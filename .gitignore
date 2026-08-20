@@ -1,16 +1,17 @@
-/[Ll]ibrary/
-/[Tt]emp/
-/[Oo]bj/
-/[Bb]uild/
-/[Bb]uilds/
-/[Ll]ogs/
-/[Uu]ser[Ss]ettings/
-/[Mm]emoryCaptures/
-/[Rr]ecordings/
+# Unity — repo kökünde veya unity/ altında oluşan otomatik klasörler (commit etme)
+**/[Ll]ibrary/
+**/[Tt]emp/
+**/[Oo]bj/
+**/[Bb]uild/
+**/[Bb]uilds/
+**/[Ll]ogs/
+**/[Uu]ser[Ss]ettings/
+**/[Mm]emoryCaptures/
+**/[Rr]ecordings/
 
 # Asset Store tools
-/[Aa]ssets/AssetStoreTools*
-/[Aa]ssets/Plugins/Editor/JetBrains*
+**/[Aa]ssets/AssetStoreTools*
+**/[Aa]ssets/Plugins/Editor/JetBrains*
 
 # Visual Studio / Rider / VS Code
 .vs/
