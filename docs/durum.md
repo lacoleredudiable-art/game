@@ -10,7 +10,7 @@
 
 | Görev | Konu | Durum | PR |
 |---|---|---|---|
-| T0 | Unity 6 URP projesi, MCP, gitignore | sürüyor (insan) | — |
+| T0 | Unity 6 URP projesi, MCP, gitignore | bitti | — |
 | T1 | Core assembly, ayar veri modeli, dotnet test kancası | bekliyor | — |
 | T2 | Cümle gramer motoru | bekliyor | — |
 | T3 | Dodge, boss frame verisi, derecelendirme | bekliyor | — |
@@ -41,4 +41,7 @@ _(henüz yok)_
 
 ## Bilinen açıklar
 
-- T0 tamamlanınca `unity/` klasörü repoda olacak; o ana kadar Faz 2 görevleri başlatılamaz.
+- T0 bitti: `unity/` içinde Unity 6 Universal 3D projesi var (`Assets`, `Packages`,
+  `ProjectSettings` commit'li; `Library`/`Temp`/`Logs` ignore ediliyor). Force Text açık,
+  Unity MCP köprüsü Cursor'a bağlı ve onaylı.
+- `dotnet --version` çıktısı henüz doğrulanmadı; T1'in ilk işi bunu kontrol etmek.
