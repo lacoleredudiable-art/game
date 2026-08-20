@@ -4,7 +4,7 @@
 > ajanın repoyu taramadan nerede kaldığımızı anlaması. Kısa tut: ne bitti, ne üretildi,
 > nerede sapma var.
 
-**Son güncelleme:** 20 Ağustos 2026 · **Sıradaki görev:** T5
+**Son güncelleme:** 20 Ağustos 2026 · **Sıradaki görev:** T6 (T5'te * işaretli kriter telefonda doğrulanacak)
 
 ## Görev durumu
 
@@ -15,7 +15,7 @@
 | T2 | Cümle gramer motoru | bitti | #2, master'a girdi |
 | T3 | Dodge, boss frame verisi, derecelendirme | bitti | task/t3-dodge-boss-exchange |
 | T4 | Zaman yönetmeni (yavaş çekim + hitstop) | bitti | task/t4-time-director |
-| T5 | Bootstrap sahne, kinematik hareket, sanal çubuk | bekliyor | — |
+| T5 | Bootstrap sahne, kinematik hareket, sanal çubuk | bitti* | task/t5-bootstrap |
 | T6 | Beşgen girdi yüzeyi, mürekkep izi | bekliyor | — |
 | T7 | Tezahür katmanı (üç rün) | bekliyor | — |
 | T8 | Boss telegrafı, sıyırma, yavaş çekim, kamera | bekliyor | — |
@@ -89,6 +89,19 @@ dosya listesi değil, çağrılacak şeyin adı ve ne yaptığı.
 
 **Test:** `TimeDirectorTests` — 8 test; toplam `dotnet test` 38 yeşil.
 
+### T5 — `Dovus.Game` (namespace, Unity kabuğu)
+
+- `PrototypeBootstrap` — Awake'te arena + oyuncu/boss kapsülü + güneş + kamera kurar; sahne kökünde tek script
+- `GameClock` — `TimeDirector.Tick(unscaledDelta)`; `WorldDeltaMs` / `RealDeltaMs` okunur
+- `KinematicMotor` — Rigidbody yok; `MoveInput` yönü × `WalkSpeedMps` × ölçeklenmiş dt
+- `MoveInput` — sol yarı dinamik sanal çubuk (`EnhancedTouch`); masaüstü WASD yedeği; sağ yarı dokunuşlara dokunmaz
+- `FollowCamera` — yumuşak takip + hafif look-ahead; `AddShake(amplitudeM, durationSec)` T8 için
+- `PrototypeTuning` — yürüme hızı 4.5 m/s, arena yarıçapı 12 m, çubuk 72 dp (spec'te yok, varsayılan)
+- Editor: **Dovus → Create Prototype Scene** (`PrototypeSceneCreator`) — `Assets/Scenes/Prototype.unity` + build settings
+
+**Unity:** Play mode doğrulandı — arena, oyuncu/boss kapsülü, takip kamerası, WASD hareketi.
+Sahne: `Assets/Scenes/Prototype.unity` (tek Bootstrap objesi). URP renderer + `MainCamera` etiketi düzeltildi.
+
 ## Spec'ten sapmalar
 
 Belgedeki bir kural/sayı uygulanamadıysa buraya yaz: hangisi, neden, yerine ne kondu.
@@ -143,6 +156,7 @@ Sessiz sapma en pahalı hata türü.
 ## Bilinen açıklar
 
 - T1/T2/T3/T4 `dotnet test` yeşil (`tools/CoreTests`, 46 test).
+- **T5 çok parmak** Device Simulator/telefonda henüz doğrulanmadı (masaüstü WASD OK).
 - Yeni eşikler (90/160/220) masa başı kararıdır, telefonda sınanmadı — T11'in his turunda
   ilk ayarlanacak sayılar bunlar.
 - "Sıyırma" kelimesi §6'da hem başarılı dodge'un genel adı hem de en düşük derecenin adı;
@@ -157,9 +171,7 @@ Sessiz sapma en pahalı hata türü.
 - `5-1-1` gibi **tekrar sıçraması** (§4 örneği) motorda `JumpKind.Repeat` olarak doğru
   sınıflanıyor ama cümle bağlamında testi yok.
 - `History` sınırsız büyüyor; uzun dövüşte sınırlanmalı.
-- **Unity bu kodu hâlâ hiç derlemedi**: `Assets/Scripts` altında tek `.meta` yok, yani
-  editör `Core`'u hiç import etmemiş. T5'in ilk işi Unity'yi açıp konsolu okumak olmalı;
-  `IsExternalInit` shim'i ve `csc.rsp` orada sınanacak.
+- **Unity Game katmanı derlendi**; play mode doğrulandı. `IsExternalInit` shim ve `csc.rsp` Unity'de sorunsuz.
 - Vurulma sonucunda `GapMs`/`ReactionMs` doldurulmuyor (0 dönüyor). T9 vurulma ekranında
   tepki süresini göstermek isterse burayı doldurmak gerekir.
 - `ExchangeResolver.IsInvulnerableAtStrike`, `DodgeState`'teki i-frame matematiğini
