@@ -329,6 +329,13 @@ bunu zaten gerektiriyor.
 
 ## 10. İlk Prototip (Hedef)
 
+> **Güncelleme (20 Ağustos 2026):** Bu bölümdeki hedef, dövüş sisteminin somutlaşmasıyla
+> genişledi. Saldırı katmanı artık "3 vuruşluk temel zincir" değil, beşgen 5 nokta üzerinde
+> **cümle kuran** bir girdi dili; dodge ise beşgenin merkezine tıklamak ve cümleyi iptal etmek.
+> Güncel ve bağlayıcı spesifikasyon: [Dövüş Sistemi](dovus-sistemi.md).
+> Prototipin sorduğu asıl soru (aşağıdaki) değişmedi, sadece üstüne dört soru daha eklendi:
+> bkz. [Dövüş Sistemi §13](dovus-sistemi.md#13-prototipin-cevapladığı-sorular).
+
 **Kapsam — greybox, hiçbir sanat varlığı yok:**
 
 - Bir kapsül oyuncu, daha büyük bir kapsül boss
@@ -369,6 +376,12 @@ yerleşimi **ölçülebilir**. Tasarım tartışmasını tahminden ölçüme çe
 ---
 
 ## 12. Açık Konular
+
+> **Güncelleme (20 Ağustos 2026):** Girdi ve saldırı dili artık açık konu değil —
+> [Dövüş Sistemi](dovus-sistemi.md)'nde karara bağlandı. Ayrıca "beceri ligi PvP" maddesinin
+> muhtemel hali netleşti: 15 saniyelik **mühür denemesi** (saf icra, skor, sıralama), boss
+> dövüşünün dışında ayrı bir mod olarak. Sebebi: hız yarışı boss dövüşüne konursa okuma
+> yarışını yer ve 3. sütun çöker.
 
 - [ ] **Tema:** karanlık biyolojik böcek/karınca dünyası (biopunk) kalsın mı? Ant King ana
       sınıf mı? Yuva = zindan, kraliçe = nest bossu kurgusu bu temaya iyi oturuyor
