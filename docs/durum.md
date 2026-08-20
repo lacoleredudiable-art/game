@@ -4,7 +4,7 @@
 > ajanın repoyu taramadan nerede kaldığımızı anlaması. Kısa tut: ne bitti, ne üretildi,
 > nerede sapma var.
 
-**Son güncelleme:** 20 Ağustos 2026 · **Sıradaki görev:** T4
+**Son güncelleme:** 20 Ağustos 2026 · **Sıradaki görev:** T5
 
 ## Görev durumu
 
@@ -14,7 +14,7 @@
 | T1 | Core assembly, ayar veri modeli, dotnet test kancası | bitti | master |
 | T2 | Cümle gramer motoru | bitti | #2, master'a girdi |
 | T3 | Dodge, boss frame verisi, derecelendirme | bitti | task/t3-dodge-boss-exchange |
-| T4 | Zaman yönetmeni (yavaş çekim + hitstop) | bekliyor | — |
+| T4 | Zaman yönetmeni (yavaş çekim + hitstop) | bitti | task/t4-time-director |
 | T5 | Bootstrap sahne, kinematik hareket, sanal çubuk | bekliyor | — |
 | T6 | Beşgen girdi yüzeyi, mürekkep izi | bekliyor | — |
 | T7 | Tezahür katmanı (üç rün) | bekliyor | — |
@@ -75,6 +75,19 @@ dosya listesi değil, çağrılacak şeyin adı ve ne yaptığı.
 
 **Test:** `CombatExchangeTests` — 18 test; toplam `dotnet test` 30 yeşil.
 
+### T4 — `Dovus.Core.Time` (namespace)
+
+- `TimeDirector(SlowmoTuning?)` — `RealTimeMs`, `WorldTimeMs`, `TimeScale`, `IsHitstopActive`,
+  `IsSlowmoActive`
+- `Tick(realDtMs)` → ölçeklenmiş dünya deltası; gerçek saat her zaman `realDt` ile ilerler
+- `TriggerSlowmo(factor?, rampDown?, hold?, rampUp?)` — varsayılanlar `SlowmoTuning`'den (§7).
+  Aktif yavaş çekim varsa baştan başlar; hitstop sırasında kuyruğa alınır
+- `TriggerHitstop(ms)` — ölçek ~0; yavaş çekimi duraklatır ve bitince kaldığı yerden sürdürür.
+  Üst üste gelirse süreler toplanır
+- Rampa geçişleri `SmoothStep` ease; iniş 55 / tut 190 / çıkış 420 ms
+
+**Test:** `TimeDirectorTests` — 8 test; toplam `dotnet test` 38 yeşil.
+
 ## Spec'ten sapmalar
 
 Belgedeki bir kural/sayı uygulanamadıysa buraya yaz: hangisi, neden, yerine ne kondu.
@@ -102,7 +115,7 @@ Sessiz sapma en pahalı hata türü.
 
 ## Bilinen açıklar
 
-- T1/T2/T3 `dotnet test` yeşil (`tools/CoreTests`, 30 test).
+- T1/T2/T3/T4 `dotnet test` yeşil (`tools/CoreTests`, 38 test).
 - 4. sıfat için uzatma penceresi belgede yok; 4. noktada cümle hemen kapanış üretir
   (taşan dokunuş da aynı sonucu verir).
 - **`OnDotTouched`/`OnDwell` `worldTimeMs` parametresini kullanmıyor**; pencere yalnızca
