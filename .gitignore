@@ -45,6 +45,9 @@ crashlytics-build.properties
 Thumbs.db
 desktop.ini
 
+# Editördeki AI asistanının yerel ayarı — makineye özel, projeye ait değil
+**/[Pp]roject[Ss]ettings/Packages/com.unity.ai.assistant/
+
 # Local setup logs
 unity-create.log
 unity-import.log
