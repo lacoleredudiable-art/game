@@ -19,6 +19,9 @@ Sırayla okunmalı:
 4. [Ajan Görev Listesi](docs/gorev-listesi.md) — sırayla çalıştırılacak görevler ve her biri
    için hazır prompt.
 
+Çalışma sırasında: [Durum](docs/durum.md) nerede kaldığımızı tutar, [T0 Kurulum](docs/t0-kurulum.md)
+ilk kurulumu anlatır, [AGENTS.md](AGENTS.md) ajanların uyduğu değişmez kuralları içerir.
+
 ## Dövüş sistemi, tek paragrafta
 
 Sol başparmak karakteri yürütür. Sağ başparmak, beşgen dizilmiş 5 noktanın üzerinde

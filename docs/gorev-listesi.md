@@ -14,6 +14,9 @@
 2. **Her göreve ayrı ajan, ayrı dal, ayrı PR.** Görev bitmeden sonrakini başlatma.
 3. Ajan bitirdiğinde tek soruyu sor: **"kabul kriterlerinden hangisini doğrulayamadın?"**
    Doğrulanmamış kriter varsa görev bitmemiştir.
+4. **Prompt'a ek bilgi yapıştırmana gerek yok.** Değişmez kurallar ve "repoyu tarama"
+   talimatı `AGENTS.md`'de ve her ajanın bağlamına otomatik giriyor. Ajan nerede kaldığımızı
+   `docs/durum.md`'den öğrenir ve bitirince orayı güncellemekle yükümlüdür.
 4. **Faz 1 (T1–T4) Unity gerektirmez** — `dotnet test` ile doğrulanır, en hızlı kısım burası.
    **Faz 2 (T5–T10) için Unity editörü açık ve MCP bağlı olmalı.**
 5. Prompt'ların hepsi "önce şu belgeyi oku" ile başlıyor. Bu satırı silme; ajanın bağlamı o.
