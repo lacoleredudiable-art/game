@@ -4,7 +4,7 @@
 > ajanın repoyu taramadan nerede kaldığımızı anlaması. Kısa tut: ne bitti, ne üretildi,
 > nerede sapma var.
 
-**Son güncelleme:** 20 Ağustos 2026 · **Sıradaki görev:** T3
+**Son güncelleme:** 20 Ağustos 2026 · **Sıradaki görev:** T4
 
 ## Görev durumu
 
@@ -13,7 +13,7 @@
 | T0 | Unity 6 URP projesi, MCP, gitignore | bitti | — |
 | T1 | Core assembly, ayar veri modeli, dotnet test kancası | bitti | master |
 | T2 | Cümle gramer motoru | bitti | #2, master'a girdi |
-| T3 | Dodge, boss frame verisi, derecelendirme | bekliyor | — |
+| T3 | Dodge, boss frame verisi, derecelendirme | bitti | task/t3-dodge-boss-exchange |
 | T4 | Zaman yönetmeni (yavaş çekim + hitstop) | bekliyor | — |
 | T5 | Bootstrap sahne, kinematik hareket, sanal çubuk | bekliyor | — |
 | T6 | Beşgen girdi yüzeyi, mürekkep izi | bekliyor | — |
@@ -61,6 +61,20 @@ dosya listesi değil, çağrılacak şeyin adı ve ne yaptığı.
 - `OnDwell` iptal penceresini **dondurur** (yığın başına `DwellMs` iade). Bekleme eşiğini
   motor ölçmez — parmağın 220 ms'yi doldurduğunu girdi katmanı (T6) bildirir.
 
+### T3 — `Dovus.Core.Combat` (namespace)
+
+- `DodgeState(DodgeTuning?)` — `Begin(pressTimeMs)`, `IsInvulnerable(worldTimeMs)`,
+  `EvaluateCurve(u)` → s(u)=1-(1-u)^curveExp, `GetDisplacementRatio(worldTimeMs)`,
+  `GetGlideVelocityRatio(worldTimeMs)`, `IsOnCooldown`, `IframeStartMs`/`IframeEndMs`
+- `BossAttack(BossTuning?)` — `WindupMs`/`ActiveMs`/`RecoveryMs`, `StrikeTimeMs(telegraphStart)`,
+  `IsInEffectVolume(distanceM, angleFromForwardDeg, arcHalfAngleDeg=180)`
+- `ExchangeResolver(CombatTuning?)` — `Resolve(ExchangeInput)` → `ExchangeResult`
+  (Outcome Dodged/Hit/Safe, Grade, GapMs, ReactionMs, Reason + `HitReasonText`)
+- `GradeFromGap(gapMs)` — eşikler T1 `GradeTuning`'den (110/200/320 ms, üst sınır dahil)
+- i-frame yarı-açık aralık: `[press+iframeStart, press+iframeStart+iframe)`
+
+**Test:** `CombatExchangeTests` — 18 test; toplam `dotnet test` 30 yeşil.
+
 ## Spec'ten sapmalar
 
 Belgedeki bir kural/sayı uygulanamadıysa buraya yaz: hangisi, neden, yerine ne kondu.
@@ -88,7 +102,7 @@ Sessiz sapma en pahalı hata türü.
 
 ## Bilinen açıklar
 
-- T1/T2 `dotnet test` yeşil (`tools/CoreTests`, 12 test).
+- T1/T2/T3 `dotnet test` yeşil (`tools/CoreTests`, 30 test).
 - 4. sıfat için uzatma penceresi belgede yok; 4. noktada cümle hemen kapanış üretir
   (taşan dokunuş da aynı sonucu verir).
 - **`OnDotTouched`/`OnDwell` `worldTimeMs` parametresini kullanmıyor**; pencere yalnızca
