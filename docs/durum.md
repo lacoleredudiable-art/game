@@ -4,7 +4,7 @@
 > ajanın repoyu taramadan nerede kaldığımızı anlaması. Kısa tut: ne bitti, ne üretildi,
 > nerede sapma var.
 
-**Son güncelleme:** 20 Ağustos 2026 · **Sıradaki görev:** T2
+**Son güncelleme:** 20 Ağustos 2026 · **Sıradaki görev:** T3
 
 ## Görev durumu
 
@@ -12,7 +12,7 @@
 |---|---|---|---|
 | T0 | Unity 6 URP projesi, MCP, gitignore | bitti | — |
 | T1 | Core assembly, ayar veri modeli, dotnet test kancası | bitti | master |
-| T2 | Cümle gramer motoru | bekliyor | — |
+| T2 | Cümle gramer motoru | bitti | — |
 | T3 | Dodge, boss frame verisi, derecelendirme | bekliyor | — |
 | T4 | Zaman yönetmeni (yavaş çekim + hitstop) | bekliyor | — |
 | T5 | Bootstrap sahne, kinematik hareket, sanal çubuk | bekliyor | — |
@@ -48,8 +48,16 @@ dosya listesi değil, çağrılacak şeyin adı ve ne yaptığı.
 - `FeelTuning` — hitstop/impact frame/sessizlik/kamera/afterimage + tepki yazısı ayarları
 - `DodgeGrade` (enum) — `Mukemmel`, `Harika`, `Temiz`, `Siyirdi`
 
-**Test:** `cd tools/CoreTests && dotnet test` → 3 test yeşil. `.csproj` Core'un tamamını
-joker ile link'ler, yani T2'nin yeni dosyaları otomatik teste girer, ekleme gerekmez.
+**Test:** `cd tools/CoreTests && dotnet test`. `.csproj` Core'un tamamını joker ile link'ler.
+
+### T2 — `Dovus.Core.Grammar` (namespace)
+
+- `Rune` (1–5) + `RuneInfo.Syllable` / `TryFromDot`
+- `PentagonLayout.ClassifyJump(from, to)` → `JumpKind` (Short / Long / Repeat); komşu = ±1, uzak = ±2
+- `SentenceEngine(SentenceTuning?)` — `OnDotTouched(dot, worldTimeMs)`, `OnDwell(worldTimeMs)`,
+  `Tick(dtMs)`, `Abort()`; `State` (`SentenceState`), `History`, `SentenceCompleted`
+- Max 4 noktada kapanış üretilir; fazla dokunuş yeni fiil başlatır. Abort → `Closing == null`
+- Pencere/ödül: `SentenceTuning.CancelWindowForDots` / `StepForDots` üzerinden (T1 API)
 
 ## Spec'ten sapmalar
 
@@ -70,7 +78,6 @@ Sessiz sapma en pahalı hata türü.
 
 ## Bilinen açıklar
 
-- T0 bitti: `unity/` içinde Unity 6 Universal 3D projesi var (`Assets`, `Packages`,
-  `ProjectSettings` commit'li; `Library`/`Temp`/`Logs` ignore ediliyor). Force Text açık,
-  Unity MCP köprüsü Cursor'a bağlı ve onaylı.
-- `dotnet --version` çıktısı henüz doğrulanmadı; T1'in ilk işi bunu kontrol etmek.
+- T1/T2 `dotnet test` yeşil (`tools/CoreTests`).
+- 4. sıfat için uzatma penceresi belgede yok; 4. noktada cümle hemen kapanış üretir
+  (taşan dokunuş da aynı sonucu verir).
