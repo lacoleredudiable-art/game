@@ -71,7 +71,7 @@ dotnet --version
 - [x] Unity 6 Universal 3D projesi `unity/` içinde
 - [x] Force Text
 - [x] MCP bağlı (Accepted, yeşil)
-- [ ] `.gitignore` + commit + push
-- [ ] `dotnet --version` çalışıyor
+- [x] `.gitignore` + commit + push
+- [x] `dotnet --version` çalışıyor
 
 Hepsi tamamsa `docs/gorev-listesi.md` içindeki **T1** prompt'unu ajana ver.
