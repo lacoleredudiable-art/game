@@ -59,6 +59,13 @@ Bedel **asla ergonomik zorluk olmamalı** — el boyu ve telefon boyu gücü bel
 öder: noktada **beklemek** (`dwellMs = 220`, en fazla `dwellMaxStacks = 2`) ya da o noktaya
 **geri dönmek** (bir sıfat yuvası harcar).
 
+İki yol iki farklı şey öder ve karıştırılmamalı. Beklemenin bedeli **parmağın ve dövüşün
+süresi**: boss bu sırada durmaz, telegraf işler, cümle gerçek zamanda uzar. Bedeli §5'teki
+iptal penceresi **değildir** — bekleme boyunca o pencere donar, bekleme biter bitmez kaldığı
+yerden işler. Donmasaydı iki yığın (2 × 220 ms) fiilin 420 ms'lik penceresine hiç sığmaz ve
+`dwellMaxStacks = 2` yazılı ama oyunda ulaşılamayan bir sayı olurdu. Geri dönmenin bedeli
+ise zaten yuvanın kendisi.
+
 > Bilerek eklemediğimiz eksenler: saat yönü, çizgilerin kesişmesi, şeklin simetrisi.
 > Hepsi cazip ama her yeni eksen öğrenilecek bir şeydir ve öğrenilecek şey ezbere kayar.
 > Alanı büyütmek gerekirse **rün havuzu** ve **durum tablosu** büyütülür, gramer değil.
@@ -148,7 +155,8 @@ mekanik tam olarak budur):
 | 1. sıfat | 360 ms |
 | 2. sıfat | 300 ms |
 
-Pencere kapanırsa cümle kendiliğinden **çözülür** (kapanış vuruşu gelir).
+Pencere kapanırsa cümle kendiliğinden **çözülür** (kapanış vuruşu gelir). Noktada bekleme
+(§3) süresince pencere durur; yoğunlaştırmak sıradaki noktaya basma hakkını yemez.
 
 **On nokta çizmek "aynı komboyu tekrarlamak" değildir.** `1-2-3-4-5-1-2-3-4-5` şöyle bölünür:
 `1-2-3-4` (cümle) → `5-1-2-3` (yeni cümle, fiil artık 5) → `4-5…` (üçüncü cümle başlar).
