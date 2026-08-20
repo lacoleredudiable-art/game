@@ -58,6 +58,8 @@ dosya listesi değil, çağrılacak şeyin adı ve ne yaptığı.
   `Tick(dtMs)`, `Abort()`; `State` (`SentenceState`), `History`, `SentenceCompleted`
 - Max 4 noktada kapanış üretilir; fazla dokunuş yeni fiil başlatır. Abort → `Closing == null`
 - Pencere/ödül: `SentenceTuning.CancelWindowForDots` / `StepForDots` üzerinden (T1 API)
+- `OnDwell` iptal penceresini **dondurur** (yığın başına `DwellMs` iade). Bekleme eşiğini
+  motor ölçmez — parmağın 220 ms'yi doldurduğunu girdi katmanı (T6) bildirir.
 
 ## Spec'ten sapmalar
 
@@ -76,8 +78,28 @@ Sessiz sapma en pahalı hata türü.
   Eksik bizdeydi: §8'e "Başlangıç sayıları" tablosu eklendi ve sınıf dolduruldu.
 - **`.csproj` dosya dosya link'liyordu**, jokere çevrildi.
 
+### T2 denetiminde düzeltilenler
+
+- **Bekleme artık iptal penceresini dondurur.** Önce donmuyordu: bekleme 220 ms, fiil
+  penceresi 420 ms olduğu için ikinci yığın gelmeden cümle çözülüyordu — yani
+  `dwellMaxStacks = 2` oyunda ulaşılamaz bir sayıydı. Kriter 6'nın testi bunu göremiyordu
+  çünkü `OnDwell`'i hiç `Tick` çağırmadan üst üste çağırıyordu; test artık dünya zamanını
+  gerçekten akıtıyor. Kuralın gerekçesi spec §3'e (ve §5'e tek satır) yazıldı.
+
 ## Bilinen açıklar
 
-- T1/T2 `dotnet test` yeşil (`tools/CoreTests`).
+- T1/T2 `dotnet test` yeşil (`tools/CoreTests`, 12 test).
 - 4. sıfat için uzatma penceresi belgede yok; 4. noktada cümle hemen kapanış üretir
   (taşan dokunuş da aynı sonucu verir).
+- **`OnDotTouched`/`OnDwell` `worldTimeMs` parametresini kullanmıyor**; pencere yalnızca
+  `Tick(dtMs)` ile eriyor, yani dokunuş zamanı kare hassasiyetine yuvarlanıyor (60 fps'te
+  ~16 ms, 300 ms'lik pencerede %5). T8'in "yavaş çekimde 4 nokta sığıyor" kriteri bu
+  pencerelerin hassasiyetine dayanıyor; T6'yı yazan ajan ya parametreyi son tarih
+  hesabında kullanmalı ya da imzadan kaldırmalı.
+- `5-1-1` gibi **tekrar sıçraması** (§4 örneği) motorda `JumpKind.Repeat` olarak doğru
+  sınıflanıyor ama cümle bağlamında testi yok.
+- `History` sınırsız büyüyor; uzun dövüşte sınırlanmalı.
+- **Unity bu kodu hiç derlemedi**: `Assets/Scripts` altında tek `.meta` yok, yani editör
+  `Core`'u hiç import etmemiş. `SentenceEngine` nullable işaretleri kullanıyor
+  (`SentenceTuning?`); Unity'nin varsayılan bağlamı kapalı olduğu için T5'te CS8632
+  uyarıları beklenir (hata değil), `Assets/csc.rsp` ile susturulabilir.

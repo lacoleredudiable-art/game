@@ -174,22 +174,66 @@ public class DwellTests
         var engine = new SentenceEngine(tuning);
 
         engine.OnDotTouched(1, 0);
-        engine.OnDwell(tuning.DwellMs);
-        engine.OnDwell(tuning.DwellMs * 2);
-        engine.OnDwell(tuning.DwellMs * 3); // üçüncü yok sayılır
 
+        // Dünya zamanı gerçekten akıyor: iki yığın 2 × 220 ms sürüyor, fiilin penceresi ise
+        // 420 ms. Pencere bekleme boyunca donmasaydı cümle ikinci yığına varmadan çözülürdü.
+        double t = 0;
+        for (int attempt = 1; attempt <= 3; attempt++)
+        {
+            engine.Tick(tuning.DwellMs);
+            t += tuning.DwellMs;
+            engine.OnDwell(t);
+        }
+
+        Assert.That(engine.State.Phase, Is.EqualTo(SentencePhase.Building));
         Assert.That(engine.State.DotCount, Is.EqualTo(1), "dwell sıfat yuvası harcamaz");
         Assert.That(engine.State.Words[0].IntensityStacks, Is.EqualTo(tuning.DwellMaxStacks));
         Assert.That(engine.State.AdjectiveCount, Is.EqualTo(0));
 
         // Hâlâ 3 sıfat yuvası açık
-        engine.OnDotTouched(2, 100);
-        engine.OnDotTouched(3, 200);
-        engine.OnDotTouched(4, 300);
+        engine.OnDotTouched(2, t);
+        engine.OnDotTouched(3, t + 100);
+        engine.OnDotTouched(4, t + 200);
 
         Assert.That(engine.History, Has.Count.EqualTo(1));
         Assert.That(engine.History[0].Words, Has.Count.EqualTo(4));
         Assert.That(engine.History[0].Words[0].IntensityStacks, Is.EqualTo(2));
         Assert.That(engine.History[0].Phase, Is.EqualTo(SentencePhase.Resolved));
+    }
+
+    [Test]
+    public void Dwell_FreezesWindow_ButNeverGrowsIt()
+    {
+        var tuning = new SentenceTuning();
+        var engine = new SentenceEngine(tuning);
+        int window = tuning.CancelWindowForDots(1);
+
+        engine.OnDotTouched(1, 0);
+        engine.Tick(tuning.DwellMs);
+        Assert.That(engine.State.RemainingWindowMs, Is.EqualTo(window - tuning.DwellMs));
+
+        engine.OnDwell(tuning.DwellMs);
+        Assert.That(engine.State.RemainingWindowMs, Is.EqualTo(window), "bekleme pencereyi dondurur");
+
+        // Zaman geçmeden gelen yığın pencereyi büyütemez
+        engine.OnDwell(tuning.DwellMs);
+        Assert.That(engine.State.RemainingWindowMs, Is.EqualTo(window));
+    }
+
+    [Test]
+    public void Dwell_DoesNotStopWindow_AfterHoldEnds()
+    {
+        var tuning = new SentenceTuning();
+        var engine = new SentenceEngine(tuning);
+
+        engine.OnDotTouched(1, 0);
+        engine.Tick(tuning.DwellMs);
+        engine.OnDwell(tuning.DwellMs);
+
+        engine.Tick(tuning.CancelWindowForDots(1));
+
+        Assert.That(engine.State.Phase, Is.EqualTo(SentencePhase.Resolved));
+        Assert.That(engine.History[0].Closing, Is.Not.Null);
+        Assert.That(engine.History[0].Words[0].IntensityStacks, Is.EqualTo(1));
     }
 }

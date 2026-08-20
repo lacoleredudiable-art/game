@@ -15,6 +15,7 @@ namespace Dovus.Core.Grammar
         readonly List<CompletedSentence> _history = new List<CompletedSentence>();
 
         double _remainingWindowMs;
+        double _armedWindowMs;
         int _lastWordDwellStacks;
 
         public SentenceEngine(SentenceTuning? tuning = null)
@@ -74,6 +75,7 @@ namespace Dovus.Core.Grammar
             int last = _words.Count - 1;
             SentenceWord w = _words[last];
             _words[last] = new SentenceWord(w.Rune, w.JumpFromPrevious, _lastWordDwellStacks);
+            FreezeWindowForDwell();
             PublishState();
         }
 
@@ -149,7 +151,18 @@ namespace Dovus.Core.Grammar
         void ArmWindowAfterHit()
         {
             // Vuruş sonrası uzatma penceresi — T1: CancelWindowForDots(noktaSayısı)
-            _remainingWindowMs = _tuning.CancelWindowForDots(_words.Count);
+            _armedWindowMs = _tuning.CancelWindowForDots(_words.Count);
+            _remainingWindowMs = _armedWindowMs;
+        }
+
+        /// <summary>
+        /// §3: bekleme parmağın süresini öder, iptal penceresini değil — bir yığın dolunca
+        /// pencere bekleme başlamadan önceki hâline döner. Donmasaydı iki yığın (2×220 ms)
+        /// fiilin 420 ms'lik penceresine sığmaz, dwellMaxStacks = 2 ulaşılamaz olurdu.
+        /// </summary>
+        void FreezeWindowForDwell()
+        {
+            _remainingWindowMs = Math.Min(_remainingWindowMs + _tuning.DwellMs, _armedWindowMs);
         }
 
         void ResolveWithClosing()
@@ -179,6 +192,7 @@ namespace Dovus.Core.Grammar
             State.Verb = completed.Verb;
             State.Words = completed.Words;
             _remainingWindowMs = 0;
+            _armedWindowMs = 0;
             SentenceCompleted?.Invoke(completed);
         }
 
@@ -187,6 +201,7 @@ namespace Dovus.Core.Grammar
             _words.Clear();
             _lastWordDwellStacks = 0;
             _remainingWindowMs = 0;
+            _armedWindowMs = 0;
             State.Phase = SentencePhase.Idle;
             State.Verb = null;
             State.Words = Array.Empty<SentenceWord>();
