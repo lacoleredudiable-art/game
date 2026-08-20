@@ -18,6 +18,7 @@
 .idea/
 .vscode/
 *.csproj
+!tools/CoreTests/*.csproj
 *.unityproj
 *.sln
 *.suo
@@ -47,3 +48,6 @@ desktop.ini
 # Local setup logs
 unity-create.log
 unity-import.log
+
+# dotnet test çıktıları (tools/CoreTests)
+tools/CoreTests/bin/

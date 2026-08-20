@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>CoreTests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="NUnit" Version="4.2.2" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\unity\Assets\Scripts\Core\Tuning\BossTuning.cs" Link="Core\Tuning\BossTuning.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Core\Tuning\CombatTuning.cs" Link="Core\Tuning\CombatTuning.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Core\Tuning\DodgeGrade.cs" Link="Core\Tuning\DodgeGrade.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Core\Tuning\DodgeTuning.cs" Link="Core\Tuning\DodgeTuning.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Core\Tuning\FeelTuning.cs" Link="Core\Tuning\FeelTuning.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Core\Tuning\GradeTuning.cs" Link="Core\Tuning\GradeTuning.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Core\Tuning\SentenceTuning.cs" Link="Core\Tuning\SentenceTuning.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Core\Tuning\SlowmoTuning.cs" Link="Core\Tuning\SlowmoTuning.cs" />
+  </ItemGroup>
+
+</Project>
