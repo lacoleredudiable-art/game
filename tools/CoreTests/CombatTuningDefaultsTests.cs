@@ -75,9 +75,9 @@ public class CombatTuningDefaultsTests
         // §6 Derecelendirme
         Assert.Multiple(() =>
         {
-            Assert.That(t.Grade.MukemmelGapMaxMs, Is.EqualTo(110));
-            Assert.That(t.Grade.HarikaGapMaxMs, Is.EqualTo(200));
-            Assert.That(t.Grade.TemizGapMaxMs, Is.EqualTo(320));
+            Assert.That(t.Grade.MukemmelGapMaxMs, Is.EqualTo(90));
+            Assert.That(t.Grade.HarikaGapMaxMs, Is.EqualTo(160));
+            Assert.That(t.Grade.TemizGapMaxMs, Is.EqualTo(220));
         });
 
         // §11 Boss
@@ -129,6 +129,21 @@ public class CombatTuningDefaultsTests
         Assert.That(gains[0], Is.GreaterThan(0f), "uzatmanın karşılığı olmalı");
         Assert.That(gains[1], Is.LessThan(gains[0]), "kazanç azalan getirili olmalı");
         Assert.That(gains[2], Is.LessThan(gains[1]), "dördüncü nokta neredeyse hiçbir şey katmaz");
+    }
+
+    /// <summary>
+    /// §6: eşikler i-frame penceresinin içinde kalmalı. Son eşik pencereye eşit ya da
+    /// büyük olursa en alt derece hiç üretilemez — bu test o ayarı elemek için var.
+    /// </summary>
+    [Test]
+    public void GradeThresholds_FitInsideIframeWindow()
+    {
+        var t = new CombatTuning();
+
+        Assert.That(t.Grade.MukemmelGapMaxMs, Is.LessThan(t.Grade.HarikaGapMaxMs));
+        Assert.That(t.Grade.HarikaGapMaxMs, Is.LessThan(t.Grade.TemizGapMaxMs));
+        Assert.That(t.Grade.TemizGapMaxMs, Is.LessThan(t.Dodge.IframeMs),
+            "son eşik pencereden küçük olmalı, yoksa SIYIRDI bandı yok olur");
     }
 
     [Test]

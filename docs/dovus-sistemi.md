@@ -209,10 +209,17 @@ penceresi açıksa sıyırma sayılır.
 
 | Derece | Eşik (`gap`) | Yazı |
 |---|---|---|
-| MÜKEMMEL | ≤ 110 ms | "tepki süren mükemmel" |
-| HARİKA | ≤ 200 ms | "neredeyse kusursuz" |
-| TEMİZ | ≤ 320 ms | "iyi okudun" |
-| SIYIRDI | > 320 ms | "biraz erken bastın" |
+| MÜKEMMEL | ≤ 90 ms | "tepki süren mükemmel" |
+| HARİKA | ≤ 160 ms | "neredeyse kusursuz" |
+| TEMİZ | ≤ 220 ms | "iyi okudun" |
+| SIYIRDI | 221 ms – pencere sonu | "biraz erken bastın" |
+
+**Eşiklerin hepsi i-frame penceresinin içinde kalmak zorunda.** `gap`, başarılı bir dodge'da
+tanımı gereği `iframeMs`'den küçüktür — pencere kapandıktan sonra gelen vuruş zaten isabet
+eder ve derece değil *sebep* üretir. Dolayısıyla son eşik (`temizGapMaxMs`) pencereden büyük
+olursa en alt derece hiç doğmaz ve §7'deki `slowmoMinGrade` işlevsizleşir: her başarılı dodge
+yavaş çekim alır. Pencere şu an 260 ms, son eşik 220; aradaki bant SIYIRDI'dır ve ödül vermez.
+`iframeMs` değişirse eşikler de değişmeli.
 
 Vurulma hâlinde de sebep yazılır — dodge bastı ama i-frame bitmişse "erken bastın",
 hiç basmamışsa "geç kaldın". Her ölüm açıklanabilir olmalı.

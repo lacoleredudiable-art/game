@@ -31,15 +31,36 @@ public class CombatExchangeTests
             InEffectVolume = true
         };
 
-    [TestCase(110, DodgeGrade.Mukemmel)]
-    [TestCase(111, DodgeGrade.Harika)]
-    [TestCase(200, DodgeGrade.Harika)]
-    [TestCase(201, DodgeGrade.Temiz)]
-    [TestCase(320, DodgeGrade.Temiz)]
-    [TestCase(321, DodgeGrade.Siyirdi)]
+    [TestCase(90, DodgeGrade.Mukemmel)]
+    [TestCase(91, DodgeGrade.Harika)]
+    [TestCase(160, DodgeGrade.Harika)]
+    [TestCase(161, DodgeGrade.Temiz)]
+    [TestCase(220, DodgeGrade.Temiz)]
+    [TestCase(221, DodgeGrade.Siyirdi)]
     public void GradeFromGap_ThresholdsAreInclusiveAtBoundaries(int gapMs, DodgeGrade expected)
     {
         Assert.That(_resolver.GradeFromGap(gapMs), Is.EqualTo(expected));
+    }
+
+    /// <summary>
+    /// Dört derecenin de gerçekten üretilebildiğini `Resolve` üzerinden doğrular.
+    /// Eşikleri doğrudan sorgulamak yetmez: eşik i-frame penceresinin dışına düşerse
+    /// `GradeFromGap` yine doğru cevabı verir ama oyunda o derece hiç oluşmaz.
+    /// </summary>
+    [TestCase(60, DodgeGrade.Mukemmel)]
+    [TestCase(140, DodgeGrade.Harika)]
+    [TestCase(200, DodgeGrade.Temiz)]
+    [TestCase(240, DodgeGrade.Siyirdi)]
+    public void Resolve_ProducesEveryGrade_WithinIframeWindow(int gapMs, DodgeGrade expected)
+    {
+        int press = StrikeTime - gapMs;
+        _dodge.Begin(press);
+        Assert.That(_dodge.IsInvulnerable(StrikeTime), Is.True, $"gap {gapMs} pencerenin içinde olmalı");
+
+        var result = _resolver.Resolve(InVolume(TelegraphStart, StrikeTime, press));
+
+        Assert.That(result.Outcome, Is.EqualTo(ExchangeOutcome.Dodged));
+        Assert.That(result.Grade, Is.EqualTo(expected));
     }
 
     [Test]

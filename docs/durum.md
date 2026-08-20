@@ -44,7 +44,8 @@ dosya listesi değil, çağrılacak şeyin adı ve ne yaptığı.
   `SlowmoMinGrade`, `SlowmoBonusDots`
 - `BossTuning` — `WindupMs`, `ActiveMs`, `RecoveryMs`, `RadiusM`, `Damage`, `IdleMinMs`,
   `IdleMaxMs`, `ApproachSpeedMps`, `RespawnMaxSec`
-- `GradeTuning` — `MukemmelGapMaxMs` 110, `HarikaGapMaxMs` 200, `TemizGapMaxMs` 320
+- `GradeTuning` — `MukemmelGapMaxMs` 90, `HarikaGapMaxMs` 160, `TemizGapMaxMs` 220.
+  Değişmez: son eşik `DodgeTuning.IframeMs`'den küçük kalmalı (yoksa SIYIRDI üretilemez)
 - `FeelTuning` — hitstop/impact frame/sessizlik/kamera/afterimage + tepki yazısı ayarları
 - `DodgeGrade` (enum) — `Mukemmel`, `Harika`, `Temiz`, `Siyirdi`
 
@@ -125,6 +126,14 @@ Sessiz sapma en pahalı hata türü.
   eskisini geçersiz kılıyor ve kuyruk her hitstop sonunda tüketiliyor. Testler:
   `SlowmoDuringHitstop_WhileEarlierSlowmoPaused_StartsFresh`,
   `QueuedSlowmo_DoesNotLeakIntoALaterHitstop`.
+- **Derecelendirme eşikleri i-frame penceresine sığdırıldı: 110/200/320 → 90/160/220.**
+  Eski eşiklerle `DodgeGrade.Siyirdi` hiç üretilemiyordu; başarılı bir dodge'da `gap`
+  tanımı gereği pencereden (260 ms) küçük, TEMİZ eşiği ise 320'ydi. Yan etkisi §7'deki
+  `slowmoMinGrade = TEMİZ`'in işlevsiz kalmasıydı — her başarılı dodge yavaş çekim
+  veriyordu; artık 221–259 bandı ödül vermiyor. Kural spec §6'ya yazıldı ve
+  `GradeThresholds_FitInsideIframeWindow` ile teste bağlandı; ayrıca
+  `Resolve_ProducesEveryGrade_WithinIframeWindow` dört derecenin de `Resolve` üzerinden
+  gerçekten doğduğunu doğruluyor.
 - **`ExchangeInput`/`ExchangeResult` Unity'de derlenmezdi.** `init` accessor'lar Unity 6'nın
   .NET Standard 2.1 BCL'inde CS0518 veriyor (resmî olarak "desteklenmeyen özellik").
   `Core/Compat/IsExternalInit.cs` shim'i eklendi; net8.0 testlerinde `#if` ile devre dışı.
@@ -133,14 +142,11 @@ Sessiz sapma en pahalı hata türü.
 
 ## Bilinen açıklar
 
-- T1/T2/T3/T4 `dotnet test` yeşil (`tools/CoreTests`, 41 test).
-- **`DodgeGrade.Siyirdi` oyunda üretilemiyor — karar bekliyor.** i-frame 260 ms, yani
-  başarılı bir dodge'da `gap` her zaman < 260. TEMİZ eşiği 320 ms olduğu için dördüncü
-  derece hiç dönmüyor; `GradeFromGap(321)` testi yeşil ama `Resolve` o değeri asla
-  üretmiyor. Yan etkisi: §7'deki `slowmoMinGrade = TEMİZ` fiilen işlevsiz, her başarılı
-  dodge yavaş çekim veriyor. Ayrıca "sıyırma" kelimesi §6'da hem "başarılı dodge"nin genel
-  adı hem de en düşük derecenin adı — çakışıyor. Çözüm spec kararı: ya `iframeMs` büyür,
-  ya eşikler düşer, ya dördüncü derece kalkar.
+- T1/T2/T3/T4 `dotnet test` yeşil (`tools/CoreTests`, 46 test).
+- Yeni eşikler (90/160/220) masa başı kararıdır, telefonda sınanmadı — T11'in his turunda
+  ilk ayarlanacak sayılar bunlar.
+- "Sıyırma" kelimesi §6'da hem başarılı dodge'un genel adı hem de en düşük derecenin adı;
+  T9 ekrana yazarken bu çakışma karışıklık yaratabilir.
 - 4. sıfat için uzatma penceresi belgede yok; 4. noktada cümle hemen kapanış üretir
   (taşan dokunuş da aynı sonucu verir).
 - **`OnDotTouched`/`OnDwell` `worldTimeMs` parametresini kullanmıyor**; pencere yalnızca
