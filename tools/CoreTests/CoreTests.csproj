@@ -15,15 +15,12 @@
     <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
   </ItemGroup>
 
+  <!--
+    Core'un TAMAMI joker ile link'lenir. Dosya dosya yazılsaydı T2/T3/T4 her yeni dosyayı
+    buraya eklemeyi hatırlamak zorunda kalırdı; unutulduğunda test sessizce eski kodu ölçer.
+  -->
   <ItemGroup>
-    <Compile Include="..\..\unity\Assets\Scripts\Core\Tuning\BossTuning.cs" Link="Core\Tuning\BossTuning.cs" />
-    <Compile Include="..\..\unity\Assets\Scripts\Core\Tuning\CombatTuning.cs" Link="Core\Tuning\CombatTuning.cs" />
-    <Compile Include="..\..\unity\Assets\Scripts\Core\Tuning\DodgeGrade.cs" Link="Core\Tuning\DodgeGrade.cs" />
-    <Compile Include="..\..\unity\Assets\Scripts\Core\Tuning\DodgeTuning.cs" Link="Core\Tuning\DodgeTuning.cs" />
-    <Compile Include="..\..\unity\Assets\Scripts\Core\Tuning\FeelTuning.cs" Link="Core\Tuning\FeelTuning.cs" />
-    <Compile Include="..\..\unity\Assets\Scripts\Core\Tuning\GradeTuning.cs" Link="Core\Tuning\GradeTuning.cs" />
-    <Compile Include="..\..\unity\Assets\Scripts\Core\Tuning\SentenceTuning.cs" Link="Core\Tuning\SentenceTuning.cs" />
-    <Compile Include="..\..\unity\Assets\Scripts\Core\Tuning\SlowmoTuning.cs" Link="Core\Tuning\SlowmoTuning.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Core\**\*.cs" Link="Core\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>

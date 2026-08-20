@@ -31,39 +31,33 @@ public class CombatTuningDefaultsTests
             Assert.That(t.Dodge.TapMaxMoveDp, Is.EqualTo(12));
         });
 
-        // §5 Cümle + §3 dwell
+        // §5 Cümle + §3 bekletme
         Assert.Multiple(() =>
         {
             Assert.That(t.Sentence.MaxSentenceDots, Is.EqualTo(4));
-            Assert.That(t.Sentence.VerbWindowMs, Is.EqualTo(420));
-            Assert.That(t.Sentence.Adjective1WindowMs, Is.EqualTo(360));
-            Assert.That(t.Sentence.Adjective2WindowMs, Is.EqualTo(300));
+            Assert.That(t.Sentence.CancelWindowMs, Is.EqualTo(new[] { 420, 360, 300 }));
             Assert.That(t.Sentence.DwellMs, Is.EqualTo(220));
             Assert.That(t.Sentence.DwellMaxStacks, Is.EqualTo(2));
         });
 
         // §5 cümle eğrisi tablosu
+        var expected = new[]
+        {
+            (dots: 1, duration: 0.25f, effect: 1.0f, recovery: 0.18f),
+            (dots: 2, duration: 0.50f, effect: 2.4f, recovery: 0.26f),
+            (dots: 3, duration: 0.80f, effect: 4.4f, recovery: 0.38f),
+            (dots: 4, duration: 1.20f, effect: 7.0f, recovery: 0.55f),
+        };
+
         Assert.Multiple(() =>
         {
-            Assert.That(t.Sentence.Dot1DurationSec, Is.EqualTo(0.25f));
-            Assert.That(t.Sentence.Dot1TotalEffect, Is.EqualTo(1.0f));
-            Assert.That(t.Sentence.Dot1EffectPerSecond, Is.EqualTo(4.0f));
-            Assert.That(t.Sentence.Dot1RecoverySec, Is.EqualTo(0.18f));
-
-            Assert.That(t.Sentence.Dot2DurationSec, Is.EqualTo(0.50f));
-            Assert.That(t.Sentence.Dot2TotalEffect, Is.EqualTo(2.4f));
-            Assert.That(t.Sentence.Dot2EffectPerSecond, Is.EqualTo(4.8f));
-            Assert.That(t.Sentence.Dot2RecoverySec, Is.EqualTo(0.26f));
-
-            Assert.That(t.Sentence.Dot3DurationSec, Is.EqualTo(0.80f));
-            Assert.That(t.Sentence.Dot3TotalEffect, Is.EqualTo(4.4f));
-            Assert.That(t.Sentence.Dot3EffectPerSecond, Is.EqualTo(5.5f));
-            Assert.That(t.Sentence.Dot3RecoverySec, Is.EqualTo(0.38f));
-
-            Assert.That(t.Sentence.Dot4DurationSec, Is.EqualTo(1.20f));
-            Assert.That(t.Sentence.Dot4TotalEffect, Is.EqualTo(7.0f));
-            Assert.That(t.Sentence.Dot4EffectPerSecond, Is.EqualTo(5.8f));
-            Assert.That(t.Sentence.Dot4RecoverySec, Is.EqualTo(0.55f));
+            foreach (var (dots, duration, effect, recovery) in expected)
+            {
+                var step = t.Sentence.StepForDots(dots);
+                Assert.That(step.DurationSec, Is.EqualTo(duration), $"{dots} nokta süresi");
+                Assert.That(step.TotalEffect, Is.EqualTo(effect), $"{dots} nokta etkisi");
+                Assert.That(step.RecoverySec, Is.EqualTo(recovery), $"{dots} nokta toparlanması");
+            }
         });
 
         // §7 Yavaş çekim
@@ -84,7 +78,6 @@ public class CombatTuningDefaultsTests
             Assert.That(t.Grade.MukemmelGapMaxMs, Is.EqualTo(110));
             Assert.That(t.Grade.HarikaGapMaxMs, Is.EqualTo(200));
             Assert.That(t.Grade.TemizGapMaxMs, Is.EqualTo(320));
-            Assert.That(t.Grade.ReactionDisplaySec, Is.EqualTo(0.45f));
         });
 
         // §11 Boss
@@ -101,6 +94,51 @@ public class CombatTuningDefaultsTests
             Assert.That(t.Boss.RespawnMaxSec, Is.EqualTo(2.0f));
         });
 
-        Assert.That(t.Feel, Is.Not.Null);
+        // §8 His katmanı başlangıç sayıları
+        Assert.Multiple(() =>
+        {
+            Assert.That(t.Feel.HitstopPerfectMs, Is.EqualTo(90));
+            Assert.That(t.Feel.HitstopPlayerHitMs, Is.EqualTo(130));
+            Assert.That(t.Feel.ImpactFrameMs, Is.EqualTo(33));
+            Assert.That(t.Feel.PostHitSilenceMs, Is.EqualTo(120));
+            Assert.That(t.Feel.AfterimageCount, Is.EqualTo(7));
+        });
+    }
+
+    /// <summary>
+    /// Saniyedeki etki türetilir, saklanmaz — §5 eğrisinin şekli kasıtlı: uzatmanın
+    /// karşılığı var ama kazanç düzleşiyor.
+    /// </summary>
+    [Test]
+    public void EffectPerSecond_IsDerived_AndFlattensAsSentenceGrows()
+    {
+        var s = new SentenceTuning();
+
+        Assert.That(s.StepForDots(1).EffectPerSecond, Is.EqualTo(4.0f).Within(0.01f));
+        Assert.That(s.StepForDots(2).EffectPerSecond, Is.EqualTo(4.8f).Within(0.01f));
+        Assert.That(s.StepForDots(3).EffectPerSecond, Is.EqualTo(5.5f).Within(0.01f));
+        Assert.That(s.StepForDots(4).EffectPerSecond, Is.EqualTo(5.83f).Within(0.01f));
+
+        var gains = new[]
+        {
+            s.StepForDots(2).EffectPerSecond - s.StepForDots(1).EffectPerSecond,
+            s.StepForDots(3).EffectPerSecond - s.StepForDots(2).EffectPerSecond,
+            s.StepForDots(4).EffectPerSecond - s.StepForDots(3).EffectPerSecond,
+        };
+
+        Assert.That(gains[0], Is.GreaterThan(0f), "uzatmanın karşılığı olmalı");
+        Assert.That(gains[1], Is.LessThan(gains[0]), "kazanç azalan getirili olmalı");
+        Assert.That(gains[2], Is.LessThan(gains[1]), "dördüncü nokta neredeyse hiçbir şey katmaz");
+    }
+
+    [Test]
+    public void CancelWindow_ShrinksThenCloses()
+    {
+        var s = new SentenceTuning();
+
+        Assert.That(s.CancelWindowForDots(1), Is.EqualTo(420));
+        Assert.That(s.CancelWindowForDots(2), Is.EqualTo(360));
+        Assert.That(s.CancelWindowForDots(3), Is.EqualTo(300));
+        Assert.That(s.CancelWindowForDots(4), Is.EqualTo(0), "sıfat yuvası dolduysa pencere yok");
     }
 }

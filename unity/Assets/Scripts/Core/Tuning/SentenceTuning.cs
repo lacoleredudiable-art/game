@@ -1,38 +1,54 @@
 namespace Dovus.Core.Tuning
 {
-    /// <summary>Cümle kuralları — dovus-sistemi.md §5; dwell §3.</summary>
+    /// <summary>
+    /// Cümle uzunluğuna göre bedel ve ödül — dovus-sistemi.md §5 tablosu.
+    /// EffectPerSecond saklanmaz, türetilir: saklanırsa süre ayarlandığında yalan söyler.
+    /// </summary>
+    public class SentenceStep
+    {
+        public float DurationSec;
+        public float TotalEffect;
+        public float RecoverySec;
+
+        public float EffectPerSecond => DurationSec > 0f ? TotalEffect / DurationSec : 0f;
+    }
+
+    /// <summary>Cümle kuralları — dovus-sistemi.md §5; bekletme §3.</summary>
     public class SentenceTuning
     {
         public int MaxSentenceDots = 4;
 
-        // İptal pencereleri (dünya zamanı) — dovus-sistemi.md §5
-        public int VerbWindowMs = 420;
-        public int Adjective1WindowMs = 360;
-        public int Adjective2WindowMs = 300;
+        // İptal pencereleri, DÜNYA zamanıyla ölçülür — dovus-sistemi.md §5.
+        // Index 0 = fiil, 1 = birinci sıfat, 2 = ikinci sıfat.
+        public int[] CancelWindowMs = { 420, 360, 300 };
 
         // Tekrar yoğunlaştırma — dovus-sistemi.md §3
         public int DwellMs = 220;
         public int DwellMaxStacks = 2;
 
-        // Cümle uzunluğu eğrisi — dovus-sistemi.md §5 tablo
-        public float Dot1DurationSec = 0.25f;
-        public float Dot1TotalEffect = 1.0f;
-        public float Dot1EffectPerSecond = 4.0f;
-        public float Dot1RecoverySec = 0.18f;
+        /// <summary>Index 0 = tek noktalı cümle, index 3 = dört noktalı.</summary>
+        public SentenceStep[] Steps =
+        {
+            new SentenceStep { DurationSec = 0.25f, TotalEffect = 1.0f, RecoverySec = 0.18f },
+            new SentenceStep { DurationSec = 0.50f, TotalEffect = 2.4f, RecoverySec = 0.26f },
+            new SentenceStep { DurationSec = 0.80f, TotalEffect = 4.4f, RecoverySec = 0.38f },
+            new SentenceStep { DurationSec = 1.20f, TotalEffect = 7.0f, RecoverySec = 0.55f },
+        };
 
-        public float Dot2DurationSec = 0.50f;
-        public float Dot2TotalEffect = 2.4f;
-        public float Dot2EffectPerSecond = 4.8f;
-        public float Dot2RecoverySec = 0.26f;
+        /// <summary>Nokta sayısına göre adım (1..MaxSentenceDots).</summary>
+        public SentenceStep StepForDots(int dots)
+        {
+            if (dots < 1) dots = 1;
+            if (dots > Steps.Length) dots = Steps.Length;
+            return Steps[dots - 1];
+        }
 
-        public float Dot3DurationSec = 0.80f;
-        public float Dot3TotalEffect = 4.4f;
-        public float Dot3EffectPerSecond = 5.5f;
-        public float Dot3RecoverySec = 0.38f;
-
-        public float Dot4DurationSec = 1.20f;
-        public float Dot4TotalEffect = 7.0f;
-        public float Dot4EffectPerSecond = 5.8f;
-        public float Dot4RecoverySec = 0.55f;
+        /// <summary>Sıradaki noktayı basmak için kalan pencere; sıfat yuvası dolduysa 0.</summary>
+        public int CancelWindowForDots(int dotsSoFar)
+        {
+            var index = dotsSoFar - 1;
+            if (index < 0 || index >= CancelWindowMs.Length) return 0;
+            return CancelWindowMs[index];
+        }
     }
 }

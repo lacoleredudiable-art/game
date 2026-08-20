@@ -259,6 +259,34 @@ hissettirir; yarım saniye gecikip gelen sonuç olay gibi.
 Ayrıca özet §6'daki bedava his araçları burada da geçerli: hitstop, impact frame, kamera
 yumruğu, hız rampası, afterimage, vuruş sonrası sessizlik. **Düşman tepki vermeli.**
 
+### Başlangıç sayıları
+
+Bu tablo tahmindir; asıl değerler telefonda elde bulunacak (bkz.
+[Teknoloji Kararları §6](teknoloji-kararlari.md#6-ayarlanabilirlik--ve-telefonda-ayar-sorunu)).
+Kodda sayı uydurmamak için buradan alınır.
+
+| Ayar | Değer | Ne |
+|---|---|---|
+| `hitstopPerfectMs` | 90 | Sıyırma anında dondurma |
+| `hitstopPlayerHitMs` | 130 | Oyuncu vurulunca |
+| `hitstopBossHitMs` | 70 | Bossa isabet |
+| `impactFrameMs` | 33 | Tek karelik beyaz/ters renk patlaması |
+| `postHitSilenceMs` | 120 | Vuruş sonrası sessizlik |
+| `cameraPerfectZoomKick` | 0.14 | Sıyırmada FOV sıçraması |
+| `cameraDodgeZoomKick` | 0.08 | Normal dodge'da |
+| `cameraRollDeg` | 1.5 | Kısa rotasyon yumruğu |
+| `shakePerfectPx` | 6 | Sıyırma sarsıntısı |
+| `shakeHitPx` | 14 | Vurulma sarsıntısı |
+| `shakeDecay` | 6 | Sarsıntı sönme hızı |
+| `afterimageCount` | 7 | Dodge sırasında hayalet kopya |
+| `afterimageLifeMs` | 320 | Kopyanın ömrü |
+
+Tepki yazısı (§6 gösterim) için: `readoutSizePx` 96, `readoutGlow` 34, `readoutHoldMs` 900,
+`readoutFadeMs` 500, `readoutPunchScale` 1.45.
+
+> **Tepki süresi bir ayar değildir.** Çalışma anında ölçülür (`basma anı − telegraf
+> başlangıcı`). "0.45 sn" belgede yalnızca örnektir; sabit olarak kodlanmaz.
+
 ---
 
 ## 9. Ses ve Hece
