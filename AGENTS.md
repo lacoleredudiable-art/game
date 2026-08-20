@@ -22,12 +22,16 @@ Bunlar görevden bağımsız, hepsi geçerli. İhlali geri dönüşü pahalı ha
 - **Repoyu tarama.** Sadece görevinin "ÖNCE OKU" satırındaki dosya ve bölümleri oku.
   Belgeler uzun; ilgisiz bölümü okumak bağlamı doldurur ve kapsam dışı "iyileştirme" riskini artırır.
 - **Asla okumayacağın yerler:** `unity/Library/`, `unity/Temp/`, `unity/obj/`, `unity/Logs/`.
-- **Başka görevin dosyalarına dokunma.** Eksik/yanlış bir şey görürsen düzeltme, PR açıklamasına yaz.
+- **Başka görevin dosyalarına dokunma.** Eksik/yanlış bir şey görürsen düzeltme,
+  `docs/durum.md`'nin "Bilinen açıklar" bölümüne yaz.
 - **Sayı uydurma.** Bir his değeri gerekiyorsa `docs/dovus-sistemi.md`'den al. Orada yoksa
-  varsayılan koy ve belgeye referansla yorum bırak, PR'da belirt.
+  varsayılan koy ve belgeye referansla yorum bırak, `docs/durum.md`'ye de geç.
 - **Bitince `docs/durum.md`'yi güncelle** — bir sonraki ajan repoyu taramak zorunda kalmasın.
 - **Kapanışta söyle:** kabul kriterlerinden hangisini doğrulayamadın.
-- Küçük ve anlamlı commit'ler; her görev kendi dalı ve kendi PR'ı.
+- Küçük ve anlamlı commit'ler; her görev kendi dalında.
+- **Dalı kendin kapat.** `dotnet test` yeşilse `master`'a merge edip push et; kimseye sorma.
+  PR'ı yalnızca **karar** gerektiren bir şey çıktıysa açık bırak — spec'te cevabı olmayan bir
+  soru, ya da doğrulayamadığın bir kabul kriteri. Onun dışında commit trafiği sahibine sorulmaz.
 
 ## Dosya haritası
 

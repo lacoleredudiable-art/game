@@ -11,7 +11,8 @@
 ## Nasıl çalıştırılır
 
 1. **Sırayı bozma.** Her görev, kendinden öncekilerin bittiğini varsayar.
-2. **Her göreve ayrı ajan, ayrı dal, ayrı PR.** Görev bitmeden sonrakini başlatma.
+2. **Her göreve ayrı ajan, ayrı dal.** Görev bitmeden sonrakini başlatma. Ajan testler
+   yeşilse dalı kendi merge eder; PR yalnızca karar gereken bir şey çıktıysa açık kalır.
 3. Ajan bitirdiğinde tek soruyu sor: **"kabul kriterlerinden hangisini doğrulayamadın?"**
    Doğrulanmamış kriter varsa görev bitmemiştir.
 4. **Prompt'a ek bilgi yapıştırmana gerek yok.** Değişmez kurallar ve "repoyu tarama"

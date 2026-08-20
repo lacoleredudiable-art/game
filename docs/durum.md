@@ -12,7 +12,7 @@
 |---|---|---|---|
 | T0 | Unity 6 URP projesi, MCP, gitignore | bitti | — |
 | T1 | Core assembly, ayar veri modeli, dotnet test kancası | bitti | master |
-| T2 | Cümle gramer motoru | bitti | — |
+| T2 | Cümle gramer motoru | bitti | #2, master'a girdi |
 | T3 | Dodge, boss frame verisi, derecelendirme | bekliyor | — |
 | T4 | Zaman yönetmeni (yavaş çekim + hitstop) | bekliyor | — |
 | T5 | Bootstrap sahne, kinematik hareket, sanal çubuk | bekliyor | — |
