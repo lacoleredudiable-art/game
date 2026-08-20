@@ -144,6 +144,9 @@ namespace Dovus.Core.Time
 
         void QueueSlowmo(float factor, int rampDownMs, int holdMs, int rampUpMs)
         {
+            // Yeni tetik duraklatılmış olanı geçersiz kılar; hitstop sırasında gelen sıyırma
+            // yutulursa oyuncu "ikinci mükemmel dodge yavaş çekim vermedi" der.
+            _slowmoPaused = false;
             _pendingSlowmo = true;
             _pendingFactor = ClampFactor(factor);
             _pendingRampDownMs = Math.Max(0, rampDownMs);
@@ -176,17 +179,20 @@ namespace Dovus.Core.Time
 
         void OnHitstopEnded()
         {
-            if (_slowmoPaused)
-                ResumeSlowmo();
-            else if (_pendingSlowmo)
+            if (_pendingSlowmo)
             {
                 _pendingSlowmo = false;
                 BeginSlowmo(_pendingFactor, _pendingRampDownMs, _pendingHoldMs, _pendingRampUpMs);
+                return;
             }
-            else if (_phase == SlowmoPhase.None)
-                _timeScale = 1f;
-            else
-                _timeScale = EvaluateSlowmoScale();
+
+            if (_slowmoPaused)
+            {
+                ResumeSlowmo();
+                return;
+            }
+
+            _timeScale = _phase == SlowmoPhase.None ? 1f : EvaluateSlowmoScale();
         }
 
         void AdvanceSlowmo(double realDtMs)

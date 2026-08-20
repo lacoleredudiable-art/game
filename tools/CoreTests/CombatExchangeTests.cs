@@ -106,6 +106,19 @@ public class CombatExchangeTests
     }
 
     [Test]
+    public void PressAfterStrike_HitsWithGecKaldin()
+    {
+        // Vuruş geçtikten sonra basmak "geç kaldın"dır; i-frame penceresi vuruşun
+        // sonrasında açıldığı için "erken bastın" demek oyuncuya yanlış sebep gösterir.
+        int press = StrikeTime + 50;
+        var result = _resolver.Resolve(InVolume(TelegraphStart, StrikeTime, press));
+
+        Assert.That(result.Outcome, Is.EqualTo(ExchangeOutcome.Hit));
+        Assert.That(result.Reason, Is.EqualTo(HitReason.GecKaldin));
+        Assert.That(result.HitReasonText, Is.EqualTo("geç kaldın"));
+    }
+
+    [Test]
     public void NoDodgePress_HitsWithGecKaldin()
     {
         var result = _resolver.Resolve(InVolume(TelegraphStart, StrikeTime, null));

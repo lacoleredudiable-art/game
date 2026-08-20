@@ -163,6 +163,42 @@ public class TimeDirectorTests
     }
 
     [Test]
+    public void SlowmoDuringHitstop_WhileEarlierSlowmoPaused_StartsFresh()
+    {
+        _director.TriggerSlowmo();
+        Advance(_director, RampDownMs + HoldMs + RampUpMs / 2); // rampa çıkışında
+
+        _director.TriggerHitstop(60);
+        _director.TriggerSlowmo(); // hitstop sırasında yeni sıyırma
+
+        Advance(_director, 60);
+        Assert.That(_director.IsHitstopActive, Is.False);
+        Assert.That(_director.TimeScale, Is.EqualTo(1f).Within(0.0001f),
+            "yeni yavaş çekim baştan başlamalı, eskisi kaldığı yerden sürmemeli");
+
+        Advance(_director, RampDownMs);
+        Assert.That(_director.TimeScale, Is.EqualTo(Factor).Within(0.0001f));
+    }
+
+    [Test]
+    public void QueuedSlowmo_DoesNotLeakIntoALaterHitstop()
+    {
+        _director.TriggerSlowmo();
+        Advance(_director, RampDownMs + HoldMs / 2);
+
+        _director.TriggerHitstop(60);
+        _director.TriggerSlowmo();
+        Advance(_director, 60 + RampDownMs + HoldMs + RampUpMs);
+        Assert.That(_director.IsSlowmoActive, Is.False);
+
+        // Yalnız bir hitstop: bitiminde hayalet yavaş çekim başlamamalı
+        _director.TriggerHitstop(40);
+        Advance(_director, 40);
+        Assert.That(_director.IsSlowmoActive, Is.False, "kuyrukta kalmış tetik sonradan patlamamalı");
+        Assert.That(_director.TimeScale, Is.EqualTo(1f));
+    }
+
+    [Test]
     public void Tick_ReturnsScaledDelta()
     {
         _director.TriggerSlowmo();

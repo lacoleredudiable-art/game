@@ -94,10 +94,12 @@ namespace Dovus.Core.Combat
                 };
             }
 
+            // Vuruş i-frame penceresinin ÖNCESİNDE kaldıysa parmak vuruştan sonra inmiştir:
+            // sebep gecikmedir, dokunulmazlığın erken bitmesi değil.
             return new ExchangeResult
             {
                 Outcome = ExchangeOutcome.Hit,
-                Reason = HitReason.ErkenBastin
+                Reason = input.StrikeTimeMs < iframeStart ? HitReason.GecKaldin : HitReason.ErkenBastin
             };
         }
 

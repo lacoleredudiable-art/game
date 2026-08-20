@@ -113,9 +113,34 @@ Sessiz sapma en pahalı hata türü.
   çünkü `OnDwell`'i hiç `Tick` çağırmadan üst üste çağırıyordu; test artık dünya zamanını
   gerçekten akıtıyor. Kuralın gerekçesi spec §3'e (ve §5'e tek satır) yazıldı.
 
+### T3/T4 denetiminde düzeltilenler
+
+- **Vuruştan sonra basılan dodge "erken bastın" diyordu.** i-frame penceresi vuruşun
+  sonrasında açıldığı için kod bunu erken basma sanıyordu; oyuncuya tam ters sebep
+  gösteriliyordu (§6: "her ölüm açıklanabilir olmalı"). Artık vuruş i-frame'den önce
+  kalıyorsa sebep `GecKaldin`. Test: `PressAfterStrike_HitsWithGecKaldin`.
+- **Hitstop sırasında gelen yavaş çekim yutuluyordu.** Duraklatılmış eski yavaş çekim
+  yeni tetiği eziyordu; üstelik kuyruktaki tetik temizlenmediği için çok sonra gelen
+  alakasız bir hitstop'ın bitiminde hayalet yavaş çekim başlatabiliyordu. Yeni tetik artık
+  eskisini geçersiz kılıyor ve kuyruk her hitstop sonunda tüketiliyor. Testler:
+  `SlowmoDuringHitstop_WhileEarlierSlowmoPaused_StartsFresh`,
+  `QueuedSlowmo_DoesNotLeakIntoALaterHitstop`.
+- **`ExchangeInput`/`ExchangeResult` Unity'de derlenmezdi.** `init` accessor'lar Unity 6'nın
+  .NET Standard 2.1 BCL'inde CS0518 veriyor (resmî olarak "desteklenmeyen özellik").
+  `Core/Compat/IsExternalInit.cs` shim'i eklendi; net8.0 testlerinde `#if` ile devre dışı.
+  Ayrıca `Core/csc.rsp` (`-nullable:enable`) kondu ki nullable işaretleri uyarıya değil
+  gerçek denetime dönüşsün. **İkisi de Unity açılana kadar doğrulanmadı.**
+
 ## Bilinen açıklar
 
-- T1/T2/T3/T4 `dotnet test` yeşil (`tools/CoreTests`, 38 test).
+- T1/T2/T3/T4 `dotnet test` yeşil (`tools/CoreTests`, 41 test).
+- **`DodgeGrade.Siyirdi` oyunda üretilemiyor — karar bekliyor.** i-frame 260 ms, yani
+  başarılı bir dodge'da `gap` her zaman < 260. TEMİZ eşiği 320 ms olduğu için dördüncü
+  derece hiç dönmüyor; `GradeFromGap(321)` testi yeşil ama `Resolve` o değeri asla
+  üretmiyor. Yan etkisi: §7'deki `slowmoMinGrade = TEMİZ` fiilen işlevsiz, her başarılı
+  dodge yavaş çekim veriyor. Ayrıca "sıyırma" kelimesi §6'da hem "başarılı dodge"nin genel
+  adı hem de en düşük derecenin adı — çakışıyor. Çözüm spec kararı: ya `iframeMs` büyür,
+  ya eşikler düşer, ya dördüncü derece kalkar.
 - 4. sıfat için uzatma penceresi belgede yok; 4. noktada cümle hemen kapanış üretir
   (taşan dokunuş da aynı sonucu verir).
 - **`OnDotTouched`/`OnDwell` `worldTimeMs` parametresini kullanmıyor**; pencere yalnızca
@@ -126,7 +151,10 @@ Sessiz sapma en pahalı hata türü.
 - `5-1-1` gibi **tekrar sıçraması** (§4 örneği) motorda `JumpKind.Repeat` olarak doğru
   sınıflanıyor ama cümle bağlamında testi yok.
 - `History` sınırsız büyüyor; uzun dövüşte sınırlanmalı.
-- **Unity bu kodu hiç derlemedi**: `Assets/Scripts` altında tek `.meta` yok, yani editör
-  `Core`'u hiç import etmemiş. `SentenceEngine` nullable işaretleri kullanıyor
-  (`SentenceTuning?`); Unity'nin varsayılan bağlamı kapalı olduğu için T5'te CS8632
-  uyarıları beklenir (hata değil), `Assets/csc.rsp` ile susturulabilir.
+- **Unity bu kodu hâlâ hiç derlemedi**: `Assets/Scripts` altında tek `.meta` yok, yani
+  editör `Core`'u hiç import etmemiş. T5'in ilk işi Unity'yi açıp konsolu okumak olmalı;
+  `IsExternalInit` shim'i ve `csc.rsp` orada sınanacak.
+- Vurulma sonucunda `GapMs`/`ReactionMs` doldurulmuyor (0 dönüyor). T9 vurulma ekranında
+  tepki süresini göstermek isterse burayı doldurmak gerekir.
+- `ExchangeResolver.IsInvulnerableAtStrike`, `DodgeState`'teki i-frame matematiğini
+  ikinci kez yazıyor; ayarlar değişirse ikisi ayrışabilir.
