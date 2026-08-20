@@ -268,12 +268,13 @@ sonuç verir.
 Rolün: Cümlenin dünyadaki karşılığını kuran geliştirici.
 
 ÖNCE OKU: docs/dovus-sistemi.md §8 (tezahür kuralları — beş kuralın hepsi zorunlu),
-§4 (rün tablosu), §5 (kapanış vuruşu).
+§4 (rün kabul testi ve "Prototip seti: üç rün"), §5 (kapanış vuruşu).
 
 GÖREV
-Beş fiili dünyada YAŞAYAN etki olarak kur (prosedürel, sanat varlığı yok):
-İĞNE delici atılış · SÜRÜ yayılan dalga · KABUK yükselen kabuk · ZEHİR yakın bulut ·
-SARSINTI yere çakma şok dalgası.
+Prototip setindeki ÜÇ fiili dünyada YAŞAYAN etki olarak kur (prosedürel, sanat varlığı yok):
+İĞNE delici atılış · SÜRÜ yayılan dalga · SARSINTI yere çakma şok dalgası.
+KABUK ve ZEHİR bu görevin kapsamı DIŞINDA (gerekçesi §4'te) — ama gramer motoru beş rünü
+tanıdığı için, tanımsız rüne dokunulduğunda temiz bir "kapalı" geri bildirimi ver.
 
 ZORUNLU KURALLAR
 - T2: hiçbir fiil anlık vurmaz; hepsi dünyada yol alır/sürer. Sıfat, YAŞAYAN etkiyi değiştirir.

@@ -65,20 +65,58 @@ Bedel **asla ergonomik zorluk olmamalı** — el boyu ve telefon boyu gücü bel
 
 ---
 
-## 4. Rünler (prototip seti)
+## 4. Rünler
 
-Beşgen, saat yönünde. Bitmiş oyunda bu 5 yuva ~12'lik havuzdan doldurulur; prototipte sabit.
+### Rün kabul testi
 
-| Nokta | Rün | Fiil olarak (baştaysa) | Sıfat olarak (sonraysa) | Hece |
-|---|---|---|---|---|
-| 1 | İĞNE | delici atılış, tek hedef | daralt, odakla, zırh del | *hi* |
-| 2 | SÜRÜ | yayılan sürü dalgası | çoğalt, genişlet | *hu* |
-| 3 | KABUK | kabuk kaldır, savunma duruşu | katılaştır, durdur, tut | *ho* |
-| 4 | ZEHİR | zehir salgısı, yakın bulut | zehir kat, süreye yay | *he* |
-| 5 | SARSINTI | yere çakma, şok dalgası | kinetik kat, savur, havalandır | *ha* |
+Bir rün setine karar vermenin doğru yolu isim seçmek değil, ölçütü sabitlemek. Aday bir rün
+şu beşinden birini geçemiyorsa sete girmez:
 
-Rünler **derece olarak değil tür olarak** farklıdır. Hasar sayısıyla kıyaslanabilir hale
-gelirlerse oyuncu en iyisini bulur ve yaratıcılık ölür.
+1. **Hem fiil hem sıfat olarak anlamlı mı?** Sıfat rolünde bir şey ifade etmeyen rün,
+   cümlenin ikinci yarısında ölü ağırlıktır.
+2. **Sıfat olarak silüeti değiştiriyor mu, sayıyı mı?** Sayı değiştiren rün §12'deki tuzağa
+   düşer: gramer görünmez olur, oyuncu ezbere döner.
+3. **Fiil olarak dünyada yaşıyor mu?** Anlık vuran fiil, sıfat kabul edemez (§8/T2).
+4. **Diğerlerinden tür olarak mı farklı, derece olarak mı?** Hasar ekseninde kıyaslanabilen
+   rünlerden biri hep en iyisi olur ve yaratıcılık ölür.
+5. **İsminden tahmin edilebiliyor mu?** Tahmin edilemeyen rün, ezberlenecek bir şeydir.
+
+Bu ölçüt tersinden okununca set kendiliğinden doğuyor: **iyi bir rün seti, aynı zamanda bir
+etkiyi değiştirmenin eksenleri setidir.** Bir etkiyi daraltabilir, çoğaltabilir, savurabilir,
+tutabilir ya da sürdürebilirsin — rünler bunlar.
+
+### Hedef set (beş nokta dolu hâli)
+
+İşlevler gerçek karardır; isimler tema kararına bağlıdır (özet §12 hâlâ açık) ve değişmesi
+hiçbir şeyi bozmaz.
+
+| Nokta | İşlev | Prototip ismi | Fiil olarak | Sıfat olarak | Hece |
+|---|---|---|---|---|---|
+| 1 | daralt / odakla | İĞNE | delici atılış, tek hedef | daralt, odakla, zırh del | *hi* |
+| 2 | çoğalt / yay | SÜRÜ | yayılan sürü dalgası | çoğalt, genişlet | *hu* |
+| 3 | tut / katılaştır | KABUK | kabuk kaldır, savunma duruşu | katılaştır, durdur, tut | *ho* |
+| 4 | sürdür / birik | ZEHİR | zehir salgısı, yakın bulut | zehir kat, süreye yay | *he* |
+| 5 | savur / kaldır | SARSINTI | yere çakma, şok dalgası | kinetik kat, savur, havalandır | *ha* |
+
+### Prototip seti: üç rün
+
+**İlk turda yalnızca 1 (İĞNE), 2 (SÜRÜ) ve 5 (SARSINTI) açık.** Sebepleri:
+
+- Üçü de kabul testinin 2. maddesini temiz geçiyor: sıfat rolünde silüeti gözle görülür
+  biçimde değiştiriyorlar (geniş dalga daralır, tek şey çoğalır, hedef havaya kalkar).
+- §13'ün ilk dört sorusunu cevaplamaya üç rün yeter; beşinci soru genişlik ister ve sırası
+  ikinci turdur.
+- Üstünde en çok çalışılmış örnek zaten bu üçüyle kuruluyor: `5` → `5-1` → `5-1-2`.
+
+**KABUK ve ZEHİR ikinci turda eklenir.** İkisi de sıfat rolünde kolayca "sayı değiştiren"
+şeye kayar — "tut" bir yavaşlatma yüzdesine, "sürdür" bir zamanla-hasar değerine. Bu, tezahür
+katmanı henüz kanıtlanmamışken testi zehirler: oyuncu grameri gözle öğrenemez, ezbere döner,
+ve biz "sistem çalışmıyor" sonucunu yanlış yerden çıkarırız. Eklenirken ikisi de kabul
+testinin 2. maddesinden ayrıca geçirilecek.
+
+> Rün seti **veridir** — bu tasarımda değiştirilmesi en ucuz şey. Pahalı olan iki şey §3'teki
+> gramer ve §8/T2'deki "anlık vuran fiil olamaz" kısıtıdır. Rünleri uzun uzun düşünmek yerine
+> ilk telefon turundan sonra yenilemek doğru sıra.
 
 ### Türetilebilirlik örnekleri
 
