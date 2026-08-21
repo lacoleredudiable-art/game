@@ -1,3 +1,4 @@
+using Dovus.Core.Tuning;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
@@ -12,6 +13,7 @@ namespace Dovus.Game
         const float PlayerHeightM = 2f;
         const float BossRadiusM = 0.85f;
         const float BossHeightM = 2.6f;
+        const int PentagonInkLayer = 5; // Unity built-in UI layer
 
         [SerializeField] PrototypeTuning _tuning = new();
 
@@ -23,7 +25,7 @@ namespace Dovus.Game
 
         void BuildWorld()
         {
-            gameObject.AddComponent<GameClock>();
+            var clock = gameObject.AddComponent<GameClock>();
 
             CreateArena();
 
@@ -49,6 +51,59 @@ namespace Dovus.Game
 
             CreateSun();
             CreateCamera(player.transform);
+            CreatePentagon(clock);
+        }
+
+        void CreatePentagon(GameClock clock)
+        {
+            var root = new GameObject("Pentagon");
+            root.transform.SetParent(transform, false);
+
+            var view = root.AddComponent<PentagonView>();
+            view.Build(_tuning);
+
+            var mainCam = Camera.main;
+            if (mainCam != null)
+                mainCam.cullingMask &= ~(1 << PentagonInkLayer);
+
+            var overlayGo = new GameObject("InkOverlayCam");
+            overlayGo.transform.SetParent(root.transform, false);
+            var overlay = overlayGo.AddComponent<PentagonOverlayCamera>();
+            overlay.Build(PentagonInkLayer);
+            AttachOverlayToMain(mainCam, overlay.Cam);
+
+            var inkGo = new GameObject("InkTrail");
+            inkGo.transform.SetParent(root.transform, false);
+            inkGo.layer = PentagonInkLayer;
+            var ink = inkGo.AddComponent<InkTrail>();
+            ink.Configure(_tuning, overlay, PentagonInkLayer);
+
+            var syllable = root.AddComponent<SyllableFeedback>();
+            var debug = root.AddComponent<SentenceDebugHud>();
+
+            var input = root.AddComponent<PentagonInput>();
+            input.Tuning = _tuning;
+            input.Combat = new CombatTuning();
+            input.Bind(clock, ink, syllable, debug);
+            debug.Configure(input.Engine, view.CanvasRoot);
+        }
+
+        static void AttachOverlayToMain(Camera main, Camera overlay)
+        {
+            if (main == null || overlay == null)
+                return;
+
+            var mainData = main.GetComponent<UniversalAdditionalCameraData>();
+            if (mainData == null)
+                mainData = main.gameObject.AddComponent<UniversalAdditionalCameraData>();
+
+            var overlayData = overlay.GetComponent<UniversalAdditionalCameraData>();
+            if (overlayData == null)
+                overlayData = overlay.gameObject.AddComponent<UniversalAdditionalCameraData>();
+
+            overlayData.renderType = CameraRenderType.Overlay;
+            if (!mainData.cameraStack.Contains(overlay))
+                mainData.cameraStack.Add(overlay);
         }
 
         void CreateArena()

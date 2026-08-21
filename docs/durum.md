@@ -4,7 +4,7 @@
 > ajanın repoyu taramadan nerede kaldığımızı anlaması. Kısa tut: ne bitti, ne üretildi,
 > nerede sapma var.
 
-**Son güncelleme:** 21 Ağustos 2026 · **Sıradaki görev:** T6
+**Son güncelleme:** 21 Ağustos 2026 · **Sıradaki görev:** T7
 
 ## Görev durumu
 
@@ -16,7 +16,7 @@
 | T3 | Dodge, boss frame verisi, derecelendirme | bitti | task/t3-dodge-boss-exchange |
 | T4 | Zaman yönetmeni (yavaş çekim + hitstop) | bitti | task/t4-time-director |
 | T5 | Bootstrap sahne, kinematik hareket, sanal çubuk | bitti | master |
-| T6 | Beşgen girdi yüzeyi, mürekkep izi | bekliyor | — |
+| T6 | Beşgen girdi yüzeyi, mürekkep izi | bitti | master |
 | T7 | Tezahür katmanı (üç rün) | bekliyor | — |
 | T8 | Boss telegrafı, sıyırma, yavaş çekim, kamera | bekliyor | — |
 | T9 | HUD, parlak tepki yazısı | bekliyor | — |
@@ -100,12 +100,26 @@ dosya listesi değil, çağrılacak şeyin adı ve ne yaptığı.
 - `MoveInput` — sol yarı dinamik sanal çubuk (`EnhancedTouch`); masaüstü WASD yedeği; sağ yarı dokunuşlara dokunmaz
 - `FollowCamera` — yumuşak takip + hafif look-ahead; `AddShake(amplitudeM, durationSec)` T8 için
 - `PrototypeTuning` — yürüme hızı 4.5 m/s, arena yarım kenarı 12 m, çubuk 72 dp (spec'te yok, varsayılan)
-  + §10 renkleri. **Tek örnek**: Bootstrap kendi `_tuning`'ini `MoveInput`/`KinematicMotor`/`FollowCamera`'ya
-  referansla verir, kopyalamaz — T10 canlı ayarı bunu bekliyor
+  + §10 renkleri + T6 beşgen alanları. **Tek örnek**: Bootstrap kendi `_tuning`'ini paylaşır
 - Editor: **Dovus → Create Prototype Scene** (`PrototypeSceneCreator`) — `Assets/Scenes/Prototype.unity` + build settings
 
 **Unity:** Play mode doğrulandı — arena, oyuncu/boss kapsülü, takip kamerası, WASD hareketi, çok parmak.
 Sahne: `Assets/Scenes/Prototype.unity` (tek Bootstrap objesi). URP renderer düzeltildi.
+
+### T6 — `Dovus.Game` beşgen girdi
+
+- `PentagonInput` — sağ yarı (veya `MirrorForLeftHand`) çizim; `SentenceEngine` + `DodgeState`.
+  Merkez tap: `DodgeTuning.TapMaxMs`/`TapMaxMoveDp`; aşımı çizim. Dodge → `Abort` + `DodgeState.Begin`.
+  Dwell: gerçek zamanda `SentenceTuning.DwellMs` ölçülür, `OnDwell(worldTimeMs)` bildirilir.
+  Masaüstü: fare sürükleme + Space dodge. `Engine` / `Dodge` / `Combat` public.
+- `PentagonLayoutScreen` — ekran-piksel merkez/nokta/hit yarıçapı (1→5 üstten saat yönü)
+- `PentagonView` — Screen Space Overlay canvas, 5 nokta + merkez
+- `InkTrail` + `PentagonOverlayCamera` — LineRenderer mürekkep (mor→camgöbeği), URP overlay stack
+- `SyllableFeedback` — `AudioClip.Create` hece + `Handheld.Vibrate`; perde nokta sayısıyla yükselir
+- `SentenceDebugHud` — fiil + sıfat debug metni
+
+**Unity:** Play mode — 5-1-2 motor doğru; merkez tap dodge / sürükleme çizim; sol çubuk + sağ çizim
+eşzamanlı (sanal Touchscreen). Konsol temiz (T6 kaynaklı hata yok).
 
 ## Spec'ten sapmalar
 
@@ -185,17 +199,23 @@ Sessiz sapma en pahalı hata türü.
   dayanmayı davet ediyordu, siliniyor.
 - Boss kapsülü 0.1 m yere gömülüydü (y=1.2, yarı yükseklik 1.3); konum yükseklikten türetildi.
 
+### T6 sapmaları / varsayılanlar
+
+- **Beşgen yarıçapı / konum / hit yarıçapı / mürekkep ömrü spec'te yok.**
+  `PrototypeTuning`: `PentagonRadiusDp=100`, merkez norm (0.78, 0.40), `DotHitRadiusDp=30`,
+  `CenterHitRadiusDp=24`, `InkLingerSec=0.40`. Telefonda T11'de ayarlanacak.
+- **Dwell eşiği gerçek zamanda ölçülür** (parmak süresi); iptal penceresi dünya zamanı
+  (motor). Yavaş çekimde dwell yığmak için parmağın gerçek süreyi doldurması gerekir —
+  spec §3 "parmağın süresi" okumasıyla uyumlu; T8 yavaş çekim testinde fark edilir.
+- **`OnDotTouched`/`OnDwell` hâlâ `worldTimeMs` yutmuyor** (Core değişmedi — T6 yasak).
+  Girdi katmanı doğru değeri iletiyor; motor `Tick` ile eritiyor. Açık kalır.
+
 ## Bilinen açıklar
 
 - T1/T2/T3/T4 `dotnet test` yeşil (`tools/CoreTests`, 46 test).
-- **T5 çok parmak girdi katmanında doğrulandı, donanımda değil.** Play mode'da sanal
-  `Touchscreen`'e iki eşzamanlı dokunuş enjekte edildi: sağ yarıdaki parmak basılıyken sol
-  çubuk kuruluyor, sağ parmak gezinirken/kalkarken sol yön bozulmuyor, ölçülen hız tam
-  4.50 m/s. Gerçek dokunmatik sürücüsü (palm rejection, parmak indeksi geri dönüşümü)
-  yalnızca telefonda görülür → T11. Not: Device Simulator tek işaretçi ürettiği için bu
-  kriteri zaten doğrulayamaz.
-- Bu doğrulama tek seferlik bir prob script'iyle yapıldı, repoda test olarak durmuyor;
-  T6 sağ yarıya çizimi eklerken aynı senaryo elle tekrarlanmalı.
+- **T5/T6 çok parmak girdi play mode'da sanal Touchscreen ile doğrulandı, donanımda değil.**
+  Sol çubuk basılıyken sağ 5-1 çizimi çalışıyor; sağ kalkınca sol yön bozulmuyor.
+  Gerçek dokunmatik → T11.
 - Yeni eşikler (90/160/220) masa başı kararıdır, telefonda sınanmadı — T11'in his turunda
   ilk ayarlanacak sayılar bunlar.
 - "Sıyırma" kelimesi §6'da hem başarılı dodge'un genel adı hem de en düşük derecenin adı;
@@ -203,10 +223,7 @@ Sessiz sapma en pahalı hata türü.
 - 4. sıfat için uzatma penceresi belgede yok; 4. noktada cümle hemen kapanış üretir
   (taşan dokunuş da aynı sonucu verir).
 - **`OnDotTouched`/`OnDwell` `worldTimeMs` parametresini kullanmıyor**; pencere yalnızca
-  `Tick(dtMs)` ile eriyor, yani dokunuş zamanı kare hassasiyetine yuvarlanıyor (60 fps'te
-  ~16 ms, 300 ms'lik pencerede %5). T8'in "yavaş çekimde 4 nokta sığıyor" kriteri bu
-  pencerelerin hassasiyetine dayanıyor; T6'yı yazan ajan ya parametreyi son tarih
-  hesabında kullanmalı ya da imzadan kaldırmalı.
+  `Tick(dtMs)` ile eriyor (~16 ms kare yuvarlaması). T8 hassasiyeti için Core'da düzeltilmeli.
 - `5-1-1` gibi **tekrar sıçraması** (§4 örneği) motorda `JumpKind.Repeat` olarak doğru
   sınıflanıyor ama cümle bağlamında testi yok.
 - `History` sınırsız büyüyor; uzun dövüşte sınırlanmalı.
@@ -219,3 +236,5 @@ Sessiz sapma en pahalı hata türü.
   tepki süresini göstermek isterse burayı doldurmak gerekir.
 - `ExchangeResolver.IsInvulnerableAtStrike`, `DodgeState`'teki i-frame matematiğini
   ikinci kez yazıyor; ayarlar değişirse ikisi ayrışabilir.
+- **T6 dodge sadece `DodgeState.Begin` + Abort** — yer değiştirme / afterimage T8.
+- Hece sesleri sinüs tıkırtısı; §9 yapısı var, müzikal kalite T11 his turuna.
