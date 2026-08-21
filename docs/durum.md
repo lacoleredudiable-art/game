@@ -229,10 +229,25 @@ T6.1 düzeltmeleri uygulandı (aynı dal):
 6. Hece adı `RuneInfo.Syllable`
 7. `OnDisable` `_fingerId` temizliği; `_engine` null guard; cooldown'da Abort/HUD yok
 
-**T6.1 doğrulama:** Unity derleme OK, varsayılan açık noktalar + aynalama yardımcısı smoke,
-konsol hata yok, `dotnet test` 46. Tam sanal çok-parmak yeniden enjekte edilemedi (MCP
-StateEvent bu turda sözcük üretmedi) — T6'daki enjeksiyon regresyonu T11/donanımda
-tekrarlanmalı. Titreşim/hece kulakla T11.
+**T6.1 doğrulama (play mode, sanal Touchscreen — 8 senaryonun 8'i geçti):**
+
+- `5-1-2` → `SÜRÜ/4.4`, bozulmadı
+- Kapalı 3 ve 4 cümleye kelime eklemiyor; parmak 3→4→5 gezinince fiil 5 oluyor
+- Aynalama açıkken sol yarıda çizim çubuğu sürmüyor (`yön=(0,0)`); sağ yarı çubuğu sürüyor
+- Merkez tap dodge açıyor, merkezden sürükleme açmıyor
+- `Canceled` merkez dokunuşu dodge tetiklemiyor
+- Sol çubuk + sağ çizim eşzamanlı
+- **Dwell gerçekten dünya zamanında:** 0.2× yavaş çekimde ilk yığın ~1100 ms *gerçek* sürede
+  düştü (= 220 ms dünya zamanı), pencere 218 → 398 ile tam `DwellMs` kadar iade aldı: nötr.
+  Düzeltmeden önce aynı sürede 2 yığın düşer ve pencere bedavaya sıfırlanırdı.
+
+Konsol temiz, `dotnet test` 46 yeşil. Titreşim/hece kulakla ve ekran görüntüsü T11'e kalıyor.
+
+> **MCP ile ölçüm alacak ajana:** enjekte edilen dokunuşlar işlemiyorsa sebep büyük ihtimalle
+> `runInBackground` kapalı olması — editör odağı kaybedince play loop duruyor ve `Time.frameCount`
+> sabit kalıyor. Prob eklemeden **önce** ayrı bir komutla `Application.runInBackground = true`
+> yapıp iki ölçümde kare sayısının arttığını doğrula; probun kendi içinde ayarlaman yetmez
+> (o satır çalışmak için zaten bir kareye ihtiyaç duyar).
 
 ## Bilinen açıklar
 
