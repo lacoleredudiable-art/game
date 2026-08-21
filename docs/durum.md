@@ -15,7 +15,7 @@
 | T2 | Cümle gramer motoru | bitti | #2, master'a girdi |
 | T3 | Dodge, boss frame verisi, derecelendirme | bitti | task/t3-dodge-boss-exchange |
 | T4 | Zaman yönetmeni (yavaş çekim + hitstop) | bitti | task/t4-time-director |
-| T5 | Bootstrap sahne, kinematik hareket, sanal çubuk | bitti* | task/t5-bootstrap |
+| T5 | Bootstrap sahne, kinematik hareket, sanal çubuk | bitti* | master |
 | T6 | Beşgen girdi yüzeyi, mürekkep izi | bekliyor | — |
 | T7 | Tezahür katmanı (üç rün) | bekliyor | — |
 | T8 | Boss telegrafı, sıyırma, yavaş çekim, kamera | bekliyor | — |
