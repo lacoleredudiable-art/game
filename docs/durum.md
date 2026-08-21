@@ -4,7 +4,7 @@
 > ajanın repoyu taramadan nerede kaldığımızı anlaması. Kısa tut: ne bitti, ne üretildi,
 > nerede sapma var.
 
-**Son güncelleme:** 21 Ağustos 2026 · **Sıradaki görev:** T8
+**Son güncelleme:** 22 Ağustos 2026 · **Sıradaki görev:** T8
 
 ## Görev durumu
 
@@ -19,6 +19,7 @@
 | T6 | Beşgen girdi yüzeyi, mürekkep izi | bitti | task/t6-pentagon-input → master |
 | T6.1 | T6 denetim düzeltmeleri | bitti | aynı dal |
 | T7 | Tezahür katmanı (üç rün) | bitti | task/t7-manifestation |
+| T7.1 | T7 denetim düzeltmeleri (bağlantı/mantık) | bitti | task/t7.1-tezahur-bagi |
 | T8 | Boss telegrafı, sıyırma, yavaş çekim, kamera | bekliyor | — |
 | T9 | HUD, parlak tepki yazısı | bekliyor | — |
 | T10 | Oyun içi ayar paneli | bekliyor | — |
@@ -129,21 +130,81 @@ Sahne: `Assets/Scenes/Prototype.unity` (tek Bootstrap objesi). URP renderer düz
 ### T7 — Tezahür (`Dovus.Core.Manifestation` + `Dovus.Game`)
 
 - `ManifestationTuning` — `CombatTuning.Manifestation`; hız/yarıçap/silüet adımları (§8'de yok,
-  varsayılan; T11 his).
+  varsayılan; T11 his). T7.1'de Core/Game'e gömülü his sayıları (sönme/bang/pierce/koridor/
+  sıfat sabitleri) da buraya taşındı — bkz. T7.1 bölümü.
 - `EffectSilhouette` — Focus / Pierce / Spread / Lift (sayı çarpanı değil).
 - `SilhouetteBuilder.FromWords` — fiil tohumu + sıfat eksenleri; dwell yığını büyütür.
 - `LivingEffect` — yaşayan etki: seyahat, silüete morph, Abort / ArmClosing / FireClosingBang.
+  T7.1: menzilini bitiren etki artık cümle Building/AwaitingClosing sürerken sönmez (bekler);
+  `SetWords` hâlâ Dead/Fading dışında her fazda kabul eder.
 - `ManifestationDirector` — `SentenceEngine` → spawn/mutate; recovery + `PostHitSilenceMs` sonra
-  kapanış; `ForceSync` / `ActiveLogic` (prob).
+  kapanış; `ForceSync` / `ActiveLogic` (prob). T7.1: spawn kararı artık `_buildingView` kimliğine
+  bağlı (nokta sayısı polling'i değil); kapanışta tam kelime listesi `SetWords` ile iletilir.
 - `LivingEffectView` — LineRenderer halka→yay→hat + az küre (sürü) + iğne kapsülü.
 - `ActorPose` — rün squash/stretch + toparlanma nefesi (T1/T5).
 - `BossReactor` — knockback / lift / pin (hasar yok).
 - `GroundScarField` — kalıcı çatlak/iğne/sürü/asit izi (§10 yeşil yalnızca asit).
 - Kapalı rün geri bildirimi **yeniden yazılmadı** (T6.1).
 
-**Test:** `SilhouetteBuilderTests` 6; toplam `dotnet test` 52 yeşil.
+**Test:** `SilhouetteBuilderTests` 6; toplam `dotnet test` 52 yeşil (T7.1 sonrası 57, bkz. altta).
 **Unity play:** `5→5-1` focus toplanıyor (aynı LivingEffect); `5-1-2` spread artıyor;
   Abort → kapanış yok; çözülünce AwaitingClosing → bang + scar.
+
+### T7.1 — T7 denetim düzeltmeleri (bağlantı katmanı)
+
+Denetimde bulunan 5 bağlantı/mantık hatası düzeltildi (Core/Grammar ve görünüm dosyalarına
+dokunulmadı):
+
+1. **4. sıfat silüete hiç işlemiyordu.** `SentenceEngine` 4. noktada cümleyi dokunuş anında
+   çözüyor, `SyncFromSentence` ise `Building` dışında hiç çalışmadığı için son sıfat asla
+   `LivingEffect.SetWords`'e ulaşmıyordu. Şimdi `OnSentenceCompleted`, kapanış kurulmadan önce
+   `sentence.Words` (tam liste) ile `SetWords` çağırıyor — `LivingEffect.SetWords` `AwaitingClosing`
+   fazında da kabul ettiği için sıra önemli değil.
+2. **Menzilini bitiren etki cümle kapanmadan sessizce sönüyordu.** `LivingEffect.Tick`, `Traveling`
+   fazında menzil dolunca `BeginFade()` çağırıyordu; `ArmClosing` ise `Fading` fazında hiçbir şey
+   yapmadan dönüyordu — bang/iz/boss tepkisi hiç gelmiyordu (İĞNE 0.75 sn'de menzili bitirir, 4
+   noktalı cümle §5'e göre en az 1.2 sn+ sürer). Artık `Traveling`/`AwaitingClosing` sürerken menzil
+   dolması etkiyi öldürmüyor, ucunda bekliyor/sürüyor; sönme yalnızca `Abort`'ta ve `Banging`
+   sonrasında olur. Güvenlik payı: `ManifestationTuning.MaxHoldPastRangeSec` (bkz. sapmalar).
+3. **Aynı karede iki nokta kaydedilirse cümle hiç doğmuyordu.** Spawn kararı `count==1` pollingine
+   bağlıydı; EnhancedTouch bir karede birden fazla `onFingerMove` verince sayı 0→2 sıçrayıp spawn'ı
+   hiç tetiklemeyebiliyordu (T6.1'deki `Canceled` hatasıyla aynı sınıf; fare ile üretilemez, telefonda
+   üretilir). `ManifestationDirector` artık `_buildingView` adlı kimlik referansı tutuyor: `Building`
+   fazında elde yaşayan (Dead/Fading olmayan) bir etki yoksa spawn eder, varsa `SetWords` çağırır.
+   `_buildingView`, her `OnSentenceCompleted`'da (Abort ya da Resolved) `null`'a dönüyor.
+4. **`view.Scarred` iki işi birden yapıyordu.** Seyahat çatlağı (odaklı SARSINTI) damgalanınca
+   `StampScar` `IsViewScarred` yüzünden erken dönüyor, kapanışın kendi izini hiç bırakmıyordu
+   (`5-1` gibi cümlelerde). İki bayrak ayrıldı: seyahat izi hâlâ `view.Scarred` (görünüm dosyasına
+   dokunulmadı); kapanış izi artık Director'ın kendi `HashSet<LivingEffect> _closingStamped`'inde.
+5. **Konsol 3× CS8632 veriyordu.** `ManifestationDirector.cs`'deki `LivingEffect?` / `LivingEffectView?`
+   dönüş tipleri (Game assembly'sinde nullable context yok) kaldırıldı, null kontrolüyle yazıldı.
+   Ölü `_lastVerb` alanı ve kullanılmayan `PendingClosing.Fired` de silindi.
+6. Core'a gömülü his sayıları `ManifestationTuning`'e taşındı (davranış **aynı** kaldı, yeri
+   değişti): `LivingEffect` sönme (`FadeDurationSec`=0.35), bang (`BangDurationSec`=0.45), pierce hız
+   katkısı (`PierceSpeedBonus`=0.25), hat yarı genişliği (`WaveCorridorHalfWidthWideM`/`NarrowM`=2.2/0.35);
+   `SilhouetteBuilder` odak eşiği (`SuruFocusReduceThreshold`=0.35) ve sıfat sabitleri
+   (`SuruFocusReduceAmount`=0.05, `KabukSpreadMultiplier`=0.55, `KabukFocusAdd`=0.12,
+   `ZehirSpreadAdd`=0.2).
+
+**Test:** `ManifestationWiringTests` 5 yeni test (4. sıfat hedefe işliyor, `SetWords`
+`AwaitingClosing`'te kabul ediliyor, menzil bitince ölmüyor + `ArmClosing` yutulmuyor, `Abort`
+menzil sonrasında da kapanışsız, güvenlik payı gerçekten çalışıyor). Toplam `dotnet test` **57
+yeşil** (52 + 5).
+
+**Unity play mode (MCP prob, gerçek `SentenceEngine`/`ManifestationDirector` üzerinden):**
+- 4 noktalı cümle, her nokta penceresinin sonuna yakın (~%90 dolu pencerede) çizildi → cümle 4
+  kelimeyle çözüldü (`lastHistoryDots=4`), kapanış patladı, **2 yeni scar** ve **boss knockback**
+  (~0.10 m yer değiştirme) geldi. Düzeltmeden önce bu senaryo (kısıtlı zamanlama) etkiyi
+  `Fading`'e düşürüp `ArmClosing`'i yutardı.
+- Bir karede senkron iki nokta (`OnDotTouched(5,..); OnDotTouched(1,..)` — Director Update'i araya
+  girmeden) → bir kare sonra `ActiveCount=1`, `Verb=Sarsinti` doğru spawn edildi; cümle zaman
+  aşımıyla çözüldü, **2 yeni scar** (seyahat çatlağı + kapanış İĞNE izi) — ikisi de geldi
+  (düzeltmeden önce ikinci scar hiç gelmezdi).
+- Cümle ortasında (3 kelime kurulu) `engine.Abort()` (merkez tap-dodge'ın yaptığı çağrı) →
+  `Phase=Aborted`, `LastClosing=null`, **0 yeni scar**, boss hareketi yok (~0). T7'de geçen
+  kriter bozulmadı.
+- Konsol: play mode boyunca `errorCount=0`, `warningCount=0` (Unity AI Toolkit'in proje koduyla
+  ilgisiz, tek seferlik ağ uyarısı hariç — derlemeden önce de vardı, kodumuzla ilgisi yok).
 
 ## Spec'ten sapmalar
 
@@ -277,9 +338,31 @@ Konsol temiz, `dotnet test` 46 yeşil. Titreşim/hece kulakla ve ekran görünt�
   silüet ve scar yolları yine var (gramer beş rün tanır).
 - **Seyahat teması tek seferlik hafif sarsıntı**; asıl ödeme kapanış bang'inde. Can/hasar T8.
 
+## T7.1 sapmaları / varsayılanlar
+
+- **`ManifestationTuning.MaxHoldPastRangeSec = 6f` (uydurma, spec'te yok).** Menzilini bitiren
+  etkinin cümle kapanana kadar beklemesi gerekiyor (§5/T2), ama bu bekleme motor tarafından asla
+  gerçekten sınanmıyor — `SentenceEngine` her cümleyi er ya da geç kapatır (Abort ya da pencere
+  zaman aşımı). Bu alan sadece güvenlik payı: cümle hiç kapanmazsa (beklenmeyen bir durum/hata)
+  etki sonsuza kadar dünyada asılı kalmasın diye. 6 sn, en uzun gerçekçi cümle+toparlanma+sessizlik
+  süresinden (~2 sn) kasıtlı olarak kat kat büyük seçildi ki normal oyunda hiç tetiklenmesin.
+- **§8/T2'nin "bedava kazancı" kurulmadı: "iptal penceresini dalganın nerede olduğuna bakarak
+  bilirsin".** Şu an iptal penceresi hâlâ görünmez — `LivingEffectView` etkinin silüetini/mesafesini
+  çizer ama kalan pencere süresiyle görsel olarak bağlanmış değil (`SentenceDebugHud` metinle
+  gösteriyor, dünyada değil). Spec'te bunu somutlaştıran bir sayı/mekanik yok, uydurulmadı. Bu,
+  T7.1'in görev tanımı dışında (görünüm dosyalarına dokunma yasağı) — T7.2 ya da T8'in ele alması
+  gerekir: dalganın/iğnenin/sürünün menzile ne kadar yaklaştığı zaten `LivingEffect.Travel` /
+  `MaxRange`'den okunabilir, görsel bir ipucuna (örn. solma, renk, nabız) çevrilmesi gerekiyor.
+
 ## Bilinen açıklar
 
-- T1/T2/T3/T4/T7 `dotnet test` yeşil (`tools/CoreTests`, 52 test).
+- T1/T2/T3/T4/T7/T7.1 `dotnet test` yeşil (`tools/CoreTests`, 57 test).
+- **`SentenceEngine.PublishState`, her `Tick`/`OnDotTouched`/`OnDwell`'de `SnapshotWords()` ile
+  yeni bir `SentenceWord[]` allocate ediyor** (T2 kaynaklı, T7.1 denetiminde görüldü). Cümle
+  kurulurken bu her karede çalışıyor (Building fazında). Sıcak yolda GC baskısı yaratabilir;
+  Core/Grammar'a T7.1'de dokunma yasağı olduğu için düzeltilmedi — küçük havuzlanmış bir dizi ya
+  da `Words` alanını yalnızca değiştiğinde güncellemek çözüm olabilir. T8/T9 ya da ayrı bir
+  performans görevi almalı.
 - **T5/T6/T7 çok parmak / tezahür play mode'da doğrulandı, donanımda değil.** Gerçek dokunmatik → T11.
 - Yeni eşikler (90/160/220) masa başı kararıdır, telefonda sınanmadı — T11'in his turunda
   ilk ayarlanacak sayılar bunlar.

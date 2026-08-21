@@ -59,19 +59,19 @@ namespace Dovus.Core.Manifestation
                 case Rune.Suru:
                     s += tuning.SpreadPerSuru;
                     // Halka ise hafif aç; hat ise hat boyunca çoğalt (odak korunur)
-                    if (f < 0.35f)
-                        f -= 0.05f;
+                    if (f < tuning.SuruFocusReduceThreshold)
+                        f -= tuning.SuruFocusReduceAmount;
                     break;
                 case Rune.Sarsinti:
                     l += tuning.LiftPerSarsinti;
                     break;
                 case Rune.Kabuk:
                     // Tut/katılaştır — yayılmayı keser, hatı kalınlaştırır (sayı değil silüet)
-                    s *= 0.55f;
-                    f += 0.12f;
+                    s *= tuning.KabukSpreadMultiplier;
+                    f += tuning.KabukFocusAdd;
                     break;
                 case Rune.Zehir:
-                    s += 0.2f;
+                    s += tuning.ZehirSpreadAdd;
                     break;
             }
 

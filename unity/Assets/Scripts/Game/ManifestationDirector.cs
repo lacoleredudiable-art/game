@@ -23,9 +23,12 @@ namespace Dovus.Game
 
         readonly List<LivingEffectView> _active = new();
         readonly List<PendingClosing> _pending = new();
+        readonly HashSet<LivingEffect> _closingStamped = new();
 
+        // Cümlenin şu an sözcük aldığı etki — nokta sayısına göre değil, kimliğe göre izlenir
+        // (aynı karede birden fazla nokta kaydı sayı polling'ini atlayabilir, bkz. T7.1).
+        LivingEffectView _buildingView;
         int _lastWordCount;
-        Rune? _lastVerb;
         bool _hooked;
 
         struct PendingClosing
@@ -33,10 +36,9 @@ namespace Dovus.Game
             public LivingEffectView View;
             public ClosingHit Closing;
             public double BangAtWorldMs;
-            public bool Fired;
         }
 
-        public LivingEffect? ActiveLogic => CurrentBuilding()?.Logic;
+        public LivingEffect ActiveLogic => _buildingView?.Logic;
 
         public int ActiveCount => _active.Count;
 
@@ -99,44 +101,32 @@ namespace Dovus.Game
         {
             var state = _engine.State;
             if (state.Phase != SentencePhase.Building)
-            {
-                _lastWordCount = 0;
-                _lastVerb = null;
                 return;
-            }
 
             int count = state.Words.Count;
             if (count == 0)
                 return;
 
-            Rune verb = state.Words[0].Rune;
-            // count 1'e düşmesi yeni fiil (önceki cümle kapandı ya da ilk dokunuş)
-            bool newSentence = count == 1 && _lastWordCount != 1;
-            bool grew = count > _lastWordCount;
+            // Kimliğe göre karar: elde yaşayan (Building'e ait) etki yoksa spawn et; varsa
+            // sadece SetWords çağır. Sayı polling'i (count==1) EnhancedTouch'ın bir karede
+            // birden fazla nokta kaydettiği durumda 0→2 sıçrayıp spawn'ı hiç tetiklemeyebilir.
+            if (_buildingView == null || _buildingView.Logic == null
+                || _buildingView.Logic.Phase is LivingEffectPhase.Dead or LivingEffectPhase.Fading)
+            {
+                _buildingView = SpawnEffect(state.Words, worldMs);
+                _pose?.PulseRune(state.Words[0].Rune, worldMs);
+                _lastWordCount = count;
+                return;
+            }
 
-            if (newSentence)
-            {
-                SpawnEffect(state.Words, worldMs);
-                _pose?.PulseRune(verb, worldMs);
-            }
-            else if (grew)
-            {
-                LivingEffectView current = CurrentBuilding();
-                current?.Logic.SetWords(state.Words);
-                Rune last = state.Words[count - 1].Rune;
-                _pose?.PulseRune(last, worldMs);
-            }
-            else if (count == _lastWordCount && CurrentBuilding() != null)
-            {
-                // dwell yoğunluğu — aynı sayıda kelime, yığın arttı
-                CurrentBuilding()!.Logic.SetWords(state.Words);
-            }
+            _buildingView.Logic.SetWords(state.Words);
+            if (count > _lastWordCount)
+                _pose?.PulseRune(state.Words[count - 1].Rune, worldMs);
 
             _lastWordCount = count;
-            _lastVerb = verb;
         }
 
-        void SpawnEffect(IReadOnlyList<SentenceWord> words, double worldMs)
+        LivingEffectView SpawnEffect(IReadOnlyList<SentenceWord> words, double worldMs)
         {
             _ = worldMs;
             Vector3 pos = _player.position;
@@ -165,17 +155,17 @@ namespace Dovus.Game
             var view = go.AddComponent<LivingEffectView>();
             view.Bind(logic, _combat.Manifestation, _colors);
             _active.Add(view);
+            return view;
         }
 
-        LivingEffectView? CurrentBuilding()
+        /// <summary>Building'e bağlı referans kaybolmuşsa (beklenmedik durum) son canlıyı bul.</summary>
+        LivingEffectView FindFallbackView()
         {
             for (int i = _active.Count - 1; i >= 0; i--)
             {
-                var v = _active[i];
-                if (v == null || v.Logic == null)
-                    continue;
-                if (v.Logic.Phase is LivingEffectPhase.Traveling or LivingEffectPhase.AwaitingClosing)
-                    return v;
+                if (_active[i] != null && _active[i].Logic != null &&
+                    _active[i].Logic.Phase != LivingEffectPhase.Dead)
+                    return _active[i];
             }
 
             return null;
@@ -183,20 +173,9 @@ namespace Dovus.Game
 
         void OnSentenceCompleted(CompletedSentence sentence)
         {
-            LivingEffectView? view = CurrentBuilding();
-            // Abort sonrası CurrentBuilding fading olabilir — son traveling'i bul
-            if (view == null)
-            {
-                for (int i = _active.Count - 1; i >= 0; i--)
-                {
-                    if (_active[i] != null && _active[i].Logic != null &&
-                        _active[i].Logic.Phase != LivingEffectPhase.Dead)
-                    {
-                        view = _active[i];
-                        break;
-                    }
-                }
-            }
+            LivingEffectView view = _buildingView ?? FindFallbackView();
+            _buildingView = null;
+            _lastWordCount = 0;
 
             if (view == null)
                 return;
@@ -206,6 +185,13 @@ namespace Dovus.Game
                 view.Logic.Abort();
                 return;
             }
+
+            // Kapanış kurulmadan önce son kelime listesi etkiye iletilir — dördüncü kelime
+            // (cümlenin en pahalı sıfatı) burada gelmezse hedef silüete hiç işlemez, çünkü
+            // SentenceEngine dördüncü noktada cümleyi dokunuş anında çözer ve SyncFromSentence
+            // artık Building fazında değilken çalışmaz. LivingEffect.SetWords AwaitingClosing
+            // fazında da kabul eder, sıra önemli değil.
+            view.Logic.SetWords(sentence.Words);
 
             ClosingHit closing = sentence.Closing.Value;
             view.Logic.ArmClosing(closing);
@@ -220,8 +206,7 @@ namespace Dovus.Game
             {
                 View = view,
                 Closing = closing,
-                BangAtWorldMs = bangAt,
-                Fired = false
+                BangAtWorldMs = bangAt
             });
         }
 
@@ -230,7 +215,7 @@ namespace Dovus.Game
             for (int i = _pending.Count - 1; i >= 0; i--)
             {
                 PendingClosing p = _pending[i];
-                if (p.Fired || p.View == null || p.View.Logic == null)
+                if (p.View == null || p.View.Logic == null)
                 {
                     _pending.RemoveAt(i);
                     continue;
@@ -246,7 +231,6 @@ namespace Dovus.Game
                     continue;
 
                 FireClosing(p);
-                p.Fired = true;
                 _pending.RemoveAt(i);
             }
         }
@@ -259,9 +243,13 @@ namespace Dovus.Game
             ApplyBossClosing(logic, p.Closing);
         }
 
+        // Kapanış izi (bu metot) ve seyahat izi (TickEffects, view.Scarred) iki ayrı bayrak:
+        // biri seyahat çatlağının damgalanıp damgalanmadığını, diğeri kapanışın kendi izini
+        // takip eder. Aynı bayrağı paylaşınca odaklı SARSINTI (`5-1`) seyahatte çatlak
+        // bıraktığı için kapanış izini hiç bırakmıyordu (T7.1).
         void StampScar(LivingEffect logic, ClosingHit closing)
         {
-            if (IsViewScarred(logic))
+            if (_closingStamped.Contains(logic))
                 return;
 
             Vector3 along = new Vector3(logic.DirX, 0f, logic.DirZ);
@@ -292,27 +280,7 @@ namespace Dovus.Game
                 _scars.Stamp(tip, scale, kind, along);
             }
 
-            MarkScarred(logic);
-        }
-
-        bool IsViewScarred(LivingEffect logic)
-        {
-            foreach (var v in _active)
-            {
-                if (v != null && v.Logic == logic)
-                    return v.Scarred;
-            }
-
-            return false;
-        }
-
-        void MarkScarred(LivingEffect logic)
-        {
-            foreach (var v in _active)
-            {
-                if (v != null && v.Logic == logic)
-                    v.Scarred = true;
-            }
+            _closingStamped.Add(logic);
         }
 
         void ApplyBossClosing(LivingEffect logic, ClosingHit closing)
@@ -421,6 +389,7 @@ namespace Dovus.Game
 
                 if (!logic.IsAlive)
                 {
+                    _closingStamped.Remove(logic);
                     Destroy(view.gameObject);
                     _active.RemoveAt(i);
                 }
