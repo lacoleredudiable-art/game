@@ -16,6 +16,7 @@ namespace Dovus.Game
         ManifestationTuning _tuning;
         PrototypeTuning _colors;
         LineRenderer _line;
+        float _lineBaseWidth;
         Transform[] _blobs;
         Transform _needle;
         Material _lineMat;
@@ -70,7 +71,8 @@ namespace Dovus.Game
             lineGo.transform.SetParent(transform, false);
             _line = lineGo.AddComponent<LineRenderer>();
             _line.sharedMaterial = _lineMat;
-            _line.widthMultiplier = 0.18f;
+            _lineBaseWidth = _colors.EffectLineWidthDefaultM;
+            _line.widthMultiplier = _lineBaseWidth;
             _line.positionCount = 0;
             _line.useWorldSpace = true;
             _line.loop = false;
@@ -82,22 +84,30 @@ namespace Dovus.Game
             _blobs = new Transform[n];
             for (int i = 0; i < n; i++)
             {
-                var s = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                s.name = "Blob" + i;
-                Object.Destroy(s.GetComponent<Collider>());
-                s.transform.SetParent(transform, false);
+                var s = CreateMeshObject("Blob" + i, "Sphere.fbx");
                 s.GetComponent<Renderer>().sharedMaterial = _blobMat;
                 s.SetActive(false);
                 _blobs[i] = s.transform;
             }
 
-            var needle = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            needle.name = "Needle";
-            Object.Destroy(needle.GetComponent<Collider>());
-            needle.transform.SetParent(transform, false);
+            var needle = CreateMeshObject("Needle", "Capsule.fbx");
             needle.GetComponent<Renderer>().sharedMaterial = _lineMat;
             needle.SetActive(false);
             _needle = needle.transform;
+        }
+
+        /// <summary>
+        /// Mesh'i doğrudan ata (MeshFilter+MeshRenderer) — GameObject.CreatePrimitive'in
+        /// otomatik eklediği Collider hiç oluşmaz. Teknoloji kararları §4: fizik dışarıda,
+        /// bir karelik Destroy edilmiş collider bile yanlış kullanıma davet çıkarır.
+        /// </summary>
+        GameObject CreateMeshObject(string name, string builtinMeshName)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(transform, false);
+            go.AddComponent<MeshFilter>().sharedMesh = Resources.GetBuiltinResource<Mesh>(builtinMeshName);
+            go.AddComponent<MeshRenderer>();
+            return go;
         }
 
         void SyncVisual(float dtSec)
@@ -130,21 +140,24 @@ namespace Dovus.Game
 
         void DrawWave(Vector3 origin, Vector3 dir, float radius, EffectSilhouette s, float y)
         {
-            if (_logic.Verb != Rune.Sarsinti && s.Focus < 0.2f && _logic.Verb != Rune.Suru)
+            if (_logic.Verb != Rune.Sarsinti && s.Focus < _colors.EffectShowMinFocus && _logic.Verb != Rune.Suru)
             {
                 _line.positionCount = 0;
+                _lineBaseWidth = _colors.EffectLineWidthDefaultM;
                 return;
             }
 
             // İĞNE fiilinde ana gövde iğne; dalga çizgisi yok
-            if (_logic.Verb == Rune.Igne && s.Spread < 0.2f)
+            if (_logic.Verb == Rune.Igne && s.Spread < _colors.EffectIgneShowMinSpread)
             {
                 _line.positionCount = 0;
+                _lineBaseWidth = _colors.EffectLineWidthDefaultM;
                 return;
             }
 
             float focus = s.Focus;
-            if (focus < 0.35f)
+            float baseWidth = _colors.EffectLineWidthDefaultM;
+            if (focus < _colors.EffectFocusRingMax)
             {
                 // Halka
                 _line.loop = true;
@@ -157,10 +170,10 @@ namespace Dovus.Game
                     _line.SetPosition(i, p);
                 }
             }
-            else if (focus < 0.75f)
+            else if (focus < _colors.EffectFocusArcMax)
             {
                 // Yaya daralma — boss yönüne doğru koridor
-                float halfArc = Mathf.Lerp(Mathf.PI, 0.35f, (focus - 0.35f) / 0.4f);
+                float halfArc = Mathf.Lerp(Mathf.PI, 0.35f, (focus - _colors.EffectFocusRingMax) / (_colors.EffectFocusArcMax - _colors.EffectFocusRingMax));
                 float facing = Mathf.Atan2(dir.x, dir.z);
                 int segs = 24;
                 _line.loop = false;
@@ -183,16 +196,21 @@ namespace Dovus.Game
                 tip.y = y;
                 _line.SetPosition(0, origin);
                 _line.SetPosition(1, tip);
-                _line.widthMultiplier = Mathf.Lerp(0.35f, 0.12f, s.Pierce);
+                baseWidth = Mathf.Lerp(_colors.EffectLineWidthWideM, _colors.EffectLineWidthNarrowM, s.Pierce);
             }
 
             if (_logic.Verb == Rune.Sarsinti)
-                _line.widthMultiplier = Mathf.Lerp(0.22f, 0.1f, focus);
+                baseWidth = Mathf.Lerp(_colors.EffectSarsintiWidthWideM, _colors.EffectSarsintiWidthNarrowM, focus);
+
+            // Taban her karede burada baştan hesaplanır (birikmez) — PulseBang bunun üstüne
+            // çarpar, DrawWave'in kendisi asla çarpımı miras almaz.
+            _lineBaseWidth = baseWidth;
+            _line.widthMultiplier = baseWidth;
         }
 
         void DrawNeedle(Vector3 origin, Vector3 dir, float dist, EffectSilhouette s)
         {
-            bool show = _logic.Verb == Rune.Igne || s.Pierce > 0.45f;
+            bool show = _logic.Verb == Rune.Igne || s.Pierce > _colors.EffectPierceNeedleShowMin;
             if (!show || _needle == null)
             {
                 if (_needle != null) _needle.gameObject.SetActive(false);
@@ -204,8 +222,8 @@ namespace Dovus.Game
             _needle.position = tip;
             if (dir.sqrMagnitude > 1e-4f)
                 _needle.rotation = Quaternion.LookRotation(dir, Vector3.up) * Quaternion.Euler(90f, 0f, 0f);
-            float thick = Mathf.Lerp(0.35f, 0.14f, s.Pierce);
-            float len = 0.7f + 0.5f * s.Pierce;
+            float thick = Mathf.Lerp(_colors.EffectNeedleThickWideM, _colors.EffectNeedleThickNarrowM, s.Pierce);
+            float len = _colors.EffectNeedleLenBaseM + _colors.EffectNeedleLenPerPierceM * s.Pierce;
             _needle.localScale = new Vector3(thick, len * 0.5f, thick);
         }
 
@@ -232,7 +250,7 @@ namespace Dovus.Game
                              * (0.4f + s.Spread);
                 // Odaklıysa hat boyunca diz; değilse yayvan halka
                 Vector3 p;
-                if (s.Focus > 0.45f || _logic.Verb == Rune.Igne)
+                if (s.Focus > _colors.EffectFocusSwarmAlongLineMin || _logic.Verb == Rune.Igne)
                     p = origin + dir * along + right * side * (1f - s.Focus * 0.7f);
                 else
                 {
@@ -243,7 +261,7 @@ namespace Dovus.Game
 
                 p.y = 0.35f + 0.5f * s.Lift * Mathf.Abs(Mathf.Sin(_logic.AgeSec * 6f + i));
                 _blobs[i].position = p;
-                float sc = 0.28f + 0.12f * s.Spread;
+                float sc = _colors.EffectBlobScaleBaseM + _colors.EffectBlobScalePerSpreadM * s.Spread;
                 _blobs[i].localScale = Vector3.one * sc;
             }
         }
@@ -251,19 +269,46 @@ namespace Dovus.Game
         void PulseBang(Vector3 origin, Vector3 dir, float dist, EffectSilhouette s)
         {
             float pulse = 1f + 0.8f * Mathf.Sin(_logic.BangAgeSec * 28f);
-            _line.widthMultiplier *= pulse;
+            // Taban değerden hesaplanır (DrawWave bu karede zaten güncelledi) — çarpan
+            // hiçbir karede önceki karenin sonucunun üstüne binmez.
+            _line.widthMultiplier = _lineBaseWidth * pulse;
             if (_needle != null && _needle.gameObject.activeSelf)
                 _needle.localScale *= 1f + 0.15f * pulse;
         }
 
         static Material MakeMat(Color c)
         {
-            var shader = Shader.Find("Universal Render Pipeline/Unlit");
-            if (shader == null)
-                shader = Shader.Find("Unlit/Color");
+            var shader = FindTransparentUnlitShader();
             var mat = new Material(shader);
+            ConfigureTransparentFallback(mat);
             SetMatColor(mat, c);
             return mat;
+        }
+
+        // "Sprites/Default" alfa'yı gerçekten harmanlar (bkz. InkTrail.EnsureMaterial); URP
+        // Unlit varsayılan OPAK'tır ve alfa'ya yazılan hiçbir değeri (sönme, iz saydamlığı)
+        // ekrana yansıtmaz. Aynı shader'ı kullanmak repodaki tek doğru desenle tutarlı kalır.
+        static Shader FindTransparentUnlitShader()
+        {
+            var shader = Shader.Find("Sprites/Default");
+            if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
+            if (shader == null) shader = Shader.Find("Unlit/Color");
+            return shader != null ? shader : Shader.Find("Hidden/Internal-Colored");
+        }
+
+        // Yalnızca yukarıdaki tercih zinciri URP Unlit'e düşerse devreye girer: yüzeyi
+        // gerçekten saydama çevirir (_Surface/_Blend + blend modu + render queue).
+        static void ConfigureTransparentFallback(Material mat)
+        {
+            if (!mat.HasProperty("_Surface"))
+                return;
+
+            mat.SetFloat("_Surface", 1f);
+            mat.SetFloat("_Blend", 0f);
+            mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            mat.SetInt("_ZWrite", 0);
+            mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
         }
 
         static void SetMatColor(Material mat, Color c)

@@ -20,6 +20,7 @@
 | T6.1 | T6 denetim düzeltmeleri | bitti | aynı dal |
 | T7 | Tezahür katmanı (üç rün) | bitti | task/t7-manifestation |
 | T7.1 | T7 denetim düzeltmeleri (bağlantı/mantık) | bitti | task/t7.1-tezahur-bagi |
+| T7.2 | T7 denetim düzeltmeleri (görünüm katmanı) | bitti | task/t7.2-tezahur-gorunum |
 | T8 | Boss telegrafı, sıyırma, yavaş çekim, kamera | bekliyor | — |
 | T9 | HUD, parlak tepki yazısı | bekliyor | — |
 | T10 | Oyun içi ayar paneli | bekliyor | — |
@@ -206,6 +207,72 @@ yeşil** (52 + 5).
 - Konsol: play mode boyunca `errorCount=0`, `warningCount=0` (Unity AI Toolkit'in proje koduyla
   ilgisiz, tek seferlik ağ uyarısı hariç — derlemeden önce de vardı, kodumuzla ilgisi yok).
 
+### T7.2 — T7 denetim düzeltmeleri (görünüm katmanı)
+
+Denetimde bulunan 6 görünüm hatası düzeltildi (`Assets/Scripts/Core`'a ve
+`ManifestationDirector.cs`'e dokunulmadı):
+
+1. **Sönme hiç görünmüyordu.** `LivingEffectView`/`GroundScarField` materyali
+   `Universal Render Pipeline/Unlit` ile kuruyordu — bu shader varsayılan OPAK, `1 - FadeT` ve
+   izlerin 0.85 alfası ekrana hiç yansımıyordu. İkisi de artık repodaki doğru desenle aynı:
+   `InkTrail.EnsureMaterial`'daki gibi önce `Sprites/Default` denenir (gerçek alfa harman);
+   yalnızca o bulunamazsa URP Unlit'e düşülür ve o zaman `_Surface`/`_Blend`/blend modu/render
+   queue elle saydama çevrilir. Play mode'da doğrulandı: `Abort()` sonrası materyal alfası
+   0.35 sn boyunca 1→0.8→0.6→0.4→0.2 şeklinde kademeli düştü (tek karede kaybolmuyor).
+2. **Kapanış patlamasında çizgi genişliği birikiyordu.** `PulseBang` her karede
+   `widthMultiplier *= pulse` yapıyordu; `DrawWave` genişliği yalnızca hat/SARSINTI dalında
+   yeniden yazıyordu, halka/yay dalında önceki karenin (zaten çarpılmış) değeri kalıyordu —
+   birikim 0.45 sn'de genişliği çöktürüyor ya da şişiriyordu. `DrawWave` şimdi HER dalda taban
+   genişliği (`_lineBaseWidth`) yeniden hesaplıyor; `PulseBang` üstüne `*=` değil `taban * pulse`
+   atıyor. Play mode'da 40 karelik bang boyunca genişlik `[0.048, 0.392]` aralığında kaldı
+   (taban ~0.1–0.22, pulse ±80%) — kaybolma ya da patlama yok.
+3. **Boss geri tepmesi eski yerine geri kayıyordu.** `BossReactor.Tick` `_home + _offset + shake`
+   yazıyordu ve `_offset` üstel olarak sıfıra sönüyordu — itilme görsel bir titremeden ibaretti,
+   kalıcı değildi. `React` artık `_home`'u KALICI kaydırıyor (arena kenarına kırpılı); eski
+   `_offset`'in yerini `_visualOffset` aldı — bu sadece home aniden değiştiğinde ışınlanmayı
+   önleyen bir yumuşatma, asla eski `_home`'a geri dönmüyor. `Home` artık genel (get/set)
+   property: T8'in yaklaşma hareketi üstüne binebilir. Play mode'da doğrulandı: bir SARSINTI
+   kapanışı sonrası boss `z=5.00 → z=6.08`'e itildi, birkaç yüz kare sonra da tam `6.08`'de
+   kaldı (pozisyon == home). Arena kenarına 30 kez art arda büyük itiş uygulanınca konum
+   `ArenaHalfSizeM - BodyRadiusM = 11.15`'te tam kırpıldı, aşmadı.
+4. **Yerdeki iz sınırsız birikiyordu.** `GroundScarField.Stamp` her damga için yeni
+   `GameObject` + `Quad` yaratıyordu, tavan yoktu. Artık `PrototypeTuning.GroundScarCapCount`
+   (varsayılan 60 — spec'te sayı yok, T11 kare bütçesi için icat edildi) kadar nesne havuzlanıyor;
+   tavan dolunca en eski iz round-robin sırayla yeniden yapılandırılıyor (transform/materyal/ölçek
+   güncellenir), yok edip yeniden yaratılmıyor. İz süreye bağlı silinmiyor (§8/T4 — kalıcı kalır).
+   İzole testte doğrulandı: tavan 5 iken 12 damga çağrısı sonunda tam 5 nesne kaldı.
+5. **Gömülü his sayıları veri oldu (AGENTS kural 3).** `LivingEffectView` çizgi genişlikleri
+   (0.18/0.35/0.12/0.22/0.1), silüet eşikleri (0.2/0.35/0.45/0.75) ve küre/iğne ölçekleri;
+   `ActorPose` poz süresi (180 ms) ve rün başına squash/stretch vektörleri; `BossReactor`
+   yerçekimi (22), geri tepme yumuşatma sönmesi (3.2) ve sarsıntı genlik katsayıları (0.12/0.05,
+   + Pin'in 0.04'ü) hepsi `PrototypeTuning`'e taşındı. Değerler AYNI kaldı, yalnızca yeri değişti.
+   `ActorPose`/`BossReactor` kendi `PrototypeTuning` alanlarını taşıyor (`[SerializeField]` +
+   `Tuning` property, `KinematicMotor` ile aynı desen) çünkü `PrototypeBootstrap.cs` bu görevin
+   dokunma listesinde değildi — bkz. aşağıdaki sapma notu.
+6. **`GameObject.CreatePrimitive`'in ürettiği collider bir kare yaşıyordu.**
+   `LivingEffectView` (küre/iğne) ve `GroundScarField` (quad) artık `MeshFilter`/`MeshRenderer`'ı
+   doğrudan kurup `Resources.GetBuiltinResource<Mesh>("Sphere.fbx"/"Capsule.fbx"/"Quad.fbx")`
+   ile aynı yerleşik mesh'i atıyor — `CreatePrimitive` hiç çağrılmıyor, collider hiç oluşmuyor
+   (`Destroy` edilen bir şey de yok). İzole testte doğrulandı: oluşan hiçbir alt nesnede
+   `Collider` bulunmuyor.
+
+**Test:** Core'a dokunulmadığı için `dotnet test` hâlâ **57 yeşil**, değişmedi.
+
+**Unity play mode (MCP prob, gerçek sahne + `BossReactor`/`GroundScarField`/`LivingEffectView`
+izole örnekleri + gerçek `SentenceEngine` üzerinden tek bir SARSINTI kapanışı):**
+
+- Sönme: `Abort()` sonrası materyal alfası 5 karede 0.35 sn'lik `FadeDurationSec` boyunca
+  düzgün kademeli düştü (yukarıda 1. madde).
+- Kapanış patlaması: 40 kare boyunca genişlik `[0.048, 0.392]` bandında sabit kaldı, birikim yok.
+- Gerçek sahne + gerçek `SentenceEngine.OnDotTouched(5, ...)` ile tek nokta (SARSINTI) cümlesi:
+  pencere kendiliğinden kapandı (`Phase=Resolved`), boss `(0,1.3,5.00)`'dan `(0,1.3,6.08)`'e
+  itildi ve **orada kaldı** (`transform.position == Home`), tam 1 yeni scar (`GroundScars`
+  child count 1), `ManifestationDirector.ActiveCount=0` (etki kapanıp öldü). Konsol:
+  `errorCount=0`; tek uyarı T7.1'de de not edilen, koddan bağımsız AI Toolkit ağ uyarısı.
+- Boss knockback + arena kırpma + tavan/recycle + collider yokluğu izole component testleriyle
+  de (Play/Edit modunda doğrudan `BossReactor`/`GroundScarField` örnekleri üstünden) ayrıca
+  doğrulandı (yukarıdaki maddelerde sayılar var).
+
 ## Spec'ten sapmalar
 
 Belgedeki bir kural/sayı uygulanamadıysa buraya yaz: hangisi, neden, yerine ne kondu.
@@ -354,6 +421,39 @@ Konsol temiz, `dotnet test` 46 yeşil. Titreşim/hece kulakla ve ekran görünt�
   gerekir: dalganın/iğnenin/sürünün menzile ne kadar yaklaştığı zaten `LivingEffect.Travel` /
   `MaxRange`'den okunabilir, görsel bir ipucuna (örn. solma, renk, nabız) çevrilmesi gerekiyor.
 
+## T7.2 sapmaları / varsayılanlar
+
+- **`PrototypeTuning.GroundScarCapCount = 60` (uydurma, spec'te sayı yok).** T11 kare bütçesi
+  için icat edildi — 30 kapanışta gerçekçi en kötü senaryo (SARSINTI odaklı çatlak kapanışta
+  3 alt damga + seyahatte 1 = 4/kapanış) ~120 iz üretebilir; tavan bunun yarısından azında
+  görsel yoğunluğu sınırlıyor. Telefonda T11'de ayarlanacak.
+- **`ActorPose`/`BossReactor` kendi `PrototypeTuning` kopyasını tutuyor, `PrototypeBootstrap`'ın
+  paylaştığı tek örnekle bağlı değil.** T5'in çözdüğü "üç kopya" sorunu bu ikisi için kısmen geri
+  geldi: görevin dokunma listesi `PrototypeBootstrap.cs`'i içermiyordu, o yüzden wiring eklenemedi
+  (`reactor.Tuning = _tuning;` / `pose.Tuning = _tuning;` satırları yok). Şu an zararsız çünkü
+  varsayılan değerler Bootstrap'ın paylaştığı örnekle birebir aynı (örn. `ArenaHalfSizeM=12`).
+  **T10 canlı ayar paneli** geldiğinde bu iki bileşen slider'dan etkilenmeyecek — o görev bu
+  wiring'i tamamlamalı (`PrototypeBootstrap.CreatePentagon`'da `pose`/`reactor` zaten elde var,
+  tek satırlık ekleme).
+- **`BossReactor._bodyRadiusM` varsayılanı (0.85 m) `PrototypeBootstrap.BossRadiusM`'le elle
+  eşleştirildi**, referansla bağlı değil (aynı wiring-dışı-kalma sebebiyle). Boss yarıçapı
+  ileride değişirse bu ikisi ayrışabilir.
+- **`LivingEffectView`'daki iğne (needle) ölçek sabitleri (0.35/0.14 kalınlık, 0.7/0.5 uzunluk)
+  ve küre yanı offset sabitleri (0.35/1.4/0.4) da veri oldu**, görev metninde tek tek sayılmasa
+  da "küre ölçekleri" kategorisiyle aynı karakterde — needle ölçek sabitleri taşındı, yanı-offset
+  sabitleri (renk lerp oranı, y-yüksekliği ofseti, nefes/breath sabitleri gibi küçük çizim
+  detaylarıyla birlikte) kasıtlı olarak taşınmadı; kapsamı büyütmemek için görevde açıkça
+  sayılanlarla ve doğrudan yan yana duran ölçek çiftleriyle sınırlı tutuldu.
+- **"30 kapanış üst üste" kabul kriteri gerçek 30 kez canlı oyunda değil, eşdeğer bir izole
+  testle doğrulandı:** `GroundScarField.Stamp` tavan=5 ile 12 kez çağrıldı, sonuçta tam 5 nesne
+  kaldı ve hiçbirinde collider yoktu (yukarıdaki T7.2 bölümü madde 4). Gerçek sahnede tek bir
+  canlı kapanış da aynı `Stamp` yolunu kullandığını doğruladı (`GroundScars` child count 1).
+  Unity MCP'nin `Update()` private metodunu reflection'sız tetikleyememesi yüzünden 30 gerçek
+  kapanışı gerçek zamanda (~30 sn bekleme) art arda çalıştırmadım — mekanik izole testte kanıtlı,
+  ama tam senaryo (Hierarchy'den elle sayım) doğrulanmadı. **Bir sonraki ajan/insan telefonda
+  veya editörde 30 kapanış yapıp Hierarchy'de `GroundScars` altındaki nesne sayısını gözle
+  saymalı.**
+
 ## Bilinen açıklar
 
 - T1/T2/T3/T4/T7/T7.1 `dotnet test` yeşil (`tools/CoreTests`, 57 test).
@@ -393,3 +493,9 @@ Konsol temiz, `dotnet test` 46 yeşil. Titreşim/hece kulakla ve ekran görünt�
   boss telegrafı §10'un istediği "en üst ve en okunabilir katman" olamaz — telegraf beşgen
   noktalarının ve debug metninin altında kalır. T8 katmanlamayı tek mekanizmaya indirmeli.
 - Mobilde ikinci kamera fazladan bir render geçişi; T11 kare bütçesinde bakılacak.
+- **`PrototypeBootstrap.ApplyColor` hâlâ `GameObject.CreatePrimitive` + `Destroy(collider)`
+  deseni kullanıyor** (arena zemini, oyuncu/boss kapsülleri) — T7.2'nin kabul kriteri 6 bununla
+  aynı sınıf hata (bir karelik collider), ama `PrototypeBootstrap.cs` T7.2'nin dokunma
+  listesinde değildi. `LivingEffectView`/`GroundScarField`'da düzeltildi (mesh doğrudan atanıyor,
+  collider hiç oluşmuyor); Bootstrap'taki üç çağrı aynı deseni izleyebilir — küçük, bağımsız bir
+  görev veya T8/T10 üstlenebilir.
