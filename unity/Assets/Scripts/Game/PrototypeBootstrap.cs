@@ -8,6 +8,11 @@ namespace Dovus.Game
     /// </summary>
     public sealed class PrototypeBootstrap : MonoBehaviour
     {
+        const float PlayerRadiusM = 0.5f;
+        const float PlayerHeightM = 2f;
+        const float BossRadiusM = 0.85f;
+        const float BossHeightM = 2.6f;
+
         [SerializeField] PrototypeTuning _tuning = new();
 
         void Awake()
@@ -21,40 +26,42 @@ namespace Dovus.Game
             gameObject.AddComponent<GameClock>();
 
             CreateArena();
-            var player = CreateCapsule("Player", new Vector3(0f, 1f, -2f), 0.5f, 2f, new Color(0.25f, 0.85f, 0.92f));
-            CreateCapsule("Boss", new Vector3(0f, 1.2f, 5f), 0.85f, 2.6f, new Color(1f, 0.38f, 0.12f));
 
-            var moveInput = player.AddComponent<MoveInput>();
-            CopyTuning(moveInput.Tuning);
+            var player = CreateCapsule(
+                "Player",
+                new Vector3(0f, PlayerHeightM * 0.5f, -2f),
+                PlayerRadiusM,
+                PlayerHeightM,
+                _tuning.PlayerColor);
+
+            CreateCapsule(
+                "Boss",
+                new Vector3(0f, BossHeightM * 0.5f, 5f),
+                BossRadiusM,
+                BossHeightM,
+                _tuning.BossColor);
+
+            player.AddComponent<MoveInput>().Tuning = _tuning;
 
             var motor = player.AddComponent<KinematicMotor>();
-            motor.SpeedMps = _tuning.WalkSpeedMps;
+            motor.Tuning = _tuning;
+            motor.BodyRadiusM = PlayerRadiusM;
 
             CreateSun();
             CreateCamera(player.transform);
-        }
-
-        void CopyTuning(PrototypeTuning target)
-        {
-            target.ArenaHalfSizeM = _tuning.ArenaHalfSizeM;
-            target.WalkSpeedMps = _tuning.WalkSpeedMps;
-            target.JoystickMaxRadiusDp = _tuning.JoystickMaxRadiusDp;
-            target.JoystickDeadZone = _tuning.JoystickDeadZone;
-            target.FollowSmoothTimeSec = _tuning.FollowSmoothTimeSec;
-            target.LookAheadM = _tuning.LookAheadM;
-            target.CameraOffset = _tuning.CameraOffset;
         }
 
         void CreateArena()
         {
             var ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
             ground.name = "Arena";
+            // Plane primitive 10x10 m; ArenaHalfSizeM yarım kenar uzunluğu.
             float scale = _tuning.ArenaHalfSizeM / 5f;
             ground.transform.localScale = new Vector3(scale, 1f, scale);
-            ApplyColor(ground, new Color(0.38f, 0.4f, 0.44f));
+            ApplyColor(ground, _tuning.GroundColor);
         }
 
-        GameObject CreateCapsule(string name, Vector3 position, float radius, float height, Color color)
+        static GameObject CreateCapsule(string name, Vector3 position, float radius, float height, Color color)
         {
             var capsule = GameObject.CreatePrimitive(PrimitiveType.Capsule);
             capsule.name = name;
@@ -83,7 +90,7 @@ namespace Dovus.Game
             camGo.tag = "MainCamera";
             var camera = camGo.AddComponent<Camera>();
             camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = new Color(0.12f, 0.14f, 0.18f);
+            camera.backgroundColor = _tuning.BackgroundColor;
             camera.nearClipPlane = 0.2f;
             camera.farClipPlane = 120f;
 
@@ -91,22 +98,27 @@ namespace Dovus.Game
             camGo.AddComponent<UniversalAdditionalCameraData>();
 
             var follow = camGo.AddComponent<FollowCamera>();
+            follow.Tuning = _tuning;
             follow.Target = target;
-            CopyTuning(follow.Tuning);
             camGo.transform.position = target.position + _tuning.CameraOffset;
         }
 
         static void ApplyColor(GameObject go, Color color)
         {
+            // Fizik kullanılmıyor (teknoloji-kararlari §4): primitive'in collider'ı ölü ağırlık.
+            var collider = go.GetComponent<Collider>();
+            if (collider != null)
+                Destroy(collider);
+
             var renderer = go.GetComponent<Renderer>();
             if (renderer == null)
                 return;
 
-            var shader = Shader.Find("Universal Render Pipeline/Unlit");
-            if (shader == null)
-                shader = Shader.Find("Universal Render Pipeline/Lit");
+            var shader = Shader.Find("Universal Render Pipeline/Lit");
             if (shader == null)
                 shader = Shader.Find("Standard");
+            if (shader == null)
+                return;
 
             var material = new Material(shader);
             if (material.HasProperty("_BaseColor"))

@@ -10,6 +10,7 @@ namespace Dovus.Game
         [SerializeField] Transform _target;
         [SerializeField] PrototypeTuning _tuning = new();
 
+        KinematicMotor _targetMotor;
         Vector3 _velocity;
         Vector3 _shakeOffset;
         float _shakeAmplitude;
@@ -19,7 +20,11 @@ namespace Dovus.Game
         public Transform Target
         {
             get => _target;
-            set => _target = value;
+            set
+            {
+                _target = value;
+                _targetMotor = _target != null ? _target.GetComponent<KinematicMotor>() : null;
+            }
         }
 
         public PrototypeTuning Tuning
@@ -35,6 +40,8 @@ namespace Dovus.Game
         void Awake()
         {
             _tuning ??= new PrototypeTuning();
+            if (_targetMotor == null && _target != null)
+                _targetMotor = _target.GetComponent<KinematicMotor>();
         }
 
         public void AddShake(float amplitudeM, float durationSec)
@@ -54,10 +61,7 @@ namespace Dovus.Game
 
             AdvanceShake();
 
-            Vector3 targetVelocity = Vector3.zero;
-            var motor = _target.GetComponent<KinematicMotor>();
-            if (motor != null)
-                targetVelocity = motor.Velocity;
+            Vector3 targetVelocity = _targetMotor != null ? _targetMotor.Velocity : Vector3.zero;
 
             Vector3 flatVelocity = new Vector3(targetVelocity.x, 0f, targetVelocity.z);
             Vector3 lookAhead = flatVelocity.sqrMagnitude > 0.0001f

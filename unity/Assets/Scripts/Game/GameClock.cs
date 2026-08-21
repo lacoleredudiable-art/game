@@ -5,7 +5,9 @@ namespace Dovus.Game
 {
     /// <summary>
     /// Core TimeDirector'ı Unity kare döngüsüne bağlar. Simülasyon ölçeklenmiş dt ile ilerler.
+    /// Saat, kendisini okuyan her davranıştan önce ilerlemeli — sıra bu yüzden sabitlendi.
     /// </summary>
+    [DefaultExecutionOrder(-1000)]
     public sealed class GameClock : MonoBehaviour
     {
         readonly TimeDirector _director = new();

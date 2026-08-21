@@ -4,7 +4,7 @@
 > ajanın repoyu taramadan nerede kaldığımızı anlaması. Kısa tut: ne bitti, ne üretildi,
 > nerede sapma var.
 
-**Son güncelleme:** 20 Ağustos 2026 · **Sıradaki görev:** T6 (T5'te * işaretli kriter telefonda doğrulanacak)
+**Son güncelleme:** 21 Ağustos 2026 · **Sıradaki görev:** T6
 
 ## Görev durumu
 
@@ -15,7 +15,7 @@
 | T2 | Cümle gramer motoru | bitti | #2, master'a girdi |
 | T3 | Dodge, boss frame verisi, derecelendirme | bitti | task/t3-dodge-boss-exchange |
 | T4 | Zaman yönetmeni (yavaş çekim + hitstop) | bitti | task/t4-time-director |
-| T5 | Bootstrap sahne, kinematik hareket, sanal çubuk | bitti* | master |
+| T5 | Bootstrap sahne, kinematik hareket, sanal çubuk | bitti | master |
 | T6 | Beşgen girdi yüzeyi, mürekkep izi | bekliyor | — |
 | T7 | Tezahür katmanı (üç rün) | bekliyor | — |
 | T8 | Boss telegrafı, sıyırma, yavaş çekim, kamera | bekliyor | — |
@@ -91,16 +91,21 @@ dosya listesi değil, çağrılacak şeyin adı ve ne yaptığı.
 
 ### T5 — `Dovus.Game` (namespace, Unity kabuğu)
 
-- `PrototypeBootstrap` — Awake'te arena + oyuncu/boss kapsülü + güneş + kamera kurar; sahne kökünde tek script
-- `GameClock` — `TimeDirector.Tick(unscaledDelta)`; `WorldDeltaMs` / `RealDeltaMs` okunur
-- `KinematicMotor` — Rigidbody yok; `MoveInput` yönü × `WalkSpeedMps` × ölçeklenmiş dt
+- `PrototypeBootstrap` — Awake'te arena + oyuncu/boss kapsülü + güneş + kamera kurar; sahne kökünde tek script.
+  Kapsül ölçüleri sabit: oyuncu r=0.5 h=2.0, boss r=0.85 h=2.6
+- `GameClock` — `TimeDirector.Tick(unscaledDelta)`; `WorldDeltaMs` / `RealDeltaMs` okunur.
+  `[DefaultExecutionOrder(-1000)]`: saati okuyan her davranıştan önce ilerler
+- `KinematicMotor` — Rigidbody yok; `MoveInput` yönü × `Tuning.WalkSpeedMps` × ölçeklenmiş dt.
+  Konum arena kenarına kırpılır (`ArenaHalfSizeM − BodyRadiusM`)
 - `MoveInput` — sol yarı dinamik sanal çubuk (`EnhancedTouch`); masaüstü WASD yedeği; sağ yarı dokunuşlara dokunmaz
 - `FollowCamera` — yumuşak takip + hafif look-ahead; `AddShake(amplitudeM, durationSec)` T8 için
-- `PrototypeTuning` — yürüme hızı 4.5 m/s, arena yarıçapı 12 m, çubuk 72 dp (spec'te yok, varsayılan)
+- `PrototypeTuning` — yürüme hızı 4.5 m/s, arena yarım kenarı 12 m, çubuk 72 dp (spec'te yok, varsayılan)
+  + §10 renkleri. **Tek örnek**: Bootstrap kendi `_tuning`'ini `MoveInput`/`KinematicMotor`/`FollowCamera`'ya
+  referansla verir, kopyalamaz — T10 canlı ayarı bunu bekliyor
 - Editor: **Dovus → Create Prototype Scene** (`PrototypeSceneCreator`) — `Assets/Scenes/Prototype.unity` + build settings
 
-**Unity:** Play mode doğrulandı — arena, oyuncu/boss kapsülü, takip kamerası, WASD hareketi.
-Sahne: `Assets/Scenes/Prototype.unity` (tek Bootstrap objesi). URP renderer + `MainCamera` etiketi düzeltildi.
+**Unity:** Play mode doğrulandı — arena, oyuncu/boss kapsülü, takip kamerası, WASD hareketi, çok parmak.
+Sahne: `Assets/Scenes/Prototype.unity` (tek Bootstrap objesi). URP renderer düzeltildi.
 
 ## Spec'ten sapmalar
 
@@ -153,10 +158,44 @@ Sessiz sapma en pahalı hata türü.
   Ayrıca `Core/csc.rsp` (`-nullable:enable`) kondu ki nullable işaretleri uyarıya değil
   gerçek denetime dönüşsün. **İkisi de Unity açılana kadar doğrulanmadı.**
 
+### T5 denetiminde düzeltilenler
+
+- **Boss gövdesi bossun telegraf rengindeydi** (`#FF6120`). §10 kırmızı-turuncuyu yalnızca
+  *tehdide* ayırıyor; gövde sürekli o renkte kalırsa T8'in telegrafı yandığında kontrast
+  kalmaz — kural tam da bunu korumak için "pazarlıksız". Gövde nötr koyuya alındı, oyuncu
+  §10'daki camgöbeğinin kendisine (`#5FF0FF`) çekildi. Renkler artık `PrototypeTuning`'de.
+- **Her şey `Universal Render Pipeline/Unlit` ile çiziliyordu.** Kurulan güneş, yumuşak
+  gölgeler ve `RenderSettings.sun` tamamen ölü koddu; kapsüller düz leke olarak görünüyordu,
+  yani derinlik okunmuyordu. `Lit`e alındı.
+- **`GameClock` ile onu okuyan davranışların Update sırası tanımsızdı.** `KinematicMotor`
+  önce koşarsa bir önceki karenin `WorldDeltaMs`'ini kullanıyordu (ilk karede 0).
+  `[DefaultExecutionOrder(-1000)]` ile sıra sabitlendi — T8 yavaş çekimde bunu kare kare
+  ölçecek.
+- **`PrototypeTuning`'in üç kopyası vardı**, `CopyTuning` ile elle senkronlanıyordu.
+  T10 slider'ı Bootstrap'in kopyasını değiştirince hareket/kamera sessizce eski değerde
+  kalırdı. Artık tek örnek referansla paylaşılıyor.
+- **`ArenaHalfSizeM` ölü ayardı**: yalnızca zeminin ölçeğini belirliyordu, oyuncu zeminin
+  dışına sonsuza yürüyebiliyordu. T8'de boss 2.2 m/s ile 4.5 m/s'lik oyuncuyu asla
+  yakalayamayacağı için dövüş kaçılarak bozulabilirdi. Konum artık arena kenarına kırpılıyor.
+- **`MainCamera` etiketi `TagManager.asset`'e eklenmişti.** Bu Unity'nin yerleşik etiketi;
+  her `AssetDatabase.Refresh` "already registered" satırı basıyordu, yani "konsol temiz"
+  kriteri gürültülüydü. Etiket listesi geri boşaltıldı.
+- **Kapsüllerin collider'ları duruyordu.** Teknoloji kararları §4 fiziği tamamen dışarıda
+  bırakıyor (vuruş tespiti matematik); bırakılan collider ileride yanlışlıkla fiziğe
+  dayanmayı davet ediyordu, siliniyor.
+- Boss kapsülü 0.1 m yere gömülüydü (y=1.2, yarı yükseklik 1.3); konum yükseklikten türetildi.
+
 ## Bilinen açıklar
 
 - T1/T2/T3/T4 `dotnet test` yeşil (`tools/CoreTests`, 46 test).
-- **T5 çok parmak** Device Simulator/telefonda henüz doğrulanmadı (masaüstü WASD OK).
+- **T5 çok parmak girdi katmanında doğrulandı, donanımda değil.** Play mode'da sanal
+  `Touchscreen`'e iki eşzamanlı dokunuş enjekte edildi: sağ yarıdaki parmak basılıyken sol
+  çubuk kuruluyor, sağ parmak gezinirken/kalkarken sol yön bozulmuyor, ölçülen hız tam
+  4.50 m/s. Gerçek dokunmatik sürücüsü (palm rejection, parmak indeksi geri dönüşümü)
+  yalnızca telefonda görülür → T11. Not: Device Simulator tek işaretçi ürettiği için bu
+  kriteri zaten doğrulayamaz.
+- Bu doğrulama tek seferlik bir prob script'iyle yapıldı, repoda test olarak durmuyor;
+  T6 sağ yarıya çizimi eklerken aynı senaryo elle tekrarlanmalı.
 - Yeni eşikler (90/160/220) masa başı kararıdır, telefonda sınanmadı — T11'in his turunda
   ilk ayarlanacak sayılar bunlar.
 - "Sıyırma" kelimesi §6'da hem başarılı dodge'un genel adı hem de en düşük derecenin adı;
@@ -172,6 +211,10 @@ Sessiz sapma en pahalı hata türü.
   sınıflanıyor ama cümle bağlamında testi yok.
 - `History` sınırsız büyüyor; uzun dövüşte sınırlanmalı.
 - **Unity Game katmanı derlendi**; play mode doğrulandı. `IsExternalInit` shim ve `csc.rsp` Unity'de sorunsuz.
+- Arena kare (kenar 24 m) ama ayarın adı `ArenaHalfSizeM`; boss dövüşü yuvarlak arena isterse
+  (T8) ad ve kırpma birlikte değişmeli.
+- `PlayerSettings.runInBackground` kapalı; telefonda dert değil ama editörde odak kaybında
+  play mode duruyor, MCP ile ölçüm alırken yanıltabilir.
 - Vurulma sonucunda `GapMs`/`ReactionMs` doldurulmuyor (0 dönüyor). T9 vurulma ekranında
   tepki süresini göstermek isterse burayı doldurmak gerekir.
 - `ExchangeResolver.IsInvulnerableAtStrike`, `DodgeState`'teki i-frame matematiğini
