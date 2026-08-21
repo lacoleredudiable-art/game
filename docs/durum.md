@@ -4,7 +4,7 @@
 > ajanın repoyu taramadan nerede kaldığımızı anlaması. Kısa tut: ne bitti, ne üretildi,
 > nerede sapma var.
 
-**Son güncelleme:** 21 Ağustos 2026 · **Sıradaki görev:** T7
+**Son güncelleme:** 21 Ağustos 2026 · **Sıradaki görev:** T8
 
 ## Görev durumu
 
@@ -18,7 +18,7 @@
 | T5 | Bootstrap sahne, kinematik hareket, sanal çubuk | bitti | master |
 | T6 | Beşgen girdi yüzeyi, mürekkep izi | bitti | task/t6-pentagon-input → master |
 | T6.1 | T6 denetim düzeltmeleri | bitti | aynı dal |
-| T7 | Tezahür katmanı (üç rün) | bekliyor | — |
+| T7 | Tezahür katmanı (üç rün) | bitti | task/t7-manifestation |
 | T8 | Boss telegrafı, sıyırma, yavaş çekim, kamera | bekliyor | — |
 | T9 | HUD, parlak tepki yazısı | bekliyor | — |
 | T10 | Oyun içi ayar paneli | bekliyor | — |
@@ -125,6 +125,25 @@ Sahne: `Assets/Scenes/Prototype.unity` (tek Bootstrap objesi). URP renderer düz
 - `PrototypeTuning` — `OpenDot1..5` (§4: 1/2/5 açık), `DotVibrationMs`
 
 **Unity:** derleme OK, konsol temiz. `dotnet test` 46 yeşil.
+
+### T7 — Tezahür (`Dovus.Core.Manifestation` + `Dovus.Game`)
+
+- `ManifestationTuning` — `CombatTuning.Manifestation`; hız/yarıçap/silüet adımları (§8'de yok,
+  varsayılan; T11 his).
+- `EffectSilhouette` — Focus / Pierce / Spread / Lift (sayı çarpanı değil).
+- `SilhouetteBuilder.FromWords` — fiil tohumu + sıfat eksenleri; dwell yığını büyütür.
+- `LivingEffect` — yaşayan etki: seyahat, silüete morph, Abort / ArmClosing / FireClosingBang.
+- `ManifestationDirector` — `SentenceEngine` → spawn/mutate; recovery + `PostHitSilenceMs` sonra
+  kapanış; `ForceSync` / `ActiveLogic` (prob).
+- `LivingEffectView` — LineRenderer halka→yay→hat + az küre (sürü) + iğne kapsülü.
+- `ActorPose` — rün squash/stretch + toparlanma nefesi (T1/T5).
+- `BossReactor` — knockback / lift / pin (hasar yok).
+- `GroundScarField` — kalıcı çatlak/iğne/sürü/asit izi (§10 yeşil yalnızca asit).
+- Kapalı rün geri bildirimi **yeniden yazılmadı** (T6.1).
+
+**Test:** `SilhouetteBuilderTests` 6; toplam `dotnet test` 52 yeşil.
+**Unity play:** `5→5-1` focus toplanıyor (aynı LivingEffect); `5-1-2` spread artıyor;
+  Abort → kapanış yok; çözülünce AwaitingClosing → bang + scar.
 
 ## Spec'ten sapmalar
 
@@ -249,12 +268,19 @@ Konsol temiz, `dotnet test` 46 yeşil. Titreşim/hece kulakla ve ekran görünt�
 > yapıp iki ölçümde kare sayısının arttığını doğrula; probun kendi içinde ayarlaman yetmez
 > (o satır çalışmak için zaten bir kareye ihtiyaç duyar).
 
+## T7 sapmaları / varsayılanlar
+
+- **Tezahür hızları/yarıçapları spec'te yok.** `ManifestationTuning`: Wave 9 m/s / 9 m,
+  Needle 16 / 12, Swarm 6.5 / 7, FocusPerIgne 0.78, MorphLerp 3.5/s, ScarScale 1.4.
+  Telefonda T11.
+- **KABUK/ZEHİR fiil olarak spawn edilmez** (noktalar kapalı); sıfat/kapanış türü olarak
+  silüet ve scar yolları yine var (gramer beş rün tanır).
+- **Seyahat teması tek seferlik hafif sarsıntı**; asıl ödeme kapanış bang'inde. Can/hasar T8.
+
 ## Bilinen açıklar
 
-- T1/T2/T3/T4 `dotnet test` yeşil (`tools/CoreTests`, 46 test).
-- **T5/T6 çok parmak girdi play mode'da sanal Touchscreen ile doğrulandı, donanımda değil.**
-  Sol çubuk basılıyken sağ 5-1 çizimi çalışıyor; sağ kalkınca sol yön bozulmuyor.
-  Gerçek dokunmatik → T11.
+- T1/T2/T3/T4/T7 `dotnet test` yeşil (`tools/CoreTests`, 52 test).
+- **T5/T6/T7 çok parmak / tezahür play mode'da doğrulandı, donanımda değil.** Gerçek dokunmatik → T11.
 - Yeni eşikler (90/160/220) masa başı kararıdır, telefonda sınanmadı — T11'in his turunda
   ilk ayarlanacak sayılar bunlar.
 - "Sıyırma" kelimesi §6'da hem başarılı dodge'un genel adı hem de en düşük derecenin adı;
@@ -275,9 +301,9 @@ Konsol temiz, `dotnet test` 46 yeşil. Titreşim/hece kulakla ve ekran görünt�
   tepki süresini göstermek isterse burayı doldurmak gerekir.
 - `ExchangeResolver.IsInvulnerableAtStrike`, `DodgeState`'teki i-frame matematiğini
   ikinci kez yazıyor; ayarlar değişirse ikisi ayrışabilir.
-- **T6 dodge sadece `DodgeState.Begin` + Abort** — yer değiştirme / afterimage T8.
-  Şu an dodge'a basınca kapsül kımıldamıyor: `GetDisplacementRatio`'yu transform'a kim
-  uygulayacak hiçbir göreve yazılmamış. T8 bunu sahiplenmeli.
+- **Dodge yer değiştirmesi hâlâ yok:** `DodgeState` zaman tutuyor; `GetDisplacementRatio`'yu
+  transform'a uygulayan kimse yok — hiçbir görev metninde yoktu. T7'ye dokunulmadı.
+  **T8 sahiplenmeli** (afterimage ile birlikte), yoksa telegraf/sıyırma hissi boş kalır.
 - Hece sesleri sinüs tıkırtısı; §9 yapısı var, müzikal kalite T11 his turuna.
 - **Ekrana sabit iki ayrı katman var:** noktalar ScreenSpaceOverlay canvas'ta, mürekkep ayrı
   ortografik kamerada (URP stack). Overlay canvas her kameranın üstüne çizildiği için T8'in

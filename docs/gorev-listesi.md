@@ -325,6 +325,10 @@ YASAKLAR
 **Bu görev prototipin can alıcı kısmı.** Spellisimo'nun hatası burada yapılırsa test yanlış
 sonuç verir.
 
+> **T6.1 notu (tekrarlama):** Kapalı rün geri bildirimi bitti — 3/4 motora gitmiyor,
+> `PentagonView` soluk çiziyor. "Tanımsız rüne kapalı geri bildirim" maddesini yeniden
+> yapma. Katmanlama (Overlay canvas vs telegraf) ve dodge yer değiştirmesi T8 / bilinen açık.
+
 ```
 Rolün: Cümlenin dünyadaki karşılığını kuran geliştirici.
 
@@ -334,8 +338,8 @@ Rolün: Cümlenin dünyadaki karşılığını kuran geliştirici.
 GÖREV
 Prototip setindeki ÜÇ fiili dünyada YAŞAYAN etki olarak kur (prosedürel, sanat varlığı yok):
 İĞNE delici atılış · SÜRÜ yayılan dalga · SARSINTI yere çakma şok dalgası.
-KABUK ve ZEHİR bu görevin kapsamı DIŞINDA (gerekçesi §4'te) — ama gramer motoru beş rünü
-tanıdığı için, tanımsız rüne dokunulduğunda temiz bir "kapalı" geri bildirimi ver.
+KABUK ve ZEHİR bu görevin kapsamı DIŞINDA (gerekçesi §4'te).
+Kapalı rün geri bildirimi T6.1'de çözüldü — burada yeniden yazma.
 
 ZORUNLU KURALLAR
 - T2: hiçbir fiil anlık vurmaz; hepsi dünyada yol alır/sürer. Sıfat, YAŞAYAN etkiyi değiştirir.
@@ -367,9 +371,13 @@ YASAKLAR
 ```
 Rolün: Boss dövüş döngüsünü ve his katmanını kuran geliştirici.
 
-ÖNCE OKU: docs/dovus-sistemi.md §6, §7, §10, §11 · Core/Combat (T3) · Core/Time (T4).
+ÖNCE OKU: docs/dovus-sistemi.md §6, §7, §10, §11 · Core/Combat (T3) · Core/Time (T4)
+· docs/durum.md "Bilinen açıklar" (katmanlama + dodge yer değiştirme).
 
 GÖREV
+0. Sahiplen (önceki görevlerden açık):
+   - Dodge: `GetDisplacementRatio` / glide'ı oyuncu transform'una uygula (+ afterimage).
+   - Katmanlama: Overlay canvas telegrafı eziyor — §10 "en üst katman" için tek mekanizma.
 1. Boss: YERE ÇAKMA saldırısı (windup 640 / active 90 / recovery 720 / radius 5.4).
    Okunabilir telegraf: hazırlık pozu + büyüyen yer göstergesi + yükselen ses.
    Idle'da oyuncuya doğru yavaş yaklaşır (2.2 m/s).

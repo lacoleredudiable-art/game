@@ -9,5 +9,6 @@ namespace Dovus.Core.Tuning
         public BossTuning Boss = new BossTuning();
         public GradeTuning Grade = new GradeTuning();
         public FeelTuning Feel = new FeelTuning();
+        public ManifestationTuning Manifestation = new ManifestationTuning();
     }
 }

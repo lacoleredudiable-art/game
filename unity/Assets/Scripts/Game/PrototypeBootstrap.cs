@@ -36,7 +36,7 @@ namespace Dovus.Game
                 PlayerHeightM,
                 _tuning.PlayerColor);
 
-            CreateCapsule(
+            var boss = CreateCapsule(
                 "Boss",
                 new Vector3(0f, BossHeightM * 0.5f, 5f),
                 BossRadiusM,
@@ -49,12 +49,18 @@ namespace Dovus.Game
             motor.Tuning = _tuning;
             motor.BodyRadiusM = PlayerRadiusM;
 
+            var pose = player.AddComponent<ActorPose>();
+            pose.CaptureBase();
+
+            var reactor = boss.AddComponent<BossReactor>();
+            reactor.CaptureHome();
+
             CreateSun();
             CreateCamera(player.transform);
-            CreatePentagon(clock);
+            CreatePentagon(clock, player.transform, pose, reactor);
         }
 
-        void CreatePentagon(GameClock clock)
+        void CreatePentagon(GameClock clock, Transform player, ActorPose pose, BossReactor boss)
         {
             var root = new GameObject("Pentagon");
             root.transform.SetParent(transform, false);
@@ -87,6 +93,16 @@ namespace Dovus.Game
             input.Combat = new CombatTuning();
             input.Bind(clock, ink, syllable, debug);
             debug.Configure(input.Engine, view.CanvasRoot);
+
+            var scarsGo = new GameObject("GroundScars");
+            scarsGo.transform.SetParent(transform, false);
+            var scars = scarsGo.AddComponent<GroundScarField>();
+            scars.Configure(_tuning);
+
+            var manGo = new GameObject("Manifestation");
+            manGo.transform.SetParent(transform, false);
+            var director = manGo.AddComponent<ManifestationDirector>();
+            director.Bind(clock, input, player, pose, boss, scars, _tuning);
         }
 
         static void AttachOverlayToMain(Camera main, Camera overlay)

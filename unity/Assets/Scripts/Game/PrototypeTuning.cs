@@ -56,6 +56,7 @@ namespace Dovus.Game
         public Color BackgroundColor = new Color(0.12f, 0.14f, 0.18f);
         public Color InkPurple = new Color(0.725f, 0.549f, 1f);   // #B98CFF
         public Color InkCyan = new Color(0.373f, 0.941f, 1f);     // #5FF0FF
+        public Color AcidGreen = new Color(0.608f, 0.910f, 0.235f); // #9BE83C — §10 zehir birikintisi
         public Color PentagonDotColor = new Color(0.55f, 0.62f, 0.72f, 0.85f);
         public Color PentagonCenterColor = new Color(0.75f, 0.78f, 0.85f, 0.9f);
 
