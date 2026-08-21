@@ -4,7 +4,7 @@
 > ajanın repoyu taramadan nerede kaldığımızı anlaması. Kısa tut: ne bitti, ne üretildi,
 > nerede sapma var.
 
-**Son güncelleme:** 21 Ağustos 2026 · **Sıradaki görev:** T6.1 (denetim düzeltmeleri), sonra T7
+**Son güncelleme:** 21 Ağustos 2026 · **Sıradaki görev:** T7
 
 ## Görev durumu
 
@@ -16,8 +16,8 @@
 | T3 | Dodge, boss frame verisi, derecelendirme | bitti | task/t3-dodge-boss-exchange |
 | T4 | Zaman yönetmeni (yavaş çekim + hitstop) | bitti | task/t4-time-director |
 | T5 | Bootstrap sahne, kinematik hareket, sanal çubuk | bitti | master |
-| T6 | Beşgen girdi yüzeyi, mürekkep izi | denetlendi, düzeltme bekliyor | task/t6-pentagon-input |
-| T6.1 | T6 denetim düzeltmeleri | bekliyor | — |
+| T6 | Beşgen girdi yüzeyi, mürekkep izi | bitti | task/t6-pentagon-input → master |
+| T6.1 | T6 denetim düzeltmeleri | bitti | aynı dal |
 | T7 | Tezahür katmanı (üç rün) | bekliyor | — |
 | T8 | Boss telegrafı, sıyırma, yavaş çekim, kamera | bekliyor | — |
 | T9 | HUD, parlak tepki yazısı | bekliyor | — |
@@ -107,20 +107,24 @@ dosya listesi değil, çağrılacak şeyin adı ve ne yaptığı.
 **Unity:** Play mode doğrulandı — arena, oyuncu/boss kapsülü, takip kamerası, WASD hareketi, çok parmak.
 Sahne: `Assets/Scenes/Prototype.unity` (tek Bootstrap objesi). URP renderer düzeltildi.
 
-### T6 — `Dovus.Game` beşgen girdi
+### T6 / T6.1 — `Dovus.Game` beşgen girdi
 
-- `PentagonInput` — sağ yarı (veya `MirrorForLeftHand`) çizim; `SentenceEngine` + `DodgeState`.
-  Merkez tap: `DodgeTuning.TapMaxMs`/`TapMaxMoveDp`; aşımı çizim. Dodge → `Abort` + `DodgeState.Begin`.
-  Dwell: gerçek zamanda `SentenceTuning.DwellMs` ölçülür, `OnDwell(worldTimeMs)` bildirilir.
-  Masaüstü: fare sürükleme + Space dodge. `Engine` / `Dodge` / `Combat` public.
-- `PentagonLayoutScreen` — ekran-piksel merkez/nokta/hit yarıçapı (1→5 üstten saat yönü)
-- `PentagonView` — Screen Space Overlay canvas, 5 nokta + merkez
-- `InkTrail` + `PentagonOverlayCamera` — LineRenderer mürekkep (mor→camgöbeği), URP overlay stack
-- `SyllableFeedback` — `AudioClip.Create` hece + `Handheld.Vibrate`; perde nokta sayısıyla yükselir
+- `PentagonInput` — çizim yarısı `IsRightHalf` (ayna ile); `SentenceEngine` + `DodgeState`.
+  Merkez tap: `DodgeTuning.TapMaxMs`/`TapMaxMoveDp`; aşımı çizim. Dodge → `Abort` + `Begin`
+  (cooldown'daysa hiçbiri yok, HUD yazmaz). `Canceled` dokunuş tap sayılmaz.
+  Dwell: **dünya zamanı** (`WorldDeltaMs`) ile `DwellMs` birikir → `OnDwell`.
+  Kapalı nokta (`PrototypeTuning.IsDotOpen`) motora/ses/mürekkep/titreşime gitmez.
+  Masaüstü: fare + Space. `Engine` / `Dodge` / `Combat` public.
+- `MoveInput` — çubuk yarısı `!IsRightHalf` (T6.1: aynada çift sahiplik kapandı)
+- `PentagonLayoutScreen` — ekran-piksel merkez/nokta/hit; `IsRightHalf`
+- `PentagonView` — Overlay canvas; kapalı nokta soluk (alpha × 0.28)
+- `InkTrail` + `PentagonOverlayCamera` — LineRenderer mürekkep, URP overlay stack
+- `SyllableFeedback` — hece adı `RuneInfo.Syllable`; frekanslar yerelde.
+  Titreşim: Android `VibrationEffect.createOneShot` (`DotVibrationMs`, varsayılan 30)
 - `SentenceDebugHud` — fiil + sıfat debug metni
+- `PrototypeTuning` — `OpenDot1..5` (§4: 1/2/5 açık), `DotVibrationMs`
 
-**Unity:** Play mode — 5-1-2 motor doğru; merkez tap dodge / sürükleme çizim; sol çubuk + sağ çizim
-eşzamanlı (sanal Touchscreen). Konsol temiz (T6 kaynaklı hata yok).
+**Unity:** derleme OK, konsol temiz. `dotnet test` 46 yeşil.
 
 ## Spec'ten sapmalar
 
@@ -205,37 +209,30 @@ Sessiz sapma en pahalı hata türü.
 - **Beşgen yarıçapı / konum / hit yarıçapı / mürekkep ömrü spec'te yok.**
   `PrototypeTuning`: `PentagonRadiusDp=100`, merkez norm (0.78, 0.40), `DotHitRadiusDp=30`,
   `CenterHitRadiusDp=24`, `InkLingerSec=0.40`. Telefonda T11'de ayarlanacak.
-- **Dwell eşiği gerçek zamanda ölçülüyor — bu karar geri alındı, T6.1 dünya zamanına
-  çevirecek.** Gerekçe aşağıda, "T6 denetimi" bölümünde.
-- **`OnDotTouched`/`OnDwell` hâlâ `worldTimeMs` yutmuyor** (Core değişmedi — T6 yasak).
+- **`DotVibrationMs = 30`** — spec'te sayı yok. `Handheld.Vibrate` ~500 ms idi; 4 noktalı
+  cümlede ayrık onay (§2) bozuluyordu. Android `createOneShot`; diğer platform sessiz.
+- **`OnDotTouched`/`OnDwell` hâlâ `worldTimeMs` yutmuyor** (Core değişmedi — T6/T6.1 yasak).
   Girdi katmanı doğru değeri iletiyor; motor `Tick` ile eritiyor. Açık kalır.
 
-## T6 denetimi
+## T6 denetimi + T6.1 kapanış
 
-Play mode'da sanal `Touchscreen`'e dokunuş enjekte edilerek yapıldı (Device Simulator tek
-işaretçi ürettiği için bu kriterleri doğrulayamıyor). Kabul kriterlerinin **dördü de geçti**:
+T6 play mode (sanal Touchscreen): `5-1-2`, merkez tap/sürükleme, dwell yığınları, sol+sağ
+çok parmak, mürekkep — geçti. Konsol temiz; `dotnet test` 46.
 
-- `5-1-2` → `[5/None, 1/Short, 2/Short]`, pencere 420→360→300 sırasıyla eriyor,
-  kapanış `SÜRÜ/4.4` (§5 üç nokta ödülü). 4 noktada kendi kapanıyor (`ZEHİR/7.0`),
-  5. dokunuş yeni cümle başlatıyor.
-- Merkez tap → `DodgeState.Begin` + cümle iptal; merkezden sürükleme → dodge yok, çizim başlıyor.
-- Dwell: 220 ms'de 1, 440 ms'de 2 yığın; `dwellMaxStacks = 2` sınırı tutuyor.
-- Sol çubuk basılıyken sağ yarıda 5-1 çizilebiliyor; çizim boyunca yön `(0.00, 1.00)` bozulmuyor.
-- Mürekkep segmentleri nokta başına bir tane doğuyor, `InkLingerSec` sonunda temizleniyor.
-- Konsolda T6 kaynaklı hata yok; `dotnet test` 46 yeşil.
+T6.1 düzeltmeleri uygulandı (aynı dal):
 
-**Doğrulanamayanlar:** ekrandaki görüntü (ScreenSpaceOverlay canvas kamera yakalamasına
-girmiyor), hece sesleri kulakla, titreşim — üçü de telefon turuna (T11) kalıyor.
+1. `MoveInput` → `IsRightHalf` (ayna çift sahipliği kapandı)
+2. Dwell → `WorldDeltaMs` (§3 pencere donması ile birim uyumu)
+3. `OpenDot1..5` — kapalı (3/4) motora/ses/mürekkep yok; view soluk
+4. `Canceled` dokunuş → tap-dodge yok
+5. Android kısa titreşim `DotVibrationMs=30`
+6. Hece adı `RuneInfo.Syllable`
+7. `OnDisable` `_fingerId` temizliği; `_engine` null guard; cooldown'da Abort/HUD yok
 
-Çıkan hatalar T6.1'e yazıldı. İkisi sahibin kararıydı, karar verildi:
-
-- **Dwell dünya zamanına geçecek.** `FreezeWindowForDwell` pencereye `DwellMs`'i dünya zamanı
-  olarak iade ediyor. Girdi katmanı eşiği gerçek zamanda ölçünce yavaş çekimde bekleme
-  ~48 ms dünya zamanı yiyip 220 ms iade alıyor: bedeli olmayan bir pencere sıfırlayıcı.
-  §3 beklemenin iptal penceresini uzatmasını yasaklıyor, üstelik T8'in "yavaş çekimde 4 nokta
-  sığıyor" ölçümü kirlenirdi — oyuncu 4. noktaya yavaş çekim sayesinde değil bekleyerek ulaşırdı.
-- **Kapalı rünler uygulanacak.** §4 ilk turda yalnızca 1/2/5'i açıyor ama beşgen beş noktayı da
-  kaydediyor; 3 ve 4'e dokunan oyuncu T7'den sonra bile sessiz cümle kurardı.
+**T6.1 doğrulama:** Unity derleme OK, varsayılan açık noktalar + aynalama yardımcısı smoke,
+konsol hata yok, `dotnet test` 46. Tam sanal çok-parmak yeniden enjekte edilemedi (MCP
+StateEvent bu turda sözcük üretmedi) — T6'daki enjeksiyon regresyonu T11/donanımda
+tekrarlanmalı. Titreşim/hece kulakla T11.
 
 ## Bilinen açıklar
 

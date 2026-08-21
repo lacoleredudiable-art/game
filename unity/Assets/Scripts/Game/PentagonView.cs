@@ -8,6 +8,7 @@ namespace Dovus.Game
     {
         PrototypeTuning _tuning;
         RectTransform[] _dots;
+        Image[] _dotImages;
         RectTransform _center;
         Canvas _canvas;
 
@@ -28,14 +29,15 @@ namespace Dovus.Game
 
             var sprite = CreateCircleSprite();
             _dots = new RectTransform[6];
+            _dotImages = new Image[6];
             for (int dot = 1; dot <= 5; dot++)
             {
-                _dots[dot] = CreateDisc($"Dot{dot}", sprite, _tuning.PentagonDotColor, canvasGo.transform);
+                _dots[dot] = CreateDisc($"Dot{dot}", sprite, DotColor(dot), canvasGo.transform, out _dotImages[dot]);
                 var label = CreateLabel(_dots[dot], dot.ToString());
                 label.fontSize = 22;
             }
 
-            _center = CreateDisc("Center", sprite, _tuning.PentagonCenterColor, canvasGo.transform);
+            _center = CreateDisc("Center", sprite, _tuning.PentagonCenterColor, canvasGo.transform, out _);
             CreateLabel(_center, "·").fontSize = 32;
 
             Layout();
@@ -58,10 +60,21 @@ namespace Dovus.Game
             {
                 Vector2 px = PentagonLayoutScreen.DotPx(dot, _tuning, w, h);
                 Place(_dots[dot], px, dotR * 2f, w, h);
+                if (_dotImages[dot] != null)
+                    _dotImages[dot].color = DotColor(dot);
             }
 
             Vector2 c = PentagonLayoutScreen.CenterPx(_tuning, w, h);
             Place(_center, c, centerR * 2f, w, h);
+        }
+
+        Color DotColor(int dot)
+        {
+            Color c = _tuning.PentagonDotColor;
+            if (_tuning.IsDotOpen(dot))
+                return c;
+            // Kapalı rün: soluk — oyuncu neden tepki almadığını görsün (§4).
+            return new Color(c.r, c.g, c.b, c.a * 0.28f);
         }
 
         static void Place(RectTransform rt, Vector2 screenPx, float diameterPx, int screenW, int screenH)
@@ -74,15 +87,20 @@ namespace Dovus.Game
             rt.anchoredPosition = screenPx;
         }
 
-        static RectTransform CreateDisc(string name, Sprite sprite, Color color, Transform parent)
+        static RectTransform CreateDisc(
+            string name,
+            Sprite sprite,
+            Color color,
+            Transform parent,
+            out Image image)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
             var rt = go.AddComponent<RectTransform>();
-            var img = go.AddComponent<Image>();
-            img.sprite = sprite;
-            img.color = color;
-            img.raycastTarget = false;
+            image = go.AddComponent<Image>();
+            image.sprite = sprite;
+            image.color = color;
+            image.raycastTarget = false;
             return rt;
         }
 

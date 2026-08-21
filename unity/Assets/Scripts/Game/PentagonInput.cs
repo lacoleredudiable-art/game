@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.EnhancedTouch;
 using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
+using TouchPhase = UnityEngine.InputSystem.TouchPhase;
 
 namespace Dovus.Game
 {
@@ -29,7 +30,7 @@ namespace Dovus.Game
         Vector2 _lastPos;
         double _pressRealMs;
         int? _activeDot;
-        double _dwellRealMs;
+        double _dwellWorldMs;
         int _dwellReported;
         Vector2? _lastInkPx;
         bool _eventsHooked;
@@ -99,6 +100,7 @@ namespace Dovus.Game
             }
 
             EnhancedTouchSupport.Disable();
+            _fingerId = null;
             EndPointer(cancelled: true);
         }
 
@@ -175,8 +177,9 @@ namespace Dovus.Game
             if (!_fingerId.HasValue || finger.index != _fingerId.Value)
                 return;
 
+            bool cancelled = finger.currentTouch.phase == TouchPhase.Canceled;
             _fingerId = null;
-            EndPointer(cancelled: false);
+            EndPointer(cancelled);
         }
 
         void BeginPointer(Vector2 pos)
@@ -185,7 +188,7 @@ namespace Dovus.Game
             _lastPos = pos;
             _pressRealMs = NowRealMs();
             _activeDot = null;
-            _dwellRealMs = 0;
+            _dwellWorldMs = 0;
             _dwellReported = 0;
             _lastInkPx = null;
 
@@ -224,7 +227,7 @@ namespace Dovus.Game
             {
                 // Noktadan çıkınca dwell kesilir; geri dönüş tekrar kayıt için serbest.
                 _activeDot = null;
-                _dwellRealMs = 0;
+                _dwellWorldMs = 0;
                 _dwellReported = 0;
                 return;
             }
@@ -244,7 +247,7 @@ namespace Dovus.Game
 
             _mode = FingerMode.None;
             _activeDot = null;
-            _dwellRealMs = 0;
+            _dwellWorldMs = 0;
             _dwellReported = 0;
             _lastInkPx = null;
             _mouseHeld = false;
@@ -259,6 +262,18 @@ namespace Dovus.Game
             if (_activeDot == hit.Value)
                 return;
 
+            if (_engine == null)
+                return;
+
+            if (!_tuning.IsDotOpen(hit.Value))
+            {
+                // Kapalı rün: motora/ses/mürekkep yok; aktif tut ki komşuya sızmasın.
+                _activeDot = hit.Value;
+                _dwellWorldMs = 0;
+                _dwellReported = 0;
+                return;
+            }
+
             Vector2 dotPx = PentagonLayoutScreen.DotPx(hit.Value, _tuning, Screen.width, Screen.height);
             double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
 
@@ -270,7 +285,7 @@ namespace Dovus.Game
 
             _activeDot = hit.Value;
             _lastInkPx = dotPx;
-            _dwellRealMs = 0;
+            _dwellWorldMs = 0;
             _dwellReported = 0;
         }
 
@@ -282,10 +297,14 @@ namespace Dovus.Game
             if (_engine.State.Phase != SentencePhase.Building)
                 return;
 
-            _dwellRealMs += _clock != null ? _clock.RealDeltaMs : Time.unscaledDeltaTime * 1000.0;
+            if (!_tuning.IsDotOpen(_activeDot.Value))
+                return;
+
+            // Dünya zamanı: FreezeWindowForDwell DwellMs'i dünya biriminde iade ediyor (§3).
+            _dwellWorldMs += _clock != null ? _clock.WorldDeltaMs : Time.deltaTime * 1000.0;
             int maxStacks = _combat.Sentence.DwellMaxStacks;
             while (_dwellReported < maxStacks &&
-                   _dwellRealMs >= _combat.Sentence.DwellMs * (_dwellReported + 1))
+                   _dwellWorldMs >= _combat.Sentence.DwellMs * (_dwellReported + 1))
             {
                 double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
                 int stacksBefore = _engine.State.Words.Count > 0
@@ -303,10 +322,12 @@ namespace Dovus.Game
 
         void TriggerDodge()
         {
-            _engine?.Abort();
             int worldMs = _clock != null ? (int)_clock.Director.WorldTimeMs : 0;
-            if (_dodge != null && !_dodge.IsOnCooldown(worldMs))
-                _dodge.Begin(worldMs);
+            if (_dodge == null || _dodge.IsOnCooldown(worldMs))
+                return;
+
+            _engine?.Abort();
+            _dodge.Begin(worldMs);
             _debugHud?.NoteDodge();
             _mode = FingerMode.None;
             _activeDot = null;

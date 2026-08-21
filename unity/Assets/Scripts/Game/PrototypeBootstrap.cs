@@ -79,6 +79,7 @@ namespace Dovus.Game
             ink.Configure(_tuning, overlay, PentagonInkLayer);
 
             var syllable = root.AddComponent<SyllableFeedback>();
+            syllable.Configure(_tuning);
             var debug = root.AddComponent<SentenceDebugHud>();
 
             var input = root.AddComponent<PentagonInput>();

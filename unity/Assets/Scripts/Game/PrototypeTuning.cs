@@ -30,6 +30,18 @@ namespace Dovus.Game
         public float InkLingerSec = 0.40f;
         public float InkWidthDp = 3.5f;
 
+        // §4 ilk tur: yalnızca 1 (İĞNE), 2 (SÜRÜ), 5 (SARSINTI). Kombo tablosu değil — açık/kapalı bayrak.
+        [Header("Açık rünler (§4)")]
+        public bool OpenDot1 = true;
+        public bool OpenDot2 = true;
+        public bool OpenDot3 = false;
+        public bool OpenDot4 = false;
+        public bool OpenDot5 = true;
+
+        // Spec'te sayı yok — ayrık onay tıkırtısı (§2); Handheld.Vibrate ~500 ms üst üste biniyordu.
+        [Header("Dokunsal (§2)")]
+        public long DotVibrationMs = 30;
+
         [Header("Kamera")]
         public float FollowSmoothTimeSec = 0.18f;
         public float LookAheadM = 1.4f;
@@ -46,5 +58,15 @@ namespace Dovus.Game
         public Color InkCyan = new Color(0.373f, 0.941f, 1f);     // #5FF0FF
         public Color PentagonDotColor = new Color(0.55f, 0.62f, 0.72f, 0.85f);
         public Color PentagonCenterColor = new Color(0.75f, 0.78f, 0.85f, 0.9f);
+
+        public bool IsDotOpen(int dot) => dot switch
+        {
+            1 => OpenDot1,
+            2 => OpenDot2,
+            3 => OpenDot3,
+            4 => OpenDot4,
+            5 => OpenDot5,
+            _ => false
+        };
     }
 }

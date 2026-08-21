@@ -81,7 +81,8 @@ namespace Dovus.Game
                 return;
 
             Vector2 pos = finger.screenPosition;
-            if (pos.x > Screen.width * 0.5f)
+            // Çubuk yarısı = çizim yarısının tersi (aynı IsRightHalf yardımcısı; MirrorForLeftHand).
+            if (PentagonLayoutScreen.IsRightHalf(pos, _tuning.MirrorForLeftHand, Screen.width))
                 return;
 
             _stickFingerId = finger.index;
