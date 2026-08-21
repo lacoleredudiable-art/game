@@ -21,8 +21,30 @@ namespace Dovus.Core.Tuning
         public float LiftPerSarsinti = 0.45f;
         public float DwellStackScale = 0.35f;
 
+        // SilhouetteBuilder sıfat sabitleri (T7.1: Core'a gömülüydü, yeri değişti — değer aynı)
+        public float SuruFocusReduceThreshold = 0.35f;
+        public float SuruFocusReduceAmount = 0.05f;
+        public float KabukSpreadMultiplier = 0.55f;
+        public float KabukFocusAdd = 0.12f;
+        public float ZehirSpreadAdd = 0.2f;
+
         // Görünür toplama: hedef silüete saniyede ne kadar yaklaşır
         public float MorphLerpPerSec = 3.5f;
+
+        // Seyahat hızı / kapanış zamanlaması (T7.1: LivingEffect'e gömülüydü, yeri değişti)
+        public float PierceSpeedBonus = 0.25f;
+        public float FadeDurationSec = 0.35f;
+        public float BangDurationSec = 0.45f;
+        public float WaveCorridorHalfWidthWideM = 2.2f;
+        public float WaveCorridorHalfWidthNarrowM = 0.35f;
+
+        /// <summary>
+        /// Menzilini bitiren etki cümle kapanmadan sönmemeli (§5/T2: fiil dünyada yaşamalı).
+        /// Bu, o beklemenin üst güvenlik payı — normal oyunda hiç dokunulmaz, motor her cümleyi
+        /// er ya da geç kapatır (Abort ya da ResolveWithClosing). Spec'te sayı yok, uydurma;
+        /// gerekçe docs/durum.md T7.1 sapmalarına yazıldı.
+        /// </summary>
+        public float MaxHoldPastRangeSec = 6f;
 
         // Temas / kapanış (hasar sayısı YOK — yalnızca fiziksel tepki)
         public float TravelHitRadiusM = 1.15f;

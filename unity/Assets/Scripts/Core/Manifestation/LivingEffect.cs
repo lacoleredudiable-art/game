@@ -33,6 +33,7 @@ namespace Dovus.Core.Manifestation
         float _travel;
         float _fade;
         float _bangAge;
+        float _holdPastRangeSec;
         bool _paidClosing;
         ClosingHit? _closing;
 
@@ -122,17 +123,32 @@ namespace Dovus.Core.Manifestation
                 case LivingEffectPhase.Traveling:
                 case LivingEffectPhase.AwaitingClosing:
                     AdvanceTravel(dtSec);
-                    if (_travel >= MaxRange && Phase == LivingEffectPhase.Traveling)
-                        BeginFade();
+                    // Cümle Building ya da AwaitingClosing iken etki ölmez — menzil sonunda
+                    // bekler/sürer (§5/T2: kapanışın ödülü dünyada görünür kalmalı). Sönme
+                    // yalnızca Abort'ta ve kapanış patladıktan sonra (Banging→Dead) olur.
+                    if (_travel >= MaxRange)
+                    {
+                        _holdPastRangeSec += dtSec;
+                        // Güvenlik payı: cümle hiç kapanmazsa (beklenmedik durum) sonsuza
+                        // asılı kalmasın. Normal akışta motor her cümleyi kapatır, buraya
+                        // hiç değmez.
+                        if (Phase == LivingEffectPhase.Traveling
+                            && _holdPastRangeSec >= _tuning.MaxHoldPastRangeSec)
+                            BeginFade();
+                    }
+                    else
+                    {
+                        _holdPastRangeSec = 0f;
+                    }
                     break;
                 case LivingEffectPhase.Fading:
-                    _fade += dtSec / 0.35f;
+                    _fade += dtSec / _tuning.FadeDurationSec;
                     if (_fade >= 1f)
                         Phase = LivingEffectPhase.Dead;
                     break;
                 case LivingEffectPhase.Banging:
                     _bangAge += dtSec;
-                    if (_bangAge >= 0.45f)
+                    if (_bangAge >= _tuning.BangDurationSec)
                         Phase = LivingEffectPhase.Dead;
                     break;
             }
@@ -187,7 +203,10 @@ namespace Dovus.Core.Manifestation
                     if (along < 0f || along > TipDistance + radiusM)
                         return false;
                     float perp = MathF.Abs(bx * -_dirZ + bz * _dirX);
-                    float halfWidth = Lerp(2.2f, 0.35f, _current.Focus) + radiusM;
+                    float halfWidth = Lerp(
+                        _tuning.WaveCorridorHalfWidthWideM,
+                        _tuning.WaveCorridorHalfWidthNarrowM,
+                        _current.Focus) + radiusM;
                     return perp <= halfWidth;
                 }
 
@@ -208,7 +227,7 @@ namespace Dovus.Core.Manifestation
                 _ => _tuning.WaveSpeedMps
             };
             // Pierce hızlandırır (daha derin atılış hissi) — sayısal hasar değil silüet tempo
-            speed *= 1f + 0.25f * _current.Pierce;
+            speed *= 1f + _tuning.PierceSpeedBonus * _current.Pierce;
             _travel += speed * dtSec;
         }
 
