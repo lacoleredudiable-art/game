@@ -263,6 +263,63 @@ YASAKLAR
 - Tezahür (dünyadaki etki) yazma, T7'nin işi
 ```
 
+### T6.1 — T6 denetim düzeltmeleri
+
+```
+Rolün: T6 denetiminde çıkan hataları kapatan geliştirici.
+
+ÖNCE OKU: docs/dovus-sistemi.md §2, §3, §4 · docs/durum.md "T6 denetimi".
+Dal: task/t6-pentagon-input (T6 master'a HENÜZ girmedi, düzeltmeler aynı dala).
+
+GÖREV
+1. `MoveInput` aynalamayı bilmiyor. `OnFingerDown` sol yarıyı sabit yazıyor
+   (`pos.x > Screen.width * 0.5f`), `PentagonInput` ise `PentagonLayoutScreen.IsRightHalf`
+   kullanıyor. `MirrorForLeftHand = true` iken tek parmak hem çubuğu sürüyor hem çiziyor
+   (play mode'da doğrulandı). `MoveInput` de aynı yardımcıyı kullansın: çubuk yarısı =
+   `!IsRightHalf(...)`. Tuning zaten `MoveInput`'ta var.
+2. Dwell dünya zamanına geçsin. `PentagonInput.TickDwell` `_clock.RealDeltaMs` yerine
+   `_clock.WorldDeltaMs` biriktirsin. Sebep: `SentenceEngine.FreezeWindowForDwell` pencereye
+   `DwellMs`'i dünya zamanı olarak iade ediyor; gerçek zamanla ölçülünce yavaş çekimde bekleme
+   ~48 ms dünya zamanı yiyip 220 ms iade alıyor, yani pencereyi sıfırlıyor. §3 beklemenin
+   pencereyi uzatmasını yasaklıyor. (Karar verildi — sahibi seçti.)
+3. Kapalı rünler. §4: ilk turda yalnızca 1 (İĞNE), 2 (SÜRÜ), 5 (SARSINTI) açık.
+   `PrototypeTuning`'e hangi noktaların açık olduğunu tutan bir alan ekle. Kapalı noktaya
+   dokunuş `SentenceEngine`'e hiç bildirilmesin; hece, titreşim ve mürekkep de üretmesin.
+   `PentagonView` kapalı noktayı soluk göstersin — oyuncu neden tepki almadığını görmeli.
+   (Karar verildi.) Bu bir kombo/dizi tablosu DEĞİL, sadece nokta açık/kapalı bayrağı.
+4. İptal edilen dokunuş tap sayılmasın. `Touch.onFingerUp` hem `Ended` hem `Canceled` için
+   tetikleniyor; `PentagonInput.OnFingerUp` ikisini ayırmıyor. Merkeze basıp 180 ms dolmadan
+   sistem tarafından iptal edilen dokunuş (avuç reddi, bildirim çekme) hayalet dodge tetikler.
+   İptal olan `EndPointer(cancelled: true)` gitsin. Editörde görünmez, telefonda görünür.
+5. Titreşim kısa olsun. `Handheld.Vibrate()` Android'de ~500 ms sabit ve ayarlanamıyor;
+   4 noktalı cümlede dördü üst üste binip kesintisiz uğultuya dönüşür — §2'nin istediği
+   ayrık onay kanalının tersi. `AndroidJavaObject` ile `VibrationEffect.createOneShot`
+   kullan; süre `PrototypeTuning`'de alan olsun (spec'te sayı yok: varsayılan koy, gerekçesini
+   durum.md'ye yaz). Android dışı platformda sessizce atla.
+6. Hece tablosu Core'a bağlansın. `SyllableFeedback` rün→hece eşlemesini ikinci kez yazıyor;
+   Core'da `RuneInfo.Syllable` var ve kullanılmıyor. §4 rün setinin "en ucuz değiştirilecek
+   şey" olduğunu söylüyor, iki yerden değişmesi bunu bozar. Frekanslar kalsın (spec'te sayı
+   yok), hece adı/sırası `RuneInfo`'dan gelsin.
+7. Küçük dayanıklılık:
+   - `PentagonInput.OnDisable` `_fingerId`'yi temizlemiyor → disable/enable'dan sonra çizim
+     kalıcı olarak ölüyor.
+   - `TryRegisterDotAt` `_engine`'i null kontrolsüz kullanıyor (başka her yerde `?.` var).
+   - Dodge cooldown'dayken `TriggerDodge` yine `Abort` edip HUD'a "DODGE" yazıyor; dodge
+     gerçekleşmediyse HUD yanıltmasın.
+
+KABUL KRİTERLERİ
+- `MirrorForLeftHand = true` iken sol yarıya basan parmak ya çubuğu sürüyor ya çiziyor,
+  ikisini birden değil
+- Kapalı noktaya (3, 4) dokunmak cümleye kelime eklemiyor, ses/titreşim/mürekkep üretmiyor
+- 5-1-2 hâlâ doğru cümleyi veriyor; merkez tap dodge / sürükleme çizim ayrımı bozulmadı
+- `dotnet test` yeşil (46 test), konsol temiz
+
+YASAKLAR
+- Core'daki dosyaları değiştirme — dwell düzeltmesi girdi katmanında, `WorldDeltaMs` ile
+- Gramer kuralı veya dizi/kombo tablosu yazma
+- Tezahür yazma (T7)
+```
+
 ### T7 — Tezahür katmanı: cümlenin dünyada canlanması
 
 **Bu görev prototipin can alıcı kısmı.** Spellisimo'nun hatası burada yapılırsa test yanlış

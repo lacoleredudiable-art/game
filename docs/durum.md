@@ -4,7 +4,7 @@
 > ajanın repoyu taramadan nerede kaldığımızı anlaması. Kısa tut: ne bitti, ne üretildi,
 > nerede sapma var.
 
-**Son güncelleme:** 21 Ağustos 2026 · **Sıradaki görev:** T7
+**Son güncelleme:** 21 Ağustos 2026 · **Sıradaki görev:** T6.1 (denetim düzeltmeleri), sonra T7
 
 ## Görev durumu
 
@@ -16,7 +16,8 @@
 | T3 | Dodge, boss frame verisi, derecelendirme | bitti | task/t3-dodge-boss-exchange |
 | T4 | Zaman yönetmeni (yavaş çekim + hitstop) | bitti | task/t4-time-director |
 | T5 | Bootstrap sahne, kinematik hareket, sanal çubuk | bitti | master |
-| T6 | Beşgen girdi yüzeyi, mürekkep izi | bitti | master |
+| T6 | Beşgen girdi yüzeyi, mürekkep izi | denetlendi, düzeltme bekliyor | task/t6-pentagon-input |
+| T6.1 | T6 denetim düzeltmeleri | bekliyor | — |
 | T7 | Tezahür katmanı (üç rün) | bekliyor | — |
 | T8 | Boss telegrafı, sıyırma, yavaş çekim, kamera | bekliyor | — |
 | T9 | HUD, parlak tepki yazısı | bekliyor | — |
@@ -204,11 +205,37 @@ Sessiz sapma en pahalı hata türü.
 - **Beşgen yarıçapı / konum / hit yarıçapı / mürekkep ömrü spec'te yok.**
   `PrototypeTuning`: `PentagonRadiusDp=100`, merkez norm (0.78, 0.40), `DotHitRadiusDp=30`,
   `CenterHitRadiusDp=24`, `InkLingerSec=0.40`. Telefonda T11'de ayarlanacak.
-- **Dwell eşiği gerçek zamanda ölçülür** (parmak süresi); iptal penceresi dünya zamanı
-  (motor). Yavaş çekimde dwell yığmak için parmağın gerçek süreyi doldurması gerekir —
-  spec §3 "parmağın süresi" okumasıyla uyumlu; T8 yavaş çekim testinde fark edilir.
+- **Dwell eşiği gerçek zamanda ölçülüyor — bu karar geri alındı, T6.1 dünya zamanına
+  çevirecek.** Gerekçe aşağıda, "T6 denetimi" bölümünde.
 - **`OnDotTouched`/`OnDwell` hâlâ `worldTimeMs` yutmuyor** (Core değişmedi — T6 yasak).
   Girdi katmanı doğru değeri iletiyor; motor `Tick` ile eritiyor. Açık kalır.
+
+## T6 denetimi
+
+Play mode'da sanal `Touchscreen`'e dokunuş enjekte edilerek yapıldı (Device Simulator tek
+işaretçi ürettiği için bu kriterleri doğrulayamıyor). Kabul kriterlerinin **dördü de geçti**:
+
+- `5-1-2` → `[5/None, 1/Short, 2/Short]`, pencere 420→360→300 sırasıyla eriyor,
+  kapanış `SÜRÜ/4.4` (§5 üç nokta ödülü). 4 noktada kendi kapanıyor (`ZEHİR/7.0`),
+  5. dokunuş yeni cümle başlatıyor.
+- Merkez tap → `DodgeState.Begin` + cümle iptal; merkezden sürükleme → dodge yok, çizim başlıyor.
+- Dwell: 220 ms'de 1, 440 ms'de 2 yığın; `dwellMaxStacks = 2` sınırı tutuyor.
+- Sol çubuk basılıyken sağ yarıda 5-1 çizilebiliyor; çizim boyunca yön `(0.00, 1.00)` bozulmuyor.
+- Mürekkep segmentleri nokta başına bir tane doğuyor, `InkLingerSec` sonunda temizleniyor.
+- Konsolda T6 kaynaklı hata yok; `dotnet test` 46 yeşil.
+
+**Doğrulanamayanlar:** ekrandaki görüntü (ScreenSpaceOverlay canvas kamera yakalamasına
+girmiyor), hece sesleri kulakla, titreşim — üçü de telefon turuna (T11) kalıyor.
+
+Çıkan hatalar T6.1'e yazıldı. İkisi sahibin kararıydı, karar verildi:
+
+- **Dwell dünya zamanına geçecek.** `FreezeWindowForDwell` pencereye `DwellMs`'i dünya zamanı
+  olarak iade ediyor. Girdi katmanı eşiği gerçek zamanda ölçünce yavaş çekimde bekleme
+  ~48 ms dünya zamanı yiyip 220 ms iade alıyor: bedeli olmayan bir pencere sıfırlayıcı.
+  §3 beklemenin iptal penceresini uzatmasını yasaklıyor, üstelik T8'in "yavaş çekimde 4 nokta
+  sığıyor" ölçümü kirlenirdi — oyuncu 4. noktaya yavaş çekim sayesinde değil bekleyerek ulaşırdı.
+- **Kapalı rünler uygulanacak.** §4 ilk turda yalnızca 1/2/5'i açıyor ama beşgen beş noktayı da
+  kaydediyor; 3 ve 4'e dokunan oyuncu T7'den sonra bile sessiz cümle kurardı.
 
 ## Bilinen açıklar
 
@@ -237,4 +264,11 @@ Sessiz sapma en pahalı hata türü.
 - `ExchangeResolver.IsInvulnerableAtStrike`, `DodgeState`'teki i-frame matematiğini
   ikinci kez yazıyor; ayarlar değişirse ikisi ayrışabilir.
 - **T6 dodge sadece `DodgeState.Begin` + Abort** — yer değiştirme / afterimage T8.
+  Şu an dodge'a basınca kapsül kımıldamıyor: `GetDisplacementRatio`'yu transform'a kim
+  uygulayacak hiçbir göreve yazılmamış. T8 bunu sahiplenmeli.
 - Hece sesleri sinüs tıkırtısı; §9 yapısı var, müzikal kalite T11 his turuna.
+- **Ekrana sabit iki ayrı katman var:** noktalar ScreenSpaceOverlay canvas'ta, mürekkep ayrı
+  ortografik kamerada (URP stack). Overlay canvas her kameranın üstüne çizildiği için T8'in
+  boss telegrafı §10'un istediği "en üst ve en okunabilir katman" olamaz — telegraf beşgen
+  noktalarının ve debug metninin altında kalır. T8 katmanlamayı tek mekanizmaya indirmeli.
+- Mobilde ikinci kamera fazladan bir render geçişi; T11 kare bütçesinde bakılacak.
