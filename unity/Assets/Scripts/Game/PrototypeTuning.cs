@@ -60,6 +60,56 @@ namespace Dovus.Game
         public Color PentagonDotColor = new Color(0.55f, 0.62f, 0.72f, 0.85f);
         public Color PentagonCenterColor = new Color(0.75f, 0.78f, 0.85f, 0.9f);
 
+        // T7.2: LivingEffectView'a gömülü his sayıları (AGENTS kural 3). Değerler T7'den
+        // AYNI taşındı, yalnızca yeri değişti — dovus-sistemi.md'de sayı yok, sapma T7
+        // durum.md'sinde kayıtlı.
+        [Header("Tezahür çizgisi (T7.2, LivingEffectView)")]
+        public float EffectLineWidthDefaultM = 0.18f;
+        public float EffectLineWidthWideM = 0.35f;
+        public float EffectLineWidthNarrowM = 0.12f;
+        public float EffectSarsintiWidthWideM = 0.22f;
+        public float EffectSarsintiWidthNarrowM = 0.1f;
+
+        [Header("Tezahür silüet eşikleri (T7.2, LivingEffectView)")]
+        public float EffectShowMinFocus = 0.2f;
+        public float EffectIgneShowMinSpread = 0.2f;
+        public float EffectFocusRingMax = 0.35f;
+        public float EffectFocusArcMax = 0.75f;
+        public float EffectPierceNeedleShowMin = 0.45f;
+        public float EffectFocusSwarmAlongLineMin = 0.45f;
+
+        [Header("Tezahür şekil ölçekleri (T7.2, LivingEffectView)")]
+        public float EffectBlobScaleBaseM = 0.28f;
+        public float EffectBlobScalePerSpreadM = 0.12f;
+        public float EffectNeedleThickWideM = 0.35f;
+        public float EffectNeedleThickNarrowM = 0.14f;
+        public float EffectNeedleLenBaseM = 0.7f;
+        public float EffectNeedleLenPerPierceM = 0.5f;
+
+        // Rün başına squash/stretch + poz süresi (T1/T5) — değer aynı, yeri ActorPose'dan taşındı.
+        [Header("Aktör poz (T7.2, ActorPose)")]
+        public float ActorPoseDurationMs = 180f;
+        public Vector3 PoseIgne = new Vector3(0.78f, 0.88f, 1.35f);
+        public Vector3 PoseSuru = new Vector3(1.35f, 0.9f, 1.1f);
+        public Vector3 PoseSarsinti = new Vector3(1.2f, 0.55f, 1.2f);
+        public Vector3 PoseKabuk = new Vector3(1.15f, 1.05f, 1.15f);
+        public Vector3 PoseZehir = new Vector3(1.05f, 0.95f, 1.25f);
+
+        // Değer aynı, yeri BossReactor'dan taşındı.
+        [Header("Boss tepki fiziği (T7.2, BossReactor)")]
+        public float BossGravityMps2 = 22f;
+        public float BossRecoilEaseDecayPerSec = 3.2f;
+        public float BossShakeAmpBaseM = 0.12f;
+        public float BossShakeAmpPerKnockbackM = 0.05f;
+        public float BossPinShakeAmpM = 0.04f;
+        public float BossLiftVelocityPerM = 4.5f;
+
+        // Spec'te tavan sayısı yok (uydurma) — T11 kare bütçesi için icat edildi; gerekçe
+        // docs/durum.md T7.2 sapmalarına yazıldı. İz kalıcıdır (§8/T4), süreye bağlı silinmez;
+        // tavan dolunca en eski iz DÖNÜŞTÜRÜLÜR (yok edilip yeniden yaratılmaz).
+        [Header("Kalıcı iz tavanı (T7.2, GroundScarField)")]
+        public int GroundScarCapCount = 60;
+
         public bool IsDotOpen(int dot) => dot switch
         {
             1 => OpenDot1,

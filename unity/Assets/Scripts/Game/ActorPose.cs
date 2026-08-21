@@ -7,11 +7,23 @@ namespace Dovus.Game
     /// </summary>
     public sealed class ActorPose : MonoBehaviour
     {
+        [SerializeField] PrototypeTuning _tuning = new();
+
         Vector3 _baseScale;
         float _poseUntilWorldMs;
         Vector3 _poseScale = Vector3.one;
         float _recoveryUntilWorldMs;
         bool _ready;
+
+        public PrototypeTuning Tuning
+        {
+            get
+            {
+                _tuning ??= new PrototypeTuning();
+                return _tuning;
+            }
+            set => _tuning = value;
+        }
 
         public void CaptureBase()
         {
@@ -28,14 +40,14 @@ namespace Dovus.Game
 
             _poseScale = rune switch
             {
-                Dovus.Core.Grammar.Rune.Igne => new Vector3(0.78f, 0.88f, 1.35f),
-                Dovus.Core.Grammar.Rune.Suru => new Vector3(1.35f, 0.9f, 1.1f),
-                Dovus.Core.Grammar.Rune.Sarsinti => new Vector3(1.2f, 0.55f, 1.2f),
-                Dovus.Core.Grammar.Rune.Kabuk => new Vector3(1.15f, 1.05f, 1.15f),
-                Dovus.Core.Grammar.Rune.Zehir => new Vector3(1.05f, 0.95f, 1.25f),
+                Dovus.Core.Grammar.Rune.Igne => Tuning.PoseIgne,
+                Dovus.Core.Grammar.Rune.Suru => Tuning.PoseSuru,
+                Dovus.Core.Grammar.Rune.Sarsinti => Tuning.PoseSarsinti,
+                Dovus.Core.Grammar.Rune.Kabuk => Tuning.PoseKabuk,
+                Dovus.Core.Grammar.Rune.Zehir => Tuning.PoseZehir,
                 _ => Vector3.one
             };
-            _poseUntilWorldMs = (float)worldTimeMs + 180f;
+            _poseUntilWorldMs = (float)worldTimeMs + Tuning.ActorPoseDurationMs;
         }
 
         public void BeginRecovery(float durationSec, double worldTimeMs)
@@ -64,7 +76,7 @@ namespace Dovus.Game
 
             if (now < _poseUntilWorldMs)
             {
-                float u = (_poseUntilWorldMs - now) / 180f;
+                float u = (_poseUntilWorldMs - now) / Tuning.ActorPoseDurationMs;
                 Vector3 s = Vector3.Lerp(Vector3.one, _poseScale, Mathf.Clamp01(u));
                 transform.localScale = Vector3.Scale(_baseScale, s);
                 return;
