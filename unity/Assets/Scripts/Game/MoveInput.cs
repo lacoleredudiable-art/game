@@ -25,6 +25,7 @@ namespace Dovus.Game
                 _tuning ??= new PrototypeTuning();
                 return _tuning;
             }
+            set => _tuning = value;
         }
 
         void Awake()
