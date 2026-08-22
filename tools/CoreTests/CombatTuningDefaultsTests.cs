@@ -65,8 +65,9 @@ public class CombatTuningDefaultsTests
         {
             Assert.That(t.Slowmo.Factor, Is.EqualTo(0.22f));
             Assert.That(t.Slowmo.RampDownMs, Is.EqualTo(55));
-            Assert.That(t.Slowmo.HoldMs, Is.EqualTo(190));
-            Assert.That(t.Slowmo.RampUpMs, Is.EqualTo(420));
+            // T8.2'de 190/420'den yükseltildi: eski süre §7'nin ödülünü gramerde hiç vermiyordu.
+            Assert.That(t.Slowmo.HoldMs, Is.EqualTo(900));
+            Assert.That(t.Slowmo.RampUpMs, Is.EqualTo(600));
             Assert.That(t.Slowmo.AudioLowpassHz, Is.EqualTo(700));
             Assert.That(t.Slowmo.SlowmoMinGrade, Is.EqualTo(DodgeGrade.Temiz));
             Assert.That(t.Slowmo.SlowmoBonusDots, Is.EqualTo(0));

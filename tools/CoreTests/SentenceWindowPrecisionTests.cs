@@ -79,65 +79,81 @@ public class SentenceWindowPrecisionTests
 }
 
 /// <summary>
-/// §7: yavaş çekim tavanı yükseltmez, tavana ulaşmanı sağlar.
+/// §7: yavaş çekim tavanı yükseltmez, tavana ulaşmanı sağlar — ve kuru "bir mükemmel dodge
+/// ≈ iki ekstra nokta".
 ///
-/// T8.1 — bu fixture eskiden `holdMs: 10_000, rampMs: 0` ile ölçüyordu, yani ölçtüğü şey
-/// spec'in sayıları değil sonsuz bir yavaş çekimdi. Artık `SlowmoTuning` varsayılanları
-/// (0.22× / 55 / 190 / 420) kullanılıyor ve testler o sayıların GERÇEKTE ne verdiğini
-/// sabitliyor: yavaş çekim pencere erimesini gözle görülür yavaşlatıyor ama 350 ms'lik
-/// gerçek boşluklarla 4. noktayı sığdırmaya yetmiyor. "4 nokta" kabul kriteri açık —
-/// bkz. docs/durum.md T8.1 kararı (`SlowmoBonusDots` hâlâ 0 ve uygulanmamış).
+/// Bu fixture iki kez yanlış kurulmuştu: T8'de `holdMs: 10_000, rampMs: 0` ile (yani spec'in
+/// sayıları değil sonsuz bir yavaş çekim ölçülüyordu), T8.1'de gerçek varsayılanlarla ama o
+/// varsayılanlar ödülü hiç vermediği için "vermiyor" diye sabitlenmişti. T8.2'de süre §7'nin
+/// kurundan geriye çözüldü (hold 900, rampUp 600); testler artık ödülün KENDİSİNİ koruyor.
+/// Hepsi `SlowmoTuning` varsayılanlarını okur — sayı burada tekrar edilmez.
 /// </summary>
 [TestFixture]
 public class SlowmoSentenceFitTests
 {
-    const double GapRealMs = 350;
     static readonly int[] Dots = { 5, 1, 2, 5 };
 
-    [Test]
-    public void FourDots_DoNotFit_AtRealtimeWith350msGaps()
+    // Yavaş çekim yokken 3 kelime çıkan tempo; ödül burada 4. noktayı açar.
+    const double BriskGapMs = 350;
+
+    // Yavaş çekim yokken 2 kelime çıkan tempo; §7'nin "iki ekstra nokta" kuru burada ölçülür.
+    const double CalmGapMs = 400;
+
+    // Ödülün üst sınırı: burada da 4 çıksaydı yavaş çekim otomatikleşir, beceri bandı silinir.
+    const double SlowGapMs = 450;
+
+    [TestCase(BriskGapMs, 3)]
+    [TestCase(CalmGapMs, 2)]
+    [TestCase(SlowGapMs, 1)]
+    public void Realtime_IsTheBaseline(double gapMs, int expectedWords)
     {
-        var engine = new SentenceEngine();
-
-        PlayDots(engine, new TimeDirector(), triggerSlowmo: false);
-
-        Assert.That(engine.History, Has.Count.EqualTo(1));
-        Assert.That(engine.History[0].Words, Has.Count.EqualTo(3), "3. pencere 300 ms, 350 ms dünya yer");
-        Assert.That(engine.State.DotCount, Is.EqualTo(1), "4. nokta yeni cümle");
+        Assert.That(PlayDots(gapMs, slowmo: false), Is.EqualTo(expectedWords));
     }
 
-    [Test]
-    public void SpecDefaults_SlowTheWindowDrain_ButDoNotBuyAFourthDot()
+    [TestCase(BriskGapMs, 4)]
+    [TestCase(CalmGapMs, 4)]
+    public void Slowmo_ReachesTheFourDotCeiling(double gapMs, int expectedWords)
     {
-        var engine = new SentenceEngine();
-
-        PlayDots(engine, new TimeDirector(), triggerSlowmo: true);
-
         Assert.That(
-            engine.History[0].Words,
-            Has.Count.EqualTo(3),
-            "spec sayılarıyla yavaş çekim ~330 ms dünya kazandırıyor, bir nokta 350 ms istiyor");
+            PlayDots(gapMs, slowmo: true),
+            Is.EqualTo(expectedWords),
+            "§7 ödülü: yavaş çekimde tavana ulaşılabilmeli");
+    }
+
+    [TestCase(CalmGapMs)]
+    [TestCase(SlowGapMs)]
+    public void Slowmo_BuysTwoExtraDots(double gapMs)
+    {
+        int plain = PlayDots(gapMs, slowmo: false);
+        int slowed = PlayDots(gapMs, slowmo: true);
+
+        Assert.That(slowed - plain, Is.EqualTo(2), "§7 kuru: bir mükemmel dodge ≈ iki ekstra nokta");
     }
 
     [Test]
-    public void SpecDefaults_BuyWorldTime_OnTheFirstGap()
+    public void Slowmo_DoesNotSaturate_AtTheSlowestCadence()
+    {
+        Assert.That(
+            PlayDots(SlowGapMs, slowmo: true),
+            Is.LessThan(4),
+            "her tempoda 4 çıkarsa ödül otomatikleşir; süre yukarıdan da sınırlı olmalı");
+    }
+
+    [Test]
+    public void Slowmo_DoesNotRaiseTheCeiling()
     {
         var tuning = new SlowmoTuning();
 
-        var realtime = new TimeDirector();
-        double plain = realtime.Tick(GapRealMs);
-
-        var slowed = new TimeDirector();
-        slowed.TriggerSlowmo(tuning.Factor, tuning.RampDownMs, tuning.HoldMs, tuning.RampUpMs);
-        double scaled = slowed.Tick(GapRealMs);
-
-        Assert.That(scaled, Is.LessThan(plain * 0.5), "ilk boşluk en az yarıya inmeli");
-        Assert.That(scaled, Is.GreaterThan(0d));
+        Assert.That(tuning.SlowmoBonusDots, Is.Zero, "§7: tavan yükselmez, yalnızca ulaşılır");
+        Assert.That(PlayDots(200, slowmo: true), Is.EqualTo(4), "tavan hâlâ 4 nokta");
     }
 
-    static void PlayDots(SentenceEngine engine, TimeDirector time, bool triggerSlowmo)
+    static int PlayDots(double gapMs, bool slowmo)
     {
-        if (triggerSlowmo)
+        var engine = new SentenceEngine();
+        var time = new TimeDirector();
+
+        if (slowmo)
         {
             var tuning = new SlowmoTuning();
             time.TriggerSlowmo(tuning.Factor, tuning.RampDownMs, tuning.HoldMs, tuning.RampUpMs);
@@ -146,12 +162,15 @@ public class SlowmoSentenceFitTests
         for (int i = 0; i < Dots.Length; i++)
         {
             if (i > 0)
-            {
-                double worldDt = time.Tick(GapRealMs);
-                engine.Tick(worldDt);
-            }
+                engine.Tick(time.Tick(gapMs));
 
             engine.OnDotTouched(Dots[i], time.WorldTimeMs);
         }
+
+        // Yavaş tempoda ilk cümle erken kapanır ve kalan noktalar YENİ cümleler açar; ölçtüğümüz
+        // şey "bu dört dokunuşla tek bir cümlede kaç kelime tutabildim".
+        return engine.History.Count > 0
+            ? engine.History[0].Words.Count
+            : engine.State.Words.Count;
     }
 }
