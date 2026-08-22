@@ -6,9 +6,8 @@
 
 **Son güncelleme:** 22 Ağustos 2026 · **Sıradaki görev:** T11 (Android build, his turu)
 
-> **T9 + T9.1 + T10 `master`'a girmeye hazır** (dal `task/t10-ayar-paneli`, `dotnet test` yeşil,
-> Unity derliyor, MCP prob'ları geçti — aşağıdaki "T10" bölümü). T11'in bilmesi gereken hazırlık
-> notları için o bölümün sonuna bak.
+> **T9 + T9.1 + T10 `master`'a girdi** (`dotnet test` yeşil, Unity derliyor, MCP prob'ları geçti —
+> aşağıdaki "T10" bölümü). T11'in bilmesi gereken hazırlık notları için o bölümün sonuna bak.
 
 ## Görev durumu
 
@@ -33,7 +32,7 @@
 | T8.2 | Yavaş çekim süresi (§7 ödülü gerçek oldu) | bitti | task/t8.2-yavas-cekim-suresi |
 | T9 | HUD, parlak tepki yazısı | bitti | [#4](https://github.com/lacoleredudiable-art/game/pull/4) → master |
 | T9.1 | T9 denetim düzeltmeleri (bant taşması, overdraw, dp) | bitti | aynı dal → master |
-| T10 | Oyun içi ayar paneli | bitti | task/t10-ayar-paneli |
+| T10 | Oyun içi ayar paneli | bitti | task/t10-ayar-paneli → master |
 | T11 | Android build, his turu | bekliyor | — |
 
 Durum değerleri: `bekliyor` · `sürüyor` · `bitti` · `bloke`
