@@ -128,7 +128,7 @@ namespace Dovus.Game
 
         void CreateArena()
         {
-            var ground = CreateMeshObject("Arena", "Plane.fbx");
+            var ground = CreateMeshObject("Arena", PrimitiveType.Plane);
             // Plane mesh 10x10 m; ArenaHalfSizeM yarım kenar uzunluğu.
             float scale = _tuning.ArenaHalfSizeM / 5f;
             ground.transform.localScale = new Vector3(scale, 1f, scale);
@@ -137,7 +137,7 @@ namespace Dovus.Game
 
         static GameObject CreateCapsule(string name, Vector3 position, float radius, float height, Color color)
         {
-            var capsule = CreateMeshObject(name, "Capsule.fbx");
+            var capsule = CreateMeshObject(name, PrimitiveType.Capsule);
             capsule.transform.position = position;
             capsule.transform.localScale = new Vector3(radius * 2f, height * 0.5f, radius * 2f);
             ApplyColor(capsule, color);
@@ -148,10 +148,10 @@ namespace Dovus.Game
         /// Mesh'i doğrudan ata (MeshFilter+MeshRenderer) — CreatePrimitive'in otomatik
         /// Collider'ı hiç oluşmaz (teknoloji-kararlari §4).
         /// </summary>
-        static GameObject CreateMeshObject(string name, string builtinMeshName)
+        static GameObject CreateMeshObject(string name, PrimitiveType type)
         {
             var go = new GameObject(name);
-            go.AddComponent<MeshFilter>().sharedMesh = Resources.GetBuiltinResource<Mesh>(builtinMeshName);
+            go.AddComponent<MeshFilter>().sharedMesh = PrimitiveMesh.Get(type);
             go.AddComponent<MeshRenderer>();
             return go;
         }

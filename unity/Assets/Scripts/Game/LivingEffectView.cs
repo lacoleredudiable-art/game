@@ -84,13 +84,13 @@ namespace Dovus.Game
             _blobs = new Transform[n];
             for (int i = 0; i < n; i++)
             {
-                var s = CreateMeshObject("Blob" + i, "Sphere.fbx");
+                var s = CreateMeshObject("Blob" + i, PrimitiveType.Sphere);
                 s.GetComponent<Renderer>().sharedMaterial = _blobMat;
                 s.SetActive(false);
                 _blobs[i] = s.transform;
             }
 
-            var needle = CreateMeshObject("Needle", "Capsule.fbx");
+            var needle = CreateMeshObject("Needle", PrimitiveType.Capsule);
             needle.GetComponent<Renderer>().sharedMaterial = _lineMat;
             needle.SetActive(false);
             _needle = needle.transform;
@@ -101,11 +101,11 @@ namespace Dovus.Game
         /// otomatik eklediği Collider hiç oluşmaz. Teknoloji kararları §4: fizik dışarıda,
         /// bir karelik Destroy edilmiş collider bile yanlış kullanıma davet çıkarır.
         /// </summary>
-        GameObject CreateMeshObject(string name, string builtinMeshName)
+        GameObject CreateMeshObject(string name, PrimitiveType type)
         {
             var go = new GameObject(name);
             go.transform.SetParent(transform, false);
-            go.AddComponent<MeshFilter>().sharedMesh = Resources.GetBuiltinResource<Mesh>(builtinMeshName);
+            go.AddComponent<MeshFilter>().sharedMesh = PrimitiveMesh.Get(type);
             go.AddComponent<MeshRenderer>();
             return go;
         }
