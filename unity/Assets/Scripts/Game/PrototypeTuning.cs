@@ -20,8 +20,9 @@ namespace Dovus.Game
         public float JoystickDeadZone = 0.12f;
 
         // Beşgen ekrana sabit (§2). Yarıçap/konum spec'te sayı yok — varsayılan; durum.md'ye geçildi.
+        // T6.2: merkez X, dodge düğmesi sağ kenardan taşmasın diye 0.78'den içeri alındı.
         [Header("Beşgen (§2)")]
-        public float PentagonCenterXNorm = 0.78f;
+        public float PentagonCenterXNorm = 0.72f;
         public float PentagonCenterYNorm = 0.40f;
         public float PentagonRadiusDp = 100f;
         public float DotHitRadiusDp = 30f;
@@ -29,6 +30,19 @@ namespace Dovus.Game
         public bool MirrorForLeftHand = false;
         public float InkLingerSec = 0.40f;
         public float InkWidthDp = 3.5f;
+
+        // §2: dodge beşgenin dışında, ekrana sabit ayrı düğme (sol çubuk dinamik olduğu için
+        // yanına konamaz). Ofset/yarıçap spec'te yok — varsayılan; durum.md'ye geçildi.
+        // Ofset beşgen merkezinden dp cinsinden; MirrorForLeftHand X'i çevirir.
+        [Header("Dodge düğmesi (§2, T6.2)")]
+        public float DodgeButtonOffsetXDp = 80f;
+        public float DodgeButtonOffsetYDp = -140f;
+        public float DodgeButtonRadiusDp = 34f;
+        public float DodgeButtonScreenMarginDp = 8f;
+
+        // §5: merkez bir kelime değil düğme; hangi fiille vurduğu veridir (prototipte 5/SARSINTI).
+        [Header("Düz vuruş (§5, T6.2)")]
+        public int BasicStrikeDot = 5;
 
         // §4 ilk tur: yalnızca 1 (İĞNE), 2 (SÜRÜ), 5 (SARSINTI). Kombo tablosu değil — açık/kapalı bayrak.
         [Header("Açık rünler (§4)")]
@@ -58,7 +72,10 @@ namespace Dovus.Game
         public Color InkCyan = new Color(0.373f, 0.941f, 1f);     // #5FF0FF
         public Color AcidGreen = new Color(0.608f, 0.910f, 0.235f); // #9BE83C — §10 zehir birikintisi
         public Color PentagonDotColor = new Color(0.55f, 0.62f, 0.72f, 0.85f);
-        public Color PentagonCenterColor = new Color(0.75f, 0.78f, 0.85f, 0.9f);
+        // T6.2: merkez artık "vur" demek — oyuncu rengine çekildi (§10 camgöbeği).
+        public Color PentagonCenterColor = new Color(0.373f, 0.941f, 1f, 0.9f);
+        // Dodge diski §10 moru: kırmızı-turuncu OLAMAZ, o renk yalnızca boss tehdidi.
+        public Color DodgeButtonColor = new Color(0.725f, 0.549f, 1f, 0.9f);
 
         // T7.2: LivingEffectView'a gömülü his sayıları (AGENTS kural 3). Değerler T7'den
         // AYNI taşındı, yalnızca yeri değişti — dovus-sistemi.md'de sayı yok, sapma T7

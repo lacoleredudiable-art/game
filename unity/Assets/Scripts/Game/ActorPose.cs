@@ -59,6 +59,16 @@ namespace Dovus.Game
             _poseUntilWorldMs = _recoveryUntilWorldMs;
         }
 
+        /// <summary>
+        /// Toparlanma kilidi kesildi (§5: düz vuruş / yeni fiil / dodge). Nefes nefese poz
+        /// kilitle birlikte biter, yoksa oyuncu yeni cümleyi çizerken hâlâ toparlanıyor görünür.
+        /// </summary>
+        public void EndRecovery()
+        {
+            _recoveryUntilWorldMs = 0f;
+            _poseUntilWorldMs = 0f;
+        }
+
         public void Tick(double worldTimeMs)
         {
             if (!_ready)

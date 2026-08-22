@@ -10,6 +10,7 @@ namespace Dovus.Game
         RectTransform[] _dots;
         Image[] _dotImages;
         RectTransform _center;
+        RectTransform _dodge;
         Canvas _canvas;
 
         public Canvas Canvas => _canvas;
@@ -40,6 +41,9 @@ namespace Dovus.Game
             _center = CreateDisc("Center", sprite, _tuning.PentagonCenterColor, canvasGo.transform, out _);
             CreateLabel(_center, "·").fontSize = 32;
 
+            // Dodge beşgenin dışında, ekrana sabit (§2). §10: kırmızı-turuncu olamaz.
+            _dodge = CreateDisc("DodgeButton", sprite, _tuning.DodgeButtonColor, canvasGo.transform, out _);
+
             Layout();
         }
 
@@ -66,6 +70,9 @@ namespace Dovus.Game
 
             Vector2 c = PentagonLayoutScreen.CenterPx(_tuning, w, h);
             Place(_center, c, centerR * 2f, w, h);
+
+            Vector2 d = PentagonLayoutScreen.DodgeButtonPx(_tuning, w, h);
+            Place(_dodge, d, PentagonLayoutScreen.DodgeButtonRadiusPx(_tuning) * 2f, w, h);
         }
 
         Color DotColor(int dot)

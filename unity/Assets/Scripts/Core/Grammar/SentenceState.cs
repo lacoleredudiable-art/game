@@ -7,7 +7,14 @@ namespace Dovus.Core.Grammar
         Idle,
         Building,
         Resolved,
-        Aborted
+        Aborted,
+
+        /// <summary>
+        /// §5 "Toparlanma girdi kilididir": kapanış ödendi, girdi kilitli. Kilit üç şeyle
+        /// kesilir (düz vuruş, yeni fiil, dodge). Yalnızca State.Phase'in anlık değeri —
+        /// CompletedSentence.Phase kapanışta Resolved kalır.
+        /// </summary>
+        Recovering
     }
 
     /// <summary>Cümle içindeki bir kelime (fiil veya sıfat) + dwell yoğunluğu.</summary>
@@ -70,7 +77,15 @@ namespace Dovus.Core.Grammar
         public Rune? Verb { get; internal set; }
         public IReadOnlyList<SentenceWord> Words { get; internal set; } = System.Array.Empty<SentenceWord>();
         public double RemainingWindowMs { get; internal set; }
+
+        /// <summary>Toparlanma kilidinden kalan süre (§5). Kesilirse 0'a düşer.</summary>
+        public double RemainingRecoveryMs { get; internal set; }
+
         public ClosingHit? LastClosing { get; internal set; }
+
+        /// <summary>Kapanış ödendi, girdi kilitli (§5).</summary>
+        public bool IsRecovering => Phase == SentencePhase.Recovering;
+
         public int AdjectiveCount => Words.Count == 0 ? 0 : Words.Count - 1;
         public int DotCount => Words.Count;
     }

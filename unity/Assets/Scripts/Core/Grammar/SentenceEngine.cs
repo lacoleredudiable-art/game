@@ -16,6 +16,7 @@ namespace Dovus.Core.Grammar
 
         double _remainingWindowMs;
         double _armedWindowMs;
+        double _remainingRecoveryMs;
         int _lastWordDwellStacks;
 
         public SentenceEngine(SentenceTuning? tuning = null)
@@ -37,7 +38,9 @@ namespace Dovus.Core.Grammar
             if (!RuneInfo.TryFromDot(dot, out Rune rune))
                 return;
 
-            if (State.Phase == SentencePhase.Resolved || State.Phase == SentencePhase.Aborted)
+            // Recovering: yeni fiil kilidi keser (§5) — BeginFresh kalan süreyi sıfırlar.
+            if (State.Phase == SentencePhase.Resolved || State.Phase == SentencePhase.Aborted
+                || State.Phase == SentencePhase.Recovering)
                 BeginFresh();
 
             if (State.Phase == SentencePhase.Idle)
@@ -79,9 +82,35 @@ namespace Dovus.Core.Grammar
             PublishState();
         }
 
+        /// <summary>
+        /// Erken kapanış (§5): cümle kurulurken merkeze basmak, o uzunluğun ödemesini alır.
+        /// Dodge'un tersi — merkez öder, dodge batırır. Idle/Recovering'de sessizce hiçbir şey
+        /// yapmaz; düz vuruşu girdi katmanı OnDotTouched + Commit ile kurar.
+        /// </summary>
+        public void Commit()
+        {
+            if (State.Phase != SentencePhase.Building || _words.Count == 0)
+                return;
+
+            ResolveWithClosing();
+        }
+
         /// <summary>Dünya zamanı ilerlemesi; pencere bitince kapanış üretir.</summary>
         public void Tick(double dtMs)
         {
+            if (State.Phase == SentencePhase.Recovering)
+            {
+                _remainingRecoveryMs -= dtMs;
+                if (_remainingRecoveryMs <= 0)
+                {
+                    BeginFresh();
+                    return;
+                }
+
+                State.RemainingRecoveryMs = _remainingRecoveryMs;
+                return;
+            }
+
             if (State.Phase != SentencePhase.Building || _words.Count == 0)
                 return;
 
@@ -100,9 +129,18 @@ namespace Dovus.Core.Grammar
             PublishState();
         }
 
-        /// <summary>Dodge veya vurulma — kapanış ve ödül yok.</summary>
+        /// <summary>
+        /// Dodge veya vurulma. Building'de yatırım batar (kapanış ve ödül yok); Recovering'de
+        /// yalnızca kilidi keser — ödenmiş kapanış (History ve LastClosing) yerinde kalır (§5).
+        /// </summary>
         public void Abort()
         {
+            if (State.Phase == SentencePhase.Recovering)
+            {
+                BeginFresh();
+                return;
+            }
+
             if (State.Phase != SentencePhase.Building || _words.Count == 0)
             {
                 BeginFresh();
@@ -186,9 +224,25 @@ namespace Dovus.Core.Grammar
         void Finish(CompletedSentence completed)
         {
             _history.Add(completed);
-            State.Phase = completed.Phase;
+
+            // Kapanış üreten HER yol (Commit, dördüncü nokta, pencere zaman aşımı) toparlanma
+            // kilidine girer; süre §5 tablosundan gelir. Kayıttaki faz Resolved kalır — geçmiş
+            // ve ödül okunuyor.
+            if (completed.Closing.HasValue)
+            {
+                _remainingRecoveryMs =
+                    _tuning.StepForDots(completed.Closing.Value.DotCount).RecoverySec * 1000.0;
+                State.Phase = SentencePhase.Recovering;
+            }
+            else
+            {
+                _remainingRecoveryMs = 0;
+                State.Phase = completed.Phase;
+            }
+
             State.LastClosing = completed.Closing;
             State.RemainingWindowMs = 0;
+            State.RemainingRecoveryMs = _remainingRecoveryMs;
             State.Verb = completed.Verb;
             State.Words = completed.Words;
             _remainingWindowMs = 0;
@@ -202,10 +256,12 @@ namespace Dovus.Core.Grammar
             _lastWordDwellStacks = 0;
             _remainingWindowMs = 0;
             _armedWindowMs = 0;
+            _remainingRecoveryMs = 0;
             State.Phase = SentencePhase.Idle;
             State.Verb = null;
             State.Words = Array.Empty<SentenceWord>();
             State.RemainingWindowMs = 0;
+            State.RemainingRecoveryMs = 0;
             // LastClosing bilinçli korunur — son ödeme okunabilsin
         }
 

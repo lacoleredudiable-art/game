@@ -75,8 +75,10 @@ public class SentenceEngineTests
         Assert.That(engine.State.RemainingWindowMs, Is.EqualTo(tuning.CancelWindowForDots(1)));
 
         engine.Tick(tuning.CancelWindowForDots(1));
-        Assert.That(engine.State.Phase, Is.EqualTo(SentencePhase.Resolved));
+        // T6.2: kapanış üreten her yol toparlanma kilidine girer; kayıttaki faz Resolved kalır.
+        Assert.That(engine.State.Phase, Is.EqualTo(SentencePhase.Recovering));
         Assert.That(engine.History, Has.Count.EqualTo(1));
+        Assert.That(engine.History[0].Phase, Is.EqualTo(SentencePhase.Resolved));
         Assert.That(engine.History[0].Closing, Is.Not.Null);
         Assert.That(engine.History[0].Closing!.Value.Type, Is.EqualTo(Rune.Igne));
         Assert.That(engine.History[0].Closing!.Value.TotalEffect, Is.EqualTo(tuning.StepForDots(1).TotalEffect));
@@ -232,7 +234,7 @@ public class DwellTests
 
         engine.Tick(tuning.CancelWindowForDots(1));
 
-        Assert.That(engine.State.Phase, Is.EqualTo(SentencePhase.Resolved));
+        Assert.That(engine.State.Phase, Is.EqualTo(SentencePhase.Recovering));
         Assert.That(engine.History[0].Closing, Is.Not.Null);
         Assert.That(engine.History[0].Words[0].IntensityStacks, Is.EqualTo(1));
     }
