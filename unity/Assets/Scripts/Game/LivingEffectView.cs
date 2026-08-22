@@ -136,9 +136,10 @@ namespace Dovus.Game
                 urgent *= 0.45f;
             float place = Mathf.Max(urgent, travel01 * 0.35f);
             float hz = Mathf.Lerp(_colors.WindowCuePulseHz, _colors.WindowCueUrgentHz, place);
-            float pulse = 1f + _colors.WindowCuePulseAmp * place
-                * (0.55f + 0.45f * Mathf.Sin(_logic.AgeSec * hz * Mathf.PI * 2f));
-            alpha = Mathf.Clamp01(alpha * pulse);
+            // Nabız AŞAĞI modüle eder: yukarı çarpmak taban alfa 0.95 iken Clamp01'e takılıyor
+            // ve ipucu hiç görünmüyordu (T8.1). §8/T2 "pencereyi dalgadan oku" buna bağlı.
+            float wave = 0.5f + 0.5f * Mathf.Sin(_logic.AgeSec * hz * Mathf.PI * 2f);
+            alpha = Mathf.Clamp01(alpha * (1f - _colors.WindowCuePulseAmp * place * wave));
 
             Color cyan = _colors.InkCyan;
             cyan.a = alpha;

@@ -18,6 +18,10 @@ namespace Dovus.Game
         public int Hp => _hp;
         public int MaxHp { get; private set; }
         public bool IsDown => _respawnAtUnscaled >= 0f;
+        public Vector3 SpawnPos => _spawnPos;
+
+        /// <summary>Dönüşe kalan gerçek saniye (HUD okur); ayakta ise 0.</summary>
+        public float RespawnInSec => IsDown ? Mathf.Max(0f, _respawnAtUnscaled - Time.unscaledTime) : 0f;
 
         public void Bind(BossTuning boss, int maxHp)
         {

@@ -14,10 +14,12 @@ namespace Dovus.Game
         GameClock _clock;
         DodgeState _dodge;
         DodgeTuning _tuning;
+        PrototypeTuning _colors;
         MoveInput _input;
         Transform _boss;
         AfterimageTrail _afterimage;
         KinematicMotor _motor;
+        PlayerVitals _vitals;
 
         Vector3 _lastMoveDir = Vector3.forward;
         Vector3 _startPos;
@@ -40,10 +42,12 @@ namespace Dovus.Game
             _clock = clock;
             _dodge = input.Dodge;
             _tuning = input.Combat.Dodge;
+            _colors = input.Tuning;
             _boss = boss;
             _afterimage = afterimage;
             _input = GetComponent<MoveInput>();
             _motor = GetComponent<KinematicMotor>();
+            _vitals = GetComponent<PlayerVitals>();
         }
 
         void Start()
@@ -69,7 +73,7 @@ namespace Dovus.Game
             if (!IsBound)
                 TryAutoBind();
 
-            if (_dodge == null || _clock == null)
+            if (_dodge == null || _clock == null || (_vitals != null && _vitals.IsDown))
             {
                 IsDisplacing = false;
                 return;
@@ -86,11 +90,12 @@ namespace Dovus.Game
             if (!_dodge.IsActive(worldMs))
             {
                 // Kare takılırsa (editör odağı, MCP) aktif pencere tek karede atlanabilir;
-                // başlamış kaymayı 1.0'da bırak, yoksa dodge yerinde sayar.
+                // başlamış kaymayı sonuna taşı. Glide kuyruğu KORUNUR: eskiden burada
+                // atılıyordu ve her dodge'un son karesinde oyuncu ~1 m geriye zıplıyordu,
+                // yani §6'nın "yağ gibi kayma"sı görünmüyordu (T8.1).
                 if (IsDisplacing && _tuning != null)
                 {
-                    Vector3 pos = ClampArena(_startPos + _dir * _tuning.DistanceM);
-                    transform.position = pos;
+                    transform.position = ClampArena(_startPos + _dir * _tuning.DistanceM + _glideExtra);
                     LastAppliedRatio = 1f;
                 }
 
@@ -99,19 +104,16 @@ namespace Dovus.Game
             }
 
             float ratio = _dodge.GetDisplacementRatio(worldMs);
-            Vector3 pos = _startPos + _dir * _tuning.DistanceM * ratio;
+            Vector3 target = _startPos + _dir * _tuning.DistanceM * ratio;
 
             float glide = _dodge.GetGlideVelocityRatio(worldMs);
-            if (glide > 0f && _tuning.DurationMs > 0)
+            if (glide > 0f)
             {
                 float dtSec = (float)(_clock.WorldDeltaMs / 1000.0);
-                float charSpeed = _tuning.DistanceM / (_tuning.DurationMs / 1000f);
-                _glideExtra += _dir * charSpeed * glide * dtSec;
-                pos += _glideExtra;
+                _glideExtra += _dir * GlideSpeedMps() * glide * dtSec;
             }
 
-            pos = ClampArena(pos);
-            transform.position = pos;
+            transform.position = ClampArena(target + _glideExtra);
             LastAppliedRatio = ratio;
             if (_dir.sqrMagnitude > 0.0001f)
                 transform.rotation = Quaternion.LookRotation(_dir, Vector3.up);
@@ -171,9 +173,15 @@ namespace Dovus.Game
                 return;
 
             _lastEmitRatio = ratio;
-            Vector3 scale = _motor != null ? transform.localScale : Vector3.one;
-            _afterimage.Emit(transform.position, transform.rotation, scale);
+            _afterimage.Emit(transform.position, transform.rotation, transform.localScale);
         }
+
+        /// <summary>
+        /// §6 "sönen artık hız". Ana hareketin ortalama hızı (3.8/0.26 = 14.6 m/s) buraya
+        /// konulamaz: eğri u=1'de hızı sıfıra indirdiği için o değer ikinci bir atılım gibi
+        /// okunuyordu. Büyüklük artık veri (T8.1).
+        /// </summary>
+        float GlideSpeedMps() => _colors != null ? _colors.DodgeGlideSpeedMps : 3.5f;
 
         Vector3 ClampArena(Vector3 pos)
         {

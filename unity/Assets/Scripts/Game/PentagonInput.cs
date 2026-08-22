@@ -73,6 +73,13 @@ namespace Dovus.Game
         public SentenceEngine Engine => _engine;
         public DodgeState Dodge => _dodge;
 
+        PlayerVitals _vitals;
+
+        /// <summary>Ölü oyuncu yazamaz ve dodge atamaz (T8.1).</summary>
+        public void BindVitals(PlayerVitals vitals) => _vitals = vitals;
+
+        bool InputLocked => _vitals != null && _vitals.IsDown;
+
         public void Bind(
             GameClock clock,
             InkTrail ink,
@@ -119,6 +126,19 @@ namespace Dovus.Game
             if (_engine != null && _clock != null)
                 _engine.Tick(_clock.WorldDeltaMs);
 
+            if (InputLocked)
+            {
+                if (_fingerId.HasValue || _mouseHeld)
+                {
+                    _fingerId = null;
+                    _mouseHeld = false;
+                    _dodgeFingerId = null;
+                    _dodgeTapAlive = false;
+                    EndPointer(cancelled: true);
+                }
+                return;
+            }
+
             HandleKeyboardDodge();
             HandleMouse();
             TickDwell();
@@ -163,6 +183,9 @@ namespace Dovus.Game
 
         void OnFingerDown(Finger finger)
         {
+            if (InputLocked)
+                return;
+
             Vector2 pos = finger.screenPosition;
             if (!IsDrawHalf(pos))
                 return;

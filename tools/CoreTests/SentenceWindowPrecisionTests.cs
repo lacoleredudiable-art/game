@@ -7,7 +7,7 @@ namespace CoreTests;
 
 /// <summary>
 /// T8 — OnDotTouched/OnDwell dünya saatini yutmuyordu; pencere yalnızca Tick ile eriyordu
-/// (~16 ms kare yuvarlaması). Yavaş çekimde 4 nokta sığması bu hassasiyete bağlı.
+/// (~16 ms kare yuvarlaması). Kaç noktanın sığdığı bu hassasiyete bağlı.
 /// </summary>
 [TestFixture]
 public class SentenceWindowPrecisionTests
@@ -79,8 +79,14 @@ public class SentenceWindowPrecisionTests
 }
 
 /// <summary>
-/// §7: yavaş çekim tavanı yükseltmez, tavana ulaşmanı sağlar. 350 ms gerçek boşlukla
-/// normal zamanda 4. nokta sığmaz (3. sıfat penceresi 300 ms); 0.22× ölçekte sığar.
+/// §7: yavaş çekim tavanı yükseltmez, tavana ulaşmanı sağlar.
+///
+/// T8.1 — bu fixture eskiden `holdMs: 10_000, rampMs: 0` ile ölçüyordu, yani ölçtüğü şey
+/// spec'in sayıları değil sonsuz bir yavaş çekimdi. Artık `SlowmoTuning` varsayılanları
+/// (0.22× / 55 / 190 / 420) kullanılıyor ve testler o sayıların GERÇEKTE ne verdiğini
+/// sabitliyor: yavaş çekim pencere erimesini gözle görülür yavaşlatıyor ama 350 ms'lik
+/// gerçek boşluklarla 4. noktayı sığdırmaya yetmiyor. "4 nokta" kabul kriteri açık —
+/// bkz. docs/durum.md T8.1 kararı (`SlowmoBonusDots` hâlâ 0 ve uygulanmamış).
 /// </summary>
 [TestFixture]
 public class SlowmoSentenceFitTests
@@ -92,9 +98,8 @@ public class SlowmoSentenceFitTests
     public void FourDots_DoNotFit_AtRealtimeWith350msGaps()
     {
         var engine = new SentenceEngine();
-        var time = new TimeDirector();
 
-        PlayDots(engine, time, triggerSlowmo: false);
+        PlayDots(engine, new TimeDirector(), triggerSlowmo: false);
 
         Assert.That(engine.History, Has.Count.EqualTo(1));
         Assert.That(engine.History[0].Words, Has.Count.EqualTo(3), "3. pencere 300 ms, 350 ms dünya yer");
@@ -102,22 +107,41 @@ public class SlowmoSentenceFitTests
     }
 
     [Test]
-    public void FourDots_Fit_DuringSlowmoWith350msRealGaps()
+    public void SpecDefaults_SlowTheWindowDrain_ButDoNotBuyAFourthDot()
     {
         var engine = new SentenceEngine();
-        var time = new TimeDirector();
 
-        PlayDots(engine, time, triggerSlowmo: true);
+        PlayDots(engine, new TimeDirector(), triggerSlowmo: true);
 
-        Assert.That(engine.History, Has.Count.EqualTo(1));
-        Assert.That(engine.History[0].Words, Has.Count.EqualTo(4), "350 ms gerçek ≈ 77 ms dünya");
-        Assert.That(engine.History[0].Closing!.Value.DotCount, Is.EqualTo(4));
+        Assert.That(
+            engine.History[0].Words,
+            Has.Count.EqualTo(3),
+            "spec sayılarıyla yavaş çekim ~330 ms dünya kazandırıyor, bir nokta 350 ms istiyor");
+    }
+
+    [Test]
+    public void SpecDefaults_BuyWorldTime_OnTheFirstGap()
+    {
+        var tuning = new SlowmoTuning();
+
+        var realtime = new TimeDirector();
+        double plain = realtime.Tick(GapRealMs);
+
+        var slowed = new TimeDirector();
+        slowed.TriggerSlowmo(tuning.Factor, tuning.RampDownMs, tuning.HoldMs, tuning.RampUpMs);
+        double scaled = slowed.Tick(GapRealMs);
+
+        Assert.That(scaled, Is.LessThan(plain * 0.5), "ilk boşluk en az yarıya inmeli");
+        Assert.That(scaled, Is.GreaterThan(0d));
     }
 
     static void PlayDots(SentenceEngine engine, TimeDirector time, bool triggerSlowmo)
     {
         if (triggerSlowmo)
-            time.TriggerSlowmo(factor: 0.22f, rampDownMs: 0, holdMs: 10_000, rampUpMs: 0);
+        {
+            var tuning = new SlowmoTuning();
+            time.TriggerSlowmo(tuning.Factor, tuning.RampDownMs, tuning.HoldMs, tuning.RampUpMs);
+        }
 
         for (int i = 0; i < Dots.Length; i++)
         {

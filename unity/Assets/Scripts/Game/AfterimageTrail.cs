@@ -17,9 +17,15 @@ namespace Dovus.Game
         readonly List<Ghost> _live = new();
         readonly Queue<Ghost> _pool = new();
 
+        // Her kare her hayalet için yeni blok tahsis etmek 7×60 ≈ 420 alloc/sn ediyordu (T8.1).
+        // Alan başlatıcısı OLAMAZ: statik kurucu MonoBehaviour ctor'undan tetiklenirse Unity
+        // MaterialPropertyBlock yaratmaya izin vermiyor. Tembel kurulum.
+        static MaterialPropertyBlock _block;
+
         FeelTuning _feel;
         PrototypeTuning _colors;
         Material _mat;
+        float _alpha = 0.55f;
 
         public int Count => _feel != null ? _feel.AfterimageCount : 0;
 
@@ -27,7 +33,8 @@ namespace Dovus.Game
         {
             _feel = feel;
             _colors = colors;
-            _mat = MakeMat(colors.PlayerColor);
+            _alpha = colors.AfterimageAlpha;
+            _mat = MakeMat(colors.PlayerColor, _alpha);
         }
 
         public void Emit(Vector3 position, Quaternion rotation, Vector3 scale)
@@ -44,7 +51,7 @@ namespace Dovus.Game
             g.Xform.localScale = scale;
             g.Xform.gameObject.SetActive(true);
             g.DieAtUnscaled = Time.unscaledTime + _feel.AfterimageLifeMs / 1000f;
-            SetAlpha(g.Rend, 0.55f);
+            SetAlpha(g.Rend, _alpha);
             _live.Add(g);
         }
 
@@ -68,7 +75,7 @@ namespace Dovus.Game
                     continue;
                 }
 
-                SetAlpha(g.Rend, 0.55f * Mathf.Clamp01(left / life));
+                SetAlpha(g.Rend, _alpha * Mathf.Clamp01(left / life));
             }
         }
 
@@ -99,27 +106,25 @@ namespace Dovus.Game
 
         static void SetAlpha(Renderer rend, float a)
         {
-            if (rend == null)
+            Material mat = rend != null ? rend.sharedMaterial : null;
+            if (mat == null)
                 return;
-            var block = new MaterialPropertyBlock();
-            rend.GetPropertyBlock(block);
-            Color c = rend.sharedMaterial != null ? rend.sharedMaterial.color : Color.white;
-            if (rend.sharedMaterial != null && rend.sharedMaterial.HasProperty("_BaseColor"))
-                c = rend.sharedMaterial.GetColor("_BaseColor");
+
+            bool baseColor = mat.HasProperty("_BaseColor");
+            Color c = baseColor ? mat.GetColor("_BaseColor") : mat.color;
             c.a = a;
-            if (rend.sharedMaterial != null && rend.sharedMaterial.HasProperty("_BaseColor"))
-                block.SetColor("_BaseColor", c);
-            else
-                block.SetColor("_Color", c);
-            rend.SetPropertyBlock(block);
+            _block ??= new MaterialPropertyBlock();
+            _block.Clear();
+            _block.SetColor(baseColor ? "_BaseColor" : "_Color", c);
+            rend.SetPropertyBlock(_block);
         }
 
-        static Material MakeMat(Color color)
+        static Material MakeMat(Color color, float alpha)
         {
             var shader = Shader.Find("Sprites/Default");
             if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
             var mat = new Material(shader);
-            color.a = 0.55f;
+            color.a = alpha;
             if (mat.HasProperty("_BaseColor"))
                 mat.SetColor("_BaseColor", color);
             else

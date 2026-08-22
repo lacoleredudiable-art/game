@@ -21,6 +21,7 @@ namespace Dovus.Game
 
         GameClock _clock;
         CombatTuning _combat;
+        PrototypeTuning _colors;
         BossReactor _reactor;
         BossAttack _attack;
         ExchangeResolver _resolver;
@@ -48,6 +49,7 @@ namespace Dovus.Game
         public void Bind(
             GameClock clock,
             CombatTuning combat,
+            PrototypeTuning colors,
             BossReactor reactor,
             PentagonInput input,
             Transform player,
@@ -57,6 +59,7 @@ namespace Dovus.Game
         {
             _clock = clock;
             _combat = combat;
+            _colors = colors;
             _reactor = reactor;
             _attack = new BossAttack(combat.Boss);
             _resolver = new ExchangeResolver(combat);
@@ -102,7 +105,16 @@ namespace Dovus.Game
             bool down = _vitals != null && _vitals.IsDown;
             if (down && !_playerWasDown)
             {
-                _reactor.Home = _originHome;
+                // Boss OYUNCUNUN doğuş noktasının üstünde duruyorsa zincir ölüm olur; yalnızca
+                // o zaman eve çekilir. Aksi halde biriken kalıcı knockback (T7.2) korunur ve
+                // boss ışınlanmaz (T8.1) — yaklaşma zaten idle'da yeniden başlıyor.
+                Vector3 spawn = _vitals.SpawnPos;
+                float safe = _combat.Boss.RadiusM;
+                Vector3 toSpawn = _reactor.Home - spawn;
+                toSpawn.y = 0f;
+                if (toSpawn.sqrMagnitude < safe * safe)
+                    _reactor.Home = _originHome;
+
                 _telegraph?.Hide();
                 _feel?.ClearThreat();
                 EnterIdle(worldMs);
@@ -131,7 +143,7 @@ namespace Dovus.Game
         void TickWindup(double worldMs)
         {
             float p = (float)((worldMs - _phaseStartedWorldMs) / _attack.WindupMs);
-            _telegraph?.SetProgress(p, show: true);
+            _telegraph?.SetProgress(p);
             _feel?.ShowThreat(p);
 
             if (worldMs >= _attack.StrikeTimeMs(_telegraphStartMs))
@@ -144,7 +156,7 @@ namespace Dovus.Game
             {
                 ResolveStrike();
                 _strikeResolved = true;
-                _telegraph?.SlamFlash();
+                _telegraph?.Slam();
             }
 
             if (worldMs >= _attack.ActiveEndMs(_telegraphStartMs))
@@ -155,7 +167,7 @@ namespace Dovus.Game
         {
             _feel?.ClearThreat();
             float fade = 1f - (float)((worldMs - _phaseStartedWorldMs) / _attack.RecoveryMs);
-            _telegraph?.SetProgress(Mathf.Clamp01(fade) * 0.35f, show: fade > 0.05f);
+            _telegraph?.Recover(fade);
 
             if (worldMs >= _attack.RecoveryEndMs(_telegraphStartMs))
                 EnterIdle(worldMs);
@@ -199,7 +211,8 @@ namespace Dovus.Game
             Vector3 home = _reactor.Home;
             Vector3 to = _player.position - home;
             to.y = 0f;
-            float stop = _reactor.BodyRadiusM + (_playerMotor != null ? _playerMotor.BodyRadiusM : 0.5f) + 0.35f;
+            float pad = _colors != null ? _colors.BossApproachStopPadM : 0.35f;
+            float stop = _reactor.BodyRadiusM + (_playerMotor != null ? _playerMotor.BodyRadiusM : 0.5f) + pad;
             if (to.sqrMagnitude <= stop * stop)
                 return;
 
@@ -232,8 +245,10 @@ namespace Dovus.Game
             }
 
             int? press = _dodge?.PressTimeMs;
-            // Önceki saldırının dodge'u bu telegrafa ait değil — "erken bastın" olmamalı.
-            if (press.HasValue && press.Value < _telegraphStartMs)
+            // Eski basış bu telegrafa ait değil → "geç kaldın". Eşik basma anı DEĞİL, i-frame
+            // sonu: telegraf başlarken dokunulmazlık hâlâ açıksa basış bu saldırıya aittir ve
+            // sebebi "erken bastın" olmalı — `press < telegraphStart` bunu da yutuyordu (T8.1).
+            if (press.HasValue && _dodge.IframeEndMs(press.Value) < _telegraphStartMs)
                 press = null;
 
             var input = new ExchangeInput
@@ -250,9 +265,7 @@ namespace Dovus.Game
             if (result.Outcome == ExchangeOutcome.Hit)
             {
                 _engine?.Abort();
-                bool died = _vitals != null && _vitals.ApplyDamage(_combat.Boss.Damage);
-                if (died)
-                    _engine?.Abort();
+                _vitals?.ApplyDamage(_combat.Boss.Damage);
             }
         }
     }

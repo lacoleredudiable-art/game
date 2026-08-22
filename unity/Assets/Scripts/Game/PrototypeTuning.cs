@@ -92,6 +92,39 @@ namespace Dovus.Game
         public float WindowCueUrgentHz = 8f;
         public float WindowCuePulseAmp = 0.45f;
 
+        // §6 "sönen artık hız". Spec büyüklük vermiyor; T8'de ana hareketin ORTALAMA hızı
+        // (3.8/0.26 = 14.6 m/s) kullanılıyordu — eğri u=1'de hızı sıfıra indirdiği için bu
+        // ikinci bir atılım gibi okunuyordu. Yürüme hızı mertebesi seçildi (T8.1).
+        [Header("Dodge kayma kuyruğu (T8.1, §6)")]
+        public float DodgeGlideSpeedMps = 3.5f;
+
+        // Telegraf silüeti: sayı değil poz. Spec §11 pozu tarif ediyor, oran vermiyor.
+        [Header("Boss telegrafı (T8.1, §11)")]
+        public float TelegraphStretch = 0.28f;
+        public float TelegraphSquash = 0.18f;
+        public float TelegraphSlamSquash = 0.22f;
+        public float TelegraphTonePitchMin = 0.55f;
+        public float TelegraphTonePitchMax = 1.8f;
+        public float TelegraphToneVolumeMin = 0.12f;
+        public float TelegraphToneVolumeMax = 0.40f;
+        // Bossun oyuncuya yaklaşırken bıraktığı boşluk. Etki yarıçapı (5.4 m) ile birlikte
+        // hangi derecelerin erişilebilir olduğunu BU sayı belirliyor — bkz. durum.md T8.1.
+        public float BossApproachStopPadM = 0.35f;
+
+        [Header("His katmanı (T8.1, CombatFeel)")]
+        public float AfterimageAlpha = 0.55f;
+        public float ImpactFadeSec = 0.04f;
+        public float VignetteHoldSec = 0.85f;
+        public float VignetteFadeSec = 0.45f;
+        public float VignetteAlpha = 0.55f;
+        public float ThreatAlphaMax = 0.35f;
+        public float ThreatPulseHzMin = 4f;
+        public float ThreatPulseHzMax = 14f;
+        // §8 sarsıntı PİKSEL veriyor, kamera METRE ile sarsılıyor. Dönüşüm spec'te yok.
+        public float CameraShakePxToM = 0.01f;
+        // "Filtre yok" değeri; yavaş çekimde SlowmoTuning.AudioLowpassHz devralır.
+        public float AudioBaseCutoffHz = 22000f;
+
         // T7.2: LivingEffectView'a gömülü his sayıları (AGENTS kural 3). Değerler T7'den
         // AYNI taşındı, yalnızca yeri değişti — dovus-sistemi.md'de sayı yok, sapma T7
         // durum.md'sinde kayıtlı.
@@ -142,27 +175,48 @@ namespace Dovus.Game
         [Header("Kalıcı iz tavanı (T7.2, GroundScarField)")]
         public int GroundScarCapCount = 60;
 
-        /// <summary>
-        /// Sahneye serileşmiş eski Bootstrap kopyasında yeni alanlar 0/siyah gelir
-        /// (C# initializer deserialize'da uygulanmaz). T8 alanlarını belgedeki/uydurma
-        /// varsayılana çeker.
-        /// </summary>
-        public void EnsureT8Defaults()
-        {
-            if (PlayerMaxHp <= 0)
-                PlayerMaxHp = 22;
-            if (WindowCuePulseHz <= 0f)
-            {
-                WindowCueUrgentRatio = 0.30f;
-                WindowCuePulseHz = 2f;
-                WindowCueUrgentHz = 8f;
-                WindowCuePulseAmp = 0.45f;
-            }
+        // Sahneye serileşmiş eski kopyada yeni alanlar 0/siyah gelir (C# initializer
+        // deserialize'da uygulanmaz). Sürüm numarası da 0 geldiği için tek seferlik yama
+        // ÇALIŞIR; sahne bir kez yeniden kaydedildikten sonra bu blok hiç girmez ve
+        // tasarımcının bilinçli 0'ı (ör. nabzı kapatmak) artık ezilmez (T8.1).
+        [HideInInspector] public int TuningVersion = CurrentVersion;
 
-            if (TelegraphHot.maxColorComponent < 0.1f)
-                TelegraphHot = new Color(1f, 0.302f, 0.141f);
-            if (TelegraphWarm.maxColorComponent < 0.1f)
-                TelegraphWarm = new Color(1f, 0.604f, 0.235f);
+        const int CurrentVersion = 2;
+
+        /// <summary>Sürümü geçmiş serileşmiş kopyayı bu sürümün varsayılanlarına çeker.</summary>
+        public void EnsureRuntimeDefaults()
+        {
+            if (TuningVersion >= CurrentVersion)
+                return;
+
+            var fresh = new PrototypeTuning();
+            PlayerMaxHp = fresh.PlayerMaxHp;
+            WindowCueUrgentRatio = fresh.WindowCueUrgentRatio;
+            WindowCuePulseHz = fresh.WindowCuePulseHz;
+            WindowCueUrgentHz = fresh.WindowCueUrgentHz;
+            WindowCuePulseAmp = fresh.WindowCuePulseAmp;
+            TelegraphHot = fresh.TelegraphHot;
+            TelegraphWarm = fresh.TelegraphWarm;
+            DodgeGlideSpeedMps = fresh.DodgeGlideSpeedMps;
+            TelegraphStretch = fresh.TelegraphStretch;
+            TelegraphSquash = fresh.TelegraphSquash;
+            TelegraphSlamSquash = fresh.TelegraphSlamSquash;
+            TelegraphTonePitchMin = fresh.TelegraphTonePitchMin;
+            TelegraphTonePitchMax = fresh.TelegraphTonePitchMax;
+            TelegraphToneVolumeMin = fresh.TelegraphToneVolumeMin;
+            TelegraphToneVolumeMax = fresh.TelegraphToneVolumeMax;
+            BossApproachStopPadM = fresh.BossApproachStopPadM;
+            AfterimageAlpha = fresh.AfterimageAlpha;
+            ImpactFadeSec = fresh.ImpactFadeSec;
+            VignetteHoldSec = fresh.VignetteHoldSec;
+            VignetteFadeSec = fresh.VignetteFadeSec;
+            VignetteAlpha = fresh.VignetteAlpha;
+            ThreatAlphaMax = fresh.ThreatAlphaMax;
+            ThreatPulseHzMin = fresh.ThreatPulseHzMin;
+            ThreatPulseHzMax = fresh.ThreatPulseHzMax;
+            CameraShakePxToM = fresh.CameraShakePxToM;
+            AudioBaseCutoffHz = fresh.AudioBaseCutoffHz;
+            TuningVersion = CurrentVersion;
         }
 
         public bool IsDotOpen(int dot) => dot switch

@@ -25,6 +25,10 @@ namespace Dovus.Game
             _engine = engine;
             var go = new GameObject("SentenceDebug");
             go.transform.SetParent(canvasRoot, false);
+            // Canvas ScreenSpaceCamera'ya geçtiği için layer artık önemli: yeni GameObject
+            // Default'ta doğuyor ve Overlay kameranın cullingMask'i yalnızca UI (T8.1).
+            if (canvasRoot != null)
+                go.layer = canvasRoot.gameObject.layer;
             var rect = go.AddComponent<RectTransform>();
             rect.anchorMin = new Vector2(0.52f, 0.82f);
             rect.anchorMax = new Vector2(0.98f, 0.98f);
@@ -69,7 +73,14 @@ namespace Dovus.Game
             }
 
             if (result.Outcome == ExchangeOutcome.Hit)
+            {
                 Note(result.HitReasonText ?? "vuruldun");
+                return;
+            }
+
+            // Etki hacminin dışındaydı: derece yok. Yazmazsak oyuncu "neden derece almadım"
+            // sorusunu cevapsız bırakıyor (T8.1).
+            Note("MENZİL DIŞI (derece yok)");
         }
 
         void Note(string text)
@@ -112,11 +123,10 @@ namespace Dovus.Game
             if (_vitals != null)
             {
                 sb.Append('\n');
-                sb.Append(_vitals.IsDown ? "ölüm — dönüş " : "can: ");
                 if (_vitals.IsDown)
-                    sb.Append("…");
+                    sb.Append("ölüm — dönüş ").Append(_vitals.RespawnInSec.ToString("0.0")).Append(" sn");
                 else
-                    sb.Append(_vitals.Hp).Append('/').Append(_vitals.MaxHp);
+                    sb.Append("can: ").Append(_vitals.Hp).Append('/').Append(_vitals.MaxHp);
             }
 
             if (Time.unscaledTime < _noteUntil && !string.IsNullOrEmpty(_note))

@@ -64,7 +64,9 @@ namespace Dovus.Game
             _punchT = 1f;
             _punchDecay = Mathf.Max(0.5f, decay);
             float duration = 2f / _punchDecay;
-            AddShake(shakePx * 0.01f, duration);
+            // §8 sarsıntıyı PİKSEL veriyor, kamera METRE ile sarsılıyor; dönüşüm spec'te yok (T8.1).
+            float pxToM = _tuning != null ? _tuning.CameraShakePxToM : 0.01f;
+            AddShake(shakePx * pxToM, duration);
         }
 
         public void AddShake(float amplitudeM, float durationSec)

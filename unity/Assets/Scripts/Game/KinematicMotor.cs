@@ -14,6 +14,7 @@ namespace Dovus.Game
         GameClock _clock;
         MoveInput _input;
         DodgeMotion _dodgeMotion;
+        PlayerVitals _vitals;
 
         public PrototypeTuning Tuning
         {
@@ -46,6 +47,15 @@ namespace Dovus.Game
                 _dodgeMotion = GetComponent<DodgeMotion>();
             if (_dodgeMotion != null && _dodgeMotion.IsDisplacing)
                 return;
+
+            // Ölü oyuncu yürümez (T8.1): eskiden 2 sn boyunca dolaşıp sonra doğuşa ışınlanıyordu.
+            if (_vitals == null)
+                _vitals = GetComponent<PlayerVitals>();
+            if (_vitals != null && _vitals.IsDown)
+            {
+                Velocity = Vector3.zero;
+                return;
+            }
 
             Vector2 move = _input.MoveDirection;
             Vector3 direction = new Vector3(move.x, 0f, move.y);

@@ -20,7 +20,7 @@ namespace Dovus.Game
         void Awake()
         {
             _tuning ??= new PrototypeTuning();
-            _tuning.EnsureT8Defaults();
+            _tuning.EnsureRuntimeDefaults();
             BuildWorld();
         }
 
@@ -121,17 +121,18 @@ namespace Dovus.Game
             input.Bind(clock, ink, syllable, debug);
             debug.Configure(input.Engine, view.CanvasRoot);
             debug.BindVitals(vitals);
+            input.BindVitals(vitals);
 
             dodgeMotion.Bind(clock, input, boss.transform, afterimage);
 
             var feelGo = new GameObject("CombatFeel");
             feelGo.transform.SetParent(transform, false);
             var feel = feelGo.AddComponent<CombatFeel>();
-            feel.Bind(clock, follow, combat, overlay.Cam, debug);
+            feel.Bind(clock, follow, combat, _tuning, overlay.Cam, debug);
 
             var directorGo = boss.gameObject;
             var bossDir = directorGo.AddComponent<BossDirector>();
-            bossDir.Bind(clock, combat, boss, input, player, vitals, telegraph, feel);
+            bossDir.Bind(clock, combat, _tuning, boss, input, player, vitals, telegraph, feel);
 
             var scarsGo = new GameObject("GroundScars");
             scarsGo.transform.SetParent(transform, false);

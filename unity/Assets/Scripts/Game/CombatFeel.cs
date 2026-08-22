@@ -8,15 +8,22 @@ namespace Dovus.Game
     /// <summary>
     /// Sıyırma/vurulma hissi: hitstop, yavaş çekim, impact frame, vinyet, kamera yumruğu.
     /// Ekran katmanı Overlay değil — Overlay kamera üzerinde Screen Space Camera (§10).
+    ///
+    /// T8.1: kullanılmayan tam ekran katman KAPALI tutulur (alfa 0 bir Image yine de geometri
+    /// üretip harmanlanır — mobilde üç kat overdraw). Vinyet artık düz dolgu değil kenardan
+    /// içeri sönen bir maske: §10'un "telegraf en okunabilir katman" kuralı için ekranın
+    /// ortası açık kalmak zorunda. Renkler `PrototypeTuning`'den — ikinci kopya yok.
     /// </summary>
     public sealed class CombatFeel : MonoBehaviour
     {
+        const float ThreatHoldSec = 0.05f;
+
         CombatTuning _combat;
+        PrototypeTuning _colors;
         GameClock _clock;
         FollowCamera _follow;
-        Camera _worldCam;
         AudioLowPassFilter _lowpass;
-        SentenceEngineBridge _hud;
+        SentenceDebugHud _hud;
 
         Canvas _canvas;
         Image _impact;
@@ -25,7 +32,6 @@ namespace Dovus.Game
         float _impactUntil;
         float _vignetteUntil;
         float _threatUntil;
-        float _baseCutoff = 22000f;
 
         public ExchangeResult? LastExchange { get; private set; }
 
@@ -33,114 +39,121 @@ namespace Dovus.Game
             GameClock clock,
             FollowCamera follow,
             CombatTuning combat,
+            PrototypeTuning colors,
             Camera overlayCam,
             SentenceDebugHud hud)
         {
             _clock = clock;
             _follow = follow;
             _combat = combat;
-            _hud = new SentenceEngineBridge(hud);
-            _worldCam = Camera.main;
-            if (_worldCam != null)
+            _colors = colors;
+            _hud = hud;
+
+            Camera worldCam = Camera.main;
+            if (worldCam != null)
             {
-                _lowpass = _worldCam.GetComponent<AudioLowPassFilter>();
+                _lowpass = worldCam.GetComponent<AudioLowPassFilter>();
                 if (_lowpass == null)
-                    _lowpass = _worldCam.gameObject.AddComponent<AudioLowPassFilter>();
-                _lowpass.cutoffFrequency = _baseCutoff;
+                    _lowpass = worldCam.gameObject.AddComponent<AudioLowPassFilter>();
+                _lowpass.cutoffFrequency = _colors.AudioBaseCutoffHz;
             }
 
             BuildCanvas(overlayCam);
         }
 
+        /// <summary>Windup tehdidi (§10 kırmızı-turuncu). Ekran kenarında, ortası açık.</summary>
         public void ShowThreat(float progress01)
         {
             if (_threatFlash == null)
                 return;
 
             float p = Mathf.Clamp01(progress01);
-            float pulse = 0.15f + 0.55f * p + 0.15f * Mathf.Sin(Time.unscaledTime * (4f + 10f * p));
-            Color c = Color.Lerp(
-                new Color(1f, 0.604f, 0.235f, 0f),
-                new Color(1f, 0.302f, 0.141f, pulse * 0.35f),
-                p);
-            _threatFlash.color = c;
-            _threatUntil = Time.unscaledTime + 0.05f;
+            float hz = Mathf.Lerp(_colors.ThreatPulseHzMin, _colors.ThreatPulseHzMax, p);
+            float pulse = 0.55f + 0.45f * Mathf.Sin(Time.unscaledTime * hz);
+            Color c = Color.Lerp(_colors.TelegraphWarm, _colors.TelegraphHot, p);
+            c.a = _colors.ThreatAlphaMax * p * pulse;
+            Show(_threatFlash, c);
+            _threatUntil = Time.unscaledTime + ThreatHoldSec;
         }
 
-        public void ClearThreat()
-        {
-            if (_threatFlash != null)
-                _threatFlash.color = Color.clear;
-        }
+        public void ClearThreat() => Hide(_threatFlash);
 
         public void OnExchange(ExchangeResult result)
         {
             LastExchange = result;
             FeelTuning feel = _combat.Feel;
-            SlowmoTuning slowmo = _combat.Slowmo;
 
             if (result.Outcome == ExchangeOutcome.Dodged)
             {
                 _clock.Director.TriggerHitstop(feel.HitstopPerfectMs);
-                if (result.Grade.HasValue && result.Grade.Value <= slowmo.SlowmoMinGrade)
+                if (result.Grade.HasValue && result.Grade.Value <= _combat.Slowmo.SlowmoMinGrade)
                     _clock.Director.TriggerSlowmo();
 
                 float kick = result.Grade == DodgeGrade.Mukemmel
                     ? feel.CameraPerfectZoomKick
                     : feel.CameraDodgeZoomKick;
                 _follow?.Punch(kick, feel.CameraRollDeg, feel.ShakePerfectPx, feel.ShakeDecay);
-                FlashImpact(feel.ImpactFrameMs);
-                _hud.NoteExchange(result);
-                return;
+                _impactUntil = Time.unscaledTime + feel.ImpactFrameMs / 1000f;
             }
-
-            if (result.Outcome == ExchangeOutcome.Hit)
+            else if (result.Outcome == ExchangeOutcome.Hit)
             {
                 _clock.Director.TriggerHitstop(feel.HitstopPlayerHitMs);
                 _follow?.Punch(feel.CameraDodgeZoomKick, feel.CameraRollDeg, feel.ShakeHitPx, feel.ShakeDecay);
-                ShowVignette(0.85f);
-                _hud.NoteExchange(result);
+                _vignetteUntil = Time.unscaledTime + _colors.VignetteHoldSec;
             }
+
+            // Safe de yazılır (T8.1): dodge oyuncuyu etki hacminin dışına taşıdığında ekranda
+            // hiçbir şey olmaması "neden derece almadım" sorusunu cevapsız bırakıyordu (§6).
+            _hud?.NoteExchange(result);
         }
 
         void LateUpdate()
         {
             float now = Time.unscaledTime;
-            if (_impact != null)
+
+            float impactLeft = _impactUntil - now;
+            if (impactLeft > 0f)
+                Show(_impact, new Color(1f, 1f, 1f, Mathf.Clamp01(impactLeft / _colors.ImpactFadeSec)));
+            else
+                Hide(_impact);
+
+            float vignetteLeft = _vignetteUntil - now;
+            if (vignetteLeft > 0f)
             {
-                float t = _impactUntil - now;
-                _impact.color = t > 0f
-                    ? new Color(1f, 1f, 1f, Mathf.Clamp01(t / 0.04f))
-                    : Color.clear;
+                Color c = _colors.TelegraphHot;
+                c.a = _colors.VignetteAlpha * Mathf.Clamp01(vignetteLeft / _colors.VignetteFadeSec);
+                Show(_vignette, c);
+            }
+            else
+            {
+                Hide(_vignette);
             }
 
-            if (_vignette != null)
-            {
-                float t = _vignetteUntil - now;
-                _vignette.color = t > 0f
-                    ? new Color(0.7f, 0.05f, 0.02f, 0.55f * Mathf.Clamp01(t / 0.45f))
-                    : Color.clear;
-            }
-
-            if (_threatFlash != null && now > _threatUntil)
-                _threatFlash.color = Color.clear;
+            if (now > _threatUntil)
+                Hide(_threatFlash);
 
             if (_lowpass != null && _clock != null)
             {
                 _lowpass.cutoffFrequency = _clock.Director.IsSlowmoActive
                     ? _combat.Slowmo.AudioLowpassHz
-                    : _baseCutoff;
+                    : _colors.AudioBaseCutoffHz;
             }
         }
 
-        void FlashImpact(int ms)
+        static void Show(Image img, Color color)
         {
-            _impactUntil = Time.unscaledTime + ms / 1000f;
+            if (img == null)
+                return;
+
+            img.color = color;
+            if (!img.enabled)
+                img.enabled = true;
         }
 
-        void ShowVignette(float holdSec)
+        static void Hide(Image img)
         {
-            _vignetteUntil = Time.unscaledTime + holdSec;
+            if (img != null && img.enabled)
+                img.enabled = false;
         }
 
         void BuildCanvas(Camera overlayCam)
@@ -154,41 +167,18 @@ namespace Dovus.Game
             _canvas.worldCamera = overlayCam;
             _canvas.planeDistance = 0.8f;
             _canvas.sortingOrder = 200;
-            if (overlayCam != null)
-            {
-                int layer = 0;
-                int mask = overlayCam.cullingMask;
-                for (int i = 0; i < 32; i++)
-                {
-                    if ((mask & (1 << i)) != 0)
-                    {
-                        layer = i;
-                        break;
-                    }
-                }
-
-                go.layer = layer;
-            }
-
             go.AddComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
-            go.AddComponent<GraphicRaycaster>();
 
-            _impact = CreateFull(go.transform, "Impact", Color.clear);
-            _vignette = CreateFull(go.transform, "Vignette", Color.clear);
-            _threatFlash = CreateFull(go.transform, "ThreatFlash", Color.clear);
+            Sprite edgeMask = CreateEdgeMaskSprite();
+            _impact = CreateFull(go.transform, "Impact", null);
+            _vignette = CreateFull(go.transform, "Vignette", edgeMask);
+            _threatFlash = CreateFull(go.transform, "ThreatFlash", edgeMask);
 
             if (overlayCam != null)
-                SetLayerRecursively(go, go.layer);
+                SetLayerRecursively(go, FirstLayer(overlayCam.cullingMask));
         }
 
-        static void SetLayerRecursively(GameObject go, int layer)
-        {
-            go.layer = layer;
-            for (int i = 0; i < go.transform.childCount; i++)
-                SetLayerRecursively(go.transform.GetChild(i).gameObject, layer);
-        }
-
-        static Image CreateFull(Transform parent, string name, Color color)
+        static Image CreateFull(Transform parent, string name, Sprite sprite)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
@@ -198,18 +188,50 @@ namespace Dovus.Game
             rt.offsetMin = Vector2.zero;
             rt.offsetMax = Vector2.zero;
             var img = go.AddComponent<Image>();
-            img.color = color;
+            img.sprite = sprite;
+            img.color = Color.clear;
             img.raycastTarget = false;
+            img.enabled = false;
             return img;
         }
 
-        readonly struct SentenceEngineBridge
+        /// <summary>Kenardan içeri sönen maske: ekranın ortası (ve boss telegrafı) açık kalır.</summary>
+        static Sprite CreateEdgeMaskSprite()
         {
-            readonly SentenceDebugHud _hud;
+            const int size = 64;
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            tex.wrapMode = TextureWrapMode.Clamp;
+            float half = (size - 1) * 0.5f;
+            for (int y = 0; y < size; y++)
+            for (int x = 0; x < size; x++)
+            {
+                float dx = (x - half) / half;
+                float dy = (y - half) / half;
+                float r = Mathf.Clamp01(Mathf.Sqrt(dx * dx + dy * dy) / 1.4142f);
+                float a = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.40f, 1f, r));
+                tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+            }
 
-            public SentenceEngineBridge(SentenceDebugHud hud) => _hud = hud;
+            tex.Apply(false, true);
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 64f);
+        }
 
-            public void NoteExchange(ExchangeResult result) => _hud?.NoteExchange(result);
+        static int FirstLayer(int mask)
+        {
+            for (int i = 0; i < 32; i++)
+            {
+                if ((mask & (1 << i)) != 0)
+                    return i;
+            }
+
+            return 0;
+        }
+
+        static void SetLayerRecursively(GameObject go, int layer)
+        {
+            go.layer = layer;
+            for (int i = 0; i < go.transform.childCount; i++)
+                SetLayerRecursively(go.transform.GetChild(i).gameObject, layer);
         }
     }
 }
