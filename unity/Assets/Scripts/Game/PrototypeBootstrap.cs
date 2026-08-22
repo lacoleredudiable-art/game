@@ -20,12 +20,15 @@ namespace Dovus.Game
         void Awake()
         {
             _tuning ??= new PrototypeTuning();
+            _tuning.EnsureT8Defaults();
             BuildWorld();
         }
 
         void BuildWorld()
         {
+            var combat = new CombatTuning();
             var clock = gameObject.AddComponent<GameClock>();
+            clock.Bind(combat.Slowmo);
 
             CreateArena();
 
@@ -53,23 +56,41 @@ namespace Dovus.Game
             pose.Tuning = _tuning;
             pose.CaptureBase();
 
+            var vitals = player.AddComponent<PlayerVitals>();
+            vitals.Bind(combat.Boss, _tuning.PlayerMaxHp);
+
+            var afterimage = player.AddComponent<AfterimageTrail>();
+            afterimage.Bind(combat.Feel, _tuning);
+
+            var dodgeMotion = player.AddComponent<DodgeMotion>();
+
             var reactor = boss.AddComponent<BossReactor>();
             reactor.Tuning = _tuning;
             reactor.BodyRadiusM = BossRadiusM;
             reactor.CaptureHome();
 
+            var telegraph = boss.AddComponent<BossTelegraph>();
+            telegraph.Bind(_tuning, combat.Boss, boss.transform);
+
             CreateSun();
-            CreateCamera(player.transform);
-            CreatePentagon(clock, player.transform, pose, reactor);
+            FollowCamera follow = CreateCamera(player.transform);
+            CreatePentagon(clock, combat, player.transform, pose, reactor, dodgeMotion, afterimage, vitals, telegraph, follow);
         }
 
-        void CreatePentagon(GameClock clock, Transform player, ActorPose pose, BossReactor boss)
+        void CreatePentagon(
+            GameClock clock,
+            CombatTuning combat,
+            Transform player,
+            ActorPose pose,
+            BossReactor boss,
+            DodgeMotion dodgeMotion,
+            AfterimageTrail afterimage,
+            PlayerVitals vitals,
+            BossTelegraph telegraph,
+            FollowCamera follow)
         {
             var root = new GameObject("Pentagon");
             root.transform.SetParent(transform, false);
-
-            var view = root.AddComponent<PentagonView>();
-            view.Build(_tuning);
 
             var mainCam = Camera.main;
             if (mainCam != null)
@@ -80,6 +101,9 @@ namespace Dovus.Game
             var overlay = overlayGo.AddComponent<PentagonOverlayCamera>();
             overlay.Build(PentagonInkLayer);
             AttachOverlayToMain(mainCam, overlay.Cam);
+
+            var view = root.AddComponent<PentagonView>();
+            view.Build(_tuning, overlay.Cam);
 
             var inkGo = new GameObject("InkTrail");
             inkGo.transform.SetParent(root.transform, false);
@@ -93,9 +117,21 @@ namespace Dovus.Game
 
             var input = root.AddComponent<PentagonInput>();
             input.Tuning = _tuning;
-            input.Combat = new CombatTuning();
+            input.Combat = combat;
             input.Bind(clock, ink, syllable, debug);
             debug.Configure(input.Engine, view.CanvasRoot);
+            debug.BindVitals(vitals);
+
+            dodgeMotion.Bind(clock, input, boss.transform, afterimage);
+
+            var feelGo = new GameObject("CombatFeel");
+            feelGo.transform.SetParent(transform, false);
+            var feel = feelGo.AddComponent<CombatFeel>();
+            feel.Bind(clock, follow, combat, overlay.Cam, debug);
+
+            var directorGo = boss.gameObject;
+            var bossDir = directorGo.AddComponent<BossDirector>();
+            bossDir.Bind(clock, combat, boss, input, player, vitals, telegraph, feel);
 
             var scarsGo = new GameObject("GroundScars");
             scarsGo.transform.SetParent(transform, false);
@@ -169,7 +205,7 @@ namespace Dovus.Game
             return light;
         }
 
-        void CreateCamera(Transform target)
+        FollowCamera CreateCamera(Transform target)
         {
             var camGo = new GameObject("Main Camera");
             camGo.tag = "MainCamera";
@@ -186,6 +222,7 @@ namespace Dovus.Game
             follow.Tuning = _tuning;
             follow.Target = target;
             camGo.transform.position = target.position + _tuning.CameraOffset;
+            return follow;
         }
 
         static void ApplyColor(GameObject go, Color color)

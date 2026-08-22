@@ -13,6 +13,7 @@ namespace Dovus.Game
 
         GameClock _clock;
         MoveInput _input;
+        DodgeMotion _dodgeMotion;
 
         public PrototypeTuning Tuning
         {
@@ -41,6 +42,11 @@ namespace Dovus.Game
 
         void Update()
         {
+            if (_dodgeMotion == null)
+                _dodgeMotion = GetComponent<DodgeMotion>();
+            if (_dodgeMotion != null && _dodgeMotion.IsDisplacing)
+                return;
+
             Vector2 move = _input.MoveDirection;
             Vector3 direction = new Vector3(move.x, 0f, move.y);
             if (direction.sqrMagnitude > 1f)

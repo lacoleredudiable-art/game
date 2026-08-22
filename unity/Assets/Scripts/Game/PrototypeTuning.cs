@@ -15,6 +15,11 @@ namespace Dovus.Game
         [Header("Oyuncu")]
         public float WalkSpeedMps = 4.5f;
 
+        // Spec §11 hasar 22; oyuncu tavanı belgede yok. Bir çakma = ölüm — respawn ≤2 sn
+        // (§11) döngüsü böyle denenebiliyor. T11 his turunda ayarlanacak.
+        [Header("Oyuncu can (T8)")]
+        public int PlayerMaxHp = 22;
+
         [Header("Sanal çubuk")]
         public float JoystickMaxRadiusDp = 72f;
         public float JoystickDeadZone = 0.12f;
@@ -76,6 +81,16 @@ namespace Dovus.Game
         public Color PentagonCenterColor = new Color(0.373f, 0.941f, 1f, 0.9f);
         // Dodge diski §10 moru: kırmızı-turuncu OLAMAZ, o renk yalnızca boss tehdidi.
         public Color DodgeButtonColor = new Color(0.725f, 0.549f, 1f, 0.9f);
+        // §10: kırmızı-turuncu YALNIZCA boss tehdidi.
+        public Color TelegraphHot = new Color(1f, 0.302f, 0.141f);   // #FF4D24
+        public Color TelegraphWarm = new Color(1f, 0.604f, 0.235f);  // #FF9A3C
+
+        // §8/T2 bedava kazanç: iptal penceresi dalganın yerinden okunur. Spec sayı vermiyor.
+        [Header("İptal penceresi ipucu (T8, §8/T2)")]
+        public float WindowCueUrgentRatio = 0.30f;
+        public float WindowCuePulseHz = 2f;
+        public float WindowCueUrgentHz = 8f;
+        public float WindowCuePulseAmp = 0.45f;
 
         // T7.2: LivingEffectView'a gömülü his sayıları (AGENTS kural 3). Değerler T7'den
         // AYNI taşındı, yalnızca yeri değişti — dovus-sistemi.md'de sayı yok, sapma T7
@@ -126,6 +141,29 @@ namespace Dovus.Game
         // tavan dolunca en eski iz DÖNÜŞTÜRÜLÜR (yok edilip yeniden yaratılmaz).
         [Header("Kalıcı iz tavanı (T7.2, GroundScarField)")]
         public int GroundScarCapCount = 60;
+
+        /// <summary>
+        /// Sahneye serileşmiş eski Bootstrap kopyasında yeni alanlar 0/siyah gelir
+        /// (C# initializer deserialize'da uygulanmaz). T8 alanlarını belgedeki/uydurma
+        /// varsayılana çeker.
+        /// </summary>
+        public void EnsureT8Defaults()
+        {
+            if (PlayerMaxHp <= 0)
+                PlayerMaxHp = 22;
+            if (WindowCuePulseHz <= 0f)
+            {
+                WindowCueUrgentRatio = 0.30f;
+                WindowCuePulseHz = 2f;
+                WindowCueUrgentHz = 8f;
+                WindowCuePulseAmp = 0.45f;
+            }
+
+            if (TelegraphHot.maxColorComponent < 0.1f)
+                TelegraphHot = new Color(1f, 0.302f, 0.141f);
+            if (TelegraphWarm.maxColorComponent < 0.1f)
+                TelegraphWarm = new Color(1f, 0.604f, 0.235f);
+        }
 
         public bool IsDotOpen(int dot) => dot switch
         {

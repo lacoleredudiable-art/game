@@ -1,5 +1,7 @@
 using System.Text;
+using Dovus.Core.Combat;
 using Dovus.Core.Grammar;
+using Dovus.Core.Tuning;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,8 +14,11 @@ namespace Dovus.Game
 
         Text _text;
         SentenceEngine _engine;
+        PlayerVitals _vitals;
         string _note;
         float _noteUntil;
+
+        public void BindVitals(PlayerVitals vitals) => _vitals = vitals;
 
         public void Configure(SentenceEngine engine, Transform canvasRoot)
         {
@@ -46,6 +51,26 @@ namespace Dovus.Game
         public void NoteCommit() => Note("ERKEN KAPANIŞ (merkez öder)");
 
         public void NoteBasicStrike() => Note("DÜZ VURUŞ");
+
+        public void NoteExchange(ExchangeResult result)
+        {
+            if (result.Outcome == ExchangeOutcome.Dodged)
+            {
+                string grade = result.Grade switch
+                {
+                    DodgeGrade.Mukemmel => "MÜKEMMEL",
+                    DodgeGrade.Harika => "HARİKA",
+                    DodgeGrade.Temiz => "TEMİZ",
+                    DodgeGrade.Siyirdi => "SIYIRDI",
+                    _ => "SIYIRMA"
+                };
+                Note($"{grade}  {result.ReactionMs / 1000f:0.00} sn");
+                return;
+            }
+
+            if (result.Outcome == ExchangeOutcome.Hit)
+                Note(result.HitReasonText ?? "vuruldun");
+        }
 
         void Note(string text)
         {
@@ -82,6 +107,16 @@ namespace Dovus.Game
             else
             {
                 sb.Append("beşgen: sürükle · merkez: vur · disk: dodge");
+            }
+
+            if (_vitals != null)
+            {
+                sb.Append('\n');
+                sb.Append(_vitals.IsDown ? "ölüm — dönüş " : "can: ");
+                if (_vitals.IsDown)
+                    sb.Append("…");
+                else
+                    sb.Append(_vitals.Hp).Append('/').Append(_vitals.MaxHp);
             }
 
             if (Time.unscaledTime < _noteUntil && !string.IsNullOrEmpty(_note))

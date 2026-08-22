@@ -16,14 +16,20 @@ namespace Dovus.Game
         public Canvas Canvas => _canvas;
         public Transform CanvasRoot => _canvas != null ? _canvas.transform : null;
 
-        public void Build(PrototypeTuning tuning)
+        public void Build(PrototypeTuning tuning, Camera overlayCam)
         {
             _tuning = tuning;
 
             var canvasGo = new GameObject("PentagonCanvas");
             canvasGo.transform.SetParent(transform, false);
             _canvas = canvasGo.AddComponent<Canvas>();
-            _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            // Overlay canvas her kameranın üstüne biner ve telegrafı ezer (§10).
+            // Tek mekanizma: Overlay kamera + Screen Space Camera.
+            _canvas.renderMode = overlayCam != null
+                ? RenderMode.ScreenSpaceCamera
+                : RenderMode.ScreenSpaceOverlay;
+            _canvas.worldCamera = overlayCam;
+            _canvas.planeDistance = 1.2f;
             _canvas.sortingOrder = 50;
             canvasGo.AddComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
             canvasGo.AddComponent<GraphicRaycaster>();
@@ -43,6 +49,9 @@ namespace Dovus.Game
 
             // Dodge beşgenin dışında, ekrana sabit (§2). §10: kırmızı-turuncu olamaz.
             _dodge = CreateDisc("DodgeButton", sprite, _tuning.DodgeButtonColor, canvasGo.transform, out _);
+
+            if (overlayCam != null)
+                SetLayerRecursively(canvasGo, FirstLayer(overlayCam.cullingMask));
 
             Layout();
         }
@@ -129,6 +138,24 @@ namespace Dovus.Game
             t.color = new Color(0.1f, 0.12f, 0.16f, 0.9f);
             t.raycastTarget = false;
             return t;
+        }
+
+        static int FirstLayer(int mask)
+        {
+            for (int i = 0; i < 32; i++)
+            {
+                if ((mask & (1 << i)) != 0)
+                    return i;
+            }
+
+            return 0;
+        }
+
+        static void SetLayerRecursively(GameObject go, int layer)
+        {
+            go.layer = layer;
+            for (int i = 0; i < go.transform.childCount; i++)
+                SetLayerRecursively(go.transform.GetChild(i).gameObject, layer);
         }
 
         static Sprite CreateCircleSprite()
