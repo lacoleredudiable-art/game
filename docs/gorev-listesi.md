@@ -371,13 +371,24 @@ YASAKLAR
 ```
 Rolün: Boss dövüş döngüsünü ve his katmanını kuran geliştirici.
 
-ÖNCE OKU: docs/dovus-sistemi.md §6, §7, §10, §11 · Core/Combat (T3) · Core/Time (T4)
-· docs/durum.md "Bilinen açıklar" (katmanlama + dodge yer değiştirme).
+ÖNCE OKU: docs/dovus-sistemi.md §6, §7, §8/T2, §10, §11 · Core/Combat (T3) · Core/Time (T4)
+· docs/durum.md "Bilinen açıklar" + "T7.1 sapmaları" (katmanlama, dodge yer değiştirme,
+iptal penceresinin görünmezliği).
 
 GÖREV
-0. Sahiplen (önceki görevlerden açık):
+0. Sahiplen (önceki görevlerden açık — hepsi docs/durum.md'de kayıtlı):
    - Dodge: `GetDisplacementRatio` / glide'ı oyuncu transform'una uygula (+ afterimage).
    - Katmanlama: Overlay canvas telegrafı eziyor — §10 "en üst katman" için tek mekanizma.
+   - §8/T2'nin bedava kazancı kurulmadı: "iptal penceresini dalganın nerede olduğuna bakarak
+     bilirsin". Şu an pencere yalnızca debug metninde; dünyada görünmüyor. Kalan süre
+     `LivingEffect.Travel`/`MaxRange` üzerinden okunabilir, görsel bir ipucuna bağlanmalı
+     (nabız/solma/renk). Spec sayı vermiyor; koyduğun sayıyı `PrototypeTuning`'e ve
+     docs/durum.md'ye yaz.
+   - `SentenceEngine.OnDotTouched`/`OnDwell` `worldTimeMs`'i yutuyor; pencere yalnızca
+     `Tick(dtMs)` ile eriyor (~16 ms kare yuvarlaması). Yavaş çekimde pencere ölçümü senin
+     kabul kriterin olduğu için bu hassasiyeti Core'da düzeltmek T8'in işi.
+   - Boss konumu `BossReactor.Home` property'sinin sahipliğinde: yaklaşma hareketini
+     `transform.position`'a değil `Home`'a yaz, yoksa geri tepme kalıcılığı (T7.2) bozulur.
 1. Boss: YERE ÇAKMA saldırısı (windup 640 / active 90 / recovery 720 / radius 5.4).
    Okunabilir telegraf: hazırlık pozu + büyüyen yer göstergesi + yükselen ses.
    Idle'da oyuncuya doğru yavaş yaklaşır (2.2 m/s).
@@ -398,6 +409,8 @@ KABUL KRİTERLERİ
 YASAKLAR
 - Yeni boss saldırısı ekleme (tek saldırı yeter)
 - Yavaş çekim rampasını Core dışında yeniden yazma
+- `GameObject.CreatePrimitive` çağırma (collider doğurur): mesh gerekiyorsa
+  `PrimitiveMesh.Get(PrimitiveType)`
 ```
 
 ### T9 — HUD: parlak tepki yazısı

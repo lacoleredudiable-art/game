@@ -21,6 +21,8 @@
 | T7 | Tezahür katmanı (üç rün) | bitti | task/t7-manifestation |
 | T7.1 | T7 denetim düzeltmeleri (bağlantı/mantık) | bitti | task/t7.1-tezahur-bagi |
 | T7.2 | T7 denetim düzeltmeleri (görünüm katmanı) | bitti | task/t7.2-tezahur-gorunum |
+| T7.3 | Bootstrap wiring (paylaşılan tuning, collider yok) | bitti | task/t7.3-bootstrap-wiring |
+| T7.4 | Yerleşik mesh adı regresyonu (ölçek) | bitti | aynı dal → master |
 | T8 | Boss telegrafı, sıyırma, yavaş çekim, kamera | bekliyor | — |
 | T9 | HUD, parlak tepki yazısı | bekliyor | — |
 | T10 | Oyun içi ayar paneli | bekliyor | — |
@@ -145,6 +147,9 @@ Sahne: `Assets/Scenes/Prototype.unity` (tek Bootstrap objesi). URP renderer düz
 - `ActorPose` — rün squash/stretch + toparlanma nefesi (T1/T5).
 - `BossReactor` — knockback / lift / pin (hasar yok).
 - `GroundScarField` — kalıcı çatlak/iğne/sürü/asit izi (§10 yeşil yalnızca asit).
+- `PrimitiveMesh.Get(PrimitiveType)` — yerleşik mesh'in tek kaynağı (T7.4). Yeni bir küp/küre/
+  kapsül gerekirse `GameObject.CreatePrimitive` **değil** bunu çağır: collider doğmaz ve ölçü
+  `CreatePrimitive`'le aynı kalır.
 - Kapalı rün geri bildirimi **yeniden yazılmadı** (T6.1).
 
 **Test:** `SilhouetteBuilderTests` 6; toplam `dotnet test` 52 yeşil (T7.1 sonrası 57, bkz. altta).
@@ -247,8 +252,8 @@ Denetimde bulunan 6 görünüm hatası düzeltildi (`Assets/Scripts/Core`'a ve
    yerçekimi (22), geri tepme yumuşatma sönmesi (3.2) ve sarsıntı genlik katsayıları (0.12/0.05,
    + Pin'in 0.04'ü) hepsi `PrototypeTuning`'e taşındı. Değerler AYNI kaldı, yalnızca yeri değişti.
    `ActorPose`/`BossReactor` kendi `PrototypeTuning` alanlarını taşıyor (`[SerializeField]` +
-   `Tuning` property, `KinematicMotor` ile aynı desen) çünkü `PrototypeBootstrap.cs` bu görevin
-   dokunma listesinde değildi — bkz. aşağıdaki sapma notu.
+   `Tuning` property, `KinematicMotor` ile aynı desen); T7.3'te Bootstrap paylaşılan
+   `_tuning` örneğini ve `BossRadiusM`'yi bağladı.
 6. **`GameObject.CreatePrimitive`'in ürettiği collider bir kare yaşıyordu.**
    `LivingEffectView` (küre/iğne) ve `GroundScarField` (quad) artık `MeshFilter`/`MeshRenderer`'ı
    doğrudan kurup `Resources.GetBuiltinResource<Mesh>("Sphere.fbx"/"Capsule.fbx"/"Quad.fbx")`
@@ -272,6 +277,58 @@ izole örnekleri + gerçek `SentenceEngine` üzerinden tek bir SARSINTI kapanı�
 - Boss knockback + arena kırpma + tavan/recycle + collider yokluğu izole component testleriyle
   de (Play/Edit modunda doğrudan `BossReactor`/`GroundScarField` örnekleri üstünden) ayrıca
   doğrulandı (yukarıdaki maddelerde sayılar var).
+
+### T7.3 — Bootstrap wiring
+
+T7.2'nin dokunamadığı `PrototypeBootstrap.cs` bağlantıları kapandı:
+
+1. **`ActorPose`/`BossReactor` paylaşılan `PrototypeTuning`.** `BuildWorld`'de `pose.Tuning =
+   _tuning` → `CaptureBase()` ve `reactor.Tuning = _tuning` → `CaptureHome()` sırası korundu
+   (`CaptureHome` arena yarıçapını Tuning'den okur).
+2. **`BossReactor.BodyRadiusM` Bootstrap sabitiyle bağlandı** (`reactor.BodyRadiusM = BossRadiusM`,
+   `KinematicMotor` deseni).
+3. **Arena/oyuncu/boss artık `CreateMeshObject` ile kuruluyor**; `CreatePrimitive` + collider
+   `Destroy` kaldırıldı — sahne kökünde hiç collider yok. (Mesh adları yanlış seçilmişti, T7.4
+   düzeltti.)
+
+**Test:** `dotnet test` **57 yeşil**. Unity play: collider sayısı 0; `_tuning.ArenaHalfSizeM=6`
+   ile boss kırpma sınırı küçülüyor (sonra varsayılan geri alındı).
+
+### T7.4 — Yerleşik mesh adı regresyonu (ölçek)
+
+T7.2/T7.3 `CreatePrimitive`'i kaldırırken mesh'leri `Resources.GetBuiltinResource<Mesh>` ile
+adla istedi, ama **öneksiz adlar başka bir mesh setine gidiyor**: `Plane.fbx`/`Capsule.fbx`/
+`Sphere.fbx` Maya kaynaklı eski varlıklar. Ölçüldü (aynı editör oturumu):
+
+| İstenen | Öneksiz ad | Ölçüsü | `CreatePrimitive` mesh'i | Ölçüsü |
+|---|---|---|---|---|
+| Zemin | `Plane.fbx` | 1×0×1 | `New-Plane.fbx` | 10×0×10 |
+| Kapsül | `Capsule.fbx` | 2×4×2 | `New-Capsule.fbx` | 1×2×1 |
+| Küre | `Sphere.fbx` | 2×2×2 | `New-Sphere.fbx` | 1×1×1 |
+| Quad (iz) | `Quad.fbx` | 1×1×0 | `Quad.fbx` | aynı — tek doğru olan buydu |
+
+Sonuç sahnede: arena 24 m yerine **2.4 m**, oyuncu/boss iki kat büyük ve yarısı **yerin
+altında** (`altY = −1.00` / `−1.30`), sürü küreleri ve iğne iki kat kalın. Ölçek formüllerinin
+hiçbiri yanlış değildi — hepsi `CreatePrimitive` ölçülerini varsayıyordu.
+
+Düzeltme: **`PrimitiveMesh.Get(PrimitiveType)`** (yeni, `Assets/Scripts/Game/PrimitiveMesh.cs`).
+Adı tek yerde tutar, tipe göre cache'ler, ad bulunamazsa uyarı basıp mesh'i geçici bir
+primitive'den alır (aynı karede `DestroyImmediate` — collider dünyaya karışmaz) ki bir sonraki
+Unity sürümünde ad değişirse sahne sessizce görünmez olmasın. `PrototypeBootstrap`,
+`LivingEffectView` ve `GroundScarField` artık string yerine bu yardımcıyı çağırıyor;
+`CreatePrimitive`'i sahne kurulumunda kimse çağırmıyor.
+
+**Test:** `dotnet test` **57 yeşil** (Core'a dokunulmadı).
+**Unity play mode (MCP prob, gerçek sahne):**
+- Altı primitive tipinin hepsinde `PrimitiveMesh.Get(t)` ile `CreatePrimitive(t)` mesh'i
+  **referans olarak aynı** (`ReferenceEquals=True`).
+- Arena `24.00 × 24.00` m (`ArenaHalfSizeM=12` ile tutarlı), üst yüzey y=0.
+- Oyuncu `1.00 × 2.00` m, boss `1.70 × 2.60` m; **ikisinin de altı tam y=0** (gömülme yok).
+- `COLLIDER sayısı = 0` (kurulumda, cümle sırasında ve kapanışta).
+- Gerçek `SentenceEngine` ile SÜRÜ cümlesi: küreler `Sphere` mesh (1 m) × 0.35 ölçek = 0.35 m.
+  İĞNE cümlesi: `Capsule` mesh (1×2) × (0.20, 0.53, 0.20) = 0.20 m kalınlık, 1.05 m boy.
+- Konsol `errorCount=0`; tek uyarı T7.1/T7.2'de de not edilen, koddan bağımsız AI Toolkit ağ
+  uyarısı. Oyun kamerasından alınan karede arena tam boy, aktörler zemine oturuyor.
 
 ## Spec'ten sapmalar
 
@@ -417,9 +474,10 @@ Konsol temiz, `dotnet test` 46 yeşil. Titreşim/hece kulakla ve ekran görünt�
   bilirsin".** Şu an iptal penceresi hâlâ görünmez — `LivingEffectView` etkinin silüetini/mesafesini
   çizer ama kalan pencere süresiyle görsel olarak bağlanmış değil (`SentenceDebugHud` metinle
   gösteriyor, dünyada değil). Spec'te bunu somutlaştıran bir sayı/mekanik yok, uydurulmadı. Bu,
-  T7.1'in görev tanımı dışında (görünüm dosyalarına dokunma yasağı) — T7.2 ya da T8'in ele alması
-  gerekir: dalganın/iğnenin/sürünün menzile ne kadar yaklaştığı zaten `LivingEffect.Travel` /
-  `MaxRange`'den okunabilir, görsel bir ipucuna (örn. solma, renk, nabız) çevrilmesi gerekiyor.
+  T7.1'in görev tanımı dışındaydı (görünüm dosyalarına dokunma yasağı) ve T7.2 de almadı —
+  **T8'e devredildi**, görev metnine madde olarak yazıldı: dalganın/iğnenin/sürünün menzile ne
+  kadar yaklaştığı `LivingEffect.Travel` / `MaxRange`'den okunabilir, görsel bir ipucuna
+  (örn. solma, renk, nabız) çevrilmesi gerekiyor.
 
 ## T7.2 sapmaları / varsayılanlar
 
@@ -427,17 +485,6 @@ Konsol temiz, `dotnet test` 46 yeşil. Titreşim/hece kulakla ve ekran görünt�
   için icat edildi — 30 kapanışta gerçekçi en kötü senaryo (SARSINTI odaklı çatlak kapanışta
   3 alt damga + seyahatte 1 = 4/kapanış) ~120 iz üretebilir; tavan bunun yarısından azında
   görsel yoğunluğu sınırlıyor. Telefonda T11'de ayarlanacak.
-- **`ActorPose`/`BossReactor` kendi `PrototypeTuning` kopyasını tutuyor, `PrototypeBootstrap`'ın
-  paylaştığı tek örnekle bağlı değil.** T5'in çözdüğü "üç kopya" sorunu bu ikisi için kısmen geri
-  geldi: görevin dokunma listesi `PrototypeBootstrap.cs`'i içermiyordu, o yüzden wiring eklenemedi
-  (`reactor.Tuning = _tuning;` / `pose.Tuning = _tuning;` satırları yok). Şu an zararsız çünkü
-  varsayılan değerler Bootstrap'ın paylaştığı örnekle birebir aynı (örn. `ArenaHalfSizeM=12`).
-  **T10 canlı ayar paneli** geldiğinde bu iki bileşen slider'dan etkilenmeyecek — o görev bu
-  wiring'i tamamlamalı (`PrototypeBootstrap.CreatePentagon`'da `pose`/`reactor` zaten elde var,
-  tek satırlık ekleme).
-- **`BossReactor._bodyRadiusM` varsayılanı (0.85 m) `PrototypeBootstrap.BossRadiusM`'le elle
-  eşleştirildi**, referansla bağlı değil (aynı wiring-dışı-kalma sebebiyle). Boss yarıçapı
-  ileride değişirse bu ikisi ayrışabilir.
 - **`LivingEffectView`'daki iğne (needle) ölçek sabitleri (0.35/0.14 kalınlık, 0.7/0.5 uzunluk)
   ve küre yanı offset sabitleri (0.35/1.4/0.4) da veri oldu**, görev metninde tek tek sayılmasa
   da "küre ölçekleri" kategorisiyle aynı karakterde — needle ölçek sabitleri taşındı, yanı-offset
@@ -493,9 +540,3 @@ Konsol temiz, `dotnet test` 46 yeşil. Titreşim/hece kulakla ve ekran görünt�
   boss telegrafı §10'un istediği "en üst ve en okunabilir katman" olamaz — telegraf beşgen
   noktalarının ve debug metninin altında kalır. T8 katmanlamayı tek mekanizmaya indirmeli.
 - Mobilde ikinci kamera fazladan bir render geçişi; T11 kare bütçesinde bakılacak.
-- **`PrototypeBootstrap.ApplyColor` hâlâ `GameObject.CreatePrimitive` + `Destroy(collider)`
-  deseni kullanıyor** (arena zemini, oyuncu/boss kapsülleri) — T7.2'nin kabul kriteri 6 bununla
-  aynı sınıf hata (bir karelik collider), ama `PrototypeBootstrap.cs` T7.2'nin dokunma
-  listesinde değildi. `LivingEffectView`/`GroundScarField`'da düzeltildi (mesh doğrudan atanıyor,
-  collider hiç oluşmuyor); Bootstrap'taki üç çağrı aynı deseni izleyebilir — küçük, bağımsız bir
-  görev veya T8/T10 üstlenebilir.

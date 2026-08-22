@@ -50,9 +50,12 @@ namespace Dovus.Game
             motor.BodyRadiusM = PlayerRadiusM;
 
             var pose = player.AddComponent<ActorPose>();
+            pose.Tuning = _tuning;
             pose.CaptureBase();
 
             var reactor = boss.AddComponent<BossReactor>();
+            reactor.Tuning = _tuning;
+            reactor.BodyRadiusM = BossRadiusM;
             reactor.CaptureHome();
 
             CreateSun();
@@ -125,9 +128,8 @@ namespace Dovus.Game
 
         void CreateArena()
         {
-            var ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
-            ground.name = "Arena";
-            // Plane primitive 10x10 m; ArenaHalfSizeM yarım kenar uzunluğu.
+            var ground = CreateMeshObject("Arena", PrimitiveType.Plane);
+            // Plane mesh 10x10 m; ArenaHalfSizeM yarım kenar uzunluğu.
             float scale = _tuning.ArenaHalfSizeM / 5f;
             ground.transform.localScale = new Vector3(scale, 1f, scale);
             ApplyColor(ground, _tuning.GroundColor);
@@ -135,12 +137,23 @@ namespace Dovus.Game
 
         static GameObject CreateCapsule(string name, Vector3 position, float radius, float height, Color color)
         {
-            var capsule = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            capsule.name = name;
+            var capsule = CreateMeshObject(name, PrimitiveType.Capsule);
             capsule.transform.position = position;
             capsule.transform.localScale = new Vector3(radius * 2f, height * 0.5f, radius * 2f);
             ApplyColor(capsule, color);
             return capsule;
+        }
+
+        /// <summary>
+        /// Mesh'i doğrudan ata (MeshFilter+MeshRenderer) — CreatePrimitive'in otomatik
+        /// Collider'ı hiç oluşmaz (teknoloji-kararlari §4).
+        /// </summary>
+        static GameObject CreateMeshObject(string name, PrimitiveType type)
+        {
+            var go = new GameObject(name);
+            go.AddComponent<MeshFilter>().sharedMesh = PrimitiveMesh.Get(type);
+            go.AddComponent<MeshRenderer>();
+            return go;
         }
 
         Light CreateSun()
@@ -177,11 +190,6 @@ namespace Dovus.Game
 
         static void ApplyColor(GameObject go, Color color)
         {
-            // Fizik kullanılmıyor (teknoloji-kararlari §4): primitive'in collider'ı ölü ağırlık.
-            var collider = go.GetComponent<Collider>();
-            if (collider != null)
-                Destroy(collider);
-
             var renderer = go.GetComponent<Renderer>();
             if (renderer == null)
                 return;
