@@ -100,6 +100,7 @@ namespace Dovus.Game
             }
 
             SyncFromSentence(worldMs);
+            ApplyWindowCue();
             TickEffects(dtSec, worldMs);
             _pose?.Tick(worldMs);
             _boss?.Tick(dtSec, worldMs);
@@ -133,6 +134,21 @@ namespace Dovus.Game
                 _pose?.PulseRune(state.Words[count - 1].Rune, worldMs);
 
             _lastWordCount = count;
+        }
+
+        void ApplyWindowCue()
+        {
+            if (_buildingView == null)
+                return;
+
+            var state = _engine.State;
+            if (state.Phase != SentencePhase.Building || state.ArmedWindowMs <= 0.5)
+            {
+                _buildingView.SetWindowCue(1f);
+                return;
+            }
+
+            _buildingView.SetWindowCue((float)(state.RemainingWindowMs / state.ArmedWindowMs));
         }
 
         LivingEffectView SpawnEffect(IReadOnlyList<SentenceWord> words, double worldMs)

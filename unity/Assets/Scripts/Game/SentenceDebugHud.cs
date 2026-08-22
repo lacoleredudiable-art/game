@@ -1,5 +1,7 @@
 using System.Text;
+using Dovus.Core.Combat;
 using Dovus.Core.Grammar;
+using Dovus.Core.Tuning;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,14 +14,21 @@ namespace Dovus.Game
 
         Text _text;
         SentenceEngine _engine;
+        PlayerVitals _vitals;
         string _note;
         float _noteUntil;
+
+        public void BindVitals(PlayerVitals vitals) => _vitals = vitals;
 
         public void Configure(SentenceEngine engine, Transform canvasRoot)
         {
             _engine = engine;
             var go = new GameObject("SentenceDebug");
             go.transform.SetParent(canvasRoot, false);
+            // Canvas ScreenSpaceCamera'ya geçtiği için layer artık önemli: yeni GameObject
+            // Default'ta doğuyor ve Overlay kameranın cullingMask'i yalnızca UI (T8.1).
+            if (canvasRoot != null)
+                go.layer = canvasRoot.gameObject.layer;
             var rect = go.AddComponent<RectTransform>();
             rect.anchorMin = new Vector2(0.52f, 0.82f);
             rect.anchorMax = new Vector2(0.98f, 0.98f);
@@ -46,6 +55,33 @@ namespace Dovus.Game
         public void NoteCommit() => Note("ERKEN KAPANIŞ (merkez öder)");
 
         public void NoteBasicStrike() => Note("DÜZ VURUŞ");
+
+        public void NoteExchange(ExchangeResult result)
+        {
+            if (result.Outcome == ExchangeOutcome.Dodged)
+            {
+                string grade = result.Grade switch
+                {
+                    DodgeGrade.Mukemmel => "MÜKEMMEL",
+                    DodgeGrade.Harika => "HARİKA",
+                    DodgeGrade.Temiz => "TEMİZ",
+                    DodgeGrade.Siyirdi => "SIYIRDI",
+                    _ => "SIYIRMA"
+                };
+                Note($"{grade}  {result.ReactionMs / 1000f:0.00} sn");
+                return;
+            }
+
+            if (result.Outcome == ExchangeOutcome.Hit)
+            {
+                Note(result.HitReasonText ?? "vuruldun");
+                return;
+            }
+
+            // Etki hacminin dışındaydı: derece yok. Yazmazsak oyuncu "neden derece almadım"
+            // sorusunu cevapsız bırakıyor (T8.1).
+            Note("MENZİL DIŞI (derece yok)");
+        }
 
         void Note(string text)
         {
@@ -82,6 +118,15 @@ namespace Dovus.Game
             else
             {
                 sb.Append("beşgen: sürükle · merkez: vur · disk: dodge");
+            }
+
+            if (_vitals != null)
+            {
+                sb.Append('\n');
+                if (_vitals.IsDown)
+                    sb.Append("ölüm — dönüş ").Append(_vitals.RespawnInSec.ToString("0.0")).Append(" sn");
+                else
+                    sb.Append("can: ").Append(_vitals.Hp).Append('/').Append(_vitals.MaxHp);
             }
 
             if (Time.unscaledTime < _noteUntil && !string.IsNullOrEmpty(_note))

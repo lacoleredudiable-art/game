@@ -4,7 +4,7 @@
 > ajanın repoyu taramadan nerede kaldığımızı anlaması. Kısa tut: ne bitti, ne üretildi,
 > nerede sapma var.
 
-**Son güncelleme:** 22 Ağustos 2026 · **Sıradaki görev:** T8
+**Son güncelleme:** 22 Ağustos 2026 · **Sıradaki görev:** T9 (HUD, parlak tepki yazısı)
 
 ## Görev durumu
 
@@ -24,7 +24,8 @@
 | T7.3 | Bootstrap wiring (paylaşılan tuning, collider yok) | bitti | task/t7.3-bootstrap-wiring |
 | T7.4 | Yerleşik mesh adı regresyonu (ölçek) | bitti | aynı dal → master |
 | T6.2 | Düz vuruş, dodge düğmesi, toparlanma kilidi | bitti | task/t6.2-duz-vurus |
-| T8 | Boss telegrafı, sıyırma, yavaş çekim, kamera | bekliyor | — |
+| T8 | Boss telegrafı, sıyırma, yavaş çekim, kamera | bitti | task/t8-boss-telegraph |
+| T8.1 | T8 denetim düzeltmeleri | bitti | task/t8.1-denetim-duzeltmeleri |
 | T9 | HUD, parlak tepki yazısı | bekliyor | — |
 | T10 | Oyun içi ayar paneli | bekliyor | — |
 | T11 | Android build, his turu | bekliyor | — |
@@ -437,9 +438,251 @@ test güncellendi (kapanıştan sonra `State.Phase` artık `Resolved` değil `Re
 
 > **Sonraki ajana (Unity editörü açıkken ölçüm alacak):** açık sahnenin bellekteki hâli, assembly
 > reload'dan sonra **eski alan değerlerini korur** — `PrototypeTuning`'de bir varsayılanı
-> değiştirdiysen play mode hâlâ eski değeri gösterir (yeni eklenen alanlar doğru gelir, bu yüzden
-> karışık bir tablo çıkar ve insanı yanıltır). Ölçümden önce sahneyi diskten yeniden aç
-> (`EditorSceneManager.OpenScene(path, OpenSceneMode.Single)`), sonra play mode'a gir.
+> değiştirdiysen play mode hâlâ eski değeri gösterir. **Yeni eklenen int/float alanlar da
+> 0 gelebilir** (C# initializer deserialize'da uygulanmaz) — T8 `EnsureT8Defaults()` bunu
+> `PlayerMaxHp` / pencere ipucu / telegraf renkleri için yamalar. Ölçümden önce sahneyi
+> diskten yeniden aç (`EditorSceneManager.OpenScene(path, OpenSceneMode.Single)`), sonra play.
+
+## T8 — Boss telegrafı, sıyırma, yavaş çekim, kamera
+
+Sahiplenilen açıklar ve boss döngüsü.
+
+**Core (`Dovus.Core.Grammar`):**
+
+- `SentenceEngine.OnDotTouched` / `OnDwell` artık `worldTimeMs` ile `CatchUp` yapıyor;
+  pencere Tick'i beklemeden erir (~16 ms kare yuvarlaması kapandı). `Tick(dt)` aynı saate
+  hizalanır, çift sayım yok.
+- `SentenceState.ArmedWindowMs` — pencere ipucu oranı için (T9 da okuyabilir).
+
+**Dövüş döngüsü (`Dovus.Game`):**
+
+- `BossDirector` — idle'da `BossReactor.Home`'a 2.2 m/s yaklaşır (transform'a yazılmaz).
+  YERE ÇAKMA: windup 640 / active 90 / recovery 720 / radius 5.4. Vuruş aktifin başında
+  tek karede `ExchangeResolver`. Bu telegraftan önceki dodge press'i yok sayılır
+  (eski basış "erken bastın" üretmesin).
+- `BossTelegraph` — yer diski §10 `#FF4D24`/`#FF9A3C`, hazırlık squash/stretch, yükselen
+  sinüs ton (220 Hz, perde 0.55→1.8).
+- `DodgeMotion` — `GetDisplacementRatio` + glide artık hızı; yön son hareket, yoksa
+  bossun tersi. `KinematicMotor` kayma sırasında durur.
+- `AfterimageTrail` — FeelTuning.AfterimageCount/LifeMs, oyuncu rengi, ölçeklenmemiş ömür.
+- `CombatFeel` — sıyırmada hitstop + `TriggerSlowmo` (`grade <= Temiz`) + kamera yumruğu
+  (FOV/roll/sarsıntı, unscaled sönme) + 33 ms impact frame. Vurulmada kırmızı vinyet +
+  `HitstopPlayerHitMs`. Yavaş çekimde listener lowpass 700 Hz. Ekran katmanı Overlay
+  kamerada `sortingOrder=200`.
+- `PlayerVitals` — tavan `PlayerMaxHp` (22, spec'te yok); ölümde ≤2 sn gerçek saatte
+  spawn'a dönüş. Ölünce boss `Home` doğuşa çekilir (spawn üstünde zincir ölüm olmasın).
+- `FollowCamera.Punch(fovKick, rollDeg, shakePx, decay)`
+- `GameClock.Bind(SlowmoTuning)` — paylaşılan `CombatTuning.Slowmo`
+
+**Katmanlama / pencere ipucu:**
+
+- `PentagonView` artık `ScreenSpaceOverlay` değil, Overlay kamera üzerinde
+  `ScreenSpaceCamera` (sort 50). Telegraf dünyada + Feel tehdit flaşı üstte — tek
+  Overlay-kamera mekanizması (§10).
+- `LivingEffectView.SetWindowCue`: kalan pencere × `Travel/MaxRange` nabız
+  (camgöbeği/mor, kırmızı yok).
+
+**Test:** `SentenceWindowPrecisionTests` 4 + `SlowmoSentenceFitTests` 2;
+`dotnet test` **72 yeşil** (66 + 6). 350 ms gerçek boşlukla normalde 3 nokta,
+0.22× yavaş çekimde 4 nokta.
+
+**Unity play mode (MCP):**
+
+- Derleme temiz, collider 0, canvas `ScreenSpaceCamera` sort 50.
+- Boss yaklaşır, telegraf/çakma çözülür: vurulma `geç kaldın` / erken dodge
+  `erken bastın` debug HUD'a yazılıyor.
+- Ölüm → 2 sn → HP 22, boss eve dönüyor.
+- `EnsureT8Defaults` olmasa serileşmiş `PlayerMaxHp=0` hemen öldürüyordu.
+- Konsol: `errorCount=0`; tek uyarı kod dışı AI Toolkit ağ uyarısı.
+
+**Play'de tam doğrulanamadı (T11 / denetim):** telegrafı okuyup tam zamanında
+dodge → yavaş çekim + yer değiştirme + afterimage. MCP ile kare-içi zamanlama
+kaçtı; Core yavaş çekim 4-nokta testi yeşil. Dodge kayması `DodgeMotion.IsBound`
+üzerinden bir kez daha bakılmalı.
+
+> **Denetim notu:** yukarıdaki play mode gözlemleri son commit'ten (8e8de05) ÖNCEsine ait.
+> O commit'teki `DodgeMotion` "kare takılırsa" yaması derlemeyi kırdı — bkz. T8 denetimi 1.
+
+## T8 denetimi (22 Ağustos) — T8.1'de kapatıldı
+
+> **Bu bölüm artık tarih.** 22 maddenin hepsinin akıbeti için aşağıdaki
+> "T8.1 — denetim düzeltmeleri" bölümüne bak. Maddelerin gerekçeleri burada duruyor
+> çünkü T8.1'in neden öyle çözdüğünü açıklayan tek yer bu.
+
+`dotnet test` **72 yeşil**, ama Unity Game assembly'si **derlenmiyor**. Aşağıdaki maddeler
+T8.1'in görev listesi. Dal `master`'a **birleştirilmedi**, PR açık: 1. madde bloke ediyor.
+
+### Bloke
+
+1. **Dal Unity'de derlenmiyor — `DodgeMotion.cs:92` CS0136.** `Update()` içinde `pos` hem
+   `if (!_dodge.IsActive(...))` bloğunda hem de dış kapsamda tanımlı; C# bunu yasaklıyor.
+   Hata commit 8e8de05'in içinde, çalışma ağacı temiz. Konsol: *"All compiler errors have to
+   be fixed before you can enter playmode!"* — yani T8 kabul kriterlerinin **hiçbiri** bu
+   commit'le play mode'da doğrulanamaz.
+   **Süreç açığı:** `dotnet test` bunu asla yakalayamaz, çünkü `tools/CoreTests` yalnızca
+   `Assets/Scripts/Core`'u link'liyor. "Yeşil test = birleştir" kuralı Unity katmanı için
+   yetersiz; T8.1 dalı kapatmadan önce editörde derlemeyi gözle görmeli.
+
+### Mekanik hatalar
+
+2. **Glide kuyruğu her dodge'un sonunda geri emiliyor (§6 "yağ gibi kayma" ölü).**
+   `_dodge.IsActive` 500 ms'de kapanıyor; o karede fallback `pos = _startPos + _dir * 3.8`
+   yazıp `_glideExtra`'yı (≈**1.07 m**) atıyor. Yani her dodge, kayma bittiği anda ~1 m
+   **geriye zıplıyor**. Fallback kare atlamaları için eklenmişti ama her dodge'un normal son
+   karesinde de çalışıyor.
+3. **Glide artık hızı yoktan doğuyor.** Eğri `s(u)=1-(1-u)^3.2` türevi u=1'de **0** — ana
+   hareket sıfır hızla bitiyor. Glide sonra `charSpeed = 3.8/0.26 = 14.6 m/s`'i sıfırdan
+   enjekte ediyor: 280. ms'de 14.6 m/s'lik hız süreksizliği, "yumuşak sönüş" değil ikinci bir
+   sıçrama. `charSpeed` uydurma; §6 artık hızın büyüklüğünü vermiyor.
+4. **Telegraf diski bossun ölçeğini miras alıyor — yarıçapı yanlış gösteriyor.** `SlamDisc`
+   boss transform'unun çocuğu; boss `localScale = (1.7, 1.3, 1.7)`. Diskin local ölçeği
+   `(radius*2, radius*2, 1)` olduğu için dünyadaki çapı **×1.7** oluyor: 5.4 m yarıçap
+   ekranda ~9.2 m (windup squash'ıyla ~7.5 m'ye iniyor, yani boyu hazırlık pozuna da bağlı).
+   §10 "telegraf en okunabilir katman" derken oyuncuya gerçek etki hacminden %40–70 büyük bir
+   alan gösteriyoruz. Ayrıca mesh **Quad** — daire değil **kare**; 5.4 m'lik daireyi hiç
+   temsil etmiyor. Disk bossun çocuğu olmaktan çıkarılmalı (ya da ölçek telafi edilmeli).
+5. **Çakma anında boss yukarı gerilmiş kalıyor.** `Phase.Active` (90 ms) boyunca
+   `SetProgress` hiç çağrılmıyor; `SlamFlash` ölçeği geri almıyor. Boss tam vururken
+   `(0.82, 1.28, 0.82)`'de, yani hâlâ "hazırlanıyor" pozunda; aşağı squash yok. Recovery
+   fade'i de `SetProgress(fade*0.35, ...)` ile ölçeği yeniden geriyor.
+6. **Pencere ipucu görünmez — §8/T2 "bedava kazanç" hâlâ kapalı.**
+   `LivingEffectView.SyncVisual` nabzı `alpha = Clamp01(alpha * pulse)` ile uyguluyor ama
+   `pulse ≥ 1` ve taban alpha 0.95 → sonuç her zaman `[0.99, 1.00]` aralığında kırpılıyor.
+   Nabız fiziksel olarak ölçülemez. Aşağı yönlü modülasyon ya da genişlik/ölçek sürmek
+   gerekiyor; `_windowRemaining01` doğru akıyor, sorun yalnızca uygulama.
+7. **`BossDirector` doğru sebebi yanlışa çeviriyor (§6 "her ölüm açıklanabilir").**
+   `press < _telegraphStartMs` ise press `null`'a çekiliyor → `ExchangeResolver` "geç kaldın"
+   diyor. Oysa resolver aynı girdiyle **"erken bastın"** üretecekti ve doğrusu o. Doğru eşik
+   press değil **i-frame sonu**: `press + IframeStart + Iframe < telegraphStart` ise basış
+   gerçekten bu saldırıya ait değil (o zaman "geç kaldın"), aksi halde "erken bastın".
+   Kök neden: `DodgeState.Reset()` hiç çağrılmıyor, basış sonsuza kadar yaşıyor.
+8. **`Safe` sonucu tamamen sessiz + geometri ödül bandını kesiyor.**
+   `CombatFeel.OnExchange` yalnızca `Dodged`/`Hit`'i işliyor; `Safe`'te HUD'a satır yok,
+   hitstop yok, kamera yok. Bu, ölçülebilir bir bandı yutuyor: boss `Approach` durma mesafesi
+   `0.85 + 0.5 + 0.35 = 1.70 m`, etki yarıçapı 5.4 m. Oyuncu dururken dodge yönü
+   "bossun tersi" olduğu için, strike anındaki mesafe `1.70 + 3.8×ratio(gap)`:
+
+   | `gap` | yer değiştirme | mesafe | sonuç |
+   |---|---|---|---|
+   | 90 ms (MÜKEMMEL) | 2.42 m | 4.12 m | hacim içi → derece gelir |
+   | 160 ms (HARİKA) | 3.48 m | 5.18 m | hacim içi (kıl payı) |
+   | ~197 ms | 3.70 m | 5.40 m | **sınır** |
+   | 220 ms (TEMİZ) | 3.77 m | 5.47 m | hacim dışı → `Safe`, hiçbir şey yok |
+   | >260 ms | 3.8 m + | >5.5 m | `Safe` — "erken bastın" hiç yazılmıyor |
+
+   Yani **TEMİZ ve SIYIRDI bantları** ve **"erken bastın" sebebi** kaçan dodge'da erişilemez;
+   `slowmoMinGrade = TEMİZ` fiilen HARİKA'ya kayıyor. §6'nın "vuruş anında hacmin içindeyse"
+   kuralına uygun, o yüzden **spec ihlali değil** — ama kararı veren sayı `+0.35f` durma payı,
+   kodda gömülü ve belgede yok. Yana doğru dodge'da (son hareket yönü) hepsi erişilebilir.
+   T8.1 en azından `Safe`'e HUD satırı vermeli; durma mesafesi veri olmalı.
+9. **Yavaş çekim 4-nokta testi gerçek ayarı sınamıyor.**
+   `SlowmoSentenceFitTests` `holdMs: 10_000, rampDown/Up: 0` ile tetikliyor — spec §7 `hold`
+   **190 ms**, rampalar 55/420. Gerçek rampalarla 350 ms'lik gerçek boşluklar dünya zamanında
+   ~79 / ~197 / **~349 ms** yiyor; üçüncü pencere 300 ms olduğu için **4. nokta sığmıyor**.
+   Gerçekten çalışan bant ~300 ms/vuruş; 290 ms'de ise yavaş çekim **olmadan da** 4 nokta
+   sığıyor. Kabul kriteri "normalde 2–3, yavaş çekimde 4" gerçek sayılarla çok dar bir
+   pencerede doğru. Test spec'in `SlowmoTuning` varsayılanlarıyla kurulmalı.
+10. **Ölü oyuncu oynamaya devam ediyor.** `PlayerVitals` hiçbir girdiyi kapatmıyor: 2 sn
+    boyunca yürünebiliyor, cümle çizilebiliyor, dodge atılabiliyor; sonra `transform.position`
+    spawn'a geri çekiliyor (çizilen cümle havada kalıyor).
+11. **Ölümde boss ışınlanıyor.** `HandlePlayerDown` `_reactor.Home = _originHome` diye
+    doğrudan atıyor; T7.2'nin `_visualOffset` yumuşatması yalnızca `React` yolunda var, setter'da
+    yok. Ayrıca birikmiş kalıcı knockback (T7.2'nin kasıtlı davranışı) her ölümde sıfırlanıyor.
+
+### Mobil bütçe
+
+12. **Üç tam ekran `Image` her karede çiziliyor.** `CombatFeel` `Impact`/`Vignette`/`ThreatFlash`
+    katmanlarını `Color.clear` yaparak "kapatıyor" — ama alfa 0 bir `Graphic` yine de geometri
+    üretip harmanlanıyor: sürekli **3× tam ekran overdraw**. T7 görev metnindeki YASAKLAR
+    "büyük yarı saydam katman (mobil overdraw)" tam olarak bunu diyor. Kullanılmayan katman
+    `enabled = false` olmalı. Ayrıca "vinyet" gradyan değil **düz kırmızı dolgu**: 0.85 sn
+    boyunca dünyayı (ve boss telegrafını) basıyor, recovery 720 ms olduğu için bir sonraki
+    windup hâlâ kırmızı perdenin altında başlıyor — §10'un "telegraf en üstte" kuralıyla çelişir.
+13. **`AfterimageTrail.SetAlpha` her karede her hayalet için yeni `MaterialPropertyBlock`.**
+    7 hayalet × 60 fps ≈ 420 tahsis/sn. `SnapshotWords` açığıyla aynı sınıf; blok bir kez
+    yaratılıp yeniden kullanılmalı.
+
+### AGENTS kural 3 (his sayısı koda gömülmez)
+
+14. **§10 renkleri iki yerden geliyor.** `CombatFeel.ShowThreat` `#FF9A3C`/`#FF4D24`'ü elle
+    yazıyor, oysa aynı değerler bu görevde `PrototypeTuning.TelegraphWarm/Hot` olarak eklendi.
+    `CombatFeel` `PrototypeTuning` almıyor — T6.1'de kapatılan "tek kaynak" hatasının aynısı.
+15. **Gömülü his sayıları:** `shakePx * 0.01` (px→m), `_baseCutoff = 22000`, boss durma payı
+    `+0.35`, telegraf squash/stretch `0.28`/`0.18`, ton perdesi `0.55→1.8` ve ses `0.12+0.28`,
+    hayalet alfası `0.55`, vinyet `0.85`/`0.45`, impact sönmesi `0.04`, tehdit nabzı
+    `0.15/0.55/0.15/4/10/0.35`. T7.2'nin yaptığı taşımanın aynısı gerekiyor.
+16. **`EnsureT8Defaults()` tasarımcı niyetini sessizce eziyor.** `WindowCuePulseHz = 0`
+    (nabzı kapatmak) **dört** alanı geri alıyor; koyu bir telegraf rengi de geri alınıyor.
+    T10'un canlı ayar paneliyle doğrudan çelişir. Kalıcı çözüm: sahnedeki serileşmiş
+    `PrototypeTuning` bir kez yeniden yazılıp bu metod **silinmeli**.
+
+### Küçük / temizlik
+
+17. `CombatFeel.SentenceEngineBridge` — `SentenceDebugHud`'ı saran, tek satırlık, adı yanlış
+    (SentenceEngine ile ilgisi yok) bir sarmalayıcı. Alan doğrudan HUD olmalı.
+18. `BossDirector.ResolveStrike` vurulmada `_engine?.Abort()`'u iki kez çağırıyor.
+19. `DodgeMotion.MaybeEmitAfterimage`: `_motor != null ? transform.localScale : Vector3.one` —
+    `_motor` kontrolünün okunan değerle ilgisi yok.
+20. `SentenceWindowPrecisionTests.Tick_AfterCatchUp_DoesNotDoubleCount` yorumu yanlış:
+    "aksi halde 320 kalırdı" diyor ama assert edilen değer de 320; çift sayımda 220 kalırdı.
+21. `SentenceDebugHud` ölümde "ölüm — dönüş …" yazıp kalan süreyi hiç basmıyor.
+22. **`SentenceDebugHud`'ın Text'i `PentagonView.SetLayerRecursively`'den SONRA yaratılıyor**,
+    dolayısıyla layer 0'da kalıyor; Overlay kamerasının cullingMask'i yalnızca layer 5.
+    `ScreenSpaceOverlay`'de layer önemsizdi, `ScreenSpaceCamera`'da olabilir — HUD'ın ekranda
+    gerçekten görünüp görünmediği **gözle doğrulanmalı** (derleme kırık olduğu için bakılamadı).
+    Genel kırılganlık: Build'den sonra canvas'a eklenen her çocuk sessizce yanlış layer'a düşer.
+
+**Denetimde bakılamayanlar (derleme kırık):** katmanlama değişikliğinin ekran görüntüsü
+(beşgen noktaları + telegraf + HUD aynı karede), dodge kaymasının 3.8 m'si, yavaş çekimin
+gözle hali, afterimage. 4. ve 12. maddeler transform/render matematiğinden türetildi, ekranda
+teyit edilmedi.
+
+## T8.1 — denetim düzeltmeleri (22 Ağustos)
+
+Derleme açıldı, oyun modu çalışıyor, `dotnet test` **73 yeşil**. 22 maddenin 21'i kapandı;
+9. madde bir **karara** dönüştü (aşağıda).
+
+**Kapanan maddeler ve nasıl:**
+
+| # | Ne yapıldı |
+|---|---|
+| 1 | `DodgeMotion.Update` içindeki ikinci `pos` → `target`; CS0136 gitti, editör derliyor |
+| 2 | Fallback artık `_glideExtra`'yı koruyor: ölçülen yer değiştirme **4.054 m** (3.8 + 0.254) |
+| 3 | Glide hızı veri: `PrototypeTuning.DodgeGlideSpeedMps = 3.5` (14.6 m/s'lik süreksizlik yok) |
+| 4 | Disk boss'un çocuğu değil, sahne kökünde; mesh **Cylinder** (gerçek daire). Ölçüldü: dünya ölçeği `(10.80, 0.02, 10.80)` → yarıçap **tam 5.40 m**, iki eksende eşit |
+| 5 | `SlamFlash` → `Slam()`: çakmada aşağı squash. `Recover(t)` toparlanmada pozu tabana getirir, yeniden germez. Ölçüldü: windup `(1.39, 1.66)` → slam `(1.89, 1.01)` → hide `(1.70, 1.30)` |
+| 6 | `LivingEffectView` nabzı **aşağı** modüle ediyor; `Clamp01` kırpması yok, ipucu görünür |
+| 7 | Eşik basma anı değil **i-frame sonu**: `_dodge.IframeEndMs(press) < telegraphStart`. "Erken bastın" artık "geç kaldın"a dönüşmüyor |
+| 8 | `Safe` HUD'a **"MENZİL DIŞI (derece yok)"** yazıyor; durma payı veri (`BossApproachStopPadM`) |
+| 10 | `PlayerVitals.IsDown` girdiyi kapatıyor: `KinematicMotor` durur, `PentagonInput` parmak/klavye almaz ve açık pointer'ı iptal eder |
+| 11 | Ölümde boss yalnızca **oyuncunun doğuş noktasının** etki yarıçapı içindeyse eve çekiliyor; aksi halde birikmiş knockback korunuyor, ışınlanma yok |
+| 12 | Üç tam ekran katman kullanılmadığında `enabled = false` (oyun modunda ölçüldü: **açık katman 0**). Vinyet ve tehdit artık düz dolgu değil, kenardan içeri sönen maske — ekran ortası ve telegraf açık kalıyor (§10) |
+| 13 | `MaterialPropertyBlock` tek örnek, tembel kurulum. **Not:** statik alan başlatıcısı olamıyor; Unity `MonoBehaviour` kurucusundan `MaterialPropertyBlock` yaratmayı yasaklıyor (ilk denemede 50 hata verdi) |
+| 14 | `CombatFeel` artık `PrototypeTuning` alıyor; `TelegraphWarm/Hot` tek kaynak |
+| 15 | 16 his sayısı `PrototypeTuning`'e taşındı (px→m, taban cutoff, durma payı, squash/stretch, ton perdesi/sesi, hayalet alfası, vinyet/impact/tehdit) |
+| 16 | `EnsureT8Defaults` → `EnsureRuntimeDefaults`: `TuningVersion` sürüm damgasıyla kapılı. Sahne bir kez yeniden kaydedilince blok hiç girmez, tasarımcının bilinçli `0`'ı ezilmez |
+| 17 | `SentenceEngineBridge` silindi, alan doğrudan `SentenceDebugHud` |
+| 18 | Çift `_engine.Abort()` tek çağrıya indi |
+| 19 | Anlamsız `_motor != null` üçlemesi kaldırıldı |
+| 20 | Yanlış test yorumu düzeltildi |
+| 21 | HUD ölümde kalan süreyi basıyor: `PlayerVitals.RespawnInSec` |
+| 22 | `SentenceDebugHud` layer'ı ebeveyn canvas'tan alıyor. Oyun modunda ölçüldü: `FeelCanvas` **UI**, `SentenceDebug` **UI** |
+
+**Oyun modunda doğrulandı** (T8'de derleme kırık olduğu için hiçbiri doğrulanamamıştı):
+sahne kuruluyor, `PlayerVitals` 22/22, `BossDirector`/`DodgeMotion`/`CombatFeel` ayakta,
+telegraf diski dairesel ve doğru yarıçapta, dodge 4.054 m taşıyor, tam ekran katmanlar boşta
+kapalı, HUD doğru layer'da. Ekran görüntüsü: turuncu-kırmızı disk boss'un altında, oyuncu
+camgöbeği — §10 renk ayrımı yerinde.
+
+### T8.1'de çıkan karar (T9'dan önce cevaplanmalı)
+
+**9. madde — "yavaş çekimde 4 nokta" kabul kriteri spec sayılarıyla tutmuyor.**
+`SlowmoTuning` varsayılanları (0.22× / 55 / 190 / 420) 350 ms'lik gerçek boşluklarda toplam
+~330 ms dünya zamanı kazandırıyor; 4. nokta 350 ms istiyor. Test artık **gerçeği** sabitliyor:
+yavaş çekim pencere erimesini ilk boşlukta yarıdan fazla yavaşlatıyor ama bir nokta
+satın almıyor. `SlowmoTuning.SlowmoBonusDots` alanı **0 ve uygulanmamış** — kriter muhtemelen
+oradan verilecekti. Seçenekler: (a) `SlowmoBonusDots = 1`'i motorda uygula, (b) `HoldMs`'i
+büyüt, (c) kriteri "pencere gözle yavaşlar"a indir. **Spec'te cevabı yok, sahibine ait.**
 
 ## Spec'ten sapmalar
 
@@ -585,10 +828,8 @@ Konsol temiz, `dotnet test` 46 yeşil. Titreşim/hece kulakla ve ekran görünt�
   bilirsin".** Şu an iptal penceresi hâlâ görünmez — `LivingEffectView` etkinin silüetini/mesafesini
   çizer ama kalan pencere süresiyle görsel olarak bağlanmış değil (`SentenceDebugHud` metinle
   gösteriyor, dünyada değil). Spec'te bunu somutlaştıran bir sayı/mekanik yok, uydurulmadı. Bu,
-  T7.1'in görev tanımı dışındaydı (görünüm dosyalarına dokunma yasağı) ve T7.2 de almadı —
-  **T8'e devredildi**, görev metnine madde olarak yazıldı: dalganın/iğnenin/sürünün menzile ne
-  kadar yaklaştığı `LivingEffect.Travel` / `MaxRange`'den okunabilir, görsel bir ipucuna
-  (örn. solma, renk, nabız) çevrilmesi gerekiyor.
+  T7.1'in görev tanımı dışındaydı (görünüm dosyalarına dokunma yasağı) ve   T7.2 de almadı —
+  **T8 aldı:** `LivingEffectView.SetWindowCue` + `Travel/MaxRange` nabzı.
 
 ## T7.2 sapmaları / varsayılanlar
 
@@ -633,9 +874,44 @@ Konsol temiz, `dotnet test` 46 yeşil. Titreşim/hece kulakla ve ekran görünt�
 - **Erken kapanışın (`Commit`) kendi sesi/geri bildirimi yok**, yalnızca debug HUD notu. Spec bir
   ses/his tanımlamıyor, uydurulmadı — T9'un HUD'ı ya da T11'in his turu almalı.
 
+## T8 sapmaları / varsayılanlar
+
+- **`PlayerMaxHp = 22`** (spec'te oyuncu tavanı yok, hasar 22). Bir çakma = ölüm;
+  respawn döngüsü böyle denenebiliyor. T11.
+- **Pencere ipucu sayıları spec'te yok:** `WindowCueUrgentRatio=0.30`,
+  `WindowCuePulseHz=2`, `WindowCueUrgentHz=8`, `WindowCuePulseAmp=0.45`.
+  Kalan süre `RemainingWindowMs/ArmedWindowMs`; dalga yeri `Travel/MaxRange`.
+- **Telegraf tonu 220 Hz**, perde 0.55→1.8 (spec "yükselen ses", sayı yok).
+- **`shakePx * 0.01` → metre** (6 px = 6 cm). Dönüşüm spec'te yok.
+- **`PrototypeTuning.EnsureT8Defaults()`** — T8.1'de `EnsureRuntimeDefaults` + `TuningVersion`
+  damgasına döndü. Sahne bir kez yeniden kaydedilince blok bir daha girmez.
+
+## T8.1 sapmaları / varsayılanlar
+
+Hepsi `PrototypeTuning`'de, hiçbiri kodda gömülü değil (AGENTS kural 3).
+
+- **`DodgeGlideSpeedMps = 3.5`** — §6 "sönen artık hız"ın büyüklüğünü vermiyor. T8'in
+  kullandığı 14.6 m/s (ana hareketin ortalama hızı) ikinci bir atılım gibi okunuyordu; yürüme
+  hızı mertebesi seçildi. 220 ms'lik kuyrukta ≈ **0.25 m** ek mesafe (ölçüldü: 4.054 m toplam).
+- **`BossApproachStopPadM = 0.35`** — T8'de kodda gömülüydü. Bu sayı hangi derecelerin
+  erişilebilir olduğunu belirliyor (denetim 8. maddesindeki tablo); veri olması T11 his
+  turunda ödül bandını ayarlanabilir kılıyor.
+- **Telegraf pozu:** `TelegraphStretch = 0.28`, `TelegraphSquash = 0.18`,
+  `TelegraphSlamSquash = 0.22`. §11 pozu tarif ediyor, oran vermiyor.
+- **Ton:** perde `0.55 → 1.8`, ses `0.12 → 0.40`. Spec "yükselen ses" diyor, sayı yok.
+- **His katmanı:** `AfterimageAlpha = 0.55`, `ImpactFadeSec = 0.04`, `VignetteHoldSec = 0.85`,
+  `VignetteFadeSec = 0.45`, `VignetteAlpha = 0.55`, `ThreatAlphaMax = 0.35`,
+  `ThreatPulseHz 4 → 14`, `CameraShakePxToM = 0.01`, `AudioBaseCutoffHz = 22000`.
+  Hepsi T8'de koda gömülüydü, değerler korundu.
+- **Vinyet/tehdit maskesi 64×64 üretilmiş doku**, alfa yarıçapın 0.40'ından kenara
+  `SmoothStep`. Spec "kırmızı vinyet" diyor, profil vermiyor. Düz dolgu yerine bu seçildi
+  çünkü §10 telegrafın en okunabilir katman kalmasını istiyor.
+- **Telegraf diski `PrimitiveType.Cylinder`**, ölçek `(çap, 0.02, çap)`, y = 0.03.
+  Unity silindiri ~20 kenarlı, yani ekranda çokgen bir daire — prototip için kabul.
+
 ## Bilinen açıklar
 
-- T1/T2/T3/T4/T7/T7.1/T6.2 `dotnet test` yeşil (`tools/CoreTests`, 66 test).
+- T1/T2/T3/T4/T7/T7.1/T6.2/T8/T8.1 `dotnet test` yeşil (`tools/CoreTests`, **73** test).
 - **Toparlanma kilidi hiçbir girdiyi engellemiyor**, çünkü §5'e göre kilidi kesen üç şey (düz
   vuruş, yeni fiil, dodge) oyuncunun elindeki eylemlerin **hepsi**. Yani kilit şu an "kalan süre"
   okunabilir bir sayı + kesme becerisinin ölçüsü; mekanik olarak yalnızca `Commit`/`OnDwell`'i
@@ -659,12 +935,13 @@ Konsol temiz, `dotnet test` 46 yeşil. Titreşim/hece kulakla ve ekran görünt�
   T9 ekrana yazarken bu çakışma karışıklık yaratabilir.
 - 4. sıfat için uzatma penceresi belgede yok; 4. noktada cümle hemen kapanış üretir
   (taşan dokunuş da aynı sonucu verir).
-- **`OnDotTouched`/`OnDwell` `worldTimeMs` parametresini kullanmıyor**; pencere yalnızca
-  `Tick(dtMs)` ile eriyor (~16 ms kare yuvarlaması). T8 hassasiyeti için Core'da düzeltilmeli.
+- **`OnDotTouched`/`OnDwell` dünya saatini CatchUp ile yiyor** (T8). Eski 16 ms
+  yuvarlama kapandı.
 - `5-1-1` gibi **tekrar sıçraması** (§4 örneği) motorda `JumpKind.Repeat` olarak doğru
   sınıflanıyor ama cümle bağlamında testi yok.
 - `History` sınırsız büyüyor; uzun dövüşte sınırlanmalı.
-- **Unity Game katmanı derlendi**; play mode doğrulandı. `IsExternalInit` shim ve `csc.rsp` Unity'de sorunsuz.
+- **Unity Game katmanı T8.1'de derleniyor** (CS0136 kapandı). `IsExternalInit` shim ve
+  `csc.rsp` Unity'de sorunsuz. Play mode T8.1'de ölçüldü.
 - Arena kare (kenar 24 m) ama ayarın adı `ArenaHalfSizeM`; boss dövüşü yuvarlak arena isterse
   (T8) ad ve kırpma birlikte değişmeli.
 - `PlayerSettings.runInBackground` kapalı; telefonda dert değil ama editörde odak kaybında
@@ -673,12 +950,17 @@ Konsol temiz, `dotnet test` 46 yeşil. Titreşim/hece kulakla ve ekran görünt�
   tepki süresini göstermek isterse burayı doldurmak gerekir.
 - `ExchangeResolver.IsInvulnerableAtStrike`, `DodgeState`'teki i-frame matematiğini
   ikinci kez yazıyor; ayarlar değişirse ikisi ayrışabilir.
-- **Dodge yer değiştirmesi hâlâ yok:** `DodgeState` zaman tutuyor; `GetDisplacementRatio`'yu
-  transform'a uygulayan kimse yok — hiçbir görev metninde yoktu. T7'ye dokunulmadı.
-  **T8 sahiplenmeli** (afterimage ile birlikte), yoksa telegraf/sıyırma hissi boş kalır.
+- **Dodge yer değiştirmesi T8.1'de ölçüldü: 4.054 m** (3.8 + 0.25 kayma kuyruğu).
+  Space/disk ile gözle de doğrulandı (oyun modu). Afterimage kuyruğu hâlâ gözle
+  "kaç hayalet, ne kadar soluk" olarak T11 his turuna kalıyor.
+- **`ExchangeOutcome.Safe` artık HUD'a "MENZİL DIŞI (derece yok)" yazıyor.** TEMİZ/SIYIRDI
+  bantlarının kaçan dodge'da erişilebilirliği `BossApproachStopPadM` ile ayarlanır; şu an
+  0.35 m durma payında o bantlar hâlâ hacim dışı. §7 ödülünün ne kadar erişilebilir olduğu
+  telefonda ölçülmeli (T11).
+- **Yavaş çekim 4-nokta kabul kriteri spec sayılarıyla tutmuyor** (T8.1 kararı, yukarıda).
+  `SlowmoBonusDots` 0 ve uygulanmamış. T9 başlamadan önce sahibinin (a)/(b)/(c) seçmesi
+  gerekiyor; aksi halde T9 HUD'u "4. noktayı yakaladın" diye bir ödül göstermez.
 - Hece sesleri sinüs tıkırtısı; §9 yapısı var, müzikal kalite T11 his turuna.
-- **Ekrana sabit iki ayrı katman var:** noktalar ScreenSpaceOverlay canvas'ta, mürekkep ayrı
-  ortografik kamerada (URP stack). Overlay canvas her kameranın üstüne çizildiği için T8'in
-  boss telegrafı §10'un istediği "en üst ve en okunabilir katman" olamaz — telegraf beşgen
-  noktalarının ve debug metninin altında kalır. T8 katmanlamayı tek mekanizmaya indirmeli.
+- **Katmanlama Overlay kamera + Screen Space Camera** (T8). Pentagon sort 50, Feel/tehdit
+  200. Dünya telegraf diski ana kamerada. Overlay canvas kalktı.
 - Mobilde ikinci kamera fazladan bir render geçişi; T11 kare bütçesinde bakılacak.

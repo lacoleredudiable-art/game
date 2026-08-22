@@ -10,9 +10,14 @@ namespace Dovus.Game
     [DefaultExecutionOrder(-1000)]
     public sealed class GameClock : MonoBehaviour
     {
-        readonly TimeDirector _director = new();
+        TimeDirector _director;
 
-        public TimeDirector Director => _director;
+        public TimeDirector Director => _director ??= new TimeDirector();
+
+        public void Bind(Dovus.Core.Tuning.SlowmoTuning tuning)
+        {
+            _director = new TimeDirector(tuning);
+        }
 
         public double WorldDeltaMs { get; private set; }
 
@@ -21,7 +26,7 @@ namespace Dovus.Game
         void Update()
         {
             RealDeltaMs = Time.unscaledDeltaTime * 1000.0;
-            WorldDeltaMs = _director.Tick(RealDeltaMs);
+            WorldDeltaMs = Director.Tick(RealDeltaMs);
         }
     }
 }

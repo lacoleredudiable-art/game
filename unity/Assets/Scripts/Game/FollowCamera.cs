@@ -11,11 +11,17 @@ namespace Dovus.Game
         [SerializeField] PrototypeTuning _tuning = new();
 
         KinematicMotor _targetMotor;
+        Camera _cam;
         Vector3 _velocity;
         Vector3 _shakeOffset;
         float _shakeAmplitude;
         float _shakeDurationSec;
         float _shakeElapsedSec;
+        float _baseFov = 60f;
+        float _fovKick;
+        float _rollDeg;
+        float _punchT;
+        float _punchDecay = 6f;
 
         public Transform Target
         {
@@ -40,8 +46,27 @@ namespace Dovus.Game
         void Awake()
         {
             _tuning ??= new PrototypeTuning();
+            _cam = GetComponent<Camera>();
+            if (_cam != null)
+                _baseFov = _cam.fieldOfView;
             if (_targetMotor == null && _target != null)
                 _targetMotor = _target.GetComponent<KinematicMotor>();
+        }
+
+        /// <summary>
+        /// Sıyırma/vurulma yumruğu: FOV sıçraması, kısa roll, sarsıntı. Animasyon
+        /// ölçeklenmemiş saatle söner — dünya yavaşken bile keskin (§8).
+        /// </summary>
+        public void Punch(float fovKick, float rollDeg, float shakePx, float decay)
+        {
+            _fovKick = fovKick;
+            _rollDeg = rollDeg;
+            _punchT = 1f;
+            _punchDecay = Mathf.Max(0.5f, decay);
+            float duration = 2f / _punchDecay;
+            // §8 sarsıntıyı PİKSEL veriyor, kamera METRE ile sarsılıyor; dönüşüm spec'te yok (T8.1).
+            float pxToM = _tuning != null ? _tuning.CameraShakePxToM : 0.01f;
+            AddShake(shakePx * pxToM, duration);
         }
 
         public void AddShake(float amplitudeM, float durationSec)
@@ -76,7 +101,23 @@ namespace Dovus.Game
                 _tuning.FollowSmoothTimeSec);
 
             Vector3 lookTarget = _target.position + lookAhead * 0.35f + Vector3.up * 1.2f;
-            transform.rotation = Quaternion.LookRotation(lookTarget - transform.position, Vector3.up);
+            Quaternion look = Quaternion.LookRotation(lookTarget - transform.position, Vector3.up);
+
+            AdvancePunch();
+            transform.rotation = look * Quaternion.Euler(0f, 0f, _rollDeg * _punchT);
+            if (_cam != null)
+                _cam.fieldOfView = _baseFov * (1f - _fovKick * _punchT);
+        }
+
+        void AdvancePunch()
+        {
+            if (_punchT <= 0f)
+            {
+                _punchT = 0f;
+                return;
+            }
+
+            _punchT = Mathf.Max(0f, _punchT - Time.unscaledDeltaTime * _punchDecay);
         }
 
         void AdvanceShake()

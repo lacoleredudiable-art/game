@@ -78,6 +78,9 @@ namespace Dovus.Core.Grammar
         public IReadOnlyList<SentenceWord> Words { get; internal set; } = System.Array.Empty<SentenceWord>();
         public double RemainingWindowMs { get; internal set; }
 
+        /// <summary>Bu kelimeden sonra kurulan uzatma penceresinin tam süresi (dwell tavanı).</summary>
+        public double ArmedWindowMs { get; internal set; }
+
         /// <summary>Toparlanma kilidinden kalan süre (§5). Kesilirse 0'a düşer.</summary>
         public double RemainingRecoveryMs { get; internal set; }
 

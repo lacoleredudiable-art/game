@@ -22,6 +22,7 @@ namespace Dovus.Game
         Material _lineMat;
         Material _blobMat;
         bool _scarred;
+        float _windowRemaining01 = 1f;
 
         public LivingEffect Logic => _logic;
         public bool Scarred
@@ -42,6 +43,15 @@ namespace Dovus.Game
             _colors = colors;
             BuildVisuals();
             SyncVisual(1f);
+        }
+
+        /// <summary>
+        /// İptal penceresinin kalan oranı (1 = taze, 0 = kapanıyor). §8/T2: dalganın
+        /// Travel/MaxRange'si ile birleşip nabız/solma ipucu olur.
+        /// </summary>
+        public void SetWindowCue(float remaining01)
+        {
+            _windowRemaining01 = Mathf.Clamp01(remaining01);
         }
 
         public void TickVisual(float dtSec)
@@ -117,6 +127,19 @@ namespace Dovus.Game
             float alpha = _logic.Phase == LivingEffectPhase.Fading
                 ? 1f - _logic.FadeT
                 : (_logic.Phase == LivingEffectPhase.Banging ? 1f : 0.95f);
+
+            float travel01 = _logic.MaxRange > 0.01f
+                ? Mathf.Clamp01(_logic.Travel / _logic.MaxRange)
+                : 0f;
+            float urgent = 1f - _windowRemaining01;
+            if (_windowRemaining01 > _colors.WindowCueUrgentRatio)
+                urgent *= 0.45f;
+            float place = Mathf.Max(urgent, travel01 * 0.35f);
+            float hz = Mathf.Lerp(_colors.WindowCuePulseHz, _colors.WindowCueUrgentHz, place);
+            // Nabız AŞAĞI modüle eder: yukarı çarpmak taban alfa 0.95 iken Clamp01'e takılıyor
+            // ve ipucu hiç görünmüyordu (T8.1). §8/T2 "pencereyi dalgadan oku" buna bağlı.
+            float wave = 0.5f + 0.5f * Mathf.Sin(_logic.AgeSec * hz * Mathf.PI * 2f);
+            alpha = Mathf.Clamp01(alpha * (1f - _colors.WindowCuePulseAmp * place * wave));
 
             Color cyan = _colors.InkCyan;
             cyan.a = alpha;

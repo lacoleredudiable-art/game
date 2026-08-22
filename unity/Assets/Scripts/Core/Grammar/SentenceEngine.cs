@@ -17,6 +17,7 @@ namespace Dovus.Core.Grammar
         double _remainingWindowMs;
         double _armedWindowMs;
         double _remainingRecoveryMs;
+        double _appliedWorldMs;
         int _lastWordDwellStacks;
 
         public SentenceEngine(SentenceTuning? tuning = null)
@@ -34,7 +35,7 @@ namespace Dovus.Core.Grammar
         /// <summary>Noktaya dokunuş. Geçersiz nokta yok sayılır.</summary>
         public void OnDotTouched(int dot, double worldTimeMs)
         {
-            _ = worldTimeMs;
+            CatchUp(worldTimeMs);
             if (!RuneInfo.TryFromDot(dot, out Rune rune))
                 return;
 
@@ -67,7 +68,7 @@ namespace Dovus.Core.Grammar
         /// </summary>
         public void OnDwell(double worldTimeMs)
         {
-            _ = worldTimeMs;
+            CatchUp(worldTimeMs);
             if (State.Phase != SentencePhase.Building || _words.Count == 0)
                 return;
 
@@ -97,6 +98,26 @@ namespace Dovus.Core.Grammar
 
         /// <summary>Dünya zamanı ilerlemesi; pencere bitince kapanış üretir.</summary>
         public void Tick(double dtMs)
+        {
+            if (dtMs < 0)
+                dtMs = 0;
+            CatchUp(_appliedWorldMs + dtMs);
+        }
+
+        /// <summary>
+        /// Pencereyi mutlak dünya saatine hizalar. OnDotTouched/OnDwell Tick'i beklemeden
+        /// (kare yuvarlaması ~16 ms) kalan süreyi yer. Aynı ana kadar zaten uygulanmışsa no-op.
+        /// </summary>
+        void CatchUp(double worldTimeMs)
+        {
+            double dt = worldTimeMs - _appliedWorldMs;
+            if (dt > 0)
+                ApplyTime(dt);
+            if (worldTimeMs > _appliedWorldMs)
+                _appliedWorldMs = worldTimeMs;
+        }
+
+        void ApplyTime(double dtMs)
         {
             if (State.Phase == SentencePhase.Recovering)
             {
@@ -242,6 +263,7 @@ namespace Dovus.Core.Grammar
 
             State.LastClosing = completed.Closing;
             State.RemainingWindowMs = 0;
+            State.ArmedWindowMs = 0;
             State.RemainingRecoveryMs = _remainingRecoveryMs;
             State.Verb = completed.Verb;
             State.Words = completed.Words;
@@ -261,6 +283,7 @@ namespace Dovus.Core.Grammar
             State.Verb = null;
             State.Words = Array.Empty<SentenceWord>();
             State.RemainingWindowMs = 0;
+            State.ArmedWindowMs = 0;
             State.RemainingRecoveryMs = 0;
             // LastClosing bilinçli korunur — son ödeme okunabilsin
         }
@@ -277,6 +300,7 @@ namespace Dovus.Core.Grammar
             State.Verb = _words.Count > 0 ? _words[0].Rune : null;
             State.Words = SnapshotWords();
             State.RemainingWindowMs = _remainingWindowMs;
+            State.ArmedWindowMs = _armedWindowMs;
         }
     }
 }
