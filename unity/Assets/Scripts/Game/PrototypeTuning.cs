@@ -258,5 +258,54 @@ namespace Dovus.Game
             5 => OpenDot5,
             _ => false
         };
+
+        /// <summary>
+        /// T10: `PrototypeTuning`'in tamamı (renkler, beşgen konumu, arena...) ayar paneline
+        /// AÇILMIYOR — yalnızca bu alt küme (dodge kayma hızı, boss yaklaşımı, kamera takibi,
+        /// tepki yazısı zamanlaması). Tam nesneyi JSON'a yazsaydık panelin hiç dokunmadığı
+        /// renk/yerleşim alanları da diske kilitlenir, ileride Inspector'dan elle ayarlanan bir
+        /// değeri sessizce ezerdi. Bu yüzden ayrı, küçük bir DTO — CombatTuning'in tamamı JSON'a
+        /// yazılabiliyor çünkü onun HİÇBİR alanı panel dışı değil (bkz. CombatTuning.CopyFrom).
+        /// </summary>
+        [System.Serializable]
+        public sealed class PanelFields
+        {
+            public int PlayerMaxHp;
+            public float DodgeGlideSpeedMps;
+            public float BossApproachStopPadM;
+            public float FollowSmoothTimeSec;
+            public float LookAheadM;
+            public float CameraShakePxToM;
+            public bool ReadoutAnchorRight;
+            public float ReadoutPunchInSec;
+        }
+
+        public PanelFields ToPanelFields() => new PanelFields
+        {
+            PlayerMaxHp = PlayerMaxHp,
+            DodgeGlideSpeedMps = DodgeGlideSpeedMps,
+            BossApproachStopPadM = BossApproachStopPadM,
+            FollowSmoothTimeSec = FollowSmoothTimeSec,
+            LookAheadM = LookAheadM,
+            CameraShakePxToM = CameraShakePxToM,
+            ReadoutAnchorRight = ReadoutAnchorRight,
+            ReadoutPunchInSec = ReadoutPunchInSec,
+        };
+
+        public void ApplyPanelFields(PanelFields f)
+        {
+            if (f == null) return;
+            PlayerMaxHp = f.PlayerMaxHp;
+            DodgeGlideSpeedMps = f.DodgeGlideSpeedMps;
+            BossApproachStopPadM = f.BossApproachStopPadM;
+            FollowSmoothTimeSec = f.FollowSmoothTimeSec;
+            LookAheadM = f.LookAheadM;
+            CameraShakePxToM = f.CameraShakePxToM;
+            ReadoutAnchorRight = f.ReadoutAnchorRight;
+            ReadoutPunchInSec = f.ReadoutPunchInSec;
+        }
+
+        /// <summary>"Sıfırla": yalnızca panelin yönettiği alt küme spec varsayılanına döner.</summary>
+        public void ResetPanelFields() => ApplyPanelFields(new PrototypeTuning().ToPanelFields());
     }
 }

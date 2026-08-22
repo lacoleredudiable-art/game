@@ -4,6 +4,7 @@ namespace Dovus.Core.Tuning
     /// His katmanı ve tepki yazısı — dovus-sistemi.md §8 "Başlangıç sayıları".
     /// Bu değerler tahmindir; asıl ayar telefonda oyun içi panelden yapılacak.
     /// </summary>
+    [System.Serializable]
     public class FeelTuning
     {
         public int HitstopPerfectMs = 90;
@@ -28,5 +29,34 @@ namespace Dovus.Core.Tuning
         public int ReadoutHoldMs = 900;
         public int ReadoutFadeMs = 500;
         public float ReadoutPunchScale = 1.45f;
+
+        /// <summary>T10: panel "Sıfırla"/JSON yükleme — bu sınıfın TÜM alanları panelde
+        /// (kamera + yazı grupları) kapsanıyor, yani tam kopya güvenli.</summary>
+        public void CopyFrom(FeelTuning other)
+        {
+            HitstopPerfectMs = other.HitstopPerfectMs;
+            HitstopPlayerHitMs = other.HitstopPlayerHitMs;
+            HitstopBossHitMs = other.HitstopBossHitMs;
+            ImpactFrameMs = other.ImpactFrameMs;
+            PostHitSilenceMs = other.PostHitSilenceMs;
+
+            CameraPerfectZoomKick = other.CameraPerfectZoomKick;
+            CameraDodgeZoomKick = other.CameraDodgeZoomKick;
+            CameraRollDeg = other.CameraRollDeg;
+            ShakePerfectPx = other.ShakePerfectPx;
+            ShakeHitPx = other.ShakeHitPx;
+            ShakeDecay = other.ShakeDecay;
+
+            AfterimageCount = other.AfterimageCount;
+            AfterimageLifeMs = other.AfterimageLifeMs;
+
+            ReadoutSizePx = other.ReadoutSizePx;
+            ReadoutGlow = other.ReadoutGlow;
+            ReadoutHoldMs = other.ReadoutHoldMs;
+            ReadoutFadeMs = other.ReadoutFadeMs;
+            ReadoutPunchScale = other.ReadoutPunchScale;
+        }
+
+        public void ResetToDefaults() => CopyFrom(new FeelTuning());
     }
 }

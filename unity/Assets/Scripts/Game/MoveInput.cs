@@ -51,6 +51,17 @@ namespace Dovus.Game
 
         void Update()
         {
+            // T10: panel açıkken hareket girdisi de susar (bkz. PentagonInput.PanelBlocking).
+            if (TuningPanel.IsOpen)
+            {
+                if (_stickFingerId.HasValue)
+                {
+                    _stickFingerId = null;
+                }
+                _moveDirection = Vector2.zero;
+                return;
+            }
+
             if (_stickFingerId.HasValue)
                 return;
 
@@ -77,7 +88,7 @@ namespace Dovus.Game
 
         void OnFingerDown(Finger finger)
         {
-            if (_stickFingerId.HasValue)
+            if (_stickFingerId.HasValue || TuningPanel.IsOpen)
                 return;
 
             Vector2 pos = finger.screenPosition;

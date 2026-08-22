@@ -4,10 +4,11 @@
 > ajanın repoyu taramadan nerede kaldığımızı anlaması. Kısa tut: ne bitti, ne üretildi,
 > nerede sapma var.
 
-**Son güncelleme:** 22 Ağustos 2026 · **Sıradaki görev:** T10 (oyun içi ayar paneli)
+**Son güncelleme:** 22 Ağustos 2026 · **Sıradaki görev:** T11 (Android build, his turu)
 
-> **T9 + T9.1 `master`'a girdi.** T10 normal şekilde `master`'dan dallanır. T10'un bilmesi
-> gereken hazırlık notları için aşağıdaki "T9.1" bölümünün sonuna bak.
+> **T9 + T9.1 + T10 `master`'a girmeye hazır** (dal `task/t10-ayar-paneli`, `dotnet test` yeşil,
+> Unity derliyor, MCP prob'ları geçti — aşağıdaki "T10" bölümü). T11'in bilmesi gereken hazırlık
+> notları için o bölümün sonuna bak.
 
 ## Görev durumu
 
@@ -32,7 +33,7 @@
 | T8.2 | Yavaş çekim süresi (§7 ödülü gerçek oldu) | bitti | task/t8.2-yavas-cekim-suresi |
 | T9 | HUD, parlak tepki yazısı | bitti | [#4](https://github.com/lacoleredudiable-art/game/pull/4) → master |
 | T9.1 | T9 denetim düzeltmeleri (bant taşması, overdraw, dp) | bitti | aynı dal → master |
-| T10 | Oyun içi ayar paneli | bekliyor | — |
+| T10 | Oyun içi ayar paneli | bitti | task/t10-ayar-paneli |
 | T11 | Android build, his turu | bekliyor | — |
 
 Durum değerleri: `bekliyor` · `sürüyor` · `bitti` · `bloke`
@@ -836,6 +837,128 @@ bir kez yamalıyor. Sahne şu an **v0** (alanlar YAML'de hiç yok), yani her aç
   gerçekten `Time.unscaledTime`'da.
 - `Hit` yolu canlı boss saldırısıyla da doğrulandı: "geç kaldın" nötr renkte, bandın içinde.
 - Seri sayacı iki tetiklemede `seri ×2 · en iyi 0,45 sn` yazdı.
+
+## T10 — Oyun içi ayar paneli (22 Ağustos)
+
+**Core (`Dovus.Core.Tuning`) — hiçbir davranış değişmedi, yalnızca kalıcılık/sıfırlama alt yapısı:**
+
+- `DodgeTuning`/`SentenceTuning`(+`SentenceStep`)/`SlowmoTuning`/`BossTuning`/`GradeTuning`/
+  `FeelTuning`/`CombatTuning` artık `[System.Serializable]` ve her biri `CopyFrom(other)` +
+  `ResetToDefaults()` taşıyor. `CopyFrom` **alan alan** yazar, iç nesnelerin (`.Dodge`, `.Sentence`
+  vb.) kimliğini korur — `DodgeState`/`SentenceEngine`/`PentagonInput.Combat` gibi tüketiciler bu
+  nesnelerin referansını `Bind` sırasında bir kez alıp sakladığı için (T9.1'in tablosu) kimlik
+  korunmazsa slider'lar sessizce hiçbir şeyi değiştirmez. `ManifestationTuning` de serileşiyor
+  (CombatTuning JSON'a yazılabilsin diye) ama panelin **dışında** — hiçbir UI ona dokunmuyor.
+
+**Game (`Dovus.Game`) — yeni tipler:**
+
+- `TuningConfig` (yeni, ScriptableObject ama `.asset` **yok** — `CreateInstance` ile üretilir).
+  `Create(CombatTuning, PrototypeTuning)`, `Save()`/`TryLoad()` (`Application.persistentDataPath/
+  tuning.json`, `JsonUtility`), `ResetToDefaults()`, `ApplyPreset(TuningPreset)`, `ToJson()`.
+  `Combat`/`Prototype` **referans** — Bootstrap'in kurduğu çalışma-anı nesnelerinin kendisi, kopya
+  değil. `TryLoad` JSON'u ayrık bir nesneye çözüp `CopyFrom`/`ApplyPanelFields` ile alan alan
+  kopyalar (`JsonUtility.FromJsonOverwrite`'ın iç nesne kimliğini koruyup korumadığı belgesiz).
+- `TuningPresets` (yeni, statik) + `TuningPreset` enum (`Agir`/`Cevik`/`Anime`). `Apply(preset,
+  CombatTuning, PrototypeTuning)` alanları tek tek yazar (nesne referansı değişmez).
+- `TuningPanel` (yeni, `MonoBehaviour`). `IsOpen` (statik, salt-okunur dışarıya) — girdi
+  katmanlarının kapı bayrağı. `HitToggleButton(Vector2)` (statik) — sağ-alt köşedeki aç/kapat
+  düğmesinin ekran alanı; `Configure(TuningConfig, PlayerVitals)` sahneyi kurar. Panel: tam ekran
+  koyu perde + kart + `ScrollRect` (69 satır: 6 grup başlığı + 61 slider + 1 sağ/sol düğmesi +
+  oyuncu can slider'ı özel olarak `PlayerVitals.SetMaxHp` de çağırıyor), altta 3 preset + Sıfırla +
+  JSON'u Kopyala düğmesi. Slider değişince ilgili alana **anında** yazar (`onValueChanged` →
+  `apply(v)`), sonra `MarkDirty()` ile 0.35 sn debounce'lu `TuningConfig.Save()`.
+  `OnApplicationPause`/`OnApplicationQuit`/`OnDestroy` bekleyen kaydı hemen boşaltır.
+- `PlayerVitals.SetMaxHp(int)` (yeni) — panel `PlayerMaxHp` slider'ı canlı değiştirebilsin diye;
+  `Bind` tek seferlik olduğu için ayrı bir yol gerekiyordu. Güncel HP yeni tavana kırpılır, tavan
+  düşürülünce anlık ölüm YOK.
+- `BossDirector.EnterIdle` artık `IdleMinMs`/`IdleMaxMs`'i `Math.Min`/`Math.Max`'la sıralıyor —
+  panelin iki slider'ı birbirinden bağımsız hareket ettiği için `Min > Max` olabilir, düzeltilmezse
+  `Random.Next` negatif aralıkla patlar (tüm boss döngüsünü kilitler).
+- `PrototypeTuning.PanelFields` (iç sınıf, yeni) + `ToPanelFields()`/`ApplyPanelFields()`/
+  `ResetPanelFields()` — `PrototypeTuning`'in tamamı değil, panelin yönettiği 8 alanlık alt küme
+  (`PlayerMaxHp`, `DodgeGlideSpeedMps`, `BossApproachStopPadM`, `FollowSmoothTimeSec`, `LookAheadM`,
+  `CameraShakePxToM`, `ReadoutAnchorRight`, `ReadoutPunchInSec`). Renkler/beşgen yerleşimi/arena
+  panelin **dışında** — tam nesneyi JSON'a yazsaydık Inspector'dan elle ayarlanan bir değeri
+  sessizce ezerdi.
+- `PentagonInput`/`MoveInput` girdi kapısı: `TuningPanel.IsOpen` açıkken ikisi de tüm
+  parmak/fare/klavye girdisini yutar (açık pointer varsa iptal eder). Ayrıca panel AÇIK/KAPALI
+  **değişmeden önceki** karede toggle düğmesine denk gelen dokunuşun beşgene/çubuğa sızmaması için
+  `TuningPanel.HitToggleButton` her ikisinde de ayrı bir dışlama kontrolü (dodge düğmesi/merkezin
+  hit-sırası deseniyle aynı yaklaşım, §2).
+- `PrototypeBootstrap`: `BuildWorld` artık `TuningConfig.Create(combat, _tuning)` + `TryLoad()`'ı
+  **dünya kurulmadan önce** çağırıyor (`EnsureRuntimeDefaults`'tan SONRA, T9.1'in belirttiği sıra).
+  `CreatePentagon`'un sonunda tek bir `EventSystem` + `InputSystemUIInputModule` kuruluyor (proje
+  ilk kez uGUI Slider/Button kullanıyor; PentagonInput/MoveInput'un elle hit-test ettiği
+  EnhancedTouch ile aynı donanım kuyruğunu farklı bir tüketici olarak okuyor, çakışma yok) ve
+  `TuningPanel` sahneye ekleniyor.
+
+**Test:** Core'a davranış eklenmedi (yalnızca `CopyFrom`/`ResetToDefaults`/`[Serializable]`),
+`dotnet test` **79 yeşil**, değişmedi.
+
+**Unity + MCP prob (gerçek sahne, gerçek Play mode — durdur/başlat ile "uygulamayı kapat/aç"
+eşdeğeri):**
+
+- Derleme temiz: `EditorUtility.scriptCompilationFailed=False`, konsol `errorCount=0`.
+- Panel kapalı: ekran görüntüsünde beşgen/HUD/debug metni dışında **hiçbir** panel izi yok —
+  yalnızca sağ-altta küçük "AYAR" düğmesi (bilinçli, kalıcı bir aç/kapat tutamacı; aşağıdaki sapmaya
+  bak). `TuningPanel.IsOpen=False`.
+- Toggle düğmesine tıklanınca (`Button.onClick.Invoke()`) panel açıldı: kart, başlık, 6 grup
+  başlığı, tam **69 satır** (beklenen sayı), 3 preset + Sıfırla/Kopyala düğmesi — hiyerarşi tam
+  planlandığı gibi kuruldu.
+- **Kabul kriteri 2 (canlı değişim) doğrulandı:** `Row_Mesafe` slider'ını 3.8→**6.5**, `Row_Çarpan
+  (factor)`'ı 0.22→**0.42** yaptım; `PentagonInput.Combat` (panelin HİÇ bilmediği, tamamen ayrı bir
+  referans) aynı anda `DistanceM=6.5`/`Factor=0.42` okudu — reference-sharing çalışıyor.
+- **Kabul kriteri 1 (kalıcılık) doğrulandı:** yukarıdaki değerlerle `tuning.json` diske yazıldı
+  (debounce sonrası, içerik doğrulandı). Play mode'u durdurup yeniden başlattım (Editor'da tam
+  domain/sahne yeniden kurulumu — "uygulamayı kapat/aç"ın en yakın eşdeğeri): yeni `PentagonInput`
+  `DistanceM=6.5`/`Factor=0.42` ile doğdu, yani `TryLoad` gerçekten çalışıyor. **Gerçek bir telefonda
+  APK kapat/aç henüz denenmedi** — bu T11'e kalıyor (aşağıya bak).
+- **Kabul kriteri 3 (iz yok) doğrulandı** (yukarıdaki "panel kapalı" maddesi).
+- "SIFIRLA" → `DistanceM`/`Factor` spec varsayılanına (3.8/0.22) döndü. "AĞIR" preset → ölçülen
+  `DistanceM=4.6, DurationMs=340, Factor=0.16, Damage=28` — `TuningPresets.ApplyAgir`'deki sayılarla
+  birebir. "JSON'u Kopyala" → pano uzunluğu dosya uzunluğuyla eşleşti.
+- `IdleMinMs=2500`/`IdleMaxMs=150` (ters aralık) slider'la ayarlandı, boss birkaç saniye canlı
+  çalıştı: konsolda **hiç hata yok** — `EnterIdle`'daki `Math.Min`/`Math.Max` guard'ı doğrulandı.
+
+### T10 sapmaları / varsayılanlar
+
+- **Toggle düğmesi panel kapalıyken de görünür kalıyor (spec'in "hiçbir iz bırakmıyor" kriteriyle
+  gerilimde).** Görev metninin YASAKLAR'ı ve T8.1 denetiminin 12. maddesi asıl hedefin "kapalı
+  katman hâlâ overdraw/geometri üretmesin" olduğunu gösteriyor (tam da bu yüzden `_contentRoot`
+  `SetActive(false)` ile **tamamen** devre dışı, `enabled=false` değil — hiç render edilmiyor).
+  Ama panelin **kendisini** tekrar açacak bir tutamaç olmadan ("hiçbir iz" tam harfi harfine
+  alınırsa) telefonda kimse paneli bulamaz. Küçük, etiketli, sabit bir düğme bırakıldı — konumu/
+  boyutu (`ToggleRadiusDp=26`, `ToggleMarginDp=10`, sağ-alt köşe) spec'te yok, uydurma. Sahibi bunu
+  "gizli köşe dokunuşu" isterse (tamamen saydam, etiketsiz) `TuningPanel.BuildToggleButton`'daki
+  `Image.color`/etiket satırları kaldırılıp `raycastTarget` açık bırakılabilir — hit-test zaten
+  `HitToggleButton` üzerinden ayrık.
+- **Panel gruplarının/slider aralıklarının min/max'ları spec'te yok.** Her `AddIntSlider`/
+  `AddFloatSlider` çağrısındaki aralık (örn. `Dodge.DistanceM` 0.5–8 m) uydurma; spec bir sayı
+  vermiyor, sadece hangi alanların ayarlanabilir olması gerektiğini ima ediyor (§5/§6/§7). Telefonda
+  dar/geniş geldiğinde T11'de değiştirilir — kod tarafında tek satırlık değişiklik.
+- **`GradeTuning.TemizGapMaxMs` slider'ı `DodgeTuning.IframeMs - 1`'e clamp'li.** §6'nın "TEMİZ
+  eşiği i-frame'den küçük kalmalı" kısıtı (GradeTuning.cs'teki belgelenmiş kısıt) sahibiyle
+  tartışılmadı, panel seviyesinde sessizce koruma altına alındı — kullanıcı i-frame'i düşürüp TEMİZ
+  eşiğini üstünde bırakırsa (ayrı sıra) yine de SIYIRDI üretilemez hâle gelebilir; panel yalnızca
+  KENDİ yazdığı sıradaki ihlali önlüyor, tam bir invariant garantisi değil.
+  `BossTuning.IdleMinMs > IdleMaxMs` benzer şekilde **motor tarafında** korunuyor
+  (`BossDirector.EnterIdle`), panelde değil — orada `Random.Next` gerçekten patlayacağı için kısıt
+  UI'da değil veri tüketicisinde tutuldu.
+- **Panelin kendi görsel/işitsel bir "kaydedildi" bildirimi var ama spec'te tarif edilmiyor.**
+  Alt köşedeki durum metni ("... uygulandı", "JSON panoya kopyalandı") 2.5 sn sonra kendiliğinden
+  siliniyor — uydurma, küçük bir kullanılabilirlik dokunuşu.
+- **`InputSystemUIInputModule` + `EventSystem` sahneye T10'da ilk kez giriyor.** Proje T5'ten beri
+  hep elle hit-test eden `EnhancedTouch` kullanıyordu (teknoloji-kararlari'nda bu tercih için bir
+  gerekçe yok, sadece mevcut desendi). Standart Slider/Button bunlarsız çalışmaz; ikisinin
+  EnhancedTouch ile aynı fiziksel dokunmatik kuyruğunu okuyup okumadığı (çakışma riski) MCP'de
+  `Button.onClick.Invoke()` ile dolaylı test edildi (gerçek dokunuş simülasyonu değil) — **gerçek
+  parmakla ikisinin aynı anda var olduğu bir cihazda henüz denenmedi, T11'e kalıyor.**
+
+**Doğrulanamayan kabul kriteri parçası:** kabul kriteri 1'in "telefonda" kısmı — yukarıdaki testler
+Unity Editor'da Play mode durdur/başlat ile (tam sahne/domain yeniden kurulumu) yapıldı, gerçek bir
+Android APK'nın kapatılıp açılması değil. Mantık aynı (`Awake` → `TryLoad`), ama gerçek cihazda
+`Application.persistentDataPath`in davranışı ve uygulamanın tamamen sonlandırılması (arka planda
+askıya alma değil) T11'de doğrulanmalı.
 
 ## Spec'ten sapmalar
 

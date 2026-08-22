@@ -4,6 +4,7 @@ namespace Dovus.Core.Tuning
     /// Cümle uzunluğuna göre bedel ve ödül — dovus-sistemi.md §5 tablosu.
     /// EffectPerSecond saklanmaz, türetilir: saklanırsa süre ayarlandığında yalan söyler.
     /// </summary>
+    [System.Serializable]
     public class SentenceStep
     {
         public float DurationSec;
@@ -11,9 +12,17 @@ namespace Dovus.Core.Tuning
         public float RecoverySec;
 
         public float EffectPerSecond => DurationSec > 0f ? TotalEffect / DurationSec : 0f;
+
+        public void CopyFrom(SentenceStep other)
+        {
+            DurationSec = other.DurationSec;
+            TotalEffect = other.TotalEffect;
+            RecoverySec = other.RecoverySec;
+        }
     }
 
     /// <summary>Cümle kuralları — dovus-sistemi.md §5; bekletme §3.</summary>
+    [System.Serializable]
     public class SentenceTuning
     {
         public int MaxSentenceDots = 4;
@@ -50,5 +59,23 @@ namespace Dovus.Core.Tuning
             if (index < 0 || index >= CancelWindowMs.Length) return 0;
             return CancelWindowMs[index];
         }
+
+        /// <summary>
+        /// T10: "Sıfırla"/JSON yükleme. Diziler YENİDEN ATANMAZ, eleman eleman kopyalanır —
+        /// SentenceEngine bu nesnenin kendisini tutuyor, dizi referansı değişirse sorun
+        /// olmaz ama kimlik netliği için (T7.1'deki desen) yine de eleman kopyası tercih edildi.
+        /// </summary>
+        public void CopyFrom(SentenceTuning other)
+        {
+            MaxSentenceDots = other.MaxSentenceDots;
+            for (int i = 0; i < CancelWindowMs.Length && i < other.CancelWindowMs.Length; i++)
+                CancelWindowMs[i] = other.CancelWindowMs[i];
+            DwellMs = other.DwellMs;
+            DwellMaxStacks = other.DwellMaxStacks;
+            for (int i = 0; i < Steps.Length && i < other.Steps.Length; i++)
+                Steps[i].CopyFrom(other.Steps[i]);
+        }
+
+        public void ResetToDefaults() => CopyFrom(new SentenceTuning());
     }
 }

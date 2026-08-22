@@ -31,6 +31,17 @@ namespace Dovus.Game
             CaptureSpawn();
         }
 
+        /// <summary>
+        /// T10: panel slider'ı `PlayerMaxHp`'i canlı değiştirebilsin diye — `Bind` tek seferlik
+        /// (bir sonraki respawn'a kadar eski tavanda kalırdı). Güncel can, yeni tavana kırpılır
+        /// (tavan düşürülürse anında ölüm YOK — kırpma, hasar değil).
+        /// </summary>
+        public void SetMaxHp(int maxHp)
+        {
+            MaxHp = Mathf.Max(1, maxHp);
+            _hp = Mathf.Min(_hp, MaxHp);
+        }
+
         public void CaptureSpawn()
         {
             _spawnPos = transform.position;

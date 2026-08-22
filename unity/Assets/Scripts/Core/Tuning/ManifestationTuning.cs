@@ -3,7 +3,10 @@ namespace Dovus.Core.Tuning
     /// <summary>
     /// Tezahür (yaşayan etki) sayıları. Spec §8'de hız/yarıçap yok — varsayılanlar;
     /// telefonda T11 his turunda ayarlanacak. Değişiklik durum.md'ye geçilir.
+    /// T10 paneli bunu KAPSAMIYOR (henüz düzenlenebilir yüzeye alınmadı); [Serializable]
+    /// yalnızca CombatTuning JSON'a yazılırken hata vermemesi için.
     /// </summary>
+    [System.Serializable]
     public class ManifestationTuning
     {
         // Seyahat — fiil dünyada yaşasın diye (T2)

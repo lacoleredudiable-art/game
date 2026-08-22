@@ -80,6 +80,10 @@ namespace Dovus.Game
 
         bool InputLocked => _vitals != null && _vitals.IsDown;
 
+        // T10: panel açıkken (ayar paneli modal) beşgen girdisi tamamen susar; EnhancedTouch
+        // global olduğu için panelin arkasındaki oyun aynı dokunuşu almaya devam ederdi.
+        bool PanelBlocking => TuningPanel.IsOpen;
+
         public void Bind(
             GameClock clock,
             InkTrail ink,
@@ -126,7 +130,7 @@ namespace Dovus.Game
             if (_engine != null && _clock != null)
                 _engine.Tick(_clock.WorldDeltaMs);
 
-            if (InputLocked)
+            if (InputLocked || PanelBlocking)
             {
                 if (_fingerId.HasValue || _mouseHeld)
                 {
@@ -165,7 +169,7 @@ namespace Dovus.Game
             Vector2 pos = mouse.position.ReadValue();
             if (mouse.leftButton.wasPressedThisFrame)
             {
-                if (!IsDrawHalf(pos))
+                if (!IsDrawHalf(pos) || TuningPanel.HitToggleButton(pos))
                     return;
                 _mouseHeld = true;
                 BeginPointer(pos);
@@ -183,11 +187,11 @@ namespace Dovus.Game
 
         void OnFingerDown(Finger finger)
         {
-            if (InputLocked)
+            if (InputLocked || PanelBlocking)
                 return;
 
             Vector2 pos = finger.screenPosition;
-            if (!IsDrawHalf(pos))
+            if (!IsDrawHalf(pos) || TuningPanel.HitToggleButton(pos))
                 return;
 
             if (_fingerId.HasValue)
