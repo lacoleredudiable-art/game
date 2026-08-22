@@ -31,7 +31,33 @@ namespace Dovus.Game
             return c + new Vector2(Mathf.Cos(rad), Mathf.Sin(rad)) * r;
         }
 
-        public static float DotHitRadiusPx(PrototypeTuning tuning) => DpToPixels(tuning.DotHitRadiusDp);
+        /// <summary>
+    /// Dodge düğmesi: beşgenin dışında, ekrana sabit (§2). Konum çizim yarısının içine
+    /// kırpılır — hem ekrandan taşmasın hem de sanal çubuğun yarısına sızmasın (T6.1 kuralı:
+    /// bir yarı, bir sahip).
+    /// </summary>
+    public static Vector2 DodgeButtonPx(PrototypeTuning tuning, int screenWidth, int screenHeight)
+    {
+        Vector2 c = CenterPx(tuning, screenWidth, screenHeight);
+        float dx = DpToPixels(tuning.DodgeButtonOffsetXDp);
+        if (tuning.MirrorForLeftHand)
+            dx = -dx;
+
+        Vector2 p = c + new Vector2(dx, DpToPixels(tuning.DodgeButtonOffsetYDp));
+        float edge = DodgeButtonRadiusPx(tuning) + DpToPixels(tuning.DodgeButtonScreenMarginDp);
+        float mid = screenWidth * 0.5f;
+
+        p.x = tuning.MirrorForLeftHand
+            ? Mathf.Clamp(p.x, edge, mid - edge)
+            : Mathf.Clamp(p.x, mid + edge, screenWidth - edge);
+        p.y = Mathf.Clamp(p.y, edge, screenHeight - edge);
+        return p;
+    }
+
+    public static float DodgeButtonRadiusPx(PrototypeTuning tuning) =>
+        DpToPixels(tuning.DodgeButtonRadiusDp);
+
+    public static float DotHitRadiusPx(PrototypeTuning tuning) => DpToPixels(tuning.DotHitRadiusDp);
 
         public static float CenterHitRadiusPx(PrototypeTuning tuning) => DpToPixels(tuning.CenterHitRadiusDp);
 

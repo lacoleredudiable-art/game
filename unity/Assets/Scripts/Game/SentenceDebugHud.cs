@@ -8,10 +8,12 @@ namespace Dovus.Game
     /// <summary>Fiil + sıfat debug metni — kabul kriteri doğrulama.</summary>
     public sealed class SentenceDebugHud : MonoBehaviour
     {
+        const float NoteHoldSec = 1.2f;
+
         Text _text;
         SentenceEngine _engine;
-        string _lastDodgeNote;
-        float _dodgeNoteUntil;
+        string _note;
+        float _noteUntil;
 
         public void Configure(SentenceEngine engine, Transform canvasRoot)
         {
@@ -36,10 +38,19 @@ namespace Dovus.Game
             _text.raycastTarget = false;
         }
 
-        public void NoteDodge()
+        public void NoteDodge(bool abortedSentence)
         {
-            _lastDodgeNote = "DODGE (cümle iptal)";
-            _dodgeNoteUntil = Time.unscaledTime + 1.2f;
+            Note(abortedSentence ? "DODGE (cümle iptal)" : "DODGE (kilit kesildi)");
+        }
+
+        public void NoteCommit() => Note("ERKEN KAPANIŞ (merkez öder)");
+
+        public void NoteBasicStrike() => Note("DÜZ VURUŞ");
+
+        void Note(string text)
+        {
+            _note = text;
+            _noteUntil = Time.unscaledTime + NoteHoldSec;
         }
 
         void LateUpdate()
@@ -49,31 +60,32 @@ namespace Dovus.Game
 
             var sb = new StringBuilder(64);
             SentenceState s = _engine.State;
-            if (Time.unscaledTime < _dodgeNoteUntil && !string.IsNullOrEmpty(_lastDodgeNote))
-            {
-                sb.Append(_lastDodgeNote);
-            }
-            else if (s.Phase == SentencePhase.Building && s.Words.Count > 0)
+            if (s.Phase == SentencePhase.Building && s.Words.Count > 0)
             {
                 sb.Append("çizim: ");
                 AppendWords(sb, s);
                 sb.Append("\npencere: ").Append(s.RemainingWindowMs.ToString("0")).Append(" ms");
             }
-            else if (s.Phase == SentencePhase.Resolved && s.Words.Count > 0)
+            else if (s.Phase == SentencePhase.Recovering && s.Words.Count > 0)
             {
                 sb.Append("kapanış: ");
                 AppendWords(sb, s);
                 if (s.LastClosing.HasValue)
                     sb.Append(" → ").Append(s.LastClosing.Value.Type);
+                // §5: toparlanma bir poz değil, kilitli süre. Kesme becerisi burada okunur.
+                sb.Append("\nkilit: ").Append(s.RemainingRecoveryMs.ToString("0")).Append(" ms");
             }
             else if (s.Phase == SentencePhase.Aborted)
             {
-                sb.Append(_lastDodgeNote ?? "iptal");
+                sb.Append("iptal (ödeme yok)");
             }
             else
             {
-                sb.Append("beşgen: sürükle · merkez: tap");
+                sb.Append("beşgen: sürükle · merkez: vur · disk: dodge");
             }
+
+            if (Time.unscaledTime < _noteUntil && !string.IsNullOrEmpty(_note))
+                sb.Append('\n').Append(_note);
 
             _text.text = sb.ToString();
         }

@@ -4,7 +4,7 @@
 > ajanın repoyu taramadan nerede kaldığımızı anlaması. Kısa tut: ne bitti, ne üretildi,
 > nerede sapma var.
 
-**Son güncelleme:** 22 Ağustos 2026 · **Sıradaki görev:** T6.2 (T8'den önce)
+**Son güncelleme:** 22 Ağustos 2026 · **Sıradaki görev:** T8
 
 ## Görev durumu
 
@@ -23,7 +23,7 @@
 | T7.2 | T7 denetim düzeltmeleri (görünüm katmanı) | bitti | task/t7.2-tezahur-gorunum |
 | T7.3 | Bootstrap wiring (paylaşılan tuning, collider yok) | bitti | task/t7.3-bootstrap-wiring |
 | T7.4 | Yerleşik mesh adı regresyonu (ölçek) | bitti | aynı dal → master |
-| T6.2 | Düz vuruş, dodge düğmesi, toparlanma kilidi | bekliyor | — |
+| T6.2 | Düz vuruş, dodge düğmesi, toparlanma kilidi | bitti | task/t6.2-duz-vurus |
 | T8 | Boss telegrafı, sıyırma, yavaş çekim, kamera | bekliyor | — |
 | T9 | HUD, parlak tepki yazısı | bekliyor | — |
 | T10 | Oyun içi ayar paneli | bekliyor | — |
@@ -31,7 +31,7 @@
 
 Durum değerleri: `bekliyor` · `sürüyor` · `bitti` · `bloke`
 
-## T6.2 kararı (22 Ağustos — spec yazıldı, kod yazılmadı)
+## T6.2 kararı (22 Ağustos — uygulandı, bkz. "T6.2 — Düz vuruş" bölümü)
 
 Sahibiyle karara bağlandı; **yeniden tartışılmayacak**, görev metni
 `docs/gorev-listesi.md`'de (T8'den önce çalıştırılır):
@@ -352,6 +352,95 @@ Unity sürümünde ad değişirse sahne sessizce görünmez olmasın. `Prototype
 - Konsol `errorCount=0`; tek uyarı T7.1/T7.2'de de not edilen, koddan bağımsız AI Toolkit ağ
   uyarısı. Oyun kamerasından alınan karede arena tam boy, aktörler zemine oturuyor.
 
+### T6.2 — Düz vuruş, dodge düğmesi, toparlanma kilidi
+
+Girdi düzeni §1/§2'ye göre değişti: **merkez artık dodge değil, düz vuruş / erken kapanış**;
+dodge beşgenin dışında ekrana sabit ayrı bir disk. §5'teki toparlanma artık gerçek bir girdi
+kilidi ve kesilebilir.
+
+**Core (`Dovus.Core.Grammar`):**
+
+- `SentencePhase.Recovering` (yeni) — kapanış ödendi, girdi kilitli. **Yalnızca `State.Phase`'in
+  anlık değeri**; `CompletedSentence.Phase` kapanışta `Resolved` kalır (geçmiş/ödül okunuyor).
+- `SentenceEngine.Commit()` — erken kapanış. Yalnızca `Building` + en az bir kelime varken
+  çalışır, gövdesi `ResolveWithClosing()`. `Idle`/`Recovering`'de sessizce hiçbir şey yapmaz.
+- Kapanış üreten **her** yol (`Commit`, dördüncü nokta, pencere zaman aşımı) `Recovering`'e girer;
+  kalan süre `SentenceTuning.StepForDots(n).RecoverySec` (§5 tablosu: 0.18/0.26/0.38/0.55 sn) ve
+  `Tick(dtMs)` ile **dünya zamanında** erir, bitince `Idle`.
+- Kesme: `Recovering`'de `OnDotTouched` kilidi sıfırlar ve yeni cümleyi başlatır. `Abort()`
+  `Building`'de yatırımı batırır (eskisi gibi), `Recovering`'de yalnızca kilidi keser — `History`
+  ve `LastClosing` yerinde kalır, iptal kaydı **eklenmez**.
+- `SentenceState.RemainingRecoveryMs` + `IsRecovering` (T9 gösterecek).
+
+**Girdi (`PentagonInput`):**
+
+- Merkez kısa dokunma: `Building` ise `Commit()`; `Idle`/`Recovering` ise düz vuruş —
+  `OnDotTouched(Tuning.BasicStrikeDot)` + `Commit()` **aynı karede** (+ hece sesi).
+- Dodge iki yerden gelir: (a) beşgenin dışındaki disk, (b) masaüstü `Space`. Disk için **ayrı
+  bir parmak yuvası** var: çizim parmağı ekranda dururken ikinci parmak diske basabilir (panik
+  dodge). İkinci parmağın eşiği aşan sürüklemesi dodge'u iptal eder (çizim yuvası dolu olduğu
+  için çizime dönüşmez); **birinci** parmakla diskten sürükleme normal çizimdir.
+- Hit sırası `BeginPointer`'da: dodge diski → merkez → nokta. `HitDot` hem merkezi hem diski
+  dışlar.
+- `FingerMode.DodgePending` eklendi; tap eşikleri (`TapMaxMs`/`TapMaxMoveDp`) merkez ve disk için
+  aynı.
+
+**Yerleşim/görünüm:**
+
+- `PentagonLayoutScreen.DodgeButtonPx` / `DodgeButtonRadiusPx` — ofset beşgen merkezinden dp
+  cinsinden, `MirrorForLeftHand` X'i çevirir. Konum **çizim yarısının içine** kırpılıyor: hem
+  ekrandan taşmıyor hem de sanal çubuğun yarısına sızmıyor (T6.1 kuralı: bir yarı, bir sahip).
+- `PentagonView` diski çiziyor (etiketsiz disk). Merkez §10 camgöbeğine, disk §10 moruna çekildi.
+- `PrototypeTuning`: `DodgeButtonOffsetXDp/YDp`, `DodgeButtonRadiusDp`,
+  `DodgeButtonScreenMarginDp`, `DodgeButtonColor`, `BasicStrikeDot`; `PentagonCenterXNorm`
+  0.78 → 0.72 (disk sağ kenardan taşmasın).
+- `SentenceDebugHud`: `NoteDodge(bool)` / `NoteCommit()` / `NoteBasicStrike()`; `Recovering`'de
+  kalan kilit ms olarak yazılıyor.
+
+**Tezahür bağı (`ManifestationDirector`):**
+
+- Düz vuruş `OnDotTouched` + `Commit`'i aynı karede çağırdığı için Director `Building` fazını hiç
+  görmez ve spawn yutulurdu (T7.1'deki "aynı karede iki nokta" hatasının aynı sınıfı). Artık
+  `OnSentenceCompleted`, elde yaşayan bir etki yoksa **kapanış için etkiyi orada doğuruyor** —
+  ödenmiş kapanış §8/T2 gereği dünyada yaşamak zorunda.
+- `FindFallbackView()` **silindi**: "son canlı etkiyi bul" davranışı, hızlı düz vuruşlarda yeni
+  kapanışı önceki cümlenin hâlâ patlayan etkisine bağlıyordu (yanlış hedefe ödeme). Yerine
+  yukarıdaki spawn geldi.
+- `ActorPose.EndRecovery()` (yeni) — kilit kesilince nefes nefese poz da kesilir; Director
+  `State.Phase != Recovering` olduğunda çağırıyor. **Kapanış patlaması kesilmez**, kendi
+  zamanlamasıyla (`TickPendingClosings`) gelir (§5).
+
+**Test:** `SentenceRecoveryTests` 9 yeni test; `dotnet test` **66 yeşil** (57 + 9). Mevcut iki
+test güncellendi (kapanıştan sonra `State.Phase` artık `Resolved` değil `Recovering`).
+
+**Unity play mode (MCP prob, sanal `Touchscreen` ile gerçek girdi katmanı üzerinden):**
+
+- Merkeze tap (cümle yok) → 1 noktalık ödeme (etki 1.0), kilit **180 ms** (§5), aynı karede
+  `ManifestationDirector.ActiveCount` 0 → 1 (spawn yutulmuyor); ~0.3 sn sonra kapanış patladı:
+  **1 yeni scar**, etki öldü, kilit kendiliğinden eridi (`Idle`). Boss 7 m uzakta olduğu için
+  kapanış menzili dışında kaldı (knockback yok) — beklenen.
+- Kilit sürerken 5-1 çizmek → `Building`, kilit 0 (kesildi), pencere 360 ms.
+- `Building`'de merkeze tap → **2 nokta ödemesi (2.4)**, Abort değil; ardından 2 noktanın kilidi
+  (260 ms) başladı.
+- Kilit sürerken diske tap → kilit 0 / `Idle`, `History` büyümedi, `LastClosing` (2.4) durdu,
+  dodge gerçekten başladı (cooldown açıldı).
+- Kilit sürerken merkeze tap → yeni düz vuruş + kilit yeniden 180 ms (kesme becerisi).
+- Merkezden ve diskten sürükleme → çizim; ikisinde de vuruş/dodge tetiklenmedi.
+- Çizim parmağı basılıyken ikinci parmakla diske tap → cümle `Aborted`/ödenmedi, dodge başladı,
+  sol çubuk yönü (0,0) — yarı sahipliği bozulmadı.
+- Sol yarıda çubuk + sağ yarıda çizim aynı anda: çubuk (0.93, 0.31), cümle 2 kelime.
+- Yerleşim (979×495 game view): disk merkezden 145 px (beşgen yarıçapı 90 px → dışında), sağ
+  kenara 171 px, alta 41 px boşluk. Merkez `#5FF0FF`, disk `#B98CFF`; hiçbir oyuncu ögesinde
+  kırmızı-turuncu yok. Ekran görüntüsünde kapalı rünler (3/4) hâlâ soluk.
+- Konsol: `errorCount=0`; tek uyarı T7.1/T7.2'de de not edilen, koddan bağımsız AI Toolkit ağ
+  uyarısı.
+
+> **Sonraki ajana (Unity editörü açıkken ölçüm alacak):** açık sahnenin bellekteki hâli, assembly
+> reload'dan sonra **eski alan değerlerini korur** — `PrototypeTuning`'de bir varsayılanı
+> değiştirdiysen play mode hâlâ eski değeri gösterir (yeni eklenen alanlar doğru gelir, bu yüzden
+> karışık bir tablo çıkar ve insanı yanıltır). Ölçümden önce sahneyi diskten yeniden aç
+> (`EditorSceneManager.OpenScene(path, OpenSceneMode.Single)`), sonra play mode'a gir.
+
 ## Spec'ten sapmalar
 
 Belgedeki bir kural/sayı uygulanamadıysa buraya yaz: hangisi, neden, yerine ne kondu.
@@ -523,16 +612,47 @@ Konsol temiz, `dotnet test` 46 yeşil. Titreşim/hece kulakla ve ekran görünt�
   veya editörde 30 kapanış yapıp Hierarchy'de `GroundScars` altındaki nesne sayısını gözle
   saymalı.**
 
+## T6.2 sapmaları / varsayılanlar
+
+- **Dodge diskinin yeri/boyu spec'te yok (uydurma).** `PrototypeTuning`:
+  `DodgeButtonOffsetXDp = 80`, `DodgeButtonOffsetYDp = -140` (beşgen merkezinden sağa-aşağı),
+  `DodgeButtonRadiusDp = 34`, `DodgeButtonScreenMarginDp = 8`. Ölçüt: disk beşgenin hit
+  alanlarının dışında kalsın (merkezden uzaklık 161 dp > yarıçap 100 + disk 34) ve başparmağın
+  doğal yayına düşsün. **Telefonda T11'de ayarlanacak** — §13'ün 1. sorusu doğrudan buna bağlı.
+- **`PentagonCenterXNorm` 0.78 → 0.72.** Görev metni "düğme ekranın dışına taşmasın, merkezi
+  gerektiği kadar içeri al" diyordu. Ek olarak `DodgeButtonPx` konumu **çizim yarısının içine**
+  kırpıyor: kırpma olmasa dar bir ekranda disk sanal çubuğun yarısına düşüp T6.1'de kapatılan
+  çift sahiplik hatasını geri getirebilirdi.
+- **`BasicStrikeDot = 5` (SARSINTI).** §5 "hangi fiille vurduğu veridir (prototipte 5/SARSINTI)"
+  diyor, sayı orada. Açık/kapalı rün bayrağına **bakılmıyor**: merkez bir kelime değil düğme, o
+  yüzden `IsDotOpen` kapısından geçmiyor. `BasicStrikeDot` kapalı bir rüne çevrilirse beşgende
+  soluk görünen bir rünle vurulur — bilinçli, ama T10 ayar panelinde tuzak olabilir.
+- **Düz vuruşta hece sesi çalıyor, mürekkep izi çizilmiyor.** §2 "her kaydedilen nokta kısa
+  titreşim + hece sesi verir" dediği için ses var (motorda gerçekten bir kelime kaydediliyor);
+  mürekkep iki nokta arası bir iz olduğu için tek noktalı vuruşta karşılığı yok.
+- **Erken kapanışın (`Commit`) kendi sesi/geri bildirimi yok**, yalnızca debug HUD notu. Spec bir
+  ses/his tanımlamıyor, uydurulmadı — T9'un HUD'ı ya da T11'in his turu almalı.
+
 ## Bilinen açıklar
 
-- T1/T2/T3/T4/T7/T7.1 `dotnet test` yeşil (`tools/CoreTests`, 57 test).
+- T1/T2/T3/T4/T7/T7.1/T6.2 `dotnet test` yeşil (`tools/CoreTests`, 66 test).
+- **Toparlanma kilidi hiçbir girdiyi engellemiyor**, çünkü §5'e göre kilidi kesen üç şey (düz
+  vuruş, yeni fiil, dodge) oyuncunun elindeki eylemlerin **hepsi**. Yani kilit şu an "kalan süre"
+  okunabilir bir sayı + kesme becerisinin ölçüsü; mekanik olarak yalnızca `Commit`/`OnDwell`'i
+  yutuyor. T9 bunu ekranda göstermeli, yoksa oyuncu kestiği süreyi hiç görmez ve §5'in beceri
+  ekseni görünmez kalır.
+- **Düz vuruşun kendi tezahürü yok:** `BasicStrikeDot` fiilinin normal cümle görselini kullanıyor
+  (SARSINTI halka dalgası). Tek noktalık vuruşun ayrı bir silüeti/animasyonu olup olmayacağı
+  spec'te yok; T11'de "vuruş mu, cümle mi" hissi karışırsa buraya bakılmalı.
 - **`SentenceEngine.PublishState`, her `Tick`/`OnDotTouched`/`OnDwell`'de `SnapshotWords()` ile
   yeni bir `SentenceWord[]` allocate ediyor** (T2 kaynaklı, T7.1 denetiminde görüldü). Cümle
   kurulurken bu her karede çalışıyor (Building fazında). Sıcak yolda GC baskısı yaratabilir;
   Core/Grammar'a T7.1'de dokunma yasağı olduğu için düzeltilmedi — küçük havuzlanmış bir dizi ya
   da `Words` alanını yalnızca değiştiğinde güncellemek çözüm olabilir. T8/T9 ya da ayrı bir
   performans görevi almalı.
-- **T5/T6/T7 çok parmak / tezahür play mode'da doğrulandı, donanımda değil.** Gerçek dokunmatik → T11.
+- **T5/T6/T6.2/T7 çok parmak / tezahür play mode'da (enjekte dokunuşla) doğrulandı, donanımda
+  değil.** Gerçek dokunmatik → T11. Özellikle panik dodge (çizim parmağı + ikinci parmak diske)
+  ve diskin başparmakla erişilebilirliği telefonda sınanmadı.
 - Yeni eşikler (90/160/220) masa başı kararıdır, telefonda sınanmadı — T11'in his turunda
   ilk ayarlanacak sayılar bunlar.
 - "Sıyırma" kelimesi §6'da hem başarılı dodge'un genel adı hem de en düşük derecenin adı;

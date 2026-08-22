@@ -10,7 +10,8 @@ using TouchPhase = UnityEngine.InputSystem.TouchPhase;
 namespace Dovus.Game
 {
     /// <summary>
-    /// Sağ yarı beşgen çizim girdisi + merkez tap-dodge. Yalnızca Core motoruna bildirir.
+    /// Sağ yarı beşgen çizim girdisi + merkez tap (düz vuruş / erken kapanış) + beşgenin
+    /// dışındaki dodge düğmesi (§2). Yalnızca Core motoruna bildirir.
     /// </summary>
     public sealed class PentagonInput : MonoBehaviour
     {
@@ -35,10 +36,17 @@ namespace Dovus.Game
         Vector2? _lastInkPx;
         bool _eventsHooked;
 
+        // Çizim parmağından bağımsız ikinci yuva: cümle sürerken panik dodge (§2).
+        int? _dodgeFingerId;
+        Vector2 _dodgePressOrigin;
+        double _dodgePressRealMs;
+        bool _dodgeTapAlive;
+
         enum FingerMode
         {
             None,
             CenterPending,
+            DodgePending,
             Drawing
         }
 
@@ -101,6 +109,8 @@ namespace Dovus.Game
 
             EnhancedTouchSupport.Disable();
             _fingerId = null;
+            _dodgeFingerId = null;
+            _dodgeTapAlive = false;
             EndPointer(cancelled: true);
         }
 
@@ -153,12 +163,22 @@ namespace Dovus.Game
 
         void OnFingerDown(Finger finger)
         {
-            if (_fingerId.HasValue)
-                return;
-
             Vector2 pos = finger.screenPosition;
             if (!IsDrawHalf(pos))
                 return;
+
+            if (_fingerId.HasValue)
+            {
+                // Çizim parmağı meşgul: yalnızca dodge düğmesi ikinci parmağı kabul eder (§2).
+                if (_dodgeFingerId.HasValue || !HitDodgeButton(pos))
+                    return;
+
+                _dodgeFingerId = finger.index;
+                _dodgePressOrigin = pos;
+                _dodgePressRealMs = NowRealMs();
+                _dodgeTapAlive = true;
+                return;
+            }
 
             _fingerId = finger.index;
             BeginPointer(pos);
@@ -166,6 +186,15 @@ namespace Dovus.Game
 
         void OnFingerMove(Finger finger)
         {
+            if (_dodgeFingerId.HasValue && finger.index == _dodgeFingerId.Value)
+            {
+                // İkinci parmak: eşiği aşan sürükleme dodge'u iptal eder (çizim yuvası dolu).
+                float moveDp = PixelsToDp(Vector2.Distance(finger.screenPosition, _dodgePressOrigin));
+                if (moveDp > _combat.Dodge.TapMaxMoveDp)
+                    _dodgeTapAlive = false;
+                return;
+            }
+
             if (!_fingerId.HasValue || finger.index != _fingerId.Value)
                 return;
 
@@ -174,6 +203,17 @@ namespace Dovus.Game
 
         void OnFingerUp(Finger finger)
         {
+            if (_dodgeFingerId.HasValue && finger.index == _dodgeFingerId.Value)
+            {
+                bool dodgeCancelled = finger.currentTouch.phase == TouchPhase.Canceled;
+                double heldMs = NowRealMs() - _dodgePressRealMs;
+                _dodgeFingerId = null;
+                if (!dodgeCancelled && _dodgeTapAlive && heldMs <= _combat.Dodge.TapMaxMs)
+                    TriggerDodge();
+                _dodgeTapAlive = false;
+                return;
+            }
+
             if (!_fingerId.HasValue || finger.index != _fingerId.Value)
                 return;
 
@@ -192,6 +232,13 @@ namespace Dovus.Game
             _dwellReported = 0;
             _lastInkPx = null;
 
+            // Hit sırası: dodge düğmesi → merkez → nokta (§2).
+            if (HitDodgeButton(pos))
+            {
+                _mode = FingerMode.DodgePending;
+                return;
+            }
+
             if (HitCenter(pos))
             {
                 _mode = FingerMode.CenterPending;
@@ -209,7 +256,8 @@ namespace Dovus.Game
 
             _lastPos = pos;
 
-            if (_mode == FingerMode.CenterPending)
+            // Merkezden ve dodge düğmesinden eşiği aşan sürükleme çizimdir (§2).
+            if (_mode == FingerMode.CenterPending || _mode == FingerMode.DodgePending)
             {
                 float moveDp = PixelsToDp(Vector2.Distance(pos, _pressOrigin));
                 if (moveDp > _combat.Dodge.TapMaxMoveDp)
@@ -237,12 +285,18 @@ namespace Dovus.Game
 
         void EndPointer(bool cancelled)
         {
-            if (_mode == FingerMode.CenterPending && !cancelled)
+            bool pendingTap = _mode == FingerMode.CenterPending || _mode == FingerMode.DodgePending;
+            if (pendingTap && !cancelled)
             {
                 double heldMs = NowRealMs() - _pressRealMs;
                 float moveDp = PixelsToDp(Vector2.Distance(_lastPos, _pressOrigin));
                 if (heldMs <= _combat.Dodge.TapMaxMs && moveDp <= _combat.Dodge.TapMaxMoveDp)
-                    TriggerDodge();
+                {
+                    if (_mode == FingerMode.CenterPending)
+                        TriggerCenter();
+                    else
+                        TriggerDodge();
+                }
             }
 
             _mode = FingerMode.None;
@@ -320,15 +374,43 @@ namespace Dovus.Game
             }
         }
 
+        /// <summary>
+        /// Merkez tap (§5). Cümle kuruluyorsa erken kapanış — o uzunluğun ödemesini alır.
+        /// Değilse düz vuruş: tek noktalık cümle aynı karede açılıp kapanır. Merkez altıncı
+        /// rün DEĞİL; hangi fiille vurduğu veridir (BasicStrikeDot).
+        /// </summary>
+        void TriggerCenter()
+        {
+            if (_engine == null)
+                return;
+
+            double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
+            if (_engine.State.Phase == SentencePhase.Building)
+            {
+                _engine.Commit();
+                _debugHud?.NoteCommit();
+                return;
+            }
+
+            // Idle ya da Recovering: kilidi keser (§5) ve tek noktalık cümleyi anında kapatır.
+            int dot = _tuning.BasicStrikeDot;
+            _engine.OnDotTouched(dot, worldMs);
+            _engine.Commit();
+            _syllable?.PlayForDot(dot, 1);
+            _debugHud?.NoteBasicStrike();
+        }
+
         void TriggerDodge()
         {
             int worldMs = _clock != null ? (int)_clock.Director.WorldTimeMs : 0;
             if (_dodge == null || _dodge.IsOnCooldown(worldMs))
                 return;
 
+            // Building: yatırım batar. Recovering: yalnızca kilit kesilir, ödenmiş kapanış durur.
+            bool wasBuilding = _engine != null && _engine.State.Phase == SentencePhase.Building;
             _engine?.Abort();
             _dodge.Begin(worldMs);
-            _debugHud?.NoteDodge();
+            _debugHud?.NoteDodge(wasBuilding);
             _mode = FingerMode.None;
             _activeDot = null;
             _lastInkPx = null;
@@ -337,19 +419,26 @@ namespace Dovus.Game
         bool IsDrawHalf(Vector2 pos) =>
             PentagonLayoutScreen.IsRightHalf(pos, _tuning.MirrorForLeftHand, Screen.width);
 
+        bool HitDodgeButton(Vector2 pos)
+        {
+            Vector2 c = PentagonLayoutScreen.DodgeButtonPx(_tuning, Screen.width, Screen.height);
+            return Vector2.Distance(pos, c) <= PentagonLayoutScreen.DodgeButtonRadiusPx(_tuning);
+        }
+
         bool HitCenter(Vector2 pos)
         {
             Vector2 c = PentagonLayoutScreen.CenterPx(_tuning, Screen.width, Screen.height);
             float centerR = PentagonLayoutScreen.CenterHitRadiusPx(_tuning);
             // Merkez, nokta hit'leriyle örtüşmesin diye noktalardan önce ayrı kontrol;
-            // nokta hit yarıçapı merkeze taşarsa merkez öncelikli (tap-dodge).
+            // nokta hit yarıçapı merkeze taşarsa merkez öncelikli (düz vuruş / erken kapanış).
             return Vector2.Distance(pos, c) <= centerR;
         }
 
         int? HitDot(Vector2 pos)
         {
-            // Merkezin içindeyse çizim noktası sayma — tap/drag ayrımı bozulmasın.
-            if (HitCenter(pos))
+            // Merkezin veya dodge düğmesinin içindeyse çizim noktası sayma — tap/drag ayrımı
+            // ve hit sırası (§2) bozulmasın.
+            if (HitDodgeButton(pos) || HitCenter(pos))
                 return null;
 
             float hitR = PentagonLayoutScreen.DotHitRadiusPx(_tuning);

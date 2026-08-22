@@ -30,6 +30,7 @@ namespace Dovus.Game
         LivingEffectView _buildingView;
         int _lastWordCount;
         bool _hooked;
+        bool _posedForRecovery;
 
         struct PendingClosing
         {
@@ -89,6 +90,14 @@ namespace Dovus.Game
 
             double worldMs = _clock.Director.WorldTimeMs;
             float dtSec = (float)(_clock.WorldDeltaMs / 1000.0);
+
+            // Kilit kesildi (§5): poz da kesilir. Kapanış patlaması kesilmez, kendi
+            // zamanlamasıyla gelir (TickPendingClosings).
+            if (_posedForRecovery && _engine.State.Phase != SentencePhase.Recovering)
+            {
+                _pose?.EndRecovery();
+                _posedForRecovery = false;
+            }
 
             SyncFromSentence(worldMs);
             TickEffects(dtSec, worldMs);
@@ -158,32 +167,29 @@ namespace Dovus.Game
             return view;
         }
 
-        /// <summary>Building'e bağlı referans kaybolmuşsa (beklenmedik durum) son canlıyı bul.</summary>
-        LivingEffectView FindFallbackView()
-        {
-            for (int i = _active.Count - 1; i >= 0; i--)
-            {
-                if (_active[i] != null && _active[i].Logic != null &&
-                    _active[i].Logic.Phase != LivingEffectPhase.Dead)
-                    return _active[i];
-            }
-
-            return null;
-        }
-
         void OnSentenceCompleted(CompletedSentence sentence)
         {
-            LivingEffectView view = _buildingView ?? FindFallbackView();
+            LivingEffectView view = _buildingView;
             _buildingView = null;
             _lastWordCount = 0;
 
-            if (view == null)
-                return;
-
             if (sentence.Phase == SentencePhase.Aborted || !sentence.Closing.HasValue)
             {
-                view.Logic.Abort();
+                if (view != null && view.Logic != null)
+                    view.Logic.Abort();
                 return;
+            }
+
+            // Düz vuruş (T6.2) OnDotTouched + Commit'i AYNI karede çağırır: Director'ın Update'i
+            // araya girmediği için Building fazı hiç görülmez ve spawn yutulur. Ödenmiş kapanış
+            // dünyada mutlaka yaşamak zorunda (§8/T2), o yüzden burada doğuyor. Elde yaşayan bir
+            // etki ARAMIYORUZ — önceki cümlenin hâlâ patlayan etkisine bu kapanışı bağlamak
+            // yanlış hedefe ödeme yapmak olur.
+            if (view == null || view.Logic == null
+                || view.Logic.Phase is LivingEffectPhase.Dead or LivingEffectPhase.Fading)
+            {
+                view = SpawnEffect(sentence.Words, _clock.Director.WorldTimeMs);
+                _pose?.PulseRune(sentence.Words[0].Rune, _clock.Director.WorldTimeMs);
             }
 
             // Kapanış kurulmadan önce son kelime listesi etkiye iletilir — dördüncü kelime
@@ -202,6 +208,7 @@ namespace Dovus.Game
                             + _combat.Feel.PostHitSilenceMs;
 
             _pose?.BeginRecovery(recoverySec, _clock.Director.WorldTimeMs);
+            _posedForRecovery = true;
             _pending.Add(new PendingClosing
             {
                 View = view,
