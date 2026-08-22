@@ -23,13 +23,19 @@
 
 | Alan | Değer |
 |---|---|
-| Telefon (marka/model) |  |
+| Telefon (marka/model) | Xiaomi `2412DPC0AG` (kod adı `rodin_global`) |
 | Android sürümü |  |
 | Ekran (çözünürlük · tazeleme hızı) |  |
 | APK | `build/android/dovus-prototip.apk` — development, IL2CPP, ARM64 |
 | Hedef kare hızı | 60 (`PrototypeTuning.TargetFrameRateHz`) |
-| Tarih / oturum süresi |  |
-| Oyuncu (kim oynadı) |  |
+| Tarih / oturum süresi | 22 Ağustos 2026 · 1. oturum (kısa) |
+| Oyuncu (kim oynadı) | sahibi |
+
+> **1. oturum (22 Ağustos, kısa deneme).** Kurulum `adb push` + telefondan elle yapıldı
+> (`adb install` Xiaomi kısıtlamasıyla reddedildi). Oyun açıldı ve oynandı; **iki parmak
+> aynı anda sorunsuz** çalıştı (sol çubuk + sağ çizim — donanımda ilk kez doğrulandı).
+> Kare süresi göstergesi **açılmadı**, yani tablo hâlâ boş. Aşağıdaki cevaplar bu kısa
+> oturumun ilk izlenimi; tam tur yapılmadı.
 
 ## Kare bütçesi
 
@@ -87,6 +93,10 @@ Alt maddeler:
 **Cevap:** ☐ evet ☐ hayır
 **Gerekçe (tek cümle, telefondayken yaz):** ____________________________________________
 
+> **1. oturum ilk izlenimi:** "iyiydi — zamanlamayı tutturmak tatmin ediciydi". Kutu **bilerek
+> işaretlenmedi**: yukarıdaki yedi alt maddenin hiçbiri tek tek denenmedi, tek bir kısa
+> oturumun genel hissi bu. Soru ancak alt maddeler dolunca kapanır.
+
 ---
 
 ## Soru 2 — Yavaş çekim ödül mü, ceza mı?
@@ -143,8 +153,9 @@ Alt maddeler:
 - [ ] Hece sesi + 30 ms titreşim, her nokta için **ayrık** bir onay veriyor mu (§2), yoksa
       birbirine mi karışıyor?
       → ____________________________________________
-- [ ] Sol çubuk + sağ çizim aynı anda sorunsuz mu? Çubuk kayboluyor/yapışıyor mu?
-      → ____________________________________________
+- [x] Sol çubuk + sağ çizim aynı anda sorunsuz mu? Çubuk kayboluyor/yapışıyor mu?
+      → **1. oturum: sorunsuz.** İkisi aynı anda çalıştı; donanımda ilk doğrulama (bugüne
+      kadar yalnızca enjekte edilmiş sanal dokunuşlarla sınanmıştı).
 
 **Cevap:** ☐ yazıyorum ☐ yönetiyorum
 **Gerekçe:** ____________________________________________

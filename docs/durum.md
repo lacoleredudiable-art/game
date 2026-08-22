@@ -995,12 +995,20 @@ askıya alma değil) T11'de doğrulanmalı.
 **Ölçülenler (masaüstü):** Editör derlemesi temiz (`scriptCompilationFailed=False`), build hedefi
 Android'e çevrildi, APK üretildi: **41.5 MB**, development build, IL2CPP/ARM64.
 
-**Doğrulanamayan kabul kriterleri (telefon elde olmadan kapanamaz):**
+**Telefonda doğrulananlar (1. oturum, 22 Ağustos — Xiaomi `2412DPC0AG`):**
 
-- "APK telefonda çalışıyor, 60 fps'e yakın" — kare bütçesi tablosu `his-kontrol-listesi.md`'de
-  **boş**.
-- "İki parmak aynı anda sorunsuz (sol çubuk + sağ çizim)" — donanımda hâlâ denenmedi.
-- His kontrol listesinin kendisi hazır ama **doldurulmadı**; §13'ün beş sorusu cevapsız.
+- **APK telefonda çalışıyor.** Kurulum `adb push /sdcard/Download/` + cihazdan elle yapıldı;
+  `adb install` Xiaomi kısıtlamasıyla reddedildi (bkz. "Bilinen açıklar").
+- **İki parmak aynı anda sorunsuz** (sol çubuk + sağ çizim) — kabul kriteri 2 **kapandı**.
+  T5'ten beri yalnızca enjekte edilmiş sanal dokunuşlarla sınanmıştı.
+- §13'ün 1. sorusu için ilk izlenim olumlu ("zamanlamayı tutturmak tatmin ediciydi"), ama
+  kontrol listesindeki alt maddeler denenmediği için soru **kapatılmadı**.
+
+**Hâlâ doğrulanamayan kabul kriterleri:**
+
+- **"60 fps'e yakın" ölçülmedi** — 1. oturumda kare süresi göstergesi hiç açılmadı, bütçe
+  tablosu `his-kontrol-listesi.md`'de boş. Kapatmak için tek gereken: AYAR → ÖLÇÜM (T11) → AÇIK.
+- His kontrol listesi hazır ama **doldurulmadı**; §13'ün beş sorusu hâlâ cevapsız.
 
 > **Sonraki ajana/sahibine:** `docs/his-kontrol-listesi.md` doldurulmadan Faz 4'e (görsellik)
 > geçilmez — görev listesi bunu açıkça yasaklıyor. Turda çıkan kod düzeltmeleri buraya
