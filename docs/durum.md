@@ -6,6 +6,11 @@
 
 **Son güncelleme:** 22 Ağustos 2026 · **Sıradaki görev:** T10 (oyun içi ayar paneli)
 
+> **T9 PR #4 hâlâ açık** (master'a girmedi — karar gerektiren 2 madde var, yukarıdaki tabloya bak).
+> T10 muhtemelen T9'un `PrototypeTuning` alanlarını (readout/vitals) ayarlanabilir kılacak, yani
+> T10'u `master`'dan değil **`task/t9-hud`'dan** dallandırmak daha az çatışma demek. Sahibi T9
+> kararlarını çözüp merge ederse T10 normal şekilde `master`'dan başlayabilir.
+
 ## Görev durumu
 
 | Görev | Konu | Durum | PR |
@@ -27,7 +32,7 @@
 | T8 | Boss telegrafı, sıyırma, yavaş çekim, kamera | bitti | task/t8-boss-telegraph |
 | T8.1 | T8 denetim düzeltmeleri | bitti | task/t8.1-denetim-duzeltmeleri |
 | T8.2 | Yavaş çekim süresi (§7 ödülü gerçek oldu) | bitti | task/t8.2-yavas-cekim-suresi |
-| T9 | HUD, parlak tepki yazısı | bitti | task/t9-hud |
+| T9 | HUD, parlak tepki yazısı | bitti | [#4](https://github.com/lacoleredudiable-art/game/pull/4) (açık — karar gerektiriyor) |
 | T10 | Oyun içi ayar paneli | bekliyor | — |
 | T11 | Android build, his turu | bekliyor | — |
 
