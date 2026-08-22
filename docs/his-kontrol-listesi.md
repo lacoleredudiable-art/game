@@ -12,7 +12,8 @@
 1. APK'yı kur (`build/android/dovus-prototip.apk`), telefonu **yatay** tut.
 2. Kare süresi göstergesini aç: sağ-alt **AYAR** → en altta **ÖLÇÜM (T11)** → *Kare süresi
    göstergesi: AÇIK*. Sol-alt köşede ortalama ms · fps · en kötü kare yazar. Ölçüm bitince kapat
-   (kapalıyken hiç çizilmiyor).
+   (kapalıyken hiç çizilmiyor). Panel açıkken sağ-alt düğme **KAPAT** olur; kartın sağ-üstünde
+   de bir KAPAT var — ikisi de kapatır (2. oturumda perde düğmeyi yutuyordu, düzeltildi).
 3. Her soru için önce alt maddeleri tek tek dene, sonra **Cevap** satırını doldur.
    Cevap yalnızca **evet / hayır** olabilir; "kısmen" yazma — kısmen, gerekçe satırına yazılır.
 4. Bir sayıyı değiştirdiysen **aynı turda** "Ayarlanan sayılar" tablosuna yaz. AYAR panelindeki
@@ -23,19 +24,20 @@
 
 | Alan | Değer |
 |---|---|
-| Telefon (marka/model) | Xiaomi `2412DPC0AG` (kod adı `rodin_global`) |
-| Android sürümü |  |
-| Ekran (çözünürlük · tazeleme hızı) |  |
+| Telefon (marka/model) | POCO / Xiaomi `2412DPC0AG` (`rodin_global`), Mali-G720 MC7 |
+| Android sürümü | 16 (HyperOS) |
+| Ekran (çözünürlük · tazeleme hızı) | 2712×1220 yatay · 520 dpi (tazeleme hızı ölçülmedi) |
 | APK | `build/android/dovus-prototip.apk` — development, IL2CPP, ARM64 |
 | Hedef kare hızı | 60 (`PrototypeTuning.TargetFrameRateHz`) |
-| Tarih / oturum süresi | 22 Ağustos 2026 · 1. oturum (kısa) |
-| Oyuncu (kim oynadı) | sahibi |
+| Tarih / oturum süresi | 22 Ağustos 2026 · 1. oturum (kısa, sahibi) + 2. oturum (kablo, ajan) |
+| Oyuncu (kim oynadı) | 1. oturum: sahibi · 2. oturum: ajan (`adb` ekran + `tuning.json`) |
 
-> **1. oturum (22 Ağustos, kısa deneme).** Kurulum `adb push` + telefondan elle yapıldı
-> (`adb install` Xiaomi kısıtlamasıyla reddedildi). Oyun açıldı ve oynandı; **iki parmak
-> aynı anda sorunsuz** çalıştı (sol çubuk + sağ çizim — donanımda ilk kez doğrulandı).
-> Kare süresi göstergesi **açılmadı**, yani tablo hâlâ boş. Aşağıdaki cevaplar bu kısa
-> oturumun ilk izlenimi; tam tur yapılmadı.
+> **1. oturum (sahibi, kısa).** Oyun açıldı ve oynandı; **iki parmak aynı anda sorunsuz**
+> (sol çubuk + sağ çizim). Gösterge açılmadı; AYAR paneli kapanmadı (perde düğmeyi yutuyordu).
+>
+> **2. oturum (kablo).** Yeni APK kuruldu, gösterge `tuning.json` ile açıldı. **16,6 ms / 60 fps**,
+> en kötü 16,8–16,9. Dünya rengi düzgün. HyperOS uzaktan dokunuşu (`input tap`) reddettiği
+> için yürüyüş/telegraf/cümle satırları ve panel kapanışı elde doğrulanacak.
 
 ## Kare bütçesi
 
@@ -44,7 +46,7 @@ kareyi yazar (0.5 sn'lik pencerede aranır).
 
 | Senaryo | Ortalama ms | En kötü ms | fps | Not |
 |---|---|---|---|---|
-| Boşta arena (hareketsiz) |  |  |  |  |
+| Boşta arena (hareketsiz) | 16,6 | 16,8–16,9 | 60 | 2. oturum ekran; ölüm/dönüş de aynı kilit |
 | Yürürken + boss yaklaşırken |  |  |  |  |
 | Telegraf + yere çakma anı |  |  |  |  |
 | 4 noktalı cümle + kapanış patlaması |  |  |  |  |
@@ -232,8 +234,10 @@ geçip geçmeyeceğini söyler — dolduran kişi karar verir, sonraki ajan uygu
 Telefonda görülüp masa başında görülmemiş her şey. Kod düzeltmesi gerektirenler buradan
 `docs/durum.md`'nin "Bilinen açıklar" bölümüne taşınır.
 
-1.
-2.
+1. **AYAR paneli kapanmıyordu** — perde aç/kapat düğmesini yutuyordu. Kodda kapandı
+   (`SetAsLastSibling` + kartta KAPAT). Elde bir kez aç-kapa ile doğrulanacak.
+2. **Dünya macentaydı** (shader strip). `AndroidBuilder` Always Included listesine yazıyor;
+   2. oturum ekranında kapandı.
 3.
 
 ## Tura girerken bilinen sorunlar

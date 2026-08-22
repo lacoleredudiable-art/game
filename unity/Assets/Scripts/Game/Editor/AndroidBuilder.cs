@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
@@ -52,9 +53,24 @@ namespace Dovus.Game.EditorTools
             return Path.Combine(repoRoot, OutputDirRelativeToRepo, ApkName);
         }
 
+        /// <summary>
+        /// Sahne koddan kuruluyor (AGENTS kural 2), yani hiçbir materyal bir asset'te durmuyor:
+        /// materyaller çalışma anında `Shader.Find` ile yaratılıyor. Player build'i yalnızca
+        /// asset'lerden REFERANS EDİLEN shader'ları paketler — `Shader.Find` telefonda null döner
+        /// ve dünya macenta çıkar (T11 1. oturumda tam bu oldu). Bu yüzden çalışma anında aranan
+        /// her shader "Always Included" listesine yazılır.
+        /// </summary>
+        static readonly string[] RuntimeShaders =
+        {
+            "Universal Render Pipeline/Lit",     // arena, oyuncu, boss (PrototypeBootstrap)
+            "Universal Render Pipeline/Unlit",   // yedek yol
+            "Sprites/Default",                   // mürekkep, telegraf, hayalet, iz, tezahür
+        };
+
         static BuildReport Build(string outputPath)
         {
             ApplyPlayerSettings();
+            EnsureAlwaysIncludedShaders();
 
             string dir = Path.GetDirectoryName(outputPath);
             if (!string.IsNullOrEmpty(dir))
@@ -136,6 +152,55 @@ namespace Dovus.Game.EditorTools
             EditorUserBuildSettings.androidCreateSymbols = AndroidCreateSymbols.Disabled;
 
             AssetDatabase.SaveAssets();
+        }
+
+        static void EnsureAlwaysIncludedShaders()
+        {
+            var settings = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>("ProjectSettings/GraphicsSettings.asset");
+            if (settings == null)
+            {
+                Debug.LogWarning("[T11] GraphicsSettings.asset okunamadı; shader listesi güncellenmedi.");
+                return;
+            }
+
+            var serialized = new SerializedObject(settings);
+            SerializedProperty list = serialized.FindProperty("m_AlwaysIncludedShaders");
+            if (list == null || !list.isArray)
+            {
+                Debug.LogWarning("[T11] m_AlwaysIncludedShaders bulunamadı; shader listesi güncellenmedi.");
+                return;
+            }
+
+            var present = new List<UnityEngine.Object>();
+            for (int i = 0; i < list.arraySize; i++)
+                present.Add(list.GetArrayElementAtIndex(i).objectReferenceValue);
+
+            bool changed = false;
+            foreach (string name in RuntimeShaders)
+            {
+                Shader shader = Shader.Find(name);
+                if (shader == null)
+                {
+                    Debug.LogWarning($"[T11] Shader bulunamadı, listeye eklenemedi: {name}");
+                    continue;
+                }
+
+                if (present.Contains(shader))
+                    continue;
+
+                int index = list.arraySize;
+                list.InsertArrayElementAtIndex(index);
+                list.GetArrayElementAtIndex(index).objectReferenceValue = shader;
+                present.Add(shader);
+                changed = true;
+                Debug.Log($"[T11] Always Included Shaders'a eklendi: {name}");
+            }
+
+            if (changed)
+            {
+                serialized.ApplyModifiedProperties();
+                AssetDatabase.SaveAssets();
+            }
         }
 
         static string ArgValue(string name)

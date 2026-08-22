@@ -5,11 +5,12 @@
 > nerede sapma var.
 
 **Son güncelleme:** 22 Ağustos 2026 · **Sıradaki görev:** T11 his turunun **doldurulması**
-(`docs/his-kontrol-listesi.md`, telefonda elde)
+(`docs/his-kontrol-listesi.md`, telefonda elde — AYAR artık KAPAT ile kapanmalı)
 
-> **T11'in kod tarafı bitti:** APK üretiliyor (`Dovus → Build Android APK`), kare süresi
-> göstergesi ayar panelinden açılıp kapanıyor, his kontrol listesi hazır. Kalan iş kod değil:
-> beş sorunun telefonda cevaplanması. Ayrıntı aşağıdaki "T11" bölümünde.
+> **T11 kod + 60 fps kabulü kapandı.** APK telefonda çalışıyor, iki parmak donanımda
+> doğrulandı, kare süresi **16,6 ms / 60 fps** (en kötü 16,8–16,9). 2. oturumda iki gerçek
+> hata çıktı ve ikisi de düzeltildi: panel kapanmıyordu (z-sıra), dünya macentaydı
+> (`Shader.Find` strip). Kalan iş hâlâ kod değil: §13 beş sorusu elde.
 
 ## Görev durumu
 
@@ -35,7 +36,7 @@
 | T9 | HUD, parlak tepki yazısı | bitti | [#4](https://github.com/lacoleredudiable-art/game/pull/4) → master |
 | T9.1 | T9 denetim düzeltmeleri (bant taşması, overdraw, dp) | bitti | aynı dal → master |
 | T10 | Oyun içi ayar paneli | bitti | task/t10-ayar-paneli → master |
-| T11 | Android build, his turu | kod bitti · tur doldurulmadı | task/t11-android-build |
+| T11 | Android build, his turu | 60 fps kapandı · tur doldurulmadı | task/t11-android-build |
 
 Durum değerleri: `bekliyor` · `sürüyor` · `bitti` · `bloke`
 
@@ -995,20 +996,33 @@ askıya alma değil) T11'de doğrulanmalı.
 **Ölçülenler (masaüstü):** Editör derlemesi temiz (`scriptCompilationFailed=False`), build hedefi
 Android'e çevrildi, APK üretildi: **41.5 MB**, development build, IL2CPP/ARM64.
 
-**Telefonda doğrulananlar (1. oturum, 22 Ağustos — Xiaomi `2412DPC0AG`):**
+**Telefonda doğrulananlar:**
 
-- **APK telefonda çalışıyor.** Kurulum `adb push /sdcard/Download/` + cihazdan elle yapıldı;
-  `adb install` Xiaomi kısıtlamasıyla reddedildi (bkz. "Bilinen açıklar").
-- **İki parmak aynı anda sorunsuz** (sol çubuk + sağ çizim) — kabul kriteri 2 **kapandı**.
-  T5'ten beri yalnızca enjekte edilmiş sanal dokunuşlarla sınanmıştı.
-- §13'ün 1. sorusu için ilk izlenim olumlu ("zamanlamayı tutturmak tatmin ediciydi"), ama
-  kontrol listesindeki alt maddeler denenmediği için soru **kapatılmadı**.
+- **1. oturum (sahibi, kısa):** APK çalışıyor; **iki parmak aynı anda sorunsuz** (sol çubuk +
+  sağ çizim) — kabul kriteri 2 **kapandı**. §13 soru 1 ilk izlenim olumlu, alt maddeler
+  denenmediği için soru kapatılmadı.
+- **2. oturum (kablo + `adb`, 22 Ağustos akşam):** Yeni APK `adb install -r` ile kuruldu
+  (bu sefer Xiaomi izin verdi). Kare süresi göstergesi `tuning.json` üzerinden açıldı
+  (panel uzaktan tıklanamadı — aşağıda). **16,6 ms · 60 fps**, en kötü **16,8–16,9 ms**,
+  hedef 60 — kabul kriteri 1 **kapandı**. Ölüm/dönüş döngüsünde de kilit 60'ta kaldı.
+  Dünya rengi düzgün (macenta gitti).
 
-**Hâlâ doğrulanamayan kabul kriterleri:**
+**2. oturumda çıkan ve kapanan hatalar:**
 
-- **"60 fps'e yakın" ölçülmedi** — 1. oturumda kare süresi göstergesi hiç açılmadı, bütçe
-  tablosu `his-kontrol-listesi.md`'de boş. Kapatmak için tek gereken: AYAR → ÖLÇÜM (T11) → AÇIK.
-- His kontrol listesi hazır ama **doldurulmadı**; §13'ün beş sorusu hâlâ cevapsız.
+- **AYAR paneli kapanmıyordu.** Aç/kapat düğmesi modal perdenin *altında* yaratılıyordu;
+  perde `raycastTarget` olduğu için düğmeye basılamıyordu. Düzeltme: düğme
+  `SetAsLastSibling`, açıkken yazısı **KAPAT**, kartın sağ-üstünde ikinci bir KAPAT.
+  **Uzaktan doğrulanamadı** — HyperOS `adb shell input tap` için `INJECT_EVENTS` istiyor
+  (aşağıdaki açık). Sahibinin bir kez aç-kapa yapması yeterli.
+- **Dünya macentaydı.** Sahne koddan kurulduğu için `Shader.Find` ile üretilen materyaller
+  player build'ine girmiyordu. `AndroidBuilder` artık URP Lit / URP Unlit / Sprites/Default
+  shader'larını Always Included listesine yazıyor. 2. oturum ekranında zemin gri, oyuncu
+  camgöbeği — kapandı.
+
+**Hâlâ doğrulanamayanlar:**
+
+- His kontrol listesi **doldurulmadı**; §13'ün beş sorusu (soru 1 alt maddeleri dahil)
+  hâlâ cevapsız. Kare bütçesi tablosunda yalnızca boşta/ölüm satırı var.
 
 > **Sonraki ajana/sahibine:** `docs/his-kontrol-listesi.md` doldurulmadan Faz 4'e (görsellik)
 > geçilmez — görev listesi bunu açıkça yasaklıyor. Turda çıkan kod düzeltmeleri buraya
@@ -1030,6 +1044,10 @@ Android'e çevrildi, APK üretildi: **41.5 MB**, development build, IL2CPP/ARM64
   profiler bağlantısı da bilerek **açılmadı** (ikisi de kare süresini şişirir).
 - **Kare süresi göstergesinin yeri sol-alt köşe** (spec'te yok): can barları sol-üstte, tepki
   yazısı/debug metni sağda, ayar düğmesi sağ-altta. Kalan tek boş köşe burası.
+- **Always Included Shaders listesine üç runtime shader yazıldı** (URP Lit, URP Unlit,
+  Sprites/Default). Sahne koddan kurulduğu için `Shader.Find` referansı asset grafında yok;
+  yazılmazsa player macenta çıkar (2. oturumda çıktı). Built-in yedekler (`Standard`,
+  `Unlit/Color`, `Hidden/Internal-Colored`) listeye konmadı — telefonda URP yolu çalışıyor.
 
 ## Spec'ten sapmalar
 
@@ -1291,10 +1309,12 @@ Hepsi `PrototypeTuning`'de, hiçbiri kodda gömülü değil (AGENTS kural 3).
 ## Bilinen açıklar
 
 - T1/T2/T3/T4/T7/T7.1/T6.2/T8/T8.1/T8.2 `dotnet test` yeşil (`tools/CoreTests`, **79** test).
-- **Xiaomi/HyperOS telefonlarda `adb install` reddediliyor** (`INSTALL_FAILED_USER_RESTRICTED`).
-  Geliştirici seçeneklerinde "USB üzerinden yükle" açılmadan kurulum olmuyor; T11'de APK
-  `/sdcard/Download/` altına `adb push` ile atılıp telefondan elle kuruldu. Kurulum yolu
-  cihaza bağlı, build'e değil.
+- **Xiaomi/HyperOS: `adb shell input tap` `INJECT_EVENTS` ile reddediliyor.** 2. oturumda
+  panel/oyun uzaktan tıklanamadı; FPS göstergesi `tuning.json` (`ShowFrameTimeHud`)
+  push + uygulama restart ile açıldı. `adb install -r` aynı cihazda 2. oturumda **çalıştı**
+  (1. oturumdaki `INSTALL_FAILED_USER_RESTRICTED` o an için geçti — "USB üzerinden yükle"
+  açılmış olabilir). Uzaktan dokunuş için ayrı geliştirici seçeneği ("USB debugging
+  (Security settings)") gerekir; his turu elde yapılacak, o yüzden açılmadı.
 - **Batchmode build, Unity Editor açıkken çalışmaz** ("another Unity instance"). Editör
   açıkken tek yol menü ya da MCP üzerinden `AndroidBuilder.BuildTo`; MCP çağrısı uzun build'de
   zaman aşımına uğrar ama **build editörde devam eder** (T11'de öyle oldu). Ayrıca kapatılmış
