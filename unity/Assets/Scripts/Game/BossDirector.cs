@@ -177,7 +177,12 @@ namespace Dovus.Game
         {
             _phase = Phase.Idle;
             _phaseStartedWorldMs = worldMs;
-            int wait = _rng.Next(_combat.Boss.IdleMinMs, _combat.Boss.IdleMaxMs + 1);
+            // T10: panelin Min/Max slider'ları BAĞIMSIZ hareket eder; Min > Max olursa
+            // Random.Next negatif aralıkla ArgumentOutOfRangeException fırlatır (tüm boss
+            // döngüsünü kilitler). Min/Max burada garantiye alınıyor, slider'lara dokunulmadı.
+            int lo = System.Math.Min(_combat.Boss.IdleMinMs, _combat.Boss.IdleMaxMs);
+            int hi = System.Math.Max(_combat.Boss.IdleMinMs, _combat.Boss.IdleMaxMs);
+            int wait = _rng.Next(lo, hi + 1);
             _idleUntilWorldMs = worldMs + wait;
             _telegraph?.Hide();
         }

@@ -1,5 +1,7 @@
 using Dovus.Core.Tuning;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.Rendering.Universal;
 
 namespace Dovus.Game
@@ -27,6 +29,13 @@ namespace Dovus.Game
         void BuildWorld()
         {
             var combat = new CombatTuning();
+
+            // T10: kayıtlı ayar, DÜNYA kurulmadan önce combat/_tuning'in İÇİNE kopyalanır
+            // (CopyFrom yolu — referans kimliği korunur). Böylece arena/oyuncu/boss ilk kareden
+            // kaydedilmiş değerlerle doğar, sonradan "sıçrayan" bir düzeltme karesi olmaz.
+            var tuningConfig = TuningConfig.Create(combat, _tuning);
+            tuningConfig.TryLoad();
+
             var clock = gameObject.AddComponent<GameClock>();
             clock.Bind(combat.Slowmo);
 
@@ -74,7 +83,7 @@ namespace Dovus.Game
 
             CreateSun();
             FollowCamera follow = CreateCamera(player.transform);
-            CreatePentagon(clock, combat, player.transform, pose, reactor, dodgeMotion, afterimage, vitals, telegraph, follow);
+            CreatePentagon(clock, combat, player.transform, pose, reactor, dodgeMotion, afterimage, vitals, telegraph, follow, tuningConfig);
         }
 
         void CreatePentagon(
@@ -87,7 +96,8 @@ namespace Dovus.Game
             AfterimageTrail afterimage,
             PlayerVitals vitals,
             BossTelegraph telegraph,
-            FollowCamera follow)
+            FollowCamera follow,
+            TuningConfig tuningConfig)
         {
             var root = new GameObject("Pentagon");
             root.transform.SetParent(transform, false);
@@ -149,6 +159,25 @@ namespace Dovus.Game
             manGo.transform.SetParent(transform, false);
             var director = manGo.AddComponent<ManifestationDirector>();
             director.Bind(clock, input, player, pose, boss, scars, _tuning);
+
+            CreateTuningPanel(tuningConfig, vitals);
+        }
+
+        /// <summary>
+        /// T10: uGUI Slider/Button ilk kez sahneye giriyor — proje şimdiye kadar hep elle
+        /// hit-test eden EnhancedTouch kullanıyordu (PentagonInput/MoveInput). Standart Slider
+        /// bir EventSystem + bir input modülü ister; InputSystemUIInputModule seçildi çünkü
+        /// proje zaten Yeni Input System üstünde (Unity.InputSystem asmdef referansı).
+        /// </summary>
+        static void CreateTuningPanel(TuningConfig tuningConfig, PlayerVitals vitals)
+        {
+            var esGo = new GameObject("EventSystem");
+            esGo.AddComponent<EventSystem>();
+            esGo.AddComponent<InputSystemUIInputModule>();
+
+            var panelGo = new GameObject("TuningPanel");
+            var panel = panelGo.AddComponent<TuningPanel>();
+            panel.Configure(tuningConfig, vitals);
         }
 
         static void AttachOverlayToMain(Camera main, Camera overlay)

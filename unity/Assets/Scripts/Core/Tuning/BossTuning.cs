@@ -1,6 +1,7 @@
 namespace Dovus.Core.Tuning
 {
     /// <summary>Prototip boss (YERE ÇAKMA) — dovus-sistemi.md §11.</summary>
+    [System.Serializable]
     public class BossTuning
     {
         public int WindupMs = 640;
@@ -14,5 +15,20 @@ namespace Dovus.Core.Tuning
 
         // Ölümden sonra tekrar dövüş — dovus-sistemi.md §11 (özet §4)
         public float RespawnMaxSec = 2.0f;
+
+        public void CopyFrom(BossTuning other)
+        {
+            WindupMs = other.WindupMs;
+            ActiveMs = other.ActiveMs;
+            RecoveryMs = other.RecoveryMs;
+            RadiusM = other.RadiusM;
+            Damage = other.Damage;
+            IdleMinMs = other.IdleMinMs;
+            IdleMaxMs = other.IdleMaxMs;
+            ApproachSpeedMps = other.ApproachSpeedMps;
+            RespawnMaxSec = other.RespawnMaxSec;
+        }
+
+        public void ResetToDefaults() => CopyFrom(new BossTuning());
     }
 }

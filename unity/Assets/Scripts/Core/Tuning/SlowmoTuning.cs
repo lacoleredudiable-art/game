@@ -1,6 +1,7 @@
 namespace Dovus.Core.Tuning
 {
     /// <summary>Yavaş çekim — dovus-sistemi.md §7.</summary>
+    [System.Serializable]
     public class SlowmoTuning
     {
         public float Factor = 0.22f;
@@ -17,5 +18,18 @@ namespace Dovus.Core.Tuning
         public int AudioLowpassHz = 700;
         public DodgeGrade SlowmoMinGrade = DodgeGrade.Temiz;
         public int SlowmoBonusDots = 0;
+
+        public void CopyFrom(SlowmoTuning other)
+        {
+            Factor = other.Factor;
+            RampDownMs = other.RampDownMs;
+            HoldMs = other.HoldMs;
+            RampUpMs = other.RampUpMs;
+            AudioLowpassHz = other.AudioLowpassHz;
+            SlowmoMinGrade = other.SlowmoMinGrade;
+            SlowmoBonusDots = other.SlowmoBonusDots;
+        }
+
+        public void ResetToDefaults() => CopyFrom(new SlowmoTuning());
     }
 }
