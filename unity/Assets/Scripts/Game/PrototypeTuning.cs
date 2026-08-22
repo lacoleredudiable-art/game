@@ -195,13 +195,21 @@ namespace Dovus.Game
         public float VitalsMarginDp = 18f;
         public Color BossVitalsColor = new Color(0.70f, 0.74f, 0.80f, 0.85f);
 
+        // T11 ölçüm turu. Hedef 60 fps görev metninden; örnekleme penceresi spec'te yok —
+        // uydurma. Pencere hem yazının tazelenme aralığı hem de "en kötü kare"nin arandığı
+        // aralık: kısalırsa yazı titrer, uzarsa takılma gözden kaçar.
+        [Header("Kare süresi göstergesi (T11)")]
+        public bool ShowFrameTimeHud = false;
+        public float FrameTimeSampleSec = 0.5f;
+        public int TargetFrameRateHz = 60;
+
         // Sahneye serileşmiş eski kopyada yeni alanlar 0/siyah gelir (C# initializer
         // deserialize'da uygulanmaz). Sürüm numarası da 0 geldiği için tek seferlik yama
         // ÇALIŞIR; sahne bir kez yeniden kaydedildikten sonra bu blok hiç girmez ve
         // tasarımcının bilinçli 0'ı (ör. nabzı kapatmak) artık ezilmez (T8.1).
         [HideInInspector] public int TuningVersion = CurrentVersion;
 
-        const int CurrentVersion = 3;
+        const int CurrentVersion = 4;
 
         /// <summary>Sürümü geçmiş serileşmiş kopyayı bu sürümün varsayılanlarına çeker.</summary>
         public void EnsureRuntimeDefaults()
@@ -246,6 +254,11 @@ namespace Dovus.Game
             VitalsMarginDp = fresh.VitalsMarginDp;
             BossVitalsColor = fresh.BossVitalsColor;
 
+            // T11: aynı desen. TargetFrameRateHz 0 gelirse Application.targetFrameRate anlamsız
+            // bir değere düşer, o yüzden bu yama ölçüm turu için kritik.
+            FrameTimeSampleSec = fresh.FrameTimeSampleSec;
+            TargetFrameRateHz = fresh.TargetFrameRateHz;
+
             TuningVersion = CurrentVersion;
         }
 
@@ -278,6 +291,9 @@ namespace Dovus.Game
             public float CameraShakePxToM;
             public bool ReadoutAnchorRight;
             public float ReadoutPunchInSec;
+            // T11: telefonda panelden açılıp kapanır ve kapatılınca öyle kalır. Eski bir
+            // tuning.json'da bu alan yok — JsonUtility false verir, o da zaten varsayılan.
+            public bool ShowFrameTimeHud;
         }
 
         public PanelFields ToPanelFields() => new PanelFields
@@ -290,6 +306,7 @@ namespace Dovus.Game
             CameraShakePxToM = CameraShakePxToM,
             ReadoutAnchorRight = ReadoutAnchorRight,
             ReadoutPunchInSec = ReadoutPunchInSec,
+            ShowFrameTimeHud = ShowFrameTimeHud,
         };
 
         public void ApplyPanelFields(PanelFields f)
@@ -303,6 +320,7 @@ namespace Dovus.Game
             CameraShakePxToM = f.CameraShakePxToM;
             ReadoutAnchorRight = f.ReadoutAnchorRight;
             ReadoutPunchInSec = f.ReadoutPunchInSec;
+            ShowFrameTimeHud = f.ShowFrameTimeHud;
         }
 
         /// <summary>"Sıfırla": yalnızca panelin yönettiği alt küme spec varsayılanına döner.</summary>

@@ -356,6 +356,9 @@ namespace Dovus.Game
                 p.PlayerMaxHp = v;
                 _vitals?.SetMaxHp(v);
             }, "");
+
+            AddHeader("ÖLÇÜM (T11)");
+            AddBoolButton("Kare süresi göstergesi", () => p.ShowFrameTimeHud, v => p.ShowFrameTimeHud = v, "AÇIK", "KAPALI");
         }
 
         // ---- Satır inşası -----------------------------------------------------------------

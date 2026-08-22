@@ -23,7 +23,19 @@ namespace Dovus.Game
         {
             _tuning ??= new PrototypeTuning();
             _tuning.EnsureRuntimeDefaults();
+            ApplyFrameRateTarget();
             BuildWorld();
+        }
+
+        /// <summary>
+        /// T11 hedefi sabit 60 fps. Android'de varsayılan tavan cihazın ekran tazeleme hızıdır
+        /// (120 Hz bir telefonda oyun 120'ye tırmanmaya çalışır ve kare süresi dalgalanır), o
+        /// yüzden tavan açıkça yazılır. vSync sayacı sıfırlanmazsa targetFrameRate yok sayılır.
+        /// </summary>
+        void ApplyFrameRateTarget()
+        {
+            QualitySettings.vSyncCount = 0;
+            Application.targetFrameRate = Mathf.Max(1, _tuning.TargetFrameRateHz);
         }
 
         void BuildWorld()
@@ -138,6 +150,9 @@ namespace Dovus.Game
 
             var vitalsHud = root.AddComponent<VitalsHud>();
             vitalsHud.Configure(vitals, _tuning, view.CanvasRoot);
+
+            var frameHud = root.AddComponent<FrameTimeHud>();
+            frameHud.Configure(_tuning, view.CanvasRoot);
 
             dodgeMotion.Bind(clock, input, boss.transform, afterimage);
 

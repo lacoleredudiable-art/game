@@ -4,10 +4,12 @@
 > ajanın repoyu taramadan nerede kaldığımızı anlaması. Kısa tut: ne bitti, ne üretildi,
 > nerede sapma var.
 
-**Son güncelleme:** 22 Ağustos 2026 · **Sıradaki görev:** T11 (Android build, his turu)
+**Son güncelleme:** 22 Ağustos 2026 · **Sıradaki görev:** T11 his turunun **doldurulması**
+(`docs/his-kontrol-listesi.md`, telefonda elde)
 
-> **T9 + T9.1 + T10 `master`'a girdi** (`dotnet test` yeşil, Unity derliyor, MCP prob'ları geçti —
-> aşağıdaki "T10" bölümü). T11'in bilmesi gereken hazırlık notları için o bölümün sonuna bak.
+> **T11'in kod tarafı bitti:** APK üretiliyor (`Dovus → Build Android APK`), kare süresi
+> göstergesi ayar panelinden açılıp kapanıyor, his kontrol listesi hazır. Kalan iş kod değil:
+> beş sorunun telefonda cevaplanması. Ayrıntı aşağıdaki "T11" bölümünde.
 
 ## Görev durumu
 
@@ -33,7 +35,7 @@
 | T9 | HUD, parlak tepki yazısı | bitti | [#4](https://github.com/lacoleredudiable-art/game/pull/4) → master |
 | T9.1 | T9 denetim düzeltmeleri (bant taşması, overdraw, dp) | bitti | aynı dal → master |
 | T10 | Oyun içi ayar paneli | bitti | task/t10-ayar-paneli → master |
-| T11 | Android build, his turu | bekliyor | — |
+| T11 | Android build, his turu | kod bitti · tur doldurulmadı | task/t11-android-build |
 
 Durum değerleri: `bekliyor` · `sürüyor` · `bitti` · `bloke`
 
@@ -959,6 +961,68 @@ Android APK'nın kapatılıp açılması değil. Mantık aynı (`Awake` → `Try
 `Application.persistentDataPath`in davranışı ve uygulamanın tamamen sonlandırılması (arka planda
 askıya alma değil) T11'de doğrulanmalı.
 
+## T11 — Android build ve kare süresi göstergesi (22 Ağustos)
+
+**Üretilenler:**
+
+- `AndroidBuilder` (`Assets/Scripts/Game/Editor/AndroidBuilder.cs`) — üç giriş: **Dovus → Build
+  Android APK** menüsü, `BuildFromCommandLine` (batchmode `-executeMethod`, `-dovusOutput <yol>`
+  ile hedef yol verilebilir) ve `BuildTo(path)` (otomasyon; menü/CLI yan etkisi yok).
+  Player ayarları **kodla** yazılır — Build Settings penceresinde elle tıklanan bir kutu ertesi
+  gün başka sonuç verir: IL2CPP · ARM64 · min SDK 24 · `com.dovus.prototip` · yalnızca yatay
+  (§2 girdi düzeni) · app bundle kapalı · sembol paketi kapalı. Çıktı `build/android/
+  dovus-prototip.apk` (`.gitignore`'da).
+- `FrameTimeHud` (`Dovus.Game`) — sol-alt köşede `ortalama ms · fps` + `en kötü ms · hedef`.
+  Ölçüm **ölçeklenmemiş** saatte (`Time.unscaledDeltaTime`): yavaş çekim kare süresini değil
+  dünya zamanını ölçekler. Pencere dolunca (varsayılan 0.5 sn) tek bir `StringBuilder` ile yazılır,
+  her kare string üretilmez. Kapalıyken `Text.enabled = false` — T8.1 denetiminin 12. ve T9.1'in
+  2. maddesi (alfa 0 bir `Graphic` yine de geometri üretir).
+- `PrototypeTuning`: `ShowFrameTimeHud` (varsayılan kapalı), `FrameTimeSampleSec` = 0.5,
+  `TargetFrameRateHz` = 60. `TuningVersion` 3 → **4** (aynı tek-seferlik yama deseni).
+  `PanelFields`'a yalnızca `ShowFrameTimeHud` eklendi — telefonda açılıp kapatılınca öyle kalsın
+  diye. Diğer ikisi panelde yok (bkz. sapmalar).
+- `PrototypeBootstrap.ApplyFrameRateTarget()` — `QualitySettings.vSyncCount = 0` +
+  `Application.targetFrameRate = TargetFrameRateHz`. vSync sıfırlanmazsa hedef yok sayılır;
+  yazılmazsa 120 Hz bir telefonda oyun 120'ye tırmanıp kare süresi dalgalanır.
+- `TuningPanel`: yeni **ÖLÇÜM (T11)** grubu, tek satır (aç/kapa). Panel 69 → **71** satır
+  (1 başlık + 1 satır).
+- `docs/his-kontrol-listesi.md` — §13'ün beş sorusu, her biri için telefonda cevaplanacak alt
+  maddeler + boş cevap alanı; ayrıca ölçüm ortamı, 8 satırlık kare bütçesi tablosu, "ayarlanan
+  sayılar" tablosu ve tura girerken bilinen 11 sorunun listesi.
+
+**Test:** Core'a dokunulmadı, `dotnet test` **79 yeşil**.
+
+**Ölçülenler (masaüstü):** Editör derlemesi temiz (`scriptCompilationFailed=False`), build hedefi
+Android'e çevrildi, APK üretildi: **41.5 MB**, development build, IL2CPP/ARM64.
+
+**Doğrulanamayan kabul kriterleri (telefon elde olmadan kapanamaz):**
+
+- "APK telefonda çalışıyor, 60 fps'e yakın" — kare bütçesi tablosu `his-kontrol-listesi.md`'de
+  **boş**.
+- "İki parmak aynı anda sorunsuz (sol çubuk + sağ çizim)" — donanımda hâlâ denenmedi.
+- His kontrol listesinin kendisi hazır ama **doldurulmadı**; §13'ün beş sorusu cevapsız.
+
+> **Sonraki ajana/sahibine:** `docs/his-kontrol-listesi.md` doldurulmadan Faz 4'e (görsellik)
+> geçilmez — görev listesi bunu açıkça yasaklıyor. Turda çıkan kod düzeltmeleri buraya
+> "Bilinen açıklar"a taşınmalı.
+
+### T11 sapmaları / varsayılanlar
+
+- **`FrameTimeSampleSec = 0.5` (uydurma, spec'te yok).** Hem yazının tazelenme aralığı hem de
+  "en kötü kare"nin arandığı pencere. Kısalırsa yazı titrer ve okunamaz, uzarsa tek karelik
+  takılma gözden kaçar.
+- **`TargetFrameRateHz = 60`** görev metninden ("Hedef: sabit 60 fps"); spec §13'te sayı yok.
+- **`FrameTimeSampleSec` ve `TargetFrameRateHz` ayar panelinde YOK**, yalnızca Inspector'da.
+  Gerekçe: `PanelFields` JSON'a yazılıyor ve eski bir `tuning.json`'da alan bulunmadığında
+  `JsonUtility` **0** verir — `TargetFrameRateHz = 0` sessizce kare tavanını bozardı. `bool`
+  için bu risk yok (0 = false = varsayılan), o yüzden yalnızca `ShowFrameTimeHud` panelde.
+- **Development build, ama IL2CPP derleyici ayarı `Release`.** Görev "geliştirme build'i"
+  istiyor; development build'in varsayılanı IL2CPP tarafını Debug derler (C++ optimizasyonu
+  kapalı), o da "60 fps'e yakın mı" sorusunu ölçülemez hale getirirdi. Script debugging ve
+  profiler bağlantısı da bilerek **açılmadı** (ikisi de kare süresini şişirir).
+- **Kare süresi göstergesinin yeri sol-alt köşe** (spec'te yok): can barları sol-üstte, tepki
+  yazısı/debug metni sağda, ayar düğmesi sağ-altta. Kalan tek boş köşe burası.
+
 ## Spec'ten sapmalar
 
 Belgedeki bir kural/sayı uygulanamadıysa buraya yaz: hangisi, neden, yerine ne kondu.
@@ -1219,6 +1283,19 @@ Hepsi `PrototypeTuning`'de, hiçbiri kodda gömülü değil (AGENTS kural 3).
 ## Bilinen açıklar
 
 - T1/T2/T3/T4/T7/T7.1/T6.2/T8/T8.1/T8.2 `dotnet test` yeşil (`tools/CoreTests`, **79** test).
+- **Xiaomi/HyperOS telefonlarda `adb install` reddediliyor** (`INSTALL_FAILED_USER_RESTRICTED`).
+  Geliştirici seçeneklerinde "USB üzerinden yükle" açılmadan kurulum olmuyor; T11'de APK
+  `/sdcard/Download/` altına `adb push` ile atılıp telefondan elle kuruldu. Kurulum yolu
+  cihaza bağlı, build'e değil.
+- **Batchmode build, Unity Editor açıkken çalışmaz** ("another Unity instance"). Editör
+  açıkken tek yol menü ya da MCP üzerinden `AndroidBuilder.BuildTo`; MCP çağrısı uzun build'de
+  zaman aşımına uğrar ama **build editörde devam eder** (T11'de öyle oldu). Ayrıca kapatılmış
+  bir editörden kalan bayat `unity/Temp/UnityLockfile` aynı hatayı verir.
+- **`BossDirector.TickWindup` (satır 145) `_attack` null iken patlıyor.** Editor.log'da eski bir
+  prob oturumundan yüzlerce `NullReferenceException` var: bileşen çalışma anında eklenip `Bind`
+  çağrılmadan bir kare geçerse `Update` boş `_attack`'a dokunuyor. Gerçek sahnede Bootstrap aynı
+  karede `Bind` çağırdığı için oyunda görülmez; yalnızca MCP prob'ları için tuzak. T11'in dosyası
+  olmadığı için düzeltilmedi (AGENTS: başka görevin dosyasına dokunma).
 - **Boss can göstergesi hâlâ kozmetik — karar sahibinde.** `VitalsHud`'ın boss barı her zaman dolu;
   Core/Game'de boss HP/hasar yok ve "boss nasıl ölür" prototipte hiç tanımlı değil. T9'un
   YASAKLAR'ı yeni mekanik eklemeyi kapattığı için T9.1'de de dokunulmadı. Gerçek bir boss-HP
