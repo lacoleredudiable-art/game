@@ -175,13 +175,33 @@ namespace Dovus.Game
         [Header("Kalıcı iz tavanı (T7.2, GroundScarField)")]
         public int GroundScarCapCount = 60;
 
+        // §6 gösterim: "sağ kenarda, parlak, büyük punto" + "hangi kenarda duracağı ayarlanabilir".
+        // Punto/glow/bekleme/sönme FeelTuning.Readout* alanlarında (T1'de spec'ten kondu, T9
+        // burada gerçekten kullanılıyor). Giriş vuruşunun (scale punch) sönme süresi spec'te
+        // yok — uydurma, durum.md'ye T9 sapması olarak geçildi.
+        [Header("Tepki yazısı (T9, ReactionReadout)")]
+        public bool ReadoutAnchorRight = true;
+        public float ReadoutPunchInSec = 0.12f;
+
+        // §6/§11 "boss ve oyuncu can göstergesi, sade". Oyuncu barı PlayerVitals'tan gerçek
+        // HP okur. Boss barı KOZMETİKTİR: Core/Game hiçbir yerde boss hasarı tutmuyor (T7
+        // "boss fiziksel tepki verir, hasar yok"), yeni bir hasar mekaniği eklemek bu görevin
+        // YASAKLAR listesine giriyor — bkz. durum.md T9 sapmaları.
+        // Ölçüler dp (beşgen/dodge diskiyle aynı yol: PentagonLayoutScreen.DpToPixels).
+        [Header("Can göstergesi (T9, VitalsHud)")]
+        public float VitalsBarWidthDp = 220f;
+        public float VitalsBarHeightDp = 16f;
+        public float VitalsBarSpacingDp = 6f;
+        public float VitalsMarginDp = 18f;
+        public Color BossVitalsColor = new Color(0.70f, 0.74f, 0.80f, 0.85f);
+
         // Sahneye serileşmiş eski kopyada yeni alanlar 0/siyah gelir (C# initializer
         // deserialize'da uygulanmaz). Sürüm numarası da 0 geldiği için tek seferlik yama
         // ÇALIŞIR; sahne bir kez yeniden kaydedildikten sonra bu blok hiç girmez ve
         // tasarımcının bilinçli 0'ı (ör. nabzı kapatmak) artık ezilmez (T8.1).
         [HideInInspector] public int TuningVersion = CurrentVersion;
 
-        const int CurrentVersion = 2;
+        const int CurrentVersion = 3;
 
         /// <summary>Sürümü geçmiş serileşmiş kopyayı bu sürümün varsayılanlarına çeker.</summary>
         public void EnsureRuntimeDefaults()
@@ -216,6 +236,16 @@ namespace Dovus.Game
             ThreatPulseHzMax = fresh.ThreatPulseHzMax;
             CameraShakePxToM = fresh.CameraShakePxToM;
             AudioBaseCutoffHz = fresh.AudioBaseCutoffHz;
+
+            // T9: yeni alanlar, aynı "sürüm damgası bir kez yamalar" deseni (yukarısı).
+            ReadoutAnchorRight = fresh.ReadoutAnchorRight;
+            ReadoutPunchInSec = fresh.ReadoutPunchInSec;
+            VitalsBarWidthDp = fresh.VitalsBarWidthDp;
+            VitalsBarHeightDp = fresh.VitalsBarHeightDp;
+            VitalsBarSpacingDp = fresh.VitalsBarSpacingDp;
+            VitalsMarginDp = fresh.VitalsMarginDp;
+            BossVitalsColor = fresh.BossVitalsColor;
+
             TuningVersion = CurrentVersion;
         }
 
