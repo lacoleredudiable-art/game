@@ -187,10 +187,12 @@ namespace Dovus.Game
         // HP okur. Boss barı KOZMETİKTİR: Core/Game hiçbir yerde boss hasarı tutmuyor (T7
         // "boss fiziksel tepki verir, hasar yok"), yeni bir hasar mekaniği eklemek bu görevin
         // YASAKLAR listesine giriyor — bkz. durum.md T9 sapmaları.
+        // Ölçüler dp (beşgen/dodge diskiyle aynı yol: PentagonLayoutScreen.DpToPixels).
         [Header("Can göstergesi (T9, VitalsHud)")]
         public float VitalsBarWidthDp = 220f;
         public float VitalsBarHeightDp = 16f;
         public float VitalsBarSpacingDp = 6f;
+        public float VitalsMarginDp = 18f;
         public Color BossVitalsColor = new Color(0.70f, 0.74f, 0.80f, 0.85f);
 
         // Sahneye serileşmiş eski kopyada yeni alanlar 0/siyah gelir (C# initializer
@@ -241,6 +243,7 @@ namespace Dovus.Game
             VitalsBarWidthDp = fresh.VitalsBarWidthDp;
             VitalsBarHeightDp = fresh.VitalsBarHeightDp;
             VitalsBarSpacingDp = fresh.VitalsBarSpacingDp;
+            VitalsMarginDp = fresh.VitalsMarginDp;
             BossVitalsColor = fresh.BossVitalsColor;
 
             TuningVersion = CurrentVersion;

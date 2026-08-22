@@ -6,10 +6,8 @@
 
 **Son güncelleme:** 22 Ağustos 2026 · **Sıradaki görev:** T10 (oyun içi ayar paneli)
 
-> **T9 PR #4 hâlâ açık** (master'a girmedi — karar gerektiren 2 madde var, yukarıdaki tabloya bak).
-> T10 muhtemelen T9'un `PrototypeTuning` alanlarını (readout/vitals) ayarlanabilir kılacak, yani
-> T10'u `master`'dan değil **`task/t9-hud`'dan** dallandırmak daha az çatışma demek. Sahibi T9
-> kararlarını çözüp merge ederse T10 normal şekilde `master`'dan başlayabilir.
+> **T9 + T9.1 `master`'a girdi.** T10 normal şekilde `master`'dan dallanır. T10'un bilmesi
+> gereken hazırlık notları için aşağıdaki "T9.1" bölümünün sonuna bak.
 
 ## Görev durumu
 
@@ -32,7 +30,8 @@
 | T8 | Boss telegrafı, sıyırma, yavaş çekim, kamera | bitti | task/t8-boss-telegraph |
 | T8.1 | T8 denetim düzeltmeleri | bitti | task/t8.1-denetim-duzeltmeleri |
 | T8.2 | Yavaş çekim süresi (§7 ödülü gerçek oldu) | bitti | task/t8.2-yavas-cekim-suresi |
-| T9 | HUD, parlak tepki yazısı | bitti | [#4](https://github.com/lacoleredudiable-art/game/pull/4) (açık — karar gerektiriyor) |
+| T9 | HUD, parlak tepki yazısı | bitti | [#4](https://github.com/lacoleredudiable-art/game/pull/4) → master |
+| T9.1 | T9 denetim düzeltmeleri (bant taşması, overdraw, dp) | bitti | aynı dal → master |
 | T10 | Oyun içi ayar paneli | bekliyor | — |
 | T11 | Android build, his turu | bekliyor | — |
 
@@ -766,25 +765,77 @@ mode'da konsol `errorCount=0`. `ReactionReadout`/`VitalsHud` hiyerarşisi (`Main
 - `VitalsHud`: oyuncu gerçek `PlayerVitals.ApplyDamage`/respawn döngüsüyle test edildi (boss'un
   gerçek saldırısı oyuncuyu vurup 22/22 → 0 → 2 sn sonra 22/22'ye döndürdü), bar `fillAmount`
   her seferinde `Hp/MaxHp` ile eşleşti. Boss barı beklenen gibi sabit `1`.
-- **Doğrulanamayan tek şey:** hold penceresinin ORTASINDA (`alpha≈1`, punch-scale) bir ekran
-  görüntüsü — MCP komut round-trip'i tek başına genelde >1.4 sn (hold+fade toplamı) sürdüğü için iki
-  ayrı araç çağrısı arasında pencereyi hep kaçırdım (`SendMessage("LateUpdate")` ile aynı karede
-  zorlamayı denedim, Unity bu mesajı private Unity-callback'lerine yönlendirmiyor). Giriş/çıkış
-  sınırları (t=0 ve t>hold+fade) ve ara durumun (seri/en iyi) her ikisi de doğru ölçüldüğü için
-  aradaki lineer formülün (aynı kod yolu) yanlış olma ihtimali düşük, ama gözle "parlak mı"
-  kriteri (kabul kriteri 1: "yazı okunaklı, parlak ve zamanında görünüyor") sadece kod incelemesiyle
-  değil, gerçek ekran görüntüsüyle teyit edilmedi. **Sonraki ajan/insan telefonda veya editörde
-  gözle bakmalı.**
-- **İkinci oturumda tekrar denendi, hâlâ kapatılamadı.** Hold/fade'i geçici bir `DebugExtendHold`
-  metoduyla (commit'e girmedi, test sonunda geri alındı) 999999 ms'e uzatıp `Unity_Camera_Capture`
-  ile yakalamayı denedim — bu round-trip sınırını aşar ama proje `PentagonView`'ın `Canvas`'ı
-  `RenderMode.ScreenSpaceCamera` ile ayrı bir URP **Overlay** kamerasına (`InkOverlayCam`,
-  `Camera.main`'in stack'ine eklenmiş) bağlı. `Unity_Camera_Capture` tek bir kamerayı **stack'ten
-  bağımsız** render ediyor: `Camera.main`'i (Base) yakalayınca 3D sahne geliyor ama UI hiç yok;
-  `InkOverlayCam`'i (Overlay) doğrudan yakalayınca tamamen beyaz kare geliyor (Overlay tipi kamera
-  tek başına `Render()` çağrısını URP'de anlamlı kompoze edemiyor). Bu bir **araç sınırlaması**
-  (stack compositing MCP capture tool'unda yok), tasarım kararı değil — `ReactionReadout`/
-  `VitalsHud` kodu değişmedi. Gerçek cihazda/editör ekranında gözle bakmak hâlâ gerekiyor.
+- **T9'da doğrulanamayan tek şey** hold penceresinin ORTASINDA bir ekran görüntüsüydü (kabul
+  kriteri 1: "yazı okunaklı, parlak ve zamanında görünüyor"). İki oturum denendi, MCP round-trip'i
+  pencereyi hep kaçırdı; `Unity_Camera_Capture` de URP kamera-stack'ini kompoze edemediği için
+  (Base'de UI yok, Overlay tek başına beyaz) işe yaramadı. **T9.1'de kapandı** — aşağıya bak.
+
+### T9.1 — T9 denetim düzeltmeleri (22 Ağustos)
+
+T9'un kodu okundu, oyun modunda ölçüldü ve **gerçek ekran görüntüsüyle** doğrulandı. Üç hata
+düzeltildi, doğrulanamayan kabul kriteri kapatıldı. `dotnet test` **79 yeşil** (Core'a dokunulmadı).
+
+**Ekran görüntüsü yöntemi (sonraki ajan için):** `Unity_Camera_Capture` yerine oyun modunda
+`ScreenCapture.CaptureScreenshot(Path.GetFullPath("Temp/x.png"))` çağrılıyor — bu Game view'ı
+**kompoze** yakalar, yani URP Overlay kamera stack'i ve UI dahil. Pencereyi kaçırmamak için
+`ReactionReadout.Configure`'a geçici bir `FeelTuning { ReadoutHoldMs = 60000 }` verildi (yalnızca
+prob; commit'e girmedi). Dosya `unity/Temp/` altına yazılır, git yok sayar.
+
+1. **Yazı kendi bandını taşıp dünyayı kapatıyordu (kabul kriteri 3).** `ReadoutSizePx = 96` sabit
+   punto + `HorizontalWrapMode.Overflow` demek: "0,45 sn MÜKEMMEL" 1027×495 game view'da **944 px**
+   yer kaplıyordu, band ise 411 px. Yazı ekranın soluna kadar uzanıp arenayı ve bossu örtüyordu
+   (ilk ekran görüntüsünde net). Punto spec'ten geldiği için (§8 başlangıç sayıları) sayı
+   değişmedi; artık **tavan** olarak okunuyor: `FitTexts` yazının `preferredWidth`'ini bandın
+   genişliğine oranlayıp puntoyu düşürüyor. Ölçüldü: ana satır 96 → **41 px**, `preferredWidth`
+   402 ≤ band 411; alt satır 31, kuyruk 23 — üçü de bandın içinde.
+   Unity'nin kendi `resizeTextForBestFit`'i **denendi ve çalışmadı**: kurulum karesinde bandın
+   genişliği daha 0 olduğu için puntoyu 14'te dondurdu (ekranda okunmayacak kadar küçük).
+2. **Boşta duran yazı overdraw üretiyordu** — T8.1 denetiminin 12. maddesinin aynısı ("alfa 0 bir
+   `Graphic` yine de geometri üretip harmanlanır"). `HideAll` renkleri `Color.clear` yapıyordu ama
+   bileşenler açık kalıyordu: ekranın **%40×%24'ünü kaplayan glow `Image`'i** + üç `Text` her karede
+   çiziliyordu. Artık `enabled = false`; oyun modunda ölçüldü: yazı yokken dördü de kapalı.
+3. **`VitalsHud`'ın `...Dp` alanları ham piksel olarak kullanılıyordu.** Canvas `ConstantPixelSize`,
+   yani projedeki her dp ölçüsü `PentagonLayoutScreen.DpToPixels`'ten geçer (beşgen, dodge diski,
+   çubuk). Barlar bu yoldan geçmediği için yüksek yoğunluklu telefonda **~2.5 kat küçük** çıkacaktı.
+   Düzeltildi (ölçüldü: dpi 144'te 220 dp → 198 px). Koda gömülü 18 px'lik üst boşluk da veri oldu:
+   `PrototypeTuning.VitalsMarginDp`.
+
+**T10 hazırlığı (aynı düzeltmede yapıldı).** T9'un alanları kurulum anında bir kez okunuyordu, yani
+T10'un canlı slider'ı ekranda hiçbir şeyi değiştirmezdi ("her slider anında canlı etki eder,
+yeniden başlatma gerektirmez"). `ReactionReadout.ApplyTuningLayout` ve `VitalsHud.ApplyTuningLayout`
+artık her karede **uygulanan değeri karşılaştırıp** değiştiyse yerleşimi yeniden yazıyor:
+punto, glow şiddeti, yazının hangi kenarda duracağı, bar ölçüleri/renkleri. Değişmeyen karenin
+maliyeti birkaç float karşılaştırması. Aynı desen T10'da yeni alanlar için tekrarlanabilir.
+
+T10'un ayar nesnelerini araması gerekmesin diye, **çalışma anında hangi örnek nerede**:
+
+| Ayar | Örnek nerede doğuyor | Çalışma anında nereden tutulur |
+|---|---|---|
+| `PrototypeTuning` | `PrototypeBootstrap._tuning` (`[SerializeField]`, sahnede serileşmiş) | `PentagonInput.Tuning` (public alan); `KinematicMotor`/`ActorPose`/`BossReactor`/`FollowCamera` aynı **referansı** paylaşır (T5 denetimi: kopya yok) |
+| `CombatTuning` (`.Dodge`/`.Sentence`/`.Slowmo`/`.Boss`/`.Grade`/`.Feel`/`.Manifestation`) | `PrototypeBootstrap.BuildWorld` içinde `new CombatTuning()` | `PentagonInput.Combat` (public alan). Core POCO'su, `ScriptableObject` **yok** — T10'un 1. maddesi onu kuracak |
+
+İkisi de referansla paylaşıldığı için bir slider alanı yazınca ilgili sistem bir sonraki karede
+görür; istisna, değeri **kurulumda** okuyan yerlerdir (bar/yazı yerleşimi buydu, T9.1 kapattı;
+`GameClock.Bind`, `PlayerVitals.Bind` gibi tek seferlik bağlamalar hâlâ öyle). Ayrıca T8.1'in 16.
+maddesi duruyor: `EnsureRuntimeDefaults` sahnedeki serileşmiş kopyayı `TuningVersion` damgasıyla
+bir kez yamalıyor. Sahne şu an **v0** (alanlar YAML'de hiç yok), yani her açılışta varsayılanlara
+çekiliyor. T10 kalıcılığı JSON'a yazacağı için bu yama sırasını bilmek zorunda: **önce**
+`EnsureRuntimeDefaults`, **sonra** JSON.
+
+**Oyun modunda ölçülenler (MCP, gerçek sahne):**
+
+- Derleme temiz (`scriptCompilationFailed=False`), konsol `errorCount=0`; tek uyarı T7.1'den beri
+  not edilen, koddan bağımsız AI Toolkit ağ uyarısı.
+- **Kabul kriteri 1 kapandı:** MÜKEMMEL dodge'un ekran görüntüsü alındı — camgöbeği "0,45 sn
+  MÜKEMMEL", altında "tepki süren mükemmel", kuyrukta "en iyi tepki: 0,45 sn", arkasında glow
+  halesi. Yazı okunaklı ve parlak.
+- **Kabul kriteri 3 kapandı:** aynı karede boss, arena ve beşgen açıkta; yazı yalnızca sağ bandı
+  kaplıyor.
+- **Kabul kriteri 2 ölçüldü:** `Time.timeScale = 0.1` iken tetiklenen yazı **7.1 sn gerçek zaman**
+  sonra tamamen kapanmıştı. Ölçekli saatte olsaydı 1.4 sn'lik hold+fade 14 sn sürerdi — animasyon
+  gerçekten `Time.unscaledTime`'da.
+- `Hit` yolu canlı boss saldırısıyla da doğrulandı: "geç kaldın" nötr renkte, bandın içinde.
+- Seri sayacı iki tetiklemede `seri ×2 · en iyi 0,45 sn` yazdı.
 
 ## Spec'ten sapmalar
 
@@ -1034,14 +1085,36 @@ Hepsi `PrototypeTuning`'de, hiçbiri kodda gömülü değil (AGENTS kural 3).
   `PrototypeTuning.PentagonDotColor` kullanıldı (yeni alan eklenmedi, var olanı yeniden kullandım) —
   hem oyuncu (camgöbeği/mor) hem tehdit (kırmızı-turuncu) paletinden kasıtlı olarak ayrı.
 
+### T9.1 sapmaları / varsayılanlar
+
+- **`FeelTuning.ReadoutSizePx` artık bir tavan, sabit punto değil.** Spec §8'in sayısı (96)
+  değişmedi; yazı bandına sığmıyorsa oranla küçülüyor. Gerekçe yukarıda (T9.1 madde 1): sabit
+  puntoyla yazı §10'un "telegraf en okunabilir katman" kuralını çiğneyip dünyayı örtüyordu.
+  Ekran büyüdükçe punto tavana kadar geri çıkar, yani telefonda küçülme olmayabilir.
+- **`PrototypeTuning.VitalsMarginDp = 18`** (uydurma, spec'te yok) — T9'da `VitalsHud`'a gömülü
+  18 px'lik üst boşluktu, değer aynı kaldı, yalnızca dp'ye ve veriye taşındı (AGENTS kural 3).
+
 ## Bilinen açıklar
 
 - T1/T2/T3/T4/T7/T7.1/T6.2/T8/T8.1/T8.2 `dotnet test` yeşil (`tools/CoreTests`, **79** test).
+- **Boss can göstergesi hâlâ kozmetik — karar sahibinde.** `VitalsHud`'ın boss barı her zaman dolu;
+  Core/Game'de boss HP/hasar yok ve "boss nasıl ölür" prototipte hiç tanımlı değil. T9'un
+  YASAKLAR'ı yeni mekanik eklemeyi kapattığı için T9.1'de de dokunulmadı. Gerçek bir boss-HP
+  sistemi istenirse **ayrı bir görev** olmalı (T11'den önce sahibiyle konuşulacak).
+- **Tepki yazısının bandı yüksek yoğunluklu telefonda beşgenin üst rününe değebilir.** Band
+  y 0.56–0.80; beşgen merkezi y 0.40 ve yarıçapı 100 dp, yani 400 dpi'lık bir ekranda üst rün
+  y≈0.63'e çıkıyor. Ölçüldü değil, geometriden türetildi — T11'de telefonda gözle bakılmalı;
+  gerekirse bandın alt sınırı ya da beşgen merkezi ayarlanır (ikisi de veri).
+- **`ReactionReadout` `CombatFeel`'in canvas'ında değil, beşgenin canvas'ında** (sort 50; Feel
+  katmanları 200). Vurulmada kırmızı vinyet kenardan içeri sönen bir maske olduğu için sağ kenardaki
+  yazının üstüne biniyor. §10 ihlali değil (telegraf hâlâ en üstte) ama "geç kaldın" yazısının
+  okunaklılığı telefonda kontrol edilmeli.
 - **Toparlanma kilidi hiçbir girdiyi engellemiyor**, çünkü §5'e göre kilidi kesen üç şey (düz
   vuruş, yeni fiil, dodge) oyuncunun elindeki eylemlerin **hepsi**. Yani kilit şu an "kalan süre"
   okunabilir bir sayı + kesme becerisinin ölçüsü; mekanik olarak yalnızca `Commit`/`OnDwell`'i
-  yutuyor. T9 bunu ekranda göstermeli, yoksa oyuncu kestiği süreyi hiç görmez ve §5'in beceri
-  ekseni görünmez kalır.
+  yutuyor. **T9 bunu almadı**: kalan kilit hâlâ yalnızca `SentenceDebugHud`'ın debug metninde
+  ("kilit: X ms"), kalıcı HUD'da değil. Oyuncu kestiği süreyi göremediği sürece §5'in beceri
+  ekseni görünmez kalıyor — T10'un paneli ya da T11'in his turu almalı.
 - **Düz vuruşun kendi tezahürü yok:** `BasicStrikeDot` fiilinin normal cümle görselini kullanıyor
   (SARSINTI halka dalgası). Tek noktalık vuruşun ayrı bir silüeti/animasyonu olup olmayacağı
   spec'te yok; T11'de "vuruş mu, cümle mi" hissi karışırsa buraya bakılmalı.

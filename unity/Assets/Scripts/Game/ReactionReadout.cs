@@ -33,6 +33,17 @@ namespace Dovus.Game
         int _streak;
         float _bestReactionSec = -1f;
 
+        // Punto/glow/kenar kurulumda bir kez okunursa T10'un canlı slider'ı ekranda hiçbir şeyi
+        // değiştirmez (kabul kriteri 6 "ayarlanabilir" + T10 "yeniden başlatma gerektirmez").
+        // Uygulanan değer saklanıp her karede karşılaştırılıyor: değişmediyse tek bir float
+        // karşılaştırması, değiştiyse layout yeniden yazılıyor.
+        bool _appliedAnchorRight;
+        float _appliedSizePx = -1f;
+        float _appliedGlow = -1f;
+        float _fittedBandWidth = -1f;
+        bool _needsFit = true;
+        bool _graphicsVisible = true;
+
         public void Configure(FeelTuning feel, PrototypeTuning tuning, Transform canvasRoot)
         {
             _feel = feel;
@@ -45,13 +56,8 @@ namespace Dovus.Game
                 go.layer = canvasRoot.gameObject.layer;
 
             _root = go.AddComponent<RectTransform>();
-            // Sağ (ya da sol) kenarda, üst debug HUD'ın (0.82-0.98) ve beşgenin (merkez
-            // y≈0.40) arasında dikey bant — telegrafı kapatmayacak kadar dar (§10).
-            _root.anchorMin = right ? new Vector2(0.58f, 0.56f) : new Vector2(0.02f, 0.56f);
-            _root.anchorMax = right ? new Vector2(0.98f, 0.80f) : new Vector2(0.42f, 0.80f);
             _root.offsetMin = Vector2.zero;
             _root.offsetMax = Vector2.zero;
-            _root.pivot = new Vector2(right ? 1f : 0f, 0.5f);
 
             var glowGo = new GameObject("Glow");
             glowGo.transform.SetParent(go.transform, false);
@@ -65,15 +71,87 @@ namespace Dovus.Game
             _glow.color = Color.clear;
             _glow.raycastTarget = false;
 
-            TextAnchor anchor = right ? TextAnchor.MiddleRight : TextAnchor.MiddleLeft;
-            _main = CreateText(go.transform, "Main", feel.ReadoutSizePx, anchor, new Vector2(0f, 0.42f), new Vector2(1f, 1f));
+            _main = CreateText(go.transform, "Main", new Vector2(0f, 0.42f), new Vector2(1f, 1f));
             _outline = _main.gameObject.AddComponent<Outline>();
-            _outline.effectDistance = new Vector2(feel.ReadoutGlow * 0.05f, -feel.ReadoutGlow * 0.05f);
 
-            _sub = CreateText(go.transform, "Sub", feel.ReadoutSizePx * 0.32f, anchor, new Vector2(0f, 0.20f), new Vector2(1f, 0.42f));
-            _tally = CreateText(go.transform, "Tally", feel.ReadoutSizePx * 0.24f, anchor, new Vector2(0f, 0f), new Vector2(1f, 0.20f));
+            _sub = CreateText(go.transform, "Sub", new Vector2(0f, 0.20f), new Vector2(1f, 0.42f));
+            _tally = CreateText(go.transform, "Tally", new Vector2(0f, 0f), new Vector2(1f, 0.20f));
 
+            _appliedAnchorRight = !right;
+            ApplyTuningLayout();
             HideAll();
+        }
+
+        /// <summary>
+        /// Kenar/punto/glow ayarlarını uygular. Değişmeyen kare için maliyeti üç karşılaştırma;
+        /// T10 paneli değeri oynattığında yerleşim aynı karede yeniden yazılır.
+        /// </summary>
+        void ApplyTuningLayout()
+        {
+            bool right = _tuning.ReadoutAnchorRight;
+            if (right != _appliedAnchorRight)
+            {
+                _appliedAnchorRight = right;
+                // Sağ (ya da sol) kenarda, üst debug HUD'ın (0.82-0.98) ve beşgenin (merkez
+                // y≈0.40) arasında dikey bant — telegrafı kapatmayacak kadar dar (§10).
+                _root.anchorMin = right ? new Vector2(0.58f, 0.56f) : new Vector2(0.02f, 0.56f);
+                _root.anchorMax = right ? new Vector2(0.98f, 0.80f) : new Vector2(0.42f, 0.80f);
+                _root.offsetMin = Vector2.zero;
+                _root.offsetMax = Vector2.zero;
+                _root.pivot = new Vector2(right ? 1f : 0f, 0.5f);
+
+                TextAnchor anchor = right ? TextAnchor.MiddleRight : TextAnchor.MiddleLeft;
+                _main.alignment = anchor;
+                _sub.alignment = anchor;
+                _tally.alignment = anchor;
+                _needsFit = true;
+            }
+
+            if (!Mathf.Approximately(_feel.ReadoutSizePx, _appliedSizePx))
+            {
+                _appliedSizePx = _feel.ReadoutSizePx;
+                _needsFit = true;
+            }
+
+            if (!Mathf.Approximately(_feel.ReadoutGlow, _appliedGlow))
+            {
+                _appliedGlow = _feel.ReadoutGlow;
+                _outline.effectDistance = new Vector2(_appliedGlow * 0.05f, -_appliedGlow * 0.05f);
+            }
+
+            if (_needsFit || !Mathf.Approximately(_root.rect.width, _fittedBandWidth))
+                FitTexts();
+        }
+
+        /// <summary>
+        /// Punto bir TAVAN: yazı bandına sığıyorsa tam bu boyda çizilir, sığmıyorsa oranla
+        /// küçülür. Sabit puntoyla "0,45 sn MÜKEMMEL" dar bir ekranda bandını taşıp dünyayı
+        /// (ve bossu) örtüyordu — kabul kriteri "yazı bossun telegrafını kapatmıyor" (§10).
+        /// Spec'in `FeelTuning.ReadoutSizePx` sayısı değişmedi, yalnızca üst sınır olarak
+        /// okunuyor. Unity'nin kendi `resizeTextForBestFit`'i kullanılmadı: kurulum karesinde
+        /// bandın genişliği daha 0 olduğu için puntoyu 96'dan 14'e düşürüp orada bırakıyordu.
+        /// </summary>
+        void FitTexts()
+        {
+            float band = _root.rect.width;
+            _fittedBandWidth = band;
+            _needsFit = false;
+
+            FitOne(_main, _appliedSizePx, band);
+            FitOne(_sub, _appliedSizePx * 0.32f, band);
+            FitOne(_tally, _appliedSizePx * 0.24f, band);
+        }
+
+        static void FitOne(Text text, float basePx, float bandWidth)
+        {
+            int max = Mathf.Max(1, Mathf.RoundToInt(basePx));
+            text.fontSize = max;
+            if (bandWidth <= 1f || string.IsNullOrEmpty(text.text))
+                return;
+
+            float preferred = text.preferredWidth;
+            if (preferred > bandWidth)
+                text.fontSize = Mathf.Max(1, Mathf.FloorToInt(max * bandWidth / preferred));
         }
 
         /// <summary>CombatFeel.OnExchange her sonucu buraya iletir.</summary>
@@ -92,6 +170,7 @@ namespace Dovus.Game
                 _accent = GradeColor(result.Grade);
                 _main.text = $"{reactionSec:0.00} sn  {GradeLabel(result.Grade)}";
                 _sub.text = GradeMessage(result.Grade);
+                _needsFit = true;
                 Show();
             }
             else if (result.Outcome == ExchangeOutcome.Hit)
@@ -101,6 +180,7 @@ namespace Dovus.Game
                 _accent = _tuning.PentagonDotColor;
                 _main.text = result.HitReasonText ?? "vuruldun";
                 _sub.text = string.Empty;
+                _needsFit = true;
                 Show();
             }
 
@@ -109,19 +189,42 @@ namespace Dovus.Game
 
         void Show() => _shownAtUnscaled = Time.unscaledTime;
 
+        /// <summary>
+        /// Alfası 0 olan bir Graphic yine de geometri üretip harmanlanır (T8.1 denetimi 12:
+        /// "Color.clear ile kapatmak overdraw'ı kapatmaz"). Yazı ekranda yokken bant, glow ve
+        /// kontur tamamen kapanır — mobilde boşta duran tam ekran harman yok.
+        /// </summary>
         void HideAll()
         {
-            if (_main != null) _main.color = Color.clear;
-            if (_sub != null) _sub.color = Color.clear;
-            if (_tally != null) _tally.color = Color.clear;
-            if (_glow != null) _glow.color = Color.clear;
-            if (_outline != null) _outline.effectColor = Color.clear;
+            if (!_graphicsVisible)
+                return;
+
+            _graphicsVisible = false;
+            _main.enabled = false;
+            _sub.enabled = false;
+            _glow.enabled = false;
+            _outline.enabled = false;
+            _root.localScale = Vector3.one;
+        }
+
+        void ShowGraphics()
+        {
+            if (_graphicsVisible)
+                return;
+
+            _graphicsVisible = true;
+            _main.enabled = true;
+            _sub.enabled = true;
+            _glow.enabled = true;
+            _outline.enabled = true;
         }
 
         void LateUpdate()
         {
             if (_feel == null)
                 return;
+
+            ApplyTuningLayout();
 
             float t = Time.unscaledTime - _shownAtUnscaled;
             float holdSec = _feel.ReadoutHoldMs / 1000f;
@@ -133,6 +236,7 @@ namespace Dovus.Game
             }
             else
             {
+                ShowGraphics();
                 float alpha = t <= holdSec ? 1f : Mathf.Clamp01(1f - (t - holdSec) / fadeSec);
                 float punchT = Mathf.Clamp01(t / Mathf.Max(0.001f, _tuning.ReadoutPunchInSec));
                 float scale = Mathf.Lerp(_feel.ReadoutPunchScale, 1f, punchT);
@@ -165,10 +269,11 @@ namespace Dovus.Game
                 _tally.text = $"en iyi tepki: {_bestReactionSec:0.00} sn";
             else
             {
-                _tally.color = Color.clear;
+                _tally.enabled = false;
                 return;
             }
 
+            _tally.enabled = true;
             _tally.color = new Color(1f, 1f, 1f, 0.55f);
         }
 
@@ -203,7 +308,7 @@ namespace Dovus.Game
             return Color.Lerp(_tuning.InkPurple, _tuning.InkCyan, t);
         }
 
-        static Text CreateText(Transform parent, string name, float fontSize, TextAnchor anchor, Vector2 anchorMin, Vector2 anchorMax)
+        static Text CreateText(Transform parent, string name, Vector2 anchorMin, Vector2 anchorMax)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
@@ -217,9 +322,8 @@ namespace Dovus.Game
             text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             if (text.font == null)
                 text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            text.fontSize = Mathf.Max(1, Mathf.RoundToInt(fontSize));
             text.fontStyle = FontStyle.Bold;
-            text.alignment = anchor;
+            // Tek satır: sarma yerine punto küçülür (FitTexts).
             text.horizontalOverflow = HorizontalWrapMode.Overflow;
             text.verticalOverflow = VerticalWrapMode.Overflow;
             text.raycastTarget = false;
