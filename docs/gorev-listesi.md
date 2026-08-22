@@ -30,6 +30,25 @@
 | 3 | T11 | evet + telefon | [§13'teki sorular](dovus-sistemi.md#13-prototipin-cevapladığı-sorular) |
 | 4 | görsellik | — | **henüz başlanmayacak** |
 
+## Hangi görev hangi modelle
+
+Ölçüt tek soru: görev `AGENTS.md`'deki **değişmez kurallara** dokunuyor mu (Core saflığı, sayı
+uydurmama, kombo tablosu yasağı, silüet ≠ sayı), yoksa speci verilmiş bir yüzey mi?
+
+- **Core'a, gramere veya birden çok katmana aynı anda dokunan görevler → Opus.** T6.2 ve T8
+  bu sınıfta: ikisi de motoru/zamanı değiştiriyor ve önceki görevlerden devralınan açıkları
+  kapatıyor, yani bağlamı bir arada tutmak gerekiyor.
+- **Speci net, tek katmanlı yüzey görevleri → Sonnet.** T9 (HUD) ve T10 (ayar paneli) böyle:
+  hacim var, incelik yok. T11'in ajana düşen kısmı da (fps göstergesi, his kontrol listesi
+  iskeleti) burada; build ve cihaz ölçümü insan işi.
+- **Mekanik, saniyede doğrulanabilen işler → Composer.** `.meta` düzeni, yeniden adlandırma,
+  gömülü sayıyı `PrototypeTuning`'e taşıma, test iskeleti. Proje büyüdükçe Composer'ın hata
+  kalıbı sabit: sayı uydurmak, tablo/dizi yazmaya kaçmak ve "ÖNCE OKU" listesinin dışına
+  taşıp başka görevin dosyasına dokunmak. Dövüş mantığına sokulmaz.
+- **Denetim turları → yazan modelden farklı bir model (Grok).** T6.1, T7.1, T7.2 ve T7.4'ün
+  hepsi denetimden doğdu; bu projeyi taşıyan şey o turlar. Denetçi **kod yazmaz**: bulgularını
+  `docs/durum.md`'ye yazar, düzeltmeyi T#.1 görevi olarak yazan model yapar.
+
 ---
 
 ## T0 — Unity projesini kur (insan işi)
@@ -366,7 +385,84 @@ YASAKLAR
 - Gramer motorunu değiştirmek
 ```
 
+### T6.2 — Düz vuruş, dodge düğmesi, toparlanma kilidi
+
+**Sıra: T8'den ÖNCE.** T8 dodge'un yer değiştirmesini yazacak; düğmenin yeri ve toparlanma
+kilidi ondan önce oturmalı, yoksa T8 iki kere yapılır. Karar sahibiyle verildi (22 Ağustos):
+merkez artık dodge değil.
+
+```
+Rolün: Girdi düzenini ve cümle tempo kilidini kuran geliştirici.
+
+ÖNCE OKU: docs/dovus-sistemi.md §1, §2, §5 (özellikle "Düz vuruş ve erken kapanış" ve
+"Toparlanma girdi kilididir") · docs/durum.md T6/T6.1 ve T7.1 bölümleri ·
+Core/Grammar/SentenceEngine.cs · Game/PentagonInput.cs.
+
+BAĞLAM
+Beşgenin merkezi dodge'du; düz vuruş hiç yoktu. Merkez artık düz vuruş / erken kapanış,
+dodge ise beşgenin dışında ekrana sabit ayrı bir düğme. Ayrıca §5'teki toparlanma süresi
+bugüne kadar sadece bir poz süresiydi; artık gerçek bir girdi kilidi ve kesilebilir olacak.
+
+GÖREV
+1. Core — SentenceEngine:
+   - public Commit(): yalnızca Building fazında ve en az bir kelime varken çalışır, gövdesi
+     mevcut ResolveWithClosing(). Idle/Recovering'de sessizce hiçbir şey yapmaz.
+   - Yeni faz: Recovering. Kapanış üreten HER yol (Commit, dördüncü nokta, pencere zaman
+     aşımı) cümleyi kapatıp Recovering'e sokar. Kalan süre SentenceTuning.StepForDots(n)
+     .RecoverySec'ten gelir (§5 tablosu — sayı uydurma) ve Tick(dtMs) ile DÜNYA zamanında
+     erir; bitince Idle.
+   - Kesme: Recovering'de OnDotTouched kalan kilidi sıfırlayıp yeni cümleyi başlatır.
+     Abort() yalnızca Building'de yatırımı batırır; Recovering'de kilidi keser ama ödenmiş
+     kapanışı geri ALMAZ (History'deki kayıt ve LastClosing durur).
+   - CompletedSentence.Phase kapanışta Resolved kalmalı (geçmiş/ödül okunuyor); Recovering
+     yalnızca State.Phase'in anlık değeri. Kalan kilit State'ten okunabilsin (T9 gösterecek).
+2. Girdi — PentagonInput:
+   - Merkez kısa dokunma: Building ise Commit(); Idle veya Recovering ise düz vuruş, yani
+     OnDotTouched(PrototypeTuning.BasicStrikeDot) + Commit() aynı karede.
+   - Dodge artık merkezde DEĞİL: beşgenin dışındaki sabit düğme + Space (masaüstü). Çizim
+     parmağı meşgulken ikinci parmak düğmeye basabilmeli (panik dodge). Cooldown'daysa
+     Abort da HUD yazısı da yok (T6.1 kuralı).
+   - Hit sırası: dodge düğmesi → merkez → nokta. Merkezden ve düğmeden SÜRÜKLEME hâlâ çizim
+     (tapMaxMs/tapMaxMoveDp eşikleri ikisi için de geçerli).
+3. Yerleşim — PentagonLayoutScreen + PentagonView + PrototypeTuning:
+   - Dodge diski: beşgen merkezinden dışarı, sağa-aşağı; MirrorForLeftHand ile aynalanır.
+     Ofset/yarıçap ayar alanı olacak (spec'te sayı yok: varsayılan koy, durum.md'ye yaz).
+   - Düğme ekranın dışına taşmasın: PentagonCenterXNorm'u gerektiği kadar içeri al.
+   - Merkez oyuncu rengine (§10 camgöbeği/mor) çekilir — artık "vur" demek. Dodge diski
+     kırmızı-turuncu OLAMAZ (§10: o renk yalnızca boss tehdidi).
+   - BasicStrikeDot ayar alanı; varsayılan 5 (SARSINTI, açık rün).
+4. ManifestationDirector: düz vuruşta OnDotTouched + Commit aynı karede olduğu için Director
+   Update'inde Building fazını hiç görmeyebilir ve spawn yutulur (T7.1'deki "aynı karede iki
+   nokta" hatasının aynı sınıfı). Kapanış patlamasının kilit kesilse de kendi zamanlamasıyla
+   gelmeye devam ettiğini doğrula (§5).
+
+KABUL KRİTERLERİ
+- Cümle yokken merkeze tıklamak dünyada yaşayan bir düz vuruş + kapanış üretiyor (köşede
+  pencere beklemeden)
+- 5-1 çizip merkeze tıklamak 2 nokta ödemesi yapıyor (Abort DEĞİL); ardından 2 noktanın
+  toparlanma kilidi başlıyor
+- Kilit dolmadan merkeze tıklamak düz vuruş çıkarıyor ve kalan kilidi kesiyor; kilit dolmadan
+  köşeye basmak yeni cümle başlatıp kilidi kesiyor
+- Hiçbir şey kesmezse kilit süresi dolana kadar yeni cümle/düz vuruş başlamıyor
+- Dodge düğmesi (ve Space): Building'de cümleyi Abort ediyor, Recovering'de kilidi kesiyor
+  ama ödenmiş kapanışı silmiyor
+- Merkezden ve dodge düğmesinden sürükleme hâlâ çizim; sol çubuk + sağ çizim aynı anda
+- `cd tools/CoreTests && dotnet test` yeşil (mevcut 57 + yenileri), play mode konsolu temiz
+
+YASAKLAR
+- Altıncı rün ekleme. Merkez bir kelime DEĞİL; gramer beş nokta olarak kalır.
+- İptale/kesmeye hasar çarpanı bağlama (§12: ödül kesilen süredir)
+- Dodge yer değiştirmesini yazma — T8'in işi (bu görev yalnızca düğme ve i-frame tetiği)
+- §5 tablosundaki süre/etki/toparlanma sayılarını değiştirme
+- Boss davranışı, telegraf, HUD yazısı yazma
+```
+
 ### T8 — Boss telegrafı, sıyırma, yavaş çekim, kamera yumruğu
+
+> **T6.2 notu:** Dodge artık beşgenin merkezinde değil, ekrana sabit ayrı bir düğme; merkez
+> düz vuruş / erken kapanış. Yer değiştirme hâlâ senin işin — yön: son hareket yönü, o da
+> yoksa bossun tersi. Ayrıca `SentenceEngine`'de `Recovering` fazı var; yavaş çekim ölçümünü
+> yaparken kilit süresini hesaba kat.
 
 ```
 Rolün: Boss dövüş döngüsünü ve his katmanını kuran geliştirici.

@@ -4,7 +4,7 @@
 > ajanın repoyu taramadan nerede kaldığımızı anlaması. Kısa tut: ne bitti, ne üretildi,
 > nerede sapma var.
 
-**Son güncelleme:** 22 Ağustos 2026 · **Sıradaki görev:** T8
+**Son güncelleme:** 22 Ağustos 2026 · **Sıradaki görev:** T6.2 (T8'den önce)
 
 ## Görev durumu
 
@@ -23,12 +23,34 @@
 | T7.2 | T7 denetim düzeltmeleri (görünüm katmanı) | bitti | task/t7.2-tezahur-gorunum |
 | T7.3 | Bootstrap wiring (paylaşılan tuning, collider yok) | bitti | task/t7.3-bootstrap-wiring |
 | T7.4 | Yerleşik mesh adı regresyonu (ölçek) | bitti | aynı dal → master |
+| T6.2 | Düz vuruş, dodge düğmesi, toparlanma kilidi | bekliyor | — |
 | T8 | Boss telegrafı, sıyırma, yavaş çekim, kamera | bekliyor | — |
 | T9 | HUD, parlak tepki yazısı | bekliyor | — |
 | T10 | Oyun içi ayar paneli | bekliyor | — |
 | T11 | Android build, his turu | bekliyor | — |
 
 Durum değerleri: `bekliyor` · `sürüyor` · `bitti` · `bloke`
+
+## T6.2 kararı (22 Ağustos — spec yazıldı, kod yazılmadı)
+
+Sahibiyle karara bağlandı; **yeniden tartışılmayacak**, görev metni
+`docs/gorev-listesi.md`'de (T8'den önce çalıştırılır):
+
+1. **Düz vuruş yoktu, eklendi.** Beşgenin merkezi artık düz vuruş; cümle kurulurken aynı
+   tıklama **erken kapanış** (öder, iptal etmez). Altıncı rün değil — merkez kelime değil
+   düğme; ekonomisi §5'in 1 nokta satırından gelir.
+2. **Dodge merkezden çıktı**, beşgenin dışında ekrana sabit düğmeye taşındı. Sol çubuğun
+   yanına konmadı: çubuk dinamik olduğu için sabit yeri olmaz. Cümle sürerken hâlâ Abort.
+3. **Toparlanma artık girdi kilidi** (eskiden sadece pozdu). Düz vuruş, yeni fiil ve dodge
+   kilidi keser — kısa cümle + araya düz vuruş dokumasının ödülü budur. Ödül **kesilen
+   süredir**, çarpan değil (§12'ye satır eklendi).
+
+Spec güncellendi: `docs/dovus-sistemi.md` §1, §2 (girdi tablosu + iki gerekçe maddesi),
+§5 ("Düz vuruş ve erken kapanış" + "Toparlanma girdi kilididir"), §12 (yeni tuzak satırı).
+
+**Model düzeni** (`docs/gorev-listesi.md` "Hangi görev hangi modelle"): Core/gramere dokunan
+T6.2 ve T8 Opus; yüzey görevleri T9/T10 Sonnet; mekanik işler Composer; denetim turları yazan
+modelden farklı bir modelle (Grok) ve denetçi kod yazmaz.
 
 ## Üretilen API yüzeyi
 

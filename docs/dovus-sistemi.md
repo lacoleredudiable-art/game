@@ -13,9 +13,11 @@
 Sol başparmak karakteri yürütür. Sağ başparmak, beşgen dizilmiş 5 noktanın üzerinde
 sürüklenerek **cümle kurar**: ilk dokunulan nokta fiildir (ne yapıyorum), sonrakiler sıfattır
 (nasıl yapıyorum). Cümle çizilirken sonuç **zaten dünyada olur ve elinin altında şekil
-değiştirir**. Beşgenin ortasına **tıklamak** dodge'dur ve kurduğun cümleyi iptal eder. Bossu
-doğru okuyup tam zamanında sıyırırsan yavaş çekim penceresi açılır; o pencerede normalde
-sığmayacak uzunlukta bir cümle kurabilirsin.
+değiştirir**. Beşgenin ortasına **tıklamak** düz vuruştur; cümle kuruluyken aynı tıklama
+cümleyi erkenden kapatır ve ödemesini alır. Dodge, beşgenin dışındaki ayrı ve ekrana sabit
+düğmedir; cümle sürerken basılırsa yatırımı iptal eder. Bossu doğru okuyup tam zamanında
+sıyırırsan yavaş çekim penceresi açılır; o pencerede normalde sığmayacak uzunlukta bir cümle
+kurabilirsin.
 
 Oyunun her an sorduğu tek soru: **bossa bakarak, kaç nokta daha sığdırabilirim?**
 Bu bir hafıza sorusu değil, okuma sorusudur. Sistemin doğruluk ölçütü budur.
@@ -28,11 +30,19 @@ Bu bir hafıza sorusu değil, okuma sorusudur. Sistemin doğruluk ölçütü bud
 |---|---|
 | Sol yarı, sürükleme | Sanal çubuk — hareket |
 | Sağ yarı, beşgen 5 nokta, sürükleme | Cümle kurma |
-| Beşgen merkezi, **kısa dokunma** | Dodge (cümleyi iptal eder) |
+| Beşgen merkezi, **kısa dokunma**, cümle yokken | Düz vuruş (tek noktalık, anında kapanan cümle) |
+| Beşgen merkezi, **kısa dokunma**, cümle kurulurken | Erken kapanış — cümle o uzunluğun ödemesini alır |
+| Dodge düğmesi (beşgenin dışında, ekrana sabit), **kısa dokunma** | Dodge (cümle sürüyorsa iptal eder) |
 | Noktada bekleme | Kelimeyi yoğunlaştırma |
 
-- Merkez **yalnızca tıklamayla** çalışır: `tapMaxMs = 180`, `tapMaxMoveDp = 12`.
-  Bu eşiklerin dışında kalan temas, çizim olarak yorumlanır.
+- Merkez ve dodge düğmesi **yalnızca tıklamayla** çalışır: `tapMaxMs = 180`,
+  `tapMaxMoveDp = 12`. Bu eşiklerin dışında kalan temas, çizim olarak yorumlanır.
+- **Dodge neden çubuğun yanında değil:** sol çubuk dinamiktir, parmağın indiği yerde doğar.
+  Yanına konan düğmenin sabit bir yeri olmaz, yani kas hafızası kurulamaz. Dodge da beşgen
+  gibi ekrana sabittir.
+- **Merkez neden düz vuruş:** beşgenin ortası eldeki en hızlı ve en kesin hedef. Dövüşün en
+  sık yapılan eylemi oraya oturur; dodge'un orada olması ise çizimi bitirip ortaya basma
+  refleksini cezaya çeviriyordu.
 - Beşgen ekrana sabittir (kas hafızası), dünyaya değil. Yarıçap ve konum ayarlanabilir,
   sağ/sol el için aynalanabilir.
 - **Dokunsal geri bildirim zorunlu:** her kaydedilen nokta kısa titreşim + hece sesi verir.
@@ -172,8 +182,8 @@ vuruşu üretir.
 - **Kapanışın türü son rüne bağlıdır** (zehirle kapatırsan yerde birikinti, sarsıntıyla
   kapatırsan havalandırma, kabukla kapatırsan sabitleme). Ödül *sadece hasar* olamaz;
   öyle olursa şekil ekseni süse döner.
-- **Yarıda kalan cümle hiç ödeme yapmaz.** Vurulursan ya da ortaya basıp dodge atarsan
-  yatırdığın zaman batar. Uzun cümle "her zaman daha iyi" değil, **kumar**dır.
+- **Yarıda kalan cümle hiç ödeme yapmaz.** Vurulursan ya da cümle sürerken dodge düğmesine
+  basarsan yatırdığın zaman batar. Uzun cümle "her zaman daha iyi" değil, **kumar**dır.
 
 | Cümle | Süre | Toplam etki | Saniyedeki | Toparlanma |
 |---|---|---|---|---|
@@ -186,6 +196,36 @@ Eğrinin şekli kasıtlıdır: uzatmanın karşılığı gerçekten var, ama kaz
 nokta neredeyse hiçbir şey katmaz — onu ancak **bedavaysa**, yani yavaş çekim penceresinde
 çizersin. Uzunluğu dizginleyen dört fren: azalan getiri, tamamlama şartı, uzayan toparlanma,
 ve açıklığın boyutunu bossun belirlemesi.
+
+### Düz vuruş ve erken kapanış
+
+**Düz vuruş, gramerin dışındadır ama ekonomisi tablodan gelir.** Merkeze tıklamak tek noktalı
+bir cümlenin anında kapanmasıdır: yukarıdaki tablonun 1 nokta satırı (0.25 sn, 1.0 etki,
+0.18 sn toparlanma). Altıncı bir rün **değildir** — merkez bir kelime değil, bir düğmedir;
+üstüne sıfat binmez. Hangi fiille vurduğu veridir (prototipte 5/SARSINTI).
+
+**Erken kapanış**, cümle kurulurken merkeze basmaktır: pencerenin kendiliğinden dolmasını
+beklemeden o uzunluğun ödemesini alırsın. Dodge'dan farkı budur ve fark pazarlıksızdır —
+merkez **öder**, dodge **batırır**. Oyuncu ikisini karıştırırsa sistem cezalandırıcı hissedilir.
+
+### Toparlanma girdi kilididir
+
+Tablodaki toparlanma süresi bir poz değil, **girdinin kilitli olduğu süredir**. Kilit üç şeyle
+kesilir: düz vuruş, yeni bir fiil (köşeye basmak) ve dodge.
+
+Kesme, uzunluk kumarının karşılığındaki beceri eksenidir: kısa cümle kurup araya düz vuruş
+dokuyan oyuncu, kilidi erken keserek saniyedeki etkisini yükseltir. 1 noktalık cümlede kesilen
+0.18 sn, 4 noktalıkta 0.55 sn — yani kesme becerisi kısa cümleyi ödüllendirir, ama uzun cümle
+hâlâ daha çok toplam etki verir. İki eksen birbirini dengeler.
+
+- **Ödül kesilen süredir, bir çarpan değildir.** "İptal edilmiş vuruş %X fazla vurur" diye bir
+  kural olamaz (§12, ve sıfatların sayı değiştirememesiyle aynı gerekçe).
+- **Kapanış patlaması kesilmez.** Kesilen şey yalnızca oyuncunun kilidi; ödenmiş kapanış
+  kendi zamanlamasıyla (§8/T5'teki gecikme ve sessizlikle) yine gelir.
+- **Toparlanmadayken dodge ücretsizdir.** Kilidi keser, ama ödenmiş kapanışı geri almaz;
+  iptal cezası yalnızca cümle **kurulurken** işler.
+- Kilit süreleri ve nelerin kestiği ayarlanabilir veridir; telefonda §13'ün 3. sorusuyla
+  birlikte ayarlanır.
 
 ---
 
@@ -355,6 +395,7 @@ başında tek karede çözülür (frame verisiyle düşünmeyi kolaylaştırır)
 | Uzunluk = güç | Herkes en uzunu spamlar, boss okumak gereksizleşir | Azalan getiri + tamamlama şartı + toparlanma |
 | Ödülün sadece hasar olması | Şekil ekseni süse döner | Kapanışın türü son rüne bağlı |
 | Sıfatın sayıyı değiştirmesi | Gramer görünmez olur, ezbere dönülür | T3: silüet değişecek |
+| İptal ödülünün sayı olması | Gramerin yanına ikinci bir "kombo çarpanı" sistemi doğar | Ödül kesilen **süre**dir (§5) |
 | Gücün ergonomik zorluğa bağlanması | El/telefon boyu dengeyi belirler, el ağrır | Bedel mesafe/zaman olur |
 | Gramere yeni eksen eklemek | Öğrenilecek şey artar, ezbere kayar | Rün havuzunu ve durum tablosunu büyüt |
 | Girdi katmanının gizemli olması | Ezber üretir | Girdi mantıklı, **keşif dünyada** |
