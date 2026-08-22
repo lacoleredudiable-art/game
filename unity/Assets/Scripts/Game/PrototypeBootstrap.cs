@@ -123,12 +123,18 @@ namespace Dovus.Game
             debug.BindVitals(vitals);
             input.BindVitals(vitals);
 
+            var readout = root.AddComponent<ReactionReadout>();
+            readout.Configure(combat.Feel, _tuning, view.CanvasRoot);
+
+            var vitalsHud = root.AddComponent<VitalsHud>();
+            vitalsHud.Configure(vitals, _tuning, view.CanvasRoot);
+
             dodgeMotion.Bind(clock, input, boss.transform, afterimage);
 
             var feelGo = new GameObject("CombatFeel");
             feelGo.transform.SetParent(transform, false);
             var feel = feelGo.AddComponent<CombatFeel>();
-            feel.Bind(clock, follow, combat, _tuning, overlay.Cam, debug);
+            feel.Bind(clock, follow, combat, _tuning, overlay.Cam, debug, readout);
 
             var directorGo = boss.gameObject;
             var bossDir = directorGo.AddComponent<BossDirector>();

@@ -4,7 +4,7 @@
 > ajanın repoyu taramadan nerede kaldığımızı anlaması. Kısa tut: ne bitti, ne üretildi,
 > nerede sapma var.
 
-**Son güncelleme:** 22 Ağustos 2026 · **Sıradaki görev:** T9 (HUD, parlak tepki yazısı)
+**Son güncelleme:** 22 Ağustos 2026 · **Sıradaki görev:** T10 (oyun içi ayar paneli)
 
 ## Görev durumu
 
@@ -27,7 +27,7 @@
 | T8 | Boss telegrafı, sıyırma, yavaş çekim, kamera | bitti | task/t8-boss-telegraph |
 | T8.1 | T8 denetim düzeltmeleri | bitti | task/t8.1-denetim-duzeltmeleri |
 | T8.2 | Yavaş çekim süresi (§7 ödülü gerçek oldu) | bitti | task/t8.2-yavas-cekim-suresi |
-| T9 | HUD, parlak tepki yazısı | bekliyor | — |
+| T9 | HUD, parlak tepki yazısı | bitti | task/t9-hud |
 | T10 | Oyun içi ayar paneli | bekliyor | — |
 | T11 | Android build, his turu | bekliyor | — |
 
@@ -722,6 +722,65 @@ sürede boss yalnızca ~430 ms dünya zamanı ilerliyor, yani ~1.1 sn gerçek za
 İfade penceresinin üstüne ciddi bir **savunma** avantajı da geliyor; iyi bir dodge "kaçış"
 olarak sömürülüyorsa ilk kısılacak sayı budur.
 
+### T9 — HUD (`Dovus.Game`)
+
+- `ReactionReadout` — §6 gösterimi: kenarda (varsayılan sağ, `PrototypeTuning.ReadoutAnchorRight`
+  ile ayarlanabilir) büyük/parlak tepki yazısı. `CombatFeel.OnExchange`'den `NoteExchange(ExchangeResult)`
+  ile beslenir (yeni `CombatFeel.Bind` parametresi, `debug` ile aynı yerden). Dodged'de
+  `"0.45 sn  MÜKEMMEL"` + §6 tablosundaki mesaj (`"tepki süren mükemmel"` vb.); Hit'te sebep yazısı
+  (`"erken bastın"`/`"geç kaldın"`) nötr `PentagonDotColor` ile (§10: kırmızı-turuncu yasak). Seri
+  sayacı (üst üste Dodged, Hit'te sıfırlanır) ve oturumun en iyi tepkisi de aynı bileşende. Animasyon
+  tamamen `Time.unscaledTime` — punto/glow/bekleme/sönme `FeelTuning.Readout*`'tan (T1'de spec'ten
+  kondu, burada ilk kez gerçekten kullanıldı); giriş vuruşu (scale punch) `ReadoutPunchInSec`.
+  "Katmanlı glow" bir radial-gradient `Image` + `Outline` bileşeninin üst üste binmesiyle taklit
+  edilir (TMPro yok, proje `UnityEngine.UI.Text` kullanıyor — T5'in paket listesi TMPro'yu
+  saymıştı ama hiçbir görev kurmadı, mevcut deseni bozmadım).
+- `VitalsHud` — §6/§11 "boss ve oyuncu can göstergesi, sade". Oyuncu barı `PlayerVitals.Hp/MaxHp`'ı
+  gerçek zamanlı okur. **Boss barı kozmetiktir** (bkz. sapmalar) — Core/Game'de boss hasarı yok.
+- `PrototypeTuning`: `ReadoutAnchorRight`, `ReadoutPunchInSec`, `VitalsBarWidthDp/HeightDp/SpacingDp`,
+  `BossVitalsColor`. `TuningVersion` 2 → 3 (yeni alanlar için tek seferlik yama, T8.1'deki desenin
+  aynısı).
+
+**Test:** Core'a dokunulmadı, `dotnet test` hâlâ **79 yeşil**. Unity: `AssetDatabase.Refresh()`
+sonrası `EditorUtility.scriptCompilationFailed=False`; sahne diskten yeniden açılıp temiz play
+mode'da konsol `errorCount=0`. `ReactionReadout`/`VitalsHud` hiyerarşisi (`Main`/`Sub`/`Tally`/`Glow`,
+`BossFill`/`PlayerFill`) doğru kuruluyor.
+
+**Unity play mode (MCP prob, gerçek `CombatFeel.OnExchange` + elle tetiklenen `ExchangeResult`'lar
+üzerinden):**
+- Gerçek boss döngüsü çalışırken (oyuncu dodge atmadı) bir "geç kaldın" `Hit` olayı **kendiliğinden**
+  `ReactionReadout`'a ulaştı — `CombatFeel → ReactionReadout` bağının canlı oyunda çalıştığının kanıtı
+  (manuel tetikleme değil).
+- Elle: MÜKEMMEL (reaction 0.45) → metin `"0,45 sn  MÜKEMMEL"` + `"tepki süren mükemmel"`; ~2 sn
+  sonra (hold 900 + fade 500 ms'nin üstünde) `main/sub/glow` alfası tam 0'a döndü ve kuyruk metni
+  `"en iyi tepki: 0,45 sn"`a geçti — sönme matematiği doğru.
+- Boss'u `enabled=false` yapıp arka arkaya 3 Dodged (MÜKEMMEL/TEMİZ/HARİKA, reaction 0.50/0.20/0.35)
+  tetikledim: bir kare sonra kuyruk `"seri ×3 · en iyi 0,20 sn"` — seri sayıyor, en iyi değer doğru
+  minimum. Ardından bir `Hit` tetikleyince seri sıfırlandı (kuyruk yalnızca `"en iyi tepki: 0,20 sn"`
+  kaldı) ve metin `"erken bastın"`a döndü.
+- `VitalsHud`: oyuncu gerçek `PlayerVitals.ApplyDamage`/respawn döngüsüyle test edildi (boss'un
+  gerçek saldırısı oyuncuyu vurup 22/22 → 0 → 2 sn sonra 22/22'ye döndürdü), bar `fillAmount`
+  her seferinde `Hp/MaxHp` ile eşleşti. Boss barı beklenen gibi sabit `1`.
+- **Doğrulanamayan tek şey:** hold penceresinin ORTASINDA (`alpha≈1`, punch-scale) bir ekran
+  görüntüsü — MCP komut round-trip'i tek başına genelde >1.4 sn (hold+fade toplamı) sürdüğü için iki
+  ayrı araç çağrısı arasında pencereyi hep kaçırdım (`SendMessage("LateUpdate")` ile aynı karede
+  zorlamayı denedim, Unity bu mesajı private Unity-callback'lerine yönlendirmiyor). Giriş/çıkış
+  sınırları (t=0 ve t>hold+fade) ve ara durumun (seri/en iyi) her ikisi de doğru ölçüldüğü için
+  aradaki lineer formülün (aynı kod yolu) yanlış olma ihtimali düşük, ama gözle "parlak mı"
+  kriteri (kabul kriteri 1: "yazı okunaklı, parlak ve zamanında görünüyor") sadece kod incelemesiyle
+  değil, gerçek ekran görüntüsüyle teyit edilmedi. **Sonraki ajan/insan telefonda veya editörde
+  gözle bakmalı.**
+- **İkinci oturumda tekrar denendi, hâlâ kapatılamadı.** Hold/fade'i geçici bir `DebugExtendHold`
+  metoduyla (commit'e girmedi, test sonunda geri alındı) 999999 ms'e uzatıp `Unity_Camera_Capture`
+  ile yakalamayı denedim — bu round-trip sınırını aşar ama proje `PentagonView`'ın `Canvas`'ı
+  `RenderMode.ScreenSpaceCamera` ile ayrı bir URP **Overlay** kamerasına (`InkOverlayCam`,
+  `Camera.main`'in stack'ine eklenmiş) bağlı. `Unity_Camera_Capture` tek bir kamerayı **stack'ten
+  bağımsız** render ediyor: `Camera.main`'i (Base) yakalayınca 3D sahne geliyor ama UI hiç yok;
+  `InkOverlayCam`'i (Overlay) doğrudan yakalayınca tamamen beyaz kare geliyor (Overlay tipi kamera
+  tek başına `Render()` çağrısını URP'de anlamlı kompoze edemiyor). Bu bir **araç sınırlaması**
+  (stack compositing MCP capture tool'unda yok), tasarım kararı değil — `ReactionReadout`/
+  `VitalsHud` kodu değişmedi. Gerçek cihazda/editör ekranında gözle bakmak hâlâ gerekiyor.
+
 ## Spec'ten sapmalar
 
 Belgedeki bir kural/sayı uygulanamadıysa buraya yaz: hangisi, neden, yerine ne kondu.
@@ -946,6 +1005,29 @@ Hepsi `PrototypeTuning`'de, hiçbiri kodda gömülü değil (AGENTS kural 3).
   çünkü §10 telegrafın en okunabilir katman kalmasını istiyor.
 - **Telegraf diski `PrimitiveType.Cylinder`**, ölçek `(çap, 0.02, çap)`, y = 0.03.
   Unity silindiri ~20 kenarlı, yani ekranda çokgen bir daire — prototip için kabul.
+
+## T9 sapmaları / varsayılanlar
+
+- **Boss can göstergesi kozmetiktir, gerçek bir hasar mekaniği YOK.** T9'un kabul kriteri "boss ve
+  oyuncu can göstergesi, sade" diyor ama Core/Game'de hiçbir yerde boss HP/hasar tutulmuyor — T7'den
+  beri "boss fiziksel tepki verir (geri tepme/sarsılma/kabuk), hasar yok" diye kayıtlı ve bu görevin
+  YASAKLAR'ı yeni oyun mekaniği eklemeyi (dolayısıyla boss-HP sistemini) kapatıyor. `VitalsHud` bossu
+  her zaman dolu, nötr renkli (`BossVitalsColor`, ne oyuncu ne tehdit paletinden) bir bar olarak
+  gösteriyor — sadece simetri için var. Gerçek boss HP'si ayrı bir **karar** gerektirir (boss nasıl
+  "ölür"? bu prototipte hiç tanımlı değil) — T10/T11'den önce sahibiyle konuşulmalı.
+- **`PrototypeTuning.ReadoutPunchInSec = 0.12f`** (uydurma). Spec "giriş vuruşu (scale punch)"
+  diyor ama süre vermiyor; `FeelTuning.ReadoutPunchScale` (büyüklük) zaten spec'ten kondu, süre yok.
+  Küçük bir animasyon inceliği olduğu için mertebe seçildi (kamera yumruğunun sönme süresiyle
+  aynı büyüklük mertebesi — T8.1'in `ShakeDecay`'i ~0.33 sn'ye karşılık geliyor).
+- **`ReadoutAnchorRight = true`** — §6 "sağ kenarda" diyor, varsayılan onu yansıtıyor; "hangi kenarda
+  duracağı ayarlanabilir" kabul kriteri için alan eklendi, sol tarafı T10/T11'de denenebilir.
+- **Katmanlı glow gerçek bir bloom/post-process değil.** Proje TMPro kurmadı (T5 paket listesinde
+  vardı ama hiçbir görev kullanmadı, mevcut kod hep `UnityEngine.UI.Text`); glow bir radial-gradient
+  `Image` + `Outline` bileşeninin üst üste binmesiyle taklit edildi. Gerçek bloom istenirse ayrı bir
+  görsellik görevi (Faz 4) gerekir.
+- **Vurulma sebebi yazısının rengi §10'a göre seçildi ama spec'te renk belirtilmiyor.** Nötr
+  `PrototypeTuning.PentagonDotColor` kullanıldı (yeni alan eklenmedi, var olanı yeniden kullandım) —
+  hem oyuncu (camgöbeği/mor) hem tehdit (kırmızı-turuncu) paletinden kasıtlı olarak ayrı.
 
 ## Bilinen açıklar
 

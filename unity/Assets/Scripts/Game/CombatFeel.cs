@@ -24,6 +24,7 @@ namespace Dovus.Game
         FollowCamera _follow;
         AudioLowPassFilter _lowpass;
         SentenceDebugHud _hud;
+        ReactionReadout _readout;
 
         Canvas _canvas;
         Image _impact;
@@ -41,13 +42,15 @@ namespace Dovus.Game
             CombatTuning combat,
             PrototypeTuning colors,
             Camera overlayCam,
-            SentenceDebugHud hud)
+            SentenceDebugHud hud,
+            ReactionReadout readout = null)
         {
             _clock = clock;
             _follow = follow;
             _combat = combat;
             _colors = colors;
             _hud = hud;
+            _readout = readout;
 
             Camera worldCam = Camera.main;
             if (worldCam != null)
@@ -105,6 +108,8 @@ namespace Dovus.Game
             // Safe de yazılır (T8.1): dodge oyuncuyu etki hacminin dışına taşıdığında ekranda
             // hiçbir şey olmaması "neden derece almadım" sorusunu cevapsız bırakıyordu (§6).
             _hud?.NoteExchange(result);
+            // Büyük, parlak tepki yazısı (T9) — Safe'i göstermez, sadece Dodged/Hit (§6).
+            _readout?.NoteExchange(result);
         }
 
         void LateUpdate()
