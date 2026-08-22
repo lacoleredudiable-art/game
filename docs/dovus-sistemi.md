@@ -273,7 +273,7 @@ dünya yavaşken bile net ve keskin görünür.
 ## 7. Yavaş Çekim
 
 ```
-factor 0.22 · rampDownMs 55 · holdMs 190 · rampUpMs 420 (yumuşak geçiş)
+factor 0.22 · rampDownMs 55 · holdMs 900 · rampUpMs 600 (yumuşak geçiş)
 audioLowpassHz 700 · slowmoMinGrade = TEMİZ
 ```
 
@@ -283,6 +283,22 @@ sınırı hâlâ 4 noktadır (`slowmoBonusDots = 0`, ayarlanabilir).
 
 Kur karşılığı böylece net: bir mükemmel dodge ≈ iki ekstra nokta ≈ yaklaşık iki katı etki.
 Ekrandaki "0.45 sn" yazısı, kaç nokta hakkı kazandığını söyleyen şeydir.
+
+**Süre neden bu kadar uzun (T8.2'de ölçülerek değişti).** İlk sayılar `holdMs 190 · rampUpMs
+420` idi ve o profille yavaş çekim **hiçbir** dokunuş temposunda kelime sayısını değiştirmiyordu
+— ödül kozmetikti. Sebep faktör değil profilin yönü: iptal pencereleri cümle büyüdükçe daralıyor
+(420 → 360 → 300) ama yavaş çekim zamanla zayıflıyor, yani en dar pencere yavaş çekim bittikten
+sonraya düşüyordu. Kazanç, ihtiyaç olmayan yere (ilk boşluk) gidiyordu. Yukarıdaki süre, bu
+bölümün kendi kurundan (iki ekstra nokta) geriye çözüldü. Ölçülen kelime sayıları:
+
+| dokunuş aralığı | yavaş çekim yok | 190/420 | **900/600** |
+|---|---|---|---|
+| 350 ms | 3 | 3 | 4 |
+| 400 ms | 2 | 2 | **4** |
+| 450 ms | 2 | 2 | 3 |
+
+Daha uzun tutmak (ör. `holdMs 1200`) her tempoda 4 verir ve beceri bandını siler — ödül
+otomatikleşir. Bu yüzden süre yukarıdan da sınırlı.
 
 ---
 

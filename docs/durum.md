@@ -26,6 +26,7 @@
 | T6.2 | Düz vuruş, dodge düğmesi, toparlanma kilidi | bitti | task/t6.2-duz-vurus |
 | T8 | Boss telegrafı, sıyırma, yavaş çekim, kamera | bitti | task/t8-boss-telegraph |
 | T8.1 | T8 denetim düzeltmeleri | bitti | task/t8.1-denetim-duzeltmeleri |
+| T8.2 | Yavaş çekim süresi (§7 ödülü gerçek oldu) | bitti | task/t8.2-yavas-cekim-suresi |
 | T9 | HUD, parlak tepki yazısı | bekliyor | — |
 | T10 | Oyun içi ayar paneli | bekliyor | — |
 | T11 | Android build, his turu | bekliyor | — |
@@ -674,15 +675,52 @@ telegraf diski dairesel ve doğru yarıçapta, dodge 4.054 m taşıyor, tam ekra
 kapalı, HUD doğru layer'da. Ekran görüntüsü: turuncu-kırmızı disk boss'un altında, oyuncu
 camgöbeği — §10 renk ayrımı yerinde.
 
-### T8.1'de çıkan karar (T9'dan önce cevaplanmalı)
+### T8.1'de çıkan karar → T8.2'de kapandı
 
-**9. madde — "yavaş çekimde 4 nokta" kabul kriteri spec sayılarıyla tutmuyor.**
-`SlowmoTuning` varsayılanları (0.22× / 55 / 190 / 420) 350 ms'lik gerçek boşluklarda toplam
-~330 ms dünya zamanı kazandırıyor; 4. nokta 350 ms istiyor. Test artık **gerçeği** sabitliyor:
-yavaş çekim pencere erimesini ilk boşlukta yarıdan fazla yavaşlatıyor ama bir nokta
-satın almıyor. `SlowmoTuning.SlowmoBonusDots` alanı **0 ve uygulanmamış** — kriter muhtemelen
-oradan verilecekti. Seçenekler: (a) `SlowmoBonusDots = 1`'i motorda uygula, (b) `HoldMs`'i
-büyüt, (c) kriteri "pencere gözle yavaşlar"a indir. **Spec'te cevabı yok, sahibine ait.**
+9. madde ("yavaş çekimde 4 nokta" kriteri tutmuyor) `SlowmoTuning` süresi ölçülerek
+büyütülerek çözüldü. Ayrıntı aşağıda, "T8.2" bölümünde.
+
+## T8.2 — Yavaş çekim süresi (22 Ağustos)
+
+**Yapılan:** `SlowmoTuning.HoldMs` 190 → **900**, `RampUpMs` 420 → **600**.
+`docs/dovus-sistemi.md` §7 güncellendi (sayı + gerekçe + ölçüm tablosu). `dotnet test` **79 yeşil**.
+
+**Neden gerekti.** Eski profille yavaş çekim **hiçbir** dokunuş temposunda tek bir cümlede
+tutulan kelime sayısını değiştirmiyordu; §7'nin ödülü gramerde karşılıksızdı (alçak geçiren
+filtre + görsel vardı, mekanik yoktu). Sebep faktör değil **profilin yönü**: iptal pencereleri
+cümle büyüdükçe daralıyor (420 → 360 → 300) ama yavaş çekim zamanla zayıflıyor, yani en dar
+pencere yavaş çekim bittikten sonraya düşüyordu. Kazanç ihtiyaç olmayan yere (ilk boşluk,
+420 ms pencere) gidiyordu. 350 ms temposunda eski dünya maliyeti `120/350/350` — üçüncü boşluk
+**hiç** indirim almıyordu.
+
+Bu yüzden yalnızca rampayı uzatmak çözmüyor: `RampUpMs` 420 → 855 denendi, üçüncü boşluk
+347 ms'de kaldı (pencere 300), çünkü `SmoothStep` en yavaş kısmını başta harcıyor. Derin
+kısmın (hold) uzaması gerekiyordu.
+
+**Ölçülen sonuçlar** (tek cümlede tutulan kelime sayısı, dört dokunuş):
+
+| dokunuş aralığı | yavaş çekim yok | 190/420 (eski) | **900/600** |
+|---|---|---|---|
+| 350 ms | 3 | 3 | 4 |
+| 400 ms | 2 | 2 | **4** |
+| 450 ms | 1 | 1 | 3 |
+
+Değer §7'nin kendi kurundan ("bir mükemmel dodge ≈ iki ekstra nokta") geriye çözüldü: 400 ve
+450 ms'de fark **tam +2**. Yukarıdan da sınırlı — `HoldMs 1200` her tempoda 4 veriyor, yani
+ödül otomatikleşip beceri bandı siliniyor. `SlowmoBonusDots` **0 kaldı**: §7 "tavanı
+yükseltmez" diyor ve bonus nokta `SentenceEngine`'e "yavaş çekimde pencereler farklı" diye
+bir özel durum eklemek olurdu (yavaş çekim cümle ortasında bitince bonus ne olacak? gibi
+kenar durumlar). Motor yavaş çekimin varlığını hâlâ bilmiyor, yalnızca dünya zamanını görüyor.
+
+**Testler artık ödülün kendisini koruyor** (`SlowmoSentenceFitTests`): temel çizgi, tavana
+ulaşma, +2 kuru, doygunlaşmama ve "tavan yükselmiyor". Hepsi `SlowmoTuning`'i okur, sayıyı
+tekrar etmez. `CombatTuningDefaultsTests` spec aynası olarak 900/600'e güncellendi — bu test
+değişikliği yakaladığı için spec ile kodun ayrışması mümkün değil.
+
+**Uyarı (T11 his turu).** Toplam yavaş çekim 665 ms → **1555 ms** gerçek zamana çıktı. O
+sürede boss yalnızca ~430 ms dünya zamanı ilerliyor, yani ~1.1 sn gerçek zaman kaybediyor.
+İfade penceresinin üstüne ciddi bir **savunma** avantajı da geliyor; iyi bir dodge "kaçış"
+olarak sömürülüyorsa ilk kısılacak sayı budur.
 
 ## Spec'ten sapmalar
 
@@ -911,7 +949,7 @@ Hepsi `PrototypeTuning`'de, hiçbiri kodda gömülü değil (AGENTS kural 3).
 
 ## Bilinen açıklar
 
-- T1/T2/T3/T4/T7/T7.1/T6.2/T8/T8.1 `dotnet test` yeşil (`tools/CoreTests`, **73** test).
+- T1/T2/T3/T4/T7/T7.1/T6.2/T8/T8.1/T8.2 `dotnet test` yeşil (`tools/CoreTests`, **79** test).
 - **Toparlanma kilidi hiçbir girdiyi engellemiyor**, çünkü §5'e göre kilidi kesen üç şey (düz
   vuruş, yeni fiil, dodge) oyuncunun elindeki eylemlerin **hepsi**. Yani kilit şu an "kalan süre"
   okunabilir bir sayı + kesme becerisinin ölçüsü; mekanik olarak yalnızca `Commit`/`OnDwell`'i
@@ -957,9 +995,10 @@ Hepsi `PrototypeTuning`'de, hiçbiri kodda gömülü değil (AGENTS kural 3).
   bantlarının kaçan dodge'da erişilebilirliği `BossApproachStopPadM` ile ayarlanır; şu an
   0.35 m durma payında o bantlar hâlâ hacim dışı. §7 ödülünün ne kadar erişilebilir olduğu
   telefonda ölçülmeli (T11).
-- **Yavaş çekim 4-nokta kabul kriteri spec sayılarıyla tutmuyor** (T8.1 kararı, yukarıda).
-  `SlowmoBonusDots` 0 ve uygulanmamış. T9 başlamadan önce sahibinin (a)/(b)/(c) seçmesi
-  gerekiyor; aksi halde T9 HUD'u "4. noktayı yakaladın" diye bir ödül göstermez.
+- **Yavaş çekim ödülü T8.2'de gerçek oldu** (hold 900, rampUp 600; ölçüm tablosu yukarıda).
+  Kelime sayısı artık tempoya göre +2'ye kadar çıkıyor, yani T9 HUD'unda "kaç nokta hakkı
+  kazandın" diye gösterilecek bir şey **var**. Yeni risk: yavaş çekim 1555 ms sürüyor ve
+  savunma avantajı da veriyor — T11'de ölçülmeli.
 - Hece sesleri sinüs tıkırtısı; §9 yapısı var, müzikal kalite T11 his turuna.
 - **Katmanlama Overlay kamera + Screen Space Camera** (T8). Pentagon sort 50, Feel/tehdit
   200. Dünya telegraf diski ana kamerada. Overlay canvas kalktı.
