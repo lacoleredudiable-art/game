@@ -27,8 +27,9 @@
 | 0 | T0 | insan işi | — |
 | 1 | T1–T4 | hayır | dövüş mantığı doğru mu |
 | 2 | T5–T10 | evet | his doğru mu |
-| 3 | T11 | evet + telefon | [§13'teki sorular](dovus-sistemi.md#13-prototipin-cevapladığı-sorular) |
-| 4 | görsellik | — | **henüz başlanmayacak** |
+| 3 | T11 | evet + telefon | [§13'ün 1–2. sorusu](dovus-sistemi.md#13-prototipin-cevapladığı-sorular) — **evet, kapandı** |
+| 3.5 | T11.1–T14 | evet + telefon | §13'ün 3–5. sorusu: soyutluk, tekdüzelik, harcamanın karşılığı |
+| 4 | görsellik | — | Faz 3.5 kapanmadan başlanmaz |
 
 ## Hangi görev hangi modelle
 
@@ -48,6 +49,11 @@ uydurmama, kombo tablosu yasağı, silüet ≠ sayı), yoksa speci verilmiş bir
 - **Denetim turları → yazan modelden farklı bir model (Grok).** T6.1, T7.1, T7.2 ve T7.4'ün
   hepsi denetimden doğdu; bu projeyi taşıyan şey o turlar. Denetçi **kod yazmaz**: bulgularını
   `docs/durum.md`'ye yazar, düzeltmeyi T#.1 görevi olarak yazan model yapar.
+
+Faz 3.5 dağılımı bu ölçüte göre: **T11.1** Composer (üç küçük, gözle doğrulanabilir düzeltme),
+**T12** Opus (Core'daki ödül tablosunu hasara bağlıyor ve kapanış türünü ayırıyor — gramere
+dokunan tek görev), **T13** ve **T14** Sonnet (biri boss döngüsü, biri görünüm katmanı; ikisi
+de tek katman ve speci verilmiş).
 
 ---
 
@@ -588,11 +594,237 @@ YASAKLAR
 
 ---
 
+## Faz 3.5 — Somutlaştırma ve dövüş yayı
+
+> **Neden bu faz var.** §13'ün 1. ve 2. sorusu telefonda "evet" aldı, yani Faz 4'ün kapısı
+> açık. Ama 3–5. sorular boş ve boş kalma sebebi sanat değil: sahibi mekaniği **okuyor**
+> (*"dodge atıyorum, yavaş çekim geliyor, 2'li çizince başka 3'lü çizince başka"*) ama
+> temsil soyut kalıyor, boss tek saldırıyla tekdüze ve harcamanın gittiği bir yer yok.
+>
+> Sıra **karar → içerik → temsil → sanat**. Faz 4'ün pahalı kısmı (rig'lenmiş boss, animasyon
+> seti, satın alınmış VFX) bossun kaç saldırısı olduğuna ve nasıl öldüğüne doğrudan bağımlı;
+> o iki karar dondurulmadan model/animasyon alınırsa "bir alan değiştir" işi "yeniden yaptır"
+> işine döner. Bu fazın tamamı hâlâ **primitive** ile yapılır.
+>
+> Sıra bağlayıcı: T11.1 → T12 → T13 → T14. Kilit HUD'da görünmeden ve mürekkep cümle sınırını
+> göstermeden boss canı eklenirse "bedel yok" şikâyeti aynı kalır, çünkü oyuncu neyi ne zaman
+> harcadığını hâlâ göremez.
+
+### T11.1 — Telefon turunun bulduğu üç düzeltme
+
+**Hedef:** cümlenin nerede bittiği ve neyin harcandığı ekranda görünsün. Kod hacmi küçük,
+etkisi büyük — T12'nin ön koşulu.
+
+```
+Rolün: telefon turunda çıkan üç düzeltmeyi kapatan geliştirici.
+
+ÖNCE OKU: docs/dovus-sistemi.md §5 ("On nokta çizmek" paragrafı + "Toparlanma girdi
+kilididir") · docs/his-kontrol-listesi.md "Turda çıkan yeni sorunlar" · docs/durum.md
+"Bilinen açıklar".
+
+GÖREV
+1. Mürekkep cümle sınırını göstermiyor. Telefonda yavaş çekimde 6–7 nokta tek kesintisiz
+   iz olarak çizilebiliyor; sahibi bunu "tavan tutulmuyor" diye rapor etti ama motor DOĞRU
+   çalışıyor: `MaxSentenceDots = 4`, 4. noktada cümle kapanıyor ve 5. nokta YENİ bir fiil
+   başlatıyor (§5). Hata izde: `InkTrail` kesintisiz devam ettiği için oyuncu iki cümleyi
+   tek cümle sanıyor. §5 "cümlenin nerede bittiği ezberlenmez, GÖRÜLÜR" diyor; şu an
+   görülmüyor. `SentenceEngine.SentenceCompleted` olayına bağlanıp izi cümle sınırında
+   KOPAR: eski iz kendi ömrüyle sönmeye başlar, yeni cümlenin izi yeni bir şerit olarak
+   sıfırdan başlar (§10: mor → camgöbeği geçişi de yeniden başlar).
+2. Toparlanma kilidi kalıcı HUD'a çıksın. Kalan kilit şu an yalnızca `SentenceDebugHud`'ın
+   debug metninde ("kilit: X ms"). Oyuncu kestiği süreyi görmediği için §5'in kesme beceri
+   ekseni görünmez; 4. oturumda sahibi tam bunu söyledi ("skill kullanmanın bedeli yok").
+   `ReactionReadout`/`VitalsHud` ile aynı canvas'ta, sade: kalan kilit süresi eriyen bir
+   gösterge. Kesildiğinde görünür biçimde kesilsin — kesmenin ödülü budur.
+   Renk §10'dan: oyuncu paleti (camgöbeği/mor), kırmızı-turuncu OLAMAZ.
+3. `BossDirector.TickWindup` null guard. `_attack` null iken patlıyor (Editor.log'da eski
+   prob oturumlarından yüzlerce NullReferenceException). Gerçek sahnede Bootstrap aynı karede
+   `Bind` çağırdığı için oyunda görülmüyor, yalnızca MCP probları için tuzak. Tek satır.
+
+KABUL KRİTERLERİ
+- Yavaş çekimde 7 nokta çizince ekranda İKİ ayrı mürekkep şeridi görünüyor (4 + 3), tek
+  kesintisiz iz değil; sınır gözle sayılabiliyor
+- Kalan toparlanma kilidi kalıcı HUD'da görünüyor ve düz vuruş/yeni fiil/dodge ile
+  kesildiğinde gözle kesildiği görülüyor
+- Kilit göstergesinde kırmızı-turuncu yok
+- `cd tools/CoreTests && dotnet test` yeşil (mevcut 79), play mode konsolu temiz
+
+YASAKLAR
+- Core'a dokunma. `SentenceEngine` doğru çalışıyor; düzeltme görünüm ve HUD katmanında
+- `MaxSentenceDots`'u değiştirme — tavan doğru, görünürlük eksik
+- Boss canı/hasar yazma (T12), varyant yazma (T13), silüet değiştirme (T14)
+```
+
+### T12 — Boss canı, hasar, ölüm, kapanış türü
+
+**Hedef:** harcamanın gittiği bir yer olsun, ve hasar eklenirken şekil ekseni ölmesin.
+
+```
+Rolün: kapanış ödülünü boss canına bağlayan ve kapanış türünü ayıran geliştirici.
+
+ÖNCE OKU: docs/dovus-sistemi.md §5 ("Kapanış vuruşu ve ödül" + "Etkinin hasara çevrilmesi"),
+§11 (boss canı ve ölüm), §12 (tuzak tablosu), §8/T4 · Core/Grammar/SentenceEngine.cs ·
+Game/ManifestationDirector.cs · Game/BossReactor.cs · Game/PlayerVitals.cs (desen için).
+
+BAĞLAM
+Boss can göstergesi T9'dan beri KOZMETİK: Core/Game'de hiçbir yerde boss HP'si yok ve
+"boss nasıl ölür" hiç tanımlı değildi. 23 Ağustos'ta sahibiyle karara bağlandı ve spec
+güncellendi. Bu görev o kararı uyguluyor.
+
+GÖREV
+1. Core — boss canı ve hasar:
+   - `BossTuning.MaxHp = 120` ve `CombatTuning.ClosingDamagePerEffect = 1.0` (ikisi de
+     §11/§5'te yazılı, sayı uydurma).
+   - `Core/Combat/BossVitals.cs` — saf C#, `PlayerVitals`in Unity'li deseninin aksine
+     Core'da: `Hp`, `MaxHp`, `ApplyDamage(float)`, `IsDown`, `Revive()`. Zaman parametre
+     olarak geçer, `UnityEngine` yok.
+   - Kapanış ödülü (`SentenceStep.TotalEffect`, §5 tablosu: 1.0 / 2.4 / 4.4 / 7.0) ×
+     `ClosingDamagePerEffect` = bossun canından düşen sayı. Yarıda kalan cümle 0 verir
+     (§5 "yarıda kalan cümle hiç ödeme yapmaz" — mevcut davranış, bozulmayacak).
+2. Kapanışın TÜRÜ son rüne bağlı kalsın (§5 + §12 — bu madde atlanamaz, hasarın tek
+   başına kalması tuzağın kendisi). `BossReactor` üç tepkiyi zaten taşıyor; kapanış son
+   rüne göre birini seçer:
+   - 5 SARSINTI → havalandırma (spec §5'te açıkça yazılı)
+   - 1 İĞNE → tek yöne toplanmış derin geri tepme (§4: "daralt / odakla"dan türetildi)
+   - 2 SÜRÜ → yerinde çok noktalı sarsılma, yer değiştirme az (§4: "çoğalt / yay")
+   Kapalı rünler için §5 zaten söylüyor: KABUK sabitleme, ZEHİR birikinti.
+   **Hasar miktarı türe göre DEĞİŞMEZ** — tür ve miktar iki ayrı eksen; türün miktarı
+   değiştirmesi §12'nin "sıfatın sayıyı değiştirmesi" tuzağıdır.
+3. Ölüm (§11): can 0'a düşünce kısa yavaş çekim + çökme pozu, sonra boss TAM canla yeniden
+   doğar. `TimeDirector.TriggerSlowmo` kullan, Core dışında yeni rampa yazma.
+4. `VitalsHud`'ın boss barı artık gerçek `BossVitals.Hp/MaxHp` okuyor (kozmetik değil).
+5. Hasar göstergesi: `TuningPanel`'e VARSAYILAN KAPALI bir satır (`ShowDamageNumbers`),
+   `ShowFrameTimeHud` deseninin aynısı — `PanelFields`'a yalnızca bool eklenir (T11
+   sapmasındaki gerekçe: eski `tuning.json`'da alan yoksa `JsonUtility` 0 verir, bool için
+   0 = false = güvenli). Bu bir ÖLÇÜM aracıdır: açıkken kapanışın verdiği hasarı yazar.
+
+KABUL KRİTERLERİ
+- 4 noktalı cümlenin kapanışı bossun canından tam 7.0 düşürüyor; düz vuruş 1.0
+- Yarıda dodge'la kesilen cümle bossun canından hiçbir şey düşürmüyor
+- Üç açık rünle kapatılan cümleler bossa GÖZLE FARKLI fiziksel tepki veriyor (havalanma /
+  geri tepme / yerinde sarsılma) ve üçünün hasarı AYNI
+- ~17 tam kapanışta (ya da karışık ~25–30) boss ölüyor, kısa yavaş çekim + çökme geliyor,
+  sonra tam canla yeniden doğuyor
+- Boss barı gerçekten azalıyor; hasar sayısı varsayılan olarak ekranda YAZMIYOR
+- `dotnet test` yeşil (mevcut 79 + yenileri), play mode konsolu temiz
+
+YASAKLAR
+- Hasar sayısını varsayılan açık bırakma (§8/T3, §12 — his kanıtı sayıda olmayacak)
+- Kapanış türünü hasar çarpanına çevirme; tür ve miktar ayrı eksen kalacak
+- Yeni boss saldırısı/varyantı yazma (T13), silüet değiştirme (T14)
+- Zafer ekranı, ilerleme, ödül veya loot yazma — §11 ölümün noktalama işareti olduğunu söylüyor
+```
+
+### T13 — Çakma varyantları
+
+**Hedef:** telegraf okuma bir kez öğrenilen refleks olmaktan çıksın.
+
+```
+Rolün: bossun tek saldırısına üç ritim kazandıran geliştirici.
+
+ÖNCE OKU: docs/dovus-sistemi.md §11 ("Çakma varyantları" tablosu ve altındaki kısıt), §6,
+§10 · docs/tasarim-ozeti.md §4 Sütun 1 ("her ölüm adil olmalı") · Game/BossDirector.cs ·
+Game/BossTelegraph.cs.
+
+GÖREV
+1. §11'deki üç varyant: YAKIN (windup 640 / radius 5.4), GEÇ (900 / 5.4), GENİŞ (640 / 8.0).
+   Hepsi AYNI saldırı — yeni bir desen değil, aynı desenin ritimleri. Sayılar §11'de yazılı,
+   `BossTuning`'de alan olacak.
+2. **Ayırt edilebilirlik pazarlıksız** (§11 kısıtı): varyant vuruştan ÖNCE, windup sırasında
+   okunabilmeli. GEÇ'in tell'i ses (ton daha yavaş yükselir, hazırlık pozu daha uzun tutar),
+   GENİŞ'in tell'i disk (baştan itibaren gözle görülür biçimde büyük). Okunamayan varyant
+   zar atışıdır ve 1. sütunu çökertir.
+3. Varyant seçimi idle'da yapılır, telegraf başlamadan. Aynı varyantın üst üste kaç kez
+   gelebileceği ayar alanı olsun — üç kez aynı varyant gelirse oyuncu desen yok sanır.
+4. `ExchangeResolver` yolu değişmiyor: vuruş hâlâ aktif pencerenin başında tek karede
+   çözülür, yalnızca `radius` ve `windup` varyanttan gelir.
+
+KABUL KRİTERLERİ
+- Üç varyant da oyunda gerçekten geliyor ve hangisinin geldiği windup sırasında ayırt
+  edilebiliyor (ekran görüntüsü/ses ile doğrula)
+- GENİŞ varyantında kaçan dodge artık "MENZİL DIŞI (derece yok)" yerine TEMİZ/SIYIRDI
+  üretiyor — §11'in not ettiği yan fayda ölçülerek doğrulanacak
+- GEÇ varyantında erken basan oyuncu "erken bastın" alıyor, sebep doğru
+- Boss telegrafı hâlâ §10'un en üst ve en okunabilir katmanı
+- `dotnet test` yeşil, play mode konsolu temiz
+
+YASAKLAR
+- İKİNCİ bir saldırı ekleme. Üçü de aynı YERE ÇAKMA; farkı yalnızca windup ve menzil
+- Varyantı gizemli yapma: rastgele ama okunabilir. Tell'i olmayan varyant kabul edilmez
+- Oyuncu efektlerine dokunma, silüet değiştirme (T14)
+```
+
+### T14 — Silüet keskinleştirme
+
+**Hedef:** üç rün "bir efekt" gibi görünmeyi bıraksın. Faz 3.5'in son görevi.
+
+```
+Rolün: üç rünün silüetlerini birbirinden ayıran geliştirici.
+
+ÖNCE OKU: docs/dovus-sistemi.md §8 (beş kuralın hepsi), §4 ("İlk turun sonucu: çeşitlilik
+yok" + rün tablosu), §10 · docs/his-kontrol-listesi.md soru 4 ve 5 ·
+Game/LivingEffectView.cs · Game/GroundScarField.cs.
+
+BAĞLAM
+Telefon turunda sahibi mekaniği okuyabildiğini ama sonucun SOYUT kaldığını söyledi; üç rünün
+silüetleri ayrık değil. §13'ün 5. sorusu düzeltmeyi zaten yazmış: rün eklemek değil, türleri
+keskinleştirmek. Ayrım HAREKET KARAKTERİNDEN gelecek (sahibinin seçimi), biçimden değil.
+
+GÖREV
+Üç fiilin hareket karakteri birbirine benzemeyecek şekilde yeniden kurulacak. Hâlâ prosedürel,
+hâlâ `PrimitiveMesh` — sanat varlığı yok:
+- **İĞNE** fırlar: tek yön, yüksek hız, ince, VARIŞTA sert durur. Zenitsu kalıbının küçük
+  hâli (özet §6): gerilme → 2–3 karelik gidiş → donmuş varış pozu.
+- **SÜRÜ** üşüşür: çok gövde, düzensiz, yayılan; tek bir cephe değil dağınık bir bulut.
+  Gövdeler aynı anda değil kademeli varır.
+- **SARSINTI** yerden yükselir: aşağıdan yukarı, genişleyen halka; hız düşük, kütle yüksek.
+Ölçüler ve zamanlamalar `ManifestationTuning`/`PrototypeTuning` alanı olacak (spec'te sayı
+yok: varsayılan koy, gerekçesini docs/durum.md'ye yaz).
+
+Ayrıca: **düz vuruşun kendi silüeti olsun.** Şu an `BasicStrikeDot` normal cümlenin SARSINTI
+halkasını kullanıyor, yani "vuruş mu, cümle mi" hissi karışıyor (bilinen açık). Kısa, dar,
+tek vuruşluk ayrı bir silüet — bir cümle gibi görünmemeli.
+
+KABUL KRİTERLERİ
+- Üç fiil, sesi kapatıp ekran görüntüsüne bakan birine hangisi olduğunu söyletebiliyor
+- `5` → `5-1` → `5-1-2` mutasyonu hâlâ AYNI etkinin morph'u, yeni spawn değil (T7 kriteri
+  bozulmayacak)
+- Düz vuruş, 1 noktalı bir cümleden gözle ayırt edilebiliyor
+- §10 ayakta: oyuncu efektlerinde hiç kırmızı-turuncu yok, telegraf hâlâ en üstte
+- Kare süresi 60 fps'te kalıyor (telefonda ölçülecek; `GroundScarCapCount` tavanı duruyor)
+- `dotnet test` yeşil (Core'a dokunulmayacak), play mode konsolu temiz
+
+YASAKLAR
+- Partikül fırtınası, büyük yarı saydam katman (mobil overdraw — özet §6'nın uyarısı)
+- Hazır asset indirmek, rig'lenmiş model, bloom/post-process — hepsi Faz 4
+- `GameObject.CreatePrimitive` çağırmak; mesh gerekiyorsa `PrimitiveMesh.Get(PrimitiveType)`
+- Sıfatı sayıya bağlamak (§8/T3) — sıfat silüeti değiştirir
+- Gramer, boss davranışı veya hasar matematiğine dokunmak
+```
+
+> **Faz 3.5 bitince telefonda yeni bir tur yapılır** ve `docs/his-kontrol-listesi.md`'nin
+> 3, 4, 5. soruları doldurulur. "İzliyorum" ve "yazıyorum" cevapları geldiğinde Faz 4'e
+> neyi cilalayacağını bilerek girilir.
+
+---
+
 ## Faz 4 — Görsellik
 
-**Henüz başlanmayacak.** [§13'teki 1. ve 2. soruya](dovus-sistemi.md#13-prototipin-cevapladığı-sorular)
-telefonda "evet" cevabı alınmadan görsel katmana geçilmesi, yanlış şeyi cilalamak olur.
+**Kapı açıldı ama sıra Faz 3.5'te.** [§13'ün 1. ve 2. sorusuna](dovus-sistemi.md#13-prototipin-cevapladığı-sorular)
+telefonda "evet" cevabı **alındı** (23 Ağustos) — yani eski yasak kalktı. Yerine tek bir
+bağımlılık kaldı: Faz 4'ün pahalı kalemleri bossun kaç saldırısı olduğuna ve nasıl öldüğüne
+bağlı. T12 ve T13 o iki kararı dondurmadan rig'lenmiş model ya da animasyon seti alınırsa,
+sonraki her ayar değişikliği "bir alan değiştir" olmaktan çıkıp "yeniden yaptır" olur.
+Faz 3.5'in tamamı primitive ile yapılıyor ve bu yüzden geri dönüşü ucuz.
 
 O aşamaya gelindiğinde ilk kararlar: zincirlenebilir animasyon seti seçimi (Animancer/Playables),
 Asset Store VFX (Hovl Studio, Gabriel Aguiar, Kripto289), ve rig'lenmiş boss modeli.
 Bkz. [Teknoloji Kararları §7](teknoloji-kararlari.md#7-animasyon-efekt-ses).
+
+**Faz 4'ten sonraki büyük sistem sanat değil, durum tablosu.** Çeşitlilik şikâyetinin gerçek
+cevabı orada ([dövüş sistemi](dovus-sistemi.md) §4 "İlk turun sonucu"
+ve [özet §5](tasarim-ozeti.md#5-yaratıcı-build-sistemi)): ıslak / yanıyor / zehirli / sersem /
+havada / zırhı kırık durumları ve aralarındaki etkileşim kuralları. Üç rünle 120, beş rünle 780
+cümle zaten var; o cümleler ancak bossun durumu onların anlamını değiştirdiğinde birbirinden
+farklı hissediyor. Rün havuzunu büyütmek (KABUK/ZEHİR, sonra sınıf başına ayrı havuz) ucuz ve
+sırası gelecek, ama boş bir bossa beş rün de üç rün kadar tekdüze hisseder.

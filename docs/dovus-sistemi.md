@@ -4,7 +4,8 @@
 > belgeye referans verir. Buradaki sayılar başlangıç değerleridir ve **hepsi ayarlanabilir
 > veri** olarak kodlanır (bkz. [Tasarım Özeti §8](tasarim-ozeti.md#-en-kritik-mimari-kural)).
 >
-> Tarih: 20 Ağustos 2026 · Durum: alfa, prototip öncesi · Bağlam: [Tasarım Özeti](tasarim-ozeti.md)
+> Tarih: 23 Ağustos 2026 · Durum: alfa, ilk telefon turu yapıldı (§13'ün 1. ve 2. sorusu
+> **evet**) · Bağlam: [Tasarım Özeti](tasarim-ozeti.md)
 
 ---
 
@@ -135,6 +136,29 @@ testinin 2. maddesinden ayrıca geçirilecek.
 > gramer ve §8/T2'deki "anlık vuran fiil olamaz" kısıtıdır. Rünleri uzun uzun düşünmek yerine
 > ilk telefon turundan sonra yenilemek doğru sıra.
 
+### İlk turun sonucu: "çeşitlilik yok" (23 Ağustos)
+
+Sahibi telefonda *"skillerde sorun yok ama çeşitlilik yok, 3 nokta açık diye mi"* dedi.
+Cevap **hayır, rün sayısı yüzünden değil.** Beş rün, 1 fiil + en fazla 3 sıfat ve tekrar
+serbest olduğu için `5 + 25 + 125 + 625 = 780` farklı cümle üretiyor; üç rünle bile 3 + 9 +
+27 + 81 = **120 cümle** var. Elle yazılmış hiçbir yetenek listesi buna yaklaşmaz. Sıkıntı
+sayıda değil, **ayırt edilebilirlikte**.
+
+Ayırt edilebilirliğin iki kaynağı var ve prototipte ikisi de eksik:
+
+1. **Silüetler tür olarak ayrışmıyor** — üçü de "bir efekt" gibi görünüyor. §13'ün 5. sorusu
+   bunun düzeltmesini zaten yazmış: rün eklemek değil, türleri keskinleştirmek.
+2. **Durum ve etkileşim tablosu hiç yok.** Cümleler birbirinden farksız hissediyor çünkü hepsi
+   aynı boş bossa aynı şeyi yapıyor. [Özet §5](tasarim-ozeti.md#5-yaratıcı-build-sistemi)'in üç
+   katmanından (taşıyıcı / yük / durum tablosu) prototipte yalnızca birincisi tam: bossun
+   ıslak, zırhı kırık ya da havada olması hiçbir cümlenin anlamını değiştirmiyor. Belge o
+   katmanı "asıl sihir burada" diye işaretlemiş ve *"8 durum + kurallar, elle yazılmış 40
+   yetenekten kat kat az iş"* demiş.
+
+> **Çeşitlilik, durum tablosuyla gelir — rün havuzuyla değil.** Rün havuzunu büyütmek (KABUK
+> ve ZEHİR'i açmak, sonra sınıf başına ayrı havuz) ucuz ve sırası gelecek; ama boş bir bossa
+> beş rün de üç rün kadar tekdüze hisseder. Durum tablosu prototipten sonraki ilk büyük sistem.
+
 ### Türetilebilirlik örnekleri
 
 Bunların hiçbiri elle tanımlanmamıştır; kurallardan doğar.
@@ -196,6 +220,29 @@ Eğrinin şekli kasıtlıdır: uzatmanın karşılığı gerçekten var, ama kaz
 nokta neredeyse hiçbir şey katmaz — onu ancak **bedavaysa**, yani yavaş çekim penceresinde
 çizersin. Uzunluğu dizginleyen dört fren: azalan getiri, tamamlama şartı, uzayan toparlanma,
 ve açıklığın boyutunu bossun belirlemesi.
+
+### Etkinin hasara çevrilmesi (23 Ağustos kararı)
+
+Prototipin ilk turunda "toplam etki" hiçbir yere gitmiyordu: boss can göstergesi kozmetikti,
+Core'da boss hasarı yoktu ve "boss nasıl ölür" hiç tanımlı değildi. Telefon turunun sonucu
+bunu doğruladı — sahibi *"skill kullanmanın bedeli yok"* ve *"cümlelerin karşılığını
+anlamıyorum"* dedi. Harcamanın gittiği bir yer olmadığı sürece optimal oynayış spam'dir.
+
+Tablodaki **toplam etki, bossun canından düşen sayıdır**: `closingDamagePerEffect = 1.0`
+(ayarlanabilir, başlangıç değeri 1'e 1). Yani 4 noktalı cümle 7, düz vuruş 1 hasar verir.
+Boss canı 120 (§11) → en iyi oynanışta ~17 kapanış, karışık oynanışta 25–30 kapanış.
+
+**İki koşul birlikte tutulmak zorunda, biri tek başına yeterli değil:**
+
+1. **Kapanışın türü son rüne bağlı kalır.** Hasar eklenince tür ekseni bırakılırsa §12'nin
+   "ödülün sadece hasar olması" tuzağına düşülür: oyuncu en yüksek sayıyı veren cümleyi bulur,
+   780 cümle 1 cümleye iner ve gramer ölür. Sarsıntıyla kapatmak savurur, kabukla kapatmak
+   sabitler, zehirle kapatmak yerde birikinti bırakır — hasar bunun **yanına** gelir, yerine
+   geçmez.
+2. **Hasar sayısı ekranda yazmaz** (§8/T3, §12). Oyuncu harcamasını boss canının azalmasından
+   okur, uçan sayılardan değil. Ayar panelinde varsayılan kapalı bir hasar göstergesi
+   bulunabilir — o bir **kumpas**, his kanalı değil; ayar yaparken cümlenin ne yaptığını
+   ölçmek içindir ve his kanıtı olarak kullanılmaz.
 
 ### Düz vuruş ve erken kapanış
 
@@ -389,17 +436,53 @@ telegrafını yutarsa oyun adaletsiz hisseder ve 1. sütun çöker.
 
 ---
 
-## 11. Boss (prototip: tek saldırı)
+## 11. Boss (prototip: tek saldırı, üç ritim)
 
 ```
 YERE ÇAKMA — windup 640 ms · active 90 ms · recovery 720 ms · radius 5.4 m · damage 22
 idle bekleme 700–1500 ms · yaklaşma hızı 2.2 m/s
+boss canı 120 · oyuncu canı 22
 ```
 
 Telegraf okunabilir olmalı: hazırlık evresi + ışık + yükselen ses. Vuruş, aktif pencerenin
 başında tek karede çözülür (frame verisiyle düşünmeyi kolaylaştırır).
 
 Ölüm cezası neredeyse sıfır: ölümden sonra ≤2 saniyede tekrar dövüşte (özet §4, Sütun 1).
+
+**Boss ölümü prototipte bir noktalama işaretidir, bitiş değil.** Can 0'a düşünce kısa bir
+yavaş çekim + çökme pozu gelir, sonra boss **tam canla yeniden doğar**. Gerekçe: ayar turunun
+kesilmemesi gerekiyor — zafer ekranı, ilerleme veya ödül kurgusu bu belgenin kapsamı dışında
+ve [özet §12](tasarim-ozeti.md#12-açık-konular)'de hâlâ açık.
+
+### Çakma varyantları
+
+İlk tur tek saldırıyla yapıldı ve amacına ulaştı: §13'ün 1. sorusu (*sırtın ürperiyor mu*)
+**evet**. Turda çıkan yeni şikâyet tekdüzelik. Düzeltmesi **yeni bir saldırı değil**, aynı
+çakmanın üç ritmi. Sebep: yeni saldırı öğrenilecek yeni bir desen demek; aynı saldırının
+varyantı ise **aynı** deseni her seferinde yeniden okumaya zorlar. Telegraf okuma bir kez
+öğrenilen refleks olmaktan çıkıp sürekli sorulan bir soruya döner.
+
+| Varyant | windup | radius | Ayırt edici tell |
+|---|---|---|---|
+| YAKIN | 640 ms | 5.4 m | temel — mevcut davranış |
+| GEÇ | 900 ms | 5.4 m | ton daha yavaş yükselir; hazırlık pozu daha uzun tutar |
+| GENİŞ | 640 ms | 8.0 m | disk baştan itibaren gözle görülür biçimde büyük |
+
+**Pazarlıksız kısıt: varyant vuruştan ÖNCE ayırt edilebilir olmalı.** Özet §4/Sütun 1 "her
+ölüm adil olmalı" diyor, §7 ise zorluğun *icra hassasiyetinden* gelmesini, gizemden veya
+şanstan gelmemesini şart koşuyor. Windup sırasında hangi varyant olduğu okunamıyorsa varyant
+sistemi bir zar atışına döner ve 1. sütun çöker. Her varyantın tell'i bu yüzden tabloda ayrı
+bir sütun: süre farkı **sesle**, menzil farkı **diskle** okunur.
+
+**GENİŞ'in yan faydası ödül bandını açması.** Dodge 4.05 m taşıyor ve boss ~1.70 m'de duruyor;
+5.4 m'lik hacimde `gap` 197 ms'yi geçen dodge hacmin dışına çıkıyor, yani TEMİZ ve SIYIRDI
+bantları kaçan dodge'da hiç doğmuyor (ölçüm tablosu `docs/durum.md`, T8 denetimi 8. madde) ve
+§7'nin `slowmoMinGrade = TEMİZ` ayarı fiilen HARİKA'ya kayıyor. 8.0 m'lik hacimde aynı dodge
+hacmin içinde kalır ve alt dereceler gerçekten üretilir. Yani varyant hem çeşitlilik hem
+derecelendirmenin kapalı kalan yarısını açıyor.
+
+> Üç varyantın sayıları **başlangıç değeridir** ve telefonda ayarlanacak; `docs/durum.md`'de
+> uydurma olarak kayıtlı. Sabit olan şey sayılar değil, yukarıdaki ayırt edilebilirlik kısıtı.
 
 ---
 
@@ -424,6 +507,13 @@ başında tek karede çözülür (frame verisiyle düşünmeyi kolaylaştırır)
 ## 13. Prototipin Cevapladığı Sorular
 
 Sırayla, ve öncekine "evet" denmeden sonrakine geçilmez:
+
+> **Durum (23 Ağustos, telefon turu — ayrıntı `docs/his-kontrol-listesi.md`):**
+> 1. soru **evet** (*"hepsi iyi, hisler iyi"*). 2. soru **evet**, duvar aşıldı (boss görünüyor,
+> pencere ödül olarak da yeniden pozisyon olarak da kullanılıyor). 3–5 **açık**, ve üçünün
+> tıkandığı yer aynı: mekanik okunuyor ama temsil soyut kalıyor, bossun tek saldırısı tekdüze
+> ve harcamanın gittiği bir yer yok. Düzeltmesi T11.1–T14 (bkz. `docs/gorev-listesi.md`);
+> sanat katmanı ondan sonra.
 
 1. **Telefonda tam zamanında dodge atıp bossun saldırısını sıyırdığında sırtın ürperiyor mu?**
    (Özet §10'un asıl sorusu.)

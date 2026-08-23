@@ -4,10 +4,21 @@
 > ajanın repoyu taramadan nerede kaldığımızı anlaması. Kısa tut: ne bitti, ne üretildi,
 > nerede sapma var.
 
-**Son güncelleme:** 22 Ağustos 2026 · **Sıradaki görev:** T11 (Android build, his turu)
+**Son güncelleme:** 23 Ağustos 2026 · **Sıradaki görev:** **T11.1** (telefon turunun bulduğu
+üç düzeltme — `docs/gorev-listesi.md` "Faz 3.5")
 
-> **T9 + T9.1 + T10 `master`'a girdi** (`dotnet test` yeşil, Unity derliyor, MCP prob'ları geçti —
-> aşağıdaki "T10" bölümü). T11'in bilmesi gereken hazırlık notları için o bölümün sonuna bak.
+> **T11 kapandı, his turu kapandı, Faz 3.5 planlandı.** §13'ün 1. ve 2. sorusu telefonda
+> **evet** — yani Faz 4'ün eski yasağı kalktı. 3–5. sorular açık ve üçünün tıkandığı yer aynı:
+> mekanik **okunuyor** ama temsil soyut, boss tek saldırıyla tekdüze, harcamanın gittiği yer yok.
+>
+> 5. oturumda (23 Ağustos, masa başı) 4. oturumun "cümle sonucu okunmuyor" teşhisi **düzeltildi**:
+> sahibi nokta sayısını ve dwell'i görüyor. Yedi karar alındı, spec güncellendi, dört görev
+> yazıldı: **T11.1 → T12 → T13 → T14**, sıra bağlayıcı. Kararların tablosu
+> `docs/his-kontrol-listesi.md` "Turda alınan kararlar"da; gerekçeler aşağıda.
+>
+> **Sanat (Faz 4) hâlâ sırada değil** — ama sebebi artık "§13 cevaplanmadı" değil: T12 ve T13
+> bossun kaç saldırısı olduğunu ve nasıl öldüğünü donduruyor, rig'li model/animasyon seti o
+> kararlara bağımlı. Faz 3.5'in tamamı primitive.
 
 ## Görev durumu
 
@@ -33,9 +44,18 @@
 | T9 | HUD, parlak tepki yazısı | bitti | [#4](https://github.com/lacoleredudiable-art/game/pull/4) → master |
 | T9.1 | T9 denetim düzeltmeleri (bant taşması, overdraw, dp) | bitti | aynı dal → master |
 | T10 | Oyun içi ayar paneli | bitti | task/t10-ayar-paneli → master |
-| T11 | Android build, his turu | bekliyor | — |
+| T11 | Android build, his turu | bitti (5 oturum, §13 soru 1–2 evet) | task/t11-android-build |
+| T11.1 | Mürekkep cümle sınırı, kilit HUD'a, null guard | bekliyor | — |
+| T12 | Boss canı, hasar, ölüm, kapanış türü | bekliyor | — |
+| T13 | Çakma varyantları (YAKIN / GEÇ / GENİŞ) | bekliyor | — |
+| T14 | Silüet keskinleştirme + düz vuruşun silüeti | bekliyor | — |
 
 Durum değerleri: `bekliyor` · `sürüyor` · `bitti` · `bloke`
+
+Faz 3.5 (T11.1–T14) sırası **bağlayıcı**: kilit HUD'da görünmeden ve mürekkep cümle sınırını
+göstermeden boss canı eklenirse "bedel yok" şikâyeti aynı kalır — oyuncu neyi ne zaman
+harcadığını hâlâ göremez. Model dağılımı: T11.1 Composer, T12 Opus (Core'daki ödül tablosuna
+dokunan tek görev), T13/T14 Sonnet.
 
 ## T6.2 kararı (22 Ağustos — uygulandı, bkz. "T6.2 — Düz vuruş" bölümü)
 
@@ -959,6 +979,181 @@ Android APK'nın kapatılıp açılması değil. Mantık aynı (`Awake` → `Try
 `Application.persistentDataPath`in davranışı ve uygulamanın tamamen sonlandırılması (arka planda
 askıya alma değil) T11'de doğrulanmalı.
 
+## T11 — Android build ve kare süresi göstergesi (22 Ağustos)
+
+**Üretilenler:**
+
+- `AndroidBuilder` (`Assets/Scripts/Game/Editor/AndroidBuilder.cs`) — üç giriş: **Dovus → Build
+  Android APK** menüsü, `BuildFromCommandLine` (batchmode `-executeMethod`, `-dovusOutput <yol>`
+  ile hedef yol verilebilir) ve `BuildTo(path)` (otomasyon; menü/CLI yan etkisi yok).
+  Player ayarları **kodla** yazılır — Build Settings penceresinde elle tıklanan bir kutu ertesi
+  gün başka sonuç verir: IL2CPP · ARM64 · min SDK 24 · `com.dovus.prototip` · yalnızca yatay
+  (§2 girdi düzeni) · app bundle kapalı · sembol paketi kapalı. Çıktı `build/android/
+  dovus-prototip.apk` (`.gitignore`'da).
+- `FrameTimeHud` (`Dovus.Game`) — sol-alt köşede `ortalama ms · fps` + `en kötü ms · hedef`.
+  Ölçüm **ölçeklenmemiş** saatte (`Time.unscaledDeltaTime`): yavaş çekim kare süresini değil
+  dünya zamanını ölçekler. Pencere dolunca (varsayılan 0.5 sn) tek bir `StringBuilder` ile yazılır,
+  her kare string üretilmez. Kapalıyken `Text.enabled = false` — T8.1 denetiminin 12. ve T9.1'in
+  2. maddesi (alfa 0 bir `Graphic` yine de geometri üretir).
+- `PrototypeTuning`: `ShowFrameTimeHud` (varsayılan kapalı), `FrameTimeSampleSec` = 0.5,
+  `TargetFrameRateHz` = 60. `TuningVersion` 3 → **4** (aynı tek-seferlik yama deseni).
+  `PanelFields`'a yalnızca `ShowFrameTimeHud` eklendi — telefonda açılıp kapatılınca öyle kalsın
+  diye. Diğer ikisi panelde yok (bkz. sapmalar).
+- `PrototypeBootstrap.ApplyFrameRateTarget()` — `QualitySettings.vSyncCount = 0` +
+  `Application.targetFrameRate = TargetFrameRateHz`. vSync sıfırlanmazsa hedef yok sayılır;
+  yazılmazsa 120 Hz bir telefonda oyun 120'ye tırmanıp kare süresi dalgalanır.
+- `TuningPanel`: yeni **ÖLÇÜM (T11)** grubu, tek satır (aç/kapa). Panel 69 → **71** satır
+  (1 başlık + 1 satır).
+- `docs/his-kontrol-listesi.md` — §13'ün beş sorusu, her biri için telefonda cevaplanacak alt
+  maddeler + boş cevap alanı; ayrıca ölçüm ortamı, 8 satırlık kare bütçesi tablosu, "ayarlanan
+  sayılar" tablosu ve tura girerken bilinen 11 sorunun listesi.
+
+**Test:** Core'a dokunulmadı, `dotnet test` **79 yeşil**.
+
+**Ölçülenler (masaüstü):** Editör derlemesi temiz (`scriptCompilationFailed=False`), build hedefi
+Android'e çevrildi, APK üretildi: **41.5 MB**, development build, IL2CPP/ARM64.
+
+**Telefonda doğrulananlar:**
+
+- **1. oturum (sahibi, kısa):** APK çalışıyor; **iki parmak aynı anda sorunsuz** (sol çubuk +
+  sağ çizim) — kabul kriteri 2 **kapandı**. §13 soru 1 ilk izlenim olumlu, alt maddeler
+  denenmediği için soru kapatılmadı.
+- **2. oturum (kablo + `adb`, 22 Ağustos akşam):** Yeni APK `adb install -r` ile kuruldu
+  (bu sefer Xiaomi izin verdi). Kare süresi göstergesi `tuning.json` üzerinden açıldı
+  (panel uzaktan tıklanamadı — aşağıda). **16,6 ms · 60 fps**, en kötü **16,8–16,9 ms**,
+  hedef 60 — kabul kriteri 1 **kapandı**. Ölüm/dönüş döngüsünde de kilit 60'ta kaldı.
+  Dünya rengi düzgün (macenta gitti).
+
+**2. oturumda çıkan ve kapanan hatalar:**
+
+- **AYAR paneli kapanmıyordu.** Aç/kapat düğmesi modal perdenin *altında* yaratılıyordu;
+  perde `raycastTarget` olduğu için düğmeye basılamıyordu. Düzeltme: düğme
+  `SetAsLastSibling`, açıkken yazısı **KAPAT**, kartın sağ-üstünde ikinci bir KAPAT.
+  **Sahibi 23 Ağustos'ta doğruladı:** kapanıyor, sıkıntı yok.
+- **Dünya macentaydı.** Sahne koddan kurulduğu için `Shader.Find` ile üretilen materyaller
+  player build'ine girmiyordu. `AndroidBuilder` artık URP Lit / URP Unlit / Sprites/Default
+  shader'larını Always Included listesine yazıyor. 2. oturum ekranında zemin gri, oyuncu
+  camgöbeği — kapandı.
+
+**Hâlâ doğrulanamayanlar:**
+
+- **Kare bütçesinin sekiz satırından yalnızca biri dolu** (boşta arena, 16,6 ms / 60 fps).
+  Yürüyüş, telegraf, 4 noktalı cümle, yavaş çekim, 30 kapanış sonrası, panel açık ve açılış
+  süresi ölçülmedi. Faz 3.5 kare maliyeti ekleyeceği için (varyant diski, silüetler) bu tablo
+  **T14'ten sonraki turda** doldurulmalı.
+- **Soru 5 (iki oyuncu) hiç yapılmadı** — ikinci bir oyuncu gerekiyor.
+- **`tuning.json` kalıcılığı gerçek APK kapat/aç ile denenmedi** (editörde play durdur/başlat
+  ile doğrulandı).
+
+> **Sonraki ajana:** his turu **kapandı**, Faz 3.5 planlandı. Sıradaki iş T11.1; görev metni
+> `docs/gorev-listesi.md`'de. Faz 4'e (sanat) T14 bitmeden geçilmez.
+
+### T11 sapmaları / varsayılanlar
+
+- **`FrameTimeSampleSec = 0.5` (uydurma, spec'te yok).** Hem yazının tazelenme aralığı hem de
+  "en kötü kare"nin arandığı pencere. Kısalırsa yazı titrer ve okunamaz, uzarsa tek karelik
+  takılma gözden kaçar.
+- **`TargetFrameRateHz = 60`** görev metninden ("Hedef: sabit 60 fps"); spec §13'te sayı yok.
+- **`FrameTimeSampleSec` ve `TargetFrameRateHz` ayar panelinde YOK**, yalnızca Inspector'da.
+  Gerekçe: `PanelFields` JSON'a yazılıyor ve eski bir `tuning.json`'da alan bulunmadığında
+  `JsonUtility` **0** verir — `TargetFrameRateHz = 0` sessizce kare tavanını bozardı. `bool`
+  için bu risk yok (0 = false = varsayılan), o yüzden yalnızca `ShowFrameTimeHud` panelde.
+- **Development build, ama IL2CPP derleyici ayarı `Release`.** Görev "geliştirme build'i"
+  istiyor; development build'in varsayılanı IL2CPP tarafını Debug derler (C++ optimizasyonu
+  kapalı), o da "60 fps'e yakın mı" sorusunu ölçülemez hale getirirdi. Script debugging ve
+  profiler bağlantısı da bilerek **açılmadı** (ikisi de kare süresini şişirir).
+- **Kare süresi göstergesinin yeri sol-alt köşe** (spec'te yok): can barları sol-üstte, tepki
+  yazısı/debug metni sağda, ayar düğmesi sağ-altta. Kalan tek boş köşe burası.
+- **Always Included Shaders listesine üç runtime shader yazıldı** (URP Lit, URP Unlit,
+  Sprites/Default). Sahne koddan kurulduğu için `Shader.Find` referansı asset grafında yok;
+  yazılmazsa player macenta çıkar (2. oturumda çıktı). Built-in yedekler (`Standard`,
+  `Unlit/Color`, `Hidden/Internal-Colored`) listeye konmadı — telefonda URP yolu çalışıyor.
+
+## His turu kapanışı ve Faz 3.5 kararları (23 Ağustos, 5. oturum)
+
+Masa başı değerlendirme oturumu; telefonda oynanmadı. **Kod yazılmadı, yalnızca belge.**
+Kararların özet tablosu `docs/his-kontrol-listesi.md` "Turda alınan kararlar"da, görev
+metinleri `docs/gorev-listesi.md` "Faz 3.5"te. Buradaki bölüm **neden** öyle karar verildiğini
+tutuyor — tabloya sığmayan kısım.
+
+### Teşhis düzeltmesi: "okunmuyor" değil, "soyut"
+
+4. oturum "cümle sonucu okunmuyor" diye kaydedilmişti ve T11 notları buna dayanıyordu.
+5. oturumda sahibi kendi oynayışını tarif etti ve teşhis çürüdü: *"ne olduğunu anlıyorum,
+dodge atıyorum, yavaş çekim geliyor, cümleleri spamlıyorum; kurduğum cümlelerin anlamını
+basit animasyonla görüyorum, basılı tutunca farklı oluyor, 2'li çizince başka 3'lü çizince
+başka. O yüzden mekanik çalışıyor dedim. Ama çok soyut kalıyor. Ve boss fight'ı tekdüze."*
+
+Bu, üç ayrı eksik demek ve yalnızca biri görsellik:
+
+1. **Temsil.** Halka/hat/küre "bir efekt" olarak okunuyor, "iğne saplanıyor" olarak
+   okunmuyor. Gerçek bir görsel iş, ama prosedürel — Faz 4 değil. → T14
+2. **İçerik.** Tek saldırı. §11 bunu bilinçli koydu ve amacına ulaştı (soru 1 evet), ama
+   telegraf bir kez öğrenildikten sonra dövüş sabitleniyor. Hiçbir VFX tek saldırılı bir
+   bossu çeşitlendirmez. → T13
+3. **Kazanma koşulu.** Boss ölmüyor, canı kozmetik. Harcamanın gittiği bir yer olmadığı için
+   optimal oynayış spam — "cümleleri spamlıyorum" bunun belirtisi, sebebi değil. → T12
+
+### Neden sanat hâlâ sırada değil
+
+Faz 4'ün eski yasağı ("§13 soru 1–2 evet olmadan geçilmez") **kalktı**, ikisi de evet. Yerine
+tek bir bağımlılık kaldı: rig'lenmiş boss modeli ve zincirlenebilir animasyon seti, bossun kaç
+saldırısı olduğuna ve nasıl öldüğüne bağlı. T12/T13 o iki kararı dondurmadan model alınırsa
+windup'ı 640'tan 900'e çekmek "bir alan değiştir" olmaktan çıkıp "yeniden yaptır" olur.
+Faz 3.5'in tamamı primitive olduğu için geri dönüşü ucuz.
+
+### Hasar sayısı: sahibi istedi, spec yasaklıyor, uzlaşma bulundu
+
+Sahibi *"hasarı sayılarla görsem his verir, vurduğum farklı cümlenin etkisini o zaman net
+anlarım"* dedi. Yasak dört yerde yazılı: `AGENTS.md` kural 5, T7 kabul kriteri, T9 yasakları,
+§12'nin iki satırı. Gerekçe: farklı cümleler yalnızca **sayıdan** ayırt edilebiliyorsa oyuncu
+en yüksek sayıyı veren cümleyi bulur ve 120 cümle 1 cümleye iner — §5'in "10 skill var ama 5'i
+işe yarıyor" hastalığının kendisi.
+
+Uzlaşma iki parçalı:
+
+- **Ölçüm aracı olarak sayı meşru.** `TuningPanel`'e varsayılan **kapalı** bir satır
+  (`ShowDamageNumbers`), `ShowFrameTimeHud` deseninin aynısı. Ayar yaparken cümlenin ne
+  yaptığını ölçmek için — kumpas, his kanalı değil.
+- **Asıl cevap tür ekseninde.** `BossReactor` geri tepme / kaldırma / sabitleme yapabiliyor ve
+  bu eksen bugüne kadar neredeyse kullanılmadı. Kapanış son rüne göre birini seçince farklı
+  cümlelerin farkı sayıya bakmadan okunur. T12 bunu hasarla **birlikte** getiriyor; hasarın
+  tek başına gelmesi tuzağın kendisi.
+
+### Çeşitlilik sorusunun cevabı: durum tablosu, rün havuzu değil
+
+Sahibi *"4-5 farklı class, 5 ründen baya fazla skill çeşidi nasıl olacak"* diye sordu. Cevaplar
+`docs/dovus-sistemi.md` §4'e ("İlk turun sonucu") ve `docs/gorev-listesi.md` Faz 4 notuna yazıldı:
+
+- **Sayı zaten var.** 1 fiil + en fazla 3 sıfat, tekrar serbest → üç rünle `3+9+27+81 = 120`,
+  beş rünle `5+25+125+625 = 780` cümle. Elle yazılmış hiçbir yetenek listesi buna yaklaşmaz.
+- **Eksik olan üçüncü katman.** [Özet §5](tasarim-ozeti.md#5-yaratıcı-build-sistemi)'in
+  taşıyıcı / yük / **durum tablosu** üçlüsünden prototipte yalnızca birincisi tam. Bossun ıslak,
+  zırhı kırık ya da havada olması hiçbir cümlenin anlamını değiştirmiyor; o yüzden bütün
+  cümleler aynı boş bossa aynı şeyi yapıyor. Belge o katmanı "asıl sihir burada" diye
+  işaretlemiş. **Faz 3.5'ten sonraki ilk büyük sistem bu**, ve Faz 4'ten bile daha çok
+  çeşitlilik üretir.
+- **Sınıflar ucuz eksenden gelecek:** özet §4/Sütun 2 "2-3 sınıfla başla" diyor (5 sınıf = 5 kat
+  iş), sınıf farkı da §4'ün "rün seti en ucuz değiştirilecek şey" kuralından — her sınıfın kendi
+  rün havuzu ve taşıyıcı seti. Gramer aynı kalır; yeni gramer ekseni eklemek §12'de tuzak.
+
+### Faz 3.5'te uydurulan sayılar (hepsi telefonda ayarlanacak)
+
+`AGENTS.md` kural: spec'te olmayan her sayı buraya. Bunlar **karar anında** kondu, koda henüz
+girmedi — ilgili görev `PrototypeTuning`/`CombatTuning`/`BossTuning` alanı olarak yazacak.
+
+| Sayı | Değer | Nereden geldi |
+|---|---|---|
+| `BossTuning.MaxHp` | 120 | Sahibinin seçtiği "iyi oynanan dövüş ~25–30 kapanış" hedefinden geriye çözüldü: §5 ödülüyle en iyi oynanışta 120/7,0 ≈ 17, karışık oynanışta 25–50 kapanış |
+| `ClosingDamagePerEffect` | 1.0 | §5 tablosunun "toplam etki" sütunu doğrudan hasar olsun diye 1'e 1; katsayı alan olarak duruyor ki tablo değişmeden dövüş süresi ayarlanabilsin |
+| GEÇ varyantı windup | 900 ms | Temel 640'ın belirgin biçimde üstü; erken basanı cezalandıracak kadar uzun, oyuncuyu uyutmayacak kadar kısa. Ölçülmedi |
+| GENİŞ varyantı radius | 8.0 m | 5.4 m'de TEMİZ (5.47 m) ve SIYIRDI hacim dışında kalıyor (T8 denetimi 8. madde tablosu). 8.0 m ikisini de içine alır, yani ödül bandının kapalı yarısını açar |
+| Silüet hareket parametreleri | — | T14 koyacak; §8'in beş kuralı ve özet §6'nın Zenitsu kalıbı dışında spec sayı vermiyor |
+
+> **Boss ölümünün yavaş çekim süresi de uydurma olacak.** §11 "kısa yavaş çekim + çökme pozu"
+> diyor, süre vermiyor. T12 `SlowmoTuning`'i yeniden kullanmalı (yeni rampa **yazmamalı**,
+> T4/§7 tek kaynak) ve seçtiği süreyi buraya yazmalı.
+
 ## Spec'ten sapmalar
 
 Belgedeki bir kural/sayı uygulanamadıysa buraya yaz: hangisi, neden, yerine ne kondu.
@@ -1219,10 +1414,35 @@ Hepsi `PrototypeTuning`'de, hiçbiri kodda gömülü değil (AGENTS kural 3).
 ## Bilinen açıklar
 
 - T1/T2/T3/T4/T7/T7.1/T6.2/T8/T8.1/T8.2 `dotnet test` yeşil (`tools/CoreTests`, **79** test).
-- **Boss can göstergesi hâlâ kozmetik — karar sahibinde.** `VitalsHud`'ın boss barı her zaman dolu;
-  Core/Game'de boss HP/hasar yok ve "boss nasıl ölür" prototipte hiç tanımlı değil. T9'un
-  YASAKLAR'ı yeni mekanik eklemeyi kapattığı için T9.1'de de dokunulmadı. Gerçek bir boss-HP
-  sistemi istenirse **ayrı bir görev** olmalı (T11'den önce sahibiyle konuşulacak).
+- **His turu kapandı (5 oturum).** Kalan açıklar Faz 3.5'e görev olarak yazıldı: T11.1
+  (mürekkep sınırı + kilit HUD'a), T12 (boss canı/hasar/ölüm + kapanış türü), T13 (çakma
+  varyantları), T14 (silüet). Teşhis düzeltmesi ve gerekçeler "His turu kapanışı ve Faz 3.5
+  kararları" bölümünde.
+- **Mürekkep cümle sınırını göstermiyor** (T11.1'e yazıldı). "Yavaş çekimde 6–7 nokta
+  çizilebiliyor" diye kaydedilmişti; **tavan hatası değil** — `MaxSentenceDots = 4` doğru
+  çalışıyor, 4. noktada cümle kapanıyor ve 5. nokta yeni fiil başlatıyor (§5). Hata `InkTrail`
+  kesintisiz devam ettiği için iki cümlenin tek cümle gibi görünmesi; §5'in "cümlenin nerede
+  bittiği görülür" iddiası şu an tutmuyor. Yavaş çekim penceresi ayrıca yeniden pozisyon olarak
+  da kullanılıyor (ödül *ve* kaçış) — bu bilinçli, sahibi 4. oturumda "ikisi de" dedi.
+- **Xiaomi/HyperOS: `adb shell input tap` `INJECT_EVENTS` ile reddediliyor.** 2. oturumda
+  panel/oyun uzaktan tıklanamadı; FPS göstergesi `tuning.json` (`ShowFrameTimeHud`)
+  push + uygulama restart ile açıldı. `adb install -r` aynı cihazda 2. oturumda **çalıştı**
+  (1. oturumdaki `INSTALL_FAILED_USER_RESTRICTED` o an için geçti — "USB üzerinden yükle"
+  açılmış olabilir). Uzaktan dokunuş için ayrı geliştirici seçeneği ("USB debugging
+  (Security settings)") gerekir; his turu elde yapılacak, o yüzden açılmadı.
+- **Batchmode build, Unity Editor açıkken çalışmaz** ("another Unity instance"). Editör
+  açıkken tek yol menü ya da MCP üzerinden `AndroidBuilder.BuildTo`; MCP çağrısı uzun build'de
+  zaman aşımına uğrar ama **build editörde devam eder** (T11'de öyle oldu). Ayrıca kapatılmış
+  bir editörden kalan bayat `unity/Temp/UnityLockfile` aynı hatayı verir.
+- **`BossDirector.TickWindup` (satır 145) `_attack` null iken patlıyor.** Editor.log'da eski bir
+  prob oturumundan yüzlerce `NullReferenceException` var: bileşen çalışma anında eklenip `Bind`
+  çağrılmadan bir kare geçerse `Update` boş `_attack`'a dokunuyor. Gerçek sahnede Bootstrap aynı
+  karede `Bind` çağırdığı için oyunda görülmez; yalnızca MCP prob'ları için tuzak.
+  → **T11.1 alıyor** (tek satırlık guard).
+- **~~Boss can göstergesi kozmetik~~ — karar verildi (23 Ağustos).** Boss canı 120, kapanış ödülü
+  1'e 1 hasara çevriliyor, ölünce kısa yavaş çekim + çökme sonrası tam canla yeniden doğuyor.
+  Spec §5/§11 güncellendi, uygulaması **T12**. Kapanışın türü son rüne bağlı kalmak zorunda —
+  hasarın tek başına gelmesi §12'nin "ödülün sadece hasar olması" tuzağı.
 - **Tepki yazısının bandı yüksek yoğunluklu telefonda beşgenin üst rününe değebilir.** Band
   y 0.56–0.80; beşgen merkezi y 0.40 ve yarıçapı 100 dp, yani 400 dpi'lık bir ekranda üst rün
   y≈0.63'e çıkıyor. Ölçüldü değil, geometriden türetildi — T11'de telefonda gözle bakılmalı;
@@ -1237,20 +1457,24 @@ Hepsi `PrototypeTuning`'de, hiçbiri kodda gömülü değil (AGENTS kural 3).
   yutuyor. **T9 bunu almadı**: kalan kilit hâlâ yalnızca `SentenceDebugHud`'ın debug metninde
   ("kilit: X ms"), kalıcı HUD'da değil. Oyuncu kestiği süreyi göremediği sürece §5'in beceri
   ekseni görünmez kalıyor — T10'un paneli ya da T11'in his turu almalı.
+  **T11 4. oturum bunu doğruladı:** sahibi "skill kullanmanın bedeli yok" dedi.
+  → **T11.1 alıyor** (kalıcı HUD'da eriyen kilit göstergesi).
 - **Düz vuruşun kendi tezahürü yok:** `BasicStrikeDot` fiilinin normal cümle görselini kullanıyor
   (SARSINTI halka dalgası). Tek noktalık vuruşun ayrı bir silüeti/animasyonu olup olmayacağı
-  spec'te yok; T11'de "vuruş mu, cümle mi" hissi karışırsa buraya bakılmalı.
+  spec'te yok. → **T14 alıyor** (kısa, dar, tek vuruşluk ayrı silüet).
 - **`SentenceEngine.PublishState`, her `Tick`/`OnDotTouched`/`OnDwell`'de `SnapshotWords()` ile
   yeni bir `SentenceWord[]` allocate ediyor** (T2 kaynaklı, T7.1 denetiminde görüldü). Cümle
   kurulurken bu her karede çalışıyor (Building fazında). Sıcak yolda GC baskısı yaratabilir;
   Core/Grammar'a T7.1'de dokunma yasağı olduğu için düzeltilmedi — küçük havuzlanmış bir dizi ya
-  da `Words` alanını yalnızca değiştiğinde güncellemek çözüm olabilir. T8/T9 ya da ayrı bir
-  performans görevi almalı.
-- **T5/T6/T6.2/T7 çok parmak / tezahür play mode'da (enjekte dokunuşla) doğrulandı, donanımda
-  değil.** Gerçek dokunmatik → T11. Özellikle panik dodge (çizim parmağı + ikinci parmak diske)
-  ve diskin başparmakla erişilebilirliği telefonda sınanmadı.
-- Yeni eşikler (90/160/220) masa başı kararıdır, telefonda sınanmadı — T11'in his turunda
-  ilk ayarlanacak sayılar bunlar.
+  da `Words` alanını yalnızca değiştiğinde güncellemek çözüm olabilir. **T12 Core'a dokunan tek
+  Faz 3.5 görevi**, isterse alabilir; almazsa ayrı bir performans görevi gerekiyor. Telefonda
+  ölçülmedi (kare bütçesinin cümle satırı boş).
+- **T5/T6/T6.2/T7 çok parmak T11'de donanımda doğrulandı:** iki parmak (1. oturum) + panik
+  dodge ve disk yayı (3. oturum, sahibi: sorun yok). Tezahür hissi (soru 3–5) hâlâ elde.
+- **Derecelendirme eşikleri (90/160/220) telefonda onaylandı** (3. oturum, sahibi: "MÜKEMMEL /
+  HARİKA / TEMİZ farkı elde hissediliyor, hepsi iyi"). Hiçbiri değiştirilmedi. Ama TEMİZ ve
+  SIYIRDI bantlarının kaçan dodge'da hâlâ erişilemez olduğu ayrı bir açık (aşağıda) — yani
+  "hepsi iyi" cevabı fiilen MÜKEMMEL/HARİKA bandı için verildi.
 - "Sıyırma" kelimesi §6'da hem başarılı dodge'un genel adı hem de en düşük derecenin adı;
   T9 ekrana yazarken bu çakışma karışıklık yaratabilir.
 - 4. sıfat için uzatma penceresi belgede yok; 4. noktada cümle hemen kapanış üretir

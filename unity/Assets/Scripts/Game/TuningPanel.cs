@@ -52,6 +52,8 @@ namespace Dovus.Game
         TuningConfig _config;
         PlayerVitals _vitals;
         GameObject _contentRoot;
+        GameObject _toggleGo;
+        Text _toggleLabel;
         RectTransform _scrollContent;
         Text _statusText;
         float _statusUntil;
@@ -77,6 +79,13 @@ namespace Dovus.Game
             BuildToggleButton(canvasGo.transform);
             BuildContent(canvasGo.transform);
 
+            // Aç/kapat düğmesi paneli KAPATMAK için de tek tutamaç, o yüzden modal perdenin
+            // ÜSTÜNDE durmak zorunda. Aynı canvas'ta önce yaratıldığı için altta kalıyordu:
+            // panel açıkken perde raycast'i yutuyor, düğmeye basılamıyordu ve panel bir daha
+            // kapanmıyordu (telefonda çıktı; editörde `onClick.Invoke()` ile test edildiği için
+            // raycast yolu hiç sınanmamıştı — T10 sapmalarındaki not).
+            _toggleGo.transform.SetAsLastSibling();
+
             _contentRoot.SetActive(false);
             IsOpen = false;
         }
@@ -98,6 +107,8 @@ namespace Dovus.Game
 
             var label = CreateLabel(go.transform, "AYAR", 16);
             label.alignment = TextAnchor.MiddleCenter;
+            _toggleGo = go;
+            _toggleLabel = label;
 
             // Ekran boyutu değişebilir (döndürme/Device Simulator) — her karede yeniden konumla.
             var follower = go.AddComponent<ScreenAnchoredCorner>();
@@ -134,6 +145,8 @@ namespace Dovus.Game
         {
             IsOpen = !IsOpen;
             _contentRoot.SetActive(IsOpen);
+            if (_toggleLabel != null)
+                _toggleLabel.text = IsOpen ? "KAPAT" : "AYAR";
             if (IsOpen)
                 RefreshAll();
         }
@@ -171,6 +184,16 @@ namespace Dovus.Game
             titleRect.offsetMax = new Vector2(-16f, 0f);
             title.alignment = TextAnchor.MiddleLeft;
             title.fontStyle = FontStyle.Bold;
+
+            // Köşedeki disk panel açıkken alttaki "JSON'U KOPYALA" düğmesinin üstüne biniyor;
+            // modalın kendi kapatma tutamacı başlık çubuğunda olsun.
+            var (closeButton, _) = CreateButton(card.transform, "KAPAT");
+            var closeRect = closeButton.GetComponent<RectTransform>();
+            closeRect.anchorMin = new Vector2(0.86f, 0.945f);
+            closeRect.anchorMax = new Vector2(0.995f, 0.998f);
+            closeRect.offsetMin = Vector2.zero;
+            closeRect.offsetMax = Vector2.zero;
+            closeButton.onClick.AddListener(TogglePanel);
 
             BuildFooter(card.transform, out float footerTop01);
             BuildScrollView(card.transform, footerTop01);
@@ -356,6 +379,9 @@ namespace Dovus.Game
                 p.PlayerMaxHp = v;
                 _vitals?.SetMaxHp(v);
             }, "");
+
+            AddHeader("ÖLÇÜM (T11)");
+            AddBoolButton("Kare süresi göstergesi", () => p.ShowFrameTimeHud, v => p.ShowFrameTimeHud = v, "AÇIK", "KAPALI");
         }
 
         // ---- Satır inşası -----------------------------------------------------------------
