@@ -4,11 +4,14 @@
 > ajanın repoyu taramadan nerede kaldığımızı anlaması. Kısa tut: ne bitti, ne üretildi,
 > nerede sapma var.
 
-**Son güncelleme:** 23 Ağustos 2026 · **Sıradaki görev:** **T13** (çakma varyantları —
+**Son güncelleme:** 23 Ağustos 2026 · **Sıradaki görev:** **T14** (silüet keskinleştirme —
 `docs/gorev-listesi.md` "Faz 3.5")
 
+> **T13 kapandı.** YERE ÇAKMA üç ritmi: YAKIN / GEÇ / GENİŞ. Tell'ler windup'ta okunur
+> (GEÇ ton+poz, GENİŞ disk). `MaxSameVariantStreak=2`. Sırada **T14**.
+>
 > **T12 kapandı.** Boss canı 120, kapanış ödülü × `ClosingDamagePerEffect` hasar, tür son
-> rüne bağlı tepki, ölümde `TriggerSlowmo` + çökme + tam can revive. Faz 3.5 sırası: **T13 → T14**.
+> rüne bağlı tepki, ölümde `TriggerSlowmo` + çökme + tam can revive. Faz 3.5 sırası: T13 → T14.
 >
 > **T11.1 kapandı.** Mürekkep cümle sınırında kopuyor, toparlanma kilidi kalıcı HUD'da,
 > `BossDirector.TickWindup` null-safe.
@@ -53,13 +56,13 @@
 | T11 | Android build, his turu | bitti (5 oturum, §13 soru 1–2 evet) | task/t11-android-build |
 | T11.1 | Mürekkep cümle sınırı, kilit HUD'a, null guard | bitti | task/t11.1-telefon-duzeltmeleri → master |
 | T12 | Boss canı, hasar, ölüm, kapanış türü | bitti | task/t12-boss-cani → master |
-| T13 | Çakma varyantları (YAKIN / GEÇ / GENİŞ) | bekliyor | — |
+| T13 | Çakma varyantları (YAKIN / GEÇ / GENİŞ) | bitti | task/t13-cakma-varyantlari → master |
 | T14 | Silüet keskinleştirme + düz vuruşun silüeti | bekliyor | — |
 
 Durum değerleri: `bekliyor` · `sürüyor` · `bitti` · `bloke`
 
-Faz 3.5 (T11.1–T14) sırası **bağlayıcı**: T11.1 ve T12 kapandı. Sırada T13 — tek saldırının
-üç ritmi. Model dağılımı: T11.1 Composer (bitti), T12 Composer (bitti), T13/T14 Sonnet.
+Faz 3.5 (T11.1–T14) sırası **bağlayıcı**: T11.1–T13 kapandı. Sırada T14 — silüet.
+Model dağılımı: T11.1/T12/T13 Composer (bitti), T14 Sonnet.
 
 ## T6.2 kararı (22 Ağustos — uygulandı, bkz. "T6.2 — Düz vuruş" bölümü)
 
@@ -99,8 +102,10 @@ dosya listesi değil, çağrılacak şeyin adı ve ne yaptığı.
 - `SentenceStep` — `DurationSec`, `TotalEffect`, `RecoverySec` + türetilen `EffectPerSecond`.
 - `SlowmoTuning` — `Factor`, `RampDownMs`, `HoldMs`, `RampUpMs`, `AudioLowpassHz`,
   `SlowmoMinGrade`, `SlowmoBonusDots`
-- `BossTuning` — `WindupMs`, `ActiveMs`, `RecoveryMs`, `RadiusM`, `Damage`, `IdleMinMs`,
-  `IdleMaxMs`, `ApproachSpeedMps`, `RespawnMaxSec`, `MaxHp` (120, §11 / T12)
+- `BossTuning` — `WindupMs`/`RadiusM` (=YAKIN), `GecWindupMs`/`GecRadiusM`,
+  `GenisWindupMs`/`GenisRadiusM`, `MaxSameVariantStreak` (2), `ActiveMs`, `RecoveryMs`,
+  `Damage`, `IdleMinMs`, `IdleMaxMs`, `ApproachSpeedMps`, `RespawnMaxSec`, `MaxHp` (120).
+  `WindupMsFor` / `RadiusMFor(SlamVariant)`
 - `GradeTuning` — `MukemmelGapMaxMs` 90, `HarikaGapMaxMs` 160, `TemizGapMaxMs` 220.
   Değişmez: son eşik `DodgeTuning.IframeMs`'den küçük kalmalı (yoksa SIYIRDI üretilemez)
 - `FeelTuning` — hitstop/impact frame/sessizlik/kamera/afterimage + tepki yazısı ayarları
@@ -124,8 +129,9 @@ dosya listesi değil, çağrılacak şeyin adı ve ne yaptığı.
 - `DodgeState(DodgeTuning?)` — `Begin(pressTimeMs)`, `IsInvulnerable(worldTimeMs)`,
   `EvaluateCurve(u)` → s(u)=1-(1-u)^curveExp, `GetDisplacementRatio(worldTimeMs)`,
   `GetGlideVelocityRatio(worldTimeMs)`, `IsOnCooldown`, `IframeStartMs`/`IframeEndMs`
-- `BossAttack(BossTuning?)` — `WindupMs`/`ActiveMs`/`RecoveryMs`, `StrikeTimeMs(telegraphStart)`,
-  `IsInEffectVolume(distanceM, angleFromForwardDeg, arcHalfAngleDeg=180)`
+- `BossAttack(BossTuning?)` — `ApplyVariant(SlamVariant)`, aktif `WindupMs`/`RadiusM`/`Variant`,
+  `StrikeTimeMs(telegraphStart)`, `IsInEffectVolume(...)`. Active/Recovery paylaşılır.
+- `SlamVariant` (Yakin/Gec/Genis) + `SlamVariantPicker.Pick` / `NextStreak`
 - `ExchangeResolver(CombatTuning?)` — `Resolve(ExchangeInput)` → `ExchangeResult`
   (Outcome Dodged/Hit/Safe, Grade, GapMs, ReactionMs, Reason + `HitReasonText`)
 - `GradeFromGap(gapMs)` — eşikler T1 `GradeTuning`'den (110/200/320 ms, üst sınır dahil)
@@ -134,7 +140,7 @@ dosya listesi değil, çağrılacak şeyin adı ve ne yaptığı.
   `IsDown` / `Revive()`. Saf C#; yeniden doğuş süresini Game katmanı (slowmo bitişi) yönetir.
   Hasar formülü: `ClosingHit.TotalEffect × CombatTuning.ClosingDamagePerEffect` (tür yok)
 
-**Test:** `CombatExchangeTests` + `BossVitalsTests`; toplam `dotnet test` 85 yeşil.
+**Test:** `CombatExchangeTests` + `BossVitalsTests` + `SlamVariantTests`; `dotnet test` 92 yeşil.
 
 ### T4 — `Dovus.Core.Time` (namespace)
 
@@ -1153,8 +1159,9 @@ değerleri artık kodda; ölüm pozu süreleri T12 sapmalarında. T13/T14 sayıl
 |---|---|---|
 | `BossTuning.MaxHp` | 120 | Sahibinin seçtiği "iyi oynanan dövüş ~25–30 kapanış" hedefinden geriye çözüldü: §5 ödülüyle en iyi oynanışta 120/7,0 ≈ 17, karışık oynanışta 25–50 kapanış |
 | `ClosingDamagePerEffect` | 1.0 | §5 tablosunun "toplam etki" sütunu doğrudan hasar olsun diye 1'e 1; katsayı alan olarak duruyor ki tablo değişmeden dövüş süresi ayarlanabilsin |
-| GEÇ varyantı windup | 900 ms | Temel 640'ın belirgin biçimde üstü; erken basanı cezalandıracak kadar uzun, oyuncuyu uyutmayacak kadar kısa. Ölçülmedi |
-| GENİŞ varyantı radius | 8.0 m | 5.4 m'de TEMİZ (5.47 m) ve SIYIRDI hacim dışında kalıyor (T8 denetimi 8. madde tablosu). 8.0 m ikisini de içine alır, yani ödül bandının kapalı yarısını açar |
+| GEÇ varyantı windup | 900 ms | Temel 640'ın belirgin biçimde üstü; erken basanı cezalandıracak kadar uzun, oyuncuyu uyutmayacak kadar kısa. Ölçülmedi — T13 kodda |
+| GENİŞ varyantı radius | 8.0 m | 5.4 m'de TEMİZ (5.47 m) ve SIYIRDI hacim dışında kalıyor (T8 denetimi 8. madde tablosu). 8.0 m ikisini de içine alır — T13 kodda |
+| `MaxSameVariantStreak` | 2 | T13: üç kez aynı varyant gelmesin |
 | Silüet hareket parametreleri | — | T14 koyacak; §8'in beş kuralı ve özet §6'nın Zenitsu kalıbı dışında spec sayı vermiyor |
 
 > **Boss ölümünün yavaş çekim süresi T12'de bağlandı.** Yeni rampa yok —
@@ -1227,6 +1234,36 @@ Harcamanın gittiği yer: kapanış ödülü boss canından düşer; tür son r�
   **`BossDeathSpreadXz = 1.35`** (uydurma — §11 süre vermiyor). Yavaş çekim
   `SlowmoTuning` varsayılanı (`TriggerSlowmo()`); çökme dünya saatinde, revive slowmo bitince.
 - **`ShowDamageNumbers = false`** — PanelFields'a yalnızca bool; eski JSON'da yoksa false.
+
+## T13 — Çakma varyantları (23 Ağustos)
+
+Aynı YERE ÇAKMA, üç ritim. Yeni saldırı yok. Varyant idle'da seçilir; `ExchangeResolver`
+yalnızca aktif `windup`/`radius` görür.
+
+### Üretilen
+
+- `SlamVariant` (Yakin/Gec/Genis) + `SlamVariantPicker` — `MaxSameVariantStreak` (varsayılan 2)
+- `BossTuning` — `GecWindupMs`/`GecRadiusM`, `GenisWindupMs`/`GenisRadiusM`, streak tavanı;
+  `WindupMs`/`RadiusM` = YAKIN
+- `BossAttack.ApplyVariant` — Active/Recovery paylaşılır
+- `BossDirector` — idle sonunda seçim; telegrafa radius+variant; `ActiveVariant` okunur
+- `BossTelegraph.SetProgress(p, radius, variant)` — GENİŞ disk baştan tam boy; GEÇ ton
+  `p²` + poz erken gerilip tutulur
+- `TuningPanel` — üç varyantın windup/yarıçap + streak slider'ları
+
+### Doğrulama
+
+- `dotnet test`: **92** yeşil (85 + 7 `SlamVariantTests`).
+- Play mode MCP: YAKIN p=0.15 disc≈0.81 m; GENİŞ p=0.15 disc=8.0 m; GEÇ p=0.5 pitch 0.86
+  < YAKIN 1.18. Live döngüde `ActiveVariant=Gec` görüldü. Konsol Error: 0.
+- Unit: GENİŞ 5.9 m → SIYIRDI (YAKIN menzil dışı); GEÇ'de YAKIN-zamanlı basış → "erken bastın".
+- Ekran: `build/t13-yakin.png` / `t13-genis.png` (gitignore `[Bb]uild/`).
+
+### T13 sapmaları / varsayılanlar
+
+- GEÇ ton eğrisi `toneT = p²` ve poz `poseT = min(1, p×1.35)` — §11 "yavaş yükselir / uzun
+  tutar" için uydurma; sayılar panelde değil (PrototypeTuning ton min/max paylaşılır).
+- `MaxSameVariantStreak = 2` — T13 metni "üç kez gelirse desen yok"; tavan 2 = üçüncü engelli.
 
 ## Spec'ten sapmalar
 

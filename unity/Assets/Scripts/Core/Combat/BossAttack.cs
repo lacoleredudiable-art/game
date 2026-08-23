@@ -6,21 +6,35 @@ namespace Dovus.Core.Combat
     /// <summary>
     /// Boss saldırısı kare verisi ve etki hacmi — dovus-sistemi.md §11.
     /// Vuruş, aktif pencerenin başında tek karede çözülür.
+    /// Windup/radius aktif çakma varyantından gelir; Active/Recovery paylaşılır.
     /// </summary>
     public sealed class BossAttack
     {
         readonly BossTuning _tuning;
+        int _windupMs;
+        float _radiusM;
+        SlamVariant _variant;
 
         public BossAttack(BossTuning? tuning = null)
         {
             _tuning = tuning ?? new BossTuning();
+            ApplyVariant(SlamVariant.Yakin);
         }
 
-        public int WindupMs => _tuning.WindupMs;
+        public SlamVariant Variant => _variant;
+        public int WindupMs => _windupMs;
         public int ActiveMs => _tuning.ActiveMs;
         public int RecoveryMs => _tuning.RecoveryMs;
-        public float RadiusM => _tuning.RadiusM;
+        public float RadiusM => _radiusM;
         public int Damage => _tuning.Damage;
+
+        /// <summary>Bir sonraki çakmanın ritmini ayarlar — telegraf başlamadan çağrılır.</summary>
+        public void ApplyVariant(SlamVariant variant)
+        {
+            _variant = variant;
+            _windupMs = _tuning.WindupMsFor(variant);
+            _radiusM = _tuning.RadiusMFor(variant);
+        }
 
         public int StrikeTimeMs(int telegraphStartMs) => telegraphStartMs + WindupMs;
 

@@ -364,10 +364,15 @@ namespace Dovus.Game
             AddBoolButton("Yazının kenarı", () => p.ReadoutAnchorRight, v => p.ReadoutAnchorRight = v, "SAĞ", "SOL");
 
             AddHeader("BOSS (§11)");
-            AddIntSlider("Hazırlık (windup)", 100, 2000, () => c.Boss.WindupMs, v => c.Boss.WindupMs = v, "ms");
+            AddIntSlider("YAKIN windup", 100, 2000, () => c.Boss.WindupMs, v => c.Boss.WindupMs = v, "ms");
+            AddFloatSlider("YAKIN yarıçap", 1f, 12f, () => c.Boss.RadiusM, v => c.Boss.RadiusM = v, "m", "0.00");
+            AddIntSlider("GEÇ windup", 100, 2000, () => c.Boss.GecWindupMs, v => c.Boss.GecWindupMs = v, "ms");
+            AddFloatSlider("GEÇ yarıçap", 1f, 12f, () => c.Boss.GecRadiusM, v => c.Boss.GecRadiusM = v, "m", "0.00");
+            AddIntSlider("GENİŞ windup", 100, 2000, () => c.Boss.GenisWindupMs, v => c.Boss.GenisWindupMs = v, "ms");
+            AddFloatSlider("GENİŞ yarıçap", 1f, 12f, () => c.Boss.GenisRadiusM, v => c.Boss.GenisRadiusM = v, "m", "0.00");
+            AddIntSlider("Aynı varyant üst üste", 1, 5, () => c.Boss.MaxSameVariantStreak, v => c.Boss.MaxSameVariantStreak = v, "");
             AddIntSlider("Aktif pencere", 20, 300, () => c.Boss.ActiveMs, v => c.Boss.ActiveMs = v, "ms");
             AddIntSlider("Toparlanma", 100, 2000, () => c.Boss.RecoveryMs, v => c.Boss.RecoveryMs = v, "ms");
-            AddFloatSlider("Etki yarıçapı", 1f, 10f, () => c.Boss.RadiusM, v => c.Boss.RadiusM = v, "m", "0.00");
             AddIntSlider("Hasar", 1, 60, () => c.Boss.Damage, v => c.Boss.Damage = v, "");
             AddIntSlider("Bekleme min", 100, 3000, () => c.Boss.IdleMinMs, v => c.Boss.IdleMinMs = v, "ms");
             AddIntSlider("Bekleme max", 100, 4000, () => c.Boss.IdleMaxMs, v => c.Boss.IdleMaxMs = v, "ms");

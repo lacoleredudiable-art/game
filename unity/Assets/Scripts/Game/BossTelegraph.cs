@@ -1,16 +1,17 @@
+using Dovus.Core.Combat;
 using Dovus.Core.Tuning;
 using UnityEngine;
 
 namespace Dovus.Game
 {
     /// <summary>
-    /// YERE ÇAKMA telegrafı: hazırlık pozu + büyüyen yer diski + yükselen ses (§11).
-    /// Renk yalnızca §10 kırmızı-turuncu.
+    /// YERE ÇAKMA telegrafı: hazırlık pozu + yer diski + yükselen ses (§11).
+    /// Renk yalnızca §10 kırmızı-turuncu. Varyant tell'leri windup'ta okunur:
+    /// GEÇ = daha yavaş ton + uzun tutulan poz; GENİŞ = disk baştan büyük.
     ///
     /// Disk boss transform'unun ÇOCUĞU DEĞİL (T8.1): bossun (1.7, 1.3, 1.7) ölçeği ve
-    /// hazırlık squash'ı diski çarpıyor, 5.4 m'lik etki yarıçapı ekranda ~7.5–9.2 m
-    /// görünüyordu — telegraf hacim hakkında yalan söylüyordu. Mesh de Quad (kare) değil
-    /// artık Cylinder: yerde yatan gerçek bir daire, yarıçapı doğrudan okunuyor.
+    /// hazırlık squash'ı diski çarpıyor, etki yarıçapı ekranda yalan söylüyordu.
+    /// Mesh Cylinder: yerde yatan gerçek daire, yarıçapı doğrudan okunuyor.
     /// </summary>
     public sealed class BossTelegraph : MonoBehaviour
     {
@@ -18,7 +19,6 @@ namespace Dovus.Game
         const float DiscThicknessScale = 0.02f;
 
         PrototypeTuning _colors;
-        BossTuning _boss;
         Transform _bossXform;
         Transform _disc;
         Material _discMat;
@@ -29,7 +29,6 @@ namespace Dovus.Game
         public void Bind(PrototypeTuning colors, BossTuning boss, Transform bossXform)
         {
             _colors = colors;
-            _boss = boss;
             _bossXform = bossXform;
             _baseScale = bossXform.localScale;
             BuildDisc();
@@ -37,24 +36,38 @@ namespace Dovus.Game
             Hide();
         }
 
-        /// <summary>Windup: p 0→1. Disk §11'in gerçek etki yarıçapını (5.4 m) gösterir.</summary>
-        public void SetProgress(float progress01)
+        /// <summary>
+        /// Windup: p 0→1. radiusM aktif varyantın etki yarıçapı.
+        /// GENİŞ disk baştan tam boyutta; GEÇ tonu yavaş yükselir, poz erken gerilip tutulur.
+        /// </summary>
+        public void SetProgress(float progress01, float radiusM, SlamVariant variant)
         {
             float p = Mathf.Clamp01(progress01);
+
+            float drawnRadius = variant == SlamVariant.Genis
+                ? radiusM
+                : radiusM * Mathf.Max(0.12f, p);
+
             DrawDisc(
-                _boss.RadiusM * Mathf.Max(0.12f, p),
+                drawnRadius,
                 Color.Lerp(_colors.TelegraphWarm, _colors.TelegraphHot, p),
                 0.35f + 0.5f * p);
 
-            // Hazırlık: yukarı gerilip çakmaya hazır — silüet, sayı değil.
-            ApplyPose(1f - _colors.TelegraphSquash * p, 1f + _colors.TelegraphStretch * p);
+            // GEÇ: hazırlık pozu daha erken dolup uzun tutulur (windup zaten 900 ms).
+            float poseT = variant == SlamVariant.Gec
+                ? Mathf.Clamp01(p * 1.35f)
+                : p;
+            ApplyPose(1f - _colors.TelegraphSquash * poseT, 1f + _colors.TelegraphStretch * poseT);
 
             if (_tone != null)
             {
                 if (!_tone.isPlaying)
                     _tone.Play();
-                _tone.pitch = Mathf.Lerp(_colors.TelegraphTonePitchMin, _colors.TelegraphTonePitchMax, p);
-                _tone.volume = Mathf.Lerp(_colors.TelegraphToneVolumeMin, _colors.TelegraphToneVolumeMax, p);
+
+                // GEÇ: ton progress'e göre daha yavaş yükselir (concave eğri + uzun windup).
+                float toneT = variant == SlamVariant.Gec ? p * p : p;
+                _tone.pitch = Mathf.Lerp(_colors.TelegraphTonePitchMin, _colors.TelegraphTonePitchMax, toneT);
+                _tone.volume = Mathf.Lerp(_colors.TelegraphToneVolumeMin, _colors.TelegraphToneVolumeMax, toneT);
             }
         }
 
@@ -62,16 +75,16 @@ namespace Dovus.Game
         /// Çakma anı. Gerilmiş poz vururken kalmamalı — aşağı squash (T8.1); eskiden aktif
         /// pencere boyunca boss hâlâ "hazırlanıyor" pozundaydı.
         /// </summary>
-        public void Slam()
+        public void Slam(float radiusM)
         {
-            DrawDisc(_boss.RadiusM, _colors.TelegraphHot, 0.9f);
+            DrawDisc(radiusM, _colors.TelegraphHot, 0.9f);
             ApplySlamPose(1f);
             if (_tone != null && _tone.isPlaying)
                 _tone.Stop();
         }
 
         /// <summary>Toparlanma: t 1→0. Poz tabana döner, disk söner.</summary>
-        public void Recover(float t01)
+        public void Recover(float t01, float radiusM)
         {
             float t = Mathf.Clamp01(t01);
             if (t <= 0.02f)
@@ -80,7 +93,7 @@ namespace Dovus.Game
                 return;
             }
 
-            DrawDisc(_boss.RadiusM, _colors.TelegraphHot, 0.5f * t);
+            DrawDisc(radiusM, _colors.TelegraphHot, 0.5f * t);
             ApplySlamPose(t);
         }
 

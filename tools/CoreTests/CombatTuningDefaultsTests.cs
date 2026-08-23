@@ -81,13 +81,18 @@ public class CombatTuningDefaultsTests
             Assert.That(t.Grade.TemizGapMaxMs, Is.EqualTo(220));
         });
 
-        // §11 Boss
+        // §11 Boss (+ T13 çakma varyantları)
         Assert.Multiple(() =>
         {
             Assert.That(t.Boss.WindupMs, Is.EqualTo(640));
             Assert.That(t.Boss.ActiveMs, Is.EqualTo(90));
             Assert.That(t.Boss.RecoveryMs, Is.EqualTo(720));
             Assert.That(t.Boss.RadiusM, Is.EqualTo(5.4f));
+            Assert.That(t.Boss.GecWindupMs, Is.EqualTo(900));
+            Assert.That(t.Boss.GecRadiusM, Is.EqualTo(5.4f));
+            Assert.That(t.Boss.GenisWindupMs, Is.EqualTo(640));
+            Assert.That(t.Boss.GenisRadiusM, Is.EqualTo(8.0f));
+            Assert.That(t.Boss.MaxSameVariantStreak, Is.EqualTo(2));
             Assert.That(t.Boss.Damage, Is.EqualTo(22));
             Assert.That(t.Boss.IdleMinMs, Is.EqualTo(700));
             Assert.That(t.Boss.IdleMaxMs, Is.EqualTo(1500));

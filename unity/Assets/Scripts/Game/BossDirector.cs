@@ -6,8 +6,9 @@ using UnityEngine;
 namespace Dovus.Game
 {
     /// <summary>
-    /// Prototip boss döngüsü: idle yaklaşma + tek YERE ÇAKMA (§11).
+    /// Prototip boss döngüsü: idle yaklaşma + YERE ÇAKMA üç ritmi (§11).
     /// Yaklaşma Home'a yazılır — transform'a değil (T7.2 geri tepme kalıcılığı).
+    /// Varyant idle'da seçilir; ExchangeResolver yalnızca aktif windup/radius görür.
     /// </summary>
     public sealed class BossDirector : MonoBehaviour
     {
@@ -43,9 +44,13 @@ namespace Dovus.Game
         Vector3 _originHome;
         readonly System.Random _rng = new();
 
+        SlamVariant? _lastVariant;
+        int _variantStreak;
+
         public bool IsWindingUp => _phase == Phase.Windup;
         public int TelegraphStartMs => _telegraphStartMs;
         public int StrikeTimeMs => _attack != null ? _attack.StrikeTimeMs(_telegraphStartMs) : 0;
+        public SlamVariant? ActiveVariant => _attack?.Variant;
 
         public void Bind(
             GameClock clock,
@@ -159,7 +164,11 @@ namespace Dovus.Game
             Approach(dtSec);
 
             if (worldMs >= _idleUntilWorldMs)
+            {
+                // Varyant telegraf başlamadan seçilir — tell windup'ta okunur (§11).
+                SelectVariantForNextSlam();
                 EnterWindup(worldMs);
+            }
         }
 
         void TickWindup(double worldMs)
@@ -168,7 +177,7 @@ namespace Dovus.Game
                 return;
 
             float p = (float)((worldMs - _phaseStartedWorldMs) / _attack.WindupMs);
-            _telegraph?.SetProgress(p);
+            _telegraph?.SetProgress(p, _attack.RadiusM, _attack.Variant);
             _feel?.ShowThreat(p);
 
             if (worldMs >= _attack.StrikeTimeMs(_telegraphStartMs))
@@ -181,7 +190,7 @@ namespace Dovus.Game
             {
                 ResolveStrike();
                 _strikeResolved = true;
-                _telegraph?.Slam();
+                _telegraph?.Slam(_attack.RadiusM);
             }
 
             if (worldMs >= _attack.ActiveEndMs(_telegraphStartMs))
@@ -192,7 +201,7 @@ namespace Dovus.Game
         {
             _feel?.ClearThreat();
             float fade = 1f - (float)((worldMs - _phaseStartedWorldMs) / _attack.RecoveryMs);
-            _telegraph?.Recover(fade);
+            _telegraph?.Recover(fade, _attack.RadiusM);
 
             if (worldMs >= _attack.RecoveryEndMs(_telegraphStartMs))
                 EnterIdle(worldMs);
@@ -231,6 +240,18 @@ namespace Dovus.Game
         {
             _phase = Phase.Recovery;
             _phaseStartedWorldMs = worldMs;
+        }
+
+        void SelectVariantForNextSlam()
+        {
+            SlamVariant picked = SlamVariantPicker.Pick(
+                _lastVariant,
+                _variantStreak,
+                _combat.Boss.MaxSameVariantStreak,
+                _rng);
+            _variantStreak = SlamVariantPicker.NextStreak(_lastVariant, _variantStreak, picked);
+            _lastVariant = picked;
+            _attack.ApplyVariant(picked);
         }
 
         void Approach(float dtSec)

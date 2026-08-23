@@ -4,10 +4,26 @@ namespace Dovus.Core.Tuning
     [System.Serializable]
     public class BossTuning
     {
+        // YAKIN — temel ritim (§11 tablosu). WindupMs/RadiusM bu varyantın alanlarıdır.
         public int WindupMs = 640;
+        public float RadiusM = 5.4f;
+
+        // GEÇ — aynı yarıçap, daha uzun hazırlık
+        public int GecWindupMs = 900;
+        public float GecRadiusM = 5.4f;
+
+        // GENİŞ — aynı windup, daha büyük etki hacmi
+        public int GenisWindupMs = 640;
+        public float GenisRadiusM = 8.0f;
+
+        /// <summary>
+        /// Aynı varyantın üst üste en fazla kaç kez seçilebileceği.
+        /// 2 → üçüncü tekrar engellenir (T13: üç kez gelirse desen yok sanılır).
+        /// </summary>
+        public int MaxSameVariantStreak = 2;
+
         public int ActiveMs = 90;
         public int RecoveryMs = 720;
-        public float RadiusM = 5.4f;
         public int Damage = 22;
         public int IdleMinMs = 700;
         public int IdleMaxMs = 1500;
@@ -22,9 +38,14 @@ namespace Dovus.Core.Tuning
         public void CopyFrom(BossTuning other)
         {
             WindupMs = other.WindupMs;
+            RadiusM = other.RadiusM;
+            GecWindupMs = other.GecWindupMs;
+            GecRadiusM = other.GecRadiusM;
+            GenisWindupMs = other.GenisWindupMs;
+            GenisRadiusM = other.GenisRadiusM;
+            MaxSameVariantStreak = other.MaxSameVariantStreak;
             ActiveMs = other.ActiveMs;
             RecoveryMs = other.RecoveryMs;
-            RadiusM = other.RadiusM;
             Damage = other.Damage;
             IdleMinMs = other.IdleMinMs;
             IdleMaxMs = other.IdleMaxMs;
@@ -34,5 +55,19 @@ namespace Dovus.Core.Tuning
         }
 
         public void ResetToDefaults() => CopyFrom(new BossTuning());
+
+        public int WindupMsFor(Dovus.Core.Combat.SlamVariant variant) => variant switch
+        {
+            Dovus.Core.Combat.SlamVariant.Gec => GecWindupMs,
+            Dovus.Core.Combat.SlamVariant.Genis => GenisWindupMs,
+            _ => WindupMs
+        };
+
+        public float RadiusMFor(Dovus.Core.Combat.SlamVariant variant) => variant switch
+        {
+            Dovus.Core.Combat.SlamVariant.Gec => GecRadiusM,
+            Dovus.Core.Combat.SlamVariant.Genis => GenisRadiusM,
+            _ => RadiusM
+        };
     }
 }
