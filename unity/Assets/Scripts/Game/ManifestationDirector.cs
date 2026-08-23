@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Dovus.Core.Combat;
 using Dovus.Core.Grammar;
 using Dovus.Core.Manifestation;
 using Dovus.Core.Tuning;
@@ -8,6 +9,7 @@ namespace Dovus.Game
 {
     /// <summary>
     /// Cümleyi dünyadaki yaşayan etkiye bağlar. Kapalı rün geri bildirimi T6.1'de — burada yok.
+    /// T12: kapanış ödülü × ClosingDamagePerEffect → BossVitals; tür son rüne bağlı tepki.
     /// </summary>
     public sealed class ManifestationDirector : MonoBehaviour
     {
@@ -18,8 +20,11 @@ namespace Dovus.Game
         Transform _player;
         ActorPose _pose;
         BossReactor _boss;
+        BossVitals _bossVitals;
         GroundScarField _scars;
         KinematicMotor _motor;
+        DamageNumberHud _damageHud;
+        BossDirector _bossDirector;
 
         readonly List<LivingEffectView> _active = new();
         readonly List<PendingClosing> _pending = new();
@@ -31,6 +36,10 @@ namespace Dovus.Game
         int _lastWordCount;
         bool _hooked;
         bool _posedForRecovery;
+
+        // §11 ölüm: yavaş çekim başladıktan sonra bitince Revive.
+        bool _deathPending;
+        bool _sawDeathSlowmo;
 
         struct PendingClosing
         {
@@ -57,8 +66,11 @@ namespace Dovus.Game
             Transform player,
             ActorPose pose,
             BossReactor boss,
+            BossVitals bossVitals,
             GroundScarField scars,
-            PrototypeTuning colors)
+            PrototypeTuning colors,
+            DamageNumberHud damageHud = null,
+            BossDirector bossDirector = null)
         {
             _clock = clock;
             _engine = input.Engine;
@@ -67,7 +79,10 @@ namespace Dovus.Game
             _player = player;
             _pose = pose;
             _boss = boss;
+            _bossVitals = bossVitals;
             _scars = scars;
+            _damageHud = damageHud;
+            _bossDirector = bossDirector;
             _motor = player.GetComponent<KinematicMotor>();
 
             if (_engine != null && !_hooked)
@@ -105,6 +120,29 @@ namespace Dovus.Game
             _pose?.Tick(worldMs);
             _boss?.Tick(dtSec, worldMs);
             TickPendingClosings(worldMs);
+            TickBossDeath();
+        }
+
+        void TickBossDeath()
+        {
+            if (!_deathPending || _clock == null)
+                return;
+
+            bool slow = _clock.Director.IsSlowmoActive;
+            if (slow)
+            {
+                _sawDeathSlowmo = true;
+                return;
+            }
+
+            if (!_sawDeathSlowmo)
+                return;
+
+            _deathPending = false;
+            _sawDeathSlowmo = false;
+            _bossVitals?.Revive();
+            _boss?.EndCollapse();
+            _bossDirector?.NotifyBossRevived(_clock.Director.WorldTimeMs);
         }
 
         void SyncFromSentence(double worldMs)
@@ -264,6 +302,38 @@ namespace Dovus.Game
             logic.FireClosingBang();
             StampScar(logic, p.Closing);
             ApplyBossClosing(logic, p.Closing);
+            ApplyClosingDamage(p.Closing);
+        }
+
+        /// <summary>
+        /// §5: TotalEffect × ClosingDamagePerEffect. Tür hasarı DEĞİŞTİRMEZ (§12).
+        /// Yarıda abort edilen cümle Closing taşımaz → buraya hiç gelmez.
+        /// </summary>
+        void ApplyClosingDamage(ClosingHit closing)
+        {
+            if (_bossVitals == null || _bossVitals.IsDown)
+                return;
+
+            float damage = closing.TotalEffect * _combat.ClosingDamagePerEffect;
+            if (damage <= 0f)
+                return;
+
+            _damageHud?.ShowDamage(damage);
+
+            bool killed = _bossVitals.ApplyDamage(damage);
+            if (!killed)
+                return;
+
+            double worldMs = _clock.Director.WorldTimeMs;
+            // Önce telegrafı kapat (Hide taban ölçeğe çeker), sonra çökme — sıra tersine
+            // dönseydi Hide çökmeyi ezerdi.
+            _bossDirector?.NotifyBossDown(worldMs);
+            float collapseSec = _colors != null ? _colors.BossDeathCollapseSec : 0.85f;
+            _boss?.BeginCollapse(collapseSec, worldMs);
+            // Yeni rampa yazılmaz — T4 TimeDirector + SlowmoTuning tek kaynak (§11 / durum T12).
+            _clock.Director.TriggerSlowmo();
+            _deathPending = true;
+            _sawDeathSlowmo = false;
         }
 
         // Kapanış izi (bu metot) ve seyahat izi (TickEffects, view.Scarred) iki ayrı bayrak:
@@ -308,67 +378,98 @@ namespace Dovus.Game
 
         void ApplyBossClosing(LivingEffect logic, ClosingHit closing)
         {
-            if (_boss == null)
+            if (_boss == null || (_bossVitals != null && _bossVitals.IsDown))
                 return;
 
             Vector3 from = new Vector3(logic.OriginX, 0f, logic.OriginZ);
-            float knock = _combat.Manifestation.BossKnockbackM * (0.6f + 0.2f * closing.DotCount);
+            var man = _combat.Manifestation;
+            float knock = man.BossKnockbackM;
             float lift = 0f;
+            float shake = man.BossShakeSec;
+            double worldMs = _clock.Director.WorldTimeMs;
 
+            // Tür = fiziksel tepki ekseni. Hasar miktarı burada yok (§5 + §12).
             switch (closing.Type)
             {
                 case Rune.Sarsinti:
-                    lift = _combat.Manifestation.BossLiftM * (0.7f + logic.Current.Lift);
+                    // Havalandırma — spec §5 açıkça yazar.
+                    knock = man.BossKnockbackM * 0.55f;
+                    lift = man.BossLiftM * (1.15f + 0.35f * logic.Current.Lift);
+                    shake = man.BossShakeSec * 0.9f;
                     break;
                 case Rune.Igne:
-                    knock *= 1.35f + logic.Current.Pierce;
+                    // Tek yöne derin geri tepme (§4 daralt/odakla).
+                    knock = man.BossKnockbackM * (1.85f + 0.4f * logic.Current.Pierce);
+                    lift = 0.05f;
+                    shake = man.BossShakeSec * 0.55f;
                     break;
                 case Rune.Suru:
-                    knock *= 0.7f;
-                    // Kısa çoklu sarsıntı
-                    _boss.React(from, knock * 0.45f, 0.15f, _combat.Manifestation.BossShakeSec,
-                        _clock.Director.WorldTimeMs);
-                    break;
+                    // Yerinde çok noktalı sarsılma, yer değiştirme az (§4 çoğalt/yay).
+                    knock = man.BossKnockbackM * 0.12f;
+                    lift = 0.08f;
+                    shake = man.BossShakeSec * 1.6f;
+                    if (!IsClosingInRange(logic, closing))
+                        return;
+                    _boss.React(from, knock, lift, shake * 0.45f, worldMs);
+                    _boss.React(from + new Vector3(logic.DirZ, 0f, -logic.DirX) * 0.35f,
+                        knock * 0.6f, lift * 0.5f, shake * 0.55f, worldMs);
+                    _boss.React(from + new Vector3(-logic.DirZ, 0f, logic.DirX) * 0.35f,
+                        knock * 0.6f, lift * 0.5f, shake * 0.55f, worldMs);
+                    return;
                 case Rune.Kabuk:
-                    _boss.Pin(0.55f, _clock.Director.WorldTimeMs);
+                    // Sabitleme — §5.
+                    if (!IsClosingInRange(logic, closing))
+                        return;
+                    _boss.Pin(0.55f, worldMs);
                     return;
                 case Rune.Zehir:
-                    knock *= 0.4f;
+                    // Birikinti izi StampScar'da; gövde hafif sarsılır.
+                    knock = man.BossKnockbackM * 0.2f;
+                    lift = 0f;
+                    shake = man.BossShakeSec * 0.7f;
                     break;
             }
 
-            // Kapanış menzilinde mi?
+            if (!IsClosingInRange(logic, closing))
+                return;
+
+            _boss.React(from, knock, lift, shake, worldMs);
+        }
+
+        bool IsClosingInRange(LivingEffect logic, ClosingHit closing)
+        {
             Vector3 bossPos = _boss.transform.position;
             float dx = bossPos.x - logic.TipX;
             float dz = bossPos.z - logic.TipZ;
             float reach = _combat.Manifestation.ClosingBangRadiusM;
             if (closing.Type == Rune.Sarsinti)
             {
-                // Şok dalgası: odaklıysa hat, değilse yarıçap
                 if (!logic.OverlapsBoss(bossPos.x, bossPos.z, reach * 0.5f))
                 {
                     float radial = Vector2.Distance(
                         new Vector2(bossPos.x, bossPos.z),
                         new Vector2(logic.OriginX, logic.OriginZ));
                     if (radial > logic.TipDistance + reach && radial > reach)
-                        return;
+                        return false;
                 }
-            }
-            else if (dx * dx + dz * dz > reach * reach)
-            {
-                // İğne/sürü: uçtan uzaksa yine de menzil kontrolü kök-uç segmentine
-                if (!logic.OverlapsBoss(bossPos.x, bossPos.z, reach * 0.35f))
-                    return;
+
+                return true;
             }
 
-            _boss.React(from, knock, lift, _combat.Manifestation.BossShakeSec,
-                _clock.Director.WorldTimeMs);
+            if (dx * dx + dz * dz > reach * reach)
+            {
+                if (!logic.OverlapsBoss(bossPos.x, bossPos.z, reach * 0.35f))
+                    return false;
+            }
+
+            return true;
         }
 
         void TickEffects(float dtSec, double worldMs)
         {
             Vector3 bossPos = _boss != null ? _boss.transform.position : Vector3.zero;
             var man = _combat.Manifestation;
+            bool bossDown = _bossVitals != null && _bossVitals.IsDown;
 
             for (int i = _active.Count - 1; i >= 0; i--)
             {
@@ -383,7 +484,7 @@ namespace Dovus.Game
                 logic.Tick(dtSec);
                 view.TickVisual(dtSec);
 
-                if (logic.Phase == LivingEffectPhase.Traveling && _boss != null && !view.TravelHitDone)
+                if (!bossDown && logic.Phase == LivingEffectPhase.Traveling && _boss != null && !view.TravelHitDone)
                 {
                     if (logic.OverlapsBoss(bossPos.x, bossPos.z, man.TravelHitRadiusM))
                     {

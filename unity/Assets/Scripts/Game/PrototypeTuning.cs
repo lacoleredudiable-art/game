@@ -169,6 +169,14 @@ namespace Dovus.Game
         public float BossPinShakeAmpM = 0.04f;
         public float BossLiftVelocityPerM = 4.5f;
 
+        // §11 boss ölümü: "kısa yavaş çekim + çökme pozu" — süre spec'te yok (uydurma).
+        // Yavaş çekim TimeDirector.TriggerSlowmo (SlowmoTuning); çökme süresi dünya saati.
+        // Gerekçe docs/durum.md T12 sapmaları.
+        [Header("Boss ölüm pozu (T12, §11)")]
+        public float BossDeathCollapseSec = 0.85f;
+        public float BossDeathSquashY = 0.28f;
+        public float BossDeathSpreadXz = 1.35f;
+
         // Spec'te tavan sayısı yok (uydurma) — T11 kare bütçesi için icat edildi; gerekçe
         // docs/durum.md T7.2 sapmalarına yazıldı. İz kalıcıdır (§8/T4), süreye bağlı silinmez;
         // tavan dolunca en eski iz DÖNÜŞTÜRÜLÜR (yok edilip yeniden yaratılmaz).
@@ -183,11 +191,8 @@ namespace Dovus.Game
         public bool ReadoutAnchorRight = true;
         public float ReadoutPunchInSec = 0.12f;
 
-        // §6/§11 "boss ve oyuncu can göstergesi, sade". Oyuncu barı PlayerVitals'tan gerçek
-        // HP okur. Boss barı KOZMETİKTİR: Core/Game hiçbir yerde boss hasarı tutmuyor (T7
-        // "boss fiziksel tepki verir, hasar yok"), yeni bir hasar mekaniği eklemek bu görevin
-        // YASAKLAR listesine giriyor — bkz. durum.md T9 sapmaları.
-        // Ölçüler dp (beşgen/dodge diskiyle aynı yol: PentagonLayoutScreen.DpToPixels).
+        // §6/§11 "boss ve oyuncu can göstergesi, sade". Ölçüler dp (beşgen/dodge diskiyle
+        // aynı yol: PentagonLayoutScreen.DpToPixels). Boss barı T12'den beri BossVitals okur.
         [Header("Can göstergesi (T9, VitalsHud)")]
         public float VitalsBarWidthDp = 220f;
         public float VitalsBarHeightDp = 16f;
@@ -209,13 +214,18 @@ namespace Dovus.Game
         public float FrameTimeSampleSec = 0.5f;
         public int TargetFrameRateHz = 60;
 
+        // T12: kapanış hasarı ölçüm aracı (§5 / §12). Varsayılan KAPALI — his kanalı değil
+        // kumpas. Eski tuning.json'da alan yoksa JsonUtility false verir (= güvenli).
+        [Header("Hasar göstergesi (T12)")]
+        public bool ShowDamageNumbers = false;
+
         // Sahneye serileşmiş eski kopyada yeni alanlar 0/siyah gelir (C# initializer
         // deserialize'da uygulanmaz). Sürüm numarası da 0 geldiği için tek seferlik yama
         // ÇALIŞIR; sahne bir kez yeniden kaydedildikten sonra bu blok hiç girmez ve
         // tasarımcının bilinçli 0'ı (ör. nabzı kapatmak) artık ezilmez (T8.1).
         [HideInInspector] public int TuningVersion = CurrentVersion;
 
-        const int CurrentVersion = 5;
+        const int CurrentVersion = 6;
 
         /// <summary>Sürümü geçmiş serileşmiş kopyayı bu sürümün varsayılanlarına çeker.</summary>
         public void EnsureRuntimeDefaults()
@@ -269,6 +279,11 @@ namespace Dovus.Game
             FrameTimeSampleSec = fresh.FrameTimeSampleSec;
             TargetFrameRateHz = fresh.TargetFrameRateHz;
 
+            // T12: ölüm pozu (0 gelirse squash görünmez / süre anlamsız).
+            BossDeathCollapseSec = fresh.BossDeathCollapseSec;
+            BossDeathSquashY = fresh.BossDeathSquashY;
+            BossDeathSpreadXz = fresh.BossDeathSpreadXz;
+
             TuningVersion = CurrentVersion;
         }
 
@@ -304,6 +319,8 @@ namespace Dovus.Game
             // T11: telefonda panelden açılıp kapanır ve kapatılınca öyle kalır. Eski bir
             // tuning.json'da bu alan yok — JsonUtility false verir, o da zaten varsayılan.
             public bool ShowFrameTimeHud;
+            // T12: aynı bool deseni — eski JSON'da yoksa false (= kapalı, §5/§12 güvenli).
+            public bool ShowDamageNumbers;
         }
 
         public PanelFields ToPanelFields() => new PanelFields
@@ -317,6 +334,7 @@ namespace Dovus.Game
             ReadoutAnchorRight = ReadoutAnchorRight,
             ReadoutPunchInSec = ReadoutPunchInSec,
             ShowFrameTimeHud = ShowFrameTimeHud,
+            ShowDamageNumbers = ShowDamageNumbers,
         };
 
         public void ApplyPanelFields(PanelFields f)
@@ -331,6 +349,7 @@ namespace Dovus.Game
             ReadoutAnchorRight = f.ReadoutAnchorRight;
             ReadoutPunchInSec = f.ReadoutPunchInSec;
             ShowFrameTimeHud = f.ShowFrameTimeHud;
+            ShowDamageNumbers = f.ShowDamageNumbers;
         }
 
         /// <summary>"Sıfırla": yalnızca panelin yönettiği alt küme spec varsayılanına döner.</summary>

@@ -13,6 +13,12 @@ namespace Dovus.Core.Tuning
         public ManifestationTuning Manifestation = new ManifestationTuning();
 
         /// <summary>
+        /// §5: toplam etki × bu katsayı = boss canından düşen. Başlangıç 1'e 1
+        /// (dovus-sistemi.md "Etkinin hasara çevrilmesi", 23 Ağustos kararı).
+        /// </summary>
+        public float ClosingDamagePerEffect = 1.0f;
+
+        /// <summary>
         /// T10: panelin "Sıfırla" ve JSON-yükleme yolu. Alt nesnelerin KİMLİĞİ korunur —
         /// PentagonInput/DodgeState/SentenceEngine gibi tüketiciler `combat.Dodge` gibi alt
         /// nesnenin REFERANSINI tutuyor (Bind sırasında), üst nesneyi değil. `Manifestation`
@@ -26,6 +32,7 @@ namespace Dovus.Core.Tuning
             Boss.CopyFrom(other.Boss);
             Grade.CopyFrom(other.Grade);
             Feel.CopyFrom(other.Feel);
+            ClosingDamagePerEffect = other.ClosingDamagePerEffect;
         }
 
         public void ResetToDefaults() => CopyFrom(new CombatTuning());

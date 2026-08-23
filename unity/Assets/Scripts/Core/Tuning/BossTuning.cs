@@ -16,6 +16,9 @@ namespace Dovus.Core.Tuning
         // Ölümden sonra tekrar dövüş — dovus-sistemi.md §11 (özet §4)
         public float RespawnMaxSec = 2.0f;
 
+        // Boss can tavanı — dovus-sistemi.md §11
+        public float MaxHp = 120f;
+
         public void CopyFrom(BossTuning other)
         {
             WindupMs = other.WindupMs;
@@ -27,6 +30,7 @@ namespace Dovus.Core.Tuning
             IdleMaxMs = other.IdleMaxMs;
             ApproachSpeedMps = other.ApproachSpeedMps;
             RespawnMaxSec = other.RespawnMaxSec;
+            MaxHp = other.MaxHp;
         }
 
         public void ResetToDefaults() => CopyFrom(new BossTuning());

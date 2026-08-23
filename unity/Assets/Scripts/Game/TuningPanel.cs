@@ -380,8 +380,9 @@ namespace Dovus.Game
                 _vitals?.SetMaxHp(v);
             }, "");
 
-            AddHeader("ÖLÇÜM (T11)");
+            AddHeader("ÖLÇÜM (T11/T12)");
             AddBoolButton("Kare süresi göstergesi", () => p.ShowFrameTimeHud, v => p.ShowFrameTimeHud = v, "AÇIK", "KAPALI");
+            AddBoolButton("Hasar sayısı", () => p.ShowDamageNumbers, v => p.ShowDamageNumbers = v, "AÇIK", "KAPALI");
         }
 
         // ---- Satır inşası -----------------------------------------------------------------
