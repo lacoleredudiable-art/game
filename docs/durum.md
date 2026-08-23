@@ -1314,6 +1314,27 @@ gözle ayırmak (görev metni + özet §6 “küçük hâli”).
 | `EffectNeedleWindupLenMul` vb. | PrototypeTuning | görsel squash/stretch / jitter / jab ölçüleri |
 | `PrototypeTuning.TuningVersion` | 7 | yeni alanlar 0 gelmesin |
 
+### T14 telefon build'i (23 Ağustos, 21:04)
+
+APK üretildi ve cihaza kuruldu — **his turu için hazır, sahibi test edecek**.
+
+- **Build:** editör açıkken MCP `Unity_RunCommand` ile `AndroidBuilder.BuildTo`. Çağrının zaman
+  aşımına uğramaması için build doğrudan değil `EditorApplication.delayCall` içinde başlatıldı:
+  komut hemen döner, build editörde ilerler, sonuç konsoldan (`[T11] APK hazır`) okunur.
+  Artımlı olduğu için 6 sn sürdü; 21:01'deki build'ten beri kaynak değişmemişti.
+- **APK:** `build/android/dovus-prototip.apk`, **57,0 MB**, IL2CPP/ARM64, development.
+- **Kurulum:** `adb install -r` → Success. `adb` yolu:
+  `C:\Program Files\Unity\Hub\Editor\6000.4.4f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK\platform-tools\adb.exe`
+  (PATH'te yok). Cihaz `offline` görünürse `adb kill-server` + `start-server` düzeltiyor.
+- **Açılışta doğrulanan (ekran görüntüsü `build/t14-telefon.png`):** oyun açılıyor, dünya renkleri
+  düzgün (macenta yok), oyuncu camgöbeği, boss telegrafı turuncu, beşgen + can barları + AYAR
+  düğmesi yerinde, kare süresi göstergesi **16,6 ms · 60 fps / en kötü 16,7 ms**.
+- **Doğrulanamayan:** üç fiilin silüet ayrımı (T14'ün asıl kabul kriteri) — oynanış gerektiriyor,
+  Xiaomi uzaktan dokunuşu reddettiği için elde denenmeli. Kare bütçesinin kalan yedi satırı da
+  hâlâ boş; ekran görüntüsündeki 16,6 ms boşta/telegraf anına ait, cümle ve yavaş çekim ölçülmedi.
+- **Not:** build sırasında Unity `unity/Assets/Scenes/Prototype.unity` dosyasını kendi kaydetti
+  (112 satır); commit edilmedi, kaynağı sahne değil kod (AGENTS kural 2).
+
 ## Spec'ten sapmalar
 
 Belgedeki bir kural/sayı uygulanamadıysa buraya yaz: hangisi, neden, yerine ne kondu.
@@ -1589,6 +1610,9 @@ Hepsi `PrototypeTuning`'de, hiçbiri kodda gömülü değil (AGENTS kural 3).
   açıkken tek yol menü ya da MCP üzerinden `AndroidBuilder.BuildTo`; MCP çağrısı uzun build'de
   zaman aşımına uğrar ama **build editörde devam eder** (T11'de öyle oldu). Ayrıca kapatılmış
   bir editörden kalan bayat `unity/Temp/UnityLockfile` aynı hatayı verir.
+  **Zaman aşımının çaresi bulundu (T14 build'i):** build'i `EditorApplication.delayCall` içine
+  koy, MCP komutu hemen dönsün; sonucu `Unity_GetConsoleLogs` ile oku. MCP `System.Reflection`
+  kullanımını reddediyor, `Dovus.Game.EditorTools` doğrudan `using` ile çağrılabiliyor.
 - **~~`BossDirector.TickWindup` null `_attack`~~ — T11.1 kapattı** (`if (_attack == null) return;`).
 - **~~Boss can göstergesi kozmetik~~ — T12 kapattı.** `BossVitals` + kapanış hasarı + ölüm
   slowmo/çökme/revive. Hasar sayısı varsayılan kapalı (`ShowDamageNumbers`).
