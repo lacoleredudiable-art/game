@@ -6,11 +6,14 @@ using UnityEngine;
 namespace Dovus.Game
 {
     /// <summary>
-    /// Tek yaşayan etkinin prosedürel çizimi — LineRenderer + az sayıda küre (overdraw yok).
+    /// Tek yaşayan etkinin prosedürel çizimi — LineRenderer + az sayıda küre/kapsül.
+    /// T14: ayrım hareket karakterinden (İĞNE fırlar, SÜRÜ üşüşür, SARSINTI yükselir);
+    /// düz vuruşun ayrı jab silüeti var. Overdraw yok (özet §6).
     /// </summary>
     public sealed class LivingEffectView : MonoBehaviour
     {
         const int RingSegments = 48;
+        const int NeedleAfterimageCount = 2;
 
         LivingEffect _logic;
         ManifestationTuning _tuning;
@@ -19,12 +22,16 @@ namespace Dovus.Game
         float _lineBaseWidth;
         Transform[] _blobs;
         Transform _needle;
+        Transform[] _needleGhosts;
         Material _lineMat;
         Material _blobMat;
+        Material _ghostMat;
         bool _scarred;
+        bool _basicStrike;
         float _windowRemaining01 = 1f;
 
         public LivingEffect Logic => _logic;
+        public bool IsBasicStrike => _basicStrike;
         public bool Scarred
         {
             get => _scarred;
@@ -36,11 +43,13 @@ namespace Dovus.Game
         public void Bind(
             LivingEffect logic,
             ManifestationTuning tuning,
-            PrototypeTuning colors)
+            PrototypeTuning colors,
+            bool basicStrike = false)
         {
             _logic = logic;
             _tuning = tuning;
             _colors = colors;
+            _basicStrike = basicStrike;
             BuildVisuals();
             SyncVisual(1f);
         }
@@ -70,12 +79,14 @@ namespace Dovus.Game
         {
             if (_lineMat != null) Destroy(_lineMat);
             if (_blobMat != null) Destroy(_blobMat);
+            if (_ghostMat != null) Destroy(_ghostMat);
         }
 
         void BuildVisuals()
         {
             _lineMat = MakeMat(_colors.InkCyan);
             _blobMat = MakeMat(_colors.InkPurple);
+            _ghostMat = MakeMat(_colors.InkCyan);
 
             var lineGo = new GameObject("WaveLine");
             lineGo.transform.SetParent(transform, false);
@@ -104,6 +115,15 @@ namespace Dovus.Game
             needle.GetComponent<Renderer>().sharedMaterial = _lineMat;
             needle.SetActive(false);
             _needle = needle.transform;
+
+            _needleGhosts = new Transform[NeedleAfterimageCount];
+            for (int i = 0; i < NeedleAfterimageCount; i++)
+            {
+                var g = CreateMeshObject("NeedleGhost" + i, PrimitiveType.Capsule);
+                g.GetComponent<Renderer>().sharedMaterial = _ghostMat;
+                g.SetActive(false);
+                _needleGhosts[i] = g.transform;
+            }
         }
 
         /// <summary>
@@ -148,17 +168,73 @@ namespace Dovus.Game
             SetMatColor(_lineMat, Color.Lerp(cyan, purple, 0.35f + 0.4f * s.Spread));
             SetMatColor(_blobMat, purple);
 
-            float y = 0.08f + 0.35f * s.Lift;
+            Color ghost = cyan;
+            ghost.a = alpha * _colors.EffectNeedleAfterimageAlpha;
+            SetMatColor(_ghostMat, ghost);
+
+            // Düz vuruş: kısa jab — halka/sürü/iğne cümle silüetlerinden ayrı.
+            if (_basicStrike)
+            {
+                HideSwarm();
+                HideNeedleGhosts();
+                DrawBasicStrike(s, alpha);
+                return;
+            }
+
+            // SARSINTI yerden yükselir; diğer fiillerde Lift hâlâ hafif yükseltir.
+            float y = EffectHeight(s, travel01);
             Vector3 origin = new Vector3(_logic.OriginX, y, _logic.OriginZ);
             Vector3 dir = new Vector3(_logic.DirX, 0f, _logic.DirZ);
             float dist = _logic.TipDistance;
 
             DrawWave(origin, dir, dist, s, y);
-            DrawNeedle(origin, dir, dist, s);
+            DrawNeedle(origin, dir, dist, s, travel01);
             DrawSwarm(origin, dir, dist, s);
 
             if (_logic.Phase == LivingEffectPhase.Banging)
                 PulseBang(origin, dir, dist, s);
+        }
+
+        float EffectHeight(EffectSilhouette s, float travel01)
+        {
+            if (_logic.Verb == Rune.Sarsinti)
+            {
+                // Aşağıdan yukarı: genişlerken yükselir (kütle / yerden çıkış).
+                float peak = _tuning.WaveRiseHeightM * (0.55f + 0.9f * s.Lift);
+                return Mathf.Lerp(_colors.EffectSarsintiGroundY, peak, travel01);
+            }
+
+            return 0.08f + 0.35f * s.Lift;
+        }
+
+        void DrawBasicStrike(EffectSilhouette s, float alpha)
+        {
+            _ = s;
+            _ = alpha;
+            _line.positionCount = 0;
+            _lineBaseWidth = _colors.EffectLineWidthDefaultM;
+
+            if (_needle == null)
+                return;
+
+            Vector3 dir = new Vector3(_logic.DirX, 0f, _logic.DirZ);
+            if (dir.sqrMagnitude < 1e-4f)
+                dir = Vector3.forward;
+
+            float dist = Mathf.Min(_logic.TipDistance, _tuning.BasicStrikeRangeM);
+            float y = _colors.EffectBasicStrikeHeightM;
+            Vector3 origin = new Vector3(_logic.OriginX, y, _logic.OriginZ);
+            // Uç, kısa menzilin ortasına yakın — "tek vuruşluk jab", uçan iğne değil.
+            Vector3 tip = origin + dir * Mathf.Max(0.35f, dist * 0.55f);
+
+            _needle.gameObject.SetActive(true);
+            _needle.position = tip;
+            _needle.rotation = Quaternion.LookRotation(dir, Vector3.up) * Quaternion.Euler(90f, 0f, 0f);
+            float thick = _colors.EffectBasicStrikeThickM;
+            float len = _colors.EffectBasicStrikeLenM;
+            if (_logic.Phase == LivingEffectPhase.Banging)
+                len *= 1f + 0.25f * Mathf.Sin(_logic.BangAgeSec * 40f);
+            _needle.localScale = new Vector3(thick, len * 0.5f, thick);
         }
 
         void DrawWave(Vector3 origin, Vector3 dir, float radius, EffectSilhouette s, float y)
@@ -172,6 +248,14 @@ namespace Dovus.Game
 
             // İĞNE fiilinde ana gövde iğne; dalga çizgisi yok
             if (_logic.Verb == Rune.Igne && s.Spread < _colors.EffectIgneShowMinSpread)
+            {
+                _line.positionCount = 0;
+                _lineBaseWidth = _colors.EffectLineWidthDefaultM;
+                return;
+            }
+
+            // SÜRÜ: cephe çizgisi yok — dağınık bulut blobs ile okunur.
+            if (_logic.Verb == Rune.Suru && s.Focus < _colors.EffectFocusSwarmAlongLineMin)
             {
                 _line.positionCount = 0;
                 _lineBaseWidth = _colors.EffectLineWidthDefaultM;
@@ -223,7 +307,11 @@ namespace Dovus.Game
             }
 
             if (_logic.Verb == Rune.Sarsinti)
+            {
                 baseWidth = Mathf.Lerp(_colors.EffectSarsintiWidthWideM, _colors.EffectSarsintiWidthNarrowM, focus);
+                // Kütle: geniş halka daha kalın okunur.
+                baseWidth *= Mathf.Lerp(1f, _colors.EffectSarsintiMassWidthMul, 1f - focus);
+            }
 
             // Taban her karede burada baştan hesaplanır (birikmez) — PulseBang bunun üstüne
             // çarpar, DrawWave'in kendisi asla çarpımı miras almaz.
@@ -231,32 +319,120 @@ namespace Dovus.Game
             _line.widthMultiplier = baseWidth;
         }
 
-        void DrawNeedle(Vector3 origin, Vector3 dir, float dist, EffectSilhouette s)
+        void DrawNeedle(Vector3 origin, Vector3 dir, float dist, EffectSilhouette s, float travel01)
         {
             bool show = _logic.Verb == Rune.Igne || s.Pierce > _colors.EffectPierceNeedleShowMin;
             if (!show || _needle == null)
             {
                 if (_needle != null) _needle.gameObject.SetActive(false);
+                HideNeedleGhosts();
                 return;
             }
 
             _needle.gameObject.SetActive(true);
+            float thick = Mathf.Lerp(_colors.EffectNeedleThickWideM, _colors.EffectNeedleThickNarrowM, s.Pierce);
+            float len = _colors.EffectNeedleLenBaseM + _colors.EffectNeedleLenPerPierceM * s.Pierce;
+
+            if (_logic.Verb == Rune.Igne)
+            {
+                DrawIgneZenitsu(origin, dir, dist, thick, len, travel01);
+                return;
+            }
+
+            // Sıfat olarak iğne: uca oturur (5-1 hattı vb.)
+            HideNeedleGhosts();
             Vector3 tip = origin + dir * dist;
             _needle.position = tip;
             if (dir.sqrMagnitude > 1e-4f)
                 _needle.rotation = Quaternion.LookRotation(dir, Vector3.up) * Quaternion.Euler(90f, 0f, 0f);
-            float thick = Mathf.Lerp(_colors.EffectNeedleThickWideM, _colors.EffectNeedleThickNarrowM, s.Pierce);
-            float len = _colors.EffectNeedleLenBaseM + _colors.EffectNeedleLenPerPierceM * s.Pierce;
             _needle.localScale = new Vector3(thick, len * 0.5f, thick);
+        }
+
+        /// <summary>
+        /// Özet §6 Zenitsu küçük hâli: gerilme → 2–3 kare gidiş → donmuş varış.
+        /// </summary>
+        void DrawIgneZenitsu(
+            Vector3 origin,
+            Vector3 dir,
+            float dist,
+            float thick,
+            float len,
+            float travel01)
+        {
+            float windup = Mathf.Max(0.01f, _tuning.NeedleWindupSec);
+            float age = _logic.AgeSec;
+            bool arrived = travel01 >= 0.98f || _logic.Travel >= _logic.MaxRange - 0.05f;
+
+            if (age < windup)
+            {
+                // Gerilme: kökte uzar, yerinde — henüz fırlamadı.
+                HideNeedleGhosts();
+                float t = age / windup;
+                float stretch = Mathf.Lerp(1f, _colors.EffectNeedleWindupLenMul, t);
+                _needle.position = origin + dir * (len * 0.25f * t);
+                if (dir.sqrMagnitude > 1e-4f)
+                    _needle.rotation = Quaternion.LookRotation(dir, Vector3.up) * Quaternion.Euler(90f, 0f, 0f);
+                float thin = thick * Mathf.Lerp(1f, 0.7f, t);
+                _needle.localScale = new Vector3(thin, len * 0.5f * stretch, thin);
+                return;
+            }
+
+            if (!arrived)
+            {
+                // Gidiş: uç TipDistance'ta; 2 hayalet smear (afterimage — az mesh).
+                Vector3 tip = origin + dir * dist;
+                _needle.position = tip;
+                if (dir.sqrMagnitude > 1e-4f)
+                    _needle.rotation = Quaternion.LookRotation(dir, Vector3.up) * Quaternion.Euler(90f, 0f, 0f);
+                _needle.localScale = new Vector3(thick * 0.75f, len * 0.45f, thick * 0.75f);
+
+                for (int i = 0; i < _needleGhosts.Length; i++)
+                {
+                    float back = (i + 1) / (_needleGhosts.Length + 1f);
+                    Vector3 gp = Vector3.Lerp(origin, tip, 1f - back * 0.85f);
+                    _needleGhosts[i].gameObject.SetActive(true);
+                    _needleGhosts[i].position = gp;
+                    _needleGhosts[i].rotation = _needle.rotation;
+                    float gScale = 1f - back * 0.45f;
+                    _needleGhosts[i].localScale = new Vector3(
+                        thick * 0.55f * gScale,
+                        len * 0.35f * gScale,
+                        thick * 0.55f * gScale);
+                }
+
+                return;
+            }
+
+            // Varış: donmuş poz — kısa, sert.
+            HideNeedleGhosts();
+            Vector3 end = origin + dir * dist;
+            _needle.position = end;
+            if (dir.sqrMagnitude > 1e-4f)
+                _needle.rotation = Quaternion.LookRotation(dir, Vector3.up) * Quaternion.Euler(90f, 0f, 0f);
+            float holdLen = len * _colors.EffectNeedleArrivalLenMul;
+            _needle.localScale = new Vector3(thick * 1.05f, holdLen * 0.5f, thick * 1.05f);
         }
 
         void DrawSwarm(Vector3 origin, Vector3 dir, float dist, EffectSilhouette s)
         {
-            int count = Mathf.RoundToInt(s.Spread * _tuning.MaxSwarmBlobs);
+            int count;
+            if (_logic.Verb == Rune.Suru)
+            {
+                // Fiil SÜRÜ: her zaman dağınık bulut — sıfır yayılmada bile birkaç gövde.
+                float minB = _colors.EffectSwarmMinBlobs;
+                count = Mathf.RoundToInt(Mathf.Lerp(minB, _blobs.Length, Mathf.Clamp01(s.Spread)));
+            }
+            else
+            {
+                count = Mathf.RoundToInt(s.Spread * _tuning.MaxSwarmBlobs);
+            }
+
             count = Mathf.Clamp(count, 0, _blobs.Length);
             Vector3 right = Vector3.Cross(Vector3.up, dir).normalized;
             if (right.sqrMagnitude < 1e-4f)
                 right = Vector3.right;
+
+            float stagger = Mathf.Max(0f, _tuning.SwarmStaggerSec);
 
             for (int i = 0; i < _blobs.Length; i++)
             {
@@ -266,37 +442,90 @@ namespace Dovus.Game
                     continue;
                 }
 
-                _blobs[i].gameObject.SetActive(true);
-                float u = (i + 1) / (count + 1f);
-                float along = dist * u;
-                float side = (i % 2 == 0 ? 1f : -1f) * (0.35f + (1f - s.Focus) * 1.4f)
-                             * (0.4f + s.Spread);
-                // Odaklıysa hat boyunca diz; değilse yayvan halka
-                Vector3 p;
-                if (s.Focus > _colors.EffectFocusSwarmAlongLineMin || _logic.Verb == Rune.Igne)
-                    p = origin + dir * along + right * side * (1f - s.Focus * 0.7f);
-                else
+                // Kademeli varış: gövdeler aynı anda değil sırayla görünür.
+                float appearAt = i * stagger;
+                if (_logic.Verb == Rune.Suru && _logic.AgeSec < appearAt)
                 {
-                    float a = u * Mathf.PI * 2f + _logic.AgeSec * 2.2f;
-                    float r = dist * (0.35f + 0.55f * u);
-                    p = origin + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * r;
+                    _blobs[i].gameObject.SetActive(false);
+                    continue;
                 }
 
-                p.y = 0.35f + 0.5f * s.Lift * Mathf.Abs(Mathf.Sin(_logic.AgeSec * 6f + i));
+                _blobs[i].gameObject.SetActive(true);
+                float localAge = Mathf.Max(0f, _logic.AgeSec - appearAt);
+                float reach = dist;
+                if (_logic.Verb == Rune.Suru && stagger > 1e-4f)
+                {
+                    // Her gövde kendi gecikmesiyle uca yetişir — cephe değil bulut.
+                    float catchUp = Mathf.Clamp01(localAge / (stagger * count + 0.15f));
+                    reach = dist * Mathf.Lerp(0.15f, 1f, catchUp);
+                }
+
+                float u = (i + 1) / (count + 1f);
+                float along = reach * u;
+                float jitter = _colors.EffectSwarmJitterM;
+                // Düzensiz ofset (sabit hash) — düzenli halka değil.
+                float jx = Pseudo(i, 1) * jitter * (0.5f + s.Spread);
+                float jz = Pseudo(i, 2) * jitter * (0.5f + s.Spread);
+                float side = (i % 2 == 0 ? 1f : -1f) * (0.35f + (1f - s.Focus) * 1.4f)
+                             * (0.4f + s.Spread);
+
+                Vector3 p;
+                if (s.Focus > _colors.EffectFocusSwarmAlongLineMin || _logic.Verb == Rune.Igne)
+                {
+                    p = origin + dir * along + right * (side * (1f - s.Focus * 0.7f) + jx * 0.35f)
+                        + dir * jz * 0.2f;
+                }
+                else
+                {
+                    // Dağınık bulut: açı + yarıçap jitter
+                    float a = u * Mathf.PI * 2f + Pseudo(i, 3) * 1.7f + localAge * 1.1f;
+                    float r = reach * (0.25f + 0.7f * u) + jz;
+                    p = origin + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * r
+                        + right * jx * 0.5f;
+                }
+
+                p.y = origin.y + 0.25f + 0.45f * s.Lift * Mathf.Abs(Mathf.Sin(localAge * 5.5f + i));
                 _blobs[i].position = p;
                 float sc = _colors.EffectBlobScaleBaseM + _colors.EffectBlobScalePerSpreadM * s.Spread;
+                // Hafif boyut çeşitliliği — tek cephe hissini kırar.
+                sc *= 0.85f + 0.3f * (0.5f + 0.5f * Pseudo(i, 4));
                 _blobs[i].localScale = Vector3.one * sc;
             }
         }
 
+        void HideSwarm()
+        {
+            if (_blobs == null) return;
+            for (int i = 0; i < _blobs.Length; i++)
+                _blobs[i].gameObject.SetActive(false);
+        }
+
+        void HideNeedleGhosts()
+        {
+            if (_needleGhosts == null) return;
+            for (int i = 0; i < _needleGhosts.Length; i++)
+                _needleGhosts[i].gameObject.SetActive(false);
+        }
+
         void PulseBang(Vector3 origin, Vector3 dir, float dist, EffectSilhouette s)
         {
+            _ = origin;
+            _ = dir;
+            _ = dist;
+            _ = s;
             float pulse = 1f + 0.8f * Mathf.Sin(_logic.BangAgeSec * 28f);
             // Taban değerden hesaplanır (DrawWave bu karede zaten güncelledi) — çarpan
             // hiçbir karede önceki karenin sonucunun üstüne binmez.
             _line.widthMultiplier = _lineBaseWidth * pulse;
             if (_needle != null && _needle.gameObject.activeSelf)
                 _needle.localScale *= 1f + 0.15f * pulse;
+        }
+
+        /// <summary>[-1,1] sabit gürültü — Random değil, morph sırasında zıplamaz.</summary>
+        static float Pseudo(int i, int salt)
+        {
+            float x = Mathf.Sin(i * 12.9898f + salt * 78.233f) * 43758.5453f;
+            return (x - Mathf.Floor(x)) * 2f - 1f;
         }
 
         static Material MakeMat(Color c)

@@ -219,10 +219,24 @@ namespace Dovus.Core.Manifestation
 
         void AdvanceTravel(float dtSec)
         {
+            // T14 İĞNE: Zenitsu küçük hâli — gerilmede yol alma, sonra 2–3 karelik gidiş,
+            // menzilde sert duruş (TipDistance zaten MaxRange'de kesilir).
+            if (_verb == Rune.Igne)
+            {
+                if (_ageSec < _tuning.NeedleWindupSec)
+                    return;
+
+                float dashSec = _tuning.NeedleDashSec > 0.016f ? _tuning.NeedleDashSec : 0.016f;
+                float dashSpeed = _tuning.NeedleMaxRangeM / dashSec;
+                // Pierce hâlâ tempoyu keskinleştirir (silüet, hasar değil).
+                dashSpeed *= 1f + _tuning.PierceSpeedBonus * _current.Pierce;
+                _travel += dashSpeed * dtSec;
+                return;
+            }
+
             float speed = _verb switch
             {
                 Rune.Sarsinti => _tuning.WaveSpeedMps,
-                Rune.Igne => _tuning.NeedleSpeedMps,
                 Rune.Suru => _tuning.SwarmSpeedMps,
                 _ => _tuning.WaveSpeedMps
             };

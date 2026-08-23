@@ -8,7 +8,8 @@ namespace Dovus.Game
         Crack,
         Needle,
         Swarm,
-        Acid
+        Acid,
+        Strike
     }
 
     /// <summary>
@@ -84,6 +85,12 @@ namespace Dovus.Game
                     go.transform.rotation = Quaternion.Euler(90f, Random.Range(0f, 360f), 0f);
                     go.transform.localScale = new Vector3(scaleM * 0.9f, scaleM * 0.7f, 1f);
                     renderer.sharedMaterial = _acidMat;
+                    break;
+                case ScarKind.Strike:
+                    // Düz vuruş: kısa dar çizik — cümle halka/çatlak izinden ayrılır.
+                    go.transform.rotation = Quaternion.LookRotation(Vector3.down, along);
+                    go.transform.localScale = new Vector3(scaleM * 0.1f, scaleM * 0.85f, 1f);
+                    renderer.sharedMaterial = _cyanMat;
                     break;
             }
         }

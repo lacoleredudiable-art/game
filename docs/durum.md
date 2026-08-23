@@ -4,14 +4,18 @@
 > ajanın repoyu taramadan nerede kaldığımızı anlaması. Kısa tut: ne bitti, ne üretildi,
 > nerede sapma var.
 
-**Son güncelleme:** 23 Ağustos 2026 · **Sıradaki görev:** **T14** (silüet keskinleştirme —
-`docs/gorev-listesi.md` "Faz 3.5")
+**Son güncelleme:** 23 Ağustos 2026 · **Sıradaki görev:** Faz 3.5 bitti — telefonda his
+turu (soru 3–5) / Faz 4 kapısı
 
+> **T14 kapandı.** Üç fiilin hareket karakteri ayrıldı (İĞNE Zenitsu fırlatış, SÜRÜ
+> kademeli bulut, SARSINTI yerden yükselen halka) + düz vuruşun kısa jab silüeti.
+> `dotnet test` 92 yeşil. Sırada telefonda §13 soru 3–5 yeniden.
+>
 > **T13 kapandı.** YERE ÇAKMA üç ritmi: YAKIN / GEÇ / GENİŞ. Tell'ler windup'ta okunur
-> (GEÇ ton+poz, GENİŞ disk). `MaxSameVariantStreak=2`. Sırada **T14**.
+> (GEÇ ton+poz, GENİŞ disk). `MaxSameVariantStreak=2`.
 >
 > **T12 kapandı.** Boss canı 120, kapanış ödülü × `ClosingDamagePerEffect` hasar, tür son
-> rüne bağlı tepki, ölümde `TriggerSlowmo` + çökme + tam can revive. Faz 3.5 sırası: T13 → T14.
+> rüne bağlı tepki, ölümde `TriggerSlowmo` + çökme + tam can revive.
 >
 > **T11.1 kapandı.** Mürekkep cümle sınırında kopuyor, toparlanma kilidi kalıcı HUD'da,
 > `BossDirector.TickWindup` null-safe.
@@ -57,12 +61,12 @@
 | T11.1 | Mürekkep cümle sınırı, kilit HUD'a, null guard | bitti | task/t11.1-telefon-duzeltmeleri → master |
 | T12 | Boss canı, hasar, ölüm, kapanış türü | bitti | task/t12-boss-cani → master |
 | T13 | Çakma varyantları (YAKIN / GEÇ / GENİŞ) | bitti | task/t13-cakma-varyantlari → master |
-| T14 | Silüet keskinleştirme + düz vuruşun silüeti | bekliyor | — |
+| T14 | Silüet keskinleştirme + düz vuruşun silüeti | bitti | task/t14-siluet-keskinlestirme |
 
 Durum değerleri: `bekliyor` · `sürüyor` · `bitti` · `bloke`
 
-Faz 3.5 (T11.1–T14) sırası **bağlayıcı**: T11.1–T13 kapandı. Sırada T14 — silüet.
-Model dağılımı: T11.1/T12/T13 Composer (bitti), T14 Sonnet.
+Faz 3.5 (T11.1–T14) sırası **bağlayıcı** ve **kapandı**. Telefonda soru 3–5 yeniden;
+ardından Faz 4.
 
 ## T6.2 kararı (22 Ağustos — uygulandı, bkz. "T6.2 — Düz vuruş" bölümü)
 
@@ -1153,7 +1157,8 @@ Sahibi *"4-5 farklı class, 5 ründen baya fazla skill çeşidi nasıl olacak"* 
 ### Faz 3.5'te uydurulan sayılar (hepsi telefonda ayarlanacak)
 
 `AGENTS.md` kural: spec'te olmayan her sayı buraya. T12'nin `MaxHp` / `ClosingDamagePerEffect`
-değerleri artık kodda; ölüm pozu süreleri T12 sapmalarında. T13/T14 sayıları hâlâ bekliyor.
+değerleri artık kodda; ölüm pozu süreleri T12 sapmalarında. T13 sayıları kodda; T14
+hareket parametreleri T14 sapmalarında.
 
 | Sayı | Değer | Nereden geldi |
 |---|---|---|
@@ -1162,7 +1167,7 @@ değerleri artık kodda; ölüm pozu süreleri T12 sapmalarında. T13/T14 sayıl
 | GEÇ varyantı windup | 900 ms | Temel 640'ın belirgin biçimde üstü; erken basanı cezalandıracak kadar uzun, oyuncuyu uyutmayacak kadar kısa. Ölçülmedi — T13 kodda |
 | GENİŞ varyantı radius | 8.0 m | 5.4 m'de TEMİZ (5.47 m) ve SIYIRDI hacim dışında kalıyor (T8 denetimi 8. madde tablosu). 8.0 m ikisini de içine alır — T13 kodda |
 | `MaxSameVariantStreak` | 2 | T13: üç kez aynı varyant gelmesin |
-| Silüet hareket parametreleri | — | T14 koyacak; §8'in beş kuralı ve özet §6'nın Zenitsu kalıbı dışında spec sayı vermiyor |
+| Silüet hareket parametreleri | T14 sapmaları tablosu | Spec sayı vermiyordu; T14 koydu (Zenitsu windup/dash, sürü stagger, sarsıntı rise, jab menzili) |
 
 > **Boss ölümünün yavaş çekim süresi T12'de bağlandı.** Yeni rampa yok —
 > `TimeDirector.TriggerSlowmo()` + `SlowmoTuning` varsayılanı; çökme
@@ -1264,6 +1269,50 @@ yalnızca aktif `windup`/`radius` görür.
 - GEÇ ton eğrisi `toneT = p²` ve poz `poseT = min(1, p×1.35)` — §11 "yavaş yükselir / uzun
   tutar" için uydurma; sayılar panelde değil (PrototypeTuning ton min/max paylaşılır).
 - `MaxSameVariantStreak = 2` — T13 metni "üç kez gelirse desen yok"; tavan 2 = üçüncü engelli.
+
+### T14 — Silüet keskinleştirme
+
+Üç fiilin ayrımı **hareket karakterinden** (sahibinin seçimi; biçimden değil). Hâlâ
+`PrimitiveMesh`, sanat yok. `5→5-1→5-1-2` aynı `LivingEffect` üzerinde morph (T7 bozulmadı).
+
+| Fiil | Hareket | Nerede |
+|---|---|---|
+| İĞNE | Gerilme → 2–3 kare gidiş → donmuş varış (Zenitsu küçük hâli, özet §6) | `LivingEffect.AdvanceTravel` + `LivingEffectView.DrawIgneZenitsu` (+ 2 afterimage kapsül) |
+| SÜRÜ | Dağınık bulut, kademeli varış, cephe çizgisi yok | `DrawSwarm` + `SwarmStaggerSec` |
+| SARSINTI | Yerden yükselen geniş halka, yavaş/kütle | `EffectHeight` + düşük `WaveSpeedMps` + `EffectSarsintiMassWidthMul` |
+| Düz vuruş | Kısa dar jab; SARSINTI halkası değil | `IsBasicStrike` + `WithBasicStrikeProfile` + `ScarKind.Strike` |
+
+Düz vuruş tespiti: `OnSentenceCompleted` içinde Building hiç görülmeden spawn + tek kelime
+(T6.2 aynı-kare Commit). 1 noktalı çizilmiş SARSINTI cümlesi Building’de spawn olduğu için
+jab değil halka kalır.
+
+**Test:** `dotnet test` **92 yeşil**. Gramer/hasar/boss’a dokunulmadı; Core’da yalnızca
+`ManifestationTuning` alanları + İĞNE seyahat eğrisi + test zamanlama yorumu.
+
+**Doğrulanamadı (telefonda):** ses kapalı ekran görüntüsünden üç fiili ayırt etmek; 60 fps
+kare bütçesi; play mode konsol (MCP bu turda bağlanmadı).
+
+### T14 sapmaları / varsayılanlar
+
+Spec §8 hız/yarıçap/Zenitsu süreleri vermiyor — uydurma; gerekçe: hareket karakterini
+gözle ayırmak (görev metni + özet §6 “küçük hâli”).
+
+| Alan | Varsayılan | Neden |
+|---|---|---|
+| `WaveSpeedMps` | 4.8 (eski 9) | SARSINTI kütle / yavaş yükseliş |
+| `WaveMaxRadiusM` | 8.5 | biraz daha kısa halka, okunur |
+| `NeedleWindupSec` | 0.12 | gerilme (ulti değil; küçük hâli) |
+| `NeedleDashSec` | 0.05 | ~3 kare @60 fps |
+| `NeedleSpeedMps` | 28 | yedek; İĞNE artık dash formülü kullanır |
+| `SwarmStaggerSec` | 0.055 | kademeli üşüşme |
+| `SwarmSpeedMps` | 5.2 | orta tempo, iğne/halkadan ayrı |
+| `MaxSwarmBlobs` | 10 | bulut okunur, overdraw hâlâ düşük |
+| `WaveRiseHeightM` | 0.55 | yerden yükselme |
+| `BasicStrikeRangeM` | 2.4 | jab menzili; cümle halkasından kısa |
+| `BasicStrikeSpeedMps` | 14 | hızlı tek vuruş |
+| `BasicStrikeBangSec` | 0.22 | kısa patlama |
+| `EffectNeedleWindupLenMul` vb. | PrototypeTuning | görsel squash/stretch / jitter / jab ölçüleri |
+| `PrototypeTuning.TuningVersion` | 7 | yeni alanlar 0 gelmesin |
 
 ## Spec'ten sapmalar
 
@@ -1524,9 +1573,8 @@ Hepsi `PrototypeTuning`'de, hiçbiri kodda gömülü değil (AGENTS kural 3).
 
 ## Bilinen açıklar
 
-- T1/T2/T3/T4/T7/T7.1/T6.2/T8/T8.1/T8.2/T11.1/T12 `dotnet test` yeşil (`tools/CoreTests`, **85** test).
-- **His turu kapandı (5 oturum).** Kalan açıklar Faz 3.5: ~~T11.1~~ ~~T12~~ (bitti), T13
-  (çakma varyantları), T14 (silüet).
+- T1/T2/T3/T4/T7/T7.1/T6.2/T8/T8.1/T8.2/T11.1/T12/T13/T14 `dotnet test` yeşil (`tools/CoreTests`, **92** test).
+- **His turu kapandı (5 oturum).** Faz 3.5 kodu bitti; telefonda soru 3–5 yeniden doldurulacak.
 - **~~Mürekkep cümle sınırını göstermiyor~~ — T11.1 kapattı.** `InkTrail.Break` +
   `SentenceCompleted`; yavaş çekimde iki şerit (4+3) beklenir. Cihazda göz doğrulaması hâlâ
   yok. Yavaş çekim penceresinin yeniden pozisyon (ödül *ve* kaçış) olarak kullanımı bilinçli —
@@ -1555,9 +1603,8 @@ Hepsi `PrototypeTuning`'de, hiçbiri kodda gömülü değil (AGENTS kural 3).
 - **~~Toparlanma kilidi kalıcı HUD'da yok~~ — T11.1 kapattı** (`RecoveryLockHud`). Kilit hâlâ
   mekanik olarak yalnızca `Commit`/`OnDwell`'i yutuyor (kesen üç eylem oyuncunun elindeki
   her şey); HUD artık kalan süreyi ve kesmeyi gösteriyor.
-- **Düz vuruşun kendi tezahürü yok:** `BasicStrikeDot` fiilinin normal cümle görselini kullanıyor
-  (SARSINTI halka dalgası). Tek noktalık vuruşun ayrı bir silüeti/animasyonu olup olmayacağı
-  spec'te yok. → **T14 alıyor** (kısa, dar, tek vuruşluk ayrı silüet).
+- **~~Düz vuruşun kendi tezahürü yok~~ — T14 kapattı.** `IsBasicStrike` + kısa jab +
+  `ScarKind.Strike`; Building’de çizilen 1 noktalı SARSINTI hâlâ halka.
 - **`SentenceEngine.PublishState`, her `Tick`/`OnDotTouched`/`OnDwell`'de `SnapshotWords()` ile
   yeni bir `SentenceWord[]` allocate ediyor** (T2 kaynaklı, T7.1 denetiminde görüldü). Cümle
   kurulurken bu her karede çalışıyor (Building fazında). Sıcak yolda GC baskısı yaratabilir;

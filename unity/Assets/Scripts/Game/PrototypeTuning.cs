@@ -151,6 +151,19 @@ namespace Dovus.Game
         public float EffectNeedleLenBaseM = 0.7f;
         public float EffectNeedleLenPerPierceM = 0.5f;
 
+        // T14 — hareket karakteri görsel ölçüleri (spec yok; durum.md T14 sapmaları).
+        [Header("Tezahür hareket (T14, LivingEffectView)")]
+        public float EffectNeedleWindupLenMul = 1.55f;
+        public float EffectNeedleArrivalLenMul = 0.72f;
+        public float EffectNeedleAfterimageAlpha = 0.35f;
+        public float EffectSwarmJitterM = 0.65f;
+        public float EffectSwarmMinBlobs = 4f;
+        public float EffectSarsintiGroundY = 0.02f;
+        public float EffectSarsintiMassWidthMul = 1.35f;
+        public float EffectBasicStrikeLenM = 0.9f;
+        public float EffectBasicStrikeThickM = 0.16f;
+        public float EffectBasicStrikeHeightM = 0.55f;
+
         // Rün başına squash/stretch + poz süresi (T1/T5) — değer aynı, yeri ActorPose'dan taşındı.
         [Header("Aktör poz (T7.2, ActorPose)")]
         public float ActorPoseDurationMs = 180f;
@@ -225,7 +238,7 @@ namespace Dovus.Game
         // tasarımcının bilinçli 0'ı (ör. nabzı kapatmak) artık ezilmez (T8.1).
         [HideInInspector] public int TuningVersion = CurrentVersion;
 
-        const int CurrentVersion = 6;
+        const int CurrentVersion = 7;
 
         /// <summary>Sürümü geçmiş serileşmiş kopyayı bu sürümün varsayılanlarına çeker.</summary>
         public void EnsureRuntimeDefaults()
@@ -283,6 +296,18 @@ namespace Dovus.Game
             BossDeathCollapseSec = fresh.BossDeathCollapseSec;
             BossDeathSquashY = fresh.BossDeathSquashY;
             BossDeathSpreadXz = fresh.BossDeathSpreadXz;
+
+            // T14: hareket karakteri ölçüleri (0 gelirse Zenitsu/sürü/halka/jab kaybolur).
+            EffectNeedleWindupLenMul = fresh.EffectNeedleWindupLenMul;
+            EffectNeedleArrivalLenMul = fresh.EffectNeedleArrivalLenMul;
+            EffectNeedleAfterimageAlpha = fresh.EffectNeedleAfterimageAlpha;
+            EffectSwarmJitterM = fresh.EffectSwarmJitterM;
+            EffectSwarmMinBlobs = fresh.EffectSwarmMinBlobs;
+            EffectSarsintiGroundY = fresh.EffectSarsintiGroundY;
+            EffectSarsintiMassWidthMul = fresh.EffectSarsintiMassWidthMul;
+            EffectBasicStrikeLenM = fresh.EffectBasicStrikeLenM;
+            EffectBasicStrikeThickM = fresh.EffectBasicStrikeThickM;
+            EffectBasicStrikeHeightM = fresh.EffectBasicStrikeHeightM;
 
             TuningVersion = CurrentVersion;
         }

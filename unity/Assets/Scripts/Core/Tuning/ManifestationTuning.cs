@@ -10,12 +10,30 @@ namespace Dovus.Core.Tuning
     public class ManifestationTuning
     {
         // Seyahat — fiil dünyada yaşasın diye (T2)
-        public float WaveSpeedMps = 9f;
-        public float WaveMaxRadiusM = 9f;
-        public float NeedleSpeedMps = 16f;
+        // T14: hızlar hareket karakterini ayırır (spec sayı yok — durum.md T14 sapmaları).
+        public float WaveSpeedMps = 4.8f;
+        public float WaveMaxRadiusM = 8.5f;
+        public float NeedleSpeedMps = 28f;
         public float NeedleMaxRangeM = 12f;
-        public float SwarmSpeedMps = 6.5f;
-        public float SwarmMaxRadiusM = 7f;
+        public float SwarmSpeedMps = 5.2f;
+        public float SwarmMaxRadiusM = 7.5f;
+
+        // T14 — İĞNE Zenitsu küçük hâli: gerilme → 2–3 kare gidiş → donmuş varış.
+        public float NeedleWindupSec = 0.12f;
+        public float NeedleDashSec = 0.05f;
+
+        // T14 — SÜRÜ kademeli üşüşme (görünüm + tempo; hasar değil).
+        public float SwarmStaggerSec = 0.055f;
+
+        // T14 — SARSINTI yerden yükselme yüksekliği (görünüm; Lift ile çarpılır).
+        public float WaveRiseHeightM = 0.55f;
+
+        // T14 — düz vuruş: kısa/dar jab; cümle SARSINTI halkasından ayrı (bilinen açık).
+        public float BasicStrikeRangeM = 2.4f;
+        public float BasicStrikeSpeedMps = 14f;
+        public float BasicStrikeBangSec = 0.22f;
+        public float BasicStrikeFadeSec = 0.18f;
+        public float BasicStrikeScarScaleM = 0.7f;
 
         // Silüet eksenleri — sıfat sayıyı değil şekli değiştirir (T3)
         public float FocusPerIgne = 0.78f;
@@ -58,6 +76,27 @@ namespace Dovus.Core.Tuning
 
         // Kalıcı iz boyutu
         public float ScarScaleM = 1.4f;
-        public int MaxSwarmBlobs = 8;
+        public int MaxSwarmBlobs = 10;
+
+        /// <summary>Alan kopyası — düz vuruş profili gibi geçici override için.</summary>
+        public ManifestationTuning Clone()
+        {
+            return (ManifestationTuning)MemberwiseClone();
+        }
+
+        /// <summary>
+        /// Düz vuruşun kısa menzil/tempo profili. Gramer aynı (BasicStrikeDot fiili);
+        /// yalnızca seyahat ölçüleri cümleden ayrılır.
+        /// </summary>
+        public ManifestationTuning WithBasicStrikeProfile()
+        {
+            ManifestationTuning c = Clone();
+            c.WaveSpeedMps = BasicStrikeSpeedMps;
+            c.WaveMaxRadiusM = BasicStrikeRangeM;
+            c.BangDurationSec = BasicStrikeBangSec;
+            c.FadeDurationSec = BasicStrikeFadeSec;
+            c.ScarScaleM = BasicStrikeScarScaleM;
+            return c;
+        }
     }
 }

@@ -189,7 +189,7 @@ namespace Dovus.Game
             _buildingView.SetWindowCue((float)(state.RemainingWindowMs / state.ArmedWindowMs));
         }
 
-        LivingEffectView SpawnEffect(IReadOnlyList<SentenceWord> words, double worldMs)
+        LivingEffectView SpawnEffect(IReadOnlyList<SentenceWord> words, double worldMs, bool basicStrike = false)
         {
             _ = worldMs;
             Vector3 pos = _player.position;
@@ -204,6 +204,10 @@ namespace Dovus.Game
                     facing = toBoss.normalized;
             }
 
+            ManifestationTuning man = _combat.Manifestation;
+            if (basicStrike)
+                man = man.WithBasicStrikeProfile();
+
             var logic = new LivingEffect(
                 words[0].Rune,
                 pos.x,
@@ -211,12 +215,12 @@ namespace Dovus.Game
                 facing.x,
                 facing.z,
                 words,
-                _combat.Manifestation);
+                man);
 
-            var go = new GameObject("LivingEffect_" + words[0].Rune);
+            var go = new GameObject(basicStrike ? "LivingEffect_BasicStrike" : "LivingEffect_" + words[0].Rune);
             go.transform.SetParent(transform, false);
             var view = go.AddComponent<LivingEffectView>();
-            view.Bind(logic, _combat.Manifestation, _colors);
+            view.Bind(logic, man, _colors, basicStrike);
             _active.Add(view);
             return view;
         }
@@ -239,10 +243,13 @@ namespace Dovus.Game
             // dünyada mutlaka yaşamak zorunda (§8/T2), o yüzden burada doğuyor. Elde yaşayan bir
             // etki ARAMIYORUZ — önceki cümlenin hâlâ patlayan etkisine bu kapanışı bağlamak
             // yanlış hedefe ödeme yapmak olur.
+            // T14: Building hiç görülmeden spawn + tek kelime = düz vuruş → ayrı jab silüeti.
+            bool spawnedForBasicStrike = false;
             if (view == null || view.Logic == null
                 || view.Logic.Phase is LivingEffectPhase.Dead or LivingEffectPhase.Fading)
             {
-                view = SpawnEffect(sentence.Words, _clock.Director.WorldTimeMs);
+                spawnedForBasicStrike = sentence.Words.Count == 1;
+                view = SpawnEffect(sentence.Words, _clock.Director.WorldTimeMs, spawnedForBasicStrike);
                 _pose?.PulseRune(sentence.Words[0].Rune, _clock.Director.WorldTimeMs);
             }
 
@@ -300,7 +307,7 @@ namespace Dovus.Game
         {
             LivingEffect logic = p.View.Logic;
             logic.FireClosingBang();
-            StampScar(logic, p.Closing);
+            StampScar(p.View, p.Closing);
             ApplyBossClosing(logic, p.Closing);
             ApplyClosingDamage(p.Closing);
         }
@@ -340,23 +347,28 @@ namespace Dovus.Game
         // biri seyahat çatlağının damgalanıp damgalanmadığını, diğeri kapanışın kendi izini
         // takip eder. Aynı bayrağı paylaşınca odaklı SARSINTI (`5-1`) seyahatte çatlak
         // bıraktığı için kapanış izini hiç bırakmıyordu (T7.1).
-        void StampScar(LivingEffect logic, ClosingHit closing)
+        void StampScar(LivingEffectView view, ClosingHit closing)
         {
-            if (_closingStamped.Contains(logic))
+            LivingEffect logic = view != null ? view.Logic : null;
+            if (logic == null || _closingStamped.Contains(logic))
                 return;
 
             Vector3 along = new Vector3(logic.DirX, 0f, logic.DirZ);
             Vector3 tip = new Vector3(logic.TipX, 0f, logic.TipZ);
-            float scale = _combat.Manifestation.ScarScaleM * (0.7f + 0.15f * closing.DotCount);
+            float scale = view.IsBasicStrike
+                ? _combat.Manifestation.BasicStrikeScarScaleM * (0.7f + 0.15f * closing.DotCount)
+                : _combat.Manifestation.ScarScaleM * (0.7f + 0.15f * closing.DotCount);
 
-            ScarKind kind = closing.Type switch
-            {
-                Rune.Sarsinti => ScarKind.Crack,
-                Rune.Igne => ScarKind.Needle,
-                Rune.Suru => ScarKind.Swarm,
-                Rune.Zehir => ScarKind.Acid,
-                _ => ScarKind.Crack
-            };
+            ScarKind kind = view.IsBasicStrike
+                ? ScarKind.Strike
+                : closing.Type switch
+                {
+                    Rune.Sarsinti => ScarKind.Crack,
+                    Rune.Igne => ScarKind.Needle,
+                    Rune.Suru => ScarKind.Swarm,
+                    Rune.Zehir => ScarKind.Acid,
+                    _ => ScarKind.Crack
+                };
 
             // Hat boyunca çatlak: kökten uca birkaç damga
             if (kind == ScarKind.Crack && logic.Current.Focus > 0.5f)

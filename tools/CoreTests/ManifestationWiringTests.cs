@@ -85,8 +85,8 @@ public class ManifestationWiringTests
         var words = new[] { new SentenceWord(Rune.Igne, JumpKind.None, 0) };
         var effect = new LivingEffect(Rune.Igne, 0, 0, 0, 1, words, manifest);
 
-        // İĞNE: 12 m / 16 m/s = 0.75 sn'de menzili bitirir. 4 noktalı cümle §5'e göre en az
-        // 1.20 sn + toparlanma + sessizlik sürer — yani menzil cümleden önce dolar.
+        // İĞNE: windup + dash sonrası menzil dolar (T14 Zenitsu). 4 noktalı cümle §5'e göre
+        // en az 1.20 sn + toparlanma + sessizlik sürer — yani menzil cümleden önce dolar.
         // 2 sn'lik tick, menzili bitirmiş etkinin "beklediğini" gösterir (MaxHoldPastRangeSec
         // güvenlik payının çok altında).
         for (int i = 0; i < 40; i++)
@@ -134,9 +134,10 @@ public class ManifestationWiringTests
         var words = new[] { new SentenceWord(Rune.Igne, JumpKind.None, 0) };
         var effect = new LivingEffect(Rune.Igne, 0, 0, 0, 1, words, manifest);
 
-        // İĞNE menzili 0.75 sn'de dolar; +0.2 sn güvenlik payı = ~0.95 sn'de sönme başlamalı.
-        for (int i = 0; i < 22; i++)
-            effect.Tick(0.05f); // 1.1 sn — fade tetiklenmiş ama henüz FadeDurationSec dolmamış
+        // İĞNE menzili windup+dash (~0.17 sn) ile dolar; +0.2 sn güvenlik payı → sönme başlar.
+        // FadeDurationSec varsayılan 0.35 — Fading penceresini yakalamak için erken bak.
+        for (int i = 0; i < 10; i++)
+            effect.Tick(0.05f); // 0.5 sn — fade başlamış, henüz Dead değil
 
         Assert.That(effect.Phase, Is.EqualTo(LivingEffectPhase.Fading),
             "cümle hiç kapanmazsa güvenlik payı sonunda sönmeye başlamalı");
