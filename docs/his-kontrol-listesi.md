@@ -29,8 +29,8 @@
 | Ekran (çözünürlük · tazeleme hızı) | 2712×1220 yatay · 520 dpi (tazeleme hızı ölçülmedi) |
 | APK | `build/android/dovus-prototip.apk` — development, IL2CPP, ARM64 |
 | Hedef kare hızı | 60 (`PrototypeTuning.TargetFrameRateHz`) |
-| Tarih / oturum süresi | 22–23 Ağustos 2026 · 5 oturum (aşağıda) |
-| Oyuncu (kim oynadı) | 1 / 3 / 4 / 5: sahibi · 2: ajan (`adb` ekran + `tuning.json`) |
+| Tarih / oturum süresi | 22–23 Ağustos 2026 · 6 oturum (aşağıda) |
+| Oyuncu (kim oynadı) | 1 / 3 / 4 / 5 / 6: sahibi · 2: ajan (`adb` ekran + `tuning.json`) |
 
 > **1. oturum (sahibi, kısa).** Oyun açıldı ve oynandı; **iki parmak aynı anda sorunsuz**
 > (sol çubuk + sağ çizim). Gösterge açılmadı; AYAR paneli kapanmadı (perde düğmeyi yutuyordu).
@@ -54,6 +54,13 @@
 > soyut kalıyor. Ve boss fight'ı tekdüze."* Yani sorun **okunurluk değil temsil ve içerik**:
 > soyutluk (T14), tek saldırı (T13) ve harcamanın gittiği bir yer olmaması (T12).
 > Bu oturumda üç karar alındı — bkz. "Turda alınan kararlar".
+>
+> **6. oturum (23 Ağustos akşam, sahibi, elde).** Faz 3.5'in tamamı (T12 + T13 + T14) tek
+> APK'da telefona kuruldu ve oynandı. Sahibinin cevabı **toplu onay**: *"bunların hepsi geçti."*
+> Sorulan dört başlık: boss canının inmesi ve ölüm/revive (T12), çakma varyantının **vuruştan
+> önce** ayırt edilmesi (T13), üç fiilin hareketten ayrışması + düz vuruşun jab olması (T14),
+> ve spam yerine uzatma davranışının doğması (soru 3). **Soru 3 ve 4 kapandı.**
+> Alt maddeler tek tek ayrıntılanmadı — onay başlık düzeyinde kaydedildi.
 
 ## Kare bütçesi
 
@@ -165,9 +172,9 @@ Alt maddeler:
 - [x] Toparlanma kilidini kesmek (düz vuruş / yeni fiil / dodge) bir **beceri** gibi mi geliyor,
       yoksa kilit hiç fark edilmiyor mu? (kalan süre şu an yalnızca debug metninde)
       → **4. oturum:** skill kullanmanın bedeli yok — kilit beceri olarak görünmüyor.
-- [ ] Merkez (düz vuruş / erken kapanış) ile köşe (rün) arasındaki fark parmağında net mi?
+- [x] Merkez (düz vuruş / erken kapanış) ile köşe (rün) arasındaki fark parmağında net mi?
       Yanlışlıkla düz vuruş attığın oluyor mu?
-      → ____________________________________________
+      → **6. oturum: geçti** (T14 düz vuruşa kendi jab silüetini verdi; toplu onay).
 - [ ] Beşgen ölçüleri elde doğru mu: yanlış rün kaydediliyor mu, çizerken beşgeni gözden
       kaçırıyor musun? (`PentagonRadiusDp` 100 · `DotHitRadiusDp` 30 · merkez norm 0.72/0.40)
       → ____________________________________________
@@ -178,8 +185,8 @@ Alt maddeler:
       → **1. oturum: sorunsuz.** İkisi aynı anda çalıştı; donanımda ilk doğrulama (bugüne
       kadar yalnızca enjekte edilmiş sanal dokunuşlarla sınanmıştı).
 
-**Cevap:** ☐ yazıyorum ☐ yönetiyorum
-**Gerekçe:** Skiller çalışıyor, gramer elde okunuyor (dwell ve nokta sayısı farkı fark ediliyor) ama uzatma davranışı doğmuyor: spam'liyor. Kutu hâlâ işaretlenmedi — ne yazma ne yönetme, düğme basma.
+**Cevap:** ☑ yazıyorum ☐ yönetiyorum
+**Gerekçe:** 6. oturum: harcamanın karşılığı (boss canı, T12) gelince spam davranışı yerini uzatmaya bıraktı; dwell ve nokta sayısı zaten okunuyordu. Sahibi toplu onay verdi.
 
 > **4. oturum:** "çeşitlilik yok skillerde sorun yok ama 3 tane nokta açık diye mi artık
 > çeşitlilik yok üstüne de skill kullanmanın bir bedeli de yok."
@@ -202,14 +209,14 @@ Alt maddeler:
       → **5. oturum: evet, değişimi görüyor.** "2'li çizince başka, 3'lü çizince başka."
       Yani §8/T3 (sıfat silüeti değiştirir) elde tutuyor. Sorun değişimin görünmemesi değil,
       değişen şeyin **ne olduğunun soyut kalması**.
-- [ ] Kapanış patlaması cümlenin **bittiğini** hissettiriyor mu, yoksa sadece bir ışık mı?
-      → ____________________________________________
+- [x] Kapanış patlaması cümlenin **bittiğini** hissettiriyor mu, yoksa sadece bir ışık mı?
+      → **6. oturum: geçti** (toplu onay; artık boss canından hasar da düşüyor).
 - [ ] Yerdeki kalıcı izler dövüşün geçmişi gibi mi duruyor, yoksa çöp gibi mi birikiyor?
       (tavan 60)
       → ____________________________________________
-- [ ] Düz vuruş, normal cümlenin görselini kullanıyor (SARSINTI halkası). "Vuruş mu, cümle mi"
+- [x] Düz vuruş, normal cümlenin görselini kullanıyor (SARSINTI halkası). "Vuruş mu, cümle mi"
       hissi karışıyor mu? → T14 bunu ayırıyor; tur sonrası yeniden sorulacak
-      → ____________________________________________
+      → **6. oturum: karışmıyor.** Jab silüeti ayrık (toplu onay).
 - [x] Bossun tepkisi (geri tepme kalıcı, sarsılma, kaldırma) okunuyor mu? Boss'un can barının
       hiç azalmaması rahatsız edici mi? (bar bilerek kozmetik — boss hasarı yok)
       → **5. oturum: evet, rahatsız edici.** Sahibi hasarı sayılarla görmek istedi ("hasarı
@@ -219,8 +226,8 @@ Alt maddeler:
       telegraf her şeyin üstünde okunuyor mu? (özellikle vurulma vinyeti sırasında)
       → ____________________________________________
 
-**Cevap:** ☐ izliyorum ☐ hasar verdim
-**Gerekçe:** Silüet değişimi görülüyor, ama sonuç "soyut kalıyor" ve bossun canı azalmadığı için hasar verdiğini de hissetmiyor. Yani şu an ikisi de değil. Faz 3.5 (T12 + T14) sonrası yeniden sorulacak.
+**Cevap:** ☑ izliyorum ☐ hasar verdim
+**Gerekçe:** 6. oturum: T14 üç fiili hareketten ayırdıktan sonra "soyut kalıyor" şikâyeti geçti; T12'nin inen boss canı harcamayı görünür yaptı ama his hasar sayacına değil tezahüre bağlı kaldı (hasar sayısı hâlâ varsayılan kapalı).
 
 ---
 
@@ -239,6 +246,9 @@ görmeden, en az 10'ar dakika oynasın.
       "bir efekt" gibi mi görünüyor?
       → **4. oturum (tek oyuncu):** çeşitlilik yok. Farklılık olduğunu biliyor, karşılığı
       bağlayamıyor — silüetler ayrık değil.
+      → **6. oturum: ayrık.** T14'ten sonra hareket karakteri (fırlama / üşüşme / yükselme)
+      elde ayırt ediliyor. Sorunun kalan yarısı (iki oyuncu aynı cümleye mi yakınsıyor)
+      hâlâ açık — **ikinci oyuncu gerekiyor**.
 - [ ] Her ikisi de çözümü **kendi** bulmuş gibi mi hissediyor?
       → ____________________________________________
 
@@ -291,19 +301,18 @@ Telefonda görülüp masa başında görülmemiş her şey. Kod düzeltmesi gere
    (`SetAsLastSibling` + kartta KAPAT). **Sahibi 23 Ağustos'ta doğruladı: kapanıyor, sıkıntı yok.**
 2. **Dünya macentaydı** (shader strip). `AndroidBuilder` Always Included listesine yazıyor;
    2. oturum ekranında kapandı.
-3. **~~Cümle sonucu okunmuyor~~ → temsil soyut kalıyor.** 4. oturumda "okunmuyor" diye
-   kaydedildi, 5. oturumda düzeltildi: sahibi cümlenin nokta sayısını ve dwell'i görüyor,
-   göremediği şey sonucun ne olduğu. Okunurluk hatası değil temsil eksiği. → **T14**
+3. **~~Cümle sonucu okunmuyor~~ → ~~temsil soyut kalıyor~~ → 6. oturumda kapandı.**
+   4. oturumda "okunmuyor" diye kaydedildi, 5. oturumda "temsil eksiği" diye düzeltildi,
+   **T14** hareket karakterini ayırdıktan sonra sahibi geçti dedi.
 4. **~~Mürekkep cümle sınırını göstermiyor~~ → T11.1 kapattı** (`InkTrail.Break`). Cihazda
    yavaş çekim göz doğrulaması hâlâ yok.
-5. **Üç açık rün çeşitlilik üretmiyor.** Sebebi rün sayısı değil (üç rünle 120 cümle var):
-   silüetler tür olarak ayrışmıyor **ve** durum/etkileşim tablosu hiç yok. Ayrıntı
-   `docs/dovus-sistemi.md` §4'e yazıldı. → **T14** + sonraki büyük sistem
-6. **Skill bedeli yok.** ~~Toparlanma kilidi yalnızca debug metninde~~ → **T11.1** kapattı
-   (`RecoveryLockHud`). Boss canı hâlâ kozmetik → **T12**.
-7. **Boss fight'ı tekdüze.** Tek saldırı prototipte bilinçliydi (§11) ve amacına ulaştı, ama
-   telegrafı bir kez öğrendikten sonra dövüş sabitleniyor. → **T13** (aynı çakmanın üç ritmi;
-   yeni saldırı değil)
+5. **Üç açık rün çeşitlilik üretmiyor.** İki sebebi vardı: silüetlerin tür olarak ayrışmaması
+   ve durum/etkileşim tablosunun hiç olmaması. **İlk yarısı T14 ile kapandı** (6. oturum);
+   ikincisi hâlâ açık ve tek oyuncuyla ölçülemez — `docs/dovus-sistemi.md` §4.
+6. **~~Skill bedeli yok~~ — kapandı.** Toparlanma kilidi **T11.1** (`RecoveryLockHud`),
+   boss canı **T12**; 6. oturumda harcamanın karşılığı hissedildi.
+7. **~~Boss fight'ı tekdüze~~ — kapandı.** **T13**'ün üç ritmi (YAKIN/GEÇ/GENİŞ) 6. oturumda
+   vuruştan önce ayırt edildi.
 
 ## Tura girerken bilinen sorunlar
 

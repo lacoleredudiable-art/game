@@ -1335,6 +1335,25 @@ APK üretildi ve cihaza kuruldu — **his turu için hazır, sahibi test edecek*
 - **Not:** build sırasında Unity `unity/Assets/Scenes/Prototype.unity` dosyasını kendi kaydetti
   (112 satır); commit edilmedi, kaynağı sahne değil kod (AGENTS kural 2).
 
+### Faz 3.5 kapanışı — 6. telefon oturumu (23 Ağustos akşam)
+
+Sahibi T12 + T13 + T14'ü tek APK'da elde oynadı ve **toplu onay** verdi: *"bunların hepsi geçti."*
+Sorulan dört başlık: boss canının inmesi/ölüm-revive, çakma varyantının **vuruştan önce**
+ayırt edilmesi, üç fiilin hareketten ayrışması + jab, ve spam yerine uzatma davranışı.
+
+**Sonuç: Faz 3.5 kapandı, §13'ün 3. ve 4. sorusu kapandı.** Beş sorudan dördü cevaplı
+(1, 2 daha önce; 3, 4 bu oturumda). 5. soru hâlâ açık ve **tek oyuncuyla ölçülemez** —
+ikinci bir oyuncu gerekiyor. `docs/his-kontrol-listesi.md` güncellendi.
+
+Kapanan şikâyetler: temsil soyutluğu (T14), boss tekdüzeliği (T13), skill bedelinin olmaması
+(T11.1 + T12). Açık kalan tek çeşitlilik ekseni **durum/etkileşim tablosu** (§4).
+
+> **Sonraki ajana:** kod tarafında sıradaki iş **Faz 4 (görsellik)** — ama içeriği henüz
+> göreve bölünmedi ve pahalı kalemleri (rig'lenmiş boss, zincirlenebilir animasyon seti,
+> Asset Store VFX) satın alma/zevk kararı gerektiriyor, sahibine sorulmadan başlanmaz.
+> Alternatif ve daha ucuz iki iş: §13 soru 5 (ikinci oyuncu, kod gerektirmez) ve
+> durum/etkileşim tablosu (saf Core işi, satın alma yok).
+
 ## Spec'ten sapmalar
 
 Belgedeki bir kural/sayı uygulanamadıysa buraya yaz: hangisi, neden, yerine ne kondu.
@@ -1595,7 +1614,11 @@ Hepsi `PrototypeTuning`'de, hiçbiri kodda gömülü değil (AGENTS kural 3).
 ## Bilinen açıklar
 
 - T1/T2/T3/T4/T7/T7.1/T6.2/T8/T8.1/T8.2/T11.1/T12/T13/T14 `dotnet test` yeşil (`tools/CoreTests`, **92** test).
-- **His turu kapandı (5 oturum).** Faz 3.5 kodu bitti; telefonda soru 3–5 yeniden doldurulacak.
+- **~~His turu kapandı (5 oturum)~~ → Faz 3.5 de kapandı (6. oturum).** §13'ün 3. ve 4. sorusu
+  telefonda "evet" aldı. **Açık kalan tek soru 5** (iki oyuncu) — ikinci bir oyuncu gerekiyor,
+  kodla kapatılamaz.
+- **Kare bütçesinin sekiz satırından hâlâ yalnızca biri dolu.** 6. oturumda his sorulduğu için
+  ölçüm alınmadı; Faz 4 kare maliyeti ekleyeceğinden tablo sanat girmeden doldurulmalı.
 - **~~Mürekkep cümle sınırını göstermiyor~~ — T11.1 kapattı.** `InkTrail.Break` +
   `SentenceCompleted`; yavaş çekimde iki şerit (4+3) beklenir. Cihazda göz doğrulaması hâlâ
   yok. Yavaş çekim penceresinin yeniden pozisyon (ödül *ve* kaçış) olarak kullanımı bilinçli —
