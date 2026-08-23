@@ -25,6 +25,11 @@ namespace Dovus.Game
         float _liftVel;
         bool _captured;
 
+        // §11 ölüm: kısa çökme pozu (squash). Yavaş çekim TimeDirector'da; burada yalnızca silüet.
+        Vector3 _baseScale = Vector3.one;
+        bool _collapsed;
+        float _collapseUntilWorldMs;
+
         public PrototypeTuning Tuning
         {
             get
@@ -40,6 +45,8 @@ namespace Dovus.Game
             get => _bodyRadiusM;
             set => _bodyRadiusM = value;
         }
+
+        public bool IsCollapsed => _collapsed;
 
         /// <summary>
         /// Kalıcı konum. Dışarıdan yazılabilir ki T8'in yaklaşma hareketi bunun üstüne binsin
@@ -59,6 +66,9 @@ namespace Dovus.Game
         {
             _home = ClampToArena(transform.position);
             _captured = true;
+            _baseScale = transform.localScale;
+            if (_baseScale.sqrMagnitude < 1e-6f)
+                _baseScale = Vector3.one;
         }
 
         public void React(
@@ -68,6 +78,9 @@ namespace Dovus.Game
             float shakeSec,
             double worldTimeMs)
         {
+            if (_collapsed)
+                return;
+
             if (!_captured)
                 CaptureHome();
 
@@ -92,10 +105,40 @@ namespace Dovus.Game
         /// <summary>Kabuk kapanışı: yerinde sabitle (kısa kilit).</summary>
         public void Pin(float durationSec, double worldTimeMs)
         {
+            if (_collapsed)
+                return;
+
             _visualOffset = Vector3.zero;
             _liftVel = 0f;
             _shakeAmp = Tuning.BossPinShakeAmpM;
             _shakeUntil = (float)worldTimeMs + durationSec * 1000f;
+        }
+
+        /// <summary>
+        /// §11 ölüm pozu: yerinde çöker (squash). Süre dünya saati — yavaş çekimle birlikte uzar.
+        /// </summary>
+        public void BeginCollapse(float durationSec, double worldTimeMs)
+        {
+            if (!_captured)
+                CaptureHome();
+
+            _collapsed = true;
+            _liftVel = 0f;
+            _shakeAmp = 0f;
+            _shakeUntil = 0f;
+            _visualOffset = Vector3.zero;
+            _collapseUntilWorldMs = (float)(worldTimeMs + Mathf.Max(0.05f, durationSec) * 1000.0);
+            ApplyCollapseScale(1f);
+        }
+
+        public void EndCollapse()
+        {
+            _collapsed = false;
+            _collapseUntilWorldMs = 0f;
+            transform.localScale = _baseScale;
+            Vector3 p = _home;
+            p.y = _home.y;
+            transform.position = p;
         }
 
         public void Tick(float dtSec, double worldTimeMs)
@@ -104,6 +147,19 @@ namespace Dovus.Game
                 CaptureHome();
 
             float now = (float)worldTimeMs;
+
+            if (_collapsed)
+            {
+                float remain = Mathf.Max(0f, _collapseUntilWorldMs - now);
+                float total = Mathf.Max(0.05f, Tuning.BossDeathCollapseSec) * 1000f;
+                float u = 1f - Mathf.Clamp01(remain / total);
+                ApplyCollapseScale(u);
+                Vector3 flat = _home;
+                flat.y = _home.y;
+                transform.position = flat;
+                return;
+            }
+
             Vector3 shake = Vector3.zero;
             if (now < _shakeUntil)
             {
@@ -135,6 +191,16 @@ namespace Dovus.Game
             Vector3 p = _home + _visualOffset + shake;
             p.y = y;
             transform.position = p;
+        }
+
+        void ApplyCollapseScale(float progress01)
+        {
+            float squash = Mathf.Lerp(1f, Tuning.BossDeathSquashY, Mathf.Clamp01(progress01));
+            float spread = Mathf.Lerp(1f, Tuning.BossDeathSpreadXz, Mathf.Clamp01(progress01));
+            transform.localScale = new Vector3(
+                _baseScale.x * spread,
+                _baseScale.y * squash,
+                _baseScale.z * spread);
         }
 
         // T5 dersi: arena dışına sonsuza kayan gövde. KinematicMotor'daki aynı desen.

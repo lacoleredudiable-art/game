@@ -29,6 +29,7 @@ namespace Dovus.Game
         SentenceEngine _engine;
         Transform _player;
         PlayerVitals _vitals;
+        BossVitals _bossVitals;
         BossTelegraph _telegraph;
         CombatFeel _feel;
         KinematicMotor _playerMotor;
@@ -54,6 +55,7 @@ namespace Dovus.Game
             PentagonInput input,
             Transform player,
             PlayerVitals vitals,
+            BossVitals bossVitals,
             BossTelegraph telegraph,
             CombatFeel feel)
         {
@@ -67,12 +69,24 @@ namespace Dovus.Game
             _engine = input.Engine;
             _player = player;
             _vitals = vitals;
+            _bossVitals = bossVitals;
             _telegraph = telegraph;
             _feel = feel;
             _playerMotor = player.GetComponent<KinematicMotor>();
             _originHome = reactor.Home;
             EnterIdle(clock.Director.WorldTimeMs);
         }
+
+        /// <summary>§11: can 0 — saldırı döngüsü durur, telegraf kapanır.</summary>
+        public void NotifyBossDown(double worldMs)
+        {
+            _telegraph?.Hide();
+            _feel?.ClearThreat();
+            EnterIdle(worldMs);
+        }
+
+        /// <summary>§11: tam canla yeniden doğuş — idle beklemeden devam.</summary>
+        public void NotifyBossRevived(double worldMs) => EnterIdle(worldMs);
 
         void Update()
         {
@@ -82,6 +96,14 @@ namespace Dovus.Game
             double worldMs = _clock.Director.WorldTimeMs;
             float dtSec = (float)(_clock.WorldDeltaMs / 1000.0);
             HandlePlayerDown(worldMs);
+
+            // Boss ölümünde çökme pozu sürerken saldırı yok (§11 noktalama).
+            if (_bossVitals != null && _bossVitals.IsDown)
+            {
+                _telegraph?.Hide();
+                _feel?.ClearThreat();
+                return;
+            }
 
             switch (_phase)
             {

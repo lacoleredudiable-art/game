@@ -1,3 +1,4 @@
+using Dovus.Core.Combat;
 using Dovus.Core.Tuning;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -90,12 +91,14 @@ namespace Dovus.Game
             reactor.BodyRadiusM = BossRadiusM;
             reactor.CaptureHome();
 
+            var bossVitals = new BossVitals(combat.Boss.MaxHp);
+
             var telegraph = boss.AddComponent<BossTelegraph>();
             telegraph.Bind(_tuning, combat.Boss, boss.transform);
 
             CreateSun();
             FollowCamera follow = CreateCamera(player.transform);
-            CreatePentagon(clock, combat, player.transform, pose, reactor, dodgeMotion, afterimage, vitals, telegraph, follow, tuningConfig);
+            CreatePentagon(clock, combat, player.transform, pose, reactor, bossVitals, dodgeMotion, afterimage, vitals, telegraph, follow, tuningConfig);
         }
 
         void CreatePentagon(
@@ -104,6 +107,7 @@ namespace Dovus.Game
             Transform player,
             ActorPose pose,
             BossReactor boss,
+            BossVitals bossVitals,
             DodgeMotion dodgeMotion,
             AfterimageTrail afterimage,
             PlayerVitals vitals,
@@ -149,13 +153,16 @@ namespace Dovus.Game
             readout.Configure(combat.Feel, _tuning, view.CanvasRoot);
 
             var vitalsHud = root.AddComponent<VitalsHud>();
-            vitalsHud.Configure(vitals, _tuning, view.CanvasRoot);
+            vitalsHud.Configure(vitals, bossVitals, _tuning, view.CanvasRoot);
 
             var lockHud = root.AddComponent<RecoveryLockHud>();
             lockHud.Configure(input.Engine, combat, _tuning, view.CanvasRoot);
 
             var frameHud = root.AddComponent<FrameTimeHud>();
             frameHud.Configure(_tuning, view.CanvasRoot);
+
+            var damageHud = root.AddComponent<DamageNumberHud>();
+            damageHud.Configure(_tuning, view.CanvasRoot);
 
             dodgeMotion.Bind(clock, input, boss.transform, afterimage);
 
@@ -166,7 +173,7 @@ namespace Dovus.Game
 
             var directorGo = boss.gameObject;
             var bossDir = directorGo.AddComponent<BossDirector>();
-            bossDir.Bind(clock, combat, _tuning, boss, input, player, vitals, telegraph, feel);
+            bossDir.Bind(clock, combat, _tuning, boss, input, player, vitals, bossVitals, telegraph, feel);
 
             var scarsGo = new GameObject("GroundScars");
             scarsGo.transform.SetParent(transform, false);
@@ -176,7 +183,7 @@ namespace Dovus.Game
             var manGo = new GameObject("Manifestation");
             manGo.transform.SetParent(transform, false);
             var director = manGo.AddComponent<ManifestationDirector>();
-            director.Bind(clock, input, player, pose, boss, scars, _tuning);
+            director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir);
 
             CreateTuningPanel(tuningConfig, vitals);
         }

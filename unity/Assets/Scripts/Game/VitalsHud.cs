@@ -1,15 +1,12 @@
+using Dovus.Core.Combat;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Dovus.Game
 {
     /// <summary>
-    /// Sade can göstergeleri (T9, §6/§11). Oyuncu barı `PlayerVitals`'tan gerçek HP okur.
-    ///
-    /// Boss barı KOZMETİKTİR: Core/Game hiçbir yerde boss hasarı tutmuyor — T7 durum.md'de
-    /// "boss fiziksel tepki verir (geri tepme/sarsılma/kabuk), hasar yok" diye kayıtlı, ve bu
-    /// görevin YASAKLAR'ı yeni oyun mekaniği eklemeyi kapatıyor. Bar her zaman dolu görünür;
-    /// gerçek bir boss-HP sistemi ayrı bir görev/karar gerektirir (bkz. durum.md T9 sapmaları).
+    /// Sade can göstergeleri (T9, §6/§11). Oyuncu barı `PlayerVitals`, boss barı
+    /// `BossVitals` okur (T12 — artık kozmetik değil).
     ///
     /// Ölçüler dp: canvas ConstantPixelSize olduğu için `PentagonLayoutScreen.DpToPixels`'ten
     /// geçer — beşgen/dodge diski ile aynı yol. Ham piksel yazılsaydı yüksek yoğunluklu
@@ -18,6 +15,7 @@ namespace Dovus.Game
     public sealed class VitalsHud : MonoBehaviour
     {
         PlayerVitals _vitals;
+        BossVitals _bossVitals;
         PrototypeTuning _tuning;
         RectTransform _root;
         RectTransform _bossBg;
@@ -33,9 +31,14 @@ namespace Dovus.Game
         Color _appliedBossColor;
         Color _appliedPlayerColor;
 
-        public void Configure(PlayerVitals vitals, PrototypeTuning tuning, Transform canvasRoot)
+        public void Configure(
+            PlayerVitals vitals,
+            BossVitals bossVitals,
+            PrototypeTuning tuning,
+            Transform canvasRoot)
         {
             _vitals = vitals;
+            _bossVitals = bossVitals;
             _tuning = tuning;
 
             var go = new GameObject("VitalsHud");
@@ -136,9 +139,13 @@ namespace Dovus.Game
             if (_vitals != null && _playerFill != null)
                 _playerFill.fillAmount = _vitals.MaxHp > 0 ? Mathf.Clamp01((float)_vitals.Hp / _vitals.MaxHp) : 0f;
 
-            // Boss: hasar mekaniği yok (yukarıdaki not) — kozmetik, her zaman dolu.
             if (_bossFill != null)
-                _bossFill.fillAmount = 1f;
+            {
+                if (_bossVitals != null && _bossVitals.MaxHp > 0f)
+                    _bossFill.fillAmount = Mathf.Clamp01(_bossVitals.Hp / _bossVitals.MaxHp);
+                else
+                    _bossFill.fillAmount = 1f;
+            }
         }
     }
 }

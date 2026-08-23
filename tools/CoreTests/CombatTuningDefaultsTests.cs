@@ -93,6 +93,8 @@ public class CombatTuningDefaultsTests
             Assert.That(t.Boss.IdleMaxMs, Is.EqualTo(1500));
             Assert.That(t.Boss.ApproachSpeedMps, Is.EqualTo(2.2f));
             Assert.That(t.Boss.RespawnMaxSec, Is.EqualTo(2.0f));
+            Assert.That(t.Boss.MaxHp, Is.EqualTo(120f));
+            Assert.That(t.ClosingDamagePerEffect, Is.EqualTo(1.0f));
         });
 
         // §8 His katmanı başlangıç sayıları
