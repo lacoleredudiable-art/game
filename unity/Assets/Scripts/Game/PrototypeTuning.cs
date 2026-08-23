@@ -195,6 +195,12 @@ namespace Dovus.Game
         public float VitalsMarginDp = 18f;
         public Color BossVitalsColor = new Color(0.70f, 0.74f, 0.80f, 0.85f);
 
+        // T11.1: toparlanma kilidi kalıcı HUD (§5 beceri ekseni). Yükseklik/gap spec'te yok —
+        // can barıyla aynı dilde dp; gerekçe docs/durum.md T11.1 sapmaları.
+        [Header("Toparlanma kilidi HUD (T11.1, §5)")]
+        public float RecoveryLockHeightDp = 10f;
+        public float RecoveryLockGapDp = 8f;
+
         // T11 ölçüm turu. Hedef 60 fps görev metninden; örnekleme penceresi spec'te yok —
         // uydurma. Pencere hem yazının tazelenme aralığı hem de "en kötü kare"nin arandığı
         // aralık: kısalırsa yazı titrer, uzarsa takılma gözden kaçar.
@@ -209,7 +215,7 @@ namespace Dovus.Game
         // tasarımcının bilinçli 0'ı (ör. nabzı kapatmak) artık ezilmez (T8.1).
         [HideInInspector] public int TuningVersion = CurrentVersion;
 
-        const int CurrentVersion = 4;
+        const int CurrentVersion = 5;
 
         /// <summary>Sürümü geçmiş serileşmiş kopyayı bu sürümün varsayılanlarına çeker.</summary>
         public void EnsureRuntimeDefaults()
@@ -253,6 +259,10 @@ namespace Dovus.Game
             VitalsBarSpacingDp = fresh.VitalsBarSpacingDp;
             VitalsMarginDp = fresh.VitalsMarginDp;
             BossVitalsColor = fresh.BossVitalsColor;
+
+            // T11.1: kilit HUD ölçüleri.
+            RecoveryLockHeightDp = fresh.RecoveryLockHeightDp;
+            RecoveryLockGapDp = fresh.RecoveryLockGapDp;
 
             // T11: aynı desen. TargetFrameRateHz 0 gelirse Application.targetFrameRate anlamsız
             // bir değere düşer, o yüzden bu yama ölçüm turu için kritik.

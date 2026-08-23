@@ -35,6 +35,10 @@ namespace Dovus.Game
         int _dwellReported;
         Vector2? _lastInkPx;
         bool _eventsHooked;
+        // SentenceCompleted OnDotTouched içinde, AddSegment'ten ÖNCE ateşlenir — kapanış
+        // segmenti çizildikten sonra Break edilmeli. Bayrak + FlushInkBreak bunu sıralar.
+        bool _inkBreakPending;
+        bool _sentenceHooked;
 
         // Çizim parmağından bağımsız ikinci yuva: cümle sürerken panik dodge (§2).
         int? _dodgeFingerId;
@@ -95,8 +99,16 @@ namespace Dovus.Game
             _syllable = syllable;
             _debugHud = debugHud;
             _combat ??= new CombatTuning();
+            if (_sentenceHooked && _engine != null)
+            {
+                _engine.SentenceCompleted -= OnSentenceCompleted;
+                _sentenceHooked = false;
+            }
+
             _engine = new SentenceEngine(_combat.Sentence);
             _dodge = new DodgeState(_combat.Dodge);
+            _engine.SentenceCompleted += OnSentenceCompleted;
+            _sentenceHooked = true;
         }
 
         void OnEnable()
@@ -125,10 +137,41 @@ namespace Dovus.Game
             EndPointer(cancelled: true);
         }
 
+        void OnDestroy()
+        {
+            if (_sentenceHooked && _engine != null)
+            {
+                _engine.SentenceCompleted -= OnSentenceCompleted;
+                _sentenceHooked = false;
+            }
+        }
+
+        /// <summary>
+        /// §5: cümle sınırı görülür — mürekkep şeridi kopar. AddSegment henüz çizilmediyse
+        /// bayrak bırakılır; <see cref="FlushInkBreak"/> kapanış segmentinden sonra Break eder.
+        /// </summary>
+        void OnSentenceCompleted(CompletedSentence _)
+        {
+            _inkBreakPending = true;
+        }
+
+        void FlushInkBreak()
+        {
+            if (!_inkBreakPending)
+                return;
+
+            _ink?.Break();
+            _lastInkPx = null;
+            _inkBreakPending = false;
+        }
+
         void Update()
         {
             if (_engine != null && _clock != null)
                 _engine.Tick(_clock.WorldDeltaMs);
+
+            // Pencere dolunca Tick içinde kapanış → şeridi aynı karede kopar.
+            FlushInkBreak();
 
             if (InputLocked || PanelBlocking)
             {
@@ -358,16 +401,23 @@ namespace Dovus.Game
             Vector2 dotPx = PentagonLayoutScreen.DotPx(hit.Value, _tuning, Screen.width, Screen.height);
             double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
 
+            // SentenceCompleted OnDotTouched içinde ateşlenebilir; kapanış segmenti için
+            // from'u önce sakla, Break'i segmentten sonra FlushInkBreak yapsın.
+            Vector2? inkFrom = _lastInkPx;
             _engine.OnDotTouched(hit.Value, worldMs);
 
-            if (_lastInkPx.HasValue)
-                _ink?.AddSegment(_lastInkPx.Value, dotPx);
+            if (inkFrom.HasValue)
+                _ink?.AddSegment(inkFrom.Value, dotPx);
             _syllable?.PlayForDot(hit.Value, _engine.State.Words.Count);
 
             _activeDot = hit.Value;
-            _lastInkPx = dotPx;
             _dwellWorldMs = 0;
             _dwellReported = 0;
+
+            if (_inkBreakPending)
+                FlushInkBreak();
+            else
+                _lastInkPx = _engine.State.Phase == SentencePhase.Building ? dotPx : null;
         }
 
         void TickDwell()
@@ -415,6 +465,7 @@ namespace Dovus.Game
             if (_engine.State.Phase == SentencePhase.Building)
             {
                 _engine.Commit();
+                FlushInkBreak();
                 _debugHud?.NoteCommit();
                 return;
             }
@@ -423,6 +474,7 @@ namespace Dovus.Game
             int dot = _tuning.BasicStrikeDot;
             _engine.OnDotTouched(dot, worldMs);
             _engine.Commit();
+            FlushInkBreak();
             _syllable?.PlayForDot(dot, 1);
             _debugHud?.NoteBasicStrike();
         }
@@ -436,6 +488,7 @@ namespace Dovus.Game
             // Building: yatırım batar. Recovering: yalnızca kilit kesilir, ödenmiş kapanış durur.
             bool wasBuilding = _engine != null && _engine.State.Phase == SentencePhase.Building;
             _engine?.Abort();
+            FlushInkBreak();
             _dodge.Begin(worldMs);
             _debugHud?.NoteDodge(wasBuilding);
             _mode = FingerMode.None;

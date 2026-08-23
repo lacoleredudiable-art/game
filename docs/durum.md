@@ -4,9 +4,12 @@
 > ajanın repoyu taramadan nerede kaldığımızı anlaması. Kısa tut: ne bitti, ne üretildi,
 > nerede sapma var.
 
-**Son güncelleme:** 23 Ağustos 2026 · **Sıradaki görev:** **T11.1** (telefon turunun bulduğu
-üç düzeltme — `docs/gorev-listesi.md` "Faz 3.5")
+**Son güncelleme:** 23 Ağustos 2026 · **Sıradaki görev:** **T12** (boss canı, hasar, ölüm,
+kapanış türü — `docs/gorev-listesi.md` "Faz 3.5")
 
+> **T11.1 kapandı.** Mürekkep cümle sınırında kopuyor, toparlanma kilidi kalıcı HUD'da,
+> `BossDirector.TickWindup` null-safe. Faz 3.5 sırası devam: **T12 → T13 → T14**.
+>
 > **T11 kapandı, his turu kapandı, Faz 3.5 planlandı.** §13'ün 1. ve 2. sorusu telefonda
 > **evet** — yani Faz 4'ün eski yasağı kalktı. 3–5. sorular açık ve üçünün tıkandığı yer aynı:
 > mekanik **okunuyor** ama temsil soyut, boss tek saldırıyla tekdüze, harcamanın gittiği yer yok.
@@ -45,16 +48,16 @@
 | T9.1 | T9 denetim düzeltmeleri (bant taşması, overdraw, dp) | bitti | aynı dal → master |
 | T10 | Oyun içi ayar paneli | bitti | task/t10-ayar-paneli → master |
 | T11 | Android build, his turu | bitti (5 oturum, §13 soru 1–2 evet) | task/t11-android-build |
-| T11.1 | Mürekkep cümle sınırı, kilit HUD'a, null guard | bekliyor | — |
+| T11.1 | Mürekkep cümle sınırı, kilit HUD'a, null guard | bitti | task/t11.1-telefon-duzeltmeleri → master |
 | T12 | Boss canı, hasar, ölüm, kapanış türü | bekliyor | — |
 | T13 | Çakma varyantları (YAKIN / GEÇ / GENİŞ) | bekliyor | — |
 | T14 | Silüet keskinleştirme + düz vuruşun silüeti | bekliyor | — |
 
 Durum değerleri: `bekliyor` · `sürüyor` · `bitti` · `bloke`
 
-Faz 3.5 (T11.1–T14) sırası **bağlayıcı**: kilit HUD'da görünmeden ve mürekkep cümle sınırını
-göstermeden boss canı eklenirse "bedel yok" şikâyeti aynı kalır — oyuncu neyi ne zaman
-harcadığını hâlâ göremez. Model dağılımı: T11.1 Composer, T12 Opus (Core'daki ödül tablosuna
+Faz 3.5 (T11.1–T14) sırası **bağlayıcı**: T11.1 kapandı (kilit HUD + mürekkep sınırı). Sırada
+T12 — boss canı olmadan "bedel yok" şikâyetinin ikinci yarısı (harcamanın gittiği yer) açık
+kalır. Model dağılımı: T11.1 Composer (bitti), T12 Opus (Core'daki ödül tablosuna
 dokunan tek görev), T13/T14 Sonnet.
 
 ## T6.2 kararı (22 Ağustos — uygulandı, bkz. "T6.2 — Düz vuruş" bölümü)
@@ -1045,7 +1048,7 @@ Android'e çevrildi, APK üretildi: **41.5 MB**, development build, IL2CPP/ARM64
 - **`tuning.json` kalıcılığı gerçek APK kapat/aç ile denenmedi** (editörde play durdur/başlat
   ile doğrulandı).
 
-> **Sonraki ajana:** his turu **kapandı**, Faz 3.5 planlandı. Sıradaki iş T11.1; görev metni
+> **Sonraki ajana:** his turu **kapandı**, T11.1 **kapandı**. Sıradaki iş T12; görev metni
 > `docs/gorev-listesi.md`'de. Faz 4'e (sanat) T14 bitmeden geçilmez.
 
 ### T11 sapmaları / varsayılanlar
@@ -1153,6 +1156,38 @@ girmedi — ilgili görev `PrototypeTuning`/`CombatTuning`/`BossTuning` alanı o
 > **Boss ölümünün yavaş çekim süresi de uydurma olacak.** §11 "kısa yavaş çekim + çökme pozu"
 > diyor, süre vermiyor. T12 `SlowmoTuning`'i yeniden kullanmalı (yeni rampa **yazmamalı**,
 > T4/§7 tek kaynak) ve seçtiği süreyi buraya yazmalı.
+
+## T11.1 — Telefon turunun üç düzeltmesi (23 Ağustos)
+
+Kod-only; Core'a dokunulmadı. `MaxSentenceDots = 4` doğru çalışıyordu — görünürlük eksikti.
+
+### Üretilen
+
+- `InkTrail` — cümle = bir şerit (`LineRenderer` nokta biriktirir). `Break()` aktif şeridi
+  bırakır (ömür Break anından başlar, söner); sonraki `AddSegment` yeni şerit + mor→camgöbeği
+  gradient sıfırdan. `PentagonInput` `SentenceCompleted`'a bağlanır; kapanış segmenti
+  çizildikten sonra `FlushInkBreak` (olay `OnDotTouched` içinde, segmentten önce ateşlendiği
+  için bayrak + flush sırası).
+- `RecoveryLockHud` — `VitalsHud`/`ReactionReadout` ile aynı canvas; can barlarının altında
+  eriyen bar. Dolgu `InkCyan`, zemin `InkPurple` (§10). Kesilince fill anında 0 + kısa tutuş
+  (`CutHoldSec`) — kesmenin ödülü gözle görülür. Debug metnindeki "kilit: X ms" duruyor.
+- `BossDirector.TickWindup` — `_attack == null` early return (MCP prob tuzağı).
+
+### Doğrulama
+
+- `dotnet test` (tools/CoreTests): **79** yeşil.
+- Play mode: `InkTrail` / `RecoveryLockHud` / `BossDirector` / `PentagonInput` sahnede;
+  konsol hatasız.
+- **Doğrulanamadı (telefonda / yavaş çekimde göz):** 7 noktalık çizimde iki ayrı şerit
+  (4+3) ve kilit kesmesinin his olarak okunması — editörde wiring doğrulandı, §13 cihaz
+  hissi değil.
+
+### T11.1 sapmaları / varsayılanlar
+
+- **`RecoveryLockHeightDp = 10`**, **`RecoveryLockGapDp = 8`** (uydurma, spec'te yok) —
+  can barı dilinde dp; genişlik `VitalsBarWidthDp` paylaşılır.
+- **`CutHoldSec = 0.14`** (uydurma, kod sabiti) — kesme anında barın boş görünmesi için
+  ölçeklenmemiş tutuş; paneli/Inspector'a açılmadı (his sayısı değil, UI flaşı).
 
 ## Spec'ten sapmalar
 
@@ -1413,17 +1448,13 @@ Hepsi `PrototypeTuning`'de, hiçbiri kodda gömülü değil (AGENTS kural 3).
 
 ## Bilinen açıklar
 
-- T1/T2/T3/T4/T7/T7.1/T6.2/T8/T8.1/T8.2 `dotnet test` yeşil (`tools/CoreTests`, **79** test).
-- **His turu kapandı (5 oturum).** Kalan açıklar Faz 3.5'e görev olarak yazıldı: T11.1
-  (mürekkep sınırı + kilit HUD'a), T12 (boss canı/hasar/ölüm + kapanış türü), T13 (çakma
-  varyantları), T14 (silüet). Teşhis düzeltmesi ve gerekçeler "His turu kapanışı ve Faz 3.5
-  kararları" bölümünde.
-- **Mürekkep cümle sınırını göstermiyor** (T11.1'e yazıldı). "Yavaş çekimde 6–7 nokta
-  çizilebiliyor" diye kaydedilmişti; **tavan hatası değil** — `MaxSentenceDots = 4` doğru
-  çalışıyor, 4. noktada cümle kapanıyor ve 5. nokta yeni fiil başlatıyor (§5). Hata `InkTrail`
-  kesintisiz devam ettiği için iki cümlenin tek cümle gibi görünmesi; §5'in "cümlenin nerede
-  bittiği görülür" iddiası şu an tutmuyor. Yavaş çekim penceresi ayrıca yeniden pozisyon olarak
-  da kullanılıyor (ödül *ve* kaçış) — bu bilinçli, sahibi 4. oturumda "ikisi de" dedi.
+- T1/T2/T3/T4/T7/T7.1/T6.2/T8/T8.1/T8.2/T11.1 `dotnet test` yeşil (`tools/CoreTests`, **79** test).
+- **His turu kapandı (5 oturum).** Kalan açıklar Faz 3.5: ~~T11.1~~ (bitti), T12 (boss
+  canı/hasar/ölüm + kapanış türü), T13 (çakma varyantları), T14 (silüet).
+- **~~Mürekkep cümle sınırını göstermiyor~~ — T11.1 kapattı.** `InkTrail.Break` +
+  `SentenceCompleted`; yavaş çekimde iki şerit (4+3) beklenir. Cihazda göz doğrulaması hâlâ
+  yok. Yavaş çekim penceresinin yeniden pozisyon (ödül *ve* kaçış) olarak kullanımı bilinçli —
+  sahibi 4. oturumda "ikisi de" dedi.
 - **Xiaomi/HyperOS: `adb shell input tap` `INJECT_EVENTS` ile reddediliyor.** 2. oturumda
   panel/oyun uzaktan tıklanamadı; FPS göstergesi `tuning.json` (`ShowFrameTimeHud`)
   push + uygulama restart ile açıldı. `adb install -r` aynı cihazda 2. oturumda **çalıştı**
@@ -1434,11 +1465,7 @@ Hepsi `PrototypeTuning`'de, hiçbiri kodda gömülü değil (AGENTS kural 3).
   açıkken tek yol menü ya da MCP üzerinden `AndroidBuilder.BuildTo`; MCP çağrısı uzun build'de
   zaman aşımına uğrar ama **build editörde devam eder** (T11'de öyle oldu). Ayrıca kapatılmış
   bir editörden kalan bayat `unity/Temp/UnityLockfile` aynı hatayı verir.
-- **`BossDirector.TickWindup` (satır 145) `_attack` null iken patlıyor.** Editor.log'da eski bir
-  prob oturumundan yüzlerce `NullReferenceException` var: bileşen çalışma anında eklenip `Bind`
-  çağrılmadan bir kare geçerse `Update` boş `_attack`'a dokunuyor. Gerçek sahnede Bootstrap aynı
-  karede `Bind` çağırdığı için oyunda görülmez; yalnızca MCP prob'ları için tuzak.
-  → **T11.1 alıyor** (tek satırlık guard).
+- **~~`BossDirector.TickWindup` null `_attack`~~ — T11.1 kapattı** (`if (_attack == null) return;`).
 - **~~Boss can göstergesi kozmetik~~ — karar verildi (23 Ağustos).** Boss canı 120, kapanış ödülü
   1'e 1 hasara çevriliyor, ölünce kısa yavaş çekim + çökme sonrası tam canla yeniden doğuyor.
   Spec §5/§11 güncellendi, uygulaması **T12**. Kapanışın türü son rüne bağlı kalmak zorunda —
@@ -1451,14 +1478,9 @@ Hepsi `PrototypeTuning`'de, hiçbiri kodda gömülü değil (AGENTS kural 3).
   katmanları 200). Vurulmada kırmızı vinyet kenardan içeri sönen bir maske olduğu için sağ kenardaki
   yazının üstüne biniyor. §10 ihlali değil (telegraf hâlâ en üstte) ama "geç kaldın" yazısının
   okunaklılığı telefonda kontrol edilmeli.
-- **Toparlanma kilidi hiçbir girdiyi engellemiyor**, çünkü §5'e göre kilidi kesen üç şey (düz
-  vuruş, yeni fiil, dodge) oyuncunun elindeki eylemlerin **hepsi**. Yani kilit şu an "kalan süre"
-  okunabilir bir sayı + kesme becerisinin ölçüsü; mekanik olarak yalnızca `Commit`/`OnDwell`'i
-  yutuyor. **T9 bunu almadı**: kalan kilit hâlâ yalnızca `SentenceDebugHud`'ın debug metninde
-  ("kilit: X ms"), kalıcı HUD'da değil. Oyuncu kestiği süreyi göremediği sürece §5'in beceri
-  ekseni görünmez kalıyor — T10'un paneli ya da T11'in his turu almalı.
-  **T11 4. oturum bunu doğruladı:** sahibi "skill kullanmanın bedeli yok" dedi.
-  → **T11.1 alıyor** (kalıcı HUD'da eriyen kilit göstergesi).
+- **~~Toparlanma kilidi kalıcı HUD'da yok~~ — T11.1 kapattı** (`RecoveryLockHud`). Kilit hâlâ
+  mekanik olarak yalnızca `Commit`/`OnDwell`'i yutuyor (kesen üç eylem oyuncunun elindeki
+  her şey); HUD artık kalan süreyi ve kesmeyi gösteriyor. Boss canı hâlâ kozmetik → **T12**.
 - **Düz vuruşun kendi tezahürü yok:** `BasicStrikeDot` fiilinin normal cümle görselini kullanıyor
   (SARSINTI halka dalgası). Tek noktalık vuruşun ayrı bir silüeti/animasyonu olup olmayacağı
   spec'te yok. → **T14 alıyor** (kısa, dar, tek vuruşluk ayrı silüet).

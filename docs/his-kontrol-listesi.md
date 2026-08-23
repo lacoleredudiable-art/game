@@ -294,16 +294,13 @@ Telefonda görülüp masa başında görülmemiş her şey. Kod düzeltmesi gere
 3. **~~Cümle sonucu okunmuyor~~ → temsil soyut kalıyor.** 4. oturumda "okunmuyor" diye
    kaydedildi, 5. oturumda düzeltildi: sahibi cümlenin nokta sayısını ve dwell'i görüyor,
    göremediği şey sonucun ne olduğu. Okunurluk hatası değil temsil eksiği. → **T14**
-4. **Mürekkep cümle sınırını göstermiyor.** Yavaş çekimde 6–7 nokta tek kesintisiz iz olarak
-   çizilebiliyor; ilk teşhis "tavan tutulmuyor"du ama motor doğru çalışıyor — 4. noktada cümle
-   kapanıyor, 5. nokta yeni fiil başlatıyor (§5). Hata izde: iki cümle tek cümle gibi
-   görünüyor, oysa §5 "cümlenin nerede bittiği görülür" diyor. → **T11.1**
+4. **~~Mürekkep cümle sınırını göstermiyor~~ → T11.1 kapattı** (`InkTrail.Break`). Cihazda
+   yavaş çekim göz doğrulaması hâlâ yok.
 5. **Üç açık rün çeşitlilik üretmiyor.** Sebebi rün sayısı değil (üç rünle 120 cümle var):
    silüetler tür olarak ayrışmıyor **ve** durum/etkileşim tablosu hiç yok. Ayrıntı
    `docs/dovus-sistemi.md` §4'e yazıldı. → **T14** + sonraki büyük sistem
-6. **Skill bedeli yok.** Toparlanma kilidi yalnızca debug metninde, boss canı kozmetik.
-   İkisi de görünmediği için §5'in beceri ekseni ölçülemiyor. → **T11.1** (kilit HUD'a) ve
-   **T12** (boss canı gerçek)
+6. **Skill bedeli yok.** ~~Toparlanma kilidi yalnızca debug metninde~~ → **T11.1** kapattı
+   (`RecoveryLockHud`). Boss canı hâlâ kozmetik → **T12**.
 7. **Boss fight'ı tekdüze.** Tek saldırı prototipte bilinçliydi (§11) ve amacına ulaştı, ama
    telegrafı bir kez öğrendikten sonra dövüş sabitleniyor. → **T13** (aynı çakmanın üç ritmi;
    yeni saldırı değil)
@@ -330,8 +327,7 @@ Kaynak: `docs/durum.md` "Bilinen açıklar".
   olarak yazıldı.
 - **Yavaş çekim 1555 ms sürüyor ve savunma avantajı da veriyor** (T8.2). İlk kısılacak sayı bu
   olabilir. (Soru 2)
-- **Toparlanma kilidi kalıcı HUD'da görünmüyor**, yalnızca debug metninde. Oyuncu kestiği süreyi
-  göremiyorsa §5'in beceri ekseni görünmez kalır. (Soru 3) → **turda doğrulandı, T11.1 alıyor.**
+- **~~Toparlanma kilidi kalıcı HUD'da görünmüyor~~** → **T11.1 kapattı.** (Soru 3)
 - **Hece sesleri sinüs tıkırtısı**, müzikal kalite yok (§9 yapısı var). (Soru 3)
 - **30 kapanış üst üste, gerçek oyunda hiç sayılmadı** — izole testte tavan doğrulandı. Telefonda
   30 kapanış yapıp yerdeki izin görsel yoğunluğuna bak. (Soru 4 + kare bütçesi)

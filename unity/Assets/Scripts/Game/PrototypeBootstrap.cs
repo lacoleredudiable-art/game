@@ -151,6 +151,9 @@ namespace Dovus.Game
             var vitalsHud = root.AddComponent<VitalsHud>();
             vitalsHud.Configure(vitals, _tuning, view.CanvasRoot);
 
+            var lockHud = root.AddComponent<RecoveryLockHud>();
+            lockHud.Configure(input.Engine, combat, _tuning, view.CanvasRoot);
+
             var frameHud = root.AddComponent<FrameTimeHud>();
             frameHud.Configure(_tuning, view.CanvasRoot);
 

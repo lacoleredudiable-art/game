@@ -142,6 +142,9 @@ namespace Dovus.Game
 
         void TickWindup(double worldMs)
         {
+            if (_attack == null)
+                return;
+
             float p = (float)((worldMs - _phaseStartedWorldMs) / _attack.WindupMs);
             _telegraph?.SetProgress(p);
             _feel?.ShowThreat(p);
