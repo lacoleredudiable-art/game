@@ -1,0 +1,110 @@
+{
+  "meta": {
+    "title": "Deneme seti — operatör 5'lisi",
+    "notes": "İsimler tema; işlevler sabit. Muhatap (boss/ally/self) yetkinlikle anlamı boyar. Düzenle, kaydet, preview.py ile dene."
+  },
+  "grammar": {
+    "maxDots": 4,
+    "closingFromLastRune": true,
+    "lengthReward": {
+      "1": { "seconds": 0.25, "effect": 1.0, "recoverySec": 0.18 },
+      "2": { "seconds": 0.55, "effect": 2.4, "recoverySec": 0.28 },
+      "3": { "seconds": 0.9,  "effect": 4.4, "recoverySec": 0.4 },
+      "4": { "seconds": 1.2,  "effect": 7.0, "recoverySec": 0.55 }
+    },
+    "windowsMs": { "verb": 420, "adj1": 360, "adj2": 300 }
+  },
+  "runes": {
+    "1": {
+      "id": "ODAK",
+      "function": "daralt / tekilleştir",
+      "verb": "İnce, delici taşıyıcı doğar — tek hat / tek nokta.",
+      "adjective": "Yaşayan etkiyi sıkıştırır, keskinleştirir, tek hatta toplar.",
+      "closing": "Dar, derin darbe / tek noktaya yapışan kapanış.",
+      "seedRegime": "Needle",
+      "visualHint": "ince kapsül / fay hattı"
+    },
+    "2": {
+      "id": "YAY",
+      "function": "çoğalt / genişlet",
+      "verb": "Yayılan, çoklu taşıyıcı doğar — bulut / sürü / cephe.",
+      "adjective": "Etkiyi parçalar, çoğaltır, genişletir; hat boyunca fışkırabilir.",
+      "closing": "Çok noktalı sarsılma / dağınık bang.",
+      "seedRegime": "Swarm",
+      "visualHint": "çoklu gövde bulutu"
+    },
+    "3": {
+      "id": "TUT",
+      "function": "tut / katılaştır",
+      "verb": "Kabuk / duvar / sabitleyici alan yükselir.",
+      "adjective": "Yayılmayı keser, şekli katılaştırır, tutar / dondurur.",
+      "closing": "Sabitleme / kalkan çarpışması / köklenme.",
+      "seedRegime": "Shell",
+      "visualHint": "kabuk / plaka"
+    },
+    "4": {
+      "id": "BIRIK",
+      "function": "sürdür / birik",
+      "verb": "Sızıntı / iz / zamanla büyüyen bulut başlar.",
+      "adjective": "Etkiyi kalıcılaştırır, süreye yayar, üst üste biner.",
+      "closing": "Yerde birikinti / DoT izi / rejenere eden sis (dost + yetkinlikte).",
+      "seedRegime": "Residue",
+      "visualHint": "iz / sis / biriken zemin"
+    },
+    "5": {
+      "id": "IT",
+      "function": "savur / kaldır",
+      "verb": "Şok dalgası / yere çakma — kinetik taşıyıcı.",
+      "adjective": "Kinetik katar: savurur, havalandırır, iter.",
+      "closing": "Havalandırma / savurma bang.",
+      "seedRegime": "Wave",
+      "visualHint": "yerden yükselen halka"
+    }
+  },
+  "regimes": {
+    "Wave":    { "label": "Şok halkası", "read": "yerden genişleyen kinetik cephe" },
+    "Needle":  { "label": "Delici hat", "read": "tek yönde ince atılış" },
+    "Swarm":   { "label": "Sürü bulutu", "read": "dağınık çoklu gövde" },
+    "Shell":   { "label": "Kabuk", "read": "katılaşmış koruyucu / tutucu biçim" },
+    "Residue": { "label": "Birikinti", "read": "süren iz / sızıntı" },
+    "Fissure": { "label": "Fay hattı", "read": "tek çatlak — halka daralıp hatta toplandı" },
+    "FissureBurst": { "label": "Çatlaktan sürü", "read": "fay üzerinde çoklu fışkırma — yeni gövde doğdu" },
+    "ScatterShock": { "label": "Parçalanmış şok", "read": "halka dağılıp buluta döndü" },
+    "PinnedWave": { "label": "Tutulmuş şok", "read": "dalga katılaştı, yerinde duruyor" },
+    "LingeringFissure": { "label": "Zehirli/kalıcı fay", "read": "hat üzerinde kalan iz" },
+    "FocusedSwarm": { "label": "Toplanmış sürü", "read": "bulut tek hatta sıkıştı" },
+    "HardenedNeedle": { "label": "Katı iğne", "read": "delici hat kalınlaştı / tutundu" },
+    "Unknown": { "label": "Belirsiz", "read": "geçiş tanımı yok — açıklamalardan türet" }
+  },
+  "transitions": [
+    { "from": "Wave", "adj": "1", "to": "Fissure", "beat": "Halka ortada kırılır; tek fay hattına dönüşür (mutate)." },
+    { "from": "Fissure", "adj": "2", "to": "FissureBurst", "beat": "Çatlaklardan sürü fışkırır — yeni taşıyıcı spawn (rejim kırılması)." },
+    { "from": "FissureBurst", "adj": "4", "to": "LingeringFissure", "beat": "Sürü geçtikten sonra hat kalıcı iz bırakır." },
+    { "from": "Wave", "adj": "2", "to": "ScatterShock", "beat": "Halka parçalanıp buluta dağılır." },
+    { "from": "Wave", "adj": "3", "to": "PinnedWave", "beat": "Dalga katılaşır, yayılması kesilir." },
+    { "from": "Wave", "adj": "4", "to": "Residue", "beat": "Şok geçici iz bırakarak sönmez; birikir." },
+    { "from": "Needle", "adj": "2", "to": "FissureBurst", "beat": "İnce hat çatlar; çoklu gövde fışkırır." },
+    { "from": "Needle", "adj": "5", "to": "Fissure", "beat": "Delici atılış savurma katar; hat kinetikleşir." },
+    { "from": "Needle", "adj": "3", "to": "HardenedNeedle", "beat": "Hat kalınlaşır / tutunur." },
+    { "from": "Needle", "adj": "4", "to": "LingeringFissure", "beat": "Delik kalıcı sızıntıya dönüşür." },
+    { "from": "Swarm", "adj": "1", "to": "FocusedSwarm", "beat": "Bulut tek hatta toplanır." },
+    { "from": "Swarm", "adj": "5", "to": "ScatterShock", "beat": "Sürü savrulur / dağılır." },
+    { "from": "Swarm", "adj": "3", "to": "PinnedWave", "beat": "Sürü yerinde tutunur." },
+    { "from": "Swarm", "adj": "4", "to": "Residue", "beat": "Bulut kalıcı sisi bırakır." },
+    { "from": "Fissure", "adj": "5", "to": "Fissure", "beat": "Fay savurma katar; hâlâ tek hat." },
+    { "from": "Fissure", "adj": "3", "to": "HardenedNeedle", "beat": "Fay katılaşır." },
+    { "from": "Fissure", "adj": "1", "to": "Fissure", "beat": "Hat daha da incelir / derinleşir (yoğunlaştır)." },
+    { "from": "FissureBurst", "adj": "1", "to": "FocusedSwarm", "beat": "Fışkıran sürü tekrar sıkışır." },
+    { "from": "FissureBurst", "adj": "5", "to": "ScatterShock", "beat": "Çatlak sürüsü savrulur." },
+    { "from": "Shell", "adj": "5", "to": "PinnedWave", "beat": "Kabuk patlayıp itişe döner." },
+    { "from": "Shell", "adj": "2", "to": "Shell", "beat": "Kabuk genişler (duvar)." },
+    { "from": "Residue", "adj": "2", "to": "Residue", "beat": "Birikinti alana yayılır (sel / sis)." },
+    { "from": "Residue", "adj": "1", "to": "LingeringFissure", "beat": "Birikinti tek hatta toplanır." }
+  ],
+  "addresseeHints": {
+    "boss": "Muhatap düşman: yük saldırı / debuff / savurma tarafına boyanır.",
+    "ally": "Muhatap dost: aynı şekil destek tarafına boyanır (heal yetkinliği yoksa micro-shield / işaretleme; varsa heal/buff).",
+    "self": "Muhatap kendin: kalkan / kişisel buff / kendini savur.",
+    "ground": "Muhatap zemin: arena kontrolü, iz, alan."
+  }
+}

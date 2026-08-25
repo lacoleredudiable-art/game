@@ -4,9 +4,13 @@
 > ajanın repoyu taramadan nerede kaldığımızı anlaması. Kısa tut: ne bitti, ne üretildi,
 > nerede sapma var.
 
-**Son güncelleme:** 23 Ağustos 2026 · **Sıradaki görev:** Faz 3.5 bitti — telefonda his
+**Son güncelleme:** 25 Ağustos 2026 · **Sıradaki görev:** Faz 3.5 bitti — telefonda his
 turu (soru 3–5) / Faz 4 kapısı
 
+> **Tasarım aracı:** `tools/skill-preview/` — JSON'da 5 rün tarif et, `python3 preview.py 5-1-2-4`
+> ile gramer + rejim geçişlerini anlatır. Unity'ye bağlı değil. Örnek set ODAK/YAY/TUT/BIRIK/IT
+> (deneme; oyun içi İĞNE/SÜRÜ/… prototipini değiştirmiyor). Geçiş yoksa nitel kırılma uyarısı verir.
+>
 > **T14 kapandı.** Üç fiilin hareket karakteri ayrıldı (İĞNE Zenitsu fırlatış, SÜRÜ
 > kademeli bulut, SARSINTI yerden yükselen halka) + düz vuruşun kısa jab silüeti.
 > `dotnet test` 92 yeşil. Sırada telefonda §13 soru 3–5 yeniden.
