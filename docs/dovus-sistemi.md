@@ -204,7 +204,8 @@ Prototip turunun cevaplanmamış soruları. Kod açıkları `docs/durum.md` §4'
 
 - **Çeşitlilik sayıda değil, ayırt edilebilirlikte tıkandı.** Üç rün bile 120, beş rün 780
   cümle üretiyor; sahibi buna rağmen "çeşitlilik yok" dedi. İki sebep bulundu: silüetler tür
-  olarak yeterince ayrışmıyor (T14 kısmen kapattı), ve **durum/etkileşim tablosu hiç yok** —
+  olarak yeterince ayrışmıyor (bir tur keskinleştirildi, yetmedi), ve **durum/etkileşim
+  tablosu hiç yok** —
   bossun ıslak, zırhı kırık ya da havada olması hiçbir cümlenin anlamını değiştirmiyor.
   Rün havuzunu büyütmek bunu **çözmez**: boş bir bossa beş rün de üç rün kadar tekdüze hisseder.
 - **Dördüncü sıfat için uzatma penceresi yok.** Dördüncü noktada cümle hemen kapanış üretiyor.

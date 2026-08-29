@@ -86,7 +86,8 @@ Tasarım kararı gerektirenler `docs/dovus-sistemi.md` §4'e taşındı. Buradak
 - **Tepki yazısının bandı yüksek yoğunluklu telefonda beşgenin üst rününe değebilir**
   (geometriden türetildi, ölçülmedi). Band y 0.56–0.80, 400 dpi'da üst rün y≈0.63.
 - **`ReactionReadout` beşgenin canvas'ında** (sort 50), `CombatFeel`'in katmanı 200; vurulma
-  vinyeti yazının üstüne biniyor. §10 ihlali değil ama okunaklılık kontrol edilmeli.
+  vinyeti yazının üstüne biniyor. Renk kuralını ihlal etmiyor (telegraf hâlâ en üstte) ama
+  yazının okunaklılığı kontrol edilmeli.
 - **Arena kare (kenar 24 m) ama ayarın adı `ArenaHalfSizeM`.** Yuvarlak arena istenirse ad ve
   kırpma birlikte değişmeli.
 - **Mobilde ikinci kamera (Overlay stack) fazladan bir render geçişi.** Kare bütçesinde bakılacak.
