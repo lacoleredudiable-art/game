@@ -1,7 +1,11 @@
-# His Kontrol Listesi
+# His Kontrol Listesi (ARŞİV)
+
+> **ARŞİV, 29 Ağustos 2026.** Bu tur kapandı: beş sorudan dördü telefonda "evet" aldı,
+> beşincisi (iki oyuncu) hiç denenmedi. Yeni bir his turu yapılacaksa şablon burada; sonuçlar
+> `docs/durum.md`'de özetli. Aşağıdaki cevaplar kapanmış turun kaydıdır.
 
 > **Bu dosya telefonda, elde doldurulur.** Masa başında cevaplanan hiçbir satırı geçerli sayma —
-> prototipin bütün amacı [§13'ün beş sorusunu](dovus-sistemi.md#13-prototipin-cevapladığı-sorular)
+> prototipin bütün amacı [§13'ün beş sorusunu](dovus-sistemi-v1.md#13-prototipin-cevapladığı-sorular)
 > gerçek bir telefonda cevaplamak.
 >
 > **Sıra bağlayıcıdır:** öncekine "evet" denmeden sonrakine geçilmez. 2. soruya "hayır" çıkarsa
@@ -262,7 +266,7 @@ görmeden, en az 10'ar dakika oynasın.
 > sorun değil: üç rünle 120, beş rünle **780** farklı cümle var (1 fiil + en fazla 3 sıfat,
 > tekrar serbest). Eksik olan iki şey `docs/dovus-sistemi.md` §4'e yazıldı — silüetlerin tür
 > olarak ayrışmaması (T14) ve **durum/etkileşim tablosunun hiç olmaması**. İkincisi Faz 3.5'in
-> değil, ondan sonraki ilk büyük sistemin konusu ([özet §5](tasarim-ozeti.md#5-yaratıcı-build-sistemi)).
+> değil, ondan sonraki ilk büyük sistemin konusu ([özet §5](../tasarim-ozeti.md#5-yaratıcı-build-sistemi)).
 
 ---
 

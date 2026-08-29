@@ -1,9 +1,10 @@
 # Teknoloji Kararları — Alfa Prototip
 
-> Amaç: [Dövüş Sistemi §13](dovus-sistemi.md#13-prototipin-cevapladığı-sorular)'teki soruları
-> en az altyapıyla cevaplamak. Ağ, backend, hesap sistemi, sanat varlığı **kapsam dışıdır**.
+> Amaç: prototipin his sorularını en az altyapıyla cevaplamak. Ağ, backend, hesap sistemi,
+> sanat varlığı **kapsam dışıdır**.
 >
-> Tarih: 20 Ağustos 2026 · Durum: alfa
+> Tarih: 20 Ağustos 2026 · Durum: **geçerli.** Prototip turu bu kararlarla yapıldı ve hiçbiri
+> değişmedi; dövüş tasarımının yeniden açılması bu belgeyi etkilemiyor.
 
 ---
 
@@ -90,7 +91,8 @@ Tek bir `TimeDirector` iki saati birlikte yönetir:
 - **Gerçek saat** (ölçeklenmemiş): HUD, tepki yazısı animasyonu, girdi eşikleri
 
 Yavaş çekim rampası ve hitstop tek yerden geçer. İptal pencerelerinin dünya saatiyle
-ölçülmesi bir detay değil, [§7'deki mekaniğin kendisidir](dovus-sistemi.md#7-yavaş-çekim).
+ölçülmesi bir detay değil, [yavaş çekim mekaniğinin
+kendisidir](dovus-sistemi.md#2-kodda-şu-an-çalışan-mekanikler-envanter).
 
 ---
 

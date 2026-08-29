@@ -1,4 +1,6 @@
-# T0 — Unity kurulumu (insan işi)
+# T0 — Unity kurulumu (insan işi, ARŞİV)
+
+> **ARŞİV.** Kurulum yapıldı; bu dosya yalnızca sıfırdan yeniden kurulum gerekirse işe yarar.
 
 Force Text ayarından sonra kalan iki adım: `.gitignore` kontrolü ve commit.
 
