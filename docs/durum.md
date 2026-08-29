@@ -7,9 +7,22 @@
 **Son güncelleme:** 25 Ağustos 2026 · **Sıradaki görev:** Faz 3.5 bitti — telefonda his
 turu (soru 3–5) / Faz 4 kapısı
 
-> **Tasarım aracı:** `tools/skill-preview/` — JSON'da 5 rün tarif et, `python3 preview.py 5-1-2-4`
-> ile gramer + rejim geçişlerini anlatır. Unity'ye bağlı değil. Örnek set ODAK/YAY/TUT/BIRIK/IT
-> (deneme; oyun içi İĞNE/SÜRÜ/… prototipini değiştirmiyor). Geçiş yoksa nitel kırılma uyarısı verir.
+> **Tasarım aracı:** `tools/skill-preview/` — JSON'da rünleri tarif et, `python3 preview.py 3-6`
+> ile gramer + rejim geçişlerini anlatır. Unity'ye bağlı değil, oyun içi İĞNE/SÜRÜ/… prototipini
+> **değiştirmiyor**. Nokta sayısı `layout.dotCount`'tan gelir. `--check` fiil × sıfat kapsama
+> tablosunu basar, geçişi olmayan ikilileri listeler.
+>
+> **Varsayılan set artık element 6'lısı (altıgen, eksen katmanı yok):**
+> `1 AYDINLIK · 2 HAVA · 3 ATEŞ · 4 KARANLIK · 5 TOPRAK · 6 SU`. Her işlev rünün
+> fizikselliğinden türetildi (`roleLean` alanı tank/dps/support eğilimini taşır — sınıf değil).
+> Altıgenin tek yapısal kazancı **tam karşıtlık**: `1↔4`, `2↔5`, `3↔6`; karşıt sıfat fiilin
+> tanımlayıcı özelliğini siler. 36 ikilinin tamamı tanımlı (eski beşgen sette 9 boşluk vardı).
+> Eski operatör 5'lisi `runes-operator5.json`'a taşındı, `--runes` ile hâlâ çalışıyor.
+> Sıra ve ters sıra ayrışıyor: `3-6` → Buhar cephesi (yakma gider, alan gelir),
+> `6-3` → Kaynayan akıntı (sönmezlik gider, sayaç gelir).
+>
+> **Uzay-zaman-bilgi-bağ-varlık "5 eksen" fikri düştü.** Element seti onun yerine geçiyor;
+> tezahür anlamını eksen değil rünün kendi fizikselliği + muhatap taşıyor.
 >
 > **T14 kapandı.** Üç fiilin hareket karakteri ayrıldı (İĞNE Zenitsu fırlatış, SÜRÜ
 > kademeli bulut, SARSINTI yerden yükselen halka) + düz vuruşun kısa jab silüeti.
@@ -1618,6 +1631,24 @@ Hepsi `PrototypeTuning`'de, hiçbiri kodda gömülü değil (AGENTS kural 3).
 ## Bilinen açıklar
 
 - T1/T2/T3/T4/T7/T7.1/T6.2/T8/T8.1/T8.2/T11.1/T12/T13/T14 `dotnet test` yeşil (`tools/CoreTests`, **92** test).
+- **Element 6'lısı yalnızca masa başında var; motorda karşılığı yok.** Unity tarafı hâlâ
+  beşgen ve `Rune` enum'u (İĞNE/SÜRÜ/KABUK/ZEHİR/SARSINTI). Altıgene geçmek için gereken
+  dokunuşlar: `PentagonLayout.DotCount` (5→6) ve `ClassifyJump` (Short/Long ikilisi karşıtlık
+  için üçüncü sınıf istiyor), `Rune` enum'u + `SilhouetteBuilder`/`LivingEffect`/
+  `ManifestationDirector` içindeki rün-adı switch'leri. Bunlar T15'in (rün setini veri yapma)
+  kapsamı; bu görevde **hiçbiri değiştirilmedi**, 92 test aynı.
+- **`runes.json` içindeki `transitions[]` 6×6 bir anlatım tablosu — motora taşınmamalı.**
+  AGENTS.md kural 7 elle yazılmış kombo dizisini yasaklıyor; tablo tasarım masasında
+  "hangi ikili 'biraz daha X'e düşüyor" sorusunu görmek için var. Unity tarafındaki karşılığı
+  silüet parametreleri (focus/pierce/spread/lift) olmalı, satır satır eşleme değil. Bu
+  eşlemenin nasıl yapılacağı **karar bekliyor**: 36 beat'in her biri parametre üçlüsüne
+  indirgenebiliyor mu, yoksa bazıları gerçekten yeni bir tezahür gövdesi mi istiyor?
+- **Element setinin his sayısı yok.** `lengthReward`/`windowsMs` eski operatör setinden
+  aynen kopyalandı (`docs/dovus-sistemi.md` §5). Elementlere özgü hiçbir sayı (alev büyüme
+  hızı, buhar hacmi, akış ömrü) uydurulmadı; spec'te de yok — silüet parametrelerine
+  bağlanınca §5'e yazılmalı.
+- **`roleLean` alanı spec'te tanımlı değil.** Fizikselliklerden türetilen bir eğilim notu;
+  tank rolünün gerçekten var olabilmesi için tehdit/aggro sistemi gerekiyor, o da yok.
 - **~~His turu kapandı (5 oturum)~~ → Faz 3.5 de kapandı (6. oturum).** §13'ün 3. ve 4. sorusu
   telefonda "evet" aldı. **Açık kalan tek soru 5** (iki oyuncu) — ikinci bir oyuncu gerekiyor,
   kodla kapatılamaz.
