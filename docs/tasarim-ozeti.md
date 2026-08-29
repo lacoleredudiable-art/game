@@ -1,8 +1,10 @@
 # Tasarım Özeti
 
 > Bu belge, projenin ilk tasarım konuşmasının çıktısıdır. Amacı, yeni bir sohbetin
-> sıfırdan bağlam kurmadan devam edebilmesini sağlamaktır.
-> Tarih: 15 Ağustos 2026 · Durum: tasarım aşaması, henüz kod yok
+> sıfırdan bağlam kurmadan devam edebilmesini sağlamaktır. Sütunlar, referans analizi ve
+> zorluk felsefesi hâlâ geçerli; dövüşün mekanik ayrıntısı için `dovus-sistemi.md`'ye bak.
+> Tarih: 15 Ağustos 2026 (§10'un "prototip hedefi" kısmı 29 Ağustos'ta karşılandı — prototip
+> çalışıyor, dövüş tasarımı yeniden açıldı; bkz. `durum.md`)
 
 ---
 
@@ -329,12 +331,12 @@ bunu zaten gerektiriyor.
 
 ## 10. İlk Prototip (Hedef)
 
-> **Güncelleme (20 Ağustos 2026):** Bu bölümdeki hedef, dövüş sisteminin somutlaşmasıyla
-> genişledi. Saldırı katmanı artık "3 vuruşluk temel zincir" değil, beşgen 5 nokta üzerinde
-> **cümle kuran** bir girdi dili; dodge ise beşgenin merkezine tıklamak ve cümleyi iptal etmek.
-> Güncel ve bağlayıcı spesifikasyon: [Dövüş Sistemi](dovus-sistemi.md).
-> Prototipin sorduğu asıl soru (aşağıdaki) değişmedi, sadece üstüne dört soru daha eklendi:
-> bkz. [Dövüş Sistemi §13](dovus-sistemi.md#13-prototipin-cevapladığı-sorular).
+> **Güncelleme (29 Ağustos 2026): bu bölüm karşılandı.** Prototip çalışıyor ve telefonda
+> ölçüldü; aşağıdaki asıl soru ("sırtın ürperiyor mu") **evet** aldı. Saldırı katmanı
+> "3 vuruşluk temel zincir" değil, beşgen 5 nokta üzerinde **cümle kuran** bir girdi dili
+> oldu; dodge beşgenin dışında ayrı bir düğme, merkez ise düz vuruş.
+> Nerede kaldığımız: [Durum](durum.md) · dövüşün güncel hâli ve sayılar:
+> [Dövüş Sistemi](dovus-sistemi.md). Aşağıdaki kapsam listesi tarih olarak bırakıldı.
 
 **Kapsam — greybox, hiçbir sanat varlığı yok:**
 
