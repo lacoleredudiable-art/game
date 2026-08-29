@@ -1,4 +1,8 @@
-# Durum
+# Durum — T0–T14 görev günlüğü (ARŞİV)
+
+> **ARŞİV, 29 Ağustos 2026.** Bu dosya kapanmış alfa prototip turunun kaydıdır ve
+> **bağlayıcı değildir**. Güncel durum: `docs/durum.md`. Buradaki bir karar oradakiyle
+> çelişirse geçerli olan yeni belgedir. Aşağıdaki metin tarih olarak dokunulmadan bırakıldı.
 
 > **Görevi bitiren ajan burayı güncellemekle yükümlü.** Bu dosyanın tek amacı, sıradaki
 > ajanın repoyu taramadan nerede kaldığımızı anlaması. Kısa tut: ne bitti, ne üretildi,
@@ -1148,7 +1152,7 @@ Sahibi *"4-5 farklı class, 5 ründen baya fazla skill çeşidi nasıl olacak"* 
 
 - **Sayı zaten var.** 1 fiil + en fazla 3 sıfat, tekrar serbest → üç rünle `3+9+27+81 = 120`,
   beş rünle `5+25+125+625 = 780` cümle. Elle yazılmış hiçbir yetenek listesi buna yaklaşmaz.
-- **Eksik olan üçüncü katman.** [Özet §5](tasarim-ozeti.md#5-yaratıcı-build-sistemi)'in
+- **Eksik olan üçüncü katman.** [Özet §5](../tasarim-ozeti.md#5-yaratıcı-build-sistemi)'in
   taşıyıcı / yük / **durum tablosu** üçlüsünden prototipte yalnızca birincisi tam. Bossun ıslak,
   zırhı kırık ya da havada olması hiçbir cümlenin anlamını değiştirmiyor; o yüzden bütün
   cümleler aynı boş bossa aynı şeyi yapıyor. Belge o katmanı "asıl sihir burada" diye

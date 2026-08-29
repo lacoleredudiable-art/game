@@ -1,11 +1,16 @@
-# Dövüş Sistemi — Alfa Spesifikasyonu
+# Dövüş Sistemi — Alfa Spesifikasyonu v1 (ARŞİV)
+
+> **ARŞİV, 29 Ağustos 2026.** Rünler ve mekanikler yeniden tasarlanıyor; bu belge artık
+> **tek doğruluk kaynağı değil**. Güncel belge `docs/dovus-sistemi.md` — pazarlıksız kısıtlar,
+> kodda çalışan mekanikler ve bütün sayılar orada. Burası kararların **gerekçesini** ve terk
+> edilmiş yolları tutuyor. Çelişki hâlinde yeni belge geçerlidir.
 
 > Bu belge, dövüş sisteminin **tek doğruluk kaynağıdır**. Ajanlara verilen her görev bu
 > belgeye referans verir. Buradaki sayılar başlangıç değerleridir ve **hepsi ayarlanabilir
-> veri** olarak kodlanır (bkz. [Tasarım Özeti §8](tasarim-ozeti.md#-en-kritik-mimari-kural)).
+> veri** olarak kodlanır (bkz. [Tasarım Özeti §8](../tasarim-ozeti.md#-en-kritik-mimari-kural)).
 >
 > Tarih: 23 Ağustos 2026 · Durum: alfa, ilk telefon turu yapıldı (§13'ün 1. ve 2. sorusu
-> **evet**) · Bağlam: [Tasarım Özeti](tasarim-ozeti.md)
+> **evet**) · Bağlam: [Tasarım Özeti](../tasarim-ozeti.md)
 
 ---
 
@@ -149,7 +154,7 @@ Ayırt edilebilirliğin iki kaynağı var ve prototipte ikisi de eksik:
 1. **Silüetler tür olarak ayrışmıyor** — üçü de "bir efekt" gibi görünüyor. §13'ün 5. sorusu
    bunun düzeltmesini zaten yazmış: rün eklemek değil, türleri keskinleştirmek.
 2. **Durum ve etkileşim tablosu hiç yok.** Cümleler birbirinden farksız hissediyor çünkü hepsi
-   aynı boş bossa aynı şeyi yapıyor. [Özet §5](tasarim-ozeti.md#5-yaratıcı-build-sistemi)'in üç
+   aynı boş bossa aynı şeyi yapıyor. [Özet §5](../tasarim-ozeti.md#5-yaratıcı-build-sistemi)'in üç
    katmanından (taşıyıcı / yük / durum tablosu) prototipte yalnızca birincisi tam: bossun
    ıslak, zırhı kırık ya da havada olması hiçbir cümlenin anlamını değiştirmiyor. Belge o
    katmanı "asıl sihir burada" diye işaretlemiş ve *"8 durum + kurallar, elle yazılmış 40
@@ -380,7 +385,7 @@ yumruğu, hız rampası, afterimage, vuruş sonrası sessizlik. **Düşman tepki
 ### Başlangıç sayıları
 
 Bu tablo tahmindir; asıl değerler telefonda elde bulunacak (bkz.
-[Teknoloji Kararları §6](teknoloji-kararlari.md#6-ayarlanabilirlik--ve-telefonda-ayar-sorunu)).
+[Teknoloji Kararları §6](../teknoloji-kararlari.md#6-ayarlanabilirlik--ve-telefonda-ayar-sorunu)).
 Kodda sayı uydurmamak için buradan alınır.
 
 | Ayar | Değer | Ne |
@@ -452,7 +457,7 @@ başında tek karede çözülür (frame verisiyle düşünmeyi kolaylaştırır)
 **Boss ölümü prototipte bir noktalama işaretidir, bitiş değil.** Can 0'a düşünce kısa bir
 yavaş çekim + çökme pozu gelir, sonra boss **tam canla yeniden doğar**. Gerekçe: ayar turunun
 kesilmemesi gerekiyor — zafer ekranı, ilerleme veya ödül kurgusu bu belgenin kapsamı dışında
-ve [özet §12](tasarim-ozeti.md#12-açık-konular)'de hâlâ açık.
+ve [özet §12](../tasarim-ozeti.md#12-açık-konular)'de hâlâ açık.
 
 ### Çakma varyantları
 
