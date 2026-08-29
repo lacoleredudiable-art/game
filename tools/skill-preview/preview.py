@@ -164,6 +164,8 @@ def narrate(
     lines.append(f"1. TOHUM ({verb['id']} fiil)")
     lines.append(f"   Rejim: {regime} — {info['label']}")
     lines.append(f"   {info['read']}")
+    if verb.get("delivery"):
+        lines.append(f"   Taşıma (fiile ait, sıfat değiştirmez): {verb['delivery']}")
     lines.append(f"   Görsel ipucu: {verb.get('visualHint', '—')}")
     lines.append(f"   Zenitsu iskeleti: anticipation → travel başlar.")
 
@@ -232,12 +234,40 @@ def narrate(
         )
     lines.append("")
 
+    # --- sıra testi (yalnız ikili) ---
+    if len(dots) == 2:
+        lines.extend(order_test(cfg, dots, regime))
+
     # --- özet cümle ---
     lines.append("── Tek cümlelik özet ──")
     summary = build_summary(cfg, dots, names, regime, target)
     lines.append(summary)
     lines.append("")
     return "\n".join(lines)
+
+
+def order_test(cfg: dict[str, Any], dots: list[str], regime: str) -> list[str]:
+    """İkili cümlede sıra silüeti ayrıştırıyor mu — yoksa fark nerede kalıyor."""
+    a, b = dots[0], dots[1]
+    rev_seed = rune_of(cfg, b).get("seedRegime", "Unknown")
+    rev = find_transition(cfg, rev_seed, a)
+    rev_regime = rev["to"] if rev else "Unknown"
+    lines = ["── Sıra testi ──"]
+    lines.append(
+        f"{b}-{a} ({rune_of(cfg, b)['id']} · {rune_of(cfg, a)['id']}) → "
+        f"{rev_regime} [{regime_info(cfg, rev_regime)['label']}]"
+    )
+    if rev_regime != regime:
+        lines.append("★ Sıra silüeti ayrıştırıyor — iki ayrı tezahür.")
+    else:
+        lines.append(
+            "· Aynı rejim: sıra son silüeti değiştirmiyor. Fark yalnızca iki yerde —"
+        )
+        lines.append(f"   taşıma: {rune_of(cfg, a).get('delivery', '—')}")
+        lines.append(f"   kapanış: {rune_of(cfg, b)['closing']}")
+        lines.append("   Bu ikisi yetiyor mu, elde ölçülmeli.")
+    lines.append("")
+    return lines
 
 
 def build_summary(

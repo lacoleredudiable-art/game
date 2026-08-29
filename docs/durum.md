@@ -21,6 +21,11 @@ turu (soru 3–5) / Faz 4 kapısı
 > Sıra ve ters sıra ayrışıyor: `3-6` → Buhar cephesi (yakma gider, alan gelir),
 > `6-3` → Kaynayan akıntı (sönmezlik gider, sayaç gelir).
 >
+> **Ama bu her çiftte olmuyor: 15 çiftin yalnızca 6'sında sıra son silüeti değiştiriyor**
+> (üç karşıt çift + AYDINLIK'ın suyla olmayan çiftleri). Kalan 9'u iki sırada da aynı rejime
+> varıyor — ör. `3-4` ve `4-3` ikisi de Kor yutuşu. Fark taşıma (`delivery`) ve kapanış
+> türünde kalıyor. `preview.py` ikili cümlelerde "Sıra testi" bölümü basıp bunu söylüyor.
+>
 > **Uzay-zaman-bilgi-bağ-varlık "5 eksen" fikri düştü.** Element seti onun yerine geçiyor;
 > tezahür anlamını eksen değil rünün kendi fizikselliği + muhatap taşıyor.
 >
@@ -1647,6 +1652,13 @@ Hepsi `PrototypeTuning`'de, hiçbiri kodda gömülü değil (AGENTS kural 3).
   aynen kopyalandı (`docs/dovus-sistemi.md` §5). Elementlere özgü hiçbir sayı (alev büyüme
   hızı, buhar hacmi, akış ömrü) uydurulmadı; spec'te de yok — silüet parametrelerine
   bağlanınca §5'e yazılmalı.
+- **Komşu çiftlerde sıra silüeti ayrıştırmıyor — karar bekliyor.** 9 çift iki sırada da aynı
+  rejime varıyor. İki okuma var: (a) fiziksel olarak doğru, komşu elementler bileşik yapar ve
+  karışım sırası bileşiği değiştirmez — fark taşıma + kapanışta kalır, yeter; (b) oyun olarak
+  yetmez, `3-4` ile `4-3` ekranda aynı görünürse oyuncu ikisini ayrı hamle saymaz. (a) doğruysa
+  bu bir *kural* oluyor: **mesafe, sıranın önemli olup olmadığını belirler** — karşıt çiftte sıra
+  hangi özelliğin silineceğini seçer (ayrışır), komşu çiftte bileşik doğar (ayrışmaz). Bu kural
+  gramerden çıkıyor, elle yazılmış tablo değil; ama telefonda doğrulanmadı.
 - **`roleLean` alanı spec'te tanımlı değil.** Fizikselliklerden türetilen bir eğilim notu;
   tank rolünün gerçekten var olabilmesi için tehdit/aggro sistemi gerekiyor, o da yok.
 - **~~His turu kapandı (5 oturum)~~ → Faz 3.5 de kapandı (6. oturum).** §13'ün 3. ve 4. sorusu

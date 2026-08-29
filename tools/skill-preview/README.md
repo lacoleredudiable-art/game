@@ -37,6 +37,16 @@ Sıra: `1 AYDINLIK · 2 HAVA · 3 ATEŞ · 4 KARANLIK · 5 TOPRAK · 6 SU`
 
 Beşgende tam karşıt yoktu; altıgenin tek yapısal kazancı bu.
 
+## Sıra testi
+
+İkili cümlede motor tersini de hesaplar ve sıranın silüeti ayrıştırıp ayrıştırmadığını söyler.
+15 çiftin yalnızca **6'sında** sıra son silüeti değiştiriyor: üç karşıt çift (`1-4`, `2-5`, `3-6`)
+ve AYDINLIK'ın suyla olmayan çiftleri (`1-2`, `1-3`, `1-5`).
+
+Kalan 9 çift iki sırada da aynı rejime varıyor (ör. `3-4` ve `4-3` → Kor yutuşu). Sebebi
+fiziksel: komşu elementler *bileşik* yapıyor, karışım sırası bileşiği değiştirmiyor. Fark
+taşımada ve kapanışta kalıyor — motor ikisini de basar, yeter mi diye elde bakılır.
+
 ## Rünleri yaz
 
 `runes.json` içinde her nokta:
@@ -46,6 +56,7 @@ Beşgende tam karşıt yoktu; altıgenin tek yapısal kazancı bu.
 | `id` | İsim (ATEŞ, SU, …) |
 | `function` | Tek cümlelik işlev |
 | `verb` | Fiil rolünde ne doğar |
+| `delivery` | Tohumun **taşıma** karakteri: nasıl varır, ne kadar yaşar. Fiile ait, sıfat değiştirmez |
 | `adjective` | Sıfat rolünde ne bozar |
 | `closing` | Son rünse kapanış türü |
 | `seedRegime` | Fiil tohum rejimi |
