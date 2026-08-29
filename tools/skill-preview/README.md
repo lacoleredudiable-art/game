@@ -1,52 +1,92 @@
 # Skill Preview — cümle anlatıcı
 
-Beş rünü JSON'da tarif et; gramerle bir cümle yaz; motor **ne olacağını** anlatır.
+Rünleri JSON'da tarif et; gramerle bir cümle yaz; motor **ne olacağını** anlatır.
 Unity'ye bağlı değil — tasarım masası aracı.
 
 ## Çalıştır
 
 ```bash
 cd tools/skill-preview
-python3 preview.py 5-1-2-4
-python3 preview.py 5-1-2 --target ally
+python3 preview.py 3-6            # ATEŞ → SU
+python3 preview.py 6-3            # SU → ATEŞ (aynı ikili, ters sıra, başka silüet)
+python3 preview.py 3-6-5 --target ground
 python3 preview.py --list
+python3 preview.py --check        # fiil × sıfat kapsama tablosu
 python3 preview.py -i
+python3 preview.py 5-1-2-4 --runes runes-operator5.json   # eski beşgen set
 ```
+
+## Setler
+
+| Dosya | Set |
+|---|---|
+| `runes.json` | **Element 6'lısı** (varsayılan): AYDINLIK, HAVA, ATEŞ, KARANLIK, TOPRAK, SU |
+| `runes-operator5.json` | Eski operatör 5'lisi: ODAK, YAY, TUT, BIRIK, IT |
+
+Nokta sayısı `layout.dotCount`'tan gelir; beşgen ve altıgen aynı motorla çalışır.
+
+## Altıgen ve karşıtlık
+
+Sıra: `1 AYDINLIK · 2 HAVA · 3 ATEŞ · 4 KARANLIK · 5 TOPRAK · 6 SU`
+
+- **Mesafe 1 (komşu)** — fiziksel yakınlık: ışık-hava, hava-ateş, ateş-karanlık,
+ karanlık-toprak, toprak-su, su-ışık. Birbirini besler.
+- **Mesafe 3 (karşıt)** — `1↔4`, `2↔5`, `3↔6`. Karşıt sıfat, fiilin **tanımlayıcı
+ özelliğini siler**: su alevin yakmasını, ateş akışın sönmezliğini, toprak havanın
+ hareketini, aydınlık karanlığın yutmasını. Nitel kırılmanın kaynağı bu.
+
+Beşgende tam karşıt yoktu; altıgenin tek yapısal kazancı bu.
+
+## Sıra testi
+
+İkili cümlede motor tersini de hesaplar ve sıranın silüeti ayrıştırıp ayrıştırmadığını söyler.
+15 çiftin yalnızca **6'sında** sıra son silüeti değiştiriyor: üç karşıt çift (`1-4`, `2-5`, `3-6`)
+ve AYDINLIK'ın suyla olmayan çiftleri (`1-2`, `1-3`, `1-5`).
+
+Kalan 9 çift iki sırada da aynı rejime varıyor (ör. `3-4` ve `4-3` → Kor yutuşu). Sebebi
+fiziksel: komşu elementler *bileşik* yapıyor, karışım sırası bileşiği değiştirmiyor. Fark
+taşımada ve kapanışta kalıyor — motor ikisini de basar, yeter mi diye elde bakılır.
 
 ## Rünleri yaz
 
-`runes.json` içinde her nokta (1–5):
+`runes.json` içinde her nokta:
 
 | Alan | Anlam |
 |---|---|
-| `id` | İsim (ODAK, YAY, …) |
+| `id` | İsim (ATEŞ, SU, …) |
 | `function` | Tek cümlelik işlev |
 | `verb` | Fiil rolünde ne doğar |
+| `delivery` | Tohumun **taşıma** karakteri: nasıl varır, ne kadar yaşar. Fiile ait, sıfat değiştirmez |
 | `adjective` | Sıfat rolünde ne bozar |
 | `closing` | Son rünse kapanış türü |
 | `seedRegime` | Fiil tohum rejimi |
 | `visualHint` | Ucuz VFX ipucu |
+| `roleLean` | Tank/dps/support eğilimi (sınıf değil, eğilim) |
 
 **Nitel fark** için `transitions[]` doldur:
 
 ```json
-{ "from": "Wave", "adj": "1", "to": "Fissure",
-  "beat": "Halka fay hattına dönüşür (mutate)." }
+{ "from": "Blaze", "adj": "6", "to": "Steam",
+  "beat": "Karşıt: alev söner ama hacim patlar — yakma gider, buhar cephesi gelir." }
 ```
 
-Geçiş yoksa motor uyarır — `5-1` ile `5-1-2` “biraz daha X”e düşmesin diye.
+`--check` boş kalan hücreleri gösterir; geçiş yoksa o ikili "biraz daha X"e düşer.
+
+> `transitions[]` bir **anlatım** tablosudur, kombo tablosu değil. Motora taşınmaz:
+> Unity tarafında karşılığı silüet parametreleridir (AGENTS.md kural 7).
 
 ## Gramer (motorun varsaydığı)
 
 - İlk nokta **fiil**, sonrakiler **sıfat**
 - En fazla 4 nokta; fazlası yeni cümle
 - Kapanış **türü** son rün; ödül miktarı uzunluk tablosundan
-- Muhatap (`--target`) anlamı boyar; ODAK tek başına heal değildir
+- Muhatap (`--target`) anlamı boyar; AYDINLIK tek başına heal değildir
 
 ## Örnek
 
 ```text
-python3 preview.py 5-1-2-4
+python3 preview.py 3-6     → Blaze → Steam   (alev söner, hacim patlar)
+python3 preview.py 6-3     → Flow  → Boil    (akış sönmez, ısınır ve erir)
+python3 preview.py 3-6-5   → Blaze → Steam → Geyser
+python3 preview.py 6-3-2   → Flow  → Boil  → Steam  (aynı varış, farklı yol ve kapanış)
 ```
-
-`IT → ODAK → YAY → BIRIK`: şok halkası → fay → çatlaktan sürü → kalıcı iz.

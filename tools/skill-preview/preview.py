@@ -2,12 +2,15 @@
 """Skill cümle önizleyici — rün tanımları + gramer → anlatım.
 
 Kullanım:
-  python3 preview.py 5-1-2-4
-  python3 preview.py 5-1-2 --target ally
+  python3 preview.py 3-6
+  python3 preview.py 3-6-5 --target ground
   python3 preview.py --list
+  python3 preview.py --check
   python3 preview.py --interactive
+  python3 preview.py 5-1-2-4 --runes runes-operator5.json
 
 Rünleri düzenle: runes.json (veya --runes yol.json)
+Nokta sayısı layout.dotCount'tan gelir — beşgen/altıgen aynı motorla çalışır.
 """
 
 from __future__ import annotations
@@ -28,19 +31,52 @@ def load_config(path: Path) -> dict[str, Any]:
         return json.load(f)
 
 
-def parse_sentence(raw: str) -> list[str]:
+def dot_count(cfg: dict[str, Any]) -> int:
+    layout = cfg.get("layout", {})
+    return int(layout.get("dotCount", len(cfg["runes"])))
+
+
+def parse_sentence(raw: str, cfg: dict[str, Any]) -> list[str]:
     raw = raw.strip().replace(" ", "")
     if not raw:
         raise ValueError("Boş cümle.")
+    n = dot_count(cfg)
+    valid = {str(i) for i in range(1, n + 1)}
     parts = raw.replace(",", "-").split("-")
     dots: list[str] = []
     for p in parts:
         if not p.isdigit():
-            raise ValueError(f"Geçersiz parça: {p!r} (1-5 arası sayı beklenir)")
-        if p not in {"1", "2", "3", "4", "5"}:
-            raise ValueError(f"Nokta {p} yok — beşgende 1..5 olmalı")
+            raise ValueError(f"Geçersiz parça: {p!r} (1-{n} arası sayı beklenir)")
+        if p not in valid:
+            raise ValueError(f"Nokta {p} yok — {n} noktalı düzende 1..{n} olmalı")
         dots.append(p)
     return dots
+
+
+def circular_distance(cfg: dict[str, Any], a: str, b: str) -> int:
+    n = dot_count(cfg)
+    d = abs(int(a) - int(b))
+    if d > n // 2:
+        d = n - d
+    return d
+
+
+def jump_label(cfg: dict[str, Any], a: str, b: str) -> str:
+    d = circular_distance(cfg, a, b)
+    kinds = cfg.get("layout", {}).get("jumpKinds", {})
+    if str(d) in kinds:
+        return f"mesafe {d} — {kinds[str(d)]}"
+    # layout tanımsız (ör. eski beşgen set): jenerik sınıf
+    n = dot_count(cfg)
+    if d == 0:
+        generic = "tekrar"
+    elif d == 1:
+        generic = "kısa"
+    elif d == n // 2:
+        generic = "en uzak"
+    else:
+        generic = "uzun"
+    return f"mesafe {d} — {generic}"
 
 
 def rune_of(cfg: dict[str, Any], slot: str) -> dict[str, Any]:
@@ -105,13 +141,20 @@ def narrate(
     lines.append("── Gramer ──")
     lines.append(f"Fiil  [{verb_slot}] {verb['id']} — {verb['function']}")
     lines.append(f"       {verb['verb']}")
+    if verb.get("roleLean"):
+        lines.append(f"       rol eğilimi: {verb['roleLean']}")
     if not adjs:
         lines.append("Sıfat (yok) — tek kelimelik cümle / düz tohum.")
     else:
+        prev = verb_slot
         for i, slot in enumerate(adjs, start=1):
             r = rune_of(cfg, slot)
-            lines.append(f"Sıfat{i} [{slot}] {r['id']} — {r['function']}")
+            lines.append(
+                f"Sıfat{i} [{slot}] {r['id']} — {r['function']}"
+                f"   ({prev}→{slot}: {jump_label(cfg, prev, slot)})"
+            )
             lines.append(f"       {r['adjective']}")
+            prev = slot
     lines.append("")
 
     # --- yaşayan timeline + rejim ---
@@ -121,14 +164,21 @@ def narrate(
     lines.append(f"1. TOHUM ({verb['id']} fiil)")
     lines.append(f"   Rejim: {regime} — {info['label']}")
     lines.append(f"   {info['read']}")
+    if verb.get("delivery"):
+        lines.append(f"   Taşıma (fiile ait, sıfat değiştirmez): {verb['delivery']}")
     lines.append(f"   Görsel ipucu: {verb.get('visualHint', '—')}")
     lines.append(f"   Zenitsu iskeleti: anticipation → travel başlar.")
 
+    prev_slot = verb_slot
     for i, slot in enumerate(adjs, start=1):
         r = rune_of(cfg, slot)
         tr = find_transition(cfg, regime, slot)
         lines.append("")
-        lines.append(f"{i + 1}. SIFAT ({r['id']}) travel sürerken gelir")
+        lines.append(
+            f"{i + 1}. SIFAT ({r['id']}) travel sürerken gelir"
+            f"  [{prev_slot}→{slot}: {jump_label(cfg, prev_slot, slot)}]"
+        )
+        prev_slot = slot
         if tr:
             new_r = tr["to"]
             beat = tr.get("beat", "")
@@ -184,12 +234,40 @@ def narrate(
         )
     lines.append("")
 
+    # --- sıra testi (yalnız ikili) ---
+    if len(dots) == 2:
+        lines.extend(order_test(cfg, dots, regime))
+
     # --- özet cümle ---
     lines.append("── Tek cümlelik özet ──")
     summary = build_summary(cfg, dots, names, regime, target)
     lines.append(summary)
     lines.append("")
     return "\n".join(lines)
+
+
+def order_test(cfg: dict[str, Any], dots: list[str], regime: str) -> list[str]:
+    """İkili cümlede sıra silüeti ayrıştırıyor mu — yoksa fark nerede kalıyor."""
+    a, b = dots[0], dots[1]
+    rev_seed = rune_of(cfg, b).get("seedRegime", "Unknown")
+    rev = find_transition(cfg, rev_seed, a)
+    rev_regime = rev["to"] if rev else "Unknown"
+    lines = ["── Sıra testi ──"]
+    lines.append(
+        f"{b}-{a} ({rune_of(cfg, b)['id']} · {rune_of(cfg, a)['id']}) → "
+        f"{rev_regime} [{regime_info(cfg, rev_regime)['label']}]"
+    )
+    if rev_regime != regime:
+        lines.append("★ Sıra silüeti ayrıştırıyor — iki ayrı tezahür.")
+    else:
+        lines.append(
+            "· Aynı rejim: sıra son silüeti değiştirmiyor. Fark yalnızca iki yerde —"
+        )
+        lines.append(f"   taşıma: {rune_of(cfg, a).get('delivery', '—')}")
+        lines.append(f"   kapanış: {rune_of(cfg, b)['closing']}")
+        lines.append("   Bu ikisi yetiyor mu, elde ölçülmeli.")
+    lines.append("")
+    return lines
 
 
 def build_summary(
@@ -221,16 +299,52 @@ def list_runes(cfg: dict[str, Any]) -> str:
         lines.append(f"     fiil:  {r['verb']}")
         lines.append(f"     sıfat: {r['adjective']}")
         lines.append(f"     tohum: {r.get('seedRegime', '?')}")
+        if r.get("roleLean"):
+            lines.append(f"     rol:   {r['roleLean']}")
         lines.append("")
+    opposites = cfg.get("meta", {}).get("opposites")
+    if opposites:
+        lines.append(f"Karşıtlar: {opposites}")
     notes = cfg.get("meta", {}).get("notes")
     if notes:
         lines.append(f"Not: {notes}")
     return "\n".join(lines)
 
 
+def check_coverage(cfg: dict[str, Any]) -> str:
+    """Her fiil tohumu × her sıfat için geçiş var mı — 'biraz daha X' kaçağı arar."""
+    n = dot_count(cfg)
+    slots = [str(i) for i in range(1, n + 1)]
+    lines = ["── Kapsama: fiil tohumu × sıfat ──", ""]
+    missing: list[str] = []
+    for vs in slots:
+        verb = rune_of(cfg, vs)
+        seed = verb.get("seedRegime", "Unknown")
+        row = []
+        for adj in slots:
+            tr = find_transition(cfg, seed, adj)
+            if tr is None:
+                row.append("  ——  ")
+                missing.append(f"{vs}-{adj} ({seed} + {rune_of(cfg, adj)['id']})")
+            else:
+                same = tr["to"] == seed
+                row.append(("·" if same else "★") + tr["to"][:6].ljust(6))
+        lines.append(f"[{vs}] {verb['id']:<9} {seed:<8} | " + " ".join(row))
+    lines.append("")
+    lines.append("★ nitel kırılma · yoğunlaştırma —— geçiş yok")
+    if missing:
+        lines.append("")
+        lines.append("Eksik geçişler:")
+        lines.extend(f"  {m}" for m in missing)
+    else:
+        lines.append("")
+        lines.append("Eksik yok: her ikili bir silüet üretiyor.")
+    return "\n".join(lines)
+
+
 def interactive(cfg: dict[str, Any], target: str) -> None:
     print(list_runes(cfg))
-    print("Cümle yaz (örn. 5-1-2-4). Çıkmak için q / boş.\n")
+    print("Cümle yaz (örn. 3-6-5). Çıkmak için q / boş.\n")
     while True:
         try:
             raw = input(f"cümle [{target}]> ").strip()
@@ -244,7 +358,7 @@ def interactive(cfg: dict[str, Any], target: str) -> None:
             print(f"Muhatap → {target}\n")
             continue
         try:
-            dots = parse_sentence(raw)
+            dots = parse_sentence(raw, cfg)
             print(narrate(cfg, dots, target=target))
         except ValueError as e:
             print(f"Hata: {e}\n")
@@ -273,6 +387,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     p.add_argument("--list", action="store_true", help="Rünleri listele")
     p.add_argument(
+        "--check",
+        action="store_true",
+        help="Fiil × sıfat kapsama tablosu — eksik geçişleri bul",
+    )
+    p.add_argument(
         "--interactive", "-i", action="store_true", help="Etkileşimli mod"
     )
     args = p.parse_args(argv)
@@ -286,12 +405,15 @@ def main(argv: list[str] | None = None) -> int:
     if args.list:
         print(list_runes(cfg))
         return 0
+    if args.check:
+        print(check_coverage(cfg))
+        return 0
     if args.interactive or not args.sentence:
         if not args.sentence:
             interactive(cfg, args.target)
             return 0
     try:
-        dots = parse_sentence(args.sentence)
+        dots = parse_sentence(args.sentence, cfg)
     except ValueError as e:
         print(f"Hata: {e}", file=sys.stderr)
         return 2
