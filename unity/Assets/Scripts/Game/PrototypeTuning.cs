@@ -122,8 +122,6 @@ namespace Dovus.Game
         public float ThreatPulseHzMax = 14f;
         // §8 sarsıntı PİKSEL veriyor, kamera METRE ile sarsılıyor. Dönüşüm spec'te yok.
         public float CameraShakePxToM = 0.01f;
-        // "Filtre yok" değeri; yavaş çekimde SlowmoTuning.AudioLowpassHz devralır.
-        public float AudioBaseCutoffHz = 22000f;
 
         // T7.2: LivingEffectView'a gömülü his sayıları (AGENTS kural 3). Değerler T7'den
         // AYNI taşındı, yalnızca yeri değişti — dovus-sistemi.md'de sayı yok, sapma T7
@@ -182,8 +180,8 @@ namespace Dovus.Game
         public float BossPinShakeAmpM = 0.04f;
         public float BossLiftVelocityPerM = 4.5f;
 
-        // §11 boss ölümü: "kısa yavaş çekim + çökme pozu" — süre spec'te yok (uydurma).
-        // Yavaş çekim TimeDirector.TriggerSlowmo (SlowmoTuning); çökme süresi dünya saati.
+        // §11 boss ölümü: "çökme pozu" — süre spec'te yok (uydurma), dünya saatiyle ölçülür.
+        // Yavaş çekim 30 Ağustos 2026'da kaldırıldı (bkz. durum.md); pozun kendisi kaldı.
         // Gerekçe docs/durum.md T12 sapmaları.
         [Header("Boss ölüm pozu (T12, §11)")]
         public float BossDeathCollapseSec = 0.85f;
@@ -272,7 +270,6 @@ namespace Dovus.Game
             ThreatPulseHzMin = fresh.ThreatPulseHzMin;
             ThreatPulseHzMax = fresh.ThreatPulseHzMax;
             CameraShakePxToM = fresh.CameraShakePxToM;
-            AudioBaseCutoffHz = fresh.AudioBaseCutoffHz;
 
             // T9: yeni alanlar, aynı "sürüm damgası bir kez yamalar" deseni (yukarısı).
             ReadoutAnchorRight = fresh.ReadoutAnchorRight;

@@ -50,7 +50,6 @@ namespace Dovus.Game
             tuningConfig.TryLoad();
 
             var clock = gameObject.AddComponent<GameClock>();
-            clock.Bind(combat.Slowmo);
 
             CreateArena();
 

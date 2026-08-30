@@ -35,7 +35,7 @@ namespace Dovus.Game
             }
         }
 
-        /// <summary>Ağır: yavaş ve tok — büyük yer değiştirme, uzun toparlanma, derin yavaş çekim.</summary>
+        /// <summary>Ağır: yavaş ve tok — büyük yer değiştirme, uzun toparlanma.</summary>
         static void ApplyAgir(CombatTuning c, PrototypeTuning p)
         {
             c.Dodge.DistanceM = 4.6f;
@@ -54,10 +54,6 @@ namespace Dovus.Game
             c.Sentence.CancelWindowMs[2] = 340;
             for (int i = 0; i < c.Sentence.Steps.Length; i++)
                 c.Sentence.Steps[i].RecoverySec *= 1.3f;
-
-            c.Slowmo.Factor = 0.16f;
-            c.Slowmo.HoldMs = 1100;
-            c.Slowmo.RampUpMs = 750;
 
             c.Boss.WindupMs = 800;
             c.Boss.RecoveryMs = 900;
@@ -101,11 +97,6 @@ namespace Dovus.Game
             for (int i = 0; i < c.Sentence.Steps.Length; i++)
                 c.Sentence.Steps[i].RecoverySec *= 0.75f;
 
-            c.Slowmo.Factor = 0.30f;
-            c.Slowmo.RampDownMs = 35;
-            c.Slowmo.HoldMs = 650;
-            c.Slowmo.RampUpMs = 400;
-
             c.Boss.WindupMs = 500;
             c.Boss.RecoveryMs = 550;
             c.Boss.ApproachSpeedMps = 3.0f;
@@ -126,7 +117,7 @@ namespace Dovus.Game
             p.ReadoutPunchInSec = 0.08f;
         }
 
-        /// <summary>Anime: dramatik — derin ve uzun yavaş çekim, büyük kamera yumruğu, parlak yazı.</summary>
+        /// <summary>Anime: dramatik — büyük kamera yumruğu, uzun hitstop, parlak yazı.</summary>
         static void ApplyAnime(CombatTuning c, PrototypeTuning p)
         {
             c.Dodge.DistanceM = 5.0f;
@@ -134,11 +125,7 @@ namespace Dovus.Game
             c.Dodge.GlideTailMs = 350;
             p.DodgeGlideSpeedMps = 5.5f;
 
-            c.Slowmo.Factor = 0.10f;
-            c.Slowmo.RampDownMs = 70;
-            c.Slowmo.HoldMs = 1400;
-            c.Slowmo.RampUpMs = 900;
-            c.Slowmo.AudioLowpassHz = 500;
+            c.Feel.HitstopPerfectMs = 160;
 
             c.Boss.WindupMs = 900;
             c.Boss.RadiusM = 6.5f;

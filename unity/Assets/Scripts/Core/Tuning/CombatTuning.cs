@@ -6,7 +6,6 @@ namespace Dovus.Core.Tuning
     {
         public DodgeTuning Dodge = new DodgeTuning();
         public SentenceTuning Sentence = new SentenceTuning();
-        public SlowmoTuning Slowmo = new SlowmoTuning();
         public BossTuning Boss = new BossTuning();
         public GradeTuning Grade = new GradeTuning();
         public FeelTuning Feel = new FeelTuning();
@@ -28,7 +27,6 @@ namespace Dovus.Core.Tuning
         {
             Dodge.CopyFrom(other.Dodge);
             Sentence.CopyFrom(other.Sentence);
-            Slowmo.CopyFrom(other.Slowmo);
             Boss.CopyFrom(other.Boss);
             Grade.CopyFrom(other.Grade);
             Feel.CopyFrom(other.Feel);

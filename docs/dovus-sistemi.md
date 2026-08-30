@@ -76,20 +76,20 @@ hız (kayma kuyruğu). Bossun vuruş anında oyuncu etki hacmindeyse ve i-frame 
 Derece `gap` (vuruş anı − basma anı) ile verilir; ekranda gösterilen sayı `reaction`
 (basma anı − telegraf başlangıcı) ve bu bir ayar değil, çalışma anında ölçülür. Vurulmada da
 sebep yazılır ("erken bastın" / "geç kaldın"). **Kısıt:** en alt derece eşiği i-frame
-penceresinden küçük kalmalı, yoksa o derece hiç doğmaz ve yavaş çekimin alt sınırı kayar.
+penceresinden küçük kalmalı, yoksa o derece hiç doğmaz.
 
-**Yavaş çekim.** Tavanı yükseltmez, tavana ulaşmanı sağlar: pencereler dünya zamanıyla
-ölçüldüğü için dünya yavaşlarken parmak gerçek zamanda daha çok vakit bulur. Cümle sınırı
-hâlâ 4 nokta. Kur: bir mükemmel dodge ≈ iki ekstra nokta. Profilin **yönü** faktörden daha
-    80|önemli — süre kısa tutulursa en dar pencere yavaş çekim bittikten sonraya düşer ve ödül
-kozmetik kalır; çok uzun tutulursa her tempoda 4 nokta gelir ve beceri bandı silinir.
+**Yavaş çekim — KALDIRILDI (30 Ağustos 2026).** Bu bölüm artık envanter değil, tarih: sistemde
+yoktu. Eskiden pencereler dünya zamanıyla ölçüldüğü için dünya yavaşlarken parmak gerçek
+zamanda daha çok vakit buluyordu (bir mükemmel dodge ≈ iki ekstra nokta). Kaldırılma gerekçesi
+ve sonucu için §4.2'ye bak — **4 noktalı cümlenin gerçek zamanda erişilebilirliği artık açık
+bir soru.**
 
 **Boss.** Tek saldırı (YERE ÇAKMA), üç ritim: YAKIN / GEÇ / GENİŞ. Vuruş aktif pencerenin
 başında tek karede çözülür. **Varyant vuruştan önce ayırt edilebilir olmak zorunda** — süre
 farkı sesle (ton daha yavaş yükselir, poz daha uzun tutulur), menzil farkı diskle okunur.
-Aynı varyant en fazla 2 kez üst üste gelir. Can 0'a düşünce yavaş çekim + çökme pozu, sonra
-tam canla yeniden doğuş: prototipte ölüm bir noktalama işareti, bitiş değil. Oyuncu ölümünün
-cezası ≤2 saniye.
+Aynı varyant en fazla 2 kez üst üste gelir. Can 0'a düşünce çökme pozu (dünya saatiyle
+ölçülen sabit süre), sonra tam canla yeniden doğuş: prototipte ölüm bir noktalama işareti,
+bitiş değil. Oyuncu ölümünün cezası ≤2 saniye.
 
 **Tezahür.** Etki seyahat eder, silüete morph olur, kapanışta patlar ve yerde kalıcı iz
     90|bırakır. Silüet eksenleri: odakla / del / yay / kaldır. Sıfat bu eksenleri oynatır, hiçbir
@@ -122,8 +122,9 @@ cümlenin oluştuğunu duyar).
 | 3 nokta | 0.80 sn | 4.4 | 5.5 | 0.38 sn |
 | 4 nokta | 1.20 sn | 7.0 | 5.8 | 0.55 sn |
 
-Eğrinin düzleşmesi kasıtlı: dördüncü nokta neredeyse hiçbir şey katmaz, onu ancak bedavaysa
-   120|(yavaş çekim penceresinde) çizersin.
+Eğrinin düzleşmesi kasıtlı: dördüncü nokta neredeyse hiçbir şey katmaz. Eskiden onu ancak
+bedavaysa (yavaş çekim penceresinde) çizebiliyordun; o pencere kalktı, gerçek zamanda 4.
+noktanın erişilebilirliği §4.2'de açık soru.
 
 **Dodge:** `startupMs` 20 · `iframeStartMs` 0 · `iframeMs` 260 · `distanceM` 3.8 ·
 `durationMs` 260 · `curveExp` 3.2 · `glideTailMs` 220 · `cooldownMs` 420
@@ -132,8 +133,9 @@ Eğrinin düzleşmesi kasıtlı: dördüncü nokta neredeyse hiçbir şey katmaz
 **Derece eşikleri (`gap`):** MÜKEMMEL ≤ 90 ms · HARİKA ≤ 160 ms · TEMİZ ≤ 220 ms ·
 SIYIRDI 221 ms – pencere sonu (ödül vermez)
 
-**Yavaş çekim:** `factor` 0.22 · `rampDownMs` 55 · `holdMs` 900 · `rampUpMs` 600 ·
-   130|`audioLowpassHz` 700 · `slowmoMinGrade` TEMİZ · `slowmoBonusDots` 0
+**Yavaş çekim:** KALDIRILDI (30 Ağustos 2026) — `SlowmoTuning` silindi, bu satırdaki sayılar
+artık kodda yok. Tarihsel referans: `factor` 0.22 · `rampDownMs` 55 · `holdMs` 900 ·
+`rampUpMs` 600 · `audioLowpassHz` 700 · `slowmoMinGrade` TEMİZ · `slowmoBonusDots` 0
 
 **Boss:** can 120 · oyuncu canı 22 `[u]` · idle bekleme 700–1500 ms · yaklaşma 2.2 m/s ·
 active 90 ms · recovery 720 ms · damage 22 · `maxSameVariantStreak` 2
@@ -200,7 +202,27 @@ Henüz açık — bir sonraki adım:
 
 ### 4.2 Mekanikler
 
-   180|*(boş — girdi düzeni, gramer, cümle ekonomisi, kapanış, dodge/yavaş çekim ilişkisi)*
+**Karar (30 Ağustos 2026, sahibi): yavaş çekim mekaniği tamamen kaldırıldı.** Gerekçe:
+co-op'ta paylaşılan dünya saatini tek oyuncunun dodge'una göre yavaşlatmak senkron sorunu
+doğuruyor — "co op'ta slow mo nasıl çalıştıracağız" sorusu cevaplanamadı, cevap "çalıştırmayacağız"
+oldu. Kod tarafı bitti: `SlowmoTuning` silindi, `TimeDirector` yalnızca hitstop taşıyor,
+boss ölüm pozu artık slowmo bitişini değil kendi süresini (`BossDeathCollapseSec`) bekliyor.
+`dotnet test` 78 yeşil (bkz. durum.md §6).
+
+**Açık kalan sonuç:** eski sistemde 4. sıfat noktasına gerçek zamanda hiçbir tempoda
+ulaşılamıyordu — tek kapı yavaş çekimdi (§2'nin eski "Yavaş çekim" paragrafı, silinen
+`SlowmoSentenceFitTests`). O kapı gidince üç seçenek var, hangisi seçilecek **henüz karar
+değil**:
+
+1. Böyle kalsın — 4 nokta teorik tavan olsun, cümle ekonomisi fiilen 3 noktaya düşsün.
+2. İptal pencereleri (§3: 420/360/300 ms) gevşetilsin, 4. nokta gerçek zamanda da
+   erişilebilir olsun — bu durumda §3'ün cümle tablosu sayıları yeniden ölçülmeli.
+3. 4. noktaya başka bir kapı tasarlanır (ör. belirli bir element kombinasyonu bonus pencere
+   açar) — bu "kombo tablosu yazılmaz" kuralına (AGENTS #7) takılmadan yapılmalı.
+
+**Henüz açık değil:** rün seti altıgene geçtiğinde (§4.1) bu ekonominin nasıl değişeceği —
+6 köşede K1/K2/K3 kuralları, `maxSentenceDots` ve pencereler yeniden mi düşünülecek yoksa
+aynen mi kalacak.
 
 ### 4.3 Boss repertuarı
 
@@ -221,8 +243,9 @@ Prototip turunun cevaplanmamış soruları. Kod açıkları `docs/durum.md` §4'
   bossun ıslak, zırhı kırık ya da havada olması hiçbir cümlenin anlamını değiştirmiyor.
   Rün havuzunu büyütmek bunu **çözmez**: boş bir bossa beş rün de üç rün kadar tekdüze hisseder.
 - **Dördüncü sıfat için uzatma penceresi yok.** Dördüncü noktada cümle hemen kapanış üretiyor.
-   200|- **Yavaş çekim penceresi hem ödül hem kaçış olarak kullanılıyor** (sahibi "ikisi de" dedi).
-  1555 ms sürüyor ve savunma avantajı da veriyor; bu bilinçli ama ölçülmedi.
+- ~~Yavaş çekim penceresi hem ödül hem kaçış olarak kullanılıyordu~~ — **çözüldü (30 Ağustos):**
+  mekanik tamamen kaldırıldı, bkz. §4.2. Yerine gelen açık: 4. nokta artık gerçek zamanda hiç
+  erişilemiyor, karar bekliyor.
 - **Boss ölümünün ne olduğu tanımsız.** Zafer ekranı, ilerleme, ödül kurgusu hiç düşünülmedi.
 - **İki oyuncunun aynı bossu farklı cümlelerle geçmesi** hiç denenmedi. Herkes aynı cümleyi
   çiziyorsa bir eksen çökmüş demektir; düzeltmesi rün eklemek değil, türleri keskinleştirmek.
