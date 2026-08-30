@@ -328,14 +328,6 @@ namespace Dovus.Game
             AddFloatSlider("Toparlanma · 3 nokta", 0.02f, 1.4f, () => c.Sentence.Steps[2].RecoverySec, v => c.Sentence.Steps[2].RecoverySec = v, "sn", "0.00");
             AddFloatSlider("Toparlanma · 4 nokta", 0.02f, 1.6f, () => c.Sentence.Steps[3].RecoverySec, v => c.Sentence.Steps[3].RecoverySec = v, "sn", "0.00");
 
-            AddHeader("YAVAŞ ÇEKİM (§7)");
-            AddFloatSlider("Çarpan (factor)", 0.05f, 1f, () => c.Slowmo.Factor, v => c.Slowmo.Factor = v, "", "0.00");
-            AddIntSlider("İniş süresi", 0, 300, () => c.Slowmo.RampDownMs, v => c.Slowmo.RampDownMs = v, "ms");
-            AddIntSlider("Tutma süresi", 0, 2500, () => c.Slowmo.HoldMs, v => c.Slowmo.HoldMs = v, "ms");
-            AddIntSlider("Çıkış süresi", 0, 1500, () => c.Slowmo.RampUpMs, v => c.Slowmo.RampUpMs = v, "ms");
-            AddIntSlider("Ses alçak geçiren", 200, 5000, () => c.Slowmo.AudioLowpassHz, v => c.Slowmo.AudioLowpassHz = v, "Hz");
-            AddIntSlider("Bonus nokta", 0, 3, () => c.Slowmo.SlowmoBonusDots, v => c.Slowmo.SlowmoBonusDots = v, "");
-
             AddHeader("KAMERA (§8)");
             AddFloatSlider("Takip yumuşatma", 0.02f, 0.5f, () => p.FollowSmoothTimeSec, v => p.FollowSmoothTimeSec = v, "sn", "0.00");
             AddFloatSlider("Önden bakış", 0f, 4f, () => p.LookAheadM, v => p.LookAheadM = v, "m", "0.00");

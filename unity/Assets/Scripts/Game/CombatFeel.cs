@@ -6,7 +6,7 @@ using UnityEngine.UI;
 namespace Dovus.Game
 {
     /// <summary>
-    /// Sıyırma/vurulma hissi: hitstop, yavaş çekim, impact frame, vinyet, kamera yumruğu.
+    /// Sıyırma/vurulma hissi: hitstop, impact frame, vinyet, kamera yumruğu.
     /// Ekran katmanı Overlay değil — Overlay kamera üzerinde Screen Space Camera (§10).
     ///
     /// T8.1: kullanılmayan tam ekran katman KAPALI tutulur (alfa 0 bir Image yine de geometri
@@ -22,7 +22,6 @@ namespace Dovus.Game
         PrototypeTuning _colors;
         GameClock _clock;
         FollowCamera _follow;
-        AudioLowPassFilter _lowpass;
         SentenceDebugHud _hud;
         ReactionReadout _readout;
 
@@ -52,15 +51,6 @@ namespace Dovus.Game
             _hud = hud;
             _readout = readout;
 
-            Camera worldCam = Camera.main;
-            if (worldCam != null)
-            {
-                _lowpass = worldCam.GetComponent<AudioLowPassFilter>();
-                if (_lowpass == null)
-                    _lowpass = worldCam.gameObject.AddComponent<AudioLowPassFilter>();
-                _lowpass.cutoffFrequency = _colors.AudioBaseCutoffHz;
-            }
-
             BuildCanvas(overlayCam);
         }
 
@@ -89,8 +79,6 @@ namespace Dovus.Game
             if (result.Outcome == ExchangeOutcome.Dodged)
             {
                 _clock.Director.TriggerHitstop(feel.HitstopPerfectMs);
-                if (result.Grade.HasValue && result.Grade.Value <= _combat.Slowmo.SlowmoMinGrade)
-                    _clock.Director.TriggerSlowmo();
 
                 float kick = result.Grade == DodgeGrade.Mukemmel
                     ? feel.CameraPerfectZoomKick
@@ -136,13 +124,6 @@ namespace Dovus.Game
 
             if (now > _threatUntil)
                 Hide(_threatFlash);
-
-            if (_lowpass != null && _clock != null)
-            {
-                _lowpass.cutoffFrequency = _clock.Director.IsSlowmoActive
-                    ? _combat.Slowmo.AudioLowpassHz
-                    : _colors.AudioBaseCutoffHz;
-            }
         }
 
         static void Show(Image img, Color color)

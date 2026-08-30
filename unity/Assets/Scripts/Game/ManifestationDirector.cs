@@ -37,9 +37,9 @@ namespace Dovus.Game
         bool _hooked;
         bool _posedForRecovery;
 
-        // §11 ölüm: yavaş çekim başladıktan sonra bitince Revive.
+        // §11 ölüm: çökme pozu bitince Revive (yavaş çekim 30 Ağustos 2026'da kaldırıldı).
         bool _deathPending;
-        bool _sawDeathSlowmo;
+        double _deathReviveAtWorldMs;
 
         struct PendingClosing
         {
@@ -128,18 +128,10 @@ namespace Dovus.Game
             if (!_deathPending || _clock == null)
                 return;
 
-            bool slow = _clock.Director.IsSlowmoActive;
-            if (slow)
-            {
-                _sawDeathSlowmo = true;
-                return;
-            }
-
-            if (!_sawDeathSlowmo)
+            if (_clock.Director.WorldTimeMs < _deathReviveAtWorldMs)
                 return;
 
             _deathPending = false;
-            _sawDeathSlowmo = false;
             _bossVitals?.Revive();
             _boss?.EndCollapse();
             _bossDirector?.NotifyBossRevived(_clock.Director.WorldTimeMs);
@@ -337,10 +329,8 @@ namespace Dovus.Game
             _bossDirector?.NotifyBossDown(worldMs);
             float collapseSec = _colors != null ? _colors.BossDeathCollapseSec : 0.85f;
             _boss?.BeginCollapse(collapseSec, worldMs);
-            // Yeni rampa yazılmaz — T4 TimeDirector + SlowmoTuning tek kaynak (§11 / durum T12).
-            _clock.Director.TriggerSlowmo();
+            _deathReviveAtWorldMs = worldMs + collapseSec * 1000.0;
             _deathPending = true;
-            _sawDeathSlowmo = false;
         }
 
         // Kapanış izi (bu metot) ve seyahat izi (TickEffects, view.Scarred) iki ayrı bayrak:
