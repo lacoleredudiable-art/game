@@ -184,7 +184,19 @@ Rün seti veridir ve bu tasarımda değiştirilmesi en ucuz şey; pahalı olan �
 
 ### 4.1 Rün seti
 
-*(boş)*
+**Karar (30 Ağustos 2026, sahibi):** şekil beşgenden **altıgene** çıkıyor (5 nokta → 6 nokta),
+rün seti **elementler**: ateş, su, toprak, hava, karanlık, aydınlık. 6 element ↔ 6 köşe.
+
+Henüz açık — bir sonraki adım:
+
+- Her elementin §4 başındaki **beş soruyu** geçen fiil + sıfat tanımı (ne taşır, hangi
+  silüeti bozar, dünyada nasıl yaşar, türce diğerlerinden nasıl ayrışır). Bu satır atlanırsa
+  altı element altı renkli aynı rün olur.
+- Altıgene geçişin gramer etkisi: `maxSentenceDots` hâlâ 4 mü kalıyor, yoksa 6 köşeyle
+  birlikte mi değişiyor (K1/K2/K3 kuralları 6 noktada nasıl okunur — komşu/karşı tanımı
+  beşgende asimetrikti, altıgende simetrik çift karşı nokta çıkıyor).
+- Isim/görsel eşlemesi: karanlık-aydınlık çifti diğer dört elementten (ateş/su/toprak/hava)
+  tür olarak mı ayrı (ör. durum/görünürlük ekseni), yoksa aynı eksende mi (taşıyıcı/yük)?
 
 ### 4.2 Mekanikler
 
