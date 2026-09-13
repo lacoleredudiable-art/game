@@ -6,7 +6,7 @@
 
 **Son güncelleme:** 13 Eylül 2026
 **Faz:** alfa prototip çalışıyor · **dövüş tasarımı yeniden açıldı** (rünler ve mekanikler)
-**Sıradaki:** `docs/element-sistemi.json` v2.1 sahibi onayı; sonra `dovus-sistemi.md` §4'e işlenir
+**Sıradaki:** `docs/element-sistemi.json` v2.2 sahibi onayı; sonra `dovus-sistemi.md` §4'e işlenir
 
 ---
 
