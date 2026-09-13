@@ -1,7 +1,7 @@
 {
   "system": {
     "version": "4.2",
-    "description": "Bağlayıcı dövüş sistemi (element rün dili) v4.2. Eski dovus-sistemi.md arşivde; buradan sıfırdan ilerlenir. Anti-ladder: uzunluk hasar/poise çarpmaz; sıfat vergisi; 4'lü dar commit anahtarı.",
+    "description": "KİLİTLİ bağlayıcı dövüş sistemi (element rün dili) v4.2. Değişiklik ancak açık tasarım kararı + sürüm bump ile. Anti-ladder: uzunluk hasar/poise çarpmaz; sıfat vergisi; 4'lü dar commit.",
     "design_intent": {
       "anti_ladder": "Uzunluk güç değil, durumsal araçtır. 2'li temel hasar/işlev, 3'lü spesifik mekanik (kozmetik kimlik + şekil), 4'lü dar silüet. Hasar uzunlukla artmaz.",
       "adjective_tax": "Sıkı kural: sıfat yeni işlev/şekil ekliyorsa damage_mult MUTLAKA <= 0.9 (asla 1.0 + ekstra). Taban hasarı 1.0 üstüne çıkaran buff yok. Saf vergi sıfatları (0.5–0.85) olduğu gibi kalır.",
@@ -13,7 +13,9 @@
     "replaces": [
       "docs/dovus-sistemi.md (arsiv)",
       "alfa pentagon-cümle dövüş spec"
-    ]
+    ],
+    "locked": true,
+    "locked_date": "2026-09-13"
   },
   "scaling_economy": {
     "lengths": {

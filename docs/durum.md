@@ -4,15 +4,15 @@
 > taramadan nerede kaldığımızı anlasın.
 
 **Son güncelleme:** 13 Eylül 2026  
-**Faz:** **sıfırdan başlangıç** — bağlayıcı dövüş tasarımı = `docs/element-sistemi.json` (v4.2)  
-**Sıradaki:** v4.2'ye göre yeni Core/gramer iskeleti; eski pentagon cümle prototipi bağlayıcı değil
+**Faz:** v4.2 **kilitli**; Core element resolver + katalog testleri yeşil  
+**Sıradaki:** Unity/oyun yüzeyi (rün girişi → resolver → efekt); skill_job satırları playtest
 
 ---
 
 ## 1. Karar
 
 Eski `dovus-sistemi.md` / önceki durum notları **arşive alındı**, bağlayıcı değil.
-Bundan sonra dövüş sistemi **element rün dilidir** (`docs/element-sistemi.json`).
+Bağlayıcı dövüş: **`docs/element-sistemi.json` v4.2** (`locked: true`, `2026-09-13`).
 
 - 2'li → bileşik kimlik skill'i (`skill_job`)
 - 3'lü → fiil kapısı + ana sıfat (`verb_unlocks_job` + adjective)
@@ -21,16 +21,22 @@ Bundan sonra dövüş sistemi **element rün dilidir** (`docs/element-sistemi.js
 
 ## 2. Kod
 
-Alfa prototip kodu repoda duruyor ama **bu turda tasarım sıfırdan**. Eski gramer/cümle
-davranışı yeni JSON ile uyumlu sayılmaz; görevler JSON'dan doğar, eski envantere
-uydurulmaz.
+| Parça | Yol |
+|---|---|
+| Tipler | `unity/Assets/Scripts/Core/Elements/ElementTypes.cs` |
+| Katalog | `…/ElementCatalog.cs` |
+| Çözümleyici | `…/ElementResolver.cs` |
+| Test yükleyici | `tools/CoreTests/ElementCatalogLoader.cs` |
+| Testler | `tools/CoreTests/ElementResolverTests.cs` (14) |
 
-Stack / mimari kabuk: `docs/teknoloji-kararlari.md`  
-Unity tuzakları: `docs/unity-notlari.md`
+`dotnet test` — 106 yeşil (ElementResolver dahil).
+
+Eski alfa gramer/cümle kodu repoda duruyor; yeni JSON ile uyumlu sayılmaz.
+Stack: `docs/teknoloji-kararlari.md` · Unity: `docs/unity-notlari.md`
 
 ## 3. Bilinen açıklar
 
-- v4.2 henüz koda bağlanmadı
+- Resolver henüz Unity sahne / input'a bağlı değil
 - 36 bileşik için `skill_job` / `verb_unlocks_job` / 4'lü dar şekil satırları taslak; playtest ile budanacak
 - Sayılar `[draft]`
 - Boss repertuarı / run yapısı tanımsız (JSON dışı, sonra)

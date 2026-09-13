@@ -1,9 +1,8 @@
 # Ajan Görev Listesi
 
-> **Görev tablosu boş.** Eski T0–T14 ve önceki dövüş turu arşivde (`docs/arsiv/`).
-> Yeni görevler `docs/element-sistemi.json` (v4.2+) üzerinden doğar — sıfırdan.
+> Eski T0–T14 arşivde (`docs/arsiv/`). Spec: `docs/element-sistemi.json` **v4.2 kilitli**.
 
-Bu dosyada kalan şey **çalışma düzeni** (tasarımdan bağımsız).
+Bu dosyada kalan şey **çalışma düzeni** + sıradaki işler.
 
 ---
 
@@ -29,4 +28,8 @@ Bu dosyada kalan şey **çalışma düzeni** (tasarımdan bağımsız).
 
 ## Görev tablosu
 
-*(boş — ilk görevler element-sistemi.json v4.2'ye göre yazılacak)*
+| ID | Durum | Özet |
+|---|---|---|
+| E0 | **bitti** | v4.2 kilitle + `ElementCatalog`/`ElementResolver` + testler |
+| E1 | sırada | Unity: rün girişi → resolver sonucu (görsel/efekt yoksa stub) |
+| E2 | sonra | skill_job / verb_unlocks_job satırlarını playtest ile budama |
