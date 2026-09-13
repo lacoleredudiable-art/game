@@ -4,9 +4,9 @@
 > taramadan nerede kaldığımızı anlaması. **Kısa tut.** Görev günlüğü tutulmaz — ne bitti,
 > ne çalışıyor, ne açık. Uzun anlatım gerekiyorsa yeri commit mesajı ya da PR açıklaması.
 
-**Son güncelleme:** 29 Ağustos 2026
+**Son güncelleme:** 13 Eylül 2026
 **Faz:** alfa prototip çalışıyor · **dövüş tasarımı yeniden açıldı** (rünler ve mekanikler)
-**Sıradaki:** yeni tasarım `docs/dovus-sistemi.md` §4'e yazılacak; görevler ondan doğar
+**Sıradaki:** `docs/element-sistemi.json` v2.1 sahibi onayı; sonra `dovus-sistemi.md` §4'e işlenir
 
 ---
 
@@ -103,6 +103,10 @@ Tasarım kararı gerektirenler `docs/dovus-sistemi.md` §4'e taşındı. Buradak
 
 Sahibi rünleri ve mekanikleri yeniden tasarlıyor. **Prototip kodu duruyor** — silinen bir şey
 yok, değişiklikler onun üstüne gelecek.
+
+**Aday veri (13 Eylül):** `docs/element-sistemi.json` v2.1 — 6 rün / 36 bileşik skill /
+fiil+sıfat uzatma, anti-ladder ekonomi, skill→fiil köprüsü, quality=silüet ekseni.
+Henüz §4'e bağlayıcı işlenmedi; sahibi onayı bekliyor.
 
 Bu turda yapılan tek şey **sadeleştirme**:
 
