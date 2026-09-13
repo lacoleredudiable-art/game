@@ -1,0 +1,1976 @@
+{
+  "system": {
+    "version": "2.2",
+    "date": "2026-09-13",
+    "description": "Element Sistemi — motor veri modeli + uzatma ekonomisi (anti-ladder) + fiil hissiyat alanları (hasar/poise/maliyet/mobilite)",
+    "design_intent": {
+      "anti_ladder": "Uzunluk asla daha fazla hasar/güç demek değildir. Uzatma yalnızca başka bir iş açar.",
+      "two_vs_three": "2'li = hazır kimlik skill'i. 3/4 = o bileşigin fiil kimliği + sıfat ile durumsal şekil. Skill upgrade'i değil, ray değişimi.",
+      "extend_when": "2'linin yapamadığı iş fight'ta gerekli olduğunda. Aksi halde 2'li default araçtır.",
+      "damage_model": "Hasar yalnızca fiile bağlıdır. Uzunluk hasarı çarpmaz. total_damage = verb.base_damage (length çarpanı = 0).",
+      "poise_is_not_ladder": "poise_damage hasar değil; Souls-like duruş kırma hissi. Uzunluk poise'u da çarpmaz — fiil kimliği belirler."
+    },
+    "totals": {
+      "elements": 42,
+      "verbs": 42,
+      "adjectives": 42,
+      "verb_families": 10,
+      "categories": 5,
+      "compound_skills": 36,
+      "mechanics": 17,
+      "adjective_categories": {
+        "quality": 5,
+        "scope": 10,
+        "position": 9,
+        "timing": 9,
+        "duration": 9
+      },
+      "quality_axes_used": [
+        "focus",
+        "pierce",
+        "spread",
+        "lift",
+        "hollow"
+      ]
+    }
+  },
+  "extension_economy": {
+    "rule": "Uzunluk = seçenek ve risk, güç değil. 2'li her fight'ta yeterli kalmalı.",
+    "lengths": {
+      "2": {
+        "role": "reliable_tool",
+        "reward": "identity_skill",
+        "reward_means": "Hazır, okunur, genel iş gören paket. Ezberlenebilir kimlik.",
+        "cost": "low",
+        "commitment": 0.25,
+        "cast_risk": "low",
+        "window": "short",
+        "interrupt": "easy_to_abort",
+        "when": "Genel durum; boss özel bir şekil istemiyorsa."
+      },
+      "3": {
+        "role": "situational",
+        "reward": "job_the_2_cannot_do",
+        "reward_means": "Aynı bileşigin fiiline geç: 2'li skill'in yapamadığı iş türü + 1 ana-element sıfatı.",
+        "cost": "mid",
+        "commitment": 0.55,
+        "cast_risk": "mid",
+        "window": "medium",
+        "interrupt": "cancel_window_closes",
+        "when": "Boss/ekip o an X işi istiyor (zırh kır, topla, taşı, arındır…)."
+      },
+      "4": {
+        "role": "fight_answer",
+        "reward": "narrow_shape",
+        "reward_means": "Bileşik sıfat ile dar, fight'a özel şekil. Spam lanırsa ekonomi bozulur.",
+        "cost": "high",
+        "commitment": 0.85,
+        "cast_risk": "high",
+        "window": "long",
+        "interrupt": "hard_commit",
+        "when": "Bu fight'ın cevabı bu şekil; yoksa 3'lü veya 2'li yeter."
+      }
+    },
+    "balance_tests": [
+      "Boss yalnızca 2'lilerle bitirilebiliyor mu? Evet → uzatma seçimdir. Hayır → ladder zorunluluğudur.",
+      "Aynı fiil + 5 farklı sıfat kategorisi 5 farklı GÖRÜNTÜ mü üretiyor, yoksa aynı patlama + farklı sayı mı?",
+      "Oyuncu Ateş×2 / ×3 / ×4 için 'hangisi daha hasar?' diye soruyorsa isim/VFX hâlâ ladder kokuyordur."
+    ]
+  },
+  "categories": {
+    "position": {
+      "id": "position",
+      "name": "Konum",
+      "question": "Nerede / kime?",
+      "modifies": "target_location",
+      "merge": "override",
+      "silhouette_readable": true
+    },
+    "scope": {
+      "id": "scope",
+      "name": "Kapsam",
+      "question": "Ne kadar alan?",
+      "modifies": "area_shape",
+      "merge": "override",
+      "silhouette_readable": true,
+      "note": "area_size sayı çarpanı değil; şekil (nokta / çizgi / halka / bulut)."
+    },
+    "timing": {
+      "id": "timing",
+      "name": "Zamanlama",
+      "question": "Ne zaman?",
+      "modifies": "trigger_profile",
+      "merge": "override",
+      "silhouette_readable": true,
+      "note": "Gecikme sayısı ezberletmez; tetik profili (anında yol al / bekle / boss vuruşuna bağla)."
+    },
+    "duration": {
+      "id": "duration",
+      "name": "Süre",
+      "question": "Ne kadar sürer / nasıl yaşar?",
+      "modifies": "lifetime_profile",
+      "merge": "override",
+      "silhouette_readable": true,
+      "note": "Daha uzun = daha güçlü değil; kısa-şiddetli vs yayılan-kalıcı gibi yaşam biçimi."
+    },
+    "quality": {
+      "id": "quality",
+      "name": "Nitelik",
+      "question": "Ne şekilde? (şiddette değil)",
+      "modifies": "silhouette_axis",
+      "merge": "override",
+      "silhouette_readable": true,
+      "forbidden": "effect_intensity, damage_multiplier, percent_buffs",
+      "axes": [
+        "focus",
+        "pierce",
+        "spread",
+        "lift",
+        "hollow"
+      ],
+      "note": "Silüet ekseni — her eksende tek sıfat. Yoğunlaştırma=focus, Keskinlik=pierce, Yakıcılık=spread, Basınç=lift, Yokluk=hollow. Eski çakışanlar (saflaştırma/saflık/berraklık) scope|duration|timing'e taşındı.",
+      "one_adjective_per_axis": true
+    }
+  },
+  "verb_families": {
+    "strike": {
+      "id": "strike",
+      "name": "Vuruş",
+      "job": "Hasar gövdesi — yol alan veya süren etki"
+    },
+    "mend": {
+      "id": "mend",
+      "name": "Onarım",
+      "job": "İyileştirme / yenileme gövdesi"
+    },
+    "motion": {
+      "id": "motion",
+      "name": "Hareket",
+      "job": "Konum değiştiren gövde"
+    },
+    "guard": {
+      "id": "guard",
+      "name": "Koruma",
+      "job": "Kalkan / emme / direnç gövdesi"
+    },
+    "purge": {
+      "id": "purge",
+      "name": "Arındırma",
+      "job": "Olumsuz etki temizleme gövdesi"
+    },
+    "control": {
+      "id": "control",
+      "name": "Kontrol",
+      "job": "Hareket/eylem kısıtı gövdesi"
+    },
+    "disrupt": {
+      "id": "disrupt",
+      "name": "Bozma",
+      "job": "Görüş / isabet / kaynak bozma"
+    },
+    "zone": {
+      "id": "zone",
+      "name": "Bölge",
+      "job": "Alana yerleşen kalıcı veya süreli alan"
+    },
+    "transfer": {
+      "id": "transfer",
+      "name": "Transfer",
+      "job": "Kaynak / kalkan / güç taşıma"
+    },
+    "special": {
+      "id": "special",
+      "name": "Özel",
+      "job": "Diriliş, klon, silme gibi nadir işler"
+    }
+  },
+  "verbs": [
+    {
+      "id": "saldiri",
+      "name": "Saldırı",
+      "element": "Ateş",
+      "family": "strike",
+      "action": "damage",
+      "base_damage": 100,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 28,
+      "base_cost": 18,
+      "cast_mobility": "slowed",
+      "mechanics": [
+        "burn",
+        "armor_break"
+      ]
+    },
+    {
+      "id": "iyilestirme",
+      "name": "İyileştirme",
+      "element": "Su",
+      "family": "mend",
+      "action": "heal",
+      "base_damage": 0,
+      "base_heal": 80,
+      "base_shield": 0,
+      "poise_damage": 0,
+      "base_cost": 16,
+      "cast_mobility": "slowed",
+      "mechanics": [
+        "cleanse",
+        "regen"
+      ]
+    },
+    {
+      "id": "hareket",
+      "name": "Hareket",
+      "element": "Hava",
+      "family": "motion",
+      "action": "move",
+      "base_damage": 0,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 4,
+      "base_cost": 10,
+      "cast_mobility": "free",
+      "mechanics": [
+        "haste",
+        "disarm"
+      ]
+    },
+    {
+      "id": "savunma",
+      "name": "Savunma",
+      "element": "Toprak",
+      "family": "guard",
+      "action": "defend",
+      "base_damage": 0,
+      "base_heal": 0,
+      "base_shield": 80,
+      "poise_damage": 8,
+      "base_cost": 12,
+      "cast_mobility": "static",
+      "mechanics": [
+        "shield",
+        "damage_reduction",
+        "taunt"
+      ]
+    },
+    {
+      "id": "arindirma",
+      "name": "Arındırma",
+      "element": "Aydınlık",
+      "family": "purge",
+      "action": "cleanse",
+      "base_damage": 0,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 6,
+      "base_cost": 15,
+      "cast_mobility": "slowed",
+      "mechanics": [
+        "cleanse",
+        "blind",
+        "taunt",
+        "stasis"
+      ]
+    },
+    {
+      "id": "gizlilik",
+      "name": "Gizlilik",
+      "element": "Karanlık",
+      "family": "disrupt",
+      "action": "stealth",
+      "base_damage": 25,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 10,
+      "base_cost": 14,
+      "cast_mobility": "slowed",
+      "mechanics": [
+        "fear",
+        "silence",
+        "weaken"
+      ]
+    },
+    {
+      "id": "kritik_vurus",
+      "name": "Kritik vuruş",
+      "element": "Alev",
+      "family": "strike",
+      "action": "critical_damage",
+      "base_damage": 100,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 18,
+      "base_cost": 18,
+      "cast_mobility": "slowed",
+      "mechanics": [
+        "armor_break"
+      ]
+    },
+    {
+      "id": "gorus_kapatma",
+      "name": "Görüş kapatma",
+      "element": "Buhar",
+      "family": "disrupt",
+      "action": "blind_area",
+      "base_damage": 25,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 10,
+      "base_cost": 14,
+      "cast_mobility": "slowed",
+      "mechanics": [
+        "blind"
+      ]
+    },
+    {
+      "id": "zirh_eritme",
+      "name": "Zırh eritme",
+      "element": "Kor",
+      "family": "disrupt",
+      "action": "armor_shred",
+      "base_damage": 25,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 10,
+      "base_cost": 14,
+      "cast_mobility": "slowed",
+      "mechanics": [
+        "armor_break",
+        "burn"
+      ]
+    },
+    {
+      "id": "alan_kilitleme",
+      "name": "Alan kilitleme",
+      "element": "Lav",
+      "family": "zone",
+      "action": "zone_lock",
+      "base_damage": 45,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 36,
+      "base_cost": 22,
+      "cast_mobility": "static",
+      "mechanics": [
+        "root",
+        "burn"
+      ]
+    },
+    {
+      "id": "can_yakma",
+      "name": "Can yakma",
+      "element": "Cehennem",
+      "family": "strike",
+      "action": "grievous_wounds",
+      "base_damage": 90,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 20,
+      "base_cost": 18,
+      "cast_mobility": "slowed",
+      "mechanics": [
+        "grievous_wounds",
+        "burn"
+      ]
+    },
+    {
+      "id": "guc_emme",
+      "name": "Güç emme",
+      "element": "Karabasan",
+      "family": "transfer",
+      "action": "drain",
+      "base_damage": 20,
+      "base_heal": 0,
+      "base_shield": 40,
+      "poise_damage": 12,
+      "base_cost": 18,
+      "cast_mobility": "slowed",
+      "mechanics": [
+        "weaken",
+        "fear"
+      ]
+    },
+    {
+      "id": "cc_arindirma",
+      "name": "CC arındırma",
+      "element": "Gayzer",
+      "family": "purge",
+      "action": "cleanse_cc",
+      "base_damage": 0,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 6,
+      "base_cost": 15,
+      "cast_mobility": "slowed",
+      "mechanics": [
+        "cleanse"
+      ]
+    },
+    {
+      "id": "yenilenme",
+      "name": "Yenilenme",
+      "element": "Pınar",
+      "family": "mend",
+      "action": "regen",
+      "base_damage": 0,
+      "base_heal": 80,
+      "base_shield": 0,
+      "poise_damage": 0,
+      "base_cost": 16,
+      "cast_mobility": "slowed",
+      "mechanics": [
+        "regen"
+      ]
+    },
+    {
+      "id": "hiz_buff",
+      "name": "Hız buff'ı",
+      "element": "Çiy",
+      "family": "motion",
+      "action": "haste_ally",
+      "base_damage": 0,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 4,
+      "base_cost": 12,
+      "cast_mobility": "free",
+      "mechanics": [
+        "haste"
+      ]
+    },
+    {
+      "id": "zemin_kontrolu",
+      "name": "Zemin kontrolü",
+      "element": "Çamur",
+      "family": "control",
+      "action": "terrain_control",
+      "base_damage": 35,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 22,
+      "base_cost": 17,
+      "cast_mobility": "slowed",
+      "mechanics": [
+        "slow",
+        "root"
+      ]
+    },
+    {
+      "id": "tam_arinma",
+      "name": "Tam arınma",
+      "element": "İksir",
+      "family": "purge",
+      "action": "full_cleanse",
+      "base_damage": 0,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 6,
+      "base_cost": 15,
+      "cast_mobility": "slowed",
+      "mechanics": [
+        "cleanse"
+      ]
+    },
+    {
+      "id": "kaynak_transferi",
+      "name": "Kaynak transferi",
+      "element": "Mürekkep",
+      "family": "transfer",
+      "action": "transfer",
+      "base_damage": 20,
+      "base_heal": 0,
+      "base_shield": 40,
+      "poise_damage": 12,
+      "base_cost": 18,
+      "cast_mobility": "slowed",
+      "mechanics": [
+        "weaken"
+      ]
+    },
+    {
+      "id": "dusman_toplama",
+      "name": "Düşman toplama",
+      "element": "Fırtına",
+      "family": "control",
+      "action": "gather_enemies",
+      "base_damage": 35,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 22,
+      "base_cost": 17,
+      "cast_mobility": "slowed",
+      "mechanics": [
+        "knockback"
+      ]
+    },
+    {
+      "id": "hiz_gorunmezlik",
+      "name": "Hız + görünmezlik",
+      "element": "Pus",
+      "family": "motion",
+      "action": "stealth_haste",
+      "base_damage": 0,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 4,
+      "base_cost": 16,
+      "cast_mobility": "free",
+      "mechanics": [
+        "haste"
+      ]
+    },
+    {
+      "id": "cift_hareket",
+      "name": "Çift hareket",
+      "element": "Rüzgar",
+      "family": "motion",
+      "action": "double_move",
+      "base_damage": 0,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 4,
+      "base_cost": 14,
+      "cast_mobility": "free",
+      "mechanics": [
+        "haste"
+      ]
+    },
+    {
+      "id": "isabet_dusurme",
+      "name": "İsabet düşürme",
+      "element": "Toz",
+      "family": "disrupt",
+      "action": "accuracy_debuff",
+      "base_damage": 25,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 10,
+      "base_cost": 14,
+      "cast_mobility": "slowed",
+      "mechanics": [
+        "blind"
+      ]
+    },
+    {
+      "id": "zincirleme",
+      "name": "Zincirleme",
+      "element": "Yıldırım",
+      "family": "strike",
+      "action": "chain",
+      "base_damage": 85,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 16,
+      "base_cost": 18,
+      "cast_mobility": "slowed",
+      "mechanics": [
+        "stun",
+        "silence"
+      ]
+    },
+    {
+      "id": "hapsetme",
+      "name": "Hapsetme",
+      "element": "Girdap",
+      "family": "control",
+      "action": "root",
+      "base_damage": 35,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 22,
+      "base_cost": 17,
+      "cast_mobility": "slowed",
+      "mechanics": [
+        "root"
+      ]
+    },
+    {
+      "id": "hasar_emme",
+      "name": "Hasar emme",
+      "element": "Obsidiyen",
+      "family": "guard",
+      "action": "absorb",
+      "base_damage": 0,
+      "base_heal": 0,
+      "base_shield": 90,
+      "poise_damage": 8,
+      "base_cost": 16,
+      "cast_mobility": "static",
+      "mechanics": [
+        "shield"
+      ]
+    },
+    {
+      "id": "adaptif_direnc",
+      "name": "Adaptif direnç",
+      "element": "Kil",
+      "family": "guard",
+      "action": "adaptive_resist",
+      "base_damage": 0,
+      "base_heal": 0,
+      "base_shield": 70,
+      "poise_damage": 8,
+      "base_cost": 14,
+      "cast_mobility": "static",
+      "mechanics": [
+        "damage_reduction"
+      ]
+    },
+    {
+      "id": "zirh_dusurme",
+      "name": "Zırh düşürme",
+      "element": "Kum",
+      "family": "disrupt",
+      "action": "armor_shred",
+      "base_damage": 25,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 10,
+      "base_cost": 14,
+      "cast_mobility": "slowed",
+      "mechanics": [
+        "armor_break"
+      ]
+    },
+    {
+      "id": "alan_bloklama",
+      "name": "Alan bloklama",
+      "element": "Kaya",
+      "family": "zone",
+      "action": "block_area",
+      "base_damage": 45,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 40,
+      "base_cost": 22,
+      "cast_mobility": "static",
+      "mechanics": [
+        "root"
+      ]
+    },
+    {
+      "id": "kalkan_transferi",
+      "name": "Kalkan transferi",
+      "element": "Kristal",
+      "family": "transfer",
+      "action": "shield_transfer",
+      "base_damage": 20,
+      "base_heal": 0,
+      "base_shield": 40,
+      "poise_damage": 12,
+      "base_cost": 18,
+      "cast_mobility": "slowed",
+      "mechanics": [
+        "shield"
+      ]
+    },
+    {
+      "id": "yavaslatma_emme",
+      "name": "Yavaşlatma + emme",
+      "element": "Katran",
+      "family": "control",
+      "action": "slow_drain",
+      "base_damage": 35,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 22,
+      "base_cost": 17,
+      "cast_mobility": "slowed",
+      "mechanics": [
+        "slow"
+      ]
+    },
+    {
+      "id": "ifsa",
+      "name": "İfşa",
+      "element": "Güneş",
+      "family": "disrupt",
+      "action": "reveal",
+      "base_damage": 25,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 10,
+      "base_cost": 14,
+      "cast_mobility": "slowed",
+      "mechanics": [
+        "blind"
+      ]
+    },
+    {
+      "id": "kutsal_kalkan",
+      "name": "Kutsal kalkan",
+      "element": "Hale",
+      "family": "guard",
+      "action": "holy_shield",
+      "base_damage": 0,
+      "base_heal": 0,
+      "base_shield": 70,
+      "poise_damage": 8,
+      "base_cost": 14,
+      "cast_mobility": "static",
+      "mechanics": [
+        "shield",
+        "regen"
+      ]
+    },
+    {
+      "id": "dirilis",
+      "name": "Diriliş",
+      "element": "Şafak",
+      "family": "special",
+      "action": "revive",
+      "base_damage": 0,
+      "base_heal": 100,
+      "base_shield": 0,
+      "poise_damage": 18,
+      "base_cost": 40,
+      "cast_mobility": "static",
+      "mechanics": [
+        "cleanse"
+      ]
+    },
+    {
+      "id": "bolge_kilidi",
+      "name": "Bölge kilidi",
+      "element": "Mühür",
+      "family": "zone",
+      "action": "zone_lock",
+      "base_damage": 45,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 34,
+      "base_cost": 24,
+      "cast_mobility": "static",
+      "mechanics": [
+        "root",
+        "stasis"
+      ]
+    },
+    {
+      "id": "alan_temizligi",
+      "name": "Alan temizliği",
+      "element": "Nova",
+      "family": "purge",
+      "action": "area_cleanse",
+      "base_damage": 0,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 6,
+      "base_cost": 15,
+      "cast_mobility": "slowed",
+      "mechanics": [
+        "cleanse"
+      ]
+    },
+    {
+      "id": "denge",
+      "name": "Denge",
+      "element": "Alacakaranlık",
+      "family": "special",
+      "action": "balance",
+      "base_damage": 40,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 18,
+      "base_cost": 28,
+      "cast_mobility": "static",
+      "mechanics": [
+        "stasis"
+      ]
+    },
+    {
+      "id": "nefes_kesme",
+      "name": "Nefes kesme",
+      "element": "Kül",
+      "family": "disrupt",
+      "action": "silence_area",
+      "base_damage": 25,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 10,
+      "base_cost": 14,
+      "cast_mobility": "slowed",
+      "mechanics": [
+        "silence",
+        "fear"
+      ]
+    },
+    {
+      "id": "iz_birakma",
+      "name": "İz bırakma",
+      "element": "Zift",
+      "family": "zone",
+      "action": "mark",
+      "base_damage": 45,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 32,
+      "base_cost": 20,
+      "cast_mobility": "static",
+      "mechanics": [
+        "slow"
+      ]
+    },
+    {
+      "id": "yon_sasirtma",
+      "name": "Yön şaşırtma",
+      "element": "Sis",
+      "family": "control",
+      "action": "confuse",
+      "base_damage": 35,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 22,
+      "base_cost": 17,
+      "cast_mobility": "slowed",
+      "mechanics": [
+        "blind",
+        "slow"
+      ]
+    },
+    {
+      "id": "hasar_sogurma",
+      "name": "Hasar soğurma",
+      "element": "Kömür",
+      "family": "guard",
+      "action": "absorb",
+      "base_damage": 0,
+      "base_heal": 0,
+      "base_shield": 85,
+      "poise_damage": 8,
+      "base_cost": 15,
+      "cast_mobility": "static",
+      "mechanics": [
+        "damage_reduction"
+      ]
+    },
+    {
+      "id": "golge_klonu",
+      "name": "Gölge klonu",
+      "element": "Gölge",
+      "family": "special",
+      "action": "clone",
+      "base_damage": 0,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 8,
+      "base_cost": 26,
+      "cast_mobility": "free",
+      "mechanics": [
+        "fear"
+      ]
+    },
+    {
+      "id": "varlik_silme",
+      "name": "Varlık silme",
+      "element": "Hiçlik",
+      "family": "special",
+      "action": "erase",
+      "base_damage": 60,
+      "base_heal": 0,
+      "base_shield": 0,
+      "poise_damage": 45,
+      "base_cost": 36,
+      "cast_mobility": "static",
+      "mechanics": [
+        "fear"
+      ]
+    }
+  ],
+  "adjectives": [
+    {
+      "id": "yogunlastirma",
+      "name": "Yoğunlaştırma",
+      "category": "quality",
+      "source_element": "Ateş",
+      "silhouette_axis": "focus",
+      "means": "Daralt, tek noktaya sıkıştır — hasar çarpmaz"
+    },
+    {
+      "id": "yayma",
+      "name": "Yayma",
+      "category": "scope",
+      "source_element": "Su",
+      "area_shape": "spread_wave"
+    },
+    {
+      "id": "tasima",
+      "name": "Taşıma",
+      "category": "position",
+      "source_element": "Hava",
+      "target_location": "relocate_effect"
+    },
+    {
+      "id": "sabitleme",
+      "name": "Sabitleme",
+      "category": "timing",
+      "source_element": "Toprak",
+      "trigger_profile": "anchor_in_place"
+    },
+    {
+      "id": "saflastirma",
+      "name": "Saflaştırma",
+      "category": "scope",
+      "source_element": "Aydınlık",
+      "means": "Saflaştırılmış ışın/şerit alan — kenarı budanmış kapsam (quality değil)",
+      "area_shape": "purified_beam"
+    },
+    {
+      "id": "ortme",
+      "name": "Örtme",
+      "category": "scope",
+      "source_element": "Karanlık",
+      "area_shape": "veil"
+    },
+    {
+      "id": "keskinlik",
+      "name": "Keskinlik",
+      "category": "quality",
+      "source_element": "Alev",
+      "silhouette_axis": "pierce",
+      "means": "İnce delici silüet"
+    },
+    {
+      "id": "bulandirma",
+      "name": "Bulandırma",
+      "category": "scope",
+      "source_element": "Buhar",
+      "area_shape": "soft_cloud"
+    },
+    {
+      "id": "tutusturma",
+      "name": "Tutuşturma",
+      "category": "scope",
+      "source_element": "Kor",
+      "area_shape": "ember_trail"
+    },
+    {
+      "id": "agirlik",
+      "name": "Ağırlık",
+      "category": "duration",
+      "source_element": "Lav",
+      "lifetime_profile": "heavy_linger"
+    },
+    {
+      "id": "yakicilik",
+      "name": "Yakıcılık",
+      "category": "quality",
+      "source_element": "Cehennem",
+      "silhouette_axis": "spread",
+      "means": "Kenardan yayılan yakıcı halka — sayı değil şekil"
+    },
+    {
+      "id": "geciktirme",
+      "name": "Geciktirme",
+      "category": "timing",
+      "source_element": "Karabasan",
+      "trigger_profile": "delayed_arm"
+    },
+    {
+      "id": "basinc",
+      "name": "Basınç",
+      "category": "quality",
+      "source_element": "Gayzer",
+      "silhouette_axis": "lift",
+      "means": "Dışa/yukarı patlayan silüet"
+    },
+    {
+      "id": "sureklilik",
+      "name": "Süreklilik",
+      "category": "duration",
+      "source_element": "Pınar",
+      "lifetime_profile": "tick_over_time"
+    },
+    {
+      "id": "anliklastirma",
+      "name": "Anlıklaştırma",
+      "category": "duration",
+      "source_element": "Çiy",
+      "lifetime_profile": "flash_brief"
+    },
+    {
+      "id": "yavaslatma",
+      "name": "Yavaşlatma",
+      "category": "timing",
+      "source_element": "Çamur",
+      "trigger_profile": "slow_windup"
+    },
+    {
+      "id": "saflik",
+      "name": "Saflık",
+      "category": "duration",
+      "source_element": "İksir",
+      "means": "Tek işe indirgenmiş yaşam — yan etki taşımaz (quality değil)",
+      "lifetime_profile": "monotask"
+    },
+    {
+      "id": "emme",
+      "name": "Emme",
+      "category": "position",
+      "source_element": "Mürekkep",
+      "target_location": "pull_into_caster"
+    },
+    {
+      "id": "savurma",
+      "name": "Savurma",
+      "category": "position",
+      "source_element": "Fırtına",
+      "target_location": "fling_outward"
+    },
+    {
+      "id": "sizma",
+      "name": "Sızma",
+      "category": "position",
+      "source_element": "Pus",
+      "target_location": "phase_through"
+    },
+    {
+      "id": "sicrama",
+      "name": "Sıçrama",
+      "category": "position",
+      "source_element": "Rüzgar",
+      "target_location": "bounce_hop"
+    },
+    {
+      "id": "kaplama",
+      "name": "Kaplama",
+      "category": "scope",
+      "source_element": "Toz",
+      "area_shape": "coat_surface"
+    },
+    {
+      "id": "isnlama",
+      "name": "Işınlama",
+      "category": "position",
+      "source_element": "Yıldırım",
+      "target_location": "blink_to_point"
+    },
+    {
+      "id": "cekme",
+      "name": "Çekme",
+      "category": "position",
+      "source_element": "Girdap",
+      "target_location": "pull_to_center"
+    },
+    {
+      "id": "tetikleme",
+      "name": "Tetikleme",
+      "category": "timing",
+      "source_element": "Obsidiyen",
+      "trigger_profile": "on_hit_react"
+    },
+    {
+      "id": "esneklik",
+      "name": "Esneklik",
+      "category": "duration",
+      "source_element": "Kil",
+      "lifetime_profile": "flexible_renew"
+    },
+    {
+      "id": "asindirma",
+      "name": "Aşındırma",
+      "category": "duration",
+      "source_element": "Kum",
+      "lifetime_profile": "erode_over_time"
+    },
+    {
+      "id": "dayaniklilik",
+      "name": "Dayanıklılık",
+      "category": "duration",
+      "source_element": "Kaya",
+      "lifetime_profile": "sturdy_persist"
+    },
+    {
+      "id": "berraklik",
+      "name": "Berraklık",
+      "category": "timing",
+      "source_element": "Kristal",
+      "means": "Kristal net tetik — gecikmesiz, kırılgan çözüm (quality değil)",
+      "trigger_profile": "crystal_clear_snap"
+    },
+    {
+      "id": "baglama",
+      "name": "Bağlama",
+      "category": "timing",
+      "source_element": "Katran",
+      "trigger_profile": "bind_to_target_clock"
+    },
+    {
+      "id": "aydinlatma",
+      "name": "Aydınlatma",
+      "category": "scope",
+      "source_element": "Güneş",
+      "area_shape": "reveal_cone"
+    },
+    {
+      "id": "kutsallik",
+      "name": "Kutsallık",
+      "category": "duration",
+      "source_element": "Hale",
+      "lifetime_profile": "aura_pulse"
+    },
+    {
+      "id": "dogurma",
+      "name": "Doğurma",
+      "category": "scope",
+      "source_element": "Şafak",
+      "area_shape": "birth_ring"
+    },
+    {
+      "id": "muhurleme",
+      "name": "Mühürleme",
+      "category": "timing",
+      "source_element": "Mühür",
+      "trigger_profile": "seal_until_break"
+    },
+    {
+      "id": "patlatma",
+      "name": "Patlatma",
+      "category": "scope",
+      "source_element": "Nova",
+      "area_shape": "burst_ring"
+    },
+    {
+      "id": "notrleme",
+      "name": "Nötrleme",
+      "category": "timing",
+      "source_element": "Alacakaranlık",
+      "trigger_profile": "cancel_opposing_clock"
+    },
+    {
+      "id": "bogma",
+      "name": "Boğma",
+      "category": "scope",
+      "source_element": "Kül",
+      "area_shape": "smother_dome"
+    },
+    {
+      "id": "izleme",
+      "name": "İzleme",
+      "category": "position",
+      "source_element": "Zift",
+      "target_location": "follow_marked"
+    },
+    {
+      "id": "sasirtma",
+      "name": "Şaşırtma",
+      "category": "timing",
+      "source_element": "Sis",
+      "trigger_profile": "desync_expectation"
+    },
+    {
+      "id": "sogurma",
+      "name": "Soğurma",
+      "category": "duration",
+      "source_element": "Kömür",
+      "lifetime_profile": "absorb_then_hold"
+    },
+    {
+      "id": "kopyalama",
+      "name": "Kopyalama",
+      "category": "position",
+      "source_element": "Gölge",
+      "target_location": "mirror_offset"
+    },
+    {
+      "id": "yokluk",
+      "name": "Yokluk",
+      "category": "quality",
+      "source_element": "Hiçlik",
+      "silhouette_axis": "hollow",
+      "means": "İçi boş silüet; merkez yok"
+    }
+  ],
+  "elements": [
+    {
+      "id": "1",
+      "name": "Ateş",
+      "type": "core",
+      "group": "B",
+      "verb_id": "saldiri",
+      "adjective_id": "yogunlastirma"
+    },
+    {
+      "id": "2",
+      "name": "Su",
+      "type": "core",
+      "group": "A",
+      "verb_id": "iyilestirme",
+      "adjective_id": "yayma"
+    },
+    {
+      "id": "3",
+      "name": "Hava",
+      "type": "core",
+      "group": "A",
+      "verb_id": "hareket",
+      "adjective_id": "tasima"
+    },
+    {
+      "id": "4",
+      "name": "Toprak",
+      "type": "core",
+      "group": "B",
+      "verb_id": "savunma",
+      "adjective_id": "sabitleme"
+    },
+    {
+      "id": "5",
+      "name": "Aydınlık",
+      "type": "core",
+      "group": "A",
+      "verb_id": "arindirma",
+      "adjective_id": "saflastirma"
+    },
+    {
+      "id": "6",
+      "name": "Karanlık",
+      "type": "core",
+      "group": "B",
+      "verb_id": "gizlilik",
+      "adjective_id": "ortme"
+    },
+    {
+      "id": "1-1",
+      "name": "Alev",
+      "type": "compound",
+      "group": "B",
+      "verb_id": "kritik_vurus",
+      "adjective_id": "keskinlik",
+      "skill_id": "ates_topu",
+      "skill_name": "Ateş Topu",
+      "skill_job": "Güvenilir orta menzil tek patlama — genel hasar aleti",
+      "verb_unlocks_job": "Tek nokta zırh delen kritik gövde — topun yapamadığı delme işi"
+    },
+    {
+      "id": "1-2",
+      "name": "Buhar",
+      "type": "compound",
+      "group": "B",
+      "verb_id": "gorus_kapatma",
+      "adjective_id": "bulandirma",
+      "skill_id": "buhar_perdesi",
+      "skill_name": "Buhar Perdesi",
+      "skill_job": "Kısa süreli görüş engeli bulutu — kaçış/örtü",
+      "verb_unlocks_job": "Yönlendirilebilir kör alan — perde değil, şekillenen kör bölge"
+    },
+    {
+      "id": "1-3",
+      "name": "Kor",
+      "type": "compound",
+      "group": "B",
+      "verb_id": "zirh_eritme",
+      "adjective_id": "tutusturma",
+      "skill_id": "kor_dalgasi",
+      "skill_name": "Kor Dalgası",
+      "skill_job": "Yakın yayılan kor dalgası — hafif zırh aşındırma paketi",
+      "verb_unlocks_job": "Odaklı zırh eritme gövdesi — dalga değil tek hedef soyma"
+    },
+    {
+      "id": "1-4",
+      "name": "Lav",
+      "type": "compound",
+      "group": "B",
+      "verb_id": "alan_kilitleme",
+      "adjective_id": "agirlik",
+      "skill_id": "lav_halkasi",
+      "skill_name": "Lav Halkası",
+      "skill_job": "Ayak altında kısa lav halkası — bölgeyi pahalılaştırır",
+      "verb_unlocks_job": "Süren alan kilidi — halka değil kapanan bölge kontrolü"
+    },
+    {
+      "id": "1-5",
+      "name": "Cehennem",
+      "type": "compound",
+      "group": "B",
+      "verb_id": "can_yakma",
+      "adjective_id": "yakicilik",
+      "skill_id": "cehennem_nefesi",
+      "skill_name": "Cehennem Nefesi",
+      "skill_job": "Kısa koni yanık — iyileştirmeyi zorlaştıran genel baskı",
+      "verb_unlocks_job": "Grievous gövde — nefes değil iyileştirmeyi kilitleyen işaret"
+    },
+    {
+      "id": "1-6",
+      "name": "Karabasan",
+      "type": "compound",
+      "group": "B",
+      "verb_id": "guc_emme",
+      "adjective_id": "geciktirme",
+      "skill_id": "karabasan_dokunusu",
+      "skill_name": "Karabasan Dokunuşu",
+      "skill_job": "Yakın dokunuşla korku/zayıflatma nabzı",
+      "verb_unlocks_job": "Güç emme gövdesi — dokunuş değil süren drain hattı"
+    },
+    {
+      "id": "2-1",
+      "name": "Gayzer",
+      "type": "compound",
+      "group": "A",
+      "verb_id": "cc_arindirma",
+      "adjective_id": "basinc",
+      "skill_id": "gayzer_firlatma",
+      "skill_name": "Gayzer Fırlatma",
+      "skill_job": "Kendini/yakını CC'den bir kerelik fırlatarak kurtarma",
+      "verb_unlocks_job": "Hedefe yönelik CC arındırma gövdesi — kendini kurtarma değil müttefik temizliği"
+    },
+    {
+      "id": "2-2",
+      "name": "Pınar",
+      "type": "compound",
+      "group": "A",
+      "verb_id": "yenilenme",
+      "adjective_id": "sureklilik",
+      "skill_id": "pinar_damlasi",
+      "skill_name": "Pınar Damlası",
+      "skill_job": "Tek seferlik güvenilir heal paketi",
+      "verb_unlocks_job": "Zamanla yenilenme gövdesi — anlık heal değil süren regen"
+    },
+    {
+      "id": "2-3",
+      "name": "Çiy",
+      "type": "compound",
+      "group": "A",
+      "verb_id": "hiz_buff",
+      "adjective_id": "anliklastirma",
+      "skill_id": "ciy_serinti",
+      "skill_name": "Çiy Serinti",
+      "skill_job": "Kısa hız serintisi — kaçış/konum alma",
+      "verb_unlocks_job": "Müttefike yöneltilen haste gövdesi — kendi serintin değil takım hızı"
+    },
+    {
+      "id": "2-4",
+      "name": "Çamur",
+      "type": "compound",
+      "group": "A",
+      "verb_id": "zemin_kontrolu",
+      "adjective_id": "yavaslatma",
+      "skill_id": "camur_seridi",
+      "skill_name": "Çamur Şeridi",
+      "skill_job": "Yere kısa yavaşlatan şerit",
+      "verb_unlocks_job": "Zemin kontrol gövdesi — şerit değil root/slow şekillenen arazi"
+    },
+    {
+      "id": "2-5",
+      "name": "İksir",
+      "type": "compound",
+      "group": "A",
+      "verb_id": "tam_arinma",
+      "adjective_id": "saflik",
+      "skill_id": "iksir_yudumu",
+      "skill_name": "İksir Yudumu",
+      "skill_job": "Kendi üzerindeki bir debuff'ı temizleme",
+      "verb_unlocks_job": "Tam arınma gövdesi — tek debuff değil tam temiz paket + sıfat şekli"
+    },
+    {
+      "id": "2-6",
+      "name": "Mürekkep",
+      "type": "compound",
+      "group": "A",
+      "verb_id": "kaynak_transferi",
+      "adjective_id": "emme",
+      "skill_id": "murekkep_izi",
+      "skill_name": "Mürekkep İzi",
+      "skill_job": "Düşmana kısa zayıflatma izi bırakma",
+      "verb_unlocks_job": "Kaynak transfer gövdesi — iz değil güç/kaynak taşıma hattı"
+    },
+    {
+      "id": "3-1",
+      "name": "Fırtına",
+      "type": "compound",
+      "group": "A",
+      "verb_id": "dusman_toplama",
+      "adjective_id": "savurma",
+      "skill_id": "ruzgar_darbesi",
+      "skill_name": "Rüzgar Darbesi",
+      "skill_job": "Yakın koni itme — küçük knockback",
+      "verb_unlocks_job": "Düşman toplama gövdesi — itme değil merkeze çekme/toplama"
+    },
+    {
+      "id": "3-2",
+      "name": "Pus",
+      "type": "compound",
+      "group": "A",
+      "verb_id": "hiz_gorunmezlik",
+      "adjective_id": "sizma",
+      "skill_id": "pus_adimi",
+      "skill_name": "Pus Adımı",
+      "skill_job": "Kısa görünmez adım — yeniden konum",
+      "verb_unlocks_job": "Hız+görünmezlik gövdesi — tek adım değil süren sızma hareketi"
+    },
+    {
+      "id": "3-3",
+      "name": "Rüzgar",
+      "type": "compound",
+      "group": "A",
+      "verb_id": "cift_hareket",
+      "adjective_id": "sicrama",
+      "skill_id": "ruzgar_sicramasi",
+      "skill_name": "Rüzgar Sıçraması",
+      "skill_job": "Tek yönlü sıçrama yer değiştirme",
+      "verb_unlocks_job": "Çift hareket gövdesi — bir sıçrama değil iki aşamalı hareket cümlesi"
+    },
+    {
+      "id": "3-4",
+      "name": "Toz",
+      "type": "compound",
+      "group": "A",
+      "verb_id": "isabet_dusurme",
+      "adjective_id": "kaplama",
+      "skill_id": "toz_bulutu",
+      "skill_name": "Toz Bulutu",
+      "skill_job": "Kısa isabet düşüren bulut — kendini örtme",
+      "verb_unlocks_job": "İsabet düşürme gövdesi — kendini örtme değil hedefe yapışan debuff şekli"
+    },
+    {
+      "id": "3-5",
+      "name": "Yıldırım",
+      "type": "compound",
+      "group": "A",
+      "verb_id": "zincirleme",
+      "adjective_id": "isnlama",
+      "skill_id": "simsek_gecisi",
+      "skill_name": "Şimşek Geçişi",
+      "skill_job": "Tek hedef şimşek — hızlı nokta vuruşu",
+      "verb_unlocks_job": "Zincirleme gövdesi — tek hedef değil hedef-atlayan zincir"
+    },
+    {
+      "id": "3-6",
+      "name": "Girdap",
+      "type": "compound",
+      "group": "A",
+      "verb_id": "hapsetme",
+      "adjective_id": "cekme",
+      "skill_id": "girdap_cekirdegi",
+      "skill_name": "Girdap Çekirdeği",
+      "skill_job": "Noktada kısa çekim — küçük toplama",
+      "verb_unlocks_job": "Hapsetme gövdesi — çekim değil root ile kilitleme"
+    },
+    {
+      "id": "4-1",
+      "name": "Obsidiyen",
+      "type": "compound",
+      "group": "B",
+      "verb_id": "hasar_emme",
+      "adjective_id": "tetikleme",
+      "skill_id": "obsidiyen_kabuk",
+      "skill_name": "Obsidiyen Kabuk",
+      "skill_job": "Kısa kişisel hasar emme kalkanı",
+      "verb_unlocks_job": "Tetiklenen emme gövdesi — pasif kabuk değil vuruşta tepki veren emme"
+    },
+    {
+      "id": "4-2",
+      "name": "Kil",
+      "type": "compound",
+      "group": "B",
+      "verb_id": "adaptif_direnc",
+      "adjective_id": "esneklik",
+      "skill_id": "kil_zirhi",
+      "skill_name": "Kil Zırhı",
+      "skill_job": "Sabit kısa hasar azaltma",
+      "verb_unlocks_job": "Adaptif direnç gövdesi — sabit zırh değil gelen hasar türüne göre şekil"
+    },
+    {
+      "id": "4-3",
+      "name": "Kum",
+      "type": "compound",
+      "group": "B",
+      "verb_id": "zirh_dusurme",
+      "adjective_id": "asindirma",
+      "skill_id": "kum_asindirmasi",
+      "skill_name": "Kum Aşındırması",
+      "skill_job": "Hedefte kısa zırh düşürme işareti",
+      "verb_unlocks_job": "Süren aşındırma gövdesi — işaret değil zamanla soyulan zırh hattı"
+    },
+    {
+      "id": "4-4",
+      "name": "Kaya",
+      "type": "compound",
+      "group": "B",
+      "verb_id": "alan_bloklama",
+      "adjective_id": "dayaniklilik",
+      "skill_id": "kaya_duvari",
+      "skill_name": "Kaya Duvarı",
+      "skill_job": "Kısa engel duvarı — yolu keser",
+      "verb_unlocks_job": "Alan bloklama gövdesi — duvar değil şekillenen yasak bölge"
+    },
+    {
+      "id": "4-5",
+      "name": "Kristal",
+      "type": "compound",
+      "group": "B",
+      "verb_id": "kalkan_transferi",
+      "adjective_id": "berraklik",
+      "skill_id": "kristal_kalkan",
+      "skill_name": "Kristal Kalkan",
+      "skill_job": "Kendine net kalkan paketi",
+      "verb_unlocks_job": "Kalkan transfer gövdesi — kendi kalkanın değil müttefike taşıma"
+    },
+    {
+      "id": "4-6",
+      "name": "Katran",
+      "type": "compound",
+      "group": "B",
+      "verb_id": "yavaslatma_emme",
+      "adjective_id": "baglama",
+      "skill_id": "katran_izi",
+      "skill_name": "Katran İzi",
+      "skill_job": "Yere yavaşlatan katran lekesi",
+      "verb_unlocks_job": "Yavaşlatma+emme gövdesi — leke değil hedefe bağlı slow-drain"
+    },
+    {
+      "id": "5-1",
+      "name": "Güneş",
+      "type": "compound",
+      "group": "A",
+      "verb_id": "ifsa",
+      "adjective_id": "aydinlatma",
+      "skill_id": "gunes_isigi",
+      "skill_name": "Güneş Işığı",
+      "skill_job": "Gizli/örtülü bir şeyi kısa ifşa",
+      "verb_unlocks_job": "İfşa gövdesi — tek ifşa değil şekillenen aydınlatma alanı"
+    },
+    {
+      "id": "5-2",
+      "name": "Hale",
+      "type": "compound",
+      "group": "A",
+      "verb_id": "kutsal_kalkan",
+      "adjective_id": "kutsallik",
+      "skill_id": "hale_dokunus",
+      "skill_name": "Hale Dokunuşu",
+      "skill_job": "Müttefike kısa kalkan+regen dokunuşu",
+      "verb_unlocks_job": "Kutsal kalkan gövdesi — dokunuş değil süren aura koruması"
+    },
+    {
+      "id": "5-3",
+      "name": "Şafak",
+      "type": "compound",
+      "group": "A",
+      "verb_id": "dirilis",
+      "adjective_id": "dogurma",
+      "skill_id": "safak_umut",
+      "skill_name": "Şafak Umudu",
+      "skill_job": "Düşük can müttefike acil stabilize (diriltmez)",
+      "verb_unlocks_job": "Diriliş gövdesi — stabilize değil gerçek revive işi (nadir)"
+    },
+    {
+      "id": "5-4",
+      "name": "Mühür",
+      "type": "compound",
+      "group": "A",
+      "verb_id": "bolge_kilidi",
+      "adjective_id": "muhurleme",
+      "skill_id": "muhur_damgasi",
+      "skill_name": "Mühür Damgası",
+      "skill_job": "Noktaya kısa stasis damgası",
+      "verb_unlocks_job": "Bölge kilidi gövdesi — nokta damga değil kapanan mühür alanı"
+    },
+    {
+      "id": "5-5",
+      "name": "Nova",
+      "type": "compound",
+      "group": "A",
+      "verb_id": "alan_temizligi",
+      "adjective_id": "patlatma",
+      "skill_id": "nova_pariltisi",
+      "skill_name": "Nova Parıltısı",
+      "skill_job": "Kendi etrafında kısa debuff temiz parıltı",
+      "verb_unlocks_job": "Alan temizliği gövdesi — kişisel parıltı değil yayılan temizleme şekli"
+    },
+    {
+      "id": "5-6",
+      "name": "Alacakaranlık",
+      "type": "compound",
+      "group": "A",
+      "verb_id": "denge",
+      "adjective_id": "notrleme",
+      "skill_id": "alacakaranlik_denge",
+      "skill_name": "Alacakaranlık Dengesi",
+      "skill_job": "Kısa süre kendini stasis ile dondurup hasarı erteleme",
+      "verb_unlocks_job": "Denge gövdesi — kendini dondurma değil karşı saatleri nötrleme"
+    },
+    {
+      "id": "6-1",
+      "name": "Kül",
+      "type": "compound",
+      "group": "B",
+      "verb_id": "nefes_kesme",
+      "adjective_id": "bogma",
+      "skill_id": "kul_bulutu",
+      "skill_name": "Kül Bulutu",
+      "skill_job": "Kısa silence nabzı bulutu",
+      "verb_unlocks_job": "Nefes kesme gövdesi — nabız değil şekillenen silence+korku alanı"
+    },
+    {
+      "id": "6-2",
+      "name": "Zift",
+      "type": "compound",
+      "group": "B",
+      "verb_id": "iz_birakma",
+      "adjective_id": "izleme",
+      "skill_id": "zift_isareti",
+      "skill_name": "Zift İşareti",
+      "skill_job": "Hedefi işaretleyip kısa yavaşlatma",
+      "verb_unlocks_job": "İz bırakma gövdesi — işaret değil takip eden zift yolu"
+    },
+    {
+      "id": "6-3",
+      "name": "Sis",
+      "type": "compound",
+      "group": "B",
+      "verb_id": "yon_sasirtma",
+      "adjective_id": "sasirtma",
+      "skill_id": "sis_perdesi",
+      "skill_name": "Sis Perdesi",
+      "skill_job": "Kısa yön şaşırtan perde — kendini gizle",
+      "verb_unlocks_job": "Yön şaşırtma gövdesi — perde değil hedefte confuse profili"
+    },
+    {
+      "id": "6-4",
+      "name": "Kömür",
+      "type": "compound",
+      "group": "B",
+      "verb_id": "hasar_sogurma",
+      "adjective_id": "sogurma",
+      "skill_id": "komur_zirhi",
+      "skill_name": "Kömür Zırhı",
+      "skill_job": "Kısa hasar soğurma — sonra serbest bırakmaz",
+      "verb_unlocks_job": "Soğurup tutan gövde — düz zırh değil em-hold profili"
+    },
+    {
+      "id": "6-5",
+      "name": "Gölge",
+      "type": "compound",
+      "group": "B",
+      "verb_id": "golge_klonu",
+      "adjective_id": "kopyalama",
+      "skill_id": "golge_adimi",
+      "skill_name": "Gölge Adımı",
+      "skill_job": "Kısa gölge izi bırakarak yanıltma (klon değil)",
+      "verb_unlocks_job": "Gölge klonu gövdesi — iz değil gerçek kopya işi"
+    },
+    {
+      "id": "6-6",
+      "name": "Hiçlik",
+      "type": "compound",
+      "group": "B",
+      "verb_id": "varlik_silme",
+      "adjective_id": "yokluk",
+      "skill_id": "hiclik_dokunus",
+      "skill_name": "Hiçlik Dokunuşu",
+      "skill_job": "Kısa korku + varlık zayıflatma (silmez)",
+      "verb_unlocks_job": "Varlık silme gövdesi — zayıflatma değil erase işi (nadir, yüksek bedel)"
+    }
+  ],
+  "mechanics": {
+    "hard_cc": [
+      "stun",
+      "root",
+      "silence",
+      "knockback"
+    ],
+    "soft_cc": [
+      "slow",
+      "blind",
+      "disarm",
+      "taunt"
+    ],
+    "debuff": [
+      "burn",
+      "armor_break",
+      "grievous_wounds",
+      "weaken"
+    ],
+    "buff": [
+      "shield",
+      "haste",
+      "cleanse",
+      "damage_reduction",
+      "regen"
+    ],
+    "special": [
+      "stasis",
+      "fear"
+    ],
+    "readability_rule": "Her mechanic ekranda tek bakışta ayırt edilir olmalı. Aynı family içindeki fiiller aynı tag çorbasına indirgenmemeli; fark silüette görünür."
+  },
+  "rules": {
+    "runes_count": 6,
+    "rune_names": [
+      "Ateş",
+      "Su",
+      "Hava",
+      "Toprak",
+      "Aydınlık",
+      "Karanlık"
+    ],
+    "groups": {
+      "A": {
+        "name": "Akışkan/Enerjik",
+        "elements": [
+          "Su",
+          "Hava",
+          "Aydınlık"
+        ]
+      },
+      "B": {
+        "name": "Katı/Yapısal",
+        "elements": [
+          "Ateş",
+          "Toprak",
+          "Karanlık"
+        ]
+      },
+      "pairing": [
+        {
+          "A": "Su",
+          "B": "Ateş"
+        },
+        {
+          "A": "Hava",
+          "B": "Toprak"
+        },
+        {
+          "A": "Aydınlık",
+          "B": "Karanlık"
+        }
+      ]
+    },
+    "classes": {
+      "DPS": {
+        "elements": [
+          "Ateş",
+          "Hava"
+        ],
+        "identity": "Hasar verme",
+        "extend_bias": "İlk iki rünle strike/motion fiili açar; sıfat her sınıftan gelir"
+      },
+      "Tank": {
+        "elements": [
+          "Toprak",
+          "Karanlık"
+        ],
+        "identity": "Hasar emme ve kontrol",
+        "extend_bias": "Guard/control/zone fiilleri; uzatma peel ve alan işi"
+      },
+      "Healer": {
+        "elements": [
+          "Su",
+          "Aydınlık"
+        ],
+        "identity": "İyileştirme ve destek",
+        "extend_bias": "Mend/purge fiilleri; uzatma müttefik/alan temizliği"
+      }
+    },
+    "coop": {
+      "principle": "Aynı boss farklı cümlelerle geçilebilmeli. Herkes aynı 4'lüyü spamlıyorsa eksen çökmüştür.",
+      "roles": {
+        "verb_owner": "Sınıf elementleriyle 2'li skill ve 3'lü fiil kimliğini açar",
+        "adjective_flex": "Sıfatlar sınıfa kilitli değil — healer Taşıma, tank Yayma kullanabilir",
+        "extend_decision": "Uzatmayı yapan, 2'linin yetmediği işi gören oyuncudur; zorunlu rota değil"
+      }
+    },
+    "two_runes": {
+      "structure": "ilk_iki → compound element",
+      "result": "skill (hazır paket)",
+      "lookup": "elements[combo].skill_id",
+      "example": "Ateş + Ateş → Alev.skill = Ateş Topu (genel patlama)",
+      "total": 36,
+      "note": "Bu bir kombo ezberi değil kimlik kataloğu; güç merdivesinin basamağı değildir."
+    },
+    "three_runes": {
+      "structure": "(ilk iki → compound.verb) + (3. rün → core.adjective)",
+      "result": "fiil gövdesi + ana element sıfatı",
+      "lookup": "elements[ilk_iki].verb_id + elements[3].adjective_id",
+      "example": "Ateş + Ateş + Ateş → Kritik vuruş + Yoğunlaştırma (odaklı delme — daha güçlü top DEĞİL)",
+      "bridge": "elements[ilk_iki].verb_unlocks_job, skill_job'un yapamadığı işi tanımlar",
+      "total": 216
+    },
+    "four_runes": {
+      "structure": "(ilk iki → compound.verb) + (son iki → compound.adjective)",
+      "result": "fiil gövdesi + bileşik sıfat (dar şekil)",
+      "lookup": "elements[ilk_iki].verb_id + elements[son_iki].adjective_id",
+      "example": "Ateş + Ateş + Ateş + Ateş → Kritik vuruş + Keskinlik (ince delici — Cehennem Topu değil)",
+      "total": 1296,
+      "note": "1296 teorik; ayırt edilebilir fight cevapları az sayıda olmalı."
+    },
+    "order_matters": {
+      "rule": "A+B ≠ B+A",
+      "reason": "İlk rün çifti bileşik/fiil ailesini, sonraki rün(ler) sıfatı seçer."
+    },
+    "adjective_universality": "Sıfatlar sınıfa özel değil. Her sınıf her sıfatı kullanabilir.",
+    "max_runes": 4,
+    "no_length_power": "2 < 3 < 4 hasar/güç sıralaması YASAK. Sıralama yalnızca risk/şekil çeşitliliği."
+  },
+  "engine": {
+    "resolution_order": [
+      "1. Oyuncu rün dizisini çizer (örn. [1,1,3])",
+      "2. Motor dizi uzunluğuna bakar (2, 3 veya 4)",
+      "3. 2'li ise: elements[a-b] → skill_id uygula (hazır paket)",
+      "4. 3'lü ise: elements[a-b].verb_id + elements[c].adjective_id → birleştir (skill upgrade DEĞİL)",
+      "5. 4'lü ise: elements[a-b].verb_id + elements[c-d].adjective_id → birleştir",
+      "6. Birleşim: apply(verb, adjective) — kategori silhouette/position/scope/timing/duration değiştirir; asla damage multiplier değil",
+      "7. Bedel: extension_economy[length] commitment/cast_risk uygula"
+    ],
+    "composition_formula": "result = apply(verb.family + verb.action, adjective.category_modifier)",
+    "adjective_modifiers": {
+      "position": "target_location → override",
+      "scope": "area_shape → override",
+      "timing": "trigger_profile → override",
+      "duration": "lifetime_profile → override",
+      "quality": "silhouette_axis → override (focus|pierce|spread|lift|hollow) — effect_intensity YOK"
+    },
+    "skill_to_verb_bridge": {
+      "field_pair": [
+        "skill_job",
+        "verb_unlocks_job"
+      ],
+      "rule": "3'lüye geçiş ancak verb_unlocks_job, skill_job'un kapsamadığı bir işse anlamlıdır. Aynı işin güçlisi olamaz."
+    },
+    "lookup_indexes": {
+      "by_verb_id": "verbs → element bulmak için",
+      "by_adjective_id": "adjectives → element bulmak için",
+      "by_element_id": "elements → hızlı erişim",
+      "by_category": "adjectives → kategoriye göre filtreleme",
+      "by_skill_id": "compound elements → 2'li skill",
+      "by_verb_family": "verbs → denge/aile bazlı filtre"
+    },
+    "examples": [
+      {
+        "input": [
+          1,
+          1
+        ],
+        "resolve": "elements['1-1'].skill = Ateş Topu",
+        "result": "Ateş Topu — genel patlama aleti",
+        "job": "reliable general damage"
+      },
+      {
+        "input": [
+          1,
+          1,
+          1
+        ],
+        "resolve": "elements['1-1'].verb + elements['1'].adjective",
+        "result": "Kritik vuruş + Yoğunlaştırma = odaklı delme",
+        "job": "armor-pierce point — NOT stronger fireball",
+        "why_extend": "Top zırhı kıramıyorsa; delme işi lazım"
+      },
+      {
+        "input": [
+          1,
+          1,
+          3
+        ],
+        "resolve": "elements['1-1'].verb + elements['3'].adjective",
+        "result": "Kritik vuruş + Taşıma = taşınan kritik gövde",
+        "job": "relocate pierce body",
+        "why_extend": "Delme lazım ama başka konumda"
+      },
+      {
+        "input": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "resolve": "elements['1-1'].verb + elements['1-1'].adjective",
+        "result": "Kritik vuruş + Keskinlik = ince delici",
+        "job": "narrow pierce silhouette — NOT hell fireball",
+        "why_extend": "Fight dar delme silüeti istiyor; 3'lü odak yetmiyor"
+      },
+      {
+        "input": [
+          1,
+          1,
+          3,
+          3
+        ],
+        "resolve": "elements['1-1'].verb + elements['3-3'].adjective",
+        "result": "Kritik vuruş + Sıçrama = sıçrayan kritik",
+        "job": "hopping pierce"
+      },
+      {
+        "input": [
+          3,
+          5
+        ],
+        "resolve": "elements['3-5'].skill = Şimşek Geçişi",
+        "result": "Şimşek Geçişi — tek hedef hızlı vuruş",
+        "job": "reliable single zap"
+      },
+      {
+        "input": [
+          3,
+          5,
+          6
+        ],
+        "resolve": "elements['3-5'].verb + elements['6'].adjective",
+        "result": "Zincirleme + Örtme = örtülü zincir",
+        "job": "veiled multi-hop chain — NOT stronger Şimşek",
+        "why_extend": "Tek zap yetmiyor; birden fazla hedef + örtü lazım"
+      }
+    ]
+  },
+  "changelog_2_1": [
+    "extension_economy eklendi (2/3/4 rol, bedel, ne zaman)",
+    "Her compound'a skill_id, skill_name, skill_job, verb_unlocks_job köprüsü",
+    "quality: effect_intensity kaldırıldı → silhouette_axis (focus/pierce/spread/lift/hollow)",
+    "scope/timing/duration: sayı yerine shape/profile alanları",
+    "verb_families (10) — denge isim üzerinden değil aile üzerinden",
+    "coop + class extend_bias",
+    "no_length_power kuralı ve bridge motor alanı",
+    "Örnekler why_extend ile anti-ladder netleştirildi"
+  ],
+  "damage_model": {
+    "rule": "no_length_power",
+    "formula": "total_damage = verb.base_damage",
+    "forbidden": "total_damage = verb.base_damage * f(length)",
+    "notes": [
+      "Aynı family içindeki 2'li skill ile 3'lü fiil aynı base_damage bandında kalabilir; fark iş türüdür.",
+      "base_heal / base_shield gibi potency alanları hasar formülüne girmez.",
+      "Sayılar [draft] — playtest ile docs/dovus-sistemi.md §3 bandına çekilecek."
+    ],
+    "example": {
+      "ates_topu_2": {
+        "verb": "via skill package → saldiri-band",
+        "damage": 100,
+        "job": "genel patlama"
+      },
+      "kritik_yogun_3": {
+        "verb": "kritik_vurus",
+        "damage": 100,
+        "job": "zırh delen nokta"
+      },
+      "kritik_keskin_4": {
+        "verb": "kritik_vurus",
+        "damage": 100,
+        "job": "ince delici silüet"
+      }
+    }
+  },
+  "cast_mobility": {
+    "enum": [
+      "free",
+      "slowed",
+      "static"
+    ],
+    "means": {
+      "free": "Cast sırasında tam hareket — bacak state machine serbest",
+      "slowed": "Cast sırasında yavaş hareket",
+      "static": "Cast sırasında köklenmiş — kaya/bölge hissi"
+    },
+    "note": "Uzunluk mobility'yi değiştirmez; fiil kimliği belirler. 4'lü static fiil hâlâ static — bedel commitment'tan gelir."
+  },
+  "changelog": {
+    "2.2": [
+      "damage_model: total_damage = verb.base_damage (length çarpanı yok)",
+      "Her fiile base_damage, base_heal, base_shield, poise_damage, base_cost, cast_mobility",
+      "poise_damage anti-ladder ile uyumlu — hasar değil duruş kırma",
+      "quality: 5 eksen × 1 sıfat; saflastirma→scope, saflik→duration, berraklik→timing",
+      "cast_mobility enum belgesi eklendi"
+    ]
+  }
+}
