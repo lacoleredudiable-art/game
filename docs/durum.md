@@ -4,7 +4,7 @@
 > taramadan nerede kaldığımızı anlasın.
 
 **Son güncelleme:** 13 Eylül 2026  
-**Faz:** v4.2 **kilitli**; Core element resolver + katalog testleri yeşil  
+**Faz:** v4.2 **kilitli**; 1554 dizi exhaustive gramer testi yeşil  
 **Sıradaki:** Unity/oyun yüzeyi (rün girişi → resolver → efekt); skill_job satırları playtest
 
 ---
@@ -18,6 +18,7 @@ Bağlayıcı dövüş: **`docs/element-sistemi.json` v4.2** (`locked: true`, `20
 - 3'lü → fiil kapısı + ana sıfat (`verb_unlocks_job` + adjective)
 - 4'lü → dar şekil / commit anahtarı (hasar ultisi değil)
 - Uzunluk hasar/poise çarpmaz; sıfat işlevi varsa `damage_mult ≤ 0.9`
+- **1554 = 6¹+6²+6³+6⁴** dizi uzayı: 1 red, 2/3/4 gramerden çözülür (tablo yok)
 
 ## 2. Kod
 
@@ -27,9 +28,9 @@ Bağlayıcı dövüş: **`docs/element-sistemi.json` v4.2** (`locked: true`, `20
 | Katalog | `…/ElementCatalog.cs` |
 | Çözümleyici | `…/ElementResolver.cs` |
 | Test yükleyici | `tools/CoreTests/ElementCatalogLoader.cs` |
-| Testler | `tools/CoreTests/ElementResolverTests.cs` (14) |
+| Testler | `ElementResolverTests` + `ElementComboExhaustiveTests` |
 
-`dotnet test` — 106 yeşil (ElementResolver dahil).
+`dotnet test` — 1554 dizi kapsamı dahil yeşil.
 
 Eski alfa gramer/cümle kodu repoda duruyor; yeni JSON ile uyumlu sayılmaz.
 Stack: `docs/teknoloji-kararlari.md` · Unity: `docs/unity-notlari.md`

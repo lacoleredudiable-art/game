@@ -31,5 +31,6 @@ Bu dosyada kalan şey **çalışma düzeni** + sıradaki işler.
 | ID | Durum | Özet |
 |---|---|---|
 | E0 | **bitti** | v4.2 kilitle + `ElementCatalog`/`ElementResolver` + testler |
+| E0b | **bitti** | 1554 dizi exhaustive gramer testi (1 red / 2·3·4 çöz) |
 | E1 | sırada | Unity: rün girişi → resolver sonucu (görsel/efekt yoksa stub) |
 | E2 | sonra | skill_job / verb_unlocks_job satırlarını playtest ile budama |
