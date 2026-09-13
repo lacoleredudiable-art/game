@@ -1,24 +1,20 @@
 # Arşiv
 
-**Buradaki hiçbir dosya bağlayıcı değildir ve rutin olarak okunmaz.** Bir görev seni açıkça
-buraya yönlendirmediyse bu klasörü atla — dosyalar uzun, bağlamı doldurur ve içlerindeki
-kararların bir kısmı artık geçersiz.
+**Buradaki hiçbir dosya bağlayıcı değildir ve rutin olarak okunmaz.** Görev seni açıkça
+buraya yönlendirmediyse atla.
 
-Geçerli belgeler bir üst klasörde: `durum.md`, `dovus-sistemi.md`, `teknoloji-kararlari.md`,
-`unity-notlari.md`, `gorev-listesi.md`, `tasarim-ozeti.md`. **Çelişki hâlinde yeni belge
-geçerlidir.**
+**Geçerli dövüş kaynağı:** `docs/element-sistemi.json`  
+Diğer geçerli: `docs/durum.md`, `docs/teknoloji-kararlari.md`, `docs/unity-notlari.md`,
+`docs/gorev-listesi.md`, `docs/tasarim-ozeti.md`.
 
-    10|29 Ağustos 2026'da alfa prototip turu kapandı ve dövüş tasarımı (rünler + mekanikler) yeniden
-açıldı. Bu klasör o turun kaydı.
+13 Eylül 2026'da dövüş tasarımı element sistemine sıfırlandı. Bu klasör önceki turların kaydı.
 
-| Dosya | Ne | Neden tutuluyor |
-|---|---|---|
-| `durum-t0-t14.md` | T0–T14 görev günlüğü, 1700 satır | Bir davranışın **neden** öyle olduğu sorusunun tek cevabı burada: her görevin denetim maddeleri, ölçümleri ve gerekçeleri |
-| `dovus-sistemi-v1.md` | Alfa dövüş spesifikasyonu | Kararların gerekçeleri ve terk edilmiş yolların nedenleri; §2'deki mekanikler kodda hâlâ çalışıyor |
-| `gorev-listesi-t0-t14.md` | Kapanmış görev listesi + prompt'lar | Yeni görev prompt'u yazarken biçim örneği |
-| `his-kontrol-listesi.md` | Telefon his turunun soru/cevap formu | Bir his turu daha yapılacaksa şablonu bu |
-| `t0-kurulum.md` | İlk Unity kurulumu (insan işi) | Tekrar kurulum gerekirse |
+| Dosya | Ne |
+|---|---|
+| `durum-oncesi-reset.md` | Reset öncesi durum notu |
+| `dovus-sistemi-oncesi-reset.md` | Reset öncesi dövüş spec (boş §4 dönemi) |
+| `dovus-sistemi-v1.md` | Alfa dövüş spesifikasyonu |
+| `durum-t0-t14.md` / `gorev-listesi-t0-t14.md` | T0–T14 turu |
+| `his-kontrol-listesi.md` / `t0-kurulum.md` | His turu / kurulum |
 
-    20|Buradaki bir bilgi hâlâ günlük olarak gerekiyorsa **yeri burası değil** — geçerli belgelerden
-birine taşınmalı. Prototip turunun operasyonel tuzakları bu yüzden `docs/unity-notlari.md`'ye
-çıkarıldı.
+Çelişki hâlinde **`docs/element-sistemi.json` + yeni `docs/durum.md`** geçerlidir.

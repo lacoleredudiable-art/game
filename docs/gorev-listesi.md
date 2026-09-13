@@ -1,50 +1,32 @@
 # Ajan Görev Listesi
 
-> **Görev tablosu boş.** Alfa prototipin T0–T14 görevleri bitti ve arşive alındı:
-> `docs/arsiv/gorev-listesi-t0-t14.md` (prompt'ların yazım biçimi için örnek olarak
-> bakılabilir, aksi hâlde okunmaz). Yeni görevler `docs/dovus-sistemi.md` §4 dolduktan
-> sonra oradan doğar.
->
-> Bu dosyada kalan şey **çalışma düzeni** — o kısım tasarımdan bağımsız ve geçerli.
+> **Görev tablosu boş.** Eski T0–T14 ve önceki dövüş turu arşivde (`docs/arsiv/`).
+> Yeni görevler `docs/element-sistemi.json` (v4.2+) üzerinden doğar — sıfırdan.
+
+Bu dosyada kalan şey **çalışma düzeni** (tasarımdan bağımsız).
 
 ---
-    10|
+
 ## Nasıl çalıştırılır
 
-1. **Her göreve ayrı ajan, ayrı dal.** Görev bitmeden sonrakini başlatma. Testler yeşilse
-   ajan dalı kendi merge eder; PR yalnızca **karar** gereken bir şey çıktıysa açık kalır.
-2. **Sırayı bozma.** Her görev kendinden öncekilerin bittiğini varsayar.
-3. Ajan bitirdiğinde tek soruyu sor: **"kabul kriterlerinden hangisini doğrulayamadın?"**
-   Doğrulanmamış kriter varsa görev bitmemiştir.
-4. **Prompt'a ek bilgi yapıştırmaya gerek yok.** Değişmez kurallar `AGENTS.md`'de ve her
-   ajanın bağlamına otomatik giriyor. Ajan nerede kaldığımızı `docs/durum.md`'den öğrenir.
-    20|5. **Her prompt "ÖNCE OKU" satırıyla başlar** ve yalnızca gereken bölümleri sayar. Bu satır
-   bağlamı korur; silinmez.
-6. **Unity gerektiren görevlerde editör açık ve MCP bağlı olmalı.** Saf C# (Core) görevleri
-   `dotnet test` ile doğrulanır, en hızlı kısım burasıdır — bir işin Core'da yapılabilecek
-   kısmı varsa oraya ayrılır.
-7. **Denetim turu ayrı bir görevdir** ve projeyi taşıyan şey odur. Denetçi **kod yazmaz**:
-   bulgularını `docs/durum.md`'ye yazar, düzeltmeyi ayrı bir görev olarak yazan model yapar.
-   Denetçi, denetlediği kodu yazan modelden farklı bir model olur.
+1. **Her göreve ayrı ajan, ayrı dal.** Testler yeşilse ajan merge eder; PR yalnızca **karar**
+   gereken şeyde açık kalır.
+2. **Sırayı bozma.**
+3. Bitince: **"kabul kriterlerinden hangisini doğrulayamadın?"**
+4. Değişmez kurallar `AGENTS.md`'de. Durum: `docs/durum.md`. Spec: `docs/element-sistemi.json`.
+5. Her prompt **"ÖNCE OKU"** ile başlar; yalnızca gereken bölümleri sayar.
+6. Unity gereken işlerde editör + MCP. Saf Core: `dotnet test`.
+7. Denetim turu ayrı görev; denetçi kod yazmaz, bulguyu `docs/durum.md`'ye yazar.
 
 ## Hangi görev hangi modelle
 
-    30|Ölçüt tek soru: görev `AGENTS.md`'deki **değişmez kurallara** dokunuyor mu (Core saflığı,
-sayı uydurmama, kombo tablosu yasağı, silüet ≠ sayı), yoksa speci verilmiş bir yüzey mi?
-
 | Görev tipi | Model |
 |---|---|
-| Core'a, gramere veya birden çok katmana aynı anda dokunan | Opus |
-| Speci net, tek katmanlı yüzey (HUD, panel, görünüm) | Sonnet |
-| Mekanik, saniyede doğrulanabilen (yeniden adlandırma, gömülü sayıyı veriye taşıma, test iskeleti) | Composer |
-| Denetim turu | Yazan modelden farklı (Grok) |
+| Core / gramer / çok katman | Opus |
+| Speci net, tek yüzey | Sonnet |
+| Mekanik, hızlı doğrulanır | Composer |
+| Denetim | Yazan modelden farklı |
 
-Composer'ın hata kalıbı proje büyüdükçe sabit: **sayı uydurmak**, tablo/dizi yazmaya kaçmak,
-    40|ve "ÖNCE OKU" listesinin dışına taşıp başka görevin dosyasına dokunmak. Dövüş mantığına
-sokulmaz.
+## Görev tablosu
 
----
-
-## Görevler
-
-*(boş)*
+*(boş — ilk görevler element-sistemi.json v4.2'ye göre yazılacak)*

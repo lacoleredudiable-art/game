@@ -92,7 +92,7 @@ Tek bir `TimeDirector` iki saati birlikte yönetir:
 
 Yavaş çekim rampası ve hitstop tek yerden geçer. İptal pencerelerinin dünya saatiyle
 ölçülmesi bir detay değil, [yavaş çekim mekaniğinin
-kendisidir](dovus-sistemi.md#2-kodda-şu-an-çalışan-mekanikler-envanter).
+kendisidir; güncel dövüş spec `element-sistemi.json`'dır (eski envanter arşivde).
 
 ---
 

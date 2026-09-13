@@ -2,9 +2,8 @@
 
 > Bu belge, projenin ilk tasarım konuşmasının çıktısıdır. Amacı, yeni bir sohbetin
 > sıfırdan bağlam kurmadan devam edebilmesini sağlamaktır. Sütunlar, referans analizi ve
-> zorluk felsefesi hâlâ geçerli; dövüşün mekanik ayrıntısı için `dovus-sistemi.md`'ye bak.
-> Tarih: 15 Ağustos 2026 (§10'un "prototip hedefi" kısmı 29 Ağustos'ta karşılandı — prototip
-> çalışıyor, dövüş tasarımı yeniden açıldı; bkz. `durum.md`)
+> zorluk felsefesi hâlâ geçerli; dövüşün mekanik ayrıntısı için `element-sistemi.json`'a bak.
+> Tarih: 15 Ağustos 2026 (13 Eylül 2026: dövüş dili sıfırdan element sistemine geçti; bkz. `durum.md`)
 
 ---
 
@@ -336,7 +335,7 @@ bunu zaten gerektiriyor.
 > "3 vuruşluk temel zincir" değil, beşgen 5 nokta üzerinde **cümle kuran** bir girdi dili
 > oldu; dodge beşgenin dışında ayrı bir düğme, merkez ise düz vuruş.
 > Nerede kaldığımız: [Durum](durum.md) · dövüşün güncel hâli ve sayılar:
-> [Dövüş Sistemi](dovus-sistemi.md). Aşağıdaki kapsam listesi tarih olarak bırakıldı.
+> [Element Sistemi](element-sistemi.json). Aşağıdaki kapsam listesi tarih olarak bırakıldı.
 
 **Kapsam — greybox, hiçbir sanat varlığı yok:**
 
@@ -380,7 +379,7 @@ yerleşimi **ölçülebilir**. Tasarım tartışmasını tahminden ölçüme çe
 ## 12. Açık Konular
 
 > **Güncelleme (20 Ağustos 2026):** Girdi ve saldırı dili artık açık konu değil —
-> [Dövüş Sistemi](dovus-sistemi.md)'nde karara bağlandı. Ayrıca "beceri ligi PvP" maddesinin
+> [Element Sistemi](element-sistemi.json) + ürün kararına bağlandı. Ayrıca "beceri ligi PvP" maddesinin
 > muhtemel hali netleşti: 15 saniyelik **mühür denemesi** (saf icra, skor, sıralama), boss
 > dövüşünün dışında ayrı bir mod olarak. Sebebi: hız yarışı boss dövüşüne konursa okuma
 > yarışını yer ve 3. sütun çöker.
