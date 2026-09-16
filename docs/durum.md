@@ -12,11 +12,20 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (Bağlama 9 · Equipment sabit silah) · **Sıradaki:**
-Bağlama 8.1 (delayed_detonation / death_delay) + Bağlama 10+ (AnimationBridge / …) +
+**Son güncelleme:** 16 Eylül 2026 (Bağlama 10 · AnimationBridge) · **Sıradaki:**
+Bağlama 8.1 (delayed_detonation / death_delay) + Bağlama 11+ (RealityEffect /
+PlaceholderFactory↔LivingEffect / PlayerStateMachine) +
 Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
-+ **Faz 6 bağlama** kalanı (RealityEffect /
-space_layer/state machine / Presentation henüz Game'e bağlı değil)
++ **Faz 6 bağlama** kalanı + Quaternius↔JSON `animator_state` eşlemesi
+
+> **16 Eylül — Bağlama 10: AnimationBridge + PresentationValidator Game'e.**
+> `ManifestationDirector.ShoutSkill` → `PresentationValidator` /
+> `PresentationCatalog.TryGetAnimation(AnimationType)` → `AnimationBridge.Play`
+> (`ActorVisual.Animator`). `PulseRune` (`PulseActor`) **silinmedi**. Eksik
+> Quaternius state → SafeSetFloat gibi sessiz atla (`LastPlayApplied=false`,
+> konsol hatası yok). MCP Play: Ateş×2 → `melee_thrust`/`Melee_Thrust`
+> applied=false; aynı köprü `CastPierce` → applied=true + state CastPierce.
+> `dotnet test` 226 yeşil.
 
 > **16 Eylül — Bağlama 9: Equipment sabit kuşam + match bonus.** `PrototypeBootstrap`:
 > `EquipmentCatalog` → sabit **Alev Kılıcı** (Ateş); seçim UI yok.
@@ -568,10 +577,11 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   (`PresentationCatalog` 16×16×10). **Görev 14:** `PresentationValidator` hitbox+animation
   doğrular; **`target_ally` hitbox prezentasyonda yok** (6 fiil). **Görev 16:**
   `PlaceholderFactory` trail/impact placeholder üretir; ManifestationDirector spawn
-  bağlama yok (Faz 6). **Görev 15:** `AnimationBridge` frame-timer + Play hazır;
-  Bootstrap'e bağlı değil. JSON `animator_state` (`Spell_Cast_*` / `Melee_*` / …)
-  Quaternius controller state isimleriyle (`CastPierce` / `BasicStrike` / …)
-  örtüşmüyor — eşleme Faz 6. Görev 17 (element_colors audit) sırada.
+  bağlama yok (Faz 6). **Görev 15 + Bağlama 10:** `AnimationBridge` `ShoutSkill`'de
+  bağlı (`PresentationValidator` + katalog); `PulseRune` duruyor. JSON
+  `animator_state` (`Spell_Cast_*` / `Melee_*` / …) Quaternius
+  (`CastPierce` / `BasicStrike` / …) ile örtüşmüyor — eşleme Faz 6 (eksik state
+  sessiz atlanır). Görev 17 (element_colors audit) sırada.
 - **`SkillResolution.Hitbox` = `target_ally` prezentasyon katmanında yok (Görev 14):**
   `prezentasyon-katmani.json` hitbox_library'de `target_ally` id'si yok. Element fiilleri:
   `cc_arindirma`, `hiz_buff`, `kalkan_transferi`, `arindirma`, `kutsal_kalkan`, `dirilis`.

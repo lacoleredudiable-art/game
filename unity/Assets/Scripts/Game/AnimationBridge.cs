@@ -7,7 +7,7 @@ namespace Dovus.Game
 {
     /// <summary>
     /// Presentation AnimationFrameNode → Animator.Play + worldMs frame-timer.
-    /// Bootstrap / ManifestationDirector'a bağlanmaz (Faz 6).
+    /// ManifestationDirector.ShoutSkill üzerinden bağlanır (Bağlama 10).
     /// </summary>
     public sealed class AnimationBridge
     {
@@ -31,11 +31,15 @@ namespace Dovus.Game
         public AnimationFrameNode Current => _node;
         public double StartWorldMs => _startWorldMs;
 
+        /// <summary>Son Play'de Controller'da state vardı ve Animator.Play çağrıldı.</summary>
+        public bool LastPlayApplied { get; private set; }
+
         /// <summary>
         /// animator_state'i Play eder (yoksa uyarı, fırlatmaz) ve frame-timer'ı
         /// <paramref name="worldMs"/> anından başlatır.
         /// </summary>
-        public void Play(AnimationFrameNode node, Animator animator, double worldMs)
+        /// <returns>State Controller'da vardıysa true.</returns>
+        public bool Play(AnimationFrameNode node, Animator animator, double worldMs)
         {
             Stop();
             _node = node;
@@ -46,7 +50,8 @@ namespace Dovus.Game
             ParseDamageSchedule(node);
             _spawnVfxFrame = node.SpawnVfxAtFrame;
 
-            TryPlayState(animator, node.AnimatorState);
+            LastPlayApplied = TryPlayState(animator, node.AnimatorState);
+            return LastPlayApplied;
         }
 
         public void Stop()
@@ -59,6 +64,7 @@ namespace Dovus.Game
             _damageFrame = null;
             _damageEveryTick = false;
             _spawnVfxFrame = null;
+            LastPlayApplied = false;
         }
 
         /// <summary>worldMs'e göre kare olaylarını ateşler. Animasyon bitince IsPlaying false.</summary>
@@ -120,33 +126,25 @@ namespace Dovus.Game
         public static double FrameToElapsedSeconds(int frame, int totalFrames, int totalDurationMs) =>
             FrameToElapsedMs(frame, totalFrames, totalDurationMs) / 1000.0;
 
-        static void TryPlayState(Animator animator, string stateName)
+        static bool TryPlayState(Animator animator, string stateName)
         {
             if (animator == null || !animator.isActiveAndEnabled
                 || animator.runtimeAnimatorController == null)
             {
-                Debug.LogWarning(
-                    "[AnimationBridge] Animator yok/kapalı — Play atlandı.");
-                return;
+                // SafeSetFloat deseni: sessiz atla, hata fırlatma.
+                return false;
             }
 
             if (string.IsNullOrEmpty(stateName))
-            {
-                Debug.LogWarning(
-                    "[AnimationBridge] animator_state boş — Play atlandı.");
-                return;
-            }
+                return false;
 
-            // SafeSetFloat deseni: Controller'da yoksa uyarı, hata fırlatma.
+            // Controller'da yoksa sessiz atla (Quaternius ↔ JSON eşlemesi Faz 6).
             if (!HasState(animator, stateName))
-            {
-                Debug.LogWarning(
-                    $"[AnimationBridge] Animator state yok: '{stateName}' — Play atlandı.");
-                return;
-            }
+                return false;
 
             animator.Play(stateName, LayerIndex, 0f);
             animator.Update(0f);
+            return true;
         }
 
         static bool HasState(Animator animator, string stateName)

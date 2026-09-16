@@ -5,6 +5,7 @@ using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using Dovus.Core.Layers;
 using Dovus.Core.Manifestation;
+using Dovus.Core.Presentation;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using UnityEngine;
@@ -81,6 +82,10 @@ namespace Dovus.Game
         // --- Ekipman (Bağlama 9) — sabit silah; seçim UI yok ---
         EquipmentItem _equippedWeapon;
         EquipmentBonusResolver _equipmentBonus;
+        // --- Animasyon (Bağlama 10) — PresentationCatalog → AnimationBridge; PulseRune kalır ---
+        PresentationCatalog _presentationCatalog;
+        PresentationValidator _presentationValidator;
+        readonly AnimationBridge _animationBridge = new();
         PentagonView _pentagonView;
         PlayerResource _playerResource;
         PlayerCooldown _playerCooldown;
@@ -96,6 +101,21 @@ namespace Dovus.Game
 
         /// <summary>Bağlama 9 / MCP: son ApplyClosingDamage çıktısı (boss'a giden, armor öncesi).</summary>
         public float LastClosingDamageDealt { get; private set; }
+
+        /// <summary>Bağlama 10 / MCP: son ShoutSkill AnimationType id (katalog anahtarı).</summary>
+        public string LastAnimationTypeId { get; private set; } = string.Empty;
+
+        /// <summary>Bağlama 10 / MCP: son denenen animator_state.</summary>
+        public string LastAnimationState { get; private set; } = string.Empty;
+
+        /// <summary>Bağlama 10 / MCP: Controller'da state vardı ve Play uygulandı.</summary>
+        public bool LastAnimationPlayApplied { get; private set; }
+
+        /// <summary>Bağlama 10 / MCP: frame-timer köprüsü (Play doğrulama).</summary>
+        public AnimationBridge AnimationBridge => _animationBridge;
+
+        /// <summary>Bağlama 10 / MCP: ShoutSkill içindeki ApplySkillAnimation yolunu doğrudan dener.</summary>
+        public void DebugApplySkillAnimation(SkillResolution skill) => ApplySkillAnimation(skill);
 
         SkillMotor Skills => _skills ??= SkillMotorLoader.LoadOrDefault();
 
@@ -222,6 +242,7 @@ namespace Dovus.Game
             _playerResource = player != null ? player.GetComponent<PlayerResource>() : null;
             _playerCooldown = player != null ? player.GetComponent<PlayerCooldown>() : null;
             _skills = SkillMotorLoader.LoadOrDefault();
+            EnsurePresentationCatalog();
             _modeDirector = new ActiveModeDirector(_skills.ActiveModes);
             _passiveDirector = new PassiveDirector(_skills.Passives);
             _chainRules = LoadChainRulesOrDefault();
@@ -305,6 +326,7 @@ namespace Dovus.Game
             TickPassives(worldMs);
             TickZones(dtSec);
             TickTimeEffects(worldMs);
+            _animationBridge.Tick(worldMs);
         }
 
         // --- Ulti (active_modes) ---
@@ -1215,6 +1237,60 @@ namespace Dovus.Game
                 sub = string.IsNullOrEmpty(sub) ? mech : sub + "  ·  " + mech;
             _readout?.NoteSkill(skill.DisplayName, sub, line);
             SkillFeel.CameraKick(skill.VerbFamily, _camera, _colors);
+            // PulseRune (PulseActor) kalır — AnimationBridge eklenir, yerine geçmez.
+            ApplySkillAnimation(skill);
+        }
+
+        /// <summary>
+        /// Bağlama 10: SkillResolution.AnimationType → PresentationCatalog → AnimationBridge.
+        /// Quaternius'ta karşılığı yoksa SafeSetFloat gibi sessiz atlar (hata yok).
+        /// </summary>
+        void ApplySkillAnimation(SkillResolution skill)
+        {
+            LastAnimationTypeId = string.Empty;
+            LastAnimationState = string.Empty;
+            LastAnimationPlayApplied = false;
+
+            if (skill.IsEmpty || _visual == null || _visual.Animator == null)
+                return;
+
+            EnsurePresentationCatalog();
+            if (_presentationValidator == null || _presentationCatalog == null)
+                return;
+
+            PresentationValidationResult check = _presentationValidator.Validate(skill);
+            LastAnimationTypeId = check.AnimationTypeId;
+            if (!check.AnimationFound)
+                return;
+
+            if (!_presentationCatalog.TryGetAnimation(check.AnimationTypeId, out AnimationFrameNode node))
+                return;
+
+            LastAnimationState = node.AnimatorState;
+            double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
+            LastAnimationPlayApplied = _animationBridge.Play(node, _visual.Animator, worldMs);
+        }
+
+        void EnsurePresentationCatalog()
+        {
+            if (_presentationCatalog != null && _presentationValidator != null)
+                return;
+
+            const string resourcePath = "Presentation/prezentasyon-katmani";
+            var asset = Resources.Load<TextAsset>(resourcePath);
+            if (asset == null || string.IsNullOrWhiteSpace(asset.text))
+                return;
+
+            try
+            {
+                _presentationCatalog = PresentationCatalog.FromJson(asset.text);
+                _presentationValidator = new PresentationValidator(_presentationCatalog);
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning(
+                    $"[ManifestationDirector] prezentasyon-katmani okunamadı: {e.Message}");
+            }
         }
 
         void ApplyClosingStatuses(PendingClosing p, SkillResolution skill)
