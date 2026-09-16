@@ -250,14 +250,18 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   bkz. yukarıdaki not) — eskiden `Rune.Igne`/`Suru`/`Kabuk`/`Zehir`/`Sarsinti`/`Toprak` gibi
   beşgen kalıntısı adlar gerçek elementle (`DisplayName`) uyuşmuyordu.
 
-### Build notları (hâlâ geçerli)
+### Build notları
 
-- **Xiaomi/HyperOS: `adb shell input tap` `INJECT_EVENTS` ile reddediliyor.** Uzaktan dokunuş
-  için ayrı bir geliştirici seçeneği ("USB debugging (Security settings)") gerekiyor.
-  `adb install -r` çalışıyor. Push + restart ile tuning değiştirmek (`tuning.json`) her zaman
-  çalışan yol.
-- **Batchmode build, Unity Editor açıkken çalışmaz** ("another Unity instance"). Editör
-  açıkken tek yol menü ya da MCP üzerinden `AndroidBuilder.BuildTo`; build'i
-  `EditorApplication.delayCall` içine koyup MCP komutunun hemen dönmesini sağla, sonucu
-  `Unity_GetConsoleLogs` ile oku (uzun build MCP'yi zaman aşımına uğratır ama build editörde
-  devam eder). Kapatılmış bir editörden kalan bayat `unity/Temp/UnityLockfile` aynı hatayı verir.
+Taşındı → `docs/unity-notlari.md` (sahne/derleme/Android build tuzakları — tasarım kararı
+yok, hepsi "şunu yapma, çalışmıyor" cinsinden, Unity/cihaza dokunacak görevde okunur).
+
+## master ayrışması (16 Eylül, 4. tur sonu)
+
+`origin/master` 29 Ağustos'tan beri **bu sohbetten habersiz, paralel bir hatta** ilerlemiş:
+kendi "proje sadeleştirme"si + 13 Eylül'de kilitlenen ayrı bir "v4.2 element spec" +
+tamamen başka bir çözücü (`Core/Elements/ElementCatalog.cs`/`ElementResolver.cs`). Sahibine
+soruldu: **bu sohbetteki hat (v5.3/`SkillMotor`/ulti) esas alındı**, `origin/master`'ın
+paralel içeriği atıldı (`git merge -s ours` ile tarihçe bağlandı ama dosyalar hiç girmedi).
+Tek kurtarılan parça `docs/unity-notlari.md` (operasyonel Unity/build notları, gerçekten
+yeni ve kullanışlıydı). **Ders: bundan sonraki her oturum işe `git fetch && git log
+origin/master` ile başlamalı** — bu ayrışma günler önce fark edilebilirdi.

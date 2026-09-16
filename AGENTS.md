@@ -28,6 +28,10 @@ Bunlar görevden bağımsız, hepsi geçerli. İhlali geri dönüşü pahalı ha
  Bir his değeri (hitstop, dodge, kamera vb.) gerekiyorsa ilgili `Core/Tuning/*.cs` sınıfının
  mevcut varsayılanından al. Hiçbirinde yoksa varsayılan koy, yoruma referans bırak,
  `docs/durum.md`'ye de geç.
+- **Başlarken `git fetch && git log --oneline origin/master -5`.** 16 Eylül'de `master`
+  günlerce fark edilmeden ayrıştı (paralel bir "v4.2 element spec" hattı) — bir oturumluk iş
+  boşa gitmesin diye çözüldü ama pahalıydı. Yerel `master` ile `origin/master` arasında commit
+  farkı varsa **önce onu** çöz, üstüne inşa etme.
 - **Bitince `docs/durum.md`'yi güncelle** — bir sonraki ajan repoyu taramak zorunda kalmasın.
 - **Kapanışta söyle:** kabul kriterlerinden hangisini doğrulayamadın.
 - Küçük ve anlamlı commit'ler; her görev kendi dalında.
@@ -43,6 +47,7 @@ Bunlar görevden bağımsız, hepsi geçerli. İhlali geri dönüşü pahalı ha
 | `docs/gorev-listesi.md` | Görevler ve prompt'lar |
 | `docs/element-sistemi.json` | Element/skill verisi — motor bunu okur, sayılar burada |
 | `docs/element-sistemi.md` | Element sisteminin insan-okunur speci (gramer, aile/rol, bilinen açıklar) |
+| `docs/unity-notlari.md` | Unity/sahne/Android build operasyonel tuzakları (tasarım değil) |
 
 > 16 Eylül 2026: `dovus-sistemi.md` / `tasarim-ozeti.md` / `teknoloji-kararlari.md` /
 > `his-kontrol-listesi.md` / `t0-kurulum.md` / `alis-sepeti.md` / `animasyon-omurgasi.md`
