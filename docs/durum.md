@@ -12,11 +12,20 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (Görev 13 · PresentationCatalog) · **Sıradaki:**
-Görev 14–17 (validator / AnimationBridge / VFX fabrika / element_colors) +
+**Son güncelleme:** 16 Eylül 2026 (Görev 14 · PresentationValidator) · **Sıradaki:**
+Görev 15–17 (AnimationBridge / VFX fabrika / element_colors) +
 Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
 + **Faz 6 bağlama** (Zone/Resource/Cooldown/Passive/TimeEffect/RealityEffect/Equipment/
 space_layer/state machine / Presentation henüz Game'e bağlı değil)
+
+> **16 Eylül — Görev 14: PresentationValidator.** `Core/Presentation/PresentationValidator.cs`
+> — `SkillResolution.Hitbox` → `PresentationCatalog.Hitboxes`, `AnimationType` →
+> `Animations` (trajectory eşleştirme **yok**, Görev 16). Eşleşmeyen id sessizce
+> `HitboxFound`/`AnimationFound=false` (fırlatmaz). **Eksik hitbox:**
+> `SkillResolution.Hitbox` değeri **`target_ally`** prezentasyon katmanında yok —
+> fiiller: `cc_arindirma`, `hiz_buff`, `kalkan_transferi`, `arindirma`, `kutsal_kalkan`,
+> `dirilis` (6/42). Tüm `animation_type` değerleri katalogda. ManifestationDirector
+> bağlama yok. `PresentationValidatorTests` 3; `dotnet test` 224 yeşil.
 
 > **16 Eylül — Görev 13: PresentationCatalog.** `Core/Presentation/PresentationCatalog.cs`
 > — MiniJson ile `docs/prezentasyon-katmani.json` (binding:false, SkillMotor'a karışmaz).
@@ -428,8 +437,14 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   **Görev 3:** `state_machine` okunuyor (`PlayerStates`/`BossStates` + `PlayerStateMachine`;
   SentencePhase bağlanmadı).   **Görev 11:** `equipment_system` Core'da okunuyor
   (`EquipmentCatalog` 18 item + `EquipmentBonusResolver`); Game/hasar yoluna bağlı değil,
-  envanter seçimi yok. **Görev 13:** `prezentasyon-katmani.json` Core'da okunuyor
-  (`PresentationCatalog` 16×16×10); SkillResolution/Animator/VFX bağlama Görev 14–17.
+  envanter seçimi yok.   **Görev 13:** `prezentasyon-katmani.json` Core'da okunuyor
+  (`PresentationCatalog` 16×16×10). **Görev 14:** `PresentationValidator` hitbox+animation
+  doğrular; **`target_ally` hitbox prezentasyonda yok** (6 fiil). Trajectory/Animator/VFX
+  Görev 15–17; Manifestation bağlama Faz 6.
+- **`SkillResolution.Hitbox` = `target_ally` prezentasyon katmanında yok (Görev 14):**
+  `prezentasyon-katmani.json` hitbox_library'de `target_ally` id'si yok. Element fiilleri:
+  `cc_arindirma`, `hiz_buff`, `kalkan_transferi`, `arindirma`, `kutsal_kalkan`, `dirilis`.
+  Validator `HitboxFound=false` döner; sessiz atlama — hitbox ekleme / eşleme kararı açık.
   `status_interaction_table`
   uygulama artık `StatusReactionTable.Rebuild(motor.StatusInteractions)` — 3 özel satır
   (burn+poison / shield+burn / stun+knockback) hâlâ StatusBoard.Tick / Applicator'da.
