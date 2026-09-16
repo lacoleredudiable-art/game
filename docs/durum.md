@@ -12,11 +12,21 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (Görev 14 · PresentationValidator) · **Sıradaki:**
-Görev 15–17 (AnimationBridge / VFX fabrika / element_colors) +
+**Son güncelleme:** 16 Eylül 2026 (Görev 16 · PlaceholderFactory) · **Sıradaki:**
+Görev 15/17 (AnimationBridge / element_colors audit) +
 Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
 + **Faz 6 bağlama** (Zone/Resource/Cooldown/Passive/TimeEffect/RealityEffect/Equipment/
 space_layer/state machine / Presentation henüz Game'e bağlı değil)
+
+> **16 Eylül — Görev 16: PlaceholderFactory.** `Game/PlaceholderFactory.cs` —
+> `vfx_binding.trail_vfx` / `impact_vfx` için `Resources/Vfx/{Trail|Impact}/{style}`
+> yoksa (şu an hiç yok) `element_colors.primary` ile LineRenderer veya küre
+> (`PrimitiveMesh`, collider yok). Uyarı stil başına bir kez
+> (`asset_missing_handling.log_warning`). Katalog:
+> `Resources/Presentation/prezentasyon-katmani.json` (+ gömülü hex yedek).
+> Play doğrulama: `PlaceholderFactoryProbe` — Ateş `#c45c26` impact küre +
+> straight trail çizgi (MCP Play mode). LivingEffectView dokunulmadı; Bootstrap'e
+> bağlı değil. ManifestationDirector VFX spawn yok (Faz 6). `dotnet test` 224 yeşil.
 
 > **16 Eylül — Görev 14: PresentationValidator.** `Core/Presentation/PresentationValidator.cs`
 > — `SkillResolution.Hitbox` → `PresentationCatalog.Hitboxes`, `AnimationType` →
@@ -439,8 +449,9 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   (`EquipmentCatalog` 18 item + `EquipmentBonusResolver`); Game/hasar yoluna bağlı değil,
   envanter seçimi yok.   **Görev 13:** `prezentasyon-katmani.json` Core'da okunuyor
   (`PresentationCatalog` 16×16×10). **Görev 14:** `PresentationValidator` hitbox+animation
-  doğrular; **`target_ally` hitbox prezentasyonda yok** (6 fiil). Trajectory/Animator/VFX
-  Görev 15–17; Manifestation bağlama Faz 6.
+  doğrular; **`target_ally` hitbox prezentasyonda yok** (6 fiil). **Görev 16:**
+  `PlaceholderFactory` trail/impact placeholder üretir; ManifestationDirector spawn
+  bağlama yok (Faz 6). Animator/element_colors audit: Görev 15/17.
 - **`SkillResolution.Hitbox` = `target_ally` prezentasyon katmanında yok (Görev 14):**
   `prezentasyon-katmani.json` hitbox_library'de `target_ally` id'si yok. Element fiilleri:
   `cc_arindirma`, `hiz_buff`, `kalkan_transferi`, `arindirma`, `kutsal_kalkan`, `dirilis`.
