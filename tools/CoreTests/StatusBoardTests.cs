@@ -1,3 +1,4 @@
+using System.IO;
 using Dovus.Core.Grammar;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
@@ -9,6 +10,23 @@ namespace CoreTests;
 public class StatusBoardTests
 {
     StatusTuning Tuning() => new();
+
+    // SkillMotorTests.LoadFull ile aynı desen — gerçek verbleri (Kor, zirh_eritme vb.)
+    // görmek için embedded fallback yetmiyor (sadece 1-2 Buhar bileşiği var).
+    static SkillMotor LoadFullMotor()
+    {
+        string path = Path.GetFullPath(Path.Combine(
+            TestContext.CurrentContext.TestDirectory,
+            "..", "..", "..", "..", "..", "docs", "element-sistemi.json"));
+        if (!File.Exists(path))
+        {
+            path = Path.GetFullPath(Path.Combine(
+                TestContext.CurrentContext.TestDirectory,
+                "..", "..", "..", "..", "docs", "element-sistemi.json"));
+        }
+        Assert.That(File.Exists(path), Is.True, $"element-sistemi.json bulunamadı: {path}");
+        return SkillMotor.FromJson(File.ReadAllText(path));
+    }
 
     [Test]
     public void Stun_BlocksMoveAndCast()
@@ -212,6 +230,41 @@ public class StatusBoardTests
         Assert.That(target.Has(StatusKind.Stun), Is.True);
         target.Tick(200, t);
         Assert.That(target.Has(StatusKind.Stun), Is.False);
+    }
+
+    [Test]
+    public void Applicator_ReportsTriggeredReaction_ForRealVerb()
+    {
+        // "skilleri attığımda bir etkileşim göremiyorum" (16 Eylül) — Kor (1-3, Ateş
+        // zirh_eritme) mechanics=[armor_break, burn] tek cast'te "Erimiş Zırh"ı tetikler.
+        // ApplySkill artık bunu Result.TriggeredReactions ile bildiriyor (Game katmanı
+        // ReactionReadout'a yazsın diye).
+        var skill = LoadFullMotor().Resolve(new[] { 1, 3 }); // Kor
+        Assert.That(skill.Mechanics, Does.Contain("armor_break"));
+        Assert.That(skill.Mechanics, Does.Contain("burn"));
+
+        var caster = new StatusBoard();
+        var target = new StatusBoard();
+        var result = StatusApplicator.ApplySkill(skill, caster, target, Tuning());
+
+        Assert.That(result.TriggeredReactions.Count, Is.EqualTo(1));
+        Assert.That(result.TriggeredReactions[0].Name, Is.EqualTo("Erimiş Zırh"));
+    }
+
+    [Test]
+    public void Board_ReactionTriggeredEvent_FiresWithCorrectRule()
+    {
+        var board = new StatusBoard();
+        var t = Tuning();
+        StatusReactionRule? fired = null;
+        board.ReactionTriggered += r => fired = r;
+
+        board.Apply(StatusKind.Haste, 2000, t.HasteSpeedMult);
+        Assert.That(fired, Is.Null); // henüz eşleşen ikinci status yok
+
+        board.Apply(StatusKind.Slow, 1500, t.SlowSpeedMult);
+        Assert.That(fired, Is.Not.Null);
+        Assert.That(fired!.Value.Name, Is.EqualTo("Nötrleşme"));
     }
 
     [Test]

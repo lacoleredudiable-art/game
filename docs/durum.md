@@ -60,6 +60,16 @@ element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
 > JustCreate karakterler, Modular Dungeon Lava) henüz satın alınmadı — Mixamo/rig
 > entegrasyonu ayrı bir tur.
 
+> **16 Eylül (3. tur) — durum tablosu görünmezdi, artık görünüyor.** Sahibi "skilleri
+> attığımda bir etkileşim göremiyorum" dedi — teşhis: mekanik (2. turda yazılan
+> `StatusReactionTable`) doğru çalışıyordu, ama tetiklendiğinde ekranda **hiçbir sinyal**
+> yoktu. `StatusBoard.ReactionTriggered` event'i eklendi; `StatusApplicator.Result` artık
+> `TriggeredReactions` taşıyor; `ManifestationDirector.ApplyClosingStatuses` bunu mevcut
+> tepki yazısı kanalına (`ReactionReadout.NoteSkill`, "ally +N" ile aynı yol) yazıyor —
+> renk `AcidGreen` (§10: kırmızı-turuncu yasak). Unity MCP'de canlı doğrulandı: Ateş'in
+> Kor'u (1-3, `zirh_eritme`, mechanics=[armor_break,burn]) TEK cast'te "Erimiş Zırh"ı
+> tetikliyor ve şimdi ekrana yazıyor. 2 yeni test (145 yeşil).
+
 **Önceki:** element-sistemi motor genişletmesi adım 2+ (bkz. `docs/gorev-listesi.md` "Backlog")
 
 > **element-sistemi 4.2.2 + SkillMotor parse genişletmesi (16 Eylül):** Sahibi sohbette v5.2

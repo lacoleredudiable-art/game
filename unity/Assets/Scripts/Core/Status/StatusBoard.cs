@@ -11,6 +11,14 @@ namespace Dovus.Core.Status
     {
         readonly Dictionary<StatusKind, StatusEntry> _active = new();
 
+        /// <summary>
+        /// 16 Eylül: "skilleri attığımda bir etkileşim göremiyorum" raporu — mekanik zaten
+        /// çalışıyordu (sayılar değişiyordu), ama hiçbir görsel/ses sinyali yoktu. Bu event
+        /// bir reaksiyon tetiklendiğinde (isim+açıklama ile) ateşlenir; Game katmanı
+        /// (ManifestationDirector → ReactionReadout) bunu ekrana yazar.
+        /// </summary>
+        public event Action<StatusReactionRule>? ReactionTriggered;
+
         public bool BlocksMovement =>
             Has(StatusKind.Stun) || Has(StatusKind.Root) || Has(StatusKind.Stasis)
             || Has(StatusKind.Fear);
@@ -199,6 +207,8 @@ namespace Dovus.Core.Status
                     otherEntry.RemainingMs = otherEntry.RemainingMs * rule.DurationMult + rule.DurationAddMs;
                     _active[other] = otherEntry;
                 }
+
+                ReactionTriggered?.Invoke(rule);
             }
         }
 

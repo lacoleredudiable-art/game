@@ -552,6 +552,17 @@ namespace Dovus.Game
 
             if (result.Knockback && _bossStatus != null && _player != null)
                 _bossStatus.ApplyKnockbackFrom(_player.position);
+
+            // 16 Eylül: "skilleri attığımda bir etkileşim göremiyorum" raporu — durum
+            // etkileşim tablosu (docs/element-sistemi.json status_interaction_table) mekanik
+            // olarak zaten çalışıyordu, hiçbir görsel sinyali yoktu. Tetiklenen kural varsa
+            // aynı tepki yazısı kanalını kullan (§10: kırmızı-turuncu yasak → AcidGreen).
+            if (result.TriggeredReactions.Count > 0 && _readout != null)
+            {
+                StatusReactionRule rule = result.TriggeredReactions[0];
+                _readout.NoteSkill(rule.Name, rule.ReadAs, _colors.AcidGreen);
+                _debugHud?.NoteSkillBang(rule.Name, rule.ReadAs);
+            }
         }
 
         /// <summary>

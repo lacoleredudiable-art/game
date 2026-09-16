@@ -11,15 +11,24 @@ namespace Dovus.Core.Status
     {
         public readonly struct Result
         {
-            public Result(bool knockback, bool cleansed)
+            public Result(bool knockback, bool cleansed, IReadOnlyList<StatusReactionRule> triggeredReactions)
             {
                 Knockback = knockback;
                 Cleansed = cleansed;
+                TriggeredReactions = triggeredReactions;
             }
 
             public bool Knockback { get; }
             public bool Cleansed { get; }
+
+            /// <summary>
+            /// 16 Eylül: bu cast sırasında ateşlenen durum etkileşim kuralları (varsa) —
+            /// Game katmanı bunu ekrana yazsın diye (bkz. StatusBoard.ReactionTriggered).
+            /// </summary>
+            public IReadOnlyList<StatusReactionRule> TriggeredReactions { get; }
         }
+
+        static readonly IReadOnlyList<StatusReactionRule> EmptyReactions = System.Array.Empty<StatusReactionRule>();
 
         /// <summary>
         /// self hitbox → caster board; aksi halde target board.
@@ -32,12 +41,12 @@ namespace Dovus.Core.Status
             StatusTuning tuning)
         {
             if (skill.IsEmpty || tuning == null)
-                return new Result(false, false);
+                return new Result(false, false, EmptyReactions);
 
             bool self = IsSelfTargeted(skill);
             StatusBoard board = self ? caster : target;
             if (board == null)
-                return new Result(false, false);
+                return new Result(false, false, EmptyReactions);
 
             bool knockback = false;
             bool cleansed = false;
@@ -49,35 +58,49 @@ namespace Dovus.Core.Status
             // burada, "aynı cast" bilgisiyle özel işleniyor.
             bool hasKnockbackThisCast = System.Array.IndexOf(mechanics, "knockback") >= 0;
 
-            for (int i = 0; i < mechanics.Length; i++)
+            // 16 Eylül: "etkileşim göremiyorum" raporu — bu cast sırasında ateşlenen kuralları
+            // topla, Game katmanı ekrana yazsın (StatusBoard mekanik olarak zaten uyguluyordu,
+            // sadece görünmüyordu).
+            var triggered = new List<StatusReactionRule>();
+            void OnReaction(StatusReactionRule r) => triggered.Add(r);
+            board.ReactionTriggered += OnReaction;
+
+            try
             {
-                string id = mechanics[i];
-                if (id == "cleanse")
+                for (int i = 0; i < mechanics.Length; i++)
                 {
-                    board.CleanseHostile();
-                    cleansed = true;
-                    continue;
+                    string id = mechanics[i];
+                    if (id == "cleanse")
+                    {
+                        board.CleanseHostile();
+                        cleansed = true;
+                        continue;
+                    }
+
+                    if (!StatusKindUtil.TryParse(id, out StatusKind kind) || kind == StatusKind.None)
+                        continue;
+
+                    if (kind == StatusKind.Knockback)
+                    {
+                        knockback = !self;
+                        continue;
+                    }
+
+                    if (kind == StatusKind.Stun && hasKnockbackThisCast)
+                    {
+                        board.Apply(kind, tuning.StunMs + tuning.StunKnockbackDurationAddMs, 1f);
+                        continue;
+                    }
+
+                    ApplyKind(board, kind, tuning);
                 }
-
-                if (!StatusKindUtil.TryParse(id, out StatusKind kind) || kind == StatusKind.None)
-                    continue;
-
-                if (kind == StatusKind.Knockback)
-                {
-                    knockback = !self;
-                    continue;
-                }
-
-                if (kind == StatusKind.Stun && hasKnockbackThisCast)
-                {
-                    board.Apply(kind, tuning.StunMs + tuning.StunKnockbackDurationAddMs, 1f);
-                    continue;
-                }
-
-                ApplyKind(board, kind, tuning);
+            }
+            finally
+            {
+                board.ReactionTriggered -= OnReaction;
             }
 
-            return new Result(knockback, cleansed);
+            return new Result(knockback, cleansed, triggered);
         }
 
         public static bool IsSelfTargeted(SkillResolution skill)
