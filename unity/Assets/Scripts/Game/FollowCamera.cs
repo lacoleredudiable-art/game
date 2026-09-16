@@ -23,6 +23,13 @@ namespace Dovus.Game
         float _punchT;
         float _punchDecay = 6f;
 
+        /// <summary>
+        /// 16 Eylül: "kamera sabit, döndüremiyorum" bug raporu. Oyuncu etrafında yatay dönüş —
+        /// CombatFeel/§8 tuning'e dokunmadan; 0 iken davranış birebir eskisiyle aynı (T8/T8.1
+        /// tuning'i bozmuyoruz). <see cref="CameraOrbitInput"/> tarafından sürülür.
+        /// </summary>
+        public float OrbitYawDeg { get; set; }
+
         public Transform Target
         {
             get => _target;
@@ -92,7 +99,8 @@ namespace Dovus.Game
             Vector3 lookAhead = flatVelocity.sqrMagnitude > 0.0001f
                 ? flatVelocity.normalized * _tuning.LookAheadM
                 : Vector3.zero;
-            Vector3 desired = _target.position + _tuning.CameraOffset + lookAhead + _shakeOffset;
+            Vector3 offset = Quaternion.Euler(0f, OrbitYawDeg, 0f) * _tuning.CameraOffset;
+            Vector3 desired = _target.position + offset + lookAhead + _shakeOffset;
 
             transform.position = Vector3.SmoothDamp(
                 transform.position,

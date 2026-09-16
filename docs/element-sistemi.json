@@ -3050,5 +3050,151 @@
       ],
       "read_as": "Yere halka, merkezden disa, icine girene carpar"
     }
+  },
+  "status_interaction_table": {
+    "description": "Iki status ayni hedefe ayni anda geldiginde ne olur. Fiziksel kimya yok - sadece mantikli ciftler. 16 Eylul sohbetinden; sahibi verdi, sayilar uydurulmadi.",
+    "version": "1.0",
+    "implemented_in": "Core/Status/StatusReactionTable.cs (14 genellenebilir kural) + StatusBoard.Apply/Tick (reaksiyon uygulama) + StatusApplicator.ApplySkill (3 ozel durum: burn+poison, shield+burn, stun+knockback). Motor bu JSON blogunu RUNTIME'DA OKUMAZ - StatusTuning/diger Tuning siniflari gibi kodda sabit, burada sadece belge/referans.",
+    "rules_count": 17,
+    "debuff_debuff": [
+      {
+        "a": "burn",
+        "b": "armor_break",
+        "name": "Erimis Zirh",
+        "effect": "armor_break etkisi 1.5x, sure +2 sn",
+        "read_as": "Yanan zirh daha hizli erir"
+      },
+      {
+        "a": "burn",
+        "b": "poison",
+        "name": "Zehirli Ates",
+        "effect": "Ikisi de hasar verirken hedefe +2 hasar/sn eklenir",
+        "read_as": "Yanma + zehir ayni anda daha cok acitir"
+      },
+      {
+        "a": "burn",
+        "b": "weaken",
+        "name": "Zayif Yanma",
+        "effect": "burn hasari 0.8x ama sure 1.5x",
+        "read_as": "Zayiflamis yanma daha uzun surer"
+      },
+      {
+        "a": "poison",
+        "b": "slow",
+        "name": "Agir Zehir",
+        "effect": "poison tick hizi 0.7x ama sure 1.5x",
+        "read_as": "Zehir yavaslar ama daha uzun kemirir"
+      },
+      {
+        "a": "armor_break",
+        "b": "weaken",
+        "name": "Kirilganlik",
+        "effect": "Ikisi de 1.3x etki",
+        "read_as": "Zirh da hasar da coker"
+      },
+      {
+        "a": "grievous_wounds",
+        "b": "burn",
+        "name": "Kavurucu Yara",
+        "effect": "heal_reduction 0.5 -> 0.7",
+        "read_as": "Yanik yaralar iyilesmez"
+      }
+    ],
+    "cc_debuff": [
+      {
+        "a": "stun",
+        "b": "burn",
+        "name": "Alevli Sersemletme",
+        "effect": "stun surunce burn hasari 1.5x",
+        "read_as": "Sersemlemis hedef yanarken aci ceker"
+      },
+      {
+        "a": "root",
+        "b": "burn",
+        "name": "Hapscul Yanma",
+        "effect": "burn suresi 1.5x",
+        "read_as": "Kacamayan hedef daha uzun yanar"
+      },
+      {
+        "a": "root",
+        "b": "armor_break",
+        "name": "Caresiz Zirh",
+        "effect": "armor_break etkisi 1.5x",
+        "read_as": "Kilitli hedef zirhini koruyamaz"
+      },
+      {
+        "a": "slow",
+        "b": "burn",
+        "name": "Surunen Alev",
+        "effect": "burn tick hizi 1.3x",
+        "read_as": "Yavas hedef alevden kacamaz"
+      }
+    ],
+    "cc_cc": [
+      {
+        "a": "slow",
+        "b": "root",
+        "name": "Tam Hapsetme",
+        "effect": "root suresi 1.5x",
+        "read_as": "Once yavaslar, sonra tamamen kilitlenir"
+      },
+      {
+        "a": "stun",
+        "b": "knockback",
+        "name": "Savrulma Sersemligi",
+        "effect": "stun suresi +1 sn",
+        "read_as": "Havada sersemleyen hedef yere cakilir"
+      },
+      {
+        "a": "silence",
+        "b": "blind",
+        "name": "Tam Karanlik",
+        "effect": "Ikisi de 1.3x sure",
+        "read_as": "Goremez ve konusamaz"
+      },
+      {
+        "a": "root",
+        "b": "blind",
+        "name": "Kapana Kisilmis",
+        "effect": "blind suresi 1.5x",
+        "read_as": "Kilitli ve kor - caresiz"
+      }
+    ],
+    "buff_debuff": [
+      {
+        "a": "shield",
+        "b": "burn",
+        "name": "Yanan Kalkan",
+        "effect": "burn shield'a da hasar verir (shield_amount x 0.5)",
+        "read_as": "Kalkan yanar, koruma azalir"
+      },
+      {
+        "a": "regen",
+        "b": "poison",
+        "name": "Zehirli Yenilenme",
+        "effect": "regen %30 azalir",
+        "read_as": "Zehir iyilesmeyi yavaslatir"
+      },
+      {
+        "a": "haste",
+        "b": "slow",
+        "name": "Notrlesme",
+        "effect": "Ikisi de %50 azalir",
+        "read_as": "Hiz ve yavaslik birbirini goturur"
+      }
+    ],
+    "notes": {
+      "what_this_is_not": [
+        "Islak + Yildirim = zincirleme gibi fiziksel kimya DEGIL",
+        "Element durumlari (islak, donmus) YOK",
+        "Her status cifti etkilesmez - sadece listedeki 17 cift"
+      ],
+      "what_this_is": [
+        "Mantikli, anlamli ciftler",
+        "Oyuncunun 'aa, ikisi ayni anda olunca farkli' diyebilecegi seyler",
+        "Her biri iki status ayni hedefe geldiginde otomatik tetiklenir"
+      ],
+      "poison_added": "StatusKind enum'inda poison yoktu (bilinen aciktir); bu turda eklendi (Core/Status/StatusKind.cs)."
+    }
   }
 }

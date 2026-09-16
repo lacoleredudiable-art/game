@@ -77,12 +77,21 @@ namespace Dovus.Game
         public SentenceEngine Engine => _engine;
         public DodgeState Dodge => _dodge;
 
+        /// <summary>16 Eylül: CameraOrbitInput'un "bu parmak zaten çiziyor/dodge'a ait" kontrolü için.</summary>
+        public int? ClaimedFingerId => _fingerId;
+        public int? ClaimedDodgeFingerId => _dodgeFingerId;
+
         PlayerVitals _vitals;
+        ActorStatus _status;
 
         /// <summary>Ölü oyuncu yazamaz ve dodge atamaz (T8.1).</summary>
         public void BindVitals(PlayerVitals vitals) => _vitals = vitals;
 
-        bool InputLocked => _vitals != null && _vitals.IsDown;
+        public void BindStatus(ActorStatus status) => _status = status;
+
+        bool InputLocked =>
+            (_vitals != null && _vitals.IsDown)
+            || (_status != null && _status.Board.BlocksCast);
 
         // T10: panel açıkken (ayar paneli modal) beşgen girdisi tamamen susar; EnhancedTouch
         // global olduğu için panelin arkasındaki oyun aynı dokunuşu almaya devam ederdi.
@@ -167,6 +176,8 @@ namespace Dovus.Game
 
         void Update()
         {
+            EnsureRuntime();
+
             if (_engine != null && _clock != null)
                 _engine.Tick(_clock.WorldDeltaMs);
 
@@ -191,6 +202,38 @@ namespace Dovus.Game
             TickDwell();
         }
 
+        void EnsureRuntime()
+        {
+            _tuning ??= new PrototypeTuning();
+            _combat ??= new CombatTuning();
+            _clock ??= FindAnyObjectByType<GameClock>();
+
+            if (_dodge == null)
+                _dodge = new DodgeState(_combat.Dodge);
+
+            if (_engine == null)
+            {
+                _engine = new SentenceEngine(_combat.Sentence);
+                _engine.SentenceCompleted += OnSentenceCompleted;
+                _sentenceHooked = true;
+            }
+
+            if (_ink == null)
+                _ink = FindAnyObjectByType<InkTrail>();
+            if (_syllable == null)
+                _syllable = FindAnyObjectByType<SyllableFeedback>();
+            if (_debugHud == null)
+                _debugHud = FindAnyObjectByType<SentenceDebugHud>();
+            if (_vitals == null)
+                _vitals = FindAnyObjectByType<PlayerVitals>();
+            if (_status == null)
+            {
+                var player = GameObject.Find("Player");
+                if (player != null)
+                    _status = player.GetComponent<ActorStatus>();
+            }
+        }
+
         void HandleKeyboardDodge()
         {
             var kb = Keyboard.current;
@@ -202,8 +245,12 @@ namespace Dovus.Game
 
         void HandleMouse()
         {
+            // Mobilde dokunuş varken fare yolunu atla. Editörde Enhanced Touch bazen
+            // hayalet touch bırakıp fareyi tamamen kilitleyebiliyor.
+#if !UNITY_EDITOR
             if (Touch.activeTouches.Count > 0)
                 return;
+#endif
 
             var mouse = Mouse.current;
             if (mouse == null)
@@ -524,7 +571,7 @@ namespace Dovus.Game
             float hitR = PentagonLayoutScreen.DotHitRadiusPx(_tuning);
             int? best = null;
             float bestDist = float.MaxValue;
-            for (int dot = 1; dot <= 5; dot++)
+            for (int dot = 1; dot <= Dovus.Core.Grammar.PentagonLayout.DotCount; dot++)
             {
                 Vector2 p = PentagonLayoutScreen.DotPx(dot, _tuning, Screen.width, Screen.height);
                 float d = Vector2.Distance(pos, p);

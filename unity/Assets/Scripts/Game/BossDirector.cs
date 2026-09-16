@@ -34,6 +34,9 @@ namespace Dovus.Game
         BossTelegraph _telegraph;
         CombatFeel _feel;
         KinematicMotor _playerMotor;
+        ActorStatus _bossStatus;
+        ActorStatus _playerStatus;
+        BossVisual _visual;
 
         Phase _phase = Phase.Idle;
         double _phaseStartedWorldMs;
@@ -46,6 +49,8 @@ namespace Dovus.Game
 
         SlamVariant? _lastVariant;
         int _variantStreak;
+        BossAttackKind? _lastAttackKind;
+        int _attackKindStreak;
 
         public bool IsWindingUp => _phase == Phase.Windup;
         public int TelegraphStartMs => _telegraphStartMs;
@@ -82,11 +87,65 @@ namespace Dovus.Game
             EnterIdle(clock.Director.WorldTimeMs);
         }
 
+        public void BindStatus(ActorStatus status) => _bossStatus = status;
+
+        public void BindPlayerStatus(ActorStatus status) => _playerStatus = status;
+
+        public void BindVisual(BossVisual visual) => _visual = visual;
+
+        /// <summary>
+        /// Script recompile Bind alanlarını siler; Awake yeniden çağrılmaz.
+        /// Eksik saf C# nesnelerini burada toparlarız.
+        /// </summary>
+        void EnsureRuntime()
+        {
+            _clock ??= FindAnyObjectByType<GameClock>();
+            _reactor ??= GetComponent<BossReactor>();
+            _attack ??= new BossAttack(_combat.Boss);
+            _resolver ??= new ExchangeResolver(_combat);
+
+            if (_colors == null)
+                _colors = new PrototypeTuning();
+
+            if (_player == null)
+            {
+                var p = GameObject.Find("Player");
+                if (p != null)
+                    _player = p.transform;
+            }
+
+            if (_vitals == null && _player != null)
+                _vitals = _player.GetComponent<PlayerVitals>();
+
+            if (_dodge == null || _engine == null)
+            {
+                var input = FindAnyObjectByType<PentagonInput>();
+                if (input != null)
+                {
+                    _dodge ??= input.Dodge;
+                    _engine ??= input.Engine;
+                }
+            }
+
+            if (_playerMotor == null && _player != null)
+                _playerMotor = _player.GetComponent<KinematicMotor>();
+
+            if (_feel == null)
+                _feel = FindAnyObjectByType<CombatFeel>();
+
+            if (_telegraph == null)
+                _telegraph = GetComponent<BossTelegraph>();
+
+            if (_visual == null)
+                _visual = GetComponent<BossVisual>();
+        }
+
         /// <summary>§11: can 0 — saldırı döngüsü durur, telegraf kapanır.</summary>
         public void NotifyBossDown(double worldMs)
         {
             _telegraph?.Hide();
             _feel?.ClearThreat();
+            _visual?.PlayDeath();
             EnterIdle(worldMs);
         }
 
@@ -95,7 +154,8 @@ namespace Dovus.Game
 
         void Update()
         {
-            if (_clock == null || _reactor == null)
+            EnsureRuntime();
+            if (_clock == null || _reactor == null || _combat == null)
                 return;
 
             double worldMs = _clock.Director.WorldTimeMs;
@@ -107,6 +167,18 @@ namespace Dovus.Game
             {
                 _telegraph?.Hide();
                 _feel?.ClearThreat();
+                _visual?.SetSpeed(0f);
+                return;
+            }
+
+            if (_bossStatus != null && _bossStatus.Board.BlocksBossAttack)
+            {
+                if (_phase is Phase.Windup or Phase.Active)
+                {
+                    _telegraph?.Hide();
+                    _feel?.ClearThreat();
+                    EnterIdle(worldMs);
+                }
                 return;
             }
 
@@ -165,8 +237,8 @@ namespace Dovus.Game
 
             if (worldMs >= _idleUntilWorldMs)
             {
-                // Varyant telegraf başlamadan seçilir — tell windup'ta okunur (§11).
-                SelectVariantForNextSlam();
+                // Saldırı (ve Slam ise varyantı) telegraf başlamadan seçilir — tell windup'ta okunur (§11).
+                SelectNextAttack();
                 EnterWindup(worldMs);
             }
         }
@@ -188,12 +260,20 @@ namespace Dovus.Game
         {
             if (!_strikeResolved)
             {
-                ResolveStrike();
+                // ResolveStrike NRE olsa bile Active'de kilitlenmeyelim.
                 _strikeResolved = true;
-                _telegraph?.Slam(_attack.RadiusM);
+                try
+                {
+                    ResolveStrike();
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogException(e);
+                }
+                _telegraph?.Slam(_attack != null ? _attack.RadiusM : 0f);
             }
 
-            if (worldMs >= _attack.ActiveEndMs(_telegraphStartMs))
+            if (_attack != null && worldMs >= _attack.ActiveEndMs(_telegraphStartMs))
                 EnterRecovery(worldMs);
         }
 
@@ -219,6 +299,8 @@ namespace Dovus.Game
             int wait = _rng.Next(lo, hi + 1);
             _idleUntilWorldMs = worldMs + wait;
             _telegraph?.Hide();
+            if (_bossVitals == null || !_bossVitals.IsDown)
+                _visual?.PlayIdle();
         }
 
         void EnterWindup(double worldMs)
@@ -228,12 +310,15 @@ namespace Dovus.Game
             _telegraphStartMs = (int)worldMs;
             _strikeResolved = false;
             FacePlayer();
+            _visual?.SetSpeed(0f);
+            _visual?.PlayWindup();
         }
 
         void EnterActive(double worldMs)
         {
             _phase = Phase.Active;
             _phaseStartedWorldMs = worldMs;
+            _visual?.PlaySlam();
         }
 
         void EnterRecovery(double worldMs)
@@ -242,8 +327,33 @@ namespace Dovus.Game
             _phaseStartedWorldMs = worldMs;
         }
 
-        void SelectVariantForNextSlam()
+        /// <summary>
+        /// 16 Eylül — önce SALDIRI TÜRÜ (Slam / FireCone) seçilir, Slam ise ardından
+        /// üç ritminden biri. İkisi de "aynısı üst üste MaxSame...Streak'i geçemez" desenini
+        /// paylaşır (§11/T13 dersi).
+        /// </summary>
+        void SelectNextAttack()
         {
+            if (_attack == null || _combat == null)
+                return;
+
+            // karadul.json faz tasarımı: Faz 1 "Uyanış" (100-50% can) yalnızca slam; Faz 2
+            // "Öfke" (50-0%) fire_cone'u da açar.
+            bool enraged = _bossVitals != null && _bossVitals.MaxHp > 0f
+                && (_bossVitals.Hp / _bossVitals.MaxHp) <= 0.5f;
+
+            BossAttackKind kind = enraged
+                ? BossAttackKindPicker.Pick(_lastAttackKind, _attackKindStreak, _combat.Boss.MaxSameAttackKindStreak, _rng)
+                : BossAttackKind.Slam;
+            _attackKindStreak = BossAttackKindPicker.NextStreak(_lastAttackKind, _attackKindStreak, kind);
+            _lastAttackKind = kind;
+
+            if (kind == BossAttackKind.FireCone)
+            {
+                _attack.ApplyFireCone();
+                return;
+            }
+
             SlamVariant picked = SlamVariantPicker.Pick(
                 _lastVariant,
                 _variantStreak,
@@ -265,10 +375,14 @@ namespace Dovus.Game
             float pad = _colors != null ? _colors.BossApproachStopPadM : 0.35f;
             float stop = _reactor.BodyRadiusM + (_playerMotor != null ? _playerMotor.BodyRadiusM : 0.5f) + pad;
             if (to.sqrMagnitude <= stop * stop)
+            {
+                _visual?.SetSpeed(0f);
                 return;
+            }
 
             home += to.normalized * _combat.Boss.ApproachSpeedMps * dtSec;
             _reactor.Home = home;
+            _visual?.SetSpeed(1f);
             FacePlayer();
         }
 
@@ -286,20 +400,31 @@ namespace Dovus.Game
         {
             if (_vitals != null && _vitals.IsDown)
                 return;
+            if (_attack == null || _resolver == null)
+                return;
 
             float dist = 0f;
-            if (_player != null)
+            float angleDeg = 0f;
+            if (_player != null && _reactor != null)
             {
                 Vector3 d = _player.position - _reactor.Home;
                 d.y = 0f;
                 dist = d.magnitude;
+                if (dist > 0.01f)
+                {
+                    // FireCone dar bir yay (§ArcHalfAngleDeg) — Slam'de arc>=180 olduğu için
+                    // bu açı zaten yok sayılır, davranış değişmiyor.
+                    Vector3 forward = transform.forward;
+                    forward.y = 0f;
+                    angleDeg = Vector3.SignedAngle(forward, d, Vector3.up);
+                }
             }
 
             int? press = _dodge?.PressTimeMs;
             // Eski basış bu telegrafa ait değil → "geç kaldın". Eşik basma anı DEĞİL, i-frame
             // sonu: telegraf başlarken dokunulmazlık hâlâ açıksa basış bu saldırıya aittir ve
             // sebebi "erken bastın" olmalı — `press < telegraphStart` bunu da yutuyordu (T8.1).
-            if (press.HasValue && _dodge.IframeEndMs(press.Value) < _telegraphStartMs)
+            if (press.HasValue && _dodge != null && _dodge.IframeEndMs(press.Value) < _telegraphStartMs)
                 press = null;
 
             var input = new ExchangeInput
@@ -307,7 +432,7 @@ namespace Dovus.Game
                 TelegraphStartMs = _telegraphStartMs,
                 StrikeTimeMs = _attack.StrikeTimeMs(_telegraphStartMs),
                 DodgePressMs = press,
-                InEffectVolume = _attack.IsInEffectVolume(dist, 0f)
+                InEffectVolume = _attack.IsInEffectVolume(dist, angleDeg, _attack.ArcHalfAngleDeg)
             };
 
             ExchangeResult result = _resolver.Resolve(input);
@@ -316,7 +441,21 @@ namespace Dovus.Game
             if (result.Outcome == ExchangeOutcome.Hit)
             {
                 _engine?.Abort();
-                _vitals?.ApplyDamage(_combat.Boss.Damage);
+                float raw = _attack.Damage;
+                // Shield / stasis (skill i-frame) ActorStatus üzerinden — düz vitals bypass yok.
+                if (_playerStatus != null)
+                    _playerStatus.ApplyDamage(raw);
+                else
+                    _vitals?.ApplyDamage(Mathf.CeilToInt(raw));
+
+                // fire_cone mekanikleri (karadul.json: grievous_wounds + burn).
+                if (_attack.Kind == BossAttackKind.FireCone && _playerStatus != null && _combat != null)
+                {
+                    _playerStatus.Board.Apply(
+                        Dovus.Core.Status.StatusKind.Burn, _combat.Status.BurnMs, _combat.Status.BurnDamagePerSec);
+                    _playerStatus.Board.Apply(
+                        Dovus.Core.Status.StatusKind.GrievousWounds, _combat.Status.GrievousMs, _combat.Status.GrievousHealMult);
+                }
             }
         }
     }

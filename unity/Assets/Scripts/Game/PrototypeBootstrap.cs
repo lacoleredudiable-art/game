@@ -20,6 +20,11 @@ namespace Dovus.Game
 
         [SerializeField] PrototypeTuning _tuning = new();
 
+        [Header("Görsel prefab (Asset Store — boşsa kapsül)")]
+        [SerializeField] GameObject _playerVisualPrefab;
+        [SerializeField] GameObject _bossVisualPrefab;
+        [SerializeField] GameObject _arenaVisualPrefab;
+
         void Awake()
         {
             _tuning ??= new PrototypeTuning();
@@ -48,11 +53,26 @@ namespace Dovus.Game
             // kaydedilmiş değerlerle doğar, sonradan "sıçrayan" bir düzeltme karesi olmaz.
             var tuningConfig = TuningConfig.Create(combat, _tuning);
             tuningConfig.TryLoad();
+            // His denemesi: boss vurmasın (kayıtlı ayar ezmesin).
+            combat.Boss.Damage = 0;
+            combat.Boss.FireConeDamage = 0; // 16 Eylül: ikinci saldırı da bu deneyin kapsamında.
 
             var clock = gameObject.AddComponent<GameClock>();
             clock.Bind(combat.Slowmo);
 
-            CreateArena();
+            var arena = CreateArena();
+            // 16 Eylül: "duvarların içine giriliyor" bug raporu — dungeon mesh'leri collider'sız
+            // geliyordu (KinematicMotor sadece dış kare clamp yapıyordu, iç duvar/sütun yoktu).
+            int wallColliders = WallColliderFit.AddCollidersToObstacles(arena);
+            Debug.Log($"[Arena] {wallColliders} engel collider eklendi (duvar/sütun/kemer).");
+            // Görsel ölçek büyüyünce floor extents de büyür; FitHalf iç dekoru ezmesin.
+            float walkHalf = ArenaWalkFit.FitHalfSizeM(arena, _tuning.ArenaHalfSizeM, insetM: 0.35f);
+            float minWalk = Mathf.Max(10f, 11f * Mathf.Max(1f, _tuning.ArenaVisualScale) * 0.9f);
+            walkHalf = Mathf.Max(walkHalf, minWalk);
+            _tuning.ArenaHalfSizeM = walkHalf;
+            combat.SkillMotion.ArenaHalfSizeM = walkHalf;
+            LavaDecor.Build(arena.transform, walkHalf);
+            Debug.Log($"[Arena] visualScale={_tuning.ArenaVisualScale:0.##} walkHalf={walkHalf:0.##}m");
 
             var player = CreateCapsule(
                 "Player",
@@ -60,13 +80,25 @@ namespace Dovus.Game
                 PlayerRadiusM,
                 PlayerHeightM,
                 _tuning.PlayerColor);
+            AttachVisual(player, _playerVisualPrefab, out var playerAnim);
+
+            var ally = CreateCapsule(
+                "AllyDummy",
+                new Vector3(-3.2f, PlayerHeightM * 0.5f, -1.2f),
+                PlayerRadiusM * 0.95f,
+                PlayerHeightM,
+                new Color(0.35f, 0.85f, 0.55f));
+            AttachVisual(ally, _playerVisualPrefab, out _);
+            var allyDummy = ally.AddComponent<AllyDummy>();
+            allyDummy.Bind(_tuning.PlayerMaxHp, startRatio: 0.5f);
 
             var boss = CreateCapsule(
                 "Boss",
-                new Vector3(0f, BossHeightM * 0.5f, 5f),
+                new Vector3(0f, BossHeightM * 0.5f, 5f * Mathf.Max(1f, _tuning.ArenaVisualScale * 0.55f)),
                 BossRadiusM,
                 BossHeightM,
                 _tuning.BossColor);
+            AttachVisual(boss, _bossVisualPrefab, out var bossAnim);
 
             player.AddComponent<MoveInput>().Tuning = _tuning;
 
@@ -78,13 +110,26 @@ namespace Dovus.Game
             pose.Tuning = _tuning;
             pose.CaptureBase();
 
+            var visual = player.AddComponent<ActorVisual>();
+            if (playerAnim != null)
+                visual.Bind(playerAnim, player.GetComponent<Renderer>());
+
+            var bossVisual = boss.AddComponent<BossVisual>();
+            if (bossAnim != null)
+                bossVisual.Bind(bossAnim, boss.GetComponent<Renderer>());
+
             var vitals = player.AddComponent<PlayerVitals>();
-            vitals.Bind(combat.Boss, _tuning.PlayerMaxHp);
+            // His: heal denemesi — oyuncu da %50 (full iken mend boş döner).
+            vitals.Bind(combat.Boss, _tuning.PlayerMaxHp, startRatio: 0.5f);
+
+            var playerStatus = player.AddComponent<ActorStatus>();
+            var bossStatus = boss.AddComponent<ActorStatus>();
 
             var afterimage = player.AddComponent<AfterimageTrail>();
             afterimage.Bind(combat.Feel, _tuning);
 
             var dodgeMotion = player.AddComponent<DodgeMotion>();
+            player.AddComponent<SkillMotionDriver>();
 
             var reactor = boss.AddComponent<BossReactor>();
             reactor.Tuning = _tuning;
@@ -92,13 +137,18 @@ namespace Dovus.Game
             reactor.CaptureHome();
 
             var bossVitals = new BossVitals(combat.Boss.MaxHp);
+            playerStatus.Bind(null, combat.Status, vitals, null, null);
+            bossStatus.Bind(null, combat.Status, null, bossVitals, reactor);
 
             var telegraph = boss.AddComponent<BossTelegraph>();
             telegraph.Bind(_tuning, combat.Boss, boss.transform);
 
-            CreateSun();
+            var sun = CreateSun();
             FollowCamera follow = CreateCamera(player.transform);
-            CreatePentagon(clock, combat, player.transform, pose, reactor, bossVitals, dodgeMotion, afterimage, vitals, telegraph, follow, tuningConfig);
+            SceneAtmosphere.Apply(sun, Camera.main, _tuning);
+            // LavDecor.Build — eski arena-wide kırmızı ember noktaları kalktı.
+            BillboardVfx.CreateEmberField(boss.transform, new Color(1f, 0.45f, 0.12f), rate: 14f);
+            CreatePentagon(clock, combat, player.transform, pose, reactor, bossVitals, dodgeMotion, afterimage, vitals, telegraph, follow, tuningConfig, allyDummy);
         }
 
         void CreatePentagon(
@@ -113,7 +163,8 @@ namespace Dovus.Game
             PlayerVitals vitals,
             BossTelegraph telegraph,
             FollowCamera follow,
-            TuningConfig tuningConfig)
+            TuningConfig tuningConfig,
+            AllyDummy allyDummy = null)
         {
             var root = new GameObject("Pentagon");
             root.transform.SetParent(transform, false);
@@ -131,6 +182,17 @@ namespace Dovus.Game
             var view = root.AddComponent<PentagonView>();
             view.Build(_tuning, overlay.Cam);
 
+            // 16 Eylül: sol yarıdaki sanal çubuk fonksiyonel olarak zaten çalışıyordu, hiç
+            // görseli yoktu (bug raporu). MoveInput'un mantığına dokunmuyor, sadece çiziyor.
+            var moveInput = player.GetComponent<MoveInput>();
+            if (moveInput != null)
+            {
+                var joystickGo = new GameObject("JoystickView");
+                joystickGo.transform.SetParent(root.transform, false);
+                var joystick = joystickGo.AddComponent<JoystickView>();
+                joystick.Build(moveInput, _tuning, overlay.Cam);
+            }
+
             var inkGo = new GameObject("InkTrail");
             inkGo.transform.SetParent(root.transform, false);
             inkGo.layer = PentagonInkLayer;
@@ -140,20 +202,39 @@ namespace Dovus.Game
             var syllable = root.AddComponent<SyllableFeedback>();
             syllable.Configure(_tuning);
             var debug = root.AddComponent<SentenceDebugHud>();
+            var skills = SkillMotorLoader.LoadOrDefault();
 
             var input = root.AddComponent<PentagonInput>();
             input.Tuning = _tuning;
             input.Combat = combat;
             input.Bind(clock, ink, syllable, debug);
-            debug.Configure(input.Engine, view.CanvasRoot);
+
+            // 16 Eylül: "kamera sabit" bug raporu — MoveInput/PentagonInput'un parmaklarına
+            // dokunmadan üçüncü bir parmakla (veya editörde sağ-tık sürükleyerek) 360° orbit.
+            if (follow != null)
+            {
+                var orbit = root.AddComponent<CameraOrbitInput>();
+                orbit.Bind(follow, player.GetComponent<MoveInput>(), input);
+            }
+            debug.Configure(input.Engine, view.CanvasRoot, skills);
             debug.BindVitals(vitals);
             input.BindVitals(vitals);
+
+            var playerStatus = player.GetComponent<ActorStatus>();
+            var bossStatus = boss.GetComponent<ActorStatus>();
+            if (playerStatus != null)
+            {
+                playerStatus.Bind(clock, combat.Status, vitals, null, null);
+                input.BindStatus(playerStatus);
+            }
+            if (bossStatus != null)
+                bossStatus.Bind(clock, combat.Status, null, bossVitals, boss);
 
             var readout = root.AddComponent<ReactionReadout>();
             readout.Configure(combat.Feel, _tuning, view.CanvasRoot);
 
             var vitalsHud = root.AddComponent<VitalsHud>();
-            vitalsHud.Configure(vitals, bossVitals, _tuning, view.CanvasRoot);
+            vitalsHud.Configure(vitals, bossVitals, _tuning, view.CanvasRoot, allyDummy);
 
             var lockHud = root.AddComponent<RecoveryLockHud>();
             lockHud.Configure(input.Engine, combat, _tuning, view.CanvasRoot);
@@ -174,6 +255,11 @@ namespace Dovus.Game
             var directorGo = boss.gameObject;
             var bossDir = directorGo.AddComponent<BossDirector>();
             bossDir.Bind(clock, combat, _tuning, boss, input, player, vitals, bossVitals, telegraph, feel);
+            if (bossStatus != null)
+                bossDir.BindStatus(bossStatus);
+            if (playerStatus != null)
+                bossDir.BindPlayerStatus(playerStatus);
+            bossDir.BindVisual(boss.GetComponent<BossVisual>());
 
             var scarsGo = new GameObject("GroundScars");
             scarsGo.transform.SetParent(transform, false);
@@ -183,7 +269,7 @@ namespace Dovus.Game
             var manGo = new GameObject("Manifestation");
             manGo.transform.SetParent(transform, false);
             var director = manGo.AddComponent<ManifestationDirector>();
-            director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir);
+            director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, allyDummy);
 
             CreateTuningPanel(tuningConfig, vitals);
         }
@@ -223,13 +309,46 @@ namespace Dovus.Game
                 mainData.cameraStack.Add(overlay);
         }
 
-        void CreateArena()
+        GameObject CreateArena()
         {
+            if (_arenaVisualPrefab != null)
+            {
+                var instance = Instantiate(_arenaVisualPrefab);
+                instance.name = "Arena";
+                float visualScale = Mathf.Max(0.5f, _tuning.ArenaVisualScale);
+                instance.transform.position = Vector3.zero;
+                instance.transform.localScale = Vector3.one * visualScale;
+                return instance;
+            }
+
             var ground = CreateMeshObject("Arena", PrimitiveType.Plane);
             // Plane mesh 10x10 m; ArenaHalfSizeM yarım kenar uzunluğu.
-            float scale = _tuning.ArenaHalfSizeM / 5f;
-            ground.transform.localScale = new Vector3(scale, 1f, scale);
+            float planeScale = _tuning.ArenaHalfSizeM / 5f;
+            ground.transform.localScale = new Vector3(planeScale, 1f, planeScale);
             ApplyColor(ground, _tuning.GroundColor);
+            return ground;
+        }
+
+        /// <summary>
+        /// Asset Store prefab'ı kökün child'ı olur; mantık kökte kalır (motor/pose/reactor).
+        /// Ayak pivot'u varsayılır — local Y ofseti prefab'a göre sonra ayarlanır.
+        /// </summary>
+        static void AttachVisual(GameObject root, GameObject prefab, out Animator animator)
+        {
+            animator = null;
+            if (root == null || prefab == null)
+                return;
+
+            var visual = Instantiate(prefab, root.transform, false);
+            visual.name = "Visual";
+            visual.transform.localPosition = new Vector3(0f, -1f, 0f); // kapsül merkezi → ayak
+            visual.transform.localRotation = Quaternion.identity;
+            visual.transform.localScale = Vector3.one;
+            animator = visual.GetComponentInChildren<Animator>();
+
+            var capsuleRend = root.GetComponent<Renderer>();
+            if (capsuleRend != null)
+                capsuleRend.enabled = false;
         }
 
         static GameObject CreateCapsule(string name, Vector3 position, float radius, float height, Color color)
@@ -277,7 +396,8 @@ namespace Dovus.Game
             camera.farClipPlane = 120f;
 
             camGo.AddComponent<AudioListener>();
-            camGo.AddComponent<UniversalAdditionalCameraData>();
+            var camData = camGo.AddComponent<UniversalAdditionalCameraData>();
+            camData.renderPostProcessing = true;
 
             var follow = camGo.AddComponent<FollowCamera>();
             follow.Tuning = _tuning;

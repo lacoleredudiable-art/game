@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Dovus.Core.Combat;
 using Dovus.Core.Grammar;
 using Dovus.Core.Manifestation;
+using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using UnityEngine;
 
@@ -19,12 +20,16 @@ namespace Dovus.Game
         PrototypeTuning _colors;
         Transform _player;
         ActorPose _pose;
+        ActorVisual _visual;
         BossReactor _boss;
         BossVitals _bossVitals;
         GroundScarField _scars;
         KinematicMotor _motor;
         DamageNumberHud _damageHud;
         BossDirector _bossDirector;
+        SentenceDebugHud _debugHud;
+        ReactionReadout _readout;
+        FollowCamera _camera;
 
         readonly List<LivingEffectView> _active = new();
         readonly List<PendingClosing> _pending = new();
@@ -37,15 +42,27 @@ namespace Dovus.Game
         bool _hooked;
         bool _posedForRecovery;
 
-        // §11 ölüm: yavaş çekim başladıktan sonra bitince Revive.
+        // §11 ölüm: çökme süresi bitince Revive (yavaş çekim yok).
         bool _deathPending;
-        bool _sawDeathSlowmo;
+        double _deathReviveAtMs;
+
+        SkillMotor _skills;
+        ActorStatus _playerStatus;
+        ActorStatus _bossStatus;
+        SkillMotionDriver _motionDriver;
+        StateBridgeBoard _stateBoard;
+        StateBridgeView _bridgeView;
+        AllyDummy _ally;
+
+        SkillMotor Skills => _skills ??= SkillMotorLoader.LoadOrDefault();
 
         struct PendingClosing
         {
             public LivingEffectView View;
             public ClosingHit Closing;
             public double BangAtWorldMs;
+            public List<SentenceWord> Words;
+            public bool IsBasicStrike;
         }
 
         public LivingEffect ActiveLogic => _buildingView?.Logic;
@@ -70,7 +87,13 @@ namespace Dovus.Game
             GroundScarField scars,
             PrototypeTuning colors,
             DamageNumberHud damageHud = null,
-            BossDirector bossDirector = null)
+            BossDirector bossDirector = null,
+            ActorStatus playerStatus = null,
+            ActorStatus bossStatus = null,
+            SentenceDebugHud debugHud = null,
+            ReactionReadout readout = null,
+            FollowCamera camera = null,
+            AllyDummy ally = null)
         {
             _clock = clock;
             _engine = input.Engine;
@@ -78,12 +101,34 @@ namespace Dovus.Game
             _colors = colors;
             _player = player;
             _pose = pose;
+            _visual = player != null ? player.GetComponent<ActorVisual>() : null;
             _boss = boss;
             _bossVitals = bossVitals;
             _scars = scars;
             _damageHud = damageHud;
             _bossDirector = bossDirector;
             _motor = player.GetComponent<KinematicMotor>();
+            _playerStatus = playerStatus;
+            _bossStatus = bossStatus;
+            _debugHud = debugHud;
+            _readout = readout;
+            _camera = camera;
+            _ally = ally;
+            _skills = SkillMotorLoader.LoadOrDefault();
+
+            _motionDriver = player.GetComponent<SkillMotionDriver>();
+            if (_motionDriver == null)
+                _motionDriver = player.gameObject.AddComponent<SkillMotionDriver>();
+            _motionDriver.Bind(clock, colors);
+
+            _stateBoard = new StateBridgeBoard();
+            _bridgeView = FindAnyObjectByType<StateBridgeView>();
+            if (_bridgeView == null)
+            {
+                var bridgeGo = new GameObject("StateBridge");
+                _bridgeView = bridgeGo.AddComponent<StateBridgeView>();
+            }
+            _bridgeView.Bind(_stateBoard);
 
             if (_engine != null && !_hooked)
             {
@@ -121,6 +166,30 @@ namespace Dovus.Game
             _boss?.Tick(dtSec, worldMs);
             TickPendingClosings(worldMs);
             TickBossDeath();
+            TickStateBridge(worldMs);
+        }
+
+        void TickStateBridge(double worldMs)
+        {
+            if (_stateBoard == null || _combat == null)
+                return;
+
+            var motion = _combat.SkillMotion;
+            motion.ArenaHalfSizeM = _colors != null ? _colors.ArenaHalfSizeM : motion.ArenaHalfSizeM;
+            _stateBoard.Tick(worldMs, motion);
+            _bridgeView?.Sync();
+
+            if (_player == null || _motionDriver == null || _motionDriver.IsDisplacing)
+                return;
+            if (_playerStatus != null && _playerStatus.Board.BlocksMovement)
+                return;
+
+            Vector3 p = _player.position;
+            if (_stateBoard.TryTraverse(p.x, p.z, worldMs, motion, out float dx, out float dz))
+            {
+                _motionDriver.WarpInstant(dx, dz);
+                _readout?.NoteSkill("Portal", "köprü geçişi", new Color(0.55f, 0.4f, 1f));
+            }
         }
 
         void TickBossDeath()
@@ -128,18 +197,10 @@ namespace Dovus.Game
             if (!_deathPending || _clock == null)
                 return;
 
-            bool slow = _clock.Director.IsSlowmoActive;
-            if (slow)
-            {
-                _sawDeathSlowmo = true;
-                return;
-            }
-
-            if (!_sawDeathSlowmo)
+            if (_clock.Director.WorldTimeMs < _deathReviveAtMs)
                 return;
 
             _deathPending = false;
-            _sawDeathSlowmo = false;
             _bossVitals?.Revive();
             _boss?.EndCollapse();
             _bossDirector?.NotifyBossRevived(_clock.Director.WorldTimeMs);
@@ -162,16 +223,41 @@ namespace Dovus.Game
                 || _buildingView.Logic.Phase is LivingEffectPhase.Dead or LivingEffectPhase.Fading)
             {
                 _buildingView = SpawnEffect(state.Words, worldMs);
-                _pose?.PulseRune(state.Words[0].Rune, worldMs);
+                PulseActor(state.Words[0].Rune, state.Words, worldMs);
                 _lastWordCount = count;
                 return;
             }
 
             _buildingView.Logic.SetWords(state.Words);
+            ApplySkillTint(_buildingView, state.Words);
             if (count > _lastWordCount)
-                _pose?.PulseRune(state.Words[count - 1].Rune, worldMs);
+                PulseActor(state.Words[count - 1].Rune, state.Words, worldMs);
 
             _lastWordCount = count;
+        }
+
+        void PulseActor(Rune rune, IReadOnlyList<SentenceWord> words, double worldMs)
+        {
+            FaceBoss();
+            _pose?.PulseRune(rune, worldMs);
+            if (_visual == null)
+                return;
+
+            EffectSilhouette s = words != null && words.Count > 0
+                ? SilhouetteBuilder.FromWords(words, _combat?.Manifestation)
+                : default;
+            _visual.PulseRune(rune, s);
+        }
+
+        void FaceBoss()
+        {
+            if (_player == null || _boss == null)
+                return;
+            Vector3 to = _boss.transform.position - _player.position;
+            to.y = 0f;
+            if (to.sqrMagnitude < 0.01f)
+                return;
+            _player.rotation = Quaternion.LookRotation(to.normalized, Vector3.up);
         }
 
         void ApplyWindowCue()
@@ -221,8 +307,18 @@ namespace Dovus.Game
             go.transform.SetParent(transform, false);
             var view = go.AddComponent<LivingEffectView>();
             view.Bind(logic, man, _colors, basicStrike);
+            ApplySkillTint(view, words);
             _active.Add(view);
             return view;
+        }
+
+        void ApplySkillTint(LivingEffectView view, IReadOnlyList<SentenceWord> words)
+        {
+            if (view == null || words == null || words.Count == 0)
+                return;
+
+            SkillFeel.ElementPalette(words, _colors, out Color line, out Color blob);
+            view.SetSkillTint(line, blob);
         }
 
         void OnSentenceCompleted(CompletedSentence sentence)
@@ -243,14 +339,26 @@ namespace Dovus.Game
             // dünyada mutlaka yaşamak zorunda (§8/T2), o yüzden burada doğuyor. Elde yaşayan bir
             // etki ARAMIYORUZ — önceki cümlenin hâlâ patlayan etkisine bu kapanışı bağlamak
             // yanlış hedefe ödeme yapmak olur.
-            // T14: Building hiç görülmeden spawn + tek kelime = düz vuruş → ayrı jab silüeti.
+            // T14: Building hiç görülmeden spawn + tek kelime = düz vuruş YALNIZCA
+            // merkezin BasicStrikeDot fiiliyse. Tek Su/Hava vb. skill cümlesi jab sayılmaz.
             bool spawnedForBasicStrike = false;
             if (view == null || view.Logic == null
                 || view.Logic.Phase is LivingEffectPhase.Dead or LivingEffectPhase.Fading)
             {
-                spawnedForBasicStrike = sentence.Words.Count == 1;
+                int basicDot = _colors != null ? _colors.BasicStrikeDot : 1;
+                spawnedForBasicStrike = sentence.Words.Count == 1
+                    && (int)sentence.Words[0].Rune == basicDot;
                 view = SpawnEffect(sentence.Words, _clock.Director.WorldTimeMs, spawnedForBasicStrike);
-                _pose?.PulseRune(sentence.Words[0].Rune, _clock.Director.WorldTimeMs);
+                if (spawnedForBasicStrike)
+                {
+                    FaceBoss();
+                    _visual?.PulseBasicStrike();
+                    _pose?.PulseRune(sentence.Words[0].Rune, _clock.Director.WorldTimeMs);
+                }
+                else
+                {
+                    PulseActor(sentence.Words[0].Rune, sentence.Words, _clock.Director.WorldTimeMs);
+                }
             }
 
             // Kapanış kurulmadan önce son kelime listesi etkiye iletilir — dördüncü kelime
@@ -270,12 +378,24 @@ namespace Dovus.Game
 
             _pose?.BeginRecovery(recoverySec, _clock.Director.WorldTimeMs);
             _posedForRecovery = true;
+            // Merkez düz vuruş: IsBasicStrike yalnızca BasicStrikeDot ile spawn edilen view.
+            bool basic = view != null && view.IsBasicStrike;
             _pending.Add(new PendingClosing
             {
                 View = view,
                 Closing = closing,
-                BangAtWorldMs = bangAt
+                BangAtWorldMs = bangAt,
+                Words = new List<SentenceWord>(sentence.Words),
+                IsBasicStrike = basic
             });
+        }
+
+        /// <summary>Editör/prob: kapanış bang zamanını zorla işle (heal vb.).</summary>
+        public void ForceTickClosings()
+        {
+            if (_clock == null)
+                return;
+            TickPendingClosings(_clock.Director.WorldTimeMs);
         }
 
         void TickPendingClosings(double worldMs)
@@ -308,39 +428,254 @@ namespace Dovus.Game
             LivingEffect logic = p.View.Logic;
             logic.FireClosingBang();
             StampScar(p.View, p.Closing);
-            ApplyBossClosing(logic, p.Closing);
-            ApplyClosingDamage(p.Closing);
+
+            // Düz vuruş: jab — skill motoru / isim bang'i / kamera yumruğu yok (Ateş vb. yazmasın).
+            // Heal vb. tek-rün skill asla IsBasicStrike olmamalı; yine de mend kaçmasın.
+            if (p.IsBasicStrike || (p.View != null && p.View.IsBasicStrike))
+            {
+                SkillResolution basicSkill = ResolvePendingSkill(p);
+                if (IsHealSkill(basicSkill))
+                {
+                    ApplyClosingStatuses(p, basicSkill);
+                    ShoutSkill(basicSkill, p.Words);
+                    ApplyClosingHeal(p.Closing, basicSkill);
+                    return;
+                }
+
+                ApplyBossClosingBasic(logic, p.Closing);
+                ApplyClosingDamage(p.Closing, SkillResolution.Empty, isBasicStrike: true, slashCommitMult: 0f);
+                return;
+            }
+
+            SkillResolution skill = ResolvePendingSkill(p);
+            SkillMotionPlan motionPlan = ResolveSkillMotion(skill);
+            ApplySkillMotion(motionPlan, skill);
+            ApplyBossClosing(logic, p.Closing, skill);
+            ApplyClosingDamage(p.Closing, skill, isBasicStrike: false, motionPlan.SlashCommitMult);
+            ApplyClosingStatuses(p, skill);
+            ShoutSkill(skill, p.Words);
+            ApplyClosingHeal(p.Closing, skill); // readout ShoutSkill'den sonra (ally +N kalsın)
+            if (!motionPlan.IsEmpty)
+                AnnotateMotion(skill, motionPlan);
+        }
+
+        SkillMotionPlan ResolveSkillMotion(SkillResolution skill)
+        {
+            if (skill.IsEmpty || _combat == null || _player == null)
+                return SkillMotionPlan.None;
+
+            var t = _combat.SkillMotion;
+            t.ArenaHalfSizeM = _colors != null ? _colors.ArenaHalfSizeM : t.ArenaHalfSizeM;
+
+            Vector3 face = _player.forward;
+            face.y = 0f;
+            if (face.sqrMagnitude < 0.0001f)
+                face = Vector3.forward;
+
+            Vector3 bossPos = _boss != null ? _boss.transform.position : Vector3.zero;
+            bool bossAlive = _bossVitals == null || !_bossVitals.IsDown;
+
+            var ctx = new SkillMotionContext(
+                _player.position.x, _player.position.z,
+                face.x, face.z,
+                bossPos.x, bossPos.z,
+                bossAlive,
+                t.ArenaHalfSizeM);
+
+            return SkillMotionMotor.Resolve(skill, ctx, t);
+        }
+
+        void ApplySkillMotion(in SkillMotionPlan plan, SkillResolution skill)
+        {
+            if (plan.IsEmpty || _clock == null)
+                return;
+
+            double worldMs = _clock.Director.WorldTimeMs;
+            if (plan.Kind == SkillMotionKind.PlaceMark)
+            {
+                _stateBoard?.PlaceMark(plan.MarkType, plan.DestX, plan.DestZ, worldMs, _combat.SkillMotion);
+                _bridgeView?.Sync();
+                return;
+            }
+
+            _motionDriver?.Play(plan, worldMs);
+        }
+
+        void AnnotateMotion(SkillResolution skill, in SkillMotionPlan plan)
+        {
+            string tag = plan.Kind switch
+            {
+                SkillMotionKind.ZenitsuPass => "Zenitsu geçiş",
+                SkillMotionKind.ShortBlink => "ışınlanma",
+                SkillMotionKind.ForwardDash => "dash",
+                SkillMotionKind.PlaceMark => "işaret",
+                _ => null
+            };
+            if (tag == null) return;
+            _debugHud?.NoteSkillBang(skill.DisplayName, tag);
+        }
+
+        SkillResolution ResolvePendingSkill(PendingClosing p)
+        {
+            if (_skills == null || p.Words == null || p.Words.Count == 0)
+                return SkillResolution.Empty;
+            return _skills.ResolveWords(p.Words);
+        }
+
+        void ShoutSkill(SkillResolution skill, IReadOnlyList<SentenceWord> words)
+        {
+            if (skill.IsEmpty)
+                return;
+
+            string mech = SkillFeel.MechanicShort(skill.Mechanics);
+            SkillFeel.ElementPalette(words, _colors, out Color line, out _);
+            _debugHud?.NoteSkillBang(skill.DisplayName, mech);
+            string sub = skill.VerbName;
+            if (!string.IsNullOrEmpty(mech))
+                sub = string.IsNullOrEmpty(sub) ? mech : sub + "  ·  " + mech;
+            _readout?.NoteSkill(skill.DisplayName, sub, line);
+            SkillFeel.CameraKick(skill.VerbFamily, _camera, _colors);
+        }
+
+        void ApplyClosingStatuses(PendingClosing p, SkillResolution skill)
+        {
+            if (skill.IsEmpty)
+                return;
+            if (_playerStatus == null && _bossStatus == null)
+                return;
+
+            var result = StatusApplicator.ApplySkill(
+                skill,
+                _playerStatus != null ? _playerStatus.Board : null,
+                _bossStatus != null ? _bossStatus.Board : null,
+                _combat != null ? _combat.Status : new StatusTuning());
+
+            if (result.Knockback && _bossStatus != null && _player != null)
+                _bossStatus.ApplyKnockbackFrom(_player.position);
         }
 
         /// <summary>
-        /// §5: TotalEffect × ClosingDamagePerEffect. Tür hasarı DEĞİŞTİRMEZ (§12).
-        /// Yarıda abort edilen cümle Closing taşımaz → buraya hiç gelmez.
+        /// Mend / heal / regen — daha boş olana basar (oran). Ally full ise oyuncu.
+        /// Miktar: TotalEffect × ClosingDamagePerEffect (commit ile aynı birim).
         /// </summary>
-        void ApplyClosingDamage(ClosingHit closing)
+        void ApplyClosingHeal(ClosingHit closing, SkillResolution skill)
+        {
+            if (skill.IsEmpty)
+                return;
+            if (!IsHealSkill(skill))
+                return;
+
+            float per = _combat != null ? _combat.ClosingDamagePerEffect : 1f;
+            // 16 Eylül: "Kavurucu Yara" (grievous_wounds+burn) — yanık hedefe gelen heal azalır.
+            // Hedefin StatusBoard'u yoksa (ör. AllyDummy) çarpan 1f, davranış eskisiyle aynı.
+            float healMult = _playerStatus != null ? _playerStatus.Board.HealEffectivenessMult : 1f;
+            int amount = Mathf.Max(1, Mathf.RoundToInt(closing.TotalEffect * per * healMult));
+            if (amount <= 0)
+                return;
+
+            var playerVitals = _player != null ? _player.GetComponent<PlayerVitals>() : null;
+            bool allyNeeds = _ally != null && _ally.Hp < _ally.MaxHp;
+            bool selfNeeds = playerVitals != null && !playerVitals.IsDown && playerVitals.Hp < playerVitals.MaxHp;
+            if (!allyNeeds && !selfNeeds)
+            {
+                _readout?.NoteSkill(skill.DisplayName, "zaten full", new Color(0.7f, 0.9f, 0.75f));
+                return;
+            }
+
+            bool healAlly = false;
+            if (allyNeeds && selfNeeds)
+            {
+                float allyR = _ally.Ratio;
+                float selfR = (float)playerVitals.Hp / playerVitals.MaxHp;
+                // Eşitse kendine — "kendime heal" denemesi.
+                healAlly = allyR < selfR;
+            }
+            else
+                healAlly = allyNeeds;
+
+            int healed;
+            if (healAlly)
+            {
+                healed = _ally.ApplyHeal(amount);
+                if (healed > 0)
+                {
+                    _damageHud?.ShowDamage(-healed);
+                    _readout?.NoteSkill(skill.DisplayName, "ally +" + healed, new Color(0.4f, 1f, 0.65f));
+                    _debugHud?.NoteSkillBang(skill.DisplayName, "ally +" + healed);
+                }
+                return;
+            }
+
+            healed = playerVitals.ApplyHeal(amount);
+            if (healed > 0)
+            {
+                _damageHud?.ShowDamage(-healed);
+                _readout?.NoteSkill(skill.DisplayName, "self +" + healed, new Color(0.4f, 1f, 0.65f));
+                _debugHud?.NoteSkillBang(skill.DisplayName, "self +" + healed);
+            }
+        }
+
+        static bool IsHealSkill(SkillResolution skill)
+        {
+            if (string.Equals(skill.VerbFamily, "mend", System.StringComparison.Ordinal))
+                return true;
+            string action = skill.Action ?? string.Empty;
+            return action is "heal" or "regen" or "cleanse" or "area_cleanse" or "holy_shield";
+        }
+
+        /// <summary>
+        /// Commit (§5 TotalEffect × ClosingDamagePerEffect) × skill fiil ölçeği.
+        /// Heal/dash BaseDamage=0 → 0 can; status ayrı. Tür hasarı değiştirmez (§12).
+        /// </summary>
+        void ApplyClosingDamage(ClosingHit closing, SkillResolution skill, bool isBasicStrike, float slashCommitMult)
         {
             if (_bossVitals == null || _bossVitals.IsDown)
                 return;
 
-            float damage = closing.TotalEffect * _combat.ClosingDamagePerEffect;
+            float outMult = 1f;
+            if (_playerStatus != null)
+                outMult = _playerStatus.Board.OutgoingDamageMult;
+
+            float damage = ClosingDamageMath.Compute(
+                closing.TotalEffect,
+                _combat != null ? _combat.ClosingDamagePerEffect : 1f,
+                skill,
+                isBasicStrike,
+                outMult);
+
+            // Teleport fiili BaseDamage=0; Zenitsu kesisi commit × SlashCommitMult.
+            if (damage <= 0f && slashCommitMult > 0f && closing.TotalEffect > 0f)
+            {
+                float per = _combat != null ? _combat.ClosingDamagePerEffect : 1f;
+                damage = closing.TotalEffect * per * slashCommitMult * outMult;
+            }
+
             if (damage <= 0f)
                 return;
+
+            // Armor break boss'ta incoming mult
+            if (_bossStatus != null)
+                damage *= _bossStatus.Board.IncomingDamageMult;
 
             _damageHud?.ShowDamage(damage);
 
             bool killed = _bossVitals.ApplyDamage(damage);
-            if (!killed)
+            var bossVisual = _boss != null ? _boss.GetComponent<BossVisual>() : null;
+            if (killed)
+            {
+                double worldMs = _clock.Director.WorldTimeMs;
+                // Önce telegrafı kapat (Hide taban ölçeğe çeker), sonra çökme — sıra tersine
+                // dönseydi Hide çökmeyi ezerdi.
+                _bossDirector?.NotifyBossDown(worldMs);
+                float collapseSec = _colors != null ? _colors.BossDeathCollapseSec : 0.85f;
+                _boss?.BeginCollapse(collapseSec, worldMs);
+                // Yavaş çekim kaldırıldı — revive çökme süresi kadar dünya saati sonra.
+                _deathReviveAtMs = worldMs + collapseSec * 1000.0;
+                _deathPending = true;
                 return;
+            }
 
-            double worldMs = _clock.Director.WorldTimeMs;
-            // Önce telegrafı kapat (Hide taban ölçeğe çeker), sonra çökme — sıra tersine
-            // dönseydi Hide çökmeyi ezerdi.
-            _bossDirector?.NotifyBossDown(worldMs);
-            float collapseSec = _colors != null ? _colors.BossDeathCollapseSec : 0.85f;
-            _boss?.BeginCollapse(collapseSec, worldMs);
-            // Yeni rampa yazılmaz — T4 TimeDirector + SlowmoTuning tek kaynak (§11 / durum T12).
-            _clock.Director.TriggerSlowmo();
-            _deathPending = true;
-            _sawDeathSlowmo = false;
+            bossVisual?.PlayStagger();
         }
 
         // Kapanış izi (bu metot) ve seyahat izi (TickEffects, view.Scarred) iki ayrı bayrak:
@@ -388,10 +723,41 @@ namespace Dovus.Game
             _closingStamped.Add(logic);
         }
 
-        void ApplyBossClosing(LivingEffect logic, ClosingHit closing)
+        /// <summary>Düz vuruş jab — hafif tepki, skill ailesi / kamera yumruğu yok.</summary>
+        void ApplyBossClosingBasic(LivingEffect logic, ClosingHit closing)
         {
             if (_boss == null || (_bossVitals != null && _bossVitals.IsDown))
                 return;
+            if (!IsClosingInRange(logic, closing))
+                return;
+
+            var man = _combat.Manifestation;
+            _boss.React(
+                new Vector3(logic.OriginX, 0f, logic.OriginZ),
+                man.BossKnockbackM * 0.55f,
+                0.04f,
+                man.BossShakeSec * 0.4f,
+                _clock.Director.WorldTimeMs);
+        }
+
+        void ApplyBossClosing(LivingEffect logic, ClosingHit closing, SkillResolution skill)
+        {
+            if (_boss == null || (_bossVitals != null && _bossVitals.IsDown))
+                return;
+
+            // Kendine yönelik fiil (mend/guard/purge) boss gövdesini boğmaz — hafif titreşim yeter.
+            if (!skill.IsEmpty && StatusApplicator.IsSelfTargeted(skill))
+            {
+                if (!IsClosingInRange(logic, closing))
+                    return;
+                _boss.React(
+                    new Vector3(logic.OriginX, 0f, logic.OriginZ),
+                    _combat.Manifestation.BossKnockbackM * 0.08f,
+                    0.04f,
+                    _combat.Manifestation.BossShakeSec * 0.35f,
+                    _clock.Director.WorldTimeMs);
+                return;
+            }
 
             Vector3 from = new Vector3(logic.OriginX, 0f, logic.OriginZ);
             var man = _combat.Manifestation;
@@ -399,6 +765,59 @@ namespace Dovus.Game
             float lift = 0f;
             float shake = man.BossShakeSec;
             double worldMs = _clock.Director.WorldTimeMs;
+
+            // Önce SkillMotor ailesi (iş), yoksa son rün (eski silüet tepkisi).
+            string family = skill.IsEmpty ? string.Empty : skill.VerbFamily;
+            if (!string.IsNullOrEmpty(family))
+            {
+                switch (family)
+                {
+                    case "strike":
+                        knock = man.BossKnockbackM * (1.85f + 0.4f * logic.Current.Pierce);
+                        lift = 0.05f;
+                        shake = man.BossShakeSec * 0.55f;
+                        break;
+                    case "disrupt":
+                        knock = man.BossKnockbackM * 0.12f;
+                        lift = 0.08f;
+                        shake = man.BossShakeSec * 1.6f;
+                        if (!IsClosingInRange(logic, closing))
+                            return;
+                        _boss.React(from, knock, lift, shake * 0.45f, worldMs);
+                        _boss.React(from + new Vector3(logic.DirZ, 0f, -logic.DirX) * 0.35f,
+                            knock * 0.6f, lift * 0.5f, shake * 0.55f, worldMs);
+                        _boss.React(from + new Vector3(-logic.DirZ, 0f, logic.DirX) * 0.35f,
+                            knock * 0.6f, lift * 0.5f, shake * 0.55f, worldMs);
+                        return;
+                    case "control":
+                        if (!IsClosingInRange(logic, closing))
+                            return;
+                        _boss.Pin(0.7f, worldMs);
+                        return;
+                    case "zone":
+                        knock = man.BossKnockbackM * 0.55f;
+                        lift = man.BossLiftM * (1.15f + 0.35f * logic.Current.Lift);
+                        shake = man.BossShakeSec * 0.9f;
+                        break;
+                    case "motion":
+                        knock = man.BossKnockbackM * 0.9f;
+                        lift = 0.12f;
+                        shake = man.BossShakeSec * 0.7f;
+                        break;
+                    case "special":
+                        knock = man.BossKnockbackM * 0.25f;
+                        lift = 0.2f;
+                        shake = man.BossShakeSec * 1.1f;
+                        break;
+                    default:
+                        break;
+                }
+
+                if (!IsClosingInRange(logic, closing))
+                    return;
+                _boss.React(from, knock, lift, shake, worldMs);
+                return;
+            }
 
             // Tür = fiziksel tepki ekseni. Hasar miktarı burada yok (§5 + §12).
             switch (closing.Type)

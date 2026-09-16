@@ -15,8 +15,21 @@ namespace Dovus.Game
         int? _stickFingerId;
         Vector2 _stickOrigin;
         Vector2 _moveDirection;
+        Vector2 _knobOffsetPx;
 
         public Vector2 MoveDirection => _moveDirection;
+
+        /// <summary>16 Eylül: JoystickView için — çubuk şu an ekranda basılı mı.</summary>
+        public bool IsActive => _stickFingerId.HasValue;
+
+        /// <summary>16 Eylül: CameraOrbitInput'un "bu parmak zaten çubuğa ait" kontrolü için.</summary>
+        public int? ClaimedFingerId => _stickFingerId;
+
+        /// <summary>Dinamik çubuğun doğduğu ekran noktası (px) — sadece IsActive'ken geçerli.</summary>
+        public Vector2 OriginPx => _stickOrigin;
+
+        /// <summary>Merkezden kabarcığa (knob) kırpılmış piksel ofseti — görsel için.</summary>
+        public Vector2 KnobOffsetPx => _knobOffsetPx;
 
         public PrototypeTuning Tuning
         {
@@ -122,15 +135,17 @@ namespace Dovus.Game
         {
             float maxRadiusPx = DpToPixels(_tuning.JoystickMaxRadiusDp);
             Vector2 delta = current - _stickOrigin;
+            Vector2 clamped = delta.magnitude > maxRadiusPx
+                ? delta.normalized * maxRadiusPx
+                : delta;
+            // Görsel kabarcık deadzone'da da parmağı takip eder (his) — hareket eşiği ayrı.
+            _knobOffsetPx = clamped;
+
             if (delta.magnitude < maxRadiusPx * _tuning.JoystickDeadZone)
             {
                 _moveDirection = Vector2.zero;
                 return;
             }
-
-            Vector2 clamped = delta.magnitude > maxRadiusPx
-                ? delta.normalized * maxRadiusPx
-                : delta;
 
             _moveDirection = clamped / maxRadiusPx;
         }

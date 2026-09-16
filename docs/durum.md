@@ -12,7 +12,55 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 · **Sıradaki:** element-sistemi motor genişletmesi adım 2+ (bkz. `docs/gorev-listesi.md` "Backlog")
+**Son güncelleme:** 16 Eylül 2026 (2. tur) · **Sıradaki:** Pentagon→Hexagon isim borcu +
+element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
+
+> **16 Eylül — bug turu + durum tablosu + boss 2. saldırı (2. oturum):** Sahibi Play mode'da
+> beş bug rapor etti, hepsi teşhis edildi ve düzeltildi (Unity MCP ile Play mode'da
+> doğrulandı, `dotnet test` 143 yeşil):
+> - **Düz vuruş heal basıyordu** — sahnede `BasicStrikeDot` donmuş `5` (eski pentagon
+>   SARSINTI) idi, altıgende 5=Aydınlık/`arindirma` (`cleanse` → `IsHealSkill` true
+>   sanıyordu). `PrototypeTuning.EnsureRuntimeDefaults()`'a zorla `1` (Ateş) eklendi.
+> - **Hasar sayısı görünmüyordu** — sahnede `ShowDamageNumbers` donmuş `0` idi (kod default'u
+>   `true` ama sahne ezmişti); aynı yerde zorla `true` yapıldı.
+> - **Sol joystick görünmüyordu** — `MoveInput` fonksiyonel olarak zaten çalışıyordu, hiç
+>   görseli yoktu. Yeni `JoystickView.cs` (dinamik taban+kabarcık, `PentagonView`'daki
+>   `CreateCircleSprite` deseniyle) eklendi.
+> - **Kamera 360° dönemiyordu** — `FollowCamera` tamamen sabitti. `OrbitYawDeg` eklendi,
+>   yeni `CameraOrbitInput.cs` üçüncü parmak (veya editörde sağ-tık sürükleme) ile yaw
+>   döndürüyor; `MoveInput`/`PentagonInput`'un zaten claim ettiği parmaklara dokunmuyor.
+> - **Duvarların içine giriliyordu** — Quaternius dungeon mesh'leri collider'sız geliyordu
+>   (`ArenaWalkFit`'in "Fizik collider yok" notu); `KinematicMotor` sadece dış kare clamp
+>   yapıyordu. Yeni `WallColliderFit.cs` isim eşleşmesiyle (`wall`/`column`/`arch`/...)
+>   `BoxCollider` ekliyor (canlı sahnede 52 adet), `KinematicMotor.PushOutOfObstacles()`
+>   küre-itme uyguluyor.
+>
+> **Durum etkileşim tablosu artık var** (`docs/element-sistemi.json` `status_interaction_table`,
+> sahibinin 17 kuralı) — `Core/Status/StatusReactionTable.cs` (14 genellenebilir kural) +
+> `StatusBoard.Apply/Tick` (reaksiyon uygulama, artık burn/poison/regen tick'i entry'nin
+> kendi magnitude'unu okuyor — eskiden global sabitti) + `StatusApplicator` (3 özel durum:
+> burn+poison ekstra tick, shield+burn kalkan aşınması, stun+knockback aynı-vuruş süre
+> uzaması). `StatusKind.Poison` + `GrievousWounds`'un artık gerçekten kullanılan
+> `HealEffectivenessMult`'ı eklendi. 8 yeni test.
+>
+> **Boss ikinci saldırı:** `docs/bosses/karadul.json`'da speclenmiş ama `implemented:false`
+> olan `fire_cone` (Cehennem Nefesi) artık çalışıyor — `BossAttackKind` (Slam/FireCone),
+> `BossAttackKindPicker` (aynı desen: üst üste tekrar sınırlı), boss can %50 altına düşünce
+> (Faz 2/Öfke) açılıyor. Dar koni (40° yarım açı, `BossAttack.ArcHalfAngleDeg` + gerçek
+> `Vector3.SignedAngle` hesap — Slam'in `angleFromForwardDeg` parametresi eskiden hep `0f`
+> geçiliyordu, kullanılmıyordu). Hasar/windup spec'ten (18/800ms); radius/arc uydurma
+> (docs/element-sistemi.md §10'da işaretli). His deneyi boss hasarını 0'a çekiyor
+> (`combat.Boss.Damage=0`) — `FireConeDamage` de aynı satırda 0'landı, tutarlı kalsın.
+>
+> **HUD (best-effort):** `VitalsHud` bar'ları düz siyah dikdörtgenden yuvarlak köşeli +
+> ince kenarlıklı hâle geldi (`RoundedRectSprite`, 9-slice). Diğer HUD elemanlarına
+> dokunulmadı — kapsam "modern" tanımı öznel, geri bildirim istiyorum.
+>
+> **Yapılmadı (kasıtlı, sahibi "sonra yapalım" dedi):** Fab paketleri (Demon Watcher,
+> JustCreate karakterler, Modular Dungeon Lava) henüz satın alınmadı — Mixamo/rig
+> entegrasyonu ayrı bir tur.
+
+**Önceki:** element-sistemi motor genişletmesi adım 2+ (bkz. `docs/gorev-listesi.md` "Backlog")
 
 > **element-sistemi 4.2.2 + SkillMotor parse genişletmesi (16 Eylül):** Sahibi sohbette v5.2
 > (5 ailenin verb/bileşik detayı + `three_runes_examples`) ve v5.2.1 (`atoms_catalog`) verisini

@@ -172,25 +172,37 @@ gerekenler (`docs/gorev-listesi.md` "Backlog"):
 
 ## 10. Bilinen açıklar (öncelik sırasına yakın)
 
-1. **Pentagon→Hexagon isim borcu** (§2) — kod doğru çalışıyor, adlar yanıltıcı.
+1. **~~Pentagon→Hexagon isim borcu~~ (§2) — hâlâ açık.** Kod doğru çalışıyor
+   (`PentagonLayout.DotCount=6`), ama dosya/sınıf adları (`PentagonInput.cs` vb.) ve `Rune`
+   enum üyeleri (`Rune.Toprak=6=Karanlık`) hâlâ yanıltıcı — henüz yeniden adlandırılmadı.
 2. **Element/sınıf seçimi yok** — tek karakter, oyuncu hangi aileyi oynadığını seçemiyor.
-3. **Durum etkileşim tablosu yok** (§7) — hem kod hem spec seviyesinde. Muhtemelen bir
-   sonraki en büyük sistem.
+3. **~~Durum etkileşim tablosu yok~~ — 16 Eylül'de kapandı.** `status_interaction_table`
+   (17 kural) `Core/Status/StatusReactionTable.cs` + `StatusBoard.Apply/Tick` +
+   `StatusApplicator` içinde uygulanıyor (8 test). JSON'a da belge olarak eklendi ama motor
+   onu okumuyor — sayılar C#'ta sabit (StatusTuning deseniyle aynı).
 4. **Co-op / network hiç yok** — `AllyDummy` yapay kukla, gerçek 2. oyuncu/senkron yok.
 5. **`base_resource_cost` Ateş ailesinin 7 fiilinde yok** — v5.2 kaynağı Ateş'i vermedi,
    uydurulmadı.
 6. **2-5 (Zehir/`aktif_zehirlenme`) ve 3-2 (Pus/`kisisel_isinlanma`) kilitli tutuldu** —
    sohbetten gelen v5.2 verisi bunları İksir/`tam_arinma` ve hız+görünmezliğe geri almak
    istiyordu ama JSON'da zaten kasıtlı dönüşüm notu vardı; sahibi kararı kilitli hali korudu.
-7. **`StatusKind` enum'ında `poison` yok** (§7).
-8. **Boss çeşitliliği düşük** — tek boss (Karadul), tek gerçek desen (`slam`, 3 varyant);
-   `docs/bosses/karadul.json` faz 2'nin `fire_cone`'u `implemented:false`.
+7. **~~`StatusKind` enum'ında `poison` yok~~ — 16 Eylül'de eklendi** (`Core/Status/StatusKind.cs`).
+8. **Boss çeşitliliği düşük ama arttı (16 Eylül).** İkinci saldırı eklendi:
+   `fire_cone`/Cehennem Nefesi (`BossAttackKind.FireCone`, `docs/bosses/karadul.json`
+   `implemented:true` oldu) — boss can %50'nin altına düşünce (Faz 2/Öfke) slam ile
+   dönüşümlü seçiliyor, dar bir koni (40°), ayrı windup/hasar/mekanik (burn+grievous_wounds).
+   Hâlâ tek boss (Karadul); görsel olarak aynı "bite" animasyonunu tekrar kullanıyor (ayrı
+   clip yok — Demon Watcher paketiyle `Combat_Spell_*` eşlenince düzelir).
 9. **Dodge/hitstop/kamera "his" numaraları artık sadece kodda** — eski `dovus-sistemi.md`
    §6-9'un anlattığı sayılar (`hitstopPerfectMs`, `impactFrameMs`, dodge derece eşikleri vb.)
    `Core/Tuning/{FeelTuning,DodgeTuning,SlowmoTuning,SentenceTuning}.cs` içinde varsayılan
    olarak yaşıyor — doküman silindi ama sayılar kaybolmadı, sadece gerekçe prose'u gitti.
    Yeni bir "his değeri" gerekirse artık kaynak bu Tuning sınıflarının mevcut değerleri +
    bu dosyadır, `dovus-sistemi.md` değil (AGENTS.md güncellendi).
+10. **16 Eylül bug turu kapatıldı** (durum.md'de detay): düz vuruşun heal basması
+    (sahnede donmuş `BasicStrikeDot=5` idi), hasar sayısı görünmemesi (`ShowDamageNumbers`
+    sahnede donmuş `0`'dı), sol joystick'in görseli olmaması, kamera 360° dönemiyor olması,
+    duvarların içine girilebilmesi. Hepsi Play mode'da Unity MCP ile doğrulandı.
 
 ## 11. Kaynak dosyalar
 

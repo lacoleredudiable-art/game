@@ -11,6 +11,8 @@ namespace Dovus.Game
     {
         [Header("Arena")]
         public float ArenaHalfSizeM = 12f;
+        /// <summary>Quaternius arena prefab ölçeği — büyütünce yürüyüş alanı da büyür.</summary>
+        public float ArenaVisualScale = 3.0f;
 
         [Header("Oyuncu")]
         public float WalkSpeedMps = 4.5f;
@@ -24,11 +26,16 @@ namespace Dovus.Game
         public float JoystickMaxRadiusDp = 72f;
         public float JoystickDeadZone = 0.12f;
 
-        // Beşgen ekrana sabit (§2). Yarıçap/konum spec'te sayı yok — varsayılan; durum.md'ye geçildi.
+        // Altıgen ekrana sabit (§2). Yarıçap/konum spec'te sayı yok — varsayılan; durum.md'ye geçildi.
         // T6.2: merkez X, dodge düğmesi sağ kenardan taşmasın diye 0.78'den içeri alındı.
-        [Header("Beşgen (§2)")]
+        [Header("Altıgen (§2)")]
         public float PentagonCenterXNorm = 0.72f;
-        public float PentagonCenterYNorm = 0.40f;
+        // 16 Eylül: 0.40 (dikey orta-altı) → 0.22 (sağ-alt köşe). Ekran Y'si ALTTAN başlar
+        // (Touch.screenPosition ile aynı uzay — bkz. PentagonLayoutScreen.CenterPx), yani
+        // küçültmek AŞAĞI taşır. Sahibi "daha güzel bir köşe" istedi; sağ-alt mobil ARPG'lerde
+        // standart skill-tekerleği konumu (Dragon Nest M vb.). X dokunulmadı (T6.2: dodge
+        // taşmasın diye 0.78'den 0.72'ye çekilmişti, o düzeltmeyi bozmuyoruz).
+        public float PentagonCenterYNorm = 0.22f;
         public float PentagonRadiusDp = 100f;
         public float DotHitRadiusDp = 30f;
         public float CenterHitRadiusDp = 24f;
@@ -36,26 +43,28 @@ namespace Dovus.Game
         public float InkLingerSec = 0.40f;
         public float InkWidthDp = 3.5f;
 
-        // §2: dodge beşgenin dışında, ekrana sabit ayrı düğme (sol çubuk dinamik olduğu için
-        // yanına konamaz). Ofset/yarıçap spec'te yok — varsayılan; durum.md'ye geçildi.
-        // Ofset beşgen merkezinden dp cinsinden; MirrorForLeftHand X'i çevirir.
+        // §2: dodge altıgenin sağ altında — Toprak (alt nokta) üstüne binmesin. v9.
         [Header("Dodge düğmesi (§2, T6.2)")]
-        public float DodgeButtonOffsetXDp = 80f;
-        public float DodgeButtonOffsetYDp = -140f;
-        public float DodgeButtonRadiusDp = 34f;
+        public float DodgeButtonOffsetXDp = 92f;
+        public float DodgeButtonOffsetYDp = -118f;
+        public float DodgeButtonRadiusDp = 30f;
         public float DodgeButtonScreenMarginDp = 8f;
 
-        // §5: merkez bir kelime değil düğme; hangi fiille vurduğu veridir (prototipte 5/SARSINTI).
+        // §5: merkez bir kelime değil düğme; hangi fiille vurduğu veridir (prototipte 1/Ateş).
         [Header("Düz vuruş (§5, T6.2)")]
-        public int BasicStrikeDot = 5;
+        public int BasicStrikeDot = 1;
 
-        // §4 ilk tur: yalnızca 1 (İĞNE), 2 (SÜRÜ), 5 (SARSINTI). Kombo tablosu değil — açık/kapalı bayrak.
+        // Altı element rünü — hepsi açık (element-sistemi.json).
         [Header("Açık rünler (§4)")]
         public bool OpenDot1 = true;
         public bool OpenDot2 = true;
-        public bool OpenDot3 = false;
-        public bool OpenDot4 = false;
+        public bool OpenDot3 = true;
+        public bool OpenDot4 = true;
         public bool OpenDot5 = true;
+        public bool OpenDot6 = true;
+
+        [Header("Altıgen ikon")]
+        public float IconDisplayScale = 1.12f;
 
         // Spec'te sayı yok — ayrık onay tıkırtısı (§2); Handheld.Vibrate ~500 ms üst üste biniyordu.
         [Header("Dokunsal (§2)")]
@@ -76,6 +85,16 @@ namespace Dovus.Game
         public Color InkPurple = new Color(0.725f, 0.549f, 1f);   // #B98CFF
         public Color InkCyan = new Color(0.373f, 0.941f, 1f);     // #5FF0FF
         public Color AcidGreen = new Color(0.608f, 0.910f, 0.235f); // #9BE83C — §10 zehir birikintisi
+
+        // Altı çekirdek — §10: kırmızı-turuncu yok (boss tehdidi). Ateş sıcak magenta.
+        [Header("Element renkleri (çizgi/tezahür)")]
+        public Color ElementFire = new Color(1f, 0.42f, 0.62f);       // Ateş — sıcak magenta
+        public Color ElementWater = new Color(0.28f, 0.72f, 1f);      // Su
+        public Color ElementAir = new Color(0.72f, 0.82f, 1f);        // Hava
+        public Color ElementEarth = new Color(0.62f, 0.78f, 0.42f);   // Toprak
+        public Color ElementLight = new Color(1f, 0.96f, 0.82f);      // Aydınlık
+        public Color ElementDark = new Color(0.48f, 0.28f, 0.78f);    // Karanlık
+
         public Color PentagonDotColor = new Color(0.55f, 0.62f, 0.72f, 0.85f);
         // T6.2: merkez artık "vur" demek — oyuncu rengine çekildi (§10 camgöbeği).
         public Color PentagonCenterColor = new Color(0.373f, 0.941f, 1f, 0.9f);
@@ -129,9 +148,9 @@ namespace Dovus.Game
         // AYNI taşındı, yalnızca yeri değişti — dovus-sistemi.md'de sayı yok, sapma T7
         // durum.md'sinde kayıtlı.
         [Header("Tezahür çizgisi (T7.2, LivingEffectView)")]
-        public float EffectLineWidthDefaultM = 0.18f;
-        public float EffectLineWidthWideM = 0.35f;
-        public float EffectLineWidthNarrowM = 0.12f;
+        public float EffectLineWidthDefaultM = 0.28f;
+        public float EffectLineWidthWideM = 0.55f;
+        public float EffectLineWidthNarrowM = 0.16f;
         public float EffectSarsintiWidthWideM = 0.22f;
         public float EffectSarsintiWidthNarrowM = 0.1f;
 
@@ -144,8 +163,8 @@ namespace Dovus.Game
         public float EffectFocusSwarmAlongLineMin = 0.45f;
 
         [Header("Tezahür şekil ölçekleri (T7.2, LivingEffectView)")]
-        public float EffectBlobScaleBaseM = 0.28f;
-        public float EffectBlobScalePerSpreadM = 0.12f;
+        public float EffectBlobScaleBaseM = 0.38f;
+        public float EffectBlobScalePerSpreadM = 0.18f;
         public float EffectNeedleThickWideM = 0.35f;
         public float EffectNeedleThickNarrowM = 0.14f;
         public float EffectNeedleLenBaseM = 0.7f;
@@ -207,11 +226,11 @@ namespace Dovus.Game
         // §6/§11 "boss ve oyuncu can göstergesi, sade". Ölçüler dp (beşgen/dodge diskiyle
         // aynı yol: PentagonLayoutScreen.DpToPixels). Boss barı T12'den beri BossVitals okur.
         [Header("Can göstergesi (T9, VitalsHud)")]
-        public float VitalsBarWidthDp = 220f;
-        public float VitalsBarHeightDp = 16f;
+        public float VitalsBarWidthDp = 280f;
+        public float VitalsBarHeightDp = 18f;
         public float VitalsBarSpacingDp = 6f;
         public float VitalsMarginDp = 18f;
-        public Color BossVitalsColor = new Color(0.70f, 0.74f, 0.80f, 0.85f);
+        public Color BossVitalsColor = new Color(0.92f, 0.42f, 0.22f, 0.95f);
 
         // T11.1: toparlanma kilidi kalıcı HUD (§5 beceri ekseni). Yükseklik/gap spec'te yok —
         // can barıyla aynı dilde dp; gerekçe docs/durum.md T11.1 sapmaları.
@@ -230,7 +249,7 @@ namespace Dovus.Game
         // T12: kapanış hasarı ölçüm aracı (§5 / §12). Varsayılan KAPALI — his kanalı değil
         // kumpas. Eski tuning.json'da alan yoksa JsonUtility false verir (= güvenli).
         [Header("Hasar göstergesi (T12)")]
-        public bool ShowDamageNumbers = false;
+        public bool ShowDamageNumbers = true;
 
         // Sahneye serileşmiş eski kopyada yeni alanlar 0/siyah gelir (C# initializer
         // deserialize'da uygulanmaz). Sürüm numarası da 0 geldiği için tek seferlik yama
@@ -238,14 +257,40 @@ namespace Dovus.Game
         // tasarımcının bilinçli 0'ı (ör. nabzı kapatmak) artık ezilmez (T8.1).
         [HideInInspector] public int TuningVersion = CurrentVersion;
 
-        const int CurrentVersion = 7;
+        const int CurrentVersion = 9;
 
         /// <summary>Sürümü geçmiş serileşmiş kopyayı bu sürümün varsayılanlarına çeker.</summary>
         public void EnsureRuntimeDefaults()
         {
-            if (TuningVersion >= CurrentVersion)
-                return;
+            if (TuningVersion < CurrentVersion)
+                MigrateToCurrent();
 
+            // Prototip: altı çekirdek her zaman açık — eski sahne false'larını her açılışta ezer.
+            OpenDot1 = true;
+            OpenDot2 = true;
+            OpenDot3 = true;
+            OpenDot4 = true;
+            OpenDot5 = true;
+            OpenDot6 = true;
+
+            // v9: dodge Toprak'ın üstünde kalmasın — sağa.
+            DodgeButtonOffsetXDp = 92f;
+            DodgeButtonOffsetYDp = -118f;
+
+            // 16 Eylül — sahnede donmuş eski değerler her açılışta ezilir (aynı desen):
+            // BasicStrikeDot sahnede 5 (eski pentagon SARSINTI) olarak serileşmişti; altıgen
+            // sisteminde 5 = Aydınlık/arindirma (action:"cleanse") — IsHealSkill onu heal
+            // sanıyordu, düz vuruş "heal basıyor" bug'ı buradan geliyordu (bkz. docs/durum.md).
+            BasicStrikeDot = 1;
+            // ShowDamageNumbers sahnede 0 (eski "kumpas, kapalı" kararı) donmuştu; his için
+            // varsayılan artık AÇIK.
+            ShowDamageNumbers = true;
+            // Altıgen köşeye taşındı (bkz. yukarısı) — sahnedeki eski 0.40 her açılışta ezilir.
+            PentagonCenterYNorm = 0.22f;
+        }
+
+        void MigrateToCurrent()
+        {
             var fresh = new PrototypeTuning();
             PlayerMaxHp = fresh.PlayerMaxHp;
             WindowCueUrgentRatio = fresh.WindowCueUrgentRatio;
@@ -309,8 +354,32 @@ namespace Dovus.Game
             EffectBasicStrikeThickM = fresh.EffectBasicStrikeThickM;
             EffectBasicStrikeHeightM = fresh.EffectBasicStrikeHeightM;
 
+            // v9: dodge sağ-alt (Toprak'tan uzak); ikon ölçeği.
+            DodgeButtonOffsetXDp = 92f;
+            DodgeButtonOffsetYDp = -118f;
+            DodgeButtonRadiusDp = 30f;
+            IconDisplayScale = 1.12f;
+            ElementFire = fresh.ElementFire;
+            ElementWater = fresh.ElementWater;
+            ElementAir = fresh.ElementAir;
+            ElementEarth = fresh.ElementEarth;
+            ElementLight = fresh.ElementLight;
+            ElementDark = fresh.ElementDark;
+
             TuningVersion = CurrentVersion;
         }
+
+        /// <summary>Çekirdek rün → tezahür çizgi rengi.</summary>
+        public Color ColorForRune(Dovus.Core.Grammar.Rune rune) => rune switch
+        {
+            Dovus.Core.Grammar.Rune.Igne => ElementFire,
+            Dovus.Core.Grammar.Rune.Suru => ElementWater,
+            Dovus.Core.Grammar.Rune.Kabuk => ElementAir,
+            Dovus.Core.Grammar.Rune.Zehir => ElementEarth,
+            Dovus.Core.Grammar.Rune.Sarsinti => ElementLight,
+            Dovus.Core.Grammar.Rune.Toprak => ElementDark,
+            _ => InkCyan
+        };
 
         public bool IsDotOpen(int dot) => dot switch
         {
@@ -319,6 +388,7 @@ namespace Dovus.Game
             3 => OpenDot3,
             4 => OpenDot4,
             5 => OpenDot5,
+            6 => OpenDot6,
             _ => false
         };
 

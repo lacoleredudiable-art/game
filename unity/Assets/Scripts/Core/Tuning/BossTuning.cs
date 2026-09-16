@@ -22,9 +22,20 @@ namespace Dovus.Core.Tuning
         /// </summary>
         public int MaxSameVariantStreak = 2;
 
+        // 16 Eylül: ikinci saldırı — docs/bosses/karadul.json "fire_cone" (Cehennem Nefesi,
+        // can_yakma fiili). windup_ms=800, damage=18 spec'ten (uydurma yok); radius/arc spec
+        // vermiyor — varsayılan, docs/durum.md'ye sapma olarak geçildi. (Core saf C# — Header
+        // attribute yok, bkz. AGENTS.md kural 1.)
+        public int FireConeWindupMs = 800;
+        public int FireConeDamage = 18;
+        public float FireConeRadiusM = 6.0f;
+        public float FireConeArcHalfAngleDeg = 40f;
+        /// <summary>Aynı saldırı TÜRÜnün (Slam/FireCone) üst üste tekrar tavanı — SlamVariant'la aynı desen.</summary>
+        public int MaxSameAttackKindStreak = 2;
+
         public int ActiveMs = 90;
         public int RecoveryMs = 720;
-        public int Damage = 22;
+        public int Damage = 0;
         public int IdleMinMs = 700;
         public int IdleMaxMs = 1500;
         public float ApproachSpeedMps = 2.2f;
@@ -44,6 +55,11 @@ namespace Dovus.Core.Tuning
             GenisWindupMs = other.GenisWindupMs;
             GenisRadiusM = other.GenisRadiusM;
             MaxSameVariantStreak = other.MaxSameVariantStreak;
+            FireConeWindupMs = other.FireConeWindupMs;
+            FireConeDamage = other.FireConeDamage;
+            FireConeRadiusM = other.FireConeRadiusM;
+            FireConeArcHalfAngleDeg = other.FireConeArcHalfAngleDeg;
+            MaxSameAttackKindStreak = other.MaxSameAttackKindStreak;
             ActiveMs = other.ActiveMs;
             RecoveryMs = other.RecoveryMs;
             Damage = other.Damage;
