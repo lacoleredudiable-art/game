@@ -12,9 +12,26 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (Görev 3 · PlayerStateMachine) · **Sıradaki:**
+**Son güncelleme:** 16 Eylül 2026 (Görev 8 · space_layer okuma) · **Sıradaki:**
 Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
 + motor uygulama görevleri (kalan backlog)
+
+> **16 Eylül (Görev 8) — space_layer okuma (SkillMotor), SkillMotionMotor dokunulmadı.**
+> `SpaceEffectNode` + `ParseSpaceEffects` → `SkillMotor.SpaceEffects` (JSON'da 5) /
+> `MaxActiveLinks` (3). Opsiyonel alanlar `Has*` + değer. **Uygulama yok** —
+> `SkillMotionMotor` / `SkillMotionTuning` hâlâ sabit sayılar; davranış değişmedi.
+>
+> **Sayı karşılaştırması (otorite sahibi karar verir — bu turda bağlama yok):**
+> | JSON effect | alan | JSON | Tuning/kod | |
+> |---|---|---|---|---|
+> | `alev_isinlanma` short_blink | `distance_m` | 3 | `ShortBlinkDistanceM=4` | **farklı** |
+> | `alev_isinlanma` | `i_frame_ms` | 300 | ShortBlink `iframeMs=0` (çağrıda) | **farklı** |
+> | `yildirim_zenitsu` phase_blink | `distance_m` | 8 | `ZenitsuEngageRangeM=9` | **farklı** |
+> | `yildirim_zenitsu` | `damage_on_pass` | true | `ZenitsuSlashCommitMult=1` (kesi var) | kavramsal yakın, birim farklı |
+> | `yildirim_zenitsu` | (i_frame yok) | — | `ZenitsuIframeMs=220` | JSON'da yok |
+> | `pus_gecisi` stealth_shift | `distance_m` | 5 | ShortBlink yolu → 4 | **farklı** |
+>
+> `dotnet test` yeşil (SpaceEffects.Count == JSON).
 
 > **16 Eylül (Görev 3) — PlayerStateMachine + state_machine okuma.**
 > `SkillMotor.ParseStateMachine` → `PlayerStates` (9) / `BossStates` (6).
@@ -282,12 +299,19 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   **Okuma katmanı (5. tur) eklendi:** `passives`/`chain_mechanics`/
   `manipulation_layers.zone_layer` + `status_interaction_table` `SkillMotor`'da listeleniyor;
   verb `crit_eligible`/`element_origin`/`damage_type` parse+Resolve'da.
+  **Görev 8:** `manipulation_layers.space_layer` de okunuyor (`SpaceEffects`/`MaxActiveLinks`);
+  SkillMotionMotor hâlâ bağlanmadı (sayı sapmaları yukarıda — otorite sahibi).
   **`formulas`/`crit_system` kodu var ama bağlı değil (6. tur):** `DamageCalculator` yazıldı;
   canlı hasar hâlâ `ClosingDamageMath`. **ChainDirector (Görev 5) Core'da** ama
   ManifestationDirector'a bağlı değil. `passives`/`zones` uygulama yok.
   `equipment_system` hâlâ yok. **Görev 2:** `global_rules` (resource/cooldown) okuyan tracker'lar var (bağlı değil). **Görev 3:** `state_machine` okunuyor (`PlayerStates`/`BossStates` + `PlayerStateMachine`; SentencePhase bağlanmadı). `status_interaction_table`
   **uygulama** hâlâ `StatusReactionTable.cs` elle kopya. `atoms_catalog` /
   `all_verbs_atoms` / `atom_kombinasyonlari` kasıtlı okunmuyor.
+- **space_layer'da 2 effect JSON'da var, oyunda karşılığı yok (Görev 8):**
+  `karabasan_hat` (`invisible_link`) ve `hiclik_yarik` (`tear`) — yalnızca
+  `SkillMotor.SpaceEffects` listesinde; yeni mekanik yazılmadı. `pus_gecisi`
+  (`stealth_shift`) de ayrı tip olarak okunuyor ama gameplay hâlâ Pus→ShortBlink/
+  Zenitsu rün yolundan gidiyor (space_layer'a bağlı değil).
 - **His deneme (geçici):** arena `ArenaVisualScale=3`, boss hasar 0, `AllyDummy` %50 —
   kalıcı tasarım değil; his bittiğinde geri alınacak.
 - **SkillMotion selective hedef UI yok** — Zenitsu = boss menzildeyse; ally blink yok.
