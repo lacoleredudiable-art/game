@@ -10,6 +10,7 @@
 **/.utmp/
 **/[Rr]ecordings/
 **/[Aa]ssets/_Recovery/
+**/[Aa]ssets/_Recovery.meta
 
 # Asset Store tools
 **/[Aa]ssets/AssetStoreTools*
