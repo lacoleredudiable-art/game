@@ -28,6 +28,13 @@ public class StatusBoardTests
         return SkillMotor.FromJson(File.ReadAllText(path));
     }
 
+    [OneTimeSetUp]
+    public void RebuildReactionTableFromFullJson()
+    {
+        // StatusReactionTable artık elle liste değil — motor.StatusInteractions'tan türetilir.
+        StatusReactionTable.Rebuild(LoadFullMotor().StatusInteractions);
+    }
+
     [Test]
     public void Stun_BlocksMoveAndCast()
     {

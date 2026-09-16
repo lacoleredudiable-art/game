@@ -1,4 +1,8 @@
+using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Text.RegularExpressions;
+using Dovus.Core.Grammar;
 
 namespace Dovus.Core.Status
 {
@@ -11,12 +15,11 @@ namespace Dovus.Core.Status
     }
 
     /// <summary>
-    /// İki status aynı hedefte aynı anda varken ne olur (docs/element-sistemi.json
-    /// "status_interaction_table", 16 Eylül sohbetinden). Sayılar sahibinin verdiği spec'ten —
-    /// uydurma yok. "Fiziksel kimya" değil (ıslak/donmuş yok); sadece mantıklı, isimli çiftler.
-    /// Üç kombinasyon burada YOK çünkü genellenemiyor, StatusBoard/StatusApplicator'da özel
-    /// işleniyor: burn+poison (ekstra tick), shield+burn (kalkan aşınması), stun+knockback
-    /// (aynı vuruşta süre uzaması — Knockback kalıcı status değil, anlık bayrak).
+    /// İki status aynı hedefte aynı anda varken ne olur.
+    /// Kaynak: docs/element-sistemi.json status_interaction_table → SkillMotor.StatusInteractions.
+    /// Elle kural listesi YOK — Rebuild ile motor listesinden türetilir.
+    /// Üç kombinasyon tabloda yok (StatusBoard/StatusApplicator özel): burn+poison (ekstra tick),
+    /// shield+burn (kalkan aşınması), stun+knockback (Knockback kalıcı status değil).
     /// </summary>
     public readonly struct StatusReactionRule
     {
@@ -49,73 +52,221 @@ namespace Dovus.Core.Status
 
     public static class StatusReactionTable
     {
-        static readonly StatusReactionRule[] Rules =
+        static StatusReactionRule[] Rules = Array.Empty<StatusReactionRule>();
+        static Dictionary<(StatusKind, StatusKind), int> Index =
+            new Dictionary<(StatusKind, StatusKind), int>();
+
+        /// <summary>
+        /// motor.StatusInteractions → genellenebilir magnitude/süre kuralları.
+        /// Eşleşmeyen StatusKind id veya özel mekanik (tick/kalkan/knockback) sessizce atlanır.
+        /// </summary>
+        public static void Rebuild(IReadOnlyList<StatusInteractionNode> interactions)
         {
-            new(StatusKind.Burn, StatusKind.ArmorBreak, "Erimiş Zırh",
-                "Yanan zırh daha hızlı erir", ReactionTarget.B,
-                magnitudeMult: 1.5f, durationAddMs: 2000),
+            var list = new List<StatusReactionRule>();
+            if (interactions != null)
+            {
+                for (int i = 0; i < interactions.Count; i++)
+                {
+                    if (TryConvert(interactions[i], out StatusReactionRule rule))
+                        list.Add(rule);
+                }
+            }
 
-            new(StatusKind.Burn, StatusKind.Weaken, "Zayıf Yanma",
-                "Zayıflamış yanma daha uzun sürer", ReactionTarget.A,
-                magnitudeMult: 0.8f, durationMult: 1.5f),
+            Rules = list.ToArray();
+            Index = BuildIndex(Rules);
+        }
 
-            new(StatusKind.Poison, StatusKind.Slow, "Ağır Zehir",
-                "Zehir yavaşlar ama daha uzun kemirir", ReactionTarget.A,
-                magnitudeMult: 0.7f, durationMult: 1.5f),
-
-            new(StatusKind.ArmorBreak, StatusKind.Weaken, "Kırılganlık",
-                "Zırh da hasar da çöker", ReactionTarget.Both,
-                magnitudeMult: 1.3f),
-
-            new(StatusKind.GrievousWounds, StatusKind.Burn, "Kavurucu Yara",
-                "Yanık yaralar iyileşmez", ReactionTarget.A,
-                magnitudeSet: 0.7f),
-
-            new(StatusKind.Stun, StatusKind.Burn, "Alevli Sersemletme",
-                "Sersemlemiş hedef yanarken acı çeker", ReactionTarget.B,
-                magnitudeMult: 1.5f),
-
-            new(StatusKind.Root, StatusKind.Burn, "Hapscul Yanma",
-                "Kaçamayan hedef daha uzun yanar", ReactionTarget.B,
-                durationMult: 1.5f),
-
-            new(StatusKind.Root, StatusKind.ArmorBreak, "Çaresiz Zırh",
-                "Kilitli hedef zırhını koruyamaz", ReactionTarget.B,
-                magnitudeMult: 1.5f),
-
-            new(StatusKind.Slow, StatusKind.Burn, "Sürünen Alev",
-                "Yavaş hedef alevden kaçamaz", ReactionTarget.B,
-                magnitudeMult: 1.3f),
-
-            new(StatusKind.Slow, StatusKind.Root, "Tam Hapsetme",
-                "Önce yavaşlar, sonra tamamen kilitlenir", ReactionTarget.B,
-                durationMult: 1.5f),
-
-            new(StatusKind.Silence, StatusKind.Blind, "Tam Karanlık",
-                "Göremez ve konuşamaz", ReactionTarget.Both,
-                durationMult: 1.3f),
-
-            new(StatusKind.Root, StatusKind.Blind, "Kapana Kısılmış",
-                "Kilitli ve kör — çaresiz", ReactionTarget.B,
-                durationMult: 1.5f),
-
-            new(StatusKind.Regen, StatusKind.Poison, "Zehirli Yenilenme",
-                "Zehir iyileşmeyi yavaşlatır", ReactionTarget.A,
-                magnitudeMult: 0.7f),
-
-            new(StatusKind.Haste, StatusKind.Slow, "Nötrleşme",
-                "Hız ve yavaşlık birbirini götürür", ReactionTarget.Both,
-                magnitudeMult: 0.5f),
-        };
-
-        static readonly Dictionary<(StatusKind, StatusKind), int> Index = BuildIndex();
-
-        static Dictionary<(StatusKind, StatusKind), int> BuildIndex()
+        static Dictionary<(StatusKind, StatusKind), int> BuildIndex(StatusReactionRule[] rules)
         {
             var map = new Dictionary<(StatusKind, StatusKind), int>();
-            for (int i = 0; i < Rules.Length; i++)
-                map[(Rules[i].A, Rules[i].B)] = i;
+            for (int i = 0; i < rules.Length; i++)
+                map[(rules[i].A, rules[i].B)] = i;
             return map;
+        }
+
+        static bool TryConvert(StatusInteractionNode node, out StatusReactionRule rule)
+        {
+            rule = default;
+            if (!StatusKindUtil.TryParse(node.A, out StatusKind kindA) || kindA == StatusKind.None)
+                return false;
+            if (!StatusKindUtil.TryParse(node.B, out StatusKind kindB) || kindB == StatusKind.None)
+                return false;
+
+            // Knockback kalıcı status değil — StatusApplicator özel dalı.
+            if (kindA == StatusKind.Knockback || kindB == StatusKind.Knockback)
+                return false;
+
+            if (!TryParseEffect(
+                    node.Effect, kindA, kindB, node.A, node.B,
+                    out ReactionTarget target,
+                    out float magMult, out float? magSet,
+                    out float durMult, out double durAdd))
+                return false;
+
+            bool identity = magSet == null
+                && Math.Abs(magMult - 1f) < 0.0001f
+                && Math.Abs(durMult - 1f) < 0.0001f
+                && Math.Abs(durAdd) < 0.0001;
+            if (identity)
+                return false;
+
+            rule = new StatusReactionRule(
+                kindA, kindB, node.Name, node.ReadAs, target,
+                magnitudeMult: magMult, magnitudeSet: magSet,
+                durationMult: durMult, durationAddMs: durAdd);
+            return true;
+        }
+
+        /// <summary>
+        /// effect metnindeki sayıları StatusReactionRule alanlarına çevirir.
+        /// Yeni kural icat etmez — yalnızca JSON effect string'ini okur.
+        /// </summary>
+        static bool TryParseEffect(
+            string effect, StatusKind kindA, StatusKind kindB, string idA, string idB,
+            out ReactionTarget target,
+            out float magnitudeMult, out float? magnitudeSet,
+            out float durationMult, out double durationAddMs)
+        {
+            magnitudeMult = 1f;
+            magnitudeSet = null;
+            durationMult = 1f;
+            durationAddMs = 0;
+            target = ReactionTarget.A;
+
+            if (string.IsNullOrWhiteSpace(effect))
+                return false;
+
+            string e = effect;
+
+            Match setMatch = Regex.Match(e, @"→\s*(\d+(?:\.\d+)?)", RegexOptions.CultureInvariant);
+            if (!setMatch.Success)
+                setMatch = Regex.Match(e, @"->\s*(\d+(?:\.\d+)?)", RegexOptions.CultureInvariant);
+            if (setMatch.Success &&
+                float.TryParse(setMatch.Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out float setVal))
+            {
+                magnitudeSet = setVal;
+                target = ResolveTarget(e, idA, idB, preferA: true);
+                return true;
+            }
+
+            Match pct = Regex.Match(e, @"%(\d+)\s*azal", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (pct.Success &&
+                int.TryParse(pct.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int pctVal))
+            {
+                magnitudeMult = 1f - pctVal / 100f;
+                target = ResolveTarget(e, idA, idB, preferA: true);
+                return true;
+            }
+
+            Match add = Regex.Match(e, @"\+(\d+)\s*sn", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (add.Success &&
+                int.TryParse(add.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int sec))
+                durationAddMs = sec * 1000.0;
+
+            // "süresi 1.5x" / "süre 1.5x" — "süresince" YOK
+            Match dur = Regex.Match(
+                e, @"süre(?:si)?\s+(\d+(?:\.\d+)?)x",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            bool hasExplicitDurationMult = false;
+            if (dur.Success &&
+                float.TryParse(dur.Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out float dMult))
+            {
+                durationMult = dMult;
+                hasExplicitDurationMult = true;
+            }
+
+            float? foundMag = null;
+            foreach (Match m in Regex.Matches(e, @"(\d+(?:\.\d+)?)x", RegexOptions.CultureInvariant))
+            {
+                if (hasExplicitDurationMult && dur.Success &&
+                    m.Index >= dur.Index && m.Index < dur.Index + dur.Length)
+                    continue;
+                if (float.TryParse(m.Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out float mx))
+                {
+                    foundMag = mx;
+                    break;
+                }
+            }
+
+            bool both = ContainsBothMarker(e);
+            if (foundMag.HasValue && !hasExplicitDurationMult && Math.Abs(durationAddMs) < 0.0001)
+            {
+                if (both)
+                {
+                    if (IsCc(kindA) && IsCc(kindB))
+                        durationMult = foundMag.Value;
+                    else
+                        magnitudeMult = foundMag.Value;
+                }
+                else
+                {
+                    StatusKind mentioned = MentionedKind(e, idA, idB, kindA, kindB);
+                    if (mentioned != StatusKind.None && IsCc(mentioned))
+                        durationMult = foundMag.Value;
+                    else
+                        magnitudeMult = foundMag.Value;
+                }
+            }
+            else if (foundMag.HasValue)
+            {
+                magnitudeMult = foundMag.Value;
+            }
+
+            bool changed = magnitudeSet != null
+                || Math.Abs(magnitudeMult - 1f) >= 0.0001f
+                || Math.Abs(durationMult - 1f) >= 0.0001f
+                || Math.Abs(durationAddMs) >= 0.0001;
+            if (!changed)
+                return false;
+
+            target = ResolveTarget(e, idA, idB, preferA: true);
+            return true;
+        }
+
+        static bool ContainsBothMarker(string effect) =>
+            effect.IndexOf("kisi de", StringComparison.OrdinalIgnoreCase) >= 0;
+
+        static bool IsCc(StatusKind k) =>
+            StatusKindUtil.IsHardCc(k) || StatusKindUtil.IsSoftCc(k);
+
+        static StatusKind MentionedKind(string effect, string idA, string idB, StatusKind a, StatusKind b)
+        {
+            bool hasA = !string.IsNullOrEmpty(idA) &&
+                        effect.IndexOf(idA, StringComparison.OrdinalIgnoreCase) >= 0;
+            bool hasB = !string.IsNullOrEmpty(idB) &&
+                        effect.IndexOf(idB, StringComparison.OrdinalIgnoreCase) >= 0;
+            if (hasA && !hasB) return a;
+            if (hasB && !hasA) return b;
+            return StatusKind.None;
+        }
+
+        static ReactionTarget ResolveTarget(string effect, string idA, string idB, bool preferA)
+        {
+            if (ContainsBothMarker(effect))
+                return ReactionTarget.Both;
+
+            bool hasA = !string.IsNullOrEmpty(idA) &&
+                        effect.IndexOf(idA, StringComparison.OrdinalIgnoreCase) >= 0;
+            bool hasB = !string.IsNullOrEmpty(idB) &&
+                        effect.IndexOf(idB, StringComparison.OrdinalIgnoreCase) >= 0;
+
+            if (effect.IndexOf("heal_reduction", StringComparison.OrdinalIgnoreCase) >= 0)
+                return ReactionTarget.A;
+
+            if (!hasA && !hasB &&
+                effect.IndexOf("tick", StringComparison.OrdinalIgnoreCase) >= 0)
+                return ReactionTarget.A;
+
+            if (hasA && !hasB) return ReactionTarget.A;
+            if (hasB && !hasA) return ReactionTarget.B;
+            if (hasA && hasB)
+            {
+                int iA = effect.IndexOf(idA, StringComparison.OrdinalIgnoreCase);
+                int iB = effect.IndexOf(idB, StringComparison.OrdinalIgnoreCase);
+                return iA <= iB ? ReactionTarget.A : ReactionTarget.B;
+            }
+
+            return preferA ? ReactionTarget.A : ReactionTarget.B;
         }
 
         /// <summary>

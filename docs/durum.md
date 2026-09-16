@@ -12,10 +12,17 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (Görev 10 · RealityEffectDirector) · **Sıradaki:**
+**Son güncelleme:** 16 Eylül 2026 (Görev 6 · StatusReactionTable JSON) · **Sıradaki:**
 Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
 + kalan motor görevleri + **Faz 6 bağlama** (Zone/Resource/Cooldown/TimeEffect/RealityEffect/space_layer/
 state machine henüz Game'e bağlı değil)
+
+> **16 Eylül — Görev 6: StatusReactionTable canlı JSON.** Elle 14 kural listesi kalktı;
+> `Rebuild(motor.StatusInteractions)` effect metninden magnitude/süre alanlarını okur.
+> `SkillMotorLoader` yüklerken Rebuild çağırır. 3 satır tabloda yok (özel yol): burn+poison
+> (Tick), shield+burn (Tick), stun+knockback (Applicator) — StatusKind id'leri eşleşiyor ama
+> genellenebilir kural değil. Eşleşmeyen mechanic id bu turda yok. StatusBoard/Applicator
+> dokunulmadı. `dotnet test` + StatusBoardTests regresyon yeşil.
 
 > **16 Eylül — Görev 10: RealityEffectDirector.** `Core/Combat/RealityEffectDirector.cs`
 > (`manipulation_layers.reality_layer`): `ApplyReviveBlock` / `IsReviveBlocked` (Cehennem,
@@ -381,7 +388,9 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   `status_durations` ↔ StatusTuning fark listesi (Görev 2, yukarıda; otorite açık).
   **Görev 3:** `state_machine` okunuyor (`PlayerStates`/`BossStates` + `PlayerStateMachine`;
   SentencePhase bağlanmadı). `equipment_system` hâlâ yok. `status_interaction_table`
-  **uygulama** hâlâ `StatusReactionTable.cs` elle kopya. `atoms_catalog` /
+  uygulama artık `StatusReactionTable.Rebuild(motor.StatusInteractions)` — 3 özel satır
+  (burn+poison / shield+burn / stun+knockback) hâlâ StatusBoard.Tick / Applicator'da.
+  `atoms_catalog` /
   `all_verbs_atoms` / `atom_kombinasyonlari` kasıtlı okunmuyor.
 - **Zone `RadiusM` JSON'da yok (Görev 7)** — `TrySpawn` çağıranı vermek zorunda; Game bağlama
   turunda tuning/config kararı lazım.

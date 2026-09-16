@@ -1,4 +1,5 @@
 using Dovus.Core.Grammar;
+using Dovus.Core.Status;
 using UnityEngine;
 
 namespace Dovus.Game
@@ -15,7 +16,9 @@ namespace Dovus.Game
             {
                 try
                 {
-                    return SkillMotor.FromJson(asset.text);
+                    SkillMotor motor = SkillMotor.FromJson(asset.text);
+                    StatusReactionTable.Rebuild(motor.StatusInteractions);
+                    return motor;
                 }
                 catch (System.Exception e)
                 {
@@ -23,7 +26,9 @@ namespace Dovus.Game
                 }
             }
 
-            return SkillMotor.CreateDefault();
+            SkillMotor fallback = SkillMotor.CreateDefault();
+            StatusReactionTable.Rebuild(fallback.StatusInteractions);
+            return fallback;
         }
     }
 }

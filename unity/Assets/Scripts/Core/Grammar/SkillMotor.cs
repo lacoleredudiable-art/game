@@ -49,7 +49,7 @@ namespace Dovus.Core.Grammar
 
         /// <summary>
         /// status_interaction_table altındaki tüm kategori dizileri düz liste.
-        /// Uygulama hâlâ StatusReactionTable (elle kopya); bu liste canlı JSON kaynağı.
+        /// StatusReactionTable.Rebuild bunu okuyup genellenebilir kuralları üretir.
         /// </summary>
         public IReadOnlyList<StatusInteractionNode> StatusInteractions => _statusInteractions;
 
