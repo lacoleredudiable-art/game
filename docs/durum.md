@@ -12,8 +12,18 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (4. tur) · **Sıradaki:** Pentagon→Hexagon isim borcu +
-element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
+**Son güncelleme:** 16 Eylül 2026 (5. tur · SkillMotor okuma katmanı) · **Sıradaki:**
+Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
++ motor uygulama görevleri (Görev 1–7: passives/chains/zones/status tablosu dünyaya)
+
+> **16 Eylül (5. tur) — SkillMotor okuma katmanı (passives/chains/zones/status + verb alanları).**
+> `docs/gorev-listesi` motor tam uyum backlog'unun parse adımı: `VerbNode`/`SkillResolution`'a
+> `CritEligible`/`ElementOrigin`/`DamageType`; yeni `PassiveNode`/`ChainNode`/
+> `StatusInteractionNode`/`ZoneNode` + `ParsePassives`/`ParseChains`/`ParseStatusInteractions`/
+> `ParseZones` (MiniJson, ActiveMode deseni). `SkillMotor.Passives`/`Chains`/
+> `StatusInteractions`/`Zones`/`MaxActiveZones`. **Uygulama yok** — yalnızca okuma.
+> `dotnet test` 156 yeşil (155+1). JSON sayıları: passives 10, chains 6, status satırları 17,
+> zones 11, max_active_zones 5.
 
 > **16 Eylül (4. tur) — v5.3 JSON merge + ulti (active_modes) uçtan uca.** Sahibi kapsamlı
 > v5.3 spec'i + ayrı bir "prezentasyon katmanı" JSON'u yapıştırdı, `element-sistemi.json`'ın
@@ -227,15 +237,15 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   `StatusBoard`'u yok, takım debuff sayısı yalnızca oyuncudan okunuyor. `team_full_cleanse` de
   yalnızca oyuncuyu temizliyor, ally'yi değil. "team_has_wounded" `min(oyuncu, ally)` can
   oranını doğru okuyor.
-- **`docs/element-sistemi.json`'ın büyük kısmı motor tarafından hiç okunmuyor** — yalnızca
-  `verbs`/`adjectives`/`elements`/`scaling_economy.lengths`/`active_modes` gerçekten parse
-  edilip dünyaya işliyor. `formulas`/`crit_system`/`global_rules`/`state_machine`/`passives`/
-  `chain_mechanics`/`manipulation_layers`/`equipment_system` hiç kod karşılığı yok — saf veri.
-  `status_interaction_table` çalışıyor ama JSON'dan CANLI okunmuyor, biri (`StatusReactionTable.cs`)
-  elle senkron kopyaladı; JSON değişirse kod otomatik güncellenmez. `atoms_catalog` /
+- **`docs/element-sistemi.json`'ın büyük kısmı motor tarafından hâlâ uygulanmıyor** —
+  `verbs`/`adjectives`/`elements`/`scaling_economy.lengths`/`active_modes` dünyaya işliyor.
+  **Okuma katmanı (5. tur) eklendi, uygulama yok:** `passives`/`chain_mechanics`/
+  `manipulation_layers.zone_layer` + `status_interaction_table` artık `SkillMotor`'da
+  listeleniyor; verb `crit_eligible`/`element_origin`/`damage_type` de parse+Resolve'a
+  taşındı. `formulas`/`crit_system`/`global_rules`/`state_machine`/`equipment_system` hâlâ
+  hiç kod karşılığı yok. `status_interaction_table` **uygulama** hâlâ `StatusReactionTable.cs`
+  elle kopya — JSON'dan canlı okunan liste henüz StatusBoard'a bağlanmadı. `atoms_catalog` /
   `all_verbs_atoms` / `atom_kombinasyonlari` kasıtlı okunmuyor (VFX/animasyon referansı).
-  Verb'lerin yeni `crit_eligible`/`element_origin`/`engine_base_stats.damage_type` alanları da
-  henüz parse edilmiyor.
 - **His deneme (geçici):** arena `ArenaVisualScale=3`, boss hasar 0, `AllyDummy` %50 —
   kalıcı tasarım değil; his bittiğinde geri alınacak.
 - **SkillMotion selective hedef UI yok** — Zenitsu = boss menzildeyse; ally blink yok.

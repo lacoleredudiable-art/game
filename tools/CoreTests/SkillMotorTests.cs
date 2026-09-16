@@ -153,9 +153,8 @@ public class SkillMotorTests
     public void Compound_Camur_ZoneEffectMovedToManipulationLayers()
     {
         // 2-4 Çamur — v5.3'te verb.zone_effect kaldırıldı; zone verisi artık ayrı bir bölümde:
-        // manipulation_layers.zone_layer.zones[].element == "Çamur" (SkillMotor henüz bunu
-        // okumuyor — bilinen açık, docs/durum.md). Burada sadece verb/mekanik hâlâ doğru
-        // çözülüyor mu diye bakıyoruz.
+        // manipulation_layers.zone_layer.zones[].element == "Çamur" (SkillMotor Zones listesinde
+        // okunuyor; dünyaya uygulama ayrı görev). Burada verb/mekanik doğru çözülüyor mu.
         SkillResolution r = LoadFull().Resolve(new[] { 2, 4 });
         Assert.That(r.DisplayName, Is.EqualTo("Çamur Şeridi"));
         Assert.That(r.VerbId, Is.EqualTo("zemin_kontrolu"));
@@ -203,6 +202,47 @@ public class SkillMotorTests
         SkillResolution pus = motor.Resolve(new[] { 3, 2 });
         Assert.That(pus.VerbId, Is.EqualTo("hiz_gorunmezlik"));
         Assert.That(pus.BaseResourceCost, Is.EqualTo(15f).Within(0.01f));
+    }
+
+    [Test]
+    public void FullJson_ParsesPassivesChainsStatusInteractionsAndZones_MatchingJsonCounts()
+    {
+        // Sayılar uydurulmaz — aynı dosyadan MiniJson ile sayılır, motor birebir eşleşmeli.
+        string path = Path.GetFullPath(Path.Combine(
+            TestContext.CurrentContext.TestDirectory,
+            "..", "..", "..", "..", "..", "docs", "element-sistemi.json"));
+        if (!File.Exists(path))
+        {
+            path = Path.GetFullPath(Path.Combine(
+                TestContext.CurrentContext.TestDirectory,
+                "..", "..", "..", "..", "docs", "element-sistemi.json"));
+        }
+        string json = File.ReadAllText(path);
+        JsonValue root = MiniJson.Parse(json);
+
+        int expectedPassives = root["passives"]["list"].AsArray().Count;
+        int expectedChains = root["chain_mechanics"]["chains"].AsArray().Count;
+        int expectedZones = root["manipulation_layers"]["zone_layer"]["zones"].AsArray().Count;
+        int expectedMaxZones = root["manipulation_layers"]["zone_layer"]["max_active_zones"].AsInt();
+        int expectedInteractions = 0;
+        foreach (var kv in root["status_interaction_table"].AsObject())
+        {
+            if (kv.Value.Kind == JsonKind.Array)
+                expectedInteractions += kv.Value.AsArray().Count;
+        }
+
+        var motor = SkillMotor.FromJson(json);
+        Assert.That(motor.Passives.Count, Is.EqualTo(expectedPassives));
+        Assert.That(motor.Chains.Count, Is.EqualTo(expectedChains));
+        Assert.That(motor.StatusInteractions.Count, Is.EqualTo(expectedInteractions));
+        Assert.That(motor.Zones.Count, Is.EqualTo(expectedZones));
+        Assert.That(motor.MaxActiveZones, Is.EqualTo(expectedMaxZones));
+
+        // Verb alanları da çözüme taşınıyor (saldiri: crit + Ateş + magical).
+        SkillResolution r = motor.Resolve(new[] { 1 });
+        Assert.That(r.CritEligible, Is.True);
+        Assert.That(r.ElementOrigin, Is.EqualTo("Ateş"));
+        Assert.That(r.DamageType, Is.EqualTo("magical"));
     }
 }
 

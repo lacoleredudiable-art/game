@@ -20,6 +20,11 @@ namespace Dovus.Core.Grammar
         readonly Dictionary<string, AdjectiveNode> _adjectives = new(StringComparer.Ordinal);
         readonly Dictionary<int, LengthTuning> _lengths = new();
         readonly List<ActiveModeNode> _activeModes = new();
+        readonly List<PassiveNode> _passives = new();
+        readonly List<ChainNode> _chains = new();
+        readonly List<StatusInteractionNode> _statusInteractions = new();
+        readonly List<ZoneNode> _zones = new();
+        int _maxActiveZones;
 
         public int ElementCount => _elements.Count;
         public int VerbCount => _verbs.Count;
@@ -31,6 +36,24 @@ namespace Dovus.Core.Grammar
         /// okuyor — tetikleme/efekt uygulaması Core/Combat/ActiveModeDirector işi.
         /// </summary>
         public IReadOnlyList<ActiveModeNode> ActiveModes => _activeModes;
+
+        /// <summary>docs/element-sistemi.json passives.list — yalnızca okuma; uygulama ayrı görev.</summary>
+        public IReadOnlyList<PassiveNode> Passives => _passives;
+
+        /// <summary>docs/element-sistemi.json chain_mechanics.chains — yalnızca okuma.</summary>
+        public IReadOnlyList<ChainNode> Chains => _chains;
+
+        /// <summary>
+        /// status_interaction_table altındaki tüm kategori dizileri düz liste.
+        /// Uygulama hâlâ StatusReactionTable (elle kopya); bu liste canlı JSON kaynağı.
+        /// </summary>
+        public IReadOnlyList<StatusInteractionNode> StatusInteractions => _statusInteractions;
+
+        /// <summary>manipulation_layers.zone_layer.zones — yalnızca okuma.</summary>
+        public IReadOnlyList<ZoneNode> Zones => _zones;
+
+        /// <summary>manipulation_layers.zone_layer.max_active_zones.</summary>
+        public int MaxActiveZones => _maxActiveZones;
         public int CoreCount
         {
             get
@@ -56,6 +79,10 @@ namespace Dovus.Core.Grammar
             ParseAdjectives(root, motor._adjectives);
             ParseLengths(root, motor._lengths);
             ParseActiveModes(root, motor._activeModes);
+            ParsePassives(root, motor._passives);
+            ParseChains(root, motor._chains);
+            ParseStatusInteractions(root, motor._statusInteractions);
+            motor._maxActiveZones = ParseZones(root, motor._zones);
             if (motor.CoreCount < 6)
                 throw new InvalidOperationException("element-sistemi: 6 çekirdek element beklenir.");
             return motor;
@@ -202,7 +229,10 @@ namespace Dovus.Core.Grammar
                 targetBehaviors: verb.TargetBehaviors,
                 special: verb.Special,
                 zoneEffect: verb.ZoneEffect,
-                engineModifiers: adj.EngineModifiers);
+                engineModifiers: adj.EngineModifiers,
+                critEligible: verb.CritEligible,
+                elementOrigin: verb.ElementOrigin,
+                damageType: verb.DamageType);
         }
 
         /// <summary>İki kök → bileşik ELEMENT (skill kartı değil). Tabloda yoksa sentetik.</summary>
@@ -292,7 +322,10 @@ namespace Dovus.Core.Grammar
                     ReadTargetBehaviors(obj["target_behaviors"]),
                     obj["special"],
                     obj["zone_effect"],
-                    obj);
+                    obj,
+                    obj["crit_eligible"].AsBool(false),
+                    obj["element_origin"].AsString(),
+                    stats["damage_type"].AsString());
             }
         }
 
@@ -394,6 +427,98 @@ namespace Dovus.Core.Grammar
             return 1f + percent / 100f;
         }
 
+        /// <summary>passives.list — tetik/efekt uygulaması ayrı görev; burada yalnızca okuma.</summary>
+        static void ParsePassives(JsonValue root, List<PassiveNode> dst)
+        {
+            foreach (JsonValue obj in root["passives"]["list"].AsArray())
+            {
+                string id = obj["id"].AsString();
+                if (string.IsNullOrEmpty(id)) continue;
+
+                IReadOnlyList<JsonValue> comboArr = obj["trigger_combo"].AsArray();
+                var combo = new int[comboArr.Count];
+                for (int i = 0; i < comboArr.Count; i++)
+                    combo[i] = comboArr[i].AsInt();
+
+                dst.Add(new PassiveNode(
+                    id: id,
+                    element: obj["element"].AsString(),
+                    triggerCombo: combo,
+                    durationSec: obj["duration_sec"].AsFloat(0f),
+                    effects: obj["effects"]));
+            }
+        }
+
+        /// <summary>chain_mechanics.chains</summary>
+        static void ParseChains(JsonValue root, List<ChainNode> dst)
+        {
+            foreach (JsonValue obj in root["chain_mechanics"]["chains"].AsArray())
+            {
+                string element = obj["element"].AsString();
+                if (string.IsNullOrEmpty(element)) continue;
+
+                IReadOnlyList<JsonValue> linkArr = obj["links"].AsArray();
+                var links = new float[linkArr.Count];
+                for (int i = 0; i < linkArr.Count; i++)
+                    links[i] = linkArr[i].AsFloat();
+
+                dst.Add(new ChainNode(
+                    element: element,
+                    pattern: obj["pattern"].AsString(),
+                    effect: obj["effect"].AsString(),
+                    links: links,
+                    finisher: obj["finisher"].AsString()));
+            }
+        }
+
+        /// <summary>
+        /// status_interaction_table — description/binding gibi meta alanları atlar;
+        /// dizi olan her kategoriyi düz listeye toplar (anahtar adları JSON'dan).
+        /// </summary>
+        static void ParseStatusInteractions(JsonValue root, List<StatusInteractionNode> dst)
+        {
+            JsonValue table = root["status_interaction_table"];
+            if (table.Kind != JsonKind.Object) return;
+
+            foreach (var kv in table.AsObject())
+            {
+                if (kv.Value.Kind != JsonKind.Array) continue;
+                foreach (JsonValue obj in kv.Value.AsArray())
+                {
+                    string name = obj["name"].AsString();
+                    if (string.IsNullOrEmpty(name) && string.IsNullOrEmpty(obj["a"].AsString()))
+                        continue;
+                    dst.Add(new StatusInteractionNode(
+                        a: obj["a"].AsString(),
+                        b: obj["b"].AsString(),
+                        name: name,
+                        effect: obj["effect"].AsString(),
+                        readAs: obj["read_as"].AsString()));
+                }
+            }
+        }
+
+        /// <summary>
+        /// manipulation_layers.zone_layer.zones + max_active_zones.
+        /// Dönüş: max_active_zones (yoksa 0).
+        /// </summary>
+        static int ParseZones(JsonValue root, List<ZoneNode> dst)
+        {
+            JsonValue layer = root["manipulation_layers"]["zone_layer"];
+            foreach (JsonValue obj in layer["zones"].AsArray())
+            {
+                string id = obj["id"].AsString();
+                if (string.IsNullOrEmpty(id)) continue;
+                dst.Add(new ZoneNode(
+                    id: id,
+                    element: obj["element"].AsString(),
+                    movement: obj["movement"].AsString(),
+                    durationSec: obj["duration_sec"].AsFloat(0f),
+                    manipulation: obj.Has("manipulation") ? obj["manipulation"] : JsonValue.Null));
+            }
+            return layer["max_active_zones"].AsInt(0);
+        }
+
         static string[] ReadStringArray(JsonValue arr)
         {
             IReadOnlyList<JsonValue> items = arr.AsArray();
@@ -458,7 +583,8 @@ namespace Dovus.Core.Grammar
             float baseDamage, float basePoise, string hitbox, string castMobility, string[] mechanics,
             string animationType, string targetMode, float baseCooldownSec, float baseResourceCost,
             IReadOnlyDictionary<string, string> targetBehaviors, JsonValue special, JsonValue zoneEffect,
-            JsonValue raw)
+            JsonValue raw,
+            bool critEligible = false, string elementOrigin = "", string damageType = "")
         {
             Id = id; Name = name; Family = family; Action = action;
             BaseDamage = baseDamage; BasePoise = basePoise; Hitbox = hitbox;
@@ -467,6 +593,9 @@ namespace Dovus.Core.Grammar
             BaseCooldownSec = baseCooldownSec; BaseResourceCost = baseResourceCost;
             TargetBehaviors = targetBehaviors; Special = special; ZoneEffect = zoneEffect;
             Raw = raw;
+            CritEligible = critEligible;
+            ElementOrigin = elementOrigin ?? string.Empty;
+            DamageType = damageType ?? string.Empty;
         }
 
         public string Id { get; }
@@ -489,6 +618,12 @@ namespace Dovus.Core.Grammar
         public JsonValue Special { get; }
         public JsonValue ZoneEffect { get; }
         public JsonValue Raw { get; }
+        /// <summary>docs/element-sistemi.json verbs[].crit_eligible</summary>
+        public bool CritEligible { get; }
+        /// <summary>docs/element-sistemi.json verbs[].element_origin</summary>
+        public string ElementOrigin { get; }
+        /// <summary>docs/element-sistemi.json verbs[].engine_base_stats.damage_type</summary>
+        public string DamageType { get; }
     }
 
     public readonly struct AdjectiveNode
@@ -571,6 +706,93 @@ namespace Dovus.Core.Grammar
         public bool GetEffectBool(string key, bool fallback = false) => Effects[key].AsBool(fallback);
     }
 
+    /// <summary>docs/element-sistemi.json passives.list[i] — bkz. SkillMotor.ParsePassives.</summary>
+    public readonly struct PassiveNode
+    {
+        public PassiveNode(
+            string id, string element, int[] triggerCombo, float durationSec, JsonValue effects)
+        {
+            Id = id ?? string.Empty;
+            Element = element ?? string.Empty;
+            TriggerCombo = triggerCombo ?? Array.Empty<int>();
+            DurationSec = durationSec;
+            Effects = effects;
+        }
+
+        public string Id { get; }
+        public string Element { get; }
+        public int[] TriggerCombo { get; }
+        public float DurationSec { get; }
+        public JsonValue Effects { get; }
+
+        public float GetEffect(string key, float fallback = 0f) => Effects[key].AsFloat(fallback);
+        public bool GetEffectBool(string key, bool fallback = false) => Effects[key].AsBool(fallback);
+    }
+
+    /// <summary>docs/element-sistemi.json chain_mechanics.chains[i]</summary>
+    public readonly struct ChainNode
+    {
+        public ChainNode(
+            string element, string pattern, string effect, float[] links, string finisher)
+        {
+            Element = element ?? string.Empty;
+            Pattern = pattern ?? string.Empty;
+            Effect = effect ?? string.Empty;
+            Links = links ?? Array.Empty<float>();
+            Finisher = finisher ?? string.Empty;
+        }
+
+        public string Element { get; }
+        public string Pattern { get; }
+        public string Effect { get; }
+        public float[] Links { get; }
+        public string Finisher { get; }
+    }
+
+    /// <summary>
+    /// status_interaction_table altındaki bir satır (kategori fark etmeksizin düz liste).
+    /// </summary>
+    public readonly struct StatusInteractionNode
+    {
+        public StatusInteractionNode(
+            string a, string b, string name, string effect, string readAs)
+        {
+            A = a ?? string.Empty;
+            B = b ?? string.Empty;
+            Name = name ?? string.Empty;
+            Effect = effect ?? string.Empty;
+            ReadAs = readAs ?? string.Empty;
+        }
+
+        public string A { get; }
+        public string B { get; }
+        public string Name { get; }
+        public string Effect { get; }
+        public string ReadAs { get; }
+    }
+
+    /// <summary>manipulation_layers.zone_layer.zones[i]</summary>
+    public readonly struct ZoneNode
+    {
+        public ZoneNode(
+            string id, string element, string movement, float durationSec,
+            JsonValue? manipulation = null)
+        {
+            Id = id ?? string.Empty;
+            Element = element ?? string.Empty;
+            Movement = movement ?? string.Empty;
+            DurationSec = durationSec;
+            Manipulation = manipulation ?? JsonValue.Null;
+        }
+
+        public string Id { get; }
+        public string Element { get; }
+        public string Movement { get; }
+        public float DurationSec { get; }
+        /// <summary>Bazı zonelerde var (lav_halkasi); yoksa Null.</summary>
+        public JsonValue Manipulation { get; }
+    }
+
     public readonly struct LengthTuning
     {
         public LengthTuning(
@@ -605,7 +827,8 @@ namespace Dovus.Core.Grammar
             string flavorElement,
             string animationType = "", string targetMode = "", float baseCooldownSec = 0f,
             float baseResourceCost = 0f, IReadOnlyDictionary<string, string>? targetBehaviors = null,
-            JsonValue? special = null, JsonValue? zoneEffect = null, JsonValue? engineModifiers = null)
+            JsonValue? special = null, JsonValue? zoneEffect = null, JsonValue? engineModifiers = null,
+            bool critEligible = false, string elementOrigin = "", string damageType = "")
         {
             ElementId = elementId ?? string.Empty;
             ElementName = elementName ?? string.Empty;
@@ -640,6 +863,9 @@ namespace Dovus.Core.Grammar
             Special = special ?? JsonValue.Null;
             ZoneEffect = zoneEffect ?? JsonValue.Null;
             EngineModifiers = engineModifiers ?? JsonValue.Null;
+            CritEligible = critEligible;
+            ElementOrigin = elementOrigin ?? string.Empty;
+            DamageType = damageType ?? string.Empty;
         }
 
         static readonly IReadOnlyDictionary<string, string> EmptyBehaviors =
@@ -685,6 +911,9 @@ namespace Dovus.Core.Grammar
         public JsonValue Special { get; }
         public JsonValue ZoneEffect { get; }
         public JsonValue EngineModifiers { get; }
+        public bool CritEligible { get; }
+        public string ElementOrigin { get; }
+        public string DamageType { get; }
     }
 
     /// <summary>Resources yoksa test/editor yedeği — yalnızca 6 çekirdek iskeleti.</summary>
