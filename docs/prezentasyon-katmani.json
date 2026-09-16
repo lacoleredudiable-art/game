@@ -1,0 +1,1017 @@
+{
+  "system": {
+    "version": "1.0",
+    "description": "Trajectory Library + Hitbox Matrix + Animation Frame Data + VFX Binding. Element sistemine bağımlı değil, motor katmanı için referans.",
+    "date": "2026-09-16",
+    "scope": "presentation_layer",
+    "binding": false,
+    "note": "Bu dosya element sisteminden bağımsızdır. Motor okur, Unity kullanır, VFX bağlar."
+  },
+
+  "trajectory_library": {
+    "description": "Bir skill'in dünyada nasıl hareket ettiği. Motor trajectory_override okuduğunda buradan detayları alır.",
+
+    "trajectories": {
+
+      "duz": {
+        "id": "duz",
+        "name": "Düz İlerleme",
+        "description": "Hedefe doğru düz bir hat boyunca ilerler",
+        "motion_curve": "linear",
+        "speed_mps_default": 15,
+        "affected_by_gravity": false,
+        "can_be_dodged": true,
+        "vfx_trail_type": "straight",
+        "sound_loop": "whoosh_steady",
+        "read_as": "Düz bir hat boyunca fırlar"
+      },
+
+      "raycast": {
+        "id": "raycast",
+        "name": "Anlık Işın",
+        "description": "Fırlatılmaz, hedefe anlık ulaşır (görünmez yol)",
+        "motion_curve": "instant",
+        "speed_mps_default": 999,
+        "duration_ms": 50,
+        "can_be_dodged": "only_before_cast",
+        "vfx_trail_type": "beam_flash",
+        "sound_loop": null,
+        "sound_impact": "sharp_crack",
+        "read_as": "Anlık çarpar, yol görünmez"
+      },
+
+      "fast_projectile": {
+        "id": "fast_projectile",
+        "name": "Hızlı Mermi",
+        "description": "Düz mermi ama çok hızlı",
+        "motion_curve": "linear",
+        "speed_mps_default": 30,
+        "affected_by_gravity": false,
+        "can_be_dodged": "tight_window",
+        "vfx_trail_type": "thin_streak",
+        "sound_loop": "whoosh_short",
+        "read_as": "Çok hızlı fırlar, dar bir çizgi bırakır"
+      },
+
+      "homing_projectile": {
+        "id": "homing_projectile",
+        "name": "Güdümlü Mermi",
+        "description": "Hedefi takip eder, kaçamaz",
+        "motion_curve": "bezier_curve_to_target",
+        "speed_mps_default": 12,
+        "turn_rate_deg_per_sec": 180,
+        "max_tracking_time_sec": 5,
+        "can_be_dodged": false,
+        "vfx_trail_type": "curved_glow",
+        "sound_loop": "humming",
+        "read_as": "Hedefi takip eder, kurtulmak imkansız"
+      },
+
+      "phase_projectile": {
+        "id": "phase_projectile",
+        "name": "Faz Geçişi",
+        "description": "Kalkanları ve engelleri yok sayarak geçer",
+        "motion_curve": "linear",
+        "speed_mps_default": 20,
+        "affected_by_gravity": false,
+        "ignores_shields": true,
+        "ignores_walls": true,
+        "can_be_dodged": true,
+        "vfx_trail_type": "phase_shimmer",
+        "sound_loop": "whisper",
+        "read_as": "Önündeki her şeyden geçer, kalkan da engel de durduramaz"
+      },
+
+      "chain_bounce": {
+        "id": "chain_bounce",
+        "name": "Zincir Sekmesi",
+        "description": "Hedeften hedefe atlar",
+        "motion_curve": "bounce_between_targets",
+        "speed_mps_default": 25,
+        "max_bounces": 3,
+        "bounce_range_m": 5,
+        "damage_falloff_per_bounce": 0.8,
+        "can_be_dodged": true,
+        "vfx_trail_type": "arc_lightning",
+        "sound_loop": "crackling_chain",
+        "read_as": "Hedeften hedefe sıçrar, her sıçramada biraz zayıflar"
+      },
+
+      "instant_hit": {
+        "id": "instant_hit",
+        "name": "Anlık Vuruş",
+        "description": "Skill'in kendisi anında teslim edilir (Yıldırım)",
+        "motion_curve": "teleport_to_target",
+        "speed_mps_default": 999,
+        "duration_ms": 100,
+        "has_i_frames_during": true,
+        "i_frame_ms": 300,
+        "can_be_dodged": "only_before_cast",
+        "vfx_trail_type": "blink_line",
+        "sound_loop": "zap_instant",
+        "read_as": "Yıldırım gibi anında varır, arada yol yok"
+      },
+
+      "teleport_to_target": {
+        "id": "teleport_to_target",
+        "name": "Hedefe Işınlanma",
+        "description": "Skill hedefe anında taşınır (oyuncu değil)",
+        "motion_curve": "teleport",
+        "speed_mps_default": 999,
+        "duration_ms": 0,
+        "can_be_dodged": "no",
+        "vfx_trail_type": "disappear_reappear",
+        "sound_loop": "whoosh_snap",
+        "read_as": "Skill hedefe ışınlanır"
+      },
+
+      "pull_to_caster": {
+        "id": "pull_to_caster",
+        "name": "Kendine Çekme",
+        "description": "Hedefi oyuncuya doğru çeker",
+        "motion_curve": "decelerating_toward_caster",
+        "speed_mps_default": 8,
+        "pull_distance_m": "target_distance",
+        "can_be_dodged": "no_if_connected",
+        "vfx_trail_type": "tether_line",
+        "sound_loop": "sucking",
+        "read_as": "Hedefi kendine doğru çeker"
+      },
+
+      "pull_to_center": {
+        "id": "pull_to_center",
+        "name": "Merkeze Çekme",
+        "description": "Alan içindeki hedefleri merkeze çeker",
+        "motion_curve": "radial_inward",
+        "speed_mps_default": 6,
+        "affected_by_gravity": false,
+        "can_be_dodged": "no_if_in_zone",
+        "vfx_trail_type": "spiral_inward",
+        "sound_loop": "vortex",
+        "read_as": "Herkes merkeze doğru çekilir"
+      },
+
+      "static_anchor": {
+        "id": "static_anchor",
+        "name": "Sabit Kalma",
+        "description": "Skill bırakıldığı yerde kalır",
+        "motion_curve": "none",
+        "speed_mps_default": 0,
+        "duration_sec_default": 10,
+        "can_be_dodged": "enter_zone",
+        "vfx_trail_type": "ground_marker",
+        "sound_loop": "idle_hum",
+        "read_as": "Bıraktığın yerde kalır"
+      },
+
+      "expanding_wave": {
+        "id": "expanding_wave",
+        "name": "Genişleyen Dalga",
+        "description": "Merkezden dışa doğru genişler",
+        "motion_curve": "radial_outward",
+        "expansion_speed_mps": 12,
+        "max_radius_m": 8,
+        "damage_falloff": false,
+        "can_be_dodged": "leave_radius",
+        "vfx_trail_type": "ring_outward",
+        "sound_loop": "boom_extended",
+        "read_as": "Merkezden dışa doğru genişler"
+      },
+
+      "radial_burst": {
+        "id": "radial_burst",
+        "name": "Anlık Patlama",
+        "description": "Merkezden anlık patlama",
+        "motion_curve": "instant_radial",
+        "expansion_speed_mps": 999,
+        "max_radius_m": 8,
+        "duration_sec": 0.3,
+        "can_be_dodged": "leave_before_cast",
+        "vfx_trail_type": "burst_flash",
+        "sound_loop": "explosion",
+        "read_as": "Merkezde anlık patlar, her yöne yayılır"
+      },
+
+      "stealth_shift": {
+        "id": "stealth_shift",
+        "name": "Görünmez Geçiş",
+        "description": "Kısa mesafeye görünmez ışınlanma",
+        "motion_curve": "teleport_short",
+        "distance_m": 5,
+        "duration_ms": 0,
+        "grants_stealth": true,
+        "stealth_duration_sec": 3,
+        "can_be_dodged": "no",
+        "vfx_trail_type": "smoke_puff",
+        "sound_loop": "puff",
+        "read_as": "Kısa mesafeye görünmez geçiş"
+      },
+
+      "double_move": {
+        "id": "double_move",
+        "name": "İki Aşamalı Hareket",
+        "description": "İki noktaya sırayla atılma",
+        "motion_curve": "two_dashes",
+        "dash_count": 2,
+        "distance_per_dash_m": 4,
+        "delay_between_dashes_ms": 300,
+        "can_be_dodged": "no",
+        "vfx_trail_type": "double_streak",
+        "sound_loop": "whoosh_double",
+        "read_as": "İki aşamalı atılma"
+      },
+
+      "self_teleport": {
+        "id": "self_teleport",
+        "name": "Kendini Işınlama",
+        "description": "Oyuncu kendini ışınlar",
+        "motion_curve": "instant",
+        "distance_m": 8,
+        "direction": "aim_or_forward",
+        "has_i_frames_during": true,
+        "i_frame_ms": 300,
+        "can_be_dodged": "no",
+        "vfx_trail_type": "afterimage_trail",
+        "sound_loop": "blink_snap",
+        "read_as": "Kendini anlık olarak ışınlarsın"
+      }
+    }
+  },
+
+  "hitbox_library": {
+    "description": "Skill'in çarpışma alanı. Motor base_hitbox okuduğunda buradan detayları alır.",
+
+    "hitboxes": {
+
+      "projectile": {
+        "id": "projectile",
+        "name": "Mermi",
+        "shape": "sphere",
+        "radius_m_default": 0.5,
+        "lifetime_sec_default": 1.5,
+        "can_pass_through_targets": false,
+        "hits_on_first_contact": true,
+        "vfx_scale_at_spawn": 1.0,
+        "vfx_scale_at_impact": 1.2
+      },
+
+      "raycast": {
+        "id": "raycast",
+        "name": "Işın",
+        "shape": "line",
+        "width_m_default": 0.15,
+        "lifetime_sec_default": 0.1,
+        "can_pass_through_targets": true,
+        "max_targets_hit": 3,
+        "vfx_scale_at_spawn": 1.0,
+        "vfx_scale_at_impact": 0.8
+      },
+
+      "cone": {
+        "id": "cone",
+        "name": "Koni",
+        "shape": "cone",
+        "angle_deg_default": 90,
+        "range_m_default": 6,
+        "lifetime_sec_default": 0.3,
+        "max_targets_hit": 5,
+        "vfx_scale_at_spawn": 1.0,
+        "vfx_scale_at_impact": 1.0
+      },
+
+      "ground_ring": {
+        "id": "ground_ring",
+        "name": "Yer Halkası",
+        "shape": "ring",
+        "radius_m_default": 5.4,
+        "thickness_m": 1.0,
+        "lifetime_sec_default": 10,
+        "tick_interval_sec": 1,
+        "tick_damage_ratio": 0.15,
+        "stays_in_world": true
+      },
+
+      "ground_circle": {
+        "id": "ground_circle",
+        "name": "Yer Daire",
+        "shape": "circle",
+        "radius_m_default": 4,
+        "lifetime_sec_default": 8,
+        "tick_interval_sec": 1,
+        "tick_damage_ratio": 0.12,
+        "stays_in_world": true
+      },
+
+      "ground_line": {
+        "id": "ground_line",
+        "name": "Yer Çizgisi",
+        "shape": "rectangle",
+        "width_m_default": 1.5,
+        "length_m_default": 12,
+        "lifetime_sec_default": 6,
+        "tick_interval_sec": 1,
+        "stays_in_world": true
+      },
+
+      "ground_surface": {
+        "id": "ground_surface",
+        "name": "Yer Yüzeyi",
+        "shape": "circle",
+        "radius_m_default": 6,
+        "lifetime_sec_default": 4,
+        "tick_interval_sec": 0.5,
+        "stays_in_world": true
+      },
+
+      "static_cloud": {
+        "id": "static_cloud",
+        "name": "Sabit Bulut",
+        "shape": "sphere",
+        "radius_m_default": 4,
+        "lifetime_sec_default": 8,
+        "tick_interval_sec": 1,
+        "blocks_vision": true,
+        "stays_in_world": true
+      },
+
+      "beam": {
+        "id": "beam",
+        "name": "Işın Hattı",
+        "shape": "rectangle",
+        "width_m_default": 0.8,
+        "length_m_default": 12,
+        "lifetime_sec_default": 2,
+        "tick_interval_sec": 0.2,
+        "stays_in_world": false
+      },
+
+      "self_aura": {
+        "id": "self_aura",
+        "name": "Kendi Etrafı",
+        "shape": "sphere",
+        "radius_m_default": 8,
+        "lifetime_sec_default": 5,
+        "follows_caster": true,
+        "tick_interval_sec": 1
+      },
+
+      "wall": {
+        "id": "wall",
+        "name": "Duvar",
+        "shape": "box",
+        "width_m_default": 6,
+        "height_m_default": 3,
+        "thickness_m_default": 0.5,
+        "lifetime_sec_default": 10,
+        "blocks_movement": true,
+        "stays_in_world": true
+      },
+
+      "radial_burst": {
+        "id": "radial_burst",
+        "name": "Radyal Patlama",
+        "shape": "sphere",
+        "radius_m_default": 8,
+        "lifetime_sec_default": 0.3,
+        "damage_falloff": false
+      },
+
+      "trail": {
+        "id": "trail",
+        "name": "İz",
+        "shape": "path",
+        "width_m_default": 1.0,
+        "lifetime_sec_default": 4,
+        "tick_interval_sec": 0.5,
+        "stays_in_world": true
+      },
+
+      "chain_projectile": {
+        "id": "chain_projectile",
+        "name": "Zincir Mermi",
+        "shape": "sphere",
+        "radius_m_default": 0.4,
+        "max_bounces": 3,
+        "bounce_range_m": 5,
+        "damage_falloff_per_bounce": 0.8
+      },
+
+      "single_target": {
+        "id": "single_target",
+        "name": "Tek Hedef",
+        "shape": "point",
+        "radius_m_default": 0.5,
+        "requires_target": true
+      },
+
+      "self": {
+        "id": "self",
+        "name": "Kendine",
+        "shape": "point",
+        "target": "self"
+      }
+    }
+  },
+
+  "trajectory_hitbox_matrix": {
+    "description": "Hangi trajectory hangi hitbox ile uyumlu. '✓' uyumlu, '⚠' özel durum, '✗' uyumsuz.",
+
+    "matrix": {
+      "duz":                 { "projectile": "✓", "raycast": "✗", "cone": "✗", "ground_ring": "✗", "ground_circle": "✗", "ground_line": "✗", "ground_surface": "✗", "static_cloud": "✗", "beam": "✗", "self_aura": "✗", "wall": "✗", "radial_burst": "✗", "trail": "✓", "chain_projectile": "✓", "single_target": "⚠", "self": "✗" },
+      "raycast":             { "projectile": "✗", "raycast": "✓", "cone": "✗", "ground_ring": "✗", "ground_circle": "✗", "ground_line": "✓", "ground_surface": "✗", "static_cloud": "✗", "beam": "✓", "self_aura": "✗", "wall": "✗", "radial_burst": "✗", "trail": "✓", "chain_projectile": "✗", "single_target": "✓", "self": "✗" },
+      "fast_projectile":     { "projectile": "✓", "raycast": "✓", "cone": "✗", "ground_ring": "✗", "ground_circle": "✗", "ground_line": "✗", "ground_surface": "✗", "static_cloud": "✗", "beam": "✗", "self_aura": "✗", "wall": "✗", "radial_burst": "✗", "trail": "✓", "chain_projectile": "✓", "single_target": "⚠", "self": "✗" },
+      "homing_projectile":   { "projectile": "✓", "raycast": "✗", "cone": "✗", "ground_ring": "✗", "ground_circle": "✗", "ground_line": "✗", "ground_surface": "✗", "static_cloud": "✗", "beam": "✗", "self_aura": "✗", "wall": "✗", "radial_burst": "✗", "trail": "✓", "chain_projectile": "✗", "single_target": "✓", "self": "✗" },
+      "phase_projectile":    { "projectile": "✓", "raycast": "✓", "cone": "✗", "ground_ring": "✗", "ground_circle": "✗", "ground_line": "✗", "ground_surface": "✗", "static_cloud": "✗", "beam": "✗", "self_aura": "✗", "wall": "✓", "radial_burst": "✗", "trail": "✓", "chain_projectile": "✓", "single_target": "⚠", "self": "✗" },
+      "chain_bounce":        { "projectile": "✓", "raycast": "✗", "cone": "✗", "ground_ring": "✗", "ground_circle": "✗", "ground_line": "✗", "ground_surface": "✗", "static_cloud": "✗", "beam": "✗", "self_aura": "✗", "wall": "✗", "radial_burst": "✗", "trail": "✓", "chain_projectile": "✓", "single_target": "✓", "self": "✗" },
+      "instant_hit":         { "projectile": "⚠", "raycast": "✓", "cone": "✗", "ground_ring": "✗", "ground_circle": "✗", "ground_line": "✗", "ground_surface": "✗", "static_cloud": "✗", "beam": "✗", "self_aura": "✗", "wall": "✗", "radial_burst": "✗", "trail": "✓", "chain_projectile": "✓", "single_target": "✓", "self": "✗" },
+      "teleport_to_target":  { "projectile": "✗", "raycast": "✓", "cone": "✗", "ground_ring": "✗", "ground_circle": "✗", "ground_line": "✗", "ground_surface": "✗", "static_cloud": "✗", "beam": "✗", "self_aura": "✗", "wall": "✗", "radial_burst": "✗", "trail": "✗", "chain_projectile": "✗", "single_target": "✓", "self": "✗" },
+      "pull_to_caster":      { "projectile": "✗", "raycast": "✗", "cone": "✗", "ground_ring": "✗", "ground_circle": "✗", "ground_line": "✗", "ground_surface": "✗", "static_cloud": "✗", "beam": "✓", "self_aura": "✓", "wall": "✗", "radial_burst": "✗", "trail": "✗", "chain_projectile": "✗", "single_target": "✓", "self": "✗" },
+      "pull_to_center":      { "projectile": "✗", "raycast": "✗", "cone": "✗", "ground_ring": "✓", "ground_circle": "✓", "ground_line": "✗", "ground_surface": "✓", "static_cloud": "✓", "beam": "✗", "self_aura": "✓", "wall": "✗", "radial_burst": "✓", "trail": "✗", "chain_projectile": "✗", "single_target": "✗", "self": "✗" },
+      "static_anchor":       { "projectile": "✗", "raycast": "✗", "cone": "✗", "ground_ring": "✓", "ground_circle": "✓", "ground_line": "✓", "ground_surface": "✓", "static_cloud": "✓", "beam": "✗", "self_aura": "✓", "wall": "✓", "radial_burst": "✗", "trail": "✓", "chain_projectile": "✗", "single_target": "✗", "self": "✓" },
+      "expanding_wave":      { "projectile": "✗", "raycast": "✗", "cone": "✗", "ground_ring": "✓", "ground_circle": "✓", "ground_line": "✗", "ground_surface": "✓", "static_cloud": "✗", "beam": "✗", "self_aura": "✓", "wall": "✗", "radial_burst": "✓", "trail": "✗", "chain_projectile": "✗", "single_target": "✗", "self": "✗" },
+      "radial_burst":        { "projectile": "✗", "raycast": "✗", "cone": "✗", "ground_ring": "✓", "ground_circle": "✓", "ground_line": "✗", "ground_surface": "✗", "static_cloud": "✗", "beam": "✗", "self_aura": "✓", "wall": "✗", "radial_burst": "✓", "trail": "✗", "chain_projectile": "✗", "single_target": "✗", "self": "✓" },
+      "stealth_shift":       { "projectile": "✗", "raycast": "✗", "cone": "✗", "ground_ring": "✗", "ground_circle": "✗", "ground_line": "✗", "ground_surface": "✗", "static_cloud": "✗", "beam": "✗", "self_aura": "✗", "wall": "✗", "radial_burst": "✗", "trail": "✓", "chain_projectile": "✗", "single_target": "✗", "self": "✓" },
+      "double_move":         { "projectile": "✗", "raycast": "✗", "cone": "✗", "ground_ring": "✗", "ground_circle": "✗", "ground_line": "✗", "ground_surface": "✗", "static_cloud": "✗", "beam": "✗", "self_aura": "✗", "wall": "✗", "radial_burst": "✗", "trail": "✓", "chain_projectile": "✗", "single_target": "✗", "self": "✓" },
+      "self_teleport":       { "projectile": "✗", "raycast": "✗", "cone": "✗", "ground_ring": "✗", "ground_circle": "✗", "ground_line": "✗", "ground_surface": "✗", "static_cloud": "✗", "beam": "✗", "self_aura": "✗", "wall": "✗", "radial_burst": "✗", "trail": "✓", "chain_projectile": "✗", "single_target": "✗", "self": "✓" }
+    },
+
+    "legend": {
+      "✓": "Uyumlu — motor çalıştırır",
+      "⚠": "Özel durum — motor özel kural uygular",
+      "✗": "Uyumsuz — motor hata verir, skill çalışmaz"
+    },
+
+    "special_cases": [
+      "instant_hit + projectile: mermi görünmez, anlık teslim",
+      "fast_projectile + single_target: hedef kilitli, mermi takip eder",
+      "phase_projectile + wall: duvardan geçer",
+      "duz + single_target: hedef kilitli, düz ilerler"
+    ]
+  },
+
+  "animation_library": {
+    "description": "Her animasyon tipinin frame data'sı. Motor animation_type okuduğunda buradan detayları alır. 60 FPS varsayımıyla.",
+
+    "animations": {
+
+      "cast_projectile": {
+        "id": "cast_projectile",
+        "name": "Mermi Fırlatma",
+        "total_frames": 30,
+        "total_duration_ms": 500,
+        "startup_frames": 10,
+        "startup_ms": 167,
+        "active_frames": [11, 12],
+        "active_ms": 33,
+        "recovery_frames": 18,
+        "recovery_ms": 300,
+        "cancel_window": [12, 20],
+        "root_frame_start": 10,
+        "root_frame_end": 12,
+        "i_frame_frames": null,
+        "spawn_vfx_at_frame": 11,
+        "damage_applied_at_frame": 12,
+        "sound_trigger_frame": 10,
+        "animator_state": "Spell_Cast_Projectile"
+      },
+
+      "cast_aoe": {
+        "id": "cast_aoe",
+        "name": "Alan Büyüsü",
+        "total_frames": 45,
+        "total_duration_ms": 750,
+        "startup_frames": 18,
+        "startup_ms": 300,
+        "active_frames": [19, 22],
+        "active_ms": 67,
+        "recovery_frames": 23,
+        "recovery_ms": 383,
+        "cancel_window": [22, 30],
+        "root_frame_start": 18,
+        "root_frame_end": 22,
+        "i_frame_frames": null,
+        "spawn_vfx_at_frame": 19,
+        "damage_applied_at_frame": 19,
+        "sound_trigger_frame": 18,
+        "animator_state": "Spell_Cast_AoE"
+      },
+
+      "cast_self": {
+        "id": "cast_self",
+        "name": "Kendine Büyü",
+        "total_frames": 25,
+        "total_duration_ms": 417,
+        "startup_frames": 8,
+        "startup_ms": 133,
+        "active_frames": [9, 10],
+        "active_ms": 33,
+        "recovery_frames": 15,
+        "recovery_ms": 250,
+        "cancel_window": [10, 16],
+        "root_frame_start": null,
+        "root_frame_end": null,
+        "i_frame_frames": [8, 15],
+        "i_frame_ms": 133,
+        "spawn_vfx_at_frame": 9,
+        "damage_applied_at_frame": 9,
+        "sound_trigger_frame": 8,
+        "animator_state": "Spell_Cast_Self"
+      },
+
+      "melee_slash": {
+        "id": "melee_slash",
+        "name": "Kılıç Savurma",
+        "total_frames": 24,
+        "total_duration_ms": 400,
+        "startup_frames": 6,
+        "startup_ms": 100,
+        "active_frames": [7, 9],
+        "active_ms": 50,
+        "recovery_frames": 14,
+        "recovery_ms": 233,
+        "cancel_window": [9, 16],
+        "root_frame_start": null,
+        "root_frame_end": null,
+        "i_frame_frames": [5, 10],
+        "i_frame_ms": 100,
+        "spawn_vfx_at_frame": 6,
+        "damage_applied_at_frame": 7,
+        "sound_trigger_frame": 6,
+        "animator_state": "Melee_Slash"
+      },
+
+      "melee_thrust": {
+        "id": "melee_thrust",
+        "name": "Delme",
+        "total_frames": 22,
+        "total_duration_ms": 367,
+        "startup_frames": 5,
+        "startup_ms": 83,
+        "active_frames": [6, 8],
+        "active_ms": 50,
+        "recovery_frames": 13,
+        "recovery_ms": 217,
+        "cancel_window": [8, 14],
+        "root_frame_start": null,
+        "root_frame_end": null,
+        "i_frame_frames": null,
+        "spawn_vfx_at_frame": 5,
+        "damage_applied_at_frame": 6,
+        "sound_trigger_frame": 5,
+        "animator_state": "Melee_Thrust"
+      },
+
+      "melee_punch": {
+        "id": "melee_punch",
+        "name": "Yumruk",
+        "total_frames": 26,
+        "total_duration_ms": 433,
+        "startup_frames": 8,
+        "startup_ms": 133,
+        "active_frames": [9, 10],
+        "active_ms": 33,
+        "recovery_frames": 16,
+        "recovery_ms": 267,
+        "cancel_window": [10, 16],
+        "root_frame_start": null,
+        "root_frame_end": null,
+        "i_frame_frames": null,
+        "spawn_vfx_at_frame": 8,
+        "damage_applied_at_frame": 9,
+        "sound_trigger_frame": 8,
+        "animator_state": "Melee_Punch"
+      },
+
+      "channel": {
+        "id": "channel",
+        "name": "Kanalize",
+        "total_frames": 60,
+        "total_duration_ms": 1000,
+        "startup_frames": 15,
+        "startup_ms": 250,
+        "active_frames": [16, 55],
+        "active_ms": 667,
+        "recovery_frames": 5,
+        "recovery_ms": 83,
+        "cancel_window": null,
+        "interruptible": true,
+        "interrupt_on_damage": true,
+        "spawn_vfx_at_frame": 16,
+        "damage_applied_at_frame": "every_tick",
+        "tick_interval_frames": 6,
+        "sound_loop_start_frame": 16,
+        "animator_state": "Channel_Loop"
+      },
+
+      "dash": {
+        "id": "dash",
+        "name": "Atılma",
+        "total_frames": 18,
+        "total_duration_ms": 300,
+        "startup_frames": 3,
+        "startup_ms": 50,
+        "active_frames": [4, 12],
+        "active_ms": 150,
+        "recovery_frames": 6,
+        "recovery_ms": 100,
+        "cancel_window": [12, 15],
+        "root_frame_start": null,
+        "root_frame_end": null,
+        "i_frame_frames": [3, 14],
+        "i_frame_ms": 183,
+        "afterimage_count": 3,
+        "afterimage_spawn_frames": [4, 8, 12],
+        "sound_trigger_frame": 3,
+        "animator_state": "Dash"
+      },
+
+      "instant": {
+        "id": "instant",
+        "name": "Anlık",
+        "total_frames": 5,
+        "total_duration_ms": 83,
+        "startup_frames": 1,
+        "startup_ms": 17,
+        "active_frames": [2, 2],
+        "active_ms": 17,
+        "recovery_frames": 3,
+        "recovery_ms": 50,
+        "cancel_window": [2, 4],
+        "spawn_vfx_at_frame": 2,
+        "damage_applied_at_frame": 2,
+        "sound_trigger_frame": 1,
+        "animator_state": "Instant"
+      },
+
+      "summon": {
+        "id": "summon",
+        "name": "Çağırma",
+        "total_frames": 50,
+        "total_duration_ms": 833,
+        "startup_frames": 25,
+        "startup_ms": 417,
+        "active_frames": [26, 30],
+        "active_ms": 83,
+        "recovery_frames": 20,
+        "recovery_ms": 333,
+        "cancel_window": null,
+        "spawn_vfx_at_frame": 26,
+        "spawn_object_at_frame": 27,
+        "damage_applied_at_frame": null,
+        "sound_trigger_frame": 25,
+        "animator_state": "Summon"
+      }
+    }
+  },
+
+  "vfx_binding": {
+    "description": "Trajectory + hitbox + animasyon → VFX prefab bağlama. Motor bu kurallara göre Asset Store'dan alınan VFX'leri yerleştirir.",
+
+    "trail_vfx": {
+      "straight": {
+        "vfx_style": "line_renderer",
+        "color_from": "element_color",
+        "color_to": "element_color_light",
+        "width_curve": "constant",
+        "duration_sec": "skill_duration",
+        "asset_example": "Hovl Studio - Simple Trails"
+      },
+      "thin_streak": {
+        "vfx_style": "line_renderer_thin",
+        "color_from": "element_color",
+        "width_curve": "taper_ends",
+        "duration_sec": 0.3,
+        "asset_example": "Gabriel Aguiar - Fast Projectile Trails"
+      },
+      "curved_glow": {
+        "vfx_style": "trail_renderer",
+        "color_from": "element_color",
+        "color_to": "white",
+        "width_curve": "grow_then_shrink",
+        "duration_sec": "skill_duration",
+        "asset_example": "Kripto289 - Homing Projectile"
+      },
+      "phase_shimmer": {
+        "vfx_style": "distortion_trail",
+        "color_from": "element_color_alpha",
+        "shader": "dissolve",
+        "duration_sec": 0.5,
+        "asset_example": "Hovl Studio - Phase Shift"
+      },
+      "arc_lightning": {
+        "vfx_style": "lightning_arc",
+        "color_from": "element_color",
+        "jitter_amplitude": 0.2,
+        "duration_sec": 0.3,
+        "asset_example": "Gabriel Aguiar - Chain Lightning"
+      },
+      "blink_line": {
+        "vfx_style": "beam_flash",
+        "color_from": "white",
+        "color_to": "element_color",
+        "duration_sec": 0.15,
+        "asset_example": "Kripto289 - Blink Effect"
+      },
+      "afterimage_trail": {
+        "vfx_style": "afterimage",
+        "color_from": "element_color_alpha",
+        "spawn_interval_ms": 60,
+        "afterimage_count": 4,
+        "fade_time_sec": 0.4,
+        "asset_example": "Hovl Studio - Afterimage"
+      },
+      "spiral_inward": {
+        "vfx_style": "spiral_particles",
+        "color_from": "element_color_dark",
+        "rotation_speed_deg_per_sec": 360,
+        "duration_sec": "zone_duration",
+        "asset_example": "Kripto289 - Vortex"
+      },
+      "ring_outward": {
+        "vfx_style": "ring_shader",
+        "color_from": "element_color",
+        "expansion_speed_mps": 12,
+        "duration_sec": 0.5,
+        "asset_example": "Gabriel Aguiar - Shockwave"
+      },
+      "burst_flash": {
+        "vfx_style": "radial_particles",
+        "color_from": "element_color",
+        "flash_frame_ms": 33,
+        "duration_sec": 0.3,
+        "asset_example": "Hovl Studio - Explosion"
+      },
+      "smoke_puff": {
+        "vfx_style": "smoke_particles",
+        "color_from": "element_color_alpha",
+        "duration_sec": 0.4,
+        "asset_example": "Kripto289 - Smoke Puff"
+      },
+      "double_streak": {
+        "vfx_style": "double_line",
+        "color_from": "element_color",
+        "duration_between_ms": 300,
+        "asset_example": "Hovl Studio - Double Dash"
+      },
+      "ground_marker": {
+        "vfx_style": "decal",
+        "color_from": "element_color",
+        "pulse_hz": 2,
+        "duration_sec": "zone_duration",
+        "asset_example": "Gabriel Aguiar - Ground Marker"
+      },
+      "tether_line": {
+        "vfx_style": "line_renderer",
+        "color_from": "element_color",
+        "width_curve": "pulse",
+        "duration_sec": "link_duration",
+        "asset_example": "Kripto289 - Tether"
+      },
+      "whoosh_steady": {
+        "vfx_style": "wind_particles",
+        "color_from": "transparent",
+        "duration_sec": "skill_duration",
+        "asset_example": "Hovl Studio - Wind Trail"
+      }
+    },
+
+    "impact_vfx": {
+      "strike": {
+        "vfx_style": "hit_flash",
+        "screen_shake_px": 3,
+        "hitstop_ms": 40,
+        "impact_frame_ms": 33,
+        "sound": "hit_light",
+        "asset_example": "Hovl Studio - Hit Impact"
+      },
+      "pierce_hit": {
+        "vfx_style": "pierce_flash",
+        "screen_shake_px": 4,
+        "hitstop_ms": 60,
+        "impact_frame_ms": 33,
+        "sound": "hit_sharp",
+        "asset_example": "Hovl Studio - Pierce"
+      },
+      "pulse": {
+        "vfx_style": "shockwave",
+        "screen_shake_px": 6,
+        "hitstop_ms": 70,
+        "sound": "boom_medium",
+        "asset_example": "Gabriel Aguiar - Shockwave"
+      },
+      "tick": {
+        "vfx_style": "small_puff",
+        "screen_shake_px": 1,
+        "hitstop_ms": 0,
+        "sound": "tick_low",
+        "asset_example": "Hovl Studio - Damage Tick"
+      },
+      "drain": {
+        "vfx_style": "particle_stream",
+        "screen_shake_px": 2,
+        "hitstop_ms": 0,
+        "sound_loop": "drain_loop",
+        "asset_example": "Kripto289 - Life Drain"
+      },
+      "cleave": {
+        "vfx_style": "slash_arc",
+        "screen_shake_px": 5,
+        "hitstop_ms": 60,
+        "sound": "slash",
+        "asset_example": "Hovl Studio - Slash"
+      },
+      "impact": {
+        "vfx_style": "ground_crack",
+        "screen_shake_px": 8,
+        "hitstop_ms": 80,
+        "sound": "thud_heavy",
+        "asset_example": "Gabriel Aguiar - Ground Impact"
+      },
+      "reflect": {
+        "vfx_style": "shield_flash",
+        "screen_shake_px": 4,
+        "hitstop_ms": 50,
+        "sound": "clang",
+        "asset_example": "Hovl Studio - Shield Reflect"
+      },
+      "none": {
+        "vfx_style": null,
+        "screen_shake_px": 0,
+        "hitstop_ms": 0
+      }
+    },
+
+    "zone_vfx": {
+      "static_cloud": {
+        "vfx_style": "cloud_particles",
+        "color_from": "element_color",
+        "opacity": 0.6,
+        "particle_count": 50,
+        "follows_zone": true,
+        "asset_example": "Gabriel Aguiar - Cloud"
+      },
+      "ground_ring": {
+        "vfx_style": "ring_decal",
+        "color_from": "element_color",
+        "pulse_hz": 2,
+        "follows_zone": true,
+        "asset_example": "Hovl Studio - Ground Ring"
+      },
+      "ground_circle": {
+        "vfx_style": "circle_decal",
+        "color_from": "element_color",
+        "opacity": 0.5,
+        "follows_zone": true,
+        "asset_example": "Hovl Studio - Ground Circle"
+      },
+      "ground_line": {
+        "vfx_style": "line_decal",
+        "color_from": "element_color",
+        "pulse_hz": 1.5,
+        "follows_zone": true,
+        "asset_example": "Gabriel Aguiar - Ground Line"
+      },
+      "ground_surface": {
+        "vfx_style": "surface_decal",
+        "color_from": "element_color",
+        "opacity": 0.4,
+        "follows_zone": true,
+        "asset_example": "Kripto289 - Ground Surface"
+      },
+      "wall": {
+        "vfx_style": "wall_mesh",
+        "color_from": "element_color",
+        "opacity": 0.9,
+        "asset_example": "Hovl Studio - Wall"
+      },
+      "trail": {
+        "vfx_style": "trail_decal",
+        "color_from": "element_color",
+        "fade_time_sec": 2,
+        "asset_example": "Gabriel Aguiar - Ground Trail"
+      }
+    },
+
+    "aura_vfx": {
+      "self_aura": {
+        "vfx_style": "aura_particles",
+        "color_from": "element_color",
+        "particle_count": 30,
+        "follows_caster": true,
+        "asset_example": "Hovl Studio - Aura"
+      },
+      "beam": {
+        "vfx_style": "beam_shader",
+        "color_from": "element_color",
+        "color_to": "white",
+        "duration_sec": "skill_duration",
+        "asset_example": "Gabriel Aguiar - Beam"
+      }
+    },
+
+    "sound_binding": {
+      "hit_light": { "file": "hit_light.wav", "volume": 0.6, "pitch": 1.0 },
+      "hit_sharp": { "file": "hit_sharp.wav", "volume": 0.7, "pitch": 1.2 },
+      "boom_medium": { "file": "boom_medium.wav", "volume": 0.8, "pitch": 1.0 },
+      "tick_low": { "file": "tick_low.wav", "volume": 0.4, "pitch": 0.8 },
+      "drain_loop": { "file": "drain_loop.wav", "volume": 0.5, "loop": true },
+      "slash": { "file": "slash.wav", "volume": 0.7, "pitch": 1.0 },
+      "thud_heavy": { "file": "thud_heavy.wav", "volume": 0.9, "pitch": 0.9 },
+      "clang": { "file": "clang.wav", "volume": 0.7, "pitch": 1.1 },
+      "whoosh_steady": { "file": "whoosh_steady.wav", "volume": 0.5 },
+      "whoosh_short": { "file": "whoosh_short.wav", "volume": 0.6 },
+      "whoosh_double": { "file": "whoosh_double.wav", "volume": 0.6 },
+      "zap_instant": { "file": "zap_instant.wav", "volume": 0.8, "pitch": 1.3 },
+      "crackling_chain": { "file": "crackling_chain.wav", "volume": 0.7 },
+      "sharp_crack": { "file": "sharp_crack.wav", "volume": 0.7, "pitch": 1.2 },
+      "explosion": { "file": "explosion.wav", "volume": 0.9 },
+      "puff": { "file": "puff.wav", "volume": 0.5 },
+      "vortex": { "file": "vortex.wav", "volume": 0.6, "loop": true },
+      "sucking": { "file": "sucking.wav", "volume": 0.5, "loop": true },
+      "humming": { "file": "humming.wav", "volume": 0.4, "loop": true },
+      "whisper": { "file": "whisper.wav", "volume": 0.4 },
+      "idle_hum": { "file": "idle_hum.wav", "volume": 0.3, "loop": true },
+      "blink_snap": { "file": "blink_snap.wav", "volume": 0.7 }
+    },
+
+    "element_colors": {
+      "Ateş":    { "primary": "#c45c26", "light": "#ff9a3c" },
+      "Su":      { "primary": "#39646a", "light": "#5fb5d0" },
+      "Hava":    { "primary": "#87a96b", "light": "#c5e0a8" },
+      "Toprak":  { "primary": "#877dd9", "light": "#b8afef" },
+      "Aydınlık": { "primary": "#c9a227", "light": "#ffe082" },
+      "Karanlık": { "primary": "#5c8a7d", "light": "#7fb3a0" }
+    }
+  },
+
+  "asset_store_references": {
+    "description": "VFX asset paketleri — satın alma öncesi referans. Ateş hattı için minimum set.",
+    "recommended_packs": [
+      {
+        "name": "Hovl Studio - Magic Arsenal",
+        "covers": ["projectile", "aoe", "beam", "trail", "impact"],
+        "price_range": "$30-50",
+        "priority": "yüksek"
+      },
+      {
+        "name": "Gabriel Aguiar - VFX Graph Pack",
+        "covers": ["shockwave", "explosion", "chain lightning", "beam"],
+        "price_range": "$20-40",
+        "priority": "yüksek"
+      },
+      {
+        "name": "Kripto289 - VFX Bundle",
+        "covers": ["vortex", "life drain", "afterimage", "smoke"],
+        "price_range": "$40-60",
+        "priority": "orta"
+      }
+    ],
+    "free_resources": [
+      { "name": "Kenney VFX", "url": "kenney.nl", "covers": ["basic impacts", "smoke"] },
+      { "name": "Unity Particle Pack", "url": "assetstore.unity.com", "covers": ["basic explosions", "trails"] },
+      { "name": "Mixamo", "url": "mixamo.com", "covers": ["animations (ücretsiz)"] }
+    ]
+  },
+
+  "implementation_notes": {
+    "for_cursor": [
+      "Trajectory library = hangi hareket nasıl. Motor trajectory_override okuduğunda buraya bakar.",
+      "Hitbox library = hangi çarpışma alanı nasıl. Motor base_hitbox okuduğunda buraya bakar.",
+      "Matrix = hangi trajectory hangi hitbox ile uyumlu. Uyumsuzsa motor hata verir.",
+      "Animation library = hangi animasyon frame data. Motor animation_type okuduğunda buraya bakar.",
+      "VFX binding = hangi trajectory/hitbox/animasyon için hangi VFX prefab. Motor asset yüklerken buraya bakar.",
+      "Bu dosya element sisteminden bağımsız. Element sistemi sadece hangi trajectory/hitbox/animation kullanacağını söyler."
+    ],
+    "motor_integration_order": [
+      "1. trajectory_override okunduğunda trajectory_library'den çek",
+      "2. base_hitbox okunduğunda hitbox_library'den çek",
+      "3. İkisini matrix'te kontrol et — uyumlu mu?",
+      "4. animation_type okunduğunda animation_library'den frame data çek",
+      "5. damage_applied_at_frame frame'inde hasar uygula",
+      "6. spawn_vfx_at_frame frame'inde VFX oluştur",
+      "7. vfx_binding kurallarına göre VFX prefab seç",
+      "8. Asset yüklenmemişse placeholder göster (renkli küp/küre)"
+    ],
+    "asset_missing_handling": {
+      "if_vfx_missing": "Renkli primitive göster (element_color)",
+      "if_animation_missing": "Basit animasyon (scale + rotate)",
+      "if_sound_missing": "Sessiz çalış",
+      "log_warning": true
+    }
+  },
+
+  "changelog": {
+    "version": "1.0",
+    "date": "2026-09-16",
+    "covers": [
+      "trajectory_library — 15 trajectory detaylı",
+      "hitbox_library — 17 hitbox detaylı",
+      "trajectory_hitbox_matrix — uyumluluk tablosu",
+      "animation_library — 10 animasyon frame data",
+      "vfx_binding — trail/impact/zone/aura VFX + ses",
+      "element_colors — 6 element rengi",
+      "asset_store_references — önerilen paketler",
+      "implementation_notes — Cursor için adımlar"
+    ]
+  }
+}

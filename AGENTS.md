@@ -48,6 +48,7 @@ Bunlar görevden bağımsız, hepsi geçerli. İhlali geri dönüşü pahalı ha
 | `docs/element-sistemi.json` | Element/skill verisi — motor bunu okur, sayılar burada |
 | `docs/element-sistemi.md` | Element sisteminin insan-okunur speci (gramer, aile/rol, bilinen açıklar) |
 | `docs/unity-notlari.md` | Unity/sahne/Android build operasyonel tuzakları (tasarım değil) |
+| `docs/prezentasyon-katmani.json` | Trajectory/hitbox/animasyon/VFX verisi — element sisteminden bağımsız, motor okur |
 
 > 16 Eylül 2026: `dovus-sistemi.md` / `tasarim-ozeti.md` / `teknoloji-kararlari.md` /
 > `his-kontrol-listesi.md` / `t0-kurulum.md` / `alis-sepeti.md` / `animasyon-omurgasi.md`

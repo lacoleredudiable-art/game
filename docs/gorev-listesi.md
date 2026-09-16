@@ -445,3 +445,162 @@ birini tek tek, sırayla, `ManifestationDirector`/`PrototypeBootstrap`'a gerçek
 Unity Play mode'da canlı doğrulayan görevler. O zaman JSON'un `equipment_system`/`ui_rules`/
 `manipulation_layers`'ının TAMAMI da dahil olmak üzere gerçekten oyunda çalışıyor olacak —
 sahibinin talebi budur, "motor değil ama JSON'da var, atlanır" diye bir kategori artık yok.
+
+---
+
+## Backlog — Prezentasyon katmanı (docs/prezentasyon-katmani.json, 16 Eylül 6. tur)
+
+**Yeni dosya:** `docs/prezentasyon-katmani.json` — element sisteminden BAĞIMSIZ, ayrı bir
+kaynak (`system.binding: false`, kendi `version: 1.0`). 16 trajectory (hareket eğrisi), 16
+hitbox (çarpışma şekli), bir uyumluluk matrisi, 10 animasyon frame-data'sı, VFX/ses bağlama
+kuralları, 6 element rengi, önerilen Asset Store paketleri içerir. **Değişmez kural 4**
+("hiçbir fiil anlık vurmaz, dünyada yaşar") bu dosyanın `trajectory_library`'siyle artık
+somut sayılara bağlanabilir — şu ana kadar bu, `LivingEffect.cs`'teki 3 eski beşgen
+arketipiyle (Dalga/İğne/Sürü) sağlanıyordu, bu dosya 16 gerçek seçenek sunuyor.
+
+**Sırala:** Görev 13 önce ve tek başına (yeni bir parser dosyası kurar, sonrakiler onu
+okur). 14-17 paralel verilebilir.
+
+### Görev 13 — PresentationCatalog: yeni JSON'u okuyan parser (sıralı, tek ajan)
+
+```
+Rolün: prezentasyon katmanı JSON'unu okuyan Core geliştiricisi.
+
+ÖNCE OKU: docs/prezentasyon-katmani.json (TAMAMI) + unity/Assets/Scripts/Core/Grammar/
+SkillMotor.cs (MiniJson deseni — AYNI deseni kullan, YENİ bir JSON parser YAZMA).
+
+GÖREV
+1. Core/Presentation/PresentationCatalog.cs (yeni klasör, saf C#): MiniJson ile
+   docs/prezentasyon-katmani.json'ı okuyan, element-sistemi.json'dan TAMAMEN AYRI bir sınıf
+   (SkillMotor'a KARIŞTIRMA — bu ayrı bir dosya, ayrı bir binding:false kaynak).
+2. TrajectoryNode struct'ı (Id, Name, MotionCurve, SpeedMpsDefault, JsonValue Raw + gerekli
+   alanlara erişim için GetFloat/GetBool/GetString yardımcıları — alanlar trajectory tipine
+   göre çok değişken, hepsini tek tek tipleme, Raw üzerinden erişilsin).
+3. HitboxNode struct'ı (Id, Name, Shape, JsonValue Raw + aynı yardımcılar).
+4. `IReadOnlyDictionary<string,bool> IsCompatible(string trajectoryId, string hitboxId)`
+   yerine basit bir `CompatibilityResult TryGetCompatibility(trajectoryId, hitboxId)` —
+   trajectory_hitbox_matrix'teki "✓"/"⚠"/"✗" değerini enum'a çevirir (Compatible/Special/
+   Incompatible). **Gerçek sayı: 16 trajectory × 16 hitbox** — dosyanın kendi changelog'u
+   "15"/"17" diyor ama BU YANLIŞ, JSON'u say, changelog'a güvenme (16 Eylül 6. tur notu).
+5. AnimationFrameNode struct'ı (Id, TotalFrames, TotalDurationMs, StartupFrames,
+   ActiveFrames int[2], RecoveryFrames, CancelWindow int[2]?, DamageAppliedAtFrame
+   (string olabilir "every_tick" — JsonValue olarak taşı, tip zorlamayan), SpawnVfxAtFrame,
+   AnimatorState).
+6. PresentationCatalog: Trajectories/Hitboxes/Animations property'leri + TryGetCompatibility.
+
+KABUL KRİTERLERİ
+- dotnet test yeşil: Trajectories.Count==16, Hitboxes.Count==16, Animations.Count==10
+  (JSON'u say, uydurma). "duz"+"projectile" compatibility ✓, "duz"+"raycast" ✗ test edilir
+  (matrix'ten gerçek örnek).
+
+YASAKLAR
+- SkillMotor.cs'e dokunma — bu TAMAMEN ayrı bir dosya/sınıf
+- element-sistemi.json'ı okuma/karıştırma
+```
+
+### Görev 14 — Trajectory×Hitbox doğrulama + SkillResolution köprüsü (paralel, Görev 13 sonrası)
+
+```
+Rolün: motor entegrasyonu geliştiricisi.
+
+ÖNCE OKU: Core/Presentation/PresentationCatalog.cs (Görev 13) + unity/Assets/Scripts/Core/
+Grammar/SkillMotor.cs (SkillResolution.Hitbox, SkillResolution.AnimationType alanları
+ZATEN var, bkz. mevcut alanlar).
+
+GÖREV
+Core/Presentation/PresentationValidator.cs: bir SkillResolution alır, `Hitbox` alanını
+PresentationCatalog.Hitboxes'ta arar, `AnimationType`'ı Animations'ta arar (trajectory
+seçimi element-sistemi.json'da yok — bu yüzden bu görev yalnızca hitbox+animation'ı
+doğrular, trajectory eşleştirmesini YAPMAZ, o Görev 16'nın işi). Eşleşmeyen id varsa
+docs/durum.md'ye "şu SkillResolution.Hitbox değeri prezentasyon katmanında yok" diye yaz,
+sessizce atlama.
+
+KABUL KRİTERLERİ
+- dotnet test yeşil: element-sistemi.json'daki TÜM verb'lerin `base_hitbox` değerleri
+  PresentationCatalog.Hitboxes'ta var mı diye tek tek test edilir (kaç tanesi eksikse
+  docs/durum.md'ye liste).
+
+YASAKLAR
+- ManifestationDirector.cs'e bağlama (Faz 6 işi)
+```
+
+### Görev 15 — AnimationBridge: frame data'yı Animator'a uygula (paralel, Görev 13 sonrası, Game katmanı)
+
+```
+Rolün: animasyon köprüsü geliştiricisi (Unity gerekli).
+
+ÖNCE OKU: Core/Presentation/PresentationCatalog.cs (AnimationFrameNode) +
+unity/Assets/Scripts/Game/ActorVisual.cs (MEVCUT Animator entegrasyonu — SafeSetFloat
+deseni, örnek al).
+
+GÖREV
+Game/AnimationBridge.cs: bir AnimationFrameNode + bir Animator alır, `animator_state`'i
+`Animator.Play` ile tetikler (state ismi Animator Controller'da YOKSA `SafeSetFloat`
+deseniyle uyarı logla, hata FIRLATMA). `damage_applied_at_frame`/`spawn_vfx_at_frame`
+zamanlamasını dışarıya event olarak sunan basit bir frame-timer (worldMs bazlı, kare
+numarasını total_duration_ms/total_frames ile saniyeye çevir).
+
+KABUL KRİTERLERİ
+- Unity Play mode'da (mevcut Quaternius Animator'larından biriyle) bir AnimationBridge
+  örneği çalıştırılıp DamageFrameReached event'inin doğru worldMs'te ateşlendiği
+  Unity MCP ile canlı doğrulanır.
+
+YASAKLAR
+- PrototypeBootstrap.cs / ManifestationDirector.cs'e bağlama (Faz 6 işi) — bu görev
+  yalnızca bağımsız çalışan bir sınıf yazar
+```
+
+### Görev 16 — Placeholder VFX/Trajectory fabrikası (paralel, Görev 13 sonrası, Game katmanı)
+
+```
+Rolün: VFX placeholder sistemi geliştiricisi (Unity gerekli).
+
+ÖNCE OKU: docs/prezentasyon-katmani.json vfx_binding + implementation_notes.
+asset_missing_handling + unity/Assets/Scripts/Game/LivingEffectView.cs (MEVCUT — renkli
+primitive/glow çizim deseni zaten var, ÖRNEK AL, silme).
+
+GÖREV
+Game/PlaceholderFactory.cs: `vfx_binding.trail_vfx`/`impact_vfx`'teki her stil için asset
+YOKSA (şu an hiç yok) `element_colors`'tan rengi alıp basit bir primitive (küre/çizgi)
+oluşturan bir fabrika. `asset_missing_handling.log_warning: true` — asset bulunamadığında
+Debug.LogWarning (spam olmasın, ilk seferinde bir kez).
+
+KABUL KRİTERLERİ
+- Unity Play mode'da PlaceholderFactory çağrıldığında (test amaçlı bir prob objesiyle)
+  element rengiyle boyanmış bir primitive'in sahneye eklendiği MCP ile doğrulanır.
+
+YASAKLAR
+- Asset Store'dan gerçek paket satın alma/import etme (bu görev SADECE placeholder)
+- LivingEffectView.cs'in mevcut çizim mantığını silme/yeniden yazma
+```
+
+### Görev 17 — element_colors'ı PrototypeTuning ile karşılaştır (paralel, Görev 13 sonrası)
+
+```
+Rolün: renk paleti denetleyicisi.
+
+ÖNCE OKU: docs/prezentasyon-katmani.json element_colors + unity/Assets/Scripts/Game/
+PrototypeTuning.cs (ElementFire/ElementWater/.../ElementDark alanları — MEVCUT, 16 Eylül
+4. turda Rune enum'u yeniden adlandırılırken bu renkler değişmedi).
+
+GÖREV
+Yeni renklerle mevcut `PrototypeTuning.ElementXxx` renklerini karşılaştır (hex'i RGB'ye
+çevirip yaklaşık eşitliğe bak). Aynıysa dokunma. Farklıysa docs/durum.md'ye iki rengi de
+yaz (hangisi otorite sahibi karar verir) — DEĞİŞTİRME, sadece raporla.
+
+KABUL KRİTERLERİ
+- docs/durum.md'de 6 elementin ikisinin de (mevcut kod / yeni JSON) rengiyle bir
+  karşılaştırma tablosu var.
+
+YASAKLAR
+- PrototypeTuning.cs'in renklerini DEĞİŞTİRME — bu görev yalnızca rapor üretir
+```
+
+---
+
+**Not:** Görev 13 bitmeden 14-17'yi başlatma (hepsi `PresentationCatalog`'u okuyor). Bunlar
+da (Görev 0-12 gibi) henüz gerçek oynanışa bağlanmıyor — trajectory'lerin GERÇEKTEN
+`LivingEffect.cs`'in yerini alması (16 hareket eğrisi, eski 3 beşgen arketipi yerine) ayrı,
+daha büyük bir "Faz 8 — Gerçek Trajectory Motoru" turu olacak; o, görsel iterasyon (ekran
+görüntüsü, oynanış hissi) gerektirdiği için kör kod yazarak yapılmayacak (bkz. sahibinin
+"6 elemente uygun efekt" isteğine verilen önceki cevap).
