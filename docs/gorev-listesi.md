@@ -1095,9 +1095,167 @@ YASAKLAR
 
 ---
 
-**Not (auto mode kullanan ajanlara):** Görev 0 bitip merge olmadan 1-7'yi başlatma — hepsi
-`Skills.Passives`/`Skills.Chains`/`Skills.StatusInteractions`/`Skills.Zones`/yeni Verb
-alanlarını okuyor, onlar yoksa derlenmezler. Her görev kendi dalında, `dotnet test` yeşilse
-kendi merge eder (AGENTS.md). Hiçbiri henüz `ManifestationDirector`'a BAĞLAMIYOR — bağlama
-(gerçek oynanışa girmesi) sayısı çok ve sırası önemli olduğu için ayrı bir "Faz 6 — Bağlama"
-turu olacak, o turun görevleri bu 7'si bitip birleşmeden yazılmayacak.
+---
+
+### Görev 8 — SpaceDirector: mevcut hardcoded geçişleri space_layer'a bağla (paralel, Görev 0 sonrası)
+
+```
+Rolün: uzay/geçiş mekaniği geliştiricisi.
+
+ÖNCE OKU: docs/element-sistemi.json manipulation_layers.space_layer + unity/Assets/Scripts/
+Core/Combat/SkillMotionMotor.cs (MEVCUT — Hava+Su Zenitsu kesişi, Hava+Su+Toprak işaret
+mekaniği ŞU AN ELLE rün kontrolüyle yazılı, space_layer JSON'undan HİÇ okumuyor) +
+StateBridgeBoard.cs.
+
+GÖREV
+1. SkillMotor'a space_layer.effects'i okuyan SpaceEffectNode + ParseSpaceEffects ekle
+   (Id, Element, Type, DistanceM, IFrameMs, DamageOnPass bool, DamageOnCross float,
+   DurationSec — alanlar effect tipine göre değişiyor, JsonValue ile opsiyonel oku).
+2. SkillMotionMotor.cs'teki mevcut sabit sayıları (distance_m, i_frame_ms vb.) motor.
+   SpaceEffects'ten gelen değerlerle KARŞILAŞTIR; aynıysa dokunma, farklıysa
+   docs/durum.md'ye yaz (hangisi otorite sahibi karar verir).
+3. "Karabasan"/"Hiçlik" gibi henüz karşılığı olmayan space effect'leri (invisible_link,
+   tear) için YENİ mekanik YAZMA — sadece motor.SpaceEffects listesinde veri olarak
+   dursunlar, docs/durum.md "Bilinen açıklar"a "şu N effect JSON'da var, oyunda karşılığı
+   yok" diye ekle.
+
+KABUL KRİTERLERİ
+- dotnet test yeşil, motor.SpaceEffects.Count JSON'daki sayıyla eşleşiyor
+- SkillMotionMotor'un MEVCUT davranışı (Zenitsu/işaret) hiç değişmedi (regresyon yok)
+
+YASAKLAR
+- SkillMotionMotor.cs'in mevcut çalışan mantığını SİLME/yeniden yazma — sadece karşılaştır
+- StateBridgeBoard.cs'e dokunma
+```
+
+---
+
+### Görev 9 — TimeDirector: gecikme/yankı/kalıcılık (paralel, Görev 0 sonrası)
+
+```
+Rolün: zaman katmanı geliştiricisi.
+
+ÖNCE OKU: docs/element-sistemi.json manipulation_layers.time_layer.
+
+GÖREV
+Core/Combat/TimeEffectDirector.cs (saf C#, mevcut Core/Time/ klasöründeki yavaş-çekim
+yönetmeninden AYRI — o dünya saatini yönetiyor, bu belirli bir cast'in gecikmeli/yankılı
+davranışını): time_layer.effects'teki 4 tipi uygula:
+- delayed_detonation (Karabasan): cast X saniye sonra patlar
+- echo (Alev): cast'ten damage_ratio kadar bir "yankı" hasarı delay_sec sonra tekrar gelir
+- extend_lifetime (Lav): bir zone/effect'in RemainingSec'i multiplier ile çarpılır
+- death_delay (Cehennem): ölüm anı delay_sec ertelenir (PlayerVitals/BossVitals'a
+  BAĞLAMA — bu görev sadece "ne zaman tetikleneceğini" hesaplayan saf mantık, gerçek
+  ölüm/patlama uygulaması Faz 6 "Bağlama" turunun işi)
+
+KABUL KRİTERLERİ
+- dotnet test yeşil: 4 tip için de zamanlama hesabı (worldMs bazlı) doğru test edilir.
+
+YASAKLAR
+- PlayerVitals.cs / BossVitals.cs / Core/Time/*.cs'e dokunma
+```
+
+---
+
+### Görev 10 — RealityDirector: dirilme engeli + silme (paralel, Görev 0 sonrası)
+
+```
+Rolün: gerçeklik katmanı geliştiricisi.
+
+ÖNCE OKU: docs/element-sistemi.json manipulation_layers.reality_layer.
+
+GÖREV
+Core/Combat/RealityEffectDirector.cs: revive_block (Cehennem, dirilmeyi N sn engeller —
+PlayerVitals'ın respawn akışına BAĞLAMA, sadece "engelli mi" bayrağını hesapla),
+partial_erase (Karabasan: shield/haste/damage_reduction hedeflerini siler — bu targets
+listesi zaten StatusKind'ta var, StatusBoard üzerinde çalışacak bir yardımcı yaz AMA
+StatusBoard.cs'e DOKUNMA, dışarıdan Board.CleanseHostile benzeri yeni bir public metod
+gerekiyorsa StatusBoard'a EKLE sadece, mevcut metodu değiştirme), full_erase (Hiçlik:
+targets = minions/summons/shields — **oyunda minion/summon sistemi YOK**, bu görevin
+kapsamı yalnızca "shields" kısmını uygular, diğer ikisini docs/durum.md'ye "sistem yok,
+uygulanamaz" diye açık olarak yazar; UYDURMA minion sistemi kurma).
+
+KABUL KRİTERLERİ
+- dotnet test yeşil: partial_erase şeffaf/haste/damage_reduction'ı doğru temizliyor,
+  full_erase shield'ı temizliyor, revive_block bayrağı süresi doğru hesaplanıyor.
+
+YASAKLAR
+- Minion/summon sistemi icat etme
+- PlayerVitals.cs'in respawn akışına bağlama (Faz 6 işi)
+```
+
+---
+
+### Görev 11 — Equipment sistemi: veri modeli + element eşleşme bonusu (paralel, Görev 0 sonrası)
+
+```
+Rolün: ekipman veri modeli geliştiricisi.
+
+ÖNCE OKU: docs/element-sistemi.json equipment_system (TAMAMI — küçük bölüm).
+
+GÖREV
+1. Core/Equipment/EquipmentSlot.cs (enum: Weapon, Armor, Accessory) +
+   Core/Equipment/EquipmentItem.cs (Id, Name, Slot, Element) — equipment_system.examples'
+   taki 6×3=18 örneği SkillMotor deseniyle JSON'dan okuyan bir parser (yeni
+   Core/Equipment/EquipmentCatalog.cs, MiniJson kullan).
+2. Core/Equipment/EquipmentBonusResolver.cs: element_match_bonus ("+%10 etki") — silahın
+   Element'i cast edilen skill'in element'iyle eşleşirse %10 bonus döner (JSON'daki
+   "+%10" metninden yüzdeyi türet, SkillMotor.ParseDefenseDropMult'taki sayı-çıkarma
+   desenini örnek al, elle "10" yazma).
+
+KABUL KRİTERLERİ
+- dotnet test yeşil: 18 örnek item doğru parse ediliyor, eşleşen/eşleşmeyen element için
+  bonus doğru (1.1 / 1.0) dönüyor.
+
+YASAKLAR
+- Envanter UI'ı yazma (oyuncunun ekipman SEÇMESİ ayrı, çok daha büyük bir görev — bu görev
+  sadece veri + hesap katmanı; oyuncunun şu an sabit/tek bir ekipmanı olduğunu VARSAY)
+- PlayerVitals.cs veya ManifestationDirector.cs'e bağlama
+```
+
+---
+
+### Görev 12 — UI Rules hizalaması (paralel, Görev 0 sonrası, Game katmanı)
+
+```
+Rolün: HUD geliştiricisi (bu görev Core değil Game — Unity gerekli).
+
+ÖNCE OKU: docs/element-sistemi.json ui_rules + unity/Assets/Scripts/Game/PentagonView.cs
++ ReactionReadout.cs + Core/Tuning/FeelTuning.cs (ReadoutHoldMs — read_as_display.
+duration_ms=1500 ile KARŞILAŞTIR).
+
+GÖREV
+1. `read_as_display.duration_ms` (1500) ile `FeelTuning.ReadoutHoldMs`'in mevcut değerini
+   karşılaştır; farklıysa docs/durum.md'ye yaz (değiştirme, sahibi karar versin).
+2. `cooldown_display` (radial_overlay, her rünün etrafında, sayı göster): PentagonView'daki
+   her nokta için `base_cooldown_sec` dolana kadar dairesel bir dolum efekti + kalan saniye
+   sayısı çiz. Şu an hiçbir cooldown UI'da görünmüyor — bu görev sadece GÖRSEL, cooldown'un
+   GERÇEKTEN engellemesi Görev 2'nin (CooldownTracker) Faz 6'da bağlanmasına bağımlı; bağlı
+   değilken bile dolum animasyonu kozmetik olarak (her cast'te base_cooldown_sec kadar
+   dolar, hiçbir şeyi engellemez) eklenebilir.
+3. `zone_display` (in_world, transparency 0.6): Görev 7 (ZoneDirector) henüz Game'e
+   bağlanmadığı için bu maddeyi sadece docs/durum.md'ye not düş, kod yazma.
+
+KABUL KRİTERLERİ
+- Unity Play mode'da her rün noktasının etrafında dairesel cooldown dolumu görünüyor
+  (Unity MCP ile canlı doğrula)
+- dotnet test yeşil (bu görev Game katmanı olsa da Core testleri kırılmamalı)
+
+YASAKLAR
+- CooldownTracker'ı gerçekten cast'i ENGELLEYECEK şekilde bağlama (Faz 6 işi)
+- ZoneDirector'ı Unity'ye bağlama (Görev 7 henüz Core'da, Game'e geçmedi)
+```
+
+---
+
+**Not (auto mode kullanan ajanlara):** Görev 0 bitip merge olmadan 1-12'yi başlatma — hepsi
+`Skills.Passives`/`Skills.Chains`/`Skills.StatusInteractions`/`Skills.Zones`/
+`Skills.SpaceEffects`/yeni Verb alanlarını okuyor, onlar yoksa derlenmezler. Her görev kendi
+dalında, `dotnet test` yeşilse kendi merge eder (AGENTS.md). **Hiçbiri henüz gerçek oynanışa
+BAĞLANMIYOR** — bu bilinçli: 13 görevin bağlama sırası birbirine karışırsa (ör. CooldownTracker
+cast'i engellemeye başlarken ResourceTracker henüz yokken oyun kilitlenebilir) hata ayıklaması
+imkânsızlaşır. Hepsi (Görev 0-12) bitip birleşince **"Faz 6 — Bağlama"** turu yazılacak: her
+birini tek tek, sırayla, `ManifestationDirector`/`PrototypeBootstrap`'a gerçekten bağlayıp
+Unity Play mode'da canlı doğrulayan görevler. O zaman JSON'un `equipment_system`/`ui_rules`/
+`manipulation_layers`'ının TAMAMI da dahil olmak üzere gerçekten oyunda çalışıyor olacak —
+sahibinin talebi budur, "motor değil ama JSON'da var, atlanır" diye bir kategori artık yok.
