@@ -12,16 +12,57 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (Görev 5 · ChainDirector) · **Sıradaki:**
+**Son güncelleme:** 16 Eylül 2026 (Görev 2 · Resource/Cooldown) · **Sıradaki:**
 Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
-+ motor uygulama görevleri (Görev 2–4, 6–7; Görev 1+5 kapandı — DamageCalculator/ChainDirector Core'da, bağlı değil)
++ motor uygulama görevleri (Görev 3–7; Görev 1–2 Core yazıldı, oyuna bağlanmadı)
 
-> **16 Eylül — Görev 5: ChainDirector.** `Core/Combat/ChainDirector.cs` + `ChainRules`/
-> `ChainStepResult`: `motor.Chains` + `chain_mechanics.rules` (window/break/max/finisher_mult).
-> Pattern `"1-X-X-X-X-X"` JSON'dan parse — digit = zorunlu element, `X` = çapa ile aynı
-> (ulti notundaki X-X-X-X dili). `RegisterCast(dot, worldMs)` Links sırasıyla bonus,
-> Finisher yalnızca tam pattern. ManifestationDirector'a **bağlanmadı**. 5 yeni test;
-> `dotnet test` 168 yeşil (163+5; DamageCalculator 7'si zaten master'da).
+> **16 Eylül (Görev 2) — ResourceTracker + CooldownTracker (Core only).**
+> `Core/Combat/ResourceTracker.cs`: JSON `global_rules.resource_system` (max_mana=100,
+> regen_per_sec=8, regen_delay_after_cast_sec=1.5) — `CanAfford`/`Spend`/`Tick`.
+> `Core/Combat/CooldownTracker.cs`: JSON `cooldown_rules` (global_cooldown_sec=0.3,
+> max_concurrent_casts=1) — verb id → soğuma bitiş (worldMs), `TryStart`/`CompleteCast`.
+> **Oyuna bağlanmadı** (PlayerVitals / ManifestationDirector kasıtlı dışı).
+> Testler: `ResourceTrackerTests` + `CooldownTrackerTests`. `dotnet test` 177 yeşil (163+14).
+>
+> **PlayerVitals MaxHp vs JSON:** `PlayerVitals.MaxHp` `PrototypeTuning.PlayerMaxHp` (=**22**)
+> üzerinden `Bind` edilir — `global_rules.player_stats.max_hp` (**100**) değil. Boss:
+> `CombatTuning.Boss.MaxHp`=120 vs `boss_stats_default.max_hp`=22000 (prototip his sayıları).
+>
+> **StatusTuning ↔ `global_rules.status_durations`** (StatusTuning.cs **değiştirilmedi** —
+> sahibi otorite seçer):
+>
+> | status (JSON) | JSON duration | StatusTuning | eşleşme |
+> |---|---|---|---|
+> | stun | 2s → 2000ms | StunMs=800 | **fark** |
+> | root | 3s → 3000ms | RootMs=1200 | **fark** |
+> | silence | 3s → 3000ms | SilenceMs=1000 | **fark** |
+> | slow | 4s → 4000ms | SlowMs=1500 | **fark** |
+> | blind | 3s → 3000ms | BlindMs=1400 | **fark** |
+> | fear | 2s → 2000ms | FearMs=900 | **fark** |
+> | taunt | 3s → 3000ms | TauntMs=1200 | **fark** |
+> | burn | 4s → 4000ms | BurnMs=2400 | **fark** |
+> | armor_break | 5s → 5000ms | ArmorBreakMs=3000 | **fark** |
+> | weaken | 4s → 4000ms | WeakenMs=2500 | **fark** |
+> | grievous_wounds | 6s → 6000ms | GrievousMs=2500 | **fark** |
+> | poison | 6s → 6000ms | PoisonMs=3000 | **fark** |
+> | shield | 5s → 5000ms | ShieldMs=2500 | **fark** |
+> | invulnerability | 0.5s → 500ms | StasisMs=700 (isim varsayımı) | **fark** |
+> | confuse | 2s → 2000ms | StatusTuning'de yok | **yalnız JSON** |
+>
+> Magnitude:
+>
+> | alan | JSON | StatusTuning | not |
+> |---|---|---|---|
+> | grievous heal | heal_reduction=0.5 | GrievousHealMult=0.5 | süre hariç **aynı** |
+> | slow speed | reduction=0.4 → 0.6 | SlowSpeedMult=0.55 | **fark** |
+> | weaken | damage_reduction=0.25 → 0.75 | WeakenOutgoingMult=0.85 | **fark** |
+> | armor_break | armor_reduction=0.3 | ArmorBreakDamageTakenMult=1.2 | semantik farklı |
+> | burn/poison tick | mult 0.08 / 0.05 | DamagePerSec 6 / 4 | birim farklı |
+> | shield absorb | 50 | ShieldAbsorb=25 | **fark** |
+> | blind accuracy | 0.5 | yok | yalnız JSON |
+>
+> StatusTuning'de olup JSON'da olmayan: DisarmMs, Haste*, DamageReduction*, Regen*,
+> Knockback*, BurnPoisonComboBonusPerSec, ShieldBurnDrainRatio, StunKnockbackDurationAddMs.
 
 > **16 Eylül (6. tur) — DamageCalculator (formulas.damage + crit_system), paralel sınıf.**
 > `Core/Combat/DamageCalculator.cs`: `base_damage_value × adj.damage_mult × length.damage_mult ×
@@ -249,8 +290,9 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 - **Ulti (`active_modes`) efektlerinin bir kısmı henüz dünyaya işlemiyor** (4. tur): JSON'daki
   `cast_time_mult`/`attack_speed_mult` okunuyor (`ActiveModeNode.GetEffect`) ama hiçbir yere
   uygulanmıyor. `dash_cooldown_mult`/`afterimage_count` (Fırtına Akışı) ve `taunt_radius_m`
-  (Aşılmaz Duvar) hiç uygulanmıyor. `resource_cost` hiçbir modda düşülmüyor — oyunda hiçbir
-  yerde (verb'lerin `base_resource_cost`'u dahil) mana/kaynak sistemi yok, ulti'ye özgü değil.
+  (Aşılmaz Duvar) hiç uygulanmıyor. `resource_cost` hiçbir modda düşülmüyor —
+  `ResourceTracker`/`CooldownTracker` Core'da var (Görev 2) ama oyuna bağlanmadı; verb
+  `base_resource_cost` hâlâ düşülmüyor.
   `visual.aura`/`screen_edges` okunmuyor — `ActiveModeHud` banner'ı var, ekran kenarı VFX yok.
 - **"team_has_debuffs"/"team_has_wounded" basitleştirilmiş okunuyor** (4. tur): `AllyDummy`'nin
   `StatusBoard`'u yok, takım debuff sayısı yalnızca oyuncudan okunuyor. `team_full_cleanse` de
@@ -264,7 +306,9 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   **`formulas`/`crit_system` kodu var ama bağlı değil (6. tur):** `DamageCalculator` yazıldı;
   canlı hasar hâlâ `ClosingDamageMath`. **ChainDirector (Görev 5) Core'da** ama
   ManifestationDirector'a bağlı değil. `passives`/`zones` uygulama yok.
-  `global_rules`/`state_machine`/`equipment_system` hâlâ yok. `status_interaction_table`
+  `global_rules.resource_system`/`cooldown_rules` → Core sınıflar var, bağ yok;
+  `status_durations` ↔ StatusTuning fark listesi (Görev 2, yukarıda; otorite açık).
+  `state_machine`/`equipment_system` hâlâ yok. `status_interaction_table`
   **uygulama** hâlâ `StatusReactionTable.cs` elle kopya. `atoms_catalog` /
   `all_verbs_atoms` / `atom_kombinasyonlari` kasıtlı okunmuyor.
 - **His deneme (geçici):** arena `ArenaVisualScale=3`, boss hasar 0, `AllyDummy` %50 —
