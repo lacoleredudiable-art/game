@@ -12,9 +12,16 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (Görev 3 · PlayerStateMachine) · **Sıradaki:**
+**Son güncelleme:** 16 Eylül 2026 (Görev 9 · TimeEffectDirector) · **Sıradaki:**
 Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
-+ kalan motor görevleri + **Faz 6 bağlama** (ZoneDirector/Resource/Cooldown / state machine henüz Game'e bağlı değil)
++ kalan motor görevleri + **Faz 6 bağlama** (Zone/Resource/Cooldown/TimeEffect/state machine henüz Game'e bağlı değil)
+
+> **16 Eylül — Görev 9: TimeEffectDirector.** `Core/Combat/TimeEffectDirector.cs` —
+> `manipulation_layers.time_layer` 4 tipi (worldMs): `delayed_detonation` / `echo`
+> (`damage_ratio`) / `extend_lifetime` (RemainingSec × multiplier, alan yuvası tutmaz) /
+> `death_delay` (beyan anı + delay). Soft-cap `max_active_fields=2`. `CollectDue` tetik
+> listesini çıkarır; PlayerVitals/BossVitals/`Core/Time/*` **dokunulmadı** (Faz 6 bağlama).
+> 7 yeni test; `dotnet test` yeşil (TimeEffectDirectorTests 7/7).
 
 > **16 Eylül (Görev 3) — PlayerStateMachine + state_machine okuma.**
 > `SkillMotor.ParseStateMachine` → `PlayerStates` (9) / `BossStates` (6).
@@ -336,7 +343,9 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   canlı hasar hâlâ `ClosingDamageMath`. **ChainDirector (Görev 5) Core'da** ama
   ManifestationDirector'a bağlı değil.
   **Zone yaşam döngüsü Core'da var (Görev 7)** — `ZoneDirector` soft-cap/süre/movement;
-  Game/Manifestation'a bağlı değil (görsel/hasar yok). `passives` uygulama yok.
+  Game/Manifestation'a bağlı değil (görsel/hasar yok).
+  **TimeEffectDirector (Görev 9) Core'da** — zamanlama hesabı var, cast/ölüm/zone'a bağlı değil.
+  `passives` uygulama yok.
   `global_rules.resource_system`/`cooldown_rules` → Core sınıflar var, bağ yok;
   `status_durations` ↔ StatusTuning fark listesi (Görev 2, yukarıda; otorite açık).
   **Görev 3:** `state_machine` okunuyor (`PlayerStates`/`BossStates` + `PlayerStateMachine`;
