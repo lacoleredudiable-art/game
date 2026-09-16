@@ -24,8 +24,10 @@ Bunlar görevden bağımsız, hepsi geçerli. İhlali geri dönüşü pahalı ha
 - **Asla okumayacağın yerler:** `unity/Library/`, `unity/Temp/`, `unity/obj/`, `unity/Logs/`.
 - **Başka görevin dosyalarına dokunma.** Eksik/yanlış bir şey görürsen düzeltme,
   `docs/durum.md`'nin "Bilinen açıklar" bölümüne yaz.
-- **Sayı uydurma.** Bir his değeri gerekiyorsa `docs/dovus-sistemi.md`'den al. Orada yoksa
-  varsayılan koy ve belgeye referansla yorum bırak, `docs/durum.md`'ye de geç.
+- **Sayı uydurma.** Bir element/skill değeri gerekiyorsa `docs/element-sistemi.json`'dan al.
+ Bir his değeri (hitstop, dodge, kamera vb.) gerekiyorsa ilgili `Core/Tuning/*.cs` sınıfının
+ mevcut varsayılanından al. Hiçbirinde yoksa varsayılan koy, yoruma referans bırak,
+ `docs/durum.md`'ye de geç.
 - **Bitince `docs/durum.md`'yi güncelle** — bir sonraki ajan repoyu taramak zorunda kalmasın.
 - **Kapanışta söyle:** kabul kriterlerinden hangisini doğrulayamadın.
 - Küçük ve anlamlı commit'ler; her görev kendi dalında.
@@ -39,6 +41,10 @@ Bunlar görevden bağımsız, hepsi geçerli. İhlali geri dönüşü pahalı ha
 |---|---|
 | `docs/durum.md` | Nerede kaldık, ne üretildi. **İlk buraya bak.** |
 | `docs/gorev-listesi.md` | Görevler ve prompt'lar |
-| `docs/dovus-sistemi.md` | Dövüşün speci, bütün sayılar |
-| `docs/teknoloji-kararlari.md` | Stack, mimari, kapsam dışı olanlar |
-| `docs/tasarim-ozeti.md` | Projenin genel bağlamı (nadiren gerekir) |
+| `docs/element-sistemi.json` | Element/skill verisi — motor bunu okur, sayılar burada |
+| `docs/element-sistemi.md` | Element sisteminin insan-okunur speci (gramer, aile/rol, bilinen açıklar) |
+
+> 16 Eylül 2026: `dovus-sistemi.md` / `tasarim-ozeti.md` / `teknoloji-kararlari.md` /
+> `his-kontrol-listesi.md` / `t0-kurulum.md` / `alis-sepeti.md` / `animasyon-omurgasi.md`
+> silindi — beşgen/3-rün alfa prototipine aitti, altıgen/6-element sistemine geçildikten
+> sonra kafa karıştırıyordu. Git geçmişinde duruyor.

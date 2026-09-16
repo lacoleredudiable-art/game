@@ -4,7 +4,12 @@
 > **kopyala-yapıştır hazır prompt** var; Composer gibi hızlı modellerle çalışacak şekilde
 > yazıldı: dar kapsam, net dosya yolları, sayılabilir kabul kriteri, açık yasaklar.
 >
-> Kaynaklar: [Dövüş Sistemi](dovus-sistemi.md) · [Teknoloji Kararları](teknoloji-kararlari.md)
+> Kaynaklar: [Element Sistemi](element-sistemi.md) · `element-sistemi.json`
+
+> **16 Eylül 2026:** `dovus-sistemi.md` ve `teknoloji-kararlari.md` silindi. Aşağıdaki T0-T14
+> görev prompt'ları **tamamlandı** (durum tablosuna bak) ve bu iki dosyaya onlarca yerde
+> referans veriyor — bu tarihi kayıttır, yeni görev yazarken örnek alınmaz. Yeni görevler
+> [Element Sistemi](element-sistemi.md) + `element-sistemi.json`'a referans vermeli.
 
 ---
 
@@ -27,7 +32,7 @@
 | 0 | T0 | insan işi | — |
 | 1 | T1–T4 | hayır | dövüş mantığı doğru mu |
 | 2 | T5–T10 | evet | his doğru mu |
-| 3 | T11 | evet + telefon | [§13'ün 1–2. sorusu](dovus-sistemi.md#13-prototipin-cevapladığı-sorular) — **evet, kapandı** |
+| 3 | T11 | evet + telefon | §13'ün 1–2. sorusu (eski `dovus-sistemi.md`, silindi) — **evet, kapandı** |
 | 3.5 | T11.1–T14 | evet + telefon | §13'ün 3–5. sorusu: soyutluk, tekdüzelik, harcamanın karşılığı |
 | 4 | görsellik | — | Faz 3.5 kapanmadan başlanmaz |
 
@@ -810,7 +815,7 @@ YASAKLAR
 
 ## Faz 4 — Görsellik
 
-**Kapı açıldı ama sıra Faz 3.5'te.** [§13'ün 1. ve 2. sorusuna](dovus-sistemi.md#13-prototipin-cevapladığı-sorular)
+**Kapı açıldı ama sıra Faz 3.5'te.** §13'ün 1. ve 2. sorusuna (eski `dovus-sistemi.md`, silindi)
 telefonda "evet" cevabı **alındı** (23 Ağustos) — yani eski yasak kalktı. Yerine tek bir
 bağımlılık kaldı: Faz 4'ün pahalı kalemleri bossun kaç saldırısı olduğuna ve nasıl öldüğüne
 bağlı. T12 ve T13 o iki kararı dondurmadan rig'lenmiş model ya da animasyon seti alınırsa,
@@ -819,15 +824,15 @@ Faz 3.5'in tamamı primitive ile yapılıyor ve bu yüzden geri dönüşü ucuz.
 
 O aşamaya gelindiğinde ilk kararlar: zincirlenebilir animasyon seti seçimi (Animancer/Playables),
 Asset Store VFX (Hovl Studio, Gabriel Aguiar, Kripto289), ve rig'lenmiş boss modeli.
-Bkz. [Teknoloji Kararları §7](teknoloji-kararlari.md#7-animasyon-efekt-ses).
+(Eski `teknoloji-kararlari.md` §7'de detaylıydı, silindi.)
 
-**Faz 4'ten sonraki büyük sistem sanat değil, durum tablosu.** Çeşitlilik şikâyetinin gerçek
-cevabı orada ([dövüş sistemi](dovus-sistemi.md) §4 "İlk turun sonucu"
-ve [özet §5](tasarim-ozeti.md#5-yaratıcı-build-sistemi)): ıslak / yanıyor / zehirli / sersem /
-havada / zırhı kırık durumları ve aralarındaki etkileşim kuralları. Üç rünle 120, beş rünle 780
-cümle zaten var; o cümleler ancak bossun durumu onların anlamını değiştirdiğinde birbirinden
-farklı hissediyor. Rün havuzunu büyütmek (KABUK/ZEHİR, sonra sınıf başına ayrı havuz) ucuz ve
-sırası gelecek, ama boş bir bossa beş rün de üç rün kadar tekdüze hisseder.
+**Faz 4'ten sonraki büyük sistem sanat değil, durum etkileşim tablosu.** (Eski
+`dovus-sistemi.md` §4 ve "Tasarım Özeti" §5'te detaylıydı, ikisi de silindi — özet
+`element-sistemi.md` §7/§10'da.) ıslak / yanıyor / zehirli / sersem / havada / zırhı kırık
+durumları ve aralarındaki etkileşim kuralları henüz yok. Altıgen sistem (6 element × 42
+fiil/sıfat) zaten çok cümle üretiyor; o cümleler ancak bossun durumu onların anlamını
+değiştirdiğinde birbirinden farklı hissedecek. Bu, `element-sistemi.md` §10'daki en büyük
+açık.
 
 ---
 

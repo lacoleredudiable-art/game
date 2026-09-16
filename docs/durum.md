@@ -4,6 +4,14 @@
 > ajanın repoyu taramadan nerede kaldığımızı anlaması. Kısa tut: ne bitti, ne üretildi,
 > nerede sapma var.
 
+> **16 Eylül 2026 — doküman sıfırlaması:** `dovus-sistemi.md`, `tasarim-ozeti.md`,
+> `teknoloji-kararlari.md`, `his-kontrol-listesi.md`, `t0-kurulum.md`, `alis-sepeti.md`,
+> `animasyon-omurgasi.md` **silindi** (beşgen/3-rün alfa prototipine aitti, altıgen/6-element
+> sistemine geçildi, kafa karıştırıyordu). Yeni bağlayıcı doküman: [Element Sistemi](element-sistemi.md)
+> + veri kaynağı `element-sistemi.json`. **Aşağıdaki eski oturum kayıtlarında** hâlâ "beşgen",
+> "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
+> yansıtmazlar; körü körüne referans alma.
+
 **Son güncelleme:** 16 Eylül 2026 · **Sıradaki:** element-sistemi motor genişletmesi adım 2+ (bkz. `docs/gorev-listesi.md` "Backlog")
 
 > **element-sistemi 4.2.2 + SkillMotor parse genişletmesi (16 Eylül):** Sahibi sohbette v5.2
@@ -1212,7 +1220,7 @@ Sahibi *"4-5 farklı class, 5 ründen baya fazla skill çeşidi nasıl olacak"* 
 
 - **Sayı zaten var.** 1 fiil + en fazla 3 sıfat, tekrar serbest → üç rünle `3+9+27+81 = 120`,
   beş rünle `5+25+125+625 = 780` cümle. Elle yazılmış hiçbir yetenek listesi buna yaklaşmaz.
-- **Eksik olan üçüncü katman.** [Özet §5](tasarim-ozeti.md#5-yaratıcı-build-sistemi)'in
+- **Eksik olan üçüncü katman.** (Eski "Tasarım Özeti" §5, silindi — bkz. `element-sistemi.md`)
   taşıyıcı / yük / **durum tablosu** üçlüsünden prototipte yalnızca birincisi tam. Bossun ıslak,
   zırhı kırık ya da havada olması hiçbir cümlenin anlamını değiştirmiyor; o yüzden bütün
   cümleler aynı boş bossa aynı şeyi yapıyor. Belge o katmanı "asıl sihir burada" diye
