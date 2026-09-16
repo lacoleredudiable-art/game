@@ -12,10 +12,18 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (Görev 4 · PassiveDirector) · **Sıradaki:**
+**Son güncelleme:** 16 Eylül 2026 (Görev 11 · Equipment veri + bonus) · **Sıradaki:**
 Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
-+ kalan motor görevleri + **Faz 6 bağlama** (Zone/Resource/Cooldown/Passive/TimeEffect/RealityEffect/
-space_layer/state machine henüz Game'e bağlı değil)
++ kalan motor görevleri (Görev 12 UI Rules) + **Faz 6 bağlama** (Zone/Resource/Cooldown/
+Passive/TimeEffect/RealityEffect/Equipment/space_layer/state machine henüz Game'e bağlı değil)
+
+> **16 Eylül — Görev 11: EquipmentCatalog + ElementMatchBonus.** `Core/Equipment/` —
+> `EquipmentSlot` / `EquipmentItem` / `EquipmentCatalog` (MiniJson,
+> `equipment_system.examples` → 18 item, Id=`{slot}:{element}`) +
+> `EquipmentBonusResolver` (`rules.element_match_bonus` "+%10 etki" → 1.1; silah×skill
+> element eşleşince çarpan, yoksa 1.0; yüzde ParseDefenseDropMult deseni). Envanter UI /
+> PlayerVitals / ManifestationDirector **bağlanmadı** (sabit tek ekipman varsayımı).
+> `EquipmentCatalogTests` 2; `dotnet test` yeşil (rebase sonrası tam suite).
 
 > **16 Eylül — Görev 4: PassiveDirector.** `Core/Combat/PassiveDirector.cs`: `SkillMotor.Passives`
 > listesini alır; `TryTrigger(dot[], worldMs)` ile `trigger_combo` birebir eşleşen pasifi açar;
@@ -395,7 +403,9 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   `global_rules.resource_system`/`cooldown_rules` → Core sınıflar var, bağ yok;
   `status_durations` ↔ StatusTuning fark listesi (Görev 2, yukarıda; otorite açık).
   **Görev 3:** `state_machine` okunuyor (`PlayerStates`/`BossStates` + `PlayerStateMachine`;
-  SentencePhase bağlanmadı). `equipment_system` hâlâ yok. `status_interaction_table`
+  SentencePhase bağlanmadı). **Görev 11:** `equipment_system` Core'da okunuyor
+  (`EquipmentCatalog` 18 item + `EquipmentBonusResolver`); Game/hasar yoluna bağlı değil,
+  envanter seçimi yok. `status_interaction_table`
   uygulama artık `StatusReactionTable.Rebuild(motor.StatusInteractions)` — 3 özel satır
   (burn+poison / shield+burn / stun+knockback) hâlâ StatusBoard.Tick / Applicator'da.
   `atoms_catalog` /
