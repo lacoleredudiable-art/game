@@ -12,9 +12,30 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (Görev 7 · ZoneDirector) · **Sıradaki:**
+**Son güncelleme:** 16 Eylül 2026 (Görev 3 · PlayerStateMachine) · **Sıradaki:**
 Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
-+ kalan motor görevleri + **Faz 6 bağlama** (ZoneDirector/Resource/Cooldown henüz Game'e bağlı değil)
++ kalan motor görevleri + **Faz 6 bağlama** (ZoneDirector/Resource/Cooldown / state machine henüz Game'e bağlı değil)
+
+> **16 Eylül (Görev 3) — PlayerStateMachine + state_machine okuma.**
+> `SkillMotor.ParseStateMachine` → `PlayerStates` (9) / `BossStates` (6).
+> `Core/Combat/PlayerStateMachine.cs` anlık durum + `can_draw`/`can_move`/`can_dodge`/
+> `i_frames` okur (bool veya string capability → metin: `"true"`/`"false"`/`"partial"`/
+> `"based_on_cast_mobility"`/`"limited"`/`"dodge_direction"`). **SentencePhase'e bağlama
+> YOK** — ayrı karar. `dotnet test` yeşil.
+>
+> **SentencePhase ↔ state_machine.player_states fark raporu (bağlama yapılmadı):**
+>
+> | SentencePhase (cümle) | player_states (dövüş) | Not |
+> |---|---|---|
+> | `Idle` | `idle` | İsim örtüşür; ikisi de "boşta". |
+> | `Building` | `drawing` | **Uyuşmazlık:** JSON `can_draw="partial"`, `can_move=false`; `Building`'de çizim tam açık, hareket SentencePhase ile kilitlenmez. |
+> | `Recovering` | `recovering` | İsim örtüşür; JSON `can_draw=true`, `can_move="limited"`, `can_dodge=true`. `SentencePhase.Recovering` girdi kilidi (`IsRecovering` / RemainingRecoveryMs) — dodge/düz vuruş/yeni fiille kesilir; capability metinleri SentenceEngine'de yok. |
+> | `Resolved` / `Aborted` | — | Cümle kaydı fazları; dövüş state_machine'de karşılık yok. |
+> | — | `casting` | SentencePhase'te yok. `can_move="based_on_cast_mobility"`. |
+> | — | `dodging` | SentencePhase'te yok. `i_frames=true`, `can_move="dodge_direction"`; JSON'da `can_dodge` anahtarı yok → parse `"false"`. |
+> | — | `stunned` / `rooted` / `channeling` / `dead` | SentencePhase'te yok (CC / kanal / ölüm). |
+>
+> Örnek görev notu doğrulandı: `drawing` → `can_draw="partial"`; `Building` tam açık.
 
 > **16 Eylül — Görev 7 (ZoneDirector).** `Core/Layers/IZoneDirector.cs` (`ZoneInstance` +
 > movement sabitleri) + `Core/Combat/ZoneDirector.cs` (saf C#: TrySpawn/Tick/Remove/MoveZone/
@@ -318,7 +339,8 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   Game/Manifestation'a bağlı değil (görsel/hasar yok). `passives` uygulama yok.
   `global_rules.resource_system`/`cooldown_rules` → Core sınıflar var, bağ yok;
   `status_durations` ↔ StatusTuning fark listesi (Görev 2, yukarıda; otorite açık).
-  `state_machine`/`equipment_system` hâlâ yok. `status_interaction_table`
+  **Görev 3:** `state_machine` okunuyor (`PlayerStates`/`BossStates` + `PlayerStateMachine`;
+  SentencePhase bağlanmadı). `equipment_system` hâlâ yok. `status_interaction_table`
   **uygulama** hâlâ `StatusReactionTable.cs` elle kopya. `atoms_catalog` /
   `all_verbs_atoms` / `atom_kombinasyonlari` kasıtlı okunmuyor.
 - **Zone `RadiusM` JSON'da yok (Görev 7)** — `TrySpawn` çağıranı vermek zorunda; Game bağlama
