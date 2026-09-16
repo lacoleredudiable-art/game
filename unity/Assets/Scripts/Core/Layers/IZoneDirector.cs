@@ -66,6 +66,12 @@ namespace Dovus.Core.Layers
         /// follow_target zone'u hedefe çeker. Diğer movement tiplerinde false.
         /// </summary>
         bool SetFollowTarget(int id, float x, float y, float z);
+
+        /// <summary>
+        /// Kalan süreyi yazar. remainingSec ≤ 0 ise zone düşer.
+        /// Id yoksa false.
+        /// </summary>
+        bool TrySetRemainingSec(int id, float remainingSec);
     }
 
     /// <summary>JSON movement string sabitleri — kombo tablosu değil, tip etiketleri.</summary>

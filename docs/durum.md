@@ -12,11 +12,21 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (Bağlama 7 · ZoneDirector Game) · **Sıradaki:**
-Bağlama 8+ (TimeEffect echo/extend_lifetime / …) +
+**Son güncelleme:** 16 Eylül 2026 (Bağlama 8 · TimeEffect echo/extend) · **Sıradaki:**
+Bağlama 8.1 (delayed_detonation / death_delay) + Bağlama 9+ (Equipment / …) +
 Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
-+ **Faz 6 bağlama** kalanı (TimeEffect/RealityEffect/Equipment/
++ **Faz 6 bağlama** kalanı (RealityEffect/Equipment/
 space_layer/state machine / Presentation henüz Game'e bağlı değil)
+
+> **16 Eylül — Bağlama 8: TimeEffectDirector echo + extend_lifetime.** `SkillMotor`
+> `time_layer` parse (`TimeEffectNode`, max_active_fields=2). `ManifestationDirector`:
+> `TimeEffectDirector` + `FireClosing` sonrası Alev→`alev_yanki` (`TryScheduleEcho`,
+> delay 1s, ratio 0.6) → `CollectDue`/`ApplyEchoDamage` (tekrar echo planlamaz);
+> Lav→`lav_kalicilik` zone `RemainingSec × 1.7` (`ZoneDirector.TrySetRemainingSec`).
+> `delayed_detonation` / `death_delay` **bağlanmadı** (Bağlama 8.1).
+> MCP Play: Ateş×2 (Alev/Ateş Topu) Commit → bang `-7,6` + field `alev_yanki`;
+> Tick+1.1s → yankı **`-4,5`** (0.6×); Lav (1-4) zone rem **17** (10×1.7).
+> `dotnet test` 226 yeşil.
 
 > **16 Eylül — Bağlama 7: ZoneDirector Game'e bağlı.** `ManifestationDirector`:
 > `ZoneDirector(Skills.MaxActiveZones)` + `ZoneFieldView` (GroundScarField deseni).

@@ -25,10 +25,12 @@ namespace Dovus.Core.Grammar
         readonly List<StatusInteractionNode> _statusInteractions = new();
         readonly List<ZoneNode> _zones = new();
         readonly List<SpaceEffectNode> _spaceEffects = new();
+        readonly List<TimeEffectNode> _timeEffects = new();
         readonly List<PlayerStateNode> _playerStates = new();
         readonly List<BossStateNode> _bossStates = new();
         int _maxActiveZones;
         int _maxActiveLinks;
+        int _maxActiveTimeFields;
 
         public int ElementCount => _elements.Count;
         public int VerbCount => _verbs.Count;
@@ -64,6 +66,12 @@ namespace Dovus.Core.Grammar
 
         /// <summary>manipulation_layers.space_layer.max_active_links.</summary>
         public int MaxActiveLinks => _maxActiveLinks;
+
+        /// <summary>manipulation_layers.time_layer.effects — yalnızca okuma; uygulama Bağlama 8.</summary>
+        public IReadOnlyList<TimeEffectNode> TimeEffects => _timeEffects;
+
+        /// <summary>manipulation_layers.time_layer.max_active_fields.</summary>
+        public int MaxActiveTimeFields => _maxActiveTimeFields;
 
         /// <summary>
         /// docs/element-sistemi.json state_machine.player_states — yalnızca okuma.
@@ -103,6 +111,7 @@ namespace Dovus.Core.Grammar
             ParseStatusInteractions(root, motor._statusInteractions);
             motor._maxActiveZones = ParseZones(root, motor._zones);
             motor._maxActiveLinks = ParseSpaceEffects(root, motor._spaceEffects);
+            motor._maxActiveTimeFields = ParseTimeEffects(root, motor._timeEffects);
             ParseStateMachine(root, motor._playerStates, motor._bossStates);
             if (motor.CoreCount < 6)
                 throw new InvalidOperationException("element-sistemi: 6 çekirdek element beklenir.");
@@ -572,6 +581,32 @@ namespace Dovus.Core.Grammar
         }
 
         /// <summary>
+        /// manipulation_layers.time_layer.effects + max_active_fields.
+        /// Tipine göre alanlar opsiyonel (delay_sec / damage_ratio / multiplier).
+        /// Dönüş: max_active_fields (yoksa 0).
+        /// </summary>
+        static int ParseTimeEffects(JsonValue root, List<TimeEffectNode> dst)
+        {
+            JsonValue layer = root["manipulation_layers"]["time_layer"];
+            foreach (JsonValue obj in layer["effects"].AsArray())
+            {
+                string id = obj["id"].AsString();
+                if (string.IsNullOrEmpty(id)) continue;
+                dst.Add(new TimeEffectNode(
+                    id: id,
+                    element: obj["element"].AsString(),
+                    type: obj["type"].AsString(),
+                    hasDelaySec: obj.Has("delay_sec"),
+                    delaySec: obj["delay_sec"].AsFloat(0f),
+                    hasDamageRatio: obj.Has("damage_ratio"),
+                    damageRatio: obj["damage_ratio"].AsFloat(0f),
+                    hasMultiplier: obj.Has("multiplier"),
+                    multiplier: obj["multiplier"].AsFloat(0f)));
+            }
+            return layer["max_active_fields"].AsInt(0);
+        }
+
+        /// <summary>
         /// state_machine.player_states + boss_states. Bool/string karışık capability
         /// alanları (can_draw:"partial", can_move:"limited") metin olarak saklanır.
         /// </summary>
@@ -941,6 +976,40 @@ namespace Dovus.Core.Grammar
         public float DamageOnCross { get; }
         public bool HasDurationSec { get; }
         public float DurationSec { get; }
+    }
+
+    /// <summary>
+    /// manipulation_layers.time_layer.effects[i]. Tipine göre alanlar opsiyonel —
+    /// Has* bayrakları JSON'da anahtarın varlığını gösterir.
+    /// </summary>
+    public readonly struct TimeEffectNode
+    {
+        public TimeEffectNode(
+            string id, string element, string type,
+            bool hasDelaySec, float delaySec,
+            bool hasDamageRatio, float damageRatio,
+            bool hasMultiplier, float multiplier)
+        {
+            Id = id ?? string.Empty;
+            Element = element ?? string.Empty;
+            Type = type ?? string.Empty;
+            HasDelaySec = hasDelaySec;
+            DelaySec = delaySec;
+            HasDamageRatio = hasDamageRatio;
+            DamageRatio = damageRatio;
+            HasMultiplier = hasMultiplier;
+            Multiplier = multiplier;
+        }
+
+        public string Id { get; }
+        public string Element { get; }
+        public string Type { get; }
+        public bool HasDelaySec { get; }
+        public float DelaySec { get; }
+        public bool HasDamageRatio { get; }
+        public float DamageRatio { get; }
+        public bool HasMultiplier { get; }
+        public float Multiplier { get; }
     }
 
     /// <summary>docs/element-sistemi.json state_machine.player_states[id] — bkz. ParseStateMachine.</summary>

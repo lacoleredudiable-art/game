@@ -108,6 +108,26 @@ namespace Dovus.Core.Combat
             return true;
         }
 
+        /// <summary>
+        /// Bağlama 8 / extend_lifetime: RemainingSec yazar.
+        /// remainingSec ≤ 0 → zone düşer (süre bitti).
+        /// </summary>
+        public bool TrySetRemainingSec(int id, float remainingSec)
+        {
+            int i = IndexOf(id);
+            if (i < 0)
+                return false;
+
+            if (remainingSec <= 0f)
+            {
+                _zones.RemoveAt(i);
+                return true;
+            }
+
+            _zones[i] = WithRemaining(_zones[i], remainingSec);
+            return true;
+        }
+
         int IndexOf(int id)
         {
             for (int i = 0; i < _zones.Count; i++)
