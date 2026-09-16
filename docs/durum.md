@@ -12,11 +12,18 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (Bağlama 8 · TimeEffect echo/extend) · **Sıradaki:**
-Bağlama 8.1 (delayed_detonation / death_delay) + Bağlama 9+ (Equipment / …) +
+**Son güncelleme:** 16 Eylül 2026 (Bağlama 9 · Equipment sabit silah) · **Sıradaki:**
+Bağlama 8.1 (delayed_detonation / death_delay) + Bağlama 10+ (AnimationBridge / …) +
 Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
-+ **Faz 6 bağlama** kalanı (RealityEffect/Equipment/
++ **Faz 6 bağlama** kalanı (RealityEffect /
 space_layer/state machine / Presentation henüz Game'e bağlı değil)
+
+> **16 Eylül — Bağlama 9: Equipment sabit kuşam + match bonus.** `PrototypeBootstrap`:
+> `EquipmentCatalog` → sabit **Alev Kılıcı** (Ateş); seçim UI yok.
+> `ManifestationDirector.ApplyClosingDamage`: `outMult` × `EquipmentBonusResolver.Resolve`
+> (fiil çekirdeği = `ElementId` ilk rün → CoreName; bileşik Alev/1-1 → Ateş).
+> MCP Play: Ateş×2 → eqMult **1.1**, dealt **8.316** (= ClosingDamageMath 7.56×1.1);
+> Su×2 → eqMult **1.0**. `dotnet test` 226 yeşil.
 
 > **16 Eylül — Bağlama 8: TimeEffectDirector echo + extend_lifetime.** `SkillMotor`
 > `time_layer` parse (`TimeEffectNode`, max_active_fields=2). `ManifestationDirector`:
@@ -556,9 +563,8 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   `global_rules.resource_system`/`cooldown_rules` → Core sınıflar var; Bağlama 2–4 bağladı;
   `status_durations` ↔ StatusTuning fark listesi (Görev 2, yukarıda; otorite açık).
   **Görev 3:** `state_machine` okunuyor (`PlayerStates`/`BossStates` + `PlayerStateMachine`;
-  SentencePhase bağlanmadı).   **Görev 11:** `equipment_system` Core'da okunuyor
-  (`EquipmentCatalog` 18 item + `EquipmentBonusResolver`); Game/hasar yoluna bağlı değil,
-  envanter seçimi yok.   **Görev 13:** `prezentasyon-katmani.json` Core'da okunuyor
+  SentencePhase bağlanmadı).   **Görev 11 + Bağlama 9:** `equipment_system` Core + Game —
+  sabit Alev Kılıcı; `ApplyClosingDamage` outMult × match bonus; envanter seçimi yok.   **Görev 13:** `prezentasyon-katmani.json` Core'da okunuyor
   (`PresentationCatalog` 16×16×10). **Görev 14:** `PresentationValidator` hitbox+animation
   doğrular; **`target_ally` hitbox prezentasyonda yok** (6 fiil). **Görev 16:**
   `PlaceholderFactory` trail/impact placeholder üretir; ManifestationDirector spawn

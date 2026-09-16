@@ -1,4 +1,5 @@
 using Dovus.Core.Combat;
+using Dovus.Core.Equipment;
 using Dovus.Core.Tuning;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -24,6 +25,11 @@ namespace Dovus.Game
         [SerializeField] GameObject _playerVisualPrefab;
         [SerializeField] GameObject _bossVisualPrefab;
         [SerializeField] GameObject _arenaVisualPrefab;
+
+        /// <summary>
+        /// Alfa: sabit tek silah (seçim UI yok). Katalogdan Alev Kılıcı / Ateş.
+        /// </summary>
+        EquipmentItem _equippedWeapon;
 
         void Awake()
         {
@@ -284,12 +290,40 @@ namespace Dovus.Game
             var scars = scarsGo.AddComponent<GroundScarField>();
             scars.Configure(_tuning);
 
+            EquipmentBonusResolver equipmentBonus = LoadPrototypeEquipment(out _equippedWeapon);
+            if (_equippedWeapon != null)
+                Debug.Log($"[Equipment] sabit silah={_equippedWeapon.Name} ({_equippedWeapon.Element}) matchMult={equipmentBonus.MatchBonusMult:0.##}");
+
             var manGo = new GameObject("Manifestation");
             manGo.transform.SetParent(transform, false);
             var director = manGo.AddComponent<ManifestationDirector>();
-            director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, allyDummy, modeHud, view, passiveHud);
+            director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, allyDummy, modeHud, view, passiveHud, _equippedWeapon, equipmentBonus);
 
             CreateTuningPanel(tuningConfig, vitals);
+        }
+
+        /// <summary>
+        /// Resources element-sistemi → Alev Kılıcı (Ateş). Katalog yoksa null / çarpan 1.
+        /// </summary>
+        static EquipmentBonusResolver LoadPrototypeEquipment(out EquipmentItem weapon)
+        {
+            weapon = null;
+            const string resourcePath = "ElementSystem/element-sistemi";
+            var asset = Resources.Load<TextAsset>(resourcePath);
+            if (asset == null || string.IsNullOrWhiteSpace(asset.text))
+                return new EquipmentBonusResolver(string.Empty);
+
+            try
+            {
+                var catalog = EquipmentCatalog.FromJson(asset.text);
+                weapon = catalog.Find(EquipmentSlot.Weapon, "Ateş");
+                return new EquipmentBonusResolver(catalog);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"[Equipment] katalog okunamadı: {e.Message}");
+                return new EquipmentBonusResolver(string.Empty);
+            }
         }
 
         /// <summary>

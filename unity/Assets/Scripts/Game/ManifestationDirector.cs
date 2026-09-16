@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Dovus.Core.Combat;
+using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using Dovus.Core.Layers;
 using Dovus.Core.Manifestation;
@@ -77,12 +78,24 @@ namespace Dovus.Game
         // --- Zaman (Bağlama 8) — echo + extend_lifetime; delayed_detonation/death_delay YOK ---
         TimeEffectDirector _timeEffectDirector;
         readonly List<TimeEffectField> _dueTimeFields = new();
+        // --- Ekipman (Bağlama 9) — sabit silah; seçim UI yok ---
+        EquipmentItem _equippedWeapon;
+        EquipmentBonusResolver _equipmentBonus;
         PentagonView _pentagonView;
         PlayerResource _playerResource;
         PlayerCooldown _playerCooldown;
         double _lastDamageDealtMs = double.NegativeInfinity;
         double _lastMovedMs = double.NegativeInfinity;
         float _modeHpDrainAccum;
+
+        /// <summary>PrototypeBootstrap'ın atadığı sabit silah (ör. Alev Kılıcı).</summary>
+        public EquipmentItem EquippedWeapon => _equippedWeapon;
+
+        /// <summary>Bağlama 9 / MCP: son kapanışta uygulanan ekipman çarpanı (eşleşme 1.1, değilse 1).</summary>
+        public float LastEquipmentMatchMult { get; private set; } = 1f;
+
+        /// <summary>Bağlama 9 / MCP: son ApplyClosingDamage çıktısı (boss'a giden, armor öncesi).</summary>
+        public float LastClosingDamageDealt { get; private set; }
 
         SkillMotor Skills => _skills ??= SkillMotorLoader.LoadOrDefault();
 
@@ -178,7 +191,9 @@ namespace Dovus.Game
             AllyDummy ally = null,
             ActiveModeHud modeHud = null,
             PentagonView pentagonView = null,
-            PassiveHud passiveHud = null)
+            PassiveHud passiveHud = null,
+            EquipmentItem equippedWeapon = null,
+            EquipmentBonusResolver equipmentBonus = null)
         {
             _clock = clock;
             _engine = input.Engine;
@@ -202,6 +217,8 @@ namespace Dovus.Game
             _modeHud = modeHud;
             _passiveHud = passiveHud;
             _pentagonView = pentagonView;
+            _equippedWeapon = equippedWeapon;
+            _equipmentBonus = equipmentBonus;
             _playerResource = player != null ? player.GetComponent<PlayerResource>() : null;
             _playerCooldown = player != null ? player.GetComponent<PlayerCooldown>() : null;
             _skills = SkillMotorLoader.LoadOrDefault();
@@ -1301,6 +1318,31 @@ namespace Dovus.Game
         }
 
         /// <summary>
+        /// Ekipman eşleşmesi: silah çekirdek elementi (Ateş/Su/…) ile skill'in fiil rünü.
+        /// ElementId "1" / "1-1" / "1-2+3" → ilk sayı CoreName; yoksa ElementOrigin.
+        /// </summary>
+        string SkillElementForEquipment(SkillResolution skill)
+        {
+            int core = ParseFirstCoreId(skill.ElementId);
+            if (core >= 1 && core <= 6 && _skills != null)
+                return _skills.CoreName(core);
+            return skill.ElementOrigin ?? string.Empty;
+        }
+
+        static int ParseFirstCoreId(string elementId)
+        {
+            if (string.IsNullOrEmpty(elementId))
+                return 0;
+            int i = 0;
+            while (i < elementId.Length && !char.IsDigit(elementId[i])) i++;
+            int start = i;
+            while (i < elementId.Length && char.IsDigit(elementId[i])) i++;
+            if (i == start)
+                return 0;
+            return int.Parse(elementId.Substring(start, i - start), System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
         /// Commit (§5 TotalEffect × ClosingDamagePerEffect) × skill fiil ölçeği.
         /// Heal/dash BaseDamage=0 → 0 can; status ayrı. Tür hasarı değiştirmez (§12).
         /// UseFormulaDamage=true → DamageCalculator (resistance/weakness nötr 0/1).
@@ -1317,6 +1359,13 @@ namespace Dovus.Game
             outMult *= _modeDirector?.DamageMult ?? 1f; // ulti: Öfke Patlaması ×1.8, Kan Çılgınlığı ×2.0
             outMult *= _passiveDirector?.DamageMult ?? 1f; // pasif: alev_hiddeti ×1.15 × karanlik_sessizligi ×1.2 …
             outMult *= _closingChainBonus; // Bağlama 6: links/finisher_mult → sonraki (bu) kapanış
+            // Bağlama 9: silah elementi ↔ skill'in fiil çekirdeği (ElementId ilk rün;
+            // bileşik "Alev"/1-1 → Ateş). ElementOrigin bileşik adı olabilir.
+            float eqMult = 1f;
+            if (_equipmentBonus != null && !isBasicStrike && !skill.IsEmpty)
+                eqMult = _equipmentBonus.Resolve(_equippedWeapon, SkillElementForEquipment(skill));
+            outMult *= eqMult;
+            LastEquipmentMatchMult = eqMult;
 
             bool isCrit = false;
             float damage;
@@ -1350,12 +1399,16 @@ namespace Dovus.Game
             }
 
             if (damage <= 0f)
+            {
+                LastClosingDamageDealt = 0f;
                 return 0f;
+            }
 
             // Armor break boss'ta incoming mult
             if (_bossStatus != null)
                 damage *= _bossStatus.Board.IncomingDamageMult;
 
+            LastClosingDamageDealt = damage;
             _damageHud?.ShowDamage(damage, isCrit);
             _lastDamageDealtMs = _clock.Director.WorldTimeMs; // "dealt_damage_recently" (Öfke Patlaması)
 
