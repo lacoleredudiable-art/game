@@ -37,6 +37,13 @@ Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/elem
 >
 > Örnek görev notu doğrulandı: `drawing` → `can_draw="partial"`; `Building` tam açık.
 
+> **16 Eylül — Görev 5: ChainDirector.** `Core/Combat/ChainDirector.cs` + `ChainRules`/
+> `ChainStepResult`: `motor.Chains` + `chain_mechanics.rules` (window/break/max/finisher_mult).
+> Pattern `"1-X-X-X-X-X"` JSON'dan parse — digit = zorunlu element, `X` = çapa ile aynı
+> (ulti notundaki X-X-X-X dili). `RegisterCast(dot, worldMs)` Links sırasıyla bonus,
+> Finisher yalnızca tam pattern. ManifestationDirector'a **bağlanmadı**. 5 yeni test;
+> `dotnet test` 168 yeşil (163+5; DamageCalculator 7'si zaten master'da).
+
 > **16 Eylül (6. tur) — DamageCalculator (formulas.damage + crit_system), paralel sınıf.**
 > `Core/Combat/DamageCalculator.cs`: `base_damage_value × adj.damage_mult × length.damage_mult ×
 > (1-resistance) × weakness_bonus`, sonra `crit_system` (base + `adjective_crit_bonus[id]`,
