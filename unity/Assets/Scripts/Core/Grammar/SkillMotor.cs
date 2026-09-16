@@ -24,6 +24,8 @@ namespace Dovus.Core.Grammar
         readonly List<ChainNode> _chains = new();
         readonly List<StatusInteractionNode> _statusInteractions = new();
         readonly List<ZoneNode> _zones = new();
+        readonly List<PlayerStateNode> _playerStates = new();
+        readonly List<BossStateNode> _bossStates = new();
         int _maxActiveZones;
 
         public int ElementCount => _elements.Count;
@@ -54,6 +56,15 @@ namespace Dovus.Core.Grammar
 
         /// <summary>manipulation_layers.zone_layer.max_active_zones.</summary>
         public int MaxActiveZones => _maxActiveZones;
+
+        /// <summary>
+        /// docs/element-sistemi.json state_machine.player_states — yalnızca okuma.
+        /// Runtime geçişler Core/Combat/PlayerStateMachine; SentencePhase'e bağlanmadı.
+        /// </summary>
+        public IReadOnlyList<PlayerStateNode> PlayerStates => _playerStates;
+
+        /// <summary>docs/element-sistemi.json state_machine.boss_states — yalnızca okuma.</summary>
+        public IReadOnlyList<BossStateNode> BossStates => _bossStates;
         public int CoreCount
         {
             get
@@ -83,6 +94,7 @@ namespace Dovus.Core.Grammar
             ParseChains(root, motor._chains);
             ParseStatusInteractions(root, motor._statusInteractions);
             motor._maxActiveZones = ParseZones(root, motor._zones);
+            ParseStateMachine(root, motor._playerStates, motor._bossStates);
             if (motor.CoreCount < 6)
                 throw new InvalidOperationException("element-sistemi: 6 çekirdek element beklenir.");
             return motor;
@@ -516,7 +528,61 @@ namespace Dovus.Core.Grammar
                     durationSec: obj["duration_sec"].AsFloat(0f),
                     manipulation: obj.Has("manipulation") ? obj["manipulation"] : JsonValue.Null));
             }
+
             return layer["max_active_zones"].AsInt(0);
+        }
+
+        /// <summary>
+        /// state_machine.player_states + boss_states. Bool/string karışık capability
+        /// alanları (can_draw:"partial", can_move:"limited") metin olarak saklanır.
+        /// </summary>
+        static void ParseStateMachine(
+            JsonValue root, List<PlayerStateNode> playerDst, List<BossStateNode> bossDst)
+        {
+            JsonValue sm = root["state_machine"];
+            if (sm.Kind != JsonKind.Object)
+                return;
+
+            foreach (var kv in sm["player_states"].AsObject())
+            {
+                JsonValue obj = kv.Value;
+                playerDst.Add(new PlayerStateNode(
+                    id: kv.Key,
+                    canDraw: ReadCapability(obj["can_draw"]),
+                    canMove: ReadCapability(obj["can_move"]),
+                    canDodge: ReadCapability(obj["can_dodge"]),
+                    iFrames: obj["i_frames"].AsBool(false),
+                    interruptible: obj["interruptible"].AsBool(false),
+                    note: obj["note"].AsString()));
+            }
+
+            foreach (var kv in sm["boss_states"].AsObject())
+            {
+                JsonValue obj = kv.Value;
+                JsonValue duration = obj["duration_sec"];
+                bossDst.Add(new BossStateNode(
+                    id: kv.Key,
+                    exitsTo: ReadStringArray(obj["exits_to"]),
+                    hasDuration: duration.Kind == JsonKind.Number,
+                    durationSec: duration.AsFloat(0f)));
+            }
+        }
+
+        /// <summary>
+        /// can_draw / can_move / can_dodge: JSON'da bool veya string olabilir
+        /// ("partial", "based_on_cast_mobility", "limited", "dodge_direction").
+        /// Eksikse "false".
+        /// </summary>
+        static string ReadCapability(JsonValue v)
+        {
+            if (v.Kind == JsonKind.Bool)
+                return v.AsBool() ? "true" : "false";
+            if (v.Kind == JsonKind.String)
+            {
+                string s = v.AsString();
+                return string.IsNullOrEmpty(s) ? "false" : s;
+            }
+            return "false";
         }
 
         static string[] ReadStringArray(JsonValue arr)
@@ -790,7 +856,53 @@ namespace Dovus.Core.Grammar
         public string Movement { get; }
         public float DurationSec { get; }
         /// <summary>Bazı zonelerde var (lav_halkasi); yoksa Null.</summary>
+
         public JsonValue Manipulation { get; }
+    }
+
+    /// <summary>docs/element-sistemi.json state_machine.player_states[id] — bkz. ParseStateMachine.</summary>
+    public readonly struct PlayerStateNode
+    {
+        public PlayerStateNode(
+            string id, string canDraw, string canMove, string canDodge,
+            bool iFrames, bool interruptible = false, string note = "")
+        {
+            Id = id ?? string.Empty;
+            CanDraw = canDraw ?? "false";
+            CanMove = canMove ?? "false";
+            CanDodge = canDodge ?? "false";
+            IFrames = iFrames;
+            Interruptible = interruptible;
+            Note = note ?? string.Empty;
+        }
+
+        public string Id { get; }
+        /// <summary>"true" / "false" / "partial".</summary>
+        public string CanDraw { get; }
+        /// <summary>"true" / "false" / "based_on_cast_mobility" / "limited" / "dodge_direction".</summary>
+        public string CanMove { get; }
+        /// <summary>"true" / "false" (JSON'da yoksa "false").</summary>
+        public string CanDodge { get; }
+        public bool IFrames { get; }
+        public bool Interruptible { get; }
+        public string Note { get; }
+    }
+
+    /// <summary>docs/element-sistemi.json state_machine.boss_states[id] — bkz. ParseStateMachine.</summary>
+    public readonly struct BossStateNode
+    {
+        public BossStateNode(string id, string[] exitsTo, bool hasDuration, float durationSec)
+        {
+            Id = id ?? string.Empty;
+            ExitsTo = exitsTo ?? Array.Empty<string>();
+            HasDuration = hasDuration;
+            DurationSec = durationSec;
+        }
+
+        public string Id { get; }
+        public IReadOnlyList<string> ExitsTo { get; }
+        public bool HasDuration { get; }
+        public float DurationSec { get; }
     }
 
     public readonly struct LengthTuning
