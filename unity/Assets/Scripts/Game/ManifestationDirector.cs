@@ -57,6 +57,7 @@ namespace Dovus.Game
         // --- Ulti (active_modes) — 16 Eylül, güven kaygısına karşılık uçtan uca ---
         ActiveModeDirector _modeDirector;
         ActiveModeHud _modeHud;
+        PentagonView _pentagonView;
         double _lastDamageDealtMs = double.NegativeInfinity;
         double _lastMovedMs = double.NegativeInfinity;
         float _modeHpDrainAccum;
@@ -101,7 +102,8 @@ namespace Dovus.Game
             ReactionReadout readout = null,
             FollowCamera camera = null,
             AllyDummy ally = null,
-            ActiveModeHud modeHud = null)
+            ActiveModeHud modeHud = null,
+            PentagonView pentagonView = null)
         {
             _clock = clock;
             _engine = input.Engine;
@@ -123,6 +125,7 @@ namespace Dovus.Game
             _camera = camera;
             _ally = ally;
             _modeHud = modeHud;
+            _pentagonView = pentagonView;
             _skills = SkillMotorLoader.LoadOrDefault();
             _modeDirector = new ActiveModeDirector(_skills.ActiveModes);
             if (_playerStatus != null)
@@ -567,6 +570,7 @@ namespace Dovus.Game
                     ApplyClosingStatuses(p, basicSkill);
                     ShoutSkill(basicSkill, p.Words);
                     ApplyClosingHeal(p.Closing, basicSkill);
+                    PulseCosmeticCooldown(basicSkill, p.Words);
                     return;
                 }
 
@@ -583,8 +587,23 @@ namespace Dovus.Game
             ApplyClosingStatuses(p, skill);
             ShoutSkill(skill, p.Words);
             ApplyClosingHeal(p.Closing, skill); // readout ShoutSkill'den sonra (ally +N kalsın)
+            PulseCosmeticCooldown(skill, p.Words);
             if (!motionPlan.IsEmpty)
                 AnnotateMotion(skill, motionPlan);
+        }
+
+        /// <summary>
+        /// ui_rules.cooldown_display — yalnızca görsel. CooldownTracker'a / cast engeline dokunmaz.
+        /// Fiil rünü (ilk kelime) etrafında base_cooldown_sec kadar radial dolum.
+        /// </summary>
+        void PulseCosmeticCooldown(SkillResolution skill, IReadOnlyList<SentenceWord> words)
+        {
+            if (_pentagonView == null || skill.IsEmpty || words == null || words.Count == 0)
+                return;
+            float sec = skill.BaseCooldownSec;
+            if (sec <= 0f)
+                return;
+            _pentagonView.BeginCosmeticCooldown((int)words[0].Rune, sec);
         }
 
         SkillMotionPlan ResolveSkillMotion(SkillResolution skill)

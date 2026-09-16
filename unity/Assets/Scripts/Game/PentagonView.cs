@@ -3,13 +3,22 @@ using UnityEngine.UI;
 
 namespace Dovus.Game
 {
-    /// <summary>Ekrana sabit altıgen noktaları + merkez (Canvas Overlay).</summary>
+    /// <summary>
+    /// Ekrana sabit altıgen noktaları + merkez (Canvas Overlay).
+    /// ui_rules.cooldown_display: her rün etrafında kozmetik radial dolum + kalan sn
+    /// (CooldownTracker'a bağlanmaz — engelleme Faz 6).
+    /// </summary>
     public sealed class PentagonView : MonoBehaviour
     {
         PrototypeTuning _tuning;
         RectTransform[] _dots;
         Image[] _dotImages;
         Sprite[] _dotIcons;
+        RectTransform[] _cdRings;
+        Image[] _cdFills;
+        Text[] _cdLabels;
+        float[] _cdRemainingSec;
+        float[] _cdDurationSec;
         RectTransform _center;
         RectTransform _dodge;
         Canvas _canvas;
@@ -36,10 +45,17 @@ namespace Dovus.Game
             canvasGo.AddComponent<GraphicRaycaster>();
 
             var fallback = CreateCircleSprite();
+            // Solid disc — radial fillAmount ile klasik cooldown pie (halka sprite fill'de silik kalıyordu).
+            var ringSprite = fallback;
             int n = Dovus.Core.Grammar.PentagonLayout.DotCount;
             _dots = new RectTransform[n + 1];
             _dotImages = new Image[n + 1];
             _dotIcons = new Sprite[n + 1];
+            _cdRings = new RectTransform[n + 1];
+            _cdFills = new Image[n + 1];
+            _cdLabels = new Text[n + 1];
+            _cdRemainingSec = new float[n + 1];
+            _cdDurationSec = new float[n + 1];
             for (int dot = 1; dot <= n; dot++)
             {
                 _dotIcons[dot] = TryCreateIconSprite(dot);
@@ -52,22 +68,166 @@ namespace Dovus.Game
                 }
             }
 
+            // Radial örtü ikon ÜSTÜNDE (klasik pie); sn sayısı en üstte.
+            for (int dot = 1; dot <= n; dot++)
+                CreateCooldownOverlay(dot, ringSprite, canvasGo.transform, underDots: false);
+
             _center = CreateDisc("Center", fallback, _tuning.PentagonCenterColor, canvasGo.transform, out _);
             CreateLabel(_center, "·").fontSize = 32;
 
             _dodge = CreateDisc("DodgeButton", fallback, _tuning.DodgeButtonColor, canvasGo.transform, out _);
             CreateLabel(_dodge, "⇄").fontSize = 26;
 
+            for (int dot = 1; dot <= n; dot++)
+                CreateCooldownLabel(dot, canvasGo.transform);
+
             if (overlayCam != null)
                 SetLayerRecursively(canvasGo, FirstLayer(overlayCam.cullingMask));
 
             Layout();
+            RefreshCooldownVisuals();
+        }
+
+        /// <summary>
+        /// Kozmetik soğuma — cast'i engellemez. ui_rules.cooldown_display (radial_overlay + sayı).
+        /// </summary>
+        public void BeginCosmeticCooldown(int dot, float durationSec)
+        {
+            if (_cdRemainingSec == null || dot < 1 || dot >= _cdRemainingSec.Length)
+                return;
+            if (durationSec <= 0f)
+                return;
+
+            _cdDurationSec[dot] = durationSec;
+            _cdRemainingSec[dot] = durationSec;
+            Layout();
+            RefreshCooldownVisuals();
         }
 
         void LateUpdate()
         {
-            if (_tuning != null)
-                Layout();
+            if (_tuning == null)
+                return;
+
+            Layout();
+            TickCosmeticCooldowns();
+        }
+
+        void TickCosmeticCooldowns()
+        {
+            if (_cdRemainingSec == null)
+                return;
+
+            float dt = Time.unscaledDeltaTime;
+            bool any = false;
+            for (int i = 1; i < _cdRemainingSec.Length; i++)
+            {
+                if (_cdRemainingSec[i] <= 0f)
+                    continue;
+                _cdRemainingSec[i] = Mathf.Max(0f, _cdRemainingSec[i] - dt);
+                any = true;
+            }
+
+            if (any || (_cdFills != null && AnyCooldownVisible()))
+                RefreshCooldownVisuals();
+        }
+
+        bool AnyCooldownVisible()
+        {
+            for (int i = 1; i < _cdFills.Length; i++)
+            {
+                if (_cdFills[i] != null && _cdFills[i].enabled)
+                    return true;
+            }
+
+            return false;
+        }
+
+        void RefreshCooldownVisuals()
+        {
+            if (_cdFills == null || _tuning == null)
+                return;
+
+            Color accent = _tuning.InkCyan;
+            for (int dot = 1; dot < _cdFills.Length; dot++)
+            {
+                float rem = _cdRemainingSec[dot];
+                float dur = _cdDurationSec[dot];
+                bool active = rem > 0f && dur > 0f;
+                Image fill = _cdFills[dot];
+                Text label = _cdLabels[dot];
+                if (fill == null)
+                    continue;
+
+                fill.enabled = active;
+                if (label != null)
+                    label.enabled = active;
+
+                if (!active)
+                    continue;
+
+                fill.fillAmount = Mathf.Clamp01(rem / dur);
+                // Koyu radial örtü — ikon üstünde net okunur.
+                fill.color = new Color(0.05f, 0.12f, 0.18f, 0.72f);
+                fill.SetAllDirty();
+                if (label != null)
+                {
+                    int shown = Mathf.Max(1, Mathf.CeilToInt(rem));
+                    label.text = shown.ToString();
+                    label.color = new Color(accent.r, accent.g, accent.b, 1f);
+                    label.fontSize = Mathf.Max(22, Mathf.RoundToInt(DotFontPx(dot)));
+                    label.SetAllDirty();
+                }
+            }
+        }
+
+        float DotFontPx(int dot)
+        {
+            if (_dots == null || _dots[dot] == null)
+                return 22f;
+            return _dots[dot].sizeDelta.x * 0.42f;
+        }
+
+        void CreateCooldownOverlay(int dot, Sprite ringSprite, Transform parent, bool underDots)
+        {
+            var ringGo = new GameObject($"CooldownRing{dot}");
+            ringGo.transform.SetParent(parent, false);
+            if (underDots)
+                ringGo.transform.SetSiblingIndex(0);
+            _cdRings[dot] = ringGo.AddComponent<RectTransform>();
+            var fill = ringGo.AddComponent<Image>();
+            fill.sprite = ringSprite;
+            fill.type = Image.Type.Filled;
+            fill.fillMethod = Image.FillMethod.Radial360;
+            fill.fillOrigin = (int)Image.Origin360.Top;
+            fill.fillClockwise = false;
+            fill.raycastTarget = false;
+            fill.fillAmount = 0f;
+            fill.enabled = false;
+            _cdFills[dot] = fill;
+        }
+
+        void CreateCooldownLabel(int dot, Transform parent)
+        {
+            var labelGo = new GameObject($"CooldownLabel{dot}");
+            labelGo.transform.SetParent(parent, false);
+            var labelRt = labelGo.AddComponent<RectTransform>();
+            labelRt.anchorMin = Vector2.zero;
+            labelRt.anchorMax = Vector2.zero;
+            labelRt.pivot = new Vector2(0.5f, 0.5f);
+            var label = labelGo.AddComponent<Text>();
+            label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            if (label.font == null)
+                label.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            label.fontStyle = FontStyle.Bold;
+            label.fontSize = 26;
+            label.alignment = TextAnchor.MiddleCenter;
+            label.raycastTarget = false;
+            label.enabled = false;
+            var outline = labelGo.AddComponent<Outline>();
+            outline.effectColor = new Color(0f, 0f, 0f, 0.85f);
+            outline.effectDistance = new Vector2(1.5f, -1.5f);
+            _cdLabels[dot] = label;
         }
 
         void Layout()
@@ -84,9 +244,18 @@ namespace Dovus.Game
                 float mul = _dotIcons != null && _dotIcons[dot] != null
                     ? Mathf.Max(0.5f, _tuning.IconDisplayScale)
                     : 1f;
-                Place(_dots[dot], px, dotR * 2f * mul, w, h);
+                float diam = dotR * 2f * mul;
+                Place(_dots[dot], px, diam, w, h);
                 if (_dotImages[dot] != null)
                     _dotImages[dot].color = DotColor(dot);
+
+                if (_cdRings != null && _cdRings[dot] != null)
+                    Place(_cdRings[dot], px, diam * 1.05f, w, h);
+                if (_cdLabels != null && _cdLabels[dot] != null)
+                {
+                    var lrt = _cdLabels[dot].rectTransform;
+                    Place(lrt, px, diam * 0.9f, w, h);
+                }
             }
 
             Vector2 c = PentagonLayoutScreen.CenterPx(_tuning, w, h);

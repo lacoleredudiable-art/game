@@ -12,10 +12,10 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (Görev 11 · Equipment veri + bonus) · **Sıradaki:**
+**Son güncelleme:** 16 Eylül 2026 (Görev 12 · UI Rules / kozmetik cooldown HUD) · **Sıradaki:**
 Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
-+ kalan motor görevleri (Görev 12 UI Rules) + **Faz 6 bağlama** (Zone/Resource/Cooldown/
-Passive/TimeEffect/RealityEffect/Equipment/space_layer/state machine henüz Game'e bağlı değil)
++ **Faz 6 bağlama** (Zone/Resource/Cooldown/Passive/TimeEffect/RealityEffect/Equipment/
+space_layer/state machine henüz Game'e bağlı değil)
 
 > **16 Eylül — Görev 11: EquipmentCatalog + ElementMatchBonus.** `Core/Equipment/` —
 > `EquipmentSlot` / `EquipmentItem` / `EquipmentCatalog` (MiniJson,
@@ -24,6 +24,20 @@ Passive/TimeEffect/RealityEffect/Equipment/space_layer/state machine henüz Game
 > element eşleşince çarpan, yoksa 1.0; yüzde ParseDefenseDropMult deseni). Envanter UI /
 > PlayerVitals / ManifestationDirector **bağlanmadı** (sabit tek ekipman varsayımı).
 > `EquipmentCatalogTests` 2; `dotnet test` 218 yeşil.
+
+> **16 Eylül — Görev 12: UI Rules hizalaması (Game).** `PentagonView` + `ManifestationDirector`:
+> her skill cast'te fiil rünü etrafında kozmetik radial cooldown (`base_cooldown_sec`) + kalan sn
+> (`ui_rules.cooldown_display`). **CooldownTracker / cast engeli yok** (Faz 6).
+>
+> **Sayı karşılaştırması (değiştirilmedi — sahibi karar verir):**
+> | kaynak | alan | değer | |
+> |---|---|---|---|
+> | `ui_rules.read_as_display.duration_ms` | JSON | **1500** | |
+> | `FeelTuning.ReadoutHoldMs` | Core | **900** | **farklı** |
+>
+> **zone_display notu (kod yok):** `ui_rules.zone_display` = `in_world`, transparency **0.6**.
+> Görev 7 `ZoneDirector` henüz Game'e bağlı değil — dünya alanı görseli Faz 6 / Zone Game
+> bağlama turunda.
 
 > **16 Eylül — Görev 4: PassiveDirector.** `Core/Combat/PassiveDirector.cs`: `SkillMotor.Passives`
 > listesini alır; `TryTrigger(dot[], worldMs)` ile `trigger_combo` birebir eşleşen pasifi açar;
@@ -412,6 +426,10 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   `all_verbs_atoms` / `atom_kombinasyonlari` kasıtlı okunmuyor.
 - **Zone `RadiusM` JSON'da yok (Görev 7)** — `TrySpawn` çağıranı vermek zorunda; Game bağlama
   turunda tuning/config kararı lazım.
+- **`ui_rules.zone_display` (Görev 12 notu)** — `in_world`, transparency 0.6; ZoneDirector henüz
+  Game'e bağlı değil, görsel yazılmadı (Faz 6 / Zone Game bağlama).
+- **`read_as_display.duration_ms` (1500) ≠ `FeelTuning.ReadoutHoldMs` (900)** — Görev 12'de
+  not düşüldü, değiştirilmedi (sahibi otorite seçer).
 - **space_layer'da 2 effect JSON'da var, oyunda karşılığı yok (Görev 8):**
   `karabasan_hat` (`invisible_link`) ve `hiclik_yarik` (`tear`) — yalnızca
   `SkillMotor.SpaceEffects` listesinde; yeni mekanik yazılmadı. `pus_gecisi`
