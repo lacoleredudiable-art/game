@@ -30,21 +30,21 @@ namespace Dovus.Game
         // T6.2: merkez X, dodge düğmesi sağ kenardan taşmasın diye 0.78'den içeri alındı.
         [Header("Altıgen (§2)")]
         public float PentagonCenterXNorm = 0.72f;
-        // Safe-area içi sağ-alt; 0.22 home indicator'a çarpıyordu → 0.30.
-        public float PentagonCenterYNorm = 0.30f;
-        public float PentagonRadiusDp = 100f;
-        public float DotHitRadiusDp = 32f;
-        public float CenterHitRadiusDp = 34f;
+        // Safe-area içi sağ-alt köşe — 0.30 hâlâ yüksek kalıyordu (telefon screenshot).
+        public float PentagonCenterYNorm = 0.18f;
+        public float PentagonRadiusDp = 108f;
+        public float DotHitRadiusDp = 36f;
+        public float CenterHitRadiusDp = 40f;
         public bool MirrorForLeftHand = false;
         public float InkLingerSec = 0.40f;
         public float InkWidthDp = 3.5f;
 
         // §2: dodge altıgenin sağ altında — Toprak (alt nokta) üstüne binmesin.
         [Header("Dodge düğmesi (§2, T6.2)")]
-        public float DodgeButtonOffsetXDp = 100f;
-        public float DodgeButtonOffsetYDp = -100f;
-        public float DodgeButtonRadiusDp = 38f;
-        public float DodgeButtonScreenMarginDp = 8f;
+        public float DodgeButtonOffsetXDp = 110f;
+        public float DodgeButtonOffsetYDp = -95f;
+        public float DodgeButtonRadiusDp = 44f;
+        public float DodgeButtonScreenMarginDp = 10f;
 
         // §5: merkez bir kelime değil düğme; hangi fiille vurduğu veridir (prototipte 1/Ateş).
         [Header("Düz vuruş (§5, T6.2)")]
@@ -267,13 +267,16 @@ namespace Dovus.Game
         [Header("Hasar göstergesi (T12)")]
         public bool ShowDamageNumbers = true;
 
+        [Header("Debug HUD")]
+        public bool ShowSentenceDebugHud = false;
+
         // Sahneye serileşmiş eski kopyada yeni alanlar 0/siyah gelir (C# initializer
         // deserialize'da uygulanmaz). Sürüm numarası da 0 geldiği için tek seferlik yama
         // ÇALIŞIR; sahne bir kez yeniden kaydedildikten sonra bu blok hiç girmez ve
         // tasarımcının bilinçli 0'ı (ör. nabzı kapatmak) artık ezilmez (T8.1).
         [HideInInspector] public int TuningVersion = CurrentVersion;
 
-        const int CurrentVersion = 10;
+        const int CurrentVersion = 11;
 
         /// <summary>Sürümü geçmiş serileşmiş kopyayı bu sürümün varsayılanlarına çeker.</summary>
         public void EnsureRuntimeDefaults()
@@ -290,16 +293,18 @@ namespace Dovus.Game
             OpenDot6 = true;
 
             // v10: dodge/hex boyut + safe-area Y; Hava rengi.
-            DodgeButtonOffsetXDp = 100f;
-            DodgeButtonOffsetYDp = -100f;
-            DodgeButtonRadiusDp = 38f;
-            CenterHitRadiusDp = 34f;
-            DotHitRadiusDp = 32f;
+            DodgeButtonOffsetXDp = 110f;
+            DodgeButtonOffsetYDp = -95f;
+            DodgeButtonRadiusDp = 44f;
+            CenterHitRadiusDp = 40f;
+            DotHitRadiusDp = 36f;
+            PentagonRadiusDp = 108f;
 
             BasicStrikeDot = 1;
             ShowDamageNumbers = true;
-            PentagonCenterYNorm = 0.30f;
+            PentagonCenterYNorm = 0.18f;
             ElementAir = new Color(0.50f, 0.70f, 0.62f);
+            ShowSentenceDebugHud = false;
             if (SoftAimRangeM <= 0.01f) SoftAimRangeM = 8f;
             if (OrbitDegreesPerDp <= 0.01f) OrbitDegreesPerDp = 0.35f;
             if (StatusIconSizeDp <= 0.01f) StatusIconSizeDp = 28f;
@@ -402,7 +407,14 @@ namespace Dovus.Game
             DamageFloatPunchScale = fresh.DamageFloatPunchScale;
             CenterHitRadiusDp = fresh.CenterHitRadiusDp;
             DotHitRadiusDp = fresh.DotHitRadiusDp;
-            PentagonCenterYNorm = 0.30f;
+            PentagonCenterYNorm = 0.18f;
+            PentagonRadiusDp = fresh.PentagonRadiusDp;
+            CenterHitRadiusDp = fresh.CenterHitRadiusDp;
+            DotHitRadiusDp = fresh.DotHitRadiusDp;
+            DodgeButtonRadiusDp = fresh.DodgeButtonRadiusDp;
+            DodgeButtonOffsetXDp = fresh.DodgeButtonOffsetXDp;
+            DodgeButtonOffsetYDp = fresh.DodgeButtonOffsetYDp;
+            ShowSentenceDebugHud = false;
 
             TuningVersion = CurrentVersion;
         }

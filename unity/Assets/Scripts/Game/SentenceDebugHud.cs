@@ -13,6 +13,7 @@ namespace Dovus.Game
         const float NoteHoldSec = 1.2f;
 
         Text _text;
+        GameObject _root;
         SentenceEngine _engine;
         SkillMotor _skills;
         PlayerVitals _vitals;
@@ -21,23 +22,23 @@ namespace Dovus.Game
 
         public void BindVitals(PlayerVitals vitals) => _vitals = vitals;
 
-        public void Configure(SentenceEngine engine, Transform canvasRoot, SkillMotor skills = null)
+        public void Configure(SentenceEngine engine, Transform canvasRoot, SkillMotor skills = null, bool show = false)
         {
             _engine = engine;
             _skills = skills ?? SkillMotor.CreateDefault();
-            var go = new GameObject("SentenceDebug");
-            go.transform.SetParent(canvasRoot, false);
+            _root = new GameObject("SentenceDebug");
+            _root.transform.SetParent(canvasRoot, false);
             // Canvas ScreenSpaceCamera'ya geçtiği için layer artık önemli: yeni GameObject
             // Default'ta doğuyor ve Overlay kameranın cullingMask'i yalnızca UI (T8.1).
             if (canvasRoot != null)
-                go.layer = canvasRoot.gameObject.layer;
-            var rect = go.AddComponent<RectTransform>();
+                _root.layer = canvasRoot.gameObject.layer;
+            var rect = _root.AddComponent<RectTransform>();
             rect.anchorMin = new Vector2(0.52f, 0.82f);
             rect.anchorMax = new Vector2(0.98f, 0.98f);
             rect.offsetMin = Vector2.zero;
             rect.offsetMax = Vector2.zero;
 
-            _text = go.AddComponent<Text>();
+            _text = _root.AddComponent<Text>();
             _text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             if (_text.font == null)
                 _text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
@@ -47,8 +48,10 @@ namespace Dovus.Game
             _text.horizontalOverflow = HorizontalWrapMode.Wrap;
             _text.verticalOverflow = VerticalWrapMode.Overflow;
             _text.raycastTarget = false;
-        }
 
+            // Telefonda / varsayılanda kapalı — premium HUD'u boğuyordu.
+            _root.SetActive(show);
+        }
         public void NoteDodge(bool abortedSentence)
         {
             Note(abortedSentence ? "DODGE (cümle iptal)" : "DODGE (kilit kesildi)");

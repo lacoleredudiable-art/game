@@ -66,10 +66,11 @@ namespace Dovus.Game
             {
                 _dotIcons[dot] = TryCreateIconSprite(dot);
                 Sprite icon = _dotIcons[dot] != null ? _dotIcons[dot] : fallback;
-                _dots[dot] = CreateDisc($"Dot{dot}", icon, DotColor(dot), canvasGo.transform, out _dotImages[dot]);
+                Color col = _dotIcons[dot] != null ? DotColor(dot) : RuneFallbackColor(dot);
+                _dots[dot] = CreateDisc($"Dot{dot}", icon, col, canvasGo.transform, out _dotImages[dot]);
                 if (_dotIcons[dot] == null)
                 {
-                    var label = CreateLabel(_dots[dot], dot.ToString());
+                    var label = CreateLabel(_dots[dot], DotGlyph(dot));
                     label.fontSize = 22;
                 }
             }
@@ -79,10 +80,19 @@ namespace Dovus.Game
                 CreateCooldownOverlay(dot, ringSprite, canvasGo.transform, underDots: false);
 
             _center = CreateDisc("Center", fallback, _tuning.PentagonCenterColor, canvasGo.transform, out _);
-            CreateLabel(_center, "·").fontSize = 32;
+            var centerLabel = CreateLabel(_center, "⚔");
+            centerLabel.fontSize = 36;
 
-            _dodge = CreateDisc("DodgeButton", fallback, _tuning.DodgeButtonColor, canvasGo.transform, out _);
-            CreateLabel(_dodge, "⇄").fontSize = 26;
+            _dodge = CreateDisc("DodgeButton", fallback, _tuning.DodgeButtonColor, canvasGo.transform, out Image dodgeImg);
+            // Frosted rim — oyuncu cyan kenar
+            dodgeImg.color = new Color(
+                _tuning.DodgeButtonColor.r,
+                _tuning.DodgeButtonColor.g,
+                _tuning.DodgeButtonColor.b,
+                0.88f);
+            var dodgeLabel = CreateLabel(_dodge, "DODGE");
+            dodgeLabel.fontSize = 18;
+            dodgeLabel.color = Color.white;
 
             for (int dot = 1; dot <= n; dot++)
                 CreateCooldownLabel(dot, canvasGo.transform);
@@ -292,7 +302,9 @@ namespace Dovus.Game
                 float diam = dotR * 2f * mul;
                 Place(_dots[dot], px, diam, w, h);
                 if (_dotImages[dot] != null)
-                    _dotImages[dot].color = DotColor(dot);
+                    _dotImages[dot].color = _dotIcons != null && _dotIcons[dot] != null
+                        ? DotColor(dot)
+                        : RuneFallbackColor(dot);
 
                 if (_cdRings != null && _cdRings[dot] != null)
                     Place(_cdRings[dot], px, diam * 1.05f, w, h);
@@ -309,6 +321,33 @@ namespace Dovus.Game
             Vector2 d = PentagonLayoutScreen.DodgeButtonPx(_tuning, w, h);
             Place(_dodge, d, PentagonLayoutScreen.DodgeButtonRadiusPx(_tuning) * 2f, w, h);
         }
+
+        Color RuneFallbackColor(int dot)
+        {
+            Color c = dot switch
+            {
+                1 => _tuning.ElementFire,
+                2 => _tuning.ElementWater,
+                3 => _tuning.ElementAir,
+                4 => _tuning.ElementEarth,
+                5 => _tuning.ElementLight,
+                6 => _tuning.ElementDark,
+                _ => _tuning.PentagonDotColor
+            };
+            c.a = _tuning.IsDotOpen(dot) ? 0.92f : 0.28f;
+            return c;
+        }
+
+        static string DotGlyph(int dot) => dot switch
+        {
+            1 => "AT",
+            2 => "SU",
+            3 => "HV", // Hava — yıldırım değil
+            4 => "TP",
+            5 => "AY",
+            6 => "KR",
+            _ => "?"
+        };
 
         Color DotColor(int dot)
         {
@@ -331,7 +370,7 @@ namespace Dovus.Game
             {
                 1 => "Concept/icon-fire",
                 2 => "Concept/icon-water",
-                3 => "Concept/icon-lightning", // Hava — ayrı ikon yok, geçici
+                3 => "Concept/icon-air", // Hava — lightning ikonu YASAK (yıldırım hissi)
                 4 => "Concept/icon-earth",
                 5 => "Concept/icon-light",
                 6 => "Concept/icon-dark",

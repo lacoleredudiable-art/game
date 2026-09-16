@@ -35,6 +35,10 @@ namespace Dovus.Game
         {
             _tuning ??= new PrototypeTuning();
             _tuning.EnsureRuntimeDefaults();
+#if !UNITY_EDITOR
+            // Development APK konsolu CapsuleCollider spam'i ile HUD'u örtüyordu.
+            Debug.developerConsoleVisible = false;
+#endif
             ApplyFrameRateTarget();
             BuildWorld();
         }
@@ -234,7 +238,7 @@ namespace Dovus.Game
                 var motor = player.GetComponent<KinematicMotor>();
                 motor?.BindCamera(follow);
             }
-            debug.Configure(input.Engine, view.CanvasRoot, skills);
+            debug.Configure(input.Engine, view.CanvasRoot, skills, _tuning.ShowSentenceDebugHud);
             debug.BindVitals(vitals);
             input.BindVitals(vitals);
 
