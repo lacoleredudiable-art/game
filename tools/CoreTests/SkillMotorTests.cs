@@ -244,6 +244,59 @@ public class SkillMotorTests
         Assert.That(r.ElementOrigin, Is.EqualTo("Ateş"));
         Assert.That(r.DamageType, Is.EqualTo("magical"));
     }
+
+    [Test]
+    public void FullJson_ParsesSpaceEffects_MatchingJsonCountAndOptionalFields()
+    {
+        string path = Path.GetFullPath(Path.Combine(
+            TestContext.CurrentContext.TestDirectory,
+            "..", "..", "..", "..", "..", "docs", "element-sistemi.json"));
+        if (!File.Exists(path))
+        {
+            path = Path.GetFullPath(Path.Combine(
+                TestContext.CurrentContext.TestDirectory,
+                "..", "..", "..", "..", "docs", "element-sistemi.json"));
+        }
+        string json = File.ReadAllText(path);
+        JsonValue layer = MiniJson.Parse(json)["manipulation_layers"]["space_layer"];
+        int expected = layer["effects"].AsArray().Count;
+        int expectedMaxLinks = layer["max_active_links"].AsInt();
+
+        var motor = SkillMotor.FromJson(json);
+        Assert.That(motor.SpaceEffects.Count, Is.EqualTo(expected));
+        Assert.That(motor.MaxActiveLinks, Is.EqualTo(expectedMaxLinks));
+
+        SpaceEffectNode alev = default;
+        SpaceEffectNode zenitsu = default;
+        SpaceEffectNode tear = default;
+        foreach (SpaceEffectNode e in motor.SpaceEffects)
+        {
+            if (e.Id == "alev_isinlanma") alev = e;
+            if (e.Id == "yildirim_zenitsu") zenitsu = e;
+            if (e.Id == "hiclik_yarik") tear = e;
+        }
+
+        Assert.That(alev.Id, Is.EqualTo("alev_isinlanma"));
+        Assert.That(alev.Type, Is.EqualTo("short_blink"));
+        Assert.That(alev.HasDistanceM, Is.True);
+        Assert.That(alev.DistanceM, Is.EqualTo(3f).Within(0.01f));
+        Assert.That(alev.HasIFrameMs, Is.True);
+        Assert.That(alev.IFrameMs, Is.EqualTo(300));
+        Assert.That(alev.HasDamageOnPass, Is.False);
+
+        Assert.That(zenitsu.Type, Is.EqualTo("phase_blink"));
+        Assert.That(zenitsu.HasDistanceM, Is.True);
+        Assert.That(zenitsu.DistanceM, Is.EqualTo(8f).Within(0.01f));
+        Assert.That(zenitsu.HasDamageOnPass, Is.True);
+        Assert.That(zenitsu.DamageOnPass, Is.True);
+        Assert.That(zenitsu.HasIFrameMs, Is.False);
+
+        Assert.That(tear.Type, Is.EqualTo("tear"));
+        Assert.That(tear.HasDurationSec, Is.True);
+        Assert.That(tear.DurationSec, Is.EqualTo(3f).Within(0.01f));
+        Assert.That(tear.HasDamageOnCross, Is.True);
+        Assert.That(tear.DamageOnCross, Is.EqualTo(30f).Within(0.01f));
+    }
 }
 
 [TestFixture]
