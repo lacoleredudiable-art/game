@@ -12,10 +12,19 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (Görev 12 · UI Rules / kozmetik cooldown HUD) · **Sıradaki:**
+**Son güncelleme:** 16 Eylül 2026 (Görev 13 · PresentationCatalog) · **Sıradaki:**
+Görev 14–17 (validator / AnimationBridge / VFX fabrika / element_colors) +
 Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
 + **Faz 6 bağlama** (Zone/Resource/Cooldown/Passive/TimeEffect/RealityEffect/Equipment/
-space_layer/state machine henüz Game'e bağlı değil)
+space_layer/state machine / Presentation henüz Game'e bağlı değil)
+
+> **16 Eylül — Görev 13: PresentationCatalog.** `Core/Presentation/PresentationCatalog.cs`
+> — MiniJson ile `docs/prezentasyon-katmani.json` (binding:false, SkillMotor'a karışmaz).
+> `TrajectoryNode` / `HitboxNode` (Raw + GetFloat/GetBool/GetString) +
+> `AnimationFrameNode` (`DamageAppliedAtFrame` JsonValue; CancelWindow nullable) +
+> `CompatibilityResult` enum (✓/⚠/✗ → Compatible/Special/Incompatible).
+> **Sayılar JSON'dan:** Trajectories=16, Hitboxes=16, Animations=10 (changelog "15"/"17"
+> yanlış). `PresentationCatalogTests` 3; `dotnet test` 221 yeşil. Game bağlama yok.
 
 > **16 Eylül — Görev 11: EquipmentCatalog + ElementMatchBonus.** `Core/Equipment/` —
 > `EquipmentSlot` / `EquipmentItem` / `EquipmentCatalog` (MiniJson,
@@ -417,9 +426,11 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   `global_rules.resource_system`/`cooldown_rules` → Core sınıflar var, bağ yok;
   `status_durations` ↔ StatusTuning fark listesi (Görev 2, yukarıda; otorite açık).
   **Görev 3:** `state_machine` okunuyor (`PlayerStates`/`BossStates` + `PlayerStateMachine`;
-  SentencePhase bağlanmadı). **Görev 11:** `equipment_system` Core'da okunuyor
+  SentencePhase bağlanmadı).   **Görev 11:** `equipment_system` Core'da okunuyor
   (`EquipmentCatalog` 18 item + `EquipmentBonusResolver`); Game/hasar yoluna bağlı değil,
-  envanter seçimi yok. `status_interaction_table`
+  envanter seçimi yok. **Görev 13:** `prezentasyon-katmani.json` Core'da okunuyor
+  (`PresentationCatalog` 16×16×10); SkillResolution/Animator/VFX bağlama Görev 14–17.
+  `status_interaction_table`
   uygulama artık `StatusReactionTable.Rebuild(motor.StatusInteractions)` — 3 özel satır
   (burn+poison / shield+burn / stun+knockback) hâlâ StatusBoard.Tick / Applicator'da.
   `atoms_catalog` /
