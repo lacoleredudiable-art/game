@@ -425,6 +425,32 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
+- **Görev 17 (element renk karşılaştırması) — sahibi için tamamlandı, RENK DEĞİŞTİRİLMEDİ.**
+  `docs/prezentasyon-katmani.json` `vfx_binding.element_colors` ile `PrototypeTuning`'in
+  mevcut `ElementFire/Water/Air/Earth/Light/Dark` alanları **hiç eşleşmiyor** — sadece
+  "biraz farklı" değil, **muhtemelen karışmış**: mevcut `ElementEarth` (#9EC76B, yeşilimsi)
+  yeni JSON'un `Hava`sına (#87a96b) neredeyse birebir yakın; mevcut `ElementDark` (#7A47C7,
+  mor) yeni JSON'un `Toprak`ına (#877dd9) neredeyse birebir yakın. Bu, Rune enum'unun 16
+  Eylül 4. turda yeniden adlandırılmasından (Igne/Suru/Kabuk/Zehir/Sarsinti/Toprak →
+  Ateş/Su/Hava/Toprak/Aydınlık/Karanlık) ÖNCE atanmış renklerin, rename SIRASINDA doğru
+  elemente taşınmamış olabileceğini düşündürüyor — ama bu bir varsayım, kanıtlanmadı.
+  **Tam karşılaştırma tablosu:**
+
+  | Element | Mevcut kod (`PrototypeTuning`) | Yeni JSON (`prezentasyon-katmani.json`) |
+  |---|---|---|
+  | Ateş | `ElementFire` #FF6B9E (sıcak magenta) | `primary` #C45C26 / `light` #FF9A3C (turuncu) |
+  | Su | `ElementWater` #47B8FF (parlak mavi) | `primary` #39646A / `light` #5FB5D0 (koyu petrol) |
+  | Hava | `ElementAir` #B8D1FF (açık mavi) | `primary` #87A96B / `light` #C5E0A8 (yeşilimsi) |
+  | Toprak | `ElementEarth` #9EC76B (yeşil) | `primary` #877DD9 / `light` #B8AFEF (mor) |
+  | Aydınlık | `ElementLight` #FFF5D1 (krem) | `primary` #C9A227 / `light` #FFE082 (altın sarısı) |
+  | Karanlık | `ElementDark` #7A47C7 (mor) | `primary` #5C8A7D / `light` #7FB3A0 (yeşilimsi-gri) |
+
+  **Karar sahibine kaldı:** hangisi otorite olacak? Mevcut kod zaten oynanışta kullanılıyor
+  (skill tint, HUD), yeni JSON ise VFX/asset paketleriyle eşleşmek için tasarlanmış
+  (`asset_example` alanlarına bakılırsa). İkisini birden tutmak (`primary` = kod rengi kalsın,
+  `light` = parlak varyant olarak eklensin gibi) da bir seçenek. Değiştirilmedi, sadece
+  rapor edildi (görev kuralı).
+
 - **Ulti (`active_modes`) efektlerinin bir kısmı henüz dünyaya işlemiyor** (4. tur): JSON'daki
   `cast_time_mult`/`attack_speed_mult` okunuyor (`ActiveModeNode.GetEffect`) ama hiçbir yere
   uygulanmıyor. `dash_cooldown_mult`/`afterimage_count` (Fırtına Akışı) ve `taunt_radius_m`
