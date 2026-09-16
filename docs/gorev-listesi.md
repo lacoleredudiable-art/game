@@ -604,3 +604,270 @@ da (Görev 0-12 gibi) henüz gerçek oynanışa bağlanmıyor — trajectory'ler
 daha büyük bir "Faz 8 — Gerçek Trajectory Motoru" turu olacak; o, görsel iterasyon (ekran
 görüntüsü, oynanış hissi) gerektirdiği için kör kod yazarak yapılmayacak (bkz. sahibinin
 "6 elemente uygun efekt" isteğine verilen önceki cevap).
+
+---
+
+## Faz 6 — Bağlama (16 Eylül 6. tur sonu)
+
+**Neden var:** Görev 0-17 hepsi `master`'da ama sahibi "oyun değişti mi?" diye sorunca cevap
+**hayır** oldu (yalnızca Görev 12'nin kozmetik cooldown dolumu görünüyor) — 18 parçanın
+neredeyse tamamı Core'da yazılı, hiçbiri `ManifestationDirector`/`PrototypeBootstrap`'a
+bağlı değil. Bu faz onu çözüyor.
+
+**KESİNLİKLE SIRALI, PARALEL VERME.** Görev 0-17'nin aksine bunlar aynı dosyaya
+(`ManifestationDirector.cs`) art arda dokunuyor VE her biri oyunun 5+ oturumda özenle
+ayarlanmış "hissine" (AGENTS.md kural 4/5, His deneyi notları) dokunma riski taşıyor. Biri
+bozarsa bir SONRAKİ göreve geçmeden önce fark edilmeli. Her görev bitince **Unity MCP ile
+Play mode'da canlı oynanış testi ZORUNLU** — sadece `dotnet test` yeterli değil.
+
+**Güvenlik deseni:** Riskli her bağlama (cast'i engelleyebilecek, hasarı değiştirebilecek)
+`CombatTuning`'e bir `bool` bayrakla girer, **varsayılan `false`** (eski davranış korunur).
+Sahibi Play mode'da denedikten sonra `true`'ya çeker. Böylece "her şeyi aynı anda açıp oyunu
+kilitleme" riski yok.
+
+### Bağlama 1 — DamageCalculator'ı devreye al (bayraklı)
+
+```
+Rolün: hasar sistemi entegrasyoncusu.
+
+ÖNCE OKU: unity/Assets/Scripts/Game/ManifestationDirector.cs (ApplyClosingDamage metodu) +
+Core/Combat/DamageCalculator.cs (Görev 1) + Core/Combat/ClosingDamageMath.cs (MEVCUT, hâlâ
+canlı yol).
+
+GÖREV
+1. CombatTuning'e `public bool UseFormulaDamage = false;` ekle (yorum: "true olunca
+   DamageCalculator kullanılır, false=eski ClosingDamageMath").
+2. ApplyClosingDamage'da: `UseFormulaDamage` true ise DamageCalculator'ı çağır (resistance/
+   weakness için şimdilik nötr 0/1 geç — boss element direnci ayrı bir görev), false ise
+   AYNEN eskisi gibi ClosingDamageMath kullan.
+3. Crit tuttuğunda DamageNumberHud'da sayının rengi/boyutu farklı olsun (crit=sarı+büyük,
+   normal=beyaz) — `DamageNumberHud.ShowDamage`'a opsiyonel `bool isCrit` parametresi ekle.
+
+KABUL KRİTERLERİ
+- `UseFormulaDamage=false` iken (varsayılan) dotnet test + Unity Play mode ÖNCEKİYLE
+  BİREBİR AYNI hissediyor (regresyon yok) — Unity MCP ile canlı doğrula.
+- `UseFormulaDamage=true` iken Play mode'da hasar sayıları değişiyor, crit ara sıra sarı
+  büyük çıkıyor — Unity MCP ile canlı doğrula, ekran görüntüsü al.
+
+YASAKLAR
+- Varsayılanı `true` yapma
+- ClosingDamageMath.cs'i silme
+```
+
+### Bağlama 2 — ResourceTracker: mana barı görünür olsun (henüz engellemez)
+
+```
+Rolün: kaynak sistemi entegrasyoncusu (Bağlama 1 sonrası).
+
+ÖNCE OKU: Core/Combat/ResourceTracker.cs (Görev 2) + unity/Assets/Scripts/Game/PlayerVitals.cs
++ VitalsHud.cs (MEVCUT HP barı deseni — ÖRNEK AL).
+
+GÖREV
+1. PlayerVitals'a paralel bir `ResourceTracker` örneği ekle (ayrı sınıf, PlayerVitals'ın
+   HP mantığına dokunma).
+2. VitalsHud'a üçüncü bir bar ekle (mana, mavi tonu — §10 kırmızı-turuncu yasak, oyuncu
+   rengi kullan) — cast'te `base_resource_cost` düşsün, `regen_per_sec` ile dolsun.
+3. **Yetersiz mana cast'i ENGELLEMESİN** (bu Bağlama 3'ün işi) — sadece bar negatife
+   inebilir ya da 0'da kilitlenir, görsel olarak "boş" görünür.
+
+KABUL KRİTERLERİ
+- Unity Play mode: mana barı görünüyor, cast'te azalıyor, zamanla doluyor (MCP ekran
+  görüntüsü ile doğrula).
+
+YASAKLAR
+- Cast'i mana yetersizliğinde ENGELLEME (ayrı görev)
+```
+
+### Bağlama 3 — ResourceTracker gerçekten engellesin
+
+```
+Rolün: kaynak sistemi entegrasyoncusu (Bağlama 2 sonrası).
+
+ÖNCE OKU: Bağlama 2'nin ürettiği kod + PentagonInput.cs (cast'in nerede başladığı).
+
+GÖREV
+CombatTuning'e `bool EnforceResourceCost = false;` ekle. True ise: mana `base_resource_cost`'tan
+azsa cümle BAŞLAMASIN (PentagonInput'ta OnDotTouched'ın ilk noktayı reddetmesi ya da
+SentenceEngine'e girmeden önce kontrol) — reddedilince kısa bir "yetersiz mana" görsel/ses
+ipucu (ReactionReadout, nötr renk).
+
+KABUL KRİTERLERİ
+- `false` iken (varsayılan) davranış eskisiyle birebir aynı (MCP ile doğrula).
+- `true` iken mana bitince cast gerçekten başlamıyor, HUD "yetersiz" gösteriyor (MCP ile
+  canlı doğrula).
+
+YASAKLAR
+- Varsayılanı true yapma
+- Dodge'u veya toparlanma kilidini etkileme
+```
+
+### Bağlama 4 — CooldownTracker: verb bazlı soğuma + Görev 12'nin radial'ını gerçek veriyle doldur
+
+```
+Rolün: soğuma sistemi entegrasyoncusu (Bağlama 3 sonrası).
+
+ÖNCE OKU: Core/Combat/CooldownTracker.cs (Görev 2) + Görev 12'nin HUD kodu (rune başına
+kozmetik radial dolum — ŞU AN sahte/kozmetik, gerçek soğuma verisine bağlanacak).
+
+GÖREV
+CombatTuning'e `bool EnforceCooldown = false;`. True ise: bir verb `base_cooldown_sec`
+dolmadan tekrar cast edilemez (o rün "kilitli" görünür — Görev 12'nin radial dolumu artık
+gerçek soğuma süresini gösterir, kozmetik değil). `global_cooldown_sec` (tüm cast'ler arası
+minimum boşluk) da buradan uygulanır.
+
+KABUL KRİTERLERİ
+- `false` iken davranış eskisiyle birebir aynı.
+- `true` iken bir rüne art arda basınca soğuma dolana kadar cast tetiklenmiyor, radial dolum
+  bunu doğru gösteriyor (MCP ile canlı doğrula).
+
+YASAKLAR
+- Varsayılanı true yapma
+- Dodge'a cooldown uygulama (dodge'un kendi ayrı sistemi var, DodgeTuning)
+```
+
+### Bağlama 5 — PassiveDirector'ı bağla
+
+```
+Rolün: pasif sistemi entegrasyoncusu (Bağlama 4 sonrası — cooldown/resource stabilse).
+
+ÖNCE OKU: Core/Combat/PassiveDirector.cs (Görev 4) + ManifestationDirector.cs
+(TryActivateMode / ActiveModeDirector entegrasyonu — AYNI DESENİ TAKİP ET, pasifler ulti
+gibi ama süresi dolunca kendiliğinden kapanan, cooldown'suz, BİRDEN FAZLA aynı anda aktif
+olabilen bir varyant).
+
+GÖREV
+ManifestationDirector'a `PassiveDirector` ekle; her kapanışta (FireClosing'de,
+TryActivateMode'un yanında) `PassiveDirector.TryTrigger` çağrılsın; aktif pasiflerin
+`GetEffect("damage_mult")` vb. çarpanları `ApplyClosingDamage`'daki `outMult`'a eklensin
+(ActiveModeDirector.DamageMult ile AYNI noktada, çarpımsal). Aktif pasif varken küçük bir
+HUD ipucu (ReactionReadout ile karışmasın — yeni, minik bir ikon/isim listesi yeterli).
+
+KABUL KRİTERLERİ
+- Unity Play mode'da bir pasifin trigger_combo'sunu (ör. [1,2,3,1]) çizince aktifleştiği,
+  süresi dolunca kapandığı MCP ile canlı doğrulanır.
+- İki pasif aynı anda aktifken ikisinin de çarpanı uygulanıyor.
+
+YASAKLAR
+- ActiveModeDirector'ın (ulti) davranışını değiştirme
+```
+
+### Bağlama 6 — ChainDirector'ı bağla
+
+```
+Rolün: zincir sistemi entegrasyoncusu (Bağlama 5 sonrası).
+
+ÖNCE OKU: Core/Combat/ChainDirector.cs (Görev 5) + ManifestationDirector.cs FireClosing.
+
+GÖREV
+Son N cast'in element dizisini tutan bir kuyruk (`ManifestationDirector`'da, küçük bir
+`Queue<int>`); her kapanışta `ChainDirector`'a iletilir. Pattern tamamlanınca Links'teki
+artan bonus o ana kadarki cast'lere UYGULANAMAZ (geçmiş) — sadece Finisher tetiklenirken
+görsel/ses bildirimi (ReactionReadout) + varsa bir sonraki cast'e bonus (dokümante et,
+JSON'da "links" tam olarak neye uygulandığını netleştirmiyor, en mantıklı yorumu seç ve
+docs/durum.md'ye YAZ).
+
+KABUL KRİTERLERİ
+- Unity Play mode'da 6 zincirden biri tam çizilince Finisher bildirimi ekranda görünüyor
+  (MCP ile canlı doğrula).
+
+YASAKLAR
+- Kombo tablosu yazma (pattern zaten JSON'dan geliyor)
+```
+
+### Bağlama 7 — ZoneDirector'ı dünyaya bağla (gerçek obje)
+
+```
+Rolün: zone sistemi entegrasyoncusu (Bağlama 6 sonrası).
+
+ÖNCE OKU: Core/Combat/ZoneDirector.cs (Görev 7) + Game/PlaceholderFactory.cs (Görev 16 —
+ASSET YOK, placeholder kullan) + GroundScarField.cs (MEVCUT, dünyada kalıcı iz bırakma
+deseni — ÖRNEK AL).
+
+GÖREV
+Toprak ailesinin zone üreten bir verb'ü cast edilince (`manipulation_layers.zone_layer.zones`
+içinde `element` alanı eşleşen — örn. Toprak/Kaya) `ZoneDirector.TrySpawn` çağrılsın,
+`PlaceholderFactory` ile dünyada RENKLI BİR DİSK/HACİM görünsün (element rengiyle),
+`RemainingSec` dolunca kaybolsun.
+
+KABUL KRİTERLERİ
+- Unity Play mode'da ilgili verb cast edilince yerde bir alan objesi belirip süresi dolunca
+  kaybolduğu MCP ile canlı doğrulanır, ekran görüntüsü alınır.
+
+YASAKLAR
+- Yeni bir asset satın alma/import — yalnızca placeholder
+```
+
+### Bağlama 8 — TimeEffectDirector: echo + extend_lifetime
+
+```
+Rolün: zaman efekti entegrasyoncusu (Bağlama 7 sonrası).
+
+ÖNCE OKU: Core/Combat/TimeEffectDirector.cs (Görev 9).
+
+GÖREV
+Yalnızca İKİ efekti bağla (en düşük risk): "echo" (Alev — bir cast'in damage_ratio kadar
+yankı hasarı delay_sec sonra tekrar gelir, ApplyClosingDamage'ı gecikmeli tekrar çağır) ve
+"extend_lifetime" (Lav — Bağlama 7'nin zone'larının RemainingSec'ini multiplier ile çarp).
+`delayed_detonation` ve `death_delay` DAHA RİSKLİ (ölüm/patlama zamanlamasına dokunuyor) —
+bu görevde YOK, ayrı bir Bağlama 8.1 olacak.
+
+KABUL KRİTERLERİ
+- Unity Play mode'da Ateş'in ilgili verb'ü cast edilince ~1 sn sonra ikinci bir hasar sayısı
+  (yankı) çıktığı MCP ile canlı doğrulanır.
+
+YASAKLAR
+- delayed_detonation / death_delay'e dokunma (ayrı görev)
+```
+
+### Bağlama 9 — Equipment: sabit bir kuşam + element eşleşme bonusu
+
+```
+Rolün: equipment entegrasyoncusu (Bağlama 8 sonrası).
+
+ÖNCE OKU: Core/Equipment/*.cs (Görev 11) + ManifestationDirector.cs ApplyClosingDamage.
+
+GÖREV
+Oyuncuya SABİT bir ekipman ata (seçim UI'ı YOK — `PrototypeBootstrap`'ta tek bir
+`EquipmentItem` referansı, ör. "Alev Kılıcı"/Ateş). Cast edilen skill'in element'i
+kuşanılan silahın element'iyle eşleşirse `EquipmentBonusResolver`'ın döndürdüğü çarpan
+`ApplyClosingDamage`'daki `outMult`'a eklensin.
+
+KABUL KRİTERLERİ
+- Unity Play mode'da eşleşen elementle cast edilince hasarın ~%10 arttığı (Bağlama 1'in
+  DamageCalculator'ı açıksa sayısal, kapalıysa ClosingDamageMath üzerinden de aynı çarpan)
+  MCP ile canlı doğrulanır.
+
+YASAKLAR
+- Ekipman seçim ekranı/envanter UI'ı yazma (ayrı, çok daha büyük bir görev)
+```
+
+### Bağlama 10 — AnimationBridge + PresentationValidator'ı ActorVisual'a bağla
+
+```
+Rolün: animasyon entegrasyoncusu (Bağlama 9 sonrası, bağımsız da denenebilir — düşük risk).
+
+ÖNCE OKU: Game/AnimationBridge.cs (Görev 15) + Core/Presentation/PresentationValidator.cs
+(Görev 14) + Game/ActorVisual.cs (MEVCUT PulseRune/SafeSetFloat deseni).
+
+GÖREV
+Bir skill cast edildiğinde (`ShoutSkill` ya da `PulseActor` civarı), `SkillResolution.
+AnimationType`'a karşılık gelen `AnimationFrameNode`'u `PresentationCatalog`'dan çek,
+`AnimationBridge` ile mevcut Animator'a uygula (Quaternius controller'larında karşılığı
+olmayan state'ler için SafeSetFloat deseniyle sessizce atla, hata verme).
+
+KABUL KRİTERLERİ
+- Unity Play mode'da bir cast'te Animator state'inin (varsa) tetiklendiği MCP ile canlı
+  doğrulanır; karşılığı olmayanlarda konsol hatasız kalır.
+
+YASAKLAR
+- Mevcut ActorVisual.PulseRune çağrılarını SİLME — AnimationBridge EKLENİR, yerine geçmez
+```
+
+---
+
+**Genel not:** Bağlama 1-10 bitince "oyun değişti mi?" sorusunun cevabı **evet** olacak:
+mana barı, soğuma dolumu, hasar formülü/crit, pasif/zincir bildirimleri, kalıcı zone
+objeleri, yankı hasarı, equipment bonusu, gerçek animasyonlar — hepsi Play mode'da görünür/
+hissedilir. Kalan (`RealityEffectDirector`'ın revive_block'u, `PlaceholderFactory`'nin
+LivingEffectView ile birleşmesi, `PlayerStateMachine`'in SentenceEngine'e bağlanması) daha
+riskli/daha az öncelikli — Bağlama 11+ olarak sahibiyle konuşulup sırası netleşince yazılır.
