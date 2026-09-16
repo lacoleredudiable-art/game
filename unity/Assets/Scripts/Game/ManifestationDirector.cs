@@ -60,6 +60,7 @@ namespace Dovus.Game
         ActiveModeHud _modeHud;
         PentagonView _pentagonView;
         PlayerResource _playerResource;
+        PlayerCooldown _playerCooldown;
         double _lastDamageDealtMs = double.NegativeInfinity;
         double _lastMovedMs = double.NegativeInfinity;
         float _modeHpDrainAccum;
@@ -163,6 +164,7 @@ namespace Dovus.Game
             _modeHud = modeHud;
             _pentagonView = pentagonView;
             _playerResource = player != null ? player.GetComponent<PlayerResource>() : null;
+            _playerCooldown = player != null ? player.GetComponent<PlayerCooldown>() : null;
             _skills = SkillMotorLoader.LoadOrDefault();
             _modeDirector = new ActiveModeDirector(_skills.ActiveModes);
             if (_playerStatus != null)
@@ -608,13 +610,15 @@ namespace Dovus.Game
                     ApplyClosingStatuses(p, basicSkill);
                     ShoutSkill(basicSkill, p.Words);
                     ApplyClosingHeal(p.Closing, basicSkill);
-                    PulseCosmeticCooldown(basicSkill, p.Words);
+                    ApplyCooldown(basicSkill, p.Words, cosmeticIfDisabled: true);
                     return;
                 }
 
                 ApplyResourceCost(basicSkill);
                 ApplyBossClosingBasic(logic, p.Closing);
                 ApplyClosingDamage(p.Closing, SkillResolution.Empty, isBasicStrike: true, slashCommitMult: 0f);
+                // Kozmetik radial yoktu; EnforceCooldown=true iken tracker yine yazar.
+                ApplyCooldown(basicSkill, p.Words, cosmeticIfDisabled: false);
                 return;
             }
 
@@ -627,7 +631,7 @@ namespace Dovus.Game
             ApplyClosingStatuses(p, skill);
             ShoutSkill(skill, p.Words);
             ApplyClosingHeal(p.Closing, skill); // readout ShoutSkill'den sonra (ally +N kalsın)
-            PulseCosmeticCooldown(skill, p.Words);
+            ApplyCooldown(skill, p.Words, cosmeticIfDisabled: true);
             if (!motionPlan.IsEmpty)
                 AnnotateMotion(skill, motionPlan);
         }
@@ -646,7 +650,43 @@ namespace Dovus.Game
         }
 
         /// <summary>
-        /// ui_rules.cooldown_display — yalnızca görsel. CooldownTracker'a / cast engeline dokunmaz.
+        /// EnforceCooldown=false: cosmeticIfDisabled ise Görev 12 kozmetik radial (birebir).
+        /// true: CooldownTracker + radial gerçek kalan süre (basic dahil).
+        /// </summary>
+        void ApplyCooldown(SkillResolution skill, IReadOnlyList<SentenceWord> words, bool cosmeticIfDisabled)
+        {
+            if (skill.IsEmpty || words == null || words.Count == 0)
+                return;
+
+            bool enforce = _combat != null && _combat.EnforceCooldown;
+            if (!enforce)
+            {
+                if (cosmeticIfDisabled)
+                    PulseCosmeticCooldown(skill, words);
+                return;
+            }
+
+            if (_playerCooldown == null || string.IsNullOrEmpty(skill.VerbId))
+                return;
+
+            float sec = skill.BaseCooldownSec;
+            double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
+            if (!_playerCooldown.TryBeginCast(skill.VerbId, sec, worldMs))
+                return;
+
+            if (_pentagonView == null || sec <= 0f)
+                return;
+
+            _pentagonView.BeginTrackedCooldown(
+                (int)words[0].Rune,
+                skill.VerbId,
+                sec,
+                _playerCooldown,
+                _clock);
+        }
+
+        /// <summary>
+        /// ui_rules.cooldown_display — yalnızca görsel (EnforceCooldown=false).
         /// Fiil rünü (ilk kelime) etrafında base_cooldown_sec kadar radial dolum.
         /// </summary>
         void PulseCosmeticCooldown(SkillResolution skill, IReadOnlyList<SentenceWord> words)

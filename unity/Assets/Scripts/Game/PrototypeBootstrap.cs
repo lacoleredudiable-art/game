@@ -126,6 +126,10 @@ namespace Dovus.Game
             // docs/element-sistemi.json resource_system: 100 / 8 / 1.5
             resource.Bind();
 
+            var cooldown = player.AddComponent<PlayerCooldown>();
+            // docs/element-sistemi.json cooldown_rules: 0.3 / 1
+            cooldown.Bind();
+
             var playerStatus = player.AddComponent<ActorStatus>();
             var bossStatus = boss.AddComponent<ActorStatus>();
 
@@ -152,7 +156,7 @@ namespace Dovus.Game
             SceneAtmosphere.Apply(sun, Camera.main, _tuning);
             // LavDecor.Build — eski arena-wide kırmızı ember noktaları kalktı.
             BillboardVfx.CreateEmberField(boss.transform, new Color(1f, 0.45f, 0.12f), rate: 14f);
-            CreatePentagon(clock, combat, player.transform, pose, reactor, bossVitals, dodgeMotion, afterimage, vitals, telegraph, follow, tuningConfig, allyDummy, resource);
+            CreatePentagon(clock, combat, player.transform, pose, reactor, bossVitals, dodgeMotion, afterimage, vitals, telegraph, follow, tuningConfig, allyDummy, resource, cooldown);
         }
 
         void CreatePentagon(
@@ -169,7 +173,8 @@ namespace Dovus.Game
             FollowCamera follow,
             TuningConfig tuningConfig,
             AllyDummy allyDummy = null,
-            PlayerResource resource = null)
+            PlayerResource resource = null,
+            PlayerCooldown cooldown = null)
         {
             var root = new GameObject("Pentagon");
             root.transform.SetParent(transform, false);
@@ -237,6 +242,8 @@ namespace Dovus.Game
 
             var readout = root.AddComponent<ReactionReadout>();
             readout.Configure(combat.Feel, _tuning, view.CanvasRoot);
+            input.BindResource(resource, readout, skills);
+            input.BindCooldown(cooldown, readout, skills);
 
             var vitalsHud = root.AddComponent<VitalsHud>();
             vitalsHud.Configure(vitals, bossVitals, _tuning, view.CanvasRoot, allyDummy, resource);

@@ -5,8 +5,8 @@ namespace Dovus.Game
 {
     /// <summary>
     /// Ekrana sabit altıgen noktaları + merkez (Canvas Overlay).
-    /// ui_rules.cooldown_display: her rün etrafında kozmetik radial dolum + kalan sn
-    /// (CooldownTracker'a bağlanmaz — engelleme Faz 6).
+    /// ui_rules.cooldown_display: her rün etrafında radial dolum + kalan sn.
+    /// EnforceCooldown=false → kozmetik (yerel sayaç). true → PlayerCooldown / CooldownTracker.
     /// </summary>
     public sealed class PentagonView : MonoBehaviour
     {
@@ -19,6 +19,10 @@ namespace Dovus.Game
         Text[] _cdLabels;
         float[] _cdRemainingSec;
         float[] _cdDurationSec;
+        string[] _cdVerbIds;
+        bool[] _cdTracked;
+        PlayerCooldown _cdSource;
+        GameClock _cdClock;
         RectTransform _center;
         RectTransform _dodge;
         Canvas _canvas;
@@ -56,6 +60,8 @@ namespace Dovus.Game
             _cdLabels = new Text[n + 1];
             _cdRemainingSec = new float[n + 1];
             _cdDurationSec = new float[n + 1];
+            _cdVerbIds = new string[n + 1];
+            _cdTracked = new bool[n + 1];
             for (int dot = 1; dot <= n; dot++)
             {
                 _dotIcons[dot] = TryCreateIconSprite(dot);
@@ -90,6 +96,7 @@ namespace Dovus.Game
 
         /// <summary>
         /// Kozmetik soğuma — cast'i engellemez. ui_rules.cooldown_display (radial_overlay + sayı).
+        /// EnforceCooldown=false yolunda ManifestationDirector bunu çağırır.
         /// </summary>
         public void BeginCosmeticCooldown(int dot, float durationSec)
         {
@@ -98,8 +105,31 @@ namespace Dovus.Game
             if (durationSec <= 0f)
                 return;
 
+            _cdTracked[dot] = false;
+            _cdVerbIds[dot] = null;
             _cdDurationSec[dot] = durationSec;
             _cdRemainingSec[dot] = durationSec;
+            Layout();
+            RefreshCooldownVisuals();
+        }
+
+        /// <summary>
+        /// Bağlama 4: gerçek CooldownTracker kalanı — radial fillAmount = rem/duration.
+        /// </summary>
+        public void BeginTrackedCooldown(int dot, string verbId, float durationSec, PlayerCooldown source, GameClock clock)
+        {
+            if (_cdRemainingSec == null || dot < 1 || dot >= _cdRemainingSec.Length)
+                return;
+            if (string.IsNullOrEmpty(verbId) || durationSec <= 0f || source == null)
+                return;
+
+            _cdSource = source;
+            _cdClock = clock;
+            _cdTracked[dot] = true;
+            _cdVerbIds[dot] = verbId;
+            _cdDurationSec[dot] = durationSec;
+            double worldMs = clock != null ? clock.Director.WorldTimeMs : 0;
+            _cdRemainingSec[dot] = source.VerbRemainingSec(verbId, worldMs);
             Layout();
             RefreshCooldownVisuals();
         }
@@ -110,18 +140,33 @@ namespace Dovus.Game
                 return;
 
             Layout();
-            TickCosmeticCooldowns();
+            TickCooldowns();
         }
 
-        void TickCosmeticCooldowns()
+        void TickCooldowns()
         {
             if (_cdRemainingSec == null)
                 return;
 
             float dt = Time.unscaledDeltaTime;
+            double worldMs = _cdClock != null ? _cdClock.Director.WorldTimeMs : 0;
             bool any = false;
             for (int i = 1; i < _cdRemainingSec.Length; i++)
             {
+                if (_cdTracked != null && _cdTracked[i] && _cdSource != null && !string.IsNullOrEmpty(_cdVerbIds[i]))
+                {
+                    float rem = _cdSource.VerbRemainingSec(_cdVerbIds[i], worldMs);
+                    if (!Mathf.Approximately(rem, _cdRemainingSec[i]))
+                        any = true;
+                    _cdRemainingSec[i] = rem;
+                    if (rem <= 0f)
+                    {
+                        _cdTracked[i] = false;
+                        _cdVerbIds[i] = null;
+                    }
+                    continue;
+                }
+
                 if (_cdRemainingSec[i] <= 0f)
                     continue;
                 _cdRemainingSec[i] = Mathf.Max(0f, _cdRemainingSec[i] - dt);

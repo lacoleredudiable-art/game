@@ -12,6 +12,7 @@ namespace Dovus.Game
         PrototypeTuning _tuning;
         AudioSource _source;
         readonly AudioClip[] _clips = new AudioClip[7]; // index 1..6
+        AudioClip _denyClip;
 
         // Frekanslar spec'te yok; hece adı/sırası RuneInfo'dan gelir.
         static readonly float[] BaseHz =
@@ -48,6 +49,8 @@ namespace Dovus.Game
                 if (_clips[i] != null)
                     Destroy(_clips[i]);
             }
+            if (_denyClip != null)
+                Destroy(_denyClip);
         }
 
         /// <summary>dotIndex 1..6; sentenceDotsAfter = cümledeki nokta sayısı (perde yükselir).</summary>
@@ -62,6 +65,18 @@ namespace Dovus.Game
 
             long ms = _tuning != null ? _tuning.DotVibrationMs : 30L;
             TryShortVibrate(ms);
+        }
+
+        /// <summary>Bağlama 3: yetersiz mana — düşük kısa buzz (hece frekanslarından ayrı).</summary>
+        public void PlayDenied()
+        {
+            if (_source == null)
+                return;
+            if (_denyClip == null)
+                _denyClip = BuildClip("deny", 120f);
+            _source.pitch = 0.85f;
+            _source.PlayOneShot(_denyClip, 0.45f);
+            TryShortVibrate(20L);
         }
 
         public void PlayForRune(Rune rune, int sentenceDotsAfter) =>

@@ -103,4 +103,19 @@ public class ResourceTrackerTests
         Assert.That(r.Mana, Is.EqualTo(0f));
         Assert.That(r.RegenDelayLeftSec, Is.EqualTo(1.5f));
     }
+
+    [Test]
+    public void EnforceResourceCost_DefaultsFalse_AndCopyFrom()
+    {
+        var a = new Dovus.Core.Tuning.CombatTuning();
+        Assert.That(a.EnforceResourceCost, Is.False);
+
+        a.EnforceResourceCost = true;
+        var b = new Dovus.Core.Tuning.CombatTuning();
+        b.CopyFrom(a);
+        Assert.That(b.EnforceResourceCost, Is.True);
+
+        b.ResetToDefaults();
+        Assert.That(b.EnforceResourceCost, Is.False);
+    }
 }

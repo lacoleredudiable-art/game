@@ -12,17 +12,36 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (Bağlama 2 · mana barı) · **Sıradaki:**
-Bağlama 3+ (EnforceResourceCost / Cooldown / …) +
+**Son güncelleme:** 16 Eylül 2026 (Bağlama 4 · EnforceCooldown) · **Sıradaki:**
+Bağlama 5+ (PassiveDirector / …) +
 Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
 + **Faz 6 bağlama** kalanı (Zone/Passive/TimeEffect/RealityEffect/Equipment/
 space_layer/state machine / Presentation henüz Game'e bağlı değil)
+
+> **16 Eylül — Bağlama 4: EnforceCooldown.** `CombatTuning.EnforceCooldown`
+> varsayılan **false** (Görev 12 kozmetik radial birebir). `true` → cümle
+> başlamadan `PlayerCooldown.CanStart(verbId)` (GCD 0.3s + fiil
+> `base_cooldown_sec`); bang'de `TryBeginCast` + radial `BeginTrackedCooldown`
+> (CooldownTracker kalanı). Deny: `ReactionReadout` "soğumada" +
+> `SyllableFeedback.PlayDenied`. Dodge'a dokunulmaz. `PlayerCooldown` JSON
+> `cooldown_rules` (0.3 / 1). MCP Play: A flag=false → TryAllow true; B
+> flag=true+CD → deny + radial label `3` (Ateş Dokunuşu 3s); C CD sonrası
+> CanStart true. `dotnet test` 226 yeşil.
+
+> **16 Eylül — Bağlama 3: EnforceResourceCost.** `CombatTuning.EnforceResourceCost`
+> varsayılan **false** (Bağlama 2 birebir). `true` → cümle başlamadan önce
+> `PlayerResource.CanAfford(verb.base_resource_cost)`; yetmezse `OnDotTouched`/
+> merkez düz vuruş reddedilir, `ReactionReadout.NoteDenied("yetersiz mana")` +
+> `SyllableFeedback.PlayDenied`. Dodge / toparlanma kilidine dokunulmaz. Bang'de
+> hâlâ `Consume` (engellemez). `length.resource_cost_mult` çarpılmıyor.
+> MCP Play: A flag=false+mana0 → Building; B flag=true+mana0 → deny + HUD
+> "yetersiz mana"; C flag=true+mana100 → Building. `dotnet test` 226 yeşil.
 
 > **16 Eylül — Bağlama 2: ResourceTracker Game'e bağlı.** `PlayerResource` (PlayerVitals'a
 > paralel; HP'ye dokunulmadı) + `ResourceTracker.Consume` (yetmezse 0'a kilit, cast
 > engellemez). `VitalsHud` üçüncü bar: mana, oyuncu camgöbeği/mavi. Cast bang'de
 > `base_resource_cost` düşer; `regen_per_sec`/delay JSON varsayılanı. Bağlama 3
-> `EnforceResourceCost` yok. MCP Play: Mana 45/100 barı görünür; Consume 76→87 regen;
+> `EnforceResourceCost` eklendi (varsayılan false). MCP Play: Mana 45/100 barı görünür; Consume 76→87 regen;
 > Ateş Dokunuşu cost=10. `dotnet test` 225 yeşil.
 
 > **16 Eylül — Bağlama 1: DamageCalculator bayraklı.** `CombatTuning.UseFormulaDamage`
@@ -469,8 +488,8 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   `cast_time_mult`/`attack_speed_mult` okunuyor (`ActiveModeNode.GetEffect`) ama hiçbir yere
   uygulanmıyor. `dash_cooldown_mult`/`afterimage_count` (Fırtına Akışı) ve `taunt_radius_m`
   (Aşılmaz Duvar) hiç uygulanmıyor. Ulti `resource_cost` hâlâ düşülmüyor (verb
-  `base_resource_cost` Bağlama 2'de düşüyor; mod maliyeti ayrı). Cast engeli yok
-  (Bağlama 3 `EnforceResourceCost`). `length.resource_cost_mult` henüz çarpılmıyor —
+  `base_resource_cost` Bağlama 2'de düşüyor; mod maliyeti ayrı). Cast engeli
+  `CombatTuning.EnforceResourceCost` (Bağlama 3, varsayılan false). `length.resource_cost_mult` henüz çarpılmıyor —
   yalnızca `base_resource_cost`.
   `visual.aura`/`screen_edges` okunmuyor — `ActiveModeHud` banner'ı var, ekran kenarı VFX yok.
 - **"team_has_debuffs"/"team_has_wounded" basitleştirilmiş okunuyor** (4. tur): `AllyDummy`'nin

@@ -83,11 +83,33 @@ namespace Dovus.Game
 
         PlayerVitals _vitals;
         ActorStatus _status;
+        PlayerResource _resource;
+        PlayerCooldown _cooldown;
+        ReactionReadout _readout;
+        SkillMotor _skills;
 
         /// <summary>Ölü oyuncu yazamaz ve dodge atamaz (T8.1).</summary>
         public void BindVitals(PlayerVitals vitals) => _vitals = vitals;
 
         public void BindStatus(ActorStatus status) => _status = status;
+
+        /// <summary>Bağlama 3: EnforceResourceCost kapısı + yetersiz mana readout.</summary>
+        public void BindResource(PlayerResource resource, ReactionReadout readout, SkillMotor skills = null)
+        {
+            _resource = resource;
+            _readout = readout;
+            _skills = skills;
+        }
+
+        /// <summary>Bağlama 4: EnforceCooldown kapısı + soğuma readout (dodge'a dokunmaz).</summary>
+        public void BindCooldown(PlayerCooldown cooldown, ReactionReadout readout = null, SkillMotor skills = null)
+        {
+            _cooldown = cooldown;
+            if (readout != null)
+                _readout = readout;
+            if (skills != null)
+                _skills = skills;
+        }
 
         bool InputLocked =>
             (_vitals != null && _vitals.IsDown)
@@ -232,6 +254,20 @@ namespace Dovus.Game
                 if (player != null)
                     _status = player.GetComponent<ActorStatus>();
             }
+            if (_resource == null)
+            {
+                var player = GameObject.Find("Player");
+                if (player != null)
+                    _resource = player.GetComponent<PlayerResource>();
+            }
+            if (_cooldown == null)
+            {
+                var player = GameObject.Find("Player");
+                if (player != null)
+                    _cooldown = player.GetComponent<PlayerCooldown>();
+            }
+            if (_readout == null)
+                _readout = FindAnyObjectByType<ReactionReadout>();
         }
 
         void HandleKeyboardDodge()
@@ -445,6 +481,15 @@ namespace Dovus.Game
                 return;
             }
 
+            // Bağlama 3: cümle BAŞLAMADAN önce mana — dodge / toparlanma kilidine dokunulmaz.
+            if (!TryAllowSentenceStart(hit.Value))
+            {
+                _activeDot = hit.Value;
+                _dwellWorldMs = 0;
+                _dwellReported = 0;
+                return;
+            }
+
             Vector2 dotPx = PentagonLayoutScreen.DotPx(hit.Value, _tuning, Screen.width, Screen.height);
             double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
 
@@ -519,11 +564,118 @@ namespace Dovus.Game
 
             // Idle ya da Recovering: kilidi keser (§5) ve tek noktalık cümleyi anında kapatır.
             int dot = _tuning.BasicStrikeDot;
+            if (!TryAllowSentenceStart(dot))
+                return;
+
             _engine.OnDotTouched(dot, worldMs);
             _engine.Commit();
             FlushInkBreak();
             _syllable?.PlayForDot(dot, 1);
             _debugHud?.NoteBasicStrike();
+        }
+
+        /// <summary>
+        /// Bağlama 3–4 / MCP: cümle başlatma kapısı. true = devam, false = reddedildi
+        /// (readout + deny sesi zaten gösterildi). Dodge / recovery'ye dokunmaz.
+        /// </summary>
+        public bool TryAllowSentenceStart(int verbDot)
+        {
+            if (!WouldStartSentence())
+                return true;
+            if (!CanAffordVerbDot(verbDot))
+            {
+                NotifyInsufficientMana();
+                return false;
+            }
+            if (!CanCooldownVerbDot(verbDot))
+            {
+                NotifyOnCooldown();
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// OnDotTouched bu noktada yeni fiil başlatacak mı? (Idle / Recovering / Resolved /
+        /// Aborted, ya da kapasite dolu Building → kapat+yeni fiil.) Building + sıfat ekleme değil.
+        /// </summary>
+        bool WouldStartSentence()
+        {
+            if (_engine == null)
+                return false;
+
+            SentencePhase phase = _engine.State.Phase;
+            if (phase == SentencePhase.Idle
+                || phase == SentencePhase.Recovering
+                || phase == SentencePhase.Resolved
+                || phase == SentencePhase.Aborted)
+                return true;
+
+            if (phase == SentencePhase.Building
+                && _engine.State.Words.Count >= _combat.Sentence.MaxSentenceDots)
+                return true;
+
+            return false;
+        }
+
+        bool CanAffordVerbDot(int verbDot)
+        {
+            if (_combat == null || !_combat.EnforceResourceCost)
+                return true;
+            if (_resource == null)
+                return true;
+
+            float cost = LookupBaseResourceCost(verbDot);
+            return _resource.CanAfford(cost);
+        }
+
+        bool CanCooldownVerbDot(int verbDot)
+        {
+            if (_combat == null || !_combat.EnforceCooldown)
+                return true;
+            if (_cooldown == null)
+                return true;
+
+            SkillResolution skill = LookupVerbSkill(verbDot);
+            if (skill.IsEmpty || string.IsNullOrEmpty(skill.VerbId))
+                return true;
+
+            double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
+            return _cooldown.CanStart(skill.VerbId, worldMs);
+        }
+
+        float LookupBaseResourceCost(int verbDot)
+        {
+            SkillResolution skill = LookupVerbSkill(verbDot);
+            return skill.IsEmpty ? 0f : skill.BaseResourceCost;
+        }
+
+        SkillResolution LookupVerbSkill(int verbDot)
+        {
+            EnsureSkills();
+            if (_skills == null)
+                return SkillResolution.Empty;
+
+            return _skills.Resolve(new[] { verbDot });
+        }
+
+        void EnsureSkills()
+        {
+            if (_skills != null)
+                return;
+            _skills = SkillMotorLoader.LoadOrDefault();
+        }
+
+        void NotifyInsufficientMana()
+        {
+            _readout?.NoteDenied("yetersiz mana");
+            _syllable?.PlayDenied();
+        }
+
+        void NotifyOnCooldown()
+        {
+            _readout?.NoteDenied("soğumada");
+            _syllable?.PlayDenied();
         }
 
         void TriggerDodge()

@@ -200,6 +200,23 @@ namespace Dovus.Game
             Show();
         }
 
+        /// <summary>
+        /// Bağlama 3: yetersiz mana — §10 kırmızı-turuncu yasak; nötr PentagonDotColor.
+        /// </summary>
+        public void NoteDenied(string title, string detail = null)
+        {
+            if (_feel == null || string.IsNullOrEmpty(title))
+                return;
+
+            _accent = _tuning != null
+                ? _tuning.PentagonDotColor
+                : new Color(0.55f, 0.62f, 0.72f, 0.85f);
+            _main.text = title;
+            _sub.text = detail ?? string.Empty;
+            _needsFit = true;
+            Show();
+        }
+
         void Show() => _shownAtUnscaled = Time.unscaledTime;
 
         /// <summary>

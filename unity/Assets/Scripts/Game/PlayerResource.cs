@@ -6,7 +6,7 @@ namespace Dovus.Game
     /// <summary>
     /// Oyuncu mana havuzu — PlayerVitals'a paralel (HP'ye dokunmaz).
     /// docs/element-sistemi.json global_rules.resource_system varsayılanları.
-    /// Bağlama 2: yetersiz mana cast'i engellemez (Consume 0'a kilitler).
+    /// Bağlama 2: Consume yetersizse 0'a kilitler. Bağlama 3: CanAfford + EnforceResourceCost.
     /// </summary>
     public sealed class PlayerResource : MonoBehaviour
     {
@@ -25,7 +25,10 @@ namespace Dovus.Game
             _tracker = new ResourceTracker(maxMana, regenPerSec, regenDelayAfterCastSec);
         }
 
-        /// <summary>Cast maliyeti — engellemez; yetmezse 0.</summary>
+        /// <summary>CombatTuning.EnforceResourceCost kapısı — tracker yoksa true (fail-open).</summary>
+        public bool CanAfford(float cost) => _tracker == null || _tracker.CanAfford(cost);
+
+        /// <summary>Cast maliyeti — engellemez; yetmezse 0. (Bağlama 2 bang yolu.)</summary>
         public void Consume(float cost) => _tracker?.Consume(cost);
 
         void Update()

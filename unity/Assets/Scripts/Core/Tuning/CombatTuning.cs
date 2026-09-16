@@ -28,6 +28,18 @@ namespace Dovus.Core.Tuning
         public bool UseFormulaDamage = false;
 
         /// <summary>
+        /// true: mana base_resource_cost'tan azsa cümle başlamaz (Bağlama 3).
+        /// Varsayılan false — Bağlama 2 Consume yolu birebir (cast engellenmez).
+        /// </summary>
+        public bool EnforceResourceCost = false;
+
+        /// <summary>
+        /// true: fiil base_cooldown_sec + global_cooldown_sec dolmadan yeniden cast yok
+        /// (Bağlama 4). Varsayılan false — Görev 12 kozmetik radial birebir.
+        /// </summary>
+        public bool EnforceCooldown = false;
+
+        /// <summary>
         /// T10: panelin "Sıfırla" ve JSON-yükleme yolu. Alt nesnelerin KİMLİĞİ korunur —
         /// PentagonInput/DodgeState/SentenceEngine gibi tüketiciler `combat.Dodge` gibi alt
         /// nesnenin REFERANSINI tutuyor (Bind sırasında), üst nesneyi değil. `Manifestation`
@@ -45,6 +57,8 @@ namespace Dovus.Core.Tuning
             SkillMotion.CopyFrom(other.SkillMotion);
             ClosingDamagePerEffect = other.ClosingDamagePerEffect;
             UseFormulaDamage = other.UseFormulaDamage;
+            EnforceResourceCost = other.EnforceResourceCost;
+            EnforceCooldown = other.EnforceCooldown;
         }
 
         public void ResetToDefaults() => CopyFrom(new CombatTuning());
