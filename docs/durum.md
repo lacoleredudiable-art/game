@@ -12,11 +12,20 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (Bağlama 4 · EnforceCooldown) · **Sıradaki:**
-Bağlama 5+ (PassiveDirector / …) +
+**Son güncelleme:** 16 Eylül 2026 (Bağlama 5 · PassiveDirector Game) · **Sıradaki:**
+Bağlama 6+ (ChainDirector / …) +
 Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
-+ **Faz 6 bağlama** kalanı (Zone/Passive/TimeEffect/RealityEffect/Equipment/
++ **Faz 6 bağlama** kalanı (Zone/TimeEffect/RealityEffect/Equipment/
 space_layer/state machine / Presentation henüz Game'e bağlı değil)
+
+> **16 Eylül — Bağlama 5: PassiveDirector Game'e bağlı.** `ManifestationDirector`:
+> `PassiveDirector` (`SkillMotor.Passives`) + `PassiveHud` (sol-üst, camgöbeği;
+> ReactionReadout/ActiveModeHud'dan ayrı). `FireClosing`'de `TryActivateMode` yanı sıra
+> `TryTriggerPassive` (dot dizisi = rünler). `ApplyClosingDamage` `outMult` ×
+> `PassiveDirector.DamageMult` (ulti ile aynı nokta, çarpımsal); heal × `HealMult`,
+> lifesteal += `LifestealAdd`. Ulti (`ActiveModeDirector`) dokunulmadı.
+> MCP Play: [1,2,3,1]→`alev_hiddeti`; +[6,3,6,3]→dual mult **1.38** (1.15×1.2);
+> 10s sonra yalnız alev; 15s hepsi kapandı. `dotnet test` 226 yeşil.
 
 > **16 Eylül — Bağlama 4: EnforceCooldown.** `CombatTuning.EnforceCooldown`
 > varsayılan **false** (Görev 12 kozmetik radial birebir). `true` → cümle
@@ -511,9 +520,11 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   **TimeEffectDirector (Görev 9) Core'da** — zamanlama hesabı var, cast/ölüm/zone'a bağlı değil.
   **RealityEffectDirector (Görev 10) Core'da** — revive_block/partial_erase/
   full_erase(shields); Game'e bağlı değil; revive_block PlayerVitals respawn'a bağlı değil
-  (Faz 6). **PassiveDirector (Görev 4) Core'da** — tetik/süre/çoklu-aktif; Manifestation'a
-  bağlı değil (Faz 6).
-  `global_rules.resource_system`/`cooldown_rules` → Core sınıflar var, bağ yok;
+  (Faz 6). **PassiveDirector (Görev 4 + Bağlama 5)** — Game'e bağlı: tetik/süre/DamageMult/
+  HealMult/LifestealAdd + PassiveHud. Henüz uygulanmayan efektler: `crit_chance_add`,
+  `damage_taken_mult`, `dash_cooldown_mult`, `armor_add`, `reflect_ratio_add`,
+  `reveal_radius_mult` (Faz 6 kalanı).
+  `global_rules.resource_system`/`cooldown_rules` → Core sınıflar var; Bağlama 2–4 bağladı;
   `status_durations` ↔ StatusTuning fark listesi (Görev 2, yukarıda; otorite açık).
   **Görev 3:** `state_machine` okunuyor (`PlayerStates`/`BossStates` + `PlayerStateMachine`;
   SentencePhase bağlanmadı).   **Görev 11:** `equipment_system` Core'da okunuyor

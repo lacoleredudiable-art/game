@@ -260,6 +260,9 @@ namespace Dovus.Game
             var modeHud = root.AddComponent<ActiveModeHud>();
             modeHud.Configure(view.CanvasRoot);
 
+            var passiveHud = root.AddComponent<PassiveHud>();
+            passiveHud.Configure(view.CanvasRoot);
+
             dodgeMotion.Bind(clock, input, boss.transform, afterimage);
 
             var feelGo = new GameObject("CombatFeel");
@@ -284,7 +287,7 @@ namespace Dovus.Game
             var manGo = new GameObject("Manifestation");
             manGo.transform.SetParent(transform, false);
             var director = manGo.AddComponent<ManifestationDirector>();
-            director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, allyDummy, modeHud, view);
+            director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, allyDummy, modeHud, view, passiveHud);
 
             CreateTuningPanel(tuningConfig, vitals);
         }

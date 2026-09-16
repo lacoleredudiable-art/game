@@ -58,6 +58,9 @@ namespace Dovus.Game
         // --- Ulti (active_modes) — 16 Eylül, güven kaygısına karşılık uçtan uca ---
         ActiveModeDirector _modeDirector;
         ActiveModeHud _modeHud;
+        // --- Pasifler (Bağlama 5) — ulti gibi ama cooldown'suz, birden fazla aynı anda ---
+        PassiveDirector _passiveDirector;
+        PassiveHud _passiveHud;
         PentagonView _pentagonView;
         PlayerResource _playerResource;
         PlayerCooldown _playerCooldown;
@@ -114,6 +117,9 @@ namespace Dovus.Game
 
         public int ActiveCount => _active.Count;
 
+        /// <summary>Bağlama 5 / MCP: Bind sonrası pasif durum makinesi (null = henüz bağlanmadı).</summary>
+        public PassiveDirector PassiveDirector => _passiveDirector;
+
         /// <summary>Editör/prob: Update beklemeden cümle senkronu.</summary>
         public void ForceSync()
         {
@@ -140,7 +146,8 @@ namespace Dovus.Game
             FollowCamera camera = null,
             AllyDummy ally = null,
             ActiveModeHud modeHud = null,
-            PentagonView pentagonView = null)
+            PentagonView pentagonView = null,
+            PassiveHud passiveHud = null)
         {
             _clock = clock;
             _engine = input.Engine;
@@ -162,11 +169,13 @@ namespace Dovus.Game
             _camera = camera;
             _ally = ally;
             _modeHud = modeHud;
+            _passiveHud = passiveHud;
             _pentagonView = pentagonView;
             _playerResource = player != null ? player.GetComponent<PlayerResource>() : null;
             _playerCooldown = player != null ? player.GetComponent<PlayerCooldown>() : null;
             _skills = SkillMotorLoader.LoadOrDefault();
             _modeDirector = new ActiveModeDirector(_skills.ActiveModes);
+            _passiveDirector = new PassiveDirector(_skills.Passives);
             if (_playerStatus != null)
                 _playerStatus.ModeDirector = _modeDirector;
 
@@ -225,6 +234,7 @@ namespace Dovus.Game
             TickBossDeath();
             TickStateBridge(worldMs);
             TickActiveMode(worldMs, dtSec);
+            TickPassives(worldMs);
         }
 
         // --- Ulti (active_modes) ---
@@ -336,6 +346,43 @@ namespace Dovus.Game
             float regenPerSec = mode.GetEffect("team_regen_per_sec");
             if (regenPerSec > 0f && mode.HasDuration && _playerStatus != null)
                 _playerStatus.Board.Apply(StatusKind.Regen, mode.DurationSec * 1000.0, regenPerSec);
+        }
+
+        // --- Pasifler (Bağlama 5) ---
+
+        void TickPassives(double worldMs)
+        {
+            if (_passiveDirector == null)
+                return;
+
+            _passiveDirector.Tick(worldMs);
+            _passiveHud?.Sync(_passiveDirector.Active, worldMs);
+        }
+
+        /// <summary>
+        /// Kapanıştaki rün dizisi bir pasifin trigger_combo'suyla eşleşirse açar.
+        /// Ulti'den farkı: cooldown yok; birden fazla pasif aynı anda aktif olabilir.
+        /// </summary>
+        void TryTriggerPassive(IReadOnlyList<SentenceWord> words, double worldMs)
+        {
+            if (_passiveDirector == null || words == null || words.Count == 0)
+                return;
+
+            var dots = new int[words.Count];
+            for (int i = 0; i < words.Count; i++)
+                dots[i] = (int)words[i].Rune;
+
+            PassiveNode? triggered = _passiveDirector.TryTrigger(dots, worldMs);
+            if (triggered == null)
+                return;
+
+            PassiveNode p = triggered.Value;
+            Color tint = Color.cyan;
+            if (_colors != null && p.TriggerCombo != null && p.TriggerCombo.Length > 0)
+                tint = _colors.ColorForRune((Rune)p.TriggerCombo[0]);
+            _readout?.NoteSkill(p.Id.Replace('_', ' '), p.Element, tint);
+            _debugHud?.NoteSkillBang(p.Id, p.Element);
+            _passiveHud?.Sync(_passiveDirector.Active, worldMs);
         }
 
         void TickStateBridge(double worldMs)
@@ -567,6 +614,21 @@ namespace Dovus.Game
             TickPendingClosings(_clock.Director.WorldTimeMs);
         }
 
+        /// <summary>MCP: bekleyen kapanışları hemen ateşle (bang'i şimdiye çeker).</summary>
+        public void ForceFirePendingClosings()
+        {
+            if (_clock == null)
+                return;
+            double now = _clock.Director.WorldTimeMs;
+            for (int i = 0; i < _pending.Count; i++)
+            {
+                PendingClosing p = _pending[i];
+                p.BangAtWorldMs = now;
+                _pending[i] = p;
+            }
+            TickPendingClosings(now);
+        }
+
         void TickPendingClosings(double worldMs)
         {
             for (int i = _pending.Count - 1; i >= 0; i--)
@@ -598,6 +660,7 @@ namespace Dovus.Game
             logic.FireClosingBang();
             StampScar(p.View, p.Closing);
             TryActivateMode(p.Words, _clock.Director.WorldTimeMs);
+            TryTriggerPassive(p.Words, _clock.Director.WorldTimeMs);
 
             // Düz vuruş: jab — skill motoru / isim bang'i / kamera yumruğu yok (Ateş vb. yazmasın).
             // Heal vb. tek-rün skill asla IsBasicStrike olmamalı; yine de mend kaçmasın.
@@ -820,6 +883,7 @@ namespace Dovus.Game
             // 16 Eylül: "Kavurucu Yara" (grievous_wounds+burn) — yanık hedefe gelen heal azalır.
             // Hedefin StatusBoard'u yoksa (ör. AllyDummy) çarpan 1f, davranış eskisiyle aynı.
             float healMult = _playerStatus != null ? _playerStatus.Board.HealEffectivenessMult : 1f;
+            healMult *= _passiveDirector?.HealMult ?? 1f;
             int amount = Mathf.Max(1, Mathf.RoundToInt(closing.TotalEffect * per * healMult));
             if (amount <= 0)
                 return;
@@ -889,6 +953,7 @@ namespace Dovus.Game
             if (_playerStatus != null)
                 outMult = _playerStatus.Board.OutgoingDamageMult;
             outMult *= _modeDirector?.DamageMult ?? 1f; // ulti: Öfke Patlaması ×1.8, Kan Çılgınlığı ×2.0
+            outMult *= _passiveDirector?.DamageMult ?? 1f; // pasif: alev_hiddeti ×1.15 × karanlik_sessizligi ×1.2 …
 
             bool isCrit = false;
             float damage;
@@ -931,7 +996,7 @@ namespace Dovus.Game
             _damageHud?.ShowDamage(damage, isCrit);
             _lastDamageDealtMs = _clock.Director.WorldTimeMs; // "dealt_damage_recently" (Öfke Patlaması)
 
-            float lifesteal = _modeDirector?.Lifesteal ?? 0f;
+            float lifesteal = (_modeDirector?.Lifesteal ?? 0f) + (_passiveDirector?.LifestealAdd ?? 0f);
             if (lifesteal > 0f)
             {
                 var vitals = _player != null ? _player.GetComponent<PlayerVitals>() : null;
