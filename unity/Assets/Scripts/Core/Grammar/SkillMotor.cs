@@ -24,7 +24,9 @@ namespace Dovus.Core.Grammar
         readonly List<ChainNode> _chains = new();
         readonly List<StatusInteractionNode> _statusInteractions = new();
         readonly List<ZoneNode> _zones = new();
+        readonly List<SpaceEffectNode> _spaceEffects = new();
         int _maxActiveZones;
+        int _maxActiveLinks;
 
         public int ElementCount => _elements.Count;
         public int VerbCount => _verbs.Count;
@@ -54,6 +56,12 @@ namespace Dovus.Core.Grammar
 
         /// <summary>manipulation_layers.zone_layer.max_active_zones.</summary>
         public int MaxActiveZones => _maxActiveZones;
+
+        /// <summary>manipulation_layers.space_layer.effects — yalnızca okuma; uygulama ayrı.</summary>
+        public IReadOnlyList<SpaceEffectNode> SpaceEffects => _spaceEffects;
+
+        /// <summary>manipulation_layers.space_layer.max_active_links.</summary>
+        public int MaxActiveLinks => _maxActiveLinks;
         public int CoreCount
         {
             get
@@ -83,6 +91,7 @@ namespace Dovus.Core.Grammar
             ParseChains(root, motor._chains);
             ParseStatusInteractions(root, motor._statusInteractions);
             motor._maxActiveZones = ParseZones(root, motor._zones);
+            motor._maxActiveLinks = ParseSpaceEffects(root, motor._spaceEffects);
             if (motor.CoreCount < 6)
                 throw new InvalidOperationException("element-sistemi: 6 çekirdek element beklenir.");
             return motor;
@@ -519,6 +528,36 @@ namespace Dovus.Core.Grammar
             return layer["max_active_zones"].AsInt(0);
         }
 
+        /// <summary>
+        /// manipulation_layers.space_layer.effects + max_active_links.
+        /// Tipine göre alanlar opsiyonel (distance_m / i_frame_ms / …) — Has ile okunur.
+        /// Dönüş: max_active_links (yoksa 0). Uygulama yok; SkillMotionMotor hâlâ tuning sabitleri.
+        /// </summary>
+        static int ParseSpaceEffects(JsonValue root, List<SpaceEffectNode> dst)
+        {
+            JsonValue layer = root["manipulation_layers"]["space_layer"];
+            foreach (JsonValue obj in layer["effects"].AsArray())
+            {
+                string id = obj["id"].AsString();
+                if (string.IsNullOrEmpty(id)) continue;
+                dst.Add(new SpaceEffectNode(
+                    id: id,
+                    element: obj["element"].AsString(),
+                    type: obj["type"].AsString(),
+                    hasDistanceM: obj.Has("distance_m"),
+                    distanceM: obj["distance_m"].AsFloat(0f),
+                    hasIFrameMs: obj.Has("i_frame_ms"),
+                    iFrameMs: obj["i_frame_ms"].AsInt(0),
+                    hasDamageOnPass: obj.Has("damage_on_pass"),
+                    damageOnPass: obj["damage_on_pass"].AsBool(false),
+                    hasDamageOnCross: obj.Has("damage_on_cross"),
+                    damageOnCross: obj["damage_on_cross"].AsFloat(0f),
+                    hasDurationSec: obj.Has("duration_sec"),
+                    durationSec: obj["duration_sec"].AsFloat(0f)));
+            }
+            return layer["max_active_links"].AsInt(0);
+        }
+
         static string[] ReadStringArray(JsonValue arr)
         {
             IReadOnlyList<JsonValue> items = arr.AsArray();
@@ -791,6 +830,50 @@ namespace Dovus.Core.Grammar
         public float DurationSec { get; }
         /// <summary>Bazı zonelerde var (lav_halkasi); yoksa Null.</summary>
         public JsonValue Manipulation { get; }
+    }
+
+    /// <summary>
+    /// manipulation_layers.space_layer.effects[i]. Tipine göre alanlar opsiyonel —
+    /// Has* bayrakları JSON'da anahtarın varlığını gösterir (0/false ≠ yok).
+    /// </summary>
+    public readonly struct SpaceEffectNode
+    {
+        public SpaceEffectNode(
+            string id, string element, string type,
+            bool hasDistanceM, float distanceM,
+            bool hasIFrameMs, int iFrameMs,
+            bool hasDamageOnPass, bool damageOnPass,
+            bool hasDamageOnCross, float damageOnCross,
+            bool hasDurationSec, float durationSec)
+        {
+            Id = id ?? string.Empty;
+            Element = element ?? string.Empty;
+            Type = type ?? string.Empty;
+            HasDistanceM = hasDistanceM;
+            DistanceM = distanceM;
+            HasIFrameMs = hasIFrameMs;
+            IFrameMs = iFrameMs;
+            HasDamageOnPass = hasDamageOnPass;
+            DamageOnPass = damageOnPass;
+            HasDamageOnCross = hasDamageOnCross;
+            DamageOnCross = damageOnCross;
+            HasDurationSec = hasDurationSec;
+            DurationSec = durationSec;
+        }
+
+        public string Id { get; }
+        public string Element { get; }
+        public string Type { get; }
+        public bool HasDistanceM { get; }
+        public float DistanceM { get; }
+        public bool HasIFrameMs { get; }
+        public int IFrameMs { get; }
+        public bool HasDamageOnPass { get; }
+        public bool DamageOnPass { get; }
+        public bool HasDamageOnCross { get; }
+        public float DamageOnCross { get; }
+        public bool HasDurationSec { get; }
+        public float DurationSec { get; }
     }
 
     public readonly struct LengthTuning
