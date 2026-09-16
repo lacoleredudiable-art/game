@@ -12,9 +12,16 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (6. tur · DamageCalculator) · **Sıradaki:**
+**Son güncelleme:** 16 Eylül 2026 (Görev 5 · ChainDirector) · **Sıradaki:**
 Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
-+ motor uygulama görevleri (Görev 2–7: resource/cooldown/passives/chains/zones/…)
++ motor uygulama görevleri (Görev 2–4, 6–7; Görev 1+5 kapandı — DamageCalculator/ChainDirector Core'da, bağlı değil)
+
+> **16 Eylül — Görev 5: ChainDirector.** `Core/Combat/ChainDirector.cs` + `ChainRules`/
+> `ChainStepResult`: `motor.Chains` + `chain_mechanics.rules` (window/break/max/finisher_mult).
+> Pattern `"1-X-X-X-X-X"` JSON'dan parse — digit = zorunlu element, `X` = çapa ile aynı
+> (ulti notundaki X-X-X-X dili). `RegisterCast(dot, worldMs)` Links sırasıyla bonus,
+> Finisher yalnızca tam pattern. ManifestationDirector'a **bağlanmadı**. 5 yeni test;
+> `dotnet test` 168 yeşil (163+5; DamageCalculator 7'si zaten master'da).
 
 > **16 Eylül (6. tur) — DamageCalculator (formulas.damage + crit_system), paralel sınıf.**
 > `Core/Combat/DamageCalculator.cs`: `base_damage_value × adj.damage_mult × length.damage_mult ×
@@ -251,15 +258,15 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   oranını doğru okuyor.
 - **`docs/element-sistemi.json`'ın büyük kısmı motor tarafından hâlâ uygulanmıyor** —
   `verbs`/`adjectives`/`elements`/`scaling_economy.lengths`/`active_modes` dünyaya işliyor.
-  **Okuma katmanı (5. tur) eklendi, uygulama yok:** `passives`/`chain_mechanics`/
-  `manipulation_layers.zone_layer` + `status_interaction_table` artık `SkillMotor`'da
-  listeleniyor; verb `crit_eligible`/`element_origin`/`damage_type` de parse+Resolve'a
-  taşındı. **`formulas`/`crit_system` kodu var ama bağlı değil (6. tur):**
-  `DamageCalculator` yazıldı; canlı hasar hâlâ `ClosingDamageMath`. Birleştirme sahibi kararı.
+  **Okuma katmanı (5. tur) eklendi:** `passives`/`chain_mechanics`/
+  `manipulation_layers.zone_layer` + `status_interaction_table` `SkillMotor`'da listeleniyor;
+  verb `crit_eligible`/`element_origin`/`damage_type` parse+Resolve'da.
+  **`formulas`/`crit_system` kodu var ama bağlı değil (6. tur):** `DamageCalculator` yazıldı;
+  canlı hasar hâlâ `ClosingDamageMath`. **ChainDirector (Görev 5) Core'da** ama
+  ManifestationDirector'a bağlı değil. `passives`/`zones` uygulama yok.
   `global_rules`/`state_machine`/`equipment_system` hâlâ yok. `status_interaction_table`
-  **uygulama** hâlâ `StatusReactionTable.cs` elle kopya — JSON'dan canlı okunan liste henüz
-  StatusBoard'a bağlanmadı. `atoms_catalog` / `all_verbs_atoms` / `atom_kombinasyonlari`
-  kasıtlı okunmuyor (VFX/animasyon referansı).
+  **uygulama** hâlâ `StatusReactionTable.cs` elle kopya. `atoms_catalog` /
+  `all_verbs_atoms` / `atom_kombinasyonlari` kasıtlı okunmuyor.
 - **His deneme (geçici):** arena `ArenaVisualScale=3`, boss hasar 0, `AllyDummy` %50 —
   kalıcı tasarım değil; his bittiğinde geri alınacak.
 - **SkillMotion selective hedef UI yok** — Zenitsu = boss menzildeyse; ally blink yok.
