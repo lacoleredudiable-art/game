@@ -12,16 +12,30 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (Görev 5 · ChainDirector) · **Sıradaki:**
+**Son güncelleme:** 16 Eylül 2026 (Görev 3 · PlayerStateMachine) · **Sıradaki:**
 Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
-+ motor uygulama görevleri (Görev 2–4, 6–7; Görev 1+5 kapandı — DamageCalculator/ChainDirector Core'da, bağlı değil)
++ motor uygulama görevleri (kalan backlog)
 
-> **16 Eylül — Görev 5: ChainDirector.** `Core/Combat/ChainDirector.cs` + `ChainRules`/
-> `ChainStepResult`: `motor.Chains` + `chain_mechanics.rules` (window/break/max/finisher_mult).
-> Pattern `"1-X-X-X-X-X"` JSON'dan parse — digit = zorunlu element, `X` = çapa ile aynı
-> (ulti notundaki X-X-X-X dili). `RegisterCast(dot, worldMs)` Links sırasıyla bonus,
-> Finisher yalnızca tam pattern. ManifestationDirector'a **bağlanmadı**. 5 yeni test;
-> `dotnet test` 168 yeşil (163+5; DamageCalculator 7'si zaten master'da).
+> **16 Eylül (Görev 3) — PlayerStateMachine + state_machine okuma.**
+> `SkillMotor.ParseStateMachine` → `PlayerStates` (9) / `BossStates` (6).
+> `Core/Combat/PlayerStateMachine.cs` anlık durum + `can_draw`/`can_move`/`can_dodge`/
+> `i_frames` okur (bool veya string capability → metin: `"true"`/`"false"`/`"partial"`/
+> `"based_on_cast_mobility"`/`"limited"`/`"dodge_direction"`). **SentencePhase'e bağlama
+> YOK** — ayrı karar. `dotnet test` yeşil.
+>
+> **SentencePhase ↔ state_machine.player_states fark raporu (bağlama yapılmadı):**
+>
+> | SentencePhase (cümle) | player_states (dövüş) | Not |
+> |---|---|---|
+> | `Idle` | `idle` | İsim örtüşür; ikisi de "boşta". |
+> | `Building` | `drawing` | **Uyuşmazlık:** JSON `can_draw="partial"`, `can_move=false`; `Building`'de çizim tam açık, hareket SentencePhase ile kilitlenmez. |
+> | `Recovering` | `recovering` | İsim örtüşür; JSON `can_draw=true`, `can_move="limited"`, `can_dodge=true`. `SentencePhase.Recovering` girdi kilidi (`IsRecovering` / RemainingRecoveryMs) — dodge/düz vuruş/yeni fiille kesilir; capability metinleri SentenceEngine'de yok. |
+> | `Resolved` / `Aborted` | — | Cümle kaydı fazları; dövüş state_machine'de karşılık yok. |
+> | — | `casting` | SentencePhase'te yok. `can_move="based_on_cast_mobility"`. |
+> | — | `dodging` | SentencePhase'te yok. `i_frames=true`, `can_move="dodge_direction"`; JSON'da `can_dodge` anahtarı yok → parse `"false"`. |
+> | — | `stunned` / `rooted` / `channeling` / `dead` | SentencePhase'te yok (CC / kanal / ölüm). |
+>
+> Örnek görev notu doğrulandı: `drawing` → `can_draw="partial"`; `Building` tam açık.
 
 > **16 Eylül (6. tur) — DamageCalculator (formulas.damage + crit_system), paralel sınıf.**
 > `Core/Combat/DamageCalculator.cs`: `base_damage_value × adj.damage_mult × length.damage_mult ×
@@ -264,7 +278,7 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   **`formulas`/`crit_system` kodu var ama bağlı değil (6. tur):** `DamageCalculator` yazıldı;
   canlı hasar hâlâ `ClosingDamageMath`. **ChainDirector (Görev 5) Core'da** ama
   ManifestationDirector'a bağlı değil. `passives`/`zones` uygulama yok.
-  `global_rules`/`state_machine`/`equipment_system` hâlâ yok. `status_interaction_table`
+  `equipment_system` hâlâ yok. **Görev 2:** `global_rules` (resource/cooldown) okuyan tracker'lar var (bağlı değil). **Görev 3:** `state_machine` okunuyor (`PlayerStates`/`BossStates` + `PlayerStateMachine`; SentencePhase bağlanmadı). `status_interaction_table`
   **uygulama** hâlâ `StatusReactionTable.cs` elle kopya. `atoms_catalog` /
   `all_verbs_atoms` / `atom_kombinasyonlari` kasıtlı okunmuyor.
 - **His deneme (geçici):** arena `ArenaVisualScale=3`, boss hasar 0, `AllyDummy` %50 —
