@@ -61,6 +61,14 @@ namespace Dovus.Game
         // --- Pasifler (Bağlama 5) — ulti gibi ama cooldown'suz, birden fazla aynı anda ---
         PassiveDirector _passiveDirector;
         PassiveHud _passiveHud;
+        // --- Zincir (Bağlama 6) — son N cast elementi; Links geçmişe yazılmaz ---
+        ChainDirector _chainDirector;
+        ChainRules _chainRules;
+        readonly Queue<int> _recentCastElements = new();
+        float _pendingChainBonus = 1f;   // bir sonraki kapanış (links / finisher_mult)
+        float _closingChainBonus = 1f;  // bu kapanışta ApplyClosing* çarpanı
+        ChainStepResult _lastChainStep = ChainStepResult.None;
+        string _lastFinisherAnnounced = string.Empty;
         PentagonView _pentagonView;
         PlayerResource _playerResource;
         PlayerCooldown _playerCooldown;
@@ -120,6 +128,15 @@ namespace Dovus.Game
         /// <summary>Bağlama 5 / MCP: Bind sonrası pasif durum makinesi (null = henüz bağlanmadı).</summary>
         public PassiveDirector PassiveDirector => _passiveDirector;
 
+        /// <summary>Bağlama 6 / MCP: Bind sonrası zincir durum makinesi.</summary>
+        public ChainDirector ChainDirector => _chainDirector;
+
+        /// <summary>Bağlama 6 / MCP: son duyurulan Finisher metni (boş = henüz yok).</summary>
+        public string LastFinisherAnnounced => _lastFinisherAnnounced;
+
+        /// <summary>Bağlama 6 / MCP: bir sonraki kapanışa bekleyen Links/finisher çarpanı.</summary>
+        public float PendingChainBonus => _pendingChainBonus;
+
         /// <summary>Editör/prob: Update beklemeden cümle senkronu.</summary>
         public void ForceSync()
         {
@@ -176,6 +193,13 @@ namespace Dovus.Game
             _skills = SkillMotorLoader.LoadOrDefault();
             _modeDirector = new ActiveModeDirector(_skills.ActiveModes);
             _passiveDirector = new PassiveDirector(_skills.Passives);
+            _chainRules = LoadChainRulesOrDefault();
+            _chainDirector = new ChainDirector(_skills.Chains, _chainRules);
+            _recentCastElements.Clear();
+            _pendingChainBonus = 1f;
+            _closingChainBonus = 1f;
+            _lastChainStep = ChainStepResult.None;
+            _lastFinisherAnnounced = string.Empty;
             if (_playerStatus != null)
                 _playerStatus.ModeDirector = _modeDirector;
 
@@ -383,6 +407,100 @@ namespace Dovus.Game
             _readout?.NoteSkill(p.Id.Replace('_', ' '), p.Element, tint);
             _debugHud?.NoteSkillBang(p.Id, p.Element);
             _passiveHud?.Sync(_passiveDirector.Active, worldMs);
+        }
+
+        /// <summary>
+        /// Bağlama 6: kapanışın fiil elementi (ilk rün) kuyruğa + ChainDirector.
+        /// Links / finisher_mult geçmiş cast'e yazılmaz — yalnızca bir sonraki kapanışa
+        /// (_pendingChainBonus). Bu kapanış önceki pending'i tüketir.
+        /// </summary>
+        float BeginChainClosing(IReadOnlyList<SentenceWord> words, double worldMs)
+        {
+            float bonusForThis = _pendingChainBonus;
+            _pendingChainBonus = 1f;
+            _lastChainStep = ChainStepResult.None;
+
+            if (_chainDirector == null || words == null || words.Count == 0)
+                return bonusForThis;
+
+            int element = (int)words[0].Rune;
+            if (element < 1)
+                return bonusForThis;
+
+            _recentCastElements.Enqueue(element);
+            int max = _chainRules.MaxChainLength > 0 ? _chainRules.MaxChainLength : 6;
+            while (_recentCastElements.Count > max)
+                _recentCastElements.Dequeue();
+
+            _lastChainStep = _chainDirector.RegisterCast(element, worldMs);
+
+            if (_lastChainStep.FinisherTriggered)
+            {
+                float fin = _chainRules.FinisherMult;
+                _pendingChainBonus = fin > 0f ? fin : 1f;
+            }
+            else if (_lastChainStep.Matched)
+            {
+                float link = _lastChainStep.LinkBonus;
+                _pendingChainBonus = link > 0f ? link : 1f;
+            }
+
+            return bonusForThis;
+        }
+
+        void AnnounceChainFinisherIfAny()
+        {
+            if (!_lastChainStep.FinisherTriggered)
+                return;
+
+            string finisher = _lastChainStep.Finisher;
+            if (string.IsNullOrEmpty(finisher))
+                return;
+
+            _lastFinisherAnnounced = finisher;
+            string element = _lastChainStep.Chain != null
+                ? _lastChainStep.Chain.Value.Element
+                : string.Empty;
+            Color tint = Color.cyan;
+            if (_colors != null && _lastChainStep.Chain != null)
+            {
+                // pattern ilk digit = çapa elementi (1..6)
+                int dot = FirstPatternDigit(_lastChainStep.Chain.Value.Pattern);
+                if (dot >= 1 && dot <= 6)
+                    tint = _colors.ColorForRune((Rune)dot);
+            }
+
+            _readout?.NoteSkill(finisher, string.IsNullOrEmpty(element) ? "zincir" : element + " zincir", tint);
+            _debugHud?.NoteSkillBang(finisher, "finisher");
+        }
+
+        static int FirstPatternDigit(string pattern)
+        {
+            if (string.IsNullOrEmpty(pattern))
+                return 0;
+            string[] tokens = pattern.Split('-');
+            if (tokens.Length == 0)
+                return 0;
+            return int.TryParse(tokens[0].Trim(), out int d) ? d : 0;
+        }
+
+        static ChainRules LoadChainRulesOrDefault()
+        {
+            const string resourcePath = "ElementSystem/element-sistemi";
+            var asset = Resources.Load<TextAsset>(resourcePath);
+            if (asset != null && !string.IsNullOrWhiteSpace(asset.text))
+            {
+                try
+                {
+                    return ChainRules.FromJsonRoot(MiniJson.Parse(asset.text));
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogWarning($"ChainRules JSON okunamadı: {e.Message}");
+                }
+            }
+
+            return ChainRules.DefaultFromSpec;
         }
 
         void TickStateBridge(double worldMs)
@@ -659,6 +777,7 @@ namespace Dovus.Game
             LivingEffect logic = p.View.Logic;
             logic.FireClosingBang();
             StampScar(p.View, p.Closing);
+            _closingChainBonus = BeginChainClosing(p.Words, _clock.Director.WorldTimeMs);
             TryActivateMode(p.Words, _clock.Director.WorldTimeMs);
             TryTriggerPassive(p.Words, _clock.Director.WorldTimeMs);
 
@@ -674,6 +793,7 @@ namespace Dovus.Game
                     ShoutSkill(basicSkill, p.Words);
                     ApplyClosingHeal(p.Closing, basicSkill);
                     ApplyCooldown(basicSkill, p.Words, cosmeticIfDisabled: true);
+                    AnnounceChainFinisherIfAny(); // ShoutSkill sonrası — Finisher readout kalsın
                     return;
                 }
 
@@ -682,6 +802,7 @@ namespace Dovus.Game
                 ApplyClosingDamage(p.Closing, SkillResolution.Empty, isBasicStrike: true, slashCommitMult: 0f);
                 // Kozmetik radial yoktu; EnforceCooldown=true iken tracker yine yazar.
                 ApplyCooldown(basicSkill, p.Words, cosmeticIfDisabled: false);
+                AnnounceChainFinisherIfAny();
                 return;
             }
 
@@ -697,6 +818,7 @@ namespace Dovus.Game
             ApplyCooldown(skill, p.Words, cosmeticIfDisabled: true);
             if (!motionPlan.IsEmpty)
                 AnnotateMotion(skill, motionPlan);
+            AnnounceChainFinisherIfAny(); // skill bang'ten sonra Finisher üstte kalsın
         }
 
         /// <summary>
@@ -884,6 +1006,7 @@ namespace Dovus.Game
             // Hedefin StatusBoard'u yoksa (ör. AllyDummy) çarpan 1f, davranış eskisiyle aynı.
             float healMult = _playerStatus != null ? _playerStatus.Board.HealEffectivenessMult : 1f;
             healMult *= _passiveDirector?.HealMult ?? 1f;
+            healMult *= _closingChainBonus; // Bağlama 6: önceki link/finisher → bu kapanış
             int amount = Mathf.Max(1, Mathf.RoundToInt(closing.TotalEffect * per * healMult));
             if (amount <= 0)
                 return;
@@ -954,6 +1077,7 @@ namespace Dovus.Game
                 outMult = _playerStatus.Board.OutgoingDamageMult;
             outMult *= _modeDirector?.DamageMult ?? 1f; // ulti: Öfke Patlaması ×1.8, Kan Çılgınlığı ×2.0
             outMult *= _passiveDirector?.DamageMult ?? 1f; // pasif: alev_hiddeti ×1.15 × karanlik_sessizligi ×1.2 …
+            outMult *= _closingChainBonus; // Bağlama 6: links/finisher_mult → sonraki (bu) kapanış
 
             bool isCrit = false;
             float damage;

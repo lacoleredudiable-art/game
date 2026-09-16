@@ -10,7 +10,7 @@ namespace Dovus.Core.Combat
     /// SkillMotor.Chains'ten gelir; pattern string'i ("1-X-X-X-X-X") JSON'dan parse edilir.
     /// X = zincirin çapa elementiyle aynı (ulti notundaki X-X-X-X ile aynı dil:
     /// "X-X-X-X formatı Cursor için dizi olarak yazıldı" → aynı element tekrarı).
-    /// ManifestationDirector'a bağlanmaz (Görev 5 yasak).
+    /// ManifestationDirector bağlama: Bağlama 6 (kuyruk + Finisher bildirimi).
     /// </summary>
     public sealed class ChainDirector
     {

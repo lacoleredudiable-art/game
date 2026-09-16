@@ -12,11 +12,20 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (Bağlama 5 · PassiveDirector Game) · **Sıradaki:**
-Bağlama 6+ (ChainDirector / …) +
+**Son güncelleme:** 16 Eylül 2026 (Bağlama 6 · ChainDirector Game) · **Sıradaki:**
+Bağlama 7+ (ZoneDirector / …) +
 Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
 + **Faz 6 bağlama** kalanı (Zone/TimeEffect/RealityEffect/Equipment/
 space_layer/state machine / Presentation henüz Game'e bağlı değil)
+
+> **16 Eylül — Bağlama 6: ChainDirector Game'e bağlı.** `ManifestationDirector`:
+> `Queue<int>` son N cast elementi (fiil = ilk rün) + `ChainDirector.RegisterCast` her
+> `FireClosing`'de. **Links yorumu (JSON net değil, seçilen):** `links[i]` = i. eşleşme
+> sonrası **bir sonraki** kapanışın hasar/heal çarpanı (`_pendingChainBonus`); geçmiş
+> cast'lere geri yazılmaz. Pattern tamamlanınca Finisher → `ReactionReadout` (ör.
+> "kırmızı patlama" / Ateş zincir) + `rules.finisher_mult` (2.0) bir sonraki kapanışa.
+> Ara link bonusları da aynı "sonraki cast" kuralıyla. MCP Play: 6× Ateş (dot 1)
+> Commit → Finisher **"kırmızı patlama"** ekranda. `dotnet test` yeşil.
 
 > **16 Eylül — Bağlama 5: PassiveDirector Game'e bağlı.** `ManifestationDirector`:
 > `PassiveDirector` (`SkillMotor.Passives`) + `PassiveHud` (sol-üst, camgöbeği;
@@ -513,8 +522,10 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   **Görev 8:** `manipulation_layers.space_layer` de okunuyor (`SpaceEffects`/`MaxActiveLinks`);
   SkillMotionMotor hâlâ bağlanmadı (sayı sapmaları yukarıda — otorite sahibi).
   **`formulas`/`crit_system` kodu var ama bağlı değil (6. tur):** `DamageCalculator` yazıldı;
-  canlı hasar hâlâ `ClosingDamageMath`. **ChainDirector (Görev 5) Core'da** ama
-  ManifestationDirector'a bağlı değil.
+  canlı hasar hâlâ `ClosingDamageMath`. **ChainDirector (Görev 5 + Bağlama 6)** —
+  Game'e bağlı: `Queue` + Finisher `ReactionReadout` + Links/finisher_mult → sonraki
+  kapanış (`docs/durum.md` Bağlama 6 Links yorumu). Finisher'ın dünya efekti
+  (patlama/heal/stealth vb. string) henüz simüle edilmiyor — yalnızca bildirim + çarpan.
   **Zone yaşam döngüsü Core'da var (Görev 7)** — `ZoneDirector` soft-cap/süre/movement;
   Game/Manifestation'a bağlı değil (görsel/hasar yok).
   **TimeEffectDirector (Görev 9) Core'da** — zamanlama hesabı var, cast/ölüm/zone'a bağlı değil.
