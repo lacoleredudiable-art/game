@@ -23,7 +23,7 @@ Passive/TimeEffect/RealityEffect/Equipment/space_layer/state machine henüz Game
 > `EquipmentBonusResolver` (`rules.element_match_bonus` "+%10 etki" → 1.1; silah×skill
 > element eşleşince çarpan, yoksa 1.0; yüzde ParseDefenseDropMult deseni). Envanter UI /
 > PlayerVitals / ManifestationDirector **bağlanmadı** (sabit tek ekipman varsayımı).
-> `EquipmentCatalogTests` 2; `dotnet test` yeşil (rebase sonrası tam suite).
+> `EquipmentCatalogTests` 2; `dotnet test` 218 yeşil.
 
 > **16 Eylül — Görev 4: PassiveDirector.** `Core/Combat/PassiveDirector.cs`: `SkillMotor.Passives`
 > listesini alır; `TryTrigger(dot[], worldMs)` ile `trigger_combo` birebir eşleşen pasifi açar;
