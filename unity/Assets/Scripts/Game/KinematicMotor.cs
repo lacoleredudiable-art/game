@@ -18,10 +18,13 @@ namespace Dovus.Game
         PlayerVitals _vitals;
         ActorStatus _status;
         ActorVisual _visual;
+        FollowCamera _follow;
 
         // 16 Eylül: "duvarların içine giriliyor" bug raporu — WallColliderFit dungeon
         // parçalarına BoxCollider ekliyor, burada onlara karşı itme (push-out) uygulanır.
         static readonly Collider[] ObstacleBuffer = new Collider[8];
+
+        public void BindCamera(FollowCamera follow) => _follow = follow;
 
         public PrototypeTuning Tuning
         {
@@ -91,6 +94,12 @@ namespace Dovus.Game
             Vector3 direction = new Vector3(move.x, 0f, move.y);
             if (direction.sqrMagnitude > 1f)
                 direction.Normalize();
+
+            // Kamera-göreli hareket — orbit yaw ile stick "ileri"si kamera-ileri olur.
+            if (_follow == null)
+                _follow = FindAnyObjectByType<FollowCamera>();
+            if (_follow != null && direction.sqrMagnitude > 0.0001f)
+                direction = Quaternion.Euler(0f, _follow.OrbitYawDeg, 0f) * direction;
 
             float speedMult = _status != null ? _status.EffectiveMoveSpeedMult : 1f;
             float dtSec = _clock != null ? (float)(_clock.WorldDeltaMs / 1000.0) : Time.deltaTime;

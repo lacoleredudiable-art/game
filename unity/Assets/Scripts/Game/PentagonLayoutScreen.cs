@@ -8,12 +8,25 @@ namespace Dovus.Game
     /// </summary>
     public static class PentagonLayoutScreen
     {
+        /// <summary>Android notch / home indicator — UI clamp buna göre.</summary>
+        public static Rect SafeRectPx()
+        {
+            Rect sa = Screen.safeArea;
+            if (sa.width < 1f || sa.height < 1f)
+                return new Rect(0f, 0f, Screen.width, Screen.height);
+            return sa;
+        }
+
         public static Vector2 CenterPx(PrototypeTuning tuning, int screenWidth, int screenHeight)
         {
+            Rect safe = SafeRectPx();
             float xNorm = tuning.MirrorForLeftHand
                 ? 1f - tuning.PentagonCenterXNorm
                 : tuning.PentagonCenterXNorm;
-            return new Vector2(xNorm * screenWidth, tuning.PentagonCenterYNorm * screenHeight);
+            // Norm, safe rect içinde yorumlanır (taşma / home bar).
+            float x = safe.xMin + xNorm * safe.width;
+            float y = safe.yMin + tuning.PentagonCenterYNorm * safe.height;
+            return new Vector2(x, y);
         }
 
         public static float RadiusPx(PrototypeTuning tuning) => DpToPixels(tuning.PentagonRadiusDp);
@@ -31,12 +44,11 @@ namespace Dovus.Game
         }
 
         /// <summary>
-        /// Dodge düğmesi: altıgenin dışında, ekrana sabit (§2). Konum çizim yarısının içine
-        /// kırpılır — hem ekrandan taşmasın hem de sanal çubuğun yarısına sızmasın (T6.1 kuralı:
-        /// bir yarı, bir sahip).
+        /// Dodge düğmesi: altıgenin dışında, safe + çizim yarısı içine kırpılır.
         /// </summary>
         public static Vector2 DodgeButtonPx(PrototypeTuning tuning, int screenWidth, int screenHeight)
         {
+            Rect safe = SafeRectPx();
             Vector2 c = CenterPx(tuning, screenWidth, screenHeight);
             float dx = DpToPixels(tuning.DodgeButtonOffsetXDp);
             if (tuning.MirrorForLeftHand)
@@ -46,10 +58,16 @@ namespace Dovus.Game
             float edge = DodgeButtonRadiusPx(tuning) + DpToPixels(tuning.DodgeButtonScreenMarginDp);
             float mid = screenWidth * 0.5f;
 
-            p.x = tuning.MirrorForLeftHand
-                ? Mathf.Clamp(p.x, edge, mid - edge)
-                : Mathf.Clamp(p.x, mid + edge, screenWidth - edge);
-            p.y = Mathf.Clamp(p.y, edge, screenHeight - edge);
+            float minX = Mathf.Max(safe.xMin + edge, tuning.MirrorForLeftHand ? edge : mid + edge);
+            float maxX = Mathf.Min(safe.xMax - edge, tuning.MirrorForLeftHand ? mid - edge : screenWidth - edge);
+            if (minX > maxX)
+            {
+                minX = safe.xMin + edge;
+                maxX = safe.xMax - edge;
+            }
+
+            p.x = Mathf.Clamp(p.x, minX, maxX);
+            p.y = Mathf.Clamp(p.y, safe.yMin + edge, safe.yMax - edge);
             return p;
         }
 
@@ -70,6 +88,19 @@ namespace Dovus.Game
         {
             float mid = screenWidth * 0.5f;
             return mirrorForLeftHand ? screenPos.x < mid : screenPos.x >= mid;
+        }
+
+        /// <summary>Safe üst inset — HUD margin ile birlikte.</summary>
+        public static float SafeTopInsetPx()
+        {
+            Rect safe = SafeRectPx();
+            return Mathf.Max(0f, Screen.height - safe.yMax);
+        }
+
+        public static float SafeLeftInsetPx()
+        {
+            Rect safe = SafeRectPx();
+            return Mathf.Max(0f, safe.xMin);
         }
     }
 }

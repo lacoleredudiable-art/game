@@ -34,7 +34,7 @@ namespace Dovus.Game
         {
             _tuning = tuning;
 
-            var canvasGo = new GameObject("PentagonCanvas");
+            var canvasGo = new GameObject("HexagonCanvas");
             canvasGo.transform.SetParent(transform, false);
             _canvas = canvasGo.AddComponent<Canvas>();
             // Overlay canvas her kameranın üstüne biner ve telegrafı ezer (§10).

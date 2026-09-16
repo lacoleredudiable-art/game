@@ -1,3 +1,4 @@
+using Dovus.Core.Status;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,10 +16,17 @@ namespace Dovus.Game
         Image _fill;
         Transform _billboard;
         Transform _cam;
+        StatusBoard _statusBoard;
 
         public int Hp => _hp;
         public int MaxHp => _maxHp;
         public float Ratio => _maxHp > 0 ? (float)_hp / _maxHp : 0f;
+        public StatusBoard Board => _statusBoard;
+
+        public void EnsureStatusBoard()
+        {
+            _statusBoard ??= new StatusBoard();
+        }
 
         public void Bind(int maxHp, float startRatio = 0.5f)
         {

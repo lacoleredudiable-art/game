@@ -161,11 +161,33 @@ namespace Dovus.Core.Status
                 // Yenile: daha uzun süre / daha güçlü magnitude kazanır.
                 existing.RemainingMs = Math.Max(existing.RemainingMs, durationMs);
                 existing.Magnitude = Math.Max(existing.Magnitude, magnitude);
+                existing.TotalDurationMs = Math.Max(existing.TotalDurationMs, existing.RemainingMs);
                 _active[kind] = existing;
                 return;
             }
 
-            _active[kind] = new StatusEntry(durationMs, magnitude);
+            _active[kind] = new StatusEntry(durationMs, magnitude, durationMs);
+        }
+
+        /// <summary>HUD: kalan süre + magnitude + halka oranı için toplam süre.</summary>
+        public bool TryGet(
+            StatusKind kind,
+            out double remainingMs,
+            out float magnitude,
+            out double totalDurationMs)
+        {
+            if (kind != StatusKind.None && _active.TryGetValue(kind, out StatusEntry e))
+            {
+                remainingMs = e.RemainingMs;
+                magnitude = e.Magnitude;
+                totalDurationMs = e.TotalDurationMs > 0 ? e.TotalDurationMs : e.RemainingMs;
+                return true;
+            }
+
+            remainingMs = 0;
+            magnitude = 0f;
+            totalDurationMs = 0;
+            return false;
         }
 
         /// <summary>
@@ -264,14 +286,17 @@ namespace Dovus.Core.Status
 
         struct StatusEntry
         {
-            public StatusEntry(double remainingMs, float magnitude)
+            public StatusEntry(double remainingMs, float magnitude, double totalDurationMs)
             {
                 RemainingMs = remainingMs;
                 Magnitude = magnitude;
+                TotalDurationMs = totalDurationMs > 0 ? totalDurationMs : remainingMs;
             }
 
             public double RemainingMs;
             public float Magnitude;
+            /// <summary>Apply anındaki süre — HUD radial fill için.</summary>
+            public double TotalDurationMs;
         }
     }
 }

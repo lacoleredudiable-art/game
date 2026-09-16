@@ -12,11 +12,20 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (Bağlama 10 · AnimationBridge) · **Sıradaki:**
-Bağlama 8.1 (delayed_detonation / death_delay) + Bağlama 11+ (RealityEffect /
-PlaceholderFactory↔LivingEffect / PlayerStateMachine) +
-Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
-+ **Faz 6 bağlama** kalanı + Quaternius↔JSON `animator_state` eşlemesi
+**Son güncelleme:** 17 Eylül 2026 (His/HUD/kamera/iz sprinti) · **Sıradaki:**
+Bağlama 8.1 + Kenney VFX prefab drop-in (`Assets/Art/Vfx/README.txt`) +
+tam `Pentagon*`→`Hexagon*` tip rename (ayrı dal) + manuel target UI
+
+> **17 Eylül — His / HUD / kamera / iz.** Premium HUD: boss üst orta +
+> `StatusIconStrip` (tüm `StatusKind`, `StatusBoard.TryGet` + süre halkası);
+> oyuncu HP/FP sol üst glass; ally `StatusBoard` (`team_has_debuffs`).
+> SafeArea clamp (`PentagonLayoutScreen.SafeRectPx`); hex YNorm 0.30,
+> dodge/merkez büyütüldü. Orbit: sağ boşluk drag (widget-only claim) +
+> `KinematicMotor` kamera-göreli hareket. Soft aim `SoftAimRangeM` (8m,
+> boss menzilde soft-lock). Floating hasar pool. `AnimationBridge.MapToQuaterniusState`;
+> bang → `PlaceholderFactory.CreateImpact`. Hava rengi muted teal.
+> Canvas adı `HexagonCanvas`. `dotnet test` **227** yeşil.
+> Mockup otorite: `docs/mockups/hud-premium-modern.png`.
 
 > **16 Eylül — Bağlama 10: AnimationBridge + PresentationValidator Game'e.**
 > `ManifestationDirector.ShoutSkill` → `PresentationValidator` /
@@ -525,16 +534,13 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   |---|---|---|
   | Ateş | `ElementFire` #FF6B9E (sıcak magenta) | `primary` #C45C26 / `light` #FF9A3C (turuncu) |
   | Su | `ElementWater` #47B8FF (parlak mavi) | `primary` #39646A / `light` #5FB5D0 (koyu petrol) |
-  | Hava | `ElementAir` #B8D1FF (açık mavi) | `primary` #87A96B / `light` #C5E0A8 (yeşilimsi) |
+  | Hava | `ElementAir` muted teal (17 Eyl — prezentasyon bandı) | `primary` #87A96B / `light` #C5E0A8 (yeşilimsi) |
   | Toprak | `ElementEarth` #9EC76B (yeşil) | `primary` #877DD9 / `light` #B8AFEF (mor) |
   | Aydınlık | `ElementLight` #FFF5D1 (krem) | `primary` #C9A227 / `light` #FFE082 (altın sarısı) |
   | Karanlık | `ElementDark` #7A47C7 (mor) | `primary` #5C8A7D / `light` #7FB3A0 (yeşilimsi-gri) |
 
-  **Karar sahibine kaldı:** hangisi otorite olacak? Mevcut kod zaten oynanışta kullanılıyor
-  (skill tint, HUD), yeni JSON ise VFX/asset paketleriyle eşleşmek için tasarlanmış
-  (`asset_example` alanlarına bakılırsa). İkisini birden tutmak (`primary` = kod rengi kalsın,
-  `light` = parlak varyant olarak eklensin gibi) da bir seçenek. Değiştirilmedi, sadece
-  rapor edildi (görev kuralı).
+  **Hava:** 17 Eylül sprintinde kod `ElementAir` prezentasyon teal bandına çekildi
+  (yıldırım-mavi değil). Diğer elementler için renk otoritesi hâlâ açık (kod vs JSON).
 
 - **Ulti (`active_modes`) efektlerinin bir kısmı henüz dünyaya işlemiyor** (4. tur): JSON'daki
   `cast_time_mult`/`attack_speed_mult` okunuyor (`ActiveModeNode.GetEffect`) ama hiçbir yere
@@ -544,10 +550,8 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   `CombatTuning.EnforceResourceCost` (Bağlama 3, varsayılan false). `length.resource_cost_mult` henüz çarpılmıyor —
   yalnızca `base_resource_cost`.
   `visual.aura`/`screen_edges` okunmuyor — `ActiveModeHud` banner'ı var, ekran kenarı VFX yok.
-- **"team_has_debuffs"/"team_has_wounded" basitleştirilmiş okunuyor** (4. tur): `AllyDummy`'nin
-  `StatusBoard`'u yok, takım debuff sayısı yalnızca oyuncudan okunuyor. `team_full_cleanse` de
-  yalnızca oyuncuyu temizliyor, ally'yi değil. "team_has_wounded" `min(oyuncu, ally)` can
-  oranını doğru okuyor.
+- **`team_full_cleanse` hâlâ yalnızca oyuncu** (17 Eyl): Ally `StatusBoard` var ve
+  `team_has_debuffs` sayıyor; cleanse ally board'a uygulanmıyor.
 - **`docs/element-sistemi.json`'ın büyük kısmı motor tarafından hâlâ uygulanmıyor** —
   `verbs`/`adjectives`/`elements`/`scaling_economy.lengths`/`active_modes` dünyaya işliyor.
   **Okuma katmanı (5. tur) eklendi:** `passives`/`chain_mechanics`/

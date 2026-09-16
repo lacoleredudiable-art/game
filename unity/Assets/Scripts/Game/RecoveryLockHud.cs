@@ -87,37 +87,40 @@ namespace Dovus.Game
             return fillImg;
         }
 
+        VitalsHud _vitalsHud;
+
+        public void BindVitalsHud(VitalsHud vitalsHud) => _vitalsHud = vitalsHud;
+
         void ApplyTuningLayout()
         {
-            // Can/mana barlarının hemen altında. Ölçüler VitalsHud ile aynı veri.
-            int rows = _vitalsBarCount;
-            float vitalsStackDp =
-                _tuning.VitalsBarHeightDp * rows
-                + _tuning.VitalsBarSpacingDp * Mathf.Max(0, rows - 1)
-                + _tuning.RecoveryLockGapDp;
+            float w = PentagonLayoutScreen.DpToPixels(_tuning.VitalsBarWidthDp);
+            float h = PentagonLayoutScreen.DpToPixels(_tuning.RecoveryLockHeightDp);
+            float gap = PentagonLayoutScreen.DpToPixels(_tuning.RecoveryLockGapDp);
+            float left = PentagonLayoutScreen.SafeLeftInsetPx()
+                + PentagonLayoutScreen.DpToPixels(_tuning.VitalsMarginDp);
 
-            bool changed =
-                !Mathf.Approximately(_tuning.VitalsBarWidthDp, _appliedWidthDp) ||
-                !Mathf.Approximately(_tuning.RecoveryLockHeightDp, _appliedHeightDp) ||
-                !Mathf.Approximately(_tuning.VitalsMarginDp, _appliedMarginDp) ||
-                !Mathf.Approximately(vitalsStackDp, _appliedVitalsStackDp);
+            float topY;
+            if (_vitalsHud != null)
+                topY = _vitalsHud.PlayerStackBottomCanvasY - gap
+                    - PentagonLayoutScreen.DpToPixels(_tuning.StatusIconSizeDp + _tuning.StatusIconGapDp);
+            else
+            {
+                int rows = _vitalsBarCount;
+                float vitalsStackDp =
+                    _tuning.VitalsBarHeightDp * rows
+                    + _tuning.VitalsBarSpacingDp * Mathf.Max(0, rows - 1)
+                    + _tuning.RecoveryLockGapDp;
+                topY = -(PentagonLayoutScreen.SafeTopInsetPx()
+                    + PentagonLayoutScreen.DpToPixels(_tuning.VitalsMarginDp + vitalsStackDp));
+            }
 
-            if (!changed)
-                return;
-
-            _appliedWidthDp = _tuning.VitalsBarWidthDp;
-            _appliedHeightDp = _tuning.RecoveryLockHeightDp;
-            _appliedMarginDp = _tuning.VitalsMarginDp;
-            _appliedVitalsStackDp = vitalsStackDp;
-
-            float w = PentagonLayoutScreen.DpToPixels(_appliedWidthDp);
-            float h = PentagonLayoutScreen.DpToPixels(_appliedHeightDp);
-            float top = PentagonLayoutScreen.DpToPixels(_appliedMarginDp + vitalsStackDp);
-
-            _root.anchoredPosition = new Vector2(0f, -top);
+            _root.anchoredPosition = new Vector2(left, topY);
             _root.sizeDelta = new Vector2(w, h);
             _bg.anchoredPosition = Vector2.zero;
             _bg.sizeDelta = new Vector2(w, h);
+            _appliedWidthDp = _tuning.VitalsBarWidthDp;
+            _appliedHeightDp = _tuning.RecoveryLockHeightDp;
+            _appliedMarginDp = _tuning.VitalsMarginDp;
         }
 
         void LateUpdate()

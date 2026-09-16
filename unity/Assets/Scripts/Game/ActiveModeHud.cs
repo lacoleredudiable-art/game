@@ -49,6 +49,16 @@ namespace Dovus.Game
             SetVisible(false);
         }
 
+        /// <summary>Boss bar + status altına kaydır — çakışma olmasın.</summary>
+        public void BindBelowBoss(VitalsHud vitals)
+        {
+            if (_root == null || vitals == null)
+                return;
+            float y = vitals.BossStackBottomCanvasY
+                - PentagonLayoutScreen.DpToPixels(36f);
+            _root.anchoredPosition = new Vector2(0f, y);
+        }
+
         static Text CreateText(Transform parent, string name, Vector2 anchorMin, Vector2 anchorMax, int fontSize)
         {
             var go = new GameObject(name);

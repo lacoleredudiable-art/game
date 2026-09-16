@@ -297,6 +297,8 @@ namespace Dovus.Game
             {
                 if (!IsDrawHalf(pos) || TuningPanel.HitToggleButton(pos))
                     return;
+                if (!HitDodgeButton(pos) && !HitCenter(pos) && HitDot(pos) == null)
+                    return;
                 _mouseHeld = true;
                 BeginPointer(pos);
             }
@@ -332,6 +334,10 @@ namespace Dovus.Game
                 _dodgeTapAlive = true;
                 return;
             }
+
+            // Sağ boşluk orbit'e bırak — yalnız widget üzerinde claim.
+            if (!HitDodgeButton(pos) && !HitCenter(pos) && HitDot(pos) == null)
+                return;
 
             _fingerId = finger.index;
             BeginPointer(pos);

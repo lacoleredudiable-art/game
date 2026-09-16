@@ -230,7 +230,9 @@ namespace Dovus.Game
             if (follow != null)
             {
                 var orbit = root.AddComponent<CameraOrbitInput>();
-                orbit.Bind(follow, player.GetComponent<MoveInput>(), input);
+                orbit.Bind(follow, player.GetComponent<MoveInput>(), input, _tuning);
+                var motor = player.GetComponent<KinematicMotor>();
+                motor?.BindCamera(follow);
             }
             debug.Configure(input.Engine, view.CanvasRoot, skills);
             debug.BindVitals(vitals);
@@ -254,8 +256,37 @@ namespace Dovus.Game
             var vitalsHud = root.AddComponent<VitalsHud>();
             vitalsHud.Configure(vitals, bossVitals, _tuning, view.CanvasRoot, allyDummy, resource);
 
+            // Status strips — gerçek StatusBoard
+            if (playerStatus != null)
+            {
+                var playerStrip = root.AddComponent<StatusIconStrip>();
+                float stripY = vitalsHud.PlayerStackBottomCanvasY
+                    - PentagonLayoutScreen.DpToPixels(_tuning.StatusIconGapDp + 4f);
+                float left = PentagonLayoutScreen.SafeLeftInsetPx()
+                    + PentagonLayoutScreen.DpToPixels(_tuning.VitalsMarginDp);
+                playerStrip.Configure(
+                    playerStatus.Board, _tuning, view.CanvasRoot,
+                    new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f),
+                    new Vector2(left, stripY), "PlayerStatusStrip");
+            }
+
+            if (bossStatus != null)
+            {
+                var bossStrip = root.AddComponent<StatusIconStrip>();
+                float stripY = vitalsHud.BossStackBottomCanvasY
+                    - PentagonLayoutScreen.DpToPixels(_tuning.StatusIconGapDp + 2f);
+                bossStrip.Configure(
+                    bossStatus.Board, _tuning, view.CanvasRoot,
+                    new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
+                    new Vector2(0f, stripY), "BossStatusStrip");
+            }
+
+            if (allyDummy != null)
+                allyDummy.EnsureStatusBoard();
+
             var lockHud = root.AddComponent<RecoveryLockHud>();
             lockHud.Configure(input.Engine, combat, _tuning, view.CanvasRoot, vitalsHud.BarCount);
+            lockHud.BindVitalsHud(vitalsHud);
 
             var frameHud = root.AddComponent<FrameTimeHud>();
             frameHud.Configure(_tuning, view.CanvasRoot);
@@ -265,9 +296,11 @@ namespace Dovus.Game
 
             var modeHud = root.AddComponent<ActiveModeHud>();
             modeHud.Configure(view.CanvasRoot);
+            modeHud.BindBelowBoss(vitalsHud);
 
             var passiveHud = root.AddComponent<PassiveHud>();
             passiveHud.Configure(view.CanvasRoot);
+            passiveHud.BindBelowPlayer(vitalsHud);
 
             dodgeMotion.Bind(clock, input, boss.transform, afterimage);
 

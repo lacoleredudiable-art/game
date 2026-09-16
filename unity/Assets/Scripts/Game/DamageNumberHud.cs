@@ -1,124 +1,178 @@
-using System.Text;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Dovus.Game
 {
     /// <summary>
-    /// Kapanış hasarı his kanalı. Varsayılan açık (ShowDamageNumbers).
+    /// Floating hasar: dünya→ekran pop, punch + rise + fade. Pool.
     /// </summary>
     public sealed class DamageNumberHud : MonoBehaviour
     {
-        PrototypeTuning _tuning;
-        Text _text;
-        readonly StringBuilder _sb = new StringBuilder(32);
+        const int PoolSize = 12;
 
-        float _hideAtUnscaled = -1f;
-        bool _appliedVisible;
+        PrototypeTuning _tuning;
+        Camera _cam;
+        Canvas _canvas;
+        readonly List<Floater> _pool = new();
+        int _next;
+
+        struct Floater
+        {
+            public GameObject Go;
+            public RectTransform Rect;
+            public Text Text;
+            public float BornUnscaled;
+            public Vector3 World;
+            public float JitterX;
+            public bool Alive;
+            public bool Crit;
+            public bool Heal;
+        }
 
         public void Configure(PrototypeTuning tuning, Transform canvasRoot)
         {
             _tuning = tuning;
+            _cam = Camera.main;
 
-            var go = new GameObject("DamageNumberHud");
-            go.transform.SetParent(canvasRoot, false);
+            var host = new GameObject("DamageNumberHud");
+            host.transform.SetParent(canvasRoot, false);
             if (canvasRoot != null)
-                go.layer = canvasRoot.gameObject.layer;
+                host.layer = canvasRoot.gameObject.layer;
+            _canvas = canvasRoot != null ? canvasRoot.GetComponentInParent<Canvas>() : null;
 
-            var rect = go.AddComponent<RectTransform>();
-            // Boss üst-orta — his kanalı; sol-alt kumpas değil.
-            rect.anchorMin = new Vector2(0.35f, 0.78f);
-            rect.anchorMax = new Vector2(0.65f, 0.88f);
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
-
-            _text = go.AddComponent<Text>();
-            _text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            if (_text.font == null)
-                _text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            _text.fontSize = 42;
-            _text.fontStyle = FontStyle.Bold;
-            _text.color = new Color(1f, 0.92f, 0.55f, 1f);
-            _text.alignment = TextAnchor.MiddleCenter;
-            _text.horizontalOverflow = HorizontalWrapMode.Overflow;
-            _text.verticalOverflow = VerticalWrapMode.Overflow;
-            _text.raycastTarget = false;
-            _text.text = string.Empty;
-
-            _appliedVisible = true;
-            ApplyVisibility(false);
+            for (int i = 0; i < PoolSize; i++)
+                _pool.Add(CreateFloater(host.transform, i));
         }
 
-        const int NormalFontSize = 42;
-        const int CritFontSize = 58;
+        Floater CreateFloater(Transform parent, int i)
+        {
+            var go = new GameObject("Float_" + i);
+            go.transform.SetParent(parent, false);
+            go.SetActive(false);
+            var rect = go.AddComponent<RectTransform>();
+            rect.sizeDelta = new Vector2(160f, 48f);
+            var text = go.AddComponent<Text>();
+            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            if (text.font == null)
+                text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            text.fontStyle = FontStyle.Bold;
+            text.alignment = TextAnchor.MiddleCenter;
+            text.horizontalOverflow = HorizontalWrapMode.Overflow;
+            text.verticalOverflow = VerticalWrapMode.Overflow;
+            text.raycastTarget = false;
+            return new Floater { Go = go, Rect = rect, Text = text };
+        }
 
-        /// <summary>Kapanışın verdiği hasarı yazar — yalnızca ShowDamageNumbers açıksa.
-        /// Negatif amount = heal (+N). Crit: sarı + büyük.</summary>
+        /// <summary>Negatif amount = heal.</summary>
         public void ShowDamage(float amount, bool isCrit = false)
         {
-            if (_tuning == null || !_tuning.ShowDamageNumbers || _text == null)
+            if (_tuning == null || !_tuning.ShowDamageNumbers)
                 return;
 
-            _sb.Clear();
-            if (amount < 0f)
+            Vector3 world = _cam != null
+                ? _cam.transform.position + _cam.transform.forward * 6f
+                : Vector3.zero;
+            // Boss üstü — FollowCamera hedefi yoksa ekran ortası-üstü.
+            var boss = Object.FindAnyObjectByType<BossReactor>();
+            if (boss != null)
+                world = boss.transform.position + Vector3.up * 2.2f;
+
+            ShowAt(world, amount, isCrit);
+        }
+
+        public void ShowAt(Vector3 worldPos, float amount, bool isCrit = false)
+        {
+            if (_tuning == null || !_tuning.ShowDamageNumbers)
+                return;
+
+            Floater f = _pool[_next];
+            int idx = _next;
+            _next = (_next + 1) % PoolSize;
+
+            bool heal = amount < 0f;
+            f.Alive = true;
+            f.BornUnscaled = Time.unscaledTime;
+            f.World = worldPos;
+            f.JitterX = Random.Range(-36f, 36f);
+            f.Crit = isCrit && !heal;
+            f.Heal = heal;
+            f.Go.SetActive(true);
+
+            if (heal)
             {
-                _sb.Append('+');
-                _sb.Append((-amount).ToString("0.#"));
-                _text.color = new Color(0.45f, 1f, 0.7f);
-                _text.fontSize = NormalFontSize;
+                f.Text.text = "+" + (-amount).ToString("0.#");
+                f.Text.color = new Color(0.45f, 0.9f, 0.75f, 1f);
+                f.Text.fontSize = Mathf.RoundToInt(PentagonLayoutScreen.DpToPixels(_tuning.DamageFloatFontDp));
             }
             else if (isCrit)
             {
-                _sb.Append('-');
-                _sb.Append(amount.ToString("0.#"));
-                _text.color = new Color(1f, 0.92f, 0.2f, 1f); // sarı
-                _text.fontSize = CritFontSize;
+                f.Text.text = Mathf.RoundToInt(amount).ToString();
+                f.Text.color = new Color(0.95f, 0.88f, 0.55f, 1f);
+                f.Text.fontSize = Mathf.RoundToInt(PentagonLayoutScreen.DpToPixels(_tuning.DamageFloatCritFontDp));
             }
             else
             {
-                _sb.Append('-');
-                _sb.Append(amount.ToString("0.#"));
-                _text.color = Color.white;
-                _text.fontSize = NormalFontSize;
+                f.Text.text = Mathf.RoundToInt(amount).ToString();
+                f.Text.color = new Color(0.95f, 0.93f, 0.88f, 1f);
+                f.Text.fontSize = Mathf.RoundToInt(PentagonLayoutScreen.DpToPixels(_tuning.DamageFloatFontDp));
             }
-            _text.text = _sb.ToString();
-            _hideAtUnscaled = Time.unscaledTime + 1.25f;
-            ApplyVisibility(true);
+
+            _pool[idx] = f;
         }
 
-        void ApplyVisibility(bool visible)
+        void LateUpdate()
         {
-            if (visible == _appliedVisible)
+            if (_tuning == null)
                 return;
+            if (_cam == null)
+                _cam = Camera.main;
 
-            _appliedVisible = visible;
-            _text.enabled = visible;
-            if (!visible)
-                _text.text = string.Empty;
-        }
+            float hold = _tuning.DamageFloatHoldSec;
+            float fade = _tuning.DamageFloatFadeSec;
+            float rise = _tuning.DamageFloatRisePx;
+            float punch = _tuning.DamageFloatPunchScale;
 
-        void Update()
-        {
-            if (_text == null || _tuning == null)
-                return;
-
-            if (!_tuning.ShowDamageNumbers)
+            for (int i = 0; i < _pool.Count; i++)
             {
-                ApplyVisibility(false);
-                _hideAtUnscaled = -1f;
-                return;
-            }
+                Floater f = _pool[i];
+                if (!f.Alive)
+                    continue;
 
-            if (_hideAtUnscaled < 0f)
-            {
-                ApplyVisibility(false);
-                return;
-            }
+                float age = Time.unscaledTime - f.BornUnscaled;
+                float life = hold + fade;
+                if (age >= life)
+                {
+                    f.Alive = false;
+                    f.Go.SetActive(false);
+                    _pool[i] = f;
+                    continue;
+                }
 
-            if (Time.unscaledTime >= _hideAtUnscaled)
-            {
-                _hideAtUnscaled = -1f;
-                ApplyVisibility(false);
+                float t = age / life;
+                float riseY = rise * Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(age / life));
+                float scale = age < 0.12f
+                    ? Mathf.Lerp(punch, 1f, age / 0.12f)
+                    : 1f;
+                float alpha = age < hold ? 1f : 1f - Mathf.Clamp01((age - hold) / Mathf.Max(0.01f, fade));
+
+                Vector3 screen = _cam != null
+                    ? _cam.WorldToScreenPoint(f.World)
+                    : new Vector3(Screen.width * 0.5f, Screen.height * 0.7f, 1f);
+
+                if (screen.z < 0f)
+                {
+                    f.Go.SetActive(false);
+                    continue;
+                }
+
+                f.Rect.position = new Vector3(screen.x + f.JitterX, screen.y + riseY, 0f);
+                f.Rect.localScale = Vector3.one * scale;
+                Color c = f.Text.color;
+                c.a = alpha;
+                f.Text.color = c;
+                f.Go.SetActive(true);
+                _pool[i] = f;
             }
         }
     }

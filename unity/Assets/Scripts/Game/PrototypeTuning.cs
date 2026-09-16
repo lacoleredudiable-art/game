@@ -30,24 +30,20 @@ namespace Dovus.Game
         // T6.2: merkez X, dodge düğmesi sağ kenardan taşmasın diye 0.78'den içeri alındı.
         [Header("Altıgen (§2)")]
         public float PentagonCenterXNorm = 0.72f;
-        // 16 Eylül: 0.40 (dikey orta-altı) → 0.22 (sağ-alt köşe). Ekran Y'si ALTTAN başlar
-        // (Touch.screenPosition ile aynı uzay — bkz. PentagonLayoutScreen.CenterPx), yani
-        // küçültmek AŞAĞI taşır. Sahibi "daha güzel bir köşe" istedi; sağ-alt mobil ARPG'lerde
-        // standart skill-tekerleği konumu (Dragon Nest M vb.). X dokunulmadı (T6.2: dodge
-        // taşmasın diye 0.78'den 0.72'ye çekilmişti, o düzeltmeyi bozmuyoruz).
-        public float PentagonCenterYNorm = 0.22f;
+        // Safe-area içi sağ-alt; 0.22 home indicator'a çarpıyordu → 0.30.
+        public float PentagonCenterYNorm = 0.30f;
         public float PentagonRadiusDp = 100f;
-        public float DotHitRadiusDp = 30f;
-        public float CenterHitRadiusDp = 24f;
+        public float DotHitRadiusDp = 32f;
+        public float CenterHitRadiusDp = 34f;
         public bool MirrorForLeftHand = false;
         public float InkLingerSec = 0.40f;
         public float InkWidthDp = 3.5f;
 
-        // §2: dodge altıgenin sağ altında — Toprak (alt nokta) üstüne binmesin. v9.
+        // §2: dodge altıgenin sağ altında — Toprak (alt nokta) üstüne binmesin.
         [Header("Dodge düğmesi (§2, T6.2)")]
-        public float DodgeButtonOffsetXDp = 92f;
-        public float DodgeButtonOffsetYDp = -118f;
-        public float DodgeButtonRadiusDp = 30f;
+        public float DodgeButtonOffsetXDp = 100f;
+        public float DodgeButtonOffsetYDp = -100f;
+        public float DodgeButtonRadiusDp = 38f;
         public float DodgeButtonScreenMarginDp = 8f;
 
         // §5: merkez bir kelime değil düğme; hangi fiille vurduğu veridir (prototipte 1/Ateş).
@@ -90,7 +86,7 @@ namespace Dovus.Game
         [Header("Element renkleri (çizgi/tezahür)")]
         public Color ElementFire = new Color(1f, 0.42f, 0.62f);       // Ateş — sıcak magenta
         public Color ElementWater = new Color(0.28f, 0.72f, 1f);      // Su
-        public Color ElementAir = new Color(0.72f, 0.82f, 1f);        // Hava
+        public Color ElementAir = new Color(0.50f, 0.70f, 0.62f);     // Hava — muted teal (prezentasyon)
         public Color ElementEarth = new Color(0.62f, 0.78f, 0.42f);   // Toprak
         public Color ElementLight = new Color(1f, 0.96f, 0.82f);      // Aydınlık
         public Color ElementDark = new Color(0.48f, 0.28f, 0.78f);    // Karanlık
@@ -226,11 +222,31 @@ namespace Dovus.Game
         // §6/§11 "boss ve oyuncu can göstergesi, sade". Ölçüler dp (beşgen/dodge diskiyle
         // aynı yol: PentagonLayoutScreen.DpToPixels). Boss barı T12'den beri BossVitals okur.
         [Header("Can göstergesi (T9, VitalsHud)")]
-        public float VitalsBarWidthDp = 280f;
-        public float VitalsBarHeightDp = 18f;
+        public float VitalsBarWidthDp = 220f;
+        public float VitalsBarHeightDp = 16f;
+        public float VitalsBossBarHeightDp = 14f;
+        public float VitalsBossBarWidthDp = 420f;
         public float VitalsBarSpacingDp = 6f;
         public float VitalsMarginDp = 18f;
-        public Color BossVitalsColor = new Color(0.92f, 0.42f, 0.22f, 0.95f);
+        public Color BossVitalsColor = new Color(0.85f, 0.28f, 0.22f, 0.95f);
+
+        [Header("Status ikon şeridi")]
+        public float StatusIconSizeDp = 28f;
+        public float StatusIconGapDp = 6f;
+
+        [Header("Kamera orbit")]
+        public float OrbitDegreesPerDp = 0.35f;
+
+        [Header("Soft aim / menzil")]
+        public float SoftAimRangeM = 8f;
+
+        [Header("Floating hasar")]
+        public float DamageFloatFontDp = 28f;
+        public float DamageFloatCritFontDp = 36f;
+        public float DamageFloatRisePx = 64f;
+        public float DamageFloatHoldSec = 0.35f;
+        public float DamageFloatFadeSec = 0.45f;
+        public float DamageFloatPunchScale = 1.25f;
 
         // T11.1: toparlanma kilidi kalıcı HUD (§5 beceri ekseni). Yükseklik/gap spec'te yok —
         // can barıyla aynı dilde dp; gerekçe docs/durum.md T11.1 sapmaları.
@@ -257,7 +273,7 @@ namespace Dovus.Game
         // tasarımcının bilinçli 0'ı (ör. nabzı kapatmak) artık ezilmez (T8.1).
         [HideInInspector] public int TuningVersion = CurrentVersion;
 
-        const int CurrentVersion = 9;
+        const int CurrentVersion = 10;
 
         /// <summary>Sürümü geçmiş serileşmiş kopyayı bu sürümün varsayılanlarına çeker.</summary>
         public void EnsureRuntimeDefaults()
@@ -273,20 +289,23 @@ namespace Dovus.Game
             OpenDot5 = true;
             OpenDot6 = true;
 
-            // v9: dodge Toprak'ın üstünde kalmasın — sağa.
-            DodgeButtonOffsetXDp = 92f;
-            DodgeButtonOffsetYDp = -118f;
+            // v10: dodge/hex boyut + safe-area Y; Hava rengi.
+            DodgeButtonOffsetXDp = 100f;
+            DodgeButtonOffsetYDp = -100f;
+            DodgeButtonRadiusDp = 38f;
+            CenterHitRadiusDp = 34f;
+            DotHitRadiusDp = 32f;
 
-            // 16 Eylül — sahnede donmuş eski değerler her açılışta ezilir (aynı desen):
-            // BasicStrikeDot sahnede 5 (eski pentagon SARSINTI) olarak serileşmişti; altıgen
-            // sisteminde 5 = Aydınlık/arindirma (action:"cleanse") — IsHealSkill onu heal
-            // sanıyordu, düz vuruş "heal basıyor" bug'ı buradan geliyordu (bkz. docs/durum.md).
             BasicStrikeDot = 1;
-            // ShowDamageNumbers sahnede 0 (eski "kumpas, kapalı" kararı) donmuştu; his için
-            // varsayılan artık AÇIK.
             ShowDamageNumbers = true;
-            // Altıgen köşeye taşındı (bkz. yukarısı) — sahnedeki eski 0.40 her açılışta ezilir.
-            PentagonCenterYNorm = 0.22f;
+            PentagonCenterYNorm = 0.30f;
+            ElementAir = new Color(0.50f, 0.70f, 0.62f);
+            if (SoftAimRangeM <= 0.01f) SoftAimRangeM = 8f;
+            if (OrbitDegreesPerDp <= 0.01f) OrbitDegreesPerDp = 0.35f;
+            if (StatusIconSizeDp <= 0.01f) StatusIconSizeDp = 28f;
+            if (VitalsBossBarWidthDp <= 0.01f) VitalsBossBarWidthDp = 420f;
+            if (VitalsBossBarHeightDp <= 0.01f) VitalsBossBarHeightDp = 14f;
+            if (DamageFloatFontDp <= 0.01f) DamageFloatFontDp = 28f;
         }
 
         void MigrateToCurrent()
@@ -355,9 +374,9 @@ namespace Dovus.Game
             EffectBasicStrikeHeightM = fresh.EffectBasicStrikeHeightM;
 
             // v9: dodge sağ-alt (Toprak'tan uzak); ikon ölçeği.
-            DodgeButtonOffsetXDp = 92f;
-            DodgeButtonOffsetYDp = -118f;
-            DodgeButtonRadiusDp = 30f;
+            DodgeButtonOffsetXDp = 100f;
+            DodgeButtonOffsetYDp = -100f;
+            DodgeButtonRadiusDp = 38f;
             IconDisplayScale = 1.12f;
             ElementFire = fresh.ElementFire;
             ElementWater = fresh.ElementWater;
@@ -365,6 +384,25 @@ namespace Dovus.Game
             ElementEarth = fresh.ElementEarth;
             ElementLight = fresh.ElementLight;
             ElementDark = fresh.ElementDark;
+
+            // v10 HUD / orbit / float
+            VitalsBarWidthDp = fresh.VitalsBarWidthDp;
+            VitalsBarHeightDp = fresh.VitalsBarHeightDp;
+            VitalsBossBarHeightDp = fresh.VitalsBossBarHeightDp;
+            VitalsBossBarWidthDp = fresh.VitalsBossBarWidthDp;
+            StatusIconSizeDp = fresh.StatusIconSizeDp;
+            StatusIconGapDp = fresh.StatusIconGapDp;
+            OrbitDegreesPerDp = fresh.OrbitDegreesPerDp;
+            SoftAimRangeM = fresh.SoftAimRangeM;
+            DamageFloatFontDp = fresh.DamageFloatFontDp;
+            DamageFloatCritFontDp = fresh.DamageFloatCritFontDp;
+            DamageFloatRisePx = fresh.DamageFloatRisePx;
+            DamageFloatHoldSec = fresh.DamageFloatHoldSec;
+            DamageFloatFadeSec = fresh.DamageFloatFadeSec;
+            DamageFloatPunchScale = fresh.DamageFloatPunchScale;
+            CenterHitRadiusDp = fresh.CenterHitRadiusDp;
+            DotHitRadiusDp = fresh.DotHitRadiusDp;
+            PentagonCenterYNorm = 0.30f;
 
             TuningVersion = CurrentVersion;
         }

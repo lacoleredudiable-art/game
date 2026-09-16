@@ -275,6 +275,18 @@ public class StatusBoardTests
     }
 
     [Test]
+    public void TryGet_ReturnsRemainingMagnitudeAndTotal()
+    {
+        var board = new StatusBoard();
+        board.Apply(StatusKind.Burn, 2000, 3.5f);
+        Assert.That(board.TryGet(StatusKind.Burn, out double rem, out float mag, out double total), Is.True);
+        Assert.That(rem, Is.EqualTo(2000).Within(0.01));
+        Assert.That(mag, Is.EqualTo(3.5f));
+        Assert.That(total, Is.EqualTo(2000).Within(0.01));
+        Assert.That(board.TryGet(StatusKind.Slow, out _, out _, out _), Is.False);
+    }
+
+    [Test]
     public void StatusKind_ParsesPoison()
     {
         Assert.That(StatusKindUtil.TryParse("poison", out StatusKind kind), Is.True);

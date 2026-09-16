@@ -6,30 +6,34 @@ using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 namespace Dovus.Game
 {
     /// <summary>
-    /// 16 Eylül: "kamerayı 360 derece döndüremiyorum, sabit" bug raporu. Sol yarı (MoveInput)
-    /// ve sağ yarı (PentagonInput çizim + dodge) her zaman kendi parmaklarını talep ediyor;
-    /// bu yüzden orbit girdisi onların DIŞINDA kalan bir parmağa bağlanır (üçüncü parmak veya
-    /// tek elle oynarken masaüstünde sağ-tık sürükleme). İki dokunuşu aynı anda desteklemeyen
-    /// telefonlarda hareket/çizim sırasında kamera döndürülemez — bilinen sınır, docs/durum.md.
+    /// Sağ boşlukta (hex/dodge/merkez dışı) sürükleyerek yaw. Stick ve widget parmaklarına
+    /// dokunmaz. Editörde sağ-tık yedek.
     /// </summary>
     public sealed class CameraOrbitInput : MonoBehaviour
     {
-        const float DegreesPerDp = 0.35f;
         const float MouseDegreesPerPixel = 0.15f;
 
         FollowCamera _camera;
         MoveInput _moveInput;
         PentagonInput _pentagonInput;
+        PrototypeTuning _tuning;
         int? _orbitFingerId;
         Vector2 _lastPos;
         float _yawDeg;
         bool _eventsHooked;
 
-        public void Bind(FollowCamera camera, MoveInput moveInput, PentagonInput pentagonInput)
+        public float YawDeg => _yawDeg;
+
+        public void Bind(
+            FollowCamera camera,
+            MoveInput moveInput,
+            PentagonInput pentagonInput,
+            PrototypeTuning tuning = null)
         {
             _camera = camera;
             _moveInput = moveInput;
             _pentagonInput = pentagonInput;
+            _tuning = tuning;
         }
 
         void OnEnable()
@@ -82,8 +86,14 @@ namespace Dovus.Game
             if (_orbitFingerId.HasValue || IsClaimedElsewhere(finger.index))
                 return;
 
+            // Sol yarı stick'e ait — orbit alma.
+            Vector2 pos = finger.screenPosition;
+            bool mirror = _tuning != null && _tuning.MirrorForLeftHand;
+            if (!PentagonLayoutScreen.IsRightHalf(pos, mirror, Screen.width))
+                return;
+
             _orbitFingerId = finger.index;
-            _lastPos = finger.screenPosition;
+            _lastPos = pos;
         }
 
         void OnFingerMove(Finger finger)
@@ -94,7 +104,8 @@ namespace Dovus.Game
             Vector2 pos = finger.screenPosition;
             float deltaXDp = PixelsToDp(pos.x - _lastPos.x);
             _lastPos = pos;
-            _yawDeg -= deltaXDp * DegreesPerDp;
+            float sens = _tuning != null ? _tuning.OrbitDegreesPerDp : 0.35f;
+            _yawDeg -= deltaXDp * sens;
         }
 
         void OnFingerUp(Finger finger)

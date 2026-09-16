@@ -128,8 +128,7 @@ namespace Dovus.Core.Combat
         public float MinTeamHpRatio;
         public double SecondsSinceLastDamageDealt;
         public double SecondsSinceLastMoved;
-        /// <summary>16 Eylül: ally'nin StatusBoard'u yok (bkz. docs/durum.md) — şimdilik
-        /// yalnızca oyuncunun debuff sayısı. "team_has_debuffs" bu basitleştirmeyle okunur.</summary>
+        /// <summary>Takım (oyuncu+ally) debuff sayısı — StatusIconStrip / active_modes.</summary>
         public int TeamDebuffCount;
     }
 }

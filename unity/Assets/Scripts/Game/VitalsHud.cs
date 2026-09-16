@@ -5,7 +5,7 @@ using UnityEngine.UI;
 namespace Dovus.Game
 {
     /// <summary>
-    /// Sade can göstergeleri (T9, §6/§11). Oyuncu / ally / boss barları.
+    /// Premium HUD: boss üst orta; oyuncu HP/mana sol üst glass panel.
     /// </summary>
     public sealed class VitalsHud : MonoBehaviour
     {
@@ -14,7 +14,10 @@ namespace Dovus.Game
         BossVitals _bossVitals;
         AllyDummy _ally;
         PrototypeTuning _tuning;
-        RectTransform _root;
+
+        RectTransform _playerRoot;
+        RectTransform _bossRoot;
+        RectTransform _playerPanel;
         RectTransform _bossBg;
         RectTransform _playerBg;
         RectTransform _manaBg;
@@ -23,6 +26,7 @@ namespace Dovus.Game
         Image _manaFill;
         Image _bossFill;
         Image _allyFill;
+        Text _bossName;
         Text _bossLabel;
         Text _playerLabel;
         Text _manaLabel;
@@ -30,6 +34,8 @@ namespace Dovus.Game
 
         float _appliedWidthDp = -1f;
         float _appliedHeightDp = -1f;
+        float _appliedBossHDp = -1f;
+        float _appliedBossWDp = -1f;
         float _appliedSpacingDp = -1f;
         float _appliedMarginDp = -1f;
         Color _appliedBossColor;
@@ -37,8 +43,16 @@ namespace Dovus.Game
         Color _appliedManaColor;
         bool _hasAlly;
 
-        /// <summary>Boss + oyuncu HP + mana (+ isteğe bağlı ally).</summary>
-        public int BarCount => _hasAlly ? 4 : 3;
+        /// <summary>Oyuncu sütunu satır sayısı (HP+mana[+ally]) — RecoveryLock için.</summary>
+        public int BarCount => _hasAlly ? 3 : 2;
+
+        /// <summary>Sol üst oyuncu panelinin alt kenarı (canvas px, üstten negatif Y).</summary>
+        public float PlayerStackBottomCanvasY { get; private set; }
+
+        /// <summary>Boss bar alt kenarı (canvas px).</summary>
+        public float BossStackBottomCanvasY { get; private set; }
+
+        public Transform CanvasParent => _playerRoot != null ? _playerRoot.parent : null;
 
         public void Configure(
             PlayerVitals vitals,
@@ -55,34 +69,63 @@ namespace Dovus.Game
             _hasAlly = ally != null;
             _tuning = tuning;
 
-            var go = new GameObject("VitalsHud");
-            go.transform.SetParent(canvasRoot, false);
+            // —— Oyuncu (sol üst) ——
+            var playerGo = new GameObject("VitalsPlayer");
+            playerGo.transform.SetParent(canvasRoot, false);
             if (canvasRoot != null)
-                go.layer = canvasRoot.gameObject.layer;
+                playerGo.layer = canvasRoot.gameObject.layer;
+            _playerRoot = playerGo.AddComponent<RectTransform>();
+            _playerRoot.anchorMin = new Vector2(0f, 1f);
+            _playerRoot.anchorMax = new Vector2(0f, 1f);
+            _playerRoot.pivot = new Vector2(0f, 1f);
 
-            _root = go.AddComponent<RectTransform>();
-            _root.anchorMin = new Vector2(0.02f, 1f);
-            _root.anchorMax = new Vector2(0.02f, 1f);
-            _root.pivot = new Vector2(0f, 1f);
-
-            _bossFill = CreateBar(go.transform, "Boss", out _bossBg);
-            _bossLabel = CreateLabel(_bossBg, "BossHp");
-            _playerFill = CreateBar(go.transform, "Player", out _playerBg);
+            _playerPanel = CreateGlassPanel(_playerRoot, "PlayerGlass");
+            _playerFill = CreateBar(_playerPanel, "Player", out _playerBg);
             _playerLabel = CreateLabel(_playerBg, "PlayerHp");
-            _manaFill = CreateBar(go.transform, "Mana", out _manaBg);
+            _manaFill = CreateBar(_playerPanel, "Mana", out _manaBg);
             _manaLabel = CreateLabel(_manaBg, "PlayerMana");
             if (_hasAlly)
             {
-                _allyFill = CreateBar(go.transform, "Ally", out _allyBg);
+                _allyFill = CreateBar(_playerPanel, "Ally", out _allyBg);
                 _allyLabel = CreateLabel(_allyBg, "AllyHp");
-                _allyFill.color = new Color(0.35f, 1f, 0.55f);
+                _allyFill.color = new Color(0.35f, 0.85f, 0.55f);
             }
+
+            // —— Boss (üst orta) ——
+            var bossGo = new GameObject("VitalsBoss");
+            bossGo.transform.SetParent(canvasRoot, false);
+            if (canvasRoot != null)
+                bossGo.layer = canvasRoot.gameObject.layer;
+            _bossRoot = bossGo.AddComponent<RectTransform>();
+            _bossRoot.anchorMin = new Vector2(0.5f, 1f);
+            _bossRoot.anchorMax = new Vector2(0.5f, 1f);
+            _bossRoot.pivot = new Vector2(0.5f, 1f);
+
+            _bossName = CreateBossName(_bossRoot);
+            _bossFill = CreateBar(_bossRoot, "Boss", out _bossBg);
+            _bossLabel = CreateLabel(_bossBg, "BossHp");
+            _bossLabel.alignment = TextAnchor.MiddleCenter;
+
             ApplyTuningLayout();
         }
 
-        // 16 Eylül: HUD modernizasyonu (best-effort) — düz siyah dikdörtgen barlar yerine
-        // yuvarlak köşeli + ince kenarlıklı bar. His katmanına dokunmuyor, sadece çizim.
         static Sprite _roundedSprite;
+
+        static RectTransform CreateGlassPanel(Transform parent, string name)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            var rect = go.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0f, 1f);
+            var img = go.AddComponent<Image>();
+            img.sprite = RoundedRectSprite();
+            img.type = Image.Type.Sliced;
+            img.color = new Color(0.05f, 0.06f, 0.08f, 0.55f);
+            img.raycastTarget = false;
+            return rect;
+        }
 
         static Image CreateBar(Transform parent, string name, out RectTransform bgRect)
         {
@@ -97,10 +140,9 @@ namespace Dovus.Game
             var bgImg = bg.AddComponent<Image>();
             bgImg.sprite = rounded;
             bgImg.type = Image.Type.Sliced;
-            bgImg.color = new Color(0.04f, 0.05f, 0.07f, 0.62f);
+            bgImg.color = new Color(0.04f, 0.05f, 0.07f, 0.72f);
             bgImg.raycastTarget = false;
 
-            // İnce kenarlık — barı "kart" gibi ayırır, düz dikdörtgen hissini kırar.
             var borderGo = new GameObject(name + "Border");
             borderGo.transform.SetParent(bg.transform, false);
             var borderRect = borderGo.AddComponent<RectTransform>();
@@ -111,7 +153,7 @@ namespace Dovus.Game
             var borderImg = borderGo.AddComponent<Image>();
             borderImg.sprite = rounded;
             borderImg.type = Image.Type.Sliced;
-            borderImg.color = new Color(1f, 1f, 1f, 0.10f);
+            borderImg.color = new Color(1f, 1f, 1f, 0.12f);
             borderImg.raycastTarget = false;
 
             var fillGo = new GameObject(name + "Fill");
@@ -174,49 +216,93 @@ namespace Dovus.Game
             text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             if (text.font == null)
                 text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            text.fontSize = 14;
+            text.fontSize = 13;
             text.fontStyle = FontStyle.Bold;
-            text.color = Color.white;
+            text.color = new Color(1f, 1f, 1f, 0.92f);
             text.alignment = TextAnchor.MiddleLeft;
             text.raycastTarget = false;
             text.text = string.Empty;
             return text;
         }
 
+        static Text CreateBossName(Transform parent)
+        {
+            var go = new GameObject("BossName");
+            go.transform.SetParent(parent, false);
+            var rect = go.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.5f, 1f);
+            rect.anchorMax = new Vector2(0.5f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.sizeDelta = new Vector2(400f, 22f);
+            var text = go.AddComponent<Text>();
+            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            if (text.font == null)
+                text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            text.fontSize = 14;
+            text.fontStyle = FontStyle.Bold;
+            text.color = new Color(0.85f, 0.82f, 0.78f, 0.9f);
+            text.alignment = TextAnchor.MiddleCenter;
+            text.raycastTarget = false;
+            text.text = "BOSS";
+            return text;
+        }
+
         void ApplyTuningLayout()
         {
-            int rows = BarCount;
+            float topInset = PentagonLayoutScreen.SafeTopInsetPx();
+            float leftInset = PentagonLayoutScreen.SafeLeftInsetPx();
+            float margin = PentagonLayoutScreen.DpToPixels(_tuning.VitalsMarginDp);
+            float w = PentagonLayoutScreen.DpToPixels(_tuning.VitalsBarWidthDp);
+            float h = PentagonLayoutScreen.DpToPixels(_tuning.VitalsBarHeightDp);
+            float bossW = PentagonLayoutScreen.DpToPixels(_tuning.VitalsBossBarWidthDp);
+            float bossH = PentagonLayoutScreen.DpToPixels(_tuning.VitalsBossBarHeightDp);
+            float spacing = PentagonLayoutScreen.DpToPixels(_tuning.VitalsBarSpacingDp);
+            float pad = PentagonLayoutScreen.DpToPixels(10f);
+
             bool sizeChanged =
                 !Mathf.Approximately(_tuning.VitalsBarWidthDp, _appliedWidthDp) ||
                 !Mathf.Approximately(_tuning.VitalsBarHeightDp, _appliedHeightDp) ||
+                !Mathf.Approximately(_tuning.VitalsBossBarHeightDp, _appliedBossHDp) ||
+                !Mathf.Approximately(_tuning.VitalsBossBarWidthDp, _appliedBossWDp) ||
                 !Mathf.Approximately(_tuning.VitalsBarSpacingDp, _appliedSpacingDp) ||
                 !Mathf.Approximately(_tuning.VitalsMarginDp, _appliedMarginDp);
 
-            if (sizeChanged)
+            if (sizeChanged || true)
             {
                 _appliedWidthDp = _tuning.VitalsBarWidthDp;
                 _appliedHeightDp = _tuning.VitalsBarHeightDp;
+                _appliedBossHDp = _tuning.VitalsBossBarHeightDp;
+                _appliedBossWDp = _tuning.VitalsBossBarWidthDp;
                 _appliedSpacingDp = _tuning.VitalsBarSpacingDp;
                 _appliedMarginDp = _tuning.VitalsMarginDp;
 
-                float w = PentagonLayoutScreen.DpToPixels(_appliedWidthDp);
-                float h = PentagonLayoutScreen.DpToPixels(_appliedHeightDp);
-                float spacing = PentagonLayoutScreen.DpToPixels(_appliedSpacingDp);
+                int rows = BarCount;
+                float panelH = rows * h + (rows - 1) * spacing + pad * 2f;
+                float panelW = w + pad * 2f;
 
-                _root.anchoredPosition = new Vector2(0f, -PentagonLayoutScreen.DpToPixels(_appliedMarginDp));
-                _root.sizeDelta = new Vector2(w, h * rows + spacing * (rows - 1));
+                _playerRoot.anchoredPosition = new Vector2(leftInset + margin, -(topInset + margin));
+                _playerPanel.anchoredPosition = Vector2.zero;
+                _playerPanel.sizeDelta = new Vector2(panelW, panelH);
 
-                _bossBg.anchoredPosition = Vector2.zero;
-                _bossBg.sizeDelta = new Vector2(w, h);
-                _playerBg.anchoredPosition = new Vector2(0f, -(h + spacing));
+                _playerBg.anchoredPosition = new Vector2(pad, -pad);
                 _playerBg.sizeDelta = new Vector2(w, h);
-                _manaBg.anchoredPosition = new Vector2(0f, -2f * (h + spacing));
+                _manaBg.anchoredPosition = new Vector2(pad, -(pad + h + spacing));
                 _manaBg.sizeDelta = new Vector2(w, h);
                 if (_hasAlly && _allyBg != null)
                 {
-                    _allyBg.anchoredPosition = new Vector2(0f, -3f * (h + spacing));
+                    _allyBg.anchoredPosition = new Vector2(pad, -(pad + 2f * (h + spacing)));
                     _allyBg.sizeDelta = new Vector2(w, h);
                 }
+
+                PlayerStackBottomCanvasY = -(topInset + margin + panelH);
+
+                float nameH = PentagonLayoutScreen.DpToPixels(20f);
+                _bossRoot.anchoredPosition = new Vector2(0f, -(topInset + margin * 0.5f));
+                _bossName.rectTransform.anchoredPosition = Vector2.zero;
+                _bossName.rectTransform.sizeDelta = new Vector2(bossW, nameH);
+                _bossBg.anchoredPosition = new Vector2(-bossW * 0.5f, -nameH);
+                _bossBg.sizeDelta = new Vector2(bossW, bossH);
+                BossStackBottomCanvasY = -(topInset + margin * 0.5f + nameH + bossH);
             }
 
             if (_appliedBossColor != _tuning.BossVitalsColor)
@@ -225,18 +311,15 @@ namespace Dovus.Game
                 _bossFill.color = _appliedBossColor;
             }
 
-            if (_appliedPlayerColor != _tuning.PlayerColor)
+            // Oyuncu HP: desatüre crimson (premium mockup)
+            Color hpColor = new Color(0.75f, 0.22f, 0.22f, 0.95f);
+            if (_appliedPlayerColor != hpColor)
             {
-                _appliedPlayerColor = _tuning.PlayerColor;
-                _playerFill.color = _appliedPlayerColor;
+                _appliedPlayerColor = hpColor;
+                _playerFill.color = hpColor;
             }
 
-            // Mana: oyuncu paleti (camgöbeği) — HP'den biraz daha mavi, §10 kırmızı-turuncu yok.
-            Color manaColor = new Color(
-                _tuning.PlayerColor.r * 0.45f,
-                _tuning.PlayerColor.g * 0.65f,
-                Mathf.Min(1f, _tuning.PlayerColor.b * 1.05f + 0.15f),
-                0.95f);
+            Color manaColor = new Color(0.28f, 0.55f, 0.78f, 0.95f);
             if (_appliedManaColor != manaColor)
             {
                 _appliedManaColor = manaColor;
@@ -258,7 +341,7 @@ namespace Dovus.Game
                     ? Mathf.Clamp01((float)_vitals.Hp / _vitals.MaxHp)
                     : 0f;
                 if (_playerLabel != null)
-                    _playerLabel.text = "Sen " + _vitals.Hp + " / " + _vitals.MaxHp;
+                    _playerLabel.text = "HP  " + _vitals.Hp + " / " + _vitals.MaxHp;
             }
 
             if (_manaFill != null)
@@ -267,39 +350,30 @@ namespace Dovus.Game
                 {
                     _manaFill.fillAmount = Mathf.Clamp01(_resource.Mana / _resource.MaxMana);
                     if (_manaLabel != null)
-                        _manaLabel.text = "Mana " + Mathf.CeilToInt(_resource.Mana) + " / " +
-                                          Mathf.CeilToInt(_resource.MaxMana);
+                        _manaLabel.text = "FP  " + Mathf.RoundToInt(_resource.Mana) + " / " + Mathf.RoundToInt(_resource.MaxMana);
                 }
                 else
                 {
                     _manaFill.fillAmount = 0f;
                     if (_manaLabel != null)
-                        _manaLabel.text = "Mana";
+                        _manaLabel.text = "FP  —";
                 }
+            }
+
+            if (_bossVitals != null && _bossFill != null)
+            {
+                _bossFill.fillAmount = _bossVitals.MaxHp > 0
+                    ? Mathf.Clamp01(_bossVitals.Hp / _bossVitals.MaxHp)
+                    : 0f;
+                if (_bossLabel != null)
+                    _bossLabel.text = Mathf.CeilToInt(_bossVitals.Hp) + " / " + Mathf.CeilToInt(_bossVitals.MaxHp);
             }
 
             if (_hasAlly && _ally != null && _allyFill != null)
             {
-                _allyFill.fillAmount = Mathf.Clamp01(_ally.Ratio);
+                _allyFill.fillAmount = _ally.Ratio;
                 if (_allyLabel != null)
-                    _allyLabel.text = "Ally " + _ally.Hp + " / " + _ally.MaxHp;
-            }
-
-            if (_bossFill != null)
-            {
-                if (_bossVitals != null && _bossVitals.MaxHp > 0f)
-                {
-                    _bossFill.fillAmount = Mathf.Clamp01(_bossVitals.Hp / _bossVitals.MaxHp);
-                    if (_bossLabel != null)
-                        _bossLabel.text = Mathf.CeilToInt(_bossVitals.Hp) + " / " +
-                                          Mathf.CeilToInt(_bossVitals.MaxHp);
-                }
-                else
-                {
-                    _bossFill.fillAmount = 1f;
-                    if (_bossLabel != null)
-                        _bossLabel.text = string.Empty;
-                }
+                    _allyLabel.text = "ALLY  " + _ally.Hp + " / " + _ally.MaxHp;
             }
         }
     }

@@ -344,11 +344,19 @@ namespace Dovus.Game
                     if (StatusKindUtil.IsDebuff(kind)) debuffCount++;
             }
 
+            if (_ally != null)
+            {
+                _ally.EnsureStatusBoard();
+                if (_ally.Board != null)
+                {
+                    foreach (StatusKind kind in _ally.Board.ActiveKinds)
+                        if (StatusKindUtil.IsDebuff(kind)) debuffCount++;
+                }
+            }
+
             return new ActiveModeContext
             {
                 HpRatio = hpRatio,
-                // 16 Eylül: ally'nin StatusBoard'u yok (bilinen açık, docs/durum.md) — team
-                // debuff sayısı şimdilik yalnızca oyuncudan okunur.
                 MinTeamHpRatio = Mathf.Min(hpRatio, allyRatio),
                 SecondsSinceLastDamageDealt = (worldMs - _lastDamageDealtMs) / 1000.0,
                 SecondsSinceLastMoved = (worldMs - _lastMovedMs) / 1000.0,
@@ -878,16 +886,7 @@ namespace Dovus.Game
         {
             _ = worldMs;
             Vector3 pos = _player.position;
-            Vector3 facing = _player.forward;
-            if (_motor != null && _motor.Velocity.sqrMagnitude > 0.05f)
-                facing = _motor.Velocity.normalized;
-            if (_boss != null)
-            {
-                Vector3 toBoss = _boss.transform.position - pos;
-                toBoss.y = 0f;
-                if (toBoss.sqrMagnitude > 0.01f)
-                    facing = toBoss.normalized;
-            }
+            Vector3 facing = ResolveAimFacing(pos);
 
             ManifestationTuning man = _combat.Manifestation;
             if (basicStrike)
@@ -909,6 +908,39 @@ namespace Dovus.Game
             ApplySkillTint(view, words);
             _active.Add(view);
             return view;
+        }
+
+        /// <summary>
+        /// Yüz / hız / kamera forward; boss yalnız SoftAimRangeM içindeyse soft-lock.
+        /// </summary>
+        Vector3 ResolveAimFacing(Vector3 pos)
+        {
+            Vector3 facing = _player != null ? _player.forward : Vector3.forward;
+            facing.y = 0f;
+            if (_motor != null && _motor.Velocity.sqrMagnitude > 0.05f)
+                facing = _motor.Velocity.normalized;
+            else if (_camera != null)
+            {
+                float yaw = _camera.OrbitYawDeg;
+                facing = Quaternion.Euler(0f, yaw, 0f) * Vector3.forward;
+            }
+
+            if (facing.sqrMagnitude < 0.0001f)
+                facing = Vector3.forward;
+            else
+                facing.Normalize();
+
+            float range = _colors != null ? _colors.SoftAimRangeM : 8f;
+            if (_boss != null && range > 0.1f)
+            {
+                Vector3 toBoss = _boss.transform.position - pos;
+                toBoss.y = 0f;
+                float dist = toBoss.magnitude;
+                if (dist > 0.01f && dist <= range)
+                    facing = toBoss / dist;
+            }
+
+            return facing;
         }
 
         void ApplySkillTint(LivingEffectView view, IReadOnlyList<SentenceWord> words)
@@ -1077,6 +1109,7 @@ namespace Dovus.Game
                 // Kozmetik radial yoktu; EnforceCooldown=true iken tracker yine yazar.
                 ApplyCooldown(basicSkill, p.Words, cosmeticIfDisabled: false);
                 AnnounceChainFinisherIfAny();
+                SpawnClosingImpact(p);
                 return;
             }
 
@@ -1096,6 +1129,23 @@ namespace Dovus.Game
             if (!motionPlan.IsEmpty)
                 AnnotateMotion(skill, motionPlan);
             AnnounceChainFinisherIfAny(); // skill bang'ten sonra Finisher üstte kalsın
+            SpawnClosingImpact(p);
+        }
+
+        void SpawnClosingImpact(PendingClosing p)
+        {
+            if (p.View == null || p.View.Logic == null)
+                return;
+
+            LivingEffect logic = p.View.Logic;
+            Vector3 tip = new Vector3(logic.TipX, 0.6f, logic.TipZ);
+            string element = p.Words != null && p.Words.Count > 0
+                ? p.Words[0].Rune.ToString()
+                : "Ates";
+            // prezentasyon impact stilleri — asset yoksa PlaceholderFactory küre üretir.
+            GameObject fx = PlaceholderFactory.CreateImpact("burst_soft", element, tip, transform);
+            if (fx != null)
+                Destroy(fx, 1.2f);
         }
 
         /// <summary>
@@ -1266,7 +1316,7 @@ namespace Dovus.Game
             if (!_presentationCatalog.TryGetAnimation(check.AnimationTypeId, out AnimationFrameNode node))
                 return;
 
-            LastAnimationState = node.AnimatorState;
+            LastAnimationState = AnimationBridge.MapToQuaterniusState(node.AnimatorState);
             double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
             LastAnimationPlayApplied = _animationBridge.Play(node, _visual.Animator, worldMs);
         }

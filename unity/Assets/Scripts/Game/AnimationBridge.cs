@@ -138,13 +138,39 @@ namespace Dovus.Game
             if (string.IsNullOrEmpty(stateName))
                 return false;
 
-            // Controller'da yoksa sessiz atla (Quaternius ↔ JSON eşlemesi Faz 6).
+            stateName = MapToQuaterniusState(stateName);
+
+            // Controller'da yoksa sessiz atla (Quaternius ↔ JSON eşlemesi).
             if (!HasState(animator, stateName))
                 return false;
 
             animator.Play(stateName, LayerIndex, 0f);
             animator.Update(0f);
             return true;
+        }
+
+        /// <summary>
+        /// prezentasyon-katmani animator_state → Quaternius Player controller state.
+        /// </summary>
+        public static string MapToQuaterniusState(string stateName)
+        {
+            if (string.IsNullOrEmpty(stateName))
+                return stateName;
+
+            return stateName switch
+            {
+                "Melee_Thrust" => "CastPierce",
+                "Melee_Slash" => "CastSweep",
+                "Melee_Punch" => "CastSlam",
+                "Spell_Cast_Projectile" => "CastPierce",
+                "Spell_Cast_AoE" => "CastSlam",
+                "Spell_Cast_Self" => "CastChannel",
+                "Channel_Loop" => "CastChannel",
+                "Dash" => "CastGuard",
+                "Instant" => "CastChannel",
+                "Summon" => "CastChannel",
+                _ => stateName
+            };
         }
 
         static bool HasState(Animator animator, string stateName)

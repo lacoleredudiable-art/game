@@ -66,6 +66,17 @@ namespace Dovus.Game
             SetVisible(false);
         }
 
+        public void BindBelowPlayer(VitalsHud vitals)
+        {
+            if (_root == null || vitals == null)
+                return;
+            float left = PentagonLayoutScreen.SafeLeftInsetPx()
+                + PentagonLayoutScreen.DpToPixels(12f);
+            float y = vitals.PlayerStackBottomCanvasY
+                - PentagonLayoutScreen.DpToPixels(52f);
+            _root.anchoredPosition = new Vector2(left, y);
+        }
+
         /// <summary>Aktif pasif listesini yeniler; boşsa gizler.</summary>
         public void Sync(IReadOnlyList<ActivePassive> active, double worldMs)
         {
