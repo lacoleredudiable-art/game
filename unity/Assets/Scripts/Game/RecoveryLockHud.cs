@@ -32,16 +32,19 @@ namespace Dovus.Game
         float _appliedHeightDp = -1f;
         float _appliedMarginDp = -1f;
         float _appliedVitalsStackDp = -1f;
+        int _vitalsBarCount = 3;
 
         public void Configure(
             SentenceEngine engine,
             CombatTuning combat,
             PrototypeTuning tuning,
-            Transform canvasRoot)
+            Transform canvasRoot,
+            int vitalsBarCount = 3)
         {
             _engine = engine;
             _sentence = combat != null ? combat.Sentence : new SentenceTuning();
             _tuning = tuning;
+            _vitalsBarCount = Mathf.Max(1, vitalsBarCount);
 
             var go = new GameObject("RecoveryLockHud");
             go.transform.SetParent(canvasRoot, false);
@@ -86,10 +89,12 @@ namespace Dovus.Game
 
         void ApplyTuningLayout()
         {
-            // Can barlarının hemen altında: 2× yükseklik + aralık + kendi boşluğu.
-            // Ölçüler VitalsHud ile aynı veri — yeni his sayısı uydurulmadı (yalnızca yerleşim).
+            // Can/mana barlarının hemen altında. Ölçüler VitalsHud ile aynı veri.
+            int rows = _vitalsBarCount;
             float vitalsStackDp =
-                _tuning.VitalsBarHeightDp * 2f + _tuning.VitalsBarSpacingDp + _tuning.RecoveryLockGapDp;
+                _tuning.VitalsBarHeightDp * rows
+                + _tuning.VitalsBarSpacingDp * Mathf.Max(0, rows - 1)
+                + _tuning.RecoveryLockGapDp;
 
             bool changed =
                 !Mathf.Approximately(_tuning.VitalsBarWidthDp, _appliedWidthDp) ||

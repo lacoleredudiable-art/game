@@ -122,6 +122,10 @@ namespace Dovus.Game
             // His: heal denemesi — oyuncu da %50 (full iken mend boş döner).
             vitals.Bind(combat.Boss, _tuning.PlayerMaxHp, startRatio: 0.5f);
 
+            var resource = player.AddComponent<PlayerResource>();
+            // docs/element-sistemi.json resource_system: 100 / 8 / 1.5
+            resource.Bind();
+
             var playerStatus = player.AddComponent<ActorStatus>();
             var bossStatus = boss.AddComponent<ActorStatus>();
 
@@ -148,7 +152,7 @@ namespace Dovus.Game
             SceneAtmosphere.Apply(sun, Camera.main, _tuning);
             // LavDecor.Build — eski arena-wide kırmızı ember noktaları kalktı.
             BillboardVfx.CreateEmberField(boss.transform, new Color(1f, 0.45f, 0.12f), rate: 14f);
-            CreatePentagon(clock, combat, player.transform, pose, reactor, bossVitals, dodgeMotion, afterimage, vitals, telegraph, follow, tuningConfig, allyDummy);
+            CreatePentagon(clock, combat, player.transform, pose, reactor, bossVitals, dodgeMotion, afterimage, vitals, telegraph, follow, tuningConfig, allyDummy, resource);
         }
 
         void CreatePentagon(
@@ -164,7 +168,8 @@ namespace Dovus.Game
             BossTelegraph telegraph,
             FollowCamera follow,
             TuningConfig tuningConfig,
-            AllyDummy allyDummy = null)
+            AllyDummy allyDummy = null,
+            PlayerResource resource = null)
         {
             var root = new GameObject("Pentagon");
             root.transform.SetParent(transform, false);
@@ -234,10 +239,10 @@ namespace Dovus.Game
             readout.Configure(combat.Feel, _tuning, view.CanvasRoot);
 
             var vitalsHud = root.AddComponent<VitalsHud>();
-            vitalsHud.Configure(vitals, bossVitals, _tuning, view.CanvasRoot, allyDummy);
+            vitalsHud.Configure(vitals, bossVitals, _tuning, view.CanvasRoot, allyDummy, resource);
 
             var lockHud = root.AddComponent<RecoveryLockHud>();
-            lockHud.Configure(input.Engine, combat, _tuning, view.CanvasRoot);
+            lockHud.Configure(input.Engine, combat, _tuning, view.CanvasRoot, vitalsHud.BarCount);
 
             var frameHud = root.AddComponent<FrameTimeHud>();
             frameHud.Configure(_tuning, view.CanvasRoot);

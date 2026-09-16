@@ -10,18 +10,22 @@ namespace Dovus.Game
     public sealed class VitalsHud : MonoBehaviour
     {
         PlayerVitals _vitals;
+        PlayerResource _resource;
         BossVitals _bossVitals;
         AllyDummy _ally;
         PrototypeTuning _tuning;
         RectTransform _root;
         RectTransform _bossBg;
         RectTransform _playerBg;
+        RectTransform _manaBg;
         RectTransform _allyBg;
         Image _playerFill;
+        Image _manaFill;
         Image _bossFill;
         Image _allyFill;
         Text _bossLabel;
         Text _playerLabel;
+        Text _manaLabel;
         Text _allyLabel;
 
         float _appliedWidthDp = -1f;
@@ -30,16 +34,22 @@ namespace Dovus.Game
         float _appliedMarginDp = -1f;
         Color _appliedBossColor;
         Color _appliedPlayerColor;
+        Color _appliedManaColor;
         bool _hasAlly;
+
+        /// <summary>Boss + oyuncu HP + mana (+ isteğe bağlı ally).</summary>
+        public int BarCount => _hasAlly ? 4 : 3;
 
         public void Configure(
             PlayerVitals vitals,
             BossVitals bossVitals,
             PrototypeTuning tuning,
             Transform canvasRoot,
-            AllyDummy ally = null)
+            AllyDummy ally = null,
+            PlayerResource resource = null)
         {
             _vitals = vitals;
+            _resource = resource;
             _bossVitals = bossVitals;
             _ally = ally;
             _hasAlly = ally != null;
@@ -59,6 +69,8 @@ namespace Dovus.Game
             _bossLabel = CreateLabel(_bossBg, "BossHp");
             _playerFill = CreateBar(go.transform, "Player", out _playerBg);
             _playerLabel = CreateLabel(_playerBg, "PlayerHp");
+            _manaFill = CreateBar(go.transform, "Mana", out _manaBg);
+            _manaLabel = CreateLabel(_manaBg, "PlayerMana");
             if (_hasAlly)
             {
                 _allyFill = CreateBar(go.transform, "Ally", out _allyBg);
@@ -173,7 +185,7 @@ namespace Dovus.Game
 
         void ApplyTuningLayout()
         {
-            int rows = _hasAlly ? 3 : 2;
+            int rows = BarCount;
             bool sizeChanged =
                 !Mathf.Approximately(_tuning.VitalsBarWidthDp, _appliedWidthDp) ||
                 !Mathf.Approximately(_tuning.VitalsBarHeightDp, _appliedHeightDp) ||
@@ -198,9 +210,11 @@ namespace Dovus.Game
                 _bossBg.sizeDelta = new Vector2(w, h);
                 _playerBg.anchoredPosition = new Vector2(0f, -(h + spacing));
                 _playerBg.sizeDelta = new Vector2(w, h);
+                _manaBg.anchoredPosition = new Vector2(0f, -2f * (h + spacing));
+                _manaBg.sizeDelta = new Vector2(w, h);
                 if (_hasAlly && _allyBg != null)
                 {
-                    _allyBg.anchoredPosition = new Vector2(0f, -2f * (h + spacing));
+                    _allyBg.anchoredPosition = new Vector2(0f, -3f * (h + spacing));
                     _allyBg.sizeDelta = new Vector2(w, h);
                 }
             }
@@ -215,6 +229,19 @@ namespace Dovus.Game
             {
                 _appliedPlayerColor = _tuning.PlayerColor;
                 _playerFill.color = _appliedPlayerColor;
+            }
+
+            // Mana: oyuncu paleti (camgöbeği) — HP'den biraz daha mavi, §10 kırmızı-turuncu yok.
+            Color manaColor = new Color(
+                _tuning.PlayerColor.r * 0.45f,
+                _tuning.PlayerColor.g * 0.65f,
+                Mathf.Min(1f, _tuning.PlayerColor.b * 1.05f + 0.15f),
+                0.95f);
+            if (_appliedManaColor != manaColor)
+            {
+                _appliedManaColor = manaColor;
+                if (_manaFill != null)
+                    _manaFill.color = _appliedManaColor;
             }
         }
 
@@ -232,6 +259,23 @@ namespace Dovus.Game
                     : 0f;
                 if (_playerLabel != null)
                     _playerLabel.text = "Sen " + _vitals.Hp + " / " + _vitals.MaxHp;
+            }
+
+            if (_manaFill != null)
+            {
+                if (_resource != null && _resource.MaxMana > 0f)
+                {
+                    _manaFill.fillAmount = Mathf.Clamp01(_resource.Mana / _resource.MaxMana);
+                    if (_manaLabel != null)
+                        _manaLabel.text = "Mana " + Mathf.CeilToInt(_resource.Mana) + " / " +
+                                          Mathf.CeilToInt(_resource.MaxMana);
+                }
+                else
+                {
+                    _manaFill.fillAmount = 0f;
+                    if (_manaLabel != null)
+                        _manaLabel.text = "Mana";
+                }
             }
 
             if (_hasAlly && _ally != null && _allyFill != null)

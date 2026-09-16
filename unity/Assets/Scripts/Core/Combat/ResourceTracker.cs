@@ -52,6 +52,19 @@ namespace Dovus.Core.Combat
             return true;
         }
 
+        /// <summary>
+        /// Cast'i engellemeden maliyeti uygular (Bağlama 2). Yetmezse 0'a kilitler;
+        /// cost≤0 ise no-op. Yenilenme gecikmesi cost pozitifken başlar.
+        /// </summary>
+        public void Consume(float cost)
+        {
+            if (cost <= 0f)
+                return;
+
+            _mana = Math.Max(0f, _mana - cost);
+            _regenDelayLeftSec = _regenDelayAfterCastSec;
+        }
+
         /// <summary>Gecikme bitene kadar yenilemez; kalan dt ile mana tavanına kadar dolar.</summary>
         public void Tick(float dtSec)
         {

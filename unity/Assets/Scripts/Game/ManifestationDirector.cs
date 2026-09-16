@@ -59,6 +59,7 @@ namespace Dovus.Game
         ActiveModeDirector _modeDirector;
         ActiveModeHud _modeHud;
         PentagonView _pentagonView;
+        PlayerResource _playerResource;
         double _lastDamageDealtMs = double.NegativeInfinity;
         double _lastMovedMs = double.NegativeInfinity;
         float _modeHpDrainAccum;
@@ -161,6 +162,7 @@ namespace Dovus.Game
             _ally = ally;
             _modeHud = modeHud;
             _pentagonView = pentagonView;
+            _playerResource = player != null ? player.GetComponent<PlayerResource>() : null;
             _skills = SkillMotorLoader.LoadOrDefault();
             _modeDirector = new ActiveModeDirector(_skills.ActiveModes);
             if (_playerStatus != null)
@@ -602,6 +604,7 @@ namespace Dovus.Game
                 SkillResolution basicSkill = ResolvePendingSkill(p);
                 if (IsHealSkill(basicSkill))
                 {
+                    ApplyResourceCost(basicSkill);
                     ApplyClosingStatuses(p, basicSkill);
                     ShoutSkill(basicSkill, p.Words);
                     ApplyClosingHeal(p.Closing, basicSkill);
@@ -609,12 +612,14 @@ namespace Dovus.Game
                     return;
                 }
 
+                ApplyResourceCost(basicSkill);
                 ApplyBossClosingBasic(logic, p.Closing);
                 ApplyClosingDamage(p.Closing, SkillResolution.Empty, isBasicStrike: true, slashCommitMult: 0f);
                 return;
             }
 
             SkillResolution skill = ResolvePendingSkill(p);
+            ApplyResourceCost(skill);
             SkillMotionPlan motionPlan = ResolveSkillMotion(skill);
             ApplySkillMotion(motionPlan, skill);
             ApplyBossClosing(logic, p.Closing, skill);
@@ -625,6 +630,19 @@ namespace Dovus.Game
             PulseCosmeticCooldown(skill, p.Words);
             if (!motionPlan.IsEmpty)
                 AnnotateMotion(skill, motionPlan);
+        }
+
+        /// <summary>
+        /// Bağlama 2: base_resource_cost düşer; yetersiz mana cast'i engellemez (0'a kilit).
+        /// </summary>
+        void ApplyResourceCost(SkillResolution skill)
+        {
+            if (_playerResource == null || skill.IsEmpty)
+                return;
+            float cost = skill.BaseResourceCost;
+            if (cost <= 0f)
+                return;
+            _playerResource.Consume(cost);
         }
 
         /// <summary>

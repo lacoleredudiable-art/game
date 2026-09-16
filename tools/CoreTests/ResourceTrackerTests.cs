@@ -92,4 +92,15 @@ public class ResourceTrackerTests
         Assert.That(r.RegenDelayLeftSec, Is.EqualTo(1.5f));
         Assert.That(r.Mana, Is.EqualTo(85f));
     }
+
+    [Test]
+    public void Consume_ClampsAtZero_DoesNotBlock()
+    {
+        var r = new ResourceTracker();
+        r.Consume(40f);
+        Assert.That(r.Mana, Is.EqualTo(60f));
+        r.Consume(100f);
+        Assert.That(r.Mana, Is.EqualTo(0f));
+        Assert.That(r.RegenDelayLeftSec, Is.EqualTo(1.5f));
+    }
 }

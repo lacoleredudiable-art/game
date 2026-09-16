@@ -12,11 +12,18 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (Bağlama 1 · UseFormulaDamage) · **Sıradaki:**
-Bağlama 2+ (Resource/Cooldown/…) +
+**Son güncelleme:** 16 Eylül 2026 (Bağlama 2 · mana barı) · **Sıradaki:**
+Bağlama 3+ (EnforceResourceCost / Cooldown / …) +
 Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
 + **Faz 6 bağlama** kalanı (Zone/Passive/TimeEffect/RealityEffect/Equipment/
 space_layer/state machine / Presentation henüz Game'e bağlı değil)
+
+> **16 Eylül — Bağlama 2: ResourceTracker Game'e bağlı.** `PlayerResource` (PlayerVitals'a
+> paralel; HP'ye dokunulmadı) + `ResourceTracker.Consume` (yetmezse 0'a kilit, cast
+> engellemez). `VitalsHud` üçüncü bar: mana, oyuncu camgöbeği/mavi. Cast bang'de
+> `base_resource_cost` düşer; `regen_per_sec`/delay JSON varsayılanı. Bağlama 3
+> `EnforceResourceCost` yok. MCP Play: Mana 45/100 barı görünür; Consume 76→87 regen;
+> Ateş Dokunuşu cost=10. `dotnet test` 225 yeşil.
 
 > **16 Eylül — Bağlama 1: DamageCalculator bayraklı.** `CombatTuning.UseFormulaDamage`
 > varsayılan **false** (ClosingDamageMath birebir). `true` → `DamageCalculator`
@@ -461,9 +468,10 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 - **Ulti (`active_modes`) efektlerinin bir kısmı henüz dünyaya işlemiyor** (4. tur): JSON'daki
   `cast_time_mult`/`attack_speed_mult` okunuyor (`ActiveModeNode.GetEffect`) ama hiçbir yere
   uygulanmıyor. `dash_cooldown_mult`/`afterimage_count` (Fırtına Akışı) ve `taunt_radius_m`
-  (Aşılmaz Duvar) hiç uygulanmıyor. `resource_cost` hiçbir modda düşülmüyor —
-  `ResourceTracker`/`CooldownTracker` Core'da var (Görev 2) ama oyuna bağlanmadı; verb
-  `base_resource_cost` hâlâ düşülmüyor.
+  (Aşılmaz Duvar) hiç uygulanmıyor. Ulti `resource_cost` hâlâ düşülmüyor (verb
+  `base_resource_cost` Bağlama 2'de düşüyor; mod maliyeti ayrı). Cast engeli yok
+  (Bağlama 3 `EnforceResourceCost`). `length.resource_cost_mult` henüz çarpılmıyor —
+  yalnızca `base_resource_cost`.
   `visual.aura`/`screen_edges` okunmuyor — `ActiveModeHud` banner'ı var, ekran kenarı VFX yok.
 - **"team_has_debuffs"/"team_has_wounded" basitleştirilmiş okunuyor** (4. tur): `AllyDummy`'nin
   `StatusBoard`'u yok, takım debuff sayısı yalnızca oyuncudan okunuyor. `team_full_cleanse` de
