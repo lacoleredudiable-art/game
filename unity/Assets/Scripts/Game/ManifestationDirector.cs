@@ -47,6 +47,7 @@ namespace Dovus.Game
         double _deathReviveAtMs;
 
         SkillMotor _skills;
+        DamageCalculator _damageCalculator;
         ActorStatus _playerStatus;
         ActorStatus _bossStatus;
         SkillMotionDriver _motionDriver;
@@ -63,6 +64,40 @@ namespace Dovus.Game
         float _modeHpDrainAccum;
 
         SkillMotor Skills => _skills ??= SkillMotorLoader.LoadOrDefault();
+
+        DamageCalculator EnsureDamageCalculator()
+        {
+            if (_damageCalculator != null)
+                return _damageCalculator;
+
+            const string resourcePath = "ElementSystem/element-sistemi";
+            var asset = Resources.Load<TextAsset>(resourcePath);
+            if (asset != null && !string.IsNullOrWhiteSpace(asset.text))
+            {
+                try
+                {
+                    // Play'te crit ara sıra çıksın diye seed sabit değil.
+                    _damageCalculator = DamageCalculator.FromElementSystemJson(
+                        asset.text,
+                        seed: unchecked((int)System.DateTime.UtcNow.Ticks));
+                    return _damageCalculator;
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogWarning($"DamageCalculator JSON okunamadı: {e.Message}");
+                }
+            }
+
+            // Resources yoksa: docs/element-sistemi.json crit_system varsayılanları
+            // (base 0.05 / mult 2.0 / max 0.75) — sayı uydurma yok.
+            _damageCalculator = new DamageCalculator(
+                seed: unchecked((int)System.DateTime.UtcNow.Ticks),
+                baseCritChance: 0.05f,
+                critMultiplier: 2f,
+                maxCritChance: 0.75f,
+                adjectiveCritBonus: null);
+            return _damageCalculator;
+        }
 
         struct PendingClosing
         {
@@ -785,6 +820,7 @@ namespace Dovus.Game
         /// <summary>
         /// Commit (§5 TotalEffect × ClosingDamagePerEffect) × skill fiil ölçeği.
         /// Heal/dash BaseDamage=0 → 0 can; status ayrı. Tür hasarı değiştirmez (§12).
+        /// UseFormulaDamage=true → DamageCalculator (resistance/weakness nötr 0/1).
         /// </summary>
         void ApplyClosingDamage(ClosingHit closing, SkillResolution skill, bool isBasicStrike, float slashCommitMult)
         {
@@ -796,12 +832,29 @@ namespace Dovus.Game
                 outMult = _playerStatus.Board.OutgoingDamageMult;
             outMult *= _modeDirector?.DamageMult ?? 1f; // ulti: Öfke Patlaması ×1.8, Kan Çılgınlığı ×2.0
 
-            float damage = ClosingDamageMath.Compute(
-                closing.TotalEffect,
-                _combat != null ? _combat.ClosingDamagePerEffect : 1f,
-                skill,
-                isBasicStrike,
-                outMult);
+            bool isCrit = false;
+            float damage;
+            if (_combat != null && _combat.UseFormulaDamage &&
+                !isBasicStrike && !skill.IsEmpty && skill.BaseDamage > 0f)
+            {
+                // length.damage_mult JSON'da 1.0 (anti-ladder); SkillResolution taşımıyor.
+                DamageHit hit = EnsureDamageCalculator().Compute(
+                    in skill,
+                    lengthDamageMult: 1f,
+                    resistance: 0f,
+                    weaknessBonus: 1f);
+                damage = hit.Amount * outMult;
+                isCrit = hit.WasCrit;
+            }
+            else
+            {
+                damage = ClosingDamageMath.Compute(
+                    closing.TotalEffect,
+                    _combat != null ? _combat.ClosingDamagePerEffect : 1f,
+                    skill,
+                    isBasicStrike,
+                    outMult);
+            }
 
             // Teleport fiili BaseDamage=0; Zenitsu kesisi commit × SlashCommitMult.
             if (damage <= 0f && slashCommitMult > 0f && closing.TotalEffect > 0f)
@@ -817,7 +870,7 @@ namespace Dovus.Game
             if (_bossStatus != null)
                 damage *= _bossStatus.Board.IncomingDamageMult;
 
-            _damageHud?.ShowDamage(damage);
+            _damageHud?.ShowDamage(damage, isCrit);
             _lastDamageDealtMs = _clock.Director.WorldTimeMs; // "dealt_damage_recently" (Öfke Patlaması)
 
             float lifesteal = _modeDirector?.Lifesteal ?? 0f;

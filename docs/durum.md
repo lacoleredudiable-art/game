@@ -12,11 +12,18 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (Görev 15 · AnimationBridge) · **Sıradaki:**
-Görev 17 (element_colors audit) +
+**Son güncelleme:** 16 Eylül 2026 (Bağlama 1 · UseFormulaDamage) · **Sıradaki:**
+Bağlama 2+ (Resource/Cooldown/…) +
 Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
-+ **Faz 6 bağlama** (Zone/Resource/Cooldown/Passive/TimeEffect/RealityEffect/Equipment/
++ **Faz 6 bağlama** kalanı (Zone/Passive/TimeEffect/RealityEffect/Equipment/
 space_layer/state machine / Presentation henüz Game'e bağlı değil)
+
+> **16 Eylül — Bağlama 1: DamageCalculator bayraklı.** `CombatTuning.UseFormulaDamage`
+> varsayılan **false** (ClosingDamageMath birebir). `true` → `DamageCalculator`
+> (resistance=0, weakness=1; boss direnci ayrı görev). Crit → `DamageNumberHud.ShowDamage(amount, isCrit)`
+> sarı+#58 / normal beyaz+#42. ClosingDamageMath **silinmedi**.
+> MCP Play: flag=false → 13.09 = ClosingDamageMath; flag=true+crit → 68 (40×0.85×2),
+> HUD `-68` #FFEB33 size 58. `dotnet test` 224 yeşil.
 
 > **16 Eylül — Görev 15: AnimationBridge.** `Game/AnimationBridge.cs` — `AnimationFrameNode`
 > + `Animator`: `animator_state` → `Animator.Play` (Controller'da yoksa

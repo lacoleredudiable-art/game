@@ -22,6 +22,12 @@ namespace Dovus.Core.Tuning
         public float ClosingDamagePerEffect = 3.5f;
 
         /// <summary>
+        /// true olunca DamageCalculator kullanılır, false=eski ClosingDamageMath.
+        /// Varsayılan false — regresyon yok; formül yolu bayrakla açılır.
+        /// </summary>
+        public bool UseFormulaDamage = false;
+
+        /// <summary>
         /// T10: panelin "Sıfırla" ve JSON-yükleme yolu. Alt nesnelerin KİMLİĞİ korunur —
         /// PentagonInput/DodgeState/SentenceEngine gibi tüketiciler `combat.Dodge` gibi alt
         /// nesnenin REFERANSINI tutuyor (Bind sırasında), üst nesneyi değil. `Manifestation`
@@ -38,6 +44,7 @@ namespace Dovus.Core.Tuning
             Status.CopyFrom(other.Status);
             SkillMotion.CopyFrom(other.SkillMotion);
             ClosingDamagePerEffect = other.ClosingDamagePerEffect;
+            UseFormulaDamage = other.UseFormulaDamage;
         }
 
         public void ResetToDefaults() => CopyFrom(new CombatTuning());

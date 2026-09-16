@@ -49,9 +49,12 @@ namespace Dovus.Game
             ApplyVisibility(false);
         }
 
+        const int NormalFontSize = 42;
+        const int CritFontSize = 58;
+
         /// <summary>Kapanışın verdiği hasarı yazar — yalnızca ShowDamageNumbers açıksa.
-        /// Negatif amount = heal (+N).</summary>
-        public void ShowDamage(float amount)
+        /// Negatif amount = heal (+N). Crit: sarı + büyük.</summary>
+        public void ShowDamage(float amount, bool isCrit = false)
         {
             if (_tuning == null || !_tuning.ShowDamageNumbers || _text == null)
                 return;
@@ -62,12 +65,21 @@ namespace Dovus.Game
                 _sb.Append('+');
                 _sb.Append((-amount).ToString("0.#"));
                 _text.color = new Color(0.45f, 1f, 0.7f);
+                _text.fontSize = NormalFontSize;
+            }
+            else if (isCrit)
+            {
+                _sb.Append('-');
+                _sb.Append(amount.ToString("0.#"));
+                _text.color = new Color(1f, 0.92f, 0.2f, 1f); // sarı
+                _text.fontSize = CritFontSize;
             }
             else
             {
                 _sb.Append('-');
                 _sb.Append(amount.ToString("0.#"));
                 _text.color = Color.white;
+                _text.fontSize = NormalFontSize;
             }
             _text.text = _sb.ToString();
             _hideAtUnscaled = Time.unscaledTime + 1.25f;
