@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using Dovus.Core.Combat;
 using Dovus.Core.Grammar;
+using Dovus.Core.Layers;
 using Dovus.Core.Manifestation;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
@@ -69,6 +71,9 @@ namespace Dovus.Game
         float _closingChainBonus = 1f;  // bu kapanışta ApplyClosing* çarpanı
         ChainStepResult _lastChainStep = ChainStepResult.None;
         string _lastFinisherAnnounced = string.Empty;
+        // --- Zone (Bağlama 7) — element_origin ↔ zone_layer.zones ---
+        ZoneDirector _zoneDirector;
+        ZoneFieldView _zoneField;
         PentagonView _pentagonView;
         PlayerResource _playerResource;
         PlayerCooldown _playerCooldown;
@@ -137,6 +142,9 @@ namespace Dovus.Game
         /// <summary>Bağlama 6 / MCP: bir sonraki kapanışa bekleyen Links/finisher çarpanı.</summary>
         public float PendingChainBonus => _pendingChainBonus;
 
+        /// <summary>Bağlama 7 / MCP: Bind sonrası zone yaşam döngüsü.</summary>
+        public ZoneDirector ZoneDirector => _zoneDirector;
+
         /// <summary>Editör/prob: Update beklemeden cümle senkronu.</summary>
         public void ForceSync()
         {
@@ -200,6 +208,14 @@ namespace Dovus.Game
             _closingChainBonus = 1f;
             _lastChainStep = ChainStepResult.None;
             _lastFinisherAnnounced = string.Empty;
+            _zoneDirector = new ZoneDirector(_skills.MaxActiveZones);
+            _zoneField = FindAnyObjectByType<ZoneFieldView>();
+            if (_zoneField == null)
+            {
+                var zoneGo = new GameObject("ZoneField");
+                _zoneField = zoneGo.AddComponent<ZoneFieldView>();
+            }
+            _zoneField.EnsureRoot();
             if (_playerStatus != null)
                 _playerStatus.ModeDirector = _modeDirector;
 
@@ -259,6 +275,7 @@ namespace Dovus.Game
             TickStateBridge(worldMs);
             TickActiveMode(worldMs, dtSec);
             TickPassives(worldMs);
+            TickZones(dtSec);
         }
 
         // --- Ulti (active_modes) ---
@@ -407,6 +424,88 @@ namespace Dovus.Game
             _readout?.NoteSkill(p.Id.Replace('_', ' '), p.Element, tint);
             _debugHud?.NoteSkillBang(p.Id, p.Element);
             _passiveHud?.Sync(_passiveDirector.Active, worldMs);
+        }
+
+        // --- Zone (Bağlama 7) ---
+
+        void TickZones(float dtSec)
+        {
+            if (_zoneDirector == null)
+                return;
+
+            _zoneDirector.Tick(dtSec);
+            UpdateZoneMovement();
+            _zoneField?.Sync(_zoneDirector.ActiveZones);
+        }
+
+        /// <summary>
+        /// Movement tiplerine hafif takip: player_directed → oyuncu; follow_target → boss.
+        /// static / bilinmeyen → no-op (ZoneDirector zaten reddeder).
+        /// </summary>
+        void UpdateZoneMovement()
+        {
+            IReadOnlyList<ZoneInstance> zones = _zoneDirector.ActiveZones;
+            for (int i = 0; i < zones.Count; i++)
+            {
+                ZoneInstance z = zones[i];
+                if (string.Equals(z.Movement, ZoneMovement.PlayerDirected, StringComparison.Ordinal))
+                {
+                    if (_player == null) continue;
+                    Vector3 p = _player.position;
+                    _zoneDirector.MoveZone(z.Id, p.x, p.y, p.z);
+                }
+                else if (string.Equals(z.Movement, ZoneMovement.FollowTarget, StringComparison.Ordinal))
+                {
+                    Transform target = _boss != null ? _boss.transform : _player;
+                    if (target == null) continue;
+                    Vector3 t = target.position;
+                    _zoneDirector.SetFollowTarget(z.Id, t.x, t.y, t.z);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Skill ElementOrigin, zone_layer.zones[].element ile eşleşirse TrySpawn + görsel Sync.
+        /// Örn. Kaya → kaya_duvari (duration 10s). Radius = ManifestationTuning.ZoneDefaultRadiusM.
+        /// </summary>
+        void TrySpawnZoneForSkill(SkillResolution skill)
+        {
+            if (_zoneDirector == null || _skills == null || skill.IsEmpty)
+                return;
+
+            string origin = skill.ElementOrigin;
+            if (string.IsNullOrEmpty(origin))
+                return;
+
+            ZoneNode? matched = null;
+            for (int i = 0; i < _skills.Zones.Count; i++)
+            {
+                ZoneNode z = _skills.Zones[i];
+                if (!string.Equals(z.Element, origin, StringComparison.OrdinalIgnoreCase))
+                    continue;
+                matched = z;
+                break;
+            }
+
+            if (matched == null)
+                return;
+
+            ZoneNode zone = matched.Value;
+            Vector3 pos = _player != null ? _player.position : Vector3.zero;
+            float radius = _combat != null
+                ? _combat.Manifestation.ZoneDefaultRadiusM
+                : 3.6f;
+
+            if (!_zoneDirector.TrySpawn(
+                    zone.Element,
+                    zone.Movement,
+                    zone.DurationSec,
+                    pos.x, pos.y, pos.z,
+                    radius,
+                    out _))
+                return;
+
+            _zoneField?.Sync(_zoneDirector.ActiveZones);
         }
 
         /// <summary>
@@ -815,6 +914,7 @@ namespace Dovus.Game
             ApplyClosingStatuses(p, skill);
             ShoutSkill(skill, p.Words);
             ApplyClosingHeal(p.Closing, skill); // readout ShoutSkill'den sonra (ally +N kalsın)
+            TrySpawnZoneForSkill(skill);
             ApplyCooldown(skill, p.Words, cosmeticIfDisabled: true);
             if (!motionPlan.IsEmpty)
                 AnnotateMotion(skill, motionPlan);

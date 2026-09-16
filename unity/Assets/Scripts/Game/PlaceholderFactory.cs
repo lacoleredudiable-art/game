@@ -87,6 +87,37 @@ namespace Dovus.Game
             return CreateSpherePlaceholder($"PlaceholderImpact_{styleId}", color, position, parent);
         }
 
+        /// <summary>
+        /// Zone alanı — asset yok; element rengiyle yerde düz disk/hacim.
+        /// Alfa: ui_rules.zone_display.transparency (0.6). Collider yok (PrimitiveMesh).
+        /// </summary>
+        public static GameObject CreateZoneDisk(
+            string elementName,
+            Vector3 position,
+            float radiusM,
+            Transform parent = null,
+            float alpha = 0.6f)
+        {
+            EnsureCatalog();
+            Color color = ResolveElementColor(elementName);
+            color.a = Mathf.Clamp01(alpha);
+
+            float r = Mathf.Max(0.1f, radiusM);
+            var go = new GameObject($"PlaceholderZone_{elementName}");
+            if (parent != null)
+                go.transform.SetParent(parent, false);
+            // Yerde ince silindir hacim — StateBridgeView Mark deseni, GroundScarField yüksekliği.
+            go.transform.position = new Vector3(position.x, 0.04f, position.z);
+            go.transform.localScale = new Vector3(r * 2f, 0.06f, r * 2f);
+
+            go.AddComponent<MeshFilter>().sharedMesh = PrimitiveMesh.Get(PrimitiveType.Cylinder);
+            var rend = go.AddComponent<MeshRenderer>();
+            rend.sharedMaterial = MakeGlowMat(color);
+            rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            rend.receiveShadows = false;
+            return go;
+        }
+
         public static bool TryGetElementColor(string elementName, out Color color)
         {
             EnsureCatalog();

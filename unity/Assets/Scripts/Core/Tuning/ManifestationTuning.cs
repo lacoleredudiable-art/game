@@ -78,6 +78,12 @@ namespace Dovus.Core.Tuning
         public float ScarScaleM = 1.4f;
         public int MaxSwarmBlobs = 10;
 
+        /// <summary>
+        /// ZoneDirector.TrySpawn radius — JSON zone_layer'da RadiusM yok (Görev 7 / Bağlama 7).
+        /// Varsayılan = ClosingBangRadiusM (3.6); docs/durum.md Bilinen açıklar.
+        /// </summary>
+        public float ZoneDefaultRadiusM = 3.6f;
+
         /// <summary>Alan kopyası — düz vuruş profili gibi geçici override için.</summary>
         public ManifestationTuning Clone()
         {

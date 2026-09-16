@@ -12,11 +12,20 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (Bağlama 6 · ChainDirector Game) · **Sıradaki:**
-Bağlama 7+ (ZoneDirector / …) +
+**Son güncelleme:** 16 Eylül 2026 (Bağlama 7 · ZoneDirector Game) · **Sıradaki:**
+Bağlama 8+ (TimeEffect echo/extend_lifetime / …) +
 Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
-+ **Faz 6 bağlama** kalanı (Zone/TimeEffect/RealityEffect/Equipment/
++ **Faz 6 bağlama** kalanı (TimeEffect/RealityEffect/Equipment/
 space_layer/state machine / Presentation henüz Game'e bağlı değil)
+
+> **16 Eylül — Bağlama 7: ZoneDirector Game'e bağlı.** `ManifestationDirector`:
+> `ZoneDirector(Skills.MaxActiveZones)` + `ZoneFieldView` (GroundScarField deseni).
+> `FireClosing`'de `ElementOrigin` ↔ `zone_layer.zones[].element` (örn. Kaya→`kaya_duvari`)
+> → `TrySpawn`; `PlaceholderFactory.CreateZoneDisk` (Toprak `#877dd9`, alfa 0.6 =
+> `ui_rules.zone_display.transparency`). Radius = `ManifestationTuning.ZoneDefaultRadiusM`
+> (**3.6**, JSON'da RadiusM yok). `Tick` + soft-cap; süre bitince görsel kapanır.
+> MCP Play: Toprak×2 Commit → `Zone_1_Kaya` canlı; Tick(11) → zones=0 / live=0.
+> `dotnet test` 226 yeşil.
 
 > **16 Eylül — Bağlama 6: ChainDirector Game'e bağlı.** `ManifestationDirector`:
 > `Queue<int>` son N cast elementi (fiil = ilk rün) + `ChainDirector.RegisterCast` her
@@ -125,9 +134,8 @@ space_layer/state machine / Presentation henüz Game'e bağlı değil)
 > | `ui_rules.read_as_display.duration_ms` | JSON | **1500** | |
 > | `FeelTuning.ReadoutHoldMs` | Core | **900** | **farklı** |
 >
-> **zone_display notu (kod yok):** `ui_rules.zone_display` = `in_world`, transparency **0.6**.
-> Görev 7 `ZoneDirector` henüz Game'e bağlı değil — dünya alanı görseli Faz 6 / Zone Game
-> bağlama turunda.
+> **zone_display notu:** `ui_rules.zone_display` = `in_world`, transparency **0.6** —
+> Bağlama 7 `PlaceholderFactory.CreateZoneDisk` alfa olarak uygulandı.
 
 > **16 Eylül — Görev 4: PassiveDirector.** `Core/Combat/PassiveDirector.cs`: `SkillMotor.Passives`
 > listesini alır; `TryTrigger(dot[], worldMs)` ile `trigger_combo` birebir eşleşen pasifi açar;
@@ -557,10 +565,10 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   (burn+poison / shield+burn / stun+knockback) hâlâ StatusBoard.Tick / Applicator'da.
   `atoms_catalog` /
   `all_verbs_atoms` / `atom_kombinasyonlari` kasıtlı okunmuyor.
-- **Zone `RadiusM` JSON'da yok (Görev 7)** — `TrySpawn` çağıranı vermek zorunda; Game bağlama
-  turunda tuning/config kararı lazım.
-- **`ui_rules.zone_display` (Görev 12 notu)** — `in_world`, transparency 0.6; ZoneDirector henüz
-  Game'e bağlı değil, görsel yazılmadı (Faz 6 / Zone Game bağlama).
+- **Zone `RadiusM` JSON'da yok (Görev 7 / Bağlama 7)** — `ManifestationTuning.ZoneDefaultRadiusM=3.6`
+  (`ClosingBangRadiusM` ile aynı); JSON'a yarıçap eklenirse tuning yerine okunmalı.
+- **`ui_rules.zone_display`** — `in_world` + transparency 0.6 Bağlama 7'de uygulandı
+  (`CreateZoneDisk`). Zone gameplay etkisi (root/blok) henüz yok — yalnızca yaşam + görsel.
 - **`read_as_display.duration_ms` (1500) ≠ `FeelTuning.ReadoutHoldMs` (900)** — Görev 12'de
   not düşüldü, değiştirilmedi (sahibi otorite seçer).
 - **space_layer'da 2 effect JSON'da var, oyunda karşılığı yok (Görev 8):**
