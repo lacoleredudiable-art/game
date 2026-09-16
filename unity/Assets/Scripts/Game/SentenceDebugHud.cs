@@ -14,15 +14,17 @@ namespace Dovus.Game
 
         Text _text;
         SentenceEngine _engine;
+        SkillMotor _skills;
         PlayerVitals _vitals;
         string _note;
         float _noteUntil;
 
         public void BindVitals(PlayerVitals vitals) => _vitals = vitals;
 
-        public void Configure(SentenceEngine engine, Transform canvasRoot)
+        public void Configure(SentenceEngine engine, Transform canvasRoot, SkillMotor skills = null)
         {
             _engine = engine;
+            _skills = skills ?? SkillMotor.CreateDefault();
             var go = new GameObject("SentenceDebug");
             go.transform.SetParent(canvasRoot, false);
             // Canvas ScreenSpaceCamera'ya geçtiği için layer artık önemli: yeni GameObject
@@ -55,6 +57,13 @@ namespace Dovus.Game
         public void NoteCommit() => Note("ERKEN KAPANIŞ (merkez öder)");
 
         public void NoteBasicStrike() => Note("DÜZ VURUŞ");
+
+        public void NoteSkillBang(string title, string mechanics)
+        {
+            if (string.IsNullOrEmpty(title))
+                return;
+            Note(string.IsNullOrEmpty(mechanics) ? title : title + "  [" + mechanics + "]");
+        }
 
         public void NoteExchange(ExchangeResult result)
         {
@@ -98,16 +107,22 @@ namespace Dovus.Game
             SentenceState s = _engine.State;
             if (s.Phase == SentencePhase.Building && s.Words.Count > 0)
             {
+                string skill = SkillLine(s);
+                if (!string.IsNullOrEmpty(skill))
+                    sb.Append(skill).Append('\n');
                 sb.Append("çizim: ");
                 AppendWords(sb, s);
                 sb.Append("\npencere: ").Append(s.RemainingWindowMs.ToString("0")).Append(" ms");
             }
             else if (s.Phase == SentencePhase.Recovering && s.Words.Count > 0)
             {
+                string skill = SkillLine(s);
+                if (!string.IsNullOrEmpty(skill))
+                    sb.Append(skill).Append('\n');
                 sb.Append("kapanış: ");
                 AppendWords(sb, s);
                 if (s.LastClosing.HasValue)
-                    sb.Append(" → ").Append(s.LastClosing.Value.Type);
+                    sb.Append(" → ").Append(Name(s.LastClosing.Value.Type));
                 // §5: toparlanma bir poz değil, kilitli süre. Kesme becerisi burada okunur.
                 sb.Append("\nkilit: ").Append(s.RemainingRecoveryMs.ToString("0")).Append(" ms");
             }
@@ -117,7 +132,7 @@ namespace Dovus.Game
             }
             else
             {
-                sb.Append("beşgen: sürükle · merkez: vur · disk: dodge");
+                sb.Append("altıgen: sürükle · merkez: vur · disk: dodge");
             }
 
             if (_vitals != null)
@@ -151,14 +166,23 @@ namespace Dovus.Game
             }
         }
 
-        static string Name(Rune r) => r switch
+        static string Name(Rune r) => RuneInfo.DisplayName(r);
+
+        string SkillLine(SentenceState s)
         {
-            Rune.Igne => "İĞNE",
-            Rune.Suru => "SÜRÜ",
-            Rune.Kabuk => "KABUK",
-            Rune.Zehir => "ZEHİR",
-            Rune.Sarsinti => "SARSINTI",
-            _ => "?"
-        };
+            if (_skills == null || s.Words.Count == 0)
+                return null;
+            SkillResolution r = _skills.ResolveWords(s.Words);
+            if (r.IsEmpty)
+                return null;
+            string line = r.DisplayName;
+            if (!string.IsNullOrEmpty(r.VerbName))
+                line += "  ·  " + r.VerbName;
+            if (!string.IsNullOrEmpty(r.AdjectiveName) && s.Words.Count >= 1)
+                line += " / " + r.AdjectiveName;
+            if (r.Mechanics != null && r.Mechanics.Length > 0)
+                line += "  [" + string.Join(",", r.Mechanics) + "]";
+            return line;
+        }
     }
 }

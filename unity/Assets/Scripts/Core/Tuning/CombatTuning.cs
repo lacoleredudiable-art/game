@@ -11,12 +11,15 @@ namespace Dovus.Core.Tuning
         public GradeTuning Grade = new GradeTuning();
         public FeelTuning Feel = new FeelTuning();
         public ManifestationTuning Manifestation = new ManifestationTuning();
+        public StatusTuning Status = new StatusTuning();
+        public SkillMotionTuning SkillMotion = new SkillMotionTuning();
 
         /// <summary>
-        /// §5: toplam etki × bu katsayı = boss canından düşen. Başlangıç 1'e 1
-        /// (dovus-sistemi.md "Etkinin hasara çevrilmesi", 23 Ağustos kararı).
+        /// §5: toplam etki × bu katsayı = boss canından düşen (commit).
+        /// His retune: 1.0 → 3.5 — bar okunur; ~5×4-rün strike ile düşer (Karadul).
+        /// Skill ölçeği ayrıca ClosingDamageMath (fiil base_damage).
         /// </summary>
-        public float ClosingDamagePerEffect = 1.0f;
+        public float ClosingDamagePerEffect = 3.5f;
 
         /// <summary>
         /// T10: panelin "Sıfırla" ve JSON-yükleme yolu. Alt nesnelerin KİMLİĞİ korunur —
@@ -32,6 +35,8 @@ namespace Dovus.Core.Tuning
             Boss.CopyFrom(other.Boss);
             Grade.CopyFrom(other.Grade);
             Feel.CopyFrom(other.Feel);
+            Status.CopyFrom(other.Status);
+            SkillMotion.CopyFrom(other.SkillMotion);
             ClosingDamagePerEffect = other.ClosingDamagePerEffect;
         }
 

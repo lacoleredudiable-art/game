@@ -9,6 +9,7 @@
 **/[Mm]emoryCaptures/
 **/.utmp/
 **/[Rr]ecordings/
+**/[Aa]ssets/_Recovery/
 
 # Asset Store tools
 **/[Aa]ssets/AssetStoreTools*
@@ -55,3 +56,8 @@ unity-import.log
 
 # dotnet test çıktıları (tools/CoreTests)
 tools/CoreTests/bin/
+
+# Ham asset indirmeleri (Blend/OBJ/zip kaynak dosyaları) — Unity'nin gerçekten kullandığı
+# içe aktarılmış hâli unity/Assets/Art/ altında, versiyonlanır. Bu klasör yalnızca
+# referans/yeniden-export kaynağı, ~100 MB+ (16 Eylül, git geçmişini şişirmesin).
+tools/vendor/

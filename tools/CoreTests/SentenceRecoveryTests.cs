@@ -30,7 +30,7 @@ public class SentenceRecoveryTests
         Assert.That(done.PaidReward, Is.True, "merkez öder, dodge batırır (§5)");
         Assert.That(done.Closing!.Value.DotCount, Is.EqualTo(2));
         Assert.That(done.Closing!.Value.TotalEffect, Is.EqualTo(tuning.StepForDots(2).TotalEffect));
-        Assert.That(done.Closing!.Value.Type, Is.EqualTo(Rune.Igne), "kapanışın türü son rün");
+        Assert.That(done.Closing!.Value.Type, Is.EqualTo(Rune.Ates), "kapanışın türü son rün");
     }
 
     [Test]
@@ -120,7 +120,7 @@ public class SentenceRecoveryTests
 
         Assert.That(engine.State.Phase, Is.EqualTo(SentencePhase.Building));
         Assert.That(engine.State.RemainingRecoveryMs, Is.Zero, "köşeye basmak kilidi keser (§5)");
-        Assert.That(engine.State.Verb, Is.EqualTo(Rune.Suru));
+        Assert.That(engine.State.Verb, Is.EqualTo(Rune.Su));
         Assert.That(engine.State.RemainingWindowMs, Is.EqualTo(tuning.CancelWindowForDots(1)));
     }
 
@@ -145,7 +145,7 @@ public class SentenceRecoveryTests
         ClosingHit strike = engine.History[1].Closing!.Value;
         Assert.That(strike.DotCount, Is.EqualTo(1));
         Assert.That(strike.TotalEffect, Is.EqualTo(tuning.StepForDots(1).TotalEffect));
-        Assert.That(strike.Type, Is.EqualTo(Rune.Sarsinti));
+        Assert.That(strike.Type, Is.EqualTo(Rune.Aydinlik));
         Assert.That(engine.State.Phase, Is.EqualTo(SentencePhase.Recovering));
         Assert.That(
             engine.State.RemainingRecoveryMs,

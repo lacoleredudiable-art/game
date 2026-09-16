@@ -93,13 +93,13 @@ public class CombatTuningDefaultsTests
             Assert.That(t.Boss.GenisWindupMs, Is.EqualTo(640));
             Assert.That(t.Boss.GenisRadiusM, Is.EqualTo(8.0f));
             Assert.That(t.Boss.MaxSameVariantStreak, Is.EqualTo(2));
-            Assert.That(t.Boss.Damage, Is.EqualTo(22));
+            Assert.That(t.Boss.Damage, Is.EqualTo(0));
             Assert.That(t.Boss.IdleMinMs, Is.EqualTo(700));
             Assert.That(t.Boss.IdleMaxMs, Is.EqualTo(1500));
             Assert.That(t.Boss.ApproachSpeedMps, Is.EqualTo(2.2f));
             Assert.That(t.Boss.RespawnMaxSec, Is.EqualTo(2.0f));
             Assert.That(t.Boss.MaxHp, Is.EqualTo(120f));
-            Assert.That(t.ClosingDamagePerEffect, Is.EqualTo(1.0f));
+            Assert.That(t.ClosingDamagePerEffect, Is.EqualTo(3.5f));
         });
 
         // §8 His katmanı başlangıç sayıları

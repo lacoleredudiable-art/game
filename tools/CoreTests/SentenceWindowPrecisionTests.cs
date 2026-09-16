@@ -25,7 +25,7 @@ public class SentenceWindowPrecisionTests
         Assert.That(engine.History, Has.Count.EqualTo(1), "pencere Tick olmadan da dolmalı");
         Assert.That(engine.History[0].Words, Has.Count.EqualTo(1));
         Assert.That(engine.History[0].Closing, Is.Not.Null);
-        Assert.That(engine.State.Verb, Is.EqualTo(Rune.Suru), "geç dokunuş yeni fiil");
+        Assert.That(engine.State.Verb, Is.EqualTo(Rune.Su), "geç dokunuş yeni fiil");
         Assert.That(engine.State.DotCount, Is.EqualTo(1));
     }
 

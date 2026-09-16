@@ -29,7 +29,8 @@ public class SkillMotorTests
         Assert.That(m.ElementCount, Is.EqualTo(42));
         Assert.That(m.CoreCount, Is.EqualTo(6));
         Assert.That(m.VerbCount, Is.EqualTo(42));
-        Assert.That(m.AdjectiveCount, Is.EqualTo(42));
+        // v5.3 (16 Eylül): kaynakta 41 benzersiz sıfat var (42 değil) — veri gerçeği, uydurma değil.
+        Assert.That(m.AdjectiveCount, Is.EqualTo(41));
         Assert.That(m.CoreName(1), Is.EqualTo("Ateş"));
         Assert.That(m.CoreName(3), Is.EqualTo("Hava"));
         Assert.That(m.CoreName(6), Is.EqualTo("Karanlık"));
@@ -38,8 +39,9 @@ public class SkillMotorTests
     [Test]
     public void Single_Core_IsRootSkill_NotCompoundCard()
     {
+        // v5.3: kök elementlere de skill_name geldi ("Ateş" → "Ateş Dokunuşu").
         SkillResolution r = LoadFull().Resolve(new[] { 1 });
-        Assert.That(r.DisplayName, Is.EqualTo("Ateş"));
+        Assert.That(r.DisplayName, Is.EqualTo("Ateş Dokunuşu"));
         Assert.That(r.VerbId, Is.EqualTo("saldiri"));
         Assert.That(r.AdjectiveId, Is.EqualTo("yogunlastirma"));
         Assert.That(r.SkillId, Is.EqualTo("core:1"));
@@ -48,9 +50,11 @@ public class SkillMotorTests
     [Test]
     public void Pair_AtesSu_IsBuharPerdesi_WithBlind()
     {
+        // v5.3: 1-2'nin skill_name'i "Buhar Perdesi"'den "Yayılan Ateş"e değişti (element adı
+        // "Buhar" aynı kaldı).
         SkillResolution r = LoadFull().Resolve(new[] { 1, 2 });
         Assert.That(r.ElementName, Is.EqualTo("Buhar"));
-        Assert.That(r.DisplayName, Is.EqualTo("Buhar Perdesi"));
+        Assert.That(r.DisplayName, Is.EqualTo("Yayılan Ateş"));
         Assert.That(r.VerbId, Is.EqualTo("gorus_kapatma"));
         Assert.That(r.Mechanics, Does.Contain("blind"));
         Assert.That(r.LengthRole, Is.EqualTo("Temel"));
@@ -59,10 +63,12 @@ public class SkillMotorTests
     [Test]
     public void Pair_AtesAtes_IsAtesTopu_SkillCard()
     {
+        // v5.3: skill_name "Ateş Topu" olarak kaldı, ama skill_id alanı v5.3'te hiç yok —
+        // SkillMotor'un "pair:" varsayılanına düşüyor (bug değil, kaynakta alan yok).
         SkillResolution r = LoadFull().Resolve(new[] { 1, 1 });
         Assert.That(r.ElementName, Is.EqualTo("Alev"));
         Assert.That(r.DisplayName, Is.EqualTo("Ateş Topu"));
-        Assert.That(r.SkillId, Is.EqualTo("ates_topu"));
+        Assert.That(r.SkillId, Is.EqualTo("pair:1-1"));
         Assert.That(r.VerbId, Is.EqualTo("kritik_vurus"));
         Assert.That(r.AdjectiveId, Is.EqualTo("keskinlik"));
     }
@@ -129,43 +135,45 @@ public class SkillMotorTests
     // --- v4.2.2 / motor_parse_extension adım 1: yeni alanlar ---
 
     [Test]
-    public void Core_Su_ReadsCooldownResourceAndSpecial()
+    public void Core_Su_ReadsCooldownAndResource()
     {
-        // Su kökü: verb_id=iyilestirme — animation_type/target_mode/base_cooldown_sec zaten
-        // JSON'daydı ama motor okumuyordu; base_resource_cost + special bu turda eklendi.
+        // Su kökü: verb_id=iyilestirme — animation_type/target_mode/base_cooldown_sec/
+        // base_resource_cost hâlâ okunuyor. v5.3: "special" alanı verb'lerden tamamen
+        // kaldırıldı (heal_value vb. artık JSON'da yok — gameplay hiç kullanmıyordu, kayıp yok).
         SkillResolution r = LoadFull().Resolve(new[] { 2 });
         Assert.That(r.VerbId, Is.EqualTo("iyilestirme"));
         Assert.That(r.AnimationType, Is.EqualTo("cast_self"));
         Assert.That(r.TargetMode, Is.EqualTo("self_or_ally"));
         Assert.That(r.BaseCooldownSec, Is.EqualTo(6f).Within(0.01f));
         Assert.That(r.BaseResourceCost, Is.EqualTo(12f).Within(0.01f));
-        Assert.That(r.Special["heal_value"].AsFloat(), Is.EqualTo(30f).Within(0.01f));
-        Assert.That(r.Special["regen_per_sec"].AsFloat(), Is.EqualTo(3f).Within(0.01f));
+        Assert.That(r.Special.IsNull, Is.True);
     }
 
     [Test]
-    public void Compound_Camur_ReadsZoneEffect()
+    public void Compound_Camur_ZoneEffectMovedToManipulationLayers()
     {
-        // 2-4 Çamur — verb_id=zemin_kontrolu, zone_effect ground_line/slow/root_after_3_sec.
+        // 2-4 Çamur — v5.3'te verb.zone_effect kaldırıldı; zone verisi artık ayrı bir bölümde:
+        // manipulation_layers.zone_layer.zones[].element == "Çamur" (SkillMotor henüz bunu
+        // okumuyor — bilinen açık, docs/durum.md). Burada sadece verb/mekanik hâlâ doğru
+        // çözülüyor mu diye bakıyoruz.
         SkillResolution r = LoadFull().Resolve(new[] { 2, 4 });
         Assert.That(r.DisplayName, Is.EqualTo("Çamur Şeridi"));
-        Assert.That(r.ZoneEffect["type"].AsString(), Is.EqualTo("ground_line"));
-        Assert.That(r.ZoneEffect["duration_sec"].AsFloat(), Is.EqualTo(8f).Within(0.01f));
-        Assert.That(r.ZoneEffect["effects"]["slow"].AsFloat(), Is.EqualTo(0.4f).Within(0.01f));
-        Assert.That(r.ZoneEffect["effects"]["root_after_3_sec"].AsBool(), Is.True);
+        Assert.That(r.VerbId, Is.EqualTo("zemin_kontrolu"));
+        Assert.That(r.Mechanics, Does.Contain("slow"));
+        Assert.That(r.Mechanics, Does.Contain("root"));
+        Assert.That(r.ZoneEffect.IsNull, Is.True);
     }
 
     [Test]
-    public void Compound_Murekkep_ReadsTargetBehaviors()
+    public void Compound_Murekkep_TargetBehaviorsMissingInV53()
     {
-        // 2-6 Mürekkep — verb_id=kaynak_transferi, selective target_mode + target_behaviors.
+        // 2-6 Mürekkep — v5.3'te target_mode="selective" ama target_behaviors JSON'da YOK.
+        // target_modes.selective açıkça "target_behaviors gerekir" diyor — bu v5.3'ün kendi
+        // kuralına aykırı gerçek bir veri açığı (uydurmadım, boş kalıyor).
         SkillResolution r = LoadFull().Resolve(new[] { 2, 6 });
         Assert.That(r.VerbId, Is.EqualTo("kaynak_transferi"));
         Assert.That(r.TargetMode, Is.EqualTo("selective"));
-        Assert.That(r.TargetBehaviors.ContainsKey("self"), Is.True);
-        Assert.That(r.TargetBehaviors.ContainsKey("enemy"), Is.True);
-        Assert.That(r.TargetBehaviors.ContainsKey("ally"), Is.True);
-        Assert.That(r.TargetBehaviors["self"], Is.Not.Empty);
+        Assert.That(r.TargetBehaviors.Count, Is.EqualTo(0));
     }
 
     [Test]
@@ -181,19 +189,20 @@ public class SkillMotorTests
     }
 
     [Test]
-    public void KnownConflicts_StayLockedNotOverwritten()
+    public void V53_RevertedZehirAndPus_NowHaveRealResourceCost()
     {
-        // 2-5 Zehir (aktif_zehirlenme) ve 3-2 Pus (kisisel_isinlanma): v5.2 kaynağı bunları
-        // İksir/tam_arinma ve hız+görünmezlik'e geri almak istiyordu; sahibi kararı: kilitli
-        // hâli koru. base_resource_cost bilerek eklenmedi (bkz. docs/durum.md).
+        // 16 Eylül, 3. tur: sahibi "v5.3 otorite, geri al" dedi — 2-5 tekrar İksir/tam_arinma,
+        // 3-2 tekrar Pus/hiz_gorunmezlik oldu (önceki turun "kilitli kalsın" kararı BİLEREK
+        // geri alındı). v5.3 ikisine de gerçek base_resource_cost veriyor (eski kilitli
+        // halde 0'dı — bilinen açıktı).
         var motor = LoadFull();
-        SkillResolution zehir = motor.Resolve(new[] { 2, 5 });
-        Assert.That(zehir.VerbId, Is.EqualTo("aktif_zehirlenme"));
-        Assert.That(zehir.BaseResourceCost, Is.EqualTo(0f));
+        SkillResolution iksir = motor.Resolve(new[] { 2, 5 });
+        Assert.That(iksir.VerbId, Is.EqualTo("tam_arinma"));
+        Assert.That(iksir.BaseResourceCost, Is.EqualTo(20f).Within(0.01f));
 
         SkillResolution pus = motor.Resolve(new[] { 3, 2 });
-        Assert.That(pus.VerbId, Is.EqualTo("kisisel_isinlanma"));
-        Assert.That(pus.BaseResourceCost, Is.EqualTo(0f));
+        Assert.That(pus.VerbId, Is.EqualTo("hiz_gorunmezlik"));
+        Assert.That(pus.BaseResourceCost, Is.EqualTo(15f).Within(0.01f));
     }
 }
 

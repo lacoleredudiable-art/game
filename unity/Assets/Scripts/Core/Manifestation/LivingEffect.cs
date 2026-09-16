@@ -89,17 +89,17 @@ namespace Dovus.Core.Manifestation
 
         public float TipDistance => _verb switch
         {
-            Rune.Sarsinti => MathF.Min(_travel, _tuning.WaveMaxRadiusM),
-            Rune.Igne => MathF.Min(_travel, _tuning.NeedleMaxRangeM),
-            Rune.Suru => MathF.Min(_travel, _tuning.SwarmMaxRadiusM),
+            Rune.Aydinlik => MathF.Min(_travel, _tuning.WaveMaxRadiusM),
+            Rune.Ates => MathF.Min(_travel, _tuning.NeedleMaxRangeM),
+            Rune.Su => MathF.Min(_travel, _tuning.SwarmMaxRadiusM),
             _ => MathF.Min(_travel, _tuning.WaveMaxRadiusM)
         };
 
         public float MaxRange => _verb switch
         {
-            Rune.Sarsinti => _tuning.WaveMaxRadiusM,
-            Rune.Igne => _tuning.NeedleMaxRangeM,
-            Rune.Suru => _tuning.SwarmMaxRadiusM,
+            Rune.Aydinlik => _tuning.WaveMaxRadiusM,
+            Rune.Ates => _tuning.NeedleMaxRangeM,
+            Rune.Su => _tuning.SwarmMaxRadiusM,
             _ => _tuning.WaveMaxRadiusM
         };
 
@@ -187,7 +187,7 @@ namespace Dovus.Core.Manifestation
             float dx = TipX - bossX;
             float dz = TipZ - bossZ;
             // SARSINTI halka/hat: mesafe halka yarıçapına yakınsa isabet
-            if (_verb == Rune.Sarsinti)
+            if (_verb == Rune.Aydinlik)
             {
                 float bx = bossX - _originX;
                 float bz = bossZ - _originZ;
@@ -221,7 +221,7 @@ namespace Dovus.Core.Manifestation
         {
             // T14 İĞNE: Zenitsu küçük hâli — gerilmede yol alma, sonra 2–3 karelik gidiş,
             // menzilde sert duruş (TipDistance zaten MaxRange'de kesilir).
-            if (_verb == Rune.Igne)
+            if (_verb == Rune.Ates)
             {
                 if (_ageSec < _tuning.NeedleWindupSec)
                     return;
@@ -236,8 +236,8 @@ namespace Dovus.Core.Manifestation
 
             float speed = _verb switch
             {
-                Rune.Sarsinti => _tuning.WaveSpeedMps,
-                Rune.Suru => _tuning.SwarmSpeedMps,
+                Rune.Aydinlik => _tuning.WaveSpeedMps,
+                Rune.Su => _tuning.SwarmSpeedMps,
                 _ => _tuning.WaveSpeedMps
             };
             // Pierce hızlandırır (daha derin atılış hissi) — sayısal hasar değil silüet tempo

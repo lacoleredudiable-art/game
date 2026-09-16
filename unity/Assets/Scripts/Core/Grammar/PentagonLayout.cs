@@ -1,12 +1,12 @@
 namespace Dovus.Core.Grammar
 {
     /// <summary>
-    /// Beşgen komşuluk: her noktanın 2 komşusu (kısa sıçrama) ve 2 uzağı (uzun sıçrama).
-    /// Saat yönünde 1–2–3–4–5; komşu = ±1 mod 5, uzak = ±2 mod 5. Elle dizi tablosu yok.
+    /// Altıgen komşuluk: her noktanın 2 komşusu (kısa sıçrama); uzak = ±2 (ve ±3 uzun).
+    /// Saat yönünde 1–6; komşu = ±1 mod 6. Elle dizi tablosu yok.
     /// </summary>
     public static class PentagonLayout
     {
-        public const int DotCount = 5;
+        public const int DotCount = 6;
 
         public static bool IsValidDot(int dot) => dot is >= 1 and <= DotCount;
 

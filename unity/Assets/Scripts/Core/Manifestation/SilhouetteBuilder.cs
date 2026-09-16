@@ -31,12 +31,13 @@ namespace Dovus.Core.Manifestation
 
         public static EffectSilhouette VerbSeed(Rune verb) => verb switch
         {
-            Rune.Sarsinti => new EffectSilhouette(focus: 0f, pierce: 0f, spread: 0f, lift: 0.25f),
-            Rune.Igne => new EffectSilhouette(focus: 0.82f, pierce: 0.7f, spread: 0f, lift: 0f),
-            Rune.Suru => new EffectSilhouette(focus: 0.15f, pierce: 0f, spread: 0.55f, lift: 0f),
-            // Prototip seti dışı fiiller: nötr tohum (T7 kapsamı değil; gramer yine üretebilir)
-            Rune.Kabuk => new EffectSilhouette(focus: 0.3f, pierce: 0f, spread: 0f, lift: 0f),
-            Rune.Zehir => new EffectSilhouette(focus: 0.2f, pierce: 0f, spread: 0.25f, lift: 0f),
+            // element-sistemi çekirdek fiilleri
+            Rune.Ates => new EffectSilhouette(focus: 0.82f, pierce: 0.7f, spread: 0f, lift: 0f),      // Ateş saldırı
+            Rune.Su => new EffectSilhouette(focus: 0.25f, pierce: 0f, spread: 0.35f, lift: 0.05f),   // Su heal
+            Rune.Hava => new EffectSilhouette(focus: 0.15f, pierce: 0.2f, spread: 0.45f, lift: 0f),  // Hava hareket
+            Rune.Toprak => new EffectSilhouette(focus: 0.35f, pierce: 0f, spread: 0f, lift: 0.25f),    // Toprak savunma
+            Rune.Aydinlik => new EffectSilhouette(focus: 0.88f, pierce: 0.4f, spread: 0f, lift: 0f), // Aydınlık arındırma
+            Rune.Karanlik => new EffectSilhouette(focus: 0.2f, pierce: 0f, spread: 0.5f, lift: 0f),    // Karanlık gizlilik
             _ => default
         };
 
@@ -52,26 +53,36 @@ namespace Dovus.Core.Manifestation
 
             switch (adjective)
             {
-                case Rune.Igne:
+                case Rune.Ates:
+                    // Ateş — yoğunlaştırma
                     f += tuning.FocusPerIgne;
                     p += tuning.PiercePerIgne;
                     break;
-                case Rune.Suru:
+                case Rune.Su:
+                    // Su — yayma
                     s += tuning.SpreadPerSuru;
-                    // Halka ise hafif aç; hat ise hat boyunca çoğalt (odak korunur)
                     if (f < tuning.SuruFocusReduceThreshold)
                         f -= tuning.SuruFocusReduceAmount;
                     break;
-                case Rune.Sarsinti:
-                    l += tuning.LiftPerSarsinti;
+                case Rune.Hava:
+                    // Hava — taşıma
+                    p += tuning.PiercePerIgne * 0.4f;
+                    s += tuning.SpreadPerSuru * 0.5f;
                     break;
-                case Rune.Kabuk:
-                    // Tut/katılaştır — yayılmayı keser, hatı kalınlaştırır (sayı değil silüet)
+                case Rune.Toprak:
+                    // Toprak — sabitleme
                     s *= tuning.KabukSpreadMultiplier;
                     f += tuning.KabukFocusAdd;
+                    l += tuning.LiftPerSarsinti;
                     break;
-                case Rune.Zehir:
-                    s += tuning.ZehirSpreadAdd;
+                case Rune.Aydinlik:
+                    // Aydınlık — saflaştırma / odak
+                    f += tuning.FocusPerIgne;
+                    p += tuning.PiercePerIgne * 0.35f;
+                    break;
+                case Rune.Karanlik:
+                    // Karanlık — örtme
+                    s += tuning.SpreadPerSuru * 0.75f;
                     break;
             }
 

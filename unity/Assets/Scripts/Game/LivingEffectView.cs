@@ -29,6 +29,9 @@ namespace Dovus.Game
         bool _scarred;
         bool _basicStrike;
         float _windowRemaining01 = 1f;
+        bool _hasSkillTint;
+        Color _skillLine = Color.cyan;
+        Color _skillBlob = Color.magenta;
 
         public LivingEffect Logic => _logic;
         public bool IsBasicStrike => _basicStrike;
@@ -50,8 +53,23 @@ namespace Dovus.Game
             _tuning = tuning;
             _colors = colors;
             _basicStrike = basicStrike;
+            _hasSkillTint = false;
             BuildVisuals();
             SyncVisual(1f);
+        }
+
+        /// <summary>SkillMotor aile rengi — şekil aynı kalsa bile iş ayrımı okunur.</summary>
+        public void SetSkillTint(Color line, Color blob)
+        {
+            _hasSkillTint = true;
+            _skillLine = line;
+            _skillBlob = blob;
+            if (_lineMat != null)
+                SetMatColor(_lineMat, line);
+            if (_blobMat != null)
+                SetMatColor(_blobMat, blob);
+            if (_ghostMat != null)
+                SetMatColor(_ghostMat, line);
         }
 
         /// <summary>
@@ -105,7 +123,8 @@ namespace Dovus.Game
             _blobs = new Transform[n];
             for (int i = 0; i < n; i++)
             {
-                var s = CreateMeshObject("Blob" + i, PrimitiveType.Sphere);
+                // Ezilmiş küre = enerji damlası (eski sert top sürü değil).
+                var s = CreateMeshObject("Wisp" + i, PrimitiveType.Sphere);
                 s.GetComponent<Renderer>().sharedMaterial = _blobMat;
                 s.SetActive(false);
                 _blobs[i] = s.transform;
@@ -124,6 +143,55 @@ namespace Dovus.Game
                 g.SetActive(false);
                 _needleGhosts[i] = g.transform;
             }
+
+            EnsureBangBurst();
+        }
+
+        ParticleSystem _bangPs;
+
+        void EnsureBangBurst()
+        {
+            if (_bangPs != null)
+                return;
+            var go = new GameObject("BangBurst");
+            go.transform.SetParent(transform, false);
+            _bangPs = go.AddComponent<ParticleSystem>();
+            var main = _bangPs.main;
+            main.loop = false;
+            main.playOnAwake = false;
+            main.duration = 0.35f;
+            main.startLifetime = 0.35f;
+            main.startSpeed = 3.5f;
+            main.startSize = 0.22f;
+            main.maxParticles = 36;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            var em = _bangPs.emission;
+            em.rateOverTime = 0f;
+            em.SetBursts(new[] { new ParticleSystem.Burst(0f, 18) });
+            var sh = _bangPs.shape;
+            sh.shapeType = ParticleSystemShapeType.Sphere;
+            sh.radius = 0.15f;
+            var col = _bangPs.colorOverLifetime;
+            col.enabled = true;
+            var grad = new Gradient();
+            grad.SetKeys(
+                new[]
+                {
+                    new GradientColorKey(Color.white, 0f),
+                    new GradientColorKey(_colors != null ? _colors.InkCyan : Color.cyan, 1f)
+                },
+                new[]
+                {
+                    new GradientAlphaKey(1f, 0f),
+                    new GradientAlphaKey(0f, 1f)
+                });
+            col.color = grad;
+            var pr = go.GetComponent<ParticleSystemRenderer>();
+            pr.renderMode = ParticleSystemRenderMode.Billboard;
+            var shader = Shader.Find("Universal Render Pipeline/Particles/Unlit")
+                         ?? Shader.Find("Sprites/Default");
+            if (shader != null)
+                pr.sharedMaterial = new Material(shader);
         }
 
         /// <summary>
@@ -161,11 +229,11 @@ namespace Dovus.Game
             float wave = 0.5f + 0.5f * Mathf.Sin(_logic.AgeSec * hz * Mathf.PI * 2f);
             alpha = Mathf.Clamp01(alpha * (1f - _colors.WindowCuePulseAmp * place * wave));
 
-            Color cyan = _colors.InkCyan;
+            Color cyan = _hasSkillTint ? _skillLine : _colors.InkCyan;
             cyan.a = alpha;
-            Color purple = _colors.InkPurple;
+            Color purple = _hasSkillTint ? _skillBlob : _colors.InkPurple;
             purple.a = alpha;
-            SetMatColor(_lineMat, Color.Lerp(cyan, purple, 0.35f + 0.4f * s.Spread));
+            SetMatColor(_lineMat, Color.Lerp(cyan, purple, _hasSkillTint ? 0.2f : 0.35f + 0.4f * s.Spread));
             SetMatColor(_blobMat, purple);
 
             Color ghost = cyan;
@@ -197,7 +265,7 @@ namespace Dovus.Game
 
         float EffectHeight(EffectSilhouette s, float travel01)
         {
-            if (_logic.Verb == Rune.Sarsinti)
+            if (_logic.Verb == Rune.Toprak)
             {
                 // Aşağıdan yukarı: genişlerken yükselir (kütle / yerden çıkış).
                 float peak = _tuning.WaveRiseHeightM * (0.55f + 0.9f * s.Lift);
@@ -239,7 +307,7 @@ namespace Dovus.Game
 
         void DrawWave(Vector3 origin, Vector3 dir, float radius, EffectSilhouette s, float y)
         {
-            if (_logic.Verb != Rune.Sarsinti && s.Focus < _colors.EffectShowMinFocus && _logic.Verb != Rune.Suru)
+            if (_logic.Verb != Rune.Toprak && s.Focus < _colors.EffectShowMinFocus && _logic.Verb != Rune.Hava && _logic.Verb != Rune.Karanlik)
             {
                 _line.positionCount = 0;
                 _lineBaseWidth = _colors.EffectLineWidthDefaultM;
@@ -247,7 +315,7 @@ namespace Dovus.Game
             }
 
             // İĞNE fiilinde ana gövde iğne; dalga çizgisi yok
-            if (_logic.Verb == Rune.Igne && s.Spread < _colors.EffectIgneShowMinSpread)
+            if (_logic.Verb == Rune.Ates && s.Spread < _colors.EffectIgneShowMinSpread)
             {
                 _line.positionCount = 0;
                 _lineBaseWidth = _colors.EffectLineWidthDefaultM;
@@ -255,7 +323,7 @@ namespace Dovus.Game
             }
 
             // SÜRÜ: cephe çizgisi yok — dağınık bulut blobs ile okunur.
-            if (_logic.Verb == Rune.Suru && s.Focus < _colors.EffectFocusSwarmAlongLineMin)
+            if ((_logic.Verb == Rune.Hava || _logic.Verb == Rune.Karanlik) && s.Focus < _colors.EffectFocusSwarmAlongLineMin)
             {
                 _line.positionCount = 0;
                 _lineBaseWidth = _colors.EffectLineWidthDefaultM;
@@ -306,7 +374,7 @@ namespace Dovus.Game
                 baseWidth = Mathf.Lerp(_colors.EffectLineWidthWideM, _colors.EffectLineWidthNarrowM, s.Pierce);
             }
 
-            if (_logic.Verb == Rune.Sarsinti)
+            if (_logic.Verb == Rune.Toprak)
             {
                 baseWidth = Mathf.Lerp(_colors.EffectSarsintiWidthWideM, _colors.EffectSarsintiWidthNarrowM, focus);
                 // Kütle: geniş halka daha kalın okunur.
@@ -321,7 +389,8 @@ namespace Dovus.Game
 
         void DrawNeedle(Vector3 origin, Vector3 dir, float dist, EffectSilhouette s, float travel01)
         {
-            bool show = _logic.Verb == Rune.Igne || s.Pierce > _colors.EffectPierceNeedleShowMin;
+            bool show = _logic.Verb == Rune.Ates || _logic.Verb == Rune.Aydinlik
+                || s.Pierce > _colors.EffectPierceNeedleShowMin;
             if (!show || _needle == null)
             {
                 if (_needle != null) _needle.gameObject.SetActive(false);
@@ -333,7 +402,7 @@ namespace Dovus.Game
             float thick = Mathf.Lerp(_colors.EffectNeedleThickWideM, _colors.EffectNeedleThickNarrowM, s.Pierce);
             float len = _colors.EffectNeedleLenBaseM + _colors.EffectNeedleLenPerPierceM * s.Pierce;
 
-            if (_logic.Verb == Rune.Igne)
+            if (_logic.Verb == Rune.Ates || _logic.Verb == Rune.Aydinlik)
             {
                 DrawIgneZenitsu(origin, dir, dist, thick, len, travel01);
                 return;
@@ -416,7 +485,7 @@ namespace Dovus.Game
         void DrawSwarm(Vector3 origin, Vector3 dir, float dist, EffectSilhouette s)
         {
             int count;
-            if (_logic.Verb == Rune.Suru)
+            if (_logic.Verb == Rune.Hava || _logic.Verb == Rune.Karanlik)
             {
                 // Fiil SÜRÜ: her zaman dağınık bulut — sıfır yayılmada bile birkaç gövde.
                 float minB = _colors.EffectSwarmMinBlobs;
@@ -444,7 +513,7 @@ namespace Dovus.Game
 
                 // Kademeli varış: gövdeler aynı anda değil sırayla görünür.
                 float appearAt = i * stagger;
-                if (_logic.Verb == Rune.Suru && _logic.AgeSec < appearAt)
+                if ((_logic.Verb == Rune.Hava || _logic.Verb == Rune.Karanlik) && _logic.AgeSec < appearAt)
                 {
                     _blobs[i].gameObject.SetActive(false);
                     continue;
@@ -453,7 +522,7 @@ namespace Dovus.Game
                 _blobs[i].gameObject.SetActive(true);
                 float localAge = Mathf.Max(0f, _logic.AgeSec - appearAt);
                 float reach = dist;
-                if (_logic.Verb == Rune.Suru && stagger > 1e-4f)
+                if ((_logic.Verb == Rune.Hava || _logic.Verb == Rune.Karanlik) && stagger > 1e-4f)
                 {
                     // Her gövde kendi gecikmesiyle uca yetişir — cephe değil bulut.
                     float catchUp = Mathf.Clamp01(localAge / (stagger * count + 0.15f));
@@ -470,7 +539,7 @@ namespace Dovus.Game
                              * (0.4f + s.Spread);
 
                 Vector3 p;
-                if (s.Focus > _colors.EffectFocusSwarmAlongLineMin || _logic.Verb == Rune.Igne)
+                if (s.Focus > _colors.EffectFocusSwarmAlongLineMin || _logic.Verb == Rune.Ates)
                 {
                     p = origin + dir * along + right * (side * (1f - s.Focus * 0.7f) + jx * 0.35f)
                         + dir * jz * 0.2f;
@@ -484,12 +553,12 @@ namespace Dovus.Game
                         + right * jx * 0.5f;
                 }
 
-                p.y = origin.y + 0.25f + 0.45f * s.Lift * Mathf.Abs(Mathf.Sin(localAge * 5.5f + i));
+                p.y = origin.y + 0.18f + 0.35f * s.Lift * Mathf.Abs(Mathf.Sin(localAge * 5.5f + i));
                 _blobs[i].position = p;
                 float sc = _colors.EffectBlobScaleBaseM + _colors.EffectBlobScalePerSpreadM * s.Spread;
-                // Hafif boyut çeşitliliği — tek cephe hissini kırar.
                 sc *= 0.85f + 0.3f * (0.5f + 0.5f * Pseudo(i, 4));
-                _blobs[i].localScale = Vector3.one * sc;
+                // Yatay wisp — eski “top sürü” silüetini kırar.
+                _blobs[i].localScale = new Vector3(sc * 1.35f, sc * 0.35f, sc * 1.35f);
             }
         }
 
@@ -509,16 +578,21 @@ namespace Dovus.Game
 
         void PulseBang(Vector3 origin, Vector3 dir, float dist, EffectSilhouette s)
         {
-            _ = origin;
-            _ = dir;
-            _ = dist;
             _ = s;
             float pulse = 1f + 0.8f * Mathf.Sin(_logic.BangAgeSec * 28f);
-            // Taban değerden hesaplanır (DrawWave bu karede zaten güncelledi) — çarpan
-            // hiçbir karede önceki karenin sonucunun üstüne binmez.
             _line.widthMultiplier = _lineBaseWidth * pulse;
             if (_needle != null && _needle.gameObject.activeSelf)
                 _needle.localScale *= 1f + 0.15f * pulse;
+
+            if (_bangPs != null && _logic.BangAgeSec < 0.05f && !_bangPs.isPlaying)
+            {
+                Vector3 tip = origin + (dir.sqrMagnitude > 1e-4f ? dir.normalized : Vector3.forward) * dist;
+                tip.y = origin.y + 0.3f;
+                _bangPs.transform.position = tip;
+                var main = _bangPs.main;
+                main.startColor = _hasSkillTint ? _skillLine : (_colors != null ? _colors.InkCyan : Color.cyan);
+                _bangPs.Play();
+            }
         }
 
         /// <summary>[-1,1] sabit gürültü — Random değil, morph sırasında zıplamaz.</summary>
@@ -556,9 +630,9 @@ namespace Dovus.Game
                 return;
 
             mat.SetFloat("_Surface", 1f);
-            mat.SetFloat("_Blend", 0f);
+            mat.SetFloat("_Blend", 1f); // Additive glow
             mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-            mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.One);
             mat.SetInt("_ZWrite", 0);
             mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
         }

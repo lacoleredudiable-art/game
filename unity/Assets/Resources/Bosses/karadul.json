@@ -1,0 +1,130 @@
+{
+  "boss_id": "karadul",
+  "name": "Karadul",
+  "subtitle": "Yuvanın Efendisi",
+  "element": ["Ateş", "Karanlık"],
+  "theme": "biopunk böcek kraliçesi",
+  "binding": true,
+  "prototype_note": "5 kişilik raid örneği değil — tek oyuncu alfa. HP/hasar BossTuning + ClosingDamageMath ile hizalı. chain/rift/lock future.",
+  "target_attempts": 8,
+  "target_clear_time_sec": 180,
+
+  "vitals": {
+    "total_hp": 120,
+    "player_hp": 22,
+    "phase_transition_sec": 2,
+    "stagger_duration_sec": 0.4,
+    "phases": [
+      {
+        "phase": 1,
+        "name": "Uyanış",
+        "range": [100, 50],
+        "attacks": ["slam"],
+        "mandatory": [],
+        "notes": "Mevcut BossDirector: YAKIN / GEÇ / GENİŞ. Bir ıskalanan çakma ≈ ölüm (Damage 22 = PlayerMaxHp 22)."
+      },
+      {
+        "phase": 2,
+        "name": "Öfke",
+        "range": [50, 0],
+        "attacks": ["slam"],
+        "mandatory": [],
+        "future_attacks": ["fire_cone"],
+        "notes": "fire_cone henüz motor yok — Cehennem Nefesi (can_yakma) fiiline map edilecek."
+      }
+    ]
+  },
+
+  "attacks": [
+    {
+      "id": "slam",
+      "name": "Yere Çakma",
+      "verb_id": "alan_kilitleme",
+      "adjective_id": "agirlik",
+      "animation_type": "cast_aoe",
+      "implemented": true,
+      "variants": {
+        "yakin": { "windup_ms": 640, "radius_m": 5.4, "damage": 22, "tell": "Kısa hazırlık" },
+        "gec": { "windup_ms": 900, "radius_m": 5.4, "damage": 22, "tell": "Ton yavaş yükselir" },
+        "genis": { "windup_ms": 640, "radius_m": 8.0, "damage": 22, "tell": "Disk baştan büyük" }
+      }
+    },
+    {
+      "id": "fire_cone",
+      "name": "Cehennem Nefesi",
+      "verb_id": "can_yakma",
+      "adjective_id": "yakicilik",
+      "animation_type": "melee_punch",
+      "implemented": false,
+      "windup_ms": 800,
+      "damage": 18,
+      "hitbox": "cone",
+      "mechanics": ["grievous_wounds", "burn"]
+    },
+    {
+      "id": "shadow_cut",
+      "name": "Boyut Kesme",
+      "verb_id": "gizlilik",
+      "target_behavior": "enemy",
+      "animation_type": "melee_slash",
+      "implemented": false,
+      "windup_ms": 500,
+      "damage": 35,
+      "hitbox": "line",
+      "mechanics": ["armor_break", "weaken"],
+      "notes": "Yami — kaybol, arkada belir, kes. Selective target_mode ile."
+    }
+  ],
+
+  "mandatory_mechanics": [
+    {
+      "id": "chain",
+      "name": "Zincir",
+      "phase": 2,
+      "implemented": false,
+      "description": "Raid co-op stub. Tek oyuncuda yok.",
+      "coop_required": 5
+    },
+    {
+      "id": "rift",
+      "name": "Yarık",
+      "phase": 3,
+      "implemented": false,
+      "coop_required": 5
+    },
+    {
+      "id": "lock",
+      "name": "Kilit",
+      "phase": 4,
+      "implemented": false,
+      "coop_required": 5
+    }
+  ],
+
+  "adaptation": {
+    "rule": "Aynı skill_id 3 kez üst üste = o skill'e direnç (future; spam cezası)",
+    "reset": "Boss ölünce / revive",
+    "implemented": false
+  },
+
+  "environment": {
+    "arena_size_m": 24,
+    "hazards": {},
+    "notes": "Mevcut dungeon arena; lav/taş future."
+  },
+
+  "tuning": {
+    "maps_to": {
+      "BossTuning.MaxHp": 120,
+      "BossTuning.Damage": 22,
+      "PrototypeTuning.PlayerMaxHp": 22,
+      "CombatTuning.ClosingDamagePerEffect": 3.5,
+      "DodgeTuning.IframeMs": 260
+    },
+    "player_iframes": {
+      "dodge": "DodgeTuning — basış + IframeStartMs … IframeMs (ExchangeResolver)",
+      "skill": "Stasis / Shield status — slam hasarı ActorStatus üzerinden (kalkan emer, stasis yutar)"
+    },
+    "learning_rule": "Her deneme dodge ritmi + hangi fiilin boss canını yediğini öğretir"
+  }
+}

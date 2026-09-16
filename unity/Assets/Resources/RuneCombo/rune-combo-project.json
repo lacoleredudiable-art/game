@@ -1,0 +1,85 @@
+{
+  "runes": [
+    {
+      "id": 1,
+      "name": "Ateş",
+      "color": "#c45c26",
+      "verb": "saldırı",
+      "adjective": "tek hedef"
+    },
+    {
+      "id": 2,
+      "name": "Aydınlık",
+      "color": "#2a6f97",
+      "verb": "keskinleştirme",
+      "adjective": "odaklama"
+    },
+    {
+      "id": 3,
+      "name": "Yıldırım",
+      "color": "#c9a227",
+      "verb": "hareket",
+      "adjective": "zincir"
+    },
+    {
+      "id": 4,
+      "name": "Su",
+      "color": "#39646a",
+      "verb": "heal",
+      "adjective": "yayılma"
+    },
+    {
+      "id": 5,
+      "name": "Karanlık",
+      "color": "#5c8a7d",
+      "verb": "hareket",
+      "adjective": "hızlı"
+    },
+    {
+      "id": 6,
+      "name": "Toprak",
+      "color": "#877dd9",
+      "verb": "savunma",
+      "adjective": "kalıcılık"
+    }
+  ],
+  "compounds": {
+    "1-4": "Buhar",
+    "1-6": "Lav",
+    "4-1": "Gayzer",
+    "3-6": "Cam",
+    "6-3": "Manyetizma",
+    "4-6": "Çamur",
+    "4-3": "Fırtına",
+    "4-4": "Girdap",
+    "1-3": "Plazma",
+    "3-3": "Şimşek",
+    "6-1": "Obsidiyen",
+    "3-1": "İyon",
+    "3-2": "Flaş",
+    "2-3": "Lazer",
+    "1-1": "Alev",
+    "1-2": "Akalev",
+    "1-5": "Karalev",
+    "5-3": "Karadelik",
+    "5-4": "Asit",
+    "5-6": "Mezar",
+    "2-6": "Kristal",
+    "2-4": "Serap",
+    "3-4": "Elektrolit",
+    "2-1": "Güneş",
+    "4-2": "Kutsalsu",
+    "6-2": "Kehribar",
+    "4-5": "Kan",
+    "6-5": "Katran",
+    "2-5": "Alacakaranlık",
+    "5-2": "Gölge",
+    "2-2": "Nova",
+    "5-5": "Hiçlik",
+    "3-5": "Parazit",
+    "6-6": "Deprem",
+    "6-4": "Kil",
+    "5-1": "Kül"
+  },
+  "overrides": []
+}

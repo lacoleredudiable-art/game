@@ -14,6 +14,7 @@ namespace Dovus.Game
         float _respawnAtUnscaled = -1f;
         Vector3 _spawnPos;
         bool _captured;
+        ActorVisual _visual;
 
         public int Hp => _hp;
         public int MaxHp { get; private set; }
@@ -23,11 +24,11 @@ namespace Dovus.Game
         /// <summary>Dönüşe kalan gerçek saniye (HUD okur); ayakta ise 0.</summary>
         public float RespawnInSec => IsDown ? Mathf.Max(0f, _respawnAtUnscaled - Time.unscaledTime) : 0f;
 
-        public void Bind(BossTuning boss, int maxHp)
+        public void Bind(BossTuning boss, int maxHp, float startRatio = 1f)
         {
             _boss = boss;
             MaxHp = Mathf.Max(1, maxHp);
-            _hp = MaxHp;
+            _hp = Mathf.Clamp(Mathf.RoundToInt(MaxHp * Mathf.Clamp01(startRatio)), 1, MaxHp);
             CaptureSpawn();
         }
 
@@ -53,13 +54,30 @@ namespace Dovus.Game
             if (IsDown || amount <= 0)
                 return false;
 
+            if (_visual == null)
+                _visual = GetComponent<ActorVisual>();
+
             _hp = Mathf.Max(0, _hp - amount);
             if (_hp > 0)
+            {
+                _visual?.Trigger(ActorVisual.TriggerHit);
                 return false;
+            }
 
+            _visual?.Trigger(ActorVisual.TriggerDeath);
             float wait = _boss != null ? _boss.RespawnMaxSec : 2f;
             _respawnAtUnscaled = Time.unscaledTime + wait;
             return true;
+        }
+
+        /// <summary>İyileştirme — tavanı aşmaz. Gerçekten eklenen canı döner.</summary>
+        public int ApplyHeal(int amount)
+        {
+            if (IsDown || amount <= 0 || _hp >= MaxHp)
+                return 0;
+            int before = _hp;
+            _hp = Mathf.Min(MaxHp, _hp + amount);
+            return _hp - before;
         }
 
         void Update() => Tick();
@@ -75,6 +93,9 @@ namespace Dovus.Game
             transform.position = _spawnPos;
             _hp = MaxHp;
             _respawnAtUnscaled = -1f;
+            if (_visual == null)
+                _visual = GetComponent<ActorVisual>();
+            _visual?.ResetToLocomotion();
         }
     }
 }

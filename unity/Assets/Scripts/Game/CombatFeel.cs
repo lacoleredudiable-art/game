@@ -89,8 +89,6 @@ namespace Dovus.Game
             if (result.Outcome == ExchangeOutcome.Dodged)
             {
                 _clock.Director.TriggerHitstop(feel.HitstopPerfectMs);
-                if (result.Grade.HasValue && result.Grade.Value <= _combat.Slowmo.SlowmoMinGrade)
-                    _clock.Director.TriggerSlowmo();
 
                 float kick = result.Grade == DodgeGrade.Mukemmel
                     ? feel.CameraPerfectZoomKick

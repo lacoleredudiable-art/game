@@ -80,7 +80,7 @@ namespace Dovus.Game
                 return;
             }
 
-            if (_status != null && _status.Board.BlocksMovement)
+            if (_status != null && _status.EffectiveBlocksMovement)
             {
                 Velocity = Vector3.zero;
                 _visual?.SetSpeed(0f);
@@ -92,7 +92,7 @@ namespace Dovus.Game
             if (direction.sqrMagnitude > 1f)
                 direction.Normalize();
 
-            float speedMult = _status != null ? _status.Board.MoveSpeedMult : 1f;
+            float speedMult = _status != null ? _status.EffectiveMoveSpeedMult : 1f;
             float dtSec = _clock != null ? (float)(_clock.WorldDeltaMs / 1000.0) : Time.deltaTime;
             float walk = _tuning.WalkSpeedMps * speedMult;
             Velocity = direction * walk;

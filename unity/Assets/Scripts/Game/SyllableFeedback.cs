@@ -11,17 +11,18 @@ namespace Dovus.Game
     {
         PrototypeTuning _tuning;
         AudioSource _source;
-        readonly AudioClip[] _clips = new AudioClip[6]; // index 1..5
+        readonly AudioClip[] _clips = new AudioClip[7]; // index 1..6
 
         // Frekanslar spec'te yok; hece adı/sırası RuneInfo'dan gelir.
         static readonly float[] BaseHz =
         {
             0f,
-            440f, // 1 İĞNE
-            370f, // 2 SÜRÜ
-            330f, // 3 KABUK
-            294f, // 4 ZEHİR
-            523f  // 5 SARSINTI
+            440f, // 1 Ateş
+            494f, // 2 Aydınlık
+            370f, // 3 Yıldırım
+            330f, // 4 Su
+            294f, // 5 Karanlık
+            262f  // 6 Toprak
         };
 
         public void Configure(PrototypeTuning tuning) => _tuning = tuning;
@@ -31,7 +32,7 @@ namespace Dovus.Game
             _source = gameObject.AddComponent<AudioSource>();
             _source.playOnAwake = false;
             _source.spatialBlend = 0f;
-            for (int dot = 1; dot <= 5; dot++)
+            for (int dot = 1; dot <= PentagonLayout.DotCount; dot++)
             {
                 if (!RuneInfo.TryFromDot(dot, out Rune rune))
                     continue;
@@ -49,10 +50,10 @@ namespace Dovus.Game
             }
         }
 
-        /// <summary>dotIndex 1..5; sentenceDotsAfter = cümledeki nokta sayısı (perde yükselir).</summary>
+        /// <summary>dotIndex 1..6; sentenceDotsAfter = cümledeki nokta sayısı (perde yükselir).</summary>
         public void PlayForDot(int dot, int sentenceDotsAfter)
         {
-            if (dot < 1 || dot > 5 || _clips[dot] == null)
+            if (dot < 1 || dot > PentagonLayout.DotCount || _clips[dot] == null)
                 return;
 
             float pitch = 1f + 0.09f * Mathf.Max(0, sentenceDotsAfter - 1);

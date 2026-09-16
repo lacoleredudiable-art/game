@@ -10,6 +10,19 @@ namespace Dovus.Game
     {
         public StatusBoard Board { get; } = new StatusBoard();
 
+        /// <summary>
+        /// 16 Eylül: ulti (active_modes) çarpanları StatusBoard'a KARIŞTIRILMADI — StatusKind
+        /// enum'u element-sistemi.json "mechanics" id'leriyle birebir (durum etkileşim tablosu
+        /// bunlara göre kurulu); ulti tamamen ayrı bir eksen. Yalnızca oyuncunun ActorStatus'una
+        /// bağlanır (bkz. ManifestationDirector.Bind), boss'unki hep null kalır.
+        /// </summary>
+        public ActiveModeDirector ModeDirector { get; set; }
+
+        /// <summary>KinematicMotor bunu okur — StatusBoard × aktif ulti modu.</summary>
+        public float EffectiveMoveSpeedMult => Board.MoveSpeedMult * (ModeDirector?.MoveSpeedMult ?? 1f);
+
+        public bool EffectiveBlocksMovement => Board.BlocksMovement || (ModeDirector?.BlocksMovement ?? false);
+
         StatusTuning _tuning = new();
         GameClock _clock;
         BossVitals _bossVitals;
@@ -54,7 +67,8 @@ namespace Dovus.Game
         public void ApplyDamage(float raw)
         {
             if (raw <= 0f) return;
-            float afterShield = Board.AbsorbDamage(raw * Board.IncomingDamageMult);
+            float modeMult = ModeDirector?.DamageTakenMult ?? 1f;
+            float afterShield = Board.AbsorbDamage(raw * Board.IncomingDamageMult * modeMult);
             if (afterShield <= 0f) return;
 
             if (_bossVitals != null)
@@ -69,7 +83,11 @@ namespace Dovus.Game
                 return;
             // 16 Eylül: "Kavurucu Yara" — yanık hedefte pasif regen tick'i de azalır.
             if (_playerVitals != null)
-                _playerVitals.ApplyHeal(Mathf.CeilToInt(amount * Board.HealEffectivenessMult));
+            {
+                int healed = _playerVitals.ApplyHeal(Mathf.CeilToInt(amount * Board.HealEffectivenessMult));
+                if (healed > 0)
+                    ModeDirector?.NotifyHealed(); // "healer iyileştirirse biter" (Kan Çılgınlığı)
+            }
         }
 
         public void ApplyKnockbackFrom(Vector3 fromWorld)

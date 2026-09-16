@@ -5,8 +5,7 @@ using UnityEngine.UI;
 namespace Dovus.Game
 {
     /// <summary>
-    /// T12: kapanış hasarı ölçüm aracı. Varsayılan kapalı (§5/§12 — his kanalı değil kumpas).
-    /// ShowFrameTimeHud deseninin aynısı: kapalıyken Text disabled (overdraw yok).
+    /// Kapanış hasarı his kanalı. Varsayılan açık (ShowDamageNumbers).
     /// </summary>
     public sealed class DamageNumberHud : MonoBehaviour
     {
@@ -27,9 +26,9 @@ namespace Dovus.Game
                 go.layer = canvasRoot.gameObject.layer;
 
             var rect = go.AddComponent<RectTransform>();
-            // Sol-alt: FrameTimeHud'un üstü — ölçüm araçları aynı köşede.
-            rect.anchorMin = new Vector2(0.02f, 0.14f);
-            rect.anchorMax = new Vector2(0.40f, 0.22f);
+            // Boss üst-orta — his kanalı; sol-alt kumpas değil.
+            rect.anchorMin = new Vector2(0.35f, 0.78f);
+            rect.anchorMax = new Vector2(0.65f, 0.88f);
             rect.offsetMin = Vector2.zero;
             rect.offsetMax = Vector2.zero;
 
@@ -37,9 +36,10 @@ namespace Dovus.Game
             _text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             if (_text.font == null)
                 _text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            _text.fontSize = 26;
-            _text.color = new Color(0.9f, 0.95f, 1f, 0.95f);
-            _text.alignment = TextAnchor.LowerLeft;
+            _text.fontSize = 42;
+            _text.fontStyle = FontStyle.Bold;
+            _text.color = new Color(1f, 0.92f, 0.55f, 1f);
+            _text.alignment = TextAnchor.MiddleCenter;
             _text.horizontalOverflow = HorizontalWrapMode.Overflow;
             _text.verticalOverflow = VerticalWrapMode.Overflow;
             _text.raycastTarget = false;
@@ -49,16 +49,28 @@ namespace Dovus.Game
             ApplyVisibility(false);
         }
 
-        /// <summary>Kapanışın verdiği hasarı yazar — yalnızca ShowDamageNumbers açıksa.</summary>
+        /// <summary>Kapanışın verdiği hasarı yazar — yalnızca ShowDamageNumbers açıksa.
+        /// Negatif amount = heal (+N).</summary>
         public void ShowDamage(float amount)
         {
             if (_tuning == null || !_tuning.ShowDamageNumbers || _text == null)
                 return;
 
             _sb.Clear();
-            _sb.Append(amount.ToString("0.#"));
+            if (amount < 0f)
+            {
+                _sb.Append('+');
+                _sb.Append((-amount).ToString("0.#"));
+                _text.color = new Color(0.45f, 1f, 0.7f);
+            }
+            else
+            {
+                _sb.Append('-');
+                _sb.Append(amount.ToString("0.#"));
+                _text.color = Color.white;
+            }
             _text.text = _sb.ToString();
-            _hideAtUnscaled = Time.unscaledTime + 1.1f;
+            _hideAtUnscaled = Time.unscaledTime + 1.25f;
             ApplyVisibility(true);
         }
 

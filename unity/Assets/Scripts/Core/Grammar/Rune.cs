@@ -1,30 +1,50 @@
 namespace Dovus.Core.Grammar
 {
-    /// <summary>Beşgen noktaları — dovus-sistemi.md §4.</summary>
+    /// <summary>
+    /// Altıgen noktaları — element-sistemi.json çekirdek sırası:
+    /// 1 Ateş, 2 Su, 3 Hava, 4 Toprak, 5 Aydınlık, 6 Karanlık.
+    /// 16 Eylül: enum adları artık gerçek elementle eşleşiyor (eskiden İĞNE/SÜRÜ/KABUK/
+    /// ZEHİR/SARSINTI/TOPRAK gibi beşgen kalıntısı adlardı — `Rune.Toprak` dot 6/Karanlık'a
+    /// denk geliyordu, gerçek Toprak dot 4'tü; kafa karıştırdığı için düzeltildi).
+    /// </summary>
     public enum Rune
     {
-        Igne = 1,
-        Suru = 2,
-        Kabuk = 3,
-        Zehir = 4,
-        Sarsinti = 5
+        Ates = 1,
+        Su = 2,
+        Hava = 3,
+        Toprak = 4,
+        Aydinlik = 5,
+        Karanlik = 6
     }
 
     public static class RuneInfo
     {
         public static string Syllable(Rune rune) => rune switch
         {
-            Rune.Igne => "hi",
-            Rune.Suru => "hu",
-            Rune.Kabuk => "ho",
-            Rune.Zehir => "he",
-            Rune.Sarsinti => "ha",
+            Rune.Ates => "hi",
+            Rune.Su => "hu",
+            Rune.Hava => "ho",
+            Rune.Toprak => "he",
+            Rune.Aydinlik => "ha",
+            Rune.Karanlik => "hm",
             _ => string.Empty
+        };
+
+        /// <summary>element-sistemi.json çekirdek adları.</summary>
+        public static string DisplayName(Rune rune) => rune switch
+        {
+            Rune.Ates => "Ateş",
+            Rune.Su => "Su",
+            Rune.Hava => "Hava",
+            Rune.Toprak => "Toprak",
+            Rune.Aydinlik => "Aydınlık",
+            Rune.Karanlik => "Karanlık",
+            _ => "?"
         };
 
         public static bool TryFromDot(int dot, out Rune rune)
         {
-            if (dot is >= 1 and <= 5)
+            if (dot is >= 1 and <= PentagonLayout.DotCount)
             {
                 rune = (Rune)dot;
                 return true;

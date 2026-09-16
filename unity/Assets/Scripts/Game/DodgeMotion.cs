@@ -27,6 +27,7 @@ namespace Dovus.Game
         Vector3 _glideExtra;
         int _pressMs = int.MinValue;
         float _lastEmitRatio = -1f;
+        ActorVisual _visual;
 
         public bool IsDisplacing { get; private set; }
         public float LastAppliedRatio { get; private set; }
@@ -48,6 +49,7 @@ namespace Dovus.Game
             _input = GetComponent<MoveInput>();
             _motor = GetComponent<KinematicMotor>();
             _vitals = GetComponent<PlayerVitals>();
+            _visual = GetComponent<ActorVisual>();
         }
 
         void Start()
@@ -132,6 +134,9 @@ namespace Dovus.Game
             _dir = ResolveDirection();
             _afterimage?.Clear();
             IsDisplacing = true;
+            if (_visual == null)
+                _visual = GetComponent<ActorVisual>();
+            _visual?.Trigger(ActorVisual.TriggerDodge);
         }
 
         Vector3 ResolveDirection()

@@ -3,12 +3,13 @@ using UnityEngine.UI;
 
 namespace Dovus.Game
 {
-    /// <summary>Ekrana sabit beşgen noktaları + merkez (Canvas Overlay).</summary>
+    /// <summary>Ekrana sabit altıgen noktaları + merkez (Canvas Overlay).</summary>
     public sealed class PentagonView : MonoBehaviour
     {
         PrototypeTuning _tuning;
         RectTransform[] _dots;
         Image[] _dotImages;
+        Sprite[] _dotIcons;
         RectTransform _center;
         RectTransform _dodge;
         Canvas _canvas;
@@ -34,21 +35,28 @@ namespace Dovus.Game
             canvasGo.AddComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
             canvasGo.AddComponent<GraphicRaycaster>();
 
-            var sprite = CreateCircleSprite();
-            _dots = new RectTransform[6];
-            _dotImages = new Image[6];
-            for (int dot = 1; dot <= 5; dot++)
+            var fallback = CreateCircleSprite();
+            int n = Dovus.Core.Grammar.PentagonLayout.DotCount;
+            _dots = new RectTransform[n + 1];
+            _dotImages = new Image[n + 1];
+            _dotIcons = new Sprite[n + 1];
+            for (int dot = 1; dot <= n; dot++)
             {
-                _dots[dot] = CreateDisc($"Dot{dot}", sprite, DotColor(dot), canvasGo.transform, out _dotImages[dot]);
-                var label = CreateLabel(_dots[dot], dot.ToString());
-                label.fontSize = 22;
+                _dotIcons[dot] = TryCreateIconSprite(dot);
+                Sprite icon = _dotIcons[dot] != null ? _dotIcons[dot] : fallback;
+                _dots[dot] = CreateDisc($"Dot{dot}", icon, DotColor(dot), canvasGo.transform, out _dotImages[dot]);
+                if (_dotIcons[dot] == null)
+                {
+                    var label = CreateLabel(_dots[dot], dot.ToString());
+                    label.fontSize = 22;
+                }
             }
 
-            _center = CreateDisc("Center", sprite, _tuning.PentagonCenterColor, canvasGo.transform, out _);
+            _center = CreateDisc("Center", fallback, _tuning.PentagonCenterColor, canvasGo.transform, out _);
             CreateLabel(_center, "·").fontSize = 32;
 
-            // Dodge beşgenin dışında, ekrana sabit (§2). §10: kırmızı-turuncu olamaz.
-            _dodge = CreateDisc("DodgeButton", sprite, _tuning.DodgeButtonColor, canvasGo.transform, out _);
+            _dodge = CreateDisc("DodgeButton", fallback, _tuning.DodgeButtonColor, canvasGo.transform, out _);
+            CreateLabel(_dodge, "⇄").fontSize = 26;
 
             if (overlayCam != null)
                 SetLayerRecursively(canvasGo, FirstLayer(overlayCam.cullingMask));
@@ -68,11 +76,15 @@ namespace Dovus.Game
             int h = Screen.height;
             float dotR = PentagonLayoutScreen.DotHitRadiusPx(_tuning);
             float centerR = PentagonLayoutScreen.CenterHitRadiusPx(_tuning);
+            int n = Dovus.Core.Grammar.PentagonLayout.DotCount;
 
-            for (int dot = 1; dot <= 5; dot++)
+            for (int dot = 1; dot <= n; dot++)
             {
                 Vector2 px = PentagonLayoutScreen.DotPx(dot, _tuning, w, h);
-                Place(_dots[dot], px, dotR * 2f, w, h);
+                float mul = _dotIcons != null && _dotIcons[dot] != null
+                    ? Mathf.Max(0.5f, _tuning.IconDisplayScale)
+                    : 1f;
+                Place(_dots[dot], px, dotR * 2f * mul, w, h);
                 if (_dotImages[dot] != null)
                     _dotImages[dot].color = DotColor(dot);
             }
@@ -86,11 +98,75 @@ namespace Dovus.Game
 
         Color DotColor(int dot)
         {
+            if (_dotIcons != null && _dotIcons[dot] != null)
+            {
+                float a = _tuning.IsDotOpen(dot) ? 1f : 0.28f;
+                return new Color(1f, 1f, 1f, a);
+            }
+
             Color c = _tuning.PentagonDotColor;
             if (_tuning.IsDotOpen(dot))
                 return c;
-            // Kapalı rün: soluk — oyuncu neden tepki almadığını görsün (§4).
             return new Color(c.r, c.g, c.b, c.a * 0.28f);
+        }
+
+        static Sprite TryCreateIconSprite(int dot)
+        {
+            // element-sistemi.json çekirdek: Ateş Su Hava Toprak Aydınlık Karanlık
+            string name = dot switch
+            {
+                1 => "Concept/icon-fire",
+                2 => "Concept/icon-water",
+                3 => "Concept/icon-lightning", // Hava — ayrı ikon yok, geçici
+                4 => "Concept/icon-earth",
+                5 => "Concept/icon-light",
+                6 => "Concept/icon-dark",
+                _ => null
+            };
+            if (string.IsNullOrEmpty(name))
+                return null;
+
+            var tex = Resources.Load<Texture2D>(name);
+            if (tex == null)
+                return null;
+
+            // Concept PNG'lerde siyah kare zemin var — yakındaki siyahı alfa yap.
+            Texture2D punched = PunchNearBlackToAlpha(tex);
+            return Sprite.Create(
+                punched,
+                new Rect(0f, 0f, punched.width, punched.height),
+                new Vector2(0.5f, 0.5f),
+                100f);
+        }
+
+        /// <summary>Siyah/koyu kare zemini şeffafa çevirir (ikonlar yuvarlak diskte okunur kalsın).</summary>
+        static Texture2D PunchNearBlackToAlpha(Texture2D src)
+        {
+            int w = src.width;
+            int h = src.height;
+            var dst = new Texture2D(w, h, TextureFormat.RGBA32, false);
+            Color32[] px;
+            try
+            {
+                px = src.GetPixels32();
+            }
+            catch
+            {
+                // Read/Write kapalı asset — olduğu gibi kullan.
+                return src;
+            }
+
+            const byte thresh = 28;
+            for (int i = 0; i < px.Length; i++)
+            {
+                Color32 c = px[i];
+                if (c.r <= thresh && c.g <= thresh && c.b <= thresh)
+                    px[i] = new Color32(0, 0, 0, 0);
+            }
+
+            dst.SetPixels32(px);
+            dst.Apply(false, true);
+            return dst;
         }
 
         static void Place(RectTransform rt, Vector2 screenPx, float diameterPx, int screenW, int screenH)
@@ -117,6 +193,7 @@ namespace Dovus.Game
             image.sprite = sprite;
             image.color = color;
             image.raycastTarget = false;
+            image.preserveAspect = true;
             return rt;
         }
 

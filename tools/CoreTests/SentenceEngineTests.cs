@@ -33,8 +33,8 @@ public class SentenceEngineTests
         CompletedSentence sa = a.History[0];
         CompletedSentence sb = b.History[0];
 
-        Assert.That(sa.Verb, Is.EqualTo(Rune.Sarsinti));
-        Assert.That(sb.Verb, Is.EqualTo(Rune.Igne));
+        Assert.That(sa.Verb, Is.EqualTo(Rune.Aydinlik));
+        Assert.That(sb.Verb, Is.EqualTo(Rune.Ates));
         Assert.That(DotsOf(sa), Is.EqualTo(new[] { 5, 1 }));
         Assert.That(DotsOf(sb), Is.EqualTo(new[] { 1, 5 }));
         Assert.That(sa.Verb, Is.Not.EqualTo(sb.Verb));
@@ -60,7 +60,7 @@ public class SentenceEngineTests
 
         Assert.That(engine.State.Phase, Is.EqualTo(SentencePhase.Building));
         Assert.That(engine.State.Words.Select(w => w.Dot).ToArray(), Is.EqualTo(new[] { 4, 5 }));
-        Assert.That(engine.State.Verb, Is.EqualTo(Rune.Zehir));
+        Assert.That(engine.State.Verb, Is.EqualTo(Rune.Toprak));
     }
 
     // Kriter 3
@@ -80,7 +80,7 @@ public class SentenceEngineTests
         Assert.That(engine.History, Has.Count.EqualTo(1));
         Assert.That(engine.History[0].Phase, Is.EqualTo(SentencePhase.Resolved));
         Assert.That(engine.History[0].Closing, Is.Not.Null);
-        Assert.That(engine.History[0].Closing!.Value.Type, Is.EqualTo(Rune.Igne));
+        Assert.That(engine.History[0].Closing!.Value.Type, Is.EqualTo(Rune.Ates));
         Assert.That(engine.History[0].Closing!.Value.TotalEffect, Is.EqualTo(tuning.StepForDots(1).TotalEffect));
     }
 
@@ -136,7 +136,7 @@ public class PentagonLayoutTests
     [Test]
     public void EachDot_HasTwoNeighborsAndTwoFar()
     {
-        for (int dot = 1; dot <= 5; dot++)
+        for (int dot = 1; dot <= PentagonLayout.DotCount; dot++)
         {
             PentagonLayout.GetNeighbors(dot, out int n0, out int n1);
             PentagonLayout.GetFarDots(dot, out int f0, out int f1);
@@ -150,7 +150,7 @@ public class PentagonLayoutTests
             Assert.That(neighbors.Contains(dot), Is.False);
             Assert.That(far.Contains(dot), Is.False);
 
-            for (int other = 1; other <= 5; other++)
+            for (int other = 1; other <= PentagonLayout.DotCount; other++)
             {
                 if (other == dot) continue;
                 JumpKind kind = PentagonLayout.ClassifyJump(dot, other);

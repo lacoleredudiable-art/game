@@ -54,6 +54,13 @@ namespace Dovus.Game
         StateBridgeView _bridgeView;
         AllyDummy _ally;
 
+        // --- Ulti (active_modes) — 16 Eylül, güven kaygısına karşılık uçtan uca ---
+        ActiveModeDirector _modeDirector;
+        ActiveModeHud _modeHud;
+        double _lastDamageDealtMs = double.NegativeInfinity;
+        double _lastMovedMs = double.NegativeInfinity;
+        float _modeHpDrainAccum;
+
         SkillMotor Skills => _skills ??= SkillMotorLoader.LoadOrDefault();
 
         struct PendingClosing
@@ -93,7 +100,8 @@ namespace Dovus.Game
             SentenceDebugHud debugHud = null,
             ReactionReadout readout = null,
             FollowCamera camera = null,
-            AllyDummy ally = null)
+            AllyDummy ally = null,
+            ActiveModeHud modeHud = null)
         {
             _clock = clock;
             _engine = input.Engine;
@@ -114,7 +122,11 @@ namespace Dovus.Game
             _readout = readout;
             _camera = camera;
             _ally = ally;
+            _modeHud = modeHud;
             _skills = SkillMotorLoader.LoadOrDefault();
+            _modeDirector = new ActiveModeDirector(_skills.ActiveModes);
+            if (_playerStatus != null)
+                _playerStatus.ModeDirector = _modeDirector;
 
             _motionDriver = player.GetComponent<SkillMotionDriver>();
             if (_motionDriver == null)
@@ -159,6 +171,9 @@ namespace Dovus.Game
                 _posedForRecovery = false;
             }
 
+            if (_motor != null && _motor.Velocity.sqrMagnitude > 0.01f)
+                _lastMovedMs = worldMs;
+
             SyncFromSentence(worldMs);
             ApplyWindowCue();
             TickEffects(dtSec, worldMs);
@@ -167,6 +182,118 @@ namespace Dovus.Game
             TickPendingClosings(worldMs);
             TickBossDeath();
             TickStateBridge(worldMs);
+            TickActiveMode(worldMs, dtSec);
+        }
+
+        // --- Ulti (active_modes) ---
+
+        ActiveModeContext BuildModeContext(double worldMs)
+        {
+            var vitals = _player != null ? _player.GetComponent<PlayerVitals>() : null;
+            float hpRatio = vitals != null && vitals.MaxHp > 0 ? (float)vitals.Hp / vitals.MaxHp : 1f;
+            float allyRatio = _ally != null ? _ally.Ratio : 1f;
+
+            int debuffCount = 0;
+            if (_playerStatus != null)
+            {
+                foreach (StatusKind kind in _playerStatus.Board.ActiveKinds)
+                    if (StatusKindUtil.IsDebuff(kind)) debuffCount++;
+            }
+
+            return new ActiveModeContext
+            {
+                HpRatio = hpRatio,
+                // 16 Eylül: ally'nin StatusBoard'u yok (bilinen açık, docs/durum.md) — team
+                // debuff sayısı şimdilik yalnızca oyuncudan okunur.
+                MinTeamHpRatio = Mathf.Min(hpRatio, allyRatio),
+                SecondsSinceLastDamageDealt = (worldMs - _lastDamageDealtMs) / 1000.0,
+                SecondsSinceLastMoved = (worldMs - _lastMovedMs) / 1000.0,
+                TeamDebuffCount = debuffCount,
+            };
+        }
+
+        void TickActiveMode(double worldMs, float dtSec)
+        {
+            if (_modeDirector == null)
+                return;
+
+            if (_modeDirector.Active == null)
+            {
+                _modeHpDrainAccum = 0f;
+                return;
+            }
+
+            // Sürekli maliyet: HP/sn (Öfke Patlaması) — tam sayıya birikip öyle uygulanır,
+            // yoksa 60 FPS'te her kare 0'a yuvarlanan hasar hiç işlemez.
+            float hpPct = _modeDirector.HpPerSecPercentCost;
+            var vitals = _player != null ? _player.GetComponent<PlayerVitals>() : null;
+            if (hpPct > 0f && vitals != null && !vitals.IsDown)
+            {
+                _modeHpDrainAccum += vitals.MaxHp * (hpPct / 100f) * dtSec;
+                int whole = Mathf.FloorToInt(_modeHpDrainAccum);
+                if (whole > 0)
+                {
+                    _modeHpDrainAccum -= whole;
+                    vitals.ApplyDamage(whole);
+                }
+            }
+
+            ActiveModeContext ctx = BuildModeContext(worldMs);
+            if (_modeDirector.Tick(worldMs, ctx))
+            {
+                _modeHud?.Hide();
+                _modeHpDrainAccum = 0f;
+            }
+            else
+            {
+                _modeHud?.UpdateRemaining(_modeDirector.RemainingSec(worldMs));
+            }
+        }
+
+        /// <summary>Dört-aynı-rün kapanışı geldiğinde (X-X-X-X) ulti tetiklenip tetiklenmediğine bakar.</summary>
+        void TryActivateMode(IReadOnlyList<SentenceWord> words, double worldMs)
+        {
+            if (_modeDirector == null || words == null || words.Count != 4 || _modeDirector.Active != null)
+                return;
+
+            int dot = (int)words[0].Rune;
+            for (int i = 1; i < words.Count; i++)
+                if ((int)words[i].Rune != dot)
+                    return; // aynı elementin 4'lüsü değil — sıradan 4'lü cümle, ulti değil
+
+            ActiveModeContext ctx = BuildModeContext(worldMs);
+            ActiveModeNode? activated = _modeDirector.TryTrigger(dot, ctx, worldMs);
+            if (activated == null)
+                return;
+
+            ActiveModeNode mode = activated.Value;
+            Color tint = _colors != null ? _colors.ColorForRune((Rune)dot) : Color.white;
+            _readout?.NoteSkill(mode.Name, mode.ReadAs, tint);
+            _debugHud?.NoteSkillBang(mode.Name, mode.ReadAs);
+            _modeHud?.ShowActivated(mode.Name, mode.ReadAs, tint);
+            ApplyModeOneShotEffects(mode);
+        }
+
+        /// <summary>
+        /// team_full_cleanse / team_invulnerability_sec / enemy_blind_sec / team_regen_per_sec —
+        /// aktivasyon anında bir kez uygulanır (sürekli tick TickActiveMode'da değil, burada).
+        /// </summary>
+        void ApplyModeOneShotEffects(ActiveModeNode mode)
+        {
+            if (mode.GetEffectBool("team_full_cleanse") && _playerStatus != null)
+                _playerStatus.Board.CleanseHostile();
+
+            float invulnSec = mode.GetEffect("team_invulnerability_sec");
+            if (invulnSec > 0f && _playerStatus != null)
+                _playerStatus.Board.Apply(StatusKind.Stasis, invulnSec * 1000.0, 1f);
+
+            float blindSec = mode.GetEffect("enemy_blind_sec");
+            if (blindSec > 0f && _bossStatus != null)
+                _bossStatus.Board.Apply(StatusKind.Blind, blindSec * 1000.0, 1f);
+
+            float regenPerSec = mode.GetEffect("team_regen_per_sec");
+            if (regenPerSec > 0f && mode.HasDuration && _playerStatus != null)
+                _playerStatus.Board.Apply(StatusKind.Regen, mode.DurationSec * 1000.0, regenPerSec);
         }
 
         void TickStateBridge(double worldMs)
@@ -428,6 +555,7 @@ namespace Dovus.Game
             LivingEffect logic = p.View.Logic;
             logic.FireClosingBang();
             StampScar(p.View, p.Closing);
+            TryActivateMode(p.Words, _clock.Director.WorldTimeMs);
 
             // Düz vuruş: jab — skill motoru / isim bang'i / kamera yumruğu yok (Ateş vb. yazmasın).
             // Heal vb. tek-rün skill asla IsBasicStrike olmamalı; yine de mend kaçmasın.
@@ -620,6 +748,7 @@ namespace Dovus.Game
             healed = playerVitals.ApplyHeal(amount);
             if (healed > 0)
             {
+                _modeDirector?.NotifyHealed(); // "healer iyileştirirse biter" (Kan Çılgınlığı)
                 _damageHud?.ShowDamage(-healed);
                 _readout?.NoteSkill(skill.DisplayName, "self +" + healed, new Color(0.4f, 1f, 0.65f));
                 _debugHud?.NoteSkillBang(skill.DisplayName, "self +" + healed);
@@ -646,6 +775,7 @@ namespace Dovus.Game
             float outMult = 1f;
             if (_playerStatus != null)
                 outMult = _playerStatus.Board.OutgoingDamageMult;
+            outMult *= _modeDirector?.DamageMult ?? 1f; // ulti: Öfke Patlaması ×1.8, Kan Çılgınlığı ×2.0
 
             float damage = ClosingDamageMath.Compute(
                 closing.TotalEffect,
@@ -669,6 +799,16 @@ namespace Dovus.Game
                 damage *= _bossStatus.Board.IncomingDamageMult;
 
             _damageHud?.ShowDamage(damage);
+            _lastDamageDealtMs = _clock.Director.WorldTimeMs; // "dealt_damage_recently" (Öfke Patlaması)
+
+            float lifesteal = _modeDirector?.Lifesteal ?? 0f;
+            if (lifesteal > 0f)
+            {
+                var vitals = _player != null ? _player.GetComponent<PlayerVitals>() : null;
+                int healAmt = Mathf.RoundToInt(damage * lifesteal);
+                if (vitals != null && healAmt > 0)
+                    vitals.ApplyHeal(healAmt); // Kan Çılgınlığı kendi hasarından beslenir — NotifyHealed BİLEREK çağrılmaz
+            }
 
             bool killed = _bossVitals.ApplyDamage(damage);
             var bossVisual = _boss != null ? _boss.GetComponent<BossVisual>() : null;
@@ -709,10 +849,10 @@ namespace Dovus.Game
                 ? ScarKind.Strike
                 : closing.Type switch
                 {
-                    Rune.Sarsinti => ScarKind.Crack,
-                    Rune.Igne => ScarKind.Needle,
-                    Rune.Suru => ScarKind.Swarm,
-                    Rune.Zehir => ScarKind.Acid,
+                    Rune.Aydinlik => ScarKind.Crack,
+                    Rune.Ates => ScarKind.Needle,
+                    Rune.Su => ScarKind.Swarm,
+                    Rune.Toprak => ScarKind.Acid,
                     _ => ScarKind.Crack
                 };
 
@@ -833,19 +973,19 @@ namespace Dovus.Game
             // Tür = fiziksel tepki ekseni. Hasar miktarı burada yok (§5 + §12).
             switch (closing.Type)
             {
-                case Rune.Sarsinti:
+                case Rune.Aydinlik:
                     // Havalandırma — spec §5 açıkça yazar.
                     knock = man.BossKnockbackM * 0.55f;
                     lift = man.BossLiftM * (1.15f + 0.35f * logic.Current.Lift);
                     shake = man.BossShakeSec * 0.9f;
                     break;
-                case Rune.Igne:
+                case Rune.Ates:
                     // Tek yöne derin geri tepme (§4 daralt/odakla).
                     knock = man.BossKnockbackM * (1.85f + 0.4f * logic.Current.Pierce);
                     lift = 0.05f;
                     shake = man.BossShakeSec * 0.55f;
                     break;
-                case Rune.Suru:
+                case Rune.Su:
                     // Yerinde çok noktalı sarsılma, yer değiştirme az (§4 çoğalt/yay).
                     knock = man.BossKnockbackM * 0.12f;
                     lift = 0.08f;
@@ -858,13 +998,13 @@ namespace Dovus.Game
                     _boss.React(from + new Vector3(-logic.DirZ, 0f, logic.DirX) * 0.35f,
                         knock * 0.6f, lift * 0.5f, shake * 0.55f, worldMs);
                     return;
-                case Rune.Kabuk:
+                case Rune.Hava:
                     // Sabitleme — §5.
                     if (!IsClosingInRange(logic, closing))
                         return;
                     _boss.Pin(0.55f, worldMs);
                     return;
-                case Rune.Zehir:
+                case Rune.Toprak:
                     // Birikinti izi StampScar'da; gövde hafif sarsılır.
                     knock = man.BossKnockbackM * 0.2f;
                     lift = 0f;
@@ -884,7 +1024,7 @@ namespace Dovus.Game
             float dx = bossPos.x - logic.TipX;
             float dz = bossPos.z - logic.TipZ;
             float reach = _combat.Manifestation.ClosingBangRadiusM;
-            if (closing.Type == Rune.Sarsinti)
+            if (closing.Type == Rune.Aydinlik)
             {
                 if (!logic.OverlapsBoss(bossPos.x, bossPos.z, reach * 0.5f))
                 {
@@ -941,7 +1081,7 @@ namespace Dovus.Game
                 }
 
                 // Seyahat izi: odaklı sarsıntı hattı yerde hafif çatlak bırakır (T4 erken kanıt)
-                if (!view.Scarred && logic.Verb == Rune.Sarsinti && logic.Current.Focus > 0.7f
+                if (!view.Scarred && logic.Verb == Rune.Aydinlik && logic.Current.Focus > 0.7f
                     && logic.Travel > 2.5f)
                 {
                     Vector3 mid = new Vector3(

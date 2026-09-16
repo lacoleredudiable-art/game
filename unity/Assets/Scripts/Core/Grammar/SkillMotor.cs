@@ -19,10 +19,18 @@ namespace Dovus.Core.Grammar
         readonly Dictionary<string, VerbNode> _verbs = new(StringComparer.Ordinal);
         readonly Dictionary<string, AdjectiveNode> _adjectives = new(StringComparer.Ordinal);
         readonly Dictionary<int, LengthTuning> _lengths = new();
+        readonly List<ActiveModeNode> _activeModes = new();
 
         public int ElementCount => _elements.Count;
         public int VerbCount => _verbs.Count;
         public int AdjectiveCount => _adjectives.Count;
+
+        /// <summary>
+        /// docs/element-sistemi.json "active_modes" (ulti): aynı elementin 4'lüsü (X-X-X-X).
+        /// 16 Eylül: "v5.2.1 hiç aktif olmadı" güven kaygısına karşılık motor artık bunu da
+        /// okuyor — tetikleme/efekt uygulaması Core/Combat/ActiveModeDirector işi.
+        /// </summary>
+        public IReadOnlyList<ActiveModeNode> ActiveModes => _activeModes;
         public int CoreCount
         {
             get
@@ -47,6 +55,7 @@ namespace Dovus.Core.Grammar
             ParseVerbs(root, motor._verbs);
             ParseAdjectives(root, motor._adjectives);
             ParseLengths(root, motor._lengths);
+            ParseActiveModes(root, motor._activeModes);
             if (motor.CoreCount < 6)
                 throw new InvalidOperationException("element-sistemi: 6 çekirdek element beklenir.");
             return motor;
@@ -325,6 +334,66 @@ namespace Dovus.Core.Grammar
             }
         }
 
+        /// <summary>
+        /// active_modes.modes — 6 element × 1 ulti. `cost` alanı sürümde ya düz metin
+        /// ("hareket edemezsin") ya nesne ({"hp_per_sec_percent":3}); ikisi de burada okunur.
+        /// Sayı uydurma yok: "savunma %50 düşer" gibi metinlerden çarpan metnin İÇİNDEKİ
+        /// yüzdeden türetilir (bkz. ParseDefenseDropMult), elle bir sabit yazılmadı.
+        /// </summary>
+        static void ParseActiveModes(JsonValue root, List<ActiveModeNode> dst)
+        {
+            foreach (JsonValue obj in root["active_modes"]["modes"].AsArray())
+            {
+                string id = obj["id"].AsString();
+                if (string.IsNullOrEmpty(id)) continue;
+
+                IReadOnlyList<JsonValue> combo = obj["trigger_combo"].AsArray();
+                int triggerDot = combo.Count > 0 ? combo[0].AsInt() : 0;
+
+                JsonValue durationVal = obj["duration_sec"];
+                JsonValue cond = obj["activation_condition"];
+                JsonValue decond = obj["deactivation_condition"];
+                JsonValue cost = obj["cost"];
+                string costText = cost.Kind == JsonKind.String ? cost.AsString() : string.Empty;
+
+                dst.Add(new ActiveModeNode(
+                    id: id,
+                    name: obj["name"].AsString(),
+                    element: obj["element"].AsString(),
+                    triggerDot: triggerDot,
+                    hasDuration: durationVal.Kind == JsonKind.Number,
+                    durationSec: durationVal.AsFloat(0f),
+                    cooldownSec: obj["cooldown_sec"].AsFloat(0f),
+                    resourceCost: obj["resource_cost"].AsFloat(0f),
+                    readAs: obj["read_as"].AsString(),
+                    activationType: cond["type"].AsString(),
+                    activationWithinSec: cond["within_sec"].AsFloat(0f),
+                    activationThreshold: cond.Has("threshold") ? cond["threshold"].AsFloat(0f) : cond["hp_below"].AsFloat(0f),
+                    activationMinCount: cond["min_count"].AsInt(0),
+                    deactivationType: decond["type"].AsString(),
+                    deactivationThreshold: decond["threshold"].AsFloat(0f),
+                    blocksMovement: costText.Contains("hareket edemezsin"),
+                    hpPerSecPercentCost: cost.Kind == JsonKind.Object ? cost["hp_per_sec_percent"].AsFloat(0f) : 0f,
+                    defenseDropMult: ParseDefenseDropMult(costText),
+                    healBreaksMode: costText.Contains("healer") || costText.Contains("iyileş"),
+                    effects: obj["effects"]));
+            }
+        }
+
+        /// <summary>"savunma %50 düşer" → 1.5f. Yüzde bulunamazsa 1f (etkisiz).</summary>
+        static float ParseDefenseDropMult(string costText)
+        {
+            if (string.IsNullOrEmpty(costText) || !costText.Contains("savunma"))
+                return 1f;
+            int i = 0;
+            while (i < costText.Length && !char.IsDigit(costText[i])) i++;
+            int start = i;
+            while (i < costText.Length && char.IsDigit(costText[i])) i++;
+            if (i == start) return 1f;
+            int percent = int.Parse(costText.Substring(start, i - start), CultureInfo.InvariantCulture);
+            return 1f + percent / 100f;
+        }
+
         static string[] ReadStringArray(JsonValue arr)
         {
             IReadOnlyList<JsonValue> items = arr.AsArray();
@@ -448,6 +517,58 @@ namespace Dovus.Core.Grammar
         /// </summary>
         public JsonValue EngineModifiers { get; }
         public JsonValue Raw { get; }
+    }
+
+    /// <summary>docs/element-sistemi.json active_modes.modes[i] — bkz. SkillMotor.ParseActiveModes.</summary>
+    public readonly struct ActiveModeNode
+    {
+        public ActiveModeNode(
+            string id, string name, string element, int triggerDot,
+            bool hasDuration, float durationSec, float cooldownSec, float resourceCost, string readAs,
+            string activationType, float activationWithinSec, float activationThreshold, int activationMinCount,
+            string deactivationType, float deactivationThreshold,
+            bool blocksMovement, float hpPerSecPercentCost, float defenseDropMult, bool healBreaksMode,
+            JsonValue effects)
+        {
+            Id = id; Name = name; Element = element; TriggerDot = triggerDot;
+            HasDuration = hasDuration; DurationSec = durationSec; CooldownSec = cooldownSec;
+            ResourceCost = resourceCost; ReadAs = readAs;
+            ActivationType = activationType; ActivationWithinSec = activationWithinSec;
+            ActivationThreshold = activationThreshold; ActivationMinCount = activationMinCount;
+            DeactivationType = deactivationType; DeactivationThreshold = deactivationThreshold;
+            BlocksMovement = blocksMovement; HpPerSecPercentCost = hpPerSecPercentCost;
+            DefenseDropMult = defenseDropMult; HealBreaksMode = healBreaksMode;
+            Effects = effects;
+        }
+
+        public string Id { get; }
+        public string Name { get; }
+        public string Element { get; }
+        /// <summary>1-6: aynı elementin 4 katı (X-X-X-X). trigger_combo[0]'dan türetilir.</summary>
+        public int TriggerDot { get; }
+        public bool HasDuration { get; }
+        public float DurationSec { get; }
+        public float CooldownSec { get; }
+        public float ResourceCost { get; }
+        public string ReadAs { get; }
+        public string ActivationType { get; }
+        public float ActivationWithinSec { get; }
+        public float ActivationThreshold { get; }
+        public int ActivationMinCount { get; }
+        public string DeactivationType { get; }
+        public float DeactivationThreshold { get; }
+        /// <summary>cost metni "hareket edemezsin" içeriyorsa true (Kutsal Kaynak, Aşılmaz Duvar).</summary>
+        public bool BlocksMovement { get; }
+        /// <summary>cost.hp_per_sec_percent (Öfke Patlaması). Yoksa 0.</summary>
+        public float HpPerSecPercentCost { get; }
+        /// <summary>cost metnindeki "savunma %N düşer" → 1+N/100 (Fırtına Akışı). Yoksa 1.</summary>
+        public float DefenseDropMult { get; }
+        /// <summary>cost metni "healer iyileştirirse biter" (Kan Çılgınlığı).</summary>
+        public bool HealBreaksMode { get; }
+        public JsonValue Effects { get; }
+
+        public float GetEffect(string key, float fallback = 0f) => Effects[key].AsFloat(fallback);
+        public bool GetEffectBool(string key, bool fallback = false) => Effects[key].AsBool(fallback);
     }
 
     public readonly struct LengthTuning

@@ -151,11 +151,134 @@ MonoBehaviour:
   _tuning:
     ArenaHalfSizeM: 12
     WalkSpeedMps: 4.5
+    PlayerMaxHp: 22
     JoystickMaxRadiusDp: 72
     JoystickDeadZone: 0.12
+    PentagonCenterXNorm: 0.72
+    PentagonCenterYNorm: 0.4
+    PentagonRadiusDp: 100
+    DotHitRadiusDp: 30
+    CenterHitRadiusDp: 24
+    MirrorForLeftHand: 0
+    InkLingerSec: 0.4
+    InkWidthDp: 3.5
+    DodgeButtonOffsetXDp: 80
+    DodgeButtonOffsetYDp: -140
+    DodgeButtonRadiusDp: 34
+    DodgeButtonScreenMarginDp: 8
+    BasicStrikeDot: 5
+    OpenDot1: 1
+    OpenDot2: 1
+    OpenDot3: 0
+    OpenDot4: 0
+    OpenDot5: 1
+    OpenDot6: 1
+    IconDisplayScale: 1.12
+    DotVibrationMs: 30
     FollowSmoothTimeSec: 0.18
     LookAheadM: 1.4
     CameraOffset: {x: 0, y: 7, z: -6}
+    PlayerColor: {r: 0.373, g: 0.941, b: 1, a: 1}
+    BossColor: {r: 0.18, g: 0.19, b: 0.22, a: 1}
+    GroundColor: {r: 0.38, g: 0.4, b: 0.44, a: 1}
+    BackgroundColor: {r: 0.12, g: 0.14, b: 0.18, a: 1}
+    InkPurple: {r: 0.725, g: 0.549, b: 1, a: 1}
+    InkCyan: {r: 0.373, g: 0.941, b: 1, a: 1}
+    AcidGreen: {r: 0.608, g: 0.91, b: 0.235, a: 1}
+    ElementFire: {r: 1, g: 0.42, b: 0.62, a: 1}
+    ElementWater: {r: 0.28, g: 0.72, b: 1, a: 1}
+    ElementAir: {r: 0.72, g: 0.82, b: 1, a: 1}
+    ElementEarth: {r: 0.62, g: 0.78, b: 0.42, a: 1}
+    ElementLight: {r: 1, g: 0.96, b: 0.82, a: 1}
+    ElementDark: {r: 0.48, g: 0.28, b: 0.78, a: 1}
+    PentagonDotColor: {r: 0.55, g: 0.62, b: 0.72, a: 0.85}
+    PentagonCenterColor: {r: 0.373, g: 0.941, b: 1, a: 0.9}
+    DodgeButtonColor: {r: 0.725, g: 0.549, b: 1, a: 0.9}
+    TelegraphHot: {r: 1, g: 0.302, b: 0.141, a: 1}
+    TelegraphWarm: {r: 1, g: 0.604, b: 0.235, a: 1}
+    WindowCueUrgentRatio: 0.3
+    WindowCuePulseHz: 2
+    WindowCueUrgentHz: 8
+    WindowCuePulseAmp: 0.45
+    DodgeGlideSpeedMps: 3.5
+    TelegraphStretch: 0.28
+    TelegraphSquash: 0.18
+    TelegraphSlamSquash: 0.22
+    TelegraphTonePitchMin: 0.55
+    TelegraphTonePitchMax: 1.8
+    TelegraphToneVolumeMin: 0.12
+    TelegraphToneVolumeMax: 0.4
+    BossApproachStopPadM: 0.35
+    AfterimageAlpha: 0.55
+    ImpactFadeSec: 0.04
+    VignetteHoldSec: 0.85
+    VignetteFadeSec: 0.45
+    VignetteAlpha: 0.55
+    ThreatAlphaMax: 0.35
+    ThreatPulseHzMin: 4
+    ThreatPulseHzMax: 14
+    CameraShakePxToM: 0.01
+    AudioBaseCutoffHz: 22000
+    EffectLineWidthDefaultM: 0.18
+    EffectLineWidthWideM: 0.35
+    EffectLineWidthNarrowM: 0.12
+    EffectSarsintiWidthWideM: 0.22
+    EffectSarsintiWidthNarrowM: 0.1
+    EffectShowMinFocus: 0.2
+    EffectIgneShowMinSpread: 0.2
+    EffectFocusRingMax: 0.35
+    EffectFocusArcMax: 0.75
+    EffectPierceNeedleShowMin: 0.45
+    EffectFocusSwarmAlongLineMin: 0.45
+    EffectBlobScaleBaseM: 0.28
+    EffectBlobScalePerSpreadM: 0.12
+    EffectNeedleThickWideM: 0.35
+    EffectNeedleThickNarrowM: 0.14
+    EffectNeedleLenBaseM: 0.7
+    EffectNeedleLenPerPierceM: 0.5
+    EffectNeedleWindupLenMul: 1.55
+    EffectNeedleArrivalLenMul: 0.72
+    EffectNeedleAfterimageAlpha: 0.35
+    EffectSwarmJitterM: 0.65
+    EffectSwarmMinBlobs: 4
+    EffectSarsintiGroundY: 0.02
+    EffectSarsintiMassWidthMul: 1.35
+    EffectBasicStrikeLenM: 0.9
+    EffectBasicStrikeThickM: 0.16
+    EffectBasicStrikeHeightM: 0.55
+    ActorPoseDurationMs: 180
+    PoseIgne: {x: 0.78, y: 0.88, z: 1.35}
+    PoseSuru: {x: 1.35, y: 0.9, z: 1.1}
+    PoseSarsinti: {x: 1.2, y: 0.55, z: 1.2}
+    PoseKabuk: {x: 1.15, y: 1.05, z: 1.15}
+    PoseZehir: {x: 1.05, y: 0.95, z: 1.25}
+    BossGravityMps2: 22
+    BossRecoilEaseDecayPerSec: 3.2
+    BossShakeAmpBaseM: 0.12
+    BossShakeAmpPerKnockbackM: 0.05
+    BossPinShakeAmpM: 0.04
+    BossLiftVelocityPerM: 4.5
+    BossDeathCollapseSec: 0.85
+    BossDeathSquashY: 0.28
+    BossDeathSpreadXz: 1.35
+    GroundScarCapCount: 60
+    ReadoutAnchorRight: 1
+    ReadoutPunchInSec: 0.12
+    VitalsBarWidthDp: 220
+    VitalsBarHeightDp: 16
+    VitalsBarSpacingDp: 6
+    VitalsMarginDp: 18
+    BossVitalsColor: {r: 0.7, g: 0.74, b: 0.8, a: 0.85}
+    RecoveryLockHeightDp: 10
+    RecoveryLockGapDp: 8
+    ShowFrameTimeHud: 0
+    FrameTimeSampleSec: 0.5
+    TargetFrameRateHz: 60
+    ShowDamageNumbers: 0
+    TuningVersion: 3
+  _playerVisualPrefab: {fileID: 718629181847812861, guid: ed0ca852bcad89045b9e2f14a586dd11, type: 3}
+  _bossVisualPrefab: {fileID: 2656069913898522396, guid: 38f837007cdb5f743bfabb214017b1e6, type: 3}
+  _arenaVisualPrefab: {fileID: 112461506210167075, guid: 301170dc91b74bd498c66d5f746d111e, type: 3}
 --- !u!4 &73949342
 Transform:
   m_ObjectHideFlags: 0

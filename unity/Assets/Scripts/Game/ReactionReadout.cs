@@ -187,6 +187,19 @@ namespace Dovus.Game
             // Safe (menzil dışı) bu büyük yazıyı tetiklemez; SentenceDebugHud zaten not ediyor.
         }
 
+        /// <summary>Kapanış bang'inde skill adı — "farklı iş" havasının yazı katmanı.</summary>
+        public void NoteSkill(string title, string detail, Color accent)
+        {
+            if (_feel == null || string.IsNullOrEmpty(title))
+                return;
+
+            _accent = accent;
+            _main.text = title;
+            _sub.text = detail ?? string.Empty;
+            _needsFit = true;
+            Show();
+        }
+
         void Show() => _shownAtUnscaled = Time.unscaledTime;
 
         /// <summary>
