@@ -12,9 +12,21 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (5. tur · SkillMotor okuma katmanı) · **Sıradaki:**
+**Son güncelleme:** 16 Eylül 2026 (6. tur · DamageCalculator) · **Sıradaki:**
 Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
-+ motor uygulama görevleri (Görev 1–7: passives/chains/zones/status tablosu dünyaya)
++ motor uygulama görevleri (Görev 2–7: resource/cooldown/passives/chains/zones/…)
+
+> **16 Eylül (6. tur) — DamageCalculator (formulas.damage + crit_system), paralel sınıf.**
+> `Core/Combat/DamageCalculator.cs`: `base_damage_value × adj.damage_mult × length.damage_mult ×
+> (1-resistance) × weakness_bonus`, sonra `crit_system` (base + `adjective_crit_bonus[id]`,
+> `max_crit_chance` tavanı, `crit_multiplier`); ctor seed'li `Random` (deterministik test).
+> `FromElementSystemJson` MiniJson ile `crit_system` okur. `SkillResolution` overload'u
+> `CritEligible`/`AdjectiveId`/`BaseDamage`/`DamageMult` kullanır.
+>
+> **Çağrılmıyor:** ManifestationDirector hâlâ `ClosingDamageMath` kullanıyor. İki yol nasıl
+> birleşir (ClosingDamageMath'i değiştir / DamageCalculator'a geç / hibrit) **sahibine sorulacak**
+> — bu görevin kapsamı değil; ClosingDamageMath ve ManifestationDirector'a dokunulmadı.
+> `dotnet test` 163 yeşil (156+7 `DamageCalculatorTests`).
 
 > **16 Eylül (5. tur) — SkillMotor okuma katmanı (passives/chains/zones/status + verb alanları).**
 > `docs/gorev-listesi` motor tam uyum backlog'unun parse adımı: `VerbNode`/`SkillResolution`'a
@@ -242,10 +254,12 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   **Okuma katmanı (5. tur) eklendi, uygulama yok:** `passives`/`chain_mechanics`/
   `manipulation_layers.zone_layer` + `status_interaction_table` artık `SkillMotor`'da
   listeleniyor; verb `crit_eligible`/`element_origin`/`damage_type` de parse+Resolve'a
-  taşındı. `formulas`/`crit_system`/`global_rules`/`state_machine`/`equipment_system` hâlâ
-  hiç kod karşılığı yok. `status_interaction_table` **uygulama** hâlâ `StatusReactionTable.cs`
-  elle kopya — JSON'dan canlı okunan liste henüz StatusBoard'a bağlanmadı. `atoms_catalog` /
-  `all_verbs_atoms` / `atom_kombinasyonlari` kasıtlı okunmuyor (VFX/animasyon referansı).
+  taşındı. **`formulas`/`crit_system` kodu var ama bağlı değil (6. tur):**
+  `DamageCalculator` yazıldı; canlı hasar hâlâ `ClosingDamageMath`. Birleştirme sahibi kararı.
+  `global_rules`/`state_machine`/`equipment_system` hâlâ yok. `status_interaction_table`
+  **uygulama** hâlâ `StatusReactionTable.cs` elle kopya — JSON'dan canlı okunan liste henüz
+  StatusBoard'a bağlanmadı. `atoms_catalog` / `all_verbs_atoms` / `atom_kombinasyonlari`
+  kasıtlı okunmuyor (VFX/animasyon referansı).
 - **His deneme (geçici):** arena `ArenaVisualScale=3`, boss hasar 0, `AllyDummy` %50 —
   kalıcı tasarım değil; his bittiğinde geri alınacak.
 - **SkillMotion selective hedef UI yok** — Zenitsu = boss menzildeyse; ally blink yok.
