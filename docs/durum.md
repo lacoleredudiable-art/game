@@ -4,8 +4,76 @@
 > ajanın repoyu taramadan nerede kaldığımızı anlaması. Kısa tut: ne bitti, ne üretildi,
 > nerede sapma var.
 
-**Son güncelleme:** 23 Ağustos 2026 · **Sıradaki görev:** Faz 3.5 bitti — telefonda his
-turu (soru 3–5) / Faz 4 kapısı
+**Son güncelleme:** 16 Eylül 2026 · **Sıradaki:** element-sistemi motor genişletmesi adım 2+ (bkz. `docs/gorev-listesi.md` "Backlog")
+
+> **element-sistemi 4.2.2 + SkillMotor parse genişletmesi (16 Eylül):** Sahibi sohbette v5.2
+> (5 ailenin verb/bileşik detayı + `three_runes_examples`) ve v5.2.1 (`atoms_catalog`) verisini
+> yapıştırdı; `docs/durum.md`'deki eski açık ("Core/Unity henüz okumuyor") buradan kapandı.
+> `docs/element-sistemi.json` (+ `Resources` kopyası) additive merge ile 4.2.2'ye çıktı: 33
+> fiile `base_resource_cost`/`special`/`zone_effect`, 28 bileşiğe `identity`/`special_mechanics`,
+> `element_families` (5 aile — Ateş kaynakta yoktu), `three_runes_examples`, `atoms_catalog` +
+> `all_verbs_atoms` + `atom_kombinasyonlari` (motor OKUMAZ, VFX/animasyon referansı) eklendi.
+> **2-5 (Zehir/`aktif_zehirlenme`) ve 3-2 (Pus/`kisisel_isinlanma`) bilerek DEĞİŞTİRİLMEDİ**:
+> v5.2 bunları İksir/`tam_arinma` ve hız+görünmezliğe geri almak istiyordu ama bu dosyada zaten
+> kasıtlı dönüşüm notu vardı (sahibi kararı: kilitli hâli koru).
+> `Core/Grammar/MiniJson.cs` (yeni, bağımsız minimal JSON ağacı) + `SkillMotor.cs` artık
+> `animation_type`/`target_mode`/`base_cooldown_sec`/`base_resource_cost`/`target_behaviors`/
+> `special`/`zone_effect` (verb) ve `engine_modifiers`'ın TAMAMI (adjective, 20+ alan) okunuyor;
+> `SkillResolution` bu alanları taşıyor. `dotnet test` 135 yeşil (127→135, 8 yeni test:
+> `SkillMotorTests` + `MiniJsonTests`). Kalan adımlar (`ResourceTracker`/`DamageCalculator`/...)
+> `docs/gorev-listesi.md` "Backlog" bölümünde — `formulas`/`global_rules` yok, o sayılar
+> gelmeden yazılmayacak.
+
+> **Telefon:** `dovus-prototip.apk` (71 MB, 15 Eyl 20:05) → `adb install -r` Success,
+> paket `com.dovus.prototip` açıldı. İçerik: arena×3, boss hasar 0, ally+oyuncu %50,
+> Su heal, Ally HUD barı.
+
+> **Heal / HUD:** Sol üstte Ally barı + kafa üstü bar. Mend daha boş olana (eşitse sana).
+
+> **Arena / VFX his:** `ArenaWalkFit` duvar/floor’dan yürüyüş yarım kenarı (inset);
+> duvara gömülme soft clamp ile kesilir. Arena-wide kırmızı ember kalktı → `LavaDecor`
+> (emissive havuz + ısı partikül + point light). Skill: daha kalın glow çizgi, yassı wisp
+> (eski top-sürü değil), kapanış bang burst. Atmosphere sıcak lav tonu + bloom.
+
+> **SkillMotion + StateBridge motoru:** Core `SkillMotionMotor` (Pus blink/Zenitsu,
+> Hareket dash, sabitleme→işaret) + `StateBridgeBoard` (iki aynı işaret=portal).
+> Game: `SkillMotionDriver`, `StateBridgeView`. Hava+Su yakın boss → Zenitsu kesisi;
+> Hava+Su+Toprak → işaret; iki işaret arası caminin içine gir → diğer uç.
+> Tuning: `CombatTuning.SkillMotion` (sayılar durum.md sapma — spec yoktu).
+
+> **Karadul his turu:** `docs/bosses/karadul.json` (+ Resources). Raid stub’ları future.
+> `ClosingDamageMath`: commit × fiil `base_damage` / 40 × sıfat tax; heal/dash = 0 can.
+> `ClosingDamagePerEffect` 1→**3.5** (~5×4-rün jab düşürür). Hasar sayısı **açık**, bar
+> turuncu + HP metni. Slam hasarı `ActorStatus` (kalkan/stasis i-frame). Dodge i-frame aynı.
+
+> **element-sistemi 4.2.1 merge:** `docs/` + `Resources` senkron. Fold korundu
+> (`secondary_effects.mechanical=true`). Fiil rename (Pus/Zehir/Mühür/Kül/Kum/Obsidiyen),
+> her fiile `animation_type` / `target_mode` / `base_cooldown_sec`, `poison`, silüet eksenleri.
+> `future_layers.state_bridge` binding:false (motor yok). Core henüz yeni alanları okumuyor.
+
+> **Jab polish:** düz vuruş ayrı `BasicStrike` → `Sword_AttackFast` @1.55 + boss’a bak.
+> CastPierce de hızlı kılıç; CastSlam Punch. Skill bang yok (önceki gibi).
+
+> **Anim (Quaternius):** `Player_Quaternius` / `Boss_Quaternius` controller —
+> `Assets/Art/Quaternius/Animators/`. Map: Roll→Dodge, Punch/Sword→Cast*,
+> Jump→Windup, Bite→Slam, HitRecieve→Stagger. `BossVisual` + motor Speed/Dodge/Hit kancaları.
+> Prefab’lara controller atandı. Idle loop için clip kopyaları `Animators/Clips/`.
+
+> **Quaternius bağlandı:** Prefab’lar `Assets/Art/Quaternius/Prefabs/` —
+> Player/Boss/Arena → Bootstrap. Warrior ~1.9m, Demon ~2.8m.
+
+> **Sanat deneme:** Fab 24s kilidi → Quaternius CC0 indirildi:
+> `unity/Assets/Art/Quaternius/` (Characters + Dungeon + BossCandidates).
+> Blend/OBJ/zip → `tools/vendor/Quaternius/`. Öneri: `Warrior.fbx`, `Demon.fbx`.
+> Fab sepeti (JustCreate + Lava + Demon Watcher) `docs/alis-sepeti.md`’de bekliyor.
+
+> **SkillMotor katlama:** 1=kök skill; 2=`skill_name` kartı (36); 3=(bileşik)+kök sıfatı
+> (`Alev · Yoğunlaştırma`); 4=bileşik+bileşik (`Alev+Alev`). 2'li kart 3/4'e taşınmaz.
+> 3/4 hazır `skill_name` yok — formül isim. `secondary_effects` notu güncellendi.
+
+**Önceki omurga:** tek Humanoid + kıyafet; sınıf yok. `ActorVisual` / `CastBodyMapper` hazır.
+
+**Önceki:** 23 Ağustos 2026 · Faz 3.5 bitti — telefonda his turu (soru 3–5) / Faz 4 kapısı
 
 > **T14 kapandı.** Üç fiilin hareket karakteri ayrıldı (İĞNE Zenitsu fırlatış, SÜRÜ
 > kademeli bulut, SARSINTI yerden yükselen halka) + düz vuruşun kısa jab silüeti.
@@ -1613,7 +1681,30 @@ Hepsi `PrototypeTuning`'de, hiçbiri kodda gömülü değil (AGENTS kural 3).
 
 ## Bilinen açıklar
 
-- T1/T2/T3/T4/T7/T7.1/T6.2/T8/T8.1/T8.2/T11.1/T12/T13/T14 `dotnet test` yeşil (`tools/CoreTests`, **92** test).
+- **His deneme (geçici):** arena `ArenaVisualScale=3`, boss hasar 0, `AllyDummy` %50 —
+  kalıcı tasarım değil; his bittiğinde geri alınacak.
+- **SkillMotion selective hedef UI yok** — Zenitsu = boss menzildeyse; ally blink yok.
+  Ateş fırtınası vb. köprü türleri yok (yalnız `isaretli_nokta`).
+- **Karadul faz 2+ / fire_cone / shadow_cut / chain-rift-lock** — JSON’da `implemented:false`;
+  BossDirector hâlâ yalnız slam. Adaptation spam cezası yok.
+- **~~element-sistemi 4.2.1 veri-only~~ — 16 Eylül'de kapandı.** `SkillMotor` artık
+  `animation_type`/`target_mode`/`base_cooldown_sec`/`base_resource_cost`/`target_behaviors`/
+  `special`/`zone_effect`/`engine_modifiers`'ı okuyor (bkz. yukarıdaki 4.2.2 notu). `poison`
+  mechanics'te var, `StatusKind`'ta hâlâ yok (ayrı açık). `future_layers.state_bridge`
+  binding:false — motor yok.
+- **Ateş ailesi'nin 7 fiilinde `base_resource_cost` yok.** v5.2 kaynağı Ateş'i vermedi (yalnızca
+  `three_runes_examples`'ta dolaylı geçiyor, length çarpanıyla ayrıştırılamayacak kadar
+  belirsiz). `aktif_zehirlenme` (Zehir) ve `kisisel_isinlanma` (Pus) de kasıtlı olarak
+  eklenmedi — v5.2 bunları farklı fiillere (İksir/`tam_arinma`, hız+görünmezlik) geri almak
+  istiyordu, sahibi kilitli hâli tuttu. Bu 9 fiilde `VerbNode.BaseResourceCost` / 
+  `SkillResolution.BaseResourceCost` şu an `0` döner — gerçek değer değil, "yok" anlamına gelir.
+- **`atoms_catalog` / `all_verbs_atoms` / `atom_kombinasyonlari` motor OKUMAZ** — kasıtlı;
+  VFX/animasyon ekibi için referans, `SkillMotor` bu alanları parse etmiyor.
+- **Görsel asset bekleniyor (9 Eylül).** Bootstrap’te `Player/Boss/Arena Visual Prefab`
+  slotları boş — kapsül + düz plane. Paketler: `docs/animasyon-omurgasi.md`. Import sonrası
+  Inspector’dan sürükle; Humanoid Animator trigger isimleri `CastPierce` vb. olmalı.
+- T1/T2/T3/T4/T7/T7.1/T6.2/T8/T8.1/T8.2/T11.1/T12/T13/T14 `dotnet test` yeşil (`tools/CoreTests`).
+  `CastBodyMapper` testleri eklendi (fiil→aile + SÜRÜ spread→Channel).
 - **~~His turu kapandı (5 oturum)~~ → Faz 3.5 de kapandı (6. oturum).** §13'ün 3. ve 4. sorusu
   telefonda "evet" aldı. **Açık kalan tek soru 5** (iki oyuncu) — ikinci bir oyuncu gerekiyor,
   kodla kapatılamaz.

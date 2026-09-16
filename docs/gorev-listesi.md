@@ -828,3 +828,26 @@ havada / zırhı kırık durumları ve aralarındaki etkileşim kuralları. Üç
 cümle zaten var; o cümleler ancak bossun durumu onların anlamını değiştirdiğinde birbirinden
 farklı hissediyor. Rün havuzunu büyütmek (KABUK/ZEHİR, sonra sınıf başına ayrı havuz) ucuz ve
 sırası gelecek, ama boş bir bossa beş rün de üç rün kadar tekdüze hisseder.
+
+---
+
+## Backlog — Element sistemi motor genişletmesi (v5.2/5.2.1 sonrası)
+
+**16 Eylül 2026'da eklendi.** Sahibi element-sistemi.json'a v5.2 (5 ailenin verb/bileşik
+detayı + `three_runes_examples`) ve v5.2.1 (`atoms_catalog`) verisini sohbetten yapıştırdı.
+Bu turda **sadece adım 1** yapıldı (bkz. `docs/durum.md`): `SkillMotor` artık
+`animation_type`/`target_mode`/`base_cooldown_sec`/`base_resource_cost`/`target_behaviors`/
+`special`/`zone_effect`/`engine_modifiers`'ın TAMAMINI okuyor (`MiniJson` ile gerçek JSON
+ağacı; `SkillResolution` bu alanları taşıyor).
+
+`docs/element-sistemi.json`'ın kendi `motor_parse_extension.implementation_order` alanı
+kalan adımların otoritesi — burada tekrar yazılmıyor. Özet: adım 2'den başlayarak
+`ResourceTracker` / `CooldownTracker` → `DamageCalculator` → `StatusApplicator` →
+`CompositionResolver` → `ValidationRules` → `ZoneDirector` → `ModeDirector`/`PassiveDirector`
+→ `SpaceDirector`/`TimeDirector`/`RealityDirector` → `ChainDirector`.
+
+**Bu backlog'u alacak ajan için not:** `formulas`/`global_rules`/`crit_system` gibi kök
+bölümler JSON'da henüz YOK (sadece `new_root_sections` listesinde planlı) — o sayılar
+gelmeden `DamageCalculator` yazmak sayı uydurmak olur. Önce sahibiyle o bölümleri netleştir,
+sonra görev prompt'unu bu dosyanın üslubunda (ÖNCE OKU / GÖREV / KABUL KRİTERLERİ / YASAKLAR)
+yaz.
