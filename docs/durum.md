@@ -12,9 +12,17 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (Görev 2 · Resource/Cooldown) · **Sıradaki:**
+**Son güncelleme:** 16 Eylül 2026 (Görev 7 · ZoneDirector) · **Sıradaki:**
 Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
-+ motor uygulama görevleri (Görev 3–7; Görev 1–2 Core yazıldı, oyuna bağlanmadı)
++ kalan motor görevleri + **Faz 6 bağlama** (ZoneDirector/Resource/Cooldown henüz Game'e bağlı değil)
+
+> **16 Eylül — Görev 7 (ZoneDirector).** `Core/Layers/IZoneDirector.cs` (`ZoneInstance` +
+> movement sabitleri) + `Core/Combat/ZoneDirector.cs` (saf C#: TrySpawn/Tick/Remove/MoveZone/
+> SetFollowTarget). Soft-cap = `max_active_zones` (JSON 5), dolunca en eski düşer
+> (StateBridgeBoard deseni). `RemainingSec` Tick ile azalır, ≤0 silinir. Movement ayrımı:
+> `player_directed`→MoveZone, `follow_target`→SetFollowTarget, `static`/boş→ikisi de no-op.
+> Görsel spawn yok. **RadiusM JSON'da yok** — spawn parametresi (çağıran verir). 9 yeni test;
+> ManifestationDirector'a bağlanmadı.
 
 > **16 Eylül (Görev 2) — ResourceTracker + CooldownTracker (Core only).**
 > `Core/Combat/ResourceTracker.cs`: JSON `global_rules.resource_system` (max_mana=100,
@@ -305,12 +313,16 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   verb `crit_eligible`/`element_origin`/`damage_type` parse+Resolve'da.
   **`formulas`/`crit_system` kodu var ama bağlı değil (6. tur):** `DamageCalculator` yazıldı;
   canlı hasar hâlâ `ClosingDamageMath`. **ChainDirector (Görev 5) Core'da** ama
-  ManifestationDirector'a bağlı değil. `passives`/`zones` uygulama yok.
+  ManifestationDirector'a bağlı değil.
+  **Zone yaşam döngüsü Core'da var (Görev 7)** — `ZoneDirector` soft-cap/süre/movement;
+  Game/Manifestation'a bağlı değil (görsel/hasar yok). `passives` uygulama yok.
   `global_rules.resource_system`/`cooldown_rules` → Core sınıflar var, bağ yok;
   `status_durations` ↔ StatusTuning fark listesi (Görev 2, yukarıda; otorite açık).
   `state_machine`/`equipment_system` hâlâ yok. `status_interaction_table`
   **uygulama** hâlâ `StatusReactionTable.cs` elle kopya. `atoms_catalog` /
   `all_verbs_atoms` / `atom_kombinasyonlari` kasıtlı okunmuyor.
+- **Zone `RadiusM` JSON'da yok (Görev 7)** — `TrySpawn` çağıranı vermek zorunda; Game bağlama
+  turunda tuning/config kararı lazım.
 - **His deneme (geçici):** arena `ArenaVisualScale=3`, boss hasar 0, `AllyDummy` %50 —
   kalıcı tasarım değil; his bittiğinde geri alınacak.
 - **SkillMotion selective hedef UI yok** — Zenitsu = boss menzildeyse; ally blink yok.
