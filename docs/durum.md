@@ -12,10 +12,17 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (Görev 6 · StatusReactionTable JSON) · **Sıradaki:**
+**Son güncelleme:** 16 Eylül 2026 (Görev 4 · PassiveDirector) · **Sıradaki:**
 Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
-+ kalan motor görevleri + **Faz 6 bağlama** (Zone/Resource/Cooldown/TimeEffect/RealityEffect/space_layer/
-state machine henüz Game'e bağlı değil)
++ kalan motor görevleri + **Faz 6 bağlama** (Zone/Resource/Cooldown/Passive/TimeEffect/RealityEffect/
+space_layer/state machine henüz Game'e bağlı değil)
+
+> **16 Eylül — Görev 4: PassiveDirector.** `Core/Combat/PassiveDirector.cs`: `SkillMotor.Passives`
+> listesini alır; `TryTrigger(dot[], worldMs)` ile `trigger_combo` birebir eşleşen pasifi açar;
+> `DurationSec` dolunca `Tick` düşürür. Cooldown yok; birden fazla pasif aynı anda aktif
+> (ActiveModeDirector tek-mod farkı). Effects `JsonValue` + birleşik çarpan/ek accessors.
+> **JSON sayısı 10** (gorev-listesi "12" yazıyordu — yanlış; test `EqualTo(10)`).
+> ManifestationDirector'a bağlanmadı. 6 yeni test; `dotnet test` 216 yeşil.
 
 > **16 Eylül — Görev 6: StatusReactionTable canlı JSON.** Elle 14 kural listesi kalktı;
 > `Rebuild(motor.StatusInteractions)` effect metninden magnitude/süre alanlarını okur.
@@ -383,7 +390,8 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   **TimeEffectDirector (Görev 9) Core'da** — zamanlama hesabı var, cast/ölüm/zone'a bağlı değil.
   **RealityEffectDirector (Görev 10) Core'da** — revive_block/partial_erase/
   full_erase(shields); Game'e bağlı değil; revive_block PlayerVitals respawn'a bağlı değil
-  (Faz 6). `passives` uygulama yok.
+  (Faz 6). **PassiveDirector (Görev 4) Core'da** — tetik/süre/çoklu-aktif; Manifestation'a
+  bağlı değil (Faz 6).
   `global_rules.resource_system`/`cooldown_rules` → Core sınıflar var, bağ yok;
   `status_durations` ↔ StatusTuning fark listesi (Görev 2, yukarıda; otorite açık).
   **Görev 3:** `state_machine` okunuyor (`PlayerStates`/`BossStates` + `PlayerStateMachine`;
