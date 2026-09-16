@@ -12,11 +12,22 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (Görev 16 · PlaceholderFactory) · **Sıradaki:**
-Görev 15/17 (AnimationBridge / element_colors audit) +
+**Son güncelleme:** 16 Eylül 2026 (Görev 15 · AnimationBridge) · **Sıradaki:**
+Görev 17 (element_colors audit) +
 Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
 + **Faz 6 bağlama** (Zone/Resource/Cooldown/Passive/TimeEffect/RealityEffect/Equipment/
 space_layer/state machine / Presentation henüz Game'e bağlı değil)
+
+> **16 Eylül — Görev 15: AnimationBridge.** `Game/AnimationBridge.cs` — `AnimationFrameNode`
+> + `Animator`: `animator_state` → `Animator.Play` (Controller'da yoksa
+> `Debug.LogWarning`, fırlatmaz — SafeSetFloat deseni). worldMs frame-timer:
+> `frame * (total_duration_ms / total_frames)` → `DamageFrameReached` /
+> `SpawnVfxFrameReached` (`every_tick` → active_frames aralığında her kare;
+> null → hasar event yok). Bootstrap/ManifestationDirector **bağlanmadı**.
+> Unity MCP Play: Quaternius `Player_Quaternius` + `CastPierce`; startMs=1000,
+> damage frame 12 → **1200** ms (PASSED). JSON `animator_state` isimleri
+> (`Spell_Cast_Projectile` vb.) Quaternius controller'da yok — Faz 6 eşleme
+> (Bilinen açıklar).
 
 > **16 Eylül — Görev 16: PlaceholderFactory.** `Game/PlaceholderFactory.cs` —
 > `vfx_binding.trail_vfx` / `impact_vfx` için `Resources/Vfx/{Trail|Impact}/{style}`
@@ -451,7 +462,10 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   (`PresentationCatalog` 16×16×10). **Görev 14:** `PresentationValidator` hitbox+animation
   doğrular; **`target_ally` hitbox prezentasyonda yok** (6 fiil). **Görev 16:**
   `PlaceholderFactory` trail/impact placeholder üretir; ManifestationDirector spawn
-  bağlama yok (Faz 6). Animator/element_colors audit: Görev 15/17.
+  bağlama yok (Faz 6). **Görev 15:** `AnimationBridge` frame-timer + Play hazır;
+  Bootstrap'e bağlı değil. JSON `animator_state` (`Spell_Cast_*` / `Melee_*` / …)
+  Quaternius controller state isimleriyle (`CastPierce` / `BasicStrike` / …)
+  örtüşmüyor — eşleme Faz 6. Görev 17 (element_colors audit) sırada.
 - **`SkillResolution.Hitbox` = `target_ally` prezentasyon katmanında yok (Görev 14):**
   `prezentasyon-katmani.json` hitbox_library'de `target_ally` id'si yok. Element fiilleri:
   `cc_arindirma`, `hiz_buff`, `kalkan_transferi`, `arindirma`, `kutsal_kalkan`, `dirilis`.
