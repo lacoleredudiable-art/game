@@ -12,9 +12,18 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 16 Eylül 2026 (Görev 9 · TimeEffectDirector) · **Sıradaki:**
-Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. docs/element-sistemi.md §10)
-+ kalan motor görevleri + **Faz 6 bağlama** (Zone/Resource/Cooldown/TimeEffect/space_layer/state machine henüz Game'e bağlı değil)
+**Son güncelleme:** 16 Eylül 2026 (Görev 10 · RealityEffectDirector) · **Sıradaki:**
+Pentagon→Hexagon isim borcu + element/sınıf seçimi + co-op (bkz. `docs/element-sistemi.md` §10)
++ kalan motor görevleri + **Faz 6 bağlama** (Zone/Resource/Cooldown/TimeEffect/RealityEffect/space_layer/
+state machine henüz Game'e bağlı değil)
+
+> **16 Eylül — Görev 10: RealityEffectDirector.** `Core/Combat/RealityEffectDirector.cs`
+> (`manipulation_layers.reality_layer`): `ApplyReviveBlock` / `IsReviveBlocked` (Cehennem,
+> worldMs bayrağı — PlayerVitals respawn'a **bağlanmadı**); `ApplyPartialErase` (Karabasan:
+> shield/haste/damage_reduction); `ApplyFullErase` (Hiçlik: yalnızca shields).
+> `StatusBoard.RemoveKinds` eklendi (`CleanseHostile` değiştirilmedi). **full_erase
+> minions/summons:** oyunda minion/summon sistemi yok — uygulanamaz (aşağıdaki açık).
+> 7 yeni test. ManifestationDirector'a bağlanmadı (Faz 6).
 
 > **16 Eylül — Görev 9: TimeEffectDirector.** Core/Combat/TimeEffectDirector.cs —
 > manipulation_layers.time_layer 4 tipi (worldMs): delayed_detonation / echo
@@ -365,7 +374,9 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   **Zone yaşam döngüsü Core'da var (Görev 7)** — `ZoneDirector` soft-cap/süre/movement;
   Game/Manifestation'a bağlı değil (görsel/hasar yok).
   **TimeEffectDirector (Görev 9) Core'da** — zamanlama hesabı var, cast/ölüm/zone'a bağlı değil.
-  `passives` uygulama yok.
+  **RealityEffectDirector (Görev 10) Core'da** — revive_block/partial_erase/
+  full_erase(shields); Game'e bağlı değil; revive_block PlayerVitals respawn'a bağlı değil
+  (Faz 6). `passives` uygulama yok.
   `global_rules.resource_system`/`cooldown_rules` → Core sınıflar var, bağ yok;
   `status_durations` ↔ StatusTuning fark listesi (Görev 2, yukarıda; otorite açık).
   **Görev 3:** `state_machine` okunuyor (`PlayerStates`/`BossStates` + `PlayerStateMachine`;
@@ -379,6 +390,9 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   `SkillMotor.SpaceEffects` listesinde; yeni mekanik yazılmadı. `pus_gecisi`
   (`stealth_shift`) de ayrı tip olarak okunuyor ama gameplay hâlâ Pus→ShortBlink/
   Zenitsu rün yolundan gidiyor (space_layer'a bağlı değil).
+- **`reality_layer` full_erase minions/summons (Görev 10):** oyunda minion/summon
+  sistemi yok — uygulanamaz. Yalnızca `shields` uygulandı; uydurma minion sistemi
+  kurulmadı.
 - **His deneme (geçici):** arena `ArenaVisualScale=3`, boss hasar 0, `AllyDummy` %50 —
   kalıcı tasarım değil; his bittiğinde geri alınacak.
 - **SkillMotion selective hedef UI yok** — Zenitsu = boss menzildeyse; ally blink yok.

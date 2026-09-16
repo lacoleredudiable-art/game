@@ -244,6 +244,22 @@ namespace Dovus.Core.Status
                 _active.Remove(remove[i]);
         }
 
+        /// <summary>
+        /// Belirtilen türleri siler (reality_layer partial_erase / full_erase).
+        /// CleanseHostile'a dokunmaz — yalnızca listedekileri kaldırır.
+        /// </summary>
+        public void RemoveKinds(IReadOnlyList<StatusKind> kinds)
+        {
+            if (kinds == null || kinds.Count == 0)
+                return;
+            for (int i = 0; i < kinds.Count; i++)
+            {
+                StatusKind k = kinds[i];
+                if (k != StatusKind.None)
+                    _active.Remove(k);
+            }
+        }
+
         public void Clear() => _active.Clear();
 
         struct StatusEntry
