@@ -12,29 +12,7 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-<<<<<<< Updated upstream
-**Son güncelleme:** 17 Eylül 2026 (düz vuruş yan etki fix) · **Sıradaki:**
-Bağlama 8.1 + Kenney VFX prefab drop-in (`Assets/Art/Vfx/README.txt`) +
-tam `Pentagon*`→`Hexagon*` tip rename (ayrı dal) + manuel target UI
-
-> **17 Eylül — Düz vuruş yan etki fix.** Merkez jab `BasicStrikeDot` (varsayılan
-> Ateş) yüzünden skill gibi işleniyordu: mana `ApplyResourceCost`, peşpeşe jab →
-> Ateş zinciri (`BeginChainClosing`), pasif/ulti tetik, boss `BossKnockbackM×0.55`
-> geri itme. `FireClosing`: basic’te zincir/pasif/ulti/mana/CD yok; pending zincir
-> bonusuna dokunulmaz. `ApplyBossClosingBasic` yalnızca sarsıntı (knock=0).
-> `PentagonInput.TriggerCenter` mana/CD kapısını atlar. `dotnet test` **227** yeşil.
-> Dal: `fix/basic-strike-side-effects`. MCP Play doğrulanmadı.
-
-> **17 Eylül — HUD layout/vitals fix.** Telefon: hex 108dp+YNorm 0.18 alt
-> rünleri kesiyordu; dodge Hava üstüne biniyordu; Hava ikonsuz düz disk;
-> can barları kalın/düz. `FittedRadiusPx` safe+dodge boşluğuna kısar;
-> dodge doğu dışarı (Hava -30° ile örtüşmez); gölge+rim katmanı; prosedürel
-> Hava rüzgâr ikonu (`icon-air` yoksa, lightning yok). Vitals: ince pill bar,
-> cam gölge/kenar, sheen. Tuning v13: radius 98dp + dodge clearance 40dp
-> (rünler arası çizim koridoru; dodge hex sağ-alt dışında).
-> `dotnet test` **227** yeşil. Dal: `fix/hud-layout-vitals`.
-=======
-**Son güncelleme:** 17 Eylül 2026 (telefon APK) · **Sıradaki:**
+**Son güncelleme:** 17 Eylül 2026 (HUD+jab → master) · **Sıradaki:**
 Bağlama 8.1 + Kenney VFX prefab drop-in (`Assets/Art/Vfx/README.txt`) +
 tam `Pentagon*`→`Hexagon*` tip rename (ayrı dal) + manuel target UI
 
@@ -42,7 +20,22 @@ tam `Pentagon*`→`Hexagon*` tip rename (ayrı dal) + manuel target UI
 > → `adb install -r` Success (YXQC5PTGUCEQMNV4) + launcher açıldı. Not: incremental
 > Bee "Not rebuilding Data files" eski APK'yı bırakabiliyor; taze için
 > `BuildOptions.CleanBuildCache` veya `Library/Bee/Android` wipe.
->>>>>>> Stashed changes
+> **Önemli:** o APK hâlâ eski HUD (`b800260`); taze master HUD için yeniden build.
+
+> **17 Eylül — Düz vuruş yan etki fix.** Merkez jab `BasicStrikeDot` (varsayılan
+> Ateş) yüzünden skill gibi işleniyordu: mana `ApplyResourceCost`, peşpeşe jab →
+> Ateş zinciri (`BeginChainClosing`), pasif/ulti tetik, boss `BossKnockbackM×0.55`
+> geri itme. `FireClosing`: basic’te zincir/pasif/ulti/mana/CD yok; pending zincir
+> bonusuna dokunulmaz. `ApplyBossClosingBasic` yalnızca sarsıntı (knock=0).
+> `PentagonInput.TriggerCenter` mana/CD kapısını atlar. `dotnet test` **227** yeşil.
+> `master`'a merge edildi.
+
+> **17 Eylül — HUD layout/vitals fix.** Telefon: hex 108dp+YNorm 0.18 alt
+> rünleri kesiyordu; dodge Hava üstüne biniyordu; Hava ikonsuz düz disk;
+> can barları kalın/düz. `FittedRadiusPx` safe+dodge boşluğuna kısar;
+> dodge hex sağ-alt dışı; gölge+rim; prosedürel Hava rüzgâr ikonu.
+> Vitals: ince pill bar. Tuning v13: radius 98dp + dodge clearance 40dp.
+> `dotnet test` **227** yeşil. `master`'a merge edildi.
 
 > **17 Eylül — His / HUD / kamera / iz.** Premium HUD: boss üst orta +
 > `StatusIconStrip` (tüm `StatusKind`, `StatusBoard.TryGet` + süre halkası);
