@@ -108,6 +108,33 @@ public class PlayerStateMachineTests
     }
 
     [Test]
+    public void SyncWorld_Priority_DeadOverDrawing()
+    {
+        var sm = new PlayerStateMachine(LoadFull().PlayerStates);
+        sm.SyncWorld(
+            isDead: true, isStunned: false, isDodging: false, isRooted: false,
+            isCasting: false, isDrawing: true, isRecovering: false);
+        Assert.That(sm.CurrentId, Is.EqualTo("dead"));
+        Assert.That(sm.AllowsDraw, Is.False);
+        Assert.That(sm.AllowsDodge, Is.False);
+    }
+
+    [Test]
+    public void SyncWorld_CastingBlocksDodge_DrawingAllowsPartialDraw()
+    {
+        var sm = new PlayerStateMachine(LoadFull().PlayerStates);
+        sm.SyncWorld(false, false, false, false, isCasting: true, false, false);
+        Assert.That(sm.CurrentId, Is.EqualTo("casting"));
+        Assert.That(sm.AllowsDraw, Is.False);
+        Assert.That(sm.AllowsDodge, Is.False);
+
+        sm.SyncWorld(false, false, false, false, false, isDrawing: true, false);
+        Assert.That(sm.CurrentId, Is.EqualTo("drawing"));
+        Assert.That(sm.AllowsDraw, Is.True);
+        Assert.That(sm.BlocksMove, Is.True);
+    }
+
+    [Test]
     public void BossStates_Parse_ExitsTo_And_StaggerDuration()
     {
         var motor = LoadFull();

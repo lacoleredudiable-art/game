@@ -12,9 +12,9 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 17 Eylül 2026 (Karabasan hat + Hiçlik yarığı) ·
-**Dal:** `master` · **Sıradaki:** PlayerStateMachine↔SentencePhase; fiil action
-özel motorları; afterimage/aura VFX; Hexagon rename
+**Son güncelleme:** 17 Eylül 2026 (Play mode CS0841 + state_machine bağlama) ·
+**Dal:** `master` · **Sıradaki:** fiil action özel motorları; afterimage/aura VFX;
+Hexagon rename
 
 ### Sahip kararları (17 Eylül)
 
@@ -23,7 +23,7 @@
 | `UseFormulaDamage` | **true** — formulas + crit_system canlı |
 | StatusTuning ↔ status_durations | deneme süresinde **böyle kalsın** |
 | Enforce mana/CD | deneme süresinde **false kalsın** |
-| state_machine bağlama | **gerekli** — henüz bağlanmadı (sıradaki) |
+| state_machine bağlama | **bağlandı** — SyncWorld + çizim/dodge/hareket kapısı |
 | fiil `action` özel motor | **gerekli** — henüz yazılmadı (sıradaki) |
 | invisible_link / tear | **bağlandı** (Karabasan hat / Hiçlik yarığı) |
 
@@ -49,7 +49,7 @@ A=oyunda hissedilir · B=kod var kapalı/kısmi · C=parse/Core only · D=motor 
 | space_layer | A | **A/B** | blink/zenitsu/stealth_shift + **invisible_link + tear** |
 | time_layer | A | **A** | echo+extend+delayed_detonation+death_delay |
 | reality_layer | A | A | revive_block / erase |
-| state_machine | A | **C** | PlayerStateMachine SentencePhase’e bağlı değil |
+| state_machine | A | **A** | PlayerStateMachine ↔ SentencePhase/dodge/CC |
 | equipment_system | A | **B** | sabit Alev Kılıcı; seçim yok |
 | status_interaction_table | A | A | Rebuild + 3 özel satır |
 | prezentasyon hitbox `target_ally` | — | **B** | 6 fiil HitboxFound=false |
@@ -86,10 +86,15 @@ Ulti: `afterimage_count`, `taunt_radius_m`, `visual.aura/screen_edges` — uygul
 
 ### Öncelik önerisi (kalan)
 
-1. PlayerStateMachine ↔ SentencePhase bağlama (sahip: gerekli)  
-2. Fiil `action` özel motorları (revive/clone/mark…)  
-3. afterimage / taunt_radius / aura VFX  
-4. (deneme sonrası) süre otoritesi + Enforce  
+1. Fiil `action` özel motorları (revive/clone/mark…)  
+2. afterimage / taunt_radius / aura VFX  
+3. (deneme sonrası) süre otoritesi + Enforce  
+
+> **17 Eylül — Play mode fix + state_machine bağlama.** `playerVitals` CS0841
+> (SpaceHost.Bind sırası) düzeltildi. `PlayerStateMachine.SyncWorld` öncelik:
+> dead&gt;stunned&gt;dodging&gt;rooted&gt;casting(pending bang)&gt;drawing&gt;recovering&gt;idle.
+> PentagonInput çizim/dodge + KinematicMotor hareket kapısı. `dotnet test` yeşil.
+> **Doğrulanamadı:** Unity Play his (drawing’de hareket kilidi).
 
 > **17 Eylül — Karabasan hat + Hiçlik yarığı.** `ISpaceDirector` / `SpaceDirector`
 > (Core) + `Game/Directors/SpaceDirector` host: link 0.5s tick (3 dmg / 1.5 heal),

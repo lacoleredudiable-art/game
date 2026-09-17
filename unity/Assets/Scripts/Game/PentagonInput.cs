@@ -1,5 +1,6 @@
 using Dovus.Core.Combat;
 using Dovus.Core.Grammar;
+using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -87,11 +88,20 @@ namespace Dovus.Game
         PlayerCooldown _cooldown;
         ReactionReadout _readout;
         SkillMotor _skills;
+        PlayerStateMachine _playerStates;
+        System.Func<bool> _isCasting;
 
         /// <summary>Ölü oyuncu yazamaz ve dodge atamaz (T8.1).</summary>
         public void BindVitals(PlayerVitals vitals) => _vitals = vitals;
 
         public void BindStatus(ActorStatus status) => _status = status;
+
+        /// <summary>state_machine.player_states — çizim/dodge kapısı.</summary>
+        public void BindPlayerStates(PlayerStateMachine states, System.Func<bool> isCasting = null)
+        {
+            _playerStates = states;
+            _isCasting = isCasting;
+        }
 
         /// <summary>Bağlama 3: EnforceResourceCost kapısı + yetersiz mana readout.</summary>
         public void BindResource(PlayerResource resource, ReactionReadout readout, SkillMotor skills = null)
@@ -199,6 +209,7 @@ namespace Dovus.Game
         void Update()
         {
             EnsureRuntime();
+            SyncPlayerStateFromWorld();
 
             if (_engine != null && _clock != null)
                 _engine.Tick(_clock.WorldDeltaMs);
@@ -223,6 +234,34 @@ namespace Dovus.Game
             HandleMouse();
             TickDwell();
         }
+
+        void SyncPlayerStateFromWorld()
+        {
+            if (_playerStates == null)
+                return;
+
+            int worldMs = _clock != null ? (int)_clock.Director.WorldTimeMs : 0;
+            bool isDead = _vitals != null && _vitals.IsDown;
+            bool isStunned = false;
+            bool isRooted = false;
+            if (_status != null)
+            {
+                var board = _status.Board;
+                isStunned = board.Has(StatusKind.Stun) || board.Has(StatusKind.Stasis) || board.Has(StatusKind.Fear);
+                isRooted = board.Has(StatusKind.Root);
+            }
+
+            bool isDodging = _dodge != null && _dodge.IsActive(worldMs);
+            bool isCasting = _isCasting != null && _isCasting();
+            bool isDrawing = _engine != null && _engine.State.Phase == SentencePhase.Building;
+            bool isRecovering = _engine != null && _engine.State.Phase == SentencePhase.Recovering;
+
+            _playerStates.SyncWorld(
+                isDead, isStunned, isDodging, isRooted, isCasting, isDrawing, isRecovering);
+        }
+
+        bool AllowsDrawNow => _playerStates == null || _playerStates.AllowsDraw;
+        bool AllowsDodgeNow => _playerStates == null || _playerStates.AllowsDodge;
 
         void EnsureRuntime()
         {
@@ -478,6 +517,13 @@ namespace Dovus.Game
             if (_engine == null)
                 return;
 
+            if (!AllowsDrawNow)
+            {
+                _readout?.NoteDenied("çizilemez");
+                _syllable?.PlayDenied();
+                return;
+            }
+
             if (!_tuning.IsDotOpen(hit.Value))
             {
                 // Kapalı rün: motora/ses/mürekkep yok; aktif tut ki komşuya sızmasın.
@@ -567,6 +613,9 @@ namespace Dovus.Game
                 _debugHud?.NoteCommit();
                 return;
             }
+
+            if (!AllowsDrawNow)
+                return;
 
             // Idle ya da Recovering: kilidi keser (§5) ve tek noktalık cümleyi anında kapatır.
             // Düz vuruş skill değil — mana / CD / zincir kapısı yok (BasicStrikeDot yalnızca
@@ -688,6 +737,14 @@ namespace Dovus.Game
             int worldMs = _clock != null ? (int)_clock.Director.WorldTimeMs : 0;
             if (_dodge == null || _dodge.IsOnCooldown(worldMs))
                 return;
+
+            SyncPlayerStateFromWorld();
+            if (!AllowsDodgeNow)
+            {
+                _readout?.NoteDenied("dodge yok");
+                _syllable?.PlayDenied();
+                return;
+            }
 
             // Building: yatırım batar. Recovering: yalnızca kilit kesilir, ödenmiş kapanış durur.
             bool wasBuilding = _engine != null && _engine.State.Phase == SentencePhase.Building;

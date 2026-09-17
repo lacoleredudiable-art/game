@@ -1,3 +1,4 @@
+using Dovus.Core.Combat;
 using UnityEngine;
 
 namespace Dovus.Game
@@ -19,12 +20,15 @@ namespace Dovus.Game
         ActorStatus _status;
         ActorVisual _visual;
         FollowCamera _follow;
+        PlayerStateMachine _playerStates;
 
         // 16 Eylül: "duvarların içine giriliyor" bug raporu — WallColliderFit dungeon
         // parçalarına BoxCollider ekliyor, burada onlara karşı itme (push-out) uygulanır.
         static readonly Collider[] ObstacleBuffer = new Collider[8];
 
         public void BindCamera(FollowCamera follow) => _follow = follow;
+
+        public void BindPlayerStates(PlayerStateMachine states) => _playerStates = states;
 
         public PrototypeTuning Tuning
         {
@@ -90,6 +94,13 @@ namespace Dovus.Game
                 return;
             }
 
+            if (_playerStates != null && _playerStates.BlocksMove)
+            {
+                Velocity = Vector3.zero;
+                _visual?.SetSpeed(0f);
+                return;
+            }
+
             Vector2 move = _input.MoveDirection;
             Vector3 direction = new Vector3(move.x, 0f, move.y);
             if (direction.sqrMagnitude > 1f)
@@ -102,6 +113,9 @@ namespace Dovus.Game
                 direction = Quaternion.Euler(0f, _follow.OrbitYawDeg, 0f) * direction;
 
             float speedMult = _status != null ? _status.EffectiveMoveSpeedMult : 1f;
+            // recovering.can_move=limited — StatusTuning.SlowSpeedMult (sayı uydurma yok).
+            if (_playerStates != null && _playerStates.MoveLimited && _status != null)
+                speedMult *= _status.Tuning.SlowSpeedMult;
             float dtSec = _clock != null ? (float)(_clock.WorldDeltaMs / 1000.0) : Time.deltaTime;
             float walk = _tuning.WalkSpeedMps * speedMult;
             Velocity = direction * walk;

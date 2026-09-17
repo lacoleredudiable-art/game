@@ -65,6 +65,8 @@ namespace Dovus.Game
         // --- Pasifler (Bağlama 5) — ulti gibi ama cooldown'suz, birden fazla aynı anda ---
         PassiveDirector _passiveDirector;
         PassiveHud _passiveHud;
+        // --- State machine (player_states ↔ SentencePhase / dodge / CC) ---
+        PlayerStateMachine _playerStates;
         // --- Zincir (Bağlama 6) — son N cast elementi; Links geçmişe yazılmaz ---
         ChainDirector _chainDirector;
         ChainRules _chainRules;
@@ -176,6 +178,9 @@ namespace Dovus.Game
         /// <summary>Bağlama 5 / MCP: Bind sonrası pasif durum makinesi (null = henüz bağlanmadı).</summary>
         public PassiveDirector PassiveDirector => _passiveDirector;
 
+        /// <summary>state_machine.player_states — SentencePhase/dodge/CC ile senkron.</summary>
+        public PlayerStateMachine PlayerStates => _playerStates;
+
         /// <summary>Bağlama 6 / MCP: Bind sonrası zincir durum makinesi.</summary>
         public ChainDirector ChainDirector => _chainDirector;
 
@@ -254,6 +259,10 @@ namespace Dovus.Game
             _playerCooldown = player != null ? player.GetComponent<PlayerCooldown>() : null;
             _skills = SkillMotorLoader.LoadOrDefault();
             EnsurePresentationCatalog();
+            _playerStates = new PlayerStateMachine(_skills.PlayerStates);
+            input.BindPlayerStates(_playerStates, () => _pending.Count > 0);
+            var motorForStates = player != null ? player.GetComponent<KinematicMotor>() : null;
+            motorForStates?.BindPlayerStates(_playerStates);
             _modeDirector = new ActiveModeDirector(_skills.ActiveModes);
             _passiveDirector = new PassiveDirector(_skills.Passives);
             _chainRules = LoadChainRulesOrDefault();
@@ -271,6 +280,7 @@ namespace Dovus.Game
                 _zoneField = zoneGo.AddComponent<ZoneFieldView>();
             }
             _zoneField.EnsureRoot();
+            var playerVitals = player != null ? player.GetComponent<PlayerVitals>() : null;
             int linkCap = _skills.MaxActiveLinks > 0 ? _skills.MaxActiveLinks : 3;
             SpaceLayerTuning spaceTuning = _combat != null ? _combat.SpaceLayer : new SpaceLayerTuning();
             _spaceDirector = new SpaceDirector(linkCap, spaceTuning);
@@ -296,7 +306,6 @@ namespace Dovus.Game
             _timeEffectDirector = new TimeEffectDirector(timeCap);
             _dueTimeFields.Clear();
             _realityDirector = new RealityEffectDirector();
-            var playerVitals = player != null ? player.GetComponent<PlayerVitals>() : null;
             if (playerVitals != null)
             {
                 playerVitals.SetReviveBlockedGate(() =>
@@ -368,6 +377,7 @@ namespace Dovus.Game
             TickActiveMode(worldMs, dtSec);
             TickPassives(worldMs);
             SyncDashCooldownMult();
+            SyncPlayerStateMachine(worldMs);
             TickZones(dtSec);
             _spaceHost?.Tick(dtSec);
             TickTimeEffects(worldMs);
@@ -768,6 +778,32 @@ namespace Dovus.Game
             float mode = _modeDirector?.DashCooldownMult ?? 1f;
             float passive = _passiveDirector?.DashCooldownMult ?? 1f;
             _input.Dodge.CooldownMult = mode * passive;
+        }
+
+        void SyncPlayerStateMachine(double worldMs)
+        {
+            if (_playerStates == null)
+                return;
+
+            var vitals = _player != null ? _player.GetComponent<PlayerVitals>() : null;
+            bool isDead = vitals != null && vitals.IsDown;
+            bool isStunned = false;
+            bool isRooted = false;
+            if (_playerStatus != null)
+            {
+                var board = _playerStatus.Board;
+                isStunned = board.Has(StatusKind.Stun) || board.Has(StatusKind.Stasis) || board.Has(StatusKind.Fear);
+                isRooted = board.Has(StatusKind.Root);
+            }
+
+            int worldMsInt = (int)worldMs;
+            bool isDodging = _input?.Dodge != null && _input.Dodge.IsActive(worldMsInt);
+            bool isCasting = _pending.Count > 0;
+            bool isDrawing = _engine != null && _engine.State.Phase == SentencePhase.Building;
+            bool isRecovering = _engine != null && _engine.State.Phase == SentencePhase.Recovering;
+
+            _playerStates.SyncWorld(
+                isDead, isStunned, isDodging, isRooted, isCasting, isDrawing, isRecovering);
         }
 
         /// <summary>
