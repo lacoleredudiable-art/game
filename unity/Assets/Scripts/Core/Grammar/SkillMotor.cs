@@ -26,6 +26,7 @@ namespace Dovus.Core.Grammar
         readonly List<ZoneNode> _zones = new();
         readonly List<SpaceEffectNode> _spaceEffects = new();
         readonly List<TimeEffectNode> _timeEffects = new();
+        readonly List<RealityEffectNode> _realityEffects = new();
         readonly List<PlayerStateNode> _playerStates = new();
         readonly List<BossStateNode> _bossStates = new();
         int _maxActiveZones;
@@ -73,6 +74,9 @@ namespace Dovus.Core.Grammar
         /// <summary>manipulation_layers.time_layer.max_active_fields.</summary>
         public int MaxActiveTimeFields => _maxActiveTimeFields;
 
+        /// <summary>manipulation_layers.reality_layer.effects — okuma; uygulama Bağlama 11.</summary>
+        public IReadOnlyList<RealityEffectNode> RealityEffects => _realityEffects;
+
         /// <summary>
         /// docs/element-sistemi.json state_machine.player_states — yalnızca okuma.
         /// Runtime geçişler Core/Combat/PlayerStateMachine; SentencePhase'e bağlanmadı.
@@ -112,6 +116,7 @@ namespace Dovus.Core.Grammar
             motor._maxActiveZones = ParseZones(root, motor._zones);
             motor._maxActiveLinks = ParseSpaceEffects(root, motor._spaceEffects);
             motor._maxActiveTimeFields = ParseTimeEffects(root, motor._timeEffects);
+            ParseRealityEffects(root, motor._realityEffects);
             ParseStateMachine(root, motor._playerStates, motor._bossStates);
             if (motor.CoreCount < 6)
                 throw new InvalidOperationException("element-sistemi: 6 çekirdek element beklenir.");
@@ -608,6 +613,44 @@ namespace Dovus.Core.Grammar
         }
 
         /// <summary>
+        /// manipulation_layers.reality_layer.effects.
+        /// duration_sec / targets tipine göre opsiyonel.
+        /// </summary>
+        static void ParseRealityEffects(JsonValue root, List<RealityEffectNode> dst)
+        {
+            JsonValue layer = root["manipulation_layers"]["reality_layer"];
+            if (layer.Kind != JsonKind.Object)
+                return;
+
+            foreach (JsonValue obj in layer["effects"].AsArray())
+            {
+                string id = obj["id"].AsString();
+                if (string.IsNullOrEmpty(id)) continue;
+
+                string[] targets = Array.Empty<string>();
+                if (obj.Has("targets") && obj["targets"].Kind == JsonKind.Array)
+                {
+                    var list = new List<string>();
+                    foreach (JsonValue t in obj["targets"].AsArray())
+                    {
+                        string s = t.AsString();
+                        if (!string.IsNullOrEmpty(s))
+                            list.Add(s);
+                    }
+                    targets = list.ToArray();
+                }
+
+                dst.Add(new RealityEffectNode(
+                    id: id,
+                    element: obj["element"].AsString(),
+                    type: obj["type"].AsString(),
+                    hasDurationSec: obj.Has("duration_sec"),
+                    durationSec: obj["duration_sec"].AsFloat(0f),
+                    targets: targets));
+            }
+        }
+
+        /// <summary>
         /// state_machine.player_states + boss_states. Bool/string karışık capability
         /// alanları (can_draw:"partial", can_move:"limited") metin olarak saklanır.
         /// </summary>
@@ -1011,6 +1054,30 @@ namespace Dovus.Core.Grammar
         public float DamageRatio { get; }
         public bool HasMultiplier { get; }
         public float Multiplier { get; }
+    }
+
+    /// <summary>manipulation_layers.reality_layer.effects[i]</summary>
+    public readonly struct RealityEffectNode
+    {
+        public RealityEffectNode(
+            string id, string element, string type,
+            bool hasDurationSec, float durationSec,
+            string[] targets)
+        {
+            Id = id ?? string.Empty;
+            Element = element ?? string.Empty;
+            Type = type ?? string.Empty;
+            HasDurationSec = hasDurationSec;
+            DurationSec = durationSec;
+            Targets = targets ?? Array.Empty<string>();
+        }
+
+        public string Id { get; }
+        public string Element { get; }
+        public string Type { get; }
+        public bool HasDurationSec { get; }
+        public float DurationSec { get; }
+        public IReadOnlyList<string> Targets { get; }
     }
 
     /// <summary>docs/element-sistemi.json state_machine.player_states[id] — bkz. ParseStateMachine.</summary>

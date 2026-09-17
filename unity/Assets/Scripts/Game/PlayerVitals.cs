@@ -1,4 +1,5 @@
 using Dovus.Core.Tuning;
+using System;
 using UnityEngine;
 
 namespace Dovus.Game
@@ -15,6 +16,7 @@ namespace Dovus.Game
         Vector3 _spawnPos;
         bool _captured;
         ActorVisual _visual;
+        Func<bool> _reviveBlocked;
 
         public int Hp => _hp;
         public int MaxHp { get; private set; }
@@ -23,6 +25,11 @@ namespace Dovus.Game
 
         /// <summary>Dönüşe kalan gerçek saniye (HUD okur); ayakta ise 0.</summary>
         public float RespawnInSec => IsDown ? Mathf.Max(0f, _respawnAtUnscaled - Time.unscaledTime) : 0f;
+
+        /// <summary>
+        /// Bağlama 11: reality revive_block — true iken respawn ertelenir.
+        /// </summary>
+        public void SetReviveBlockedGate(Func<bool> gate) => _reviveBlocked = gate;
 
         public void Bind(BossTuning boss, int maxHp, float startRatio = 1f)
         {
@@ -86,6 +93,13 @@ namespace Dovus.Game
         {
             if (!IsDown || Time.unscaledTime < _respawnAtUnscaled)
                 return;
+
+            if (_reviveBlocked != null && _reviveBlocked())
+            {
+                // Kapı açık kalana kadar kısa aralıklarla yeniden dene (HUD 0'da takılı kalmasın).
+                _respawnAtUnscaled = Time.unscaledTime + 0.25f;
+                return;
+            }
 
             if (!_captured)
                 CaptureSpawn();

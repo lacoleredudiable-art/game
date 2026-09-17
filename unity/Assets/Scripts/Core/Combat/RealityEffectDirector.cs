@@ -133,4 +133,12 @@ namespace Dovus.Core.Combat
             return StatusKindUtil.TryParse(targetId, out kind) && kind != StatusKind.None;
         }
     }
+
+    /// <summary>JSON reality_layer.effects[].type sabitleri.</summary>
+    public static class RealityEffectTypes
+    {
+        public const string ReviveBlock = "revive_block";
+        public const string PartialErase = "partial_erase";
+        public const string FullErase = "full_erase";
+    }
 }

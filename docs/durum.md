@@ -12,9 +12,10 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 17 Eylül 2026 (LivingEffect köprüsü + length ekonomisi) ·
-**Dal:** `fix/living-effect-skill-bridge` · **Sıradaki:** reality/space/state;
-Enforce bayrakları (sahip kararı); zone CC; Kenney VFX; Hexagon rename
+**Son güncelleme:** 17 Eylül 2026 (Bağlama 11: reality + zone CC) ·
+**Dal:** `fix/reality-zone-cc` · **Sıradaki:** space_layer SkillMotion bağlama;
+state_machine ↔ SentencePhase (sahip kararı); Enforce bayrakları (sahip kararı);
+Kenney VFX; Hexagon rename
 
 ## Bulgular — JSON → oyun (17 Eylül)
 
@@ -35,11 +36,19 @@ trajectory-hitbox borusu Faz 6’da bırakılmış → telefonda “bağlı değ
 | Resolve → status / damage_mult | A — çalışır |
 | passives / chain / zone görsel / echo / equipment / ulti kısmi | A/B |
 | formulas/crit, Enforce mana/CD | B — kod var, bayrak kapalı |
-| length cast/mana/mobility | **A (bu dal)** — SkillMobility |
-| reality / space / state_machine | C — Core veya parse only |
+| length cast/mana/mobility | **A** — SkillMobility |
+| reality / space / state_machine | **reality A** (Bağlama 11); space/state C |
 | trajectory + hitbox → LivingEffect | **A** — SkillWorldPlanner |
 | atoms / three_runes_examples / lore | D — motor okumaz |
 | `yayma` expanding_wave | **JSON düzeltildi** (trajectory_override + radial_burst hitbox) |
+| zone CC (root/slow) | **A** — ZoneInstance.CcKind + boss Approach |
+
+> **17 Eylül — Bağlama 11: reality + zone CC.** `SkillMotor.RealityEffects` parse;
+> `ManifestationDirector` ElementOrigin ↔ revive_block / partial_erase / full_erase;
+> `PlayerVitals.SetReviveBlockedGate` respawn kapısı; zone spawn `skill.Mechanics`
+> root/slow → `ZoneInstance.CcKind`, tick’te boss board yenileme; `BossDirector.Approach`
+> `EffectiveBlocksMovement` / `MoveSpeedMult` dinler. `dotnet test` **237** yeşil.
+> **Doğrulanamadı:** Unity Play / telefon (Cehennem revive_block, Kaya zone root).
 
 > **17 Eylül — LivingEffect + length ekonomisi.** `SkillWorldPlanner` /
 > `LivingEffect.ApplyPlan` / `FromSkill` / bang scale / sıfat `apply_*` / HUD.
@@ -620,10 +629,11 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   (patlama/heal/stealth vb. string) henüz simüle edilmiyor — yalnızca bildirim + çarpan.
   **Zone yaşam döngüsü Core'da var (Görev 7)** — `ZoneDirector` soft-cap/süre/movement;
   Game/Manifestation'a bağlı değil (görsel/hasar yok).
-  **TimeEffectDirector (Görev 9) Core'da** — zamanlama hesabı var, cast/ölüm/zone'a bağlı değil.
-  **RealityEffectDirector (Görev 10) Core'da** — revive_block/partial_erase/
-  full_erase(shields); Game'e bağlı değil; revive_block PlayerVitals respawn'a bağlı değil
-  (Faz 6). **PassiveDirector (Görev 4 + Bağlama 5)** — Game'e bağlı: tetik/süre/DamageMult/
+  **TimeEffectDirector (Görev 9) Core'da** — zamanlama hesabı var; Bağlama 8 echo +
+  extend_lifetime Game'e bağlı; delayed_detonation/death_delay hâlâ yok.
+  **RealityEffectDirector (Görev 10) + Bağlama 11** — Game'e bağlı: ElementOrigin ↔
+  revive_block (PlayerVitals kapısı) / partial_erase / full_erase(shields);
+  minions/summons sistem yok. **PassiveDirector (Görev 4 + Bağlama 5)** — Game'e bağlı: tetik/süre/DamageMult/
   HealMult/LifestealAdd + PassiveHud. Henüz uygulanmayan efektler: `crit_chance_add`,
   `damage_taken_mult`, `dash_cooldown_mult`, `armor_add`, `reflect_ratio_add`,
   `reveal_radius_mult` (Faz 6 kalanı).
@@ -652,7 +662,9 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 - **Zone `RadiusM` JSON'da yok (Görev 7 / Bağlama 7)** — `ManifestationTuning.ZoneDefaultRadiusM=3.6`
   (`ClosingBangRadiusM` ile aynı); JSON'a yarıçap eklenirse tuning yerine okunmalı.
 - **`ui_rules.zone_display`** — `in_world` + transparency 0.6 Bağlama 7'de uygulandı
-  (`CreateZoneDisk`). Zone gameplay etkisi (root/blok) henüz yok — yalnızca yaşam + görsel.
+  (`CreateZoneDisk`). Zone CC (root/slow): Bağlama 11 — `skill.Mechanics` →
+  `ZoneInstance.CcKind`, boss Approach StatusBoard dinler. Fiziksel wall collider yok
+  (teknoloji soft-clamp).
 - **`read_as_display.duration_ms` (1500) ≠ `FeelTuning.ReadoutHoldMs` (900)** — Görev 12'de
   not düşüldü, değiştirilmedi (sahibi otorite seçer).
 - **space_layer'da 2 effect JSON'da var, oyunda karşılığı yok (Görev 8):**

@@ -369,6 +369,22 @@ namespace Dovus.Game
             if (_player == null || dtSec <= 0f)
                 return;
 
+            float speedMult = 1f;
+            if (_bossStatus != null)
+            {
+                if (_bossStatus.EffectiveBlocksMovement)
+                {
+                    _visual?.SetSpeed(0f);
+                    return;
+                }
+                speedMult = _bossStatus.EffectiveMoveSpeedMult;
+                if (speedMult <= 0.01f)
+                {
+                    _visual?.SetSpeed(0f);
+                    return;
+                }
+            }
+
             Vector3 home = _reactor.Home;
             Vector3 to = _player.position - home;
             to.y = 0f;
@@ -380,9 +396,9 @@ namespace Dovus.Game
                 return;
             }
 
-            home += to.normalized * _combat.Boss.ApproachSpeedMps * dtSec;
+            home += to.normalized * _combat.Boss.ApproachSpeedMps * speedMult * dtSec;
             _reactor.Home = home;
-            _visual?.SetSpeed(1f);
+            _visual?.SetSpeed(speedMult);
             FacePlayer();
         }
 

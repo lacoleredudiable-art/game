@@ -26,7 +26,8 @@ namespace Dovus.Core.Combat
         public bool TrySpawn(
             string element, string movement, float durationSec,
             float x, float y, float z, float radiusM,
-            out ZoneInstance spawned)
+            out ZoneInstance spawned,
+            string ccKind = "")
         {
             spawned = default;
             if (durationSec <= 0f || radiusM <= 0f)
@@ -43,7 +44,8 @@ namespace Dovus.Core.Combat
                 x, y, z,
                 radiusM,
                 durationSec,
-                movement);
+                movement,
+                NormalizeCcKind(ccKind));
             _zones.Add(spawned);
             return true;
         }
@@ -150,10 +152,22 @@ namespace Dovus.Core.Combat
             return ZoneMovement.Static;
         }
 
+        /// <summary>Yalnızca hareket CC: root / slow. Diğer mechanics zone CC sayılmaz.</summary>
+        static string NormalizeCcKind(string ccKind)
+        {
+            if (string.IsNullOrEmpty(ccKind))
+                return string.Empty;
+            if (string.Equals(ccKind, "root", StringComparison.OrdinalIgnoreCase))
+                return "root";
+            if (string.Equals(ccKind, "slow", StringComparison.OrdinalIgnoreCase))
+                return "slow";
+            return string.Empty;
+        }
+
         static ZoneInstance WithRemaining(in ZoneInstance z, float remainingSec) =>
-            new(z.Id, z.Element, z.X, z.Y, z.Z, z.RadiusM, remainingSec, z.Movement);
+            new(z.Id, z.Element, z.X, z.Y, z.Z, z.RadiusM, remainingSec, z.Movement, z.CcKind);
 
         static ZoneInstance WithPosition(in ZoneInstance z, float x, float y, float zPos) =>
-            new(z.Id, z.Element, x, y, zPos, z.RadiusM, z.RemainingSec, z.Movement);
+            new(z.Id, z.Element, x, y, zPos, z.RadiusM, z.RemainingSec, z.Movement, z.CcKind);
     }
 }

@@ -10,7 +10,8 @@ namespace Dovus.Core.Layers
     {
         public ZoneInstance(
             int id, string element, float x, float y, float z,
-            float radiusM, float remainingSec, string movement)
+            float radiusM, float remainingSec, string movement,
+            string ccKind = "")
         {
             Id = id;
             Element = element ?? string.Empty;
@@ -20,6 +21,7 @@ namespace Dovus.Core.Layers
             RadiusM = radiusM;
             RemainingSec = remainingSec;
             Movement = movement ?? string.Empty;
+            CcKind = ccKind ?? string.Empty;
         }
 
         public int Id { get; }
@@ -31,6 +33,10 @@ namespace Dovus.Core.Layers
         public float RemainingSec { get; }
         /// <summary>"static" | "player_directed" | "follow_target" (JSON movement).</summary>
         public string Movement { get; }
+        /// <summary>
+        /// Zone içindeki hedefe yenilenen CC — skill.Mechanics'ten (root/slow). Boş = yok.
+        /// </summary>
+        public string CcKind { get; }
     }
 
     /// <summary>
@@ -48,7 +54,8 @@ namespace Dovus.Core.Layers
         bool TrySpawn(
             string element, string movement, float durationSec,
             float x, float y, float z, float radiusM,
-            out ZoneInstance spawned);
+            out ZoneInstance spawned,
+            string ccKind = "");
 
         /// <summary>Kalan süreyi düşürür; RemainingSec ≤ 0 olanları siler.</summary>
         void Tick(float dtSec);
