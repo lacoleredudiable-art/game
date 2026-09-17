@@ -176,4 +176,41 @@ public class ActiveModeDirectorTests
         Assert.That(director.NotifyHealed(), Is.False);
         Assert.That(director.Active, Is.Not.Null);
     }
+
+    [Test]
+    public void Visual_And_Afterimage_Taunt_Parsed()
+    {
+        var motor = LoadFull();
+        ActiveModeNode? storm = null;
+        ActiveModeNode? wall = null;
+        ActiveModeNode? rage = null;
+        foreach (var m in motor.ActiveModes)
+        {
+            if (m.Id == "firtina_akisi") storm = m;
+            if (m.Id == "asilmaz_duvar") wall = m;
+            if (m.Id == "ofke_patlamasi") rage = m;
+        }
+
+        Assert.That(storm, Is.Not.Null);
+        Assert.That(storm!.Value.GetEffect("afterimage_count"), Is.EqualTo(5f).Within(0.001f));
+        Assert.That(storm.Value.VisualAura, Is.Not.Empty);
+
+        Assert.That(wall, Is.Not.Null);
+        Assert.That(wall!.Value.GetEffect("taunt_radius_m"), Is.EqualTo(12f).Within(0.001f));
+
+        Assert.That(rage, Is.Not.Null);
+        Assert.That(rage!.Value.VisualScreenEdges, Is.Not.Empty);
+
+        var dir = new ActiveModeDirector(motor.ActiveModes);
+        // Fırtına: hareket koşulu
+        Assert.That(dir.TryTrigger(3, new ActiveModeContext { SecondsSinceLastMoved = 0 }, 0), Is.Not.Null);
+        Assert.That(dir.AfterimageCount, Is.EqualTo(5));
+        Assert.That(dir.VisualAura, Is.Not.Empty);
+
+        dir.NotifyHealed(); // no-op for storm
+        // Aşılmaz: ayrı tetik — önce süresi bitsin diye yeni director
+        var dir2 = new ActiveModeDirector(motor.ActiveModes);
+        Assert.That(dir2.TryTrigger(4, new ActiveModeContext { HpRatio = 0.8f }, 0), Is.Not.Null);
+        Assert.That(dir2.TauntRadiusM, Is.EqualTo(12f).Within(0.001f));
+    }
 }

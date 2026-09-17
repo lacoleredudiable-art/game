@@ -120,8 +120,18 @@ namespace Dovus.Core.Combat
         public float CastTimeMult => Active?.GetEffect("cast_time_mult", 1f) ?? 1f;
         public float AttackSpeedMult => Active?.GetEffect("attack_speed_mult", 1f) ?? 1f;
         public float DashCooldownMult => Active?.GetEffect("dash_cooldown_mult", 1f) ?? 1f;
+        /// <summary>Fırtına Akışı afterimage_count — 0 veya yoksa FeelTuning kullanılır.</summary>
+        public int AfterimageCount => Active != null
+            ? MathfRoundToInt(Active.Value.GetEffect("afterimage_count", 0f))
+            : 0;
+        /// <summary>Aşılmaz Duvar taunt_radius_m — 0 = yok.</summary>
+        public float TauntRadiusM => Active?.GetEffect("taunt_radius_m", 0f) ?? 0f;
+        public string VisualAura => Active?.VisualAura ?? string.Empty;
+        public string VisualScreenEdges => Active?.VisualScreenEdges ?? string.Empty;
         public bool BlocksMovement => Active?.BlocksMovement ?? false;
         public float HpPerSecPercentCost => Active?.HpPerSecPercentCost ?? 0f;
+
+        static int MathfRoundToInt(float v) => (int)Math.Round(v);
     }
 
     public struct ActiveModeContext

@@ -62,6 +62,8 @@ namespace Dovus.Game
         // --- Ulti (active_modes) — 16 Eylül, güven kaygısına karşılık uçtan uca ---
         ActiveModeDirector _modeDirector;
         ActiveModeHud _modeHud;
+        ActiveModeVfx _modeVfx;
+        AfterimageTrail _afterimage;
         // --- Pasifler (Bağlama 5) — ulti gibi ama cooldown'suz, birden fazla aynı anda ---
         PassiveDirector _passiveDirector;
         PassiveHud _passiveHud;
@@ -252,6 +254,20 @@ namespace Dovus.Game
             _ally = ally;
             _modeHud = modeHud;
             _passiveHud = passiveHud;
+            _afterimage = player != null ? player.GetComponent<AfterimageTrail>() : null;
+            _modeVfx = FindAnyObjectByType<ActiveModeVfx>();
+            if (_modeVfx == null)
+            {
+                var vfxGo = new GameObject("ActiveModeVfx");
+                _modeVfx = vfxGo.AddComponent<ActiveModeVfx>();
+            }
+            Transform canvasRoot = modeHud != null ? modeHud.transform.parent : null;
+            if (canvasRoot == null)
+            {
+                var canvas = FindAnyObjectByType<Canvas>();
+                canvasRoot = canvas != null ? canvas.transform : null;
+            }
+            _modeVfx.Bind(player, canvasRoot);
             _pentagonView = pentagonView;
             _equippedWeapon = equippedWeapon;
             _equipmentBonus = equipmentBonus;
@@ -427,6 +443,7 @@ namespace Dovus.Game
             if (_modeDirector.Active == null)
             {
                 _modeHpDrainAccum = 0f;
+                ClearModePresentation();
                 return;
             }
 
@@ -445,16 +462,62 @@ namespace Dovus.Game
                 }
             }
 
+            SyncModePresentation();
+            TickModeTaunt();
+
             ActiveModeContext ctx = BuildModeContext(worldMs);
             if (_modeDirector.Tick(worldMs, ctx))
             {
                 _modeHud?.Hide();
                 _modeHpDrainAccum = 0f;
+                ClearModePresentation();
             }
             else
             {
                 _modeHud?.UpdateRemaining(_modeDirector.RemainingSec(worldMs));
             }
+        }
+
+        void SyncModePresentation()
+        {
+            if (_modeDirector?.Active == null)
+                return;
+
+            int after = _modeDirector.AfterimageCount;
+            if (_afterimage != null)
+                _afterimage.CountOverride = after > 0 ? after : -1;
+
+            // VFX her kare Show etmek yerine yalnız aktifken pulse — Show idempotent.
+            ActiveModeNode mode = _modeDirector.Active.Value;
+            Color tint = _colors != null
+                ? _colors.ColorForRune((Rune)Mathf.Clamp(mode.TriggerDot, 1, 6))
+                : Color.cyan;
+            _modeVfx?.Show(mode.VisualAura, mode.VisualScreenEdges, tint);
+        }
+
+        void ClearModePresentation()
+        {
+            if (_afterimage != null)
+                _afterimage.CountOverride = -1;
+            _modeVfx?.Hide();
+        }
+
+        /// <summary>Aşılmaz Duvar taunt_radius_m — boss Taunt durumu (tek oyuncu; strip + okunur).</summary>
+        void TickModeTaunt()
+        {
+            float radius = _modeDirector?.TauntRadiusM ?? 0f;
+            if (radius <= 0f || _bossStatus == null || _player == null || _boss == null)
+                return;
+
+            float dist = Vector3.Distance(
+                new Vector3(_player.position.x, 0f, _player.position.z),
+                new Vector3(_boss.transform.position.x, 0f, _boss.transform.position.z));
+            if (dist > radius)
+                return;
+
+            // Süreyi yenile — mod açıkken taunt düşmesin.
+            double ms = _combat != null ? _combat.Status.TauntMs : 2000;
+            _bossStatus.Board.Apply(StatusKind.Taunt, ms, 1f);
         }
 
         /// <summary>Dört-aynı-rün kapanışı geldiğinde (X-X-X-X) ulti tetiklenip tetiklenmediğine bakar.</summary>
@@ -479,6 +542,7 @@ namespace Dovus.Game
             _debugHud?.NoteSkillBang(mode.Name, mode.ReadAs);
             _modeHud?.ShowActivated(mode.Name, mode.ReadAs, tint);
             ApplyModeOneShotEffects(mode);
+            SyncModePresentation();
         }
 
         /// <summary>
@@ -1877,7 +1941,11 @@ namespace Dovus.Game
             healed = playerVitals.ApplyHeal(amount);
             if (healed > 0)
             {
-                _modeDirector?.NotifyHealed(); // "healer iyileştirirse biter" (Kan Çılgınlığı)
+                if (_modeDirector != null && _modeDirector.NotifyHealed())
+                {
+                    _modeHud?.Hide();
+                    ClearModePresentation();
+                }
                 _damageHud?.ShowDamage(-healed);
                 _readout?.NoteSkill(skill.DisplayName, "self +" + healed, new Color(0.4f, 1f, 0.65f));
                 _debugHud?.NoteSkillBang(skill.DisplayName, "self +" + healed);

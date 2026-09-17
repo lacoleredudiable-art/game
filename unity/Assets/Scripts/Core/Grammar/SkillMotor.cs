@@ -425,6 +425,7 @@ namespace Dovus.Core.Grammar
                 JsonValue cost = obj["cost"];
                 string costText = cost.Kind == JsonKind.String ? cost.AsString() : string.Empty;
 
+                JsonValue visual = obj["visual"];
                 dst.Add(new ActiveModeNode(
                     id: id,
                     name: obj["name"].AsString(),
@@ -445,7 +446,9 @@ namespace Dovus.Core.Grammar
                     hpPerSecPercentCost: cost.Kind == JsonKind.Object ? cost["hp_per_sec_percent"].AsFloat(0f) : 0f,
                     defenseDropMult: ParseDefenseDropMult(costText),
                     healBreaksMode: costText.Contains("healer") || costText.Contains("iyileş"),
-                    effects: obj["effects"]));
+                    effects: obj["effects"],
+                    visualAura: visual["aura"].AsString(),
+                    visualScreenEdges: visual["screen_edges"].AsString()));
             }
         }
 
@@ -847,7 +850,9 @@ namespace Dovus.Core.Grammar
             string activationType, float activationWithinSec, float activationThreshold, int activationMinCount,
             string deactivationType, float deactivationThreshold,
             bool blocksMovement, float hpPerSecPercentCost, float defenseDropMult, bool healBreaksMode,
-            JsonValue effects)
+            JsonValue effects,
+            string visualAura = "",
+            string visualScreenEdges = "")
         {
             Id = id; Name = name; Element = element; TriggerDot = triggerDot;
             HasDuration = hasDuration; DurationSec = durationSec; CooldownSec = cooldownSec;
@@ -858,6 +863,8 @@ namespace Dovus.Core.Grammar
             BlocksMovement = blocksMovement; HpPerSecPercentCost = hpPerSecPercentCost;
             DefenseDropMult = defenseDropMult; HealBreaksMode = healBreaksMode;
             Effects = effects;
+            VisualAura = visualAura ?? string.Empty;
+            VisualScreenEdges = visualScreenEdges ?? string.Empty;
         }
 
         public string Id { get; }
@@ -885,6 +892,10 @@ namespace Dovus.Core.Grammar
         /// <summary>cost metni "healer iyileştirirse biter" (Kan Çılgınlığı).</summary>
         public bool HealBreaksMode { get; }
         public JsonValue Effects { get; }
+        /// <summary>visual.aura — VFX etiket (oyuncu camgöbeği/mor paletine map edilir).</summary>
+        public string VisualAura { get; }
+        /// <summary>visual.screen_edges — kenar vignette etiket.</summary>
+        public string VisualScreenEdges { get; }
 
         public float GetEffect(string key, float fallback = 0f) => Effects[key].AsFloat(fallback);
         public bool GetEffectBool(string key, bool fallback = false) => Effects[key].AsBool(fallback);

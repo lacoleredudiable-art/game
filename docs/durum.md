@@ -12,9 +12,9 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 17 Eylül 2026 (Play mode CS0841 + state_machine bağlama) ·
-**Dal:** `master` · **Sıradaki:** fiil action özel motorları; afterimage/aura VFX;
-Hexagon rename
+**Son güncelleme:** 17 Eylül 2026 (ulti VFX polish) ·
+**Dal:** `master` · **Sıradaki:** fiil action özel motorları; Hexagon rename;
+(deneme sonrası süre/Enforce)
 
 ### Sahip kararları (17 Eylül)
 
@@ -43,7 +43,7 @@ A=oyunda hissedilir · B=kod var kapalı/kısmi · C=parse/Core only · D=motor 
 | resource / cooldown rules | A | **B** | Enforce* bayrakları false |
 | status_durations | D | **B** | StatusTuning sabit; shield 50/5s hizalandı, stun/root vb. hâlâ kısa |
 | passives | A | **A/B** | crit/armor/reflect/dashCD/damage_taken bağlı; reveal_radius yok |
-| active_modes (ulti) | A | **A/B** | cast_time + attack_speed + dash_cooldown bağlı; afterimage/taunt/aura yok |
+| active_modes (ulti) | A | **A** | cast/dash + afterimage/taunt/aura/screen_edges |
 | chain_mechanics | A | **B** | çarpan+HUD; finisher dünya efekti yok |
 | zone_layer | A | **A/B** | spawn+CC root/slow; zone_lock/block wall collider yok |
 | space_layer | A | **A/B** | blink/zenitsu/stealth_shift + **invisible_link + tear** |
@@ -82,13 +82,17 @@ Bunlar JSON’da ayrı action; oyun çoğunlukla yalnız `mechanics` uygular:
 
 PassiveDirector: `RevealRadiusMult` hâlâ uygulanmıyor.
 
-Ulti: `afterimage_count`, `taunt_radius_m`, `visual.aura/screen_edges` — uygulanmıyor.
-
 ### Öncelik önerisi (kalan)
 
 1. Fiil `action` özel motorları (revive/clone/mark…)  
-2. afterimage / taunt_radius / aura VFX  
-3. (deneme sonrası) süre otoritesi + Enforce  
+2. (deneme sonrası) süre otoritesi + Enforce  
+3. Hexagon rename / Kenney VFX  
+
+> **17 Eylül — ulti VFX polish.** `visual.aura` / `screen_edges` parse +
+> `ActiveModeVfx` (halka + kenar vignette, oyuncu camgöbeği/mor paleti).
+> Fırtına `afterimage_count` → AfterimageTrail.CountOverride; Aşılmaz
+> `taunt_radius_m` → boss Taunt yenileme. `dotnet test` **257** yeşil.
+> **Doğrulanamadı:** Unity Play ulti görselleri.
 
 > **17 Eylül — Play mode fix + state_machine bağlama.** `playerVitals` CS0841
 > (SpaceHost.Bind sırası) düzeltildi. `PlayerStateMachine.SyncWorld` öncelik:

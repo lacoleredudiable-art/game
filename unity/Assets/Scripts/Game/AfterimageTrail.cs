@@ -26,8 +26,24 @@ namespace Dovus.Game
         PrototypeTuning _colors;
         Material _mat;
         float _alpha = 0.55f;
+        int _countOverride = -1;
 
-        public int Count => _feel != null ? _feel.AfterimageCount : 0;
+        /// <summary>Ulti afterimage_count — &lt;0 ise FeelTuning.AfterimageCount.</summary>
+        public int CountOverride
+        {
+            get => _countOverride;
+            set => _countOverride = value;
+        }
+
+        public int Count
+        {
+            get
+            {
+                if (_countOverride >= 0)
+                    return _countOverride;
+                return _feel != null ? _feel.AfterimageCount : 0;
+            }
+        }
 
         public void Bind(FeelTuning feel, PrototypeTuning colors)
         {
@@ -39,10 +55,11 @@ namespace Dovus.Game
 
         public void Emit(Vector3 position, Quaternion rotation, Vector3 scale)
         {
-            if (_feel == null || _feel.AfterimageCount <= 0)
+            int cap = Count;
+            if (_feel == null || cap <= 0)
                 return;
 
-            while (_live.Count >= _feel.AfterimageCount)
+            while (_live.Count >= cap)
                 Retire(0);
 
             Ghost g = _pool.Count > 0 ? _pool.Dequeue() : CreateGhost();
