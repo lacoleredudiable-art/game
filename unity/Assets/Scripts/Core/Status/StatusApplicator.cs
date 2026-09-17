@@ -11,14 +11,16 @@ namespace Dovus.Core.Status
     {
         public readonly struct Result
         {
-            public Result(bool knockback, bool cleansed, IReadOnlyList<StatusReactionRule> triggeredReactions)
+            public Result(bool knockback, bool cleansed, IReadOnlyList<StatusReactionRule> triggeredReactions, bool pull = false)
             {
                 Knockback = knockback;
                 Cleansed = cleansed;
                 TriggeredReactions = triggeredReactions;
+                Pull = pull;
             }
 
             public bool Knockback { get; }
+            public bool Pull { get; }
             public bool Cleansed { get; }
 
             /// <summary>
@@ -49,6 +51,7 @@ namespace Dovus.Core.Status
                 return new Result(false, false, EmptyReactions);
 
             bool knockback = false;
+            bool pull = false;
             bool cleansed = false;
             string[] mechanics = skill.Mechanics ?? System.Array.Empty<string>();
 
@@ -96,26 +99,28 @@ namespace Dovus.Core.Status
                 }
 
                 // Sıfat engine_modifiers — fiil mechanics dışında ek durum (3’lü/4’lü farkı).
-                ApplyAdjectiveModifiers(skill, board, self, ref knockback, tuning, mechanics);
+                ApplyAdjectiveModifiers(skill, board, caster, self, ref knockback, ref pull, tuning, mechanics);
             }
             finally
             {
                 board.ReactionTriggered -= OnReaction;
             }
 
-            return new Result(knockback, cleansed, triggered);
+            return new Result(knockback, cleansed, triggered, pull);
         }
 
         /// <summary>
         /// apply_slow / apply_root / apply_burn / apply_poison_on_hit / apply_silence /
-        /// apply_knockback — JSON adjectives.engine_modifiers. Fiil mechanics’te zaten
-        /// varsa tekrar uygulanmaz (durum etkileşim çift tetiklenmesin).
+        /// apply_knockback / apply_pull / apply_stealth / apply_confuse — JSON adjectives.
+        /// Fiil mechanics’te zaten varsa tekrar uygulanmaz.
         /// </summary>
         static void ApplyAdjectiveModifiers(
             SkillResolution skill,
             StatusBoard board,
+            StatusBoard caster,
             bool self,
             ref bool knockback,
+            ref bool pull,
             StatusTuning tuning,
             string[] mechanics)
         {
@@ -156,11 +161,27 @@ namespace Dovus.Core.Status
             if (ModifierTruthy(mods, "apply_knockback") && !self && !HasMech("knockback"))
                 knockback = true;
 
+            if (ModifierTruthy(mods, "apply_pull") && !self)
+                pull = true;
+
             if (mods.Has("apply_damage_reduction") && !HasMech("damage_reduction"))
             {
                 float mult = mods["apply_damage_reduction"].AsFloat(tuning.DamageReductionMult);
                 if (mult > 0f && mult < 1f)
                     board.Apply(StatusKind.DamageReduction, tuning.DamageReductionMs, mult);
+            }
+
+            // gizleme: her zaman caster'a stealth (hedef board self olsa da caster aynı).
+            if (ModifierTruthy(mods, "apply_stealth") && !HasMech("stealth") && caster != null)
+                caster.Apply(StatusKind.Stealth, tuning.StealthMs, 1f);
+
+            // sasirtma: Confuse kind yok → Blind + Slow (durum.md öncelik 2).
+            if (ModifierTruthy(mods, "apply_confuse") && !self)
+            {
+                if (!HasMech("blind"))
+                    board.Apply(StatusKind.Blind, tuning.BlindMs, 1f);
+                if (!HasMech("slow"))
+                    board.Apply(StatusKind.Slow, tuning.SlowMs, tuning.SlowSpeedMult);
             }
         }
 

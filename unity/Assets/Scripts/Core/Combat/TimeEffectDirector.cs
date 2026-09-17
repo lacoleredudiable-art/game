@@ -27,15 +27,16 @@ namespace Dovus.Core.Combat
 
         /// <summary>
         /// delayed_detonation (Karabasan): cast worldMs'te planlanır, delay_sec sonra tetik.
+        /// pendingDamage bang hasarı (CollectDue → ComputedDetonationDamage).
         /// delaySec ≤ 0 ise false.
         /// </summary>
         public bool TryScheduleDelayedDetonation(
             string effectId, string element, float delaySec, double worldMs,
-            out TimeEffectField field)
+            out TimeEffectField field, float pendingDamage = 0f)
         {
             return TrySchedule(
                 effectId, element, TimeEffectTypes.DelayedDetonation,
-                delaySec, worldMs, damageRatio: 0f, sourceDamage: 0f, out field);
+                delaySec, worldMs, damageRatio: 0f, sourceDamage: pendingDamage, out field);
         }
 
         /// <summary>
@@ -196,6 +197,12 @@ namespace Dovus.Core.Combat
         public float ComputedEchoDamage =>
             string.Equals(Type, TimeEffectTypes.Echo, StringComparison.Ordinal)
                 ? TimeEffectDirector.EchoDamage(SourceDamage, DamageRatio)
+                : 0f;
+
+        /// <summary>delayed_detonation için bekleyen bang hasarı; diğer tiplerde 0.</summary>
+        public float ComputedDetonationDamage =>
+            string.Equals(Type, TimeEffectTypes.DelayedDetonation, StringComparison.Ordinal)
+                ? Math.Max(0f, SourceDamage)
                 : 0f;
     }
 }

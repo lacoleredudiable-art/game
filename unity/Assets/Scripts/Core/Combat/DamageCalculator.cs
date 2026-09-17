@@ -82,7 +82,8 @@ namespace Dovus.Core.Combat
             float resistance,
             float weaknessBonus,
             string adjectiveId,
-            bool critEligible)
+            bool critEligible,
+            float extraCritChanceAdd = 0f)
         {
             float adj = adjectiveDamageMult > 0f ? adjectiveDamageMult : 1f;
             float len = lengthDamageMult > 0f ? lengthDamageMult : 1f;
@@ -97,7 +98,7 @@ namespace Dovus.Core.Combat
             float chance = 0f;
             if (critEligible && amount > 0f)
             {
-                chance = CritChanceFor(adjectiveId);
+                chance = Math.Min(CritChanceFor(adjectiveId) + Math.Max(0f, extraCritChanceAdd), _maxCritChance);
                 if (chance > 0f && _rng.NextDouble() < chance)
                 {
                     amount *= _critMultiplier;
@@ -109,6 +110,21 @@ namespace Dovus.Core.Combat
         }
 
         /// <summary>
+        /// ClosingDamageMath sonrası pasif/sıfat crit_chance_add — taban crit_system yok,
+        /// yalnız ekstra şans (UseFormulaDamage=false yolu).
+        /// </summary>
+        public DamageHit ApplyExtraCrit(float amount, float extraCritChanceAdd)
+        {
+            if (amount <= 0f || extraCritChanceAdd <= 0f)
+                return new DamageHit(amount, false, 0f);
+
+            float chance = Math.Min(extraCritChanceAdd, _maxCritChance);
+            if (chance > 0f && _rng.NextDouble() < chance)
+                return new DamageHit(amount * _critMultiplier, true, chance);
+            return new DamageHit(amount, false, chance);
+        }
+
+        /// <summary>
         /// SkillResolution alanlarından çözer. LengthDamageMult SkillResolution'da yok
         /// (SkillMotor yalnızca LengthCastMult taşır) — çağıran length.damage_mult verir.
         /// </summary>
@@ -116,7 +132,8 @@ namespace Dovus.Core.Combat
             in SkillResolution skill,
             float lengthDamageMult,
             float resistance,
-            float weaknessBonus)
+            float weaknessBonus,
+            float extraCritChanceAdd = 0f)
         {
             if (skill.IsEmpty || skill.BaseDamage <= 0f)
                 return new DamageHit(0f, false, 0f);
@@ -128,7 +145,8 @@ namespace Dovus.Core.Combat
                 resistance,
                 weaknessBonus,
                 skill.AdjectiveId,
-                skill.CritEligible);
+                skill.CritEligible,
+                extraCritChanceAdd);
         }
     }
 

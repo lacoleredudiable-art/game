@@ -17,6 +17,11 @@ namespace Dovus.Core.Combat
             _tuning = tuning ?? new DodgeTuning();
         }
 
+        /// <summary>
+        /// Ulti/pasif dash_cooldown_mult çarpımı (0 = serbest dodge). IsOnCooldown bunu kullanır.
+        /// </summary>
+        public float CooldownMult { get; set; } = 1f;
+
         public int? PressTimeMs => _pressTimeMs >= 0 ? _pressTimeMs : null;
 
         public void Begin(int pressTimeMs)
@@ -44,7 +49,11 @@ namespace Dovus.Core.Combat
             if (_pressTimeMs < 0)
                 return false;
 
-            return worldTimeMs < _pressTimeMs + _tuning.CooldownMs;
+            float mult = CooldownMult;
+            if (mult < 0f)
+                mult = 0f;
+            int cd = (int)Math.Round(_tuning.CooldownMs * mult);
+            return worldTimeMs < _pressTimeMs + cd;
         }
 
         /// <summary>

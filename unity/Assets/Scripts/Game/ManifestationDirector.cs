@@ -76,9 +76,11 @@ namespace Dovus.Game
         // --- Zone (Bağlama 7) — element_origin ↔ zone_layer.zones ---
         ZoneDirector _zoneDirector;
         ZoneFieldView _zoneField;
-        // --- Zaman (Bağlama 8) — echo + extend_lifetime; delayed_detonation/death_delay YOK ---
+        // --- Zaman (Bağlama 8) — echo / extend / delayed_detonation / death_delay ---
         TimeEffectDirector _timeEffectDirector;
         readonly List<TimeEffectField> _dueTimeFields = new();
+        bool _deferredBossDeath;
+        PentagonInput _input;
         // --- Gerçeklik (Bağlama 11) — revive_block + erase ---
         RealityEffectDirector _realityDirector;
         // --- Ekipman (Bağlama 9) — sabit silah; seçim UI yok ---
@@ -221,6 +223,7 @@ namespace Dovus.Game
             EquipmentBonusResolver equipmentBonus = null)
         {
             _clock = clock;
+            _input = input;
             _engine = input.Engine;
             _combat = input.Combat;
             _colors = colors;
@@ -280,7 +283,11 @@ namespace Dovus.Game
                     && _realityDirector.IsReviveBlocked(_clock.Director.WorldTimeMs));
             }
             if (_playerStatus != null)
+            {
                 _playerStatus.ModeDirector = _modeDirector;
+                _playerStatus.PassiveDirector = _passiveDirector;
+                _playerStatus.ReflectBossVitals = bossVitals;
+            }
 
             _motionDriver = player.GetComponent<SkillMotionDriver>();
             if (_motionDriver == null)
@@ -338,6 +345,7 @@ namespace Dovus.Game
             TickStateBridge(worldMs);
             TickActiveMode(worldMs, dtSec);
             TickPassives(worldMs);
+            SyncDashCooldownMult();
             TickZones(dtSec);
             TickTimeEffects(worldMs);
             _animationBridge.Tick(worldMs);
@@ -681,6 +689,15 @@ namespace Dovus.Game
             }
         }
 
+        void SyncDashCooldownMult()
+        {
+            if (_input?.Dodge == null)
+                return;
+            float mode = _modeDirector?.DashCooldownMult ?? 1f;
+            float passive = _passiveDirector?.DashCooldownMult ?? 1f;
+            _input.Dodge.CooldownMult = mode * passive;
+        }
+
         /// <summary>
         /// Bağlama 8: ElementOrigin ↔ time_layer echo (Alev / alev_yanki).
         /// Kaynak hasarın damage_ratio kadarını delay_sec sonra uygular.
@@ -709,6 +726,77 @@ namespace Dovus.Game
                     e.Id, e.Element, delay, ratio, sourceDamage, worldMs, out _);
                 return;
             }
+        }
+
+        /// <summary>
+        /// Karabasan delayed_detonation — bang hasarını delay_sec sonra uygular.
+        /// true = hasar ertelendi (şimdi ApplyClosingDamage yazılmasın).
+        /// </summary>
+        bool TryDeferDamageAsDelayedDetonation(SkillResolution skill, float pendingDamage)
+        {
+            if (_timeEffectDirector == null || _skills == null || skill.IsEmpty || pendingDamage <= 0f)
+                return false;
+
+            string origin = skill.ElementOrigin;
+            if (string.IsNullOrEmpty(origin))
+                return false;
+
+            for (int i = 0; i < _skills.TimeEffects.Count; i++)
+            {
+                TimeEffectNode e = _skills.TimeEffects[i];
+                if (!string.Equals(e.Type, TimeEffectTypes.DelayedDetonation, StringComparison.Ordinal))
+                    continue;
+                if (!string.Equals(e.Element, origin, StringComparison.Ordinal))
+                    continue;
+
+                float delay = e.HasDelaySec ? e.DelaySec : 0f;
+                double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
+                return _timeEffectDirector.TryScheduleDelayedDetonation(
+                    e.Id, e.Element, delay, worldMs, out _, pendingDamage);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Cehennem death_delay — ölüm beyanını delay_sec erteler (çökme/revive sonra).
+        /// </summary>
+        bool TryDeferBossDeath(SkillResolution skill, double worldMs)
+        {
+            if (_timeEffectDirector == null || _skills == null || skill.IsEmpty)
+                return false;
+
+            string origin = skill.ElementOrigin;
+            if (string.IsNullOrEmpty(origin))
+                return false;
+
+            for (int i = 0; i < _skills.TimeEffects.Count; i++)
+            {
+                TimeEffectNode e = _skills.TimeEffects[i];
+                if (!string.Equals(e.Type, TimeEffectTypes.DeathDelay, StringComparison.Ordinal))
+                    continue;
+                if (!string.Equals(e.Element, origin, StringComparison.Ordinal))
+                    continue;
+
+                float delay = e.HasDelaySec ? e.DelaySec : 0f;
+                if (!_timeEffectDirector.TryScheduleDeathDelay(
+                        e.Id, e.Element, delay, worldMs, out _))
+                    return false;
+                _deferredBossDeath = true;
+                return true;
+            }
+
+            return false;
+        }
+
+        void BeginBossDeathSequence(double worldMs)
+        {
+            _bossDirector?.NotifyBossDown(worldMs);
+            float collapseSec = _colors != null ? _colors.BossDeathCollapseSec : 0.85f;
+            _boss?.BeginCollapse(collapseSec, worldMs);
+            _deathReviveAtMs = worldMs + collapseSec * 1000.0;
+            _deathPending = true;
+            _deferredBossDeath = false;
         }
 
         /// <summary>
@@ -754,7 +842,7 @@ namespace Dovus.Game
             _zoneField?.Sync(_zoneDirector.ActiveZones);
         }
 
-        /// <summary>Bağlama 8: vadesi gelen echo alanlarını uygula (delayed_detonation/death_delay yok).</summary>
+        /// <summary>Bağlama 8: vadesi gelen echo / delayed_detonation / death_delay.</summary>
         void TickTimeEffects(double worldMs)
         {
             if (_timeEffectDirector == null)
@@ -765,13 +853,29 @@ namespace Dovus.Game
             for (int i = 0; i < n; i++)
             {
                 TimeEffectField field = _dueTimeFields[i];
-                if (!string.Equals(field.Type, TimeEffectTypes.Echo, StringComparison.Ordinal))
+                if (string.Equals(field.Type, TimeEffectTypes.Echo, StringComparison.Ordinal))
+                {
+                    ApplyEchoDamage(field.ComputedEchoDamage);
                     continue;
-                ApplyEchoDamage(field.ComputedEchoDamage);
+                }
+
+                if (string.Equals(field.Type, TimeEffectTypes.DelayedDetonation, StringComparison.Ordinal))
+                {
+                    ApplyEchoDamage(field.ComputedDetonationDamage);
+                    continue;
+                }
+
+                if (string.Equals(field.Type, TimeEffectTypes.DeathDelay, StringComparison.Ordinal)
+                    && _deferredBossDeath
+                    && _bossVitals != null
+                    && _bossVitals.IsDown)
+                {
+                    BeginBossDeathSequence(worldMs);
+                }
             }
         }
 
-        /// <summary>Yankı hasarı — kaynak × ratio; tekrar echo planlamaz.</summary>
+        /// <summary>Yankı / gecikmeli patlama hasarı — kaynak; tekrar echo planlamaz.</summary>
         void ApplyEchoDamage(float amount)
         {
             if (amount <= 0f || _bossVitals == null || _bossVitals.IsDown)
@@ -785,11 +889,7 @@ namespace Dovus.Game
             if (killed)
             {
                 double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
-                _bossDirector?.NotifyBossDown(worldMs);
-                float collapseSec = _colors != null ? _colors.BossDeathCollapseSec : 0.85f;
-                _boss?.BeginCollapse(collapseSec, worldMs);
-                _deathReviveAtMs = worldMs + collapseSec * 1000.0;
-                _deathPending = true;
+                BeginBossDeathSequence(worldMs);
                 return;
             }
 
@@ -1159,6 +1259,10 @@ namespace Dovus.Game
                 armedSkill = _skills.ResolveWords(sentence.Words);
                 castMult = SkillMobility.CastTimeMult(armedSkill);
             }
+            castMult *= _modeDirector?.CastTimeMult ?? 1f;
+            float atkSpd = _modeDirector?.AttackSpeedMult ?? 1f;
+            if (atkSpd > 0f)
+                castMult /= atkSpd;
             recoverySec *= castMult;
 
             double bangAt = _clock.Director.WorldTimeMs
@@ -1592,6 +1696,9 @@ namespace Dovus.Game
             if (result.Knockback && _bossStatus != null && _player != null)
                 _bossStatus.ApplyKnockbackFrom(_player.position);
 
+            if (result.Pull && _bossStatus != null && _player != null)
+                _bossStatus.ApplyPullToward(_player.position);
+
             // 16 Eylül: "skilleri attığımda bir etkileşim göremiyorum" raporu — durum
             // etkileşim tablosu (docs/element-sistemi.json status_interaction_table) mekanik
             // olarak zaten çalışıyordu, hiçbir görsel sinyali yoktu. Tetiklenen kural varsa
@@ -1728,6 +1835,7 @@ namespace Dovus.Game
 
             bool isCrit = false;
             float damage;
+            float extraCrit = ExtraCritChanceAdd(skill);
             if (_combat != null && _combat.UseFormulaDamage &&
                 !isBasicStrike && !skill.IsEmpty && skill.BaseDamage > 0f)
             {
@@ -1736,7 +1844,8 @@ namespace Dovus.Game
                     in skill,
                     lengthDamageMult: 1f,
                     resistance: 0f,
-                    weaknessBonus: 1f);
+                    weaknessBonus: 1f,
+                    extraCritChanceAdd: extraCrit);
                 damage = hit.Amount * outMult;
                 isCrit = hit.WasCrit;
             }
@@ -1748,6 +1857,12 @@ namespace Dovus.Game
                     skill,
                     isBasicStrike,
                     outMult);
+                if (extraCrit > 0f && damage > 0f)
+                {
+                    DamageHit critHit = EnsureDamageCalculator().ApplyExtraCrit(damage, extraCrit);
+                    damage = critHit.Amount;
+                    isCrit = critHit.WasCrit;
+                }
             }
 
             // Teleport fiili BaseDamage=0; Zenitsu kesisi commit × SlashCommitMult.
@@ -1767,11 +1882,19 @@ namespace Dovus.Game
             if (_bossStatus != null)
                 damage *= _bossStatus.Board.IncomingDamageMult;
 
+            // Karabasan: bang hasarı delay_sec sonra (delayed_detonation).
+            if (!isBasicStrike && TryDeferDamageAsDelayedDetonation(skill, damage))
+            {
+                LastClosingDamageDealt = damage;
+                return damage; // echo kaynağı; CollectDue uygular — şimdi yazma
+            }
+
             LastClosingDamageDealt = damage;
             _damageHud?.ShowDamage(damage, isCrit);
             _lastDamageDealtMs = _clock.Director.WorldTimeMs; // "dealt_damage_recently" (Öfke Patlaması)
 
             float lifesteal = (_modeDirector?.Lifesteal ?? 0f) + (_passiveDirector?.LifestealAdd ?? 0f);
+            lifesteal += AdjectiveLifesteal(skill);
             if (lifesteal > 0f)
             {
                 var vitals = _player != null ? _player.GetComponent<PlayerVitals>() : null;
@@ -1785,19 +1908,32 @@ namespace Dovus.Game
             if (killed)
             {
                 double worldMs = _clock.Director.WorldTimeMs;
-                // Önce telegrafı kapat (Hide taban ölçeğe çeker), sonra çökme — sıra tersine
-                // dönseydi Hide çökmeyi ezerdi.
-                _bossDirector?.NotifyBossDown(worldMs);
-                float collapseSec = _colors != null ? _colors.BossDeathCollapseSec : 0.85f;
-                _boss?.BeginCollapse(collapseSec, worldMs);
-                // Yavaş çekim kaldırıldı — revive çökme süresi kadar dünya saati sonra.
-                _deathReviveAtMs = worldMs + collapseSec * 1000.0;
-                _deathPending = true;
+                if (!isBasicStrike && TryDeferBossDeath(skill, worldMs))
+                    return damage;
+                BeginBossDeathSequence(worldMs);
                 return damage;
             }
 
             bossVisual?.PlayStagger();
             return damage;
+        }
+
+        static float AdjectiveLifesteal(in SkillResolution skill)
+        {
+            if (skill.IsEmpty || skill.EngineModifiers.IsNull)
+                return 0f;
+            if (!skill.EngineModifiers.Has("apply_lifesteal"))
+                return 0f;
+            return Math.Max(0f, skill.EngineModifiers["apply_lifesteal"].AsFloat(0f));
+        }
+
+        float ExtraCritChanceAdd(in SkillResolution skill)
+        {
+            float add = _passiveDirector?.CritChanceAdd ?? 0f;
+            if (!skill.IsEmpty && !skill.EngineModifiers.IsNull &&
+                skill.EngineModifiers.Has("crit_chance_add"))
+                add += Math.Max(0f, skill.EngineModifiers["crit_chance_add"].AsFloat(0f));
+            return add;
         }
 
         // Kapanış izi (bu metot) ve seyahat izi (TickEffects, view.Scarred) iki ayrı bayrak:

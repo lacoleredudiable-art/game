@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Dovus.Core.Grammar;
 using Dovus.Core.Manifestation;
@@ -128,6 +129,31 @@ public class SkillWorldPlannerTests
         var target = new StatusBoard();
         var caster = new StatusBoard();
         StatusApplicator.ApplySkill(skill, caster, target, new StatusTuning());
+        Assert.That(target.Has(StatusKind.Slow), Is.True);
+    }
+
+    [Test]
+    public void StatusApplicator_ApplyPull_Stealth_Confuse_FromModifiers()
+    {
+        var mods = MiniJson.Parse(
+            "{\"apply_pull\":true,\"apply_stealth\":true,\"apply_confuse\":true}");
+        var skill = new SkillResolution(
+            "t", "Test", "Test", "t", "job",
+            "v", "V", "strike", "damage",
+            10f, 0f, "single_target", "free_move", Array.Empty<string>(),
+            "cekme", "Çekme", "none",
+            1f, 1f, 1f,
+            2, "Temel", 1f, "free_move",
+            string.Empty,
+            engineModifiers: mods);
+
+        var target = new StatusBoard();
+        var caster = new StatusBoard();
+        var result = StatusApplicator.ApplySkill(skill, caster, target, new StatusTuning());
+
+        Assert.That(result.Pull, Is.True);
+        Assert.That(caster.Has(StatusKind.Stealth), Is.True);
+        Assert.That(target.Has(StatusKind.Blind), Is.True);
         Assert.That(target.Has(StatusKind.Slow), Is.True);
     }
 }

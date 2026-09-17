@@ -164,4 +164,24 @@ public class DamageCalculatorTests
         }
         Assert.That(amountsA, Is.EqualTo(amountsB));
     }
+
+    [Test]
+    public void ExtraCritChanceAdd_RaisesChance()
+    {
+        var calc = new DamageCalculator(
+            seed: 1,
+            baseCritChance: 0f,
+            critMultiplier: 2f,
+            maxCritChance: 1f,
+            adjectiveCritBonus: new Dictionary<string, float>());
+
+        // extra 1.0 → her zaman crit
+        DamageHit hit = calc.Compute(40f, 1f, 1f, 0f, 1f, "", true, extraCritChanceAdd: 1f);
+        Assert.That(hit.WasCrit, Is.True);
+        Assert.That(hit.Amount, Is.EqualTo(80f).Within(0.001f));
+
+        DamageHit rolled = calc.ApplyExtraCrit(50f, 1f);
+        Assert.That(rolled.WasCrit, Is.True);
+        Assert.That(rolled.Amount, Is.EqualTo(100f).Within(0.001f));
+    }
 }

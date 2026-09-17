@@ -117,6 +117,9 @@ namespace Dovus.Core.Combat
                                          * (Active?.DefenseDropMult ?? 1f);
         public float MoveSpeedMult => Active?.GetEffect("move_speed_mult", 1f) ?? 1f;
         public float Lifesteal => Active?.GetEffect("lifesteal", 0f) ?? 0f;
+        public float CastTimeMult => Active?.GetEffect("cast_time_mult", 1f) ?? 1f;
+        public float AttackSpeedMult => Active?.GetEffect("attack_speed_mult", 1f) ?? 1f;
+        public float DashCooldownMult => Active?.GetEffect("dash_cooldown_mult", 1f) ?? 1f;
         public bool BlocksMovement => Active?.BlocksMovement ?? false;
         public float HpPerSecPercentCost => Active?.HpPerSecPercentCost ?? 0f;
     }

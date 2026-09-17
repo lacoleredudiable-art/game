@@ -18,6 +18,9 @@ namespace Dovus.Game
         /// </summary>
         public ActiveModeDirector ModeDirector { get; set; }
 
+        /// <summary>Pasif çarpanları (damage_taken / armor / reflect) — yalnız oyuncu.</summary>
+        public PassiveDirector PassiveDirector { get; set; }
+
         /// <summary>KinematicMotor bunu okur — StatusBoard × aktif ulti modu.</summary>
         public float EffectiveMoveSpeedMult => Board.MoveSpeedMult * (ModeDirector?.MoveSpeedMult ?? 1f);
 
@@ -30,6 +33,9 @@ namespace Dovus.Game
         BossReactor _reactor;
         bool _stealthVisual;
         Renderer[] _renderers;
+
+        /// <summary>Oyuncu reflect pasifi için boss canı (Bind'de bossVitals yoksa ayrıca set).</summary>
+        public BossVitals ReflectBossVitals { get; set; }
 
         public void Bind(
             GameClock clock,
@@ -109,8 +115,17 @@ namespace Dovus.Game
         {
             if (raw <= 0f) return;
             float modeMult = ModeDirector?.DamageTakenMult ?? 1f;
-            float afterShield = Board.AbsorbDamage(raw * Board.IncomingDamageMult * modeMult);
+            float passiveTaken = PassiveDirector?.DamageTakenMult ?? 1f;
+            float armor = PassiveDirector?.ArmorAdd ?? 0f;
+            float armorMult = 1f - Mathf.Clamp(armor, 0f, 0.9f);
+            float incoming = raw * Board.IncomingDamageMult * modeMult * passiveTaken * armorMult;
+            float afterShield = Board.AbsorbDamage(incoming);
             if (afterShield <= 0f) return;
+
+            float reflect = PassiveDirector?.ReflectRatioAdd ?? 0f;
+            BossVitals reflectTarget = ReflectBossVitals ?? (_playerVitals != null ? null : _bossVitals);
+            if (reflect > 0f && _playerVitals != null && reflectTarget != null && !reflectTarget.IsDown)
+                reflectTarget.ApplyDamage(afterShield * reflect);
 
             if (_bossVitals != null)
                 _bossVitals.ApplyDamage(afterShield);
@@ -137,6 +152,22 @@ namespace Dovus.Game
                 return;
             _reactor.React(
                 fromWorld,
+                _tuning.KnockbackMeters,
+                _tuning.KnockbackLiftM,
+                _tuning.KnockbackShakeSec,
+                _clock != null ? _clock.Director.WorldTimeMs : 0);
+        }
+
+        /// <summary>çekme sıfatı — boss'u towardWorld yönüne (oyuncuya) çeker.</summary>
+        public void ApplyPullToward(Vector3 towardWorld)
+        {
+            if (_reactor == null)
+                return;
+            // React fromWorld'dan uzağa iter; karşı taraftan itince pull olur.
+            Vector3 pos = transform.position;
+            Vector3 away = pos + (pos - towardWorld);
+            _reactor.React(
+                away,
                 _tuning.KnockbackMeters,
                 _tuning.KnockbackLiftM,
                 _tuning.KnockbackShakeSec,

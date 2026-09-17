@@ -12,9 +12,9 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 17 Eylül 2026 (JSON↔oyun derin boşluk taraması) ·
-**Dal:** `master` · **Sıradaki:** (öncelik önerisi aşağıda); state/Enforce
-sahip kararı; Kenney VFX; Hexagon rename
+**Son güncelleme:** 17 Eylül 2026 (kararsız paket bağlama) ·
+**Dal:** `master` · **Sıradaki:** state/Enforce sahip kararı; invisible_link/tear;
+Kenney VFX; Hexagon rename; StatusTuning↔status_durations
 
 ## JSON ↔ oyun — derin boşluk matrisi (17 Eylül tarama)
 
@@ -26,17 +26,17 @@ A=oyunda hissedilir · B=kod var kapalı/kısmi · C=parse/Core only · D=motor 
 | JSON bölümü | Parse | Game | Not |
 |---|---|---|---|
 | elements / verbs / adjectives / lengths | A | A | Resolve + LivingEffect köprüsü |
-| mechanics → StatusKind | A | A | Stealth eklendi; confuse yok |
+| mechanics → StatusKind | A | A | Stealth eklendi; confuse yok (sıfat→Blind+Slow) |
 | action string (40 fiil) | A (taşınır) | **B/C** | Çoğu action yok sayılır; yalnız mechanics/hitbox işler |
-| formulas + crit_system | A (DamageCalculator) | **B** | `UseFormulaDamage=false` |
+| formulas + crit_system | A (DamageCalculator) | **B** | `UseFormulaDamage=false`; CritChanceAdd closing yolunda |
 | resource / cooldown rules | A | **B** | Enforce* bayrakları false |
 | status_durations | D | **B** | StatusTuning sabit; shield 50/5s hizalandı, stun/root vb. hâlâ kısa |
-| passives | A | **B** | damage/heal/lifesteal bağlı; crit/armor/reflect/dashCD/reveal **okunur uygulanmaz** |
-| active_modes (ulti) | A | **B** | damage/move/lifesteal/DR/cleanse/regen kısmi; cast_speed/attack_speed/dashCD/afterimage/taunt_radius/aura **yok** |
+| passives | A | **A/B** | crit/armor/reflect/dashCD/damage_taken bağlı; reveal_radius yok |
+| active_modes (ulti) | A | **A/B** | cast_time + attack_speed + dash_cooldown bağlı; afterimage/taunt/aura yok |
 | chain_mechanics | A | **B** | çarpan+HUD; finisher dünya efekti yok |
 | zone_layer | A | **A/B** | spawn+CC root/slow; zone_lock/block wall collider yok |
 | space_layer | A | **B** | blink/zenitsu/stealth_shift JSON; **invisible_link + tear yok** |
-| time_layer | A | **B** | echo+extend; **delayed_detonation + death_delay yok** |
+| time_layer | A | **A** | echo+extend+delayed_detonation+death_delay |
 | reality_layer | A | A | revive_block / erase |
 | state_machine | A | **C** | PlayerStateMachine SentencePhase’e bağlı değil |
 | equipment_system | A | **B** | sabit Alev Kılıcı; seçim yok |
@@ -63,25 +63,29 @@ Bunlar JSON’da ayrı action; oyun çoğunlukla yalnız `mechanics` uygular:
 
 ### Sıfat `engine_modifiers` — bağlı vs atlanan
 
-**Bağlı:** damage_mult, hitbox_*, lifetime_add, trajectory_override, cast_time_mult (SkillMobility), apply_slow/root/burn/poison/silence/knockback/DR, burn_damage_mult.
+**Bağlı:** damage_mult, hitbox_*, lifetime_add, trajectory_override, cast_time_mult (SkillMobility), apply_slow/root/burn/poison/silence/knockback/DR/pull/lifesteal/stealth/confuse, burn_damage_mult, crit_chance_add (Game).
 
-**Atlanan (JSON’da var):** apply_pull, apply_lifesteal, apply_stealth, apply_confuse, apply_invulnerability_frames, apply_armor_shred, apply_stamina_drain, absorb_damage_to_heal, reflect_projectiles, reveal_stealth, spawn_minion, duplicate_cast, cancel_enemy_cast, crit_chance_add, cooldown_mult, pierce_armor_flat, ignore_resist, accuracy_debuff, max_targets, tick_rate_mult, trigger_delay/profile, target_auto_lock.
+**Atlanan (JSON’da var):** apply_invulnerability_frames, apply_armor_shred, apply_stamina_drain, absorb_damage_to_heal, reflect_projectiles, reveal_stealth, spawn_minion, duplicate_cast, cancel_enemy_cast, cooldown_mult, pierce_armor_flat, ignore_resist, accuracy_debuff, max_targets, tick_rate_mult, trigger_delay/profile, target_auto_lock.
 
-### Pasif / ulti — accessor var, Game kullanmıyor
+### Pasif / ulti — kalan boşluklar
 
-PassiveDirector: `CritChanceAdd`, `ArmorAdd`, `ReflectRatioAdd`, `DashCooldownMult`, `RevealRadiusMult`, `DamageTakenMult` (passive) — **Manifestation’da çarpılmıyor**.
+PassiveDirector: `RevealRadiusMult` hâlâ uygulanmıyor.
 
-Ulti: `cast_time_mult`, `attack_speed_mult`, `dash_cooldown_mult`, `afterimage_count`, `taunt_radius_m`, `visual.aura/screen_edges` — **uygulanmıyor**.
+Ulti: `afterimage_count`, `taunt_radius_m`, `visual.aura/screen_edges` — uygulanmıyor.
 
-### Öncelik önerisi (sahip onayı olmadan yapılabilecekler)
+### Öncelik önerisi (sahip kararı gerekenler)
 
-1. delayed_detonation + death_delay (time_layer kalanı)  
-2. Sıfat apply_* köprüsü: apply_stealth, apply_lifesteal, apply_pull (pull→boss), apply_confuse→Blind+Slow veya yeni kind  
-3. Passive CritChanceAdd / DamageTakenMult / ArmorAdd Game’e  
-4. Ulti cast_time_mult + dash_cooldown_mult  
-5. StatusTuning ↔ status_durations hizalama (sahip: JSON otorite mi?)  
-6. invisible_link / tear (yeni mekanik — tasarım)  
-7. state_machine / Enforce bayrakları (sahip kararı)
+1. StatusTuning ↔ status_durations hizalama (JSON otorite mi?)  
+2. invisible_link / tear (yeni mekanik — tasarım)  
+3. state_machine / Enforce bayrakları (sahip kararı)  
+4. afterimage / taunt_radius / aura VFX  
+
+> **17 Eylül — kararsız paket.** time_layer `delayed_detonation` (Karabasan bang
+> hasarı delay_sec sonra) + `death_delay` (Cehennem ölüm → çökme ertelenir).
+> Sıfat: `apply_pull` / `apply_lifesteal` / `apply_stealth` / `apply_confuse`→Blind+Slow.
+> Pasif: CritChanceAdd, DamageTakenMult, ArmorAdd, ReflectRatioAdd, DashCooldownMult.
+> Ulti: cast_time_mult × attack_speed_mult (bang gecikmesi), dash_cooldown_mult.
+> `dotnet test` **248** yeşil. **Doğrulanamadı:** Unity Play / telefon.
 
 > **17 Eylül — shield/stealth + zone CC okunurluğu.** `savunma` mechanics
 > `shield`+`damage_reduction`; `gizlilik`/`hiz_gorunmezlik` → `stealth`.
@@ -163,7 +167,7 @@ Ulti: `cast_time_mult`, `attack_speed_mult`, `dash_cooldown_mult`, `afterimage_c
 > `TimeEffectDirector` + `FireClosing` sonrası Alev→`alev_yanki` (`TryScheduleEcho`,
 > delay 1s, ratio 0.6) → `CollectDue`/`ApplyEchoDamage` (tekrar echo planlamaz);
 > Lav→`lav_kalicilik` zone `RemainingSec × 1.7` (`ZoneDirector.TrySetRemainingSec`).
-> `delayed_detonation` / `death_delay` **bağlanmadı** (Bağlama 8.1).
+> (17 Eyl kararsız paket: `delayed_detonation` + `death_delay` da bağlandı.)
 > MCP Play: Ateş×2 (Alev/Ateş Topu) Commit → bang `-7,6` + field `alev_yanki`;
 > Tick+1.1s → yankı **`-4,5`** (0.6×); Lav (1-4) zone rem **17** (10×1.7).
 > `dotnet test` 226 yeşil.
@@ -657,14 +661,14 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   **Hava:** 17 Eylül sprintinde kod `ElementAir` prezentasyon teal bandına çekildi
   (yıldırım-mavi değil). Diğer elementler için renk otoritesi hâlâ açık (kod vs JSON).
 
-- **Ulti (`active_modes`) efektlerinin bir kısmı henüz dünyaya işlemiyor** (4. tur): JSON'daki
-  `cast_time_mult`/`attack_speed_mult` okunuyor (`ActiveModeNode.GetEffect`) ama hiçbir yere
-  uygulanmıyor. `dash_cooldown_mult`/`afterimage_count` (Fırtına Akışı) ve `taunt_radius_m`
-  (Aşılmaz Duvar) hiç uygulanmıyor. Ulti `resource_cost` hâlâ düşülmüyor (verb
-  `base_resource_cost` Bağlama 2'de düşüyor; mod maliyeti ayrı). Cast engeli
-  `CombatTuning.EnforceResourceCost` (Bağlama 3, varsayılan false). `length.resource_cost_mult`
-  **bağlandı** (17 Eyl LivingEffect dalı: `SkillMobility.ResourceCost`); Enforce hâlâ false.
-  `visual.aura`/`screen_edges` okunmuyor — `ActiveModeHud` banner'ı var, ekran kenarı VFX yok.
+- **Ulti (`active_modes`) kalan boşluklar** (17 Eyl kararsız paket): `cast_time_mult` /
+  `attack_speed_mult` / `dash_cooldown_mult` bang gecikmesi + dodge CD'ye bağlandı.
+  `afterimage_count` (Fırtına Akışı) ve `taunt_radius_m` (Aşılmaz Duvar) hâlâ yok.
+  Ulti `resource_cost` hâlâ düşülmüyor (verb `base_resource_cost` Bağlama 2'de düşüyor; mod
+  maliyeti ayrı). Cast engeli `CombatTuning.EnforceResourceCost` (Bağlama 3, varsayılan false).
+  `length.resource_cost_mult` **bağlandı** (17 Eyl LivingEffect dalı: `SkillMobility.ResourceCost`);
+  Enforce hâlâ false. `visual.aura`/`screen_edges` okunmuyor — `ActiveModeHud` banner'ı var,
+  ekran kenarı VFX yok.
 - **`team_full_cleanse` hâlâ yalnızca oyuncu** (17 Eyl): Ally `StatusBoard` var ve
   `team_has_debuffs` sayıyor; cleanse ally board'a uygulanmıyor.
 - **`docs/element-sistemi.json`'ın büyük kısmı motor tarafından hâlâ uygulanmıyor** —
@@ -681,14 +685,13 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   (patlama/heal/stealth vb. string) henüz simüle edilmiyor — yalnızca bildirim + çarpan.
   **Zone yaşam döngüsü Core'da var (Görev 7)** — `ZoneDirector` soft-cap/süre/movement;
   Game/Manifestation'a bağlı değil (görsel/hasar yok).
-  **TimeEffectDirector (Görev 9) Core'da** — zamanlama hesabı var; Bağlama 8 echo +
-  extend_lifetime Game'e bağlı; delayed_detonation/death_delay hâlâ yok.
+  **TimeEffectDirector (Görev 9 + Bağlama 8 + kararsız paket)** — echo / extend_lifetime /
+  delayed_detonation / death_delay Game'e bağlı.
   **RealityEffectDirector (Görev 10) + Bağlama 11** — Game'e bağlı: ElementOrigin ↔
   revive_block (PlayerVitals kapısı) / partial_erase / full_erase(shields);
-  minions/summons sistem yok. **PassiveDirector (Görev 4 + Bağlama 5)** — Game'e bağlı: tetik/süre/DamageMult/
-  HealMult/LifestealAdd + PassiveHud. Henüz uygulanmayan efektler: `crit_chance_add`,
-  `damage_taken_mult`, `dash_cooldown_mult`, `armor_add`, `reflect_ratio_add`,
-  `reveal_radius_mult` (Faz 6 kalanı).
+  minions/summons sistem yok.   **PassiveDirector (Görev 4 + Bağlama 5 + kararsız paket)** — Game'e bağlı: tetik/süre/
+  DamageMult/HealMult/LifestealAdd/CritChanceAdd/DamageTakenMult/ArmorAdd/ReflectRatioAdd/
+  DashCooldownMult + PassiveHud. Kalan: `reveal_radius_mult`.
   `global_rules.resource_system`/`cooldown_rules` → Core sınıflar var; Bağlama 2–4 bağladı;
   `status_durations` ↔ StatusTuning fark listesi (Görev 2, yukarıda; otorite açık).
   **Görev 3:** `state_machine` okunuyor (`PlayerStates`/`BossStates` + `PlayerStateMachine`;

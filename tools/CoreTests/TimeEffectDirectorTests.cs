@@ -26,7 +26,7 @@ public class TimeEffectDirectorTests
         var dir = new TimeEffectDirector();
         Assert.That(
             dir.TryScheduleDelayedDetonation("karabasan_gecikme", "Karabasan", 2f, worldMs: 1000,
-                out var field),
+                out var field, pendingDamage: 42f),
             Is.True);
 
         Assert.That(field.Type, Is.EqualTo(TimeEffectTypes.DelayedDetonation));
@@ -40,6 +40,7 @@ public class TimeEffectDirectorTests
 
         Assert.That(dir.CollectDue(3000, due), Is.EqualTo(1));
         Assert.That(due[0].Id, Is.EqualTo(field.Id));
+        Assert.That(due[0].ComputedDetonationDamage, Is.EqualTo(42f).Within(0.0001f));
         Assert.That(dir.ActiveFields.Count, Is.EqualTo(0));
     }
 
