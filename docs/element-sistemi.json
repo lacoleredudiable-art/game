@@ -717,7 +717,8 @@
         "damage_type": "magical"
       },
       "mechanics": [
-        "haste"
+        "haste",
+        "stealth"
       ],
       "atoms": {
         "motion": "dash",
@@ -855,6 +856,7 @@
         "damage_type": "physical"
       },
       "mechanics": [
+        "shield",
         "damage_reduction"
       ],
       "atoms": {
@@ -1248,7 +1250,7 @@
         "damage_type": "magical"
       },
       "mechanics": [
-        "fear"
+        "stealth"
       ],
       "atoms": {
         "motion": "phase",
@@ -2960,6 +2962,9 @@
       },
       "taunt": {
         "duration_sec": 3
+      },
+      "stealth": {
+        "duration_sec": 4
       }
     },
     "player_stats": {

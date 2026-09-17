@@ -30,6 +30,8 @@ namespace Dovus.Core.Status
         Regen,
         // special
         Stasis,
+        /// <summary>Görünmez / hedef dışı — gizlilik / stealth_haste.</summary>
+        Stealth,
         Fear
     }
 
@@ -57,6 +59,7 @@ namespace Dovus.Core.Status
                 "damage_reduction" => StatusKind.DamageReduction,
                 "regen" => StatusKind.Regen,
                 "stasis" => StatusKind.Stasis,
+                "stealth" => StatusKind.Stealth,
                 "fear" => StatusKind.Fear,
                 "cleanse" => StatusKind.None, // eylem, durum değil
                 _ => StatusKind.None
@@ -76,6 +79,7 @@ namespace Dovus.Core.Status
                 or StatusKind.Poison;
 
         public static bool IsBuff(StatusKind k) =>
-            k is StatusKind.Shield or StatusKind.Haste or StatusKind.DamageReduction or StatusKind.Regen;
+            k is StatusKind.Shield or StatusKind.Haste or StatusKind.DamageReduction or StatusKind.Regen
+                or StatusKind.Stealth;
     }
 }

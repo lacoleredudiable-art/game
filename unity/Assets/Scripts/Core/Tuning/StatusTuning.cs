@@ -17,6 +17,8 @@ namespace Dovus.Core.Tuning
         public int DisarmMs = 1000;
         public int TauntMs = 1200;
         public int StasisMs = 700;
+        /// <summary>global_rules.status_durations.stealth duration_sec=4.</summary>
+        public int StealthMs = 4000;
 
         public int BurnMs = 2400;
         public float BurnDamagePerSec = 6f;
@@ -34,8 +36,8 @@ namespace Dovus.Core.Tuning
         public int PoisonMs = 3000;
         public float PoisonDamagePerSec = 4f;
 
-        public int ShieldMs = 2500;
-        public float ShieldAbsorb = 25f;
+        public int ShieldMs = 5000;
+        public float ShieldAbsorb = 50f;
         public int HasteMs = 2000;
         public float HasteSpeedMult = 1.35f;
         public int DamageReductionMs = 2000;
@@ -70,6 +72,7 @@ namespace Dovus.Core.Tuning
             DisarmMs = other.DisarmMs;
             TauntMs = other.TauntMs;
             StasisMs = other.StasisMs;
+            StealthMs = other.StealthMs;
             BurnMs = other.BurnMs;
             BurnDamagePerSec = other.BurnDamagePerSec;
             ArmorBreakMs = other.ArmorBreakMs;

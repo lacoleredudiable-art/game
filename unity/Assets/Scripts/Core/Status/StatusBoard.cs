@@ -80,6 +80,9 @@ namespace Dovus.Core.Status
         /// <summary>Stasis = kısa i-frame (dodge dışı skill koruması).</summary>
         public bool IsInvulnerable => Has(StatusKind.Stasis);
 
+        /// <summary>Gizlilik — boss hedef almaz, hasar yutulur.</summary>
+        public bool IsStealthed => Has(StatusKind.Stealth);
+
         public int ActiveCount => _active.Count;
 
         public bool Has(StatusKind kind) =>
@@ -234,12 +237,12 @@ namespace Dovus.Core.Status
             }
         }
 
-        /// <summary>Kalkan hasar emer; stasis tüm hasarı yutar. Kalan hasarı döner.</summary>
+        /// <summary>Kalkan hasar emer; stasis/stealth tüm hasarı yutar. Kalan hasarı döner.</summary>
         public float AbsorbDamage(float amount)
         {
             if (amount <= 0f)
                 return amount;
-            if (IsInvulnerable)
+            if (IsInvulnerable || IsStealthed)
                 return 0f;
             if (!Has(StatusKind.Shield))
                 return amount;

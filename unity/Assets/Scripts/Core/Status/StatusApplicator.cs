@@ -218,6 +218,9 @@ namespace Dovus.Core.Status
                 case StatusKind.Stasis:
                     board.Apply(kind, t.StasisMs, 1f);
                     break;
+                case StatusKind.Stealth:
+                    board.Apply(kind, t.StealthMs, 1f);
+                    break;
                 case StatusKind.Burn:
                     board.Apply(kind, t.BurnMs, t.BurnDamagePerSec);
                     break;

@@ -28,6 +28,8 @@ namespace Dovus.Game
         BossVitals _bossVitals;
         PlayerVitals _playerVitals;
         BossReactor _reactor;
+        bool _stealthVisual;
+        Renderer[] _renderers;
 
         public void Bind(
             GameClock clock,
@@ -41,6 +43,7 @@ namespace Dovus.Game
             _playerVitals = playerVitals;
             _bossVitals = bossVitals;
             _reactor = reactor;
+            _renderers = GetComponentsInChildren<Renderer>(true);
         }
 
         public StatusTuning Tuning
@@ -55,6 +58,7 @@ namespace Dovus.Game
                 return;
 
             float payload = Board.Tick(_clock.WorldDeltaMs, _tuning);
+            SyncStealthVisual();
             if (Mathf.Abs(payload) < 0.001f)
                 return;
 
@@ -62,6 +66,43 @@ namespace Dovus.Game
                 ApplyDamage(payload);
             else
                 ApplyHeal(-payload);
+        }
+
+        /// <summary>Gizlilik: camgöbeği yarı saydam (oyuncu efekt rengi kuralı).</summary>
+        void SyncStealthVisual()
+        {
+            bool stealth = Board.IsStealthed;
+            if (stealth == _stealthVisual)
+                return;
+            _stealthVisual = stealth;
+            if (_renderers == null || _renderers.Length == 0)
+                _renderers = GetComponentsInChildren<Renderer>(true);
+
+            float a = stealth ? 0.35f : 1f;
+            for (int i = 0; i < _renderers.Length; i++)
+            {
+                Renderer r = _renderers[i];
+                if (r == null) continue;
+                Material mat = r.material;
+                if (mat == null)
+                    continue;
+                bool hasBase = mat.HasProperty("_BaseColor");
+                bool hasColor = mat.HasProperty("_Color");
+                if (!hasBase && !hasColor)
+                    continue;
+                if (hasBase)
+                {
+                    Color c = mat.GetColor("_BaseColor");
+                    c.a = a;
+                    mat.SetColor("_BaseColor", c);
+                }
+                else
+                {
+                    Color c = mat.color;
+                    c.a = a;
+                    mat.color = c;
+                }
+            }
         }
 
         public void ApplyDamage(float raw)
