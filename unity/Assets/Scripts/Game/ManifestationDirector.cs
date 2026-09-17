@@ -1461,7 +1461,7 @@ namespace Dovus.Game
                 bossAlive,
                 t.ArenaHalfSizeM);
 
-            return SkillMotionMotor.Resolve(skill, ctx, t);
+            return SkillMotionMotor.Resolve(skill, ctx, t, _skills != null ? _skills.SpaceEffects : null);
         }
 
         void ApplySkillMotion(in SkillMotionPlan plan, SkillResolution skill)
