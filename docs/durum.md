@@ -12,9 +12,20 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 17 Eylül 2026 (kararsız paket bağlama) ·
-**Dal:** `master` · **Sıradaki:** state/Enforce sahip kararı; invisible_link/tear;
-Kenney VFX; Hexagon rename; StatusTuning↔status_durations
+**Son güncelleme:** 17 Eylül 2026 (formül+crit açık; sahip kararları) ·
+**Dal:** `master` · **Sıradaki:** invisible_link/tear tasarım; afterimage/aura VFX;
+Hexagon rename; (deneme sonrası: süre otoritesi / Enforce)
+
+### Sahip kararları (17 Eylül)
+
+| Konu | Karar |
+|---|---|
+| `UseFormulaDamage` | **true** — formulas + crit_system canlı |
+| StatusTuning ↔ status_durations | deneme süresinde **böyle kalsın** (tuning sabit) |
+| Enforce mana/CD | deneme süresinde **false kalsın** |
+| state_machine bağlama | henüz karar yok (aşağıda ne işe yaradığı) |
+| invisible_link / tear | henüz tasarım (aşağıda ne demek) |
+| fiil `action` özel motor | soru açıklandı; sahiplik kararı bekliyor |
 
 ## JSON ↔ oyun — derin boşluk matrisi (17 Eylül tarama)
 
@@ -28,7 +39,7 @@ A=oyunda hissedilir · B=kod var kapalı/kısmi · C=parse/Core only · D=motor 
 | elements / verbs / adjectives / lengths | A | A | Resolve + LivingEffect köprüsü |
 | mechanics → StatusKind | A | A | Stealth eklendi; confuse yok (sıfat→Blind+Slow) |
 | action string (40 fiil) | A (taşınır) | **B/C** | Çoğu action yok sayılır; yalnız mechanics/hitbox işler |
-| formulas + crit_system | A (DamageCalculator) | **B** | `UseFormulaDamage=false`; CritChanceAdd closing yolunda |
+| formulas + crit_system | A (DamageCalculator) | **A** | `UseFormulaDamage=true` (17 Eyl sahip) |
 | resource / cooldown rules | A | **B** | Enforce* bayrakları false |
 | status_durations | D | **B** | StatusTuning sabit; shield 50/5s hizalandı, stun/root vb. hâlâ kısa |
 | passives | A | **A/B** | crit/armor/reflect/dashCD/damage_taken bağlı; reveal_radius yok |
@@ -73,12 +84,17 @@ PassiveDirector: `RevealRadiusMult` hâlâ uygulanmıyor.
 
 Ulti: `afterimage_count`, `taunt_radius_m`, `visual.aura/screen_edges` — uygulanmıyor.
 
-### Öncelik önerisi (sahip kararı gerekenler)
+### Öncelik önerisi (kalan)
 
-1. StatusTuning ↔ status_durations hizalama (JSON otorite mi?)  
-2. invisible_link / tear (yeni mekanik — tasarım)  
-3. state_machine / Enforce bayrakları (sahip kararı)  
+1. invisible_link / tear — ne yapsınlar? (tasarım)  
+2. state_machine ↔ SentencePhase bağlansın mı?  
+3. fiil `action` derinliği (revive/clone… gerçek motor mu, lore mu?)  
 4. afterimage / taunt_radius / aura VFX  
+5. (deneme sonrası) süre otoritesi + Enforce  
+
+> **17 Eylül — UseFormulaDamage=true.** Sahip: formül+crit açılsın; status süreleri
+> ve Enforce deneme süresinde eski hali. `dotnet test` yeşil beklenir.
+> **Doğrulanamadı:** Unity Play hasar/crit hissi.
 
 > **17 Eylül — kararsız paket.** time_layer `delayed_detonation` (Karabasan bang
 > hasarı delay_sec sonra) + `death_delay` (Cehennem ölüm → çökme ertelenir).

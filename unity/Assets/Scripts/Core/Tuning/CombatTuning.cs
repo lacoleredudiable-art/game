@@ -23,9 +23,9 @@ namespace Dovus.Core.Tuning
 
         /// <summary>
         /// true olunca DamageCalculator kullanılır, false=eski ClosingDamageMath.
-        /// Varsayılan false — regresyon yok; formül yolu bayrakla açılır.
+        /// 17 Eyl sahip: deneme süresinde formül+crit açık.
         /// </summary>
-        public bool UseFormulaDamage = false;
+        public bool UseFormulaDamage = true;
 
         /// <summary>
         /// true: mana base_resource_cost'tan azsa cümle başlamaz (Bağlama 3).
