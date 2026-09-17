@@ -12,9 +12,42 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 17 Eylül 2026 (HUD+jab → master) · **Sıradaki:**
-Bağlama 8.1 + Kenney VFX prefab drop-in (`Assets/Art/Vfx/README.txt`) +
-tam `Pentagon*`→`Hexagon*` tip rename (ayrı dal) + manuel target UI
+**Son güncelleme:** 17 Eylül 2026 (LivingEffect köprüsü + length ekonomisi) ·
+**Dal:** `fix/living-effect-skill-bridge` · **Sıradaki:** reality/space/state;
+Enforce bayrakları (sahip kararı); zone CC; Kenney VFX; Hexagon rename
+
+## Bulgular — JSON → oyun (17 Eylül)
+
+**Sahip:** 2’liden sonra eklenen rünler HUD’da isim değiştiriyor, oyunda etki yok.
+
+**Kök neden:** `SkillMotor.Resolve` (katlama) bang’te isim/status/hasar verir;
+`LivingEffect` hâlâ `words[0].Rune` + `SilhouetteBuilder.FromWords` (eski K1).
+3’lüde fiil aynı kalır; fark sıfatta (`trajectory_override`, `hitbox_scale_mult`,
+`lifetime_add`, `silhouette_axis`) — LivingEffect okumuyordu. HUD “etki” = fiil
+`mechanics` → 2’li ile aynı.
+
+**Dünkü Bağlama 1–10:** Core + bang yan etkisi + HUD; `UseFormulaDamage` /
+`EnforceResourceCost` / `EnforceCooldown` varsayılan **false**; LivingEffect /
+trajectory-hitbox borusu Faz 6’da bırakılmış → telefonda “bağlı değil” hissi.
+
+| Katman | Durum |
+|---|---|
+| Resolve → status / damage_mult | A — çalışır |
+| passives / chain / zone görsel / echo / equipment / ulti kısmi | A/B |
+| formulas/crit, Enforce mana/CD | B — kod var, bayrak kapalı |
+| length cast/mana/mobility | **A (bu dal)** — SkillMobility |
+| reality / space / state_machine | C — Core veya parse only |
+| trajectory + hitbox → LivingEffect | **A** — SkillWorldPlanner |
+| atoms / three_runes_examples / lore | D — motor okumaz |
+| `yayma` expanding_wave | **JSON düzeltildi** (trajectory_override + radial_burst hitbox) |
+
+> **17 Eylül — LivingEffect + length ekonomisi.** `SkillWorldPlanner` /
+> `LivingEffect.ApplyPlan` / `FromSkill` / bang scale / sıfat `apply_*` / HUD.
+> `SkillMobility`: length×verb mobility (motion istisnası); bang gecikmesi ×
+> `LengthCastMult`×sıfat `cast_time_mult`; mana × `LengthResourceCostMult`;
+> Building≥3 Slow/Root yenileme. Bang’te trajectory `vfx_trail_type` →
+> PlaceholderFactory trail. `yayma` JSON + Resources kopyası düzeltildi.
+> `dotnet test` **234** yeşil. **Doğrulanamadı:** Unity Play / telefon APK.
 
 > **17 Eylül — Telefon build.** `dovus-prototip.apk` (~42.5 MB, CleanBuildCache)
 > → `adb install -r` Success (YXQC5PTGUCEQMNV4) + launcher açıldı. Not: incremental
@@ -568,8 +601,8 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   uygulanmıyor. `dash_cooldown_mult`/`afterimage_count` (Fırtına Akışı) ve `taunt_radius_m`
   (Aşılmaz Duvar) hiç uygulanmıyor. Ulti `resource_cost` hâlâ düşülmüyor (verb
   `base_resource_cost` Bağlama 2'de düşüyor; mod maliyeti ayrı). Cast engeli
-  `CombatTuning.EnforceResourceCost` (Bağlama 3, varsayılan false). `length.resource_cost_mult` henüz çarpılmıyor —
-  yalnızca `base_resource_cost`.
+  `CombatTuning.EnforceResourceCost` (Bağlama 3, varsayılan false). `length.resource_cost_mult`
+  **bağlandı** (17 Eyl LivingEffect dalı: `SkillMobility.ResourceCost`); Enforce hâlâ false.
   `visual.aura`/`screen_edges` okunmuyor — `ActiveModeHud` banner'ı var, ekran kenarı VFX yok.
 - **`team_full_cleanse` hâlâ yalnızca oyuncu** (17 Eyl): Ally `StatusBoard` var ve
   `team_has_debuffs` sayıyor; cleanse ally board'a uygulanmıyor.

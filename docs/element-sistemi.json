@@ -1528,7 +1528,8 @@
       "engine_modifiers": {
         "damage_mult": 0.8,
         "hitbox_scale_mult": 2.5,
-        "hitbox_override": "expanding_wave",
+        "trajectory_override": "expanding_wave",
+        "hitbox_override": "radial_burst",
         "max_targets": 5
       }
     },

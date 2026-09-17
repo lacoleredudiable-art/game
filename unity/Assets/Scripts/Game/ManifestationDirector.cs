@@ -836,7 +836,9 @@ namespace Dovus.Game
             }
 
             _buildingView.Logic.SetWords(state.Words);
+            ApplySkillWorldPlan(_buildingView.Logic, state.Words);
             ApplySkillTint(_buildingView, state.Words);
+            RefreshBuildingMobility(state.Words);
             if (count > _lastWordCount)
                 PulseActor(state.Words[count - 1].Rune, state.Words, worldMs);
 
@@ -850,9 +852,20 @@ namespace Dovus.Game
             if (_visual == null)
                 return;
 
-            EffectSilhouette s = words != null && words.Count > 0
-                ? SilhouetteBuilder.FromWords(words, _combat?.Manifestation)
-                : default;
+            EffectSilhouette s;
+            if (_skills != null && words != null && words.Count > 0)
+            {
+                SkillResolution skill = _skills.ResolveWords(words);
+                s = skill.IsEmpty
+                    ? SilhouetteBuilder.FromWords(words, _combat?.Manifestation)
+                    : SilhouetteBuilder.FromSkill(skill, _combat?.Manifestation);
+            }
+            else
+            {
+                s = words != null && words.Count > 0
+                    ? SilhouetteBuilder.FromWords(words, _combat?.Manifestation)
+                    : default;
+            }
             _visual.PulseRune(rune, s);
         }
 
@@ -905,9 +918,29 @@ namespace Dovus.Game
             go.transform.SetParent(transform, false);
             var view = go.AddComponent<LivingEffectView>();
             view.Bind(logic, man, _colors, basicStrike);
+            if (!basicStrike)
+                ApplySkillWorldPlan(logic, words);
             ApplySkillTint(view, words);
             _active.Add(view);
             return view;
+        }
+
+        /// <summary>
+        /// SkillMotor.Resolve + prezentasyon → LivingEffect seyahat/silüet/bang.
+        /// </summary>
+        void ApplySkillWorldPlan(LivingEffect logic, IReadOnlyList<SentenceWord> words)
+        {
+            if (logic == null || words == null || words.Count == 0 || _skills == null)
+                return;
+
+            SkillResolution skill = _skills.ResolveWords(words);
+            if (skill.IsEmpty)
+                return;
+
+            EnsurePresentationCatalog();
+            ManifestationTuning man = _combat != null ? _combat.Manifestation : new ManifestationTuning();
+            LivingEffectPlan plan = SkillWorldPlanner.Build(skill, _presentationCatalog, man);
+            logic.ApplyPlan(plan);
         }
 
         /// <summary>
@@ -998,17 +1031,35 @@ namespace Dovus.Game
             // artık Building fazında değilken çalışmaz. LivingEffect.SetWords AwaitingClosing
             // fazında da kabul eder, sıra önemli değil.
             view.Logic.SetWords(sentence.Words);
+            if (!spawnedForBasicStrike)
+                ApplySkillWorldPlan(view.Logic, sentence.Words);
 
             ClosingHit closing = sentence.Closing.Value;
             view.Logic.ArmClosing(closing);
 
             float recoverySec = _combat.Sentence.StepForDots(closing.DotCount).RecoverySec;
+            float castMult = 1f;
+            SkillResolution armedSkill = SkillResolution.Empty;
+            if (!spawnedForBasicStrike && _skills != null)
+            {
+                armedSkill = _skills.ResolveWords(sentence.Words);
+                castMult = SkillMobility.CastTimeMult(armedSkill);
+            }
+            recoverySec *= castMult;
+
             double bangAt = _clock.Director.WorldTimeMs
                             + recoverySec * 1000.0
                             + _combat.Feel.PostHitSilenceMs;
 
             _pose?.BeginRecovery(recoverySec, _clock.Director.WorldTimeMs);
             _posedForRecovery = true;
+
+            if (!spawnedForBasicStrike && !armedSkill.IsEmpty)
+            {
+                float lockSec = recoverySec + _combat.Feel.PostHitSilenceMs / 1000f;
+                ApplyCastMobility(armedSkill, lockSec);
+            }
+
             // Merkez düz vuruş: IsBasicStrike yalnızca BasicStrikeDot ile spawn edilen view.
             bool basic = view != null && view.IsBasicStrike;
             _pending.Add(new PendingClosing
@@ -1139,11 +1190,43 @@ namespace Dovus.Game
 
             LivingEffect logic = p.View.Logic;
             Vector3 tip = new Vector3(logic.TipX, 0.6f, logic.TipZ);
+            Vector3 origin = new Vector3(logic.OriginX, 0.55f, logic.OriginZ);
             string element = p.Words != null && p.Words.Count > 0
                 ? p.Words[0].Rune.ToString()
                 : "Ates";
-            // prezentasyon impact stilleri — asset yoksa PlaceholderFactory küre üretir.
-            GameObject fx = PlaceholderFactory.CreateImpact("burst_soft", element, tip, transform);
+
+            string impactStyle = "burst_soft";
+            string trailStyle = string.Empty;
+            if (!p.IsBasicStrike && _skills != null && p.Words != null)
+            {
+                SkillResolution skill = _skills.ResolveWords(p.Words);
+                EnsurePresentationCatalog();
+                if (_presentationCatalog != null && !skill.IsEmpty)
+                {
+                    LivingEffectPlan plan = SkillWorldPlanner.Build(
+                        skill, _presentationCatalog,
+                        _combat != null ? _combat.Manifestation : new ManifestationTuning());
+                    if (!string.IsNullOrEmpty(plan.TrajectoryId)
+                        && _presentationCatalog.TryGetTrajectory(plan.TrajectoryId, out TrajectoryNode traj))
+                    {
+                        trailStyle = traj.GetString("vfx_trail_type", string.Empty);
+                        if (plan.TravelKind == LivingTravelKind.ExpandingRadial
+                            || plan.TrajectoryId is "expanding_wave" or "radial_burst")
+                            impactStyle = "pulse";
+                        else if (plan.TrajectoryId is "raycast" or "instant_hit")
+                            impactStyle = "pierce_hit";
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(trailStyle))
+            {
+                GameObject trail = PlaceholderFactory.CreateTrail(trailStyle, element, origin, tip, transform);
+                if (trail != null)
+                    Destroy(trail, 1.0f);
+            }
+
+            GameObject fx = PlaceholderFactory.CreateImpact(impactStyle, element, tip, transform);
             if (fx != null)
                 Destroy(fx, 1.2f);
         }
@@ -1155,10 +1238,39 @@ namespace Dovus.Game
         {
             if (_playerResource == null || skill.IsEmpty)
                 return;
-            float cost = skill.BaseResourceCost;
+            float cost = SkillMobility.ResourceCost(skill);
             if (cost <= 0f)
                 return;
             _playerResource.Consume(cost);
+        }
+
+        /// <summary>
+        /// length.mobility × verb.cast_mobility → oyuncu Slow/Root (KinematicMotor okur).
+        /// </summary>
+        void ApplyCastMobility(SkillResolution skill, float durationSec)
+        {
+            if (_playerStatus == null || skill.IsEmpty || durationSec <= 0f)
+                return;
+
+            string mob = SkillMobility.Resolve(skill);
+            double ms = durationSec * 1000.0;
+            StatusTuning st = _combat != null ? _combat.Status : new StatusTuning();
+
+            if (mob == SkillMobility.Rooted)
+                _playerStatus.Board.Apply(StatusKind.Root, ms, 1f);
+            else if (mob == SkillMobility.SlowedMove)
+                _playerStatus.Board.Apply(StatusKind.Slow, ms, st.SlowSpeedMult);
+        }
+
+        /// <summary>Building sırasında length≥3 mobiliteyi kısa yenile (cümlenin riski).</summary>
+        void RefreshBuildingMobility(IReadOnlyList<SentenceWord> words)
+        {
+            if (words == null || words.Count < 3 || _skills == null)
+                return;
+            SkillResolution skill = _skills.ResolveWords(words);
+            if (skill.IsEmpty)
+                return;
+            ApplyCastMobility(skill, 0.45f);
         }
 
         /// <summary>
@@ -1280,11 +1392,17 @@ namespace Dovus.Game
                 return;
 
             string mech = SkillFeel.MechanicShort(skill.Mechanics);
+            string adj = SkillFeel.AdjectiveShort(skill);
             SkillFeel.ElementPalette(words, _colors, out Color line, out _);
-            _debugHud?.NoteSkillBang(skill.DisplayName, mech);
+            string bangNote = string.IsNullOrEmpty(adj)
+                ? mech
+                : (string.IsNullOrEmpty(mech) ? adj : mech + " | " + adj);
+            _debugHud?.NoteSkillBang(skill.DisplayName, bangNote);
             string sub = skill.VerbName;
             if (!string.IsNullOrEmpty(mech))
                 sub = string.IsNullOrEmpty(sub) ? mech : sub + "  ·  " + mech;
+            if (!string.IsNullOrEmpty(adj))
+                sub = string.IsNullOrEmpty(sub) ? adj : sub + "  ·  " + adj;
             _readout?.NoteSkill(skill.DisplayName, sub, line);
             SkillFeel.CameraKick(skill.VerbFamily, _camera, _colors);
             // PulseRune (PulseActor) kalır — AnimationBridge eklenir, yerine geçmez.
@@ -1762,6 +1880,8 @@ namespace Dovus.Game
             float dx = bossPos.x - logic.TipX;
             float dz = bossPos.z - logic.TipZ;
             float reach = _combat.Manifestation.ClosingBangRadiusM;
+            if (logic != null && logic.BangRadiusM > 0f)
+                reach = logic.BangRadiusM;
             if (closing.Type == Rune.Aydinlik)
             {
                 if (!logic.OverlapsBoss(bossPos.x, bossPos.z, reach * 0.5f))

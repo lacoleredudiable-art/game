@@ -41,6 +41,32 @@ namespace Dovus.Game
             return string.Join(" · ", mechanics);
         }
 
+        /// <summary>
+        /// Sıfat katkısı — HUD “etki” satırında 3’lü/4’lü farkı görünsün.
+        /// </summary>
+        public static string AdjectiveShort(SkillResolution skill)
+        {
+            if (skill.IsEmpty)
+                return string.Empty;
+            var parts = new List<string>(4);
+            if (!string.IsNullOrEmpty(skill.AdjectiveName))
+                parts.Add(skill.AdjectiveName);
+            if (!string.IsNullOrEmpty(skill.SilhouetteAxis)
+                && !string.Equals(skill.SilhouetteAxis, "none", System.StringComparison.Ordinal))
+                parts.Add(skill.SilhouetteAxis);
+            if (skill.HitboxScaleMult > 0f && System.Math.Abs(skill.HitboxScaleMult - 1f) > 0.05f)
+                parts.Add("alan×" + skill.HitboxScaleMult.ToString("0.#"));
+            if (!skill.EngineModifiers.IsNull)
+            {
+                string traj = skill.EngineModifiers["trajectory_override"].AsString();
+                if (string.IsNullOrEmpty(traj))
+                    traj = skill.EngineModifiers["hitbox_override"].AsString();
+                if (!string.IsNullOrEmpty(traj))
+                    parts.Add(traj);
+            }
+            return parts.Count == 0 ? string.Empty : string.Join(" · ", parts);
+        }
+
         /// <summary>Kapanışta kamera vuruşu — aileye göre ağırlık.</summary>
         public static void CameraKick(string verbFamily, FollowCamera cam, PrototypeTuning colors)
         {

@@ -94,6 +94,9 @@ namespace Dovus.Core.Status
 
                     ApplyKind(board, kind, tuning);
                 }
+
+                // Sıfat engine_modifiers — fiil mechanics dışında ek durum (3’lü/4’lü farkı).
+                ApplyAdjectiveModifiers(skill, board, self, ref knockback, tuning, mechanics);
             }
             finally
             {
@@ -101,6 +104,78 @@ namespace Dovus.Core.Status
             }
 
             return new Result(knockback, cleansed, triggered);
+        }
+
+        /// <summary>
+        /// apply_slow / apply_root / apply_burn / apply_poison_on_hit / apply_silence /
+        /// apply_knockback — JSON adjectives.engine_modifiers. Fiil mechanics’te zaten
+        /// varsa tekrar uygulanmaz (durum etkileşim çift tetiklenmesin).
+        /// </summary>
+        static void ApplyAdjectiveModifiers(
+            SkillResolution skill,
+            StatusBoard board,
+            bool self,
+            ref bool knockback,
+            StatusTuning tuning,
+            string[] mechanics)
+        {
+            JsonValue mods = skill.EngineModifiers;
+            if (mods.IsNull || mods.Kind != JsonKind.Object)
+                return;
+
+            bool HasMech(string id) => System.Array.IndexOf(mechanics, id) >= 0;
+
+            if (mods.Has("apply_slow") && !HasMech("slow"))
+            {
+                float mult = mods["apply_slow"].AsFloat(0f);
+                if (mult <= 0f)
+                    mult = tuning.SlowSpeedMult;
+                if (mult <= 0f || mult > 1f)
+                    mult = tuning.SlowSpeedMult;
+                board.Apply(StatusKind.Slow, tuning.SlowMs, mult);
+            }
+
+            if (ModifierTruthy(mods, "apply_root") && !HasMech("root"))
+                board.Apply(StatusKind.Root, tuning.RootMs, 1f);
+
+            if (ModifierTruthy(mods, "apply_burn") && !HasMech("burn"))
+            {
+                float burn = tuning.BurnDamagePerSec;
+                float burnMult = mods["burn_damage_mult"].AsFloat(1f);
+                if (burnMult > 0f)
+                    burn *= burnMult;
+                board.Apply(StatusKind.Burn, tuning.BurnMs, burn);
+            }
+
+            if (ModifierTruthy(mods, "apply_poison_on_hit") && !HasMech("poison"))
+                board.Apply(StatusKind.Poison, tuning.PoisonMs, tuning.PoisonDamagePerSec);
+
+            if (ModifierTruthy(mods, "apply_silence") && !HasMech("silence"))
+                board.Apply(StatusKind.Silence, tuning.SilenceMs, 1f);
+
+            if (ModifierTruthy(mods, "apply_knockback") && !self && !HasMech("knockback"))
+                knockback = true;
+
+            if (mods.Has("apply_damage_reduction") && !HasMech("damage_reduction"))
+            {
+                float mult = mods["apply_damage_reduction"].AsFloat(tuning.DamageReductionMult);
+                if (mult > 0f && mult < 1f)
+                    board.Apply(StatusKind.DamageReduction, tuning.DamageReductionMs, mult);
+            }
+        }
+
+        static bool ModifierTruthy(JsonValue mods, string key)
+        {
+            if (!mods.Has(key))
+                return false;
+            JsonValue v = mods[key];
+            if (v.Kind == JsonKind.Bool)
+                return v.AsBool(false);
+            if (v.Kind == JsonKind.Number)
+                return v.AsFloat(0f) > 0f;
+            if (v.Kind == JsonKind.String)
+                return !string.IsNullOrEmpty(v.AsString());
+            return false;
         }
 
         public static bool IsSelfTargeted(SkillResolution skill)

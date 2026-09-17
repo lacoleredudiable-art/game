@@ -16,7 +16,8 @@ namespace Dovus.Core.Manifestation
 
     /// <summary>
     /// Tek bir yaşayan etki — Unity bilmez. Sıfat hedef silüeti anında günceller;
-    /// görünen silüet MorphLerp ile ona yaklaşır (5→5-1 toplama gözle okunur).
+    /// görünen silüet MorphLerp ile ona yaklaşır.
+    /// SkillWorldPlanner planı varsa seyahat/menzil/bang rün yerine JSON’dan gelir.
     /// </summary>
     public sealed class LivingEffect
     {
@@ -36,6 +37,13 @@ namespace Dovus.Core.Manifestation
         float _holdPastRangeSec;
         bool _paidClosing;
         ClosingHit? _closing;
+
+        LivingTravelKind _travelKind = LivingTravelKind.LegacyVerb;
+        float _speedMps;
+        float _maxRangeM;
+        float _bangRadiusM;
+        float _lifetimeAddSec;
+        bool _hasPlan;
 
         public LivingEffect(
             Rune verb,
@@ -83,29 +91,58 @@ namespace Dovus.Core.Manifestation
         public ClosingHit? Closing => _closing;
         public bool PaidClosing => _paidClosing;
         public bool IsAlive => Phase is not LivingEffectPhase.Dead;
+        public bool HasSkillPlan => _hasPlan;
+        public LivingTravelKind TravelKind => _travelKind;
+        /// <summary>Plan bang yarıçapı; 0 ise caller tuning.ClosingBangRadiusM kullanır.</summary>
+        public float BangRadiusM => _bangRadiusM;
+        public float LifetimeAddSec => _lifetimeAddSec;
 
         public float TipX => _originX + _dirX * TipDistance;
         public float TipZ => _originZ + _dirZ * TipDistance;
 
-        public float TipDistance => _verb switch
-        {
-            Rune.Aydinlik => MathF.Min(_travel, _tuning.WaveMaxRadiusM),
-            Rune.Ates => MathF.Min(_travel, _tuning.NeedleMaxRangeM),
-            Rune.Su => MathF.Min(_travel, _tuning.SwarmMaxRadiusM),
-            _ => MathF.Min(_travel, _tuning.WaveMaxRadiusM)
-        };
+        public float TipDistance => MathF.Min(_travel, MaxRange);
 
-        public float MaxRange => _verb switch
+        public float MaxRange
         {
-            Rune.Aydinlik => _tuning.WaveMaxRadiusM,
-            Rune.Ates => _tuning.NeedleMaxRangeM,
-            Rune.Su => _tuning.SwarmMaxRadiusM,
-            _ => _tuning.WaveMaxRadiusM
-        };
+            get
+            {
+                if (_hasPlan && _maxRangeM > 0f)
+                    return _maxRangeM;
+                return _verb switch
+                {
+                    Rune.Aydinlik => _tuning.WaveMaxRadiusM,
+                    Rune.Ates => _tuning.NeedleMaxRangeM,
+                    Rune.Su => _tuning.SwarmMaxRadiusM,
+                    _ => _tuning.WaveMaxRadiusM
+                };
+            }
+        }
+
+        /// <summary>SkillMotor + prezentasyon planı — silüet/seyahat/bang.</summary>
+        public void ApplyPlan(in LivingEffectPlan plan)
+        {
+            if (Phase is LivingEffectPhase.Dead or LivingEffectPhase.Fading)
+                return;
+            if (!plan.HasPlan)
+                return;
+
+            _hasPlan = true;
+            _travelKind = plan.TravelKind;
+            _speedMps = plan.SpeedMps;
+            _maxRangeM = plan.MaxRangeM;
+            _bangRadiusM = plan.BangRadiusM;
+            _lifetimeAddSec = plan.LifetimeAddSec;
+            _target = plan.Silhouette.Clamped();
+            if (_ageSec < 0.05f)
+                _current = _target;
+        }
 
         public void SetWords(IReadOnlyList<SentenceWord> words)
         {
             if (Phase is LivingEffectPhase.Dead or LivingEffectPhase.Fading)
+                return;
+            // Plan varken FromWords ara rünleri yanlış sıfat sayar — silüeti plan korur.
+            if (_hasPlan)
                 return;
             _target = SilhouetteBuilder.FromWords(words, _tuning);
         }
@@ -123,17 +160,12 @@ namespace Dovus.Core.Manifestation
                 case LivingEffectPhase.Traveling:
                 case LivingEffectPhase.AwaitingClosing:
                     AdvanceTravel(dtSec);
-                    // Cümle Building ya da AwaitingClosing iken etki ölmez — menzil sonunda
-                    // bekler/sürer (§5/T2: kapanışın ödülü dünyada görünür kalmalı). Sönme
-                    // yalnızca Abort'ta ve kapanış patladıktan sonra (Banging→Dead) olur.
+                    float holdMax = _tuning.MaxHoldPastRangeSec + MathF.Max(0f, _lifetimeAddSec);
                     if (_travel >= MaxRange)
                     {
                         _holdPastRangeSec += dtSec;
-                        // Güvenlik payı: cümle hiç kapanmazsa (beklenmedik durum) sonsuza
-                        // asılı kalmasın. Normal akışta motor her cümleyi kapatır, buraya
-                        // hiç değmez.
                         if (Phase == LivingEffectPhase.Traveling
-                            && _holdPastRangeSec >= _tuning.MaxHoldPastRangeSec)
+                            && _holdPastRangeSec >= holdMax)
                             BeginFade();
                     }
                     else
@@ -154,7 +186,6 @@ namespace Dovus.Core.Manifestation
             }
         }
 
-        /// <summary>Dodge / vurulma — kapanış yok, sön.</summary>
         public void Abort()
         {
             if (Phase == LivingEffectPhase.Dead)
@@ -164,7 +195,6 @@ namespace Dovus.Core.Manifestation
             BeginFade();
         }
 
-        /// <summary>Cümle çözüldü — kapanış sessizlikten sonra çağrılacak.</summary>
         public void ArmClosing(ClosingHit closing)
         {
             if (Phase is LivingEffectPhase.Dead or LivingEffectPhase.Fading)
@@ -186,8 +216,16 @@ namespace Dovus.Core.Manifestation
         {
             float dx = TipX - bossX;
             float dz = TipZ - bossZ;
-            // SARSINTI halka/hat: mesafe halka yarıçapına yakınsa isabet
-            if (_verb == Rune.Aydinlik)
+
+            if (_hasPlan && _travelKind == LivingTravelKind.ExpandingRadial)
+            {
+                float bx = bossX - _originX;
+                float bz = bossZ - _originZ;
+                float radial = MathF.Sqrt(bx * bx + bz * bz);
+                return radial <= TipDistance + radiusM;
+            }
+
+            if (_verb == Rune.Aydinlik && !_hasPlan)
             {
                 float bx = bossX - _originX;
                 float bz = bossZ - _originZ;
@@ -196,13 +234,12 @@ namespace Dovus.Core.Manifestation
                 if (ringGap > radiusM)
                     return false;
 
-                // Odak yüksekse yalnızca hat koridoru
                 if (_current.Focus > 0.35f)
                 {
                     float along = bx * _dirX + bz * _dirZ;
                     if (along < 0f || along > TipDistance + radiusM)
                         return false;
-                    float perp = MathF.Abs(bx * -_dirZ + bz * _dirX);
+                    float perp = MathF.Abs(bx * _dirZ - bz * _dirX);
                     float halfWidth = Lerp(
                         _tuning.WaveCorridorHalfWidthWideM,
                         _tuning.WaveCorridorHalfWidthNarrowM,
@@ -219,8 +256,12 @@ namespace Dovus.Core.Manifestation
 
         void AdvanceTravel(float dtSec)
         {
-            // T14 İĞNE: Zenitsu küçük hâli — gerilmede yol alma, sonra 2–3 karelik gidiş,
-            // menzilde sert duruş (TipDistance zaten MaxRange'de kesilir).
+            if (_hasPlan)
+            {
+                AdvancePlanned(dtSec);
+                return;
+            }
+
             if (_verb == Rune.Ates)
             {
                 if (_ageSec < _tuning.NeedleWindupSec)
@@ -228,7 +269,6 @@ namespace Dovus.Core.Manifestation
 
                 float dashSec = _tuning.NeedleDashSec > 0.016f ? _tuning.NeedleDashSec : 0.016f;
                 float dashSpeed = _tuning.NeedleMaxRangeM / dashSec;
-                // Pierce hâlâ tempoyu keskinleştirir (silüet, hasar değil).
                 dashSpeed *= 1f + _tuning.PierceSpeedBonus * _current.Pierce;
                 _travel += dashSpeed * dtSec;
                 return;
@@ -240,9 +280,37 @@ namespace Dovus.Core.Manifestation
                 Rune.Su => _tuning.SwarmSpeedMps,
                 _ => _tuning.WaveSpeedMps
             };
-            // Pierce hızlandırır (daha derin atılış hissi) — sayısal hasar değil silüet tempo
             speed *= 1f + _tuning.PierceSpeedBonus * _current.Pierce;
             _travel += speed * dtSec;
+        }
+
+        void AdvancePlanned(float dtSec)
+        {
+            switch (_travelKind)
+            {
+                case LivingTravelKind.Instant:
+                    _travel = MaxRange;
+                    return;
+                case LivingTravelKind.Static:
+                    {
+                        float target = _bangRadiusM > 0f ? _bangRadiusM : MaxRange * 0.35f;
+                        float spd = _speedMps > 0f ? _speedMps : _tuning.WaveSpeedMps;
+                        if (_travel < target)
+                            _travel += spd * dtSec;
+                        else
+                            _travel = MathF.Max(_travel, target);
+                    }
+                    return;
+                case LivingTravelKind.ExpandingRadial:
+                case LivingTravelKind.Linear:
+                default:
+                    {
+                        float spd = _speedMps > 0f ? _speedMps : _tuning.WaveSpeedMps;
+                        spd *= 1f + _tuning.PierceSpeedBonus * _current.Pierce;
+                        _travel += spd * dtSec;
+                    }
+                    return;
+            }
         }
 
         void Morph(float dtSec)

@@ -1528,7 +1528,8 @@
       "engine_modifiers": {
         "damage_mult": 0.8,
         "hitbox_scale_mult": 2.5,
-        "hitbox_override": "expanding_wave",
+        "trajectory_override": "expanding_wave",
+        "hitbox_override": "radial_burst",
         "max_targets": 5
       }
     },
@@ -2427,6 +2428,12 @@
     "note": "16 Eylul: sahibi DeepSeek'te hazirlanan v5.3'u (formulas, crit_system, global_rules, state_machine, active_modes/ulti, passives, chain_mechanics, manipulation_layers, equipment_system, ui_rules, lore) getirdi. verbs/adjectives/elements/status_interaction_table/atoms_catalog/atom_kombinasyonlari v5.3 ile DEGISTIRILDI (once aktif_zehirlenme/kisisel_isinlanma kilitliydi, sahibi 'v5.3 otorite, geri al' dedi - 2-5 tekrar Iksir/tam_arinma, 3-2 tekrar Pus/hiz_gorunmezlik oldu). scaling_economy/secondary_effects/categories/verb_families/target_modes/animation_types/future_layers/element_families/three_runes_examples v5.3'te YOK, eski dosyadan KORUNDU (motor scaling_economy'siz calismiyor). Presentation-layer dosyasi (trajectory/hitbox/animation/vfx) BILEREK bu turda entegre edilmedi - sahibi 'sonra' dedi."
   },
   "element_families": {
+    "ates_ailesi": {
+      "class": "DPS",
+      "root": "Ates",
+      "identity": "Irade, saldirganlik, tuketim",
+      "_source": "class + identity: v5.3 elements[id=1].class ve lore.arketipler.Ates'ten. read_as yok - v5.3 aile duzeyinde bunu vermiyor (uydurulmadi)."
+    },
     "su_ailesi": {
       "class": "Support",
       "root": "Su",
@@ -2457,7 +2464,7 @@
       "identity": "Gizlilik, belirsizlik, sir",
       "read_as": "Sinsi, emici, gizleyen"
     },
-    "_note": "ates_ailesi bu tabloda yok - v5.2 kaynagi Ates icin class/identity/read_as vermedi. docs/durum.md Bilinen aciklar'da."
+    "_note": "16 Eylul: ates_ailesi v5.3 verisiyle eklendi (class+identity var, read_as yok - kaynak vermiyor)."
   },
   "three_runes_examples": {
     "description": "Her aile icin 3 ornek 3'lu kombo. Fiil + sifat mekanigini gosterir. Motor bu bolumu henuz okumuyor (DamageCalculator/formulas yok); VFX/tasarim referansi.",

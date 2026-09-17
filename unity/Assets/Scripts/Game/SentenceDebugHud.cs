@@ -183,6 +183,13 @@ namespace Dovus.Game
                 line += "  ·  " + r.VerbName;
             if (!string.IsNullOrEmpty(r.AdjectiveName) && s.Words.Count >= 1)
                 line += " / " + r.AdjectiveName;
+            if (!string.IsNullOrEmpty(r.SilhouetteAxis)
+                && !string.Equals(r.SilhouetteAxis, "none", System.StringComparison.Ordinal)
+                && s.Words.Count >= 3)
+                line += " {" + r.SilhouetteAxis + "}";
+            if (r.HitboxScaleMult > 0f && System.Math.Abs(r.HitboxScaleMult - 1f) > 0.05f
+                && s.Words.Count >= 2)
+                line += " ×" + r.HitboxScaleMult.ToString("0.#");
             if (r.Mechanics != null && r.Mechanics.Length > 0)
                 line += "  [" + string.Join(",", r.Mechanics) + "]";
             return line;

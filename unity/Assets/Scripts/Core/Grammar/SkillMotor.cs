@@ -262,7 +262,8 @@ namespace Dovus.Core.Grammar
                 engineModifiers: adj.EngineModifiers,
                 critEligible: verb.CritEligible,
                 elementOrigin: verb.ElementOrigin,
-                damageType: verb.DamageType);
+                damageType: verb.DamageType,
+                lengthResourceCostMult: length.ResourceCostMult);
         }
 
         /// <summary>İki kök → bileşik ELEMENT (skill kartı değil). Tabloda yoksa sentetik.</summary>
@@ -1092,7 +1093,8 @@ namespace Dovus.Core.Grammar
             string animationType = "", string targetMode = "", float baseCooldownSec = 0f,
             float baseResourceCost = 0f, IReadOnlyDictionary<string, string>? targetBehaviors = null,
             JsonValue? special = null, JsonValue? zoneEffect = null, JsonValue? engineModifiers = null,
-            bool critEligible = false, string elementOrigin = "", string damageType = "")
+            bool critEligible = false, string elementOrigin = "", string damageType = "",
+            float lengthResourceCostMult = 1f)
         {
             ElementId = elementId ?? string.Empty;
             ElementName = elementName ?? string.Empty;
@@ -1118,6 +1120,7 @@ namespace Dovus.Core.Grammar
             LengthRole = lengthRole ?? string.Empty;
             LengthCastMult = lengthCastMult;
             LengthMobility = lengthMobility ?? string.Empty;
+            LengthResourceCostMult = lengthResourceCostMult > 0f ? lengthResourceCostMult : 1f;
             FlavorElement = flavorElement ?? string.Empty;
             AnimationType = animationType ?? string.Empty;
             TargetMode = targetMode ?? string.Empty;
@@ -1162,6 +1165,8 @@ namespace Dovus.Core.Grammar
         public string LengthRole { get; }
         public float LengthCastMult { get; }
         public string LengthMobility { get; }
+        /// <summary>scaling_economy.lengths[N].resource_cost_mult (anti-ladder dışı maliyet).</summary>
+        public float LengthResourceCostMult { get; }
         public string FlavorElement { get; }
         public bool IsEmpty => Length <= 0 || string.IsNullOrEmpty(DisplayName);
 
