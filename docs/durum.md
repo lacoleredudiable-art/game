@@ -12,10 +12,10 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 17 Eylül 2026 (space_layer → SkillMotion) ·
-**Dal:** `fix/space-layer-skill-motion` · **Sıradaki:** state_machine ↔ SentencePhase
-(sahip kararı); Enforce bayrakları (sahip kararı); invisible_link/tear mekaniği;
-CC/zone dünya VFX; Kenney VFX; Hexagon rename
+**Son güncelleme:** 17 Eylül 2026 (shield/stealth + zone CC VFX) ·
+**Dal:** `fix/shield-stealth-status-vfx` · **Sıradaki:** state_machine ↔ SentencePhase
+(sahip kararı); Enforce bayrakları (sahip kararı); invisible_link/tear;
+Kenney VFX; Hexagon rename
 
 ## Bulgular — JSON → oyun (17 Eylül)
 
@@ -41,7 +41,14 @@ trajectory-hitbox borusu Faz 6’da bırakılmış → telefonda “bağlı değ
 | trajectory + hitbox → LivingEffect | **A** — SkillWorldPlanner |
 | atoms / three_runes_examples / lore | D — motor okumaz |
 | `yayma` expanding_wave | **JSON düzeltildi** (trajectory_override + radial_burst hitbox) |
-| zone CC (root/slow) | **A** — ZoneInstance.CcKind + boss Approach |
+| zone CC (root/slow) | **A** — CcKind + boss Approach + opak disk |
+| stealth / shield | **A** — Stealth status; savunma shield+DR; JSON absorb 50/5s |
+
+> **17 Eylül — shield/stealth + zone CC okunurluğu.** `savunma` mechanics
+> `shield`+`damage_reduction`; `gizlilik`/`hiz_gorunmezlik` → `stealth`.
+> `StatusKind.Stealth`: hasar yutar, boss Approach/vuruş keser, yarı saydam.
+> Shield tuning JSON `status_durations.shield` (50 / 5s). Zone CcKind → disk alfa 0.85.
+> `dotnet test` **244** yeşil. **Doğrulanamadı:** Unity Play / telefon.
 
 > **17 Eylül — space_layer → SkillMotion.** `SkillMotionMotor.Resolve(..., SpaceEffects)`:
 > short_blink/stealth_shift → blink mesafe+iframe (JSON otorite); phase_blink.distance_m

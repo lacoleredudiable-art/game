@@ -43,12 +43,17 @@ namespace Dovus.Game
                 if (!_visuals.TryGetValue(z.Id, out GameObject go) || go == null)
                 {
                     string colorKey = ColorKeyForZoneElement(z.Element);
+                    // CC alanları daha opak okunur (root/slow).
+                    float alpha = string.IsNullOrEmpty(z.CcKind) ? 0.6f : 0.85f;
                     go = PlaceholderFactory.CreateZoneDisk(
                         colorKey,
                         new Vector3(z.X, z.Y, z.Z),
                         z.RadiusM,
-                        _root);
-                    go.name = $"Zone_{z.Id}_{z.Element}";
+                        _root,
+                        alpha);
+                    go.name = string.IsNullOrEmpty(z.CcKind)
+                        ? $"Zone_{z.Id}_{z.Element}"
+                        : $"Zone_{z.Id}_{z.Element}_{z.CcKind}";
                     _visuals[z.Id] = go;
                 }
                 else

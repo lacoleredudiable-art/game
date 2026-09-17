@@ -293,4 +293,48 @@ public class StatusBoardTests
         Assert.That(kind, Is.EqualTo(StatusKind.Poison));
         Assert.That(StatusKindUtil.IsDebuff(StatusKind.Poison), Is.True);
     }
+
+    [Test]
+    public void Stealth_AbsorbsAllDamage_AndParses()
+    {
+        Assert.That(StatusKindUtil.TryParse("stealth", out StatusKind kind), Is.True);
+        Assert.That(kind, Is.EqualTo(StatusKind.Stealth));
+        Assert.That(StatusKindUtil.IsBuff(StatusKind.Stealth), Is.True);
+
+        var board = new StatusBoard();
+        board.Apply(StatusKind.Stealth, 4000, 1f);
+        Assert.That(board.IsStealthed, Is.True);
+        Assert.That(board.AbsorbDamage(40f), Is.EqualTo(0f));
+    }
+
+    [Test]
+    public void Shield_UsesJsonSizedAbsorbDefaults()
+    {
+        var t = Tuning();
+        Assert.That(t.ShieldMs, Is.EqualTo(5000));
+        Assert.That(t.ShieldAbsorb, Is.EqualTo(50f));
+
+        var board = new StatusBoard();
+        board.Apply(StatusKind.Shield, t.ShieldMs, t.ShieldAbsorb);
+        Assert.That(board.AbsorbDamage(30f), Is.EqualTo(0f).Within(0.01f));
+        Assert.That(board.ShieldRemaining, Is.EqualTo(20f).Within(0.01f));
+        Assert.That(board.AbsorbDamage(25f), Is.EqualTo(5f).Within(0.01f));
+    }
+
+    [Test]
+    public void Savunma_And_Gizlilik_Mechanics_FromFullJson()
+    {
+        var motor = LoadFullMotor();
+        Assert.That(motor.TryGetVerb("savunma", out VerbNode savunma), Is.True);
+        Assert.That(savunma.Mechanics, Does.Contain("shield"));
+        Assert.That(savunma.Mechanics, Does.Contain("damage_reduction"));
+
+        Assert.That(motor.TryGetVerb("gizlilik", out VerbNode gizlilik), Is.True);
+        Assert.That(gizlilik.Mechanics, Does.Contain("stealth"));
+        Assert.That(gizlilik.Mechanics, Does.Not.Contain("fear"));
+
+        Assert.That(motor.TryGetVerb("hiz_gorunmezlik", out VerbNode pus), Is.True);
+        Assert.That(pus.Mechanics, Does.Contain("stealth"));
+        Assert.That(pus.Mechanics, Does.Contain("haste"));
+    }
 }

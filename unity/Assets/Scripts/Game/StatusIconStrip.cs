@@ -272,6 +272,8 @@ namespace Dovus.Game
                     accent = new Color(0.7f, 0.5f, 0.55f); glyph = "WK"; break;
                 case StatusKind.Shield:
                     accent = new Color(0.45f, 0.85f, 1f); glyph = "SH"; break;
+                case StatusKind.Stealth:
+                    accent = new Color(0.55f, 0.45f, 0.85f); glyph = "IV"; break;
                 case StatusKind.Haste:
                     accent = new Color(0.55f, 0.95f, 0.75f); glyph = "HA"; break;
                 case StatusKind.DamageReduction:

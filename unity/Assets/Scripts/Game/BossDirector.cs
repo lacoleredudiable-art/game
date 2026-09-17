@@ -182,6 +182,24 @@ namespace Dovus.Game
                 return;
             }
 
+            // Oyuncu gizlilikte: boss yaklaşmaz / vurmaz (telegraph iptal).
+            if (_playerStatus != null && _playerStatus.Board.IsStealthed)
+            {
+                if (_phase is Phase.Windup or Phase.Active)
+                {
+                    _telegraph?.Hide();
+                    _feel?.ClearThreat();
+                    EnterIdle(worldMs);
+                }
+                else
+                {
+                    _telegraph?.Hide();
+                    _feel?.ClearThreat();
+                    _visual?.SetSpeed(0f);
+                }
+                return;
+            }
+
             switch (_phase)
             {
                 case Phase.Idle:
