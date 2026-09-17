@@ -29,13 +29,43 @@ namespace Dovus.Game
             return new Vector2(x, y);
         }
 
-        public static float RadiusPx(PrototypeTuning tuning) => DpToPixels(tuning.PentagonRadiusDp);
+        /// <summary>
+        /// İstenen yarıçapı safe-area + dodge boşluğuna sığacak şekilde kısar.
+        /// Büyük dp / yüksek DPI telefonda alt rünlerin kesilmesini engeller.
+        /// </summary>
+        public static float FittedRadiusPx(PrototypeTuning tuning, int screenWidth, int screenHeight)
+        {
+            float desired = DpToPixels(tuning.PentagonRadiusDp);
+            Rect safe = SafeRectPx();
+            Vector2 c = CenterPx(tuning, screenWidth, screenHeight);
+            float dotR = DotHitRadiusPx(tuning);
+            float dodgeR = DodgeButtonRadiusPx(tuning);
+            float margin = DpToPixels(10f);
+            float dodgePad = dodgeR + DpToPixels(Mathf.Max(16f, tuning.DodgeClearanceDp));
+
+            float bottomRoom = c.y - safe.yMin - margin - dotR;
+            float topRoom = safe.yMax - c.y - margin - dotR;
+            float sideRoom = tuning.MirrorForLeftHand
+                ? c.x - safe.xMin - margin - dotR
+                : safe.xMax - c.x - margin - dotR;
+
+            // Dodge sağ-alt dışarıda; yarıçap + dodgePad kenara sığmalı.
+            float maxR = Mathf.Min(bottomRoom - dodgePad * 0.45f, topRoom, sideRoom - dodgePad);
+            // Çizim koridoru için taban: komşu kenar boşluğu ≥ ~36dp (radius − 2·dotR).
+            float floor = DpToPixels(Mathf.Max(72f, tuning.DotHitRadiusDp * 2f + 36f));
+            if (maxR < floor)
+                maxR = floor;
+            return Mathf.Clamp(desired, floor, maxR);
+        }
+
+        public static float RadiusPx(PrototypeTuning tuning) =>
+            FittedRadiusPx(tuning, Screen.width, Screen.height);
 
         /// <summary>dot 1..6 — üstten başlayıp saat yönünde.</summary>
         public static Vector2 DotPx(int dot, PrototypeTuning tuning, int screenWidth, int screenHeight)
         {
             Vector2 c = CenterPx(tuning, screenWidth, screenHeight);
-            float r = RadiusPx(tuning);
+            float r = FittedRadiusPx(tuning, screenWidth, screenHeight);
             float startDeg = 90f;
             float step = tuning.MirrorForLeftHand ? 60f : -60f;
             float deg = startDeg + (dot - 1) * step;
@@ -44,18 +74,30 @@ namespace Dovus.Game
         }
 
         /// <summary>
-        /// Dodge düğmesi: altıgenin dışında, safe + çizim yarısı içine kırpılır.
+        /// Dodge: hex'in sağ-alt köşesinde, rün halkasının dışında.
+        /// Hava/Toprak ile arasında DodgeClearanceDp çizim/parmak boşluğu.
         /// </summary>
         public static Vector2 DodgeButtonPx(PrototypeTuning tuning, int screenWidth, int screenHeight)
         {
             Rect safe = SafeRectPx();
             Vector2 c = CenterPx(tuning, screenWidth, screenHeight);
+            float r = FittedRadiusPx(tuning, screenWidth, screenHeight);
+            float dodgeR = DodgeButtonRadiusPx(tuning);
+            float gap = DpToPixels(Mathf.Max(24f, tuning.DodgeClearanceDp));
+            float side = tuning.MirrorForLeftHand ? -1f : 1f;
+
+            // Sağa + aşağı: halkaya yapışmaz, skill çizimini kesmez.
+            Vector2 p = new Vector2(
+                c.x + side * (r + dodgeR + gap),
+                c.y - (r * 0.55f));
+
             float dx = DpToPixels(tuning.DodgeButtonOffsetXDp);
+            float dy = DpToPixels(tuning.DodgeButtonOffsetYDp);
             if (tuning.MirrorForLeftHand)
                 dx = -dx;
+            p += new Vector2(dx, dy);
 
-            Vector2 p = c + new Vector2(dx, DpToPixels(tuning.DodgeButtonOffsetYDp));
-            float edge = DodgeButtonRadiusPx(tuning) + DpToPixels(tuning.DodgeButtonScreenMarginDp);
+            float edge = dodgeR + DpToPixels(tuning.DodgeButtonScreenMarginDp);
             float mid = screenWidth * 0.5f;
 
             float minX = Mathf.Max(safe.xMin + edge, tuning.MirrorForLeftHand ? edge : mid + edge);

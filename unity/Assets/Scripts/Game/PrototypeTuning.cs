@@ -29,22 +29,26 @@ namespace Dovus.Game
         // Altıgen ekrana sabit (§2). Yarıçap/konum spec'te sayı yok — varsayılan; durum.md'ye geçildi.
         // T6.2: merkez X, dodge düğmesi sağ kenardan taşmasın diye 0.78'den içeri alındı.
         [Header("Altıgen (§2)")]
-        public float PentagonCenterXNorm = 0.72f;
-        // Safe-area içi sağ-alt köşe — 0.30 hâlâ yüksek kalıyordu (telefon screenshot).
-        public float PentagonCenterYNorm = 0.18f;
-        public float PentagonRadiusDp = 108f;
-        public float DotHitRadiusDp = 36f;
-        public float CenterHitRadiusDp = 40f;
+        // Biraz içeri: sağda dodge + çizim boşluğu kalsın.
+        public float PentagonCenterXNorm = 0.68f;
+        // Sağ-alt; FittedRadiusPx alt rünleri safe içinde tutar.
+        public float PentagonCenterYNorm = 0.32f;
+        // Komşu rün kenar boşluğu ≈ radius − 2·dotR (≥40dp çizim koridoru).
+        public float PentagonRadiusDp = 98f;
+        public float DotHitRadiusDp = 26f;
+        public float CenterHitRadiusDp = 28f;
         public bool MirrorForLeftHand = false;
         public float InkLingerSec = 0.40f;
         public float InkWidthDp = 3.5f;
 
-        // §2: dodge altıgenin sağ altında — Toprak (alt nokta) üstüne binmesin.
+        // §2: dodge hex dışı (sağ-alt); offset ek kaydırma (varsayılan 0).
         [Header("Dodge düğmesi (§2, T6.2)")]
-        public float DodgeButtonOffsetXDp = 110f;
-        public float DodgeButtonOffsetYDp = -95f;
-        public float DodgeButtonRadiusDp = 44f;
+        public float DodgeButtonOffsetXDp = 0f;
+        public float DodgeButtonOffsetYDp = 0f;
+        public float DodgeButtonRadiusDp = 32f;
         public float DodgeButtonScreenMarginDp = 10f;
+        /// <summary>Hex kenarı ile dodge yüzeyi arası (dp).</summary>
+        public float DodgeClearanceDp = 40f;
 
         // §5: merkez bir kelime değil düğme; hangi fiille vurduğu veridir (prototipte 1/Ateş).
         [Header("Düz vuruş (§5, T6.2)")]
@@ -60,7 +64,8 @@ namespace Dovus.Game
         public bool OpenDot6 = true;
 
         [Header("Altıgen ikon")]
-        public float IconDisplayScale = 1.12f;
+        // 1.0 — görsel disk hit'ten şişmesin, komşu boşluğu yemesin.
+        public float IconDisplayScale = 1.0f;
 
         // Spec'te sayı yok — ayrık onay tıkırtısı (§2); Handheld.Vibrate ~500 ms üst üste biniyordu.
         [Header("Dokunsal (§2)")]
@@ -222,13 +227,13 @@ namespace Dovus.Game
         // §6/§11 "boss ve oyuncu can göstergesi, sade". Ölçüler dp (beşgen/dodge diskiyle
         // aynı yol: PentagonLayoutScreen.DpToPixels). Boss barı T12'den beri BossVitals okur.
         [Header("Can göstergesi (T9, VitalsHud)")]
-        public float VitalsBarWidthDp = 220f;
-        public float VitalsBarHeightDp = 16f;
-        public float VitalsBossBarHeightDp = 14f;
-        public float VitalsBossBarWidthDp = 420f;
-        public float VitalsBarSpacingDp = 6f;
-        public float VitalsMarginDp = 18f;
-        public Color BossVitalsColor = new Color(0.85f, 0.28f, 0.22f, 0.95f);
+        public float VitalsBarWidthDp = 168f;
+        public float VitalsBarHeightDp = 11f;
+        public float VitalsBossBarHeightDp = 12f;
+        public float VitalsBossBarWidthDp = 280f;
+        public float VitalsBarSpacingDp = 5f;
+        public float VitalsMarginDp = 14f;
+        public Color BossVitalsColor = new Color(0.78f, 0.22f, 0.18f, 0.98f);
 
         [Header("Status ikon şeridi")]
         public float StatusIconSizeDp = 28f;
@@ -276,7 +281,7 @@ namespace Dovus.Game
         // tasarımcının bilinçli 0'ı (ör. nabzı kapatmak) artık ezilmez (T8.1).
         [HideInInspector] public int TuningVersion = CurrentVersion;
 
-        const int CurrentVersion = 11;
+        const int CurrentVersion = 13;
 
         /// <summary>Sürümü geçmiş serileşmiş kopyayı bu sürümün varsayılanlarına çeker.</summary>
         public void EnsureRuntimeDefaults()
@@ -292,25 +297,22 @@ namespace Dovus.Game
             OpenDot5 = true;
             OpenDot6 = true;
 
-            // v10: dodge/hex boyut + safe-area Y; Hava rengi.
-            DodgeButtonOffsetXDp = 110f;
-            DodgeButtonOffsetYDp = -95f;
-            DodgeButtonRadiusDp = 44f;
-            CenterHitRadiusDp = 40f;
-            DotHitRadiusDp = 36f;
-            PentagonRadiusDp = 108f;
-
             BasicStrikeDot = 1;
             ShowDamageNumbers = true;
-            PentagonCenterYNorm = 0.18f;
             ElementAir = new Color(0.50f, 0.70f, 0.62f);
             ShowSentenceDebugHud = false;
             if (SoftAimRangeM <= 0.01f) SoftAimRangeM = 8f;
             if (OrbitDegreesPerDp <= 0.01f) OrbitDegreesPerDp = 0.35f;
             if (StatusIconSizeDp <= 0.01f) StatusIconSizeDp = 28f;
-            if (VitalsBossBarWidthDp <= 0.01f) VitalsBossBarWidthDp = 420f;
-            if (VitalsBossBarHeightDp <= 0.01f) VitalsBossBarHeightDp = 14f;
+            if (VitalsBossBarWidthDp <= 0.01f) VitalsBossBarWidthDp = 280f;
+            if (VitalsBossBarHeightDp <= 0.01f) VitalsBossBarHeightDp = 12f;
             if (DamageFloatFontDp <= 0.01f) DamageFloatFontDp = 28f;
+            if (PentagonRadiusDp <= 0.01f) PentagonRadiusDp = 98f;
+            if (DotHitRadiusDp <= 0.01f) DotHitRadiusDp = 26f;
+            if (CenterHitRadiusDp <= 0.01f) CenterHitRadiusDp = 28f;
+            if (DodgeButtonRadiusDp <= 0.01f) DodgeButtonRadiusDp = 32f;
+            if (DodgeClearanceDp <= 0.01f) DodgeClearanceDp = 40f;
+            if (IconDisplayScale <= 0.01f) IconDisplayScale = 1.0f;
         }
 
         void MigrateToCurrent()
@@ -405,15 +407,25 @@ namespace Dovus.Game
             DamageFloatHoldSec = fresh.DamageFloatHoldSec;
             DamageFloatFadeSec = fresh.DamageFloatFadeSec;
             DamageFloatPunchScale = fresh.DamageFloatPunchScale;
-            CenterHitRadiusDp = fresh.CenterHitRadiusDp;
-            DotHitRadiusDp = fresh.DotHitRadiusDp;
-            PentagonCenterYNorm = 0.18f;
+
+            // v12: hex/dodge/vitals — telefon screenshot'ta alt rün kesiliyordu, dodge Hava üstündeydi.
+            // v13: rünler arası + dodge çizim boşluğu.
+            PentagonCenterXNorm = fresh.PentagonCenterXNorm;
+            PentagonCenterYNorm = fresh.PentagonCenterYNorm;
             PentagonRadiusDp = fresh.PentagonRadiusDp;
             CenterHitRadiusDp = fresh.CenterHitRadiusDp;
             DotHitRadiusDp = fresh.DotHitRadiusDp;
             DodgeButtonRadiusDp = fresh.DodgeButtonRadiusDp;
             DodgeButtonOffsetXDp = fresh.DodgeButtonOffsetXDp;
             DodgeButtonOffsetYDp = fresh.DodgeButtonOffsetYDp;
+            DodgeClearanceDp = fresh.DodgeClearanceDp;
+            IconDisplayScale = fresh.IconDisplayScale;
+            VitalsBarWidthDp = fresh.VitalsBarWidthDp;
+            VitalsBarHeightDp = fresh.VitalsBarHeightDp;
+            VitalsBossBarHeightDp = fresh.VitalsBossBarHeightDp;
+            VitalsBossBarWidthDp = fresh.VitalsBossBarWidthDp;
+            VitalsBarSpacingDp = fresh.VitalsBarSpacingDp;
+            VitalsMarginDp = fresh.VitalsMarginDp;
             ShowSentenceDebugHud = false;
 
             TuningVersion = CurrentVersion;

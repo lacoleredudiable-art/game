@@ -26,6 +26,10 @@ namespace Dovus.Game
         Image _manaFill;
         Image _bossFill;
         Image _allyFill;
+        Image _playerSheen;
+        Image _manaSheen;
+        Image _bossSheen;
+        Image _allySheen;
         Text _bossName;
         Text _bossLabel;
         Text _playerLabel;
@@ -80,15 +84,15 @@ namespace Dovus.Game
             _playerRoot.pivot = new Vector2(0f, 1f);
 
             _playerPanel = CreateGlassPanel(_playerRoot, "PlayerGlass");
-            _playerFill = CreateBar(_playerPanel, "Player", out _playerBg);
+            _playerFill = CreateBar(_playerPanel, "Player", out _playerBg, out _playerSheen);
             _playerLabel = CreateLabel(_playerBg, "PlayerHp");
-            _manaFill = CreateBar(_playerPanel, "Mana", out _manaBg);
+            _manaFill = CreateBar(_playerPanel, "Mana", out _manaBg, out _manaSheen);
             _manaLabel = CreateLabel(_manaBg, "PlayerMana");
             if (_hasAlly)
             {
-                _allyFill = CreateBar(_playerPanel, "Ally", out _allyBg);
+                _allyFill = CreateBar(_playerPanel, "Ally", out _allyBg, out _allySheen);
                 _allyLabel = CreateLabel(_allyBg, "AllyHp");
-                _allyFill.color = new Color(0.35f, 0.85f, 0.55f);
+                _allyFill.color = new Color(0.32f, 0.78f, 0.52f, 0.95f);
             }
 
             // —— Boss (üst orta) ——
@@ -102,7 +106,7 @@ namespace Dovus.Game
             _bossRoot.pivot = new Vector2(0.5f, 1f);
 
             _bossName = CreateBossName(_bossRoot);
-            _bossFill = CreateBar(_bossRoot, "Boss", out _bossBg);
+            _bossFill = CreateBar(_bossRoot, "Boss", out _bossBg, out _bossSheen);
             _bossLabel = CreateLabel(_bossBg, "BossHp");
             _bossLabel.alignment = TextAnchor.MiddleCenter;
 
@@ -110,6 +114,7 @@ namespace Dovus.Game
         }
 
         static Sprite _roundedSprite;
+        static Sprite _pillSprite;
 
         static RectTransform CreateGlassPanel(Transform parent, string name)
         {
@@ -119,17 +124,48 @@ namespace Dovus.Game
             rect.anchorMin = new Vector2(0f, 1f);
             rect.anchorMax = new Vector2(0f, 1f);
             rect.pivot = new Vector2(0f, 1f);
+
+            var shadowGo = new GameObject("Shadow");
+            shadowGo.transform.SetParent(go.transform, false);
+            var shadowRt = shadowGo.AddComponent<RectTransform>();
+            shadowRt.anchorMin = Vector2.zero;
+            shadowRt.anchorMax = Vector2.one;
+            shadowRt.offsetMin = new Vector2(2f, -4f);
+            shadowRt.offsetMax = new Vector2(4f, -2f);
+            var shadowImg = shadowGo.AddComponent<Image>();
+            shadowImg.sprite = RoundedRectSprite();
+            shadowImg.type = Image.Type.Sliced;
+            shadowImg.color = new Color(0f, 0f, 0f, 0.35f);
+            shadowImg.raycastTarget = false;
+
             var img = go.AddComponent<Image>();
             img.sprite = RoundedRectSprite();
             img.type = Image.Type.Sliced;
-            img.color = new Color(0.05f, 0.06f, 0.08f, 0.55f);
+            img.color = new Color(0.04f, 0.06f, 0.09f, 0.62f);
             img.raycastTarget = false;
+
+            var edgeGo = new GameObject("Edge");
+            edgeGo.transform.SetParent(go.transform, false);
+            var edgeRt = edgeGo.AddComponent<RectTransform>();
+            edgeRt.anchorMin = Vector2.zero;
+            edgeRt.anchorMax = Vector2.one;
+            edgeRt.offsetMin = Vector2.zero;
+            edgeRt.offsetMax = Vector2.zero;
+            var edgeImg = edgeGo.AddComponent<Image>();
+            edgeImg.sprite = RoundedRectSprite();
+            edgeImg.type = Image.Type.Sliced;
+            edgeImg.color = new Color(0.45f, 0.9f, 1f, 0.14f);
+            edgeImg.raycastTarget = false;
             return rect;
         }
 
-        static Image CreateBar(Transform parent, string name, out RectTransform bgRect)
+        static Image CreateBar(
+            Transform parent,
+            string name,
+            out RectTransform bgRect,
+            out Image sheen)
         {
-            Sprite rounded = RoundedRectSprite();
+            Sprite pill = PillSprite();
 
             var bg = new GameObject(name + "Bg");
             bg.transform.SetParent(parent, false);
@@ -138,23 +174,10 @@ namespace Dovus.Game
             bgRect.anchorMax = new Vector2(0f, 1f);
             bgRect.pivot = new Vector2(0f, 1f);
             var bgImg = bg.AddComponent<Image>();
-            bgImg.sprite = rounded;
+            bgImg.sprite = pill;
             bgImg.type = Image.Type.Sliced;
-            bgImg.color = new Color(0.04f, 0.05f, 0.07f, 0.72f);
+            bgImg.color = new Color(0.02f, 0.03f, 0.04f, 0.78f);
             bgImg.raycastTarget = false;
-
-            var borderGo = new GameObject(name + "Border");
-            borderGo.transform.SetParent(bg.transform, false);
-            var borderRect = borderGo.AddComponent<RectTransform>();
-            borderRect.anchorMin = Vector2.zero;
-            borderRect.anchorMax = Vector2.one;
-            borderRect.offsetMin = Vector2.zero;
-            borderRect.offsetMax = Vector2.zero;
-            var borderImg = borderGo.AddComponent<Image>();
-            borderImg.sprite = rounded;
-            borderImg.type = Image.Type.Sliced;
-            borderImg.color = new Color(1f, 1f, 1f, 0.12f);
-            borderImg.raycastTarget = false;
 
             var fillGo = new GameObject(name + "Fill");
             fillGo.transform.SetParent(bg.transform, false);
@@ -164,13 +187,25 @@ namespace Dovus.Game
             fillRect.offsetMin = new Vector2(2f, 2f);
             fillRect.offsetMax = new Vector2(-2f, -2f);
             var fillImg = fillGo.AddComponent<Image>();
-            fillImg.sprite = rounded;
+            fillImg.sprite = pill;
             fillImg.type = Image.Type.Filled;
             fillImg.fillMethod = Image.FillMethod.Horizontal;
             fillImg.fillOrigin = (int)Image.OriginHorizontal.Left;
             fillImg.raycastTarget = false;
-            fillGo.transform.SetAsLastSibling();
-            borderGo.transform.SetAsLastSibling();
+
+            var sheenGo = new GameObject(name + "Sheen");
+            sheenGo.transform.SetParent(fillGo.transform, false);
+            var sheenRt = sheenGo.AddComponent<RectTransform>();
+            sheenRt.anchorMin = new Vector2(0f, 0.55f);
+            sheenRt.anchorMax = new Vector2(1f, 1f);
+            sheenRt.offsetMin = Vector2.zero;
+            sheenRt.offsetMax = Vector2.zero;
+            sheen = sheenGo.AddComponent<Image>();
+            sheen.sprite = pill;
+            sheen.type = Image.Type.Sliced;
+            sheen.color = new Color(1f, 1f, 1f, 0.18f);
+            sheen.raycastTarget = false;
+
             return fillImg;
         }
 
@@ -181,6 +216,23 @@ namespace Dovus.Game
 
             const int size = 64;
             const float radius = 14f;
+            _roundedSprite = BuildRounded(size, radius);
+            return _roundedSprite;
+        }
+
+        static Sprite PillSprite()
+        {
+            if (_pillSprite != null)
+                return _pillSprite;
+
+            // Tam yükseklik yarıçapı → stadium / modern bar.
+            const int size = 64;
+            _pillSprite = BuildRounded(size, size * 0.5f - 0.5f);
+            return _pillSprite;
+        }
+
+        static Sprite BuildRounded(int size, float radius)
+        {
             var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
             tex.wrapMode = TextureWrapMode.Clamp;
             for (int y = 0; y < size; y++)
@@ -196,11 +248,10 @@ namespace Dovus.Game
             }
             tex.Apply(false, true);
 
-            int b = Mathf.RoundToInt(radius);
-            _roundedSprite = Sprite.Create(
+            int b = Mathf.Max(1, Mathf.RoundToInt(radius));
+            return Sprite.Create(
                 tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f,
                 0, SpriteMeshType.FullRect, new Vector4(b, b, b, b));
-            return _roundedSprite;
         }
 
         static Text CreateLabel(RectTransform parent, string name)
@@ -210,18 +261,21 @@ namespace Dovus.Game
             var rect = go.AddComponent<RectTransform>();
             rect.anchorMin = Vector2.zero;
             rect.anchorMax = Vector2.one;
-            rect.offsetMin = new Vector2(6f, 0f);
-            rect.offsetMax = new Vector2(-6f, 0f);
+            rect.offsetMin = new Vector2(8f, 0f);
+            rect.offsetMax = new Vector2(-8f, 0f);
             var text = go.AddComponent<Text>();
             text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             if (text.font == null)
                 text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            text.fontSize = 13;
+            text.fontSize = 11;
             text.fontStyle = FontStyle.Bold;
-            text.color = new Color(1f, 1f, 1f, 0.92f);
+            text.color = new Color(1f, 1f, 1f, 0.88f);
             text.alignment = TextAnchor.MiddleLeft;
             text.raycastTarget = false;
             text.text = string.Empty;
+            var outline = go.AddComponent<Outline>();
+            outline.effectColor = new Color(0f, 0f, 0f, 0.65f);
+            outline.effectDistance = new Vector2(1f, -1f);
             return text;
         }
 
@@ -233,14 +287,14 @@ namespace Dovus.Game
             rect.anchorMin = new Vector2(0.5f, 1f);
             rect.anchorMax = new Vector2(0.5f, 1f);
             rect.pivot = new Vector2(0.5f, 1f);
-            rect.sizeDelta = new Vector2(400f, 22f);
+            rect.sizeDelta = new Vector2(400f, 18f);
             var text = go.AddComponent<Text>();
             text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             if (text.font == null)
                 text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            text.fontSize = 14;
+            text.fontSize = 12;
             text.fontStyle = FontStyle.Bold;
-            text.color = new Color(0.85f, 0.82f, 0.78f, 0.9f);
+            text.color = new Color(0.78f, 0.74f, 0.7f, 0.75f);
             text.alignment = TextAnchor.MiddleCenter;
             text.raycastTarget = false;
             text.text = "BOSS";
@@ -257,7 +311,7 @@ namespace Dovus.Game
             float bossW = PentagonLayoutScreen.DpToPixels(_tuning.VitalsBossBarWidthDp);
             float bossH = PentagonLayoutScreen.DpToPixels(_tuning.VitalsBossBarHeightDp);
             float spacing = PentagonLayoutScreen.DpToPixels(_tuning.VitalsBarSpacingDp);
-            float pad = PentagonLayoutScreen.DpToPixels(10f);
+            float pad = PentagonLayoutScreen.DpToPixels(8f);
 
             bool sizeChanged =
                 !Mathf.Approximately(_tuning.VitalsBarWidthDp, _appliedWidthDp) ||
@@ -296,7 +350,7 @@ namespace Dovus.Game
 
                 PlayerStackBottomCanvasY = -(topInset + margin + panelH);
 
-                float nameH = PentagonLayoutScreen.DpToPixels(20f);
+                float nameH = PentagonLayoutScreen.DpToPixels(16f);
                 _bossRoot.anchoredPosition = new Vector2(0f, -(topInset + margin * 0.5f));
                 _bossName.rectTransform.anchoredPosition = Vector2.zero;
                 _bossName.rectTransform.sizeDelta = new Vector2(bossW, nameH);
@@ -311,15 +365,15 @@ namespace Dovus.Game
                 _bossFill.color = _appliedBossColor;
             }
 
-            // Oyuncu HP: desatüre crimson (premium mockup)
-            Color hpColor = new Color(0.75f, 0.22f, 0.22f, 0.95f);
+            // Oyuncu HP: soft rose (kırmızı-turuncu boss tehdidine yaklaşmaz)
+            Color hpColor = new Color(0.72f, 0.28f, 0.34f, 0.95f);
             if (_appliedPlayerColor != hpColor)
             {
                 _appliedPlayerColor = hpColor;
                 _playerFill.color = hpColor;
             }
 
-            Color manaColor = new Color(0.28f, 0.55f, 0.78f, 0.95f);
+            Color manaColor = new Color(0.30f, 0.62f, 0.88f, 0.95f);
             if (_appliedManaColor != manaColor)
             {
                 _appliedManaColor = manaColor;
@@ -341,7 +395,7 @@ namespace Dovus.Game
                     ? Mathf.Clamp01((float)_vitals.Hp / _vitals.MaxHp)
                     : 0f;
                 if (_playerLabel != null)
-                    _playerLabel.text = "HP  " + _vitals.Hp + " / " + _vitals.MaxHp;
+                    _playerLabel.text = _vitals.Hp + "  /  " + _vitals.MaxHp;
             }
 
             if (_manaFill != null)
@@ -350,13 +404,14 @@ namespace Dovus.Game
                 {
                     _manaFill.fillAmount = Mathf.Clamp01(_resource.Mana / _resource.MaxMana);
                     if (_manaLabel != null)
-                        _manaLabel.text = "FP  " + Mathf.RoundToInt(_resource.Mana) + " / " + Mathf.RoundToInt(_resource.MaxMana);
+                        _manaLabel.text = Mathf.RoundToInt(_resource.Mana) + "  /  "
+                            + Mathf.RoundToInt(_resource.MaxMana);
                 }
                 else
                 {
                     _manaFill.fillAmount = 0f;
                     if (_manaLabel != null)
-                        _manaLabel.text = "FP  —";
+                        _manaLabel.text = "—";
                 }
             }
 
@@ -366,14 +421,15 @@ namespace Dovus.Game
                     ? Mathf.Clamp01(_bossVitals.Hp / _bossVitals.MaxHp)
                     : 0f;
                 if (_bossLabel != null)
-                    _bossLabel.text = Mathf.CeilToInt(_bossVitals.Hp) + " / " + Mathf.CeilToInt(_bossVitals.MaxHp);
+                    _bossLabel.text = Mathf.CeilToInt(_bossVitals.Hp) + "  /  "
+                        + Mathf.CeilToInt(_bossVitals.MaxHp);
             }
 
             if (_hasAlly && _ally != null && _allyFill != null)
             {
                 _allyFill.fillAmount = _ally.Ratio;
                 if (_allyLabel != null)
-                    _allyLabel.text = "ALLY  " + _ally.Hp + " / " + _ally.MaxHp;
+                    _allyLabel.text = _ally.Hp + "  /  " + _ally.MaxHp;
             }
         }
     }

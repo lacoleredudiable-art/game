@@ -67,11 +67,17 @@ namespace Dovus.Game
                 _dotIcons[dot] = TryCreateIconSprite(dot);
                 Sprite icon = _dotIcons[dot] != null ? _dotIcons[dot] : fallback;
                 Color col = _dotIcons[dot] != null ? DotColor(dot) : RuneFallbackColor(dot);
-                _dots[dot] = CreateDisc($"Dot{dot}", icon, col, canvasGo.transform, out _dotImages[dot]);
+                _dots[dot] = CreateLayeredDisc(
+                    $"Dot{dot}", icon, fallback, col, canvasGo.transform, out _dotImages[dot],
+                    RimColorForDot(dot));
                 if (_dotIcons[dot] == null)
                 {
                     var label = CreateLabel(_dots[dot], DotGlyph(dot));
-                    label.fontSize = 22;
+                    label.fontSize = 18;
+                    label.color = new Color(0.06f, 0.08f, 0.1f, 0.95f);
+                    var outline = label.gameObject.AddComponent<Outline>();
+                    outline.effectColor = new Color(1f, 1f, 1f, 0.35f);
+                    outline.effectDistance = new Vector2(1f, -1f);
                 }
             }
 
@@ -79,20 +85,31 @@ namespace Dovus.Game
             for (int dot = 1; dot <= n; dot++)
                 CreateCooldownOverlay(dot, ringSprite, canvasGo.transform, underDots: false);
 
-            _center = CreateDisc("Center", fallback, _tuning.PentagonCenterColor, canvasGo.transform, out _);
+            _center = CreateLayeredDisc(
+                "Center", fallback, fallback, _tuning.PentagonCenterColor, canvasGo.transform, out _,
+                new Color(0.85f, 0.98f, 1f, 0.55f));
             var centerLabel = CreateLabel(_center, "⚔");
-            centerLabel.fontSize = 36;
+            centerLabel.fontSize = 28;
+            centerLabel.color = new Color(0.05f, 0.1f, 0.14f, 0.95f);
 
-            _dodge = CreateDisc("DodgeButton", fallback, _tuning.DodgeButtonColor, canvasGo.transform, out Image dodgeImg);
-            // Frosted rim — oyuncu cyan kenar
+            _dodge = CreateLayeredDisc(
+                "DodgeButton", fallback, fallback, _tuning.DodgeButtonColor, canvasGo.transform, out Image dodgeImg,
+                new Color(0.55f, 0.95f, 1f, 0.7f));
             dodgeImg.color = new Color(
                 _tuning.DodgeButtonColor.r,
                 _tuning.DodgeButtonColor.g,
                 _tuning.DodgeButtonColor.b,
-                0.88f);
+                0.92f);
             var dodgeLabel = CreateLabel(_dodge, "DODGE");
-            dodgeLabel.fontSize = 18;
+            dodgeLabel.fontSize = 15;
+            dodgeLabel.fontStyle = FontStyle.Bold;
             dodgeLabel.color = Color.white;
+            var dodgeOutline = dodgeLabel.gameObject.AddComponent<Outline>();
+            dodgeOutline.effectColor = new Color(0.15f, 0.05f, 0.35f, 0.85f);
+            dodgeOutline.effectDistance = new Vector2(1.2f, -1.2f);
+
+            // Dodge her zaman rünlerin üstünde (görsel katman + dokunma okunurluğu).
+            _dodge.SetAsLastSibling();
 
             for (int dot = 1; dot <= n; dot++)
                 CreateCooldownLabel(dot, canvasGo.transform);
@@ -320,6 +337,13 @@ namespace Dovus.Game
 
             Vector2 d = PentagonLayoutScreen.DodgeButtonPx(_tuning, w, h);
             Place(_dodge, d, PentagonLayoutScreen.DodgeButtonRadiusPx(_tuning) * 2f, w, h);
+            _dodge.SetAsLastSibling();
+        }
+
+        Color RimColorForDot(int dot)
+        {
+            Color c = RuneFallbackColor(dot);
+            return new Color(c.r * 1.15f, c.g * 1.15f, c.b * 1.15f, 0.65f);
         }
 
         Color RuneFallbackColor(int dot)
@@ -381,7 +405,12 @@ namespace Dovus.Game
 
             var tex = Resources.Load<Texture2D>(name);
             if (tex == null)
+            {
+                // Hava asset yoksa prosedürel rüzgâr — lightning'e düşme.
+                if (dot == 3)
+                    return CreateAirSwirlSprite();
                 return null;
+            }
 
             // Concept PNG'lerde siyah kare zemin var — yakındaki siyahı alfa yap.
             Texture2D punched = PunchNearBlackToAlpha(tex);
@@ -390,6 +419,49 @@ namespace Dovus.Game
                 new Rect(0f, 0f, punched.width, punched.height),
                 new Vector2(0.5f, 0.5f),
                 100f);
+        }
+
+        /// <summary>Hava rünü — yumuşak rüzgâr halkaları (yıldırım değil).</summary>
+        static Sprite CreateAirSwirlSprite()
+        {
+            const int size = 128;
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            tex.wrapMode = TextureWrapMode.Clamp;
+            float cx = (size - 1) * 0.5f;
+            float cy = (size - 1) * 0.5f;
+            float rMax = cx * 0.92f;
+            for (int y = 0; y < size; y++)
+            for (int x = 0; x < size; x++)
+            {
+                float dx = x - cx;
+                float dy = y - cy;
+                float distPx = Mathf.Sqrt(dx * dx + dy * dy);
+                float aDisc = Mathf.Clamp01(rMax - distPx + 0.5f);
+                if (aDisc <= 0f)
+                {
+                    tex.SetPixel(x, y, Color.clear);
+                    continue;
+                }
+
+                float dist = distPx / cx;
+                float ang = Mathf.Atan2(dy, dx);
+                float band1 = Mathf.Exp(-Mathf.Pow((dist - 0.42f) / 0.07f, 2f))
+                    * Mathf.Clamp01(Mathf.Cos(ang * 2f + 0.4f) + 0.35f);
+                float band2 = Mathf.Exp(-Mathf.Pow((dist - 0.62f) / 0.06f, 2f))
+                    * Mathf.Clamp01(Mathf.Cos(ang * 2f - 1.1f) + 0.25f);
+                float band3 = Mathf.Exp(-Mathf.Pow((dist - 0.24f) / 0.05f, 2f)) * 0.55f;
+                float ink = Mathf.Clamp01(band1 * 0.95f + band2 * 0.85f + band3);
+
+                // Disk: muted teal; şeritler daha açık.
+                Color baseCol = new Color(0.42f, 0.62f, 0.55f, aDisc);
+                Color swirl = new Color(0.82f, 0.96f, 0.90f, ink * aDisc);
+                Color mixed = Color.Lerp(baseCol, swirl, swirl.a);
+                mixed.a = Mathf.Max(baseCol.a, swirl.a);
+                tex.SetPixel(x, y, mixed);
+            }
+
+            tex.Apply(false, true);
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f);
         }
 
         /// <summary>Siyah/koyu kare zemini şeffafa çevirir (ikonlar yuvarlak diskte okunur kalsın).</summary>
@@ -439,11 +511,62 @@ namespace Dovus.Game
             Transform parent,
             out Image image)
         {
+            return CreateLayeredDisc(name, sprite, sprite, color, parent, out image, Color.clear);
+        }
+
+        /// <summary>
+        /// Gölge + rim (daire) + yüz — dodge/rünlerde düz diskten ayrışır.
+        /// </summary>
+        static RectTransform CreateLayeredDisc(
+            string name,
+            Sprite faceSprite,
+            Sprite discSprite,
+            Color color,
+            Transform parent,
+            out Image image,
+            Color rimColor)
+        {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
             var rt = go.AddComponent<RectTransform>();
-            image = go.AddComponent<Image>();
-            image.sprite = sprite;
+
+            var shadowGo = new GameObject("Shadow");
+            shadowGo.transform.SetParent(go.transform, false);
+            var shadowRt = shadowGo.AddComponent<RectTransform>();
+            shadowRt.anchorMin = Vector2.zero;
+            shadowRt.anchorMax = Vector2.one;
+            shadowRt.offsetMin = new Vector2(3f, -5f);
+            shadowRt.offsetMax = new Vector2(3f, -5f);
+            var shadowImg = shadowGo.AddComponent<Image>();
+            shadowImg.sprite = discSprite;
+            shadowImg.color = new Color(0f, 0f, 0f, 0.45f);
+            shadowImg.raycastTarget = false;
+            shadowImg.preserveAspect = true;
+
+            var rimGo = new GameObject("Rim");
+            rimGo.transform.SetParent(go.transform, false);
+            var rimRt = rimGo.AddComponent<RectTransform>();
+            rimRt.anchorMin = Vector2.zero;
+            rimRt.anchorMax = Vector2.one;
+            rimRt.offsetMin = new Vector2(-3f, -3f);
+            rimRt.offsetMax = new Vector2(3f, 3f);
+            var rimImg = rimGo.AddComponent<Image>();
+            rimImg.sprite = discSprite;
+            rimImg.color = rimColor.a > 0.01f
+                ? rimColor
+                : new Color(1f, 1f, 1f, 0.28f);
+            rimImg.raycastTarget = false;
+            rimImg.preserveAspect = true;
+
+            var faceGo = new GameObject("Face");
+            faceGo.transform.SetParent(go.transform, false);
+            var faceRt = faceGo.AddComponent<RectTransform>();
+            faceRt.anchorMin = Vector2.zero;
+            faceRt.anchorMax = Vector2.one;
+            faceRt.offsetMin = new Vector2(2f, 2f);
+            faceRt.offsetMax = new Vector2(-2f, -2f);
+            image = faceGo.AddComponent<Image>();
+            image.sprite = faceSprite;
             image.color = color;
             image.raycastTarget = false;
             image.preserveAspect = true;
