@@ -803,11 +803,13 @@ namespace Dovus.Game
                 if (!string.Equals(e.Element, origin, StringComparison.OrdinalIgnoreCase))
                     continue;
 
+                // Readout'a yazma — ShoutSkill DisplayName'i ezmeyelim (eski: effect id
+                // "karabasan koruma silme" 2/3/4'lüyü aynı gösteriyordu). Yan etki debug'da.
                 if (string.Equals(e.Type, RealityEffectTypes.ReviveBlock, StringComparison.Ordinal))
                 {
                     float dur = e.HasDurationSec ? e.DurationSec : RealityEffectDirector.DefaultReviveBlockSec;
                     _realityDirector.ApplyReviveBlock(worldMs, dur);
-                    _readout?.NoteSkill(e.Id.Replace('_', ' '), "diriliş engeli", Color.magenta);
+                    _debugHud?.NoteSkillBang(skill.DisplayName, "diriliş engeli");
                     return;
                 }
 
@@ -818,7 +820,7 @@ namespace Dovus.Game
                         _realityDirector.ApplyPartialErase(board, e.Targets);
                     else
                         _realityDirector.ApplyPartialErase(board);
-                    _readout?.NoteSkill(e.Id.Replace('_', ' '), "kısmi silme", Color.magenta);
+                    _debugHud?.NoteSkillBang(skill.DisplayName, "kısmi silme");
                     return;
                 }
 
@@ -829,7 +831,7 @@ namespace Dovus.Game
                         _realityDirector.ApplyFullErase(board, e.Targets);
                     else
                         _realityDirector.ApplyFullErase(board);
-                    _readout?.NoteSkill(e.Id.Replace('_', ' '), "tam silme", Color.magenta);
+                    _debugHud?.NoteSkillBang(skill.DisplayName, "tam silme");
                     return;
                 }
             }
@@ -903,10 +905,15 @@ namespace Dovus.Game
         /// <summary>
         /// Karabasan delayed_detonation — bang hasarını delay_sec sonra uygular.
         /// true = hasar ertelendi (şimdi ApplyClosingDamage yazılmasın).
+        /// Yalnızca sıfat <c>trigger_profile=delayed_detonation</c> (Geciktirme) iken —
+        /// aksi halde her 1-6 katlaması aynı 2 sn gecikmeyi alırdı (3'lü/4'lü fark yok).
         /// </summary>
         bool TryDeferDamageAsDelayedDetonation(SkillResolution skill, float pendingDamage)
         {
             if (_timeEffectDirector == null || _skills == null || skill.IsEmpty || pendingDamage <= 0f)
+                return false;
+
+            if (!SkillWantsDelayedDetonation(skill))
                 return false;
 
             string origin = skill.ElementOrigin;
@@ -918,7 +925,7 @@ namespace Dovus.Game
                 TimeEffectNode e = _skills.TimeEffects[i];
                 if (!string.Equals(e.Type, TimeEffectTypes.DelayedDetonation, StringComparison.Ordinal))
                     continue;
-                if (!string.Equals(e.Element, origin, StringComparison.Ordinal))
+                if (!string.Equals(e.Element, origin, StringComparison.OrdinalIgnoreCase))
                     continue;
 
                 float delay = e.HasDelaySec ? e.DelaySec : 0f;
@@ -928,6 +935,19 @@ namespace Dovus.Game
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Sıfat engine_modifiers.trigger_profile == delayed_detonation (JSON: geciktirme).
+        /// </summary>
+        static bool SkillWantsDelayedDetonation(SkillResolution skill)
+        {
+            if (skill.IsEmpty || skill.EngineModifiers.IsNull)
+                return false;
+            if (!skill.EngineModifiers.Has("trigger_profile"))
+                return false;
+            string profile = skill.EngineModifiers["trigger_profile"].AsString();
+            return string.Equals(profile, TimeEffectTypes.DelayedDetonation, StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -1795,6 +1815,10 @@ namespace Dovus.Game
                 sub = string.IsNullOrEmpty(sub) ? mech : sub + "  ·  " + mech;
             if (!string.IsNullOrEmpty(adj))
                 sub = string.IsNullOrEmpty(sub) ? adj : sub + "  ·  " + adj;
+            if (skill.Length >= 3 && !string.IsNullOrEmpty(skill.LengthRole))
+                sub = string.IsNullOrEmpty(sub)
+                    ? skill.LengthRole
+                    : sub + "  ·  " + skill.Length + "·" + skill.LengthRole;
             _readout?.NoteSkill(skill.DisplayName, sub, line);
             SkillFeel.CameraKick(skill.VerbFamily, _camera, _colors);
             // PulseRune (PulseActor) kalır — AnimationBridge eklenir, yerine geçmez.

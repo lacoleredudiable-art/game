@@ -339,6 +339,37 @@ public class SkillMotorTests
         Assert.That(full.Type, Is.EqualTo("full_erase"));
         Assert.That(full.Targets.Count, Is.EqualTo(3));
     }
+
+    [Test]
+    public void KarabasanLine_Fold2_3_4_DifferByNameAndAdjective()
+    {
+        var m = LoadFull();
+
+        SkillResolution pair = m.Resolve(new[] { 1, 6 });
+        Assert.That(pair.DisplayName, Is.EqualTo("Karabasan Dokunuşu"));
+        Assert.That(pair.VerbId, Is.EqualTo("guc_emme"));
+        Assert.That(pair.AdjectiveId, Is.EqualTo("geciktirme"));
+        Assert.That(pair.ElementOrigin, Is.EqualTo("Karabasan"));
+        Assert.That(pair.EngineModifiers["trigger_profile"].AsString(),
+            Is.EqualTo("delayed_detonation"));
+
+        // 1-6-2: Karabasan fiili + Su kök sıfatı (Yayma) — geciktirme düşer.
+        SkillResolution fold3 = m.Resolve(new[] { 1, 6, 2 });
+        Assert.That(fold3.DisplayName, Is.EqualTo("Karabasan · Yayma"));
+        Assert.That(fold3.VerbId, Is.EqualTo("guc_emme"));
+        Assert.That(fold3.AdjectiveId, Is.EqualTo("yayma"));
+        Assert.That(fold3.HitboxScaleMult, Is.EqualTo(2.5f).Within(0.01f));
+        Assert.That(fold3.EngineModifiers.Has("trigger_profile"), Is.False,
+            "3'lü Yayma delayed_detonation almamalı");
+
+        // 1-6-2-2: Karabasan + Pınar sıfatı (akis) — 3'lüden farklı isim/sıfat.
+        SkillResolution fold4 = m.Resolve(new[] { 1, 6, 2, 2 });
+        Assert.That(fold4.DisplayName, Is.EqualTo("Karabasan+Pınar"));
+        Assert.That(fold4.VerbId, Is.EqualTo("guc_emme"));
+        Assert.That(fold4.AdjectiveId, Is.Not.EqualTo(fold3.AdjectiveId));
+        Assert.That(fold4.DisplayName, Is.Not.EqualTo(fold3.DisplayName));
+        Assert.That(fold4.EngineModifiers.Has("trigger_profile"), Is.False);
+    }
 }
 
 [TestFixture]
