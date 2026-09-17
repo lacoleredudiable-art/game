@@ -12,9 +12,9 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 17 Eylül 2026 (ulti VFX polish) ·
-**Dal:** `master` · **Sıradaki:** fiil action özel motorları; Hexagon rename;
-(deneme sonrası süre/Enforce)
+**Son güncelleme:** 17 Eylül 2026 (Karabasan readout + delayed gate) ·
+**Dal:** `fix/karabasan-readout-fold` · **Sıradaki:** fiil action özel motorları
+(`drain`/Karabasan hattı dahil); Hexagon rename; (deneme sonrası süre/Enforce)
 
 ### Sahip kararları (17 Eylül)
 
@@ -26,6 +26,15 @@
 | state_machine bağlama | **bağlandı** — SyncWorld + çizim/dodge/hareket kapısı |
 | fiil `action` özel motor | **gerekli** — henüz yazılmadı (sıradaki) |
 | invisible_link / tear | **bağlandı** (Karabasan hat / Hiçlik yarığı) |
+
+> **17 Eylül — Karabasan hattı (Ateş-Karanlık) fix.** Sahip: "koruma silme
+> yazıyor, 3lü 4lü farketmiyor". (1) Reality `NoteSkill(e.Id)` ShoutSkill
+> adını eziyordu → readout'a yazma kaldırıldı (erase hâlâ uygulanır, debug not).
+> (2) `delayed_detonation` her ElementOrigin=Karabasan'da değil, yalnız sıfat
+> `trigger_profile=delayed_detonation` (Geciktirme / 2'li) iken. 3'lü Yayma
+> anında bang + 2.5× alan. ShoutSkill alt satıra length role. Test:
+> `KarabasanLine_Fold2_3_4_DifferByNameAndAdjective`. `dotnet test` **258**.
+> **Doğrulanamadı:** telefon APK (bu oturumda yeniden yükleme yok).
 
 ## JSON ↔ oyun — derin boşluk matrisi (17 Eylül tarama)
 
