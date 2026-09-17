@@ -1082,36 +1082,36 @@ namespace Dovus.Game
             LivingEffect logic = p.View.Logic;
             logic.FireClosingBang();
             StampScar(p.View, p.Closing);
-            _closingChainBonus = BeginChainClosing(p.Words, _clock.Director.WorldTimeMs);
-            TryActivateMode(p.Words, _clock.Director.WorldTimeMs);
-            TryTriggerPassive(p.Words, _clock.Director.WorldTimeMs);
 
-            // Düz vuruş: jab — skill motoru / isim bang'i / kamera yumruğu yok (Ateş vb. yazmasın).
-            // Heal vb. tek-rün skill asla IsBasicStrike olmamalı; yine de mend kaçmasın.
-            if (p.IsBasicStrike || (p.View != null && p.View.IsBasicStrike))
+            // Düz vuruş: jab — skill motoru / mana / CD / zincir / pasif / ulti yok.
+            // BasicStrikeDot gramer fiili (varsayılan Ateş) skill cast sayılmaz.
+            bool basic = p.IsBasicStrike || (p.View != null && p.View.IsBasicStrike);
+            if (basic)
             {
+                _closingChainBonus = 1f; // pending zincir bonusunu yeme
+                _lastChainStep = ChainStepResult.None;
+
+                // Heal vb. tek-rün skill asla IsBasicStrike olmamalı; yanlış BasicStrikeDot
+                // mend'e kilitliyse mend kaçmasın (mana/CD yine yok — jab).
                 SkillResolution basicSkill = ResolvePendingSkill(p);
                 if (IsHealSkill(basicSkill))
                 {
-                    ApplyResourceCost(basicSkill);
                     ApplyClosingStatuses(p, basicSkill);
                     ShoutSkill(basicSkill, p.Words);
                     ApplyClosingHeal(p.Closing, basicSkill);
-                    ApplyCooldown(basicSkill, p.Words, cosmeticIfDisabled: true);
-                    AnnounceChainFinisherIfAny(); // ShoutSkill sonrası — Finisher readout kalsın
                     return;
                 }
 
-                ApplyResourceCost(basicSkill);
                 ApplyBossClosingBasic(logic, p.Closing);
                 float basicDealt = ApplyClosingDamage(p.Closing, SkillResolution.Empty, isBasicStrike: true, slashCommitMult: 0f);
                 TryScheduleEchoForSkill(SkillResolution.Empty, basicDealt);
-                // Kozmetik radial yoktu; EnforceCooldown=true iken tracker yine yazar.
-                ApplyCooldown(basicSkill, p.Words, cosmeticIfDisabled: false);
-                AnnounceChainFinisherIfAny();
                 SpawnClosingImpact(p);
                 return;
             }
+
+            _closingChainBonus = BeginChainClosing(p.Words, _clock.Director.WorldTimeMs);
+            TryActivateMode(p.Words, _clock.Director.WorldTimeMs);
+            TryTriggerPassive(p.Words, _clock.Director.WorldTimeMs);
 
             SkillResolution skill = ResolvePendingSkill(p);
             ApplyResourceCost(skill);
@@ -1612,7 +1612,7 @@ namespace Dovus.Game
             _closingStamped.Add(logic);
         }
 
-        /// <summary>Düz vuruş jab — hafif tepki, skill ailesi / kamera yumruğu yok.</summary>
+        /// <summary>Düz vuruş jab — yalnızca kısa sarsıntı; geri itme yok (skill tepkisi değil).</summary>
         void ApplyBossClosingBasic(LivingEffect logic, ClosingHit closing)
         {
             if (_boss == null || (_bossVitals != null && _bossVitals.IsDown))
@@ -1623,9 +1623,9 @@ namespace Dovus.Game
             var man = _combat.Manifestation;
             _boss.React(
                 new Vector3(logic.OriginX, 0f, logic.OriginZ),
-                man.BossKnockbackM * 0.55f,
-                0.04f,
-                man.BossShakeSec * 0.4f,
+                knockbackM: 0f,
+                liftM: 0f,
+                shakeSec: man.BossShakeSec * 0.35f,
                 _clock.Director.WorldTimeMs);
         }
 

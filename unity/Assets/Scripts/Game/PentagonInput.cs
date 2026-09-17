@@ -569,10 +569,9 @@ namespace Dovus.Game
             }
 
             // Idle ya da Recovering: kilidi keser (§5) ve tek noktalık cümleyi anında kapatır.
+            // Düz vuruş skill değil — mana / CD / zincir kapısı yok (BasicStrikeDot yalnızca
+            // gramer fiili; Ateş×N sayılmaz).
             int dot = _tuning.BasicStrikeDot;
-            if (!TryAllowSentenceStart(dot))
-                return;
-
             _engine.OnDotTouched(dot, worldMs);
             _engine.Commit();
             FlushInkBreak();

@@ -12,9 +12,26 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 17 Eylül 2026 (His/HUD/kamera/iz sprinti) · **Sıradaki:**
+**Son güncelleme:** 17 Eylül 2026 (düz vuruş yan etki fix) · **Sıradaki:**
 Bağlama 8.1 + Kenney VFX prefab drop-in (`Assets/Art/Vfx/README.txt`) +
 tam `Pentagon*`→`Hexagon*` tip rename (ayrı dal) + manuel target UI
+
+> **17 Eylül — Düz vuruş yan etki fix.** Merkez jab `BasicStrikeDot` (varsayılan
+> Ateş) yüzünden skill gibi işleniyordu: mana `ApplyResourceCost`, peşpeşe jab →
+> Ateş zinciri (`BeginChainClosing`), pasif/ulti tetik, boss `BossKnockbackM×0.55`
+> geri itme. `FireClosing`: basic’te zincir/pasif/ulti/mana/CD yok; pending zincir
+> bonusuna dokunulmaz. `ApplyBossClosingBasic` yalnızca sarsıntı (knock=0).
+> `PentagonInput.TriggerCenter` mana/CD kapısını atlar. `dotnet test` **227** yeşil.
+> Dal: `fix/basic-strike-side-effects`. MCP Play doğrulanmadı.
+
+> **17 Eylül — HUD layout/vitals fix.** Telefon: hex 108dp+YNorm 0.18 alt
+> rünleri kesiyordu; dodge Hava üstüne biniyordu; Hava ikonsuz düz disk;
+> can barları kalın/düz. `FittedRadiusPx` safe+dodge boşluğuna kısar;
+> dodge doğu dışarı (Hava -30° ile örtüşmez); gölge+rim katmanı; prosedürel
+> Hava rüzgâr ikonu (`icon-air` yoksa, lightning yok). Vitals: ince pill bar,
+> cam gölge/kenar, sheen. Tuning v13: radius 98dp + dodge clearance 40dp
+> (rünler arası çizim koridoru; dodge hex sağ-alt dışında).
+> `dotnet test` **227** yeşil. Dal: `fix/hud-layout-vitals`.
 
 > **17 Eylül — His / HUD / kamera / iz.** Premium HUD: boss üst orta +
 > `StatusIconStrip` (tüm `StatusKind`, `StatusBoard.TryGet` + süre halkası);
