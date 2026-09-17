@@ -297,6 +297,48 @@ public class SkillMotorTests
         Assert.That(tear.HasDamageOnCross, Is.True);
         Assert.That(tear.DamageOnCross, Is.EqualTo(30f).Within(0.01f));
     }
+
+    [Test]
+    public void FullJson_ParsesRealityEffects_MatchingJsonCountAndTypes()
+    {
+        string path = Path.GetFullPath(Path.Combine(
+            TestContext.CurrentContext.TestDirectory,
+            "..", "..", "..", "..", "..", "docs", "element-sistemi.json"));
+        if (!File.Exists(path))
+        {
+            path = Path.GetFullPath(Path.Combine(
+                TestContext.CurrentContext.TestDirectory,
+                "..", "..", "..", "..", "docs", "element-sistemi.json"));
+        }
+        string json = File.ReadAllText(path);
+        JsonValue layer = MiniJson.Parse(json)["manipulation_layers"]["reality_layer"];
+        int expected = layer["effects"].AsArray().Count;
+
+        var motor = SkillMotor.FromJson(json);
+        Assert.That(motor.RealityEffects.Count, Is.EqualTo(expected));
+        Assert.That(expected, Is.EqualTo(3));
+
+        RealityEffectNode revive = default;
+        RealityEffectNode partial = default;
+        RealityEffectNode full = default;
+        foreach (RealityEffectNode e in motor.RealityEffects)
+        {
+            if (e.Id == "cehennem_dirilis_engeli") revive = e;
+            if (e.Id == "karabasan_koruma_silme") partial = e;
+            if (e.Id == "hiclik_varlik_silme") full = e;
+        }
+
+        Assert.That(revive.Type, Is.EqualTo("revive_block"));
+        Assert.That(revive.HasDurationSec, Is.True);
+        Assert.That(revive.DurationSec, Is.EqualTo(5f).Within(0.01f));
+        Assert.That(revive.Element, Is.EqualTo("Cehennem"));
+
+        Assert.That(partial.Type, Is.EqualTo("partial_erase"));
+        Assert.That(partial.Targets.Count, Is.EqualTo(3));
+
+        Assert.That(full.Type, Is.EqualTo("full_erase"));
+        Assert.That(full.Targets.Count, Is.EqualTo(3));
+    }
 }
 
 [TestFixture]

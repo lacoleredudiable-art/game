@@ -79,6 +79,8 @@ namespace Dovus.Game
         // --- Zaman (Bağlama 8) — echo + extend_lifetime; delayed_detonation/death_delay YOK ---
         TimeEffectDirector _timeEffectDirector;
         readonly List<TimeEffectField> _dueTimeFields = new();
+        // --- Gerçeklik (Bağlama 11) — revive_block + erase ---
+        RealityEffectDirector _realityDirector;
         // --- Ekipman (Bağlama 9) — sabit silah; seçim UI yok ---
         EquipmentItem _equippedWeapon;
         EquipmentBonusResolver _equipmentBonus;
@@ -184,6 +186,9 @@ namespace Dovus.Game
         /// <summary>Bağlama 8 / MCP: Bind sonrası zaman alanları (echo vb.).</summary>
         public TimeEffectDirector TimeEffectDirector => _timeEffectDirector;
 
+        /// <summary>Bağlama 11 / MCP: revive_block + erase.</summary>
+        public RealityEffectDirector RealityDirector => _realityDirector;
+
         /// <summary>Editör/prob: Update beklemeden cümle senkronu.</summary>
         public void ForceSync()
         {
@@ -265,6 +270,15 @@ namespace Dovus.Game
                 : Dovus.Core.Combat.TimeEffectDirector.DefaultMaxActiveFields;
             _timeEffectDirector = new TimeEffectDirector(timeCap);
             _dueTimeFields.Clear();
+            _realityDirector = new RealityEffectDirector();
+            var playerVitals = player != null ? player.GetComponent<PlayerVitals>() : null;
+            if (playerVitals != null)
+            {
+                playerVitals.SetReviveBlockedGate(() =>
+                    _realityDirector != null
+                    && _clock != null
+                    && _realityDirector.IsReviveBlocked(_clock.Director.WorldTimeMs));
+            }
             if (_playerStatus != null)
                 _playerStatus.ModeDirector = _modeDirector;
 
@@ -494,7 +508,39 @@ namespace Dovus.Game
 
             _zoneDirector.Tick(dtSec);
             UpdateZoneMovement();
+            ApplyZoneCrowdControl();
             _zoneField?.Sync(_zoneDirector.ActiveZones);
+        }
+
+        /// <summary>
+        /// Zone CcKind (skill.Mechanics root/slow) — hedef zone yarıçapındaysa StatusBoard yenile.
+        /// Süre StatusTuning.RootMs / SlowMs (uydurma yok).
+        /// </summary>
+        void ApplyZoneCrowdControl()
+        {
+            if (_zoneDirector == null || _bossStatus == null || _boss == null)
+                return;
+
+            StatusTuning tuning = _combat != null ? _combat.Status : new StatusTuning();
+            Vector3 bossPos = _boss.transform.position;
+            IReadOnlyList<ZoneInstance> zones = _zoneDirector.ActiveZones;
+            for (int i = 0; i < zones.Count; i++)
+            {
+                ZoneInstance z = zones[i];
+                if (string.IsNullOrEmpty(z.CcKind))
+                    continue;
+
+                float dx = bossPos.x - z.X;
+                float dz = bossPos.z - z.Z;
+                float r = z.RadiusM;
+                if (dx * dx + dz * dz > r * r)
+                    continue;
+
+                if (string.Equals(z.CcKind, "root", StringComparison.Ordinal))
+                    _bossStatus.Board.Apply(StatusKind.Root, tuning.RootMs, 1f);
+                else if (string.Equals(z.CcKind, "slow", StringComparison.Ordinal))
+                    _bossStatus.Board.Apply(StatusKind.Slow, tuning.SlowMs, tuning.SlowSpeedMult);
+            }
         }
 
         /// <summary>
@@ -561,10 +607,78 @@ namespace Dovus.Game
                     zone.DurationSec,
                     pos.x, pos.y, pos.z,
                     radius,
-                    out _))
+                    out _,
+                    PickZoneCcKind(skill.Mechanics)))
                 return;
 
             _zoneField?.Sync(_zoneDirector.ActiveZones);
+        }
+
+        /// <summary>mechanics dizisinden ilk root/slow — zone CC (kombo tablosu değil, skill verisi).</summary>
+        static string PickZoneCcKind(string[] mechanics)
+        {
+            if (mechanics == null)
+                return string.Empty;
+            for (int i = 0; i < mechanics.Length; i++)
+            {
+                string m = mechanics[i];
+                if (string.Equals(m, "root", StringComparison.OrdinalIgnoreCase))
+                    return "root";
+                if (string.Equals(m, "slow", StringComparison.OrdinalIgnoreCase))
+                    return "slow";
+            }
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Bağlama 11: ElementOrigin ↔ reality_layer (revive_block / partial_erase / full_erase).
+        /// </summary>
+        void TryApplyRealityForSkill(SkillResolution skill)
+        {
+            if (_realityDirector == null || _skills == null || skill.IsEmpty)
+                return;
+
+            string origin = skill.ElementOrigin;
+            if (string.IsNullOrEmpty(origin))
+                return;
+
+            double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
+            for (int i = 0; i < _skills.RealityEffects.Count; i++)
+            {
+                RealityEffectNode e = _skills.RealityEffects[i];
+                if (!string.Equals(e.Element, origin, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                if (string.Equals(e.Type, RealityEffectTypes.ReviveBlock, StringComparison.Ordinal))
+                {
+                    float dur = e.HasDurationSec ? e.DurationSec : RealityEffectDirector.DefaultReviveBlockSec;
+                    _realityDirector.ApplyReviveBlock(worldMs, dur);
+                    _readout?.NoteSkill(e.Id.Replace('_', ' '), "diriliş engeli", Color.magenta);
+                    return;
+                }
+
+                if (string.Equals(e.Type, RealityEffectTypes.PartialErase, StringComparison.Ordinal))
+                {
+                    StatusBoard board = _bossStatus != null ? _bossStatus.Board : null;
+                    if (e.Targets != null && e.Targets.Count > 0)
+                        _realityDirector.ApplyPartialErase(board, e.Targets);
+                    else
+                        _realityDirector.ApplyPartialErase(board);
+                    _readout?.NoteSkill(e.Id.Replace('_', ' '), "kısmi silme", Color.magenta);
+                    return;
+                }
+
+                if (string.Equals(e.Type, RealityEffectTypes.FullErase, StringComparison.Ordinal))
+                {
+                    StatusBoard board = _bossStatus != null ? _bossStatus.Board : null;
+                    if (e.Targets != null && e.Targets.Count > 0)
+                        _realityDirector.ApplyFullErase(board, e.Targets);
+                    else
+                        _realityDirector.ApplyFullErase(board);
+                    _readout?.NoteSkill(e.Id.Replace('_', ' '), "tam silme", Color.magenta);
+                    return;
+                }
+            }
         }
 
         /// <summary>
@@ -1176,6 +1290,7 @@ namespace Dovus.Game
             ApplyClosingHeal(p.Closing, skill); // readout ShoutSkill'den sonra (ally +N kalsın)
             TrySpawnZoneForSkill(skill);
             TryExtendZonesForSkill(skill);
+            TryApplyRealityForSkill(skill);
             ApplyCooldown(skill, p.Words, cosmeticIfDisabled: true);
             if (!motionPlan.IsEmpty)
                 AnnotateMotion(skill, motionPlan);

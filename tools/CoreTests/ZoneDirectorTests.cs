@@ -135,6 +135,31 @@ public class ZoneDirectorTests
     }
 
     [Test]
+    public void TrySpawn_StoresCcKind_AndSurvivesTickMove()
+    {
+        var dir = new ZoneDirector(5);
+        Assert.That(
+            dir.TrySpawn("Kaya", ZoneMovement.Static, 10f, 0, 0, 0, Radius, out var z, "root"),
+            Is.True);
+        Assert.That(z.CcKind, Is.EqualTo("root"));
+        Assert.That(dir.ActiveZones[0].CcKind, Is.EqualTo("root"));
+
+        dir.Tick(1f);
+        Assert.That(dir.ActiveZones[0].CcKind, Is.EqualTo("root"));
+        Assert.That(dir.ActiveZones[0].RemainingSec, Is.EqualTo(9f).Within(0.001f));
+    }
+
+    [Test]
+    public void TrySpawn_UnknownCcKind_BecomesEmpty()
+    {
+        var dir = new ZoneDirector(5);
+        Assert.That(
+            dir.TrySpawn("Lav", ZoneMovement.Static, 10f, 0, 0, 0, Radius, out var z, "burn"),
+            Is.True);
+        Assert.That(z.CcKind, Is.EqualTo(string.Empty));
+    }
+
+    [Test]
     public void Remove_ById_Works()
     {
         var dir = new ZoneDirector(5);
