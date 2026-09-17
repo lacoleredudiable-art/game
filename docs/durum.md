@@ -12,37 +12,76 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 17 Eylül 2026 (shield/stealth + zone CC VFX) ·
-**Dal:** `fix/shield-stealth-status-vfx` · **Sıradaki:** state_machine ↔ SentencePhase
-(sahip kararı); Enforce bayrakları (sahip kararı); invisible_link/tear;
-Kenney VFX; Hexagon rename
+**Son güncelleme:** 17 Eylül 2026 (JSON↔oyun derin boşluk taraması) ·
+**Dal:** `master` · **Sıradaki:** (öncelik önerisi aşağıda); state/Enforce
+sahip kararı; Kenney VFX; Hexagon rename
 
-## Bulgular — JSON → oyun (17 Eylül)
+## JSON ↔ oyun — derin boşluk matrisi (17 Eylül tarama)
 
-**Sahip:** 2’liden sonra eklenen rünler HUD’da isim değiştiriyor, oyunda etki yok.
+Kaynak: `docs/element-sistemi.json` × `SkillMotor` parse × `ManifestationDirector`/Game.
+A=oyunda hissedilir · B=kod var kapalı/kısmi · C=parse/Core only · D=motor okumaz.
 
-**Kök neden:** `SkillMotor.Resolve` (katlama) bang’te isim/status/hasar verir;
-`LivingEffect` hâlâ `words[0].Rune` + `SilhouetteBuilder.FromWords` (eski K1).
-3’lüde fiil aynı kalır; fark sıfatta (`trajectory_override`, `hitbox_scale_mult`,
-`lifetime_add`, `silhouette_axis`) — LivingEffect okumuyordu. HUD “etki” = fiil
-`mechanics` → 2’li ile aynı.
+### Katman özeti
 
-**Dünkü Bağlama 1–10:** Core + bang yan etkisi + HUD; `UseFormulaDamage` /
-`EnforceResourceCost` / `EnforceCooldown` varsayılan **false**; LivingEffect /
-trajectory-hitbox borusu Faz 6’da bırakılmış → telefonda “bağlı değil” hissi.
+| JSON bölümü | Parse | Game | Not |
+|---|---|---|---|
+| elements / verbs / adjectives / lengths | A | A | Resolve + LivingEffect köprüsü |
+| mechanics → StatusKind | A | A | Stealth eklendi; confuse yok |
+| action string (40 fiil) | A (taşınır) | **B/C** | Çoğu action yok sayılır; yalnız mechanics/hitbox işler |
+| formulas + crit_system | A (DamageCalculator) | **B** | `UseFormulaDamage=false` |
+| resource / cooldown rules | A | **B** | Enforce* bayrakları false |
+| status_durations | D | **B** | StatusTuning sabit; shield 50/5s hizalandı, stun/root vb. hâlâ kısa |
+| passives | A | **B** | damage/heal/lifesteal bağlı; crit/armor/reflect/dashCD/reveal **okunur uygulanmaz** |
+| active_modes (ulti) | A | **B** | damage/move/lifesteal/DR/cleanse/regen kısmi; cast_speed/attack_speed/dashCD/afterimage/taunt_radius/aura **yok** |
+| chain_mechanics | A | **B** | çarpan+HUD; finisher dünya efekti yok |
+| zone_layer | A | **A/B** | spawn+CC root/slow; zone_lock/block wall collider yok |
+| space_layer | A | **B** | blink/zenitsu/stealth_shift JSON; **invisible_link + tear yok** |
+| time_layer | A | **B** | echo+extend; **delayed_detonation + death_delay yok** |
+| reality_layer | A | A | revive_block / erase |
+| state_machine | A | **C** | PlayerStateMachine SentencePhase’e bağlı değil |
+| equipment_system | A | **B** | sabit Alev Kılıcı; seçim yok |
+| status_interaction_table | A | A | Rebuild + 3 özel satır |
+| prezentasyon hitbox `target_ally` | — | **B** | 6 fiil HitboxFound=false |
+| atoms / lore / examples | D | D | kasıtlı |
+| ui_rules | kısmi | B | zone transparency evet; readout 1500≠900 |
 
-| Katman | Durum |
-|---|---|
-| Resolve → status / damage_mult | A — çalışır |
-| passives / chain / zone görsel / echo / equipment / ulti kısmi | A/B |
-| formulas/crit, Enforce mana/CD | B — kod var, bayrak kapalı |
-| length cast/mana/mobility | **A** — SkillMobility |
-| reality / space / state_machine | **reality A**; **space blink/zenitsu A**; link/tear C; state C |
-| trajectory + hitbox → LivingEffect | **A** — SkillWorldPlanner |
-| atoms / three_runes_examples / lore | D — motor okumaz |
-| `yayma` expanding_wave | **JSON düzeltildi** (trajectory_override + radial_burst hitbox) |
-| zone CC (root/slow) | **A** — CcKind + boss Approach + opak disk |
-| stealth / shield | **A** — Stealth status; savunma shield+DR; JSON absorb 50/5s |
+### Fiil `action` — isim var, özel motor yok (atlanan hissi)
+
+Bunlar JSON’da ayrı action; oyun çoğunlukla yalnız `mechanics` uygular:
+
+| action | fiil örneği | Gerçekte olan |
+|---|---|---|
+| revive | dirilis | cleanse only — diriltme yok |
+| clone | golge_klonu | fear only — klon yok |
+| confuse | yon_sasirtma | blind+slow — StatusKind.Confuse yok |
+| mark | iz_birakma | slow only — işaret debuff yok |
+| reflect | adaptif_zirh | shield only — yansıtma yok |
+| reveal | ifsa | blind — stealth açma yok |
+| gather_enemies | dusman_toplama | knockback — pull yok |
+| block_area / zone_lock | kaya/lav | root (+zone) — duvar collider yok |
+| transfer / erase / absorb / balance / stamina_drain | … | weaken/DR/stasis vb. kısmi |
+
+### Sıfat `engine_modifiers` — bağlı vs atlanan
+
+**Bağlı:** damage_mult, hitbox_*, lifetime_add, trajectory_override, cast_time_mult (SkillMobility), apply_slow/root/burn/poison/silence/knockback/DR, burn_damage_mult.
+
+**Atlanan (JSON’da var):** apply_pull, apply_lifesteal, apply_stealth, apply_confuse, apply_invulnerability_frames, apply_armor_shred, apply_stamina_drain, absorb_damage_to_heal, reflect_projectiles, reveal_stealth, spawn_minion, duplicate_cast, cancel_enemy_cast, crit_chance_add, cooldown_mult, pierce_armor_flat, ignore_resist, accuracy_debuff, max_targets, tick_rate_mult, trigger_delay/profile, target_auto_lock.
+
+### Pasif / ulti — accessor var, Game kullanmıyor
+
+PassiveDirector: `CritChanceAdd`, `ArmorAdd`, `ReflectRatioAdd`, `DashCooldownMult`, `RevealRadiusMult`, `DamageTakenMult` (passive) — **Manifestation’da çarpılmıyor**.
+
+Ulti: `cast_time_mult`, `attack_speed_mult`, `dash_cooldown_mult`, `afterimage_count`, `taunt_radius_m`, `visual.aura/screen_edges` — **uygulanmıyor**.
+
+### Öncelik önerisi (sahip onayı olmadan yapılabilecekler)
+
+1. delayed_detonation + death_delay (time_layer kalanı)  
+2. Sıfat apply_* köprüsü: apply_stealth, apply_lifesteal, apply_pull (pull→boss), apply_confuse→Blind+Slow veya yeni kind  
+3. Passive CritChanceAdd / DamageTakenMult / ArmorAdd Game’e  
+4. Ulti cast_time_mult + dash_cooldown_mult  
+5. StatusTuning ↔ status_durations hizalama (sahip: JSON otorite mi?)  
+6. invisible_link / tear (yeni mekanik — tasarım)  
+7. state_machine / Enforce bayrakları (sahip kararı)
 
 > **17 Eylül — shield/stealth + zone CC okunurluğu.** `savunma` mechanics
 > `shield`+`damage_reduction`; `gizlilik`/`hiz_gorunmezlik` → `stealth`.
