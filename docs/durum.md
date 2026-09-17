@@ -12,6 +12,7 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
+<<<<<<< Updated upstream
 **Son güncelleme:** 17 Eylül 2026 (düz vuruş yan etki fix) · **Sıradaki:**
 Bağlama 8.1 + Kenney VFX prefab drop-in (`Assets/Art/Vfx/README.txt`) +
 tam `Pentagon*`→`Hexagon*` tip rename (ayrı dal) + manuel target UI
@@ -32,6 +33,16 @@ tam `Pentagon*`→`Hexagon*` tip rename (ayrı dal) + manuel target UI
 > cam gölge/kenar, sheen. Tuning v13: radius 98dp + dodge clearance 40dp
 > (rünler arası çizim koridoru; dodge hex sağ-alt dışında).
 > `dotnet test` **227** yeşil. Dal: `fix/hud-layout-vitals`.
+=======
+**Son güncelleme:** 17 Eylül 2026 (telefon APK) · **Sıradaki:**
+Bağlama 8.1 + Kenney VFX prefab drop-in (`Assets/Art/Vfx/README.txt`) +
+tam `Pentagon*`→`Hexagon*` tip rename (ayrı dal) + manuel target UI
+
+> **17 Eylül — Telefon build.** `dovus-prototip.apk` (~42.5 MB, CleanBuildCache)
+> → `adb install -r` Success (YXQC5PTGUCEQMNV4) + launcher açıldı. Not: incremental
+> Bee "Not rebuilding Data files" eski APK'yı bırakabiliyor; taze için
+> `BuildOptions.CleanBuildCache` veya `Library/Bee/Android` wipe.
+>>>>>>> Stashed changes
 
 > **17 Eylül — His / HUD / kamera / iz.** Premium HUD: boss üst orta +
 > `StatusIconStrip` (tüm `StatusKind`, `StatusBoard.TryGet` + süre halkası);
