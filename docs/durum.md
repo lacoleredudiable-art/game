@@ -12,10 +12,10 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 17 Eylül 2026 (Bağlama 11: reality + zone CC) ·
-**Dal:** `fix/reality-zone-cc` · **Sıradaki:** space_layer SkillMotion bağlama;
-state_machine ↔ SentencePhase (sahip kararı); Enforce bayrakları (sahip kararı);
-Kenney VFX; Hexagon rename
+**Son güncelleme:** 17 Eylül 2026 (space_layer → SkillMotion) ·
+**Dal:** `fix/space-layer-skill-motion` · **Sıradaki:** state_machine ↔ SentencePhase
+(sahip kararı); Enforce bayrakları (sahip kararı); invisible_link/tear mekaniği;
+CC/zone dünya VFX; Kenney VFX; Hexagon rename
 
 ## Bulgular — JSON → oyun (17 Eylül)
 
@@ -37,11 +37,17 @@ trajectory-hitbox borusu Faz 6’da bırakılmış → telefonda “bağlı değ
 | passives / chain / zone görsel / echo / equipment / ulti kısmi | A/B |
 | formulas/crit, Enforce mana/CD | B — kod var, bayrak kapalı |
 | length cast/mana/mobility | **A** — SkillMobility |
-| reality / space / state_machine | **reality A** (Bağlama 11); space/state C |
+| reality / space / state_machine | **reality A**; **space blink/zenitsu A**; link/tear C; state C |
 | trajectory + hitbox → LivingEffect | **A** — SkillWorldPlanner |
 | atoms / three_runes_examples / lore | D — motor okumaz |
 | `yayma` expanding_wave | **JSON düzeltildi** (trajectory_override + radial_burst hitbox) |
 | zone CC (root/slow) | **A** — ZoneInstance.CcKind + boss Approach |
+
+> **17 Eylül — space_layer → SkillMotion.** `SkillMotionMotor.Resolve(..., SpaceEffects)`:
+> short_blink/stealth_shift → blink mesafe+iframe (JSON otorite); phase_blink.distance_m
+> → Zenitsu engage. Portal köprüsü zaten `StateBridgeBoard` (sabitleme×2).
+> `invisible_link` / `tear` hâlâ uygulanmıyor. `dotnet test` **241** yeşil.
+> **Doğrulanamadı:** Unity Play / telefon blink mesafeleri.
 
 > **17 Eylül — Bağlama 11: reality + zone CC.** `SkillMotor.RealityEffects` parse;
 > `ManifestationDirector` ElementOrigin ↔ revive_block / partial_erase / full_erase;
@@ -669,9 +675,10 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   not düşüldü, değiştirilmedi (sahibi otorite seçer).
 - **space_layer'da 2 effect JSON'da var, oyunda karşılığı yok (Görev 8):**
   `karabasan_hat` (`invisible_link`) ve `hiclik_yarik` (`tear`) — yalnızca
-  `SkillMotor.SpaceEffects` listesinde; yeni mekanik yazılmadı. `pus_gecisi`
-  (`stealth_shift`) de ayrı tip olarak okunuyor ama gameplay hâlâ Pus→ShortBlink/
-  Zenitsu rün yolundan gidiyor (space_layer'a bağlı değil).
+  `SkillMotor.SpaceEffects` listesinde; yeni mekanik yazılmadı. **17 Eyl:**
+  short_blink / stealth_shift / phase_blink → `SkillMotionMotor` JSON otoritesi;
+  portal köprüsü `StateBridgeBoard` (sabitleme). `pus_gecisi` artık space_layer
+  mesafesiyle blink (eski sabit 4m değil).
 - **`reality_layer` full_erase minions/summons (Görev 10):** oyunda minion/summon
   sistemi yok — uygulanamaz. Yalnızca `shields` uygulandı; uydurma minion sistemi
   kurulmadı.
