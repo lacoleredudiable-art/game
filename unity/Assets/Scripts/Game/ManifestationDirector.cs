@@ -76,6 +76,9 @@ namespace Dovus.Game
         // --- Zone (Bağlama 7) — element_origin ↔ zone_layer.zones ---
         ZoneDirector _zoneDirector;
         ZoneFieldView _zoneField;
+        // --- Space link/tear (Karabasan / Hiçlik) ---
+        SpaceDirector _spaceDirector;
+        SpaceDirectorHost _spaceHost;
         // --- Zaman (Bağlama 8) — echo / extend / delayed_detonation / death_delay ---
         TimeEffectDirector _timeEffectDirector;
         readonly List<TimeEffectField> _dueTimeFields = new();
@@ -268,6 +271,25 @@ namespace Dovus.Game
                 _zoneField = zoneGo.AddComponent<ZoneFieldView>();
             }
             _zoneField.EnsureRoot();
+            int linkCap = _skills.MaxActiveLinks > 0 ? _skills.MaxActiveLinks : 3;
+            SpaceLayerTuning spaceTuning = _combat != null ? _combat.SpaceLayer : new SpaceLayerTuning();
+            _spaceDirector = new SpaceDirector(linkCap, spaceTuning);
+            _spaceHost = FindAnyObjectByType<SpaceDirectorHost>();
+            if (_spaceHost == null)
+            {
+                var spaceGo = new GameObject("SpaceDirector");
+                _spaceHost = spaceGo.AddComponent<SpaceDirectorHost>();
+            }
+            _spaceHost.Bind(
+                _spaceDirector,
+                spaceTuning,
+                player,
+                boss != null ? boss.transform : null,
+                bossVitals,
+                playerVitals,
+                ally);
+            if (_playerStatus != null)
+                _playerStatus.SpaceLinkBreak = () => _spaceHost?.NotifyOwnerDamaged(SpaceDirectorHost.ActorPlayer);
             int timeCap = _skills.MaxActiveTimeFields > 0
                 ? _skills.MaxActiveTimeFields
                 : Dovus.Core.Combat.TimeEffectDirector.DefaultMaxActiveFields;
@@ -347,6 +369,7 @@ namespace Dovus.Game
             TickPassives(worldMs);
             SyncDashCooldownMult();
             TickZones(dtSec);
+            _spaceHost?.Tick(dtSec);
             TickTimeEffects(worldMs);
             _animationBridge.Tick(worldMs);
         }
@@ -620,6 +643,55 @@ namespace Dovus.Game
                 return;
 
             _zoneField?.Sync(_zoneDirector.ActiveZones);
+        }
+
+        /// <summary>
+        /// ElementOrigin ↔ space_layer invisible_link (Karabasan) / tear (Hiçlik).
+        /// </summary>
+        void TrySpawnSpaceForSkill(SkillResolution skill)
+        {
+            if (_spaceDirector == null || _skills == null || skill.IsEmpty)
+                return;
+
+            string origin = skill.ElementOrigin;
+            if (string.IsNullOrEmpty(origin))
+                return;
+
+            SpaceLayerTuning tune = _combat != null ? _combat.SpaceLayer : new SpaceLayerTuning();
+            Vector3 playerPos = _player != null ? _player.position : Vector3.zero;
+            Vector3 bossPos = _boss != null ? _boss.transform.position : playerPos + Vector3.forward * 2f;
+
+            for (int i = 0; i < _skills.SpaceEffects.Count; i++)
+            {
+                SpaceEffectNode e = _skills.SpaceEffects[i];
+                if (!string.Equals(e.Element, origin, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                if (string.Equals(e.Type, SpaceEffectTypes.InvisibleLink, StringComparison.Ordinal))
+                {
+                    float dur = e.HasDurationSec ? e.DurationSec : 2f;
+                    if (_spaceDirector.TrySpawnLink(
+                            e.Id, dur,
+                            playerPos.x, playerPos.y, playerPos.z,
+                            bossPos.x, bossPos.y, bossPos.z,
+                            SpaceDirectorHost.ActorPlayer, SpaceDirectorHost.ActorBoss,
+                            tune.LinkDrainPerTick, tune.LinkHealPerTick, tune.LinkMaxRangeM,
+                            out _))
+                        _spaceHost?.SyncVisuals();
+                    return;
+                }
+
+                if (string.Equals(e.Type, SpaceEffectTypes.Tear, StringComparison.Ordinal))
+                {
+                    float dur = e.HasDurationSec ? e.DurationSec : 3f;
+                    float dmg = e.HasDamageOnCross ? e.DamageOnCross : 30f;
+                    // Yırtık bang ucunda / oyuncu-boss ortasında.
+                    Vector3 mid = Vector3.Lerp(playerPos, bossPos, 0.55f);
+                    if (_spaceDirector.TrySpawnTear(e.Id, dur, mid.x, 0f, mid.z, dmg, out _))
+                        _spaceHost?.SyncVisuals();
+                    return;
+                }
+            }
         }
 
         /// <summary>mechanics dizisinden ilk root/slow — zone CC (kombo tablosu değil, skill verisi).</summary>
@@ -1394,6 +1466,7 @@ namespace Dovus.Game
             ApplyClosingHeal(p.Closing, skill); // readout ShoutSkill'den sonra (ally +N kalsın)
             TrySpawnZoneForSkill(skill);
             TryExtendZonesForSkill(skill);
+            TrySpawnSpaceForSkill(skill);
             TryApplyRealityForSkill(skill);
             ApplyCooldown(skill, p.Words, cosmeticIfDisabled: true);
             if (!motionPlan.IsEmpty)

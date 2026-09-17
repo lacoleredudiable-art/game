@@ -94,7 +94,7 @@ namespace Dovus.Core.Combat
     /// <summary>
     /// Fiil + sıfat → hareket/işaret planı. Kombo tablosu yok; action / verb_id / adjective_id.
     /// space_layer eşleşen effect varsa distance/i_frame JSON otoritesi (tuning yedek).
-    /// invisible_link / tear uygulanmaz (yeni mekanik yok).
+    /// invisible_link / tear → SpaceDirector (Manifestation bang); burada blink değil.
     /// </summary>
     public static class SkillMotionMotor
     {

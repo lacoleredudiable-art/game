@@ -12,20 +12,20 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 17 Eylül 2026 (formül+crit açık; sahip kararları) ·
-**Dal:** `master` · **Sıradaki:** invisible_link/tear tasarım; afterimage/aura VFX;
-Hexagon rename; (deneme sonrası: süre otoritesi / Enforce)
+**Son güncelleme:** 17 Eylül 2026 (Karabasan hat + Hiçlik yarığı) ·
+**Dal:** `master` · **Sıradaki:** PlayerStateMachine↔SentencePhase; fiil action
+özel motorları; afterimage/aura VFX; Hexagon rename
 
 ### Sahip kararları (17 Eylül)
 
 | Konu | Karar |
 |---|---|
 | `UseFormulaDamage` | **true** — formulas + crit_system canlı |
-| StatusTuning ↔ status_durations | deneme süresinde **böyle kalsın** (tuning sabit) |
+| StatusTuning ↔ status_durations | deneme süresinde **böyle kalsın** |
 | Enforce mana/CD | deneme süresinde **false kalsın** |
-| state_machine bağlama | henüz karar yok (aşağıda ne işe yaradığı) |
-| invisible_link / tear | henüz tasarım (aşağıda ne demek) |
-| fiil `action` özel motor | soru açıklandı; sahiplik kararı bekliyor |
+| state_machine bağlama | **gerekli** — henüz bağlanmadı (sıradaki) |
+| fiil `action` özel motor | **gerekli** — henüz yazılmadı (sıradaki) |
+| invisible_link / tear | **bağlandı** (Karabasan hat / Hiçlik yarığı) |
 
 ## JSON ↔ oyun — derin boşluk matrisi (17 Eylül tarama)
 
@@ -46,7 +46,7 @@ A=oyunda hissedilir · B=kod var kapalı/kısmi · C=parse/Core only · D=motor 
 | active_modes (ulti) | A | **A/B** | cast_time + attack_speed + dash_cooldown bağlı; afterimage/taunt/aura yok |
 | chain_mechanics | A | **B** | çarpan+HUD; finisher dünya efekti yok |
 | zone_layer | A | **A/B** | spawn+CC root/slow; zone_lock/block wall collider yok |
-| space_layer | A | **B** | blink/zenitsu/stealth_shift JSON; **invisible_link + tear yok** |
+| space_layer | A | **A/B** | blink/zenitsu/stealth_shift + **invisible_link + tear** |
 | time_layer | A | **A** | echo+extend+delayed_detonation+death_delay |
 | reality_layer | A | A | revive_block / erase |
 | state_machine | A | **C** | PlayerStateMachine SentencePhase’e bağlı değil |
@@ -86,11 +86,16 @@ Ulti: `afterimage_count`, `taunt_radius_m`, `visual.aura/screen_edges` — uygul
 
 ### Öncelik önerisi (kalan)
 
-1. invisible_link / tear — ne yapsınlar? (tasarım)  
-2. state_machine ↔ SentencePhase bağlansın mı?  
-3. fiil `action` derinliği (revive/clone… gerçek motor mu, lore mu?)  
-4. afterimage / taunt_radius / aura VFX  
-5. (deneme sonrası) süre otoritesi + Enforce  
+1. PlayerStateMachine ↔ SentencePhase bağlama (sahip: gerekli)  
+2. Fiil `action` özel motorları (revive/clone/mark…)  
+3. afterimage / taunt_radius / aura VFX  
+4. (deneme sonrası) süre otoritesi + Enforce  
+
+> **17 Eylül — Karabasan hat + Hiçlik yarığı.** `ISpaceDirector` / `SpaceDirector`
+> (Core) + `Game/Directors/SpaceDirector` host: link 0.5s tick (3 dmg / 1.5 heal),
+> 12m kopma, owner hasarda kopma; tear 30 ilk geçiş (boss+ally+player), süre bitince
+> kapan animasyonu. Sayılar `SpaceLayerTuning` (JSON'da drain/range yok — görev).
+> `dotnet test` **254** yeşil. **Doğrulanamadı:** Unity Play / telefon VFX.
 
 > **17 Eylül — UseFormulaDamage=true.** Sahip: formül+crit açılsın; status süreleri
 > ve Enforce deneme süresinde eski hali. `dotnet test` yeşil beklenir.
@@ -112,7 +117,8 @@ Ulti: `afterimage_count`, `taunt_radius_m`, `visual.aura/screen_edges` — uygul
 > **17 Eylül — space_layer → SkillMotion.** `SkillMotionMotor.Resolve(..., SpaceEffects)`:
 > short_blink/stealth_shift → blink mesafe+iframe (JSON otorite); phase_blink.distance_m
 > → Zenitsu engage. Portal köprüsü zaten `StateBridgeBoard` (sabitleme×2).
-> `invisible_link` / `tear` hâlâ uygulanmıyor. `dotnet test` **241** yeşil.
+> `invisible_link` / `tear` 17 Eyl'de SpaceDirector ile bağlandı (aşağıdaki oturum).
+> `dotnet test` **241** yeşil (o gün).
 > **Doğrulanamadı:** Unity Play / telefon blink mesafeleri.
 
 > **17 Eylül — Bağlama 11: reality + zone CC.** `SkillMotor.RealityEffects` parse;
@@ -738,12 +744,9 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   (teknoloji soft-clamp).
 - **`read_as_display.duration_ms` (1500) ≠ `FeelTuning.ReadoutHoldMs` (900)** — Görev 12'de
   not düşüldü, değiştirilmedi (sahibi otorite seçer).
-- **space_layer'da 2 effect JSON'da var, oyunda karşılığı yok (Görev 8):**
-  `karabasan_hat` (`invisible_link`) ve `hiclik_yarik` (`tear`) — yalnızca
-  `SkillMotor.SpaceEffects` listesinde; yeni mekanik yazılmadı. **17 Eyl:**
-  short_blink / stealth_shift / phase_blink → `SkillMotionMotor` JSON otoritesi;
-  portal köprüsü `StateBridgeBoard` (sabitleme). `pus_gecisi` artık space_layer
-  mesafesiyle blink (eski sabit 4m değil).
+- **space_layer (Görev 8 + 17 Eyl hat/yarığı):** blink/zenitsu/stealth_shift →
+  `SkillMotionMotor`; `karabasan_hat` / `hiclik_yarik` → `SpaceDirector` +
+  `SpaceDirectorHost` (link tick/kopma, tear cross). Portal köprüsü `StateBridgeBoard`.
 - **`reality_layer` full_erase minions/summons (Görev 10):** oyunda minion/summon
   sistemi yok — uygulanamaz. Yalnızca `shields` uygulandı; uydurma minion sistemi
   kurulmadı.

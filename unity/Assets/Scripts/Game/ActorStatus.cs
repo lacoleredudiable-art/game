@@ -21,6 +21,9 @@ namespace Dovus.Game
         /// <summary>Pasif çarpanları (damage_taken / armor / reflect) — yalnız oyuncu.</summary>
         public PassiveDirector PassiveDirector { get; set; }
 
+        /// <summary>Karabasan hattı: oyuncu hasar alınca koparma (SpaceDirectorHost).</summary>
+        public System.Action SpaceLinkBreak { get; set; }
+
         /// <summary>KinematicMotor bunu okur — StatusBoard × aktif ulti modu.</summary>
         public float EffectiveMoveSpeedMult => Board.MoveSpeedMult * (ModeDirector?.MoveSpeedMult ?? 1f);
 
@@ -130,7 +133,12 @@ namespace Dovus.Game
             if (_bossVitals != null)
                 _bossVitals.ApplyDamage(afterShield);
             else if (_playerVitals != null)
-                _playerVitals.ApplyDamage(Mathf.CeilToInt(afterShield));
+            {
+                if (_playerVitals.ApplyDamage(Mathf.CeilToInt(afterShield)))
+                    SpaceLinkBreak?.Invoke();
+                else if (afterShield > 0f)
+                    SpaceLinkBreak?.Invoke(); // hasar alındı → hat kopar (ölüm şart değil)
+            }
         }
 
         public void ApplyHeal(float amount)
