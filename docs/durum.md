@@ -21,7 +21,8 @@
 > dodge altıgen dışında ayrı düğme. Perfect-dodge yavaş çekim sistemi (`SlowmoTuning`,
 > `TimeDirector.TriggerSlowmo`, tuning UI/preset/testler) kaldırıldı; hitstop korunuyor.
 > README/element spec/ajan kuralları güncellendi; kırmızı-turuncu kuralı değişmezlerden
-> çıkarıldı. `dotnet test` sonucu bu kayıt testten sonra tamamlanacak.
+> çıkarıldı. `dotnet test tools/CoreTests/CoreTests.csproj`: **244/244 yeşil**.
+> **Doğrulanamadı:** Unity Editor bu ortamda yok; Play mode/Unity script derlemesi.
 
 ### Sahip kararları (17 Eylül)
 
