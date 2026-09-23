@@ -64,7 +64,7 @@ namespace Dovus.Game
 
         void Update()
         {
-            // T10: panel açıkken hareket girdisi de susar (bkz. PentagonInput.PanelBlocking).
+            // T10: panel açıkken hareket girdisi de susar (bkz. HexagonInput.PanelBlocking).
             if (TuningPanel.IsOpen)
             {
                 if (_stickFingerId.HasValue)
@@ -106,7 +106,7 @@ namespace Dovus.Game
 
             Vector2 pos = finger.screenPosition;
             // Çubuk yarısı = çizim yarısının tersi (aynı IsRightHalf yardımcısı; MirrorForLeftHand).
-            if (PentagonLayoutScreen.IsRightHalf(pos, _tuning.MirrorForLeftHand, Screen.width))
+            if (HexagonLayoutScreen.IsRightHalf(pos, _tuning.MirrorForLeftHand, Screen.width))
                 return;
 
             _stickFingerId = finger.index;

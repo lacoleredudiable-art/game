@@ -76,7 +76,7 @@ namespace Dovus.Game
                 _root = go.transform;
             }
 
-            // Oyuncu efekti: mor-siyah (kırmızı-turuncu yasak).
+            // Oyuncu efekti için mevcut mor-siyah palet.
             _linkMat ??= MakeUnlit(new Color(0.45f, 0.12f, 0.55f, 0.95f));
             _tearMat ??= MakeUnlit(new Color(0.12f, 0.04f, 0.14f, 0.92f));
         }

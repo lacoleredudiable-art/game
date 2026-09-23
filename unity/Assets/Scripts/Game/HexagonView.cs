@@ -8,7 +8,7 @@ namespace Dovus.Game
     /// ui_rules.cooldown_display: her rün etrafında radial dolum + kalan sn.
     /// EnforceCooldown=false → kozmetik (yerel sayaç). true → PlayerCooldown / CooldownTracker.
     /// </summary>
-    public sealed class PentagonView : MonoBehaviour
+    public sealed class HexagonView : MonoBehaviour
     {
         PrototypeTuning _tuning;
         RectTransform[] _dots;
@@ -51,7 +51,7 @@ namespace Dovus.Game
             var fallback = CreateCircleSprite();
             // Solid disc — radial fillAmount ile klasik cooldown pie (halka sprite fill'de silik kalıyordu).
             var ringSprite = fallback;
-            int n = Dovus.Core.Grammar.PentagonLayout.DotCount;
+            int n = Dovus.Core.Grammar.HexagonLayout.DotCount;
             _dots = new RectTransform[n + 1];
             _dotImages = new Image[n + 1];
             _dotIcons = new Sprite[n + 1];
@@ -86,7 +86,7 @@ namespace Dovus.Game
                 CreateCooldownOverlay(dot, ringSprite, canvasGo.transform, underDots: false);
 
             _center = CreateLayeredDisc(
-                "Center", fallback, fallback, _tuning.PentagonCenterColor, canvasGo.transform, out _,
+                "Center", fallback, fallback, _tuning.HexagonCenterColor, canvasGo.transform, out _,
                 new Color(0.85f, 0.98f, 1f, 0.55f));
             var centerLabel = CreateLabel(_center, "⚔");
             centerLabel.fontSize = 28;
@@ -306,13 +306,13 @@ namespace Dovus.Game
         {
             int w = Screen.width;
             int h = Screen.height;
-            float dotR = PentagonLayoutScreen.DotHitRadiusPx(_tuning);
-            float centerR = PentagonLayoutScreen.CenterHitRadiusPx(_tuning);
-            int n = Dovus.Core.Grammar.PentagonLayout.DotCount;
+            float dotR = HexagonLayoutScreen.DotHitRadiusPx(_tuning);
+            float centerR = HexagonLayoutScreen.CenterHitRadiusPx(_tuning);
+            int n = Dovus.Core.Grammar.HexagonLayout.DotCount;
 
             for (int dot = 1; dot <= n; dot++)
             {
-                Vector2 px = PentagonLayoutScreen.DotPx(dot, _tuning, w, h);
+                Vector2 px = HexagonLayoutScreen.DotPx(dot, _tuning, w, h);
                 float mul = _dotIcons != null && _dotIcons[dot] != null
                     ? Mathf.Max(0.5f, _tuning.IconDisplayScale)
                     : 1f;
@@ -332,11 +332,11 @@ namespace Dovus.Game
                 }
             }
 
-            Vector2 c = PentagonLayoutScreen.CenterPx(_tuning, w, h);
+            Vector2 c = HexagonLayoutScreen.CenterPx(_tuning, w, h);
             Place(_center, c, centerR * 2f, w, h);
 
-            Vector2 d = PentagonLayoutScreen.DodgeButtonPx(_tuning, w, h);
-            Place(_dodge, d, PentagonLayoutScreen.DodgeButtonRadiusPx(_tuning) * 2f, w, h);
+            Vector2 d = HexagonLayoutScreen.DodgeButtonPx(_tuning, w, h);
+            Place(_dodge, d, HexagonLayoutScreen.DodgeButtonRadiusPx(_tuning) * 2f, w, h);
             _dodge.SetAsLastSibling();
         }
 
@@ -356,7 +356,7 @@ namespace Dovus.Game
                 4 => _tuning.ElementEarth,
                 5 => _tuning.ElementLight,
                 6 => _tuning.ElementDark,
-                _ => _tuning.PentagonDotColor
+                _ => _tuning.HexagonDotColor
             };
             c.a = _tuning.IsDotOpen(dot) ? 0.92f : 0.28f;
             return c;
@@ -381,7 +381,7 @@ namespace Dovus.Game
                 return new Color(1f, 1f, 1f, a);
             }
 
-            Color c = _tuning.PentagonDotColor;
+            Color c = _tuning.HexagonDotColor;
             if (_tuning.IsDotOpen(dot))
                 return c;
             return new Color(c.r, c.g, c.b, c.a * 0.28f);

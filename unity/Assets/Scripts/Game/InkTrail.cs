@@ -14,7 +14,7 @@ namespace Dovus.Game
     public sealed class InkTrail : MonoBehaviour
     {
         PrototypeTuning _tuning;
-        PentagonOverlayCamera _overlay;
+        HexagonOverlayCamera _overlay;
         readonly List<Trail> _trails = new List<Trail>(8);
         Material _lineMaterial;
         int _layer;
@@ -28,7 +28,7 @@ namespace Dovus.Game
             public float LifeSec;
         }
 
-        public void Configure(PrototypeTuning tuning, PentagonOverlayCamera overlay, int layer)
+        public void Configure(PrototypeTuning tuning, HexagonOverlayCamera overlay, int layer)
         {
             _tuning = tuning;
             _overlay = overlay;
@@ -142,7 +142,7 @@ namespace Dovus.Game
             line.useWorldSpace = true;
             line.numCapVertices = 4;
             line.numCornerVertices = 2;
-            float width = PentagonLayoutScreen.DpToPixels(_tuning.InkWidthDp);
+            float width = HexagonLayoutScreen.DpToPixels(_tuning.InkWidthDp);
             line.startWidth = width;
             line.endWidth = width * 0.85f;
             line.sortingOrder = 10;

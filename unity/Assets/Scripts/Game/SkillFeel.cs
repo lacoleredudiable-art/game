@@ -6,7 +6,7 @@ namespace Dovus.Game
 {
     /// <summary>
     /// Element rengi (çizgi) + aileye göre boss tepki/kamera.
-    /// §10: kırmızı-turuncu yok; Ateş sıcak magenta.
+    /// Mevcut Ateş rengi sıcak magenta.
     /// </summary>
     public static class SkillFeel
     {

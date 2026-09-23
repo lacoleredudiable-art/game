@@ -17,7 +17,7 @@ namespace Dovus.Game
         const float PlayerHeightM = 2f;
         const float BossRadiusM = 0.85f;
         const float BossHeightM = 2.6f;
-        const int PentagonInkLayer = 5; // Unity built-in UI layer
+        const int HexagonInkLayer = 5; // Unity built-in UI layer
 
         [SerializeField] PrototypeTuning _tuning = new();
 
@@ -68,7 +68,6 @@ namespace Dovus.Game
             combat.Boss.FireConeDamage = 0; // 16 Eylül: ikinci saldırı da bu deneyin kapsamında.
 
             var clock = gameObject.AddComponent<GameClock>();
-            clock.Bind(combat.Slowmo);
 
             var arena = CreateArena();
             // 16 Eylül: "duvarların içine giriliyor" bug raporu — dungeon mesh'leri collider'sız
@@ -166,10 +165,10 @@ namespace Dovus.Game
             SceneAtmosphere.Apply(sun, Camera.main, _tuning);
             // LavDecor.Build — eski arena-wide kırmızı ember noktaları kalktı.
             BillboardVfx.CreateEmberField(boss.transform, new Color(1f, 0.45f, 0.12f), rate: 14f);
-            CreatePentagon(clock, combat, player.transform, pose, reactor, bossVitals, dodgeMotion, afterimage, vitals, telegraph, follow, tuningConfig, allyDummy, resource, cooldown);
+            CreateHexagon(clock, combat, player.transform, pose, reactor, bossVitals, dodgeMotion, afterimage, vitals, telegraph, follow, tuningConfig, allyDummy, resource, cooldown);
         }
 
-        void CreatePentagon(
+        void CreateHexagon(
             GameClock clock,
             CombatTuning combat,
             Transform player,
@@ -186,20 +185,20 @@ namespace Dovus.Game
             PlayerResource resource = null,
             PlayerCooldown cooldown = null)
         {
-            var root = new GameObject("Pentagon");
+            var root = new GameObject("Hexagon");
             root.transform.SetParent(transform, false);
 
             var mainCam = Camera.main;
             if (mainCam != null)
-                mainCam.cullingMask &= ~(1 << PentagonInkLayer);
+                mainCam.cullingMask &= ~(1 << HexagonInkLayer);
 
             var overlayGo = new GameObject("InkOverlayCam");
             overlayGo.transform.SetParent(root.transform, false);
-            var overlay = overlayGo.AddComponent<PentagonOverlayCamera>();
-            overlay.Build(PentagonInkLayer);
+            var overlay = overlayGo.AddComponent<HexagonOverlayCamera>();
+            overlay.Build(HexagonInkLayer);
             AttachOverlayToMain(mainCam, overlay.Cam);
 
-            var view = root.AddComponent<PentagonView>();
+            var view = root.AddComponent<HexagonView>();
             view.Build(_tuning, overlay.Cam);
 
             // 16 Eylül: sol yarıdaki sanal çubuk fonksiyonel olarak zaten çalışıyordu, hiç
@@ -215,21 +214,21 @@ namespace Dovus.Game
 
             var inkGo = new GameObject("InkTrail");
             inkGo.transform.SetParent(root.transform, false);
-            inkGo.layer = PentagonInkLayer;
+            inkGo.layer = HexagonInkLayer;
             var ink = inkGo.AddComponent<InkTrail>();
-            ink.Configure(_tuning, overlay, PentagonInkLayer);
+            ink.Configure(_tuning, overlay, HexagonInkLayer);
 
             var syllable = root.AddComponent<SyllableFeedback>();
             syllable.Configure(_tuning);
             var debug = root.AddComponent<SentenceDebugHud>();
             var skills = SkillMotorLoader.LoadOrDefault();
 
-            var input = root.AddComponent<PentagonInput>();
+            var input = root.AddComponent<HexagonInput>();
             input.Tuning = _tuning;
             input.Combat = combat;
             input.Bind(clock, ink, syllable, debug);
 
-            // 16 Eylül: "kamera sabit" bug raporu — MoveInput/PentagonInput'un parmaklarına
+            // 16 Eylül: "kamera sabit" bug raporu — MoveInput/HexagonInput'un parmaklarına
             // dokunmadan üçüncü bir parmakla (veya editörde sağ-tık sürükleyerek) 360° orbit.
             if (follow != null)
             {
@@ -265,9 +264,9 @@ namespace Dovus.Game
             {
                 var playerStrip = root.AddComponent<StatusIconStrip>();
                 float stripY = vitalsHud.PlayerStackBottomCanvasY
-                    - PentagonLayoutScreen.DpToPixels(_tuning.StatusIconGapDp + 4f);
-                float left = PentagonLayoutScreen.SafeLeftInsetPx()
-                    + PentagonLayoutScreen.DpToPixels(_tuning.VitalsMarginDp);
+                    - HexagonLayoutScreen.DpToPixels(_tuning.StatusIconGapDp + 4f);
+                float left = HexagonLayoutScreen.SafeLeftInsetPx()
+                    + HexagonLayoutScreen.DpToPixels(_tuning.VitalsMarginDp);
                 playerStrip.Configure(
                     playerStatus.Board, _tuning, view.CanvasRoot,
                     new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f),
@@ -278,7 +277,7 @@ namespace Dovus.Game
             {
                 var bossStrip = root.AddComponent<StatusIconStrip>();
                 float stripY = vitalsHud.BossStackBottomCanvasY
-                    - PentagonLayoutScreen.DpToPixels(_tuning.StatusIconGapDp + 2f);
+                    - HexagonLayoutScreen.DpToPixels(_tuning.StatusIconGapDp + 2f);
                 bossStrip.Configure(
                     bossStatus.Board, _tuning, view.CanvasRoot,
                     new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
@@ -365,7 +364,7 @@ namespace Dovus.Game
 
         /// <summary>
         /// T10: uGUI Slider/Button ilk kez sahneye giriyor — proje şimdiye kadar hep elle
-        /// hit-test eden EnhancedTouch kullanıyordu (PentagonInput/MoveInput). Standart Slider
+        /// hit-test eden EnhancedTouch kullanıyordu (HexagonInput/MoveInput). Standart Slider
         /// bir EventSystem + bir input modülü ister; InputSystemUIInputModule seçildi çünkü
         /// proje zaten Yeni Input System üstünde (Unity.InputSystem asmdef referansı).
         /// </summary>

@@ -83,7 +83,7 @@ namespace Dovus.Game
             if (!_appliedVisible)
                 return;
 
-            // Yavaş çekim/hitstop kare süresini DEĞİŞTİRMEZ, yalnızca dünya zamanını ölçekler:
+            // Hitstop kare süresini DEĞİŞTİRMEZ, yalnızca dünya zamanını durdurur:
             // bütçe ölçümü ölçeklenmemiş saatte olmak zorunda (T4).
             float dt = Time.unscaledDeltaTime;
             float ms = dt * 1000f;

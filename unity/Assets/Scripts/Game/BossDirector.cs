@@ -62,7 +62,7 @@ namespace Dovus.Game
             CombatTuning combat,
             PrototypeTuning colors,
             BossReactor reactor,
-            PentagonInput input,
+            HexagonInput input,
             Transform player,
             PlayerVitals vitals,
             BossVitals bossVitals,
@@ -119,7 +119,7 @@ namespace Dovus.Game
 
             if (_dodge == null || _engine == null)
             {
-                var input = FindAnyObjectByType<PentagonInput>();
+                var input = FindAnyObjectByType<HexagonInput>();
                 if (input != null)
                 {
                     _dodge ??= input.Dodge;

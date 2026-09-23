@@ -33,7 +33,7 @@ namespace Dovus.Game
             _source = gameObject.AddComponent<AudioSource>();
             _source.playOnAwake = false;
             _source.spatialBlend = 0f;
-            for (int dot = 1; dot <= PentagonLayout.DotCount; dot++)
+            for (int dot = 1; dot <= HexagonLayout.DotCount; dot++)
             {
                 if (!RuneInfo.TryFromDot(dot, out Rune rune))
                     continue;
@@ -56,7 +56,7 @@ namespace Dovus.Game
         /// <summary>dotIndex 1..6; sentenceDotsAfter = cümledeki nokta sayısı (perde yükselir).</summary>
         public void PlayForDot(int dot, int sentenceDotsAfter)
         {
-            if (dot < 1 || dot > PentagonLayout.DotCount || _clips[dot] == null)
+            if (dot < 1 || dot > HexagonLayout.DotCount || _clips[dot] == null)
                 return;
 
             float pitch = 1f + 0.09f * Mathf.Max(0, sentenceDotsAfter - 1);

@@ -1,6 +1,6 @@
 namespace Dovus.Core.Tuning
 {
-    /// <summary>Dodge hareketi — dovus-sistemi.md §6.</summary>
+    /// <summary>Ayrı dodge kontrolünün hareket ve tap ayarları.</summary>
     [System.Serializable]
     public class DodgeTuning
     {
@@ -13,7 +13,7 @@ namespace Dovus.Core.Tuning
         public int GlideTailMs = 220;
         public int CooldownMs = 420;
 
-        // Beşgen merkezi kısa dokunma — dovus-sistemi.md §2
+        // Altıgen dışındaki ayrı dodge düğmesinin tap eşikleri.
         public int TapMaxMs = 180;
         public int TapMaxMoveDp = 12;
 

@@ -36,7 +36,7 @@ namespace Dovus.Game
 
         public void Bind(
             GameClock clock,
-            PentagonInput input,
+            HexagonInput input,
             Transform boss,
             AfterimageTrail afterimage)
         {
@@ -60,7 +60,7 @@ namespace Dovus.Game
 
         void TryAutoBind()
         {
-            var input = FindAnyObjectByType<PentagonInput>();
+            var input = FindAnyObjectByType<HexagonInput>();
             var clock = FindAnyObjectByType<GameClock>();
             var boss = GameObject.Find("Boss");
             if (input == null || clock == null || boss == null)

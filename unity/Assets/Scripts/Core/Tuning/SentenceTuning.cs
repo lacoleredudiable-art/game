@@ -27,8 +27,9 @@ namespace Dovus.Core.Tuning
     {
         public int MaxSentenceDots = 4;
 
-        // İptal pencereleri, DÜNYA zamanıyla ölçülür — dovus-sistemi.md §5.
-        // Index 0 = fiil, 1 = birinci sıfat, 2 = ikinci sıfat.
+        // İptal pencereleri DÜNYA zamanıyla ölçülür.
+        // Index, mevcut son kelimeyi gösterir: fiil, birinci sıfat, ikinci sıfat.
+        // Üçüncü sıfat dördüncü ve son noktadır; ardından yeni pencere açılmaz.
         public int[] CancelWindowMs = { 420, 360, 300 };
 
         // Tekrar yoğunlaştırma — dovus-sistemi.md §3

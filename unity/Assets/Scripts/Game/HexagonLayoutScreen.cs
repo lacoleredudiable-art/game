@@ -4,9 +4,9 @@ namespace Dovus.Game
 {
     /// <summary>
     /// Altıgen noktalarının ekran pikseli konumları. Dünyaya bağlı değil (§2).
-    /// Nokta sırası 1→6 saat yönünde; komşu = ±1 (Core PentagonLayout ile uyumlu).
+    /// Nokta sırası 1→6 saat yönünde; komşu = ±1 (Core HexagonLayout ile uyumlu).
     /// </summary>
-    public static class PentagonLayoutScreen
+    public static class HexagonLayoutScreen
     {
         /// <summary>Android notch / home indicator — UI clamp buna göre.</summary>
         public static Rect SafeRectPx()
@@ -21,11 +21,11 @@ namespace Dovus.Game
         {
             Rect safe = SafeRectPx();
             float xNorm = tuning.MirrorForLeftHand
-                ? 1f - tuning.PentagonCenterXNorm
-                : tuning.PentagonCenterXNorm;
+                ? 1f - tuning.HexagonCenterXNorm
+                : tuning.HexagonCenterXNorm;
             // Norm, safe rect içinde yorumlanır (taşma / home bar).
             float x = safe.xMin + xNorm * safe.width;
-            float y = safe.yMin + tuning.PentagonCenterYNorm * safe.height;
+            float y = safe.yMin + tuning.HexagonCenterYNorm * safe.height;
             return new Vector2(x, y);
         }
 
@@ -35,7 +35,7 @@ namespace Dovus.Game
         /// </summary>
         public static float FittedRadiusPx(PrototypeTuning tuning, int screenWidth, int screenHeight)
         {
-            float desired = DpToPixels(tuning.PentagonRadiusDp);
+            float desired = DpToPixels(tuning.HexagonRadiusDp);
             Rect safe = SafeRectPx();
             Vector2 c = CenterPx(tuning, screenWidth, screenHeight);
             float dotR = DotHitRadiusPx(tuning);

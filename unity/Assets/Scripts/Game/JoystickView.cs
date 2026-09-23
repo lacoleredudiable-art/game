@@ -28,7 +28,7 @@ namespace Dovus.Game
             canvas.renderMode = overlayCam != null ? RenderMode.ScreenSpaceCamera : RenderMode.ScreenSpaceOverlay;
             canvas.worldCamera = overlayCam;
             canvas.planeDistance = 1.2f;
-            // Pentagon canvas'ı (50) altında dursun ama diğer HUD'ların üstünde olsun.
+            // Hexagon canvas'ı (50) altında dursun ama diğer HUD'ların üstünde olsun.
             canvas.sortingOrder = 45;
             canvasGo.AddComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
 
@@ -51,7 +51,7 @@ namespace Dovus.Game
             if (!_input.IsActive)
                 return;
 
-            float baseR = PentagonLayoutScreen.DpToPixels(_tuning.JoystickMaxRadiusDp);
+            float baseR = HexagonLayoutScreen.DpToPixels(_tuning.JoystickMaxRadiusDp);
             Place(_base, _input.OriginPx, baseR * 2f);
             Place(_knob, _input.OriginPx + _input.KnobOffsetPx, baseR * 0.9f);
         }

@@ -55,7 +55,7 @@ namespace Dovus.Game
             if (_root == null || vitals == null)
                 return;
             float y = vitals.BossStackBottomCanvasY
-                - PentagonLayoutScreen.DpToPixels(36f);
+                - HexagonLayoutScreen.DpToPixels(36f);
             _root.anchoredPosition = new Vector2(0f, y);
         }
 

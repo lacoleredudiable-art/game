@@ -303,15 +303,15 @@ namespace Dovus.Game
 
         void ApplyTuningLayout()
         {
-            float topInset = PentagonLayoutScreen.SafeTopInsetPx();
-            float leftInset = PentagonLayoutScreen.SafeLeftInsetPx();
-            float margin = PentagonLayoutScreen.DpToPixels(_tuning.VitalsMarginDp);
-            float w = PentagonLayoutScreen.DpToPixels(_tuning.VitalsBarWidthDp);
-            float h = PentagonLayoutScreen.DpToPixels(_tuning.VitalsBarHeightDp);
-            float bossW = PentagonLayoutScreen.DpToPixels(_tuning.VitalsBossBarWidthDp);
-            float bossH = PentagonLayoutScreen.DpToPixels(_tuning.VitalsBossBarHeightDp);
-            float spacing = PentagonLayoutScreen.DpToPixels(_tuning.VitalsBarSpacingDp);
-            float pad = PentagonLayoutScreen.DpToPixels(8f);
+            float topInset = HexagonLayoutScreen.SafeTopInsetPx();
+            float leftInset = HexagonLayoutScreen.SafeLeftInsetPx();
+            float margin = HexagonLayoutScreen.DpToPixels(_tuning.VitalsMarginDp);
+            float w = HexagonLayoutScreen.DpToPixels(_tuning.VitalsBarWidthDp);
+            float h = HexagonLayoutScreen.DpToPixels(_tuning.VitalsBarHeightDp);
+            float bossW = HexagonLayoutScreen.DpToPixels(_tuning.VitalsBossBarWidthDp);
+            float bossH = HexagonLayoutScreen.DpToPixels(_tuning.VitalsBossBarHeightDp);
+            float spacing = HexagonLayoutScreen.DpToPixels(_tuning.VitalsBarSpacingDp);
+            float pad = HexagonLayoutScreen.DpToPixels(8f);
 
             bool sizeChanged =
                 !Mathf.Approximately(_tuning.VitalsBarWidthDp, _appliedWidthDp) ||
@@ -350,7 +350,7 @@ namespace Dovus.Game
 
                 PlayerStackBottomCanvasY = -(topInset + margin + panelH);
 
-                float nameH = PentagonLayoutScreen.DpToPixels(16f);
+                float nameH = HexagonLayoutScreen.DpToPixels(16f);
                 _bossRoot.anchoredPosition = new Vector2(0f, -(topInset + margin * 0.5f));
                 _bossName.rectTransform.anchoredPosition = Vector2.zero;
                 _bossName.rectTransform.sizeDelta = new Vector2(bossW, nameH);
@@ -365,7 +365,7 @@ namespace Dovus.Game
                 _bossFill.color = _appliedBossColor;
             }
 
-            // Oyuncu HP: soft rose (kırmızı-turuncu boss tehdidine yaklaşmaz)
+            // Oyuncu HP: mevcut soft rose tonu
             Color hpColor = new Color(0.72f, 0.28f, 0.34f, 0.95f);
             if (_appliedPlayerColor != hpColor)
             {

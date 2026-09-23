@@ -103,19 +103,19 @@ namespace Dovus.Game
             {
                 f.Text.text = "+" + (-amount).ToString("0.#");
                 f.Text.color = new Color(0.45f, 0.9f, 0.75f, 1f);
-                f.Text.fontSize = Mathf.RoundToInt(PentagonLayoutScreen.DpToPixels(_tuning.DamageFloatFontDp));
+                f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(_tuning.DamageFloatFontDp));
             }
             else if (isCrit)
             {
                 f.Text.text = Mathf.RoundToInt(amount).ToString();
                 f.Text.color = new Color(0.95f, 0.88f, 0.55f, 1f);
-                f.Text.fontSize = Mathf.RoundToInt(PentagonLayoutScreen.DpToPixels(_tuning.DamageFloatCritFontDp));
+                f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(_tuning.DamageFloatCritFontDp));
             }
             else
             {
                 f.Text.text = Mathf.RoundToInt(amount).ToString();
                 f.Text.color = new Color(0.95f, 0.93f, 0.88f, 1f);
-                f.Text.fontSize = Mathf.RoundToInt(PentagonLayoutScreen.DpToPixels(_tuning.DamageFloatFontDp));
+                f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(_tuning.DamageFloatFontDp));
             }
 
             _pool[idx] = f;

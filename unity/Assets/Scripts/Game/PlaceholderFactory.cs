@@ -167,7 +167,7 @@ namespace Dovus.Game
                 ElementPrimary.TryGetValue(elementName, out Color c))
                 return c;
 
-            // Bilinmeyen element: camgöbeği oyuncu efekti (kırmızı-turuncu yasak).
+            // Bilinmeyen element için mevcut camgöbeği yedek renk.
             return new Color(0.373f, 0.941f, 1f, 0.95f);
         }
 

@@ -70,10 +70,10 @@ namespace Dovus.Game
         {
             if (_root == null || vitals == null)
                 return;
-            float left = PentagonLayoutScreen.SafeLeftInsetPx()
-                + PentagonLayoutScreen.DpToPixels(12f);
+            float left = HexagonLayoutScreen.SafeLeftInsetPx()
+                + HexagonLayoutScreen.DpToPixels(12f);
             float y = vitals.PlayerStackBottomCanvasY
-                - PentagonLayoutScreen.DpToPixels(52f);
+                - HexagonLayoutScreen.DpToPixels(52f);
             _root.anchoredPosition = new Vector2(left, y);
         }
 

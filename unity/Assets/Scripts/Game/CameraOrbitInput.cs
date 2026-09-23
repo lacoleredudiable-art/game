@@ -15,7 +15,7 @@ namespace Dovus.Game
 
         FollowCamera _camera;
         MoveInput _moveInput;
-        PentagonInput _pentagonInput;
+        HexagonInput _hexagonInput;
         PrototypeTuning _tuning;
         int? _orbitFingerId;
         Vector2 _lastPos;
@@ -27,12 +27,12 @@ namespace Dovus.Game
         public void Bind(
             FollowCamera camera,
             MoveInput moveInput,
-            PentagonInput pentagonInput,
+            HexagonInput hexagonInput,
             PrototypeTuning tuning = null)
         {
             _camera = camera;
             _moveInput = moveInput;
-            _pentagonInput = pentagonInput;
+            _hexagonInput = hexagonInput;
             _tuning = tuning;
         }
 
@@ -78,8 +78,8 @@ namespace Dovus.Game
 
         bool IsClaimedElsewhere(int fingerIndex) =>
             (_moveInput != null && _moveInput.ClaimedFingerId == fingerIndex)
-            || (_pentagonInput != null && _pentagonInput.ClaimedFingerId == fingerIndex)
-            || (_pentagonInput != null && _pentagonInput.ClaimedDodgeFingerId == fingerIndex);
+            || (_hexagonInput != null && _hexagonInput.ClaimedFingerId == fingerIndex)
+            || (_hexagonInput != null && _hexagonInput.ClaimedDodgeFingerId == fingerIndex);
 
         void OnFingerDown(Finger finger)
         {
@@ -89,7 +89,7 @@ namespace Dovus.Game
             // Sol yarı stick'e ait — orbit alma.
             Vector2 pos = finger.screenPosition;
             bool mirror = _tuning != null && _tuning.MirrorForLeftHand;
-            if (!PentagonLayoutScreen.IsRightHalf(pos, mirror, Screen.width))
+            if (!HexagonLayoutScreen.IsRightHalf(pos, mirror, Screen.width))
                 return;
 
             _orbitFingerId = finger.index;
