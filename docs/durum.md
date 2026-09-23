@@ -12,9 +12,16 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 17 Eylül 2026 (Karabasan readout + delayed gate) ·
-**Dal:** `fix/karabasan-readout-fold` · **Sıradaki:** fiil action özel motorları
-(`drain`/Karabasan hattı dahil); Hexagon rename; (deneme sonrası süre/Enforce)
+**Son güncelleme:** 23 Eylül 2026 (altıgen adlandırma + girdi/zaman temizliği) ·
+**Dal:** `cursor/hexagon-cleanup-8244` · **Sıradaki:** fiil action özel motorları
+(`drain`/Karabasan hattı dahil); (deneme sonrası süre/Enforce)
+
+> **23 Eylül — güncel tasarım temizliği.** `Pentagon*` dosya/tip/adları `Hexagon*`
+> olarak değiştirildi; 6 nokta davranışı korunuyor. Merkez düz vuruş/erken kapanış,
+> dodge altıgen dışında ayrı düğme. Perfect-dodge yavaş çekim sistemi (`SlowmoTuning`,
+> `TimeDirector.TriggerSlowmo`, tuning UI/preset/testler) kaldırıldı; hitstop korunuyor.
+> README/element spec/ajan kuralları güncellendi; kırmızı-turuncu kuralı değişmezlerden
+> çıkarıldı. `dotnet test` sonucu bu kayıt testten sonra tamamlanacak.
 
 ### Sahip kararları (17 Eylül)
 
@@ -106,7 +113,7 @@ PassiveDirector: `RevealRadiusMult` hâlâ uygulanmıyor.
 > **17 Eylül — Play mode fix + state_machine bağlama.** `playerVitals` CS0841
 > (SpaceHost.Bind sırası) düzeltildi. `PlayerStateMachine.SyncWorld` öncelik:
 > dead&gt;stunned&gt;dodging&gt;rooted&gt;casting(pending bang)&gt;drawing&gt;recovering&gt;idle.
-> PentagonInput çizim/dodge + KinematicMotor hareket kapısı. `dotnet test` yeşil.
+> HexagonInput çizim/dodge + KinematicMotor hareket kapısı. `dotnet test` yeşil.
 > **Doğrulanamadı:** Unity Play his (drawing’de hareket kilidi).
 
 > **17 Eylül — Karabasan hat + Hiçlik yarığı.** `ISpaceDirector` / `SpaceDirector`
@@ -165,7 +172,7 @@ PassiveDirector: `RevealRadiusMult` hâlâ uygulanmıyor.
 > Ateş zinciri (`BeginChainClosing`), pasif/ulti tetik, boss `BossKnockbackM×0.55`
 > geri itme. `FireClosing`: basic’te zincir/pasif/ulti/mana/CD yok; pending zincir
 > bonusuna dokunulmaz. `ApplyBossClosingBasic` yalnızca sarsıntı (knock=0).
-> `PentagonInput.TriggerCenter` mana/CD kapısını atlar. `dotnet test` **227** yeşil.
+> `HexagonInput.TriggerCenter` mana/CD kapısını atlar. `dotnet test` **227** yeşil.
 > `master`'a merge edildi.
 
 > **17 Eylül — HUD layout/vitals fix.** Telefon: hex 108dp+YNorm 0.18 alt
@@ -178,7 +185,7 @@ PassiveDirector: `RevealRadiusMult` hâlâ uygulanmıyor.
 > **17 Eylül — His / HUD / kamera / iz.** Premium HUD: boss üst orta +
 > `StatusIconStrip` (tüm `StatusKind`, `StatusBoard.TryGet` + süre halkası);
 > oyuncu HP/FP sol üst glass; ally `StatusBoard` (`team_has_debuffs`).
-> SafeArea clamp (`PentagonLayoutScreen.SafeRectPx`); hex YNorm 0.30,
+> SafeArea clamp (`HexagonLayoutScreen.SafeRectPx`); hex YNorm 0.30,
 > dodge/merkez büyütüldü. Orbit: sağ boşluk drag (widget-only claim) +
 > `KinematicMotor` kamera-göreli hareket. Soft aim `SoftAimRangeM` (8m,
 > boss menzilde soft-lock). Floating hasar pool. `AnimationBridge.MapToQuaterniusState`;
@@ -318,7 +325,7 @@ PassiveDirector: `RevealRadiusMult` hâlâ uygulanmıyor.
 > PlayerVitals / ManifestationDirector **bağlanmadı** (sabit tek ekipman varsayımı).
 > `EquipmentCatalogTests` 2; `dotnet test` 218 yeşil.
 
-> **16 Eylül — Görev 12: UI Rules hizalaması (Game).** `PentagonView` + `ManifestationDirector`:
+> **16 Eylül — Görev 12: UI Rules hizalaması (Game).** `HexagonView` + `ManifestationDirector`:
 > her skill cast'te fiil rünü etrafında kozmetik radial cooldown (`base_cooldown_sec`) + kalan sn
 > (`ui_rules.cooldown_display`). **CooldownTracker / cast engeli yok** (Faz 6).
 >
@@ -512,17 +519,17 @@ PassiveDirector: `RevealRadiusMult` hâlâ uygulanmıyor.
 > **16 Eylül — bug turu + durum tablosu + boss 2. saldırı (2. oturum):** Sahibi Play mode'da
 > beş bug rapor etti, hepsi teşhis edildi ve düzeltildi (Unity MCP ile Play mode'da
 > doğrulandı, `dotnet test` 143 yeşil):
-> - **Düz vuruş heal basıyordu** — sahnede `BasicStrikeDot` donmuş `5` (eski pentagon
+> - **Düz vuruş heal basıyordu** — sahnede `BasicStrikeDot` donmuş `5` (eski beşgen
 >   SARSINTI) idi, altıgende 5=Aydınlık/`arindirma` (`cleanse` → `IsHealSkill` true
 >   sanıyordu). `PrototypeTuning.EnsureRuntimeDefaults()`'a zorla `1` (Ateş) eklendi.
 > - **Hasar sayısı görünmüyordu** — sahnede `ShowDamageNumbers` donmuş `0` idi (kod default'u
 >   `true` ama sahne ezmişti); aynı yerde zorla `true` yapıldı.
 > - **Sol joystick görünmüyordu** — `MoveInput` fonksiyonel olarak zaten çalışıyordu, hiç
->   görseli yoktu. Yeni `JoystickView.cs` (dinamik taban+kabarcık, `PentagonView`'daki
+>   görseli yoktu. Yeni `JoystickView.cs` (dinamik taban+kabarcık, `HexagonView`'daki
 >   `CreateCircleSprite` deseniyle) eklendi.
 > - **Kamera 360° dönemiyordu** — `FollowCamera` tamamen sabitti. `OrbitYawDeg` eklendi,
 >   yeni `CameraOrbitInput.cs` üçüncü parmak (veya editörde sağ-tık sürükleme) ile yaw
->   döndürüyor; `MoveInput`/`PentagonInput`'un zaten claim ettiği parmaklara dokunmuyor.
+>   döndürüyor; `MoveInput`/`HexagonInput`'un zaten claim ettiği parmaklara dokunmuyor.
 > - **Duvarların içine giriliyordu** — Quaternius dungeon mesh'leri collider'sız geliyordu
 >   (`ArenaWalkFit`'in "Fizik collider yok" notu); `KinematicMotor` sadece dış kare clamp
 >   yapıyordu. Yeni `WallColliderFit.cs` isim eşleşmesiyle (`wall`/`column`/`arch`/...)
@@ -560,7 +567,7 @@ PassiveDirector: `RevealRadiusMult` hâlâ uygulanmıyor.
 > yoktu. `StatusBoard.ReactionTriggered` event'i eklendi; `StatusApplicator.Result` artık
 > `TriggeredReactions` taşıyor; `ManifestationDirector.ApplyClosingStatuses` bunu mevcut
 > tepki yazısı kanalına (`ReactionReadout.NoteSkill`, "ally +N" ile aynı yol) yazıyor —
-> renk `AcidGreen` (§10: kırmızı-turuncu yasak). Unity MCP'de canlı doğrulandı: Ateş'in
+> renk mevcut `AcidGreen` vurgusu. Unity MCP'de canlı doğrulandı: Ateş'in
 > Kor'u (1-3, `zirh_eritme`, mechanics=[armor_break,burn]) TEK cast'te "Erimiş Zırh"ı
 > tetikliyor ve şimdi ekrana yazıyor. 2 yeni test (145 yeşil).
 
@@ -643,7 +650,7 @@ PassiveDirector: `RevealRadiusMult` hâlâ uygulanmıyor.
 > (GEÇ ton+poz, GENİŞ disk). `MaxSameVariantStreak=2`.
 >
 > **T12 kapandı.** Boss canı 120, kapanış ödülü × `ClosingDamagePerEffect` hasar, tür son
-> rüne bağlı tepki, ölümde `TriggerSlowmo` + çökme + tam can revive.
+> rüne bağlı tepki, ölümde çökme + tam can revive.
 >
 > **T11.1 kapandı.** Mürekkep cümle sınırında kopuyor, toparlanma kilidi kalıcı HUD'da,
 > `BossDirector.TickWindup` null-safe.
@@ -664,7 +671,7 @@ PassiveDirector: `RevealRadiusMult` hâlâ uygulanmıyor.
 ## Tarihçe (özet)
 
 Beşgen prototip dönemi (T0–T14, 22–23 Ağustos): Core/Unity iskeleti, cümle gramer motoru,
-dodge/exchange derecelendirmesi, tezahür (yaşayan etki) katmanı, boss telegrafı + yavaş çekim
+dodge/exchange derecelendirmesi, tezahür (yaşayan etki) katmanı, boss telegrafı + hitstop
 + kamera, HUD, oyun içi ayar paneli, Android build + kare süresi göstergesi, his turu (§13
 soru 1–2 evet), silüet keskinleştirme — hepsi bitti. 16 Eylül'de altıgen/element-sistemi
 dönemine geçildi (bkz. yukarısı). Görev görev "üretilen API / doğrulama / sapma" detayları

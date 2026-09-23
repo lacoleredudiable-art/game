@@ -406,14 +406,14 @@ YASAKLAR
 ```
 Rolün: HUD geliştiricisi (bu görev Core değil Game — Unity gerekli).
 
-ÖNCE OKU: docs/element-sistemi.json ui_rules + unity/Assets/Scripts/Game/PentagonView.cs
+ÖNCE OKU: docs/element-sistemi.json ui_rules + unity/Assets/Scripts/Game/HexagonView.cs
 + ReactionReadout.cs + Core/Tuning/FeelTuning.cs (ReadoutHoldMs — read_as_display.
 duration_ms=1500 ile KARŞILAŞTIR).
 
 GÖREV
 1. `read_as_display.duration_ms` (1500) ile `FeelTuning.ReadoutHoldMs`'in mevcut değerini
    karşılaştır; farklıysa docs/durum.md'ye yaz (değiştirme, sahibi karar versin).
-2. `cooldown_display` (radial_overlay, her rünün etrafında, sayı göster): PentagonView'daki
+2. `cooldown_display` (radial_overlay, her rünün etrafında, sayı göster): HexagonView'daki
    her nokta için `base_cooldown_sec` dolana kadar dairesel bir dolum efekti + kalan saniye
    sayısı çiz. Şu an hiçbir cooldown UI'da görünmüyor — bu görev sadece GÖRSEL, cooldown'un
    GERÇEKTEN engellemesi Görev 2'nin (CooldownTracker) Faz 6'da bağlanmasına bağımlı; bağlı
@@ -665,7 +665,7 @@ Rolün: kaynak sistemi entegrasyoncusu (Bağlama 1 sonrası).
 GÖREV
 1. PlayerVitals'a paralel bir `ResourceTracker` örneği ekle (ayrı sınıf, PlayerVitals'ın
    HP mantığına dokunma).
-2. VitalsHud'a üçüncü bir bar ekle (mana, mavi tonu — §10 kırmızı-turuncu yasak, oyuncu
+2. VitalsHud'a üçüncü bir bar ekle (mana, mevcut mavi oyuncu tonu
    rengi kullan) — cast'te `base_resource_cost` düşsün, `regen_per_sec` ile dolsun.
 3. **Yetersiz mana cast'i ENGELLEMESİN** (bu Bağlama 3'ün işi) — sadece bar negatife
    inebilir ya da 0'da kilitlenir, görsel olarak "boş" görünür.
@@ -683,11 +683,11 @@ YASAKLAR
 ```
 Rolün: kaynak sistemi entegrasyoncusu (Bağlama 2 sonrası).
 
-ÖNCE OKU: Bağlama 2'nin ürettiği kod + PentagonInput.cs (cast'in nerede başladığı).
+ÖNCE OKU: Bağlama 2'nin ürettiği kod + HexagonInput.cs (cast'in nerede başladığı).
 
 GÖREV
 CombatTuning'e `bool EnforceResourceCost = false;` ekle. True ise: mana `base_resource_cost`'tan
-azsa cümle BAŞLAMASIN (PentagonInput'ta OnDotTouched'ın ilk noktayı reddetmesi ya da
+azsa cümle BAŞLAMASIN (HexagonInput'ta OnDotTouched'ın ilk noktayı reddetmesi ya da
 SentenceEngine'e girmeden önce kontrol) — reddedilince kısa bir "yetersiz mana" görsel/ses
 ipucu (ReactionReadout, nötr renk).
 

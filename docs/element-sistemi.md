@@ -21,29 +21,19 @@ sürüklenerek cümle kurar: ilk dokunulan nokta **fiil** (ne yapıyorum), sonra
 (nasıl yapıyorum). Altı nokta altı elemente karşılık gelir — Ateş / Su / Hava / Toprak /
 Aydınlık / Karanlık (`docs/element-sistemi.json` çekirdek id 1-6). Cümle çizilirken sonuç
 zaten dünyada olur. Merkeze kısa dokunma düz vuruş, dodge ekrana sabit ayrı düğme. Bu girdi
-katmanının detayları (mesafe/kısa-sıçrama, dwell, iptal pencereleri) eski `dovus-sistemi.md`
-§2-3'te yazılıydı ve **hâlâ geçerli** — sadece nokta sayısı 5'ten 6'ya çıktı, mekanik aynı.
+katmanının canlı davranışı `HexagonInput` ve `Core/Tuning` sınıflarındadır; silinmiş beşgen
+dönemi belgeleri güncel girdi tasarımına kaynak değildir.
 
-## 2. Girdi — kod durumu ve bilinen isim borcu
+## 2. Girdi — kod durumu
 
 Kontrol mantığı zaten 6 noktaya geçmiş:
 
-- `Core/Grammar/PentagonLayout.cs`: `DotCount = 6`, komşuluk `±1 mod 6` (altıgen).
+- `Core/Grammar/HexagonLayout.cs`: `DotCount = 6`, komşuluk `±1 mod 6`.
 - `Core/Grammar/Rune.cs`: `Rune` enum 1-6, `RuneInfo.DisplayName` doğru eşliyor
   (1=Ateş … 6=Karanlık).
-
-**Ama isimlendirme borcu var** — kod çalışıyor, isimler yanıltıcı:
-
-- Dosya/sınıf adları hâlâ `Pentagon*`: `PentagonLayout.cs`, `PentagonInput.cs`,
-  `PentagonView.cs`, `PentagonLayoutScreen.cs`. Altıgen mantığı bu dosyaların içinde ama adları
-  beşgen diyor.
-- `Rune` enum'unun **üye adları** eski 5-rün isimlerini taşıyor ve artık yanlış elementi
-  karşılıyor: `Rune.Zehir = 4` ama pozisyon 4 = **Toprak**; `Rune.Toprak = 6` ama pozisyon 6 =
-  **Karanlık**. Kod `RuneInfo.DisplayName()` ile doğru string'i döndürüyor, yani **çalışıyor**,
-  ama enum'u okuyan biri "Toprak" görüp "Karanlık" olduğunu bilemez.
-
-Bu bir davranış hatası değil, isimlendirme hatası — düzeltmesi mekanik (rename + kullanım
-yerlerini güncelle) ama henüz yapılmadı. `docs/durum.md` "Bilinen açıklar"da da kayıtlı.
+- `Game/HexagonInput.cs`: merkez düz vuruş/erken kapanış; altıgen dışındaki ayrı düğme dodge.
+- `HexagonView`, `HexagonLayoutScreen` ve `HexagonOverlayCamera` adları canlı 6-nokta
+  davranışıyla uyumludur.
 
 ## 3. Gramer (değişmeden taşındı)
 
@@ -172,9 +162,8 @@ gerekenler (`docs/gorev-listesi.md` "Backlog"):
 
 ## 10. Bilinen açıklar (öncelik sırasına yakın)
 
-1. **~~Pentagon→Hexagon isim borcu~~ (§2) — hâlâ açık.** Kod doğru çalışıyor
-   (`PentagonLayout.DotCount=6`), ama dosya/sınıf adları (`PentagonInput.cs` vb.) ve `Rune`
-   enum üyeleri (`Rune.Toprak=6=Karanlık`) hâlâ yanıltıcı — henüz yeniden adlandırılmadı.
+1. **Altıgen isimlendirmesi tamamlandı (§2).** `HexagonLayout.DotCount=6`; Core/Game
+   dosya ve tip adları güncel terminolojiyi kullanıyor.
 2. **Element/sınıf seçimi yok** — tek karakter, oyuncu hangi aileyi oynadığını seçemiyor.
 3. **~~Durum etkileşim tablosu yok~~ — 16 Eylül'de kapandı.** `status_interaction_table`
    (17 kural) `Core/Status/StatusReactionTable.cs` + `StatusBoard.Apply/Tick` +
@@ -193,11 +182,10 @@ gerekenler (`docs/gorev-listesi.md` "Backlog"):
    dönüşümlü seçiliyor, dar bir koni (40°), ayrı windup/hasar/mekanik (burn+grievous_wounds).
    Hâlâ tek boss (Karadul); görsel olarak aynı "bite" animasyonunu tekrar kullanıyor (ayrı
    clip yok — Demon Watcher paketiyle `Combat_Spell_*` eşlenince düzelir).
-9. **Dodge/hitstop/kamera "his" numaraları artık sadece kodda** — eski `dovus-sistemi.md`
-   §6-9'un anlattığı sayılar (`hitstopPerfectMs`, `impactFrameMs`, dodge derece eşikleri vb.)
-   `Core/Tuning/{FeelTuning,DodgeTuning,SlowmoTuning,SentenceTuning}.cs` içinde varsayılan
-   olarak yaşıyor — doküman silindi ama sayılar kaybolmadı, sadece gerekçe prose'u gitti.
-   Yeni bir "his değeri" gerekirse artık kaynak bu Tuning sınıflarının mevcut değerleri +
+9. **Dodge/hitstop/kamera "his" numaraları artık sadece kodda** — ilgili değerler
+   `Core/Tuning/{FeelTuning,DodgeTuning,SentenceTuning}.cs` içinde varsayılan olarak yaşıyor.
+   Perfect-dodge yavaş çekimi kaldırıldı; dodge derecesi hitstop/kamera/okunurluk üretir.
+   Yeni bir "his değeri" gerekirse kaynak bu Tuning sınıflarının mevcut değerleri +
    bu dosyadır, `dovus-sistemi.md` değil (AGENTS.md güncellendi).
 10. **16 Eylül bug turu kapatıldı** (durum.md'de detay): düz vuruşun heal basması
     (sahnede donmuş `BasicStrikeDot=5` idi), hasar sayısı görünmemesi (`ShowDamageNumbers`
