@@ -74,6 +74,13 @@ namespace Dovus.Core.Tuning
         public float BossLiftM = 1.1f;
         public float BossShakeSec = 0.28f;
 
+        // SkillExecutor prototipi: melee overlap, cast penceresinin orta %40'ında canlı.
+        // Oranlar görev kabul kriterinden; süre mevcut BangDurationSec'tir.
+        public float ExecutorMeleeWindowOpen01 = 0.3f;
+        public float ExecutorMeleeWindowClose01 = 0.7f;
+        // prezentasyon-katmani ground/self aura hitbox'larının ortak varsayılan tick'i.
+        public float ExecutorFieldTickSec = 1f;
+
         // Kalıcı iz boyutu
         public float ScarScaleM = 1.4f;
         public int MaxSwarmBlobs = 10;
