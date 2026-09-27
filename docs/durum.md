@@ -14,7 +14,7 @@
 > yansıtmazlar; körü körüne referans alma.
 
 **Son güncelleme:** 27 Eylül 2026 (v6.1.1 + altıgen temizliği + daire salon merge) ·
-**Dal:** `feat/circular-arena-feel` · **Sıradaki:** Unity Play kanıtı (`docs/COMPAT.md`),
+**Dal:** `feat/circular-arena-feel` · **Sıradaki:** `docs/COMPAT.md` 3–8 elle Play,
 sonra `hitbox_vfx` prefab ve tam `presentation` bağları
 
 ### v6.1.1 bağlayıcı uygulama sırası 1–9
@@ -44,6 +44,20 @@ sonra `hitbox_vfx` prefab ve tam `presentation` bağları
 Kilitli davranış: yalnız 2-rün skill; silah-fiil uyumsuzluğu ×0.8 hasar / ×1.2 cast,
 pasif kapalı, sarı (uyumlu yeşil); sıfat uyumsuzluğu yok; Zaman aktör `Slow`/`Haste`,
 global `Time.timeScale` değil. Elle doğrulama: `docs/COMPAT.md`.
+
+> **27 Eylül — üç dal birleşti (`feat/circular-arena-feel`).** Daire salon + Synty/Mixamo
+> commit'i, `cursor/hexagon-cleanup-8244` ve `cursor/adopt-element-system-v6-1-079a`
+> merge edildi. Çakışmalarda oyun mantığı v6 (noktalar = `RuneLoadout` slotu, element
+> değil), adlar Hexagon; kırmızı-turuncu kuralı çıkarılmış kaldı. `Dovus.Game.Editor.asmdef`'e
+> eksik `Dovus.Core` referansı eklendi (importer derlenmiyordu). Synty paketi ve Mixamo FBX
+> lisans gereği `.gitignore`'da, yerelde kalır.
+> **Doğrulandı:** `dotnet test` **256/256** (v6 270 − silinen slow-mo testleri); Unity
+> 6000.4 derleme temiz; Play'de `[BindingReady] JSON 6.1.1 → SO 12/10/6 → buildSkills=36
+> → smoke=Ateşli Yoğun Vuruş → weapon=Kılıç → element=Ateş`, altıgende build
+> `[1,5,6,2,7,9]` etiketleri + `SkillPreviewHud` görünüyor. **Açık:** COMPAT 3–8
+> (F1 smoke, pick-6, element cycle, uyum rengi, Zaman class) elle denenmedi; boss
+> controller'ında `Windup/Slam/Idle/Stagger` trigger'ı yok (Synty/Mixamo controller uyarısı);
+> `LivingEffectView.EnsureBangBurst` particle süresi hatası.
 
 > **27 Eylül — v6.1.1 runtime doğrudan yüklüyor.** `SkillMotorLoader` →
 > `SkillMotor`: 12 çift-yüzlü rün, 144 adet 2-rün fiil×sıfat skill, 6-of-12
