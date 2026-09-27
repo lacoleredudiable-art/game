@@ -31,6 +31,7 @@ public class WeaponV611Tests
         Assert.That(catalog.IsV61, Is.True);
         Assert.That(catalog.Items.Count, Is.EqualTo(10));
         Assert.That(sword.Name, Is.EqualTo("Kılıç"));
+        Assert.That(sword.Type, Is.EqualTo("medium"));
         Assert.That(sword.DamageMult, Is.EqualTo(1f));
         Assert.That(sword.CastTimeMult, Is.EqualTo(0.9f));
         Assert.That(sword.CompatibleVerbs, Is.EqualTo(new[] { 1, 3, 5, 9 }));

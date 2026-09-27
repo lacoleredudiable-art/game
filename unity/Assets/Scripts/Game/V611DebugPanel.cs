@@ -15,6 +15,8 @@ namespace Dovus.Game
         public static bool IsOpen { get; private set; }
 
         SkillMotor _skills;
+        RuneManager _runeManager;
+        ElementSystemAssetCatalog _assets;
         PentagonInput _input;
         PentagonView _view;
         ManifestationDirector _manifestation;
@@ -26,12 +28,16 @@ namespace Dovus.Game
 
         public void Configure(
             SkillMotor skills,
+            RuneManager runeManager,
+            ElementSystemAssetCatalog assets,
             PentagonInput input,
             PentagonView view,
             ManifestationDirector manifestation,
             Transform canvasRoot)
         {
             _skills = skills;
+            _runeManager = runeManager;
+            _assets = assets;
             _input = input;
             _view = view;
             _manifestation = manifestation;
@@ -144,9 +150,22 @@ namespace Dovus.Game
 
             try
             {
-                RuneLoadout loadout = _skills.CreateLoadout(_selected);
+                string error = "RuneManager yok.";
+                RuneLoadout previous = _runeManager?.Current;
+                if (_runeManager == null
+                    || !_runeManager.TrySelect(_selected, null, out error))
+                {
+                    SetStatus("Build reddedildi: " + error);
+                    return;
+                }
+                RuneLoadout loadout = _runeManager.Current;
                 if (!_input.TrySetLoadout(loadout))
                 {
+                    if (previous != null)
+                        _runeManager.TrySelect(
+                            previous.RuneIds,
+                            new List<int>(previous.PassiveRuneIds),
+                            out _);
                     SetStatus("Çizim sürerken build değişmez.");
                     return;
                 }
@@ -182,7 +201,9 @@ namespace Dovus.Game
             {
                 int slot = _selected.IndexOf(pair.Key);
                 string marker = slot >= 0 ? $"[{slot + 1}]" : "[ ]";
-                pair.Value.text = marker + " " + pair.Key + " " + _skills.RuneName(pair.Key);
+                string runeName = _assets?.FindRune(pair.Key)?.DisplayName
+                    ?? _skills.RuneName(pair.Key);
+                pair.Value.text = marker + " " + pair.Key + " " + runeName;
                 pair.Value.color = slot >= 0 ? Color.cyan : Color.white;
             }
 

@@ -204,23 +204,27 @@ namespace Dovus.Game
             overlay.Build(PentagonInkLayer);
             AttachOverlayToMain(mainCam, overlay.Cam);
 
-            var skills = SkillMotorLoader.LoadOrDefault();
-            RuneLoadout loadout = skills.DefaultLoadout;
-            try
+            ElementSystemDesign design = null;
+            ElementSystemAssetCatalog assetCatalog = null;
+            if (ElementSystemJsonLoader.TryLoad(out ElementSystemDesign loaded))
             {
-                skills.TryCreateMainClassLoadout(
+                design = loaded;
+                assetCatalog = ElementSystemAssetCatalog.CreateRuntime(design);
+            }
+            SkillMotor skills = design?.SkillMotor ?? SkillMotorLoader.LoadOrDefault();
+            var runeManager = new RuneManager(skills);
+            if (!runeManager.TrySelectMainClass(
                     _prototypeMainClassId,
                     _prototypePassiveRuneIds,
-                    out loadout);
-            }
-            catch (System.Exception e)
+                    out string buildError))
             {
-                Debug.LogWarning($"[ElementSystem] build seçimi geçersiz; varsayılan kullanıldı: {e.Message}");
-                loadout = skills.DefaultLoadout;
+                Debug.LogWarning($"[RuneManager] {buildError}; varsayılan build kullanıldı.");
             }
+            RuneLoadout loadout = runeManager.Current;
             Debug.Log(
                 $"[ElementSystem] mainClass={_prototypeMainClassId} build=[{string.Join(",", loadout.RuneIds)}] "
-                + $"passives={loadout.PassiveCount}");
+                + $"passives={loadout.PassiveCount}; SO={assetCatalog?.Runes.Count ?? 0}/"
+                + $"{assetCatalog?.Weapons.Count ?? 0}/{assetCatalog?.Elements.Count ?? 0}");
             var view = root.AddComponent<PentagonView>();
             view.Build(_tuning, overlay.Cam, skills, loadout);
 
@@ -348,17 +352,27 @@ namespace Dovus.Game
             var scars = scarsGo.AddComponent<GroundScarField>();
             scars.Configure(_tuning);
 
-            EquipmentBonusResolver equipmentBonus = LoadPrototypeEquipment(out _equippedWeapon);
+            EquipmentBonusResolver equipmentBonus;
+            if (design != null && assetCatalog != null)
+            {
+                equipmentBonus = new EquipmentBonusResolver(design.Equipment);
+                _equippedWeapon = assetCatalog.FindWeapon(4)?.ToEquipmentItem();
+            }
+            else
+            {
+                equipmentBonus = LoadPrototypeEquipment(out _equippedWeapon);
+            }
             if (_equippedWeapon != null)
                 Debug.Log($"[Equipment] prototip silah={_equippedWeapon.Name}; v6 fiil uyumu etkin.");
+            var skillFactory = new SkillFactory(skills, equipmentBonus);
 
             var manGo = new GameObject("Manifestation");
             manGo.transform.SetParent(transform, false);
             var director = manGo.AddComponent<ManifestationDirector>();
-            director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, allyDummy, modeHud, view, passiveHud, _equippedWeapon, equipmentBonus, skills);
+            director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, allyDummy, modeHud, view, passiveHud, _equippedWeapon, equipmentBonus, skills, skillFactory, design?.Animations);
 
             var v6Panel = root.AddComponent<V611DebugPanel>();
-            v6Panel.Configure(skills, input, view, director, view.CanvasRoot);
+            v6Panel.Configure(skills, runeManager, assetCatalog, input, view, director, view.CanvasRoot);
 
             CreateTuningPanel(tuningConfig, vitals);
         }
@@ -369,14 +383,12 @@ namespace Dovus.Game
         static EquipmentBonusResolver LoadPrototypeEquipment(out EquipmentItem weapon)
         {
             weapon = null;
-            const string resourcePath = "ElementSystem/element-sistemi";
-            var asset = Resources.Load<TextAsset>(resourcePath);
-            if (asset == null || string.IsNullOrWhiteSpace(asset.text))
+            if (!ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
                 return new EquipmentBonusResolver(string.Empty);
 
             try
             {
-                var catalog = EquipmentCatalog.FromJson(asset.text);
+                EquipmentCatalog catalog = design.Equipment;
                 weapon = catalog.FindWeapon(4);
                 return new EquipmentBonusResolver(catalog);
             }

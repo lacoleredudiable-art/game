@@ -33,6 +33,9 @@ namespace Dovus.Game
 
         /// <summary>Son Play'de Controller'da state vardı ve Animator.Play çağrıldı.</summary>
         public bool LastPlayApplied { get; private set; }
+        public string LastClipName { get; private set; } = string.Empty;
+        public bool LastExactClipFound { get; private set; }
+        public bool LastUsedFallbackState { get; private set; }
 
         /// <summary>
         /// animator_state'i Play eder (yoksa uyarı, fırlatmaz) ve frame-timer'ı
@@ -65,6 +68,28 @@ namespace Dovus.Game
             return LastPlayApplied;
         }
 
+        /// <summary>
+        /// JSON animasyon adını controller clip listesinde arar; exact clip/state yoksa
+        /// AnimationDatabase'in mevcut generic Cast* state'ine düşer.
+        /// </summary>
+        public bool PlayBinding(AnimationBinding binding, Animator animator)
+        {
+            Stop();
+            AnimationClip clip = FindClip(animator, binding.DisplayName);
+            LastExactClipFound = clip != null;
+            LastClipName = clip != null ? clip.name : string.Empty;
+            if (clip != null && TryPlayState(animator, clip.name))
+            {
+                LastUsedFallbackState = false;
+                LastPlayApplied = true;
+                return true;
+            }
+
+            LastUsedFallbackState = true;
+            LastPlayApplied = TryPlayState(animator, binding.AnimatorState);
+            return LastPlayApplied;
+        }
+
         public void Stop()
         {
             _playing = false;
@@ -76,6 +101,36 @@ namespace Dovus.Game
             _damageEveryTick = false;
             _spawnVfxFrame = null;
             LastPlayApplied = false;
+            LastClipName = string.Empty;
+            LastExactClipFound = false;
+            LastUsedFallbackState = false;
+        }
+
+        static AnimationClip FindClip(Animator animator, string displayName)
+        {
+            if (animator == null || animator.runtimeAnimatorController == null
+                || string.IsNullOrEmpty(displayName))
+                return null;
+            string wanted = NormalizeClipName(displayName);
+            AnimationClip[] clips = animator.runtimeAnimatorController.animationClips;
+            for (int i = 0; i < clips.Length; i++)
+            {
+                AnimationClip clip = clips[i];
+                if (clip != null && NormalizeClipName(clip.name) == wanted)
+                    return clip;
+            }
+            return null;
+        }
+
+        static string NormalizeClipName(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return string.Empty;
+            var chars = new System.Text.StringBuilder(value.Length);
+            for (int i = 0; i < value.Length; i++)
+                if (char.IsLetterOrDigit(value[i]))
+                    chars.Append(char.ToLowerInvariant(value[i]));
+            return chars.ToString();
         }
 
         /// <summary>worldMs'e göre kare olaylarını ateşler. Animasyon bitince IsPlaying false.</summary>

@@ -19,6 +19,7 @@ namespace Dovus.Core.Grammar
         readonly Dictionary<string, VerbNode> _verbs = new(StringComparer.Ordinal);
         readonly Dictionary<string, AdjectiveNode> _adjectives = new(StringComparer.Ordinal);
         readonly Dictionary<int, RuneDefinition> _runes = new();
+        readonly List<RuneDefinition> _runeDefinitions = new();
         readonly Dictionary<string, V61SkillNode> _v61Skills = new(StringComparer.Ordinal);
         readonly List<ElementPaintNode> _elementPaints = new();
         readonly List<MainClassNode> _mainClasses = new();
@@ -45,6 +46,7 @@ namespace Dovus.Core.Grammar
         public int VerbCount => _verbs.Count;
         public int AdjectiveCount => _adjectives.Count;
         public int RuneCount => _runes.Count;
+        public IReadOnlyList<RuneDefinition> RuneDefinitions => _runeDefinitions;
         public int SkillCount => _v61Skills.Count;
         public string Version => _version;
         public bool IsV61 => _isV61;
@@ -504,6 +506,7 @@ namespace Dovus.Core.Grammar
                     obj["base_effect"].AsString(),
                     obj["passive_duration_default"].AsFloat(0f));
                 motor._runes[id] = rune;
+                motor._runeDefinitions.Add(rune);
 
                 // Eski tüketicilerin sözlük API'si korunur; içerik v6 rünlerinden üretilir.
                 motor._elements[key] = new ElementNode(

@@ -55,6 +55,7 @@ namespace Dovus.Core.Grammar
             new RuneLoadout(new[] { 1, 2, 3, 4, 5, 6 });
 
         public IReadOnlyList<int> RuneIds => _runeIds;
+        public IReadOnlyCollection<int> PassiveRuneIds => _passiveRuneIds;
         public int PassiveCount => _passiveRuneIds.Count;
 
         public int RuneIdAtSlot(int slot)

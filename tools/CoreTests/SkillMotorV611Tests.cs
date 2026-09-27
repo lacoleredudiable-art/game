@@ -1,4 +1,6 @@
 using System.IO;
+using System.Linq;
+using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using Dovus.Core.Presentation;
 using Dovus.Core.Tuning;
@@ -121,6 +123,51 @@ public class SkillMotorV611Tests
         Assert.That(database.TryGet("kilic", 5, out AnimationBinding blast), Is.True);
         Assert.That(blast.AnimatorState, Is.EqualTo("CastSlam"));
         Assert.That(database.TryGet("missing", 1, out _), Is.False);
+    }
+
+    [Test]
+    public void SkillFactoryBuilds144UniqueAnd36PerSelectedBuild()
+    {
+        string json = LoadJson();
+        SkillMotor motor = SkillMotor.FromJson(json);
+        EquipmentCatalog equipment = EquipmentCatalog.FromJson(json);
+        var factory = new SkillFactory(motor, new EquipmentBonusResolver(equipment));
+        EquipmentItem sword = equipment.FindWeapon(4)!;
+
+        var all = Enumerable.Range(1, 12)
+            .SelectMany(verb => Enumerable.Range(1, 12)
+                .Select(adjective => factory.Create(verb, adjective, sword, 1)))
+            .ToArray();
+        Assert.That(all.Length, Is.EqualTo(144));
+        Assert.That(all.Select(skill => skill.Id).Distinct().Count(), Is.EqualTo(144));
+        Assert.That(all[0].DisplayName, Does.StartWith("Ateşli "));
+
+        IReadOnlyList<Skill> buildSkills =
+            factory.CreateForBuild(motor.DefaultLoadout, sword, elementPaintId: 1);
+        Assert.That(buildSkills.Count, Is.EqualTo(36));
+        Assert.That(buildSkills.Select(skill => skill.Id).Distinct().Count(), Is.EqualTo(36));
+    }
+
+    [Test]
+    public void RuneManagerEnforcesSixUniqueAndZeroToTwoPassiveSlots()
+    {
+        SkillMotor motor = Load();
+        var manager = new RuneManager(motor);
+
+        Assert.That(
+            manager.TrySelect(
+                new[] { 1, 3, 5, 7, 9, 12 },
+                new[] { 3, 12 },
+                out string error),
+            Is.True,
+            error);
+        Assert.That(manager.Current.RuneIds, Is.EqualTo(new[] { 1, 3, 5, 7, 9, 12 }));
+        Assert.That(manager.Current.PassiveCount, Is.EqualTo(2));
+
+        Assert.That(
+            manager.TrySetPassiveSlots(new[] { 1, 3, 5 }, out _),
+            Is.False);
+        Assert.That(manager.Current.PassiveCount, Is.EqualTo(2));
     }
 
     [Test]

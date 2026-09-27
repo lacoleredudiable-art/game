@@ -23,7 +23,8 @@ namespace Dovus.Core.Equipment
             int mobilityMod,
             string identityPassive,
             int[] compatibleVerbs,
-            string animationsKey)
+            string animationsKey,
+            string type = "")
         {
             Id = id ?? string.Empty;
             Name = name ?? string.Empty;
@@ -37,6 +38,7 @@ namespace Dovus.Core.Equipment
             IdentityPassive = identityPassive ?? string.Empty;
             CompatibleVerbs = compatibleVerbs ?? System.Array.Empty<int>();
             AnimationsKey = animationsKey ?? string.Empty;
+            Type = type ?? string.Empty;
         }
 
         public string Id { get; }
@@ -51,6 +53,7 @@ namespace Dovus.Core.Equipment
         public string IdentityPassive { get; }
         public int[] CompatibleVerbs { get; }
         public string AnimationsKey { get; }
+        public string Type { get; }
 
         public bool IsCompatibleWithVerb(int verbId)
         {

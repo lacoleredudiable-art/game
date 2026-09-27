@@ -96,7 +96,8 @@ namespace Dovus.Core.Equipment
                     row["mobility_mod"].AsInt(0),
                     row["identity_passive"].AsString(),
                     verbs,
-                    row["animations_key"].AsString());
+                    row["animations_key"].AsString(),
+                    row["type"].AsString());
                 catalog._items.Add(item);
                 catalog._byId[item.Id] = item;
             }
