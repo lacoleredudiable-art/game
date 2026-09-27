@@ -13,9 +13,15 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 27 Eylül 2026 (element sistemi v6.1 tasarım kilidi) ·
+**Son güncelleme:** 27 Eylül 2026 (element sistemi v6.1.1 veri güncellemesi) ·
 **Dal:** `cursor/adopt-element-system-v6-1-079a` · **Sıradaki:** `SkillMotorLoader`
-ve Core motorlarını v6.1 şemasına uyarlamak
+ve Core motorlarını v6.1.1 şemasına uyarlamak
+
+> **27 Eylül — v6.1.1 bağlayıcı veri güncel.** Docs + Resources aynalandı; yeni üst
+> seviye anahtarlar: `ana_classes_80`, `skills_prose_144`, `hitbox_vfx`, `mobility_cc`,
+> `uyumsuz_cizim`, `presentation`, `changelog_v6_1`, `design_warnings`. Zaman prose'u
+> yalnız tempo (`enemy_slow` / `self_haste`), global slow-mo yok; class 41/50 ayrıştırılmış
+> adları kanonik JSON'daki haliyle korundu.
 
 > **27 Eylül — v6.1 bağlayıcı tasarım kilidi.** `docs/element-sistemi.json` ve
 > Resources kopyası tam v6.1 ile değiştirildi; önceki v5.3

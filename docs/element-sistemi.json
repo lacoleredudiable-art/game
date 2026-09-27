@@ -1,7 +1,7 @@
 {
   "system": {
-    "version": "6.1",
-    "description": "12 rün + 10 silah + 6 element + 144 skill + 924 build. Naruto hand sign hissi. 2'li kombo. Pasif yuva (0-2). Multiplayer uyumlu. v6.1: engine sayıları + Zaman tempo (no bullet-time).",
+    "version": "6.1.1",
+    "description": "12 rün + 10 silah + 6 element + 144 skill + 924 build + 80 ana class. Naruto hand sign. 2'li kombo. Pasif 0-2. MP uyumlu. v6.1.1: prose+hitbox+mobility+presentation.",
     "date": "2026-09-27",
     "binding": true,
     "locked": true,
@@ -33,7 +33,9 @@
       "Zaman: slow-mo/bullet-time kaldırıldı → enemy_slow / self_haste; no_global_timescale=true.",
       "element_mult prototipte 1.0; formula alanları netleştirildi.",
       "verb_base + adjective_mods tabloları eklendi (tek kaynak).",
-      "Kullanıcı v6.0 prose effect'leri 1-x için korundu; diğer fiillerde template — sonraki turda tam prose merge."
+      "Kullanıcı v6.0 prose effect'leri 1-x için korundu; diğer fiillerde template — sonraki turda tam prose merge.",
+      "Merged user additive delta: ana_classes_80, skills_prose_144, hitbox_vfx, mobility_cc, uyumsuz_cizim, presentation.",
+      "Zaman prose: no slow-mo wording; tempo only."
     ]
   },
   "runes": [
@@ -382,7 +384,7 @@
             "id": "1-1",
             "name": "Yoğun Vuruş",
             "adjective": "Yoğunlaştırma",
-            "effect": "Dar, odaklı, yüksek hasarlı tek vuruş",
+            "effect": "Dar, odaklı, yüksek hasar",
             "passive": "5 sn boyunca vuruşlar +%15 hasar",
             "engine": {
               "action": "damage",
@@ -395,13 +397,16 @@
               "damage_mult": 1.35,
               "hitbox_scale_mult": 0.55,
               "poise_damage_mult": 1.2
-            }
+            },
+            "prose_mechanic": "Dar, odaklı, yüksek hasar",
+            "prose_feel": "Sert, kararlı, tek noktaya",
+            "prose_visual": "Tek çizgi, beyaz iz"
           },
           {
             "id": "1-2",
             "name": "Emici Vuruş",
             "adjective": "Emme",
-            "effect": "Vurur, hasarın %30'unu can olarak alır",
+            "effect": "Vurur, %30 can çalar",
             "passive": "5 sn boyunca vuruşlar can çalar",
             "engine": {
               "action": "damage",
@@ -413,13 +418,16 @@
               "label": "Emme",
               "lifesteal": 0.3,
               "damage_mult": 0.95
-            }
+            },
+            "prose_mechanic": "Vurur, %30 can çalar",
+            "prose_feel": "Aç, emici",
+            "prose_visual": "Kırmızı iz, kan akışı"
           },
           {
             "id": "1-3",
             "name": "Sıçrayan Vuruş",
             "adjective": "Sıçrama",
-            "effect": "Vurur, yakındaki 2. hedefe %50 hasarla seker",
+            "effect": "2. hedefe %50 seker",
             "passive": "5 sn boyunca vuruşlar seker",
             "engine": {
               "action": "damage",
@@ -432,13 +440,16 @@
               "bounce_targets": 2,
               "bounce_damage_mult": 0.5,
               "hitbox_scale_mult": 1.1
-            }
+            },
+            "prose_mechanic": "2. hedefe %50 seker",
+            "prose_feel": "Çevik, kaotik",
+            "prose_visual": "Sarı kıvılcım sekmesi"
           },
           {
             "id": "1-4",
             "name": "Sabit Vuruş",
             "adjective": "Sabitleme",
-            "effect": "Vurur, poise kırar (poise ×1.5)",
+            "effect": "Poise ×1.5",
             "passive": "5 sn boyunca yerinde kalırsın, poise kırma ×1.5",
             "engine": {
               "action": "damage",
@@ -451,13 +462,16 @@
               "poise_damage_mult": 1.5,
               "lifetime_add": 2.0,
               "cast_mobility": "rooted"
-            }
+            },
+            "prose_mechanic": "Poise ×1.5",
+            "prose_feel": "Ağır, kırıcı",
+            "prose_visual": "Yere çakma, toz"
           },
           {
             "id": "1-5",
             "name": "Yayılan Vuruş",
             "adjective": "Yayma",
-            "effect": "Vurur, çevreye %50 hasar yayar",
+            "effect": "Çevreye %50 hasar",
             "passive": "5 sn boyunca vuruşlar alana yayılır",
             "engine": {
               "action": "damage",
@@ -470,13 +484,16 @@
               "hitbox_scale_mult": 1.8,
               "damage_mult": 0.85,
               "max_targets": 5
-            }
+            },
+            "prose_mechanic": "Çevreye %50 hasar",
+            "prose_feel": "Geniş, dalga",
+            "prose_visual": "Şok dalgası"
           },
           {
             "id": "1-6",
             "name": "Bağlayıcı Vuruş",
             "adjective": "Bağlama",
-            "effect": "Vurur, hedefi 1.5 sn bağlar (root)",
+            "effect": "1.5 sn root",
             "passive": "5 sn boyunca vuruşlar hedefi yavaşlatır",
             "engine": {
               "action": "damage",
@@ -488,13 +505,16 @@
               "label": "Bağlama",
               "apply_root_sec": 1.5,
               "apply_slow": 0.3
-            }
+            },
+            "prose_mechanic": "1.5 sn root",
+            "prose_feel": "Kontrolcü",
+            "prose_visual": "Zincir, bağ izi"
           },
           {
             "id": "1-7",
             "name": "Bulandırıcı Vuruş",
             "adjective": "Bulandırma",
-            "effect": "Vurur, hedefin isabetini 3 sn %30 düşürür",
+            "effect": "İsabet -%30, 3 sn",
             "passive": "5 sn boyunca vuruşlar isabet düşürür",
             "engine": {
               "action": "damage",
@@ -506,13 +526,16 @@
               "label": "Bulandırma",
               "accuracy_debuff": 0.3,
               "lifetime_add": 3.0
-            }
+            },
+            "prose_mechanic": "İsabet -%30, 3 sn",
+            "prose_feel": "Sinsi, bozucu",
+            "prose_visual": "Karanlık duman"
           },
           {
             "id": "1-8",
             "name": "Yükselen Vuruş",
             "adjective": "Yükseltme",
-            "effect": "Vurur, kendine 3 sn +%10 hasar buff",
+            "effect": "+%10 hasar, 3 sn",
             "passive": "5 sn boyunca hasarın +%15",
             "engine": {
               "action": "damage",
@@ -524,13 +547,16 @@
               "label": "Yükseltme",
               "self_damage_buff": 0.1,
               "buff_duration_sec": 3.0
-            }
+            },
+            "prose_mechanic": "+%10 hasar, 3 sn",
+            "prose_feel": "Güçlenen",
+            "prose_visual": "Altın parıltı"
           },
           {
             "id": "1-9",
             "name": "Odaklı Vuruş",
             "adjective": "Odaklama",
-            "effect": "Vurur, zırhı yoksayar (ignore armor)",
+            "effect": "Zırh yoksayar",
             "passive": "5 sn boyunca vuruşlar zırhı yoksayar",
             "engine": {
               "action": "damage",
@@ -543,13 +569,16 @@
               "ignore_armor": true,
               "damage_mult": 1.15,
               "max_targets": 1
-            }
+            },
+            "prose_mechanic": "Zırh yoksayar",
+            "prose_feel": "Delici, keskin",
+            "prose_visual": "Mavi nokta, delme"
           },
           {
             "id": "1-10",
             "name": "Aynalı Vuruş",
             "adjective": "Aynalama",
-            "effect": "Vurur, 2 sn boyunca gelen hasarın %30'unu yansıtır",
+            "effect": "%30 yansıma, 2 sn",
             "passive": "5 sn boyunca hasar yansıtır",
             "engine": {
               "action": "damage",
@@ -561,13 +590,16 @@
               "label": "Aynalama",
               "reflect_ratio": 0.3,
               "reflect_duration_sec": 2.0
-            }
+            },
+            "prose_mechanic": "%30 yansıma, 2 sn",
+            "prose_feel": "Ters, ayna",
+            "prose_visual": "Gümüş yansıma"
           },
           {
             "id": "1-11",
             "name": "Kopya Vuruş",
             "adjective": "Kopyalama",
-            "effect": "Vurur, 0.3 sn sonra ikinci vuruş (aynı hasar)",
+            "effect": "0.3 sn sonra 2. vuruş",
             "passive": "5 sn boyunca her vuruş iki kez tetiklenir",
             "engine": {
               "action": "damage",
@@ -580,13 +612,16 @@
               "duplicate_cast": true,
               "duplicate_delay_sec": 0.3,
               "duplicate_damage_mult": 1.0
-            }
+            },
+            "prose_mechanic": "0.3 sn sonra 2. vuruş",
+            "prose_feel": "İkiz, tekrarlı",
+            "prose_visual": "Çift iz"
           },
           {
             "id": "1-12",
             "name": "Akan Vuruş",
             "adjective": "Akış",
-            "effect": "Vurur, 3 sn boyunca ardışık vuruş serisi başlar",
+            "effect": "3 sn ardışık seri",
             "passive": "5 sn boyunca sürekli vuruş akışı",
             "engine": {
               "action": "damage",
@@ -599,7 +634,10 @@
               "channel_sec": 3.0,
               "tick_rate_mult": 1.2,
               "damage_mult": 0.7
-            }
+            },
+            "prose_mechanic": "3 sn ardışık seri",
+            "prose_feel": "Sürekli, akıcı",
+            "prose_visual": "Su gibi akış"
           }
         ]
       },
@@ -612,7 +650,7 @@
             "id": "2-1",
             "name": "Yoğun Şifa",
             "adjective": "Yoğunlaştırma",
-            "effect": "Yoğun Şifa: fiil tabanı + sıfat motoru",
+            "effect": "Anlık büyük can",
             "passive": "7 sn pasif: Yoğunlaştırma",
             "engine": {
               "action": "heal",
@@ -625,13 +663,16 @@
               "damage_mult": 1.35,
               "hitbox_scale_mult": 0.55,
               "poise_damage_mult": 1.2
-            }
+            },
+            "prose_mechanic": "Anlık büyük can",
+            "prose_feel": "Ani, güçlü",
+            "prose_visual": "Yeşil patlama"
           },
           {
             "id": "2-2",
             "name": "Emici Şifa",
             "adjective": "Emme",
-            "effect": "Emici Şifa: fiil tabanı + sıfat motoru",
+            "effect": "Dren ile verir",
             "passive": "7 sn pasif: Emme",
             "engine": {
               "action": "drain_heal",
@@ -643,13 +684,16 @@
               "label": "Emme",
               "lifesteal": 0.35,
               "damage_mult": 0.95
-            }
+            },
+            "prose_mechanic": "Dren ile verir",
+            "prose_feel": "Sömüren",
+            "prose_visual": "Kırmızı→yeşil akış"
           },
           {
             "id": "2-3",
             "name": "Sıçrayan Şifa",
             "adjective": "Sıçrama",
-            "effect": "Sıçrayan Şifa: fiil tabanı + sıfat motoru",
+            "effect": "Dosta seker",
             "passive": "7 sn pasif: Sıçrama",
             "engine": {
               "action": "heal",
@@ -662,13 +706,16 @@
               "bounce_targets": 2,
               "bounce_damage_mult": 0.5,
               "hitbox_scale_mult": 1.1
-            }
+            },
+            "prose_mechanic": "Dosta seker",
+            "prose_feel": "Bulaşıcı",
+            "prose_visual": "Yeşil sekme"
           },
           {
             "id": "2-4",
             "name": "Sabit Şifa",
             "adjective": "Sabitleme",
-            "effect": "Sabit Şifa: fiil tabanı + sıfat motoru",
+            "effect": "Yerleşik şifa alanı",
             "passive": "7 sn pasif: Sabitleme",
             "engine": {
               "action": "heal",
@@ -681,13 +728,16 @@
               "poise_damage_mult": 1.5,
               "lifetime_add": 2.0,
               "cast_mobility": "rooted"
-            }
+            },
+            "prose_mechanic": "Yerleşik şifa alanı",
+            "prose_feel": "Kalıcı, sabırlı",
+            "prose_visual": "Yeşil halka"
           },
           {
             "id": "2-5",
             "name": "Yayılan Şifa",
             "adjective": "Yayma",
-            "effect": "Yayılan Şifa: fiil tabanı + sıfat motoru",
+            "effect": "Geniş alan",
             "passive": "7 sn pasif: Yayma",
             "engine": {
               "action": "heal",
@@ -700,13 +750,16 @@
               "hitbox_scale_mult": 1.8,
               "damage_mult": 0.85,
               "max_targets": 5
-            }
+            },
+            "prose_mechanic": "Geniş alan",
+            "prose_feel": "Cömert",
+            "prose_visual": "Yeşil dalga"
           },
           {
             "id": "2-6",
             "name": "Bağlayıcı Şifa",
             "adjective": "Bağlama",
-            "effect": "Bağlayıcı Şifa: fiil tabanı + sıfat motoru",
+            "effect": "Dosta bağlanır",
             "passive": "7 sn pasif: Bağlama",
             "engine": {
               "action": "heal",
@@ -718,13 +771,16 @@
               "label": "Bağlama",
               "apply_root_sec": 1.5,
               "apply_slow": 0.3
-            }
+            },
+            "prose_mechanic": "Dosta bağlanır",
+            "prose_feel": "Bağlı, sürekli",
+            "prose_visual": "Yeşil bağ"
           },
           {
             "id": "2-7",
             "name": "Bulandırıcı Şifa",
             "adjective": "Bulandırma",
-            "effect": "Bulandırıcı Şifa: fiil tabanı + sıfat motoru",
+            "effect": "Debuff temizler",
             "passive": "7 sn pasif: Bulandırma",
             "engine": {
               "action": "heal",
@@ -736,13 +792,16 @@
               "label": "Bulandırma",
               "accuracy_debuff": 0.3,
               "lifetime_add": 3.0
-            }
+            },
+            "prose_mechanic": "Debuff temizler",
+            "prose_feel": "Temizleyici",
+            "prose_visual": "Beyaz parıltı"
           },
           {
             "id": "2-8",
             "name": "Yükselen Şifa",
             "adjective": "Yükseltme",
-            "effect": "Yükselen Şifa: fiil tabanı + sıfat motoru",
+            "effect": "Şifa + buff",
             "passive": "7 sn pasif: Yükseltme",
             "engine": {
               "action": "heal",
@@ -754,13 +813,16 @@
               "label": "Yükseltme",
               "self_damage_buff": 0.1,
               "buff_duration_sec": 3.0
-            }
+            },
+            "prose_mechanic": "Şifa + buff",
+            "prose_feel": "Yükseltici",
+            "prose_visual": "Altın-yeşil"
           },
           {
             "id": "2-9",
             "name": "Odaklı Şifa",
             "adjective": "Odaklama",
-            "effect": "Odaklı Şifa: fiil tabanı + sıfat motoru",
+            "effect": "En yaralıyı bulur",
             "passive": "7 sn pasif: Odaklama",
             "engine": {
               "action": "heal",
@@ -773,13 +835,16 @@
               "ignore_armor": true,
               "damage_mult": 1.15,
               "max_targets": 1
-            }
+            },
+            "prose_mechanic": "En yaralıyı bulur",
+            "prose_feel": "Akıllı, odaklı",
+            "prose_visual": "Yeşil ok"
           },
           {
             "id": "2-10",
             "name": "Aynalı Şifa",
             "adjective": "Aynalama",
-            "effect": "Aynalı Şifa: fiil tabanı + sıfat motoru",
+            "effect": "Hasar→şifa",
             "passive": "7 sn pasif: Aynalama",
             "engine": {
               "action": "heal",
@@ -791,13 +856,16 @@
               "label": "Aynalama",
               "reflect_ratio": 0.3,
               "reflect_duration_sec": 2.0
-            }
+            },
+            "prose_mechanic": "Hasar→şifa",
+            "prose_feel": "Dönüştürücü",
+            "prose_visual": "Gümüş-yeşil"
           },
           {
             "id": "2-11",
             "name": "Kopya Şifa",
             "adjective": "Kopyalama",
-            "effect": "Kopya Şifa: fiil tabanı + sıfat motoru",
+            "effect": "İki kez tetiklenir",
             "passive": "7 sn pasif: Kopyalama",
             "engine": {
               "action": "heal",
@@ -810,13 +878,16 @@
               "duplicate_cast": true,
               "duplicate_delay_sec": 0.3,
               "duplicate_damage_mult": 1.0
-            }
+            },
+            "prose_mechanic": "İki kez tetiklenir",
+            "prose_feel": "İkiz",
+            "prose_visual": "Çift yeşil"
           },
           {
             "id": "2-12",
             "name": "Akan Şifa",
             "adjective": "Akış",
-            "effect": "Akan Şifa: fiil tabanı + sıfat motoru",
+            "effect": "Sürekli regen",
             "passive": "7 sn pasif: Akış",
             "engine": {
               "action": "heal",
@@ -829,7 +900,10 @@
               "channel_sec": 3.0,
               "tick_rate_mult": 1.2,
               "damage_mult": 0.7
-            }
+            },
+            "prose_mechanic": "Sürekli regen",
+            "prose_feel": "Akıcı, sabırlı",
+            "prose_visual": "Yeşil nehir"
           }
         ]
       },
@@ -842,7 +916,7 @@
             "id": "3-1",
             "name": "Yoğun Adım",
             "adjective": "Yoğunlaştırma",
-            "effect": "Yoğun Adım: fiil tabanı + sıfat motoru",
+            "effect": "Kısa, hızlı dash",
             "passive": "5 sn pasif: Yoğunlaştırma",
             "engine": {
               "action": "dash",
@@ -855,13 +929,16 @@
               "damage_mult": 1.35,
               "hitbox_scale_mult": 0.55,
               "poise_damage_mult": 1.2
-            }
+            },
+            "prose_mechanic": "Kısa, hızlı dash",
+            "prose_feel": "Ani, kısa",
+            "prose_visual": "Beyaz iz"
           },
           {
             "id": "3-2",
             "name": "Emici Adım",
             "adjective": "Emme",
-            "effect": "Emici Adım: fiil tabanı + sıfat motoru",
+            "effect": "Dash + can çal",
             "passive": "5 sn pasif: Emme",
             "engine": {
               "action": "dash",
@@ -873,13 +950,16 @@
               "label": "Emme",
               "lifesteal": 0.3,
               "damage_mult": 0.95
-            }
+            },
+            "prose_mechanic": "Dash + can çal",
+            "prose_feel": "Sinsi, emici",
+            "prose_visual": "Kırmızı iz"
           },
           {
             "id": "3-3",
             "name": "Sıçrayan Adım",
             "adjective": "Sıçrama",
-            "effect": "Sıçrayan Adım: fiil tabanı + sıfat motoru",
+            "effect": "Çift dash",
             "passive": "5 sn pasif: Sıçrama",
             "engine": {
               "action": "dash",
@@ -892,13 +972,16 @@
               "bounce_targets": 2,
               "bounce_damage_mult": 0.5,
               "hitbox_scale_mult": 1.1
-            }
+            },
+            "prose_mechanic": "Çift dash",
+            "prose_feel": "Çevik, ikiz",
+            "prose_visual": "Çift beyaz"
           },
           {
             "id": "3-4",
             "name": "Sabit Adım",
             "adjective": "Sabitleme",
-            "effect": "Sabit Adım: fiil tabanı + sıfat motoru",
+            "effect": "Dash + armor",
             "passive": "5 sn pasif: Sabitleme",
             "engine": {
               "action": "dash",
@@ -911,13 +994,16 @@
               "poise_damage_mult": 1.5,
               "lifetime_add": 2.0,
               "cast_mobility": "rooted"
-            }
+            },
+            "prose_mechanic": "Dash + armor",
+            "prose_feel": "Güvenli",
+            "prose_visual": "Mavi kalkan"
           },
           {
             "id": "3-5",
             "name": "Yayılan Adım",
             "adjective": "Yayma",
-            "effect": "Yayılan Adım: fiil tabanı + sıfat motoru",
+            "effect": "Dash + çevre hasarı",
             "passive": "5 sn pasif: Yayma",
             "engine": {
               "action": "dash",
@@ -930,13 +1016,16 @@
               "hitbox_scale_mult": 1.8,
               "damage_mult": 0.85,
               "max_targets": 5
-            }
+            },
+            "prose_mechanic": "Dash + çevre hasarı",
+            "prose_feel": "Patlayıcı",
+            "prose_visual": "Şok dalgası"
           },
           {
             "id": "3-6",
             "name": "Bağlayıcı Adım",
             "adjective": "Bağlama",
-            "effect": "Bağlayıcı Adım: fiil tabanı + sıfat motoru",
+            "effect": "Dash + root",
             "passive": "5 sn pasif: Bağlama",
             "engine": {
               "action": "dash",
@@ -948,13 +1037,16 @@
               "label": "Bağlama",
               "apply_root_sec": 1.5,
               "apply_slow": 0.3
-            }
+            },
+            "prose_mechanic": "Dash + root",
+            "prose_feel": "Kontrolcü",
+            "prose_visual": "Zincir izi"
           },
           {
             "id": "3-7",
             "name": "Bulandırıcı Adım",
             "adjective": "Bulandırma",
-            "effect": "Bulandırıcı Adım: fiil tabanı + sıfat motoru",
+            "effect": "Dash + görünmezlik",
             "passive": "5 sn pasif: Bulandırma",
             "engine": {
               "action": "dash",
@@ -966,13 +1058,16 @@
               "label": "Bulandırma",
               "accuracy_debuff": 0.3,
               "lifetime_add": 3.0
-            }
+            },
+            "prose_mechanic": "Dash + görünmezlik",
+            "prose_feel": "Hayalet",
+            "prose_visual": "Karanlık iz"
           },
           {
             "id": "3-8",
             "name": "Yükselen Adım",
             "adjective": "Yükseltme",
-            "effect": "Yükselen Adım: fiil tabanı + sıfat motoru",
+            "effect": "Dash + hız buff",
             "passive": "5 sn pasif: Yükseltme",
             "engine": {
               "action": "dash",
@@ -984,13 +1079,16 @@
               "label": "Yükseltme",
               "self_damage_buff": 0.1,
               "buff_duration_sec": 3.0
-            }
+            },
+            "prose_mechanic": "Dash + hız buff",
+            "prose_feel": "Hızlanan",
+            "prose_visual": "Altın iz"
           },
           {
             "id": "3-9",
             "name": "Odaklı Adım",
             "adjective": "Odaklama",
-            "effect": "Odaklı Adım: fiil tabanı + sıfat motoru",
+            "effect": "Dash + kilitlenme",
             "passive": "5 sn pasif: Odaklama",
             "engine": {
               "action": "dash",
@@ -1003,13 +1101,16 @@
               "ignore_armor": true,
               "damage_mult": 1.15,
               "max_targets": 1
-            }
+            },
+            "prose_mechanic": "Dash + kilitlenme",
+            "prose_feel": "Kilitli",
+            "prose_visual": "Mavi hedef"
           },
           {
             "id": "3-10",
             "name": "Aynalı Adım",
             "adjective": "Aynalama",
-            "effect": "Aynalı Adım: fiil tabanı + sıfat motoru",
+            "effect": "Dash + iz",
             "passive": "5 sn pasif: Aynalama",
             "engine": {
               "action": "dash",
@@ -1021,13 +1122,16 @@
               "label": "Aynalama",
               "reflect_ratio": 0.3,
               "reflect_duration_sec": 2.0
-            }
+            },
+            "prose_mechanic": "Dash + iz",
+            "prose_feel": "İz bırakan",
+            "prose_visual": "Gümüş iz"
           },
           {
             "id": "3-11",
             "name": "Kopya Adım",
             "adjective": "Kopyalama",
-            "effect": "Kopya Adım: fiil tabanı + sıfat motoru",
+            "effect": "Dash + klon",
             "passive": "5 sn pasif: Kopyalama",
             "engine": {
               "action": "dash",
@@ -1040,13 +1144,16 @@
               "duplicate_cast": true,
               "duplicate_delay_sec": 0.3,
               "duplicate_damage_mult": 1.0
-            }
+            },
+            "prose_mechanic": "Dash + klon",
+            "prose_feel": "İkiz",
+            "prose_visual": "Aynı figür"
           },
           {
             "id": "3-12",
             "name": "Akan Adım",
             "adjective": "Akış",
-            "effect": "Akan Adım: fiil tabanı + sıfat motoru",
+            "effect": "Sürekli hız",
             "passive": "5 sn pasif: Akış",
             "engine": {
               "action": "dash",
@@ -1059,7 +1166,10 @@
               "channel_sec": 3.0,
               "tick_rate_mult": 1.2,
               "damage_mult": 0.7
-            }
+            },
+            "prose_mechanic": "Sürekli hız",
+            "prose_feel": "Akıcı",
+            "prose_visual": "Mavi akış"
           }
         ]
       },
@@ -1072,7 +1182,7 @@
             "id": "4-1",
             "name": "Yoğun Kalkan",
             "adjective": "Yoğunlaştırma",
-            "effect": "Yoğun Kalkan: fiil tabanı + sıfat motoru",
+            "effect": "Dar, güçlü armor",
             "passive": "7 sn pasif: Yoğunlaştırma",
             "engine": {
               "action": "shield",
@@ -1085,13 +1195,16 @@
               "damage_mult": 1.35,
               "hitbox_scale_mult": 0.55,
               "poise_damage_mult": 1.2
-            }
+            },
+            "prose_mechanic": "Dar, güçlü armor",
+            "prose_feel": "Sağlam",
+            "prose_visual": "Mavi dar halka"
           },
           {
             "id": "4-2",
             "name": "Emici Kalkan",
             "adjective": "Emme",
-            "effect": "Emici Kalkan: fiil tabanı + sıfat motoru",
+            "effect": "Hasar→can",
             "passive": "7 sn pasif: Emme",
             "engine": {
               "action": "shield",
@@ -1103,13 +1216,16 @@
               "label": "Emme",
               "lifesteal": 0.3,
               "damage_mult": 0.95
-            }
+            },
+            "prose_mechanic": "Hasar→can",
+            "prose_feel": "Emici",
+            "prose_visual": "Kırmızı→mavi"
           },
           {
             "id": "4-3",
             "name": "Sıçrayan Kalkan",
             "adjective": "Sıçrama",
-            "effect": "Sıçrayan Kalkan: fiil tabanı + sıfat motoru",
+            "effect": "Dosta seker",
             "passive": "7 sn pasif: Sıçrama",
             "engine": {
               "action": "shield",
@@ -1122,13 +1238,16 @@
               "bounce_targets": 2,
               "bounce_damage_mult": 0.5,
               "hitbox_scale_mult": 1.1
-            }
+            },
+            "prose_mechanic": "Dosta seker",
+            "prose_feel": "Paylaşımcı",
+            "prose_visual": "Mavi sekme"
           },
           {
             "id": "4-4",
             "name": "Sabit Kalkan",
             "adjective": "Sabitleme",
-            "effect": "Sabit Kalkan: fiil tabanı + sıfat motoru",
+            "effect": "Uzun armor",
             "passive": "7 sn pasif: Sabitleme",
             "engine": {
               "action": "shield",
@@ -1141,13 +1260,16 @@
               "poise_damage_mult": 1.5,
               "lifetime_add": 2.0,
               "cast_mobility": "rooted"
-            }
+            },
+            "prose_mechanic": "Uzun armor",
+            "prose_feel": "Kalıcı",
+            "prose_visual": "Mavi kubbe"
           },
           {
             "id": "4-5",
             "name": "Yayılan Kalkan",
             "adjective": "Yayma",
-            "effect": "Yayılan Kalkan: fiil tabanı + sıfat motoru",
+            "effect": "Geniş alan armor",
             "passive": "7 sn pasif: Yayma",
             "engine": {
               "action": "shield",
@@ -1160,13 +1282,16 @@
               "hitbox_scale_mult": 1.8,
               "damage_mult": 0.85,
               "max_targets": 5
-            }
+            },
+            "prose_mechanic": "Geniş alan armor",
+            "prose_feel": "Koruyucu",
+            "prose_visual": "Mavi dalga"
           },
           {
             "id": "4-6",
             "name": "Bağlayıcı Kalkan",
             "adjective": "Bağlama",
-            "effect": "Bağlayıcı Kalkan: fiil tabanı + sıfat motoru",
+            "effect": "Dosta bağlanır",
             "passive": "7 sn pasif: Bağlama",
             "engine": {
               "action": "shield",
@@ -1178,13 +1303,16 @@
               "label": "Bağlama",
               "apply_root_sec": 1.5,
               "apply_slow": 0.3
-            }
+            },
+            "prose_mechanic": "Dosta bağlanır",
+            "prose_feel": "Bağlı",
+            "prose_visual": "Mavi bağ"
           },
           {
             "id": "4-7",
             "name": "Bulandırıcı Kalkan",
             "adjective": "Bulandırma",
-            "effect": "Bulandırıcı Kalkan: fiil tabanı + sıfat motoru",
+            "effect": "Vurana yavaşlatma",
             "passive": "7 sn pasif: Bulandırma",
             "engine": {
               "action": "shield",
@@ -1196,13 +1324,16 @@
               "label": "Bulandırma",
               "accuracy_debuff": 0.3,
               "lifetime_add": 3.0
-            }
+            },
+            "prose_mechanic": "Vurana yavaşlatma",
+            "prose_feel": "Tuzakçı",
+            "prose_visual": "Mavi duman"
           },
           {
             "id": "4-8",
             "name": "Yükselen Kalkan",
             "adjective": "Yükseltme",
-            "effect": "Yükselen Kalkan: fiil tabanı + sıfat motoru",
+            "effect": "Kalkan + buff",
             "passive": "7 sn pasif: Yükseltme",
             "engine": {
               "action": "shield",
@@ -1214,13 +1345,16 @@
               "label": "Yükseltme",
               "self_damage_buff": 0.1,
               "buff_duration_sec": 3.0
-            }
+            },
+            "prose_mechanic": "Kalkan + buff",
+            "prose_feel": "Güçlendirici",
+            "prose_visual": "Altın-mavi"
           },
           {
             "id": "4-9",
             "name": "Odaklı Kalkan",
             "adjective": "Odaklama",
-            "effect": "Odaklı Kalkan: fiil tabanı + sıfat motoru",
+            "effect": "En çok hasarlıyı korur",
             "passive": "7 sn pasif: Odaklama",
             "engine": {
               "action": "shield",
@@ -1233,13 +1367,16 @@
               "ignore_armor": true,
               "damage_mult": 1.15,
               "max_targets": 1
-            }
+            },
+            "prose_mechanic": "En çok hasarlıyı korur",
+            "prose_feel": "Akıllı",
+            "prose_visual": "Mavi hedef"
           },
           {
             "id": "4-10",
             "name": "Aynalı Kalkan",
             "adjective": "Aynalama",
-            "effect": "Aynalı Kalkan: fiil tabanı + sıfat motoru",
+            "effect": "%40 yansıma",
             "passive": "7 sn pasif: Aynalama",
             "engine": {
               "action": "shield",
@@ -1251,13 +1388,16 @@
               "label": "Aynalama",
               "reflect_ratio": 0.3,
               "reflect_duration_sec": 2.0
-            }
+            },
+            "prose_mechanic": "%40 yansıma",
+            "prose_feel": "Yansıtıcı",
+            "prose_visual": "Gümüş kubbe"
           },
           {
             "id": "4-11",
             "name": "Kopya Kalkan",
             "adjective": "Kopyalama",
-            "effect": "Kopya Kalkan: fiil tabanı + sıfat motoru",
+            "effect": "İki katman",
             "passive": "7 sn pasif: Kopyalama",
             "engine": {
               "action": "shield",
@@ -1270,13 +1410,16 @@
               "duplicate_cast": true,
               "duplicate_delay_sec": 0.3,
               "duplicate_damage_mult": 1.0
-            }
+            },
+            "prose_mechanic": "İki katman",
+            "prose_feel": "İkiz",
+            "prose_visual": "Çift kubbe"
           },
           {
             "id": "4-12",
             "name": "Akan Kalkan",
             "adjective": "Akış",
-            "effect": "Akan Kalkan: fiil tabanı + sıfat motoru",
+            "effect": "Sürekli yenilenen",
             "passive": "7 sn pasif: Akış",
             "engine": {
               "action": "shield",
@@ -1289,7 +1432,10 @@
               "channel_sec": 3.0,
               "tick_rate_mult": 1.2,
               "damage_mult": 0.7
-            }
+            },
+            "prose_mechanic": "Sürekli yenilenen",
+            "prose_feel": "Yenilenen",
+            "prose_visual": "Mavi akış"
           }
         ]
       },
@@ -1302,7 +1448,7 @@
             "id": "5-1",
             "name": "Yoğun Patlama",
             "adjective": "Yoğunlaştırma",
-            "effect": "Yoğun Patlama: fiil tabanı + sıfat motoru",
+            "effect": "Dar, güçlü alan",
             "passive": "5 sn pasif: Yoğunlaştırma",
             "engine": {
               "action": "damage",
@@ -1316,13 +1462,16 @@
               "damage_mult": 1.35,
               "hitbox_scale_mult": 0.55,
               "poise_damage_mult": 1.2
-            }
+            },
+            "prose_mechanic": "Dar, güçlü alan",
+            "prose_feel": "Odaklı yıkım",
+            "prose_visual": "Kırmızı dar patlama"
           },
           {
             "id": "5-2",
             "name": "Emici Patlama",
             "adjective": "Emme",
-            "effect": "Emici Patlama: fiil tabanı + sıfat motoru",
+            "effect": "Alan + can çalma",
             "passive": "5 sn pasif: Emme",
             "engine": {
               "action": "damage",
@@ -1335,13 +1484,16 @@
               "label": "Emme",
               "lifesteal": 0.3,
               "damage_mult": 0.95
-            }
+            },
+            "prose_mechanic": "Alan + can çalma",
+            "prose_feel": "Sömüren",
+            "prose_visual": "Kırmızı→mor"
           },
           {
             "id": "5-3",
             "name": "Sıçrayan Patlama",
             "adjective": "Sıçrama",
-            "effect": "Sıçrayan Patlama: fiil tabanı + sıfat motoru",
+            "effect": "2. hedefe seker",
             "passive": "5 sn pasif: Sıçrama",
             "engine": {
               "action": "damage",
@@ -1355,13 +1507,16 @@
               "bounce_targets": 2,
               "bounce_damage_mult": 0.5,
               "hitbox_scale_mult": 1.1
-            }
+            },
+            "prose_mechanic": "2. hedefe seker",
+            "prose_feel": "Kaotik",
+            "prose_visual": "Turuncu sekme"
           },
           {
             "id": "5-4",
             "name": "Sabit Patlama",
             "adjective": "Sabitleme",
-            "effect": "Sabit Patlama: fiil tabanı + sıfat motoru",
+            "effect": "Yerleşik alan (4 sn)",
             "passive": "5 sn pasif: Sabitleme",
             "engine": {
               "action": "damage",
@@ -1375,13 +1530,16 @@
               "poise_damage_mult": 1.5,
               "lifetime_add": 2.0,
               "cast_mobility": "rooted"
-            }
+            },
+            "prose_mechanic": "Yerleşik alan (4 sn)",
+            "prose_feel": "Kalıcı",
+            "prose_visual": "Turuncu halka"
           },
           {
             "id": "5-5",
             "name": "Yayılan Patlama",
             "adjective": "Yayma",
-            "effect": "Yayılan Patlama: fiil tabanı + sıfat motoru",
+            "effect": "Geniş alan",
             "passive": "5 sn pasif: Yayma",
             "engine": {
               "action": "damage",
@@ -1395,13 +1553,16 @@
               "hitbox_scale_mult": 1.8,
               "damage_mult": 0.85,
               "max_targets": 5
-            }
+            },
+            "prose_mechanic": "Geniş alan",
+            "prose_feel": "Büyük yıkım",
+            "prose_visual": "Turuncu dalga"
           },
           {
             "id": "5-6",
             "name": "Bağlayıcı Patlama",
             "adjective": "Bağlama",
-            "effect": "Bağlayıcı Patlama: fiil tabanı + sıfat motoru",
+            "effect": "Patlama + root",
             "passive": "5 sn pasif: Bağlama",
             "engine": {
               "action": "damage",
@@ -1414,13 +1575,16 @@
               "label": "Bağlama",
               "apply_root_sec": 1.5,
               "apply_slow": 0.3
-            }
+            },
+            "prose_mechanic": "Patlama + root",
+            "prose_feel": "Kontrolcü",
+            "prose_visual": "Turuncu zincir"
           },
           {
             "id": "5-7",
             "name": "Bulandırıcı Patlama",
             "adjective": "Bulandırma",
-            "effect": "Bulandırıcı Patlama: fiil tabanı + sıfat motoru",
+            "effect": "Patlama + kör",
             "passive": "5 sn pasif: Bulandırma",
             "engine": {
               "action": "damage",
@@ -1433,13 +1597,16 @@
               "label": "Bulandırma",
               "accuracy_debuff": 0.3,
               "lifetime_add": 3.0
-            }
+            },
+            "prose_mechanic": "Patlama + kör",
+            "prose_feel": "Şaşırtıcı",
+            "prose_visual": "Beyaz flaş"
           },
           {
             "id": "5-8",
             "name": "Yükselen Patlama",
             "adjective": "Yükseltme",
-            "effect": "Yükselen Patlama: fiil tabanı + sıfat motoru",
+            "effect": "Patlama + buff",
             "passive": "5 sn pasif: Yükseltme",
             "engine": {
               "action": "damage",
@@ -1452,13 +1619,16 @@
               "label": "Yükseltme",
               "self_damage_buff": 0.1,
               "buff_duration_sec": 3.0
-            }
+            },
+            "prose_mechanic": "Patlama + buff",
+            "prose_feel": "Güçlendirici",
+            "prose_visual": "Altın patlama"
           },
           {
             "id": "5-9",
             "name": "Odaklı Patlama",
             "adjective": "Odaklama",
-            "effect": "Odaklı Patlama: fiil tabanı + sıfat motoru",
+            "effect": "Tek hedef, %50 fazla",
             "passive": "5 sn pasif: Odaklama",
             "engine": {
               "action": "damage",
@@ -1472,13 +1642,16 @@
               "ignore_armor": true,
               "damage_mult": 1.15,
               "max_targets": 1
-            }
+            },
+            "prose_mechanic": "Tek hedef, %50 fazla",
+            "prose_feel": "Kilitli",
+            "prose_visual": "Mavi ateş"
           },
           {
             "id": "5-10",
             "name": "Aynalı Patlama",
             "adjective": "Aynalama",
-            "effect": "Aynalı Patlama: fiil tabanı + sıfat motoru",
+            "effect": "%30 yansıma",
             "passive": "5 sn pasif: Aynalama",
             "engine": {
               "action": "damage",
@@ -1491,13 +1664,16 @@
               "label": "Aynalama",
               "reflect_ratio": 0.3,
               "reflect_duration_sec": 2.0
-            }
+            },
+            "prose_mechanic": "%30 yansıma",
+            "prose_feel": "Yansıtıcı",
+            "prose_visual": "Gümüş patlama"
           },
           {
             "id": "5-11",
             "name": "Kopya Patlama",
             "adjective": "Kopyalama",
-            "effect": "Kopya Patlama: fiil tabanı + sıfat motoru",
+            "effect": "0.3 sn sonra 2.",
             "passive": "5 sn pasif: Kopyalama",
             "engine": {
               "action": "damage",
@@ -1511,13 +1687,16 @@
               "duplicate_cast": true,
               "duplicate_delay_sec": 0.3,
               "duplicate_damage_mult": 1.0
-            }
+            },
+            "prose_mechanic": "0.3 sn sonra 2.",
+            "prose_feel": "İkiz",
+            "prose_visual": "Çift patlama"
           },
           {
             "id": "5-12",
             "name": "Akan Patlama",
             "adjective": "Akış",
-            "effect": "Akan Patlama: fiil tabanı + sıfat motoru",
+            "effect": "Sürekli seri",
             "passive": "5 sn pasif: Akış",
             "engine": {
               "action": "damage",
@@ -1531,7 +1710,10 @@
               "channel_sec": 3.0,
               "tick_rate_mult": 1.2,
               "damage_mult": 0.7
-            }
+            },
+            "prose_mechanic": "Sürekli seri",
+            "prose_feel": "Sürekli yıkım",
+            "prose_visual": "Zincir patlamalar"
           }
         ]
       },
@@ -1544,7 +1726,7 @@
             "id": "6-1",
             "name": "Yoğun Bağ",
             "adjective": "Yoğunlaştırma",
-            "effect": "Yoğun Bağ: fiil tabanı + sıfat motoru",
+            "effect": "1.5 sn stun",
             "passive": "4 sn pasif: Yoğunlaştırma",
             "engine": {
               "action": "cc",
@@ -1558,13 +1740,16 @@
               "damage_mult": 1.35,
               "hitbox_scale_mult": 0.55,
               "poise_damage_mult": 1.2
-            }
+            },
+            "prose_mechanic": "1.5 sn stun",
+            "prose_feel": "Sert, kısa",
+            "prose_visual": "Beyaz dar halka"
           },
           {
             "id": "6-2",
             "name": "Emici Bağ",
             "adjective": "Emme",
-            "effect": "Emici Bağ: fiil tabanı + sıfat motoru",
+            "effect": "CC + can çal",
             "passive": "4 sn pasif: Emme",
             "engine": {
               "action": "cc",
@@ -1577,13 +1762,16 @@
               "label": "Emme",
               "lifesteal": 0.3,
               "damage_mult": 0.95
-            }
+            },
+            "prose_mechanic": "CC + can çal",
+            "prose_feel": "Sinsi",
+            "prose_visual": "Mor halka"
           },
           {
             "id": "6-3",
             "name": "Sıçrayan Bağ",
             "adjective": "Sıçrama",
-            "effect": "Sıçrayan Bağ: fiil tabanı + sıfat motoru",
+            "effect": "2. hedefe seker",
             "passive": "4 sn pasif: Sıçrama",
             "engine": {
               "action": "cc",
@@ -1597,13 +1785,16 @@
               "bounce_targets": 2,
               "bounce_damage_mult": 0.5,
               "hitbox_scale_mult": 1.1
-            }
+            },
+            "prose_mechanic": "2. hedefe seker",
+            "prose_feel": "Bulaşıcı",
+            "prose_visual": "Mor sekme"
           },
           {
             "id": "6-4",
             "name": "Sabit Bağ",
             "adjective": "Sabitleme",
-            "effect": "Sabit Bağ: fiil tabanı + sıfat motoru",
+            "effect": "3 sn root",
             "passive": "4 sn pasif: Sabitleme",
             "engine": {
               "action": "cc",
@@ -1617,13 +1808,16 @@
               "poise_damage_mult": 1.5,
               "lifetime_add": 2.0,
               "cast_mobility": "rooted"
-            }
+            },
+            "prose_mechanic": "3 sn root",
+            "prose_feel": "Uzun, sabırlı",
+            "prose_visual": "Kalın zincir"
           },
           {
             "id": "6-5",
             "name": "Yayılan Bağ",
             "adjective": "Yayma",
-            "effect": "Yayılan Bağ: fiil tabanı + sıfat motoru",
+            "effect": "Alan CC",
             "passive": "4 sn pasif: Yayma",
             "engine": {
               "action": "cc",
@@ -1637,13 +1831,16 @@
               "hitbox_scale_mult": 1.8,
               "damage_mult": 0.85,
               "max_targets": 5
-            }
+            },
+            "prose_mechanic": "Alan CC",
+            "prose_feel": "Kuşatıcı",
+            "prose_visual": "Geniş halka"
           },
           {
             "id": "6-6",
             "name": "Bağlayıcı Bağ",
             "adjective": "Bağlama",
-            "effect": "Bağlayıcı Bağ: fiil tabanı + sıfat motoru",
+            "effect": "Çift CC",
             "passive": "4 sn pasif: Bağlama",
             "engine": {
               "action": "cc",
@@ -1656,13 +1853,16 @@
               "label": "Bağlama",
               "apply_root_sec": 1.5,
               "apply_slow": 0.3
-            }
+            },
+            "prose_mechanic": "Çift CC",
+            "prose_feel": "İkiz",
+            "prose_visual": "Çift zincir"
           },
           {
             "id": "6-7",
             "name": "Bulandırıcı Bağ",
             "adjective": "Bulandırma",
-            "effect": "Bulandırıcı Bağ: fiil tabanı + sıfat motoru",
+            "effect": "CC + kör",
             "passive": "4 sn pasif: Bulandırma",
             "engine": {
               "action": "cc",
@@ -1675,13 +1875,16 @@
               "label": "Bulandırma",
               "accuracy_debuff": 0.3,
               "lifetime_add": 3.0
-            }
+            },
+            "prose_mechanic": "CC + kör",
+            "prose_feel": "Şaşırtıcı",
+            "prose_visual": "Siyah duman"
           },
           {
             "id": "6-8",
             "name": "Yükselen Bağ",
             "adjective": "Yükseltme",
-            "effect": "Yükselen Bağ: fiil tabanı + sıfat motoru",
+            "effect": "CC + buff",
             "passive": "4 sn pasif: Yükseltme",
             "engine": {
               "action": "cc",
@@ -1694,13 +1897,16 @@
               "label": "Yükseltme",
               "self_damage_buff": 0.1,
               "buff_duration_sec": 3.0
-            }
+            },
+            "prose_mechanic": "CC + buff",
+            "prose_feel": "Güçlendirici",
+            "prose_visual": "Altın zincir"
           },
           {
             "id": "6-9",
             "name": "Odaklı Bağ",
             "adjective": "Odaklama",
-            "effect": "Odaklı Bağ: fiil tabanı + sıfat motoru",
+            "effect": "Tek hedefe uzun kilit",
             "passive": "4 sn pasif: Odaklama",
             "engine": {
               "action": "cc",
@@ -1714,13 +1920,16 @@
               "ignore_armor": true,
               "damage_mult": 1.15,
               "max_targets": 1
-            }
+            },
+            "prose_mechanic": "Tek hedefe uzun kilit",
+            "prose_feel": "Kilitli",
+            "prose_visual": "Kırmızı hedef"
           },
           {
             "id": "6-10",
             "name": "Aynalı Bağ",
             "adjective": "Aynalama",
-            "effect": "Aynalı Bağ: fiil tabanı + sıfat motoru",
+            "effect": "CC + yansıma",
             "passive": "4 sn pasif: Aynalama",
             "engine": {
               "action": "cc",
@@ -1733,13 +1942,16 @@
               "label": "Aynalama",
               "reflect_ratio": 0.3,
               "reflect_duration_sec": 2.0
-            }
+            },
+            "prose_mechanic": "CC + yansıma",
+            "prose_feel": "Yansıtıcı",
+            "prose_visual": "Gümüş zincir"
           },
           {
             "id": "6-11",
             "name": "Kopya Bağ",
             "adjective": "Kopyalama",
-            "effect": "Kopya Bağ: fiil tabanı + sıfat motoru",
+            "effect": "İki CC",
             "passive": "4 sn pasif: Kopyalama",
             "engine": {
               "action": "cc",
@@ -1753,13 +1965,16 @@
               "duplicate_cast": true,
               "duplicate_delay_sec": 0.3,
               "duplicate_damage_mult": 1.0
-            }
+            },
+            "prose_mechanic": "İki CC",
+            "prose_feel": "İkiz",
+            "prose_visual": "Çift halka"
           },
           {
             "id": "6-12",
             "name": "Akan Bağ",
             "adjective": "Akış",
-            "effect": "Akan Bağ: fiil tabanı + sıfat motoru",
+            "effect": "Sürekli CC alanı",
             "passive": "4 sn pasif: Akış",
             "engine": {
               "action": "cc",
@@ -1773,7 +1988,10 @@
               "channel_sec": 3.0,
               "tick_rate_mult": 1.2,
               "damage_mult": 0.7
-            }
+            },
+            "prose_mechanic": "Sürekli CC alanı",
+            "prose_feel": "Kuşatıcı",
+            "prose_visual": "Mor akış"
           }
         ]
       },
@@ -1786,7 +2004,7 @@
             "id": "7-1",
             "name": "Yoğun Zafiyet",
             "adjective": "Yoğunlaştırma",
-            "effect": "Yoğun Zafiyet: fiil tabanı + sıfat motoru",
+            "effect": "Armor -%20, 4 sn",
             "passive": "6 sn pasif: Yoğunlaştırma",
             "engine": {
               "action": "debuff",
@@ -1800,13 +2018,16 @@
               "damage_mult": 1.35,
               "hitbox_scale_mult": 0.55,
               "poise_damage_mult": 1.2
-            }
+            },
+            "prose_mechanic": "Armor -%20, 4 sn",
+            "prose_feel": "Sert debuff",
+            "prose_visual": "Siyah dar halka"
           },
           {
             "id": "7-2",
             "name": "Emici Zafiyet",
             "adjective": "Emme",
-            "effect": "Emici Zafiyet: fiil tabanı + sıfat motoru",
+            "effect": "Debuff + can çal",
             "passive": "6 sn pasif: Emme",
             "engine": {
               "action": "debuff",
@@ -1819,13 +2040,16 @@
               "label": "Emme",
               "lifesteal": 0.3,
               "damage_mult": 0.95
-            }
+            },
+            "prose_mechanic": "Debuff + can çal",
+            "prose_feel": "Sinsi",
+            "prose_visual": "Mor akış"
           },
           {
             "id": "7-3",
             "name": "Sıçrayan Zafiyet",
             "adjective": "Sıçrama",
-            "effect": "Sıçrayan Zafiyet: fiil tabanı + sıfat motoru",
+            "effect": "2. hedefe seker",
             "passive": "6 sn pasif: Sıçrama",
             "engine": {
               "action": "debuff",
@@ -1839,13 +2063,16 @@
               "bounce_targets": 2,
               "bounce_damage_mult": 0.5,
               "hitbox_scale_mult": 1.1
-            }
+            },
+            "prose_mechanic": "2. hedefe seker",
+            "prose_feel": "Bulaşıcı",
+            "prose_visual": "Siyah sekme"
           },
           {
             "id": "7-4",
             "name": "Sabit Zafiyet",
             "adjective": "Sabitleme",
-            "effect": "Sabit Zafiyet: fiil tabanı + sıfat motoru",
+            "effect": "7 sn debuff",
             "passive": "6 sn pasif: Sabitleme",
             "engine": {
               "action": "debuff",
@@ -1859,13 +2086,16 @@
               "poise_damage_mult": 1.5,
               "lifetime_add": 2.0,
               "cast_mobility": "rooted"
-            }
+            },
+            "prose_mechanic": "7 sn debuff",
+            "prose_feel": "Kalıcı",
+            "prose_visual": "Uzun duman"
           },
           {
             "id": "7-5",
             "name": "Yayılan Zafiyet",
             "adjective": "Yayma",
-            "effect": "Yayılan Zafiyet: fiil tabanı + sıfat motoru",
+            "effect": "Alan debuff",
             "passive": "6 sn pasif: Yayma",
             "engine": {
               "action": "debuff",
@@ -1879,13 +2109,16 @@
               "hitbox_scale_mult": 1.8,
               "damage_mult": 0.85,
               "max_targets": 5
-            }
+            },
+            "prose_mechanic": "Alan debuff",
+            "prose_feel": "Kuşatıcı",
+            "prose_visual": "Siyah dalga"
           },
           {
             "id": "7-6",
             "name": "Bağlayıcı Zafiyet",
             "adjective": "Bağlama",
-            "effect": "Bağlayıcı Zafiyet: fiil tabanı + sıfat motoru",
+            "effect": "Debuff + root",
             "passive": "6 sn pasif: Bağlama",
             "engine": {
               "action": "debuff",
@@ -1898,13 +2131,16 @@
               "label": "Bağlama",
               "apply_root_sec": 1.5,
               "apply_slow": 0.3
-            }
+            },
+            "prose_mechanic": "Debuff + root",
+            "prose_feel": "Kontrolcü",
+            "prose_visual": "Siyah zincir"
           },
           {
             "id": "7-7",
             "name": "Bulandırıcı Zafiyet",
             "adjective": "Bulandırma",
-            "effect": "Bulandırıcı Zafiyet: fiil tabanı + sıfat motoru",
+            "effect": "Çift debuff",
             "passive": "6 sn pasif: Bulandırma",
             "engine": {
               "action": "debuff",
@@ -1917,13 +2153,16 @@
               "label": "Bulandırma",
               "accuracy_debuff": 0.3,
               "lifetime_add": 3.0
-            }
+            },
+            "prose_mechanic": "Çift debuff",
+            "prose_feel": "Ağır",
+            "prose_visual": "Çift duman"
           },
           {
             "id": "7-8",
             "name": "Yükselen Zafiyet",
             "adjective": "Yükseltme",
-            "effect": "Yükselen Zafiyet: fiil tabanı + sıfat motoru",
+            "effect": "Debuff + buff",
             "passive": "6 sn pasif: Yükseltme",
             "engine": {
               "action": "debuff",
@@ -1936,13 +2175,16 @@
               "label": "Yükseltme",
               "self_damage_buff": 0.1,
               "buff_duration_sec": 3.0
-            }
+            },
+            "prose_mechanic": "Debuff + buff",
+            "prose_feel": "Güçlendirici",
+            "prose_visual": "Siyah-altın"
           },
           {
             "id": "7-9",
             "name": "Odaklı Zafiyet",
             "adjective": "Odaklama",
-            "effect": "Odaklı Zafiyet: fiil tabanı + sıfat motoru",
+            "effect": "Armor -%30",
             "passive": "6 sn pasif: Odaklama",
             "engine": {
               "action": "debuff",
@@ -1956,13 +2198,16 @@
               "ignore_armor": true,
               "damage_mult": 1.15,
               "max_targets": 1
-            }
+            },
+            "prose_mechanic": "Armor -%30",
+            "prose_feel": "Delici",
+            "prose_visual": "Kırmızı hedef"
           },
           {
             "id": "7-10",
             "name": "Aynalı Zafiyet",
             "adjective": "Aynalama",
-            "effect": "Aynalı Zafiyet: fiil tabanı + sıfat motoru",
+            "effect": "Debuff + yansıma",
             "passive": "6 sn pasif: Aynalama",
             "engine": {
               "action": "debuff",
@@ -1975,13 +2220,16 @@
               "label": "Aynalama",
               "reflect_ratio": 0.3,
               "reflect_duration_sec": 2.0
-            }
+            },
+            "prose_mechanic": "Debuff + yansıma",
+            "prose_feel": "Yansıtıcı",
+            "prose_visual": "Gümüş duman"
           },
           {
             "id": "7-11",
             "name": "Kopya Zafiyet",
             "adjective": "Kopyalama",
-            "effect": "Kopya Zafiyet: fiil tabanı + sıfat motoru",
+            "effect": "İki debuff",
             "passive": "6 sn pasif: Kopyalama",
             "engine": {
               "action": "debuff",
@@ -1995,13 +2243,16 @@
               "duplicate_cast": true,
               "duplicate_delay_sec": 0.3,
               "duplicate_damage_mult": 1.0
-            }
+            },
+            "prose_mechanic": "İki debuff",
+            "prose_feel": "İkiz",
+            "prose_visual": "Çift halka"
           },
           {
             "id": "7-12",
             "name": "Akan Zafiyet",
             "adjective": "Akış",
-            "effect": "Akan Zafiyet: fiil tabanı + sıfat motoru",
+            "effect": "Sürekli debuff alanı",
             "passive": "6 sn pasif: Akış",
             "engine": {
               "action": "debuff",
@@ -2015,7 +2266,10 @@
               "channel_sec": 3.0,
               "tick_rate_mult": 1.2,
               "damage_mult": 0.7
-            }
+            },
+            "prose_mechanic": "Sürekli debuff alanı",
+            "prose_feel": "Kuşatıcı",
+            "prose_visual": "Siyah akış"
           }
         ]
       },
@@ -2028,7 +2282,7 @@
             "id": "8-1",
             "name": "Yoğun Yükseliş",
             "adjective": "Yoğunlaştırma",
-            "effect": "Yoğun Yükseliş: fiil tabanı + sıfat motoru",
+            "effect": "+%20 hasar, 3 sn",
             "passive": "5 sn pasif: Yoğunlaştırma",
             "engine": {
               "action": "buff",
@@ -2042,13 +2296,16 @@
               "damage_mult": 1.35,
               "hitbox_scale_mult": 0.55,
               "poise_damage_mult": 1.2
-            }
+            },
+            "prose_mechanic": "+%20 hasar, 3 sn",
+            "prose_feel": "Ani güç",
+            "prose_visual": "Altın patlama"
           },
           {
             "id": "8-2",
             "name": "Emici Yükseliş",
             "adjective": "Emme",
-            "effect": "Emici Yükseliş: fiil tabanı + sıfat motoru",
+            "effect": "Buff + can çal",
             "passive": "5 sn pasif: Emme",
             "engine": {
               "action": "buff",
@@ -2061,13 +2318,16 @@
               "label": "Emme",
               "lifesteal": 0.3,
               "damage_mult": 0.95
-            }
+            },
+            "prose_mechanic": "Buff + can çal",
+            "prose_feel": "Sömüren",
+            "prose_visual": "Altın-mor"
           },
           {
             "id": "8-3",
             "name": "Sıçrayan Yükseliş",
             "adjective": "Sıçrama",
-            "effect": "Sıçrayan Yükseliş: fiil tabanı + sıfat motoru",
+            "effect": "Dosta seker",
             "passive": "5 sn pasif: Sıçrama",
             "engine": {
               "action": "buff",
@@ -2081,13 +2341,16 @@
               "bounce_targets": 2,
               "bounce_damage_mult": 0.5,
               "hitbox_scale_mult": 1.1
-            }
+            },
+            "prose_mechanic": "Dosta seker",
+            "prose_feel": "Paylaşımcı",
+            "prose_visual": "Altın sekme"
           },
           {
             "id": "8-4",
             "name": "Sabit Yükseliş",
             "adjective": "Sabitleme",
-            "effect": "Sabit Yükseliş: fiil tabanı + sıfat motoru",
+            "effect": "7 sn buff",
             "passive": "5 sn pasif: Sabitleme",
             "engine": {
               "action": "buff",
@@ -2101,13 +2364,16 @@
               "poise_damage_mult": 1.5,
               "lifetime_add": 2.0,
               "cast_mobility": "rooted"
-            }
+            },
+            "prose_mechanic": "7 sn buff",
+            "prose_feel": "Kalıcı",
+            "prose_visual": "Altın halka"
           },
           {
             "id": "8-5",
             "name": "Yayılan Yükseliş",
             "adjective": "Yayma",
-            "effect": "Yayılan Yükseliş: fiil tabanı + sıfat motoru",
+            "effect": "Alan buff",
             "passive": "5 sn pasif: Yayma",
             "engine": {
               "action": "buff",
@@ -2121,13 +2387,16 @@
               "hitbox_scale_mult": 1.8,
               "damage_mult": 0.85,
               "max_targets": 5
-            }
+            },
+            "prose_mechanic": "Alan buff",
+            "prose_feel": "Cömert",
+            "prose_visual": "Altın dalga"
           },
           {
             "id": "8-6",
             "name": "Bağlayıcı Yükseliş",
             "adjective": "Bağlama",
-            "effect": "Bağlayıcı Yükseliş: fiil tabanı + sıfat motoru",
+            "effect": "Dosta bağlanır",
             "passive": "5 sn pasif: Bağlama",
             "engine": {
               "action": "buff",
@@ -2140,13 +2409,16 @@
               "label": "Bağlama",
               "apply_root_sec": 1.5,
               "apply_slow": 0.3
-            }
+            },
+            "prose_mechanic": "Dosta bağlanır",
+            "prose_feel": "Bağlı",
+            "prose_visual": "Altın bağ"
           },
           {
             "id": "8-7",
             "name": "Bulandırıcı Yükseliş",
             "adjective": "Bulandırma",
-            "effect": "Bulandırıcı Yükseliş: fiil tabanı + sıfat motoru",
+            "effect": "Buff + debuff",
             "passive": "5 sn pasif: Bulandırma",
             "engine": {
               "action": "buff",
@@ -2159,13 +2431,16 @@
               "label": "Bulandırma",
               "accuracy_debuff": 0.3,
               "lifetime_add": 3.0
-            }
+            },
+            "prose_mechanic": "Buff + debuff",
+            "prose_feel": "İki yönlü",
+            "prose_visual": "Altın-siyah"
           },
           {
             "id": "8-8",
             "name": "Yükselen Yükseliş",
             "adjective": "Yükseltme",
-            "effect": "Yükselen Yükseliş: fiil tabanı + sıfat motoru",
+            "effect": "Çift buff",
             "passive": "5 sn pasif: Yükseltme",
             "engine": {
               "action": "buff",
@@ -2177,13 +2452,16 @@
               "hitbox": "self_or_ally",
               "label": "Yükseltme",
               "self_damage_buff": 0.1
-            }
+            },
+            "prose_mechanic": "Çift buff",
+            "prose_feel": "İkiz",
+            "prose_visual": "Çift altın"
           },
           {
             "id": "8-9",
             "name": "Odaklı Yükseliş",
             "adjective": "Odaklama",
-            "effect": "Odaklı Yükseliş: fiil tabanı + sıfat motoru",
+            "effect": "En güçlü dosta +%30",
             "passive": "5 sn pasif: Odaklama",
             "engine": {
               "action": "buff",
@@ -2197,13 +2475,16 @@
               "ignore_armor": true,
               "damage_mult": 1.15,
               "max_targets": 1
-            }
+            },
+            "prose_mechanic": "En güçlü dosta +%30",
+            "prose_feel": "Akıllı",
+            "prose_visual": "Altın hedef"
           },
           {
             "id": "8-10",
             "name": "Aynalı Yükseliş",
             "adjective": "Aynalama",
-            "effect": "Aynalı Yükseliş: fiil tabanı + sıfat motoru",
+            "effect": "Buff + yansıma",
             "passive": "5 sn pasif: Aynalama",
             "engine": {
               "action": "buff",
@@ -2216,13 +2497,16 @@
               "label": "Aynalama",
               "reflect_ratio": 0.3,
               "reflect_duration_sec": 2.0
-            }
+            },
+            "prose_mechanic": "Buff + yansıma",
+            "prose_feel": "Yansıtıcı",
+            "prose_visual": "Gümüş-altın"
           },
           {
             "id": "8-11",
             "name": "Kopya Yükseliş",
             "adjective": "Kopyalama",
-            "effect": "Kopya Yükseliş: fiil tabanı + sıfat motoru",
+            "effect": "Buff iki kez",
             "passive": "5 sn pasif: Kopyalama",
             "engine": {
               "action": "buff",
@@ -2236,13 +2520,16 @@
               "duplicate_cast": true,
               "duplicate_delay_sec": 0.3,
               "duplicate_damage_mult": 1.0
-            }
+            },
+            "prose_mechanic": "Buff iki kez",
+            "prose_feel": "İkiz",
+            "prose_visual": "Çift halka"
           },
           {
             "id": "8-12",
             "name": "Akan Yükseliş",
             "adjective": "Akış",
-            "effect": "Akan Yükseliş: fiil tabanı + sıfat motoru",
+            "effect": "Sürekli artan buff",
             "passive": "5 sn pasif: Akış",
             "engine": {
               "action": "buff",
@@ -2256,7 +2543,10 @@
               "channel_sec": 3.0,
               "tick_rate_mult": 1.2,
               "damage_mult": 0.7
-            }
+            },
+            "prose_mechanic": "Sürekli artan buff",
+            "prose_feel": "Yükselen",
+            "prose_visual": "Altın akış"
           }
         ]
       },
@@ -2269,7 +2559,7 @@
             "id": "9-1",
             "name": "Yoğun Arınma",
             "adjective": "Yoğunlaştırma",
-            "effect": "Yoğun Arınma: fiil tabanı + sıfat motoru",
+            "effect": "1 debuff sil",
             "passive": "0 sn pasif: Yoğunlaştırma",
             "engine": {
               "action": "cleanse",
@@ -2282,13 +2572,16 @@
               "damage_mult": 1.35,
               "hitbox_scale_mult": 0.55,
               "poise_damage_mult": 1.2
-            }
+            },
+            "prose_mechanic": "1 debuff sil",
+            "prose_feel": "Ani temizlik",
+            "prose_visual": "Beyaz flaş"
           },
           {
             "id": "9-2",
             "name": "Emici Arınma",
             "adjective": "Emme",
-            "effect": "Emici Arınma: fiil tabanı + sıfat motoru",
+            "effect": "Debuff→can",
             "passive": "0 sn pasif: Emme",
             "engine": {
               "action": "cleanse",
@@ -2300,13 +2593,16 @@
               "label": "Emme",
               "lifesteal": 0.3,
               "damage_mult": 0.95
-            }
+            },
+            "prose_mechanic": "Debuff→can",
+            "prose_feel": "Dönüştürücü",
+            "prose_visual": "Beyaz→yeşil"
           },
           {
             "id": "9-3",
             "name": "Sıçrayan Arınma",
             "adjective": "Sıçrama",
-            "effect": "Sıçrayan Arınma: fiil tabanı + sıfat motoru",
+            "effect": "Dosta seker",
             "passive": "0 sn pasif: Sıçrama",
             "engine": {
               "action": "cleanse",
@@ -2319,13 +2615,16 @@
               "bounce_targets": 2,
               "bounce_damage_mult": 0.5,
               "hitbox_scale_mult": 1.1
-            }
+            },
+            "prose_mechanic": "Dosta seker",
+            "prose_feel": "Bulaşıcı",
+            "prose_visual": "Beyaz sekme"
           },
           {
             "id": "9-4",
             "name": "Sabit Arınma",
             "adjective": "Sabitleme",
-            "effect": "Sabit Arınma: fiil tabanı + sıfat motoru",
+            "effect": "Yerleşik alan (5 sn)",
             "passive": "0 sn pasif: Sabitleme",
             "engine": {
               "action": "cleanse",
@@ -2338,13 +2637,16 @@
               "poise_damage_mult": 1.5,
               "lifetime_add": 2.0,
               "cast_mobility": "rooted"
-            }
+            },
+            "prose_mechanic": "Yerleşik alan (5 sn)",
+            "prose_feel": "Kalıcı",
+            "prose_visual": "Beyaz halka"
           },
           {
             "id": "9-5",
             "name": "Yayılan Arınma",
             "adjective": "Yayma",
-            "effect": "Yayılan Arınma: fiil tabanı + sıfat motoru",
+            "effect": "Alan arınma",
             "passive": "0 sn pasif: Yayma",
             "engine": {
               "action": "cleanse",
@@ -2357,13 +2659,16 @@
               "hitbox_scale_mult": 1.8,
               "damage_mult": 0.85,
               "max_targets": 5
-            }
+            },
+            "prose_mechanic": "Alan arınma",
+            "prose_feel": "Kuşatıcı",
+            "prose_visual": "Beyaz dalga"
           },
           {
             "id": "9-6",
             "name": "Bağlayıcı Arınma",
             "adjective": "Bağlama",
-            "effect": "Bağlayıcı Arınma: fiil tabanı + sıfat motoru",
+            "effect": "Dosta bağlanır",
             "passive": "0 sn pasif: Bağlama",
             "engine": {
               "action": "cleanse",
@@ -2375,13 +2680,16 @@
               "label": "Bağlama",
               "apply_root_sec": 1.5,
               "apply_slow": 0.3
-            }
+            },
+            "prose_mechanic": "Dosta bağlanır",
+            "prose_feel": "Bağlı",
+            "prose_visual": "Beyaz bağ"
           },
           {
             "id": "9-7",
             "name": "Bulandırıcı Arınma",
             "adjective": "Bulandırma",
-            "effect": "Bulandırıcı Arınma: fiil tabanı + sıfat motoru",
+            "effect": "Arınma + bozma",
             "passive": "0 sn pasif: Bulandırma",
             "engine": {
               "action": "cleanse",
@@ -2393,13 +2701,16 @@
               "label": "Bulandırma",
               "accuracy_debuff": 0.3,
               "lifetime_add": 3.0
-            }
+            },
+            "prose_mechanic": "Arınma + bozma",
+            "prose_feel": "İki yönlü",
+            "prose_visual": "Beyaz-siyah"
           },
           {
             "id": "9-8",
             "name": "Yükselen Arınma",
             "adjective": "Yükseltme",
-            "effect": "Yükselen Arınma: fiil tabanı + sıfat motoru",
+            "effect": "Arınma + buff",
             "passive": "0 sn pasif: Yükseltme",
             "engine": {
               "action": "cleanse",
@@ -2411,13 +2722,16 @@
               "label": "Yükseltme",
               "self_damage_buff": 0.1,
               "buff_duration_sec": 3.0
-            }
+            },
+            "prose_mechanic": "Arınma + buff",
+            "prose_feel": "Güçlendirici",
+            "prose_visual": "Beyaz-altın"
           },
           {
             "id": "9-9",
             "name": "Odaklı Arınma",
             "adjective": "Odaklama",
-            "effect": "Odaklı Arınma: fiil tabanı + sıfat motoru",
+            "effect": "En ağırı önce",
             "passive": "0 sn pasif: Odaklama",
             "engine": {
               "action": "cleanse",
@@ -2430,13 +2744,16 @@
               "ignore_armor": true,
               "damage_mult": 1.15,
               "max_targets": 1
-            }
+            },
+            "prose_mechanic": "En ağırı önce",
+            "prose_feel": "Akıllı",
+            "prose_visual": "Beyaz hedef"
           },
           {
             "id": "9-10",
             "name": "Aynalı Arınma",
             "adjective": "Aynalama",
-            "effect": "Aynalı Arınma: fiil tabanı + sıfat motoru",
+            "effect": "Arınma + yansıma",
             "passive": "0 sn pasif: Aynalama",
             "engine": {
               "action": "cleanse",
@@ -2448,13 +2765,16 @@
               "label": "Aynalama",
               "reflect_ratio": 0.3,
               "reflect_duration_sec": 2.0
-            }
+            },
+            "prose_mechanic": "Arınma + yansıma",
+            "prose_feel": "Yansıtıcı",
+            "prose_visual": "Gümüş-beyaz"
           },
           {
             "id": "9-11",
             "name": "Kopya Arınma",
             "adjective": "Kopyalama",
-            "effect": "Kopya Arınma: fiil tabanı + sıfat motoru",
+            "effect": "İki kez tetiklenir",
             "passive": "0 sn pasif: Kopyalama",
             "engine": {
               "action": "cleanse",
@@ -2467,13 +2787,16 @@
               "duplicate_cast": true,
               "duplicate_delay_sec": 0.3,
               "duplicate_damage_mult": 1.0
-            }
+            },
+            "prose_mechanic": "İki kez tetiklenir",
+            "prose_feel": "İkiz",
+            "prose_visual": "Çift beyaz"
           },
           {
             "id": "9-12",
             "name": "Akan Arınma",
             "adjective": "Akış",
-            "effect": "Akan Arınma: fiil tabanı + sıfat motoru",
+            "effect": "Sürekli temizlik",
             "passive": "0 sn pasif: Akış",
             "engine": {
               "action": "cleanse",
@@ -2486,7 +2809,10 @@
               "channel_sec": 3.0,
               "tick_rate_mult": 1.2,
               "damage_mult": 0.7
-            }
+            },
+            "prose_mechanic": "Sürekli temizlik",
+            "prose_feel": "Akıcı",
+            "prose_visual": "Beyaz akış"
           }
         ]
       },
@@ -2499,7 +2825,7 @@
             "id": "10-1",
             "name": "Yoğun Yansı",
             "adjective": "Yoğunlaştırma",
-            "effect": "Yoğun Yansı: fiil tabanı + sıfat motoru",
+            "effect": "%50 yansıma, 2 sn",
             "passive": "5 sn pasif: Yoğunlaştırma",
             "engine": {
               "action": "reflect",
@@ -2513,13 +2839,16 @@
               "damage_mult": 1.35,
               "hitbox_scale_mult": 0.55,
               "poise_damage_mult": 1.2
-            }
+            },
+            "prose_mechanic": "%50 yansıma, 2 sn",
+            "prose_feel": "Sert",
+            "prose_visual": "Gümüş dar halka"
           },
           {
             "id": "10-2",
             "name": "Emici Yansı",
             "adjective": "Emme",
-            "effect": "Emici Yansı: fiil tabanı + sıfat motoru",
+            "effect": "Yansı + can çalma",
             "passive": "5 sn pasif: Emme",
             "engine": {
               "action": "reflect",
@@ -2532,13 +2861,16 @@
               "label": "Emme",
               "lifesteal": 0.3,
               "damage_mult": 0.95
-            }
+            },
+            "prose_mechanic": "Yansı + can çalma",
+            "prose_feel": "Sömüren",
+            "prose_visual": "Gümüş-kırmızı"
           },
           {
             "id": "10-3",
             "name": "Sıçrayan Yansı",
             "adjective": "Sıçrama",
-            "effect": "Sıçrayan Yansı: fiil tabanı + sıfat motoru",
+            "effect": "Dosta seker",
             "passive": "5 sn pasif: Sıçrama",
             "engine": {
               "action": "reflect",
@@ -2552,13 +2884,16 @@
               "bounce_targets": 2,
               "bounce_damage_mult": 0.5,
               "hitbox_scale_mult": 1.1
-            }
+            },
+            "prose_mechanic": "Dosta seker",
+            "prose_feel": "Paylaşımcı",
+            "prose_visual": "Gümüş sekme"
           },
           {
             "id": "10-4",
             "name": "Sabit Yansı",
             "adjective": "Sabitleme",
-            "effect": "Sabit Yansı: fiil tabanı + sıfat motoru",
+            "effect": "7 sn yansıma",
             "passive": "5 sn pasif: Sabitleme",
             "engine": {
               "action": "reflect",
@@ -2572,13 +2907,16 @@
               "poise_damage_mult": 1.5,
               "lifetime_add": 2.0,
               "cast_mobility": "rooted"
-            }
+            },
+            "prose_mechanic": "7 sn yansıma",
+            "prose_feel": "Kalıcı",
+            "prose_visual": "Gümüş kubbe"
           },
           {
             "id": "10-5",
             "name": "Yayılan Yansı",
             "adjective": "Yayma",
-            "effect": "Yayılan Yansı: fiil tabanı + sıfat motoru",
+            "effect": "Alan yansıma",
             "passive": "5 sn pasif: Yayma",
             "engine": {
               "action": "reflect",
@@ -2592,13 +2930,16 @@
               "hitbox_scale_mult": 1.8,
               "damage_mult": 0.85,
               "max_targets": 5
-            }
+            },
+            "prose_mechanic": "Alan yansıma",
+            "prose_feel": "Kuşatıcı",
+            "prose_visual": "Gümüş dalga"
           },
           {
             "id": "10-6",
             "name": "Bağlayıcı Yansı",
             "adjective": "Bağlama",
-            "effect": "Bağlayıcı Yansı: fiil tabanı + sıfat motoru",
+            "effect": "Dosta bağlanır",
             "passive": "5 sn pasif: Bağlama",
             "engine": {
               "action": "reflect",
@@ -2611,13 +2952,16 @@
               "label": "Bağlama",
               "apply_root_sec": 1.5,
               "apply_slow": 0.3
-            }
+            },
+            "prose_mechanic": "Dosta bağlanır",
+            "prose_feel": "Bağlı",
+            "prose_visual": "Gümüş bağ"
           },
           {
             "id": "10-7",
             "name": "Bulandırıcı Yansı",
             "adjective": "Bulandırma",
-            "effect": "Bulandırıcı Yansı: fiil tabanı + sıfat motoru",
+            "effect": "Yansı + kör etme",
             "passive": "5 sn pasif: Bulandırma",
             "engine": {
               "action": "reflect",
@@ -2630,13 +2974,16 @@
               "label": "Bulandırma",
               "accuracy_debuff": 0.3,
               "lifetime_add": 3.0
-            }
+            },
+            "prose_mechanic": "Yansı + kör etme",
+            "prose_feel": "Şaşırtıcı",
+            "prose_visual": "Gümüş-siyah"
           },
           {
             "id": "10-8",
             "name": "Yükselen Yansı",
             "adjective": "Yükseltme",
-            "effect": "Yükselen Yansı: fiil tabanı + sıfat motoru",
+            "effect": "Yansı + buff",
             "passive": "5 sn pasif: Yükseltme",
             "engine": {
               "action": "reflect",
@@ -2649,13 +2996,16 @@
               "label": "Yükseltme",
               "self_damage_buff": 0.1,
               "buff_duration_sec": 3.0
-            }
+            },
+            "prose_mechanic": "Yansı + buff",
+            "prose_feel": "Güçlendirici",
+            "prose_visual": "Gümüş-altın"
           },
           {
             "id": "10-9",
             "name": "Odaklı Yansı",
             "adjective": "Odaklama",
-            "effect": "Odaklı Yansı: fiil tabanı + sıfat motoru",
+            "effect": "%70 tek hedef",
             "passive": "5 sn pasif: Odaklama",
             "engine": {
               "action": "reflect",
@@ -2669,13 +3019,16 @@
               "ignore_armor": true,
               "damage_mult": 1.15,
               "max_targets": 1
-            }
+            },
+            "prose_mechanic": "%70 tek hedef",
+            "prose_feel": "Odaklı",
+            "prose_visual": "Gümüş hedef"
           },
           {
             "id": "10-10",
             "name": "Aynalı Yansı",
             "adjective": "Aynalama",
-            "effect": "Aynalı Yansı: fiil tabanı + sıfat motoru",
+            "effect": "%80 çift yansıma",
             "passive": "5 sn pasif: Aynalama",
             "engine": {
               "action": "reflect",
@@ -2686,13 +3039,16 @@
               "base_cooldown": 1.5,
               "hitbox": "self",
               "label": "Aynalama"
-            }
+            },
+            "prose_mechanic": "%80 çift yansıma",
+            "prose_feel": "Ayna",
+            "prose_visual": "Çift gümüş"
           },
           {
             "id": "10-11",
             "name": "Kopya Yansı",
             "adjective": "Kopyalama",
-            "effect": "Kopya Yansı: fiil tabanı + sıfat motoru",
+            "effect": "İki kez tetiklenir",
             "passive": "5 sn pasif: Kopyalama",
             "engine": {
               "action": "reflect",
@@ -2706,13 +3062,16 @@
               "duplicate_cast": true,
               "duplicate_delay_sec": 0.3,
               "duplicate_damage_mult": 1.0
-            }
+            },
+            "prose_mechanic": "İki kez tetiklenir",
+            "prose_feel": "İkiz",
+            "prose_visual": "Çift halka"
           },
           {
             "id": "10-12",
             "name": "Akan Yansı",
             "adjective": "Akış",
-            "effect": "Akan Yansı: fiil tabanı + sıfat motoru",
+            "effect": "Sürekli yansıma",
             "passive": "5 sn pasif: Akış",
             "engine": {
               "action": "reflect",
@@ -2726,7 +3085,10 @@
               "channel_sec": 3.0,
               "tick_rate_mult": 1.2,
               "damage_mult": 0.7
-            }
+            },
+            "prose_mechanic": "Sürekli yansıma",
+            "prose_feel": "Akıcı",
+            "prose_visual": "Gümüş akış"
           }
         ]
       },
@@ -2739,7 +3101,7 @@
             "id": "11-1",
             "name": "Yoğun Çağrı",
             "adjective": "Yoğunlaştırma",
-            "effect": "Yoğun Çağrı: fiil tabanı + sıfat motoru",
+            "effect": "Güçlü tek minion",
             "passive": "0 sn pasif: Yoğunlaştırma",
             "engine": {
               "action": "summon",
@@ -2753,13 +3115,16 @@
               "damage_mult": 1.35,
               "hitbox_scale_mult": 0.55,
               "poise_damage_mult": 1.2
-            }
+            },
+            "prose_mechanic": "Güçlü tek minion",
+            "prose_feel": "Sağlam",
+            "prose_visual": "Tek büyük figür"
           },
           {
             "id": "11-2",
             "name": "Emici Çağrı",
             "adjective": "Emme",
-            "effect": "Emici Çağrı: fiil tabanı + sıfat motoru",
+            "effect": "Minion can çalar",
             "passive": "0 sn pasif: Emme",
             "engine": {
               "action": "summon",
@@ -2772,13 +3137,16 @@
               "label": "Emme",
               "lifesteal": 0.3,
               "damage_mult": 0.95
-            }
+            },
+            "prose_mechanic": "Minion can çalar",
+            "prose_feel": "Sömüren",
+            "prose_visual": "Kırmızı minion"
           },
           {
             "id": "11-3",
             "name": "Sıçrayan Çağrı",
             "adjective": "Sıçrama",
-            "effect": "Sıçrayan Çağrı: fiil tabanı + sıfat motoru",
+            "effect": "Minion seker",
             "passive": "0 sn pasif: Sıçrama",
             "engine": {
               "action": "summon",
@@ -2792,13 +3160,16 @@
               "bounce_targets": 2,
               "bounce_damage_mult": 0.5,
               "hitbox_scale_mult": 1.1
-            }
+            },
+            "prose_mechanic": "Minion seker",
+            "prose_feel": "Çevik",
+            "prose_visual": "Sarı minion"
           },
           {
             "id": "11-4",
             "name": "Sabit Çağrı",
             "adjective": "Sabitleme",
-            "effect": "Sabit Çağrı: fiil tabanı + sıfat motoru",
+            "effect": "Yerleşik minion (taret)",
             "passive": "0 sn pasif: Sabitleme",
             "engine": {
               "action": "summon",
@@ -2812,13 +3183,16 @@
               "poise_damage_mult": 1.5,
               "lifetime_add": 2.0,
               "cast_mobility": "rooted"
-            }
+            },
+            "prose_mechanic": "Yerleşik minion (taret)",
+            "prose_feel": "Kalıcı",
+            "prose_visual": "Sabit figür"
           },
           {
             "id": "11-5",
             "name": "Yayılan Çağrı",
             "adjective": "Yayma",
-            "effect": "Yayılan Çağrı: fiil tabanı + sıfat motoru",
+            "effect": "3 küçük minion",
             "passive": "0 sn pasif: Yayma",
             "engine": {
               "action": "summon",
@@ -2832,13 +3206,16 @@
               "hitbox_scale_mult": 1.8,
               "damage_mult": 0.85,
               "max_targets": 5
-            }
+            },
+            "prose_mechanic": "3 küçük minion",
+            "prose_feel": "Kalabalık",
+            "prose_visual": "Üç figür"
           },
           {
             "id": "11-6",
             "name": "Bağlayıcı Çağrı",
             "adjective": "Bağlama",
-            "effect": "Bağlayıcı Çağrı: fiil tabanı + sıfat motoru",
+            "effect": "Minion bağlar",
             "passive": "0 sn pasif: Bağlama",
             "engine": {
               "action": "summon",
@@ -2851,13 +3228,16 @@
               "label": "Bağlama",
               "apply_root_sec": 1.5,
               "apply_slow": 0.3
-            }
+            },
+            "prose_mechanic": "Minion bağlar",
+            "prose_feel": "Kontrolcü",
+            "prose_visual": "Zincir minion"
           },
           {
             "id": "11-7",
             "name": "Bulandırıcı Çağrı",
             "adjective": "Bulandırma",
-            "effect": "Bulandırıcı Çağrı: fiil tabanı + sıfat motoru",
+            "effect": "Minion kör eder",
             "passive": "0 sn pasif: Bulandırma",
             "engine": {
               "action": "summon",
@@ -2870,13 +3250,16 @@
               "label": "Bulandırma",
               "accuracy_debuff": 0.3,
               "lifetime_add": 3.0
-            }
+            },
+            "prose_mechanic": "Minion kör eder",
+            "prose_feel": "Şaşırtıcı",
+            "prose_visual": "Karanlık minion"
           },
           {
             "id": "11-8",
             "name": "Yükselen Çağrı",
             "adjective": "Yükseltme",
-            "effect": "Yükselen Çağrı: fiil tabanı + sıfat motoru",
+            "effect": "Büyük minion",
             "passive": "0 sn pasif: Yükseltme",
             "engine": {
               "action": "summon",
@@ -2889,13 +3272,16 @@
               "label": "Yükseltme",
               "self_damage_buff": 0.1,
               "buff_duration_sec": 3.0
-            }
+            },
+            "prose_mechanic": "Büyük minion",
+            "prose_feel": "Güçlü",
+            "prose_visual": "Altın minion"
           },
           {
             "id": "11-9",
             "name": "Odaklı Çağrı",
             "adjective": "Odaklama",
-            "effect": "Odaklı Çağrı: fiil tabanı + sıfat motoru",
+            "effect": "Hedefe kilitli minion",
             "passive": "0 sn pasif: Odaklama",
             "engine": {
               "action": "summon",
@@ -2909,13 +3295,16 @@
               "ignore_armor": true,
               "damage_mult": 1.15,
               "max_targets": 1
-            }
+            },
+            "prose_mechanic": "Hedefe kilitli minion",
+            "prose_feel": "Odaklı",
+            "prose_visual": "Kırmızı minion"
           },
           {
             "id": "11-10",
             "name": "Aynalı Çağrı",
             "adjective": "Aynalama",
-            "effect": "Aynalı Çağrı: fiil tabanı + sıfat motoru",
+            "effect": "Yansıtıcı minion",
             "passive": "0 sn pasif: Aynalama",
             "engine": {
               "action": "summon",
@@ -2928,13 +3317,16 @@
               "label": "Aynalama",
               "reflect_ratio": 0.3,
               "reflect_duration_sec": 2.0
-            }
+            },
+            "prose_mechanic": "Yansıtıcı minion",
+            "prose_feel": "Yansıtıcı",
+            "prose_visual": "Gümüş minion"
           },
           {
             "id": "11-11",
             "name": "Kopya Çağrı",
             "adjective": "Kopyalama",
-            "effect": "Kopya Çağrı: fiil tabanı + sıfat motoru",
+            "effect": "İki minion",
             "passive": "0 sn pasif: Kopyalama",
             "engine": {
               "action": "summon",
@@ -2948,13 +3340,16 @@
               "duplicate_cast": true,
               "duplicate_delay_sec": 0.3,
               "duplicate_damage_mult": 1.0
-            }
+            },
+            "prose_mechanic": "İki minion",
+            "prose_feel": "İkiz",
+            "prose_visual": "İki figür"
           },
           {
             "id": "11-12",
             "name": "Akan Çağrı",
             "adjective": "Akış",
-            "effect": "Akan Çağrı: fiil tabanı + sıfat motoru",
+            "effect": "Sürekli minion",
             "passive": "0 sn pasif: Akış",
             "engine": {
               "action": "summon",
@@ -2968,7 +3363,10 @@
               "channel_sec": 3.0,
               "tick_rate_mult": 1.2,
               "damage_mult": 0.7
-            }
+            },
+            "prose_mechanic": "Sürekli minion",
+            "prose_feel": "Akıcı",
+            "prose_visual": "Minion nehri"
           }
         ]
       },
@@ -2981,7 +3379,7 @@
             "id": "12-1",
             "name": "Yoğun Zaman",
             "adjective": "Yoğunlaştırma",
-            "effect": "Tek düşmana anlık ağır yavaşlatma (%70, 1 sn). Global slow-mo yok.",
+            "effect": "Tek düşman hızı %70 düşer, 1 sn (global timescale yok)",
             "passive": "4 sn: tempo debuff güçlenir",
             "engine": {
               "action": "tempo",
@@ -2997,13 +3395,16 @@
               "damage_mult": 1.35,
               "hitbox_scale_mult": 0.55,
               "poise_damage_mult": 1.2
-            }
+            },
+            "prose_mechanic": "Tek düşman hızı %70 düşer, 1 sn (global timescale yok)",
+            "prose_feel": "Ani tempo",
+            "prose_visual": "Mavi dar halka"
           },
           {
             "id": "12-2",
             "name": "Emici Zaman",
             "adjective": "Emme",
-            "effect": "Düşmanı yavaşlat + can çal",
+            "effect": "Düşman yavaşlat + can çal",
             "passive": "4 sn: tempo can çalar",
             "engine": {
               "action": "tempo",
@@ -3018,13 +3419,16 @@
               "label": "Emme",
               "lifesteal": 0.3,
               "damage_mult": 0.95
-            }
+            },
+            "prose_mechanic": "Düşman yavaşlat + can çal",
+            "prose_feel": "Sömüren",
+            "prose_visual": "Mavi-kırmızı"
           },
           {
             "id": "12-3",
             "name": "Sıçrayan Zaman",
             "adjective": "Sıçrama",
-            "effect": "Tempo etkisi 2. hedefe seker",
+            "effect": "Tempo debuff 2. hedefe seker",
             "passive": "4 sn: tempo seker",
             "engine": {
               "action": "tempo",
@@ -3040,13 +3444,16 @@
               "bounce_targets": 2,
               "bounce_damage_mult": 0.5,
               "hitbox_scale_mult": 1.1
-            }
+            },
+            "prose_mechanic": "Tempo debuff 2. hedefe seker",
+            "prose_feel": "Bulaşıcı",
+            "prose_visual": "Mavi sekme"
           },
           {
             "id": "12-4",
             "name": "Sabit Zaman",
             "adjective": "Sabitleme",
-            "effect": "Uzun süreli yavaşlatma alanı (5 sn, düşman hızı)",
+            "effect": "5 sn düşman yavaşlatma alanı",
             "passive": "4 sn: kalıcı tempo alanı",
             "engine": {
               "action": "tempo",
@@ -3062,13 +3469,16 @@
               "poise_damage_mult": 1.5,
               "lifetime_add": 2.0,
               "cast_mobility": "rooted"
-            }
+            },
+            "prose_mechanic": "5 sn düşman yavaşlatma alanı",
+            "prose_feel": "Kalıcı",
+            "prose_visual": "Mavi kubbe"
           },
           {
             "id": "12-5",
             "name": "Yayılan Zaman",
             "adjective": "Yayma",
-            "effect": "Alan yavaşlatma (düşman hareket/cast)",
+            "effect": "Alan düşman yavaşlatma",
             "passive": "4 sn: geniş tempo alanı",
             "engine": {
               "action": "tempo",
@@ -3084,13 +3494,16 @@
               "hitbox_scale_mult": 1.8,
               "damage_mult": 0.85,
               "max_targets": 5
-            }
+            },
+            "prose_mechanic": "Alan düşman yavaşlatma",
+            "prose_feel": "Kuşatıcı",
+            "prose_visual": "Mavi dalga"
           },
           {
             "id": "12-6",
             "name": "Bağlayıcı Zaman",
             "adjective": "Bağlama",
-            "effect": "Dosta bağlanır: ikisi de hızlanır (self/ally haste)",
+            "effect": "Dosta bağlanır, ikisi self-haste",
             "passive": "4 sn: bağlı haste",
             "engine": {
               "action": "tempo",
@@ -3105,7 +3518,10 @@
               "label": "Bağlama",
               "apply_root_sec": 1.5,
               "apply_slow": 0.3
-            }
+            },
+            "prose_mechanic": "Dosta bağlanır, ikisi self-haste",
+            "prose_feel": "Paylaşımcı",
+            "prose_visual": "Mavi bağ"
           },
           {
             "id": "12-7",
@@ -3126,13 +3542,16 @@
               "label": "Bulandırma",
               "accuracy_debuff": 0.3,
               "lifetime_add": 3.0
-            }
+            },
+            "prose_mechanic": "Yavaşlatma + isabet düşürme",
+            "prose_feel": "Şaşırtıcı",
+            "prose_visual": "Mavi duman"
           },
           {
             "id": "12-8",
             "name": "Yükselen Zaman",
             "adjective": "Yükseltme",
-            "effect": "Kendin hızlan (%50, 3 sn); dünya saati değişmez",
+            "effect": "Kendine +%50 hareket/cast hızı (dünya saati sabit)",
             "passive": "4 sn: self haste",
             "engine": {
               "action": "tempo",
@@ -3147,7 +3566,10 @@
               "label": "Yükseltme",
               "self_damage_buff": 0.1,
               "buff_duration_sec": 3.0
-            }
+            },
+            "prose_mechanic": "Kendine +%50 hareket/cast hızı (dünya saati sabit)",
+            "prose_feel": "Hızlanan",
+            "prose_visual": "Altın-mavi"
           },
           {
             "id": "12-9",
@@ -3169,13 +3591,16 @@
               "ignore_armor": true,
               "damage_mult": 1.15,
               "max_targets": 1
-            }
+            },
+            "prose_mechanic": "Tek hedefe 3 sn ağır yavaşlatma",
+            "prose_feel": "Odaklı",
+            "prose_visual": "Kırmızı hedef"
           },
           {
             "id": "12-10",
             "name": "Aynalı Zaman",
             "adjective": "Aynalama",
-            "effect": "Yavaşlatma + yansıma",
+            "effect": "Tempo + yansıma",
             "passive": "4 sn: tempo yansıtır",
             "engine": {
               "action": "tempo",
@@ -3190,7 +3615,10 @@
               "label": "Aynalama",
               "reflect_ratio": 0.3,
               "reflect_duration_sec": 2.0
-            }
+            },
+            "prose_mechanic": "Tempo + yansıma",
+            "prose_feel": "Yansıtıcı",
+            "prose_visual": "Gümüş-mavi"
           },
           {
             "id": "12-11",
@@ -3212,13 +3640,16 @@
               "duplicate_cast": true,
               "duplicate_delay_sec": 0.3,
               "duplicate_damage_mult": 1.0
-            }
+            },
+            "prose_mechanic": "Tempo etkisi iki kez (gecikmeli)",
+            "prose_feel": "İkiz",
+            "prose_visual": "Çift mavi"
           },
           {
             "id": "12-12",
             "name": "Akan Zaman",
             "adjective": "Akış",
-            "effect": "Sürekli tempo alanı (4 sn, düşman slow)",
+            "effect": "Sürekli düşman yavaşlatma alanı, 4 sn",
             "passive": "4 sn: kesintisiz tempo",
             "engine": {
               "action": "tempo",
@@ -3234,7 +3665,10 @@
               "channel_sec": 3.0,
               "tick_rate_mult": 1.2,
               "damage_mult": 0.7
-            }
+            },
+            "prose_mechanic": "Sürekli düşman yavaşlatma alanı, 4 sn",
+            "prose_feel": "Akıcı",
+            "prose_visual": "Mavi akış"
           }
         ]
       }
@@ -4113,5 +4547,2617 @@
       "Çağırma": "Çağırma",
       "Zaman": "Zaman"
     }
-  }
+  },
+  "ana_classes_80": {
+    "description": "924 build'in 80'i tanıdık isimli ana class. Oyuncuya görünmez, tasarım aracı.",
+    "groups": {
+      "3_3_0_0": {
+        "count": 6,
+        "categories": "İki kategori eşit (3+3)",
+        "classes": [
+          {
+            "id": 1,
+            "name": "Savaşçı",
+            "runes": [
+              1,
+              5,
+              6,
+              2,
+              7,
+              9
+            ],
+            "category": "Hasar+Destek",
+            "his": "Vur, yarala, iyileştir"
+          },
+          {
+            "id": 2,
+            "name": "Bruiser",
+            "runes": [
+              1,
+              5,
+              6,
+              4,
+              8,
+              10
+            ],
+            "category": "Hasar+Savunma",
+            "his": "Vur, dayan, karşılık ver"
+          },
+          {
+            "id": 3,
+            "name": "Suikastçı",
+            "runes": [
+              1,
+              5,
+              6,
+              3,
+              11,
+              12
+            ],
+            "category": "Hasar+Hareket",
+            "his": "Kaç, açık bul, vur"
+          },
+          {
+            "id": 4,
+            "name": "Kutsal Destek",
+            "runes": [
+              2,
+              7,
+              9,
+              4,
+              8,
+              10
+            ],
+            "category": "Destek+Savunma",
+            "his": "İyileştir, koru, temizle"
+          },
+          {
+            "id": 5,
+            "name": "Gezgin",
+            "runes": [
+              2,
+              7,
+              9,
+              3,
+              11,
+              12
+            ],
+            "category": "Destek+Hareket",
+            "his": "İyileştir, kaç"
+          },
+          {
+            "id": 6,
+            "name": "Kale",
+            "runes": [
+              4,
+              8,
+              10,
+              3,
+              11,
+              12
+            ],
+            "category": "Savunma+Hareket",
+            "his": "Koru, hareket et"
+          }
+        ]
+      },
+      "3_2_1_0": {
+        "count": 24,
+        "categories": "Baskın (3 ana + 2 ikincil + 1 üçüncül)",
+        "classes": [
+          {
+            "id": 7,
+            "name": "Berserker",
+            "runes": [
+              1,
+              5,
+              6,
+              2,
+              7,
+              4
+            ],
+            "his": "Bas, bas, bas"
+          },
+          {
+            "id": 8,
+            "name": "Kan Avcısı",
+            "runes": [
+              1,
+              5,
+              6,
+              2,
+              7,
+              3
+            ],
+            "his": "Vur, em, kaç"
+          },
+          {
+            "id": 9,
+            "name": "Paladin",
+            "runes": [
+              1,
+              5,
+              6,
+              4,
+              8,
+              2
+            ],
+            "his": "Vur, koru, iyileştir"
+          },
+          {
+            "id": 10,
+            "name": "Savaş Lordu",
+            "runes": [
+              1,
+              5,
+              6,
+              4,
+              8,
+              3
+            ],
+            "his": "Vur, koru, manevra"
+          },
+          {
+            "id": 11,
+            "name": "Kılıç Ustası",
+            "runes": [
+              1,
+              5,
+              6,
+              3,
+              11,
+              2
+            ],
+            "his": "Vur, kaç, iyileştir"
+          },
+          {
+            "id": 12,
+            "name": "Topçu",
+            "runes": [
+              1,
+              5,
+              6,
+              3,
+              11,
+              4
+            ],
+            "his": "Vur, yerleş, patlat"
+          },
+          {
+            "id": 13,
+            "name": "Kutsal Şifacı",
+            "runes": [
+              2,
+              7,
+              9,
+              1,
+              5,
+              4
+            ],
+            "his": "İyileştir, temizle, vur"
+          },
+          {
+            "id": 14,
+            "name": "Şifacı-Kaçkın",
+            "runes": [
+              2,
+              7,
+              9,
+              1,
+              5,
+              3
+            ],
+            "his": "İyileştir, kaç"
+          },
+          {
+            "id": 15,
+            "name": "Tapınak",
+            "runes": [
+              2,
+              7,
+              9,
+              4,
+              8,
+              1
+            ],
+            "his": "Koru, iyileştir"
+          },
+          {
+            "id": 16,
+            "name": "Barışçıl Gezgin",
+            "runes": [
+              2,
+              7,
+              9,
+              4,
+              8,
+              3
+            ],
+            "his": "Koru, gez"
+          },
+          {
+            "id": 17,
+            "name": "Çoban",
+            "runes": [
+              2,
+              7,
+              9,
+              3,
+              11,
+              1
+            ],
+            "his": "Sürüyü koru"
+          },
+          {
+            "id": 18,
+            "name": "Rüzgar Rahibi",
+            "runes": [
+              2,
+              7,
+              9,
+              3,
+              11,
+              4
+            ],
+            "his": "İyileştir, kaç, koru"
+          },
+          {
+            "id": 19,
+            "name": "Duvar",
+            "runes": [
+              4,
+              8,
+              10,
+              1,
+              5,
+              2
+            ],
+            "his": "Dur, ye, vur"
+          },
+          {
+            "id": 20,
+            "name": "Demir Tank",
+            "runes": [
+              4,
+              8,
+              10,
+              1,
+              5,
+              3
+            ],
+            "his": "Dur, ye, manevra"
+          },
+          {
+            "id": 21,
+            "name": "Yansıtıcı Tank",
+            "runes": [
+              4,
+              8,
+              10,
+              2,
+              7,
+              1
+            ],
+            "his": "Yansıt, iyileştir"
+          },
+          {
+            "id": 22,
+            "name": "Kutsal Duvar",
+            "runes": [
+              4,
+              8,
+              10,
+              2,
+              7,
+              3
+            ],
+            "his": "Koru, temizle"
+          },
+          {
+            "id": 23,
+            "name": "Kale Bekçisi",
+            "runes": [
+              4,
+              8,
+              10,
+              3,
+              11,
+              1
+            ],
+            "his": "Koru, manevra"
+          },
+          {
+            "id": 24,
+            "name": "Mobil Tank",
+            "runes": [
+              4,
+              8,
+              10,
+              3,
+              11,
+              2
+            ],
+            "his": "Koru, kaç"
+          },
+          {
+            "id": 25,
+            "name": "Hayalet",
+            "runes": [
+              3,
+              11,
+              12,
+              1,
+              5,
+              2
+            ],
+            "his": "Uç, vur, kaç"
+          },
+          {
+            "id": 26,
+            "name": "Kuklacı",
+            "runes": [
+              3,
+              11,
+              12,
+              1,
+              5,
+              4
+            ],
+            "his": "Minion kur, savaş"
+          },
+          {
+            "id": 27,
+            "name": "Rüzgar Ustası",
+            "runes": [
+              3,
+              11,
+              12,
+              2,
+              7,
+              1
+            ],
+            "his": "Uç, iyileştir"
+          },
+          {
+            "id": 28,
+            "name": "Gezgin Rahip",
+            "runes": [
+              3,
+              11,
+              12,
+              2,
+              7,
+              4
+            ],
+            "his": "Gez, koru"
+          },
+          {
+            "id": 29,
+            "name": "Gölge Efendisi",
+            "runes": [
+              3,
+              11,
+              12,
+              4,
+              8,
+              1
+            ],
+            "his": "Kaybol, vur"
+          },
+          {
+            "id": 30,
+            "name": "Sınır Bekçisi",
+            "runes": [
+              3,
+              11,
+              12,
+              4,
+              8,
+              2
+            ],
+            "his": "Sınırda dur"
+          }
+        ]
+      },
+      "3_1_1_1": {
+        "count": 15,
+        "categories": "Dengeli (3 ana + 1+1+1)",
+        "classes": [
+          {
+            "id": 31,
+            "name": "Haçlı",
+            "runes": [
+              1,
+              5,
+              6,
+              2,
+              4,
+              3
+            ],
+            "his": "Vur, iyileştir, koru, kaç"
+          },
+          {
+            "id": 32,
+            "name": "Savaş Büyücüsü",
+            "runes": [
+              1,
+              5,
+              6,
+              2,
+              4,
+              11
+            ],
+            "his": "Vur, çağır, koru"
+          },
+          {
+            "id": 33,
+            "name": "Gölge Savaşçısı",
+            "runes": [
+              1,
+              5,
+              6,
+              2,
+              8,
+              12
+            ],
+            "his": "Vur, güçlen, zaman bük"
+          },
+          {
+            "id": 34,
+            "name": "Element Ustası",
+            "runes": [
+              1,
+              5,
+              6,
+              7,
+              4,
+              3
+            ],
+            "his": "Vur, boz, koru, kaç"
+          },
+          {
+            "id": 35,
+            "name": "Kaos Savaşçısı",
+            "runes": [
+              1,
+              5,
+              6,
+              7,
+              10,
+              12
+            ],
+            "his": "Vur, boz, yansıt"
+          },
+          {
+            "id": 36,
+            "name": "Kan Lordu",
+            "runes": [
+              1,
+              5,
+              6,
+              9,
+              8,
+              11
+            ],
+            "his": "Vur, temizle, güçlen, çağır"
+          },
+          {
+            "id": 37,
+            "name": "Koruyucu Şifacı",
+            "runes": [
+              2,
+              7,
+              9,
+              1,
+              4,
+              3
+            ],
+            "his": "İyileştir, koru, kaç"
+          },
+          {
+            "id": 38,
+            "name": "Kutsal Casus",
+            "runes": [
+              2,
+              7,
+              9,
+              1,
+              10,
+              11
+            ],
+            "his": "İyileştir, yansıt, çağır"
+          },
+          {
+            "id": 39,
+            "name": "Doğa Rahibi",
+            "runes": [
+              2,
+              7,
+              9,
+              5,
+              8,
+              12
+            ],
+            "his": "İyileştir, patlat, güçlen"
+          },
+          {
+            "id": 40,
+            "name": "Kader Şifacısı",
+            "runes": [
+              2,
+              7,
+              9,
+              6,
+              4,
+              3
+            ],
+            "his": "İyileştir, kontrol et, kaç"
+          },
+          {
+            "id": 41,
+            "name": "Kutsal Casus A",
+            "runes": [
+              2,
+              7,
+              9,
+              6,
+              10,
+              11
+            ],
+            "his": "İyileştir, kontrol et, yansıt",
+            "rename_from": "Kutsal Casus",
+            "note": "id41 was duplicate name with id38; renamed Kutsal Casus A for uniqueness"
+          },
+          {
+            "id": 42,
+            "name": "Ruh Şifacısı",
+            "runes": [
+              2,
+              7,
+              9,
+              5,
+              4,
+              12
+            ],
+            "his": "İyileştir, patlat, koru"
+          },
+          {
+            "id": 43,
+            "name": "Zırh Ustası",
+            "runes": [
+              4,
+              8,
+              10,
+              1,
+              2,
+              3
+            ],
+            "his": "Koru, vur, iyileştir"
+          },
+          {
+            "id": 44,
+            "name": "Kutsal Tank",
+            "runes": [
+              4,
+              8,
+              10,
+              1,
+              7,
+              12
+            ],
+            "his": "Koru, vur, boz"
+          },
+          {
+            "id": 45,
+            "name": "Yansıtıcı Usta",
+            "runes": [
+              4,
+              8,
+              10,
+              5,
+              2,
+              11
+            ],
+            "his": "Koru, yansıt, çağır"
+          }
+        ]
+      },
+      "2_2_2_0": {
+        "count": 20,
+        "categories": "Hibrit (2+2+2, bir kategori yok)",
+        "classes": [
+          {
+            "id": 46,
+            "name": "Savaş Rahibi",
+            "runes": [
+              1,
+              5,
+              2,
+              7,
+              4,
+              8
+            ],
+            "missing": "Hareket",
+            "his": "Vur, iyileştir, koru"
+          },
+          {
+            "id": 47,
+            "name": "Cehennem Rahibi",
+            "runes": [
+              1,
+              6,
+              2,
+              9,
+              4,
+              10
+            ],
+            "missing": "Hareket",
+            "his": "Vur, kontrol, temizle"
+          },
+          {
+            "id": 48,
+            "name": "Kan Rahibi",
+            "runes": [
+              5,
+              6,
+              7,
+              9,
+              8,
+              10
+            ],
+            "missing": "Hareket",
+            "his": "Patlat, boz, koru"
+          },
+          {
+            "id": 49,
+            "name": "Kutsal Savaşçı",
+            "runes": [
+              1,
+              5,
+              2,
+              7,
+              3,
+              11
+            ],
+            "missing": "Savunma",
+            "his": "Vur, iyileştir, kaç"
+          },
+          {
+            "id": 50,
+            "name": "Kutsal Casus B",
+            "runes": [
+              1,
+              6,
+              2,
+              9,
+              3,
+              12
+            ],
+            "missing": "Savunma",
+            "his": "Vur, kontrol, kaç",
+            "rename_from": "Kutsal Casus",
+            "note": "duplicate name fix"
+          },
+          {
+            "id": 51,
+            "name": "Kaos Rahibi",
+            "runes": [
+              5,
+              6,
+              7,
+              9,
+              11,
+              12
+            ],
+            "missing": "Savunma",
+            "his": "Patlat, boz, kaç"
+          },
+          {
+            "id": 52,
+            "name": "Yıldırım Savaşçısı",
+            "runes": [
+              1,
+              5,
+              4,
+              8,
+              3,
+              11
+            ],
+            "missing": "Destek",
+            "his": "Vur, koru, kaç"
+          },
+          {
+            "id": 53,
+            "name": "Rüzgar Tankı",
+            "runes": [
+              1,
+              6,
+              4,
+              10,
+              3,
+              12
+            ],
+            "missing": "Destek",
+            "his": "Vur, kontrol, yansıt"
+          },
+          {
+            "id": 54,
+            "name": "Gölge Kale",
+            "runes": [
+              5,
+              6,
+              8,
+              10,
+              11,
+              12
+            ],
+            "missing": "Destek",
+            "his": "Patlat, güçlen, yansıt"
+          },
+          {
+            "id": 55,
+            "name": "Kutsal Kale",
+            "runes": [
+              2,
+              7,
+              4,
+              8,
+              3,
+              11
+            ],
+            "missing": "Hasar",
+            "his": "İyileştir, koru, kaç"
+          },
+          {
+            "id": 56,
+            "name": "Ruh Kale",
+            "runes": [
+              2,
+              9,
+              4,
+              10,
+              3,
+              12
+            ],
+            "missing": "Hasar",
+            "his": "İyileştir, temizle, yansıt"
+          },
+          {
+            "id": 57,
+            "name": "Şifa Gezgini",
+            "runes": [
+              7,
+              9,
+              8,
+              10,
+              11,
+              12
+            ],
+            "missing": "Hasar",
+            "his": "Boz, temizle, kaç"
+          },
+          {
+            "id": 58,
+            "name": "Paladin (2)",
+            "runes": [
+              1,
+              5,
+              2,
+              9,
+              4,
+              8
+            ],
+            "missing": "Hareket",
+            "his": "Vur, iyileştir, koru"
+          },
+          {
+            "id": 59,
+            "name": "Vampir",
+            "runes": [
+              1,
+              5,
+              2,
+              7,
+              3,
+              12
+            ],
+            "missing": "Savunma",
+            "his": "Vur, em, kaç"
+          },
+          {
+            "id": 60,
+            "name": "Savaş Lordu (2)",
+            "runes": [
+              1,
+              6,
+              4,
+              8,
+              3,
+              11
+            ],
+            "missing": "Destek",
+            "his": "Vur, kontrol, koru"
+          },
+          {
+            "id": 61,
+            "name": "Koruyucu",
+            "runes": [
+              2,
+              7,
+              4,
+              8,
+              3,
+              12
+            ],
+            "missing": "Hasar",
+            "his": "İyileştir, koru, kaç"
+          },
+          {
+            "id": 62,
+            "name": "Nuker",
+            "runes": [
+              1,
+              5,
+              2,
+              7,
+              4,
+              10
+            ],
+            "missing": "Hareket",
+            "his": "Vur, iyileştir, yansıt"
+          },
+          {
+            "id": 63,
+            "name": "Fırtına",
+            "runes": [
+              1,
+              5,
+              4,
+              8,
+              11,
+              12
+            ],
+            "missing": "Destek",
+            "his": "Vur, koru, çağır"
+          },
+          {
+            "id": 64,
+            "name": "Kutsal Şifacı (2)",
+            "runes": [
+              2,
+              9,
+              4,
+              10,
+              3,
+              11
+            ],
+            "missing": "Hasar",
+            "his": "İyileştir, temizle, koru"
+          },
+          {
+            "id": 65,
+            "name": "Sinsi Suikastçı",
+            "runes": [
+              1,
+              6,
+              2,
+              9,
+              3,
+              12
+            ],
+            "missing": "Savunma",
+            "his": "Vur, kontrol, kaç"
+          }
+        ]
+      },
+      "2_2_1_1": {
+        "count": 15,
+        "categories": "Dengeli Hibrit (2+2+1+1)",
+        "classes": [
+          {
+            "id": 66,
+            "name": "Büyücü",
+            "runes": [
+              1,
+              5,
+              2,
+              7,
+              4,
+              3
+            ],
+            "his": "Vur, iyileştir, koru, kaç"
+          },
+          {
+            "id": 67,
+            "name": "Savaşçı-Rahip",
+            "runes": [
+              1,
+              6,
+              2,
+              9,
+              8,
+              11
+            ],
+            "his": "Vur, kontrol, temizle"
+          },
+          {
+            "id": 68,
+            "name": "Kan Büyücüsü",
+            "runes": [
+              5,
+              6,
+              7,
+              9,
+              4,
+              3
+            ],
+            "his": "Patlat, boz, koru"
+          },
+          {
+            "id": 69,
+            "name": "Kutsal Savaşçı (2)",
+            "runes": [
+              1,
+              5,
+              2,
+              7,
+              10,
+              12
+            ],
+            "his": "Vur, iyileştir, yansıt"
+          },
+          {
+            "id": 70,
+            "name": "Ruh Savaşçısı",
+            "runes": [
+              1,
+              6,
+              2,
+              9,
+              4,
+              3
+            ],
+            "his": "Vur, kontrol, temizle"
+          },
+          {
+            "id": 71,
+            "name": "Doğa Savaşçısı",
+            "runes": [
+              5,
+              6,
+              7,
+              9,
+              8,
+              11
+            ],
+            "his": "Patlat, boz, koru"
+          },
+          {
+            "id": 72,
+            "name": "Kaos",
+            "runes": [
+              1,
+              5,
+              2,
+              7,
+              4,
+              11
+            ],
+            "his": "Vur, iyileştir, çağır"
+          },
+          {
+            "id": 73,
+            "name": "Yıldırım",
+            "runes": [
+              1,
+              6,
+              2,
+              9,
+              8,
+              12
+            ],
+            "his": "Vur, kontrol, yansıt"
+          },
+          {
+            "id": 74,
+            "name": "Gölge",
+            "runes": [
+              5,
+              6,
+              7,
+              9,
+              4,
+              3
+            ],
+            "his": "Patlat, boz, koru"
+          },
+          {
+            "id": 75,
+            "name": "Kutsal",
+            "runes": [
+              1,
+              5,
+              2,
+              7,
+              10,
+              12
+            ],
+            "his": "Vur, iyileştir, yansıt"
+          },
+          {
+            "id": 76,
+            "name": "Vampir Lordu",
+            "runes": [
+              1,
+              5,
+              2,
+              9,
+              4,
+              11
+            ],
+            "his": "Vur, iyileştir, koru"
+          },
+          {
+            "id": 77,
+            "name": "Zehir Ustası",
+            "runes": [
+              1,
+              6,
+              7,
+              9,
+              8,
+              12
+            ],
+            "his": "Vur, kontrol, boz"
+          },
+          {
+            "id": 78,
+            "name": "Kan Şifacısı",
+            "runes": [
+              5,
+              6,
+              2,
+              7,
+              4,
+              3
+            ],
+            "his": "Patlat, iyileştir, koru"
+          },
+          {
+            "id": 79,
+            "name": "Savaş Rahibi (2)",
+            "runes": [
+              1,
+              5,
+              7,
+              9,
+              10,
+              11
+            ],
+            "his": "Vur, iyileştir, boz"
+          },
+          {
+            "id": 80,
+            "name": "Kutsal Casus (2)",
+            "runes": [
+              1,
+              6,
+              2,
+              9,
+              4,
+              12
+            ],
+            "his": "Vur, kontrol, temizle"
+          }
+        ]
+      }
+    },
+    "category_distribution": {
+      "hasar": [
+        1,
+        5,
+        6
+      ],
+      "destek": [
+        2,
+        7,
+        9
+      ],
+      "savunma": [
+        4,
+        8,
+        10
+      ],
+      "hareket": [
+        3,
+        11,
+        12
+      ]
+    },
+    "classification_rule": {
+      "distance_0": "ana_class",
+      "distance_1": "yakin_varyant (~350)",
+      "distance_2_3": "melez (~300)",
+      "distance_4_plus": "ozgun (~194)"
+    }
+  },
+  "skills_prose_144": {
+    "description": "144 skill için tam prose. İsim + mekanik + his + görsel.",
+    "entries": {
+      "1": {
+        "1-1": {
+          "name": "Yoğun Vuruş",
+          "mechanic": "Dar, odaklı, yüksek hasar",
+          "feel": "Sert, kararlı, tek noktaya",
+          "visual": "Tek çizgi, beyaz iz"
+        },
+        "1-2": {
+          "name": "Emici Vuruş",
+          "mechanic": "Vurur, %30 can çalar",
+          "feel": "Aç, emici",
+          "visual": "Kırmızı iz, kan akışı"
+        },
+        "1-3": {
+          "name": "Sıçrayan Vuruş",
+          "mechanic": "2. hedefe %50 seker",
+          "feel": "Çevik, kaotik",
+          "visual": "Sarı kıvılcım sekmesi"
+        },
+        "1-4": {
+          "name": "Sabit Vuruş",
+          "mechanic": "Poise ×1.5",
+          "feel": "Ağır, kırıcı",
+          "visual": "Yere çakma, toz"
+        },
+        "1-5": {
+          "name": "Yayılan Vuruş",
+          "mechanic": "Çevreye %50 hasar",
+          "feel": "Geniş, dalga",
+          "visual": "Şok dalgası"
+        },
+        "1-6": {
+          "name": "Bağlayıcı Vuruş",
+          "mechanic": "1.5 sn root",
+          "feel": "Kontrolcü",
+          "visual": "Zincir, bağ izi"
+        },
+        "1-7": {
+          "name": "Bulandırıcı Vuruş",
+          "mechanic": "İsabet -%30, 3 sn",
+          "feel": "Sinsi, bozucu",
+          "visual": "Karanlık duman"
+        },
+        "1-8": {
+          "name": "Yükselen Vuruş",
+          "mechanic": "+%10 hasar, 3 sn",
+          "feel": "Güçlenen",
+          "visual": "Altın parıltı"
+        },
+        "1-9": {
+          "name": "Odaklı Vuruş",
+          "mechanic": "Zırh yoksayar",
+          "feel": "Delici, keskin",
+          "visual": "Mavi nokta, delme"
+        },
+        "1-10": {
+          "name": "Aynalı Vuruş",
+          "mechanic": "%30 yansıma, 2 sn",
+          "feel": "Ters, ayna",
+          "visual": "Gümüş yansıma"
+        },
+        "1-11": {
+          "name": "Kopya Vuruş",
+          "mechanic": "0.3 sn sonra 2. vuruş",
+          "feel": "İkiz, tekrarlı",
+          "visual": "Çift iz"
+        },
+        "1-12": {
+          "name": "Akan Vuruş",
+          "mechanic": "3 sn ardışık seri",
+          "feel": "Sürekli, akıcı",
+          "visual": "Su gibi akış"
+        }
+      },
+      "2": {
+        "2-1": {
+          "name": "Yoğun Şifa",
+          "mechanic": "Anlık büyük can",
+          "feel": "Ani, güçlü",
+          "visual": "Yeşil patlama"
+        },
+        "2-2": {
+          "name": "Emici Şifa",
+          "mechanic": "Dren ile verir",
+          "feel": "Sömüren",
+          "visual": "Kırmızı→yeşil akış"
+        },
+        "2-3": {
+          "name": "Sıçrayan Şifa",
+          "mechanic": "Dosta seker",
+          "feel": "Bulaşıcı",
+          "visual": "Yeşil sekme"
+        },
+        "2-4": {
+          "name": "Sabit Şifa",
+          "mechanic": "Yerleşik şifa alanı",
+          "feel": "Kalıcı, sabırlı",
+          "visual": "Yeşil halka"
+        },
+        "2-5": {
+          "name": "Yayılan Şifa",
+          "mechanic": "Geniş alan",
+          "feel": "Cömert",
+          "visual": "Yeşil dalga"
+        },
+        "2-6": {
+          "name": "Bağlayıcı Şifa",
+          "mechanic": "Dosta bağlanır",
+          "feel": "Bağlı, sürekli",
+          "visual": "Yeşil bağ"
+        },
+        "2-7": {
+          "name": "Bulandırıcı Şifa",
+          "mechanic": "Debuff temizler",
+          "feel": "Temizleyici",
+          "visual": "Beyaz parıltı"
+        },
+        "2-8": {
+          "name": "Yükselen Şifa",
+          "mechanic": "Şifa + buff",
+          "feel": "Yükseltici",
+          "visual": "Altın-yeşil"
+        },
+        "2-9": {
+          "name": "Odaklı Şifa",
+          "mechanic": "En yaralıyı bulur",
+          "feel": "Akıllı, odaklı",
+          "visual": "Yeşil ok"
+        },
+        "2-10": {
+          "name": "Aynalı Şifa",
+          "mechanic": "Hasar→şifa",
+          "feel": "Dönüştürücü",
+          "visual": "Gümüş-yeşil"
+        },
+        "2-11": {
+          "name": "Kopya Şifa",
+          "mechanic": "İki kez tetiklenir",
+          "feel": "İkiz",
+          "visual": "Çift yeşil"
+        },
+        "2-12": {
+          "name": "Akan Şifa",
+          "mechanic": "Sürekli regen",
+          "feel": "Akıcı, sabırlı",
+          "visual": "Yeşil nehir"
+        }
+      },
+      "3": {
+        "3-1": {
+          "name": "Yoğun Adım",
+          "mechanic": "Kısa, hızlı dash",
+          "feel": "Ani, kısa",
+          "visual": "Beyaz iz"
+        },
+        "3-2": {
+          "name": "Emici Adım",
+          "mechanic": "Dash + can çal",
+          "feel": "Sinsi, emici",
+          "visual": "Kırmızı iz"
+        },
+        "3-3": {
+          "name": "Sıçrayan Adım",
+          "mechanic": "Çift dash",
+          "feel": "Çevik, ikiz",
+          "visual": "Çift beyaz"
+        },
+        "3-4": {
+          "name": "Sabit Adım",
+          "mechanic": "Dash + armor",
+          "feel": "Güvenli",
+          "visual": "Mavi kalkan"
+        },
+        "3-5": {
+          "name": "Yayılan Adım",
+          "mechanic": "Dash + çevre hasarı",
+          "feel": "Patlayıcı",
+          "visual": "Şok dalgası"
+        },
+        "3-6": {
+          "name": "Bağlayıcı Adım",
+          "mechanic": "Dash + root",
+          "feel": "Kontrolcü",
+          "visual": "Zincir izi"
+        },
+        "3-7": {
+          "name": "Bulandırıcı Adım",
+          "mechanic": "Dash + görünmezlik",
+          "feel": "Hayalet",
+          "visual": "Karanlık iz"
+        },
+        "3-8": {
+          "name": "Yükselen Adım",
+          "mechanic": "Dash + hız buff",
+          "feel": "Hızlanan",
+          "visual": "Altın iz"
+        },
+        "3-9": {
+          "name": "Odaklı Adım",
+          "mechanic": "Dash + kilitlenme",
+          "feel": "Kilitli",
+          "visual": "Mavi hedef"
+        },
+        "3-10": {
+          "name": "Aynalı Adım",
+          "mechanic": "Dash + iz",
+          "feel": "İz bırakan",
+          "visual": "Gümüş iz"
+        },
+        "3-11": {
+          "name": "Kopya Adım",
+          "mechanic": "Dash + klon",
+          "feel": "İkiz",
+          "visual": "Aynı figür"
+        },
+        "3-12": {
+          "name": "Akan Adım",
+          "mechanic": "Sürekli hız",
+          "feel": "Akıcı",
+          "visual": "Mavi akış"
+        }
+      },
+      "4": {
+        "4-1": {
+          "name": "Yoğun Kalkan",
+          "mechanic": "Dar, güçlü armor",
+          "feel": "Sağlam",
+          "visual": "Mavi dar halka"
+        },
+        "4-2": {
+          "name": "Emici Kalkan",
+          "mechanic": "Hasar→can",
+          "feel": "Emici",
+          "visual": "Kırmızı→mavi"
+        },
+        "4-3": {
+          "name": "Sıçrayan Kalkan",
+          "mechanic": "Dosta seker",
+          "feel": "Paylaşımcı",
+          "visual": "Mavi sekme"
+        },
+        "4-4": {
+          "name": "Sabit Kalkan",
+          "mechanic": "Uzun armor",
+          "feel": "Kalıcı",
+          "visual": "Mavi kubbe"
+        },
+        "4-5": {
+          "name": "Yayılan Kalkan",
+          "mechanic": "Geniş alan armor",
+          "feel": "Koruyucu",
+          "visual": "Mavi dalga"
+        },
+        "4-6": {
+          "name": "Bağlayıcı Kalkan",
+          "mechanic": "Dosta bağlanır",
+          "feel": "Bağlı",
+          "visual": "Mavi bağ"
+        },
+        "4-7": {
+          "name": "Bulandırıcı Kalkan",
+          "mechanic": "Vurana yavaşlatma",
+          "feel": "Tuzakçı",
+          "visual": "Mavi duman"
+        },
+        "4-8": {
+          "name": "Yükselen Kalkan",
+          "mechanic": "Kalkan + buff",
+          "feel": "Güçlendirici",
+          "visual": "Altın-mavi"
+        },
+        "4-9": {
+          "name": "Odaklı Kalkan",
+          "mechanic": "En çok hasarlıyı korur",
+          "feel": "Akıllı",
+          "visual": "Mavi hedef"
+        },
+        "4-10": {
+          "name": "Aynalı Kalkan",
+          "mechanic": "%40 yansıma",
+          "feel": "Yansıtıcı",
+          "visual": "Gümüş kubbe"
+        },
+        "4-11": {
+          "name": "Kopya Kalkan",
+          "mechanic": "İki katman",
+          "feel": "İkiz",
+          "visual": "Çift kubbe"
+        },
+        "4-12": {
+          "name": "Akan Kalkan",
+          "mechanic": "Sürekli yenilenen",
+          "feel": "Yenilenen",
+          "visual": "Mavi akış"
+        }
+      },
+      "5": {
+        "5-1": {
+          "name": "Yoğun Patlama",
+          "mechanic": "Dar, güçlü alan",
+          "feel": "Odaklı yıkım",
+          "visual": "Kırmızı dar patlama"
+        },
+        "5-2": {
+          "name": "Emici Patlama",
+          "mechanic": "Alan + can çalma",
+          "feel": "Sömüren",
+          "visual": "Kırmızı→mor"
+        },
+        "5-3": {
+          "name": "Sıçrayan Patlama",
+          "mechanic": "2. hedefe seker",
+          "feel": "Kaotik",
+          "visual": "Turuncu sekme"
+        },
+        "5-4": {
+          "name": "Sabit Patlama",
+          "mechanic": "Yerleşik alan (4 sn)",
+          "feel": "Kalıcı",
+          "visual": "Turuncu halka"
+        },
+        "5-5": {
+          "name": "Yayılan Patlama",
+          "mechanic": "Geniş alan",
+          "feel": "Büyük yıkım",
+          "visual": "Turuncu dalga"
+        },
+        "5-6": {
+          "name": "Bağlayıcı Patlama",
+          "mechanic": "Patlama + root",
+          "feel": "Kontrolcü",
+          "visual": "Turuncu zincir"
+        },
+        "5-7": {
+          "name": "Bulandırıcı Patlama",
+          "mechanic": "Patlama + kör",
+          "feel": "Şaşırtıcı",
+          "visual": "Beyaz flaş"
+        },
+        "5-8": {
+          "name": "Yükselen Patlama",
+          "mechanic": "Patlama + buff",
+          "feel": "Güçlendirici",
+          "visual": "Altın patlama"
+        },
+        "5-9": {
+          "name": "Odaklı Patlama",
+          "mechanic": "Tek hedef, %50 fazla",
+          "feel": "Kilitli",
+          "visual": "Mavi ateş"
+        },
+        "5-10": {
+          "name": "Aynalı Patlama",
+          "mechanic": "%30 yansıma",
+          "feel": "Yansıtıcı",
+          "visual": "Gümüş patlama"
+        },
+        "5-11": {
+          "name": "Kopya Patlama",
+          "mechanic": "0.3 sn sonra 2.",
+          "feel": "İkiz",
+          "visual": "Çift patlama"
+        },
+        "5-12": {
+          "name": "Akan Patlama",
+          "mechanic": "Sürekli seri",
+          "feel": "Sürekli yıkım",
+          "visual": "Zincir patlamalar"
+        }
+      },
+      "6": {
+        "6-1": {
+          "name": "Yoğun Bağ",
+          "mechanic": "1.5 sn stun",
+          "feel": "Sert, kısa",
+          "visual": "Beyaz dar halka"
+        },
+        "6-2": {
+          "name": "Emici Bağ",
+          "mechanic": "CC + can çal",
+          "feel": "Sinsi",
+          "visual": "Mor halka"
+        },
+        "6-3": {
+          "name": "Sıçrayan Bağ",
+          "mechanic": "2. hedefe seker",
+          "feel": "Bulaşıcı",
+          "visual": "Mor sekme"
+        },
+        "6-4": {
+          "name": "Sabit Bağ",
+          "mechanic": "3 sn root",
+          "feel": "Uzun, sabırlı",
+          "visual": "Kalın zincir"
+        },
+        "6-5": {
+          "name": "Yayılan Bağ",
+          "mechanic": "Alan CC",
+          "feel": "Kuşatıcı",
+          "visual": "Geniş halka"
+        },
+        "6-6": {
+          "name": "Bağlayıcı Bağ",
+          "mechanic": "Çift CC",
+          "feel": "İkiz",
+          "visual": "Çift zincir"
+        },
+        "6-7": {
+          "name": "Bulandırıcı Bağ",
+          "mechanic": "CC + kör",
+          "feel": "Şaşırtıcı",
+          "visual": "Siyah duman"
+        },
+        "6-8": {
+          "name": "Yükselen Bağ",
+          "mechanic": "CC + buff",
+          "feel": "Güçlendirici",
+          "visual": "Altın zincir"
+        },
+        "6-9": {
+          "name": "Odaklı Bağ",
+          "mechanic": "Tek hedefe uzun kilit",
+          "feel": "Kilitli",
+          "visual": "Kırmızı hedef"
+        },
+        "6-10": {
+          "name": "Aynalı Bağ",
+          "mechanic": "CC + yansıma",
+          "feel": "Yansıtıcı",
+          "visual": "Gümüş zincir"
+        },
+        "6-11": {
+          "name": "Kopya Bağ",
+          "mechanic": "İki CC",
+          "feel": "İkiz",
+          "visual": "Çift halka"
+        },
+        "6-12": {
+          "name": "Akan Bağ",
+          "mechanic": "Sürekli CC alanı",
+          "feel": "Kuşatıcı",
+          "visual": "Mor akış"
+        }
+      },
+      "7": {
+        "7-1": {
+          "name": "Yoğun Zafiyet",
+          "mechanic": "Armor -%20, 4 sn",
+          "feel": "Sert debuff",
+          "visual": "Siyah dar halka"
+        },
+        "7-2": {
+          "name": "Emici Zafiyet",
+          "mechanic": "Debuff + can çal",
+          "feel": "Sinsi",
+          "visual": "Mor akış"
+        },
+        "7-3": {
+          "name": "Sıçrayan Zafiyet",
+          "mechanic": "2. hedefe seker",
+          "feel": "Bulaşıcı",
+          "visual": "Siyah sekme"
+        },
+        "7-4": {
+          "name": "Sabit Zafiyet",
+          "mechanic": "7 sn debuff",
+          "feel": "Kalıcı",
+          "visual": "Uzun duman"
+        },
+        "7-5": {
+          "name": "Yayılan Zafiyet",
+          "mechanic": "Alan debuff",
+          "feel": "Kuşatıcı",
+          "visual": "Siyah dalga"
+        },
+        "7-6": {
+          "name": "Bağlayıcı Zafiyet",
+          "mechanic": "Debuff + root",
+          "feel": "Kontrolcü",
+          "visual": "Siyah zincir"
+        },
+        "7-7": {
+          "name": "Bulandırıcı Zafiyet",
+          "mechanic": "Çift debuff",
+          "feel": "Ağır",
+          "visual": "Çift duman"
+        },
+        "7-8": {
+          "name": "Yükselen Zafiyet",
+          "mechanic": "Debuff + buff",
+          "feel": "Güçlendirici",
+          "visual": "Siyah-altın"
+        },
+        "7-9": {
+          "name": "Odaklı Zafiyet",
+          "mechanic": "Armor -%30",
+          "feel": "Delici",
+          "visual": "Kırmızı hedef"
+        },
+        "7-10": {
+          "name": "Aynalı Zafiyet",
+          "mechanic": "Debuff + yansıma",
+          "feel": "Yansıtıcı",
+          "visual": "Gümüş duman"
+        },
+        "7-11": {
+          "name": "Kopya Zafiyet",
+          "mechanic": "İki debuff",
+          "feel": "İkiz",
+          "visual": "Çift halka"
+        },
+        "7-12": {
+          "name": "Akan Zafiyet",
+          "mechanic": "Sürekli debuff alanı",
+          "feel": "Kuşatıcı",
+          "visual": "Siyah akış"
+        }
+      },
+      "8": {
+        "8-1": {
+          "name": "Yoğun Yükseliş",
+          "mechanic": "+%20 hasar, 3 sn",
+          "feel": "Ani güç",
+          "visual": "Altın patlama"
+        },
+        "8-2": {
+          "name": "Emici Yükseliş",
+          "mechanic": "Buff + can çal",
+          "feel": "Sömüren",
+          "visual": "Altın-mor"
+        },
+        "8-3": {
+          "name": "Sıçrayan Yükseliş",
+          "mechanic": "Dosta seker",
+          "feel": "Paylaşımcı",
+          "visual": "Altın sekme"
+        },
+        "8-4": {
+          "name": "Sabit Yükseliş",
+          "mechanic": "7 sn buff",
+          "feel": "Kalıcı",
+          "visual": "Altın halka"
+        },
+        "8-5": {
+          "name": "Yayılan Yükseliş",
+          "mechanic": "Alan buff",
+          "feel": "Cömert",
+          "visual": "Altın dalga"
+        },
+        "8-6": {
+          "name": "Bağlayıcı Yükseliş",
+          "mechanic": "Dosta bağlanır",
+          "feel": "Bağlı",
+          "visual": "Altın bağ"
+        },
+        "8-7": {
+          "name": "Bulandırıcı Yükseliş",
+          "mechanic": "Buff + debuff",
+          "feel": "İki yönlü",
+          "visual": "Altın-siyah"
+        },
+        "8-8": {
+          "name": "Yükselen Yükseliş",
+          "mechanic": "Çift buff",
+          "feel": "İkiz",
+          "visual": "Çift altın"
+        },
+        "8-9": {
+          "name": "Odaklı Yükseliş",
+          "mechanic": "En güçlü dosta +%30",
+          "feel": "Akıllı",
+          "visual": "Altın hedef"
+        },
+        "8-10": {
+          "name": "Aynalı Yükseliş",
+          "mechanic": "Buff + yansıma",
+          "feel": "Yansıtıcı",
+          "visual": "Gümüş-altın"
+        },
+        "8-11": {
+          "name": "Kopya Yükseliş",
+          "mechanic": "Buff iki kez",
+          "feel": "İkiz",
+          "visual": "Çift halka"
+        },
+        "8-12": {
+          "name": "Akan Yükseliş",
+          "mechanic": "Sürekli artan buff",
+          "feel": "Yükselen",
+          "visual": "Altın akış"
+        }
+      },
+      "9": {
+        "9-1": {
+          "name": "Yoğun Arınma",
+          "mechanic": "1 debuff sil",
+          "feel": "Ani temizlik",
+          "visual": "Beyaz flaş"
+        },
+        "9-2": {
+          "name": "Emici Arınma",
+          "mechanic": "Debuff→can",
+          "feel": "Dönüştürücü",
+          "visual": "Beyaz→yeşil"
+        },
+        "9-3": {
+          "name": "Sıçrayan Arınma",
+          "mechanic": "Dosta seker",
+          "feel": "Bulaşıcı",
+          "visual": "Beyaz sekme"
+        },
+        "9-4": {
+          "name": "Sabit Arınma",
+          "mechanic": "Yerleşik alan (5 sn)",
+          "feel": "Kalıcı",
+          "visual": "Beyaz halka"
+        },
+        "9-5": {
+          "name": "Yayılan Arınma",
+          "mechanic": "Alan arınma",
+          "feel": "Kuşatıcı",
+          "visual": "Beyaz dalga"
+        },
+        "9-6": {
+          "name": "Bağlayıcı Arınma",
+          "mechanic": "Dosta bağlanır",
+          "feel": "Bağlı",
+          "visual": "Beyaz bağ"
+        },
+        "9-7": {
+          "name": "Bulandırıcı Arınma",
+          "mechanic": "Arınma + bozma",
+          "feel": "İki yönlü",
+          "visual": "Beyaz-siyah"
+        },
+        "9-8": {
+          "name": "Yükselen Arınma",
+          "mechanic": "Arınma + buff",
+          "feel": "Güçlendirici",
+          "visual": "Beyaz-altın"
+        },
+        "9-9": {
+          "name": "Odaklı Arınma",
+          "mechanic": "En ağırı önce",
+          "feel": "Akıllı",
+          "visual": "Beyaz hedef"
+        },
+        "9-10": {
+          "name": "Aynalı Arınma",
+          "mechanic": "Arınma + yansıma",
+          "feel": "Yansıtıcı",
+          "visual": "Gümüş-beyaz"
+        },
+        "9-11": {
+          "name": "Kopya Arınma",
+          "mechanic": "İki kez tetiklenir",
+          "feel": "İkiz",
+          "visual": "Çift beyaz"
+        },
+        "9-12": {
+          "name": "Akan Arınma",
+          "mechanic": "Sürekli temizlik",
+          "feel": "Akıcı",
+          "visual": "Beyaz akış"
+        }
+      },
+      "10": {
+        "10-1": {
+          "name": "Yoğun Yansı",
+          "mechanic": "%50 yansıma, 2 sn",
+          "feel": "Sert",
+          "visual": "Gümüş dar halka"
+        },
+        "10-2": {
+          "name": "Emici Yansı",
+          "mechanic": "Yansı + can çalma",
+          "feel": "Sömüren",
+          "visual": "Gümüş-kırmızı"
+        },
+        "10-3": {
+          "name": "Sıçrayan Yansı",
+          "mechanic": "Dosta seker",
+          "feel": "Paylaşımcı",
+          "visual": "Gümüş sekme"
+        },
+        "10-4": {
+          "name": "Sabit Yansı",
+          "mechanic": "7 sn yansıma",
+          "feel": "Kalıcı",
+          "visual": "Gümüş kubbe"
+        },
+        "10-5": {
+          "name": "Yayılan Yansı",
+          "mechanic": "Alan yansıma",
+          "feel": "Kuşatıcı",
+          "visual": "Gümüş dalga"
+        },
+        "10-6": {
+          "name": "Bağlayıcı Yansı",
+          "mechanic": "Dosta bağlanır",
+          "feel": "Bağlı",
+          "visual": "Gümüş bağ"
+        },
+        "10-7": {
+          "name": "Bulandırıcı Yansı",
+          "mechanic": "Yansı + kör etme",
+          "feel": "Şaşırtıcı",
+          "visual": "Gümüş-siyah"
+        },
+        "10-8": {
+          "name": "Yükselen Yansı",
+          "mechanic": "Yansı + buff",
+          "feel": "Güçlendirici",
+          "visual": "Gümüş-altın"
+        },
+        "10-9": {
+          "name": "Odaklı Yansı",
+          "mechanic": "%70 tek hedef",
+          "feel": "Odaklı",
+          "visual": "Gümüş hedef"
+        },
+        "10-10": {
+          "name": "Aynalı Yansı",
+          "mechanic": "%80 çift yansıma",
+          "feel": "Ayna",
+          "visual": "Çift gümüş"
+        },
+        "10-11": {
+          "name": "Kopya Yansı",
+          "mechanic": "İki kez tetiklenir",
+          "feel": "İkiz",
+          "visual": "Çift halka"
+        },
+        "10-12": {
+          "name": "Akan Yansı",
+          "mechanic": "Sürekli yansıma",
+          "feel": "Akıcı",
+          "visual": "Gümüş akış"
+        }
+      },
+      "11": {
+        "11-1": {
+          "name": "Yoğun Çağrı",
+          "mechanic": "Güçlü tek minion",
+          "feel": "Sağlam",
+          "visual": "Tek büyük figür"
+        },
+        "11-2": {
+          "name": "Emici Çağrı",
+          "mechanic": "Minion can çalar",
+          "feel": "Sömüren",
+          "visual": "Kırmızı minion"
+        },
+        "11-3": {
+          "name": "Sıçrayan Çağrı",
+          "mechanic": "Minion seker",
+          "feel": "Çevik",
+          "visual": "Sarı minion"
+        },
+        "11-4": {
+          "name": "Sabit Çağrı",
+          "mechanic": "Yerleşik minion (taret)",
+          "feel": "Kalıcı",
+          "visual": "Sabit figür"
+        },
+        "11-5": {
+          "name": "Yayılan Çağrı",
+          "mechanic": "3 küçük minion",
+          "feel": "Kalabalık",
+          "visual": "Üç figür"
+        },
+        "11-6": {
+          "name": "Bağlayıcı Çağrı",
+          "mechanic": "Minion bağlar",
+          "feel": "Kontrolcü",
+          "visual": "Zincir minion"
+        },
+        "11-7": {
+          "name": "Bulandırıcı Çağrı",
+          "mechanic": "Minion kör eder",
+          "feel": "Şaşırtıcı",
+          "visual": "Karanlık minion"
+        },
+        "11-8": {
+          "name": "Yükselen Çağrı",
+          "mechanic": "Büyük minion",
+          "feel": "Güçlü",
+          "visual": "Altın minion"
+        },
+        "11-9": {
+          "name": "Odaklı Çağrı",
+          "mechanic": "Hedefe kilitli minion",
+          "feel": "Odaklı",
+          "visual": "Kırmızı minion"
+        },
+        "11-10": {
+          "name": "Aynalı Çağrı",
+          "mechanic": "Yansıtıcı minion",
+          "feel": "Yansıtıcı",
+          "visual": "Gümüş minion"
+        },
+        "11-11": {
+          "name": "Kopya Çağrı",
+          "mechanic": "İki minion",
+          "feel": "İkiz",
+          "visual": "İki figür"
+        },
+        "11-12": {
+          "name": "Akan Çağrı",
+          "mechanic": "Sürekli minion",
+          "feel": "Akıcı",
+          "visual": "Minion nehri"
+        }
+      },
+      "12": {
+        "12-1": {
+          "name": "Yoğun Zaman",
+          "mechanic": "Tek düşman hızı %70 düşer, 1 sn (global timescale yok)",
+          "feel": "Ani tempo",
+          "visual": "Mavi dar halka"
+        },
+        "12-2": {
+          "name": "Emici Zaman",
+          "mechanic": "Düşman yavaşlat + can çal",
+          "feel": "Sömüren",
+          "visual": "Mavi-kırmızı"
+        },
+        "12-3": {
+          "name": "Sıçrayan Zaman",
+          "mechanic": "Tempo debuff 2. hedefe seker",
+          "feel": "Bulaşıcı",
+          "visual": "Mavi sekme"
+        },
+        "12-4": {
+          "name": "Sabit Zaman",
+          "mechanic": "5 sn düşman yavaşlatma alanı",
+          "feel": "Kalıcı",
+          "visual": "Mavi kubbe"
+        },
+        "12-5": {
+          "name": "Yayılan Zaman",
+          "mechanic": "Alan düşman yavaşlatma",
+          "feel": "Kuşatıcı",
+          "visual": "Mavi dalga"
+        },
+        "12-6": {
+          "name": "Bağlayıcı Zaman",
+          "mechanic": "Dosta bağlanır, ikisi self-haste",
+          "feel": "Paylaşımcı",
+          "visual": "Mavi bağ"
+        },
+        "12-7": {
+          "name": "Bulandırıcı Zaman",
+          "mechanic": "Yavaşlatma + isabet düşürme",
+          "feel": "Şaşırtıcı",
+          "visual": "Mavi duman"
+        },
+        "12-8": {
+          "name": "Yükselen Zaman",
+          "mechanic": "Kendine +%50 hareket/cast hızı (dünya saati sabit)",
+          "feel": "Hızlanan",
+          "visual": "Altın-mavi"
+        },
+        "12-9": {
+          "name": "Odaklı Zaman",
+          "mechanic": "Tek hedefe 3 sn ağır yavaşlatma",
+          "feel": "Odaklı",
+          "visual": "Kırmızı hedef"
+        },
+        "12-10": {
+          "name": "Aynalı Zaman",
+          "mechanic": "Tempo + yansıma",
+          "feel": "Yansıtıcı",
+          "visual": "Gümüş-mavi"
+        },
+        "12-11": {
+          "name": "Kopya Zaman",
+          "mechanic": "Tempo etkisi iki kez (gecikmeli)",
+          "feel": "İkiz",
+          "visual": "Çift mavi"
+        },
+        "12-12": {
+          "name": "Akan Zaman",
+          "mechanic": "Sürekli düşman yavaşlatma alanı, 4 sn",
+          "feel": "Akıcı",
+          "visual": "Mavi akış"
+        }
+      }
+    },
+    "zaman_note": "Verb 12 prose rewritten: no global slow-mo; enemy_slow / self_haste only."
+  },
+  "hitbox_vfx": {
+    "description": "Hitbox şekli + boyut + VFX tablosu.",
+    "fiil_hitbox": {
+      "1": {
+        "shape": "capsule",
+        "base_size": "1.5m × 0.5m",
+        "duration": "anlık",
+        "multi": false
+      },
+      "2": {
+        "shape": "sphere",
+        "base_size": "2m yarıçap",
+        "duration": "anlık",
+        "multi": "dost"
+      },
+      "3": {
+        "shape": "line",
+        "base_size": "3m × 0.8m",
+        "duration": "0.3 sn",
+        "multi": false
+      },
+      "4": {
+        "shape": "sphere",
+        "base_size": "1.5m yarıçap",
+        "duration": "süreli",
+        "multi": false
+      },
+      "5": {
+        "shape": "sphere",
+        "base_size": "3m yarıçap",
+        "duration": "anlık",
+        "multi": true
+      },
+      "6": {
+        "shape": "cone",
+        "base_size": "4m × 60°",
+        "duration": "anlık",
+        "multi": true
+      },
+      "7": {
+        "shape": "capsule",
+        "base_size": "3m × 1m",
+        "duration": "anlık",
+        "multi": false
+      },
+      "8": {
+        "shape": "sphere",
+        "base_size": "2m yarıçap",
+        "duration": "anlık",
+        "multi": "dost"
+      },
+      "9": {
+        "shape": "sphere",
+        "base_size": "2.5m yarıçap",
+        "duration": "anlık",
+        "multi": "dost"
+      },
+      "10": {
+        "shape": "sphere",
+        "base_size": "1.5m yarıçap",
+        "duration": "süreli",
+        "multi": false
+      },
+      "11": {
+        "shape": "point",
+        "base_size": "1m yarıçap",
+        "duration": "anlık",
+        "multi": false
+      },
+      "12": {
+        "shape": "cylinder",
+        "base_size": "4m yarıçap",
+        "duration": "süreli",
+        "multi": true
+      }
+    },
+    "sifat_override": {
+      "1": {
+        "size_mult": 0.4,
+        "damage_mult": 1.3
+      },
+      "2": {
+        "size_mult": 1.0,
+        "damage_mult": 0.8,
+        "lifesteal": 0.3
+      },
+      "3": {
+        "size_mult": 1.0,
+        "chain_count": 2
+      },
+      "4": {
+        "size_mult": 1.0,
+        "duration_mult": 3
+      },
+      "5": {
+        "size_mult": 2.5,
+        "damage_mult": 0.7
+      },
+      "6": {
+        "size_mult": 1.0,
+        "add_cc": "root"
+      },
+      "7": {
+        "size_mult": 1.5,
+        "add_cc": "blind"
+      },
+      "8": {
+        "size_mult": 1.0,
+        "add_buff": 0.2
+      },
+      "9": {
+        "size_mult": 0.5,
+        "single_target": true
+      },
+      "10": {
+        "size_mult": 1.0,
+        "add_reflect": 0.4
+      },
+      "11": {
+        "size_mult": 1.0,
+        "second_trigger": 0.3
+      },
+      "12": {
+        "size_mult": 1.0,
+        "duration_mult": 2
+      }
+    },
+    "weapon_size_mult": {
+      "1": 0.5,
+      "2": 0.6,
+      "3": 2.0,
+      "4": 1.0,
+      "5": 0.9,
+      "6": 1.0,
+      "7": 3.0,
+      "8": 2.5,
+      "9": 2.8,
+      "10": 0.5
+    },
+    "hitbox_formula": "final = base × weapon.range_mult × adjective.size_mult",
+    "vfx_prefab_naming": "VFX_{Element}_{FiilId}_{SifatId}",
+    "vfx_prefab_count": 72,
+    "vfx_prefab_note": "6 element × 12 fiil = 72 ana prefab. Sıfat runtime modifiye eder.",
+    "element_color": {
+      "1": {
+        "primary": "#ff4d1a",
+        "secondary": "#ffaa00",
+        "brightness": 1.2,
+        "saturation": 1.0
+      },
+      "2": {
+        "primary": "#1a8cff",
+        "secondary": "#00d9ff",
+        "brightness": 1.0,
+        "saturation": 0.8
+      },
+      "3": {
+        "primary": "#b3e6ff",
+        "secondary": "#ffffff",
+        "brightness": 1.1,
+        "saturation": 0.6
+      },
+      "4": {
+        "primary": "#8b6f3a",
+        "secondary": "#4d3f1a",
+        "brightness": 0.9,
+        "saturation": 0.9
+      },
+      "5": {
+        "primary": "#ffd94d",
+        "secondary": "#ffffff",
+        "brightness": 1.4,
+        "saturation": 0.7
+      },
+      "6": {
+        "primary": "#4d1a66",
+        "secondary": "#000000",
+        "brightness": 0.7,
+        "saturation": 1.0
+      }
+    },
+    "element_shape_icon": {
+      "1": "triangle_up",
+      "2": "circle",
+      "3": "wave",
+      "4": "square",
+      "5": "star",
+      "6": "triangle_down"
+    },
+    "hit_feel": {
+      "capsule": {
+        "shake": 0.1,
+        "hit_stop": 0.04,
+        "sound": "kisa"
+      },
+      "sphere": {
+        "shake": 0.2,
+        "hit_stop": 0.08,
+        "sound": "orta"
+      },
+      "cone": {
+        "shake": 0.15,
+        "hit_stop": 0.06,
+        "sound": "orta"
+      },
+      "line": {
+        "shake": 0.12,
+        "hit_stop": 0.04,
+        "sound": "kisa"
+      },
+      "cylinder": {
+        "shake": 0.25,
+        "hit_stop": 0.1,
+        "sound": "uzun"
+      }
+    },
+    "crit_multiplier": {
+      "shake": 1.5,
+      "flash": "altin",
+      "duration": 0.1
+    }
+  },
+  "mobility_cc": {
+    "description": "Cast mobility, i-frame, CC önceliği, poise kuralları.",
+    "fiil_base_mobility": {
+      "1": "free_move",
+      "2": "free_move",
+      "3": "free_move",
+      "4": "slowed_move",
+      "5": "slowed_move",
+      "6": "slowed_move",
+      "7": "free_move",
+      "8": "free_move",
+      "9": "free_move",
+      "10": "rooted",
+      "11": "slowed_move",
+      "12": "rooted"
+    },
+    "sifat_mobility_override": {
+      "1": "bir_seviye_kisitla",
+      "2": "degistirmez",
+      "3": "bir_seviye_serbestle",
+      "4": "rooted_zorla",
+      "5": "bir_seviye_kisitla",
+      "6": "degistirmez",
+      "7": "degistirmez",
+      "8": "bir_seviye_serbestle",
+      "9": "rooted_zorla",
+      "10": "degistirmez",
+      "11": "degistirmez",
+      "12": "bir_seviye_serbestle"
+    },
+    "weapon_mobility_mod": {
+      "1": 1,
+      "2": 2,
+      "3": 0,
+      "4": 0,
+      "5": -1,
+      "6": -1,
+      "7": -1,
+      "8": 0,
+      "9": 1,
+      "10": -1
+    },
+    "mobility_resolution": "final = fiil_base + sifat_override + silah_mod. +1 ve üstü = free, -1 = bir kısıtla, -2 ve altı = rooted.",
+    "i_frame": [
+      {
+        "source": "dodge",
+        "duration_ms": 260,
+        "condition": "her_zaman"
+      },
+      {
+        "source": "3-7",
+        "duration_ms": 400,
+        "condition": "dash_sirasinda"
+      },
+      {
+        "source": "11-10",
+        "duration_ms": 300,
+        "condition": "minion_spawn_aninda"
+      }
+    ],
+    "cc_priority": [
+      {
+        "rank": 1,
+        "cc": "stun",
+        "duration_sec": 2
+      },
+      {
+        "rank": 2,
+        "cc": "root",
+        "duration_sec": 3
+      },
+      {
+        "rank": 3,
+        "cc": "silence",
+        "duration_sec": 3
+      },
+      {
+        "rank": 4,
+        "cc": "knockback",
+        "duration_sec": "anlık"
+      },
+      {
+        "rank": 5,
+        "cc": "slow",
+        "duration_sec": 4
+      },
+      {
+        "rank": 6,
+        "cc": "blind",
+        "duration_sec": 3
+      },
+      {
+        "rank": 7,
+        "cc": "disarm",
+        "duration_sec": 3
+      },
+      {
+        "rank": 8,
+        "cc": "taunt",
+        "duration_sec": 3
+      }
+    ],
+    "cc_stacking": {
+      "same_cc": "süre_uzar",
+      "different_cc": "ikisi_de_uygulanır_ama_bazıları_çakışır"
+    },
+    "cc_priority_table": {
+      "stun_root": "stun (root gizli)",
+      "stun_slow": "stun",
+      "stun_blind": "stun + blind",
+      "root_slow": "root (slow gizli)",
+      "root_silence": "root + silence",
+      "slow_blind": "slow + blind",
+      "silence_blind": "silence + blind",
+      "knockback_stun": "knockback + stun"
+    },
+    "cc_duration_mult": {
+      "base": 1.0,
+      "baglama": 1.5,
+      "sabitleme": 2.0,
+      "yogunlastirma": 0.7,
+      "yayma": 0.8
+    },
+    "cast_time_mobility": {
+      "lt_0_3": "free_move",
+      "0_3_to_0_5": "free_move_vEYA_slowed",
+      "0_5_to_1_0": "slowed_move",
+      "gt_1_0": "rooted"
+    },
+    "interrupt": {
+      "startup": "kesilebilir (dodge)",
+      "active": "kesilemez",
+      "recovery": "kesilebilir (dodge, swap, yeni skill)"
+    },
+    "poise": {
+      "hafif": 10,
+      "orta": 25,
+      "agir": 50,
+      "kesme_esigi": "gelen_hasar > poise ise iptal + 1 sn stun"
+    }
+  },
+  "uyumsuz_cizim": {
+    "description": "Silah compatible_verbs ile uyumsuz çizim davranışı.",
+    "rule": "Her çizim çalışır. Uyumsuz = hafif ceza + pasif yok.",
+    "effects": {
+      "uyumlu": {
+        "damage_mult": 1.0,
+        "cast_time_mult": 1.0,
+        "passive": "çalışır",
+        "ui_color": "yeşil"
+      },
+      "uyumsuz": {
+        "damage_mult": 0.8,
+        "cast_time_mult": 1.2,
+        "passive": "çalışmaz",
+        "ui_color": "sarı"
+      }
+    },
+    "ceza_reason": "Özgürlük + ceza dengesi. Uyumlu = daha güçlü, uyumsuz = hâlâ kullanılabilir.",
+    "degistirilebilir": "Dengeleme aşamasında %20 ayarlanır.",
+    "isim_degismez": true,
+    "ui_etiketi": {
+      "uyumlu": "Uyumlu — [Silah] pasifi aktif",
+      "uyumsuz": "Uyumsuz — %80 etki"
+    },
+    "sifat_uyumsuzlugu": "Yok. Tüm sıfatlar tüm fiillerle çalışır. Sadece fiil-silah uyumsuzluğu var."
+  },
+  "presentation": {
+    "description": "VFX, animasyon event'leri, ses, UI feedback.",
+    "animation_events": {
+      "OnCastStart": "0% — mana harca, cast başlat",
+      "OnStartupEnd": "30% — hitbox yarat",
+      "OnHit": "50% — hasar uygula, VFX tetikle",
+      "OnRecoveryStart": "70% — kesme penceresi aç",
+      "OnCastEnd": "100% — skill biter"
+    },
+    "sound_layers": {
+      "fiil": {
+        "1": {
+          "sound": "Shing",
+          "duration": 0.15
+        },
+        "2": {
+          "sound": "Whoosh",
+          "duration": 0.3
+        },
+        "3": {
+          "sound": "Swoosh",
+          "duration": 0.2
+        },
+        "4": {
+          "sound": "Hum",
+          "duration": 0.4
+        },
+        "5": {
+          "sound": "Boom",
+          "duration": 0.5
+        },
+        "6": {
+          "sound": "Clank",
+          "duration": 0.3
+        },
+        "7": {
+          "sound": "Hiss",
+          "duration": 0.3
+        },
+        "8": {
+          "sound": "Chime",
+          "duration": 0.4
+        },
+        "9": {
+          "sound": "Ring",
+          "duration": 0.4
+        },
+        "10": {
+          "sound": "Ting",
+          "duration": 0.3
+        },
+        "11": {
+          "sound": "Summon",
+          "duration": 0.5
+        },
+        "12": {
+          "sound": "Vwoop",
+          "duration": 0.5
+        }
+      },
+      "element": {
+        "1": "alev_çıtırtısı",
+        "2": "su_akışı",
+        "3": "rüzgar",
+        "4": "taş_gıcırtısı",
+        "5": "çan",
+        "6": "fısıltı"
+      },
+      "weapon": {
+        "1": "et_yumruğu",
+        "2": "ince_metal",
+        "3": "uzun_metal",
+        "4": "geniş_metal",
+        "5": "ağır_metal",
+        "6": "tok_darbe",
+        "7": "top_ateşi",
+        "8": "büyü",
+        "9": "kristal",
+        "10": "ahşap_metal"
+      }
+    },
+    "ui_feedback": {
+      "skill_preview": {
+        "position": "üst_orta",
+        "shows": [
+          "element_icon",
+          "skill_name",
+          "damage",
+          "cast_time",
+          "uyumluluk"
+        ],
+        "live_update": true
+      },
+      "hit_feedback": {
+        "normal": "ekran_sarsıntısı + ses",
+        "crit": "altın_flaş + CRIT! (0.5 sn)",
+        "kill": "kırmızı_flaş + KILL!",
+        "miss": "gri_flaş + Miss",
+        "block": "mavi_flaş + kalkan_ikonu"
+      },
+      "cooldown": {
+        "type": "radial_overlay",
+        "position": "rün_etrafında",
+        "show_number": true
+      },
+      "passive_slot_badge": {
+        "type": "badge",
+        "position": "rün_üzerinde",
+        "active_color": "mavi",
+        "inactive_color": "gri"
+      }
+    },
+    "animation_transitions": {
+      "same_weapon": {
+        "duration": 0.1,
+        "type": "crossfade"
+      },
+      "different_weapon": {
+        "duration": 0.25,
+        "type": "swap_animation"
+      },
+      "dodge_to_skill": {
+        "duration": 0.15,
+        "type": "hızlı_blend"
+      },
+      "skill_to_dodge": {
+        "duration": 0.05,
+        "type": "iptal"
+      }
+    },
+    "weapon_swap_animation": {
+      "duration": 0.25,
+      "invulnerable": false,
+      "cancels_recovery": true,
+      "cancels_combo": true
+    },
+    "asset_structure": {
+      "vfx": "Assets/VFX/{Element}/VFX_{Element}_{FiilId}.prefab",
+      "animations": "Assets/Animations/{Silah}/{Silah}_{Fiil}.anim",
+      "sfx": "Assets/SFX/{Verbs|Elements|Weapons}/",
+      "ui": "Assets/UI/{SkillPreview|RuneHexagon|ElementRadialMenu}.prefab"
+    },
+    "asset_counts": {
+      "vfx_prefab": 72,
+      "animations": 120,
+      "sound_files": 28,
+      "ui_prefabs": 3
+    },
+    "multiplayer_rules": {
+      "vfx": "client_side",
+      "hit_stop": "sadece_kendi_client",
+      "screen_shake": "kişisel_ayar",
+      "network_data": "sadece_skill_id + pozisyon + element_id"
+    },
+    "performance": {
+      "pooling": true,
+      "particle_lod": "uzak = basit",
+      "max_particles": 50
+    },
+    "prototype_priority": {
+      "phase_1": "3 element (Ateş, Su, Karanlık) + 4 fiil (1,2,4,5) + 3 silah (Yumruk, Asa, Top) = 12 VFX + 12 animasyon",
+      "phase_2": "6 element + 12 fiil + 10 silah = 72 VFX + 120 animasyon",
+      "phase_3": "Sıfat modifiyeleri + ses karışımları + erişilebilirlik"
+    }
+  },
+  "v6_1_delta": {
+    "version": "6.1.1",
+    "base_version": "6.0",
+    "date": "2026-09-27",
+    "description": "Additive: 144 prose, 80 class, hitbox/VFX, mobility/CC, uyumsuzluk, presentation. Zaman tempo fix.",
+    "type": "additive_patch"
+  },
+  "changelog_v6_1": {
+    "version": "6.1.1",
+    "date": "2026-09-27",
+    "type": "additive_patch_on_v6.0",
+    "adds": [
+      "ana_classes_80",
+      "skills_prose_144",
+      "hitbox_vfx",
+      "mobility_cc",
+      "uyumsuz_cizim",
+      "presentation"
+    ],
+    "modifies": [
+      "Zaman prose: slow-mo → tempo",
+      "duplicate class names 38/41/50 disambiguated"
+    ],
+    "kilitli": true,
+    "kilit_tarihi": "2026-09-27",
+    "sonraki_adim": "Unity SO + JSON loader"
+  },
+  "design_warnings": [
+    "User delta had duplicate display name 'Kutsal Casus' on ids 38, 41, 50 — renamed 41→Kutsal Casus A, 50→Kutsal Casus B; id80 keeps '(2)'.",
+    "Several intentional '(2)' suffix class names remain (Paladin, Savaş Lordu, etc.)."
+  ]
 }

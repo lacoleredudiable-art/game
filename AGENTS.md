@@ -17,13 +17,15 @@ Bunlar görevden bağımsız, hepsi geçerli. İhlali geri dönüşü pahalı ha
 6. **Kırmızı-turuncu yalnızca boss tehdidi.** Oyuncu efektleri camgöbeği/mor.
 7. **Kombo tablosu yazılmaz.** Hiçbir dizi elle tanımlanmaz; her şey gramerden doğar.
 
-## Bağlayıcı tasarım — v6.1
+## Bağlayıcı tasarım — v6.1.1
 
 Tek doğruluk kaynağı `docs/element-sistemi.json`'dır. Sistem 12 çift yüzlü ründür
 (fiil + sıfat); build 12'den tekrarsız 6 rün seçer ve 2-rün grameri 144 skill üretir.
 Element prototipte yalnız VFX/isim katmanıdır. Global slow-mo yoktur; Zaman
 `enemy_slow` / `self_haste` uygular. Pasif yuva 0-2, silahlar çarpan + animasyon +
 hitbox katmanıdır; skill mekaniğini değiştirmez.
+v6.1.1 ekleri: `ana_classes_80`, `skills_prose_144`, `hitbox_vfx`, `mobility_cc`,
+`uyumsuz_cizim`, `presentation`, `changelog_v6_1`, `design_warnings`.
 
 ## Çalışma düzeni
 
@@ -53,7 +55,7 @@ hitbox katmanıdır; skill mekaniğini değiştirmez.
 |---|---|
 | `docs/durum.md` | Nerede kaldık, ne üretildi. **İlk buraya bak.** |
 | `docs/gorev-listesi.md` | Görevler ve prompt'lar |
-| `docs/element-sistemi.json` | **v6.1 bağlayıcı** element/skill verisi — sayılar ve kurallar burada |
+| `docs/element-sistemi.json` | **v6.1.1 bağlayıcı** element/skill verisi — sayılar ve kurallar burada |
 | `docs/element-sistemi.md` | İnsan-okunur tarihsel/açıklayıcı notlar; JSON bağlayıcıdır |
 | `docs/unity-notlari.md` | Unity/sahne/Android build operasyonel tuzakları (tasarım değil) |
 | `docs/prezentasyon-katmani.json` | Trajectory/hitbox/animasyon/VFX verisi — element sisteminden bağımsız, motor okur |
