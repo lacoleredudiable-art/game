@@ -6,7 +6,7 @@ namespace Dovus.Game
     /// Mürekkep LineRenderer'ları için ekran-piksel ortografik kamera.
     /// Ana kameradan bağımsız — takip/sarsıntı izi kaydırmaz (§2 ekrana sabit).
     /// </summary>
-    public sealed class PentagonOverlayCamera : MonoBehaviour
+    public sealed class HexagonOverlayCamera : MonoBehaviour
     {
         Camera _cam;
 

@@ -139,7 +139,7 @@ namespace Dovus.Game.EditorTools
             PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevelAuto;
             PlayerSettings.Android.useCustomKeystore = false;
 
-            // §2 girdi düzeni yatay: sol yarı çubuk, sağ yarı beşgen. Dikey çevrilirse iki
+            // §2 girdi düzeni yatay: sol yarı çubuk, sağ yarı altıgen. Dikey çevrilirse iki
             // yarı da başparmak yayının dışına çıkar.
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;
             PlayerSettings.allowedAutorotateToPortrait = false;

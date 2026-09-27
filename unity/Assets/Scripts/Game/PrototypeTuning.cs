@@ -49,11 +49,11 @@ namespace Dovus.Game
         // T6.2: merkez X, dodge düğmesi sağ kenardan taşmasın diye 0.78'den içeri alındı.
         [Header("Altıgen (§2)")]
         // Biraz içeri: sağda dodge + çizim boşluğu kalsın.
-        public float PentagonCenterXNorm = 0.68f;
+        public float HexagonCenterXNorm = 0.68f;
         // Sağ-alt; FittedRadiusPx alt rünleri safe içinde tutar.
-        public float PentagonCenterYNorm = 0.32f;
+        public float HexagonCenterYNorm = 0.32f;
         // Komşu rün kenar boşluğu ≈ radius − 2·dotR (≥40dp çizim koridoru).
-        public float PentagonRadiusDp = 98f;
+        public float HexagonRadiusDp = 98f;
         public float DotHitRadiusDp = 26f;
         public float CenterHitRadiusDp = 28f;
         public bool MirrorForLeftHand = false;
@@ -95,8 +95,7 @@ namespace Dovus.Game
         public float LookAheadM = 1.4f;
         public Vector3 CameraOffset = new Vector3(0f, 7f, -6f);
 
-        // Renkler dovus-sistemi.md §10'dan. Kırmızı-turuncu bossun TEHDİDİNE ayrılı olduğu için
-        // bossun gövdesi nötr: telegraf (T8) yandığında kontrast kalsın.
+        // Mevcut prototip paleti: nötr boss gövdesi, sıcak telegraf ve element renkleri.
         [Header("Renk dili (§10)")]
         public Color PlayerColor = new Color(0.373f, 0.941f, 1f);
         public Color BossColor = new Color(0.18f, 0.19f, 0.22f);
@@ -106,7 +105,7 @@ namespace Dovus.Game
         public Color InkCyan = new Color(0.373f, 0.941f, 1f);     // #5FF0FF
         public Color AcidGreen = new Color(0.608f, 0.910f, 0.235f); // #9BE83C — §10 zehir birikintisi
 
-        // Altı çekirdek — §10: kırmızı-turuncu yok (boss tehdidi). Ateş sıcak magenta.
+        // Altı çekirdek için mevcut prototip renkleri. Ateş sıcak magenta.
         [Header("Element renkleri (çizgi/tezahür)")]
         public Color ElementFire = new Color(1f, 0.42f, 0.62f);       // Ateş — sıcak magenta
         public Color ElementWater = new Color(0.28f, 0.72f, 1f);      // Su
@@ -115,12 +114,12 @@ namespace Dovus.Game
         public Color ElementLight = new Color(1f, 0.96f, 0.82f);      // Aydınlık
         public Color ElementDark = new Color(0.48f, 0.28f, 0.78f);    // Karanlık
 
-        public Color PentagonDotColor = new Color(0.55f, 0.62f, 0.72f, 0.85f);
+        public Color HexagonDotColor = new Color(0.55f, 0.62f, 0.72f, 0.85f);
         // T6.2: merkez artık "vur" demek — oyuncu rengine çekildi (§10 camgöbeği).
-        public Color PentagonCenterColor = new Color(0.373f, 0.941f, 1f, 0.9f);
-        // Dodge diski §10 moru: kırmızı-turuncu OLAMAZ, o renk yalnızca boss tehdidi.
+        public Color HexagonCenterColor = new Color(0.373f, 0.941f, 1f, 0.9f);
+        // Dodge diski mevcut mor oyuncu vurgusunu kullanır.
         public Color DodgeButtonColor = new Color(0.725f, 0.549f, 1f, 0.9f);
-        // §10: kırmızı-turuncu YALNIZCA boss tehdidi.
+        // Boss telegrafının mevcut sıcak renkleri.
         public Color TelegraphHot = new Color(1f, 0.302f, 0.141f);   // #FF4D24
         public Color TelegraphWarm = new Color(1f, 0.604f, 0.235f);  // #FF9A3C
 
@@ -161,8 +160,6 @@ namespace Dovus.Game
         public float ThreatPulseHzMax = 14f;
         // §8 sarsıntı PİKSEL veriyor, kamera METRE ile sarsılıyor. Dönüşüm spec'te yok.
         public float CameraShakePxToM = 0.01f;
-        // "Filtre yok" değeri; yavaş çekimde SlowmoTuning.AudioLowpassHz devralır.
-        public float AudioBaseCutoffHz = 22000f;
 
         // T7.2: LivingEffectView'a gömülü his sayıları (AGENTS kural 3). Değerler T7'den
         // AYNI taşındı, yalnızca yeri değişti — dovus-sistemi.md'de sayı yok, sapma T7
@@ -221,9 +218,7 @@ namespace Dovus.Game
         public float BossPinShakeAmpM = 0.04f;
         public float BossLiftVelocityPerM = 4.5f;
 
-        // §11 boss ölümü: "kısa yavaş çekim + çökme pozu" — süre spec'te yok (uydurma).
-        // Yavaş çekim TimeDirector.TriggerSlowmo (SlowmoTuning); çökme süresi dünya saati.
-        // Gerekçe docs/durum.md T12 sapmaları.
+        // Boss ölümündeki çökme pozu; süre mevcut his varsayılanıdır.
         [Header("Boss ölüm pozu (T12, §11)")]
         public float BossDeathCollapseSec = 0.85f;
         public float BossDeathSquashY = 0.28f;
@@ -243,8 +238,8 @@ namespace Dovus.Game
         public bool ReadoutAnchorRight = true;
         public float ReadoutPunchInSec = 0.12f;
 
-        // §6/§11 "boss ve oyuncu can göstergesi, sade". Ölçüler dp (beşgen/dodge diskiyle
-        // aynı yol: PentagonLayoutScreen.DpToPixels). Boss barı T12'den beri BossVitals okur.
+        // §6/§11 "boss ve oyuncu can göstergesi, sade". Ölçüler dp (altıgen/dodge diskiyle
+        // aynı yol: HexagonLayoutScreen.DpToPixels). Boss barı T12'den beri BossVitals okur.
         [Header("Can göstergesi (T9, VitalsHud)")]
         public float VitalsBarWidthDp = 168f;
         public float VitalsBarHeightDp = 11f;
@@ -326,7 +321,7 @@ namespace Dovus.Game
             if (VitalsBossBarWidthDp <= 0.01f) VitalsBossBarWidthDp = 280f;
             if (VitalsBossBarHeightDp <= 0.01f) VitalsBossBarHeightDp = 12f;
             if (DamageFloatFontDp <= 0.01f) DamageFloatFontDp = 28f;
-            if (PentagonRadiusDp <= 0.01f) PentagonRadiusDp = 98f;
+            if (HexagonRadiusDp <= 0.01f) HexagonRadiusDp = 98f;
             if (DotHitRadiusDp <= 0.01f) DotHitRadiusDp = 26f;
             if (CenterHitRadiusDp <= 0.01f) CenterHitRadiusDp = 28f;
             if (DodgeButtonRadiusDp <= 0.01f) DodgeButtonRadiusDp = 32f;
@@ -372,7 +367,6 @@ namespace Dovus.Game
             ThreatPulseHzMin = fresh.ThreatPulseHzMin;
             ThreatPulseHzMax = fresh.ThreatPulseHzMax;
             CameraShakePxToM = fresh.CameraShakePxToM;
-            AudioBaseCutoffHz = fresh.AudioBaseCutoffHz;
 
             // T9: yeni alanlar, aynı "sürüm damgası bir kez yamalar" deseni (yukarısı).
             ReadoutAnchorRight = fresh.ReadoutAnchorRight;
@@ -439,9 +433,9 @@ namespace Dovus.Game
 
             // v12: hex/dodge/vitals — telefon screenshot'ta alt rün kesiliyordu, dodge Hava üstündeydi.
             // v13: rünler arası + dodge çizim boşluğu.
-            PentagonCenterXNorm = fresh.PentagonCenterXNorm;
-            PentagonCenterYNorm = fresh.PentagonCenterYNorm;
-            PentagonRadiusDp = fresh.PentagonRadiusDp;
+            HexagonCenterXNorm = fresh.HexagonCenterXNorm;
+            HexagonCenterYNorm = fresh.HexagonCenterYNorm;
+            HexagonRadiusDp = fresh.HexagonRadiusDp;
             CenterHitRadiusDp = fresh.CenterHitRadiusDp;
             DotHitRadiusDp = fresh.DotHitRadiusDp;
             DodgeButtonRadiusDp = fresh.DodgeButtonRadiusDp;
@@ -499,7 +493,7 @@ namespace Dovus.Game
         };
 
         /// <summary>
-        /// T10: `PrototypeTuning`'in tamamı (renkler, beşgen konumu, arena...) ayar paneline
+        /// T10: `PrototypeTuning`'in tamamı (renkler, altıgen konumu, arena...) ayar paneline
         /// AÇILMIYOR — yalnızca bu alt küme (dodge kayma hızı, boss yaklaşımı, kamera takibi,
         /// tepki yazısı zamanlaması). Tam nesneyi JSON'a yazsaydık panelin hiç dokunmadığı
         /// renk/yerleşim alanları da diske kilitlenir, ileride Inspector'dan elle ayarlanan bir

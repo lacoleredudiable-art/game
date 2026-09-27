@@ -130,16 +130,16 @@ public class SentenceEngineTests
 }
 
 [TestFixture]
-public class PentagonLayoutTests
+public class HexagonLayoutTests
 {
     // Kriter 5
     [Test]
     public void EachDot_HasTwoNeighborsAndTwoFar()
     {
-        for (int dot = 1; dot <= PentagonLayout.DotCount; dot++)
+        for (int dot = 1; dot <= HexagonLayout.DotCount; dot++)
         {
-            PentagonLayout.GetNeighbors(dot, out int n0, out int n1);
-            PentagonLayout.GetFarDots(dot, out int f0, out int f1);
+            HexagonLayout.GetNeighbors(dot, out int n0, out int n1);
+            HexagonLayout.GetFarDots(dot, out int f0, out int f1);
 
             var neighbors = new HashSet<int> { n0, n1 };
             var far = new HashSet<int> { f0, f1 };
@@ -150,17 +150,17 @@ public class PentagonLayoutTests
             Assert.That(neighbors.Contains(dot), Is.False);
             Assert.That(far.Contains(dot), Is.False);
 
-            for (int other = 1; other <= PentagonLayout.DotCount; other++)
+            for (int other = 1; other <= HexagonLayout.DotCount; other++)
             {
                 if (other == dot) continue;
-                JumpKind kind = PentagonLayout.ClassifyJump(dot, other);
+                JumpKind kind = HexagonLayout.ClassifyJump(dot, other);
                 if (neighbors.Contains(other))
                     Assert.That(kind, Is.EqualTo(JumpKind.Short));
                 else
                     Assert.That(kind, Is.EqualTo(JumpKind.Long));
             }
 
-            Assert.That(PentagonLayout.ClassifyJump(dot, dot), Is.EqualTo(JumpKind.Repeat));
+            Assert.That(HexagonLayout.ClassifyJump(dot, dot), Is.EqualTo(JumpKind.Repeat));
         }
     }
 }

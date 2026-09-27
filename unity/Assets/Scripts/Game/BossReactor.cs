@@ -25,7 +25,7 @@ namespace Dovus.Game
         float _liftVel;
         bool _captured;
 
-        // §11 ölüm: kısa çökme pozu (squash). Yavaş çekim TimeDirector'da; burada yalnızca silüet.
+        // Boss ölümü: kısa çökme pozu (squash).
         Vector3 _baseScale = Vector3.one;
         bool _collapsed;
         float _collapseUntilWorldMs;
@@ -115,7 +115,7 @@ namespace Dovus.Game
         }
 
         /// <summary>
-        /// §11 ölüm pozu: yerinde çöker (squash). Süre dünya saati — yavaş çekimle birlikte uzar.
+        /// Boss ölüm pozu: yerinde çöker (squash). Süre dünya saatiyle ilerler.
         /// </summary>
         public void BeginCollapse(float durationSec, double worldTimeMs)
         {

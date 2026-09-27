@@ -46,7 +46,7 @@ namespace Dovus.Game
         bool _hooked;
         bool _posedForRecovery;
 
-        // §11 ölüm: çökme süresi bitince Revive (yavaş çekim yok).
+        // Boss ölümü: çökme süresi bitince Revive.
         bool _deathPending;
         double _deathReviveAtMs;
 
@@ -87,7 +87,7 @@ namespace Dovus.Game
         TimeEffectDirector _timeEffectDirector;
         readonly List<TimeEffectField> _dueTimeFields = new();
         bool _deferredBossDeath;
-        PentagonInput _input;
+        HexagonInput _input;
         // --- Gerçeklik (Bağlama 11) — revive_block + erase ---
         RealityEffectDirector _realityDirector;
         // --- Ekipman (Bağlama 9) — sabit silah; seçim UI yok ---
@@ -97,7 +97,7 @@ namespace Dovus.Game
         PresentationCatalog _presentationCatalog;
         PresentationValidator _presentationValidator;
         readonly AnimationBridge _animationBridge = new();
-        PentagonView _pentagonView;
+        HexagonView _hexagonView;
         PlayerResource _playerResource;
         PlayerCooldown _playerCooldown;
         double _lastDamageDealtMs = double.NegativeInfinity;
@@ -211,7 +211,7 @@ namespace Dovus.Game
 
         public void Bind(
             GameClock clock,
-            PentagonInput input,
+            HexagonInput input,
             Transform player,
             ActorPose pose,
             BossReactor boss,
@@ -227,7 +227,7 @@ namespace Dovus.Game
             FollowCamera camera = null,
             AllyDummy ally = null,
             ActiveModeHud modeHud = null,
-            PentagonView pentagonView = null,
+            HexagonView hexagonView = null,
             PassiveHud passiveHud = null,
             EquipmentItem equippedWeapon = null,
             EquipmentBonusResolver equipmentBonus = null)
@@ -268,7 +268,7 @@ namespace Dovus.Game
                 canvasRoot = canvas != null ? canvas.transform : null;
             }
             _modeVfx.Bind(player, canvasRoot);
-            _pentagonView = pentagonView;
+            _hexagonView = hexagonView;
             _equippedWeapon = equippedWeapon;
             _equipmentBonus = equipmentBonus;
             _playerResource = player != null ? player.GetComponent<PlayerResource>() : null;
@@ -1716,10 +1716,10 @@ namespace Dovus.Game
             if (!_playerCooldown.TryBeginCast(skill.VerbId, sec, worldMs))
                 return;
 
-            if (_pentagonView == null || sec <= 0f)
+            if (_hexagonView == null || sec <= 0f)
                 return;
 
-            _pentagonView.BeginTrackedCooldown(
+            _hexagonView.BeginTrackedCooldown(
                 (int)words[0].Rune,
                 skill.VerbId,
                 sec,
@@ -1733,12 +1733,12 @@ namespace Dovus.Game
         /// </summary>
         void PulseCosmeticCooldown(SkillResolution skill, IReadOnlyList<SentenceWord> words)
         {
-            if (_pentagonView == null || skill.IsEmpty || words == null || words.Count == 0)
+            if (_hexagonView == null || skill.IsEmpty || words == null || words.Count == 0)
                 return;
             float sec = skill.BaseCooldownSec;
             if (sec <= 0f)
                 return;
-            _pentagonView.BeginCosmeticCooldown((int)words[0].Rune, sec);
+            _hexagonView.BeginCosmeticCooldown((int)words[0].Rune, sec);
         }
 
         SkillMotionPlan ResolveSkillMotion(SkillResolution skill)
@@ -1915,7 +1915,7 @@ namespace Dovus.Game
             // 16 Eylül: "skilleri attığımda bir etkileşim göremiyorum" raporu — durum
             // etkileşim tablosu (docs/element-sistemi.json status_interaction_table) mekanik
             // olarak zaten çalışıyordu, hiçbir görsel sinyali yoktu. Tetiklenen kural varsa
-            // aynı tepki yazısı kanalını kullan (§10: kırmızı-turuncu yasak → AcidGreen).
+            // aynı tepki yazısı kanalını mevcut AcidGreen vurgusuyla kullan.
             if (result.TriggeredReactions.Count > 0 && _readout != null)
             {
                 StatusReactionRule rule = result.TriggeredReactions[0];

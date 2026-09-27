@@ -12,7 +12,56 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 18 Eylül 2026 (daire salon + ağır hareket) ·
+**Son güncelleme:** 23 Eylül 2026 (altıgen adlandırma + girdi/zaman temizliği; daire salon merge) ·
+**Dal:** `feat/circular-arena-feel` · **Sıradaki:** fiil action özel motorları
+(`drain`/Karabasan hattı dahil); his sahibi gözü; (deneme sonrası süre/Enforce)
+
+> **23 Eylül — güncel tasarım temizliği.** `Pentagon*` dosya/tip/adları `Hexagon*`
+> olarak değiştirildi; 6 nokta davranışı korunuyor. Merkez düz vuruş/erken kapanış,
+> dodge altıgen dışında ayrı düğme. Perfect-dodge yavaş çekim sistemi (`SlowmoTuning`,
+> `TimeDirector.TriggerSlowmo`, tuning UI/preset/testler) kaldırıldı; hitstop korunuyor.
+> README/element spec/ajan kuralları güncellendi; kırmızı-turuncu kuralı değişmezlerden
+> çıkarıldı. `dotnet test tools/CoreTests/CoreTests.csproj`: **244/244 yeşil**.
+> **Doğrulanamadı:** Unity Editor bu ortamda yok; Play mode/Unity script derlemesi.
+
+> **18 Eylül — 100 m çap daire zindan.** Long_Hall (avize/sütun/tavan görüşü
+> kesiyordu) kalktı. `CircularArena`: r=50 m disk + 18 m yüksek çevre duvarı,
+> tavansız. `ArenaClamp` daire sınır; `KinematicMotor` CapsuleCast + push-out
+> (duvar içinden geçme). Karakter %50 büyük (`PlayerVisualScale=2.625` /
+> `BossVisualScale=3.3`). Walk **7.5 m/s**. Locomotion tam stick = **Running**
+> (Walking değil). Idle fidget freeze; cast 1.0. TuningVersion **15**.
+> **Doğrulanamadı:** Play / telefon APK (bu oturumda Unity Play yok).
+
+> **17 Eylül — Sert/sabit anim pass.** Idle → Fighting Idle; cast klipleri
+> overdrive+0.65. Controller: exitTime 0.78 / blend 0.02s; cast speed ~1.5;
+> `CharacterAnimSpeed=1.35`. Bind + APK telefona. **Doğrulandı:** Mixamo export
+> + Bind log + install; his sahibi gözü.
+
+> **17 Eylül — Karakter ölçek.** `PlayerVisualScale=1.75` / `BossVisualScale=2.2`
+> (`PrototypeTuning`) — Long_Hall’da küçük silüet. Inspector’dan ayarlanır.
+
+> **17 Eylül — Skill anim ayrımı.** `ActorVisual` SetTrigger kullanıyordu; Mixamo
+> controller'da trigger yok → hep aynı/idle. Artık `Animator.Play` +
+> `animation_type` map (projectile/aoe/self/dash/melee ayrı). PulseActor skill
+> tipine göre. **Doğrulandı:** Play map tablosu; his sahibi gözü.
+
+> **17 Eylül — T-pose fix.** Nested Synty prefab'da Animator override Instantiate'te
+> düşüyordu (`ctrl=null`). Unpack + controller kaynak/wrapper'a yazıldı; Bind artık
+> GUID silmiyor. **Doğrulandı:** Play 3× Animator `Player_Synty`/`Boss_Synty`, CastSweep.
+
+> **17 Eylül — Anim çeşitlendirme.** Önce çoğu skill `CastChannel`/`CastGuard`’a
+> düşüyordu (hep aynı Spell_Cast). Map: projectile→Pierce, aoe→Sweep,
+> self/channel→Channel, dash→**Dodge** (roll). Clip seçimi dosya adına göre.
+> **Doğrulandı:** map string’leri; Play his sahibi gözü.
+
+> **17 Eylül — Mixamo full anim set.** 10 FBX (Idle/Walking/Running/Melee_*/
+> Spell_Cast/Dash/Hit/Death) → `Assets/Art/Mixamo/`. Controllers
+> `Player_Synty`/`Boss_Synty` (CastPierce/Sweep/Slam/Channel/Guard + Locomotion
+> blend) → Synty prefabs. `tools/mixamo-download.mjs` + `MixamoAnimatorBind`.
+> **Doğrulandı:** Play Humanoid + Locomotion + CastSweep tetik.
+
+> **17 Eylül — Animasyon bütçe kararı.** Synty ANIMATION paketleri alma
+> (Sidekick uyumsuz). Mixamo $0 yeterli; KayKit yedek (~$0 itch / ~**Son güncelleme:** 18 Eylül 2026 (daire salon + ağır hareket) ·
 **Dal:** `feat/circular-arena-feel` · **Sıradaki:** fiil action motorları; his sahibi gözü
 
 > **18 Eylül — 100 m çap daire zindan.** Long_Hall (avize/sütun/tavan görüşü
@@ -53,6 +102,12 @@
 
 > **17 Eylül — Animasyon bütçe kararı.** Synty ANIMATION paketleri alma
 > (Sidekick uyumsuz). Mixamo $0 yeterli; KayKit yedek (~$0 itch / ~$12 Store).
+
+> **17 Eylül — Synty Long_Hall arenası.** Promo salon: Demo.unity `Long_Hall`
+> (+ URP lights) → `ArenaVisual_Synty`. Kapalı salon (sütun/avize/banner),
+> boş platform değil. `Dovus/Synty/Bind Demo Hall Arena`. Atmosphere torch/bloom.
+> **Doğrulandı:** Play bounds ~38×76 m, 96 light.
+2 Store).
 
 > **17 Eylül — Synty Long_Hall arenası.** Promo salon: Demo.unity `Long_Hall`
 > (+ URP lights) → `ArenaVisual_Synty`. Kapalı salon (sütun/avize/banner),
@@ -149,7 +204,7 @@ PassiveDirector: `RevealRadiusMult` hâlâ uygulanmıyor.
 > **17 Eylül — Play mode fix + state_machine bağlama.** `playerVitals` CS0841
 > (SpaceHost.Bind sırası) düzeltildi. `PlayerStateMachine.SyncWorld` öncelik:
 > dead&gt;stunned&gt;dodging&gt;rooted&gt;casting(pending bang)&gt;drawing&gt;recovering&gt;idle.
-> PentagonInput çizim/dodge + KinematicMotor hareket kapısı. `dotnet test` yeşil.
+> HexagonInput çizim/dodge + KinematicMotor hareket kapısı. `dotnet test` yeşil.
 > **Doğrulanamadı:** Unity Play his (drawing’de hareket kilidi).
 
 > **17 Eylül — Karabasan hat + Hiçlik yarığı.** `ISpaceDirector` / `SpaceDirector`
@@ -208,7 +263,7 @@ PassiveDirector: `RevealRadiusMult` hâlâ uygulanmıyor.
 > Ateş zinciri (`BeginChainClosing`), pasif/ulti tetik, boss `BossKnockbackM×0.55`
 > geri itme. `FireClosing`: basic’te zincir/pasif/ulti/mana/CD yok; pending zincir
 > bonusuna dokunulmaz. `ApplyBossClosingBasic` yalnızca sarsıntı (knock=0).
-> `PentagonInput.TriggerCenter` mana/CD kapısını atlar. `dotnet test` **227** yeşil.
+> `HexagonInput.TriggerCenter` mana/CD kapısını atlar. `dotnet test` **227** yeşil.
 > `master`'a merge edildi.
 
 > **17 Eylül — HUD layout/vitals fix.** Telefon: hex 108dp+YNorm 0.18 alt
@@ -221,7 +276,7 @@ PassiveDirector: `RevealRadiusMult` hâlâ uygulanmıyor.
 > **17 Eylül — His / HUD / kamera / iz.** Premium HUD: boss üst orta +
 > `StatusIconStrip` (tüm `StatusKind`, `StatusBoard.TryGet` + süre halkası);
 > oyuncu HP/FP sol üst glass; ally `StatusBoard` (`team_has_debuffs`).
-> SafeArea clamp (`PentagonLayoutScreen.SafeRectPx`); hex YNorm 0.30,
+> SafeArea clamp (`HexagonLayoutScreen.SafeRectPx`); hex YNorm 0.30,
 > dodge/merkez büyütüldü. Orbit: sağ boşluk drag (widget-only claim) +
 > `KinematicMotor` kamera-göreli hareket. Soft aim `SoftAimRangeM` (8m,
 > boss menzilde soft-lock). Floating hasar pool. `AnimationBridge.MapToQuaterniusState`;
@@ -361,7 +416,7 @@ PassiveDirector: `RevealRadiusMult` hâlâ uygulanmıyor.
 > PlayerVitals / ManifestationDirector **bağlanmadı** (sabit tek ekipman varsayımı).
 > `EquipmentCatalogTests` 2; `dotnet test` 218 yeşil.
 
-> **16 Eylül — Görev 12: UI Rules hizalaması (Game).** `PentagonView` + `ManifestationDirector`:
+> **16 Eylül — Görev 12: UI Rules hizalaması (Game).** `HexagonView` + `ManifestationDirector`:
 > her skill cast'te fiil rünü etrafında kozmetik radial cooldown (`base_cooldown_sec`) + kalan sn
 > (`ui_rules.cooldown_display`). **CooldownTracker / cast engeli yok** (Faz 6).
 >
@@ -555,17 +610,17 @@ PassiveDirector: `RevealRadiusMult` hâlâ uygulanmıyor.
 > **16 Eylül — bug turu + durum tablosu + boss 2. saldırı (2. oturum):** Sahibi Play mode'da
 > beş bug rapor etti, hepsi teşhis edildi ve düzeltildi (Unity MCP ile Play mode'da
 > doğrulandı, `dotnet test` 143 yeşil):
-> - **Düz vuruş heal basıyordu** — sahnede `BasicStrikeDot` donmuş `5` (eski pentagon
+> - **Düz vuruş heal basıyordu** — sahnede `BasicStrikeDot` donmuş `5` (eski beşgen
 >   SARSINTI) idi, altıgende 5=Aydınlık/`arindirma` (`cleanse` → `IsHealSkill` true
 >   sanıyordu). `PrototypeTuning.EnsureRuntimeDefaults()`'a zorla `1` (Ateş) eklendi.
 > - **Hasar sayısı görünmüyordu** — sahnede `ShowDamageNumbers` donmuş `0` idi (kod default'u
 >   `true` ama sahne ezmişti); aynı yerde zorla `true` yapıldı.
 > - **Sol joystick görünmüyordu** — `MoveInput` fonksiyonel olarak zaten çalışıyordu, hiç
->   görseli yoktu. Yeni `JoystickView.cs` (dinamik taban+kabarcık, `PentagonView`'daki
+>   görseli yoktu. Yeni `JoystickView.cs` (dinamik taban+kabarcık, `HexagonView`'daki
 >   `CreateCircleSprite` deseniyle) eklendi.
 > - **Kamera 360° dönemiyordu** — `FollowCamera` tamamen sabitti. `OrbitYawDeg` eklendi,
 >   yeni `CameraOrbitInput.cs` üçüncü parmak (veya editörde sağ-tık sürükleme) ile yaw
->   döndürüyor; `MoveInput`/`PentagonInput`'un zaten claim ettiği parmaklara dokunmuyor.
+>   döndürüyor; `MoveInput`/`HexagonInput`'un zaten claim ettiği parmaklara dokunmuyor.
 > - **Duvarların içine giriliyordu** — Quaternius dungeon mesh'leri collider'sız geliyordu
 >   (`ArenaWalkFit`'in "Fizik collider yok" notu); `KinematicMotor` sadece dış kare clamp
 >   yapıyordu. Yeni `WallColliderFit.cs` isim eşleşmesiyle (`wall`/`column`/`arch`/...)
@@ -603,7 +658,7 @@ PassiveDirector: `RevealRadiusMult` hâlâ uygulanmıyor.
 > yoktu. `StatusBoard.ReactionTriggered` event'i eklendi; `StatusApplicator.Result` artık
 > `TriggeredReactions` taşıyor; `ManifestationDirector.ApplyClosingStatuses` bunu mevcut
 > tepki yazısı kanalına (`ReactionReadout.NoteSkill`, "ally +N" ile aynı yol) yazıyor —
-> renk `AcidGreen` (§10: kırmızı-turuncu yasak). Unity MCP'de canlı doğrulandı: Ateş'in
+> renk mevcut `AcidGreen` vurgusu. Unity MCP'de canlı doğrulandı: Ateş'in
 > Kor'u (1-3, `zirh_eritme`, mechanics=[armor_break,burn]) TEK cast'te "Erimiş Zırh"ı
 > tetikliyor ve şimdi ekrana yazıyor. 2 yeni test (145 yeşil).
 
@@ -686,7 +741,7 @@ PassiveDirector: `RevealRadiusMult` hâlâ uygulanmıyor.
 > (GEÇ ton+poz, GENİŞ disk). `MaxSameVariantStreak=2`.
 >
 > **T12 kapandı.** Boss canı 120, kapanış ödülü × `ClosingDamagePerEffect` hasar, tür son
-> rüne bağlı tepki, ölümde `TriggerSlowmo` + çökme + tam can revive.
+> rüne bağlı tepki, ölümde çökme + tam can revive.
 >
 > **T11.1 kapandı.** Mürekkep cümle sınırında kopuyor, toparlanma kilidi kalıcı HUD'da,
 > `BossDirector.TickWindup` null-safe.
@@ -707,7 +762,7 @@ PassiveDirector: `RevealRadiusMult` hâlâ uygulanmıyor.
 ## Tarihçe (özet)
 
 Beşgen prototip dönemi (T0–T14, 22–23 Ağustos): Core/Unity iskeleti, cümle gramer motoru,
-dodge/exchange derecelendirmesi, tezahür (yaşayan etki) katmanı, boss telegrafı + yavaş çekim
+dodge/exchange derecelendirmesi, tezahür (yaşayan etki) katmanı, boss telegrafı + hitstop
 + kamera, HUD, oyun içi ayar paneli, Android build + kare süresi göstergesi, his turu (§13
 soru 1–2 evet), silüet keskinleştirme — hepsi bitti. 16 Eylül'de altıgen/element-sistemi
 dönemine geçildi (bkz. yukarısı). Görev görev "üretilen API / doğrulama / sapma" detayları

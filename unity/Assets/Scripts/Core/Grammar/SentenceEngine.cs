@@ -193,7 +193,7 @@ namespace Dovus.Core.Grammar
         void AppendAdjective(Rune rune)
         {
             Rune previous = _words[_words.Count - 1].Rune;
-            JumpKind jump = PentagonLayout.ClassifyJump((int)previous, (int)rune);
+            JumpKind jump = HexagonLayout.ClassifyJump((int)previous, (int)rune);
             _lastWordDwellStacks = 0;
             _words.Add(new SentenceWord(rune, jump, 0));
 

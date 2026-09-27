@@ -12,18 +12,18 @@ namespace Dovus.Game
     /// alanlarını yazar (kopya yok) — bir sonraki karede ilgili sistem doğrudan görür.
     ///
     /// Girdi çakışması: proje hiçbir yerde EventSystem/uGUI Slider kullanmıyordu (hepsi
-    /// EnhancedTouch ile elle hit-test ediliyordu — PentagonInput/MoveInput). Bu panel standart
+    /// EnhancedTouch ile elle hit-test ediliyordu — HexagonInput/MoveInput). Bu panel standart
     /// Slider/Button kullanıyor (EventSystem + InputSystemUIInputModule Bootstrap'te bir kez
     /// kuruluyor), AMA EnhancedTouch'ın global `Touch.onFingerDown` akışı UI raycast'inden habersiz
-    /// olduğu için panel açıkken aynı dokunuş beşgeni/çubuğu da tetikleyebilirdi. Çözüm iki parçalı:
-    /// 1) panel açıkken `IsOpen` bayrağı PentagonInput/MoveInput'u tamamen susturuyor,
+    /// olduğu için panel açıkken aynı dokunuş altıgeni/çubuğu da tetikleyebilirdi. Çözüm iki parçalı:
+    /// 1) panel açıkken `IsOpen` bayrağı HexagonInput/MoveInput'u tamamen susturuyor,
     /// 2) paneli AÇAN/KAPATAN dokunuşun kendisi (bayrak henüz değişmeden önceki kare) için
     ///    `HitToggleButton` sabit bir köşeyi (sağ-alt) her iki girdi katmanında da hariç tutuyor
     ///    (dodge düğmesi/merkezin hit-sırası deseniyle aynı yaklaşım, §2).
     /// </summary>
     public sealed class TuningPanel : MonoBehaviour
     {
-        // Sağ-alt köşe: pentagon (merkez y≈0.40, yarıçap ~100dp) ve dodge düğmesinin altında,
+        // Sağ-alt köşe: altıgen (merkez y≈0.40, yarıçap ~100dp) ve dodge düğmesinin altında,
         // SentenceDebugHud/ReactionReadout'un (y>0.56) dışında kalan boş bölge. Spec'te konum/
         // boyut yok — uydurma, durum.md'ye T10 sapması olarak geçildi.
         const float ToggleRadiusDp = 26f;
@@ -38,14 +38,14 @@ namespace Dovus.Game
 
         public static bool HitToggleButton(Vector2 screenPos)
         {
-            float r = PentagonLayoutScreen.DpToPixels(ToggleRadiusDp);
+            float r = HexagonLayoutScreen.DpToPixels(ToggleRadiusDp);
             return Vector2.Distance(screenPos, ToggleCenterPx()) <= r;
         }
 
         static Vector2 ToggleCenterPx()
         {
-            float margin = PentagonLayoutScreen.DpToPixels(ToggleMarginDp);
-            float r = PentagonLayoutScreen.DpToPixels(ToggleRadiusDp);
+            float margin = HexagonLayoutScreen.DpToPixels(ToggleMarginDp);
+            float r = HexagonLayoutScreen.DpToPixels(ToggleRadiusDp);
             return new Vector2(Screen.width - margin - r, margin + r);
         }
 
@@ -71,7 +71,7 @@ namespace Dovus.Game
             canvasGo.transform.SetParent(transform, false);
             var canvas = canvasGo.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            // En üstte: oyun içi HER şeyin (beşgen 50, his katmanı 200) üstünde açılan modal.
+            // En üstte: oyun içi HER şeyin (altıgen 50, his katmanı 200) üstünde açılan modal.
             canvas.sortingOrder = 1000;
             canvasGo.AddComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
             canvasGo.AddComponent<GraphicRaycaster>();
@@ -134,8 +134,8 @@ namespace Dovus.Game
 
             void Apply()
             {
-                float margin = PentagonLayoutScreen.DpToPixels(_marginDp);
-                float d = PentagonLayoutScreen.DpToPixels(_radiusDp) * 2f;
+                float margin = HexagonLayoutScreen.DpToPixels(_marginDp);
+                float d = HexagonLayoutScreen.DpToPixels(_radiusDp) * 2f;
                 _rect.sizeDelta = new Vector2(d, d);
                 _rect.anchoredPosition = new Vector2(-margin, margin);
             }
@@ -327,14 +327,6 @@ namespace Dovus.Game
             AddFloatSlider("Toparlanma · 2 nokta", 0.02f, 1.2f, () => c.Sentence.Steps[1].RecoverySec, v => c.Sentence.Steps[1].RecoverySec = v, "sn", "0.00");
             AddFloatSlider("Toparlanma · 3 nokta", 0.02f, 1.4f, () => c.Sentence.Steps[2].RecoverySec, v => c.Sentence.Steps[2].RecoverySec = v, "sn", "0.00");
             AddFloatSlider("Toparlanma · 4 nokta", 0.02f, 1.6f, () => c.Sentence.Steps[3].RecoverySec, v => c.Sentence.Steps[3].RecoverySec = v, "sn", "0.00");
-
-            AddHeader("YAVAŞ ÇEKİM (§7)");
-            AddFloatSlider("Çarpan (factor)", 0.05f, 1f, () => c.Slowmo.Factor, v => c.Slowmo.Factor = v, "", "0.00");
-            AddIntSlider("İniş süresi", 0, 300, () => c.Slowmo.RampDownMs, v => c.Slowmo.RampDownMs = v, "ms");
-            AddIntSlider("Tutma süresi", 0, 2500, () => c.Slowmo.HoldMs, v => c.Slowmo.HoldMs = v, "ms");
-            AddIntSlider("Çıkış süresi", 0, 1500, () => c.Slowmo.RampUpMs, v => c.Slowmo.RampUpMs = v, "ms");
-            AddIntSlider("Ses alçak geçiren", 200, 5000, () => c.Slowmo.AudioLowpassHz, v => c.Slowmo.AudioLowpassHz = v, "Hz");
-            AddIntSlider("Bonus nokta", 0, 3, () => c.Slowmo.SlowmoBonusDots, v => c.Slowmo.SlowmoBonusDots = v, "");
 
             AddHeader("KAMERA (§8)");
             AddFloatSlider("Takip yumuşatma", 0.02f, 0.5f, () => p.FollowSmoothTimeSec, v => p.FollowSmoothTimeSec = v, "sn", "0.00");

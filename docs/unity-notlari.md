@@ -22,13 +22,13 @@
   **diskten yeniden aç** (`EditorSceneManager.OpenScene(path, OpenSceneMode.Single)`), sonra play.
 - **Yükleme sırası:** `EnsureRuntimeDefaults` **önce**, `TuningConfig.TryLoad` (JSON) **sonra**.
   Ters olursa telefonda kaydedilen ayar varsayılanlarla ezilir.
-- **Ayar nesnelerinin kimliği korunmalı.** `DodgeState`/`SentenceEngine`/`PentagonInput`
+- **Ayar nesnelerinin kimliği korunmalı.** `DodgeState`/`SentenceEngine`/`HexagonInput`
   iç ayar nesnelerinin referansını `Bind` sırasında bir kez alıp saklıyor; `CopyFrom` alan alan
   yazar. Yeni bir ayar nesnesi atarsan panelin slider'ları sessizce hiçbir şeyi değiştirmez.
 - **Kurulumda okunan yerleşim canlı ayarı yutar.** `ReactionReadout`/`VitalsHud`
   `ApplyTuningLayout` deseninde her karede uygulanan değeri karşılaştırıp değiştiyse yeniden
   yazıyor. Yeni bir HUD ögesi eklerken aynı deseni kullan, yoksa slider ekranda çalışmaz.
-- **Canvas `ConstantPixelSize`:** her `...Dp` ölçüsü `PentagonLayoutScreen.DpToPixels`'ten
+- **Canvas `ConstantPixelSize`:** her `...Dp` ölçüsü `HexagonLayoutScreen.DpToPixels`'ten
   geçmek zorunda. Geçmeyen ölçü yüksek yoğunluklu telefonda ~2.5 kat küçük çıkar.
 - **Alfa 0 bir `Graphic` yine de geometri üretip harmanlanır.** Görünmeyen HUD ögesi için renk
   saydamlaştırmak yetmez, `enabled = false` gerekir (mobil overdraw).

@@ -14,11 +14,6 @@ namespace Dovus.Game
 
         public TimeDirector Director => _director ??= new TimeDirector();
 
-        public void Bind(Dovus.Core.Tuning.SlowmoTuning tuning)
-        {
-            _director = new TimeDirector(tuning);
-        }
-
         public double WorldDeltaMs { get; private set; }
 
         public double RealDeltaMs { get; private set; }

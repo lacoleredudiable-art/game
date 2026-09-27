@@ -1,5 +1,4 @@
 using Dovus.Core.Time;
-using Dovus.Core.Tuning;
 using NUnit.Framework;
 
 namespace CoreTests;
@@ -7,24 +6,12 @@ namespace CoreTests;
 [TestFixture]
 public class TimeDirectorTests
 {
-    const float Factor = 0.22f;
-    const int RampDownMs = 55;
-    const int HoldMs = 190;
-    const int RampUpMs = 420;
-    const int TotalSlowmoMs = RampDownMs + HoldMs + RampUpMs;
-
     TimeDirector _director = null!;
 
     [SetUp]
     public void SetUp()
     {
-        _director = new TimeDirector(new SlowmoTuning
-        {
-            Factor = Factor,
-            RampDownMs = RampDownMs,
-            HoldMs = HoldMs,
-            RampUpMs = RampUpMs
-        });
+        _director = new TimeDirector();
     }
 
     static void Advance(TimeDirector director, double realMs, double stepMs = 1)
@@ -39,84 +26,35 @@ public class TimeDirectorTests
     }
 
     [Test]
-    public void SlowmoRamp_ReturnsToOneAfterFullDuration()
-    {
-        _director.TriggerSlowmo();
-
-        Assert.That(_director.TimeScale, Is.EqualTo(1f).Within(0.0001f));
-
-        Advance(_director, RampDownMs);
-        Assert.That(_director.TimeScale, Is.EqualTo(Factor).Within(0.0001f));
-
-        Advance(_director, HoldMs);
-        Assert.That(_director.TimeScale, Is.EqualTo(Factor).Within(0.0001f));
-
-        Advance(_director, RampUpMs);
-        Assert.That(_director.TimeScale, Is.EqualTo(1f).Within(0.0001f));
-        Assert.That(_director.IsSlowmoActive, Is.False);
-    }
-
-    [Test]
-    public void SlowmoScale_StaysWithinFactorAndOne()
-    {
-        _director.TriggerSlowmo();
-
-        for (int i = 0; i <= TotalSlowmoMs; i++)
-        {
-            _director.Tick(1);
-            Assert.That(_director.TimeScale, Is.InRange(Factor, 1f),
-                $"scale out of range at real t={i}ms, phase active={_director.IsSlowmoActive}");
-        }
-    }
-
-    [Test]
-    public void HitstopDuringSlowmo_PausesSlowmoThenResumes()
+    public void Hitstop_StopsWorldClockUntilDurationEnds()
     {
         const int hitstopMs = 90;
-
-        _director.TriggerSlowmo();
-        Advance(_director, RampDownMs + HoldMs / 2);
         double worldBeforeHitstop = _director.WorldTimeMs;
-        float scaleBeforeHitstop = _director.TimeScale;
-
-        Assert.That(scaleBeforeHitstop, Is.EqualTo(Factor).Within(0.0001f));
 
         _director.TriggerHitstop(hitstopMs);
         Assert.That(_director.TimeScale, Is.EqualTo(0f));
         Assert.That(_director.IsHitstopActive, Is.True);
 
         Advance(_director, hitstopMs / 2);
-        Assert.That(_director.TimeScale, Is.EqualTo(0f));
         Assert.That(_director.WorldTimeMs, Is.EqualTo(worldBeforeHitstop));
 
         Advance(_director, hitstopMs / 2);
         Assert.That(_director.IsHitstopActive, Is.False);
-        Assert.That(_director.TimeScale, Is.EqualTo(Factor).Within(0.0001f));
+        Assert.That(_director.TimeScale, Is.EqualTo(1f));
 
-        double worldAfterResume = _director.WorldTimeMs;
         Advance(_director, 10);
-        Assert.That(_director.WorldTimeMs, Is.GreaterThan(worldAfterResume));
+        Assert.That(_director.WorldTimeMs, Is.EqualTo(worldBeforeHitstop + 10));
     }
 
     [Test]
-    public void RealClock_AdvancesIndependentlyOfWorldClock()
+    public void RealClock_AdvancesDuringHitstop()
     {
-        _director.TriggerSlowmo();
-        Advance(_director, RampDownMs + 10);
-
-        double realAtHold = _director.RealTimeMs;
-        double worldAtHold = _director.WorldTimeMs;
-        Assert.That(_director.TimeScale, Is.EqualTo(Factor).Within(0.0001f));
-
-        Advance(_director, 50);
-        Assert.That(_director.RealTimeMs, Is.EqualTo(realAtHold + 50).Within(0.0001));
-        Assert.That(_director.WorldTimeMs, Is.EqualTo(worldAtHold + 50 * Factor).Within(0.05));
-
         _director.TriggerHitstop(80);
         double realAtHitstop = _director.RealTimeMs;
         double worldAtHitstop = _director.WorldTimeMs;
 
         Advance(_director, 80);
+
         Assert.That(_director.RealTimeMs, Is.EqualTo(realAtHitstop + 80).Within(0.0001));
         Assert.That(_director.WorldTimeMs, Is.EqualTo(worldAtHitstop).Within(0.0001));
     }
@@ -138,74 +76,22 @@ public class TimeDirectorTests
     }
 
     [Test]
-    public void SlowmoDuringSlowmo_RestartsFromRampDown()
+    public void NonPositiveHitstop_IsIgnored()
     {
-        _director.TriggerSlowmo();
-        Advance(_director, RampDownMs + HoldMs / 2);
+        _director.TriggerHitstop(0);
+        _director.TriggerHitstop(-10);
 
-        _director.TriggerSlowmo();
-        Assert.That(_director.TimeScale, Is.EqualTo(1f).Within(0.0001f));
-
-        Advance(_director, RampDownMs);
-        Assert.That(_director.TimeScale, Is.EqualTo(Factor).Within(0.0001f));
-    }
-
-    [Test]
-    public void SlowmoDuringHitstop_StartsAfterHitstopEnds()
-    {
-        _director.TriggerHitstop(50);
-        _director.TriggerSlowmo();
-
-        Advance(_director, 50);
         Assert.That(_director.IsHitstopActive, Is.False);
-        Assert.That(_director.IsSlowmoActive, Is.True);
-        Assert.That(_director.TimeScale, Is.EqualTo(1f).Within(0.0001f));
+        Assert.That(_director.Tick(16), Is.EqualTo(16));
     }
 
     [Test]
-    public void SlowmoDuringHitstop_WhileEarlierSlowmoPaused_StartsFresh()
+    public void Tick_ReturnsZeroDuringHitstop_ThenRealtimeDelta()
     {
-        _director.TriggerSlowmo();
-        Advance(_director, RampDownMs + HoldMs + RampUpMs / 2); // rampa çıkışında
+        _director.TriggerHitstop(10);
 
-        _director.TriggerHitstop(60);
-        _director.TriggerSlowmo(); // hitstop sırasında yeni sıyırma
-
-        Advance(_director, 60);
-        Assert.That(_director.IsHitstopActive, Is.False);
-        Assert.That(_director.TimeScale, Is.EqualTo(1f).Within(0.0001f),
-            "yeni yavaş çekim baştan başlamalı, eskisi kaldığı yerden sürmemeli");
-
-        Advance(_director, RampDownMs);
-        Assert.That(_director.TimeScale, Is.EqualTo(Factor).Within(0.0001f));
-    }
-
-    [Test]
-    public void QueuedSlowmo_DoesNotLeakIntoALaterHitstop()
-    {
-        _director.TriggerSlowmo();
-        Advance(_director, RampDownMs + HoldMs / 2);
-
-        _director.TriggerHitstop(60);
-        _director.TriggerSlowmo();
-        Advance(_director, 60 + RampDownMs + HoldMs + RampUpMs);
-        Assert.That(_director.IsSlowmoActive, Is.False);
-
-        // Yalnız bir hitstop: bitiminde hayalet yavaş çekim başlamamalı
-        _director.TriggerHitstop(40);
-        Advance(_director, 40);
-        Assert.That(_director.IsSlowmoActive, Is.False, "kuyrukta kalmış tetik sonradan patlamamalı");
-        Assert.That(_director.TimeScale, Is.EqualTo(1f));
-    }
-
-    [Test]
-    public void Tick_ReturnsScaledDelta()
-    {
-        _director.TriggerSlowmo();
-        Advance(_director, RampDownMs + 10);
-
-        double scaled = _director.Tick(10);
-        Assert.That(_director.TimeScale, Is.EqualTo(Factor).Within(0.0001f));
-        Assert.That(scaled, Is.EqualTo(10 * Factor).Within(0.0001));
+        Assert.That(_director.Tick(5), Is.Zero);
+        Assert.That(_director.Tick(5), Is.Zero);
+        Assert.That(_director.Tick(10), Is.EqualTo(10));
     }
 }

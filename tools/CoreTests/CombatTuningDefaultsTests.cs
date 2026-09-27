@@ -7,7 +7,7 @@ namespace CoreTests;
 public class CombatTuningDefaultsTests
 {
     [Test]
-    public void DefaultValues_MatchDovusSistemiSpec()
+    public void DefaultValues_MatchCurrentPrototypeTuning()
     {
         var t = new CombatTuning();
 
@@ -24,7 +24,7 @@ public class CombatTuningDefaultsTests
             Assert.That(t.Dodge.CooldownMs, Is.EqualTo(420));
         });
 
-        // §2 merkez dokunma (dodge girdisi)
+        // Ayrı dodge düğmesinin tap eşiği
         Assert.Multiple(() =>
         {
             Assert.That(t.Dodge.TapMaxMs, Is.EqualTo(180));
@@ -58,19 +58,6 @@ public class CombatTuningDefaultsTests
                 Assert.That(step.TotalEffect, Is.EqualTo(effect), $"{dots} nokta etkisi");
                 Assert.That(step.RecoverySec, Is.EqualTo(recovery), $"{dots} nokta toparlanması");
             }
-        });
-
-        // §7 Yavaş çekim
-        Assert.Multiple(() =>
-        {
-            Assert.That(t.Slowmo.Factor, Is.EqualTo(0.22f));
-            Assert.That(t.Slowmo.RampDownMs, Is.EqualTo(55));
-            // T8.2'de 190/420'den yükseltildi: eski süre §7'nin ödülünü gramerde hiç vermiyordu.
-            Assert.That(t.Slowmo.HoldMs, Is.EqualTo(900));
-            Assert.That(t.Slowmo.RampUpMs, Is.EqualTo(600));
-            Assert.That(t.Slowmo.AudioLowpassHz, Is.EqualTo(700));
-            Assert.That(t.Slowmo.SlowmoMinGrade, Is.EqualTo(DodgeGrade.Temiz));
-            Assert.That(t.Slowmo.SlowmoBonusDots, Is.EqualTo(0));
         });
 
         // §6 Derecelendirme

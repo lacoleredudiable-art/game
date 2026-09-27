@@ -6,7 +6,7 @@ namespace Dovus.Game
 {
     /// <summary>
     /// YERE ÇAKMA telegrafı: hazırlık pozu + yer diski + yükselen ses (§11).
-    /// Renk yalnızca §10 kırmızı-turuncu. Varyant tell'leri windup'ta okunur:
+    /// Sıcak telegraf rengi kullanılır. Varyant tell'leri windup'ta okunur:
     /// GEÇ = daha yavaş ton + uzun tutulan poz; GENİŞ = disk baştan büyük.
     ///
     /// Disk boss transform'unun ÇOCUĞU DEĞİL (T8.1): bossun (1.7, 1.3, 1.7) ölçeği ve

@@ -8,7 +8,7 @@ namespace Dovus.Game
     /// <summary>
     /// §5 toparlanma kilidi — kalan süre eriyen gösterge. Kesme becerisinin (düz vuruş /
     /// yeni fiil / dodge) ödülü buradan okunur; debug metnindeki "kilit: X ms" kalıcı HUD'a
-    /// taşındı (T11.1). Renk §10 oyuncu paleti (camgöbeği/mor); kırmızı-turuncu yok.
+    /// taşındı (T11.1). Renk mevcut oyuncu paletinden (camgöbeği/mor).
     /// </summary>
     public sealed class RecoveryLockHud : MonoBehaviour
     {
@@ -93,16 +93,16 @@ namespace Dovus.Game
 
         void ApplyTuningLayout()
         {
-            float w = PentagonLayoutScreen.DpToPixels(_tuning.VitalsBarWidthDp);
-            float h = PentagonLayoutScreen.DpToPixels(_tuning.RecoveryLockHeightDp);
-            float gap = PentagonLayoutScreen.DpToPixels(_tuning.RecoveryLockGapDp);
-            float left = PentagonLayoutScreen.SafeLeftInsetPx()
-                + PentagonLayoutScreen.DpToPixels(_tuning.VitalsMarginDp);
+            float w = HexagonLayoutScreen.DpToPixels(_tuning.VitalsBarWidthDp);
+            float h = HexagonLayoutScreen.DpToPixels(_tuning.RecoveryLockHeightDp);
+            float gap = HexagonLayoutScreen.DpToPixels(_tuning.RecoveryLockGapDp);
+            float left = HexagonLayoutScreen.SafeLeftInsetPx()
+                + HexagonLayoutScreen.DpToPixels(_tuning.VitalsMarginDp);
 
             float topY;
             if (_vitalsHud != null)
                 topY = _vitalsHud.PlayerStackBottomCanvasY - gap
-                    - PentagonLayoutScreen.DpToPixels(_tuning.StatusIconSizeDp + _tuning.StatusIconGapDp);
+                    - HexagonLayoutScreen.DpToPixels(_tuning.StatusIconSizeDp + _tuning.StatusIconGapDp);
             else
             {
                 int rows = _vitalsBarCount;
@@ -110,8 +110,8 @@ namespace Dovus.Game
                     _tuning.VitalsBarHeightDp * rows
                     + _tuning.VitalsBarSpacingDp * Mathf.Max(0, rows - 1)
                     + _tuning.RecoveryLockGapDp;
-                topY = -(PentagonLayoutScreen.SafeTopInsetPx()
-                    + PentagonLayoutScreen.DpToPixels(_tuning.VitalsMarginDp + vitalsStackDp));
+                topY = -(HexagonLayoutScreen.SafeTopInsetPx()
+                    + HexagonLayoutScreen.DpToPixels(_tuning.VitalsMarginDp + vitalsStackDp));
             }
 
             _root.anchoredPosition = new Vector2(left, topY);

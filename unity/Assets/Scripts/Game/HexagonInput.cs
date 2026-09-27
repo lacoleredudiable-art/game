@@ -11,10 +11,10 @@ using TouchPhase = UnityEngine.InputSystem.TouchPhase;
 namespace Dovus.Game
 {
     /// <summary>
-    /// Sağ yarı beşgen çizim girdisi + merkez tap (düz vuruş / erken kapanış) + beşgenin
+    /// Sağ yarı altıgen çizim girdisi + merkez tap (düz vuruş / erken kapanış) + altıgenin
     /// dışındaki dodge düğmesi (§2). Yalnızca Core motoruna bildirir.
     /// </summary>
-    public sealed class PentagonInput : MonoBehaviour
+    public sealed class HexagonInput : MonoBehaviour
     {
         PrototypeTuning _tuning = new();
         CombatTuning _combat = new();
@@ -125,7 +125,7 @@ namespace Dovus.Game
             (_vitals != null && _vitals.IsDown)
             || (_status != null && _status.Board.BlocksCast);
 
-        // T10: panel açıkken (ayar paneli modal) beşgen girdisi tamamen susar; EnhancedTouch
+        // T10: panel açıkken (ayar paneli modal) altıgen girdisi tamamen susar; EnhancedTouch
         // global olduğu için panelin arkasındaki oyun aynı dokunuşu almaya devam ederdi.
         bool PanelBlocking => TuningPanel.IsOpen;
 
@@ -542,7 +542,7 @@ namespace Dovus.Game
                 return;
             }
 
-            Vector2 dotPx = PentagonLayoutScreen.DotPx(hit.Value, _tuning, Screen.width, Screen.height);
+            Vector2 dotPx = HexagonLayoutScreen.DotPx(hit.Value, _tuning, Screen.width, Screen.height);
             double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
 
             // SentenceCompleted OnDotTouched içinde ateşlenebilir; kapanış segmenti için
@@ -758,18 +758,18 @@ namespace Dovus.Game
         }
 
         bool IsDrawHalf(Vector2 pos) =>
-            PentagonLayoutScreen.IsRightHalf(pos, _tuning.MirrorForLeftHand, Screen.width);
+            HexagonLayoutScreen.IsRightHalf(pos, _tuning.MirrorForLeftHand, Screen.width);
 
         bool HitDodgeButton(Vector2 pos)
         {
-            Vector2 c = PentagonLayoutScreen.DodgeButtonPx(_tuning, Screen.width, Screen.height);
-            return Vector2.Distance(pos, c) <= PentagonLayoutScreen.DodgeButtonRadiusPx(_tuning);
+            Vector2 c = HexagonLayoutScreen.DodgeButtonPx(_tuning, Screen.width, Screen.height);
+            return Vector2.Distance(pos, c) <= HexagonLayoutScreen.DodgeButtonRadiusPx(_tuning);
         }
 
         bool HitCenter(Vector2 pos)
         {
-            Vector2 c = PentagonLayoutScreen.CenterPx(_tuning, Screen.width, Screen.height);
-            float centerR = PentagonLayoutScreen.CenterHitRadiusPx(_tuning);
+            Vector2 c = HexagonLayoutScreen.CenterPx(_tuning, Screen.width, Screen.height);
+            float centerR = HexagonLayoutScreen.CenterHitRadiusPx(_tuning);
             // Merkez, nokta hit'leriyle örtüşmesin diye noktalardan önce ayrı kontrol;
             // nokta hit yarıçapı merkeze taşarsa merkez öncelikli (düz vuruş / erken kapanış).
             return Vector2.Distance(pos, c) <= centerR;
@@ -782,12 +782,12 @@ namespace Dovus.Game
             if (HitDodgeButton(pos) || HitCenter(pos))
                 return null;
 
-            float hitR = PentagonLayoutScreen.DotHitRadiusPx(_tuning);
+            float hitR = HexagonLayoutScreen.DotHitRadiusPx(_tuning);
             int? best = null;
             float bestDist = float.MaxValue;
-            for (int dot = 1; dot <= Dovus.Core.Grammar.PentagonLayout.DotCount; dot++)
+            for (int dot = 1; dot <= Dovus.Core.Grammar.HexagonLayout.DotCount; dot++)
             {
-                Vector2 p = PentagonLayoutScreen.DotPx(dot, _tuning, Screen.width, Screen.height);
+                Vector2 p = HexagonLayoutScreen.DotPx(dot, _tuning, Screen.width, Screen.height);
                 float d = Vector2.Distance(pos, p);
                 if (d <= hitR && d < bestDist)
                 {

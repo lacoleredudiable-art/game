@@ -4,7 +4,7 @@ using UnityEngine.UI;
 namespace Dovus.Game
 {
     /// <summary>
-    /// Ulti visual.aura / screen_edges — oyuncu camgöbeği/mor (kırmızı-turuncu yasak).
+    /// Ulti visual.aura / screen_edges — mevcut oyuncu paleti camgöbeği/mor.
     /// Koddan kurulur; prefab yok.
     /// </summary>
     public sealed class ActiveModeVfx : MonoBehaviour
@@ -164,7 +164,7 @@ namespace Dovus.Game
                 mat.color = c;
         }
 
-        /// <summary>JSON aura metni → oyuncu paleti (kırmızı-turuncu boss tehdidine düşmez).</summary>
+        /// <summary>JSON aura metni → mevcut oyuncu paleti.</summary>
         public static Color MapPlayerSafeTint(string aura, string edges, Color elementTint)
         {
             string s = ((aura ?? "") + " " + (edges ?? "")).ToLowerInvariant();

@@ -9,7 +9,7 @@ namespace Dovus.Game
     /// §6 gösterim: kenarda büyük, parlak (katmanlı glow) tepki yazısı — "0.45 sn" + derece +
     /// mesaj. Seri sayacı ve en iyi tepki kaydı da burada. Vurulunca sebep yazısı ("erken
     /// bastın"/"geç kaldın") aynı yolla gösterilir ama oyuncu rengiyle DEĞİL — §10 kırmızı-
-    /// turuncu yasak olduğu için nötr `PentagonDotColor` kullanılır.
+    /// vurulma nedeni için nötr `HexagonDotColor` kullanılır.
     ///
     /// Animasyon ÖLÇEKLENMEMİŞ saatle (Time.unscaledTime) çalışır: dünya yavaşken bile
     /// keskin görünmeli (§6). Punto/glow/bekleme/sönme `FeelTuning.Readout*`'tan (T1'de spec'e
@@ -92,7 +92,7 @@ namespace Dovus.Game
             if (right != _appliedAnchorRight)
             {
                 _appliedAnchorRight = right;
-                // Sağ (ya da sol) kenarda, üst debug HUD'ın (0.82-0.98) ve beşgenin (merkez
+                // Sağ (ya da sol) kenarda, üst debug HUD'ın (0.82-0.98) ve altıgenin (merkez
                 // y≈0.40) arasında dikey bant — telegrafı kapatmayacak kadar dar (§10).
                 _root.anchorMin = right ? new Vector2(0.58f, 0.56f) : new Vector2(0.02f, 0.56f);
                 _root.anchorMax = right ? new Vector2(0.98f, 0.80f) : new Vector2(0.42f, 0.80f);
@@ -176,8 +176,8 @@ namespace Dovus.Game
             else if (result.Outcome == ExchangeOutcome.Hit)
             {
                 _streak = 0;
-                // §10: kırmızı-turuncu yalnızca boss tehdidi. Vurulma sebebi nötr renkte.
-                _accent = _tuning.PentagonDotColor;
+                // Vurulma sebebi nötr renkte.
+                _accent = _tuning.HexagonDotColor;
                 _main.text = result.HitReasonText ?? "vuruldun";
                 _sub.text = string.Empty;
                 _needsFit = true;
@@ -201,7 +201,7 @@ namespace Dovus.Game
         }
 
         /// <summary>
-        /// Bağlama 3: yetersiz mana — §10 kırmızı-turuncu yasak; nötr PentagonDotColor.
+        /// Bağlama 3: yetersiz mana için nötr HexagonDotColor.
         /// </summary>
         public void NoteDenied(string title, string detail = null)
         {
@@ -209,7 +209,7 @@ namespace Dovus.Game
                 return;
 
             _accent = _tuning != null
-                ? _tuning.PentagonDotColor
+                ? _tuning.HexagonDotColor
                 : new Color(0.55f, 0.62f, 0.72f, 0.85f);
             _main.text = title;
             _sub.text = detail ?? string.Empty;

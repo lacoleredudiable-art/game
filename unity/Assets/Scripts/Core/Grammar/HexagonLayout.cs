@@ -4,7 +4,7 @@ namespace Dovus.Core.Grammar
     /// Altıgen komşuluk: her noktanın 2 komşusu (kısa sıçrama); uzak = ±2 (ve ±3 uzun).
     /// Saat yönünde 1–6; komşu = ±1 mod 6. Elle dizi tablosu yok.
     /// </summary>
-    public static class PentagonLayout
+    public static class HexagonLayout
     {
         public const int DotCount = 6;
 
@@ -41,7 +41,7 @@ namespace Dovus.Core.Grammar
             farB = Wrap(dot + 2);
         }
 
-        /// <summary>Beşgende en kısa yay mesafesi (1 veya 2; aynı noktada 0).</summary>
+        /// <summary>Altıgende en kısa yay mesafesi (1..3; aynı noktada 0).</summary>
         public static int CircularDistance(int a, int b)
         {
             int d = System.Math.Abs(a - b);

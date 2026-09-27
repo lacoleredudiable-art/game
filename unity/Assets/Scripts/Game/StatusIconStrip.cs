@@ -58,8 +58,8 @@ namespace Dovus.Game
             _root.pivot = pivot;
             _root.anchoredPosition = anchoredPos;
             _root.sizeDelta = new Vector2(
-                PentagonLayoutScreen.DpToPixels(tuning.StatusIconSizeDp * MaxSlots + tuning.StatusIconGapDp * (MaxSlots - 1)),
-                PentagonLayoutScreen.DpToPixels(tuning.StatusIconSizeDp));
+                HexagonLayoutScreen.DpToPixels(tuning.StatusIconSizeDp * MaxSlots + tuning.StatusIconGapDp * (MaxSlots - 1)),
+                HexagonLayoutScreen.DpToPixels(tuning.StatusIconSizeDp));
 
             for (int i = 0; i < MaxSlots; i++)
                 _pool.Add(CreateSlot(go.transform, i));
@@ -75,8 +75,8 @@ namespace Dovus.Game
 
         Slot CreateSlot(Transform parent, int index)
         {
-            float size = PentagonLayoutScreen.DpToPixels(_tuning.StatusIconSizeDp);
-            float gap = PentagonLayoutScreen.DpToPixels(_tuning.StatusIconGapDp);
+            float size = HexagonLayoutScreen.DpToPixels(_tuning.StatusIconSizeDp);
+            float gap = HexagonLayoutScreen.DpToPixels(_tuning.StatusIconGapDp);
 
             var go = new GameObject("Status_" + index);
             go.transform.SetParent(parent, false);
@@ -168,8 +168,8 @@ namespace Dovus.Game
             _scratch.Sort(ComparePriority);
             int show = Math.Min(_scratch.Count, MaxSlots);
 
-            float size = PentagonLayoutScreen.DpToPixels(_tuning.StatusIconSizeDp);
-            float gap = PentagonLayoutScreen.DpToPixels(_tuning.StatusIconGapDp);
+            float size = HexagonLayoutScreen.DpToPixels(_tuning.StatusIconSizeDp);
+            float gap = HexagonLayoutScreen.DpToPixels(_tuning.StatusIconGapDp);
 
             for (int i = 0; i < MaxSlots; i++)
             {
