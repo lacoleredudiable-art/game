@@ -27,9 +27,11 @@ verisidir ve prototip hasar hesabını değiştirmez.
 4. 1-1 cast'inde `AnimationDatabase` Kılıç×Saldırı adını önce mevcut controller
    clip'lerinde arar; özel clip yoksa `CastPierce` state'ine düşer;
    state/clip varsa animasyon oynamalı, yoksa cast sürüp binding uyarısı vermeli.
-5. B veya `V6` paneli → listeden tam 6 rün → `SEÇİLİ 6'YI UYGULA`; altı slot etiketi
-   değişmeli ve yeni iki-rün skill cast edilebilmeli. Salt-okunur preview ilk ründe
-   fiili, kapanışta skill/prose/uyum rengini göstermeli.
+5. Play açılışında `BuildSelectScreen` gelir (dünya saati durur); 12 karttan 6 seç ya da
+   ◀ ▶ ile hazır class → `SAVAŞA BAŞLA`. Sağ üst `BUILD` / B tuşu ekranı savaş içinde
+   yeniden açar. Altı slot etiketi değişmeli, yeni iki-rün skill cast edilebilmeli.
+   Salt-okunur preview altıgenin üstünde: ilk ründe fiili, kapanışta skill/prose/uyum
+   rengini gösterip kısa süre sonra kaybolmalı.
 6. E veya `ELEMENT DEĞİŞTİR`; sonraki skill başlığının element öneki değişmeli,
    hasar sayısı yalnız element yüzünden değişmemeli.
 7. Prototip Kılıç ile fiil 1/3/5/9 yeşil “Uyumlu”, diğer fiiller sarı

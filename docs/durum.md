@@ -13,9 +13,27 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 27 Eylül 2026 (v6.1.1 + altıgen temizliği + daire salon merge) ·
-**Dal:** `feat/circular-arena-feel` · **Sıradaki:** `docs/COMPAT.md` 3–8 elle Play,
-sonra `hitbox_vfx` prefab ve tam `presentation` bağları
+**Son güncelleme:** 27 Eylül 2026 (build seçim ekranı + skill önizleme yeri) ·
+**Dal:** `feat/build-select-screen` · **Sıradaki:** telefonda build ekranı/önizleme,
+`docs/COMPAT.md` 6–8 elle Play, sonra `hitbox_vfx` prefab ve tam `presentation` bağları
+
+> **27 Eylül — build seçim ekranı (v6 7b).** Sahibi: "skiller ekranın ortasında saçma,
+> 12 ründen 6 seçemiyorum". Yeni `BuildSelectScreen`: Play açılışında tam ekran; 12 rün
+> kartı (fiil yüzü, sıfat yüzü, kategori, base_effect), seçim sırası = altıgen slotu,
+> sağda altıgen önizleme (slota dokun = çıkar), ◀ ▶ ile `ana_classes_80` hazır build ve
+> eşleşen class adı, `SAVAŞA BAŞLA`. Açıkken `GameClock.Paused` dünya saatini durdurur;
+> altıgen/çubuk/orbit girdisi susar. Sağ üst `BUILD` / B savaş içinde yeniden açar.
+> `V611DebugPanel` liste pick-6'sı kaldırıldı (F1 smoke + E element kaldı).
+> `SkillPreviewHud` ekran ortasından altıgenin üstüne taşındı; çizimde ve cast sonrası
+> `SkillPreviewHoldSec` (FeelTuning.ReadoutHoldMs 900) kadar görünür. `ShoutSkill` artık
+> her cast'te dev `ReactionReadout` yazısını basmıyor (o kanal dodge/tepki/iyileşme için).
+> Uydurma: `SkillPreviewWidthDp=240`, `SkillPreviewGapDp=10`, önizleme yüksekliği 48dp.
+> Pasif yuva (0-2) seçimi ekranda yok — build pasifsiz uygulanır.
+> **Doğrulandı:** Unity derleme temiz, `dotnet test` 256/256; Play'de ekran açılışta
+> geliyor (dünya saati 0'da duruyor), sahibi hazır class ile iki kez uyguladı
+> (`[BuildSelect] build=[1,5,6,4,8,3] class=Savaş Lordu` …), `SAVAŞA BAŞLA` → cast 1-5
+> → önizleme altıgen üstünde, ortada dev yazı yok. **Doğrulanamadı:** telefonda dokunmatik
+> ve dar ekran yerleşimi.
 
 ### v6.1.1 bağlayıcı uygulama sırası 1–9
 
@@ -33,9 +51,9 @@ sonra `hitbox_vfx` prefab ve tam `presentation` bağları
    factory'den alır; tek-rün çizim önizlemesi motor üzerinde kalır (skill değildir).
 6. [x] **AnimationDatabase:** 120 JSON adı controller clip adlarında aranır; yoksa mevcut
    `Cast*` state fallback'i, o da yoksa temiz no-op/uyarı. Görsel Play kanıtı yok.
-7. [ ] **UI:** 7a salt-okunur `SkillPreviewHud` tamam (isim/prose/uyum rengi);
-   mevcut hexagon + basit pick-6 + element cycle bağlı. Radial element menü ve
-   production UI eksik.
+7. [ ] **UI:** 7a `SkillPreviewHud` altıgen üstünde (isim/prose/uyum rengi);
+   7b savaş öncesi `BuildSelectScreen` (12 kart, pick-6, hazır class) bağlı; element
+   cycle debug panelde. Radial element menü, pasif yuva seçimi, silah seçimi eksik.
 8. [ ] **Playtest:** startup preflight JSON→SO 12/10/6→36 build skill→1-1'i doğrular;
    1 build + Kılıç + 1 element ve F1 fight smoke bağlı. Unity Editor olmadığı için
    görsel/fight kanıtı yok.
