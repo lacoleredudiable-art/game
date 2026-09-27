@@ -42,25 +42,21 @@ public class DamageCalculatorTests
     }
 
     [Test]
-    public void AdjectiveCritBonuses_SumWithBase_MatchJson()
+    public void AdjectiveCritBonuses_MatchJson_AndMissingUsesBase()
     {
         string json = LoadJson();
         var (baseChance, maxChance, _, bonuses) = ReadCritSystem(json);
-        // Kabul: keskinlik / saflastirma / berraklik id'leri JSON'dan.
-        Assert.That(bonuses.ContainsKey("keskinlik"), Is.True);
-        Assert.That(bonuses.ContainsKey("saflastirma"), Is.True);
-        Assert.That(bonuses.ContainsKey("berraklik"), Is.True);
-
         var calc = DamageCalculator.FromElementSystemJson(json, seed: 1);
 
-        foreach (string id in new[] { "keskinlik", "saflastirma", "berraklik" })
+        foreach (KeyValuePair<string, float> bonus in bonuses)
         {
-            float expected = System.Math.Min(baseChance + bonuses[id], maxChance);
-            Assert.That(calc.CritChanceFor(id), Is.EqualTo(expected).Within(0.0001f), id);
+            float expected = System.Math.Min(baseChance + bonus.Value, maxChance);
+            Assert.That(calc.CritChanceFor(bonus.Key), Is.EqualTo(expected).Within(0.0001f), bonus.Key);
         }
 
-        // Bilinmeyen sıfat → yalnızca base.
-        Assert.That(calc.CritChanceFor("yogunlastirma"), Is.EqualTo(baseChance).Within(0.0001f));
+        // v6.1.1 adjective_crit_bonus tanımlamıyor; eksik/herhangi bir id yalnız base kullanır.
+        Assert.That(calc.AdjectiveCritBonus.Count, Is.EqualTo(bonuses.Count));
+        Assert.That(calc.CritChanceFor("1"), Is.EqualTo(baseChance).Within(0.0001f));
     }
 
     [Test]

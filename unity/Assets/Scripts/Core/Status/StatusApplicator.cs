@@ -142,6 +142,9 @@ namespace Dovus.Core.Status
 
             if (ModifierTruthy(mods, "apply_root") && !HasMech("root"))
                 board.Apply(StatusKind.Root, tuning.RootMs, 1f);
+            float rootSec = mods["apply_root_sec"].AsFloat(0f);
+            if (rootSec > 0f && !HasMech("root"))
+                board.Apply(StatusKind.Root, rootSec * 1000.0, 1f);
 
             if (ModifierTruthy(mods, "apply_burn") && !HasMech("burn"))
             {
@@ -202,7 +205,9 @@ namespace Dovus.Core.Status
         public static bool IsSelfTargeted(SkillResolution skill)
         {
             string hit = skill.Hitbox ?? string.Empty;
-            if (hit is "self" or "self_aura" or "target_ally")
+            if (hit is "self" or "self_aura" or "target_ally" or "self_or_ally")
+                return true;
+            if (skill.TargetMode is "self_only" or "self_or_ally")
                 return true;
             string family = skill.VerbFamily ?? string.Empty;
             return family is "mend" or "guard" or "purge";

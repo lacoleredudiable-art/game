@@ -7,14 +7,75 @@
 > **16 Eylül 2026 — doküman sıfırlaması:** `dovus-sistemi.md`, `tasarim-ozeti.md`,
 > `teknoloji-kararlari.md`, `his-kontrol-listesi.md`, `t0-kurulum.md`, `alis-sepeti.md`,
 > `animasyon-omurgasi.md` **silindi** (beşgen/3-rün alfa prototipine aitti, altıgen/6-element
-> sistemine geçildi, kafa karıştırıyordu). Yeni bağlayıcı doküman: [Element Sistemi](element-sistemi.md)
-> + veri kaynağı `element-sistemi.json`. **Aşağıdaki eski oturum kayıtlarında** hâlâ "beşgen",
+> sistemine geçildi, kafa karıştırıyordu). Bağlayıcı kaynak:
+> `element-sistemi.json`. [Element Sistemi](element-sistemi.md) yalnızca insan-okunur
+> açıklayıcı/tarihsel nottur. **Aşağıdaki eski oturum kayıtlarında** hâlâ "beşgen",
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 23 Eylül 2026 (altıgen adlandırma + girdi/zaman temizliği; daire salon merge) ·
-**Dal:** `feat/circular-arena-feel` · **Sıradaki:** fiil action özel motorları
-(`drain`/Karabasan hattı dahil); his sahibi gözü; (deneme sonrası süre/Enforce)
+**Son güncelleme:** 27 Eylül 2026 (v6.1.1 + altıgen temizliği + daire salon merge) ·
+**Dal:** `feat/circular-arena-feel` · **Sıradaki:** Unity Play kanıtı (`docs/COMPAT.md`),
+sonra `hitbox_vfx` prefab ve tam `presentation` bağları
+
+### v6.1.1 bağlayıcı uygulama sırası 1–9
+
+`[x]` kod + statik veri kontrolü tamam; Unity Play gerektirenler ayrıca açık yazılır.
+
+1. [x] **JSONLoader:** `ElementSystemJsonLoader`, tek canonical Resources kopyasını
+   v6.1.1/binding/cardinality ile doğrular ve parse sonucunu cache'ler.
+2. [x] **SO üretimi:** runtime 12 `RuneSO` + 10 `WeaponSO` + 6 `ElementSO` üretir.
+   `Dovus → Import Element System v6.1.1 Assets` aynı veriden kalıcı asset üretir;
+   importer bu ortamda Unity olmadığı için çalıştırılamadı.
+3. [x] **SkillFactory:** 12×12=144 benzersiz `Skill`; seçili 6 ründe 6×6=36 skill.
+   Element yalnız isim boyası, silah/uyumsuz çarpanları factory sonucundadır.
+4. [x] **RuneManager:** 12'den tekrarsız 6 seçim ve build içinden 0–2 pasif rün doğrular.
+5. [x] **SkillMotor → SkillFactory:** canlı `ManifestationDirector` iki-rün çözümünü
+   factory'den alır; tek-rün çizim önizlemesi motor üzerinde kalır (skill değildir).
+6. [x] **AnimationDatabase:** 120 JSON adı controller clip adlarında aranır; yoksa mevcut
+   `Cast*` state fallback'i, o da yoksa temiz no-op/uyarı. Görsel Play kanıtı yok.
+7. [ ] **UI:** 7a salt-okunur `SkillPreviewHud` tamam (isim/prose/uyum rengi);
+   mevcut hexagon + basit pick-6 + element cycle bağlı. Radial element menü ve
+   production UI eksik.
+8. [ ] **Playtest:** startup preflight JSON→SO 12/10/6→36 build skill→1-1'i doğrular;
+   1 build + Kılıç + 1 element ve F1 fight smoke bağlı. Unity Editor olmadığı için
+   görsel/fight kanıtı yok.
+9. [ ] **Eski SO/listeleri sil:** yapılmadı; 1–8 Play'de doğrulanmadan yapılmayacak.
+
+Kilitli davranış: yalnız 2-rün skill; silah-fiil uyumsuzluğu ×0.8 hasar / ×1.2 cast,
+pasif kapalı, sarı (uyumlu yeşil); sıfat uyumsuzluğu yok; Zaman aktör `Slow`/`Haste`,
+global `Time.timeScale` değil. Elle doğrulama: `docs/COMPAT.md`.
+
+> **27 Eylül — v6.1.1 runtime doğrudan yüklüyor.** `SkillMotorLoader` →
+> `SkillMotor`: 12 çift-yüzlü rün, 144 adet 2-rün fiil×sıfat skill, 6-of-12
+> `RuneLoadout`, 80 ana class ve 6 element boya verisi. `PrototypeBootstrap` Inspector'daki
+> ana class id + 0-2 pasif rün id'sini kullanır (varsayılan class 1). 10 silahın JSON
+> çarpanları + `compatible_verbs` canlı; uyumsuz fiil = hasar ×0.8, cast ×1.2,
+> pasif kapalı, sarı UI; uyumlu = tam, yeşil UI. Sıfat uyumsuzluğu yok. Zaman yalnız
+> hedef `Slow` / oyuncu `Haste`; global zaman ölçeğine çağrı yok. Element boya katmanı
+> hasar matematiğine girmez. Unity doğrulaması: `docs/COMPAT.md`.
+> **Stub:** silah seçimi, pasif rün ve silah identity-passive efektlerinin tamamı,
+> `hitbox_vfx` prefabları, özel clip/event'ler ve tam VFX/ses presentation.
+> **Doğrulandı:** yerel .NET 8 ile Core derlendi; `dotnet test` **270/270 yeşil**.
+> JSON yapısı, ayna eşitliği ve diff doğrulandı. **Doğrulanamadı:** Unity derleme /
+> Editor Play / telefon (ortamda Unity Editor yok).
+
+> **27 Eylül — v6.1.1 bağlayıcı veri güncel.** Docs + Resources aynalandı; yeni üst
+> seviye anahtarlar: `ana_classes_80`, `skills_prose_144`, `hitbox_vfx`, `mobility_cc`,
+> `uyumsuz_cizim`, `presentation`, `changelog_v6_1`, `design_warnings`. Zaman prose'u
+> yalnız tempo (`enemy_slow` / `self_haste`), global slow-mo yok; class 41/50 ayrıştırılmış
+> adları kanonik JSON'daki haliyle korundu.
+
+> **27 Eylül — v6.1 bağlayıcı tasarım kilidi.** `docs/element-sistemi.json` ve
+> Resources kopyası tam v6.1 ile değiştirildi; önceki v5.3
+> `docs/archive/element-sistemi-v5.3.json` altında saklandı. Yeni sistem: 12 çift yüzlü
+> rün (fiil+sıfat), 12'den tekrarsız 6-rün build, 2-rün gramerinden 144 skill,
+> 0-2 pasif yuva. Element prototipte yalnız VFX/isim katmanı (`element_mult=1.0`);
+> silahlar çarpan + animasyon + hitbox katmanı. Engine sayıları JSON'da bulunur.
+> Multiplayer için global slow-mo yok; Zaman yalnız `enemy_slow` / `self_haste`
+> (`no_global_timescale=true`) uygular. Bu ilk veri-kilidi commit'indeki loader açığı
+> aynı dalın v6.1.1 runtime adaptasyonunda (yukarıda) kapatıldı.
+> JSON bütünlüğü, 12×12=144 skill ve iki kopyanın birebirliği doğrulandı.
+> **Doğrulanamadı:** `dotnet test` (bu ortamda `dotnet` kurulu değil).
 
 > **23 Eylül — güncel tasarım temizliği.** `Pentagon*` dosya/tip/adları `Hexagon*`
 > olarak değiştirildi; 6 nokta davranışı korunuyor. Merkez düz vuruş/erken kapanış,
@@ -61,53 +122,7 @@
 > **Doğrulandı:** Play Humanoid + Locomotion + CastSweep tetik.
 
 > **17 Eylül — Animasyon bütçe kararı.** Synty ANIMATION paketleri alma
-> (Sidekick uyumsuz). Mixamo $0 yeterli; KayKit yedek (~$0 itch / ~**Son güncelleme:** 18 Eylül 2026 (daire salon + ağır hareket) ·
-**Dal:** `feat/circular-arena-feel` · **Sıradaki:** fiil action motorları; his sahibi gözü
-
-> **18 Eylül — 100 m çap daire zindan.** Long_Hall (avize/sütun/tavan görüşü
-> kesiyordu) kalktı. `CircularArena`: r=50 m disk + 18 m yüksek çevre duvarı,
-> tavansız. `ArenaClamp` daire sınır; `KinematicMotor` CapsuleCast + push-out
-> (duvar içinden geçme). Karakter %50 büyük (`PlayerVisualScale=2.625` /
-> `BossVisualScale=3.3`). Walk **7.5 m/s**. Locomotion tam stick = **Running**
-> (Walking değil). Idle fidget freeze; cast 1.0. TuningVersion **15**.
-> **Doğrulanamadı:** Play / telefon APK (bu oturumda Unity Play yok).
-
-> **17 Eylül — Sert/sabit anim pass.** Idle → Fighting Idle; cast klipleri
-> overdrive+0.65. Controller: exitTime 0.78 / blend 0.02s; cast speed ~1.5;
-> `CharacterAnimSpeed=1.35`. Bind + APK telefona. **Doğrulandı:** Mixamo export
-> + Bind log + install; his sahibi gözü.
-
-> **17 Eylül — Karakter ölçek.** `PlayerVisualScale=1.75` / `BossVisualScale=2.2`
-> (`PrototypeTuning`) — Long_Hall’da küçük silüet. Inspector’dan ayarlanır.
-
-> **17 Eylül — Skill anim ayrımı.** `ActorVisual` SetTrigger kullanıyordu; Mixamo
-> controller'da trigger yok → hep aynı/idle. Artık `Animator.Play` +
-> `animation_type` map (projectile/aoe/self/dash/melee ayrı). PulseActor skill
-> tipine göre. **Doğrulandı:** Play map tablosu; his sahibi gözü.
-
-> **17 Eylül — T-pose fix.** Nested Synty prefab'da Animator override Instantiate'te
-> düşüyordu (`ctrl=null`). Unpack + controller kaynak/wrapper'a yazıldı; Bind artık
-> GUID silmiyor. **Doğrulandı:** Play 3× Animator `Player_Synty`/`Boss_Synty`, CastSweep.
-
-> **17 Eylül — Anim çeşitlendirme.** Önce çoğu skill `CastChannel`/`CastGuard`’a
-> düşüyordu (hep aynı Spell_Cast). Map: projectile→Pierce, aoe→Sweep,
-> self/channel→Channel, dash→**Dodge** (roll). Clip seçimi dosya adına göre.
-> **Doğrulandı:** map string’leri; Play his sahibi gözü.
-
-> **17 Eylül — Mixamo full anim set.** 10 FBX (Idle/Walking/Running/Melee_*/
-> Spell_Cast/Dash/Hit/Death) → `Assets/Art/Mixamo/`. Controllers
-> `Player_Synty`/`Boss_Synty` (CastPierce/Sweep/Slam/Channel/Guard + Locomotion
-> blend) → Synty prefabs. `tools/mixamo-download.mjs` + `MixamoAnimatorBind`.
-> **Doğrulandı:** Play Humanoid + Locomotion + CastSweep tetik.
-
-> **17 Eylül — Animasyon bütçe kararı.** Synty ANIMATION paketleri alma
 > (Sidekick uyumsuz). Mixamo $0 yeterli; KayKit yedek (~$0 itch / ~$12 Store).
-
-> **17 Eylül — Synty Long_Hall arenası.** Promo salon: Demo.unity `Long_Hall`
-> (+ URP lights) → `ArenaVisual_Synty`. Kapalı salon (sütun/avize/banner),
-> boş platform değil. `Dovus/Synty/Bind Demo Hall Arena`. Atmosphere torch/bloom.
-> **Doğrulandı:** Play bounds ~38×76 m, 96 light.
-2 Store).
 
 > **17 Eylül — Synty Long_Hall arenası.** Promo salon: Demo.unity `Long_Hall`
 > (+ URP lights) → `ArenaVisual_Synty`. Kapalı salon (sütun/avize/banner),

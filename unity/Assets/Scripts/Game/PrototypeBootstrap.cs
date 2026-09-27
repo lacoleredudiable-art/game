@@ -1,5 +1,6 @@
 using Dovus.Core.Combat;
 using Dovus.Core.Equipment;
+using Dovus.Core.Grammar;
 using Dovus.Core.Tuning;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -25,6 +26,10 @@ namespace Dovus.Game
         [SerializeField] GameObject _playerVisualPrefab;
         [SerializeField] GameObject _bossVisualPrefab;
         [SerializeField] GameObject _arenaVisualPrefab;
+
+        [Header("v6 build (ana_classes_80 id + 0-2 pasif rün id)")]
+        [SerializeField, Min(1)] int _prototypeMainClassId = 1;
+        [SerializeField] int[] _prototypePassiveRuneIds = new int[0];
 
         /// <summary>
         /// Alfa: sabit tek silah (seçim UI yok). Katalogdan Alev Kılıcı / Ateş.
@@ -204,8 +209,29 @@ namespace Dovus.Game
             overlay.Build(HexagonInkLayer);
             AttachOverlayToMain(mainCam, overlay.Cam);
 
+            ElementSystemDesign design = null;
+            ElementSystemAssetCatalog assetCatalog = null;
+            if (ElementSystemJsonLoader.TryLoad(out ElementSystemDesign loaded))
+            {
+                design = loaded;
+                assetCatalog = ElementSystemAssetCatalog.CreateRuntime(design);
+            }
+            SkillMotor skills = design?.SkillMotor ?? SkillMotorLoader.LoadOrDefault();
+            var runeManager = new RuneManager(skills);
+            if (!runeManager.TrySelectMainClass(
+                    _prototypeMainClassId,
+                    _prototypePassiveRuneIds,
+                    out string buildError))
+            {
+                Debug.LogWarning($"[RuneManager] {buildError}; varsayılan build kullanıldı.");
+            }
+            RuneLoadout loadout = runeManager.Current;
+            Debug.Log(
+                $"[ElementSystem] mainClass={_prototypeMainClassId} build=[{string.Join(",", loadout.RuneIds)}] "
+                + $"passives={loadout.PassiveCount}; SO={assetCatalog?.Runes.Count ?? 0}/"
+                + $"{assetCatalog?.Weapons.Count ?? 0}/{assetCatalog?.Elements.Count ?? 0}");
             var view = root.AddComponent<HexagonView>();
-            view.Build(_tuning, overlay.Cam);
+            view.Build(_tuning, overlay.Cam, skills, loadout);
 
             // 16 Eylül: sol yarıdaki sanal çubuk fonksiyonel olarak zaten çalışıyordu, hiç
             // görseli yoktu (bug raporu). MoveInput'un mantığına dokunmuyor, sadece çiziyor.
@@ -227,12 +253,11 @@ namespace Dovus.Game
             var syllable = root.AddComponent<SyllableFeedback>();
             syllable.Configure(_tuning);
             var debug = root.AddComponent<SentenceDebugHud>();
-            var skills = SkillMotorLoader.LoadOrDefault();
 
             var input = root.AddComponent<HexagonInput>();
             input.Tuning = _tuning;
             input.Combat = combat;
-            input.Bind(clock, ink, syllable, debug);
+            input.Bind(clock, ink, syllable, debug, skills, loadout);
 
             // 16 Eylül: "kamera sabit" bug raporu — MoveInput/HexagonInput'un parmaklarına
             // dokunmadan üçüncü bir parmakla (veya editörde sağ-tık sürükleyerek) 360° orbit.
@@ -332,33 +357,78 @@ namespace Dovus.Game
             var scars = scarsGo.AddComponent<GroundScarField>();
             scars.Configure(_tuning);
 
-            EquipmentBonusResolver equipmentBonus = LoadPrototypeEquipment(out _equippedWeapon);
+            EquipmentBonusResolver equipmentBonus;
+            if (design != null && assetCatalog != null)
+            {
+                equipmentBonus = new EquipmentBonusResolver(design.Equipment);
+                _equippedWeapon = assetCatalog.FindWeapon(4)?.ToEquipmentItem();
+            }
+            else
+            {
+                equipmentBonus = LoadPrototypeEquipment(out _equippedWeapon);
+            }
             if (_equippedWeapon != null)
-                Debug.Log($"[Equipment] sabit silah={_equippedWeapon.Name} ({_equippedWeapon.Element}) matchMult={equipmentBonus.MatchBonusMult:0.##}");
+                Debug.Log($"[Equipment] prototip silah={_equippedWeapon.Name}; v6 fiil uyumu etkin.");
+            var skillFactory = new SkillFactory(skills, equipmentBonus);
+            VerifyBindingPipeline(design, assetCatalog, runeManager, skillFactory, _equippedWeapon);
 
             var manGo = new GameObject("Manifestation");
             manGo.transform.SetParent(transform, false);
             var director = manGo.AddComponent<ManifestationDirector>();
-            director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, allyDummy, modeHud, view, passiveHud, _equippedWeapon, equipmentBonus);
+            director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, allyDummy, modeHud, view, passiveHud, _equippedWeapon, equipmentBonus, skills, skillFactory, design?.Animations);
+
+            var preview = root.AddComponent<SkillPreviewHud>();
+            preview.Configure(input.Engine, skills, skillFactory, _equippedWeapon, director, view.CanvasRoot);
+
+            var v6Panel = root.AddComponent<V611DebugPanel>();
+            v6Panel.Configure(skills, runeManager, assetCatalog, input, view, director, view.CanvasRoot);
 
             CreateTuningPanel(tuningConfig, vitals);
         }
 
+        static void VerifyBindingPipeline(
+            ElementSystemDesign design,
+            ElementSystemAssetCatalog assets,
+            RuneManager runes,
+            SkillFactory factory,
+            EquipmentItem weapon)
+        {
+            if (design == null || assets == null || runes == null || factory == null || weapon == null)
+            {
+                Debug.LogWarning("[BindingReady] v6.1.1 preflight atlandı: bağımlılık eksik.");
+                return;
+            }
+
+            int elementId = assets.Elements.Count > 0 ? assets.Elements[0].Id : 0;
+            var buildSkills = runes.BuildSkills(factory, weapon, elementId);
+            Skill smoke = factory.Create(1, 1, weapon, elementId);
+            if (assets.Runes.Count != 12 || assets.Weapons.Count != 10
+                || assets.Elements.Count != 6 || buildSkills.Count != 36
+                || smoke.Id != "1-1")
+            {
+                throw new System.InvalidOperationException(
+                    "v6 binding preflight 12/10/6 SO, 36 build skill ve 1-1 smoke bekler.");
+            }
+
+            Debug.Log(
+                $"[BindingReady] JSON {design.Version} → SO 12/10/6 → "
+                + $"buildSkills={buildSkills.Count} → smoke={smoke.DisplayName} → "
+                + $"weapon={weapon.Name} → element={assets.Elements[0].DisplayName}");
+        }
+
         /// <summary>
-        /// Resources element-sistemi → Alev Kılıcı (Ateş). Katalog yoksa null / çarpan 1.
+        /// Resources element-sistemi v6.1.1 → prototip Kılıç. Seçim UI ayrı sunum işi.
         /// </summary>
         static EquipmentBonusResolver LoadPrototypeEquipment(out EquipmentItem weapon)
         {
             weapon = null;
-            const string resourcePath = "ElementSystem/element-sistemi";
-            var asset = Resources.Load<TextAsset>(resourcePath);
-            if (asset == null || string.IsNullOrWhiteSpace(asset.text))
+            if (!ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
                 return new EquipmentBonusResolver(string.Empty);
 
             try
             {
-                var catalog = EquipmentCatalog.FromJson(asset.text);
-                weapon = catalog.Find(EquipmentSlot.Weapon, "Ateş");
+                EquipmentCatalog catalog = design.Equipment;
+                weapon = catalog.FindWeapon(4);
                 return new EquipmentBonusResolver(catalog);
             }
             catch (System.Exception e)

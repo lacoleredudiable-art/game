@@ -13,8 +13,22 @@ Bunlar görevden bağımsız, hepsi geçerli. İhlali geri dönüşü pahalı ha
 2. **Sahne koddan kurulur.** `.unity` / `.prefab` YAML dosyaları elle düzenlenmez.
 3. **Ayarlanabilir her şey veri.** His sayıları koda gömülmez; ScriptableObject/config alanı olur.
 4. **Hiçbir fiil anlık vurmaz.** Her etki dünyada yaşar (yol alır/sürer), yoksa sıfat kabul edemez.
-5. **Sıfat silüeti değiştirir, sayıyı değil.** "%30 daha fazla hasar" diye bir sıfat olamaz.
+5. **Sıfat davranış ve silüeti değiştirir.** Sayısal karşılığı varsa yalnızca bağlayıcı JSON'daki `engine` / `adjective_mods` verisinden gelir.
 6. **Kombo tablosu yazılmaz.** Hiçbir dizi elle tanımlanmaz; her şey gramerden doğar.
+
+## Bağlayıcı tasarım — v6.1.1
+
+Tek doğruluk kaynağı `docs/element-sistemi.json`'dır. Sistem 12 çift yüzlü ründür
+(fiil + sıfat); build 12'den tekrarsız 6 rün seçer ve 2-rün grameri 144 skill üretir.
+Element prototipte yalnız VFX/isim katmanıdır. Global slow-mo yoktur; Zaman
+`enemy_slow` / `self_haste` uygular. Pasif yuva 0-2, silahlar çarpan + animasyon +
+hitbox katmanıdır; skill mekaniğini değiştirmez.
+v6.1.1 ekleri: `ana_classes_80`, `skills_prose_144`, `hitbox_vfx`, `mobility_cc`,
+`uyumsuz_cizim`, `presentation`, `changelog_v6_1`, `design_warnings`.
+Runtime sırası: `ElementSystemJsonLoader` → 12/10/6 SO katalog → `SkillFactory` →
+`RuneManager` → `SkillMotor`. Altı ekran slotu `RuneLoadout` ile 12 ründen seçilir.
+Radial element UI ile tam hitbox/VFX/presentation henüz stub'dır. 1–8 Unity Play'de
+doğrulanmadan eski SO/listeleri silme veya v5 davranışını canlı motora geri ekleme.
 
 ## Çalışma düzeni
 
@@ -44,8 +58,8 @@ Bunlar görevden bağımsız, hepsi geçerli. İhlali geri dönüşü pahalı ha
 |---|---|
 | `docs/durum.md` | Nerede kaldık, ne üretildi. **İlk buraya bak.** |
 | `docs/gorev-listesi.md` | Görevler ve prompt'lar |
-| `docs/element-sistemi.json` | Element/skill verisi — motor bunu okur, sayılar burada |
-| `docs/element-sistemi.md` | Element sisteminin insan-okunur speci (gramer, aile/rol, bilinen açıklar) |
+| `docs/element-sistemi.json` | **v6.1.1 bağlayıcı** element/skill verisi — sayılar ve kurallar burada |
+| `docs/element-sistemi.md` | İnsan-okunur tarihsel/açıklayıcı notlar; JSON bağlayıcıdır |
 | `docs/unity-notlari.md` | Unity/sahne/Android build operasyonel tuzakları (tasarım değil) |
 | `docs/prezentasyon-katmani.json` | Trajectory/hitbox/animasyon/VFX verisi — element sisteminden bağımsız, motor okur |
 

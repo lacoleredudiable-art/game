@@ -51,6 +51,7 @@ namespace Dovus.Game
         double _deathReviveAtMs;
 
         SkillMotor _skills;
+        SkillFactory _skillFactory;
         DamageCalculator _damageCalculator;
         ActorStatus _playerStatus;
         ActorStatus _bossStatus;
@@ -96,7 +97,10 @@ namespace Dovus.Game
         // --- Animasyon (Bağlama 10) — PresentationCatalog → AnimationBridge; PulseRune kalır ---
         PresentationCatalog _presentationCatalog;
         PresentationValidator _presentationValidator;
+        AnimationDatabase _animationDatabase;
+        readonly HashSet<string> _missingAnimationBindings = new();
         readonly AnimationBridge _animationBridge = new();
+        int _elementPaintIndex;
         HexagonView _hexagonView;
         PlayerResource _playerResource;
         PlayerCooldown _playerCooldown;
@@ -107,8 +111,14 @@ namespace Dovus.Game
         /// <summary>PrototypeBootstrap'ın atadığı sabit silah (ör. Alev Kılıcı).</summary>
         public EquipmentItem EquippedWeapon => _equippedWeapon;
 
-        /// <summary>Bağlama 9 / MCP: son kapanışta uygulanan ekipman çarpanı (eşleşme 1.1, değilse 1).</summary>
+        /// <summary>v6: son kapanışta silah × uyumsuz çizim hasar çarpanı.</summary>
         public float LastEquipmentMatchMult { get; private set; } = 1f;
+        public bool LastWeaponCompatible { get; private set; } = true;
+        public bool LastWeaponPassiveEnabled { get; private set; } = true;
+        public string LastWeaponUiLabel { get; private set; } = string.Empty;
+        public string LastResolvedSkillId { get; private set; } = string.Empty;
+        public bool LastSkillEffectApplied { get; private set; }
+        public Skill LastFactorySkill { get; private set; }
 
         /// <summary>Bağlama 9 / MCP: son ApplyClosingDamage çıktısı (boss'a giden, armor öncesi).</summary>
         public float LastClosingDamageDealt { get; private set; }
@@ -118,32 +128,59 @@ namespace Dovus.Game
 
         /// <summary>Bağlama 10 / MCP: son denenen animator_state.</summary>
         public string LastAnimationState { get; private set; } = string.Empty;
+        public string LastAnimationClip { get; private set; } = string.Empty;
+        public bool LastAnimationUsedFallback { get; private set; }
 
         /// <summary>Bağlama 10 / MCP: Controller'da state vardı ve Play uygulandı.</summary>
         public bool LastAnimationPlayApplied { get; private set; }
 
         /// <summary>Bağlama 10 / MCP: frame-timer köprüsü (Play doğrulama).</summary>
         public AnimationBridge AnimationBridge => _animationBridge;
+        public ElementPaintNode? SelectedElementPaint =>
+            _skills != null
+            && _skills.ElementPaints.Count > 0
+            && _elementPaintIndex >= 0
+            && _elementPaintIndex < _skills.ElementPaints.Count
+                ? _skills.ElementPaints[_elementPaintIndex]
+                : null;
 
         /// <summary>Bağlama 10 / MCP: ShoutSkill içindeki ApplySkillAnimation yolunu doğrudan dener.</summary>
         public void DebugApplySkillAnimation(SkillResolution skill) => ApplySkillAnimation(skill);
 
+        public ElementPaintNode? CycleElementPaint()
+        {
+            if (_skills == null || _skills.ElementPaints.Count == 0)
+                return null;
+            _elementPaintIndex = (_elementPaintIndex + 1) % _skills.ElementPaints.Count;
+            ElementPaintNode paint = _skills.ElementPaints[_elementPaintIndex];
+            _readout?.NoteSkill("Element: " + paint.Name, "isim/VFX boya katmanı", Color.cyan);
+            Debug.Log($"[ElementSystem] element paint={paint.Id}:{paint.Name} ({paint.Vfx})");
+            return paint;
+        }
+
         SkillMotor Skills => _skills ??= SkillMotorLoader.LoadOrDefault();
+
+        WeaponSkillCompatibility WeaponCompatibilityFor(SkillResolution skill)
+        {
+            if (_equipmentBonus == null || _equippedWeapon == null || skill.IsEmpty)
+                return WeaponSkillCompatibility.Neutral;
+            return _skillFactory != null
+                ? _skillFactory.EvaluateWeapon(skill, _equippedWeapon)
+                : WeaponSkillCompatibility.Neutral;
+        }
 
         DamageCalculator EnsureDamageCalculator()
         {
             if (_damageCalculator != null)
                 return _damageCalculator;
 
-            const string resourcePath = "ElementSystem/element-sistemi";
-            var asset = Resources.Load<TextAsset>(resourcePath);
-            if (asset != null && !string.IsNullOrWhiteSpace(asset.text))
+            if (ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
             {
                 try
                 {
                     // Play'te crit ara sıra çıksın diye seed sabit değil.
                     _damageCalculator = DamageCalculator.FromElementSystemJson(
-                        asset.text,
+                        design.Json,
                         seed: unchecked((int)System.DateTime.UtcNow.Ticks));
                     return _damageCalculator;
                 }
@@ -230,7 +267,10 @@ namespace Dovus.Game
             HexagonView hexagonView = null,
             PassiveHud passiveHud = null,
             EquipmentItem equippedWeapon = null,
-            EquipmentBonusResolver equipmentBonus = null)
+            EquipmentBonusResolver equipmentBonus = null,
+            SkillMotor skills = null,
+            SkillFactory skillFactory = null,
+            AnimationDatabase animationDatabase = null)
         {
             _clock = clock;
             _input = input;
@@ -273,7 +313,10 @@ namespace Dovus.Game
             _equipmentBonus = equipmentBonus;
             _playerResource = player != null ? player.GetComponent<PlayerResource>() : null;
             _playerCooldown = player != null ? player.GetComponent<PlayerCooldown>() : null;
-            _skills = SkillMotorLoader.LoadOrDefault();
+            _skills = skills ?? SkillMotorLoader.LoadOrDefault();
+            _skillFactory = skillFactory ?? new SkillFactory(_skills, _equipmentBonus);
+            _animationDatabase = animationDatabase ?? LoadAnimationDatabase();
+            _elementPaintIndex = 0;
             EnsurePresentationCatalog();
             _playerStates = new PlayerStateMachine(_skills.PlayerStates);
             input.BindPlayerStates(_playerStates, () => _pending.Count > 0);
@@ -355,6 +398,13 @@ namespace Dovus.Game
                 _engine.SentenceCompleted += OnSentenceCompleted;
                 _hooked = true;
             }
+        }
+
+        static AnimationDatabase LoadAnimationDatabase()
+        {
+            return ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design)
+                ? design.Animations
+                : null;
         }
 
         void OnDestroy()
@@ -1165,13 +1215,11 @@ namespace Dovus.Game
 
         static ChainRules LoadChainRulesOrDefault()
         {
-            const string resourcePath = "ElementSystem/element-sistemi";
-            var asset = Resources.Load<TextAsset>(resourcePath);
-            if (asset != null && !string.IsNullOrWhiteSpace(asset.text))
+            if (ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
             {
                 try
                 {
-                    return ChainRules.FromJsonRoot(MiniJson.Parse(asset.text));
+                    return ChainRules.FromJsonRoot(MiniJson.Parse(design.Json));
                 }
                 catch (System.Exception e)
                 {
@@ -1262,7 +1310,7 @@ namespace Dovus.Game
             SkillResolution skill = SkillResolution.Empty;
             if (_skills != null && words != null && words.Count > 0)
             {
-                skill = _skills.ResolveWords(words);
+                skill = ResolveSkillWords(words);
                 s = skill.IsEmpty
                     ? SilhouetteBuilder.FromWords(words, _combat?.Manifestation)
                     : SilhouetteBuilder.FromSkill(skill, _combat?.Manifestation);
@@ -1345,7 +1393,7 @@ namespace Dovus.Game
             if (logic == null || words == null || words.Count == 0 || _skills == null)
                 return;
 
-            SkillResolution skill = _skills.ResolveWords(words);
+            SkillResolution skill = ResolveSkillWords(words);
             if (skill.IsEmpty)
                 return;
 
@@ -1454,8 +1502,9 @@ namespace Dovus.Game
             SkillResolution armedSkill = SkillResolution.Empty;
             if (!spawnedForBasicStrike && _skills != null)
             {
-                armedSkill = _skills.ResolveWords(sentence.Words);
+                armedSkill = ResolveSkillWords(sentence.Words);
                 castMult = SkillMobility.CastTimeMult(armedSkill);
+                castMult *= WeaponCompatibilityFor(armedSkill).CastTimeMult;
             }
             castMult *= _modeDirector?.CastTimeMult ?? 1f;
             float atkSpd = _modeDirector?.AttackSpeedMult ?? 1f;
@@ -1578,9 +1627,20 @@ namespace Dovus.Game
 
             _closingChainBonus = BeginChainClosing(p.Words, _clock.Director.WorldTimeMs);
             TryActivateMode(p.Words, _clock.Director.WorldTimeMs);
-            TryTriggerPassive(p.Words, _clock.Director.WorldTimeMs);
-
             SkillResolution skill = ResolvePendingSkill(p);
+            if (skill.IsEmpty || !skill.IsComplete)
+            {
+                _readout?.NoteDenied("2 rün gerekli");
+                return;
+            }
+
+            WeaponSkillCompatibility compatibility = WeaponCompatibilityFor(skill);
+            LastWeaponCompatible = compatibility.Compatible;
+            LastWeaponPassiveEnabled = compatibility.PassiveEnabled;
+            LastWeaponUiLabel = compatibility.UiLabel;
+            if (compatibility.PassiveEnabled)
+                TryTriggerPassive(p.Words, _clock.Director.WorldTimeMs);
+
             ApplyResourceCost(skill);
             SkillMotionPlan motionPlan = ResolveSkillMotion(skill);
             ApplySkillMotion(motionPlan, skill);
@@ -1599,6 +1659,17 @@ namespace Dovus.Game
                 AnnotateMotion(skill, motionPlan);
             AnnounceChainFinisherIfAny(); // skill bang'ten sonra Finisher üstte kalsın
             SpawnClosingImpact(p);
+            LastResolvedSkillId = skill.SkillId;
+            LastSkillEffectApplied = dealt > 0f
+                || IsHealSkill(skill)
+                || !motionPlan.IsEmpty
+                || skill.Mechanics.Length > 0;
+            if (string.Equals(skill.SkillId, "1-1", StringComparison.Ordinal))
+            {
+                Debug.Log(
+                    $"[ElementSystem] smoke 1-1 effect applied={LastSkillEffectApplied} "
+                    + $"damage={dealt:0.##}");
+            }
         }
 
         void SpawnClosingImpact(PendingClosing p)
@@ -1617,7 +1688,7 @@ namespace Dovus.Game
             string trailStyle = string.Empty;
             if (!p.IsBasicStrike && _skills != null && p.Words != null)
             {
-                SkillResolution skill = _skills.ResolveWords(p.Words);
+                SkillResolution skill = ResolveSkillWords(p.Words);
                 EnsurePresentationCatalog();
                 if (_presentationCatalog != null && !skill.IsEmpty)
                 {
@@ -1685,7 +1756,7 @@ namespace Dovus.Game
         {
             if (words == null || words.Count < 3 || _skills == null)
                 return;
-            SkillResolution skill = _skills.ResolveWords(words);
+            SkillResolution skill = ResolveSkillWords(words);
             if (skill.IsEmpty)
                 return;
             ApplyCastMobility(skill, 0.45f);
@@ -1720,7 +1791,7 @@ namespace Dovus.Game
                 return;
 
             _hexagonView.BeginTrackedCooldown(
-                (int)words[0].Rune,
+                words[0].Dot,
                 skill.VerbId,
                 sec,
                 _playerCooldown,
@@ -1738,7 +1809,7 @@ namespace Dovus.Game
             float sec = skill.BaseCooldownSec;
             if (sec <= 0f)
                 return;
-            _hexagonView.BeginCosmeticCooldown((int)words[0].Rune, sec);
+            _hexagonView.BeginCosmeticCooldown(words[0].Dot, sec);
         }
 
         SkillMotionPlan ResolveSkillMotion(SkillResolution skill)
@@ -1797,11 +1868,33 @@ namespace Dovus.Game
             _debugHud?.NoteSkillBang(skill.DisplayName, tag);
         }
 
+        SkillResolution ResolveSkillWords(IReadOnlyList<SentenceWord> words)
+        {
+            if (_skills == null || words == null || words.Count == 0)
+                return SkillResolution.Empty;
+            if (_skills.IsV61 && words.Count == 2 && _skillFactory != null)
+            {
+                int elementId = SelectedElementPaint?.Id ?? 0;
+                try
+                {
+                    LastFactorySkill = _skillFactory.CreateFromWords(
+                        words, _equippedWeapon, elementId);
+                    return LastFactorySkill.Resolution;
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning($"[SkillFactory] pair çözülemedi: {e.Message}");
+                    return SkillResolution.Empty;
+                }
+            }
+            return _skills.ResolveWords(words);
+        }
+
         SkillResolution ResolvePendingSkill(PendingClosing p)
         {
             if (_skills == null || p.Words == null || p.Words.Count == 0)
                 return SkillResolution.Empty;
-            return _skills.ResolveWords(p.Words);
+            return ResolveSkillWords(p.Words);
         }
 
         void ShoutSkill(SkillResolution skill, IReadOnlyList<SentenceWord> words)
@@ -1812,20 +1905,38 @@ namespace Dovus.Game
             string mech = SkillFeel.MechanicShort(skill.Mechanics);
             string adj = SkillFeel.AdjectiveShort(skill);
             SkillFeel.ElementPalette(words, _colors, out Color line, out _);
+            WeaponSkillCompatibility compatibility = WeaponCompatibilityFor(skill);
+            if (!string.IsNullOrEmpty(compatibility.UiColor))
+                line = compatibility.Compatible ? Color.green : Color.yellow;
+            string paintedName = LastFactorySkill != null
+                && string.Equals(LastFactorySkill.Id, skill.SkillId, StringComparison.Ordinal)
+                    ? LastFactorySkill.DisplayName
+                    : skill.DisplayName;
+            ElementPaintNode? paint = SelectedElementPaint;
+            if ((LastFactorySkill == null || LastFactorySkill.Id != skill.SkillId)
+                && paint.HasValue && !string.IsNullOrEmpty(paint.Value.NamePrefix))
+                paintedName = paint.Value.NamePrefix + " " + paintedName;
             string bangNote = string.IsNullOrEmpty(adj)
                 ? mech
                 : (string.IsNullOrEmpty(mech) ? adj : mech + " | " + adj);
-            _debugHud?.NoteSkillBang(skill.DisplayName, bangNote);
+            _debugHud?.NoteSkillBang(paintedName, bangNote);
             string sub = skill.VerbName;
             if (!string.IsNullOrEmpty(mech))
                 sub = string.IsNullOrEmpty(sub) ? mech : sub + "  ·  " + mech;
             if (!string.IsNullOrEmpty(adj))
                 sub = string.IsNullOrEmpty(sub) ? adj : sub + "  ·  " + adj;
+            if (!string.IsNullOrEmpty(compatibility.UiLabel))
+            {
+                string weaponLabel = compatibility.UiLabel.Replace(
+                    "[Silah]",
+                    _equippedWeapon != null ? _equippedWeapon.Name : "Silah");
+                sub = string.IsNullOrEmpty(sub) ? weaponLabel : sub + "  ·  " + weaponLabel;
+            }
             if (skill.Length >= 3 && !string.IsNullOrEmpty(skill.LengthRole))
                 sub = string.IsNullOrEmpty(sub)
                     ? skill.LengthRole
                     : sub + "  ·  " + skill.Length + "·" + skill.LengthRole;
-            _readout?.NoteSkill(skill.DisplayName, sub, line);
+            _readout?.NoteSkill(paintedName, sub, line);
             SkillFeel.CameraKick(skill.VerbFamily, _camera, _colors);
             // PulseRune (PulseActor) kalır — AnimationBridge eklenir, yerine geçmez.
             ApplySkillAnimation(skill);
@@ -1840,9 +1951,33 @@ namespace Dovus.Game
             LastAnimationTypeId = string.Empty;
             LastAnimationState = string.Empty;
             LastAnimationPlayApplied = false;
+            LastAnimationClip = string.Empty;
+            LastAnimationUsedFallback = false;
 
             if (skill.IsEmpty || _visual == null || _visual.Animator == null)
                 return;
+
+            if (_skills != null && _skills.IsV61)
+            {
+                int verbId = int.TryParse(skill.VerbId, out int parsed) ? parsed : 0;
+                string weaponKey = _equippedWeapon?.AnimationsKey ?? string.Empty;
+                string bindingKey = weaponKey + ":" + verbId;
+                if (_animationDatabase != null
+                    && _animationDatabase.TryGet(weaponKey, verbId, out AnimationBinding binding))
+                {
+                    LastAnimationTypeId = bindingKey;
+                    LastAnimationState = binding.AnimatorState;
+                    LastAnimationPlayApplied =
+                        _animationBridge.PlayBinding(binding, _visual.Animator);
+                    LastAnimationClip = _animationBridge.LastClipName;
+                    LastAnimationUsedFallback = _animationBridge.LastUsedFallbackState;
+                }
+                else if (_missingAnimationBindings.Add(bindingKey))
+                {
+                    Debug.LogWarning($"[AnimationDatabase] binding yok, cast no-op: {bindingKey}");
+                }
+                return;
+            }
 
             EnsurePresentationCatalog();
             if (_presentationValidator == null || _presentationCatalog == null)
@@ -1906,6 +2041,19 @@ namespace Dovus.Game
                 _bossStatus != null ? _bossStatus.Board : null,
                 _combat != null ? _combat.Status : new StatusTuning());
 
+            // v6 Zaman fiili yalnız aktör durumudur; GameClock/Time.timeScale'a dokunmaz.
+            if (string.Equals(skill.Action, "tempo", StringComparison.Ordinal))
+            {
+                JsonValue engine = skill.EngineModifiers;
+                double durationMs = engine["tempo_duration_sec"].AsFloat(0f) * 1000.0;
+                float enemySlow = engine["enemy_slow"].AsFloat(0f);
+                float selfHaste = engine["self_haste"].AsFloat(0f);
+                if (durationMs > 0 && enemySlow > 0f && enemySlow <= 1f && _bossStatus != null)
+                    _bossStatus.Board.Apply(StatusKind.Slow, durationMs, enemySlow);
+                if (durationMs > 0 && selfHaste > 0f && _playerStatus != null)
+                    _playerStatus.Board.Apply(StatusKind.Haste, durationMs, 1f + selfHaste);
+            }
+
             if (result.Knockback && _bossStatus != null && _player != null)
                 _bossStatus.ApplyKnockbackFrom(_player.position);
 
@@ -1941,7 +2089,11 @@ namespace Dovus.Game
             float healMult = _playerStatus != null ? _playerStatus.Board.HealEffectivenessMult : 1f;
             healMult *= _passiveDirector?.HealMult ?? 1f;
             healMult *= _closingChainBonus; // Bağlama 6: önceki link/finisher → bu kapanış
-            int amount = Mathf.Max(1, Mathf.RoundToInt(closing.TotalEffect * per * healMult));
+            healMult *= WeaponCompatibilityFor(skill).DamageMult;
+            float healBase = skill.BaseHeal > 0f
+                ? skill.BaseHeal
+                : closing.TotalEffect * per;
+            int amount = Mathf.Max(1, Mathf.RoundToInt(healBase * healMult));
             if (amount <= 0)
                 return;
 
@@ -2001,31 +2153,6 @@ namespace Dovus.Game
         }
 
         /// <summary>
-        /// Ekipman eşleşmesi: silah çekirdek elementi (Ateş/Su/…) ile skill'in fiil rünü.
-        /// ElementId "1" / "1-1" / "1-2+3" → ilk sayı CoreName; yoksa ElementOrigin.
-        /// </summary>
-        string SkillElementForEquipment(SkillResolution skill)
-        {
-            int core = ParseFirstCoreId(skill.ElementId);
-            if (core >= 1 && core <= 6 && _skills != null)
-                return _skills.CoreName(core);
-            return skill.ElementOrigin ?? string.Empty;
-        }
-
-        static int ParseFirstCoreId(string elementId)
-        {
-            if (string.IsNullOrEmpty(elementId))
-                return 0;
-            int i = 0;
-            while (i < elementId.Length && !char.IsDigit(elementId[i])) i++;
-            int start = i;
-            while (i < elementId.Length && char.IsDigit(elementId[i])) i++;
-            if (i == start)
-                return 0;
-            return int.Parse(elementId.Substring(start, i - start), System.Globalization.CultureInfo.InvariantCulture);
-        }
-
-        /// <summary>
         /// Commit (§5 TotalEffect × ClosingDamagePerEffect) × skill fiil ölçeği.
         /// Heal/dash BaseDamage=0 → 0 can; status ayrı. Tür hasarı değiştirmez (§12).
         /// UseFormulaDamage=true → DamageCalculator (resistance/weakness nötr 0/1).
@@ -2042,11 +2169,15 @@ namespace Dovus.Game
             outMult *= _modeDirector?.DamageMult ?? 1f; // ulti: Öfke Patlaması ×1.8, Kan Çılgınlığı ×2.0
             outMult *= _passiveDirector?.DamageMult ?? 1f; // pasif: alev_hiddeti ×1.15 × karanlik_sessizligi ×1.2 …
             outMult *= _closingChainBonus; // Bağlama 6: links/finisher_mult → sonraki (bu) kapanış
-            // Bağlama 9: silah elementi ↔ skill'in fiil çekirdeği (ElementId ilk rün;
-            // bileşik "Alev"/1-1 → Ateş). ElementOrigin bileşik adı olabilir.
             float eqMult = 1f;
             if (_equipmentBonus != null && !isBasicStrike && !skill.IsEmpty)
-                eqMult = _equipmentBonus.Resolve(_equippedWeapon, SkillElementForEquipment(skill));
+            {
+                WeaponSkillCompatibility compatibility = WeaponCompatibilityFor(skill);
+                eqMult = compatibility.DamageMult;
+                LastWeaponCompatible = compatibility.Compatible;
+                LastWeaponPassiveEnabled = compatibility.PassiveEnabled;
+                LastWeaponUiLabel = compatibility.UiLabel;
+            }
             outMult *= eqMult;
             LastEquipmentMatchMult = eqMult;
 

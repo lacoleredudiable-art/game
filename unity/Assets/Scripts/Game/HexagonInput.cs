@@ -127,26 +127,76 @@ namespace Dovus.Game
 
         // T10: panel açıkken (ayar paneli modal) altıgen girdisi tamamen susar; EnhancedTouch
         // global olduğu için panelin arkasındaki oyun aynı dokunuşu almaya devam ederdi.
-        bool PanelBlocking => TuningPanel.IsOpen;
+        bool PanelBlocking => TuningPanel.IsOpen || V611DebugPanel.IsOpen;
+
+        public bool TrySetLoadout(RuneLoadout loadout)
+        {
+            EnsureRuntime();
+            return _engine != null && _engine.TrySetLoadout(loadout);
+        }
+
+        /// <summary>
+        /// v6 ladder smoke path: aynı SentenceEngine event zincirinden iki rün cast eder.
+        /// ManifestationDirector normal cast gibi alır; ayrı hasar/skill yolu yoktur.
+        /// </summary>
+        public bool TryDebugCastSkill(int verbRuneId, int adjectiveRuneId)
+        {
+            EnsureRuntime();
+            if (_engine == null || InputLocked)
+                return false;
+
+            int verbSlot = FindSlot(_engine.Loadout, verbRuneId);
+            int adjectiveSlot = FindSlot(_engine.Loadout, adjectiveRuneId);
+            if (verbSlot <= 0 || adjectiveSlot <= 0)
+                return false;
+
+            if (_engine.State.Phase == SentencePhase.Building)
+                _engine.Abort();
+            double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
+            _engine.OnDotTouched(verbSlot, worldMs);
+            _syllable?.PlayForDot(verbSlot, 1);
+            _engine.OnDotTouched(adjectiveSlot, worldMs);
+            _syllable?.PlayForDot(adjectiveSlot, 2);
+            FlushInkBreak();
+            Debug.Log($"[ElementSystem] smoke cast accepted: {verbRuneId}-{adjectiveRuneId}");
+            return true;
+        }
+
+        static int FindSlot(RuneLoadout loadout, int runeId)
+        {
+            if (loadout == null)
+                return 0;
+            for (int slot = 1; slot <= RuneLoadout.SlotCount; slot++)
+                if (loadout.RuneIdAtSlot(slot) == runeId)
+                    return slot;
+            return 0;
+        }
 
         public void Bind(
             GameClock clock,
             InkTrail ink,
             SyllableFeedback syllable,
-            SentenceDebugHud debugHud)
+            SentenceDebugHud debugHud,
+            SkillMotor skills = null,
+            RuneLoadout loadout = null)
         {
             _clock = clock;
             _ink = ink;
             _syllable = syllable;
             _debugHud = debugHud;
+            _skills = skills ?? _skills;
             _combat ??= new CombatTuning();
+            if (_skills != null && _skills.MaxComboLength > 0)
+                _combat.Sentence.MaxSentenceDots = _skills.MaxComboLength;
             if (_sentenceHooked && _engine != null)
             {
                 _engine.SentenceCompleted -= OnSentenceCompleted;
                 _sentenceHooked = false;
             }
 
-            _engine = new SentenceEngine(_combat.Sentence);
+            _engine = new SentenceEngine(
+                _combat.Sentence,
+                loadout ?? _skills?.DefaultLoadout ?? RuneLoadout.Sequential);
             _dodge = new DodgeState(_combat.Dodge);
             _engine.SentenceCompleted += OnSentenceCompleted;
             _sentenceHooked = true;
@@ -274,7 +324,12 @@ namespace Dovus.Game
 
             if (_engine == null)
             {
-                _engine = new SentenceEngine(_combat.Sentence);
+                EnsureSkills();
+                if (_skills != null && _skills.MaxComboLength > 0)
+                    _combat.Sentence.MaxSentenceDots = _skills.MaxComboLength;
+                _engine = new SentenceEngine(
+                    _combat.Sentence,
+                    _skills?.DefaultLoadout ?? RuneLoadout.Sequential);
                 _engine.SentenceCompleted += OnSentenceCompleted;
                 _sentenceHooked = true;
             }
@@ -710,7 +765,10 @@ namespace Dovus.Game
             if (_skills == null)
                 return SkillResolution.Empty;
 
-            return _skills.Resolve(new[] { verbDot });
+            int runeId = _engine != null
+                ? _engine.Loadout.RuneIdAtSlot(verbDot)
+                : verbDot;
+            return _skills.Resolve(new[] { runeId });
         }
 
         void EnsureSkills()
