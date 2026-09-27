@@ -26,9 +26,10 @@ Element prototipte yalnız VFX/isim katmanıdır. Global slow-mo yoktur; Zaman
 hitbox katmanıdır; skill mekaniğini değiştirmez.
 v6.1.1 ekleri: `ana_classes_80`, `skills_prose_144`, `hitbox_vfx`, `mobility_cc`,
 `uyumsuz_cizim`, `presentation`, `changelog_v6_1`, `design_warnings`.
-Runtime `SkillMotor` bu şemayı doğrudan okur; altı ekran slotu `RuneLoadout` ile
-12 ründen seçilir. Build/silah/element seçim UI'ı ile tam hitbox/VFX/presentation
-bağlantıları henüz stub'dır; eski v5 davranışını canlı motora geri ekleme.
+Runtime sırası: `ElementSystemJsonLoader` → 12/10/6 SO katalog → `SkillFactory` →
+`RuneManager` → `SkillMotor`. Altı ekran slotu `RuneLoadout` ile 12 ründen seçilir.
+Radial element UI ile tam hitbox/VFX/presentation henüz stub'dır. 1–8 Unity Play'de
+doğrulanmadan eski SO/listeleri silme veya v5 davranışını canlı motora geri ekleme.
 
 ## Çalışma düzeni
 

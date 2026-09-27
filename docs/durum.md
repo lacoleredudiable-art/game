@@ -13,30 +13,35 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 27 Eylül 2026 (v6.1.1 uygulama merdiveni) ·
+**Son güncelleme:** 27 Eylül 2026 (v6.1.1 bağlayıcı sıra 1–6) ·
 **Dal:** `cursor/adopt-element-system-v6-1-079a` · **Sıradaki:** Unity Play kanıtı,
 sonra `hitbox_vfx` prefab ve tam `presentation` bağları
 
-### v6.1.1 uygulama merdiveni (bağlayıcı sıra)
+### v6.1.1 bağlayıcı uygulama sırası 1–9
 
-- [x] **Tek skill yolu kodda:** `TEST 1-1` / F1, 1-1'i ayrı kestirme olmadan
-  `SentenceEngine → ManifestationDirector` canlı cast hattına yollar; effect sonucu loglanır.
-- [ ] **Tek skill Unity Play kanıtı:** Console'da `smoke 1-1 effect applied=True` ve boss
-  hasarı görülmeli. Bu ortamda Unity Editor yok.
-- [x] **AnimationDatabase kodda:** JSON'daki 10×12=120 silah×fiil adı mevcut
-  `CastPierce/Sweep/Slam/Channel/Guard` controller state'lerine map edilir.
-- [ ] **Animasyon görsel kanıtı:** mevcut clip/state Play'de görülmeli; eksik state temiz
-  no-op/uyarı. Özel 120 clip ve animation event'leri stub.
-- [x] **Basit pick-6 kodda:** `V6` paneli 12 satırlı listeden tam 6 rünü mevcut altı
-  cast slotuna uygular. Radial/12-node UI yapılmadı.
-- [ ] **Pick-6 dokunmatik Play kanıtı:** panel → 6 seçim → iki-rün cast telefonda denenmedi.
-- [x] **Element debug cycle kodda:** E / panel düğmesi, element isim boyasını skill
-  başlığına uygular; hasar matematiğine dokunmaz.
-- [ ] **Element VFX/radial:** renk/prefab boyası ve radial menü stub.
+`[x]` kod + statik veri kontrolü tamam; Unity Play gerektirenler ayrıca açık yazılır.
 
-Kilitli davranış korunur: yalnız 2-rün skill; silah-fiil uyumsuzluğu ×0.8 hasar /
-×1.2 cast, pasif kapalı, sarı (uyumlu yeşil); sıfat uyumsuzluğu yok; Zaman aktör
-`Slow`/`Haste`, global `Time.timeScale` değil. Elle doğrulama: `docs/COMPAT.md`.
+1. [x] **JSONLoader:** `ElementSystemJsonLoader`, tek canonical Resources kopyasını
+   v6.1.1/binding/cardinality ile doğrular ve parse sonucunu cache'ler.
+2. [x] **SO üretimi:** runtime 12 `RuneSO` + 10 `WeaponSO` + 6 `ElementSO` üretir.
+   `Dovus → Import Element System v6.1.1 Assets` aynı veriden kalıcı asset üretir;
+   importer bu ortamda Unity olmadığı için çalıştırılamadı.
+3. [x] **SkillFactory:** 12×12=144 benzersiz `Skill`; seçili 6 ründe 6×6=36 skill.
+   Element yalnız isim boyası, silah/uyumsuz çarpanları factory sonucundadır.
+4. [x] **RuneManager:** 12'den tekrarsız 6 seçim ve build içinden 0–2 pasif rün doğrular.
+5. [x] **SkillMotor → SkillFactory:** canlı `ManifestationDirector` iki-rün çözümünü
+   factory'den alır; tek-rün çizim önizlemesi motor üzerinde kalır (skill değildir).
+6. [x] **AnimationDatabase:** 120 JSON adı controller clip adlarında aranır; yoksa mevcut
+   `Cast*` state fallback'i, o da yoksa temiz no-op/uyarı. Görsel Play kanıtı yok.
+7. [ ] **UI:** mevcut hexagon + basit pick-6/skill adı preview var. Radial element menü,
+   tam skill preview ve production UI eksik.
+8. [ ] **Playtest:** 1 build + Kılıç + 1 element runtime'a bağlı; F1 1-1 smoke yolu hazır.
+   Unity Editor olmadığı için fight kanıtı yok.
+9. [ ] **Eski SO/listeleri sil:** yapılmadı; 1–8 Play'de doğrulanmadan yapılmayacak.
+
+Kilitli davranış: yalnız 2-rün skill; silah-fiil uyumsuzluğu ×0.8 hasar / ×1.2 cast,
+pasif kapalı, sarı (uyumlu yeşil); sıfat uyumsuzluğu yok; Zaman aktör `Slow`/`Haste`,
+global `Time.timeScale` değil. Elle doğrulama: `docs/COMPAT.md`.
 
 > **27 Eylül — v6.1.1 runtime doğrudan yüklüyor.** `SkillMotorLoader` →
 > `SkillMotor`: 12 çift-yüzlü rün, 144 adet 2-rün fiil×sıfat skill, 6-of-12
