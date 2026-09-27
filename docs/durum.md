@@ -13,9 +13,30 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 27 Eylül 2026 (v6.1.1 runtime adaptasyonu) ·
-**Dal:** `cursor/adopt-element-system-v6-1-079a` · **Sıradaki:** build/silah/element
-seçim UI'ı + `hitbox_vfx` prefab ve tam `presentation` bağları
+**Son güncelleme:** 27 Eylül 2026 (v6.1.1 uygulama merdiveni) ·
+**Dal:** `cursor/adopt-element-system-v6-1-079a` · **Sıradaki:** Unity Play kanıtı,
+sonra `hitbox_vfx` prefab ve tam `presentation` bağları
+
+### v6.1.1 uygulama merdiveni (bağlayıcı sıra)
+
+- [x] **Tek skill yolu kodda:** `TEST 1-1` / F1, 1-1'i ayrı kestirme olmadan
+  `SentenceEngine → ManifestationDirector` canlı cast hattına yollar; effect sonucu loglanır.
+- [ ] **Tek skill Unity Play kanıtı:** Console'da `smoke 1-1 effect applied=True` ve boss
+  hasarı görülmeli. Bu ortamda Unity Editor yok.
+- [x] **AnimationDatabase kodda:** JSON'daki 10×12=120 silah×fiil adı mevcut
+  `CastPierce/Sweep/Slam/Channel/Guard` controller state'lerine map edilir.
+- [ ] **Animasyon görsel kanıtı:** mevcut clip/state Play'de görülmeli; eksik state temiz
+  no-op/uyarı. Özel 120 clip ve animation event'leri stub.
+- [x] **Basit pick-6 kodda:** `V6` paneli 12 satırlı listeden tam 6 rünü mevcut altı
+  cast slotuna uygular. Radial/12-node UI yapılmadı.
+- [ ] **Pick-6 dokunmatik Play kanıtı:** panel → 6 seçim → iki-rün cast telefonda denenmedi.
+- [x] **Element debug cycle kodda:** E / panel düğmesi, element isim boyasını skill
+  başlığına uygular; hasar matematiğine dokunmaz.
+- [ ] **Element VFX/radial:** renk/prefab boyası ve radial menü stub.
+
+Kilitli davranış korunur: yalnız 2-rün skill; silah-fiil uyumsuzluğu ×0.8 hasar /
+×1.2 cast, pasif kapalı, sarı (uyumlu yeşil); sıfat uyumsuzluğu yok; Zaman aktör
+`Slow`/`Haste`, global `Time.timeScale` değil. Elle doğrulama: `docs/COMPAT.md`.
 
 > **27 Eylül — v6.1.1 runtime doğrudan yüklüyor.** `SkillMotorLoader` →
 > `SkillMotor`: 12 çift-yüzlü rün, 144 adet 2-rün fiil×sıfat skill, 6-of-12
@@ -25,8 +46,8 @@ seçim UI'ı + `hitbox_vfx` prefab ve tam `presentation` bağları
 > pasif kapalı, sarı UI; uyumlu = tam, yeşil UI. Sıfat uyumsuzluğu yok. Zaman yalnız
 > hedef `Slow` / oyuncu `Haste`; global zaman ölçeğine çağrı yok. Element boya katmanı
 > hasar matematiğine girmez. Unity doğrulaması: `docs/COMPAT.md`.
-> **Stub:** build/silah/element seçim UI'ı, pasif rün efektlerinin tamamı,
-> `hitbox_vfx` prefabları, tam animasyon/VFX/ses presentation.
+> **Stub:** silah seçimi, pasif rün ve silah identity-passive efektlerinin tamamı,
+> `hitbox_vfx` prefabları, özel clip/event'ler ve tam VFX/ses presentation.
 > **Doğrulanamadı:** C# derleme / `dotnet test` / Unity Play (ortamda `dotnet`,
 > C# derleyicisi ve Unity Editor yok). JSON yapısı, ayna eşitliği ve diff doğrulandı.
 

@@ -16,13 +16,20 @@ verisidir ve prototip hasar hesabını değiştirmez.
 
 1. Play'e gir; Console'da `[ElementSystem] v6.1.1 loaded: 12 runes, 144 skills`
    satırını gör.
-2. Altıgendeki iki rünü çiz; sonuç iki-rün skill adıyla kapanmalı.
-3. Prototip Kılıç ile fiil 1/3/5/9 yeşil “Uyumlu”, diğer fiiller sarı
+2. F1'e bas (veya `V6` → `TEST 1-1`); aynı normal cast hattından sonra Console'da
+   `smoke 1-1 effect applied=True` ve boss hasarı görünmeli.
+3. 1-1 cast'inde `AnimationDatabase` Kılıç×Saldırı'yı `CastPierce` state'ine yollar;
+   state/clip varsa animasyon oynamalı, yoksa cast sürüp binding uyarısı vermeli.
+4. B veya `V6` paneli → listeden tam 6 rün → `SEÇİLİ 6'YI UYGULA`; altı slot etiketi
+   değişmeli ve yeni iki-rün skill cast edilebilmeli.
+5. E veya `ELEMENT DEĞİŞTİR`; sonraki skill başlığının element öneki değişmeli,
+   hasar sayısı yalnız element yüzünden değişmemeli.
+6. Prototip Kılıç ile fiil 1/3/5/9 yeşil “Uyumlu”, diğer fiiller sarı
    “Uyumsuz — %80 etki” göstermeli.
-4. Zaman için sahnedeki `PrototypeBootstrap` üzerinde `Prototype Main Class Id = 3`
+7. Zaman için sahnedeki `PrototypeBootstrap` üzerinde `Prototype Main Class Id = 3`
    seç; tempo yalnız aktör status'larına gitmeli, `Time.timeScale` değişmemeli.
 
-Henüz stub: build/silah/element seçim UI'ı, pasif rün efektlerinin tamamı,
-`hitbox_vfx` prefabları ve tam `presentation` animasyon/VFX/ses bağları. Eksik
-presentation asset'leri mevcut güvenli fallback yolunu kullanır. Core test projeleri
-korundu; v5-only subsistem testleri arşiv v5.3 fixture'ına sabitlendi.
+Henüz stub: radial build/element menüleri, silah seçimi, pasif rün ve silah
+identity-passive efektleri, `hitbox_vfx` prefabları, 120 özel clip/event ve tam
+VFX/ses bağları. Eksik presentation asset'leri mevcut güvenli fallback yolunu kullanır.
+Core test projeleri korundu; v5-only subsistem testleri arşiv v5.3 fixture'ına sabitlendi.
