@@ -13,9 +13,23 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 27 Eylül 2026 (build seçim ekranı + skill önizleme yeri) ·
-**Dal:** `feat/build-select-screen` · **Sıradaki:** telefonda build ekranı/önizleme,
-`docs/COMPAT.md` 6–8 elle Play, sonra `hitbox_vfx` prefab ve tam `presentation` bağları
+**Son güncelleme:** 27 Eylül 2026 (SkillExecutor prototipi) ·
+**Dal:** `cursor/skill-executors-c20b` · **Sıradaki:** F2 silah döngüsü; ardından
+Movement/SelfState executor'ları; sonra modifier'lar; en son gerçek VFX/clip bağları
+
+> **27 Eylül — SkillExecutor prototipi.** `SkillMotor` adı/rolü değişmeden saf Core
+> `SkillExecutorRouter` eklendi. İki-rün kapanışında fiil 1/5 explicit `weapon.type` ile
+> melee overlap veya hareketli projectile'a; 2/4/6/8/9/12 süreli tick field'a gider.
+> JSON `medium` (Mızrak/Kılıç) isim tahmini yapılmadan yakın temas, yalnız `ranged`
+> projectile kabul edilir. 3/7/10/11 stub log + eski LivingEffect yoluna güvenli düşer.
+> Game'de tam üç executor: `MeleeHitboxExecutor` (%30–70 Physics overlap; Patlama tek
+> geniş sphere), `ProjectileExecutor` (kinematic primitive, presentation hızı +
+> weapon range_mult, hit/range despawn), `FieldAuraExecutor` (presentation
+> lifetime/tick + ince ground disk). Hasar/heal/status mevcut
+> `ManifestationDirector`/vitals yoluna callback ile döner; animasyon köprüsü no-op olsa
+> da fizik çalışır. `ManifestationTuning.ExecutorFieldTickSec=1` prezentasyon katmanındaki
+> ortak tick varsayılanından gelir; melee pencere oranı görev kabul kriteridir.
+> **Doğrulama:** test/Unity Play henüz çalıştırılmadı.
 
 > **27 Eylül — build seçim ekranı (v6 7b).** Sahibi: "skiller ekranın ortasında saçma,
 > 12 ründen 6 seçemiyorum". Yeni `BuildSelectScreen`: Play açılışında tam ekran; 12 rün

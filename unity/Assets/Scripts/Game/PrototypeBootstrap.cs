@@ -118,6 +118,10 @@ namespace Dovus.Game
                 BossRadiusM,
                 BossHeightM,
                 _tuning.BossColor);
+            // SkillExecutor overlap/projectile yolu için gerçek fizik hedefi. Primitive mesh
+            // bilinçli collider'sız kurulur; yalnız aktör hedef kapsülü burada eklenir.
+            var bossHitCollider = boss.AddComponent<CapsuleCollider>();
+            bossHitCollider.isTrigger = true;
             AttachVisual(boss, _bossVisualPrefab, _tuning.BossVisualScale, _tuning.CharacterAnimSpeed, out var bossAnim);
 
             player.AddComponent<MoveInput>().Tuning = _tuning;
