@@ -107,8 +107,10 @@ namespace Dovus.Game
         /// <summary>PrototypeBootstrap'ın atadığı sabit silah (ör. Alev Kılıcı).</summary>
         public EquipmentItem EquippedWeapon => _equippedWeapon;
 
-        /// <summary>Bağlama 9 / MCP: son kapanışta uygulanan ekipman çarpanı (eşleşme 1.1, değilse 1).</summary>
+        /// <summary>v6: son kapanışta silah × uyumsuz çizim hasar çarpanı.</summary>
         public float LastEquipmentMatchMult { get; private set; } = 1f;
+        public bool LastWeaponCompatible { get; private set; } = true;
+        public string LastWeaponUiLabel { get; private set; } = string.Empty;
 
         /// <summary>Bağlama 9 / MCP: son ApplyClosingDamage çıktısı (boss'a giden, armor öncesi).</summary>
         public float LastClosingDamageDealt { get; private set; }
@@ -129,6 +131,15 @@ namespace Dovus.Game
         public void DebugApplySkillAnimation(SkillResolution skill) => ApplySkillAnimation(skill);
 
         SkillMotor Skills => _skills ??= SkillMotorLoader.LoadOrDefault();
+
+        WeaponSkillCompatibility WeaponCompatibilityFor(SkillResolution skill)
+        {
+            if (_equipmentBonus == null || _equippedWeapon == null || skill.IsEmpty)
+                return WeaponSkillCompatibility.Neutral;
+            return int.TryParse(skill.VerbId, out int verbId)
+                ? _equipmentBonus.Resolve(_equippedWeapon, verbId)
+                : WeaponSkillCompatibility.Neutral;
+        }
 
         DamageCalculator EnsureDamageCalculator()
         {
@@ -230,7 +241,8 @@ namespace Dovus.Game
             PentagonView pentagonView = null,
             PassiveHud passiveHud = null,
             EquipmentItem equippedWeapon = null,
-            EquipmentBonusResolver equipmentBonus = null)
+            EquipmentBonusResolver equipmentBonus = null,
+            SkillMotor skills = null)
         {
             _clock = clock;
             _input = input;
@@ -273,7 +285,7 @@ namespace Dovus.Game
             _equipmentBonus = equipmentBonus;
             _playerResource = player != null ? player.GetComponent<PlayerResource>() : null;
             _playerCooldown = player != null ? player.GetComponent<PlayerCooldown>() : null;
-            _skills = SkillMotorLoader.LoadOrDefault();
+            _skills = skills ?? SkillMotorLoader.LoadOrDefault();
             EnsurePresentationCatalog();
             _playerStates = new PlayerStateMachine(_skills.PlayerStates);
             input.BindPlayerStates(_playerStates, () => _pending.Count > 0);
@@ -1450,6 +1462,7 @@ namespace Dovus.Game
             {
                 armedSkill = _skills.ResolveWords(sentence.Words);
                 castMult = SkillMobility.CastTimeMult(armedSkill);
+                castMult *= WeaponCompatibilityFor(armedSkill).CastTimeMult;
             }
             castMult *= _modeDirector?.CastTimeMult ?? 1f;
             float atkSpd = _modeDirector?.AttackSpeedMult ?? 1f;
@@ -1572,9 +1585,19 @@ namespace Dovus.Game
 
             _closingChainBonus = BeginChainClosing(p.Words, _clock.Director.WorldTimeMs);
             TryActivateMode(p.Words, _clock.Director.WorldTimeMs);
-            TryTriggerPassive(p.Words, _clock.Director.WorldTimeMs);
-
             SkillResolution skill = ResolvePendingSkill(p);
+            if (skill.IsEmpty || !skill.IsComplete)
+            {
+                _readout?.NoteDenied("2 rün gerekli");
+                return;
+            }
+
+            WeaponSkillCompatibility compatibility = WeaponCompatibilityFor(skill);
+            LastWeaponCompatible = compatibility.Compatible;
+            LastWeaponUiLabel = compatibility.UiLabel;
+            if (compatibility.PassiveEnabled)
+                TryTriggerPassive(p.Words, _clock.Director.WorldTimeMs);
+
             ApplyResourceCost(skill);
             SkillMotionPlan motionPlan = ResolveSkillMotion(skill);
             ApplySkillMotion(motionPlan, skill);
@@ -1714,7 +1737,7 @@ namespace Dovus.Game
                 return;
 
             _pentagonView.BeginTrackedCooldown(
-                (int)words[0].Rune,
+                words[0].Dot,
                 skill.VerbId,
                 sec,
                 _playerCooldown,
@@ -1732,7 +1755,7 @@ namespace Dovus.Game
             float sec = skill.BaseCooldownSec;
             if (sec <= 0f)
                 return;
-            _pentagonView.BeginCosmeticCooldown((int)words[0].Rune, sec);
+            _pentagonView.BeginCosmeticCooldown(words[0].Dot, sec);
         }
 
         SkillMotionPlan ResolveSkillMotion(SkillResolution skill)
@@ -1806,6 +1829,9 @@ namespace Dovus.Game
             string mech = SkillFeel.MechanicShort(skill.Mechanics);
             string adj = SkillFeel.AdjectiveShort(skill);
             SkillFeel.ElementPalette(words, _colors, out Color line, out _);
+            WeaponSkillCompatibility compatibility = WeaponCompatibilityFor(skill);
+            if (!string.IsNullOrEmpty(compatibility.UiColor))
+                line = compatibility.Compatible ? Color.green : Color.yellow;
             string bangNote = string.IsNullOrEmpty(adj)
                 ? mech
                 : (string.IsNullOrEmpty(mech) ? adj : mech + " | " + adj);
@@ -1815,6 +1841,13 @@ namespace Dovus.Game
                 sub = string.IsNullOrEmpty(sub) ? mech : sub + "  ·  " + mech;
             if (!string.IsNullOrEmpty(adj))
                 sub = string.IsNullOrEmpty(sub) ? adj : sub + "  ·  " + adj;
+            if (!string.IsNullOrEmpty(compatibility.UiLabel))
+            {
+                string weaponLabel = compatibility.UiLabel.Replace(
+                    "[Silah]",
+                    _equippedWeapon != null ? _equippedWeapon.Name : "Silah");
+                sub = string.IsNullOrEmpty(sub) ? weaponLabel : sub + "  ·  " + weaponLabel;
+            }
             if (skill.Length >= 3 && !string.IsNullOrEmpty(skill.LengthRole))
                 sub = string.IsNullOrEmpty(sub)
                     ? skill.LengthRole
@@ -1890,6 +1923,19 @@ namespace Dovus.Game
                 _bossStatus != null ? _bossStatus.Board : null,
                 _combat != null ? _combat.Status : new StatusTuning());
 
+            // v6 Zaman fiili yalnız aktör durumudur; GameClock/Time.timeScale'a dokunmaz.
+            if (string.Equals(skill.Action, "tempo", StringComparison.Ordinal))
+            {
+                JsonValue engine = skill.EngineModifiers;
+                double durationMs = engine["tempo_duration_sec"].AsFloat(0f) * 1000.0;
+                float enemySlow = engine["enemy_slow"].AsFloat(0f);
+                float selfHaste = engine["self_haste"].AsFloat(0f);
+                if (durationMs > 0 && enemySlow > 0f && enemySlow <= 1f && _bossStatus != null)
+                    _bossStatus.Board.Apply(StatusKind.Slow, durationMs, enemySlow);
+                if (durationMs > 0 && selfHaste > 0f && _playerStatus != null)
+                    _playerStatus.Board.Apply(StatusKind.Haste, durationMs, 1f + selfHaste);
+            }
+
             if (result.Knockback && _bossStatus != null && _player != null)
                 _bossStatus.ApplyKnockbackFrom(_player.position);
 
@@ -1925,7 +1971,11 @@ namespace Dovus.Game
             float healMult = _playerStatus != null ? _playerStatus.Board.HealEffectivenessMult : 1f;
             healMult *= _passiveDirector?.HealMult ?? 1f;
             healMult *= _closingChainBonus; // Bağlama 6: önceki link/finisher → bu kapanış
-            int amount = Mathf.Max(1, Mathf.RoundToInt(closing.TotalEffect * per * healMult));
+            healMult *= WeaponCompatibilityFor(skill).DamageMult;
+            float healBase = skill.BaseHeal > 0f
+                ? skill.BaseHeal
+                : closing.TotalEffect * per;
+            int amount = Mathf.Max(1, Mathf.RoundToInt(healBase * healMult));
             if (amount <= 0)
                 return;
 
@@ -1985,31 +2035,6 @@ namespace Dovus.Game
         }
 
         /// <summary>
-        /// Ekipman eşleşmesi: silah çekirdek elementi (Ateş/Su/…) ile skill'in fiil rünü.
-        /// ElementId "1" / "1-1" / "1-2+3" → ilk sayı CoreName; yoksa ElementOrigin.
-        /// </summary>
-        string SkillElementForEquipment(SkillResolution skill)
-        {
-            int core = ParseFirstCoreId(skill.ElementId);
-            if (core >= 1 && core <= 6 && _skills != null)
-                return _skills.CoreName(core);
-            return skill.ElementOrigin ?? string.Empty;
-        }
-
-        static int ParseFirstCoreId(string elementId)
-        {
-            if (string.IsNullOrEmpty(elementId))
-                return 0;
-            int i = 0;
-            while (i < elementId.Length && !char.IsDigit(elementId[i])) i++;
-            int start = i;
-            while (i < elementId.Length && char.IsDigit(elementId[i])) i++;
-            if (i == start)
-                return 0;
-            return int.Parse(elementId.Substring(start, i - start), System.Globalization.CultureInfo.InvariantCulture);
-        }
-
-        /// <summary>
         /// Commit (§5 TotalEffect × ClosingDamagePerEffect) × skill fiil ölçeği.
         /// Heal/dash BaseDamage=0 → 0 can; status ayrı. Tür hasarı değiştirmez (§12).
         /// UseFormulaDamage=true → DamageCalculator (resistance/weakness nötr 0/1).
@@ -2026,11 +2051,14 @@ namespace Dovus.Game
             outMult *= _modeDirector?.DamageMult ?? 1f; // ulti: Öfke Patlaması ×1.8, Kan Çılgınlığı ×2.0
             outMult *= _passiveDirector?.DamageMult ?? 1f; // pasif: alev_hiddeti ×1.15 × karanlik_sessizligi ×1.2 …
             outMult *= _closingChainBonus; // Bağlama 6: links/finisher_mult → sonraki (bu) kapanış
-            // Bağlama 9: silah elementi ↔ skill'in fiil çekirdeği (ElementId ilk rün;
-            // bileşik "Alev"/1-1 → Ateş). ElementOrigin bileşik adı olabilir.
             float eqMult = 1f;
             if (_equipmentBonus != null && !isBasicStrike && !skill.IsEmpty)
-                eqMult = _equipmentBonus.Resolve(_equippedWeapon, SkillElementForEquipment(skill));
+            {
+                WeaponSkillCompatibility compatibility = WeaponCompatibilityFor(skill);
+                eqMult = compatibility.DamageMult;
+                LastWeaponCompatible = compatibility.Compatible;
+                LastWeaponUiLabel = compatibility.UiLabel;
+            }
             outMult *= eqMult;
             LastEquipmentMatchMult = eqMult;
 

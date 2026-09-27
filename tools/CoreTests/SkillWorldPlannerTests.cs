@@ -16,11 +16,11 @@ public class SkillWorldPlannerTests
     {
         string fromTest = Path.GetFullPath(Path.Combine(
             TestContext.CurrentContext.TestDirectory,
-            "..", "..", "..", "..", "..", "docs", "element-sistemi.json"));
+            "..", "..", "..", "..", "..", "docs", "archive", "element-sistemi-v5.3.json"));
         if (File.Exists(fromTest)) return fromTest;
         string fromCwd = Path.GetFullPath(Path.Combine(
             Directory.GetCurrentDirectory(),
-            "..", "..", "..", "..", "docs", "element-sistemi.json"));
+            "..", "..", "..", "..", "docs", "archive", "element-sistemi-v5.3.json"));
         Assert.That(File.Exists(fromCwd), Is.True, $"element-sistemi.json yok: {fromCwd}");
         return fromCwd;
     }

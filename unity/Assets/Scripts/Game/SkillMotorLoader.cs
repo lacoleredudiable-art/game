@@ -18,6 +18,10 @@ namespace Dovus.Game
                 {
                     SkillMotor motor = SkillMotor.FromJson(asset.text);
                     StatusReactionTable.Rebuild(motor.StatusInteractions);
+                    Debug.Log(
+                        $"[ElementSystem] v{motor.Version} loaded: "
+                        + $"{motor.RuneCount} runes, {motor.SkillCount} skills, "
+                        + $"default build [{string.Join(",", motor.DefaultLoadout.RuneIds)}]");
                     return motor;
                 }
                 catch (System.Exception e)

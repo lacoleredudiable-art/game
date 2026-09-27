@@ -31,7 +31,8 @@ public class PresentationValidatorTests
     static PresentationCatalog LoadPresentation() =>
         PresentationCatalog.FromJson(File.ReadAllText(FindDocsFile("prezentasyon-katmani.json")));
 
-    static string LoadElementJson() => File.ReadAllText(FindDocsFile("element-sistemi.json"));
+    static string LoadElementJson() =>
+        File.ReadAllText(FindDocsFile(Path.Combine("archive", "element-sistemi-v5.3.json")));
 
     static SkillResolution ResolutionWith(string hitbox, string animationType) =>
         new SkillResolution(

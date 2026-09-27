@@ -199,8 +199,9 @@ namespace Dovus.Game
             overlay.Build(PentagonInkLayer);
             AttachOverlayToMain(mainCam, overlay.Cam);
 
+            var skills = SkillMotorLoader.LoadOrDefault();
             var view = root.AddComponent<PentagonView>();
-            view.Build(_tuning, overlay.Cam);
+            view.Build(_tuning, overlay.Cam, skills, skills.DefaultLoadout);
 
             // 16 Eylül: sol yarıdaki sanal çubuk fonksiyonel olarak zaten çalışıyordu, hiç
             // görseli yoktu (bug raporu). MoveInput'un mantığına dokunmuyor, sadece çiziyor.
@@ -222,12 +223,11 @@ namespace Dovus.Game
             var syllable = root.AddComponent<SyllableFeedback>();
             syllable.Configure(_tuning);
             var debug = root.AddComponent<SentenceDebugHud>();
-            var skills = SkillMotorLoader.LoadOrDefault();
 
             var input = root.AddComponent<PentagonInput>();
             input.Tuning = _tuning;
             input.Combat = combat;
-            input.Bind(clock, ink, syllable, debug);
+            input.Bind(clock, ink, syllable, debug, skills, skills.DefaultLoadout);
 
             // 16 Eylül: "kamera sabit" bug raporu — MoveInput/PentagonInput'un parmaklarına
             // dokunmadan üçüncü bir parmakla (veya editörde sağ-tık sürükleyerek) 360° orbit.
@@ -329,18 +329,18 @@ namespace Dovus.Game
 
             EquipmentBonusResolver equipmentBonus = LoadPrototypeEquipment(out _equippedWeapon);
             if (_equippedWeapon != null)
-                Debug.Log($"[Equipment] sabit silah={_equippedWeapon.Name} ({_equippedWeapon.Element}) matchMult={equipmentBonus.MatchBonusMult:0.##}");
+                Debug.Log($"[Equipment] prototip silah={_equippedWeapon.Name}; v6 fiil uyumu etkin.");
 
             var manGo = new GameObject("Manifestation");
             manGo.transform.SetParent(transform, false);
             var director = manGo.AddComponent<ManifestationDirector>();
-            director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, allyDummy, modeHud, view, passiveHud, _equippedWeapon, equipmentBonus);
+            director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, allyDummy, modeHud, view, passiveHud, _equippedWeapon, equipmentBonus, skills);
 
             CreateTuningPanel(tuningConfig, vitals);
         }
 
         /// <summary>
-        /// Resources element-sistemi → Alev Kılıcı (Ateş). Katalog yoksa null / çarpan 1.
+        /// Resources element-sistemi v6.1.1 → prototip Kılıç. Seçim UI ayrı sunum işi.
         /// </summary>
         static EquipmentBonusResolver LoadPrototypeEquipment(out EquipmentItem weapon)
         {
@@ -353,7 +353,7 @@ namespace Dovus.Game
             try
             {
                 var catalog = EquipmentCatalog.FromJson(asset.text);
-                weapon = catalog.Find(EquipmentSlot.Weapon, "Ateş");
+                weapon = catalog.FindWeapon(4);
                 return new EquipmentBonusResolver(catalog);
             }
             catch (System.Exception e)

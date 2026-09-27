@@ -5,8 +5,8 @@ using System.Globalization;
 namespace Dovus.Core.Grammar
 {
     /// <summary>
-    /// docs/element-sistemi.json (v4.2.2) — 6 kök + 36 bileşik, fiil/sıfat sözlüğü.
-    /// Kombo hasar tablosu değil: cümleyi element + verb + adjective + length ekonomisine çözer.
+    /// docs/element-sistemi.json. v6.1.1'de 12 çift-yüzlü rün + 2-rün
+    /// fiil×sıfat gramerini çözer; arşiv/test için v5 şemasını da okuyabilir.
     /// Root/stun vb. dünyada uygulamak StatusDirector işi; bu sınıf yalnızca çözüm üretir.
     /// Parse artık MiniJson (gerçek ağaç) üzerinden — animation_type/target_mode/
     /// base_cooldown_sec/base_resource_cost/target_behaviors/special/zone_effect ve
@@ -18,6 +18,10 @@ namespace Dovus.Core.Grammar
         readonly Dictionary<string, ElementNode> _elements = new(StringComparer.Ordinal);
         readonly Dictionary<string, VerbNode> _verbs = new(StringComparer.Ordinal);
         readonly Dictionary<string, AdjectiveNode> _adjectives = new(StringComparer.Ordinal);
+        readonly Dictionary<int, RuneDefinition> _runes = new();
+        readonly Dictionary<string, V61SkillNode> _v61Skills = new(StringComparer.Ordinal);
+        readonly List<ElementPaintNode> _elementPaints = new();
+        readonly List<MainClassNode> _mainClasses = new();
         readonly Dictionary<int, LengthTuning> _lengths = new();
         readonly List<ActiveModeNode> _activeModes = new();
         readonly List<PassiveNode> _passives = new();
@@ -32,10 +36,22 @@ namespace Dovus.Core.Grammar
         int _maxActiveZones;
         int _maxActiveLinks;
         int _maxActiveTimeFields;
+        int _maxComboLength = 4;
+        RuneLoadout _defaultLoadout = RuneLoadout.Sequential;
+        string _version = string.Empty;
+        bool _isV61;
 
         public int ElementCount => _elements.Count;
         public int VerbCount => _verbs.Count;
         public int AdjectiveCount => _adjectives.Count;
+        public int RuneCount => _runes.Count;
+        public int SkillCount => _v61Skills.Count;
+        public string Version => _version;
+        public bool IsV61 => _isV61;
+        public int MaxComboLength => _maxComboLength;
+        public RuneLoadout DefaultLoadout => _defaultLoadout;
+        public IReadOnlyList<ElementPaintNode> ElementPaints => _elementPaints;
+        public IReadOnlyList<MainClassNode> MainClasses => _mainClasses;
 
         /// <summary>
         /// docs/element-sistemi.json "active_modes" (ulti): aynı elementin 4'lüsü (X-X-X-X).
@@ -105,6 +121,13 @@ namespace Dovus.Core.Grammar
 
             JsonValue root = MiniJson.Parse(json);
             var motor = new SkillMotor();
+            motor._version = root["system"]["version"].AsString();
+            if (root["runes"].Kind == JsonKind.Array)
+            {
+                ParseV61(root, motor);
+                return motor;
+            }
+
             ParseElements(root, motor._elements);
             ParseVerbs(root, motor._verbs);
             ParseAdjectives(root, motor._adjectives);
@@ -123,6 +146,25 @@ namespace Dovus.Core.Grammar
             return motor;
         }
 
+        public bool TryGetRune(int id, out RuneDefinition rune) =>
+            _runes.TryGetValue(id, out rune);
+
+        public string RuneName(int id) =>
+            _runes.TryGetValue(id, out RuneDefinition rune)
+                ? rune.Name
+                : (RuneInfo.TryFromId(id, out Rune legacy) ? RuneInfo.DisplayName(legacy) : $"#{id}");
+
+        public RuneLoadout CreateLoadout(
+            IReadOnlyList<int> runeIds,
+            IReadOnlyList<int> passiveRuneIds = null)
+        {
+            var loadout = new RuneLoadout(runeIds, passiveRuneIds);
+            for (int i = 0; i < loadout.RuneIds.Count; i++)
+                if (!_runes.ContainsKey(loadout.RuneIds[i]))
+                    throw new ArgumentException("Build, katalogda olmayan rün içeriyor.", nameof(runeIds));
+            return loadout;
+        }
+
         public bool TryGetElement(string id, out ElementNode node) =>
             _elements.TryGetValue(id, out node);
 
@@ -137,6 +179,105 @@ namespace Dovus.Core.Grammar
                 ? e.Name
                 : $"#{id}";
 
+        SkillResolution ResolveV61(IReadOnlyList<int> runeIds)
+        {
+            int len = runeIds.Count;
+            if (len < 1 || len > _maxComboLength)
+                return SkillResolution.Empty;
+            if (!_runes.TryGetValue(runeIds[0], out RuneDefinition verbRune))
+                return SkillResolution.Empty;
+
+            string verbId = runeIds[0].ToString(CultureInfo.InvariantCulture);
+            _verbs.TryGetValue(verbId, out VerbNode verb);
+
+            if (len == 1)
+            {
+                return new SkillResolution(
+                    elementId: string.Empty,
+                    elementName: string.Empty,
+                    displayName: verbRune.VerbFace,
+                    skillId: "verb:" + verbId,
+                    skillJob: verbRune.BaseEffect,
+                    verbId: verbId,
+                    verbName: verbRune.VerbFace,
+                    verbFamily: verbRune.Family,
+                    action: verb.Action,
+                    baseDamage: verb.BaseDamage,
+                    basePoise: verb.BasePoise,
+                    hitbox: verb.Hitbox,
+                    castMobility: verb.CastMobility,
+                    mechanics: verb.Mechanics,
+                    adjectiveId: string.Empty,
+                    adjectiveName: string.Empty,
+                    silhouetteAxis: string.Empty,
+                    damageMult: 1f,
+                    hitboxScaleMult: 1f,
+                    poiseDamageMult: 1f,
+                    length: 1,
+                    lengthRole: "Fiil önizleme",
+                    lengthCastMult: 1f,
+                    lengthMobility: "free_move",
+                    flavorElement: string.Empty,
+                    targetMode: verb.TargetMode,
+                    baseCooldownSec: verb.BaseCooldownSec,
+                    baseResourceCost: verb.BaseResourceCost,
+                    engineModifiers: verb.Raw,
+                    critEligible: verb.BaseDamage > 0f,
+                    isComplete: false,
+                    baseHeal: verb.Raw["base_heal"].AsFloat(0f));
+            }
+
+            int adjectiveRuneId = runeIds[1];
+            if (!_runes.TryGetValue(adjectiveRuneId, out RuneDefinition adjectiveRune))
+                return SkillResolution.Empty;
+
+            string skillId = verbId + "-" + adjectiveRuneId.ToString(CultureInfo.InvariantCulture);
+            if (!_v61Skills.TryGetValue(skillId, out V61SkillNode skill))
+                return SkillResolution.Empty;
+
+            JsonValue engine = skill.Engine;
+            string adjectiveId = adjectiveRuneId.ToString(CultureInfo.InvariantCulture);
+            _adjectives.TryGetValue(adjectiveId, out AdjectiveNode adjective);
+            string[] mechanics = ReadV61Mechanics(engine);
+
+            return new SkillResolution(
+                elementId: string.Empty,
+                elementName: string.Empty,
+                displayName: skill.Name,
+                skillId: skill.Id,
+                skillJob: skill.Effect,
+                verbId: verbId,
+                verbName: verbRune.VerbFace,
+                verbFamily: verbRune.Family,
+                action: engine["action"].AsString(verb.Action),
+                baseDamage: engine["base_damage"].AsFloat(verb.BaseDamage),
+                basePoise: engine["base_poise"].AsFloat(verb.BasePoise),
+                hitbox: engine["hitbox"].AsString(verb.Hitbox),
+                castMobility: engine["cast_mobility"].AsString(verb.CastMobility),
+                mechanics: mechanics,
+                adjectiveId: adjectiveId,
+                adjectiveName: adjectiveRune.AdjectiveFace,
+                silhouetteAxis: adjective.SilhouetteAxis,
+                damageMult: engine["damage_mult"].AsFloat(1f),
+                hitboxScaleMult: engine["hitbox_scale_mult"].AsFloat(1f),
+                poiseDamageMult: engine["poise_damage_mult"].AsFloat(1f),
+                length: 2,
+                lengthRole: "2-rün skill",
+                lengthCastMult: 1f,
+                lengthMobility: "free_move",
+                flavorElement: string.Empty,
+                targetMode: verbRune.TargetMode,
+                baseCooldownSec: engine["base_cooldown"].AsFloat(verb.BaseCooldownSec),
+                baseResourceCost: engine["base_cost"].AsFloat(verb.BaseResourceCost),
+                engineModifiers: engine,
+                critEligible: engine["base_damage"].AsFloat(0f) > 0f,
+                isComplete: true,
+                baseHeal: engine["base_heal"].AsFloat(0f),
+                passiveDescription: skill.Passive,
+                proseFeel: skill.ProseFeel,
+                proseVisual: skill.ProseVisual);
+        }
+
         /// <summary>
         /// Katlama grameri (sahip):
         /// 1 = kök skill (fiil+sıfat).
@@ -148,6 +289,8 @@ namespace Dovus.Core.Grammar
         {
             if (runeIds == null || runeIds.Count == 0)
                 return SkillResolution.Empty;
+            if (_isV61)
+                return ResolveV61(runeIds);
 
             int len = runeIds.Count;
             if (len > 4)
@@ -311,6 +454,177 @@ namespace Dovus.Core.Grammar
 
         static string PairKey(int a, int b) =>
             a.ToString(CultureInfo.InvariantCulture) + "-" + b.ToString(CultureInfo.InvariantCulture);
+
+        static void ParseV61(JsonValue root, SkillMotor motor)
+        {
+            motor._isV61 = true;
+            motor._maxComboLength = root["combo_system"]["current_max_length"].AsInt(2);
+
+            JsonValue verbBase = root["verb_base"];
+            JsonValue adjectiveMods = root["adjective_mods"];
+            foreach (JsonValue obj in root["runes"].AsArray())
+            {
+                int id = obj["id"].AsInt();
+                if (id <= 0)
+                    continue;
+
+                string key = id.ToString(CultureInfo.InvariantCulture);
+                string name = obj["name"].AsString();
+                string verbFace = obj["verb_face"].AsString(name);
+                string adjectiveFace = obj["adjective_face"].AsString();
+                string family = obj["family"].AsString();
+                string targetMode = obj["target_mode"].AsString();
+                var rune = new RuneDefinition(
+                    id,
+                    name,
+                    verbFace,
+                    adjectiveFace,
+                    obj["adjective_prefix"].AsString(),
+                    obj["verb_noun"].AsString(),
+                    family,
+                    obj["category"].AsString(),
+                    targetMode,
+                    obj["base_effect"].AsString(),
+                    obj["passive_duration_default"].AsFloat(0f));
+                motor._runes[id] = rune;
+
+                // Eski tüketicilerin sözlük API'si korunur; içerik v6 rünlerinden üretilir.
+                motor._elements[key] = new ElementNode(
+                    key, name, "core", key, key, string.Empty, string.Empty,
+                    obj["base_effect"].AsString(), string.Empty,
+                    JsonValue.Null, JsonValue.Null, obj);
+
+                JsonValue stats = verbBase[key];
+                string[] mechanics = ReadV61Mechanics(stats);
+                motor._verbs[key] = new VerbNode(
+                    key,
+                    verbFace,
+                    family,
+                    stats["action"].AsString(),
+                    stats["base_damage"].AsFloat(0f),
+                    stats["base_poise"].AsFloat(0f),
+                    stats["hitbox"].AsString(),
+                    stats["cast_mobility"].AsString("free_move"),
+                    mechanics,
+                    string.Empty,
+                    targetMode,
+                    stats["base_cooldown"].AsFloat(0f),
+                    stats["base_cost"].AsFloat(0f),
+                    EmptyBehaviors,
+                    stats,
+                    JsonValue.Null,
+                    stats,
+                    stats["base_damage"].AsFloat(0f) > 0f,
+                    string.Empty,
+                    string.Empty);
+
+                JsonValue mods = adjectiveMods[key];
+                motor._adjectives[key] = new AdjectiveNode(
+                    key,
+                    adjectiveFace,
+                    obj["category"].AsString(),
+                    mods["label"].AsString(adjectiveFace),
+                    mods["damage_mult"].AsFloat(1f),
+                    mods["hitbox_scale_mult"].AsFloat(1f),
+                    mods["poise_damage_mult"].AsFloat(1f),
+                    mods,
+                    obj);
+            }
+
+            foreach (var verbKv in root["skills"]["by_verb"].AsObject())
+            {
+                foreach (JsonValue obj in verbKv.Value["skills"].AsArray())
+                {
+                    string id = obj["id"].AsString();
+                    if (string.IsNullOrEmpty(id))
+                        continue;
+                    motor._v61Skills[id] = new V61SkillNode(
+                        id,
+                        obj["name"].AsString(),
+                        obj["effect"].AsString(),
+                        obj["passive"].AsString(),
+                        obj["engine"],
+                        obj["prose_mechanic"].AsString(),
+                        obj["prose_feel"].AsString(),
+                        obj["prose_visual"].AsString());
+                }
+            }
+
+            foreach (JsonValue obj in root["elements"].AsArray())
+            {
+                int id = obj["id"].AsInt();
+                if (id <= 0)
+                    continue;
+                motor._elementPaints.Add(new ElementPaintNode(
+                    id,
+                    obj["name"].AsString(),
+                    obj["name_prefix"].AsString(),
+                    obj["color"].AsString(),
+                    obj["vfx"].AsString()));
+            }
+
+            foreach (var group in root["ana_classes_80"]["groups"].AsObject())
+            {
+                foreach (JsonValue obj in group.Value["classes"].AsArray())
+                {
+                    IReadOnlyList<JsonValue> values = obj["runes"].AsArray();
+                    var ids = new int[values.Count];
+                    for (int i = 0; i < ids.Length; i++)
+                        ids[i] = values[i].AsInt();
+                    motor._mainClasses.Add(new MainClassNode(
+                        obj["id"].AsInt(),
+                        obj["name"].AsString(),
+                        ids,
+                        obj["category"].AsString(),
+                        obj["his"].AsString()));
+                }
+            }
+
+            if (motor._mainClasses.Count > 0)
+                motor._defaultLoadout = new RuneLoadout(motor._mainClasses[0].RuneIds);
+            else
+            {
+                var ids = new List<int>(RuneLoadout.SlotCount);
+                foreach (var kv in motor._runes)
+                {
+                    if (ids.Count >= RuneLoadout.SlotCount) break;
+                    ids.Add(kv.Key);
+                }
+                motor._defaultLoadout = new RuneLoadout(ids);
+            }
+
+            // v6 bölümleri olmayan eski subsistemler boş kalır ve Game katmanında no-op olur.
+            ParseStateMachine(root, motor._playerStates, motor._bossStates);
+
+            if (motor._runes.Count != 12)
+                throw new InvalidOperationException("element-sistemi v6: 12 rün beklenir.");
+            if (motor._v61Skills.Count != 144)
+                throw new InvalidOperationException("element-sistemi v6: 144 skill beklenir.");
+            if (motor._maxComboLength != 2)
+                throw new InvalidOperationException("element-sistemi v6: mevcut kombo uzunluğu 2 olmalıdır.");
+        }
+
+        static string[] ReadV61Mechanics(JsonValue engine)
+        {
+            var mechanics = new List<string>();
+            string action = engine["action"].AsString();
+            void Add(string value)
+            {
+                if (!string.IsNullOrEmpty(value) && !mechanics.Contains(value))
+                    mechanics.Add(value);
+            }
+
+            if (action == "cc")
+                Add(engine["cc_kind"].AsString());
+            else if (action == "cleanse")
+                Add("cleanse");
+            else if (action == "shield")
+                Add("shield");
+            else if (action == "debuff" && engine["debuff_armor"].AsFloat(0f) != 0f)
+                Add("armor_break");
+
+            return mechanics.ToArray();
+        }
 
         static void ParseElements(JsonValue root, Dictionary<string, ElementNode> dst)
         {
@@ -731,6 +1045,101 @@ namespace Dovus.Core.Grammar
 
         static readonly IReadOnlyDictionary<string, string> EmptyBehaviors =
             new Dictionary<string, string>(StringComparer.Ordinal);
+    }
+
+    public readonly struct RuneDefinition
+    {
+        public RuneDefinition(
+            int id, string name, string verbFace, string adjectiveFace,
+            string adjectivePrefix, string verbNoun, string family, string category,
+            string targetMode, string baseEffect, float passiveDurationDefault)
+        {
+            Id = id;
+            Name = name ?? string.Empty;
+            VerbFace = verbFace ?? string.Empty;
+            AdjectiveFace = adjectiveFace ?? string.Empty;
+            AdjectivePrefix = adjectivePrefix ?? string.Empty;
+            VerbNoun = verbNoun ?? string.Empty;
+            Family = family ?? string.Empty;
+            Category = category ?? string.Empty;
+            TargetMode = targetMode ?? string.Empty;
+            BaseEffect = baseEffect ?? string.Empty;
+            PassiveDurationDefault = passiveDurationDefault;
+        }
+
+        public int Id { get; }
+        public string Name { get; }
+        public string VerbFace { get; }
+        public string AdjectiveFace { get; }
+        public string AdjectivePrefix { get; }
+        public string VerbNoun { get; }
+        public string Family { get; }
+        public string Category { get; }
+        public string TargetMode { get; }
+        public string BaseEffect { get; }
+        public float PassiveDurationDefault { get; }
+    }
+
+    public readonly struct V61SkillNode
+    {
+        public V61SkillNode(
+            string id, string name, string effect, string passive, JsonValue engine,
+            string proseMechanic, string proseFeel, string proseVisual)
+        {
+            Id = id ?? string.Empty;
+            Name = name ?? string.Empty;
+            Effect = effect ?? string.Empty;
+            Passive = passive ?? string.Empty;
+            Engine = engine;
+            ProseMechanic = proseMechanic ?? string.Empty;
+            ProseFeel = proseFeel ?? string.Empty;
+            ProseVisual = proseVisual ?? string.Empty;
+        }
+
+        public string Id { get; }
+        public string Name { get; }
+        public string Effect { get; }
+        public string Passive { get; }
+        public JsonValue Engine { get; }
+        public string ProseMechanic { get; }
+        public string ProseFeel { get; }
+        public string ProseVisual { get; }
+    }
+
+    public readonly struct ElementPaintNode
+    {
+        public ElementPaintNode(int id, string name, string namePrefix, string colorHex, string vfx)
+        {
+            Id = id;
+            Name = name ?? string.Empty;
+            NamePrefix = namePrefix ?? string.Empty;
+            ColorHex = colorHex ?? string.Empty;
+            Vfx = vfx ?? string.Empty;
+        }
+
+        public int Id { get; }
+        public string Name { get; }
+        public string NamePrefix { get; }
+        public string ColorHex { get; }
+        public string Vfx { get; }
+    }
+
+    public readonly struct MainClassNode
+    {
+        public MainClassNode(int id, string name, int[] runeIds, string category, string feel)
+        {
+            Id = id;
+            Name = name ?? string.Empty;
+            RuneIds = runeIds ?? Array.Empty<int>();
+            Category = category ?? string.Empty;
+            Feel = feel ?? string.Empty;
+        }
+
+        public int Id { get; }
+        public string Name { get; }
+        public int[] RuneIds { get; }
+        public string Category { get; }
+        public string Feel { get; }
     }
 
     public readonly struct ElementNode
@@ -1172,7 +1581,8 @@ namespace Dovus.Core.Grammar
             float baseResourceCost = 0f, IReadOnlyDictionary<string, string>? targetBehaviors = null,
             JsonValue? special = null, JsonValue? zoneEffect = null, JsonValue? engineModifiers = null,
             bool critEligible = false, string elementOrigin = "", string damageType = "",
-            float lengthResourceCostMult = 1f)
+            float lengthResourceCostMult = 1f, bool isComplete = true, float baseHeal = 0f,
+            string passiveDescription = "", string proseFeel = "", string proseVisual = "")
         {
             ElementId = elementId ?? string.Empty;
             ElementName = elementName ?? string.Empty;
@@ -1211,6 +1621,11 @@ namespace Dovus.Core.Grammar
             CritEligible = critEligible;
             ElementOrigin = elementOrigin ?? string.Empty;
             DamageType = damageType ?? string.Empty;
+            IsComplete = isComplete;
+            BaseHeal = baseHeal;
+            PassiveDescription = passiveDescription ?? string.Empty;
+            ProseFeel = proseFeel ?? string.Empty;
+            ProseVisual = proseVisual ?? string.Empty;
         }
 
         static readonly IReadOnlyDictionary<string, string> EmptyBehaviors =
@@ -1261,6 +1676,12 @@ namespace Dovus.Core.Grammar
         public bool CritEligible { get; }
         public string ElementOrigin { get; }
         public string DamageType { get; }
+        /// <summary>v6: false yalnız tek-rün fiil önizlemesinde; gerçek skill 2 ründür.</summary>
+        public bool IsComplete { get; }
+        public float BaseHeal { get; }
+        public string PassiveDescription { get; }
+        public string ProseFeel { get; }
+        public string ProseVisual { get; }
     }
 
     /// <summary>Resources yoksa test/editor yedeği — yalnızca 6 çekirdek iskeleti.</summary>

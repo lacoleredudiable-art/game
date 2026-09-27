@@ -1,0 +1,124 @@
+using System.IO;
+using Dovus.Core.Grammar;
+using Dovus.Core.Tuning;
+using NUnit.Framework;
+
+namespace CoreTests;
+
+[TestFixture]
+public class SkillMotorV611Tests
+{
+    static string JsonPath()
+    {
+        string path = Path.GetFullPath(Path.Combine(
+            TestContext.CurrentContext.TestDirectory,
+            "..", "..", "..", "..", "..", "docs", "element-sistemi.json"));
+        if (!File.Exists(path))
+        {
+            path = Path.GetFullPath(Path.Combine(
+                TestContext.CurrentContext.TestDirectory,
+                "..", "..", "..", "..", "docs", "element-sistemi.json"));
+        }
+        Assert.That(File.Exists(path), Is.True, $"element-sistemi.json bulunamadı: {path}");
+        return path;
+    }
+
+    static SkillMotor Load() => SkillMotor.FromJson(File.ReadAllText(JsonPath()));
+
+    [Test]
+    public void LoadsLockedV611Catalog()
+    {
+        SkillMotor motor = Load();
+
+        Assert.That(motor.Version, Is.EqualTo("6.1.1"));
+        Assert.That(motor.IsV61, Is.True);
+        Assert.That(motor.RuneCount, Is.EqualTo(12));
+        Assert.That(motor.SkillCount, Is.EqualTo(144));
+        Assert.That(motor.MaxComboLength, Is.EqualTo(2));
+        Assert.That(motor.ElementPaints.Count, Is.EqualTo(6));
+        Assert.That(motor.MainClasses.Count, Is.EqualTo(80));
+    }
+
+    [Test]
+    public void DefaultBuildComesFromFirstMainClassAndMapsSixSlots()
+    {
+        SkillMotor motor = Load();
+        RuneLoadout loadout = motor.DefaultLoadout;
+
+        Assert.That(loadout.RuneIds, Is.EqualTo(new[] { 1, 5, 6, 2, 7, 9 }));
+        Assert.That(loadout.PassiveCount, Is.Zero);
+        Assert.That(loadout.TryResolveSlot(5, out Rune rune), Is.True);
+        Assert.That((int)rune, Is.EqualTo(7));
+    }
+
+    [Test]
+    public void PairIsVerbTimesAdjectiveAndSingleIsPreviewOnly()
+    {
+        SkillMotor motor = Load();
+
+        SkillResolution preview = motor.Resolve(new[] { 1 });
+        Assert.That(preview.IsEmpty, Is.False);
+        Assert.That(preview.IsComplete, Is.False);
+        Assert.That(preview.VerbName, Is.EqualTo("Saldırı"));
+
+        SkillResolution pair = motor.Resolve(new[] { 1, 2 });
+        Assert.That(pair.IsComplete, Is.True);
+        Assert.That(pair.SkillId, Is.EqualTo("1-2"));
+        Assert.That(pair.DisplayName, Is.EqualTo("Emici Vuruş"));
+        Assert.That(pair.VerbId, Is.EqualTo("1"));
+        Assert.That(pair.AdjectiveId, Is.EqualTo("2"));
+        Assert.That(pair.BaseDamage, Is.EqualTo(40f));
+        Assert.That(pair.DamageMult, Is.EqualTo(0.95f));
+
+        Assert.That(motor.Resolve(new[] { 1, 2, 3 }).IsEmpty, Is.True);
+    }
+
+    [Test]
+    public void EveryLockedPairResolves()
+    {
+        SkillMotor motor = Load();
+        int resolved = 0;
+        for (int verb = 1; verb <= 12; verb++)
+        for (int adjective = 1; adjective <= 12; adjective++)
+        {
+            SkillResolution skill = motor.Resolve(new[] { verb, adjective });
+            Assert.That(skill.IsEmpty, Is.False, $"{verb}-{adjective}");
+            Assert.That(skill.IsComplete, Is.True, $"{verb}-{adjective}");
+            resolved++;
+        }
+
+        Assert.That(resolved, Is.EqualTo(144));
+    }
+
+    [Test]
+    public void ZamanResolvesToActorTempoNeverGlobalTime()
+    {
+        SkillResolution zaman = Load().Resolve(new[] { 12, 1 });
+
+        Assert.That(zaman.Action, Is.EqualTo("tempo"));
+        Assert.That(zaman.EngineModifiers["enemy_slow"].AsFloat(), Is.EqualTo(0.7f));
+        Assert.That(zaman.EngineModifiers["self_haste"].AsFloat(), Is.EqualTo(0f));
+        Assert.That(zaman.EngineModifiers["no_global_timescale"].AsBool(), Is.True);
+    }
+
+    [Test]
+    public void SentenceEngineMapsScreenSlotsThroughSelectedBuild()
+    {
+        SkillMotor motor = Load();
+        RuneLoadout loadout = motor.CreateLoadout(
+            new[] { 12, 11, 10, 9, 8, 7 },
+            new[] { 12, 7 });
+        var tuning = new SentenceTuning { MaxSentenceDots = 2 };
+        var engine = new SentenceEngine(tuning, loadout);
+
+        engine.OnDotTouched(1, 0);
+        engine.OnDotTouched(6, 10);
+
+        CompletedSentence completed = engine.History[0];
+        Assert.That((int)completed.Words[0].Rune, Is.EqualTo(12));
+        Assert.That((int)completed.Words[1].Rune, Is.EqualTo(7));
+        Assert.That(completed.Words[0].Dot, Is.EqualTo(1));
+        Assert.That(completed.Words[1].Dot, Is.EqualTo(6));
+        Assert.That(loadout.PassiveCount, Is.EqualTo(2));
+    }
+}

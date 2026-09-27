@@ -11,6 +11,7 @@ namespace Dovus.Core.Grammar
     public sealed class SentenceEngine
     {
         readonly SentenceTuning _tuning;
+        readonly RuneLoadout _loadout;
         readonly List<SentenceWord> _words = new List<SentenceWord>(4);
         readonly List<CompletedSentence> _history = new List<CompletedSentence>();
 
@@ -20,13 +21,15 @@ namespace Dovus.Core.Grammar
         double _appliedWorldMs;
         int _lastWordDwellStacks;
 
-        public SentenceEngine(SentenceTuning? tuning = null)
+        public SentenceEngine(SentenceTuning? tuning = null, RuneLoadout? loadout = null)
         {
             _tuning = tuning ?? new SentenceTuning();
+            _loadout = loadout ?? RuneLoadout.Sequential;
             State = new SentenceState();
         }
 
         public SentenceState State { get; }
+        public RuneLoadout Loadout => _loadout;
 
         public IReadOnlyList<CompletedSentence> History => _history;
 
@@ -36,7 +39,7 @@ namespace Dovus.Core.Grammar
         public void OnDotTouched(int dot, double worldTimeMs)
         {
             CatchUp(worldTimeMs);
-            if (!RuneInfo.TryFromDot(dot, out Rune rune))
+            if (!RuneInfo.TryFromDot(dot, _loadout, out Rune rune))
                 return;
 
             // Recovering: yeni fiil kilidi keser (§5) — BeginFresh kalan süreyi sıfırlar.
@@ -46,7 +49,7 @@ namespace Dovus.Core.Grammar
 
             if (State.Phase == SentencePhase.Idle)
             {
-                StartVerb(rune);
+                StartVerb(dot, rune);
                 return;
             }
 
@@ -55,11 +58,11 @@ namespace Dovus.Core.Grammar
             {
                 ResolveWithClosing();
                 BeginFresh();
-                StartVerb(rune);
+                StartVerb(dot, rune);
                 return;
             }
 
-            AppendAdjective(rune);
+            AppendAdjective(dot, rune);
         }
 
         /// <summary>
@@ -78,7 +81,7 @@ namespace Dovus.Core.Grammar
             _lastWordDwellStacks++;
             int last = _words.Count - 1;
             SentenceWord w = _words[last];
-            _words[last] = new SentenceWord(w.Rune, w.JumpFromPrevious, _lastWordDwellStacks);
+            _words[last] = new SentenceWord(w.Slot, w.Rune, w.JumpFromPrevious, _lastWordDwellStacks);
             FreezeWindowForDwell();
             PublishState();
         }
@@ -179,23 +182,23 @@ namespace Dovus.Core.Grammar
             Finish(completed);
         }
 
-        void StartVerb(Rune rune)
+        void StartVerb(int slot, Rune rune)
         {
             _words.Clear();
             _lastWordDwellStacks = 0;
-            _words.Add(new SentenceWord(rune, JumpKind.None, 0));
+            _words.Add(new SentenceWord(slot, rune, JumpKind.None, 0));
             State.Phase = SentencePhase.Building;
             State.LastClosing = null;
             ArmWindowAfterHit();
             PublishState();
         }
 
-        void AppendAdjective(Rune rune)
+        void AppendAdjective(int slot, Rune rune)
         {
-            Rune previous = _words[_words.Count - 1].Rune;
-            JumpKind jump = PentagonLayout.ClassifyJump((int)previous, (int)rune);
+            int previousSlot = _words[_words.Count - 1].Slot;
+            JumpKind jump = PentagonLayout.ClassifyJump(previousSlot, slot);
             _lastWordDwellStacks = 0;
-            _words.Add(new SentenceWord(rune, jump, 0));
+            _words.Add(new SentenceWord(slot, rune, jump, 0));
 
             if (_words.Count >= _tuning.MaxSentenceDots)
             {

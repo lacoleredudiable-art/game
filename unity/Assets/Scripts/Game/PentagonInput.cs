@@ -133,20 +133,27 @@ namespace Dovus.Game
             GameClock clock,
             InkTrail ink,
             SyllableFeedback syllable,
-            SentenceDebugHud debugHud)
+            SentenceDebugHud debugHud,
+            SkillMotor skills = null,
+            RuneLoadout loadout = null)
         {
             _clock = clock;
             _ink = ink;
             _syllable = syllable;
             _debugHud = debugHud;
+            _skills = skills ?? _skills;
             _combat ??= new CombatTuning();
+            if (_skills != null && _skills.MaxComboLength > 0)
+                _combat.Sentence.MaxSentenceDots = _skills.MaxComboLength;
             if (_sentenceHooked && _engine != null)
             {
                 _engine.SentenceCompleted -= OnSentenceCompleted;
                 _sentenceHooked = false;
             }
 
-            _engine = new SentenceEngine(_combat.Sentence);
+            _engine = new SentenceEngine(
+                _combat.Sentence,
+                loadout ?? _skills?.DefaultLoadout ?? RuneLoadout.Sequential);
             _dodge = new DodgeState(_combat.Dodge);
             _engine.SentenceCompleted += OnSentenceCompleted;
             _sentenceHooked = true;
@@ -274,7 +281,12 @@ namespace Dovus.Game
 
             if (_engine == null)
             {
-                _engine = new SentenceEngine(_combat.Sentence);
+                EnsureSkills();
+                if (_skills != null && _skills.MaxComboLength > 0)
+                    _combat.Sentence.MaxSentenceDots = _skills.MaxComboLength;
+                _engine = new SentenceEngine(
+                    _combat.Sentence,
+                    _skills?.DefaultLoadout ?? RuneLoadout.Sequential);
                 _engine.SentenceCompleted += OnSentenceCompleted;
                 _sentenceHooked = true;
             }
@@ -710,7 +722,10 @@ namespace Dovus.Game
             if (_skills == null)
                 return SkillResolution.Empty;
 
-            return _skills.Resolve(new[] { verbDot });
+            int runeId = _engine != null
+                ? _engine.Loadout.RuneIdAtSlot(verbDot)
+                : verbDot;
+            return _skills.Resolve(new[] { runeId });
         }
 
         void EnsureSkills()

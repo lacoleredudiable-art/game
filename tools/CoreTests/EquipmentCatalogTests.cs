@@ -15,12 +15,12 @@ public class EquipmentCatalogTests
     {
         string path = Path.GetFullPath(Path.Combine(
             TestContext.CurrentContext.TestDirectory,
-            "..", "..", "..", "..", "..", "docs", "element-sistemi.json"));
+            "..", "..", "..", "..", "..", "docs", "archive", "element-sistemi-v5.3.json"));
         if (!File.Exists(path))
         {
             path = Path.GetFullPath(Path.Combine(
                 TestContext.CurrentContext.TestDirectory,
-                "..", "..", "..", "..", "docs", "element-sistemi.json"));
+                "..", "..", "..", "..", "docs", "archive", "element-sistemi-v5.3.json"));
         }
         Assert.That(File.Exists(path), Is.True, $"element-sistemi.json bulunamadı: {path}");
         return EquipmentCatalog.FromJson(File.ReadAllText(path));

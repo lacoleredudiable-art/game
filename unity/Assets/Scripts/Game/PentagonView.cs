@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using Dovus.Core.Grammar;
 
 namespace Dovus.Game
 {
@@ -11,6 +12,8 @@ namespace Dovus.Game
     public sealed class PentagonView : MonoBehaviour
     {
         PrototypeTuning _tuning;
+        SkillMotor _skills;
+        RuneLoadout _loadout;
         RectTransform[] _dots;
         Image[] _dotImages;
         Sprite[] _dotIcons;
@@ -30,9 +33,15 @@ namespace Dovus.Game
         public Canvas Canvas => _canvas;
         public Transform CanvasRoot => _canvas != null ? _canvas.transform : null;
 
-        public void Build(PrototypeTuning tuning, Camera overlayCam)
+        public void Build(
+            PrototypeTuning tuning,
+            Camera overlayCam,
+            SkillMotor skills = null,
+            RuneLoadout loadout = null)
         {
             _tuning = tuning;
+            _skills = skills;
+            _loadout = loadout ?? skills?.DefaultLoadout ?? RuneLoadout.Sequential;
 
             var canvasGo = new GameObject("HexagonCanvas");
             canvasGo.transform.SetParent(transform, false);
@@ -64,7 +73,8 @@ namespace Dovus.Game
             _cdTracked = new bool[n + 1];
             for (int dot = 1; dot <= n; dot++)
             {
-                _dotIcons[dot] = TryCreateIconSprite(dot);
+                // v6 rünleri element değildir; eski ateş/su ikonlarına geri düşme.
+                _dotIcons[dot] = null;
                 Sprite icon = _dotIcons[dot] != null ? _dotIcons[dot] : fallback;
                 Color col = _dotIcons[dot] != null ? DotColor(dot) : RuneFallbackColor(dot);
                 _dots[dot] = CreateLayeredDisc(
@@ -73,7 +83,7 @@ namespace Dovus.Game
                 if (_dotIcons[dot] == null)
                 {
                     var label = CreateLabel(_dots[dot], DotGlyph(dot));
-                    label.fontSize = 18;
+                    label.fontSize = 14;
                     label.color = new Color(0.06f, 0.08f, 0.1f, 0.95f);
                     var outline = label.gameObject.AddComponent<Outline>();
                     outline.effectColor = new Color(1f, 1f, 1f, 0.35f);
@@ -348,30 +358,20 @@ namespace Dovus.Game
 
         Color RuneFallbackColor(int dot)
         {
-            Color c = dot switch
-            {
-                1 => _tuning.ElementFire,
-                2 => _tuning.ElementWater,
-                3 => _tuning.ElementAir,
-                4 => _tuning.ElementEarth,
-                5 => _tuning.ElementLight,
-                6 => _tuning.ElementDark,
-                _ => _tuning.PentagonDotColor
-            };
+            Color c = (dot & 1) == 0 ? _tuning.InkPurple : _tuning.InkCyan;
             c.a = _tuning.IsDotOpen(dot) ? 0.92f : 0.28f;
             return c;
         }
 
-        static string DotGlyph(int dot) => dot switch
+        string DotGlyph(int dot)
         {
-            1 => "AT",
-            2 => "SU",
-            3 => "HV", // Hava — yıldırım değil
-            4 => "TP",
-            5 => "AY",
-            6 => "KR",
-            _ => "?"
-        };
+            int runeId = _loadout != null ? _loadout.RuneIdAtSlot(dot) : dot;
+            string name = _skills != null ? _skills.RuneName(runeId) : RuneInfo.DisplayName((Rune)runeId);
+            if (string.IsNullOrEmpty(name))
+                return runeId.ToString();
+            string compact = name.Replace("İ", "I").Replace("ı", "i");
+            return compact.Length <= 2 ? compact.ToUpperInvariant() : compact.Substring(0, 2).ToUpperInvariant();
+        }
 
         Color DotColor(int dot)
         {
