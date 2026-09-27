@@ -44,6 +44,12 @@ public class SkillExecutorRouterTests
             _router.Route(_motor.Resolve(new[] { 1, 1 }), sword).Kind,
             Is.EqualTo(SkillExecutorKind.MeleeHitbox));
         Assert.That(
+            _router.Route(_motor.Resolve(new[] { 5, 1 }), sword).Kind,
+            Is.EqualTo(SkillExecutorKind.MeleeHitbox));
+        Assert.That(
+            _router.Route(_motor.Resolve(new[] { 1, 1 }), cannon).Kind,
+            Is.EqualTo(SkillExecutorKind.Projectile));
+        Assert.That(
             _router.Route(_motor.Resolve(new[] { 5, 1 }), cannon).Kind,
             Is.EqualTo(SkillExecutorKind.Projectile));
     }

@@ -1771,12 +1771,16 @@ namespace Dovus.Game
             bool friendly = IsFriendlyFieldVerb(skill);
             bool burst = string.Equals(skill.VerbId, "5", StringComparison.Ordinal);
             float slashCommitMult = motionPlan.SlashCommitMult;
+            float executorChainBonus = _closingChainBonus;
             string colorKey = SelectedElementPaint?.Name
                 ?? (pending.Words != null && pending.Words.Count > 0
                     ? pending.Words[0].Rune.ToString()
                     : string.Empty);
 
             bool echoScheduled = false;
+            bool statusesApplied = false;
+            float accumulatedHealScale = 0f;
+            int appliedHealAmount = 0;
             void ApplyExecutorEffect(float effectFraction)
             {
                 if (effectFraction <= 0f)
@@ -1789,7 +1793,8 @@ namespace Dovus.Game
                     skill,
                     isBasicStrike: false,
                     slashCommitMult,
-                    effectFraction);
+                    effectFraction,
+                    executorChainBonus);
                 // Bir projectile/melee tek hit'tir. Tick field'da echo katmanını çoğaltmamak
                 // için yalnız ilk gerçek hasar kaynak olur.
                 if (!echoScheduled && hitDamage > 0f)
@@ -1797,8 +1802,29 @@ namespace Dovus.Game
                     TryScheduleEchoForSkill(skill, hitDamage);
                     echoScheduled = true;
                 }
-                ApplyClosingStatuses(pending, skill);
-                ApplyClosingHeal(pending.Closing, skill, effectFraction);
+                if (!statusesApplied)
+                {
+                    ApplyClosingStatuses(pending, skill);
+                    statusesApplied = true;
+                }
+                if (IsHealSkill(skill))
+                {
+                    accumulatedHealScale = Mathf.Min(1f, accumulatedHealScale + effectFraction);
+                    int targetTotal = CalculateClosingHealAmount(
+                        pending.Closing,
+                        skill,
+                        accumulatedHealScale,
+                        executorChainBonus);
+                    int delta = Mathf.Max(0, targetTotal - appliedHealAmount);
+                    if (delta > 0)
+                    {
+                        Vector3? fieldCenter = kind == SkillExecutorKind.FieldAura && friendly
+                            ? origin
+                            : null;
+                        ApplyClosingHealAmount(skill, delta, fieldCenter, radius);
+                        appliedHealAmount += delta;
+                    }
+                }
                 LastSkillEffectApplied = hitDamage > 0f
                     || IsHealSkill(skill)
                     || skill.Mechanics.Length > 0;
@@ -2231,32 +2257,58 @@ namespace Dovus.Game
         void ApplyClosingHeal(
             ClosingHit closing,
             SkillResolution skill,
-            float effectScale = 1f)
+            float effectScale = 1f,
+            float? chainBonusOverride = null,
+            Vector3? fieldCenter = null,
+            float fieldRadiusM = 0f)
         {
-            if (skill.IsEmpty)
-                return;
-            if (!IsHealSkill(skill))
-                return;
-            if (effectScale <= 0f)
-                return;
+            int amount = CalculateClosingHealAmount(
+                closing,
+                skill,
+                effectScale,
+                chainBonusOverride);
+            ApplyClosingHealAmount(skill, amount, fieldCenter, fieldRadiusM);
+        }
 
+        int CalculateClosingHealAmount(
+            ClosingHit closing,
+            SkillResolution skill,
+            float effectScale,
+            float? chainBonusOverride)
+        {
+            if (skill.IsEmpty || !IsHealSkill(skill) || effectScale <= 0f)
+                return 0;
             float per = _combat != null ? _combat.ClosingDamagePerEffect : 1f;
             // 16 Eylül: "Kavurucu Yara" (grievous_wounds+burn) — yanık hedefe gelen heal azalır.
             // Hedefin StatusBoard'u yoksa (ör. AllyDummy) çarpan 1f, davranış eskisiyle aynı.
             float healMult = _playerStatus != null ? _playerStatus.Board.HealEffectivenessMult : 1f;
             healMult *= _passiveDirector?.HealMult ?? 1f;
-            healMult *= _closingChainBonus; // Bağlama 6: önceki link/finisher → bu kapanış
+            healMult *= chainBonusOverride ?? _closingChainBonus;
             healMult *= WeaponCompatibilityFor(skill).DamageMult;
             float healBase = skill.BaseHeal > 0f
                 ? skill.BaseHeal
                 : closing.TotalEffect * per;
-            int amount = Mathf.Max(1, Mathf.RoundToInt(healBase * healMult * effectScale));
+            return Mathf.Max(0, Mathf.RoundToInt(healBase * healMult * effectScale));
+        }
+
+        void ApplyClosingHealAmount(
+            SkillResolution skill,
+            int amount,
+            Vector3? fieldCenter,
+            float fieldRadiusM)
+        {
             if (amount <= 0)
                 return;
 
             var playerVitals = _player != null ? _player.GetComponent<PlayerVitals>() : null;
-            bool allyNeeds = _ally != null && _ally.Hp < _ally.MaxHp;
-            bool selfNeeds = playerVitals != null && !playerVitals.IsDown && playerVitals.Hp < playerVitals.MaxHp;
+            bool spatial = fieldCenter.HasValue && fieldRadiusM > 0f;
+            bool allyInRange = !spatial || (_ally != null
+                && FlatDistance(_ally.transform.position, fieldCenter.Value) <= fieldRadiusM);
+            bool selfInRange = !spatial || (_player != null
+                && FlatDistance(_player.position, fieldCenter.Value) <= fieldRadiusM);
+            bool allyNeeds = _ally != null && allyInRange && _ally.Hp < _ally.MaxHp;
+            bool selfNeeds = playerVitals != null && selfInRange
+                && !playerVitals.IsDown && playerVitals.Hp < playerVitals.MaxHp;
             if (!allyNeeds && !selfNeeds)
             {
                 _readout?.NoteSkill(skill.DisplayName, "zaten full", new Color(0.7f, 0.9f, 0.75f));
@@ -2301,6 +2353,13 @@ namespace Dovus.Game
             }
         }
 
+        static float FlatDistance(Vector3 a, Vector3 b)
+        {
+            float dx = a.x - b.x;
+            float dz = a.z - b.z;
+            return Mathf.Sqrt(dx * dx + dz * dz);
+        }
+
         static bool IsHealSkill(SkillResolution skill)
         {
             if (string.Equals(skill.VerbFamily, "mend", System.StringComparison.Ordinal))
@@ -2320,7 +2379,8 @@ namespace Dovus.Game
             SkillResolution skill,
             bool isBasicStrike,
             float slashCommitMult,
-            float effectScale = 1f)
+            float effectScale = 1f,
+            float? chainBonusOverride = null)
         {
             if (_bossVitals == null || _bossVitals.IsDown)
                 return 0f;
@@ -2332,7 +2392,7 @@ namespace Dovus.Game
                 outMult = _playerStatus.Board.OutgoingDamageMult;
             outMult *= _modeDirector?.DamageMult ?? 1f; // ulti: Öfke Patlaması ×1.8, Kan Çılgınlığı ×2.0
             outMult *= _passiveDirector?.DamageMult ?? 1f; // pasif: alev_hiddeti ×1.15 × karanlik_sessizligi ×1.2 …
-            outMult *= _closingChainBonus; // Bağlama 6: links/finisher_mult → sonraki (bu) kapanış
+            outMult *= chainBonusOverride ?? _closingChainBonus;
             float eqMult = 1f;
             if (_equipmentBonus != null && !isBasicStrike && !skill.IsEmpty)
             {

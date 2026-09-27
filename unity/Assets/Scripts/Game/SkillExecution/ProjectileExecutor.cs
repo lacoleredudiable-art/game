@@ -7,6 +7,7 @@ namespace Dovus.Game
     public sealed class ProjectileExecutor : SkillExecutor
     {
         static readonly Collider[] Hits = new Collider[24];
+        static readonly RaycastHit[] SweptHits = new RaycastHit[24];
 
         GameObject _projectile;
         Vector3 _spawn;
@@ -54,8 +55,33 @@ namespace Dovus.Game
             if (!HasContext || _projectile == null)
                 return;
 
-            float step = Context.SpeedMps * Time.deltaTime;
-            _projectile.transform.position += Context.Direction * step;
+            float remaining = Context.RangeM - _travelM;
+            if (remaining <= 0f)
+            {
+                Finish();
+                return;
+            }
+
+            float step = Mathf.Min(Context.SpeedMps * Time.deltaTime, remaining);
+            Vector3 from = _projectile.transform.position;
+            int sweptCount = Physics.SphereCastNonAlloc(
+                from,
+                Context.RadiusM,
+                Context.Direction,
+                SweptHits,
+                step,
+                Physics.AllLayers,
+                QueryTriggerInteraction.Collide);
+            for (int i = 0; i < sweptCount; i++)
+            {
+                if (!IsTarget(SweptHits[i].collider))
+                    continue;
+                _projectile.transform.position = from + Context.Direction * SweptHits[i].distance;
+                Impact();
+                return;
+            }
+
+            _projectile.transform.position = from + Context.Direction * step;
             _travelM += step;
 
             int count = Physics.OverlapSphereNonAlloc(
@@ -72,7 +98,7 @@ namespace Dovus.Game
                 return;
             }
 
-            if (_travelM >= Context.RangeM)
+            if (_travelM >= Context.RangeM - 0.0001f)
                 Finish();
         }
 
