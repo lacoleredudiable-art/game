@@ -22,7 +22,7 @@ namespace Dovus.Core.Equipment
             float rangeMult,
             int mobilityMod,
             string identityPassive,
-            int[] compatibleVerbs,
+            int[]? compatibleVerbs,
             string animationsKey,
             string type = "")
         {

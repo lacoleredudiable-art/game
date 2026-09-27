@@ -9,18 +9,18 @@ namespace Dovus.Core.Grammar
     {
         readonly SkillMotor _motor;
 
-        public RuneManager(SkillMotor motor, RuneLoadout initial = null)
+        public RuneManager(SkillMotor motor, RuneLoadout? initial = null)
         {
             _motor = motor ?? throw new ArgumentNullException(nameof(motor));
             Current = initial ?? motor.DefaultLoadout;
         }
 
         public RuneLoadout Current { get; private set; }
-        public event Action<RuneLoadout> Changed;
+        public event Action<RuneLoadout>? Changed;
 
         public bool TrySelect(
             IReadOnlyList<int> runeIds,
-            IReadOnlyList<int> passiveRuneIds,
+            IReadOnlyList<int>? passiveRuneIds,
             out string error)
         {
             try
@@ -40,7 +40,7 @@ namespace Dovus.Core.Grammar
 
         public bool TrySelectMainClass(
             int mainClassId,
-            IReadOnlyList<int> passiveRuneIds,
+            IReadOnlyList<int>? passiveRuneIds,
             out string error)
         {
             try
@@ -62,12 +62,12 @@ namespace Dovus.Core.Grammar
             }
         }
 
-        public bool TrySetPassiveSlots(IReadOnlyList<int> passiveRuneIds, out string error) =>
+        public bool TrySetPassiveSlots(IReadOnlyList<int>? passiveRuneIds, out string error) =>
             TrySelect(Current.RuneIds, passiveRuneIds, out error);
 
         public IReadOnlyList<Skill> BuildSkills(
             SkillFactory factory,
-            EquipmentItem weapon = null,
+            EquipmentItem? weapon = null,
             int elementPaintId = 0)
         {
             if (factory == null)

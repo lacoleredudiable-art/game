@@ -17,7 +17,7 @@ namespace Dovus.Core.Grammar
 
         public RuneLoadout(
             IReadOnlyList<int> runeIds,
-            IReadOnlyList<int> passiveRuneIds = null)
+            IReadOnlyList<int>? passiveRuneIds = null)
         {
             if (runeIds == null)
                 throw new ArgumentNullException(nameof(runeIds));

@@ -158,7 +158,7 @@ namespace Dovus.Core.Grammar
 
         public RuneLoadout CreateLoadout(
             IReadOnlyList<int> runeIds,
-            IReadOnlyList<int> passiveRuneIds = null)
+            IReadOnlyList<int>? passiveRuneIds = null)
         {
             var loadout = new RuneLoadout(runeIds, passiveRuneIds);
             for (int i = 0; i < loadout.RuneIds.Count; i++)
@@ -169,7 +169,7 @@ namespace Dovus.Core.Grammar
 
         public bool TryCreateMainClassLoadout(
             int mainClassId,
-            IReadOnlyList<int> passiveRuneIds,
+            IReadOnlyList<int>? passiveRuneIds,
             out RuneLoadout loadout)
         {
             for (int i = 0; i < _mainClasses.Count; i++)

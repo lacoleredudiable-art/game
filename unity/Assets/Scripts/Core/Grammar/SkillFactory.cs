@@ -22,7 +22,7 @@ namespace Dovus.Core.Grammar
         public Skill Create(
             int verbRuneId,
             int adjectiveRuneId,
-            EquipmentItem weapon = null,
+            EquipmentItem? weapon = null,
             int elementPaintId = 0)
         {
             SkillResolution resolution = _motor.Resolve(new[] { verbRuneId, adjectiveRuneId });
@@ -40,7 +40,7 @@ namespace Dovus.Core.Grammar
 
         public Skill CreateFromWords(
             IReadOnlyList<SentenceWord> words,
-            EquipmentItem weapon = null,
+            EquipmentItem? weapon = null,
             int elementPaintId = 0)
         {
             if (words == null || words.Count != 2)
@@ -50,7 +50,7 @@ namespace Dovus.Core.Grammar
 
         public IReadOnlyList<Skill> CreateForBuild(
             RuneLoadout loadout,
-            EquipmentItem weapon = null,
+            EquipmentItem? weapon = null,
             int elementPaintId = 0)
         {
             if (loadout == null)
@@ -70,7 +70,7 @@ namespace Dovus.Core.Grammar
 
         public WeaponSkillCompatibility EvaluateWeapon(
             in SkillResolution resolution,
-            EquipmentItem weapon)
+            EquipmentItem? weapon)
         {
             return int.TryParse(resolution.VerbId, out int verbId)
                 ? _equipment.Resolve(weapon, verbId)
