@@ -24,7 +24,9 @@ Movement/SelfState executor'ları veya gerçek animasyon/VFX bağları
 > `SkillExecutorRouter` her cast'te bunu okur. Log:
 > `[WeaponCycle] id=… name=… type=melee|ranged canonicalType=…`.
 > JSON `medium` Kılıç/Mızrak effective melee kalır; yalnız canonical `ranged` projectile.
-> **Doğrulama:** test ve kullanıcı Play smoke bekliyor.
+> **Doğrulandı:** `dotnet test` **268/268**; 10 canonical silahın fiil 1/5 route'u
+> effective ranged/melee sınıfına göre testte doğrulandı. **Doğrulanamadı:** Unity
+> Editor bu cloud imajında yok; F2 wrap + canlı melee/projectile Play smoke kullanıcıda.
 
 > **27 Eylül — SkillExecutor prototipi.** `SkillMotor` adı/rolü değişmeden saf Core
 > `SkillExecutorRouter` eklendi. İki-rün kapanışında fiil 1/5 explicit `weapon.type` ile
