@@ -378,10 +378,13 @@ namespace Dovus.Game
             director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, allyDummy, modeHud, view, passiveHud, _equippedWeapon, equipmentBonus, skills, skillFactory, design?.Animations);
 
             var preview = root.AddComponent<SkillPreviewHud>();
-            preview.Configure(input.Engine, skills, skillFactory, _equippedWeapon, director, view.CanvasRoot);
+            preview.Configure(input.Engine, skills, skillFactory, _equippedWeapon, director, _tuning, view.CanvasRoot);
+
+            var buildSelect = root.AddComponent<BuildSelectScreen>();
+            buildSelect.Configure(skills, runeManager, input, view, clock, !_tuning.SkipBuildSelectOnStart);
 
             var v6Panel = root.AddComponent<V611DebugPanel>();
-            v6Panel.Configure(skills, runeManager, assetCatalog, input, view, director, view.CanvasRoot);
+            v6Panel.Configure(input, director, buildSelect, view.CanvasRoot);
 
             CreateTuningPanel(tuningConfig, vitals);
         }

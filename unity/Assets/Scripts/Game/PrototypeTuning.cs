@@ -286,6 +286,16 @@ namespace Dovus.Game
         [Header("Hasar göstergesi (T12)")]
         public bool ShowDamageNumbers = true;
 
+        // v6 7a: önizleme altıgenin hemen üstünde durur, ekran ortasını kapatmaz. Genişlik/boşluk
+        // spec'te yok (durum.md); bekleme FeelTuning.ReadoutHoldMs (900) varsayılanından.
+        [Header("Skill önizleme (v6 7a, SkillPreviewHud)")]
+        public float SkillPreviewWidthDp = 240f;
+        public float SkillPreviewGapDp = 10f;
+        public float SkillPreviewHoldSec = 0.9f;
+
+        [Header("Build seçimi (v6 7b, BuildSelectScreen)")]
+        public bool SkipBuildSelectOnStart = false;
+
         [Header("Debug HUD")]
         public bool ShowSentenceDebugHud = false;
 
@@ -322,6 +332,9 @@ namespace Dovus.Game
             if (VitalsBossBarHeightDp <= 0.01f) VitalsBossBarHeightDp = 12f;
             if (DamageFloatFontDp <= 0.01f) DamageFloatFontDp = 28f;
             if (HexagonRadiusDp <= 0.01f) HexagonRadiusDp = 98f;
+            if (SkillPreviewWidthDp <= 0.01f) SkillPreviewWidthDp = 240f;
+            if (SkillPreviewGapDp <= 0.01f) SkillPreviewGapDp = 10f;
+            if (SkillPreviewHoldSec <= 0.01f) SkillPreviewHoldSec = 0.9f;
             if (DotHitRadiusDp <= 0.01f) DotHitRadiusDp = 26f;
             if (CenterHitRadiusDp <= 0.01f) CenterHitRadiusDp = 28f;
             if (DodgeButtonRadiusDp <= 0.01f) DodgeButtonRadiusDp = 32f;

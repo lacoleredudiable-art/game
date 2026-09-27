@@ -18,10 +18,13 @@ namespace Dovus.Game
 
         public double RealDeltaMs { get; private set; }
 
+        /// <summary>Menü (build seçimi) açıkken dünya saati durur; gerçek saat UI için akar.</summary>
+        public bool Paused { get; set; }
+
         void Update()
         {
             RealDeltaMs = Time.unscaledDeltaTime * 1000.0;
-            WorldDeltaMs = Director.Tick(RealDeltaMs);
+            WorldDeltaMs = Paused ? 0.0 : Director.Tick(RealDeltaMs);
         }
     }
 }

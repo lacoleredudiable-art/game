@@ -1904,10 +1904,6 @@ namespace Dovus.Game
 
             string mech = SkillFeel.MechanicShort(skill.Mechanics);
             string adj = SkillFeel.AdjectiveShort(skill);
-            SkillFeel.ElementPalette(words, _colors, out Color line, out _);
-            WeaponSkillCompatibility compatibility = WeaponCompatibilityFor(skill);
-            if (!string.IsNullOrEmpty(compatibility.UiColor))
-                line = compatibility.Compatible ? Color.green : Color.yellow;
             string paintedName = LastFactorySkill != null
                 && string.Equals(LastFactorySkill.Id, skill.SkillId, StringComparison.Ordinal)
                     ? LastFactorySkill.DisplayName
@@ -1920,23 +1916,7 @@ namespace Dovus.Game
                 ? mech
                 : (string.IsNullOrEmpty(mech) ? adj : mech + " | " + adj);
             _debugHud?.NoteSkillBang(paintedName, bangNote);
-            string sub = skill.VerbName;
-            if (!string.IsNullOrEmpty(mech))
-                sub = string.IsNullOrEmpty(sub) ? mech : sub + "  ·  " + mech;
-            if (!string.IsNullOrEmpty(adj))
-                sub = string.IsNullOrEmpty(sub) ? adj : sub + "  ·  " + adj;
-            if (!string.IsNullOrEmpty(compatibility.UiLabel))
-            {
-                string weaponLabel = compatibility.UiLabel.Replace(
-                    "[Silah]",
-                    _equippedWeapon != null ? _equippedWeapon.Name : "Silah");
-                sub = string.IsNullOrEmpty(sub) ? weaponLabel : sub + "  ·  " + weaponLabel;
-            }
-            if (skill.Length >= 3 && !string.IsNullOrEmpty(skill.LengthRole))
-                sub = string.IsNullOrEmpty(sub)
-                    ? skill.LengthRole
-                    : sub + "  ·  " + skill.Length + "·" + skill.LengthRole;
-            _readout?.NoteSkill(paintedName, sub, line);
+            // Skill adı altıgen üstündeki SkillPreviewHud'da; büyük ReactionReadout dodge/tepki içindir.
             SkillFeel.CameraKick(skill.VerbFamily, _camera, _colors);
             // PulseRune (PulseActor) kalır — AnimationBridge eklenir, yerine geçmez.
             ApplySkillAnimation(skill);

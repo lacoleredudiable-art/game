@@ -7,18 +7,27 @@ namespace Dovus.Game
 {
     /// <summary>
     /// Binding sıra 7a: salt-okunur preview. Seçim/cast üretmez; canlı SentenceEngine ve
-    /// SkillFactory sonucunu gösterir.
+    /// SkillFactory sonucunu altıgenin hemen üstünde gösterir. Çizim yokken gizlenir;
+    /// cast sonrası <see cref="PrototypeTuning.SkillPreviewHoldSec"/> kadar kalır.
     /// </summary>
     public sealed class SkillPreviewHud : MonoBehaviour
     {
+        const float FadeSec = 0.2f;
+        const float PanelHeightDp = 48f;
+
         SentenceEngine _engine;
         SkillMotor _motor;
         SkillFactory _factory;
         EquipmentItem _weapon;
         ManifestationDirector _manifestation;
+        PrototypeTuning _tuning;
+        RectTransform _rect;
+        CanvasGroup _group;
         Text _title;
         Text _detail;
         string _lastSignature = string.Empty;
+        float _visibleUntil = float.NegativeInfinity;
+        Skill _lastCast;
 
         public void Configure(
             SentenceEngine engine,
@@ -26,6 +35,7 @@ namespace Dovus.Game
             SkillFactory factory,
             EquipmentItem weapon,
             ManifestationDirector manifestation,
+            PrototypeTuning tuning,
             Transform canvasRoot)
         {
             _engine = engine;
@@ -33,22 +43,29 @@ namespace Dovus.Game
             _factory = factory;
             _weapon = weapon;
             _manifestation = manifestation;
+            _tuning = tuning;
 
             var root = new GameObject("SkillPreviewReadOnly");
             root.transform.SetParent(canvasRoot, false);
-            var rect = root.AddComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0.24f, 0.48f);
-            rect.anchorMax = new Vector2(0.76f, 0.58f);
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
+            if (canvasRoot != null)
+                root.layer = canvasRoot.gameObject.layer;
+            _rect = root.AddComponent<RectTransform>();
+            _rect.anchorMin = Vector2.zero;
+            _rect.anchorMax = Vector2.zero;
+            _rect.pivot = new Vector2(0.5f, 0f);
+
+            _group = root.AddComponent<CanvasGroup>();
+            _group.alpha = 0f;
+            _group.blocksRaycasts = false;
+            _group.interactable = false;
 
             var bg = root.AddComponent<Image>();
             bg.color = new Color(0.02f, 0.08f, 0.12f, 0.72f);
             bg.raycastTarget = false;
 
-            _title = CreateText(root.transform, "Title", new Vector2(0f, 0.46f), Vector2.one, 20);
-            _detail = CreateText(root.transform, "Detail", Vector2.zero, new Vector2(1f, 0.46f), 14);
-            SetPreview("İlk rünü seç", "fiil + sıfat · 2-rün skill", Color.cyan);
+            _title = CreateText(root.transform, "Title", new Vector2(0f, 0.46f), Vector2.one, 18);
+            _detail = CreateText(root.transform, "Detail", Vector2.zero, new Vector2(1f, 0.46f), 12);
+            Layout();
         }
 
         void LateUpdate()
@@ -56,7 +73,18 @@ namespace Dovus.Game
             if (_engine == null || _motor == null || _factory == null)
                 return;
 
+            Layout();
+
             SentenceState state = _engine.State;
+            bool drawing = state.Phase == SentencePhase.Building && state.Words.Count > 0;
+            Skill cast = _manifestation?.LastFactorySkill;
+            bool newCast = cast != null && !ReferenceEquals(cast, _lastCast);
+            _lastCast = cast;
+            float hold = _tuning != null ? _tuning.SkillPreviewHoldSec : 0.9f;
+            if (drawing || newCast)
+                _visibleUntil = Time.unscaledTime + hold;
+            _group.alpha = Mathf.Clamp01((_visibleUntil - Time.unscaledTime) / FadeSec);
+
             int elementId = _manifestation?.SelectedElementPaint?.Id ?? 0;
             string signature = state.Phase + ":" + state.Words.Count + ":" + elementId;
             for (int i = 0; i < state.Words.Count; i++)
@@ -89,10 +117,7 @@ namespace Dovus.Game
             }
             skill ??= _manifestation?.LastFactorySkill;
             if (skill == null)
-            {
-                SetPreview("İlk rünü seç", "fiil + sıfat · 2-rün skill", Color.cyan);
                 return;
-            }
 
             Color color = skill.Weapon.Compatible ? Color.green : Color.yellow;
             string compatibility = skill.Weapon.Compatible ? "uyumlu" : "uyumsuz ×0.8 / cast ×1.2";
@@ -100,6 +125,28 @@ namespace Dovus.Game
                 ? skill.Resolution.SkillJob
                 : skill.Resolution.ProseFeel;
             SetPreview(skill.DisplayName, compatibility + " · " + prose, color);
+        }
+
+        void Layout()
+        {
+            if (_rect == null || _tuning == null)
+                return;
+
+            Vector2 center = HexagonLayoutScreen.CenterPx(_tuning, Screen.width, Screen.height);
+            float top = center.y
+                + HexagonLayoutScreen.RadiusPx(_tuning)
+                + HexagonLayoutScreen.DotHitRadiusPx(_tuning)
+                + HexagonLayoutScreen.DpToPixels(_tuning.SkillPreviewGapDp);
+            float width = HexagonLayoutScreen.DpToPixels(_tuning.SkillPreviewWidthDp);
+            float height = HexagonLayoutScreen.DpToPixels(PanelHeightDp);
+
+            Rect safe = HexagonLayoutScreen.SafeRectPx();
+            float half = width * 0.5f;
+            float x = Mathf.Clamp(center.x, safe.xMin + half, safe.xMax - half);
+            float y = Mathf.Min(top, safe.yMax - height);
+
+            _rect.sizeDelta = new Vector2(width, height);
+            _rect.anchoredPosition = new Vector2(x, y);
         }
 
         void SetPreview(string title, string detail, Color color)
@@ -121,6 +168,7 @@ namespace Dovus.Game
         {
             var go = new GameObject(objectName);
             go.transform.SetParent(parent, false);
+            go.layer = parent.gameObject.layer;
             var rect = go.AddComponent<RectTransform>();
             rect.anchorMin = anchorMin;
             rect.anchorMax = anchorMax;
@@ -134,6 +182,9 @@ namespace Dovus.Game
             text.alignment = TextAnchor.MiddleCenter;
             text.horizontalOverflow = HorizontalWrapMode.Wrap;
             text.verticalOverflow = VerticalWrapMode.Truncate;
+            text.resizeTextForBestFit = true;
+            text.resizeTextMinSize = 9;
+            text.resizeTextMaxSize = fontSize;
             text.raycastTarget = false;
             return text;
         }

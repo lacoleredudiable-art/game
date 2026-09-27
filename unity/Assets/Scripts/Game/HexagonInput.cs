@@ -127,7 +127,7 @@ namespace Dovus.Game
 
         // T10: panel açıkken (ayar paneli modal) altıgen girdisi tamamen susar; EnhancedTouch
         // global olduğu için panelin arkasındaki oyun aynı dokunuşu almaya devam ederdi.
-        bool PanelBlocking => TuningPanel.IsOpen || V611DebugPanel.IsOpen;
+        bool PanelBlocking => TuningPanel.IsOpen || V611DebugPanel.IsOpen || BuildSelectScreen.IsOpen;
 
         public bool TrySetLoadout(RuneLoadout loadout)
         {

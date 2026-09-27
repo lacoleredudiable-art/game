@@ -83,7 +83,7 @@ namespace Dovus.Game
 
         void OnFingerDown(Finger finger)
         {
-            if (_orbitFingerId.HasValue || IsClaimedElsewhere(finger.index))
+            if (_orbitFingerId.HasValue || IsClaimedElsewhere(finger.index) || BuildSelectScreen.IsOpen)
                 return;
 
             // Sol yarı stick'e ait — orbit alma.

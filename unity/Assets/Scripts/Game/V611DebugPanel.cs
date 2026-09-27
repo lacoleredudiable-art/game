@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Dovus.Core.Grammar;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -7,43 +6,29 @@ using UnityEngine.UI;
 namespace Dovus.Game
 {
     /// <summary>
-    /// v6 implementation ladder controls. Deliberately plain: list-based pick-6,
-    /// deterministic 1-1 smoke cast, and element paint cycle. Radial/polished UI is deferred.
+    /// v6 implementation ladder controls: deterministic 1-1 smoke cast and element paint cycle.
+    /// Build seçimi <see cref="BuildSelectScreen"/>'dedir (B kısayolu onu açar).
     /// </summary>
     public sealed class V611DebugPanel : MonoBehaviour
     {
         public static bool IsOpen { get; private set; }
 
-        SkillMotor _skills;
-        RuneManager _runeManager;
-        ElementSystemAssetCatalog _assets;
         HexagonInput _input;
-        HexagonView _view;
         ManifestationDirector _manifestation;
+        BuildSelectScreen _buildSelect;
         GameObject _panel;
         Text _status;
         Text _element;
-        readonly List<int> _selected = new();
-        readonly Dictionary<int, Text> _runeLabels = new();
 
         public void Configure(
-            SkillMotor skills,
-            RuneManager runeManager,
-            ElementSystemAssetCatalog assets,
             HexagonInput input,
-            HexagonView view,
             ManifestationDirector manifestation,
+            BuildSelectScreen buildSelect,
             Transform canvasRoot)
         {
-            _skills = skills;
-            _runeManager = runeManager;
-            _assets = assets;
             _input = input;
-            _view = view;
             _manifestation = manifestation;
-            _selected.Clear();
-            if (input?.Engine?.Loadout != null)
-                _selected.AddRange(input.Engine.Loadout.RuneIds);
+            _buildSelect = buildSelect;
 
             Build(canvasRoot);
             Refresh();
@@ -74,26 +59,8 @@ namespace Dovus.Game
             heading.alignment = TextAnchor.MiddleCenter;
             heading.gameObject.AddComponent<LayoutElement>().preferredHeight = 34f;
 
-            var gridGo = new GameObject("RuneList");
-            gridGo.transform.SetParent(_panel.transform, false);
-            var grid = gridGo.AddComponent<GridLayoutGroup>();
-            grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-            grid.constraintCount = 2;
-            grid.cellSize = new Vector2(170f, 34f);
-            grid.spacing = new Vector2(6f, 5f);
-            gridGo.AddComponent<LayoutElement>().preferredHeight = 235f;
-
-            for (int id = 1; id <= 12; id++)
-            {
-                int captured = id;
-                Button button = CreateButton(gridGo.transform, string.Empty, Vector2.zero, Vector2.one);
-                Text label = button.GetComponentInChildren<Text>();
-                _runeLabels[id] = label;
-                button.onClick.AddListener(() => ToggleRune(captured));
-            }
-
-            Button apply = CreateRowButton(_panel.transform, "SEÇİLİ 6'YI UYGULA");
-            apply.onClick.AddListener(ApplyBuild);
+            Button build = CreateRowButton(_panel.transform, "BUILD SEÇ (B)");
+            build.onClick.AddListener(OpenBuildSelect);
             Button smoke = CreateRowButton(_panel.transform, "TEST 1-1 (F1)");
             smoke.onClick.AddListener(SmokeCast);
             Button element = CreateRowButton(_panel.transform, "ELEMENT DEĞİŞTİR (E)");
@@ -118,7 +85,14 @@ namespace Dovus.Game
             if (keyboard.eKey.wasPressedThisFrame)
                 CycleElement();
             if (keyboard.bKey.wasPressedThisFrame)
+                OpenBuildSelect();
+        }
+
+        void OpenBuildSelect()
+        {
+            if (IsOpen)
                 Toggle();
+            _buildSelect?.Open();
         }
 
         void Toggle()
@@ -126,56 +100,6 @@ namespace Dovus.Game
             IsOpen = !IsOpen;
             if (_panel != null)
                 _panel.SetActive(IsOpen);
-        }
-
-        void ToggleRune(int runeId)
-        {
-            int index = _selected.IndexOf(runeId);
-            if (index >= 0)
-                _selected.RemoveAt(index);
-            else if (_selected.Count < RuneLoadout.SlotCount)
-                _selected.Add(runeId);
-            else
-                SetStatus("Önce bir rünü çıkar; build tam 6 rün.");
-            Refresh();
-        }
-
-        void ApplyBuild()
-        {
-            if (_selected.Count != RuneLoadout.SlotCount)
-            {
-                SetStatus($"6 rün gerekli; seçili={_selected.Count}.");
-                return;
-            }
-
-            try
-            {
-                string error = "RuneManager yok.";
-                RuneLoadout previous = _runeManager?.Current;
-                if (_runeManager == null
-                    || !_runeManager.TrySelect(_selected, null, out error))
-                {
-                    SetStatus("Build reddedildi: " + error);
-                    return;
-                }
-                RuneLoadout loadout = _runeManager.Current;
-                if (!_input.TrySetLoadout(loadout))
-                {
-                    if (previous != null)
-                        _runeManager.TrySelect(
-                            previous.RuneIds,
-                            new List<int>(previous.PassiveRuneIds),
-                            out _);
-                    SetStatus("Çizim sürerken build değişmez.");
-                    return;
-                }
-                _view.SetLoadout(loadout);
-                SetStatus("Build uygulandı: [" + string.Join(",", loadout.RuneIds) + "]");
-            }
-            catch (System.Exception e)
-            {
-                SetStatus("Build reddedildi: " + e.Message);
-            }
         }
 
         void SmokeCast()
@@ -197,20 +121,10 @@ namespace Dovus.Game
 
         void Refresh()
         {
-            foreach (var pair in _runeLabels)
-            {
-                int slot = _selected.IndexOf(pair.Key);
-                string marker = slot >= 0 ? $"[{slot + 1}]" : "[ ]";
-                string runeName = _assets?.FindRune(pair.Key)?.DisplayName
-                    ?? _skills.RuneName(pair.Key);
-                pair.Value.text = marker + " " + pair.Key + " " + runeName;
-                pair.Value.color = slot >= 0 ? Color.cyan : Color.white;
-            }
-
             ElementPaintNode? paint = _manifestation?.SelectedElementPaint;
             if (_element != null)
                 _element.text = paint.HasValue ? "Element boya: " + paint.Value.Name : "Element boya: —";
-            SetStatus($"Seçili {_selected.Count}/6 · B panel · F1 smoke · E element");
+            SetStatus("B build · F1 smoke · E element");
         }
 
         void SetStatus(string value)
