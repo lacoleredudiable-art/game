@@ -110,6 +110,7 @@ namespace Dovus.Game
         /// <summary>v6: son kapanışta silah × uyumsuz çizim hasar çarpanı.</summary>
         public float LastEquipmentMatchMult { get; private set; } = 1f;
         public bool LastWeaponCompatible { get; private set; } = true;
+        public bool LastWeaponPassiveEnabled { get; private set; } = true;
         public string LastWeaponUiLabel { get; private set; } = string.Empty;
 
         /// <summary>Bağlama 9 / MCP: son ApplyClosingDamage çıktısı (boss'a giden, armor öncesi).</summary>
@@ -1594,6 +1595,7 @@ namespace Dovus.Game
 
             WeaponSkillCompatibility compatibility = WeaponCompatibilityFor(skill);
             LastWeaponCompatible = compatibility.Compatible;
+            LastWeaponPassiveEnabled = compatibility.PassiveEnabled;
             LastWeaponUiLabel = compatibility.UiLabel;
             if (compatibility.PassiveEnabled)
                 TryTriggerPassive(p.Words, _clock.Director.WorldTimeMs);
@@ -2057,6 +2059,7 @@ namespace Dovus.Game
                 WeaponSkillCompatibility compatibility = WeaponCompatibilityFor(skill);
                 eqMult = compatibility.DamageMult;
                 LastWeaponCompatible = compatibility.Compatible;
+                LastWeaponPassiveEnabled = compatibility.PassiveEnabled;
                 LastWeaponUiLabel = compatibility.UiLabel;
             }
             outMult *= eqMult;
