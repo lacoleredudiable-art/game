@@ -193,10 +193,7 @@ namespace Dovus.Game
             if (_motor == null)
                 return pos;
 
-            float limit = Mathf.Max(0f, _motor.Tuning.ArenaHalfSizeM - _motor.BodyRadiusM);
-            pos.x = Mathf.Clamp(pos.x, -limit, limit);
-            pos.z = Mathf.Clamp(pos.z, -limit, limit);
-            return pos;
+            return ArenaClamp.XZ(pos, _motor.Tuning.ArenaHalfSizeM, _motor.BodyRadiusM);
         }
     }
 }

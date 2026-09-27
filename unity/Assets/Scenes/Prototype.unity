@@ -149,7 +149,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Dovus.Game::Dovus.Game.PrototypeBootstrap
   _tuning:
-    ArenaHalfSizeM: 12
+    ArenaHalfSizeM: 18
+    ArenaVisualScale: 1
     WalkSpeedMps: 4.5
     PlayerMaxHp: 22
     JoystickMaxRadiusDp: 72
@@ -166,6 +167,7 @@ MonoBehaviour:
     DodgeButtonOffsetYDp: -140
     DodgeButtonRadiusDp: 34
     DodgeButtonScreenMarginDp: 8
+    DodgeClearanceDp: 40
     BasicStrikeDot: 5
     OpenDot1: 1
     OpenDot2: 1
@@ -266,19 +268,32 @@ MonoBehaviour:
     ReadoutPunchInSec: 0.12
     VitalsBarWidthDp: 220
     VitalsBarHeightDp: 16
+    VitalsBossBarHeightDp: 12
+    VitalsBossBarWidthDp: 280
     VitalsBarSpacingDp: 6
     VitalsMarginDp: 18
     BossVitalsColor: {r: 0.7, g: 0.74, b: 0.8, a: 0.85}
+    StatusIconSizeDp: 28
+    StatusIconGapDp: 6
+    OrbitDegreesPerDp: 0.35
+    SoftAimRangeM: 8
+    DamageFloatFontDp: 28
+    DamageFloatCritFontDp: 36
+    DamageFloatRisePx: 64
+    DamageFloatHoldSec: 0.35
+    DamageFloatFadeSec: 0.45
+    DamageFloatPunchScale: 1.25
     RecoveryLockHeightDp: 10
     RecoveryLockGapDp: 8
     ShowFrameTimeHud: 0
     FrameTimeSampleSec: 0.5
     TargetFrameRateHz: 60
     ShowDamageNumbers: 0
+    ShowSentenceDebugHud: 0
     TuningVersion: 3
-  _playerVisualPrefab: {fileID: 718629181847812861, guid: ed0ca852bcad89045b9e2f14a586dd11, type: 3}
-  _bossVisualPrefab: {fileID: 2656069913898522396, guid: 38f837007cdb5f743bfabb214017b1e6, type: 3}
-  _arenaVisualPrefab: {fileID: 112461506210167075, guid: 301170dc91b74bd498c66d5f746d111e, type: 3}
+  _playerVisualPrefab: {fileID: 5243334159006450704, guid: d7d66a8d11b166549b25f84080f9a0eb, type: 3}
+  _bossVisualPrefab: {fileID: 3688253447631659964, guid: 6bfdf37fb479d1d4fb8381795a140d45, type: 3}
+  _arenaVisualPrefab: {fileID: 7747599323419041020, guid: fdeda39a1df6ddb4d98d1c4ac721bccb, type: 3}
 --- !u!4 &73949342
 Transform:
   m_ObjectHideFlags: 0

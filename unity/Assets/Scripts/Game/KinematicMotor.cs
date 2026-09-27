@@ -22,9 +22,8 @@ namespace Dovus.Game
         FollowCamera _follow;
         PlayerStateMachine _playerStates;
 
-        // 16 Eylül: "duvarların içine giriliyor" bug raporu — WallColliderFit dungeon
-        // parçalarına BoxCollider ekliyor, burada onlara karşı itme (push-out) uygulanır.
-        static readonly Collider[] ObstacleBuffer = new Collider[8];
+        static readonly Collider[] ObstacleBuffer = new Collider[16];
+        static readonly RaycastHit[] CastHits = new RaycastHit[8];
 
         public void BindCamera(FollowCamera follow) => _follow = follow;
 
@@ -63,6 +62,7 @@ namespace Dovus.Game
                 _visual = GetComponent<ActorVisual>();
             if (_dodgeMotion != null && _dodgeMotion.IsDisplacing)
             {
+                Velocity = Vector3.zero;
                 _visual?.SetSpeed(0f);
                 return;
             }
@@ -71,6 +71,7 @@ namespace Dovus.Game
                 _skillMotion = GetComponent<SkillMotionDriver>();
             if (_skillMotion != null && _skillMotion.IsDisplacing)
             {
+                Velocity = Vector3.zero;
                 _visual?.SetSpeed(0f);
                 return;
             }
@@ -106,14 +107,12 @@ namespace Dovus.Game
             if (direction.sqrMagnitude > 1f)
                 direction.Normalize();
 
-            // Kamera-göreli hareket — orbit yaw ile stick "ileri"si kamera-ileri olur.
             if (_follow == null)
                 _follow = FindAnyObjectByType<FollowCamera>();
             if (_follow != null && direction.sqrMagnitude > 0.0001f)
                 direction = Quaternion.Euler(0f, _follow.OrbitYawDeg, 0f) * direction;
 
             float speedMult = _status != null ? _status.EffectiveMoveSpeedMult : 1f;
-            // recovering.can_move=limited — StatusTuning.SlowSpeedMult (sayı uydurma yok).
             if (_playerStates != null && _playerStates.MoveLimited && _status != null)
                 speedMult *= _status.Tuning.SlowSpeedMult;
             float dtSec = _clock != null ? (float)(_clock.WorldDeltaMs / 1000.0) : Time.deltaTime;
@@ -121,37 +120,95 @@ namespace Dovus.Game
             Velocity = direction * walk;
             _visual?.SetSpeed(walk > 0.01f ? Mathf.Clamp01(direction.magnitude) : 0f);
 
-            Vector3 next = transform.position + Velocity * dtSec;
+            Vector3 from = transform.position;
+            Vector3 next = SweepAndSlide(from, from + Velocity * dtSec);
             next = PushOutOfObstacles(next);
-            float limit = Mathf.Max(0f, _tuning.ArenaHalfSizeM - _bodyRadiusM);
-            next.x = Mathf.Clamp(next.x, -limit, limit);
-            next.z = Mathf.Clamp(next.z, -limit, limit);
+            next = ArenaClamp.XZ(next, _tuning.ArenaHalfSizeM, _bodyRadiusM);
             transform.position = next;
 
             if (direction.sqrMagnitude > 0.0001f)
                 transform.rotation = Quaternion.LookRotation(direction, Vector3.up);
         }
 
-        /// <summary>
-        /// Rigidbody/CharacterController yok (dosya başlığı) — WallColliderFit'in eklediği
-        /// BoxCollider'lara karşı basit küre-itme. Yalnızca yatay düzlemde (Y'ye dokunmaz).
-        /// </summary>
+        Vector3 SweepAndSlide(Vector3 from, Vector3 to)
+        {
+            Vector3 delta = to - from;
+            delta.y = 0f;
+            float dist = delta.magnitude;
+            if (dist < 0.0001f)
+                return from;
+
+            Vector3 dir = delta / dist;
+            float radius = Mathf.Max(0.05f, _bodyRadiusM * 0.92f);
+            Vector3 p1 = from + Vector3.up * (radius + 0.05f);
+            Vector3 p2 = from + Vector3.up * 1.6f;
+            int hits = Physics.CapsuleCastNonAlloc(
+                p1, p2, radius, dir, CastHits, dist, ~0, QueryTriggerInteraction.Ignore);
+            if (hits <= 0)
+                return to;
+
+            float best = dist;
+            Vector3 bestNormal = Vector3.zero;
+            for (int i = 0; i < hits; i++)
+            {
+                RaycastHit h = CastHits[i];
+                if (h.collider == null)
+                    continue;
+                if (h.distance < best)
+                {
+                    best = h.distance;
+                    bestNormal = h.normal;
+                }
+            }
+
+            Vector3 stop = from + dir * Mathf.Max(0f, best - 0.02f);
+            bestNormal.y = 0f;
+            if (bestNormal.sqrMagnitude < 0.0001f)
+                return stop;
+
+            bestNormal.Normalize();
+            float remain = dist - best;
+            if (remain <= 0.001f)
+                return stop;
+
+            Vector3 slide = Vector3.ProjectOnPlane(dir * remain, bestNormal);
+            return stop + slide;
+        }
+
         Vector3 PushOutOfObstacles(Vector3 pos)
         {
-            int count = Physics.OverlapSphereNonAlloc(pos + Vector3.up * 0.9f, _bodyRadiusM, ObstacleBuffer);
+            Vector3 probe = pos + Vector3.up * 0.9f;
+            int count = Physics.OverlapSphereNonAlloc(probe, _bodyRadiusM, ObstacleBuffer);
             for (int i = 0; i < count; i++)
             {
                 Collider col = ObstacleBuffer[i];
                 if (col == null)
                     continue;
 
-                Vector3 probe = pos + Vector3.up * 0.9f;
                 Vector3 closest = col.ClosestPoint(probe);
                 Vector3 away = probe - closest;
                 away.y = 0f;
                 float dist = away.magnitude;
-                if (dist < _bodyRadiusM && dist > 0.0001f)
-                    pos += away.normalized * (_bodyRadiusM - dist);
+                if (dist < 0.0001f)
+                {
+                    Vector3 fromCenter = probe - col.bounds.center;
+                    fromCenter.y = 0f;
+                    if (fromCenter.sqrMagnitude < 0.0001f)
+                        fromCenter = -new Vector3(pos.x, 0f, pos.z);
+                    if (fromCenter.sqrMagnitude < 0.0001f)
+                        fromCenter = Vector3.forward;
+                    away = fromCenter.normalized;
+                    dist = 0f;
+                }
+                else
+                {
+                    away /= dist;
+                }
+
+                if (dist < _bodyRadiusM)
+                    pos += away * (_bodyRadiusM - dist + 0.02f);
+
+                probe = pos + Vector3.up * 0.9f;
             }
 
             return pos;

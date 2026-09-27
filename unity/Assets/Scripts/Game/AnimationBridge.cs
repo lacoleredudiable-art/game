@@ -150,7 +150,8 @@ namespace Dovus.Game
         }
 
         /// <summary>
-        /// prezentasyon-katmani animator_state → Quaternius Player controller state.
+        /// prezentasyon-katmani animator_state → Synty/Mixamo controller state.
+        /// Üç büyü tipi + dash bilinçli ayrılır (hepsi aynı Spell_Cast olmasın).
         /// </summary>
         public static string MapToQuaterniusState(string stateName)
         {
@@ -162,12 +163,13 @@ namespace Dovus.Game
                 "Melee_Thrust" => "CastPierce",
                 "Melee_Slash" => "CastSweep",
                 "Melee_Punch" => "CastSlam",
+                // Büyü çeşitleri: mermi=thrust, alan=savurma, self/channel=büyü cast
                 "Spell_Cast_Projectile" => "CastPierce",
-                "Spell_Cast_AoE" => "CastSlam",
+                "Spell_Cast_AoE" => "CastSweep",
                 "Spell_Cast_Self" => "CastChannel",
                 "Channel_Loop" => "CastChannel",
-                "Dash" => "CastGuard",
-                "Instant" => "CastChannel",
+                "Dash" => "Dodge",
+                "Instant" => "CastSlam",
                 "Summon" => "CastChannel",
                 _ => stateName
             };

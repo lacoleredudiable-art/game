@@ -5,8 +5,8 @@ using UnityEngine;
 namespace Dovus.Game
 {
     /// <summary>
-    /// Humanoid Animator kancası. Prefab/Controller yoksa no-op (kapsül prototip çalışır).
-    /// Clip isimleri docs/animasyon-omurgasi.md ile hizalı: CastPierce, CastSweep, …
+    /// Humanoid Animator kancası. Mixamo/Synty controller state'lerine
+    /// <see cref="Animator.Play"/> ile gider (SetTrigger yok — controller'da trigger şart değil).
     /// </summary>
     public sealed class ActorVisual : MonoBehaviour
     {
@@ -15,21 +15,26 @@ namespace Dovus.Game
         public const string ParamPierce = "Pierce";
         public const string ParamSpread = "Spread";
         public const string ParamLift = "Lift";
-        public const string TriggerDodge = "Dodge";
-        public const string TriggerHit = "Hit";
-        public const string TriggerDeath = "Death";
-        public const string TriggerBasicStrike = "BasicStrike";
+        public const string StateDodge = "Dodge";
+        public const string StateHit = "Hit";
+        public const string StateDeath = "Death";
+        public const string StateBasicStrike = "BasicStrike";
         public const string StateLocomotion = "Locomotion";
-        static readonly int BasicStrikeHash = Animator.StringToHash(TriggerBasicStrike);
 
-        static readonly int[] FamilyTriggers =
+        // Eski sabit isimleri — Trigger*() çağrıları artık Play(state).
+        public const string TriggerDodge = StateDodge;
+        public const string TriggerHit = StateHit;
+        public const string TriggerDeath = StateDeath;
+        public const string TriggerBasicStrike = StateBasicStrike;
+
+        static readonly string[] FamilyStates =
         {
-            0,
-            Animator.StringToHash("CastPierce"),
-            Animator.StringToHash("CastSweep"),
-            Animator.StringToHash("CastSlam"),
-            Animator.StringToHash("CastChannel"),
-            Animator.StringToHash("CastGuard"),
+            null,
+            "CastPierce",
+            "CastSweep",
+            "CastSlam",
+            "CastChannel",
+            "CastGuard",
         };
 
         [SerializeField] Animator _animator;
@@ -70,39 +75,66 @@ namespace Dovus.Game
             FireFamily(family);
         }
 
-        /// <summary>Merkez düz vuruş — ayrı jab clip (Sword_AttackFast), skill cast ailelerinden ayrı.</summary>
+        /// <summary>
+        /// element-sistemi <c>animation_type</c> → controller state (skill başına farklı clip).
+        /// </summary>
+        public void PulseAnimationType(string animationTypeId, EffectSilhouette silhouette)
+        {
+            if (_animator == null || !_animator.isActiveAndEnabled)
+                return;
+
+            ApplyAxes(silhouette);
+            string state = AnimationTypeToState(animationTypeId);
+            PlayState(state);
+        }
+
+        /// <summary>Merkez düz vuruş — jab clip.</summary>
         public void PulseBasicStrike()
         {
-            if (_animator == null || !_animator.isActiveAndEnabled || _animator.runtimeAnimatorController == null)
-                return;
-            _animator.ResetTrigger(TriggerBasicStrike);
-            _animator.SetTrigger(BasicStrikeHash);
+            PlayState(StateBasicStrike);
         }
 
-        public void Trigger(string triggerName)
+        public void Trigger(string triggerOrStateName)
         {
-            if (_animator == null || !_animator.isActiveAndEnabled || _animator.runtimeAnimatorController == null
-                || string.IsNullOrEmpty(triggerName))
-                return;
-            _animator.SetTrigger(triggerName);
+            // Eski API: isim state olarak Play edilir (Mixamo'da trigger yok).
+            PlayState(triggerOrStateName);
         }
 
-        /// <summary>0 = idle, 1 ≈ koşu. Controller'da yoksa no-op.</summary>
+        /// <summary>0 = idle (sabit), 1 ≈ koşu. Küçük stick gürültüsü idle fidget’e sızmasın.</summary>
         public void SetSpeed(float normalized01)
         {
             if (_animator == null || !_animator.isActiveAndEnabled || _animator.runtimeAnimatorController == null)
                 return;
-            _animator.SetFloat(ParamSpeed, Mathf.Clamp01(normalized01));
+            float s = Mathf.Clamp01(normalized01);
+            if (s < 0.08f)
+                s = 0f;
+            _animator.SetFloat(ParamSpeed, s);
         }
 
         public void ResetToLocomotion()
         {
-            if (_animator == null || !_animator.isActiveAndEnabled || _animator.runtimeAnimatorController == null)
-                return;
-            _animator.ResetTrigger(TriggerDeath);
-            _animator.ResetTrigger(TriggerHit);
-            _animator.ResetTrigger(TriggerDodge);
-            _animator.Play(StateLocomotion, 0, 0f);
+            PlayState(StateLocomotion);
+        }
+
+        public static string AnimationTypeToState(string animationTypeId)
+        {
+            if (string.IsNullOrEmpty(animationTypeId))
+                return "CastChannel";
+
+            return animationTypeId switch
+            {
+                "cast_projectile" => "CastPierce",
+                "cast_aoe" => "CastSweep",
+                "cast_self" => "CastChannel",
+                "channel" => "CastChannel",
+                "melee_thrust" => "CastPierce",
+                "melee_slash" => "CastSweep",
+                "melee_punch" => "CastSlam",
+                "dash" => StateDodge,
+                "instant" => "CastSlam",
+                "summon" => "CastChannel",
+                _ => AnimationBridge.MapToQuaterniusState(animationTypeId)
+            };
         }
 
         void ApplyAxes(EffectSilhouette s)
@@ -115,19 +147,37 @@ namespace Dovus.Game
 
         void FireFamily(CastBodyFamily family)
         {
-            if (_animator == null || !_animator.isActiveAndEnabled || _animator.runtimeAnimatorController == null)
-                return;
             int i = (int)family;
-            if (i <= 0 || i >= FamilyTriggers.Length)
+            if (i <= 0 || i >= FamilyStates.Length)
                 return;
-            _animator.SetTrigger(FamilyTriggers[i]);
+            PlayState(FamilyStates[i]);
+        }
+
+        void PlayState(string stateName)
+        {
+            if (_animator == null || !_animator.isActiveAndEnabled
+                || _animator.runtimeAnimatorController == null
+                || string.IsNullOrEmpty(stateName))
+                return;
+
+            int hash = Animator.StringToHash(stateName);
+            if (!_animator.HasState(0, hash))
+                return;
+
+            _animator.Play(hash, 0, 0f);
+            _animator.Update(0f);
         }
 
         void SafeSetFloat(string name, float value)
         {
-            // Parametre Controller'da yoksa Unity uyarı basmaz; SetFloat no-op gibi davranır
-            // yalnızca hash biliniyorsa. Yokluğu göze alıyoruz — clip gelince eklenir.
-            _animator.SetFloat(name, value);
+            foreach (var p in _animator.parameters)
+            {
+                if (p.name == name && p.type == AnimatorControllerParameterType.Float)
+                {
+                    _animator.SetFloat(name, value);
+                    return;
+                }
+            }
         }
     }
 }

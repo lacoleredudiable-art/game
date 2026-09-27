@@ -1259,9 +1259,10 @@ namespace Dovus.Game
                 return;
 
             EffectSilhouette s;
+            SkillResolution skill = SkillResolution.Empty;
             if (_skills != null && words != null && words.Count > 0)
             {
-                SkillResolution skill = _skills.ResolveWords(words);
+                skill = _skills.ResolveWords(words);
                 s = skill.IsEmpty
                     ? SilhouetteBuilder.FromWords(words, _combat?.Manifestation)
                     : SilhouetteBuilder.FromSkill(skill, _combat?.Manifestation);
@@ -1272,7 +1273,12 @@ namespace Dovus.Game
                     ? SilhouetteBuilder.FromWords(words, _combat?.Manifestation)
                     : default;
             }
-            _visual.PulseRune(rune, s);
+
+            // Skill animation_type varsa ona göre Play (element ailesi değil — her fiil ayrı clip).
+            if (!skill.IsEmpty && !string.IsNullOrEmpty(skill.AnimationType))
+                _visual.PulseAnimationType(skill.AnimationType, s);
+            else
+                _visual.PulseRune(rune, s);
         }
 
         void FaceBoss()
@@ -1851,6 +1857,16 @@ namespace Dovus.Game
                 return;
 
             LastAnimationState = AnimationBridge.MapToQuaterniusState(node.AnimatorState);
+            // ActorVisual.Play yolu — animation_type doğrudan state'e (çift kaynak senkron).
+            if (!string.IsNullOrEmpty(check.AnimationTypeId))
+            {
+                EffectSilhouette axes = default;
+                _visual.PulseAnimationType(check.AnimationTypeId, axes);
+                LastAnimationState = ActorVisual.AnimationTypeToState(check.AnimationTypeId);
+                LastAnimationPlayApplied = true;
+                return;
+            }
+
             double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
             LastAnimationPlayApplied = _animationBridge.Play(node, _visual.Animator, worldMs);
         }

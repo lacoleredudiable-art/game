@@ -66,23 +66,29 @@ namespace Dovus.Game
             // His denemesi: boss vurmasın (kayıtlı ayar ezmesin).
             combat.Boss.Damage = 0;
             combat.Boss.FireConeDamage = 0; // 16 Eylül: ikinci saldırı da bu deneyin kapsamında.
+            // Sahip: 100 m çap daire, tavansız yüksek duvar — Long_Hall/Synty ölçeği ve
+            // kayıtlı 3× visual ezmesin.
+            _tuning.ArenaHalfSizeM = 50f;
+            _tuning.ArenaWallHeightM = 18f;
+            _tuning.ArenaWallThicknessM = 1.4f;
+            _tuning.ArenaVisualScale = 1f;
+            _tuning.PlayerVisualScale = 2.625f;
+            _tuning.BossVisualScale = 3.3f;
+            // Run clip adımına yakın yol — 5.5’te ayaklar yerinde sayıyordu.
+            _tuning.WalkSpeedMps = 7.5f;
+            _tuning.CharacterAnimSpeed = 1.0f;
+            _tuning.DodgeGlideSpeedMps = 3.5f;
 
             var clock = gameObject.AddComponent<GameClock>();
             clock.Bind(combat.Slowmo);
 
             var arena = CreateArena();
-            // 16 Eylül: "duvarların içine giriliyor" bug raporu — dungeon mesh'leri collider'sız
-            // geliyordu (KinematicMotor sadece dış kare clamp yapıyordu, iç duvar/sütun yoktu).
-            int wallColliders = WallColliderFit.AddCollidersToObstacles(arena);
-            Debug.Log($"[Arena] {wallColliders} engel collider eklendi (duvar/sütun/kemer).");
-            // Görsel ölçek büyüyünce floor extents de büyür; FitHalf iç dekoru ezmesin.
-            float walkHalf = ArenaWalkFit.FitHalfSizeM(arena, _tuning.ArenaHalfSizeM, insetM: 0.35f);
-            float minWalk = Mathf.Max(10f, 11f * Mathf.Max(1f, _tuning.ArenaVisualScale) * 0.9f);
-            walkHalf = Mathf.Max(walkHalf, minWalk);
-            _tuning.ArenaHalfSizeM = walkHalf;
+            // Daire salonda duvarlar CircularArena'da collider'lı; eski mesh fit yok.
+            float walkHalf = _tuning.ArenaHalfSizeM;
             combat.SkillMotion.ArenaHalfSizeM = walkHalf;
             LavaDecor.Build(arena.transform, walkHalf);
-            Debug.Log($"[Arena] visualScale={_tuning.ArenaVisualScale:0.##} walkHalf={walkHalf:0.##}m");
+            ArenaHorizon.Build(arena.transform, walkHalf);
+            Debug.Log($"[Arena] circle r={walkHalf:0.##}m wallH={_tuning.ArenaWallHeightM:0.#}m");
 
             var player = CreateCapsule(
                 "Player",
@@ -90,7 +96,7 @@ namespace Dovus.Game
                 PlayerRadiusM,
                 PlayerHeightM,
                 _tuning.PlayerColor);
-            AttachVisual(player, _playerVisualPrefab, out var playerAnim);
+            AttachVisual(player, _playerVisualPrefab, _tuning.PlayerVisualScale, _tuning.CharacterAnimSpeed, out var playerAnim);
 
             var ally = CreateCapsule(
                 "AllyDummy",
@@ -98,7 +104,7 @@ namespace Dovus.Game
                 PlayerRadiusM * 0.95f,
                 PlayerHeightM,
                 new Color(0.35f, 0.85f, 0.55f));
-            AttachVisual(ally, _playerVisualPrefab, out _);
+            AttachVisual(ally, _playerVisualPrefab, _tuning.PlayerVisualScale, _tuning.CharacterAnimSpeed, out _);
             var allyDummy = ally.AddComponent<AllyDummy>();
             allyDummy.Bind(_tuning.PlayerMaxHp, startRatio: 0.5f);
 
@@ -108,7 +114,7 @@ namespace Dovus.Game
                 BossRadiusM,
                 BossHeightM,
                 _tuning.BossColor);
-            AttachVisual(boss, _bossVisualPrefab, out var bossAnim);
+            AttachVisual(boss, _bossVisualPrefab, _tuning.BossVisualScale, _tuning.CharacterAnimSpeed, out var bossAnim);
 
             player.AddComponent<MoveInput>().Tuning = _tuning;
 
@@ -400,40 +406,36 @@ namespace Dovus.Game
 
         GameObject CreateArena()
         {
-            if (_arenaVisualPrefab != null)
-            {
-                var instance = Instantiate(_arenaVisualPrefab);
-                instance.name = "Arena";
-                float visualScale = Mathf.Max(0.5f, _tuning.ArenaVisualScale);
-                instance.transform.position = Vector3.zero;
-                instance.transform.localScale = Vector3.one * visualScale;
-                return instance;
-            }
-
-            var ground = CreateMeshObject("Arena", PrimitiveType.Plane);
-            // Plane mesh 10x10 m; ArenaHalfSizeM yarım kenar uzunluğu.
-            float planeScale = _tuning.ArenaHalfSizeM / 5f;
-            ground.transform.localScale = new Vector3(planeScale, 1f, planeScale);
-            ApplyColor(ground, _tuning.GroundColor);
-            return ground;
+            // Sahip: 100 m çap daire, yüksek duvar, tavansız — Long_Hall avize/sütun görüşü kesiyordu.
+            Color wall = new Color(0.28f, 0.26f, 0.24f);
+            return CircularArena.Build(
+                _tuning.ArenaHalfSizeM,
+                _tuning.ArenaWallHeightM,
+                _tuning.ArenaWallThicknessM,
+                _tuning.GroundColor,
+                wall);
         }
 
         /// <summary>
         /// Asset Store prefab'ı kökün child'ı olur; mantık kökte kalır (motor/pose/reactor).
         /// Ayak pivot'u varsayılır — local Y ofseti prefab'a göre sonra ayarlanır.
         /// </summary>
-        static void AttachVisual(GameObject root, GameObject prefab, out Animator animator)
+        static void AttachVisual(
+            GameObject root, GameObject prefab, float visualScale, float animSpeed, out Animator animator)
         {
             animator = null;
             if (root == null || prefab == null)
                 return;
 
+            float s = Mathf.Max(0.1f, visualScale);
             var visual = Instantiate(prefab, root.transform, false);
             visual.name = "Visual";
             visual.transform.localPosition = new Vector3(0f, -1f, 0f); // kapsül merkezi → ayak
             visual.transform.localRotation = Quaternion.identity;
-            visual.transform.localScale = Vector3.one;
+            visual.transform.localScale = Vector3.one * s;
             animator = visual.GetComponentInChildren<Animator>();
+            if (animator != null)
+                animator.speed = Mathf.Clamp(animSpeed, 0.25f, 3f);
 
             var capsuleRend = root.GetComponent<Renderer>();
             if (capsuleRend != null)
@@ -466,11 +468,16 @@ namespace Dovus.Game
             var sunGo = new GameObject("Sun");
             var light = sunGo.AddComponent<Light>();
             light.type = LightType.Directional;
-            light.intensity = 1.35f;
+            light.intensity = 1.55f;
             light.color = new Color(1f, 0.96f, 0.9f);
             light.shadows = LightShadows.Soft;
             sunGo.transform.rotation = Quaternion.Euler(48f, -32f, 0f);
             RenderSettings.sun = light;
+            // Synty Generic_Basic atlas karanlıkta flat görünür — fill ambient.
+            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
+            RenderSettings.ambientSkyColor = new Color(0.45f, 0.48f, 0.55f);
+            RenderSettings.ambientEquatorColor = new Color(0.28f, 0.26f, 0.24f);
+            RenderSettings.ambientGroundColor = new Color(0.12f, 0.11f, 0.10f);
             return light;
         }
 
@@ -482,7 +489,7 @@ namespace Dovus.Game
             camera.clearFlags = CameraClearFlags.SolidColor;
             camera.backgroundColor = _tuning.BackgroundColor;
             camera.nearClipPlane = 0.2f;
-            camera.farClipPlane = 120f;
+            camera.farClipPlane = 250f;
 
             camGo.AddComponent<AudioListener>();
             var camData = camGo.AddComponent<UniversalAdditionalCameraData>();

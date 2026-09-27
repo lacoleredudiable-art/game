@@ -10,12 +10,31 @@ namespace Dovus.Game
     public sealed class PrototypeTuning
     {
         [Header("Arena")]
-        public float ArenaHalfSizeM = 12f;
-        /// <summary>Quaternius arena prefab ölçeği — büyütünce yürüyüş alanı da büyür.</summary>
-        public float ArenaVisualScale = 3.0f;
+        /// <summary>Daire salon yarıçapı (çap = 2×). Eski kare yarım-kenar adı korundu.</summary>
+        public float ArenaHalfSizeM = 50f;
+        /// <summary>Çevre duvar yüksekliği (tavansız salon).</summary>
+        public float ArenaWallHeightM = 18f;
+        /// <summary>Çevre duvar kalınlığı.</summary>
+        public float ArenaWallThicknessM = 1.4f;
+        /// <summary>Quaternius arena prefab ölçeği — daire salonda 1.</summary>
+        public float ArenaVisualScale = 1.0f;
+
+        [Header("Karakter görsel ölçek (Synty)")]
+        /// <summary>Player/Ally mesh ölçeği — önceki 1.75’in %50 büyüğü.</summary>
+        public float PlayerVisualScale = 2.625f;
+        /// <summary>Boss mesh ölçeği — önceki 2.2’nin %50 büyüğü.</summary>
+        public float BossVisualScale = 3.3f;
+        /// <summary>Animator hızı — locomotion 1; idle freeze blend tree’de.</summary>
+        public float CharacterAnimSpeed = 1.0f;
 
         [Header("Oyuncu")]
-        public float WalkSpeedMps = 4.5f;
+        public float WalkSpeedMps = 7.5f;
+        /// <summary>Yedek alan (motor anlık hız kullanır).</summary>
+        public float MoveAccelMps2 = 40f;
+        /// <summary>Yedek alan (motor anlık hız kullanır).</summary>
+        public float MoveDecelMps2 = 50f;
+        /// <summary>Yedek alan (motor anlık bakış kullanır).</summary>
+        public float TurnRateDegPerSec = 720f;
 
         // Spec §11 hasar 22; oyuncu tavanı belgede yok. Bir çakma = ölüm — respawn ≤2 sn
         // (§11) döngüsü böyle denenebiliyor. T11 his turunda ayarlanacak.
@@ -82,7 +101,7 @@ namespace Dovus.Game
         public Color PlayerColor = new Color(0.373f, 0.941f, 1f);
         public Color BossColor = new Color(0.18f, 0.19f, 0.22f);
         public Color GroundColor = new Color(0.38f, 0.4f, 0.44f);
-        public Color BackgroundColor = new Color(0.12f, 0.14f, 0.18f);
+        public Color BackgroundColor = new Color(0.14f, 0.13f, 0.125f);
         public Color InkPurple = new Color(0.725f, 0.549f, 1f);   // #B98CFF
         public Color InkCyan = new Color(0.373f, 0.941f, 1f);     // #5FF0FF
         public Color AcidGreen = new Color(0.608f, 0.910f, 0.235f); // #9BE83C — §10 zehir birikintisi
@@ -281,7 +300,7 @@ namespace Dovus.Game
         // tasarımcının bilinçli 0'ı (ör. nabzı kapatmak) artık ezilmez (T8.1).
         [HideInInspector] public int TuningVersion = CurrentVersion;
 
-        const int CurrentVersion = 13;
+        const int CurrentVersion = 15;
 
         /// <summary>Sürümü geçmiş serileşmiş kopyayı bu sürümün varsayılanlarına çeker.</summary>
         public void EnsureRuntimeDefaults()
@@ -313,6 +332,16 @@ namespace Dovus.Game
             if (DodgeButtonRadiusDp <= 0.01f) DodgeButtonRadiusDp = 32f;
             if (DodgeClearanceDp <= 0.01f) DodgeClearanceDp = 40f;
             if (IconDisplayScale <= 0.01f) IconDisplayScale = 1.0f;
+            if (PlayerVisualScale <= 0.01f) PlayerVisualScale = 2.625f;
+            if (BossVisualScale <= 0.01f) BossVisualScale = 3.3f;
+            if (CharacterAnimSpeed <= 0.01f) CharacterAnimSpeed = 1.0f;
+            if (WalkSpeedMps <= 0.01f) WalkSpeedMps = 7.5f;
+            if (MoveAccelMps2 <= 0.01f) MoveAccelMps2 = 40f;
+            if (MoveDecelMps2 <= 0.01f) MoveDecelMps2 = 50f;
+            if (TurnRateDegPerSec <= 0.01f) TurnRateDegPerSec = 720f;
+            if (ArenaHalfSizeM <= 0.01f) ArenaHalfSizeM = 50f;
+            if (ArenaWallHeightM <= 0.01f) ArenaWallHeightM = 18f;
+            if (ArenaWallThicknessM <= 0.01f) ArenaWallThicknessM = 1.4f;
         }
 
         void MigrateToCurrent()
@@ -427,6 +456,21 @@ namespace Dovus.Game
             VitalsBarSpacingDp = fresh.VitalsBarSpacingDp;
             VitalsMarginDp = fresh.VitalsMarginDp;
             ShowSentenceDebugHud = false;
+
+            // v14: 100 m çap daire salon + %50 karakter + ağır hareket.
+            // v15: walk snappy 5.5; anim 1.0; idle fidget freeze (controller).
+            ArenaHalfSizeM = fresh.ArenaHalfSizeM;
+            ArenaWallHeightM = fresh.ArenaWallHeightM;
+            ArenaWallThicknessM = fresh.ArenaWallThicknessM;
+            ArenaVisualScale = fresh.ArenaVisualScale;
+            PlayerVisualScale = fresh.PlayerVisualScale;
+            BossVisualScale = fresh.BossVisualScale;
+            CharacterAnimSpeed = fresh.CharacterAnimSpeed;
+            WalkSpeedMps = fresh.WalkSpeedMps;
+            MoveAccelMps2 = fresh.MoveAccelMps2;
+            MoveDecelMps2 = fresh.MoveDecelMps2;
+            TurnRateDegPerSec = fresh.TurnRateDegPerSec;
+            DodgeGlideSpeedMps = fresh.DodgeGlideSpeedMps;
 
             TuningVersion = CurrentVersion;
         }

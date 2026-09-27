@@ -62,3 +62,10 @@ tools/CoreTests/bin/
 # içe aktarılmış hâli unity/Assets/Art/ altında, versiyonlanır. Bu klasör yalnızca
 # referans/yeniden-export kaynağı, ~100 MB+ (16 Eylül, git geçmişini şişirmesin).
 tools/vendor/
+
+# Lisansı public repoda dağıtıma izin vermeyen asset'ler (Synty Asset Store paketi,
+# Mixamo animasyonları) — yerelde kalır; tools/mixamo-download.mjs ile yeniden indirilir.
+unity/Assets/Synty/
+unity/Assets/Synty.meta
+unity/Assets/Art/Mixamo/
+unity/Assets/Art/Mixamo.meta

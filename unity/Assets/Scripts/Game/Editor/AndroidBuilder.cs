@@ -97,7 +97,8 @@ namespace Dovus.Game.EditorTools
                 // Ölçüm turu geliştirme build'i istiyor (görev metni). Script debugging ve
                 // profiler bağlantısı AÇILMADI: ikisi de kare süresini kendileri şişirip
                 // "60 fps'e yakın mı" sorusunu ölçülemez hale getirir.
-                options = BuildOptions.Development
+                // CleanBuildCache: incremental Bee bazen eski Data files bırakıyor (telefon APK).
+                options = BuildOptions.Development | BuildOptions.CleanBuildCache
             };
 
             BuildReport report = BuildPipeline.BuildPlayer(options);

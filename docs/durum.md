@@ -12,9 +12,52 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 17 Eylül 2026 (Karabasan readout + delayed gate) ·
-**Dal:** `fix/karabasan-readout-fold` · **Sıradaki:** fiil action özel motorları
-(`drain`/Karabasan hattı dahil); Hexagon rename; (deneme sonrası süre/Enforce)
+**Son güncelleme:** 18 Eylül 2026 (daire salon + ağır hareket) ·
+**Dal:** `feat/circular-arena-feel` · **Sıradaki:** fiil action motorları; his sahibi gözü
+
+> **18 Eylül — 100 m çap daire zindan.** Long_Hall (avize/sütun/tavan görüşü
+> kesiyordu) kalktı. `CircularArena`: r=50 m disk + 18 m yüksek çevre duvarı,
+> tavansız. `ArenaClamp` daire sınır; `KinematicMotor` CapsuleCast + push-out
+> (duvar içinden geçme). Karakter %50 büyük (`PlayerVisualScale=2.625` /
+> `BossVisualScale=3.3`). Walk **7.5 m/s**. Locomotion tam stick = **Running**
+> (Walking değil). Idle fidget freeze; cast 1.0. TuningVersion **15**.
+> **Doğrulanamadı:** Play / telefon APK (bu oturumda Unity Play yok).
+
+> **17 Eylül — Sert/sabit anim pass.** Idle → Fighting Idle; cast klipleri
+> overdrive+0.65. Controller: exitTime 0.78 / blend 0.02s; cast speed ~1.5;
+> `CharacterAnimSpeed=1.35`. Bind + APK telefona. **Doğrulandı:** Mixamo export
+> + Bind log + install; his sahibi gözü.
+
+> **17 Eylül — Karakter ölçek.** `PlayerVisualScale=1.75` / `BossVisualScale=2.2`
+> (`PrototypeTuning`) — Long_Hall’da küçük silüet. Inspector’dan ayarlanır.
+
+> **17 Eylül — Skill anim ayrımı.** `ActorVisual` SetTrigger kullanıyordu; Mixamo
+> controller'da trigger yok → hep aynı/idle. Artık `Animator.Play` +
+> `animation_type` map (projectile/aoe/self/dash/melee ayrı). PulseActor skill
+> tipine göre. **Doğrulandı:** Play map tablosu; his sahibi gözü.
+
+> **17 Eylül — T-pose fix.** Nested Synty prefab'da Animator override Instantiate'te
+> düşüyordu (`ctrl=null`). Unpack + controller kaynak/wrapper'a yazıldı; Bind artık
+> GUID silmiyor. **Doğrulandı:** Play 3× Animator `Player_Synty`/`Boss_Synty`, CastSweep.
+
+> **17 Eylül — Anim çeşitlendirme.** Önce çoğu skill `CastChannel`/`CastGuard`’a
+> düşüyordu (hep aynı Spell_Cast). Map: projectile→Pierce, aoe→Sweep,
+> self/channel→Channel, dash→**Dodge** (roll). Clip seçimi dosya adına göre.
+> **Doğrulandı:** map string’leri; Play his sahibi gözü.
+
+> **17 Eylül — Mixamo full anim set.** 10 FBX (Idle/Walking/Running/Melee_*/
+> Spell_Cast/Dash/Hit/Death) → `Assets/Art/Mixamo/`. Controllers
+> `Player_Synty`/`Boss_Synty` (CastPierce/Sweep/Slam/Channel/Guard + Locomotion
+> blend) → Synty prefabs. `tools/mixamo-download.mjs` + `MixamoAnimatorBind`.
+> **Doğrulandı:** Play Humanoid + Locomotion + CastSweep tetik.
+
+> **17 Eylül — Animasyon bütçe kararı.** Synty ANIMATION paketleri alma
+> (Sidekick uyumsuz). Mixamo $0 yeterli; KayKit yedek (~$0 itch / ~$12 Store).
+
+> **17 Eylül — Synty Long_Hall arenası.** Promo salon: Demo.unity `Long_Hall`
+> (+ URP lights) → `ArenaVisual_Synty`. Kapalı salon (sütun/avize/banner),
+> boş platform değil. `Dovus/Synty/Bind Demo Hall Arena`. Atmosphere torch/bloom.
+> **Doğrulandı:** Play bounds ~38×76 m, 96 light.
 
 ### Sahip kararları (17 Eylül)
 

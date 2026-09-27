@@ -71,10 +71,8 @@ namespace Dovus.Game
             Vector3 p = transform.position;
             p.x = x;
             p.z = z;
-            float half = _proto != null ? _proto.ArenaHalfSizeM : 12f;
-            p.x = Mathf.Clamp(p.x, -half, half);
-            p.z = Mathf.Clamp(p.z, -half, half);
-            transform.position = p;
+            float radius = _proto != null ? _proto.ArenaHalfSizeM : 50f;
+            transform.position = ArenaClamp.XZ(p, radius, 0.5f);
             _active = false;
         }
 
@@ -97,10 +95,8 @@ namespace Dovus.Game
             // Ease-out: hızlı gidiş, yumuşak varış.
             float eased = 1f - (1f - t) * (1f - t);
             Vector3 pos = Vector3.Lerp(_from, _to, eased);
-            float half = _proto != null ? _proto.ArenaHalfSizeM : 12f;
-            pos.x = Mathf.Clamp(pos.x, -half, half);
-            pos.z = Mathf.Clamp(pos.z, -half, half);
-            transform.position = pos;
+            float radius = _proto != null ? _proto.ArenaHalfSizeM : 50f;
+            transform.position = ArenaClamp.XZ(pos, radius, 0.5f);
 
             if (_face.sqrMagnitude > 0.0001f)
                 transform.rotation = Quaternion.LookRotation(_face, Vector3.up);

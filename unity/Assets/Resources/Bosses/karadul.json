@@ -108,7 +108,7 @@
   },
 
   "environment": {
-    "arena_size_m": 24,
+    "arena_size_m": 100,
     "hazards": {},
     "notes": "Mevcut dungeon arena; lav/taş future."
   },

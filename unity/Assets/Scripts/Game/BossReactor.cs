@@ -203,13 +203,8 @@ namespace Dovus.Game
                 _baseScale.z * spread);
         }
 
-        // T5 dersi: arena dışına sonsuza kayan gövde. KinematicMotor'daki aynı desen.
-        Vector3 ClampToArena(Vector3 pos)
-        {
-            float limit = Mathf.Max(0f, Tuning.ArenaHalfSizeM - _bodyRadiusM);
-            pos.x = Mathf.Clamp(pos.x, -limit, limit);
-            pos.z = Mathf.Clamp(pos.z, -limit, limit);
-            return pos;
-        }
+        // T5 dersi: arena dışına sonsuza kayan gövde. Daire salon — kare clamp değil.
+        Vector3 ClampToArena(Vector3 pos) =>
+            ArenaClamp.XZ(pos, Tuning.ArenaHalfSizeM, _bodyRadiusM);
     }
 }

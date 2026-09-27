@@ -29,7 +29,7 @@ namespace Dovus.Core.Tuning
         public int MaxMarks = 4;
         public int MaxBridges = 2;
 
-        public float ArenaHalfSizeM = 11f;
+        public float ArenaHalfSizeM = 50f;
 
         public void CopyFrom(SkillMotionTuning other)
         {
