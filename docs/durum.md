@@ -28,6 +28,8 @@ ve Core motorlarını v6.1 şemasına uyarlamak
 > `elements`/`verbs`/`adjectives` şemasını bekler; `SkillMotorLoader` parse hatasını
 > loglayıp gömülü varsayılana döner. 144 motor bu değişiklikte uygulanmadı; sonraki kod
 > işi v6.1 loader/motor adaptasyonudur. Ayrıntı: `docs/COMPAT.md`.
+> JSON bütünlüğü, 12×12=144 skill ve iki kopyanın birebirliği doğrulandı.
+> **Doğrulanamadı:** `dotnet test` (bu ortamda `dotnet` kurulu değil).
 
 ### Sahip kararları (17 Eylül)
 
