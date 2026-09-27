@@ -7,14 +7,27 @@
 > **16 Eylül 2026 — doküman sıfırlaması:** `dovus-sistemi.md`, `tasarim-ozeti.md`,
 > `teknoloji-kararlari.md`, `his-kontrol-listesi.md`, `t0-kurulum.md`, `alis-sepeti.md`,
 > `animasyon-omurgasi.md` **silindi** (beşgen/3-rün alfa prototipine aitti, altıgen/6-element
-> sistemine geçildi, kafa karıştırıyordu). Yeni bağlayıcı doküman: [Element Sistemi](element-sistemi.md)
-> + veri kaynağı `element-sistemi.json`. **Aşağıdaki eski oturum kayıtlarında** hâlâ "beşgen",
+> sistemine geçildi, kafa karıştırıyordu). Bağlayıcı kaynak:
+> `element-sistemi.json`. [Element Sistemi](element-sistemi.md) yalnızca insan-okunur
+> açıklayıcı/tarihsel nottur. **Aşağıdaki eski oturum kayıtlarında** hâlâ "beşgen",
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 17 Eylül 2026 (Karabasan readout + delayed gate) ·
-**Dal:** `fix/karabasan-readout-fold` · **Sıradaki:** fiil action özel motorları
-(`drain`/Karabasan hattı dahil); Hexagon rename; (deneme sonrası süre/Enforce)
+**Son güncelleme:** 27 Eylül 2026 (element sistemi v6.1 tasarım kilidi) ·
+**Dal:** `cursor/adopt-element-system-v6-1-079a` · **Sıradaki:** `SkillMotorLoader`
+ve Core motorlarını v6.1 şemasına uyarlamak
+
+> **27 Eylül — v6.1 bağlayıcı tasarım kilidi.** `docs/element-sistemi.json` ve
+> Resources kopyası tam v6.1 ile değiştirildi; önceki v5.3
+> `docs/archive/element-sistemi-v5.3.json` altında saklandı. Yeni sistem: 12 çift yüzlü
+> rün (fiil+sıfat), 12'den tekrarsız 6-rün build, 2-rün gramerinden 144 skill,
+> 0-2 pasif yuva. Element prototipte yalnız VFX/isim katmanı (`element_mult=1.0`);
+> silahlar çarpan + animasyon + hitbox katmanı. Engine sayıları JSON'da bulunur.
+> Multiplayer için global slow-mo yok; Zaman yalnız `enemy_slow` / `self_haste`
+> (`no_global_timescale=true`) uygular. **Uyumluluk:** mevcut `SkillMotor` v5.3
+> `elements`/`verbs`/`adjectives` şemasını bekler; `SkillMotorLoader` parse hatasını
+> loglayıp gömülü varsayılana döner. 144 motor bu değişiklikte uygulanmadı; sonraki kod
+> işi v6.1 loader/motor adaptasyonudur. Ayrıntı: `docs/COMPAT.md`.
 
 ### Sahip kararları (17 Eylül)
 
