@@ -29,7 +29,9 @@ Movement/SelfState executor'ları; sonra modifier'lar; en son gerçek VFX/clip b
 > `ManifestationDirector`/vitals yoluna callback ile döner; animasyon köprüsü no-op olsa
 > da fizik çalışır. `ManifestationTuning.ExecutorFieldTickSec=1` prezentasyon katmanındaki
 > ortak tick varsayılanından gelir; melee pencere oranı görev kabul kriteridir.
-> **Doğrulama:** test/Unity Play henüz çalıştırılmadı.
+> **Doğrulandı:** `dotnet test` **267/267** yeşil; router 1/5 için melee+ranged,
+> alan fiilleri ve stub fiilleri kapsıyor. **Doğrulanamadı:** Unity Editor bu cloud
+> imajında yok; canlı overlap/projectile/field Play görüntüsü alınamadı.
 
 > **27 Eylül — build seçim ekranı (v6 7b).** Sahibi: "skiller ekranın ortasında saçma,
 > 12 ründen 6 seçemiyorum". Yeni `BuildSelectScreen`: Play açılışında tam ekran; 12 rün
