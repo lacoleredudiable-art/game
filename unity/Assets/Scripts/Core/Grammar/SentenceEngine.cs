@@ -11,7 +11,7 @@ namespace Dovus.Core.Grammar
     public sealed class SentenceEngine
     {
         readonly SentenceTuning _tuning;
-        readonly RuneLoadout _loadout;
+        RuneLoadout _loadout;
         readonly List<SentenceWord> _words = new List<SentenceWord>(4);
         readonly List<CompletedSentence> _history = new List<CompletedSentence>();
 
@@ -30,6 +30,17 @@ namespace Dovus.Core.Grammar
 
         public SentenceState State { get; }
         public RuneLoadout Loadout => _loadout;
+
+        /// <summary>Build seçimi yalnız çizim yokken değişir; event abonelikleri korunur.</summary>
+        public bool TrySetLoadout(RuneLoadout loadout)
+        {
+            if (loadout == null || State.Phase == SentencePhase.Building)
+                return false;
+            BeginFresh();
+            _loadout = loadout;
+            PublishState();
+            return true;
+        }
 
         public IReadOnlyList<CompletedSentence> History => _history;
 

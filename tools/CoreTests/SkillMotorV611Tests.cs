@@ -1,5 +1,6 @@
 using System.IO;
 using Dovus.Core.Grammar;
+using Dovus.Core.Presentation;
 using Dovus.Core.Tuning;
 using NUnit.Framework;
 
@@ -23,7 +24,8 @@ public class SkillMotorV611Tests
         return path;
     }
 
-    static SkillMotor Load() => SkillMotor.FromJson(File.ReadAllText(JsonPath()));
+    static string LoadJson() => File.ReadAllText(JsonPath());
+    static SkillMotor Load() => SkillMotor.FromJson(LoadJson());
 
     [Test]
     public void LoadsLockedV611Catalog()
@@ -105,6 +107,20 @@ public class SkillMotorV611Tests
         Assert.That(zaman.EngineModifiers["enemy_slow"].AsFloat(), Is.EqualTo(0.7f));
         Assert.That(zaman.EngineModifiers["self_haste"].AsFloat(), Is.EqualTo(0f));
         Assert.That(zaman.EngineModifiers["no_global_timescale"].AsBool(), Is.True);
+    }
+
+    [Test]
+    public void AnimationDatabaseMapsAllWeaponVerbNamesToExistingCastStates()
+    {
+        AnimationDatabase database = AnimationDatabase.FromJson(LoadJson());
+
+        Assert.That(database.Count, Is.EqualTo(120));
+        Assert.That(database.TryGet("kilic", 1, out AnimationBinding strike), Is.True);
+        Assert.That(strike.DisplayName, Is.EqualTo("Geniş Kesme"));
+        Assert.That(strike.AnimatorState, Is.EqualTo("CastPierce"));
+        Assert.That(database.TryGet("kilic", 5, out AnimationBinding blast), Is.True);
+        Assert.That(blast.AnimatorState, Is.EqualTo("CastSlam"));
+        Assert.That(database.TryGet("missing", 1, out _), Is.False);
     }
 
     [Test]

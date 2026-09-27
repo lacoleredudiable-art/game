@@ -357,6 +357,9 @@ namespace Dovus.Game
             var director = manGo.AddComponent<ManifestationDirector>();
             director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, allyDummy, modeHud, view, passiveHud, _equippedWeapon, equipmentBonus, skills);
 
+            var v6Panel = root.AddComponent<V611DebugPanel>();
+            v6Panel.Configure(skills, input, view, director, view.CanvasRoot);
+
             CreateTuningPanel(tuningConfig, vitals);
         }
 

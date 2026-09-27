@@ -54,6 +54,17 @@ namespace Dovus.Game
             return LastPlayApplied;
         }
 
+        /// <summary>
+        /// v6 AnimationDatabase'in mevcut controller state'i. Frame metadata yoksa yalnız
+        /// Animator oynatılır; state eksikse false/no-op.
+        /// </summary>
+        public bool PlayState(Animator animator, string stateName)
+        {
+            Stop();
+            LastPlayApplied = TryPlayState(animator, stateName);
+            return LastPlayApplied;
+        }
+
         public void Stop()
         {
             _playing = false;

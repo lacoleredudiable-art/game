@@ -16,6 +16,7 @@ namespace Dovus.Game
         RuneLoadout _loadout;
         RectTransform[] _dots;
         Image[] _dotImages;
+        Text[] _dotLabels;
         Sprite[] _dotIcons;
         RectTransform[] _cdRings;
         Image[] _cdFills;
@@ -63,6 +64,7 @@ namespace Dovus.Game
             int n = Dovus.Core.Grammar.PentagonLayout.DotCount;
             _dots = new RectTransform[n + 1];
             _dotImages = new Image[n + 1];
+            _dotLabels = new Text[n + 1];
             _dotIcons = new Sprite[n + 1];
             _cdRings = new RectTransform[n + 1];
             _cdFills = new Image[n + 1];
@@ -83,6 +85,7 @@ namespace Dovus.Game
                 if (_dotIcons[dot] == null)
                 {
                     var label = CreateLabel(_dots[dot], DotGlyph(dot));
+                    _dotLabels[dot] = label;
                     label.fontSize = 14;
                     label.color = new Color(0.06f, 0.08f, 0.1f, 0.95f);
                     var outline = label.gameObject.AddComponent<Outline>();
@@ -129,6 +132,18 @@ namespace Dovus.Game
 
             Layout();
             RefreshCooldownVisuals();
+        }
+
+        public void SetLoadout(RuneLoadout loadout)
+        {
+            if (loadout == null)
+                return;
+            _loadout = loadout;
+            if (_dotLabels == null)
+                return;
+            for (int dot = 1; dot < _dotLabels.Length; dot++)
+                if (_dotLabels[dot] != null)
+                    _dotLabels[dot].text = DotGlyph(dot);
         }
 
         /// <summary>

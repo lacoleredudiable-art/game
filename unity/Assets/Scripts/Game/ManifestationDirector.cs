@@ -96,7 +96,10 @@ namespace Dovus.Game
         // --- Animasyon (Bağlama 10) — PresentationCatalog → AnimationBridge; PulseRune kalır ---
         PresentationCatalog _presentationCatalog;
         PresentationValidator _presentationValidator;
+        AnimationDatabase _animationDatabase;
+        readonly HashSet<string> _missingAnimationBindings = new();
         readonly AnimationBridge _animationBridge = new();
+        int _elementPaintIndex;
         PentagonView _pentagonView;
         PlayerResource _playerResource;
         PlayerCooldown _playerCooldown;
@@ -112,6 +115,8 @@ namespace Dovus.Game
         public bool LastWeaponCompatible { get; private set; } = true;
         public bool LastWeaponPassiveEnabled { get; private set; } = true;
         public string LastWeaponUiLabel { get; private set; } = string.Empty;
+        public string LastResolvedSkillId { get; private set; } = string.Empty;
+        public bool LastSkillEffectApplied { get; private set; }
 
         /// <summary>Bağlama 9 / MCP: son ApplyClosingDamage çıktısı (boss'a giden, armor öncesi).</summary>
         public float LastClosingDamageDealt { get; private set; }
@@ -127,9 +132,27 @@ namespace Dovus.Game
 
         /// <summary>Bağlama 10 / MCP: frame-timer köprüsü (Play doğrulama).</summary>
         public AnimationBridge AnimationBridge => _animationBridge;
+        public ElementPaintNode? SelectedElementPaint =>
+            _skills != null
+            && _skills.ElementPaints.Count > 0
+            && _elementPaintIndex >= 0
+            && _elementPaintIndex < _skills.ElementPaints.Count
+                ? _skills.ElementPaints[_elementPaintIndex]
+                : null;
 
         /// <summary>Bağlama 10 / MCP: ShoutSkill içindeki ApplySkillAnimation yolunu doğrudan dener.</summary>
         public void DebugApplySkillAnimation(SkillResolution skill) => ApplySkillAnimation(skill);
+
+        public ElementPaintNode? CycleElementPaint()
+        {
+            if (_skills == null || _skills.ElementPaints.Count == 0)
+                return null;
+            _elementPaintIndex = (_elementPaintIndex + 1) % _skills.ElementPaints.Count;
+            ElementPaintNode paint = _skills.ElementPaints[_elementPaintIndex];
+            _readout?.NoteSkill("Element: " + paint.Name, "isim/VFX boya katmanı", Color.cyan);
+            Debug.Log($"[ElementSystem] element paint={paint.Id}:{paint.Name} ({paint.Vfx})");
+            return paint;
+        }
 
         SkillMotor Skills => _skills ??= SkillMotorLoader.LoadOrDefault();
 
@@ -287,6 +310,8 @@ namespace Dovus.Game
             _playerResource = player != null ? player.GetComponent<PlayerResource>() : null;
             _playerCooldown = player != null ? player.GetComponent<PlayerCooldown>() : null;
             _skills = skills ?? SkillMotorLoader.LoadOrDefault();
+            _animationDatabase = LoadAnimationDatabase();
+            _elementPaintIndex = 0;
             EnsurePresentationCatalog();
             _playerStates = new PlayerStateMachine(_skills.PlayerStates);
             input.BindPlayerStates(_playerStates, () => _pending.Count > 0);
@@ -367,6 +392,23 @@ namespace Dovus.Game
             {
                 _engine.SentenceCompleted += OnSentenceCompleted;
                 _hooked = true;
+            }
+        }
+
+        static AnimationDatabase LoadAnimationDatabase()
+        {
+            const string resourcePath = "ElementSystem/element-sistemi";
+            var asset = Resources.Load<TextAsset>(resourcePath);
+            if (asset == null || string.IsNullOrWhiteSpace(asset.text))
+                return null;
+            try
+            {
+                return AnimationDatabase.FromJson(asset.text);
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[AnimationDatabase] v6 tablo okunamadı: {e.Message}");
+                return null;
             }
         }
 
@@ -1618,6 +1660,17 @@ namespace Dovus.Game
                 AnnotateMotion(skill, motionPlan);
             AnnounceChainFinisherIfAny(); // skill bang'ten sonra Finisher üstte kalsın
             SpawnClosingImpact(p);
+            LastResolvedSkillId = skill.SkillId;
+            LastSkillEffectApplied = dealt > 0f
+                || IsHealSkill(skill)
+                || !motionPlan.IsEmpty
+                || skill.Mechanics.Length > 0;
+            if (string.Equals(skill.SkillId, "1-1", StringComparison.Ordinal))
+            {
+                Debug.Log(
+                    $"[ElementSystem] smoke 1-1 effect applied={LastSkillEffectApplied} "
+                    + $"damage={dealt:0.##}");
+            }
         }
 
         void SpawnClosingImpact(PendingClosing p)
@@ -1834,10 +1887,14 @@ namespace Dovus.Game
             WeaponSkillCompatibility compatibility = WeaponCompatibilityFor(skill);
             if (!string.IsNullOrEmpty(compatibility.UiColor))
                 line = compatibility.Compatible ? Color.green : Color.yellow;
+            string paintedName = skill.DisplayName;
+            ElementPaintNode? paint = SelectedElementPaint;
+            if (paint.HasValue && !string.IsNullOrEmpty(paint.Value.NamePrefix))
+                paintedName = paint.Value.NamePrefix + " " + paintedName;
             string bangNote = string.IsNullOrEmpty(adj)
                 ? mech
                 : (string.IsNullOrEmpty(mech) ? adj : mech + " | " + adj);
-            _debugHud?.NoteSkillBang(skill.DisplayName, bangNote);
+            _debugHud?.NoteSkillBang(paintedName, bangNote);
             string sub = skill.VerbName;
             if (!string.IsNullOrEmpty(mech))
                 sub = string.IsNullOrEmpty(sub) ? mech : sub + "  ·  " + mech;
@@ -1854,7 +1911,7 @@ namespace Dovus.Game
                 sub = string.IsNullOrEmpty(sub)
                     ? skill.LengthRole
                     : sub + "  ·  " + skill.Length + "·" + skill.LengthRole;
-            _readout?.NoteSkill(skill.DisplayName, sub, line);
+            _readout?.NoteSkill(paintedName, sub, line);
             SkillFeel.CameraKick(skill.VerbFamily, _camera, _colors);
             // PulseRune (PulseActor) kalır — AnimationBridge eklenir, yerine geçmez.
             ApplySkillAnimation(skill);
@@ -1872,6 +1929,26 @@ namespace Dovus.Game
 
             if (skill.IsEmpty || _visual == null || _visual.Animator == null)
                 return;
+
+            if (_skills != null && _skills.IsV61)
+            {
+                int verbId = int.TryParse(skill.VerbId, out int parsed) ? parsed : 0;
+                string weaponKey = _equippedWeapon?.AnimationsKey ?? string.Empty;
+                string bindingKey = weaponKey + ":" + verbId;
+                if (_animationDatabase != null
+                    && _animationDatabase.TryGet(weaponKey, verbId, out AnimationBinding binding))
+                {
+                    LastAnimationTypeId = bindingKey;
+                    LastAnimationState = binding.AnimatorState;
+                    LastAnimationPlayApplied =
+                        _animationBridge.PlayState(_visual.Animator, binding.AnimatorState);
+                }
+                else if (_missingAnimationBindings.Add(bindingKey))
+                {
+                    Debug.LogWarning($"[AnimationDatabase] binding yok, cast no-op: {bindingKey}");
+                }
+                return;
+            }
 
             EnsurePresentationCatalog();
             if (_presentationValidator == null || _presentationCatalog == null)
