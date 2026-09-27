@@ -13,7 +13,7 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 27 Eylül 2026 (v6.1.1 bağlayıcı sıra 1–6) ·
+**Son güncelleme:** 27 Eylül 2026 (v6.1.1 sıra 1–6 + Core 270 yeşil) ·
 **Dal:** `cursor/adopt-element-system-v6-1-079a` · **Sıradaki:** Unity Play kanıtı,
 sonra `hitbox_vfx` prefab ve tam `presentation` bağları
 
@@ -33,10 +33,12 @@ sonra `hitbox_vfx` prefab ve tam `presentation` bağları
    factory'den alır; tek-rün çizim önizlemesi motor üzerinde kalır (skill değildir).
 6. [x] **AnimationDatabase:** 120 JSON adı controller clip adlarında aranır; yoksa mevcut
    `Cast*` state fallback'i, o da yoksa temiz no-op/uyarı. Görsel Play kanıtı yok.
-7. [ ] **UI:** mevcut hexagon + basit pick-6/skill adı preview var. Radial element menü,
-   tam skill preview ve production UI eksik.
-8. [ ] **Playtest:** 1 build + Kılıç + 1 element runtime'a bağlı; F1 1-1 smoke yolu hazır.
-   Unity Editor olmadığı için fight kanıtı yok.
+7. [ ] **UI:** 7a salt-okunur `SkillPreviewHud` tamam (isim/prose/uyum rengi);
+   mevcut hexagon + basit pick-6 + element cycle bağlı. Radial element menü ve
+   production UI eksik.
+8. [ ] **Playtest:** startup preflight JSON→SO 12/10/6→36 build skill→1-1'i doğrular;
+   1 build + Kılıç + 1 element ve F1 fight smoke bağlı. Unity Editor olmadığı için
+   görsel/fight kanıtı yok.
 9. [ ] **Eski SO/listeleri sil:** yapılmadı; 1–8 Play'de doğrulanmadan yapılmayacak.
 
 Kilitli davranış: yalnız 2-rün skill; silah-fiil uyumsuzluğu ×0.8 hasar / ×1.2 cast,
@@ -53,8 +55,9 @@ global `Time.timeScale` değil. Elle doğrulama: `docs/COMPAT.md`.
 > hasar matematiğine girmez. Unity doğrulaması: `docs/COMPAT.md`.
 > **Stub:** silah seçimi, pasif rün ve silah identity-passive efektlerinin tamamı,
 > `hitbox_vfx` prefabları, özel clip/event'ler ve tam VFX/ses presentation.
-> **Doğrulanamadı:** C# derleme / `dotnet test` / Unity Play (ortamda `dotnet`,
-> C# derleyicisi ve Unity Editor yok). JSON yapısı, ayna eşitliği ve diff doğrulandı.
+> **Doğrulandı:** yerel .NET 8 ile Core derlendi; `dotnet test` **270/270 yeşil**.
+> JSON yapısı, ayna eşitliği ve diff doğrulandı. **Doğrulanamadı:** Unity derleme /
+> Editor Play / telefon (ortamda Unity Editor yok).
 
 > **27 Eylül — v6.1.1 bağlayıcı veri güncel.** Docs + Resources aynalandı; yeni üst
 > seviye anahtarlar: `ana_classes_80`, `skills_prose_144`, `hitbox_vfx`, `mobility_cc`,

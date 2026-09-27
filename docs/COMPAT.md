@@ -21,14 +21,15 @@ verisidir ve prototip hasar hesabını değiştirmez.
 1. İsteğe bağlı Editor importer'ı çalıştır; Console'da
    `12 RuneSO / 10 WeaponSO / 6 ElementSO` tamamlandığını gör.
 2. Play'e gir; Console'da `[JSONLoader] v6.1.1: 12 runes, 144 skills`
-   satırını gör.
+   ve `[BindingReady] ... SO 12/10/6 ... buildSkills=36 ... smoke=...` satırlarını gör.
 3. F1'e bas (veya `V6` → `TEST 1-1`); aynı normal cast hattından sonra Console'da
    `smoke 1-1 effect applied=True` ve boss hasarı görünmeli.
 4. 1-1 cast'inde `AnimationDatabase` Kılıç×Saldırı adını önce mevcut controller
    clip'lerinde arar; özel clip yoksa `CastPierce` state'ine düşer;
    state/clip varsa animasyon oynamalı, yoksa cast sürüp binding uyarısı vermeli.
 5. B veya `V6` paneli → listeden tam 6 rün → `SEÇİLİ 6'YI UYGULA`; altı slot etiketi
-   değişmeli ve yeni iki-rün skill cast edilebilmeli.
+   değişmeli ve yeni iki-rün skill cast edilebilmeli. Salt-okunur preview ilk ründe
+   fiili, kapanışta skill/prose/uyum rengini göstermeli.
 6. E veya `ELEMENT DEĞİŞTİR`; sonraki skill başlığının element öneki değişmeli,
    hasar sayısı yalnız element yüzünden değişmemeli.
 7. Prototip Kılıç ile fiil 1/3/5/9 yeşil “Uyumlu”, diğer fiiller sarı
