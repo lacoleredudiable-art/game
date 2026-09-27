@@ -165,6 +165,23 @@ namespace Dovus.Core.Grammar
             return loadout;
         }
 
+        public bool TryCreateMainClassLoadout(
+            int mainClassId,
+            IReadOnlyList<int> passiveRuneIds,
+            out RuneLoadout loadout)
+        {
+            for (int i = 0; i < _mainClasses.Count; i++)
+            {
+                if (_mainClasses[i].Id != mainClassId)
+                    continue;
+                loadout = CreateLoadout(_mainClasses[i].RuneIds, passiveRuneIds);
+                return true;
+            }
+
+            loadout = _defaultLoadout;
+            return false;
+        }
+
         public bool TryGetElement(string id, out ElementNode node) =>
             _elements.TryGetValue(id, out node);
 

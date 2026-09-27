@@ -1,5 +1,6 @@
 using Dovus.Core.Combat;
 using Dovus.Core.Equipment;
+using Dovus.Core.Grammar;
 using Dovus.Core.Tuning;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -25,6 +26,10 @@ namespace Dovus.Game
         [SerializeField] GameObject _playerVisualPrefab;
         [SerializeField] GameObject _bossVisualPrefab;
         [SerializeField] GameObject _arenaVisualPrefab;
+
+        [Header("v6 build (ana_classes_80 id + 0-2 pasif rün id)")]
+        [SerializeField, Min(1)] int _prototypeMainClassId = 1;
+        [SerializeField] int[] _prototypePassiveRuneIds = new int[0];
 
         /// <summary>
         /// Alfa: sabit tek silah (seçim UI yok). Katalogdan Alev Kılıcı / Ateş.
@@ -200,8 +205,24 @@ namespace Dovus.Game
             AttachOverlayToMain(mainCam, overlay.Cam);
 
             var skills = SkillMotorLoader.LoadOrDefault();
+            RuneLoadout loadout = skills.DefaultLoadout;
+            try
+            {
+                skills.TryCreateMainClassLoadout(
+                    _prototypeMainClassId,
+                    _prototypePassiveRuneIds,
+                    out loadout);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"[ElementSystem] build seçimi geçersiz; varsayılan kullanıldı: {e.Message}");
+                loadout = skills.DefaultLoadout;
+            }
+            Debug.Log(
+                $"[ElementSystem] mainClass={_prototypeMainClassId} build=[{string.Join(",", loadout.RuneIds)}] "
+                + $"passives={loadout.PassiveCount}");
             var view = root.AddComponent<PentagonView>();
-            view.Build(_tuning, overlay.Cam, skills, skills.DefaultLoadout);
+            view.Build(_tuning, overlay.Cam, skills, loadout);
 
             // 16 Eylül: sol yarıdaki sanal çubuk fonksiyonel olarak zaten çalışıyordu, hiç
             // görseli yoktu (bug raporu). MoveInput'un mantığına dokunmuyor, sadece çiziyor.
@@ -227,7 +248,7 @@ namespace Dovus.Game
             var input = root.AddComponent<PentagonInput>();
             input.Tuning = _tuning;
             input.Combat = combat;
-            input.Bind(clock, ink, syllable, debug, skills, skills.DefaultLoadout);
+            input.Bind(clock, ink, syllable, debug, skills, loadout);
 
             // 16 Eylül: "kamera sabit" bug raporu — MoveInput/PentagonInput'un parmaklarına
             // dokunmadan üçüncü bir parmakla (veya editörde sağ-tık sürükleyerek) 360° orbit.

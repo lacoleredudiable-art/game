@@ -13,9 +13,22 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 27 Eylül 2026 (element sistemi v6.1.1 veri güncellemesi) ·
-**Dal:** `cursor/adopt-element-system-v6-1-079a` · **Sıradaki:** `SkillMotorLoader`
-ve Core motorlarını v6.1.1 şemasına uyarlamak
+**Son güncelleme:** 27 Eylül 2026 (v6.1.1 runtime adaptasyonu) ·
+**Dal:** `cursor/adopt-element-system-v6-1-079a` · **Sıradaki:** build/silah/element
+seçim UI'ı + `hitbox_vfx` prefab ve tam `presentation` bağları
+
+> **27 Eylül — v6.1.1 runtime doğrudan yüklüyor.** `SkillMotorLoader` →
+> `SkillMotor`: 12 çift-yüzlü rün, 144 adet 2-rün fiil×sıfat skill, 6-of-12
+> `RuneLoadout`, 80 ana class ve 6 element boya verisi. `PrototypeBootstrap` Inspector'daki
+> ana class id + 0-2 pasif rün id'sini kullanır (varsayılan class 1). 10 silahın JSON
+> çarpanları + `compatible_verbs` canlı; uyumsuz fiil = hasar ×0.8, cast ×1.2,
+> pasif kapalı, sarı UI; uyumlu = tam, yeşil UI. Sıfat uyumsuzluğu yok. Zaman yalnız
+> hedef `Slow` / oyuncu `Haste`; global zaman ölçeğine çağrı yok. Element boya katmanı
+> hasar matematiğine girmez. Unity doğrulaması: `docs/COMPAT.md`.
+> **Stub:** build/silah/element seçim UI'ı, pasif rün efektlerinin tamamı,
+> `hitbox_vfx` prefabları, tam animasyon/VFX/ses presentation.
+> **Doğrulanamadı:** C# derleme / `dotnet test` / Unity Play (ortamda `dotnet`,
+> C# derleyicisi ve Unity Editor yok). JSON yapısı, ayna eşitliği ve diff doğrulandı.
 
 > **27 Eylül — v6.1.1 bağlayıcı veri güncel.** Docs + Resources aynalandı; yeni üst
 > seviye anahtarlar: `ana_classes_80`, `skills_prose_144`, `hitbox_vfx`, `mobility_cc`,
@@ -30,10 +43,8 @@ ve Core motorlarını v6.1.1 şemasına uyarlamak
 > 0-2 pasif yuva. Element prototipte yalnız VFX/isim katmanı (`element_mult=1.0`);
 > silahlar çarpan + animasyon + hitbox katmanı. Engine sayıları JSON'da bulunur.
 > Multiplayer için global slow-mo yok; Zaman yalnız `enemy_slow` / `self_haste`
-> (`no_global_timescale=true`) uygular. **Uyumluluk:** mevcut `SkillMotor` v5.3
-> `elements`/`verbs`/`adjectives` şemasını bekler; `SkillMotorLoader` parse hatasını
-> loglayıp gömülü varsayılana döner. 144 motor bu değişiklikte uygulanmadı; sonraki kod
-> işi v6.1 loader/motor adaptasyonudur. Ayrıntı: `docs/COMPAT.md`.
+> (`no_global_timescale=true`) uygular. Bu ilk veri-kilidi commit'indeki loader açığı
+> aynı dalın v6.1.1 runtime adaptasyonunda (yukarıda) kapatıldı.
 > JSON bütünlüğü, 12×12=144 skill ve iki kopyanın birebirliği doğrulandı.
 > **Doğrulanamadı:** `dotnet test` (bu ortamda `dotnet` kurulu değil).
 

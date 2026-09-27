@@ -49,6 +49,12 @@ public class SkillMotorV611Tests
         Assert.That(loadout.PassiveCount, Is.Zero);
         Assert.That(loadout.TryResolveSlot(5, out Rune rune), Is.True);
         Assert.That((int)rune, Is.EqualTo(7));
+
+        Assert.That(
+            motor.TryCreateMainClassLoadout(3, new[] { 12 }, out RuneLoadout zamanBuild),
+            Is.True);
+        Assert.That(zamanBuild.ContainsRune(12), Is.True);
+        Assert.That(zamanBuild.IsPassive(12), Is.True);
     }
 
     [Test]
