@@ -365,16 +365,50 @@ namespace Dovus.Game
             if (_equippedWeapon != null)
                 Debug.Log($"[Equipment] prototip silah={_equippedWeapon.Name}; v6 fiil uyumu etkin.");
             var skillFactory = new SkillFactory(skills, equipmentBonus);
+            VerifyBindingPipeline(design, assetCatalog, runeManager, skillFactory, _equippedWeapon);
 
             var manGo = new GameObject("Manifestation");
             manGo.transform.SetParent(transform, false);
             var director = manGo.AddComponent<ManifestationDirector>();
             director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, allyDummy, modeHud, view, passiveHud, _equippedWeapon, equipmentBonus, skills, skillFactory, design?.Animations);
 
+            var preview = root.AddComponent<SkillPreviewHud>();
+            preview.Configure(input.Engine, skills, skillFactory, _equippedWeapon, director, view.CanvasRoot);
+
             var v6Panel = root.AddComponent<V611DebugPanel>();
             v6Panel.Configure(skills, runeManager, assetCatalog, input, view, director, view.CanvasRoot);
 
             CreateTuningPanel(tuningConfig, vitals);
+        }
+
+        static void VerifyBindingPipeline(
+            ElementSystemDesign design,
+            ElementSystemAssetCatalog assets,
+            RuneManager runes,
+            SkillFactory factory,
+            EquipmentItem weapon)
+        {
+            if (design == null || assets == null || runes == null || factory == null || weapon == null)
+            {
+                Debug.LogWarning("[BindingReady] v6.1.1 preflight atlandı: bağımlılık eksik.");
+                return;
+            }
+
+            int elementId = assets.Elements.Count > 0 ? assets.Elements[0].Id : 0;
+            var buildSkills = runes.BuildSkills(factory, weapon, elementId);
+            Skill smoke = factory.Create(1, 1, weapon, elementId);
+            if (assets.Runes.Count != 12 || assets.Weapons.Count != 10
+                || assets.Elements.Count != 6 || buildSkills.Count != 36
+                || smoke.Id != "1-1")
+            {
+                throw new System.InvalidOperationException(
+                    "v6 binding preflight 12/10/6 SO, 36 build skill ve 1-1 smoke bekler.");
+            }
+
+            Debug.Log(
+                $"[BindingReady] JSON {design.Version} → SO 12/10/6 → "
+                + $"buildSkills={buildSkills.Count} → smoke={smoke.DisplayName} → "
+                + $"weapon={weapon.Name} → element={assets.Elements[0].DisplayName}");
         }
 
         /// <summary>
