@@ -96,6 +96,8 @@ namespace Dovus.Game
         EquipmentItem _equippedWeapon;
         EquipmentBonusResolver _equipmentBonus;
         readonly SkillExecutorRouter _skillExecutorRouter = new();
+        readonly List<EquipmentItem> _cycleWeapons = new();
+        int _cycleWeaponIndex = -1;
         // --- Animasyon (Bağlama 10) — PresentationCatalog → AnimationBridge; PulseRune kalır ---
         PresentationCatalog _presentationCatalog;
         PresentationValidator _presentationValidator;
@@ -112,6 +114,53 @@ namespace Dovus.Game
 
         /// <summary>PrototypeBootstrap'ın atadığı sabit silah (ör. Alev Kılıcı).</summary>
         public EquipmentItem EquippedWeapon => _equippedWeapon;
+
+        public void ConfigureWeaponCycle(IReadOnlyList<EquipmentItem> weapons)
+        {
+            _cycleWeapons.Clear();
+            if (weapons != null)
+            {
+                for (int i = 0; i < weapons.Count; i++)
+                {
+                    EquipmentItem weapon = weapons[i];
+                    if (weapon != null && weapon.Slot == EquipmentSlot.Weapon)
+                        _cycleWeapons.Add(weapon);
+                }
+            }
+
+            _cycleWeaponIndex = -1;
+            for (int i = 0; i < _cycleWeapons.Count; i++)
+            {
+                if (_equippedWeapon != null
+                    && string.Equals(_cycleWeapons[i].Id, _equippedWeapon.Id, StringComparison.Ordinal))
+                {
+                    _cycleWeaponIndex = i;
+                    break;
+                }
+            }
+        }
+
+        public EquipmentItem CycleEquippedWeapon()
+        {
+            if (_cycleWeapons.Count == 0)
+                return _equippedWeapon;
+
+            _cycleWeaponIndex = (_cycleWeaponIndex + 1) % _cycleWeapons.Count;
+            _equippedWeapon = _cycleWeapons[_cycleWeaponIndex];
+            LastFactorySkill = null;
+
+            string routeType = SkillExecutorRouter.IsRangedWeapon(_equippedWeapon)
+                ? "ranged"
+                : "melee";
+            string numericId = _equippedWeapon.Id;
+            int colon = numericId.LastIndexOf(':');
+            if (colon >= 0 && colon + 1 < numericId.Length)
+                numericId = numericId.Substring(colon + 1);
+            Debug.Log(
+                $"[WeaponCycle] id={numericId} name={_equippedWeapon.Name} "
+                + $"type={routeType} canonicalType={_equippedWeapon.Type}");
+            return _equippedWeapon;
+        }
 
         /// <summary>v6: son kapanışta silah × uyumsuz çizim hasar çarpanı.</summary>
         public float LastEquipmentMatchMult { get; private set; } = 1f;

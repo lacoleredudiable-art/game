@@ -13,9 +13,18 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 27 Eylül 2026 (SkillExecutor prototipi) ·
-**Dal:** `cursor/skill-executors-c20b` · **Sıradaki:** F2 silah döngüsü; ardından
-Movement/SelfState executor'ları; sonra modifier'lar; en son gerçek VFX/clip bağları
+**Son güncelleme:** 27 Eylül 2026 (F2 debug silah döngüsü) ·
+**Dal:** `cursor/skill-executors-c20b` · **Sıradaki:** kullanıcı Play smoke sonrası
+Movement/SelfState executor'ları veya gerçek animasyon/VFX bağları
+
+> **27 Eylül — F2 debug silah döngüsü.** `V611DebugPanel` F2 + küçük butonla canonical
+> 10 silahı id sırasıyla döndürür ve wrap eder; panelde güncel ad + effective
+> `melee/projectile` yolu görünür. Tek canlı state `ManifestationDirector.EquippedWeapon`;
+> `SkillPreviewHud`, `SkillFactory` uyum/çarpanları, animasyon key'i ve
+> `SkillExecutorRouter` her cast'te bunu okur. Log:
+> `[WeaponCycle] id=… name=… type=melee|ranged canonicalType=…`.
+> JSON `medium` Kılıç/Mızrak effective melee kalır; yalnız canonical `ranged` projectile.
+> **Doğrulama:** test ve kullanıcı Play smoke bekliyor.
 
 > **27 Eylül — SkillExecutor prototipi.** `SkillMotor` adı/rolü değişmeden saf Core
 > `SkillExecutorRouter` eklendi. İki-rün kapanışında fiil 1/5 explicit `weapon.type` ile

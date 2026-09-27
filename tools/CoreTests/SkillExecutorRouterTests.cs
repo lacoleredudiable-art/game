@@ -54,6 +54,26 @@ public class SkillExecutorRouterTests
             Is.EqualTo(SkillExecutorKind.Projectile));
     }
 
+    [Test]
+    public void AllCanonicalWeaponsRouteStrikeAndBlastByEffectiveRangeType()
+    {
+        Assert.That(_equipment.Items.Count, Is.EqualTo(10));
+        foreach (EquipmentItem weapon in _equipment.Items)
+        {
+            SkillExecutorKind expected = SkillExecutorRouter.IsRangedWeapon(weapon)
+                ? SkillExecutorKind.Projectile
+                : SkillExecutorKind.MeleeHitbox;
+            Assert.That(
+                _router.Route(_motor.Resolve(new[] { 1, 1 }), weapon).Kind,
+                Is.EqualTo(expected),
+                weapon.Name + " Saldırı");
+            Assert.That(
+                _router.Route(_motor.Resolve(new[] { 5, 1 }), weapon).Kind,
+                Is.EqualTo(expected),
+                weapon.Name + " Patlama");
+        }
+    }
+
     [TestCase(2)]
     [TestCase(4)]
     [TestCase(6)]

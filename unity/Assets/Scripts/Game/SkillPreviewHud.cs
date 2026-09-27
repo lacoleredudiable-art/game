@@ -1,4 +1,3 @@
-using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,7 +17,6 @@ namespace Dovus.Game
         SentenceEngine _engine;
         SkillMotor _motor;
         SkillFactory _factory;
-        EquipmentItem _weapon;
         ManifestationDirector _manifestation;
         PrototypeTuning _tuning;
         RectTransform _rect;
@@ -33,7 +31,6 @@ namespace Dovus.Game
             SentenceEngine engine,
             SkillMotor motor,
             SkillFactory factory,
-            EquipmentItem weapon,
             ManifestationDirector manifestation,
             PrototypeTuning tuning,
             Transform canvasRoot)
@@ -41,7 +38,6 @@ namespace Dovus.Game
             _engine = engine;
             _motor = motor;
             _factory = factory;
-            _weapon = weapon;
             _manifestation = manifestation;
             _tuning = tuning;
 
@@ -86,7 +82,9 @@ namespace Dovus.Game
             _group.alpha = Mathf.Clamp01((_visibleUntil - Time.unscaledTime) / FadeSec);
 
             int elementId = _manifestation?.SelectedElementPaint?.Id ?? 0;
-            string signature = state.Phase + ":" + state.Words.Count + ":" + elementId;
+            string weaponId = _manifestation?.EquippedWeapon?.Id ?? string.Empty;
+            string signature = state.Phase + ":" + state.Words.Count + ":" + elementId
+                + ":weapon:" + weaponId;
             for (int i = 0; i < state.Words.Count; i++)
                 signature += ":" + (int)state.Words[i].Rune;
             if (state.Words.Count == 0 && _manifestation?.LastFactorySkill != null)
@@ -108,7 +106,10 @@ namespace Dovus.Game
             {
                 try
                 {
-                    skill = _factory.CreateFromWords(state.Words, _weapon, elementId);
+                    skill = _factory.CreateFromWords(
+                        state.Words,
+                        _manifestation?.EquippedWeapon,
+                        elementId);
                 }
                 catch
                 {
