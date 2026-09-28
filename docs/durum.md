@@ -1305,6 +1305,12 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
+- **Premium HUD telefonda çakışıyor (29 Eylül, `f4a0b02` APK, Xiaomi 2412DPC0AG yatay).**
+  Altıgen rün paneli ekranın sağ yarısını kaplıyor ve boss'u örtüyor; "ELEMENT // ATEŞ · BASILI
+  TUT" kutusu pasif yuva paneline biniyor; sol üst vitals başlığı ("AVCI // OYUNCU") v6 rozetinin
+  altında kırpılıyor; AYAR düğmesi DODGE'un üstünde. 59 fps. Editörde smoke checklist geçmişti;
+  telefon çözünürlüğü/safe area ile ayrıca bakılmalı.
+
 - **mechanic_grammar dünya atomları — kalanlar (28 Eylül).** Bu turun tam label audit'i ve
   ertelenme sebepleri dosyanın en üstündeki oturum notunda. Özet: düşman projectile sistemi,
   ikinci düşman, gerçek co-op aktörü ve boss hedefleme/kontrol AI'sı olmayan davranışlar
