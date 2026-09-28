@@ -52,7 +52,24 @@ namespace Dovus.Game
         BossAttackKind? _lastAttackKind;
         int _attackKindStreak;
 
+        bool _phase2Announced;
+
+        /// <summary>karadul.json faz sırası: 1 = Uyanış, 2 = Öfke (can ≤ %50).</summary>
+        public int BossPhase => _phase2Announced ? 2 : 1;
+
+        /// <summary>Faz geçişi (HUD banner'ı için). Argüman yeni faz numarası.</summary>
+        public event System.Action<int> BossPhaseChanged;
+
+        public BossVitals Vitals => _bossVitals;
+
         public bool IsWindingUp => _phase == Phase.Windup;
+        public BossAttackKind? CurrentAttackKind => _phase is Phase.Windup or Phase.Active ? _attack?.Kind : null;
+
+        /// <summary>Windup ilerlemesi 0→1 (windup dışında 0) — boss cast barı okur.</summary>
+        public float WindupProgress01 =>
+            _phase == Phase.Windup && _attack != null && _clock != null && _attack.WindupMs > 0
+                ? Mathf.Clamp01((float)((_clock.Director.WorldTimeMs - _phaseStartedWorldMs) / _attack.WindupMs))
+                : 0f;
         public int TelegraphStartMs => _telegraphStartMs;
         public int StrikeTimeMs => _attack != null ? _attack.StrikeTimeMs(_telegraphStartMs) : 0;
         public SlamVariant? ActiveVariant => _attack?.Variant;
@@ -150,7 +167,15 @@ namespace Dovus.Game
         }
 
         /// <summary>§11: tam canla yeniden doğuş — idle beklemeden devam.</summary>
-        public void NotifyBossRevived(double worldMs) => EnterIdle(worldMs);
+        public void NotifyBossRevived(double worldMs)
+        {
+            bool wasPhase2 = _phase2Announced;
+            _phase2Announced = false;
+            _visual?.NotifyRevived();
+            if (wasPhase2)
+                BossPhaseChanged?.Invoke(1);
+            EnterIdle(worldMs);
+        }
 
         /// <summary>
         /// mechanic_grammar Aynalı tempo: hazırlanmakta olan saldırıyı iptal edip yeni idle
@@ -265,6 +290,21 @@ namespace Dovus.Game
                 return;
             }
 
+            if (!_phase2Announced && IsEnraged())
+            {
+                _phase2Announced = true;
+                _visual?.PlayRoar();
+                BossPhaseChanged?.Invoke(2);
+            }
+
+            // Kükreme klibi bitene kadar yürümez / saldırmaz (sunum; saldırı sırası değişmez).
+            if (_visual != null && _visual.IsBusy)
+            {
+                _visual.SetSpeed(0f);
+                _idleUntilWorldMs = System.Math.Max(_idleUntilWorldMs, worldMs + _combat.Boss.IdleMinMs);
+                return;
+            }
+
             Approach(dtSec);
 
             if (worldMs >= _idleUntilWorldMs)
@@ -343,7 +383,11 @@ namespace Dovus.Game
             _strikeResolved = false;
             FacePlayer();
             _visual?.SetSpeed(0f);
-            _visual?.PlayWindup();
+            if (_attack != null)
+            {
+                _telegraph?.SetShape(_attack.ArcHalfAngleDeg);
+                _visual?.PlayWindup(_attack.Kind, _attack.WindupMs);
+            }
         }
 
         void EnterActive(double worldMs)
@@ -371,8 +415,7 @@ namespace Dovus.Game
 
             // karadul.json faz tasarımı: Faz 1 "Uyanış" (100-50% can) yalnızca slam; Faz 2
             // "Öfke" (50-0%) fire_cone'u da açar.
-            bool enraged = _bossVitals != null && _bossVitals.MaxHp > 0f
-                && (_bossVitals.Hp / _bossVitals.MaxHp) <= 0.5f;
+            bool enraged = IsEnraged();
 
             BossAttackKind kind = enraged
                 ? BossAttackKindPicker.Pick(_lastAttackKind, _attackKindStreak, _combat.Boss.MaxSameAttackKindStreak, _rng)
@@ -428,10 +471,28 @@ namespace Dovus.Game
                 return;
             }
 
-            home += to.normalized * _combat.Boss.ApproachSpeedMps * speedMult * dtSec;
+            float groundMps = _combat.Boss.ApproachSpeedMps * speedMult;
+            home += to.normalized * groundMps * dtSec;
             _reactor.Home = home;
-            _visual?.SetSpeed(speedMult);
-            FacePlayer();
+            _visual?.SetWalk(groundMps);
+            TurnTowardPlayer(dtSec);
+        }
+
+        bool IsEnraged() =>
+            _bossVitals != null && _bossVitals.MaxHp > 0f && (_bossVitals.Hp / _bossVitals.MaxHp) <= 0.5f;
+
+        /// <summary>Yaklaşırken dönüş hız sınırlı; windup başındaki kilitleme (FacePlayer) anlık kalır.</summary>
+        void TurnTowardPlayer(float dtSec)
+        {
+            if (_player == null)
+                return;
+            Vector3 to = _player.position - _reactor.Home;
+            to.y = 0f;
+            if (to.sqrMagnitude <= 0.01f)
+                return;
+            float rate = _colors != null ? _colors.BossTurnRateDegPerSec : 240f;
+            transform.rotation = Quaternion.RotateTowards(
+                transform.rotation, Quaternion.LookRotation(to.normalized, Vector3.up), rate * dtSec);
         }
 
         void FacePlayer()

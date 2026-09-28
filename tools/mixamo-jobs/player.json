@@ -1,0 +1,15 @@
+[
+  { "label": "Player_Idle", "query": "Sword And Shield Idle" },
+  { "label": "Player_Walk", "query": "Sword And Shield Walk" },
+  { "label": "Player_Run", "query": "Sword And Shield Run" },
+  { "label": "Player_Strike_A", "query": "Sword And Shield Slash", "overdrive": true },
+  { "label": "Player_Strike_B", "query": "Sword And Shield Attack", "overdrive": true },
+  { "label": "Player_Strike_C", "query": "Sword And Shield Kick", "overdrive": true },
+  { "label": "Player_Spell_Cast", "query": "Standing 2H Magic Attack 01", "overdrive": true },
+  { "label": "Player_1H_Magic_Shoot", "query": "Standing 1H Magic Attack 01", "overdrive": true },
+  { "label": "Player_Ground_Slam", "query": "Sword And Shield Power Up", "overdrive": true },
+  { "label": "Player_Block", "query": "Sword And Shield Block" },
+  { "label": "Player_Roll", "query": "Sprinting Forward Roll", "overdrive": true },
+  { "label": "Player_Hit", "query": "Sword And Shield Impact" },
+  { "label": "Player_Death", "query": "Sword And Shield Death" }
+]

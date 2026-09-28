@@ -17,6 +17,29 @@
 **Dal:** `feat/feel-*` fazları · **Sıradaki:** his/sunum turu fazları (plan: Faz 0 his
 ayarları → 1 boss anim → 2 oyuncu anim → 3 HUD → 4 VFX/SFX → 5 telefon)
 
+> **28 Eylül — His turu Faz 1: boss animasyonu (dal `feat/feel-f1-boss-anim`).**
+> `BossVisual` artık state crossfade ile sürülür: `Locomotion` (idle/walk blend, `LocoSpeed`
+> = zemin hızı / klip kök hızı → kayma yok), `BossSlam`/`BossBreath` (windup),
+> `BossRoar` (faz 2 girişi), `BossStagger` (meşgulken ve `BossStaggerMinGapSec` içinde
+> yutulur), `BossDeath`. Windup senkronu: `ActionSpeed = impactNorm × klipSüresi / windupSn`
+> → tell zamanı `BossTuning` windup verisinden gelir, klipten değil. Yaklaşırken
+> `BossTurnRateDegPerSec` ile döner (windup `FacePlayer` snap'i oynanış, dokunulmadı).
+> `BossDirector`: `BossPhase`, `BossPhaseChanged`, `CurrentAttackKind`, `WindupProgress01`,
+> `Vitals` (Faz 3 HUD için). `BossTelegraph.SetShape`: yay < 180° ise disk yerine koni
+> (fan mesh). `MixamoAnimatorBind` yeniden yazıldı: `Mixamo/Player/` ve `Mixamo/Boss/`
+> klasörleri önce, paylaşılan `Mixamo/*.fbx` yedek; tek klipli FBX'lerin klip adı dosya adına
+> çevrilir ("mixamo.com" sorunu); oyuncu tarafına BasicStrikeB/C, CastShoot ve
+> `UpperBody` maskeli katman eklendi (Faz 2 kullanacak). İndirme: `tools/mixamo-download.mjs`
+> + `tools/mixamo-jobs/{boss,player}.json` (token: mixamo.com `localStorage.access_token`;
+> `node tools/mixamo-download.mjs <token> unity/Assets/Art/Mixamo/Boss tools/mixamo-jobs/boss.json`
+> → `Dovus/Synty/Bind Mixamo Animator`). **Uydurma/önerilen:** `BossTurnRateDegPerSec`=240,
+> `BossSlamImpactNorm`=0.42, `BossConeImpactNorm`=0.40, `BossStaggerMinGapSec`=0.6,
+> `BossAnimCrossFadeSec`=0.15, `BossWalkClipMps`=1.4. **Doğrulandı (Editor Play):** zorlanan
+> windup `BossSlam`'e girer, `ActionSpeed` 0.39–0.55; can %50 altı → faz 2 + roar; konsol
+> hatasız; `dotnet test` 305/305. **Doğrulanamadı:** mutant klip seti indirilmedi (token
+> yok) — şimdilik paylaşılan Melee_Thrust/Spell_Cast/Hit/Death yedekleri; job listesindeki
+> Mixamo adları sunucuda doğrulanmadı; koni telegraf göz kontrolü.
+
 > **28 Eylül — His turu Faz 0: bağlanmamış his ayarları (dal `feat/feel-f0-wiring`).**
 > `KinematicMotor` artık `MoveAccelMps2`/`MoveDecelMps2` ile ivmelenir, `TurnRateDegPerSec`
 > ile döner (eskiden anlık). Çubuk büyüklüğü hızı ölçekler: ölü bölge üstü
