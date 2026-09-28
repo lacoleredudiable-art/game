@@ -40,6 +40,21 @@ namespace Dovus.Game
         /// <summary>Oyuncu reflect pasifi için boss canı (Bind'de bossVitals yoksa ayrıca set).</summary>
         public BossVitals ReflectBossVitals { get; set; }
 
+        float _skillReflectRatio;
+        double _skillReflectUntilMs;
+
+        /// <summary>Yansıma fiili / Aynalama sıfatı: reflect_ratio, reflect_duration_sec boyunca.</summary>
+        public void GrantReflect(float ratio, double untilWorldMs)
+        {
+            if (ratio <= 0f)
+                return;
+            _skillReflectRatio = ratio;
+            _skillReflectUntilMs = untilWorldMs;
+        }
+
+        public float ActiveSkillReflectRatio =>
+            _clock != null && _clock.Director.WorldTimeMs < _skillReflectUntilMs ? _skillReflectRatio : 0f;
+
         public void Bind(
             GameClock clock,
             StatusTuning tuning,
@@ -125,7 +140,7 @@ namespace Dovus.Game
             float afterShield = Board.AbsorbDamage(incoming);
             if (afterShield <= 0f) return;
 
-            float reflect = PassiveDirector?.ReflectRatioAdd ?? 0f;
+            float reflect = (PassiveDirector?.ReflectRatioAdd ?? 0f) + ActiveSkillReflectRatio;
             BossVitals reflectTarget = ReflectBossVitals ?? (_playerVitals != null ? null : _bossVitals);
             if (reflect > 0f && _playerVitals != null && reflectTarget != null && !reflectTarget.IsDown)
                 reflectTarget.ApplyDamage(afterShield * reflect);

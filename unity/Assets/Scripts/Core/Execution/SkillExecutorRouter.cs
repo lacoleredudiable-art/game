@@ -9,7 +9,10 @@ namespace Dovus.Core.Execution
         Fallback,
         MeleeHitbox,
         Projectile,
-        FieldAura
+        FieldAura,
+        Movement,
+        SelfState,
+        Summon
     }
 
     public readonly struct SkillExecutorRoute
@@ -28,7 +31,7 @@ namespace Dovus.Core.Execution
 
     /// <summary>
     /// İki rünlük skill'i fiil + canonical weapon.type üzerinden fiziksel teslimata yollar.
-    /// Unity fiziği içermez; gerçek spawn/overlap Game katmanındaki üç executor'dadır.
+    /// Unity fiziği içermez; gerçek spawn/overlap Game katmanındaki executor'lardadır.
     /// </summary>
     public sealed class SkillExecutorRouter
     {
@@ -41,6 +44,7 @@ namespace Dovus.Core.Execution
             {
                 case 1: // Saldırı
                 case 5: // Patlama
+                case 7: // Zayıflatma — hedefe capsule (hitbox_vfx.fiil_hitbox.7)
                     return IsRangedWeapon(weapon)
                         ? new SkillExecutorRoute(SkillExecutorKind.Projectile, false, string.Empty)
                         : new SkillExecutorRoute(SkillExecutorKind.MeleeHitbox, false, string.Empty);
@@ -53,11 +57,14 @@ namespace Dovus.Core.Execution
                 case 12: // Zaman
                     return new SkillExecutorRoute(SkillExecutorKind.FieldAura, false, string.Empty);
 
-                case 3:  // Hareket
-                case 7:  // Zayıflatma
-                case 10: // Yansıma / SelfState
-                case 11: // Çağırma
-                    return Stub($"fiil {verbId} executor kapsamı dışında");
+                case 3: // Hareket — dash_line
+                    return new SkillExecutorRoute(SkillExecutorKind.Movement, false, string.Empty);
+
+                case 10: // Yansıma — kendine süreli yansıtma
+                    return new SkillExecutorRoute(SkillExecutorKind.SelfState, false, string.Empty);
+
+                case 11: // Çağırma — minion
+                    return new SkillExecutorRoute(SkillExecutorKind.Summon, false, string.Empty);
 
                 default:
                     return Stub($"fiil {verbId} için executor yok");

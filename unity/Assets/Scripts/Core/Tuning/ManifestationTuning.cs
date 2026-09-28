@@ -85,6 +85,14 @@ namespace Dovus.Core.Tuning
         public float ExecutorBurstForwardFrac = 0.35f;
         public float ExecutorFieldDiskAlpha = 0.6f;
 
+        // Çağırma minion'u: JSON verb_base.11 base_damage=0 ve saldırı/hız vermiyor — bunlar
+        // varsayılan his ayarı (docs/durum.md). Süre/sayı JSON'dan (minion_duration_sec/count).
+        public float ExecutorMinionHitDamage = 6f;
+        public float ExecutorMinionAttackIntervalSec = 1f;
+        public float ExecutorMinionMoveSpeedMps = 3.5f;
+        public float ExecutorMinionReachM = 1.4f;
+        public float ExecutorMinionSizeM = 0.6f;
+
         // Kalıcı iz boyutu
         public float ScarScaleM = 1.4f;
         public int MaxSwarmBlobs = 10;

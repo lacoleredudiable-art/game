@@ -99,7 +99,7 @@ namespace Dovus.Core.Status
                 }
 
                 // Sıfat engine_modifiers — fiil mechanics dışında ek durum (3’lü/4’lü farkı).
-                ApplyAdjectiveModifiers(skill, board, caster, self, ref knockback, ref pull, tuning, mechanics);
+                ApplyAdjectiveModifiers(skill, board, caster, target, self, ref knockback, ref pull, tuning, mechanics);
             }
             finally
             {
@@ -112,12 +112,15 @@ namespace Dovus.Core.Status
         /// <summary>
         /// apply_slow / apply_root / apply_burn / apply_poison_on_hit / apply_silence /
         /// apply_knockback / apply_pull / apply_stealth / apply_confuse — JSON adjectives.
-        /// Fiil mechanics’te zaten varsa tekrar uygulanmaz.
+        /// Fiil mechanics’te zaten varsa tekrar uygulanmaz. Düşmanca sıfat durumları kendine
+        /// yönelik fiilde de (Hareket/Çağırma/Yansıma) caster'a değil vurulan hedefe gider;
+        /// hedef yoksa (hiçbir şeye değmedi) uygulanmaz.
         /// </summary>
         static void ApplyAdjectiveModifiers(
             SkillResolution skill,
             StatusBoard board,
             StatusBoard caster,
+            StatusBoard target,
             bool self,
             ref bool knockback,
             ref bool pull,
@@ -128,6 +131,45 @@ namespace Dovus.Core.Status
             if (mods.IsNull || mods.Kind != JsonKind.Object)
                 return;
 
+            bool HasMech(string id) => System.Array.IndexOf(mechanics, id) >= 0;
+            StatusBoard hostile = self ? target : board;
+
+            if (hostile != null)
+                ApplyHostileAdjectiveModifiers(mods, hostile, tuning, mechanics);
+
+            if (ModifierTruthy(mods, "apply_knockback") && !self && !HasMech("knockback"))
+                knockback = true;
+
+            if (ModifierTruthy(mods, "apply_pull") && !self)
+                pull = true;
+
+            if (mods.Has("apply_damage_reduction") && !HasMech("damage_reduction"))
+            {
+                float mult = mods["apply_damage_reduction"].AsFloat(tuning.DamageReductionMult);
+                if (mult > 0f && mult < 1f)
+                    board.Apply(StatusKind.DamageReduction, tuning.DamageReductionMs, mult);
+            }
+
+            // gizleme: her zaman caster'a stealth (hedef board self olsa da caster aynı).
+            if (ModifierTruthy(mods, "apply_stealth") && !HasMech("stealth") && caster != null)
+                caster.Apply(StatusKind.Stealth, tuning.StealthMs, 1f);
+
+            // sasirtma: Confuse kind yok → Blind + Slow (durum.md öncelik 2).
+            if (ModifierTruthy(mods, "apply_confuse") && !self)
+            {
+                if (!HasMech("blind"))
+                    board.Apply(StatusKind.Blind, tuning.BlindMs, 1f);
+                if (!HasMech("slow"))
+                    board.Apply(StatusKind.Slow, tuning.SlowMs, tuning.SlowSpeedMult);
+            }
+        }
+
+        static void ApplyHostileAdjectiveModifiers(
+            JsonValue mods,
+            StatusBoard board,
+            StatusTuning tuning,
+            string[] mechanics)
+        {
             bool HasMech(string id) => System.Array.IndexOf(mechanics, id) >= 0;
 
             if (mods.Has("apply_slow") && !HasMech("slow"))
@@ -161,31 +203,9 @@ namespace Dovus.Core.Status
             if (ModifierTruthy(mods, "apply_silence") && !HasMech("silence"))
                 board.Apply(StatusKind.Silence, tuning.SilenceMs, 1f);
 
-            if (ModifierTruthy(mods, "apply_knockback") && !self && !HasMech("knockback"))
-                knockback = true;
-
-            if (ModifierTruthy(mods, "apply_pull") && !self)
-                pull = true;
-
-            if (mods.Has("apply_damage_reduction") && !HasMech("damage_reduction"))
-            {
-                float mult = mods["apply_damage_reduction"].AsFloat(tuning.DamageReductionMult);
-                if (mult > 0f && mult < 1f)
-                    board.Apply(StatusKind.DamageReduction, tuning.DamageReductionMs, mult);
-            }
-
-            // gizleme: her zaman caster'a stealth (hedef board self olsa da caster aynı).
-            if (ModifierTruthy(mods, "apply_stealth") && !HasMech("stealth") && caster != null)
-                caster.Apply(StatusKind.Stealth, tuning.StealthMs, 1f);
-
-            // sasirtma: Confuse kind yok → Blind + Slow (durum.md öncelik 2).
-            if (ModifierTruthy(mods, "apply_confuse") && !self)
-            {
-                if (!HasMech("blind"))
-                    board.Apply(StatusKind.Blind, tuning.BlindMs, 1f);
-                if (!HasMech("slow"))
-                    board.Apply(StatusKind.Slow, tuning.SlowMs, tuning.SlowSpeedMult);
-            }
+            // Bulandırma accuracy_debuff: isabet düşer → Blind (hitbox_vfx.sifat_override.7 add_cc blind).
+            if (mods["accuracy_debuff"].AsFloat(0f) > 0f && !HasMech("blind"))
+                board.Apply(StatusKind.Blind, tuning.BlindMs, 1f);
         }
 
         static bool ModifierTruthy(JsonValue mods, string key)

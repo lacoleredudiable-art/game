@@ -498,6 +498,7 @@ namespace Dovus.Game
             SyncDashCooldownMult();
             SyncPlayerStateMachine(worldMs);
             TickWeaponSwap(worldMs);
+            TickDelayedLaunches(worldMs);
             TickZones(dtSec);
             _spaceHost?.Tick(dtSec);
             TickTimeEffects(worldMs);
@@ -1703,12 +1704,19 @@ namespace Dovus.Game
 
             ApplyResourceCost(skill);
             SkillMotionPlan motionPlan = ResolveSkillMotion(skill);
-            ApplySkillMotion(motionPlan, skill);
-
             SkillExecutorRoute executorRoute = _skillExecutorRouter.Route(skill, _equippedWeapon);
             LastExecutorKind = executorRoute.Kind;
+            // Hareket executor'ı dash'i kendisi başlatır (Sıçrama/Kopyalama tekrarları için).
+            if (executorRoute.Kind != SkillExecutorKind.Movement)
+                ApplySkillMotion(motionPlan, skill);
+            ApplySelfCastEffects(skill);
+
             bool executorStarted = executorRoute.Kind != SkillExecutorKind.Fallback
                 && TryLaunchSkillExecutor(executorRoute.Kind, p, skill, motionPlan);
+            if (executorStarted)
+                ScheduleFollowUpLaunches(executorRoute.Kind, p, skill, motionPlan);
+            else if (executorRoute.Kind == SkillExecutorKind.Movement)
+                ApplySkillMotion(motionPlan, skill);
             float dealt = 0f;
             if (!executorStarted)
             {
@@ -1806,12 +1814,15 @@ namespace Dovus.Game
             SkillExecutorKind kind,
             PendingClosing pending,
             SkillResolution skill,
-            in SkillMotionPlan motionPlan)
+            in SkillMotionPlan motionPlan,
+            float effectMult = 1f,
+            LivingEffect capturedLogic = null)
         {
-            if (_player == null || pending.View == null || pending.View.Logic == null)
+            LivingEffect logic = capturedLogic
+                ?? (pending.View != null ? pending.View.Logic : null);
+            if (_player == null || logic == null)
                 return false;
 
-            LivingEffect logic = pending.View.Logic;
             EnsurePresentationCatalog();
             ManifestationTuning tuning = _combat != null
                 ? _combat.Manifestation
@@ -1829,11 +1840,13 @@ namespace Dovus.Game
                 : Mathf.Max(radius, plan.MaxRangeM * rangeMult);
             float speed = plan.SpeedMps > 0f ? plan.SpeedMps : tuning.NeedleSpeedMps;
             ResolveFieldTiming(skill, plan, tuning, out float durationSec, out float tickSec);
+            int spawnCount = 1;
+            ApplyVerbHitboxSizing(kind, skill, tuning, rangeMult, burst, ref radius, ref range, ref durationSec, ref spawnCount);
 
             Vector3 origin = _player.position;
             Vector3 direction = new(logic.DirX, 0f, logic.DirZ);
             Transform target = _boss != null ? _boss.transform : null;
-            bool friendly = IsFriendlyFieldVerb(skill);
+            bool friendly = IsFriendlyFieldVerb(skill) || kind == SkillExecutorKind.SelfState;
             // Düşmana alan boss'un üstünde değil, etkinin dünyada vardığı uçta açılır.
             Vector3 fieldCenter = friendly
                 ? origin
@@ -1861,7 +1874,7 @@ namespace Dovus.Game
                     skill,
                     isBasicStrike: false,
                     slashCommitMult,
-                    effectFraction,
+                    effectFraction * effectMult,
                     executorChainBonus);
                 // Bir projectile/melee tek hit'tir. Tick field'da echo katmanını çoğaltmamak
                 // için yalnız ilk gerçek hasar kaynak olur.
@@ -1872,7 +1885,10 @@ namespace Dovus.Game
                 }
                 if (!statusesApplied)
                 {
-                    ApplyClosingStatuses(pending, skill);
+                    // Dost/kendine alan düşmanca sıfat durumunu yalnız boss alanın içindeyse verir.
+                    bool bossReached = !friendly
+                        || BossWithin(_player != null ? _player.position : origin, radius);
+                    ApplyClosingStatuses(pending, skill, bossReached);
                     statusesApplied = true;
                 }
                 if (IsHealSkill(skill))
@@ -1918,7 +1934,14 @@ namespace Dovus.Game
                 ApplyExecutorEffect,
                 _clock,
                 tuning,
-                fieldCenter);
+                fieldCenter,
+                startMotion: kind == SkillExecutorKind.Movement
+                    ? () => ApplySkillMotion(ResolveSkillMotion(skill), skill)
+                    : null,
+                applyFlatDamage: kind == SkillExecutorKind.Summon
+                    ? raw => ApplyMinionHit(skill, raw * effectMult)
+                    : null,
+                spawnCount: spawnCount);
 
             var go = new GameObject($"{kind}_{skill.SkillId}");
             go.transform.SetParent(transform, false);
@@ -1927,6 +1950,9 @@ namespace Dovus.Game
                 SkillExecutorKind.MeleeHitbox => go.AddComponent<MeleeHitboxExecutor>(),
                 SkillExecutorKind.Projectile => go.AddComponent<ProjectileExecutor>(),
                 SkillExecutorKind.FieldAura => go.AddComponent<FieldAuraExecutor>(),
+                SkillExecutorKind.Movement => go.AddComponent<MovementExecutor>(),
+                SkillExecutorKind.SelfState => go.AddComponent<SelfStateExecutor>(),
+                SkillExecutorKind.Summon => go.AddComponent<SummonExecutor>(),
                 _ => null
             };
             if (executor == null)
@@ -1935,9 +1961,65 @@ namespace Dovus.Game
                 return false;
             }
 
+            if (kind == SkillExecutorKind.Summon)
+                ApplySpawnIFrame(skill);
             executor.Execute(context);
-            Debug.Log($"[SkillExecutor] {skill.SkillId} → {kind}");
+            Debug.Log($"[SkillExecutor] {skill.SkillId} → {kind} r={radius:0.##} menzil={range:0.##} süre={durationSec:0.##} x{effectMult:0.##}");
             return true;
+        }
+
+        /// <summary>
+        /// hitbox_vfx.fiil_hitbox boyutları: final = base × weapon.range_mult × sıfat hitbox_scale_mult
+        /// (hitbox_formula). Saldırı/Patlama his turundaki tuning menzilinde kalır.
+        /// Süreli fiiller süreyi engine'den alır (+ lifetime_add).
+        /// </summary>
+        void ApplyVerbHitboxSizing(
+            SkillExecutorKind kind,
+            in SkillResolution skill,
+            ManifestationTuning tuning,
+            float rangeMult,
+            bool burst,
+            ref float radius,
+            ref float range,
+            ref float durationSec,
+            ref int spawnCount)
+        {
+            if (!TryVerbHitbox(skill, out VerbHitboxSpec spec))
+                return;
+            float scale = skill.HitboxScaleMult > 0f ? skill.HitboxScaleMult : 1f;
+            JsonValue engine = skill.EngineModifiers;
+            float lifetimeAdd = Mathf.Max(0f, engine["lifetime_add"].AsFloat(0f));
+            bool tunedReach = skill.VerbId is "1" or "5";
+
+            switch (kind)
+            {
+                case SkillExecutorKind.MeleeHitbox when !burst && !tunedReach && spec.SizeB > 0f:
+                    range = spec.SizeA * rangeMult * scale;
+                    radius = spec.SizeB * 0.5f * scale;
+                    break;
+
+                case SkillExecutorKind.Movement:
+                    if (spec.SizeB > 0f)
+                        radius = spec.SizeB * 0.5f * scale;
+                    float dashSec = _combat != null ? _combat.SkillMotion.DashDurationSec : 0f;
+                    durationSec = Mathf.Max(spec.DurationSec, dashSec);
+                    break;
+
+                case SkillExecutorKind.SelfState:
+                    radius = spec.SizeA * scale;
+                    float stateSec = engine["reflect_duration_sec"].AsFloat(0f);
+                    if (stateSec > 0f)
+                        durationSec = stateSec + lifetimeAdd;
+                    break;
+
+                case SkillExecutorKind.Summon:
+                    radius = spec.SizeA;
+                    float minionSec = engine["minion_duration_sec"].AsFloat(0f);
+                    if (minionSec > 0f)
+                        durationSec = minionSec + lifetimeAdd;
+                    spawnCount = Mathf.Max(1, engine["minion_count"].AsInt(1));
+                    break;
+            }
         }
 
         void ResolveFieldTiming(
@@ -2104,7 +2186,10 @@ namespace Dovus.Game
                 bossAlive,
                 t.ArenaHalfSizeM);
 
-            return SkillMotionMotor.Resolve(skill, ctx, t, _skills != null ? _skills.SpaceEffects : null);
+            return SkillMotionMotor.Resolve(
+                skill, ctx, t,
+                _skills != null ? _skills.SpaceEffects : null,
+                _verbData?.IFrameMsFor(skill.SkillId) ?? 0);
         }
 
         void ApplySkillMotion(in SkillMotionPlan plan, SkillResolution skill)
@@ -2464,6 +2549,7 @@ namespace Dovus.Game
                 outMult = _playerStatus.Board.OutgoingDamageMult;
             outMult *= _modeDirector?.DamageMult ?? 1f; // ulti: Öfke Patlaması ×1.8, Kan Çılgınlığı ×2.0
             outMult *= _passiveDirector?.DamageMult ?? 1f; // pasif: alev_hiddeti ×1.15 × karanlik_sessizligi ×1.2 …
+            outMult *= SelfDamageBuffMult(); // Güçlendirme buff_damage / Yükseltme self_damage_buff
             outMult *= chainBonusOverride ?? _closingChainBonus;
             float eqMult = 1f;
             if (_equipmentBonus != null && !isBasicStrike && !skill.IsEmpty)
@@ -2568,9 +2654,10 @@ namespace Dovus.Game
         {
             if (skill.IsEmpty || skill.EngineModifiers.IsNull)
                 return 0f;
-            if (!skill.EngineModifiers.Has("apply_lifesteal"))
-                return 0f;
-            return Math.Max(0f, skill.EngineModifiers["apply_lifesteal"].AsFloat(0f));
+            // v6 adjective_mods.2 "lifesteal"; eski katalog "apply_lifesteal".
+            JsonValue mods = skill.EngineModifiers;
+            float v = mods.Has("lifesteal") ? mods["lifesteal"].AsFloat(0f) : mods["apply_lifesteal"].AsFloat(0f);
+            return Math.Max(0f, v);
         }
 
         float ExtraCritChanceAdd(in SkillResolution skill)
