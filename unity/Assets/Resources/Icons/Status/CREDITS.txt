@@ -1,0 +1,22 @@
+﻿Status ikonları: game-icons.net — CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/)
+
+Stun.png — delapouite/knocked-out-stars by delapouite
+Root.png — lorc/root-tip by lorc
+Silence.png — lorc/silence by lorc
+Fear.png — lorc/terror by lorc
+Stasis.png — lorc/hourglass by lorc
+Slow.png — lorc/snail by lorc
+Blind.png — delapouite/blindfold by delapouite
+Disarm.png — skoll/drop-weapon by skoll
+Taunt.png — lorc/shouting by lorc
+Burn.png — carl-olsen/flame by carl-olsen
+Poison.png — lorc/poison-bottle by lorc
+ArmorBreak.png — lorc/broken-shield by lorc
+GrievousWounds.png — lorc/bleeding-wound by lorc
+Weaken.png — delapouite/armor-downgrade by delapouite
+Shield.png — delapouite/cross-shield by delapouite
+Stealth.png — delapouite/invisible by delapouite
+Haste.png — lorc/sprint by lorc
+DamageReduction.png — lorc/armor-vest by lorc
+Regen.png — sbed/regeneration by sbed
+Knockback.png - delapouite/push by delapouite

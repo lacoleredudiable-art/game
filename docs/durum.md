@@ -17,6 +17,35 @@
 **Dal:** `feat/feel-*` fazları · **Sıradaki:** his/sunum turu fazları (plan: Faz 0 his
 ayarları → 1 boss anim → 2 oyuncu anim → 3 HUD → 4 VFX/SFX → 5 telefon)
 
+> **28 Eylül — His turu Faz 3: HUD cilası (dal `feat/feel-f3-hud`).**
+> uGUI'de kalındı; TMP (ugui 2.0 içi) essentials `Assets/TextMesh Pro`'ya alındı. Ortak katman:
+> `HudTheme` (SO, `Resources/HudTheme` yoksa varsayılan örnek; renk/dp/juice süreleri) +
+> `UiJuice` (unscaled punch/shake/fade/pulse). Font: `Resources/Fonts/HudFont.ttf` = **Russo One**
+> (OFL, `OFL.txt` yanında; Lilita One `ğ ş İ` içermediği için elendi); TMP asset'i
+> `Dovus/UI/Build HUD Font Asset` menüsü üretir (`HudFont SDF.asset`, statik atlas). HUD
+> metinleri `HudTheme.LegacyFont`'a geçti (debug panelleri hariç).
+> Eklenenler: `BarJuice` (ghost bar tut→eri, hasarda beyaz / heal'de yeşil flash; oyuncu barı
+> düşük canda nabız); boss adı + alt başlık + faz çentiği + **cast barı** (`BossDirector.
+> CurrentAttackKind`/`WindupProgress01`, isim `Resources/Bosses/karadul.json`'dan `BossHudData`);
+> faz 2'de "FAZ 2 ÖFKE" banner'ı + boss barı sarsıntısı; `CombatOverlayHud` (düşük can kenar
+> vinyeti, hasar yönü kaması, ekran dışı boss oku, ZAFER + süre / YENİLDİN + dönüş sayacı;
+> kanvas FeelCanvas'ın üstünde, sort 210); hex butonlarda basış punch'ı (`HexagonInput.
+> DotAccepted` → `HexagonView.NotifyPressed`), cooldown bitince hazır pop'u, kapalı/cooldown'da
+> `DisabledTint`; `StatusIconStrip` game-icons.net ikonları (`Resources/Icons/Status`, CC BY 3.0,
+> `CREDITS.txt`; yoksa glif), yeni statüde punch, bitmeye yakın yanıp söner; hasar sayıları
+> isabet noktasında (`ManifestationDirector.HudFeed`: boss gövde yarıçapında darbe yönü) ve
+> element renginde, kritik altın "N!".
+> **Uydurma/önerilen:** `HudTheme` alanlarının tamamı (renkler, dp boyları, GhostHold 0.35 /
+> Drain 0.6/sn, Flash 0.12, LowHpFrac 0.3, pulse 2.2 Hz, banner 1.6+0.4 sn, punch 1.25/1.08/
+> 0.88/1.18, status blink <1.5 sn @4 Hz).
+> **Doğrulandı (Editor Play):** derleme temiz; boss adı/alt başlık, cast barı ("Yere Çakma",
+> "Cehennem Nefesi"), %50'de faz banner'ı; ekran dışı ok (boss kamera arkasına alınınca açık,
+> geri gelince kapalı); düşük can vinyeti + hasar yönü bayrakları; boss ölünce "ZAFER Süre
+> mm:ss"; 20/21 statü ikonu yükleniyor (`None` hariç); `dotnet test` 305/305.
+> **Doğrulanamadı:** hasar sayıları bu makinede panel ayarıyla kapalı (`ShowDamageNumbers`,
+> tuning.json'da yoksa false) — göz kontrolü yapılmadı; ghost bar/flash ve hex punch
+> animasyonlarının göz kontrolü; telefon dp ölçeğinde okunurluk (Faz 5).
+
 > **28 Eylül — His turu Faz 2: oyuncu animasyon seti (dal `feat/feel-f2-player-anim`).**
 > Hepsi yalnız görsel; hasar/etki doğumu zamanlaması değişmedi. `ActorVisual.PulseBasicStrike`
 > düz vuruşta `BasicStrike → BasicStrikeB → BasicStrikeC` döner (`BasicStrikeComboResetSec`

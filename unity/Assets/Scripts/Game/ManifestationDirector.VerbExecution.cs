@@ -194,7 +194,7 @@ namespace Dovus.Game
                 mult *= _bossStatus.Board.IncomingDamageMult;
 
             float damage = raw * mult;
-            _damageHud?.ShowDamage(damage, false);
+            _damageHud?.ShowDamage(damage, false, BossHitPoint(), DamageTint());
             _lastDamageDealtMs = _clock.Director.WorldTimeMs;
             float lifesteal = AdjectiveLifesteal(skill);
             lifesteal += _slotPassives?.LifestealAdd ?? 0f;

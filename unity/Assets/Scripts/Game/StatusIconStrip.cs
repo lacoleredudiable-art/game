@@ -27,6 +27,7 @@ namespace Dovus.Game
             public Image Bg;
             public Image Fill;
             public Text Glyph;
+            public Image Icon;
             public Text Mag;
             public StatusKind Kind;
             public bool Active;
@@ -115,14 +116,25 @@ namespace Dovus.Game
             glyphRect.offsetMin = Vector2.zero;
             glyphRect.offsetMax = Vector2.zero;
             var glyph = glyphGo.AddComponent<Text>();
-            glyph.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            if (glyph.font == null)
-                glyph.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            glyph.font = HudTheme.LegacyFont;
             glyph.fontSize = Mathf.RoundToInt(size * 0.42f);
             glyph.fontStyle = FontStyle.Bold;
             glyph.alignment = TextAnchor.MiddleCenter;
             glyph.raycastTarget = false;
             glyph.color = Color.white;
+
+            var iconGo = new GameObject("Icon");
+            iconGo.transform.SetParent(go.transform, false);
+            var iconRect = iconGo.AddComponent<RectTransform>();
+            iconRect.anchorMin = Vector2.zero;
+            iconRect.anchorMax = Vector2.one;
+            float inset = size * 0.14f;
+            iconRect.offsetMin = new Vector2(inset, inset);
+            iconRect.offsetMax = new Vector2(-inset, -inset);
+            var icon = iconGo.AddComponent<Image>();
+            icon.preserveAspect = true;
+            icon.raycastTarget = false;
+            icon.enabled = false;
 
             var magGo = new GameObject("Mag");
             magGo.transform.SetParent(go.transform, false);
@@ -146,6 +158,7 @@ namespace Dovus.Game
                 Bg = bg,
                 Fill = fill,
                 Glyph = glyph,
+                Icon = icon,
                 Mag = mag,
                 Kind = StatusKind.None,
                 Active = false
@@ -198,12 +211,26 @@ namespace Dovus.Game
                     StatusVisual(kind, out Color accent, out string glyph);
                     slot.Bg.color = new Color(accent.r * 0.25f, accent.g * 0.25f, accent.b * 0.25f, 0.78f);
                     slot.Fill.color = new Color(accent.r, accent.g, accent.b, 0.55f);
+                    Sprite iconSprite = IconFor(kind);
+                    slot.Icon.sprite = iconSprite;
+                    slot.Icon.color = accent;
+                    slot.Icon.enabled = iconSprite != null;
                     slot.Glyph.color = accent;
-                    slot.Glyph.text = glyph;
+                    slot.Glyph.text = iconSprite != null ? string.Empty : glyph;
+                    UiJuice.PunchScale(slot.Rect, HudTheme.Current.ReadyPopScale, HudTheme.Current.JuiceSec);
                 }
 
                 float ratio = total > 1e-3 ? Mathf.Clamp01((float)(rem / total)) : 0f;
                 slot.Fill.fillAmount = ratio;
+                HudTheme th = HudTheme.Current;
+                bool blink = rem > 0 && rem < th.StatusBlinkUnderSec;
+                float alpha = blink ? Mathf.Lerp(0.25f, 1f, UiJuice.Pulse01(th.StatusBlinkHz)) : 1f;
+                Color ic = slot.Icon.color;
+                ic.a = alpha;
+                slot.Icon.color = ic;
+                Color gc = slot.Glyph.color;
+                gc.a = alpha;
+                slot.Glyph.color = gc;
                 slot.Rect.anchoredPosition = new Vector2(i * (size + gap), 0f);
 
                 if (kind == StatusKind.Shield && mag > 0.5f)
@@ -218,6 +245,21 @@ namespace Dovus.Game
                 show > 0 ? show * size + (show - 1) * gap : 0f,
                 size);
             _root.gameObject.SetActive(show > 0);
+        }
+
+        static readonly Dictionary<StatusKind, Sprite> _icons = new();
+
+        /// <summary>game-icons.net (CC BY 3.0) — <c>Resources/Icons/Status/{Kind}.png</c>; yoksa null (harf glifine düşer).</summary>
+        static Sprite IconFor(StatusKind kind)
+        {
+            if (_icons.TryGetValue(kind, out Sprite cached))
+                return cached;
+            var tex = Resources.Load<Texture2D>("Icons/Status/" + kind);
+            Sprite s = tex != null
+                ? Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100f)
+                : null;
+            _icons[kind] = s;
+            return s;
         }
 
         static int ComparePriority(StatusKind a, StatusKind b)

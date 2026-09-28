@@ -70,7 +70,7 @@ namespace Dovus.Game
             rect.offsetMax = Vector2.zero;
 
             var text = go.AddComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.font = HudTheme.LegacyFont;
             if (text.font == null)
                 text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
             text.fontStyle = FontStyle.Bold;

@@ -198,6 +198,19 @@ namespace Dovus.Game
             RefreshWeaponSwapButton();
         }
 
+        /// <summary>Kapalı rün ya da soğumada: gri ton.</summary>
+        bool IsDotUnavailable(int dot) =>
+            !_tuning.IsDotOpen(dot)
+            || (_cdRemainingSec != null && dot < _cdRemainingSec.Length && _cdRemainingSec[dot] > 0f);
+
+        /// <summary>Dokunuş kabul edildi: basınca küçülme (0 = merkez).</summary>
+        public void NotifyPressed(int dot)
+        {
+            RectTransform target = dot == 0 ? _center : (_dots != null && dot > 0 && dot < _dots.Length ? _dots[dot] : null);
+            HudTheme th = HudTheme.Current;
+            UiJuice.PunchScale(target, th.PressScale, th.JuiceSec);
+        }
+
         void TickCooldowns()
         {
             if (_cdRemainingSec == null)
@@ -208,28 +221,39 @@ namespace Dovus.Game
             bool any = false;
             for (int i = 1; i < _cdRemainingSec.Length; i++)
             {
-                if (_cdTracked != null && _cdTracked[i] && _cdSource != null && !string.IsNullOrEmpty(_cdVerbIds[i]))
+                bool wasCooling = _cdRemainingSec[i] > 0f;
+                TickCooldown(i, dt, worldMs, ref any);
+                if (wasCooling && _cdRemainingSec[i] <= 0f && _dots != null && _dots[i] != null)
                 {
-                    float rem = _cdSource.VerbRemainingSec(_cdVerbIds[i], worldMs);
-                    if (!Mathf.Approximately(rem, _cdRemainingSec[i]))
-                        any = true;
-                    _cdRemainingSec[i] = rem;
-                    if (rem <= 0f)
-                    {
-                        _cdTracked[i] = false;
-                        _cdVerbIds[i] = null;
-                    }
-                    continue;
+                    HudTheme th = HudTheme.Current;
+                    UiJuice.PunchScale(_dots[i], th.ReadyPopScale, th.JuiceSec * 1.5f);
                 }
-
-                if (_cdRemainingSec[i] <= 0f)
-                    continue;
-                _cdRemainingSec[i] = Mathf.Max(0f, _cdRemainingSec[i] - dt);
-                any = true;
             }
 
             if (any || (_cdFills != null && AnyCooldownVisible()))
                 RefreshCooldownVisuals();
+        }
+
+        void TickCooldown(int i, float dt, double worldMs, ref bool any)
+        {
+            if (_cdTracked != null && _cdTracked[i] && _cdSource != null && !string.IsNullOrEmpty(_cdVerbIds[i]))
+            {
+                float rem = _cdSource.VerbRemainingSec(_cdVerbIds[i], worldMs);
+                if (!Mathf.Approximately(rem, _cdRemainingSec[i]))
+                    any = true;
+                _cdRemainingSec[i] = rem;
+                if (rem <= 0f)
+                {
+                    _cdTracked[i] = false;
+                    _cdVerbIds[i] = null;
+                }
+                return;
+            }
+
+            if (_cdRemainingSec[i] <= 0f)
+                return;
+            _cdRemainingSec[i] = Mathf.Max(0f, _cdRemainingSec[i] - dt);
+            any = true;
         }
 
         bool AnyCooldownVisible()
@@ -316,7 +340,7 @@ namespace Dovus.Game
             labelRt.anchorMax = Vector2.zero;
             labelRt.pivot = new Vector2(0.5f, 0.5f);
             var label = labelGo.AddComponent<Text>();
-            label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            label.font = HudTheme.LegacyFont;
             if (label.font == null)
                 label.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
             label.fontStyle = FontStyle.Bold;
@@ -347,9 +371,12 @@ namespace Dovus.Game
                 float diam = dotR * 2f * mul;
                 Place(_dots[dot], px, diam, w, h);
                 if (_dotImages[dot] != null)
-                    _dotImages[dot].color = _dotIcons != null && _dotIcons[dot] != null
+                {
+                    Color col = _dotIcons != null && _dotIcons[dot] != null
                         ? DotColor(dot)
                         : RuneFallbackColor(dot);
+                    _dotImages[dot].color = IsDotUnavailable(dot) ? col * HudTheme.Current.DisabledTint : col;
+                }
 
                 if (_cdRings != null && _cdRings[dot] != null)
                     Place(_cdRings[dot], px, diam * 1.05f, w, h);
@@ -602,7 +629,7 @@ namespace Dovus.Game
             rt.offsetMin = Vector2.zero;
             rt.offsetMax = Vector2.zero;
             var t = go.AddComponent<Text>();
-            t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            t.font = HudTheme.LegacyFont;
             if (t.font == null)
                 t.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
             t.text = text;
