@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Dovus.Core.Combat;
 using Dovus.Core.Equipment;
+using Dovus.Core.Execution;
 using Dovus.Core.Grammar;
 using Dovus.Core.Layers;
 using Dovus.Core.Manifestation;
@@ -94,6 +95,9 @@ namespace Dovus.Game
         // --- Ekipman (Bağlama 9) — sabit silah; seçim UI yok ---
         EquipmentItem _equippedWeapon;
         EquipmentBonusResolver _equipmentBonus;
+        readonly SkillExecutorRouter _skillExecutorRouter = new();
+        readonly List<EquipmentItem> _cycleWeapons = new();
+        int _cycleWeaponIndex = -1;
         // --- Animasyon (Bağlama 10) — PresentationCatalog → AnimationBridge; PulseRune kalır ---
         PresentationCatalog _presentationCatalog;
         PresentationValidator _presentationValidator;
@@ -111,6 +115,53 @@ namespace Dovus.Game
         /// <summary>PrototypeBootstrap'ın atadığı sabit silah (ör. Alev Kılıcı).</summary>
         public EquipmentItem EquippedWeapon => _equippedWeapon;
 
+        public void ConfigureWeaponCycle(IReadOnlyList<EquipmentItem> weapons)
+        {
+            _cycleWeapons.Clear();
+            if (weapons != null)
+            {
+                for (int i = 0; i < weapons.Count; i++)
+                {
+                    EquipmentItem weapon = weapons[i];
+                    if (weapon != null && weapon.Slot == EquipmentSlot.Weapon)
+                        _cycleWeapons.Add(weapon);
+                }
+            }
+
+            _cycleWeaponIndex = -1;
+            for (int i = 0; i < _cycleWeapons.Count; i++)
+            {
+                if (_equippedWeapon != null
+                    && string.Equals(_cycleWeapons[i].Id, _equippedWeapon.Id, StringComparison.Ordinal))
+                {
+                    _cycleWeaponIndex = i;
+                    break;
+                }
+            }
+        }
+
+        public EquipmentItem CycleEquippedWeapon()
+        {
+            if (_cycleWeapons.Count == 0)
+                return _equippedWeapon;
+
+            _cycleWeaponIndex = (_cycleWeaponIndex + 1) % _cycleWeapons.Count;
+            _equippedWeapon = _cycleWeapons[_cycleWeaponIndex];
+            LastFactorySkill = null;
+
+            string routeType = SkillExecutorRouter.IsRangedWeapon(_equippedWeapon)
+                ? "ranged"
+                : "melee";
+            string numericId = _equippedWeapon.Id;
+            int colon = numericId.LastIndexOf(':');
+            if (colon >= 0 && colon + 1 < numericId.Length)
+                numericId = numericId.Substring(colon + 1);
+            Debug.Log(
+                $"[WeaponCycle] id={numericId} name={_equippedWeapon.Name} "
+                + $"type={routeType} canonicalType={_equippedWeapon.Type}");
+            return _equippedWeapon;
+        }
+
         /// <summary>v6: son kapanışta silah × uyumsuz çizim hasar çarpanı.</summary>
         public float LastEquipmentMatchMult { get; private set; } = 1f;
         public bool LastWeaponCompatible { get; private set; } = true;
@@ -119,6 +170,7 @@ namespace Dovus.Game
         public string LastResolvedSkillId { get; private set; } = string.Empty;
         public bool LastSkillEffectApplied { get; private set; }
         public Skill LastFactorySkill { get; private set; }
+        public SkillExecutorKind LastExecutorKind { get; private set; } = SkillExecutorKind.Fallback;
 
         /// <summary>Bağlama 9 / MCP: son ApplyClosingDamage çıktısı (boss'a giden, armor öncesi).</summary>
         public float LastClosingDamageDealt { get; private set; }
@@ -1644,12 +1696,29 @@ namespace Dovus.Game
             ApplyResourceCost(skill);
             SkillMotionPlan motionPlan = ResolveSkillMotion(skill);
             ApplySkillMotion(motionPlan, skill);
-            ApplyBossClosing(logic, p.Closing, skill);
-            float dealt = ApplyClosingDamage(p.Closing, skill, isBasicStrike: false, motionPlan.SlashCommitMult);
-            TryScheduleEchoForSkill(skill, dealt);
-            ApplyClosingStatuses(p, skill);
+
+            SkillExecutorRoute executorRoute = _skillExecutorRouter.Route(skill, _equippedWeapon);
+            LastExecutorKind = executorRoute.Kind;
+            bool executorStarted = executorRoute.Kind != SkillExecutorKind.Fallback
+                && TryLaunchSkillExecutor(executorRoute.Kind, p, skill, motionPlan);
+            float dealt = 0f;
+            if (!executorStarted)
+            {
+                if (executorRoute.IsStub)
+                    Debug.Log($"[SkillExecutor] stub → LivingEffect: {executorRoute.Reason}");
+                LastExecutorKind = SkillExecutorKind.Fallback;
+                ApplyBossClosing(logic, p.Closing, skill);
+                dealt = ApplyClosingDamage(
+                    p.Closing,
+                    skill,
+                    isBasicStrike: false,
+                    motionPlan.SlashCommitMult);
+                TryScheduleEchoForSkill(skill, dealt);
+                ApplyClosingStatuses(p, skill);
+                ApplyClosingHeal(p.Closing, skill);
+            }
+
             ShoutSkill(skill, p.Words);
-            ApplyClosingHeal(p.Closing, skill); // readout ShoutSkill'den sonra (ally +N kalsın)
             TrySpawnZoneForSkill(skill);
             TryExtendZonesForSkill(skill);
             TrySpawnSpaceForSkill(skill);
@@ -1660,7 +1729,8 @@ namespace Dovus.Game
             AnnounceChainFinisherIfAny(); // skill bang'ten sonra Finisher üstte kalsın
             SpawnClosingImpact(p);
             LastResolvedSkillId = skill.SkillId;
-            LastSkillEffectApplied = dealt > 0f
+            LastSkillEffectApplied = executorStarted
+                || dealt > 0f
                 || IsHealSkill(skill)
                 || !motionPlan.IsEmpty
                 || skill.Mechanics.Length > 0;
@@ -1719,6 +1789,185 @@ namespace Dovus.Game
             if (fx != null)
                 Destroy(fx, 1.2f);
         }
+
+        bool TryLaunchSkillExecutor(
+            SkillExecutorKind kind,
+            PendingClosing pending,
+            SkillResolution skill,
+            in SkillMotionPlan motionPlan)
+        {
+            if (_player == null || pending.View == null || pending.View.Logic == null)
+                return false;
+
+            LivingEffect logic = pending.View.Logic;
+            EnsurePresentationCatalog();
+            ManifestationTuning tuning = _combat != null
+                ? _combat.Manifestation
+                : new ManifestationTuning();
+            LivingEffectPlan plan = SkillWorldPlanner.Build(skill, _presentationCatalog, tuning);
+
+            float rangeMult = _equippedWeapon != null ? _equippedWeapon.RangeMult : 1f;
+            float radius = plan.BangRadiusM > 0f ? plan.BangRadiusM : tuning.TravelHitRadiusM;
+            float range = kind == SkillExecutorKind.MeleeHitbox
+                ? tuning.BasicStrikeRangeM * rangeMult
+                : Mathf.Max(radius, plan.MaxRangeM * rangeMult);
+            float speed = plan.SpeedMps > 0f ? plan.SpeedMps : tuning.NeedleSpeedMps;
+            ResolveFieldTiming(skill, plan, tuning, out float durationSec, out float tickSec);
+
+            Vector3 origin = _player.position;
+            Vector3 direction = new(logic.DirX, 0f, logic.DirZ);
+            Transform target = _boss != null ? _boss.transform : null;
+            bool friendly = IsFriendlyFieldVerb(skill);
+            bool burst = string.Equals(skill.VerbId, "5", StringComparison.Ordinal);
+            float slashCommitMult = motionPlan.SlashCommitMult;
+            float executorChainBonus = _closingChainBonus;
+            string colorKey = SelectedElementPaint?.Name
+                ?? (pending.Words != null && pending.Words.Count > 0
+                    ? pending.Words[0].Rune.ToString()
+                    : string.Empty);
+
+            bool echoScheduled = false;
+            bool statusesApplied = false;
+            float accumulatedHealScale = 0f;
+            int appliedHealAmount = 0;
+            void ApplyExecutorEffect(float effectFraction)
+            {
+                if (effectFraction <= 0f)
+                    return;
+
+                if (!friendly)
+                    ApplyBossClosing(logic, pending.Closing, skill);
+                float hitDamage = ApplyClosingDamage(
+                    pending.Closing,
+                    skill,
+                    isBasicStrike: false,
+                    slashCommitMult,
+                    effectFraction,
+                    executorChainBonus);
+                // Bir projectile/melee tek hit'tir. Tick field'da echo katmanını çoğaltmamak
+                // için yalnız ilk gerçek hasar kaynak olur.
+                if (!echoScheduled && hitDamage > 0f)
+                {
+                    TryScheduleEchoForSkill(skill, hitDamage);
+                    echoScheduled = true;
+                }
+                if (!statusesApplied)
+                {
+                    ApplyClosingStatuses(pending, skill);
+                    statusesApplied = true;
+                }
+                if (IsHealSkill(skill))
+                {
+                    accumulatedHealScale = Mathf.Min(1f, accumulatedHealScale + effectFraction);
+                    int targetTotal = CalculateClosingHealAmount(
+                        pending.Closing,
+                        skill,
+                        accumulatedHealScale,
+                        executorChainBonus);
+                    int delta = Mathf.Max(0, targetTotal - appliedHealAmount);
+                    if (delta > 0)
+                    {
+                        Vector3? fieldCenter = kind == SkillExecutorKind.FieldAura && friendly
+                            ? origin
+                            : null;
+                        ApplyClosingHealAmount(skill, delta, fieldCenter, radius);
+                        appliedHealAmount += delta;
+                    }
+                }
+                LastSkillEffectApplied = hitDamage > 0f
+                    || IsHealSkill(skill)
+                    || skill.Mechanics.Length > 0;
+            }
+
+            var context = new SkillExecutionContext(
+                skill,
+                _player,
+                target,
+                origin,
+                direction,
+                tuning.BangDurationSec,
+                tuning.ExecutorMeleeWindowOpen01,
+                tuning.ExecutorMeleeWindowClose01,
+                radius,
+                range,
+                speed,
+                durationSec,
+                tickSec,
+                burst,
+                friendly,
+                colorKey,
+                ApplyExecutorEffect,
+                _clock,
+                tuning);
+
+            var go = new GameObject($"{kind}_{skill.SkillId}");
+            go.transform.SetParent(transform, false);
+            ISkillExecutor executor = kind switch
+            {
+                SkillExecutorKind.MeleeHitbox => go.AddComponent<MeleeHitboxExecutor>(),
+                SkillExecutorKind.Projectile => go.AddComponent<ProjectileExecutor>(),
+                SkillExecutorKind.FieldAura => go.AddComponent<FieldAuraExecutor>(),
+                _ => null
+            };
+            if (executor == null)
+            {
+                Destroy(go);
+                return false;
+            }
+
+            executor.Execute(context);
+            Debug.Log($"[SkillExecutor] {skill.SkillId} → {kind}");
+            return true;
+        }
+
+        void ResolveFieldTiming(
+            in SkillResolution skill,
+            in LivingEffectPlan plan,
+            ManifestationTuning tuning,
+            out float durationSec,
+            out float tickSec)
+        {
+            durationSec = 0f;
+            tickSec = tuning.ExecutorFieldTickSec;
+            if (_presentationCatalog != null
+                && _presentationCatalog.TryGetHitbox(plan.HitboxId, out HitboxNode hitbox))
+            {
+                durationSec = hitbox.GetFloat("lifetime_sec_default", 0f);
+                tickSec = hitbox.GetFloat("tick_interval_sec", tickSec);
+            }
+
+            JsonValue engine = skill.EngineModifiers;
+            if (durationSec <= 0f && !engine.IsNull)
+            {
+                durationSec = Mathf.Max(
+                    engine["channel_sec"].AsFloat(0f),
+                    Mathf.Max(
+                        engine["cc_duration_sec"].AsFloat(0f),
+                        Mathf.Max(
+                            engine["buff_duration_sec"].AsFloat(0f),
+                            engine["tempo_duration_sec"].AsFloat(0f))));
+            }
+
+            if (durationSec <= 0f)
+            {
+                StatusTuning status = _combat != null ? _combat.Status : new StatusTuning();
+                durationSec = skill.VerbId switch
+                {
+                    "2" => status.RegenMs / 1000f,
+                    "4" => status.ShieldMs / 1000f,
+                    "6" => status.RootMs / 1000f,
+                    "8" => status.HasteMs / 1000f,
+                    "12" => status.SlowMs / 1000f,
+                    _ => tuning.BangDurationSec
+                };
+            }
+
+            durationSec = Mathf.Max(tuning.BangDurationSec, durationSec);
+            tickSec = Mathf.Clamp(tickSec, 0.01f, durationSec);
+        }
+
+        static bool IsFriendlyFieldVerb(in SkillResolution skill) =>
+            skill.VerbId is "2" or "4" or "8" or "9";
 
         /// <summary>
         /// Bağlama 2: base_resource_cost düşer; yetersiz mana cast'i engellemez (0'a kilit).
@@ -2056,30 +2305,61 @@ namespace Dovus.Game
         /// Mend / heal / regen — daha boş olana basar (oran). Ally full ise oyuncu.
         /// Miktar: TotalEffect × ClosingDamagePerEffect (commit ile aynı birim).
         /// </summary>
-        void ApplyClosingHeal(ClosingHit closing, SkillResolution skill)
+        void ApplyClosingHeal(
+            ClosingHit closing,
+            SkillResolution skill,
+            float effectScale = 1f,
+            float? chainBonusOverride = null,
+            Vector3? fieldCenter = null,
+            float fieldRadiusM = 0f)
         {
-            if (skill.IsEmpty)
-                return;
-            if (!IsHealSkill(skill))
-                return;
+            int amount = CalculateClosingHealAmount(
+                closing,
+                skill,
+                effectScale,
+                chainBonusOverride);
+            ApplyClosingHealAmount(skill, amount, fieldCenter, fieldRadiusM);
+        }
 
+        int CalculateClosingHealAmount(
+            ClosingHit closing,
+            SkillResolution skill,
+            float effectScale,
+            float? chainBonusOverride)
+        {
+            if (skill.IsEmpty || !IsHealSkill(skill) || effectScale <= 0f)
+                return 0;
             float per = _combat != null ? _combat.ClosingDamagePerEffect : 1f;
             // 16 Eylül: "Kavurucu Yara" (grievous_wounds+burn) — yanık hedefe gelen heal azalır.
             // Hedefin StatusBoard'u yoksa (ör. AllyDummy) çarpan 1f, davranış eskisiyle aynı.
             float healMult = _playerStatus != null ? _playerStatus.Board.HealEffectivenessMult : 1f;
             healMult *= _passiveDirector?.HealMult ?? 1f;
-            healMult *= _closingChainBonus; // Bağlama 6: önceki link/finisher → bu kapanış
+            healMult *= chainBonusOverride ?? _closingChainBonus;
             healMult *= WeaponCompatibilityFor(skill).DamageMult;
             float healBase = skill.BaseHeal > 0f
                 ? skill.BaseHeal
                 : closing.TotalEffect * per;
-            int amount = Mathf.Max(1, Mathf.RoundToInt(healBase * healMult));
+            return Mathf.Max(0, Mathf.RoundToInt(healBase * healMult * effectScale));
+        }
+
+        void ApplyClosingHealAmount(
+            SkillResolution skill,
+            int amount,
+            Vector3? fieldCenter,
+            float fieldRadiusM)
+        {
             if (amount <= 0)
                 return;
 
             var playerVitals = _player != null ? _player.GetComponent<PlayerVitals>() : null;
-            bool allyNeeds = _ally != null && _ally.Hp < _ally.MaxHp;
-            bool selfNeeds = playerVitals != null && !playerVitals.IsDown && playerVitals.Hp < playerVitals.MaxHp;
+            bool spatial = fieldCenter.HasValue && fieldRadiusM > 0f;
+            bool allyInRange = !spatial || (_ally != null
+                && FlatDistance(_ally.transform.position, fieldCenter.Value) <= fieldRadiusM);
+            bool selfInRange = !spatial || (_player != null
+                && FlatDistance(_player.position, fieldCenter.Value) <= fieldRadiusM);
+            bool allyNeeds = _ally != null && allyInRange && _ally.Hp < _ally.MaxHp;
+            bool selfNeeds = playerVitals != null && selfInRange
+                && !playerVitals.IsDown && playerVitals.Hp < playerVitals.MaxHp;
             if (!allyNeeds && !selfNeeds)
             {
                 _readout?.NoteSkill(skill.DisplayName, "zaten full", new Color(0.7f, 0.9f, 0.75f));
@@ -2124,6 +2404,13 @@ namespace Dovus.Game
             }
         }
 
+        static float FlatDistance(Vector3 a, Vector3 b)
+        {
+            float dx = a.x - b.x;
+            float dz = a.z - b.z;
+            return Mathf.Sqrt(dx * dx + dz * dz);
+        }
+
         static bool IsHealSkill(SkillResolution skill)
         {
             if (string.Equals(skill.VerbFamily, "mend", System.StringComparison.Ordinal))
@@ -2138,9 +2425,17 @@ namespace Dovus.Game
         /// UseFormulaDamage=true → DamageCalculator (resistance/weakness nötr 0/1).
         /// Dönüş: boss'a uygulanan hasar (0 = yok); Bağlama 8 echo kaynağı.
         /// </summary>
-        float ApplyClosingDamage(ClosingHit closing, SkillResolution skill, bool isBasicStrike, float slashCommitMult)
+        float ApplyClosingDamage(
+            ClosingHit closing,
+            SkillResolution skill,
+            bool isBasicStrike,
+            float slashCommitMult,
+            float effectScale = 1f,
+            float? chainBonusOverride = null)
         {
             if (_bossVitals == null || _bossVitals.IsDown)
+                return 0f;
+            if (effectScale <= 0f)
                 return 0f;
 
             float outMult = 1f;
@@ -2148,7 +2443,7 @@ namespace Dovus.Game
                 outMult = _playerStatus.Board.OutgoingDamageMult;
             outMult *= _modeDirector?.DamageMult ?? 1f; // ulti: Öfke Patlaması ×1.8, Kan Çılgınlığı ×2.0
             outMult *= _passiveDirector?.DamageMult ?? 1f; // pasif: alev_hiddeti ×1.15 × karanlik_sessizligi ×1.2 …
-            outMult *= _closingChainBonus; // Bağlama 6: links/finisher_mult → sonraki (bu) kapanış
+            outMult *= chainBonusOverride ?? _closingChainBonus;
             float eqMult = 1f;
             if (_equipmentBonus != null && !isBasicStrike && !skill.IsEmpty)
             {
@@ -2199,6 +2494,8 @@ namespace Dovus.Game
                 float per = _combat != null ? _combat.ClosingDamagePerEffect : 1f;
                 damage = closing.TotalEffect * per * slashCommitMult * outMult;
             }
+
+            damage *= effectScale;
 
             if (damage <= 0f)
             {

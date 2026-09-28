@@ -1,3 +1,4 @@
+using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -19,6 +20,7 @@ namespace Dovus.Game
         GameObject _panel;
         Text _status;
         Text _element;
+        Text _weapon;
 
         public void Configure(
             HexagonInput input,
@@ -65,9 +67,13 @@ namespace Dovus.Game
             smoke.onClick.AddListener(SmokeCast);
             Button element = CreateRowButton(_panel.transform, "ELEMENT DEĞİŞTİR (E)");
             element.onClick.AddListener(CycleElement);
+            Button weapon = CreateRowButton(_panel.transform, "SİLAH DEĞİŞTİR (F2)");
+            weapon.onClick.AddListener(CycleWeapon);
 
             _element = CreateLabel(_panel.transform, string.Empty, 15);
             _element.gameObject.AddComponent<LayoutElement>().preferredHeight = 28f;
+            _weapon = CreateLabel(_panel.transform, string.Empty, 15);
+            _weapon.gameObject.AddComponent<LayoutElement>().preferredHeight = 28f;
             _status = CreateLabel(_panel.transform, string.Empty, 14);
             _status.gameObject.AddComponent<LayoutElement>().preferredHeight = 46f;
 
@@ -82,6 +88,8 @@ namespace Dovus.Game
                 return;
             if (keyboard.f1Key.wasPressedThisFrame)
                 SmokeCast();
+            if (keyboard.f2Key.wasPressedThisFrame)
+                CycleWeapon();
             if (keyboard.eKey.wasPressedThisFrame)
                 CycleElement();
             if (keyboard.bKey.wasPressedThisFrame)
@@ -119,12 +127,36 @@ namespace Dovus.Game
                 _element.text = "Element boya: " + paint.Value.Name;
         }
 
+        void CycleWeapon()
+        {
+            EquipmentItem weapon = _manifestation?.CycleEquippedWeapon();
+            RefreshWeapon(weapon);
+            if (weapon != null)
+                SetStatus("Silah: " + weapon.Name + " · F1 ile 1-1 dene");
+        }
+
         void Refresh()
         {
             ElementPaintNode? paint = _manifestation?.SelectedElementPaint;
             if (_element != null)
                 _element.text = paint.HasValue ? "Element boya: " + paint.Value.Name : "Element boya: —";
-            SetStatus("B build · F1 smoke · E element");
+            RefreshWeapon(_manifestation?.EquippedWeapon);
+            SetStatus("B build · F1 smoke · F2 silah · E element");
+        }
+
+        void RefreshWeapon(EquipmentItem weapon)
+        {
+            if (_weapon == null)
+                return;
+            if (weapon == null)
+            {
+                _weapon.text = "Silah: —";
+                return;
+            }
+            string route = Dovus.Core.Execution.SkillExecutorRouter.IsRangedWeapon(weapon)
+                ? "projectile"
+                : "melee";
+            _weapon.text = $"Silah: {weapon.Name} ({route})";
         }
 
         void SetStatus(string value)

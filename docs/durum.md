@@ -13,9 +13,46 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 27 Eylül 2026 (build seçim ekranı + skill önizleme yeri) ·
-**Dal:** `feat/build-select-screen` · **Sıradaki:** telefonda build ekranı/önizleme,
-`docs/COMPAT.md` 6–8 elle Play, sonra `hitbox_vfx` prefab ve tam `presentation` bağları
+**Son güncelleme:** 28 Eylül 2026 (PR #15 executor düzeltmeleri + master merge) ·
+**Dal:** `master` · **Sıradaki:** kullanıcı Play smoke sonrası
+Movement/SelfState executor'ları veya gerçek animasyon/VFX bağları
+
+> **28 Eylül — PR #15 düzeltmeleri.** Üç executor `Time.deltaTime` yerine
+> `GameClock.WorldDeltaMs` ile ilerler (`SkillExecutor.WorldDeltaSec`); build menüsü açıkken
+> mermi/alan/vuruş penceresi donar, `TimeDirector` ölçeğini izler. Koda gömülü üç sayı
+> `ManifestationTuning`'e taşındı: `ExecutorProjectileMinHeightM=0.35`,
+> `ExecutorBurstForwardFrac=0.35`, `ExecutorFieldDiskAlpha=0.6` — **uydurma varsayılan**
+> (PR'daki değerler, kaynak yok). **Doğrulandı:** `dotnet test` 268/268, Unity derleme
+> temiz; Editor Play'de Kılıç 1-1 → `MeleeHitbox` boss'a 54 hasar, Top (ranged) 1-1 →
+> `Projectile` 77.8 hasar; `GameClock.Paused` iken uçan mermi 3 sn aynı konumda kaldı.
+> **Doğrulanamadı:** alan (FieldAura) fiillerinin canlı tick'i, telefonda executor hissi.
+
+> **27 Eylül — F2 debug silah döngüsü.** `V611DebugPanel` F2 + küçük butonla canonical
+> 10 silahı id sırasıyla döndürür ve wrap eder; panelde güncel ad + effective
+> `melee/projectile` yolu görünür. Tek canlı state `ManifestationDirector.EquippedWeapon`;
+> `SkillPreviewHud`, `SkillFactory` uyum/çarpanları, animasyon key'i ve
+> `SkillExecutorRouter` her cast'te bunu okur. Log:
+> `[WeaponCycle] id=… name=… type=melee|ranged canonicalType=…`.
+> JSON `medium` Kılıç/Mızrak effective melee kalır; yalnız canonical `ranged` projectile.
+> **Doğrulandı:** `dotnet test` **268/268**; 10 canonical silahın fiil 1/5 route'u
+> effective ranged/melee sınıfına göre testte doğrulandı. **Doğrulanamadı:** Unity
+> Editor bu cloud imajında yok; F2 wrap + canlı melee/projectile Play smoke kullanıcıda.
+
+> **27 Eylül — SkillExecutor prototipi.** `SkillMotor` adı/rolü değişmeden saf Core
+> `SkillExecutorRouter` eklendi. İki-rün kapanışında fiil 1/5 explicit `weapon.type` ile
+> melee overlap veya hareketli projectile'a; 2/4/6/8/9/12 süreli tick field'a gider.
+> JSON `medium` (Mızrak/Kılıç) isim tahmini yapılmadan yakın temas, yalnız `ranged`
+> projectile kabul edilir. 3/7/10/11 stub log + eski LivingEffect yoluna güvenli düşer.
+> Game'de tam üç executor: `MeleeHitboxExecutor` (%30–70 Physics overlap; Patlama tek
+> geniş sphere), `ProjectileExecutor` (kinematic primitive, presentation hızı +
+> weapon range_mult, hit/range despawn), `FieldAuraExecutor` (presentation
+> lifetime/tick + ince ground disk). Hasar/heal/status mevcut
+> `ManifestationDirector`/vitals yoluna callback ile döner; animasyon köprüsü no-op olsa
+> da fizik çalışır. `ManifestationTuning.ExecutorFieldTickSec=1` prezentasyon katmanındaki
+> ortak tick varsayılanından gelir; melee pencere oranı görev kabul kriteridir.
+> **Doğrulandı:** `dotnet test` **267/267** yeşil; router 1/5 için melee+ranged,
+> alan fiilleri ve stub fiilleri kapsıyor. **Doğrulanamadı:** Unity Editor bu cloud
+> imajında yok; canlı overlap/projectile/field Play görüntüsü alınamadı.
 
 > **27 Eylül — build seçim ekranı (v6 7b).** Sahibi: "skiller ekranın ortasında saçma,
 > 12 ründen 6 seçemiyorum". Yeni `BuildSelectScreen`: Play açılışında tam ekran; 12 rün

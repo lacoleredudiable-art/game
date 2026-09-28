@@ -31,11 +31,6 @@ namespace Dovus.Game
         [SerializeField, Min(1)] int _prototypeMainClassId = 1;
         [SerializeField] int[] _prototypePassiveRuneIds = new int[0];
 
-        /// <summary>
-        /// Alfa: sabit tek silah (seçim UI yok). Katalogdan Alev Kılıcı / Ateş.
-        /// </summary>
-        EquipmentItem _equippedWeapon;
-
         void Awake()
         {
             _tuning ??= new PrototypeTuning();
@@ -118,6 +113,10 @@ namespace Dovus.Game
                 BossRadiusM,
                 BossHeightM,
                 _tuning.BossColor);
+            // SkillExecutor overlap/projectile yolu için gerçek fizik hedefi. Primitive mesh
+            // bilinçli collider'sız kurulur; yalnız aktör hedef kapsülü burada eklenir.
+            var bossHitCollider = boss.AddComponent<CapsuleCollider>();
+            bossHitCollider.isTrigger = true;
             AttachVisual(boss, _bossVisualPrefab, _tuning.BossVisualScale, _tuning.CharacterAnimSpeed, out var bossAnim);
 
             player.AddComponent<MoveInput>().Tuning = _tuning;
@@ -358,27 +357,29 @@ namespace Dovus.Game
             scars.Configure(_tuning);
 
             EquipmentBonusResolver equipmentBonus;
+            EquipmentItem equippedWeapon;
             if (design != null && assetCatalog != null)
             {
                 equipmentBonus = new EquipmentBonusResolver(design.Equipment);
-                _equippedWeapon = assetCatalog.FindWeapon(4)?.ToEquipmentItem();
+                equippedWeapon = assetCatalog.FindWeapon(4)?.ToEquipmentItem();
             }
             else
             {
-                equipmentBonus = LoadPrototypeEquipment(out _equippedWeapon);
+                equipmentBonus = LoadPrototypeEquipment(out equippedWeapon);
             }
-            if (_equippedWeapon != null)
-                Debug.Log($"[Equipment] prototip silah={_equippedWeapon.Name}; v6 fiil uyumu etkin.");
+            if (equippedWeapon != null)
+                Debug.Log($"[Equipment] prototip silah={equippedWeapon.Name}; v6 fiil uyumu etkin.");
             var skillFactory = new SkillFactory(skills, equipmentBonus);
-            VerifyBindingPipeline(design, assetCatalog, runeManager, skillFactory, _equippedWeapon);
+            VerifyBindingPipeline(design, assetCatalog, runeManager, skillFactory, equippedWeapon);
 
             var manGo = new GameObject("Manifestation");
             manGo.transform.SetParent(transform, false);
             var director = manGo.AddComponent<ManifestationDirector>();
-            director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, allyDummy, modeHud, view, passiveHud, _equippedWeapon, equipmentBonus, skills, skillFactory, design?.Animations);
+            director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, allyDummy, modeHud, view, passiveHud, equippedWeapon, equipmentBonus, skills, skillFactory, design?.Animations);
+            director.ConfigureWeaponCycle(design?.Equipment.Items);
 
             var preview = root.AddComponent<SkillPreviewHud>();
-            preview.Configure(input.Engine, skills, skillFactory, _equippedWeapon, director, _tuning, view.CanvasRoot);
+            preview.Configure(input.Engine, skills, skillFactory, director, _tuning, view.CanvasRoot);
 
             var buildSelect = root.AddComponent<BuildSelectScreen>();
             buildSelect.Configure(skills, runeManager, input, view, clock, !_tuning.SkipBuildSelectOnStart);
