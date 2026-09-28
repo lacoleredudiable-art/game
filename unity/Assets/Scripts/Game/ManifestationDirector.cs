@@ -368,6 +368,7 @@ namespace Dovus.Game
             _readout = readout;
             _camera = camera;
             _ally = ally;
+            _ally?.BindStatusClock(clock, _combat != null ? _combat.Status : null);
             _modeHud = modeHud;
             _passiveHud = passiveHud;
             _afterimage = player != null ? player.GetComponent<AfterimageTrail>() : null;
@@ -455,6 +456,7 @@ namespace Dovus.Game
                 _playerStatus.PassiveDirector = _passiveDirector;
                 _playerStatus.SlotPassiveDirector = _slotPassives;
                 _playerStatus.ReflectBossVitals = bossVitals;
+                _playerStatus.IncomingDamageRedirect = RedirectMechanicDamage;
                 _playerStatus.DamageTaken += OnPlayerDamageTaken;
             }
 
@@ -491,7 +493,10 @@ namespace Dovus.Game
             if (_engine != null && _hooked)
                 _engine.SentenceCompleted -= OnSentenceCompleted;
             if (_playerStatus != null)
+            {
                 _playerStatus.DamageTaken -= OnPlayerDamageTaken;
+                _playerStatus.IncomingDamageRedirect = null;
+            }
         }
 
         void Update()
@@ -1759,12 +1764,16 @@ namespace Dovus.Game
             ApplyResourceCost(skill);
             SkillMotionPlan motionPlan = ResolveSkillMotion(skill);
             SkillExecutorRoute executorRoute = _skillExecutorRouter.Route(skill, _equippedWeapon);
+            executorRoute = ApplyMechanicWorldRoute(MechanicPlanFor(skill), executorRoute);
             LastExecutorKind = executorRoute.Kind;
             // Hareket executor'ı dash'i kendisi başlatır (Sıçrama/Kopyalama tekrarları için).
             if (executorRoute.Kind != SkillExecutorKind.Movement)
                 ApplySkillMotion(motionPlan, skill);
             ApplySelfCastEffects(skill);
-            BeginMechanicPlan(skill, new Vector3(logic.DirX, 0f, logic.DirZ));
+            BeginMechanicPlan(
+                skill,
+                new Vector3(logic.DirX, 0f, logic.DirZ),
+                new Vector3(logic.TipX, _player.position.y, logic.TipZ));
 
             bool executorStarted = executorRoute.Kind != SkillExecutorKind.Fallback
                 && TryLaunchSkillExecutor(executorRoute.Kind, p, skill, motionPlan);
@@ -1933,6 +1942,28 @@ namespace Dovus.Game
                     : string.Empty);
 
             MechanicPlan mechanicPlan = MechanicPlanFor(skill);
+            MechanicWorldProfile worldProfile = mechanicPlan != null
+                ? MechanicWorldProfile.From(mechanicPlan)
+                : null;
+            if (kind == SkillExecutorKind.Summon && mechanicPlan != null)
+            {
+                MechanicEffect actorEffect = mechanicPlan.Effects.Find(
+                    e => e.Stat is "aktor_yarat" or "klon");
+                if (actorEffect != null && actorEffect.Amount > 0)
+                    spawnCount = Mathf.Max(spawnCount, Mathf.RoundToInt((float)actorEffect.Amount));
+            }
+            float activationDelaySec = 0f;
+            if (worldProfile != null && worldProfile.RiseDelay && MechanicEngine != null)
+                activationDelaySec = Mathf.Max(
+                    activationDelaySec,
+                    (float)MechanicEngine.Rules.Param("rise_delay_sec"));
+            if (worldProfile != null && worldProfile.DelayedMark && MechanicEngine != null)
+                activationDelaySec = Mathf.Max(
+                    activationDelaySec,
+                    (float)MechanicEngine.Rules.Param("mark_delay_sec"));
+            float tickEffectFraction = worldProfile != null && worldProfile.Continuous && MechanicEngine != null
+                ? (float)MechanicEngine.Rules.Param("flow_tick_fraction")
+                : 0f;
             bool echoScheduled = false;
             bool statusesApplied = false;
             float accumulatedHealScale = 0f;
@@ -1963,12 +1994,15 @@ namespace Dovus.Game
                     // Dost/kendine alan düşmanca sıfat durumunu yalnız boss alanın içindeyse verir.
                     bool bossReached = !friendly
                         || BossWithin(_player != null ? _player.position : origin, radius);
-                    ApplyClosingStatuses(pending, skill, bossReached);
-                    if (bossReached)
-                        ApplyMechanicHitEffects(mechanicPlan, fieldCenter);
+                    if (worldProfile == null || !worldProfile.GuardTrigger)
+                    {
+                        ApplyClosingStatuses(pending, skill, bossReached);
+                        if (bossReached)
+                            ApplyMechanicHitEffects(mechanicPlan, fieldCenter);
+                    }
                     statusesApplied = true;
                 }
-                if (IsHealSkill(skill))
+                if (IsHealSkill(skill) && (worldProfile == null || !worldProfile.GuardTrigger))
                 {
                     accumulatedHealScale = Mathf.Min(1f, accumulatedHealScale + effectFraction);
                     int targetTotal = CalculateClosingHealAmount(
@@ -2020,9 +2054,18 @@ namespace Dovus.Game
                     ? () => ApplySkillMotion(ResolveSkillMotion(skill), skill)
                     : null,
                 applyFlatDamage: kind == SkillExecutorKind.Summon
-                    ? raw => ApplyMinionHit(skill, raw * effectMult)
+                    ? raw =>
+                    {
+                        float bindingDamage = MechanicEngine != null
+                            ? (float)MechanicEngine.Rules.Param("minion_hit_damage")
+                            : raw;
+                        ApplyMinionHit(skill, bindingDamage * effectMult);
+                    }
                     : null,
-                spawnCount: spawnCount);
+                spawnCount: spawnCount,
+                mechanicPlan: mechanicPlan,
+                activationDelaySec: activationDelaySec,
+                tickEffectFraction: tickEffectFraction);
 
             var go = new GameObject($"{kind}_{skill.SkillId}");
             go.transform.SetParent(transform, false);
@@ -2134,6 +2177,8 @@ namespace Dovus.Game
             }
 
             JsonValue engine = skill.EngineModifiers;
+            float tickRateMult = Mathf.Max(0.01f, engine["tick_rate_mult"].AsFloat(1f));
+            tickSec /= tickRateMult;
             if (durationSec <= 0f && !engine.IsNull)
             {
                 durationSec = Mathf.Max(

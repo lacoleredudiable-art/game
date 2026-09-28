@@ -28,7 +28,9 @@ namespace Dovus.Game
             _ageSec = 0f;
             _nextTickSec = 0f;
             _remainingTicks = Mathf.Max(1, Mathf.CeilToInt(context.DurationSec / context.TickIntervalSec));
-            _effectFraction = 1f / _remainingTicks;
+            _effectFraction = context.TickEffectFraction > 0f
+                ? context.TickEffectFraction
+                : 1f / _remainingTicks;
 
             GameObject disk = PlaceholderFactory.CreateZoneDisk(
                 context.ColorKey,
@@ -53,6 +55,8 @@ namespace Dovus.Game
         void Update()
         {
             if (!HasContext)
+                return;
+            if (WaitingForActivation())
                 return;
 
             _ageSec += WorldDeltaSec;

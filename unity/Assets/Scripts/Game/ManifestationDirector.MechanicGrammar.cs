@@ -68,7 +68,7 @@ namespace Dovus.Game
         }
 
         /// <summary>Kapanış patlamasında: plan kurulur, kendine yönelik atomlar uygulanır.</summary>
-        void BeginMechanicPlan(in SkillResolution skill, Vector3 aimDir)
+        void BeginMechanicPlan(in SkillResolution skill, Vector3 aimDir, Vector3 landedAt)
         {
             MechanicPlan plan = MechanicPlanFor(skill);
             LastMechanicPlan = plan;
@@ -76,6 +76,8 @@ namespace Dovus.Game
                 return;
             Debug.Log($"[Mechanic] {plan.SkillId}/{plan.WeaponName}: {MechanicDescriber.ShortTitle(plan)} — {plan.Description}");
             ApplyMechanicSelfEffects(plan, aimDir);
+            if (_clock != null)
+                BeginMechanicWorld(plan, aimDir, landedAt, _clock.Director.WorldTimeMs);
         }
 
         void ApplyMechanicSelfEffects(MechanicPlan plan, Vector3 aimDir)
@@ -84,7 +86,7 @@ namespace Dovus.Game
                 return;
             double now = _clock.Director.WorldTimeMs;
             StatusBoard self = _playerStatus != null ? _playerStatus.Board : null;
-            bool cloudOnSelf = plan.Body.BornAt == "sende" || plan.Body.BornAt == "dokunus";
+            bool bodyOnSelf = plan.Body.BornAt == "sende";
             var applied = new List<string>();
 
             foreach (MechanicEffect e in plan.Effects)
@@ -93,10 +95,11 @@ namespace Dovus.Game
                     continue;
                 switch (e.Atom, e.Stat)
                 {
-                    case ("hiz", "tempo") when e.Amount > 1 && e.DurationSec > 0 && self != null:
+                    case ("hiz", "tempo") when (bodyOnSelf || e.Has("aktarim"))
+                        && e.Amount > 1 && e.DurationSec > 0 && self != null:
                         ApplyOnce(self, StatusKind.Haste, e.DurationSec * 1000.0, (float)e.Amount, applied);
                         break;
-                    case ("gorunurluk", "gizlen") when cloudOnSelf && e.DurationSec > 0 && self != null:
+                    case ("gorunurluk", "gizlen") when bodyOnSelf && e.DurationSec > 0 && self != null:
                         ApplyOnce(self, StatusKind.Stealth, e.DurationSec * 1000.0, 1f, applied);
                         break;
                     case ("konum", "hedefin_arkasina"):
@@ -113,6 +116,9 @@ namespace Dovus.Game
                     case ("konum", "portal"):
                         OpenPortal(plan, aimDir, now + e.DurationSec * 1000.0);
                         applied.Add($"portal {e.DurationSec:0.#}sn");
+                        break;
+                    case ("varlik", "durum_aktar"):
+                        ApplyStatusTransfer(applied);
                         break;
                 }
             }
@@ -165,6 +171,15 @@ namespace Dovus.Game
                         After(_clock.Director.WorldTimeMs, dashSec, () => TeleportPlayer(swapTo));
                         applied.Add("yer değiştirme");
                         break;
+                    case ("hiz", "geri_sar") when _clock != null:
+                        RewindBoss(e.Amount, _clock.Director.WorldTimeMs, applied);
+                        break;
+                    case ("varlik", "durum_aktar"):
+                        ApplyStatusTransfer(applied);
+                        break;
+                    case ("varlik", "iyi_durum_sil"):
+                        PurgeBossBuffs(applied);
+                        break;
                 }
             }
             if (applied.Count > 0)
@@ -194,6 +209,7 @@ namespace Dovus.Game
                 run();
             }
             TickPortals(worldMs);
+            TickMechanicWorld(worldMs);
         }
 
         Vector3 ClampToArena(Vector3 pos) =>

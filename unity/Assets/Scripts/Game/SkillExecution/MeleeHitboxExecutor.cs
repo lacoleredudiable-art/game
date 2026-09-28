@@ -1,4 +1,5 @@
 using Dovus.Core.Execution;
+using Dovus.Core.Mechanic;
 using UnityEngine;
 
 namespace Dovus.Game
@@ -13,6 +14,7 @@ namespace Dovus.Game
 
         float _ageSec;
         bool _applied;
+        bool _homing;
 
         public override SkillExecutorKind Kind => SkillExecutorKind.MeleeHitbox;
 
@@ -21,6 +23,8 @@ namespace Dovus.Game
             base.Execute(context);
             _ageSec = 0f;
             _applied = false;
+            _homing = context.MechanicPlan != null
+                && MechanicWorldProfile.From(context.MechanicPlan).Homing;
             Vector3 origin = context.Owner != null ? context.Owner.position : context.Origin;
             Vector3 visualPosition = context.IsBurst
                 ? origin + context.Direction * Mathf.Min(
@@ -42,6 +46,8 @@ namespace Dovus.Game
         {
             if (!HasContext)
                 return;
+            if (WaitingForActivation())
+                return;
 
             _ageSec += WorldDeltaSec;
             float cast01 = _ageSec / Context.CastWindowSec;
@@ -55,6 +61,17 @@ namespace Dovus.Game
         void Probe()
         {
             Vector3 origin = Context.Owner != null ? Context.Owner.position : Context.Origin;
+            if (_homing && Context.Target != null)
+            {
+                Vector3 to = Context.Target.position - origin;
+                to.y = 0f;
+                if (to.magnitude <= Context.RangeM + Context.RadiusM)
+                {
+                    _applied = true;
+                    Apply(1f);
+                }
+                return;
+            }
             int count;
             if (Context.IsBurst)
             {

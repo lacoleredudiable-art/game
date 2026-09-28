@@ -25,6 +25,12 @@ namespace Dovus.Game
         /// <summary>Kalkan sonrası gerçek gelen hasar; radial kesme ve poise için.</summary>
         public event System.Action<float> DamageTaken;
 
+        /// <summary>
+        /// Can bağı / yönlendirme adaptörü. Gelen miktarı takım arkadaşına veya düşmana
+        /// paylaştırır ve oyuncuda kalacak miktarı döndürür.
+        /// </summary>
+        public System.Func<float, float> IncomingDamageRedirect { get; set; }
+
         /// <summary>Karabasan hattı: oyuncu hasar alınca koparma (SpaceDirectorHost).</summary>
         public System.Action SpaceLinkBreak { get; set; }
 
@@ -171,6 +177,9 @@ namespace Dovus.Game
             float armorMult = 1f - Mathf.Clamp(armor, 0f, 0.9f);
             float incoming = raw * Board.IncomingDamageMult * modeMult * passiveTaken * armorMult;
             float afterShield = Board.AbsorbDamage(incoming);
+            if (afterShield <= 0f) return;
+            if (IncomingDamageRedirect != null)
+                afterShield = Mathf.Max(0f, IncomingDamageRedirect(afterShield));
             if (afterShield <= 0f) return;
 
             float reflect = (PassiveDirector?.ReflectRatioAdd ?? 0f) + ActiveSkillReflectRatio;

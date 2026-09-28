@@ -1,6 +1,7 @@
 using System;
 using Dovus.Core.Execution;
 using Dovus.Core.Grammar;
+using Dovus.Core.Mechanic;
 using Dovus.Core.Tuning;
 using UnityEngine;
 
@@ -41,12 +42,18 @@ namespace Dovus.Game
             Vector3 fieldCenter,
             Action startMotion = null,
             Action<float> applyFlatDamage = null,
-            int spawnCount = 1)
+            int spawnCount = 1,
+            MechanicPlan mechanicPlan = null,
+            float activationDelaySec = 0f,
+            float tickEffectFraction = 0f)
         {
             FieldCenter = fieldCenter;
             StartMotion = startMotion;
             ApplyFlatDamage = applyFlatDamage;
             SpawnCount = Mathf.Max(1, spawnCount);
+            MechanicPlan = mechanicPlan;
+            ActivationDelaySec = Mathf.Max(0f, activationDelaySec);
+            TickEffectFraction = Mathf.Max(0f, tickEffectFraction);
             Skill = skill;
             Owner = owner;
             Target = target;
@@ -103,6 +110,9 @@ namespace Dovus.Game
         /// <summary>Summon: minion vuruşu — skill base_damage'ından bağımsız ham hasar.</summary>
         public Action<float> ApplyFlatDamage { get; }
         public int SpawnCount { get; }
+        public MechanicPlan MechanicPlan { get; }
+        public float ActivationDelaySec { get; }
+        public float TickEffectFraction { get; }
     }
 
     /// <summary>Unity yaşam döngüsü taşıyan fiziksel executor'lar için ortak taban.</summary>
@@ -110,6 +120,7 @@ namespace Dovus.Game
     {
         protected SkillExecutionContext Context { get; private set; }
         protected bool HasContext { get; private set; }
+        float _activationDelayRemainingSec;
 
         public abstract SkillExecutorKind Kind { get; }
 
@@ -122,6 +133,16 @@ namespace Dovus.Game
         {
             Context = context;
             HasContext = true;
+            _activationDelayRemainingSec = context.ActivationDelaySec;
+        }
+
+        /// <summary>Yükselen/gecikmeli-an: görsel dünyada durur, gameplay bu kapıdan sonra başlar.</summary>
+        protected bool WaitingForActivation()
+        {
+            if (_activationDelayRemainingSec <= 0f)
+                return false;
+            _activationDelayRemainingSec -= WorldDeltaSec;
+            return _activationDelayRemainingSec > 0f;
         }
 
         protected bool IsTarget(Collider collider)

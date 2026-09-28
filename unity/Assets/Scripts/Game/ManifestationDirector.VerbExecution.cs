@@ -3,6 +3,7 @@ using Dovus.Core.Combat;
 using Dovus.Core.Execution;
 using Dovus.Core.Grammar;
 using Dovus.Core.Manifestation;
+using Dovus.Core.Mechanic;
 using Dovus.Core.Status;
 using UnityEngine;
 
@@ -45,6 +46,7 @@ namespace Dovus.Game
 
         void OnPlayerDamageTaken(float incomingDamage)
         {
+            ReflectFromWorldVolumes(incomingDamage);
             if (_mobilityCc == null || _pending.Count == 0)
                 return;
             // JSON poise katmanını ekipmana bağlayan alan yok; prototip nötr "orta" kullanır.
@@ -103,7 +105,8 @@ namespace Dovus.Game
 
             float reflect = engine["reflect_ratio"].AsFloat(0f);
             float reflectSec = engine["reflect_duration_sec"].AsFloat(0f);
-            if (reflect > 0f && reflectSec > 0f && _playerStatus != null)
+            MechanicPlan mechanicPlan = MechanicPlanFor(skill);
+            if (reflect > 0f && reflectSec > 0f && _playerStatus != null && HasSelfReflect(mechanicPlan))
                 _playerStatus.GrantReflect(reflect, now + (reflectSec + lifetimeAdd) * 1000.0);
         }
 

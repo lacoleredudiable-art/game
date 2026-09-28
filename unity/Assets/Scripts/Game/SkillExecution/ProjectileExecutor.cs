@@ -1,4 +1,5 @@
 using Dovus.Core.Execution;
+using Dovus.Core.Mechanic;
 using UnityEngine;
 
 namespace Dovus.Game
@@ -12,6 +13,7 @@ namespace Dovus.Game
         GameObject _projectile;
         Vector3 _spawn;
         float _travelM;
+        bool _homing;
 
         public override SkillExecutorKind Kind => SkillExecutorKind.Projectile;
 
@@ -21,6 +23,8 @@ namespace Dovus.Game
             _spawn = context.Origin + Vector3.up
                 * Mathf.Max(context.Tuning.ExecutorProjectileMinHeightM, context.RadiusM);
             _travelM = 0f;
+            _homing = context.MechanicPlan != null
+                && MechanicWorldProfile.From(context.MechanicPlan).Homing;
 
             _projectile = HitboxVfxRegistry.Create(
                 context.VfxKey,
@@ -60,6 +64,8 @@ namespace Dovus.Game
         {
             if (!HasContext || _projectile == null)
                 return;
+            if (WaitingForActivation())
+                return;
 
             float remaining = Context.RangeM - _travelM;
             if (remaining <= 0f)
@@ -70,10 +76,18 @@ namespace Dovus.Game
 
             float step = Mathf.Min(Context.SpeedMps * WorldDeltaSec, remaining);
             Vector3 from = _projectile.transform.position;
+            Vector3 travelDirection = Context.Direction;
+            if (_homing && Context.Target != null)
+            {
+                Vector3 toTarget = Context.Target.position - from;
+                if (toTarget.sqrMagnitude > 0.0001f)
+                    travelDirection = toTarget.normalized;
+                _projectile.transform.rotation = Quaternion.LookRotation(travelDirection, Vector3.up);
+            }
             int sweptCount = Physics.SphereCastNonAlloc(
                 from,
                 Context.RadiusM,
-                Context.Direction,
+                travelDirection,
                 SweptHits,
                 step,
                 Physics.AllLayers,
@@ -82,12 +96,12 @@ namespace Dovus.Game
             {
                 if (!IsTarget(SweptHits[i].collider))
                     continue;
-                _projectile.transform.position = from + Context.Direction * SweptHits[i].distance;
+                _projectile.transform.position = from + travelDirection * SweptHits[i].distance;
                 Impact();
                 return;
             }
 
-            _projectile.transform.position = from + Context.Direction * step;
+            _projectile.transform.position = from + travelDirection * step;
             _travelM += step;
 
             int count = Physics.OverlapSphereNonAlloc(
