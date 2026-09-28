@@ -382,6 +382,9 @@ namespace Dovus.Game
             {
                 director.ConfigureWeaponSwap(WeaponSwapRules.FromJson(design.Json));
                 director.ConfigureVerbExecution(VerbExecutionData.FromJson(design.Json));
+                MobilityCcData mobilityCc = MobilityCcData.FromJson(design.Json);
+                director.ConfigureMobilityCc(mobilityCc);
+                input.BindMobilityCc(mobilityCc);
             }
             view.BindWeaponSwap(director, clock);
             input.WeaponSwapRequested += () => director.TryRequestWeaponSwap();
@@ -391,6 +394,14 @@ namespace Dovus.Game
 
             var buildSelect = root.AddComponent<BuildSelectScreen>();
             buildSelect.Configure(skills, runeManager, input, view, clock, director, !_tuning.SkipBuildSelectOnStart);
+
+            int elementTransitionMs = 300;
+            if (design != null)
+                elementTransitionMs = MiniJson.Parse(design.Json)["element_system"]["selection"]
+                    ["transition_time_ms"].AsInt(300);
+            var elementMenu = root.AddComponent<ElementRadialMenu>();
+            elementMenu.Configure(
+                director, skills, playerStatus, _tuning, view.CanvasRoot, elementTransitionMs);
 
             var v6Panel = root.AddComponent<V611DebugPanel>();
             v6Panel.Configure(input, director, buildSelect, view.CanvasRoot);

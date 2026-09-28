@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Dovus.Core.Combat;
 using Dovus.Core.Grammar;
 using Dovus.Core.Tuning;
 
@@ -40,7 +41,8 @@ namespace Dovus.Core.Status
             SkillResolution skill,
             StatusBoard caster,
             StatusBoard target,
-            StatusTuning tuning)
+            StatusTuning tuning,
+            MobilityCcData? mobilityCc = null)
         {
             if (skill.IsEmpty || tuning == null)
                 return new Result(false, false, EmptyReactions);
@@ -95,11 +97,13 @@ namespace Dovus.Core.Status
                         continue;
                     }
 
-                    ApplyKind(board, kind, tuning);
+                    ApplyKind(board, kind, tuning, mobilityCc, ParseAdjectiveId(skill.AdjectiveId));
                 }
 
                 // Sıfat engine_modifiers — fiil mechanics dışında ek durum (3’lü/4’lü farkı).
-                ApplyAdjectiveModifiers(skill, board, caster, target, self, ref knockback, ref pull, tuning, mechanics);
+                ApplyAdjectiveModifiers(
+                    skill, board, caster, target, self, ref knockback, ref pull, tuning, mechanics,
+                    mobilityCc, ParseAdjectiveId(skill.AdjectiveId));
             }
             finally
             {
@@ -125,7 +129,9 @@ namespace Dovus.Core.Status
             ref bool knockback,
             ref bool pull,
             StatusTuning tuning,
-            string[] mechanics)
+            string[] mechanics,
+            MobilityCcData? mobilityCc,
+            int adjectiveId)
         {
             JsonValue mods = skill.EngineModifiers;
             if (mods.IsNull || mods.Kind != JsonKind.Object)
@@ -135,7 +141,8 @@ namespace Dovus.Core.Status
             StatusBoard hostile = self ? target : board;
 
             if (hostile != null)
-                ApplyHostileAdjectiveModifiers(mods, hostile, tuning, mechanics);
+                ApplyHostileAdjectiveModifiers(
+                    mods, hostile, tuning, mechanics, mobilityCc, adjectiveId);
 
             if (ModifierTruthy(mods, "apply_knockback") && !self && !HasMech("knockback"))
                 knockback = true;
@@ -158,9 +165,17 @@ namespace Dovus.Core.Status
             if (ModifierTruthy(mods, "apply_confuse") && !self)
             {
                 if (!HasMech("blind"))
-                    board.Apply(StatusKind.Blind, tuning.BlindMs, 1f);
+                    board.Apply(
+                        StatusKind.Blind,
+                        mobilityCc?.ResolveCcDurationMs(StatusKind.Blind, adjectiveId, tuning.BlindMs)
+                            ?? tuning.BlindMs,
+                        1f);
                 if (!HasMech("slow"))
-                    board.Apply(StatusKind.Slow, tuning.SlowMs, tuning.SlowSpeedMult);
+                    board.Apply(
+                        StatusKind.Slow,
+                        mobilityCc?.ResolveCcDurationMs(StatusKind.Slow, adjectiveId, tuning.SlowMs)
+                            ?? tuning.SlowMs,
+                        tuning.SlowSpeedMult);
             }
         }
 
@@ -168,7 +183,9 @@ namespace Dovus.Core.Status
             JsonValue mods,
             StatusBoard board,
             StatusTuning tuning,
-            string[] mechanics)
+            string[] mechanics,
+            MobilityCcData? mobilityCc,
+            int adjectiveId)
         {
             bool HasMech(string id) => System.Array.IndexOf(mechanics, id) >= 0;
 
@@ -179,14 +196,26 @@ namespace Dovus.Core.Status
                     mult = tuning.SlowSpeedMult;
                 if (mult <= 0f || mult > 1f)
                     mult = tuning.SlowSpeedMult;
-                board.Apply(StatusKind.Slow, tuning.SlowMs, mult);
+                board.Apply(
+                    StatusKind.Slow,
+                    mobilityCc?.ResolveCcDurationMs(StatusKind.Slow, adjectiveId, tuning.SlowMs)
+                        ?? tuning.SlowMs,
+                    mult);
             }
 
             if (ModifierTruthy(mods, "apply_root") && !HasMech("root"))
-                board.Apply(StatusKind.Root, tuning.RootMs, 1f);
+                board.Apply(
+                    StatusKind.Root,
+                    mobilityCc?.ResolveCcDurationMs(StatusKind.Root, adjectiveId, tuning.RootMs)
+                        ?? tuning.RootMs,
+                    1f);
             float rootSec = mods["apply_root_sec"].AsFloat(0f);
             if (rootSec > 0f && !HasMech("root"))
-                board.Apply(StatusKind.Root, rootSec * 1000.0, 1f);
+                board.Apply(
+                    StatusKind.Root,
+                    mobilityCc?.ResolveCcDurationMs(StatusKind.Root, adjectiveId, rootSec * 1000.0)
+                        ?? rootSec * 1000.0,
+                    1f);
 
             if (ModifierTruthy(mods, "apply_burn") && !HasMech("burn"))
             {
@@ -201,11 +230,19 @@ namespace Dovus.Core.Status
                 board.Apply(StatusKind.Poison, tuning.PoisonMs, tuning.PoisonDamagePerSec);
 
             if (ModifierTruthy(mods, "apply_silence") && !HasMech("silence"))
-                board.Apply(StatusKind.Silence, tuning.SilenceMs, 1f);
+                board.Apply(
+                    StatusKind.Silence,
+                    mobilityCc?.ResolveCcDurationMs(StatusKind.Silence, adjectiveId, tuning.SilenceMs)
+                        ?? tuning.SilenceMs,
+                    1f);
 
             // Bulandırma accuracy_debuff: isabet düşer → Blind (hitbox_vfx.sifat_override.7 add_cc blind).
             if (mods["accuracy_debuff"].AsFloat(0f) > 0f && !HasMech("blind"))
-                board.Apply(StatusKind.Blind, tuning.BlindMs, 1f);
+                board.Apply(
+                    StatusKind.Blind,
+                    mobilityCc?.ResolveCcDurationMs(StatusKind.Blind, adjectiveId, tuning.BlindMs)
+                        ?? tuning.BlindMs,
+                    1f);
         }
 
         static bool ModifierTruthy(JsonValue mods, string key)
@@ -233,30 +270,37 @@ namespace Dovus.Core.Status
             return family is "mend" or "guard" or "purge";
         }
 
-        static void ApplyKind(StatusBoard board, StatusKind kind, StatusTuning t)
+        static void ApplyKind(
+            StatusBoard board,
+            StatusKind kind,
+            StatusTuning t,
+            MobilityCcData? mobilityCc,
+            int adjectiveId)
         {
+            double Duration(double fallback) =>
+                mobilityCc?.ResolveCcDurationMs(kind, adjectiveId, fallback) ?? fallback;
             switch (kind)
             {
                 case StatusKind.Stun:
-                    board.Apply(kind, t.StunMs, 1f);
+                    board.Apply(kind, Duration(t.StunMs), 1f);
                     break;
                 case StatusKind.Root:
-                    board.Apply(kind, t.RootMs, 1f);
+                    board.Apply(kind, Duration(t.RootMs), 1f);
                     break;
                 case StatusKind.Silence:
-                    board.Apply(kind, t.SilenceMs, 1f);
+                    board.Apply(kind, Duration(t.SilenceMs), 1f);
                     break;
                 case StatusKind.Slow:
-                    board.Apply(kind, t.SlowMs, t.SlowSpeedMult);
+                    board.Apply(kind, Duration(t.SlowMs), t.SlowSpeedMult);
                     break;
                 case StatusKind.Blind:
-                    board.Apply(kind, t.BlindMs, 1f);
+                    board.Apply(kind, Duration(t.BlindMs), 1f);
                     break;
                 case StatusKind.Disarm:
-                    board.Apply(kind, t.DisarmMs, 1f);
+                    board.Apply(kind, Duration(t.DisarmMs), 1f);
                     break;
                 case StatusKind.Taunt:
-                    board.Apply(kind, t.TauntMs, 1f);
+                    board.Apply(kind, Duration(t.TauntMs), 1f);
                     break;
                 case StatusKind.Fear:
                     board.Apply(kind, t.FearMs, 1f);
@@ -296,5 +340,8 @@ namespace Dovus.Core.Status
                     break;
             }
         }
+
+        static int ParseAdjectiveId(string id) =>
+            int.TryParse(id, out int value) ? value : 0;
     }
 }

@@ -31,6 +31,10 @@ namespace Dovus.Game
             bool isBurst,
             bool isFriendly,
             string colorKey,
+            string hitboxShape,
+            float hitboxAngleDeg,
+            string vfxKey,
+            string vfxColorHex,
             Action<float> applyEffect,
             GameClock clock,
             ManifestationTuning tuning,
@@ -61,6 +65,10 @@ namespace Dovus.Game
             IsBurst = isBurst;
             IsFriendly = isFriendly;
             ColorKey = colorKey ?? string.Empty;
+            HitboxShape = hitboxShape ?? string.Empty;
+            HitboxAngleDeg = Mathf.Max(0f, hitboxAngleDeg);
+            VfxKey = vfxKey ?? string.Empty;
+            VfxColorHex = vfxColorHex ?? string.Empty;
             ApplyEffect = applyEffect;
             Clock = clock;
             Tuning = tuning ?? new ManifestationTuning();
@@ -82,6 +90,10 @@ namespace Dovus.Game
         public bool IsBurst { get; }
         public bool IsFriendly { get; }
         public string ColorKey { get; }
+        public string HitboxShape { get; }
+        public float HitboxAngleDeg { get; }
+        public string VfxKey { get; }
+        public string VfxColorHex { get; }
         public Action<float> ApplyEffect { get; }
         public GameClock Clock { get; }
         public ManifestationTuning Tuning { get; }

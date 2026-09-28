@@ -20,14 +20,47 @@ namespace Dovus.Game
 
         /// <summary>Pasif çarpanları (damage_taken / armor / reflect) — yalnız oyuncu.</summary>
         public PassiveDirector PassiveDirector { get; set; }
+        public SlotPassiveDirector SlotPassiveDirector { get; set; }
+
+        /// <summary>Kalkan sonrası gerçek gelen hasar; radial kesme ve poise için.</summary>
+        public event System.Action<float> DamageTaken;
 
         /// <summary>Karabasan hattı: oyuncu hasar alınca koparma (SpaceDirectorHost).</summary>
         public System.Action SpaceLinkBreak { get; set; }
 
-        /// <summary>KinematicMotor bunu okur — StatusBoard × aktif ulti modu.</summary>
-        public float EffectiveMoveSpeedMult => Board.MoveSpeedMult * (ModeDirector?.MoveSpeedMult ?? 1f);
+        string _castMobility = string.Empty;
+        double _castMobilityUntilMs;
 
-        public bool EffectiveBlocksMovement => Board.BlocksMovement || (ModeDirector?.BlocksMovement ?? false);
+        bool CastMobilityActive => _clock != null && _clock.Director.WorldTimeMs < _castMobilityUntilMs;
+
+        /// <summary>KinematicMotor bunu okur — düşman CC'sinden ayrı cast mobility.</summary>
+        public float EffectiveMoveSpeedMult =>
+            Board.MoveSpeedMult
+            * (ModeDirector?.MoveSpeedMult ?? 1f)
+            * (CastMobilityActive && _castMobility == Dovus.Core.Grammar.SkillMobility.SlowedMove
+                ? _tuning.SlowSpeedMult
+                : 1f);
+
+        public bool EffectiveBlocksMovement =>
+            Board.BlocksMovement
+            || (ModeDirector?.BlocksMovement ?? false)
+            || (CastMobilityActive && _castMobility == Dovus.Core.Grammar.SkillMobility.Rooted)
+            || string.Equals(
+                SlotPassiveDirector?.StringModifier("cast_mobility"),
+                Dovus.Core.Grammar.SkillMobility.Rooted,
+                System.StringComparison.Ordinal);
+
+        public void GrantCastMobility(string mobility, double untilWorldMs)
+        {
+            _castMobility = mobility ?? string.Empty;
+            _castMobilityUntilMs = untilWorldMs;
+        }
+
+        public void ClearCastMobility()
+        {
+            _castMobility = string.Empty;
+            _castMobilityUntilMs = 0;
+        }
 
         StatusTuning _tuning = new();
         GameClock _clock;
@@ -141,6 +174,7 @@ namespace Dovus.Game
             if (afterShield <= 0f) return;
 
             float reflect = (PassiveDirector?.ReflectRatioAdd ?? 0f) + ActiveSkillReflectRatio;
+            reflect += SlotPassiveDirector?.ReflectRatioAdd ?? 0f;
             BossVitals reflectTarget = ReflectBossVitals ?? (_playerVitals != null ? null : _bossVitals);
             if (reflect > 0f && _playerVitals != null && reflectTarget != null && !reflectTarget.IsDown)
                 reflectTarget.ApplyDamage(afterShield * reflect);
@@ -149,6 +183,7 @@ namespace Dovus.Game
                 _bossVitals.ApplyDamage(afterShield);
             else if (_playerVitals != null)
             {
+                DamageTaken?.Invoke(afterShield);
                 if (_playerVitals.ApplyDamage(Mathf.CeilToInt(afterShield)))
                     SpaceLinkBreak?.Invoke();
                 else if (afterShield > 0f)

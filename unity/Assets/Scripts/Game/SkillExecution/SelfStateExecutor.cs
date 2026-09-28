@@ -19,6 +19,15 @@ namespace Dovus.Game
             base.Execute(context);
             _ageSec = 0f;
             Apply(1f);
+            HitboxVfxRegistry.Create(
+                context.VfxKey,
+                context.HitboxShape,
+                context.VfxColorHex,
+                OwnerPosition(),
+                context.Direction,
+                context.RadiusM,
+                context.RangeM,
+                transform);
 
             _disk = PlaceholderFactory.CreateZoneDisk(
                 context.ColorKey,

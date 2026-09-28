@@ -38,6 +38,16 @@ namespace Dovus.Game
                 alpha: context.Tuning.ExecutorFieldDiskAlpha);
             if (disk != null)
                 disk.name = $"FieldAura_{context.Skill.SkillId}";
+            HitboxVfxRegistry.Create(
+                context.VfxKey,
+                context.HitboxShape,
+                context.VfxColorHex,
+                _center,
+                context.Direction,
+                context.RadiusM,
+                context.RangeM,
+                transform,
+                context.HitboxAngleDeg);
         }
 
         void Update()
@@ -75,6 +85,14 @@ namespace Dovus.Game
             {
                 if (!IsTarget(Hits[i]))
                     continue;
+                if (Context.HitboxShape == "cone")
+                {
+                    Vector3 to = Hits[i].transform.position - _center;
+                    to.y = 0f;
+                    if (to.sqrMagnitude > 0.0001f
+                        && Vector3.Angle(Context.Direction, to) > Context.HitboxAngleDeg * 0.5f)
+                        continue;
+                }
                 Apply(_effectFraction);
                 return;
             }

@@ -103,6 +103,29 @@ namespace Dovus.Game
             SetVisible(true);
         }
 
+        public void Sync(IReadOnlyList<ActiveSlotPassive> active, double worldMs)
+        {
+            if (active == null || active.Count == 0)
+            {
+                SetVisible(false);
+                return;
+            }
+
+            _sb.Clear();
+            for (int i = 0; i < active.Count; i++)
+            {
+                ActiveSlotPassive passive = active[i];
+                if (i > 0) _sb.Append('\n');
+                _sb.Append('◆').Append(' ')
+                    .Append(string.IsNullOrEmpty(passive.Name) ? passive.RuneId.ToString() : passive.Name)
+                    .Append(' ').Append(passive.RemainingSec(worldMs).ToString("0")).Append('s');
+            }
+
+            _label.text = _sb.ToString();
+            _root.sizeDelta = new Vector2(220f, Mathf.Max(28f, 8f + active.Count * 18f));
+            SetVisible(true);
+        }
+
         static string DisplayName(string id)
         {
             if (string.IsNullOrEmpty(id))

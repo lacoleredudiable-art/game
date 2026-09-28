@@ -9,8 +9,8 @@ namespace Dovus.Game
     /// <summary>
     /// v6 7b: savaş öncesi build ekranı. 12 çift yüzlü ründen tekrarsız 6'sı seçilir; seçim
     /// sırası altıgen slotudur (1 üst, saat yönü — <see cref="HexagonLayoutScreen.DotPx"/>).
-    /// Açıkken dünya saati durur, altıgen/çubuk/orbit girdisi susar. Pasif yuva (0-2) seçimi
-    /// henüz yok; pasif efektleri stub olduğu için build pasifsiz uygulanır.
+    /// Açıkken dünya saati durur, altıgen/çubuk/orbit girdisi susar. Seçili altılı içinden
+    /// 0-2 rün pasif yuva olarak işaretlenebilir.
     /// ui_rules.build_display "2_weapons": 10 silahtan 2'si (1 = başlangıç, 2 = swap yedeği).
     /// </summary>
     public sealed class BuildSelectScreen : MonoBehaviour
@@ -43,12 +43,16 @@ namespace Dovus.Game
         readonly List<RectTransform> _safeRects = new();
         Rect _appliedSafe;
         readonly List<int> _selected = new();
+        readonly List<int> _passiveSelected = new();
         readonly Dictionary<int, Image> _cardImages = new();
         readonly Dictionary<int, GameObject> _cardBadges = new();
         readonly Dictionary<int, Text> _cardBadgeLabels = new();
+        readonly Dictionary<int, Image> _passiveBadges = new();
+        readonly Dictionary<int, Button> _passiveButtons = new();
         readonly Image[] _slotImages = new Image[RuneLoadout.SlotCount];
         readonly Text[] _slotLabels = new Text[RuneLoadout.SlotCount];
         Text _counter;
+        Text _passiveCounter;
         Text _classLabel;
         Text _status;
         Button _startButton;
@@ -93,8 +97,12 @@ namespace Dovus.Game
                 _input.Engine.Abort();
 
             _selected.Clear();
+            _passiveSelected.Clear();
             if (_runes?.Current != null)
+            {
                 _selected.AddRange(_runes.Current.RuneIds);
+                _passiveSelected.AddRange(_runes.Current.PassiveRuneIds);
+            }
             _presetIndex = FindMatchingClassIndex();
 
             _weapons.Clear();
@@ -144,7 +152,10 @@ namespace Dovus.Game
         {
             int index = _selected.IndexOf(runeId);
             if (index >= 0)
+            {
                 _selected.RemoveAt(index);
+                _passiveSelected.Remove(runeId);
+            }
             else if (_selected.Count < RuneLoadout.SlotCount)
                 _selected.Add(runeId);
             else
@@ -153,6 +164,27 @@ namespace Dovus.Game
                 return;
             }
             _presetIndex = FindMatchingClassIndex();
+            SetStatus(string.Empty);
+            Refresh();
+        }
+
+        void TogglePassive(int runeId)
+        {
+            if (!_selected.Contains(runeId))
+            {
+                SetStatus("Önce rünü build'e seç.");
+                return;
+            }
+            int index = _passiveSelected.IndexOf(runeId);
+            if (index >= 0)
+                _passiveSelected.RemoveAt(index);
+            else if (_passiveSelected.Count < RuneLoadout.MaxPassiveSlots)
+                _passiveSelected.Add(runeId);
+            else
+            {
+                SetStatus("2 pasif yuva dolu.");
+                return;
+            }
             SetStatus(string.Empty);
             Refresh();
         }
@@ -181,7 +213,9 @@ namespace Dovus.Game
         {
             if (slotIndex < 0 || slotIndex >= _selected.Count)
                 return;
+            int runeId = _selected[slotIndex];
             _selected.RemoveAt(slotIndex);
+            _passiveSelected.Remove(runeId);
             _presetIndex = FindMatchingClassIndex();
             Refresh();
         }
@@ -189,6 +223,7 @@ namespace Dovus.Game
         void ClearSelection()
         {
             _selected.Clear();
+            _passiveSelected.Clear();
             _presetIndex = -1;
             SetStatus(string.Empty);
             Refresh();
@@ -208,6 +243,7 @@ namespace Dovus.Game
                 : (_presetIndex + direction + classes.Count) % classes.Count;
             _selected.Clear();
             _selected.AddRange(classes[_presetIndex].RuneIds);
+            _passiveSelected.RemoveAll(id => !_selected.Contains(id));
             SetStatus(string.Empty);
             Refresh();
         }
@@ -231,7 +267,7 @@ namespace Dovus.Game
             }
 
             RuneLoadout previous = _runes.Current;
-            if (!_runes.TrySelect(_selected, null, out string error))
+            if (!_runes.TrySelect(_selected, _passiveSelected, out string error))
             {
                 SetStatus("Build reddedildi: " + error);
                 return;
@@ -291,6 +327,9 @@ namespace Dovus.Game
                 _cardBadges[pair.Key].SetActive(chosen);
                 if (chosen)
                     _cardBadgeLabels[pair.Key].text = (slot + 1).ToString();
+                bool passive = _passiveSelected.Contains(pair.Key);
+                _passiveBadges[pair.Key].color = passive ? AccentColor : SlotEmptyColor;
+                _passiveButtons[pair.Key].interactable = chosen;
             }
 
             for (int i = 0; i < RuneLoadout.SlotCount; i++)
@@ -303,6 +342,8 @@ namespace Dovus.Game
 
             _counter.text = $"{_selected.Count}/6";
             _counter.color = _selected.Count == RuneLoadout.SlotCount ? AccentColor : MutedText;
+            _passiveCounter.text = $"PASİF {_passiveSelected.Count}/2";
+            _passiveCounter.color = _passiveSelected.Count > 0 ? AccentColor : MutedText;
 
             if (_presetIndex >= 0)
             {
@@ -401,10 +442,13 @@ namespace Dovus.Game
             _counter = CreateText(content, "0/6", 40, MutedText, TextAnchor.MiddleRight);
             _counter.fontStyle = FontStyle.Bold;
             Place(_counter.rectTransform, 0.50f, 0.90f, 0.64f, 0.98f);
+            _passiveCounter = CreateText(content, "PASİF 0/2", 18, MutedText, TextAnchor.MiddleRight);
+            _passiveCounter.fontStyle = FontStyle.Bold;
+            Place(_passiveCounter.rectTransform, 0.50f, 0.82f, 0.64f, 0.90f);
             Text subtitle = CreateText(
                 content,
                 "12 rünün 6'sını seç. Her rün hem fiil hem sıfat; skill = ilk çizdiğin (fiil) + ikinci (sıfat). "
-                + "Seçim sırası altıgendeki yeri belirler.",
+                + "Seçim sırası altıgendeki yeri belirler. Karttaki P ile 0-2 pasif seç.",
                 18,
                 MutedText,
                 TextAnchor.UpperLeft);
@@ -478,6 +522,16 @@ namespace Dovus.Game
             _cardBadges[runeId] = badge;
             _cardBadgeLabels[runeId] = badgeLabel;
             badge.SetActive(false);
+
+            Button passive = CreateButton(rect, "P", 16, SlotEmptyColor);
+            var passiveRect = (RectTransform)passive.transform;
+            passiveRect.anchorMin = passiveRect.anchorMax = new Vector2(1f, 0f);
+            passiveRect.pivot = new Vector2(1f, 0f);
+            passiveRect.sizeDelta = new Vector2(38f, 30f);
+            passiveRect.anchoredPosition = new Vector2(-7f, 7f);
+            passive.onClick.AddListener(() => TogglePassive(captured));
+            _passiveBadges[runeId] = (Image)passive.targetGraphic;
+            _passiveButtons[runeId] = passive;
         }
 
         void BuildWeaponRow(RectTransform content)

@@ -65,7 +65,7 @@ namespace Dovus.Game
         void Update()
         {
             // T10: panel açıkken hareket girdisi de susar (bkz. HexagonInput.PanelBlocking).
-            if (TuningPanel.IsOpen || BuildSelectScreen.IsOpen)
+            if (TuningPanel.IsOpen || BuildSelectScreen.IsOpen || ElementRadialMenu.AnyOpen)
             {
                 if (_stickFingerId.HasValue)
                 {
@@ -101,7 +101,8 @@ namespace Dovus.Game
 
         void OnFingerDown(Finger finger)
         {
-            if (_stickFingerId.HasValue || TuningPanel.IsOpen || BuildSelectScreen.IsOpen)
+            if (_stickFingerId.HasValue || TuningPanel.IsOpen || BuildSelectScreen.IsOpen
+                || ElementRadialMenu.HitHoldChip(finger.screenPosition))
                 return;
 
             Vector2 pos = finger.screenPosition;

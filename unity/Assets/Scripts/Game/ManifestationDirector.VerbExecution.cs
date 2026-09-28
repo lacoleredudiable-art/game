@@ -36,6 +36,35 @@ namespace Dovus.Game
 
         public void ConfigureVerbExecution(VerbExecutionData data) => _verbData = data;
 
+        public void ConfigureMobilityCc(MobilityCcData data)
+        {
+            _mobilityCc = data;
+            _playerStatus?.Board.ConfigureMobilityCc(data);
+            _bossStatus?.Board.ConfigureMobilityCc(data);
+        }
+
+        void OnPlayerDamageTaken(float incomingDamage)
+        {
+            if (_mobilityCc == null || _pending.Count == 0)
+                return;
+            // JSON poise katmanını ekipmana bağlayan alan yok; prototip nötr "orta" kullanır.
+            float threshold = _mobilityCc.PoiseThreshold("orta");
+            if (!_mobilityCc.TryPoiseBreak(incomingDamage, threshold, out int stunMs))
+                return;
+            CancelPendingCast("poise");
+            _playerStatus?.Board.Apply(StatusKind.Stun, stunMs, 1f);
+        }
+
+        void CancelPendingCast(string reason)
+        {
+            for (int i = 0; i < _pending.Count; i++)
+                _pending[i].View?.Logic?.Abort();
+            if (_pending.Count > 0)
+                Debug.Log($"[Interrupt] startup cancelled by {reason}; count={_pending.Count}");
+            _pending.Clear();
+            _playerStatus?.ClearCastMobility();
+        }
+
         bool TryVerbHitbox(in SkillResolution skill, out VerbHitboxSpec spec)
         {
             spec = default;
@@ -156,6 +185,7 @@ namespace Dovus.Game
             if (_playerStatus != null)
                 mult *= _playerStatus.Board.OutgoingDamageMult;
             mult *= _passiveDirector?.DamageMult ?? 1f;
+            mult *= _slotPassives?.DamageMult ?? 1f;
             mult *= SelfDamageBuffMult();
             if (_bossStatus != null)
                 mult *= _bossStatus.Board.IncomingDamageMult;
@@ -164,6 +194,7 @@ namespace Dovus.Game
             _damageHud?.ShowDamage(damage, false);
             _lastDamageDealtMs = _clock.Director.WorldTimeMs;
             float lifesteal = AdjectiveLifesteal(skill);
+            lifesteal += _slotPassives?.LifestealAdd ?? 0f;
             if (lifesteal > 0f && _player != null)
             {
                 var vitals = _player.GetComponent<PlayerVitals>();
