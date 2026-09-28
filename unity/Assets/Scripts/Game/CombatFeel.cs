@@ -39,6 +39,9 @@ namespace Dovus.Game
 
         public ExchangeResult? LastExchange { get; private set; }
 
+        /// <summary>Boss vuruşu çözüldü (dodge / isabet / güvenli) — ses sunumu dinler.</summary>
+        public event System.Action<ExchangeResult> Exchanged;
+
         public void BindActors(HitFlash playerFlash, HitFlash bossFlash)
         {
             _playerFlash = playerFlash;
@@ -129,6 +132,7 @@ namespace Dovus.Game
             _hud?.NoteExchange(result);
             // Büyük, parlak tepki yazısı (T9) — Safe'i göstermez, sadece Dodged/Hit (§6).
             _readout?.NoteExchange(result);
+            Exchanged?.Invoke(result);
         }
 
         void LateUpdate()

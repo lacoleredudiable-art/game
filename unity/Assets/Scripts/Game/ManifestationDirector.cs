@@ -2438,6 +2438,7 @@ namespace Dovus.Game
             SyncVisualDelivery();
             ApplySkillAnimation(skill);
             StartCastVfxTimer(skill, words);
+            SfxDirector.Play(SfxLibrary.CastPrefix + skill.VerbFamily);
         }
 
         /// <summary>

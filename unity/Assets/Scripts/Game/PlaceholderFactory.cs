@@ -146,7 +146,9 @@ namespace Dovus.Game
         {
             if (string.IsNullOrEmpty(styleId))
                 return null;
-            return Resources.Load<GameObject>($"{folder}/{styleId}");
+            // VfxLibrary anahtarı "Trail/straight" → tablo, sonra Resources/Vfx/Trail/straight.
+            string key = folder.Substring(folder.IndexOf('/') + 1) + "/" + styleId;
+            return VfxLibrary.Current.TryResolve(key, out GameObject prefab, out _) ? prefab : null;
         }
 
         static void WarnMissingOnce(string kind, string styleId)

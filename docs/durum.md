@@ -17,6 +17,38 @@
 **Dal:** `feat/feel-*` fazları · **Sıradaki:** his/sunum turu fazları (plan: Faz 0 his
 ayarları → 1 boss anim → 2 oyuncu anim → 3 HUD → 4 VFX/SFX → 5 telefon)
 
+> **28 Eylül — His turu Faz 4: VFX + SFX (dal `feat/feel-f4-vfx-sfx`).**
+> VFX çözümleme: `Core/Presentation/VfxKeyChain` (`VFX_{Element}_{Fiil}_{Sifat}` →
+> `VFX_{Element}_{Fiil}` → `VFX_{Fiil}`, testli) + `VfxLibrary` SO (`Resources/VfxLibrary.asset`,
+> şimdilik boş tablo: anahtar → prefab + ömür). Sıra: tablo → `Resources/Vfx/Hitbox/{k}` →
+> `Resources/Vfx/{k}` → prosedürel. `HitboxVfxRegistry` ve `PlaceholderFactory` (anahtar
+> `Trail/{stil}`, `Impact/{stil}`) bu zincirden geçer. His efektleri sabit `FX_*` anahtarlı
+> (`FX_HitSpark`, `FX_CritSpark`, `FX_DodgeDust`, `FX_FootDust`, `FX_BossStepDust`,
+> `FX_SlamShockwave`, `FX_GroundCrack`, `FX_FireCone`); prefab yoksa `FeelVfx` koddan kurar:
+> isabet kıvılcımı (element rengi, kritikte büyük), dodge tozu, ayak/boss adım tozu, slam şok
+> halkası + toz + zemin çatlağı (prosedürel doku, `FxTween` ile söner), alev konisi (koni açısı
+> ve menzil saldırıdan). `SfxLibrary` SO (`Resources/SfxLibrary.asset`, boş = varsayılanlar) +
+> `SfxDirector` (10 sesli 2D havuz, pitch/volume rastgele, olay başına min aralık, aynı klibi
+> üst üste çalmaz). Klipler `Resources/Sfx/{olay}/` — **Kenney CC0** (Impact/Interface/RPG/
+> Sci-fi, `Sfx/CREDITS.txt`, 58 ogg ≈ 1 MB). Olaylar: `hit`, `crit`, `player_hurt`, `dodge`,
+> `perfect_dodge`, `boss_windup/slam/fire/roar/step`, `ui_tap`, `footstep`, `cast_{family}`
+> (element-sistemi.json `verbs[].family`: strike/mend/motion/guard/control/disrupt/purge/special).
+> Bağlantı: `PresentationFx` (BossDirector `AttackWindupStarted`/`AttackStruck`/`BossPhaseChanged`,
+> DodgeMotion `SlideStarted`, CombatFeel `Exchanged`, HexagonInput `DotAccepted`) +
+> `ManifestationDirector.NotifyBossStruck` (kıvılcım + hit/crit) + `ShoutSkill` (cast sesi) +
+> `FootstepEmitter` (mesafe tabanlı adım; oyuncu + boss). Hepsi yalnız sunum, hasar zamanlaması
+> değişmedi. CFX Remaster Free / Particle Pack klasörleri `.gitignore`'da
+> (`JMO Assets/`, `EffectExamples/`, `ParticlePack/`).
+> **Uydurma/önerilen:** `VfxLibrary` prosedürel alanlarının tamamı; `SfxLibrary` varsayılan
+> ses/pitch/aralık tablosu; `FootstepStrideM`=2.2, `BossFootstepStrideM`=2.4; klip seçimleri
+> (kükreme için Kenney'de yaratık sesi yok → alçak frekans patlama yer tutucu).
+> **Doğrulandı (Editor Play):** derleme + konsol temiz; çalan olaylar: ui_tap, cast_strike, hit,
+> dodge, boss_windup, boss_slam, boss_fire, boss_roar, boss_step, player_hurt, footstep;
+> slam halkası + çatlak + kıvılcım ekranda; `dotnet test` 308/308.
+> **Doğrulanamadı:** `crit` ve `perfect_dodge` sesleri oyunda tetiklenmedi (koşul gerektiriyor);
+> CFX / Particle Pack import'u sahibinde (Asset Store oturumu) — paket gelince prefab'lar
+> `VfxLibrary`'ye sürüklenir; seslerin kulak kontrolü ve miks dengesi; alev konisi göz kontrolü.
+
 > **28 Eylül — His turu Faz 3: HUD cilası (dal `feat/feel-f3-hud`).**
 > uGUI'de kalındı; TMP (ugui 2.0 içi) essentials `Assets/TextMesh Pro`'ya alındı. Ortak katman:
 > `HudTheme` (SO, `Resources/HudTheme` yoksa varsayılan örnek; renk/dp/juice süreleri) +
