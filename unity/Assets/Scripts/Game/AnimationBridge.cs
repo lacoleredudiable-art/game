@@ -45,6 +45,17 @@ namespace Dovus.Game
         public bool Play(AnimationFrameNode node, Animator animator, double worldMs)
         {
             Stop();
+            StartFrameTimer(node, worldMs);
+            LastPlayApplied = TryPlayState(animator, node.AnimatorState);
+            return LastPlayApplied;
+        }
+
+        /// <summary>
+        /// Animator'a dokunmadan yalnız kare zamanlayıcısını başlatır (VFX çıkış anı için).
+        /// Son Play sonuç alanlarını silmez.
+        /// </summary>
+        public void StartFrameTimer(AnimationFrameNode node, double worldMs)
+        {
             _node = node;
             _startWorldMs = worldMs;
             _playing = true;
@@ -52,10 +63,13 @@ namespace Dovus.Game
             _vfxFired = false;
             ParseDamageSchedule(node);
             _spawnVfxFrame = node.SpawnVfxAtFrame;
-
-            LastPlayApplied = TryPlayState(animator, node.AnimatorState);
-            return LastPlayApplied;
         }
+
+        /// <summary>
+        /// Atanırsa state'ler Animator.Play yerine buradan oynar (ActorVisual crossfade +
+        /// üst gövde yönlendirmesi). null → doğrudan Animator.Play.
+        /// </summary>
+        public Func<string, bool> StatePlayer { get; set; }
 
         /// <summary>
         /// v6 AnimationDatabase'in mevcut controller state'i. Frame metadata yoksa yalnız
@@ -192,7 +206,7 @@ namespace Dovus.Game
         public static double FrameToElapsedSeconds(int frame, int totalFrames, int totalDurationMs) =>
             FrameToElapsedMs(frame, totalFrames, totalDurationMs) / 1000.0;
 
-        static bool TryPlayState(Animator animator, string stateName)
+        bool TryPlayState(Animator animator, string stateName)
         {
             if (animator == null || !animator.isActiveAndEnabled
                 || animator.runtimeAnimatorController == null)
@@ -209,6 +223,9 @@ namespace Dovus.Game
             // Controller'da yoksa sessiz atla (Quaternius ↔ JSON eşlemesi).
             if (!HasState(animator, stateName))
                 return false;
+
+            if (StatePlayer != null)
+                return StatePlayer(stateName);
 
             animator.Play(stateName, LayerIndex, 0f);
             animator.Update(0f);

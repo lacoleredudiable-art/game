@@ -38,6 +38,10 @@ namespace Dovus.Game
         public float AnimSpeedDampSec = 0.08f;
         /// <summary>Aksiyon state'ine giriş crossfade süresi (eskisi sert kesim). Önerilen.</summary>
         public float AnimCrossFadeSec = 0.06f;
+        /// <summary>Düz vuruş görsel döngüsü (A→B→C) bu süre vuruşsuz geçince A'ya döner. Önerilen.</summary>
+        public float BasicStrikeComboResetSec = 1.2f;
+        /// <summary>Animator Speed bu eşiğin üstündeyken cast üst gövde katmanında oynar (bacaklar koşar). Önerilen.</summary>
+        public float UpperBodyCastMinSpeed = 0.15f;
 
         // Spec §11 hasar 22; oyuncu tavanı belgede yok. Bir çakma = ölüm — respawn ≤2 sn
         // (§11) döngüsü böyle denenebiliyor. T11 his turunda ayarlanacak.
@@ -380,6 +384,8 @@ namespace Dovus.Game
             if (MinStickSpeedFrac <= 0.01f) MinStickSpeedFrac = 0.4f;
             if (AnimSpeedDampSec <= 0f) AnimSpeedDampSec = 0.08f;
             if (AnimCrossFadeSec <= 0f) AnimCrossFadeSec = 0.06f;
+            if (BasicStrikeComboResetSec <= 0f) BasicStrikeComboResetSec = 1.2f;
+            if (UpperBodyCastMinSpeed <= 0f) UpperBodyCastMinSpeed = 0.15f;
             if (BossTurnRateDegPerSec <= 0.01f) BossTurnRateDegPerSec = 240f;
             if (BossSlamImpactNorm <= 0.01f) BossSlamImpactNorm = 0.42f;
             if (BossConeImpactNorm <= 0.01f) BossConeImpactNorm = 0.40f;

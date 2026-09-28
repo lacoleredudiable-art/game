@@ -20,6 +20,12 @@ namespace Dovus.Game
         public const string StateDeath = "Death";
         public const string StateBasicStrike = "BasicStrike";
         public const string StateLocomotion = "Locomotion";
+        public const string StateCastPierce = "CastPierce";
+        public const string StateCastShoot = "CastShoot";
+        public const string UpperLayerName = "UpperBody";
+        public const string UpperStatePrefix = "Upper";
+
+        static readonly string[] StrikeCycle = { StateBasicStrike, "BasicStrikeB", "BasicStrikeC" };
 
         // Eski sabit isimleri — Trigger*() çağrıları artık Play(state).
         public const string TriggerDodge = StateDodge;
@@ -45,6 +51,7 @@ namespace Dovus.Game
         public void Bind(Animator animator, params Renderer[] hideWhenPresent)
         {
             _animator = animator;
+            _upperLayer = -2;
             _hideWhenVisualPresent = hideWhenPresent;
             if (_animator != null && _hideWhenVisualPresent != null)
             {
@@ -88,11 +95,37 @@ namespace Dovus.Game
             PlayState(state);
         }
 
-        /// <summary>Merkez düz vuruş — jab clip.</summary>
+        /// <summary>
+        /// Merkez düz vuruş. Yalnız görsel: yakın silahta A→B→C klip döngüsü, menzilli silahta
+        /// atış klibi. Hasar/zamanlama buradan etkilenmez.
+        /// </summary>
         public void PulseBasicStrike()
         {
-            PlayState(StateBasicStrike);
+            if (RangedDelivery && PlayAction(StateCastShoot))
+                return;
+
+            float now = Time.time;
+            if (now - _lastStrikeTime > StrikeComboResetSec)
+                _strikeIndex = 0;
+            _lastStrikeTime = now;
+            string state = StrikeCycle[_strikeIndex % StrikeCycle.Length];
+            _strikeIndex++;
+            if (!PlayAction(state))
+                PlayAction(StateBasicStrike);
         }
+
+        /// <summary>Kuşanılmış silah menzilli teslim yolu mu (mermi cast'i atış klibine düşer).</summary>
+        public bool RangedDelivery { get; set; }
+
+        /// <summary>Düz vuruş döngüsü sıfırlanma süresi (sn).</summary>
+        public float StrikeComboResetSec { get; set; } = 1.2f;
+
+        /// <summary>Speed parametresi bu eşiğin üstündeyse aksiyon üst gövde katmanına gider.</summary>
+        public float UpperBodyMinSpeed { get; set; } = 0.15f;
+
+        int _strikeIndex;
+        float _lastStrikeTime = float.NegativeInfinity;
+        int _upperLayer = -2;
 
         public void Trigger(string triggerOrStateName)
         {
@@ -162,27 +195,85 @@ namespace Dovus.Game
             PlayState(FamilyStates[i]);
         }
 
-        void PlayState(string stateName)
+        void PlayState(string stateName) => PlayAction(stateName);
+
+        /// <summary>
+        /// Aksiyon state'i oynatır. Menzilli teslimde mermi cast'i atış klibine düşer; karakter
+        /// hareket ederken Cast/vuruş state'i varsa üst gövde katmanında oynar (bacaklar
+        /// Locomotion'da kalır). State yoksa false.
+        /// </summary>
+        public bool PlayAction(string stateName)
         {
             if (_animator == null || !_animator.isActiveAndEnabled
                 || _animator.runtimeAnimatorController == null
                 || string.IsNullOrEmpty(stateName))
-                return;
+                return false;
+
+            if (RangedDelivery && stateName == StateCastPierce
+                && _animator.HasState(0, Animator.StringToHash(StateCastShoot)))
+                stateName = StateCastShoot;
+
+            if (IsMoving() && TryPlayUpper(stateName))
+                return true;
 
             int hash = Animator.StringToHash(stateName);
             if (!_animator.HasState(0, hash))
-                return;
+                return false;
 
-            bool sameState = _animator.GetCurrentAnimatorStateInfo(0).shortNameHash == hash
-                             || (_animator.IsInTransition(0)
-                                 && _animator.GetNextAnimatorStateInfo(0).shortNameHash == hash);
+            CrossFadeOrRestart(0, hash);
+            ClearUpper();
+            return true;
+        }
+
+        void ClearUpper()
+        {
+            if (_upperLayer == -2)
+                _upperLayer = _animator.GetLayerIndex(UpperLayerName);
+            if (_upperLayer < 0)
+                return;
+            int empty = Animator.StringToHash("Empty");
+            if (_animator.HasState(_upperLayer, empty)
+                && _animator.GetCurrentAnimatorStateInfo(_upperLayer).shortNameHash != empty)
+                _animator.CrossFadeInFixedTime(empty, CrossFadeSec, _upperLayer, 0f);
+        }
+
+        bool IsMoving()
+        {
+            foreach (var p in _animator.parameters)
+            {
+                if (p.name == ParamSpeed && p.type == AnimatorControllerParameterType.Float)
+                    return _animator.GetFloat(ParamSpeed) >= UpperBodyMinSpeed;
+            }
+            return false;
+        }
+
+        bool TryPlayUpper(string stateName)
+        {
+            if (!stateName.StartsWith("Cast") && !stateName.StartsWith(StateBasicStrike))
+                return false;
+            if (_upperLayer == -2)
+                _upperLayer = _animator.GetLayerIndex(UpperLayerName);
+            if (_upperLayer < 0)
+                return false;
+            int hash = Animator.StringToHash(UpperStatePrefix + stateName);
+            if (!_animator.HasState(_upperLayer, hash))
+                return false;
+            CrossFadeOrRestart(_upperLayer, hash);
+            return true;
+        }
+
+        void CrossFadeOrRestart(int layer, int hash)
+        {
+            bool sameState = _animator.GetCurrentAnimatorStateInfo(layer).shortNameHash == hash
+                             || (_animator.IsInTransition(layer)
+                                 && _animator.GetNextAnimatorStateInfo(layer).shortNameHash == hash);
             if (CrossFadeSec > 0f && !sameState)
             {
-                _animator.CrossFadeInFixedTime(hash, CrossFadeSec, 0, 0f);
+                _animator.CrossFadeInFixedTime(hash, CrossFadeSec, layer, 0f);
                 return;
             }
 
-            _animator.Play(hash, 0, 0f);
+            _animator.Play(hash, layer, 0f);
             _animator.Update(0f);
         }
 
