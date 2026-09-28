@@ -569,6 +569,14 @@ namespace Dovus.Game
 
         void Update()
         {
+            if (_toggleGo != null)
+            {
+                // Build ekranı sağ üstte kendi başlığını taşıyor; AYAR onun üstüne biniyordu.
+                bool showToggle = IsOpen || !BuildSelectScreen.IsOpen;
+                if (_toggleGo.activeSelf != showToggle)
+                    _toggleGo.SetActive(showToggle);
+            }
+
             if (_dirty)
             {
                 _saveDebounceRemaining -= Time.unscaledDeltaTime;
