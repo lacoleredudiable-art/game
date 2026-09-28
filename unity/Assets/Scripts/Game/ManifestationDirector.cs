@@ -1420,6 +1420,7 @@ namespace Dovus.Game
             _pose?.PulseRune(rune, worldMs);
             if (_visual == null)
                 return;
+            SyncVisualDelivery();
 
             EffectSilhouette s;
             SkillResolution skill = SkillResolution.Empty;
@@ -1593,6 +1594,7 @@ namespace Dovus.Game
                 if (spawnedForBasicStrike)
                 {
                     FaceAim();
+                    SyncVisualDelivery();
                     _visual?.PulseBasicStrike();
                     _pose?.PulseRune(sentence.Words[0].Rune, _clock.Director.WorldTimeMs);
                 }
@@ -2433,7 +2435,9 @@ namespace Dovus.Game
             // Skill adı altıgen üstündeki SkillPreviewHud'da; büyük ReactionReadout dodge/tepki içindir.
             SkillFeel.CameraKick(skill.VerbFamily, _camera, _combat?.Feel);
             // PulseRune (PulseActor) kalır — AnimationBridge eklenir, yerine geçmez.
+            SyncVisualDelivery();
             ApplySkillAnimation(skill);
+            StartCastVfxTimer(skill, words);
         }
 
         /// <summary>

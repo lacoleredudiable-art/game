@@ -17,6 +17,28 @@
 **Dal:** `feat/feel-*` fazları · **Sıradaki:** his/sunum turu fazları (plan: Faz 0 his
 ayarları → 1 boss anim → 2 oyuncu anim → 3 HUD → 4 VFX/SFX → 5 telefon)
 
+> **28 Eylül — His turu Faz 2: oyuncu animasyon seti (dal `feat/feel-f2-player-anim`).**
+> Hepsi yalnız görsel; hasar/etki doğumu zamanlaması değişmedi. `ActorVisual.PulseBasicStrike`
+> düz vuruşta `BasicStrike → BasicStrikeB → BasicStrikeC` döner (`BasicStrikeComboResetSec`
+> vuruşsuz geçince A'ya döner); menzilli silahta (`weapons[].type == "ranged"`: top/asa/tılsım)
+> `CastShoot` oynar ve mermi cast'i (`CastPierce`) de `CastShoot`'a düşer. Yeni
+> `ActorVisual.PlayAction`: `Speed ≥ UpperBodyCastMinSpeed` iken Cast/vuruş `UpperBody`
+> maskeli katmanında (`Upper*` state) oynar, bacaklar Locomotion'da kalır; tam gövde
+> state'leri (Dodge/Hit/Death/durağan cast) üst katmanı `Empty`'ye çeker. Rooted cast'te motor
+> durur → Speed sönümlenir → bacaklar idle'a iner (ayrı kural yok). `AnimationBridge.StatePlayer`
+> ile v6.1 `PlayBinding` yolu da ActorVisual'dan geçer (crossfade + üst gövde).
+> `AnimationBridge.StartFrameTimer` + `ManifestationDirector.CastPresentation.cs`: v6.1 skill'de
+> oynayan state'in prezentasyon karşılığı (`animator_state` eşlemesi; menzilli → `cast_*`,
+> yakın → `melee_*` tercih) `spawn_vfx_at_frame` anında sağ elde `CastFlash` parçacığı
+> (element rengi; değerler BangBurst'ten). Bind aracı `UpperBasicStrike/B/C` ekler.
+> **Uydurma/önerilen:** `BasicStrikeComboResetSec`=1.2, `UpperBodyCastMinSpeed`=0.15.
+> **Doğrulandı (Editor Play):** vuruş döngüsü A B C A; koşarken cast → `UpperCastPierce` +
+> taban Locomotion; skill kapanışında `CastFlash` 1 kez; konsol hatasız; `dotnet test` 305/305.
+> **Doğrulanamadı:** Mixamo kılıç seti indirilmedi (token yok) — `tools/mixamo-jobs/player.json`
+> hazır: `node tools/mixamo-download.mjs <token> unity/Assets/Art/Mixamo/Player tools/mixamo-jobs/player.json`
+> → Bind menüsü; şimdilik A/B/C = Melee_Thrust/Slash/Punch, CastShoot = Melee_Thrust.
+> Üst gövde karışımının göz kontrolü; koşu başlangıç/duruş ve küçük/büyük darbe klipleri yok.
+
 > **28 Eylül — His turu Faz 1: boss animasyonu (dal `feat/feel-f1-boss-anim`).**
 > `BossVisual` artık state crossfade ile sürülür: `Locomotion` (idle/walk blend, `LocoSpeed`
 > = zemin hızı / klip kök hızı → kayma yok), `BossSlam`/`BossBreath` (windup),

@@ -134,6 +134,8 @@ namespace Dovus.Game
             if (playerAnim != null)
                 visual.Bind(playerAnim, player.GetComponent<Renderer>());
             visual.CrossFadeSec = _tuning.AnimCrossFadeSec;
+            visual.StrikeComboResetSec = _tuning.BasicStrikeComboResetSec;
+            visual.UpperBodyMinSpeed = _tuning.UpperBodyCastMinSpeed;
 
             var bossVisual = boss.AddComponent<BossVisual>();
             if (bossAnim != null)

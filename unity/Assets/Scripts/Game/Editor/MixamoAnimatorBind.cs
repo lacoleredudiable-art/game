@@ -124,7 +124,7 @@ namespace Dovus.Game.EditorTools
             AddActionState(sm, "BasicStrikeB", strikeB, 740, 80, 0.78f, 0.08f);
             AddActionState(sm, "BasicStrikeC", strikeC, 740, 160, 0.78f, 0.08f);
 
-            BuildUpperBodyLayer(ac, pierce, sweep, slam, channel, guard, shoot);
+            BuildUpperBodyLayer(ac, pierce, sweep, slam, channel, guard, shoot, strikeA, strikeB, strikeC);
             EditorUtility.SetDirty(ac);
         }
 
@@ -159,7 +159,11 @@ namespace Dovus.Game.EditorTools
             var empty = sm.AddState("Empty", new Vector3(300, 0, 0));
             sm.defaultState = empty;
 
-            string[] names = { "UpperCastPierce", "UpperCastSweep", "UpperCastSlam", "UpperCastChannel", "UpperCastGuard", "UpperCastShoot" };
+            string[] names =
+            {
+                "UpperCastPierce", "UpperCastSweep", "UpperCastSlam", "UpperCastChannel", "UpperCastGuard",
+                "UpperCastShoot", "UpperBasicStrike", "UpperBasicStrikeB", "UpperBasicStrikeC",
+            };
             for (int i = 0; i < names.Length && i < clips.Length; i++)
             {
                 var st = sm.AddState(names[i], new Vector3(520, i * 80, 0));
