@@ -268,9 +268,9 @@ def write_folder_meta(path):
         "folderAsset: yes\n"
         "DefaultImporter:\n"
         "  externalObjects: {}\n"
-        "  userData: \n"
-        "  assetBundleName: \n"
-        "  assetBundleVariant: \n",
+        "  userData:\n"
+        "  assetBundleName:\n"
+        "  assetBundleVariant:\n",
         encoding="utf-8",
     )
 
@@ -359,21 +359,21 @@ def write_texture_meta(path):
         "    serializedVersion: 2\n"
         "    sprites: []\n"
         "    outline: []\n"
-        "    customData: \n"
+        "    customData:\n"
         "    physicsShape: []\n"
         "    bones: []\n"
-        "    spriteID: \n"
+        "    spriteID:\n"
         "    internalID: 0\n"
         "    vertices: []\n"
-        "    indices: \n"
+        "    indices:\n"
         "    edges: []\n"
         "    weights: []\n"
         "    secondaryTextures: []\n"
         "    nameFileIdTable: {}\n"
-        "  mipmapLimitGroupName: \n"
-        "  userData: \n"
-        "  assetBundleName: \n"
-        "  assetBundleVariant: \n",
+        "  mipmapLimitGroupName:\n"
+        "  userData:\n"
+        "  assetBundleName:\n"
+        "  assetBundleVariant:\n",
         encoding="utf-8",
     )
 
