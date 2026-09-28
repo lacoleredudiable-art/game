@@ -20,8 +20,13 @@ namespace Dovus.Game
         public static void HitSpark(Vector3 pos, Color tint, bool crit)
         {
             VfxLibrary lib = VfxLibrary.Current;
-            if (lib.TrySpawn(crit ? VfxLibrary.CritSpark : VfxLibrary.HitSpark, pos, Quaternion.identity) != null)
+            GameObject prefab = lib.TrySpawn(crit ? VfxLibrary.CritSpark : VfxLibrary.HitSpark, pos, Quaternion.identity);
+            if (prefab != null)
+            {
+                if (!crit)
+                    VfxLibrary.Tint(prefab, tint, lib.HitSparkTintStrength);
                 return;
+            }
 
             float mult = crit ? lib.CritSparkMult : 1f;
             ParticleSystem ps = NewBurst("HitSpark", pos, Quaternion.identity, additive: true);
@@ -67,8 +72,10 @@ namespace Dovus.Game
         {
             VfxLibrary lib = VfxLibrary.Current;
             Vector3 ground = new(center.x, GroundY, center.z);
-            bool wave = lib.TrySpawn(VfxLibrary.SlamShockwave, ground, Quaternion.identity) != null;
-            bool crack = lib.TrySpawn(VfxLibrary.GroundCrack, ground, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f)) != null;
+            float diameter = radiusM * 2f;
+            bool wave = lib.TrySpawn(VfxLibrary.SlamShockwave, ground, Quaternion.identity, null, diameter) != null;
+            bool crack = lib.TrySpawn(VfxLibrary.GroundCrack, ground, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f),
+                null, diameter) != null;
 
             if (!wave)
             {
@@ -103,7 +110,7 @@ namespace Dovus.Game
             VfxLibrary lib = VfxLibrary.Current;
             forward.y = 0f;
             Quaternion rot = forward.sqrMagnitude > 0.0001f ? Quaternion.LookRotation(forward.normalized) : Quaternion.identity;
-            if (lib.TrySpawn(VfxLibrary.FireCone, origin, rot) != null)
+            if (lib.TrySpawn(VfxLibrary.FireCone, origin, rot, null, reachM) != null)
                 return;
 
             ParticleSystem ps = NewBurst("FireCone", origin, rot, additive: true);

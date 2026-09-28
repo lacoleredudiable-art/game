@@ -33,9 +33,15 @@ namespace Dovus.Game
             public GameObject Prefab;
             /// <summary>Prefab örneği bu kadar sonra yok edilir (0 = prefab kendi yönetir).</summary>
             public float LifetimeSec;
+            /// <summary>Prefab'ın 1x ölçekte kapladığı boyut (m); çağıran boyut verirse ona ölçeklenir (0 = ölçeklenmez).</summary>
+            public float ReferenceSizeM;
         }
 
         public List<Entry> Entries = new();
+
+        [Header("Paket prefab'ı renklendirme — önerilen")]
+        [Range(0f, 1f)] public float ImpactTintStrength = 0.75f;
+        [Range(0f, 1f)] public float HitSparkTintStrength = 0.5f;
 
         [Header("Prosedürel yedek — hepsi önerilen (docs/durum.md his turu Faz 4)")]
         public int HitSparkCount = 14;
@@ -89,16 +95,21 @@ namespace Dovus.Game
         }
 
         /// <summary>Zincirdeki ilk bulunan prefab; hiçbiri yoksa false (çağıran prosedürel çizer).</summary>
-        public bool TryResolve(string key, out GameObject prefab, out float lifetimeSec)
+        public bool TryResolve(string key, out GameObject prefab, out float lifetimeSec) =>
+            TryResolve(key, out prefab, out lifetimeSec, out _);
+
+        bool TryResolve(string key, out GameObject prefab, out float lifetimeSec, out float referenceSizeM)
         {
             prefab = null;
             lifetimeSec = 0f;
+            referenceSizeM = 0f;
             foreach (string candidate in VfxKeyChain.Expand(key))
             {
                 if (Map.TryGetValue(candidate, out Entry e) && e.Prefab != null)
                 {
                     prefab = e.Prefab;
                     lifetimeSec = e.LifetimeSec;
+                    referenceSizeM = e.ReferenceSizeM;
                     return true;
                 }
                 if (Missing.Contains(candidate))
@@ -115,15 +126,60 @@ namespace Dovus.Game
 
         static readonly HashSet<string> Missing = new(StringComparer.Ordinal);
 
-        /// <summary>Çözülen prefab'ı örnekler; yoksa null.</summary>
-        public GameObject TrySpawn(string key, Vector3 position, Quaternion rotation, Transform parent = null)
+        /// <summary>
+        /// Çözülen prefab'ı örnekler; yoksa null. <paramref name="sizeM"/> &gt; 0 ve kayıtta
+        /// <see cref="Entry.ReferenceSizeM"/> varsa örnek o boyuta ölçeklenir.
+        /// </summary>
+        public GameObject TrySpawn(string key, Vector3 position, Quaternion rotation, Transform parent = null,
+            float sizeM = 0f)
         {
-            if (!TryResolve(key, out GameObject prefab, out float life))
+            if (!TryResolve(key, out GameObject prefab, out float life, out float refSize))
                 return null;
             GameObject go = Instantiate(prefab, position, rotation, parent);
+            if (sizeM > 0f && refSize > 0f)
+                ScaleTo(go, sizeM / refSize);
             if (life > 0f)
                 Destroy(go, life);
             return go;
+        }
+
+        static void ScaleTo(GameObject go, float factor)
+        {
+            go.transform.localScale *= factor;
+            foreach (ParticleSystem ps in go.GetComponentsInChildren<ParticleSystem>(true))
+            {
+                var main = ps.main;
+                main.scalingMode = ParticleSystemScalingMode.Hierarchy;
+            }
+        }
+
+        /// <summary>Paket prefab'ının başlangıç rengini elemente doğru çeker (alfa korunur).</summary>
+        public static void Tint(GameObject go, Color tint, float strength)
+        {
+            if (go == null || strength <= 0f)
+                return;
+            foreach (ParticleSystem ps in go.GetComponentsInChildren<ParticleSystem>(true))
+            {
+                var main = ps.main;
+                ParticleSystem.MinMaxGradient c = main.startColor;
+                switch (c.mode)
+                {
+                    case ParticleSystemGradientMode.Color:
+                        main.startColor = Mix(c.color, tint, strength);
+                        break;
+                    case ParticleSystemGradientMode.TwoColors:
+                        main.startColor = new ParticleSystem.MinMaxGradient(
+                            Mix(c.colorMin, tint, strength), Mix(c.colorMax, tint, strength));
+                        break;
+                }
+            }
+        }
+
+        static Color Mix(Color from, Color tint, float t)
+        {
+            Color c = Color.Lerp(from, tint, t);
+            c.a = from.a;
+            return c;
         }
 
         Dictionary<string, Entry> Map

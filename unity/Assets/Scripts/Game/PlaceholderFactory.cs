@@ -79,6 +79,7 @@ namespace Dovus.Game
                 var instance = UnityEngine.Object.Instantiate(asset, parent);
                 instance.name = $"Impact_{styleId}";
                 instance.transform.position = position;
+                VfxLibrary.Tint(instance, ResolveElementColor(elementName), VfxLibrary.Current.ImpactTintStrength);
                 return instance;
             }
 

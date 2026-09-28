@@ -12,7 +12,105 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2465604b3d15c242bdb06caf48369c7, type: 3}
   m_Name: VfxLibrary
   m_EditorClassIdentifier: Dovus.Game::Dovus.Game.VfxLibrary
-  Entries: []
+  Entries:
+  - Key: FX_HitSpark
+    Prefab: {fileID: 1429954232896169633, guid: 83036083a4ebcd34f98131bd3cf6f4d2, type: 3}
+    LifetimeSec: 2
+    ReferenceSizeM: 0
+  - Key: FX_CritSpark
+    Prefab: {fileID: 5880797563127281583, guid: 265d3a5ba69981a4698ceabcedf368b0, type: 3}
+    LifetimeSec: 2
+    ReferenceSizeM: 0
+  - Key: FX_DodgeDust
+    Prefab: {fileID: 141433446842962269, guid: 9fe8f8b3288e45a44af36ff8aa04486e, type: 3}
+    LifetimeSec: 2.5
+    ReferenceSizeM: 0
+  - Key: FX_SlamShockwave
+    Prefab: {fileID: 3432958286849152088, guid: 87ee7299dd44ed747af24dbb91bcd33b, type: 3}
+    LifetimeSec: 3
+    ReferenceSizeM: 3
+  - Key: FX_GroundCrack
+    Prefab: {fileID: 1314945738539566, guid: 32c9fd11a72259d45aa26ae41c34c5aa, type: 3}
+    LifetimeSec: 3
+    ReferenceSizeM: 4
+  - Key: FX_FireCone
+    Prefab: {fileID: 8764043878647920493, guid: c4ed38c72957f2241ad144a1614956d9, type: 3}
+    LifetimeSec: 3
+    ReferenceSizeM: 6
+  - Key: Impact/strike
+    Prefab: {fileID: 1429954232896169633, guid: 83036083a4ebcd34f98131bd3cf6f4d2, type: 3}
+    LifetimeSec: 2
+    ReferenceSizeM: 0
+  - Key: Impact/cleave
+    Prefab: {fileID: 1429954232896169633, guid: 83036083a4ebcd34f98131bd3cf6f4d2, type: 3}
+    LifetimeSec: 2
+    ReferenceSizeM: 0
+  - Key: Impact/impact
+    Prefab: {fileID: 1429954232896169633, guid: 83036083a4ebcd34f98131bd3cf6f4d2, type: 3}
+    LifetimeSec: 2
+    ReferenceSizeM: 0
+  - Key: Impact/pierce_hit
+    Prefab: {fileID: 8771972552311404799, guid: bbf9e36a48d6c5648a13889afab076fd, type: 3}
+    LifetimeSec: 2
+    ReferenceSizeM: 0
+  - Key: Impact/pulse
+    Prefab: {fileID: 2708598583397607911, guid: 6398d43fe79ea0140913dc5530c646af, type: 3}
+    LifetimeSec: 2
+    ReferenceSizeM: 0
+  - Key: Impact/burst_soft
+    Prefab: {fileID: 2708598583397607911, guid: 6398d43fe79ea0140913dc5530c646af, type: 3}
+    LifetimeSec: 2
+    ReferenceSizeM: 0
+  - Key: Impact/tick
+    Prefab: {fileID: 7177991128484655659, guid: 59a35ab9f68edff40b6e5332bed330f5, type: 3}
+    LifetimeSec: 1
+    ReferenceSizeM: 0
+  - Key: Impact/drain
+    Prefab: {fileID: 9157105887711914197, guid: c4f829cb7dd4b864caf8832ec5b1ee55, type: 3}
+    LifetimeSec: 2
+    ReferenceSizeM: 0
+  - Key: Impact/reflect
+    Prefab: {fileID: 7177991128484655659, guid: 59a35ab9f68edff40b6e5332bed330f5, type: 3}
+    LifetimeSec: 1
+    ReferenceSizeM: 0
+  - Key: Delivery/Projectile
+    Prefab: {fileID: 1947871717301538, guid: a990e3ac1318b834488c784d851f42a9, type: 3}
+    LifetimeSec: 0
+    ReferenceSizeM: 0
+  - Key: Delivery/MeleeHitbox
+    Prefab: {fileID: 8525990746615576120, guid: b85d21f3b8fed714bacf0c4fd50fa512, type: 3}
+    LifetimeSec: 2
+    ReferenceSizeM: 0
+  - Key: Delivery/MeleeHitbox/sphere
+    Prefab: {fileID: 2433282508537954060, guid: 3ef3ae421f71c5c4e97fe12dc2fc6312, type: 3}
+    LifetimeSec: 3
+    ReferenceSizeM: 3
+  - Key: Delivery/FieldAura
+    Prefab: {fileID: 1314945738539566, guid: 32c9fd11a72259d45aa26ae41c34c5aa, type: 3}
+    LifetimeSec: 0
+    ReferenceSizeM: 4
+  - Key: Delivery/Summon
+    Prefab: {fileID: 1820680284854294, guid: 1a1c02facd51d87458dcaa3a761e2c03, type: 3}
+    LifetimeSec: 0
+    ReferenceSizeM: 3
+  - Key: Delivery/Movement
+    Prefab: {fileID: 9157105887711914197, guid: c4f829cb7dd4b864caf8832ec5b1ee55, type: 3}
+    LifetimeSec: 2
+    ReferenceSizeM: 0
+  - Key: Delivery/SelfState
+    Prefab: {fileID: 3280519133390621005, guid: a71be3e7990efb040a07565c43cbb198, type: 3}
+    LifetimeSec: 0
+    ReferenceSizeM: 2
+  - Key: Delivery/cone
+    Prefab: {fileID: 8764043878647920493, guid: c4ed38c72957f2241ad144a1614956d9, type: 3}
+    LifetimeSec: 3
+    ReferenceSizeM: 6
+  - Key: Delivery/line
+    Prefab: {fileID: 1820680284854294, guid: 1a1c02facd51d87458dcaa3a761e2c03, type: 3}
+    LifetimeSec: 0
+    ReferenceSizeM: 4
+  ImpactTintStrength: 0.75
+  HitSparkTintStrength: 0.5
   HitSparkCount: 14
   HitSparkSpeed: 7
   HitSparkLifeSec: 0.22
