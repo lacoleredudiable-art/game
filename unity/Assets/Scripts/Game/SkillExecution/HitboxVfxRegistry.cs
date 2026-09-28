@@ -22,11 +22,11 @@ namespace Dovus.Game
             Transform parent,
             float angleDeg = 0f)
         {
-            GameObject prefab = !string.IsNullOrEmpty(key)
-                ? Resources.Load<GameObject>("Vfx/Hitbox/" + key)
-                : null;
-            if (prefab != null)
-                return Object.Instantiate(prefab, position, Quaternion.LookRotation(direction), parent);
+            if (VfxLibrary.Current.TryResolve(key, out GameObject prefab, out _))
+            {
+                Vector3 look = direction.sqrMagnitude > 0.0001f ? direction : Vector3.forward;
+                return Object.Instantiate(prefab, position, Quaternion.LookRotation(look), parent);
+            }
 
             PrimitiveType primitive = shape switch
             {

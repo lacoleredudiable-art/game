@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2465604b3d15c242bdb06caf48369c7, type: 3}
+  m_Name: VfxLibrary
+  m_EditorClassIdentifier: Dovus.Game::Dovus.Game.VfxLibrary
+  Entries: []
+  HitSparkCount: 14
+  HitSparkSpeed: 7
+  HitSparkLifeSec: 0.22
+  HitSparkSize: 0.09
+  CritSparkMult: 1.8
+  DodgeDustCount: 16
+  DodgeDustLifeSec: 0.45
+  DodgeDustSize: 0.45
+  DustColor: {r: 0.62, g: 0.56, b: 0.5, a: 0.55}
+  FootDustCount: 4
+  FootDustLifeSec: 0.35
+  FootDustSize: 0.22
+  BossStepDustMult: 3
+  ShockwaveSec: 0.45
+  ShockwaveWidthM: 0.35
+  ShockwaveColor: {r: 1, g: 0.78, b: 0.5, a: 0.85}
+  CrackHoldSec: 1.4
+  CrackFadeSec: 0.6
+  CrackColor: {r: 0.08, g: 0.05, b: 0.04, a: 0.85}
+  FlameSec: 0.5
+  FlameRate: 220
+  FlameSpeed: 11
+  FlameSize: 0.7
+  FlameColorA: {r: 1, g: 0.85, b: 0.35, a: 1}
+  FlameColorB: {r: 0.95, g: 0.25, b: 0.05, a: 0}

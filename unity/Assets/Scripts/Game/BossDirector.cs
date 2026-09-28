@@ -62,6 +62,16 @@ namespace Dovus.Game
 
         public BossVitals Vitals => _bossVitals;
 
+        /// <summary>Windup başladı (ses/sunum).</summary>
+        public event System.Action<BossAttackKind> AttackWindupStarted;
+
+        /// <summary>Vuruş anı: etki çözüldü (şok dalgası / alev sunumu). Hasar bundan bağımsız.</summary>
+        public event System.Action<BossAttackKind> AttackStruck;
+
+        public float AttackRadiusM => _attack?.RadiusM ?? 0f;
+        public float AttackArcHalfAngleDeg => _attack?.ArcHalfAngleDeg ?? 180f;
+        public Vector3 AttackOrigin => _reactor != null ? _reactor.Home : transform.position;
+
         public bool IsWindingUp => _phase == Phase.Windup;
         public BossAttackKind? CurrentAttackKind => _phase is Phase.Windup or Phase.Active ? _attack?.Kind : null;
 
@@ -343,6 +353,8 @@ namespace Dovus.Game
                     Debug.LogException(e);
                 }
                 _telegraph?.Slam(_attack != null ? _attack.RadiusM : 0f);
+                if (_attack != null)
+                    AttackStruck?.Invoke(_attack.Kind);
             }
 
             if (_attack != null && worldMs >= _attack.ActiveEndMs(_telegraphStartMs))
@@ -387,6 +399,7 @@ namespace Dovus.Game
             {
                 _telegraph?.SetShape(_attack.ArcHalfAngleDeg);
                 _visual?.PlayWindup(_attack.Kind, _attack.WindupMs);
+                AttackWindupStarted?.Invoke(_attack.Kind);
             }
         }
 

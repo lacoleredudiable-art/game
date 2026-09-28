@@ -34,6 +34,9 @@ namespace Dovus.Game
         public Vector3 LastSlideStart { get; private set; }
         public bool IsBound => _dodge != null && _clock != null;
 
+        /// <summary>Kayma başladı: başlangıç konumu + yön (toz/ses sunumu).</summary>
+        public event System.Action<Vector3, Vector3> SlideStarted;
+
         public void Bind(
             GameClock clock,
             HexagonInput input,
@@ -137,6 +140,7 @@ namespace Dovus.Game
             if (_visual == null)
                 _visual = GetComponent<ActorVisual>();
             _visual?.Trigger(ActorVisual.TriggerDodge);
+            SlideStarted?.Invoke(_startPos, _dir);
         }
 
         Vector3 ResolveDirection()

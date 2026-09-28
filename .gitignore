@@ -71,3 +71,12 @@ unity/Assets/Synty/
 unity/Assets/Synty.meta
 unity/Assets/Art/Mixamo/
 unity/Assets/Art/Mixamo.meta
+
+# Ücretsiz Asset Store VFX paketleri (Cartoon FX Remaster Free, Unity Particle Pack) — lisans
+# yeniden dağıtıma izin vermiyor; VfxLibrary tablosu boşken oyun prosedürel efektlere düşer.
+unity/Assets/JMO Assets/
+unity/Assets/JMO Assets.meta
+unity/Assets/EffectExamples/
+unity/Assets/EffectExamples.meta
+unity/Assets/ParticlePack/
+unity/Assets/ParticlePack.meta

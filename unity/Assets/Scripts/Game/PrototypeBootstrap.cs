@@ -364,6 +364,14 @@ namespace Dovus.Game
             bossDir.BindVisual(boss.GetComponent<BossVisual>());
             vitalsHud.BindBoss(bossDir);
 
+            feelGo.AddComponent<SfxDirector>();
+            feelGo.AddComponent<PresentationFx>().Bind(bossDir, dodgeMotion, feel, input);
+            var playerSteps = player.gameObject.AddComponent<FootstepEmitter>();
+            playerSteps.StrideM = _tuning.FootstepStrideM;
+            var bossSteps = boss.gameObject.AddComponent<FootstepEmitter>();
+            bossSteps.StrideM = _tuning.BossFootstepStrideM;
+            bossSteps.IsBoss = true;
+
             var scarsGo = new GameObject("GroundScars");
             scarsGo.transform.SetParent(transform, false);
             var scars = scarsGo.AddComponent<GroundScarField>();

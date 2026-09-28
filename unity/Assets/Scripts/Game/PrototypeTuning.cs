@@ -42,6 +42,10 @@ namespace Dovus.Game
         public float BasicStrikeComboResetSec = 1.2f;
         /// <summary>Animator Speed bu eşiğin üstündeyken cast üst gövde katmanında oynar (bacaklar koşar). Önerilen.</summary>
         public float UpperBodyCastMinSpeed = 0.15f;
+        /// <summary>Ayak sesi + tozu bu kadar yatay yolda bir (7.5 m/sn koşuda ~3.4 adım/sn). Önerilen.</summary>
+        public float FootstepStrideM = 2.2f;
+        /// <summary>Boss ağır adımı (ses + büyük toz). Önerilen.</summary>
+        public float BossFootstepStrideM = 2.4f;
 
         // Spec §11 hasar 22; oyuncu tavanı belgede yok. Bir çakma = ölüm — respawn ≤2 sn
         // (§11) döngüsü böyle denenebiliyor. T11 his turunda ayarlanacak.
@@ -386,6 +390,8 @@ namespace Dovus.Game
             if (AnimCrossFadeSec <= 0f) AnimCrossFadeSec = 0.06f;
             if (BasicStrikeComboResetSec <= 0f) BasicStrikeComboResetSec = 1.2f;
             if (UpperBodyCastMinSpeed <= 0f) UpperBodyCastMinSpeed = 0.15f;
+            if (FootstepStrideM <= 0.05f) FootstepStrideM = 2.2f;
+            if (BossFootstepStrideM <= 0.05f) BossFootstepStrideM = 2.4f;
             if (BossTurnRateDegPerSec <= 0.01f) BossTurnRateDegPerSec = 240f;
             if (BossSlamImpactNorm <= 0.01f) BossSlamImpactNorm = 0.42f;
             if (BossConeImpactNorm <= 0.01f) BossConeImpactNorm = 0.40f;
