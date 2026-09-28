@@ -1,0 +1,9 @@
+[
+  { "label": "Boss_Idle", "query": "Mutant Breathing Idle" },
+  { "label": "Boss_Walk", "query": "Mutant Walking" },
+  { "label": "Boss_Slam", "query": "Mutant Jump Attack" },
+  { "label": "Boss_Breath", "query": "Mutant Roaring" },
+  { "label": "Boss_Roar", "query": "Mutant Flexing Muscles" },
+  { "label": "Boss_Stagger", "query": "Big Hit To Head" },
+  { "label": "Boss_Death", "query": "Mutant Dying" }
+]

@@ -233,6 +233,17 @@ namespace Dovus.Game
         public float BossPinShakeAmpM = 0.04f;
         public float BossLiftVelocityPerM = 4.5f;
 
+        // Boss animasyon sunumu (his turu Faz 1). Hepsi önerilen — klip değişince göz kontrolü.
+        [Header("Boss animasyon (his turu)")]
+        public float BossTurnRateDegPerSec = 240f;
+        /// <summary>Saldırı klibinde darbe karesinin normalize zamanı; windup sonuna hizalanır.</summary>
+        public float BossSlamImpactNorm = 0.42f;
+        public float BossConeImpactNorm = 0.40f;
+        public float BossStaggerMinGapSec = 0.6f;
+        public float BossAnimCrossFadeSec = 0.15f;
+        /// <summary>Yürüme klibinin kök hızı bulunamazsa (in-place klip) ölçek-1 adım hızı.</summary>
+        public float BossWalkClipMps = 1.4f;
+
         // Boss ölümündeki çökme pozu; süre mevcut his varsayılanıdır.
         [Header("Boss ölüm pozu (T12, §11)")]
         public float BossDeathCollapseSec = 0.85f;
@@ -369,6 +380,12 @@ namespace Dovus.Game
             if (MinStickSpeedFrac <= 0.01f) MinStickSpeedFrac = 0.4f;
             if (AnimSpeedDampSec <= 0f) AnimSpeedDampSec = 0.08f;
             if (AnimCrossFadeSec <= 0f) AnimCrossFadeSec = 0.06f;
+            if (BossTurnRateDegPerSec <= 0.01f) BossTurnRateDegPerSec = 240f;
+            if (BossSlamImpactNorm <= 0.01f) BossSlamImpactNorm = 0.42f;
+            if (BossConeImpactNorm <= 0.01f) BossConeImpactNorm = 0.40f;
+            if (BossStaggerMinGapSec <= 0f) BossStaggerMinGapSec = 0.6f;
+            if (BossAnimCrossFadeSec <= 0f) BossAnimCrossFadeSec = 0.15f;
+            if (BossWalkClipMps <= 0.01f) BossWalkClipMps = 1.4f;
             if (ArenaHalfSizeM <= 0.01f) ArenaHalfSizeM = 50f;
             if (ArenaWallHeightM <= 0.01f) ArenaWallHeightM = 18f;
             if (ArenaWallThicknessM <= 0.01f) ArenaWallThicknessM = 1.4f;

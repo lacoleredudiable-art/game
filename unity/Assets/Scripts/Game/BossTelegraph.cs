@@ -18,10 +18,16 @@ namespace Dovus.Game
         const float DiscHeightY = 0.03f;
         const float DiscThicknessScale = 0.02f;
 
+        const int ConeSegments = 28;
+
         PrototypeTuning _colors;
         Transform _bossXform;
         Transform _disc;
         Material _discMat;
+        Transform _cone;
+        Mesh _coneMesh;
+        float _coneMeshArc = -1f;
+        float _arcHalfDeg = 180f;
         AudioSource _tone;
         AudioClip _clip;
         Vector3 _baseScale;
@@ -35,6 +41,12 @@ namespace Dovus.Game
             BuildTone();
             Hide();
         }
+
+        /// <summary>
+        /// Windup başında etki hacminin şekli: 180 = tam daire (Slam), daha küçük = koni (FireCone).
+        /// Koni yönü windup başında kilitlenen boss bakışıdır (ResolveStrike ile aynı eksen).
+        /// </summary>
+        public void SetShape(float arcHalfAngleDeg) => _arcHalfDeg = arcHalfAngleDeg;
 
         /// <summary>
         /// Windup: p 0→1. radiusM aktif varyantın etki yarıçapı.
@@ -101,6 +113,8 @@ namespace Dovus.Game
         {
             if (_disc != null && _disc.gameObject.activeSelf)
                 _disc.gameObject.SetActive(false);
+            if (_cone != null && _cone.gameObject.activeSelf)
+                _cone.gameObject.SetActive(false);
             ApplyPose(1f, 1f);
             if (_tone != null && _tone.isPlaying)
                 _tone.Stop();
@@ -110,6 +124,10 @@ namespace Dovus.Game
         {
             if (_disc != null)
                 Destroy(_disc.gameObject);
+            if (_cone != null)
+                Destroy(_cone.gameObject);
+            if (_coneMesh != null)
+                Destroy(_coneMesh);
             if (_discMat != null)
                 Destroy(_discMat);
             if (_clip != null)
@@ -121,6 +139,14 @@ namespace Dovus.Game
             if (_disc == null || _bossXform == null)
                 return;
 
+            if (_arcHalfDeg < 180f)
+            {
+                DrawCone(radiusM, color, alpha);
+                return;
+            }
+
+            if (_cone != null && _cone.gameObject.activeSelf)
+                _cone.gameObject.SetActive(false);
             if (!_disc.gameObject.activeSelf)
                 _disc.gameObject.SetActive(true);
 
@@ -129,6 +155,68 @@ namespace Dovus.Game
             Color c = color;
             c.a = alpha;
             SetMatColor(_discMat, c);
+        }
+
+        void DrawCone(float radiusM, Color color, float alpha)
+        {
+            if (_disc.gameObject.activeSelf)
+                _disc.gameObject.SetActive(false);
+            if (_cone == null)
+                BuildCone();
+            if (!Mathf.Approximately(_coneMeshArc, _arcHalfDeg))
+                RebuildConeMesh(_arcHalfDeg);
+            if (!_cone.gameObject.activeSelf)
+                _cone.gameObject.SetActive(true);
+
+            Vector3 fwd = _bossXform.forward;
+            fwd.y = 0f;
+            if (fwd.sqrMagnitude < 0.0001f)
+                fwd = Vector3.forward;
+            _cone.SetPositionAndRotation(
+                new Vector3(_bossXform.position.x, DiscHeightY, _bossXform.position.z),
+                Quaternion.LookRotation(fwd.normalized, Vector3.up));
+            _cone.localScale = new Vector3(radiusM, 1f, radiusM);
+            Color c = color;
+            c.a = alpha;
+            SetMatColor(_discMat, c);
+        }
+
+        void BuildCone()
+        {
+            var go = new GameObject("FireConeTelegraph");
+            _coneMesh = new Mesh { name = "TelegraphCone" };
+            go.AddComponent<MeshFilter>().sharedMesh = _coneMesh;
+            var rend = go.AddComponent<MeshRenderer>();
+            rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            rend.receiveShadows = false;
+            rend.sharedMaterial = _discMat;
+            _cone = go.transform;
+        }
+
+        /// <summary>Birim yarıçaplı yelpaze: +Z ekseni etrafında ±arcHalfDeg.</summary>
+        void RebuildConeMesh(float arcHalfDeg)
+        {
+            _coneMeshArc = arcHalfDeg;
+            var verts = new Vector3[ConeSegments + 2];
+            var tris = new int[ConeSegments * 3];
+            verts[0] = Vector3.zero;
+            float half = arcHalfDeg * Mathf.Deg2Rad;
+            for (int i = 0; i <= ConeSegments; i++)
+            {
+                float a = Mathf.Lerp(-half, half, i / (float)ConeSegments);
+                verts[i + 1] = new Vector3(Mathf.Sin(a), 0f, Mathf.Cos(a));
+            }
+            for (int i = 0; i < ConeSegments; i++)
+            {
+                tris[i * 3] = 0;
+                tris[i * 3 + 1] = i + 1;
+                tris[i * 3 + 2] = i + 2;
+            }
+            _coneMesh.Clear();
+            _coneMesh.vertices = verts;
+            _coneMesh.triangles = tris;
+            _coneMesh.RecalculateNormals();
+            _coneMesh.RecalculateBounds();
         }
 
         void ApplyPose(float xz, float y)

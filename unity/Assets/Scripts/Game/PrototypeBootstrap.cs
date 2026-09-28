@@ -138,6 +138,7 @@ namespace Dovus.Game
             var bossVisual = boss.AddComponent<BossVisual>();
             if (bossAnim != null)
                 bossVisual.Bind(bossAnim, boss.GetComponent<Renderer>());
+            bossVisual.Configure(_tuning);
 
             player.AddComponent<HitFlash>().Bind(combat.Feel);
             boss.AddComponent<HitFlash>().Bind(combat.Feel);

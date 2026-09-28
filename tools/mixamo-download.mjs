@@ -1,6 +1,8 @@
 /**
  * Mixamo batch download (FBX for Unity, without skin).
- * Usage: node mixamo-download.mjs <access_token> <out_dir>
+ * Usage: node mixamo-download.mjs <access_token> <out_dir> [jobs.json]
+ * jobs.json: [{ "label", "query", "exact", "inplace", "overdrive" }] — bkz. tools/mixamo-jobs/.
+ * Token: mixamo.com'a giriş yapıp tarayıcı konsolunda localStorage.access_token.
  */
 import fs from "fs";
 import path from "path";
@@ -18,15 +20,26 @@ fs.mkdirSync(outDir, { recursive: true });
 const CHAR = "2dee24f8-3b49-48af-b735-c6377509eaac"; // X Bot
 const API = "https://www.mixamo.com/api/v1";
 
-const JOBS = [
+const DEFAULT_JOBS = [
   // Daha sert idle (Standing Idle fazla oynaktı)
-  ["Idle", "Fighting Idle", "Fighting Idle", true],
+  ["Idle", "Fighting Idle", "Fighting Idle", true, false],
   // Cast'ler snappier overdrive ile yeniden
-  ["Melee_Slash", "Standing Melee Attack Horizontal", "Standing Melee Attack Horizontal", true],
-  ["Melee_Thrust", "Standing Melee Attack Downward", "Standing Melee Attack Downward", true],
-  ["Melee_Punch", "Hook Punch", "Hook Punch", true],
-  ["Spell_Cast", "Standing 2H Magic Attack 01", "Standing 2H Magic Attack 01", true],
+  ["Melee_Slash", "Standing Melee Attack Horizontal", "Standing Melee Attack Horizontal", true, true],
+  ["Melee_Thrust", "Standing Melee Attack Downward", "Standing Melee Attack Downward", true, true],
+  ["Melee_Punch", "Hook Punch", "Hook Punch", true, true],
+  ["Spell_Cast", "Standing 2H Magic Attack 01", "Standing 2H Magic Attack 01", true, true],
 ];
+
+const jobsFile = process.argv[4];
+const JOBS = jobsFile
+  ? JSON.parse(fs.readFileSync(jobsFile, "utf8")).map((j) => [
+      j.label,
+      j.query,
+      j.exact || j.query,
+      j.inplace !== false,
+      !!j.overdrive,
+    ])
+  : DEFAULT_JOBS;
 
 /** Cast kliplerinde overdrive — daha sert/hızlı silüet (0 = nötr, ~0.5–1 snappier). */
 const OVERDRIVE_BOOST = 0.65;
@@ -127,15 +140,20 @@ async function findExact(query, exactName) {
     encodeURIComponent(query);
   const { json } = await req("GET", url);
   const list = (json && json.results) || [];
-  return list.find((x) => x.name === exactName) || null;
+  const lower = exactName.toLowerCase();
+  return (
+    list.find((x) => x.name === exactName) ||
+    list.find((x) => String(x.name).toLowerCase() === lower) ||
+    list.find((x) => String(x.name).toLowerCase().includes(lower)) ||
+    null
+  );
 }
 
-async function exportOne(query, exactName, inplace) {
+async function exportOne(query, exactName, inplace, boost) {
   const product = await findExact(query, exactName);
   if (!product) throw new Error("not found: " + exactName);
   await sleep(2500);
   const full = (await req("GET", API + "/products/" + product.id + "?similar=0")).json;
-  const boost = exactName !== "Fighting Idle";
   const body = {
     gms_hash: gmsify(full.details.gms_hash, inplace, boost),
     preferences: { format: "fbx7_unity", skin: "false", fps: "30", reducekf: "0" },
@@ -159,11 +177,11 @@ function sleep(ms) {
 }
 
 const summary = [];
-for (const [label, query, exact, inplace] of JOBS) {
+for (const [label, query, exact, inplace, boost] of JOBS) {
   const dest = path.join(outDir, label + ".fbx");
   process.stdout.write(label + " ... ");
   try {
-    const { name, url } = await exportOne(query, exact, inplace);
+    const { name, url } = await exportOne(query, exact, inplace, boost);
     await download(url, dest);
     const size = fs.statSync(dest).size;
     console.log("OK " + name + " (" + size + " bytes)");
