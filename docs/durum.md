@@ -31,7 +31,10 @@ ayarları → 1 boss anim → 2 oyuncu anim → 3 HUD → 4 VFX/SFX → 5 telefo
 > `PrototypeTuning.LocoMaxPlaybackMult = 1.5` (**önerilen**). Play ölçümü: 7.5 m/s'de oynatma
 > 1.36× (tavan altı, kayma yok); 3.4 m/s yürümede yürüme/koşu karışımı. Ölçüm yoksa eski
 > 0/0.4/1 eşiklerine düşer. **Açık:** Kalkan benzeri silahta sol kol kalkan tutmaz; vuruş/cast
-> klipleri hâlâ Sword&Shield üslubu; 720°/s dönüş ani; telefonda doğrulanmadı.
+> klipleri hâlâ Sword&Shield üslubu; 720°/s dönüş ani. **APK:** `d3ef794` build'i (67.8 MB)
+> `adb install -r` Success (YXQC5PTGUCEQMNV4), build ekranına kadar açıldı; oynanış hissi
+> sahibinde. Not: Play'den çıkar çıkmaz `delayCall` ile kuyruğa alınan build geç tetiklendi
+> (domain reload); `adb` PATH'te değil → Unity SDK `platform-tools\adb.exe`.
 
 > **28 Eylül — Skill görseli gramerden doğuyor: madde × yol × silüet (dal `feat/skill-vfx-grammar`).**
 > Sahibi geri bildirimi: "her skill aynı lavlı kayayı atıyor", "1 silah × 1 fiil olsa da 120 farklı
