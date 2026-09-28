@@ -48,7 +48,12 @@ mekanik smoke matrisi; düşman mermisi / çoklu düşman gelince ertelenen atom
 > telefon kapsamına dokunulmadı. Bağlayıcı docs/Resources/upload SHA-256 birebir:
 > `29d06672086111ec8baebc29e3531cf9c40f132d8cf9e56427499b37fcd66f4f`.
 > **Doğrulandı:** `dotnet test tools/CoreTests/CoreTests.csproj` **305/305**.
-> **Doğrulanamadı:** Cloud imajında Unity Editor yok; Play-cast/Unity script derlemesi.
+> **Editor doğrulaması (yerel, Kılıç, merge öncesi):** Unity derlemesi temiz, Play'de
+> exception yok. 4-4 3×3 m `MechanicWall` 2.5 sn (oyuncu önüne ışın duvara çarpar);
+> 11-4 taret ve 11-11 iki klon doğar; 12-10 isabet → "geri sarma 2sn + cast iptal";
+> 10-1 `MechanicReflector` alanı; 12-12 alan → boss Slow; 6-6 `MechanicTether` + boss
+> Root/Slow; 2-7 `MechanicCloud` + boss Blind; 3-11 `MechanicPlayerDecoy`. Denenmedi:
+> yansıtıcının hasarı gerçekten döndürmesi, alan içindeki oyuncuya Haste, güdümün izi.
 > Audit follow-up: Girdap hareketi legacy knockback yerine bağlayıcı
 > `vortex_pull_mps × tick_dt` ile `BossReactor.Home` üzerinde ilerler.
 
@@ -1029,7 +1034,9 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   ikinci düşman, gerçek co-op aktörü ve boss hedefleme/kontrol AI'sı olmayan davranışlar
   doğrulanamaz; taşma/savuşturma/ayna ikinci gövde/rampa/glide executor sahipliği ayrı iş.
   Top=Tılsım 9, Çekiç=Tılsım 6 skill'de aynı davranış (Sabit/Yükselen silah yolunu eziyor) —
-  bu gramer kararı değişmedi.
+  bu gramer kararı değişmedi. **Süre tutarsızlığı:** gramer hacimleri `Body.LifeSec` ile
+  yaşar; süresiz fiillerde bu 0.2 sn (ör. 2-2 Girdap boss'u yalnız ~0.2 m çeker) ama aynı
+  skill'in FieldAura executor'ı 5 sn sürer — hangisinin bağlayıcı olduğu karar bekliyor.
 - **Fiil executor'ları (28 Eylül) — kalanlar.** 11-4 taret ve 11-5 halka artık gramer
   aktör profiliyle dünyada; Akan aktörler `channel_sec` boyunca saniyelik doğar ve Akan
   alan `tick_rate_mult` + `flow_tick_fraction` kullanır. `max_targets`, `ignore_armor`,
