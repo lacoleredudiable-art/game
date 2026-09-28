@@ -28,6 +28,8 @@ namespace Dovus.Game
         // boyut yok — uydurma, durum.md'ye T10 sapması olarak geçildi.
         const float ToggleRadiusDp = 26f;
         const float ToggleMarginDp = 10f;
+        /// <summary>BUILD düğmesi (BuildSelectScreen, 1600×900 referans) ekranın sağ ~%8'inde.</summary>
+        const float ToggleRightEdgeNorm = 0.905f;
 
         const float RowHeight = 58f;
         const float RowSpacing = 4f;
@@ -95,9 +97,10 @@ namespace Dovus.Game
             var go = new GameObject("ToggleButton");
             go.transform.SetParent(parent, false);
             var rect = go.AddComponent<RectTransform>();
-            rect.anchorMin = new Vector2(1f, 0f);
-            rect.anchorMax = new Vector2(1f, 0f);
-            rect.pivot = new Vector2(1f, 0f);
+            // Üst şeritte BUILD'in solu: sağ-alt köşe DODGE'un üstüne düşüyordu (29 Eyl telefon).
+            rect.anchorMin = new Vector2(ToggleRightEdgeNorm, 1f);
+            rect.anchorMax = new Vector2(ToggleRightEdgeNorm, 1f);
+            rect.pivot = new Vector2(1f, 1f);
 
             var img = go.AddComponent<Image>();
             img.color = new Color(0.55f, 0.62f, 0.72f, 0.55f);
@@ -137,7 +140,7 @@ namespace Dovus.Game
                 float margin = HexagonLayoutScreen.DpToPixels(_marginDp);
                 float d = HexagonLayoutScreen.DpToPixels(_radiusDp) * 2f;
                 _rect.sizeDelta = new Vector2(d, d);
-                _rect.anchoredPosition = new Vector2(-margin, margin);
+                _rect.anchoredPosition = new Vector2(-margin, -margin);
             }
         }
 

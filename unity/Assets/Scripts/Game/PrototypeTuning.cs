@@ -62,8 +62,14 @@ namespace Dovus.Game
         // Altıgen ekrana sabit (§2). Yarıçap/konum spec'te sayı yok — varsayılan; durum.md'ye geçildi.
         // T6.2: merkez X, dodge düğmesi sağ kenardan taşmasın diye 0.78'den içeri alındı.
         [Header("Altıgen (§2)")]
-        // Biraz içeri: sağda dodge + çizim boşluğu kalsın.
-        public float HexagonCenterXNorm = 0.70f;
+        /// <summary>
+        /// Ekranın kısa kenarı bu dp'den azsa bütün savaş HUD'u orantılı küçülür (0 = kapalı).
+        /// Yatay telefonda kısa kenar ~440 dp; tam ölçekte altıgen tepsisi yüksekliğin %84'ünü
+        /// kaplıyordu (29 Eyl telefon). Önerilen.
+        /// </summary>
+        public float HudFitShortSideDp = 600f;
+        // Sağ-alt köşeye yaslı: boss ekran ortasında görünür kalsın.
+        public float HexagonCenterXNorm = 0.78f;
         // Sağ-alt; FittedRadiusPx alt rünleri safe içinde tutar.
         public float HexagonCenterYNorm = 0.30f;
         // Komşu rün kenar boşluğu ≈ radius − 2·dotR (≥40dp çizim koridoru).
@@ -98,8 +104,9 @@ namespace Dovus.Game
         public float ElementMenuChipHeightDp = 48f;
         public float ElementMenuItemWidthDp = 84f;
         public float ElementMenuItemHeightDp = 48f;
-        [Range(0f, 1f)] public float ElementMenuAnchorXNorm = 0.16f;
-        [Range(0f, 1f)] public float ElementMenuAnchorYNorm = 0.27f;
+        // Sağ başparmak: altıgen tepsisinin üstü (sol yarı hareket çubuğunun).
+        [Range(0f, 1f)] public float ElementMenuAnchorXNorm = 0.86f;
+        [Range(0f, 1f)] public float ElementMenuAnchorYNorm = 0.72f;
 
         // §5: merkez bir kelime değil düğme; hangi fiille vurduğu veridir (prototipte 1/Ateş).
         [Header("Düz vuruş (§5, T6.2)")]
@@ -335,6 +342,14 @@ namespace Dovus.Game
 
         [Header("Kamera orbit")]
         public float OrbitDegreesPerDp = 0.35f;
+        /// <summary>
+        /// Dikey sürükleme eğimi (+ = kamera yükselip aşağı bakar). Alt sınır kameranın zemine
+        /// inmemesi için; üst sınır boss'u kadrajdan atmaması için. Önerilen.
+        /// </summary>
+        public float CameraPitchMinDeg = -8f;
+        public float CameraPitchMaxDeg = 35f;
+        [Tooltip("Açıkken parmak yukarı = kamera yükselir (aşağı bakar).")]
+        public bool OrbitInvertPitch = false;
 
         [Header("Soft aim / menzil")]
         public float SoftAimRangeM = 8f;
@@ -376,12 +391,6 @@ namespace Dovus.Game
         public float SkillPreviewGapDp = 10f;
         public float SkillPreviewHoldSec = 0.9f;
 
-        [Header("Pasif yuvaları (Combat HUD)")]
-        public float PassiveHudWidthDp = 224f;
-        public float PassiveSlotHeightDp = 34f;
-        public float PassiveSlotGapDp = 6f;
-        public float PassiveHudGapBelowVitalsDp = 46f;
-
         [Header("Build seçimi (v6 7b, BuildSelectScreen)")]
         public bool SkipBuildSelectOnStart = false;
 
@@ -394,7 +403,7 @@ namespace Dovus.Game
         // tasarımcının bilinçli 0'ı (ör. nabzı kapatmak) artık ezilmez (T8.1).
         [HideInInspector] public int TuningVersion = CurrentVersion;
 
-        const int CurrentVersion = 17;
+        const int CurrentVersion = 18;
 
         /// <summary>Sürümü geçmiş serileşmiş kopyayı bu sürümün varsayılanlarına çeker.</summary>
         public void EnsureRuntimeDefaults()
@@ -445,10 +454,8 @@ namespace Dovus.Game
             if (ElementMenuItemHeightDp <= 0.01f) ElementMenuItemHeightDp = 48f;
             if (ElementMenuAnchorXNorm <= 0.01f) ElementMenuAnchorXNorm = 0.16f;
             if (ElementMenuAnchorYNorm <= 0.01f) ElementMenuAnchorYNorm = 0.27f;
-            if (PassiveHudWidthDp <= 0.01f) PassiveHudWidthDp = 224f;
-            if (PassiveSlotHeightDp <= 0.01f) PassiveSlotHeightDp = 34f;
-            if (PassiveSlotGapDp <= 0.01f) PassiveSlotGapDp = 6f;
-            if (PassiveHudGapBelowVitalsDp <= 0.01f) PassiveHudGapBelowVitalsDp = 46f;
+            if (HudFitShortSideDp < 0f) HudFitShortSideDp = 600f;
+            if (CameraPitchMaxDeg < CameraPitchMinDeg) { CameraPitchMinDeg = -8f; CameraPitchMaxDeg = 35f; }
             if (PlayerVisualHeightM <= 0.01f) PlayerVisualHeightM = 1.78f;
             if (BossVisualHeightM <= 0.01f) BossVisualHeightM = 5.0f;
             if (CharacterAnimSpeed <= 0.01f) CharacterAnimSpeed = 1.0f;
@@ -687,10 +694,15 @@ namespace Dovus.Game
             VitalsPanelPaddingDp = fresh.VitalsPanelPaddingDp;
             SkillPreviewWidthDp = fresh.SkillPreviewWidthDp;
             SkillPreviewHeightDp = fresh.SkillPreviewHeightDp;
-            PassiveHudWidthDp = fresh.PassiveHudWidthDp;
-            PassiveSlotHeightDp = fresh.PassiveSlotHeightDp;
-            PassiveSlotGapDp = fresh.PassiveSlotGapDp;
-            PassiveHudGapBelowVitalsDp = fresh.PassiveHudGapBelowVitalsDp;
+
+            // v18: telefon HUD'u — kısa kenara sığdırma, sağ element düğmesi, kamera eğimi.
+            HudFitShortSideDp = fresh.HudFitShortSideDp;
+            HexagonCenterXNorm = fresh.HexagonCenterXNorm;
+            ElementMenuAnchorXNorm = fresh.ElementMenuAnchorXNorm;
+            ElementMenuAnchorYNorm = fresh.ElementMenuAnchorYNorm;
+            CameraPitchMinDeg = fresh.CameraPitchMinDeg;
+            CameraPitchMaxDeg = fresh.CameraPitchMaxDeg;
+            OrbitInvertPitch = fresh.OrbitInvertPitch;
 
             TuningVersion = CurrentVersion;
         }

@@ -33,6 +33,8 @@ namespace Dovus.Game
         /// tuning'i bozmuyoruz). <see cref="CameraOrbitInput"/> tarafından sürülür.
         /// </summary>
         public float OrbitYawDeg { get; set; }
+        /// <summary>Omuz ofsetinin yatay eksende eğimi (+ = kamera yükselir, aşağı bakar). 0 = eski kadraj.</summary>
+        public float OrbitPitchDeg { get; set; }
         /// <summary>Kamera soft-lock'u uygulandıktan sonraki yaw; kamera-göreli hareket bunu kullanır.</summary>
         public float MovementYawDeg => _resolvedYawDeg;
 
@@ -130,7 +132,7 @@ namespace Dovus.Game
             ResolveYaw(dt);
             Vector3 localOffset = _tuning.CameraShoulderOffset
                 + Vector3.back * _tuning.CameraDistanceM;
-            Vector3 offset = Quaternion.Euler(0f, _resolvedYawDeg, 0f) * localOffset;
+            Vector3 offset = Quaternion.Euler(OrbitPitchDeg, _resolvedYawDeg, 0f) * localOffset;
             Vector3 desired = _target.position + offset + lookAhead + _shakeOffset;
 
             transform.position = Vector3.SmoothDamp(

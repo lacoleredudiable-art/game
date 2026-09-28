@@ -38,7 +38,8 @@ namespace Dovus.Game
 
         void Build(Transform canvasRoot)
         {
-            var toggle = CreateButton(canvasRoot, "V6", new Vector2(0.01f, 0.88f), new Vector2(0.09f, 0.97f));
+            // Üst şeritte AYAR'ın solu: sol üst köşe oyuncu barlarının başlığını örtüyordu.
+            var toggle = CreateButton(canvasRoot, "V6", new Vector2(0.80f, 0.90f), new Vector2(0.855f, 0.975f));
             toggle.onClick.AddListener(Toggle);
 
             _panel = new GameObject("V611SimpleControls");

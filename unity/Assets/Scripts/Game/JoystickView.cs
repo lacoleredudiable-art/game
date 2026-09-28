@@ -39,6 +39,7 @@ namespace Dovus.Game
             if (overlayCam != null)
                 SetLayerRecursively(canvasGo, FirstLayer(overlayCam.cullingMask));
 
+            _visible = true;
             SetVisible(false);
         }
 
@@ -51,7 +52,7 @@ namespace Dovus.Game
             if (!_input.IsActive)
                 return;
 
-            float baseR = HexagonLayoutScreen.DpToPixels(_tuning.JoystickMaxRadiusDp);
+            float baseR = HexagonLayoutScreen.PhysicalDpToPixels(_tuning.JoystickMaxRadiusDp);
             Place(_base, _input.OriginPx, baseR * 2f);
             Place(_knob, _input.OriginPx + _input.KnobOffsetPx, baseR * 0.9f);
         }

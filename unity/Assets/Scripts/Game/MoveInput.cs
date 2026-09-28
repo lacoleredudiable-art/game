@@ -139,7 +139,7 @@ namespace Dovus.Game
 
         void UpdateStick(Vector2 current)
         {
-            float maxRadiusPx = DpToPixels(_tuning.JoystickMaxRadiusDp);
+            float maxRadiusPx = HexagonLayoutScreen.PhysicalDpToPixels(_tuning.JoystickMaxRadiusDp);
             Vector2 delta = current - _stickOrigin;
             Vector2 clamped = delta.magnitude > maxRadiusPx
                 ? delta.normalized * maxRadiusPx
@@ -154,12 +154,6 @@ namespace Dovus.Game
             }
 
             _moveDirection = clamped / maxRadiusPx;
-        }
-
-        static float DpToPixels(float dp)
-        {
-            float dpi = Screen.dpi > 0f ? Screen.dpi : 160f;
-            return dp * (dpi / 160f);
         }
     }
 }

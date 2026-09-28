@@ -6,8 +6,8 @@ using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 namespace Dovus.Game
 {
     /// <summary>
-    /// Sağ boşlukta (hex/dodge/merkez dışı) sürükleyerek yaw. Stick ve widget parmaklarına
-    /// dokunmaz. Editörde sağ-tık yedek.
+    /// Sağ boşlukta (hex/dodge/merkez/element dışı) sürükleyerek yaw + pitch. Stick ve widget
+    /// parmaklarına dokunmaz. Editörde sağ-tık yedek.
     /// </summary>
     public sealed class CameraOrbitInput : MonoBehaviour
     {
@@ -20,9 +20,11 @@ namespace Dovus.Game
         int? _orbitFingerId;
         Vector2 _lastPos;
         float _yawDeg;
+        float _pitchDeg;
         bool _eventsHooked;
 
         public float YawDeg => _yawDeg;
+        public float PitchDeg => _pitchDeg;
 
         public void Bind(
             FollowCamera camera,
@@ -61,7 +63,10 @@ namespace Dovus.Game
         {
             HandleMouseOrbit();
             if (_camera != null)
+            {
                 _camera.OrbitYawDeg = _yawDeg;
+                _camera.OrbitPitchDeg = _pitchDeg;
+            }
         }
 
         void HandleMouseOrbit()
@@ -73,7 +78,16 @@ namespace Dovus.Game
 
             Vector2 delta = mouse.delta.ReadValue();
             _yawDeg -= delta.x * MouseDegreesPerPixel;
+            AddPitch(delta.y * MouseDegreesPerPixel);
 #endif
+        }
+
+        void AddPitch(float fingerUpDeg)
+        {
+            bool invert = _tuning != null && _tuning.OrbitInvertPitch;
+            float min = _tuning != null ? _tuning.CameraPitchMinDeg : -8f;
+            float max = _tuning != null ? _tuning.CameraPitchMaxDeg : 35f;
+            _pitchDeg = Mathf.Clamp(_pitchDeg + (invert ? fingerUpDeg : -fingerUpDeg), min, max);
         }
 
         bool IsClaimedElsewhere(int fingerIndex) =>
@@ -91,6 +105,8 @@ namespace Dovus.Game
             bool mirror = _tuning != null && _tuning.MirrorForLeftHand;
             if (!HexagonLayoutScreen.IsRightHalf(pos, mirror, Screen.width))
                 return;
+            if (ElementRadialMenu.AnyOpen || ElementRadialMenu.HitHoldChip(pos))
+                return;
 
             _orbitFingerId = finger.index;
             _lastPos = pos;
@@ -103,9 +119,11 @@ namespace Dovus.Game
 
             Vector2 pos = finger.screenPosition;
             float deltaXDp = PixelsToDp(pos.x - _lastPos.x);
+            float deltaYDp = PixelsToDp(pos.y - _lastPos.y);
             _lastPos = pos;
             float sens = _tuning != null ? _tuning.OrbitDegreesPerDp : 0.35f;
             _yawDeg -= deltaXDp * sens;
+            AddPitch(deltaYDp * sens);
         }
 
         void OnFingerUp(Finger finger)

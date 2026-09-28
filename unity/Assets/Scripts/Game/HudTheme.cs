@@ -40,7 +40,9 @@ namespace Dovus.Game
         public Color RuneFaceTint = Color.white;
         public Color PrimaryTextColor = new(0.95f, 0.98f, 1f, 1f);
         public Color SecondaryTextColor = new(0.72f, 0.82f, 0.91f, 0.94f);
-        public Color EmptySlotTextColor = new(0.55f, 0.63f, 0.71f, 0.70f);
+        /// <summary>Rün düğmesi üstündeki "PASİF" rozeti (bekleyen / etkin). Önerilen.</summary>
+        public Color PassiveBadgeColor = new(0.02f, 0.05f, 0.09f, 0.88f);
+        public Color PassiveBadgeActiveColor = new(0.20f, 0.62f, 0.44f, 0.95f);
         public Color ControlCaptionColor = new(0.72f, 0.84f, 0.94f, 0.92f);
         public Color SkillCompatibleColor = new(0.33f, 0.95f, 0.68f, 1f);
         public Color SkillMismatchColor = new(1f, 0.76f, 0.22f, 1f);
@@ -85,8 +87,9 @@ namespace Dovus.Game
         public float SkillDetailDp = 11f;
         public float SkillAccentWidthDp = 6f;
         public float SkillCardPaddingDp = 12f;
-        public float PassiveTitleDp = 9f;
-        public float PassiveBodyDp = 12f;
+        /// <summary>Pasif rozeti rün diskinin çapına oranla (genişlik, yükseklik). Önerilen.</summary>
+        public float PassiveBadgeWidthFrac = 0.92f;
+        public float PassiveBadgeHeightFrac = 0.30f;
         public float PanelShadowDp = 4f;
         public float PanelOutlineDp = 1f;
         public float TrayTitleInsetDp = 14f;
@@ -95,11 +98,6 @@ namespace Dovus.Game
         public float WeaponReserveIconDp = 22f;
         public float WeaponCaptionGapDp = 5f;
         public float WeaponCaptionHeightDp = 18f;
-        public float PassiveHeaderExtraDp = 8f;
-        public float PassivePanelInsetDp = 9f;
-        public float PassiveIconInsetDp = 4f;
-        public float PassiveTimerWidthDp = 42f;
-        public float PassiveNameEndPadDp = 46f;
         public float BarInsetDp = 2f;
         public float BarLabelInsetDp = 8f;
 

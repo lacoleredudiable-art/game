@@ -36,6 +36,7 @@ namespace Dovus.Game
         {
             _tuning ??= new PrototypeTuning();
             _tuning.EnsureRuntimeDefaults();
+            HexagonLayoutScreen.FitShortSideDp = _tuning.HudFitShortSideDp;
 #if !UNITY_EDITOR
             // Development APK konsolu CapsuleCollider spam'i ile HUD'u örtüyordu.
             Debug.developerConsoleVisible = false;
@@ -346,9 +347,8 @@ namespace Dovus.Game
             modeHud.BindBelowBoss(vitalsHud);
 
             var passiveHud = root.AddComponent<PassiveHud>();
-            passiveHud.Configure(view.CanvasRoot, _tuning);
-            passiveHud.BindRunes(runeManager, skills);
-            passiveHud.BindBelowPlayer(vitalsHud);
+            passiveHud.Configure(view);
+            passiveHud.BindRunes(runeManager);
 
             dodgeMotion.Bind(clock, input, boss.transform, afterimage, follow);
 
@@ -563,18 +563,23 @@ namespace Dovus.Game
                 1f / Mathf.Max(0.0001f, parentScale.y),
                 1f / Mathf.Max(0.0001f, parentScale.z));
 
-            if (TryGetRendererBounds(visual, out Bounds initial) && initial.size.y > 0.01f)
+            animator = visual.GetComponentInChildren<Animator>();
+            if (animator != null && animator.runtimeAnimatorController != null)
+                animator.Update(0f);
+
+            if (TryGetRendererBounds(visual, out Bounds initial, posed: false) && initial.size.y > 0.01f)
             {
                 float fit = Mathf.Max(0.1f, targetHeightM) / initial.size.y;
                 visual.transform.localScale *= fit;
-                if (TryGetRendererBounds(visual, out Bounds fitted))
+                // Skinned mesh'in hazır bounds'u dolgulu (Synty'de tabanın ~10 cm altı); ona
+                // oturtunca ayak havada kalıyordu. Zemin, ilk animasyon pozunun gerçek köşelerinden.
+                if (TryGetRendererBounds(visual, out Bounds fitted, posed: true))
                     visual.transform.position += Vector3.up * (groundY - fitted.min.y);
                 Debug.Log(
                     $"[VisualScale] {root.name} target={targetHeightM:0.00}m "
                     + $"source={initial.size.y:0.00}m fit={fit:0.000}");
             }
 
-            animator = visual.GetComponentInChildren<Animator>();
             if (animator != null)
                 animator.speed = Mathf.Clamp(animSpeed, 0.25f, 3f);
 
@@ -583,24 +588,41 @@ namespace Dovus.Game
                 capsuleRend.enabled = false;
         }
 
-        static bool TryGetRendererBounds(GameObject root, out Bounds bounds)
+        static bool TryGetRendererBounds(GameObject root, out Bounds bounds, bool posed)
         {
             bounds = default;
             bool found = false;
+            Mesh baked = null;
             foreach (Renderer renderer in root.GetComponentsInChildren<Renderer>(true))
             {
                 if (renderer == null || !renderer.enabled || !renderer.gameObject.activeInHierarchy)
                     continue;
+                Bounds b = renderer.bounds;
+                if (posed && renderer is SkinnedMeshRenderer skinned && skinned.sharedMesh != null)
+                {
+                    baked ??= new Mesh();
+                    skinned.BakeMesh(baked, true);
+                    Matrix4x4 toWorld = skinned.transform.localToWorldMatrix;
+                    Vector3[] verts = baked.vertices;
+                    if (verts.Length > 0)
+                    {
+                        b = new Bounds(toWorld.MultiplyPoint3x4(verts[0]), Vector3.zero);
+                        for (int i = 1; i < verts.Length; i++)
+                            b.Encapsulate(toWorld.MultiplyPoint3x4(verts[i]));
+                    }
+                }
                 if (!found)
                 {
-                    bounds = renderer.bounds;
+                    bounds = b;
                     found = true;
                 }
                 else
                 {
-                    bounds.Encapsulate(renderer.bounds);
+                    bounds.Encapsulate(b);
                 }
             }
+            if (baked != null)
+                Destroy(baked);
             return found;
         }
 

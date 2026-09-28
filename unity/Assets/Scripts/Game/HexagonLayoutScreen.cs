@@ -160,9 +160,33 @@ namespace Dovus.Game
 
         public static float CenterHitRadiusPx(PrototypeTuning tuning) => DpToPixels(tuning.CenterHitRadiusDp);
 
-        public static float DpToPixels(float dp)
+        /// <summary>
+        /// Kısa kenar bu dp'den azsa HUD orantılı küçülür (0 = kapalı). <see cref="PrototypeTuning.HudFitShortSideDp"/>
+        /// ile beslenir; yatay telefonda kısa kenar ~430 dp, altıgen tepsisi ise ~360 dp.
+        /// </summary>
+        public static float FitShortSideDp { get; set; }
+
+        /// <summary>Editörde telefon DPI'ını taklit etmek için (0 = gerçek Screen.dpi).</summary>
+        public static float DebugDpiOverride { get; set; }
+
+        public static float PixelsPerDp
         {
-            float dpi = Screen.dpi > 0f ? Screen.dpi : 160f;
+            get
+            {
+                float dpi = DebugDpiOverride > 0f ? DebugDpiOverride : Screen.dpi > 0f ? Screen.dpi : 160f;
+                float perDp = dpi / 160f;
+                if (FitShortSideDp > 1f)
+                    perDp = Mathf.Min(perDp, Mathf.Min(Screen.width, Screen.height) / FitShortSideDp);
+                return perDp;
+            }
+        }
+
+        public static float DpToPixels(float dp) => dp * PixelsPerDp;
+
+        /// <summary>HUD sığdırmasından bağımsız fiziksel dp (sanal çubuk: parmak mesafesi sabit kalmalı).</summary>
+        public static float PhysicalDpToPixels(float dp)
+        {
+            float dpi = DebugDpiOverride > 0f ? DebugDpiOverride : Screen.dpi > 0f ? Screen.dpi : 160f;
             return dp * (dpi / 160f);
         }
 
