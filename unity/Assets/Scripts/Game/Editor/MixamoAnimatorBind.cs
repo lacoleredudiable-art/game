@@ -48,6 +48,7 @@ namespace Dovus.Game.EditorTools
             }
 
             BuildPlayerController(new ClipSource(player, shared));
+            AlignPlayerLocoFeet();
             BuildBossController(new ClipSource(boss, shared));
 
             AssignController(PlayerVisual, PlayerCtrl);
@@ -321,8 +322,9 @@ namespace Dovus.Game.EditorTools
         }
 
         /// <summary>
-        /// Klibin zemin hızı (model birimi/sn): ayağın yere bastığı karelerde gövdeye göre geriye kayma
+        /// Klibin zemin hızı (model birimi/sn): ayağın yere bastığı karelerde gövdeye göre yatay kayma
         /// hızının medyanı. In-place Mixamo kliplerinde kök hızı olmadığından tek güvenilir kaynak bu.
+        /// Yön bağımsız: SampleAnimation kök dönüş ofsetini uygulamaz.
         /// </summary>
         static float MeasureGroundSpeed(AnimationClip clip)
         {
@@ -347,7 +349,7 @@ namespace Dovus.Game.EditorTools
                     return 0f;
                 float dt = clip.length / samples;
                 var y = new float[2, samples + 1];
-                var z = new float[2, samples + 1];
+                var xz = new Vector2[2, samples + 1];
                 for (int i = 0; i <= samples; i++)
                 {
                     clip.SampleAnimation(an.gameObject, dt * i);
@@ -355,7 +357,7 @@ namespace Dovus.Game.EditorTools
                     {
                         Vector3 p = root.InverseTransformPoint(feet[f].position);
                         y[f, i] = p.y;
-                        z[f, i] = p.z;
+                        xz[f, i] = new Vector2(p.x, p.z);
                     }
                 }
                 var speeds = new List<float>();
@@ -367,13 +369,94 @@ namespace Dovus.Game.EditorTools
                     for (int i = 0; i < samples; i++)
                     {
                         if (y[f, i] < min + groundBand)
-                            speeds.Add(-(z[f, i + 1] - z[f, i]) / dt);
+                            speeds.Add((xz[f, i + 1] - xz[f, i]).magnitude / dt);
                     }
                 }
                 if (speeds.Count == 0)
                     return 0f;
                 speeds.Sort();
                 return Mathf.Max(0f, speeds[speeds.Count / 2]);
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+            }
+        }
+
+        /// <summary>
+        /// Yürüme/koşu/duruş kliplerinde ayak uçlarının ortalama yönünü hareket yönüne (kök ileri)
+        /// hizalar: gerçek Animator'la ölçülen sapma klibin rotationOffset'ine eklenir. Burulmuş
+        /// gövdeli balta klibinde koşarken sol ayak 60-70° yana dönüyordu (29 Eyl sahip bildirimi).
+        /// </summary>
+        static void AlignPlayerLocoFeet()
+        {
+            const float toleranceDeg = 1f;
+            var ac = AssetDatabase.LoadAssetAtPath<AnimatorController>(PlayerCtrl);
+            var tree = ac != null ? ac.layers[0].stateMachine.defaultState?.motion as BlendTree : null;
+            if (tree == null)
+                return;
+            string log = "";
+            foreach (ChildMotion child in tree.children)
+            {
+                var clip = child.motion as AnimationClip;
+                string path = clip != null ? AssetDatabase.GetAssetPath(clip) : null;
+                if (path == null || !path.StartsWith(PlayerDir + "/", System.StringComparison.Ordinal))
+                    continue;
+                float yaw = MeasureMeanFootYaw(ac, child.threshold, clip.length);
+                if (float.IsNaN(yaw))
+                    continue;
+                var imp = AssetImporter.GetAtPath(path) as ModelImporter;
+                var clips = imp != null ? imp.clipAnimations : null;
+                if (clips == null || clips.Length != 1)
+                    continue;
+                if (Mathf.Abs(yaw) > toleranceDeg)
+                {
+                    clips[0].rotationOffset = Mathf.DeltaAngle(0f, clips[0].rotationOffset + yaw);
+                    imp.clipAnimations = clips;
+                    imp.SaveAndReimport();
+                }
+                log += $" {clip.name}: sapma={yaw:F0}° ofset={clips[0].rotationOffset:F0}°";
+            }
+            Debug.Log("[MixamoBind] ayak hizası:" + log);
+        }
+
+        /// <summary>İki ayağın (parmak − bilek) yatay yönünün kök ileriye göre ortalama açısı; NaN = ölçülemedi.</summary>
+        static float MeasureMeanFootYaw(AnimatorController ac, float speedParam, float clipLength)
+        {
+            const float stepSec = 1f / 60f;
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PlayerVisual);
+            if (prefab == null)
+                return float.NaN;
+            var go = (GameObject)Object.Instantiate(prefab);
+            try
+            {
+                var an = go.GetComponentInChildren<Animator>(true);
+                if (an == null || !an.isHuman)
+                    return float.NaN;
+                an.runtimeAnimatorController = ac;
+                Transform root = an.transform;
+                Transform lf = an.GetBoneTransform(HumanBodyBones.LeftFoot);
+                Transform rf = an.GetBoneTransform(HumanBodyBones.RightFoot);
+                Transform lt = an.GetBoneTransform(HumanBodyBones.LeftToes);
+                Transform rt = an.GetBoneTransform(HumanBodyBones.RightToes);
+                if (lf == null || rf == null || lt == null || rt == null)
+                    return float.NaN;
+                an.Rebind();
+                an.SetFloat("Speed", speedParam);
+                an.Update(0f);
+                int steps = Mathf.Max(30, Mathf.CeilToInt(clipLength / stepSec));
+                float sum = 0f;
+                for (int i = 0; i < steps; i++)
+                {
+                    an.Update(stepSec);
+                    Vector3 l = lt.position - lf.position;
+                    Vector3 r = rt.position - rf.position;
+                    l.y = 0f;
+                    r.y = 0f;
+                    sum += Vector3.SignedAngle(root.forward, l, Vector3.up)
+                        + Vector3.SignedAngle(root.forward, r, Vector3.up);
+                }
+                return sum / (steps * 2f);
             }
             finally
             {
@@ -486,6 +569,11 @@ namespace Dovus.Game.EditorTools
                 string fileName = Path.GetFileNameWithoutExtension(path);
                 string lower = fileName.ToLowerInvariant();
                 bool loop = lower.Contains("idle") || lower.Contains("walk") || lower.Contains("run");
+                // Oyuncu locomotion'ı yerinde oynar: kök dönüşü (gövde yönüne göre), yüksekliği ve XZ'si
+                // poza gömülür; yön farkını AlignPlayerLocoFeet ölçüp rotationOffset'e yazar. Bu Mixamo
+                // dosyalarında "Original" kök gövdeye göre ~42° dönük (duruşta bile ayaklar yana bakıyor).
+                // Boss hariç: BossVisual walk.averageSpeed okur.
+                bool playerLoco = loop && path.StartsWith(PlayerDir + "/", System.StringComparison.Ordinal);
                 var clips = imp.clipAnimations;
                 if (clips == null || clips.Length == 0)
                     clips = imp.defaultClipAnimations;
@@ -495,6 +583,19 @@ namespace Dovus.Game.EditorTools
                     if (loop && !clips[i].loopTime)
                     {
                         clips[i].loopTime = true;
+                        clipsDirty = true;
+                    }
+                    if (playerLoco && !(clips[i].lockRootRotation && !clips[i].keepOriginalOrientation
+                            && clips[i].lockRootHeightY && clips[i].keepOriginalPositionY
+                            && clips[i].lockRootPositionXZ && clips[i].keepOriginalPositionXZ))
+                    {
+                        clips[i].lockRootRotation = true;
+                        clips[i].keepOriginalOrientation = false;
+                        clips[i].lockRootHeightY = true;
+                        clips[i].keepOriginalPositionY = true;
+                        clips[i].heightFromFeet = false;
+                        clips[i].lockRootPositionXZ = true;
+                        clips[i].keepOriginalPositionXZ = true;
                         clipsDirty = true;
                     }
                     if (clips.Length == 1 && clips[i].name != fileName)
