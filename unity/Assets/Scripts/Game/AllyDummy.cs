@@ -116,7 +116,7 @@ namespace Dovus.Game
             tr.offsetMin = new Vector2(4f, 0f);
             tr.offsetMax = new Vector2(-4f, -2f);
             _label = textGo.AddComponent<Text>();
-            _label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            _label.font = HudTheme.LegacyFont;
             if (_label.font == null)
                 _label.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
             _label.fontSize = 28;

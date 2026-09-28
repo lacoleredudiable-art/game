@@ -1237,7 +1237,7 @@ namespace Dovus.Game
             if (amount <= 0f || _bossVitals == null || _bossVitals.IsDown)
                 return;
 
-            _damageHud?.ShowDamage(amount, isCrit: false);
+            _damageHud?.ShowDamage(amount, false, BossHitPoint(), DamageTint());
             _lastDamageDealtMs = _clock != null ? _clock.Director.WorldTimeMs : _lastDamageDealtMs;
 
             bool killed = _bossVitals.ApplyDamage(amount);
@@ -2811,7 +2811,7 @@ namespace Dovus.Game
             }
 
             LastClosingDamageDealt = damage;
-            _damageHud?.ShowDamage(damage, isCrit);
+            _damageHud?.ShowDamage(damage, isCrit, BossHitPoint(), DamageTint());
             _lastDamageDealtMs = _clock.Director.WorldTimeMs; // "dealt_damage_recently" (Öfke Patlaması)
 
             float lifesteal = (_modeDirector?.Lifesteal ?? 0f) + (_passiveDirector?.LifestealAdd ?? 0f);
@@ -2908,6 +2908,7 @@ namespace Dovus.Game
         /// <summary>Düz vuruş jab — yalnızca kısa sarsıntı; geri itme yok (skill tepkisi değil).</summary>
         void ApplyBossClosingBasic(LivingEffect logic, ClosingHit closing)
         {
+            NoteImpactOrigin(logic);
             if (_boss == null || (_bossVitals != null && _bossVitals.IsDown))
                 return;
             if (!IsClosingInRange(logic, closing))
@@ -2924,6 +2925,7 @@ namespace Dovus.Game
 
         void ApplyBossClosing(LivingEffect logic, ClosingHit closing, SkillResolution skill)
         {
+            NoteImpactOrigin(logic);
             if (_boss == null || (_bossVitals != null && _bossVitals.IsDown))
                 return;
 

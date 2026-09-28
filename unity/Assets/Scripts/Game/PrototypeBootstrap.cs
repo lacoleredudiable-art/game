@@ -265,6 +265,7 @@ namespace Dovus.Game
             input.Tuning = _tuning;
             input.Combat = combat;
             input.Bind(clock, ink, syllable, debug, skills, loadout);
+            input.DotAccepted += view.NotifyPressed;
 
             // 16 Eylül: "kamera sabit" bug raporu — MoveInput/HexagonInput'un parmaklarına
             // dokunmadan üçüncü bir parmakla (veya editörde sağ-tık sürükleyerek) 360° orbit.
@@ -350,6 +351,8 @@ namespace Dovus.Game
             var feel = feelGo.AddComponent<CombatFeel>();
             feel.Bind(clock, follow, combat, _tuning, overlay.Cam, debug, readout);
             feel.BindActors(player.GetComponent<HitFlash>(), boss.GetComponent<HitFlash>());
+            var overlayHud = feelGo.AddComponent<CombatOverlayHud>();
+            overlayHud.Configure(vitals, bossVitals, player, boss.transform, overlay.Cam);
 
             var directorGo = boss.gameObject;
             var bossDir = directorGo.AddComponent<BossDirector>();
@@ -359,6 +362,7 @@ namespace Dovus.Game
             if (playerStatus != null)
                 bossDir.BindPlayerStatus(playerStatus);
             bossDir.BindVisual(boss.GetComponent<BossVisual>());
+            vitalsHud.BindBoss(bossDir);
 
             var scarsGo = new GameObject("GroundScars");
             scarsGo.transform.SetParent(transform, false);

@@ -82,6 +82,9 @@ namespace Dovus.Game
         public SentenceEngine Engine => _engine;
         public DodgeState Dodge => _dodge;
 
+        /// <summary>Motor bir dokunuşu kabul etti (0 = merkez düz vuruş). Yalnız UI juice için.</summary>
+        public event System.Action<int> DotAccepted;
+
         /// <summary>16 Eylül: CameraOrbitInput'un "bu parmak zaten çiziyor/dodge'a ait" kontrolü için.</summary>
         public int? ClaimedFingerId => _fingerId;
         public int? ClaimedDodgeFingerId => _dodgeFingerId;
@@ -161,8 +164,10 @@ namespace Dovus.Game
                 _engine.Abort();
             double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
             _engine.OnDotTouched(verbSlot, worldMs);
+            DotAccepted?.Invoke(verbSlot);
             _syllable?.PlayForDot(verbSlot, 1);
             _engine.OnDotTouched(adjectiveSlot, worldMs);
+            DotAccepted?.Invoke(adjectiveSlot);
             _syllable?.PlayForDot(adjectiveSlot, 2);
             FlushInkBreak();
             Debug.Log($"[ElementSystem] smoke cast accepted: {verbRuneId}-{adjectiveRuneId}");
@@ -625,6 +630,7 @@ namespace Dovus.Game
             // from'u önce sakla, Break'i segmentten sonra FlushInkBreak yapsın.
             Vector2? inkFrom = _lastInkPx;
             _engine.OnDotTouched(hit.Value, worldMs);
+            DotAccepted?.Invoke(hit.Value);
 
             if (inkFrom.HasValue)
                 _ink?.AddSegment(inkFrom.Value, dotPx);
@@ -699,6 +705,7 @@ namespace Dovus.Game
             int dot = _tuning.BasicStrikeDot;
             _engine.OnDotTouched(dot, worldMs);
             _engine.Commit();
+            DotAccepted?.Invoke(0);
             FlushInkBreak();
             _syllable?.PlayForDot(dot, 1);
             _debugHud?.NoteBasicStrike();

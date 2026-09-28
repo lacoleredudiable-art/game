@@ -53,10 +53,11 @@ namespace Dovus.Game
             var rect = go.AddComponent<RectTransform>();
             rect.sizeDelta = new Vector2(160f, 48f);
             var text = go.AddComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            if (text.font == null)
-                text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            text.fontStyle = FontStyle.Bold;
+            text.font = HudTheme.LegacyFont;
+            text.fontStyle = FontStyle.Normal;
+            var outline = go.AddComponent<Outline>();
+            outline.effectColor = new Color(0f, 0f, 0f, 0.75f);
+            outline.effectDistance = new Vector2(1.5f, -1.5f);
             text.alignment = TextAnchor.MiddleCenter;
             text.horizontalOverflow = HorizontalWrapMode.Overflow;
             text.verticalOverflow = VerticalWrapMode.Overflow;
@@ -64,8 +65,11 @@ namespace Dovus.Game
             return new Floater { Go = go, Rect = rect, Text = text };
         }
 
-        /// <summary>Negatif amount = heal.</summary>
-        public void ShowDamage(float amount, bool isCrit = false)
+        /// <summary>
+        /// Negatif amount = heal. <paramref name="worldPos"/> isabet noktası (yoksa boss üstü);
+        /// <paramref name="tint"/> element rengi (kritik altın, heal yeşil kalır).
+        /// </summary>
+        public void ShowDamage(float amount, bool isCrit = false, Vector3? worldPos = null, Color? tint = null)
         {
             if (_tuning == null || !_tuning.ShowDamageNumbers)
                 return;
@@ -73,15 +77,21 @@ namespace Dovus.Game
             Vector3 world = _cam != null
                 ? _cam.transform.position + _cam.transform.forward * 6f
                 : Vector3.zero;
-            // Boss üstü — FollowCamera hedefi yoksa ekran ortası-üstü.
-            var boss = Object.FindAnyObjectByType<BossReactor>();
-            if (boss != null)
-                world = boss.transform.position + Vector3.up * 2.2f;
+            if (worldPos.HasValue)
+            {
+                world = worldPos.Value;
+            }
+            else
+            {
+                var boss = Object.FindAnyObjectByType<BossReactor>();
+                if (boss != null)
+                    world = boss.transform.position + Vector3.up * 2.2f;
+            }
 
-            ShowAt(world, amount, isCrit);
+            ShowAt(world, amount, isCrit, tint);
         }
 
-        public void ShowAt(Vector3 worldPos, float amount, bool isCrit = false)
+        public void ShowAt(Vector3 worldPos, float amount, bool isCrit = false, Color? tint = null)
         {
             if (_tuning == null || !_tuning.ShowDamageNumbers)
                 return;
@@ -99,22 +109,24 @@ namespace Dovus.Game
             f.Heal = heal;
             f.Go.SetActive(true);
 
+            HudTheme th = HudTheme.Current;
             if (heal)
             {
                 f.Text.text = "+" + (-amount).ToString("0.#");
-                f.Text.color = new Color(0.45f, 0.9f, 0.75f, 1f);
+                f.Text.color = th.HealColor;
                 f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(_tuning.DamageFloatFontDp));
             }
             else if (isCrit)
             {
-                f.Text.text = Mathf.RoundToInt(amount).ToString();
-                f.Text.color = new Color(0.95f, 0.88f, 0.55f, 1f);
+                f.Text.text = Mathf.RoundToInt(amount) + "!";
+                f.Text.color = th.CritTextColor;
                 f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(_tuning.DamageFloatCritFontDp));
             }
             else
             {
                 f.Text.text = Mathf.RoundToInt(amount).ToString();
-                f.Text.color = new Color(0.95f, 0.93f, 0.88f, 1f);
+                // Element rengi beyaza doğru açılır: koyu element tonları da okunur kalsın.
+                f.Text.color = tint.HasValue ? Color.Lerp(tint.Value, th.DamageTextColor, 0.35f) : th.DamageTextColor;
                 f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(_tuning.DamageFloatFontDp));
             }
 

@@ -1,4 +1,5 @@
 using Dovus.Core.Combat;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -30,8 +31,21 @@ namespace Dovus.Game
         Image _manaSheen;
         Image _bossSheen;
         Image _allySheen;
-        Text _bossName;
+        TextMeshProUGUI _bossName;
         Text _bossLabel;
+        BarJuice _playerJuice;
+        BarJuice _bossJuice;
+        BossHudData _bossData;
+        BossDirector _bossDirector;
+        RectTransform _castRoot;
+        CanvasGroup _castGroup;
+        Image _castFill;
+        TextMeshProUGUI _castLabel;
+        BossAttackKind _castKind;
+        bool _castShown;
+        TextMeshProUGUI _banner;
+        CanvasGroup _bannerGroup;
+        float _bannerShownAt;
         Text _playerLabel;
         Text _manaLabel;
         Text _allyLabel;
@@ -84,7 +98,7 @@ namespace Dovus.Game
             _playerRoot.pivot = new Vector2(0f, 1f);
 
             _playerPanel = CreateGlassPanel(_playerRoot, "PlayerGlass");
-            _playerFill = CreateBar(_playerPanel, "Player", out _playerBg, out _playerSheen);
+            _playerFill = CreateBar(_playerPanel, "Player", out _playerBg, out _playerSheen, out _playerJuice);
             _playerLabel = CreateLabel(_playerBg, "PlayerHp");
             _manaFill = CreateBar(_playerPanel, "Mana", out _manaBg, out _manaSheen);
             _manaLabel = CreateLabel(_manaBg, "PlayerMana");
@@ -105,12 +119,156 @@ namespace Dovus.Game
             _bossRoot.anchorMax = new Vector2(0.5f, 1f);
             _bossRoot.pivot = new Vector2(0.5f, 1f);
 
-            _bossName = CreateBossName(_bossRoot);
-            _bossFill = CreateBar(_bossRoot, "Boss", out _bossBg, out _bossSheen);
+            _bossData = BossHudData.Load();
+            _bossName = CreateBossName(_bossRoot, _bossData);
+            _bossFill = CreateBar(_bossRoot, "Boss", out _bossBg, out _bossSheen, out _bossJuice);
+            CreatePhaseNotches(_bossBg, _bossData);
             _bossLabel = CreateLabel(_bossBg, "BossHp");
             _bossLabel.alignment = TextAnchor.MiddleCenter;
+            CreateCastBar(_bossRoot);
+            CreatePhaseBanner(canvasRoot);
 
             ApplyTuningLayout();
+        }
+
+        /// <summary>Faz banner'ı ve cast barı için boss beyni.</summary>
+        public void BindBoss(BossDirector boss)
+        {
+            if (_bossDirector != null)
+                _bossDirector.BossPhaseChanged -= OnBossPhaseChanged;
+            _bossDirector = boss;
+            if (_bossDirector != null)
+                _bossDirector.BossPhaseChanged += OnBossPhaseChanged;
+        }
+
+        void OnDestroy()
+        {
+            if (_bossDirector != null)
+                _bossDirector.BossPhaseChanged -= OnBossPhaseChanged;
+        }
+
+        void OnBossPhaseChanged(int phase)
+        {
+            // Faz 1 = revive sonrası sıfırlama; banner yalnız yükselişte.
+            if (phase <= 1 || _banner == null)
+                return;
+            string phaseName = _bossData.PhaseName(phase);
+            _banner.text = string.IsNullOrEmpty(phaseName)
+                ? "FAZ " + phase
+                : "FAZ " + phase + "  <size=70%>" + _bossData.Upper(phaseName) + "</size>";
+            _bannerShownAt = Time.unscaledTime;
+            _bannerGroup.alpha = 1f;
+            HudTheme th = HudTheme.Current;
+            UiJuice.PunchScale(_banner.transform, th.BannerPunchScale, th.JuiceSec * 2f);
+            UiJuice.Shake(_bossRoot, HexagonLayoutScreen.DpToPixels(th.BossBarShakeDp), th.BossBarShakeSec);
+        }
+
+        void CreatePhaseNotches(RectTransform bossBg, BossHudData data)
+        {
+            foreach (var p in data.Phases)
+            {
+                if (p.UpperFrac <= 0.001f || p.UpperFrac >= 0.999f)
+                    continue;
+                var go = new GameObject("PhaseNotch" + p.Phase);
+                go.transform.SetParent(bossBg, false);
+                var rt = go.AddComponent<RectTransform>();
+                rt.anchorMin = new Vector2(p.UpperFrac, 0f);
+                rt.anchorMax = new Vector2(p.UpperFrac, 1f);
+                rt.pivot = new Vector2(0.5f, 0.5f);
+                rt.sizeDelta = new Vector2(HexagonLayoutScreen.DpToPixels(2f), 0f);
+                var img = go.AddComponent<Image>();
+                img.color = HudTheme.Current.PhaseNotchColor;
+                img.raycastTarget = false;
+            }
+        }
+
+        void CreateCastBar(RectTransform bossRoot)
+        {
+            HudTheme th = HudTheme.Current;
+            var go = new GameObject("BossCastBar");
+            go.transform.SetParent(bossRoot, false);
+            _castRoot = go.AddComponent<RectTransform>();
+            _castRoot.anchorMin = new Vector2(0.5f, 1f);
+            _castRoot.anchorMax = new Vector2(0.5f, 1f);
+            _castRoot.pivot = new Vector2(0.5f, 1f);
+            _castGroup = go.AddComponent<CanvasGroup>();
+            _castGroup.alpha = 0f;
+            _castGroup.blocksRaycasts = false;
+            _castGroup.interactable = false;
+
+            var bg = go.AddComponent<Image>();
+            bg.sprite = PillSprite();
+            bg.type = Image.Type.Sliced;
+            bg.color = new Color(0.02f, 0.03f, 0.04f, 0.78f);
+            bg.raycastTarget = false;
+
+            _castFill = CreateBarLayer(go.transform, "CastFill", PillSprite(), Image.Type.Filled);
+            _castFill.color = th.CastBarColor;
+            _castLabel = HudTheme.CreateTmp(go.transform, "CastLabel", th.CastLabelDp, Color.white);
+            var lrt = _castLabel.rectTransform;
+            lrt.anchorMin = new Vector2(0f, 1f);
+            lrt.anchorMax = new Vector2(1f, 1f);
+            lrt.pivot = new Vector2(0.5f, 0f);
+            lrt.anchoredPosition = new Vector2(0f, HexagonLayoutScreen.DpToPixels(1f));
+            lrt.sizeDelta = new Vector2(0f, HexagonLayoutScreen.DpToPixels(th.CastLabelDp + 4f));
+        }
+
+        void CreatePhaseBanner(Transform canvasRoot)
+        {
+            HudTheme th = HudTheme.Current;
+            var go = new GameObject("PhaseBanner");
+            go.transform.SetParent(canvasRoot, false);
+            if (canvasRoot != null)
+                go.layer = canvasRoot.gameObject.layer;
+            var rt = go.AddComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0.5f, 0.68f);
+            rt.anchorMax = new Vector2(0.5f, 0.68f);
+            rt.sizeDelta = new Vector2(HexagonLayoutScreen.DpToPixels(360f), HexagonLayoutScreen.DpToPixels(th.BannerDp * 1.6f));
+            _bannerGroup = go.AddComponent<CanvasGroup>();
+            _bannerGroup.alpha = 0f;
+            _bannerGroup.blocksRaycasts = false;
+            _bannerGroup.interactable = false;
+            _banner = HudTheme.CreateTmp(go.transform, "BannerText", th.BannerDp, th.BannerColor);
+            var brt = _banner.rectTransform;
+            brt.anchorMin = Vector2.zero;
+            brt.anchorMax = Vector2.one;
+            brt.offsetMin = Vector2.zero;
+            brt.offsetMax = Vector2.zero;
+        }
+
+        void TickBossExtras()
+        {
+            HudTheme th = HudTheme.Current;
+            if (_bannerGroup != null && _bannerGroup.alpha > 0f)
+            {
+                float age = Time.unscaledTime - _bannerShownAt;
+                _bannerGroup.alpha = age <= th.BannerHoldSec
+                    ? 1f
+                    : 1f - Mathf.Clamp01((age - th.BannerHoldSec) / Mathf.Max(0.01f, th.BannerFadeSec));
+            }
+
+            if (_castGroup == null)
+                return;
+            bool casting = _bossDirector != null && _bossDirector.IsWindingUp
+                && _bossDirector.CurrentAttackKind.HasValue;
+            if (casting)
+            {
+                var kind = _bossDirector.CurrentAttackKind.Value;
+                if (!_castShown || _castKind != kind)
+                {
+                    _castKind = kind;
+                    _castLabel.text = _bossData.AttackName(kind);
+                    UiJuice.PunchScale(_castRoot, th.CastPopScale, th.JuiceSec);
+                }
+                _castShown = true;
+                _castFill.fillAmount = _bossDirector.WindupProgress01;
+                _castGroup.alpha = 1f;
+            }
+            else
+            {
+                _castShown = false;
+                _castGroup.alpha = Mathf.MoveTowards(_castGroup.alpha, 0f, Time.unscaledDeltaTime / Mathf.Max(0.01f, th.BannerFadeSec));
+            }
         }
 
         static Sprite _roundedSprite;
@@ -163,7 +321,14 @@ namespace Dovus.Game
             Transform parent,
             string name,
             out RectTransform bgRect,
-            out Image sheen)
+            out Image sheen) => CreateBar(parent, name, out bgRect, out sheen, out _);
+
+        static Image CreateBar(
+            Transform parent,
+            string name,
+            out RectTransform bgRect,
+            out Image sheen,
+            out BarJuice juice)
         {
             Sprite pill = PillSprite();
 
@@ -178,6 +343,8 @@ namespace Dovus.Game
             bgImg.type = Image.Type.Sliced;
             bgImg.color = new Color(0.02f, 0.03f, 0.04f, 0.78f);
             bgImg.raycastTarget = false;
+
+            Image ghost = CreateBarLayer(bg.transform, name + "Ghost", pill, Image.Type.Filled);
 
             var fillGo = new GameObject(name + "Fill");
             fillGo.transform.SetParent(bg.transform, false);
@@ -206,7 +373,31 @@ namespace Dovus.Game
             sheen.color = new Color(1f, 1f, 1f, 0.18f);
             sheen.raycastTarget = false;
 
+            Image flash = CreateBarLayer(bg.transform, name + "Flash", pill, Image.Type.Sliced);
+            flash.enabled = false;
+            juice = new BarJuice(ghost, flash);
             return fillImg;
+        }
+
+        static Image CreateBarLayer(Transform bg, string name, Sprite pill, Image.Type type)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(bg, false);
+            var rect = go.AddComponent<RectTransform>();
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = new Vector2(2f, 2f);
+            rect.offsetMax = new Vector2(-2f, -2f);
+            var img = go.AddComponent<Image>();
+            img.sprite = pill;
+            img.type = type;
+            if (type == Image.Type.Filled)
+            {
+                img.fillMethod = Image.FillMethod.Horizontal;
+                img.fillOrigin = (int)Image.OriginHorizontal.Left;
+            }
+            img.raycastTarget = false;
+            return img;
         }
 
         static Sprite RoundedRectSprite()
@@ -264,9 +455,7 @@ namespace Dovus.Game
             rect.offsetMin = new Vector2(8f, 0f);
             rect.offsetMax = new Vector2(-8f, 0f);
             var text = go.AddComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            if (text.font == null)
-                text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            text.font = HudTheme.LegacyFont;
             text.fontSize = 11;
             text.fontStyle = FontStyle.Bold;
             text.color = new Color(1f, 1f, 1f, 0.88f);
@@ -279,25 +468,19 @@ namespace Dovus.Game
             return text;
         }
 
-        static Text CreateBossName(Transform parent)
+        static TextMeshProUGUI CreateBossName(Transform parent, BossHudData data)
         {
-            var go = new GameObject("BossName");
-            go.transform.SetParent(parent, false);
-            var rect = go.AddComponent<RectTransform>();
+            HudTheme th = HudTheme.Current;
+            var text = HudTheme.CreateTmp(parent, "BossName", th.BossNameDp, new Color(0.92f, 0.88f, 0.82f, 0.95f));
+            var rect = text.rectTransform;
             rect.anchorMin = new Vector2(0.5f, 1f);
             rect.anchorMax = new Vector2(0.5f, 1f);
             rect.pivot = new Vector2(0.5f, 1f);
             rect.sizeDelta = new Vector2(400f, 18f);
-            var text = go.AddComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            if (text.font == null)
-                text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            text.fontSize = 12;
-            text.fontStyle = FontStyle.Bold;
-            text.color = new Color(0.78f, 0.74f, 0.7f, 0.75f);
-            text.alignment = TextAnchor.MiddleCenter;
-            text.raycastTarget = false;
-            text.text = "BOSS";
+            float subPct = th.BossNameDp > 0f ? th.BossSubtitleDp / th.BossNameDp * 100f : 70f;
+            text.text = string.IsNullOrEmpty(data.Subtitle)
+                ? data.Upper(data.Name)
+                : data.Upper(data.Name) + "  <size=" + subPct.ToString("0") + "%><alpha=#AA>" + data.Subtitle + "</size>";
             return text;
         }
 
@@ -350,13 +533,23 @@ namespace Dovus.Game
 
                 PlayerStackBottomCanvasY = -(topInset + margin + panelH);
 
-                float nameH = HexagonLayoutScreen.DpToPixels(16f);
+                HudTheme th = HudTheme.Current;
+                float nameH = HexagonLayoutScreen.DpToPixels(th.BossNameDp + 4f);
                 _bossRoot.anchoredPosition = new Vector2(0f, -(topInset + margin * 0.5f));
                 _bossName.rectTransform.anchoredPosition = Vector2.zero;
                 _bossName.rectTransform.sizeDelta = new Vector2(bossW, nameH);
                 _bossBg.anchoredPosition = new Vector2(-bossW * 0.5f, -nameH);
                 _bossBg.sizeDelta = new Vector2(bossW, bossH);
-                BossStackBottomCanvasY = -(topInset + margin * 0.5f + nameH + bossH);
+                // Cast barı boss barının altında; etiketi barın üstünde durur.
+                float castLabelH = HexagonLayoutScreen.DpToPixels(th.CastLabelDp + 4f);
+                float castH = HexagonLayoutScreen.DpToPixels(th.CastBarHeightDp);
+                float castTop = nameH + bossH + castLabelH;
+                if (_castRoot != null)
+                {
+                    _castRoot.anchoredPosition = new Vector2(0f, -castTop);
+                    _castRoot.sizeDelta = new Vector2(bossW * th.CastBarWidthFrac, castH);
+                }
+                BossStackBottomCanvasY = -(topInset + margin * 0.5f + castTop + castH);
             }
 
             if (_appliedBossColor != _tuning.BossVitalsColor)
@@ -388,12 +581,19 @@ namespace Dovus.Game
                 return;
 
             ApplyTuningLayout();
+            HudTheme th = HudTheme.Current;
 
             if (_vitals != null && _playerFill != null)
             {
-                _playerFill.fillAmount = _vitals.MaxHp > 0
+                float ratio = _vitals.MaxHp > 0
                     ? Mathf.Clamp01((float)_vitals.Hp / _vitals.MaxHp)
                     : 0f;
+                _playerFill.fillAmount = ratio;
+                _playerJuice?.Tick(ratio, th);
+                bool low = ratio > 0f && ratio <= th.LowHpFrac;
+                _playerFill.color = low
+                    ? Color.Lerp(_appliedPlayerColor, Color.white, UiJuice.Pulse01(th.LowHpPulseHz) * th.LowHpPulseStrength)
+                    : _appliedPlayerColor;
                 if (_playerLabel != null)
                     _playerLabel.text = _vitals.Hp + "  /  " + _vitals.MaxHp;
             }
@@ -420,6 +620,7 @@ namespace Dovus.Game
                 _bossFill.fillAmount = _bossVitals.MaxHp > 0
                     ? Mathf.Clamp01(_bossVitals.Hp / _bossVitals.MaxHp)
                     : 0f;
+                _bossJuice?.Tick(_bossFill.fillAmount, th);
                 if (_bossLabel != null)
                     _bossLabel.text = Mathf.CeilToInt(_bossVitals.Hp) + "  /  "
                         + Mathf.CeilToInt(_bossVitals.MaxHp);
@@ -431,6 +632,8 @@ namespace Dovus.Game
                 if (_allyLabel != null)
                     _allyLabel.text = _ally.Hp + "  /  " + _ally.MaxHp;
             }
+
+            TickBossExtras();
         }
     }
 }

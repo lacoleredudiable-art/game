@@ -3,7 +3,8 @@
     "rootNamespace": "",
     "references": [
         "Dovus.Core",
-        "Dovus.Game"
+        "Dovus.Game",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [
         "Editor"

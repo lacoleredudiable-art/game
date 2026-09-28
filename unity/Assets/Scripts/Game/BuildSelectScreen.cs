@@ -705,7 +705,7 @@ namespace Dovus.Game
             var rect = go.AddComponent<RectTransform>();
             Stretch(rect, Vector2.zero, Vector2.one);
             var text = go.AddComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.font = HudTheme.LegacyFont;
             if (text.font == null)
                 text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
             text.text = value;
