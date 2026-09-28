@@ -6,7 +6,7 @@ namespace Dovus.Core.Tuning
     {
         public int StartupMs = 10;
         public int IframeStartMs = 0;
-        public int IframeMs = 220;
+        public int IframeMs = 260;
         public float DistanceM = 3.2f;
         public int DurationMs = 190;
         public float CurveExp = 3.6f;

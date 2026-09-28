@@ -16,7 +16,7 @@ public class CombatTuningDefaultsTests
         {
             Assert.That(t.Dodge.StartupMs, Is.EqualTo(10));
             Assert.That(t.Dodge.IframeStartMs, Is.EqualTo(0));
-            Assert.That(t.Dodge.IframeMs, Is.EqualTo(220));
+            Assert.That(t.Dodge.IframeMs, Is.EqualTo(260));
             Assert.That(t.Dodge.DistanceM, Is.EqualTo(3.2f));
             Assert.That(t.Dodge.DurationMs, Is.EqualTo(190));
             Assert.That(t.Dodge.CurveExp, Is.EqualTo(3.6f));
@@ -65,7 +65,7 @@ public class CombatTuningDefaultsTests
         {
             Assert.That(t.Grade.MukemmelGapMaxMs, Is.EqualTo(90));
             Assert.That(t.Grade.HarikaGapMaxMs, Is.EqualTo(160));
-            Assert.That(t.Grade.TemizGapMaxMs, Is.EqualTo(200));
+            Assert.That(t.Grade.TemizGapMaxMs, Is.EqualTo(220));
         });
 
         // §11 Boss (+ T13 çakma varyantları)

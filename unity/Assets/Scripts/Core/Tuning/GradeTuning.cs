@@ -14,7 +14,7 @@ namespace Dovus.Core.Tuning
     {
         public int MukemmelGapMaxMs = 90;
         public int HarikaGapMaxMs = 160;
-        public int TemizGapMaxMs = 200;
+        public int TemizGapMaxMs = 220;
 
         public void CopyFrom(GradeTuning other)
         {

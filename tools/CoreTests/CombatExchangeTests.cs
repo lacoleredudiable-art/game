@@ -202,7 +202,7 @@ public class CombatExchangeTests
     public void DodgeState_DisplacementReachesOneAfterDuration()
     {
         _dodge.Begin(0);
-        int endOfDuration = 20 + 260;
+        int endOfDuration = 10 + 190;
         Assert.That(_dodge.GetDisplacementRatio(endOfDuration), Is.EqualTo(1f).Within(1e-6f));
     }
 
@@ -210,10 +210,10 @@ public class CombatExchangeTests
     public void DodgeState_GlideVelocityDecaysAfterDuration()
     {
         _dodge.Begin(0);
-        int moveEnd = 20 + 260;
+        int moveEnd = 10 + 190;
 
         Assert.That(_dodge.GetGlideVelocityRatio(moveEnd), Is.EqualTo(0f).Within(1e-6f));
         Assert.That(_dodge.GetGlideVelocityRatio(moveEnd + 1), Is.GreaterThan(0f));
-        Assert.That(_dodge.GetGlideVelocityRatio(moveEnd + 220), Is.EqualTo(0f).Within(1e-6f));
+        Assert.That(_dodge.GetGlideVelocityRatio(moveEnd + 120), Is.EqualTo(0f).Within(1e-6f));
     }
 }
