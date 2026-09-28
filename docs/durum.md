@@ -17,6 +17,22 @@
 **Dal:** `feat/feel-*` fazları · **Sıradaki:** his/sunum turu fazları (plan: Faz 0 his
 ayarları → 1 boss anim → 2 oyuncu anim → 3 HUD → 4 VFX/SFX → 5 telefon)
 
+> **28 Eylül — His turu Faz 5 (kısmi): Mixamo setleri + build shader'ı (dal `feat/feel-f5-phone`).**
+> Sahibi mixamo.com'a Cursor tarayıcısında girdi; `tools/mixamo-download.mjs` ile
+> `mixamo-jobs/player.json` 13/13 (Sword And Shield idle/walk/run/slash/attack/kick/block/impact/
+> death + roll + 1H/2H magic + power up) ve `boss.json` 7/7 (Mutant idle/walk/jump attack/roaring/
+> flexing/dying + Big Hit To Head) indirildi → `Dovus/Synty/Bind Mixamo Animator` çalıştırıldı.
+> Editor Play: oyuncu `Player_Idle/Walk/Run` blend + `Player_Strike_A/B/C` vuruş döngüsü,
+> boss `Boss_Walk` + `Boss_Slam` oynuyor. **Not:** `unity/Assets/Art/Mixamo/` `.gitignore`'da —
+> klipler yalnız bu makinede; başka makinede aynı iki komut tekrar çalıştırılmalı.
+> CastPierce/CastSweep hâlâ ortak `Melee_Thrust/Melee_Slash` (oyuncu setinde karşılığı yok).
+> `AndroidBuilder.RuntimeShaders`'a `Universal Render Pipeline/Particles/Unlit` eklendi
+> (FeelVfx, CastFlash, LivingEffectView, LavaDecor, BillboardVfx `Shader.Find` ile arıyordu;
+> build'de düşerdi). **Açık:** APK yeniden alınmadı (ilk deneme Play'e girilince kesildi),
+> telefon bağlı değil → kare süresi / overdraw / parçacık bütçesi ölçülmedi, telefon his turu yok.
+> Editor'de `StickKnob` bir kez fare bırakılmadan oyun görünümünden çıkınca aktif kaldı
+> (`MoveInput.IsActive` parmak id'si takılı) — telefonda tekrar edip etmediği bakılmadı.
+
 > **28 Eylül — His turu Faz 4: VFX + SFX (dal `feat/feel-f4-vfx-sfx`).**
 > VFX çözümleme: `Core/Presentation/VfxKeyChain` (`VFX_{Element}_{Fiil}_{Sifat}` →
 > `VFX_{Element}_{Fiil}` → `VFX_{Fiil}`, testli) + `VfxLibrary` SO (`Resources/VfxLibrary.asset`,
