@@ -7376,6 +7376,7 @@
       "guard_threshold": 0.3,
       "rewind_sec": 2.0,
       "portal_life_sec": 4.0,
+      "portal_trigger_radius_m": 1.0,
       "decoy_life_sec": 2.0,
       "flow_tick_fraction": 0.33,
       "glide_speed_mult": 1.5,

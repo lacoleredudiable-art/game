@@ -13,9 +13,34 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 28 Eylül 2026 (pasif/hitbox/mobility/radial) ·
-**Dal:** `cursor/runtime-design-gaps-da7d` · **Sıradaki:** Unity Play/telefon his testi,
-sonra 11-4 taret / 11-5 çoklu minion ve gerçek presentation animasyon/VFX
+**Son güncelleme:** 28 Eylül 2026 (mechanic_grammar oyuna bağlandı) ·
+**Dal:** `feat/mechanic-grammar` · **Sıradaki:** telefon his testi; duvar/klon/taret/
+geri sarma/sürekli alan gibi henüz dünyaya inmeyen gramer atomları (Bilinen açıklar)
+
+> **28 Eylül — mechanic_grammar BAĞLAYICI + oyunda (dal `feat/mechanic-grammar`).** Sahibi
+> atom gramerini onayladı. Kurallar `element-sistemi.json` → `mechanic_grammar`'a taşındı
+> (sürüm 6.1.1 kaldı; taslak `docs/atom-grammar-taslak.json` silindi). Motor Core'da:
+> `Core/Mechanic/` (`MechanicRules` JSON okur, `MechanicGrammar.Compose(fiil, sıfat, silah)`
+> plan üretir, `MechanicLabeler`/`MechanicDescriber` etiket + Türkçe açıklama). `tools/AtomSim`
+> artık bu dosyaları link'ler (kopya yok). Simülasyon düzeltmeleri: **yansıma konumu**
+> (`self_effect_location`: gövdesi sende değilse Yumruk → dokunulan dost, uzak yollar →
+> indiği alan; 64 "uzakta ama sende" skill → 0) ve **uyumsuz silah** (`incompatible_weapon`:
+> `uyumsuz_cizim` 0.8 etki / 1.2 cast; oyunda bu ceza zaten `EquipmentBonusResolver`'da,
+> gramer tekrar uygulamaz). **Oyunda** (`ManifestationDirector.MechanicGrammar.cs`): her
+> cast'te plan kurulur, `[Mechanic]` log + skill HUD notuna kısa ad ("Dondurma", "Portal"...)
+> yazılır; eşleme atom türüne göre (skill'e özel dal yok): düşmana tempo → Stun (dondur) /
+> Slow, hareket → Root / Stun (havada, sersem), körlük → Blind, çekme → pull, yukarı fırlat →
+> Stun `knockup_sec`, yer değiştirme → boss'un karşı tarafına (dash bitince); kendine tempo →
+> Haste, gizlen (bulut sendeyse) → Stealth, hedefin arkasına ışınlan (dash bitince), işaretle-
+> geri dön, portal çifti (`portal_life_sec`, yeni `portal_trigger_radius_m` = 1.0 önerilen).
+> Eski motorun verdiği aynı durum tekrar uzatılmaz (`ApplyOnce`). **Doğrulandı (Editor Play,
+> Kılıç):** 12-4 isabet → boss Stun 1 sn; 12-8 Haste; 3-9 boss arkasına; 3-10 A kapısına giren
+> B'den çıkar; 3-4 2.2 sn sonra işarete döner; 3-6 temas → boss'un arkası. **Uydurma/önerilen
+> sayılar:** `mechanic_grammar.params` tamamı; arkaya ışınlanma mesafesi =
+> `BasicStrikeRangeM × 0.5`. **Bu turda ayrıca:** diğer ajanın `runtime-design-gaps` işi
+> incelendi ve master'a alındı; koni hitbox'ı (SizeB açı, genişlik değil — Kontrol 30 m alan
+> açıyordu) düzeltildi. `dotnet test` **303/303**; AtomSim A=0 B=0 D=0, 463 skill yalnız
+> genel desende (ör. "Sert", "Delici").
 
 > **28 Eylül — v6.1.1 runtime boşlukları (pasif/hitbox/mobility/radial).** Build ekranı
 > seçili altılı içinden 0-2 pasif rünü `P` rozetiyle seçip korur; ikinci çizilen (sıfat)
@@ -36,7 +61,7 @@ sonra 11-4 taret / 11-5 çoklu minion ve gerçek presentation animasyon/VFX
 > **Doğrulama:** `dotnet test` **285/285** yeşil (5 yeni uçtan uca Core testi);
 > Unity Editor bu ortamda yok, Play/dokunmatik/görsel ölçüm doğrulanamadı.
 
-> **28 Eylül — atom grameri simülasyonu (dal `feat/atom-grammar-sim`, KARAR BEKLİYOR).**
+> **28 Eylül — atom grameri simülasyonu (dal `feat/atom-grammar-sim`; üstteki kayıtla ONAYLANDI).**
 > Sahibi: "skiller çok benzer; duvar/portal/klon/zaman alanı gibi mekanikler elle atanmasın,
 > fiil+sıfat+silah anlamından motor çıkarsın". Taslak kural seti `docs/atom-grammar-taslak.json`
 > (bağlayıcı DEĞİL): Skill = Sıfat.kural(Silah.teslim(Fiil.atomlar)) → çakışma → etiket.
@@ -964,6 +989,17 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
+- **mechanic_grammar — dünyaya henüz inmeyen atomlar (28 Eylül).** Plan/etiket/HUD her
+  skill için var; şunlar yalnız etiket + log, oyunda davranış yok: **duvar / engel / perde**
+  (`mermi_sil`, boss mermisi ve engelleyici collider yok), **klon / yem kopya / taret**
+  (eski summon yolu çalışır ama gramerin sayısı/davranışı bağlı değil), **geri sarma**
+  (Zaman+Aynalı düşmanı hedefler; boss `_home`'a çapalı ve saldırı iptal API'si yok),
+  **zaman alanı / sürekli akış** (dost haste tik'i yok; tek sefer Haste), **güdüm, çapalı
+  mayın/çit, bağ ekseni, bulut içi gizlenme (uzak bulut)**, **uzak/dosta yansıtma**
+  (`GrantReflect` yalnız kendine), **durum aktarma / iyi durum silme**. Boss sabit
+  olduğundan çekme/yer değiştirme boss'u taşımaz (çekme görsel sapma, yer değiştirme
+  oyuncuyu taşır). Top=Tılsım 9, Çekiç=Tılsım 6 skill'de aynı davranış (Sabit/Yükselen
+  silah yolunu eziyor) — gramer kararı bekliyor.
 - **Fiil executor'ları (28 Eylül) — kalanlar.** 11-4 taret (sabit minion) ve 11-5 "3 minion"
   yok (JSON'da sayı yok, `minion_count` 1 kullanılıyor); `max_targets`, `ignore_armor`,
   `tick_rate_mult`, `cleanse_count` bağlı değil; `channel_sec` anlamı belirsiz; 3-7

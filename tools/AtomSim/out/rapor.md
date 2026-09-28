@@ -57,6 +57,7 @@ Kurallar: `docs/element-sistemi.json` → `mechanic_grammar`. Motor: `Core/Mecha
 | Ters kopya | 30 |
 | Hedefi sana çekme | 22 |
 | Sıçrayıp çakılma | 21 |
+| Sert | 21 |
 | Tasma | 12 |
 | Ters kontrol | 12 |
 | Bataklık | 12 |
@@ -247,7 +248,7 @@ Kurallar: `docs/element-sistemi.json` → `mechanic_grammar`. Motor: `Core/Mecha
 ### 9 Arındırma
 
 - *sıfatsız*: kılıç yayı → küre 3m, önünde yay. Etkiler: durum_sil→dost 1; mermi_sil→düşman mermisi
-- **9-1 Yoğun Arındırma** — __ — kılıç yayı → küre 1.7m, önünde yay (tek hedef). Etkiler: durum_sil→dost 1 [guclu]; mermi_sil→düşman mermisi [delici]
+- **9-1 Yoğun Arındırma** — _Sert_ — kılıç yayı → küre 1.7m, önünde yay (tek hedef). Etkiler: durum_sil→dost 1 [guclu]; mermi_sil→düşman mermisi [delici]
 - **9-2 Emici Arındırma** — _Girdap, Durum aktarma_ — kılıç yayı → küre 3m, önünde yay (içine çeker). Etkiler: durum_aktar→dost 1; mermi_sil→düşman mermisi [yut]; durum_ekle→düşman 1 [aktarim]
 - **9-3 Sıçrayan Arındırma** — _Seken_ — kılıç yayı → küre 3.3m, önünde yay (2 kez seker). Etkiler: durum_sil→dost 1 [dosttan_dosta]; mermi_sil→düşman mermisi [seker]
 - **9-4 Sabit Arındırma** — _Mermi kesen engel, Arınma alanı_ — kılıç yayı → küre 3m, önünde yay (yerinde çapalı). Etkiler: durum_sil→dost 1 [arinma_alani]; mermi_sil→düşman mermisi [engel]
@@ -279,7 +280,7 @@ Kurallar: `docs/element-sistemi.json` → `mechanic_grammar`. Motor: `Core/Mecha
 ### 11 Çağırma
 
 - *sıfatsız*: kılıç yayı → nokta 1m, önünde yay (uyumsuz silah). Etkiler: aktor_yarat→sen 1 5sn [silahla:yay]
-- **11-1 Yoğun Çağırma** — __ — kılıç yayı → nokta 0.6m, önünde yay (tek hedef, uyumsuz silah). Etkiler: aktor_yarat→sen 1 2.5sn [guclu,silahla:yay]
+- **11-1 Yoğun Çağırma** — _Sert_ — kılıç yayı → nokta 0.6m, önünde yay (tek hedef, uyumsuz silah). Etkiler: aktor_yarat→sen 1 2.5sn [guclu,silahla:yay]
 - **11-2 Emici Çağırma** — _Can emen minyon, Girdap_ — kılıç yayı → nokta 1m, önünde yay (içine çeker, uyumsuz silah). Etkiler: aktor_yarat→sen 1 5sn [can_emen,silahla:yay]; mermi_sil→düşman mermisi [yut]
 - **11-3 Sıçrayan Çağırma** — _Zıplayan minyon, Seken_ — kılıç yayı → nokta 1.1m, önünde yay (2 kez seker, uyumsuz silah). Etkiler: aktor_yarat→sen 1 5sn [silahla:yay,ziplayan]
 - **11-4 Sabit Çağırma** — _Taret_ — kılıç yayı → nokta 1m, önünde yay (yerinde çapalı, uyumsuz silah). Etkiler: aktor_yarat→sen 1 5sn [silahla:yay,taret]
@@ -441,7 +442,7 @@ Kurallar: `docs/element-sistemi.json` → `mechanic_grammar`. Motor: `Core/Mecha
 ### 9 Arındırma
 
 - *sıfatsız*: top mermisi (yay çizip düşer) → küre 2.5m, hedef noktada (uyumsuz silah). Etkiler: durum_sil→dost 1; mermi_sil→düşman mermisi
-- **9-1 Yoğun Arındırma** — __ — top mermisi (yay çizip düşer) → küre 1.4m, hedef noktada (tek hedef, uyumsuz silah). Etkiler: durum_sil→dost 1 [guclu]; mermi_sil→düşman mermisi [delici]
+- **9-1 Yoğun Arındırma** — _Sert_ — top mermisi (yay çizip düşer) → küre 1.4m, hedef noktada (tek hedef, uyumsuz silah). Etkiler: durum_sil→dost 1 [guclu]; mermi_sil→düşman mermisi [delici]
 - **9-2 Emici Arındırma** — _Girdap, Durum aktarma_ — top mermisi (yay çizip düşer) → küre 2.5m, hedef noktada (içine çeker, uyumsuz silah). Etkiler: durum_aktar→dost 1; mermi_sil→düşman mermisi [yut]; durum_ekle→düşman 1 [aktarim]
 - **9-3 Sıçrayan Arındırma** — _Seken_ — top mermisi (yay çizip düşer) → küre 2.8m, hedef noktada (2 kez seker, uyumsuz silah). Etkiler: durum_sil→dost 1 [dosttan_dosta]; mermi_sil→düşman mermisi [seker]
 - **9-4 Sabit Arındırma** — _Mermi kesen engel, Arınma alanı_ — top mermisi (yay çizip düşer) → küre 2.5m, hedef noktada (yerinde çapalı, uyumsuz silah). Etkiler: durum_sil→dost 1 [arinma_alani]; mermi_sil→düşman mermisi [engel]
@@ -473,7 +474,7 @@ Kurallar: `docs/element-sistemi.json` → `mechanic_grammar`. Motor: `Core/Mecha
 ### 11 Çağırma
 
 - *sıfatsız*: top mermisi (yay çizip düşer) → nokta 1m, hedef noktada (uyumsuz silah). Etkiler: aktor_yarat→sen 1 5sn [silahla:ucan]
-- **11-1 Yoğun Çağırma** — __ — top mermisi (yay çizip düşer) → nokta 0.6m, hedef noktada (tek hedef, uyumsuz silah). Etkiler: aktor_yarat→sen 1 2.5sn [guclu,silahla:ucan]
+- **11-1 Yoğun Çağırma** — _Sert_ — top mermisi (yay çizip düşer) → nokta 0.6m, hedef noktada (tek hedef, uyumsuz silah). Etkiler: aktor_yarat→sen 1 2.5sn [guclu,silahla:ucan]
 - **11-2 Emici Çağırma** — _Can emen minyon, Girdap_ — top mermisi (yay çizip düşer) → nokta 1m, hedef noktada (içine çeker, uyumsuz silah). Etkiler: aktor_yarat→sen 1 5sn [can_emen,silahla:ucan]; mermi_sil→düşman mermisi [yut]
 - **11-3 Sıçrayan Çağırma** — _Zıplayan minyon, Seken_ — top mermisi (yay çizip düşer) → nokta 1.1m, hedef noktada (2 kez seker, uyumsuz silah). Etkiler: aktor_yarat→sen 1 5sn [silahla:ucan,ziplayan]
 - **11-4 Sabit Çağırma** — _Taret_ — top mermisi (yay çizip düşer) → nokta 1m, hedef noktada (yerinde çapalı, uyumsuz silah). Etkiler: aktor_yarat→sen 1 5sn [silahla:ucan,taret]
@@ -623,13 +624,13 @@ Kurallar: `docs/element-sistemi.json` → `mechanic_grammar`. Motor: `Core/Mecha
 - 1-5 Yayılan Saldırı: 9 silah — _Dalga_
 - 1-6 Bağlayıcı Saldırı: 9 silah — _Bağ_
 - 1-9 Odaklı Saldırı: 9 silah — _Güdümlü_
-- 10-1 Yoğun Yansıma: 1 silah — __
+- 10-1 Yoğun Yansıma: 1 silah — _Sert_
 - 10-11 Kopya Yansıma: 1 silah — _Çift_
 - 10-12 Akan Yansıma: 1 silah — _Akış_
 - 10-3 Sıçrayan Yansıma: 1 silah — _Seken_
 - 10-5 Yayılan Yansıma: 1 silah — _Dalga_
 - 10-8 Yükselen Yansıma: 1 silah — _Yükselen_
-- 11-1 Yoğun Çağırma: 10 silah — __
+- 11-1 Yoğun Çağırma: 10 silah — _Sert_
 - 11-12 Akan Çağırma: 9 silah — _Akış_
 - 11-8 Yükselen Çağırma: 10 silah — _Yükselen_
 - 12-1 Yoğun Zaman: 10 silah — _Delici_
@@ -665,7 +666,7 @@ Kurallar: `docs/element-sistemi.json` → `mechanic_grammar`. Motor: `Core/Mecha
 - 8-3 Sıçrayan Güçlendirme: 10 silah — _Seken_
 - 8-5 Yayılan Güçlendirme: 10 silah — _Dalga_
 - 8-8 Yükselen Güçlendirme: 10 silah — _Yükselen_
-- 9-1 Yoğun Arındırma: 10 silah — __
+- 9-1 Yoğun Arındırma: 10 silah — _Sert_
 - 9-11 Kopya Arındırma: 10 silah — _Çift_
 - 9-12 Akan Arındırma: 9 silah — _Akış_
 - 9-3 Sıçrayan Arındırma: 10 silah — _Seken_

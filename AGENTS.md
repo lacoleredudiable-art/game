@@ -22,9 +22,10 @@ Tek doğruluk kaynağı `docs/element-sistemi.json`'dır. Sistem 12 çift yüzl�
 (fiil + sıfat); build 12'den tekrarsız 6 rün seçer ve 2-rün grameri 144 skill üretir.
 Element prototipte yalnız VFX/isim katmanıdır. Global slow-mo yoktur; Zaman
 `enemy_slow` / `self_haste` uygular. Pasif yuva 0-2, silahlar çarpan + animasyon +
-hitbox katmanıdır; skill mekaniğini değiştirmez.
+hitbox + **teslim yolu**dur: fiilin ne yaptığını değil, dünyaya nasıl çıktığını değiştirir.
 v6.1.1 ekleri: `ana_classes_80`, `skills_prose_144`, `hitbox_vfx`, `mobility_cc`,
-`uyumsuz_cizim`, `presentation`, `changelog_v6_1`, `design_warnings`.
+`uyumsuz_cizim`, `presentation`, `changelog_v6_1`, `design_warnings`, `mechanic_grammar`
+(Skill = Sıfat.kural(Silah.teslim(Fiil.atomlar)); motor `Core/Mechanic`, kontrol `tools/AtomSim`).
 Runtime sırası: `ElementSystemJsonLoader` → 12/10/6 SO katalog → `SkillFactory` →
 `RuneManager` → `SkillMotor`. Altı ekran slotu `RuneLoadout` ile 12 ründen seçilir.
 Radial element UI ile tam hitbox/VFX/presentation henüz stub'dır. 1–8 Unity Play'de
