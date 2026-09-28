@@ -40,9 +40,11 @@
 > uyumsuz skill kartı; key/rim/sis ve yalnız parlak VFX'te hafif bloom. Konsolda
 > `[VisualScale] Player/Boss target=...` satırlarını kontrol et.
 >
-> **Kalan/doğrulanamadı:** Bu cloud imajında Unity Editor Play görseli ve telefon kare süresi
-> doğrulanamadı. Gerçek sunum ses miksajı, hitstop yoğunluğunun kullanıcı gözü/kulağıyla ayarı
-> ve Mixamo dosyaları gitignored olduğu için kliplerin başka makinede yeniden indirilmesi açık.
+> **Doğrulama:** `dotnet test tools/CoreTests/CoreTests.csproj` **313/313 yeşil**.
+> **Kalan/doğrulanamadı:** Bu cloud imajında Unity 6000.4.4f1 Editor yok; Play görseli ve
+> telefon kare süresi doğrulanamadı. Gerçek sunum ses miksajı, hitstop yoğunluğunun kullanıcı
+> gözü/kulağıyla ayarı ve Mixamo dosyaları gitignored olduğu için kliplerin başka makinede
+> yeniden indirilmesi açık.
 
 > **28 Eylül — Oyuncu yürüme/koşu/duruş yenilendi (dal `feat/feel-player-loco`).**
 > Sahibi: "yürüyüşü koşuşu duruşu çirkin". Sebep: Sword&Shield klipleri olmayan kalkan için sol
