@@ -35,6 +35,8 @@
 > ortalama ayak yaw'ını ölçüp `rotationOffset` yazar (Idle -1 / Walk 19 / Run 52; koşuda sol
 > ayak ~66°→19°). Klipler gitignore'da — başka makinede `Bind` yeniden çalıştırılmalı.
 > Joystick görseli ilk dokunuşa kadar ekran ortasında beyaz disk olarak kalıyordu (düzeltildi).
+> AYAR düğmesi build ekranı açıkken gizli (başlığın üstüne biniyordu). Xiaomi'de
+> `adb shell input tap` INJECT_EVENTS ile reddediliyor — savaş ekranı telefonda elle açılmalı.
 
 > **28 Eylül — premium combat HUD ve repo içi ikonografi (PR #19 devamı).** "Basit placeholder"
 > reddine göre HUD yeniden kuruldu. `Resources/UI/Runes/` altında bağlayıcı v6 kimlikleri için
