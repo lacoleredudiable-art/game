@@ -124,7 +124,8 @@ Movement/SelfState executor'ları veya gerçek animasyon/VFX bağları
    `Cast*` state fallback'i, o da yoksa temiz no-op/uyarı. Görsel Play kanıtı yok.
 7. [ ] **UI:** 7a `SkillPreviewHud` altıgen üstünde (isim/prose/uyum rengi);
    7b savaş öncesi `BuildSelectScreen` (12 kart, pick-6, hazır class) bağlı; element
-   cycle debug panelde. Radial element menü, pasif yuva seçimi, silah seçimi eksik.
+   cycle debug panelde; 28 Eyl: build ekranında 2 silah seçimi + savaş içi swap düğmesi.
+   Radial element menü ve pasif yuva seçimi eksik.
 8. [ ] **Playtest:** startup preflight JSON→SO 12/10/6→36 build skill→1-1'i doğrular;
    1 build + Kılıç + 1 element ve F1 fight smoke bağlı. Unity Editor olmadığı için
    görsel/fight kanıtı yok.
@@ -275,7 +276,7 @@ A=oyunda hissedilir · B=kod var kapalı/kısmi · C=parse/Core only · D=motor 
 | time_layer | A | **A** | echo+extend+delayed_detonation+death_delay |
 | reality_layer | A | A | revive_block / erase |
 | state_machine | A | **A** | PlayerStateMachine ↔ SentencePhase/dodge/CC |
-| equipment_system | A | **B** | sabit Alev Kılıcı; seçim yok |
+| equipment_system | A | **A** | 28 Eyl: build'de 2 silah + savaş içi swap |
 | status_interaction_table | A | A | Rebuild + 3 özel satır |
 | prezentasyon hitbox `target_ally` | — | **B** | 6 fiil HitboxFound=false |
 | atoms / lore / examples | D | D | kasıtlı |
