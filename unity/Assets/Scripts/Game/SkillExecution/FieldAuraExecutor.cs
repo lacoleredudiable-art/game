@@ -22,8 +22,9 @@ namespace Dovus.Game
         public override void Execute(in SkillExecutionContext context)
         {
             base.Execute(context);
-            Transform anchor = context.IsFriendly ? context.Owner : context.Target;
-            _center = anchor != null ? anchor.position : context.Origin;
+            _center = context.IsFriendly && context.Owner != null
+                ? context.Owner.position
+                : context.FieldCenter;
             _ageSec = 0f;
             _nextTickSec = 0f;
             _remainingTicks = Mathf.Max(1, Mathf.CeilToInt(context.DurationSec / context.TickIntervalSec));
