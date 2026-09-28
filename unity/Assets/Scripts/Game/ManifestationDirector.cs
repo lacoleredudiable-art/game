@@ -6,6 +6,7 @@ using Dovus.Core.Execution;
 using Dovus.Core.Grammar;
 using Dovus.Core.Layers;
 using Dovus.Core.Manifestation;
+using Dovus.Core.Mechanic;
 using Dovus.Core.Presentation;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
@@ -526,6 +527,7 @@ namespace Dovus.Game
             SyncPlayerStateMachine(worldMs);
             TickWeaponSwap(worldMs);
             TickDelayedLaunches(worldMs);
+            TickMechanics(worldMs);
             TickZones(dtSec);
             _spaceHost?.Tick(dtSec);
             TickTimeEffects(worldMs);
@@ -1762,6 +1764,7 @@ namespace Dovus.Game
             if (executorRoute.Kind != SkillExecutorKind.Movement)
                 ApplySkillMotion(motionPlan, skill);
             ApplySelfCastEffects(skill);
+            BeginMechanicPlan(skill, new Vector3(logic.DirX, 0f, logic.DirZ));
 
             bool executorStarted = executorRoute.Kind != SkillExecutorKind.Fallback
                 && TryLaunchSkillExecutor(executorRoute.Kind, p, skill, motionPlan);
@@ -1787,6 +1790,8 @@ namespace Dovus.Game
                     TryScheduleEchoForSkill(skill, dealt);
                 }
                 ApplyClosingStatuses(p, skill, bossReached);
+                if (bossReached)
+                    ApplyMechanicHitEffects(LastMechanicPlan, new Vector3(logic.TipX, 0f, logic.TipZ));
                 ApplyClosingHeal(p.Closing, skill);
             }
 
@@ -1927,6 +1932,7 @@ namespace Dovus.Game
                     ? pending.Words[0].Rune.ToString()
                     : string.Empty);
 
+            MechanicPlan mechanicPlan = MechanicPlanFor(skill);
             bool echoScheduled = false;
             bool statusesApplied = false;
             float accumulatedHealScale = 0f;
@@ -1958,6 +1964,8 @@ namespace Dovus.Game
                     bool bossReached = !friendly
                         || BossWithin(_player != null ? _player.position : origin, radius);
                     ApplyClosingStatuses(pending, skill, bossReached);
+                    if (bossReached)
+                        ApplyMechanicHitEffects(mechanicPlan, fieldCenter);
                     statusesApplied = true;
                 }
                 if (IsHealSkill(skill))
@@ -2059,13 +2067,7 @@ namespace Dovus.Game
             if (!TryVerbHitbox(skill, out VerbHitboxSpec spec))
                 return;
             int.TryParse(skill.AdjectiveId, out int adjectiveId);
-            int weaponId = 0;
-            if (_equippedWeapon != null)
-            {
-                string id = _equippedWeapon.Id ?? string.Empty;
-                int colon = id.LastIndexOf(':');
-                int.TryParse(colon >= 0 ? id.Substring(colon + 1) : id, out weaponId);
-            }
+            int weaponId = EquippedWeaponNumber();
             float weaponScale = _verbData?.WeaponSizeMult(weaponId, rangeMult) ?? rangeMult;
             float adjectiveScale = _verbData?.AdjectiveSizeMult(adjectiveId) ?? 1f;
             adjectiveScale *= _slotPassives?.HitboxSizeMult ?? 1f;
@@ -2375,6 +2377,12 @@ namespace Dovus.Game
             string bangNote = string.IsNullOrEmpty(adj)
                 ? mech
                 : (string.IsNullOrEmpty(mech) ? adj : mech + " | " + adj);
+            MechanicPlan mechanic = LastMechanicPlan;
+            if (mechanic != null && string.Equals(mechanic.SkillId, skill.SkillId, StringComparison.Ordinal))
+            {
+                string title = MechanicDescriber.ShortTitle(mechanic);
+                bangNote = string.IsNullOrEmpty(bangNote) ? title : title + " | " + bangNote;
+            }
             _debugHud?.NoteSkillBang(paintedName, bangNote);
             // Skill adı altıgen üstündeki SkillPreviewHud'da; büyük ReactionReadout dodge/tepki içindir.
             SkillFeel.CameraKick(skill.VerbFamily, _camera, _colors);

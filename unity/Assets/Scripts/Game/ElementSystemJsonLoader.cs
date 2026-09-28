@@ -1,6 +1,7 @@
 using System;
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
+using Dovus.Core.Mechanic;
 using Dovus.Core.Presentation;
 using UnityEngine;
 
@@ -98,5 +99,30 @@ namespace Dovus.Game
         public SkillMotor SkillMotor { get; }
         public EquipmentCatalog Equipment { get; }
         public AnimationDatabase Animations { get; }
+
+        MechanicGrammar _mechanics;
+        bool _mechanicsTried;
+
+        /// <summary>mechanic_grammar motoru (ilk istekte kurulur); JSON'da yoksa null.</summary>
+        public MechanicGrammar Mechanics
+        {
+            get
+            {
+                if (_mechanicsTried)
+                    return _mechanics;
+                _mechanicsTried = true;
+                try
+                {
+                    MechanicRules rules = MechanicRules.FromJson(Json);
+                    _mechanics = rules.IsValid ? new MechanicGrammar(rules) : null;
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning($"[Mechanic] mechanic_grammar yüklenemedi: {e.Message}");
+                    _mechanics = null;
+                }
+                return _mechanics;
+            }
+        }
     }
 }
