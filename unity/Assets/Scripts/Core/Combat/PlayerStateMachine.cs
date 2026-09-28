@@ -61,6 +61,11 @@ namespace Dovus.Core.Combat
         public bool AllowsDodge =>
             string.Equals(CanDodge, "true", StringComparison.Ordinal);
 
+        public string CanSwap => Current.CanSwap;
+
+        public bool AllowsSwap =>
+            string.Equals(CanSwap, "true", StringComparison.Ordinal);
+
         /// <summary>false → hareket yok; limited / based_on_cast_mobility / dodge_direction → Game yorumlar.</summary>
         public bool BlocksMove =>
             string.Equals(CanMove, "false", StringComparison.Ordinal);

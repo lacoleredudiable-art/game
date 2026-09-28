@@ -52,8 +52,12 @@ namespace Dovus.Game
             None,
             CenterPending,
             DodgePending,
+            SwapPending,
             Drawing
         }
+
+        /// <summary>Swap düğmesi tap'i / Q tuşu — ManifestationDirector kapıyı kendisi kontrol eder.</summary>
+        public event System.Action WeaponSwapRequested;
 
         public PrototypeTuning Tuning
         {
@@ -367,10 +371,12 @@ namespace Dovus.Game
         void HandleKeyboardDodge()
         {
             var kb = Keyboard.current;
-            if (kb == null || !kb.spaceKey.wasPressedThisFrame)
+            if (kb == null)
                 return;
-
-            TriggerDodge();
+            if (kb.qKey.wasPressedThisFrame)
+                WeaponSwapRequested?.Invoke();
+            if (kb.spaceKey.wasPressedThisFrame)
+                TriggerDodge();
         }
 
         void HandleMouse()
@@ -391,7 +397,7 @@ namespace Dovus.Game
             {
                 if (!IsDrawHalf(pos) || TuningPanel.HitToggleButton(pos))
                     return;
-                if (!HitDodgeButton(pos) && !HitCenter(pos) && HitDot(pos) == null)
+                if (!HitDodgeButton(pos) && !HitSwapButton(pos) && !HitCenter(pos) && HitDot(pos) == null)
                     return;
                 _mouseHeld = true;
                 BeginPointer(pos);
@@ -430,7 +436,7 @@ namespace Dovus.Game
             }
 
             // Sağ boşluk orbit'e bırak — yalnız widget üzerinde claim.
-            if (!HitDodgeButton(pos) && !HitCenter(pos) && HitDot(pos) == null)
+            if (!HitDodgeButton(pos) && !HitSwapButton(pos) && !HitCenter(pos) && HitDot(pos) == null)
                 return;
 
             _fingerId = finger.index;
@@ -492,6 +498,12 @@ namespace Dovus.Game
                 return;
             }
 
+            if (HitSwapButton(pos))
+            {
+                _mode = FingerMode.SwapPending;
+                return;
+            }
+
             if (HitCenter(pos))
             {
                 _mode = FingerMode.CenterPending;
@@ -508,6 +520,8 @@ namespace Dovus.Game
                 return;
 
             _lastPos = pos;
+            if (_mode == FingerMode.SwapPending)
+                return;
 
             // Merkezden ve dodge düğmesinden eşiği aşan sürükleme çizimdir (§2).
             if (_mode == FingerMode.CenterPending || _mode == FingerMode.DodgePending)
@@ -538,7 +552,9 @@ namespace Dovus.Game
 
         void EndPointer(bool cancelled)
         {
-            bool pendingTap = _mode == FingerMode.CenterPending || _mode == FingerMode.DodgePending;
+            bool pendingTap = _mode == FingerMode.CenterPending
+                || _mode == FingerMode.DodgePending
+                || _mode == FingerMode.SwapPending;
             if (pendingTap && !cancelled)
             {
                 double heldMs = NowRealMs() - _pressRealMs;
@@ -547,6 +563,8 @@ namespace Dovus.Game
                 {
                     if (_mode == FingerMode.CenterPending)
                         TriggerCenter();
+                    else if (_mode == FingerMode.SwapPending)
+                        WeaponSwapRequested?.Invoke();
                     else
                         TriggerDodge();
                 }
@@ -824,6 +842,12 @@ namespace Dovus.Game
             return Vector2.Distance(pos, c) <= HexagonLayoutScreen.DodgeButtonRadiusPx(_tuning);
         }
 
+        bool HitSwapButton(Vector2 pos)
+        {
+            Vector2 c = HexagonLayoutScreen.WeaponSwapButtonPx(_tuning, Screen.width, Screen.height);
+            return Vector2.Distance(pos, c) <= HexagonLayoutScreen.WeaponSwapButtonRadiusPx(_tuning);
+        }
+
         bool HitCenter(Vector2 pos)
         {
             Vector2 c = HexagonLayoutScreen.CenterPx(_tuning, Screen.width, Screen.height);
@@ -837,7 +861,7 @@ namespace Dovus.Game
         {
             // Merkezin veya dodge düğmesinin içindeyse çizim noktası sayma — tap/drag ayrımı
             // ve hit sırası (§2) bozulmasın.
-            if (HitDodgeButton(pos) || HitCenter(pos))
+            if (HitDodgeButton(pos) || HitSwapButton(pos) || HitCenter(pos))
                 return null;
 
             float hitR = HexagonLayoutScreen.DotHitRadiusPx(_tuning);

@@ -69,6 +69,12 @@ namespace Dovus.Game
         /// <summary>Hex kenarı ile dodge yüzeyi arası (dp).</summary>
         public float DodgeClearanceDp = 40f;
 
+        // weapon_skill_interaction.swap: dodge'un altıgene göre simetriği (sol-alt).
+        [Header("Silah swap düğmesi (v6 swap)")]
+        public float WeaponSwapButtonRadiusDp = 28f;
+        public float WeaponSwapButtonOffsetXDp = 0f;
+        public float WeaponSwapButtonOffsetYDp = 0f;
+
         // §5: merkez bir kelime değil düğme; hangi fiille vurduğu veridir (prototipte 1/Ateş).
         [Header("Düz vuruş (§5, T6.2)")]
         public int BasicStrikeDot = 1;
@@ -341,6 +347,7 @@ namespace Dovus.Game
             if (DotHitRadiusDp <= 0.01f) DotHitRadiusDp = 26f;
             if (CenterHitRadiusDp <= 0.01f) CenterHitRadiusDp = 28f;
             if (DodgeButtonRadiusDp <= 0.01f) DodgeButtonRadiusDp = 32f;
+            if (WeaponSwapButtonRadiusDp <= 0.01f) WeaponSwapButtonRadiusDp = 28f;
             if (DodgeClearanceDp <= 0.01f) DodgeClearanceDp = 40f;
             if (IconDisplayScale <= 0.01f) IconDisplayScale = 1.0f;
             if (PlayerVisualScale <= 0.01f) PlayerVisualScale = 2.625f;
@@ -459,6 +466,9 @@ namespace Dovus.Game
             DodgeButtonOffsetXDp = fresh.DodgeButtonOffsetXDp;
             DodgeButtonOffsetYDp = fresh.DodgeButtonOffsetYDp;
             DodgeClearanceDp = fresh.DodgeClearanceDp;
+            WeaponSwapButtonRadiusDp = fresh.WeaponSwapButtonRadiusDp;
+            WeaponSwapButtonOffsetXDp = fresh.WeaponSwapButtonOffsetXDp;
+            WeaponSwapButtonOffsetYDp = fresh.WeaponSwapButtonOffsetYDp;
             IconDisplayScale = fresh.IconDisplayScale;
             VitalsBarWidthDp = fresh.VitalsBarWidthDp;
             VitalsBarHeightDp = fresh.VitalsBarHeightDp;

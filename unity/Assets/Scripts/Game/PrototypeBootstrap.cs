@@ -377,12 +377,16 @@ namespace Dovus.Game
             var director = manGo.AddComponent<ManifestationDirector>();
             director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, allyDummy, modeHud, view, passiveHud, equippedWeapon, equipmentBonus, skills, skillFactory, design?.Animations);
             director.ConfigureWeaponCycle(design?.Equipment.Items);
+            if (design != null)
+                director.ConfigureWeaponSwap(WeaponSwapRules.FromJson(design.Json));
+            view.BindWeaponSwap(director, clock);
+            input.WeaponSwapRequested += () => director.TryRequestWeaponSwap();
 
             var preview = root.AddComponent<SkillPreviewHud>();
             preview.Configure(input.Engine, skills, skillFactory, director, _tuning, view.CanvasRoot);
 
             var buildSelect = root.AddComponent<BuildSelectScreen>();
-            buildSelect.Configure(skills, runeManager, input, view, clock, !_tuning.SkipBuildSelectOnStart);
+            buildSelect.Configure(skills, runeManager, input, view, clock, director, !_tuning.SkipBuildSelectOnStart);
 
             var v6Panel = root.AddComponent<V611DebugPanel>();
             v6Panel.Configure(input, director, buildSelect, view.CanvasRoot);
