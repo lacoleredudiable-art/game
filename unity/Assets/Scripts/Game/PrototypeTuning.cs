@@ -258,6 +258,8 @@ namespace Dovus.Game
 
         [Header("Soft aim / menzil")]
         public float SoftAimRangeM = 8f;
+        // Yarım açı: boss bakış yönünün bu kadar dışındaysa kilit yok (arkası dönük vurmaz).
+        public float SoftAimConeDeg = 70f;
 
         [Header("Floating hasar")]
         public float DamageFloatFontDp = 28f;
@@ -326,6 +328,7 @@ namespace Dovus.Game
             ElementAir = new Color(0.50f, 0.70f, 0.62f);
             ShowSentenceDebugHud = false;
             if (SoftAimRangeM <= 0.01f) SoftAimRangeM = 8f;
+            if (SoftAimConeDeg <= 0.01f) SoftAimConeDeg = 70f;
             if (OrbitDegreesPerDp <= 0.01f) OrbitDegreesPerDp = 0.35f;
             if (StatusIconSizeDp <= 0.01f) StatusIconSizeDp = 28f;
             if (VitalsBossBarWidthDp <= 0.01f) VitalsBossBarWidthDp = 280f;
@@ -437,6 +440,7 @@ namespace Dovus.Game
             StatusIconGapDp = fresh.StatusIconGapDp;
             OrbitDegreesPerDp = fresh.OrbitDegreesPerDp;
             SoftAimRangeM = fresh.SoftAimRangeM;
+            SoftAimConeDeg = fresh.SoftAimConeDeg;
             DamageFloatFontDp = fresh.DamageFloatFontDp;
             DamageFloatCritFontDp = fresh.DamageFloatCritFontDp;
             DamageFloatRisePx = fresh.DamageFloatRisePx;

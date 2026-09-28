@@ -33,8 +33,10 @@ namespace Dovus.Game
             string colorKey,
             Action<float> applyEffect,
             GameClock clock,
-            ManifestationTuning tuning)
+            ManifestationTuning tuning,
+            Vector3 fieldCenter)
         {
+            FieldCenter = fieldCenter;
             Skill = skill;
             Owner = owner;
             Target = target;
@@ -77,6 +79,7 @@ namespace Dovus.Game
         public Action<float> ApplyEffect { get; }
         public GameClock Clock { get; }
         public ManifestationTuning Tuning { get; }
+        public Vector3 FieldCenter { get; }
     }
 
     /// <summary>Unity yaşam döngüsü taşıyan üç fiziksel executor için ortak taban.</summary>

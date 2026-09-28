@@ -1481,7 +1481,9 @@ namespace Dovus.Game
                 Vector3 toBoss = _boss.transform.position - pos;
                 toBoss.y = 0f;
                 float dist = toBoss.magnitude;
-                if (dist > 0.01f && dist <= range)
+                float cone = _colors != null ? _colors.SoftAimConeDeg : 70f;
+                if (dist > 0.01f && dist <= range
+                    && Vector3.Angle(facing, toBoss) <= cone)
                     facing = toBoss / dist;
             }
 
@@ -1670,8 +1672,12 @@ namespace Dovus.Game
                     return;
                 }
 
-                ApplyBossClosingBasic(logic, p.Closing);
-                float basicDealt = ApplyClosingDamage(p.Closing, SkillResolution.Empty, isBasicStrike: true, slashCommitMult: 0f);
+                float basicDealt = 0f;
+                if (IsBossInStrikeCapsule(logic, _combat.Manifestation.BasicStrikeRangeM))
+                {
+                    ApplyBossClosingBasic(logic, p.Closing);
+                    basicDealt = ApplyClosingDamage(p.Closing, SkillResolution.Empty, isBasicStrike: true, slashCommitMult: 0f);
+                }
                 TryScheduleEchoForSkill(SkillResolution.Empty, basicDealt);
                 SpawnClosingImpact(p);
                 return;
@@ -1708,13 +1714,17 @@ namespace Dovus.Game
                     Debug.Log($"[SkillExecutor] stub → LivingEffect: {executorRoute.Reason}");
                 LastExecutorKind = SkillExecutorKind.Fallback;
                 ApplyBossClosing(logic, p.Closing, skill);
-                dealt = ApplyClosingDamage(
-                    p.Closing,
-                    skill,
-                    isBasicStrike: false,
-                    motionPlan.SlashCommitMult);
-                TryScheduleEchoForSkill(skill, dealt);
-                ApplyClosingStatuses(p, skill);
+                bool bossReached = _boss != null && IsClosingInRange(logic, p.Closing);
+                if (bossReached)
+                {
+                    dealt = ApplyClosingDamage(
+                        p.Closing,
+                        skill,
+                        isBasicStrike: false,
+                        motionPlan.SlashCommitMult);
+                    TryScheduleEchoForSkill(skill, dealt);
+                }
+                ApplyClosingStatuses(p, skill, bossReached);
                 ApplyClosingHeal(p.Closing, skill);
             }
 
@@ -1807,7 +1817,11 @@ namespace Dovus.Game
             LivingEffectPlan plan = SkillWorldPlanner.Build(skill, _presentationCatalog, tuning);
 
             float rangeMult = _equippedWeapon != null ? _equippedWeapon.RangeMult : 1f;
+            bool burst = string.Equals(skill.VerbId, "5", StringComparison.Ordinal);
             float radius = plan.BangRadiusM > 0f ? plan.BangRadiusM : tuning.TravelHitRadiusM;
+            // Tek hedefli yakın vuruş kapsülü bang yarıçapıyla şişmez; yalnız Patlama alandır.
+            if (kind == SkillExecutorKind.MeleeHitbox && !burst)
+                radius = tuning.TravelHitRadiusM;
             float range = kind == SkillExecutorKind.MeleeHitbox
                 ? tuning.BasicStrikeRangeM * rangeMult
                 : Mathf.Max(radius, plan.MaxRangeM * rangeMult);
@@ -1818,7 +1832,10 @@ namespace Dovus.Game
             Vector3 direction = new(logic.DirX, 0f, logic.DirZ);
             Transform target = _boss != null ? _boss.transform : null;
             bool friendly = IsFriendlyFieldVerb(skill);
-            bool burst = string.Equals(skill.VerbId, "5", StringComparison.Ordinal);
+            // Düşmana alan boss'un üstünde değil, etkinin dünyada vardığı uçta açılır.
+            Vector3 fieldCenter = friendly
+                ? origin
+                : new Vector3(logic.TipX, origin.y, logic.TipZ);
             float slashCommitMult = motionPlan.SlashCommitMult;
             float executorChainBonus = _closingChainBonus;
             string colorKey = SelectedElementPaint?.Name
@@ -1867,10 +1884,10 @@ namespace Dovus.Game
                     int delta = Mathf.Max(0, targetTotal - appliedHealAmount);
                     if (delta > 0)
                     {
-                        Vector3? fieldCenter = kind == SkillExecutorKind.FieldAura && friendly
+                        Vector3? healCenter = kind == SkillExecutorKind.FieldAura && friendly
                             ? origin
                             : null;
-                        ApplyClosingHealAmount(skill, delta, fieldCenter, radius);
+                        ApplyClosingHealAmount(skill, delta, healCenter, radius);
                         appliedHealAmount += delta;
                     }
                 }
@@ -1898,7 +1915,8 @@ namespace Dovus.Game
                 colorKey,
                 ApplyExecutorEffect,
                 _clock,
-                tuning);
+                tuning,
+                fieldCenter);
 
             var go = new GameObject($"{kind}_{skill.SkillId}");
             go.transform.SetParent(transform, false);
@@ -2257,17 +2275,18 @@ namespace Dovus.Game
             }
         }
 
-        void ApplyClosingStatuses(PendingClosing p, SkillResolution skill)
+        void ApplyClosingStatuses(PendingClosing p, SkillResolution skill, bool bossReached = true)
         {
             if (skill.IsEmpty)
                 return;
-            if (_playerStatus == null && _bossStatus == null)
+            ActorStatus bossStatus = bossReached ? _bossStatus : null;
+            if (_playerStatus == null && bossStatus == null)
                 return;
 
             var result = StatusApplicator.ApplySkill(
                 skill,
                 _playerStatus != null ? _playerStatus.Board : null,
-                _bossStatus != null ? _bossStatus.Board : null,
+                bossStatus != null ? bossStatus.Board : null,
                 _combat != null ? _combat.Status : new StatusTuning());
 
             // v6 Zaman fiili yalnız aktör durumudur; GameClock/Time.timeScale'a dokunmaz.
@@ -2277,17 +2296,17 @@ namespace Dovus.Game
                 double durationMs = engine["tempo_duration_sec"].AsFloat(0f) * 1000.0;
                 float enemySlow = engine["enemy_slow"].AsFloat(0f);
                 float selfHaste = engine["self_haste"].AsFloat(0f);
-                if (durationMs > 0 && enemySlow > 0f && enemySlow <= 1f && _bossStatus != null)
-                    _bossStatus.Board.Apply(StatusKind.Slow, durationMs, enemySlow);
+                if (durationMs > 0 && enemySlow > 0f && enemySlow <= 1f && bossStatus != null)
+                    bossStatus.Board.Apply(StatusKind.Slow, durationMs, enemySlow);
                 if (durationMs > 0 && selfHaste > 0f && _playerStatus != null)
                     _playerStatus.Board.Apply(StatusKind.Haste, durationMs, 1f + selfHaste);
             }
 
-            if (result.Knockback && _bossStatus != null && _player != null)
-                _bossStatus.ApplyKnockbackFrom(_player.position);
+            if (result.Knockback && bossStatus != null && _player != null)
+                bossStatus.ApplyKnockbackFrom(_player.position);
 
-            if (result.Pull && _bossStatus != null && _player != null)
-                _bossStatus.ApplyPullToward(_player.position);
+            if (result.Pull && bossStatus != null && _player != null)
+                bossStatus.ApplyPullToward(_player.position);
 
             // 16 Eylül: "skilleri attığımda bir etkileşim göremiyorum" raporu — durum
             // etkileşim tablosu (docs/element-sistemi.json status_interaction_table) mekanik
@@ -2748,6 +2767,35 @@ namespace Dovus.Game
                 return;
 
             _boss.React(from, knock, lift, shake, worldMs);
+        }
+
+        static readonly Collider[] StrikeHits = new Collider[24];
+
+        /// <summary>
+        /// Oyuncudan bakış yönünde reach uzunluğunda, TravelHitRadiusM kalınlığında kapsül.
+        /// Kapsül oyuncunun arkasına taşmaz; boss'un gerçek collider'ı temas etmeli.
+        /// </summary>
+        bool IsBossInStrikeCapsule(LivingEffect logic, float reachM)
+        {
+            if (_boss == null || _player == null || logic == null)
+                return false;
+            float radius = _combat.Manifestation.TravelHitRadiusM;
+            Vector3 dir = new Vector3(logic.DirX, 0f, logic.DirZ);
+            if (dir.sqrMagnitude < 0.0001f)
+                return false;
+            dir.Normalize();
+            Vector3 low = _player.position + Vector3.up * radius + dir * radius;
+            Vector3 high = _player.position + Vector3.up * radius + dir * Mathf.Max(radius, reachM);
+            int count = Physics.OverlapCapsuleNonAlloc(
+                low, high, radius, StrikeHits, Physics.AllLayers, QueryTriggerInteraction.Collide);
+            Transform bossT = _boss.transform;
+            for (int i = 0; i < count; i++)
+            {
+                Transform hit = StrikeHits[i].transform;
+                if (hit == bossT || hit.IsChildOf(bossT))
+                    return true;
+            }
+            return false;
         }
 
         bool IsClosingInRange(LivingEffect logic, ClosingHit closing)

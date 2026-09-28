@@ -13,9 +13,24 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 28 Eylül 2026 (PR #15 executor düzeltmeleri + master merge) ·
-**Dal:** `master` · **Sıradaki:** kullanıcı Play smoke sonrası
-Movement/SelfState executor'ları veya gerçek animasyon/VFX bağları
+**Son güncelleme:** 28 Eylül 2026 (menzil/arkadan vurma düzeltmesi) ·
+**Dal:** `master` · **Sıradaki:** savaş içi 2 silah swap (`weapon_skill_interaction.swap`),
+sonra Movement/SelfState executor'ları veya gerçek animasyon/VFX bağları
+
+> **28 Eylül — menzil / arkadan vurma.** Sahibi: "arkam dönük uzaktan yumrukla vuruyorum,
+> düz hasar yiyor; skill de aynı". Sebepler: (1) düz vuruş ve executor'sız fallback yolu
+> hasarı menzile bakmadan veriyordu (menzil yalnız boss sarsılma görselindeydi);
+> (2) soft-aim 8 m içinde yönü koşulsuz boss'a çeviriyordu; (3) melee executor kapsülü
+> bang yarıçapıyla (3.6 m'ye kadar) şişip oyuncunun arkasına taşıyordu; (4) düşman alanı
+> boss'un üstünde açılıyordu. Düzeltme: düz vuruş `IsBossInStrikeCapsule` (bakış yönünde
+> `BasicStrikeRangeM`, kalınlık `TravelHitRadiusM`, arkaya taşmaz); fallback hasar/boss
+> statüsü `IsClosingInRange` ile kapılı; soft-aim `PrototypeTuning.SoftAimConeDeg=70`
+> yarım açı (**uydurma varsayılan**); tek hedefli melee kapsülü `TravelHitRadiusM`, yalnız
+> Patlama (fiil 5) alan kalır; düşman FieldAura etkinin ucunda açılır.
+> **Doğrulandı (Editor Play):** düz vuruş sırtı dönük 1.8 m → 0, önde 6 m → 0, önde 2.2 m →
+> hasar; 1-1 sırtı dönük 1.8 m → 0; 1-4 önde 2.2 m → 40. 5-5 7 m'den vurur — veride
+> `bang=9.72 m` (sıfat 5 alanı büyütüyor), tasarım gereği. **Doğrulanamadı:** 3/7/10/11
+> fallback fiillerinin canlı menzili, düşman alan fiillerinin (6/12) yeni konumda tick'i.
 
 > **28 Eylül — PR #15 düzeltmeleri.** Üç executor `Time.deltaTime` yerine
 > `GameClock.WorldDeltaMs` ile ilerler (`SkillExecutor.WorldDeltaSec`); build menüsü açıkken

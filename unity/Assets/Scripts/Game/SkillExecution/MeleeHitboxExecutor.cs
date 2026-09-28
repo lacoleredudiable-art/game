@@ -58,8 +58,9 @@ namespace Dovus.Game
             else
             {
                 float reach = Mathf.Max(Context.RadiusM, Context.RangeM);
-                Vector3 low = origin + Vector3.up * Context.RadiusM;
-                Vector3 high = low + Context.Direction * reach;
+                Vector3 baseAt = origin + Vector3.up * Context.RadiusM;
+                Vector3 low = baseAt + Context.Direction * Context.RadiusM;
+                Vector3 high = baseAt + Context.Direction * reach;
                 count = Physics.OverlapCapsuleNonAlloc(
                     low,
                     high,
