@@ -5,7 +5,9 @@ namespace Dovus.Game
 {
     /// <summary>
     /// hitbox_vfx.vfx_prefab_naming registry. Art prefabı yoksa geometriyi element rengiyle
-    /// görünür kılan collider'sız, hafif primitive üretir.
+    /// görünür kılan collider'sız, hafif primitive üretir. Primitive'in üstüne teslim yoluna göre
+    /// somut bir paket efekti giydirilir (<c>Delivery/{executor}/{şekil}</c> → <c>Delivery/{executor}</c>
+    /// → <c>Delivery/{şekil}</c>); giydirme varsa primitive yalnız hitbox/collider taşıyıcısı kalır.
     /// </summary>
     public static class HitboxVfxRegistry
     {
@@ -22,8 +24,86 @@ namespace Dovus.Game
             Transform parent,
             float angleDeg = 0f)
         {
+            GameObject go = CreateBase(key, shape, colorHex, position, direction, radiusM, reachM, parent, angleDeg,
+                out bool fromKey);
+            if (fromKey || go == null)
+                return go;
+
+            string role = parent != null && parent.TryGetComponent(out SkillExecutor executor)
+                ? executor.Kind.ToString()
+                : null;
+            GameObject dress = SpawnDelivery(role, shape, colorHex, go.transform, direction, radiusM, reachM, parent);
+            if (dress != null && shape != "cylinder" && go.TryGetComponent(out MeshRenderer primitive))
+                primitive.enabled = false;
+            return go;
+        }
+
+        static GameObject SpawnDelivery(string role, string shape, string colorHex, Transform anchor,
+            Vector3 direction, float radiusM, float reachM, Transform parent)
+        {
+            VfxLibrary lib = VfxLibrary.Current;
+            string key = null;
+            foreach (string candidate in new[]
+                     {
+                         role != null ? $"Delivery/{role}/{shape}" : null,
+                         role != null ? $"Delivery/{role}" : null,
+                         $"Delivery/{shape}",
+                     })
+            {
+                if (candidate != null && lib.TryResolve(candidate, out _, out _))
+                {
+                    key = candidate;
+                    break;
+                }
+            }
+            if (key == null)
+                return null;
+
+            Vector3 flat = new(direction.x, 0f, direction.z);
+            Quaternion rot = flat.sqrMagnitude > 0.0001f ? Quaternion.LookRotation(flat.normalized) : Quaternion.identity;
+            float size = shape is "cone" or "line" or "capsule" ? Mathf.Max(reachM, radiusM * 2f) : radiusM * 2f;
+            GameObject dress = lib.TrySpawn(key, anchor.position, rot, parent, size);
+            if (dress == null)
+                return null;
+            dress.name = key.Replace('/', '_');
+            if (!string.IsNullOrEmpty(colorHex) && ColorUtility.TryParseHtmlString(colorHex, out Color tint))
+                VfxLibrary.Tint(dress, tint, lib.ImpactTintStrength);
+            dress.AddComponent<FollowAnchor>().Anchor = anchor;
+            return dress;
+        }
+
+        /// <summary>Giydirme, hareket eden primitive'i (mermi) izler; primitive yok olunca kendini siler.</summary>
+        sealed class FollowAnchor : MonoBehaviour
+        {
+            public Transform Anchor;
+
+            void LateUpdate()
+            {
+                if (Anchor == null)
+                {
+                    Destroy(gameObject);
+                    return;
+                }
+                transform.position = Anchor.position;
+            }
+        }
+
+        static GameObject CreateBase(
+            string key,
+            string shape,
+            string colorHex,
+            Vector3 position,
+            Vector3 direction,
+            float radiusM,
+            float reachM,
+            Transform parent,
+            float angleDeg,
+            out bool fromKey)
+        {
+            fromKey = false;
             if (VfxLibrary.Current.TryResolve(key, out GameObject prefab, out _))
             {
+                fromKey = true;
                 Vector3 look = direction.sqrMagnitude > 0.0001f ? direction : Vector3.forward;
                 return Object.Instantiate(prefab, position, Quaternion.LookRotation(look), parent);
             }

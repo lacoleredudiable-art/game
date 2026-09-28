@@ -17,6 +17,27 @@
 **Dal:** `feat/feel-*` fazları · **Sıradaki:** his/sunum turu fazları (plan: Faz 0 his
 ayarları → 1 boss anim → 2 oyuncu anim → 3 HUD → 4 VFX/SFX → 5 telefon)
 
+> **28 Eylül — Somut skill efektleri: CFX Remaster Free + Particle Pack bağlandı (dal `feat/feel-f5-phone`).**
+> Sahibi iki paketi Asset Store'dan import etti (`JMO Assets/`, `UnityTechnologies/ParticlePack/`,
+> ikisi de `.gitignore`'da). Sahibi geri bildirimi: boss slam'indeki taş/lav patlaması (EarthShatter)
+> "somut" — "bütün skillerde bunu arıyorum". Yapılan: `HitboxVfxRegistry` primitive'in üstüne teslim
+> yoluna göre paket efekti giydiriyor (`Delivery/{executor}/{şekil}` → `Delivery/{executor}` →
+> `Delivery/{şekil}`); giydirme varsa yarı saydam primitive gizlenir (zemin `cylinder` hariç), collider
+> aynen kalır. Eşleme `Dovus/Feel/Bind VFX Packs` (`VfxPackBinder`) ile `Resources/VfxLibrary.asset`'e
+> yazılır: Projectile→FireBall, MeleeHitbox→CFXR4 Sword Hit (patlama/sphere→CFXR Explosion 1),
+> FieldAura→EarthShatter, Summon/line→IceLance, Movement→CFXR Magic Poof, SelfState→CFXR3 Magic Aura,
+> cone→CFXR Fire Breath; his efektleri FX_HitSpark/Crit/Dodge/Slam/Crack/FireCone ve `Impact/*` stilleri
+> de CFXR'a bağlı. Paket prefab'ı element rengine `VfxLibrary.Tint` ile çekilir
+> (`ImpactTintStrength` 0.75, `HitSparkTintStrength` 0.5 — önerilen), `Entry.ReferenceSizeM` ile
+> saldırı boyutuna ölçeklenir (referans boyutlar gözle — önerilen). Editor Play: boss slam taş+ateş,
+> 1-5 yakın vuruş kıvılcımı, 6-5 alan skillinde taş/lav halkası ekranda.
+> **Tuzak (unity-notlari'na aday):** Particle Pack "Starter Assets" import'u `manifest.json`'a ~17 paket
+> (postprocessing v2, progrids preview…) + `UNITY_POST_PROCESSING_STACK_V2` define'ı + TMP örnekleri
+> ekliyor; geri alındı. Paket geri çözümlemesinden sonra Synty `Generic_Basic.shadergraph` hata
+> shader'ına düştü (karakterler pembe) → `ImportAsset(ForceUpdate)` ile düzeldi.
+> **Doğrulanamadı:** mermi (FireBall), çağırma (IceLance), hareket ve self skilleri Play'de tek tek
+> görülmedi; ölçek/renk göz ayarı sahibinde; telefonda parçacık maliyeti ölçülmedi.
+
 > **28 Eylül — His turu Faz 5 (kısmi): Mixamo setleri + build shader'ı (dal `feat/feel-f5-phone`).**
 > Sahibi mixamo.com'a Cursor tarayıcısında girdi; `tools/mixamo-download.mjs` ile
 > `mixamo-jobs/player.json` 13/13 (Sword And Shield idle/walk/run/slash/attack/kick/block/impact/
