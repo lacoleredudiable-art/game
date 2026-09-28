@@ -43,7 +43,7 @@ namespace Dovus.Core.Mechanic
             StatusTransfer = plan.Effects.Any(e => e.Stat == "durum_aktar");
             BuffPurge = plan.Effects.Any(e => e.Stat == "iyi_durum_sil");
 
-            MechanicEffect actor = plan.Effects.FirstOrDefault(e => e.Stat is "aktor_yarat" or "klon");
+            var actor = plan.Effects.FirstOrDefault(e => e.Stat is "aktor_yarat" or "klon");
             if (actor == null)
                 ActorKind = MechanicActorKind.None;
             else if (actor.Stat == "klon")

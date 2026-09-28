@@ -58,7 +58,7 @@ namespace Dovus.Core.Mechanic
         {
             if (_samples.Count == 0)
             {
-                value = default;
+                value = default!;
                 return false;
             }
 
