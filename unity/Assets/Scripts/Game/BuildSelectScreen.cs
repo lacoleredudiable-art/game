@@ -50,6 +50,7 @@ namespace Dovus.Game
         readonly Dictionary<int, Image> _passiveBadges = new();
         readonly Dictionary<int, Button> _passiveButtons = new();
         readonly Image[] _slotImages = new Image[RuneLoadout.SlotCount];
+        readonly Image[] _slotIconImages = new Image[RuneLoadout.SlotCount];
         readonly Text[] _slotLabels = new Text[RuneLoadout.SlotCount];
         Text _counter;
         Text _passiveCounter;
@@ -336,7 +337,10 @@ namespace Dovus.Game
             {
                 bool filled = i < _selected.Count;
                 _slotImages[i].color = filled ? SlotFilledColor : SlotEmptyColor;
-                _slotLabels[i].text = filled ? VerbFace(_selected[i]) : (i + 1).ToString();
+                Sprite icon = filled ? RuneIconCatalog.Get(_selected[i]) : null;
+                _slotIconImages[i].sprite = icon;
+                _slotIconImages[i].enabled = icon != null;
+                _slotLabels[i].text = filled && icon == null ? VerbFace(_selected[i]) : (filled ? string.Empty : (i + 1).ToString());
                 _slotLabels[i].color = filled ? Color.white : MutedText;
             }
 
@@ -493,11 +497,18 @@ namespace Dovus.Game
             card.onClick.AddListener(() => ToggleRune(captured));
             _cardImages[runeId] = (Image)card.targetGraphic;
 
+            Sprite runeIcon = RuneIconCatalog.Get(runeId);
+            if (runeIcon != null)
+            {
+                Image icon = CreateIcon(rect, "RuneIcon", runeIcon);
+                Place(icon.rectTransform, 0.035f, 0.53f, 0.26f, 0.96f);
+            }
+
             Text verbText = CreateText(rect, verb, 28, Color.white, TextAnchor.MiddleLeft);
             verbText.fontStyle = FontStyle.Bold;
-            Place(verbText.rectTransform, 0.06f, 0.62f, 0.74f, 0.96f);
+            Place(verbText.rectTransform, 0.27f, 0.62f, 0.78f, 0.96f);
             Text adjectiveText = CreateText(rect, "sıfat: " + adjective, 18, MutedText, TextAnchor.MiddleLeft);
-            Place(adjectiveText.rectTransform, 0.06f, 0.42f, 0.96f, 0.63f);
+            Place(adjectiveText.rectTransform, 0.27f, 0.42f, 0.96f, 0.63f);
             Text categoryText = CreateText(
                 rect, category.ToUpperInvariant(), 15, CategoryColor(category), TextAnchor.MiddleLeft);
             categoryText.fontStyle = FontStyle.Bold;
@@ -558,14 +569,20 @@ namespace Dovus.Game
                 chip.onClick.AddListener(() => ToggleWeapon(captured));
                 _weaponChipImages[weapon.Id] = (Image)chip.targetGraphic;
 
+                Sprite weaponIcon = WeaponIconCatalog.Get(weapon);
+                if (weaponIcon != null)
+                {
+                    Image icon = CreateIcon(rect, "WeaponIcon", weaponIcon);
+                    Place(icon.rectTransform, 0.26f, 0.48f, 0.74f, 0.96f);
+                }
                 Text name = CreateText(rect, weapon.Name, 18, Color.white, TextAnchor.MiddleCenter);
                 name.fontStyle = FontStyle.Bold;
-                Place(name.rectTransform, 0.04f, 0.50f, 0.96f, 0.95f);
+                Place(name.rectTransform, 0.04f, 0.31f, 0.96f, 0.52f);
                 Text type = CreateText(rect, WeaponTypeLabel(weapon.Type), 13, MutedText, TextAnchor.MiddleCenter);
-                Place(type.rectTransform, 0.04f, 0.28f, 0.96f, 0.52f);
+                Place(type.rectTransform, 0.04f, 0.18f, 0.96f, 0.33f);
                 Text badge = CreateText(rect, string.Empty, 12, AccentColor, TextAnchor.MiddleCenter);
                 badge.fontStyle = FontStyle.Bold;
-                Place(badge.rectTransform, 0.02f, 0.03f, 0.98f, 0.28f);
+                Place(badge.rectTransform, 0.02f, 0.01f, 0.98f, 0.19f);
                 _weaponChipBadges[weapon.Id] = badge;
             }
         }
@@ -611,6 +628,9 @@ namespace Dovus.Game
                 int captured = i;
                 slot.onClick.AddListener(() => RemoveSlot(captured));
                 _slotImages[i] = slotImage;
+                Image slotIcon = CreateIcon(slotRect, "RuneIcon", null);
+                Place(slotIcon.rectTransform, 0.13f, 0.13f, 0.87f, 0.87f);
+                _slotIconImages[i] = slotIcon;
                 _slotLabels[i] = CreateText(slotRect, (i + 1).ToString(), 16, MutedText, TextAnchor.MiddleCenter);
                 _slotLabels[i].fontStyle = FontStyle.Bold;
             }
@@ -719,6 +739,20 @@ namespace Dovus.Game
             text.resizeTextMaxSize = fontSize;
             text.raycastTarget = false;
             return text;
+        }
+
+        static Image CreateIcon(Transform parent, string name, Sprite sprite)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            go.AddComponent<RectTransform>();
+            var image = go.AddComponent<Image>();
+            image.sprite = sprite;
+            image.color = Color.white;
+            image.preserveAspect = true;
+            image.raycastTarget = false;
+            image.enabled = sprite != null;
+            return image;
         }
 
         static Sprite CreateCircleSprite()

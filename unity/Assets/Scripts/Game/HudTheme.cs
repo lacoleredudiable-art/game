@@ -32,9 +32,46 @@ namespace Dovus.Game
         public Color DisabledTint = new(0.42f, 0.42f, 0.46f, 1f);
         public Color PhaseNotchColor = new(1f, 1f, 1f, 0.75f);
 
+        [Header("Combat chrome paleti")]
+        [Tooltip("Alt savaş tepsisi ve kartların ortak koyu cam yüzeyi.")]
+        public Color PanelColor = new(0.018f, 0.032f, 0.065f, 0.82f);
+        public Color PanelSoftColor = new(0.035f, 0.065f, 0.11f, 0.62f);
+        public Color PanelEdgeColor = new(0.35f, 0.78f, 1f, 0.22f);
+        public Color RuneFaceTint = Color.white;
+        public Color PrimaryTextColor = new(0.95f, 0.98f, 1f, 1f);
+        public Color SecondaryTextColor = new(0.72f, 0.82f, 0.91f, 0.94f);
+        public Color EmptySlotTextColor = new(0.55f, 0.63f, 0.71f, 0.70f);
+        public Color ControlCaptionColor = new(0.72f, 0.84f, 0.94f, 0.92f);
+        public Color SkillCompatibleColor = new(0.33f, 0.95f, 0.68f, 1f);
+        public Color SkillMismatchColor = new(1f, 0.76f, 0.22f, 1f);
+        public Color SkillNeutralColor = new(0.42f, 0.90f, 1f, 1f);
+        public Color PlayerHpColor = new(0.86f, 0.22f, 0.31f, 0.98f);
+        public Color PlayerManaColor = new(0.24f, 0.62f, 1f, 0.98f);
+        public Color AllyHpColor = new(0.30f, 0.86f, 0.56f, 0.98f);
+        public Color BossLowHpColor = new(1f, 0.23f, 0.16f, 1f);
+        public Color CastUrgentColor = new(1f, 0.20f, 0.10f, 1f);
+        public Color WeaponSwapAccentColor = new(1f, 0.80f, 0.34f, 1f);
+        public Color CooldownOverlayColor = new(0.01f, 0.025f, 0.05f, 0.68f);
+
+        [Header("Rün kimlik renkleri")]
+        [Tooltip("Yalnız rim/vurgu; ikon yüzleri v6 fiil kimliğini taşır, element rengi değildir.")]
+        public Color Rune1 = new(0.28f, 0.86f, 1f, 1f);
+        public Color Rune2 = new(0.32f, 0.92f, 0.65f, 1f);
+        public Color Rune3 = new(0.36f, 0.73f, 1f, 1f);
+        public Color Rune4 = new(0.58f, 0.57f, 1f, 1f);
+        public Color Rune5 = new(1f, 0.42f, 0.32f, 1f);
+        public Color Rune6 = new(0.36f, 0.84f, 0.93f, 1f);
+        public Color Rune7 = new(0.79f, 0.42f, 1f, 1f);
+        public Color Rune8 = new(1f, 0.75f, 0.29f, 1f);
+        public Color Rune9 = new(0.44f, 0.93f, 0.83f, 1f);
+        public Color Rune10 = new(0.73f, 0.61f, 1f, 1f);
+        public Color Rune11 = new(0.47f, 0.54f, 1f, 1f);
+        public Color Rune12 = new(0.35f, 0.85f, 1f, 1f);
+
         [Header("Boyut (dp)")]
         public float BossNameDp = 18f;
         public float BossSubtitleDp = 11f;
+        public float PlayerIdentityDp = 11f;
         public float BannerDp = 30f;
         public float CastLabelDp = 12f;
         public float CastBarHeightDp = 9f;
@@ -42,6 +79,29 @@ namespace Dovus.Game
         public float OffscreenArrowDp = 26f;
         public float OffscreenMarginDp = 34f;
         public float DamageDirectionDp = 120f;
+        public float RuneTrayTitleDp = 10f;
+        public float ControlCaptionDp = 10f;
+        public float SkillTitleDp = 19f;
+        public float SkillDetailDp = 11f;
+        public float SkillAccentWidthDp = 6f;
+        public float SkillCardPaddingDp = 12f;
+        public float PassiveTitleDp = 9f;
+        public float PassiveBodyDp = 12f;
+        public float PanelShadowDp = 4f;
+        public float PanelOutlineDp = 1f;
+        public float TrayTitleInsetDp = 14f;
+        public float TrayTitleTopDp = 5f;
+        public float TrayAccentHeightDp = 2f;
+        public float WeaponReserveIconDp = 22f;
+        public float WeaponCaptionGapDp = 5f;
+        public float WeaponCaptionHeightDp = 18f;
+        public float PassiveHeaderExtraDp = 8f;
+        public float PassivePanelInsetDp = 9f;
+        public float PassiveIconInsetDp = 4f;
+        public float PassiveTimerWidthDp = 42f;
+        public float PassiveNameEndPadDp = 46f;
+        public float BarInsetDp = 2f;
+        public float BarLabelInsetDp = 8f;
 
         [Header("Bar juice (sn)")]
         /// <summary>Ghost bar düşmeden önce bekler. Önerilen.</summary>
@@ -65,11 +125,21 @@ namespace Dovus.Game
         public float CastPopScale = 1.08f;
         public float BossBarShakeDp = 4f;
         public float BossBarShakeSec = 0.35f;
+        [Range(0f, 1f)] public float BossLowHpFrac = 0.18f;
+        public float BossLowHpPulseHz = 3.2f;
+        [Range(0f, 1f)] public float BossLowHpPulseStrength = 0.35f;
+        [Range(0f, 1f)] public float CastUrgencyStart01 = 0.68f;
+        public float CastUrgencyPulseHz = 6f;
+        [Range(0f, 1f)] public float CastUrgencyPulseStrength = 0.42f;
 
         [Header("Altıgen buton juice")]
         public float PressScale = 0.88f;
         public float ReadyPopScale = 1.18f;
         public float JuiceSec = 0.14f;
+        public float RuneHighlightSec = 0.42f;
+        public float RuneHighlightScale = 1.10f;
+        public float SkillCardPopScale = 1.08f;
+        public float SkillCardFadeSec = 0.18f;
 
         [Header("Status ikonları")]
         /// <summary>Kalan süre bunun altına inince ikon yanıp söner. Önerilen.</summary>
@@ -122,6 +192,23 @@ namespace Dovus.Game
                 return _tmpFont;
             }
         }
+
+        public Color RuneAccent(int runeId) => runeId switch
+        {
+            1 => Rune1,
+            2 => Rune2,
+            3 => Rune3,
+            4 => Rune4,
+            5 => Rune5,
+            6 => Rune6,
+            7 => Rune7,
+            8 => Rune8,
+            9 => Rune9,
+            10 => Rune10,
+            11 => Rune11,
+            12 => Rune12,
+            _ => SkillNeutralColor
+        };
 
         /// <summary>Kod-kurulu TMP etiketi (raycast kapalı, taşma serbest).</summary>
         public static TextMeshProUGUI CreateTmp(

@@ -32,6 +32,7 @@ namespace Dovus.Game
         Image _bossSheen;
         Image _allySheen;
         TextMeshProUGUI _bossName;
+        TextMeshProUGUI _playerIdentity;
         Text _bossLabel;
         BarJuice _playerJuice;
         BarJuice _bossJuice;
@@ -98,6 +99,10 @@ namespace Dovus.Game
             _playerRoot.pivot = new Vector2(0f, 1f);
 
             _playerPanel = CreateGlassPanel(_playerRoot, "PlayerGlass");
+            _playerIdentity = HudTheme.CreateTmp(
+                _playerPanel, "PlayerIdentity", HudTheme.Current.PlayerIdentityDp,
+                HudTheme.Current.ControlCaptionColor, TextAlignmentOptions.Left);
+            _playerIdentity.text = "AVCI  //  OYUNCU";
             _playerFill = CreateBar(_playerPanel, "Player", out _playerBg, out _playerSheen, out _playerJuice);
             _playerLabel = CreateLabel(_playerBg, "PlayerHp");
             _manaFill = CreateBar(_playerPanel, "Mana", out _manaBg, out _manaSheen);
@@ -106,7 +111,7 @@ namespace Dovus.Game
             {
                 _allyFill = CreateBar(_playerPanel, "Ally", out _allyBg, out _allySheen);
                 _allyLabel = CreateLabel(_allyBg, "AllyHp");
-                _allyFill.color = new Color(0.32f, 0.78f, 0.52f, 0.95f);
+                _allyFill.color = HudTheme.Current.AllyHpColor;
             }
 
             // —— Boss (üst orta) ——
@@ -261,7 +266,14 @@ namespace Dovus.Game
                     UiJuice.PunchScale(_castRoot, th.CastPopScale, th.JuiceSec);
                 }
                 _castShown = true;
-                _castFill.fillAmount = _bossDirector.WindupProgress01;
+                float progress = _bossDirector.WindupProgress01;
+                _castFill.fillAmount = progress;
+                float urgency = Mathf.InverseLerp(th.CastUrgencyStart01, 1f, progress);
+                float pulse = UiJuice.Pulse01(th.CastUrgencyPulseHz) * th.CastUrgencyPulseStrength;
+                _castFill.color = Color.Lerp(
+                    th.CastBarColor,
+                    th.CastUrgentColor,
+                    Mathf.Clamp01(urgency + urgency * pulse));
                 _castGroup.alpha = 1f;
             }
             else
@@ -288,8 +300,9 @@ namespace Dovus.Game
             var shadowRt = shadowGo.AddComponent<RectTransform>();
             shadowRt.anchorMin = Vector2.zero;
             shadowRt.anchorMax = Vector2.one;
-            shadowRt.offsetMin = new Vector2(2f, -4f);
-            shadowRt.offsetMax = new Vector2(4f, -2f);
+            float shadowPx = HexagonLayoutScreen.DpToPixels(HudTheme.Current.PanelShadowDp);
+            shadowRt.offsetMin = new Vector2(0f, -shadowPx);
+            shadowRt.offsetMax = new Vector2(shadowPx, 0f);
             var shadowImg = shadowGo.AddComponent<Image>();
             shadowImg.sprite = RoundedRectSprite();
             shadowImg.type = Image.Type.Sliced;
@@ -299,7 +312,7 @@ namespace Dovus.Game
             var img = go.AddComponent<Image>();
             img.sprite = RoundedRectSprite();
             img.type = Image.Type.Sliced;
-            img.color = new Color(0.04f, 0.06f, 0.09f, 0.62f);
+            img.color = HudTheme.Current.PanelSoftColor;
             img.raycastTarget = false;
 
             var edgeGo = new GameObject("Edge");
@@ -312,7 +325,7 @@ namespace Dovus.Game
             var edgeImg = edgeGo.AddComponent<Image>();
             edgeImg.sprite = RoundedRectSprite();
             edgeImg.type = Image.Type.Sliced;
-            edgeImg.color = new Color(0.45f, 0.9f, 1f, 0.10f);
+            edgeImg.color = HudTheme.Current.PanelEdgeColor;
             edgeImg.raycastTarget = false;
             return rect;
         }
@@ -351,8 +364,9 @@ namespace Dovus.Game
             var fillRect = fillGo.AddComponent<RectTransform>();
             fillRect.anchorMin = Vector2.zero;
             fillRect.anchorMax = Vector2.one;
-            fillRect.offsetMin = new Vector2(2f, 2f);
-            fillRect.offsetMax = new Vector2(-2f, -2f);
+            float barInset = HexagonLayoutScreen.DpToPixels(HudTheme.Current.BarInsetDp);
+            fillRect.offsetMin = new Vector2(barInset, barInset);
+            fillRect.offsetMax = new Vector2(-barInset, -barInset);
             var fillImg = fillGo.AddComponent<Image>();
             fillImg.sprite = pill;
             fillImg.type = Image.Type.Filled;
@@ -386,8 +400,9 @@ namespace Dovus.Game
             var rect = go.AddComponent<RectTransform>();
             rect.anchorMin = Vector2.zero;
             rect.anchorMax = Vector2.one;
-            rect.offsetMin = new Vector2(2f, 2f);
-            rect.offsetMax = new Vector2(-2f, -2f);
+            float barInset = HexagonLayoutScreen.DpToPixels(HudTheme.Current.BarInsetDp);
+            rect.offsetMin = new Vector2(barInset, barInset);
+            rect.offsetMax = new Vector2(-barInset, -barInset);
             var img = go.AddComponent<Image>();
             img.sprite = pill;
             img.type = type;
@@ -452,8 +467,9 @@ namespace Dovus.Game
             var rect = go.AddComponent<RectTransform>();
             rect.anchorMin = Vector2.zero;
             rect.anchorMax = Vector2.one;
-            rect.offsetMin = new Vector2(8f, 0f);
-            rect.offsetMax = new Vector2(-8f, 0f);
+            float labelInset = HexagonLayoutScreen.DpToPixels(HudTheme.Current.BarLabelInsetDp);
+            rect.offsetMin = new Vector2(labelInset, 0f);
+            rect.offsetMax = new Vector2(-labelInset, 0f);
             var text = go.AddComponent<Text>();
             text.font = HudTheme.LegacyFont;
             text.fontSize = Mathf.Max(11, Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(10.5f)));
@@ -494,7 +510,8 @@ namespace Dovus.Game
             float bossW = HexagonLayoutScreen.DpToPixels(_tuning.VitalsBossBarWidthDp);
             float bossH = HexagonLayoutScreen.DpToPixels(_tuning.VitalsBossBarHeightDp);
             float spacing = HexagonLayoutScreen.DpToPixels(_tuning.VitalsBarSpacingDp);
-            float pad = HexagonLayoutScreen.DpToPixels(8f);
+            float pad = HexagonLayoutScreen.DpToPixels(_tuning.VitalsPanelPaddingDp);
+            float headerH = HexagonLayoutScreen.DpToPixels(_tuning.VitalsHeaderHeightDp);
             Rect safe = HexagonLayoutScreen.SafeRectPx();
             bossW = Mathf.Min(bossW, safe.width - margin * 2f);
 
@@ -516,20 +533,29 @@ namespace Dovus.Game
                 _appliedMarginDp = _tuning.VitalsMarginDp;
 
                 int rows = BarCount;
-                float panelH = rows * h + (rows - 1) * spacing + pad * 2f;
+                float panelH = headerH + rows * h + (rows - 1) * spacing + pad * 2f;
                 float panelW = w + pad * 2f;
 
                 _playerRoot.anchoredPosition = new Vector2(leftInset + margin, -(topInset + margin));
                 _playerPanel.anchoredPosition = Vector2.zero;
                 _playerPanel.sizeDelta = new Vector2(panelW, panelH);
 
-                _playerBg.anchoredPosition = new Vector2(pad, -pad);
+                if (_playerIdentity != null)
+                {
+                    RectTransform identity = _playerIdentity.rectTransform;
+                    identity.anchorMin = identity.anchorMax = new Vector2(0f, 1f);
+                    identity.pivot = new Vector2(0f, 1f);
+                    identity.anchoredPosition = new Vector2(pad, -pad * 0.35f);
+                    identity.sizeDelta = new Vector2(w, headerH);
+                }
+                float barsTop = pad + headerH;
+                _playerBg.anchoredPosition = new Vector2(pad, -barsTop);
                 _playerBg.sizeDelta = new Vector2(w, h);
-                _manaBg.anchoredPosition = new Vector2(pad, -(pad + h + spacing));
+                _manaBg.anchoredPosition = new Vector2(pad, -(barsTop + h + spacing));
                 _manaBg.sizeDelta = new Vector2(w, h);
                 if (_hasAlly && _allyBg != null)
                 {
-                    _allyBg.anchoredPosition = new Vector2(pad, -(pad + 2f * (h + spacing)));
+                    _allyBg.anchoredPosition = new Vector2(pad, -(barsTop + 2f * (h + spacing)));
                     _allyBg.sizeDelta = new Vector2(w, h);
                 }
 
@@ -561,14 +587,14 @@ namespace Dovus.Game
             }
 
             // Oyuncu HP: mevcut soft rose tonu
-            Color hpColor = new Color(0.72f, 0.28f, 0.34f, 0.95f);
+            Color hpColor = HudTheme.Current.PlayerHpColor;
             if (_appliedPlayerColor != hpColor)
             {
                 _appliedPlayerColor = hpColor;
                 _playerFill.color = hpColor;
             }
 
-            Color manaColor = new Color(0.30f, 0.62f, 0.88f, 0.95f);
+            Color manaColor = HudTheme.Current.PlayerManaColor;
             if (_appliedManaColor != manaColor)
             {
                 _appliedManaColor = manaColor;
@@ -619,10 +645,18 @@ namespace Dovus.Game
 
             if (_bossVitals != null && _bossFill != null)
             {
-                _bossFill.fillAmount = _bossVitals.MaxHp > 0
+                float bossRatio = _bossVitals.MaxHp > 0
                     ? Mathf.Clamp01(_bossVitals.Hp / _bossVitals.MaxHp)
                     : 0f;
-                _bossJuice?.Tick(_bossFill.fillAmount, th);
+                _bossFill.fillAmount = bossRatio;
+                _bossJuice?.Tick(bossRatio, th);
+                bool low = bossRatio > 0f && bossRatio <= th.BossLowHpFrac;
+                _bossFill.color = low
+                    ? Color.Lerp(
+                        _appliedBossColor,
+                        th.BossLowHpColor,
+                        UiJuice.Pulse01(th.BossLowHpPulseHz) * th.BossLowHpPulseStrength)
+                    : _appliedBossColor;
                 if (_bossLabel != null)
                     _bossLabel.text = "HP   " + Mathf.CeilToInt(_bossVitals.Hp) + "  /  "
                         + Mathf.CeilToInt(_bossVitals.MaxHp);

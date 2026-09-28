@@ -11,7 +11,6 @@ namespace Dovus.Game
     /// </summary>
     public sealed class SkillPreviewHud : MonoBehaviour
     {
-        const float FadeSec = 0.2f;
         SentenceEngine _engine;
         SkillMotor _motor;
         SkillFactory _factory;
@@ -21,10 +20,12 @@ namespace Dovus.Game
         CanvasGroup _group;
         Text _title;
         Text _detail;
+        Text _compatibility;
         Image _accent;
         string _lastSignature = string.Empty;
         float _visibleUntil = float.NegativeInfinity;
         Skill _lastCast;
+        bool _wasVisible;
 
         public void Configure(
             SentenceEngine engine,
@@ -55,8 +56,17 @@ namespace Dovus.Game
             _group.interactable = false;
 
             var bg = root.AddComponent<Image>();
-            bg.color = new Color(0.015f, 0.025f, 0.045f, 0.84f);
+            HudTheme theme = HudTheme.Current;
+            bg.color = theme.PanelColor;
             bg.raycastTarget = false;
+            var shadow = root.AddComponent<Shadow>();
+            shadow.effectColor = new Color(0f, 0f, 0f, 0.58f);
+            shadow.effectDistance = new Vector2(
+                0f, -HexagonLayoutScreen.DpToPixels(theme.PanelShadowDp));
+            var outline = root.AddComponent<Outline>();
+            outline.effectColor = theme.PanelEdgeColor;
+            float outlinePx = HexagonLayoutScreen.DpToPixels(theme.PanelOutlineDp);
+            outline.effectDistance = new Vector2(outlinePx, -outlinePx);
 
             var accentGo = new GameObject("CompatibilityAccent");
             accentGo.transform.SetParent(root.transform, false);
@@ -64,12 +74,18 @@ namespace Dovus.Game
             accentRt.anchorMin = new Vector2(0f, 0f);
             accentRt.anchorMax = new Vector2(0f, 1f);
             accentRt.pivot = new Vector2(0f, 0.5f);
-            accentRt.sizeDelta = new Vector2(HexagonLayoutScreen.DpToPixels(4f), 0f);
+            accentRt.sizeDelta = new Vector2(HexagonLayoutScreen.DpToPixels(theme.SkillAccentWidthDp), 0f);
             _accent = accentGo.AddComponent<Image>();
             _accent.raycastTarget = false;
 
-            _title = CreateText(root.transform, "Title", new Vector2(0f, 0.46f), Vector2.one, 21);
-            _detail = CreateText(root.transform, "Detail", Vector2.zero, new Vector2(1f, 0.46f), 13);
+            _title = CreateText(root.transform, "Title", new Vector2(0f, 0.46f), new Vector2(0.72f, 1f), theme.SkillTitleDp);
+            _title.alignment = TextAnchor.MiddleLeft;
+            _title.fontStyle = FontStyle.Bold;
+            _detail = CreateText(root.transform, "Detail", Vector2.zero, new Vector2(1f, 0.46f), theme.SkillDetailDp);
+            _detail.alignment = TextAnchor.MiddleLeft;
+            _compatibility = CreateText(root.transform, "Compatibility", new Vector2(0.72f, 0.48f), Vector2.one, theme.SkillDetailDp);
+            _compatibility.alignment = TextAnchor.MiddleRight;
+            _compatibility.fontStyle = FontStyle.Bold;
             Layout();
         }
 
@@ -88,7 +104,13 @@ namespace Dovus.Game
             float hold = _tuning != null ? _tuning.SkillPreviewHoldSec : 0.9f;
             if (drawing || newCast)
                 _visibleUntil = Time.unscaledTime + hold;
-            _group.alpha = Mathf.Clamp01((_visibleUntil - Time.unscaledTime) / FadeSec);
+            HudTheme theme = HudTheme.Current;
+            bool visible = _visibleUntil > Time.unscaledTime;
+            if (visible && !_wasVisible)
+                UiJuice.PunchScale(_rect, theme.SkillCardPopScale, theme.JuiceSec * 1.4f);
+            _wasVisible = visible;
+            _group.alpha = Mathf.Clamp01(
+                (_visibleUntil - Time.unscaledTime) / Mathf.Max(0.01f, theme.SkillCardFadeSec));
 
             int elementId = _manifestation?.SelectedElementPaint?.Id ?? 0;
             string weaponId = _manifestation?.EquippedWeapon?.Id ?? string.Empty;
@@ -106,7 +128,8 @@ namespace Dovus.Game
             {
                 int verbId = (int)state.Words[0].Rune;
                 SkillResolution preview = _motor.Resolve(new[] { verbId });
-                SetPreview(preview.VerbName, "ikinci rün: sıfat seç", Color.cyan);
+                SetPreview(preview.VerbName, "İkinci rünü çiz: sıfat davranışı ve silüeti değiştirir.",
+                    theme.SkillNeutralColor, "FİİL HAZIR");
                 return;
             }
 
@@ -129,12 +152,13 @@ namespace Dovus.Game
             if (skill == null)
                 return;
 
-            Color color = skill.Weapon.Compatible ? Color.green : Color.yellow;
-            string compatibility = skill.Weapon.Compatible ? "uyumlu" : "uyumsuz ×0.8 / cast ×1.2";
+            Color color = skill.Weapon.Compatible ? theme.SkillCompatibleColor : theme.SkillMismatchColor;
+            string compatibility = skill.Weapon.Compatible ? "UYUMLU" : "UYUMSUZ  ×0.8";
             string prose = !string.IsNullOrEmpty(skill.Resolution.SkillJob)
                 ? skill.Resolution.SkillJob
                 : skill.Resolution.ProseFeel;
-            SetPreview(skill.DisplayName, compatibility + " · " + prose, color);
+            string detail = skill.Weapon.Compatible ? prose : "Cast ×1.2  ·  " + prose;
+            SetPreview(skill.DisplayName, detail, color, compatibility);
         }
 
         void Layout()
@@ -159,14 +183,16 @@ namespace Dovus.Game
             _rect.anchoredPosition = new Vector2(x, y);
         }
 
-        void SetPreview(string title, string detail, Color color)
+        void SetPreview(string title, string detail, Color color, string compatibility)
         {
-            if (_title == null || _detail == null)
+            if (_title == null || _detail == null || _compatibility == null)
                 return;
             _title.text = title ?? string.Empty;
             _detail.text = detail ?? string.Empty;
-            _title.color = color;
-            _detail.color = new Color(color.r, color.g, color.b, 0.9f);
+            _compatibility.text = compatibility ?? string.Empty;
+            _title.color = HudTheme.Current.PrimaryTextColor;
+            _detail.color = HudTheme.Current.SecondaryTextColor;
+            _compatibility.color = color;
             if (_accent != null)
                 _accent.color = color;
         }
@@ -176,7 +202,7 @@ namespace Dovus.Game
             string objectName,
             Vector2 anchorMin,
             Vector2 anchorMax,
-            int fontSize)
+            float fontSizeDp)
         {
             var go = new GameObject(objectName);
             go.transform.SetParent(parent, false);
@@ -184,12 +210,14 @@ namespace Dovus.Game
             var rect = go.AddComponent<RectTransform>();
             rect.anchorMin = anchorMin;
             rect.anchorMax = anchorMax;
-            rect.offsetMin = new Vector2(8f, 2f);
-            rect.offsetMax = new Vector2(-8f, -2f);
+            float pad = HexagonLayoutScreen.DpToPixels(HudTheme.Current.SkillCardPaddingDp);
+            rect.offsetMin = new Vector2(pad, HexagonLayoutScreen.DpToPixels(2f));
+            rect.offsetMax = new Vector2(-pad, -HexagonLayoutScreen.DpToPixels(2f));
             var text = go.AddComponent<Text>();
             text.font = HudTheme.LegacyFont;
             if (text.font == null)
                 text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            int fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(fontSizeDp));
             text.fontSize = fontSize;
             text.alignment = TextAnchor.MiddleCenter;
             text.horizontalOverflow = HorizontalWrapMode.Wrap;

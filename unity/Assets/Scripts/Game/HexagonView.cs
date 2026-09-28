@@ -16,8 +16,10 @@ namespace Dovus.Game
         RuneLoadout _loadout;
         RectTransform[] _dots;
         Image[] _dotImages;
+        Image[] _dotRims;
         Text[] _dotLabels;
         Sprite[] _dotIcons;
+        float[] _dotHighlightUntil;
         RectTransform[] _cdRings;
         Image[] _cdFills;
         Text[] _cdLabels;
@@ -29,8 +31,13 @@ namespace Dovus.Game
         GameClock _cdClock;
         RectTransform _center;
         RectTransform _dodge;
+        Image _centerFace;
         Text _centerLabel;
         Text _dodgeLabel;
+        RectTransform _tray;
+        RectTransform _trayEdge;
+        Text _trayTitle;
+        RectTransform[] _trayLinks;
         Canvas _canvas;
 
         public Canvas Canvas => _canvas;
@@ -63,11 +70,14 @@ namespace Dovus.Game
             var fallback = CreateCircleSprite();
             // Solid disc — radial fillAmount ile klasik cooldown pie (halka sprite fill'de silik kalıyordu).
             var ringSprite = fallback;
+            BuildCombatTrayBackdrop(canvasGo.transform);
             int n = Dovus.Core.Grammar.HexagonLayout.DotCount;
             _dots = new RectTransform[n + 1];
             _dotImages = new Image[n + 1];
+            _dotRims = new Image[n + 1];
             _dotLabels = new Text[n + 1];
             _dotIcons = new Sprite[n + 1];
+            _dotHighlightUntil = new float[n + 1];
             _cdRings = new RectTransform[n + 1];
             _cdFills = new Image[n + 1];
             _cdLabels = new Text[n + 1];
@@ -77,23 +87,22 @@ namespace Dovus.Game
             _cdTracked = new bool[n + 1];
             for (int dot = 1; dot <= n; dot++)
             {
-                // v6 rünleri element değildir; eski ateş/su ikonlarına geri düşme.
-                _dotIcons[dot] = null;
+                int runeId = RuneIdAt(dot);
+                _dotIcons[dot] = RuneIconCatalog.Get(runeId);
                 Sprite icon = _dotIcons[dot] != null ? _dotIcons[dot] : fallback;
                 Color col = _dotIcons[dot] != null ? DotColor(dot) : RuneFallbackColor(dot);
                 _dots[dot] = CreateLayeredDisc(
                     $"Dot{dot}", icon, fallback, col, canvasGo.transform, out _dotImages[dot],
                     RimColorForDot(dot));
-                if (_dotIcons[dot] == null)
-                {
-                    var label = CreateLabel(_dots[dot], DotGlyph(dot));
-                    _dotLabels[dot] = label;
-                    label.fontSize = 14;
-                    label.color = new Color(0.06f, 0.08f, 0.1f, 0.95f);
-                    var outline = label.gameObject.AddComponent<Outline>();
-                    outline.effectColor = new Color(1f, 1f, 1f, 0.35f);
-                    outline.effectDistance = new Vector2(1f, -1f);
-                }
+                _dotRims[dot] = _dots[dot].Find("Rim")?.GetComponent<Image>();
+                var label = CreateLabel(_dots[dot], DotGlyph(dot));
+                _dotLabels[dot] = label;
+                label.enabled = _dotIcons[dot] == null;
+                label.fontSize = 14;
+                label.color = new Color(0.92f, 0.97f, 1f, 0.98f);
+                var outline = label.gameObject.AddComponent<Outline>();
+                outline.effectColor = new Color(0f, 0f, 0f, 0.85f);
+                outline.effectDistance = new Vector2(1f, -1f);
             }
 
             // Radial örtü ikon ÜSTÜNDE (klasik pie); sn sayısı en üstte.
@@ -101,7 +110,7 @@ namespace Dovus.Game
                 CreateCooldownOverlay(dot, ringSprite, canvasGo.transform, underDots: false);
 
             _center = CreateLayeredDisc(
-                "Center", fallback, fallback, _tuning.HexagonCenterColor, canvasGo.transform, out _,
+                "Center", fallback, fallback, _tuning.HexagonCenterColor, canvasGo.transform, out _centerFace,
                 new Color(0.85f, 0.98f, 1f, 0.55f));
             _centerLabel = CreateLabel(_center, "⚔");
             _centerLabel.fontSize = 28;
@@ -146,8 +155,7 @@ namespace Dovus.Game
             if (_dotLabels == null)
                 return;
             for (int dot = 1; dot < _dotLabels.Length; dot++)
-                if (_dotLabels[dot] != null)
-                    _dotLabels[dot].text = DotGlyph(dot);
+                ApplyDotIdentity(dot);
         }
 
         /// <summary>
@@ -211,6 +219,11 @@ namespace Dovus.Game
             RectTransform target = dot == 0 ? _center : (_dots != null && dot > 0 && dot < _dots.Length ? _dots[dot] : null);
             HudTheme th = HudTheme.Current;
             UiJuice.PunchScale(target, th.PressScale, th.JuiceSec);
+            if (dot > 0 && _dotHighlightUntil != null && dot < _dotHighlightUntil.Length)
+            {
+                _dotHighlightUntil[dot] = Time.unscaledTime + th.RuneHighlightSec;
+                UiJuice.PunchScale(target, th.RuneHighlightScale, th.JuiceSec * 1.35f);
+            }
         }
 
         void TickCooldowns()
@@ -294,7 +307,7 @@ namespace Dovus.Game
 
                 fill.fillAmount = Mathf.Clamp01(rem / dur);
                 // Koyu radial örtü — ikon üstünde net okunur.
-                fill.color = new Color(0.05f, 0.12f, 0.18f, 0.72f);
+                fill.color = HudTheme.Current.CooldownOverlayColor;
                 fill.SetAllDirty();
                 if (label != null)
                 {
@@ -381,6 +394,7 @@ namespace Dovus.Game
                         : RuneFallbackColor(dot);
                     _dotImages[dot].color = IsDotUnavailable(dot) ? col * HudTheme.Current.DisabledTint : col;
                 }
+                RefreshDotRim(dot);
 
                 if (_cdRings != null && _cdRings[dot] != null)
                     Place(_cdRings[dot], px, diam * 1.05f, w, h);
@@ -403,12 +417,14 @@ namespace Dovus.Game
                 _dodgeLabel.fontSize = Mathf.RoundToInt(dodgeR * 0.38f);
             _dodge.SetAsLastSibling();
             LayoutWeaponSwapButton(w, h);
+            LayoutCombatTray(c, dotR);
         }
 
         Color RimColorForDot(int dot)
         {
-            Color c = RuneFallbackColor(dot);
-            return new Color(c.r * 1.15f, c.g * 1.15f, c.b * 1.15f, 0.65f);
+            Color c = HudTheme.Current.RuneAccent(RuneIdAt(dot));
+            c.a = _tuning.IsDotOpen(dot) ? 0.82f : 0.25f;
+            return c;
         }
 
         Color RuneFallbackColor(int dot)
@@ -420,7 +436,7 @@ namespace Dovus.Game
 
         string DotGlyph(int dot)
         {
-            int runeId = _loadout != null ? _loadout.RuneIdAtSlot(dot) : dot;
+            int runeId = RuneIdAt(dot);
             string name = _skills != null ? _skills.RuneName(runeId) : RuneInfo.DisplayName((Rune)runeId);
             if (string.IsNullOrEmpty(name))
                 return runeId.ToString();
@@ -433,7 +449,9 @@ namespace Dovus.Game
             if (_dotIcons != null && _dotIcons[dot] != null)
             {
                 float a = _tuning.IsDotOpen(dot) ? 1f : 0.28f;
-                return new Color(1f, 1f, 1f, a);
+                Color tint = HudTheme.Current.RuneFaceTint;
+                tint.a *= a;
+                return tint;
             }
 
             Color c = _tuning.HexagonDotColor;
@@ -442,111 +460,163 @@ namespace Dovus.Game
             return new Color(c.r, c.g, c.b, c.a * 0.28f);
         }
 
-        static Sprite TryCreateIconSprite(int dot)
+        int RuneIdAt(int dot) =>
+            _loadout != null ? _loadout.RuneIdAtSlot(dot) : dot;
+
+        void ApplyDotIdentity(int dot)
         {
-            // element-sistemi.json çekirdek: Ateş Su Hava Toprak Aydınlık Karanlık
-            string name = dot switch
+            if (_dotImages == null || dot <= 0 || dot >= _dotImages.Length)
+                return;
+            _dotIcons[dot] = RuneIconCatalog.Get(RuneIdAt(dot));
+            Image face = _dotImages[dot];
+            if (face != null)
             {
-                1 => "Concept/icon-fire",
-                2 => "Concept/icon-water",
-                3 => "Concept/icon-air", // Hava — lightning ikonu YASAK (yıldırım hissi)
-                4 => "Concept/icon-earth",
-                5 => "Concept/icon-light",
-                6 => "Concept/icon-dark",
-                _ => null
-            };
-            if (string.IsNullOrEmpty(name))
-                return null;
-
-            var tex = Resources.Load<Texture2D>(name);
-            if (tex == null)
-            {
-                // Hava asset yoksa prosedürel rüzgâr — lightning'e düşme.
-                if (dot == 3)
-                    return CreateAirSwirlSprite();
-                return null;
+                face.sprite = _dotIcons[dot] != null ? _dotIcons[dot] : CreateCircleSprite();
+                face.color = _dotIcons[dot] != null ? DotColor(dot) : RuneFallbackColor(dot);
             }
-
-            // Concept PNG'lerde siyah kare zemin var — yakındaki siyahı alfa yap.
-            Texture2D punched = PunchNearBlackToAlpha(tex);
-            return Sprite.Create(
-                punched,
-                new Rect(0f, 0f, punched.width, punched.height),
-                new Vector2(0.5f, 0.5f),
-                100f);
+            if (_dotLabels != null && _dotLabels[dot] != null)
+            {
+                _dotLabels[dot].enabled = _dotIcons[dot] == null;
+                _dotLabels[dot].text = DotGlyph(dot);
+            }
+            RefreshDotRim(dot);
         }
 
-        /// <summary>Hava rünü — yumuşak rüzgâr halkaları (yıldırım değil).</summary>
-        static Sprite CreateAirSwirlSprite()
+        void RefreshDotRim(int dot)
         {
-            const int size = 128;
-            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
-            tex.wrapMode = TextureWrapMode.Clamp;
-            float cx = (size - 1) * 0.5f;
-            float cy = (size - 1) * 0.5f;
-            float rMax = cx * 0.92f;
+            if (_dotRims == null || dot <= 0 || dot >= _dotRims.Length || _dotRims[dot] == null)
+                return;
+            Color baseColor = RimColorForDot(dot);
+            bool hot = _dotHighlightUntil != null && Time.unscaledTime < _dotHighlightUntil[dot];
+            if (hot)
+            {
+                float pulse = UiJuice.Pulse01(8f);
+                Color bright = Color.Lerp(baseColor, Color.white, 0.55f + pulse * 0.25f);
+                bright.a = 0.92f;
+                _dotRims[dot].color = bright;
+            }
+            else
+            {
+                _dotRims[dot].color = baseColor;
+            }
+        }
+
+        void BuildCombatTrayBackdrop(Transform parent)
+        {
+            HudTheme th = HudTheme.Current;
+            var go = new GameObject("CombatRuneTray");
+            go.transform.SetParent(parent, false);
+            _tray = go.AddComponent<RectTransform>();
+            var image = go.AddComponent<Image>();
+            image.sprite = CreateRoundedRectSprite(_tuning.CombatTrayCornerRadiusDp);
+            image.type = Image.Type.Sliced;
+            image.color = th.PanelSoftColor;
+            image.raycastTarget = false;
+            var shadow = go.AddComponent<Shadow>();
+            shadow.effectColor = new Color(0f, 0f, 0f, 0.55f);
+            shadow.effectDistance = new Vector2(0f, -HexagonLayoutScreen.DpToPixels(th.PanelShadowDp));
+            var outline = go.AddComponent<Outline>();
+            outline.effectColor = th.PanelEdgeColor;
+            float outlinePx = HexagonLayoutScreen.DpToPixels(th.PanelOutlineDp);
+            outline.effectDistance = new Vector2(outlinePx, -outlinePx);
+
+            var edgeGo = new GameObject("AccentEdge");
+            edgeGo.transform.SetParent(go.transform, false);
+            _trayEdge = edgeGo.AddComponent<RectTransform>();
+            _trayEdge.anchorMin = new Vector2(0f, 1f);
+            _trayEdge.anchorMax = new Vector2(1f, 1f);
+            _trayEdge.pivot = new Vector2(0.5f, 1f);
+            _trayEdge.sizeDelta = new Vector2(0f, HexagonLayoutScreen.DpToPixels(th.TrayAccentHeightDp));
+            var edge = edgeGo.AddComponent<Image>();
+            edge.color = th.SkillNeutralColor;
+            edge.raycastTarget = false;
+
+            _trayTitle = CreateLabel(_tray, "RÜN ZİNCİRİ  ·  ÇİZ / BIRAK");
+            _trayTitle.fontStyle = FontStyle.Bold;
+            _trayTitle.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(th.RuneTrayTitleDp));
+            _trayTitle.alignment = TextAnchor.UpperLeft;
+            _trayTitle.color = th.ControlCaptionColor;
+            _trayTitle.rectTransform.offsetMin = new Vector2(HexagonLayoutScreen.DpToPixels(th.TrayTitleInsetDp), 0f);
+            _trayTitle.rectTransform.offsetMax = new Vector2(0f, -HexagonLayoutScreen.DpToPixels(th.TrayTitleTopDp));
+
+            _trayLinks = new RectTransform[Dovus.Core.Grammar.HexagonLayout.DotCount];
+            for (int i = 0; i < _trayLinks.Length; i++)
+            {
+                var linkGo = new GameObject("HexLink" + (i + 1));
+                linkGo.transform.SetParent(parent, false);
+                _trayLinks[i] = linkGo.AddComponent<RectTransform>();
+                var link = linkGo.AddComponent<Image>();
+                Color c = th.PanelEdgeColor;
+                c.a *= 0.72f;
+                link.color = c;
+                link.raycastTarget = false;
+            }
+        }
+
+        void LayoutCombatTray(Vector2 center, float dotRadius)
+        {
+            if (_tray == null)
+                return;
+            float padding = HexagonLayoutScreen.DpToPixels(_tuning.CombatTrayPaddingDp);
+            float header = HexagonLayoutScreen.DpToPixels(_tuning.CombatTrayHeaderHeightDp);
+            float radius = HexagonLayoutScreen.RadiusPx(_tuning);
+            float width = (radius + dotRadius + padding) * 2f;
+            float height = width + header;
+            Rect safe = HexagonLayoutScreen.SafeRectPx();
+            float x = Mathf.Clamp(center.x, safe.xMin + width * 0.5f, safe.xMax - width * 0.5f);
+            float y = Mathf.Clamp(center.y + header * 0.5f, safe.yMin + height * 0.5f, safe.yMax - height * 0.5f);
+            _tray.anchorMin = Vector2.zero;
+            _tray.anchorMax = Vector2.zero;
+            _tray.pivot = new Vector2(0.5f, 0.5f);
+            _tray.sizeDelta = new Vector2(width, height);
+            _tray.anchoredPosition = new Vector2(x, y);
+            _tray.SetAsFirstSibling();
+
+            if (_trayLinks == null)
+                return;
+            for (int i = 0; i < _trayLinks.Length; i++)
+            {
+                Vector2 a = HexagonLayoutScreen.DotPx(i + 1, _tuning, Screen.width, Screen.height);
+                Vector2 b = HexagonLayoutScreen.DotPx((i + 1) % _trayLinks.Length + 1, _tuning, Screen.width, Screen.height);
+                LayoutLink(_trayLinks[i], a, b, HexagonLayoutScreen.DpToPixels(_tuning.CombatTrayLinkWidthDp));
+            }
+        }
+
+        static Sprite _roundedRectSprite;
+
+        static Sprite CreateRoundedRectSprite(float cornerRadiusDp)
+        {
+            if (_roundedRectSprite != null)
+                return _roundedRectSprite;
+            const int size = 64;
+            float radius = Mathf.Clamp(cornerRadiusDp, 4f, size * 0.45f);
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            texture.wrapMode = TextureWrapMode.Clamp;
             for (int y = 0; y < size; y++)
             for (int x = 0; x < size; x++)
             {
-                float dx = x - cx;
-                float dy = y - cy;
-                float distPx = Mathf.Sqrt(dx * dx + dy * dy);
-                float aDisc = Mathf.Clamp01(rMax - distPx + 0.5f);
-                if (aDisc <= 0f)
-                {
-                    tex.SetPixel(x, y, Color.clear);
-                    continue;
-                }
-
-                float dist = distPx / cx;
-                float ang = Mathf.Atan2(dy, dx);
-                float band1 = Mathf.Exp(-Mathf.Pow((dist - 0.42f) / 0.07f, 2f))
-                    * Mathf.Clamp01(Mathf.Cos(ang * 2f + 0.4f) + 0.35f);
-                float band2 = Mathf.Exp(-Mathf.Pow((dist - 0.62f) / 0.06f, 2f))
-                    * Mathf.Clamp01(Mathf.Cos(ang * 2f - 1.1f) + 0.25f);
-                float band3 = Mathf.Exp(-Mathf.Pow((dist - 0.24f) / 0.05f, 2f)) * 0.55f;
-                float ink = Mathf.Clamp01(band1 * 0.95f + band2 * 0.85f + band3);
-
-                // Disk: muted teal; şeritler daha açık.
-                Color baseCol = new Color(0.42f, 0.62f, 0.55f, aDisc);
-                Color swirl = new Color(0.82f, 0.96f, 0.90f, ink * aDisc);
-                Color mixed = Color.Lerp(baseCol, swirl, swirl.a);
-                mixed.a = Mathf.Max(baseCol.a, swirl.a);
-                tex.SetPixel(x, y, mixed);
+                float cx = Mathf.Clamp(x, radius, size - 1 - radius);
+                float cy = Mathf.Clamp(y, radius, size - 1 - radius);
+                float dist = Vector2.Distance(new Vector2(x, y), new Vector2(cx, cy));
+                texture.SetPixel(x, y, new Color(1f, 1f, 1f, Mathf.Clamp01(radius - dist + 0.5f)));
             }
-
-            tex.Apply(false, true);
-            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f);
+            texture.Apply(false, true);
+            int border = Mathf.RoundToInt(radius);
+            _roundedRectSprite = Sprite.Create(
+                texture, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), 100f,
+                0, SpriteMeshType.FullRect, new Vector4(border, border, border, border));
+            return _roundedRectSprite;
         }
 
-        /// <summary>Siyah/koyu kare zemini şeffafa çevirir (ikonlar yuvarlak diskte okunur kalsın).</summary>
-        static Texture2D PunchNearBlackToAlpha(Texture2D src)
+        static void LayoutLink(RectTransform rect, Vector2 from, Vector2 to, float width)
         {
-            int w = src.width;
-            int h = src.height;
-            var dst = new Texture2D(w, h, TextureFormat.RGBA32, false);
-            Color32[] px;
-            try
-            {
-                px = src.GetPixels32();
-            }
-            catch
-            {
-                // Read/Write kapalı asset — olduğu gibi kullan.
-                return src;
-            }
-
-            const byte thresh = 28;
-            for (int i = 0; i < px.Length; i++)
-            {
-                Color32 c = px[i];
-                if (c.r <= thresh && c.g <= thresh && c.b <= thresh)
-                    px[i] = new Color32(0, 0, 0, 0);
-            }
-
-            dst.SetPixels32(px);
-            dst.Apply(false, true);
-            return dst;
+            Vector2 delta = to - from;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.zero;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = (from + to) * 0.5f;
+            rect.sizeDelta = new Vector2(delta.magnitude, Mathf.Max(1f, width));
+            rect.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(delta.y, delta.x) * Mathf.Rad2Deg);
         }
 
         static void Place(RectTransform rt, Vector2 screenPx, float diameterPx, int screenW, int screenH)

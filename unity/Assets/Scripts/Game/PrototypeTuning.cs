@@ -63,13 +63,13 @@ namespace Dovus.Game
         // T6.2: merkez X, dodge düğmesi sağ kenardan taşmasın diye 0.78'den içeri alındı.
         [Header("Altıgen (§2)")]
         // Biraz içeri: sağda dodge + çizim boşluğu kalsın.
-        public float HexagonCenterXNorm = 0.68f;
+        public float HexagonCenterXNorm = 0.70f;
         // Sağ-alt; FittedRadiusPx alt rünleri safe içinde tutar.
-        public float HexagonCenterYNorm = 0.32f;
+        public float HexagonCenterYNorm = 0.30f;
         // Komşu rün kenar boşluğu ≈ radius − 2·dotR (≥40dp çizim koridoru).
-        public float HexagonRadiusDp = 108f;
-        public float DotHitRadiusDp = 30f;
-        public float CenterHitRadiusDp = 32f;
+        public float HexagonRadiusDp = 112f;
+        public float DotHitRadiusDp = 34f;
+        public float CenterHitRadiusDp = 38f;
         public bool MirrorForLeftHand = false;
         public float InkLingerSec = 0.40f;
         public float InkWidthDp = 3.5f;
@@ -78,22 +78,28 @@ namespace Dovus.Game
         [Header("Dodge düğmesi (§2, T6.2)")]
         public float DodgeButtonOffsetXDp = 0f;
         public float DodgeButtonOffsetYDp = 0f;
-        public float DodgeButtonRadiusDp = 36f;
+        public float DodgeButtonRadiusDp = 40f;
         public float DodgeButtonScreenMarginDp = 10f;
         /// <summary>Hex kenarı ile dodge yüzeyi arası (dp).</summary>
         public float DodgeClearanceDp = 40f;
 
         // weapon_skill_interaction.swap: dodge'un altıgene göre simetriği (sol-alt).
         [Header("Silah swap düğmesi (v6 swap)")]
-        public float WeaponSwapButtonRadiusDp = 28f;
+        public float WeaponSwapButtonRadiusDp = 36f;
         public float WeaponSwapButtonOffsetXDp = 0f;
         public float WeaponSwapButtonOffsetYDp = 0f;
+        [Range(0.4f, 1f), Tooltip("Swap yüzü içindeki silah ikonunun çap oranı.")]
+        public float WeaponSwapIconScale = 0.72f;
 
         [Header("Element radial (v6.1.1)")]
         /// <summary>JSON yalnız 6 konum/300 ms verir; ekran yarıçapı için prototip varsayılanı.</summary>
         public float ElementMenuRadiusDp = 92f;
-        public float ElementMenuChipWidthDp = 126f;
-        public float ElementMenuChipHeightDp = 44f;
+        public float ElementMenuChipWidthDp = 144f;
+        public float ElementMenuChipHeightDp = 48f;
+        public float ElementMenuItemWidthDp = 84f;
+        public float ElementMenuItemHeightDp = 48f;
+        [Range(0f, 1f)] public float ElementMenuAnchorXNorm = 0.16f;
+        [Range(0f, 1f)] public float ElementMenuAnchorYNorm = 0.27f;
 
         // §5: merkez bir kelime değil düğme; hangi fiille vurduğu veridir (prototipte 1/Ateş).
         [Header("Düz vuruş (§5, T6.2)")]
@@ -111,6 +117,11 @@ namespace Dovus.Game
         [Header("Altıgen ikon")]
         // 1.0 — görsel disk hit'ten şişmesin, komşu boşluğu yemesin.
         public float IconDisplayScale = 1.0f;
+        [Tooltip("Altıgeni gruplayan cam tepsinin rune halkasına ek boşluğu.")]
+        public float CombatTrayPaddingDp = 22f;
+        public float CombatTrayHeaderHeightDp = 22f;
+        public float CombatTrayCornerRadiusDp = 20f;
+        public float CombatTrayLinkWidthDp = 1.5f;
 
         // Spec'te sayı yok — ayrık onay tıkırtısı (§2); Handheld.Vibrate ~500 ms üst üste biniyordu.
         [Header("Dokunsal (§2)")]
@@ -308,12 +319,14 @@ namespace Dovus.Game
         // §6/§11 "boss ve oyuncu can göstergesi, sade". Ölçüler dp (altıgen/dodge diskiyle
         // aynı yol: HexagonLayoutScreen.DpToPixels). Boss barı T12'den beri BossVitals okur.
         [Header("Can göstergesi (T9, VitalsHud)")]
-        public float VitalsBarWidthDp = 210f;
-        public float VitalsBarHeightDp = 15f;
-        public float VitalsBossBarHeightDp = 20f;
-        public float VitalsBossBarWidthDp = 420f;
+        public float VitalsBarWidthDp = 224f;
+        public float VitalsBarHeightDp = 17f;
+        public float VitalsBossBarHeightDp = 24f;
+        public float VitalsBossBarWidthDp = 460f;
         public float VitalsBarSpacingDp = 6f;
         public float VitalsMarginDp = 16f;
+        public float VitalsHeaderHeightDp = 18f;
+        public float VitalsPanelPaddingDp = 8f;
         public Color BossVitalsColor = new Color(0.88f, 0.16f, 0.12f, 0.98f);
 
         [Header("Status ikon şeridi")]
@@ -358,10 +371,16 @@ namespace Dovus.Game
         // v6 7a: önizleme altıgenin hemen üstünde durur, ekran ortasını kapatmaz. Genişlik/boşluk
         // spec'te yok (durum.md); bekleme FeelTuning.ReadoutHoldMs (900) varsayılanından.
         [Header("Skill önizleme (v6 7a, SkillPreviewHud)")]
-        public float SkillPreviewWidthDp = 300f;
-        public float SkillPreviewHeightDp = 58f;
+        public float SkillPreviewWidthDp = 324f;
+        public float SkillPreviewHeightDp = 72f;
         public float SkillPreviewGapDp = 10f;
         public float SkillPreviewHoldSec = 0.9f;
+
+        [Header("Pasif yuvaları (Combat HUD)")]
+        public float PassiveHudWidthDp = 224f;
+        public float PassiveSlotHeightDp = 34f;
+        public float PassiveSlotGapDp = 6f;
+        public float PassiveHudGapBelowVitalsDp = 46f;
 
         [Header("Build seçimi (v6 7b, BuildSelectScreen)")]
         public bool SkipBuildSelectOnStart = false;
@@ -375,7 +394,7 @@ namespace Dovus.Game
         // tasarımcının bilinçli 0'ı (ör. nabzı kapatmak) artık ezilmez (T8.1).
         [HideInInspector] public int TuningVersion = CurrentVersion;
 
-        const int CurrentVersion = 16;
+        const int CurrentVersion = 17;
 
         /// <summary>Sürümü geçmiş serileşmiş kopyayı bu sürümün varsayılanlarına çeker.</summary>
         public void EnsureRuntimeDefaults()
@@ -399,20 +418,37 @@ namespace Dovus.Game
             if (SoftAimConeDeg <= 0.01f) SoftAimConeDeg = 70f;
             if (OrbitDegreesPerDp <= 0.01f) OrbitDegreesPerDp = 0.35f;
             if (StatusIconSizeDp <= 0.01f) StatusIconSizeDp = 28f;
-            if (VitalsBossBarWidthDp <= 0.01f) VitalsBossBarWidthDp = 420f;
-            if (VitalsBossBarHeightDp <= 0.01f) VitalsBossBarHeightDp = 20f;
+            if (VitalsBossBarWidthDp <= 0.01f) VitalsBossBarWidthDp = 460f;
+            if (VitalsBossBarHeightDp <= 0.01f) VitalsBossBarHeightDp = 24f;
+            if (VitalsHeaderHeightDp <= 0.01f) VitalsHeaderHeightDp = 18f;
+            if (VitalsPanelPaddingDp <= 0.01f) VitalsPanelPaddingDp = 8f;
             if (DamageFloatFontDp <= 0.01f) DamageFloatFontDp = 28f;
-            if (HexagonRadiusDp <= 0.01f) HexagonRadiusDp = 108f;
-            if (SkillPreviewWidthDp <= 0.01f) SkillPreviewWidthDp = 300f;
-            if (SkillPreviewHeightDp <= 0.01f) SkillPreviewHeightDp = 58f;
+            if (HexagonRadiusDp <= 0.01f) HexagonRadiusDp = 112f;
+            if (SkillPreviewWidthDp <= 0.01f) SkillPreviewWidthDp = 324f;
+            if (SkillPreviewHeightDp <= 0.01f) SkillPreviewHeightDp = 72f;
             if (SkillPreviewGapDp <= 0.01f) SkillPreviewGapDp = 10f;
             if (SkillPreviewHoldSec <= 0.01f) SkillPreviewHoldSec = 0.9f;
-            if (DotHitRadiusDp <= 0.01f) DotHitRadiusDp = 30f;
-            if (CenterHitRadiusDp <= 0.01f) CenterHitRadiusDp = 32f;
-            if (DodgeButtonRadiusDp <= 0.01f) DodgeButtonRadiusDp = 36f;
-            if (WeaponSwapButtonRadiusDp <= 0.01f) WeaponSwapButtonRadiusDp = 28f;
+            if (DotHitRadiusDp <= 0.01f) DotHitRadiusDp = 34f;
+            if (CenterHitRadiusDp <= 0.01f) CenterHitRadiusDp = 38f;
+            if (DodgeButtonRadiusDp <= 0.01f) DodgeButtonRadiusDp = 40f;
+            if (WeaponSwapButtonRadiusDp <= 0.01f) WeaponSwapButtonRadiusDp = 36f;
             if (DodgeClearanceDp <= 0.01f) DodgeClearanceDp = 40f;
             if (IconDisplayScale <= 0.01f) IconDisplayScale = 1.0f;
+            if (WeaponSwapIconScale <= 0.01f) WeaponSwapIconScale = 0.72f;
+            if (CombatTrayPaddingDp <= 0.01f) CombatTrayPaddingDp = 22f;
+            if (CombatTrayHeaderHeightDp <= 0.01f) CombatTrayHeaderHeightDp = 22f;
+            if (CombatTrayCornerRadiusDp <= 0.01f) CombatTrayCornerRadiusDp = 20f;
+            if (CombatTrayLinkWidthDp <= 0.01f) CombatTrayLinkWidthDp = 1.5f;
+            if (ElementMenuChipWidthDp <= 0.01f) ElementMenuChipWidthDp = 144f;
+            if (ElementMenuChipHeightDp <= 0.01f) ElementMenuChipHeightDp = 48f;
+            if (ElementMenuItemWidthDp <= 0.01f) ElementMenuItemWidthDp = 84f;
+            if (ElementMenuItemHeightDp <= 0.01f) ElementMenuItemHeightDp = 48f;
+            if (ElementMenuAnchorXNorm <= 0.01f) ElementMenuAnchorXNorm = 0.16f;
+            if (ElementMenuAnchorYNorm <= 0.01f) ElementMenuAnchorYNorm = 0.27f;
+            if (PassiveHudWidthDp <= 0.01f) PassiveHudWidthDp = 224f;
+            if (PassiveSlotHeightDp <= 0.01f) PassiveSlotHeightDp = 34f;
+            if (PassiveSlotGapDp <= 0.01f) PassiveSlotGapDp = 6f;
+            if (PassiveHudGapBelowVitalsDp <= 0.01f) PassiveHudGapBelowVitalsDp = 46f;
             if (PlayerVisualHeightM <= 0.01f) PlayerVisualHeightM = 1.78f;
             if (BossVisualHeightM <= 0.01f) BossVisualHeightM = 5.0f;
             if (CharacterAnimSpeed <= 0.01f) CharacterAnimSpeed = 1.0f;
@@ -483,6 +519,7 @@ namespace Dovus.Game
             VitalsBarHeightDp = fresh.VitalsBarHeightDp;
             VitalsBarSpacingDp = fresh.VitalsBarSpacingDp;
             VitalsMarginDp = fresh.VitalsMarginDp;
+            VitalsHeaderHeightDp = fresh.VitalsHeaderHeightDp;
             BossVitalsColor = fresh.BossVitalsColor;
 
             // T11.1: kilit HUD ölçüleri.
@@ -528,6 +565,7 @@ namespace Dovus.Game
             VitalsBarHeightDp = fresh.VitalsBarHeightDp;
             VitalsBossBarHeightDp = fresh.VitalsBossBarHeightDp;
             VitalsBossBarWidthDp = fresh.VitalsBossBarWidthDp;
+            VitalsHeaderHeightDp = fresh.VitalsHeaderHeightDp;
             StatusIconSizeDp = fresh.StatusIconSizeDp;
             StatusIconGapDp = fresh.StatusIconGapDp;
             OrbitDegreesPerDp = fresh.OrbitDegreesPerDp;
@@ -621,6 +659,38 @@ namespace Dovus.Game
             ColorContrast = fresh.ColorContrast;
             ColorSaturation = fresh.ColorSaturation;
             PostVignetteIntensity = fresh.PostVignetteIntensity;
+
+            // v17: premium combat HUD — 44dp+ kontroller, ikonlu tepsi ve pasif yuvaları.
+            HexagonCenterXNorm = fresh.HexagonCenterXNorm;
+            HexagonCenterYNorm = fresh.HexagonCenterYNorm;
+            HexagonRadiusDp = fresh.HexagonRadiusDp;
+            DotHitRadiusDp = fresh.DotHitRadiusDp;
+            CenterHitRadiusDp = fresh.CenterHitRadiusDp;
+            DodgeButtonRadiusDp = fresh.DodgeButtonRadiusDp;
+            WeaponSwapButtonRadiusDp = fresh.WeaponSwapButtonRadiusDp;
+            WeaponSwapIconScale = fresh.WeaponSwapIconScale;
+            CombatTrayPaddingDp = fresh.CombatTrayPaddingDp;
+            CombatTrayHeaderHeightDp = fresh.CombatTrayHeaderHeightDp;
+            CombatTrayCornerRadiusDp = fresh.CombatTrayCornerRadiusDp;
+            CombatTrayLinkWidthDp = fresh.CombatTrayLinkWidthDp;
+            ElementMenuChipWidthDp = fresh.ElementMenuChipWidthDp;
+            ElementMenuChipHeightDp = fresh.ElementMenuChipHeightDp;
+            ElementMenuItemWidthDp = fresh.ElementMenuItemWidthDp;
+            ElementMenuItemHeightDp = fresh.ElementMenuItemHeightDp;
+            ElementMenuAnchorXNorm = fresh.ElementMenuAnchorXNorm;
+            ElementMenuAnchorYNorm = fresh.ElementMenuAnchorYNorm;
+            VitalsBarWidthDp = fresh.VitalsBarWidthDp;
+            VitalsBarHeightDp = fresh.VitalsBarHeightDp;
+            VitalsBossBarHeightDp = fresh.VitalsBossBarHeightDp;
+            VitalsBossBarWidthDp = fresh.VitalsBossBarWidthDp;
+            VitalsHeaderHeightDp = fresh.VitalsHeaderHeightDp;
+            VitalsPanelPaddingDp = fresh.VitalsPanelPaddingDp;
+            SkillPreviewWidthDp = fresh.SkillPreviewWidthDp;
+            SkillPreviewHeightDp = fresh.SkillPreviewHeightDp;
+            PassiveHudWidthDp = fresh.PassiveHudWidthDp;
+            PassiveSlotHeightDp = fresh.PassiveSlotHeightDp;
+            PassiveSlotGapDp = fresh.PassiveSlotGapDp;
+            PassiveHudGapBelowVitalsDp = fresh.PassiveHudGapBelowVitalsDp;
 
             TuningVersion = CurrentVersion;
         }

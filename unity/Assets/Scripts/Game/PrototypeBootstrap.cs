@@ -346,7 +346,7 @@ namespace Dovus.Game
             modeHud.BindBelowBoss(vitalsHud);
 
             var passiveHud = root.AddComponent<PassiveHud>();
-            passiveHud.Configure(view.CanvasRoot);
+            passiveHud.Configure(view.CanvasRoot, _tuning);
             passiveHud.BindBelowPlayer(vitalsHud);
 
             dodgeMotion.Bind(clock, input, boss.transform, afterimage, follow);

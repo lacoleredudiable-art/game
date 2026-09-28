@@ -33,7 +33,10 @@ namespace Dovus.Game
         CanvasGroup _group;
         Text _chipLabel;
         readonly List<Image> _wedges = new();
+        readonly List<RectTransform> _wedgeRects = new();
         readonly List<Text> _labels = new();
+        PrototypeTuning _tuning;
+        Rect _appliedSafe;
         float _transitionSec = 0.3f;
         float _openedAt;
         float _closedAt;
@@ -71,6 +74,8 @@ namespace Dovus.Game
 
         void Build(Transform canvasRoot, PrototypeTuning tuning)
         {
+            _tuning = tuning;
+            HudTheme theme = HudTheme.Current;
             var layer = new GameObject("ElementRadialMenu");
             layer.transform.SetParent(canvasRoot, false);
             _root = layer.AddComponent<RectTransform>();
@@ -82,13 +87,21 @@ namespace Dovus.Game
             var chipGo = new GameObject("ElementHoldChip");
             chipGo.transform.SetParent(canvasRoot, false);
             _chip = chipGo.AddComponent<RectTransform>();
-            _chip.anchorMin = _chip.anchorMax = new Vector2(0.18f, 0.28f);
+            _chip.anchorMin = _chip.anchorMax = Vector2.zero;
             _chip.pivot = new Vector2(0.5f, 0.5f);
             _chip.sizeDelta = new Vector2(
                 HexagonLayoutScreen.DpToPixels(tuning.ElementMenuChipWidthDp),
                 HexagonLayoutScreen.DpToPixels(tuning.ElementMenuChipHeightDp));
             var chipImage = chipGo.AddComponent<Image>();
-            chipImage.color = new Color(0.05f, 0.10f, 0.15f, 0.88f);
+            chipImage.color = theme.PanelColor;
+            var shadow = chipGo.AddComponent<Shadow>();
+            shadow.effectColor = new Color(0f, 0f, 0f, 0.55f);
+            shadow.effectDistance = new Vector2(
+                0f, -HexagonLayoutScreen.DpToPixels(theme.PanelShadowDp));
+            var outline = chipGo.AddComponent<Outline>();
+            outline.effectColor = theme.PanelEdgeColor;
+            float outlinePx = HexagonLayoutScreen.DpToPixels(theme.PanelOutlineDp);
+            outline.effectDistance = new Vector2(outlinePx, -outlinePx);
             HoldSurface hold = chipGo.AddComponent<HoldSurface>();
             hold.Down = BeginHold;
             hold.Drag = UpdateHover;
@@ -96,29 +109,37 @@ namespace Dovus.Game
             _chipLabel = CreateText(chipGo.transform, 15);
 
             float radius = HexagonLayoutScreen.DpToPixels(tuning.ElementMenuRadiusDp);
-            float size = HexagonLayoutScreen.DpToPixels(48f);
+            float itemWidth = HexagonLayoutScreen.DpToPixels(tuning.ElementMenuItemWidthDp);
+            float itemHeight = HexagonLayoutScreen.DpToPixels(tuning.ElementMenuItemHeightDp);
             for (int i = 0; i < _elements.Count; i++)
             {
                 float rad = (90f - i * 60f) * Mathf.Deg2Rad;
                 var go = new GameObject("Element_" + _elements[i].Id);
                 go.transform.SetParent(_root, false);
                 var rect = go.AddComponent<RectTransform>();
-                rect.anchorMin = rect.anchorMax = _chip.anchorMin;
+                rect.anchorMin = rect.anchorMax = Vector2.zero;
                 rect.pivot = new Vector2(0.5f, 0.5f);
-                rect.sizeDelta = new Vector2(size * 1.75f, size);
-                rect.anchoredPosition = new Vector2(Mathf.Cos(rad), Mathf.Sin(rad)) * radius;
+                rect.sizeDelta = new Vector2(itemWidth, itemHeight);
+                rect.anchoredPosition = _chip.anchoredPosition
+                    + new Vector2(Mathf.Cos(rad), Mathf.Sin(rad)) * radius;
                 var image = go.AddComponent<Image>();
                 image.color = ParseColor(_elements[i].ColorHex, 0.82f);
                 image.raycastTarget = false;
+                var wedgeOutline = go.AddComponent<Outline>();
+                wedgeOutline.effectColor = new Color(1f, 1f, 1f, 0.26f);
+                wedgeOutline.effectDistance = new Vector2(outlinePx, -outlinePx);
                 Text label = CreateText(go.transform, 13);
                 label.text = _elements[i].Name + "\n" + _elements[i].NamePrefix;
                 _wedges.Add(image);
+                _wedgeRects.Add(rect);
                 _labels.Add(label);
             }
+            ApplySafeLayout();
         }
 
         void Update()
         {
+            ApplySafeLayout();
             Keyboard keyboard = Keyboard.current;
             if (keyboard != null)
             {
@@ -236,7 +257,12 @@ namespace Dovus.Game
             _chipLabel.text = paint.HasValue ? "ELEMENT · " + paint.Value.Name : "ELEMENT";
             Image image = _chip.GetComponent<Image>();
             if (image != null && paint.HasValue)
-                image.color = ParseColor(paint.Value.ColorHex, 0.9f);
+            {
+                Color element = ParseColor(paint.Value.ColorHex, 0.96f);
+                image.color = Color.Lerp(HudTheme.Current.PanelColor, element, 0.38f);
+            }
+            if (paint.HasValue)
+                _chipLabel.text = "ELEMENT  //  " + paint.Value.Name.ToUpperInvariant() + "  ·  BASILI TUT";
         }
 
         int SelectedIndex()
@@ -285,6 +311,27 @@ namespace Dovus.Game
             text.color = Color.white;
             text.raycastTarget = false;
             return text;
+        }
+
+        void ApplySafeLayout()
+        {
+            if (_chip == null || _tuning == null)
+                return;
+            Rect safe = HexagonLayoutScreen.SafeRectPx();
+            if (safe == _appliedSafe)
+                return;
+            _appliedSafe = safe;
+            Vector2 chipPos = new(
+                safe.xMin + safe.width * _tuning.ElementMenuAnchorXNorm,
+                safe.yMin + safe.height * _tuning.ElementMenuAnchorYNorm);
+            _chip.anchoredPosition = chipPos;
+            float radius = HexagonLayoutScreen.DpToPixels(_tuning.ElementMenuRadiusDp);
+            for (int i = 0; i < _wedgeRects.Count; i++)
+            {
+                float rad = (90f - i * 60f) * Mathf.Deg2Rad;
+                _wedgeRects[i].anchoredPosition = chipPos
+                    + new Vector2(Mathf.Cos(rad), Mathf.Sin(rad)) * radius;
+            }
         }
 
         static Color ParseColor(string hex, float alpha)
