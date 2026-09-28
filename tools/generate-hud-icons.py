@@ -6,6 +6,7 @@ script after changing a glyph; the checked-in PNGs are the runtime source assets
 """
 
 from pathlib import Path
+import hashlib
 from PIL import Image, ImageDraw, ImageFilter
 
 
@@ -249,10 +250,139 @@ def save_set(folder, entries):
     for name, painter, accent in entries:
         image, draw = base_icon(accent)
         painter(draw)
-        image.resize((FINAL, FINAL), Image.Resampling.LANCZOS).save(target / f"{name}.png", optimize=True)
+        path = target / f"{name}.png"
+        image.resize((FINAL, FINAL), Image.Resampling.LANCZOS).save(path, optimize=True)
+        write_texture_meta(path)
+
+
+def guid_for(path):
+    relative = path.resolve().relative_to(ROOT).as_posix()
+    return hashlib.md5(("dovus-hud:" + relative).encode("utf-8")).hexdigest()
+
+
+def write_folder_meta(path):
+    meta = Path(str(path) + ".meta")
+    meta.write_text(
+        "fileFormatVersion: 2\n"
+        f"guid: {guid_for(path)}\n"
+        "folderAsset: yes\n"
+        "DefaultImporter:\n"
+        "  externalObjects: {}\n"
+        "  userData: \n"
+        "  assetBundleName: \n"
+        "  assetBundleVariant: \n",
+        encoding="utf-8",
+    )
+
+
+def write_texture_meta(path):
+    meta = Path(str(path) + ".meta")
+    meta.write_text(
+        "fileFormatVersion: 2\n"
+        f"guid: {guid_for(path)}\n"
+        "TextureImporter:\n"
+        "  internalIDToNameTable: []\n"
+        "  externalObjects: {}\n"
+        "  serializedVersion: 13\n"
+        "  mipmaps:\n"
+        "    mipMapMode: 0\n"
+        "    enableMipMap: 0\n"
+        "    sRGBTexture: 1\n"
+        "    linearTexture: 0\n"
+        "    fadeOut: 0\n"
+        "    borderMipMap: 0\n"
+        "    mipMapsPreserveCoverage: 0\n"
+        "    alphaTestReferenceValue: 0.5\n"
+        "  isReadable: 0\n"
+        "  streamingMipmaps: 0\n"
+        "  streamingMipmapsPriority: 0\n"
+        "  grayScaleToAlpha: 0\n"
+        "  generateCubemap: 6\n"
+        "  cubemapConvolution: 0\n"
+        "  seamlessCubemap: 0\n"
+        "  textureFormat: 1\n"
+        "  maxTextureSize: 256\n"
+        "  textureSettings:\n"
+        "    serializedVersion: 2\n"
+        "    filterMode: 1\n"
+        "    aniso: 1\n"
+        "    mipBias: 0\n"
+        "    wrapU: 1\n"
+        "    wrapV: 1\n"
+        "    wrapW: 1\n"
+        "  nPOTScale: 1\n"
+        "  lightmap: 0\n"
+        "  compressionQuality: 50\n"
+        "  spriteMode: 0\n"
+        "  spriteExtrude: 1\n"
+        "  spriteMeshType: 1\n"
+        "  alignment: 0\n"
+        "  spritePivot: {x: 0.5, y: 0.5}\n"
+        "  spritePixelsToUnits: 100\n"
+        "  spriteBorder: {x: 0, y: 0, z: 0, w: 0}\n"
+        "  spriteGenerateFallbackPhysicsShape: 0\n"
+        "  alphaUsage: 1\n"
+        "  alphaIsTransparency: 1\n"
+        "  spriteTessellationDetail: -1\n"
+        "  textureType: 0\n"
+        "  textureShape: 1\n"
+        "  singleChannelComponent: 0\n"
+        "  flipbookRows: 1\n"
+        "  flipbookColumns: 1\n"
+        "  maxTextureSizeSet: 0\n"
+        "  compressionQualitySet: 0\n"
+        "  textureFormatSet: 0\n"
+        "  ignorePngGamma: 0\n"
+        "  applyGammaDecoding: 0\n"
+        "  platformSettings:\n"
+        "  - serializedVersion: 4\n"
+        "    buildTarget: DefaultTexturePlatform\n"
+        "    maxTextureSize: 256\n"
+        "    resizeAlgorithm: 0\n"
+        "    textureFormat: -1\n"
+        "    textureCompression: 1\n"
+        "    compressionQuality: 50\n"
+        "    crunchedCompression: 0\n"
+        "    allowsAlphaSplitting: 0\n"
+        "    overridden: 0\n"
+        "  - serializedVersion: 4\n"
+        "    buildTarget: Android\n"
+        "    maxTextureSize: 256\n"
+        "    resizeAlgorithm: 0\n"
+        "    textureFormat: -1\n"
+        "    textureCompression: 1\n"
+        "    compressionQuality: 50\n"
+        "    crunchedCompression: 0\n"
+        "    allowsAlphaSplitting: 0\n"
+        "    overridden: 0\n"
+        "  spriteSheet:\n"
+        "    serializedVersion: 2\n"
+        "    sprites: []\n"
+        "    outline: []\n"
+        "    customData: \n"
+        "    physicsShape: []\n"
+        "    bones: []\n"
+        "    spriteID: \n"
+        "    internalID: 0\n"
+        "    vertices: []\n"
+        "    indices: \n"
+        "    edges: []\n"
+        "    weights: []\n"
+        "    secondaryTextures: []\n"
+        "    nameFileIdTable: {}\n"
+        "  mipmapLimitGroupName: \n"
+        "  userData: \n"
+        "  assetBundleName: \n"
+        "  assetBundleVariant: \n",
+        encoding="utf-8",
+    )
 
 
 if __name__ == "__main__":
+    OUT.mkdir(parents=True, exist_ok=True)
+    write_folder_meta(OUT)
+    write_folder_meta(OUT / "Runes")
+    write_folder_meta(OUT / "Weapons")
     save_set("Runes", RUNES)
     save_set("Weapons", WEAPONS)
     print(f"Wrote {len(RUNES) + len(WEAPONS)} HUD icons to {OUT}")

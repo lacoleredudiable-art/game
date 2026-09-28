@@ -321,11 +321,20 @@ namespace Dovus.Game
             if (safe == _appliedSafe)
                 return;
             _appliedSafe = safe;
-            Vector2 chipPos = new(
+            Vector2 desired = new(
                 safe.xMin + safe.width * _tuning.ElementMenuAnchorXNorm,
                 safe.yMin + safe.height * _tuning.ElementMenuAnchorYNorm);
-            _chip.anchoredPosition = chipPos;
             float radius = HexagonLayoutScreen.DpToPixels(_tuning.ElementMenuRadiusDp);
+            float xExtent = radius + HexagonLayoutScreen.DpToPixels(_tuning.ElementMenuItemWidthDp) * 0.5f;
+            float yExtent = radius + HexagonLayoutScreen.DpToPixels(_tuning.ElementMenuItemHeightDp) * 0.5f;
+            float x = safe.width >= xExtent * 2f
+                ? Mathf.Clamp(desired.x, safe.xMin + xExtent, safe.xMax - xExtent)
+                : safe.center.x;
+            float y = safe.height >= yExtent * 2f
+                ? Mathf.Clamp(desired.y, safe.yMin + yExtent, safe.yMax - yExtent)
+                : safe.center.y;
+            Vector2 chipPos = new(x, y);
+            _chip.anchoredPosition = chipPos;
             for (int i = 0; i < _wedgeRects.Count; i++)
             {
                 float rad = (90f - i * 60f) * Mathf.Deg2Rad;

@@ -18,8 +18,11 @@ namespace Dovus.Game
         readonly Image[] _slotIcon = new Image[2];
         readonly Text[] _slotName = new Text[2];
         readonly Text[] _slotTime = new Text[2];
-        readonly int[] _activeRuneIds = new int[2];
+        readonly int[] _selectedRuneIds = new int[2];
+        readonly bool[] _occupied = new bool[2];
         PrototypeTuning _tuning;
+        RuneManager _runes;
+        SkillMotor _skills;
 
         public void Configure(Transform canvasRoot, PrototypeTuning tuning)
         {
@@ -69,6 +72,42 @@ namespace Dovus.Game
             ClearSlots();
         }
 
+        public void BindRunes(RuneManager runes, SkillMotor skills)
+        {
+            if (_runes != null)
+                _runes.Changed -= OnLoadoutChanged;
+            _runes = runes;
+            _skills = skills;
+            if (_runes != null)
+            {
+                _runes.Changed += OnLoadoutChanged;
+                OnLoadoutChanged(_runes.Current);
+            }
+        }
+
+        void OnDestroy()
+        {
+            if (_runes != null)
+                _runes.Changed -= OnLoadoutChanged;
+        }
+
+        void OnLoadoutChanged(RuneLoadout loadout)
+        {
+            _selectedRuneIds[0] = 0;
+            _selectedRuneIds[1] = 0;
+            if (loadout != null)
+            {
+                int passiveSlot = 0;
+                for (int i = 0; i < loadout.RuneIds.Count && passiveSlot < 2; i++)
+                {
+                    int runeId = loadout.RuneIds[i];
+                    if (loadout.IsPassive(runeId))
+                        _selectedRuneIds[passiveSlot++] = runeId;
+                }
+            }
+            RefreshLoadoutSlots();
+        }
+
         public void BindBelowPlayer(VitalsHud vitals)
         {
             if (_root == null || vitals == null)
@@ -85,44 +124,57 @@ namespace Dovus.Game
         {
             if (active == null || active.Count == 0)
             {
-                ClearSlots();
+                RefreshLoadoutSlots();
                 return;
             }
 
-            int count = Mathf.Min(2, active.Count);
+            RefreshLoadoutSlots();
+            int nextFree = SelectedCount();
+            int count = Mathf.Min(2 - nextFree, active.Count);
             for (int i = 0; i < count; i++)
             {
                 ActivePassive a = active[i];
                 PassiveNode n = a.Node;
                 float remain = Mathf.Max(0f, n.DurationSec - (float)((worldMs - a.SinceMs) / 1000.0));
-                SetSlot(i, 0, DisplayName(n.Id), remain);
+                SetSlot(nextFree + i, 0, DisplayName(n.Id), remain);
             }
-            for (int i = count; i < 2; i++)
-                ClearSlot(i);
-            _header.text = "PASİF YUVALARI  " + count + "/2";
         }
 
         public void Sync(IReadOnlyList<ActiveSlotPassive> active, double worldMs)
         {
             if (active == null || active.Count == 0)
             {
-                ClearSlots();
+                RefreshLoadoutSlots();
                 return;
             }
 
-            int count = Mathf.Min(2, active.Count);
-            for (int i = 0; i < count; i++)
+            RefreshLoadoutSlots();
+            _occupied[0] = false;
+            _occupied[1] = false;
+            // Önce mevcut build'in pasiflerini sabit yuvasına koy; build değişiminden kalan
+            // eski etkiler yalnız boş kalan yuvayı geçici olarak kullanır.
+            for (int pass = 0; pass < 2; pass++)
             {
-                ActiveSlotPassive passive = active[i];
-                SetSlot(
-                    i,
-                    passive.RuneId,
-                    string.IsNullOrEmpty(passive.Name) ? passive.RuneId.ToString() : passive.Name,
-                    passive.RemainingSec(worldMs));
+                for (int i = 0; i < active.Count; i++)
+                {
+                    ActiveSlotPassive passive = active[i];
+                    int selectedSlot = SlotForRune(passive.RuneId);
+                    bool currentLoadout = selectedSlot >= 0;
+                    if ((pass == 0) != currentLoadout)
+                        continue;
+                    int slot = currentLoadout && !_occupied[selectedSlot]
+                        ? selectedSlot
+                        : FirstUnoccupied(_occupied);
+                    if (slot < 0)
+                        continue;
+                    _occupied[slot] = true;
+                    SetSlot(
+                        slot,
+                        passive.RuneId,
+                        string.IsNullOrEmpty(passive.Name) ? passive.RuneId.ToString() : passive.Name,
+                        passive.RemainingSec(worldMs));
+                }
             }
-            for (int i = count; i < 2; i++)
-                ClearSlot(i);
-            _header.text = "PASİF YUVALARI  " + count + "/2";
         }
 
         static string DisplayName(string id)
@@ -179,15 +231,15 @@ namespace Dovus.Game
 
         void ClearSlots()
         {
-            if (_header != null)
-                _header.text = "PASİF YUVALARI  0/2";
+            _selectedRuneIds[0] = 0;
+            _selectedRuneIds[1] = 0;
             for (int i = 0; i < 2; i++)
                 ClearSlot(i);
+            UpdateHeader();
         }
 
         void ClearSlot(int i)
         {
-            _activeRuneIds[i] = 0;
             if (_slotIcon[i] != null)
             {
                 _slotIcon[i].sprite = null;
@@ -209,11 +261,54 @@ namespace Dovus.Game
             _slotIcon[index].enabled = icon != null;
             _slotName[index].text = name;
             _slotName[index].color = HudTheme.Current.PrimaryTextColor;
-            _slotTime[index].text = remain.ToString("0") + "s";
-            int identity = runeId > 0 ? runeId : -(index + 1);
-            if (icon != null && _activeRuneIds[index] != identity)
-                UiJuice.PunchScale(_slotIcon[index].rectTransform, HudTheme.Current.ReadyPopScale, HudTheme.Current.JuiceSec);
-            _activeRuneIds[index] = identity;
+            _slotTime[index].text = remain >= 0f ? remain.ToString("0") + "s" : "HAZIR";
+        }
+
+        void RefreshLoadoutSlots()
+        {
+            for (int i = 0; i < 2; i++)
+            {
+                int runeId = _selectedRuneIds[i];
+                if (runeId <= 0)
+                {
+                    ClearSlot(i);
+                    continue;
+                }
+                string name = _skills != null ? _skills.RuneName(runeId) : runeId.ToString();
+                SetSlot(i, runeId, name, -1f);
+            }
+            UpdateHeader();
+        }
+
+        int SlotForRune(int runeId)
+        {
+            for (int i = 0; i < _selectedRuneIds.Length; i++)
+                if (_selectedRuneIds[i] == runeId)
+                    return i;
+            return -1;
+        }
+
+        int SelectedCount()
+        {
+            int count = 0;
+            for (int i = 0; i < _selectedRuneIds.Length; i++)
+                if (_selectedRuneIds[i] > 0)
+                    count++;
+            return count;
+        }
+
+        static int FirstUnoccupied(bool[] occupied)
+        {
+            for (int i = 0; i < occupied.Length; i++)
+                if (!occupied[i])
+                    return i;
+            return -1;
+        }
+
+        void UpdateHeader()
+        {
+            if (_header != null)
+                _header.text = "PASİF YUVALARI  " + SelectedCount() + "/2";
         }
 
         static Text CreateText(Transform parent, string name, float sizeDp, Color color)

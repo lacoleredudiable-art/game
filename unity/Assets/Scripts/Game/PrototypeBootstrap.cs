@@ -347,6 +347,7 @@ namespace Dovus.Game
 
             var passiveHud = root.AddComponent<PassiveHud>();
             passiveHud.Configure(view.CanvasRoot, _tuning);
+            passiveHud.BindRunes(runeManager, skills);
             passiveHud.BindBelowPlayer(vitalsHud);
 
             dodgeMotion.Bind(clock, input, boss.transform, afterimage, follow);
