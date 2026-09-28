@@ -104,7 +104,8 @@ namespace Dovus.Core.Combat
             SkillResolution skill,
             in SkillMotionContext ctx,
             SkillMotionTuning tuning,
-            IReadOnlyList<SpaceEffectNode>? spaceEffects = null)
+            IReadOnlyList<SpaceEffectNode>? spaceEffects = null,
+            int dashIFrameMs = 0)
         {
             if (skill.IsEmpty || tuning == null)
                 return SkillMotionPlan.None;
@@ -131,10 +132,16 @@ namespace Dovus.Core.Combat
                 return ZenitsuBehindBoss(ctx, tuning, fx, fz, spaceEffects);
 
             if (IsDashVerb(skill))
+            {
+                // v6 verb_base.3.dash_distance_m otoritedir; eski katalogda tuning yedek.
+                float dashM = skill.EngineModifiers["dash_distance_m"].AsFloat(0f);
+                if (dashM <= 0f)
+                    dashM = tuning.ForwardDashDistanceM;
                 return BlinkAlong(
                     SkillMotionKind.ForwardDash,
                     ctx, tuning, fx, fz,
-                    tuning.ForwardDashDistanceM, tuning.DashDurationSec, 0, 0f);
+                    dashM, tuning.DashDurationSec, Math.Max(0, dashIFrameMs), 0f);
+            }
 
             return SkillMotionPlan.None;
         }

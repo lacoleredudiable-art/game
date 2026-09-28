@@ -1,5 +1,6 @@
 using Dovus.Core.Combat;
 using Dovus.Core.Equipment;
+using Dovus.Core.Execution;
 using Dovus.Core.Grammar;
 using Dovus.Core.Tuning;
 using UnityEngine;
@@ -378,7 +379,10 @@ namespace Dovus.Game
             director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, allyDummy, modeHud, view, passiveHud, equippedWeapon, equipmentBonus, skills, skillFactory, design?.Animations);
             director.ConfigureWeaponCycle(design?.Equipment.Items);
             if (design != null)
+            {
                 director.ConfigureWeaponSwap(WeaponSwapRules.FromJson(design.Json));
+                director.ConfigureVerbExecution(VerbExecutionData.FromJson(design.Json));
+            }
             view.BindWeaponSwap(director, clock);
             input.WeaponSwapRequested += () => director.TryRequestWeaponSwap();
 

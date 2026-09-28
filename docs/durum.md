@@ -13,9 +13,34 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 28 Eylül 2026 (savaş içi 2 silah swap) ·
-**Dal:** `master` · **Sıradaki:** telefonda swap butonu/menzil hissi, sonra
-Movement/SelfState executor'ları veya gerçek animasyon/VFX bağları
+**Son güncelleme:** 28 Eylül 2026 (fiil 3/7/10/11 executor'ları) ·
+**Dal:** `master` · **Sıradaki:** telefonda his testi (swap, menzil, dash, minion), sonra
+11-4 taret / 11-5 çoklu minion, fiil 1/5 hitbox'ının JSON boyutuna geçmesi, gerçek animasyon/VFX
+
+> **28 Eylül — fiil executor'ları (3 Hareket, 7 Zayıflatma, 10 Yansıma, 11 Çağırma).**
+> Sahibi: "fiilleri ve hareket skillerini yaz". Artık stub fiil yok; `SkillExecutorRouter`
+> 7 → silah tipine göre Melee/Projectile (1/5 gibi), 3 → `Movement`, 10 → `SelfState`,
+> 11 → `Summon`. Core: `VerbExecutionData` `hitbox_vfx.fiil_hitbox` (şekil/boyut/süre) ve
+> `mobility_cc.i_frame` (3-7 400 ms dash sırasında, 11-10 300 ms minion doğarken) okur;
+> `ApplyVerbHitboxSizing` boyutu `base × weapon.range_mult × sıfat hitbox ölçeği` ile
+> uygular (`hitbox_formula`). Dash mesafesi `verb_base.dash_distance_m` (3 m), i-frame =
+> Stasis. Game: `MovementExecutor` (dash yolunu kapsülle süpürür, hedefe bir kez uygular),
+> `SelfStateExecutor` (oyuncuyu izleyen disk), `SummonExecutor` (minion boss'a yürür,
+> menzilde vurur), `ManifestationDirector.VerbExecution.cs`. Güçlendirme = `buff_damage` +
+> `self_damage_buff` (kapanış ve minion hasarına çarpan); Yansıma = `reflect_ratio` →
+> `ActorStatus.GrantReflect` (pasif yansımasına eklenir). `duplicate_cast` (sıfat 11)
+> `duplicate_delay_sec` sonra ikinci atış; 3-3 `bounce_targets` = ikinci dash sekmesi
+> (`sifat_override` chain_count 2) ×`bounce_damage_mult`. Hata düzeltmesi: düşmanca sıfat
+> modları (slow/root/burn/poison/silence) self fiillerde oyuncuya yazılıyordu (3-6 oyuncuyu
+> köklüyordu) → artık hedef board'a; `accuracy_debuff` → Blind; lifesteal v6 anahtarı
+> `lifesteal`. **Uydurma varsayılanlar (`ManifestationTuning`, JSON'da yok):** minion vuruşu
+> 6, aralık 1 sn, hız 3.5 m/sn, erişim 1.4 m, boy 0.6 m. **Karar:** buff/yansıma cast anında
+> verilir (JSON zamanlama söylemiyor). **Doğrulandı:** `dotnet test` 280/280; Editor Play'de
+> 3-6 dash boss'u kökledi+yavaşlattı, oyuncu köklenmedi; 3-3 iki atış (×1, ×0.5, ~6 m);
+> 3-7 3 m + i-frame görüldü, 3-1 3 m i-frame yok; 7-1 önde 2.5 m → hasar + ArmorBreak,
+> arkada → 0; 11-1 minion 4.5 sn'de 32 hasar; 11-11 iki minion; 10-1 yansıma 0.5, süre
+> sonunda 0. **Doğrulanamadı:** telefonda his; Güçlendirme buff'ının sayısal etkisi Play'de
+> ayrıca ölçülmedi; minion görseli placeholder küre.
 
 > **28 Eylül — savaş içi silah swap (`weapon_skill_interaction.swap`).** Sahibi: "2 silah
 > seçip savaşırken değiştirme JSON'da yazmıyor mu". Core: `WeaponSwapRules.FromJsonRoot`
@@ -894,6 +919,16 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 `docs/element-sistemi.json`. Boss verisi `docs/bosses/*.json`.
 
 ## Bilinen açıklar
+
+- **Fiil executor'ları (28 Eylül) — kalanlar.** 11-4 taret (sabit minion) ve 11-5 "3 minion"
+  yok (JSON'da sayı yok, `minion_count` 1 kullanılıyor); `max_targets`, `ignore_armor`,
+  `tick_rate_mult`, `cleanse_count` bağlı değil; `channel_sec` anlamı belirsiz; 3-7
+  "görünmezlik" stealth olarak uygulanmıyor (i-frame + sıfat 7 blind var); müttefik
+  buff/yansıma yok (tek oyuncu); `mobility_cc` temel hareket/CC önceliği bağlı değil;
+  fiil 1/5 hâlâ tuned menzil kullanıyor (JSON hitbox boyutuna geçmedi); fiil 6/7 statü
+  süreleri `StatusTuning`'den; minion'lar boss aggro'sunu çekmiyor.
+- **`LivingEffectView.EnsureBangBurst` (satır ~162) konsol spam'i:** "Setting the duration
+  while system is still playing" — mevcut hata, bu görevde dokunulmadı.
 
 - **Görev 17 (element renk karşılaştırması) — sahibi için tamamlandı, RENK DEĞİŞTİRİLMEDİ.**
   `docs/prezentasyon-katmani.json` `vfx_binding.element_colors` ile `PrototypeTuning`'in

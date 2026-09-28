@@ -89,17 +89,38 @@ public class SkillExecutorRouterTests
         Assert.That(route.IsStub, Is.False);
     }
 
-    [TestCase(3)]
-    [TestCase(7)]
-    [TestCase(10)]
-    [TestCase(11)]
-    public void OutOfScopeVerbsStubToFallback(int verbId)
+    [TestCase(3, SkillExecutorKind.Movement)]
+    [TestCase(10, SkillExecutorKind.SelfState)]
+    [TestCase(11, SkillExecutorKind.Summon)]
+    public void SelfVerbsHaveDedicatedExecutors(int verbId, SkillExecutorKind expected)
     {
         SkillExecutorRoute route =
             _router.Route(_motor.Resolve(new[] { verbId, 1 }), _equipment.FindWeapon(4));
 
-        Assert.That(route.Kind, Is.EqualTo(SkillExecutorKind.Fallback));
-        Assert.That(route.IsStub, Is.True);
-        Assert.That(route.Reason, Is.Not.Empty);
+        Assert.That(route.Kind, Is.EqualTo(expected));
+        Assert.That(route.IsStub, Is.False);
+    }
+
+    [Test]
+    public void DebuffUsesWeaponTypeLikeStrike()
+    {
+        Assert.That(
+            _router.Route(_motor.Resolve(new[] { 7, 1 }), _equipment.FindWeapon(4)).Kind,
+            Is.EqualTo(SkillExecutorKind.MeleeHitbox));
+        Assert.That(
+            _router.Route(_motor.Resolve(new[] { 7, 1 }), _equipment.FindWeapon(7)).Kind,
+            Is.EqualTo(SkillExecutorKind.Projectile));
+    }
+
+    [Test]
+    public void EveryVerbHasAnExecutor()
+    {
+        for (int verb = 1; verb <= 12; verb++)
+        {
+            SkillExecutorRoute route =
+                _router.Route(_motor.Resolve(new[] { verb, 1 }), _equipment.FindWeapon(4));
+            Assert.That(route.IsStub, Is.False, "fiil " + verb);
+            Assert.That(route.Kind, Is.Not.EqualTo(SkillExecutorKind.Fallback), "fiil " + verb);
+        }
     }
 }
