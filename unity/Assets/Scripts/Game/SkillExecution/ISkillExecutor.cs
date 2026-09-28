@@ -124,6 +124,10 @@ namespace Dovus.Game
 
         public abstract SkillExecutorKind Kind { get; }
 
+        /// <summary>Sunum katmanı (HitboxVfxRegistry) bu cast'in gramer planını ve sahibini okur.</summary>
+        public MechanicPlan Plan => HasContext ? Context.MechanicPlan : null;
+        public Transform CastOwner => HasContext ? Context.Owner : null;
+
         /// <summary>Dünya saati: build menüsü açıkken 0, TimeDirector ölçeğini izler.</summary>
         protected float WorldDeltaSec => Context.Clock != null
             ? (float)(Context.Clock.WorldDeltaMs / 1000.0)

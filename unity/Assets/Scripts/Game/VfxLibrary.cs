@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Dovus.Core.Presentation;
+using Dovus.Core.Tuning;
 using UnityEngine;
 
 namespace Dovus.Game
@@ -35,6 +36,24 @@ namespace Dovus.Game
             public float LifetimeSec;
             /// <summary>Prefab'ın 1x ölçekte kapladığı boyut (m); çağıran boyut verirse ona ölçeklenir (0 = ölçeklenmez).</summary>
             public float ReferenceSizeM;
+            /// <summary>Katı parça (kaya, buz…): varsa her görsel parçada yerden çıkan/uçan gerçek mesh olur.</summary>
+            public Mesh ChunkMesh;
+            /// <summary>Boşsa element rengine boyanan URP/Lit malzeme üretilir.</summary>
+            public Material ChunkMaterial;
+            /// <summary>Paket mesh'i yoksa koddan üretilen katı şekil (<see cref="ProceduralChunkMesh"/>).</summary>
+            public string ChunkShape;
+        }
+
+        /// <summary>Anahtarın katı parça mesh'i (yalnız doğrudan kayıt; zincir yok).</summary>
+        public bool TryResolveChunk(string key, out Mesh mesh, out Material material)
+        {
+            mesh = null;
+            material = null;
+            if (!Map.TryGetValue(key, out Entry e))
+                return false;
+            mesh = e.ChunkMesh != null ? e.ChunkMesh : ProceduralChunkMesh.Get(e.ChunkShape);
+            material = e.ChunkMaterial;
+            return mesh != null;
         }
 
         public List<Entry> Entries = new();
@@ -42,6 +61,10 @@ namespace Dovus.Game
         [Header("Paket prefab'ı renklendirme — önerilen")]
         [Range(0f, 1f)] public float ImpactTintStrength = 0.75f;
         [Range(0f, 1f)] public float HitSparkTintStrength = 0.5f;
+        /// <summary>Fiil maddesi (kaya, yaprak…) element rengine daha az çekilir; malzeme okunur kalsın. Önerilen.</summary>
+        [Range(0f, 1f)] public float SubstanceTintStrength = 0.35f;
+        /// <summary>Gramer → görsel reçete dizilim hissi (MechanicVisualComposer).</summary>
+        public SkillVisualTuning Composition = new SkillVisualTuning();
 
         [Header("Prosedürel yedek — hepsi önerilen (docs/durum.md his turu Faz 4)")]
         public int HitSparkCount = 14;

@@ -1,13 +1,16 @@
 using System.Collections.Generic;
+using System.Globalization;
+using Dovus.Core.Mechanic;
 using UnityEngine;
 
 namespace Dovus.Game
 {
     /// <summary>
     /// hitbox_vfx.vfx_prefab_naming registry. Art prefabı yoksa geometriyi element rengiyle
-    /// görünür kılan collider'sız, hafif primitive üretir. Primitive'in üstüne teslim yoluna göre
-    /// somut bir paket efekti giydirilir (<c>Delivery/{executor}/{şekil}</c> → <c>Delivery/{executor}</c>
-    /// → <c>Delivery/{şekil}</c>); giydirme varsa primitive yalnız hitbox/collider taşıyıcısı kalır.
+    /// görünür kılan collider'sız, hafif primitive üretir. Primitive'in üstüne gramer planından
+    /// doğan reçete oynatılır (<see cref="ComposedSkillVfx"/>); fiil maddesi bağlı değilse teslim
+    /// yolu giydirmesine düşer (<c>Delivery/{executor}/{şekil}</c> → <c>Delivery/{executor}</c>
+    /// → <c>Delivery/{şekil}</c>). Giydirme varsa primitive yalnız hitbox/collider taşıyıcısı kalır.
     /// </summary>
     public static class HitboxVfxRegistry
     {
@@ -29,13 +32,38 @@ namespace Dovus.Game
             if (fromKey || go == null)
                 return go;
 
-            string role = parent != null && parent.TryGetComponent(out SkillExecutor executor)
-                ? executor.Kind.ToString()
-                : null;
-            GameObject dress = SpawnDelivery(role, shape, colorHex, go.transform, direction, radiusM, reachM, parent);
-            if (dress != null && shape != "cylinder" && go.TryGetComponent(out MeshRenderer primitive))
+            SkillExecutor executor = parent != null ? parent.GetComponent<SkillExecutor>() : null;
+            bool dressed = executor != null && TryCompose(executor, go.transform, position, direction, colorHex);
+            if (!dressed)
+                dressed = SpawnDelivery(executor != null ? executor.Kind.ToString() : null, shape, colorHex,
+                    go.transform, direction, radiusM, reachM, parent) != null;
+            if (dressed && shape != "cylinder" && go.TryGetComponent(out MeshRenderer primitive))
                 primitive.enabled = false;
             return go;
+        }
+
+        static readonly Dictionary<MechanicPlan, VisualRecipe> Recipes = new();
+
+        /// <summary>Madde (fiil) × yol (silah) × silüet (sıfat): reçete yalnız gramer planından doğar.</summary>
+        static bool TryCompose(SkillExecutor executor, Transform anchor, Vector3 origin, Vector3 direction,
+            string colorHex)
+        {
+            MechanicPlan plan = executor.Plan;
+            if (plan == null)
+                return false;
+            VfxLibrary lib = VfxLibrary.Current;
+            string key = "Substance/" + plan.Verb.ToString(CultureInfo.InvariantCulture);
+            if (!lib.TryResolve(key, out _, out _))
+                return false;
+            if (!Recipes.TryGetValue(plan, out VisualRecipe recipe))
+            {
+                recipe = MechanicVisualComposer.Compose(plan, lib.Composition);
+                Recipes[plan] = recipe;
+            }
+            if (recipe == null || recipe.Pieces.Count == 0)
+                return false;
+            ComposedSkillVfx.Play(recipe, key, anchor, executor.CastOwner, origin, direction, colorHex);
+            return true;
         }
 
         static GameObject SpawnDelivery(string role, string shape, string colorHex, Transform anchor,
