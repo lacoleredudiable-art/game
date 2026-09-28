@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Dovus.Core.Combat;
 using Dovus.Core.Grammar;
 using Dovus.Core.Tuning;
 
@@ -40,7 +41,8 @@ namespace Dovus.Core.Status
             SkillResolution skill,
             StatusBoard caster,
             StatusBoard target,
-            StatusTuning tuning)
+            StatusTuning tuning,
+            MobilityCcData mobilityCc = null)
         {
             if (skill.IsEmpty || tuning == null)
                 return new Result(false, false, EmptyReactions);
@@ -95,7 +97,7 @@ namespace Dovus.Core.Status
                         continue;
                     }
 
-                    ApplyKind(board, kind, tuning);
+                    ApplyKind(board, kind, tuning, mobilityCc, ParseAdjectiveId(skill.AdjectiveId));
                 }
 
                 // Sıfat engine_modifiers — fiil mechanics dışında ek durum (3’lü/4’lü farkı).
@@ -233,30 +235,37 @@ namespace Dovus.Core.Status
             return family is "mend" or "guard" or "purge";
         }
 
-        static void ApplyKind(StatusBoard board, StatusKind kind, StatusTuning t)
+        static void ApplyKind(
+            StatusBoard board,
+            StatusKind kind,
+            StatusTuning t,
+            MobilityCcData mobilityCc,
+            int adjectiveId)
         {
+            double Duration(double fallback) =>
+                mobilityCc?.ResolveCcDurationMs(kind, adjectiveId, fallback) ?? fallback;
             switch (kind)
             {
                 case StatusKind.Stun:
-                    board.Apply(kind, t.StunMs, 1f);
+                    board.Apply(kind, Duration(t.StunMs), 1f);
                     break;
                 case StatusKind.Root:
-                    board.Apply(kind, t.RootMs, 1f);
+                    board.Apply(kind, Duration(t.RootMs), 1f);
                     break;
                 case StatusKind.Silence:
-                    board.Apply(kind, t.SilenceMs, 1f);
+                    board.Apply(kind, Duration(t.SilenceMs), 1f);
                     break;
                 case StatusKind.Slow:
-                    board.Apply(kind, t.SlowMs, t.SlowSpeedMult);
+                    board.Apply(kind, Duration(t.SlowMs), t.SlowSpeedMult);
                     break;
                 case StatusKind.Blind:
-                    board.Apply(kind, t.BlindMs, 1f);
+                    board.Apply(kind, Duration(t.BlindMs), 1f);
                     break;
                 case StatusKind.Disarm:
-                    board.Apply(kind, t.DisarmMs, 1f);
+                    board.Apply(kind, Duration(t.DisarmMs), 1f);
                     break;
                 case StatusKind.Taunt:
-                    board.Apply(kind, t.TauntMs, 1f);
+                    board.Apply(kind, Duration(t.TauntMs), 1f);
                     break;
                 case StatusKind.Fear:
                     board.Apply(kind, t.FearMs, 1f);
@@ -296,5 +305,8 @@ namespace Dovus.Core.Status
                     break;
             }
         }
+
+        static int ParseAdjectiveId(string id) =>
+            int.TryParse(id, out int value) ? value : 0;
     }
 }

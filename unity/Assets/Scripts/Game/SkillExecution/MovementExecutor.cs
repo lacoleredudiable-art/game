@@ -28,6 +28,15 @@ namespace Dovus.Game
             _start = OwnerPosition();
             context.StartMotion?.Invoke();
             _last = OwnerPosition();
+            HitboxVfxRegistry.Create(
+                context.VfxKey,
+                context.HitboxShape,
+                context.VfxColorHex,
+                _start + Vector3.up * context.RadiusM,
+                context.Direction,
+                context.RadiusM,
+                context.RangeM,
+                transform);
 
             _trailGo = PlaceholderFactory.CreateTrail("blink_line", context.ColorKey, _start, _start + Vector3.up * 0.01f, transform);
             if (_trailGo != null)

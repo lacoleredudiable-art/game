@@ -49,6 +49,22 @@ namespace Dovus.Core.Execution
         public string Condition { get; }
     }
 
+    public readonly struct ElementVfxColor
+    {
+        public ElementVfxColor(string primary, string secondary, float brightness, float saturation)
+        {
+            Primary = primary ?? string.Empty;
+            Secondary = secondary ?? string.Empty;
+            Brightness = brightness;
+            Saturation = saturation;
+        }
+
+        public string Primary { get; }
+        public string Secondary { get; }
+        public float Brightness { get; }
+        public float Saturation { get; }
+    }
+
     /// <summary>
     /// Fiil executor'larının JSON otoritesi: fiil başına hitbox boyutu ve skill başına
     /// dokunulmazlık (i-frame). Sayılar yalnız JSON'dan; Unity içermez.
@@ -58,11 +74,22 @@ namespace Dovus.Core.Execution
         static readonly Regex Number = new(@"\d+(?:[.,]\d+)?", RegexOptions.CultureInvariant);
 
         readonly Dictionary<int, VerbHitboxSpec> _hitboxes = new();
+        readonly Dictionary<int, float> _adjectiveSize = new();
+        readonly Dictionary<int, float> _weaponSize = new();
+        readonly Dictionary<int, ElementVfxColor> _elementColors = new();
         readonly List<IFrameRule> _iFrames = new();
 
         public IReadOnlyList<IFrameRule> IFrames => _iFrames;
 
         public bool TryGetHitbox(int verbId, out VerbHitboxSpec spec) => _hitboxes.TryGetValue(verbId, out spec);
+        public float AdjectiveSizeMult(int adjectiveId) =>
+            _adjectiveSize.TryGetValue(adjectiveId, out float value) && value > 0f ? value : 1f;
+        public float WeaponSizeMult(int weaponId, float fallback = 1f) =>
+            _weaponSize.TryGetValue(weaponId, out float value) && value > 0f ? value : fallback;
+        public bool TryGetElementColor(int elementId, out ElementVfxColor color) =>
+            _elementColors.TryGetValue(elementId, out color);
+        public string VfxKey(int elementId, int verbId, int adjectiveId) =>
+            $"VFX_{elementId}_{verbId}_{adjectiveId}";
 
         public bool TryGetHitbox(in SkillResolution skill, out VerbHitboxSpec spec)
         {
@@ -94,6 +121,25 @@ namespace Dovus.Core.Execution
                 if (!int.TryParse(kv.Key, NumberStyles.Integer, CultureInfo.InvariantCulture, out int verbId))
                     continue;
                 data._hitboxes[verbId] = ParseHitbox(kv.Value);
+            }
+
+            foreach (KeyValuePair<string, JsonValue> kv in root["hitbox_vfx"]["sifat_override"].AsObject())
+                if (int.TryParse(kv.Key, NumberStyles.Integer, CultureInfo.InvariantCulture, out int adjectiveId))
+                    data._adjectiveSize[adjectiveId] = kv.Value["size_mult"].AsFloat(1f);
+
+            foreach (KeyValuePair<string, JsonValue> kv in root["hitbox_vfx"]["weapon_size_mult"].AsObject())
+                if (int.TryParse(kv.Key, NumberStyles.Integer, CultureInfo.InvariantCulture, out int weaponId))
+                    data._weaponSize[weaponId] = kv.Value.AsFloat(1f);
+
+            foreach (KeyValuePair<string, JsonValue> kv in root["hitbox_vfx"]["element_color"].AsObject())
+            {
+                if (!int.TryParse(kv.Key, NumberStyles.Integer, CultureInfo.InvariantCulture, out int elementId))
+                    continue;
+                data._elementColors[elementId] = new ElementVfxColor(
+                    kv.Value["primary"].AsString(),
+                    kv.Value["secondary"].AsString(),
+                    kv.Value["brightness"].AsFloat(1f),
+                    kv.Value["saturation"].AsFloat(1f));
             }
 
             foreach (JsonValue row in root["mobility_cc"]["i_frame"].AsArray())

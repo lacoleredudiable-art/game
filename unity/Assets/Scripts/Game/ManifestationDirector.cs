@@ -68,7 +68,9 @@ namespace Dovus.Game
         AfterimageTrail _afterimage;
         // --- Pasifler (Bağlama 5) — ulti gibi ama cooldown'suz, birden fazla aynı anda ---
         PassiveDirector _passiveDirector;
+        SlotPassiveDirector _slotPassives;
         PassiveHud _passiveHud;
+        MobilityCcData _mobilityCc;
         // --- State machine (player_states ↔ SentencePhase / dodge / CC) ---
         PlayerStateMachine _playerStates;
         // --- Zincir (Bağlama 6) — son N cast elementi; Links geçmişe yazılmaz ---
@@ -196,6 +198,7 @@ namespace Dovus.Game
             && _elementPaintIndex < _skills.ElementPaints.Count
                 ? _skills.ElementPaints[_elementPaintIndex]
                 : null;
+        public event Action<ElementPaintNode> ElementPaintChanged;
 
         /// <summary>Bağlama 10 / MCP: ShoutSkill içindeki ApplySkillAnimation yolunu doğrudan dener.</summary>
         public void DebugApplySkillAnimation(SkillResolution skill) => ApplySkillAnimation(skill);
@@ -209,6 +212,24 @@ namespace Dovus.Game
             _readout?.NoteSkill("Element: " + paint.Name, "isim/VFX boya katmanı", Color.cyan);
             Debug.Log($"[ElementSystem] element paint={paint.Id}:{paint.Name} ({paint.Vfx})");
             return paint;
+        }
+
+        public bool TrySetElementPaint(int elementId)
+        {
+            if (_skills == null)
+                return false;
+            for (int i = 0; i < _skills.ElementPaints.Count; i++)
+            {
+                if (_skills.ElementPaints[i].Id != elementId)
+                    continue;
+                _elementPaintIndex = i;
+                ElementPaintNode paint = _skills.ElementPaints[i];
+                ElementPaintChanged?.Invoke(paint);
+                _readout?.NoteSkill("Element: " + paint.Name, "isim/VFX boya katmanı", Color.cyan);
+                Debug.Log($"[ElementSystem] element paint={paint.Id}:{paint.Name} ({paint.Vfx})");
+                return true;
+            }
+            return false;
         }
 
         SkillMotor Skills => _skills ??= SkillMotorLoader.LoadOrDefault();
@@ -269,6 +290,7 @@ namespace Dovus.Game
 
         /// <summary>Bağlama 5 / MCP: Bind sonrası pasif durum makinesi (null = henüz bağlanmadı).</summary>
         public PassiveDirector PassiveDirector => _passiveDirector;
+        public SlotPassiveDirector SlotPassives => _slotPassives;
 
         /// <summary>state_machine.player_states — SentencePhase/dodge/CC ile senkron.</summary>
         public PlayerStateMachine PlayerStates => _playerStates;
@@ -377,6 +399,7 @@ namespace Dovus.Game
             motorForStates?.BindPlayerStates(_playerStates);
             _modeDirector = new ActiveModeDirector(_skills.ActiveModes);
             _passiveDirector = new PassiveDirector(_skills.Passives);
+            _slotPassives = new SlotPassiveDirector();
             _chainRules = LoadChainRulesOrDefault();
             _chainDirector = new ChainDirector(_skills.Chains, _chainRules);
             _recentCastElements.Clear();
@@ -429,8 +452,11 @@ namespace Dovus.Game
             {
                 _playerStatus.ModeDirector = _modeDirector;
                 _playerStatus.PassiveDirector = _passiveDirector;
+                _playerStatus.SlotPassiveDirector = _slotPassives;
                 _playerStatus.ReflectBossVitals = bossVitals;
+                _playerStatus.DamageTaken += OnPlayerDamageTaken;
             }
+            input.DodgeTriggered += OnDodgeTriggered;
 
             _motionDriver = player.GetComponent<SkillMotionDriver>();
             if (_motionDriver == null)
@@ -464,6 +490,10 @@ namespace Dovus.Game
         {
             if (_engine != null && _hooked)
                 _engine.SentenceCompleted -= OnSentenceCompleted;
+            if (_input != null)
+                _input.DodgeTriggered -= OnDodgeTriggered;
+            if (_playerStatus != null)
+                _playerStatus.DamageTaken -= OnPlayerDamageTaken;
         }
 
         void Update()
@@ -676,11 +706,12 @@ namespace Dovus.Game
 
         void TickPassives(double worldMs)
         {
-            if (_passiveDirector == null)
-                return;
-
-            _passiveDirector.Tick(worldMs);
-            _passiveHud?.Sync(_passiveDirector.Active, worldMs);
+            _passiveDirector?.Tick(worldMs);
+            _slotPassives?.Tick(worldMs);
+            if (_slotPassives != null && _slotPassives.ActiveCount > 0)
+                _passiveHud?.Sync(_slotPassives.Active, worldMs);
+            else if (_passiveDirector != null)
+                _passiveHud?.Sync(_passiveDirector.Active, worldMs);
         }
 
         /// <summary>
@@ -689,9 +720,33 @@ namespace Dovus.Game
         /// </summary>
         void TryTriggerPassive(IReadOnlyList<SentenceWord> words, double worldMs)
         {
-            if (_passiveDirector == null || words == null || words.Count == 0)
+            if (words == null || words.Count == 0)
                 return;
 
+            if (words.Count >= 2 && _slotPassives != null && _engine?.Loadout != null)
+            {
+                int adjectiveRuneId = (int)words[1].Rune;
+                if (_engine.Loadout.IsPassive(adjectiveRuneId)
+                    && _skills.TryGetRune(adjectiveRuneId, out RuneDefinition rune)
+                    && _skills.TryGetAdjective(adjectiveRuneId.ToString(), out AdjectiveNode adjective)
+                    && _slotPassives.Activate(
+                        adjectiveRuneId,
+                        rune.AdjectiveFace,
+                        rune.PassiveDurationDefault,
+                        adjective.EngineModifiers,
+                        worldMs))
+                {
+                    _readout?.NoteSkill(
+                        rune.AdjectiveFace + " pasif",
+                        rune.PassiveDurationDefault.ToString("0.#") + " sn",
+                        Color.cyan);
+                    _passiveHud?.Sync(_slotPassives.Active, worldMs);
+                }
+                return;
+            }
+
+            if (_passiveDirector == null)
+                return;
             var dots = new int[words.Count];
             for (int i = 0; i < words.Count; i++)
                 dots[i] = (int)words[i].Rune;
@@ -1770,9 +1825,10 @@ namespace Dovus.Game
             LivingEffect logic = p.View.Logic;
             Vector3 tip = new Vector3(logic.TipX, 0.6f, logic.TipZ);
             Vector3 origin = new Vector3(logic.OriginX, 0.55f, logic.OriginZ);
-            string element = p.Words != null && p.Words.Count > 0
-                ? p.Words[0].Rune.ToString()
-                : "Ates";
+            string element = SelectedElementPaint?.Name
+                ?? (p.Words != null && p.Words.Count > 0
+                    ? p.Words[0].Rune.ToString()
+                    : "Ates");
 
             string impactStyle = "burst_soft";
             string trailStyle = string.Empty;
@@ -1842,6 +1898,18 @@ namespace Dovus.Game
             ResolveFieldTiming(skill, plan, tuning, out float durationSec, out float tickSec);
             int spawnCount = 1;
             ApplyVerbHitboxSizing(kind, skill, tuning, rangeMult, burst, ref radius, ref range, ref durationSec, ref spawnCount);
+            string hitboxShape = TryVerbHitbox(skill, out VerbHitboxSpec visualSpec)
+                ? visualSpec.Shape
+                : "sphere";
+            int elementId = SelectedElementPaint?.Id ?? 1;
+            int.TryParse(skill.VerbId, out int verbVfxId);
+            int.TryParse(skill.AdjectiveId, out int adjectiveVfxId);
+            string vfxKey = _verbData?.VfxKey(elementId, verbVfxId, adjectiveVfxId) ?? string.Empty;
+            string vfxColorHex = SelectedElementPaint?.ColorHex ?? string.Empty;
+            if (_verbData != null
+                && _verbData.TryGetElementColor(elementId, out ElementVfxColor vfxColor)
+                && !string.IsNullOrEmpty(vfxColor.Primary))
+                vfxColorHex = vfxColor.Primary;
 
             Vector3 origin = _player.position;
             Vector3 direction = new(logic.DirX, 0f, logic.DirZ);
@@ -1931,6 +1999,9 @@ namespace Dovus.Game
                 burst,
                 friendly,
                 colorKey,
+                hitboxShape,
+                vfxKey,
+                vfxColorHex,
                 ApplyExecutorEffect,
                 _clock,
                 tuning,
@@ -1969,8 +2040,7 @@ namespace Dovus.Game
         }
 
         /// <summary>
-        /// hitbox_vfx.fiil_hitbox boyutları: final = base × weapon.range_mult × sıfat hitbox_scale_mult
-        /// (hitbox_formula). Saldırı/Patlama his turundaki tuning menzilinde kalır.
+        /// hitbox_vfx.fiil_hitbox boyutları: final = base × weapon.range_mult × sifat_override.size_mult.
         /// Süreli fiiller süreyi engine'den alır (+ lifetime_add).
         /// </summary>
         void ApplyVerbHitboxSizing(
@@ -1986,34 +2056,55 @@ namespace Dovus.Game
         {
             if (!TryVerbHitbox(skill, out VerbHitboxSpec spec))
                 return;
-            float scale = skill.HitboxScaleMult > 0f ? skill.HitboxScaleMult : 1f;
+            int.TryParse(skill.AdjectiveId, out int adjectiveId);
+            int weaponId = 0;
+            if (_equippedWeapon != null)
+            {
+                string id = _equippedWeapon.Id ?? string.Empty;
+                int colon = id.LastIndexOf(':');
+                int.TryParse(colon >= 0 ? id.Substring(colon + 1) : id, out weaponId);
+            }
+            float weaponScale = _verbData?.WeaponSizeMult(weaponId, rangeMult) ?? rangeMult;
+            float adjectiveScale = _verbData?.AdjectiveSizeMult(adjectiveId) ?? 1f;
+            adjectiveScale *= _slotPassives?.HitboxSizeMult ?? 1f;
+            HitboxSize size = HitboxSizing.Resolve(spec, weaponScale, adjectiveScale);
             JsonValue engine = skill.EngineModifiers;
             float lifetimeAdd = Mathf.Max(0f, engine["lifetime_add"].AsFloat(0f));
-            bool tunedReach = skill.VerbId is "1" or "5";
 
             switch (kind)
             {
-                case SkillExecutorKind.MeleeHitbox when !burst && !tunedReach && spec.SizeB > 0f:
-                    range = spec.SizeA * rangeMult * scale;
-                    radius = spec.SizeB * 0.5f * scale;
+                case SkillExecutorKind.MeleeHitbox:
+                    range = size.ReachM;
+                    radius = size.RadiusM;
+                    break;
+
+                case SkillExecutorKind.Projectile:
+                    radius = size.RadiusM;
+                    range = size.ReachM;
+                    break;
+
+                case SkillExecutorKind.FieldAura:
+                    radius = spec.IsRadius ? size.RadiusM : size.ReachM;
+                    range = size.ReachM;
                     break;
 
                 case SkillExecutorKind.Movement:
-                    if (spec.SizeB > 0f)
-                        radius = spec.SizeB * 0.5f * scale;
+                    radius = size.RadiusM;
                     float dashSec = _combat != null ? _combat.SkillMotion.DashDurationSec : 0f;
-                    durationSec = Mathf.Max(spec.DurationSec, dashSec);
+                    durationSec = Mathf.Max(size.DurationSec, dashSec);
                     break;
 
                 case SkillExecutorKind.SelfState:
-                    radius = spec.SizeA * scale;
+                    radius = size.RadiusM;
+                    range = size.ReachM;
                     float stateSec = engine["reflect_duration_sec"].AsFloat(0f);
                     if (stateSec > 0f)
                         durationSec = stateSec + lifetimeAdd;
                     break;
 
                 case SkillExecutorKind.Summon:
-                    radius = spec.SizeA;
+                    radius = size.RadiusM;
+                    range = size.ReachM;
                     float minionSec = engine["minion_duration_sec"].AsFloat(0f);
                     if (minionSec > 0f)
                         durationSec = minionSec + lifetimeAdd;
@@ -2085,14 +2176,32 @@ namespace Dovus.Game
         }
 
         /// <summary>
-        /// length.mobility × verb.cast_mobility → oyuncu Slow/Root (KinematicMotor okur).
+        /// mobility_cc fiil + sıfat + silah çözümü → oyuncu Slow/Root (KinematicMotor okur).
         /// </summary>
         void ApplyCastMobility(SkillResolution skill, float durationSec)
         {
             if (_playerStatus == null || skill.IsEmpty || durationSec <= 0f)
                 return;
 
-            string mob = SkillMobility.Resolve(skill);
+            string mob;
+            if (_mobilityCc != null
+                && int.TryParse(skill.VerbId, out int verbId)
+                && int.TryParse(skill.AdjectiveId, out int adjectiveId))
+            {
+                int weaponId = 0;
+                if (_equippedWeapon != null)
+                {
+                    string id = _equippedWeapon.Id ?? string.Empty;
+                    int colon = id.LastIndexOf(':');
+                    int.TryParse(colon >= 0 ? id.Substring(colon + 1) : id, out weaponId);
+                }
+                mob = _mobilityCc.ResolveMobility(
+                    verbId, adjectiveId, weaponId, _equippedWeapon?.MobilityMod ?? 0);
+            }
+            else
+            {
+                mob = SkillMobility.Resolve(skill);
+            }
             double ms = durationSec * 1000.0;
             StatusTuning st = _combat != null ? _combat.Status : new StatusTuning();
 
@@ -2374,7 +2483,8 @@ namespace Dovus.Game
                 skill,
                 _playerStatus != null ? _playerStatus.Board : null,
                 bossStatus != null ? bossStatus.Board : null,
-                _combat != null ? _combat.Status : new StatusTuning());
+                _combat != null ? _combat.Status : new StatusTuning(),
+                _mobilityCc);
 
             // v6 Zaman fiili yalnız aktör durumudur; GameClock/Time.timeScale'a dokunmaz.
             if (string.Equals(skill.Action, "tempo", StringComparison.Ordinal))
@@ -2388,6 +2498,8 @@ namespace Dovus.Game
                 if (durationMs > 0 && selfHaste > 0f && _playerStatus != null)
                     _playerStatus.Board.Apply(StatusKind.Haste, durationMs, 1f + selfHaste);
             }
+
+            ApplySlotPassiveOnHit(bossStatus);
 
             if (result.Knockback && bossStatus != null && _player != null)
                 bossStatus.ApplyKnockbackFrom(_player.position);
@@ -2405,6 +2517,27 @@ namespace Dovus.Game
                 _readout.NoteSkill(rule.Name, rule.ReadAs, _colors.AcidGreen);
                 _debugHud?.NoteSkillBang(rule.Name, rule.ReadAs);
             }
+        }
+
+        void ApplySlotPassiveOnHit(ActorStatus target)
+        {
+            if (target == null || _slotPassives == null || _slotPassives.ActiveCount == 0)
+                return;
+            StatusTuning tuning = _combat != null ? _combat.Status : new StatusTuning();
+            float rootSec = _slotPassives.MaxModifier("apply_root_sec");
+            if (rootSec > 0f)
+                target.Board.Apply(StatusKind.Root, rootSec * 1000.0, 1f);
+            float slow = _slotPassives.MaxModifier("apply_slow");
+            if (slow > 0f)
+                target.Board.Apply(
+                    StatusKind.Slow,
+                    _mobilityCc?.ResolveCcDurationMs(StatusKind.Slow, 0, tuning.SlowMs) ?? tuning.SlowMs,
+                    slow <= 1f ? slow : tuning.SlowSpeedMult);
+            if (_slotPassives.HasModifier("accuracy_debuff"))
+                target.Board.Apply(
+                    StatusKind.Blind,
+                    _mobilityCc?.ResolveCcDurationMs(StatusKind.Blind, 0, tuning.BlindMs) ?? tuning.BlindMs,
+                    1f);
         }
 
         /// <summary>
@@ -2549,6 +2682,7 @@ namespace Dovus.Game
                 outMult = _playerStatus.Board.OutgoingDamageMult;
             outMult *= _modeDirector?.DamageMult ?? 1f; // ulti: Öfke Patlaması ×1.8, Kan Çılgınlığı ×2.0
             outMult *= _passiveDirector?.DamageMult ?? 1f; // pasif: alev_hiddeti ×1.15 × karanlik_sessizligi ×1.2 …
+            outMult *= _slotPassives?.DamageMult ?? 1f;
             outMult *= SelfDamageBuffMult(); // Güçlendirme buff_damage / Yükseltme self_damage_buff
             outMult *= chainBonusOverride ?? _closingChainBonus;
             float eqMult = 1f;
@@ -2626,6 +2760,7 @@ namespace Dovus.Game
             _lastDamageDealtMs = _clock.Director.WorldTimeMs; // "dealt_damage_recently" (Öfke Patlaması)
 
             float lifesteal = (_modeDirector?.Lifesteal ?? 0f) + (_passiveDirector?.LifestealAdd ?? 0f);
+            lifesteal += _slotPassives?.LifestealAdd ?? 0f;
             lifesteal += AdjectiveLifesteal(skill);
             if (lifesteal > 0f)
             {

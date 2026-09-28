@@ -58,6 +58,7 @@ namespace Dovus.Game
 
         /// <summary>Swap düğmesi tap'i / Q tuşu — ManifestationDirector kapıyı kendisi kontrol eder.</summary>
         public event System.Action WeaponSwapRequested;
+        public event System.Action DodgeTriggered;
 
         public PrototypeTuning Tuning
         {
@@ -827,6 +828,7 @@ namespace Dovus.Game
             _engine?.Abort();
             FlushInkBreak();
             _dodge.Begin(worldMs);
+            DodgeTriggered?.Invoke();
             _debugHud?.NoteDodge(wasBuilding);
             _mode = FingerMode.None;
             _activeDot = null;

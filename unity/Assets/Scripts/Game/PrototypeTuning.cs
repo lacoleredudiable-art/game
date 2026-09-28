@@ -75,6 +75,12 @@ namespace Dovus.Game
         public float WeaponSwapButtonOffsetXDp = 0f;
         public float WeaponSwapButtonOffsetYDp = 0f;
 
+        [Header("Element radial (v6.1.1)")]
+        /// <summary>JSON yalnız 6 konum/300 ms verir; ekran yarıçapı için prototip varsayılanı.</summary>
+        public float ElementMenuRadiusDp = 92f;
+        public float ElementMenuChipWidthDp = 126f;
+        public float ElementMenuChipHeightDp = 44f;
+
         // §5: merkez bir kelime değil düğme; hangi fiille vurduğu veridir (prototipte 1/Ateş).
         [Header("Düz vuruş (§5, T6.2)")]
         public int BasicStrikeDot = 1;

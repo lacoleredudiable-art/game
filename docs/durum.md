@@ -17,6 +17,24 @@
 **Dal:** `master` · **Sıradaki:** telefonda his testi (swap, menzil, dash, minion), sonra
 11-4 taret / 11-5 çoklu minion, fiil 1/5 hitbox'ının JSON boyutuna geçmesi, gerçek animasyon/VFX
 
+> **28 Eylül — v6.1.1 runtime boşlukları (pasif/hitbox/mobility/radial).** Build ekranı
+> seçili altılı içinden 0-2 pasif rünü `P` rozetiyle seçip korur; ikinci çizilen (sıfat)
+> pasif slotundaysa `passive_duration_default` kadar açılır, aynı pasif kalan süreye eklenir,
+> farklıları üst üste biner. Uyumsuz fiil-silah pasifi tetiklemez. Slot pasifinin engine
+> hasar/lifesteal/reflect/hitbox ve root/slow/blind etkileri canlı hasar/status yollarına bağlı;
+> 0 süreli 9/11 işaretlenebilir ama tetik no-op'tur. `hitbox_vfx` artık
+> `base × weapon_size_mult × sifat_override.size_mult` kullanır: fiil 1 kapsül ve fiil 5
+> 3 m küre dahil tüm executor yolları; `VFX_{Element}_{FiilId}_{SifatId}` registry asset
+> arar, yoksa element renkli şekil üretir. `mobility_cc`: fiil+sıfat+silah mobilitesi,
+> JSON CC süre/öncelik/aynı-CC süre ekleme, startup dodge kesmesi ve poise kırılması
+> (hasar > eşik → iptal + 1 sn stun) bağlı. JSON poise tier eşlemesi vermediği için oyuncu
+> prototipte nötr `orta=25`; mobility toplamı 0 üç kademeli eksenin ortası `slowed_move`
+> kabul edildi. Element menüsü: E veya sol HUD chip basılı → 6'lı radial, JSON 300 ms,
+> hasarda iptal, slow-mo yok; seçim yalnız isim/VFX boyasıdır. Radius/chip boyutu JSON'da
+> olmadığı için `PrototypeTuning` varsayılanları eklendi. **Sunum yapılmadı:** ses, hitstop,
+> shake, animation event ve boss Slam animator parametreleri dokunulmadı.
+> **Doğrulama:** dotnet test henüz çalıştırılmadı; Unity Editor/Play bu ortamda beklenmiyor.
+
 > **28 Eylül — nişan yönü (boss hasar yemiyor).** Sahibi: "boss hasar yemiyor artık".
 > Sebep: `ResolveAimFacing` dururken kamera orbit yaw'ını kullanıyordu; kamera oyuncunun
 > arkasını izlemediği için vuruş sabit dünya yönüne (+z) gidiyordu. Menzil düzeltmesindeki

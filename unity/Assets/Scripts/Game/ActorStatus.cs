@@ -20,6 +20,10 @@ namespace Dovus.Game
 
         /// <summary>Pasif çarpanları (damage_taken / armor / reflect) — yalnız oyuncu.</summary>
         public PassiveDirector PassiveDirector { get; set; }
+        public SlotPassiveDirector SlotPassiveDirector { get; set; }
+
+        /// <summary>Kalkan sonrası gerçek gelen hasar; radial kesme ve poise için.</summary>
+        public event System.Action<float> DamageTaken;
 
         /// <summary>Karabasan hattı: oyuncu hasar alınca koparma (SpaceDirectorHost).</summary>
         public System.Action SpaceLinkBreak { get; set; }
@@ -141,6 +145,7 @@ namespace Dovus.Game
             if (afterShield <= 0f) return;
 
             float reflect = (PassiveDirector?.ReflectRatioAdd ?? 0f) + ActiveSkillReflectRatio;
+            reflect += SlotPassiveDirector?.ReflectRatioAdd ?? 0f;
             BossVitals reflectTarget = ReflectBossVitals ?? (_playerVitals != null ? null : _bossVitals);
             if (reflect > 0f && _playerVitals != null && reflectTarget != null && !reflectTarget.IsDown)
                 reflectTarget.ApplyDamage(afterShield * reflect);
@@ -149,6 +154,7 @@ namespace Dovus.Game
                 _bossVitals.ApplyDamage(afterShield);
             else if (_playerVitals != null)
             {
+                DamageTaken?.Invoke(afterShield);
                 if (_playerVitals.ApplyDamage(Mathf.CeilToInt(afterShield)))
                     SpaceLinkBreak?.Invoke();
                 else if (afterShield > 0f)

@@ -21,6 +21,21 @@ namespace Dovus.Game
             base.Execute(context);
             _ageSec = 0f;
             _applied = false;
+            Vector3 origin = context.Owner != null ? context.Owner.position : context.Origin;
+            Vector3 visualPosition = context.IsBurst
+                ? origin + context.Direction * Mathf.Min(
+                    context.RadiusM * context.Tuning.ExecutorBurstForwardFrac,
+                    context.RangeM)
+                : origin + Vector3.up * context.RadiusM;
+            HitboxVfxRegistry.Create(
+                context.VfxKey,
+                context.HitboxShape,
+                context.VfxColorHex,
+                visualPosition,
+                context.Direction,
+                context.RadiusM,
+                context.RangeM,
+                transform);
         }
 
         void Update()

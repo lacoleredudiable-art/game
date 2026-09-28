@@ -38,6 +38,15 @@ namespace Dovus.Game
                 alpha: context.Tuning.ExecutorFieldDiskAlpha);
             if (disk != null)
                 disk.name = $"FieldAura_{context.Skill.SkillId}";
+            HitboxVfxRegistry.Create(
+                context.VfxKey,
+                context.HitboxShape,
+                context.VfxColorHex,
+                _center,
+                context.Direction,
+                context.RadiusM,
+                context.RangeM,
+                transform);
         }
 
         void Update()

@@ -32,6 +32,15 @@ namespace Dovus.Game
             _statusesApplied = false;
 
             Vector3 origin = context.Owner != null ? context.Owner.position : context.Origin;
+            HitboxVfxRegistry.Create(
+                context.VfxKey,
+                context.HitboxShape,
+                context.VfxColorHex,
+                origin + context.Direction * context.RangeM,
+                context.Direction,
+                context.RadiusM,
+                context.RangeM,
+                transform);
             Vector3 side = Vector3.Cross(Vector3.up, context.Direction).normalized;
             float size = context.Tuning.ExecutorMinionSizeM;
             for (int i = 0; i < context.SpawnCount; i++)

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Dovus.Core.Combat;
 using Dovus.Core.Tuning;
 
 namespace Dovus.Core.Status
@@ -10,6 +11,9 @@ namespace Dovus.Core.Status
     public sealed class StatusBoard
     {
         readonly Dictionary<StatusKind, StatusEntry> _active = new();
+        MobilityCcData _mobilityCc;
+
+        public void ConfigureMobilityCc(MobilityCcData data) => _mobilityCc = data;
 
         /// <summary>
         /// 16 Eylül: "skilleri attığımda bir etkileşim göremiyorum" raporu — mekanik zaten
@@ -20,18 +24,18 @@ namespace Dovus.Core.Status
         public event Action<StatusReactionRule>? ReactionTriggered;
 
         public bool BlocksMovement =>
-            Has(StatusKind.Stun) || Has(StatusKind.Root) || Has(StatusKind.Stasis)
-            || Has(StatusKind.Fear);
+            HasEffective(StatusKind.Stun) || HasEffective(StatusKind.Root) || Has(StatusKind.Stasis)
+            || HasEffective(StatusKind.Fear);
 
         public bool BlocksCast =>
-            Has(StatusKind.Stun) || Has(StatusKind.Silence) || Has(StatusKind.Stasis)
-            || Has(StatusKind.Fear);
+            HasEffective(StatusKind.Stun) || HasEffective(StatusKind.Silence) || Has(StatusKind.Stasis)
+            || HasEffective(StatusKind.Fear);
 
         public bool BlocksBossAttack =>
-            Has(StatusKind.Stun) || Has(StatusKind.Stasis) || Has(StatusKind.Fear);
+            HasEffective(StatusKind.Stun) || Has(StatusKind.Stasis) || HasEffective(StatusKind.Fear);
 
-        public bool HasBlind => Has(StatusKind.Blind);
-        public bool HasDisarm => Has(StatusKind.Disarm);
+        public bool HasBlind => HasEffective(StatusKind.Blind);
+        public bool HasDisarm => HasEffective(StatusKind.Disarm);
 
         public float MoveSpeedMult
         {
@@ -39,7 +43,7 @@ namespace Dovus.Core.Status
             {
                 if (BlocksMovement) return 0f;
                 float m = 1f;
-                if (Has(StatusKind.Slow) && _active.TryGetValue(StatusKind.Slow, out StatusEntry slow))
+                if (HasEffective(StatusKind.Slow) && _active.TryGetValue(StatusKind.Slow, out StatusEntry slow))
                     m *= slow.Magnitude;
                 if (Has(StatusKind.Haste) && _active.TryGetValue(StatusKind.Haste, out StatusEntry haste))
                     m *= haste.Magnitude;
@@ -87,6 +91,10 @@ namespace Dovus.Core.Status
 
         public bool Has(StatusKind kind) =>
             kind != StatusKind.None && _active.ContainsKey(kind);
+
+        /// <summary>CC priority_table'da başka bir aktif CC tarafından gizlenmiyorsa true.</summary>
+        public bool HasEffective(StatusKind kind) =>
+            Has(kind) && (_mobilityCc == null || _mobilityCc.IsCcVisible(kind, _active.Keys));
 
         public IReadOnlyCollection<StatusKind> ActiveKinds => _active.Keys;
 
@@ -161,8 +169,11 @@ namespace Dovus.Core.Status
 
             if (_active.TryGetValue(kind, out StatusEntry existing))
             {
-                // Yenile: daha uzun süre / daha güçlü magnitude kazanır.
-                existing.RemainingMs = Math.Max(existing.RemainingMs, durationMs);
+                // mobility_cc.same_cc=süre_uzar: kalan süreye yeni süre eklenir.
+                existing.RemainingMs = _mobilityCc != null && _mobilityCc.ExtendSameCc
+                    && (StatusKindUtil.IsHardCc(kind) || StatusKindUtil.IsSoftCc(kind))
+                        ? existing.RemainingMs + durationMs
+                        : Math.Max(existing.RemainingMs, durationMs);
                 existing.Magnitude = Math.Max(existing.Magnitude, magnitude);
                 existing.TotalDurationMs = Math.Max(existing.TotalDurationMs, existing.RemainingMs);
                 _active[kind] = existing;

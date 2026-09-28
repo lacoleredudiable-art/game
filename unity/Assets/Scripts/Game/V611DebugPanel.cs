@@ -90,8 +90,6 @@ namespace Dovus.Game
                 SmokeCast();
             if (keyboard.f2Key.wasPressedThisFrame)
                 CycleWeapon();
-            if (keyboard.eKey.wasPressedThisFrame)
-                CycleElement();
             if (keyboard.bKey.wasPressedThisFrame)
                 OpenBuildSelect();
         }
@@ -141,7 +139,7 @@ namespace Dovus.Game
             if (_element != null)
                 _element.text = paint.HasValue ? "Element boya: " + paint.Value.Name : "Element boya: —";
             RefreshWeapon(_manifestation?.EquippedWeapon);
-            SetStatus("B build · F1 smoke · F2 silah · E element");
+            SetStatus("B build · F1 smoke · F2 silah · E basılı: element radial");
         }
 
         void RefreshWeapon(EquipmentItem weapon)

@@ -22,10 +22,14 @@ namespace Dovus.Game
                 * Mathf.Max(context.Tuning.ExecutorProjectileMinHeightM, context.RadiusM);
             _travelM = 0f;
 
-            _projectile = PlaceholderFactory.CreateImpact(
-                "burst_soft",
-                context.ColorKey,
+            _projectile = HitboxVfxRegistry.Create(
+                context.VfxKey,
+                context.HitboxShape,
+                context.VfxColorHex,
                 _spawn,
+                context.Direction,
+                context.RadiusM,
+                context.RangeM,
                 transform);
             if (_projectile == null)
             {
@@ -36,7 +40,8 @@ namespace Dovus.Game
                 _projectile.AddComponent<MeshRenderer>();
             }
             _projectile.name = $"Projectile_{context.Skill.SkillId}";
-            _projectile.transform.localScale = Vector3.one * context.RadiusM * 2f;
+            if (context.HitboxShape is not ("capsule" or "line"))
+                _projectile.transform.localScale = Vector3.one * context.RadiusM * 2f;
 
             var collider = _projectile.GetComponent<SphereCollider>();
             if (collider == null)
