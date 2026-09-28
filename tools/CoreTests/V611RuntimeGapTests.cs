@@ -67,6 +67,12 @@ public class V611RuntimeGapTests
         Assert.That(fiveSpread.Shape, Is.EqualTo("sphere"));
         Assert.That(fiveSpread.RadiusM, Is.EqualTo(7.5f).Within(0.001f));
         Assert.That(_hitboxes.VfxKey("Su", 5, 5), Is.EqualTo("VFX_Su_5_5"));
+
+        Assert.That(_hitboxes.TryGetHitbox(6, out VerbHitboxSpec six), Is.True);
+        HitboxSize cone = HitboxSizing.Resolve(six, 1f, 1f);
+        Assert.That(cone.Shape, Is.EqualTo("cone"));
+        Assert.That(cone.RadiusM, Is.EqualTo(4f).Within(0.001f), "60° açı yarıçap sayılmamalı");
+        Assert.That(cone.ReachM, Is.EqualTo(4f).Within(0.001f));
         Assert.That(_hitboxes.TryGetElementColor(2, out ElementVfxColor color), Is.True);
         Assert.That(color.Primary, Is.EqualTo("#1a8cff"));
     }
