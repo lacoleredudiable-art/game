@@ -34,7 +34,7 @@ namespace Dovus.Game
                 _center,
                 context.RadiusM,
                 transform,
-                alpha: 0.6f);
+                alpha: context.Tuning.ExecutorFieldDiskAlpha);
             if (disk != null)
                 disk.name = $"FieldAura_{context.Skill.SkillId}";
         }
@@ -44,7 +44,7 @@ namespace Dovus.Game
             if (!HasContext)
                 return;
 
-            _ageSec += Time.deltaTime;
+            _ageSec += WorldDeltaSec;
             while (_remainingTicks > 0 && _ageSec >= _nextTickSec)
             {
                 TickField();

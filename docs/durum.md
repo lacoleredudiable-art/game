@@ -13,9 +13,19 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 27 Eylül 2026 (F2 debug silah döngüsü) ·
-**Dal:** `cursor/skill-executors-c20b` · **Sıradaki:** kullanıcı Play smoke sonrası
+**Son güncelleme:** 28 Eylül 2026 (PR #15 executor düzeltmeleri + master merge) ·
+**Dal:** `master` · **Sıradaki:** kullanıcı Play smoke sonrası
 Movement/SelfState executor'ları veya gerçek animasyon/VFX bağları
+
+> **28 Eylül — PR #15 düzeltmeleri.** Üç executor `Time.deltaTime` yerine
+> `GameClock.WorldDeltaMs` ile ilerler (`SkillExecutor.WorldDeltaSec`); build menüsü açıkken
+> mermi/alan/vuruş penceresi donar, `TimeDirector` ölçeğini izler. Koda gömülü üç sayı
+> `ManifestationTuning`'e taşındı: `ExecutorProjectileMinHeightM=0.35`,
+> `ExecutorBurstForwardFrac=0.35`, `ExecutorFieldDiskAlpha=0.6` — **uydurma varsayılan**
+> (PR'daki değerler, kaynak yok). **Doğrulandı:** `dotnet test` 268/268, Unity derleme
+> temiz; Editor Play'de Kılıç 1-1 → `MeleeHitbox` boss'a 54 hasar, Top (ranged) 1-1 →
+> `Projectile` 77.8 hasar; `GameClock.Paused` iken uçan mermi 3 sn aynı konumda kaldı.
+> **Doğrulanamadı:** alan (FieldAura) fiillerinin canlı tick'i, telefonda executor hissi.
 
 > **27 Eylül — F2 debug silah döngüsü.** `V611DebugPanel` F2 + küçük butonla canonical
 > 10 silahı id sırasıyla döndürür ve wrap eder; panelde güncel ad + effective

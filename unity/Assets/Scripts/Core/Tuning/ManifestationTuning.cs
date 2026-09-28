@@ -80,6 +80,10 @@ namespace Dovus.Core.Tuning
         public float ExecutorMeleeWindowClose01 = 0.7f;
         // prezentasyon-katmani ground/self aura hitbox'larının ortak varsayılan tick'i.
         public float ExecutorFieldTickSec = 1f;
+        // Aşağıdaki üçü PR #15'te koda gömülü gelen değerler; kaynak yok, his ayarı.
+        public float ExecutorProjectileMinHeightM = 0.35f;
+        public float ExecutorBurstForwardFrac = 0.35f;
+        public float ExecutorFieldDiskAlpha = 0.6f;
 
         // Kalıcı iz boyutu
         public float ScarScaleM = 1.4f;

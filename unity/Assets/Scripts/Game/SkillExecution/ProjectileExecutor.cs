@@ -18,7 +18,8 @@ namespace Dovus.Game
         public override void Execute(in SkillExecutionContext context)
         {
             base.Execute(context);
-            _spawn = context.Origin + Vector3.up * Mathf.Max(0.35f, context.RadiusM);
+            _spawn = context.Origin + Vector3.up
+                * Mathf.Max(context.Tuning.ExecutorProjectileMinHeightM, context.RadiusM);
             _travelM = 0f;
 
             _projectile = PlaceholderFactory.CreateImpact(
@@ -62,7 +63,7 @@ namespace Dovus.Game
                 return;
             }
 
-            float step = Mathf.Min(Context.SpeedMps * Time.deltaTime, remaining);
+            float step = Mathf.Min(Context.SpeedMps * WorldDeltaSec, remaining);
             Vector3 from = _projectile.transform.position;
             int sweptCount = Physics.SphereCastNonAlloc(
                 from,

@@ -28,7 +28,7 @@ namespace Dovus.Game
             if (!HasContext)
                 return;
 
-            _ageSec += Time.deltaTime;
+            _ageSec += WorldDeltaSec;
             float cast01 = _ageSec / Context.CastWindowSec;
             if (!_applied && cast01 >= Context.WindowOpen01 && cast01 <= Context.WindowClose01)
                 Probe();
@@ -43,7 +43,9 @@ namespace Dovus.Game
             int count;
             if (Context.IsBurst)
             {
-                Vector3 center = origin + Context.Direction * Mathf.Min(Context.RadiusM * 0.35f, Context.RangeM);
+                Vector3 center = origin + Context.Direction * Mathf.Min(
+                    Context.RadiusM * Context.Tuning.ExecutorBurstForwardFrac,
+                    Context.RangeM);
                 count = Physics.OverlapSphereNonAlloc(
                     center,
                     Context.RadiusM,

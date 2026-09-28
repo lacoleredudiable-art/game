@@ -1,6 +1,7 @@
 using System;
 using Dovus.Core.Execution;
 using Dovus.Core.Grammar;
+using Dovus.Core.Tuning;
 using UnityEngine;
 
 namespace Dovus.Game
@@ -30,7 +31,9 @@ namespace Dovus.Game
             bool isBurst,
             bool isFriendly,
             string colorKey,
-            Action<float> applyEffect)
+            Action<float> applyEffect,
+            GameClock clock,
+            ManifestationTuning tuning)
         {
             Skill = skill;
             Owner = owner;
@@ -51,6 +54,8 @@ namespace Dovus.Game
             IsFriendly = isFriendly;
             ColorKey = colorKey ?? string.Empty;
             ApplyEffect = applyEffect;
+            Clock = clock;
+            Tuning = tuning ?? new ManifestationTuning();
         }
 
         public SkillResolution Skill { get; }
@@ -70,6 +75,8 @@ namespace Dovus.Game
         public bool IsFriendly { get; }
         public string ColorKey { get; }
         public Action<float> ApplyEffect { get; }
+        public GameClock Clock { get; }
+        public ManifestationTuning Tuning { get; }
     }
 
     /// <summary>Unity yaşam döngüsü taşıyan üç fiziksel executor için ortak taban.</summary>
@@ -79,6 +86,11 @@ namespace Dovus.Game
         protected bool HasContext { get; private set; }
 
         public abstract SkillExecutorKind Kind { get; }
+
+        /// <summary>Dünya saati: build menüsü açıkken 0, TimeDirector ölçeğini izler.</summary>
+        protected float WorldDeltaSec => Context.Clock != null
+            ? (float)(Context.Clock.WorldDeltaMs / 1000.0)
+            : Time.deltaTime;
 
         public virtual void Execute(in SkillExecutionContext context)
         {

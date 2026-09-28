@@ -1896,7 +1896,9 @@ namespace Dovus.Game
                 burst,
                 friendly,
                 colorKey,
-                ApplyExecutorEffect);
+                ApplyExecutorEffect,
+                _clock,
+                tuning);
 
             var go = new GameObject($"{kind}_{skill.SkillId}");
             go.transform.SetParent(transform, false);
