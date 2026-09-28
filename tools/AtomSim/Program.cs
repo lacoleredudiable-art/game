@@ -1,16 +1,13 @@
-using System.Globalization;
 using System.Text;
-using AtomSim;
+using Dovus.Core.Mechanic;
 
 string root = FindRepoRoot();
-var data = Data.Load(
-    Path.Combine(root, "docs", "element-sistemi.json"),
-    Path.Combine(root, "docs", "atom-grammar-taslak.json"));
-var grammar = new Grammar(data);
+var rules = MechanicRules.FromJson(File.ReadAllText(Path.Combine(root, "docs", "element-sistemi.json")));
+var grammar = new MechanicGrammar(rules);
 
-var baselines = new Dictionary<(int v, int w), Plan>();
-var plans = new List<Plan>();
-foreach (Weapon w in data.Weapons)
+var baselines = new Dictionary<(int v, int w), MechanicPlan>();
+var plans = new List<MechanicPlan>();
+foreach (MechanicWeapon w in rules.Weapons)
     for (int v = 1; v <= 12; v++)
     {
         baselines[(v, w.Id)] = grammar.Compose(v, 0, w);
@@ -18,7 +15,7 @@ foreach (Weapon w in data.Weapons)
     }
 
 // A: sıfat nitel imzayı değiştirmeli; A2: sıfat en az bir ETKİ atomunu değiştirmeli (yalnız gövde değil)
-static string EffectSig(Plan p) => string.Join(" ; ", p.Effects.Select(e => e.Signature()).OrderBy(x => x, StringComparer.Ordinal));
+static string EffectSig(MechanicPlan p) => p.EffectSignature();
 var failA = plans.Where(p => p.QualSignature() == baselines[(p.Verb, p.Weapon)].QualSignature()).ToList();
 var failA2 = plans.Where(p => EffectSig(p) == EffectSig(baselines[(p.Verb, p.Weapon)])).ToList();
 
@@ -27,7 +24,7 @@ var collisions = plans.GroupBy(p => (p.Weapon, Sig: p.QualSignature()))
     .Where(g => g.Count() > 1).ToList();
 
 // B2: silahtan bağımsız davranış çekirdeği (yol hariç) aynı olan skill çiftleri
-static string CoreSig(Plan p) => p.QualSignature().Replace("yol=" + p.Body.Path, "");
+static string CoreSig(MechanicPlan p) => p.QualSignature().Replace("yol=" + p.Body.Path, "");
 var coreCollisions = plans.Where(p => p.Weapon == 4).GroupBy(CoreSig).Where(g => g.Count() > 1).ToList();
 
 // C: her skill 10 silahta kaç farklı imza (tam yol) / kaç farklı yol sınıfı imzası
@@ -36,14 +33,14 @@ var perSkill = plans.GroupBy(p => (p.Verb, p.Adjective)).Select(g => new
     g.Key.Verb,
     g.Key.Adjective,
     Full = g.Select(p => p.QualSignature()).Distinct().Count(),
-    Class = g.Select(p => p.QualSignature().Replace("yol=" + p.Body.Path, "yol=" + Grammar.PathClass(p.Body.Path))).Distinct().Count(),
+    Class = g.Select(p => p.QualSignature().Replace("yol=" + p.Body.Path, "yol=" + MechanicGrammar.PathClass(p.Body.Path))).Distinct().Count(),
     Core = g.Select(CoreSig).Distinct().Count()
 }).ToList();
 
 // C2: iki silah kaç skill'de yol adı dışında birebir aynı davranıyor
 var pairSame = new List<(string a, string b, int n)>();
-foreach (Weapon wa in data.Weapons)
-    foreach (Weapon wb in data.Weapons.Where(x => x.Id > wa.Id))
+foreach (MechanicWeapon wa in rules.Weapons)
+    foreach (MechanicWeapon wb in rules.Weapons.Where(x => x.Id > wa.Id))
     {
         int n = 0;
         for (int v = 1; v <= 12; v++)
@@ -55,7 +52,7 @@ foreach (Weapon wa in data.Weapons)
     }
 
 var contradictions = plans.Where(p => p.Contradictions.Count > 0).ToList();
-var plain = plans.Where(p => p.Labels.All(Labeler.Generic.Contains)).ToList();
+var plain = plans.Where(p => p.Labels.All(MechanicLabeler.Generic.Contains)).ToList();
 
 string outDir = Path.Combine(root, "tools", "AtomSim", "out");
 Directory.CreateDirectory(outDir);
@@ -74,11 +71,11 @@ Console.WriteLine($"D  çelişkili plan: {contradictions.Count}");
 Console.WriteLine($"   özel etiketsiz (yalnız genel desen) plan: {plain.Count}");
 Console.WriteLine($"rapor: {Path.Combine(outDir, "rapor.md")}");
 
-void WriteCsv(string path, List<Plan> all)
+void WriteCsv(string path, List<MechanicPlan> all)
 {
     var sb = new StringBuilder();
     sb.AppendLine("skill;fiil;sifat;silah;uyumlu;etiketler;aciklama;catisma;celiski;imza");
-    foreach (Plan p in all)
+    foreach (MechanicPlan p in all)
         sb.AppendLine(string.Join(";", new[]
         {
             p.SkillId, p.VerbName, p.AdjectiveName, p.WeaponName, p.Compatible ? "evet" : "hayir",
@@ -95,7 +92,7 @@ void WriteReport(string path)
     var sb = new StringBuilder();
     sb.AppendLine("# AtomSim raporu — 1440 skill");
     sb.AppendLine();
-    sb.AppendLine("Kurallar: `docs/atom-grammar-taslak.json` (TASLAK). Sayılar: `docs/element-sistemi.json`.");
+    sb.AppendLine("Kurallar: `docs/element-sistemi.json` → `mechanic_grammar`. Motor: `Core/Mechanic/MechanicGrammar` (oyunla aynı kod).");
     sb.AppendLine();
     sb.AppendLine("## Özet");
     sb.AppendLine();
@@ -126,16 +123,16 @@ void WriteReport(string path)
 
     foreach (int wid in new[] { 4, 7 })
     {
-        Weapon w = data.Weapons.First(x => x.Id == wid);
+        MechanicWeapon w = rules.Weapons.First(x => x.Id == wid);
         sb.AppendLine($"## 144 skill — {w.Name} ({w.Path})");
         sb.AppendLine();
         for (int v = 1; v <= 12; v++)
         {
-            Plan b0 = baselines[(v, wid)];
-            sb.AppendLine($"### {v} {data.VerbNames[v]}");
+            MechanicPlan b0 = baselines[(v, wid)];
+            sb.AppendLine($"### {v} {rules.VerbName(v)}");
             sb.AppendLine();
             sb.AppendLine($"- *sıfatsız*: {b0.Description}");
-            foreach (Plan p in plans.Where(p => p.Weapon == wid && p.Verb == v).OrderBy(p => p.Adjective))
+            foreach (MechanicPlan p in plans.Where(p => p.Weapon == wid && p.Verb == v).OrderBy(p => p.Adjective))
             {
                 string flag = p.Contradictions.Count > 0 ? " ⚠ " + string.Join(", ", p.Contradictions) : "";
                 sb.AppendLine($"- **{p.SkillId} {p.AdjectiveName} {p.VerbName}** — _{string.Join(", ", p.Labels)}_ — {p.Description}{flag}");
@@ -148,16 +145,16 @@ void WriteReport(string path)
     sb.AppendLine();
     foreach ((int v, int s) in new[] { (3, 10), (4, 4), (12, 12), (2, 9), (1, 3), (11, 11) })
     {
-        sb.AppendLine($"### {v}-{s} {data.AdjectiveNames[s]} {data.VerbNames[v]}");
+        sb.AppendLine($"### {v}-{s} {rules.AdjectiveName(s)} {rules.VerbName(v)}");
         sb.AppendLine();
-        foreach (Plan p in plans.Where(p => p.Verb == v && p.Adjective == s))
+        foreach (MechanicPlan p in plans.Where(p => p.Verb == v && p.Adjective == s))
             sb.AppendLine($"- {p.WeaponName}{(p.Compatible ? " ✓" : "")}: _{string.Join(", ", p.Labels)}_ — {p.Description}");
         sb.AppendLine();
     }
 
     sb.AppendLine("## A — sıfatın nitel etkisi olmayanlar");
     sb.AppendLine();
-    foreach (Plan p in failA) sb.AppendLine($"- {p.SkillId} {p.AdjectiveName} {p.VerbName} / {p.WeaponName}");
+    foreach (MechanicPlan p in failA) sb.AppendLine($"- {p.SkillId} {p.AdjectiveName} {p.VerbName} / {p.WeaponName}");
     sb.AppendLine();
     sb.AppendLine("## A2 — sıfat yalnız gövdeyi değiştiriyor (skill id, silah fark etmeksizin)");
     sb.AppendLine();
@@ -172,7 +169,7 @@ void WriteReport(string path)
     sb.AppendLine("## C — silahla en az ayrışan skill'ler (yol sınıfı imzası)");
     sb.AppendLine();
     foreach (var x in perSkill.OrderBy(x => x.Core).Take(15))
-        sb.AppendLine($"- {x.Verb}-{x.Adjective} {data.AdjectiveNames[x.Adjective]} {data.VerbNames[x.Verb]}: {x.Core} davranış / {x.Class} sınıf / {x.Full} tam");
+        sb.AppendLine($"- {x.Verb}-{x.Adjective} {rules.AdjectiveName(x.Adjective)} {rules.VerbName(x.Verb)}: {x.Core} davranış / {x.Class} sınıf / {x.Full} tam");
     sb.AppendLine();
     sb.AppendLine("## D — çelişkiler");
     sb.AppendLine();
@@ -189,7 +186,7 @@ void WriteReport(string path)
 
 static string FindRepoRoot()
 {
-    string? dir = Directory.GetCurrentDirectory();
+    string dir = Directory.GetCurrentDirectory();
     while (dir != null && !File.Exists(Path.Combine(dir, "docs", "element-sistemi.json")))
         dir = Path.GetDirectoryName(dir);
     return dir ?? throw new InvalidOperationException("docs/element-sistemi.json bulunamadı");

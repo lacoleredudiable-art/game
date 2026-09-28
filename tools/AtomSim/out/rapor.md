@@ -1,6 +1,6 @@
 # AtomSim raporu — 1440 skill
 
-Kurallar: `docs/atom-grammar-taslak.json` (TASLAK). Sayılar: `docs/element-sistemi.json`.
+Kurallar: `docs/element-sistemi.json` → `mechanic_grammar`. Motor: `Core/Mechanic/MechanicGrammar` (oyunla aynı kod).
 
 ## Özet
 
@@ -26,7 +26,7 @@ Kurallar: `docs/atom-grammar-taslak.json` (TASLAK). Sayılar: `docs/element-sist
 - Yumruk = Asa: 0
 - Yumruk = Tılsım: 0
 
-- Özel mekanik etiketi olmayan (yalnız Delici/Seken/Dalga gibi genel desen): **516**
+- Özel mekanik etiketi olmayan (yalnız Delici/Seken/Dalga gibi genel desen): **463**
 
 ## Etiket sıklığı (1440 içinde)
 
@@ -42,23 +42,25 @@ Kurallar: `docs/atom-grammar-taslak.json` (TASLAK). Sayılar: `docs/element-sist
 | Ayna eşli | 120 |
 | Çift | 120 |
 | Akış | 120 |
+| Uzak yansıtıcı | 96 |
 | Delici | 50 |
-| Tasma | 42 |
-| Taşma | 42 |
 | Havaya atma | 40 |
 | Kıskaç | 40 |
 | Tuzak | 36 |
 | Sersemletme | 36 |
 | Gecikmeli an | 32 |
+| Taşma | 30 |
 | Emme/çalma | 30 |
 | Totem | 30 |
 | Can bağı | 30 |
 | Koruyucu tetik | 30 |
-| Ters kopya hasar | 30 |
+| Ters kopya | 30 |
 | Hedefi sana çekme | 22 |
 | Sıçrayıp çakılma | 21 |
+| Tasma | 12 |
 | Ters kontrol | 12 |
 | Bataklık | 12 |
+| Dosta yansıtma | 12 |
 | İnen akış alanı | 12 |
 | Fırlatılma | 12 |
 | Çit | 12 |
@@ -132,19 +134,19 @@ Kurallar: `docs/atom-grammar-taslak.json` (TASLAK). Sayılar: `docs/element-sist
 
 ### 2 İyileştirme
 
-- *sıfatsız*: kılıç yayı → küre 2m, önünde yay. Etkiler: can→dost 35
-- **2-1 Yoğun İyileştirme** — _Tasma, Taşma_ — kılıç yayı → küre 1.1m, önünde yay (tek hedef). Etkiler: can→dost 47.25 [tasma]
-- **2-2 Emici İyileştirme** — _Girdap, Emme/çalma_ — kılıç yayı → küre 2m, önünde yay (içine çeker). Etkiler: can→düşman -33.25 [emme]; can→sen 33.25 [aktarim]; mermi_sil→düşman mermisi [yut]
-- **2-3 Sıçrayan İyileştirme** — _Seken_ — kılıç yayı → küre 2.2m, önünde yay (2 kez seker). Etkiler: can→dost 35 [dosttan_dosta]
-- **2-4 Sabit İyileştirme** — _Totem_ — kılıç yayı → küre 2m, önünde yay (yerinde çapalı, tik tik). Etkiler: can→dost 35 [totem]
-- **2-5 Yayılan İyileştirme** — _Dalga_ — kılıç yayı → küre 3.6m, önünde yay (dışa büyür, cephe geçerken). Etkiler: can→dost 29.75 [alan]
-- **2-6 Bağlayıcı İyileştirme** — _Can bağı, Bağ_ — kılıç yayı → bağ 2m, önünde yay (sen↔hedef bağı, tik tik). Etkiler: can→dost 35 [can_bagi]; hasar_paylasimi→dost 0.5 1.5sn [bag]
-- **2-7 Bulandırıcı İyileştirme** — _Sis_ — kılıç yayı → bulut 2m, önünde yay (sis hacmi, tik tik). Etkiler: can→dost 35 [bulut_tik]; gizlen→dost 3.2sn [bulut_ici]; kor→düşman 0.3 3.2sn [bulut_ici]
-- **2-8 Yükselen İyileştirme** — _Yükselen_ — kılıç yayı → küre 2m, önünde yay (yerden yükselir, gücü artar). Etkiler: can→dost 35 [buyuyen]; hasar_buff→sen 0.1 3sn [yukselen]
-- **2-9 Odaklı İyileştirme** — _Koruyucu tetik, Güdümlü_ — kılıç yayı → küre 2m, önünde yay (hedefe kilitli, tek hedef). Etkiler: can→dost 40.25 [koruyucu_tetik]
-- **2-10 Aynalı İyileştirme** — _Ters kopya hasar, Ayna eşli_ — kılıç yayı → küre 2m, önünde yay (karşı noktada eşi). Etkiler: can→dost 35; can→düşman -10.5 [ters_kopya]; yansit→sen 0.3 2sn [ayna_sifati]
-- **2-11 Kopya İyileştirme** — _Çift_ — kılıç yayı → küre 2m, önünde yay (2 kez (kopya)). Etkiler: can→dost 35 [iki_kez]
-- **2-12 Akan İyileştirme** — _Akış_ — kılıç yayı → küre 2m, önünde yay (sürekli akar, tik tik). Etkiler: can→dost 24.5 3sn [akis]
+- *sıfatsız*: kılıç yayı → küre 2m, önünde yay (uyumsuz silah). Etkiler: can→dost 28
+- **2-1 Yoğun İyileştirme** — _Taşma_ — kılıç yayı → küre 1.1m, önünde yay (tek hedef, uyumsuz silah). Etkiler: can→dost 37.8 [tasar]
+- **2-2 Emici İyileştirme** — _Girdap, Emme/çalma_ — kılıç yayı → küre 2m, önünde yay (içine çeker, uyumsuz silah). Etkiler: can→düşman -26.6 [emme]; can→sen 26.6 [aktarim]; mermi_sil→düşman mermisi [yut]
+- **2-3 Sıçrayan İyileştirme** — _Seken_ — kılıç yayı → küre 2.2m, önünde yay (2 kez seker, uyumsuz silah). Etkiler: can→dost 28 [dosttan_dosta]
+- **2-4 Sabit İyileştirme** — _Totem_ — kılıç yayı → küre 2m, önünde yay (yerinde çapalı, tik tik, uyumsuz silah). Etkiler: can→dost 28 [totem]
+- **2-5 Yayılan İyileştirme** — _Dalga_ — kılıç yayı → küre 3.6m, önünde yay (dışa büyür, cephe geçerken, uyumsuz silah). Etkiler: can→dost 23.8 [alan]
+- **2-6 Bağlayıcı İyileştirme** — _Can bağı, Bağ_ — kılıç yayı → bağ 2m, önünde yay (sen↔hedef bağı, tik tik, uyumsuz silah). Etkiler: can→dost 28 [can_bagi]; hasar_paylasimi→dost 0.5 1.5sn [bag]
+- **2-7 Bulandırıcı İyileştirme** — _Sis_ — kılıç yayı → bulut 2m, önünde yay (sis hacmi, tik tik, uyumsuz silah). Etkiler: can→dost 28 [bulut_tik]; gizlen→dost 3.2sn [bulut_ici]; kor→düşman 0.3 3.2sn [bulut_ici]
+- **2-8 Yükselen İyileştirme** — _Yükselen_ — kılıç yayı → küre 2m, önünde yay (yerden yükselir, gücü artar, uyumsuz silah). Etkiler: can→dost 28 [buyuyen]; hasar_buff→sen 0.1 3sn [yukselen]
+- **2-9 Odaklı İyileştirme** — _Koruyucu tetik, Güdümlü_ — kılıç yayı → küre 2m, önünde yay (hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: can→dost 32.2 [koruyucu_tetik]
+- **2-10 Aynalı İyileştirme** — _Ters kopya, Ayna eşli_ — kılıç yayı → küre 2m, önünde yay (karşı noktada eşi, uyumsuz silah). Etkiler: can→dost 28; can→düşman -8.4 [ters_kopya]; yansit→sen 0.3 2sn [ayna_sifati]
+- **2-11 Kopya İyileştirme** — _Çift_ — kılıç yayı → küre 2m, önünde yay (2 kez (kopya), uyumsuz silah). Etkiler: can→dost 28 [iki_kez]
+- **2-12 Akan İyileştirme** — _Akış_ — kılıç yayı → küre 2m, önünde yay (sürekli akar, tik tik, uyumsuz silah). Etkiler: can→dost 19.6 3sn [akis]
 
 ### 3 Hareket
 
@@ -164,19 +166,19 @@ Kurallar: `docs/atom-grammar-taslak.json` (TASLAK). Sayılar: `docs/element-sist
 
 ### 4 Savunma
 
-- *sıfatsız*: kılıç yayı → küre 1.5m, önünde yay (katı). Etkiler: kalkan→dost 50
-- **4-1 Yoğun Savunma** — _Tasma, Taşma_ — kılıç yayı → küre 0.8m, önünde yay (katı, tek hedef). Etkiler: kalkan→dost 67.5 [tasma]
-- **4-2 Emici Savunma** — _Girdap, Emme/çalma_ — kılıç yayı → küre 1.5m, önünde yay (katı, içine çeker). Etkiler: can→düşman -47.5 [emme]; kalkan→sen 47.5 [aktarim]; mermi_sil→düşman mermisi [yut]
-- **4-3 Sıçrayan Savunma** — _Seken_ — kılıç yayı → küre 1.7m, önünde yay (katı, 2 kez seker). Etkiler: kalkan→dost 50 [dosttan_dosta]
-- **4-4 Sabit Savunma** — _Duvar, Totem_ — kılıç yayı → küre 1.5m, önünde yay (yerinde çapalı, katı, tik tik). Etkiler: kalkan→dost 50 [totem]
-- **4-5 Yayılan Savunma** — _Dalga_ — kılıç yayı → küre 2.7m, önünde yay (katı, dışa büyür, cephe geçerken). Etkiler: kalkan→dost 42.5 [alan]
-- **4-6 Bağlayıcı Savunma** — _Can bağı, Bağ_ — kılıç yayı → bağ 1.5m, önünde yay (katı, sen↔hedef bağı, tik tik). Etkiler: kalkan→dost 50 [can_bagi]; hasar_paylasimi→dost 0.5 1.5sn [bag]
-- **4-7 Bulandırıcı Savunma** — _Sis_ — kılıç yayı → bulut 1.5m, önünde yay (katı, sis hacmi, tik tik). Etkiler: kalkan→dost 50 [bulut_tik]; gizlen→dost 3.5sn [bulut_ici]; kor→düşman 0.3 3.5sn [bulut_ici]
-- **4-8 Yükselen Savunma** — _Yükselen_ — kılıç yayı → küre 1.5m, önünde yay (katı, yerden yükselir, gücü artar). Etkiler: kalkan→dost 50 [buyuyen]; hasar_buff→sen 0.1 3sn [yukselen]
-- **4-9 Odaklı Savunma** — _Koruyucu tetik, Güdümlü_ — kılıç yayı → küre 1.5m, önünde yay (katı, hedefe kilitli, tek hedef). Etkiler: kalkan→dost 57.5 [koruyucu_tetik]
-- **4-10 Aynalı Savunma** — _Ters kopya hasar, Ayna eşli_ — kılıç yayı → küre 1.5m, önünde yay (katı, karşı noktada eşi). Etkiler: kalkan→dost 50; can→düşman -15 [ters_kopya]; yansit→sen 0.3 2sn [ayna_sifati]
-- **4-11 Kopya Savunma** — _Çift_ — kılıç yayı → küre 1.5m, önünde yay (katı, 2 kez (kopya)). Etkiler: kalkan→dost 50 [iki_kez]
-- **4-12 Akan Savunma** — _Akış_ — kılıç yayı → küre 1.5m, önünde yay (katı, sürekli akar, tik tik). Etkiler: kalkan→dost 35 3sn [akis]
+- *sıfatsız*: kılıç yayı → küre 1.5m, önünde yay (katı, uyumsuz silah). Etkiler: kalkan→dost 40
+- **4-1 Yoğun Savunma** — _Taşma_ — kılıç yayı → küre 0.8m, önünde yay (katı, tek hedef, uyumsuz silah). Etkiler: kalkan→dost 54 [tasar]
+- **4-2 Emici Savunma** — _Girdap, Emme/çalma_ — kılıç yayı → küre 1.5m, önünde yay (katı, içine çeker, uyumsuz silah). Etkiler: can→düşman -38 [emme]; kalkan→sen 38 [aktarim]; mermi_sil→düşman mermisi [yut]
+- **4-3 Sıçrayan Savunma** — _Seken_ — kılıç yayı → küre 1.7m, önünde yay (katı, 2 kez seker, uyumsuz silah). Etkiler: kalkan→dost 40 [dosttan_dosta]
+- **4-4 Sabit Savunma** — _Duvar, Totem_ — kılıç yayı → küre 1.5m, önünde yay (yerinde çapalı, katı, tik tik, uyumsuz silah). Etkiler: kalkan→dost 40 [totem]
+- **4-5 Yayılan Savunma** — _Dalga_ — kılıç yayı → küre 2.7m, önünde yay (katı, dışa büyür, cephe geçerken, uyumsuz silah). Etkiler: kalkan→dost 34 [alan]
+- **4-6 Bağlayıcı Savunma** — _Can bağı, Bağ_ — kılıç yayı → bağ 1.5m, önünde yay (katı, sen↔hedef bağı, tik tik, uyumsuz silah). Etkiler: kalkan→dost 40 [can_bagi]; hasar_paylasimi→dost 0.5 1.5sn [bag]
+- **4-7 Bulandırıcı Savunma** — _Sis_ — kılıç yayı → bulut 1.5m, önünde yay (katı, sis hacmi, tik tik, uyumsuz silah). Etkiler: kalkan→dost 40 [bulut_tik]; gizlen→dost 3.5sn [bulut_ici]; kor→düşman 0.3 3.5sn [bulut_ici]
+- **4-8 Yükselen Savunma** — _Yükselen_ — kılıç yayı → küre 1.5m, önünde yay (katı, yerden yükselir, gücü artar, uyumsuz silah). Etkiler: kalkan→dost 40 [buyuyen]; hasar_buff→sen 0.1 3sn [yukselen]
+- **4-9 Odaklı Savunma** — _Koruyucu tetik, Güdümlü_ — kılıç yayı → küre 1.5m, önünde yay (katı, hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: kalkan→dost 46 [koruyucu_tetik]
+- **4-10 Aynalı Savunma** — _Ters kopya, Ayna eşli_ — kılıç yayı → küre 1.5m, önünde yay (katı, karşı noktada eşi, uyumsuz silah). Etkiler: kalkan→dost 40; can→düşman -12 [ters_kopya]; yansit→sen 0.3 2sn [ayna_sifati]
+- **4-11 Kopya Savunma** — _Çift_ — kılıç yayı → küre 1.5m, önünde yay (katı, 2 kez (kopya), uyumsuz silah). Etkiler: kalkan→dost 40 [iki_kez]
+- **4-12 Akan Savunma** — _Akış_ — kılıç yayı → küre 1.5m, önünde yay (katı, sürekli akar, tik tik, uyumsuz silah). Etkiler: kalkan→dost 28 3sn [akis]
 
 ### 5 Patlama
 
@@ -196,51 +198,51 @@ Kurallar: `docs/atom-grammar-taslak.json` (TASLAK). Sayılar: `docs/element-sist
 
 ### 6 Kontrol
 
-- *sıfatsız*: kılıç yayı → koni 4m, önünde yay. Etkiler: hareket→düşman 1.5sn; can→düşman -8
-- **6-1 Yoğun Kontrol** — _Delici_ — kılıç yayı → koni 2.2m, önünde yay (delip geçer). Etkiler: hareket→düşman 0.8sn [sert]; can→düşman -10.8
-- **6-2 Emici Kontrol** — _Hedefi sana çekme, Girdap_ — kılıç yayı → koni 4m, önünde yay (içine çeker). Etkiler: hareket→düşman 1.5sn; can→düşman -7.6; cek→düşman [sana_dogru]; can→sen 2.28 [aktarim]; mermi_sil→düşman mermisi [yut]
-- **6-3 Sıçrayan Kontrol** — _Seken_ — kılıç yayı → koni 4.4m, önünde yay (2 kez seker). Etkiler: hareket→düşman 1.5sn [seker]; can→düşman -8 [seker]
-- **6-4 Sabit Kontrol** — _Tuzak_ — kılıç yayı → koni 4m, önünde yay (yerinde çapalı, içine girene). Etkiler: hareket→düşman 3.5sn [uzun]; can→düşman -8 [tuzak]
-- **6-5 Yayılan Kontrol** — _Dalga_ — kılıç yayı → koni 7.2m, önünde yay (dışa büyür, cephe geçerken). Etkiler: hareket→düşman 1.5sn [dalga]; can→düşman -6.8 [alan]
-- **6-6 Bağlayıcı Kontrol** — _Tasma, Taşma, Bağ_ — kılıç yayı → bağ 4m, önünde yay (sen↔hedef bağı, tik tik). Etkiler: hareket→düşman 1.5sn [tasma]; can→düşman -8 [bag_akisi]; hareket→düşman 1.5sn [bag_ucu]; hareket→düşman 0.7 1.5sn [bag_ucu,yavas]
-- **6-7 Bulandırıcı Kontrol** — _Sis_ — kılıç yayı → bulut 4m, önünde yay (sis hacmi, tik tik). Etkiler: hareket→düşman 1.5sn [bulut_tik]; can→düşman -8 [bulut_tik]; gizlen→dost 3.2sn [bulut_ici]; kor→düşman 0.3 3.2sn [bulut_ici]
-- **6-8 Yükselen Kontrol** — _Havaya atma, Yükselen_ — kılıç yayı → koni 4m, önünde yay (yerden yükselir, gücü artar). Etkiler: hareket→düşman 1.5sn [havaya_at]; can→düşman -8 [havaya_at]; hasar_buff→sen 0.1 3sn [yukselen]
-- **6-9 Odaklı Kontrol** — _Gecikmeli an, Güdümlü_ — kılıç yayı → koni 4m, önünde yay (hedefe kilitli, tek hedef). Etkiler: hareket→düşman 1.5sn [isaretli_an]; can→düşman -9.2 [iskalamaz,zirh_yoksay]
-- **6-10 Aynalı Kontrol** — _Kıskaç, Ters kontrol, Ayna eşli_ — kılıç yayı → koni 4m, önünde yay (karşı noktada eşi). Etkiler: hareket→düşman 1.5sn [ters_kontrol]; can→düşman -8 [kiskac]; yansit→sen 0.3 2sn [ayna_sifati]
-- **6-11 Kopya Kontrol** — _Çift_ — kılıç yayı → koni 4m, önünde yay (2 kez (kopya)). Etkiler: hareket→düşman 1.5sn [iki_kez]; can→düşman -8 [iki_kez]
-- **6-12 Akan Kontrol** — _Bataklık, Akış_ — kılıç yayı → koni 4m, önünde yay (sürekli akar, tik tik). Etkiler: hareket→düşman 3sn [bataklik]; can→düşman -5.6 3sn [akis]
+- *sıfatsız*: kılıç yayı → koni 4m, önünde yay (uyumsuz silah). Etkiler: hareket→düşman 1.5sn; can→düşman -6.4
+- **6-1 Yoğun Kontrol** — _Delici_ — kılıç yayı → koni 2.2m, önünde yay (delip geçer, uyumsuz silah). Etkiler: hareket→düşman 0.8sn [sert]; can→düşman -8.64
+- **6-2 Emici Kontrol** — _Hedefi sana çekme, Girdap_ — kılıç yayı → koni 4m, önünde yay (içine çeker, uyumsuz silah). Etkiler: hareket→düşman 1.5sn; can→düşman -6.08; cek→düşman [sana_dogru]; can→sen 1.82 [aktarim]; mermi_sil→düşman mermisi [yut]
+- **6-3 Sıçrayan Kontrol** — _Seken_ — kılıç yayı → koni 4.4m, önünde yay (2 kez seker, uyumsuz silah). Etkiler: hareket→düşman 1.5sn [seker]; can→düşman -6.4 [seker]
+- **6-4 Sabit Kontrol** — _Tuzak_ — kılıç yayı → koni 4m, önünde yay (yerinde çapalı, içine girene, uyumsuz silah). Etkiler: hareket→düşman 3.5sn [uzun]; can→düşman -6.4 [tuzak]
+- **6-5 Yayılan Kontrol** — _Dalga_ — kılıç yayı → koni 7.2m, önünde yay (dışa büyür, cephe geçerken, uyumsuz silah). Etkiler: hareket→düşman 1.5sn [dalga]; can→düşman -5.44 [alan]
+- **6-6 Bağlayıcı Kontrol** — _Tasma, Bağ_ — kılıç yayı → bağ 4m, önünde yay (sen↔hedef bağı, tik tik, uyumsuz silah). Etkiler: hareket→düşman 1.5sn [tasma]; can→düşman -6.4 [bag_akisi]; hareket→düşman 1.5sn [bag_ucu]; hareket→düşman 0.7 1.5sn [bag_ucu,yavas]
+- **6-7 Bulandırıcı Kontrol** — _Sis_ — kılıç yayı → bulut 4m, önünde yay (sis hacmi, tik tik, uyumsuz silah). Etkiler: hareket→düşman 1.5sn [bulut_tik]; can→düşman -6.4 [bulut_tik]; gizlen→dost 3.2sn [bulut_ici]; kor→düşman 0.3 3.2sn [bulut_ici]
+- **6-8 Yükselen Kontrol** — _Havaya atma, Yükselen_ — kılıç yayı → koni 4m, önünde yay (yerden yükselir, gücü artar, uyumsuz silah). Etkiler: hareket→düşman 1.5sn [havaya_at]; can→düşman -6.4 [havaya_at]; hasar_buff→sen 0.1 3sn [yukselen]
+- **6-9 Odaklı Kontrol** — _Gecikmeli an, Güdümlü_ — kılıç yayı → koni 4m, önünde yay (hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: hareket→düşman 1.5sn [isaretli_an]; can→düşman -7.36 [iskalamaz,zirh_yoksay]
+- **6-10 Aynalı Kontrol** — _Kıskaç, Ters kontrol, Ayna eşli_ — kılıç yayı → koni 4m, önünde yay (karşı noktada eşi, uyumsuz silah). Etkiler: hareket→düşman 1.5sn [ters_kontrol]; can→düşman -6.4 [kiskac]; yansit→sen 0.3 2sn [ayna_sifati]
+- **6-11 Kopya Kontrol** — _Çift_ — kılıç yayı → koni 4m, önünde yay (2 kez (kopya), uyumsuz silah). Etkiler: hareket→düşman 1.5sn [iki_kez]; can→düşman -6.4 [iki_kez]
+- **6-12 Akan Kontrol** — _Bataklık, Akış_ — kılıç yayı → koni 4m, önünde yay (sürekli akar, tik tik, uyumsuz silah). Etkiler: hareket→düşman 3sn [bataklik]; can→düşman -4.48 3sn [akis]
 
 ### 7 Zayıflatma
 
-- *sıfatsız*: kılıç yayı → kapsül 3m, önünde yay. Etkiler: zirh→düşman -0.2 4sn; can→düşman -5
-- **7-1 Yoğun Zayıflatma** — _Delici_ — kılıç yayı → kapsül 1.7m, önünde yay (delip geçer). Etkiler: zirh→düşman -0.27 2sn; can→düşman -6.75
-- **7-2 Emici Zayıflatma** — _Girdap_ — kılıç yayı → kapsül 3m, önünde yay (içine çeker). Etkiler: zirh→düşman -0.19 4sn; can→düşman -4.75; zirh→sen 0.06 4sn [aktarim]; can→sen 1.43 [aktarim]; mermi_sil→düşman mermisi [yut]
-- **7-3 Sıçrayan Zayıflatma** — _Seken_ — kılıç yayı → kapsül 3.3m, önünde yay (2 kez seker). Etkiler: zirh→düşman -0.2 4sn [seker]; can→düşman -5 [seker]
-- **7-4 Sabit Zayıflatma** — _Tuzak_ — kılıç yayı → kapsül 3m, önünde yay (yerinde çapalı, içine girene). Etkiler: zirh→düşman -0.2 4sn [tuzak]; can→düşman -5 [tuzak]
-- **7-5 Yayılan Zayıflatma** — _Dalga_ — kılıç yayı → kapsül 5.4m, önünde yay (dışa büyür, cephe geçerken). Etkiler: zirh→düşman -0.17 4sn [alan]; can→düşman -4.25 [alan]
-- **7-6 Bağlayıcı Zayıflatma** — _Bağ_ — kılıç yayı → bağ 3m, önünde yay (sen↔hedef bağı, tik tik). Etkiler: zirh→düşman -0.2 4sn [bag_akisi]; can→düşman -5 [bag_akisi]; hareket→düşman 1.5sn [bag_ucu]; hareket→düşman 0.7 1.5sn [bag_ucu,yavas]
-- **7-7 Bulandırıcı Zayıflatma** — _Sis_ — kılıç yayı → bulut 3m, önünde yay (sis hacmi, tik tik). Etkiler: zirh→düşman -0.2 4sn [bulut_tik]; can→düşman -5 [bulut_tik]; gizlen→dost 3.2sn [bulut_ici]; kor→düşman 0.3 3.2sn [bulut_ici]
-- **7-8 Yükselen Zayıflatma** — _Havaya atma, Yükselen_ — kılıç yayı → kapsül 3m, önünde yay (yerden yükselir, gücü artar). Etkiler: zirh→düşman -0.2 4sn [havaya_at]; can→düşman -5 [havaya_at]; hareket→düşman 0.8sn [havada]; hasar_buff→sen 0.1 3sn [yukselen]
-- **7-9 Odaklı Zayıflatma** — _Gecikmeli an, Güdümlü_ — kılıç yayı → kapsül 3m, önünde yay (hedefe kilitli, tek hedef). Etkiler: zirh→düşman -0.23 4sn [isaretli_an]; can→düşman -5.75 [iskalamaz,zirh_yoksay]
-- **7-10 Aynalı Zayıflatma** — _Kıskaç, Ayna eşli_ — kılıç yayı → kapsül 3m, önünde yay (karşı noktada eşi). Etkiler: zirh→düşman -0.2 4sn [kiskac]; can→düşman -5 [kiskac]; yansit→sen 0.3 2sn [ayna_sifati]
-- **7-11 Kopya Zayıflatma** — _Çift_ — kılıç yayı → kapsül 3m, önünde yay (2 kez (kopya)). Etkiler: zirh→düşman -0.2 4sn [iki_kez]; can→düşman -5 [iki_kez]
-- **7-12 Akan Zayıflatma** — _Akış_ — kılıç yayı → kapsül 3m, önünde yay (sürekli akar, tik tik). Etkiler: zirh→düşman -0.14 3sn [akis]; can→düşman -3.5 3sn [akis]
+- *sıfatsız*: kılıç yayı → kapsül 3m, önünde yay (uyumsuz silah). Etkiler: zirh→düşman -0.16 4sn; can→düşman -4
+- **7-1 Yoğun Zayıflatma** — _Delici_ — kılıç yayı → kapsül 1.7m, önünde yay (delip geçer, uyumsuz silah). Etkiler: zirh→düşman -0.22 2sn; can→düşman -5.4
+- **7-2 Emici Zayıflatma** — _Girdap_ — kılıç yayı → kapsül 3m, önünde yay (içine çeker, uyumsuz silah). Etkiler: zirh→düşman -0.15 4sn; can→düşman -3.8; zirh→sen 0.05 4sn [aktarim]; can→sen 1.14 [aktarim]; mermi_sil→düşman mermisi [yut]
+- **7-3 Sıçrayan Zayıflatma** — _Seken_ — kılıç yayı → kapsül 3.3m, önünde yay (2 kez seker, uyumsuz silah). Etkiler: zirh→düşman -0.16 4sn [seker]; can→düşman -4 [seker]
+- **7-4 Sabit Zayıflatma** — _Tuzak_ — kılıç yayı → kapsül 3m, önünde yay (yerinde çapalı, içine girene, uyumsuz silah). Etkiler: zirh→düşman -0.16 4sn [tuzak]; can→düşman -4 [tuzak]
+- **7-5 Yayılan Zayıflatma** — _Dalga_ — kılıç yayı → kapsül 5.4m, önünde yay (dışa büyür, cephe geçerken, uyumsuz silah). Etkiler: zirh→düşman -0.14 4sn [alan]; can→düşman -3.4 [alan]
+- **7-6 Bağlayıcı Zayıflatma** — _Bağ_ — kılıç yayı → bağ 3m, önünde yay (sen↔hedef bağı, tik tik, uyumsuz silah). Etkiler: zirh→düşman -0.16 4sn [bag_akisi]; can→düşman -4 [bag_akisi]; hareket→düşman 1.5sn [bag_ucu]; hareket→düşman 0.7 1.5sn [bag_ucu,yavas]
+- **7-7 Bulandırıcı Zayıflatma** — _Sis_ — kılıç yayı → bulut 3m, önünde yay (sis hacmi, tik tik, uyumsuz silah). Etkiler: zirh→düşman -0.16 4sn [bulut_tik]; can→düşman -4 [bulut_tik]; gizlen→dost 3.2sn [bulut_ici]; kor→düşman 0.3 3.2sn [bulut_ici]
+- **7-8 Yükselen Zayıflatma** — _Havaya atma, Yükselen_ — kılıç yayı → kapsül 3m, önünde yay (yerden yükselir, gücü artar, uyumsuz silah). Etkiler: zirh→düşman -0.16 4sn [havaya_at]; can→düşman -4 [havaya_at]; hareket→düşman 0.8sn [havada]; hasar_buff→sen 0.1 3sn [yukselen]
+- **7-9 Odaklı Zayıflatma** — _Gecikmeli an, Güdümlü_ — kılıç yayı → kapsül 3m, önünde yay (hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: zirh→düşman -0.18 4sn [isaretli_an]; can→düşman -4.6 [iskalamaz,zirh_yoksay]
+- **7-10 Aynalı Zayıflatma** — _Kıskaç, Ayna eşli_ — kılıç yayı → kapsül 3m, önünde yay (karşı noktada eşi, uyumsuz silah). Etkiler: zirh→düşman -0.16 4sn [kiskac]; can→düşman -4 [kiskac]; yansit→sen 0.3 2sn [ayna_sifati]
+- **7-11 Kopya Zayıflatma** — _Çift_ — kılıç yayı → kapsül 3m, önünde yay (2 kez (kopya), uyumsuz silah). Etkiler: zirh→düşman -0.16 4sn [iki_kez]; can→düşman -4 [iki_kez]
+- **7-12 Akan Zayıflatma** — _Akış_ — kılıç yayı → kapsül 3m, önünde yay (sürekli akar, tik tik, uyumsuz silah). Etkiler: zirh→düşman -0.11 3sn [akis]; can→düşman -2.8 3sn [akis]
 
 ### 8 Güçlendirme
 
-- *sıfatsız*: kılıç yayı → küre 2m, önünde yay. Etkiler: hasar_buff→dost 0.2 3sn
-- **8-1 Yoğun Güçlendirme** — _Tasma, Taşma_ — kılıç yayı → küre 1.1m, önünde yay (tek hedef). Etkiler: hasar_buff→dost 0.27 1.5sn [tasma]
-- **8-2 Emici Güçlendirme** — _Girdap, Emme/çalma_ — kılıç yayı → küre 2m, önünde yay (içine çeker). Etkiler: hasar_buff→düşman -0.19 3sn [emme]; hasar_buff→sen 0.19 3sn [aktarim]; mermi_sil→düşman mermisi [yut]
-- **8-3 Sıçrayan Güçlendirme** — _Seken_ — kılıç yayı → küre 2.2m, önünde yay (2 kez seker). Etkiler: hasar_buff→dost 0.2 3sn [dosttan_dosta]
-- **8-4 Sabit Güçlendirme** — _Totem_ — kılıç yayı → küre 2m, önünde yay (yerinde çapalı, tik tik). Etkiler: hasar_buff→dost 0.2 3sn [totem]
-- **8-5 Yayılan Güçlendirme** — _Dalga_ — kılıç yayı → küre 3.6m, önünde yay (dışa büyür, cephe geçerken). Etkiler: hasar_buff→dost 0.17 3sn [alan]
-- **8-6 Bağlayıcı Güçlendirme** — _Can bağı, Bağ_ — kılıç yayı → bağ 2m, önünde yay (sen↔hedef bağı, tik tik). Etkiler: hasar_buff→dost 0.2 3sn [can_bagi]; hasar_paylasimi→dost 0.5 1.5sn [bag]
-- **8-7 Bulandırıcı Güçlendirme** — _Sis_ — kılıç yayı → bulut 2m, önünde yay (sis hacmi, tik tik). Etkiler: hasar_buff→dost 0.2 3sn [bulut_tik]; gizlen→dost 3.2sn [bulut_ici]; kor→düşman 0.3 3.2sn [bulut_ici]
-- **8-8 Yükselen Güçlendirme** — _Yükselen_ — kılıç yayı → küre 2m, önünde yay (yerden yükselir, gücü artar). Etkiler: hasar_buff→dost 0.2 3sn [buyuyen]; hasar_buff→sen 0.1 3sn [yukselen]
-- **8-9 Odaklı Güçlendirme** — _Koruyucu tetik, Güdümlü_ — kılıç yayı → küre 2m, önünde yay (hedefe kilitli, tek hedef). Etkiler: hasar_buff→dost 0.23 3sn [koruyucu_tetik]
-- **8-10 Aynalı Güçlendirme** — _Ters kopya hasar, Ayna eşli_ — kılıç yayı → küre 2m, önünde yay (karşı noktada eşi). Etkiler: hasar_buff→dost 0.2 3sn; hasar_buff→düşman -0.06 3sn [ters_kopya]; yansit→sen 0.3 2sn [ayna_sifati]
-- **8-11 Kopya Güçlendirme** — _Çift_ — kılıç yayı → küre 2m, önünde yay (2 kez (kopya)). Etkiler: hasar_buff→dost 0.2 3sn [iki_kez]
-- **8-12 Akan Güçlendirme** — _Akış_ — kılıç yayı → küre 2m, önünde yay (sürekli akar, tik tik). Etkiler: hasar_buff→dost 0.14 3sn [akis]
+- *sıfatsız*: kılıç yayı → küre 2m, önünde yay (uyumsuz silah). Etkiler: hasar_buff→dost 0.16 3sn
+- **8-1 Yoğun Güçlendirme** — _Taşma_ — kılıç yayı → küre 1.1m, önünde yay (tek hedef, uyumsuz silah). Etkiler: hasar_buff→dost 0.22 1.5sn [tasar]
+- **8-2 Emici Güçlendirme** — _Girdap, Emme/çalma_ — kılıç yayı → küre 2m, önünde yay (içine çeker, uyumsuz silah). Etkiler: hasar_buff→düşman -0.15 3sn [emme]; hasar_buff→sen 0.15 3sn [aktarim]; mermi_sil→düşman mermisi [yut]
+- **8-3 Sıçrayan Güçlendirme** — _Seken_ — kılıç yayı → küre 2.2m, önünde yay (2 kez seker, uyumsuz silah). Etkiler: hasar_buff→dost 0.16 3sn [dosttan_dosta]
+- **8-4 Sabit Güçlendirme** — _Totem_ — kılıç yayı → küre 2m, önünde yay (yerinde çapalı, tik tik, uyumsuz silah). Etkiler: hasar_buff→dost 0.16 3sn [totem]
+- **8-5 Yayılan Güçlendirme** — _Dalga_ — kılıç yayı → küre 3.6m, önünde yay (dışa büyür, cephe geçerken, uyumsuz silah). Etkiler: hasar_buff→dost 0.14 3sn [alan]
+- **8-6 Bağlayıcı Güçlendirme** — _Can bağı, Bağ_ — kılıç yayı → bağ 2m, önünde yay (sen↔hedef bağı, tik tik, uyumsuz silah). Etkiler: hasar_buff→dost 0.16 3sn [can_bagi]; hasar_paylasimi→dost 0.5 1.5sn [bag]
+- **8-7 Bulandırıcı Güçlendirme** — _Sis_ — kılıç yayı → bulut 2m, önünde yay (sis hacmi, tik tik, uyumsuz silah). Etkiler: hasar_buff→dost 0.16 3sn [bulut_tik]; gizlen→dost 3.2sn [bulut_ici]; kor→düşman 0.3 3.2sn [bulut_ici]
+- **8-8 Yükselen Güçlendirme** — _Yükselen_ — kılıç yayı → küre 2m, önünde yay (yerden yükselir, gücü artar, uyumsuz silah). Etkiler: hasar_buff→dost 0.16 3sn [buyuyen]; hasar_buff→sen 0.1 3sn [yukselen]
+- **8-9 Odaklı Güçlendirme** — _Koruyucu tetik, Güdümlü_ — kılıç yayı → küre 2m, önünde yay (hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: hasar_buff→dost 0.18 3sn [koruyucu_tetik]
+- **8-10 Aynalı Güçlendirme** — _Ters kopya, Ayna eşli_ — kılıç yayı → küre 2m, önünde yay (karşı noktada eşi, uyumsuz silah). Etkiler: hasar_buff→dost 0.16 3sn; hasar_buff→düşman -0.05 3sn [ters_kopya]; yansit→sen 0.3 2sn [ayna_sifati]
+- **8-11 Kopya Güçlendirme** — _Çift_ — kılıç yayı → küre 2m, önünde yay (2 kez (kopya), uyumsuz silah). Etkiler: hasar_buff→dost 0.16 3sn [iki_kez]
+- **8-12 Akan Güçlendirme** — _Akış_ — kılıç yayı → küre 2m, önünde yay (sürekli akar, tik tik, uyumsuz silah). Etkiler: hasar_buff→dost 0.11 3sn [akis]
 
 ### 9 Arındırma
 
@@ -260,117 +262,117 @@ Kurallar: `docs/atom-grammar-taslak.json` (TASLAK). Sayılar: `docs/element-sist
 
 ### 10 Yansıma
 
-- *sıfatsız*: kılıç yayı → küre 1.5m, önünde yay. Etkiler: yansit→sen 0.5 2sn [silahla:yay]
-- **10-1 Yoğun Yansıma** — __ — kılıç yayı → küre 0.8m, önünde yay (tek hedef). Etkiler: yansit→sen 0.68 1sn [sert,silahla:yay]
-- **10-2 Emici Yansıma** — _Girdap, Hasar emme_ — kılıç yayı → küre 1.5m, önünde yay (içine çeker). Etkiler: em→sen 0.5 2sn [cana_cevir,silahla:yay]; mermi_sil→düşman mermisi [yut]
-- **10-3 Sıçrayan Yansıma** — _Seken_ — kılıç yayı → küre 1.7m, önünde yay (2 kez seker). Etkiler: yansit→sen 0.5 2sn [seker,silahla:yay]
-- **10-4 Sabit Yansıma** — _Ayna yüzey_ — kılıç yayı → küre 1.5m, önünde yay (yerinde çapalı). Etkiler: yansit→sen 0.5 2sn [ayna_yuzey,silahla:yay]
-- **10-5 Yayılan Yansıma** — _Dalga_ — kılıç yayı → küre 2.7m, önünde yay (dışa büyür, cephe geçerken). Etkiler: yansit→sen 0.5 2sn [aura,silahla:yay]
-- **10-6 Bağlayıcı Yansıma** — _Hasar yönlendirme, Bağ_ — kılıç yayı → bağ 1.5m, önünde yay (sen↔hedef bağı, tik tik). Etkiler: yonlendir→düşman 0.5 2sn [bag,silahla:yay]; hareket→düşman 1.5sn [bag_ucu]; hareket→düşman 0.7 2sn [bag_ucu,yavas]
-- **10-7 Bulandırıcı Yansıma** — _Sis_ — kılıç yayı → bulut 1.5m, önünde yay (sis hacmi, tik tik). Etkiler: yansit→sen 0.5 2sn [gizli,silahla:yay]; gizlen→dost 5sn [bulut_ici]; kor→düşman 0.3 5sn [bulut_ici]
-- **10-8 Yükselen Yansıma** — _Yükselen_ — kılıç yayı → küre 1.5m, önünde yay (yerden yükselir, gücü artar). Etkiler: yansit→sen 0.5 2sn [artan_oran,silahla:yay]; hasar_buff→sen 0.1 3sn [yukselen]
-- **10-9 Odaklı Yansıma** — _Kusursuz savuşturma, Güdümlü_ — kılıç yayı → küre 1.5m, önünde yay (hedefe kilitli, tek hedef). Etkiler: yansit→sen 1 2sn [savusturma,silahla:yay]
-- **10-10 Aynalı Yansıma** — _Bölünen yansıma, Ayna eşli_ — kılıç yayı → küre 1.5m, önünde yay (karşı noktada eşi). Etkiler: yansit→sen 0.5 2sn [bolunen,silahla:yay]; yansit→sen 0.3 2sn [ayna_sifati]
-- **10-11 Kopya Yansıma** — _Çift_ — kılıç yayı → küre 1.5m, önünde yay (2 kez (kopya)). Etkiler: yansit→sen 0.5 2sn [iki_kez,silahla:yay]
-- **10-12 Akan Yansıma** — _Akış_ — kılıç yayı → küre 1.5m, önünde yay (sürekli akar, tik tik). Etkiler: yansit→sen 0.5 3sn [silahla:yay,surekli]
+- *sıfatsız*: kılıç yayı → küre 1.5m, önünde yay (uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [dunyada,silahla:yay]
+- **10-1 Yoğun Yansıma** — _Uzak yansıtıcı_ — kılıç yayı → küre 0.8m, önünde yay (tek hedef, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.68 1sn [dunyada,sert,silahla:yay]
+- **10-2 Emici Yansıma** — _Girdap, Uzak yansıtıcı, Hasar emme_ — kılıç yayı → küre 1.5m, önünde yay (içine çeker, uyumsuz silah). Etkiler: em→gövdenin olduğu yer 0.5 2sn [cana_cevir,dunyada,silahla:yay]; mermi_sil→düşman mermisi [yut]
+- **10-3 Sıçrayan Yansıma** — _Uzak yansıtıcı, Seken_ — kılıç yayı → küre 1.7m, önünde yay (2 kez seker, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [dunyada,seker,silahla:yay]
+- **10-4 Sabit Yansıma** — _Ayna yüzey, Uzak yansıtıcı_ — kılıç yayı → küre 1.5m, önünde yay (yerinde çapalı, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [ayna_yuzey,dunyada,silahla:yay]
+- **10-5 Yayılan Yansıma** — _Uzak yansıtıcı, Dalga_ — kılıç yayı → küre 2.7m, önünde yay (dışa büyür, cephe geçerken, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [aura,dunyada,silahla:yay]
+- **10-6 Bağlayıcı Yansıma** — _Uzak yansıtıcı, Hasar yönlendirme, Bağ_ — kılıç yayı → bağ 1.5m, önünde yay (sen↔hedef bağı, tik tik, uyumsuz silah). Etkiler: yonlendir→düşman 0.5 2sn [bag,dunyada,silahla:yay]; hareket→düşman 1.5sn [bag_ucu]; hareket→düşman 0.7 2sn [bag_ucu,yavas]
+- **10-7 Bulandırıcı Yansıma** — _Sis, Uzak yansıtıcı_ — kılıç yayı → bulut 1.5m, önünde yay (sis hacmi, tik tik, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [dunyada,gizli,silahla:yay]; gizlen→dost 5sn [bulut_ici]; kor→düşman 0.3 5sn [bulut_ici]
+- **10-8 Yükselen Yansıma** — _Uzak yansıtıcı, Yükselen_ — kılıç yayı → küre 1.5m, önünde yay (yerden yükselir, gücü artar, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [artan_oran,dunyada,silahla:yay]; hasar_buff→sen 0.1 3sn [yukselen]
+- **10-9 Odaklı Yansıma** — _Uzak yansıtıcı, Kusursuz savuşturma, Güdümlü_ — kılıç yayı → küre 1.5m, önünde yay (hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 1 2sn [dunyada,savusturma,silahla:yay]
+- **10-10 Aynalı Yansıma** — _Uzak yansıtıcı, Bölünen yansıma, Ayna eşli_ — kılıç yayı → küre 1.5m, önünde yay (karşı noktada eşi, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [bolunen,dunyada,silahla:yay]; yansit→sen 0.3 2sn [ayna_sifati]
+- **10-11 Kopya Yansıma** — _Uzak yansıtıcı, Çift_ — kılıç yayı → küre 1.5m, önünde yay (2 kez (kopya), uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [dunyada,iki_kez,silahla:yay]
+- **10-12 Akan Yansıma** — _Uzak yansıtıcı, Akış_ — kılıç yayı → küre 1.5m, önünde yay (sürekli akar, tik tik, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 3sn [dunyada,silahla:yay,surekli]
 
 ### 11 Çağırma
 
-- *sıfatsız*: kılıç yayı → nokta 1m, önünde yay. Etkiler: aktor_yarat→sen 1 5sn [silahla:yay]
-- **11-1 Yoğun Çağırma** — __ — kılıç yayı → nokta 0.6m, önünde yay (tek hedef). Etkiler: aktor_yarat→sen 1 2.5sn [guclu,silahla:yay]
-- **11-2 Emici Çağırma** — _Can emen minyon, Girdap_ — kılıç yayı → nokta 1m, önünde yay (içine çeker). Etkiler: aktor_yarat→sen 1 5sn [can_emen,silahla:yay]; mermi_sil→düşman mermisi [yut]
-- **11-3 Sıçrayan Çağırma** — _Zıplayan minyon, Seken_ — kılıç yayı → nokta 1.1m, önünde yay (2 kez seker). Etkiler: aktor_yarat→sen 1 5sn [silahla:yay,ziplayan]
-- **11-4 Sabit Çağırma** — _Taret_ — kılıç yayı → nokta 1m, önünde yay (yerinde çapalı). Etkiler: aktor_yarat→sen 1 5sn [silahla:yay,taret]
-- **11-5 Yayılan Çağırma** — _Minyon halkası, Dalga_ — kılıç yayı → nokta 1.8m, önünde yay (dışa büyür, cephe geçerken). Etkiler: aktor_yarat→sen 3 5sn [halka,silahla:yay]
-- **11-6 Bağlayıcı Çağırma** — _Muhafız, Bağ_ — kılıç yayı → bağ 1m, önünde yay (sen↔hedef bağı, tik tik). Etkiler: aktor_yarat→sen 1 5sn [bagli_muhafiz,silahla:yay]
-- **11-7 Bulandırıcı Çağırma** — _Görünmez minyon, Sis_ — kılıç yayı → bulut 1m, önünde yay (sis hacmi, tik tik). Etkiler: aktor_yarat→sen 1 5sn [gorunmez,silahla:yay]; gizlen→dost 3.2sn [bulut_ici]; kor→düşman 0.3 3.2sn [bulut_ici]
-- **11-8 Yükselen Çağırma** — _Yükselen_ — kılıç yayı → nokta 1m, önünde yay (yerden yükselir, gücü artar). Etkiler: aktor_yarat→sen 1 5sn [buyuyen,silahla:yay]; hasar_buff→sen 0.1 3sn [yukselen]
-- **11-9 Odaklı Çağırma** — _Suikastçı minyon, Güdümlü_ — kılıç yayı → nokta 1m, önünde yay (hedefe kilitli, tek hedef). Etkiler: aktor_yarat→sen 1 5sn [silahla:yay,suikastci]
-- **11-10 Aynalı Çağırma** — _Ayna klon, Ayna eşli_ — kılıç yayı → nokta 1m, önünde yay (karşı noktada eşi). Etkiler: aktor_yarat→sen 1 5sn [ayna_klon,silahla:yay]; yansit→sen 0.3 2sn [ayna_sifati]
-- **11-11 Kopya Çağırma** — _Klon, Çift_ — kılıç yayı → nokta 1m, önünde yay (2 kez (kopya)). Etkiler: klon→sen 1 5sn [senin_kopyan,silahla:yay]
-- **11-12 Akan Çağırma** — _Akış_ — kılıç yayı → nokta 1m, önünde yay (sürekli akar, tik tik). Etkiler: aktor_yarat→sen 3 5sn [akis,silahla:yay]
+- *sıfatsız*: kılıç yayı → nokta 1m, önünde yay (uyumsuz silah). Etkiler: aktor_yarat→sen 1 5sn [silahla:yay]
+- **11-1 Yoğun Çağırma** — __ — kılıç yayı → nokta 0.6m, önünde yay (tek hedef, uyumsuz silah). Etkiler: aktor_yarat→sen 1 2.5sn [guclu,silahla:yay]
+- **11-2 Emici Çağırma** — _Can emen minyon, Girdap_ — kılıç yayı → nokta 1m, önünde yay (içine çeker, uyumsuz silah). Etkiler: aktor_yarat→sen 1 5sn [can_emen,silahla:yay]; mermi_sil→düşman mermisi [yut]
+- **11-3 Sıçrayan Çağırma** — _Zıplayan minyon, Seken_ — kılıç yayı → nokta 1.1m, önünde yay (2 kez seker, uyumsuz silah). Etkiler: aktor_yarat→sen 1 5sn [silahla:yay,ziplayan]
+- **11-4 Sabit Çağırma** — _Taret_ — kılıç yayı → nokta 1m, önünde yay (yerinde çapalı, uyumsuz silah). Etkiler: aktor_yarat→sen 1 5sn [silahla:yay,taret]
+- **11-5 Yayılan Çağırma** — _Minyon halkası, Dalga_ — kılıç yayı → nokta 1.8m, önünde yay (dışa büyür, cephe geçerken, uyumsuz silah). Etkiler: aktor_yarat→sen 3 5sn [halka,silahla:yay]
+- **11-6 Bağlayıcı Çağırma** — _Muhafız, Bağ_ — kılıç yayı → bağ 1m, önünde yay (sen↔hedef bağı, tik tik, uyumsuz silah). Etkiler: aktor_yarat→sen 1 5sn [bagli_muhafiz,silahla:yay]
+- **11-7 Bulandırıcı Çağırma** — _Görünmez minyon, Sis_ — kılıç yayı → bulut 1m, önünde yay (sis hacmi, tik tik, uyumsuz silah). Etkiler: aktor_yarat→sen 1 5sn [gorunmez,silahla:yay]; gizlen→dost 3.2sn [bulut_ici]; kor→düşman 0.3 3.2sn [bulut_ici]
+- **11-8 Yükselen Çağırma** — _Yükselen_ — kılıç yayı → nokta 1m, önünde yay (yerden yükselir, gücü artar, uyumsuz silah). Etkiler: aktor_yarat→sen 1 5sn [buyuyen,silahla:yay]; hasar_buff→sen 0.1 3sn [yukselen]
+- **11-9 Odaklı Çağırma** — _Suikastçı minyon, Güdümlü_ — kılıç yayı → nokta 1m, önünde yay (hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: aktor_yarat→sen 1 5sn [silahla:yay,suikastci]
+- **11-10 Aynalı Çağırma** — _Ayna klon, Ayna eşli_ — kılıç yayı → nokta 1m, önünde yay (karşı noktada eşi, uyumsuz silah). Etkiler: aktor_yarat→sen 1 5sn [ayna_klon,silahla:yay]; yansit→sen 0.3 2sn [ayna_sifati]
+- **11-11 Kopya Çağırma** — _Klon, Çift_ — kılıç yayı → nokta 1m, önünde yay (2 kez (kopya), uyumsuz silah). Etkiler: klon→sen 1 5sn [senin_kopyan,silahla:yay]
+- **11-12 Akan Çağırma** — _Akış_ — kılıç yayı → nokta 1m, önünde yay (sürekli akar, tik tik, uyumsuz silah). Etkiler: aktor_yarat→sen 3 5sn [akis,silahla:yay]
 
 ### 12 Zaman
 
-- *sıfatsız*: kılıç yayı → silindir 4m, önünde yay. Etkiler: tempo→düşman 0.7 1sn
-- **12-1 Yoğun Zaman** — _Delici_ — kılıç yayı → silindir 2.2m, önünde yay (delip geçer). Etkiler: tempo→düşman 0.3 0.5sn [sert]
-- **12-2 Emici Zaman** — _Zaman çalma, Girdap_ — kılıç yayı → silindir 4m, önünde yay (içine çeker). Etkiler: tempo→düşman 0.7 1sn; tempo→sen 1.3 1sn [aktarim]; mermi_sil→düşman mermisi [yut]
-- **12-3 Sıçrayan Zaman** — _Seken_ — kılıç yayı → silindir 4.4m, önünde yay (2 kez seker). Etkiler: tempo→düşman 0.7 1sn [seker]
-- **12-4 Sabit Zaman** — _Dondurma_ — kılıç yayı → silindir 4m, önünde yay (yerinde çapalı). Etkiler: tempo→düşman 1sn [dondur]
-- **12-5 Yayılan Zaman** — _Dalga_ — kılıç yayı → silindir 7.2m, önünde yay (dışa büyür, cephe geçerken). Etkiler: tempo→düşman 0.7 1sn [dalga]
-- **12-6 Bağlayıcı Zaman** — _Zaman senkronu, Bağ_ — kılıç yayı → bağ 4m, önünde yay (sen↔hedef bağı, tik tik). Etkiler: tempo→düşman 0.7 1sn [senkron]; hareket→düşman 1.5sn [bag_ucu]; hareket→düşman 0.7 1.5sn [bag_ucu,yavas]
-- **12-7 Bulandırıcı Zaman** — _Titreyen zaman, Sis_ — kılıç yayı → bulut 4m, önünde yay (sis hacmi, tik tik). Etkiler: tempo→düşman 0.7 1sn [titrer]; gizlen→dost 4sn [bulut_ici]; kor→düşman 0.3 4sn [bulut_ici]
-- **12-8 Yükselen Zaman** — _Hızlanma, Yükselen_ — kılıç yayı → silindir 4m, önünde yay (yerden yükselir, gücü artar). Etkiler: tempo→sen 1.3 1sn [hizlanma]; hasar_buff→sen 0.1 3sn [yukselen]
-- **12-9 Odaklı Zaman** — _Gecikmeli an, Güdümlü_ — kılıç yayı → silindir 4m, önünde yay (hedefe kilitli, tek hedef). Etkiler: tempo→düşman 0.7 1sn [isaretli_an]
-- **12-10 Aynalı Zaman** — _Geri sarma, Ayna eşli_ — kılıç yayı → silindir 4m, önünde yay (karşı noktada eşi). Etkiler: geri_sar→düşman 2 1sn [geri_sarma]; yansit→sen 0.3 2sn [ayna_sifati]
-- **12-11 Kopya Zaman** — _Yankı, Çift_ — kılıç yayı → silindir 4m, önünde yay (2 kez (kopya)). Etkiler: tempo→düşman 0.7 1sn [iki_kez]; onceki_skill_tekrar→sen 1 [yanki]
-- **12-12 Akan Zaman** — _Zaman alanı, Akış_ — kılıç yayı → silindir 4m, önünde yay (sürekli akar, tik tik). Etkiler: tempo→düşman 0.7 3sn [zaman_alani]; tempo→dost 1.3 3sn [zaman_alani]
+- *sıfatsız*: kılıç yayı → silindir 4m, önünde yay (uyumsuz silah). Etkiler: tempo→düşman 0.7 1sn
+- **12-1 Yoğun Zaman** — _Delici_ — kılıç yayı → silindir 2.2m, önünde yay (delip geçer, uyumsuz silah). Etkiler: tempo→düşman 0.3 0.5sn [sert]
+- **12-2 Emici Zaman** — _Zaman çalma, Girdap_ — kılıç yayı → silindir 4m, önünde yay (içine çeker, uyumsuz silah). Etkiler: tempo→düşman 0.7 1sn; tempo→sen 1.3 1sn [aktarim]; mermi_sil→düşman mermisi [yut]
+- **12-3 Sıçrayan Zaman** — _Seken_ — kılıç yayı → silindir 4.4m, önünde yay (2 kez seker, uyumsuz silah). Etkiler: tempo→düşman 0.7 1sn [seker]
+- **12-4 Sabit Zaman** — _Dondurma_ — kılıç yayı → silindir 4m, önünde yay (yerinde çapalı, uyumsuz silah). Etkiler: tempo→düşman 1sn [dondur]
+- **12-5 Yayılan Zaman** — _Dalga_ — kılıç yayı → silindir 7.2m, önünde yay (dışa büyür, cephe geçerken, uyumsuz silah). Etkiler: tempo→düşman 0.7 1sn [dalga]
+- **12-6 Bağlayıcı Zaman** — _Zaman senkronu, Bağ_ — kılıç yayı → bağ 4m, önünde yay (sen↔hedef bağı, tik tik, uyumsuz silah). Etkiler: tempo→düşman 0.7 1sn [senkron]; hareket→düşman 1.5sn [bag_ucu]; hareket→düşman 0.7 1.5sn [bag_ucu,yavas]
+- **12-7 Bulandırıcı Zaman** — _Titreyen zaman, Sis_ — kılıç yayı → bulut 4m, önünde yay (sis hacmi, tik tik, uyumsuz silah). Etkiler: tempo→düşman 0.7 1sn [titrer]; gizlen→dost 4sn [bulut_ici]; kor→düşman 0.3 4sn [bulut_ici]
+- **12-8 Yükselen Zaman** — _Hızlanma, Yükselen_ — kılıç yayı → silindir 4m, önünde yay (yerden yükselir, gücü artar, uyumsuz silah). Etkiler: tempo→sen 1.3 1sn [hizlanma]; hasar_buff→sen 0.1 3sn [yukselen]
+- **12-9 Odaklı Zaman** — _Gecikmeli an, Güdümlü_ — kılıç yayı → silindir 4m, önünde yay (hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: tempo→düşman 0.7 1sn [isaretli_an]
+- **12-10 Aynalı Zaman** — _Geri sarma, Ayna eşli_ — kılıç yayı → silindir 4m, önünde yay (karşı noktada eşi, uyumsuz silah). Etkiler: geri_sar→düşman 2 1sn [geri_sarma]; yansit→sen 0.3 2sn [ayna_sifati]
+- **12-11 Kopya Zaman** — _Yankı, Çift_ — kılıç yayı → silindir 4m, önünde yay (2 kez (kopya), uyumsuz silah). Etkiler: tempo→düşman 0.7 1sn [iki_kez]; onceki_skill_tekrar→sen 1 [yanki]
+- **12-12 Akan Zaman** — _Zaman alanı, Akış_ — kılıç yayı → silindir 4m, önünde yay (sürekli akar, tik tik, uyumsuz silah). Etkiler: tempo→düşman 0.7 3sn [zaman_alani]; tempo→dost 1.3 3sn [zaman_alani]
 
 ## 144 skill — Top (balistik)
 
 ### 1 Saldırı
 
-- *sıfatsız*: top mermisi (yay çizip düşer) → kapsül 1.5m, hedef noktada. Etkiler: can→düşman -72
-- **1-1 Yoğun Saldırı** — _Delici_ — top mermisi (yay çizip düşer) → kapsül 0.8m, hedef noktada (delip geçer). Etkiler: can→düşman -97.2
-- **1-2 Emici Saldırı** — _Girdap_ — top mermisi (yay çizip düşer) → kapsül 1.5m, hedef noktada (içine çeker). Etkiler: can→düşman -68.4; can→sen 20.52 [aktarim]; mermi_sil→düşman mermisi [yut]
-- **1-3 Sıçrayan Saldırı** — _Seken_ — top mermisi (yay çizip düşer) → kapsül 1.7m, hedef noktada (2 kez seker). Etkiler: can→düşman -72 [seker]
-- **1-4 Sabit Saldırı** — _Mayın_ — top mermisi (yay çizip düşer) → kapsül 1.5m, hedef noktada (yerinde çapalı, içine girene). Etkiler: can→düşman -72 [tuzak]
-- **1-5 Yayılan Saldırı** — _Dalga_ — top mermisi (yay çizip düşer) → kapsül 2.7m, hedef noktada (dışa büyür, cephe geçerken). Etkiler: can→düşman -61.2 [alan]
-- **1-6 Bağlayıcı Saldırı** — _Bağ_ — top mermisi (yay çizip düşer) → bağ 1.5m, hedef noktada (sen↔hedef bağı, tik tik). Etkiler: can→düşman -72 [bag_akisi]; hareket→düşman 1.5sn [bag_ucu]; hareket→düşman 0.7 1.5sn [bag_ucu,yavas]
-- **1-7 Bulandırıcı Saldırı** — _Sis_ — top mermisi (yay çizip düşer) → bulut 1.5m, hedef noktada (sis hacmi, tik tik). Etkiler: can→düşman -72 [bulut_tik]; gizlen→dost 3.2sn [bulut_ici]; kor→düşman 0.3 3.2sn [bulut_ici]
-- **1-8 Yükselen Saldırı** — _Havaya atma, Yükselen_ — top mermisi (yay çizip düşer) → kapsül 1.5m, hedef noktada (yerden yükselir, gücü artar). Etkiler: can→düşman -72 [havaya_at]; hareket→düşman 0.8sn [havada]; hasar_buff→sen 0.1 3sn [yukselen]
-- **1-9 Odaklı Saldırı** — _Güdümlü_ — top mermisi (yay çizip düşer) → kapsül 1.5m, hedef noktada (hedefe kilitli, tek hedef). Etkiler: can→düşman -82.8 [iskalamaz,zirh_yoksay]
-- **1-10 Aynalı Saldırı** — _Kıskaç, Ayna eşli_ — top mermisi (yay çizip düşer) → kapsül 1.5m, hedef noktada (karşı noktada eşi). Etkiler: can→düşman -72 [kiskac]; yansit→sen 0.3 2sn [ayna_sifati]
-- **1-11 Kopya Saldırı** — _Çift_ — top mermisi (yay çizip düşer) → kapsül 1.5m, hedef noktada (2 kez (kopya)). Etkiler: can→düşman -72 [iki_kez]
-- **1-12 Akan Saldırı** — _İnen akış alanı, Akış_ — top mermisi (yay çizip düşer) → kapsül 1.5m, hedef noktada (sürekli akar, tik tik). Etkiler: can→düşman -50.4 3sn [akis]
+- *sıfatsız*: top mermisi (yay çizip düşer) → kapsül 1.5m, hedef noktada (uyumsuz silah). Etkiler: can→düşman -57.6
+- **1-1 Yoğun Saldırı** — _Delici_ — top mermisi (yay çizip düşer) → kapsül 0.8m, hedef noktada (delip geçer, uyumsuz silah). Etkiler: can→düşman -77.76
+- **1-2 Emici Saldırı** — _Girdap_ — top mermisi (yay çizip düşer) → kapsül 1.5m, hedef noktada (içine çeker, uyumsuz silah). Etkiler: can→düşman -54.72; can→sen 16.42 [aktarim]; mermi_sil→düşman mermisi [yut]
+- **1-3 Sıçrayan Saldırı** — _Seken_ — top mermisi (yay çizip düşer) → kapsül 1.7m, hedef noktada (2 kez seker, uyumsuz silah). Etkiler: can→düşman -57.6 [seker]
+- **1-4 Sabit Saldırı** — _Mayın_ — top mermisi (yay çizip düşer) → kapsül 1.5m, hedef noktada (yerinde çapalı, içine girene, uyumsuz silah). Etkiler: can→düşman -57.6 [tuzak]
+- **1-5 Yayılan Saldırı** — _Dalga_ — top mermisi (yay çizip düşer) → kapsül 2.7m, hedef noktada (dışa büyür, cephe geçerken, uyumsuz silah). Etkiler: can→düşman -48.96 [alan]
+- **1-6 Bağlayıcı Saldırı** — _Bağ_ — top mermisi (yay çizip düşer) → bağ 1.5m, hedef noktada (sen↔hedef bağı, tik tik, uyumsuz silah). Etkiler: can→düşman -57.6 [bag_akisi]; hareket→düşman 1.5sn [bag_ucu]; hareket→düşman 0.7 1.5sn [bag_ucu,yavas]
+- **1-7 Bulandırıcı Saldırı** — _Sis_ — top mermisi (yay çizip düşer) → bulut 1.5m, hedef noktada (sis hacmi, tik tik, uyumsuz silah). Etkiler: can→düşman -57.6 [bulut_tik]; gizlen→dost 3.2sn [bulut_ici]; kor→düşman 0.3 3.2sn [bulut_ici]
+- **1-8 Yükselen Saldırı** — _Havaya atma, Yükselen_ — top mermisi (yay çizip düşer) → kapsül 1.5m, hedef noktada (yerden yükselir, gücü artar, uyumsuz silah). Etkiler: can→düşman -57.6 [havaya_at]; hareket→düşman 0.8sn [havada]; hasar_buff→sen 0.1 3sn [yukselen]
+- **1-9 Odaklı Saldırı** — _Güdümlü_ — top mermisi (yay çizip düşer) → kapsül 1.5m, hedef noktada (hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: can→düşman -66.24 [iskalamaz,zirh_yoksay]
+- **1-10 Aynalı Saldırı** — _Kıskaç, Ayna eşli_ — top mermisi (yay çizip düşer) → kapsül 1.5m, hedef noktada (karşı noktada eşi, uyumsuz silah). Etkiler: can→düşman -57.6 [kiskac]; yansit→sen 0.3 2sn [ayna_sifati]
+- **1-11 Kopya Saldırı** — _Çift_ — top mermisi (yay çizip düşer) → kapsül 1.5m, hedef noktada (2 kez (kopya), uyumsuz silah). Etkiler: can→düşman -57.6 [iki_kez]
+- **1-12 Akan Saldırı** — _İnen akış alanı, Akış_ — top mermisi (yay çizip düşer) → kapsül 1.5m, hedef noktada (sürekli akar, tik tik, uyumsuz silah). Etkiler: can→düşman -40.32 3sn [akis]
 
 ### 2 İyileştirme
 
-- *sıfatsız*: top mermisi (yay çizip düşer) → küre 2m, hedef noktada. Etkiler: can→dost 35
-- **2-1 Yoğun İyileştirme** — _Tasma, Taşma_ — top mermisi (yay çizip düşer) → küre 1.1m, hedef noktada (tek hedef). Etkiler: can→dost 47.25 [tasma]
-- **2-2 Emici İyileştirme** — _Girdap, Emme/çalma_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (içine çeker). Etkiler: can→düşman -33.25 [emme]; can→sen 33.25 [aktarim]; mermi_sil→düşman mermisi [yut]
-- **2-3 Sıçrayan İyileştirme** — _Seken_ — top mermisi (yay çizip düşer) → küre 2.2m, hedef noktada (2 kez seker). Etkiler: can→dost 35 [dosttan_dosta]
-- **2-4 Sabit İyileştirme** — _Totem_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (yerinde çapalı, tik tik). Etkiler: can→dost 35 [totem]
-- **2-5 Yayılan İyileştirme** — _Dalga_ — top mermisi (yay çizip düşer) → küre 3.6m, hedef noktada (dışa büyür, cephe geçerken). Etkiler: can→dost 29.75 [alan]
-- **2-6 Bağlayıcı İyileştirme** — _Can bağı, Bağ_ — top mermisi (yay çizip düşer) → bağ 2m, hedef noktada (sen↔hedef bağı, tik tik). Etkiler: can→dost 35 [can_bagi]; hasar_paylasimi→dost 0.5 1.5sn [bag]
-- **2-7 Bulandırıcı İyileştirme** — _Sis_ — top mermisi (yay çizip düşer) → bulut 2m, hedef noktada (sis hacmi, tik tik). Etkiler: can→dost 35 [bulut_tik]; gizlen→dost 3.2sn [bulut_ici]; kor→düşman 0.3 3.2sn [bulut_ici]
-- **2-8 Yükselen İyileştirme** — _Yükselen_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (yerden yükselir, gücü artar). Etkiler: can→dost 35 [buyuyen]; hasar_buff→sen 0.1 3sn [yukselen]
-- **2-9 Odaklı İyileştirme** — _Koruyucu tetik, Güdümlü_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (hedefe kilitli, tek hedef). Etkiler: can→dost 40.25 [koruyucu_tetik]
-- **2-10 Aynalı İyileştirme** — _Ters kopya hasar, Ayna eşli_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (karşı noktada eşi). Etkiler: can→dost 35; can→düşman -10.5 [ters_kopya]; yansit→sen 0.3 2sn [ayna_sifati]
-- **2-11 Kopya İyileştirme** — _Çift_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (2 kez (kopya)). Etkiler: can→dost 35 [iki_kez]
-- **2-12 Akan İyileştirme** — _İnen akış alanı, Akış_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (sürekli akar, tik tik). Etkiler: can→dost 24.5 3sn [akis]
+- *sıfatsız*: top mermisi (yay çizip düşer) → küre 2m, hedef noktada (uyumsuz silah). Etkiler: can→dost 28
+- **2-1 Yoğun İyileştirme** — _Taşma_ — top mermisi (yay çizip düşer) → küre 1.1m, hedef noktada (tek hedef, uyumsuz silah). Etkiler: can→dost 37.8 [tasar]
+- **2-2 Emici İyileştirme** — _Girdap, Emme/çalma_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (içine çeker, uyumsuz silah). Etkiler: can→düşman -26.6 [emme]; can→sen 26.6 [aktarim]; mermi_sil→düşman mermisi [yut]
+- **2-3 Sıçrayan İyileştirme** — _Seken_ — top mermisi (yay çizip düşer) → küre 2.2m, hedef noktada (2 kez seker, uyumsuz silah). Etkiler: can→dost 28 [dosttan_dosta]
+- **2-4 Sabit İyileştirme** — _Totem_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (yerinde çapalı, tik tik, uyumsuz silah). Etkiler: can→dost 28 [totem]
+- **2-5 Yayılan İyileştirme** — _Dalga_ — top mermisi (yay çizip düşer) → küre 3.6m, hedef noktada (dışa büyür, cephe geçerken, uyumsuz silah). Etkiler: can→dost 23.8 [alan]
+- **2-6 Bağlayıcı İyileştirme** — _Can bağı, Bağ_ — top mermisi (yay çizip düşer) → bağ 2m, hedef noktada (sen↔hedef bağı, tik tik, uyumsuz silah). Etkiler: can→dost 28 [can_bagi]; hasar_paylasimi→dost 0.5 1.5sn [bag]
+- **2-7 Bulandırıcı İyileştirme** — _Sis_ — top mermisi (yay çizip düşer) → bulut 2m, hedef noktada (sis hacmi, tik tik, uyumsuz silah). Etkiler: can→dost 28 [bulut_tik]; gizlen→dost 3.2sn [bulut_ici]; kor→düşman 0.3 3.2sn [bulut_ici]
+- **2-8 Yükselen İyileştirme** — _Yükselen_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (yerden yükselir, gücü artar, uyumsuz silah). Etkiler: can→dost 28 [buyuyen]; hasar_buff→sen 0.1 3sn [yukselen]
+- **2-9 Odaklı İyileştirme** — _Koruyucu tetik, Güdümlü_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: can→dost 32.2 [koruyucu_tetik]
+- **2-10 Aynalı İyileştirme** — _Ters kopya, Ayna eşli_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (karşı noktada eşi, uyumsuz silah). Etkiler: can→dost 28; can→düşman -8.4 [ters_kopya]; yansit→sen 0.3 2sn [ayna_sifati]
+- **2-11 Kopya İyileştirme** — _Çift_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (2 kez (kopya), uyumsuz silah). Etkiler: can→dost 28 [iki_kez]
+- **2-12 Akan İyileştirme** — _İnen akış alanı, Akış_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (sürekli akar, tik tik, uyumsuz silah). Etkiler: can→dost 19.6 3sn [akis]
 
 ### 3 Hareket
 
-- *sıfatsız*: top mermisi (yay çizip düşer) → çizgi 3m, sende. Etkiler: kendini_tasi→sen 9 [yol:firlatilma]
-- **3-1 Yoğun Hareket** — _Fırlatılma, Faz geçişi_ — top mermisi (yay çizip düşer) → çizgi 1.7m, sende (tek hedef). Etkiler: kendini_tasi→sen 9 [faz,yol:firlatilma]
-- **3-2 Emici Hareket** — _Hedefi sana çekme, Fırlatılma, Girdap_ — top mermisi (yay çizip düşer) → çizgi 3m, sende (içine çeker). Etkiler: cek→düşman 9 [sana_dogru,yol:firlatilma]; mermi_sil→düşman mermisi [yut]
-- **3-3 Sıçrayan Hareket** — _Fırlatılma, Sekmeli zıplama, Seken_ — top mermisi (yay çizip düşer) → çizgi 3.3m, sende (2 kez seker). Etkiler: kendini_tasi→sen 9 [sekmeli,yol:firlatilma]
-- **3-4 Sabit Hareket** — _İşaretle-geri dön, Fırlatılma_ — top mermisi (yay çizip düşer) → çizgi 3m, sende (yerinde çapalı). Etkiler: isaret_geri_don→sen 9 2.2sn [geri_donus,yol:firlatilma]
-- **3-5 Yayılan Hareket** — _Fırlatılma, İniş şok dalgası, Dalga_ — top mermisi (yay çizip düşer) → çizgi 5.4m, sende (dışa büyür, cephe geçerken). Etkiler: kendini_tasi→sen 9 [inis_dalgasi,yol:firlatilma]; it→düşman [dalga]
-- **3-6 Bağlayıcı Hareket** — _Yer değiştirme, Fırlatılma, Bağ_ — top mermisi (yay çizip düşer) → bağ 3m, sende (sen↔hedef bağı, tik tik). Etkiler: yer_degistir→düşman 9 [iki_uc,yol:firlatilma]; hareket→düşman 1.5sn [bag_ucu]; hareket→düşman 0.7 1.5sn [bag_ucu,yavas]
-- **3-7 Bulandırıcı Hareket** — _Görünmez geçiş, Fırlatılma, Sis_ — top mermisi (yay çizip düşer) → bulut 3m, sende (sis hacmi, tik tik). Etkiler: kendini_tasi→sen 9 [gorunmez_gecis,yol:firlatilma]; gizlen→dost 3.2sn [bulut_ici]; kor→düşman 0.3 3.2sn [bulut_ici]
-- **3-8 Yükselen Hareket** — _Sıçrayıp çakılma, Fırlatılma, Yükselen_ — top mermisi (yay çizip düşer) → çizgi 3m, sende (yerden yükselir, gücü artar). Etkiler: kendini_tasi→sen 9 [sicrayip_cakil,yol:firlatilma]; hasar_buff→sen 0.1 3sn [yukselen]
-- **3-9 Odaklı Hareket** — _Arkaya ışınlanma, Fırlatılma, Güdümlü_ — top mermisi (yay çizip düşer) → çizgi 3m, sende (hedefe kilitli, tek hedef). Etkiler: hedefin_arkasina→sen 9 [isinlanma,yol:firlatilma]
-- **3-10 Aynalı Hareket** — _Portal, Fırlatılma, Ayna eşli_ — top mermisi (yay çizip düşer) → çizgi 3m, sende (karşı noktada eşi). Etkiler: portal→sen 9 4sn [portal_cifti,yol:firlatilma]; yansit→sen 0.3 2sn [ayna_sifati]
-- **3-11 Kopya Hareket** — _Fırlatılma, Yem kopya, Çift_ — top mermisi (yay çizip düşer) → çizgi 3m, sende (2 kez (kopya)). Etkiler: kendini_tasi→sen 9 [ardinda_kopya,yol:firlatilma]; yem_kopya→sen 1 2sn [dikkat_ceker]
-- **3-12 Akan Hareket** — _Fırlatılma, Süzülme, İnen akış alanı, Akış_ — top mermisi (yay çizip düşer) → çizgi 3m, sende (sürekli akar, tik tik). Etkiler: kendini_tasi→sen 9 3sn [suzulme,yol:firlatilma]
+- *sıfatsız*: top mermisi (yay çizip düşer) → çizgi 3m, sende (uyumsuz silah). Etkiler: kendini_tasi→sen 9 [yol:firlatilma]
+- **3-1 Yoğun Hareket** — _Fırlatılma, Faz geçişi_ — top mermisi (yay çizip düşer) → çizgi 1.7m, sende (tek hedef, uyumsuz silah). Etkiler: kendini_tasi→sen 9 [faz,yol:firlatilma]
+- **3-2 Emici Hareket** — _Hedefi sana çekme, Fırlatılma, Girdap_ — top mermisi (yay çizip düşer) → çizgi 3m, sende (içine çeker, uyumsuz silah). Etkiler: cek→düşman 9 [sana_dogru,yol:firlatilma]; mermi_sil→düşman mermisi [yut]
+- **3-3 Sıçrayan Hareket** — _Fırlatılma, Sekmeli zıplama, Seken_ — top mermisi (yay çizip düşer) → çizgi 3.3m, sende (2 kez seker, uyumsuz silah). Etkiler: kendini_tasi→sen 9 [sekmeli,yol:firlatilma]
+- **3-4 Sabit Hareket** — _İşaretle-geri dön, Fırlatılma_ — top mermisi (yay çizip düşer) → çizgi 3m, sende (yerinde çapalı, uyumsuz silah). Etkiler: isaret_geri_don→sen 9 2.2sn [geri_donus,yol:firlatilma]
+- **3-5 Yayılan Hareket** — _Fırlatılma, İniş şok dalgası, Dalga_ — top mermisi (yay çizip düşer) → çizgi 5.4m, sende (dışa büyür, cephe geçerken, uyumsuz silah). Etkiler: kendini_tasi→sen 9 [inis_dalgasi,yol:firlatilma]; it→düşman [dalga]
+- **3-6 Bağlayıcı Hareket** — _Yer değiştirme, Fırlatılma, Bağ_ — top mermisi (yay çizip düşer) → bağ 3m, sende (sen↔hedef bağı, tik tik, uyumsuz silah). Etkiler: yer_degistir→düşman 9 [iki_uc,yol:firlatilma]; hareket→düşman 1.5sn [bag_ucu]; hareket→düşman 0.7 1.5sn [bag_ucu,yavas]
+- **3-7 Bulandırıcı Hareket** — _Görünmez geçiş, Fırlatılma, Sis_ — top mermisi (yay çizip düşer) → bulut 3m, sende (sis hacmi, tik tik, uyumsuz silah). Etkiler: kendini_tasi→sen 9 [gorunmez_gecis,yol:firlatilma]; gizlen→dost 3.2sn [bulut_ici]; kor→düşman 0.3 3.2sn [bulut_ici]
+- **3-8 Yükselen Hareket** — _Sıçrayıp çakılma, Fırlatılma, Yükselen_ — top mermisi (yay çizip düşer) → çizgi 3m, sende (yerden yükselir, gücü artar, uyumsuz silah). Etkiler: kendini_tasi→sen 9 [sicrayip_cakil,yol:firlatilma]; hasar_buff→sen 0.1 3sn [yukselen]
+- **3-9 Odaklı Hareket** — _Arkaya ışınlanma, Fırlatılma, Güdümlü_ — top mermisi (yay çizip düşer) → çizgi 3m, sende (hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: hedefin_arkasina→sen 9 [isinlanma,yol:firlatilma]
+- **3-10 Aynalı Hareket** — _Portal, Fırlatılma, Ayna eşli_ — top mermisi (yay çizip düşer) → çizgi 3m, sende (karşı noktada eşi, uyumsuz silah). Etkiler: portal→sen 9 4sn [portal_cifti,yol:firlatilma]; yansit→sen 0.3 2sn [ayna_sifati]
+- **3-11 Kopya Hareket** — _Fırlatılma, Yem kopya, Çift_ — top mermisi (yay çizip düşer) → çizgi 3m, sende (2 kez (kopya), uyumsuz silah). Etkiler: kendini_tasi→sen 9 [ardinda_kopya,yol:firlatilma]; yem_kopya→sen 1 2sn [dikkat_ceker]
+- **3-12 Akan Hareket** — _Fırlatılma, Süzülme, İnen akış alanı, Akış_ — top mermisi (yay çizip düşer) → çizgi 3m, sende (sürekli akar, tik tik, uyumsuz silah). Etkiler: kendini_tasi→sen 9 3sn [suzulme,yol:firlatilma]
 
 ### 4 Savunma
 
-- *sıfatsız*: top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (katı). Etkiler: kalkan→dost 50
-- **4-1 Yoğun Savunma** — _Tasma, Taşma_ — top mermisi (yay çizip düşer) → küre 0.8m, hedef noktada (katı, tek hedef). Etkiler: kalkan→dost 67.5 [tasma]
-- **4-2 Emici Savunma** — _Girdap, Emme/çalma_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (katı, içine çeker). Etkiler: can→düşman -47.5 [emme]; kalkan→sen 47.5 [aktarim]; mermi_sil→düşman mermisi [yut]
-- **4-3 Sıçrayan Savunma** — _Seken_ — top mermisi (yay çizip düşer) → küre 1.7m, hedef noktada (katı, 2 kez seker). Etkiler: kalkan→dost 50 [dosttan_dosta]
-- **4-4 Sabit Savunma** — _Duvar, Totem_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (yerinde çapalı, katı, tik tik). Etkiler: kalkan→dost 50 [totem]
-- **4-5 Yayılan Savunma** — _Dalga_ — top mermisi (yay çizip düşer) → küre 2.7m, hedef noktada (katı, dışa büyür, cephe geçerken). Etkiler: kalkan→dost 42.5 [alan]
-- **4-6 Bağlayıcı Savunma** — _Can bağı, Bağ_ — top mermisi (yay çizip düşer) → bağ 1.5m, hedef noktada (katı, sen↔hedef bağı, tik tik). Etkiler: kalkan→dost 50 [can_bagi]; hasar_paylasimi→dost 0.5 1.5sn [bag]
-- **4-7 Bulandırıcı Savunma** — _Sis_ — top mermisi (yay çizip düşer) → bulut 1.5m, hedef noktada (katı, sis hacmi, tik tik). Etkiler: kalkan→dost 50 [bulut_tik]; gizlen→dost 3.5sn [bulut_ici]; kor→düşman 0.3 3.5sn [bulut_ici]
-- **4-8 Yükselen Savunma** — _Yükselen_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (katı, yerden yükselir, gücü artar). Etkiler: kalkan→dost 50 [buyuyen]; hasar_buff→sen 0.1 3sn [yukselen]
-- **4-9 Odaklı Savunma** — _Koruyucu tetik, Güdümlü_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (katı, hedefe kilitli, tek hedef). Etkiler: kalkan→dost 57.5 [koruyucu_tetik]
-- **4-10 Aynalı Savunma** — _Ters kopya hasar, Ayna eşli_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (katı, karşı noktada eşi). Etkiler: kalkan→dost 50; can→düşman -15 [ters_kopya]; yansit→sen 0.3 2sn [ayna_sifati]
-- **4-11 Kopya Savunma** — _Çift_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (katı, 2 kez (kopya)). Etkiler: kalkan→dost 50 [iki_kez]
-- **4-12 Akan Savunma** — _İnen akış alanı, Akış_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (katı, sürekli akar, tik tik). Etkiler: kalkan→dost 35 3sn [akis]
+- *sıfatsız*: top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (katı, uyumsuz silah). Etkiler: kalkan→dost 40
+- **4-1 Yoğun Savunma** — _Taşma_ — top mermisi (yay çizip düşer) → küre 0.8m, hedef noktada (katı, tek hedef, uyumsuz silah). Etkiler: kalkan→dost 54 [tasar]
+- **4-2 Emici Savunma** — _Girdap, Emme/çalma_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (katı, içine çeker, uyumsuz silah). Etkiler: can→düşman -38 [emme]; kalkan→sen 38 [aktarim]; mermi_sil→düşman mermisi [yut]
+- **4-3 Sıçrayan Savunma** — _Seken_ — top mermisi (yay çizip düşer) → küre 1.7m, hedef noktada (katı, 2 kez seker, uyumsuz silah). Etkiler: kalkan→dost 40 [dosttan_dosta]
+- **4-4 Sabit Savunma** — _Duvar, Totem_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (yerinde çapalı, katı, tik tik, uyumsuz silah). Etkiler: kalkan→dost 40 [totem]
+- **4-5 Yayılan Savunma** — _Dalga_ — top mermisi (yay çizip düşer) → küre 2.7m, hedef noktada (katı, dışa büyür, cephe geçerken, uyumsuz silah). Etkiler: kalkan→dost 34 [alan]
+- **4-6 Bağlayıcı Savunma** — _Can bağı, Bağ_ — top mermisi (yay çizip düşer) → bağ 1.5m, hedef noktada (katı, sen↔hedef bağı, tik tik, uyumsuz silah). Etkiler: kalkan→dost 40 [can_bagi]; hasar_paylasimi→dost 0.5 1.5sn [bag]
+- **4-7 Bulandırıcı Savunma** — _Sis_ — top mermisi (yay çizip düşer) → bulut 1.5m, hedef noktada (katı, sis hacmi, tik tik, uyumsuz silah). Etkiler: kalkan→dost 40 [bulut_tik]; gizlen→dost 3.5sn [bulut_ici]; kor→düşman 0.3 3.5sn [bulut_ici]
+- **4-8 Yükselen Savunma** — _Yükselen_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (katı, yerden yükselir, gücü artar, uyumsuz silah). Etkiler: kalkan→dost 40 [buyuyen]; hasar_buff→sen 0.1 3sn [yukselen]
+- **4-9 Odaklı Savunma** — _Koruyucu tetik, Güdümlü_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (katı, hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: kalkan→dost 46 [koruyucu_tetik]
+- **4-10 Aynalı Savunma** — _Ters kopya, Ayna eşli_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (katı, karşı noktada eşi, uyumsuz silah). Etkiler: kalkan→dost 40; can→düşman -12 [ters_kopya]; yansit→sen 0.3 2sn [ayna_sifati]
+- **4-11 Kopya Savunma** — _Çift_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (katı, 2 kez (kopya), uyumsuz silah). Etkiler: kalkan→dost 40 [iki_kez]
+- **4-12 Akan Savunma** — _İnen akış alanı, Akış_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (katı, sürekli akar, tik tik, uyumsuz silah). Etkiler: kalkan→dost 28 3sn [akis]
 
 ### 5 Patlama
 
@@ -396,7 +398,7 @@ Kurallar: `docs/atom-grammar-taslak.json` (TASLAK). Sayılar: `docs/element-sist
 - **6-3 Sıçrayan Kontrol** — _Seken_ — top mermisi (yay çizip düşer) → koni 4.4m, hedef noktada (2 kez seker). Etkiler: hareket→düşman 1.5sn [seker]; can→düşman -14.4 [seker]
 - **6-4 Sabit Kontrol** — _Mayın_ — top mermisi (yay çizip düşer) → koni 4m, hedef noktada (yerinde çapalı, içine girene). Etkiler: hareket→düşman 3.5sn [uzun]; can→düşman -14.4 [tuzak]
 - **6-5 Yayılan Kontrol** — _Dalga_ — top mermisi (yay çizip düşer) → koni 7.2m, hedef noktada (dışa büyür, cephe geçerken). Etkiler: hareket→düşman 1.5sn [dalga]; can→düşman -12.24 [alan]
-- **6-6 Bağlayıcı Kontrol** — _Tasma, Taşma, Bağ_ — top mermisi (yay çizip düşer) → bağ 4m, hedef noktada (sen↔hedef bağı, tik tik). Etkiler: hareket→düşman 1.5sn [tasma]; can→düşman -14.4 [bag_akisi]; hareket→düşman 1.5sn [bag_ucu]; hareket→düşman 0.7 1.5sn [bag_ucu,yavas]
+- **6-6 Bağlayıcı Kontrol** — _Tasma, Bağ_ — top mermisi (yay çizip düşer) → bağ 4m, hedef noktada (sen↔hedef bağı, tik tik). Etkiler: hareket→düşman 1.5sn [tasma]; can→düşman -14.4 [bag_akisi]; hareket→düşman 1.5sn [bag_ucu]; hareket→düşman 0.7 1.5sn [bag_ucu,yavas]
 - **6-7 Bulandırıcı Kontrol** — _Sis_ — top mermisi (yay çizip düşer) → bulut 4m, hedef noktada (sis hacmi, tik tik). Etkiler: hareket→düşman 1.5sn [bulut_tik]; can→düşman -14.4 [bulut_tik]; gizlen→dost 3.2sn [bulut_ici]; kor→düşman 0.3 3.2sn [bulut_ici]
 - **6-8 Yükselen Kontrol** — _Havaya atma, Yükselen_ — top mermisi (yay çizip düşer) → koni 4m, hedef noktada (yerden yükselir, gücü artar). Etkiler: hareket→düşman 1.5sn [havaya_at]; can→düşman -14.4 [havaya_at]; hasar_buff→sen 0.1 3sn [yukselen]
 - **6-9 Odaklı Kontrol** — _Gecikmeli an, Güdümlü_ — top mermisi (yay çizip düşer) → koni 4m, hedef noktada (hedefe kilitli, tek hedef). Etkiler: hareket→düşman 1.5sn [isaretli_an]; can→düşman -16.56 [iskalamaz,zirh_yoksay]
@@ -422,67 +424,67 @@ Kurallar: `docs/atom-grammar-taslak.json` (TASLAK). Sayılar: `docs/element-sist
 
 ### 8 Güçlendirme
 
-- *sıfatsız*: top mermisi (yay çizip düşer) → küre 2m, hedef noktada. Etkiler: hasar_buff→dost 0.2 3sn
-- **8-1 Yoğun Güçlendirme** — _Tasma, Taşma_ — top mermisi (yay çizip düşer) → küre 1.1m, hedef noktada (tek hedef). Etkiler: hasar_buff→dost 0.27 1.5sn [tasma]
-- **8-2 Emici Güçlendirme** — _Girdap, Emme/çalma_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (içine çeker). Etkiler: hasar_buff→düşman -0.19 3sn [emme]; hasar_buff→sen 0.19 3sn [aktarim]; mermi_sil→düşman mermisi [yut]
-- **8-3 Sıçrayan Güçlendirme** — _Seken_ — top mermisi (yay çizip düşer) → küre 2.2m, hedef noktada (2 kez seker). Etkiler: hasar_buff→dost 0.2 3sn [dosttan_dosta]
-- **8-4 Sabit Güçlendirme** — _Totem_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (yerinde çapalı, tik tik). Etkiler: hasar_buff→dost 0.2 3sn [totem]
-- **8-5 Yayılan Güçlendirme** — _Dalga_ — top mermisi (yay çizip düşer) → küre 3.6m, hedef noktada (dışa büyür, cephe geçerken). Etkiler: hasar_buff→dost 0.17 3sn [alan]
-- **8-6 Bağlayıcı Güçlendirme** — _Can bağı, Bağ_ — top mermisi (yay çizip düşer) → bağ 2m, hedef noktada (sen↔hedef bağı, tik tik). Etkiler: hasar_buff→dost 0.2 3sn [can_bagi]; hasar_paylasimi→dost 0.5 1.5sn [bag]
-- **8-7 Bulandırıcı Güçlendirme** — _Sis_ — top mermisi (yay çizip düşer) → bulut 2m, hedef noktada (sis hacmi, tik tik). Etkiler: hasar_buff→dost 0.2 3sn [bulut_tik]; gizlen→dost 3.2sn [bulut_ici]; kor→düşman 0.3 3.2sn [bulut_ici]
-- **8-8 Yükselen Güçlendirme** — _Yükselen_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (yerden yükselir, gücü artar). Etkiler: hasar_buff→dost 0.2 3sn [buyuyen]; hasar_buff→sen 0.1 3sn [yukselen]
-- **8-9 Odaklı Güçlendirme** — _Koruyucu tetik, Güdümlü_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (hedefe kilitli, tek hedef). Etkiler: hasar_buff→dost 0.23 3sn [koruyucu_tetik]
-- **8-10 Aynalı Güçlendirme** — _Ters kopya hasar, Ayna eşli_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (karşı noktada eşi). Etkiler: hasar_buff→dost 0.2 3sn; hasar_buff→düşman -0.06 3sn [ters_kopya]; yansit→sen 0.3 2sn [ayna_sifati]
-- **8-11 Kopya Güçlendirme** — _Çift_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (2 kez (kopya)). Etkiler: hasar_buff→dost 0.2 3sn [iki_kez]
-- **8-12 Akan Güçlendirme** — _İnen akış alanı, Akış_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (sürekli akar, tik tik). Etkiler: hasar_buff→dost 0.14 3sn [akis]
+- *sıfatsız*: top mermisi (yay çizip düşer) → küre 2m, hedef noktada (uyumsuz silah). Etkiler: hasar_buff→dost 0.16 3sn
+- **8-1 Yoğun Güçlendirme** — _Taşma_ — top mermisi (yay çizip düşer) → küre 1.1m, hedef noktada (tek hedef, uyumsuz silah). Etkiler: hasar_buff→dost 0.22 1.5sn [tasar]
+- **8-2 Emici Güçlendirme** — _Girdap, Emme/çalma_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (içine çeker, uyumsuz silah). Etkiler: hasar_buff→düşman -0.15 3sn [emme]; hasar_buff→sen 0.15 3sn [aktarim]; mermi_sil→düşman mermisi [yut]
+- **8-3 Sıçrayan Güçlendirme** — _Seken_ — top mermisi (yay çizip düşer) → küre 2.2m, hedef noktada (2 kez seker, uyumsuz silah). Etkiler: hasar_buff→dost 0.16 3sn [dosttan_dosta]
+- **8-4 Sabit Güçlendirme** — _Totem_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (yerinde çapalı, tik tik, uyumsuz silah). Etkiler: hasar_buff→dost 0.16 3sn [totem]
+- **8-5 Yayılan Güçlendirme** — _Dalga_ — top mermisi (yay çizip düşer) → küre 3.6m, hedef noktada (dışa büyür, cephe geçerken, uyumsuz silah). Etkiler: hasar_buff→dost 0.14 3sn [alan]
+- **8-6 Bağlayıcı Güçlendirme** — _Can bağı, Bağ_ — top mermisi (yay çizip düşer) → bağ 2m, hedef noktada (sen↔hedef bağı, tik tik, uyumsuz silah). Etkiler: hasar_buff→dost 0.16 3sn [can_bagi]; hasar_paylasimi→dost 0.5 1.5sn [bag]
+- **8-7 Bulandırıcı Güçlendirme** — _Sis_ — top mermisi (yay çizip düşer) → bulut 2m, hedef noktada (sis hacmi, tik tik, uyumsuz silah). Etkiler: hasar_buff→dost 0.16 3sn [bulut_tik]; gizlen→dost 3.2sn [bulut_ici]; kor→düşman 0.3 3.2sn [bulut_ici]
+- **8-8 Yükselen Güçlendirme** — _Yükselen_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (yerden yükselir, gücü artar, uyumsuz silah). Etkiler: hasar_buff→dost 0.16 3sn [buyuyen]; hasar_buff→sen 0.1 3sn [yukselen]
+- **8-9 Odaklı Güçlendirme** — _Koruyucu tetik, Güdümlü_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: hasar_buff→dost 0.18 3sn [koruyucu_tetik]
+- **8-10 Aynalı Güçlendirme** — _Ters kopya, Ayna eşli_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (karşı noktada eşi, uyumsuz silah). Etkiler: hasar_buff→dost 0.16 3sn; hasar_buff→düşman -0.05 3sn [ters_kopya]; yansit→sen 0.3 2sn [ayna_sifati]
+- **8-11 Kopya Güçlendirme** — _Çift_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (2 kez (kopya), uyumsuz silah). Etkiler: hasar_buff→dost 0.16 3sn [iki_kez]
+- **8-12 Akan Güçlendirme** — _İnen akış alanı, Akış_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (sürekli akar, tik tik, uyumsuz silah). Etkiler: hasar_buff→dost 0.11 3sn [akis]
 
 ### 9 Arındırma
 
-- *sıfatsız*: top mermisi (yay çizip düşer) → küre 2.5m, hedef noktada. Etkiler: durum_sil→dost 1; mermi_sil→düşman mermisi
-- **9-1 Yoğun Arındırma** — __ — top mermisi (yay çizip düşer) → küre 1.4m, hedef noktada (tek hedef). Etkiler: durum_sil→dost 1 [guclu]; mermi_sil→düşman mermisi [delici]
-- **9-2 Emici Arındırma** — _Girdap, Durum aktarma_ — top mermisi (yay çizip düşer) → küre 2.5m, hedef noktada (içine çeker). Etkiler: durum_aktar→dost 1; mermi_sil→düşman mermisi [yut]; durum_ekle→düşman 1 [aktarim]
-- **9-3 Sıçrayan Arındırma** — _Seken_ — top mermisi (yay çizip düşer) → küre 2.8m, hedef noktada (2 kez seker). Etkiler: durum_sil→dost 1 [dosttan_dosta]; mermi_sil→düşman mermisi [seker]
-- **9-4 Sabit Arındırma** — _Mermi kesen engel, Arınma alanı_ — top mermisi (yay çizip düşer) → küre 2.5m, hedef noktada (yerinde çapalı). Etkiler: durum_sil→dost 1 [arinma_alani]; mermi_sil→düşman mermisi [engel]
-- **9-5 Yayılan Arındırma** — _Dalga_ — top mermisi (yay çizip düşer) → küre 4.5m, hedef noktada (dışa büyür, cephe geçerken). Etkiler: durum_sil→dost 1 [alan]; mermi_sil→düşman mermisi [alan]
-- **9-6 Bağlayıcı Arındırma** — _Bağışıklık bağı, Bağ_ — top mermisi (yay çizip düşer) → bağ 2.5m, hedef noktada (sen↔hedef bağı, tik tik). Etkiler: durum_sil→dost 1 [bag_bagisiklik]; mermi_sil→düşman mermisi [bag_hatti]
-- **9-7 Bulandırıcı Arındırma** — _Sis_ — top mermisi (yay çizip düşer) → bulut 2.5m, hedef noktada (sis hacmi, tik tik). Etkiler: durum_sil→dost 1 [gizli]; mermi_sil→düşman mermisi [sis_perdesi]; gizlen→dost 3.2sn [bulut_ici]; kor→düşman 0.3 3.2sn [bulut_ici]
-- **9-8 Yükselen Arındırma** — _Arınıp güçlenme, Yükselen_ — top mermisi (yay çizip düşer) → küre 2.5m, hedef noktada (yerden yükselir, gücü artar). Etkiler: durum_sil→dost 1 [guce_cevir]; mermi_sil→düşman mermisi [yukselen_perde]; hasar_buff→sen 0.1 3sn [yukselen]
-- **9-9 Odaklı Arındırma** — _Tam arındırma, Güdümlü_ — top mermisi (yay çizip düşer) → küre 2.5m, hedef noktada (hedefe kilitli, tek hedef). Etkiler: durum_sil→dost 99 [tumunu_sil]; mermi_sil→düşman mermisi [hedefli]
-- **9-10 Aynalı Arındırma** — _Buff silme, Mermi geri gönderme, Ayna eşli_ — top mermisi (yay çizip düşer) → küre 2.5m, hedef noktada (karşı noktada eşi). Etkiler: iyi_durum_sil→düşman 1 [ters_hedef]; mermi_sil→düşman mermisi [geri_gonder]; yansit→sen 0.3 2sn [ayna_sifati]
-- **9-11 Kopya Arındırma** — _Çift_ — top mermisi (yay çizip düşer) → küre 2.5m, hedef noktada (2 kez (kopya)). Etkiler: durum_sil→dost 1 [iki_kez]; mermi_sil→düşman mermisi [iki_kez]
-- **9-12 Akan Arındırma** — _İnen akış alanı, Akış_ — top mermisi (yay çizip düşer) → küre 2.5m, hedef noktada (sürekli akar, tik tik). Etkiler: durum_sil→dost 1 [aura]; mermi_sil→düşman mermisi [surekli_perde]
+- *sıfatsız*: top mermisi (yay çizip düşer) → küre 2.5m, hedef noktada (uyumsuz silah). Etkiler: durum_sil→dost 1; mermi_sil→düşman mermisi
+- **9-1 Yoğun Arındırma** — __ — top mermisi (yay çizip düşer) → küre 1.4m, hedef noktada (tek hedef, uyumsuz silah). Etkiler: durum_sil→dost 1 [guclu]; mermi_sil→düşman mermisi [delici]
+- **9-2 Emici Arındırma** — _Girdap, Durum aktarma_ — top mermisi (yay çizip düşer) → küre 2.5m, hedef noktada (içine çeker, uyumsuz silah). Etkiler: durum_aktar→dost 1; mermi_sil→düşman mermisi [yut]; durum_ekle→düşman 1 [aktarim]
+- **9-3 Sıçrayan Arındırma** — _Seken_ — top mermisi (yay çizip düşer) → küre 2.8m, hedef noktada (2 kez seker, uyumsuz silah). Etkiler: durum_sil→dost 1 [dosttan_dosta]; mermi_sil→düşman mermisi [seker]
+- **9-4 Sabit Arındırma** — _Mermi kesen engel, Arınma alanı_ — top mermisi (yay çizip düşer) → küre 2.5m, hedef noktada (yerinde çapalı, uyumsuz silah). Etkiler: durum_sil→dost 1 [arinma_alani]; mermi_sil→düşman mermisi [engel]
+- **9-5 Yayılan Arındırma** — _Dalga_ — top mermisi (yay çizip düşer) → küre 4.5m, hedef noktada (dışa büyür, cephe geçerken, uyumsuz silah). Etkiler: durum_sil→dost 1 [alan]; mermi_sil→düşman mermisi [alan]
+- **9-6 Bağlayıcı Arındırma** — _Bağışıklık bağı, Bağ_ — top mermisi (yay çizip düşer) → bağ 2.5m, hedef noktada (sen↔hedef bağı, tik tik, uyumsuz silah). Etkiler: durum_sil→dost 1 [bag_bagisiklik]; mermi_sil→düşman mermisi [bag_hatti]
+- **9-7 Bulandırıcı Arındırma** — _Sis_ — top mermisi (yay çizip düşer) → bulut 2.5m, hedef noktada (sis hacmi, tik tik, uyumsuz silah). Etkiler: durum_sil→dost 1 [gizli]; mermi_sil→düşman mermisi [sis_perdesi]; gizlen→dost 3.2sn [bulut_ici]; kor→düşman 0.3 3.2sn [bulut_ici]
+- **9-8 Yükselen Arındırma** — _Arınıp güçlenme, Yükselen_ — top mermisi (yay çizip düşer) → küre 2.5m, hedef noktada (yerden yükselir, gücü artar, uyumsuz silah). Etkiler: durum_sil→dost 1 [guce_cevir]; mermi_sil→düşman mermisi [yukselen_perde]; hasar_buff→sen 0.1 3sn [yukselen]
+- **9-9 Odaklı Arındırma** — _Tam arındırma, Güdümlü_ — top mermisi (yay çizip düşer) → küre 2.5m, hedef noktada (hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: durum_sil→dost 99 [tumunu_sil]; mermi_sil→düşman mermisi [hedefli]
+- **9-10 Aynalı Arındırma** — _Buff silme, Mermi geri gönderme, Ayna eşli_ — top mermisi (yay çizip düşer) → küre 2.5m, hedef noktada (karşı noktada eşi, uyumsuz silah). Etkiler: iyi_durum_sil→düşman 1 [ters_hedef]; mermi_sil→düşman mermisi [geri_gonder]; yansit→sen 0.3 2sn [ayna_sifati]
+- **9-11 Kopya Arındırma** — _Çift_ — top mermisi (yay çizip düşer) → küre 2.5m, hedef noktada (2 kez (kopya), uyumsuz silah). Etkiler: durum_sil→dost 1 [iki_kez]; mermi_sil→düşman mermisi [iki_kez]
+- **9-12 Akan Arındırma** — _İnen akış alanı, Akış_ — top mermisi (yay çizip düşer) → küre 2.5m, hedef noktada (sürekli akar, tik tik, uyumsuz silah). Etkiler: durum_sil→dost 1 [aura]; mermi_sil→düşman mermisi [surekli_perde]
 
 ### 10 Yansıma
 
-- *sıfatsız*: top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada. Etkiler: yansit→sen 0.5 2sn [silahla:ucan]
-- **10-1 Yoğun Yansıma** — __ — top mermisi (yay çizip düşer) → küre 0.8m, hedef noktada (tek hedef). Etkiler: yansit→sen 0.68 1sn [sert,silahla:ucan]
-- **10-2 Emici Yansıma** — _Girdap, Hasar emme_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (içine çeker). Etkiler: em→sen 0.5 2sn [cana_cevir,silahla:ucan]; mermi_sil→düşman mermisi [yut]
-- **10-3 Sıçrayan Yansıma** — _Seken_ — top mermisi (yay çizip düşer) → küre 1.7m, hedef noktada (2 kez seker). Etkiler: yansit→sen 0.5 2sn [seker,silahla:ucan]
-- **10-4 Sabit Yansıma** — _Ayna yüzey_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (yerinde çapalı). Etkiler: yansit→sen 0.5 2sn [ayna_yuzey,silahla:ucan]
-- **10-5 Yayılan Yansıma** — _Dalga_ — top mermisi (yay çizip düşer) → küre 2.7m, hedef noktada (dışa büyür, cephe geçerken). Etkiler: yansit→sen 0.5 2sn [aura,silahla:ucan]
-- **10-6 Bağlayıcı Yansıma** — _Hasar yönlendirme, Bağ_ — top mermisi (yay çizip düşer) → bağ 1.5m, hedef noktada (sen↔hedef bağı, tik tik). Etkiler: yonlendir→düşman 0.5 2sn [bag,silahla:ucan]; hareket→düşman 1.5sn [bag_ucu]; hareket→düşman 0.7 2sn [bag_ucu,yavas]
-- **10-7 Bulandırıcı Yansıma** — _Sis_ — top mermisi (yay çizip düşer) → bulut 1.5m, hedef noktada (sis hacmi, tik tik). Etkiler: yansit→sen 0.5 2sn [gizli,silahla:ucan]; gizlen→dost 5sn [bulut_ici]; kor→düşman 0.3 5sn [bulut_ici]
-- **10-8 Yükselen Yansıma** — _Yükselen_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (yerden yükselir, gücü artar). Etkiler: yansit→sen 0.5 2sn [artan_oran,silahla:ucan]; hasar_buff→sen 0.1 3sn [yukselen]
-- **10-9 Odaklı Yansıma** — _Kusursuz savuşturma, Güdümlü_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (hedefe kilitli, tek hedef). Etkiler: yansit→sen 1 2sn [savusturma,silahla:ucan]
-- **10-10 Aynalı Yansıma** — _Bölünen yansıma, Ayna eşli_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (karşı noktada eşi). Etkiler: yansit→sen 0.5 2sn [bolunen,silahla:ucan]; yansit→sen 0.3 2sn [ayna_sifati]
-- **10-11 Kopya Yansıma** — _Çift_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (2 kez (kopya)). Etkiler: yansit→sen 0.5 2sn [iki_kez,silahla:ucan]
-- **10-12 Akan Yansıma** — _İnen akış alanı, Akış_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (sürekli akar, tik tik). Etkiler: yansit→sen 0.5 3sn [silahla:ucan,surekli]
+- *sıfatsız*: top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [dunyada,silahla:ucan]
+- **10-1 Yoğun Yansıma** — _Uzak yansıtıcı_ — top mermisi (yay çizip düşer) → küre 0.8m, hedef noktada (tek hedef, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.68 1sn [dunyada,sert,silahla:ucan]
+- **10-2 Emici Yansıma** — _Girdap, Uzak yansıtıcı, Hasar emme_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (içine çeker, uyumsuz silah). Etkiler: em→gövdenin olduğu yer 0.5 2sn [cana_cevir,dunyada,silahla:ucan]; mermi_sil→düşman mermisi [yut]
+- **10-3 Sıçrayan Yansıma** — _Uzak yansıtıcı, Seken_ — top mermisi (yay çizip düşer) → küre 1.7m, hedef noktada (2 kez seker, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [dunyada,seker,silahla:ucan]
+- **10-4 Sabit Yansıma** — _Ayna yüzey, Uzak yansıtıcı_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (yerinde çapalı, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [ayna_yuzey,dunyada,silahla:ucan]
+- **10-5 Yayılan Yansıma** — _Uzak yansıtıcı, Dalga_ — top mermisi (yay çizip düşer) → küre 2.7m, hedef noktada (dışa büyür, cephe geçerken, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [aura,dunyada,silahla:ucan]
+- **10-6 Bağlayıcı Yansıma** — _Uzak yansıtıcı, Hasar yönlendirme, Bağ_ — top mermisi (yay çizip düşer) → bağ 1.5m, hedef noktada (sen↔hedef bağı, tik tik, uyumsuz silah). Etkiler: yonlendir→düşman 0.5 2sn [bag,dunyada,silahla:ucan]; hareket→düşman 1.5sn [bag_ucu]; hareket→düşman 0.7 2sn [bag_ucu,yavas]
+- **10-7 Bulandırıcı Yansıma** — _Sis, Uzak yansıtıcı_ — top mermisi (yay çizip düşer) → bulut 1.5m, hedef noktada (sis hacmi, tik tik, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [dunyada,gizli,silahla:ucan]; gizlen→dost 5sn [bulut_ici]; kor→düşman 0.3 5sn [bulut_ici]
+- **10-8 Yükselen Yansıma** — _Uzak yansıtıcı, Yükselen_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (yerden yükselir, gücü artar, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [artan_oran,dunyada,silahla:ucan]; hasar_buff→sen 0.1 3sn [yukselen]
+- **10-9 Odaklı Yansıma** — _Uzak yansıtıcı, Kusursuz savuşturma, Güdümlü_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 1 2sn [dunyada,savusturma,silahla:ucan]
+- **10-10 Aynalı Yansıma** — _Uzak yansıtıcı, Bölünen yansıma, Ayna eşli_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (karşı noktada eşi, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [bolunen,dunyada,silahla:ucan]; yansit→sen 0.3 2sn [ayna_sifati]
+- **10-11 Kopya Yansıma** — _Uzak yansıtıcı, Çift_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (2 kez (kopya), uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [dunyada,iki_kez,silahla:ucan]
+- **10-12 Akan Yansıma** — _Uzak yansıtıcı, İnen akış alanı, Akış_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (sürekli akar, tik tik, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 3sn [dunyada,silahla:ucan,surekli]
 
 ### 11 Çağırma
 
-- *sıfatsız*: top mermisi (yay çizip düşer) → nokta 1m, hedef noktada. Etkiler: aktor_yarat→sen 1 5sn [silahla:ucan]
-- **11-1 Yoğun Çağırma** — __ — top mermisi (yay çizip düşer) → nokta 0.6m, hedef noktada (tek hedef). Etkiler: aktor_yarat→sen 1 2.5sn [guclu,silahla:ucan]
-- **11-2 Emici Çağırma** — _Can emen minyon, Girdap_ — top mermisi (yay çizip düşer) → nokta 1m, hedef noktada (içine çeker). Etkiler: aktor_yarat→sen 1 5sn [can_emen,silahla:ucan]; mermi_sil→düşman mermisi [yut]
-- **11-3 Sıçrayan Çağırma** — _Zıplayan minyon, Seken_ — top mermisi (yay çizip düşer) → nokta 1.1m, hedef noktada (2 kez seker). Etkiler: aktor_yarat→sen 1 5sn [silahla:ucan,ziplayan]
-- **11-4 Sabit Çağırma** — _Taret_ — top mermisi (yay çizip düşer) → nokta 1m, hedef noktada (yerinde çapalı). Etkiler: aktor_yarat→sen 1 5sn [silahla:ucan,taret]
-- **11-5 Yayılan Çağırma** — _Minyon halkası, Dalga_ — top mermisi (yay çizip düşer) → nokta 1.8m, hedef noktada (dışa büyür, cephe geçerken). Etkiler: aktor_yarat→sen 3 5sn [halka,silahla:ucan]
-- **11-6 Bağlayıcı Çağırma** — _Muhafız, Bağ_ — top mermisi (yay çizip düşer) → bağ 1m, hedef noktada (sen↔hedef bağı, tik tik). Etkiler: aktor_yarat→sen 1 5sn [bagli_muhafiz,silahla:ucan]
-- **11-7 Bulandırıcı Çağırma** — _Görünmez minyon, Sis_ — top mermisi (yay çizip düşer) → bulut 1m, hedef noktada (sis hacmi, tik tik). Etkiler: aktor_yarat→sen 1 5sn [gorunmez,silahla:ucan]; gizlen→dost 3.2sn [bulut_ici]; kor→düşman 0.3 3.2sn [bulut_ici]
-- **11-8 Yükselen Çağırma** — _Yükselen_ — top mermisi (yay çizip düşer) → nokta 1m, hedef noktada (yerden yükselir, gücü artar). Etkiler: aktor_yarat→sen 1 5sn [buyuyen,silahla:ucan]; hasar_buff→sen 0.1 3sn [yukselen]
-- **11-9 Odaklı Çağırma** — _Suikastçı minyon, Güdümlü_ — top mermisi (yay çizip düşer) → nokta 1m, hedef noktada (hedefe kilitli, tek hedef). Etkiler: aktor_yarat→sen 1 5sn [silahla:ucan,suikastci]
-- **11-10 Aynalı Çağırma** — _Ayna klon, Ayna eşli_ — top mermisi (yay çizip düşer) → nokta 1m, hedef noktada (karşı noktada eşi). Etkiler: aktor_yarat→sen 1 5sn [ayna_klon,silahla:ucan]; yansit→sen 0.3 2sn [ayna_sifati]
-- **11-11 Kopya Çağırma** — _Klon, Çift_ — top mermisi (yay çizip düşer) → nokta 1m, hedef noktada (2 kez (kopya)). Etkiler: klon→sen 1 5sn [senin_kopyan,silahla:ucan]
-- **11-12 Akan Çağırma** — _İnen akış alanı, Akış_ — top mermisi (yay çizip düşer) → nokta 1m, hedef noktada (sürekli akar, tik tik). Etkiler: aktor_yarat→sen 3 5sn [akis,silahla:ucan]
+- *sıfatsız*: top mermisi (yay çizip düşer) → nokta 1m, hedef noktada (uyumsuz silah). Etkiler: aktor_yarat→sen 1 5sn [silahla:ucan]
+- **11-1 Yoğun Çağırma** — __ — top mermisi (yay çizip düşer) → nokta 0.6m, hedef noktada (tek hedef, uyumsuz silah). Etkiler: aktor_yarat→sen 1 2.5sn [guclu,silahla:ucan]
+- **11-2 Emici Çağırma** — _Can emen minyon, Girdap_ — top mermisi (yay çizip düşer) → nokta 1m, hedef noktada (içine çeker, uyumsuz silah). Etkiler: aktor_yarat→sen 1 5sn [can_emen,silahla:ucan]; mermi_sil→düşman mermisi [yut]
+- **11-3 Sıçrayan Çağırma** — _Zıplayan minyon, Seken_ — top mermisi (yay çizip düşer) → nokta 1.1m, hedef noktada (2 kez seker, uyumsuz silah). Etkiler: aktor_yarat→sen 1 5sn [silahla:ucan,ziplayan]
+- **11-4 Sabit Çağırma** — _Taret_ — top mermisi (yay çizip düşer) → nokta 1m, hedef noktada (yerinde çapalı, uyumsuz silah). Etkiler: aktor_yarat→sen 1 5sn [silahla:ucan,taret]
+- **11-5 Yayılan Çağırma** — _Minyon halkası, Dalga_ — top mermisi (yay çizip düşer) → nokta 1.8m, hedef noktada (dışa büyür, cephe geçerken, uyumsuz silah). Etkiler: aktor_yarat→sen 3 5sn [halka,silahla:ucan]
+- **11-6 Bağlayıcı Çağırma** — _Muhafız, Bağ_ — top mermisi (yay çizip düşer) → bağ 1m, hedef noktada (sen↔hedef bağı, tik tik, uyumsuz silah). Etkiler: aktor_yarat→sen 1 5sn [bagli_muhafiz,silahla:ucan]
+- **11-7 Bulandırıcı Çağırma** — _Görünmez minyon, Sis_ — top mermisi (yay çizip düşer) → bulut 1m, hedef noktada (sis hacmi, tik tik, uyumsuz silah). Etkiler: aktor_yarat→sen 1 5sn [gorunmez,silahla:ucan]; gizlen→dost 3.2sn [bulut_ici]; kor→düşman 0.3 3.2sn [bulut_ici]
+- **11-8 Yükselen Çağırma** — _Yükselen_ — top mermisi (yay çizip düşer) → nokta 1m, hedef noktada (yerden yükselir, gücü artar, uyumsuz silah). Etkiler: aktor_yarat→sen 1 5sn [buyuyen,silahla:ucan]; hasar_buff→sen 0.1 3sn [yukselen]
+- **11-9 Odaklı Çağırma** — _Suikastçı minyon, Güdümlü_ — top mermisi (yay çizip düşer) → nokta 1m, hedef noktada (hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: aktor_yarat→sen 1 5sn [silahla:ucan,suikastci]
+- **11-10 Aynalı Çağırma** — _Ayna klon, Ayna eşli_ — top mermisi (yay çizip düşer) → nokta 1m, hedef noktada (karşı noktada eşi, uyumsuz silah). Etkiler: aktor_yarat→sen 1 5sn [ayna_klon,silahla:ucan]; yansit→sen 0.3 2sn [ayna_sifati]
+- **11-11 Kopya Çağırma** — _Klon, Çift_ — top mermisi (yay çizip düşer) → nokta 1m, hedef noktada (2 kez (kopya), uyumsuz silah). Etkiler: klon→sen 1 5sn [senin_kopyan,silahla:ucan]
+- **11-12 Akan Çağırma** — _İnen akış alanı, Akış_ — top mermisi (yay çizip düşer) → nokta 1m, hedef noktada (sürekli akar, tik tik, uyumsuz silah). Etkiler: aktor_yarat→sen 3 5sn [akis,silahla:ucan]
 
 ### 12 Zaman
 
@@ -506,53 +508,53 @@ Kurallar: `docs/atom-grammar-taslak.json` (TASLAK). Sayılar: `docs/element-sist
 
 - Yumruk ✓: _Portal, Ayna eşli_ — yumruk teması → çizgi 3m, sende (karşı noktada eşi). Etkiler: portal→sen 1.5 4sn [portal_cifti,yol:kisa_hamle]; yansit→sen 0.3 2sn [ayna_sifati]
 - Hançer ✓: _Portal, Ayna eşli_ — hançer dürtüşü → çizgi 3m, sende (karşı noktada eşi). Etkiler: portal→sen 1.8 4sn [portal_cifti,yol:hamle]; yansit→sen 0.3 2sn [ayna_sifati]
-- Mızrak: _Portal, Ayna eşli_ — mızrak saplaması → çizgi 3m, sende (karşı noktada eşi). Etkiler: portal→sen 6 4sn [portal_cifti,yol:uzun_hamle]; yansit→sen 0.3 2sn [ayna_sifati]
+- Mızrak: _Portal, Ayna eşli_ — mızrak saplaması → çizgi 3m, sende (karşı noktada eşi, uyumsuz silah). Etkiler: portal→sen 6 4sn [portal_cifti,yol:uzun_hamle]; yansit→sen 0.3 2sn [ayna_sifati]
 - Kılıç ✓: _Portal, Ayna eşli_ — kılıç yayı → çizgi 3.6m, sende (karşı noktada eşi). Etkiler: portal→sen 3 4sn [portal_cifti,yol:yay_kayma]; yansit→sen 0.3 2sn [ayna_sifati]
-- Balta: _Portal, Ayna eşli_ — ağır balta yayı → çizgi 3m, sende (karşı noktada eşi, sarsılmaz). Etkiler: portal→sen 2.7 4sn [portal_cifti,yol:agir_hamle]; yansit→sen 0.3 2sn [ayna_sifati]
-- Çekiç: _Portal, Sıçrayıp çakılma, Ayna eşli_ — yere vuruş → çizgi 3m, sende (yerden yükselir, karşı noktada eşi). Etkiler: portal→sen 3 4sn [portal_cifti,yol:sicrayip_cakilma]; yansit→sen 0.3 2sn [ayna_sifati]
-- Top: _Portal, Fırlatılma, Ayna eşli_ — top mermisi (yay çizip düşer) → çizgi 3m, sende (karşı noktada eşi). Etkiler: portal→sen 9 4sn [portal_cifti,yol:firlatilma]; yansit→sen 0.3 2sn [ayna_sifati]
-- Asa: _Portal, Ayna eşli_ — asa ışını (hat) → çizgi 3m, sende (karşı noktada eşi, tik tik). Etkiler: portal→sen 7.5 4sn [portal_cifti,yol:hat_kayma]; yansit→sen 0.3 2sn [ayna_sifati]
-- Tılsım: _Portal, Işınlanma, Ayna eşli_ — tılsım (hedefte belirir) → çizgi 3m, sende (karşı noktada eşi). Etkiler: portal→sen 8.4 4sn [portal_cifti,yol:isarete_isinlanma]; yansit→sen 0.3 2sn [ayna_sifati]
-- Kalkan: _Portal, Kalkan hücumu, Ayna eşli_ — kalkan gövdesi → çizgi 3m, sende (karşı noktada eşi, gövdene bağlı). Etkiler: portal→sen 1.5 4sn [portal_cifti,yol:kalkan_hucumu]; yansit→sen 0.3 2sn [ayna_sifati]
+- Balta: _Portal, Ayna eşli_ — ağır balta yayı → çizgi 3m, sende (karşı noktada eşi, sarsılmaz, uyumsuz silah). Etkiler: portal→sen 2.7 4sn [portal_cifti,yol:agir_hamle]; yansit→sen 0.3 2sn [ayna_sifati]
+- Çekiç: _Portal, Sıçrayıp çakılma, Ayna eşli_ — yere vuruş → çizgi 3m, sende (yerden yükselir, karşı noktada eşi, uyumsuz silah). Etkiler: portal→sen 3 4sn [portal_cifti,yol:sicrayip_cakilma]; yansit→sen 0.3 2sn [ayna_sifati]
+- Top: _Portal, Fırlatılma, Ayna eşli_ — top mermisi (yay çizip düşer) → çizgi 3m, sende (karşı noktada eşi, uyumsuz silah). Etkiler: portal→sen 9 4sn [portal_cifti,yol:firlatilma]; yansit→sen 0.3 2sn [ayna_sifati]
+- Asa: _Portal, Ayna eşli_ — asa ışını (hat) → çizgi 3m, sende (karşı noktada eşi, tik tik, uyumsuz silah). Etkiler: portal→sen 7.5 4sn [portal_cifti,yol:hat_kayma]; yansit→sen 0.3 2sn [ayna_sifati]
+- Tılsım: _Portal, Işınlanma, Ayna eşli_ — tılsım (hedefte belirir) → çizgi 3m, sende (karşı noktada eşi, uyumsuz silah). Etkiler: portal→sen 8.4 4sn [portal_cifti,yol:isarete_isinlanma]; yansit→sen 0.3 2sn [ayna_sifati]
+- Kalkan: _Portal, Kalkan hücumu, Ayna eşli_ — kalkan gövdesi → çizgi 3m, sende (karşı noktada eşi, gövdene bağlı, uyumsuz silah). Etkiler: portal→sen 1.5 4sn [portal_cifti,yol:kalkan_hucumu]; yansit→sen 0.3 2sn [ayna_sifati]
 
 ### 4-4 Sabit Savunma
 
-- Yumruk: _Duvar, Totem_ — yumruk teması → küre 1.5m, dokunduğun ilk kişide (yerinde çapalı, katı, tek hedef, tik tik). Etkiler: kalkan→dost 50 [totem]
-- Hançer: _Duvar, Totem_ — hançer dürtüşü → küre 1.5m, önünde (yerinde çapalı, katı, tik tik). Etkiler: kalkan→dost 50 [totem]
-- Mızrak: _Duvar, Totem_ — mızrak saplaması → küre 1.5m, önünde uzun hat (yerinde çapalı, katı, tik tik). Etkiler: kalkan→dost 50 [totem]
-- Kılıç: _Duvar, Totem_ — kılıç yayı → küre 1.5m, önünde yay (yerinde çapalı, katı, tik tik). Etkiler: kalkan→dost 50 [totem]
-- Balta: _Duvar, Totem_ — ağır balta yayı → küre 1.5m, önünde yay (yerinde çapalı, katı, sarsılmaz, tik tik). Etkiler: kalkan→dost 50 [totem]
+- Yumruk: _Duvar, Totem_ — yumruk teması → küre 1.5m, dokunduğun ilk kişide (yerinde çapalı, katı, tek hedef, tik tik, uyumsuz silah). Etkiler: kalkan→dost 40 [totem]
+- Hançer: _Duvar, Totem_ — hançer dürtüşü → küre 1.5m, önünde (yerinde çapalı, katı, tik tik, uyumsuz silah). Etkiler: kalkan→dost 40 [totem]
+- Mızrak: _Duvar, Totem_ — mızrak saplaması → küre 1.5m, önünde uzun hat (yerinde çapalı, katı, tik tik, uyumsuz silah). Etkiler: kalkan→dost 40 [totem]
+- Kılıç: _Duvar, Totem_ — kılıç yayı → küre 1.5m, önünde yay (yerinde çapalı, katı, tik tik, uyumsuz silah). Etkiler: kalkan→dost 40 [totem]
+- Balta: _Duvar, Totem_ — ağır balta yayı → küre 1.5m, önünde yay (yerinde çapalı, katı, sarsılmaz, tik tik, uyumsuz silah). Etkiler: kalkan→dost 40 [totem]
 - Çekiç ✓: _Yerden taş duvar, Totem_ — yere vuruş → küre 1.5m, hedef noktada (yerinde çapalı, katı, yerden yükselir, tik tik). Etkiler: kalkan→dost 50 [totem]
-- Top: _Duvar, Totem_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (yerinde çapalı, katı, tik tik). Etkiler: kalkan→dost 50 [totem]
-- Asa: _Hat duvar, Totem, Çit_ — asa ışını (hat) → küre 1.5m, senden hedefe hat (yerinde çapalı, katı, tik tik). Etkiler: kalkan→dost 50 [totem]
-- Tılsım: _Duvar, Totem_ — tılsım (hedefte belirir) → küre 1.5m, hedef noktada (yerinde çapalı, katı, tik tik). Etkiler: kalkan→dost 50 [totem]
+- Top: _Duvar, Totem_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (yerinde çapalı, katı, tik tik, uyumsuz silah). Etkiler: kalkan→dost 40 [totem]
+- Asa: _Hat duvar, Totem, Çit_ — asa ışını (hat) → küre 1.5m, senden hedefe hat (yerinde çapalı, katı, tik tik, uyumsuz silah). Etkiler: kalkan→dost 40 [totem]
+- Tılsım: _Duvar, Totem_ — tılsım (hedefte belirir) → küre 1.5m, hedef noktada (yerinde çapalı, katı, tik tik, uyumsuz silah). Etkiler: kalkan→dost 40 [totem]
 - Kalkan ✓: _Duvar, Totem_ — kalkan gövdesi → küre 1.5m, sende (yerinde çapalı, katı, tik tik). Etkiler: kalkan→dost 50 [totem]
 
 ### 12-12 Akan Zaman
 
-- Yumruk: _Zaman alanı, Akış_ — yumruk teması → silindir 4m, dokunduğun ilk kişide (sürekli akar, tek hedef, tik tik). Etkiler: tempo→düşman 0.7 3sn [zaman_alani]; tempo→dost 1.3 3sn [zaman_alani]
-- Hançer: _Zaman alanı, Akış_ — hançer dürtüşü → silindir 4m, önünde (sürekli akar, tik tik). Etkiler: tempo→düşman 0.7 3sn [zaman_alani]; tempo→dost 1.3 3sn [zaman_alani]
+- Yumruk: _Zaman alanı, Akış_ — yumruk teması → silindir 4m, dokunduğun ilk kişide (sürekli akar, tek hedef, tik tik, uyumsuz silah). Etkiler: tempo→düşman 0.7 3sn [zaman_alani]; tempo→dost 1.3 3sn [zaman_alani]
+- Hançer: _Zaman alanı, Akış_ — hançer dürtüşü → silindir 4m, önünde (sürekli akar, tik tik, uyumsuz silah). Etkiler: tempo→düşman 0.7 3sn [zaman_alani]; tempo→dost 1.3 3sn [zaman_alani]
 - Mızrak ✓: _Zaman alanı, Akış_ — mızrak saplaması → silindir 4m, önünde uzun hat (sürekli akar, tik tik). Etkiler: tempo→düşman 0.7 3sn [zaman_alani]; tempo→dost 1.3 3sn [zaman_alani]
-- Kılıç: _Zaman alanı, Akış_ — kılıç yayı → silindir 4m, önünde yay (sürekli akar, tik tik). Etkiler: tempo→düşman 0.7 3sn [zaman_alani]; tempo→dost 1.3 3sn [zaman_alani]
-- Balta: _Zaman alanı, Akış_ — ağır balta yayı → silindir 4m, önünde yay (sürekli akar, sarsılmaz, tik tik). Etkiler: tempo→düşman 0.7 3sn [zaman_alani]; tempo→dost 1.3 3sn [zaman_alani]
-- Çekiç: _Zaman alanı, Akış_ — yere vuruş → silindir 4m, hedef noktada (yerden yükselir, sürekli akar, tik tik). Etkiler: tempo→düşman 0.7 3sn [zaman_alani]; tempo→dost 1.3 3sn [zaman_alani]
+- Kılıç: _Zaman alanı, Akış_ — kılıç yayı → silindir 4m, önünde yay (sürekli akar, tik tik, uyumsuz silah). Etkiler: tempo→düşman 0.7 3sn [zaman_alani]; tempo→dost 1.3 3sn [zaman_alani]
+- Balta: _Zaman alanı, Akış_ — ağır balta yayı → silindir 4m, önünde yay (sürekli akar, sarsılmaz, tik tik, uyumsuz silah). Etkiler: tempo→düşman 0.7 3sn [zaman_alani]; tempo→dost 1.3 3sn [zaman_alani]
+- Çekiç: _Zaman alanı, Akış_ — yere vuruş → silindir 4m, hedef noktada (yerden yükselir, sürekli akar, tik tik, uyumsuz silah). Etkiler: tempo→düşman 0.7 3sn [zaman_alani]; tempo→dost 1.3 3sn [zaman_alani]
 - Top ✓: _Zaman alanı, İnen akış alanı, Akış_ — top mermisi (yay çizip düşer) → silindir 4m, hedef noktada (sürekli akar, tik tik). Etkiler: tempo→düşman 0.7 3sn [zaman_alani]; tempo→dost 1.3 3sn [zaman_alani]
-- Asa: _Zaman alanı, Akış_ — asa ışını (hat) → silindir 4m, senden hedefe hat (sürekli akar, tik tik). Etkiler: tempo→düşman 0.7 3sn [zaman_alani]; tempo→dost 1.3 3sn [zaman_alani]
-- Tılsım: _Zaman alanı, Akış_ — tılsım (hedefte belirir) → silindir 4m, hedef noktada (sürekli akar, tik tik). Etkiler: tempo→düşman 0.7 3sn [zaman_alani]; tempo→dost 1.3 3sn [zaman_alani]
-- Kalkan: _Zaman alanı, Akış_ — kalkan gövdesi → silindir 4m, sende (gövdene bağlı, sürekli akar, tik tik). Etkiler: tempo→düşman 0.7 3sn [zaman_alani]; tempo→dost 1.3 3sn [zaman_alani]
+- Asa: _Zaman alanı, Akış_ — asa ışını (hat) → silindir 4m, senden hedefe hat (sürekli akar, tik tik, uyumsuz silah). Etkiler: tempo→düşman 0.7 3sn [zaman_alani]; tempo→dost 1.3 3sn [zaman_alani]
+- Tılsım: _Zaman alanı, Akış_ — tılsım (hedefte belirir) → silindir 4m, hedef noktada (sürekli akar, tik tik, uyumsuz silah). Etkiler: tempo→düşman 0.7 3sn [zaman_alani]; tempo→dost 1.3 3sn [zaman_alani]
+- Kalkan: _Zaman alanı, Akış_ — kalkan gövdesi → silindir 4m, sende (gövdene bağlı, sürekli akar, tik tik, uyumsuz silah). Etkiler: tempo→düşman 0.7 3sn [zaman_alani]; tempo→dost 1.3 3sn [zaman_alani]
 
 ### 2-9 Odaklı İyileştirme
 
-- Yumruk: _Koruyucu tetik, Güdümlü_ — yumruk teması → küre 2m, dokunduğun ilk kişide (hedefe kilitli, tek hedef). Etkiler: can→dost 40.25 [koruyucu_tetik]
-- Hançer: _Koruyucu tetik, Güdümlü_ — hançer dürtüşü → küre 2m, önünde (hedefe kilitli, tek hedef). Etkiler: can→dost 40.25 [koruyucu_tetik]
-- Mızrak: _Koruyucu tetik, Güdümlü_ — mızrak saplaması → küre 2m, önünde uzun hat (hedefe kilitli, tek hedef). Etkiler: can→dost 40.25 [koruyucu_tetik]
-- Kılıç: _Koruyucu tetik, Güdümlü_ — kılıç yayı → küre 2m, önünde yay (hedefe kilitli, tek hedef). Etkiler: can→dost 40.25 [koruyucu_tetik]
-- Balta: _Koruyucu tetik, Güdümlü_ — ağır balta yayı → küre 2m, önünde yay (hedefe kilitli, sarsılmaz, tek hedef). Etkiler: can→dost 40.25 [koruyucu_tetik]
-- Çekiç: _Koruyucu tetik, Güdümlü_ — yere vuruş → küre 2m, hedef noktada (yerden yükselir, hedefe kilitli, tek hedef). Etkiler: can→dost 40.25 [koruyucu_tetik]
-- Top: _Koruyucu tetik, Güdümlü_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (hedefe kilitli, tek hedef). Etkiler: can→dost 40.25 [koruyucu_tetik]
+- Yumruk: _Koruyucu tetik, Güdümlü_ — yumruk teması → küre 2m, dokunduğun ilk kişide (hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: can→dost 32.2 [koruyucu_tetik]
+- Hançer: _Koruyucu tetik, Güdümlü_ — hançer dürtüşü → küre 2m, önünde (hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: can→dost 32.2 [koruyucu_tetik]
+- Mızrak: _Koruyucu tetik, Güdümlü_ — mızrak saplaması → küre 2m, önünde uzun hat (hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: can→dost 32.2 [koruyucu_tetik]
+- Kılıç: _Koruyucu tetik, Güdümlü_ — kılıç yayı → küre 2m, önünde yay (hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: can→dost 32.2 [koruyucu_tetik]
+- Balta: _Koruyucu tetik, Güdümlü_ — ağır balta yayı → küre 2m, önünde yay (hedefe kilitli, sarsılmaz, tek hedef, uyumsuz silah). Etkiler: can→dost 32.2 [koruyucu_tetik]
+- Çekiç: _Koruyucu tetik, Güdümlü_ — yere vuruş → küre 2m, hedef noktada (yerden yükselir, hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: can→dost 32.2 [koruyucu_tetik]
+- Top: _Koruyucu tetik, Güdümlü_ — top mermisi (yay çizip düşer) → küre 2m, hedef noktada (hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: can→dost 32.2 [koruyucu_tetik]
 - Asa ✓: _Koruyucu tetik, Güdümlü_ — asa ışını (hat) → küre 2m, senden hedefe hat (hedefe kilitli, tek hedef, tik tik). Etkiler: can→dost 40.25 [koruyucu_tetik]
 - Tılsım ✓: _Koruyucu tetik, Güdümlü_ — tılsım (hedefte belirir) → küre 2m, hedef noktada (hedefe kilitli, tek hedef). Etkiler: can→dost 48.3 [koruyucu_tetik]
-- Kalkan: _Koruyucu tetik, Güdümlü_ — kalkan gövdesi → küre 2m, sende (hedefe kilitli, gövdene bağlı, tek hedef). Etkiler: can→dost 40.25 [koruyucu_tetik]
+- Kalkan: _Koruyucu tetik, Güdümlü_ — kalkan gövdesi → küre 2m, sende (hedefe kilitli, gövdene bağlı, tek hedef, uyumsuz silah). Etkiler: can→dost 32.2 [koruyucu_tetik]
 
 ### 1-3 Sıçrayan Saldırı
 
@@ -562,23 +564,23 @@ Kurallar: `docs/atom-grammar-taslak.json` (TASLAK). Sayılar: `docs/element-sist
 - Kılıç ✓: _Seken_ — kılıç yayı → kapsül 2m, önünde yay (2 kez seker). Etkiler: can→düşman -40 [seker]
 - Balta ✓: _Seken_ — ağır balta yayı → kapsül 1.7m, önünde yay (sarsılmaz, 2 kez seker). Etkiler: can→düşman -52 [seker]
 - Çekiç ✓: _Sersemletme, Seken_ — yere vuruş → kapsül 1.7m, hedef noktada (yerden yükselir, 2 kez seker). Etkiler: can→düşman -60 [seker]; hareket→düşman 0.5sn [seker,sersem]
-- Top: _Seken_ — top mermisi (yay çizip düşer) → kapsül 1.7m, hedef noktada (2 kez seker). Etkiler: can→düşman -72 [seker]
-- Asa: _Seken_ — asa ışını (hat) → kapsül 1.7m, senden hedefe hat (2 kez seker, tik tik). Etkiler: can→düşman -36 [seker]
-- Tılsım: _Seken_ — tılsım (hedefte belirir) → kapsül 1.7m, hedef noktada (2 kez seker). Etkiler: can→düşman -24 [seker]
-- Kalkan: _Seken_ — kalkan gövdesi → kapsül 1.7m, sende (gövdene bağlı, 2 kez seker). Etkiler: can→düşman -20 [seker]
+- Top: _Seken_ — top mermisi (yay çizip düşer) → kapsül 1.7m, hedef noktada (2 kez seker, uyumsuz silah). Etkiler: can→düşman -57.6 [seker]
+- Asa: _Seken_ — asa ışını (hat) → kapsül 1.7m, senden hedefe hat (2 kez seker, tik tik, uyumsuz silah). Etkiler: can→düşman -28.8 [seker]
+- Tılsım: _Seken_ — tılsım (hedefte belirir) → kapsül 1.7m, hedef noktada (2 kez seker, uyumsuz silah). Etkiler: can→düşman -19.2 [seker]
+- Kalkan: _Seken_ — kalkan gövdesi → kapsül 1.7m, sende (gövdene bağlı, 2 kez seker, uyumsuz silah). Etkiler: can→düşman -16 [seker]
 
 ### 11-11 Kopya Çağırma
 
-- Yumruk: _Klon, Çift_ — yumruk teması → nokta 1m, dokunduğun ilk kişide (tek hedef, 2 kez (kopya)). Etkiler: klon→sen 1 5sn [senin_kopyan,silahla:yakin_itis]
-- Hançer: _Klon, Çift_ — hançer dürtüşü → nokta 1m, önünde (2 kez (kopya)). Etkiler: klon→sen 1 5sn [senin_kopyan,silahla:yakin_itis]
-- Mızrak: _Klon, Çift_ — mızrak saplaması → nokta 1m, önünde uzun hat (2 kez (kopya)). Etkiler: klon→sen 1 5sn [senin_kopyan,silahla:yakin_itis]
-- Kılıç: _Klon, Çift_ — kılıç yayı → nokta 1m, önünde yay (2 kez (kopya)). Etkiler: klon→sen 1 5sn [senin_kopyan,silahla:yay]
-- Balta: _Klon, Çift_ — ağır balta yayı → nokta 1m, önünde yay (sarsılmaz, 2 kez (kopya)). Etkiler: klon→sen 1 5sn [senin_kopyan,silahla:yay]
-- Çekiç: _Klon, Çift_ — yere vuruş → nokta 1m, hedef noktada (yerden yükselir, 2 kez (kopya)). Etkiler: klon→sen 1 5sn [senin_kopyan,silahla:dikey]
-- Top: _Klon, Çift_ — top mermisi (yay çizip düşer) → nokta 1m, hedef noktada (2 kez (kopya)). Etkiler: klon→sen 1 5sn [senin_kopyan,silahla:ucan]
+- Yumruk: _Klon, Çift_ — yumruk teması → nokta 1m, dokunduğun ilk kişide (tek hedef, 2 kez (kopya), uyumsuz silah). Etkiler: klon→sen 1 5sn [senin_kopyan,silahla:yakin_itis]
+- Hançer: _Klon, Çift_ — hançer dürtüşü → nokta 1m, önünde (2 kez (kopya), uyumsuz silah). Etkiler: klon→sen 1 5sn [senin_kopyan,silahla:yakin_itis]
+- Mızrak: _Klon, Çift_ — mızrak saplaması → nokta 1m, önünde uzun hat (2 kez (kopya), uyumsuz silah). Etkiler: klon→sen 1 5sn [senin_kopyan,silahla:yakin_itis]
+- Kılıç: _Klon, Çift_ — kılıç yayı → nokta 1m, önünde yay (2 kez (kopya), uyumsuz silah). Etkiler: klon→sen 1 5sn [senin_kopyan,silahla:yay]
+- Balta: _Klon, Çift_ — ağır balta yayı → nokta 1m, önünde yay (sarsılmaz, 2 kez (kopya), uyumsuz silah). Etkiler: klon→sen 1 5sn [senin_kopyan,silahla:yay]
+- Çekiç: _Klon, Çift_ — yere vuruş → nokta 1m, hedef noktada (yerden yükselir, 2 kez (kopya), uyumsuz silah). Etkiler: klon→sen 1 5sn [senin_kopyan,silahla:dikey]
+- Top: _Klon, Çift_ — top mermisi (yay çizip düşer) → nokta 1m, hedef noktada (2 kez (kopya), uyumsuz silah). Etkiler: klon→sen 1 5sn [senin_kopyan,silahla:ucan]
 - Asa ✓: _Klon, Çift_ — asa ışını (hat) → nokta 1m, senden hedefe hat (2 kez (kopya), tik tik). Etkiler: klon→sen 1 5sn [senin_kopyan,silahla:hat]
 - Tılsım ✓: _Klon, Çift_ — tılsım (hedefte belirir) → nokta 1m, hedef noktada (2 kez (kopya)). Etkiler: klon→sen 1 5sn [senin_kopyan,silahla:belirme]
-- Kalkan: _Klon, Çift_ — kalkan gövdesi → nokta 1m, sende (gövdene bağlı, 2 kez (kopya)). Etkiler: klon→sen 1 5sn [senin_kopyan,silahla:govde]
+- Kalkan: _Klon, Çift_ — kalkan gövdesi → nokta 1m, sende (gövdene bağlı, 2 kez (kopya), uyumsuz silah). Etkiler: klon→sen 1 5sn [senin_kopyan,silahla:govde]
 
 ## A — sıfatın nitel etkisi olmayanlar
 
@@ -621,12 +623,12 @@ Kurallar: `docs/atom-grammar-taslak.json` (TASLAK). Sayılar: `docs/element-sist
 - 1-5 Yayılan Saldırı: 9 silah — _Dalga_
 - 1-6 Bağlayıcı Saldırı: 9 silah — _Bağ_
 - 1-9 Odaklı Saldırı: 9 silah — _Güdümlü_
-- 10-1 Yoğun Yansıma: 10 silah — __
-- 10-11 Kopya Yansıma: 10 silah — _Çift_
-- 10-12 Akan Yansıma: 9 silah — _Akış_
-- 10-3 Sıçrayan Yansıma: 10 silah — _Seken_
-- 10-5 Yayılan Yansıma: 10 silah — _Dalga_
-- 10-8 Yükselen Yansıma: 10 silah — _Yükselen_
+- 10-1 Yoğun Yansıma: 1 silah — __
+- 10-11 Kopya Yansıma: 1 silah — _Çift_
+- 10-12 Akan Yansıma: 1 silah — _Akış_
+- 10-3 Sıçrayan Yansıma: 1 silah — _Seken_
+- 10-5 Yayılan Yansıma: 1 silah — _Dalga_
+- 10-8 Yükselen Yansıma: 1 silah — _Yükselen_
 - 11-1 Yoğun Çağırma: 10 silah — __
 - 11-12 Akan Çağırma: 9 silah — _Akış_
 - 11-8 Yükselen Çağırma: 10 silah — _Yükselen_
