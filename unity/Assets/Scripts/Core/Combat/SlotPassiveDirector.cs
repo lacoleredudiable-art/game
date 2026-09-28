@@ -97,6 +97,17 @@ namespace Dovus.Core.Combat
             return result;
         }
 
+        public string StringModifier(string key)
+        {
+            for (int i = _active.Count - 1; i >= 0; i--)
+            {
+                string value = _active[i].Modifiers[key].AsString();
+                if (!string.IsNullOrEmpty(value))
+                    return value;
+            }
+            return string.Empty;
+        }
+
         float Product(string key)
         {
             float result = 1f;

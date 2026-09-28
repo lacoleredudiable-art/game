@@ -456,7 +456,6 @@ namespace Dovus.Game
                 _playerStatus.ReflectBossVitals = bossVitals;
                 _playerStatus.DamageTaken += OnPlayerDamageTaken;
             }
-            input.DodgeTriggered += OnDodgeTriggered;
 
             _motionDriver = player.GetComponent<SkillMotionDriver>();
             if (_motionDriver == null)
@@ -490,8 +489,6 @@ namespace Dovus.Game
         {
             if (_engine != null && _hooked)
                 _engine.SentenceCompleted -= OnSentenceCompleted;
-            if (_input != null)
-                _input.DodgeTriggered -= OnDodgeTriggered;
             if (_playerStatus != null)
                 _playerStatus.DamageTaken -= OnPlayerDamageTaken;
         }
@@ -1901,10 +1898,14 @@ namespace Dovus.Game
             string hitboxShape = TryVerbHitbox(skill, out VerbHitboxSpec visualSpec)
                 ? visualSpec.Shape
                 : "sphere";
+            float hitboxAngleDeg = hitboxShape == "cone" ? visualSpec.SizeB : 0f;
             int elementId = SelectedElementPaint?.Id ?? 1;
             int.TryParse(skill.VerbId, out int verbVfxId);
             int.TryParse(skill.AdjectiveId, out int adjectiveVfxId);
-            string vfxKey = _verbData?.VfxKey(elementId, verbVfxId, adjectiveVfxId) ?? string.Empty;
+            string vfxKey = _verbData?.VfxKey(
+                SelectedElementPaint?.Name ?? elementId.ToString(),
+                verbVfxId,
+                adjectiveVfxId) ?? string.Empty;
             string vfxColorHex = SelectedElementPaint?.ColorHex ?? string.Empty;
             if (_verbData != null
                 && _verbData.TryGetElementColor(elementId, out ElementVfxColor vfxColor)
@@ -1916,7 +1917,7 @@ namespace Dovus.Game
             Transform target = _boss != null ? _boss.transform : null;
             bool friendly = IsFriendlyFieldVerb(skill) || kind == SkillExecutorKind.SelfState;
             // Düşmana alan boss'un üstünde değil, etkinin dünyada vardığı uçta açılır.
-            Vector3 fieldCenter = friendly
+            Vector3 fieldCenter = friendly || hitboxShape == "cone"
                 ? origin
                 : new Vector3(logic.TipX, origin.y, logic.TipZ);
             float slashCommitMult = motionPlan.SlashCommitMult;
@@ -2000,6 +2001,7 @@ namespace Dovus.Game
                 friendly,
                 colorKey,
                 hitboxShape,
+                hitboxAngleDeg,
                 vfxKey,
                 vfxColorHex,
                 ApplyExecutorEffect,
@@ -2202,13 +2204,8 @@ namespace Dovus.Game
             {
                 mob = SkillMobility.Resolve(skill);
             }
-            double ms = durationSec * 1000.0;
-            StatusTuning st = _combat != null ? _combat.Status : new StatusTuning();
-
-            if (mob == SkillMobility.Rooted)
-                _playerStatus.Board.Apply(StatusKind.Root, ms, 1f);
-            else if (mob == SkillMobility.SlowedMove)
-                _playerStatus.Board.Apply(StatusKind.Slow, ms, st.SlowSpeedMult);
+            double now = _clock != null ? _clock.Director.WorldTimeMs : 0;
+            _playerStatus.GrantCastMobility(mob, now + durationSec * 1000.0);
         }
 
         /// <summary>Building sırasında length≥3 mobiliteyi kısa yenile (cümlenin riski).</summary>

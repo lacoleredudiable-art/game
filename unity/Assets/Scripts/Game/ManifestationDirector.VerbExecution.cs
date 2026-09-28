@@ -43,13 +43,6 @@ namespace Dovus.Game
             _bossStatus?.Board.ConfigureMobilityCc(data);
         }
 
-        void OnDodgeTriggered()
-        {
-            if (_mobilityCc != null
-                && _mobilityCc.CanInterrupt(CastInterruptPhase.Startup, "dodge"))
-                CancelPendingCast("dodge");
-        }
-
         void OnPlayerDamageTaken(float incomingDamage)
         {
             if (_mobilityCc == null || _pending.Count == 0)
@@ -69,6 +62,7 @@ namespace Dovus.Game
             if (_pending.Count > 0)
                 Debug.Log($"[Interrupt] startup cancelled by {reason}; count={_pending.Count}");
             _pending.Clear();
+            _playerStatus?.ClearCastMobility();
         }
 
         bool TryVerbHitbox(in SkillResolution skill, out VerbHitboxSpec spec)

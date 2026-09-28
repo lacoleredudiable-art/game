@@ -32,8 +32,8 @@ namespace Dovus.Core.Execution
 
             if (spec.IsRadius)
             {
-                float radius = spec.SizeA * scale;
-                return new HitboxSize(spec.Shape, radius, radius, spec.DurationSec);
+                float radialSize = spec.SizeA * scale;
+                return new HitboxSize(spec.Shape, radialSize, radialSize, spec.DurationSec);
             }
 
             float reach = spec.SizeA * scale;

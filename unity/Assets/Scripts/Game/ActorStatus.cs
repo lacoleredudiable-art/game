@@ -28,10 +28,39 @@ namespace Dovus.Game
         /// <summary>Karabasan hattı: oyuncu hasar alınca koparma (SpaceDirectorHost).</summary>
         public System.Action SpaceLinkBreak { get; set; }
 
-        /// <summary>KinematicMotor bunu okur — StatusBoard × aktif ulti modu.</summary>
-        public float EffectiveMoveSpeedMult => Board.MoveSpeedMult * (ModeDirector?.MoveSpeedMult ?? 1f);
+        string _castMobility = string.Empty;
+        double _castMobilityUntilMs;
 
-        public bool EffectiveBlocksMovement => Board.BlocksMovement || (ModeDirector?.BlocksMovement ?? false);
+        bool CastMobilityActive => _clock != null && _clock.Director.WorldTimeMs < _castMobilityUntilMs;
+
+        /// <summary>KinematicMotor bunu okur — düşman CC'sinden ayrı cast mobility.</summary>
+        public float EffectiveMoveSpeedMult =>
+            Board.MoveSpeedMult
+            * (ModeDirector?.MoveSpeedMult ?? 1f)
+            * (CastMobilityActive && _castMobility == Dovus.Core.Grammar.SkillMobility.SlowedMove
+                ? _tuning.SlowSpeedMult
+                : 1f);
+
+        public bool EffectiveBlocksMovement =>
+            Board.BlocksMovement
+            || (ModeDirector?.BlocksMovement ?? false)
+            || (CastMobilityActive && _castMobility == Dovus.Core.Grammar.SkillMobility.Rooted)
+            || string.Equals(
+                SlotPassiveDirector?.StringModifier("cast_mobility"),
+                Dovus.Core.Grammar.SkillMobility.Rooted,
+                System.StringComparison.Ordinal);
+
+        public void GrantCastMobility(string mobility, double untilWorldMs)
+        {
+            _castMobility = mobility ?? string.Empty;
+            _castMobilityUntilMs = untilWorldMs;
+        }
+
+        public void ClearCastMobility()
+        {
+            _castMobility = string.Empty;
+            _castMobilityUntilMs = 0;
+        }
 
         StatusTuning _tuning = new();
         GameClock _clock;

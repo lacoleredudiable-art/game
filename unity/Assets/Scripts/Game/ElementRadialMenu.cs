@@ -12,6 +12,7 @@ namespace Dovus.Game
     /// <summary>element_system.selection: hold radial, 6 konum, slow-mo yok, hasarda iptal.</summary>
     public sealed class ElementRadialMenu : MonoBehaviour
     {
+        static ElementRadialMenu _instance;
         sealed class HoldSurface : MonoBehaviour,
             IPointerDownHandler, IPointerUpHandler, IDragHandler, IPointerExitHandler
         {
@@ -42,6 +43,10 @@ namespace Dovus.Game
         bool _keyboardHold;
 
         public bool IsOpen => _holding || (_root != null && _root.gameObject.activeSelf);
+        public static bool AnyOpen => _instance != null && _instance.IsOpen;
+        public static bool HitHoldChip(Vector2 screenPosition) =>
+            _instance != null && _instance._chip != null
+            && RectTransformUtility.RectangleContainsScreenPoint(_instance._chip, screenPosition);
 
         public void Configure(
             ManifestationDirector director,
@@ -52,6 +57,7 @@ namespace Dovus.Game
             int transitionMs)
         {
             _director = director;
+            _instance = this;
             _elements = skills?.ElementPaints ?? Array.Empty<ElementPaintNode>();
             _playerStatus = playerStatus;
             _transitionSec = Mathf.Max(0.01f, transitionMs / 1000f);
@@ -256,6 +262,8 @@ namespace Dovus.Game
 
         void OnDestroy()
         {
+            if (_instance == this)
+                _instance = null;
             if (_playerStatus != null)
                 _playerStatus.DamageTaken -= OnDamageTaken;
             if (_director != null)

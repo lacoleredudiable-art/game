@@ -382,7 +382,9 @@ namespace Dovus.Game
             {
                 director.ConfigureWeaponSwap(WeaponSwapRules.FromJson(design.Json));
                 director.ConfigureVerbExecution(VerbExecutionData.FromJson(design.Json));
-                director.ConfigureMobilityCc(MobilityCcData.FromJson(design.Json));
+                MobilityCcData mobilityCc = MobilityCcData.FromJson(design.Json);
+                director.ConfigureMobilityCc(mobilityCc);
+                input.BindMobilityCc(mobilityCc);
             }
             view.BindWeaponSwap(director, clock);
             input.WeaponSwapRequested += () => director.TryRequestWeaponSwap();

@@ -13,9 +13,9 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 28 Eylül 2026 (fiil 3/7/10/11 executor'ları) ·
-**Dal:** `master` · **Sıradaki:** telefonda his testi (swap, menzil, dash, minion), sonra
-11-4 taret / 11-5 çoklu minion, fiil 1/5 hitbox'ının JSON boyutuna geçmesi, gerçek animasyon/VFX
+**Son güncelleme:** 28 Eylül 2026 (pasif/hitbox/mobility/radial) ·
+**Dal:** `cursor/runtime-design-gaps-da7d` · **Sıradaki:** Unity Play/telefon his testi,
+sonra 11-4 taret / 11-5 çoklu minion ve gerçek presentation animasyon/VFX
 
 > **28 Eylül — v6.1.1 runtime boşlukları (pasif/hitbox/mobility/radial).** Build ekranı
 > seçili altılı içinden 0-2 pasif rünü `P` rozetiyle seçip korur; ikinci çizilen (sıfat)
@@ -33,7 +33,8 @@
 > hasarda iptal, slow-mo yok; seçim yalnız isim/VFX boyasıdır. Radius/chip boyutu JSON'da
 > olmadığı için `PrototypeTuning` varsayılanları eklendi. **Sunum yapılmadı:** ses, hitstop,
 > shake, animation event ve boss Slam animator parametreleri dokunulmadı.
-> **Doğrulama:** dotnet test henüz çalıştırılmadı; Unity Editor/Play bu ortamda beklenmiyor.
+> **Doğrulama:** `dotnet test` **285/285** yeşil (5 yeni uçtan uca Core testi);
+> Unity Editor bu ortamda yok, Play/dokunmatik/görsel ölçüm doğrulanamadı.
 
 > **28 Eylül — nişan yönü (boss hasar yemiyor).** Sahibi: "boss hasar yemiyor artık".
 > Sebep: `ResolveAimFacing` dururken kamera orbit yaw'ını kullanıyordu; kamera oyuncunun
@@ -953,9 +954,9 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   yok (JSON'da sayı yok, `minion_count` 1 kullanılıyor); `max_targets`, `ignore_armor`,
   `tick_rate_mult`, `cleanse_count` bağlı değil; `channel_sec` anlamı belirsiz; 3-7
   "görünmezlik" stealth olarak uygulanmıyor (i-frame + sıfat 7 blind var); müttefik
-  buff/yansıma yok (tek oyuncu); `mobility_cc` temel hareket/CC önceliği bağlı değil;
-  fiil 1/5 hâlâ tuned menzil kullanıyor (JSON hitbox boyutuna geçmedi); fiil 6/7 statü
-  süreleri `StatusTuning`'den; minion'lar boss aggro'sunu çekmiyor.
+  buff/yansıma yok (tek oyuncu); bazı sıfatla eklenen CC süreleri hâlâ `StatusTuning`'den;
+  minion'lar boss aggro'sunu çekmiyor. `mobility_cc` temel CC süre/öncelik ve fiil 1/5
+  JSON hitbox geçişi üstteki runtime boşlukları turunda bağlandı.
 - **`LivingEffectView.EnsureBangBurst` (satır ~162) konsol spam'i:** "Setting the duration
   while system is still playing" — mevcut hata, bu görevde dokunulmadı.
 

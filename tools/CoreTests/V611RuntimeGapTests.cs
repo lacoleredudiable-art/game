@@ -66,7 +66,7 @@ public class V611RuntimeGapTests
             five, _hitboxes.WeaponSizeMult(4), _hitboxes.AdjectiveSizeMult(5));
         Assert.That(fiveSpread.Shape, Is.EqualTo("sphere"));
         Assert.That(fiveSpread.RadiusM, Is.EqualTo(7.5f).Within(0.001f));
-        Assert.That(_hitboxes.VfxKey(2, 5, 5), Is.EqualTo("VFX_2_5_5"));
+        Assert.That(_hitboxes.VfxKey("Su", 5, 5), Is.EqualTo("VFX_Su_5_5"));
         Assert.That(_hitboxes.TryGetElementColor(2, out ElementVfxColor color), Is.True);
         Assert.That(color.Primary, Is.EqualTo("#1a8cff"));
     }

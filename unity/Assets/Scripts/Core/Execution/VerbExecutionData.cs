@@ -88,8 +88,8 @@ namespace Dovus.Core.Execution
             _weaponSize.TryGetValue(weaponId, out float value) && value > 0f ? value : fallback;
         public bool TryGetElementColor(int elementId, out ElementVfxColor color) =>
             _elementColors.TryGetValue(elementId, out color);
-        public string VfxKey(int elementId, int verbId, int adjectiveId) =>
-            $"VFX_{elementId}_{verbId}_{adjectiveId}";
+        public string VfxKey(string element, int verbId, int adjectiveId) =>
+            $"VFX_{element}_{verbId}_{adjectiveId}";
 
         public bool TryGetHitbox(in SkillResolution skill, out VerbHitboxSpec spec)
         {

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Dovus.Game
@@ -8,6 +9,8 @@ namespace Dovus.Game
     /// </summary>
     public static class HitboxVfxRegistry
     {
+        static readonly Dictionary<string, Material> Materials = new();
+
         public static GameObject Create(
             string key,
             string shape,
@@ -16,7 +19,8 @@ namespace Dovus.Game
             Vector3 direction,
             float radiusM,
             float reachM,
-            Transform parent)
+            Transform parent,
+            float angleDeg = 0f)
         {
             GameObject prefab = !string.IsNullOrEmpty(key)
                 ? Resources.Load<GameObject>("Vfx/Hitbox/" + key)
@@ -28,7 +32,6 @@ namespace Dovus.Game
             {
                 "capsule" => PrimitiveType.Capsule,
                 "line" => PrimitiveType.Cube,
-                "cone" => PrimitiveType.Cylinder,
                 "cylinder" => PrimitiveType.Cylinder,
                 _ => PrimitiveType.Sphere
             };
@@ -37,7 +40,9 @@ namespace Dovus.Game
             go.transform.position = position;
             Vector3 forward = direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector3.forward;
             go.transform.rotation = Quaternion.LookRotation(forward, Vector3.up);
-            go.AddComponent<MeshFilter>().sharedMesh = PrimitiveMesh.Get(primitive);
+            go.AddComponent<MeshFilter>().sharedMesh = shape == "cone"
+                ? CreateConeMesh(angleDeg)
+                : PrimitiveMesh.Get(primitive);
             MeshRenderer renderer = go.AddComponent<MeshRenderer>();
 
             if (shape is "capsule" or "line")
@@ -49,9 +54,13 @@ namespace Dovus.Game
                 if (shape == "capsule")
                     go.transform.rotation *= Quaternion.Euler(90f, 0f, 0f);
             }
+            else if (shape == "cone")
+            {
+                go.transform.localScale = new Vector3(reachM, 1f, reachM);
+            }
             else
             {
-                float height = shape is "cone" or "cylinder" ? Mathf.Max(0.05f, radiusM * 0.15f) : radiusM * 2f;
+                float height = shape == "cylinder" ? Mathf.Max(0.05f, radiusM * 0.15f) : radiusM * 2f;
                 go.transform.localScale = new Vector3(radiusM * 2f, height, radiusM * 2f);
             }
 
@@ -59,17 +68,47 @@ namespace Dovus.Game
             if (!string.IsNullOrEmpty(colorHex))
                 ColorUtility.TryParseHtmlString(colorHex, out color);
             color.a = 0.38f;
-            Shader shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color");
-            if (shader != null)
+            string materialKey = colorHex ?? string.Empty;
+            if (!Materials.TryGetValue(materialKey, out Material material) || material == null)
             {
-                var material = new Material(shader);
-                if (material.HasProperty("_BaseColor"))
-                    material.SetColor("_BaseColor", color);
-                else
-                    material.color = color;
-                renderer.sharedMaterial = material;
+                Shader shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color");
+                if (shader != null)
+                {
+                    material = new Material(shader);
+                    if (material.HasProperty("_BaseColor"))
+                        material.SetColor("_BaseColor", color);
+                    else
+                        material.color = color;
+                    Materials[materialKey] = material;
+                }
             }
+            renderer.sharedMaterial = material;
             return go;
+        }
+
+        static Mesh CreateConeMesh(float angleDeg)
+        {
+            float half = Mathf.Clamp(angleDeg > 0f ? angleDeg : 60f, 1f, 359f) * 0.5f;
+            const int segments = 12;
+            var vertices = new Vector3[segments + 2];
+            var triangles = new int[segments * 3];
+            vertices[0] = Vector3.zero;
+            for (int i = 0; i <= segments; i++)
+            {
+                float angle = Mathf.Lerp(-half, half, i / (float)segments) * Mathf.Deg2Rad;
+                vertices[i + 1] = new Vector3(Mathf.Sin(angle), 0.02f, Mathf.Cos(angle));
+                if (i == segments)
+                    continue;
+                int t = i * 3;
+                triangles[t] = 0;
+                triangles[t + 1] = i + 1;
+                triangles[t + 2] = i + 2;
+            }
+            var mesh = new Mesh { name = "HitboxCone" };
+            mesh.vertices = vertices;
+            mesh.triangles = triangles;
+            mesh.RecalculateNormals();
+            return mesh;
         }
     }
 }

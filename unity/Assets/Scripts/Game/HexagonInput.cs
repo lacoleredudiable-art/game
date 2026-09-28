@@ -58,7 +58,6 @@ namespace Dovus.Game
 
         /// <summary>Swap düğmesi tap'i / Q tuşu — ManifestationDirector kapıyı kendisi kontrol eder.</summary>
         public event System.Action WeaponSwapRequested;
-        public event System.Action DodgeTriggered;
 
         public PrototypeTuning Tuning
         {
@@ -107,6 +106,9 @@ namespace Dovus.Game
             _playerStates = states;
             _isCasting = isCasting;
         }
+
+        MobilityCcData _mobilityCc;
+        public void BindMobilityCc(MobilityCcData data) => _mobilityCc = data;
 
         /// <summary>Bağlama 3: EnforceResourceCost kapısı + yetersiz mana readout.</summary>
         public void BindResource(PlayerResource resource, ReactionReadout readout, SkillMotor skills = null)
@@ -823,12 +825,19 @@ namespace Dovus.Game
                 return;
             }
 
-            // Building: yatırım batar. Recovering: yalnızca kilit kesilir, ödenmiş kapanış durur.
+            CastInterruptPhase phase = _engine != null && _engine.State.Phase == SentencePhase.Building
+                ? CastInterruptPhase.Startup
+                : CastInterruptPhase.Recovery;
+            if (_mobilityCc != null && !_mobilityCc.CanInterrupt(phase, "dodge"))
+            {
+                _readout?.NoteDenied("cast kesilemez");
+                return;
+            }
+            // startup: yatırım batar; recovery: kilit kesilir, aktif dünya etkisi yaşamaya devam eder.
             bool wasBuilding = _engine != null && _engine.State.Phase == SentencePhase.Building;
             _engine?.Abort();
             FlushInkBreak();
             _dodge.Begin(worldMs);
-            DodgeTriggered?.Invoke();
             _debugHud?.NoteDodge(wasBuilding);
             _mode = FingerMode.None;
             _activeDot = null;

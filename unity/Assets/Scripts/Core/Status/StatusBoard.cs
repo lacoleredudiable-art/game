@@ -11,7 +11,7 @@ namespace Dovus.Core.Status
     public sealed class StatusBoard
     {
         readonly Dictionary<StatusKind, StatusEntry> _active = new();
-        MobilityCcData _mobilityCc;
+        MobilityCcData? _mobilityCc;
 
         public void ConfigureMobilityCc(MobilityCcData data) => _mobilityCc = data;
 
