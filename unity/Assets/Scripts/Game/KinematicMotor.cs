@@ -127,8 +127,8 @@ namespace Dovus.Game
             float rate = target.sqrMagnitude >= current.sqrMagnitude ? _tuning.MoveAccelMps2 : _tuning.MoveDecelMps2;
             Velocity = Vector3.MoveTowards(current, target, rate * dtSec);
 
-            float walkRef = Mathf.Max(0.01f, _tuning.WalkSpeedMps);
-            _visual?.SetSpeed(Velocity.magnitude / walkRef, _tuning.AnimSpeedDampSec);
+            _visual?.SetLocomotion(Velocity.magnitude, _tuning.WalkSpeedMps, _tuning.AnimSpeedDampSec,
+                _tuning.LocoMaxPlaybackMult);
 
             Vector3 from = transform.position;
             Vector3 next = SweepAndSlide(from, from + Velocity * dtSec);

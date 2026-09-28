@@ -38,6 +38,7 @@ const JOBS = jobsFile
       j.exact || j.query,
       j.inplace !== false,
       !!j.overdrive,
+      j.desc || null,
     ])
   : DEFAULT_JOBS;
 
@@ -133,7 +134,8 @@ function gmsify(gms, inplace, boostOverdrive) {
   ];
 }
 
-async function findExact(query, exactName) {
+/** desc: aynı adlı klipleri (ör. birden çok "Standing Idle") Mixamo açıklamasıyla ayırır. */
+async function findExact(query, exactName, desc) {
   const url =
     API +
     "/products?page=1&limit=48&order=&type=Motion%2CMotionPack&query=" +
@@ -141,6 +143,7 @@ async function findExact(query, exactName) {
   const { json } = await req("GET", url);
   const list = (json && json.results) || [];
   const lower = exactName.toLowerCase();
+  if (desc) return list.find((x) => x.name === exactName && x.description === desc) || null;
   return (
     list.find((x) => x.name === exactName) ||
     list.find((x) => String(x.name).toLowerCase() === lower) ||
@@ -149,8 +152,8 @@ async function findExact(query, exactName) {
   );
 }
 
-async function exportOne(query, exactName, inplace, boost) {
-  const product = await findExact(query, exactName);
+async function exportOne(query, exactName, inplace, boost, desc) {
+  const product = await findExact(query, exactName, desc);
   if (!product) throw new Error("not found: " + exactName);
   await sleep(2500);
   const full = (await req("GET", API + "/products/" + product.id + "?similar=0")).json;
@@ -177,11 +180,11 @@ function sleep(ms) {
 }
 
 const summary = [];
-for (const [label, query, exact, inplace, boost] of JOBS) {
+for (const [label, query, exact, inplace, boost, desc] of JOBS) {
   const dest = path.join(outDir, label + ".fbx");
   process.stdout.write(label + " ... ");
   try {
-    const { name, url } = await exportOne(query, exact, inplace, boost);
+    const { name, url } = await exportOne(query, exact, inplace, boost, desc);
     await download(url, dest);
     const size = fs.statSync(dest).size;
     console.log("OK " + name + " (" + size + " bytes)");
