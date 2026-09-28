@@ -36,6 +36,20 @@ sonra 11-4 taret / 11-5 çoklu minion ve gerçek presentation animasyon/VFX
 > **Doğrulama:** `dotnet test` **285/285** yeşil (5 yeni uçtan uca Core testi);
 > Unity Editor bu ortamda yok, Play/dokunmatik/görsel ölçüm doğrulanamadı.
 
+> **28 Eylül — atom grameri simülasyonu (dal `feat/atom-grammar-sim`, KARAR BEKLİYOR).**
+> Sahibi: "skiller çok benzer; duvar/portal/klon/zaman alanı gibi mekanikler elle atanmasın,
+> fiil+sıfat+silah anlamından motor çıkarsın". Taslak kural seti `docs/atom-grammar-taslak.json`
+> (bağlayıcı DEĞİL): Skill = Sıfat.kural(Silah.teslim(Fiil.atomlar)) → çakışma → etiket.
+> Fiil = hitbox NE (atomlar: değer/hız/konum/varlık/yön), silah = teslim yolu (tier C),
+> sıfat = hitbox NASIL (atom TÜRÜNE yazılmış tek kural, kombo tablosu yok).
+> `tools/AtomSim` (`dotnet run --project tools/AtomSim`) 1440 skill üretir →
+> `tools/AtomSim/out/rapor.md` + `skills.csv`. Son tur: A (sıfat nitel fark) 0 ihlal,
+> B (aynı silahta aynı skill) 0, D (çelişki) 0; yol adı hariç bir skill 10 silahta ort.
+> 9.9 farklı davranış; Top=Tılsım 9 ve Çekiç=Tılsım 6 skill'de örtüşüyor (Sabit/Yükselen
+> silahı eziyor). Taslak `params` sayılarının tamamı önerilen/uydurmadır.
+> **Oyun motoruna ve `element-sistemi.json`'a dokunulmadı** — sahip onaylarsa
+> `mechanic_grammar` olarak taşınır ve Core'a yazılır.
+
 > **28 Eylül — nişan yönü (boss hasar yemiyor).** Sahibi: "boss hasar yemiyor artık".
 > Sebep: `ResolveAimFacing` dururken kamera orbit yaw'ını kullanıyordu; kamera oyuncunun
 > arkasını izlemediği için vuruş sabit dünya yönüne (+z) gidiyordu. Menzil düzeltmesindeki
