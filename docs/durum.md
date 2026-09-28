@@ -13,8 +13,49 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 28 Eylül 2026 (Arise-esintili görünür his turu) ·
-**Dal:** `cursor/arise-feel-pass-8b3d` · **Sıradaki:** Editor Play görsel smoke + telefon hissi
+**Son güncelleme:** 28 Eylül 2026 (premium combat HUD + özgün ikon seti) ·
+**Dal:** `cursor/arise-feel-pass-8b3d` · **Sıradaki:** Kullanıcı Editor Play + telefon HUD smoke
+
+> **28 Eylül — premium combat HUD ve repo içi ikonografi (PR #19 devamı).** "Basit placeholder"
+> reddine göre HUD yeniden kuruldu. `Resources/UI/Runes/` altında bağlayıcı v6 kimlikleri için
+> **12 ayrı 256×256 RGBA ikon** var: 1 Saldırı, 2 İyileştirme, 3 Hareket, 4 Savunma,
+> 5 Patlama, 6 Kontrol, 7 Zayıflatma, 8 Güçlendirme, 9 Arındırma, 10 Yansıma, 11 Çağırma,
+> 12 Zaman (`rune-{id}-{ad}.png`). Bunlar eski Ateş/Su/Hava/Toprak/Aydınlık/Karanlık yüzleri
+> değildir; her silüet fiil/sıfat rolünden çizildi. `Resources/UI/Weapons/` altında Yumruk,
+> Hançer, Mızrak, Kılıç, Balta, Çekiç, Top, Asa, Tılsım, Kalkan için 10 ayrı ikon var.
+> PNG + deterministic Unity `.meta` üretimi `tools/generate-hud-icons.py`; runtime eşleme
+> `CombatIconCatalog.cs` (`RuneIconCatalog` / `WeaponIconCatalog`). Asset yoksa yalnız o zaman
+> iki harfli rün/silah adı fallback'i.
+>
+> **Combat chrome:** `HexagonView` artık cam backplate + ince altıgen bağlantı çizgisi + başlıklı
+> savaş tepsisi; rünler 68 dp çap, merkez saldırı aktif silah ikonunu taşır, dodge 80 dp,
+> swap 72 dp ve yedek silah rozeti gösterir. Rune rim rengi v6 kimlik rengidir (element değil);
+> kabul edilen çizim noktası parlar/punch yapar, cooldown maskesi ve hazır pop korunur.
+> Build ekranındaki 12 rün kartı/altıgen slotu ve 10 silah chip'i de aynı katalogları kullanır.
+> Skill kartı büyük başlık + prose + sağ uyum etiketi + renk şeridi oldu; uyumsuz hâl sarı
+> (`×0.8`, cast `×1.2`) ve kart görünürken pop/fade alır. Boss 460×24 dp HP + urgency cast,
+> oyuncu AVCI/HP/MP/ALLY cam kümesi; oyuncu ve boss low-HP pulse. Pasif HUD artık seçilen
+> 0–2 rünü `RuneManager.Changed` ile sabit yuvalarda gösterir (`HAZIR`/timer); build değişiminden
+> kalan aktif eski etki bitene kadar boş görünür yuvayı kullanır. Element chip/radial merkezi,
+> tüm seçenek yarıçapı ve yarım boylarıyla safe-area içine clamp edilir.
+>
+> Tüm yeni palet, metin hiyerarşisi, panel/ikon/padding ve motion değerleri `HudTheme`;
+> konum, dp boyu, touch alanı, radial/pasif/vitals ölçüleri `PrototypeTuning` v17 alanlarında
+> Inspector açıklamalarıyla. Gramer/executor/cooldown/i-frame/global zaman kuralları değişmedi.
+>
+> **Editor Play smoke (cloud'da Unity yok; kullanıcıdan özellikle isteniyor):** Prototype Play →
+> 6 rün + 2 silah seç; 12 rün/10 silah ikonunun ayrı olduğunu ve slot sırasını doğrula; safe
+> area içinde tepsi/68 dp rün/80 dp dodge/72 dp swap çakışmasın; bir ve iki rün çizince rim +
+> skill kartı, uyumsuzda sarı kart; swap sonrası merkez/swap/yedek ikonları; element chip'e
+> basılı tutup 6 seçim (slow-mo yok); 0/1/2 pasif yuvası ve timer; oyuncu/boss düşük can pulse,
+> üç boss cast'inde urgency; cooldown/hasar/camera/dodge/skill kuralları ve konsol temizliği.
+>
+> **Doğrulama:** üretici ikinci çalıştırmada birebir çıktı (`git diff --exit-code`);
+> 22/22 PNG 256×256 RGBA + boş olmayan alfa ve 22/22 `.meta` doğrulandı; bağımsız salt-okunur
+> C# incelemesinde compile blocker kalmadı. Bu cloud imajında `dotnet` ve Unity Editor yok:
+> güncel HUD revizyonu burada derlenemedi/Play edilemedi. PR'ın HUD öncesi commit'i
+> `dotnet test tools/CoreTests/CoreTests.csproj` **313/313 yeşildi**; HUD follow-up'ı Core'a
+> dokunmadı. Telefon yoğunluk/thumb-reach/overdraw ve gerçek motion gözü doğrulanamadı.
 
 > **28 Eylül — görünür his turu (ölçek/kamera/tempo/atmosfer/HUD).** Gerçek stack
 > doğrulandı: `Prototype.unity` Synty Hero Knight + Rock Golem prefablarını koddan kuruyor;
