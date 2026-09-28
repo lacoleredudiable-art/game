@@ -112,4 +112,36 @@ public class MechanicGrammarTests
         Assert.That(P(8, 10, 4).Find("hasar_buff", "dusman")!.Has("ters_kopya"), Is.True,
             "güç verirken ters kopya düşmanı zayıflatır");
     }
+
+    [Test]
+    public void WorldProfile_MapsBindingAtoms_NotPresentationLabels()
+    {
+        Assert.That(MechanicWorldProfile.From(P(4, 4, 1)).BlocksMovement, Is.True);
+        Assert.That(MechanicWorldProfile.From(P(11, 4, 7)).ActorKind, Is.EqualTo(MechanicActorKind.Turret));
+        Assert.That(MechanicWorldProfile.From(P(11, 11, 4)).ActorKind, Is.EqualTo(MechanicActorKind.Clone));
+        Assert.That(MechanicWorldProfile.From(P(11, 10, 4)).ActorKind, Is.EqualTo(MechanicActorKind.MirrorClone));
+        Assert.That(MechanicWorldProfile.From(P(12, 10, 4)).Rewind, Is.True);
+        Assert.That(MechanicWorldProfile.From(P(12, 12, 4)).TempoField, Is.True);
+        Assert.That(MechanicWorldProfile.From(P(1, 9, 7)).Homing, Is.True);
+        Assert.That(MechanicWorldProfile.From(P(10, 0, 1)).Reflector, Is.True);
+        Assert.That(MechanicWorldProfile.From(P(3, 11, 4)).Decoy, Is.True);
+        Assert.That(MechanicWorldProfile.From(P(9, 2, 4)).StatusTransfer, Is.True);
+        Assert.That(MechanicWorldProfile.From(P(9, 10, 4)).BuffPurge, Is.True);
+    }
+
+    [Test]
+    public void TimedHistory_ReturnsPastSample_AndRetainsBoundary()
+    {
+        var history = new TimedHistory<string>(retentionMs: 2000, sampleIntervalMs: 100);
+        history.Record(0, "zero");
+        history.Record(50, "ignored");
+        history.Record(100, "one");
+        history.Record(1000, "ten");
+        history.Record(2200, "twenty-two");
+
+        Assert.That(history.TryGetAtOrBefore(250, out string? at250), Is.True);
+        Assert.That(at250, Is.EqualTo("one"));
+        Assert.That(history.TryGetAtOrBefore(-1, out string? oldest), Is.True);
+        Assert.That(oldest, Is.EqualTo("one"), "retention sınırından önceki tek örnek tutulur");
+    }
 }

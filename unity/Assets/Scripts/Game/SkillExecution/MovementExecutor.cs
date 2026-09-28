@@ -17,6 +17,7 @@ namespace Dovus.Game
         Vector3 _last;
         LineRenderer _trail;
         GameObject _trailGo;
+        bool _motionStarted;
 
         public override SkillExecutorKind Kind => SkillExecutorKind.Movement;
 
@@ -26,8 +27,8 @@ namespace Dovus.Game
             _ageSec = 0f;
             _applied = false;
             _start = OwnerPosition();
-            context.StartMotion?.Invoke();
             _last = OwnerPosition();
+            _motionStarted = false;
             HitboxVfxRegistry.Create(
                 context.VfxKey,
                 context.HitboxShape,
@@ -52,6 +53,15 @@ namespace Dovus.Game
         {
             if (!HasContext)
                 return;
+            if (WaitingForActivation())
+                return;
+            if (!_motionStarted)
+            {
+                _motionStarted = true;
+                Context.StartMotion?.Invoke();
+                _start = OwnerPosition();
+                _last = _start;
+            }
 
             _ageSec += WorldDeltaSec;
             Vector3 now = OwnerPosition();

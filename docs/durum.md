@@ -13,9 +13,39 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 28 Eylül 2026 (mechanic_grammar oyuna bağlandı) ·
-**Dal:** `feat/mechanic-grammar` · **Sıradaki:** telefon his testi; duvar/klon/taret/
-geri sarma/sürekli alan gibi henüz dünyaya inmeyen gramer atomları (Bilinen açıklar)
+**Son güncelleme:** 28 Eylül 2026 (mechanic_grammar dünya atomları) ·
+**Dal:** `cursor/world-mechanic-atoms-2314` · **Sıradaki:** Unity Play'de aşağıdaki
+mekanik smoke matrisi; düşman mermisi / çoklu düşman gelince ertelenen atomları tamamlama
+
+> **28 Eylül — label-only mechanic_grammar atomları dünyaya indi.** Runtime etiketi okumaz:
+> yeni saf-Core `MechanicWorldProfile` gövde/atom/modlardan yetenek çıkarır; Unity adaptörü
+> `ManifestationDirector.MechanicWorld` bunları yaşayan nesnelere bağlar. **Artık dünya
+> etkisi olanlar:** Duvar/Çit (ömürlü gerçek collider; oyuncu geçemez), Klon/Ayna klon/
+> Taret/Muhafız/Suikastçı (ayrı aktör silüeti; taret sabit, klonlar oyuncu-kopya davranışı,
+> silah yoluna göre yakın saldırı veya görünen atış), Geri sarma (boss konum geçmişi +
+> hazırlanan saldırıyı iptal), Zaman alanı (sürekli hacim; boss Slow, oyuncu/ally Haste;
+> global timescale yok), Güdüm (projectile hedefi her kare kovalar; melee hedef kilidi),
+> Dosta/Uzak yansıtma (ally/iniş noktasında ömürlü alan; içindeki oyuncuya gelen hasarı
+> boss'a döndürür). Audit'te bulunan diğer label-only atomlardan: uzak Sis stealth/blind,
+> Girdap sürekli çekme, Bağ/Tasma (can paylaşımı + hasar yönlendirme + yenilenen CC ve
+> tether), Yem kopya, Arınma alanı, Durum aktarma, Buff silme, koruyucu HP-eşiği tetik,
+> `rise_delay_sec` / `mark_delay_sec`, Bataklık/Akıntı sürekli tikleri dünyaya bağlandı.
+> Portal, işaretle-geri dön, arkaya ışınlanma, yer değiştirme, dondurma/hızlanma/knockup
+> zaten canlıydı. `TimedHistory<T>` ve profil eşleme Core testleri eklendi.
+>
+> **Hâlâ ertelenen atom envanteri (sebep):** düşman mermisi olmadığı için Emici yutma,
+> Mermi geri gönderme/kesen perde ve Bölünen yansıma düşman mermisi üzerinde denenemez
+> (perde hacmi/collider dünyada); tek boss olduğu için Seken/Zıplayan minyonun "sonraki
+> hedef" seçimi ve Delici'nin ikinci hedefi yok; boss AI kapsam dışı olduğu için Yem kopya
+> aggro çekmez ve Ters kontrol hedef girdisini çeviremez; gerçek co-op aktörü olmadığı için
+> ally Haste/Stealth StatusBoard'da canlı olsa da hareket/görünüşe yansımaz. Taşma stat
+> merdiveni, Emme/çalma'nın yarar→düşman stat dönüşümü, Ters kopya, Arınıp güçlenme,
+> Kusursuz savuşturmanın pencere bazlı ilk-vuruş ayrımı, Ayna/Kıskaç ikinci hasar gövdesi,
+> Yankı'nın önceki skill snapshot'ı, rampa gücünün 1→`ramp_max` sayısal artışı ve Akan
+> hareketin kesintisiz glide'ı executor hasar/zaman sahipliğini ayırmayı gerektiriyor.
+> Bunlar artık sessiz label-only değil; bu listede açıkça ertelendi. Presentation/boss AI/
+> telefon kapsamına dokunulmadı. Bağlayıcı docs/Resources/upload SHA-256 birebir:
+> `29d06672086111ec8baebc29e3531cf9c40f132d8cf9e56427499b37fcd66f4f`.
 
 > **28 Eylül — mechanic_grammar BAĞLAYICI + oyunda (dal `feat/mechanic-grammar`).** Sahibi
 > atom gramerini onayladı. Kurallar `element-sistemi.json` → `mechanic_grammar`'a taşındı
@@ -989,23 +1019,20 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
-- **mechanic_grammar — dünyaya henüz inmeyen atomlar (28 Eylül).** Plan/etiket/HUD her
-  skill için var; şunlar yalnız etiket + log, oyunda davranış yok: **duvar / engel / perde**
-  (`mermi_sil`, boss mermisi ve engelleyici collider yok), **klon / yem kopya / taret**
-  (eski summon yolu çalışır ama gramerin sayısı/davranışı bağlı değil), **geri sarma**
-  (Zaman+Aynalı düşmanı hedefler; boss `_home`'a çapalı ve saldırı iptal API'si yok),
-  **zaman alanı / sürekli akış** (dost haste tik'i yok; tek sefer Haste), **güdüm, çapalı
-  mayın/çit, bağ ekseni, bulut içi gizlenme (uzak bulut)**, **uzak/dosta yansıtma**
-  (`GrantReflect` yalnız kendine), **durum aktarma / iyi durum silme**. Boss sabit
-  olduğundan çekme/yer değiştirme boss'u taşımaz (çekme görsel sapma, yer değiştirme
-  oyuncuyu taşır). Top=Tılsım 9, Çekiç=Tılsım 6 skill'de aynı davranış (Sabit/Yükselen
-  silah yolunu eziyor) — gramer kararı bekliyor.
-- **Fiil executor'ları (28 Eylül) — kalanlar.** 11-4 taret (sabit minion) ve 11-5 "3 minion"
-  yok (JSON'da sayı yok, `minion_count` 1 kullanılıyor); `max_targets`, `ignore_armor`,
-  `tick_rate_mult`, `cleanse_count` bağlı değil; `channel_sec` anlamı belirsiz; 3-7
-  "görünmezlik" stealth olarak uygulanmıyor (i-frame + sıfat 7 blind var); müttefik
-  buff/yansıma yok (tek oyuncu); bazı sıfatla eklenen CC süreleri hâlâ `StatusTuning`'den;
-  minion'lar boss aggro'sunu çekmiyor. `mobility_cc` temel CC süre/öncelik ve fiil 1/5
+- **mechanic_grammar dünya atomları — kalanlar (28 Eylül).** Bu turun tam label audit'i ve
+  ertelenme sebepleri dosyanın en üstündeki oturum notunda. Özet: düşman projectile sistemi,
+  ikinci düşman, gerçek co-op aktörü ve boss hedefleme/kontrol AI'sı olmayan davranışlar
+  doğrulanamaz; taşma/savuşturma/ayna ikinci gövde/rampa/glide executor sahipliği ayrı iş.
+  Top=Tılsım 9, Çekiç=Tılsım 6 skill'de aynı davranış (Sabit/Yükselen silah yolunu eziyor) —
+  bu gramer kararı değişmedi.
+- **Fiil executor'ları (28 Eylül) — kalanlar.** 11-4 taret ve 11-5 halka artık gramer
+  aktör profiliyle dünyada; Akan aktörler `channel_sec` boyunca saniyelik doğar ve Akan
+  alan `tick_rate_mult` + `flow_tick_fraction` kullanır. `max_targets`, `ignore_armor`,
+  `cleanse_count` genel executor'a bağlı değil; 3-7
+  görünmez geçiş uzak Sis hacmiyle Stealth/Blind verir; ally buff/yansıma dummy üstünde
+  StatusBoard/alan olarak var ama gerçek co-op hareket/hasar hedeflemesi yok; bazı sıfatla
+  eklenen CC süreleri hâlâ `StatusTuning`'den; minion/decoy boss aggro'sunu çekmiyor
+  (boss AI kapsam dışı). `mobility_cc` temel CC süre/öncelik ve fiil 1/5
   JSON hitbox geçişi üstteki runtime boşlukları turunda bağlandı.
 - **`LivingEffectView.EnsureBangBurst` (satır ~162) konsol spam'i:** "Setting the duration
   while system is still playing" — mevcut hata, bu görevde dokunulmadı.

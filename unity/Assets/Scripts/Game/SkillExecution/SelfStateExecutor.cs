@@ -11,6 +11,7 @@ namespace Dovus.Game
     {
         float _ageSec;
         GameObject _disk;
+        bool _applied;
 
         public override SkillExecutorKind Kind => SkillExecutorKind.SelfState;
 
@@ -18,7 +19,7 @@ namespace Dovus.Game
         {
             base.Execute(context);
             _ageSec = 0f;
-            Apply(1f);
+            _applied = false;
             HitboxVfxRegistry.Create(
                 context.VfxKey,
                 context.HitboxShape,
@@ -46,6 +47,13 @@ namespace Dovus.Game
         {
             if (!HasContext)
                 return;
+            if (WaitingForActivation())
+                return;
+            if (!_applied)
+            {
+                _applied = true;
+                Apply(1f);
+            }
 
             _ageSec += WorldDeltaSec;
             if (_disk != null)

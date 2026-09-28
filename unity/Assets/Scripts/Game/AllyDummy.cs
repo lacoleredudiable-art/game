@@ -1,4 +1,5 @@
 using Dovus.Core.Status;
+using Dovus.Core.Tuning;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,6 +18,8 @@ namespace Dovus.Game
         Transform _billboard;
         Transform _cam;
         StatusBoard _statusBoard;
+        GameClock _clock;
+        StatusTuning _statusTuning = new();
 
         public int Hp => _hp;
         public int MaxHp => _maxHp;
@@ -26,6 +29,13 @@ namespace Dovus.Game
         public void EnsureStatusBoard()
         {
             _statusBoard ??= new StatusBoard();
+        }
+
+        public void BindStatusClock(GameClock clock, StatusTuning tuning)
+        {
+            _clock = clock;
+            _statusTuning = tuning ?? new StatusTuning();
+            EnsureStatusBoard();
         }
 
         public void Bind(int maxHp, float startRatio = 0.5f)
@@ -138,6 +148,17 @@ namespace Dovus.Game
             if (_cam != null)
                 _billboard.rotation = Quaternion.LookRotation(
                     _billboard.position - _cam.position, Vector3.up);
+        }
+
+        void Update()
+        {
+            if (_statusBoard == null || _clock == null)
+                return;
+            float payload = _statusBoard.Tick(_clock.WorldDeltaMs, _statusTuning);
+            if (payload > 0f)
+                ApplyDamage(Mathf.CeilToInt(payload));
+            else if (payload < 0f)
+                ApplyHeal(Mathf.CeilToInt(-payload));
         }
     }
 }

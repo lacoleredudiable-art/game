@@ -152,6 +152,20 @@ namespace Dovus.Game
         /// <summary>§11: tam canla yeniden doğuş — idle beklemeden devam.</summary>
         public void NotifyBossRevived(double worldMs) => EnterIdle(worldMs);
 
+        /// <summary>
+        /// mechanic_grammar Aynalı tempo: hazırlanmakta olan saldırıyı iptal edip yeni idle
+        /// döngüsüne döner. Boss AI seçimini değiştirmez; yalnız mevcut cast state'i sarar.
+        /// </summary>
+        public bool CancelPreparedAttack(double worldMs)
+        {
+            if (_phase != Phase.Windup)
+                return false;
+            _telegraph?.Hide();
+            _feel?.ClearThreat();
+            EnterIdle(worldMs);
+            return true;
+        }
+
         void Update()
         {
             EnsureRuntime();
