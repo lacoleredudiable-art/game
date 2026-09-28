@@ -17,7 +17,12 @@ namespace Dovus.Game
         Vector2 _moveDirection;
         Vector2 _knobOffsetPx;
 
-        public Vector2 MoveDirection => _moveDirection;
+        Vector2? _scriptedDirection;
+
+        public Vector2 MoveDirection => _scriptedDirection ?? _moveDirection;
+
+        /// <summary>Editor smoke testleri için çubuğu koddan tutar; null bırakınca gerçek girdiye döner.</summary>
+        public void SetScriptedDirection(Vector2? direction) => _scriptedDirection = direction;
 
         /// <summary>16 Eylül: JoystickView için — çubuk şu an ekranda basılı mı.</summary>
         public bool IsActive => _stickFingerId.HasValue;

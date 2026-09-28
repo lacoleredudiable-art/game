@@ -156,6 +156,8 @@ namespace Dovus.Game
             var go = new GameObject("BangBurst");
             go.transform.SetParent(transform, false);
             _bangPs = go.AddComponent<ParticleSystem>();
+            // AddComponent sistemi hemen oynatır; süre oynarken yazılamaz.
+            _bangPs.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             var main = _bangPs.main;
             main.loop = false;
             main.playOnAwake = false;

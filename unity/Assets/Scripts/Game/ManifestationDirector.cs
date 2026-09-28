@@ -1249,6 +1249,7 @@ namespace Dovus.Game
                 return;
             }
 
+            NotifyBossStruck(false, allowHitstop: false);
             bossVisual?.PlayStagger();
         }
 
@@ -2430,7 +2431,7 @@ namespace Dovus.Game
             }
             _debugHud?.NoteSkillBang(paintedName, bangNote);
             // Skill adı altıgen üstündeki SkillPreviewHud'da; büyük ReactionReadout dodge/tepki içindir.
-            SkillFeel.CameraKick(skill.VerbFamily, _camera, _colors);
+            SkillFeel.CameraKick(skill.VerbFamily, _camera, _combat?.Feel);
             // PulseRune (PulseActor) kalır — AnimationBridge eklenir, yerine geçmez.
             ApplySkillAnimation(skill);
         }
@@ -2831,6 +2832,7 @@ namespace Dovus.Game
                 return damage;
             }
 
+            NotifyBossStruck(isCrit, allowHitstop: true);
             bossVisual?.PlayStagger();
             return damage;
         }

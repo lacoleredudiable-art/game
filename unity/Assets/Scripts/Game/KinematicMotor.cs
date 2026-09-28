@@ -104,8 +104,9 @@ namespace Dovus.Game
 
             Vector2 move = _input.MoveDirection;
             Vector3 direction = new Vector3(move.x, 0f, move.y);
-            if (direction.sqrMagnitude > 1f)
-                direction.Normalize();
+            float stick = Mathf.Clamp01(direction.magnitude);
+            if (stick > 0.0001f)
+                direction /= Mathf.Max(1f, direction.magnitude);
 
             if (_follow == null)
                 _follow = FindAnyObjectByType<FollowCamera>();
@@ -116,9 +117,18 @@ namespace Dovus.Game
             if (_playerStates != null && _playerStates.MoveLimited && _status != null)
                 speedMult *= _status.Tuning.SlowSpeedMult;
             float dtSec = _clock != null ? (float)(_clock.WorldDeltaMs / 1000.0) : Time.deltaTime;
-            float walk = _tuning.WalkSpeedMps * speedMult;
-            Velocity = direction * walk;
-            _visual?.SetSpeed(walk > 0.01f ? Mathf.Clamp01(direction.magnitude) : 0f);
+
+            float stickT = Mathf.InverseLerp(_tuning.JoystickDeadZone, 1f, stick);
+            float speedFrac = stick > 0.0001f ? Mathf.Lerp(_tuning.MinStickSpeedFrac, 1f, stickT) : 0f;
+            Vector3 dirFlat = direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector3.zero;
+            Vector3 target = dirFlat * (_tuning.WalkSpeedMps * speedMult * speedFrac);
+
+            Vector3 current = Velocity;
+            float rate = target.sqrMagnitude >= current.sqrMagnitude ? _tuning.MoveAccelMps2 : _tuning.MoveDecelMps2;
+            Velocity = Vector3.MoveTowards(current, target, rate * dtSec);
+
+            float walkRef = Mathf.Max(0.01f, _tuning.WalkSpeedMps);
+            _visual?.SetSpeed(Velocity.magnitude / walkRef, _tuning.AnimSpeedDampSec);
 
             Vector3 from = transform.position;
             Vector3 next = SweepAndSlide(from, from + Velocity * dtSec);
@@ -126,8 +136,12 @@ namespace Dovus.Game
             next = ArenaClamp.XZ(next, _tuning.ArenaHalfSizeM, _bodyRadiusM);
             transform.position = next;
 
-            if (direction.sqrMagnitude > 0.0001f)
-                transform.rotation = Quaternion.LookRotation(direction, Vector3.up);
+            if (dirFlat.sqrMagnitude > 0.0001f && dtSec > 0f)
+            {
+                Quaternion want = Quaternion.LookRotation(dirFlat, Vector3.up);
+                transform.rotation = Quaternion.RotateTowards(
+                    transform.rotation, want, _tuning.TurnRateDegPerSec * dtSec);
+            }
         }
 
         Vector3 SweepAndSlide(Vector3 from, Vector3 to)

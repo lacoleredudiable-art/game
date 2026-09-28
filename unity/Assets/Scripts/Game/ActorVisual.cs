@@ -101,15 +101,24 @@ namespace Dovus.Game
         }
 
         /// <summary>0 = idle (sabit), 1 ≈ koşu. Küçük stick gürültüsü idle fidget’e sızmasın.</summary>
-        public void SetSpeed(float normalized01)
+        public void SetSpeed(float normalized01) => SetSpeed(normalized01, 0f);
+
+        /// <summary>Sönümlü Speed; <paramref name="dampSec"/> 0 ise anında.</summary>
+        public void SetSpeed(float normalized01, float dampSec)
         {
             if (_animator == null || !_animator.isActiveAndEnabled || _animator.runtimeAnimatorController == null)
                 return;
             float s = Mathf.Clamp01(normalized01);
             if (s < 0.08f)
                 s = 0f;
-            _animator.SetFloat(ParamSpeed, s);
+            if (dampSec > 0f && Time.deltaTime > 0f)
+                _animator.SetFloat(ParamSpeed, s, dampSec, Time.deltaTime);
+            else
+                _animator.SetFloat(ParamSpeed, s);
         }
+
+        /// <summary>Aksiyon state'ine crossfade süresi (0 = sert kesim).</summary>
+        public float CrossFadeSec { get; set; }
 
         public void ResetToLocomotion()
         {
@@ -163,6 +172,15 @@ namespace Dovus.Game
             int hash = Animator.StringToHash(stateName);
             if (!_animator.HasState(0, hash))
                 return;
+
+            bool sameState = _animator.GetCurrentAnimatorStateInfo(0).shortNameHash == hash
+                             || (_animator.IsInTransition(0)
+                                 && _animator.GetNextAnimatorStateInfo(0).shortNameHash == hash);
+            if (CrossFadeSec > 0f && !sameState)
+            {
+                _animator.CrossFadeInFixedTime(hash, CrossFadeSec, 0, 0f);
+                return;
+            }
 
             _animator.Play(hash, 0, 0f);
             _animator.Update(0f);

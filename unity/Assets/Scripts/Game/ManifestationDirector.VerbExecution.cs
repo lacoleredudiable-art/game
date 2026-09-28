@@ -206,6 +206,7 @@ namespace Dovus.Game
                     vitals.ApplyHeal(heal);
             }
             _bossVitals.ApplyDamage(damage);
+            NotifyBossStruck(false, allowHitstop: false);
         }
 
         /// <summary>Kendine/dost alan boss'a da değiyor mu (düşmanca sıfat durumları için).</summary>
