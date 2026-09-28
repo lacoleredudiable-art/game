@@ -68,42 +68,42 @@ namespace Dovus.Game
         }
 
         /// <summary>Kapanışta kamera vuruşu — aileye göre ağırlık.</summary>
-        public static void CameraKick(string verbFamily, FollowCamera cam, PrototypeTuning colors)
+        public static void CameraKick(string verbFamily, FollowCamera cam, Dovus.Core.Tuning.FeelTuning feel)
         {
-            if (cam == null)
+            if (cam == null || feel == null)
                 return;
             float kick;
             float shakePx;
             switch (verbFamily)
             {
                 case "strike":
-                    kick = 3.2f;
-                    shakePx = 14f;
+                    kick = feel.SkillKickStrike;
+                    shakePx = feel.SkillShakeStrikePx;
                     break;
                 case "disrupt":
-                    kick = 1.4f;
-                    shakePx = 22f;
+                    kick = feel.SkillKickDisrupt;
+                    shakePx = feel.SkillShakeDisruptPx;
                     break;
                 case "control":
                 case "guard":
-                    kick = 0.8f;
-                    shakePx = 6f;
+                    kick = feel.SkillKickControl;
+                    shakePx = feel.SkillShakeControlPx;
                     break;
                 case "zone":
-                    kick = 2.4f;
-                    shakePx = 18f;
+                    kick = feel.SkillKickZone;
+                    shakePx = feel.SkillShakeZonePx;
                     break;
                 case "motion":
-                    kick = 2.0f;
-                    shakePx = 10f;
+                    kick = feel.SkillKickMotion;
+                    shakePx = feel.SkillShakeMotionPx;
                     break;
                 default:
-                    kick = 1.6f;
-                    shakePx = 12f;
+                    kick = feel.SkillKickDefault;
+                    shakePx = feel.SkillShakeDefaultPx;
                     break;
             }
 
-            cam.Punch(kick, 1.2f, shakePx, 8f);
+            cam.Punch(kick, feel.SkillKickRollDeg, shakePx, feel.SkillKickDecay);
         }
     }
 }

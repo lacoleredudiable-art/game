@@ -76,6 +76,17 @@ namespace Dovus.Game
             AddShake(shakePx * pxToM, duration);
         }
 
+        /// <summary>Süren daha güçlü bir sarsıntıyı (ör. skill kick) ezmeden piksel sarsıntı ekler.</summary>
+        public void AddShakePxAtLeast(float shakePx, float decay)
+        {
+            float pxToM = _tuning != null ? _tuning.CameraShakePxToM : 0.01f;
+            float amp = shakePx * pxToM;
+            float remaining01 = _shakeDurationSec > 0f ? 1f - Mathf.Clamp01(_shakeElapsedSec / _shakeDurationSec) : 0f;
+            if (_shakeAmplitude * remaining01 >= amp)
+                return;
+            AddShake(amp, 2f / Mathf.Max(0.5f, decay));
+        }
+
         public void AddShake(float amplitudeM, float durationSec)
         {
             if (durationSec <= 0f)

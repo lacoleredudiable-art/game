@@ -29,12 +29,15 @@ namespace Dovus.Game
 
         [Header("Oyuncu")]
         public float WalkSpeedMps = 7.5f;
-        /// <summary>Yedek alan (motor anlık hız kullanır).</summary>
         public float MoveAccelMps2 = 40f;
-        /// <summary>Yedek alan (motor anlık hız kullanır).</summary>
         public float MoveDecelMps2 = 50f;
-        /// <summary>Yedek alan (motor anlık bakış kullanır).</summary>
         public float TurnRateDegPerSec = 720f;
+        /// <summary>Çubuk ölü bölgenin hemen üstündeyken hız oranı (yürüme); tam çubuk = 1 (koşu). Önerilen.</summary>
+        public float MinStickSpeedFrac = 0.4f;
+        /// <summary>Animator Speed parametresi sönümü. Önerilen.</summary>
+        public float AnimSpeedDampSec = 0.08f;
+        /// <summary>Aksiyon state'ine giriş crossfade süresi (eskisi sert kesim). Önerilen.</summary>
+        public float AnimCrossFadeSec = 0.06f;
 
         // Spec §11 hasar 22; oyuncu tavanı belgede yok. Bir çakma = ölüm — respawn ≤2 sn
         // (§11) döngüsü böyle denenebiliyor. T11 his turunda ayarlanacak.
@@ -363,6 +366,9 @@ namespace Dovus.Game
             if (MoveAccelMps2 <= 0.01f) MoveAccelMps2 = 40f;
             if (MoveDecelMps2 <= 0.01f) MoveDecelMps2 = 50f;
             if (TurnRateDegPerSec <= 0.01f) TurnRateDegPerSec = 720f;
+            if (MinStickSpeedFrac <= 0.01f) MinStickSpeedFrac = 0.4f;
+            if (AnimSpeedDampSec <= 0f) AnimSpeedDampSec = 0.08f;
+            if (AnimCrossFadeSec <= 0f) AnimCrossFadeSec = 0.06f;
             if (ArenaHalfSizeM <= 0.01f) ArenaHalfSizeM = 50f;
             if (ArenaWallHeightM <= 0.01f) ArenaWallHeightM = 18f;
             if (ArenaWallThicknessM <= 0.01f) ArenaWallThicknessM = 1.4f;

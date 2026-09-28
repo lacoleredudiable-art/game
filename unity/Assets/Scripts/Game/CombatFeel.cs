@@ -33,7 +33,37 @@ namespace Dovus.Game
         float _vignetteUntil;
         float _threatUntil;
 
+        HitFlash _playerFlash;
+        HitFlash _bossFlash;
+        float _lastBossHitstopUnscaled = -999f;
+
         public ExchangeResult? LastExchange { get; private set; }
+
+        public void BindActors(HitFlash playerFlash, HitFlash bossFlash)
+        {
+            _playerFlash = playerFlash;
+            _bossFlash = bossFlash;
+        }
+
+        /// <summary>
+        /// Oyuncu vuruşu bossa değdi: kısa hitstop + hafif sarsıntı + gövde parlaması.
+        /// Art arda isabetler <see cref="FeelTuning.BossHitHitstopMinGapMs"/> içinde hitstop yığmaz.
+        /// </summary>
+        public void OnBossStruck(bool isCrit, bool allowHitstop = true)
+        {
+            _bossFlash?.Flash(isCrit ? _colors.TelegraphWarm : Color.white);
+            if (_combat == null || !allowHitstop)
+                return;
+            FeelTuning feel = _combat.Feel;
+            float now = Time.unscaledTime;
+            if ((now - _lastBossHitstopUnscaled) * 1000f < feel.BossHitHitstopMinGapMs)
+                return;
+            _lastBossHitstopUnscaled = now;
+            if (feel.HitstopBossHitMs > 0)
+                _clock?.Director.TriggerHitstop(feel.HitstopBossHitMs);
+            if (feel.BossHitShakePx > 0f)
+                _follow?.AddShakePxAtLeast(isCrit ? feel.BossHitShakePx * 2f : feel.BossHitShakePx, feel.ShakeDecay);
+        }
 
         public void Bind(
             GameClock clock,
@@ -90,6 +120,7 @@ namespace Dovus.Game
             {
                 _clock.Director.TriggerHitstop(feel.HitstopPlayerHitMs);
                 _follow?.Punch(feel.CameraDodgeZoomKick, feel.CameraRollDeg, feel.ShakeHitPx, feel.ShakeDecay);
+                _playerFlash?.Flash(_colors.TelegraphHot);
                 _vignetteUntil = Time.unscaledTime + _colors.VignetteHoldSec;
             }
 

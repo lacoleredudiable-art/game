@@ -13,9 +13,28 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 28 Eylül 2026 (mechanic_grammar dünya atomları) ·
-**Dal:** `cursor/world-mechanic-atoms-2314` · **Sıradaki:** Unity Play'de aşağıdaki
-mekanik smoke matrisi; düşman mermisi / çoklu düşman gelince ertelenen atomları tamamlama
+**Son güncelleme:** 28 Eylül 2026 (his ve sunum turu) ·
+**Dal:** `feat/feel-*` fazları · **Sıradaki:** his/sunum turu fazları (plan: Faz 0 his
+ayarları → 1 boss anim → 2 oyuncu anim → 3 HUD → 4 VFX/SFX → 5 telefon)
+
+> **28 Eylül — His turu Faz 0: bağlanmamış his ayarları (dal `feat/feel-f0-wiring`).**
+> `KinematicMotor` artık `MoveAccelMps2`/`MoveDecelMps2` ile ivmelenir, `TurnRateDegPerSec`
+> ile döner (eskiden anlık). Çubuk büyüklüğü hızı ölçekler: ölü bölge üstü
+> `MinStickSpeedFrac`=0.4 (yürüme) → tam çubuk 1 (koşu). Animator `Speed` = gerçek hız /
+> `WalkSpeedMps`, `AnimSpeedDampSec`=0.08 sönümlü. `ActorVisual` aksiyon state'lerine
+> `AnimCrossFadeSec`=0.06 crossfade ile girer (aynı state tekrarında sert restart).
+> Bossa doğrudan isabet (kapanış hasarı) → `CombatFeel.OnBossStruck`: `HitstopBossHitMs`
+> (70, artık canlı) + `BossHitShakePx`=4 + boss `HitFlash`; yankı/minion isabeti yalnız
+> parlama. Art arda isabet `BossHitHitstopMinGapMs`=140 içinde hitstop yığmaz. Oyuncu
+> vurulunca gövde sıcak renkte parlar. Yeni `HitFlash` (MaterialPropertyBlock `_BaseColor`,
+> `HitFlashMs`=90, `HitFlashStrength`=0.85). `SkillFeel.CameraKick` gömülü sayıları
+> `FeelTuning.SkillKick*`/`SkillShake*`'e aynen taşındı. `LivingEffectView.EnsureBangBurst`
+> "duration while playing" spam'i düzeldi (AddComponent sonrası Stop). Test kancası:
+> `MoveInput.SetScriptedDirection`. **Uydurma/önerilen:** MinStickSpeedFrac, AnimSpeedDampSec,
+> AnimCrossFadeSec, BossHitHitstopMinGapMs, BossHitShakePx, HitFlashMs, HitFlashStrength.
+> **Doğrulandı (Editor Play):** tam çubuk 7.5 m/s, kısmi (0.2) 3.41 m/s + Speed 0.45;
+> `OnBossStruck` → hitstop aktif + boss parlıyor; konsol hatasız; `dotnet test` 305/305.
+> **Doğrulanamadı:** telefonda ivme/dönüş hissi; parlamanın görsel yoğunluğu göz kontrolü.
 
 > **28 Eylül — label-only mechanic_grammar atomları dünyaya indi.** Runtime etiketi okumaz:
 > yeni saf-Core `MechanicWorldProfile` gövde/atom/modlardan yetenek çıkarır; Unity adaptörü

@@ -23,6 +23,29 @@ namespace Dovus.Core.Tuning
         public int AfterimageCount = 7;
         public int AfterimageLifeMs = 320;
 
+        // Bossa isabet: art arda tick/çoklu vuruş hitstop'u üst üste yığmasın. Önerilen (durum.md).
+        public int BossHitHitstopMinGapMs = 140;
+        public float BossHitShakePx = 4f;
+        // Gövde beyaz parlaması (MaterialPropertyBlock). Önerilen (durum.md).
+        public int HitFlashMs = 90;
+        public float HitFlashStrength = 0.85f;
+
+        // Kapanış kamera vuruşu — SkillFeel.CameraKick'teki gömülü değerler aynen taşındı.
+        public float SkillKickStrike = 3.2f;
+        public float SkillShakeStrikePx = 14f;
+        public float SkillKickDisrupt = 1.4f;
+        public float SkillShakeDisruptPx = 22f;
+        public float SkillKickControl = 0.8f;
+        public float SkillShakeControlPx = 6f;
+        public float SkillKickZone = 2.4f;
+        public float SkillShakeZonePx = 18f;
+        public float SkillKickMotion = 2.0f;
+        public float SkillShakeMotionPx = 10f;
+        public float SkillKickDefault = 1.6f;
+        public float SkillShakeDefaultPx = 12f;
+        public float SkillKickRollDeg = 1.2f;
+        public float SkillKickDecay = 8f;
+
         // Tepki yazısı — dovus-sistemi.md §6 gösterim
         public float ReadoutSizePx = 96f;
         public float ReadoutGlow = 34f;
@@ -49,6 +72,26 @@ namespace Dovus.Core.Tuning
 
             AfterimageCount = other.AfterimageCount;
             AfterimageLifeMs = other.AfterimageLifeMs;
+
+            BossHitHitstopMinGapMs = other.BossHitHitstopMinGapMs;
+            BossHitShakePx = other.BossHitShakePx;
+            HitFlashMs = other.HitFlashMs;
+            HitFlashStrength = other.HitFlashStrength;
+
+            SkillKickStrike = other.SkillKickStrike;
+            SkillShakeStrikePx = other.SkillShakeStrikePx;
+            SkillKickDisrupt = other.SkillKickDisrupt;
+            SkillShakeDisruptPx = other.SkillShakeDisruptPx;
+            SkillKickControl = other.SkillKickControl;
+            SkillShakeControlPx = other.SkillShakeControlPx;
+            SkillKickZone = other.SkillKickZone;
+            SkillShakeZonePx = other.SkillShakeZonePx;
+            SkillKickMotion = other.SkillKickMotion;
+            SkillShakeMotionPx = other.SkillShakeMotionPx;
+            SkillKickDefault = other.SkillKickDefault;
+            SkillShakeDefaultPx = other.SkillShakeDefaultPx;
+            SkillKickRollDeg = other.SkillKickRollDeg;
+            SkillKickDecay = other.SkillKickDecay;
 
             ReadoutSizePx = other.ReadoutSizePx;
             ReadoutGlow = other.ReadoutGlow;

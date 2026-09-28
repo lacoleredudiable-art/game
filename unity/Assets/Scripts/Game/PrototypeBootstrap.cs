@@ -133,10 +133,14 @@ namespace Dovus.Game
             var visual = player.AddComponent<ActorVisual>();
             if (playerAnim != null)
                 visual.Bind(playerAnim, player.GetComponent<Renderer>());
+            visual.CrossFadeSec = _tuning.AnimCrossFadeSec;
 
             var bossVisual = boss.AddComponent<BossVisual>();
             if (bossAnim != null)
                 bossVisual.Bind(bossAnim, boss.GetComponent<Renderer>());
+
+            player.AddComponent<HitFlash>().Bind(combat.Feel);
+            boss.AddComponent<HitFlash>().Bind(combat.Feel);
 
             var vitals = player.AddComponent<PlayerVitals>();
             // His: heal denemesi — oyuncu da %50 (full iken mend boş döner).
@@ -342,6 +346,7 @@ namespace Dovus.Game
             feelGo.transform.SetParent(transform, false);
             var feel = feelGo.AddComponent<CombatFeel>();
             feel.Bind(clock, follow, combat, _tuning, overlay.Cam, debug, readout);
+            feel.BindActors(player.GetComponent<HitFlash>(), boss.GetComponent<HitFlash>());
 
             var directorGo = boss.gameObject;
             var bossDir = directorGo.AddComponent<BossDirector>();
