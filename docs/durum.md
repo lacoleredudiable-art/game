@@ -17,6 +17,17 @@
 **Dal:** `master` · **Sıradaki:** telefonda his testi (swap, menzil, dash, minion), sonra
 11-4 taret / 11-5 çoklu minion, fiil 1/5 hitbox'ının JSON boyutuna geçmesi, gerçek animasyon/VFX
 
+> **28 Eylül — nişan yönü (boss hasar yemiyor).** Sahibi: "boss hasar yemiyor artık".
+> Sebep: `ResolveAimFacing` dururken kamera orbit yaw'ını kullanıyordu; kamera oyuncunun
+> arkasını izlemediği için vuruş sabit dünya yönüne (+z) gidiyordu. Menzil düzeltmesindeki
+> 70° soft-aim konisi bu yönle kıyaslandığından boss'un yan/arka tarafından tüm tek hedefli
+> vuruşlar (düz vuruş, melee kapsül, mermi) ıskalıyordu; `FaceBoss` ise karakteri görsel
+> olarak boss'a çevirdiği için oyuncu "vurdum ama hasar yok" görüyordu. Düzeltme: nişan =
+> hız, yoksa karakterin yüzü (kamera yok); `FaceAim` karakteri vuruşun gerçek yönüne çevirir
+> (boss'a yalnız koni içindeyse). **Doğrulandı (Editor Play, 1-6, 2 m):** boss'un doğu/batı/
+> kuzeyinden yüzü dönük → 40 hasar; 45° sapmayla → soft-aim vurdu; sırtı dönük → 0.
+> **Doğrulanamadı:** telefonda joystick ile his.
+
 > **28 Eylül — fiil executor'ları (3 Hareket, 7 Zayıflatma, 10 Yansıma, 11 Çağırma).**
 > Sahibi: "fiilleri ve hareket skillerini yaz". Artık stub fiil yok; `SkillExecutorRouter`
 > 7 → silah tipine göre Melee/Projectile (1/5 gibi), 3 → `Movement`, 10 → `SelfState`,

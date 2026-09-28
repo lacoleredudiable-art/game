@@ -1356,7 +1356,7 @@ namespace Dovus.Game
 
         void PulseActor(Rune rune, IReadOnlyList<SentenceWord> words, double worldMs)
         {
-            FaceBoss();
+            FaceAim();
             _pose?.PulseRune(rune, worldMs);
             if (_visual == null)
                 return;
@@ -1384,15 +1384,18 @@ namespace Dovus.Game
                 _visual.PulseRune(rune, s);
         }
 
-        void FaceBoss()
+        /// <summary>
+        /// Karakteri vuruşun gideceği yöne çevirir; boss'a yalnız soft-aim konisindeyse döner.
+        /// Görsel yön ile hitbox yönü ayrışırsa oyuncu boss'a vurduğunu görüp hasar göremez.
+        /// </summary>
+        void FaceAim()
         {
-            if (_player == null || _boss == null)
+            if (_player == null)
                 return;
-            Vector3 to = _boss.transform.position - _player.position;
-            to.y = 0f;
-            if (to.sqrMagnitude < 0.01f)
+            Vector3 aim = ResolveAimFacing(_player.position);
+            if (aim.sqrMagnitude < 0.0001f)
                 return;
-            _player.rotation = Quaternion.LookRotation(to.normalized, Vector3.up);
+            _player.rotation = Quaternion.LookRotation(aim, Vector3.up);
         }
 
         void ApplyWindowCue()
@@ -1459,7 +1462,9 @@ namespace Dovus.Game
         }
 
         /// <summary>
-        /// Yüz / hız / kamera forward; boss yalnız SoftAimRangeM içindeyse soft-lock.
+        /// Hız varsa hız, yoksa karakterin yüzü; boss yalnız SoftAimRangeM + SoftAimConeDeg
+        /// içindeyse soft-lock. Kamera yaw'ı kullanılmaz: kamera oyuncunun arkasını izlemez,
+        /// durunca vuruş karakterin baktığı yerden kopup sabit dünya yönüne giderdi.
         /// </summary>
         Vector3 ResolveAimFacing(Vector3 pos)
         {
@@ -1467,11 +1472,6 @@ namespace Dovus.Game
             facing.y = 0f;
             if (_motor != null && _motor.Velocity.sqrMagnitude > 0.05f)
                 facing = _motor.Velocity.normalized;
-            else if (_camera != null)
-            {
-                float yaw = _camera.OrbitYawDeg;
-                facing = Quaternion.Euler(0f, yaw, 0f) * Vector3.forward;
-            }
 
             if (facing.sqrMagnitude < 0.0001f)
                 facing = Vector3.forward;
@@ -1532,7 +1532,7 @@ namespace Dovus.Game
                 view = SpawnEffect(sentence.Words, _clock.Director.WorldTimeMs, spawnedForBasicStrike);
                 if (spawnedForBasicStrike)
                 {
-                    FaceBoss();
+                    FaceAim();
                     _visual?.PulseBasicStrike();
                     _pose?.PulseRune(sentence.Words[0].Rune, _clock.Director.WorldTimeMs);
                 }
