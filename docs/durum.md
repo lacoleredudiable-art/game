@@ -28,7 +28,8 @@ mekanik smoke matrisi; düşman mermisi / çoklu düşman gelince ertelenen atom
 > Dosta/Uzak yansıtma (ally/iniş noktasında ömürlü alan; içindeki oyuncuya gelen hasarı
 > boss'a döndürür). Audit'te bulunan diğer label-only atomlardan: uzak Sis stealth/blind,
 > Girdap sürekli çekme, Bağ/Tasma (can paylaşımı + hasar yönlendirme + yenilenen CC ve
-> tether), Yem kopya, Arınma alanı, Durum aktarma, Buff silme, koruyucu HP-eşiği tetik,
+> hedefe göre boss/ally tether; düşman ucu `link_len_m` tasmalı), Yem kopya, Arınma alanı,
+> Durum aktarma, Buff silme, koruyucu HP-eşiği tetik,
 > `rise_delay_sec` / `mark_delay_sec`, Bataklık/Akıntı sürekli tikleri dünyaya bağlandı.
 > Portal, işaretle-geri dön, arkaya ışınlanma, yer değiştirme, dondurma/hızlanma/knockup
 > zaten canlıydı. `TimedHistory<T>` ve profil eşleme Core testleri eklendi.
@@ -48,6 +49,8 @@ mekanik smoke matrisi; düşman mermisi / çoklu düşman gelince ertelenen atom
 > `29d06672086111ec8baebc29e3531cf9c40f132d8cf9e56427499b37fcd66f4f`.
 > **Doğrulandı:** `dotnet test tools/CoreTests/CoreTests.csproj` **305/305**.
 > **Doğrulanamadı:** Cloud imajında Unity Editor yok; Play-cast/Unity script derlemesi.
+> Audit follow-up: Girdap hareketi legacy knockback yerine bağlayıcı
+> `vortex_pull_mps × tick_dt` ile `BossReactor.Home` üzerinde ilerler.
 
 > **28 Eylül — mechanic_grammar BAĞLAYICI + oyunda (dal `feat/mechanic-grammar`).** Sahibi
 > atom gramerini onayladı. Kurallar `element-sistemi.json` → `mechanic_grammar`'a taşındı

@@ -71,6 +71,20 @@ namespace Dovus.Game
                 _baseScale = Vector3.one;
         }
 
+        /// <summary>
+        /// Gramer alanlarının sürekli çekişi: kalıcı Home'u hedefe en fazla distanceM taşır.
+        /// Hız/zaman hesabı çağırandadır; burada ek his sayısı yoktur.
+        /// </summary>
+        public void MoveHomeToward(Vector3 targetWorld, float distanceM)
+        {
+            if (_collapsed || distanceM <= 0f)
+                return;
+            if (!_captured)
+                CaptureHome();
+            targetWorld.y = _home.y;
+            Home = Vector3.MoveTowards(_home, targetWorld, distanceM);
+        }
+
         public void React(
             Vector3 fromWorld,
             float knockbackM,

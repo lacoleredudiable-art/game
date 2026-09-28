@@ -36,6 +36,7 @@ namespace Dovus.Game
         {
             public LineRenderer Line;
             public MechanicPlan Plan;
+            public Transform Target;
             public double UntilMs;
         }
 
@@ -215,6 +216,9 @@ namespace Dovus.Game
             {
                 Line = line,
                 Plan = plan,
+                Target = plan.Effects.Any(e => e.Target == "dusman")
+                    ? (_boss != null ? _boss.transform : null)
+                    : (_ally != null ? _ally.transform : _player),
                 UntilMs = worldMs + Math.Max(100, plan.Body.LifeSec * 1000.0)
             });
         }
@@ -331,8 +335,13 @@ namespace Dovus.Game
                 }
             }
 
-            if (volume.Profile.Vortex && bossInside)
-                _bossStatus?.ApplyPullToward(volume.Center);
+            if (volume.Profile.Vortex && bossInside && _boss != null)
+            {
+                double pullMps = MechanicEngine?.Rules.Param("vortex_pull_mps") ?? 0;
+                _boss.MoveHomeToward(
+                    volume.Center,
+                    (float)(pullMps * volume.TickMs / 1000.0));
+            }
             if (volume.Profile.Continuous && bossInside)
             {
                 if (volume.Plan.Effects.Any(e => e.Has("akinti")))
@@ -363,7 +372,7 @@ namespace Dovus.Game
             for (int i = _mechanicLinks.Count - 1; i >= 0; i--)
             {
                 MechanicLink link = _mechanicLinks[i];
-                if (worldMs >= link.UntilMs || link.Line == null || _player == null || _boss == null)
+                if (worldMs >= link.UntilMs || link.Line == null || _player == null || link.Target == null)
                 {
                     if (link.Line != null)
                         Destroy(link.Line.gameObject);
@@ -371,7 +380,14 @@ namespace Dovus.Game
                     continue;
                 }
                 link.Line.SetPosition(0, _player.position + Vector3.up);
-                link.Line.SetPosition(1, _boss.transform.position + Vector3.up);
+                link.Line.SetPosition(1, link.Target.position + Vector3.up);
+                if (_boss != null && link.Target == _boss.transform)
+                {
+                    float distance = FlatDistance(_player.position, _boss.Home);
+                    float maxLength = Mathf.Max(0f, (float)link.Plan.Body.ReachM);
+                    if (maxLength > 0f && distance > maxLength)
+                        _boss.MoveHomeToward(_player.position, distance - maxLength);
+                }
                 foreach (MechanicEffect e in link.Plan.Effects)
                 {
                     if (e.Stat == "durum_sil" && e.Has("bag_bagisiklik"))
