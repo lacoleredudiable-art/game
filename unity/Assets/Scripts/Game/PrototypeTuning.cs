@@ -36,6 +36,8 @@ namespace Dovus.Game
         public float MinStickSpeedFrac = 0.4f;
         /// <summary>Animator Speed parametresi sönümü. Önerilen.</summary>
         public float AnimSpeedDampSec = 0.08f;
+        /// <summary>Koşu klibi doğal hızını aşınca en çok bu kat hızlanır (üstü ayak kayması kabul). Önerilen.</summary>
+        public float LocoMaxPlaybackMult = 1.5f;
         /// <summary>Aksiyon state'ine giriş crossfade süresi (eskisi sert kesim). Önerilen.</summary>
         public float AnimCrossFadeSec = 0.06f;
         /// <summary>Düz vuruş görsel döngüsü (A→B→C) bu süre vuruşsuz geçince A'ya döner. Önerilen.</summary>
@@ -387,6 +389,7 @@ namespace Dovus.Game
             if (TurnRateDegPerSec <= 0.01f) TurnRateDegPerSec = 720f;
             if (MinStickSpeedFrac <= 0.01f) MinStickSpeedFrac = 0.4f;
             if (AnimSpeedDampSec <= 0f) AnimSpeedDampSec = 0.08f;
+            if (LocoMaxPlaybackMult < 1f) LocoMaxPlaybackMult = 1.5f;
             if (AnimCrossFadeSec <= 0f) AnimCrossFadeSec = 0.06f;
             if (BasicStrikeComboResetSec <= 0f) BasicStrikeComboResetSec = 1.2f;
             if (UpperBodyCastMinSpeed <= 0f) UpperBodyCastMinSpeed = 0.15f;

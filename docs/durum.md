@@ -17,6 +17,22 @@
 **Dal:** `feat/feel-*` fazları · **Sıradaki:** his/sunum turu fazları (plan: Faz 0 his
 ayarları → 1 boss anim → 2 oyuncu anim → 3 HUD → 4 VFX/SFX → 5 telefon)
 
+> **28 Eylül — Oyuncu yürüme/koşu/duruş yenilendi (dal `feat/feel-player-loco`).**
+> Sahibi: "yürüyüşü koşuşu duruşu çirkin". Sebep: Sword&Shield klipleri olmayan kalkan için sol
+> kolu önde tutuyordu, eski idle ~50° sallanıyordu. Yerine Mixamo Pro Melee **Axe** seti
+> ("Standing Idle/Walk/Run" + açıklama "…With Axe"; `tools/mixamo-jobs/player.json` artık `desc`
+> ile tam eşleşiyor). Eski klipler `Assets/Art/Mixamo/_old_loco/` altında (binder okumaz).
+> Klipler gitignored → başka makinede `tools/mixamo-download.mjs` + "Dovus/Synty/Bind Mixamo
+> Animator" yeniden çalıştırılmalı. Binder artık yürüme/koşu kliplerinin **zemin hızını ölçer**
+> (ayak basışındaki kayma hızı medyanı, model birimi: yürüme 0.93, koşu 2.10 → dünya 2.44 / 5.52
+> m/s) ve blend eşiklerini buna koyar; `LocoRunSpeed`/`LocoPlayback` parametreleri, state'te
+> `speedParameter=LocoPlayback`, `iKOnFeet`. `ActorVisual.SetLocomotion` gerçek hızı model
+> birimine çevirir; koşu doğal hızını aşınca oynatma hızı oranla artar, tavan
+> `PrototypeTuning.LocoMaxPlaybackMult = 1.5` (**önerilen**). Play ölçümü: 7.5 m/s'de oynatma
+> 1.36× (tavan altı, kayma yok); 3.4 m/s yürümede yürüme/koşu karışımı. Ölçüm yoksa eski
+> 0/0.4/1 eşiklerine düşer. **Açık:** Kalkan benzeri silahta sol kol kalkan tutmaz; vuruş/cast
+> klipleri hâlâ Sword&Shield üslubu; 720°/s dönüş ani; telefonda doğrulanmadı.
+
 > **28 Eylül — Skill görseli gramerden doğuyor: madde × yol × silüet (dal `feat/skill-vfx-grammar`).**
 > Sahibi geri bildirimi: "her skill aynı lavlı kayayı atıyor", "1 silah × 1 fiil olsa da 120 farklı
 > şey olmalı" — elle sıfat→görsel eşlemesi reddedildi (kural 6). Yeni: `Core/Mechanic/MechanicVisual.cs`

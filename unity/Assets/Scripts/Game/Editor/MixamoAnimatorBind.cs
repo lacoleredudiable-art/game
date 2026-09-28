@@ -108,7 +108,28 @@ namespace Dovus.Game.EditorTools
             var loco = sm.AddState("Locomotion", new Vector3(300, 0, 0));
             // 17 Eyl sahip kararı: ortak Fighting Idle fazla oynak → donuk. Oyuncuya özel idle normal hızda.
             float idleScale = c.PickPrimary("idle") != null ? 1f : 0.02f;
-            loco.motion = MakeLocomotionTree(ac, "LocomotionBT", idle, walk, run, idleScale);
+            // Eşikler kliplerin ölçülmüş zemin hızı: ActorVisual.SetLocomotion gerçek hızı model birimiyle
+            // verir, ayak yere bastığı yerde kalır. Ölçüm olmazsa eski normalize eşiklere düşer.
+            float walkSpeed = MeasureGroundSpeed(walk);
+            float runSpeed = run != walk ? MeasureGroundSpeed(run) : 0f;
+            bool measured = walkSpeed > 0.01f && runSpeed > walkSpeed;
+            loco.motion = measured
+                ? MakeLocomotionTree(ac, "LocomotionBT", idle, walk, run, idleScale, walkSpeed, runSpeed)
+                : MakeLocomotionTree(ac, "LocomotionBT", idle, walk, run, idleScale);
+            if (measured)
+            {
+                EnsureParam(ac, ActorVisual.ParamLocoRunSpeed, AnimatorControllerParameterType.Float, runSpeed);
+                EnsureParam(ac, ActorVisual.ParamLocoPlayback, AnimatorControllerParameterType.Float, 1f);
+                loco.speedParameterActive = true;
+                loco.speedParameter = ActorVisual.ParamLocoPlayback;
+            }
+            else
+            {
+                RemoveParam(ac, ActorVisual.ParamLocoRunSpeed);
+                RemoveParam(ac, ActorVisual.ParamLocoPlayback);
+            }
+            loco.iKOnFeet = true;
+            Debug.Log($"[MixamoBind] locomotion zemin hızı (model/sn): yürüme={walkSpeed:F2} koşu={runSpeed:F2} ölçüldü={measured}");
             sm.defaultState = loco;
 
             AddActionState(sm, "Dodge", dodge, 300, 80, 0.85f, 0.06f);
@@ -277,6 +298,100 @@ namespace Dovus.Game.EditorTools
             var layers = ac.layers;
             layers[0].avatarMask = null;
             ac.layers = layers;
+        }
+
+        static BlendTree MakeLocomotionTree(AnimatorController ac, string name, AnimationClip idle, AnimationClip walk,
+            AnimationClip run, float idleTimeScale, float walkThreshold, float runThreshold)
+        {
+            var tree = new BlendTree
+            {
+                name = name,
+                blendParameter = "Speed",
+                blendType = BlendTreeType.Simple1D,
+                useAutomaticThresholds = false
+            };
+            AssetDatabase.AddObjectToAsset(tree, ac);
+            tree.AddChild(idle, 0f);
+            tree.AddChild(walk, walkThreshold);
+            tree.AddChild(run, runThreshold);
+            var children = tree.children;
+            children[0].timeScale = idleTimeScale;
+            tree.children = children;
+            return tree;
+        }
+
+        /// <summary>
+        /// Klibin zemin hızı (model birimi/sn): ayağın yere bastığı karelerde gövdeye göre geriye kayma
+        /// hızının medyanı. In-place Mixamo kliplerinde kök hızı olmadığından tek güvenilir kaynak bu.
+        /// </summary>
+        static float MeasureGroundSpeed(AnimationClip clip)
+        {
+            const int samples = 120;
+            const float groundBand = 0.025f;
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PlayerVisual);
+            if (clip == null || prefab == null)
+                return 0f;
+            var go = (GameObject)Object.Instantiate(prefab);
+            try
+            {
+                var an = go.GetComponentInChildren<Animator>(true);
+                if (an == null || !an.isHuman)
+                    return 0f;
+                Transform root = an.transform;
+                Transform[] feet =
+                {
+                    an.GetBoneTransform(HumanBodyBones.LeftToes) ?? an.GetBoneTransform(HumanBodyBones.LeftFoot),
+                    an.GetBoneTransform(HumanBodyBones.RightToes) ?? an.GetBoneTransform(HumanBodyBones.RightFoot),
+                };
+                if (feet[0] == null || feet[1] == null)
+                    return 0f;
+                float dt = clip.length / samples;
+                var y = new float[2, samples + 1];
+                var z = new float[2, samples + 1];
+                for (int i = 0; i <= samples; i++)
+                {
+                    clip.SampleAnimation(an.gameObject, dt * i);
+                    for (int f = 0; f < 2; f++)
+                    {
+                        Vector3 p = root.InverseTransformPoint(feet[f].position);
+                        y[f, i] = p.y;
+                        z[f, i] = p.z;
+                    }
+                }
+                var speeds = new List<float>();
+                for (int f = 0; f < 2; f++)
+                {
+                    float min = float.MaxValue;
+                    for (int i = 0; i <= samples; i++)
+                        min = Mathf.Min(min, y[f, i]);
+                    for (int i = 0; i < samples; i++)
+                    {
+                        if (y[f, i] < min + groundBand)
+                            speeds.Add(-(z[f, i + 1] - z[f, i]) / dt);
+                    }
+                }
+                if (speeds.Count == 0)
+                    return 0f;
+                speeds.Sort();
+                return Mathf.Max(0f, speeds[speeds.Count / 2]);
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+            }
+        }
+
+        static void RemoveParam(AnimatorController ac, string name)
+        {
+            var ps = ac.parameters;
+            for (int i = 0; i < ps.Length; i++)
+            {
+                if (ps[i].name == name)
+                {
+                    ac.RemoveParameter(i);
+                    return;
+                }
+            }
         }
 
         static BlendTree MakeLocomotionTree(AnimatorController ac, string name, AnimationClip idle, AnimationClip walk, AnimationClip run,

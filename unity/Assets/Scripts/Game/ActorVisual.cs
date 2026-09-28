@@ -11,6 +11,10 @@ namespace Dovus.Game
     public sealed class ActorVisual : MonoBehaviour
     {
         public const string ParamSpeed = "Speed";
+        /// <summary>Locomotion state hız çarpanı: koşu klibinin doğal hızı aşılınca adım da hızlanır.</summary>
+        public const string ParamLocoPlayback = "LocoPlayback";
+        /// <summary>Koşu klibinin ölçülmüş zemin hızı (model birimi/sn); binder klipten yazar.</summary>
+        public const string ParamLocoRunSpeed = "LocoRunSpeed";
         public const string ParamFocus = "Focus";
         public const string ParamPierce = "Pierce";
         public const string ParamSpread = "Spread";
@@ -148,6 +152,50 @@ namespace Dovus.Game
                 _animator.SetFloat(ParamSpeed, s, dampSec, Time.deltaTime);
             else
                 _animator.SetFloat(ParamSpeed, s);
+            if (s == 0f && HasFloat(ParamLocoPlayback))
+                _animator.SetFloat(ParamLocoPlayback, 1f);
+        }
+
+        /// <summary>
+        /// Gerçek hızla locomotion: blend eşikleri kliplerin ölçülmüş zemin hızı (model birimi) olduğundan
+        /// ayak yere bastığı yerde kalır. Koşu hızı aşılınca klip en çok <paramref name="maxPlaybackMult"/>
+        /// kat hızlanır. Controller eski (ölçümsüz) ise normalize <see cref="SetSpeed(float,float)"/>'e düşer.
+        /// </summary>
+        public void SetLocomotion(float worldSpeedMps, float normalizeRefMps, float dampSec, float maxPlaybackMult)
+        {
+            if (_animator == null || !_animator.isActiveAndEnabled || _animator.runtimeAnimatorController == null)
+                return;
+            if (!HasFloat(ParamLocoRunSpeed) || !HasFloat(ParamLocoPlayback))
+            {
+                SetSpeed(worldSpeedMps / Mathf.Max(0.01f, normalizeRefMps), dampSec);
+                return;
+            }
+
+            float run = Mathf.Max(0.01f, _animator.GetFloat(ParamLocoRunSpeed));
+            float model = worldSpeedMps / Mathf.Max(0.01f, _animator.transform.lossyScale.y);
+            if (model < run * 0.08f)
+                model = 0f;
+            float playback = Mathf.Clamp(model / run, 1f, Mathf.Max(1f, maxPlaybackMult));
+            if (dampSec > 0f && Time.deltaTime > 0f)
+            {
+                _animator.SetFloat(ParamSpeed, Mathf.Min(model, run), dampSec, Time.deltaTime);
+                _animator.SetFloat(ParamLocoPlayback, playback, dampSec, Time.deltaTime);
+            }
+            else
+            {
+                _animator.SetFloat(ParamSpeed, Mathf.Min(model, run));
+                _animator.SetFloat(ParamLocoPlayback, playback);
+            }
+        }
+
+        bool HasFloat(string name)
+        {
+            foreach (var p in _animator.parameters)
+            {
+                if (p.name == name && p.type == AnimatorControllerParameterType.Float)
+                    return true;
+            }
+            return false;
         }
 
         /// <summary>Aksiyon state'ine crossfade süresi (0 = sert kesim).</summary>
