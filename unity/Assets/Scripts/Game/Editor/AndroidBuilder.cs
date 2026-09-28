@@ -65,6 +65,7 @@ namespace Dovus.Game.EditorTools
             "Universal Render Pipeline/Lit",     // arena, oyuncu, boss (PrototypeBootstrap)
             "Universal Render Pipeline/Unlit",   // yedek yol
             "Sprites/Default",                   // mürekkep, telegraf, hayalet, iz, tezahür
+            "Universal Render Pipeline/Particles/Unlit", // FeelVfx, CastFlash, LivingEffectView, LavaDecor, BillboardVfx
         };
 
         static BuildReport Build(string outputPath)
