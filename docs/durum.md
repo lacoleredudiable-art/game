@@ -13,9 +13,28 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 28 Eylül 2026 (menzil/arkadan vurma düzeltmesi) ·
-**Dal:** `master` · **Sıradaki:** savaş içi 2 silah swap (`weapon_skill_interaction.swap`),
-sonra Movement/SelfState executor'ları veya gerçek animasyon/VFX bağları
+**Son güncelleme:** 28 Eylül 2026 (savaş içi 2 silah swap) ·
+**Dal:** `master` · **Sıradaki:** telefonda swap butonu/menzil hissi, sonra
+Movement/SelfState executor'ları veya gerçek animasyon/VFX bağları
+
+> **28 Eylül — savaş içi silah swap (`weapon_skill_interaction.swap`).** Sahibi: "2 silah
+> seçip savaşırken değiştirme JSON'da yazmıyor mu". Core: `WeaponSwapRules.FromJsonRoot`
+> (enabled / weapons_carried=2 / cooldown_sec=1.2 / animation_sec=0.25 / cancels_combo /
+> dodge_cancels_swap / recovery_cancel) + `WeaponSwapState` (zaman parametre);
+> `PlayerStateNode.CanSwap` + `PlayerStateMachine.AllowsSwap` (`state_machine.can_swap`);
+> `ChainDirector.Reset()`. Game: `ManifestationDirector.WeaponSwap.cs` (swap animasyon
+> bitince `EquippedWeapon` değişir → çarpan/uyum/pasif/executor yolu otomatik; combo
+> zinciri sıfırlanır; dodge swap'ı iptal eder; Recovering'de swap kilidi keser). Build
+> ekranı: 10 silah sırası, 2 seçim zorunlu (1 başlangıç, 2 yedek). Savaş HUD'u: altıgenin
+> sol-altında dodge'un simetriği swap düğmesi (aktif ad + "⇄ yedek" + radial bekleme);
+> klavye **Q**. **Uydurma/karar:** bekleme swap başlarken başlar ve dodge iptali beklemeyi
+> sıfırlamaz (JSON sessiz); build seçilmeden varsayılan yedek = birincilden farklı sınıftaki
+> ilk silah (Kılıç → Top); `WeaponSwapButtonRadiusDp=28`. Swap animasyonu görsel olarak
+> stub (0.25 sn yalnız zamanlama; buton turuncuya döner). **Doğrulandı:** `dotnet test`
+> 273/273 (5 yeni); Editor Play'de build ekranı silah sırası, swap Kılıç→Top tamamlandı,
+> hemen ikinci istek `AlreadySwapping`, swap + dodge → "dodge iptal etti" ve silah
+> değişmedi. **Doğrulanamadı:** swap düğmesine gerçek dokunuş / Q tuşu (kod yolu dodge
+> düğmesiyle aynı), telefonda düğme yeri.
 
 > **28 Eylül — menzil / arkadan vurma.** Sahibi: "arkam dönük uzaktan yumrukla vuruyorum,
 > düz hasar yiyor; skill de aynı". Sebepler: (1) düz vuruş ve executor'sız fallback yolu

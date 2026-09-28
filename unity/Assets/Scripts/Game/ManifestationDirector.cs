@@ -17,7 +17,7 @@ namespace Dovus.Game
     /// Cümleyi dünyadaki yaşayan etkiye bağlar. Kapalı rün geri bildirimi T6.1'de — burada yok.
     /// T12: kapanış ödülü × ClosingDamagePerEffect → BossVitals; tür son rüne bağlı tepki.
     /// </summary>
-    public sealed class ManifestationDirector : MonoBehaviour
+    public sealed partial class ManifestationDirector : MonoBehaviour
     {
         GameClock _clock;
         SentenceEngine _engine;
@@ -148,6 +148,7 @@ namespace Dovus.Game
             _cycleWeaponIndex = (_cycleWeaponIndex + 1) % _cycleWeapons.Count;
             _equippedWeapon = _cycleWeapons[_cycleWeaponIndex];
             LastFactorySkill = null;
+            _weaponSwap?.ReplaceActive(_equippedWeapon);
 
             string routeType = SkillExecutorRouter.IsRangedWeapon(_equippedWeapon)
                 ? "ranged"
@@ -496,6 +497,7 @@ namespace Dovus.Game
             TickPassives(worldMs);
             SyncDashCooldownMult();
             SyncPlayerStateMachine(worldMs);
+            TickWeaponSwap(worldMs);
             TickZones(dtSec);
             _spaceHost?.Tick(dtSec);
             TickTimeEffects(worldMs);

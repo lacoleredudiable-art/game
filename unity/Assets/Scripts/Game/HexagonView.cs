@@ -9,7 +9,7 @@ namespace Dovus.Game
     /// ui_rules.cooldown_display: her rün etrafında radial dolum + kalan sn.
     /// EnforceCooldown=false → kozmetik (yerel sayaç). true → PlayerCooldown / CooldownTracker.
     /// </summary>
-    public sealed class HexagonView : MonoBehaviour
+    public sealed partial class HexagonView : MonoBehaviour
     {
         PrototypeTuning _tuning;
         SkillMotor _skills;
@@ -124,6 +124,8 @@ namespace Dovus.Game
             // Dodge her zaman rünlerin üstünde (görsel katman + dokunma okunurluğu).
             _dodge.SetAsLastSibling();
 
+            BuildWeaponSwapButton(fallback, canvasGo.transform);
+
             for (int dot = 1; dot <= n; dot++)
                 CreateCooldownLabel(dot, canvasGo.transform);
 
@@ -193,6 +195,7 @@ namespace Dovus.Game
 
             Layout();
             TickCooldowns();
+            RefreshWeaponSwapButton();
         }
 
         void TickCooldowns()
@@ -363,6 +366,7 @@ namespace Dovus.Game
             Vector2 d = HexagonLayoutScreen.DodgeButtonPx(_tuning, w, h);
             Place(_dodge, d, HexagonLayoutScreen.DodgeButtonRadiusPx(_tuning) * 2f, w, h);
             _dodge.SetAsLastSibling();
+            LayoutWeaponSwapButton(w, h);
         }
 
         Color RimColorForDot(int dot)

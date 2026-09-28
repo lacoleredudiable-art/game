@@ -1008,7 +1008,8 @@ namespace Dovus.Core.Grammar
                     canDodge: ReadCapability(obj["can_dodge"]),
                     iFrames: obj["i_frames"].AsBool(false),
                     interruptible: obj["interruptible"].AsBool(false),
-                    note: obj["note"].AsString()));
+                    note: obj["note"].AsString(),
+                    canSwap: ReadCapability(obj["can_swap"])));
             }
 
             foreach (var kv in sm["boss_states"].AsObject())
@@ -1525,12 +1526,13 @@ namespace Dovus.Core.Grammar
     {
         public PlayerStateNode(
             string id, string canDraw, string canMove, string canDodge,
-            bool iFrames, bool interruptible = false, string note = "")
+            bool iFrames, bool interruptible = false, string note = "", string canSwap = "false")
         {
             Id = id ?? string.Empty;
             CanDraw = canDraw ?? "false";
             CanMove = canMove ?? "false";
             CanDodge = canDodge ?? "false";
+            CanSwap = canSwap ?? "false";
             IFrames = iFrames;
             Interruptible = interruptible;
             Note = note ?? string.Empty;
@@ -1543,6 +1545,8 @@ namespace Dovus.Core.Grammar
         public string CanMove { get; }
         /// <summary>"true" / "false" (JSON'da yoksa "false").</summary>
         public string CanDodge { get; }
+        /// <summary>"true" / "false" (JSON'da yoksa "false") — savaş içi silah swap.</summary>
+        public string CanSwap { get; }
         public bool IFrames { get; }
         public bool Interruptible { get; }
         public string Note { get; }

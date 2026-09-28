@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,6 +11,7 @@ namespace Dovus.Game
     /// sırası altıgen slotudur (1 üst, saat yönü — <see cref="HexagonLayoutScreen.DotPx"/>).
     /// Açıkken dünya saati durur, altıgen/çubuk/orbit girdisi susar. Pasif yuva (0-2) seçimi
     /// henüz yok; pasif efektleri stub olduğu için build pasifsiz uygulanır.
+    /// ui_rules.build_display "2_weapons": 10 silahtan 2'si (1 = başlangıç, 2 = swap yedeği).
     /// </summary>
     public sealed class BuildSelectScreen : MonoBehaviour
     {
@@ -31,7 +33,11 @@ namespace Dovus.Game
         HexagonInput _input;
         HexagonView _view;
         GameClock _clock;
+        ManifestationDirector _manifestation;
         Sprite _circle;
+        readonly List<EquipmentItem> _weapons = new();
+        readonly Dictionary<string, Image> _weaponChipImages = new();
+        readonly Dictionary<string, Text> _weaponChipBadges = new();
 
         GameObject _screen;
         readonly List<RectTransform> _safeRects = new();
@@ -58,6 +64,7 @@ namespace Dovus.Game
             HexagonInput input,
             HexagonView view,
             GameClock clock,
+            ManifestationDirector manifestation,
             bool openNow)
         {
             _skills = skills;
@@ -65,6 +72,7 @@ namespace Dovus.Game
             _input = input;
             _view = view;
             _clock = clock;
+            _manifestation = manifestation;
             _circle = CreateCircleSprite();
 
             BuildCanvas();
@@ -88,6 +96,16 @@ namespace Dovus.Game
             if (_runes?.Current != null)
                 _selected.AddRange(_runes.Current.RuneIds);
             _presetIndex = FindMatchingClassIndex();
+
+            _weapons.Clear();
+            WeaponSwapState swap = _manifestation != null ? _manifestation.WeaponSwap : null;
+            if (swap != null)
+            {
+                if (swap.Slot(0) != null)
+                    _weapons.Add(swap.Slot(0));
+                if (swap.Slot(1) != null)
+                    _weapons.Add(swap.Slot(1));
+            }
 
             IsOpen = true;
             _screen.SetActive(true);
@@ -139,6 +157,26 @@ namespace Dovus.Game
             Refresh();
         }
 
+        void ToggleWeapon(EquipmentItem weapon)
+        {
+            int index = _weapons.FindIndex(w => w.Id == weapon.Id);
+            if (index >= 0)
+                _weapons.RemoveAt(index);
+            else if (_weapons.Count < WeaponsCarried)
+                _weapons.Add(weapon);
+            else
+            {
+                SetStatus("2 silah dolu — önce birini çıkar.");
+                return;
+            }
+            SetStatus(string.Empty);
+            Refresh();
+        }
+
+        int WeaponsCarried => _manifestation?.WeaponSwap?.Rules.WeaponsCarried ?? 0;
+
+        bool WeaponsReady => WeaponsCarried < 2 || _weapons.Count == WeaponsCarried;
+
         void RemoveSlot(int slotIndex)
         {
             if (slotIndex < 0 || slotIndex >= _selected.Count)
@@ -181,6 +219,11 @@ namespace Dovus.Game
                 SetStatus($"6 rün gerekli — seçili {_selected.Count}.");
                 return;
             }
+            if (!WeaponsReady)
+            {
+                SetStatus($"{WeaponsCarried} silah gerekli — seçili {_weapons.Count}.");
+                return;
+            }
             if (_runes == null || _input == null)
             {
                 SetStatus("Rün yöneticisi bağlı değil.");
@@ -204,9 +247,15 @@ namespace Dovus.Game
             }
 
             _view?.SetLoadout(loadout);
+            if (_manifestation != null && _weapons.Count > 0)
+                _manifestation.SetWeaponLoadout(_weapons[0], _weapons.Count > 1 ? _weapons[1] : null);
             _hasApplied = true;
             string className = _presetIndex >= 0 ? _skills.MainClasses[_presetIndex].Name : "özel";
-            Debug.Log($"[BuildSelect] build=[{string.Join(",", loadout.RuneIds)}] class={className}");
+            string weaponNames = _weapons.Count > 0
+                ? string.Join("+", _weapons.ConvertAll(w => w.Name))
+                : "—";
+            Debug.Log(
+                $"[BuildSelect] build=[{string.Join(",", loadout.RuneIds)}] class={className} silah={weaponNames}");
             Close();
         }
 
@@ -267,7 +316,19 @@ namespace Dovus.Game
                     : "—\n<size=16>ya da ◀ ▶ ile hazır class seç</size>";
             }
 
-            bool ready = _selected.Count == RuneLoadout.SlotCount;
+            foreach (var pair in _weaponChipImages)
+            {
+                int slot = _weapons.FindIndex(w => w.Id == pair.Key);
+                pair.Value.color = slot >= 0 ? CardSelectedColor : CardColor;
+                _weaponChipBadges[pair.Key].text = slot switch
+                {
+                    0 => "1 · başlangıç",
+                    1 => "2 · yedek",
+                    _ => string.Empty
+                };
+            }
+
+            bool ready = _selected.Count == RuneLoadout.SlotCount && WeaponsReady;
             _startButton.interactable = ready;
             _startImage.color = ready ? AccentColor : ButtonColor;
             _startLabel.color = ready ? new Color(0.02f, 0.08f, 0.12f, 1f) : MutedText;
@@ -349,10 +410,15 @@ namespace Dovus.Game
                 TextAnchor.UpperLeft);
             Place(subtitle.rectTransform, 0.02f, 0.82f, 0.64f, 0.90f);
 
+            bool hasWeapons = _manifestation != null
+                && _manifestation.AvailableWeapons.Count > 0
+                && WeaponsCarried >= 2;
             RectTransform grid = CreateRect("RuneGrid", content, Vector2.zero, Vector2.one);
-            Place(grid, 0.015f, 0.02f, 0.645f, 0.82f);
+            Place(grid, 0.015f, hasWeapons ? 0.19f : 0.02f, 0.645f, 0.82f);
             for (int id = 1; id <= 12; id++)
                 BuildCard(grid, id);
+            if (hasWeapons)
+                BuildWeaponRow(content);
 
             BuildSidePanel(content);
             ApplySafeArea(HexagonLayoutScreen.SafeRectPx());
@@ -413,6 +479,50 @@ namespace Dovus.Game
             _cardBadgeLabels[runeId] = badgeLabel;
             badge.SetActive(false);
         }
+
+        void BuildWeaponRow(RectTransform content)
+        {
+            Text header = CreateText(
+                content, $"SİLAHLAR — {WeaponsCarried} seç (savaşta swap)", 16, MutedText, TextAnchor.MiddleLeft);
+            header.fontStyle = FontStyle.Bold;
+            Place(header.rectTransform, 0.02f, 0.155f, 0.645f, 0.19f);
+
+            RectTransform row = CreateRect("WeaponRow", content, Vector2.zero, Vector2.one);
+            Place(row, 0.015f, 0.02f, 0.645f, 0.155f);
+            IReadOnlyList<EquipmentItem> weapons = _manifestation.AvailableWeapons;
+            int count = weapons.Count;
+            for (int i = 0; i < count; i++)
+            {
+                EquipmentItem weapon = weapons[i];
+                Button chip = CreateButton(row, string.Empty, 16, CardColor);
+                var rect = (RectTransform)chip.transform;
+                rect.anchorMin = new Vector2((float)i / count, 0f);
+                rect.anchorMax = new Vector2((float)(i + 1) / count, 1f);
+                rect.offsetMin = new Vector2(3f, 3f);
+                rect.offsetMax = new Vector2(-3f, -3f);
+                EquipmentItem captured = weapon;
+                chip.onClick.AddListener(() => ToggleWeapon(captured));
+                _weaponChipImages[weapon.Id] = (Image)chip.targetGraphic;
+
+                Text name = CreateText(rect, weapon.Name, 18, Color.white, TextAnchor.MiddleCenter);
+                name.fontStyle = FontStyle.Bold;
+                Place(name.rectTransform, 0.04f, 0.50f, 0.96f, 0.95f);
+                Text type = CreateText(rect, WeaponTypeLabel(weapon.Type), 13, MutedText, TextAnchor.MiddleCenter);
+                Place(type.rectTransform, 0.04f, 0.28f, 0.96f, 0.52f);
+                Text badge = CreateText(rect, string.Empty, 12, AccentColor, TextAnchor.MiddleCenter);
+                badge.fontStyle = FontStyle.Bold;
+                Place(badge.rectTransform, 0.02f, 0.03f, 0.98f, 0.28f);
+                _weaponChipBadges[weapon.Id] = badge;
+            }
+        }
+
+        static string WeaponTypeLabel(string type) => type switch
+        {
+            "melee" => "yakın",
+            "medium" => "orta",
+            "ranged" => "menzilli",
+            _ => type ?? string.Empty
+        };
 
         void BuildSidePanel(RectTransform content)
         {

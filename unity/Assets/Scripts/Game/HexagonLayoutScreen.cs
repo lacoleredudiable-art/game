@@ -116,6 +116,46 @@ namespace Dovus.Game
         public static float DodgeButtonRadiusPx(PrototypeTuning tuning) =>
             DpToPixels(tuning.DodgeButtonRadiusDp);
 
+        /// <summary>
+        /// Silah swap: dodge'un altıgene göre simetriği (sol-alt), çizim yarısında kalır.
+        /// </summary>
+        public static Vector2 WeaponSwapButtonPx(PrototypeTuning tuning, int screenWidth, int screenHeight)
+        {
+            Rect safe = SafeRectPx();
+            Vector2 c = CenterPx(tuning, screenWidth, screenHeight);
+            float r = FittedRadiusPx(tuning, screenWidth, screenHeight);
+            float swapR = WeaponSwapButtonRadiusPx(tuning);
+            float gap = DpToPixels(Mathf.Max(24f, tuning.DodgeClearanceDp));
+            float side = tuning.MirrorForLeftHand ? 1f : -1f;
+
+            Vector2 p = new Vector2(
+                c.x + side * (r + swapR + gap),
+                c.y - (r * 0.55f));
+
+            float dx = DpToPixels(tuning.WeaponSwapButtonOffsetXDp);
+            float dy = DpToPixels(tuning.WeaponSwapButtonOffsetYDp);
+            if (tuning.MirrorForLeftHand)
+                dx = -dx;
+            p += new Vector2(dx, dy);
+
+            float edge = swapR + DpToPixels(tuning.DodgeButtonScreenMarginDp);
+            float mid = screenWidth * 0.5f;
+            float minX = tuning.MirrorForLeftHand ? safe.xMin + edge : mid + edge;
+            float maxX = tuning.MirrorForLeftHand ? mid - edge : safe.xMax - edge;
+            if (minX > maxX)
+            {
+                minX = safe.xMin + edge;
+                maxX = safe.xMax - edge;
+            }
+
+            p.x = Mathf.Clamp(p.x, minX, maxX);
+            p.y = Mathf.Clamp(p.y, safe.yMin + edge, safe.yMax - edge);
+            return p;
+        }
+
+        public static float WeaponSwapButtonRadiusPx(PrototypeTuning tuning) =>
+            DpToPixels(tuning.WeaponSwapButtonRadiusDp);
+
         public static float DotHitRadiusPx(PrototypeTuning tuning) => DpToPixels(tuning.DotHitRadiusDp);
 
         public static float CenterHitRadiusPx(PrototypeTuning tuning) => DpToPixels(tuning.CenterHitRadiusDp);

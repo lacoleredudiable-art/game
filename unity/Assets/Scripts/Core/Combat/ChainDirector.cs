@@ -42,6 +42,16 @@ namespace Dovus.Core.Combat
         public string LastFinisher => _lastFinisher;
         public bool InBreakPenalty(double worldMs) => worldMs < _penaltyUntilMs;
 
+        /// <summary>Zinciri cezasız sıfırlar (ör. silah swap cancels_combo).</summary>
+        public void Reset()
+        {
+            _history.Clear();
+            _active = null;
+            _linkCount = 0;
+            _lastCastMs = double.NegativeInfinity;
+            _lastFinisher = string.Empty;
+        }
+
         /// <summary>
         /// Skill kapanışı (element dot 1..6). Window aşılırsa veya pattern kırılırsa zincir
         /// düşer (break_penalty); aksi halde Links sırasıyla ilerler. Finisher yalnızca
