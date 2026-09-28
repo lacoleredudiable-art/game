@@ -312,7 +312,7 @@ namespace Dovus.Game
             var edgeImg = edgeGo.AddComponent<Image>();
             edgeImg.sprite = RoundedRectSprite();
             edgeImg.type = Image.Type.Sliced;
-            edgeImg.color = new Color(0.45f, 0.9f, 1f, 0.14f);
+            edgeImg.color = new Color(0.45f, 0.9f, 1f, 0.10f);
             edgeImg.raycastTarget = false;
             return rect;
         }
@@ -370,7 +370,7 @@ namespace Dovus.Game
             sheen = sheenGo.AddComponent<Image>();
             sheen.sprite = pill;
             sheen.type = Image.Type.Sliced;
-            sheen.color = new Color(1f, 1f, 1f, 0.18f);
+            sheen.color = new Color(1f, 1f, 1f, 0.10f);
             sheen.raycastTarget = false;
 
             Image flash = CreateBarLayer(bg.transform, name + "Flash", pill, Image.Type.Sliced);
@@ -456,7 +456,7 @@ namespace Dovus.Game
             rect.offsetMax = new Vector2(-8f, 0f);
             var text = go.AddComponent<Text>();
             text.font = HudTheme.LegacyFont;
-            text.fontSize = 11;
+            text.fontSize = Mathf.Max(11, Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(10.5f)));
             text.fontStyle = FontStyle.Bold;
             text.color = new Color(1f, 1f, 1f, 0.88f);
             text.alignment = TextAnchor.MiddleLeft;
@@ -495,6 +495,8 @@ namespace Dovus.Game
             float bossH = HexagonLayoutScreen.DpToPixels(_tuning.VitalsBossBarHeightDp);
             float spacing = HexagonLayoutScreen.DpToPixels(_tuning.VitalsBarSpacingDp);
             float pad = HexagonLayoutScreen.DpToPixels(8f);
+            Rect safe = HexagonLayoutScreen.SafeRectPx();
+            bossW = Mathf.Min(bossW, safe.width - margin * 2f);
 
             bool sizeChanged =
                 !Mathf.Approximately(_tuning.VitalsBarWidthDp, _appliedWidthDp) ||
@@ -595,7 +597,7 @@ namespace Dovus.Game
                     ? Color.Lerp(_appliedPlayerColor, Color.white, UiJuice.Pulse01(th.LowHpPulseHz) * th.LowHpPulseStrength)
                     : _appliedPlayerColor;
                 if (_playerLabel != null)
-                    _playerLabel.text = _vitals.Hp + "  /  " + _vitals.MaxHp;
+                    _playerLabel.text = "HP   " + _vitals.Hp + "  /  " + _vitals.MaxHp;
             }
 
             if (_manaFill != null)
@@ -604,7 +606,7 @@ namespace Dovus.Game
                 {
                     _manaFill.fillAmount = Mathf.Clamp01(_resource.Mana / _resource.MaxMana);
                     if (_manaLabel != null)
-                        _manaLabel.text = Mathf.RoundToInt(_resource.Mana) + "  /  "
+                        _manaLabel.text = "MP   " + Mathf.RoundToInt(_resource.Mana) + "  /  "
                             + Mathf.RoundToInt(_resource.MaxMana);
                 }
                 else
@@ -622,7 +624,7 @@ namespace Dovus.Game
                     : 0f;
                 _bossJuice?.Tick(_bossFill.fillAmount, th);
                 if (_bossLabel != null)
-                    _bossLabel.text = Mathf.CeilToInt(_bossVitals.Hp) + "  /  "
+                    _bossLabel.text = "HP   " + Mathf.CeilToInt(_bossVitals.Hp) + "  /  "
                         + Mathf.CeilToInt(_bossVitals.MaxHp);
             }
 
@@ -630,7 +632,7 @@ namespace Dovus.Game
             {
                 _allyFill.fillAmount = _ally.Ratio;
                 if (_allyLabel != null)
-                    _allyLabel.text = _ally.Hp + "  /  " + _ally.MaxHp;
+                    _allyLabel.text = "ALLY   " + _ally.Hp + "  /  " + _ally.MaxHp;
             }
 
             TickBossExtras();

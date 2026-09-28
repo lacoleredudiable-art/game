@@ -20,6 +20,7 @@ namespace Dovus.Game
         AfterimageTrail _afterimage;
         KinematicMotor _motor;
         PlayerVitals _vitals;
+        FollowCamera _follow;
 
         Vector3 _lastMoveDir = Vector3.forward;
         Vector3 _startPos;
@@ -41,7 +42,8 @@ namespace Dovus.Game
             GameClock clock,
             HexagonInput input,
             Transform boss,
-            AfterimageTrail afterimage)
+            AfterimageTrail afterimage,
+            FollowCamera follow = null)
         {
             _clock = clock;
             _dodge = input.Dodge;
@@ -49,6 +51,7 @@ namespace Dovus.Game
             _colors = input.Tuning;
             _boss = boss;
             _afterimage = afterimage;
+            _follow = follow;
             _input = GetComponent<MoveInput>();
             _motor = GetComponent<KinematicMotor>();
             _vitals = GetComponent<PlayerVitals>();
@@ -68,7 +71,12 @@ namespace Dovus.Game
             var boss = GameObject.Find("Boss");
             if (input == null || clock == null || boss == null)
                 return;
-            Bind(clock, input, boss.transform, GetComponent<AfterimageTrail>());
+            Bind(
+                clock,
+                input,
+                boss.transform,
+                GetComponent<AfterimageTrail>(),
+                FindAnyObjectByType<FollowCamera>());
         }
 
         void Update()
@@ -168,7 +176,12 @@ namespace Dovus.Game
 
             Vector2 move = _input.MoveDirection;
             if (move.sqrMagnitude > 0.01f)
-                _lastMoveDir = new Vector3(move.x, 0f, move.y);
+            {
+                Vector3 direction = new Vector3(move.x, 0f, move.y);
+                if (_follow != null)
+                    direction = Quaternion.Euler(0f, _follow.MovementYawDeg, 0f) * direction;
+                _lastMoveDir = direction;
+            }
         }
 
         void MaybeEmitAfterimage(float ratio)

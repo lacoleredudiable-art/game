@@ -12,8 +12,6 @@ namespace Dovus.Game
     public sealed class SkillPreviewHud : MonoBehaviour
     {
         const float FadeSec = 0.2f;
-        const float PanelHeightDp = 48f;
-
         SentenceEngine _engine;
         SkillMotor _motor;
         SkillFactory _factory;
@@ -23,6 +21,7 @@ namespace Dovus.Game
         CanvasGroup _group;
         Text _title;
         Text _detail;
+        Image _accent;
         string _lastSignature = string.Empty;
         float _visibleUntil = float.NegativeInfinity;
         Skill _lastCast;
@@ -56,11 +55,21 @@ namespace Dovus.Game
             _group.interactable = false;
 
             var bg = root.AddComponent<Image>();
-            bg.color = new Color(0.02f, 0.08f, 0.12f, 0.72f);
+            bg.color = new Color(0.015f, 0.025f, 0.045f, 0.84f);
             bg.raycastTarget = false;
 
-            _title = CreateText(root.transform, "Title", new Vector2(0f, 0.46f), Vector2.one, 18);
-            _detail = CreateText(root.transform, "Detail", Vector2.zero, new Vector2(1f, 0.46f), 12);
+            var accentGo = new GameObject("CompatibilityAccent");
+            accentGo.transform.SetParent(root.transform, false);
+            var accentRt = accentGo.AddComponent<RectTransform>();
+            accentRt.anchorMin = new Vector2(0f, 0f);
+            accentRt.anchorMax = new Vector2(0f, 1f);
+            accentRt.pivot = new Vector2(0f, 0.5f);
+            accentRt.sizeDelta = new Vector2(HexagonLayoutScreen.DpToPixels(4f), 0f);
+            _accent = accentGo.AddComponent<Image>();
+            _accent.raycastTarget = false;
+
+            _title = CreateText(root.transform, "Title", new Vector2(0f, 0.46f), Vector2.one, 21);
+            _detail = CreateText(root.transform, "Detail", Vector2.zero, new Vector2(1f, 0.46f), 13);
             Layout();
         }
 
@@ -139,7 +148,7 @@ namespace Dovus.Game
                 + HexagonLayoutScreen.DotHitRadiusPx(_tuning)
                 + HexagonLayoutScreen.DpToPixels(_tuning.SkillPreviewGapDp);
             float width = HexagonLayoutScreen.DpToPixels(_tuning.SkillPreviewWidthDp);
-            float height = HexagonLayoutScreen.DpToPixels(PanelHeightDp);
+            float height = HexagonLayoutScreen.DpToPixels(_tuning.SkillPreviewHeightDp);
 
             Rect safe = HexagonLayoutScreen.SafeRectPx();
             float half = width * 0.5f;
@@ -158,6 +167,8 @@ namespace Dovus.Game
             _detail.text = detail ?? string.Empty;
             _title.color = color;
             _detail.color = new Color(color.r, color.g, color.b, 0.9f);
+            if (_accent != null)
+                _accent.color = color;
         }
 
         static Text CreateText(

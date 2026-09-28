@@ -4,14 +4,14 @@ namespace Dovus.Core.Tuning
     [System.Serializable]
     public class DodgeTuning
     {
-        public int StartupMs = 20;
+        public int StartupMs = 10;
         public int IframeStartMs = 0;
-        public int IframeMs = 260;
-        public float DistanceM = 3.8f;
-        public int DurationMs = 260;
-        public float CurveExp = 3.2f;
-        public int GlideTailMs = 220;
-        public int CooldownMs = 420;
+        public int IframeMs = 220;
+        public float DistanceM = 3.2f;
+        public int DurationMs = 190;
+        public float CurveExp = 3.6f;
+        public int GlideTailMs = 120;
+        public int CooldownMs = 360;
 
         // Altıgen dışındaki ayrı dodge düğmesinin tap eşikleri.
         public int TapMaxMs = 180;

@@ -111,7 +111,7 @@ namespace Dovus.Game
             if (_follow == null)
                 _follow = FindAnyObjectByType<FollowCamera>();
             if (_follow != null && direction.sqrMagnitude > 0.0001f)
-                direction = Quaternion.Euler(0f, _follow.OrbitYawDeg, 0f) * direction;
+                direction = Quaternion.Euler(0f, _follow.MovementYawDeg, 0f) * direction;
 
             float speedMult = _status != null ? _status.EffectiveMoveSpeedMult : 1f;
             if (_playerStates != null && _playerStates.MoveLimited && _status != null)

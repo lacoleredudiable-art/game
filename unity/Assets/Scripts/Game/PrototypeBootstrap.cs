@@ -67,19 +67,6 @@ namespace Dovus.Game
             // His denemesi: boss vurmasın (kayıtlı ayar ezmesin).
             combat.Boss.Damage = 0;
             combat.Boss.FireConeDamage = 0; // 16 Eylül: ikinci saldırı da bu deneyin kapsamında.
-            // Sahip: 100 m çap daire, tavansız yüksek duvar — Long_Hall/Synty ölçeği ve
-            // kayıtlı 3× visual ezmesin.
-            _tuning.ArenaHalfSizeM = 50f;
-            _tuning.ArenaWallHeightM = 18f;
-            _tuning.ArenaWallThicknessM = 1.4f;
-            _tuning.ArenaVisualScale = 1f;
-            _tuning.PlayerVisualScale = 2.625f;
-            _tuning.BossVisualScale = 3.3f;
-            // Run clip adımına yakın yol — 5.5’te ayaklar yerinde sayıyordu.
-            _tuning.WalkSpeedMps = 7.5f;
-            _tuning.CharacterAnimSpeed = 1.0f;
-            _tuning.DodgeGlideSpeedMps = 3.5f;
-
             var clock = gameObject.AddComponent<GameClock>();
 
             var arena = CreateArena();
@@ -96,7 +83,13 @@ namespace Dovus.Game
                 PlayerRadiusM,
                 PlayerHeightM,
                 _tuning.PlayerColor);
-            AttachVisual(player, _playerVisualPrefab, _tuning.PlayerVisualScale, _tuning.CharacterAnimSpeed, out var playerAnim);
+            AttachVisual(
+                player,
+                _playerVisualPrefab,
+                _tuning.PlayerVisualHeightM,
+                player.transform.position.y - PlayerHeightM * 0.5f,
+                _tuning.CharacterAnimSpeed,
+                out var playerAnim);
 
             var ally = CreateCapsule(
                 "AllyDummy",
@@ -104,7 +97,13 @@ namespace Dovus.Game
                 PlayerRadiusM * 0.95f,
                 PlayerHeightM,
                 new Color(0.35f, 0.85f, 0.55f));
-            AttachVisual(ally, _playerVisualPrefab, _tuning.PlayerVisualScale, _tuning.CharacterAnimSpeed, out _);
+            AttachVisual(
+                ally,
+                _playerVisualPrefab,
+                _tuning.PlayerVisualHeightM,
+                ally.transform.position.y - PlayerHeightM * 0.5f,
+                _tuning.CharacterAnimSpeed,
+                out _);
             var allyDummy = ally.AddComponent<AllyDummy>();
             allyDummy.Bind(_tuning.PlayerMaxHp, startRatio: 0.5f);
 
@@ -118,7 +117,13 @@ namespace Dovus.Game
             // bilinçli collider'sız kurulur; yalnız aktör hedef kapsülü burada eklenir.
             var bossHitCollider = boss.AddComponent<CapsuleCollider>();
             bossHitCollider.isTrigger = true;
-            AttachVisual(boss, _bossVisualPrefab, _tuning.BossVisualScale, _tuning.CharacterAnimSpeed, out var bossAnim);
+            AttachVisual(
+                boss,
+                _bossVisualPrefab,
+                _tuning.BossVisualHeightM,
+                boss.transform.position.y - BossHeightM * 0.5f,
+                _tuning.CharacterAnimSpeed,
+                out var bossAnim);
 
             player.AddComponent<MoveInput>().Tuning = _tuning;
 
@@ -179,7 +184,7 @@ namespace Dovus.Game
             telegraph.Bind(_tuning, combat.Boss, boss.transform);
 
             var sun = CreateSun();
-            FollowCamera follow = CreateCamera(player.transform);
+            FollowCamera follow = CreateCamera(player.transform, boss.transform);
             SceneAtmosphere.Apply(sun, Camera.main, _tuning);
             // LavDecor.Build — eski arena-wide kırmızı ember noktaları kalktı.
             BillboardVfx.CreateEmberField(boss.transform, new Color(1f, 0.45f, 0.12f), rate: 14f);
@@ -344,7 +349,7 @@ namespace Dovus.Game
             passiveHud.Configure(view.CanvasRoot);
             passiveHud.BindBelowPlayer(vitalsHud);
 
-            dodgeMotion.Bind(clock, input, boss.transform, afterimage);
+            dodgeMotion.Bind(clock, input, boss.transform, afterimage, follow);
 
             var feelGo = new GameObject("CombatFeel");
             feelGo.transform.SetParent(transform, false);
@@ -533,18 +538,41 @@ namespace Dovus.Game
         /// Ayak pivot'u varsayılır — local Y ofseti prefab'a göre sonra ayarlanır.
         /// </summary>
         static void AttachVisual(
-            GameObject root, GameObject prefab, float visualScale, float animSpeed, out Animator animator)
+            GameObject root,
+            GameObject prefab,
+            float targetHeightM,
+            float groundY,
+            float animSpeed,
+            out Animator animator)
         {
             animator = null;
             if (root == null || prefab == null)
                 return;
 
-            float s = Mathf.Max(0.1f, visualScale);
             var visual = Instantiate(prefab, root.transform, false);
             visual.name = "Visual";
-            visual.transform.localPosition = new Vector3(0f, -1f, 0f); // kapsül merkezi → ayak
+            visual.transform.localPosition = Vector3.zero;
             visual.transform.localRotation = Quaternion.identity;
-            visual.transform.localScale = Vector3.one * s;
+
+            // Gameplay kökü kapsül mesh'ini ölçekliyor (boss'ta XZ ve Y farklı). Görsel bu
+            // ölçeği miras alırsa karakter ezilip genişliyordu; önce dünya ölçeğini 1'e çeker.
+            Vector3 parentScale = root.transform.lossyScale;
+            visual.transform.localScale = new Vector3(
+                1f / Mathf.Max(0.0001f, parentScale.x),
+                1f / Mathf.Max(0.0001f, parentScale.y),
+                1f / Mathf.Max(0.0001f, parentScale.z));
+
+            if (TryGetRendererBounds(visual, out Bounds initial) && initial.size.y > 0.01f)
+            {
+                float fit = Mathf.Max(0.1f, targetHeightM) / initial.size.y;
+                visual.transform.localScale *= fit;
+                if (TryGetRendererBounds(visual, out Bounds fitted))
+                    visual.transform.position += Vector3.up * (groundY - fitted.min.y);
+                Debug.Log(
+                    $"[VisualScale] {root.name} target={targetHeightM:0.00}m "
+                    + $"source={initial.size.y:0.00}m fit={fit:0.000}");
+            }
+
             animator = visual.GetComponentInChildren<Animator>();
             if (animator != null)
                 animator.speed = Mathf.Clamp(animSpeed, 0.25f, 3f);
@@ -552,6 +580,27 @@ namespace Dovus.Game
             var capsuleRend = root.GetComponent<Renderer>();
             if (capsuleRend != null)
                 capsuleRend.enabled = false;
+        }
+
+        static bool TryGetRendererBounds(GameObject root, out Bounds bounds)
+        {
+            bounds = default;
+            bool found = false;
+            foreach (Renderer renderer in root.GetComponentsInChildren<Renderer>(true))
+            {
+                if (renderer == null || !renderer.enabled || !renderer.gameObject.activeInHierarchy)
+                    continue;
+                if (!found)
+                {
+                    bounds = renderer.bounds;
+                    found = true;
+                }
+                else
+                {
+                    bounds.Encapsulate(renderer.bounds);
+                }
+            }
+            return found;
         }
 
         static GameObject CreateCapsule(string name, Vector3 position, float radius, float height, Color color)
@@ -593,7 +642,7 @@ namespace Dovus.Game
             return light;
         }
 
-        FollowCamera CreateCamera(Transform target)
+        FollowCamera CreateCamera(Transform target, Transform boss)
         {
             var camGo = new GameObject("Main Camera");
             camGo.tag = "MainCamera";
@@ -602,6 +651,7 @@ namespace Dovus.Game
             camera.backgroundColor = _tuning.BackgroundColor;
             camera.nearClipPlane = 0.2f;
             camera.farClipPlane = 250f;
+            camera.fieldOfView = _tuning.CameraFovDeg;
 
             camGo.AddComponent<AudioListener>();
             var camData = camGo.AddComponent<UniversalAdditionalCameraData>();
@@ -610,7 +660,10 @@ namespace Dovus.Game
             var follow = camGo.AddComponent<FollowCamera>();
             follow.Tuning = _tuning;
             follow.Target = target;
-            camGo.transform.position = target.position + _tuning.CameraOffset;
+            follow.BossTarget = boss;
+            Vector3 startOffset = _tuning.CameraShoulderOffset
+                + Vector3.back * _tuning.CameraDistanceM;
+            camGo.transform.position = target.position + startOffset;
             return follow;
         }
 

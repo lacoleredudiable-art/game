@@ -8,6 +8,7 @@ namespace Dovus.Game
     public sealed class FollowCamera : MonoBehaviour
     {
         [SerializeField] Transform _target;
+        [SerializeField] Transform _bossTarget;
         [SerializeField] PrototypeTuning _tuning = new();
 
         KinematicMotor _targetMotor;
@@ -22,6 +23,9 @@ namespace Dovus.Game
         float _rollDeg;
         float _punchT;
         float _punchDecay = 6f;
+        float _resolvedYawDeg;
+        float _yawVelocity;
+        Quaternion _aimRotation;
 
         /// <summary>
         /// 16 Eylül: "kamera sabit, döndüremiyorum" bug raporu. Oyuncu etrafında yatay dönüş —
@@ -29,6 +33,14 @@ namespace Dovus.Game
         /// tuning'i bozmuyoruz). <see cref="CameraOrbitInput"/> tarafından sürülür.
         /// </summary>
         public float OrbitYawDeg { get; set; }
+        /// <summary>Kamera soft-lock'u uygulandıktan sonraki yaw; kamera-göreli hareket bunu kullanır.</summary>
+        public float MovementYawDeg => _resolvedYawDeg;
+
+        public Transform BossTarget
+        {
+            get => _bossTarget;
+            set => _bossTarget = value;
+        }
 
         public Transform Target
         {
@@ -55,7 +67,11 @@ namespace Dovus.Game
             _tuning ??= new PrototypeTuning();
             _cam = GetComponent<Camera>();
             if (_cam != null)
+            {
                 _baseFov = _cam.fieldOfView;
+                _aimRotation = transform.rotation;
+            }
+            _resolvedYawDeg = OrbitYawDeg;
             if (_targetMotor == null && _target != null)
                 _targetMotor = _target.GetComponent<KinematicMotor>();
         }
@@ -110,22 +126,78 @@ namespace Dovus.Game
             Vector3 lookAhead = flatVelocity.sqrMagnitude > 0.0001f
                 ? flatVelocity.normalized * _tuning.LookAheadM
                 : Vector3.zero;
-            Vector3 offset = Quaternion.Euler(0f, OrbitYawDeg, 0f) * _tuning.CameraOffset;
+            float dt = Mathf.Max(0.0001f, Time.unscaledDeltaTime);
+            ResolveYaw(dt);
+            Vector3 localOffset = _tuning.CameraShoulderOffset
+                + Vector3.back * _tuning.CameraDistanceM;
+            Vector3 offset = Quaternion.Euler(0f, _resolvedYawDeg, 0f) * localOffset;
             Vector3 desired = _target.position + offset + lookAhead + _shakeOffset;
 
             transform.position = Vector3.SmoothDamp(
                 transform.position,
                 desired,
                 ref _velocity,
-                _tuning.FollowSmoothTimeSec);
+                _tuning.FollowSmoothTimeSec,
+                Mathf.Infinity,
+                dt);
 
-            Vector3 lookTarget = _target.position + lookAhead * 0.35f + Vector3.up * 1.2f;
+            Vector3 lookTarget = _target.position + lookAhead * 0.35f
+                + Vector3.up * _tuning.CameraLookHeightM;
+            float bossWeight = BossFramingWeight();
+            if (bossWeight > 0f)
+            {
+                Vector3 bossPoint = _bossTarget.position + Vector3.up * _tuning.CameraBossAimHeightM;
+                lookTarget = Vector3.Lerp(lookTarget, bossPoint, bossWeight);
+            }
             Quaternion look = Quaternion.LookRotation(lookTarget - transform.position, Vector3.up);
+            float aimBlend = 1f - Mathf.Exp(-dt / Mathf.Max(0.001f, _tuning.CameraAimDampingSec));
+            _aimRotation = Quaternion.Slerp(_aimRotation, look, aimBlend);
 
             AdvancePunch();
-            transform.rotation = look * Quaternion.Euler(0f, 0f, _rollDeg * _punchT);
+            transform.rotation = _aimRotation * Quaternion.Euler(0f, 0f, _rollDeg * _punchT);
             if (_cam != null)
+            {
+                _baseFov = Mathf.Clamp(_tuning.CameraFovDeg, 35f, 85f);
                 _cam.fieldOfView = _baseFov * (1f - _fovKick * _punchT);
+            }
+        }
+
+        void ResolveYaw(float dt)
+        {
+            float desired = OrbitYawDeg;
+            if (_bossTarget != null)
+            {
+                Vector3 toBoss = _bossTarget.position - _target.position;
+                toBoss.y = 0f;
+                float range = Mathf.Max(0.01f, _tuning.CameraSoftLockRangeM);
+                if (toBoss.sqrMagnitude <= range * range && toBoss.sqrMagnitude > 0.001f)
+                {
+                    float bossYaw = Mathf.Atan2(toBoss.x, toBoss.z) * Mathf.Rad2Deg;
+                    desired = Mathf.LerpAngle(
+                        OrbitYawDeg,
+                        bossYaw,
+                        Mathf.Clamp01(_tuning.CameraSoftLockStrength));
+                }
+            }
+
+            _resolvedYawDeg = Mathf.SmoothDampAngle(
+                _resolvedYawDeg,
+                desired,
+                ref _yawVelocity,
+                Mathf.Max(0.01f, _tuning.FollowSmoothTimeSec),
+                Mathf.Infinity,
+                dt);
+        }
+
+        float BossFramingWeight()
+        {
+            if (_bossTarget == null)
+                return 0f;
+            Vector3 toBoss = _bossTarget.position - _target.position;
+            toBoss.y = 0f;
+            float range = Mathf.Max(0.01f, _tuning.CameraSoftLockRangeM);
+            float distanceWeight = 1f - Mathf.SmoothStep(0.72f, 1f, toBoss.magnitude / range);
+            return Mathf.Clamp01(_tuning.CameraBossFramingWeight) * distanceWeight;
         }
 
         void AdvancePunch()

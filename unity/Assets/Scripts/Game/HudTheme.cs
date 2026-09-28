@@ -33,12 +33,12 @@ namespace Dovus.Game
         public Color PhaseNotchColor = new(1f, 1f, 1f, 0.75f);
 
         [Header("Boyut (dp)")]
-        public float BossNameDp = 15f;
-        public float BossSubtitleDp = 10f;
+        public float BossNameDp = 18f;
+        public float BossSubtitleDp = 11f;
         public float BannerDp = 30f;
-        public float CastLabelDp = 11f;
-        public float CastBarHeightDp = 7f;
-        public float CastBarWidthFrac = 0.62f;
+        public float CastLabelDp = 12f;
+        public float CastBarHeightDp = 9f;
+        public float CastBarWidthFrac = 0.72f;
         public float OffscreenArrowDp = 26f;
         public float OffscreenMarginDp = 34f;
         public float DamageDirectionDp = 120f;

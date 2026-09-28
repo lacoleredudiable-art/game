@@ -13,9 +13,36 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 28 Eylül 2026 (his ve sunum turu) ·
-**Dal:** `feat/feel-*` fazları · **Sıradaki:** his/sunum turu fazları (plan: Faz 0 his
-ayarları → 1 boss anim → 2 oyuncu anim → 3 HUD → 4 VFX/SFX → 5 telefon)
+**Son güncelleme:** 28 Eylül 2026 (Arise-esintili görünür his turu) ·
+**Dal:** `cursor/arise-feel-pass-8b3d` · **Sıradaki:** Editor Play görsel smoke + telefon hissi
+
+> **28 Eylül — görünür his turu (ölçek/kamera/tempo/atmosfer/HUD).** Gerçek stack
+> doğrulandı: `Prototype.unity` Synty Hero Knight + Rock Golem prefablarını koddan kuruyor;
+> Cinemachine yok, mevcut `FollowCamera` shake/orbit/hareket yönünü taşıyor. Asıl ölçek hatası:
+> oyuncu 2.625×, boss 3.3× zorlanıyor ve boss görseli ayrıca kapsülün 1.7×/1.3× non-uniform
+> kök ölçeğini miras alıyordu. `AttachVisual` artık etkin renderer bounds'unu ölçüp oyuncuyu
+> **1.78 m**, boss'u **5.0 m** (2.8×) hedef boya getiriyor, parent ölçeğini nötrleyip ayağı
+> zemine oturtuyor. Kamera runtime'daki `(0,12,-14)` tepeden override'ını kaldırdı; mevcut
+> stack omuz pivotu `(0.45,1,-0.35)` + 3.4 m mesafe, 56° FOV, boss'a yumuşak yaw/framing ve
+> kamera-göreli dodge kullanıyor. Tam çubuk koşu 7.5→**6.4 m/sn** (ölçülen Axe run 5.52'ye
+> 1.16×), düşük stick yürüyüşü ~2.7 m/sn; ivme/fren 52/64. Dodge varsayılanı
+> 3.8 m/260 ms + 220 ms kuyruk → **3.2 m/190 ms + 120 ms kuyruk**, 360 ms cooldown;
+> global timescale yok. Atmosfer tek güçlü sıcak key + düşük ambient, gölgesiz hafif soğuk rim,
+> sis ve restrained bloom (1.8→0.42); tüm sayılar `PrototypeTuning` Inspector alanlarında,
+> dodge `CombatTuning.Dodge`/ayar panelinde. HUD: boss barı 280×12→420×20 dp, oyuncu
+> barları 210×15 dp ve HP/MP/ALLY etiketli; rune hit yüzleri 26→30 dp, dodge 36 dp,
+> skill kartı 300×58 dp + uyum renk şeridi. Hex/radial/sarı uyumsuzluk/pasif/swap sistemleri
+> korunuyor.
+>
+> **Editor smoke:** Play → build seç → oyuncu/boss ayağı zeminde ve oran ~1:2.8; ileri/yan
+> koş + düşük stick yürüme ayrımı; boss çevresinde sağ sürükle ve bırak (kamera boss'a yumuşak
+> döner, oyuncu alt-merkezde); farklı yönlere dodge; boss bar/cast, HP-MP, 6 rune, sarı
+> uyumsuz skill kartı; key/rim/sis ve yalnız parlak VFX'te hafif bloom. Konsolda
+> `[VisualScale] Player/Boss target=...` satırlarını kontrol et.
+>
+> **Kalan/doğrulanamadı:** Bu cloud imajında Unity Editor Play görseli ve telefon kare süresi
+> doğrulanamadı. Gerçek sunum ses miksajı, hitstop yoğunluğunun kullanıcı gözü/kulağıyla ayarı
+> ve Mixamo dosyaları gitignored olduğu için kliplerin başka makinede yeniden indirilmesi açık.
 
 > **28 Eylül — Oyuncu yürüme/koşu/duruş yenilendi (dal `feat/feel-player-loco`).**
 > Sahibi: "yürüyüşü koşuşu duruşu çirkin". Sebep: Sword&Shield klipleri olmayan kalkan için sol

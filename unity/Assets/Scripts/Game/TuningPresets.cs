@@ -46,7 +46,7 @@ namespace Dovus.Game
 
             c.Grade.MukemmelGapMaxMs = 110;
             c.Grade.HarikaGapMaxMs = 190;
-            c.Grade.TemizGapMaxMs = 240; // < IframeMs (260)
+            c.Grade.TemizGapMaxMs = 210; // < IframeMs (220)
 
             c.Sentence.DwellMs = 280;
             c.Sentence.CancelWindowMs[0] = 460;
@@ -88,7 +88,7 @@ namespace Dovus.Game
 
             c.Grade.MukemmelGapMaxMs = 70;
             c.Grade.HarikaGapMaxMs = 130;
-            c.Grade.TemizGapMaxMs = 190; // < IframeMs (260)
+            c.Grade.TemizGapMaxMs = 190; // < IframeMs (220)
 
             c.Sentence.DwellMs = 170;
             c.Sentence.CancelWindowMs[0] = 360;

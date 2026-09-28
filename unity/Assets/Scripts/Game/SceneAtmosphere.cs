@@ -9,42 +9,39 @@ namespace Dovus.Game
     /// </summary>
     public static class SceneAtmosphere
     {
-        static readonly Color Mist = new Color(0.32f, 0.30f, 0.28f);
-        static readonly Color MistDeep = new Color(0.22f, 0.21f, 0.20f);
-
         public static void Apply(Light sun, Camera camera, PrototypeTuning tuning)
         {
+            tuning ??= new PrototypeTuning();
             RenderSettings.ambientMode = AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = new Color(0.18f, 0.20f, 0.28f);
-            RenderSettings.ambientEquatorColor = new Color(0.22f, 0.16f, 0.12f);
-            RenderSettings.ambientGroundColor = new Color(0.10f, 0.08f, 0.07f);
+            RenderSettings.ambientSkyColor = tuning.AmbientSky;
+            RenderSettings.ambientEquatorColor = tuning.AmbientEquator;
+            RenderSettings.ambientGroundColor = tuning.AmbientGround;
 
-            // Kapalı salon: skybox değil — soft sis (duvar/tavan dışarıyı keser).
+            // Açık daire arena: düşük ambient + hafif sis, karakter silüetini fondan ayırır.
             RenderSettings.skybox = null;
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.ExponentialSquared;
-            RenderSettings.fogColor = new Color(0.08f, 0.07f, 0.09f);
-            RenderSettings.fogDensity = 0.012f;
+            RenderSettings.fogColor = tuning.FogColor;
+            RenderSettings.fogDensity = Mathf.Max(0f, tuning.FogDensity);
 
             if (camera != null)
             {
                 camera.clearFlags = CameraClearFlags.SolidColor;
-                camera.backgroundColor = new Color(0.06f, 0.05f, 0.055f);
+                camera.backgroundColor = tuning.BackgroundColor;
                 camera.farClipPlane = 120f;
+                camera.fieldOfView = tuning.CameraFovDeg;
             }
 
             if (sun != null)
             {
-                // Demo salonu kendi torch/chandelier ışığını taşır — güneşi bastır.
-                sun.intensity = 0.35f;
-                sun.color = new Color(0.55f, 0.65f, 0.95f);
+                sun.intensity = Mathf.Max(0f, tuning.KeyLightIntensity);
+                sun.color = tuning.KeyLightColor;
                 sun.shadows = LightShadows.Soft;
-                sun.shadowStrength = 0.35f;
-                sun.transform.rotation = Quaternion.Euler(25f, -40f, 0f);
+                sun.shadowStrength = Mathf.Clamp01(tuning.KeyShadowStrength);
+                sun.transform.rotation = Quaternion.Euler(tuning.KeyLightEuler);
             }
 
-            if (tuning != null)
-                tuning.CameraOffset = new Vector3(0f, 12f, -14f);
+            CreateRimLight(tuning);
 
             var fx = new GameObject("PostFX");
             var volume = fx.AddComponent<Volume>();
@@ -54,19 +51,34 @@ namespace Dovus.Game
             volume.profile = profile;
 
             var bloom = profile.Add<Bloom>(true);
-            bloom.threshold.Override(0.35f);
-            bloom.intensity.Override(1.8f);
-            bloom.scatter.Override(0.7f);
-            bloom.tint.Override(new Color(1f, 0.55f, 0.25f));
+            bloom.threshold.Override(Mathf.Max(0f, tuning.BloomThreshold));
+            bloom.intensity.Override(Mathf.Max(0f, tuning.BloomIntensity));
+            bloom.scatter.Override(Mathf.Clamp01(tuning.BloomScatter));
+            bloom.tint.Override(Color.white);
 
             var colorAdj = profile.Add<ColorAdjustments>(true);
-            colorAdj.postExposure.Override(0.2f);
-            colorAdj.contrast.Override(14f);
-            colorAdj.saturation.Override(10f);
+            colorAdj.postExposure.Override(tuning.PostExposure);
+            colorAdj.contrast.Override(tuning.ColorContrast);
+            colorAdj.saturation.Override(tuning.ColorSaturation);
 
             var vignette = profile.Add<Vignette>(true);
-            vignette.intensity.Override(0.22f);
+            vignette.intensity.Override(Mathf.Clamp01(tuning.PostVignetteIntensity));
             vignette.smoothness.Override(0.45f);
+        }
+
+        static void CreateRimLight(PrototypeTuning tuning)
+        {
+            if (tuning.RimLightIntensity <= 0f)
+                return;
+
+            var go = new GameObject("CharacterRim");
+            var rim = go.AddComponent<Light>();
+            rim.type = LightType.Directional;
+            rim.color = tuning.RimLightColor;
+            rim.intensity = tuning.RimLightIntensity;
+            rim.shadows = LightShadows.None;
+            rim.renderMode = LightRenderMode.ForceVertex;
+            go.transform.rotation = Quaternion.Euler(tuning.RimLightEuler);
         }
     }
 }

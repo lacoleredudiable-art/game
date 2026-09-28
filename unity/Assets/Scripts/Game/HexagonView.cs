@@ -29,6 +29,8 @@ namespace Dovus.Game
         GameClock _cdClock;
         RectTransform _center;
         RectTransform _dodge;
+        Text _centerLabel;
+        Text _dodgeLabel;
         Canvas _canvas;
 
         public Canvas Canvas => _canvas;
@@ -101,9 +103,9 @@ namespace Dovus.Game
             _center = CreateLayeredDisc(
                 "Center", fallback, fallback, _tuning.HexagonCenterColor, canvasGo.transform, out _,
                 new Color(0.85f, 0.98f, 1f, 0.55f));
-            var centerLabel = CreateLabel(_center, "⚔");
-            centerLabel.fontSize = 28;
-            centerLabel.color = new Color(0.05f, 0.1f, 0.14f, 0.95f);
+            _centerLabel = CreateLabel(_center, "⚔");
+            _centerLabel.fontSize = 28;
+            _centerLabel.color = new Color(0.05f, 0.1f, 0.14f, 0.95f);
 
             _dodge = CreateLayeredDisc(
                 "DodgeButton", fallback, fallback, _tuning.DodgeButtonColor, canvasGo.transform, out Image dodgeImg,
@@ -113,11 +115,11 @@ namespace Dovus.Game
                 _tuning.DodgeButtonColor.g,
                 _tuning.DodgeButtonColor.b,
                 0.92f);
-            var dodgeLabel = CreateLabel(_dodge, "DODGE");
-            dodgeLabel.fontSize = 15;
-            dodgeLabel.fontStyle = FontStyle.Bold;
-            dodgeLabel.color = Color.white;
-            var dodgeOutline = dodgeLabel.gameObject.AddComponent<Outline>();
+            _dodgeLabel = CreateLabel(_dodge, "DODGE");
+            _dodgeLabel.fontSize = 15;
+            _dodgeLabel.fontStyle = FontStyle.Bold;
+            _dodgeLabel.color = Color.white;
+            var dodgeOutline = _dodgeLabel.gameObject.AddComponent<Outline>();
             dodgeOutline.effectColor = new Color(0.15f, 0.05f, 0.35f, 0.85f);
             dodgeOutline.effectDistance = new Vector2(1.2f, -1.2f);
 
@@ -370,6 +372,8 @@ namespace Dovus.Game
                     : 1f;
                 float diam = dotR * 2f * mul;
                 Place(_dots[dot], px, diam, w, h);
+                if (_dotLabels != null && _dotLabels[dot] != null)
+                    _dotLabels[dot].fontSize = Mathf.RoundToInt(diam * 0.30f);
                 if (_dotImages[dot] != null)
                 {
                     Color col = _dotIcons != null && _dotIcons[dot] != null
@@ -389,9 +393,14 @@ namespace Dovus.Game
 
             Vector2 c = HexagonLayoutScreen.CenterPx(_tuning, w, h);
             Place(_center, c, centerR * 2f, w, h);
+            if (_centerLabel != null)
+                _centerLabel.fontSize = Mathf.RoundToInt(centerR * 0.95f);
 
             Vector2 d = HexagonLayoutScreen.DodgeButtonPx(_tuning, w, h);
-            Place(_dodge, d, HexagonLayoutScreen.DodgeButtonRadiusPx(_tuning) * 2f, w, h);
+            float dodgeR = HexagonLayoutScreen.DodgeButtonRadiusPx(_tuning);
+            Place(_dodge, d, dodgeR * 2f, w, h);
+            if (_dodgeLabel != null)
+                _dodgeLabel.fontSize = Mathf.RoundToInt(dodgeR * 0.38f);
             _dodge.SetAsLastSibling();
             LayoutWeaponSwapButton(w, h);
         }

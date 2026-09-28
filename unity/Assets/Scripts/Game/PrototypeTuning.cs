@@ -19,21 +19,22 @@ namespace Dovus.Game
         /// <summary>Quaternius arena prefab ölçeği — daire salonda 1.</summary>
         public float ArenaVisualScale = 1.0f;
 
-        [Header("Karakter görsel ölçek (Synty)")]
-        /// <summary>Player/Ally mesh ölçeği — önceki 1.75’in %50 büyüğü.</summary>
-        public float PlayerVisualScale = 2.625f;
-        /// <summary>Boss mesh ölçeği — önceki 2.2’nin %50 büyüğü.</summary>
-        public float BossVisualScale = 3.3f;
+        [Header("Karakter görsel boyu (metre)")]
+        /// <summary>Prefab kaynağından bağımsız, renderer bounds ile ölçülen oyuncu boyu.</summary>
+        public float PlayerVisualHeightM = 1.78f;
+        /// <summary>Oyuncunun yaklaşık 2.8 katı; renderer bounds ile ölçülen boss boyu.</summary>
+        public float BossVisualHeightM = 5.0f;
         /// <summary>Animator hızı — locomotion 1; idle freeze blend tree’de.</summary>
         public float CharacterAnimSpeed = 1.0f;
 
         [Header("Oyuncu")]
-        public float WalkSpeedMps = 7.5f;
-        public float MoveAccelMps2 = 40f;
-        public float MoveDecelMps2 = 50f;
+        /// <summary>Tam çubuk koşu hızı; Axe run klibinin 5.52 m/sn doğal hızına yakın.</summary>
+        public float WalkSpeedMps = 6.4f;
+        public float MoveAccelMps2 = 52f;
+        public float MoveDecelMps2 = 64f;
         public float TurnRateDegPerSec = 720f;
         /// <summary>Çubuk ölü bölgenin hemen üstündeyken hız oranı (yürüme); tam çubuk = 1 (koşu). Önerilen.</summary>
-        public float MinStickSpeedFrac = 0.4f;
+        public float MinStickSpeedFrac = 0.42f;
         /// <summary>Animator Speed parametresi sönümü. Önerilen.</summary>
         public float AnimSpeedDampSec = 0.08f;
         /// <summary>Koşu klibi doğal hızını aşınca en çok bu kat hızlanır (üstü ayak kayması kabul). Önerilen.</summary>
@@ -66,9 +67,9 @@ namespace Dovus.Game
         // Sağ-alt; FittedRadiusPx alt rünleri safe içinde tutar.
         public float HexagonCenterYNorm = 0.32f;
         // Komşu rün kenar boşluğu ≈ radius − 2·dotR (≥40dp çizim koridoru).
-        public float HexagonRadiusDp = 98f;
-        public float DotHitRadiusDp = 26f;
-        public float CenterHitRadiusDp = 28f;
+        public float HexagonRadiusDp = 108f;
+        public float DotHitRadiusDp = 30f;
+        public float CenterHitRadiusDp = 32f;
         public bool MirrorForLeftHand = false;
         public float InkLingerSec = 0.40f;
         public float InkWidthDp = 3.5f;
@@ -77,7 +78,7 @@ namespace Dovus.Game
         [Header("Dodge düğmesi (§2, T6.2)")]
         public float DodgeButtonOffsetXDp = 0f;
         public float DodgeButtonOffsetYDp = 0f;
-        public float DodgeButtonRadiusDp = 32f;
+        public float DodgeButtonRadiusDp = 36f;
         public float DodgeButtonScreenMarginDp = 10f;
         /// <summary>Hex kenarı ile dodge yüzeyi arası (dp).</summary>
         public float DodgeClearanceDp = 40f;
@@ -115,10 +116,40 @@ namespace Dovus.Game
         [Header("Dokunsal (§2)")]
         public long DotVibrationMs = 30;
 
-        [Header("Kamera")]
-        public float FollowSmoothTimeSec = 0.18f;
-        public float LookAheadM = 1.4f;
-        public Vector3 CameraOffset = new Vector3(0f, 7f, -6f);
+        [Header("Kamera — omuz üstü savaş")]
+        public float FollowSmoothTimeSec = 0.12f;
+        public float LookAheadM = 0.65f;
+        /// <summary>Oyuncu köküne göre omuz pivotu; mesafe ayrıca geriye uygulanır.</summary>
+        public Vector3 CameraShoulderOffset = new Vector3(0.45f, 1.0f, -0.35f);
+        public float CameraDistanceM = 3.4f;
+        public float CameraLookHeightM = 0.35f;
+        public float CameraFovDeg = 56f;
+        public float CameraAimDampingSec = 0.10f;
+        public float CameraSoftLockRangeM = 18f;
+        [Range(0f, 1f)] public float CameraSoftLockStrength = 0.52f;
+        [Range(0f, 1f)] public float CameraBossFramingWeight = 0.34f;
+        public float CameraBossAimHeightM = 1.45f;
+
+        [Header("Arena atmosferi — mobil URP")]
+        public Color AmbientSky = new Color(0.11f, 0.13f, 0.18f);
+        public Color AmbientEquator = new Color(0.12f, 0.085f, 0.07f);
+        public Color AmbientGround = new Color(0.035f, 0.03f, 0.035f);
+        public Color FogColor = new Color(0.055f, 0.045f, 0.065f);
+        public float FogDensity = 0.009f;
+        public Color KeyLightColor = new Color(1f, 0.78f, 0.62f);
+        public float KeyLightIntensity = 1.35f;
+        public Vector3 KeyLightEuler = new Vector3(42f, -32f, 0f);
+        public float KeyShadowStrength = 0.72f;
+        public Color RimLightColor = new Color(0.38f, 0.55f, 1f);
+        public float RimLightIntensity = 0.18f;
+        public Vector3 RimLightEuler = new Vector3(28f, 145f, 0f);
+        public float BloomIntensity = 0.42f;
+        public float BloomThreshold = 1.05f;
+        public float BloomScatter = 0.55f;
+        public float PostExposure = -0.08f;
+        public float ColorContrast = 18f;
+        public float ColorSaturation = -4f;
+        public float PostVignetteIntensity = 0.18f;
 
         // Mevcut prototip paleti: nötr boss gövdesi, sıcak telegraf ve element renkleri.
         [Header("Renk dili (§10)")]
@@ -277,13 +308,13 @@ namespace Dovus.Game
         // §6/§11 "boss ve oyuncu can göstergesi, sade". Ölçüler dp (altıgen/dodge diskiyle
         // aynı yol: HexagonLayoutScreen.DpToPixels). Boss barı T12'den beri BossVitals okur.
         [Header("Can göstergesi (T9, VitalsHud)")]
-        public float VitalsBarWidthDp = 168f;
-        public float VitalsBarHeightDp = 11f;
-        public float VitalsBossBarHeightDp = 12f;
-        public float VitalsBossBarWidthDp = 280f;
-        public float VitalsBarSpacingDp = 5f;
-        public float VitalsMarginDp = 14f;
-        public Color BossVitalsColor = new Color(0.78f, 0.22f, 0.18f, 0.98f);
+        public float VitalsBarWidthDp = 210f;
+        public float VitalsBarHeightDp = 15f;
+        public float VitalsBossBarHeightDp = 20f;
+        public float VitalsBossBarWidthDp = 420f;
+        public float VitalsBarSpacingDp = 6f;
+        public float VitalsMarginDp = 16f;
+        public Color BossVitalsColor = new Color(0.88f, 0.16f, 0.12f, 0.98f);
 
         [Header("Status ikon şeridi")]
         public float StatusIconSizeDp = 28f;
@@ -327,7 +358,8 @@ namespace Dovus.Game
         // v6 7a: önizleme altıgenin hemen üstünde durur, ekran ortasını kapatmaz. Genişlik/boşluk
         // spec'te yok (durum.md); bekleme FeelTuning.ReadoutHoldMs (900) varsayılanından.
         [Header("Skill önizleme (v6 7a, SkillPreviewHud)")]
-        public float SkillPreviewWidthDp = 240f;
+        public float SkillPreviewWidthDp = 300f;
+        public float SkillPreviewHeightDp = 58f;
         public float SkillPreviewGapDp = 10f;
         public float SkillPreviewHoldSec = 0.9f;
 
@@ -343,7 +375,7 @@ namespace Dovus.Game
         // tasarımcının bilinçli 0'ı (ör. nabzı kapatmak) artık ezilmez (T8.1).
         [HideInInspector] public int TuningVersion = CurrentVersion;
 
-        const int CurrentVersion = 15;
+        const int CurrentVersion = 16;
 
         /// <summary>Sürümü geçmiş serileşmiş kopyayı bu sürümün varsayılanlarına çeker.</summary>
         public void EnsureRuntimeDefaults()
@@ -367,27 +399,28 @@ namespace Dovus.Game
             if (SoftAimConeDeg <= 0.01f) SoftAimConeDeg = 70f;
             if (OrbitDegreesPerDp <= 0.01f) OrbitDegreesPerDp = 0.35f;
             if (StatusIconSizeDp <= 0.01f) StatusIconSizeDp = 28f;
-            if (VitalsBossBarWidthDp <= 0.01f) VitalsBossBarWidthDp = 280f;
-            if (VitalsBossBarHeightDp <= 0.01f) VitalsBossBarHeightDp = 12f;
+            if (VitalsBossBarWidthDp <= 0.01f) VitalsBossBarWidthDp = 420f;
+            if (VitalsBossBarHeightDp <= 0.01f) VitalsBossBarHeightDp = 20f;
             if (DamageFloatFontDp <= 0.01f) DamageFloatFontDp = 28f;
-            if (HexagonRadiusDp <= 0.01f) HexagonRadiusDp = 98f;
-            if (SkillPreviewWidthDp <= 0.01f) SkillPreviewWidthDp = 240f;
+            if (HexagonRadiusDp <= 0.01f) HexagonRadiusDp = 108f;
+            if (SkillPreviewWidthDp <= 0.01f) SkillPreviewWidthDp = 300f;
+            if (SkillPreviewHeightDp <= 0.01f) SkillPreviewHeightDp = 58f;
             if (SkillPreviewGapDp <= 0.01f) SkillPreviewGapDp = 10f;
             if (SkillPreviewHoldSec <= 0.01f) SkillPreviewHoldSec = 0.9f;
-            if (DotHitRadiusDp <= 0.01f) DotHitRadiusDp = 26f;
-            if (CenterHitRadiusDp <= 0.01f) CenterHitRadiusDp = 28f;
-            if (DodgeButtonRadiusDp <= 0.01f) DodgeButtonRadiusDp = 32f;
+            if (DotHitRadiusDp <= 0.01f) DotHitRadiusDp = 30f;
+            if (CenterHitRadiusDp <= 0.01f) CenterHitRadiusDp = 32f;
+            if (DodgeButtonRadiusDp <= 0.01f) DodgeButtonRadiusDp = 36f;
             if (WeaponSwapButtonRadiusDp <= 0.01f) WeaponSwapButtonRadiusDp = 28f;
             if (DodgeClearanceDp <= 0.01f) DodgeClearanceDp = 40f;
             if (IconDisplayScale <= 0.01f) IconDisplayScale = 1.0f;
-            if (PlayerVisualScale <= 0.01f) PlayerVisualScale = 2.625f;
-            if (BossVisualScale <= 0.01f) BossVisualScale = 3.3f;
+            if (PlayerVisualHeightM <= 0.01f) PlayerVisualHeightM = 1.78f;
+            if (BossVisualHeightM <= 0.01f) BossVisualHeightM = 5.0f;
             if (CharacterAnimSpeed <= 0.01f) CharacterAnimSpeed = 1.0f;
-            if (WalkSpeedMps <= 0.01f) WalkSpeedMps = 7.5f;
-            if (MoveAccelMps2 <= 0.01f) MoveAccelMps2 = 40f;
-            if (MoveDecelMps2 <= 0.01f) MoveDecelMps2 = 50f;
+            if (WalkSpeedMps <= 0.01f) WalkSpeedMps = 6.4f;
+            if (MoveAccelMps2 <= 0.01f) MoveAccelMps2 = 52f;
+            if (MoveDecelMps2 <= 0.01f) MoveDecelMps2 = 64f;
             if (TurnRateDegPerSec <= 0.01f) TurnRateDegPerSec = 720f;
-            if (MinStickSpeedFrac <= 0.01f) MinStickSpeedFrac = 0.4f;
+            if (MinStickSpeedFrac <= 0.01f) MinStickSpeedFrac = 0.42f;
             if (AnimSpeedDampSec <= 0f) AnimSpeedDampSec = 0.08f;
             if (LocoMaxPlaybackMult < 1f) LocoMaxPlaybackMult = 1.5f;
             if (AnimCrossFadeSec <= 0f) AnimCrossFadeSec = 0.06f;
@@ -404,6 +437,14 @@ namespace Dovus.Game
             if (ArenaHalfSizeM <= 0.01f) ArenaHalfSizeM = 50f;
             if (ArenaWallHeightM <= 0.01f) ArenaWallHeightM = 18f;
             if (ArenaWallThicknessM <= 0.01f) ArenaWallThicknessM = 1.4f;
+            if (CameraDistanceM <= 0.01f) CameraDistanceM = 3.4f;
+            if (CameraFovDeg <= 1f) CameraFovDeg = 56f;
+            if (CameraAimDampingSec <= 0f) CameraAimDampingSec = 0.10f;
+            if (CameraSoftLockRangeM <= 0f) CameraSoftLockRangeM = 18f;
+            if (CameraBossAimHeightM <= 0f) CameraBossAimHeightM = 1.45f;
+            if (FogDensity <= 0f) FogDensity = 0.009f;
+            if (KeyLightIntensity <= 0f) KeyLightIntensity = 1.35f;
+            if (BloomThreshold <= 0f) BloomThreshold = 1.05f;
         }
 
         void MigrateToCurrent()
@@ -522,20 +563,64 @@ namespace Dovus.Game
             VitalsMarginDp = fresh.VitalsMarginDp;
             ShowSentenceDebugHud = false;
 
-            // v14: 100 m çap daire salon + %50 karakter + ağır hareket.
-            // v15: walk snappy 5.5; anim 1.0; idle fidget freeze (controller).
+            // v14: 100 m çap daire salon. v15: yeni locomotion klipleri.
+            // v16: insan ölçeği + büyük boss, omuz kamerası, mobil atmosfer ve okunur HUD.
             ArenaHalfSizeM = fresh.ArenaHalfSizeM;
             ArenaWallHeightM = fresh.ArenaWallHeightM;
             ArenaWallThicknessM = fresh.ArenaWallThicknessM;
             ArenaVisualScale = fresh.ArenaVisualScale;
-            PlayerVisualScale = fresh.PlayerVisualScale;
-            BossVisualScale = fresh.BossVisualScale;
+            PlayerVisualHeightM = fresh.PlayerVisualHeightM;
+            BossVisualHeightM = fresh.BossVisualHeightM;
             CharacterAnimSpeed = fresh.CharacterAnimSpeed;
             WalkSpeedMps = fresh.WalkSpeedMps;
             MoveAccelMps2 = fresh.MoveAccelMps2;
             MoveDecelMps2 = fresh.MoveDecelMps2;
             TurnRateDegPerSec = fresh.TurnRateDegPerSec;
+            MinStickSpeedFrac = fresh.MinStickSpeedFrac;
             DodgeGlideSpeedMps = fresh.DodgeGlideSpeedMps;
+            HexagonRadiusDp = fresh.HexagonRadiusDp;
+            DotHitRadiusDp = fresh.DotHitRadiusDp;
+            CenterHitRadiusDp = fresh.CenterHitRadiusDp;
+            DodgeButtonRadiusDp = fresh.DodgeButtonRadiusDp;
+            VitalsBarWidthDp = fresh.VitalsBarWidthDp;
+            VitalsBarHeightDp = fresh.VitalsBarHeightDp;
+            VitalsBossBarHeightDp = fresh.VitalsBossBarHeightDp;
+            VitalsBossBarWidthDp = fresh.VitalsBossBarWidthDp;
+            VitalsBarSpacingDp = fresh.VitalsBarSpacingDp;
+            VitalsMarginDp = fresh.VitalsMarginDp;
+            BossVitalsColor = fresh.BossVitalsColor;
+            SkillPreviewWidthDp = fresh.SkillPreviewWidthDp;
+            SkillPreviewHeightDp = fresh.SkillPreviewHeightDp;
+            FollowSmoothTimeSec = fresh.FollowSmoothTimeSec;
+            LookAheadM = fresh.LookAheadM;
+            CameraShoulderOffset = fresh.CameraShoulderOffset;
+            CameraDistanceM = fresh.CameraDistanceM;
+            CameraLookHeightM = fresh.CameraLookHeightM;
+            CameraFovDeg = fresh.CameraFovDeg;
+            CameraAimDampingSec = fresh.CameraAimDampingSec;
+            CameraSoftLockRangeM = fresh.CameraSoftLockRangeM;
+            CameraSoftLockStrength = fresh.CameraSoftLockStrength;
+            CameraBossFramingWeight = fresh.CameraBossFramingWeight;
+            CameraBossAimHeightM = fresh.CameraBossAimHeightM;
+            AmbientSky = fresh.AmbientSky;
+            AmbientEquator = fresh.AmbientEquator;
+            AmbientGround = fresh.AmbientGround;
+            FogColor = fresh.FogColor;
+            FogDensity = fresh.FogDensity;
+            KeyLightColor = fresh.KeyLightColor;
+            KeyLightIntensity = fresh.KeyLightIntensity;
+            KeyLightEuler = fresh.KeyLightEuler;
+            KeyShadowStrength = fresh.KeyShadowStrength;
+            RimLightColor = fresh.RimLightColor;
+            RimLightIntensity = fresh.RimLightIntensity;
+            RimLightEuler = fresh.RimLightEuler;
+            BloomIntensity = fresh.BloomIntensity;
+            BloomThreshold = fresh.BloomThreshold;
+            BloomScatter = fresh.BloomScatter;
+            PostExposure = fresh.PostExposure;
+            ColorContrast = fresh.ColorContrast;
+            ColorSaturation = fresh.ColorSaturation;
+            PostVignetteIntensity = fresh.PostVignetteIntensity;
 
             TuningVersion = CurrentVersion;
         }
