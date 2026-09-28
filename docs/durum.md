@@ -17,6 +17,31 @@
 **Dal:** `feat/feel-*` fazları · **Sıradaki:** his/sunum turu fazları (plan: Faz 0 his
 ayarları → 1 boss anim → 2 oyuncu anim → 3 HUD → 4 VFX/SFX → 5 telefon)
 
+> **28 Eylül — Skill görseli gramerden doğuyor: madde × yol × silüet (dal `feat/skill-vfx-grammar`).**
+> Sahibi geri bildirimi: "her skill aynı lavlı kayayı atıyor", "1 silah × 1 fiil olsa da 120 farklı
+> şey olmalı" — elle sıfat→görsel eşlemesi reddedildi (kural 6). Yeni: `Core/Mechanic/MechanicVisual.cs`
+> (`MechanicVisualComposer.Compose(plan, SkillVisualTuning)` → `VisualRecipe`, saf C#). Madde = fiil
+> kimliği (`Substance/{verb}`), dizilim = `Body.Path` (temas/dürtme/saplama/yay/ağır yay/çarpma/
+> yerleşim/taşınan/hat/gövde), silüet = `Body` bayrakları (bulut→pus, katı→duvar, tek hedef→tek iri
+> parça, delici→uzama, sarsılmaz, dikey sütun, rampa, güdüm, çekim, büyür, zincir sekme, kopya, ayna,
+> bağ ipi, çapa halkası, akış, gövdeye bağlı); boyut `Body.SizeM`'den. Test
+> (`MechanicVisualTests`): her silahta 144/144 farklı reçete, toplam 1440/1440; maddeden bağımsız
+> dizilim silah başına 25–54. Unity: `ComposedSkillVfx` reçeteyi oynatır (`HitboxVfxRegistry.TryCompose`
+> önce, madde yoksa eski `Delivery/*` giydirmesi). Her fiilin **katı cismi** var: 1 kaya
+> (`RockDebris_Low`), 4 kaya dikeni, 10 buz mızrağı (paket mesh'i); diğerleri koddan üretilen
+> düşük poligon şekil (`ProceduralChunkMesh`: 2 yaprak, 3 ok, 5 dikenli patlama, 6 zincir halkası,
+> 7 balçık, 8 kristal, 9 yıldız, 11 dikilitaş, 12 kum saati) — binder'da `"shape:<ad>"`
+> (`VfxLibrary.Entry.ChunkShape`). Cisimler yerden çıkar/batar, mermideki takla atar ve yol boyunca
+> iz bırakır; malzeme URP/Lit + element rengi + hafif ışıma (paket Ice.mat pembe/hata shader'ı,
+> kullanılmıyor). Zemin yüksekliği `FeelVfx.GroundY` (arenada zemin collider'ı yok).
+> Tüm sayılar `Core/Tuning/SkillVisualTuning.cs` (**hepsi önerilen**, `VfxLibrary.Composition`);
+> kod varsayılanı değişince asset'teki kopya elle sıfırlanmalı (`lib.Composition = new …`).
+> Editor Play doğrulandı: Kılıç 1-5 kaya yayı, Çekiç 1-5 2.7 m önde halka + sütun, 1-9 tek iri kaya,
+> Top 1-5 uçan kaya + yerde iz, Asa 1-5 hat boyunca kaya; 12 fiil yan yana galeri ve 5-7'nin 10 silahta
+> ayrı dizilimi. **Doğrulanamadı:** 1440'ın hepsi gözle görülmedi; 11 dikilitaş ile 12 kum saati
+> uzaktan benzer; telefonda parçacık+mesh maliyeti (Top izi 0.1 sn'de bir parça) ve URP/Lit
+> `_EMISSION` varyantının build'de kalıp kalmadığı ölçülmedi.
+
 > **28 Eylül — Somut skill efektleri: CFX Remaster Free + Particle Pack bağlandı (dal `feat/feel-f5-phone`).**
 > Sahibi iki paketi Asset Store'dan import etti (`JMO Assets/`, `UnityTechnologies/ParticlePack/`,
 > ikisi de `.gitignore`'da). Sahibi geri bildirimi: boss slam'indeki taş/lav patlaması (EarthShatter)

@@ -11,7 +11,8 @@ namespace Dovus.Game
     /// </summary>
     public static class FeelVfx
     {
-        const float GroundY = 0.03f;
+        /// <summary>Düz arena zemini (zemin collider'ı yok); yere oturan efektler bunu kullanır.</summary>
+        public const float GroundY = 0.03f;
 
         static Texture2D _dot;
         static Texture2D _crack;
