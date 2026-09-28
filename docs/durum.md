@@ -13,8 +13,28 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 28 Eylül 2026 (premium combat HUD + özgün ikon seti) ·
-**Dal:** `cursor/arise-feel-pass-8b3d` · **Sıradaki:** Kullanıcı Editor Play + telefon HUD smoke
+**Son güncelleme:** 29 Eylül 2026 (telefon HUD yerleşimi + kamera eğimi + ayak zemini) ·
+**Dal:** `feat/hud-phone-layout` → `master` · **Sıradaki:** telefonda his/dokunma smoke
+
+> **29 Eylül — telefon yerleşimi (f5-phone).** Telefonda (445 dpi, kısa kenar ~438 dp) altıgen
+> tepsi ekran yüksekliğinin ~%84'ünü kaplıyordu. `HexagonLayoutScreen.PixelsPerDp` artık
+> `min(dpi/160, kısaKenarPx / HudFitShortSideDp)`; `HudFitShortSideDp = 600` (önerilen) —
+> telefonda HUD ~0.73 ölçek. Joystick yarıçapı fiziksel dp'de kalır (`PhysicalDpToPixels`).
+> Editörde telefonu taklit: Play'de `HexagonLayoutScreen.DebugDpiOverride = Screen.height*160/438`
+> + sahneyi yeniden yükle. Tepsi `HexagonCenterXNorm 0.78`; element chip sağ üstte
+> (`ElementMenuAnchor 0.86/0.72`); AYAR ve V6 düğmeleri üst şeritte BUILD'in solunda.
+> **Pasif paneli kaldırıldı:** pasif rünün altıgen düğmesinin üstünde "PASİF" rozeti
+> (`HexagonView.PassiveBadges.cs`; etkinken yeşil + kalan sn). Yukarıdaki "Pasif HUD sabit
+> yuvalar" notu artık geçersiz. **Kamera eğimi:** sağ yarıda dikey sürükleme
+> (`CameraPitchMinDeg -8` / `MaxDeg 35` / `OrbitInvertPitch`, önerilen), editörde sağ tık sürükle.
+> `TuningVersion 18`. **Ayak zemini:** `AttachVisual` modeli skinned mesh'in dolgulu hazır
+> bounds'una oturtuyordu (Synty'de ~10 cm havada); zemin artık ilk animasyon pozunun bake
+> edilmiş köşelerinden (oyuncu/ally/boss taban 0.000). Boy ölçeği bilerek eski (dolgulu) ölçümde
+> bırakıldı — bkz. Bilinen açıklar. **Ayak yönü:** Mixamo oyuncu loco kliplerinde "Original"
+> kök yönü gövdeden ~42° sapık; `MixamoAnimatorBind.AlignPlayerLocoFeet` gerçek Animator ile
+> ortalama ayak yaw'ını ölçüp `rotationOffset` yazar (Idle -1 / Walk 19 / Run 52; koşuda sol
+> ayak ~66°→19°). Klipler gitignore'da — başka makinede `Bind` yeniden çalıştırılmalı.
+> Joystick görseli ilk dokunuşa kadar ekran ortasında beyaz disk olarak kalıyordu (düzeltildi).
 
 > **28 Eylül — premium combat HUD ve repo içi ikonografi (PR #19 devamı).** "Basit placeholder"
 > reddine göre HUD yeniden kuruldu. `Resources/UI/Runes/` altında bağlayıcı v6 kimlikleri için
@@ -1305,11 +1325,16 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
-- **Premium HUD telefonda çakışıyor (29 Eylül, `f4a0b02` APK, Xiaomi 2412DPC0AG yatay).**
-  Altıgen rün paneli ekranın sağ yarısını kaplıyor ve boss'u örtüyor; "ELEMENT // ATEŞ · BASILI
-  TUT" kutusu pasif yuva paneline biniyor; sol üst vitals başlığı ("AVCI // OYUNCU") v6 rozetinin
-  altında kırpılıyor; AYAR düğmesi DODGE'un üstünde. 59 fps. Editörde smoke checklist geçmişti;
-  telefon çözünürlüğü/safe area ile ayrıca bakılmalı.
+- **Premium HUD telefonda çakışıyor — editörde telefon DPI taklidiyle giderildi (29 Eylül).**
+  Gerçek cihazda dokunma boyutu (rün diski ~51 dp) ve rozet okunurluğu henüz hissedilmedi.
+- **Ally HP billboard'u (`AllyDummy.EnsureBillboard`) çok büyük ve kafanın epey üstünde**
+  (2.64×0.67 m dünya kutusu, metin görünmüyor); sol üstte vitals'ın altında siyah kutu gibi
+  duruyor. Bu turda dokunulmadı.
+- **Görsel boy hedefi dolgulu bounds'tan ölçülüyor:** `PlayerVisualHeightM 1.78` iken şövalyenin
+  gerçek boyu 1.60 m, boss 5.0 hedefte 4.22 m. Düzeltmek kadrajı/hitbox hissini değiştirir;
+  karar bekliyor (`AttachVisual` içinde `posed: true` ile ölçmek yeter).
+- **Walk/Run `rotationOffset` (19°/52°) gövdeyi hafif yan döndürmüş gösterebilir** — telefonda
+  bakılmadı; kötüyse ayak yönü yerine klip değiştirilmeli.
 
 - **mechanic_grammar dünya atomları — kalanlar (28 Eylül).** Bu turun tam label audit'i ve
   ertelenme sebepleri dosyanın en üstündeki oturum notunda. Özet: düşman projectile sistemi,
