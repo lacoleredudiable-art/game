@@ -22,6 +22,7 @@
 .vscode/
 *.csproj
 !tools/CoreTests/*.csproj
+!tools/AtomSim/*.csproj
 *.unityproj
 *.sln
 *.suo
@@ -57,6 +58,7 @@ unity-import.log
 
 # dotnet test çıktıları (tools/CoreTests)
 tools/CoreTests/bin/
+tools/AtomSim/bin/
 
 # Ham asset indirmeleri (Blend/OBJ/zip kaynak dosyaları) — Unity'nin gerçekten kullandığı
 # içe aktarılmış hâli unity/Assets/Art/ altında, versiyonlanır. Bu klasör yalnızca
