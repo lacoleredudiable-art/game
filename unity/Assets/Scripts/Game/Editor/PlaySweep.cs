@@ -131,6 +131,8 @@ namespace Dovus.Game.EditorTools
         static readonly Dictionary<int, string> _stateNames = new();
         static int _pauseIndex;
         static Vector3 _bossHome;
+        static Vector3 _bossStart;
+        static bool _bossStartSet;
         static bool _bossShifted;
         static Snapshot _pre;
         static CaseInfo _info;
@@ -262,6 +264,7 @@ namespace Dovus.Game.EditorTools
         {
             if (change == PlayModeStateChange.EnteredPlayMode)
             {
+                _bossStartSet = false;
                 string pending = SessionState.GetString(PendingKey, "");
                 if (!string.IsNullOrEmpty(pending))
                 {
@@ -399,6 +402,11 @@ namespace Dovus.Game.EditorTools
                     case Stage.WaitScene:
                         if (++_waitFrames < 30 || !BindScene())
                             return;
+                        if (!_bossStartSet)
+                        {
+                            _bossStart = _boss.position;
+                            _bossStartSet = true;
+                        }
                         NextCase();
                         break;
                     case Stage.Idle:
@@ -561,6 +569,7 @@ namespace Dovus.Game.EditorTools
             }
             EnsureWeapon(c.Weapon);
             ResetActors();
+            ResetBossPosition();
             PlacePlayer(c.StartDistM);
             _stage = Stage.Settle;
             _stageMs = NowMs;
@@ -837,6 +846,21 @@ namespace Dovus.Game.EditorTools
             S(_md, "_closingChainBonus", 1f);
             S(_md, "_pendingChainBonus", 1f);
             _input.Dodge?.Reset();
+        }
+
+        /// <summary>
+        /// Emici çekmeleri boss'u her vakada oyuncuya taşır; toplanan kayma dostu (sabit) uzakta bırakır.
+        /// Her vaka boss'un tarama başındaki yerinden başlar.
+        /// </summary>
+        static void ResetBossPosition()
+        {
+            if (_bossReactor == null || BossPulling())
+                return;
+            if (Flat(_boss.position - _bossStart).magnitude < 0.05f)
+                return;
+            _bossReactor.Home = _bossStart;
+            _boss.position = new Vector3(_bossStart.x, _boss.position.y, _bossStart.z);
+            Physics.SyncTransforms();
         }
 
         static void PlacePlayer(float dist)
