@@ -13,8 +13,30 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 29 Eylül 2026 (Play taraması üçüncü koşu, Kılıç + Asa) ·
-**Dal:** `feat/play-sweep` · **Sıradaki:** Emici çekme ile ileri giden kalıp çakışması (1-2, 4-2), 2-6 Asa dost kancası, hızlı atılmada bacak hızı
+**Son güncelleme:** 30 Eylül 2026 (Play taraması dördüncü koşu, Kılıç + Asa) ·
+**Dal:** `feat/play-sweep` · **Sıradaki:** 6-2 tek kare sıçrama, 3-2 kıpırdamıyor (merge kuralı tutmadı, PR #25/#26 açık)
+
+> **30 Eylül — dördüncü koşu: Kılıç 142/144, Asa 143/144. Merge edilmedi.** `feat/motion-templates-2`
+> (`b9df90b`) merge edildi. `dotnet test` 402/402, Unity derlemesi ve konsol temiz (yalnız bilinen
+> URP/ShaderGraph paket hataları). **Araç düzeltmesi:** Emici çekmeleri boss'u her vakada oyuncuya
+> taşıyor, kayma birikiyordu (Asa taramasının sonunda boss z=-25, dost başlangıç yerinde, 24 m uzakta;
+> 2-6 Asa "20–46 m uçuş" buydu). Araç artık her vakadan önce boss'u oturum başındaki yerine koyuyor.
+> Düzeltme öncesi koşu Kılıç 141, Asa 140 idi.
+> **Kalanlar:**
+> - **3-2 Emici Adım (iki silah):** oyuncu hiç kıpırdamıyor (başlangıçtan 0,00 m), kalıp içinden
+>   geçip arkaya inmeli (simülasyon farkı 5,5 m). "Emici çekmede oyuncu yerinde" kuralı bu kalıbı da
+>   durduruyor gibi. Boss 1,10 m geliyor.
+> - **6-2 Emici Bağ (Kılıç):** `cek` fazında oyuncu tek karede 0,66–0,67 m sıçrıyor (t=0,82);
+>   tam taramada ve iz koşusunda tekrarlandı. Merge kuralını bu bozdu.
+> - İlk koşuda 5-10 bir kez kalıbı 7,6 sn sürdü (beklenen 0,36); iz ve ikinci koşuda geçti: kararsız.
+> **Hızlı kontroller (iz `kontrol-detay.txt`):**
+> - **1-2 / 4-2 (iki silah):** çakışma ve itme yok, geçiyor. Ama oyuncu yerinde kalmıyor: 1,5–1,65 m
+>   ileri yürüyor, boss kıpırdamıyor. 4-2 Kılıç izinde kalkan etkisi görülmedi (tam taramada geçti).
+> - **Asa 2-6:** boss'un içinden geçmiyor, sıçrama yok, dostun yakınında bitiyor (3,40 m yol, dost
+>   başlangıca ~3,8 m). Yere inme doğrudan ölçülmedi (iz Y yazmıyor).
+> - **Asa 3-3 (Kılıç'tan hemen sonra silah değişimi):** arkaya iniyor, simülasyon farkı 0.
+> - **Dash pozu:** hızlı fazlarda koşu yok (3-6: 0/35 kare koşu); Kılıç `CastPierce`, Asa `CastShoot`
+>   pozu 1× tutuluyor.
 
 > **29 Eylül — Play taraması üçüncü koşu: Kılıç 141/144, Asa 140/144.** `feat/motion-templates-2`
 > (`00ee852`, Emici çekme oyuncuya, 3-3 arkaya) merge edildi. `dotnet test` 399/399, Unity derlemesi
@@ -1636,16 +1658,15 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
-- **Play taraması Kılıç 141/144, Asa 140/144 (29 Eylül, üçüncü koşu, skill kodu düzeltilmedi).**
-  1-2 oyuncu çekme sırasında geri yürür; 2-2 büyük ihtimal araç beklentisi (boss sabit simülasyonu);
-  4-2 boss oyuncunun içine girer/iter (kararsız); 2-6 Asa dost kancası 17–46 m fırlatır, Y=5 m'de
-  kalır. Girdap hacmi `bossInside` olmadan her tikte çeker. Asa 3-3 ve Asa Emici iz koşusunda
-  kararsız (silah değişimi sonrası).
+- **Play taraması Kılıç 142/144, Asa 143/144 (30 Eylül, dördüncü koşu, skill kodu düzeltilmedi).**
+  3-2 oyuncu hiç kıpırdamaz (içinden geçip arkaya inmeli). 6-2 Kılıç `cek` fazında tek karede
+  0,66 m sıçrar. 1-2 / 4-2'de oyuncu 1,5 m ileri yürür, boss gelmez (çakışma yok). Merge kuralı
+  tutmadı; PR #25 ve #26 açık.
 - **Görsel (29 Eylül, duruyor).** Hitbox VFX yer tutucu küre 1-5 dönüşünü kapatır; 12-7'de kum saati yok.
   2-2 akış çizgisi hâlâ oyuncu→dost, kırmızı değil (hasar yolu ayrı bağlandı).
   Bağ/hacim (`_mechanicLinks`) status temizliğinden sonra da Root/Slow uygulayabiliyor.
 - **3-6 ayak kayması (29 Eylül, ikinci deneme).** Oynatma tavanı 12× (2,2 m/s klip, 19 m/s yay).
-  Play'de oran 1,00 (Kılıç + Asa). Ama koşu klibi 7–10× oynar (~24 adım/sn): gözle saçma, karar bekliyor.
+  Play'de oran 1,00 (Kılıç + Asa). 30 Eylül: koşu en çok 2×, üstünde dash pozu tutuluyor (doğrulandı).
 - **Emici çekme (29 Eylül).** Varış oyuncunun önü, temas mesafesi. Play'de 5-2/12-2/2-2/6-2 boss
   0,32–0,67 sn'de, kare başı ≤0,13 m ile oyuncuya geliyor; 3-2 sıçramıyor.
 - **Vuruş göğüs yüksekliği uydurma (29 Eylül).** `ManifestationTuning.StrikeChestOffsetM`
