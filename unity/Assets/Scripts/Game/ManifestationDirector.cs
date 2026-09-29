@@ -1499,6 +1499,15 @@ namespace Dovus.Game
                 _player.rotation = Quaternion.LookRotation(to.normalized, Vector3.up);
         }
 
+        Vector3 FlatBodyForward()
+        {
+            Vector3 facing = _player != null ? _player.forward : Vector3.forward;
+            facing.y = 0f;
+            if (facing.sqrMagnitude < 0.0001f)
+                return Vector3.forward;
+            return facing.normalized;
+        }
+
         bool TryArmSkillTarget(SkillResolution skill)
         {
             SkillAimMode aimMode = TargetingRules.AimMode(skill);
@@ -1596,16 +1605,30 @@ namespace Dovus.Game
         {
             _ = worldMs;
             Vector3 pos = _player.position;
-            Vector3 facing = ResolveAimFacing(pos);
-            if (basicStrike && _targeting != null
-                && _targeting.TryResolveBasicEnemy(_combat.Manifestation.BasicStrikeRangeM, out Transform basicTarget))
+            Vector3 facing;
+            if (basicStrike)
             {
-                _castFacingTarget = basicTarget;
-                Vector3 toTarget = basicTarget.position - pos;
-                toTarget.y = 0f;
-                if (toTarget.sqrMagnitude > 0.0001f)
-                    facing = toTarget.normalized;
+                // Boş vuruş bakılan yere gider. Hız yönü kullanılmaz: geri giderken saldırı
+                // gövdeyi arkaya çevirmesin. Menzildeki düşman varsa ona kilitlenir.
+                facing = FlatBodyForward();
+                _castFacingTarget = null;
+                if (_targeting != null && _combat != null
+                    && _targeting.TryResolveBasicEnemy(
+                        _combat.Manifestation.BasicStrikeRangeM, out Transform basicTarget)
+                    && basicTarget != null)
+                {
+                    _castFacingTarget = basicTarget;
+                    Vector3 toTarget = basicTarget.position - pos;
+                    toTarget.y = 0f;
+                    if (toTarget.sqrMagnitude > 0.0001f)
+                        facing = toTarget.normalized;
+                }
+
+                if (_player != null && facing.sqrMagnitude > 0.0001f)
+                    _player.rotation = Quaternion.LookRotation(facing, Vector3.up);
             }
+            else
+                facing = ResolveAimFacing(pos);
 
             ManifestationTuning man = _combat.Manifestation;
             if (basicStrike)
@@ -1720,7 +1743,6 @@ namespace Dovus.Game
                 view = SpawnEffect(sentence.Words, _clock.Director.WorldTimeMs, spawnedForBasicStrike);
                 if (spawnedForBasicStrike)
                 {
-                    FaceAim();
                     SyncVisualDelivery();
                     _visual?.PulseBasicStrike();
                     _pose?.PulseRune(sentence.Words[0].Rune, _clock.Director.WorldTimeMs);
@@ -1885,7 +1907,8 @@ namespace Dovus.Game
                 }
 
                 float basicDealt = 0f;
-                if (IsBossInStrikeCapsule(logic, _combat.Manifestation.BasicStrikeRangeM))
+                float basicReach = _combat.Manifestation.BasicStrikeRangeM;
+                if (IsBossInStrikeCapsule(logic, basicReach) || BasicTargetStillInReach(p.Target, basicReach))
                 {
                     ApplyBossClosingBasic(logic, p.Closing);
                     basicDealt = ApplyClosingDamage(p.Closing, SkillResolution.Empty, isBasicStrike: true, slashCommitMult: 0f);
@@ -3251,6 +3274,27 @@ namespace Dovus.Game
                     return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Düz vuruş menzilde kilitlediği boss hâlâ menzildeyse kapsül ıskalasa da vurur.
+        /// Hasar yolu hâlâ yalnız boss'a gider; ikinci düşman bu prototipte yok.
+        /// </summary>
+        bool BasicTargetStillInReach(Transform target, float reachM)
+        {
+            if (target == null || _player == null || _boss == null)
+                return false;
+            if (target != _boss.transform && !target.IsChildOf(_boss.transform))
+                return false;
+            Targetable mark = target.GetComponent<Targetable>();
+            if (mark == null)
+                mark = target.GetComponentInParent<Targetable>();
+            if (mark != null && !mark.IsAvailable)
+                return false;
+            float dist = mark != null
+                ? mark.DistanceFrom(_player.position)
+                : FlatDistance(_player.position, target.position);
+            return dist <= reachM;
         }
 
         bool IsClosingInRange(LivingEffect logic, ClosingHit closing)

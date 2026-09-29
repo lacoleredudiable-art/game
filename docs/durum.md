@@ -13,8 +13,17 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 29 Eylül 2026 (telefon HUD yerleşimi + kamera eğimi + ayak zemini) ·
-**Dal:** `feat/hud-phone-layout` → `master` · **Sıradaki:** telefonda his/dokunma smoke
+**Son güncelleme:** 29 Eylül 2026 (hedefleme + savaş bakışı, PR #20) ·
+**Dal:** `cursor/targeting-facing-dbde` · **Sıradaki:** Unity Play'de a–e smoke (aşağıdaki liste)
+
+> **29 Eylül — hedefleme (PR #20).** Skill'ler varsayılan olarak hedefli: ikinci rün kabul
+> edilmeden menzilde düşman yoksa cast olmaz (`hedef yok` / `menzil dışı`, mana ve soğuma
+> gitmez). Seçim tık/dokunuşla; sol yarı çubuk ve altıgen düğmeleri seçim sayılmaz. Düz
+> vuruş menzildeki düşmana döner, yoksa bakılan yöne boş sallar ve eski hedefi taşımaz.
+> Geri giderken saldırı gövdeyi çubuk yönüne çevirmez. Yön isteyenler yalnız fiil 3
+> (Hareket, `engine.action = dash`, 12 skill). Başka skill'de `aim_mode` yok; opt-in
+> `engine.aim_mode` (`directional` / `skillshot` / `ground_aimed`). Unity Play bu turda
+> çalıştırılmadı — yalnız Core `dotnet test` ve kod bağlama kontrolü.
 
 > **29 Eylül — telefon yerleşimi (f5-phone).** Telefonda (445 dpi, kısa kenar ~438 dp) altıgen
 > tepsi ekran yüksekliğinin ~%84'ünü kaplıyordu. `HexagonLayoutScreen.PixelsPerDp` artık
@@ -1327,6 +1336,11 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
+- **Hedefleme Unity Play'de doğrulanmadı (29 Eylül, PR #20).** Core testleri geçti; editörde
+  tık, menzil reddi, düz vuruş ve geri yürüme elle bakılacak. Düz vuruş hasarı hâlâ yalnız
+  boss'a gider (ikinci düşman yok). Seçili hedef varken saldırı dışında da gövde hedefe
+  kilitlenir. Yürüme klibi ileri kliptir; gövde dönmese de ayaklar geri adım animasyonu
+  oynamaz.
 - **Premium HUD telefonda çakışıyor — editörde telefon DPI taklidiyle giderildi (29 Eylül).**
   Gerçek cihazda dokunma boyutu (rün diski ~51 dp) ve rozet okunurluğu henüz hissedilmedi.
 - **Ally HP billboard'u (`AllyDummy.EnsureBillboard`) çok büyük ve kafanın epey üstünde**

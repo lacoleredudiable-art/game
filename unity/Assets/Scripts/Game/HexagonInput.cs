@@ -643,6 +643,7 @@ namespace Dovus.Game
                 _activeDot = hit.Value;
                 _dwellWorldMs = 0;
                 _dwellReported = 0;
+                _syllable?.PlayDenied();
                 return;
             }
 
@@ -942,6 +943,9 @@ namespace Dovus.Game
         public bool IsCombatControlAt(Vector2 pos) =>
             IsDrawHalf(pos)
             && (HitDodgeButton(pos) || HitSwapButton(pos) || HitCenter(pos) || HitDot(pos).HasValue);
+
+        /// <summary>Sol yarı sanal çubuktur; oradaki dokunuş hedef seçmez.</summary>
+        public bool IsStickHalf(Vector2 pos) => !IsDrawHalf(pos);
 
         static double NowRealMs() => Time.realtimeSinceStartupAsDouble * 1000.0;
 

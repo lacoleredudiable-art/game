@@ -33,7 +33,11 @@ namespace Dovus.Game
         public float DistanceFrom(Vector3 origin)
         {
             _collider ??= GetComponent<Collider>();
-            Vector3 point = _collider != null ? _collider.ClosestPoint(origin) : transform.position;
+            // ClosestPoint tetikleyici collider'da güvenilir değil (Unity noktayı geri verir,
+            // mesafe 0 olur ve her düşman menzilde sanılır). Bounds tetikten etkilenmez.
+            Vector3 point = _collider != null
+                ? _collider.bounds.ClosestPoint(origin)
+                : transform.position;
             point.y = origin.y;
             return Vector3.Distance(origin, point);
         }
@@ -197,7 +201,7 @@ namespace Dovus.Game
         {
             BuildCandidates();
             int? selectedId = null;
-            if (_selected != null && _selected.TeamId != _ownerTeamId
+            if (_owner != null && _selected != null && _selected.TeamId != _ownerTeamId
                 && _selected.IsAvailable && _selected.DistanceFrom(_owner.position) <= rangeM)
                 selectedId = _selected.GetInstanceID();
 
@@ -241,7 +245,9 @@ namespace Dovus.Game
             _fingerStart = finger.screenPosition;
             _fingerBlocked = _hexagon != null
                 && (_hexagon.ClaimedFingerId == finger.index
-                    || _hexagon.ClaimedDodgeFingerId == finger.index);
+                    || _hexagon.ClaimedDodgeFingerId == finger.index
+                    || _hexagon.IsStickHalf(finger.screenPosition)
+                    || _hexagon.IsCombatControlAt(finger.screenPosition));
         }
 
         void OnFingerUp(Finger finger)
@@ -259,7 +265,6 @@ namespace Dovus.Game
 
         void HandleMouse()
         {
-#if UNITY_EDITOR
             var mouse = Mouse.current;
             if (mouse == null)
                 return;
@@ -279,7 +284,6 @@ namespace Dovus.Game
                     && PixelsToDp(Vector2.Distance(_mouseStart, pos)) <= _tapMaxMoveDp)
                     SelectAt(pos);
             }
-#endif
         }
 
         void SelectAt(Vector2 screenPosition)
