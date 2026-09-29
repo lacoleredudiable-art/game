@@ -10,6 +10,7 @@ using Dovus.Core.Manifestation;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Presentation;
 using Dovus.Core.Status;
+using Dovus.Core.Motion;
 using Dovus.Core.Tuning;
 using UnityEngine;
 
@@ -64,6 +65,7 @@ namespace Dovus.Game
         ActorStatus _playerStatus;
         ActorStatus _bossStatus;
         SkillMotionDriver _motionDriver;
+        MotionTemplateBody _motionBody;
         StateBridgeBoard _stateBoard;
         StateBridgeView _bridgeView;
         AllyDummy _ally;
@@ -326,6 +328,7 @@ namespace Dovus.Game
                 || _engine.State.Phase == SentencePhase.Recovering))
             || _pending.Count > 0
             || (_motionDriver != null && _motionDriver.IsDisplacing)
+            || (_motionBody != null && _motionBody.IsDisplacing)
             || (_visual != null && _visual.IsAttackPose);
 
         AttackFaceKind FacingKind()
@@ -1558,7 +1561,7 @@ namespace Dovus.Game
             if (_targeting == null)
                 return;
             Transform selected = _targeting.SelectedTransform;
-            if (selected != null && selected != _player)
+            if (selected != null && selected != _player && IsEnemyBody(selected))
             {
                 _castFacingTarget = selected;
                 return;
@@ -1658,7 +1661,9 @@ namespace Dovus.Game
                 float allyRange = _skillNumbers != null
                     ? _skillNumbers.AllySkillRangeM
                     : SkillNumberFallbacks.AllySkillRangeM;
-                return Mathf.Max(0.05f, CardEffectRules.ResolveRange(true, allyRange, 0f));
+                return MotionCastReach.GateRangeM(
+                    Mathf.Max(0.05f, CardEffectRules.ResolveRange(true, allyRange, 0f)),
+                    PlayerBodyRadiusM());
             }
 
             EnsurePresentationCatalog();
@@ -1681,7 +1686,12 @@ namespace Dovus.Game
             ApplyVerbHitboxSizing(
                 route.Kind, skill, tuning, rangeMult, burst,
                 ref radius, ref range, ref duration, ref spawnCount);
-            return Mathf.Max(0.05f, range);
+            float edge = Mathf.Max(0.05f, range);
+            if (!skill.IsEmpty
+                && MotionCatalog.TryGet(skill.SkillId, out MotionBinding motion)
+                && motion.Implemented)
+                edge = Mathf.Max(edge, MotionCastReach.EdgeReachM(motion.Template));
+            return MotionCastReach.GateRangeM(edge, PlayerBodyRadiusM());
         }
 
         void ApplyWindowCue()
@@ -1814,6 +1824,14 @@ namespace Dovus.Game
         {
             LivingEffectView view = _buildingView;
             _buildingView = null;
+            int basicRune = _colors != null ? _colors.BasicStrikeDot : 1;
+            bool sentenceIsBasic = sentence.Words.Count == 1 && (int)sentence.Words[0].Rune == basicRune;
+            if (view != null && BasicStrikeInput.ReplaceStaleView(sentenceIsBasic, view.IsBasicStrike))
+            {
+                if (view.Logic != null)
+                    view.Logic.Abort();
+                view = null;
+            }
             _lastWordCount = 0;
 
             if (sentence.Phase == SentencePhase.Aborted || !sentence.Closing.HasValue)
@@ -1988,7 +2006,13 @@ namespace Dovus.Game
             bool basic = p.IsBasicStrike || (p.View != null && p.View.IsBasicStrike);
             if (basic)
             {
-                FaceTarget(p.Target);
+                Transform impactTarget = p.Target;
+                if (impactTarget == null || impactTarget == _player || !IsEnemyBody(impactTarget))
+                {
+                    CaptureBasicFacing();
+                    impactTarget = _castFacingTarget;
+                }
+                FaceTarget(impactTarget);
                 _closingChainBonus = 1f; // pending zincir bonusunu yeme
                 _lastChainStep = ChainStepResult.None;
 
@@ -2005,7 +2029,9 @@ namespace Dovus.Game
 
                 float basicDealt = 0f;
                 float basicReach = _combat.Manifestation.BasicStrikeRangeM;
-                if (IsBossInStrikeCapsule(logic, basicReach) || BasicTargetStillInReach(p.Target, basicReach))
+                bool capsuleHit = IsBossInStrikeCapsule(logic, basicReach);
+                bool inReach = BasicTargetStillInReach(impactTarget, basicReach);
+                if (BasicStrikeInput.DealsDamage(capsuleHit, inReach))
                 {
                     ApplyBossClosingBasic(logic, p.Closing);
                     basicDealt = ApplyClosingDamage(p.Closing, SkillResolution.Empty, isBasicStrike: true, slashCommitMult: 0f);
@@ -2033,11 +2059,12 @@ namespace Dovus.Game
 
             ApplyResourceCost(skill);
             SkillMotionPlan motionPlan = ResolveSkillMotion(skill);
+            bool templateOwnsDelivery = TryBeginMotionTemplate(skill, p);
             SkillExecutorRoute executorRoute = _skillExecutorRouter.Route(skill, _equippedWeapon);
             executorRoute = ApplyMechanicWorldRoute(MechanicPlanFor(skill), executorRoute);
             LastExecutorKind = executorRoute.Kind;
             // Hareket executor'ı dash'i kendisi başlatır (Sıçrama/Kopyalama tekrarları için).
-            if (executorRoute.Kind != SkillExecutorKind.Movement)
+            if (!templateOwnsDelivery && executorRoute.Kind != SkillExecutorKind.Movement)
                 ApplySkillMotion(motionPlan, skill);
             ApplySelfCastEffects(skill);
             BeginMechanicPlan(
@@ -2045,14 +2072,15 @@ namespace Dovus.Game
                 new Vector3(logic.DirX, 0f, logic.DirZ),
                 new Vector3(logic.TipX, _player.position.y, logic.TipZ));
 
-            bool executorStarted = executorRoute.Kind != SkillExecutorKind.Fallback
+            bool executorStarted = !templateOwnsDelivery
+                && executorRoute.Kind != SkillExecutorKind.Fallback
                 && TryLaunchSkillExecutor(executorRoute.Kind, p, skill, motionPlan);
             if (executorStarted)
                 ScheduleFollowUpLaunches(executorRoute.Kind, p, skill, motionPlan);
-            else if (executorRoute.Kind == SkillExecutorKind.Movement)
+            else if (!templateOwnsDelivery && executorRoute.Kind == SkillExecutorKind.Movement)
                 ApplySkillMotion(motionPlan, skill);
             float dealt = 0f;
-            if (!executorStarted)
+            if (!executorStarted && !templateOwnsDelivery)
             {
                 if (executorRoute.IsStub)
                     Debug.Log($"[SkillExecutor] stub → LivingEffect: {executorRoute.Reason}");
@@ -2086,6 +2114,7 @@ namespace Dovus.Game
             SpawnClosingImpact(p);
             LastResolvedSkillId = skill.SkillId;
             LastSkillEffectApplied = executorStarted
+                || templateOwnsDelivery
                 || dealt > 0f
                 || IsHealSkill(skill)
                 || !motionPlan.IsEmpty

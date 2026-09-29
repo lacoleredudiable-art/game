@@ -1,5 +1,6 @@
 using Dovus.Core.Combat;
 using Dovus.Core.Grammar;
+using Dovus.Core.Motion;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using UnityEngine;
@@ -40,12 +41,16 @@ namespace Dovus.Game
         // segmenti çizildikten sonra Break edilmeli. Bayrak + FlushInkBreak bunu sıralar.
         bool _inkBreakPending;
         bool _sentenceHooked;
+        bool _centerStrikeArmed;
 
         // Çizim parmağından bağımsız ikinci yuva: cümle sürerken panik dodge (§2).
         int? _dodgeFingerId;
         Vector2 _dodgePressOrigin;
         double _dodgePressRealMs;
         bool _dodgeTapAlive;
+
+        /// <summary>İkinci rün hâlâ basılıyken yükleme fazı bekler.</summary>
+        public bool SkillFingerHeld => _mode == FingerMode.Drawing;
 
         enum FingerMode
         {
@@ -150,7 +155,11 @@ namespace Dovus.Game
         public bool TrySetLoadout(RuneLoadout loadout)
         {
             EnsureRuntime();
-            return _engine != null && _engine.TrySetLoadout(loadout);
+            if (_engine == null || !_engine.TrySetLoadout(loadout))
+                return false;
+            _centerStrikeArmed = true;
+            SyncPlayerStateFromWorld();
+            return true;
         }
 
         /// <summary>
@@ -720,18 +729,25 @@ namespace Dovus.Game
                 return;
             }
 
-            if (!AllowsDrawNow)
+            SyncPlayerStateFromWorld();
+            bool engineOk = _engine.State.Phase == SentencePhase.Idle
+                || _engine.State.Phase == SentencePhase.Recovering
+                || _engine.State.Phase == SentencePhase.Resolved
+                || _engine.State.Phase == SentencePhase.Aborted;
+            if (!BasicStrikeInput.AllowsCenterStrike(AllowsDrawNow, _centerStrikeArmed, engineOk))
                 return;
+            _centerStrikeArmed = false;
 
             // Idle ya da Recovering: kilidi keser (§5) ve tek noktalık cümleyi anında kapatır.
-            // Düz vuruş skill değil — mana / CD / zincir kapısı yok (BasicStrikeDot yalnızca
-            // gramer fiili; Ateş×N sayılmaz).
-            int dot = _tuning.BasicStrikeDot;
-            _engine.OnDotTouched(dot, worldMs);
+            // Düz vuruş skill değil — mana / CD / zincir kapısı yok. BasicStrikeDot rün
+            // kimliğidir, ekran slotu değil; build 12,1,... iken de vuruş çalışır.
+            int runeId = _tuning.BasicStrikeDot;
+            if (!_engine.BeginBasicStrike(runeId, worldMs))
+                return;
             _engine.Commit();
             DotAccepted?.Invoke(0);
             FlushInkBreak();
-            _syllable?.PlayForDot(dot, 1);
+            _syllable?.PlayForDot(runeId, 1);
             _debugHud?.NoteBasicStrike();
         }
 

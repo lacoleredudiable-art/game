@@ -169,7 +169,7 @@ namespace Dovus.Game
             }
         }
 
-        static string Name(Rune r) => RuneInfo.DisplayName(r);
+        static string Name(Dovus.Core.Grammar.Rune r) => RuneInfo.DisplayName(r);
 
         string SkillLine(SentenceState s)
         {

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>Dovus.Game</RootNamespace>
+    <!-- Unity 2021 referans DLL'si. Editör yokken Game betiklerinin derlendiğini kanıtlar. -->
+    <NoWarn>NU1701</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Unity3D.SDK" Version="2021.1.14.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="gen/unity/Assets/Scripts/Core/**/*.cs" />
+    <Compile Include="gen/unity/Assets/Scripts/Game/**/*.cs" />
+    <Compile Include="Stubs/Modules.cs" />
+    <Compile Include="CompileShims.cs" />
+  </ItemGroup>
+</Project>

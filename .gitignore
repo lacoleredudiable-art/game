@@ -23,6 +23,9 @@
 *.csproj
 !tools/CoreTests/*.csproj
 !tools/AtomSim/*.csproj
+!tools/GameCompile/GameCompile.csproj
+tools/GameCompile/gen/
+tools/GameCompile/bin/
 *.unityproj
 *.sln
 *.suo

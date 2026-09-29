@@ -90,6 +90,14 @@ namespace Dovus.Game
                 return;
             }
 
+            var templateBody = GetComponent<MotionTemplateBody>();
+            if (templateBody != null && templateBody.IsDisplacing)
+            {
+                Velocity = Vector3.zero;
+                _visual?.SetSpeed(0f);
+                return;
+            }
+
             if (_vitals == null)
                 _vitals = GetComponent<PlayerVitals>();
             if (_status == null)

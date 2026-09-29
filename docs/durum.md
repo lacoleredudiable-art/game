@@ -13,14 +13,83 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 29 Eylül 2026 (motor adım 3: Unity Play + düz vuruş kapsülü) ·
-**Dal:** `master` (PR #23 merge) · **Sıradaki:** skill'lerin ilk parçası
+**Son güncelleme:** 29 Eylül 2026 (PR #24 master'a birleşti) ·
+**Dal:** `master` · **Sıradaki:** aile 15–42
+
+> **29 Eylül — 3. Unity Play, PR #24 birleşti.** Konsolda script hatası yok; Windows'ta
+> `dotnet test` 376/376. 3-6 (Kılıç) üç koşu: merkez 4,5 m ve 2,5 m boss durdurulmuş, 4,5 m boss
+> yapay zekası açık. Üçünde de boss'un arkasına bir kez iniyor (merkeze 1,50–1,55 m), sonraki
+> 2,3 sn'de kayma 0, tek karede sıçrama 0, taraf değişimi yok. Log: "yer değiştirme kalıpta,
+> Root 1,5sn". 3-4 ve 3-9 kalıpları henüz yok, test edilmedi. Parmak basılı yükleme, animasyon
+> ayak kayması ve Kılıç dışı silahlar hâlâ Play'de ölçülmedi.
+
+> **29 Eylül — kalıp konumu sahiplenir (PR #24, Unity Play yok).** Kalıp oyuncuyu oynatıyorsa
+> o cast'te oyuncunun yerini yalnız kalıp değiştirir. `yer_degistir` ve `hedefin_arkasina`
+> ışınlanması atlanır; kalıpta eğri ya da arkaya iniş yoksa gramer mesafesi yedek olarak
+> kalıba yazılır. `isaret_geri_don` işareti yine konur, dönüş kısa kenar-güvenli bir atılma
+> fazıdır (ışınlanma değil). Kök, yavaşlatma, hasar, çekme, itme, portal sürer. Kalıp
+> oyuncuyu oynatmıyorsa gramer eskisi gibi ışınlar. Atlanan adım skill başına bir kez loglanır.
+> Gramerin oyuncuyu oynatan konum adımı üç skill'de: Sabit Adım (3-4), Bağlayıcı Adım (3-6),
+> Odaklı Adım (3-9). 3-6 kalıbı oynar ve boss'un arkasına bir kez iner. 3-4 ve 3-9 kalıbı
+> henüz yok (aile 24 ve 23); onlar hâlâ eski ışınlanmayı kullanır. Derleme testi `python3`,
+> sonra `python`, sonra `py -3` dener; hiçbiri yoksa düşmez, atlar. Core test 376/376.
+> Unity Play bu turda yok.
+
+> **29 Eylül — Play düzeltmeleri, 2. Unity Play (PR #24 açık, birleştirilmedi).** Konsolda
+> script hatası yok. Boss durdurulmuş, cast `TryDebugCastSkill`, Kılıç. **1-1** merkez 3,0 /
+> 2,6 / 1,6 m'den atıldı; hepsi boss merkezine 1,50 m'de (temas 1,35) durdu, sonra kayma 0 ✓.
+> **1-3** iki vuruş 20 + 20 ✓. **1-5** 360°, kayma 0, 34 ✓. **5-1** turuncu `#FF6B14` fitil boss
+> kenarında; patlama fitilde (fitile 0,00 m) 37,8 ✓; boss `Home` ile 3 m yürütülünce patlama
+> fitilde kaldı, boss'a değmedi ✓. **Build değişip aynı karede merkez** iki kez vurdu ✓.
+> **3-6** kanca boss'a gidiyor, arkasına iniyor (merkeze 1,50 m), Root 1,5 sn ✓ (hasar 0,
+> JSON `base_damage: 0`). **Ama** 0,13 sn sonra oyuncu 2,86 m ışınlanıp boss'un önüne
+> dönüyor ✗ — bkz. Bilinen açıklar. Windows'ta `dotnet test` 367/368: yeni derleme testi
+> `python3` çağırıyor, Windows'ta o ad Store saplaması; `python tools/GameCompile/check.py` geçiyor.
+
+> **29 Eylül — Play düzeltmeleri (PR #24).** `ManifestationDirector.MotionTemplate.cs`
+> CS0150 gitti (`or` ile `||` ayrıldı). Oyun betikleri artık Unity'siz de derleniyor:
+> `python3 tools/GameCompile/check.py` (Unity 2021 referans DLL + küçük saplama).
+> Kanca (3-6) düşmana kilitlenir, boss'un öte kenarında durur. Sekme vuruşları (1-3)
+> hedefin üstüne biner. Saplama kenardan kenara durur, gövdenin içine girmez.
+> Fitil (5-1) saplandığı yerde kalır, boss yürürse peşinden gitmez. Skill menzili
+> kenardan kenara; lunge mesafesi kapıya eklenir. Build değişince ilk merkez vuruşu
+> bayat "casting" yüzünden yutulmaz. `cross_section: width` fiil 3 (line) ve fiil 7'de
+> durur: line/box ikinci sayı tam genişlik; işaretsiz capsule/sphere yarıçap.
+
+> **29 Eylül — hareket kalıbı bölüm 1, Unity Play (PR #24 açık, birleştirilmedi).**
+> Dal Unity'de **derlenmiyor**: `ManifestationDirector.MotionTemplate.cs:136` CS0150
+> (`is "self" or ... or hit.Shape == "sphere"`; `... or "behind" || hit.Shape == "sphere"` olmalı).
+> Editör sessizce eski master derlemesini koşturuyor; `dotnet test` Game katmanını derlemediği
+> için 362/362 yeşil. Satır yerelde düzeltilip ölçüldü (commit yok). Boss durdurulmuş, cast
+> `TryDebugCastSkill` ile (parmak basılı değil). Sonuç: **1-1** yükleme 0,34 sn + saplama, 54
+> hasar ✓ (ama bkz. açıklar). **1-3** sol/sağ sekme var, iki vuruş da boşa (0 hasar) ✗.
+> **1-5** 360° yerinde, kök kayması 0,00 m, 34 hasar ✓. **3-6** kanca oyuncunun kendisine
+> kilitleniyor, boss'un 2,2 m önüne iniyor, 0 hasar ✗. **5-1** sapla + 1,5 m geri, patlama
+> +1,60 sn, 37,8 hasar ✓. **Düz vuruş** `12,1,8,6,2,5` ile vuruyor ✓ (1,9 / 2,6 m vurdu, 4,5 m ıskaladı).
+
+> **29 Eylül — hareket kalıbı, bölüm 1.** Sıfat artık yalnız sayı değiştirmez.
+> `motion-templates.json` (`Resources/ElementSystem/` ve `docs/`, aynı dosya) 144 komboyu
+> 101 kalıba ve 42 aileye bağlar. Koşucu `Core/Motion`: kök yer değiştirme, faz süresi,
+> hedefe yapışma, bakış, faz vuruşu. Sayı yoksa bir kez uyarı ve yedek. **Aile 1–14 oynanır**
+> (36 kalıp, 49 skill). Aile 15–42 kayıtlıdır; atılınca eski davranış sürer ve o aile için
+> bir kez "Hareket kalıbı bekliyor" yazılır. Portal / Sınır modu / Takım kombosu / Silah kesme
+> etiketleri veridedir, mekaniği yok. Çok vuruşta skill hasarı paylara bölünür; toplam eski
+> tek vuruşla aynı. Süreler JSON'da (yankı 0,3 sn, fitil ~1,5 sn, seri 3 sn, sıçrayıp çakılma
+> 0,6 sn). Ara mesafeler his yedeği, aynı dosyada. Üretim: `tools/build-motion-templates.py`.
+> Core test 362/362. Unity Play yok.
+
+> **29 Eylül — düz vuruş yuva sırasından bağımsız.** Merkez, rün 1 hangi slotta olursa olsun
+> Saldırı atar. `12,1,8,6,2,5` ile de jab gelir. Eski "slot 1 = rün 1" açıkı kapandı.
+
+> **29 Eylül — fiil 3 ve 7 genişliği.** `3m × 0.8m` ve `3m × 1m` yarıçap değil genişlik
+> (küreler "yarıçap" der, bunlar demez). `cross_section: width`. Oyun yarıçapı yarıya indi;
+> görünür genişlik 0,8 m ve 1 m. Fiil 1 kapsülü Play'de yarıçap olarak kaldı (0,5 m).
 
 > **29 Eylül — hitbox boyutu okuma kuralı (sahip kararı).** `base_size` "A × B" = uzunluk ×
 > yarıçap (koni: menzil × açı). Uzunluk yuvarlak uçlar dahil toplam boy, saldıranın
 > kenarından ölçülür; B Unity OverlapCapsule gibi yarıçap. `HitboxSizing` artık B'yi
-> yarılamıyor → fiil 3 çizgisi 0.8 m, fiil 7 kapsülü 1 m yarıçap (öncekinin iki katı genişlik;
-> Play'de denenmedi). Düz vuruş: göğüste, gövde kenarından 1.5 m, 0.5 m yarıçap
+> yarılamıyor. Fiil 3 ve 7 bu okumayla iki kat genişledi; aynı gün `cross_section: width`
+> ile görünür genişlik yazılan metreye çekildi (yukarı). Fiil 1 yarıçap kaldı. Düz vuruş: göğüste, gövde kenarından 1.5 m, 0.5 m yarıçap
 > (`StrikeCapsule`, `ManifestationTuning.BasicStrikeRadiusM` JSON'dan). Menzil kontrolü ve
 > otomatik hedef kenardan kenara. Play: kenar mesafesi 2.0/1.6 m ıskaladı, 1.4/1.0/0.3 m
 > vurdu. Core test 343/343.
@@ -1410,13 +1479,24 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 - **Vuruş göğüs yüksekliği uydurma (29 Eylül).** `ManifestationTuning.StrikeChestOffsetM`
   = 0.35 m (gövde merkezinin üstü, 2 m gövdede ~1.35 m). Spec'te yok, önerilen.
-- **Fiil 3/7 hitbox genişliği iki katına çıktı (29 Eylül).** B artık yarıçap; bu fiillerin
-  skill hitbox'ları Play'de ölçülmedi.
-- **Düz vuruş yalnız slot 1'de rün 1 varken çalışıyor (29 Eylül, Play).**
-  `ManifestationDirector` tek kelimelik cümleyi `(int)Words[0].Rune == BasicStrikeDot` ile
-  jab sayıyor; `BasicStrikeDot` slot numarası (1), `Rune` ise o slottaki rün kimliği. Build
-  `12,1,8,6,2,5`'te merkez dokunuşu tek rünlük Zaman cast'i oluyor, "2 rün gerekli" ile
-  düşüyor, hasar yok. PR #23 bu koda dokunmuyor.
+- **Hareket kalıbı bölüm 1 (29 Eylül).** Aile 1–14 oynanır. Aile 15–42 eski davranış + bir kez
+  uyarı. Portal, Sınır modu, Takım kombosu, Silah kesme etiket olarak durur, işlemez.
+  Kalıp, bang anında başlar (~0,26 sn toparlanmadan sonra). Kalıp oyuncuyu oynatıyorsa
+  gramerin konum ışınlanması atlanır (yukarı). Boss collider yoksa vuruş payı 0,6 m. Ayna klonların
+  5 sn'lik tekrarı ve dostu gerçekten çekmek bu bölümde yok. Unity Play yok.
+- **Fiil 3/7 genişliği (29 Eylül, sahip onayladı).** `cross_section: "width"` fiil 3 (line)
+  ve fiil 7'de durur: ikinci sayı tam genişlik, oyun yarıçapı bunun yarısı. İşaretsiz
+  capsule/sphere (fiil 1 kapsülü 0,5 m) yarıçap kalır. Line/box şekilleri de genişlik sayılır.
+- **Hareket kalıbı Play bulguları (29 Eylül, düzeltildi, yeniden Play yok).** Kanca düşmana
+  iner, sekme vuruşu boss'a değer, saplama kenarda durur, fitil yere çakılır, menzil kapısı
+  lunge'u sayar, ilk merkez vuruşu build sonrası yutulmaz. Unity Play bu turda yok.
+- **Kalıp konumu (29 Eylül, uygulandı, 3-6 Play'de doğrulandı).** Sahip kararı kodda: kalıp
+  oyuncuyu oynatıyorsa `yer_degistir` / `hedefin_arkasina` ışınlanmaz; `isaret_geri_don`
+  işareti konur, dönüş kalıbın içinde kısa atılmadır. 3-6 bir kez arkaya iner ve kalır.
+  3-4 ve 3-9 kalıbı henüz oynanmadığı için eski ışınlanma durur. `isaret_geri_don` atılması
+  Play'de denenmedi.
+- **Derleme testi (29 Eylül).** `python3`, sonra `python`, sonra `py -3`. Hiçbiri yoksa
+  test atlanır, düşmez. Windows'ta geçiyor (376/376).
 
 - **Motor denetimi — adım 3 (29 Eylül).** Düz vuruş menzili fiil 1 kapsülü (1.5 m);
   saldırı bakışı hedefe kilitlenir, çubuk vuruşun ortasında gövdeyi çevirmez. İkisi de
