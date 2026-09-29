@@ -1,0 +1,4 @@
+# Play taraması asa — 142/144 geçti (Asa: 142/144)
+3-2 Emici Adım [Asa] KALDI: sıçrama — hasarsız skill (base_damage 0): etki hareketin kendisi; vuruş 1: 0,68s@boss0,88m/oyuncu1,36m; kalıp sonu: merkeze 2,50 m, başlangıçtan 3,32 m, kalıp simülasyonundan 2,19 m, boss 2,19 m kaydı; gövdeye girdi: merkeze 0,14 m (t=0,67, temas 1,20) geçiş tasarım gereği; tek karede 0,64 m sıçrama (t=0,70, faz gec); boss tek karede 1,43 m sıçradı (t=0,70); toparlanma 0,53 sn (tablo 0,26)
+3-3 Sıçrayan Adım [Asa] KALDI: konum(arka→ön) — hasarsız skill (base_damage 0): etki hareketin kendisi; vuruş 3: 0,67s@boss2,08m/oyuncu0,00m 0,87s@boss1,35m/oyuncu0,00m 1,07s@boss1,92m/oyuncu0,00m; kalıp sonu: merkeze 2,19 m, başlangıçtan 3,89 m, kalıp simülasyonundan 0,11 m; toparlanma 0,53 sn (tablo 0,26)
+

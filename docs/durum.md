@@ -13,8 +13,34 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 29 Eylül 2026 (Play taraması, 144 kombo) ·
-**Dal:** `feat/play-sweep` · **Sıradaki:** kalıp hedefi = oyuncunun kendisi (27 kombo), Emici çekme boss ışınlanması
+**Son güncelleme:** 29 Eylül 2026 (Play taraması ikinci koşu, Kılıç + Asa) ·
+**Dal:** `feat/play-sweep` · **Sıradaki:** Emici çekme boss'u oyuncudan uzağa itiyor (3-2, 5-2, 6-2, 12-2)
+
+> **29 Eylül — Play taraması ikinci koşu: Kılıç 141/144, Asa 142/144.** `feat/motion-templates-2`
+> (`8bdbd3c`) bu dala merge edildi, Unity derlemesi temiz (konsolda yalnız bilinen URP/ShaderGraph
+> paket hataları). Araç düzeltmesi: `MotionTemplateBody` / `SkillMotionDriver` artık sahne
+> bağlanırken, cast anında ve her örnek karede yeniden aranıyor (build ekranı açıkken `_body` boş
+> kalıyordu, 1-1 yanlışlıkla kalıyordu). Yeni menü `Dovus/Play Sweep/144 kombo - Asa`.
+> Tablolar `docs/play-sweep/kilic.csv`, `asa.csv`; kalanlar `*-detay.txt`; 7 kombonun kare kare izi
+> `kontrol-kilic-detay.txt`. 1-1 artık geçiyor (kalıp oynadı, simülasyon farkı 0).
+> **Kalanlar (skill koduna dokunulmadı):**
+> - **3-2 Emici Adım (Kılıç + Asa):** oyuncu boss'un içinden geçerken (merkeze 0,09 m) boss tek
+>   karede 1,45 m dışarı fırlıyor. `BossReactor.AdvancePull` → `KeepSeparated` her kare boss'u
+>   oyuncudan temas mesafesine itiyor; içinden geçen kalıpta bu bir ışınlanma. Tam taramada bir kez
+>   oyuncu da tek karede 7,79 m sıçradı (t=0,62), iz koşusunda tekrarlanmadı.
+> - **6-2 Emici Bağ (Kılıç):** boss oyuncudan **uzağa** 3,25 m kayıyor (merkez 3 → 7,85 m),
+>   vuruş boşa düşüyor (hasar 0). Plan `cek düşman [sana_dogru]` diyor. Asa'da 0,53 m uzaklaşıyor, geçiyor.
+> - **5-2 Emici Patlama (Kılıç):** tam taramada boss 2,52 m kaydı, oyuncu 1,02 m geri itildi
+>   (konum yerinde→geri). İz koşusunda boss kıpırdamadı, geçti: kararsız.
+> - **12-2 Emici Zaman:** geçti ama boss oyuncudan 3,6 m uzağa gidiyor (merkez 3 → 6,63). Muhtemel
+>   ortak kök: girdap merkezi boss'un ötesinde, çekme `volume.Center`'a gidiyor → oyuncudan uzağa.
+> - **3-3 Sıçrayan Adım (yalnız Asa):** konum arka bekleniyor, önde bitiyor; kalıp simülasyonu da
+>   önde (fark 0,11 m). Araç beklentisi tasarım etiketinden (`land: behind`) geliyor; Asa'da kalıp
+>   arkaya ulaşmıyor olabilir.
+> **Elle kontrol:** 3-6 artık boss merkezinden geçmiyor (en yakın 1,50 m ≥ temas 1,35), ama ayak
+> hâlâ kayıyor: ayak/gövde oranı 0,43 (önce 0,24–0,36; 1,0 ideal). 3-2 çekme yumuşamadı (yukarı).
+> 3-12 titreme yok (0 ileri-geri, simülasyon farkı 0). 2-2 boss'a 26,6 hasar, oyuncu +11, dost +11.
+> Asa'da toparlanma 0,46–0,53 sn (tablo 0,26), süre kontrolünü geçiyor, bilgi.
 
 > **29 Eylül — Play taraması (Bölüm B, ilk koşu): 103/144 geçti (Kılıç).** Araç: menü `Dovus/Play Sweep/144
 > kombo - Kılıç` (`Game/Editor/PlaySweep.cs`). Boss durdurulmuş, merkez 3 m, her cast öncesi
@@ -1568,26 +1594,15 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
-- **Play taraması 103/144 (29 Eylül, düzeltilmedi).** Kök: kendine/dosta skill'de kalıp hedefi
-  oyuncunun kendisi (`ManifestationDirector.MotionTemplate.cs`, `_templateAim = pending.Target`)
-  → 27 kombo her kare 1,15 m titrer. Emici çekme boss'u ışınlar (3-2, 5-2, 6-2, 12-2). 1-3, 1-4,
-  5-1, 6-1 3 m'de reddedilir; 1-5, 7-1, 7-5 3 m'den değmez. 6-12 boss merkezinden geçer.
-  Oturumun ilk cast'i kalıbı atlar. Asa (ikinci silah) taraması koşulmadı.
-- **PR #25 Play bulguları (29 Eylül, düzeltilmedi).** 3-6 aş fazı boss merkezinden geçer
-  (`side: 1` işlemiyor, yan sapma 0). 3-2'de boss tek karede 3 m sıçrar (çekme anlık; kural 4).
-  3-12 süzülme her kare 1,15 m titrer. 2-2 boss'a hasar vermez (dost/şifa dalı), akış çizgisi
-  boss'tan değil oyuncu→dost ve kırmızı değil. Çekiş/kayma ayak/gövde oranı 0,02–0,44 (ayak kayar).
-  Hitbox VFX yer tutucu küre 1-5 dönüşünü kapatır; 12-7'de kum saati görseli yok.
-  Bağ/hacim (`_mechanicLinks`) status temizliğinden sonra da Root/Slow ve boss çekişi uygular.
-- **Play sweep aracı (29 Eylül).** `feat/play-sweep` ilk komboda `MotionTemplateBody` referansını
-  almıyor: build ekranı açıkken `TickIdle` erken çıkıyor, `_body` boş kalıyor, 1-1 "kalıp hiç oynamadı"
-  diyor. O koşuda bitiş kalıp simülasyonuyla aynıydı (merkeze 1,50 m, simülasyon farkı 0). Araç cast
-  anında gövdeyi yeniden aramalı. Bu dalda katalog/gövde Bind'de hazırlanıyor; Play Mode tekrar şart.
+- **Play taraması Kılıç 141/144, Asa 142/144 (29 Eylül, skill kodu düzeltilmedi).** Emici çekme:
+  3-2 boss içinden geçişte tek karede 1,45 m fırlar (`KeepSeparated`); 6-2 / 12-2 (ve bazen 5-2)
+  boss'u oyuncudan uzağa kaydırır (girdap merkezi boss'un ötesinde). 6-2 Kılıç'ta isabet yok.
+  3-3 Asa'da arkaya ulaşmaz. 3-6 ayak/gövde oranı 0,43 (ayak kayar). Araç düzeltildi (1-1).
 - **Görsel (29 Eylül, duruyor).** Hitbox VFX yer tutucu küre 1-5 dönüşünü kapatır; 12-7'de kum saati yok.
   2-2 akış çizgisi hâlâ oyuncu→dost, kırmızı değil (hasar yolu ayrı bağlandı).
   Bağ/hacim (`_mechanicLinks`) status temizliğinden sonra da Root/Slow uygulayabiliyor.
 - **3-6 ayak kayması (29 Eylül, kod denemesi).** Kalıp bacak sönümü 0; hız klip ölçüsünü aşınca
-  oynatma en çok 2,4 kata çıkar. Ayak/gövde oranı Play'de doğrulanmadı.
+  oynatma en çok 2,4 kata çıkar. Play'de oran 0,43 (Kılıç, 32/35 kare koşu): hâlâ kayıyor.
 - **Vuruş göğüs yüksekliği uydurma (29 Eylül).** `ManifestationTuning.StrikeChestOffsetM`
   = 0.35 m (gövde merkezinin üstü, 2 m gövdede ~1.35 m). Spec'te yok, önerilen.
 - **Animasyon kancası (29 Eylül).** Faz anahtarı + `anim_bridge`. Bacaklar kalıp hızından
