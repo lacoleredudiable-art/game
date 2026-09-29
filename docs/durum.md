@@ -13,7 +13,21 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (Play taraması dördüncü koşu, Kılıç + Asa) ·
+**Son güncelleme:** 29 Eylül 2026 (Portal, Sınır modu, Takım kombosu) ·
+**Dal:** `feat/portal-border-team` · **Sıradaki:** Unity Play'de dene. Silah kesme hâlâ yalnız etiket. 6-2 sıçrama ve 3-2 kıpırdamama duruyor.
+
+> **29 Eylül — Portal, Sınır modu ve Takım kombosu artık işliyor** (donmuş 144 kombo metni).
+> Yeni dosyalar: `Core/Border/BorderMode`, `Core/Portal/PortalSystem`, `Core/Team/TeamComboSystem`
+> ve `IAllyPlayer`. Sahneye `PortalBorderTeamHost` bağlar; Play'de sol üst **Takım dene** menüsü
+> 1–4 sahte dost çıkarır. Hasar hesabı, dodge ve silah koduna dokunulmadı. Hız, hasar ve can
+> çalma mevcut çarpanlara eklenir. Işınlanma kalıp bitince olur; kimse boss'un içine inmez.
+> **Sapma:** 12-6 JSON "4 sn / self_haste 0" yerine metin (ip uzaklaşınca kopar, hız yedeği +%50).
+> 8-1 "daha dar vurur" için yüzde yok, 2 sn bayrak; boss vuruş genişliği değişmez. Taret aralığı
+> metinde yok, 1 sn. 7-6 zırh süresi `StatusTuning.ArmorBreakMs`. Kapı yarıçapı JSON
+> `portal_trigger_radius_m` (1 m). Silah kesme hâlâ etiket. `dotnet test` 427/427.
+> `python3 tools/GameCompile/check.py` geçti. Unity Play bu ortamda yok.
+
+**Önceki:** 30 Eylül 2026 (Play taraması dördüncü koşu, Kılıç + Asa) ·
 **Dal:** `feat/play-sweep` · **Sıradaki:** 6-2 tek kare sıçrama, 3-2 kıpırdamıyor (merge kuralı tutmadı, PR #25/#26 açık)
 
 > **30 Eylül — dördüncü koşu: Kılıç 142/144, Asa 143/144. Merge edilmedi.** `feat/motion-templates-2`
@@ -1658,6 +1672,10 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
+- **Portal / Sınır / Takım (29 Eylül, `feat/portal-border-team`).** Üç etiket artık işler.
+  Aşağıdaki 29 Eylül "etiket olarak durur" satırları o günün kaydıdır. Silah kesme hâlâ
+  yalnız etikettir. 8-1 boss vuruşunu daraltmaz (yüzde yok). Taret 1 sn, 12-6 mesafe kopması
+  ve +%50 hız yedeği, 7-6 zırh süresi `ArmorBreakMs`. Unity Play bu turda yok.
 - **Play taraması Kılıç 142/144, Asa 143/144 (30 Eylül, dördüncü koşu, skill kodu düzeltilmedi).**
   3-2 oyuncu hiç kıpırdamaz (içinden geçip arkaya inmeli). 6-2 Kılıç `cek` fazında tek karede
   0,66 m sıçrar. 1-2 / 4-2'de oyuncu 1,5 m ileri yürür, boss gelmez (çakışma yok). Merge kuralı

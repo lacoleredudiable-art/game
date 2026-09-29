@@ -128,6 +128,11 @@ namespace Dovus.Game
                         applied.Add($"işaret → {e.DurationSec:0.#}sn sonra dönüş");
                         break;
                     case ("konum", "portal"):
+                        if (Dovus.Core.Portal.PortalSystem.IsPortalSkill(plan.SkillId))
+                        {
+                            applied.Add("portal sistemi");
+                            break;
+                        }
                         OpenPortal(plan, aimDir, now + e.DurationSec * 1000.0);
                         applied.Add($"portal {e.DurationSec:0.#}sn");
                         break;

@@ -1907,6 +1907,7 @@ namespace Dovus.Game
             }
             castMult *= _modeDirector?.CastTimeMult ?? 1f;
             float atkSpd = _modeDirector?.AttackSpeedMult ?? 1f;
+            atkSpd *= PortalBorderTeamHooks.AttackSpeedMult;
             if (atkSpd > 0f)
                 castMult /= atkSpd;
             recoverySec *= castMult;
@@ -2061,6 +2062,7 @@ namespace Dovus.Game
             ApplyResourceCost(skill);
             SkillMotionPlan motionPlan = ResolveSkillMotion(skill);
             bool templateOwnsDelivery = TryBeginMotionTemplate(skill, p);
+            PortalBorderTeamHooks.NotifyCast(skill.SkillId);
             SkillExecutorRoute executorRoute = _skillExecutorRouter.Route(skill, _equippedWeapon);
             executorRoute = ApplyMechanicWorldRoute(MechanicPlanFor(skill), executorRoute);
             LastExecutorKind = executorRoute.Kind;
@@ -3063,6 +3065,7 @@ namespace Dovus.Game
             outMult *= _modeDirector?.DamageMult ?? 1f; // ulti: Öfke Patlaması ×1.8, Kan Çılgınlığı ×2.0
             outMult *= _passiveDirector?.DamageMult ?? 1f; // pasif: alev_hiddeti ×1.15 × karanlik_sessizligi ×1.2 …
             outMult *= _slotPassives?.DamageMult ?? 1f;
+            outMult *= PortalBorderTeamHooks.DamageMult;
             outMult *= SelfDamageBuffMult(); // Güçlendirme buff_damage / Yükseltme self_damage_buff
             outMult *= chainBonusOverride ?? _closingChainBonus;
             float eqMult = 1f;
@@ -3128,6 +3131,7 @@ namespace Dovus.Game
             // Armor break boss'ta incoming mult
             if (_bossStatus != null)
                 damage *= _bossStatus.Board.IncomingDamageMult;
+            damage *= PortalBorderTeamHooks.BossIncomingMult;
 
             // Karabasan: bang hasarı delay_sec sonra (delayed_detonation).
             if (!isBasicStrike && TryDeferDamageAsDelayedDetonation(skill, damage))
@@ -3143,6 +3147,7 @@ namespace Dovus.Game
             float lifesteal = (_modeDirector?.Lifesteal ?? 0f) + (_passiveDirector?.LifestealAdd ?? 0f);
             lifesteal += _slotPassives?.LifestealAdd ?? 0f;
             lifesteal += AdjectiveLifesteal(skill);
+            lifesteal += PortalBorderTeamHooks.LifestealAdd;
             if (lifesteal > 0f)
             {
                 var vitals = _player != null ? _player.GetComponent<PlayerVitals>() : null;

@@ -43,6 +43,7 @@ namespace Dovus.Game
         public float EffectiveMoveSpeedMult =>
             Board.MoveSpeedMult
             * (ModeDirector?.MoveSpeedMult ?? 1f)
+            * PortalBorderTeamHooks.MoveSpeedMult
             * (CastMobilityActive && _castMobility == Dovus.Core.Grammar.SkillMobility.SlowedMove
                 ? _tuning.SlowSpeedMult
                 : 1f);
@@ -175,7 +176,8 @@ namespace Dovus.Game
             float passiveTaken = PassiveDirector?.DamageTakenMult ?? 1f;
             float armor = PassiveDirector?.ArmorAdd ?? 0f;
             float armorMult = 1f - Mathf.Clamp(armor, 0f, 0.9f);
-            float incoming = raw * Board.IncomingDamageMult * modeMult * passiveTaken * armorMult;
+            float incoming = raw * Board.IncomingDamageMult * modeMult * passiveTaken * armorMult
+                * (_playerVitals != null ? PortalBorderTeamHooks.PlayerDamageTakenMult : 1f);
             float afterShield = Board.AbsorbDamage(incoming);
             if (afterShield <= 0f) return;
             if (IncomingDamageRedirect != null)
