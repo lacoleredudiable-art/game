@@ -142,6 +142,7 @@ namespace Dovus.Game.EditorTools
         static HexagonInput _input;
         static Transform _player;
         static Transform _boss;
+        static BossReactor _bossReactor;
         static BossVitals _bossVitals;
         static BossDirector _bossDirector;
         static ActorStatus _playerStatus;
@@ -457,6 +458,7 @@ namespace Dovus.Game.EditorTools
             if (_input == null || _player == null || bossReactor == null)
                 return false;
             _boss = bossReactor.transform;
+            _bossReactor = bossReactor as BossReactor;
             _bossVitals = F<BossVitals>(_md, "_bossVitals");
             _bossDirector = F<BossDirector>(_md, "_bossDirector");
             _playerStatus = F<ActorStatus>(_md, "_playerStatus");
@@ -525,7 +527,7 @@ namespace Dovus.Game.EditorTools
                 return;
             }
             RefreshBody();
-            bool busy = Performing() || (_body != null && _body.IsDisplacing);
+            bool busy = Performing() || (_body != null && _body.IsDisplacing) || BossPulling();
             var zones = _md.ZoneDirector;
             bool zonesLeft = zones != null && zones.ActiveZones.Count > 0;
             bool worldLeft = MechanicLeftovers() > 0;
@@ -567,6 +569,9 @@ namespace Dovus.Game.EditorTools
         static void TickSettle()
         {
             if (NowMs - _stageMs < SettleSec * 1000.0)
+                return;
+            // Önceki Emici çekmesi sürerken boss oyuncunun eski yerine kayar; yeni cast o kaymayı devralır.
+            if (BossPulling() && NowMs - _stageMs < 3000.0)
                 return;
             PlaySweepCase c = _cases[_index];
             PlacePlayer(c.StartDistM);
@@ -966,6 +971,8 @@ namespace Dovus.Game.EditorTools
         // ---------------------------------------------------------------- ölçüm
 
         static bool Performing() => P<bool>(_md, "PerformingAttack");
+
+        static bool BossPulling() => _bossReactor != null && _bossReactor.PullActive;
 
         static Snapshot Snap() => new()
         {
