@@ -1522,6 +1522,19 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   kalıpla oynar; Play henüz yok.
 - **Derleme testi (29 Eylül).** `python3`, sonra `python`, sonra `py -3`. Hiçbiri yoksa
   test atlanır, düşmez. Windows'ta geçiyor (376/376).
+- **Hareket kalıbı animasyonsuz (29 Eylül, Play + kod).** `MotionTemplateBody` ve
+  `ManifestationDirector.MotionTemplate.cs` animatöre hiç dokunmuyor; kalıp oynarken
+  `KinematicMotor` yürüme hızını 0'a çekiyor. Kanca çekişi (6 m), saplama, sekme, dönüş
+  gövdeyi taşır ama bacaklar yürümez: görsel ayak kayması kalıp tasarımından geliyor.
+  Dönüş gövdeyi transform ile çevirir. Kalan 28 aile için de geçerli.
+- **Eski Adım ışınlanmaları (29 Eylül, Play, Kılıç).** 3-4 Sabit Adım: dash + 2,2 sn sonra
+  işarete ışınlanma çalışıyor; yakından (2,5 m) dash boss gövdesine giriyor (merkeze 1,02 m,
+  temas 1,35). 3-9 Odaklı Adım: "arkaya ışınlanma" logu düşüyor ama 4,5 m'den oyuncu boss'un
+  önünde (1,50 m) kalıyor; 2,5 m'den dash boss'un içinden geçip arkaya çıkıyor. Kalıpları
+  gelince yeniden bakılacak.
+- **Play taraması (29 Eylül, master).** 3-6 on silahın hepsinde (Balta, Çekiç, Top, Asa,
+  Tılsım, Kalkan, Yumruk, Hançer, Mızrak, Kılıç) arkaya iniyor, 3 sn kalıyor, Root 1,5 sn.
+  1-1 parmak basılı: bırakmadan duruş 0,35 sn; 1,6 sn basılıyken 1,25 sn (0,34 + 0,9 üst sınır).
 
 - **Motor denetimi — adım 3 (29 Eylül).** Düz vuruş menzili fiil 1 kapsülü (1.5 m);
   saldırı bakışı hedefe kilitlenir, çubuk vuruşun ortasında gövdeyi çevirmez. İkisi de
