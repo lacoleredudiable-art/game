@@ -1567,7 +1567,9 @@ namespace Dovus.Game
             float range = _combat != null
                 ? _combat.Manifestation.BasicStrikeRangeM
                 : SkillNumberFallbacks.RangeM;
-            if (_targeting.TryResolveBasicEnemy(range, out Transform auto) && auto != null)
+            if (_targeting.TryResolveBasicEnemy(
+                    StrikeCapsule.CenterRange(PlayerBodyRadiusM(), range), out Transform auto)
+                && auto != null)
                 _castFacingTarget = auto;
         }
 
@@ -3347,20 +3349,24 @@ namespace Dovus.Game
         static readonly Collider[] StrikeHits = new Collider[24];
 
         /// <summary>
-        /// Oyuncudan bakış yönünde reach uzunluğunda, TravelHitRadiusM kalınlığında kapsül.
-        /// Kapsül oyuncunun arkasına taşmaz; boss'un gerçek collider'ı temas etmeli.
+        /// Göğüs hizasında, gövde kenarından bakış yönüne uçlar dahil reach boyunda kapsül
+        /// (<see cref="StrikeCapsule"/>). Kapsül oyuncunun arkasına taşmaz; boss'un gerçek
+        /// collider'ı temas etmeli.
         /// </summary>
         bool IsBossInStrikeCapsule(LivingEffect logic, float reachM)
         {
             if (_boss == null || _player == null || logic == null)
                 return false;
-            float radius = _combat.Manifestation.TravelHitRadiusM;
+            ManifestationTuning man = _combat.Manifestation;
+            float radius = man.BasicStrikeRadiusM;
             Vector3 dir = new Vector3(logic.DirX, 0f, logic.DirZ);
             if (dir.sqrMagnitude < 0.0001f)
                 return false;
             dir.Normalize();
-            Vector3 low = _player.position + Vector3.up * radius + dir * radius;
-            Vector3 high = _player.position + Vector3.up * radius + dir * Mathf.Max(radius, reachM);
+            StrikeCapsule.Segment(PlayerBodyRadiusM(), reachM, radius, out float nearM, out float farM);
+            Vector3 chest = _player.position + Vector3.up * man.StrikeChestOffsetM;
+            Vector3 low = chest + dir * nearM;
+            Vector3 high = chest + dir * farM;
             int count = Physics.OverlapCapsuleNonAlloc(
                 low, high, radius, StrikeHits, Physics.AllLayers, QueryTriggerInteraction.Collide);
             Transform bossT = _boss.transform;
@@ -3391,8 +3397,10 @@ namespace Dovus.Game
             float dist = mark != null
                 ? mark.DistanceFrom(_player.position)
                 : FlatDistance(_player.position, target.position);
-            return dist <= reachM;
+            return StrikeCapsule.EdgeInReach(dist, PlayerBodyRadiusM(), reachM);
         }
+
+        float PlayerBodyRadiusM() => _motor != null ? _motor.BodyRadiusM : 0f;
 
         bool IsClosingInRange(LivingEffect logic, ClosingHit closing)
         {

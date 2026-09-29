@@ -31,6 +31,30 @@ public class AttackFacingAndRangeTests
         catalog.ApplyBasicStrikeRange(tuning);
         Assert.That(tuning.BasicStrikeRangeM, Is.EqualTo(1.5f).Within(0.001f));
         Assert.That(tuning.BasicStrikeRangeM, Is.Not.EqualTo(SkillNumberFallbacks.RangeM));
+        Assert.That(tuning.BasicStrikeRadiusM, Is.EqualTo(0.5f).Within(0.001f), "1.5m × 0.5m: 0.5 yarıçap");
+    }
+
+    [Test]
+    public void BasicStrikeCapsule_StartsAtBodyEdge_ReachIsEdgeToEdge()
+    {
+        const float body = 0.5f, reach = 1.5f, radius = 0.5f;
+        StrikeCapsule.Segment(body, reach, radius, out float near, out float far);
+        Assert.That(near - radius, Is.EqualTo(body).Within(0.001f), "arka uç gövde kenarında");
+        Assert.That(far + radius, Is.EqualTo(body + reach).Within(0.001f), "ön uç kenardan 1.5 m");
+
+        Assert.That(StrikeCapsule.EdgeInReach(body + 1.0f, body, reach), Is.True, "yakından vurur");
+        Assert.That(StrikeCapsule.EdgeInReach(body + 2.0f, body, reach), Is.False, "2 m'den ıskalar");
+        Assert.That(StrikeCapsule.CenterRange(body, reach), Is.EqualTo(2f).Within(0.001f));
+    }
+
+    [Test]
+    public void HitboxSecondNumber_IsRadius_NotDiameter()
+    {
+        var boxes = VerbExecutionData.FromJson(File.ReadAllText(JsonPath()));
+        Assert.That(boxes.TryGetHitbox(3, out VerbHitboxSpec line), Is.True);
+        Assert.That(boxes.TryGetHitbox(7, out VerbHitboxSpec capsule), Is.True);
+        Assert.That(HitboxSizing.Resolve(line, 1f, 1f).RadiusM, Is.EqualTo(0.8f).Within(0.001f));
+        Assert.That(HitboxSizing.Resolve(capsule, 1f, 1f).RadiusM, Is.EqualTo(1f).Within(0.001f));
     }
 
     [Test]

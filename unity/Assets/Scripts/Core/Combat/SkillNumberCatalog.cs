@@ -133,7 +133,7 @@ namespace Dovus.Core.Combat
             _verbs.TryGetValue(verbId, out VerbNumbers n) ? n.RangeM : SkillNumberFallbacks.RangeM;
 
         /// <summary>
-        /// Düz vuruş menzili = fiil 1 hitbox'ı (hitbox_vfx). Alan yoksa tuning yedeği kalır
+        /// Düz vuruş menzili ve kapsül yarıçapı = fiil 1 hitbox'ı (hitbox_vfx). Alan yoksa tuning yedeği kalır
         /// ve katalog zaten bir kez uyarmıştır.
         /// </summary>
         public void ApplyBasicStrikeRange(ManifestationTuning tuning)
@@ -141,6 +141,7 @@ namespace Dovus.Core.Combat
             if (tuning == null)
                 return;
             tuning.BasicStrikeRangeM = RangeM(1);
+            tuning.BasicStrikeRadiusM = RadiusM(1);
         }
 
         /// <summary>

@@ -30,6 +30,11 @@ namespace Dovus.Core.Tuning
 
         // Düz vuruş menzili yedeği. Açılışta fiil 1 hitbox'ı (JSON) bunu ezer.
         public float BasicStrikeRangeM = 2.4f;
+        // Düz vuruş kapsül yarıçapı yedeği (eski TravelHitRadiusM). Açılışta fiil 1 hitbox'ı ezer.
+        public float BasicStrikeRadiusM = 1.15f;
+        // Kapsülün doğduğu göğüs, gövde merkezinin üstünde. Spec'te yok; 2 m gövdede ~1.35 m
+        // (önerilen, docs/durum.md).
+        public float StrikeChestOffsetM = 0.35f;
         public float BasicStrikeSpeedMps = 14f;
         public float BasicStrikeBangSec = 0.22f;
         public float BasicStrikeFadeSec = 0.18f;

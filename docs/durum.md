@@ -13,8 +13,17 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 29 Eylül 2026 (motor adım 3 Unity Play) ·
-**Dal:** `fix/engine-step3` (PR #23 açık) · **Sıradaki:** düz vuruş kapsül kalınlığı kararı — 2 m'den hâlâ vuruyor
+**Son güncelleme:** 29 Eylül 2026 (motor adım 3: Unity Play + düz vuruş kapsülü) ·
+**Dal:** `master` (PR #23 merge) · **Sıradaki:** skill'lerin ilk parçası
+
+> **29 Eylül — hitbox boyutu okuma kuralı (sahip kararı).** `base_size` "A × B" = uzunluk ×
+> yarıçap (koni: menzil × açı). Uzunluk yuvarlak uçlar dahil toplam boy, saldıranın
+> kenarından ölçülür; B Unity OverlapCapsule gibi yarıçap. `HitboxSizing` artık B'yi
+> yarılamıyor → fiil 3 çizgisi 0.8 m, fiil 7 kapsülü 1 m yarıçap (öncekinin iki katı genişlik;
+> Play'de denenmedi). Düz vuruş: göğüste, gövde kenarından 1.5 m, 0.5 m yarıçap
+> (`StrikeCapsule`, `ManifestationTuning.BasicStrikeRadiusM` JSON'dan). Menzil kontrolü ve
+> otomatik hedef kenardan kenara. Play: kenar mesafesi 2.0/1.6 m ıskaladı, 1.4/1.0/0.3 m
+> vurdu. Core test 343/343.
 
 > **29 Eylül — motor adım 3, Unity Play.** Build `1,12,8,6,2,5`, geçici editör betiğiyle
 > (commit edilmedi). Bakış: boss seçili, çubuk yana ve geriye basılıyken üç vuruşluk zincirde
@@ -22,10 +31,10 @@
 > kaldı, çubuğun hareket yönü ~40°'ye kaydı; vuruş bitince yürüyüşe döndü. Şifa (2-1): dost
 > 5 m'de (kenara 4.5 m), seçim yok → dost 11 → 22/22. Yoğun Zaman kartı "hızı %30 düşer";
 > boss 1.0 sn ×0.70, yavaşken ~1.5 m/s yürüdü, sonra ~2.2 m/s. Yükselen Zaman kartı "3 sn";
-> hız ×1.50, ~3.2 sn (gerçek saat). **Düz vuruş kaldı:** menzil 1.5 m ama isabet kapsülünün
-> yarıçapı hâlâ `TravelHitRadiusM` = 1.15 m, JSON'daki "1.5m × 0.5m" kalınlığı okunmuyor.
-> Boss kenarına 2.1/2.3/2.6 m'den vurdu, 2.75 m'den ıskaladı. Core test 341/341
-> (`EngineStep3Tests` satır sonu düzeltmesiyle; Windows CRLF'de 1 test düşüyordu).
+> hız ×1.50, ~3.2 sn (gerçek saat). Düz vuruş ilk turda kaldı: kapsül yarıçapı
+> `TravelHitRadiusM` = 1.15 m idi, boss kenarına 2.6 m'den vuruyordu (yukarıdaki kuralla
+> düzeltildi). Core test 341/341 (`EngineStep3Tests` satır sonu düzeltmesiyle; Windows
+> CRLF'de 1 test düşüyordu).
 
 > **29 Eylül — motor adım 3, dost menzili ve kartlar.** Dost hedefi skill'ler (şifa, kalkan, buff)
 > silahtan bağımsız 6 m (`global_rules.ally_skill_range_m`). Seçili dost menzildeyse o, yoksa en
@@ -1399,9 +1408,10 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
-- **Düz vuruş kapsülü kalın (29 Eylül, Play).** Uzunluk JSON'dan 1.5 m, yarıçap
-  `ManifestationTuning.TravelHitRadiusM` = 1.15 m → boss kenarına ~2.65 m'ye kadar vuruyor.
-  JSON fiil 1: `capsule`, `1.5m × 0.5m`. 0.5 m çap mı yarıçap mı spec'te net değil.
+- **Vuruş göğüs yüksekliği uydurma (29 Eylül).** `ManifestationTuning.StrikeChestOffsetM`
+  = 0.35 m (gövde merkezinin üstü, 2 m gövdede ~1.35 m). Spec'te yok, önerilen.
+- **Fiil 3/7 hitbox genişliği iki katına çıktı (29 Eylül).** B artık yarıçap; bu fiillerin
+  skill hitbox'ları Play'de ölçülmedi.
 - **Düz vuruş yalnız slot 1'de rün 1 varken çalışıyor (29 Eylül, Play).**
   `ManifestationDirector` tek kelimelik cümleyi `(int)Words[0].Rune == BasicStrikeDot` ile
   jab sayıyor; `BasicStrikeDot` slot numarası (1), `Rune` ise o slottaki rün kimliği. Build

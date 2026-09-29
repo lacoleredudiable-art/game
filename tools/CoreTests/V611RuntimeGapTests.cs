@@ -60,7 +60,7 @@ public class V611RuntimeGapTests
             one, _hitboxes.WeaponSizeMult(4), _hitboxes.AdjectiveSizeMult(1));
         Assert.That(oneFocused.Shape, Is.EqualTo("capsule"));
         Assert.That(oneFocused.ReachM, Is.EqualTo(0.6f).Within(0.001f));
-        Assert.That(oneFocused.RadiusM, Is.EqualTo(0.1f).Within(0.001f));
+        Assert.That(oneFocused.RadiusM, Is.EqualTo(0.2f).Within(0.001f), "0.5 m yarıçap × 0.4");
 
         HitboxSize fiveSpread = HitboxSizing.Resolve(
             five, _hitboxes.WeaponSizeMult(4), _hitboxes.AdjectiveSizeMult(5));

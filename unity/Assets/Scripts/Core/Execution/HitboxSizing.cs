@@ -39,7 +39,7 @@ namespace Dovus.Core.Execution
             float reach = spec.SizeA * scale;
             // Koninin SizeB'si genişlik değil açı (°): menzil yarıçaptır, açı ayrıca taşınır.
             bool angular = string.Equals(spec.Shape, "cone", StringComparison.Ordinal);
-            float radius = spec.SizeB > 0f && !angular ? spec.SizeB * 0.5f * scale : reach;
+            float radius = spec.SizeB > 0f && !angular ? spec.SizeB * scale : reach;
             return new HitboxSize(spec.Shape, radius, reach, spec.DurationSec);
         }
     }
