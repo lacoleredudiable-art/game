@@ -173,6 +173,7 @@ namespace Dovus.Game
             afterimage.Bind(combat.Feel, _tuning);
 
             var dodgeMotion = player.AddComponent<DodgeMotion>();
+            player.AddComponent<PlayerDodgeRig>();
             player.AddComponent<SkillMotionDriver>();
             player.AddComponent<MotionTemplateBody>();
 
@@ -373,11 +374,17 @@ namespace Dovus.Game
 
             dodgeMotion.Bind(clock, input, boss.transform, afterimage, follow);
 
+            var chargeHud = root.AddComponent<DodgeChargeHud>();
+            chargeHud.Bind(input, view);
+            var practice = root.AddComponent<DodgePractice>();
+            practice.Bind(player, boss.transform);
+
             var feelGo = new GameObject("CombatFeel");
             feelGo.transform.SetParent(transform, false);
             var feel = feelGo.AddComponent<CombatFeel>();
             feel.Bind(clock, follow, combat, _tuning, overlay.Cam, debug, readout);
             feel.BindActors(player.GetComponent<HitFlash>(), boss.GetComponent<HitFlash>());
+            player.GetComponent<PlayerDodgeRig>()?.Bind(clock, input, follow, readout, feel);
             var overlayHud = feelGo.AddComponent<CombatOverlayHud>();
             overlayHud.Configure(vitals, bossVitals, player, boss.transform, overlay.Cam);
 

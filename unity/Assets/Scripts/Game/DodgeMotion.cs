@@ -22,7 +22,6 @@ namespace Dovus.Game
         PlayerVitals _vitals;
         FollowCamera _follow;
 
-        Vector3 _lastMoveDir = Vector3.forward;
         Vector3 _startPos;
         Vector3 _dir;
         Vector3 _glideExtra;
@@ -81,8 +80,6 @@ namespace Dovus.Game
 
         void Update()
         {
-            RememberWalk();
-
             if (!IsBound)
                 TryAutoBind();
 
@@ -108,7 +105,7 @@ namespace Dovus.Game
                 // yani §6'nın "yağ gibi kayma"sı görünmüyordu (T8.1).
                 if (IsDisplacing && _tuning != null)
                 {
-                    transform.position = ClampArena(_startPos + _dir * _tuning.DistanceM + _glideExtra);
+                    transform.position = Place(_startPos + _dir * _tuning.DistanceM + _glideExtra);
                     LastAppliedRatio = 1f;
                 }
 
@@ -126,7 +123,7 @@ namespace Dovus.Game
                 _glideExtra += _dir * GlideSpeedMps() * glide * dtSec;
             }
 
-            transform.position = ClampArena(target + _glideExtra);
+            transform.position = Place(target + _glideExtra);
             LastAppliedRatio = ratio;
             if (_dir.sqrMagnitude > 0.0001f)
                 transform.rotation = Quaternion.LookRotation(_dir, Vector3.up);
@@ -153,35 +150,41 @@ namespace Dovus.Game
 
         Vector3 ResolveDirection()
         {
-            if (_lastMoveDir.sqrMagnitude > 0.01f)
-                return _lastMoveDir.normalized;
-
-            if (_boss != null)
+            Vector3 stick = Vector3.zero;
+            if (_input != null)
             {
-                Vector3 away = transform.position - _boss.position;
-                away.y = 0f;
-                if (away.sqrMagnitude > 0.01f)
-                    return away.normalized;
+                Vector2 move = _input.MoveDirection;
+                if (move.sqrMagnitude > 0.01f)
+                {
+                    stick = new Vector3(move.x, 0f, move.y);
+                    if (_follow != null)
+                        stick = Quaternion.Euler(0f, _follow.MovementYawDeg, 0f) * stick;
+                }
             }
 
-            Vector3 fwd = transform.forward;
-            fwd.y = 0f;
-            return fwd.sqrMagnitude > 0.01f ? fwd.normalized : Vector3.forward;
+            Vector3 face = transform.forward;
+            DodgeDirection.Resolve(stick.x, stick.z, face.x, face.z, out float x, out float z);
+            return new Vector3(x, 0f, z);
         }
 
-        void RememberWalk()
-        {
-            if (_input == null)
-                return;
+        Vector3 Place(Vector3 pos) => KeepBossEdge(ClampArena(pos));
 
-            Vector2 move = _input.MoveDirection;
-            if (move.sqrMagnitude > 0.01f)
-            {
-                Vector3 direction = new Vector3(move.x, 0f, move.y);
-                if (_follow != null)
-                    direction = Quaternion.Euler(0f, _follow.MovementYawDeg, 0f) * direction;
-                _lastMoveDir = direction;
-            }
+        Vector3 KeepBossEdge(Vector3 pos)
+        {
+            if (_boss == null)
+                return pos;
+            float body = _motor != null ? _motor.BodyRadiusM : 0.5f;
+            float bossR = 0.85f;
+            BossReactor reactor = _boss.GetComponent<BossReactor>();
+            if (reactor != null && reactor.BodyRadiusM > 0.01f)
+                bossR = reactor.BodyRadiusM;
+            float gap = _tuning != null ? _tuning.EdgeGapM : 0.15f;
+            float x = pos.x;
+            float z = pos.z;
+            DodgeEdge.KeepOutside(ref x, ref z, _boss.position.x, _boss.position.z, body + bossR + gap, _dir.x, _dir.z);
+            pos.x = x;
+            pos.z = z;
+            return pos;
         }
 
         void MaybeEmitAfterimage(float ratio)

@@ -66,6 +66,8 @@ namespace Dovus.Game
                 _visual?.Trigger(ActorVisual.TriggerDodge);
         }
 
+        public void Stop() => _active = false;
+
         public void WarpInstant(float x, float z)
         {
             Vector3 p = transform.position;

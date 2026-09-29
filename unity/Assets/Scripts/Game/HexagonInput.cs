@@ -21,6 +21,7 @@ namespace Dovus.Game
         CombatTuning _combat = new();
         SentenceEngine _engine;
         DodgeState _dodge;
+        DodgeChargeBank _charges;
         GameClock _clock;
         InkTrail _ink;
         SyllableFeedback _syllable;
@@ -64,6 +65,9 @@ namespace Dovus.Game
         /// <summary>Swap düğmesi tap'i / Q tuşu — ManifestationDirector kapıyı kendisi kontrol eder.</summary>
         public event System.Action WeaponSwapRequested;
 
+        /// <summary>Dodge kabul edildi. Süren skill kesilir, kalıp konumu hemen bırakılır.</summary>
+        public event System.Action SkillCancelledByDodge;
+
         public PrototypeTuning Tuning
         {
             get
@@ -86,6 +90,7 @@ namespace Dovus.Game
 
         public SentenceEngine Engine => _engine;
         public DodgeState Dodge => _dodge;
+        public DodgeChargeBank Charges => _charges;
 
         /// <summary>Motor bir dokunuşu kabul etti (0 = merkez düz vuruş). Yalnız UI juice için.</summary>
         public event System.Action<int> DotAccepted;
@@ -123,8 +128,11 @@ namespace Dovus.Game
         public void BindSkillTargetGate(System.Func<SkillResolution, bool> gate) =>
             _skillTargetGate = gate;
 
-        MobilityCcData _mobilityCc;
-        public void BindMobilityCc(MobilityCcData data) => _mobilityCc = data;
+        public void BindMobilityCc(MobilityCcData data)
+        {
+            // Dodge kesmesi mobility_cc tablosuna bakmaz; sert CC kapısı yeter.
+            _ = data;
+        }
 
         /// <summary>Bağlama 3: EnforceResourceCost kapısı + yetersiz mana readout.</summary>
         public void BindResource(PlayerResource resource, ReactionReadout readout, SkillMotor skills = null)
@@ -234,6 +242,7 @@ namespace Dovus.Game
                 _combat.Sentence,
                 loadout ?? _skills?.DefaultLoadout ?? RuneLoadout.Sequential);
             _dodge = new DodgeState(_combat.Dodge);
+            _charges = new DodgeChargeBank(_combat.Dodge);
             _engine.SentenceCompleted += OnSentenceCompleted;
             _sentenceHooked = true;
         }
@@ -295,6 +304,7 @@ namespace Dovus.Game
         void Update()
         {
             EnsureRuntime();
+            TickCharges();
             SyncPlayerStateFromWorld();
 
             if (_engine != null && _clock != null)
@@ -347,7 +357,6 @@ namespace Dovus.Game
         }
 
         bool AllowsDrawNow => _playerStates == null || _playerStates.AllowsDraw;
-        bool AllowsDodgeNow => _playerStates == null || _playerStates.AllowsDodge;
 
         void EnsureRuntime()
         {
@@ -357,6 +366,8 @@ namespace Dovus.Game
 
             if (_dodge == null)
                 _dodge = new DodgeState(_combat.Dodge);
+            if (_charges == null)
+                _charges = new DodgeChargeBank(_combat.Dodge);
 
             if (_engine == null)
             {
@@ -874,32 +885,57 @@ namespace Dovus.Game
             _syllable?.PlayDenied();
         }
 
+        void TickCharges()
+        {
+            if (_charges == null)
+                return;
+            int worldMs = _clock != null ? (int)_clock.Director.WorldTimeMs : 0;
+            _charges.RechargeMult = _dodge != null ? _dodge.CooldownMult : 1f;
+            _charges.Tick(worldMs);
+        }
+
         void TriggerDodge()
         {
             int worldMs = _clock != null ? (int)_clock.Director.WorldTimeMs : 0;
-            if (_dodge == null || _dodge.IsOnCooldown(worldMs))
+            if (_dodge == null)
                 return;
 
-            SyncPlayerStateFromWorld();
-            if (!AllowsDodgeNow)
+            bool dead = _vitals != null && _vitals.IsDown;
+            bool stun = false;
+            bool freeze = false;
+            bool knockdown = false;
+            if (_status != null)
+            {
+                var board = _status.Board;
+                stun = board.Has(StatusKind.Stun) || board.Has(StatusKind.Fear);
+                freeze = board.Has(StatusKind.Stasis);
+                knockdown = board.Has(StatusKind.Knockback);
+            }
+
+            if (!DodgeCancelRules.Allowed(dead, stun, freeze, knockdown))
             {
                 _readout?.NoteDenied("dodge yok");
                 _syllable?.PlayDenied();
                 return;
             }
 
-            CastInterruptPhase phase = _engine != null && _engine.State.Phase == SentencePhase.Building
-                ? CastInterruptPhase.Startup
-                : CastInterruptPhase.Recovery;
-            if (_mobilityCc != null && !_mobilityCc.CanInterrupt(phase, "dodge"))
+            if (_charges != null)
             {
-                _readout?.NoteDenied("cast kesilemez");
-                return;
+                _charges.RechargeMult = _dodge.CooldownMult;
+                if (!_charges.TrySpend(worldMs))
+                {
+                    _readout?.NoteDenied("dodge yok");
+                    _syllable?.PlayDenied();
+                    return;
+                }
             }
-            // startup: yatırım batar; recovery: kilit kesilir, aktif dünya etkisi yaşamaya devam eder.
+            else if (_dodge.IsOnCooldown(worldMs))
+                return;
+
             bool wasBuilding = _engine != null && _engine.State.Phase == SentencePhase.Building;
             _engine?.Abort();
             FlushInkBreak();
+            SkillCancelledByDodge?.Invoke();
             _dodge.Begin(worldMs);
             _debugHud?.NoteDodge(wasBuilding);
             _mode = FingerMode.None;

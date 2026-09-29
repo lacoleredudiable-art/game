@@ -168,9 +168,13 @@ namespace Dovus.Game
             }
         }
 
-        public void ApplyDamage(float raw)
+        public void ApplyDamage(float raw, bool dodgeable = true)
         {
             if (raw <= 0f) return;
+            // Dodge i-frame kapısı. Hasar formülüne girmeden yutulur.
+            // Hasar borusu aynı sorguyu PlayerDodgeRig.BlocksIncoming ile kurabilir.
+            if (_playerVitals != null && PlayerDodgeRig.BlocksIncoming(this, dodgeable))
+                return;
             float modeMult = ModeDirector?.DamageTakenMult ?? 1f;
             float passiveTaken = PassiveDirector?.DamageTakenMult ?? 1f;
             float armor = PassiveDirector?.ArmorAdd ?? 0f;

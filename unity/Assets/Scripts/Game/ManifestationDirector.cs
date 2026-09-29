@@ -407,7 +407,14 @@ namespace Dovus.Game
             AnimationDatabase animationDatabase = null)
         {
             _clock = clock;
+            if (_input != null)
+                _input.SkillCancelledByDodge -= CancelActiveSkillForDodge;
             _input = input;
+            if (_input != null)
+            {
+                _input.SkillCancelledByDodge -= CancelActiveSkillForDodge;
+                _input.SkillCancelledByDodge += CancelActiveSkillForDodge;
+            }
             _engine = input.Engine;
             _combat = input.Combat;
             _colors = colors;
@@ -3118,6 +3125,8 @@ namespace Dovus.Game
             }
 
             damage *= effectScale;
+            if (damage > 0f && _player != null)
+                damage *= PlayerDodgeRig.ConsumeNextHit(_player);
 
             if (damage <= 0f)
             {
