@@ -16,6 +16,17 @@
 **Son güncelleme:** 29 Eylül 2026 (hareket kalıbı, bölüm 1) ·
 **Dal:** `feat/motion-templates-1` · **Sıradaki:** aile 15–42
 
+> **29 Eylül — hareket kalıbı bölüm 1, Unity Play (PR #24 açık, birleştirilmedi).**
+> Dal Unity'de **derlenmiyor**: `ManifestationDirector.MotionTemplate.cs:136` CS0150
+> (`is "self" or ... or hit.Shape == "sphere"`; `... or "behind" || hit.Shape == "sphere"` olmalı).
+> Editör sessizce eski master derlemesini koşturuyor; `dotnet test` Game katmanını derlemediği
+> için 362/362 yeşil. Satır yerelde düzeltilip ölçüldü (commit yok). Boss durdurulmuş, cast
+> `TryDebugCastSkill` ile (parmak basılı değil). Sonuç: **1-1** yükleme 0,34 sn + saplama, 54
+> hasar ✓ (ama bkz. açıklar). **1-3** sol/sağ sekme var, iki vuruş da boşa (0 hasar) ✗.
+> **1-5** 360° yerinde, kök kayması 0,00 m, 34 hasar ✓. **3-6** kanca oyuncunun kendisine
+> kilitleniyor, boss'un 2,2 m önüne iniyor, 0 hasar ✗. **5-1** sapla + 1,5 m geri, patlama
+> +1,60 sn, 37,8 hasar ✓. **Düz vuruş** `12,1,8,6,2,5` ile vuruyor ✓ (1,9 / 2,6 m vurdu, 4,5 m ıskaladı).
+
 > **29 Eylül — hareket kalıbı, bölüm 1.** Sıfat artık yalnız sayı değiştirmez.
 > `motion-templates.json` (`Resources/ElementSystem/` ve `docs/`, aynı dosya) 144 komboyu
 > 101 kalıba ve 42 aileye bağlar. Koşucu `Core/Motion`: kök yer değiştirme, faz süresi,
@@ -1435,6 +1446,22 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   5 sn'lik tekrarı ve dostu gerçekten çekmek bu bölümde yok. Unity Play yok.
 - **Fiil 3/7 genişliği (29 Eylül, düzeltildi).** İkinci sayı genişlik. Yarıçap yarıya indi
   (çizgi 0,4 m, kapsül 0,5 m). Fiil 1 yarıçap kaldı. Play'de şerit genişliği bakılmadı.
+  **Karar bekliyor:** sahip 29 Eylül'de "A × B = uzunluk × yarıçap, diğer fiil şekilleri de
+  böyle" dedi; PR #24 bağlayıcı JSON'a `cross_section: "width"` ekleyip 3/7'yi çapa çeviriyor.
+- **Hareket kalıbı Play bulguları (29 Eylül, PR #24).**
+  - 3-6 Bağlayıcı Adım: `TryBeginMotionTemplate` `pending.Target`'ı alıyor; fiil 3'te bu
+    oyuncunun kendisi (`templateAim=Player`). Boss'a düşüş yalnız hedef null iken var. Çekiş
+    0,15 m, sıçrama boss'un önüne; "arkasına in" olmuyor, `behind` vuruşu 0 hasar.
+  - 1-3 Sıçrayan Vuruş: `side` çapası vuruşu oyuncunun zaten kaymış konumundan bir yan mesafe
+    daha dışarı koyuyor (boss merkezine 2,2 / 3,9 m). Önündeki boss'a hiç değmiyor.
+  - 1-1 saplama: `lunge` durağı `len − 0.45` merkezden merkeze; gövde yarıçapları (0,5 + 0,85)
+    yok. Oyuncu boss merkezine 0,45 m'ye giriyor, kalıp bitince motor 0,9 m geri itiyor (görünür
+    sıçrama). Sahibin kenardan kenara kuralıyla çelişiyor.
+  - 5-1 fitil `target` çapası: patlama o anki boss merkezinde, yere dikilmiş bir nokta değil;
+    bekleme boyunca dünyada görünen fitil yok (kural 4).
+  - Skill menzil kapısı (PR #24'ten önce de var): 1-1 ancak merkez 1,4 m'de (kenar ~0,05 m)
+    atılıyor, 1,8 m'de "menzil dışı"; 5-1 1,7 m'de. Düz vuruş 2,6 m'den vuruyor.
+  - Build değişince ilk merkez dokunuşu hasar vermedi; ikincisi vurdu.
 
 - **Motor denetimi — adım 3 (29 Eylül).** Düz vuruş menzili fiil 1 kapsülü (1.5 m);
   saldırı bakışı hedefe kilitlenir, çubuk vuruşun ortasında gövdeyi çevirmez. İkisi de
