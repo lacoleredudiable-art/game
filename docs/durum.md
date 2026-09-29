@@ -16,7 +16,7 @@
 **Son güncelleme:** 29 Eylül 2026 (Play taraması, 144 kombo) ·
 **Dal:** `feat/play-sweep` · **Sıradaki:** kalıp hedefi = oyuncunun kendisi (27 kombo), Emici çekme boss ışınlanması
 
-> **29 Eylül — Play taraması (Bölüm B): 103/144 geçti (Kılıç).** Araç: menü `Dovus/Play Sweep/144
+> **29 Eylül — Play taraması (Bölüm B, ilk koşu): 103/144 geçti (Kılıç).** Araç: menü `Dovus/Play Sweep/144
 > kombo - Kılıç` (`Game/Editor/PlaySweep.cs`). Boss durdurulmuş, merkez 3 m, her cast öncesi
 > status/bağ/bölge temizlenir, can/mana dolar. Kontroller: cast, isabet, kalıp sonu konumu
 > (kalıbın çevrimdışı simülasyonuna göre), gövdeye girmedi, tek sistem, konsol hatası, süre, tek
@@ -36,6 +36,17 @@
 > Araç notları: açık build ekranı saati durdurur (araç önce build'i uygular). Play açılışında bir
 > paket PlayerLoop'u sıfırlıyor; araç tick'i `EditorApplication.update` ile geri takar. Editör
 > odakta değilken tarama yavaşlar. Play sırasında script kaydetmek taramayı siler (domain reload).
+
+> **29 Eylül — Play sweep kökleri (kod, Unity Play yok).** Kılıç taramasındaki 41 kalanın
+> kökleri bu dalda ele alındı. Kendine/dosta giden 27 kalıp artık atıcıyı duruş hedefi yapmıyor
+> (dost, düşman, bakış veya hedefsiz); 3-12 titremesi bu yüzden. Emici çekme (3-2, 5-2, 6-2, 12-2)
+> tek karelik ışın yerine 0,4 sn smoothstep; stasis ve saldırı kilidi bağışıklığı keser, gövdeler
+> iç içe geçmez. Menzil kapısı JSON kenar menzili + kapanış mesafesi (1-3, 1-4, 5-1, 6-1, 3 m).
+> 1-5 / 7-1 / 7-5 isabeti JSON hitbox'ı veya uçuş hattı. 3-6 ve 6-12 arkaya iniş boss'un çevresinden
+> yay çizer. 2-2 emme boss'a planındaki eksi canı yazar, iyileştirme aynı paydan gelir.
+> 3-6 bacak sönümü kapatıldı (ayak kayması Play'de bakılacak). İlk cast: katalog başarısız okumada
+> kilitlenmez, gövde Bind'de hazır, Play Update'ten sonraysa LateUpdate işler.
+> `dotnet test` 393/393. `python3 tools/GameCompile/check.py` geçti. Unity Play yok.
 
 > **29 Eylül — PR #25 Unity Play, Bölüm A (11 madde, 16 koşu).** Konsolda script hatası yok
 > (3 ShaderGraph/URP paket hatası var, bizim değil). Araç: `Dovus/Play Sweep` (ayrı dal
@@ -1568,6 +1579,15 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   boss'tan değil oyuncu→dost ve kırmızı değil. Çekiş/kayma ayak/gövde oranı 0,02–0,44 (ayak kayar).
   Hitbox VFX yer tutucu küre 1-5 dönüşünü kapatır; 12-7'de kum saati görseli yok.
   Bağ/hacim (`_mechanicLinks`) status temizliğinden sonra da Root/Slow ve boss çekişi uygular.
+- **Play sweep aracı (29 Eylül).** `feat/play-sweep` ilk komboda `MotionTemplateBody` referansını
+  almıyor: build ekranı açıkken `TickIdle` erken çıkıyor, `_body` boş kalıyor, 1-1 "kalıp hiç oynamadı"
+  diyor. O koşuda bitiş kalıp simülasyonuyla aynıydı (merkeze 1,50 m, simülasyon farkı 0). Araç cast
+  anında gövdeyi yeniden aramalı. Bu dalda katalog/gövde Bind'de hazırlanıyor; Play Mode tekrar şart.
+- **Görsel (29 Eylül, duruyor).** Hitbox VFX yer tutucu küre 1-5 dönüşünü kapatır; 12-7'de kum saati yok.
+  2-2 akış çizgisi hâlâ oyuncu→dost, kırmızı değil (hasar yolu ayrı bağlandı).
+  Bağ/hacim (`_mechanicLinks`) status temizliğinden sonra da Root/Slow uygulayabiliyor.
+- **3-6 ayak kayması (29 Eylül, kod denemesi).** Kalıp bacak sönümü 0; hız klip ölçüsünü aşınca
+  oynatma en çok 2,4 kata çıkar. Ayak/gövde oranı Play'de doğrulanmadı.
 - **Vuruş göğüs yüksekliği uydurma (29 Eylül).** `ManifestationTuning.StrikeChestOffsetM`
   = 0.35 m (gövde merkezinin üstü, 2 m gövdede ~1.35 m). Spec'te yok, önerilen.
 - **Animasyon kancası (29 Eylül).** Faz anahtarı + `anim_bridge`. Bacaklar kalıp hızından

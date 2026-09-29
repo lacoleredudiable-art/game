@@ -324,10 +324,7 @@ namespace Dovus.Core.Motion
                     break;
                 case "hop":
                     if (phase.Land == "behind")
-                    {
-                        _x = _phaseX + (_destX - _phaseX) * u;
-                        _z = _phaseZ + (_destZ - _phaseZ) * u;
-                    }
+                        ArcAround(u, side, target);
                     else
                     {
                         _x = _phaseX + rx * side * u * phase.DistanceM + fx * u * phase.ForwardM;
@@ -336,8 +333,13 @@ namespace Dovus.Core.Motion
                     _y = _groundY + 4f * phase.HeightM * uLinear * (1f - uLinear);
                     break;
                 case "leap":
-                    _x = _phaseX + (_destX - _phaseX) * u;
-                    _z = _phaseZ + (_destZ - _phaseZ) * u;
+                    if (phase.Land == "behind")
+                        ArcAround(u, side, target);
+                    else
+                    {
+                        _x = _phaseX + (_destX - _phaseX) * u;
+                        _z = _phaseZ + (_destZ - _phaseZ) * u;
+                    }
                     _y = _groundY + 4f * phase.HeightM * uLinear * (1f - uLinear);
                     break;
                 case "slam":
@@ -493,6 +495,12 @@ namespace Dovus.Core.Motion
             float oz = _z;
             float dx = _faceX;
             float dz = _faceZ;
+            // Yelpaze/dönüş gövdeyi çevirir; vuruş fazın başındaki nişanda kalır.
+            if (phase.Motion is "fan" or "spin")
+            {
+                dx = _phaseFaceX;
+                dz = _phaseFaceZ;
+            }
             float rx = dz;
             float rz = -dx;
             float side = phase.Side < 0f ? -1f : 1f;
@@ -535,8 +543,18 @@ namespace Dovus.Core.Motion
                     oz = _plantZ;
                     break;
                 case "shot":
-                    ox = _x + dx * Math.Max(_shot, 0.01f);
-                    oz = _z + dz * Math.Max(_shot, 0.01f);
+                    float shot = Math.Max(_shot, 0.01f);
+                    ox = _x + dx * shot;
+                    oz = _z + dz * shot;
+                    if (target.Has)
+                    {
+                        float along = (target.X - _x) * dx + (target.Z - _z) * dz;
+                        if (along >= 0f && along <= shot)
+                        {
+                            ox = _x + dx * along;
+                            oz = _z + dz * along;
+                        }
+                    }
                     break;
                 case "self":
                 case "ring":
@@ -687,8 +705,16 @@ namespace Dovus.Core.Motion
                     Approach(ux, uz, len, target, cap: phase.DistanceM);
                     break;
                 case "blink":
-                    // Arkaya iniş yukarıda ayrıldı. Düz ışınlanma hedefin yakın kenarında biter.
-                    Approach(ux, uz, len, target, cap: 0f);
+                    // Menzil gövdeye yetiyorsa yakın kenarda durmak yerine öte kenardan çık.
+                    // Ara kare yok: ışınlanma tek anda iner, merkezde kare bırakmaz.
+                    if (phase.DistanceM + 0.05f >= len)
+                    {
+                        float exit = Separation(target);
+                        _destX = target.X + ux * exit;
+                        _destZ = target.Z + uz * exit;
+                    }
+                    else
+                        Approach(ux, uz, len, target, cap: 0f);
                     break;
                 case "slam":
                     Approach(ux, uz, len, target, cap: phase.DistanceM);
@@ -707,6 +733,45 @@ namespace Dovus.Core.Motion
                 travel = Math.Min(cap, travel);
             _destX = _phaseX + ux * travel;
             _destZ = _phaseZ + uz * travel;
+        }
+
+        /// <summary>
+        /// Arkaya iniş düz çizgiyle merkezden geçer. Yol, hedefin çevresinde kenar payının
+        /// dışında bir yay çizer; bitiş yine öte kenardadır.
+        /// </summary>
+        void ArcAround(float u, float side, in MotionTarget target)
+        {
+            if (!target.Has)
+            {
+                _x = _phaseX + (_destX - _phaseX) * u;
+                _z = _phaseZ + (_destZ - _phaseZ) * u;
+                return;
+            }
+
+            float sx = _phaseX - target.X;
+            float sz = _phaseZ - target.Z;
+            float ex = _destX - target.X;
+            float ez = _destZ - target.Z;
+            float r0 = MathF.Sqrt(sx * sx + sz * sz);
+            float r1 = MathF.Sqrt(ex * ex + ez * ez);
+            float minR = Separation(target);
+            if (r0 < 0.05f)
+                r0 = minR;
+            if (r1 < 0.05f)
+                r1 = minR;
+            float a0 = MathF.Atan2(sz, sx);
+            float a1 = MathF.Atan2(ez, ex);
+            float delta = a1 - a0;
+            while (delta > MathF.PI)
+                delta -= 2f * MathF.PI;
+            while (delta < -MathF.PI)
+                delta += 2f * MathF.PI;
+            if (MathF.Abs(MathF.Abs(delta) - MathF.PI) < 0.35f)
+                delta = (side < 0f ? -1f : 1f) * MathF.PI;
+            float angle = a0 + delta * u;
+            float radius = MathF.Max(minR, r0 + (r1 - r0) * u);
+            _x = target.X + MathF.Cos(angle) * radius;
+            _z = target.Z + MathF.Sin(angle) * radius;
         }
 
         float Separation(in MotionTarget target) =>

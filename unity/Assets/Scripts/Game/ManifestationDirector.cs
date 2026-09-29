@@ -427,6 +427,7 @@ namespace Dovus.Game
             _camera = camera;
             _ally = ally;
             _ally?.BindStatusClock(clock, _combat != null ? _combat.Status : null);
+            EnsureMotionReady();
             _modeHud = modeHud;
             _passiveHud = passiveHud;
             _afterimage = player != null ? player.GetComponent<AfterimageTrail>() : null;
@@ -1690,7 +1691,7 @@ namespace Dovus.Game
             if (!skill.IsEmpty
                 && MotionCatalog.TryGet(skill.SkillId, out MotionBinding motion)
                 && motion.Implemented)
-                edge = Mathf.Max(edge, MotionCastReach.EdgeReachM(motion.Template));
+                edge = MotionCastReach.ComboEdgeReach(edge, motion.Template);
             return MotionCastReach.GateRangeM(edge, PlayerBodyRadiusM());
         }
 
@@ -2422,10 +2423,11 @@ namespace Dovus.Game
             int.TryParse(skill.AdjectiveId, out int adjectiveId);
             int weaponId = EquippedWeaponNumber();
             float weaponScale = _verbData?.WeaponSizeMult(weaponId, rangeMult) ?? rangeMult;
-            float adjectiveScale = _verbData?.AdjectiveSizeMult(adjectiveId) ?? 1f;
+            JsonValue engine = skill.EngineModifiers;
+            float tableScale = _verbData?.AdjectiveSizeMult(adjectiveId) ?? 1f;
+            float adjectiveScale = HitboxSizing.AdjectiveScale(tableScale, engine["hitbox_scale_mult"].AsFloat(0f));
             adjectiveScale *= _slotPassives?.HitboxSizeMult ?? 1f;
             HitboxSize size = HitboxSizing.Resolve(spec, weaponScale, adjectiveScale);
-            JsonValue engine = skill.EngineModifiers;
             float lifetimeAdd = Mathf.Max(0f, engine["lifetime_add"].AsFloat(0f));
 
             switch (kind)
