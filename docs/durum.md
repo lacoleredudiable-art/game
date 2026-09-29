@@ -13,8 +13,30 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 29 Eylül 2026 (hasar borusu + dodge birleşti) ·
-**Dal:** `feat/damage-armor` · **Sıradaki:** Unity Play (sayılar, zırh, Emici, dodge)
+**Son güncelleme:** 30 Eylül 2026 (PR #30 Unity Play testi) ·
+**Dal:** `feat/damage-armor` · **Sıradaki:** Emici 5-2 / 10-2 / 11-2 tek kare sıçrama (merge kuralı tutmadı, PR #27/#30 açık)
+
+> **30 Eylül — PR #30 Play testi: Kılıç 138/144, Asa 140/144. Merge edilmedi** (kural 142+).
+> `dotnet test` 429/429, Unity derlemesi ve konsol temiz. Master'da son koşu 142/143 idi.
+> **Yeni kalanlar (Emici):** 5-2 (iki silah) ve 11-2 (iki silah) `cek`/`em` fazında oyuncu
+> tek karede ~2,93 m sıçrıyor; 10-2 Kılıç aynı (faz `yut`); 12-2 Kılıç "yerinde" yerine
+> "geri" bitiyor. Hepsinde isabet merkezi boss'ta (0,00 m), oyuncu 1,50 m'ye oturuyor.
+> **Araç beklentisi eski:** 1-2 ve 4-2 (iki silah) oyuncu yerinde (0,00 m), boss temasa
+> (1,35 m) geliyor — PR'ın istediği bu, ama araç kalıp simülasyonuna göre "ön" bekliyor.
+> 3-2 içinden geçip arkaya iniyor (geçti), 6-2 Kılıç sıçrama yok (geçti).
+> **Elle ölçüm:** dodge çubuk yönüne ~4,1 m (kayıtlı ayar 3,8 m + süzülme), çubuksuz geri;
+> 2 hak, 3. basış reddedilir, hak 4,0 / 8,0 sn'de dolar; skill ve düz vuruşu keser (hasar 0);
+> Stun/Stasis'te dodge yok. Boss'a doğru dodge hiç içeride bitmiyor (≥1,50 m, temas 1,35)
+> ama 1,5–2,2 m'den atılınca boss'un **üstünden tek karede 2,6–3,0 m atlayıp** arkaya iniyor.
+> F8: dodge'suz 88.000 hasar; basış→vuruş 249 ms hasar 0, PERFECT yok; 67/116 ms PERFECT,
+> hak geri, sonraki vuruş ×1,30 bir kez (hasar alınca da korunur); 450 ms geç → 88.000.
+> Can: boss 88.000.000, oyuncu 400.000. Yüzen sayılar: düz vuruş 13,5–14,5K (beklenen
+> 20–30K değil), Zafiyet vuruşu 18–22K, skill 175–222K; kritik "279.7K!" altın, 32 px
+> (normal 25 px); oyuncuya "88K" kırmızı; iyileştirme "+32K" yeşil. M biçimi görülmedi
+> (1M üstü vuruş yok). Bu makinedeki kayıtlı ayarda `ShowDamageNumbers` kapalı — ölçüm
+> için oturumda açıldı. **Zafiyet:** 7-1/7-9 sonrası boss `ArmorBreak` → gelen hasar ×1,20,
+> sonraki 1-1 ~×1,2. Zırh kırılması (−%18/−%22) ise etkisiz: boss zırhı JSON'da 0,15, LoL
+> formülünde bu ~%0,15 azaltma demek (zırh birimi uyuşmuyor, bkz. Bilinen açıklar).
 
 > **29 Eylül — hasar ve zırh.** Bütün vuruş, zehir ve boss hasarı tek borudan geçer:
 > güç × saldırı, kritik (varsayılan %10, ×1,5), buff'lar bir kez, zırh delme, LoL zırhı,
@@ -1682,8 +1704,12 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   der, motor −0,2. Ayar paneli sıfırlayınca can 22'ye dönebilir (ölçek bağlama yalnız açılışta).
   Geciken patlama kalkanı vuruş hesaplanırken yer. Emici 3-2 / 1-2 / 4-2 / 6-2 kodda düzeltildi;
   Play taraması yeniden koşulmadı.
-- **Play taraması Kılıç 142/144, Asa 143/144 (30 Eylül, dördüncü koşu).** Emici kalanları
-  yukarıdaki hasar turunda kodlandı. O koşunun sayıları hâlâ eski kayıt.
+- **PR #30 Play testi (30 Eylül): Kılıç 138/144, Asa 140/144, merge yok.** Emici 5-2 / 10-2 /
+  11-2 tek karede ~2,93 m sıçrama, 12-2 Kılıç "geri" bitiyor. 1-2 / 4-2 için `PlaySweep`
+  beklentisi eski ("ön"); yeni tasarım "yerinde". Karar gerekiyor: araç mı güncellenecek?
+  Dodge 1,5–2,2 m'den boss'a atılınca `DodgeEdge.KeepOutside` onu boss'un üstünden tek karede
+  arkaya atıyor (2,6–3,0 m). Zafiyet'in zırh kırması 0,15 puanlık zırhta ölçülemez; görülen
+  +%20 `ArmorBreak` çarpanından. Düz vuruş 13,5–14,5K, beklenen 20–30K değil.
 - **Görsel (29 Eylül, duruyor).** Hitbox VFX yer tutucu küre 1-5 dönüşünü kapatır; 12-7'de kum saati yok.
   2-2 akış çizgisi hâlâ oyuncu→dost, kırmızı değil (hasar yolu ayrı bağlandı).
   Bağ/hacim (`_mechanicLinks`) status temizliğinden sonra da Root/Slow uygulayabiliyor.

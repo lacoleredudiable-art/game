@@ -1,3 +1,6 @@
-# Play taraması asa — 143/144 geçti (Asa: 143/144)
-3-2 Emici Adım [Asa] KALDI: konum(arka→yerinde) — hasarsız skill (base_damage 0): etki hareketin kendisi; vuruş 1: 0,68s@boss1,02m/oyuncu1,36m; kalıp sonu: merkeze 1,90 m, başlangıçtan 0,00 m, kalıp simülasyonundan 5,65 m, boss 1,10 m kaydı; toparlanma 0,53 sn (tablo 0,26)
+# Play taraması asa — 140/144 geçti (Asa: 140/144)
+1-2 Emici Vuruş [Asa] KALDI: konum(ön→yerinde) — vuruş 3: 0,62s@boss1,64m/oyuncu1,02m 0,72s@boss1,20m/oyuncu1,02m 0,85s@boss0,65m/oyuncu1,02m; kalıp sonu: merkeze 1,47 m, başlangıçtan 0,00 m, kalıp simülasyonundan 1,50 m, boss 1,53 m kaydı; toparlanma 0,53 sn (tablo 0,26)
+4-2 Emici Kalkan [Asa] KALDI: konum(ön→yerinde) — vuruş 1: 0,65s@boss1,24m/oyuncu1,28m; kalıp sonu: merkeze 2,24 m, başlangıçtan 0,00 m, kalıp simülasyonundan 1,50 m, boss 0,76 m kaydı; toparlanma 0,53 sn (tablo 0,26)
+5-2 Emici Patlama [Asa] KALDI: konum(yerinde→arka), sıçrama — vuruş 3: 1,20s@boss0,00m/oyuncu1,50m 1,70s@boss0,00m/oyuncu1,50m 1,77s@boss0,00m/oyuncu1,50m; kalıp sonu: merkeze 1,50 m, başlangıçtan 2,08 m, kalıp simülasyonundan 2,08 m, boss 2,42 m kaydı; tek karede 2,93 m sıçrama (t=1,57, faz cek); toparlanma 0,53 sn (tablo 0,26)
+11-2 Emici Çağrı [Asa] KALDI: konum(yerinde→geri), sıçrama — hasarsız skill (base_damage 0): etki hareketin kendisi; vuruş 6: 0,62s@boss0,20m/oyuncu2,58m 1,63s@boss0,00m/oyuncu1,50m 2,65s@boss0,00m/oyuncu1,50m 3,64s@boss0,00m/oyuncu1,50m 4,64s@boss0,00m/oyuncu1,50m 5,64s@boss0,00m/oyuncu1,50m; kalıp sonu: merkeze 1,50 m, başlangıçtan 1,45 m, kalıp simülasyonundan 1,45 m, boss 3,05 m kaydı; tek karede 2,93 m sıçrama (t=2,15, faz em); toparlanma 0,46 sn (tablo 0,26)
 
