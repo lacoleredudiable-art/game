@@ -13,8 +13,19 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 29 Eylül 2026 (motor adım 3: dost menzili, kart metni, hız süresi) ·
-**Dal:** `fix/engine-step3` · **Sıradaki:** Unity Play — düz vuruş 1.5 m, vuruş bakışı, dost şifası ~5 m, Yoğun Zaman kartı %30, Yükselen Zaman ~3 sn
+**Son güncelleme:** 29 Eylül 2026 (motor adım 3 Unity Play) ·
+**Dal:** `fix/engine-step3` (PR #23 açık) · **Sıradaki:** düz vuruş kapsül kalınlığı kararı — 2 m'den hâlâ vuruyor
+
+> **29 Eylül — motor adım 3, Unity Play.** Build `1,12,8,6,2,5`, geçici editör betiğiyle
+> (commit edilmedi). Bakış: boss seçili, çubuk yana ve geriye basılıyken üç vuruşluk zincirde
+> gövde–boss açısı her karede 0°. Seçim yok, boss menzil dışı: vuruş boyunca gövde 87°'de
+> kaldı, çubuğun hareket yönü ~40°'ye kaydı; vuruş bitince yürüyüşe döndü. Şifa (2-1): dost
+> 5 m'de (kenara 4.5 m), seçim yok → dost 11 → 22/22. Yoğun Zaman kartı "hızı %30 düşer";
+> boss 1.0 sn ×0.70, yavaşken ~1.5 m/s yürüdü, sonra ~2.2 m/s. Yükselen Zaman kartı "3 sn";
+> hız ×1.50, ~3.2 sn (gerçek saat). **Düz vuruş kaldı:** menzil 1.5 m ama isabet kapsülünün
+> yarıçapı hâlâ `TravelHitRadiusM` = 1.15 m, JSON'daki "1.5m × 0.5m" kalınlığı okunmuyor.
+> Boss kenarına 2.1/2.3/2.6 m'den vurdu, 2.75 m'den ıskaladı. Core test 341/341
+> (`EngineStep3Tests` satır sonu düzeltmesiyle; Windows CRLF'de 1 test düşüyordu).
 
 > **29 Eylül — motor adım 3, dost menzili ve kartlar.** Dost hedefi skill'ler (şifa, kalkan, buff)
 > silahtan bağımsız 6 m (`global_rules.ally_skill_range_m`). Seçili dost menzildeyse o, yoksa en
@@ -1387,6 +1398,15 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 `docs/element-sistemi.json`. Boss verisi `docs/bosses/*.json`.
 
 ## Bilinen açıklar
+
+- **Düz vuruş kapsülü kalın (29 Eylül, Play).** Uzunluk JSON'dan 1.5 m, yarıçap
+  `ManifestationTuning.TravelHitRadiusM` = 1.15 m → boss kenarına ~2.65 m'ye kadar vuruyor.
+  JSON fiil 1: `capsule`, `1.5m × 0.5m`. 0.5 m çap mı yarıçap mı spec'te net değil.
+- **Düz vuruş yalnız slot 1'de rün 1 varken çalışıyor (29 Eylül, Play).**
+  `ManifestationDirector` tek kelimelik cümleyi `(int)Words[0].Rune == BasicStrikeDot` ile
+  jab sayıyor; `BasicStrikeDot` slot numarası (1), `Rune` ise o slottaki rün kimliği. Build
+  `12,1,8,6,2,5`'te merkez dokunuşu tek rünlük Zaman cast'i oluyor, "2 rün gerekli" ile
+  düşüyor, hasar yok. PR #23 bu koda dokunmuyor.
 
 - **Motor denetimi — adım 3 (29 Eylül).** Düz vuruş menzili fiil 1 kapsülü (1.5 m);
   saldırı bakışı hedefe kilitlenir, çubuk vuruşun ortasında gövdeyi çevirmez. İkisi de
