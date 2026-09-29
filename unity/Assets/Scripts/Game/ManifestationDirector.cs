@@ -159,6 +159,7 @@ namespace Dovus.Game
 
             _cycleWeaponIndex = (_cycleWeaponIndex + 1) % _cycleWeapons.Count;
             _equippedWeapon = _cycleWeapons[_cycleWeaponIndex];
+            RefreshDefenderArmor();
             LastFactorySkill = null;
             _weaponSwap?.ReplaceActive(_equippedWeapon);
 
@@ -446,6 +447,8 @@ namespace Dovus.Game
             _modeVfx.Bind(player, canvasRoot);
             _hexagonView = hexagonView;
             _equippedWeapon = equippedWeapon;
+            RefreshDefenderArmor();
+            EnsureBossArmor();
             _equipmentBonus = equipmentBonus;
             _playerResource = player != null ? player.GetComponent<PlayerResource>() : null;
             _playerCooldown = player != null ? player.GetComponent<PlayerCooldown>() : null;
@@ -2869,6 +2872,7 @@ namespace Dovus.Game
                     _ally != null ? _ally.Board : null);
             }
 
+            ApplyArmorShred(skill, bossStatus);
             ApplySlotPassiveOnHit(bossStatus);
 
             if (result.Knockback && bossStatus != null && _player != null)
@@ -2942,14 +2946,12 @@ namespace Dovus.Game
             float per = _combat != null ? _combat.ClosingDamagePerEffect : 1f;
             // 16 Eylül: "Kavurucu Yara" (grievous_wounds+burn) — yanık hedefe gelen heal azalır.
             // Hedefin StatusBoard'u yoksa (ör. AllyDummy) çarpan 1f, davranış eskisiyle aynı.
-            float healMult = _playerStatus != null ? _playerStatus.Board.HealEffectivenessMult : 1f;
-            healMult *= _passiveDirector?.HealMult ?? 1f;
-            healMult *= chainBonusOverride ?? _closingChainBonus;
-            healMult *= WeaponCompatibilityFor(skill).DamageMult;
+            float chain = chainBonusOverride ?? _closingChainBonus;
+            float weapon = WeaponCompatibilityFor(skill).DamageMult;
             float healBase = skill.BaseHeal > 0f
                 ? skill.BaseHeal
                 : closing.TotalEffect * per;
-            return Mathf.Max(0, Mathf.RoundToInt(healBase * healMult * effectScale));
+            return Mathf.Max(0, Mathf.RoundToInt(healBase * chain * weapon * effectScale));
         }
 
         void ApplyClosingHealAmount(
@@ -2959,6 +2961,19 @@ namespace Dovus.Game
             float fieldRadiusM,
             Transform preferredTarget = null)
         {
+            if (amount <= 0)
+                return;
+            DamageOutcome healedBy = DamagePipeline.Resolve(new DamageQuery
+            {
+                Heal = true,
+                HealPower = amount,
+                HealMultiplier = HealBuffMultiplier(skill),
+                ThreatMultiplier = _passiveDirector?.ThreatMultiplier ?? 1f,
+                ScaleMagnitudes = true
+            });
+            amount = Mathf.Max(0, Mathf.RoundToInt(healedBy.Amount));
+            if (_playerStatus != null)
+                _playerStatus.LastThreat = healedBy.Threat;
             if (amount <= 0)
                 return;
 
@@ -3057,77 +3072,16 @@ namespace Dovus.Game
             if (effectScale <= 0f)
                 return 0f;
 
-            float outMult = 1f;
-            if (_playerStatus != null)
-                outMult = _playerStatus.Board.OutgoingDamageMult;
-            outMult *= _modeDirector?.DamageMult ?? 1f; // ulti: Öfke Patlaması ×1.8, Kan Çılgınlığı ×2.0
-            outMult *= _passiveDirector?.DamageMult ?? 1f; // pasif: alev_hiddeti ×1.15 × karanlik_sessizligi ×1.2 …
-            outMult *= _slotPassives?.DamageMult ?? 1f;
-            outMult *= SelfDamageBuffMult(); // Güçlendirme buff_damage / Yükseltme self_damage_buff
-            outMult *= chainBonusOverride ?? _closingChainBonus;
-            float eqMult = 1f;
-            if (_equipmentBonus != null && !isBasicStrike && !skill.IsEmpty)
-            {
-                WeaponSkillCompatibility compatibility = WeaponCompatibilityFor(skill);
-                eqMult = compatibility.DamageMult;
-                LastWeaponCompatible = compatibility.Compatible;
-                LastWeaponPassiveEnabled = compatibility.PassiveEnabled;
-                LastWeaponUiLabel = compatibility.UiLabel;
-            }
-            outMult *= eqMult;
-            LastEquipmentMatchMult = eqMult;
-
-            bool isCrit = false;
-            float damage;
-            float extraCrit = ExtraCritChanceAdd(skill);
-            if (_combat != null && _combat.UseFormulaDamage &&
-                !isBasicStrike && !skill.IsEmpty && skill.BaseDamage > 0f)
-            {
-                // length.damage_mult JSON'da 1.0 (anti-ladder); SkillResolution taşımıyor.
-                DamageHit hit = EnsureDamageCalculator().Compute(
-                    in skill,
-                    lengthDamageMult: 1f,
-                    resistance: 0f,
-                    weaknessBonus: 1f,
-                    extraCritChanceAdd: extraCrit);
-                damage = hit.Amount * outMult;
-                isCrit = hit.WasCrit;
-            }
-            else
-            {
-                damage = ClosingDamageMath.Compute(
-                    closing.TotalEffect,
-                    _combat != null ? _combat.ClosingDamagePerEffect : 1f,
-                    skill,
-                    isBasicStrike,
-                    outMult,
-                    _skillNumbers != null ? _skillNumbers.VerbDamageReference : 0f);
-                if (extraCrit > 0f && damage > 0f)
-                {
-                    DamageHit critHit = EnsureDamageCalculator().ApplyExtraCrit(damage, extraCrit);
-                    damage = critHit.Amount;
-                    isCrit = critHit.WasCrit;
-                }
-            }
-
-            // Teleport fiili BaseDamage=0; Zenitsu kesisi commit × SlashCommitMult.
-            if (damage <= 0f && slashCommitMult > 0f && closing.TotalEffect > 0f)
-            {
-                float per = _combat != null ? _combat.ClosingDamagePerEffect : 1f;
-                damage = closing.TotalEffect * per * slashCommitMult * outMult;
-            }
-
-            damage *= effectScale;
+            DamageOutcome dealt = ComputeOutgoingHit(
+                closing, skill, isBasicStrike, slashCommitMult, effectScale, chainBonusOverride);
+            float damage = dealt.Amount;
+            bool isCrit = dealt.WasCrit;
 
             if (damage <= 0f)
             {
                 LastClosingDamageDealt = 0f;
                 return 0f;
             }
-
-            // Armor break boss'ta incoming mult
-            if (_bossStatus != null)
-                damage *= _bossStatus.Board.IncomingDamageMult;
 
             // Karabasan: bang hasarı delay_sec sonra (delayed_detonation).
             if (!isBasicStrike && TryDeferDamageAsDelayedDetonation(skill, damage))

@@ -370,7 +370,7 @@ namespace Dovus.Core.Motion
             float dt)
         {
             Axis(phase, target, out float fx, out float fz);
-            if (target.HoldApproach)
+            if (EmiciApproach.Freezes(phase, target.HoldApproach))
             {
                 if (!_yieldApproach)
                 {

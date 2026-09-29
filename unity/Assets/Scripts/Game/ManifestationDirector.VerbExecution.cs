@@ -48,12 +48,18 @@ namespace Dovus.Game
 
         void OnPlayerDamageTaken(float incomingDamage)
         {
+            bool crit = _playerStatus != null && _playerStatus.LastHitWasCrit;
+            Vector3 at = _player != null ? _player.position + Vector3.up * 1.6f : Vector3.zero;
+            _damageHud?.ShowDamage(incomingDamage, crit, at, victimIsPlayer: true);
             ReflectFromWorldVolumes(incomingDamage);
             if (_mobilityCc == null || _pending.Count == 0)
                 return;
-            // JSON poise katmanını ekipmana bağlayan alan yok; prototip nötr "orta" kullanır.
+            // Poise, ölçeklenmiş can hasarıyla değil eski (küçük) vuruş sayısıyla kırılır.
+            float poiseDamage = _playerStatus != null && _playerStatus.LastPoise > 0f
+                ? _playerStatus.LastPoise
+                : incomingDamage / CombatScale.DamageAndHp;
             float threshold = _mobilityCc.PoiseThreshold("orta");
-            if (!_mobilityCc.TryPoiseBreak(incomingDamage, threshold, out int stunMs))
+            if (!_mobilityCc.TryPoiseBreak(poiseDamage, threshold, out int stunMs))
                 return;
             CancelPendingCast("poise");
             _playerStatus?.Board.Apply(StatusKind.Stun, stunMs, 1f);
@@ -181,7 +187,7 @@ namespace Dovus.Game
                 _playerStatus.Board.Apply(StatusKind.Stasis, ms, 1f);
         }
 
-        /// <summary>Minion vuruşu: ham hasar × sıfat damage_mult × oyuncu çıkış çarpanları.</summary>
+        /// <summary>Minion vuruşu: ham hasar boru hattından (zırh, kritik, ölçek bir kez).</summary>
         void ApplyMinionHit(in SkillResolution skill, float raw)
         {
             if (_bossVitals == null || _bossVitals.IsDown || raw <= 0f)
@@ -192,10 +198,42 @@ namespace Dovus.Game
             mult *= _passiveDirector?.DamageMult ?? 1f;
             mult *= _slotPassives?.DamageMult ?? 1f;
             mult *= SelfDamageBuffMult();
-            if (_bossStatus != null)
-                mult *= _bossStatus.Board.IncomingDamageMult;
 
-            float damage = raw * mult;
+            EnsureBossArmor();
+            double now = _clock != null ? _clock.Director.WorldTimeMs : 0;
+            float armor = 0f;
+            float taken = 1f;
+            float shield = 0f;
+            if (_bossStatus != null)
+            {
+                armor = _bossStatus.Armor.Effective(now);
+                taken = _bossStatus.Board.IncomingDamageMult;
+                shield = _bossStatus.Board.ShieldRemaining;
+            }
+            float penPct = _passiveDirector?.ArmorPenPercent ?? 0f;
+            if (!skill.IsEmpty && !skill.EngineModifiers.IsNull && skill.EngineModifiers["ignore_armor"].AsBool(false))
+                penPct = 1f;
+            var dealt = DamagePipeline.Resolve(new DamageQuery
+            {
+                SkillPower = raw,
+                AttackPower = _passiveDirector?.AttackPower ?? 1f,
+                Multiplier = mult,
+                CanCrit = !skill.IsEmpty && skill.BaseDamage > 0f,
+                CritChance = DamagePipeline.DefaultCritChance + Mathf.Max(0f, ExtraCritChanceAdd(skill)),
+                Armor = armor,
+                ArmorPenFlat = _passiveDirector?.ArmorPenFlat ?? 0f,
+                ArmorPenPercent = penPct,
+                DamageTakenFactor = taken,
+                Shield = shield,
+                ApplyVariance = true,
+                VarianceSeed = _damageRoll++,
+                Poise = skill.IsEmpty ? 0f : skill.BasePoise,
+                ThreatMultiplier = _passiveDirector?.ThreatMultiplier ?? 1f,
+                ScaleMagnitudes = true
+            });
+            if (dealt.ShieldAbsorbed > 0f && _bossStatus != null)
+                _bossStatus.Board.ConsumeShield(dealt.ShieldAbsorbed);
+            float damage = dealt.Amount;
             _damageHud?.ShowDamage(damage, false, BossHitPoint(), DamageTint());
             _lastDamageDealtMs = _clock.Director.WorldTimeMs;
             float lifesteal = AdjectiveLifesteal(skill);

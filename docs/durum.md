@@ -13,8 +13,20 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (Play taraması dördüncü koşu, Kılıç + Asa) ·
-**Dal:** `feat/play-sweep` · **Sıradaki:** 6-2 tek kare sıçrama, 3-2 kıpırdamıyor (merge kuralı tutmadı, PR #25/#26 açık)
+**Son güncelleme:** 29 Eylül 2026 (hasar borusu, zırh, ×4000, Emici hareket) ·
+**Dal:** `feat/damage-armor` · **Sıradaki:** Unity Play (sayılar, zırh, 3-2 / 1-2 / 4-2 / 6-2)
+
+> **29 Eylül — hasar ve zırh.** Bütün vuruş, zehir ve boss hasarı tek borudan geçer:
+> güç × saldırı, kritik (varsayılan %10, ×1,5), buff'lar bir kez, zırh delme, LoL zırhı,
+> en fazla %90 azaltma, ±%5 sapma. İyileştirme zırha girmez. Tehdit değeri her olayda durur.
+> Can ve hasar JSON'u bozmadan ×4000 (oyuncu ~400 bin, boss ~88 milyon; 150–250 milyon
+> hedefi sonra `max_hp` ile). Yüzen sayılar K/M, havuzlu. Zırh: silah alanı (şimdilik 0),
+> pasif, geçici buff. Zafiyet (7-6, 7-9) motor değeri −%20 zırhı gerçekten düşürür;
+> karttaki “−%30” metni değişmedi. Emici: 3-2 hâlâ içinden geçer, 1-2 ve 4-2 yerinde kalıp
+> boss'u çeker, 6-2 geri çekilirken tek karede yığılmaz. Unity Play bu turda yok.
+> Dodge dalı gelince i-frame kapısı borudan önce, mükemmel vuruş çarpanı buff aşamasında.
+
+
 
 > **30 Eylül — dördüncü koşu: Kılıç 142/144, Asa 143/144. Merge edilmedi.** `feat/motion-templates-2`
 > (`b9df90b`) merge edildi. `dotnet test` 402/402, Unity derlemesi ve konsol temiz (yalnız bilinen
@@ -1658,10 +1670,15 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
-- **Play taraması Kılıç 142/144, Asa 143/144 (30 Eylül, dördüncü koşu, skill kodu düzeltilmedi).**
-  3-2 oyuncu hiç kıpırdamaz (içinden geçip arkaya inmeli). 6-2 Kılıç `cek` fazında tek karede
-  0,66 m sıçrar. 1-2 / 4-2'de oyuncu 1,5 m ileri yürür, boss gelmez (çakışma yok). Merge kuralı
-  tutmadı; PR #25 ve #26 açık.
+- **Hasar borusu (29 Eylül, kod, Unity Play yok).** Kritik JSON'da %5 / ×2 durur; canlı vuruş
+  %10 / ×1,5. Zırh kırma hâlâ gelen hasarı ×1,2 çarpar, yüzde kırılmayla üst üste binebilir.
+  Boss zırhı 0,15 (LoL'de neredeyse delinmez sayılmaz, çok az keser). Boss canı 88 milyon;
+  150–250 milyon için `max_hp` sonra ayarlanır (`max_hp_hard` yoksa normal). 7-9 kartı “−%30”
+  der, motor −0,2. Ayar paneli sıfırlayınca can 22'ye dönebilir (ölçek bağlama yalnız açılışta).
+  Geciken patlama kalkanı vuruş hesaplanırken yer. Emici 3-2 / 1-2 / 4-2 / 6-2 kodda düzeltildi;
+  Play taraması yeniden koşulmadı.
+- **Play taraması Kılıç 142/144, Asa 143/144 (30 Eylül, dördüncü koşu).** Emici kalanları
+  yukarıdaki hasar turunda kodlandı. O koşunun sayıları hâlâ eski kayıt.
 - **Görsel (29 Eylül, duruyor).** Hitbox VFX yer tutucu küre 1-5 dönüşünü kapatır; 12-7'de kum saati yok.
   2-2 akış çizgisi hâlâ oyuncu→dost, kırmızı değil (hasar yolu ayrı bağlandı).
   Bağ/hacim (`_mechanicLinks`) status temizliğinden sonra da Root/Slow uygulayabiliyor.
