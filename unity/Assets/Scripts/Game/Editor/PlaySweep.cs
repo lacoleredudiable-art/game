@@ -228,6 +228,9 @@ namespace Dovus.Game.EditorTools
         [MenuItem("Dovus/Play Sweep/144 kombo - Kılıç")]
         static void MenuSword() => Launch("kilic");
 
+        [MenuItem("Dovus/Play Sweep/144 kombo - Asa")]
+        static void MenuStaff() => Launch("asa");
+
         [MenuItem("Dovus/Play Sweep/144 kombo - Kılıç + Asa")]
         static void MenuSwordStaff() => Launch("kilic+asa");
 
@@ -273,6 +276,11 @@ namespace Dovus.Game.EditorTools
 
         public static void StartPreset(string preset)
         {
+            if (preset == "asa")
+            {
+                Start(AllCombos("Asa"), preset);
+                return;
+            }
             string second = preset == "kilic+asa" ? "Asa" : "";
             Start(AllCombos("Kılıç", second), preset, second);
         }
@@ -460,8 +468,23 @@ namespace Dovus.Game.EditorTools
             _dodge = _player.GetComponent<DodgeMotion>();
             var visual = _player.GetComponent<ActorVisual>();
             _animator = visual != null ? F<Animator>(visual, "_animator") : null;
+            RefreshBody();
             CollectStateNames();
             return _skills != null && _bossVitals != null;
+        }
+
+        /// <summary>
+        /// Gövde bileşenleri geç eklenebilir (build ekranı açıkken Idle atlanır, gövde bang'de doğabilir).
+        /// Boş ya da yok edilmiş referans her çağrıda yeniden aranır.
+        /// </summary>
+        static void RefreshBody()
+        {
+            if (_player == null)
+                return;
+            if (_body == null)
+                _body = _player.GetComponent<MotionTemplateBody>();
+            if (_driver == null)
+                _driver = _player.GetComponent<SkillMotionDriver>();
         }
 
         static void NextCase()
@@ -501,8 +524,7 @@ namespace Dovus.Game.EditorTools
                 _stageMs = NowMs;
                 return;
             }
-            _body ??= _player.GetComponent<MotionTemplateBody>();
-            _driver ??= _player.GetComponent<SkillMotionDriver>();
+            RefreshBody();
             bool busy = Performing() || (_body != null && _body.IsDisplacing);
             var zones = _md.ZoneDirector;
             bool zonesLeft = zones != null && zones.ActiveZones.Count > 0;
@@ -561,6 +583,7 @@ namespace Dovus.Game.EditorTools
             _bossShifted = false;
             _bossHome = _boss.position;
             _pre = Snap();
+            RefreshBody();
             bool ok = _input.TryDebugCastSkill(c.Verb, c.Adj);
             _castMs = NowMs;
             if (!ok)
@@ -956,6 +979,7 @@ namespace Dovus.Game.EditorTools
 
         static Frame Sample()
         {
+            RefreshBody();
             var f = new Frame
             {
                 T = (float)((NowMs - _castMs) / 1000.0),
