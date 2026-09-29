@@ -97,7 +97,7 @@ namespace Dovus.Core.Status
                         continue;
                     }
 
-                    ApplyKind(board, kind, tuning, mobilityCc, ParseAdjectiveId(skill.AdjectiveId));
+                    ApplyKind(board, kind, skill, tuning, mobilityCc, ParseAdjectiveId(skill.AdjectiveId));
                 }
 
                 // Sıfat engine_modifiers — fiil mechanics dışında ek durum (3’lü/4’lü farkı).
@@ -142,7 +142,7 @@ namespace Dovus.Core.Status
 
             if (hostile != null)
                 ApplyHostileAdjectiveModifiers(
-                    mods, hostile, tuning, mechanics, mobilityCc, adjectiveId);
+                    mods, hostile, skill, tuning, mechanics, mobilityCc, adjectiveId);
 
             if (ModifierTruthy(mods, "apply_knockback") && !self && !HasMech("knockback"))
                 knockback = true;
@@ -182,6 +182,7 @@ namespace Dovus.Core.Status
         static void ApplyHostileAdjectiveModifiers(
             JsonValue mods,
             StatusBoard board,
+            SkillResolution skill,
             StatusTuning tuning,
             string[] mechanics,
             MobilityCcData? mobilityCc,
@@ -206,16 +207,16 @@ namespace Dovus.Core.Status
             if (ModifierTruthy(mods, "apply_root") && !HasMech("root"))
                 board.Apply(
                     StatusKind.Root,
-                    mobilityCc?.ResolveCcDurationMs(StatusKind.Root, adjectiveId, tuning.RootMs)
-                        ?? tuning.RootMs,
-                    1f);
+                    ExplicitOrFallback(mods, "cc_duration_sec", StatusKind.Root, adjectiveId, tuning.RootMs, mobilityCc),
+                    1f,
+                    RootSource(skill, "adj"));
             float rootSec = mods["apply_root_sec"].AsFloat(0f);
             if (rootSec > 0f && !HasMech("root"))
                 board.Apply(
                     StatusKind.Root,
-                    mobilityCc?.ResolveCcDurationMs(StatusKind.Root, adjectiveId, rootSec * 1000.0)
-                        ?? rootSec * 1000.0,
-                    1f);
+                    rootSec * 1000.0,
+                    1f,
+                    RootSource(skill, "adj"));
 
             if (ModifierTruthy(mods, "apply_burn") && !HasMech("burn"))
             {
@@ -273,19 +274,20 @@ namespace Dovus.Core.Status
         static void ApplyKind(
             StatusBoard board,
             StatusKind kind,
+            SkillResolution skill,
             StatusTuning t,
             MobilityCcData? mobilityCc,
             int adjectiveId)
         {
             double Duration(double fallback) =>
-                mobilityCc?.ResolveCcDurationMs(kind, adjectiveId, fallback) ?? fallback;
+                ExplicitOrFallback(skill.EngineModifiers, "cc_duration_sec", kind, adjectiveId, fallback, mobilityCc);
             switch (kind)
             {
                 case StatusKind.Stun:
                     board.Apply(kind, Duration(t.StunMs), 1f);
                     break;
                 case StatusKind.Root:
-                    board.Apply(kind, Duration(t.RootMs), 1f);
+                    board.Apply(kind, Duration(t.RootMs), 1f, RootSource(skill, "verb"));
                     break;
                 case StatusKind.Silence:
                     board.Apply(kind, Duration(t.SilenceMs), 1f);
@@ -340,6 +342,34 @@ namespace Dovus.Core.Status
                     break;
             }
         }
+
+        /// <summary>
+        /// Skill engine'i kendi süresini yazdıysa o kullanılır.
+        /// Yazmadıysa mobility_cc tablosu, o da yoksa tuning yedeği.
+        /// </summary>
+        static double ExplicitOrFallback(
+            JsonValue engine,
+            string secondsField,
+            StatusKind kind,
+            int adjectiveId,
+            double fallbackMs,
+            MobilityCcData? mobilityCc)
+        {
+            if (!engine.IsNull && engine.Kind == JsonKind.Object)
+            {
+                string cc = engine["cc_kind"].AsString();
+                bool matches = string.IsNullOrEmpty(cc)
+                    || (StatusKindUtil.TryParse(cc, out StatusKind ccKind) && ccKind == kind);
+                float seconds = engine[secondsField].AsFloat(0f);
+                if (matches && seconds > 0f)
+                    return seconds * 1000.0;
+            }
+
+            return mobilityCc?.ResolveCcDurationMs(kind, adjectiveId, fallbackMs) ?? fallbackMs;
+        }
+
+        static string RootSource(SkillResolution skill, string part) =>
+            "skill:" + (string.IsNullOrEmpty(skill.SkillId) ? "unknown" : skill.SkillId) + ":" + part;
 
         static int ParseAdjectiveId(string id) =>
             int.TryParse(id, out int value) ? value : 0;

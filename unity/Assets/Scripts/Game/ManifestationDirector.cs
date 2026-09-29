@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Dovus.Core;
 using Dovus.Core.Combat;
 using Dovus.Core.Equipment;
 using Dovus.Core.Execution;
@@ -76,6 +77,7 @@ namespace Dovus.Game
         SlotPassiveDirector _slotPassives;
         PassiveHud _passiveHud;
         MobilityCcData _mobilityCc;
+        SkillNumberCatalog _skillNumbers;
         // --- State machine (player_states ↔ SentencePhase / dodge / CC) ---
         PlayerStateMachine _playerStates;
         // --- Zincir (Bağlama 6) — son N cast elementi; Links geçmişe yazılmaz ---
@@ -836,7 +838,7 @@ namespace Dovus.Game
                     continue;
 
                 if (string.Equals(z.CcKind, "root", StringComparison.Ordinal))
-                    _bossStatus.Board.Apply(StatusKind.Root, tuning.RootMs, 1f);
+                    _bossStatus.Board.Apply(StatusKind.Root, tuning.RootMs, 1f, "zone:" + z.Id);
                 else if (string.Equals(z.CcKind, "slow", StringComparison.Ordinal))
                     _bossStatus.Board.Apply(StatusKind.Slow, tuning.SlowMs, tuning.SlowSpeedMult);
             }
@@ -896,9 +898,7 @@ namespace Dovus.Game
 
             ZoneNode zone = matched.Value;
             Vector3 pos = _player != null ? _player.position : Vector3.zero;
-            float radius = _combat != null
-                ? _combat.Manifestation.ZoneDefaultRadiusM
-                : 3.6f;
+            float radius = ZoneRadiusFromJson(skill);
 
             if (!_zoneDirector.TrySpawn(
                     zone.Element,
@@ -911,6 +911,23 @@ namespace Dovus.Game
                 return;
 
             _zoneField?.Sync(_zoneDirector.ActiveZones);
+        }
+
+        float ZoneRadiusFromJson(in SkillResolution skill)
+        {
+            if (_skillNumbers != null && int.TryParse(skill.VerbId, out int verbId))
+            {
+                float fromJson = _skillNumbers.RadiusM(verbId);
+                if (fromJson > 0f)
+                    return fromJson;
+            }
+
+            DesignWarnings.Once(
+                "zone_radius",
+                "element-sistemi.json alan yarıçapı yok; yedek yarıçap kullanıldı.");
+            return _combat != null
+                ? _combat.Manifestation.ZoneDefaultRadiusM
+                : SkillNumberFallbacks.RadiusM;
         }
 
         /// <summary>
@@ -2769,7 +2786,7 @@ namespace Dovus.Game
             StatusTuning tuning = _combat != null ? _combat.Status : new StatusTuning();
             float rootSec = _slotPassives.MaxModifier("apply_root_sec");
             if (rootSec > 0f)
-                target.Board.Apply(StatusKind.Root, rootSec * 1000.0, 1f);
+                target.Board.Apply(StatusKind.Root, rootSec * 1000.0, 1f, "passive:root");
             float slow = _slotPassives.MaxModifier("apply_slow");
             if (slow > 0f)
                 target.Board.Apply(
@@ -2971,7 +2988,8 @@ namespace Dovus.Game
                     _combat != null ? _combat.ClosingDamagePerEffect : 1f,
                     skill,
                     isBasicStrike,
-                    outMult);
+                    outMult,
+                    _skillNumbers != null ? _skillNumbers.VerbDamageReference : 0f);
                 if (extraCrit > 0f && damage > 0f)
                 {
                     DamageHit critHit = EnsureDamageCalculator().ApplyExtraCrit(damage, extraCrit);

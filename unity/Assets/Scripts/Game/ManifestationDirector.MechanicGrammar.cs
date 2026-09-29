@@ -150,7 +150,11 @@ namespace Dovus.Game
                         break;
                     case ("hiz", "hareket"):
                         if (e.Amount <= 0)
-                            ApplyOnce(boss, e.Has("havada") || e.Has("sersem") ? StatusKind.Stun : StatusKind.Root, ms, 1f, applied);
+                            ApplyOnce(
+                                boss,
+                                e.Has("havada") || e.Has("sersem") ? StatusKind.Stun : StatusKind.Root,
+                                ms, 1f, applied,
+                                e.Has("havada") || e.Has("sersem") ? null : "hit:" + plan.SkillId);
                         else if (e.Amount < 1)
                             ApplyOnce(boss, StatusKind.Slow, ms, (float)e.Amount, applied);
                         break;
@@ -186,12 +190,15 @@ namespace Dovus.Game
                 Debug.Log($"[Mechanic] isabet {plan.SkillId}/{plan.WeaponName}: {string.Join(", ", applied)}");
         }
 
-        static void ApplyOnce(StatusBoard board, StatusKind kind, double ms, float magnitude, List<string> applied)
+        static void ApplyOnce(
+            StatusBoard board, StatusKind kind, double ms, float magnitude, List<string> applied,
+            string sourceId = null)
         {
             // Aynı cast'in eski motor durumu zaten verdiyse süre ikinci kez uzamasın.
-            if (ms <= 0 || board.Has(kind))
+            // Kök ayrı: ikinci kaynak süreyi uzatmaz, en uzun olan kalır.
+            if (ms <= 0 || (kind != StatusKind.Root && board.Has(kind)))
                 return;
-            board.Apply(kind, ms, magnitude);
+            board.Apply(kind, ms, magnitude, sourceId);
             applied.Add($"{kind} {ms / 1000.0:0.##}sn");
         }
 

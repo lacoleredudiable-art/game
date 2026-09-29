@@ -11,9 +11,20 @@ namespace Dovus.Core.Status
     public sealed class StatusBoard
     {
         readonly Dictionary<StatusKind, StatusEntry> _active = new();
+        readonly Dictionary<string, double> _rootSources = new(StringComparer.Ordinal);
         MobilityCcData? _mobilityCc;
+        double _rootImmunityMs = SkillNumberFallbacks.RootImmunityMs;
+        double _rootImmunityRemainingMs;
 
-        public void ConfigureMobilityCc(MobilityCcData data) => _mobilityCc = data;
+        public void ConfigureMobilityCc(MobilityCcData data)
+        {
+            _mobilityCc = data;
+            if (data != null && data.RootImmunityMs >= 0)
+                _rootImmunityMs = data.RootImmunityMs;
+        }
+
+        public double RootImmunityRemainingMs => _rootImmunityRemainingMs;
+        public bool IsRootImmune => _rootImmunityRemainingMs > 0;
 
         /// <summary>
         /// 16 Eylül: "skilleri attığımda bir etkileşim göremiyorum" raporu — mekanik zaten
@@ -107,7 +118,14 @@ namespace Dovus.Core.Status
         /// </summary>
         public float Tick(double worldDtMs, StatusTuning tuning)
         {
-            if (worldDtMs <= 0 || _active.Count == 0)
+            if (worldDtMs <= 0)
+                return 0f;
+
+            if (_rootImmunityRemainingMs > 0)
+                _rootImmunityRemainingMs = Math.Max(0, _rootImmunityRemainingMs - worldDtMs);
+            DecayRoots(worldDtMs);
+
+            if (_active.Count == 0)
                 return 0f;
 
             float tickPayload = 0f;
@@ -118,6 +136,8 @@ namespace Dovus.Core.Status
             var refreshed = new List<KeyValuePair<StatusKind, StatusEntry>>();
             foreach (var kv in _active)
             {
+                if (kv.Key == StatusKind.Root)
+                    continue;
                 StatusEntry e = kv.Value;
                 e.RemainingMs -= worldDtMs;
                 if (kv.Key == StatusKind.Burn)
@@ -160,10 +180,16 @@ namespace Dovus.Core.Status
             return tickPayload;
         }
 
-        public void Apply(StatusKind kind, double durationMs, float magnitude)
+        public void Apply(StatusKind kind, double durationMs, float magnitude, string? sourceId = null)
         {
             if (kind == StatusKind.None || durationMs <= 0)
                 return;
+
+            if (kind == StatusKind.Root)
+            {
+                ApplyRoot(sourceId, durationMs, magnitude);
+                return;
+            }
 
             ApplyReactions(kind, ref durationMs, ref magnitude);
 
@@ -270,6 +296,7 @@ namespace Dovus.Core.Status
 
         public void CleanseHostile()
         {
+            bool hadRoot = Has(StatusKind.Root) || _rootSources.Count > 0;
             var remove = new List<StatusKind>();
             foreach (StatusKind k in _active.Keys)
             {
@@ -278,6 +305,8 @@ namespace Dovus.Core.Status
             }
             for (int i = 0; i < remove.Count; i++)
                 _active.Remove(remove[i]);
+            if (hadRoot)
+                EndRoot();
         }
 
         /// <summary>
@@ -288,15 +317,112 @@ namespace Dovus.Core.Status
         {
             if (kinds == null || kinds.Count == 0)
                 return;
+            bool dropRoot = false;
             for (int i = 0; i < kinds.Count; i++)
             {
                 StatusKind k = kinds[i];
-                if (k != StatusKind.None)
-                    _active.Remove(k);
+                if (k == StatusKind.None)
+                    continue;
+                if (k == StatusKind.Root && (Has(StatusKind.Root) || _rootSources.Count > 0))
+                    dropRoot = true;
+                _active.Remove(k);
             }
+            if (dropRoot)
+                EndRoot();
         }
 
-        public void Clear() => _active.Clear();
+        public void Clear()
+        {
+            _active.Clear();
+            _rootSources.Clear();
+            _rootImmunityRemainingMs = 0;
+        }
+
+        void ApplyRoot(string? sourceId, double durationMs, float magnitude)
+        {
+            if (_rootImmunityRemainingMs > 0)
+                return;
+
+            ApplyReactions(StatusKind.Root, ref durationMs, ref magnitude);
+            if (durationMs <= 0)
+                return;
+
+            string source = string.IsNullOrEmpty(sourceId) ? "root" : sourceId;
+            _rootSources[source] = durationMs;
+            PublishRoot(magnitude > 0f ? magnitude : 1f);
+        }
+
+        void DecayRoots(double worldDtMs)
+        {
+            if (_rootSources.Count == 0)
+                return;
+
+            var keys = new List<string>(_rootSources.Keys);
+            var dead = new List<string>();
+            for (int i = 0; i < keys.Count; i++)
+            {
+                double rem = _rootSources[keys[i]] - worldDtMs;
+                if (rem <= 0)
+                    dead.Add(keys[i]);
+                else
+                    _rootSources[keys[i]] = rem;
+            }
+
+            for (int i = 0; i < dead.Count; i++)
+                _rootSources.Remove(dead[i]);
+
+            if (_rootSources.Count == 0)
+            {
+                _active.Remove(StatusKind.Root);
+                BeginRootImmunity();
+                return;
+            }
+
+            float mag = 1f;
+            if (_active.TryGetValue(StatusKind.Root, out StatusEntry existing))
+                mag = existing.Magnitude;
+            PublishRoot(mag);
+        }
+
+        void PublishRoot(float magnitude)
+        {
+            double longest = 0;
+            foreach (KeyValuePair<string, double> kv in _rootSources)
+            {
+                if (kv.Value > longest)
+                    longest = kv.Value;
+            }
+
+            if (longest <= 0)
+            {
+                _active.Remove(StatusKind.Root);
+                return;
+            }
+
+            if (_active.TryGetValue(StatusKind.Root, out StatusEntry existing))
+            {
+                existing.RemainingMs = longest;
+                existing.Magnitude = Math.Max(existing.Magnitude, magnitude);
+                existing.TotalDurationMs = Math.Max(existing.TotalDurationMs, longest);
+                _active[StatusKind.Root] = existing;
+                return;
+            }
+
+            _active[StatusKind.Root] = new StatusEntry(longest, magnitude, longest);
+        }
+
+        void EndRoot()
+        {
+            _rootSources.Clear();
+            _active.Remove(StatusKind.Root);
+            BeginRootImmunity();
+        }
+
+        void BeginRootImmunity()
+        {
+            if (_rootImmunityMs > 0)
+                _rootImmunityRemainingMs = _rootImmunityMs;
+        }
 
         struct StatusEntry
         {

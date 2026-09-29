@@ -1,3 +1,4 @@
+using Dovus.Core;
 using Dovus.Core.Combat;
 using Dovus.Core.Equipment;
 using Dovus.Core.Execution;
@@ -426,6 +427,13 @@ namespace Dovus.Game
             director.ConfigureWeaponCycle(design?.Equipment.Items);
             if (design != null)
             {
+                DesignWarnings.Warned -= LogDesignWarning;
+                DesignWarnings.Warned += LogDesignWarning;
+                SkillNumberCatalog numbers = SkillNumberCatalog.FromJson(design.Json);
+                numbers.ApplyCcDurations(combat.Status);
+                director.ConfigureSkillNumbers(numbers);
+                resource.Bind(numbers.MaxMana, numbers.ManaRegenPerSec, numbers.ManaRegenDelaySec);
+                cooldown.Bind(numbers.GlobalCooldownSec, numbers.MaxConcurrentCasts);
                 director.ConfigureWeaponSwap(WeaponSwapRules.FromJson(design.Json));
                 director.ConfigureVerbExecution(VerbExecutionData.FromJson(design.Json));
                 MobilityCcData mobilityCc = MobilityCcData.FromJson(design.Json);
@@ -454,6 +462,8 @@ namespace Dovus.Game
 
             CreateTuningPanel(tuningConfig, vitals);
         }
+
+        static void LogDesignWarning(string message) => Debug.LogWarning(message);
 
         static void VerifyBindingPipeline(
             ElementSystemDesign design,

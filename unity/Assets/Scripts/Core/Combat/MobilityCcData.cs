@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using Dovus.Core;
 using Dovus.Core.Grammar;
 using Dovus.Core.Status;
 
@@ -27,6 +28,8 @@ namespace Dovus.Core.Combat
 
         public string SameCcStacking { get; private set; } = string.Empty;
         public string DifferentCcStacking { get; private set; } = string.Empty;
+        /// <summary>Kök bitince kısa bağışıklık. JSON'da yoksa 0.5 sn.</summary>
+        public double RootImmunityMs { get; private set; } = SkillNumberFallbacks.RootImmunityMs;
         public float LightPoise { get; private set; }
         public float MediumPoise { get; private set; }
         public float HeavyPoise { get; private set; }
@@ -58,6 +61,7 @@ namespace Dovus.Core.Combat
 
             data.SameCcStacking = node["cc_stacking"]["same_cc"].AsString();
             data.DifferentCcStacking = node["cc_stacking"]["different_cc"].AsString();
+            data.RootImmunityMs = ReadRootImmunityMs(node);
             foreach (KeyValuePair<string, JsonValue> kv in node["cc_priority_table"].AsObject())
                 data.ParsePriorityPair(kv.Key, kv.Value.AsString());
 
@@ -194,6 +198,29 @@ namespace Dovus.Core.Combat
             foreach (KeyValuePair<string, JsonValue> kv in obj.AsObject())
                 if (TryId(kv.Key, out int id))
                     dst[id] = kv.Value.AsString();
+        }
+
+        static double ReadRootImmunityMs(JsonValue node)
+        {
+            if (TrySeconds(node, "root_immunity_sec", out double sec)
+                || TrySeconds(node, "bind_immunity_sec", out sec)
+                || TrySeconds(node["cc_stacking"], "root_immunity_sec", out sec)
+                || TrySeconds(node["cc_stacking"], "bind_immunity_sec", out sec))
+                return sec * 1000.0;
+
+            DesignWarnings.Once(
+                "mobility_cc.root_immunity_sec",
+                "element-sistemi.json kök bağışıklığı yok; yedek 0.5 sn kullanıldı.");
+            return SkillNumberFallbacks.RootImmunityMs;
+        }
+
+        static bool TrySeconds(JsonValue obj, string field, out double seconds)
+        {
+            seconds = 0;
+            if (!obj.Has(field) || obj[field].Kind != JsonKind.Number)
+                return false;
+            seconds = obj[field].AsFloat(0f);
+            return true;
         }
 
         static bool TryId(string value, out int id) =>

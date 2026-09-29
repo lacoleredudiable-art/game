@@ -10,8 +10,10 @@ namespace Dovus.Core.Combat
     /// </summary>
     public static class ClosingDamageMath
     {
-        /// <summary>element-sistemi saldiri.base_damage_value — ölçek 1.0.</summary>
-        public const float VerbDamageReference = 40f;
+        /// <summary>
+        /// JSON verb_base.1.base_damage yoksa ölçek. Canlı yol katalogdan gelen değeri geçirir.
+        /// </summary>
+        public const float VerbDamageReference = SkillNumberFallbacks.VerbDamageReference;
 
         /// <param name="totalEffect">ClosingHit.TotalEffect (§5 tablo).</param>
         /// <param name="closingDamagePerEffect">CombatTuning.ClosingDamagePerEffect.</param>
@@ -23,7 +25,8 @@ namespace Dovus.Core.Combat
             float closingDamagePerEffect,
             SkillResolution skill,
             bool isBasicStrike,
-            float outgoingDamageMult = 1f)
+            float outgoingDamageMult = 1f,
+            float verbDamageReference = 0f)
         {
             if (totalEffect <= 0f || closingDamagePerEffect <= 0f)
                 return 0f;
@@ -39,7 +42,8 @@ namespace Dovus.Core.Combat
                 return 0f;
 
             float adj = skill.DamageMult > 0f ? skill.DamageMult : 1f;
-            float verbScale = skill.BaseDamage / VerbDamageReference;
+            float reference = verbDamageReference > 0f ? verbDamageReference : VerbDamageReference;
+            float verbScale = skill.BaseDamage / reference;
             return commit * verbScale * adj * outMult;
         }
     }
