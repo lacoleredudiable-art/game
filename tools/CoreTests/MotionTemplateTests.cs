@@ -130,10 +130,15 @@ public class MotionTemplateTests
     [Test]
     public void Family03_SideHopCrosses_ThreeBounces_StompThenAway()
     {
-        var side = Play(Ready("yan_yan_sekme"), 1f, new MotionTarget(true, 0f, 3f));
+        var boss = new MotionTarget(true, 0f, 3f, 0.85f);
+        var side = Play(Ready("yan_yan_sekme"), 1f, boss, bodyRadius: 0.5f);
         Assert.That(side.Hits, Has.Count.EqualTo(2));
-        Assert.That(side.Hits[0].OriginX, Is.LessThan(-0.5f));
-        Assert.That(side.Hits[1].OriginX, Is.GreaterThan(0.5f));
+        Assert.That(MotionHitGeometry.Overlaps(
+            side.Hits[0].OriginX, side.Hits[0].OriginZ, side.Hits[0].DirX, side.Hits[0].DirZ,
+            side.Hits[0].LengthM, side.Hits[0].RadiusM, side.Hits[0].Anchor, 0f, 3f, 0.85f), Is.True);
+        Assert.That(MotionHitGeometry.Overlaps(
+            side.Hits[1].OriginX, side.Hits[1].OriginZ, side.Hits[1].DirX, side.Hits[1].DirZ,
+            side.Hits[1].LengthM, side.Hits[1].RadiusM, side.Hits[1].Anchor, 0f, 3f, 0.85f), Is.True);
 
         var hops = Play(Ready("sekmeli_ziplama"), 1f, new MotionTarget(false, 0f, 0f));
         Assert.That(hops.Hits, Has.Count.EqualTo(3));
@@ -157,8 +162,9 @@ public class MotionTemplateTests
         Assert.That(crash.Y, Is.LessThan(0.2f));
         Assert.That(crash.Z, Is.GreaterThan(2f));
 
-        var dive = Play(Ready("dalis_patlamasi"), 0.6f, new MotionTarget(true, 0f, 4f));
-        Assert.That(dive.Z, Is.EqualTo(4f).Within(0.35f));
+        var dive = Play(Ready("dalis_patlamasi"), 0.6f, new MotionTarget(true, 0f, 4f, 0.85f), bodyRadius: 0.5f);
+        Assert.That(MotionHitGeometry.EdgeGap(dive.X, dive.Z, 0.5f, 0f, 4f, 0.85f), Is.GreaterThan(0.05f),
+            "dalış boss'un içine girmez");
         Assert.That(dive.Hits, Has.Count.EqualTo(1));
     }
 
@@ -198,9 +204,15 @@ public class MotionTemplateTests
     [Test]
     public void Family07_HookLandsPastTarget_YankStepsBack()
     {
-        var hook = Play(Ready("kanca_cekis"), 1f, new MotionTarget(true, 0f, 4f));
+        var hookBoss = new MotionTarget(true, 0f, 4f, 0.85f);
+        var hook = Play(Ready("kanca_cekis"), 1.2f, hookBoss, bodyRadius: 0.5f);
         Assert.That(hook.Z, Is.GreaterThan(4f), "sırtına iner");
-        Assert.That(hook.Hits[0].Anchor, Is.EqualTo("behind"));
+        Assert.That(MotionHitGeometry.EdgeGap(hook.X, hook.Z, 0.5f, 0f, 4f, 0.85f), Is.GreaterThan(0.05f));
+        Assert.That(hook.Hits, Has.Some.Property("Anchor").EqualTo("behind"));
+        MotionHit behind = hook.Hits.Find(h => h.Anchor == "behind");
+        Assert.That(MotionHitGeometry.Overlaps(
+            behind.OriginX, behind.OriginZ, behind.DirX, behind.DirZ,
+            behind.LengthM, behind.RadiusM, behind.Anchor, 0f, 4f, 0.85f), Is.True);
 
         var yank = Play(Ready("bossu_cek"), 0.6f, new MotionTarget(true, 0f, 3f));
         Assert.That(yank.Z, Is.LessThan(-1f));
@@ -244,10 +256,14 @@ public class MotionTemplateTests
     [Test]
     public void Family10_FuseIsDelayed_MarkThenStrike()
     {
-        var fuse = Play(Ready("saplanan_fitil"), 2f, new MotionTarget(true, 0f, 4f));
-        Assert.That(fuse.Hits, Has.Count.EqualTo(1));
-        Assert.That(fuse.Hits[0].TimeSec, Is.GreaterThan(1.4f));
-        Assert.That(fuse.Z, Is.LessThan(0f), "fitili saplayıp uzaklaşır");
+        var fuse = Play(Ready("saplanan_fitil"), 2f, new MotionTarget(true, 0f, 4f, 0.85f), bodyRadius: 0.5f);
+        MotionHit boom = fuse.Hits.Find(h => h.Payload == "effect");
+        MotionHit marker = fuse.Hits.Find(h => h.Payload == "marker");
+        Assert.That(marker.TimeSec, Is.LessThan(0.4f));
+        Assert.That(boom.TimeSec, Is.GreaterThan(1.4f));
+        Assert.That(boom.Anchor, Is.EqualTo("plant"));
+        Assert.That(boom.OriginZ, Is.EqualTo(marker.OriginZ).Within(0.05f), "patlama fitilin çakıldığı yerde");
+        Assert.That(fuse.Z, Is.LessThan(boom.OriginZ), "fitili saplayıp uzaklaşır");
 
         var mark = Play(Ready("isarete_vur"), 0.5f, new MotionTarget(true, 0f, 3f));
         Assert.That(mark.Hits, Has.Count.EqualTo(1));
@@ -269,11 +285,15 @@ public class MotionTemplateTests
         Assert.That(door.Hits, Has.Count.EqualTo(2));
         Assert.That(door.Hits[0].OriginZ, Is.LessThan(3f));
         Assert.That(door.Hits[1].Anchor, Is.EqualTo("behind"));
-        Assert.That(door.Hits[1].OriginZ, Is.GreaterThan(3f));
+        Assert.That(MotionHitGeometry.Overlaps(
+            door.Hits[1].OriginX, door.Hits[1].OriginZ, door.Hits[1].DirX, door.Hits[1].DirZ,
+            door.Hits[1].LengthM, door.Hits[1].RadiusM, door.Hits[1].Anchor, 0f, 3f, 0.85f), Is.True);
 
         var pincer = Play(Ready("onden_arkadan"), 0.5f, new MotionTarget(true, 0f, 3f));
         Assert.That(pincer.Hits, Has.Count.EqualTo(2));
-        Assert.That(pincer.Hits[1].OriginZ, Is.GreaterThan(3f));
+        Assert.That(MotionHitGeometry.Overlaps(
+            pincer.Hits[1].OriginX, pincer.Hits[1].OriginZ, pincer.Hits[1].DirX, pincer.Hits[1].DirZ,
+            pincer.Hits[1].LengthM, pincer.Hits[1].RadiusM, pincer.Hits[1].Anchor, 0f, 3f, 0.85f), Is.True);
 
         var twin = Play(Ready("ters_es"), 0.6f, new MotionTarget(true, 0f, 3f));
         Assert.That(twin.Z, Is.EqualTo(0f).Within(0.2f));
@@ -316,6 +336,107 @@ public class MotionTemplateTests
     }
 
     [Test]
+    public void EnemyAim_IgnoresSelfEffectTarget()
+    {
+        Assert.That(_catalog.TryGet("3-6", out MotionBinding hook), Is.True);
+        Assert.That(hook.Template.Aim, Is.EqualTo(MotionAim.Enemy));
+        Assert.That(MotionAim.TryResolveEnemy(
+            hasSelectedEnemy: true, 2f, 5f,
+            hasAutoEnemy: true, 0f, 1f,
+            out float x, out float z), Is.True);
+        Assert.That(x, Is.EqualTo(2f).Within(0.001f));
+        Assert.That(z, Is.EqualTo(5f).Within(0.001f));
+
+        Assert.That(MotionAim.TryResolveEnemy(
+            false, 0f, 0f, true, 0f, 4f, out x, out z), Is.True);
+        Assert.That(z, Is.EqualTo(4f).Within(0.001f), "seçim yoksa menzildeki düşman");
+        Assert.That(MotionAim.TryResolveEnemy(false, 9f, 9f, false, 0f, 0f, out _, out _), Is.False);
+    }
+
+    [Test]
+    public void Lunge_StopsEdgeToEdge_AndDoesNotEnterTheBody()
+    {
+        MotionTemplate template = Ready("yukle_birak");
+        var boss = new MotionTarget(true, 0f, 3f, 0.85f);
+        var runner = new MotionTemplateRunner();
+        runner.Begin(template, 0f, 0f, 0f, 0f, 1f, 0.5f, 0.15f);
+        Step(runner, 0.2f, boss, held: false);
+        Step(runner, 0.6f, boss, held: false);
+        float gap = MotionHitGeometry.EdgeGap(runner.X, runner.Z, 0.5f, 0f, 3f, 0.85f);
+        Assert.That(gap, Is.GreaterThan(0.1f), "kenarlar birbirine girmez");
+
+        var close = new MotionTarget(true, 0f, 1.0f, 0.85f);
+        var inside = new MotionTemplateRunner();
+        inside.Begin(template, 0f, 0f, 0f, 0f, 1f, 0.5f, 0.15f);
+        Step(inside, 0.8f, close, held: false);
+        Assert.That(inside.Z, Is.LessThan(0.05f), "zaten içerdeyse daha içeri saplanmaz");
+    }
+
+    [Test]
+    public void CastRange_IsEdgeToEdge_AndIncludesLungeTravel()
+    {
+        MotionTemplate lunge = Ready("yukle_birak");
+        float edge = MotionCastReach.EdgeReachM(lunge);
+        Assert.That(edge, Is.GreaterThan(1.7f), "saplama mesafesi menzile girer");
+        float gate = MotionCastReach.GateRangeM(edge, 0.5f);
+        // Eski kapı ~0.6 m yüzey mesafesiydi; 1 m yüzey (kenar 0.5 m) artık sığar.
+        Assert.That(1.0f, Is.LessThan(gate));
+        Assert.That(gate, Is.EqualTo(edge + 0.5f).Within(0.001f));
+    }
+
+    [Test]
+    public void Fuse_StaysAtThePlantedPoint_WhenTheBossMoves()
+    {
+        MotionTemplate template = Ready("saplanan_fitil");
+        var runner = new MotionTemplateRunner();
+        var boss = new MotionTarget(true, 0f, 4f, 0.85f);
+        runner.Begin(template, 0f, 0f, 0f, 0f, 1f, 0.5f, 0.15f);
+        MotionHit marker = default;
+        bool marked = false;
+        float left = 0.5f;
+        while (left > 0f && !marked)
+        {
+            MotionTick tick = runner.Tick(0.02f, boss, default);
+            if (tick.Hits != null)
+            {
+                for (int i = 0; i < tick.Hits.Length; i++)
+                {
+                    if (tick.Hits[i].Payload == "marker")
+                    {
+                        marker = tick.Hits[i];
+                        marked = true;
+                    }
+                }
+            }
+            left -= 0.02f;
+        }
+        Assert.That(marked, Is.True);
+        var walked = new MotionTarget(true, 0f, 9f, 0.85f);
+        MotionHit boom = default;
+        bool exploded = false;
+        left = 2f;
+        while (left > 0f && !runner.Finished)
+        {
+            MotionTick tick = runner.Tick(0.02f, walked, default);
+            if (tick.Hits != null)
+            {
+                for (int i = 0; i < tick.Hits.Length; i++)
+                {
+                    if (tick.Hits[i].Payload == "effect")
+                    {
+                        boom = tick.Hits[i];
+                        exploded = true;
+                    }
+                }
+            }
+            left -= 0.02f;
+        }
+        Assert.That(exploded, Is.True);
+        Assert.That(boom.OriginZ, Is.EqualTo(marker.OriginZ).Within(0.05f));
+        Assert.That(boom.OriginZ, Is.LessThan(8f), "patlama boss'un yeni yerinde değil");
+    }
+
+    [Test]
     public void Family14_ThrowLeavesTheBody_AndTheShotTravels()
     {
         var shot = Play(Ready("diken_firlatma"), 0.5f, new MotionTarget(true, 0f, 6f));
@@ -343,10 +464,10 @@ public class MotionTemplateTests
         return new List<string>(binding.Tags);
     }
 
-    static Sample Play(MotionTemplate template, float seconds, MotionTarget target, float moveX = 0f)
+    static Sample Play(MotionTemplate template, float seconds, MotionTarget target, float moveX = 0f, float bodyRadius = 0.5f)
     {
         var runner = new MotionTemplateRunner();
-        runner.Begin(template, 0f, 0f, 0f, 0f, 1f);
+        runner.Begin(template, 0f, 0f, 0f, 0f, 1f, bodyRadius, 0.15f);
         var hits = new List<MotionHit>();
         float peakY = 0f;
         float peakZ = 0f;
@@ -454,5 +575,17 @@ public class BasicStrikeSlotTests
         Assert.That(strike.State.Phase, Is.EqualTo(SentencePhase.Recovering));
         Assert.That(strike.BeginBasicStrike(1, 50), Is.True, "toparlanma kilidini keser");
         Assert.That(strike.State.Words[0].Rune, Is.EqualTo(Rune.Saldiri));
+    }
+
+    [Test]
+    public void AfterLoadout_FirstCenterTap_IsNotSwallowed()
+    {
+        Assert.That(BasicStrikeInput.AllowsCenterStrike(
+            drawAllowed: false, loadoutJustApplied: true, engineAcceptsStrike: true), Is.True);
+        Assert.That(BasicStrikeInput.AllowsCenterStrike(
+            drawAllowed: false, loadoutJustApplied: false, engineAcceptsStrike: true), Is.False);
+        Assert.That(BasicStrikeInput.DealsDamage(capsuleHit: false, enemyInEdgeReachAtImpact: true), Is.True);
+        Assert.That(BasicStrikeInput.ReplaceStaleView(sentenceIsBasic: true, viewIsBasic: false), Is.True);
+        Assert.That(BasicStrikeInput.ReplaceStaleView(sentenceIsBasic: true, viewIsBasic: true), Is.False);
     }
 }

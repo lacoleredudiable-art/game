@@ -6,16 +6,19 @@ namespace Dovus.Core.Motion
 {
     public readonly struct MotionTarget
     {
-        public MotionTarget(bool has, float x, float z)
+        public MotionTarget(bool has, float x, float z, float radiusM = 0f)
         {
             Has = has;
             X = x;
             Z = z;
+            RadiusM = Math.Max(0f, radiusM);
         }
 
         public bool Has { get; }
         public float X { get; }
         public float Z { get; }
+        /// <summary>Hedef collider yarıçapı. 0 ise kenar payı yalnız saldıran gövdesinden gelir.</summary>
+        public float RadiusM { get; }
     }
 
     public readonly struct MotionStick
@@ -125,6 +128,11 @@ namespace Dovus.Core.Motion
         float _destX, _destZ;
         float _shot;
         float _walkX, _walkZ;
+        float _bodyRadius = 0.5f;
+        float _stopGap = 0.15f;
+        float _plantX, _plantZ;
+        bool _plantSent;
+        MotionTarget _lastTarget;
         bool _active;
         bool _finished;
         bool _hitSent;
@@ -138,7 +146,12 @@ namespace Dovus.Core.Motion
         public float FaceX => _faceX;
         public float FaceZ => _faceZ;
 
-        public void Begin(MotionTemplate template, float x, float y, float z, float faceX, float faceZ)
+        public void Begin(
+            MotionTemplate template,
+            float x, float y, float z,
+            float faceX, float faceZ,
+            float bodyRadiusM = 0.5f,
+            float stopGapM = 0.15f)
         {
             _template = template;
             _phase = 0;
@@ -152,6 +165,12 @@ namespace Dovus.Core.Motion
             _walkX = 0f;
             _walkZ = 0f;
             _shot = 0f;
+            _bodyRadius = Math.Max(0f, bodyRadiusM);
+            _stopGap = Math.Max(0f, stopGapM);
+            _plantSent = false;
+            _plantX = x;
+            _plantZ = z;
+            _lastTarget = default;
             _finished = template == null || template.Phases.Count == 0;
             _active = !_finished;
             Normalize(faceX, faceZ, out _faceX, out _faceZ);
@@ -165,6 +184,7 @@ namespace Dovus.Core.Motion
             if (!_active || _finished || dt <= 0f || _template == null)
                 return Capture();
 
+            _lastTarget = target;
             float left = dt;
             int guard = 0;
             while (left > 0.00001f && !_finished && guard++ < 12)
@@ -259,8 +279,16 @@ namespace Dovus.Core.Motion
                     _y = _groundY;
                     break;
                 case "hop":
-                    _x = _phaseX + rx * side * u * phase.DistanceM + fx * u * phase.ForwardM;
-                    _z = _phaseZ + rz * side * u * phase.DistanceM + fz * u * phase.ForwardM;
+                    if (phase.Land == "behind")
+                    {
+                        _x = _phaseX + (_destX - _phaseX) * u;
+                        _z = _phaseZ + (_destZ - _phaseZ) * u;
+                    }
+                    else
+                    {
+                        _x = _phaseX + rx * side * u * phase.DistanceM + fx * u * phase.ForwardM;
+                        _z = _phaseZ + rz * side * u * phase.DistanceM + fz * u * phase.ForwardM;
+                    }
                     _y = _groundY + 4f * phase.HeightM * uLinear * (1f - uLinear);
                     break;
                 case "leap":
@@ -430,18 +458,31 @@ namespace Dovus.Core.Motion
                 case "behind":
                     if (target.Has)
                     {
-                        ox = target.X + dx * phase.BehindM;
-                        oz = target.Z + dz * phase.BehindM;
-                    }
-                    else
-                    {
-                        ox = _x + dx * phase.BehindM;
-                        oz = _z + dz * phase.BehindM;
+                        ox = target.X;
+                        oz = target.Z;
                     }
                     break;
                 case "side":
                     ox = _x + rx * side * Math.Max(phase.SideM, phase.DistanceM);
                     oz = _z + rz * side * Math.Max(phase.SideM, phase.DistanceM);
+                    break;
+                case "target_side":
+                    // Sekme vuruşu hedefin yanında durur; kaymış gövdenin bir yan mesafe daha dışına kaçmaz.
+                    float lateral = 0.35f;
+                    if (target.Has)
+                    {
+                        ox = target.X + rx * side * lateral;
+                        oz = target.Z + rz * side * lateral;
+                    }
+                    else
+                    {
+                        ox = _x + rx * side * lateral;
+                        oz = _z + rz * side * lateral;
+                    }
+                    break;
+                case "plant":
+                    ox = _plantX;
+                    oz = _plantZ;
                     break;
                 case "shot":
                     ox = _x + dx * Math.Max(_shot, 0.01f);
@@ -490,6 +531,8 @@ namespace Dovus.Core.Motion
 
         void NextPhase()
         {
+            if (_template != null && _phase >= 0 && _phase < _template.Phases.Count)
+                RememberPlant(_template.Phases[_phase], _lastTarget);
             _phase++;
             if (_template == null || _phase >= _template.Phases.Count)
             {
@@ -498,6 +541,48 @@ namespace Dovus.Core.Motion
                 return;
             }
             EnterPhase();
+        }
+
+        void RememberPlant(MotionPhase phase, in MotionTarget target)
+        {
+            if (!phase.Plant || _plantSent)
+                return;
+            float fx = _faceX;
+            float fz = _faceZ;
+            if (target.Has)
+            {
+                float dx = target.X - _x;
+                float dz = target.Z - _z;
+                float len = MathF.Sqrt(dx * dx + dz * dz);
+                if (len > 0.05f)
+                {
+                    fx = dx / len;
+                    fz = dz / len;
+                }
+                // Fitil, o andaki hedefin yakın kenarına çakılır; boss sonra yürürse yerinde kalır.
+                _plantX = target.X - fx * target.RadiusM;
+                _plantZ = target.Z - fz * target.RadiusM;
+            }
+            else
+            {
+                _plantX = _x;
+                _plantZ = _z;
+            }
+            _plantSent = true;
+            _hits.Add(new MotionHit(
+                phase.Name,
+                "sphere",
+                "plant",
+                "marker",
+                0.25f,
+                0.2f,
+                0f,
+                _plantX,
+                _groundY,
+                _plantZ,
+                fx,
+                fz,
+                _elapsed));
         }
 
         void AimDest(MotionPhase phase, in MotionTarget target)
@@ -511,39 +596,60 @@ namespace Dovus.Core.Motion
             float dx = target.X - _phaseX;
             float dz = target.Z - _phaseZ;
             float len = MathF.Sqrt(dx * dx + dz * dz);
-            if (len < 0.05f)
-                return;
-            if (phase.Homing != "track")
+            if (len < 0.001f)
                 return;
             float ux = dx / len;
             float uz = dz / len;
+            if (phase.Land == "behind")
+            {
+                float behind = Separation(target);
+                _destX = target.X + ux * behind;
+                _destZ = target.Z + uz * behind;
+                return;
+            }
+            if (phase.Homing != "track")
+                return;
             switch (phase.Motion)
             {
                 case "dash":
-                    _destX = _phaseX + ux * (len + phase.OvershootM);
-                    _destZ = _phaseZ + uz * (len + phase.OvershootM);
+                    if (phase.OvershootM > 0.01f)
+                    {
+                        float through = len + target.RadiusM + _bodyRadius + _stopGap + phase.OvershootM;
+                        _destX = _phaseX + ux * through;
+                        _destZ = _phaseZ + uz * through;
+                    }
+                    else
+                        Approach(ux, uz, len, target, cap: 0f);
                     break;
                 case "leap":
                 case "pull":
-                    float land = Math.Max(0.15f, len - phase.GapM);
-                    _destX = _phaseX + ux * land;
-                    _destZ = _phaseZ + uz * land;
+                    Approach(ux, uz, len, target, cap: 0f);
                     break;
                 case "lunge":
-                    float reach = Math.Min(phase.DistanceM, Math.Max(0.2f, len - 0.45f));
-                    _destX = _phaseX + ux * reach;
-                    _destZ = _phaseZ + uz * reach;
+                    Approach(ux, uz, len, target, cap: phase.DistanceM);
                     break;
                 case "blink":
-                    _destX = target.X + ux * phase.BehindM;
-                    _destZ = target.Z + uz * phase.BehindM;
+                    _destX = target.X + ux * Separation(target);
+                    _destZ = target.Z + uz * Separation(target);
                     break;
                 case "slam":
-                    _destX = _phaseX + ux * phase.DistanceM;
-                    _destZ = _phaseZ + uz * phase.DistanceM;
+                    Approach(ux, uz, len, target, cap: phase.DistanceM);
                     break;
             }
         }
+
+        /// <summary>Merkezler, saldıran kenarı + pay + hedef kenarı kadar ayrı durur. İçeri girilmez.</summary>
+        void Approach(float ux, float uz, float len, in MotionTarget target, float cap)
+        {
+            float travel = Math.Max(0f, len - Separation(target));
+            if (cap > 0.01f)
+                travel = Math.Min(cap, travel);
+            _destX = _phaseX + ux * travel;
+            _destZ = _phaseZ + uz * travel;
+        }
+
+        float Separation(in MotionTarget target) =>
+            _bodyRadius + target.RadiusM + _stopGap;
 
         void Axis(MotionPhase phase, in MotionTarget target, out float fx, out float fz)
         {

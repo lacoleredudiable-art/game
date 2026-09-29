@@ -33,7 +33,13 @@ namespace Dovus.Game
             _body = bodyRadiusM > 0f ? bodyRadiusM : 0.5f;
         }
 
-        public void Play(MotionTemplate template, Func<MotionTarget> target, Func<bool> held, Action<MotionHit> onHit)
+        public void Play(
+            MotionTemplate template,
+            Func<MotionTarget> target,
+            Func<bool> held,
+            Action<MotionHit> onHit,
+            float bodyRadiusM = 0.5f,
+            float stopGapM = 0.15f)
         {
             if (template == null)
                 return;
@@ -42,7 +48,7 @@ namespace Dovus.Game
             f.y = 0f;
             if (f.sqrMagnitude < 0.0001f)
                 f = Vector3.forward;
-            _runner.Begin(template, p.x, p.y, p.z, f.x, f.z);
+            _runner.Begin(template, p.x, p.y, p.z, f.x, f.z, bodyRadiusM, stopGapM);
             _target = target;
             _held = held;
             _onHit = onHit;

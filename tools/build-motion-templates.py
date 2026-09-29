@@ -79,6 +79,16 @@ def H(anchor, at, share, shape="capsule", length=1.4, radius=0.32, payload="effe
 TRACK = {"facing": "target", "homing": "track"}
 TRAVEL = {"facing": "travel", "homing": "none"}
 
+# Hareket düşmana göredir; fiilin etki hedefi (kendin/dost) bunu değiştirmez.
+ENEMY_AIM = {
+    "yukle_birak", "kan_ceken_pence", "basili_seri", "yan_yan_sekme", "basip_sekme",
+    "yere_cakilan", "dalis_patlamasi", "yer_yarigi", "onde_yelpaze", "zincirli_firlatma",
+    "silaha_kement", "kanca_cekis", "bossu_cek", "sokup_cekme", "dumandan_cikis",
+    "havaya_kaldirma", "yerden_fiskirma", "havada_asma", "isarete_vur", "saplanan_fitil",
+    "isaret_patlamasi", "sirtta_kapi", "onden_arkadan", "golge_yankisi", "sinir_noktasi",
+    "diken_firlatma",
+}
+
 PHASES = {
     "yukle_birak": [
         P("yukleme", "hold", 0.34, gate="release", max_hold_sec=0.9, **TRACK),
@@ -99,9 +109,9 @@ PHASES = {
     ],
     "yan_yan_sekme": [
         P("sol", "sidestep", 0.18, side=-1, distance_m=1.35, forward_m=0.45,
-          hit=H("side", 0.72, 0.5, length=1.3, radius=0.35), **TRACK),
+          hit=H("target_side", 0.72, 0.5, length=1.3, radius=0.55), **TRACK),
         P("sag", "hop", 0.28, side=1, distance_m=2.7, forward_m=0.35, height_m=0.8,
-          hit=H("side", 0.82, 0.5, length=1.3, radius=0.35), **TRACK),
+          hit=H("target_side", 0.82, 0.5, length=1.3, radius=0.55), **TRACK),
     ],
     "sekmeli_ziplama": [
         P("sek_1", "hop", 0.2, side=1, distance_m=0.7, forward_m=1.35, height_m=0.55,
@@ -163,8 +173,8 @@ PHASES = {
     "kanca_cekis": [
         P("at", "throw", 0.16, shot_m=5, **TRACK),
         P("cek", "pull", 0.32, distance_m=2.2, gap_m=1.15, **TRACK),
-        P("as", "hop", 0.26, side=1, distance_m=0, forward_m=2.15, height_m=0.95, behind_m=1.1,
-          hit=H("behind", 0.7, 1, length=1.2, radius=0.4), **TRAVEL),
+        P("as", "hop", 0.26, side=1, distance_m=0, forward_m=0, height_m=0.95, land="behind",
+          hit=H("behind", 0.7, 1, shape="sphere", length=0.8, radius=0.55), **TRAVEL),
     ],
     "dostu_kanca": [
         P("at", "throw", 0.18, shot_m=4, **TRACK),
@@ -212,10 +222,10 @@ PHASES = {
           hit=H("forward", 0.6, 1, length=1.5, radius=0.28), **TRACK),
     ],
     "saplanan_fitil": [
-        P("sapla", "lunge", 0.12, distance_m=0.7, **TRACK),
+        P("sapla", "lunge", 0.12, distance_m=0.7, plant=True, **TRACK),
         P("uzaklas", "retreat", 0.26, distance_m=1.5, **TRACK),
         P("patla", "hold", 1.24,
-          hit=H("target", 0.99, 1, shape="sphere", length=0.8, radius=0.65), **TRACK),
+          hit=H("plant", 0.99, 1, shape="sphere", length=0.9, radius=0.9), **TRACK),
     ],
     "isaret_patlamasi": [
         P("at", "throw", 0.2, shot_m=4.5, **TRACK),
@@ -458,6 +468,7 @@ def main():
             "id": tid,
             "name": info["name"],
             "family": info["family"],
+            "aim": "enemy" if tid in ENEMY_AIM else "effect",
             "combos": info["combos"],
             "phases": phases,
         })
@@ -478,9 +489,10 @@ def main():
             "hit_radius_m": 0.4,
             "max_hold_sec": 0.9,
             "walk_mps": 1.6,
-            "height_m": 0.9,
-            "gap_m": 0.9,
-        },
+        "height_m": 0.9,
+        "gap_m": 0.9,
+        "stop_gap_m": 0.15,
+    },
         "families": [
             {"id": i, "name": name, "implemented": done}
             for i, name, done in FAMILIES

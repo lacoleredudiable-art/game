@@ -170,9 +170,12 @@ namespace Dovus.Core.Execution
         static VerbHitboxSpec ParseHitbox(JsonValue row)
         {
             string shape = row["shape"].AsString();
-            // "A × B" varsayılanı uzunluk × yarıçap (koni: menzil × açı). cross_section
-            // "width" ise B genişliktir (çap): fiil 3 "3m × 0.8m" ve fiil 7 "3m × 1m"
-            // kürelerdeki "yarıçap" sözcüğünü taşımaz, görünür genişlik yazılan metredir.
+            // "A × B" okuma kuralı (sahip, 29 Eylül):
+            //   line ve box: ikinci sayı tam genişliktir (çap). Oyun yarıçapı B/2.
+            //   capsule ve sphere: ikinci sayı yarıçaptır, yarılmaz.
+            //   cross_section "width" genişlik kuralını açıkça ister. Fiil 3 (line) ve
+            //   fiil 7 (kapsül) bu işareti taşır; fiil 1 kapsülü işaretsiz, 0.5 m yarıçaptır.
+            //   Koni: menzil × açı.
             string size = row["base_size"].AsString();
             MatchCollection numbers = Number.Matches(size);
             float a = numbers.Count > 0 ? ParseFloat(numbers[0].Value) : 0f;

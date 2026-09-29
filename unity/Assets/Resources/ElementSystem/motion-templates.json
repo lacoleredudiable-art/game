@@ -15,7 +15,8 @@
     "max_hold_sec": 0.9,
     "walk_mps": 1.6,
     "height_m": 0.9,
-    "gap_m": 0.9
+    "gap_m": 0.9,
+    "stop_gap_m": 0.15
   },
   "families": [
     {
@@ -234,6 +235,7 @@
       "id": "yukle_birak",
       "name": "Yükle ve bırak",
       "family": 1,
+      "aim": "enemy",
       "combos": [
         {
           "id": "1-1",
@@ -281,6 +283,7 @@
       "id": "kan_ceken_pence",
       "name": "Kan çeken pençe",
       "family": 2,
+      "aim": "enemy",
       "combos": [
         {
           "id": "1-2",
@@ -348,6 +351,7 @@
       "id": "yan_yan_sekme",
       "name": "Yan yan sekme",
       "family": 3,
+      "aim": "enemy",
       "combos": [
         {
           "id": "1-3",
@@ -364,9 +368,9 @@
           "forward_m": 0.45,
           "hit": {
             "shape": "capsule",
-            "anchor": "side",
+            "anchor": "target_side",
             "length_m": 1.3,
-            "radius_m": 0.35,
+            "radius_m": 0.55,
             "at": 0.72,
             "share": 0.5,
             "payload": "effect"
@@ -384,9 +388,9 @@
           "height_m": 0.8,
           "hit": {
             "shape": "capsule",
-            "anchor": "side",
+            "anchor": "target_side",
             "length_m": 1.3,
-            "radius_m": 0.35,
+            "radius_m": 0.55,
             "at": 0.82,
             "share": 0.5,
             "payload": "effect"
@@ -400,6 +404,7 @@
       "id": "yere_cakilan",
       "name": "Yere çakılan darbe",
       "family": 4,
+      "aim": "enemy",
       "combos": [
         {
           "id": "1-4",
@@ -435,6 +440,7 @@
       "id": "donen_kesik",
       "name": "Dönen kesik",
       "family": 5,
+      "aim": "effect",
       "combos": [
         {
           "id": "1-5",
@@ -467,6 +473,7 @@
       "id": "zincirli_firlatma",
       "name": "Zincirli fırlatma",
       "family": 6,
+      "aim": "enemy",
       "combos": [
         {
           "id": "1-6",
@@ -525,6 +532,7 @@
       "id": "dumandan_cikis",
       "name": "Dumandan çıkış",
       "family": 8,
+      "aim": "enemy",
       "combos": [
         {
           "id": "1-7",
@@ -562,6 +570,7 @@
       "id": "havaya_kaldirma",
       "name": "Havaya kaldırma",
       "family": 9,
+      "aim": "enemy",
       "combos": [
         {
           "id": "1-8",
@@ -599,6 +608,7 @@
       "id": "isarete_vur",
       "name": "İşarete vur",
       "family": 10,
+      "aim": "enemy",
       "combos": [
         {
           "id": "1-9",
@@ -636,6 +646,7 @@
       "id": "sirtta_kapi",
       "name": "Sırtta açılan kapı",
       "family": 11,
+      "aim": "enemy",
       "combos": [
         {
           "id": "1-10",
@@ -690,6 +701,7 @@
       "id": "golge_yankisi",
       "name": "Gölge yankısı",
       "family": 12,
+      "aim": "enemy",
       "combos": [
         {
           "id": "1-11",
@@ -754,6 +766,7 @@
       "id": "basili_seri",
       "name": "Basılı seri",
       "family": 2,
+      "aim": "enemy",
       "combos": [
         {
           "id": "1-12",
@@ -788,6 +801,7 @@
       "id": "tek_dokunus",
       "name": "Tek dokunuş",
       "family": 13,
+      "aim": "effect",
       "combos": [
         {
           "id": "2-1",
@@ -822,6 +836,7 @@
       "id": "uzaktan_emme",
       "name": "Uzaktan emme",
       "family": 15,
+      "aim": "effect",
       "combos": [
         {
           "id": "2-2",
@@ -842,6 +857,7 @@
       "id": "dosttan_dosta",
       "name": "Dosttan dosta sekme",
       "family": 16,
+      "aim": "effect",
       "combos": [
         {
           "id": "2-3",
@@ -866,6 +882,7 @@
       "id": "totem_dikme",
       "name": "Totem dikme",
       "family": 18,
+      "aim": "effect",
       "combos": [
         {
           "id": "2-4",
@@ -894,6 +911,7 @@
       "id": "genisleyen_halka",
       "name": "Genişleyen halka",
       "family": 19,
+      "aim": "effect",
       "combos": [
         {
           "id": "2-5",
@@ -918,6 +936,7 @@
       "id": "dostu_kanca",
       "name": "Dostu kancayla çekme",
       "family": 7,
+      "aim": "effect",
       "combos": [
         {
           "id": "2-6",
@@ -959,6 +978,7 @@
       "id": "sis_ortusu",
       "name": "Sis örtüsü",
       "family": 21,
+      "aim": "effect",
       "combos": [
         {
           "id": "2-7",
@@ -983,6 +1003,7 @@
       "id": "yerden_buyuyen",
       "name": "Yerden büyüyen",
       "family": 22,
+      "aim": "effect",
       "combos": [
         {
           "id": "2-8",
@@ -1011,6 +1032,7 @@
       "id": "koruyucu_isaret",
       "name": "Koruyucu işaret",
       "family": 10,
+      "aim": "effect",
       "combos": [
         {
           "id": "2-9",
@@ -1049,6 +1071,7 @@
       "id": "ters_es",
       "name": "Ters eş",
       "family": 11,
+      "aim": "effect",
       "combos": [
         {
           "id": "2-10",
@@ -1098,6 +1121,7 @@
       "id": "golge_ulak",
       "name": "Gölge ulak",
       "family": 12,
+      "aim": "effect",
       "combos": [
         {
           "id": "2-11",
@@ -1157,6 +1181,7 @@
       "id": "basili_isik",
       "name": "Basılı ışın",
       "family": 15,
+      "aim": "effect",
       "combos": [
         {
           "id": "2-12",
@@ -1181,6 +1206,7 @@
       "id": "isinlan_kes",
       "name": "Işınlan ve kes",
       "family": 23,
+      "aim": "effect",
       "combos": [
         {
           "id": "3-1",
@@ -1205,6 +1231,7 @@
       "id": "icinden_emme",
       "name": "İçinden geçip emme",
       "family": 23,
+      "aim": "effect",
       "combos": [
         {
           "id": "3-2",
@@ -1228,6 +1255,7 @@
       "id": "sekmeli_ziplama",
       "name": "Sekmeli zıplama",
       "family": 3,
+      "aim": "effect",
       "combos": [
         {
           "id": "3-3",
@@ -1301,6 +1329,7 @@
       "id": "geri_sarma",
       "name": "Geri sarma",
       "family": 24,
+      "aim": "effect",
       "combos": [
         {
           "id": "3-4",
@@ -1327,6 +1356,7 @@
       "id": "dalis_patlamasi",
       "name": "Dalış patlaması",
       "family": 4,
+      "aim": "enemy",
       "combos": [
         {
           "id": "3-5",
@@ -1367,6 +1397,7 @@
       "id": "kanca_cekis",
       "name": "Kanca çekiş",
       "family": 7,
+      "aim": "enemy",
       "combos": [
         {
           "id": "3-6",
@@ -1397,14 +1428,14 @@
           "sec": 0.26,
           "side": 1,
           "distance_m": 0,
-          "forward_m": 2.15,
+          "forward_m": 0,
           "height_m": 0.95,
-          "behind_m": 1.1,
+          "land": "behind",
           "hit": {
-            "shape": "capsule",
+            "shape": "sphere",
             "anchor": "behind",
-            "length_m": 1.2,
-            "radius_m": 0.4,
+            "length_m": 0.8,
+            "radius_m": 0.55,
             "at": 0.7,
             "share": 1,
             "payload": "effect"
@@ -1418,6 +1449,7 @@
       "id": "duman_kaybolma",
       "name": "Duman olup kaybolma",
       "family": 8,
+      "aim": "effect",
       "combos": [
         {
           "id": "3-7",
@@ -1456,6 +1488,7 @@
       "id": "sicrayip_cakilma",
       "name": "Sıçrayıp çakılma",
       "family": 4,
+      "aim": "effect",
       "combos": [
         {
           "id": "3-8",
@@ -1499,6 +1532,7 @@
       "id": "iki_kapi",
       "name": "İki kapılı portal",
       "family": 25,
+      "aim": "effect",
       "combos": [
         {
           "id": "3-10",
@@ -1529,6 +1563,7 @@
       "id": "yem_kac",
       "name": "Yem bırakıp kaçma",
       "family": 27,
+      "aim": "effect",
       "combos": [
         {
           "id": "3-11",
@@ -1549,6 +1584,7 @@
       "id": "suzulme",
       "name": "Süzülme",
       "family": 41,
+      "aim": "effect",
       "combos": [
         {
           "id": "3-12",
@@ -1569,6 +1605,7 @@
       "id": "tam_zamanli",
       "name": "Tam zamanlı blok",
       "family": 28,
+      "aim": "effect",
       "combos": [
         {
           "id": "4-1",
@@ -1595,6 +1632,7 @@
       "id": "kalkan_calma",
       "name": "Kalkan çalma",
       "family": 30,
+      "aim": "effect",
       "combos": [
         {
           "id": "4-2",
@@ -1615,6 +1653,7 @@
       "id": "seken_disk",
       "name": "Seken disk",
       "family": 16,
+      "aim": "effect",
       "combos": [
         {
           "id": "4-3",
@@ -1635,6 +1674,7 @@
       "id": "duvar_dikme",
       "name": "Duvar dikme",
       "family": 18,
+      "aim": "effect",
       "combos": [
         {
           "id": "4-4",
@@ -1659,6 +1699,7 @@
       "id": "onde_yelpaze",
       "name": "Önde yelpaze alan",
       "family": 5,
+      "aim": "enemy",
       "combos": [
         {
           "id": "4-5",
@@ -1700,6 +1741,7 @@
       "id": "duman_duvari",
       "name": "Duman duvarı",
       "family": 18,
+      "aim": "effect",
       "combos": [
         {
           "id": "4-7",
@@ -1720,6 +1762,7 @@
       "id": "yem_kopya",
       "name": "Yem kopya",
       "family": 27,
+      "aim": "effect",
       "combos": [
         {
           "id": "4-11",
@@ -1748,6 +1791,7 @@
       "id": "basili_siper",
       "name": "Basılı siper",
       "family": 29,
+      "aim": "effect",
       "combos": [
         {
           "id": "4-12",
@@ -1772,6 +1816,7 @@
       "id": "saplanan_fitil",
       "name": "Saplanan fitil",
       "family": 10,
+      "aim": "enemy",
       "combos": [
         {
           "id": "5-1",
@@ -1784,6 +1829,7 @@
           "motion": "lunge",
           "sec": 0.12,
           "distance_m": 0.7,
+          "plant": true,
           "facing": "target",
           "homing": "track"
         },
@@ -1801,9 +1847,9 @@
           "sec": 1.24,
           "hit": {
             "shape": "sphere",
-            "anchor": "target",
-            "length_m": 0.8,
-            "radius_m": 0.65,
+            "anchor": "plant",
+            "length_m": 0.9,
+            "radius_m": 0.9,
             "at": 0.99,
             "share": 1,
             "payload": "effect"
@@ -1817,6 +1863,7 @@
       "id": "ceken_girdap",
       "name": "Çeken girdap",
       "family": 31,
+      "aim": "effect",
       "combos": [
         {
           "id": "5-2",
@@ -1841,6 +1888,7 @@
       "id": "seken_bomba",
       "name": "Seken bomba",
       "family": 16,
+      "aim": "effect",
       "combos": [
         {
           "id": "5-3",
@@ -1861,6 +1909,7 @@
       "id": "mayin_cakma",
       "name": "Mayın çakma",
       "family": 32,
+      "aim": "effect",
       "combos": [
         {
           "id": "5-4",
@@ -1887,6 +1936,7 @@
       "id": "yer_yarigi",
       "name": "Yer yarığı",
       "family": 5,
+      "aim": "enemy",
       "combos": [
         {
           "id": "5-5",
@@ -1966,6 +2016,7 @@
       "id": "gerilip_kopan",
       "name": "Gerilip kopan bağ",
       "family": 33,
+      "aim": "effect",
       "combos": [
         {
           "id": "5-6",
@@ -1986,6 +2037,7 @@
       "id": "sis_bombasi",
       "name": "Sis bombası",
       "family": 21,
+      "aim": "effect",
       "combos": [
         {
           "id": "5-7",
@@ -2010,6 +2062,7 @@
       "id": "yerden_fiskirma",
       "name": "Yerden fışkırma",
       "family": 9,
+      "aim": "enemy",
       "combos": [
         {
           "id": "5-8",
@@ -2054,6 +2107,7 @@
       "id": "gudumlu_top",
       "name": "Güdümlü top",
       "family": 34,
+      "aim": "effect",
       "combos": [
         {
           "id": "5-9",
@@ -2078,6 +2132,7 @@
       "id": "karsi_darbe",
       "name": "Karşı darbe",
       "family": 28,
+      "aim": "effect",
       "combos": [
         {
           "id": "5-10",
@@ -2102,6 +2157,7 @@
       "id": "patlayan_iz",
       "name": "Patlayan iz",
       "family": 35,
+      "aim": "effect",
       "combos": [
         {
           "id": "5-12",
@@ -2122,6 +2178,7 @@
       "id": "sinir_noktasi",
       "name": "Sinir noktası",
       "family": 13,
+      "aim": "enemy",
       "combos": [
         {
           "id": "6-1",
@@ -2161,6 +2218,7 @@
       "id": "bossu_cek",
       "name": "Boss'u kendine çekme",
       "family": 7,
+      "aim": "enemy",
       "combos": [
         {
           "id": "6-2",
@@ -2199,6 +2257,7 @@
       "id": "basip_sekme",
       "name": "Basıp sekme",
       "family": 3,
+      "aim": "enemy",
       "combos": [
         {
           "id": "6-3",
@@ -2244,6 +2303,7 @@
       "id": "karsilikli_kilit",
       "name": "Karşılıklı kilit",
       "family": 29,
+      "aim": "effect",
       "combos": [
         {
           "id": "6-4",
@@ -2264,6 +2324,7 @@
       "id": "yer_tuzagi",
       "name": "Yer tuzağı",
       "family": 32,
+      "aim": "effect",
       "combos": [
         {
           "id": "6-5",
@@ -2288,6 +2349,7 @@
       "id": "iki_uclu",
       "name": "İki uçlu bağ",
       "family": 36,
+      "aim": "effect",
       "combos": [
         {
           "id": "6-6",
@@ -2318,6 +2380,7 @@
       "id": "goz_bagi",
       "name": "Göz bağı",
       "family": 21,
+      "aim": "effect",
       "combos": [
         {
           "id": "6-7",
@@ -2342,6 +2405,7 @@
       "id": "havada_asma",
       "name": "Havada asma",
       "family": 9,
+      "aim": "enemy",
       "combos": [
         {
           "id": "6-8",
@@ -2384,6 +2448,7 @@
       "id": "zamanli_donma",
       "name": "Zamanlı donma",
       "family": 28,
+      "aim": "effect",
       "combos": [
         {
           "id": "6-9",
@@ -2408,6 +2473,7 @@
       "id": "onden_arkadan",
       "name": "Önden arkadan kıskaç",
       "family": 11,
+      "aim": "enemy",
       "combos": [
         {
           "id": "6-11",
@@ -2460,6 +2526,7 @@
       "id": "cember_sarma",
       "name": "Çember çizip sarma",
       "family": 36,
+      "aim": "effect",
       "combos": [
         {
           "id": "6-12",
@@ -2480,6 +2547,7 @@
       "id": "diken_firlatma",
       "name": "Diken fırlatma",
       "family": 14,
+      "aim": "enemy",
       "combos": [
         {
           "id": "7-1",
@@ -2517,6 +2585,7 @@
       "id": "sokup_cekme",
       "name": "Söküp çekme",
       "family": 7,
+      "aim": "enemy",
       "combos": [
         {
           "id": "7-2",
@@ -2564,6 +2633,7 @@
       "id": "seken_yaratik",
       "name": "Seken yaratık",
       "family": 37,
+      "aim": "effect",
       "combos": [
         {
           "id": "7-3",
@@ -2588,6 +2658,7 @@
       "id": "dost_ip",
       "name": "Dostun patlattığı ip",
       "family": 33,
+      "aim": "effect",
       "combos": [
         {
           "id": "7-6",
@@ -2610,6 +2681,7 @@
       "id": "isaret_patlamasi",
       "name": "İşaret patlaması",
       "family": 10,
+      "aim": "enemy",
       "combos": [
         {
           "id": "7-9",
@@ -2660,6 +2732,7 @@
       "id": "kuculten_kapi",
       "name": "Küçülten kapı",
       "family": 26,
+      "aim": "effect",
       "combos": [
         {
           "id": "8-1",
@@ -2682,6 +2755,7 @@
       "id": "kan_muhru",
       "name": "Kan mührü",
       "family": 30,
+      "aim": "effect",
       "combos": [
         {
           "id": "8-2",
@@ -2705,6 +2779,7 @@
       "id": "pas_verme",
       "name": "Pas verme",
       "family": 17,
+      "aim": "effect",
       "combos": [
         {
           "id": "8-3",
@@ -2727,6 +2802,7 @@
       "id": "savas_narasi",
       "name": "Savaş narası",
       "family": 19,
+      "aim": "effect",
       "combos": [
         {
           "id": "8-5",
@@ -2747,6 +2823,7 @@
       "id": "dost_dosta",
       "name": "Dost dosta ip",
       "family": 36,
+      "aim": "effect",
       "combos": [
         {
           "id": "8-6",
@@ -2769,6 +2846,7 @@
       "id": "buyuten_kemer",
       "name": "Büyüten kemer",
       "family": 26,
+      "aim": "effect",
       "combos": [
         {
           "id": "8-8",
@@ -2791,6 +2869,7 @@
       "id": "akinti_yolu",
       "name": "Akıntı yolu",
       "family": 35,
+      "aim": "effect",
       "combos": [
         {
           "id": "8-12",
@@ -2811,6 +2890,7 @@
       "id": "cekip_firlat",
       "name": "Çekip fırlatma",
       "family": 31,
+      "aim": "effect",
       "combos": [
         {
           "id": "9-2",
@@ -2831,6 +2911,7 @@
       "id": "dagilan_yagmur",
       "name": "Dağılan yağmur",
       "family": 20,
+      "aim": "effect",
       "combos": [
         {
           "id": "9-5",
@@ -2851,6 +2932,7 @@
       "id": "isik_sutunu",
       "name": "Işık sütunu",
       "family": 22,
+      "aim": "effect",
       "combos": [
         {
           "id": "9-8",
@@ -2878,6 +2960,7 @@
       "id": "mermi_sondur",
       "name": "Mermi söndürme",
       "family": 34,
+      "aim": "effect",
       "combos": [
         {
           "id": "9-9",
@@ -2898,6 +2981,7 @@
       "id": "yer_degistir",
       "name": "Yer değiştirme",
       "family": 25,
+      "aim": "effect",
       "combos": [
         {
           "id": "9-10",
@@ -2920,6 +3004,7 @@
       "id": "nabiz",
       "name": "Nabız atışı",
       "family": 19,
+      "aim": "effect",
       "combos": [
         {
           "id": "9-12",
@@ -2940,6 +3025,7 @@
       "id": "yutan_girdap",
       "name": "Yutan girdap",
       "family": 31,
+      "aim": "effect",
       "combos": [
         {
           "id": "10-2",
@@ -2960,6 +3046,7 @@
       "id": "seken_geri",
       "name": "Seken geri vuruş",
       "family": 16,
+      "aim": "effect",
       "combos": [
         {
           "id": "10-3",
@@ -2980,6 +3067,7 @@
       "id": "yuruyen_balon",
       "name": "Yürüyen balon",
       "family": 41,
+      "aim": "effect",
       "combos": [
         {
           "id": "10-5",
@@ -3004,6 +3092,7 @@
       "id": "silaha_kement",
       "name": "Silaha kement",
       "family": 6,
+      "aim": "enemy",
       "combos": [
         {
           "id": "10-6",
@@ -3041,6 +3130,7 @@
       "id": "sahte_goruntu",
       "name": "Sahte görüntüler",
       "family": 27,
+      "aim": "effect",
       "combos": [
         {
           "id": "10-7",
@@ -3061,6 +3151,7 @@
       "id": "sirt_saplama",
       "name": "Uzaktan sırt saplama",
       "family": 38,
+      "aim": "effect",
       "combos": [
         {
           "id": "11-1",
@@ -3085,6 +3176,7 @@
       "id": "yapisan",
       "name": "Yapışan yaratık",
       "family": 37,
+      "aim": "effect",
       "combos": [
         {
           "id": "11-2",
@@ -3105,6 +3197,7 @@
       "id": "taret_dikme",
       "name": "Taret dikme",
       "family": 18,
+      "aim": "effect",
       "combos": [
         {
           "id": "11-4",
@@ -3127,6 +3220,7 @@
       "id": "dagilan_suru",
       "name": "Dağılan sürü",
       "family": 37,
+      "aim": "effect",
       "combos": [
         {
           "id": "11-5",
@@ -3147,6 +3241,7 @@
       "id": "muhafiz",
       "name": "Yanında muhafız",
       "family": 40,
+      "aim": "effect",
       "combos": [
         {
           "id": "11-6",
@@ -3167,6 +3262,7 @@
       "id": "dostu_yerden",
       "name": "Dostu yerden çağırma",
       "family": 25,
+      "aim": "effect",
       "combos": [
         {
           "id": "11-8",
@@ -3189,6 +3285,7 @@
       "id": "pesinden_av",
       "name": "Peşinden giden av",
       "family": 34,
+      "aim": "effect",
       "combos": [
         {
           "id": "11-9",
@@ -3209,6 +3306,7 @@
       "id": "takim_kapisi",
       "name": "Takım kapısı",
       "family": 25,
+      "aim": "effect",
       "combos": [
         {
           "id": "11-10",
@@ -3231,6 +3329,7 @@
       "id": "ayna_klonlar",
       "name": "Ayna klonlar",
       "family": 12,
+      "aim": "effect",
       "combos": [
         {
           "id": "11-11",
@@ -3287,6 +3386,7 @@
       "id": "kapidan_akin",
       "name": "Kapıdan akın",
       "family": 39,
+      "aim": "effect",
       "combos": [
         {
           "id": "11-12",
@@ -3307,6 +3407,7 @@
       "id": "geri_donen_kure",
       "name": "Geri dönen küre",
       "family": 17,
+      "aim": "effect",
       "combos": [
         {
           "id": "12-3",
@@ -3327,6 +3428,7 @@
       "id": "kum_saati",
       "name": "Titreyen zaman",
       "family": 42,
+      "aim": "effect",
       "combos": [
         {
           "id": "12-7",
@@ -3347,6 +3449,7 @@
       "id": "boss_geri",
       "name": "Boss'u geri sarma",
       "family": 24,
+      "aim": "effect",
       "combos": [
         {
           "id": "12-10",

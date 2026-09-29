@@ -64,11 +64,20 @@ namespace Dovus.Game
             _templatePending = pending;
             _templateChain = _closingChainBonus;
             _templateStatusSent = false;
-            _templateAim = pending.Target;
-            if (_templateAim == null && !IsFriendlyFieldVerb(skill) && _boss != null)
-                _templateAim = _boss.transform;
+            if (MotionAim.IsEnemy(template.Aim))
+                _templateAim = ResolveMotionEnemy(template);
+            else
+            {
+                _templateAim = pending.Target;
+                if (_templateAim == null && !IsFriendlyFieldVerb(skill) && _boss != null)
+                    _templateAim = _boss.transform;
+            }
 
             Transform aim = _templateAim;
+            float bodyR = PlayerBodyRadiusM();
+            if (bodyR < 0.05f)
+                bodyR = 0.5f;
+            float stopGap = MotionCatalog.Fallbacks.StopGapM;
             _motionBody.Play(
                 template,
                 () =>
@@ -76,17 +85,27 @@ namespace Dovus.Game
                     if (aim == null)
                         return default;
                     Vector3 pos = aim.position;
-                    return new MotionTarget(true, pos.x, pos.z);
+                    return new MotionTarget(true, pos.x, pos.z, ColliderRadius(aim));
                 },
                 () => _input != null && _input.SkillFingerHeld,
-                OnMotionTemplateHit);
+                OnMotionTemplateHit,
+                bodyR,
+                stopGap);
             Debug.Log($"[Motion] {skill.SkillId} → {template.Name}");
             return true;
         }
 
         void OnMotionTemplateHit(MotionHit hit)
         {
+            if (hit.Payload == "marker" && hit.Anchor == "plant")
+            {
+                SpawnFuse(hit);
+                return;
+            }
+
             SpawnMotionHitVisual(hit);
+            if (hit.Anchor == "plant")
+                ClearFuse();
             if (hit.Payload == "none" || _templateSkill.IsEmpty)
                 return;
 
@@ -133,7 +152,8 @@ namespace Dovus.Game
             Vector3 boss = _boss.transform.position;
             float extra = BossBodyRadius();
             var origin = new Vector3(hit.OriginX, boss.y, hit.OriginZ);
-            if (hit.Anchor is "self" or "ring" or "target" or "behind" or hit.Shape == "sphere")
+            if (hit.Anchor is "self" or "ring" or "target" or "behind" or "plant" or "target_side"
+                || hit.Shape == "sphere")
             {
                 Vector3 flat = boss - origin;
                 flat.y = 0f;
@@ -171,6 +191,71 @@ namespace Dovus.Game
                 return Vector3.Distance(point, a);
             float t = Mathf.Clamp01(Vector3.Dot(point - a, ab) / len2);
             return Vector3.Distance(point, a + ab * t);
+        }
+
+        Transform ResolveMotionEnemy(MotionTemplate template)
+        {
+            float gate = MotionCastReach.GateRangeM(
+                MotionCastReach.EdgeReachM(template),
+                PlayerBodyRadiusM());
+            if (_targeting != null && _player != null)
+            {
+                Targetable selected = _targeting.Selected;
+                if (selected != null && selected.IsAvailable && IsEnemyBody(selected.transform)
+                    && selected.DistanceFrom(_player.position) <= gate)
+                    return selected.transform;
+                if (_targeting.TryResolveBasicEnemy(gate, out Transform auto) && IsEnemyBody(auto))
+                    return auto;
+            }
+
+            return _boss != null ? _boss.transform : null;
+        }
+
+        bool IsEnemyBody(Transform body)
+        {
+            if (body == null || body == _player)
+                return false;
+            if (_ally != null && (body == _ally.transform || body.IsChildOf(_ally.transform)))
+                return false;
+            return true;
+        }
+
+        float ColliderRadius(Transform body)
+        {
+            if (body == null)
+                return 0f;
+            if (_boss != null && (body == _boss.transform || body.IsChildOf(_boss.transform)))
+                return BossBodyRadius();
+            Collider col = body.GetComponentInChildren<Collider>();
+            if (col == null)
+                return 0.5f;
+            return Mathf.Max(col.bounds.extents.x, col.bounds.extents.z);
+        }
+
+        GameObject _fuse;
+
+        void SpawnFuse(in MotionHit hit)
+        {
+            ClearFuse();
+            _fuse = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            _fuse.name = "Fuse";
+            _fuse.transform.SetParent(transform, true);
+            _fuse.transform.position = new Vector3(hit.OriginX, 0.18f, hit.OriginZ);
+            _fuse.transform.localScale = Vector3.one * 0.28f;
+            Collider col = _fuse.GetComponent<Collider>();
+            if (col != null)
+                Destroy(col);
+            Renderer renderer = _fuse.GetComponent<Renderer>();
+            if (renderer != null)
+                renderer.material.color = new Color(1f, 0.42f, 0.08f);
+        }
+
+        void ClearFuse()
+        {
+            if (_fuse == null)
+                return;
+            Destroy(_fuse);
+            _fuse = null;
         }
 
         void SpawnMotionHitVisual(in MotionHit hit)

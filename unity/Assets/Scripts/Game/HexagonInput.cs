@@ -1,5 +1,6 @@
 using Dovus.Core.Combat;
 using Dovus.Core.Grammar;
+using Dovus.Core.Motion;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using UnityEngine;
@@ -40,6 +41,7 @@ namespace Dovus.Game
         // segmenti çizildikten sonra Break edilmeli. Bayrak + FlushInkBreak bunu sıralar.
         bool _inkBreakPending;
         bool _sentenceHooked;
+        bool _centerStrikeArmed;
 
         // Çizim parmağından bağımsız ikinci yuva: cümle sürerken panik dodge (§2).
         int? _dodgeFingerId;
@@ -153,7 +155,11 @@ namespace Dovus.Game
         public bool TrySetLoadout(RuneLoadout loadout)
         {
             EnsureRuntime();
-            return _engine != null && _engine.TrySetLoadout(loadout);
+            if (_engine == null || !_engine.TrySetLoadout(loadout))
+                return false;
+            _centerStrikeArmed = true;
+            SyncPlayerStateFromWorld();
+            return true;
         }
 
         /// <summary>
@@ -723,8 +729,14 @@ namespace Dovus.Game
                 return;
             }
 
-            if (!AllowsDrawNow)
+            SyncPlayerStateFromWorld();
+            bool engineOk = _engine.State.Phase == SentencePhase.Idle
+                || _engine.State.Phase == SentencePhase.Recovering
+                || _engine.State.Phase == SentencePhase.Resolved
+                || _engine.State.Phase == SentencePhase.Aborted;
+            if (!BasicStrikeInput.AllowsCenterStrike(AllowsDrawNow, _centerStrikeArmed, engineOk))
                 return;
+            _centerStrikeArmed = false;
 
             // Idle ya da Recovering: kilidi keser (§5) ve tek noktalık cümleyi anında kapatır.
             // Düz vuruş skill değil — mana / CD / zincir kapısı yok. BasicStrikeDot rün
