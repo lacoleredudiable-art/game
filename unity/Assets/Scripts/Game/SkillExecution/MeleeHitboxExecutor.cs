@@ -1,4 +1,5 @@
 using Dovus.Core.Execution;
+using Dovus.Core.Combat;
 using Dovus.Core.Mechanic;
 using UnityEngine;
 
@@ -23,8 +24,9 @@ namespace Dovus.Game
             base.Execute(context);
             _ageSec = 0f;
             _applied = false;
-            _homing = context.MechanicPlan != null
-                && MechanicWorldProfile.From(context.MechanicPlan).Homing;
+            _homing = TargetingRules.IsHoming(context.AimMode)
+                || (context.MechanicPlan != null
+                    && MechanicWorldProfile.From(context.MechanicPlan).Homing);
             Vector3 origin = context.Owner != null ? context.Owner.position : context.Origin;
             Vector3 visualPosition = context.IsBurst
                 ? origin + context.Direction * Mathf.Min(

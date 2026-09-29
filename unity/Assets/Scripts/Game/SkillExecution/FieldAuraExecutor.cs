@@ -22,9 +22,9 @@ namespace Dovus.Game
         public override void Execute(in SkillExecutionContext context)
         {
             base.Execute(context);
-            _center = context.IsFriendly && context.Owner != null
-                ? context.Owner.position
-                : context.FieldCenter;
+            // Targeted enemy fields land on the enemy; friendly fields land on selected ally
+            // (or self, supplied as FieldCenter by the director).
+            _center = context.FieldCenter;
             _ageSec = 0f;
             _nextTickSec = 0f;
             _remainingTicks = Mathf.Max(1, Mathf.CeilToInt(context.DurationSec / context.TickIntervalSec));

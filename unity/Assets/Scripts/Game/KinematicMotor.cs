@@ -21,6 +21,8 @@ namespace Dovus.Game
         ActorVisual _visual;
         FollowCamera _follow;
         PlayerStateMachine _playerStates;
+        System.Func<Transform> _combatFacingTarget;
+        System.Func<bool> _combatFacingLocked;
 
         static readonly Collider[] ObstacleBuffer = new Collider[16];
         static readonly RaycastHit[] CastHits = new RaycastHit[8];
@@ -28,6 +30,18 @@ namespace Dovus.Game
         public void BindCamera(FollowCamera follow) => _follow = follow;
 
         public void BindPlayerStates(PlayerStateMachine states) => _playerStates = states;
+
+        /// <summary>
+        /// Hedef tutulurken veya saldırı sürerken hareket yönü gövdeyi döndürmez; karakter hedefe
+        /// bakıp strafe/backpedal eder. Delegeler oyuncu örneğine özeldir (co-op static state yok).
+        /// </summary>
+        public void BindCombatFacing(
+            System.Func<Transform> target,
+            System.Func<bool> facingLocked)
+        {
+            _combatFacingTarget = target;
+            _combatFacingLocked = facingLocked;
+        }
 
         public PrototypeTuning Tuning
         {
@@ -136,9 +150,25 @@ namespace Dovus.Game
             next = ArenaClamp.XZ(next, _tuning.ArenaHalfSizeM, _bodyRadiusM);
             transform.position = next;
 
-            if (dirFlat.sqrMagnitude > 0.0001f && dtSec > 0f)
+            Transform combatTarget = _combatFacingTarget?.Invoke();
+            bool lockFacing = combatTarget != null || (_combatFacingLocked?.Invoke() ?? false);
+            Vector3 faceDirection = dirFlat;
+            if (combatTarget != null)
             {
-                Quaternion want = Quaternion.LookRotation(dirFlat, Vector3.up);
+                faceDirection = combatTarget.position - transform.position;
+                faceDirection.y = 0f;
+                if (faceDirection.sqrMagnitude > 0.0001f)
+                    faceDirection.Normalize();
+            }
+
+            if (!lockFacing && dirFlat.sqrMagnitude > 0.0001f)
+                faceDirection = dirFlat;
+            else if (lockFacing && combatTarget == null)
+                faceDirection = Vector3.zero;
+
+            if (faceDirection.sqrMagnitude > 0.0001f && dtSec > 0f)
+            {
+                Quaternion want = Quaternion.LookRotation(faceDirection, Vector3.up);
                 transform.rotation = Quaternion.RotateTowards(
                     transform.rotation, want, _tuning.TurnRateDegPerSec * dtSec);
             }

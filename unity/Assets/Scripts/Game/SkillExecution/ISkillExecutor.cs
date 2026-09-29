@@ -1,4 +1,5 @@
 using System;
+using Dovus.Core.Combat;
 using Dovus.Core.Execution;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
@@ -19,6 +20,7 @@ namespace Dovus.Game
             SkillResolution skill,
             Transform owner,
             Transform target,
+            SkillAimMode aimMode,
             Vector3 origin,
             Vector3 direction,
             float castWindowSec,
@@ -57,6 +59,7 @@ namespace Dovus.Game
             Skill = skill;
             Owner = owner;
             Target = target;
+            AimMode = aimMode;
             Origin = origin;
             Direction = direction.sqrMagnitude > 0.0001f
                 ? direction.normalized
@@ -84,6 +87,7 @@ namespace Dovus.Game
         public SkillResolution Skill { get; }
         public Transform Owner { get; }
         public Transform Target { get; }
+        public SkillAimMode AimMode { get; }
         public Vector3 Origin { get; }
         public Vector3 Direction { get; }
         public float CastWindowSec { get; }

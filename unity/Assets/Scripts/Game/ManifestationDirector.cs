@@ -36,6 +36,10 @@ namespace Dovus.Game
         SentenceDebugHud _debugHud;
         ReactionReadout _readout;
         FollowCamera _camera;
+        PlayerTargeting _targeting;
+        Transform _armedTarget;
+        Transform _castFacingTarget;
+        string _armedSkillId = string.Empty;
 
         readonly List<LivingEffectView> _active = new();
         readonly List<PendingClosing> _pending = new();
@@ -283,11 +287,30 @@ namespace Dovus.Game
             public double BangAtWorldMs;
             public List<SentenceWord> Words;
             public bool IsBasicStrike;
+            public Transform Target;
+            public SkillAimMode AimMode;
         }
 
         public LivingEffect ActiveLogic => _buildingView?.Logic;
 
         public int ActiveCount => _active.Count;
+
+        public Transform CurrentFacingTarget
+        {
+            get
+            {
+                bool casting = (_engine != null && _engine.State.Phase == SentencePhase.Building)
+                    || _pending.Count > 0;
+                if (casting && _castFacingTarget != null)
+                    return _castFacingTarget;
+                return _targeting != null ? _targeting.SelectedTransform : null;
+            }
+        }
+
+        public bool CombatFacingLocked =>
+            CurrentFacingTarget != null
+            || (_engine != null && _engine.State.Phase == SentencePhase.Building)
+            || _pending.Count > 0;
 
         /// <summary>Bağlama 5 / MCP: Bind sonrası pasif durum makinesi (null = henüz bağlanmadı).</summary>
         public PassiveDirector PassiveDirector => _passiveDirector;
@@ -479,6 +502,13 @@ namespace Dovus.Game
                 _engine.SentenceCompleted += OnSentenceCompleted;
                 _hooked = true;
             }
+        }
+
+        public void BindTargeting(PlayerTargeting targeting)
+        {
+            _targeting = targeting;
+            _input?.BindSkillTargetGate(TryArmSkillTarget);
+            _motor?.BindCombatFacing(() => CurrentFacingTarget, () => CombatFacingLocked);
         }
 
         static AnimationDatabase LoadAnimationDatabase()
@@ -1459,6 +1489,94 @@ namespace Dovus.Game
             _player.rotation = Quaternion.LookRotation(aim, Vector3.up);
         }
 
+        void FaceTarget(Transform target)
+        {
+            if (_player == null || target == null || target == _player)
+                return;
+            Vector3 to = target.position - _player.position;
+            to.y = 0f;
+            if (to.sqrMagnitude > 0.0001f)
+                _player.rotation = Quaternion.LookRotation(to.normalized, Vector3.up);
+        }
+
+        bool TryArmSkillTarget(SkillResolution skill)
+        {
+            SkillAimMode aimMode = TargetingRules.AimMode(skill);
+            float range = TargetingRangeFor(skill);
+            Transform target;
+            TargetFailure failure;
+            bool allowed = _targeting != null
+                ? _targeting.TryResolve(skill, range, out target, out failure)
+                : TryResolveLegacyTarget(skill, aimMode, range, out target, out failure);
+            if (!allowed)
+            {
+                _armedTarget = null;
+                _armedSkillId = string.Empty;
+                _castFacingTarget = null;
+                _readout?.NoteDenied(
+                    failure == TargetFailure.OutOfRange ? "menzil dışı" : "hedef yok",
+                    "mana ve soğuma harcanmadı");
+                return false;
+            }
+
+            _armedTarget = target;
+            _armedSkillId = skill.SkillId;
+            _castFacingTarget = aimMode == SkillAimMode.Targeted && target != _player
+                ? target
+                : null;
+            FaceTarget(_castFacingTarget);
+            return true;
+        }
+
+        bool TryResolveLegacyTarget(
+            in SkillResolution skill,
+            SkillAimMode aimMode,
+            float range,
+            out Transform target,
+            out TargetFailure failure)
+        {
+            failure = TargetFailure.None;
+            if (aimMode != SkillAimMode.Targeted || skill.TargetMode == "self_only"
+                || skill.TargetMode == "self_or_ally")
+            {
+                target = _player;
+                return true;
+            }
+            if (_boss != null && FlatDistance(_player.position, _boss.transform.position) <= range)
+            {
+                target = _boss.transform;
+                return true;
+            }
+            target = null;
+            failure = TargetFailure.NoTarget;
+            return false;
+        }
+
+        float TargetingRangeFor(in SkillResolution skill)
+        {
+            EnsurePresentationCatalog();
+            ManifestationTuning tuning = _combat != null
+                ? _combat.Manifestation
+                : new ManifestationTuning();
+            SkillExecutorRoute route = _skillExecutorRouter.Route(skill, _equippedWeapon);
+            route = ApplyMechanicWorldRoute(MechanicPlanFor(skill), route);
+            LivingEffectPlan plan = SkillWorldPlanner.Build(skill, _presentationCatalog, tuning);
+            float rangeMult = _equippedWeapon != null ? _equippedWeapon.RangeMult : 1f;
+            bool burst = string.Equals(skill.VerbId, "5", StringComparison.Ordinal);
+            float radius = plan.BangRadiusM > 0f ? plan.BangRadiusM : tuning.TravelHitRadiusM;
+            if (route.Kind == SkillExecutorKind.MeleeHitbox && !burst)
+                radius = tuning.TravelHitRadiusM;
+            float range = route.Kind == SkillExecutorKind.MeleeHitbox
+                ? tuning.BasicStrikeRangeM * rangeMult
+                : Mathf.Max(radius, plan.MaxRangeM * rangeMult);
+            float duration = tuning.BangDurationSec;
+            int spawnCount = 1;
+            ApplyVerbHitboxSizing(
+                route.Kind, skill, tuning, rangeMult, burst,
+                ref radius, ref range, ref duration, ref spawnCount);
+            return Mathf.Max(0.05f, range);
+        }
+
         void ApplyWindowCue()
         {
             if (_buildingView == null)
@@ -1479,6 +1597,15 @@ namespace Dovus.Game
             _ = worldMs;
             Vector3 pos = _player.position;
             Vector3 facing = ResolveAimFacing(pos);
+            if (basicStrike && _targeting != null
+                && _targeting.TryResolveBasicEnemy(_combat.Manifestation.BasicStrikeRangeM, out Transform basicTarget))
+            {
+                _castFacingTarget = basicTarget;
+                Vector3 toTarget = basicTarget.position - pos;
+                toTarget.y = 0f;
+                if (toTarget.sqrMagnitude > 0.0001f)
+                    facing = toTarget.normalized;
+            }
 
             ManifestationTuning man = _combat.Manifestation;
             if (basicStrike)
@@ -1625,6 +1752,21 @@ namespace Dovus.Game
                 castMult = SkillMobility.CastTimeMult(armedSkill);
                 castMult *= WeaponCompatibilityFor(armedSkill).CastTimeMult;
             }
+
+            Transform pendingTarget = spawnedForBasicStrike ? _castFacingTarget : null;
+            SkillAimMode pendingAimMode = SkillAimMode.Targeted;
+            if (!spawnedForBasicStrike && !armedSkill.IsEmpty)
+            {
+                pendingAimMode = TargetingRules.AimMode(armedSkill);
+                if (!string.Equals(_armedSkillId, armedSkill.SkillId, StringComparison.Ordinal)
+                    && !TryArmSkillTarget(armedSkill))
+                {
+                    view.Logic.Abort();
+                    return;
+                }
+                pendingTarget = _armedTarget;
+                FaceTarget(_castFacingTarget);
+            }
             castMult *= _modeDirector?.CastTimeMult ?? 1f;
             float atkSpd = _modeDirector?.AttackSpeedMult ?? 1f;
             if (atkSpd > 0f)
@@ -1652,8 +1794,12 @@ namespace Dovus.Game
                 Closing = closing,
                 BangAtWorldMs = bangAt,
                 Words = new List<SentenceWord>(sentence.Words),
-                IsBasicStrike = basic
+                IsBasicStrike = basic,
+                Target = pendingTarget,
+                AimMode = pendingAimMode
             });
+            _armedTarget = null;
+            _armedSkillId = string.Empty;
         }
 
         /// <summary>Editör/prob: kapanış bang zamanını zorla işle (heal vb.).</summary>
@@ -1723,6 +1869,7 @@ namespace Dovus.Game
             bool basic = p.IsBasicStrike || (p.View != null && p.View.IsBasicStrike);
             if (basic)
             {
+                FaceTarget(p.Target);
                 _closingChainBonus = 1f; // pending zincir bonusunu yeme
                 _lastChainStep = ChainStepResult.None;
 
@@ -1931,12 +2078,22 @@ namespace Dovus.Game
 
             Vector3 origin = _player.position;
             Vector3 direction = new(logic.DirX, 0f, logic.DirZ);
-            Transform target = _boss != null ? _boss.transform : null;
+            Transform target = pending.Target;
+            if (target == null && pending.AimMode == SkillAimMode.Targeted && _boss != null)
+                target = _boss.transform;
+            if (pending.AimMode == SkillAimMode.Targeted && target != null && target != _player)
+            {
+                Vector3 toTarget = target.position - origin;
+                toTarget.y = 0f;
+                if (toTarget.sqrMagnitude > 0.0001f)
+                    direction = toTarget.normalized;
+            }
             bool friendly = IsFriendlyFieldVerb(skill) || kind == SkillExecutorKind.SelfState;
-            // Düşmana alan boss'un üstünde değil, etkinin dünyada vardığı uçta açılır.
-            Vector3 fieldCenter = friendly || hitboxShape == "cone"
-                ? origin
-                : new Vector3(logic.TipX, origin.y, logic.TipZ);
+            Vector3 fieldCenter = pending.AimMode == SkillAimMode.Targeted && target != null
+                ? target.position
+                : friendly || hitboxShape == "cone"
+                    ? origin
+                    : new Vector3(logic.TipX, origin.y, logic.TipZ);
             float slashCommitMult = motionPlan.SlashCommitMult;
             float executorChainBonus = _closingChainBonus;
             string colorKey = SelectedElementPaint?.Name
@@ -2017,9 +2174,9 @@ namespace Dovus.Game
                     if (delta > 0)
                     {
                         Vector3? healCenter = kind == SkillExecutorKind.FieldAura && friendly
-                            ? origin
+                            ? fieldCenter
                             : null;
-                        ApplyClosingHealAmount(skill, delta, healCenter, radius);
+                        ApplyClosingHealAmount(skill, delta, healCenter, radius, target);
                         appliedHealAmount += delta;
                     }
                 }
@@ -2032,6 +2189,7 @@ namespace Dovus.Game
                 skill,
                 _player,
                 target,
+                pending.AimMode,
                 origin,
                 direction,
                 tuning.BangDurationSec,
@@ -2532,12 +2690,18 @@ namespace Dovus.Game
             if (skill.IsEmpty)
                 return;
             ActorStatus bossStatus = bossReached ? _bossStatus : null;
-            if (_playerStatus == null && bossStatus == null)
+            bool targetsAlly = _ally != null && p.Target == _ally.transform;
+            if (targetsAlly)
+                _ally.EnsureStatusBoard();
+            StatusBoard friendlyBoard = targetsAlly
+                ? _ally.Board
+                : _playerStatus != null ? _playerStatus.Board : null;
+            if (friendlyBoard == null && bossStatus == null)
                 return;
 
             var result = StatusApplicator.ApplySkill(
                 skill,
-                _playerStatus != null ? _playerStatus.Board : null,
+                friendlyBoard,
                 bossStatus != null ? bossStatus.Board : null,
                 _combat != null ? _combat.Status : new StatusTuning(),
                 _mobilityCc);
@@ -2641,7 +2805,8 @@ namespace Dovus.Game
             SkillResolution skill,
             int amount,
             Vector3? fieldCenter,
-            float fieldRadiusM)
+            float fieldRadiusM,
+            Transform preferredTarget = null)
         {
             if (amount <= 0)
                 return;
@@ -2655,21 +2820,28 @@ namespace Dovus.Game
             bool allyNeeds = _ally != null && allyInRange && _ally.Hp < _ally.MaxHp;
             bool selfNeeds = playerVitals != null && selfInRange
                 && !playerVitals.IsDown && playerVitals.Hp < playerVitals.MaxHp;
+            bool preferAlly = _ally != null && preferredTarget == _ally.transform;
+            bool preferSelf = _player != null && preferredTarget == _player;
+            if ((preferAlly && !allyNeeds) || (preferSelf && !selfNeeds))
+            {
+                _readout?.NoteSkill(skill.DisplayName, "zaten full", new Color(0.7f, 0.9f, 0.75f));
+                return;
+            }
             if (!allyNeeds && !selfNeeds)
             {
                 _readout?.NoteSkill(skill.DisplayName, "zaten full", new Color(0.7f, 0.9f, 0.75f));
                 return;
             }
 
-            bool healAlly = false;
-            if (allyNeeds && selfNeeds)
+            bool healAlly = preferAlly && allyNeeds;
+            if (!preferAlly && !preferSelf && allyNeeds && selfNeeds)
             {
                 float allyR = _ally.Ratio;
                 float selfR = (float)playerVitals.Hp / playerVitals.MaxHp;
                 // Eşitse kendine — "kendime heal" denemesi.
                 healAlly = allyR < selfR;
             }
-            else
+            else if (!preferSelf && !preferAlly)
                 healAlly = allyNeeds;
 
             int healed;

@@ -1,4 +1,5 @@
 using Dovus.Core.Execution;
+using Dovus.Core.Combat;
 using Dovus.Core.Mechanic;
 using UnityEngine;
 
@@ -23,8 +24,9 @@ namespace Dovus.Game
             _spawn = context.Origin + Vector3.up
                 * Mathf.Max(context.Tuning.ExecutorProjectileMinHeightM, context.RadiusM);
             _travelM = 0f;
-            _homing = context.MechanicPlan != null
-                && MechanicWorldProfile.From(context.MechanicPlan).Homing;
+            _homing = TargetingRules.IsHoming(context.AimMode)
+                || (context.MechanicPlan != null
+                    && MechanicWorldProfile.From(context.MechanicPlan).Homing);
 
             _projectile = HitboxVfxRegistry.Create(
                 context.VfxKey,
