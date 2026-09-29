@@ -47,6 +47,13 @@ namespace Dovus.Core.Motion
         public static bool ShouldHoldCaster(string adjectiveId, MotionTemplate template) =>
             IsEmici(adjectiveId) && TemplateAdvancesToward(template);
 
+        /// <summary>
+        /// Tarama aracı: yerinde kalan Emici kalıbı "yerinde" bekler.
+        /// Duran boss'lu simülasyon ileri hamle görse de oyun oyuncuyu yürütmez.
+        /// </summary>
+        public static string SweepStayCategory(string adjectiveId, MotionTemplate template) =>
+            ShouldHoldCaster(adjectiveId, template) ? "yerinde" : null;
+
         /// <summary>Çekme bayrağı bu fazı dondurur mu?</summary>
         public static bool Freezes(MotionPhase phase, bool holdApproach) =>
             holdApproach && AdvancesToward(phase);

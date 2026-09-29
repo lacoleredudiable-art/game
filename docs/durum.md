@@ -13,8 +13,21 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (PR #30 Unity Play testi) ·
-**Dal:** `feat/damage-armor` · **Sıradaki:** Emici 5-2 / 10-2 / 11-2 tek kare sıçrama (merge kuralı tutmadı, PR #27/#30 açık)
+**Son güncelleme:** 30 Eylül 2026 (PR #30 Play düzeltmeleri, kod) ·
+**Dal:** `feat/damage-armor` · **Sıradaki:** bu düzeltmelerin Unity Play'i (PR #30 açık, merge yok)
+
+> **30 Eylül — Play kalanları, kod.** Dodge boss'a doğru atılınca yakın yüzde durur
+> (`DodgeEdge.StopBeforeCrossing`); uzak yüze ışınlanmaz. Atış/tutma/dönüş fazları kenar
+> itmesiyle yer değiştirmez; yürüyen fazın kenar düzeltmesi kare başı en fazla 0,15 m.
+> 5-2, 10-2, 11-2, 12-2 boss oyuncunun içinden geçse de oyuncu yerinde kalır. 1-2 ve 4-2
+> oyun davranışı aynı (oyuncu yerinde, boss temasa gelir); tarama beklentisi artık "yerinde".
+> Boss zırhı JSON: normal 100 (%50), sert 150 (%40 alınır). Canlı dövüş normal zırhı okur;
+> sert mod anahtarı yok. Skill gücü zırhtan önce ×2 (`SkillPreArmorScale`) — 175–222K bandı
+> durur, delme ve kırılma sonra işler. Düz vuruş tabanı `BasicStrikePower` 12,5 → zırh sonrası
+> ~25K (20–30K). Zafiyet 7-6 −%30, 7-9 −%50 yalnız zırh puanını düşürür; `armor_break` ×1,2
+> artık üstüne binmez. Unity Play bu düzeltmelerde yok.
+
+
 
 > **30 Eylül — PR #30 Play testi: Kılıç 138/144, Asa 140/144. Merge edilmedi** (kural 142+).
 > `dotnet test` 429/429, Unity derlemesi ve konsol temiz. Master'da son koşu 142/143 idi.
@@ -1697,19 +1710,13 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
-- **Hasar borusu (29 Eylül, kod, Unity Play yok).** Kritik JSON'da %5 / ×2 durur; canlı vuruş
-  %10 / ×1,5. Zırh kırma hâlâ gelen hasarı ×1,2 çarpar, yüzde kırılmayla üst üste binebilir.
-  Boss zırhı 0,15 (LoL'de neredeyse delinmez sayılmaz, çok az keser). Boss canı 88 milyon;
-  150–250 milyon için `max_hp` sonra ayarlanır (`max_hp_hard` yoksa normal). 7-9 kartı “−%30”
-  der, motor −0,2. Ayar paneli sıfırlayınca can 22'ye dönebilir (ölçek bağlama yalnız açılışta).
-  Geciken patlama kalkanı vuruş hesaplanırken yer. Emici 3-2 / 1-2 / 4-2 / 6-2 kodda düzeltildi;
-  Play taraması yeniden koşulmadı.
-- **PR #30 Play testi (30 Eylül): Kılıç 138/144, Asa 140/144, merge yok.** Emici 5-2 / 10-2 /
-  11-2 tek karede ~2,93 m sıçrama, 12-2 Kılıç "geri" bitiyor. 1-2 / 4-2 için `PlaySweep`
-  beklentisi eski ("ön"); yeni tasarım "yerinde". Karar gerekiyor: araç mı güncellenecek?
-  Dodge 1,5–2,2 m'den boss'a atılınca `DodgeEdge.KeepOutside` onu boss'un üstünden tek karede
-  arkaya atıyor (2,6–3,0 m). Zafiyet'in zırh kırması 0,15 puanlık zırhta ölçülemez; görülen
-  +%20 `ArmorBreak` çarpanından. Düz vuruş 13,5–14,5K, beklenen 20–30K değil.
+- **Hasar borusu (30 Eylül, kod).** Kritik JSON'da %5 / ×2 durur; canlı vuruş %10 / ×1,5.
+  Boss zırhı normal 100, sert 150 (JSON). Canlı dövüş normali kullanır; sert mod anahtarı yok.
+  Boss canı 88 milyon; 150–250 milyon için `max_hp` sonra ayarlanır. Ayar paneli sıfırlayınca
+  can 22'ye dönebilir (ölçek bağlama yalnız açılışta). Geciken patlama kalkanı vuruş
+  hesaplanırken yer. Zafiyet artık yalnız zırh puanını düşürür (`armor_break` ×1,2 binmez).
+  Play'deki tek kare sıçrama, tarama beklentisi, düz vuruş ve zırh kodda düzeltildi;
+  bu tur Unity Play'de doğrulanmadı.
 - **Görsel (29 Eylül, duruyor).** Hitbox VFX yer tutucu küre 1-5 dönüşünü kapatır; 12-7'de kum saati yok.
   2-2 akış çizgisi hâlâ oyuncu→dost, kırmızı değil (hasar yolu ayrı bağlandı).
   Bağ/hacim (`_mechanicLinks`) status temizliğinden sonra da Root/Slow uygulayabiliyor.

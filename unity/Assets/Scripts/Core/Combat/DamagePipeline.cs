@@ -23,6 +23,20 @@ namespace Dovus.Core.Combat
 
         static readonly Random Shared = new Random();
 
+        /// <summary>
+        /// Düz vuruş kendi tabanını kullanır. Skill gücü zırhtan önce ölçeklenir.
+        /// basicPower ≤ 0 ise hesaplanmış güç kalır. skillScale ≤ 0 ise 1 sayılır.
+        /// </summary>
+        public static float TuneOutgoingPower(bool basicStrike, float skillPower, float basicPower, float skillScale)
+        {
+            if (basicStrike)
+                return basicPower > 0f ? basicPower : skillPower;
+            if (skillPower <= 0f)
+                return 0f;
+            float scale = skillScale > 0f ? skillScale : 1f;
+            return skillPower * scale;
+        }
+
         public static DamageOutcome Resolve(DamageQuery query)
         {
             if (query == null)

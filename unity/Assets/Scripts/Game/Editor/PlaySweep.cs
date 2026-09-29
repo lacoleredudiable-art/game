@@ -214,6 +214,7 @@ namespace Dovus.Game.EditorTools
             public bool DamageSkill;
             public bool HasHitPhase;
             public string ExpectedCat = "";
+            public int Adj;
             public Vector3 SimFinal;
             public bool HasSim;
             public Vector3 SimStart;
@@ -900,6 +901,7 @@ namespace Dovus.Game.EditorTools
         static CaseInfo Describe(PlaySweepCase c)
         {
             var info = new CaseInfo();
+            info.Adj = c.Adj;
             SkillResolution skill = _skills.Resolve(new[] { c.Verb, c.Adj });
             info.Name = skill.DisplayName;
             info.DamageSkill = skill.BaseDamage > 0f || skill.BaseHeal > 0f;
@@ -952,7 +954,9 @@ namespace Dovus.Game.EditorTools
             info.SimFinal = new Vector3(runner.X, s.y, runner.Z);
             info.HasSim = true;
             info.SimAim = aim == null ? "yok" : aim == _boss.transform ? "boss" : aim.name;
-            info.ExpectedCat = DesignCategory(info.Template) ?? Category(s, info.SimFinal, b, maxExc);
+            string stay = EmiciApproach.SweepStayCategory(
+                info.Adj.ToString(CultureInfo.InvariantCulture), info.Template);
+            info.ExpectedCat = stay ?? DesignCategory(info.Template) ?? Category(s, info.SimFinal, b, maxExc);
         }
 
         static string DesignCategory(MotionTemplate t)

@@ -43,5 +43,60 @@ namespace Dovus.Core.Combat
             x = bossX + dx * scale;
             z = bossZ + dz * scale;
         }
+
+        /// <summary>
+        /// Kayma, başlangıçtan istenen noktaya giden doğru gövdeye değerse yakın yüzde durur.
+        /// Daireyi aşıp uzak yüzde biten bir örnek oyuncuyu arkaya ışınlamaz.
+        /// </summary>
+        public static void StopBeforeCrossing(
+            ref float x, ref float z,
+            float fromX, float fromZ,
+            float bossX, float bossZ,
+            float minSeparation)
+        {
+            if (minSeparation <= 0f)
+                return;
+
+            float abx = x - fromX;
+            float abz = z - fromZ;
+            float a = abx * abx + abz * abz;
+            float fx = fromX - bossX;
+            float fz = fromZ - bossZ;
+            float c = fx * fx + fz * fz - minSeparation * minSeparation;
+
+            if (a < 1e-8f)
+            {
+                if (c < 0f)
+                    KeepOutside(ref x, ref z, bossX, bossZ, minSeparation, 0f, 0f);
+                return;
+            }
+
+            if (c < 0f)
+            {
+                float side = MathF.Sqrt(fx * fx + fz * fz);
+                if (side < 0.0001f)
+                {
+                    KeepOutside(ref x, ref z, bossX, bossZ, minSeparation, abx, abz);
+                    return;
+                }
+
+                float inv = minSeparation / side;
+                x = bossX + fx * inv;
+                z = bossZ + fz * inv;
+                return;
+            }
+
+            float b = 2f * (fx * abx + fz * abz);
+            float disc = b * b - 4f * a * c;
+            if (disc < 0f)
+                return;
+
+            float tEnter = (-b - MathF.Sqrt(disc)) / (2f * a);
+            if (tEnter > 0f && tEnter < 1f)
+            {
+                x = fromX + abx * tEnter;
+                z = fromZ + abz * tEnter;
+            }
+        }
     }
 }

@@ -255,9 +255,33 @@ public class DamagePipelineTests
         var profile = BossCombatProfile.FromJson(File.ReadAllText(ElementPath()));
         Assert.That(profile.PlayerMaxHp, Is.EqualTo(100f * CombatScale.DamageAndHp).Within(0.1f));
         Assert.That(profile.BossMaxHp, Is.EqualTo(22000f * CombatScale.DamageAndHp).Within(0.1f));
-        Assert.That(profile.Armor, Is.EqualTo(0.15f).Within(0.0001f));
+        Assert.That(profile.Armor, Is.EqualTo(100f).Within(0.0001f));
+        Assert.That(profile.ArmorHard, Is.EqualTo(150f).Within(0.0001f));
         Assert.That(profile.BossMaxHpHard, Is.EqualTo(profile.BossMaxHp).Within(0.1f));
-        Assert.That(profile.ArmorHard, Is.EqualTo(profile.Armor).Within(0.0001f));
+        Assert.That(ArmorMath.Mitigate(100f, profile.Armor), Is.EqualTo(50f).Within(0.01f));
+        Assert.That(ArmorMath.Mitigate(100f, profile.ArmorHard), Is.EqualTo(40f).Within(0.01f));
+    }
+
+    [Test]
+    public void BasicStrike_LandsBetween20And30K_AfterArmor100()
+    {
+        var tuning = new Dovus.Core.Tuning.CombatTuning();
+        float low = Hit(tuning.BasicStrikePower, armor: 100f, variance01: 0f);
+        float high = Hit(tuning.BasicStrikePower, armor: 100f, variance01: 1f);
+        Assert.That(low, Is.InRange(20000f, 30000f));
+        Assert.That(high, Is.InRange(20000f, 30000f));
+        Assert.That(low, Is.LessThan(high));
+    }
+
+    [Test]
+    public void SkillDamage_StaysNearTheOldBand_AfterArmor100()
+    {
+        var tuning = new Dovus.Core.Tuning.CombatTuning();
+        float power = DamagePipeline.TuneOutgoingPower(false, 40f * 1.35f, 0f, tuning.SkillPreArmorScale);
+        float landed = Hit(power, armor: 100f, variance01: 0.5f);
+        float beforeArmor = 40f * 1.35f * CombatScale.DamageAndHp;
+        Assert.That(landed, Is.EqualTo(beforeArmor).Within(beforeArmor * 0.02f));
+        Assert.That(landed, Is.InRange(175000f, 222000f));
     }
 
     [Test]
@@ -278,17 +302,26 @@ public class DamagePipelineTests
         var motor = SkillMotor.FromJson(File.ReadAllText(ElementPath()));
         SkillResolution weak = motor.Resolve(new[] { 7, 6 });
         SkillResolution nine = motor.Resolve(new[] { 7, 9 });
-        Assert.That(weak.EngineModifiers["debuff_armor"].AsFloat(0f), Is.EqualTo(-0.2f).Within(0.0001f));
-        Assert.That(nine.EngineModifiers["debuff_armor"].AsFloat(0f), Is.EqualTo(-0.2f).Within(0.0001f));
+        Assert.That(weak.EngineModifiers["debuff_armor"].AsFloat(0f), Is.EqualTo(-0.3f).Within(0.0001f));
+        Assert.That(nine.EngineModifiers["debuff_armor"].AsFloat(0f), Is.EqualTo(-0.5f).Within(0.0001f));
         Assert.That(nine.EngineModifiers["ignore_armor"].AsBool(false), Is.True);
+        Assert.That(weak.Mechanics, Does.Not.Contain("armor_break"));
+        Assert.That(nine.Mechanics, Does.Not.Contain("armor_break"));
 
-        var sheet = new ArmorSheet { Base = 100f };
-        sheet.ApplyShred(0.2f, 0, 4000);
-        Assert.That(sheet.Effective(0), Is.EqualTo(80f).Within(0.01f));
+        var six = new ArmorSheet { Base = 100f };
+        six.ApplyShred(0.30f, 0, 4000);
+        Assert.That(six.Effective(0), Is.EqualTo(70f).Within(0.01f));
 
-        var thirty = new ArmorSheet { Base = 100f };
-        thirty.ApplyShred(0.30f, 0, 4000);
-        Assert.That(thirty.Effective(0), Is.EqualTo(70f).Within(0.01f));
+        var nineSheet = new ArmorSheet { Base = 100f };
+        nineSheet.ApplyShred(0.50f, 0, 4000);
+        Assert.That(nineSheet.Effective(0), Is.EqualTo(50f).Within(0.01f));
+
+        float full = Hit(80f, armor: 100f, variance01: 0.5f);
+        float shredded = Hit(80f, armor: six.Effective(0), variance01: 0.5f);
+        float ratio = shredded / full;
+        float expected = (100f / 170f) / (100f / 200f);
+        Assert.That(ratio, Is.EqualTo(expected).Within(0.02f));
+        Assert.That(ratio, Is.LessThan(1.2f), "kırılma gelen hasarı ayrıca ×1,2 çarpmaz");
 
         var ignored = DamagePipeline.Resolve(new DamageQuery
         {
@@ -298,6 +331,21 @@ public class DamagePipelineTests
         });
         Assert.That(ignored.ArmorAfterPen, Is.EqualTo(0f).Within(0.01f));
         Assert.That(ignored.Amount, Is.EqualTo(200f).Within(0.01f));
+    }
+
+    static float Hit(float skillPower, float armor, float variance01)
+    {
+        DamageOutcome hit = DamagePipeline.Resolve(new DamageQuery
+        {
+            SkillPower = skillPower,
+            Armor = armor,
+            CanCrit = false,
+            ApplyVariance = true,
+            VarianceRoll01 = variance01,
+            ScaleMagnitudes = true,
+            DamageTakenFactor = 1f
+        });
+        return hit.Amount;
     }
 
     static string ElementPath()

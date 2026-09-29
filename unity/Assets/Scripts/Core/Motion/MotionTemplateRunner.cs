@@ -170,6 +170,8 @@ namespace Dovus.Core.Motion
         float _walkX, _walkZ;
         float _bodyRadius = 0.5f;
         float _stopGap = 0.15f;
+        /// <summary>Kenar düzeltmesi kalıp adımı değildir. Play: kare başı 0,15 m üstü ışınlanma sayılır.</summary>
+        const float EdgeNudgeM = 0.15f;
         float _plantX, _plantZ;
         float _markX, _markZ;
         bool _plantSent;
@@ -370,6 +372,8 @@ namespace Dovus.Core.Motion
             float dt)
         {
             Axis(phase, target, out float fx, out float fz);
+            float anchorX = _x;
+            float anchorZ = _z;
             if (EmiciApproach.Freezes(phase, target.HoldApproach))
             {
                 if (!_yieldApproach)
@@ -500,10 +504,11 @@ namespace Dovus.Core.Motion
             }
 
             // Arkaya iniş ve içinden geçiş kasıtlı olarak gövdeyi keser; bitiş yine dışarıdadır.
-            // Diğer fazlar her karede kenarın dışında tutulur.
+            // Atış / tutma oyuncuyu oynatmaz: kenar itmesi boss merkeze gelince karşı yüze ışınlar.
+            // Yürüyen fazlarda itme, kalıp adımının üstüne en fazla bir kenar payı ekler.
             bool crossesBody = phase.Land == "behind" || phase.OvershootM > 0.01f;
-            if (!crossesBody)
-                KeepOutside(target, ref _x, ref _z);
+            if (!crossesBody && !FeetPlanted(phase))
+                KeepOutside(target, ref _x, ref _z, anchorX, anchorZ, EdgeNudgeM);
 
             ApplyFacing(phase, u, fx, fz, target);
         }
@@ -983,26 +988,84 @@ namespace Dovus.Core.Motion
         float Separation(in MotionTarget target) =>
             _bodyRadius + target.RadiusM + _stopGap;
 
-        /// <summary>Dönüş atılması hedefin içine inmez; işaret dışarıdaysa işaret kalır.</summary>
-        void KeepOutside(in MotionTarget target, ref float x, ref float z)
+        /// <summary>Atış, tutma ve dönüş oyuncunun ayaklarını yerinden kaldırmaz.</summary>
+        static bool FeetPlanted(MotionPhase phase) =>
+            phase.Motion is "hold" or "throw" or "spin" or "fan" or "hover";
+
+        /// <summary>
+        /// Dönüş atılması hedefin içine inmez; işaret dışarıdaysa işaret kalır.
+        /// Çapa verilmişse itme karşı yüze dönmez. maxNudge &gt; 0 ise bu karedeki
+        /// düzeltme o kadarla sınırlıdır (kalıp adımının kendisi sınırlanmaz).
+        /// </summary>
+        void KeepOutside(
+            in MotionTarget target,
+            ref float x, ref float z,
+            float anchorX = float.NaN,
+            float anchorZ = float.NaN,
+            float maxNudge = 0f)
         {
             if (!target.Has)
                 return;
+            float posedX = x;
+            float posedZ = z;
             float dx = x - target.X;
             float dz = z - target.Z;
             float dist = MathF.Sqrt(dx * dx + dz * dz);
             float min = Separation(target);
             if (dist >= min)
                 return;
-            if (dist < 0.001f)
+
+            float sx;
+            float sz;
+            float adx = anchorX - target.X;
+            float adz = anchorZ - target.Z;
+            float ad = MathF.Sqrt(adx * adx + adz * adz);
+            bool haveAnchor = !float.IsNaN(anchorX) && ad >= 0.001f;
+            bool oppose = haveAnchor && dist >= 0.001f && dx * adx + dz * adz < 0f;
+            if (haveAnchor && (dist < 0.05f || oppose))
             {
-                x = target.X - _faceX * min;
-                z = target.Z - _faceZ * min;
-                return;
+                sx = adx / ad;
+                sz = adz / ad;
             }
-            float scale = min / dist;
-            x = target.X + dx * scale;
-            z = target.Z + dz * scale;
+            else if (dist >= 0.001f)
+            {
+                sx = dx / dist;
+                sz = dz / dist;
+            }
+            else
+            {
+                sx = -_faceX;
+                sz = -_faceZ;
+                float fl = MathF.Sqrt(sx * sx + sz * sz);
+                if (fl < 0.001f)
+                {
+                    sx = -1f;
+                    sz = 0f;
+                }
+                else
+                {
+                    sx /= fl;
+                    sz /= fl;
+                }
+            }
+
+            float safeX = target.X + sx * min;
+            float safeZ = target.Z + sz * min;
+            if (maxNudge > 0f)
+            {
+                float cx = safeX - posedX;
+                float cz = safeZ - posedZ;
+                float cd = MathF.Sqrt(cx * cx + cz * cz);
+                if (cd > maxNudge)
+                {
+                    float scaleNudge = maxNudge / cd;
+                    safeX = posedX + cx * scaleNudge;
+                    safeZ = posedZ + cz * scaleNudge;
+                }
+            }
+
+            x = safeX;
+            z = safeZ;
         }
 
         void Axis(MotionPhase phase, in MotionTarget target, out float fx, out float fz)

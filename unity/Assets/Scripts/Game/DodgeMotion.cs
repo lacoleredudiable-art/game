@@ -181,7 +181,11 @@ namespace Dovus.Game
             float gap = _tuning != null ? _tuning.EdgeGapM : 0.15f;
             float x = pos.x;
             float z = pos.z;
-            DodgeEdge.KeepOutside(ref x, ref z, _boss.position.x, _boss.position.z, body + bossR + gap, _dir.x, _dir.z);
+            DodgeEdge.StopBeforeCrossing(
+                ref x, ref z,
+                _startPos.x, _startPos.z,
+                _boss.position.x, _boss.position.z,
+                body + bossR + gap);
             pos.x = x;
             pos.z = z;
             return pos;

@@ -119,6 +119,44 @@ public class EmiciApproachTests
         Assert.That(maxStep, Is.LessThanOrEqualTo(0.15f));
     }
 
+    [Test]
+    public void EmiciStaySkills_ExpectYerinde_PassThroughDoesNot()
+    {
+        Assert.That(_catalog.TryPlay("1-2", out MotionTemplate claw), Is.True);
+        Assert.That(_catalog.TryPlay("4-2", out MotionTemplate ward), Is.True);
+        Assert.That(_catalog.TryPlay("3-2", out MotionTemplate step), Is.True);
+        Assert.That(EmiciApproach.SweepStayCategory("2", claw), Is.EqualTo("yerinde"));
+        Assert.That(EmiciApproach.SweepStayCategory("2", ward), Is.EqualTo("yerinde"));
+        Assert.That(EmiciApproach.SweepStayCategory("2", step), Is.Null);
+    }
+
+    [Test]
+    public void StationaryEmici_DoesNotTeleportWhenTheBossCrosses()
+    {
+        foreach (string id in new[] { "5-2", "10-2", "11-2", "12-2" })
+        {
+            Assert.That(_catalog.TryPlay(id, out MotionTemplate template), Is.True, id);
+            var runner = new MotionTemplateRunner();
+            runner.Begin(template, 0f, 0f, 0f, 0f, 1f, Body, Stop);
+            float maxStep = 0f;
+            for (int i = 0; i < 400 && !runner.Finished; i++)
+            {
+                float u = MathF.Min(1f, i / 70f);
+                float bossZ = 3f + (-1f - 3f) * u;
+                float x0 = runner.X;
+                float z0 = runner.Z;
+                runner.Tick(1f / 60f, new MotionTarget(true, 0f, bossZ, BossR), default);
+                float step = MathF.Sqrt((runner.X - x0) * (runner.X - x0) + (runner.Z - z0) * (runner.Z - z0));
+                if (step > maxStep)
+                    maxStep = step;
+            }
+
+            Assert.That(maxStep, Is.LessThanOrEqualTo(0.15f), id);
+            Assert.That(runner.X, Is.EqualTo(0f).Within(0.05f), id);
+            Assert.That(runner.Z, Is.EqualTo(0f).Within(0.05f), id + " yerinde");
+        }
+    }
+
     static string MotionPath()
     {
         string path = Path.GetFullPath(Path.Combine(

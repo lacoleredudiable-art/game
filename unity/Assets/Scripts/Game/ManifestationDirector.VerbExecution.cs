@@ -192,6 +192,8 @@ namespace Dovus.Game
         {
             if (_bossVitals == null || _bossVitals.IsDown || raw <= 0f)
                 return;
+            raw = DamagePipeline.TuneOutgoingPower(
+                false, raw, 0f, _combat != null ? _combat.SkillPreArmorScale : 1f);
             float mult = skill.DamageMult > 0f ? skill.DamageMult : 1f;
             if (_playerStatus != null)
                 mult *= _playerStatus.Board.OutgoingDamageMult;

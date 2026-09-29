@@ -90,6 +90,12 @@ namespace Dovus.Game
             if (skillPower <= 0f && slashCommitMult > 0f && closing.TotalEffect > 0f)
                 skillPower = closing.TotalEffect * per * slashCommitMult;
 
+            skillPower = DamagePipeline.TuneOutgoingPower(
+                isBasicStrike,
+                skillPower,
+                _combat != null ? _combat.BasicStrikePower : 0f,
+                _combat != null ? _combat.SkillPreArmorScale : 1f);
+
             if (!skill.IsEmpty && !skill.EngineModifiers.IsNull && skill.EngineModifiers.Has("element_mult"))
             {
                 float element = skill.EngineModifiers["element_mult"].AsFloat(1f);
