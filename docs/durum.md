@@ -1475,8 +1475,11 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   Kılıç grameri `yer_degistir` (sen↔hedef) üretir; isabette `After(dashSec, TeleportPlayer(swapTo))`
   (`ManifestationDirector.MechanicGrammar.cs`) kalıp oyuncuyu boss'un arkasına indirdikten
   0,13 sn sonra ayna konuma (boss'un önü) ışınlar. `hedefin_arkasina` ve `isaret_geri_don`
-  aynı yolu kullanır. Kalıp teslimi sahiplenince gramerin `konum` atomları atlanacak mı,
-  yoksa silahın teslim yolu kalıbın üstüne mi binecek — spec'te cevap yok.
+  aynı yolu kullanır. **Sahip kararı (29 Eylül):** kalıp oyuncunun konumunu yönetir;
+  kalıp teslimi sahiplenince gramerin `konum` atomları (`yer_degistir`, `hedefin_arkasina`,
+  `isaret_geri_don` ışınlanması) atlanır. Kök, yavaşlatma, hasar gibi durum etkileri çalışır.
+  İstisna: `isaret_geri_don`'da işaret yine konur; geri dönüş ışınlanma değil, kalıbın içinde
+  kısa bir atılma fazı olur. Henüz uygulanmadı.
 - **Derleme testi Windows'ta kırmızı (29 Eylül).** `GameLayerCompileTests` `python3`'ü
   çalıştırıyor; Windows'ta bu ad Microsoft Store saplaması. `python` ile betik geçiyor.
 
