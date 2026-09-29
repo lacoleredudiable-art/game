@@ -26,6 +26,7 @@
 > boss'u çeker, 6-2 geri çekilirken tek karede yığılmaz. Unity Play bu turda yok.
 > Dodge i-frame'i borudan önce yutar (`ActorStatus` ve `PlayerVitals`). Mükemmel sıyırmanın
 > sonraki vuruş çarpanı buff aşamasında bir kez tüketilir; ıskalama ve yenilmezlikte harcanmaz.
+> `dotnet test` 429/429, `python3 tools/GameCompile/check.py` geçti. Unity Play yok.
 
 > **Dodge (Dragon Nest tarzı).** Kısa kayma ~4 m / 0,25 sn, dokunulmazlık dodge başında ~0,3 sn.
 > 2 hak, her biri ~4 sn'de dolar. Skill ve düz vuruş her an kesilir. Mükemmel sıyırma sonraki

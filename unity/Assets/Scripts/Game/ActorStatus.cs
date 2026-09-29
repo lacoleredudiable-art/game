@@ -169,9 +169,9 @@ namespace Dovus.Game
         }
 
         public ArmorSheet Armor { get; } = new ArmorSheet();
-        public bool LastHitWasCrit { get; private set; }
-        public float LastThreat { get; private set; }
-        public float LastPoise { get; private set; }
+        public bool LastHitWasCrit { get; set; }
+        public float LastThreat { get; set; }
+        public float LastPoise { get; set; }
 
         public void ApplyDamage(float raw, bool dodgeable = true)
         {

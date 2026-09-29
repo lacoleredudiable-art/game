@@ -137,7 +137,7 @@ namespace Dovus.Core.Combat
         public float AdditivePercent;
         public float Multiplier = 1f;
         /// <summary>Buff aşamasında bir kez. Mükemmel sıyırmanın sonraki vuruşu buradan gelir.</summary>
-        public Func<float> LandMultiplier;
+        public Func<float>? LandMultiplier;
         public bool CanCrit;
         public float CritChance = DamagePipeline.DefaultCritChance;
         public float CritMultiplier = DamagePipeline.DefaultCritMultiplier;
