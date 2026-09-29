@@ -13,8 +13,16 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 29 Eylül 2026 (hedefleme + savaş bakışı, PR #20) ·
-**Dal:** `cursor/targeting-facing-dbde` · **Sıradaki:** Unity Play'de a–e smoke (aşağıdaki liste)
+**Son güncelleme:** 29 Eylül 2026 (motor adım 1: kök yığılması + JSON sayıları) ·
+**Dal:** `fix/engine-step1` (taslak PR) · **Sıradaki:** Unity Play kök/sayı dumanı, sonra denetim listesinin geri kalanı
+
+> **29 Eylül — motor adım 1.** Kök artık aynı kaynaktan yenilenir, farklı kaynaklar toplanmaz
+> (en uzun süre kalır) ve süre bitince 0.5 sn bağışıklık başlar (JSON'da `root_immunity_sec` yok,
+> bir kez uyarı). Skill hasar/süre/soğuma/mana/menzil/yarıçap `SkillNumberCatalog` ile
+> `Resources/ElementSystem/element-sistemi.json` üzerinden okunur; skill'in kendi
+> `cc_duration_sec` değeri genel CC tablosunun üstüne yazılmaz. Canlı CC süreleri
+> (`cc_priority`) oyun açılınca `StatusTuning` yedeğinin üstüne yazılır. Core test 322/322.
+> Unity derlemesi editör komutuyla doğrulandı; Play dumanı bu turda çalıştırılmadı.
 
 > **29 Eylül — hedefleme (PR #20).** Skill'ler varsayılan olarak hedefli: ikinci rün kabul
 > edilmeden menzilde düşman yoksa cast olmaz (`hedef yok` / `menzil dışı`, mana ve soğuma
@@ -1336,6 +1344,12 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
+- **Motor denetimi — adım 1 dışında kalanlar (29 Eylül).** Kök yığılması ve JSON sayı yolu
+  `fix/engine-step1`'de. Sıradaki: (1) kök/yavaş boss saldırısını kesmiyor — boss yürümeyi
+  bırakır ama vuruşa devam eder; (2) dosta giden skill çoğu zaman kendine, düşman sıfatı
+  varsa boss'a gider; (3) kart metni ile engine süresi uyuşmuyor (Yoğun Bağ "1.5 sn stun"
+  yazar, motor root uygular); (4) tempo senkron yavaşlatması hâlâ 0.2 sn sabit; (5) düz
+  vuruş menzili hâlâ his ayarı (`BasicStrikeRangeM`). Unity Play'de kök dumanı henüz yok.
 - **Hedefleme Unity Play'de doğrulanmadı (29 Eylül, PR #20).** Core testleri geçti; editörde
   tık, menzil reddi, düz vuruş ve geri yürüme elle bakılacak. Düz vuruş hasarı hâlâ yalnız
   boss'a gider (ikinci düşman yok). Seçili hedef varken saldırı dışında da gövde hedefe

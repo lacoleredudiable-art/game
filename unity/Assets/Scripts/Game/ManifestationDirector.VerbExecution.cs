@@ -44,6 +44,8 @@ namespace Dovus.Game
             _bossStatus?.Board.ConfigureMobilityCc(data);
         }
 
+        public void ConfigureSkillNumbers(SkillNumberCatalog numbers) => _skillNumbers = numbers;
+
         void OnPlayerDamageTaken(float incomingDamage)
         {
             ReflectFromWorldVolumes(incomingDamage);

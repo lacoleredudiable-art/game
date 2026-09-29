@@ -93,10 +93,13 @@ public class V611RuntimeGapTests
     {
         var board = new StatusBoard();
         board.ConfigureMobilityCc(_mobility);
-        board.Apply(StatusKind.Root, 3000, 1f);
-        board.Apply(StatusKind.Root, 3000, 1f);
+        board.Apply(StatusKind.Root, 3000, 1f, "zone");
+        board.Apply(StatusKind.Root, 3000, 1f, "zone");
         Assert.That(board.TryGet(StatusKind.Root, out double remaining, out _, out _), Is.True);
-        Assert.That(remaining, Is.EqualTo(6000).Within(0.001));
+        Assert.That(remaining, Is.EqualTo(3000).Within(0.001), "aynı kök kaynağı süreyi uzatmaz, yeniler");
+        board.Apply(StatusKind.Root, 1000, 1f, "skill");
+        Assert.That(board.TryGet(StatusKind.Root, out remaining, out _, out _), Is.True);
+        Assert.That(remaining, Is.EqualTo(3000).Within(0.001), "farklı kaynaklar toplanmaz, en uzun kalır");
 
         board.Apply(StatusKind.Stun, 2000, 1f);
         Assert.That(board.HasEffective(StatusKind.Stun), Is.True);

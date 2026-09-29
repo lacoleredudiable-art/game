@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Dovus.Core;
+using Dovus.Core.Combat;
 using Dovus.Core.Execution;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Status;
@@ -350,7 +352,8 @@ namespace Dovus.Game
                 if (mire != null)
                 {
                     if (mire.Amount <= 0)
-                        _bossStatus?.Board.Apply(StatusKind.Root, refreshMs, 1f);
+                        _bossStatus?.Board.Apply(
+                            StatusKind.Root, refreshMs, 1f, "mire:" + (volume.Plan != null ? volume.Plan.SkillId : "volume"));
                     else if (mire.Amount < 1)
                         _bossStatus?.Board.Apply(StatusKind.Slow, refreshMs, (float)mire.Amount);
                 }
@@ -408,14 +411,27 @@ namespace Dovus.Game
                             ? _playerStatus.EffectiveMoveSpeedMult
                             : 1f;
                         if (_playerStatus != null && _playerStatus.EffectiveBlocksMovement)
-                            _bossStatus?.Board.Apply(StatusKind.Root, 200, 1f);
+                        {
+                            double syncMs = e.DurationSec > 0
+                                ? e.DurationSec * 1000.0
+                                : SkillNumberFallbacks.TempoSyncRefreshMs;
+                            if (e.DurationSec <= 0)
+                                DesignWarnings.Once(
+                                    "tempo_sync_duration",
+                                    "element-sistemi.json tempo senkron süresi yok; yedek 0.2 sn kullanıldı.");
+                            _bossStatus?.Board.Apply(
+                                StatusKind.Root, syncMs, 1f,
+                                "link-tempo:" + (link.Plan != null ? link.Plan.SkillId : "link"));
+                        }
                         else if (playerTempo < 1f)
                             _bossStatus?.Board.Apply(StatusKind.Slow, 200, playerTempo);
                         continue;
                     }
                     double refresh = Math.Max(100, e.DurationSec * 1000.0);
                     if (e.Amount <= 0)
-                        _bossStatus?.Board.Apply(StatusKind.Root, refresh, 1f);
+                        _bossStatus?.Board.Apply(
+                            StatusKind.Root, refresh, 1f,
+                            "link:" + (link.Plan != null ? link.Plan.SkillId : "link"));
                     else if (e.Amount < 1)
                         _bossStatus?.Board.Apply(StatusKind.Slow, refresh, (float)e.Amount);
                 }
