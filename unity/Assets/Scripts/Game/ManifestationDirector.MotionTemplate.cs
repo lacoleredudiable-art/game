@@ -102,7 +102,6 @@ namespace Dovus.Game
                 _motionBody = _player.gameObject.AddComponent<MotionTemplateBody>();
 
             float arena = _colors != null ? _colors.ArenaHalfSizeM : 50f;
-            _motionBody.Bind(_clock, arena, 0.5f);
             _templateSkill = skill;
             _templatePending = pending;
             _templateChain = _closingChainBonus;
@@ -112,6 +111,7 @@ namespace Dovus.Game
             float bodyR = PlayerBodyRadiusM();
             if (bodyR < 0.05f)
                 bodyR = 0.5f;
+            _motionBody.Bind(_clock, arena, bodyR);
             float stopGap = MotionCatalog.Fallbacks.StopGapM;
             string weapon = _equippedWeapon != null
                 ? (string.IsNullOrEmpty(_equippedWeapon.AnimationsKey) ? _equippedWeapon.Id : _equippedWeapon.AnimationsKey)
@@ -124,7 +124,23 @@ namespace Dovus.Game
                     if (aim == null)
                         return default;
                     Vector3 pos = aim.position;
-                    return new MotionTarget(true, pos.x, pos.z, ColliderRadius(aim));
+                    bool hold = _boss != null && _boss.PullActive
+                        && (aim == _boss.transform || aim.IsChildOf(_boss.transform));
+                    bool obstacle = false;
+                    float ox = 0f;
+                    float oz = 0f;
+                    float orad = 0f;
+                    if (_boss != null && _ally != null && aim == _ally.transform)
+                    {
+                        obstacle = true;
+                        Vector3 bossPos = _boss.transform.position;
+                        ox = bossPos.x;
+                        oz = bossPos.z;
+                        orad = BossBodyRadius();
+                    }
+                    return new MotionTarget(
+                        true, pos.x, pos.z, ColliderRadius(aim),
+                        hold, obstacle, ox, oz, orad);
                 },
                 () => _input != null && _input.SkillFingerHeld,
                 OnMotionTemplateHit,

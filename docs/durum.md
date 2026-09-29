@@ -90,6 +90,14 @@
 > paket PlayerLoop'u sıfırlıyor; araç tick'i `EditorApplication.update` ile geri takar. Editör
 > odakta değilken tarama yavaşlar. Play sırasında script kaydetmek taramayı siler (domain reload).
 
+> **29 Eylül — üçüncü tarama (Kılıç 141/144, Asa 140/144).** Emici çekme sürerken kalıp hedefe
+> yürümez; oyuncu yerinde vurur, boss gelir. Varış her kare oyuncunun o anki temas noktasıdır,
+> iç içe geçmez, oyuncu itilmez. Girdap yalnız içindeki boss'u çeker (`bossInside` geri geldi).
+> 2-6 dost kancası dostun yakın kenarında, yerde biter; silah menzili uzatamaz, boss'un içinden
+> geçmez. Koşu klibi en çok 2×; üstünde `dash_fast` (CastPierce, `anim_bridge`) tutulur.
+> 3-3 arkaya iniş cast başlangıcına göredir; silah çarpanı ve swap yolu değiştirmez.
+> `dotnet test` 402/402. `python3 tools/GameCompile/check.py` geçti. Unity Play yok.
+
 > **29 Eylül — ikinci tarama kalanları.** Kılıç 141/144, Asa 142/144 sonrası. Emici çekme artık
 > girdap merkezine değil, oyuncunun önündeki temas noktasına gider (kenar kenara, 0,4 sn).
 > Çekme sürerken KeepSeparated yok; 3-2'de boss tek karede dışarı fırlamaz. Hedef ışınlanırsa

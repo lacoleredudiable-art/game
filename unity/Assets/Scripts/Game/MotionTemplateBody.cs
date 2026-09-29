@@ -36,6 +36,9 @@ namespace Dovus.Game
         {
             _clock = clock;
             _arena = arenaHalfM > 1f ? arenaHalfM : 50f;
+            // Oynayan kalıbın gövde yarıçapı silah değişiminde yeniden yazılmaz.
+            if (_playing)
+                return;
             _body = bodyRadiusM > 0f ? bodyRadiusM : 0.5f;
         }
 
@@ -61,6 +64,8 @@ namespace Dovus.Game
             f.y = 0f;
             if (f.sqrMagnitude < 0.0001f)
                 f = Vector3.forward;
+            if (bodyRadiusM > 0f)
+                _body = bodyRadiusM;
             _runner.Begin(template, p.x, p.y, p.z, f.x, f.z, bodyRadiusM, stopGapM);
             _target = target;
             _held = held;

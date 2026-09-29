@@ -80,6 +80,13 @@
         "verb": 0,
         "state": "CastChannel",
         "trigger": ""
+      },
+      {
+        "key": "dash_fast",
+        "weapon": 0,
+        "verb": 0,
+        "state": "CastPierce",
+        "trigger": ""
       }
     ]
   },
