@@ -165,6 +165,101 @@ public class PlaySweepFixTests
     }
 
     [Test]
+    public void EmiciPull_GoesToContactInFront_NotPastTheBoss()
+    {
+        // Boss 3 m ötede. Girdap merkezi daha da ötede olsa da varış temas noktasıdır.
+        EmiciPull.ContactPoint(0f, 0f, 0f, 3f, Body, BossR, 0f, 1f, out float x, out float z);
+        float contact = Body + BossR;
+        Assert.That(z, Is.EqualTo(contact).Within(0.02f));
+        Assert.That(x, Is.EqualTo(0f).Within(0.02f));
+        Assert.That(EmiciPull.MovesTowardPlayer(0f, 3f, 0f, 0f, x, z), Is.True);
+        Assert.That(EmiciPull.MovesTowardPlayer(0f, 3f, 0f, 0f, 0f, 8f), Is.False, "öteki merkez uzağa iter");
+
+        // İç içeyken kararlı yön korunur, tek karede karşı tarafa fırlamaz.
+        EmiciPull.ContactPoint(0f, 2.9f, 0f, 3f, Body, BossR, 0f, 1f, out _, out float near);
+        Assert.That(near, Is.GreaterThan(2.9f));
+        Assert.That(EmiciPull.Distance(0f, 3f, 0f, near), Is.LessThan(2f));
+    }
+
+    [Test]
+    public void PullEase_DoesNotJumpAFrame()
+    {
+        float x = 0f;
+        float z = 3f;
+        float px = x;
+        float pz = z;
+        for (int i = 1; i <= 24; i++)
+        {
+            float u = i / 24f;
+            DisplacementEase.Sample(0f, 3f, 0f, Body + BossR, u, out x, out z);
+            float step = MathF.Sqrt((x - px) * (x - px) + (z - pz) * (z - pz));
+            Assert.That(step, Is.LessThan(0.7f), "kare " + i);
+            px = x;
+            pz = z;
+        }
+        Assert.That(z, Is.EqualTo(Body + BossR).Within(0.05f));
+    }
+
+    [Test]
+    public void TrackedTargetTeleport_DoesNotFlingThePlayer()
+    {
+        var dash = new MotionPhase(
+            "gec", "dash", 0.28f, "target", "track", string.Empty, 0f,
+            3f, 0f, 0f, 0f, 0f, 0f, 0f, 1.15f, 0f, 0f, 0f,
+            0f, 0f, null, null);
+        var template = new MotionTemplate("deneme", "deneme", 1, "deneme", true, new[] { dash }, MotionAim.Enemy);
+        var runner = new MotionTemplateRunner();
+        runner.Begin(template, 0f, 0f, 0f, 0f, 1f, Body, Stop);
+        var boss = new MotionTarget(true, 0f, 3f, BossR);
+        float worst = 0f;
+        for (int i = 0; i < 8; i++)
+            runner.Tick(1f / 60f, boss, default);
+        // Boss bir karede 8 m ışınlansa da oyuncu 40 m/s üstüne çıkmaz.
+        var flung = new MotionTarget(true, 0f, 11f, BossR);
+        float z0 = runner.Z;
+        runner.Tick(1f / 60f, flung, default);
+        worst = MathF.Abs(runner.Z - z0);
+        Assert.That(worst, Is.LessThan(0.8f), "hedef sıçraması oyuncuyu fırlatmaz");
+    }
+
+    [Test]
+    public void HoppingStep_LandsBehind_ForEveryBossRadius()
+    {
+        Assert.That(_catalog.TryPlay("3-3", out MotionTemplate hops), Is.True);
+        foreach (float bossR in new[] { 0.70f, 0.85f, 0.93f })
+        {
+            var runner = new MotionTemplateRunner();
+            var boss = new MotionTarget(true, 0f, 3f, bossR);
+            runner.Begin(hops, 0f, 0f, 0f, 0f, 1f, Body, Stop);
+            float min = 99f;
+            while (!runner.Finished)
+            {
+                runner.Tick(1f / 60f, boss, default);
+                float d = MathF.Sqrt(runner.X * runner.X + (runner.Z - 3f) * (runner.Z - 3f));
+                if (d < min)
+                    min = d;
+            }
+            Assert.That(runner.Z, Is.GreaterThan(3.3f), "r=" + bossR.ToString("0.00") + " z=" + runner.Z.ToString("0.00"));
+            Assert.That(min, Is.GreaterThanOrEqualTo(Body + bossR - 0.05f), "r=" + bossR);
+        }
+    }
+
+    [Test]
+    public void WeaponRange_CannotShortenTemplateTravel()
+    {
+        Assert.That(MotionTravel.Protect(1.35f, 0.5f), Is.EqualTo(1.35f));
+        Assert.That(MotionTravel.Protect(1.35f, 7.5f), Is.EqualTo(7.5f));
+    }
+
+    [Test]
+    public void FastArc_PlaybackMatchesTheBody()
+    {
+        float playback = LocoBlend.MatchPlayback(19.1f, 2.24f);
+        float foot = 2.24f * playback;
+        Assert.That(foot / 19.1f, Is.GreaterThan(0.9f));
+    }
+
+    [Test]
     public void Pull_Eases_AndDoesNotOverlap()
     {
         DisplacementEase.Sample(0f, 0f, 3f, 0f, 0f, out float x, out float z);

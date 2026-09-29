@@ -63,6 +63,13 @@
 > paket PlayerLoop'u sıfırlıyor; araç tick'i `EditorApplication.update` ile geri takar. Editör
 > odakta değilken tarama yavaşlar. Play sırasında script kaydetmek taramayı siler (domain reload).
 
+> **29 Eylül — ikinci tarama kalanları.** Kılıç 141/144, Asa 142/144 sonrası. Emici çekme artık
+> girdap merkezine değil, oyuncunun önündeki temas noktasına gider (kenar kenara, 0,4 sn).
+> Çekme sürerken KeepSeparated yok; 3-2'de boss tek karede dışarı fırlamaz. Hedef ışınlanırsa
+> nişan en çok 40 m/s kayar (3-2'deki 7,79 m oyuncu sıçramasının yolu). 3-3 son sıçrama arkaya
+> iner; silah menzili kalıp mesafesini kısaltamaz. 3-6 bacak oynatması tavana 12 kata çıktı.
+> `dotnet test` 399/399. Oyun katmanı derlendi. Unity Play yok.
+
 > **29 Eylül — Play sweep kökleri (kod, Unity Play yok).** Kılıç taramasındaki 41 kalanın
 > kökleri bu dalda ele alındı. Kendine/dosta giden 27 kalıp artık atıcıyı duruş hedefi yapmıyor
 > (dost, düşman, bakış veya hedefsiz); 3-12 titremesi bu yüzden. Emici çekme (3-2, 5-2, 6-2, 12-2)
@@ -1601,8 +1608,10 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 - **Görsel (29 Eylül, duruyor).** Hitbox VFX yer tutucu küre 1-5 dönüşünü kapatır; 12-7'de kum saati yok.
   2-2 akış çizgisi hâlâ oyuncu→dost, kırmızı değil (hasar yolu ayrı bağlandı).
   Bağ/hacim (`_mechanicLinks`) status temizliğinden sonra da Root/Slow uygulayabiliyor.
-- **3-6 ayak kayması (29 Eylül, kod denemesi).** Kalıp bacak sönümü 0; hız klip ölçüsünü aşınca
-  oynatma en çok 2,4 kata çıkar. Play'de oran 0,43 (Kılıç, 32/35 kare koşu): hâlâ kayıyor.
+- **3-6 ayak kayması (29 Eylül, ikinci deneme).** Oynatma tavanı 12× (2,2 m/s klip, 19 m/s yay).
+  Oran Play'de 0,43'tü; yeni tavan kodda 0,9 üstünü hedefler, ekranda doğrulanmadı.
+- **Emici çekme (29 Eylül).** Varış oyuncunun önü, temas mesafesi. Girdap merkezi yön seçmez.
+  Unity Play ile 3-2, 5-2, 6-2, 12-2 ve Asa 3-3 yeniden bakılacak.
 - **Vuruş göğüs yüksekliği uydurma (29 Eylül).** `ManifestationTuning.StrikeChestOffsetM`
   = 0.35 m (gövde merkezinin üstü, 2 m gövdede ~1.35 m). Spec'te yok, önerilen.
 - **Animasyon kancası (29 Eylül).** Faz anahtarı + `anim_bridge`. Bacaklar kalıp hızından

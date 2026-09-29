@@ -1596,6 +1596,7 @@
           "distance_m": 0.55,
           "forward_m": 1.25,
           "height_m": 0.5,
+          "land": "behind",
           "hit": {
             "shape": "sphere",
             "anchor": "self",

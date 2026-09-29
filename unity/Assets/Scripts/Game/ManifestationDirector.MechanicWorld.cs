@@ -67,6 +67,16 @@ namespace Dovus.Game
         };
         static readonly StatusKind[] SlowOnly = { StatusKind.Slow };
 
+        void PullBossToPlayerContact()
+        {
+            if (_boss == null || _player == null)
+                return;
+            if (!ForcedDisplacement.Allows(_bossStatus != null ? _bossStatus.Board : null))
+                return;
+            float playerR = Mathf.Max(0.5f, PlayerBodyRadiusM());
+            _boss.PullToContact(_player.position, playerR, _boss.BodyRadiusM);
+        }
+
         void BeginMechanicWorld(MechanicPlan plan, Vector3 aimDir, Vector3 landedAt, double worldMs)
         {
             if (plan == null || _player == null)
@@ -341,18 +351,9 @@ namespace Dovus.Game
                 }
             }
 
-            if (volume.Profile.Vortex && bossInside && _boss != null
+            if (volume.Profile.Vortex && _boss != null && _player != null
                 && ForcedDisplacement.Allows(_bossStatus != null ? _bossStatus.Board : null))
-            {
-                double pullMps = MechanicEngine?.Rules.Param("vortex_pull_mps") ?? 0;
-                Vector3 stop = _player != null ? _player.position : volume.Center;
-                float sep = _boss.BodyRadiusM + Mathf.Max(0.5f, PlayerBodyRadiusM());
-                _boss.MoveHomeToward(
-                    volume.Center,
-                    (float)(pullMps * volume.TickMs / 1000.0),
-                    stop,
-                    sep);
-            }
+                PullBossToPlayerContact();
             if (volume.Profile.Continuous && bossInside)
             {
                 if (volume.Plan.Effects.Any(e => e.Has("akinti")))
@@ -399,10 +400,7 @@ namespace Dovus.Game
                     float maxLength = Mathf.Max(0f, (float)link.Plan.Body.ReachM);
                     if (maxLength > 0f && distance > maxLength
                         && ForcedDisplacement.Allows(_bossStatus != null ? _bossStatus.Board : null))
-                    {
-                        float sep = _boss.BodyRadiusM + Mathf.Max(0.5f, PlayerBodyRadiusM());
-                        _boss.MoveHomeToward(_player.position, distance - maxLength, _player.position, sep);
-                    }
+                        _boss.MoveHomeToward(_player.position, distance - maxLength);
                 }
                 string linkId = link.Plan != null && !string.IsNullOrEmpty(link.Plan.SkillId)
                     ? link.Plan.SkillId

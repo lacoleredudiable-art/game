@@ -153,6 +153,9 @@ namespace Dovus.Core.Motion
         bool _active;
         bool _finished;
         bool _hitSent;
+        bool _snapped;
+        bool _hasTracked;
+        MotionTarget _tracked;
         int _everySent;
 
         public bool Finished => _finished;
@@ -206,6 +209,8 @@ namespace Dovus.Core.Motion
                 }
             }
             _lastTarget = default;
+            _hasTracked = false;
+            _tracked = default;
             _finished = template == null || template.Phases.Count == 0;
             _active = !_finished;
             Normalize(faceX, faceZ, out _faceX, out _faceZ);
@@ -221,20 +226,24 @@ namespace Dovus.Core.Motion
 
             float x0 = _x;
             float z0 = _z;
-            _lastTarget = target;
+            _snapped = false;
+            // Hedef bir karede ışınlanırsa dash varışı da sıçrar (3-2'de 7,79 m).
+            // Nişan noktası en çok 40 m/s kayar; ışınlanma fazı bunu kullanmaz.
+            MotionTarget aim = SlewTarget(target, dt);
+            _lastTarget = aim;
             float left = dt;
             int guard = 0;
             while (left > 0.00001f && !_finished && guard++ < 12)
             {
                 MotionPhase phase = _template.Phases[_phase];
-                AimDest(phase, target);
+                AimDest(phase, aim);
                 float dur = Math.Max(0.01f, phase.DurationSec);
                 if (phase.Gate == "release")
                 {
                     if (_time < dur)
                     {
                         float step = Math.Min(left, dur - _time);
-                        Advance(phase, step, dur, target, stick);
+                        Advance(phase, step, dur, aim, stick);
                         left -= step;
                         if (_time < dur - 0.00001f)
                             break;
@@ -246,7 +255,7 @@ namespace Dovus.Core.Motion
                         _held += holdStep;
                         _elapsed += holdStep;
                         left -= holdStep;
-                        Pose(phase, 1f, 1f, target, stick, 0f);
+                        Pose(phase, 1f, 1f, aim, stick, 0f);
                         if (stick.Held && _held < phase.MaxHoldSec - 0.0001f)
                             break;
                     }
@@ -259,7 +268,7 @@ namespace Dovus.Core.Motion
                 if (room > 0.00001f)
                 {
                     float step = Math.Min(left, room);
-                    Advance(phase, step, dur, target, stick);
+                    Advance(phase, step, dur, aim, stick);
                     left -= step;
                 }
 
@@ -271,6 +280,34 @@ namespace Dovus.Core.Motion
 
             float inv = 1f / dt;
             return Capture((_x - x0) * inv, (_z - z0) * inv);
+        }
+
+        /// <summary>Nişan hedefini kare hızıyla takip eder. 8 m'lik bir ışınlanma oyuncuyu sürüklemez.</summary>
+        MotionTarget SlewTarget(in MotionTarget target, float dt)
+        {
+            if (!target.Has || _snapped)
+            {
+                _hasTracked = false;
+                return target;
+            }
+            if (!_hasTracked)
+            {
+                _tracked = target;
+                _hasTracked = true;
+                return target;
+            }
+            float dx = target.X - _tracked.X;
+            float dz = target.Z - _tracked.Z;
+            float dist = MathF.Sqrt(dx * dx + dz * dz);
+            float cap = 40f * MathF.Max(dt, 0.001f);
+            if (dist <= cap)
+            {
+                _tracked = target;
+                return target;
+            }
+            float scale = cap / dist;
+            _tracked = new MotionTarget(true, _tracked.X + dx * scale, _tracked.Z + dz * scale, target.RadiusM);
+            return _tracked;
         }
 
         void Advance(MotionPhase phase, float step, float dur, in MotionTarget target, in MotionStick stick)
@@ -373,6 +410,7 @@ namespace Dovus.Core.Motion
                     {
                         _x = _destX;
                         _z = _destZ;
+                        _snapped = true;
                     }
                     else
                     {

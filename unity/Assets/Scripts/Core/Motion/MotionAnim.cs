@@ -275,5 +275,19 @@ namespace Dovus.Core.Motion
                 Math.Clamp(forward, -1f, 1f),
                 Math.Clamp(strafe, -1f, 1f));
         }
+
+        /// <summary>
+        /// Klip hızı (model m/s) gövdenin gerisinde kalırsa oynatma çarpanı.
+        /// 1,5× yetmez: 19 m/s yay 2,2 m/s klipten 0,4 oran bırakır. Tavan 12.
+        /// </summary>
+        public const float TemplatePlaybackCap = 12f;
+
+        public static float MatchPlayback(float worldMps, float clipRunMps)
+        {
+            if (clipRunMps <= 0.05f || worldMps <= clipRunMps)
+                return 1f;
+            float need = worldMps / clipRunMps;
+            return MathF.Min(need, TemplatePlaybackCap);
+        }
     }
 }

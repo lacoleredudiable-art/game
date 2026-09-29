@@ -148,9 +148,7 @@ namespace Dovus.Game
             var blend = LocoBlend.FromVelocity(tick.VelX, tick.VelZ, tick.FaceX, tick.FaceZ, refMps);
             // Kalıp hızı kısa fazda sönümün gerisinde kalmasın; ayak gövdeyle aynı karede eşleşsin.
             float damp = 0f;
-            float maxPlayback = _motor != null ? _motor.LocoMaxPlayback : 1.5f;
-            if (blend.SpeedMps > refMps * maxPlayback && refMps > 0.05f)
-                maxPlayback = Mathf.Min(2.4f, blend.SpeedMps / refMps);
+            float maxPlayback = LocoBlend.TemplatePlaybackCap;
             _visual.DriveMotion(
                 blend, tick.AnimKey, tick.AnimSpeed, tick.Spin,
                 _anims, _weaponKey, _verbId, refMps, damp, maxPlayback);
