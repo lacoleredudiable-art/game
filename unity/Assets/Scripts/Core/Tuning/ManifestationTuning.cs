@@ -28,7 +28,7 @@ namespace Dovus.Core.Tuning
         // T14 — SARSINTI yerden yükselme yüksekliği (görünüm; Lift ile çarpılır).
         public float WaveRiseHeightM = 0.55f;
 
-        // T14 — düz vuruş: kısa/dar jab; cümle SARSINTI halkasından ayrı (bilinen açık).
+        // Düz vuruş menzili yedeği. Açılışta fiil 1 hitbox'ı (JSON) bunu ezer.
         public float BasicStrikeRangeM = 2.4f;
         public float BasicStrikeSpeedMps = 14f;
         public float BasicStrikeBangSec = 0.22f;

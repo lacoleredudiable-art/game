@@ -13,8 +13,16 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 29 Eylül 2026 (motor adım 2: yavaşlatma süresi yenilenir, eklenmez) ·
-**Dal:** `fix/engine-step2` (taslak PR #22) · **Sıradaki:** Unity Play — Yoğun Zaman süresi 1 sn'de kalmalı
+**Son güncelleme:** 29 Eylül 2026 (motor adım 2: düz vuruş menzili + saldırı bakışı) ·
+**Dal:** `fix/engine-step2` (taslak PR #22) · **Sıradaki:** Unity Play — menzil 1.5 m, vuruşta gövde hedefe kilitli
+
+> **29 Eylül — motor adım 2, menzil ve bakış.** Düz vuruş menzili artık his ayarı değil:
+> fiil 1 kapsülü (`hitbox_vfx`, 1.5 m). JSON'da yoksa bir kez uyarır ve eski yedek 2.4 m kalır.
+> Aynı sayı isabet kontrolünde ve otomatik hedef menzilinde de kullanılır.
+> Saldırı sırasında gövdeyi çubuğa çeken ikinci dönüş (nişan, hız yönü) kalktı. Seçili hedef
+> varsa vuruş boyunca ona bakılır; yoksa menzildeki düşmana; o da yoksa bakış kalır, çubuk
+> çevirmez. Geri giderken de hedefe bakılır. Dash yönlü nişanını korur. Saldırı bitince
+> yürüme eskisi gibi. Unity Play bu turda yok.
 
 > **29 Eylül — motor adım 2, yavaşlatma süresi.** Yoğun Zaman'ın gücü doğruydu (0.70) ama tempo bağı
 > her tikte 1 sn'yi kalan sürenin üstüne ekliyordu (oyunda ~156 sn). Artık aynı kaynak süreyi
@@ -1363,10 +1371,10 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
-- **Motor denetimi — adım 2 sonrası (29 Eylül).** (1)–(4) `fix/engine-step2`'de: boss CC,
-  dost hedefi, karttaki etki türü, tempo süresi. Yavaşlatma/hız yeniden gelince süre
-  eklenmez (Yoğun Zaman 1 sn). Kalan: (5) düz vuruş menzili hâlâ his ayarı
-  (`BasicStrikeRangeM`) — bu turda bilerek dokunulmadı. Kart süresi hâlâ kısa olanlar:
+- **Motor denetimi — adım 2 sonrası (29 Eylül).** (1)–(5) `fix/engine-step2`'de: boss CC,
+  dost hedefi, karttaki etki türü, tempo süresi, düz vuruş menzili (fiil 1 kapsülü 1.5 m).
+  Yavaşlatma/hız yeniden gelince süre eklenmez (Yoğun Zaman 1 sn). Saldırı bakışı hedefe
+  kilitlenir; çubuk vuruşun ortasında gövdeyi çevirmez. Kart süresi hâlâ kısa olanlar:
   Sabit Bağ "3 sn" iken kök süresi 1.5 sn; Sabit/Odaklı/Akan Zaman kartı 5/3/4 sn der,
   tempo alanı 1 sn. Boss'un bugünkü saldırıları (çakma, nefes) yerinde; hücum/sıçrama/atış
   yok, kök onları ancak eklenince keser. Unity Play dumanı henüz yok.

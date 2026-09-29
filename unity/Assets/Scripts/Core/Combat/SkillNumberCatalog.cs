@@ -127,6 +127,17 @@ namespace Dovus.Core.Combat
             _verbs.TryGetValue(verbId, out VerbNumbers n) ? n.RangeM : SkillNumberFallbacks.RangeM;
 
         /// <summary>
+        /// Düz vuruş menzili = fiil 1 hitbox'ı (hitbox_vfx). Alan yoksa tuning yedeği kalır
+        /// ve katalog zaten bir kez uyarmıştır.
+        /// </summary>
+        public void ApplyBasicStrikeRange(ManifestationTuning tuning)
+        {
+            if (tuning == null)
+                return;
+            tuning.BasicStrikeRangeM = RangeM(1);
+        }
+
+        /// <summary>
         /// CC sürelerini JSON cc_priority'den canlı ayara yazar.
         /// Alan yoksa StatusTuning'deki adlı yedek kalır.
         /// </summary>
