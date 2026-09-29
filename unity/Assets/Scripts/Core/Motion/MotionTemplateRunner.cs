@@ -365,7 +365,7 @@ namespace Dovus.Core.Motion
                     _walkZ += stick.MoveZ * phase.WalkMps * dt;
                     _x = _phaseX + fx * u * phase.DriftM + _walkX;
                     _z = _phaseZ + fz * u * phase.DriftM + _walkZ;
-                    _y = _groundY;
+                    _y = _groundY + (phase.HeightM > 0.01f ? phase.HeightM : 0f);
                     break;
                 default:
                     if (phase.Motion != "hold")
@@ -379,6 +379,12 @@ namespace Dovus.Core.Motion
                     _y = _groundY;
                     break;
             }
+
+            // Arkaya iniş ve içinden geçiş kasıtlı olarak gövdeyi keser; bitiş yine dışarıdadır.
+            // Diğer fazlar her karede kenarın dışında tutulur.
+            bool crossesBody = phase.Land == "behind" || phase.OvershootM > 0.01f;
+            if (!crossesBody)
+                KeepOutside(target, ref _x, ref _z);
 
             ApplyFacing(phase, u, fx, fz, target);
         }
@@ -662,8 +668,8 @@ namespace Dovus.Core.Motion
                     Approach(ux, uz, len, target, cap: phase.DistanceM);
                     break;
                 case "blink":
-                    _destX = target.X + ux * Separation(target);
-                    _destZ = target.Z + uz * Separation(target);
+                    // Arkaya iniş yukarıda ayrıldı. Düz ışınlanma hedefin yakın kenarında biter.
+                    Approach(ux, uz, len, target, cap: 0f);
                     break;
                 case "slam":
                     Approach(ux, uz, len, target, cap: phase.DistanceM);

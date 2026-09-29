@@ -13,15 +13,26 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 29 Eylül 2026 (PR #24 master'a birleşti) ·
-**Dal:** `master` · **Sıradaki:** aile 15–42
+**Son güncelleme:** 29 Eylül 2026 (kalıp 15–42) ·
+**Dal:** `feat/motion-templates-2` · **Sıradaki:** Unity Play (bacaklar, dönüş, 3-4, 3-9)
+
+> **29 Eylül — hareket kalıbı bölüm 2–3 (Unity Play yok).** Aile 15–42 de oynanır.
+> 42 aile, 101 kalıp, 144 skill. Hiçbir kombo "kalıp bekliyor" demez. Sayılar
+> `motion-templates.json` içinde; yoksa bir kez uyarı ve yedek. Sabit Adım (3-4) çapayı
+> koyup boss'a atılır, 2 sn sonra işarete kısa kenar-güvenli atılmayla döner. Odaklı Adım
+> (3-9) 0,3 sn bekleyip boss'un arkasına bir kez iner; gramerin ışınlanması kapalı. Aynı
+> kalıp Yoğun Adım'da (3-1) da arkaya iner. Emici Adım (3-2) boss'un içinden geçip öte
+> kenarda durur. Etiketler (Portal, Sınır modu, Takım kombosu, Silah kesme) hâlâ yalnız
+> veridir, mekaniği yok. Yürüyen balon kalıbı 4 sn (Akan Zaman 12-12). Yayılan Yansı (10-5)
+> metni 2 sn der; gövde aynı kalıp olduğu için 4 sn yürür. Core test 379/379.
+> `python3 tools/GameCompile/check.py` oyun katmanını derledi. Unity Play yok.
 
 > **29 Eylül — 3. Unity Play, PR #24 birleşti.** Konsolda script hatası yok; Windows'ta
 > `dotnet test` 376/376. 3-6 (Kılıç) üç koşu: merkez 4,5 m ve 2,5 m boss durdurulmuş, 4,5 m boss
 > yapay zekası açık. Üçünde de boss'un arkasına bir kez iniyor (merkeze 1,50–1,55 m), sonraki
 > 2,3 sn'de kayma 0, tek karede sıçrama 0, taraf değişimi yok. Log: "yer değiştirme kalıpta,
-> Root 1,5sn". 3-4 ve 3-9 kalıpları henüz yok, test edilmedi. Parmak basılı yükleme, animasyon
-> ayak kayması ve Kılıç dışı silahlar hâlâ Play'de ölçülmedi.
+> Root 1,5sn". 3-4 ve 3-9 o Play'de yoktu. Parmak basılı yükleme, animasyon ayak kayması ve
+> Kılıç dışı silahlar o turda ölçülmedi.
 
 > **29 Eylül — kalıp konumu sahiplenir (PR #24, Unity Play yok).** Kalıp oyuncuyu oynatıyorsa
 > o cast'te oyuncunun yerini yalnız kalıp değiştirir. `yer_degistir` ve `hedefin_arkasina`
@@ -30,8 +41,8 @@
 > fazıdır (ışınlanma değil). Kök, yavaşlatma, hasar, çekme, itme, portal sürer. Kalıp
 > oyuncuyu oynatmıyorsa gramer eskisi gibi ışınlar. Atlanan adım skill başına bir kez loglanır.
 > Gramerin oyuncuyu oynatan konum adımı üç skill'de: Sabit Adım (3-4), Bağlayıcı Adım (3-6),
-> Odaklı Adım (3-9). 3-6 kalıbı oynar ve boss'un arkasına bir kez iner. 3-4 ve 3-9 kalıbı
-> henüz yok (aile 24 ve 23); onlar hâlâ eski ışınlanmayı kullanır. Derleme testi `python3`,
+> Odaklı Adım (3-9). 3-6 kalıbı oynar ve boss'un arkasına bir kez iner. 3-4 ve 3-9 o turda
+> yoktu (aile 24 ve 23); bölüm 2–3'te bağlandı, eski ışınlanma kapandı. Derleme testi `python3`,
 > sonra `python`, sonra `py -3` dener; hiçbiri yoksa düşmez, atlar. Core test 376/376.
 > Unity Play bu turda yok.
 
@@ -1479,8 +1490,11 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 - **Vuruş göğüs yüksekliği uydurma (29 Eylül).** `ManifestationTuning.StrikeChestOffsetM`
   = 0.35 m (gövde merkezinin üstü, 2 m gövdede ~1.35 m). Spec'te yok, önerilen.
-- **Hareket kalıbı bölüm 1 (29 Eylül).** Aile 1–14 oynanır. Aile 15–42 eski davranış + bir kez
-  uyarı. Portal, Sınır modu, Takım kombosu, Silah kesme etiket olarak durur, işlemez.
+- **Hareket kalıbı bölüm 2–3 (29 Eylül).** Aile 1–42 oynanır (101 kalıp, 144 skill).
+  Portal, Sınır modu, Takım kombosu, Silah kesme etiket olarak durur, işlemez.
+  Yürüyen balon 4 sn; 10-5 metnindeki 2 sn ayrı gövde değil. Unity Play yok.
+- **Hareket kalıbı bölüm 1 (29 Eylül).** Aile 1–14 o turda açıldı. Aile 15–42 sonraki turda
+  bağlandı (yukarı). Portal, Sınır modu, Takım kombosu, Silah kesme etiket olarak durur, işlemez.
   Kalıp, bang anında başlar (~0,26 sn toparlanmadan sonra). Kalıp oyuncuyu oynatıyorsa
   gramerin konum ışınlanması atlanır (yukarı). Boss collider yoksa vuruş payı 0,6 m. Ayna klonların
   5 sn'lik tekrarı ve dostu gerçekten çekmek bu bölümde yok. Unity Play yok.
@@ -1490,11 +1504,10 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 - **Hareket kalıbı Play bulguları (29 Eylül, düzeltildi, yeniden Play yok).** Kanca düşmana
   iner, sekme vuruşu boss'a değer, saplama kenarda durur, fitil yere çakılır, menzil kapısı
   lunge'u sayar, ilk merkez vuruşu build sonrası yutulmaz. Unity Play bu turda yok.
-- **Kalıp konumu (29 Eylül, uygulandı, 3-6 Play'de doğrulandı).** Sahip kararı kodda: kalıp
-  oyuncuyu oynatıyorsa `yer_degistir` / `hedefin_arkasina` ışınlanmaz; `isaret_geri_don`
-  işareti konur, dönüş kalıbın içinde kısa atılmadır. 3-6 bir kez arkaya iner ve kalır.
-  3-4 ve 3-9 kalıbı henüz oynanmadığı için eski ışınlanma durur. `isaret_geri_don` atılması
-  Play'de denenmedi.
+- **Kalıp konumu (29 Eylül).** Sahip kararı kodda: kalıp oyuncuyu oynatıyorsa
+  `yer_degistir` / `hedefin_arkasina` ışınlanmaz; `isaret_geri_don` işareti konur, dönüş
+  kalıbın içinde kısa atılmadır. 3-6 Play'de bir kez arkaya inip kalıyor. 3-4 ve 3-9 bu dalda
+  kalıpla oynar; Play henüz yok.
 - **Derleme testi (29 Eylül).** `python3`, sonra `python`, sonra `py -3`. Hiçbiri yoksa
   test atlanır, düşmez. Windows'ta geçiyor (376/376).
 

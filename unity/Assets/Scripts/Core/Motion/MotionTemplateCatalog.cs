@@ -549,10 +549,13 @@ namespace Dovus.Core.Motion
                 MotionPhase phase = template.Phases[i];
                 float travel = phase.Motion switch
                 {
-                    "lunge" or "dash" or "leap" or "pull" => phase.DistanceM,
-                    "hop" => Math.Max(0f, phase.ForwardM),
+                    "lunge" or "dash" or "leap" or "pull" or "blink" or "return" or "slam" => phase.DistanceM,
+                    "hop" => phase.Land == "behind"
+                        ? Math.Max(phase.DistanceM, phase.BehindM)
+                        : Math.Max(0f, phase.ForwardM),
                     "sidestep" => Math.Max(0f, phase.ForwardM),
                     "throw" => phase.ShotM,
+                    "channel" => phase.DriftM,
                     _ => 0f
                 };
                 float hit = 0f;

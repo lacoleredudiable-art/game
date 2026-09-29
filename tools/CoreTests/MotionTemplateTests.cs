@@ -20,13 +20,13 @@ public class MotionTemplateTests
     }
 
     [Test]
-    public void Catalog_MapsEveryCombo_AndTheFirstFourteenFamilies()
+    public void Catalog_MapsEveryCombo_AndAllFortyTwoFamilies()
     {
         Assert.That(_catalog.FamilyCount, Is.EqualTo(42));
         Assert.That(_catalog.TemplateCount, Is.EqualTo(101));
         Assert.That(_catalog.SkillCount, Is.EqualTo(144));
-        Assert.That(_catalog.CountImplementedFamilies(), Is.EqualTo(14));
-        Assert.That(_catalog.CountReadySkills(), Is.EqualTo(49));
+        Assert.That(_catalog.CountImplementedFamilies(), Is.EqualTo(42));
+        Assert.That(_catalog.CountReadySkills(), Is.EqualTo(144));
 
         for (int verb = 1; verb <= 12; verb++)
         for (int adjective = 1; adjective <= 12; adjective++)
@@ -54,22 +54,36 @@ public class MotionTemplateTests
         Assert.That(Tags("4-10"), Does.Not.Contain(MotionTemplateCatalog.TagPortal));
         Assert.That(Tags("6-8"), Does.Contain(MotionTemplateCatalog.TagTakim));
         Assert.That(Tags("10-1"), Does.Contain(MotionTemplateCatalog.TagSilah));
-        Assert.That(_catalog.TryPlay("10-1", out _), Is.False, "aile 28 henüz oynanmaz");
+        Assert.That(_catalog.TryPlay("10-1", out MotionTemplate parry), Is.True);
+        Assert.That(parry.FamilyId, Is.EqualTo(28));
+        Assert.That(Tags("3-10"), Does.Contain(MotionTemplateCatalog.TagPortal));
+        Assert.That(Tags("3-10"), Does.Contain(MotionTemplateCatalog.TagTakim));
+        Assert.That(Tags("5-4"), Does.Contain(MotionTemplateCatalog.TagTakim));
     }
 
     [Test]
-    public void PendingFamily_WarnsOnce_AndDoesNotReplaceTheOldSkill()
+    public void EveryCombo_ResolvesToAnImplementedTemplate()
     {
-        int warnings = 0;
+        int pending = 0;
         DesignWarnings.Warned += message =>
         {
             if (message != null && message.Contains("bekliyor", System.StringComparison.Ordinal))
-                warnings++;
+                pending++;
         };
-        Assert.That(_catalog.TryPlay("2-2", out _), Is.False);
-        Assert.That(_catalog.TryPlay("7-12", out _), Is.False);
-        Assert.That(warnings, Is.EqualTo(1));
-        Assert.That(DesignWarnings.WasWarned("motion.pending.15"), Is.True);
+
+        for (int verb = 1; verb <= 12; verb++)
+        for (int adjective = 1; adjective <= 12; adjective++)
+        {
+            string id = verb + "-" + adjective;
+            Assert.That(_catalog.TryPlay(id, out MotionTemplate template), Is.True, id);
+            Assert.That(template.Implemented, Is.True, id);
+            Assert.That(template.Phases.Count, Is.GreaterThan(0), id);
+            Assert.That(template.Phases[0].Name, Is.Not.EqualTo("bekliyor"), id);
+        }
+
+        Assert.That(pending, Is.EqualTo(0));
+        Assert.That(_catalog.TryPlay("0-0", out _), Is.False);
+        Assert.That(DesignWarnings.WasWarned("motion.missing.0-0"), Is.True);
     }
 
     [Test]
@@ -445,6 +459,223 @@ public class MotionTemplateTests
         Assert.That(shot.Hits[0].Anchor, Is.EqualTo("shot"));
         Assert.That(shot.Hits[0].OriginZ, Is.GreaterThan(4f));
         Assert.That(shot.FaceZ, Is.GreaterThan(0.8f));
+    }
+
+    [Test]
+    public void EveryTemplate_HitsTheStandingTarget_AndNeverEndsInside()
+    {
+        string elements = File.ReadAllText(Path.Combine(RepoRoot(), "docs", "element-sistemi.json"));
+        var grammar = new Dovus.Core.Mechanic.MechanicGrammar(Dovus.Core.Mechanic.MechanicRules.FromJson(elements));
+        Assert.That(grammar.Rules.IsValid, Is.True);
+
+        const float body = 0.5f;
+        const float bossR = 0.85f;
+        const float stop = 0.15f;
+        var failures = new List<string>();
+
+        for (int i = 0; i < _catalog.Templates.Count; i++)
+        {
+            MotionTemplate template = _catalog.Templates[i];
+            MotionTarget target = StandingTarget(template, bossR);
+            CastSample cast = SampleCast(template, target, body, stop);
+
+            float endGap = MotionHitGeometry.EdgeGap(cast.X, cast.Z, body, target.X, target.Z, bossR);
+            if (endGap <= 0.04f)
+                failures.Add(template.Id + " bitiş içinde gap=" + endGap.ToString("0.00"));
+
+            bool crosses = false;
+            bool behind = false;
+            bool overshoot = false;
+            bool returns = false;
+            bool retreats = false;
+            for (int p = 0; p < template.Phases.Count; p++)
+            {
+                MotionPhase phase = template.Phases[p];
+                if (phase.Land == "behind" || phase.OvershootM > 0.01f)
+                    crosses = true;
+                if (phase.Land == "behind")
+                    behind = true;
+                if (phase.OvershootM > 0.01f)
+                    overshoot = true;
+                if (phase.Motion == "return")
+                    returns = true;
+                if (phase.Motion == "retreat")
+                    retreats = true;
+            }
+
+            if (!crosses)
+            {
+                for (int s = 0; s < cast.Gaps.Count; s++)
+                {
+                    if (cast.Gaps[s] <= 0.04f)
+                    {
+                        failures.Add(template.Id + " kare " + s + " içinde");
+                        break;
+                    }
+                }
+            }
+
+            if (behind && cast.PeakZ <= target.Z)
+                failures.Add(template.Id + " arkaya inmeli peak=" + cast.PeakZ.ToString("0.00"));
+
+            if (overshoot && cast.Z <= target.Z)
+                failures.Add(template.Id + " öte kenarda bitmeli z=" + cast.Z.ToString("0.00"));
+
+            if (returns)
+            {
+                if (cast.PeakZ <= 1.2f)
+                    failures.Add(template.Id + " işaretten uzaklaşmalı");
+                if (MathF.Abs(cast.Z) > 0.2f)
+                    failures.Add(template.Id + " işarete dönmeli z=" + cast.Z.ToString("0.00"));
+            }
+            else if (retreats && !behind && cast.Z >= -0.4f)
+            {
+                failures.Add(template.Id + " geri çekilmeli z=" + cast.Z.ToString("0.00"));
+            }
+
+            if (template.Id == "suzulme" && cast.PeakY < 0.6f)
+                failures.Add("suzulme yerden kalkmadı");
+
+            for (int h = 0; h < cast.Hits.Count; h++)
+            {
+                MotionHit hit = cast.Hits[h];
+                if (hit.Payload is "none" or "marker")
+                    continue;
+                if (hit.Anchor == "side")
+                {
+                    if (MathF.Abs(hit.OriginX) <= 0.5f)
+                        failures.Add(template.Id + " yan " + hit.Phase + " x=" + hit.OriginX.ToString("0.00"));
+                    continue;
+                }
+
+                if (hit.Anchor is "self")
+                    continue;
+                if (hit.Anchor is not ("forward" or "shot" or "target" or "behind" or "target_side" or "plant" or "ring"))
+                    continue;
+
+                bool overlaps = MotionHitGeometry.Overlaps(
+                    hit.OriginX, hit.OriginZ, hit.DirX, hit.DirZ,
+                    hit.LengthM, hit.RadiusM, hit.Anchor,
+                    target.X, target.Z, bossR);
+                if (!overlaps)
+                    failures.Add(template.Id + " " + hit.Phase + " " + hit.Anchor
+                        + " hedefz=" + target.Z.ToString("0.00"));
+            }
+        }
+
+        Assert.That(failures.Count, Is.EqualTo(0), string.Join(" | ", failures));
+
+        for (int verb = 1; verb <= 12; verb++)
+        for (int adjective = 1; adjective <= 12; adjective++)
+        {
+            string id = verb + "-" + adjective;
+            Assert.That(_catalog.TryGet(id, out MotionBinding binding), Is.True, id);
+            var plan = grammar.Compose(verb, adjective, 1);
+            bool grammarMoves = false;
+            foreach (var effect in plan.Effects)
+            {
+                if (PositionOwnership.Kind(effect.Atom, effect.Stat) != PositionStepKind.None)
+                    grammarMoves = true;
+            }
+            bool templateMoves = PositionOwnership.MovesPlayer(binding.Template);
+            Assert.That(
+                PositionOwnership.PositionWriters(templateMoves, grammarMoves),
+                Is.LessThanOrEqualTo(1),
+                id);
+        }
+    }
+
+    static MotionTarget StandingTarget(MotionTemplate template, float bossR)
+    {
+        float shot = 0f;
+        float ring = 0f;
+        bool aimed = false;
+        bool behind = false;
+        bool overshoot = false;
+        bool returns = false;
+        bool retreats = false;
+        for (int i = 0; i < template.Phases.Count; i++)
+        {
+            MotionPhase phase = template.Phases[i];
+            if (phase.Land == "behind")
+                behind = true;
+            if (phase.OvershootM > 0.01f)
+                overshoot = true;
+            if (phase.Motion == "return")
+                returns = true;
+            if (phase.Motion == "retreat")
+                retreats = true;
+            MotionHitSpec hit = phase.Hit;
+            if (hit == null || hit.Payload is "none" or "marker")
+                continue;
+            if (hit.Anchor == "shot")
+                shot = MathF.Max(shot, phase.ShotM * Math.Clamp(hit.At, 0.05f, 1f));
+            if (hit.Anchor == "ring")
+                ring = MathF.Max(ring, hit.RadiusM);
+            if (hit.Anchor is "forward" or "target" or "behind" or "target_side" or "plant")
+                aimed = true;
+        }
+
+        float z;
+        if (returns)
+            z = 4f;
+        else if (shot > 2.2f && retreats)
+            z = MathF.Max(1.9f, shot - 0.6f);
+        else if (shot > 2.2f)
+            z = shot;
+        else if (behind || overshoot)
+            z = 3.2f;
+        else if (ring > 0.4f && !aimed)
+            z = Math.Clamp(ring + bossR - 0.25f, 1.75f, 3f);
+        else
+            z = 1.9f;
+        return new MotionTarget(true, 0f, z, bossR);
+    }
+
+    static CastSample SampleCast(MotionTemplate template, MotionTarget target, float body, float stop)
+    {
+        var runner = new MotionTemplateRunner();
+        runner.Begin(template, 0f, 0f, 0f, 0f, 1f, body, stop);
+        var hits = new List<MotionHit>();
+        var gaps = new List<float>();
+        float peakZ = 0f;
+        float peakY = 0f;
+        var stick = new MotionStick(false, 0f, 0f);
+        for (int i = 0; i < 800 && !runner.Finished; i++)
+        {
+            MotionTick tick = runner.Tick(0.02f, target, stick);
+            if (tick.Hits != null)
+                hits.AddRange(tick.Hits);
+            if (tick.Z > peakZ)
+                peakZ = tick.Z;
+            if (tick.Y > peakY)
+                peakY = tick.Y;
+            gaps.Add(MotionHitGeometry.EdgeGap(tick.X, tick.Z, body, target.X, target.Z, target.RadiusM));
+        }
+        Assert.That(runner.Finished, Is.True, template.Id);
+        return new CastSample(runner.X, runner.Y, runner.Z, peakY, peakZ, hits, gaps);
+    }
+
+    readonly struct CastSample
+    {
+        public CastSample(float x, float y, float z, float peakY, float peakZ, List<MotionHit> hits, List<float> gaps)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+            PeakY = peakY;
+            PeakZ = peakZ;
+            Hits = hits;
+            Gaps = gaps;
+        }
+
+        public float X { get; }
+        public float Y { get; }
+        public float Z { get; }
+        public float PeakY { get; }
+        public float PeakZ { get; }
+        public List<MotionHit> Hits { get; }
+        public List<float> Gaps { get; }
     }
 
     static MotionTemplate Ready(string id)
