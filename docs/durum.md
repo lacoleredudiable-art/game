@@ -17,15 +17,16 @@
 **Dal:** `feat/damage-armor` · **Sıradaki:** bu düzeltmelerin Unity Play'i (PR #30 açık, merge yok)
 
 > **30 Eylül — Play kalanları, kod.** Dodge boss'a doğru atılınca yakın yüzde durur
-> (`DodgeEdge.StopBeforeCrossing`); uzak yüze ışınlanmaz. Atış/tutma/dönüş fazları kenar
-> itmesiyle yer değiştirmez; yürüyen fazın kenar düzeltmesi kare başı en fazla 0,15 m.
-> 5-2, 10-2, 11-2, 12-2 boss oyuncunun içinden geçse de oyuncu yerinde kalır. 1-2 ve 4-2
+> (`DodgeEdge.StopBeforeCrossing`); uzak yüze ışınlanmaz. Atış, tutma ve dönüş fazları
+> kenar itmesiyle yer değiştirmez; yürüyen kalıbın kendi adımı durur. 5-2, 10-2, 11-2,
+> 12-2 boss oyuncunun içinden geçse de oyuncu yerinde kalır. 1-2 ve 4-2
 > oyun davranışı aynı (oyuncu yerinde, boss temasa gelir); tarama beklentisi artık "yerinde".
 > Boss zırhı JSON: normal 100 (%50), sert 150 (%40 alınır). Canlı dövüş normal zırhı okur;
 > sert mod anahtarı yok. Skill gücü zırhtan önce ×2 (`SkillPreArmorScale`) — 175–222K bandı
 > durur, delme ve kırılma sonra işler. Düz vuruş tabanı `BasicStrikePower` 12,5 → zırh sonrası
 > ~25K (20–30K). Zafiyet 7-6 −%30, 7-9 −%50 yalnız zırh puanını düşürür; `armor_break` ×1,2
-> artık üstüne binmez. Unity Play bu düzeltmelerde yok.
+> artık üstüne binmez. `dotnet test` 434/434, `python3 tools/GameCompile/check.py` geçti.
+> Unity Play bu düzeltmelerde yok.
 
 
 
