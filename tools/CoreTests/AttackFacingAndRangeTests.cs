@@ -48,13 +48,25 @@ public class AttackFacingAndRangeTests
     }
 
     [Test]
-    public void HitboxSecondNumber_IsRadius_NotDiameter()
+    public void Verb3And7_WrittenSizeIsWidth_GameplayRadiusIsHalf()
     {
         var boxes = VerbExecutionData.FromJson(File.ReadAllText(JsonPath()));
+        Assert.That(boxes.TryGetHitbox(1, out VerbHitboxSpec jab), Is.True);
+        Assert.That(jab.SizeBIsWidth, Is.False, "fiil 1 Play'de yarıçap olarak doğrulandı");
+        Assert.That(HitboxSizing.Resolve(jab, 1f, 1f).RadiusM, Is.EqualTo(0.5f).Within(0.001f));
+
         Assert.That(boxes.TryGetHitbox(3, out VerbHitboxSpec line), Is.True);
         Assert.That(boxes.TryGetHitbox(7, out VerbHitboxSpec capsule), Is.True);
-        Assert.That(HitboxSizing.Resolve(line, 1f, 1f).RadiusM, Is.EqualTo(0.8f).Within(0.001f));
-        Assert.That(HitboxSizing.Resolve(capsule, 1f, 1f).RadiusM, Is.EqualTo(1f).Within(0.001f));
+        Assert.That(line.SizeB, Is.EqualTo(0.8f).Within(0.001f));
+        Assert.That(capsule.SizeB, Is.EqualTo(1f).Within(0.001f));
+        Assert.That(line.SizeBIsWidth, Is.True);
+        Assert.That(capsule.SizeBIsWidth, Is.True);
+        HitboxSize lineSize = HitboxSizing.Resolve(line, 1f, 1f);
+        HitboxSize capsuleSize = HitboxSizing.Resolve(capsule, 1f, 1f);
+        Assert.That(lineSize.RadiusM * 2f, Is.EqualTo(0.8f).Within(0.001f), "çizgi genişliği 0.8 m");
+        Assert.That(capsuleSize.RadiusM * 2f, Is.EqualTo(1f).Within(0.001f), "kapsül genişliği 1 m");
+        Assert.That(lineSize.ReachM, Is.EqualTo(3f).Within(0.001f));
+        Assert.That(capsuleSize.ReachM, Is.EqualTo(3f).Within(0.001f));
     }
 
     [Test]

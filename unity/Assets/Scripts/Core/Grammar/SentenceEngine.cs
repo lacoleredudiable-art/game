@@ -46,6 +46,27 @@ namespace Dovus.Core.Grammar
 
         public event Action<CompletedSentence>? SentenceCompleted;
 
+        /// <summary>
+        /// Merkez düz vuruş. Slot sırasına bakmaz: rün 1 hangi yuvada olursa olsun
+        /// fiil Saldırı'dır. Slot 0 ekran noktası değildir.
+        /// </summary>
+        public bool BeginBasicStrike(int runeId, double worldTimeMs)
+        {
+            CatchUp(worldTimeMs);
+            if (!RuneInfo.TryFromId(runeId, out Rune rune))
+                return false;
+
+            if (State.Phase == SentencePhase.Resolved || State.Phase == SentencePhase.Aborted
+                || State.Phase == SentencePhase.Recovering)
+                BeginFresh();
+
+            if (State.Phase != SentencePhase.Idle)
+                return false;
+
+            StartVerb(0, rune);
+            return true;
+        }
+
         /// <summary>Noktaya dokunuş. Geçersiz nokta yok sayılır.</summary>
         public void OnDotTouched(int dot, double worldTimeMs)
         {

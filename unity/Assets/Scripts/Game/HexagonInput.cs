@@ -47,6 +47,9 @@ namespace Dovus.Game
         double _dodgePressRealMs;
         bool _dodgeTapAlive;
 
+        /// <summary>İkinci rün hâlâ basılıyken yükleme fazı bekler.</summary>
+        public bool SkillFingerHeld => _mode == FingerMode.Drawing;
+
         enum FingerMode
         {
             None,
@@ -724,14 +727,15 @@ namespace Dovus.Game
                 return;
 
             // Idle ya da Recovering: kilidi keser (§5) ve tek noktalık cümleyi anında kapatır.
-            // Düz vuruş skill değil — mana / CD / zincir kapısı yok (BasicStrikeDot yalnızca
-            // gramer fiili; Ateş×N sayılmaz).
-            int dot = _tuning.BasicStrikeDot;
-            _engine.OnDotTouched(dot, worldMs);
+            // Düz vuruş skill değil — mana / CD / zincir kapısı yok. BasicStrikeDot rün
+            // kimliğidir, ekran slotu değil; build 12,1,... iken de vuruş çalışır.
+            int runeId = _tuning.BasicStrikeDot;
+            if (!_engine.BeginBasicStrike(runeId, worldMs))
+                return;
             _engine.Commit();
             DotAccepted?.Invoke(0);
             FlushInkBreak();
-            _syllable?.PlayForDot(dot, 1);
+            _syllable?.PlayForDot(runeId, 1);
             _debugHud?.NoteBasicStrike();
         }
 

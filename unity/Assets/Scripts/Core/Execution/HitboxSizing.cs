@@ -40,6 +40,9 @@ namespace Dovus.Core.Execution
             // Koninin SizeB'si genişlik değil açı (°): menzil yarıçaptır, açı ayrıca taşınır.
             bool angular = string.Equals(spec.Shape, "cone", StringComparison.Ordinal);
             float radius = spec.SizeB > 0f && !angular ? spec.SizeB * scale : reach;
+            // Genişlik olarak yazılmış B: kapsül çapı B, OverlapCapsule yarıçapı B/2.
+            if (spec.SizeBIsWidth && !angular)
+                radius *= 0.5f;
             return new HitboxSize(spec.Shape, radius, reach, spec.DurationSec);
         }
     }

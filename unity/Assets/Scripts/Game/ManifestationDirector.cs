@@ -64,6 +64,7 @@ namespace Dovus.Game
         ActorStatus _playerStatus;
         ActorStatus _bossStatus;
         SkillMotionDriver _motionDriver;
+        MotionTemplateBody _motionBody;
         StateBridgeBoard _stateBoard;
         StateBridgeView _bridgeView;
         AllyDummy _ally;
@@ -326,6 +327,7 @@ namespace Dovus.Game
                 || _engine.State.Phase == SentencePhase.Recovering))
             || _pending.Count > 0
             || (_motionDriver != null && _motionDriver.IsDisplacing)
+            || (_motionBody != null && _motionBody.IsDisplacing)
             || (_visual != null && _visual.IsAttackPose);
 
         AttackFaceKind FacingKind()
@@ -2033,11 +2035,12 @@ namespace Dovus.Game
 
             ApplyResourceCost(skill);
             SkillMotionPlan motionPlan = ResolveSkillMotion(skill);
+            bool templateOwnsDelivery = TryBeginMotionTemplate(skill, p);
             SkillExecutorRoute executorRoute = _skillExecutorRouter.Route(skill, _equippedWeapon);
             executorRoute = ApplyMechanicWorldRoute(MechanicPlanFor(skill), executorRoute);
             LastExecutorKind = executorRoute.Kind;
             // Hareket executor'ı dash'i kendisi başlatır (Sıçrama/Kopyalama tekrarları için).
-            if (executorRoute.Kind != SkillExecutorKind.Movement)
+            if (!templateOwnsDelivery && executorRoute.Kind != SkillExecutorKind.Movement)
                 ApplySkillMotion(motionPlan, skill);
             ApplySelfCastEffects(skill);
             BeginMechanicPlan(
@@ -2045,14 +2048,15 @@ namespace Dovus.Game
                 new Vector3(logic.DirX, 0f, logic.DirZ),
                 new Vector3(logic.TipX, _player.position.y, logic.TipZ));
 
-            bool executorStarted = executorRoute.Kind != SkillExecutorKind.Fallback
+            bool executorStarted = !templateOwnsDelivery
+                && executorRoute.Kind != SkillExecutorKind.Fallback
                 && TryLaunchSkillExecutor(executorRoute.Kind, p, skill, motionPlan);
             if (executorStarted)
                 ScheduleFollowUpLaunches(executorRoute.Kind, p, skill, motionPlan);
-            else if (executorRoute.Kind == SkillExecutorKind.Movement)
+            else if (!templateOwnsDelivery && executorRoute.Kind == SkillExecutorKind.Movement)
                 ApplySkillMotion(motionPlan, skill);
             float dealt = 0f;
-            if (!executorStarted)
+            if (!executorStarted && !templateOwnsDelivery)
             {
                 if (executorRoute.IsStub)
                     Debug.Log($"[SkillExecutor] stub → LivingEffect: {executorRoute.Reason}");
@@ -2086,6 +2090,7 @@ namespace Dovus.Game
             SpawnClosingImpact(p);
             LastResolvedSkillId = skill.SkillId;
             LastSkillEffectApplied = executorStarted
+                || templateOwnsDelivery
                 || dealt > 0f
                 || IsHealSkill(skill)
                 || !motionPlan.IsEmpty

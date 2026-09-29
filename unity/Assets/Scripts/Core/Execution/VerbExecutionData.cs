@@ -9,7 +9,15 @@ namespace Dovus.Core.Execution
     /// <summary>docs/element-sistemi.json hitbox_vfx.fiil_hitbox satırı (metin boyutlar sayıya çevrilir).</summary>
     public readonly struct VerbHitboxSpec
     {
-        public VerbHitboxSpec(string shape, float sizeA, float sizeB, bool isRadius, float durationSec, bool isTimed, string multi)
+        public VerbHitboxSpec(
+            string shape,
+            float sizeA,
+            float sizeB,
+            bool isRadius,
+            float durationSec,
+            bool isTimed,
+            string multi,
+            bool sizeBIsWidth = false)
         {
             Shape = shape ?? string.Empty;
             SizeA = sizeA;
@@ -18,6 +26,7 @@ namespace Dovus.Core.Execution
             DurationSec = durationSec;
             IsTimed = isTimed;
             Multi = multi ?? string.Empty;
+            SizeBIsWidth = sizeBIsWidth;
         }
 
         public string Shape { get; }
@@ -31,6 +40,11 @@ namespace Dovus.Core.Execution
         /// <summary>Süre skill engine'inden gelir (reflect_duration_sec, minion_duration_sec…).</summary>
         public bool IsTimed { get; }
         public string Multi { get; }
+        /// <summary>
+        /// İkinci sayı yarıçap değil genişlik (çap). Oyun yarıçapı bunun yarısıdır;
+        /// kapsülün görünür genişliği yazılan metreyle aynı kalır.
+        /// </summary>
+        public bool SizeBIsWidth { get; }
         public bool IsEmpty => string.IsNullOrEmpty(Shape);
     }
 
@@ -156,9 +170,9 @@ namespace Dovus.Core.Execution
         static VerbHitboxSpec ParseHitbox(JsonValue row)
         {
             string shape = row["shape"].AsString();
-            // "A × B" = uzunluk × yarıçap (koni: menzil × açı). Uzunluk yuvarlak uçlar dahil
-            // toplam boydur ve saldıranın kenarından ölçülür; B Unity OverlapCapsule/CapsuleCast
-            // gibi yarıçaptır, çap değil. "1.5m × 0.5m" = 1.5 m boy, 1 m genişlik.
+            // "A × B" varsayılanı uzunluk × yarıçap (koni: menzil × açı). cross_section
+            // "width" ise B genişliktir (çap): fiil 3 "3m × 0.8m" ve fiil 7 "3m × 1m"
+            // kürelerdeki "yarıçap" sözcüğünü taşımaz, görünür genişlik yazılan metredir.
             string size = row["base_size"].AsString();
             MatchCollection numbers = Number.Matches(size);
             float a = numbers.Count > 0 ? ParseFloat(numbers[0].Value) : 0f;
@@ -176,7 +190,8 @@ namespace Dovus.Core.Execution
                 ? (multi.AsBool() ? "true" : "false")
                 : multi.AsString();
 
-            return new VerbHitboxSpec(shape, a, b, isRadius, durationSec, timed, multiText);
+            bool width = string.Equals(row["cross_section"].AsString(), "width", StringComparison.Ordinal);
+            return new VerbHitboxSpec(shape, a, b, isRadius, durationSec, timed, multiText, width);
         }
 
         static float ParseFloat(string s) =>

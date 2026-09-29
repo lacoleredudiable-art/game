@@ -13,14 +13,32 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 29 Eylül 2026 (motor adım 3: Unity Play + düz vuruş kapsülü) ·
-**Dal:** `master` (PR #23 merge) · **Sıradaki:** skill'lerin ilk parçası
+**Son güncelleme:** 29 Eylül 2026 (hareket kalıbı, bölüm 1) ·
+**Dal:** `feat/motion-templates-1` · **Sıradaki:** aile 15–42
+
+> **29 Eylül — hareket kalıbı, bölüm 1.** Sıfat artık yalnız sayı değiştirmez.
+> `motion-templates.json` (`Resources/ElementSystem/` ve `docs/`, aynı dosya) 144 komboyu
+> 101 kalıba ve 42 aileye bağlar. Koşucu `Core/Motion`: kök yer değiştirme, faz süresi,
+> hedefe yapışma, bakış, faz vuruşu. Sayı yoksa bir kez uyarı ve yedek. **Aile 1–14 oynanır**
+> (36 kalıp, 49 skill). Aile 15–42 kayıtlıdır; atılınca eski davranış sürer ve o aile için
+> bir kez "Hareket kalıbı bekliyor" yazılır. Portal / Sınır modu / Takım kombosu / Silah kesme
+> etiketleri veridedir, mekaniği yok. Çok vuruşta skill hasarı paylara bölünür; toplam eski
+> tek vuruşla aynı. Süreler JSON'da (yankı 0,3 sn, fitil ~1,5 sn, seri 3 sn, sıçrayıp çakılma
+> 0,6 sn). Ara mesafeler his yedeği, aynı dosyada. Üretim: `tools/build-motion-templates.py`.
+> Core test 362/362. Unity Play yok.
+
+> **29 Eylül — düz vuruş yuva sırasından bağımsız.** Merkez, rün 1 hangi slotta olursa olsun
+> Saldırı atar. `12,1,8,6,2,5` ile de jab gelir. Eski "slot 1 = rün 1" açıkı kapandı.
+
+> **29 Eylül — fiil 3 ve 7 genişliği.** `3m × 0.8m` ve `3m × 1m` yarıçap değil genişlik
+> (küreler "yarıçap" der, bunlar demez). `cross_section: width`. Oyun yarıçapı yarıya indi;
+> görünür genişlik 0,8 m ve 1 m. Fiil 1 kapsülü Play'de yarıçap olarak kaldı (0,5 m).
 
 > **29 Eylül — hitbox boyutu okuma kuralı (sahip kararı).** `base_size` "A × B" = uzunluk ×
 > yarıçap (koni: menzil × açı). Uzunluk yuvarlak uçlar dahil toplam boy, saldıranın
 > kenarından ölçülür; B Unity OverlapCapsule gibi yarıçap. `HitboxSizing` artık B'yi
-> yarılamıyor → fiil 3 çizgisi 0.8 m, fiil 7 kapsülü 1 m yarıçap (öncekinin iki katı genişlik;
-> Play'de denenmedi). Düz vuruş: göğüste, gövde kenarından 1.5 m, 0.5 m yarıçap
+> yarılamıyor. Fiil 3 ve 7 bu okumayla iki kat genişledi; aynı gün `cross_section: width`
+> ile görünür genişlik yazılan metreye çekildi (yukarı). Fiil 1 yarıçap kaldı. Düz vuruş: göğüste, gövde kenarından 1.5 m, 0.5 m yarıçap
 > (`StrikeCapsule`, `ManifestationTuning.BasicStrikeRadiusM` JSON'dan). Menzil kontrolü ve
 > otomatik hedef kenardan kenara. Play: kenar mesafesi 2.0/1.6 m ıskaladı, 1.4/1.0/0.3 m
 > vurdu. Core test 343/343.
@@ -1410,13 +1428,13 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 - **Vuruş göğüs yüksekliği uydurma (29 Eylül).** `ManifestationTuning.StrikeChestOffsetM`
   = 0.35 m (gövde merkezinin üstü, 2 m gövdede ~1.35 m). Spec'te yok, önerilen.
-- **Fiil 3/7 hitbox genişliği iki katına çıktı (29 Eylül).** B artık yarıçap; bu fiillerin
-  skill hitbox'ları Play'de ölçülmedi.
-- **Düz vuruş yalnız slot 1'de rün 1 varken çalışıyor (29 Eylül, Play).**
-  `ManifestationDirector` tek kelimelik cümleyi `(int)Words[0].Rune == BasicStrikeDot` ile
-  jab sayıyor; `BasicStrikeDot` slot numarası (1), `Rune` ise o slottaki rün kimliği. Build
-  `12,1,8,6,2,5`'te merkez dokunuşu tek rünlük Zaman cast'i oluyor, "2 rün gerekli" ile
-  düşüyor, hasar yok. PR #23 bu koda dokunmuyor.
+- **Hareket kalıbı bölüm 1 (29 Eylül).** Aile 1–14 oynanır. Aile 15–42 eski davranış + bir kez
+  uyarı. Portal, Sınır modu, Takım kombosu, Silah kesme etiket olarak durur, işlemez.
+  Kalıp, bang anında başlar (~0,26 sn toparlanmadan sonra). Mekanik gramerin kendi
+  ışınlanması kalıpla yarışabilir. Boss collider yoksa vuruş payı 0,6 m. Ayna klonların
+  5 sn'lik tekrarı ve dostu gerçekten çekmek bu bölümde yok. Unity Play yok.
+- **Fiil 3/7 genişliği (29 Eylül, düzeltildi).** İkinci sayı genişlik. Yarıçap yarıya indi
+  (çizgi 0,4 m, kapsül 0,5 m). Fiil 1 yarıçap kaldı. Play'de şerit genişliği bakılmadı.
 
 - **Motor denetimi — adım 3 (29 Eylül).** Düz vuruş menzili fiil 1 kapsülü (1.5 m);
   saldırı bakışı hedefe kilitlenir, çubuk vuruşun ortasında gövdeyi çevirmez. İkisi de

@@ -6594,6 +6594,7 @@
       "3": {
         "shape": "line",
         "base_size": "3m × 0.8m",
+        "cross_section": "width",
         "duration": "0.3 sn",
         "multi": false
       },
@@ -6618,6 +6619,7 @@
       "7": {
         "shape": "capsule",
         "base_size": "3m × 1m",
+        "cross_section": "width",
         "duration": "anlık",
         "multi": false
       },

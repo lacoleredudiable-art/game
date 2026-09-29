@@ -174,6 +174,7 @@ namespace Dovus.Game
 
             var dodgeMotion = player.AddComponent<DodgeMotion>();
             player.AddComponent<SkillMotionDriver>();
+            player.AddComponent<MotionTemplateBody>();
 
             var reactor = boss.AddComponent<BossReactor>();
             reactor.Tuning = _tuning;
