@@ -13,8 +13,17 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 29 Eylül 2026 (motor adım 2: yavaşlatma süresi yenilenir, eklenmez) ·
-**Dal:** `fix/engine-step2` (taslak PR #22) · **Sıradaki:** Unity Play — Yoğun Zaman süresi 1 sn'de kalmalı
+**Son güncelleme:** 29 Eylül 2026 (motor adım 2 Unity Play dumanı) ·
+**Dal:** `master` (PR #22 merge edildi) · **Sıradaki:** Yoğun Zaman gücü (0.70 çarpan mı, %70 düşüş mü) ve şifa menzili kararı
+
+> **29 Eylül — motor adım 2, Unity Play.** PR #22 merge edildi, Play'de `HexagonInput.TryDebugCastSkill`
+> ile build `12,1,8,6,2,5` üzerinden denendi. Yoğun Zaman (12-1) 0/2/4. sn'de üç kez atıldı: her
+> biri boss'a 1000 ms ×0.70 yavaş basıyor, son atıştan sonra yavaş tam 1 sn'de düştü, birikme yok.
+> Yükselen Zaman (12-8) oyuncuya 1000 ms ×1.50 hız verdi (`tempo_duration_sec`). Yoğun Bağ (6-1)
+> boss hazırlığının %69'unda 1500 ms sersemlik bastı, hazırlık aynı karede kesildi; bitince
+> bağışıklık açıldı, boss hemen yeni hazırlığa girip 650 ms sonra vurdu. Yoğun Şifa (2-1) dost
+> 3.2 m uzaktayken dosta gitmedi (menzil 0.8 m, kural gereği kendine düştü, oyuncu full olduğu için
+> "zaten full"); dostun 0.6 m yanında dost 11 → 22/22 oldu. Core test 333/333.
 
 > **29 Eylül — motor adım 2, yavaşlatma süresi.** Yoğun Zaman'ın gücü doğruydu (0.70) ama tempo bağı
 > her tikte 1 sn'yi kalan sürenin üstüne ekliyordu (oyunda ~156 sn). Artık aynı kaynak süreyi
@@ -1369,7 +1378,16 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   (`BasicStrikeRangeM`) — bu turda bilerek dokunulmadı. Kart süresi hâlâ kısa olanlar:
   Sabit Bağ "3 sn" iken kök süresi 1.5 sn; Sabit/Odaklı/Akan Zaman kartı 5/3/4 sn der,
   tempo alanı 1 sn. Boss'un bugünkü saldırıları (çakma, nefes) yerinde; hücum/sıçrama/atış
-  yok, kök onları ancak eklenince keser. Unity Play dumanı henüz yok.
+  yok, kök onları ancak eklenince keser. Unity Play dumanı yapıldı (yukarıdaki 29 Eylül Play
+  kaydı); kök ile yavaşın hazırlığı uzatması Play'de ayrıca ölçülmedi.
+- **Yoğun Zaman gücü kartla çelişebilir (29 Eylül, Play).** Kart "hızı %70 düşer" diyor; motor
+  `enemy_slow: 0.7`'yi hız çarpanı olarak okuyup boss'u ×0.70'e (yalnız %30 yavaş) indiriyor.
+  Mekanik gramer logu aynı skill için `tempo→düşman 0.3` yazıyor. Hangisi doğru, karar gerekli.
+- **Yoğun Şifa menzili Kılıç'la 0.8 m (29 Eylül, Play).** Dost birkaç metre ötedeyken şifa sessizce
+  kendine düşüyor; oyuncu full ise "zaten full" yazıyor. Kural doğru çalışıyor ama dosta şifa için
+  neredeyse temas gerekiyor.
+- **Yükselen Zaman kartında süre yok.** Hız 1 sn sürüyor (`tempo_duration_sec`); kartın pasif satırı
+  "4 sn", `buff_duration_sec` 3 sn. Oyuncu kartta hız süresini göremiyor.
 - **Hedefleme Unity Play'de doğrulanmadı (29 Eylül, PR #20).** Core testleri geçti; editörde
   tık, menzil reddi, düz vuruş ve geri yürüme elle bakılacak. Düz vuruş hasarı hâlâ yalnız
   boss'a gider (ikinci düşman yok). Seçili hedef varken saldırı dışında da gövde hedefe
