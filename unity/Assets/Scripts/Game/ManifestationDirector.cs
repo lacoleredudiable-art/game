@@ -840,7 +840,7 @@ namespace Dovus.Game
                 if (string.Equals(z.CcKind, "root", StringComparison.Ordinal))
                     _bossStatus.Board.Apply(StatusKind.Root, tuning.RootMs, 1f, "zone:" + z.Id);
                 else if (string.Equals(z.CcKind, "slow", StringComparison.Ordinal))
-                    _bossStatus.Board.Apply(StatusKind.Slow, tuning.SlowMs, tuning.SlowSpeedMult);
+                    _bossStatus.Board.Apply(StatusKind.Slow, tuning.SlowMs, tuning.SlowSpeedMult, "zone:" + z.Id);
             }
         }
 
@@ -2739,6 +2739,8 @@ namespace Dovus.Game
             if (friendlyBoard == null && bossStatus == null)
                 return;
 
+            if (_ally != null)
+                _ally.EnsureStatusBoard();
             var result = StatusApplicator.ApplySkill(
                 skill,
                 friendlyBoard,
@@ -2747,16 +2749,13 @@ namespace Dovus.Game
                 _mobilityCc);
 
             // v6 Zaman fiili yalnız aktör durumudur; GameClock/Time.timeScale'a dokunmaz.
+            // Süre ve güç kart/JSON'dan gelir. Kart kendine hız diyorsa düşmana yavaş inmez.
             if (string.Equals(skill.Action, "tempo", StringComparison.Ordinal))
             {
-                JsonValue engine = skill.EngineModifiers;
-                double durationMs = engine["tempo_duration_sec"].AsFloat(0f) * 1000.0;
-                float enemySlow = engine["enemy_slow"].AsFloat(0f);
-                float selfHaste = engine["self_haste"].AsFloat(0f);
-                if (durationMs > 0 && enemySlow > 0f && enemySlow <= 1f && bossStatus != null)
-                    bossStatus.Board.Apply(StatusKind.Slow, durationMs, enemySlow);
-                if (durationMs > 0 && selfHaste > 0f && _playerStatus != null)
-                    _playerStatus.Board.Apply(StatusKind.Haste, durationMs, 1f + selfHaste);
+                TempoCast.From(skill).Apply(
+                    _playerStatus != null ? _playerStatus.Board : friendlyBoard,
+                    bossStatus != null ? bossStatus.Board : null,
+                    _ally != null ? _ally.Board : null);
             }
 
             ApplySlotPassiveOnHit(bossStatus);
@@ -2792,7 +2791,8 @@ namespace Dovus.Game
                 target.Board.Apply(
                     StatusKind.Slow,
                     _mobilityCc?.ResolveCcDurationMs(StatusKind.Slow, 0, tuning.SlowMs) ?? tuning.SlowMs,
-                    slow <= 1f ? slow : tuning.SlowSpeedMult);
+                    slow <= 1f ? slow : tuning.SlowSpeedMult,
+                    "passive:slow");
             if (_slotPassives.HasModifier("accuracy_debuff"))
                 target.Board.Apply(
                     StatusKind.Blind,

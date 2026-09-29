@@ -4,6 +4,7 @@ using System.Linq;
 using Dovus.Core;
 using Dovus.Core.Combat;
 using Dovus.Core.Execution;
+using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Status;
 using UnityEngine;
@@ -288,6 +289,9 @@ namespace Dovus.Game
             bool playerInside = _player != null && FlatDistance(_player.position, volume.Center) <= volume.RadiusM;
             bool allyInside = _ally != null && FlatDistance(_ally.transform.position, volume.Center) <= volume.RadiusM;
             double refreshMs = volume.TickMs * 2.1;
+            string volumeId = volume.Plan != null && !string.IsNullOrEmpty(volume.Plan.SkillId)
+                ? volume.Plan.SkillId
+                : "volume";
 
             MechanicEffect flickerTempo = volume.Plan.Effects.FirstOrDefault(
                 e => e.Stat == "tempo" && e.Has("titrer") && e.Target == "dusman");
@@ -297,7 +301,7 @@ namespace Dovus.Game
                 bool on = flickerSec <= 0
                     || ((long)(volume.NextTickMs / (flickerSec * 1000.0)) & 1) == 0;
                 if (on && flickerTempo.Amount < 1)
-                    _bossStatus?.Board.Apply(StatusKind.Slow, refreshMs, (float)flickerTempo.Amount);
+                    _bossStatus?.Board.Apply(StatusKind.Slow, refreshMs, (float)flickerTempo.Amount, "flicker:" + volumeId);
                 else
                     _bossStatus?.Board.RemoveKinds(SlowOnly);
             }
@@ -307,15 +311,15 @@ namespace Dovus.Game
                 foreach (MechanicEffect e in volume.Plan.Effects.Where(e => e.Stat == "tempo" && e.Has("zaman_alani")))
                 {
                     if (e.Target == "dusman" && bossInside && e.Amount < 1)
-                        _bossStatus?.Board.Apply(StatusKind.Slow, refreshMs, (float)e.Amount);
+                        _bossStatus?.Board.Apply(StatusKind.Slow, refreshMs, (float)e.Amount, "field:" + volumeId);
                     if ((e.Target == "dost" || e.Target == "kendin") && e.Amount > 1)
                     {
                         if (playerInside)
-                            _playerStatus?.Board.Apply(StatusKind.Haste, refreshMs, (float)e.Amount);
+                            _playerStatus?.Board.Apply(StatusKind.Haste, refreshMs, (float)e.Amount, "field:" + volumeId);
                         if (allyInside)
                         {
                             _ally.EnsureStatusBoard();
-                            _ally.Board.Apply(StatusKind.Haste, refreshMs, (float)e.Amount);
+                            _ally.Board.Apply(StatusKind.Haste, refreshMs, (float)e.Amount, "field:" + volumeId);
                         }
                     }
                 }
@@ -355,7 +359,7 @@ namespace Dovus.Game
                         _bossStatus?.Board.Apply(
                             StatusKind.Root, refreshMs, 1f, "mire:" + (volume.Plan != null ? volume.Plan.SkillId : "volume"));
                     else if (mire.Amount < 1)
-                        _bossStatus?.Board.Apply(StatusKind.Slow, refreshMs, (float)mire.Amount);
+                        _bossStatus?.Board.Apply(StatusKind.Slow, refreshMs, (float)mire.Amount, "mire:" + volumeId);
                 }
             }
             if (volume.Profile.CleanseField)
@@ -391,6 +395,9 @@ namespace Dovus.Game
                     if (maxLength > 0f && distance > maxLength)
                         _boss.MoveHomeToward(_player.position, distance - maxLength);
                 }
+                string linkId = link.Plan != null && !string.IsNullOrEmpty(link.Plan.SkillId)
+                    ? link.Plan.SkillId
+                    : "link";
                 foreach (MechanicEffect e in link.Plan.Effects)
                 {
                     if (e.Stat == "durum_sil" && e.Has("bag_bagisiklik"))
@@ -407,35 +414,40 @@ namespace Dovus.Game
                         continue;
                     if (e.Stat == "tempo" && e.Has("senkron"))
                     {
-                        float playerTempo = _playerStatus != null
-                            ? _playerStatus.EffectiveMoveSpeedMult
-                            : 1f;
+                        SkillResolution linked = SkillFromPlan(link.Plan);
+                        if (CardEffectRules.WantsSelfHaste(linked.SkillJob))
+                            continue;
+                        TempoSyncRules.Read(e.DurationSec, (float)e.Amount, out double syncMs, out float syncStrength);
                         if (_playerStatus != null && _playerStatus.EffectiveBlocksMovement)
                         {
-                            double syncMs = e.DurationSec > 0
-                                ? e.DurationSec * 1000.0
-                                : SkillNumberFallbacks.TempoSyncRefreshMs;
-                            if (e.DurationSec <= 0)
-                                DesignWarnings.Once(
-                                    "tempo_sync_duration",
-                                    "element-sistemi.json tempo senkron süresi yok; yedek 0.2 sn kullanıldı.");
                             _bossStatus?.Board.Apply(
                                 StatusKind.Root, syncMs, 1f,
                                 "link-tempo:" + (link.Plan != null ? link.Plan.SkillId : "link"));
                         }
-                        else if (playerTempo < 1f)
-                            _bossStatus?.Board.Apply(StatusKind.Slow, 200, playerTempo);
+                        else if (_playerStatus != null && _playerStatus.EffectiveMoveSpeedMult < 1f)
+                            _bossStatus?.Board.Apply(StatusKind.Slow, syncMs, syncStrength, "link:" + linkId);
                         continue;
                     }
+                    SkillResolution linkedLock = SkillFromPlan(link.Plan);
+                    if (CardEffectRules.WantsSelfHaste(linkedLock.SkillJob)
+                        && !CardEffectRules.Names(linkedLock.SkillJob, "root"))
+                        continue;
                     double refresh = Math.Max(100, e.DurationSec * 1000.0);
                     if (e.Amount <= 0)
                         _bossStatus?.Board.Apply(
                             StatusKind.Root, refresh, 1f,
                             "link:" + (link.Plan != null ? link.Plan.SkillId : "link"));
                     else if (e.Amount < 1)
-                        _bossStatus?.Board.Apply(StatusKind.Slow, refresh, (float)e.Amount);
+                        _bossStatus?.Board.Apply(StatusKind.Slow, refresh, (float)e.Amount, "link:" + linkId);
                 }
             }
+        }
+
+        SkillResolution SkillFromPlan(MechanicPlan plan)
+        {
+            if (_skills == null || plan == null || plan.Verb <= 0 || plan.Adjective <= 0)
+                return SkillResolution.Empty;
+            return _skills.Resolve(new[] { plan.Verb, plan.Adjective });
         }
 
         void TickGuardTriggers(double worldMs)

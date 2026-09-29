@@ -170,7 +170,7 @@ namespace Dovus.Game
             BuildCandidates();
             int? selectedId = _selected != null ? _selected.GetInstanceID() : null;
             TargetResolution result = TargetingRules.Resolve(
-                skill.TargetMode, aimMode, rangeM, selectedId, _candidateData);
+                skill.TargetMode, aimMode, rangeM, selectedId, _candidateData, skill.Action);
             failure = result.Failure;
             if (!result.Allowed)
             {

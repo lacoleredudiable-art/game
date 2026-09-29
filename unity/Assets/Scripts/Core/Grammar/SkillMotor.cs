@@ -257,7 +257,7 @@ namespace Dovus.Core.Grammar
             JsonValue engine = skill.Engine;
             string adjectiveId = adjectiveRuneId.ToString(CultureInfo.InvariantCulture);
             _adjectives.TryGetValue(adjectiveId, out AdjectiveNode adjective);
-            string[] mechanics = ReadV61Mechanics(engine);
+            string[] mechanics = ReadV61Mechanics(engine, skill.Effect);
 
             return new SkillResolution(
                 elementId: string.Empty,
@@ -515,7 +515,7 @@ namespace Dovus.Core.Grammar
                     JsonValue.Null, JsonValue.Null, obj);
 
                 JsonValue stats = verbBase[key];
-                string[] mechanics = ReadV61Mechanics(stats);
+                string[] mechanics = ReadV61Mechanics(stats, string.Empty);
                 motor._verbs[key] = new VerbNode(
                     key,
                     verbFace,
@@ -624,7 +624,7 @@ namespace Dovus.Core.Grammar
                 throw new InvalidOperationException("element-sistemi v6: mevcut kombo uzunluğu 2 olmalıdır.");
         }
 
-        static string[] ReadV61Mechanics(JsonValue engine)
+        static string[] ReadV61Mechanics(JsonValue engine, string effectText)
         {
             var mechanics = new List<string>();
             string action = engine["action"].AsString();
@@ -635,7 +635,7 @@ namespace Dovus.Core.Grammar
             }
 
             if (action == "cc")
-                Add(engine["cc_kind"].AsString());
+                Add(Dovus.Core.Combat.CardEffectRules.CcKind(effectText, engine["cc_kind"].AsString()));
             else if (action == "cleanse")
                 Add("cleanse");
             else if (action == "shield")

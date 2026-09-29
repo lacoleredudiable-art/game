@@ -138,11 +138,28 @@ namespace Dovus.Core.Status
                 return;
 
             bool HasMech(string id) => System.Array.IndexOf(mechanics, id) >= 0;
-            StatusBoard hostile = self ? target : board;
+            bool hitsEnemy = CardEffectRules.HarmfulHitsEnemy(skill.TargetMode, skill.Action, skill.SkillJob);
+            StatusBoard hostile = hitsEnemy ? (self ? target : board) : null;
 
             if (hostile != null)
                 ApplyHostileAdjectiveModifiers(
                     mods, hostile, skill, tuning, mechanics, mobilityCc, adjectiveId);
+
+            if (CardEffectRules.WantsSelfHaste(skill.SkillJob)
+                && !string.Equals(skill.Action, "tempo", System.StringComparison.OrdinalIgnoreCase)
+                && caster != null)
+            {
+                float haste = CardEffectRules.HasteMagnitude(
+                    skill.SkillJob,
+                    mods["self_haste"].AsFloat(0f),
+                    mods["enemy_slow"].AsFloat(0f),
+                    mods["self_damage_buff"].AsFloat(0f));
+                double hasteMs = mods["buff_duration_sec"].AsFloat(0f) * 1000.0;
+                if (hasteMs <= 0)
+                    hasteMs = tuning.HasteMs;
+                if (haste > 1f)
+                    caster.Apply(StatusKind.Haste, hasteMs, haste, EffectSource(skill, "haste"));
+            }
 
             if (ModifierTruthy(mods, "apply_knockback") && !self && !HasMech("knockback"))
                 knockback = true;
@@ -175,7 +192,8 @@ namespace Dovus.Core.Status
                         StatusKind.Slow,
                         mobilityCc?.ResolveCcDurationMs(StatusKind.Slow, adjectiveId, tuning.SlowMs)
                             ?? tuning.SlowMs,
-                        tuning.SlowSpeedMult);
+                        tuning.SlowSpeedMult,
+                        EffectSource(skill, "confuse-slow"));
             }
         }
 
@@ -189,8 +207,10 @@ namespace Dovus.Core.Status
             int adjectiveId)
         {
             bool HasMech(string id) => System.Array.IndexOf(mechanics, id) >= 0;
+            bool keepEnemyLock = !CardEffectRules.WantsSelfHaste(skill.SkillJob)
+                || CardEffectRules.Names(skill.SkillJob, "root");
 
-            if (mods.Has("apply_slow") && !HasMech("slow"))
+            if (keepEnemyLock && mods.Has("apply_slow") && !HasMech("slow"))
             {
                 float mult = mods["apply_slow"].AsFloat(0f);
                 if (mult <= 0f)
@@ -201,17 +221,18 @@ namespace Dovus.Core.Status
                     StatusKind.Slow,
                     mobilityCc?.ResolveCcDurationMs(StatusKind.Slow, adjectiveId, tuning.SlowMs)
                         ?? tuning.SlowMs,
-                    mult);
+                    mult,
+                    EffectSource(skill, "slow"));
             }
 
-            if (ModifierTruthy(mods, "apply_root") && !HasMech("root"))
+            if (keepEnemyLock && ModifierTruthy(mods, "apply_root") && !HasMech("root"))
                 board.Apply(
                     StatusKind.Root,
-                    ExplicitOrFallback(mods, "cc_duration_sec", StatusKind.Root, adjectiveId, tuning.RootMs, mobilityCc),
+                    ExplicitOrFallback(mods, "cc_duration_sec", StatusKind.Root, adjectiveId, tuning.RootMs, mobilityCc, skill.SkillJob),
                     1f,
                     RootSource(skill, "adj"));
             float rootSec = mods["apply_root_sec"].AsFloat(0f);
-            if (rootSec > 0f && !HasMech("root"))
+            if (keepEnemyLock && rootSec > 0f && !HasMech("root"))
                 board.Apply(
                     StatusKind.Root,
                     rootSec * 1000.0,
@@ -237,8 +258,19 @@ namespace Dovus.Core.Status
                         ?? tuning.SilenceMs,
                     1f);
 
-            // Bulandırma accuracy_debuff: isabet düşer → Blind (hitbox_vfx.sifat_override.7 add_cc blind).
-            if (mods["accuracy_debuff"].AsFloat(0f) > 0f && !HasMech("blind"))
+            // Kart "yavaşlatma" diyorsa isabet cezası kör değil yavaşlatmadır.
+            // Kart "kör" veya "isabet" diyorsa eski kör eşlemesi kalır.
+            float accuracy = mods["accuracy_debuff"].AsFloat(0f);
+            if (accuracy > 0f && CardEffectRules.AccuracyIsSlow(skill.SkillJob) && !HasMech("slow"))
+            {
+                float mult = accuracy <= 1f ? accuracy : tuning.SlowSpeedMult;
+                double slowMs = mods["lifetime_add"].AsFloat(0f) * 1000.0;
+                if (slowMs <= 0)
+                    slowMs = mobilityCc?.ResolveCcDurationMs(StatusKind.Slow, adjectiveId, tuning.SlowMs)
+                        ?? tuning.SlowMs;
+                board.Apply(StatusKind.Slow, slowMs, mult, EffectSource(skill, "accuracy-slow"));
+            }
+            else if (accuracy > 0f && !HasMech("blind"))
                 board.Apply(
                     StatusKind.Blind,
                     mobilityCc?.ResolveCcDurationMs(StatusKind.Blind, adjectiveId, tuning.BlindMs)
@@ -280,7 +312,8 @@ namespace Dovus.Core.Status
             int adjectiveId)
         {
             double Duration(double fallback) =>
-                ExplicitOrFallback(skill.EngineModifiers, "cc_duration_sec", kind, adjectiveId, fallback, mobilityCc);
+                ExplicitOrFallback(
+                    skill.EngineModifiers, "cc_duration_sec", kind, adjectiveId, fallback, mobilityCc, skill.SkillJob);
             switch (kind)
             {
                 case StatusKind.Stun:
@@ -293,7 +326,7 @@ namespace Dovus.Core.Status
                     board.Apply(kind, Duration(t.SilenceMs), 1f);
                     break;
                 case StatusKind.Slow:
-                    board.Apply(kind, Duration(t.SlowMs), t.SlowSpeedMult);
+                    board.Apply(kind, Duration(t.SlowMs), t.SlowSpeedMult, EffectSource(skill, "slow"));
                     break;
                 case StatusKind.Blind:
                     board.Apply(kind, Duration(t.BlindMs), 1f);
@@ -332,7 +365,7 @@ namespace Dovus.Core.Status
                     board.Apply(kind, t.ShieldMs, t.ShieldAbsorb);
                     break;
                 case StatusKind.Haste:
-                    board.Apply(kind, t.HasteMs, t.HasteSpeedMult);
+                    board.Apply(kind, t.HasteMs, t.HasteSpeedMult, EffectSource(skill, "haste"));
                     break;
                 case StatusKind.DamageReduction:
                     board.Apply(kind, t.DamageReductionMs, t.DamageReductionMult);
@@ -353,11 +386,12 @@ namespace Dovus.Core.Status
             StatusKind kind,
             int adjectiveId,
             double fallbackMs,
-            MobilityCcData? mobilityCc)
+            MobilityCcData? mobilityCc,
+            string effectText = "")
         {
             if (!engine.IsNull && engine.Kind == JsonKind.Object)
             {
-                string cc = engine["cc_kind"].AsString();
+                string cc = CardEffectRules.CcKind(effectText, engine["cc_kind"].AsString());
                 bool matches = string.IsNullOrEmpty(cc)
                     || (StatusKindUtil.TryParse(cc, out StatusKind ccKind) && ccKind == kind);
                 float seconds = engine[secondsField].AsFloat(0f);
@@ -368,8 +402,11 @@ namespace Dovus.Core.Status
             return mobilityCc?.ResolveCcDurationMs(kind, adjectiveId, fallbackMs) ?? fallbackMs;
         }
 
-        static string RootSource(SkillResolution skill, string part) =>
+        static string EffectSource(SkillResolution skill, string part) =>
             "skill:" + (string.IsNullOrEmpty(skill.SkillId) ? "unknown" : skill.SkillId) + ":" + part;
+
+        static string RootSource(SkillResolution skill, string part) =>
+            EffectSource(skill, part);
 
         static int ParseAdjectiveId(string id) =>
             int.TryParse(id, out int value) ? value : 0;

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Dovus.Core.Combat;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Status;
@@ -31,6 +32,7 @@ namespace Dovus.Game
         }
 
         readonly Dictionary<(int, int, int), MechanicPlan> _mechanicPlans = new();
+        string _cardEffect = string.Empty;
         readonly List<MechanicTimer> _mechanicTimers = new();
         readonly List<PortalPair> _portals = new();
 
@@ -72,6 +74,7 @@ namespace Dovus.Game
         {
             MechanicPlan plan = MechanicPlanFor(skill);
             LastMechanicPlan = plan;
+            _cardEffect = skill.SkillJob ?? string.Empty;
             if (plan == null)
                 return;
             Debug.Log($"[Mechanic] {plan.SkillId}/{plan.WeaponName}: {MechanicDescriber.ShortTitle(plan)} — {plan.Description}");
@@ -140,26 +143,43 @@ namespace Dovus.Game
                 if (e.Target != "dusman")
                     continue;
                 double ms = e.DurationSec * 1000.0;
+                bool hasteCard = CardEffectRules.WantsSelfHaste(_cardEffect);
                 switch (e.Atom, e.Stat)
                 {
                     case ("hiz", "tempo"):
+                        if (hasteCard)
+                            break;
                         if (e.Has("dondur") || e.Amount <= 0)
                             ApplyOnce(boss, StatusKind.Stun, ms, 1f, applied);
                         else if (e.Amount < 1)
                             ApplyOnce(boss, StatusKind.Slow, ms, (float)e.Amount, applied);
                         break;
                     case ("hiz", "hareket"):
+                        if (hasteCard && !CardEffectRules.Names(_cardEffect, "root"))
+                            break;
                         if (e.Amount <= 0)
+                        {
+                            bool daze = e.Has("havada") || e.Has("sersem");
+                            StatusKind lockKind = CardEffectRules.MovementLockKind(_cardEffect, daze);
                             ApplyOnce(
                                 boss,
-                                e.Has("havada") || e.Has("sersem") ? StatusKind.Stun : StatusKind.Root,
+                                lockKind,
                                 ms, 1f, applied,
-                                e.Has("havada") || e.Has("sersem") ? null : "hit:" + plan.SkillId);
+                                lockKind == StatusKind.Root ? "hit:" + plan.SkillId : null);
+                        }
                         else if (e.Amount < 1)
                             ApplyOnce(boss, StatusKind.Slow, ms, (float)e.Amount, applied);
                         break;
                     case ("gorunurluk", "kor"):
-                        ApplyOnce(boss, StatusKind.Blind, ms, (float)Math.Max(e.Amount, 0.0), applied);
+                        if (CardEffectRules.AccuracyIsSlow(_cardEffect))
+                        {
+                            float slow = e.Amount > 0 && e.Amount < 1
+                                ? (float)e.Amount
+                                : SkillNumberFallbacks.TempoSyncFallbackStrength;
+                            ApplyOnce(boss, StatusKind.Slow, ms, slow, applied);
+                        }
+                        else
+                            ApplyOnce(boss, StatusKind.Blind, ms, (float)Math.Max(e.Amount, 0.0), applied);
                         break;
                     case ("konum", "cek"):
                         _bossStatus.ApplyPullToward(e.Has("merkeze") ? center : _player.position);

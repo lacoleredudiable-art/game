@@ -87,24 +87,44 @@ public sealed class TargetingRulesTests
     }
 
     [Test]
-    public void FriendlySkillUsesSelectedAllyOrFallsBackToSelf()
+    public void FriendlySkillUsesSelectedAllyThenNearestThenSelf()
     {
         var candidates = new List<TargetCandidate>
         {
             new(20, TargetRelation.Ally, 3f),
+            new(21, TargetRelation.Ally, 1.5f),
             new(30, TargetRelation.Enemy, 1f)
         };
 
-        TargetResolution ally = TargetingRules.Resolve(
+        TargetResolution selected = TargetingRules.Resolve(
             "self_or_ally", SkillAimMode.Targeted, 5f, 20, candidates);
-        TargetResolution self = TargetingRules.Resolve(
+        TargetResolution nearest = TargetingRules.Resolve(
             "self_or_ally", SkillAimMode.Targeted, 5f, 30, candidates);
 
-        Assert.That(ally.Allowed, Is.True);
-        Assert.That(ally.UseSelf, Is.False);
-        Assert.That(ally.TargetId, Is.EqualTo(20));
-        Assert.That(self.Allowed, Is.True);
+        Assert.That(selected.Allowed, Is.True);
+        Assert.That(selected.UseSelf, Is.False);
+        Assert.That(selected.TargetId, Is.EqualTo(20));
+        Assert.That(nearest.Allowed, Is.True);
+        Assert.That(nearest.TargetId, Is.EqualTo(21), "seçili düşman dost skill'ini kendine çevirmez");
+
+        var farSelected = new List<TargetCandidate>
+        {
+            new(20, TargetRelation.Ally, 8f),
+            new(21, TargetRelation.Ally, 2f)
+        };
+        TargetResolution other = TargetingRules.Resolve(
+            "self_or_ally", SkillAimMode.Targeted, 5f, 20, farSelected);
+        Assert.That(other.TargetId, Is.EqualTo(21));
+
+        var none = new List<TargetCandidate> { new(20, TargetRelation.Ally, 9f) };
+        TargetResolution self = TargetingRules.Resolve(
+            "self_or_ally", SkillAimMode.Targeted, 5f, 20, none);
         Assert.That(self.UseSelf, Is.True);
+
+        TargetResolution shield = TargetingRules.Resolve(
+            "self_only", SkillAimMode.Targeted, 5f, null, candidates, "shield");
+        Assert.That(shield.UseSelf, Is.False);
+        Assert.That(shield.TargetId, Is.EqualTo(21));
     }
 
     [Test]

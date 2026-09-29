@@ -252,7 +252,13 @@ namespace Dovus.Core.Combat
         public const float RadiusM = 1.15f;
         public const double RootImmunitySec = 0.5;
         public const double RootImmunityMs = RootImmunitySec * 1000.0;
-        /// <summary>Bağ temposu JSON'da süre vermezse kök yenileme dilimi.</summary>
+        /// <summary>Eski kısa dilim. Yeni tempo okuması bunu kullanmaz.</summary>
         public const double TempoSyncRefreshMs = 200.0;
+        /// <summary>Tempo süresi JSON'da yoksa tek yedek: 1 sn.</summary>
+        public const double TempoSyncFallbackMs = 1000.0;
+        /// <summary>Tempo gücü JSON'da yoksa tek yedek (hareketin %70'i).</summary>
+        public const float TempoSyncFallbackStrength = 0.7f;
+        /// <summary>Kart "haste" der ama JSON sayı vermezse +%50.</summary>
+        public const float SelfHasteBonus = 0.5f;
     }
 }
