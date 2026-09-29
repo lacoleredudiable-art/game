@@ -13,8 +13,15 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 29 Eylül 2026 (kalıp konumu sahiplenir) ·
-**Dal:** `feat/motion-templates-1` · **Sıradaki:** aile 15–42
+**Son güncelleme:** 29 Eylül 2026 (PR #24 master'a birleşti) ·
+**Dal:** `master` · **Sıradaki:** aile 15–42
+
+> **29 Eylül — 3. Unity Play, PR #24 birleşti.** Konsolda script hatası yok; Windows'ta
+> `dotnet test` 376/376. 3-6 (Kılıç) üç koşu: merkez 4,5 m ve 2,5 m boss durdurulmuş, 4,5 m boss
+> yapay zekası açık. Üçünde de boss'un arkasına bir kez iniyor (merkeze 1,50–1,55 m), sonraki
+> 2,3 sn'de kayma 0, tek karede sıçrama 0, taraf değişimi yok. Log: "yer değiştirme kalıpta,
+> Root 1,5sn". 3-4 ve 3-9 kalıpları henüz yok, test edilmedi. Parmak basılı yükleme, animasyon
+> ayak kayması ve Kılıç dışı silahlar hâlâ Play'de ölçülmedi.
 
 > **29 Eylül — kalıp konumu sahiplenir (PR #24, Unity Play yok).** Kalıp oyuncuyu oynatıyorsa
 > o cast'te oyuncunun yerini yalnız kalıp değiştirir. `yer_degistir` ve `hedefin_arkasina`
@@ -1483,12 +1490,13 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 - **Hareket kalıbı Play bulguları (29 Eylül, düzeltildi, yeniden Play yok).** Kanca düşmana
   iner, sekme vuruşu boss'a değer, saplama kenarda durur, fitil yere çakılır, menzil kapısı
   lunge'u sayar, ilk merkez vuruşu build sonrası yutulmaz. Unity Play bu turda yok.
-- **Kalıp konumu (29 Eylül, uygulandı, Play yok).** Sahip kararı kodda: kalıp oyuncuyu
-  oynatıyorsa `yer_degistir` / `hedefin_arkasina` ışınlanmaz; `isaret_geri_don` işareti
-  konur, dönüş kalıbın içinde kısa atılmadır. 3-6 bir kez arkaya iner. 3-4 ve 3-9 kalıbı
-  henüz oynanmadığı için eski ışınlanma durur. Unity Play bu turda yok.
+- **Kalıp konumu (29 Eylül, uygulandı, 3-6 Play'de doğrulandı).** Sahip kararı kodda: kalıp
+  oyuncuyu oynatıyorsa `yer_degistir` / `hedefin_arkasina` ışınlanmaz; `isaret_geri_don`
+  işareti konur, dönüş kalıbın içinde kısa atılmadır. 3-6 bir kez arkaya iner ve kalır.
+  3-4 ve 3-9 kalıbı henüz oynanmadığı için eski ışınlanma durur. `isaret_geri_don` atılması
+  Play'de denenmedi.
 - **Derleme testi (29 Eylül).** `python3`, sonra `python`, sonra `py -3`. Hiçbiri yoksa
-  test atlanır, düşmez. Windows'ta bu tur ölçülmedi.
+  test atlanır, düşmez. Windows'ta geçiyor (376/376).
 
 - **Motor denetimi — adım 3 (29 Eylül).** Düz vuruş menzili fiil 1 kapsülü (1.5 m);
   saldırı bakışı hedefe kilitlenir, çubuk vuruşun ortasında gövdeyi çevirmez. İkisi de
