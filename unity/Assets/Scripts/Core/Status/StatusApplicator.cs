@@ -158,7 +158,7 @@ namespace Dovus.Core.Status
                 if (hasteMs <= 0)
                     hasteMs = tuning.HasteMs;
                 if (haste > 1f)
-                    caster.Apply(StatusKind.Haste, hasteMs, haste);
+                    caster.Apply(StatusKind.Haste, hasteMs, haste, EffectSource(skill, "haste"));
             }
 
             if (ModifierTruthy(mods, "apply_knockback") && !self && !HasMech("knockback"))
@@ -192,7 +192,8 @@ namespace Dovus.Core.Status
                         StatusKind.Slow,
                         mobilityCc?.ResolveCcDurationMs(StatusKind.Slow, adjectiveId, tuning.SlowMs)
                             ?? tuning.SlowMs,
-                        tuning.SlowSpeedMult);
+                        tuning.SlowSpeedMult,
+                        EffectSource(skill, "confuse-slow"));
             }
         }
 
@@ -220,7 +221,8 @@ namespace Dovus.Core.Status
                     StatusKind.Slow,
                     mobilityCc?.ResolveCcDurationMs(StatusKind.Slow, adjectiveId, tuning.SlowMs)
                         ?? tuning.SlowMs,
-                    mult);
+                    mult,
+                    EffectSource(skill, "slow"));
             }
 
             if (keepEnemyLock && ModifierTruthy(mods, "apply_root") && !HasMech("root"))
@@ -266,7 +268,7 @@ namespace Dovus.Core.Status
                 if (slowMs <= 0)
                     slowMs = mobilityCc?.ResolveCcDurationMs(StatusKind.Slow, adjectiveId, tuning.SlowMs)
                         ?? tuning.SlowMs;
-                board.Apply(StatusKind.Slow, slowMs, mult);
+                board.Apply(StatusKind.Slow, slowMs, mult, EffectSource(skill, "accuracy-slow"));
             }
             else if (accuracy > 0f && !HasMech("blind"))
                 board.Apply(
@@ -324,7 +326,7 @@ namespace Dovus.Core.Status
                     board.Apply(kind, Duration(t.SilenceMs), 1f);
                     break;
                 case StatusKind.Slow:
-                    board.Apply(kind, Duration(t.SlowMs), t.SlowSpeedMult);
+                    board.Apply(kind, Duration(t.SlowMs), t.SlowSpeedMult, EffectSource(skill, "slow"));
                     break;
                 case StatusKind.Blind:
                     board.Apply(kind, Duration(t.BlindMs), 1f);
@@ -363,7 +365,7 @@ namespace Dovus.Core.Status
                     board.Apply(kind, t.ShieldMs, t.ShieldAbsorb);
                     break;
                 case StatusKind.Haste:
-                    board.Apply(kind, t.HasteMs, t.HasteSpeedMult);
+                    board.Apply(kind, t.HasteMs, t.HasteSpeedMult, EffectSource(skill, "haste"));
                     break;
                 case StatusKind.DamageReduction:
                     board.Apply(kind, t.DamageReductionMs, t.DamageReductionMult);
@@ -400,8 +402,11 @@ namespace Dovus.Core.Status
             return mobilityCc?.ResolveCcDurationMs(kind, adjectiveId, fallbackMs) ?? fallbackMs;
         }
 
-        static string RootSource(SkillResolution skill, string part) =>
+        static string EffectSource(SkillResolution skill, string part) =>
             "skill:" + (string.IsNullOrEmpty(skill.SkillId) ? "unknown" : skill.SkillId) + ":" + part;
+
+        static string RootSource(SkillResolution skill, string part) =>
+            EffectSource(skill, part);
 
         static int ParseAdjectiveId(string id) =>
             int.TryParse(id, out int value) ? value : 0;

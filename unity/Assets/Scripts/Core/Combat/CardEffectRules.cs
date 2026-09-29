@@ -220,7 +220,8 @@ namespace Dovus.Core.Combat
             bool allyHaste,
             double durationMs,
             float slowStrength,
-            float hasteStrength)
+            float hasteStrength,
+            string sourceId)
         {
             EnemySlow = enemySlow;
             SelfHaste = selfHaste;
@@ -228,6 +229,7 @@ namespace Dovus.Core.Combat
             DurationMs = durationMs;
             SlowStrength = slowStrength;
             HasteStrength = hasteStrength;
+            SourceId = string.IsNullOrEmpty(sourceId) ? "tempo" : sourceId;
         }
 
         public bool EnemySlow { get; }
@@ -236,6 +238,7 @@ namespace Dovus.Core.Combat
         public double DurationMs { get; }
         public float SlowStrength { get; }
         public float HasteStrength { get; }
+        public string SourceId { get; }
 
         public static TempoCast From(in SkillResolution skill)
         {
@@ -250,23 +253,25 @@ namespace Dovus.Core.Combat
             float hasteMag = haste
                 ? CardEffectRules.HasteMagnitude(text, selfHaste, enemySlow, damageBuff)
                 : 1f;
+            string skillId = string.IsNullOrEmpty(skill.SkillId) ? "zaman" : skill.SkillId;
             return new TempoCast(
                 !haste && enemySlow > 0f,
                 haste,
                 haste && CardEffectRules.SharesHasteWithAlly(text),
                 ms,
                 slowStrength,
-                hasteMag);
+                hasteMag,
+                "tempo:" + skillId);
         }
 
-        public void Apply(StatusBoard self, StatusBoard enemy, StatusBoard ally)
+        public void Apply(StatusBoard? self, StatusBoard? enemy, StatusBoard? ally)
         {
             if (EnemySlow && enemy != null && DurationMs > 0 && SlowStrength > 0f && SlowStrength < 1f)
-                enemy.Apply(StatusKind.Slow, DurationMs, SlowStrength);
+                enemy.Apply(StatusKind.Slow, DurationMs, SlowStrength, SourceId);
             if (SelfHaste && self != null && DurationMs > 0 && HasteStrength > 1f)
-                self.Apply(StatusKind.Haste, DurationMs, HasteStrength);
+                self.Apply(StatusKind.Haste, DurationMs, HasteStrength, SourceId);
             if (AllyHaste && ally != null && DurationMs > 0 && HasteStrength > 1f)
-                ally.Apply(StatusKind.Haste, DurationMs, HasteStrength);
+                ally.Apply(StatusKind.Haste, DurationMs, HasteStrength, SourceId);
         }
     }
 }

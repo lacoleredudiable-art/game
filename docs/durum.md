@@ -13,8 +13,17 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 29 Eylül 2026 (motor adım 2: boss CC + dost hedefi + kart=etki + tempo) ·
-**Dal:** `fix/engine-step2` (taslak PR) · **Sıradaki:** Unity Play dumanı (aşağıdaki 4 kontrol)
+**Son güncelleme:** 29 Eylül 2026 (motor adım 2: yavaşlatma süresi yenilenir, eklenmez) ·
+**Dal:** `fix/engine-step2` (taslak PR #22) · **Sıradaki:** Unity Play — Yoğun Zaman süresi 1 sn'de kalmalı
+
+> **29 Eylül — motor adım 2, yavaşlatma süresi.** Yoğun Zaman'ın gücü doğruydu (0.70) ama tempo bağı
+> her tikte 1 sn'yi kalan sürenin üstüne ekliyordu (oyunda ~156 sn). Artık aynı kaynak süreyi
+> yeniler (`max(kalan, yeni)`), farklı kaynaklar toplanmaz; en güçlü yavaşlatma kalır, süre bitince
+> etki düşer. Hız da aynı kuralda. Sersemlik, kör, sessizlik, silahsız, kışkırtma, korku, durağanlık
+> ve geri itme de yeniden gelince süre eklemez. Kalkan, yanma, zehir, yenilenme, gizlilik, zırh kırma,
+> zayıflatma, ağır yara ve hasar azaltma zaten yeniliyordu; dokunulmadı. Pasif yuva JSON'da
+> `same_passive: süre_uzar` dediği için hâlâ süre ekler. Hitstop ve Lav'ın ömür uzatması durum değil,
+> duruyor. Core test 333/333. Unity Play bu turda yok.
 
 > **29 Eylül — motor adım 2.** Boss köklenince yerinde vuruş atabilir, hücum/sıçrama/atış başlatamaz.
 > Sersemlik hiçbir saldırıyı başlatmaz ve hazırlığı keser; bitince kısa bağışıklık var (adım 1'deki
@@ -1355,7 +1364,8 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 ## Bilinen açıklar
 
 - **Motor denetimi — adım 2 sonrası (29 Eylül).** (1)–(4) `fix/engine-step2`'de: boss CC,
-  dost hedefi, karttaki etki türü, tempo süresi. Kalan: (5) düz vuruş menzili hâlâ his ayarı
+  dost hedefi, karttaki etki türü, tempo süresi. Yavaşlatma/hız yeniden gelince süre
+  eklenmez (Yoğun Zaman 1 sn). Kalan: (5) düz vuruş menzili hâlâ his ayarı
   (`BasicStrikeRangeM`) — bu turda bilerek dokunulmadı. Kart süresi hâlâ kısa olanlar:
   Sabit Bağ "3 sn" iken kök süresi 1.5 sn; Sabit/Odaklı/Akan Zaman kartı 5/3/4 sn der,
   tempo alanı 1 sn. Boss'un bugünkü saldırıları (çakma, nefes) yerinde; hücum/sıçrama/atış

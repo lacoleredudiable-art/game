@@ -840,7 +840,7 @@ namespace Dovus.Game
                 if (string.Equals(z.CcKind, "root", StringComparison.Ordinal))
                     _bossStatus.Board.Apply(StatusKind.Root, tuning.RootMs, 1f, "zone:" + z.Id);
                 else if (string.Equals(z.CcKind, "slow", StringComparison.Ordinal))
-                    _bossStatus.Board.Apply(StatusKind.Slow, tuning.SlowMs, tuning.SlowSpeedMult);
+                    _bossStatus.Board.Apply(StatusKind.Slow, tuning.SlowMs, tuning.SlowSpeedMult, "zone:" + z.Id);
             }
         }
 
@@ -2791,7 +2791,8 @@ namespace Dovus.Game
                 target.Board.Apply(
                     StatusKind.Slow,
                     _mobilityCc?.ResolveCcDurationMs(StatusKind.Slow, 0, tuning.SlowMs) ?? tuning.SlowMs,
-                    slow <= 1f ? slow : tuning.SlowSpeedMult);
+                    slow <= 1f ? slow : tuning.SlowSpeedMult,
+                    "passive:slow");
             if (_slotPassives.HasModifier("accuracy_debuff"))
                 target.Board.Apply(
                     StatusKind.Blind,
