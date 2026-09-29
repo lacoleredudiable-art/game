@@ -97,6 +97,7 @@ namespace Dovus.Game
         SkillMotor _skills;
         PlayerStateMachine _playerStates;
         System.Func<bool> _isCasting;
+        System.Func<SkillResolution, bool> _skillTargetGate;
 
         /// <summary>Ölü oyuncu yazamaz ve dodge atamaz (T8.1).</summary>
         public void BindVitals(PlayerVitals vitals) => _vitals = vitals;
@@ -109,6 +110,13 @@ namespace Dovus.Game
             _playerStates = states;
             _isCasting = isCasting;
         }
+
+        /// <summary>
+        /// İkinci rün motora verilmeden hedef/menzil kontrolü. false ise cümle ilk ründe
+        /// kalır; mana ve cooldown kapanışta harcanmadığı için reddedilen cast ücretsizdir.
+        /// </summary>
+        public void BindSkillTargetGate(System.Func<SkillResolution, bool> gate) =>
+            _skillTargetGate = gate;
 
         MobilityCcData _mobilityCc;
         public void BindMobilityCc(MobilityCcData data) => _mobilityCc = data;
@@ -166,6 +174,13 @@ namespace Dovus.Game
             _engine.OnDotTouched(verbSlot, worldMs);
             DotAccepted?.Invoke(verbSlot);
             _syllable?.PlayForDot(verbSlot, 1);
+            SkillResolution prospective = _skills.Resolve(new[] { verbRuneId, adjectiveRuneId });
+            if (_skillTargetGate != null && !_skillTargetGate(prospective))
+            {
+                _engine.Abort();
+                FlushInkBreak();
+                return false;
+            }
             _engine.OnDotTouched(adjectiveSlot, worldMs);
             DotAccepted?.Invoke(adjectiveSlot);
             _syllable?.PlayForDot(adjectiveSlot, 2);
@@ -623,6 +638,15 @@ namespace Dovus.Game
                 return;
             }
 
+            if (!TryAllowProspectiveTarget(hit.Value))
+            {
+                _activeDot = hit.Value;
+                _dwellWorldMs = 0;
+                _dwellReported = 0;
+                _syllable?.PlayDenied();
+                return;
+            }
+
             Vector2 dotPx = HexagonLayoutScreen.DotPx(hit.Value, _tuning, Screen.width, Screen.height);
             double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
 
@@ -799,6 +823,22 @@ namespace Dovus.Game
             return _skills.Resolve(new[] { runeId });
         }
 
+        bool TryAllowProspectiveTarget(int nextDot)
+        {
+            if (_skillTargetGate == null || _engine == null
+                || _engine.State.Phase != SentencePhase.Building
+                || _engine.State.Words.Count != 1)
+                return true;
+
+            EnsureSkills();
+            if (_skills == null)
+                return true;
+            int verbRuneId = (int)_engine.State.Words[0].Rune;
+            int adjectiveRuneId = _engine.Loadout.RuneIdAtSlot(nextDot);
+            SkillResolution skill = _skills.Resolve(new[] { verbRuneId, adjectiveRuneId });
+            return skill.IsEmpty || _skillTargetGate(skill);
+        }
+
         void EnsureSkills()
         {
             if (_skills != null)
@@ -898,6 +938,14 @@ namespace Dovus.Game
 
             return best;
         }
+
+        /// <summary>Hedef seçimi, altıgen/dodge/swap tap'lerini dünya tap'i saymasın.</summary>
+        public bool IsCombatControlAt(Vector2 pos) =>
+            IsDrawHalf(pos)
+            && (HitDodgeButton(pos) || HitSwapButton(pos) || HitCenter(pos) || HitDot(pos).HasValue);
+
+        /// <summary>Sol yarı sanal çubuktur; oradaki dokunuş hedef seçmez.</summary>
+        public bool IsStickHalf(Vector2 pos) => !IsDrawHalf(pos);
 
         static double NowRealMs() => Time.realtimeSinceStartupAsDouble * 1000.0;
 

@@ -105,6 +105,8 @@ namespace Dovus.Game
                 ally.transform.position.y - PlayerHeightM * 0.5f,
                 _tuning.CharacterAnimSpeed,
                 out _);
+            var allyHitCollider = ally.AddComponent<CapsuleCollider>();
+            allyHitCollider.isTrigger = true;
             var allyDummy = ally.AddComponent<AllyDummy>();
             allyDummy.Bind(_tuning.PlayerMaxHp, startRatio: 0.5f);
 
@@ -178,6 +180,14 @@ namespace Dovus.Game
             reactor.CaptureHome();
 
             var bossVitals = new BossVitals(combat.Boss.MaxHp);
+            ally.AddComponent<Targetable>().Configure(
+                teamId: 0,
+                displayName: "ALLY",
+                available: () => allyDummy.Hp > 0);
+            boss.AddComponent<Targetable>().Configure(
+                teamId: 1,
+                displayName: "BOSS",
+                available: () => !bossVitals.IsDown);
             playerStatus.Bind(null, combat.Status, vitals, null, null);
             bossStatus.Bind(null, combat.Status, null, bossVitals, reactor);
 
@@ -301,6 +311,15 @@ namespace Dovus.Game
             input.BindResource(resource, readout, skills);
             input.BindCooldown(cooldown, readout, skills);
 
+            var targeting = player.gameObject.AddComponent<PlayerTargeting>();
+            targeting.Bind(
+                player,
+                0,
+                Camera.main,
+                input,
+                combat.Dodge.TapMaxMoveDp,
+                view.CanvasRoot);
+
             var vitalsHud = root.AddComponent<VitalsHud>();
             vitalsHud.Configure(vitals, bossVitals, _tuning, view.CanvasRoot, allyDummy, resource);
 
@@ -403,6 +422,7 @@ namespace Dovus.Game
             manGo.transform.SetParent(transform, false);
             var director = manGo.AddComponent<ManifestationDirector>();
             director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, allyDummy, modeHud, view, passiveHud, equippedWeapon, equipmentBonus, skills, skillFactory, design?.Animations);
+            director.BindTargeting(targeting);
             director.ConfigureWeaponCycle(design?.Equipment.Items);
             if (design != null)
             {
