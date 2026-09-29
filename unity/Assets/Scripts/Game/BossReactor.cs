@@ -1,3 +1,4 @@
+using Dovus.Core.Motion;
 using UnityEngine;
 
 namespace Dovus.Game
@@ -24,6 +25,15 @@ namespace Dovus.Game
         float _shakeAmp;
         float _liftVel;
         bool _captured;
+
+        bool _pulling;
+        float _pullAge;
+        float _pullDur = DisplacementEase.DurationSec;
+        Vector3 _pullFrom;
+        Vector3 _pullTo;
+        bool _hasPullStop;
+        Vector3 _pullStop;
+        float _pullMinSep;
 
         // Boss ölümü: kısa çökme pozu (squash).
         Vector3 _baseScale = Vector3.one;
@@ -77,12 +87,49 @@ namespace Dovus.Game
         /// </summary>
         public void MoveHomeToward(Vector3 targetWorld, float distanceM)
         {
+            MoveHomeToward(targetWorld, distanceM, targetWorld, 0f);
+        }
+
+        /// <summary>
+        /// İstenen mesafeyi tek karede ışınlamaz. 0,4 sn smoothstep ile gider.
+        /// stopWorld + minSeparation gövdelerin iç içe geçmesini keser.
+        /// </summary>
+        public void MoveHomeToward(Vector3 targetWorld, float distanceM, Vector3 stopWorld, float minSeparation)
+        {
             if (_collapsed || distanceM <= 0f)
                 return;
             if (!_captured)
                 CaptureHome();
             targetWorld.y = _home.y;
-            Home = Vector3.MoveTowards(_home, targetWorld, distanceM);
+            Vector3 desired = Vector3.MoveTowards(_home, targetWorld, distanceM);
+            if (minSeparation > 0f)
+            {
+                Vector3 flatStop = stopWorld;
+                flatStop.y = desired.y;
+                Vector3 away = desired - flatStop;
+                away.y = 0f;
+                float dist = away.magnitude;
+                if (dist < minSeparation)
+                {
+                    if (dist < 0.0001f)
+                        away = -transform.forward;
+                    if (away.sqrMagnitude < 0.0001f)
+                        away = Vector3.forward;
+                    desired = flatStop + away.normalized * minSeparation;
+                    desired.y = _home.y;
+                }
+            }
+
+            _pullFrom = _home;
+            _pullTo = ClampToArena(desired);
+            _pullAge = 0f;
+            _pullDur = DisplacementEase.DurationSec;
+            _hasPullStop = minSeparation > 0f;
+            _pullStop = stopWorld;
+            _pullMinSep = minSeparation;
+            _pulling = Horizontal(_pullFrom, _pullTo) > 0.02f;
+            if (!_pulling)
+                Home = _pullTo;
         }
 
         public void React(
@@ -160,6 +207,9 @@ namespace Dovus.Game
             if (!_captured)
                 CaptureHome();
 
+            if (_pulling)
+                AdvancePull(dtSec);
+
             float now = (float)worldTimeMs;
 
             if (_collapsed)
@@ -205,6 +255,26 @@ namespace Dovus.Game
             Vector3 p = _home + _visualOffset + shake;
             p.y = y;
             transform.position = p;
+        }
+
+        void AdvancePull(float dtSec)
+        {
+            _pullAge += Mathf.Max(0f, dtSec);
+            float u = _pullDur <= 0.01f ? 1f : Mathf.Clamp01(_pullAge / _pullDur);
+            DisplacementEase.Sample(_pullFrom.x, _pullFrom.z, _pullTo.x, _pullTo.z, u, out float x, out float z);
+            if (_hasPullStop)
+                DisplacementEase.KeepSeparated(ref x, ref z, _pullStop.x, _pullStop.z, _pullMinSep);
+            var next = new Vector3(x, _home.y, z);
+            _home = ClampToArena(next);
+            if (u >= 1f)
+                _pulling = false;
+        }
+
+        static float Horizontal(Vector3 a, Vector3 b)
+        {
+            float dx = a.x - b.x;
+            float dz = a.z - b.z;
+            return Mathf.Sqrt(dx * dx + dz * dz);
         }
 
         void ApplyCollapseScale(float progress01)

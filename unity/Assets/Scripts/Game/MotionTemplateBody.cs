@@ -28,6 +28,7 @@ namespace Dovus.Game
         float _arena = 50f;
         float _body = 0.5f;
         bool _playing;
+        bool _tickedThisFrame;
 
         public bool IsDisplacing => _playing;
 
@@ -65,11 +66,26 @@ namespace Dovus.Game
             _held = held;
             _onHit = onHit;
             _playing = !_runner.Finished;
+            _tickedThisFrame = false;
         }
 
         public void Stop() => _playing = false;
 
         void Update()
+        {
+            TickMotion();
+            _tickedThisFrame = true;
+        }
+
+        void LateUpdate()
+        {
+            // Play, Update'ten sonra geldiyse (build ekranı kapanınca ilk cast) bu kare de işlensin.
+            if (!_tickedThisFrame)
+                TickMotion();
+            _tickedThisFrame = false;
+        }
+
+        void TickMotion()
         {
             if (!_playing)
                 return;
@@ -129,9 +145,12 @@ namespace Dovus.Game
             if (_motor == null)
                 _motor = GetComponent<KinematicMotor>();
             float refMps = _motor != null ? _motor.LocoRefMps : 6.4f;
-            float damp = _motor != null ? _motor.LocoDampSec : 0.08f;
-            float maxPlayback = _motor != null ? _motor.LocoMaxPlayback : 1.5f;
             var blend = LocoBlend.FromVelocity(tick.VelX, tick.VelZ, tick.FaceX, tick.FaceZ, refMps);
+            // Kalıp hızı kısa fazda sönümün gerisinde kalmasın; ayak gövdeyle aynı karede eşleşsin.
+            float damp = 0f;
+            float maxPlayback = _motor != null ? _motor.LocoMaxPlayback : 1.5f;
+            if (blend.SpeedMps > refMps * maxPlayback && refMps > 0.05f)
+                maxPlayback = Mathf.Min(2.4f, blend.SpeedMps / refMps);
             _visual.DriveMotion(
                 blend, tick.AnimKey, tick.AnimSpeed, tick.Spin,
                 _anims, _weaponKey, _verbId, refMps, damp, maxPlayback);

@@ -341,12 +341,17 @@ namespace Dovus.Game
                 }
             }
 
-            if (volume.Profile.Vortex && bossInside && _boss != null)
+            if (volume.Profile.Vortex && bossInside && _boss != null
+                && ForcedDisplacement.Allows(_bossStatus != null ? _bossStatus.Board : null))
             {
                 double pullMps = MechanicEngine?.Rules.Param("vortex_pull_mps") ?? 0;
+                Vector3 stop = _player != null ? _player.position : volume.Center;
+                float sep = _boss.BodyRadiusM + Mathf.Max(0.5f, PlayerBodyRadiusM());
                 _boss.MoveHomeToward(
                     volume.Center,
-                    (float)(pullMps * volume.TickMs / 1000.0));
+                    (float)(pullMps * volume.TickMs / 1000.0),
+                    stop,
+                    sep);
             }
             if (volume.Profile.Continuous && bossInside)
             {
@@ -392,8 +397,12 @@ namespace Dovus.Game
                 {
                     float distance = FlatDistance(_player.position, _boss.Home);
                     float maxLength = Mathf.Max(0f, (float)link.Plan.Body.ReachM);
-                    if (maxLength > 0f && distance > maxLength)
-                        _boss.MoveHomeToward(_player.position, distance - maxLength);
+                    if (maxLength > 0f && distance > maxLength
+                        && ForcedDisplacement.Allows(_bossStatus != null ? _bossStatus.Board : null))
+                    {
+                        float sep = _boss.BodyRadiusM + Mathf.Max(0.5f, PlayerBodyRadiusM());
+                        _boss.MoveHomeToward(_player.position, distance - maxLength, _player.position, sep);
+                    }
                 }
                 string linkId = link.Plan != null && !string.IsNullOrEmpty(link.Plan.SkillId)
                     ? link.Plan.SkillId

@@ -602,6 +602,47 @@ namespace Dovus.Core.Motion
         /// </summary>
         public static float GateRangeM(float edgeReachM, float attackerRadiusM) =>
             Math.Max(0f, edgeReachM) + Math.Max(0f, attackerRadiusM);
+
+        /// <summary>
+        /// Hedefe kapanan en uzun faz. Geri çekilme menzili uzatmaz.
+        /// Vuruş, kapanıştan sonra gövdenin yeni kenarından ölçülür: menzil = JSON + kapanış.
+        /// </summary>
+        public static float ClosingApproachM(MotionTemplate template)
+        {
+            if (template == null)
+                return 0f;
+            float best = 0f;
+            for (int i = 0; i < template.Phases.Count; i++)
+            {
+                MotionPhase phase = template.Phases[i];
+                float step = phase.Motion switch
+                {
+                    "lunge" or "dash" or "pull" or "leap" or "slam" => phase.DistanceM,
+                    "hop" or "sidestep" => Math.Max(0f, phase.ForwardM),
+                    "blink" when phase.Land != "behind" => phase.DistanceM,
+                    _ => 0f
+                };
+                if (step > best)
+                    best = step;
+            }
+            return best;
+        }
+
+        public static float ComboEdgeReach(float jsonReachM, MotionTemplate template)
+        {
+            float json = Math.Max(0f, jsonReachM);
+            float authored = EdgeReachM(template);
+            return Math.Max(json + ClosingApproachM(template), authored);
+        }
+
+        /// <summary>Merkez mesafesi, kenardan kenara JSON menziline sığıyor mu.</summary>
+        public static bool CenterInReach(
+            float centerDistM,
+            float attackerRadiusM,
+            float targetRadiusM,
+            float edgeReachM) =>
+            centerDistM - Math.Max(0f, attackerRadiusM) - Math.Max(0f, targetRadiusM)
+            <= Math.Max(0f, edgeReachM) + 0.02f;
     }
 
     public static class MotionHitGeometry

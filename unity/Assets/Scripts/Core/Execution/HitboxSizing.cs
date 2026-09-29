@@ -21,6 +21,19 @@ namespace Dovus.Core.Execution
     /// <summary>hitbox_formula: final = base × weapon.range_mult × adjective.size_mult.</summary>
     public static class HitboxSizing
     {
+        /// <summary>
+        /// Tablo (hitbox_vfx.sifat_override.size_mult) ile skill'in kendi hitbox_scale_mult'u
+        /// ayrı yazılabiliyor. Kapı ve vuruş, ikisinin büyüğünü kullanır; küçük olan cast'i
+        /// JSON'un izin verdiği kenar menzilinin altında kesmesin.
+        /// </summary>
+        public static float AdjectiveScale(float tableSizeMult, float skillHitboxScale)
+        {
+            float table = tableSizeMult > 0f ? tableSizeMult : 1f;
+            if (skillHitboxScale > 0f)
+                return Math.Max(table, skillHitboxScale);
+            return table;
+        }
+
         public static HitboxSize Resolve(
             in VerbHitboxSpec spec,
             float weaponSizeMult,
