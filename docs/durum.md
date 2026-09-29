@@ -13,8 +13,16 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 29 Eylül 2026 (motor adım 3: düz vuruş menzili + saldırı bakışı) ·
-**Dal:** `fix/engine-step3` · **Sıradaki:** Unity Play — menzil 1.5 m, vuruşta gövde hedefe kilitli. Açık kararlar: Yoğun Zaman gücü ve şifa menzili.
+**Son güncelleme:** 29 Eylül 2026 (motor adım 3: dost menzili, kart metni, hız süresi) ·
+**Dal:** `fix/engine-step3` · **Sıradaki:** Unity Play — düz vuruş 1.5 m, vuruş bakışı, dost şifası ~5 m, Yoğun Zaman kartı %30, Yükselen Zaman ~3 sn
+
+> **29 Eylül — motor adım 3, dost menzili ve kartlar.** Dost hedefi skill'ler (şifa, kalkan, buff)
+> silahtan bağımsız 6 m (`global_rules.ally_skill_range_m`). Seçili dost menzildeyse o, yoksa en
+> yakın, o da yoksa kendine. Alan yoksa bir kez uyarı ve yedek 6 m. Yoğun Zaman etkisi aynı
+> (boss normal hızın %70'i, yani %30 yavaş; çarpan 0.7). Kart metni artık "%30 düşer" diyor.
+> Başka hız kartında çarpan/azalma çelişkisi yoktu; Yükselen Zaman +%50 hızı zaten doğruydu,
+>   süresi 3 sn oldu (`tempo_duration_sec`, hasar buff'ı ile aynı) ve kartta "3 sn" yazıyor.
+> Core test 341/341. Unity Play yok.
 
 > **29 Eylül — motor adım 3, menzil ve bakış.** Düz vuruş menzili artık his ayarı değil:
 > fiil 1 kapsülü (`hitbox_vfx`, 1.5 m). JSON'da yoksa bir kez uyarır ve eski yedek 2.4 m kalır.
@@ -1391,11 +1399,12 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 - **Yoğun Zaman gücü kartla çelişebilir (29 Eylül, Play).** Kart "hızı %70 düşer" diyor; motor
   `enemy_slow: 0.7`'yi hız çarpanı olarak okuyup boss'u ×0.70'e (yalnız %30 yavaş) indiriyor.
   Mekanik gramer logu aynı skill için `tempo→düşman 0.3` yazıyor. Hangisi doğru, karar gerekli.
-- **Yoğun Şifa menzili Kılıç'la 0.8 m (29 Eylül, Play).** Dost birkaç metre ötedeyken şifa sessizce
-  kendine düşüyor; oyuncu full ise "zaten full" yazıyor. Kural doğru çalışıyor ama dosta şifa için
-  neredeyse temas gerekiyor.
-- **Yükselen Zaman kartında süre yok.** Hız 1 sn sürüyor (`tempo_duration_sec`); kartın pasif satırı
-  "4 sn", `buff_duration_sec` 3 sn. Oyuncu kartta hız süresini göremiyor.
+- **Yoğun Şifa menzili (29 Eylül).** Play'de Kılıç 0.8 m yüzünden 3.2 m'deki dosta gitmedi.
+  Adım 3 bunu 6 m yaptı (`ally_skill_range_m`); Play'de ~5 m henüz bakılmadı.
+- **Yoğun Zaman kartı (29 Eylül).** Etki boss'u normal hızın %70'ine indiriyor (%30 yavaş).
+  Kart "%70 düşer" diyordu; metin "%30 düşer" olacak şekilde düzeltildi. Güç sayısı değişmedi.
+- **Yükselen Zaman süresi (29 Eylül).** Hız artık 3 sn (`tempo_duration_sec` = hasar buff'ı) ve
+  kartta "3 sn" yazıyor. Pasif satırı hâlâ "4 sn" — o pasif yuvanın süresi, bu turda değiştirilmedi.
 - **Hedefleme Unity Play'de doğrulanmadı (29 Eylül, PR #20).** Core testleri geçti; editörde
   tık, menzil reddi, düz vuruş ve geri yürüme elle bakılacak. Düz vuruş hasarı hâlâ yalnız
   boss'a gider (ikinci düşman yok). Seçili hedef varken saldırı dışında da gövde hedefe

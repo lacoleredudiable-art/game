@@ -1651,6 +1651,14 @@ namespace Dovus.Game
 
         float TargetingRangeFor(in SkillResolution skill)
         {
+            if (CardEffectRules.PrefersAlly(skill.TargetMode, skill.Action))
+            {
+                float allyRange = _skillNumbers != null
+                    ? _skillNumbers.AllySkillRangeM
+                    : SkillNumberFallbacks.AllySkillRangeM;
+                return Mathf.Max(0.05f, CardEffectRules.ResolveRange(true, allyRange, 0f));
+            }
+
             EnsurePresentationCatalog();
             ManifestationTuning tuning = _combat != null
                 ? _combat.Manifestation
@@ -2923,14 +2931,15 @@ namespace Dovus.Game
 
             var playerVitals = _player != null ? _player.GetComponent<PlayerVitals>() : null;
             bool spatial = fieldCenter.HasValue && fieldRadiusM > 0f;
-            bool allyInRange = !spatial || (_ally != null
+            bool preferAlly = _ally != null && preferredTarget == _ally.transform;
+            // Seçilen dost, dost menzili kapısından geçti. Silahın dar alanı onu elemez.
+            bool allyInRange = preferAlly || !spatial || (_ally != null
                 && FlatDistance(_ally.transform.position, fieldCenter.Value) <= fieldRadiusM);
             bool selfInRange = !spatial || (_player != null
                 && FlatDistance(_player.position, fieldCenter.Value) <= fieldRadiusM);
             bool allyNeeds = _ally != null && allyInRange && _ally.Hp < _ally.MaxHp;
             bool selfNeeds = playerVitals != null && selfInRange
                 && !playerVitals.IsDown && playerVitals.Hp < playerVitals.MaxHp;
-            bool preferAlly = _ally != null && preferredTarget == _ally.transform;
             bool preferSelf = _player != null && preferredTarget == _player;
             if ((preferAlly && !allyNeeds) || (preferSelf && !selfNeeds))
             {
