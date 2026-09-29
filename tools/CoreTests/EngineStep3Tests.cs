@@ -61,7 +61,7 @@ public class EngineStep3Tests
     [Test]
     public void AllySkillRange_Missing_WarnsOnceAndUsesFallback()
     {
-        string broken = _json.Replace("\"ally_skill_range_m\": 6,\n    ", "");
+        string broken = Regex.Replace(_json, "\"ally_skill_range_m\":\\s*6,\\s*", "");
         var catalog = SkillNumberCatalog.FromJson(broken);
         Assert.That(catalog.AllySkillRangeM, Is.EqualTo(SkillNumberFallbacks.AllySkillRangeM).Within(0.001f));
         Assert.That(DesignWarnings.WasWarned("global_rules.ally_skill_range_m"), Is.True);
