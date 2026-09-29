@@ -110,6 +110,8 @@ namespace Dovus.Game.EditorTools
         public static string Status { get; private set; } = "boşta";
         public static string LastSummary { get; private set; } = "";
         public static string PausedAt { get; private set; } = "";
+        /// <summary>Takılmayı ayıklamak için: aşama ve aşamada geçen dünya süresi.</summary>
+        public static string StageInfo => Running ? $"{_stage} {(NowMs - _stageMs) / 1000.0:F1} sn" : "-";
         public static readonly List<PlaySweepResult> Results = new();
 
         static List<PlaySweepCase> _cases;
@@ -211,11 +213,16 @@ namespace Dovus.Game.EditorTools
             public string ExpectedCat = "";
             public Vector3 SimFinal;
             public bool HasSim;
+            public Vector3 SimStart;
+            public float StopGap;
+            public string SimAim = "boss";
+            public bool AimCaptured;
         }
 
         static PlaySweep()
         {
             EditorApplication.playModeStateChanged += OnPlayModeChanged;
+            EditorApplication.update += LoopWatchdog;
         }
 
         [MenuItem("Dovus/Play Sweep/144 kombo - Kılıç")]
@@ -353,6 +360,23 @@ namespace Dovus.Game.EditorTools
             PlayerLoop.SetPlayerLoop(loop);
         }
 
+        static bool LoopInstalled()
+        {
+            foreach (PlayerLoopSystem sys in PlayerLoop.GetCurrentPlayerLoop().subSystemList)
+            {
+                if (sys.type == typeof(PostLateUpdate) && sys.subSystemList != null)
+                    return sys.subSystemList.Any(s => s.type == typeof(SweepTick));
+            }
+            return false;
+        }
+
+        /// <summary>Play açılışında paketler PlayerLoop'u sıfırlayabiliyor; tick kaybolursa geri takılır.</summary>
+        static void LoopWatchdog()
+        {
+            if (Running && EditorApplication.isPlaying && !LoopInstalled())
+                InstallLoop(true);
+        }
+
         static double NowMs => _clock != null ? _clock.Director.WorldTimeMs : Time.timeAsDouble * 1000.0;
 
         static void Tick()
@@ -470,6 +494,13 @@ namespace Dovus.Game.EditorTools
         {
             if (_bossDirector != null)
                 _bossDirector.enabled = false;
+            if (BuildSelectScreen.IsOpen)
+            {
+                // Açık build ekranı saati durdurur; bekleme dünya saatine bakar, hiç bitmez.
+                _stage = Stage.Setup;
+                _stageMs = NowMs;
+                return;
+            }
             _body ??= _player.GetComponent<MotionTemplateBody>();
             _driver ??= _player.GetComponent<SkillMotionDriver>();
             bool busy = Performing() || (_body != null && _body.IsDisplacing);
@@ -535,7 +566,7 @@ namespace Dovus.Game.EditorTools
             if (!ok)
             {
                 var r = NewResult(c);
-                r.Notes.Add("cast reddedildi (menzil/hedef kapısı ya da kilit)");
+                r.Notes.Add("cast reddedildi: " + RejectReason(c));
                 Results.Add(r);
                 _index++;
                 NextCase();
@@ -647,7 +678,7 @@ namespace Dovus.Game.EditorTools
         {
             error = "";
             RuneLoadout current = _input.Engine?.Loadout;
-            if (current != null && current.RuneIds.Contains(v) && current.RuneIds.Contains(a))
+            if (!BuildSelectScreen.IsOpen && current != null && current.RuneIds.Contains(v) && current.RuneIds.Contains(a))
                 return true;
 
             int key = BuildKey(v, a);
@@ -792,6 +823,28 @@ namespace Dovus.Game.EditorTools
                 Call(targeting, "Select", target);
         }
 
+        static string RejectReason(PlaySweepCase c)
+        {
+            if (P<bool>(_input, "InputLocked"))
+                return "girdi kilitli (düşük can ya da BlocksCast)";
+            RuneLoadout loadout = _input.Engine?.Loadout;
+            bool hasVerb = false, hasAdj = false;
+            for (int slot = 1; loadout != null && slot <= RuneLoadout.SlotCount; slot++)
+            {
+                hasVerb |= loadout.RuneIdAtSlot(slot) == c.Verb;
+                hasAdj |= loadout.RuneIdAtSlot(slot) == c.Adj;
+            }
+            if (!hasVerb || !hasAdj)
+                return "rün build'de yok";
+            var gate = F<Func<SkillResolution, bool>>(_input, "_skillTargetGate");
+            if (gate != null && !gate(_skills.Resolve(new[] { c.Verb, c.Adj })))
+            {
+                string why = _logs.LastOrDefault(l => !l.StartsWith("SWEEP"));
+                return "hedef/menzil kapısı" + (string.IsNullOrEmpty(why) ? "" : " — " + why);
+            }
+            return "bilinmiyor";
+        }
+
         static CaseInfo Describe(PlaySweepCase c)
         {
             var info = new CaseInfo();
@@ -819,20 +872,35 @@ namespace Dovus.Game.EditorTools
             }
 
             Vector3 b = _boss.position;
-            Vector3 s = new(b.x, _player.position.y, b.z - c.StartDistM);
+            info.SimStart = new Vector3(b.x, _player.position.y, b.z - c.StartDistM);
+            info.StopGap = catalog.Fallbacks.StopGapM;
+            Simulate(info, _boss.transform);
+            return info;
+        }
+
+        /// <summary>Kalıbı çevrimdışı koşturur. aim: oyunun kalıba verdiği hedef (boss, dost ya da yok).</summary>
+        static void Simulate(CaseInfo info, Transform aim)
+        {
+            Vector3 s = info.SimStart;
+            Vector3 b = _boss.position;
+            MotionTarget target = default;
+            if (aim != null)
+            {
+                float r = aim == _boss.transform ? info.BossR : Call<float>(_md, "ColliderRadius", aim);
+                target = new MotionTarget(true, aim.position.x, aim.position.z, r);
+            }
             var runner = new MotionTemplateRunner();
-            float stopGap = catalog.Fallbacks.StopGapM;
-            runner.Begin(info.Template, s.x, s.y, s.z, 0f, 1f, info.PlayerR, stopGap);
+            runner.Begin(info.Template, s.x, s.y, s.z, 0f, 1f, info.PlayerR, info.StopGap);
             float maxExc = 0f;
             for (int i = 0; i < 1200 && !runner.Finished; i++)
             {
-                runner.Tick(1f / 60f, new MotionTarget(true, b.x, b.z, info.BossR), new MotionStick(false, 0f, 0f));
+                runner.Tick(1f / 60f, target, new MotionStick(false, 0f, 0f));
                 maxExc = Mathf.Max(maxExc, Flat(new Vector3(runner.X, 0f, runner.Z) - s).magnitude);
             }
             info.SimFinal = new Vector3(runner.X, s.y, runner.Z);
             info.HasSim = true;
+            info.SimAim = aim == null ? "yok" : aim == _boss.transform ? "boss" : aim.name;
             info.ExpectedCat = DesignCategory(info.Template) ?? Category(s, info.SimFinal, b, maxExc);
-            return info;
         }
 
         static string DesignCategory(MotionTemplate t)
@@ -912,6 +980,14 @@ namespace Dovus.Game.EditorTools
             f.Bang = !drawing;
             f.Busy = f.Playing || f.Driver || drawing || pending > 0;
 
+            if (f.Playing && _info != null && _info.Template != null && !_info.AimCaptured)
+            {
+                _info.AimCaptured = true;
+                var aim = F<Transform>(_md, "_templateAim");
+                if (aim != _boss.transform)
+                    Simulate(_info, aim);
+            }
+
             object runner = _body != null ? F<object>(_body, "_runner") : null;
             if (runner is MotionTemplateRunner mr)
             {
@@ -979,7 +1055,7 @@ namespace Dovus.Game.EditorTools
 
         static void OnLog(string msg, string stack, LogType type)
         {
-            if (!Running || _stage != Stage.Record)
+            if (!Running || (_stage != Stage.Record && _stage != Stage.Settle))
                 return;
             string first = msg.Split('\n')[0];
             if (first.StartsWith("[PlaySweep]", StringComparison.Ordinal))
@@ -1111,7 +1187,8 @@ namespace Dovus.Game.EditorTools
                          || (r.ActualPos == r.ExpectedPos && (!_info.HasSim || simErr <= SimMatchM || bossMoved));
             r.Notes.Add($"kalıp sonu: merkeze {Flat(end.P - end.B).magnitude:F2} m, başlangıçtan {Flat(end.P - start).magnitude:F2} m, " +
                         $"kalıp simülasyonundan {simErr:F2} m" + (bossMoved ? $", boss {Flat(end.B - _pre.B).magnitude:F2} m kaydı" : "") +
-                        (steered ? ", çubukla yönlendirildi" : ""));
+                        (steered ? ", çubukla yönlendirildi" : "") +
+                        (_info.SimAim != "boss" ? $", kalıp hedefi {_info.SimAim}" : ""));
 
             // 3) boss gövdesine girmedi
             r.MinDist = float.MaxValue;
