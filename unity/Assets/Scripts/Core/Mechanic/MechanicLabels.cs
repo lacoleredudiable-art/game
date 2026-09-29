@@ -118,7 +118,10 @@ namespace Dovus.Core.Mechanic
             ["balistik"] = "top mermisi (yay çizip düşer)",
             ["isin"] = "asa ışını (hat)",
             ["yerlestirme"] = "tılsım (hedefte belirir)",
-            ["govde"] = "kalkan gövdesi"
+            ["govde"] = "kalkan gövdesi",
+            ["ok"] = "düz ok",
+            ["sayfa"] = "uçan sayfa",
+            ["kure"] = "yüzen küre"
         };
 
         static readonly Dictionary<string, string> ShapeTr = new Dictionary<string, string>

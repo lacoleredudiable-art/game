@@ -13,7 +13,12 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (Play taraması dördüncü koşu, Kılıç + Asa) ·
+**Son güncelleme:** 30 Eylül 2026 (10 silah, `feat/weapons-10`) ·
+**Dal:** `feat/weapons-10` · **Sıradaki:** Unity Play'de her silah 144/144 (bu ortamda Play yok)
+
+> **30 Eylül — 10 silah (`feat/weapons-10`).** Hançer, Mızrak ve Balta gitti; yerlerine Yay, Büyü Kitabı ve Küre geldi. Kılıç hâlâ 4 numaralı orta silah. Veri `element-sistemi.json` (iki kopya aynı). Her silahın vuruş şekli, menzili, pasifi ve değiştirme bonusu orada. Zırh alanı `base_armor`: Kalkan 25, Çekiç 15, Top 10, diğerleri 0 (belgede sayı yoktu, önerilen). Hafif silahların temel vuruş aralığı da belgede yoktu: Yumruk 0,2 sn, Kılıç 0,28 sn, Çekiç 0,9 sn, Asa 0,45 sn, Kitap 0,25 sn. Silah değiştirme 0,25 sn, bekleme 1,2 sn. "Silah kesme" etiketli 10 kombo son %50'de değişince bitişi keser ve sonraki skill hemen başlar; diğerleri son %30'da yalnız bitişi keser. Hareket kalıbının yolu silahtan değişmez. Menü: `Dovus/Play Sweep/144 kombo` her silah ve `Tüm silahlar`. İkonlar Yay/Kitap/Küre için eski yer tutucu. `dotnet test` 411/411 (eski 402 + 9). **Doğrulanmadı:** Unity Play taraması. Küre basılı tut / çift dokunuş henüz düğmeye bağlı değil (`TryPlaceOrb` / `TryRecallOrb` hazır). Topun itmesi ve kendi geri tepmesi harekete yazılmadı. Kalkanın 15 kalkanı, Tılsımın arındırması ve Kitabın bedava manası veri olarak duruyor; hasar formülüne dokunulmadı. Yay zırh yok sayma bayrağı `WeaponIgnoresArmor`.
+
+**Eski satır:** 30 Eylül 2026 (Play taraması dördüncü koşu, Kılıç + Asa) ·
 **Dal:** `feat/play-sweep` · **Sıradaki:** 6-2 tek kare sıçrama, 3-2 kıpırdamıyor (merge kuralı tutmadı, PR #25/#26 açık)
 
 > **30 Eylül — dördüncü koşu: Kılıç 142/144, Asa 143/144. Merge edilmedi.** `feat/motion-templates-2`

@@ -179,6 +179,10 @@ namespace Dovus.Game
                         if (e.Amount <= 0)
                         {
                             bool daze = e.Has("havada") || e.Has("sersem");
+                            if (e.Has("sersem")
+                                && _clock != null
+                                && !HammerStunAllowed(_clock.Director.WorldTimeMs))
+                                break;
                             StatusKind lockKind = CardEffectRules.MovementLockKind(_cardEffect, daze);
                             ApplyOnce(
                                 boss,

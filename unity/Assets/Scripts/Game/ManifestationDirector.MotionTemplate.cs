@@ -117,6 +117,7 @@ namespace Dovus.Game
                 ? (string.IsNullOrEmpty(_equippedWeapon.AnimationsKey) ? _equippedWeapon.Id : _equippedWeapon.AnimationsKey)
                 : string.Empty;
             _motionBody.SetAnimContext(MotionCatalog.Anims, weapon, VerbOf(skill.SkillId));
+            _motionBody.NoteSkill(skill.SkillId);
             _motionBody.Play(
                 template,
                 () =>

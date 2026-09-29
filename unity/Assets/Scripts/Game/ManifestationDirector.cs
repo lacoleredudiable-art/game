@@ -585,6 +585,7 @@ namespace Dovus.Game
 
             if (_motor != null && _motor.Velocity.sqrMagnitude > 0.01f)
                 _lastMovedMs = worldMs;
+            TickOrb(worldMs);
 
             SyncFromSentence(worldMs);
             ApplyWindowCue();
@@ -1111,7 +1112,7 @@ namespace Dovus.Game
 
             int worldMsInt = (int)worldMs;
             bool isDodging = _input?.Dodge != null && _input.Dodge.IsActive(worldMsInt);
-            bool isCasting = _pending.Count > 0;
+            bool isCasting = _pending.Count > 0 && !SwapDrawUnlocked(worldMs);
             bool isDrawing = _engine != null && _engine.State.Phase == SentencePhase.Building;
             bool isRecovering = _engine != null && _engine.State.Phase == SentencePhase.Recovering;
 
@@ -2029,7 +2030,7 @@ namespace Dovus.Game
                 }
 
                 float basicDealt = 0f;
-                float basicReach = _combat.Manifestation.BasicStrikeRangeM;
+                float basicReach = WeaponBasicReach(_combat.Manifestation.BasicStrikeRangeM);
                 bool capsuleHit = IsBossInStrikeCapsule(logic, basicReach);
                 bool inReach = BasicTargetStillInReach(impactTarget, basicReach);
                 if (BasicStrikeInput.DealsDamage(capsuleHit, inReach))
@@ -2335,6 +2336,9 @@ namespace Dovus.Game
                     || skill.Mechanics.Length > 0;
             }
 
+            ApplyWeaponDelivery(
+                skill, kind, target,
+                ref origin, ref range, ref radius, ref hitboxShape, ref hitboxAngleDeg, ref speed);
             var context = new SkillExecutionContext(
                 skill,
                 _player,
@@ -2517,6 +2521,7 @@ namespace Dovus.Game
             }
 
             durationSec = Mathf.Max(tuning.BangDurationSec, durationSec);
+            durationSec *= WeaponDurationMult(skill);
             tickSec = Mathf.Clamp(tickSec, 0.01f, durationSec);
         }
 
@@ -2586,6 +2591,7 @@ namespace Dovus.Game
         {
             if (skill.IsEmpty || words == null || words.Count == 0)
                 return;
+            NoteWeaponCast(skill);
 
             bool enforce = _combat != null && _combat.EnforceCooldown;
             if (!enforce)
@@ -2598,7 +2604,7 @@ namespace Dovus.Game
             if (_playerCooldown == null || string.IsNullOrEmpty(skill.VerbId))
                 return;
 
-            float sec = skill.BaseCooldownSec;
+            float sec = skill.BaseCooldownSec * WeaponCooldownMult();
             double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
             if (!_playerCooldown.TryBeginCast(skill.VerbId, sec, worldMs))
                 return;
@@ -2622,7 +2628,7 @@ namespace Dovus.Game
         {
             if (_hexagonView == null || skill.IsEmpty || words == null || words.Count == 0)
                 return;
-            float sec = skill.BaseCooldownSec;
+            float sec = skill.BaseCooldownSec * WeaponCooldownMult();
             if (sec <= 0f)
                 return;
             _hexagonView.BeginCosmeticCooldown(words[0].Dot, sec);
@@ -2945,7 +2951,7 @@ namespace Dovus.Game
             float healMult = _playerStatus != null ? _playerStatus.Board.HealEffectivenessMult : 1f;
             healMult *= _passiveDirector?.HealMult ?? 1f;
             healMult *= chainBonusOverride ?? _closingChainBonus;
-            healMult *= WeaponCompatibilityFor(skill).DamageMult;
+            healMult *= WeaponSupportPower(skill);
             float healBase = skill.BaseHeal > 0f
                 ? skill.BaseHeal
                 : closing.TotalEffect * per;
@@ -3075,11 +3081,12 @@ namespace Dovus.Game
                 LastWeaponUiLabel = compatibility.UiLabel;
             }
             outMult *= eqMult;
+            outMult *= WeaponOutgoingDamageMult(skill, isBasicStrike);
             LastEquipmentMatchMult = eqMult;
 
             bool isCrit = false;
             float damage;
-            float extraCrit = ExtraCritChanceAdd(skill);
+            float extraCrit = ExtraCritChanceAdd(skill) + WeaponCritAdd(skill, isBasicStrike);
             if (_combat != null && _combat.UseFormulaDamage &&
                 !isBasicStrike && !skill.IsEmpty && skill.BaseDamage > 0f)
             {
@@ -3136,6 +3143,8 @@ namespace Dovus.Game
                 return damage; // echo kaynağı; CollectDue uygular — şimdi yazma
             }
 
+            RememberHitPoint(BossHitPoint());
+            ConsumeWeaponBonus();
             LastClosingDamageDealt = damage;
             _damageHud?.ShowDamage(damage, isCrit, BossHitPoint(), DamageTint());
             _lastDamageDealtMs = _clock.Director.WorldTimeMs; // "dealt_damage_recently" (Öfke Patlaması)

@@ -48,6 +48,7 @@ namespace Dovus.Game
 
         void OnPlayerDamageTaken(float incomingDamage)
         {
+            NoteShieldBlockIfGuarding();
             ReflectFromWorldVolumes(incomingDamage);
             if (_mobilityCc == null || _pending.Count == 0)
                 return;

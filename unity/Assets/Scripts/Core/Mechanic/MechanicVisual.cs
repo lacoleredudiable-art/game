@@ -128,6 +128,21 @@ namespace Dovus.Core.Mechanic
                     r.FollowOwner = true;
                     Ring(r, 0, 0, size, t.OrbitPieces, 0, 0.8);
                     break;
+                case "ok":
+                    r.Layout = "ok";
+                    Row(r, reach, step, t.ThrustSpeedMps, t);
+                    endZ = reach;
+                    break;
+                case "sayfa":
+                    r.Layout = "sayfa";
+                    Row(r, reach * 0.6, step, t.ThrustSpeedMps, t);
+                    endZ = reach * 0.6;
+                    break;
+                case "kure":
+                    r.Layout = "kure";
+                    Add(r, reach * 0.4, 0, 0, 1);
+                    endZ = reach * 0.4;
+                    break;
                 default:
                     r.Layout = "temas";
                     Add(r, 0, reach, 0, 1);

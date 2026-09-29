@@ -31,6 +31,9 @@ namespace Dovus.Game
         bool _tickedThisFrame;
 
         public bool IsDisplacing => _playing;
+        public float PlayedSec => _runner.Elapsed;
+        public float PlayLengthSec { get; private set; }
+        public string SkillId { get; private set; } = string.Empty;
 
         public void Bind(GameClock clock, float arenaHalfM, float bodyRadiusM)
         {
@@ -70,11 +73,24 @@ namespace Dovus.Game
             _target = target;
             _held = held;
             _onHit = onHit;
+            PlayLengthSec = SumLength(template);
             _playing = !_runner.Finished;
             _tickedThisFrame = false;
         }
 
+        public void NoteSkill(string skillId) => SkillId = skillId ?? string.Empty;
+
         public void Stop() => _playing = false;
+
+        static float SumLength(MotionTemplate template)
+        {
+            if (template == null)
+                return 0f;
+            float sum = 0f;
+            for (int i = 0; i < template.Phases.Count; i++)
+                sum += template.Phases[i].DurationSec;
+            return sum;
+        }
 
         void Update()
         {

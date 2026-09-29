@@ -24,7 +24,8 @@ namespace Dovus.Core.Equipment
             string identityPassive,
             int[]? compatibleVerbs,
             string animationsKey,
-            string type = "")
+            string type = "",
+            WeaponCombatProfile profile = null)
         {
             Id = id ?? string.Empty;
             Name = name ?? string.Empty;
@@ -39,6 +40,7 @@ namespace Dovus.Core.Equipment
             CompatibleVerbs = compatibleVerbs ?? System.Array.Empty<int>();
             AnimationsKey = animationsKey ?? string.Empty;
             Type = type ?? string.Empty;
+            Profile = profile;
         }
 
         public string Id { get; }
@@ -54,6 +56,10 @@ namespace Dovus.Core.Equipment
         public int[] CompatibleVerbs { get; }
         public string AnimationsKey { get; }
         public string Type { get; }
+        /// <summary>10 silah teslimi. Eski ekipman satırlarında yok.</summary>
+        public WeaponCombatProfile Profile { get; }
+        /// <summary>Hasar ajanının okuyacağı zırh. Dokümanda sayı yoksa ağır silahta orta, hafifte 0.</summary>
+        public float BaseArmor => Profile != null ? Profile.BaseArmor : 0f;
 
         public bool IsCompatibleWithVerb(int verbId)
         {

@@ -17,6 +17,7 @@ namespace Dovus.Game
         [SerializeField, TextArea] string _identityPassive;
         [SerializeField] int[] _compatibleVerbs = System.Array.Empty<int>();
         [SerializeField] string _animationsKey;
+        [SerializeField] float _baseArmor;
 
         public int Id => _id;
         public string DisplayName => _displayName;
@@ -29,6 +30,8 @@ namespace Dovus.Game
         public string IdentityPassive => _identityPassive;
         public int[] CompatibleVerbs => _compatibleVerbs;
         public string AnimationsKey => _animationsKey;
+        public float BaseArmor => _baseArmor;
+        public WeaponCombatProfile Profile { get; private set; }
 
         public void Import(EquipmentItem source)
         {
@@ -45,6 +48,8 @@ namespace Dovus.Game
                 ? (int[])source.CompatibleVerbs.Clone()
                 : System.Array.Empty<int>();
             _animationsKey = source?.AnimationsKey ?? string.Empty;
+            _baseArmor = source?.BaseArmor ?? 0f;
+            Profile = source?.Profile;
             name = $"Weapon_{_id:00}_{_displayName}";
         }
 
@@ -64,7 +69,8 @@ namespace Dovus.Game
                     ? (int[])_compatibleVerbs.Clone()
                     : System.Array.Empty<int>(),
                 _animationsKey,
-                _type);
+                _type,
+                Profile);
 
         static int ParseNumericId(string id)
         {
