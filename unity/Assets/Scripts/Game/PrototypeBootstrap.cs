@@ -431,6 +431,7 @@ namespace Dovus.Game
                 DesignWarnings.Warned += LogDesignWarning;
                 SkillNumberCatalog numbers = SkillNumberCatalog.FromJson(design.Json);
                 numbers.ApplyCcDurations(combat.Status);
+                numbers.ApplyBasicStrikeRange(combat.Manifestation);
                 director.ConfigureSkillNumbers(numbers);
                 resource.Bind(numbers.MaxMana, numbers.ManaRegenPerSec, numbers.ManaRegenDelaySec);
                 cooldown.Bind(numbers.GlobalCooldownSec, numbers.MaxConcurrentCasts);

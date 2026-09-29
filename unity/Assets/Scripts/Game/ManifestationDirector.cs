@@ -40,6 +40,7 @@ namespace Dovus.Game
         PlayerTargeting _targeting;
         Transform _armedTarget;
         Transform _castFacingTarget;
+        bool _directionalAttack;
         string _armedSkillId = string.Empty;
 
         readonly List<LivingEffectView> _active = new();
@@ -301,18 +302,47 @@ namespace Dovus.Game
         {
             get
             {
-                bool casting = (_engine != null && _engine.State.Phase == SentencePhase.Building)
-                    || _pending.Count > 0;
-                if (casting && _castFacingTarget != null)
-                    return _castFacingTarget;
-                return _targeting != null ? _targeting.SelectedTransform : null;
+                switch (FacingKind())
+                {
+                    case AttackFaceKind.LockedTarget:
+                        return AttackLockTarget();
+                    case AttackFaceKind.Movement:
+                        return _targeting != null ? _targeting.SelectedTransform : null;
+                    default:
+                        return null;
+                }
             }
         }
 
+        /// <summary>
+        /// Saldırı boyunca gövde çubuğa dönmez. Hedef varsa ona kilitlenir;
+        /// yoksa bakış kalır. Saldırı dışında seçili hedef varsa eski kilit durur.
+        /// </summary>
         public bool CombatFacingLocked =>
-            CurrentFacingTarget != null
-            || (_engine != null && _engine.State.Phase == SentencePhase.Building)
-            || _pending.Count > 0;
+            FacingKind() != AttackFaceKind.Movement || CurrentFacingTarget != null;
+
+        bool PerformingAttack =>
+            (_engine != null && (_engine.State.Phase == SentencePhase.Building
+                || _engine.State.Phase == SentencePhase.Recovering))
+            || _pending.Count > 0
+            || (_motionDriver != null && _motionDriver.IsDisplacing)
+            || (_visual != null && _visual.IsAttackPose);
+
+        AttackFaceKind FacingKind()
+        {
+            bool performing = PerformingAttack;
+            return AttackFacingRules.Resolve(
+                performing,
+                performing && _directionalAttack,
+                AttackLockTarget() != null);
+        }
+
+        Transform AttackLockTarget()
+        {
+            if (_castFacingTarget != null && _castFacingTarget != _player)
+                return _castFacingTarget;
+            return _targeting != null ? _targeting.SelectedTransform : null;
+        }
 
         /// <summary>Bağlama 5 / MCP: Bind sonrası pasif durum makinesi (null = henüz bağlanmadı).</summary>
         public PassiveDirector PassiveDirector => _passiveDirector;
@@ -538,6 +568,8 @@ namespace Dovus.Game
 
             double worldMs = _clock.Director.WorldTimeMs;
             float dtSec = (float)(_clock.WorldDeltaMs / 1000.0);
+            if (!PerformingAttack)
+                _directionalAttack = false;
 
             // Kilit kesildi (§5): poz da kesilir. Kapanış patlaması kesilmez, kendi
             // zamanlamasıyla gelir (TickPendingClosings).
@@ -1463,27 +1495,22 @@ namespace Dovus.Game
 
         void PulseActor(Rune rune, IReadOnlyList<SentenceWord> words, double worldMs)
         {
-            FaceAim();
+            SkillResolution skill = SkillResolution.Empty;
+            if (_skills != null && words != null && words.Count > 0)
+                skill = ResolveSkillWords(words);
+            FaceAim(skill);
             _pose?.PulseRune(rune, worldMs);
             if (_visual == null)
                 return;
             SyncVisualDelivery();
 
             EffectSilhouette s;
-            SkillResolution skill = SkillResolution.Empty;
-            if (_skills != null && words != null && words.Count > 0)
-            {
-                skill = ResolveSkillWords(words);
-                s = skill.IsEmpty
-                    ? SilhouetteBuilder.FromWords(words, _combat?.Manifestation)
-                    : SilhouetteBuilder.FromSkill(skill, _combat?.Manifestation);
-            }
+            if (!skill.IsEmpty)
+                s = SilhouetteBuilder.FromSkill(skill, _combat?.Manifestation);
+            else if (words != null && words.Count > 0)
+                s = SilhouetteBuilder.FromWords(words, _combat?.Manifestation);
             else
-            {
-                s = words != null && words.Count > 0
-                    ? SilhouetteBuilder.FromWords(words, _combat?.Manifestation)
-                    : default;
-            }
+                s = default;
 
             // Skill animation_type varsa ona göre Play (element ailesi değil — her fiil ayrı clip).
             if (!skill.IsEmpty && !string.IsNullOrEmpty(skill.AnimationType))
@@ -1496,14 +1523,23 @@ namespace Dovus.Game
         /// Karakteri vuruşun gideceği yöne çevirir; boss'a yalnız soft-aim konisindeyse döner.
         /// Görsel yön ile hitbox yönü ayrışırsa oyuncu boss'a vurduğunu görüp hasar göremez.
         /// </summary>
-        void FaceAim()
+        void FaceAim(in SkillResolution skill)
         {
             if (_player == null)
                 return;
-            Vector3 aim = ResolveAimFacing(_player.position);
-            if (aim.sqrMagnitude < 0.0001f)
+            bool directional = !skill.IsEmpty
+                && TargetingRules.AimMode(skill) == SkillAimMode.Directional;
+            _directionalAttack = directional;
+            if (directional)
+            {
+                Vector3 aim = ResolveAimFacing(_player.position);
+                if (aim.sqrMagnitude < 0.0001f)
+                    return;
+                _player.rotation = Quaternion.LookRotation(aim, Vector3.up);
                 return;
-            _player.rotation = Quaternion.LookRotation(aim, Vector3.up);
+            }
+
+            FaceTarget(AttackLockTarget());
         }
 
         void FaceTarget(Transform target)
@@ -1514,6 +1550,37 @@ namespace Dovus.Game
             to.y = 0f;
             if (to.sqrMagnitude > 0.0001f)
                 _player.rotation = Quaternion.LookRotation(to.normalized, Vector3.up);
+        }
+
+        void CaptureBasicFacing()
+        {
+            _castFacingTarget = null;
+            if (_targeting == null)
+                return;
+            Transform selected = _targeting.SelectedTransform;
+            if (selected != null && selected != _player)
+            {
+                _castFacingTarget = selected;
+                return;
+            }
+
+            float range = _combat != null
+                ? _combat.Manifestation.BasicStrikeRangeM
+                : SkillNumberFallbacks.RangeM;
+            if (_targeting.TryResolveBasicEnemy(range, out Transform auto) && auto != null)
+                _castFacingTarget = auto;
+        }
+
+        Vector3 FacingOrBody(Transform target, Vector3 pos)
+        {
+            if (target != null && target != _player)
+            {
+                Vector3 to = target.position - pos;
+                to.y = 0f;
+                if (to.sqrMagnitude > 0.0001f)
+                    return to.normalized;
+            }
+            return FlatBodyForward();
         }
 
         Vector3 FlatBodyForward()
@@ -1547,10 +1614,14 @@ namespace Dovus.Game
 
             _armedTarget = target;
             _armedSkillId = skill.SkillId;
+            _directionalAttack = aimMode == SkillAimMode.Directional;
             _castFacingTarget = aimMode == SkillAimMode.Targeted && target != _player
                 ? target
                 : null;
-            FaceTarget(_castFacingTarget);
+            if (_directionalAttack)
+                FaceAim(skill);
+            else
+                FaceTarget(AttackLockTarget());
             return true;
         }
 
@@ -1625,17 +1696,14 @@ namespace Dovus.Game
             Vector3 facing;
             if (basicStrike)
             {
-                // Boş vuruş bakılan yere gider. Hız yönü kullanılmaz: geri giderken saldırı
-                // gövdeyi arkaya çevirmesin. Menzildeki düşman varsa ona kilitlenir.
+                // Seçili hedef varsa ona bak, menzil dışı olsa bile. Yoksa menzildeki
+                // düşman. O da yoksa mevcut bakış: çubuk vuruşun ortasında gövdeyi çevirmez.
+                _directionalAttack = false;
+                CaptureBasicFacing();
                 facing = FlatBodyForward();
-                _castFacingTarget = null;
-                if (_targeting != null && _combat != null
-                    && _targeting.TryResolveBasicEnemy(
-                        _combat.Manifestation.BasicStrikeRangeM, out Transform basicTarget)
-                    && basicTarget != null)
+                if (_castFacingTarget != null)
                 {
-                    _castFacingTarget = basicTarget;
-                    Vector3 toTarget = basicTarget.position - pos;
+                    Vector3 toTarget = _castFacingTarget.position - pos;
                     toTarget.y = 0f;
                     if (toTarget.sqrMagnitude > 0.0001f)
                         facing = toTarget.normalized;
@@ -1644,8 +1712,10 @@ namespace Dovus.Game
                 if (_player != null && facing.sqrMagnitude > 0.0001f)
                     _player.rotation = Quaternion.LookRotation(facing, Vector3.up);
             }
-            else
+            else if (_directionalAttack)
                 facing = ResolveAimFacing(pos);
+            else
+                facing = FacingOrBody(_castFacingTarget != null ? _castFacingTarget : AttackLockTarget(), pos);
 
             ManifestationTuning man = _combat.Manifestation;
             if (basicStrike)

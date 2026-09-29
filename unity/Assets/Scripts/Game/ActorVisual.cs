@@ -52,6 +52,59 @@ namespace Dovus.Game
 
         public Animator Animator => _animator;
 
+        static readonly int HashBasic = Animator.StringToHash(StateBasicStrike);
+        static readonly int HashBasicB = Animator.StringToHash("BasicStrikeB");
+        static readonly int HashBasicC = Animator.StringToHash("BasicStrikeC");
+        static readonly int HashPierce = Animator.StringToHash(StateCastPierce);
+        static readonly int HashSweep = Animator.StringToHash("CastSweep");
+        static readonly int HashSlam = Animator.StringToHash("CastSlam");
+        static readonly int HashChannel = Animator.StringToHash("CastChannel");
+        static readonly int HashGuard = Animator.StringToHash("CastGuard");
+        static readonly int HashShoot = Animator.StringToHash(StateCastShoot);
+        static readonly int HashUpperBasic = Animator.StringToHash("UpperBasicStrike");
+        static readonly int HashUpperBasicB = Animator.StringToHash("UpperBasicStrikeB");
+        static readonly int HashUpperBasicC = Animator.StringToHash("UpperBasicStrikeC");
+        static readonly int HashUpperPierce = Animator.StringToHash("UpperCastPierce");
+        static readonly int HashUpperSweep = Animator.StringToHash("UpperCastSweep");
+        static readonly int HashUpperSlam = Animator.StringToHash("UpperCastSlam");
+        static readonly int HashUpperChannel = Animator.StringToHash("UpperCastChannel");
+        static readonly int HashUpperGuard = Animator.StringToHash("UpperCastGuard");
+        static readonly int HashUpperShoot = Animator.StringToHash("UpperCastShoot");
+
+        /// <summary>Vuruş veya skill klibi hâlâ oynuyorsa true. Yürüme ve dodge sayılmaz.</summary>
+        public bool IsAttackPose
+        {
+            get
+            {
+                if (_animator == null || !_animator.isActiveAndEnabled
+                    || _animator.runtimeAnimatorController == null)
+                    return false;
+                if (_upperLayer == -2)
+                    _upperLayer = _animator.GetLayerIndex(UpperLayerName);
+                if (LayerAttacking(_upperLayer))
+                    return true;
+                return LayerAttacking(0);
+            }
+        }
+
+        bool LayerAttacking(int layer)
+        {
+            if (layer < 0)
+                return false;
+            if (_animator.IsInTransition(layer)
+                && IsAttackHash(_animator.GetNextAnimatorStateInfo(layer).shortNameHash))
+                return true;
+            return IsAttackHash(_animator.GetCurrentAnimatorStateInfo(layer).shortNameHash);
+        }
+
+        static bool IsAttackHash(int hash) =>
+            hash == HashBasic || hash == HashBasicB || hash == HashBasicC
+            || hash == HashPierce || hash == HashSweep || hash == HashSlam
+            || hash == HashChannel || hash == HashGuard || hash == HashShoot
+            || hash == HashUpperBasic || hash == HashUpperBasicB || hash == HashUpperBasicC
+            || hash == HashUpperPierce || hash == HashUpperSweep || hash == HashUpperSlam
+            || hash == HashUpperChannel || hash == HashUpperGuard || hash == HashUpperShoot;
+
         public void Bind(Animator animator, params Renderer[] hideWhenPresent)
         {
             _animator = animator;

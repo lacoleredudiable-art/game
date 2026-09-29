@@ -13,8 +13,16 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 29 Eylül 2026 (motor adım 2 Unity Play dumanı) ·
-**Dal:** `master` (PR #22 merge edildi) · **Sıradaki:** Yoğun Zaman gücü (0.70 çarpan mı, %70 düşüş mü) ve şifa menzili kararı
+**Son güncelleme:** 29 Eylül 2026 (motor adım 3: düz vuruş menzili + saldırı bakışı) ·
+**Dal:** `fix/engine-step3` · **Sıradaki:** Unity Play — menzil 1.5 m, vuruşta gövde hedefe kilitli. Açık kararlar: Yoğun Zaman gücü ve şifa menzili.
+
+> **29 Eylül — motor adım 3, menzil ve bakış.** Düz vuruş menzili artık his ayarı değil:
+> fiil 1 kapsülü (`hitbox_vfx`, 1.5 m). JSON'da yoksa bir kez uyarır ve eski yedek 2.4 m kalır.
+> Aynı sayı isabet kontrolünde ve otomatik hedef menzilinde de kullanılır.
+> Saldırı sırasında gövdeyi çubuğa çeken ikinci dönüş (nişan, hız yönü) kalktı. Seçili hedef
+> varsa vuruş boyunca ona bakılır; yoksa menzildeki düşmana; o da yoksa bakış kalır, çubuk
+> çevirmez. Geri giderken de hedefe bakılır. Dash yönlü nişanını korur. Saldırı bitince
+> yürüme eskisi gibi. Core test 336/336. Unity Play bu turda yok.
 
 > **29 Eylül — motor adım 2, Unity Play.** PR #22 merge edildi, Play'de `HexagonInput.TryDebugCastSkill`
 > ile build `12,1,8,6,2,5` üzerinden denendi. Yoğun Zaman (12-1) 0/2/4. sn'de üç kez atıldı: her
@@ -1372,10 +1380,10 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
-- **Motor denetimi — adım 2 sonrası (29 Eylül).** (1)–(4) `fix/engine-step2`'de: boss CC,
-  dost hedefi, karttaki etki türü, tempo süresi. Yavaşlatma/hız yeniden gelince süre
-  eklenmez (Yoğun Zaman 1 sn). Kalan: (5) düz vuruş menzili hâlâ his ayarı
-  (`BasicStrikeRangeM`) — bu turda bilerek dokunulmadı. Kart süresi hâlâ kısa olanlar:
+- **Motor denetimi — adım 3 (29 Eylül).** Düz vuruş menzili fiil 1 kapsülü (1.5 m);
+  saldırı bakışı hedefe kilitlenir, çubuk vuruşun ortasında gövdeyi çevirmez. İkisi de
+  `fix/engine-step3`'te, Unity Play henüz yok. Adım 2 (PR #22) master'da: boss CC, dost
+  hedefi, karttaki etki, tempo süresi; yavaş/hız süresi eklenmez. Kart süresi hâlâ kısa olanlar:
   Sabit Bağ "3 sn" iken kök süresi 1.5 sn; Sabit/Odaklı/Akan Zaman kartı 5/3/4 sn der,
   tempo alanı 1 sn. Boss'un bugünkü saldırıları (çakma, nefes) yerinde; hücum/sıçrama/atış
   yok, kök onları ancak eklenince keser. Unity Play dumanı yapıldı (yukarıdaki 29 Eylül Play
