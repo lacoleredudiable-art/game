@@ -1,5 +1,5 @@
 # Play taraması kilic — 141/144 geçti (Kılıç: 141/144)
-3-2 Emici Adım [Kılıç] KALDI: sıçrama — hasarsız skill (base_damage 0): etki hareketin kendisi; vuruş 1: 0,51s@boss0,43m/oyuncu1,36m; kalıp sonu: merkeze 2,65 m, başlangıçtan 4,96 m, kalıp simülasyonundan 10,61 m, boss 5,31 m kaydı; gövdeye girdi: merkeze 0,16 m (t=0,47, temas 1,35) geçiş tasarım gereği; tek karede 7,79 m sıçrama (t=0,62); titreme: 4 karede ≥0,2 m ileri-geri; boss tek karede 2,64 m sıçradı (t=0,62)
-5-2 Emici Patlama [Kılıç] KALDI: konum(yerinde→geri) — vuruş 3: 1,02s@boss0,02m/oyuncu1,71m 1,52s@boss0,00m/oyuncu1,50m 1,59s@boss0,00m/oyuncu1,50m; kalıp sonu: merkeze 1,50 m, başlangıçtan 1,02 m, kalıp simülasyonundan 1,02 m, boss 2,52 m kaydı
-6-2 Emici Bağ [Kılıç] KALDI: isabet — hasar yok, etki görülmedi; vuruş 1: 0,70s@boss5,02m/oyuncu1,36m; kalıp sonu: merkeze 7,85 m, başlangıçtan 1,60 m, kalıp simülasyonundan 0,00 m, boss 3,25 m kaydı
+1-2 Emici Vuruş [Kılıç] KALDI: konum(ön→başlangıç) — vuruş 3: 0,44s@boss1,21m/oyuncu1,02m 0,56s@boss0,48m/oyuncu1,02m 0,69s@boss0,48m/oyuncu1,02m; kalıp sonu: merkeze 1,50 m, başlangıçtan 0,12 m, kalıp simülasyonundan 1,62 m, boss 1,62 m kaydı
+2-2 Emici Şifa [Kılıç] KALDI: konum(ön→yerinde) — vuruş 4: 1,07s@boss1,22m/oyuncu2,72m 1,57s@boss1,22m/oyuncu2,72m 2,07s@boss1,22m/oyuncu2,72m 2,57s@boss1,22m/oyuncu2,72m; kalıp sonu: merkeze 1,50 m, başlangıçtan 0,15 m, kalıp simülasyonundan 0,50 m, boss 1,65 m kaydı
+4-2 Emici Kalkan [Kılıç] KALDI: tek-sistem — vuruş 1: 0,54s@boss0,61m/oyuncu1,28m; kalıp sonu: merkeze 1,50 m, başlangıçtan 0,86 m, kalıp simülasyonundan 0,64 m, boss 0,64 m kaydı; yer değiştiren: kalıp 0,93 m, başka 0,87 m, SkillMotionDriver 0 kare, dodge 0 kare
 
