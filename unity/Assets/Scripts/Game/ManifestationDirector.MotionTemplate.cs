@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using Dovus.Core;
 using Dovus.Core.Grammar;
+using Dovus.Core.Mechanic;
 using Dovus.Core.Motion;
 using UnityEngine;
 
@@ -10,6 +12,7 @@ namespace Dovus.Game
     {
         MotionTemplateCatalog _motionCatalog;
         bool _motionCatalogTried;
+        bool _templateOwnsPosition;
         SkillResolution _templateSkill;
         PendingClosing _templatePending;
         float _templateChain;
@@ -46,12 +49,35 @@ namespace Dovus.Game
             }
         }
 
+        PositionPlayback PreparePositionPlayback(SkillResolution skill, MotionTemplate template)
+        {
+            var steps = new List<GrammarPositionStep>();
+            MechanicPlan plan = MechanicPlanFor(skill);
+            if (plan != null)
+            {
+                foreach (MechanicEffect effect in plan.Effects)
+                {
+                    if (PositionOwnership.Kind(effect.Atom, effect.Stat) == PositionStepKind.None)
+                        continue;
+                    steps.Add(new GrammarPositionStep(effect.Stat, effect.Amount));
+                }
+            }
+
+            MotionFallbacks fallbacks = MotionCatalog.Fallbacks;
+            return PositionOwnership.Prepare(template, steps, fallbacks.PhaseSec, fallbacks.StepM);
+        }
+
         bool TryBeginMotionTemplate(SkillResolution skill, PendingClosing pending)
         {
+            _templateOwnsPosition = false;
             if (skill.IsEmpty || string.IsNullOrEmpty(skill.SkillId) || _player == null)
                 return false;
             if (!MotionCatalog.TryPlay(skill.SkillId, out MotionTemplate template))
                 return false;
+
+            PositionPlayback playback = PreparePositionPlayback(skill, template);
+            _templateOwnsPosition = playback.OwnsPosition;
+            template = playback.Template ?? template;
 
             if (_motionBody == null)
                 _motionBody = _player.GetComponent<MotionTemplateBody>();

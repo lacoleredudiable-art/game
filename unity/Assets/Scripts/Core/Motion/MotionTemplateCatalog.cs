@@ -153,6 +153,14 @@ namespace Dovus.Core.Motion
         public float SnapAt { get; }
         public float[] Curve { get; }
         public MotionHitSpec Hit { get; }
+
+        /// <summary>Aynı faz; mesafe / arkaya iniş gramer yedeğiyle doldurulmuş kopya.</summary>
+        public MotionPhase WithTravel(float distanceM, float behindM, string land) =>
+            new MotionPhase(
+                Name, Motion, DurationSec, Facing, Homing, Gate, MaxHoldSec,
+                distanceM, ForwardM, Side, SideM, HeightM, YawDeg, GapM, OvershootM,
+                ShotM, DriftM, WalkMps, behindM, SnapAt, Curve, Hit,
+                land ?? Land, Plant);
     }
 
     public sealed class MotionTemplate
@@ -183,6 +191,27 @@ namespace Dovus.Core.Motion
         public IReadOnlyList<MotionPhase> Phases { get; }
         /// <summary>"enemy" hareket hedefi düşmandır; "effect" fiilin etki hedefidir.</summary>
         public string Aim { get; }
+
+        public MotionTemplate WithPhases(IReadOnlyList<MotionPhase> phases)
+        {
+            if (phases == null)
+                return this;
+            if (phases.Count == Phases.Count)
+            {
+                bool same = true;
+                for (int i = 0; i < phases.Count; i++)
+                {
+                    if (!ReferenceEquals(phases[i], Phases[i]))
+                    {
+                        same = false;
+                        break;
+                    }
+                }
+                if (same)
+                    return this;
+            }
+            return new MotionTemplate(Id, Name, FamilyId, FamilyName, Implemented, phases, Aim);
+        }
     }
 
     /// <summary>

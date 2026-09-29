@@ -131,6 +131,7 @@ namespace Dovus.Core.Motion
         float _bodyRadius = 0.5f;
         float _stopGap = 0.15f;
         float _plantX, _plantZ;
+        float _markX, _markZ;
         bool _plantSent;
         MotionTarget _lastTarget;
         bool _active;
@@ -145,6 +146,10 @@ namespace Dovus.Core.Motion
         public float Z => _z;
         public float FaceX => _faceX;
         public float FaceZ => _faceZ;
+        /// <summary>Dönüş fazı varsa işaret, cast'in başladığı yerdir.</summary>
+        public bool ReturnMarkPlaced { get; private set; }
+        public float MarkX => _markX;
+        public float MarkZ => _markZ;
 
         public void Begin(
             MotionTemplate template,
@@ -170,6 +175,20 @@ namespace Dovus.Core.Motion
             _plantSent = false;
             _plantX = x;
             _plantZ = z;
+            _markX = x;
+            _markZ = z;
+            ReturnMarkPlaced = false;
+            if (template != null)
+            {
+                for (int i = 0; i < template.Phases.Count; i++)
+                {
+                    if (template.Phases[i].Motion == "return")
+                    {
+                        ReturnMarkPlaced = true;
+                        break;
+                    }
+                }
+            }
             _lastTarget = default;
             _finished = template == null || template.Phases.Count == 0;
             _active = !_finished;
@@ -267,6 +286,12 @@ namespace Dovus.Core.Motion
                     _x = _phaseX + (_destX - _phaseX) * u;
                     _z = _phaseZ + (_destZ - _phaseZ) * u;
                     _y = _groundY;
+                    break;
+                case "return":
+                    _x = _phaseX + (_destX - _phaseX) * u;
+                    _z = _phaseZ + (_destZ - _phaseZ) * u;
+                    _y = _groundY;
+                    KeepOutside(target, ref _x, ref _z);
                     break;
                 case "retreat":
                     _x = _phaseX - fx * (u * phase.DistanceM);
@@ -587,6 +612,14 @@ namespace Dovus.Core.Motion
 
         void AimDest(MotionPhase phase, in MotionTarget target)
         {
+            if (phase.Motion == "return")
+            {
+                _destX = _markX;
+                _destZ = _markZ;
+                KeepOutside(target, ref _destX, ref _destZ);
+                return;
+            }
+
             Axis(phase, target, out float fx, out float fz);
             _destX = _phaseX + fx * phase.DistanceM;
             _destZ = _phaseZ + fz * phase.DistanceM;
@@ -650,6 +683,28 @@ namespace Dovus.Core.Motion
 
         float Separation(in MotionTarget target) =>
             _bodyRadius + target.RadiusM + _stopGap;
+
+        /// <summary>Dönüş atılması hedefin içine inmez; işaret dışarıdaysa işaret kalır.</summary>
+        void KeepOutside(in MotionTarget target, ref float x, ref float z)
+        {
+            if (!target.Has)
+                return;
+            float dx = x - target.X;
+            float dz = z - target.Z;
+            float dist = MathF.Sqrt(dx * dx + dz * dz);
+            float min = Separation(target);
+            if (dist >= min)
+                return;
+            if (dist < 0.001f)
+            {
+                x = target.X - _faceX * min;
+                z = target.Z - _faceZ * min;
+                return;
+            }
+            float scale = min / dist;
+            x = target.X + dx * scale;
+            z = target.Z + dz * scale;
+        }
 
         void Axis(MotionPhase phase, in MotionTarget target, out float fx, out float fz)
         {

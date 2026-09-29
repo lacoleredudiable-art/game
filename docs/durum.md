@@ -13,8 +13,20 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 29 Eylül 2026 (hareket kalıbı Play düzeltmeleri) ·
+**Son güncelleme:** 29 Eylül 2026 (kalıp konumu sahiplenir) ·
 **Dal:** `feat/motion-templates-1` · **Sıradaki:** aile 15–42
+
+> **29 Eylül — kalıp konumu sahiplenir (PR #24, Unity Play yok).** Kalıp oyuncuyu oynatıyorsa
+> o cast'te oyuncunun yerini yalnız kalıp değiştirir. `yer_degistir` ve `hedefin_arkasina`
+> ışınlanması atlanır; kalıpta eğri ya da arkaya iniş yoksa gramer mesafesi yedek olarak
+> kalıba yazılır. `isaret_geri_don` işareti yine konur, dönüş kısa kenar-güvenli bir atılma
+> fazıdır (ışınlanma değil). Kök, yavaşlatma, hasar, çekme, itme, portal sürer. Kalıp
+> oyuncuyu oynatmıyorsa gramer eskisi gibi ışınlar. Atlanan adım skill başına bir kez loglanır.
+> Gramerin oyuncuyu oynatan konum adımı üç skill'de: Sabit Adım (3-4), Bağlayıcı Adım (3-6),
+> Odaklı Adım (3-9). 3-6 kalıbı oynar ve boss'un arkasına bir kez iner. 3-4 ve 3-9 kalıbı
+> henüz yok (aile 24 ve 23); onlar hâlâ eski ışınlanmayı kullanır. Derleme testi `python3`,
+> sonra `python`, sonra `py -3` dener; hiçbiri yoksa düşmez, atlar. Core test 376/376.
+> Unity Play bu turda yok.
 
 > **29 Eylül — Play düzeltmeleri, 2. Unity Play (PR #24 açık, birleştirilmedi).** Konsolda
 > script hatası yok. Boss durdurulmuş, cast `TryDebugCastSkill`, Kılıç. **1-1** merkez 3,0 /
@@ -1462,8 +1474,8 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   = 0.35 m (gövde merkezinin üstü, 2 m gövdede ~1.35 m). Spec'te yok, önerilen.
 - **Hareket kalıbı bölüm 1 (29 Eylül).** Aile 1–14 oynanır. Aile 15–42 eski davranış + bir kez
   uyarı. Portal, Sınır modu, Takım kombosu, Silah kesme etiket olarak durur, işlemez.
-  Kalıp, bang anında başlar (~0,26 sn toparlanmadan sonra). Mekanik gramerin kendi
-  ışınlanması kalıpla yarışabilir. Boss collider yoksa vuruş payı 0,6 m. Ayna klonların
+  Kalıp, bang anında başlar (~0,26 sn toparlanmadan sonra). Kalıp oyuncuyu oynatıyorsa
+  gramerin konum ışınlanması atlanır (yukarı). Boss collider yoksa vuruş payı 0,6 m. Ayna klonların
   5 sn'lik tekrarı ve dostu gerçekten çekmek bu bölümde yok. Unity Play yok.
 - **Fiil 3/7 genişliği (29 Eylül, sahip onayladı).** `cross_section: "width"` fiil 3 (line)
   ve fiil 7'de durur: ikinci sayı tam genişlik, oyun yarıçapı bunun yarısı. İşaretsiz
@@ -1471,17 +1483,12 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 - **Hareket kalıbı Play bulguları (29 Eylül, düzeltildi, yeniden Play yok).** Kanca düşmana
   iner, sekme vuruşu boss'a değer, saplama kenarda durur, fitil yere çakılır, menzil kapısı
   lunge'u sayar, ilk merkez vuruşu build sonrası yutulmaz. Unity Play bu turda yok.
-- **Kalıp ile mekanik gramer konumu yarışıyor (29 Eylül, 2. Play, karar gerekli).** 3-6 +
-  Kılıç grameri `yer_degistir` (sen↔hedef) üretir; isabette `After(dashSec, TeleportPlayer(swapTo))`
-  (`ManifestationDirector.MechanicGrammar.cs`) kalıp oyuncuyu boss'un arkasına indirdikten
-  0,13 sn sonra ayna konuma (boss'un önü) ışınlar. `hedefin_arkasina` ve `isaret_geri_don`
-  aynı yolu kullanır. **Sahip kararı (29 Eylül):** kalıp oyuncunun konumunu yönetir;
-  kalıp teslimi sahiplenince gramerin `konum` atomları (`yer_degistir`, `hedefin_arkasina`,
-  `isaret_geri_don` ışınlanması) atlanır. Kök, yavaşlatma, hasar gibi durum etkileri çalışır.
-  İstisna: `isaret_geri_don`'da işaret yine konur; geri dönüş ışınlanma değil, kalıbın içinde
-  kısa bir atılma fazı olur. Henüz uygulanmadı.
-- **Derleme testi Windows'ta kırmızı (29 Eylül).** `GameLayerCompileTests` `python3`'ü
-  çalıştırıyor; Windows'ta bu ad Microsoft Store saplaması. `python` ile betik geçiyor.
+- **Kalıp konumu (29 Eylül, uygulandı, Play yok).** Sahip kararı kodda: kalıp oyuncuyu
+  oynatıyorsa `yer_degistir` / `hedefin_arkasina` ışınlanmaz; `isaret_geri_don` işareti
+  konur, dönüş kalıbın içinde kısa atılmadır. 3-6 bir kez arkaya iner. 3-4 ve 3-9 kalıbı
+  henüz oynanmadığı için eski ışınlanma durur. Unity Play bu turda yok.
+- **Derleme testi (29 Eylül).** `python3`, sonra `python`, sonra `py -3`. Hiçbiri yoksa
+  test atlanır, düşmez. Windows'ta bu tur ölçülmedi.
 
 - **Motor denetimi — adım 3 (29 Eylül).** Düz vuruş menzili fiil 1 kapsülü (1.5 m);
   saldırı bakışı hedefe kilitlenir, çubuk vuruşun ortasında gövdeyi çevirmez. İkisi de

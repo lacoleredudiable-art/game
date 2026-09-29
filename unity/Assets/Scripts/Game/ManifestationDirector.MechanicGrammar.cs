@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Dovus.Core.Combat;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
+using Dovus.Core.Motion;
 using Dovus.Core.Status;
 using UnityEngine;
 
@@ -106,13 +107,23 @@ namespace Dovus.Game
                         ApplyOnce(self, StatusKind.Stealth, e.DurationSec * 1000.0, 1f, applied);
                         break;
                     case ("konum", "hedefin_arkasina"):
-                        // Hareket dash'i konumu kendi sürer; ışınlanma dash bitince iner.
+                        if (TemplateOwnsPosition(plan, e.Stat))
+                        {
+                            applied.Add("arkaya iniş kalıpta");
+                            break;
+                        }
+                        // Kalıp oyuncuyu oynatmıyorsa eski ışınlanma durur.
                         float dashSec = _combat != null ? _combat.SkillMotion.DashDurationSec : 0f;
                         After(now, dashSec, TeleportBehindBoss);
                         applied.Add("arkaya ışınlanma");
                         break;
                     case ("konum", "isaret_geri_don"):
                         Vector3 mark = _player.position;
+                        if (TemplateOwnsPosition(plan, e.Stat))
+                        {
+                            applied.Add($"işaret ({mark.x:0.#},{mark.z:0.#}) dönüş kalıpta");
+                            break;
+                        }
                         After(now, (float)Math.Max(e.DurationSec, 0.0), () => TeleportPlayer(mark));
                         applied.Add($"işaret → {e.DurationSec:0.#}sn sonra dönüş");
                         break;
@@ -127,6 +138,14 @@ namespace Dovus.Game
             }
             if (applied.Count > 0)
                 Debug.Log($"[Mechanic] kendine {plan.SkillId}/{plan.WeaponName}: {string.Join(", ", applied)}");
+        }
+
+        bool TemplateOwnsPosition(MechanicPlan plan, string stat)
+        {
+            if (!_templateOwnsPosition || plan == null)
+                return false;
+            PositionOwnership.LogSuppressed(plan.SkillId, stat);
+            return true;
         }
 
         /// <summary>Gövde düşmana değdiğinde (bir kez): düşmana yönelik atomlar.</summary>
@@ -189,6 +208,11 @@ namespace Dovus.Game
                         ApplyOnce(boss, StatusKind.Stun, grammar.Rules.Param("knockup_sec") * 1000.0, 1f, applied);
                         break;
                     case ("konum", "yer_degistir") when _clock != null && _player != null:
+                        if (TemplateOwnsPosition(plan, e.Stat))
+                        {
+                            applied.Add("yer değiştirme kalıpta");
+                            break;
+                        }
                         // Temas anındaki tarafın aynası; dash konumu sürdüğü için dash bitince iner.
                         Vector3 swapTo = MirroredAcrossBoss(_player.position);
                         float dashSec = _combat != null ? _combat.SkillMotion.DashDurationSec : 0f;
