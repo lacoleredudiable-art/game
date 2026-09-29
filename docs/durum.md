@@ -13,8 +13,46 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 29 Eylül 2026 (animasyon kancası) ·
-**Dal:** `feat/motion-templates-2` · **Sıradaki:** Unity Play (bacaklar, dönüş, 3-4, 3-9)
+**Son güncelleme:** 29 Eylül 2026 (PR #25 Unity Play, Bölüm A) ·
+**Dal:** `feat/motion-templates-2` · **Sıradaki:** 3-6 aş fazı, 3-2 boss sıçraması, 3-12 titreme düzeltmesi
+
+> **29 Eylül — PR #25 Unity Play, Bölüm A (11 madde, 16 koşu).** Konsolda script hatası yok
+> (3 ShaderGraph/URP paket hatası var, bizim değil). Araç: `Dovus/Play Sweep` (ayrı dal
+> `feat/play-sweep`). Boss durdurulmuş, Kılıç, cast `TryDebugCastSkill`. Boss r 0,85, oyuncu r
+> 0,50, temas 1,35 m. Ham tablo `docs/play-sweep/partA.csv`, kare kare iz `partA-detay.txt`.
+> **Sonuç 11/16 koşu geçti; 11 maddeden 8'i tamam, 3'ü kaldı.**
+> 1. **3-6 KALDI.** Çekişte bacak koşuyor: 32/35 kare Locomotion, Speed 2,2, playback 1,49.
+>    Ama gövde 9,4 m/sn, ayak/gövde hız oranı 0,24 (4,5 m) / 0,36 (3 m): ayak kayıyor.
+>    **Aş fazı boss'un tam merkezinden geçiyor:** merkeze 0,04–0,08 m (t≈0,96, temas 1,35).
+>    Kalıpta `side: 1`, `height_m: 0,95` var ama yan sapma 0,00 m. Arkaya iniş doğru (1,50 m),
+>    Root + Slow var, hasar 0 (base 0). Aş fazında taban Locomotion, üstte CastSlam.
+> 2. **1-5 GEÇTİ.** Dönüşte gövde yaw kare başı ~11° (11°→229° / 0,33 sn), taban CastSweep
+>    normalize 0,06→0,47 ilerliyor: heykel dönüşü değil, klip oynuyor. Vuruş 0,60 sn, 34 hasar,
+>    6 kare hitstop. Ekranda turuncu yer tutucu küre dönüşü kapatıyor, gözle doğrulanamadı.
+> 3. **3-4 GEÇTİ.** 2,5 m: dash merkeze 1,50 m'de duruyor (içine girmiyor), 2 sn bekliyor,
+>    dönüş koşarak 3,6 m/sn, kare başı en fazla 0,06 m, başlangıca (2,50 m) dönüyor. 4,5 m de aynı.
+>    Bekleme sonunda gövde tek karede 180° dönüyor.
+> 4. **3-9 GEÇTİ.** 4,5 m: t=0,73'te tek karede 6,0 m blink, arkaya 1,50 m. 2,5 m: 4,0 m blink,
+>    arkaya 1,50 m, hiçbir kare gövde içinde değil.
+> 5. **3-2 KALDI.** Oyuncu içinden geçip öte tarafta duruyor. Ama **boss t=0,38'de tek karede
+>    3,00 m sıçrıyor** (oyuncuya doğru çekme anlık); o karede oyuncu merkeze 0,36 m. Kalıp sonu
+>    merkeze 2,65 m, sonra boss yavaşça çekiliyor (1,87 m'ye).
+> 6. **3-12 KALDI.** Süzülme boyunca her kare 1,89 m ↔ 3,04 m arası gidip geliyor (1,15 m,
+>    179 kare ileri-geri). Playback her kare işaret değiştiriyor, ayak/gövde oranı 0,02.
+>    Çubuk (1,0) ile 7,7 m gidiyor: parmak yönlendiriyor ama titreme sürüyor.
+> 7. **2-2 GEÇTİ (sayı), görsel KALDI.** Duruyor (sapma 0,35 m = kalıp `drift_m`). Kalıp 2,15 sn,
+>    4 vuruş 1,07 / 1,57 / 2,07 / 2,57 sn, hepsi boss üstünde. Oyuncu +11, dost +11 can.
+>    **Boss hasarı 0** (log "can→düşman -26,6" diyor). Çizilen tek çizgi oyuncu→dost, renk
+>    turuncu-kahve (0,77/0,36/0,15). Boss'tan oyuncuya kırmızı akış yok.
+> 8. **5-3 GEÇTİ.** 3 vuruş: 0,52 sn (boss'a 0,74 m), 0,63 (0,00), 0,83 (0,35). 28 hasar.
+> 9. **5-6 GEÇTİ.** Fitil 0,52 sn'de boss kenarında (merkeze 0,85 m), patlama 0,87 sn'de boss'a
+>    0,85 m / oyuncuya 2,65 m. 28 hasar, Root. Sonra bağ boss'u 0,28 m çekiyor.
+> 10. **5-9 GEÇTİ.** Boss sabit ve 1,5 m kaydırılmış iki koşuda patlama boss'a 0,00 m, 32,2 hasar.
+> 11. **12-7 GEÇTİ (sayı).** Vuruş 0,60 sn, boss'a 0,56 m (oyuncuya 3,56 m). Oyuncu 0 m kıpırdadı.
+>     Blind + Slow ×0,70. Ekranda kum saati yok: küçük camgöbeği nokta + büyük halka (yer tutucu).
+> Araç notu: ilk turdaki "süre" kalışları araç hatasıydı. Gerçek bang `_pending.BangAtWorldMs`
+> (castMult dahil); 12-7 uyumsuz silahla ~0,15 sn geç bang yapar. Bir önceki Bağlayıcı cast'in bağı
+> (`_mechanicLinks`) sonraki casta Root/Slow taşıyordu; araç artık bekleyip temizliyor.
 
 > **29 Eylül — animasyon kancası (Unity Play yok).** Her faz `anim` anahtarı taşır
 > (windup, lunge, dash, backstep, sidestep, spin, leap, land, hook_throw, recover, cast).
@@ -1498,6 +1536,12 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
+- **PR #25 Play bulguları (29 Eylül, düzeltilmedi).** 3-6 aş fazı boss merkezinden geçer
+  (`side: 1` işlemiyor, yan sapma 0). 3-2'de boss tek karede 3 m sıçrar (çekme anlık; kural 4).
+  3-12 süzülme her kare 1,15 m titrer. 2-2 boss'a hasar vermez (dost/şifa dalı), akış çizgisi
+  boss'tan değil oyuncu→dost ve kırmızı değil. Çekiş/kayma ayak/gövde oranı 0,02–0,44 (ayak kayar).
+  Hitbox VFX yer tutucu küre 1-5 dönüşünü kapatır; 12-7'de kum saati görseli yok.
+  Bağ/hacim (`_mechanicLinks`) status temizliğinden sonra da Root/Slow ve boss çekişi uygular.
 - **Vuruş göğüs yüksekliği uydurma (29 Eylül).** `ManifestationTuning.StrikeChestOffsetM`
   = 0.35 m (gövde merkezinin üstü, 2 m gövdede ~1.35 m). Spec'te yok, önerilen.
 - **Animasyon kancası (29 Eylül).** Faz anahtarı + `anim_bridge`. Bacaklar kalıp hızından
