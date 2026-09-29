@@ -184,7 +184,10 @@ namespace Dovus.Core.Motion
                     if (!NeedsDistanceFallback(phases[i]))
                         continue;
                     string land = wantBehind ? "behind" : phases[i].Land;
-                    phases[i] = phases[i].WithTravel(fallback, wantBehind ? fallback : phases[i].BehindM, land);
+                    // Silah menzili kalıbın kendi yolunu kısaltamaz. Gramer ancak uzatır.
+                    float authored = Math.Max(phases[i].DistanceM, Math.Max(phases[i].ForwardM, phases[i].DriftM));
+                    float travel = MotionTravel.Protect(authored, fallback);
+                    phases[i] = phases[i].WithTravel(travel, wantBehind ? travel : phases[i].BehindM, land);
                     changed = true;
                     if (land == "behind")
                         hasBehind = true;
@@ -247,5 +250,16 @@ namespace Dovus.Core.Motion
                 "geri_don", "return", sec, "travel", "none", string.Empty, 0f,
                 distanceM, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f,
                 0f, 0f, null, null);
+    }
+
+    /// <summary>Silah çarpanı hareket kalıbının yazılmış mesafesini kısaltamaz.</summary>
+    public static class MotionTravel
+    {
+        public static float Protect(float authoredM, float weaponScaledM)
+        {
+            float authored = Math.Max(0f, authoredM);
+            float scaled = Math.Max(0f, weaponScaledM);
+            return Math.Max(authored, scaled);
+        }
     }
 }

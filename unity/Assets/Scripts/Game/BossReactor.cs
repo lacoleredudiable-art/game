@@ -31,9 +31,7 @@ namespace Dovus.Game
         float _pullDur = DisplacementEase.DurationSec;
         Vector3 _pullFrom;
         Vector3 _pullTo;
-        bool _hasPullStop;
-        Vector3 _pullStop;
-        float _pullMinSep;
+        Vector3 _stablePullDir;
 
         // Boss ölümü: kısa çökme pozu (squash).
         Vector3 _baseScale = Vector3.one;
@@ -85,48 +83,50 @@ namespace Dovus.Game
         /// Gramer alanlarının sürekli çekişi: kalıcı Home'u hedefe en fazla distanceM taşır.
         /// Hız/zaman hesabı çağırandadır; burada ek his sayısı yoktur.
         /// </summary>
-        public void MoveHomeToward(Vector3 targetWorld, float distanceM)
-        {
-            MoveHomeToward(targetWorld, distanceM, targetWorld, 0f);
-        }
+        public bool PullActive => _pulling;
 
-        /// <summary>
-        /// İstenen mesafeyi tek karede ışınlamaz. 0,4 sn smoothstep ile gider.
-        /// stopWorld + minSeparation gövdelerin iç içe geçmesini keser.
-        /// </summary>
-        public void MoveHomeToward(Vector3 targetWorld, float distanceM, Vector3 stopWorld, float minSeparation)
+        public void MoveHomeToward(Vector3 targetWorld, float distanceM)
         {
             if (_collapsed || distanceM <= 0f)
                 return;
             if (!_captured)
                 CaptureHome();
             targetWorld.y = _home.y;
-            Vector3 desired = Vector3.MoveTowards(_home, targetWorld, distanceM);
-            if (minSeparation > 0f)
-            {
-                Vector3 flatStop = stopWorld;
-                flatStop.y = desired.y;
-                Vector3 away = desired - flatStop;
-                away.y = 0f;
-                float dist = away.magnitude;
-                if (dist < minSeparation)
-                {
-                    if (dist < 0.0001f)
-                        away = -transform.forward;
-                    if (away.sqrMagnitude < 0.0001f)
-                        away = Vector3.forward;
-                    desired = flatStop + away.normalized * minSeparation;
-                    desired.y = _home.y;
-                }
-            }
+            BeginEasedMove(Vector3.MoveTowards(_home, targetWorld, distanceM));
+        }
 
+        /// <summary>
+        /// Boss'u oyuncunun önündeki temas noktasına 0,4 sn'de çeker.
+        /// Çekme sürerken KeepSeparated uygulanmaz; içinden geçen oyuncu boss'u tek karede fırlatmaz.
+        /// </summary>
+        public void PullToContact(Vector3 playerWorld, float playerRadius, float bossRadius)
+        {
+            if (_collapsed)
+                return;
+            if (!_captured)
+                CaptureHome();
+            Vector3 delta = _home - playerWorld;
+            delta.y = 0f;
+            if (delta.sqrMagnitude > 0.0064f)
+                _stablePullDir = delta;
+            else if (_stablePullDir.sqrMagnitude < 0.0001f)
+                _stablePullDir = transform.forward.sqrMagnitude > 0.0001f ? transform.forward : Vector3.forward;
+
+            EmiciPull.ContactPoint(
+                playerWorld.x, playerWorld.z,
+                _home.x, _home.z,
+                playerRadius, bossRadius,
+                _stablePullDir.x, _stablePullDir.z,
+                out float x, out float z);
+            BeginEasedMove(new Vector3(x, _home.y, z));
+        }
+
+        void BeginEasedMove(Vector3 desired)
+        {
             _pullFrom = _home;
             _pullTo = ClampToArena(desired);
             _pullAge = 0f;
             _pullDur = DisplacementEase.DurationSec;
-            _hasPullStop = minSeparation > 0f;
-            _pullStop = stopWorld;
-            _pullMinSep = minSeparation;
             _pulling = Horizontal(_pullFrom, _pullTo) > 0.02f;
             if (!_pulling)
                 Home = _pullTo;
@@ -262,8 +262,6 @@ namespace Dovus.Game
             _pullAge += Mathf.Max(0f, dtSec);
             float u = _pullDur <= 0.01f ? 1f : Mathf.Clamp01(_pullAge / _pullDur);
             DisplacementEase.Sample(_pullFrom.x, _pullFrom.z, _pullTo.x, _pullTo.z, u, out float x, out float z);
-            if (_hasPullStop)
-                DisplacementEase.KeepSeparated(ref x, ref z, _pullStop.x, _pullStop.z, _pullMinSep);
             var next = new Vector3(x, _home.y, z);
             _home = ClampToArena(next);
             if (u >= 1f)
