@@ -27,6 +27,7 @@ namespace Dovus.Core.Combat
         public float ManaRegenPerSec { get; private set; } = SkillNumberFallbacks.ManaRegenPerSec;
         public float ManaRegenDelaySec { get; private set; } = SkillNumberFallbacks.ManaRegenDelaySec;
         public double RootImmunityMs { get; private set; } = SkillNumberFallbacks.RootImmunityMs;
+        public float AllySkillRangeM { get; private set; } = SkillNumberFallbacks.AllySkillRangeM;
 
         public static SkillNumberCatalog FromJson(string json) =>
             FromJsonRoot(MiniJson.Parse(json));
@@ -38,6 +39,11 @@ namespace Dovus.Core.Combat
             VerbExecutionData hitboxes = VerbExecutionData.FromJsonRoot(root);
             MobilityCcData mobility = MobilityCcData.FromJsonRoot(root);
             catalog.RootImmunityMs = mobility.RootImmunityMs;
+            catalog.AllySkillRangeM = NeedFloat(
+                root["global_rules"],
+                "ally_skill_range_m",
+                "global_rules.ally_skill_range_m",
+                SkillNumberFallbacks.AllySkillRangeM);
 
             JsonValue cooldown = root["global_rules"]["cooldown_rules"];
             catalog.GlobalCooldownSec = NeedFloat(
@@ -125,6 +131,18 @@ namespace Dovus.Core.Combat
 
         public float RangeM(int verbId) =>
             _verbs.TryGetValue(verbId, out VerbNumbers n) ? n.RangeM : SkillNumberFallbacks.RangeM;
+
+        /// <summary>
+        /// Düz vuruş menzili ve kapsül yarıçapı = fiil 1 hitbox'ı (hitbox_vfx). Alan yoksa tuning yedeği kalır
+        /// ve katalog zaten bir kez uyarmıştır.
+        /// </summary>
+        public void ApplyBasicStrikeRange(ManifestationTuning tuning)
+        {
+            if (tuning == null)
+                return;
+            tuning.BasicStrikeRangeM = RangeM(1);
+            tuning.BasicStrikeRadiusM = RadiusM(1);
+        }
 
         /// <summary>
         /// CC sürelerini JSON cc_priority'den canlı ayara yazar.
@@ -260,5 +278,7 @@ namespace Dovus.Core.Combat
         public const float TempoSyncFallbackStrength = 0.7f;
         /// <summary>Kart "haste" der ama JSON sayı vermezse +%50.</summary>
         public const float SelfHasteBonus = 0.5f;
+        /// <summary>Dost hedefi skill menzili JSON'da yoksa 6 m.</summary>
+        public const float AllySkillRangeM = 6f;
     }
 }

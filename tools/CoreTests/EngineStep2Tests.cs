@@ -265,9 +265,10 @@ public class EngineStep2Tests
         TempoCast bond = TempoCast.From(_motor.Resolve(new[] { 12, 6 }));
         float buffSec = risingSkill.EngineModifiers["buff_duration_sec"].AsFloat(0f);
         Assert.That(rising.SelfHaste, Is.True);
-        Assert.That(rising.DurationMs, Is.EqualTo(1000).Within(0.01));
+        Assert.That(rising.DurationMs, Is.EqualTo(3000).Within(0.01));
+        Assert.That(buffSec * 1000.0, Is.EqualTo(rising.DurationMs).Within(0.01));
         Assert.That(rising.HasteStrength, Is.GreaterThan(bond.HasteStrength));
-        Assert.That(buffSec * 1000.0, Is.GreaterThan(rising.DurationMs));
+        Assert.That(bond.DurationMs, Is.LessThan(rising.DurationMs));
 
         var self = new StatusBoard();
         self.ConfigureMobilityCc(MobilityCcData.FromJson(_json));
@@ -284,18 +285,18 @@ public class EngineStep2Tests
         self.Tick(rising.DurationMs, tuning);
         Assert.That(self.Has(StatusKind.Haste), Is.False);
 
-        self.Apply(StatusKind.Haste, rising.DurationMs, rising.HasteStrength, rising.SourceId);
-        self.Apply(StatusKind.Haste, buffSec * 1000.0, bond.HasteStrength, bond.SourceId);
+        self.Apply(StatusKind.Haste, bond.DurationMs, rising.HasteStrength, "short");
+        self.Apply(StatusKind.Haste, rising.DurationMs, bond.HasteStrength, "long");
         Assert.That(self.TryGet(StatusKind.Haste, out double left, out float strength, out _), Is.True);
-        Assert.That(left, Is.EqualTo(buffSec * 1000.0).Within(0.01), "iki hız toplanmaz");
+        Assert.That(left, Is.EqualTo(rising.DurationMs).Within(0.01), "iki hız toplanmaz");
         Assert.That(strength, Is.EqualTo(rising.HasteStrength).Within(0.001f));
 
-        self.Tick(rising.DurationMs, tuning);
+        self.Tick(bond.DurationMs, tuning);
         Assert.That(self.TryGet(StatusKind.Haste, out left, out strength, out _), Is.True);
-        Assert.That(left, Is.EqualTo(buffSec * 1000.0 - rising.DurationMs).Within(0.01));
+        Assert.That(left, Is.EqualTo(rising.DurationMs - bond.DurationMs).Within(0.01));
         Assert.That(strength, Is.EqualTo(bond.HasteStrength).Within(0.001f));
 
-        self.Tick(buffSec * 1000.0 - rising.DurationMs, tuning);
+        self.Tick(rising.DurationMs - bond.DurationMs, tuning);
         Assert.That(self.Has(StatusKind.Haste), Is.False);
     }
 

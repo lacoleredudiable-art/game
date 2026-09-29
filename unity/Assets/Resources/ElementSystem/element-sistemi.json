@@ -3379,7 +3379,7 @@
             "id": "12-1",
             "name": "Yoğun Zaman",
             "adjective": "Yoğunlaştırma",
-            "effect": "Tek düşman hızı %70 düşer, 1 sn (global timescale yok)",
+            "effect": "Tek düşman hızı %30 düşer, 1 sn (global timescale yok)",
             "passive": "4 sn: tempo debuff güçlenir",
             "engine": {
               "action": "tempo",
@@ -3396,7 +3396,7 @@
               "hitbox_scale_mult": 0.55,
               "poise_damage_mult": 1.2
             },
-            "prose_mechanic": "Tek düşman hızı %70 düşer, 1 sn (global timescale yok)",
+            "prose_mechanic": "Tek düşman hızı %30 düşer, 1 sn (global timescale yok)",
             "prose_feel": "Ani tempo",
             "prose_visual": "Mavi dar halka"
           },
@@ -3551,13 +3551,13 @@
             "id": "12-8",
             "name": "Yükselen Zaman",
             "adjective": "Yükseltme",
-            "effect": "Kendine +%50 hareket/cast hızı (dünya saati sabit)",
+            "effect": "Kendine +%50 hareket/cast hızı, 3 sn (dünya saati sabit)",
             "passive": "4 sn: self haste",
             "engine": {
               "action": "tempo",
               "enemy_slow": 0.7,
               "self_haste": 0.0,
-              "tempo_duration_sec": 1.0,
+              "tempo_duration_sec": 3.0,
               "base_damage": 0,
               "base_cost": 16,
               "base_cooldown": 1.8,
@@ -3567,7 +3567,7 @@
               "self_damage_buff": 0.1,
               "buff_duration_sec": 3.0
             },
-            "prose_mechanic": "Kendine +%50 hareket/cast hızı (dünya saati sabit)",
+            "prose_mechanic": "Kendine +%50 hareket/cast hızı, 3 sn (dünya saati sabit)",
             "prose_feel": "Hızlanan",
             "prose_visual": "Altın-mavi"
           },
@@ -4308,6 +4308,7 @@
     "max_crit_chance": 0.75
   },
   "global_rules": {
+    "ally_skill_range_m": 6,
     "composition_rules": {
       "damage_zero_cancels_status": "damage_mult = 0.0 ise status UYGULANMAZ",
       "invulnerability_blocks_harm": "invuln varsa hostile etki UYGULANMAZ",
@@ -6501,7 +6502,7 @@
       "12": {
         "12-1": {
           "name": "Yoğun Zaman",
-          "mechanic": "Tek düşman hızı %70 düşer, 1 sn (global timescale yok)",
+          "mechanic": "Tek düşman hızı %30 düşer, 1 sn (global timescale yok)",
           "feel": "Ani tempo",
           "visual": "Mavi dar halka"
         },
@@ -6543,7 +6544,7 @@
         },
         "12-8": {
           "name": "Yükselen Zaman",
-          "mechanic": "Kendine +%50 hareket/cast hızı (dünya saati sabit)",
+          "mechanic": "Kendine +%50 hareket/cast hızı, 3 sn (dünya saati sabit)",
           "feel": "Hızlanan",
           "visual": "Altın-mavi"
         },

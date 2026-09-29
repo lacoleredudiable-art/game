@@ -23,7 +23,7 @@ namespace Dovus.Core.Execution
         public string Shape { get; }
         /// <summary>Uzunluk (line/capsule/cone) veya yarıçap (sphere/point/cylinder), metre.</summary>
         public float SizeA { get; }
-        /// <summary>Genişlik (m) ya da koni açısı (°); yarıçaplı şekillerde 0.</summary>
+        /// <summary>Yarıçap (m) ya da koni açısı (°); yarıçaplı şekillerde 0.</summary>
         public float SizeB { get; }
         public bool IsRadius { get; }
         /// <summary>"0.3 sn" → 0.3; "anlık" → 0; "süreli" → 0 ve <see cref="IsTimed"/>.</summary>
@@ -156,6 +156,9 @@ namespace Dovus.Core.Execution
         static VerbHitboxSpec ParseHitbox(JsonValue row)
         {
             string shape = row["shape"].AsString();
+            // "A × B" = uzunluk × yarıçap (koni: menzil × açı). Uzunluk yuvarlak uçlar dahil
+            // toplam boydur ve saldıranın kenarından ölçülür; B Unity OverlapCapsule/CapsuleCast
+            // gibi yarıçaptır, çap değil. "1.5m × 0.5m" = 1.5 m boy, 1 m genişlik.
             string size = row["base_size"].AsString();
             MatchCollection numbers = Number.Matches(size);
             float a = numbers.Count > 0 ? ParseFloat(numbers[0].Value) : 0f;

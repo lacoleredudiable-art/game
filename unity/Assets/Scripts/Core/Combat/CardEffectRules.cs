@@ -57,6 +57,10 @@ namespace Dovus.Core.Combat
             return string.Equals(targetMode, "self_or_ally", StringComparison.OrdinalIgnoreCase);
         }
 
+        /// <summary>Dost hedefi skill silah menzilini kullanmaz.</summary>
+        public static float ResolveRange(bool allyTargeted, float allyRangeM, float weaponRangeM) =>
+            allyTargeted && allyRangeM > 0f ? allyRangeM : weaponRangeM;
+
         /// <summary>
         /// Dosta giden becerideki zararlı ek, JSON düşman diyorsa boss'a gider
         /// (vuran / düşman yavaşlat). Aksi halde boss'a inmez.

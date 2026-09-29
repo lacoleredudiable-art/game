@@ -164,7 +164,7 @@ namespace Dovus.Game
             if (!lockFacing && dirFlat.sqrMagnitude > 0.0001f)
                 faceDirection = dirFlat;
             else if (lockFacing && combatTarget == null)
-                faceDirection = Vector3.zero;
+                faceDirection = Vector3.zero; // vuruşta hedef yoksa çubuk gövdeyi çevirmez
 
             if (faceDirection.sqrMagnitude > 0.0001f && dtSec > 0f)
             {
