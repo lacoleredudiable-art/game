@@ -3794,7 +3794,7 @@
       "basic": {"kind": "orb_bolt", "reach_m": 10, "shape": "orb", "interval_sec": 0.4, "hits": 1, "radius_m": 0.25},
       "passive": {"id": "capraz_ates", "angle_deg": 90, "damage_mult": 1.2},
       "swap_bonus": {"id": "son_vurus", "window_sec": 2},
-      "orb": {"place_m": 8, "move_sec": 0.4, "cooldown_sec": 2, "spell_m": 10}
+      "orb": {"place_m": 8, "move_sec": 0.4, "cooldown_sec": 2, "spell_m": 10, "hold_sec": 0.4, "double_tap_sec": 0.3}
     },
     {
       "id": 6,
@@ -3840,7 +3840,7 @@
       "identity_passive": "Sabit nişan +%50",
       "compatible_verbs": [5, 6, 7, 12],
       "animations_key": "top",
-      "basic": {"kind": "shell", "reach_m": 25, "shape": "ballistic", "interval_sec": 1.5, "hits": 1, "radius_m": 3},
+      "basic": {"kind": "shell", "reach_m": 25, "shape": "ballistic", "interval_sec": 1.5, "hits": 1, "radius_m": 3, "boss_push_m": 0.5, "recoil_m": 0.5},
       "passive": {"id": "sabit_nisan", "still_sec": 0.5, "damage_mult": 1.5},
       "swap_bonus": {"id": "sabit", "window_sec": 2, "damage_mult": 1.5}
     },

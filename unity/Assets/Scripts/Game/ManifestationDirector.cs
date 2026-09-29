@@ -407,7 +407,14 @@ namespace Dovus.Game
             AnimationDatabase animationDatabase = null)
         {
             _clock = clock;
+            if (_input != null)
+                _input.SkillCancelledByDodge -= CancelActiveSkillForDodge;
             _input = input;
+            if (_input != null)
+            {
+                _input.SkillCancelledByDodge -= CancelActiveSkillForDodge;
+                _input.SkillCancelledByDodge += CancelActiveSkillForDodge;
+            }
             _engine = input.Engine;
             _combat = input.Combat;
             _colors = colors;
@@ -586,6 +593,7 @@ namespace Dovus.Game
             if (_motor != null && _motor.Velocity.sqrMagnitude > 0.01f)
                 _lastMovedMs = worldMs;
             TickOrb(worldMs);
+            TickCannonRecoil();
 
             SyncFromSentence(worldMs);
             ApplyWindowCue();
@@ -2040,6 +2048,7 @@ namespace Dovus.Game
                 }
                 TryScheduleEchoForSkill(SkillResolution.Empty, basicDealt);
                 SpawnClosingImpact(p);
+                TryCannonBlast(logic.TipX, logic.TipZ);
                 return;
             }
 
@@ -2538,7 +2547,7 @@ namespace Dovus.Game
             float cost = SkillMobility.ResourceCost(skill);
             if (cost <= 0f)
                 return;
-            _playerResource.Consume(cost);
+            _playerResource.Consume(cost, TryTakeFreeMana());
         }
 
         /// <summary>
@@ -3011,6 +3020,8 @@ namespace Dovus.Game
                     _damageHud?.ShowDamage(-healed);
                     _readout?.NoteSkill(skill.DisplayName, "ally +" + healed, new Color(0.4f, 1f, 0.65f));
                     _debugHud?.NoteSkillBang(skill.DisplayName, "ally +" + healed);
+                    _ally.EnsureStatusBoard();
+                    ConsumeWeaponBonus(_ally.Board);
                 }
                 return;
             }
@@ -3018,6 +3029,7 @@ namespace Dovus.Game
             healed = playerVitals.ApplyHeal(amount);
             if (healed > 0)
             {
+                ConsumeWeaponBonus(_playerStatus != null ? _playerStatus.Board : null);
                 if (_modeDirector != null && _modeDirector.NotifyHealed())
                 {
                     _modeHud?.Hide();
@@ -3125,6 +3137,8 @@ namespace Dovus.Game
             }
 
             damage *= effectScale;
+            if (damage > 0f && _player != null)
+                damage *= PlayerDodgeRig.ConsumeNextHit(_player);
 
             if (damage <= 0f)
             {
@@ -3144,7 +3158,9 @@ namespace Dovus.Game
             }
 
             RememberHitPoint(BossHitPoint());
-            ConsumeWeaponBonus();
+            if (!isBasicStrike)
+                TryCannonBlast(_lastHitX, _lastHitZ);
+            ConsumeWeaponBonus(_bossStatus != null ? _bossStatus.Board : null);
             LastClosingDamageDealt = damage;
             _damageHud?.ShowDamage(damage, isCrit, BossHitPoint(), DamageTint());
             _lastDamageDealtMs = _clock.Director.WorldTimeMs; // "dealt_damage_recently" (Öfke Patlaması)

@@ -33,7 +33,11 @@ namespace Dovus.Core.Equipment
             float orbPlaceM,
             float orbMoveSec,
             float orbCooldownSec,
-            float orbSpellM)
+            float orbSpellM,
+            float bossPushM = 0f,
+            float recoilM = 0f,
+            float orbHoldSec = 0f,
+            float orbDoubleTapSec = 0f)
         {
             Id = id;
             School = school ?? string.Empty;
@@ -59,6 +63,10 @@ namespace Dovus.Core.Equipment
             OrbMoveSec = orbMoveSec > 0f ? orbMoveSec : 0f;
             OrbCooldownSec = orbCooldownSec > 0f ? orbCooldownSec : 0f;
             OrbSpellM = orbSpellM > 0f ? orbSpellM : 0f;
+            BossPushM = bossPushM > 0f ? bossPushM : 0f;
+            RecoilM = recoilM > 0f ? recoilM : 0f;
+            OrbHoldSec = orbHoldSec > 0f ? orbHoldSec : 0f;
+            OrbDoubleTapSec = orbDoubleTapSec > 0f ? orbDoubleTapSec : 0f;
         }
 
         public int Id { get; }
@@ -85,6 +93,10 @@ namespace Dovus.Core.Equipment
         public float OrbMoveSec { get; }
         public float OrbCooldownSec { get; }
         public float OrbSpellM { get; }
+        public float BossPushM { get; }
+        public float RecoilM { get; }
+        public float OrbHoldSec { get; }
+        public float OrbDoubleTapSec { get; }
 
         public static WeaponCombatProfile FromRow(JsonValue row)
         {
@@ -122,7 +134,11 @@ namespace Dovus.Core.Equipment
                 orb["place_m"].AsFloat(0f),
                 orb["move_sec"].AsFloat(0f),
                 orb["cooldown_sec"].AsFloat(0f),
-                orb["spell_m"].AsFloat(0f));
+                orb["spell_m"].AsFloat(0f),
+                basic["boss_push_m"].AsFloat(shape == "ballistic" ? 0.5f : 0f),
+                basic["recoil_m"].AsFloat(shape == "ballistic" ? 0.5f : 0f),
+                orb["hold_sec"].AsFloat(orb["place_m"].AsFloat(0f) > 0f ? 0.4f : 0f),
+                orb["double_tap_sec"].AsFloat(orb["place_m"].AsFloat(0f) > 0f ? 0.3f : 0f));
         }
     }
 

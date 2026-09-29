@@ -168,9 +168,20 @@ namespace Dovus.Game
             }
         }
 
-        public void ApplyDamage(float raw)
+        public void ApplyDamage(float raw, bool dodgeable = true)
         {
             if (raw <= 0f) return;
+            // Dodge i-frame kapısı. Hasar formülüne girmeden yutulur.
+            // Hasar borusu aynı sorguyu PlayerDodgeRig.BlocksIncoming ile kurabilir.
+            if (_playerVitals != null && PlayerDodgeRig.BlocksIncoming(this, dodgeable))
+                return;
+            if (_playerVitals != null)
+            {
+                double now = _clock != null ? _clock.Director.WorldTimeMs : 0;
+                raw = WeaponShortShieldHost.Absorb(this, raw, now);
+                if (raw <= 0f)
+                    return;
+            }
             float modeMult = ModeDirector?.DamageTakenMult ?? 1f;
             float passiveTaken = PassiveDirector?.DamageTakenMult ?? 1f;
             float armor = PassiveDirector?.ArmorAdd ?? 0f;
@@ -193,7 +204,7 @@ namespace Dovus.Game
             else if (_playerVitals != null)
             {
                 DamageTaken?.Invoke(afterShield);
-                if (_playerVitals.ApplyDamage(Mathf.CeilToInt(afterShield)))
+                if (_playerVitals.ApplyDamage(Mathf.CeilToInt(afterShield), dodgeable, shortShieldAlreadyApplied: true))
                     SpaceLinkBreak?.Invoke();
                 else if (afterShield > 0f)
                     SpaceLinkBreak?.Invoke(); // hasar alındı → hat kopar (ölüm şart değil)

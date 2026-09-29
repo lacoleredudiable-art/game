@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using Dovus.Core.Equipment;
 using Dovus.Core.Execution;
 using Dovus.Core.Grammar;
+using Dovus.Core.Status;
 using UnityEngine;
 
 namespace Dovus.Game
@@ -14,6 +16,11 @@ namespace Dovus.Game
     {
         readonly WeaponPassiveState _weaponPassives = new();
         readonly OrbAnchor _orb = new();
+        readonly CannonRecoil _cannonRecoil = new();
+        readonly List<Transform> _cannonBodies = new();
+        bool _cannonQueued;
+        float _cannonImpactX;
+        float _cannonImpactZ;
         double _swapInstantDrawUntilMs;
         float _lastHitX;
         float _lastHitZ;
@@ -26,6 +33,8 @@ namespace Dovus.Game
 
         public WeaponCombatProfile EquippedProfile => _equippedWeapon != null ? _equippedWeapon.Profile : null;
 
+        public double WorldTimeMs => _clock != null ? _clock.Director.WorldTimeMs : 0;
+
         public OrbAnchor Orb => _orb;
 
         bool SwapDrawUnlocked(double worldMs) => worldMs < _swapInstantDrawUntilMs;
@@ -35,16 +44,42 @@ namespace Dovus.Game
             return HitMods(skill, isBasicStrike, false).DamageMult;
         }
 
-        void ConsumeWeaponBonus()
+        bool TryTakeFreeMana()
+        {
+            WeaponCombatProfile profile = EquippedProfile;
+            if (profile == null || !profile.SwapBonus.FreeMana || _clock == null)
+                return false;
+            return _weaponPassives.TryConsumeBonus(
+                profile.Id, _clock.Director.WorldTimeMs, out _, profile);
+        }
+
+        void ConsumeWeaponBonus(StatusBoard cleanseTarget = null)
         {
             if (_equippedWeapon == null || _clock == null || EquippedProfile == null)
                 return;
-            if (_weaponPassives.TryConsumeBonus(
+            if (!_weaponPassives.TryConsumeBonus(
                     EquippedProfile.Id,
                     _clock.Director.WorldTimeMs,
                     out WeaponSwapBonusSpec bonus,
                     EquippedProfile))
-                WeaponIgnoresArmor = bonus.IgnoreArmor;
+                return;
+            WeaponIgnoresArmor = bonus.IgnoreArmor;
+            if (bonus.Cleanse)
+                OneNegativeCleanse.TryRemove(cleanseTarget);
+            if (bonus.Shield > 0f)
+                GrantShortShield(bonus.Shield, bonus.ShieldSec);
+        }
+
+        void GrantShortShield(float points, float durationSec)
+        {
+            if (_player == null || points <= 0f)
+                return;
+            WeaponShortShieldHost host = _player.GetComponent<WeaponShortShieldHost>();
+            if (host == null)
+                host = _player.gameObject.AddComponent<WeaponShortShieldHost>();
+            if (_clock != null)
+                host.Bind(_clock);
+            host.Grant(points, WorldTimeMs, durationSec);
         }
 
         float WeaponSupportPower(in SkillResolution skill)
@@ -327,6 +362,119 @@ namespace Dovus.Game
             if (toPlayer.sqrMagnitude < 0.0001f || toOrb.sqrMagnitude < 0.0001f)
                 return 0f;
             return Vector3.Angle(toPlayer, toOrb);
+        }
+
+        void TryCannonBlast(float impactX, float impactZ)
+        {
+            WeaponCombatProfile profile = EquippedProfile;
+            if (profile == null || profile.HitShape != "ballistic")
+                return;
+            if (_motionBody != null && _motionBody.IsDisplacing)
+            {
+                _cannonQueued = true;
+                _cannonImpactX = impactX;
+                _cannonImpactZ = impactZ;
+                return;
+            }
+
+            ApplyCannonBlast(impactX, impactZ);
+        }
+
+        void TickCannonRecoil()
+        {
+            if (!_cannonQueued)
+                return;
+            if (_motionBody != null && _motionBody.IsDisplacing)
+                return;
+            _cannonQueued = false;
+            ApplyCannonBlast(_cannonImpactX, _cannonImpactZ);
+        }
+
+        void ApplyCannonBlast(float impactX, float impactZ)
+        {
+            WeaponCombatProfile profile = EquippedProfile;
+            if (profile == null || _player == null)
+                return;
+            float splash = profile.BasicRadiusM > 0f ? profile.BasicRadiusM : 3f;
+            float bossPush = profile.BossPushM > 0f ? profile.BossPushM : 0.5f;
+            float arena = _motor != null ? _motor.Tuning.ArenaHalfSizeM : 50f;
+            float playerR = PlayerBodyRadiusM();
+            float bossR = 0.85f;
+            if (_boss != null && _boss.BodyRadiusM > 0.01f)
+                bossR = _boss.BodyRadiusM;
+
+            if (_boss != null)
+            {
+                Vector3 boss = _boss.transform.position;
+                float dx = boss.x - impactX;
+                float dz = boss.z - impactZ;
+                if (dx * dx + dz * dz <= splash * splash)
+                    _boss.React(new Vector3(impactX, boss.y, impactZ), bossPush, 0f, 0.12f, WorldTimeMs);
+            }
+
+            PushCannonBodies(impactX, impactZ, splash, arena, bossR);
+
+            if (profile.RecoilM <= 0f)
+                return;
+            Vector3 player = _player.position;
+            float dirX = player.x - impactX;
+            float dirZ = player.z - impactZ;
+            if (dirX * dirX + dirZ * dirZ < 0.0001f)
+            {
+                dirX = -_player.forward.x;
+                dirZ = -_player.forward.z;
+            }
+
+            float x = player.x;
+            float z = player.z;
+            float bossX = _boss != null ? _boss.transform.position.x : player.x;
+            float bossZ = _boss != null ? _boss.transform.position.z : player.z;
+            _cannonRecoil.Queue(
+                dirX, dirZ, profile.RecoilM, bossX, bossZ,
+                playerR + bossR + 0.15f, arena, playerR);
+            if (_cannonRecoil.TryApply(false, ref x, ref z))
+                _player.position = new Vector3(x, player.y, z);
+        }
+
+        void PushCannonBodies(float impactX, float impactZ, float splash, float arena, float bossR)
+        {
+            _cannonBodies.Clear();
+            SummonExecutor[] summons = FindObjectsByType<SummonExecutor>(FindObjectsSortMode.None);
+            for (int i = 0; i < summons.Length; i++)
+            {
+                if (summons[i] != null)
+                    summons[i].CollectWithin(impactX, impactZ, splash, _cannonBodies);
+            }
+
+            Targetable[] targets = FindObjectsByType<Targetable>(FindObjectsSortMode.None);
+            float splashSq = splash * splash;
+            for (int i = 0; i < targets.Length; i++)
+            {
+                Targetable target = targets[i];
+                if (target == null)
+                    continue;
+                Transform body = target.transform;
+                if (body == _player || (_boss != null && body == _boss.transform) || (_ally != null && body == _ally.transform))
+                    continue;
+                float dx = body.position.x - impactX;
+                float dz = body.position.z - impactZ;
+                if (dx * dx + dz * dz <= splashSq)
+                    _cannonBodies.Add(body);
+            }
+
+            float bossX = _boss != null ? _boss.transform.position.x : impactX;
+            float bossZ = _boss != null ? _boss.transform.position.z : impactZ;
+            float minSep = 0.4f + bossR + 0.15f;
+            for (int i = 0; i < _cannonBodies.Count; i++)
+            {
+                Transform body = _cannonBodies[i];
+                if (body == null)
+                    continue;
+                float x = body.position.x;
+                float z = body.position.z;
+                CannonBlast.Move(ref x, ref z, x - impactX, z - impactZ, splash, bossX, bossZ, minSep, arena, 0.4f);
+                body.position = new Vector3(x, body.position.y, z);
+            }
         }
 
         void CutTemplateForSwap(bool instant)

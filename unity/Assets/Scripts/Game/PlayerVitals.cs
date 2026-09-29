@@ -56,10 +56,20 @@ namespace Dovus.Game
             _captured = true;
         }
 
-        public bool ApplyDamage(int amount)
+        public bool ApplyDamage(int amount, bool dodgeable = true, bool shortShieldAlreadyApplied = false)
         {
             if (IsDown || amount <= 0)
                 return false;
+            if (PlayerDodgeRig.BlocksIncoming(this, dodgeable))
+                return false;
+            if (!shortShieldAlreadyApplied)
+            {
+                WeaponShortShieldHost host = GetComponent<WeaponShortShieldHost>();
+                double now = host != null ? host.NowMs : 0;
+                amount = Mathf.CeilToInt(WeaponShortShieldHost.Absorb(this, amount, now));
+                if (amount <= 0)
+                    return false;
+            }
 
             if (_visual == null)
                 _visual = GetComponent<ActorVisual>();
