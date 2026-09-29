@@ -16,6 +16,17 @@
 **Son güncelleme:** 29 Eylül 2026 (hareket kalıbı Play düzeltmeleri) ·
 **Dal:** `feat/motion-templates-1` · **Sıradaki:** aile 15–42
 
+> **29 Eylül — Play düzeltmeleri, 2. Unity Play (PR #24 açık, birleştirilmedi).** Konsolda
+> script hatası yok. Boss durdurulmuş, cast `TryDebugCastSkill`, Kılıç. **1-1** merkez 3,0 /
+> 2,6 / 1,6 m'den atıldı; hepsi boss merkezine 1,50 m'de (temas 1,35) durdu, sonra kayma 0 ✓.
+> **1-3** iki vuruş 20 + 20 ✓. **1-5** 360°, kayma 0, 34 ✓. **5-1** turuncu `#FF6B14` fitil boss
+> kenarında; patlama fitilde (fitile 0,00 m) 37,8 ✓; boss `Home` ile 3 m yürütülünce patlama
+> fitilde kaldı, boss'a değmedi ✓. **Build değişip aynı karede merkez** iki kez vurdu ✓.
+> **3-6** kanca boss'a gidiyor, arkasına iniyor (merkeze 1,50 m), Root 1,5 sn ✓ (hasar 0,
+> JSON `base_damage: 0`). **Ama** 0,13 sn sonra oyuncu 2,86 m ışınlanıp boss'un önüne
+> dönüyor ✗ — bkz. Bilinen açıklar. Windows'ta `dotnet test` 367/368: yeni derleme testi
+> `python3` çağırıyor, Windows'ta o ad Store saplaması; `python tools/GameCompile/check.py` geçiyor.
+
 > **29 Eylül — Play düzeltmeleri (PR #24).** `ManifestationDirector.MotionTemplate.cs`
 > CS0150 gitti (`or` ile `||` ayrıldı). Oyun betikleri artık Unity'siz de derleniyor:
 > `python3 tools/GameCompile/check.py` (Unity 2021 referans DLL + küçük saplama).
@@ -1460,6 +1471,14 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 - **Hareket kalıbı Play bulguları (29 Eylül, düzeltildi, yeniden Play yok).** Kanca düşmana
   iner, sekme vuruşu boss'a değer, saplama kenarda durur, fitil yere çakılır, menzil kapısı
   lunge'u sayar, ilk merkez vuruşu build sonrası yutulmaz. Unity Play bu turda yok.
+- **Kalıp ile mekanik gramer konumu yarışıyor (29 Eylül, 2. Play, karar gerekli).** 3-6 +
+  Kılıç grameri `yer_degistir` (sen↔hedef) üretir; isabette `After(dashSec, TeleportPlayer(swapTo))`
+  (`ManifestationDirector.MechanicGrammar.cs`) kalıp oyuncuyu boss'un arkasına indirdikten
+  0,13 sn sonra ayna konuma (boss'un önü) ışınlar. `hedefin_arkasina` ve `isaret_geri_don`
+  aynı yolu kullanır. Kalıp teslimi sahiplenince gramerin `konum` atomları atlanacak mı,
+  yoksa silahın teslim yolu kalıbın üstüne mi binecek — spec'te cevap yok.
+- **Derleme testi Windows'ta kırmızı (29 Eylül).** `GameLayerCompileTests` `python3`'ü
+  çalıştırıyor; Windows'ta bu ad Microsoft Store saplaması. `python` ile betik geçiyor.
 
 - **Motor denetimi — adım 3 (29 Eylül).** Düz vuruş menzili fiil 1 kapsülü (1.5 m);
   saldırı bakışı hedefe kilitlenir, çubuk vuruşun ortasında gövdeyi çevirmez. İkisi de
