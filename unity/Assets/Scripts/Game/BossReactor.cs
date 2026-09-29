@@ -27,6 +27,8 @@ namespace Dovus.Game
         bool _captured;
 
         bool _pulling;
+        bool _contactPull;
+        float _pullSpeed;
         float _pullAge;
         float _pullDur = DisplacementEase.DurationSec;
         Vector3 _pullFrom;
@@ -89,15 +91,19 @@ namespace Dovus.Game
         {
             if (_collapsed || distanceM <= 0f)
                 return;
+            // Temas çekişi sürerken tasma ikinci bir yer değiştirme yazmaz.
+            if (_pulling && _contactPull)
+                return;
             if (!_captured)
                 CaptureHome();
             targetWorld.y = _home.y;
+            _contactPull = false;
             BeginEasedMove(Vector3.MoveTowards(_home, targetWorld, distanceM));
         }
 
         /// <summary>
-        /// Boss'u oyuncunun önündeki temas noktasına 0,4 sn'de çeker.
-        /// Çekme sürerken KeepSeparated uygulanmaz; içinden geçen oyuncu boss'u tek karede fırlatmaz.
+        /// Boss'u oyuncunun o anki önündeki temas noktasına çeker.
+        /// Varış her çağrıda yeniden hesaplanır; süre başa sarmaz. Oyuncu itilmez.
         /// </summary>
         public void PullToContact(Vector3 playerWorld, float playerRadius, float bossRadius)
         {
@@ -105,20 +111,34 @@ namespace Dovus.Game
                 return;
             if (!_captured)
                 CaptureHome();
-            Vector3 delta = _home - playerWorld;
-            delta.y = 0f;
-            if (delta.sqrMagnitude > 0.0064f)
-                _stablePullDir = delta;
-            else if (_stablePullDir.sqrMagnitude < 0.0001f)
+            if (_stablePullDir.sqrMagnitude < 0.0001f)
                 _stablePullDir = transform.forward.sqrMagnitude > 0.0001f ? transform.forward : Vector3.forward;
 
-            EmiciPull.ContactPoint(
-                playerWorld.x, playerWorld.z,
+            float stableX = _stablePullDir.x;
+            float stableZ = _stablePullDir.z;
+            EmiciPull.Retarget(
+                _pulling && _contactPull,
                 _home.x, _home.z,
+                playerWorld.x, playerWorld.z,
                 playerRadius, bossRadius,
-                _stablePullDir.x, _stablePullDir.z,
-                out float x, out float z);
-            BeginEasedMove(new Vector3(x, _home.y, z));
+                ref stableX, ref stableZ,
+                ref _pullSpeed,
+                out float toX, out float toZ,
+                out bool pulling);
+            _stablePullDir = new Vector3(stableX, 0f, stableZ);
+            _pullTo = ClampToArena(new Vector3(toX, _home.y, toZ));
+            _contactPull = true;
+            _pulling = pulling;
+            if (!_pulling)
+                Home = _pullTo;
+        }
+
+        /// <summary>Çekme sürerken varışı oyuncunun güncel yerine taşır. Saati sıfırlamaz.</summary>
+        public void UpdatePullContact(Vector3 playerWorld, float playerRadius, float bossRadius)
+        {
+            if (!_pulling || !_contactPull)
+                return;
+            PullToContact(playerWorld, playerRadius, bossRadius);
         }
 
         void BeginEasedMove(Vector3 desired)
@@ -259,11 +279,21 @@ namespace Dovus.Game
 
         void AdvancePull(float dtSec)
         {
+            if (_contactPull)
+            {
+                float x = _home.x;
+                float z = _home.z;
+                EmiciPull.StepToward(ref x, ref z, _pullTo.x, _pullTo.z, _pullSpeed, dtSec, out bool arrived);
+                _home = ClampToArena(new Vector3(x, _home.y, z));
+                if (arrived)
+                    _pulling = false;
+                return;
+            }
+
             _pullAge += Mathf.Max(0f, dtSec);
             float u = _pullDur <= 0.01f ? 1f : Mathf.Clamp01(_pullAge / _pullDur);
-            DisplacementEase.Sample(_pullFrom.x, _pullFrom.z, _pullTo.x, _pullTo.z, u, out float x, out float z);
-            var next = new Vector3(x, _home.y, z);
-            _home = ClampToArena(next);
+            DisplacementEase.Sample(_pullFrom.x, _pullFrom.z, _pullTo.x, _pullTo.z, u, out float xEase, out float zEase);
+            _home = ClampToArena(new Vector3(xEase, _home.y, zEase));
             if (u >= 1f)
                 _pulling = false;
         }

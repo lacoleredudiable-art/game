@@ -63,5 +63,66 @@ namespace Dovus.Core.Motion
             float dz = az - bz;
             return MathF.Sqrt(dx * dx + dz * dz);
         }
+
+        /// <summary>
+        /// Girdap yalnız içindeki gövdeyi çeker (adjective 2 govde). Dışarıdaki hareketle yarışmaz.
+        /// </summary>
+        public static bool VortexActs(bool vortexProfile, bool bossInside) =>
+            vortexProfile && bossInside;
+
+        /// <summary>
+        /// Temas noktası oyuncunun o anki yerinden hesaplanır. Çekme sürerken hız sıfırlanmaz;
+        /// yoksa her kare ease başa sarar ve boss yerinde kalır.
+        /// </summary>
+        public static void Retarget(
+            bool alreadyPulling,
+            float homeX, float homeZ,
+            float playerX, float playerZ,
+            float playerRadius, float bossRadius,
+            ref float stableX, ref float stableZ,
+            ref float speed,
+            out float toX, out float toZ,
+            out bool pulling)
+        {
+            float dx = homeX - playerX;
+            float dz = homeZ - playerZ;
+            if (dx * dx + dz * dz > 0.0064f)
+            {
+                stableX = dx;
+                stableZ = dz;
+            }
+            ContactPoint(
+                playerX, playerZ, homeX, homeZ,
+                playerRadius, bossRadius,
+                stableX, stableZ,
+                out toX, out toZ);
+            float dist = Distance(homeX, homeZ, toX, toZ);
+            if (!alreadyPulling)
+                speed = dist / DisplacementEase.DurationSec;
+            pulling = dist > 0.02f;
+        }
+
+        /// <summary>Varışa doğru sabit hız. Hedefi geçmez; içerdeyse temas noktasına kadar dışarı yürür, ışınlanmaz.</summary>
+        public static void StepToward(
+            ref float homeX, ref float homeZ,
+            float toX, float toZ,
+            float speed, float dt,
+            out bool arrived)
+        {
+            float dx = toX - homeX;
+            float dz = toZ - homeZ;
+            float dist = MathF.Sqrt(dx * dx + dz * dz);
+            float step = MathF.Max(0f, speed) * MathF.Max(0f, dt);
+            if (dist <= 0.02f || dist <= step)
+            {
+                homeX = toX;
+                homeZ = toZ;
+                arrived = true;
+                return;
+            }
+            homeX += dx / dist * step;
+            homeZ += dz / dist * step;
+            arrived = false;
+        }
     }
 }

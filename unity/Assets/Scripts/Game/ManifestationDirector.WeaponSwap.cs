@@ -86,6 +86,8 @@ namespace Dovus.Game
             if (!_weaponSwap.Tick(worldMs))
                 return;
 
+            // Silah değişimi oynayan kalıbı durdurmaz ve menzil çarpanını yoluna yazmaz.
+            // Kalıp Play anında kopyalanmıştır; sonraki cast yeni silahı okur.
             _equippedWeapon = _weaponSwap.Active;
             LastFactorySkill = null;
             SyncCycleIndex();

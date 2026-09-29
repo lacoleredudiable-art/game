@@ -156,7 +156,8 @@ namespace Dovus.Core.Motion
         public static readonly string[] Known =
         {
             "windup", "lunge", "dash", "backstep", "sidestep",
-            "spin", "leap", "land", "hook_throw", "recover", "cast"
+            "spin", "leap", "land", "hook_throw", "recover", "cast",
+            "dash_fast"
         };
 
         static List<Row> DefaultRows()
@@ -173,6 +174,7 @@ namespace Dovus.Core.Motion
             Add(rows, "hook_throw", "CastShoot");
             Add(rows, "recover", "Locomotion");
             Add(rows, "cast", "CastChannel");
+            Add(rows, "dash_fast", "CastPierce");
             return rows;
         }
 
@@ -277,10 +279,12 @@ namespace Dovus.Core.Motion
         }
 
         /// <summary>
-        /// Klip hızı (model m/s) gövdenin gerisinde kalırsa oynatma çarpanı.
-        /// 1,5× yetmez: 19 m/s yay 2,2 m/s klipten 0,4 oran bırakır. Tavan 12.
+        /// Koşu klibi en çok 2× oynar. Gövde bunu aşarsa döngü hızlanmaz;
+        /// <see cref="DashFastKey"/> tutulur (gerçek dash klibi animasyon paketiyle gelir).
         /// </summary>
-        public const float TemplatePlaybackCap = 12f;
+        public const float TemplatePlaybackCap = 2f;
+
+        public const string DashFastKey = "dash_fast";
 
         public static float MatchPlayback(float worldMps, float clipRunMps)
         {
@@ -288,6 +292,20 @@ namespace Dovus.Core.Motion
                 return 1f;
             float need = worldMps / clipRunMps;
             return MathF.Min(need, TemplatePlaybackCap);
+        }
+
+        public static bool NeedsDashPose(float worldMps, float clipRunMps)
+        {
+            float clip = clipRunMps > 0.05f ? clipRunMps : 2.24f;
+            return worldMps > clip * TemplatePlaybackCap + 0.01f;
+        }
+
+        /// <summary>Koşu anahtarı 2×'i aşan gövde hızında dash pozuna döner. Saldırı anahtarı kalır.</summary>
+        public static string PresentationKey(string phaseKey, float worldMps, float clipRunMps)
+        {
+            if (NeedsDashPose(worldMps, clipRunMps) && MotionAnimTable.IsLocomotionKey(phaseKey))
+                return DashFastKey;
+            return phaseKey ?? string.Empty;
         }
     }
 }

@@ -401,10 +401,15 @@ namespace Dovus.Game
             float dampSec,
             float maxPlayback)
         {
-            ApplyTemplateLocomotion(blend, refMps, dampSec, maxPlayback);
-            if (string.Equals(_motionKey, key, System.StringComparison.Ordinal))
+            float clipRun = ClipRunMps(refMps);
+            bool tooFast = LocoBlend.NeedsDashPose(blend.SpeedMps, clipRun);
+            string playKey = LocoBlend.PresentationKey(key, blend.SpeedMps, clipRun);
+            LocoBlend legs = tooFast ? default : blend;
+            float cap = Mathf.Min(maxPlayback > 0.05f ? maxPlayback : LocoBlend.TemplatePlaybackCap, LocoBlend.TemplatePlaybackCap);
+            ApplyTemplateLocomotion(legs, refMps, dampSec, cap);
+            if (string.Equals(_motionKey, playKey, System.StringComparison.Ordinal))
                 return;
-            _motionKey = key ?? string.Empty;
+            _motionKey = playKey ?? string.Empty;
             MotionAnimClip clip = (table ?? MotionAnimTable.BuiltIn).Resolve(_motionKey, weaponKey, verbId);
             PlayMotionClip(clip, animSpeed, spin);
         }
@@ -443,6 +448,19 @@ namespace Dovus.Game
             {
                 _animator.speed = _savedAnimatorSpeed > 0.01f ? _savedAnimatorSpeed : 1f;
             }
+        }
+
+        float ClipRunMps(float fallback)
+        {
+            if (_animator != null && _animator.isActiveAndEnabled
+                && _animator.runtimeAnimatorController != null
+                && HasFloat(ParamLocoRunSpeed))
+            {
+                float run = _animator.GetFloat(ParamLocoRunSpeed);
+                if (run > 0.05f)
+                    return run;
+            }
+            return fallback > 0.05f ? fallback : 2.24f;
         }
 
         void ApplyTemplateLocomotion(in LocoBlend blend, float refMps, float dampSec, float maxPlayback)

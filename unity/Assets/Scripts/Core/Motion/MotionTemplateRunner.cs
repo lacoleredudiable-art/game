@@ -6,12 +6,26 @@ namespace Dovus.Core.Motion
 {
     public readonly struct MotionTarget
     {
-        public MotionTarget(bool has, float x, float z, float radiusM = 0f)
+        public MotionTarget(
+            bool has,
+            float x,
+            float z,
+            float radiusM = 0f,
+            bool holdApproach = false,
+            bool hasObstacle = false,
+            float obstacleX = 0f,
+            float obstacleZ = 0f,
+            float obstacleRadiusM = 0f)
         {
             Has = has;
             X = x;
             Z = z;
             RadiusM = Math.Max(0f, radiusM);
+            HoldApproach = holdApproach;
+            HasObstacle = hasObstacle;
+            ObstacleX = obstacleX;
+            ObstacleZ = obstacleZ;
+            ObstacleRadiusM = Math.Max(0f, obstacleRadiusM);
         }
 
         public bool Has { get; }
@@ -19,6 +33,16 @@ namespace Dovus.Core.Motion
         public float Z { get; }
         /// <summary>Hedef collider yarıçapı. 0 ise kenar payı yalnız saldıran gövdesinden gelir.</summary>
         public float RadiusM { get; }
+        /// <summary>Emici çekme sürerken kalıp bu hedefe yaklaşmaz; vuruş yerinde kalır.</summary>
+        public bool HoldApproach { get; }
+        /// <summary>Dost kancasının yolundaki boss. Varış dostun yakın kenarıdır, gövdenin içinden geçilmez.</summary>
+        public bool HasObstacle { get; }
+        public float ObstacleX { get; }
+        public float ObstacleZ { get; }
+        public float ObstacleRadiusM { get; }
+
+        public MotionTarget At(float x, float z) =>
+            new(Has, x, z, RadiusM, HoldApproach, HasObstacle, ObstacleX, ObstacleZ, ObstacleRadiusM);
     }
 
     public readonly struct MotionStick
@@ -156,6 +180,9 @@ namespace Dovus.Core.Motion
         bool _snapped;
         bool _hasTracked;
         MotionTarget _tracked;
+        bool _yieldApproach;
+        float _yieldX, _yieldZ;
+        float _blendU0 = -1f;
         int _everySent;
 
         public bool Finished => _finished;
@@ -211,6 +238,10 @@ namespace Dovus.Core.Motion
             _lastTarget = default;
             _hasTracked = false;
             _tracked = default;
+            _yieldApproach = false;
+            _yieldX = x;
+            _yieldZ = z;
+            _blendU0 = -1f;
             _finished = template == null || template.Phases.Count == 0;
             _active = !_finished;
             Normalize(faceX, faceZ, out _faceX, out _faceZ);
@@ -236,6 +267,15 @@ namespace Dovus.Core.Motion
             while (left > 0.00001f && !_finished && guard++ < 12)
             {
                 MotionPhase phase = _template.Phases[_phase];
+                float durAhead = Math.Max(0.01f, phase.DurationSec);
+                if (_yieldApproach && !aim.HoldApproach)
+                {
+                    // Çekme bitince faz eğrisi eski başlangıca zıplamasın.
+                    _yieldApproach = false;
+                    _blendU0 = Math.Clamp(_time / durAhead, 0f, 0.999f);
+                    _phaseX = _x;
+                    _phaseZ = _z;
+                }
                 AimDest(phase, aim);
                 float dur = Math.Max(0.01f, phase.DurationSec);
                 if (phase.Gate == "release")
@@ -306,7 +346,7 @@ namespace Dovus.Core.Motion
                 return target;
             }
             float scale = cap / dist;
-            _tracked = new MotionTarget(true, _tracked.X + dx * scale, _tracked.Z + dz * scale, target.RadiusM);
+            _tracked = target.At(_tracked.X + dx * scale, _tracked.Z + dz * scale);
             return _tracked;
         }
 
@@ -330,6 +370,28 @@ namespace Dovus.Core.Motion
             float dt)
         {
             Axis(phase, target, out float fx, out float fz);
+            if (target.HoldApproach)
+            {
+                if (!_yieldApproach)
+                {
+                    _yieldApproach = true;
+                    _yieldX = _x;
+                    _yieldZ = _z;
+                }
+                _x = _yieldX;
+                _z = _yieldZ;
+                _y = phase.Motion == "pull" ? 0f : _groundY;
+                _shot = u * phase.ShotM;
+                ApplyFacing(phase, u, fx, fz, target);
+                return;
+            }
+
+            if (_blendU0 >= 0f)
+            {
+                float span = 1f - _blendU0;
+                u = span < 0.05f ? 0f : Math.Clamp((uLinear - _blendU0) / span, 0f, 1f);
+            }
+
             float rx = fz;
             float rz = -fx;
             float side = phase.Side < 0f ? -1f : 1f;
@@ -385,9 +447,7 @@ namespace Dovus.Core.Motion
                     _y = _groundY + phase.HeightM * (1f - uLinear);
                     break;
                 case "pull":
-                    _x = _phaseX + (_destX - _phaseX) * u;
-                    _z = _phaseZ + (_destZ - _phaseZ) * u;
-                    _y = _groundY;
+                    PullTravel(u, target);
                     break;
                 case "spin":
                 case "fan":
@@ -625,6 +685,7 @@ namespace Dovus.Core.Motion
             _held = 0f;
             _hitSent = false;
             _everySent = 0;
+            _blendU0 = -1f;
             _walkX = 0f;
             _walkZ = 0f;
             _shot = 0f;
@@ -716,9 +777,30 @@ namespace Dovus.Core.Motion
             float uz = dz / len;
             if (phase.Land == "behind")
             {
+                // Arkaya iniş, cast'in başladığı tarafa göredir. Ara sıçrama boss'u
+                // geçse de varış ön yüze dönmez. Silah çarpanı bu yönü değiştirmez.
+                float ox = _markX;
+                float oz = _markZ;
+                float bx = target.X - ox;
+                float bz = target.Z - oz;
+                float blen = MathF.Sqrt(bx * bx + bz * bz);
+                float bux = ux;
+                float buz = uz;
+                if (blen > 0.05f)
+                {
+                    bux = bx / blen;
+                    buz = bz / blen;
+                }
                 float behind = Separation(target);
-                _destX = target.X + ux * behind;
-                _destZ = target.Z + uz * behind;
+                _destX = target.X + bux * behind;
+                _destZ = target.Z + buz * behind;
+                return;
+            }
+            if (phase.Motion == "pull")
+            {
+                // Dost kancası hedefin yakın kenarında biter. distance_m ve silah menzili geçemez.
+                Approach(ux, uz, len, target, cap: 0f);
+                ClampPullDest(target);
                 return;
             }
             if (phase.Homing != "track")
@@ -736,7 +818,6 @@ namespace Dovus.Core.Motion
                         Approach(ux, uz, len, target, cap: 0f);
                     break;
                 case "leap":
-                case "pull":
                     Approach(ux, uz, len, target, cap: 0f);
                     break;
                 case "lunge":
@@ -810,6 +891,93 @@ namespace Dovus.Core.Motion
             float radius = MathF.Max(minR, r0 + (r1 - r0) * u);
             _x = target.X + MathF.Cos(angle) * radius;
             _z = target.Z + MathF.Sin(angle) * radius;
+        }
+
+        /// <summary>Arena zemini. Kanca havadaki giriş yüksekliğini taşımaz (ayaklar y=0).</summary>
+        const float FloorY = 0f;
+
+        void PullTravel(float u, in MotionTarget target)
+        {
+            if (target.HasObstacle && SegmentTooClose(target))
+                ArcObstacle(u, target);
+            else
+            {
+                _x = _phaseX + (_destX - _phaseX) * u;
+                _z = _phaseZ + (_destZ - _phaseZ) * u;
+            }
+            _y = FloorY;
+        }
+
+        void ClampPullDest(in MotionTarget target)
+        {
+            if (!target.HasObstacle)
+                return;
+            float clear = _bodyRadius + target.ObstacleRadiusM + _stopGap;
+            float dx = _destX - target.ObstacleX;
+            float dz = _destZ - target.ObstacleZ;
+            float dist = MathF.Sqrt(dx * dx + dz * dz);
+            if (dist >= clear)
+                return;
+            float px = _phaseX - target.ObstacleX;
+            float pz = _phaseZ - target.ObstacleZ;
+            float plen = MathF.Sqrt(px * px + pz * pz);
+            if (plen < 0.001f)
+            {
+                px = -_faceX;
+                pz = -_faceZ;
+                plen = MathF.Max(0.001f, MathF.Sqrt(px * px + pz * pz));
+            }
+            _destX = target.ObstacleX + px / plen * clear;
+            _destZ = target.ObstacleZ + pz / plen * clear;
+        }
+
+        bool SegmentTooClose(in MotionTarget target)
+        {
+            float clear = _bodyRadius + target.ObstacleRadiusM + _stopGap;
+            return PointSegment(
+                target.ObstacleX, target.ObstacleZ,
+                _phaseX, _phaseZ, _destX, _destZ) < clear - 0.02f;
+        }
+
+        void ArcObstacle(float u, in MotionTarget target)
+        {
+            float clear = _bodyRadius + target.ObstacleRadiusM + _stopGap;
+            float sx = _phaseX - target.ObstacleX;
+            float sz = _phaseZ - target.ObstacleZ;
+            float ex = _destX - target.ObstacleX;
+            float ez = _destZ - target.ObstacleZ;
+            float r0 = MathF.Sqrt(sx * sx + sz * sz);
+            float r1 = MathF.Sqrt(ex * ex + ez * ez);
+            if (r0 < 0.05f)
+                r0 = clear;
+            if (r1 < 0.05f)
+                r1 = clear;
+            float a0 = MathF.Atan2(sz, sx);
+            float a1 = MathF.Atan2(ez, ex);
+            float delta = a1 - a0;
+            while (delta > MathF.PI)
+                delta -= 2f * MathF.PI;
+            while (delta < -MathF.PI)
+                delta += 2f * MathF.PI;
+            if (MathF.Abs(MathF.Abs(delta) - MathF.PI) < 0.35f)
+                delta = MathF.PI;
+            float angle = a0 + delta * u;
+            float radius = MathF.Max(clear, r0 + (r1 - r0) * u);
+            _x = target.ObstacleX + MathF.Cos(angle) * radius;
+            _z = target.ObstacleZ + MathF.Sin(angle) * radius;
+        }
+
+        static float PointSegment(float px, float pz, float ax, float az, float bx, float bz)
+        {
+            float abx = bx - ax;
+            float abz = bz - az;
+            float len2 = abx * abx + abz * abz;
+            if (len2 < 0.0001f)
+                return MathF.Sqrt((px - ax) * (px - ax) + (pz - az) * (pz - az));
+            float t = Math.Clamp(((px - ax) * abx + (pz - az) * abz) / len2, 0f, 1f);
+            float cx = ax + abx * t - px;
+            float cz = az + abz * t - pz;
+            return MathF.Sqrt(cx * cx + cz * cz);
         }
 
         float Separation(in MotionTarget target) =>
