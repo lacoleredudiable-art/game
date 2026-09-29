@@ -4,6 +4,7 @@ using System.Linq;
 using Dovus.Core;
 using Dovus.Core.Combat;
 using Dovus.Core.Execution;
+using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Status;
 using UnityEngine;
@@ -407,26 +408,24 @@ namespace Dovus.Game
                         continue;
                     if (e.Stat == "tempo" && e.Has("senkron"))
                     {
-                        float playerTempo = _playerStatus != null
-                            ? _playerStatus.EffectiveMoveSpeedMult
-                            : 1f;
+                        SkillResolution linked = SkillFromPlan(link.Plan);
+                        if (CardEffectRules.WantsSelfHaste(linked.SkillJob))
+                            continue;
+                        TempoSyncRules.Read(e.DurationSec, (float)e.Amount, out double syncMs, out float syncStrength);
                         if (_playerStatus != null && _playerStatus.EffectiveBlocksMovement)
                         {
-                            double syncMs = e.DurationSec > 0
-                                ? e.DurationSec * 1000.0
-                                : SkillNumberFallbacks.TempoSyncRefreshMs;
-                            if (e.DurationSec <= 0)
-                                DesignWarnings.Once(
-                                    "tempo_sync_duration",
-                                    "element-sistemi.json tempo senkron süresi yok; yedek 0.2 sn kullanıldı.");
                             _bossStatus?.Board.Apply(
                                 StatusKind.Root, syncMs, 1f,
                                 "link-tempo:" + (link.Plan != null ? link.Plan.SkillId : "link"));
                         }
-                        else if (playerTempo < 1f)
-                            _bossStatus?.Board.Apply(StatusKind.Slow, 200, playerTempo);
+                        else if (_playerStatus != null && _playerStatus.EffectiveMoveSpeedMult < 1f)
+                            _bossStatus?.Board.Apply(StatusKind.Slow, syncMs, syncStrength);
                         continue;
                     }
+                    SkillResolution linkedLock = SkillFromPlan(link.Plan);
+                    if (CardEffectRules.WantsSelfHaste(linkedLock.SkillJob)
+                        && !CardEffectRules.Names(linkedLock.SkillJob, "root"))
+                        continue;
                     double refresh = Math.Max(100, e.DurationSec * 1000.0);
                     if (e.Amount <= 0)
                         _bossStatus?.Board.Apply(
@@ -436,6 +435,13 @@ namespace Dovus.Game
                         _bossStatus?.Board.Apply(StatusKind.Slow, refresh, (float)e.Amount);
                 }
             }
+        }
+
+        SkillResolution SkillFromPlan(MechanicPlan plan)
+        {
+            if (_skills == null || plan == null || plan.Verb <= 0 || plan.Adjective <= 0)
+                return SkillResolution.Empty;
+            return _skills.Resolve(new[] { plan.Verb, plan.Adjective });
         }
 
         void TickGuardTriggers(double worldMs)

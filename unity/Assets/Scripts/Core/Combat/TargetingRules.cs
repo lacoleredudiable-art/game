@@ -93,31 +93,52 @@ namespace Dovus.Core.Combat
             SkillAimMode aimMode,
             float rangeM,
             int? selectedId,
-            IReadOnlyList<TargetCandidate> candidates)
+            IReadOnlyList<TargetCandidate> candidates,
+            string action = "")
         {
             if (aimMode is SkillAimMode.Directional or SkillAimMode.GroundAimed)
                 return AllowedSelf();
 
-            if (string.Equals(targetMode, "self_only", StringComparison.OrdinalIgnoreCase))
+            bool friendly = CardEffectRules.PrefersAlly(targetMode, action);
+            if (string.Equals(targetMode, "self_only", StringComparison.OrdinalIgnoreCase) && !friendly)
                 return AllowedSelf();
 
-            bool friendly = string.Equals(targetMode, "self_or_ally", StringComparison.OrdinalIgnoreCase);
             TargetRelation wanted = friendly ? TargetRelation.Ally : TargetRelation.Enemy;
             float range = Math.Max(0f, rangeM);
 
             if (selectedId.HasValue
                 && TryFind(candidates, selectedId.Value, out TargetCandidate selected)
                 && selected.Available
-                && selected.Relation == wanted)
-            {
-                return selected.DistanceM <= range
-                    ? AllowedTarget(selected.Id)
-                    : new TargetResolution(false, false, selected.Id, TargetFailure.OutOfRange);
-            }
+                && selected.Relation == wanted
+                && selected.DistanceM <= range)
+                return AllowedTarget(selected.Id);
 
-            // Dost fiilleri otomatik başka dosta atlamaz: seçili geçerli dost yoksa self.
+            if (!friendly && selectedId.HasValue
+                && TryFind(candidates, selectedId.Value, out TargetCandidate picked)
+                && picked.Available
+                && picked.Relation == wanted
+                && picked.DistanceM > range)
+                return new TargetResolution(false, false, picked.Id, TargetFailure.OutOfRange);
+
             if (friendly)
-                return AllowedSelf();
+            {
+                TargetCandidate nearestAlly = default;
+                bool allyFound = false;
+                for (int i = 0; i < candidates.Count; i++)
+                {
+                    TargetCandidate candidate = candidates[i];
+                    if (!candidate.Available || candidate.Relation != TargetRelation.Ally
+                        || candidate.DistanceM > range)
+                        continue;
+                    if (!allyFound || candidate.DistanceM < nearestAlly.DistanceM)
+                    {
+                        nearestAlly = candidate;
+                        allyFound = true;
+                    }
+                }
+
+                return allyFound ? AllowedTarget(nearestAlly.Id) : AllowedSelf();
+            }
 
             TargetCandidate best = default;
             bool found = false;

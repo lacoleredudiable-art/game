@@ -15,6 +15,8 @@ namespace Dovus.Core.Status
         MobilityCcData? _mobilityCc;
         double _rootImmunityMs = SkillNumberFallbacks.RootImmunityMs;
         double _rootImmunityRemainingMs;
+        double _attackLockImmunityRemainingMs;
+        bool _attackLockImmunity;
 
         public void ConfigureMobilityCc(MobilityCcData data)
         {
@@ -25,6 +27,28 @@ namespace Dovus.Core.Status
 
         public double RootImmunityRemainingMs => _rootImmunityRemainingMs;
         public bool IsRootImmune => _rootImmunityRemainingMs > 0;
+
+        /// <summary>
+        /// Boss tahtasında açık. Sersemlik bitince kısa bağışıklık başlar;
+        /// aynı CC süreyi üst üste ekleyip dövüşü kilitleyemez.
+        /// </summary>
+        public void EnableAttackLockImmunity() => _attackLockImmunity = true;
+
+        public bool IsAttackLockImmune => _attackLockImmunityRemainingMs > 0;
+
+        /// <summary>Yavaşlatma ve hız çarpanı. Kök/sersemlik bunu sıfırlamaz; hareket ayrı kalır.</summary>
+        public float ActionSpeedMult
+        {
+            get
+            {
+                float m = 1f;
+                if (HasEffective(StatusKind.Slow) && _active.TryGetValue(StatusKind.Slow, out StatusEntry slow) && slow.Magnitude > 0f)
+                    m *= slow.Magnitude;
+                if (Has(StatusKind.Haste) && _active.TryGetValue(StatusKind.Haste, out StatusEntry haste) && haste.Magnitude > 0f)
+                    m *= haste.Magnitude;
+                return m;
+            }
+        }
 
         /// <summary>
         /// 16 Eylül: "skilleri attığımda bir etkileşim göremiyorum" raporu — mekanik zaten
@@ -123,6 +147,9 @@ namespace Dovus.Core.Status
 
             if (_rootImmunityRemainingMs > 0)
                 _rootImmunityRemainingMs = Math.Max(0, _rootImmunityRemainingMs - worldDtMs);
+            if (_attackLockImmunityRemainingMs > 0)
+                _attackLockImmunityRemainingMs = Math.Max(0, _attackLockImmunityRemainingMs - worldDtMs);
+            bool lockBefore = AttackLockPresent();
             DecayRoots(worldDtMs);
 
             if (_active.Count == 0)
@@ -177,6 +204,7 @@ namespace Dovus.Core.Status
                     _active[StatusKind.Shield] = shieldAfter;
             }
 
+            FinishAttackLockIfEnded(lockBefore);
             return tickPayload;
         }
 
@@ -191,13 +219,19 @@ namespace Dovus.Core.Status
                 return;
             }
 
+            if (IsAttackLockKind(kind) && _attackLockImmunity && _attackLockImmunityRemainingMs > 0)
+                return;
+
             ApplyReactions(kind, ref durationMs, ref magnitude);
 
             if (_active.TryGetValue(kind, out StatusEntry existing))
             {
                 // mobility_cc.same_cc=süre_uzar: kalan süreye yeni süre eklenir.
-                existing.RemainingMs = _mobilityCc != null && _mobilityCc.ExtendSameCc
+                // Boss kilit bağışıklığında sersemlik uzamaz; süre yenilenir, sonra pencere açılır.
+                bool extend = _mobilityCc != null && _mobilityCc.ExtendSameCc
                     && (StatusKindUtil.IsHardCc(kind) || StatusKindUtil.IsSoftCc(kind))
+                    && !(_attackLockImmunity && IsAttackLockKind(kind));
+                existing.RemainingMs = extend
                         ? existing.RemainingMs + durationMs
                         : Math.Max(existing.RemainingMs, durationMs);
                 existing.Magnitude = Math.Max(existing.Magnitude, magnitude);
@@ -296,6 +330,7 @@ namespace Dovus.Core.Status
 
         public void CleanseHostile()
         {
+            bool hadLock = AttackLockPresent();
             bool hadRoot = Has(StatusKind.Root) || _rootSources.Count > 0;
             var remove = new List<StatusKind>();
             foreach (StatusKind k in _active.Keys)
@@ -307,6 +342,7 @@ namespace Dovus.Core.Status
                 _active.Remove(remove[i]);
             if (hadRoot)
                 EndRoot();
+            FinishAttackLockIfEnded(hadLock);
         }
 
         /// <summary>
@@ -317,6 +353,7 @@ namespace Dovus.Core.Status
         {
             if (kinds == null || kinds.Count == 0)
                 return;
+            bool hadLock = AttackLockPresent();
             bool dropRoot = false;
             for (int i = 0; i < kinds.Count; i++)
             {
@@ -329,6 +366,7 @@ namespace Dovus.Core.Status
             }
             if (dropRoot)
                 EndRoot();
+            FinishAttackLockIfEnded(hadLock);
         }
 
         public void Clear()
@@ -336,6 +374,20 @@ namespace Dovus.Core.Status
             _active.Clear();
             _rootSources.Clear();
             _rootImmunityRemainingMs = 0;
+            _attackLockImmunityRemainingMs = 0;
+        }
+
+        bool AttackLockPresent() =>
+            Has(StatusKind.Stun) || Has(StatusKind.Fear) || Has(StatusKind.Stasis);
+
+        static bool IsAttackLockKind(StatusKind kind) =>
+            kind is StatusKind.Stun or StatusKind.Fear or StatusKind.Stasis;
+
+        void FinishAttackLockIfEnded(bool hadLock)
+        {
+            if (!_attackLockImmunity || !hadLock || AttackLockPresent() || _rootImmunityMs <= 0)
+                return;
+            _attackLockImmunityRemainingMs = _rootImmunityMs;
         }
 
         void ApplyRoot(string? sourceId, double durationMs, float magnitude)

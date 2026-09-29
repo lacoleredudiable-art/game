@@ -13,8 +13,18 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 29 Eylül 2026 (motor adım 1: kök yığılması + JSON sayıları) ·
-**Dal:** `fix/engine-step1` (taslak PR) · **Sıradaki:** Unity Play kök/sayı dumanı, sonra denetim listesinin geri kalanı
+**Son güncelleme:** 29 Eylül 2026 (motor adım 2: boss CC + dost hedefi + kart=etki + tempo) ·
+**Dal:** `fix/engine-step2` (taslak PR) · **Sıradaki:** Unity Play dumanı (aşağıdaki 4 kontrol)
+
+> **29 Eylül — motor adım 2.** Boss köklenince yerinde vuruş atabilir, hücum/sıçrama/atış başlatamaz.
+> Sersemlik hiçbir saldırıyı başlatmaz ve hazırlığı keser; bitince kısa bağışıklık var (adım 1'deki
+> kök penceresi). Yavaşlatma, yürüyüşle aynı oranda hazırlığı ve toparlanmayı uzatır. İyileştirme,
+> kalkan ve buff: seçili dost menzildeyse ona, değilse en yakın dosta, o da yoksa kendine gider.
+> Dosta giden becerinin zararlı eki, kart düşman/vuran demiyorsa boss'a inmez. Kartın adlandırdığı
+> tür uygulanır (Yoğun Bağ stun, Bulandırıcı Kalkan yavaş, Yükselen Adım hız, Bağlayıcı Zaman
+> ikisine haste, Yükselen Zaman +%50 haste). Tempo bağı artık 0.2 sn dilim değil; süre ve güç
+> JSON'dan, yoksa yedek 1 sn / 0.7 ve bir kez uyarı. Düz vuruş menziline dokunulmadı.
+> Core test 329/329. Unity Play bu turda çalıştırılmadı.
 
 > **29 Eylül — motor adım 1.** Kök artık aynı kaynaktan yenilenir, farklı kaynaklar toplanmaz
 > (en uzun süre kalır) ve süre bitince 0.5 sn bağışıklık başlar (JSON'da `root_immunity_sec` yok,
@@ -1344,12 +1354,12 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
-- **Motor denetimi — adım 1 dışında kalanlar (29 Eylül).** Kök yığılması ve JSON sayı yolu
-  `fix/engine-step1`'de. Sıradaki: (1) kök/yavaş boss saldırısını kesmiyor — boss yürümeyi
-  bırakır ama vuruşa devam eder; (2) dosta giden skill çoğu zaman kendine, düşman sıfatı
-  varsa boss'a gider; (3) kart metni ile engine süresi uyuşmuyor (Yoğun Bağ "1.5 sn stun"
-  yazar, motor root uygular); (4) tempo senkron yavaşlatması hâlâ 0.2 sn sabit; (5) düz
-  vuruş menzili hâlâ his ayarı (`BasicStrikeRangeM`). Unity Play'de kök dumanı henüz yok.
+- **Motor denetimi — adım 2 sonrası (29 Eylül).** (1)–(4) `fix/engine-step2`'de: boss CC,
+  dost hedefi, karttaki etki türü, tempo süresi. Kalan: (5) düz vuruş menzili hâlâ his ayarı
+  (`BasicStrikeRangeM`) — bu turda bilerek dokunulmadı. Kart süresi hâlâ kısa olanlar:
+  Sabit Bağ "3 sn" iken kök süresi 1.5 sn; Sabit/Odaklı/Akan Zaman kartı 5/3/4 sn der,
+  tempo alanı 1 sn. Boss'un bugünkü saldırıları (çakma, nefes) yerinde; hücum/sıçrama/atış
+  yok, kök onları ancak eklenince keser. Unity Play dumanı henüz yok.
 - **Hedefleme Unity Play'de doğrulanmadı (29 Eylül, PR #20).** Core testleri geçti; editörde
   tık, menzil reddi, düz vuruş ve geri yürüme elle bakılacak. Düz vuruş hasarı hâlâ yalnız
   boss'a gider (ikinci düşman yok). Seçili hedef varken saldırı dışında da gövde hedefe
