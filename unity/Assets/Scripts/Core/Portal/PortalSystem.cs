@@ -146,6 +146,7 @@ namespace Dovus.Core.Portal
         public const float ShrinkSpeedAdd = 0.30f;
         public const float ShrinkMiss = 0.30f;
         public const float BossShrinkSec = 2f;
+        public const float BossStrikeScale = 0.7f;
         public const float GrowDamageAdd = 0.30f;
         public const float GrowTakenOff = 0.25f;
         public const float GrowSlow = 0.20f;
@@ -180,6 +181,7 @@ namespace Dovus.Core.Portal
         public BackStrike Strike { get; private set; }
         public bool BossNarrow => NarrowLeft > 0f;
         public float NarrowLeft { get; private set; }
+        public float StrikeScale => BossNarrow ? BossStrikeScale : 1f;
         public bool HasAnchor => _anchor.Alive && _now < _anchor.Until;
         public float AnchorX => _anchor.X;
         public float AnchorZ => _anchor.Z;

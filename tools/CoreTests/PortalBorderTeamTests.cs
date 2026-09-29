@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Dovus.Core.Border;
+using Dovus.Core.Combat;
 using Dovus.Core.Portal;
 using Dovus.Core.Status;
 using Dovus.Core.Team;
@@ -181,6 +182,43 @@ public class PortalBorderTeamTests
         portal.Sense(bossBody, false, boss, out _);
         Assert.That(portal.NarrowLeft, Is.EqualTo(PortalSystem.BossShrinkSec).Within(0.001f));
         Assert.That(portal.BossNarrow, Is.True);
+        Assert.That(portal.StrikeScale, Is.EqualTo(0.7f).Within(0.001f));
+    }
+
+    [Test]
+    public void Skill_8_1_BossStrikesThirtyPercentSmaller()
+    {
+        var portal = new PortalSystem();
+        var boss = Boss(0f, 8f);
+        portal.Cast("8-1", Actor(1, 0f, 0f), Actor(2, 0f, 4f), null, boss);
+        DoorView gate = portal.Doors[0];
+        portal.Sense(new Body(9, gate.X, 0f, gate.Z, 0.85f, false, true), false, boss, out _);
+
+        const float radius = 5.4f;
+        const float length = 7f;
+        const float width = 1.4f;
+        BossStrikeShape small = BossStrikeShape.Scale(radius, length, width, portal.StrikeScale);
+        Assert.That(small.Radius, Is.EqualTo(radius * 0.7f).Within(0.001f));
+        Assert.That(small.Length, Is.EqualTo(length * 0.7f).Within(0.001f));
+        Assert.That(small.Width, Is.EqualTo(width * 0.7f).Within(0.001f));
+        Assert.That(small.CircleHits(radius * 0.75f), Is.False);
+        Assert.That(small.CircleHits(radius * 0.6f), Is.True);
+        Assert.That(small.LineHits(length * 0.8f, 0f), Is.False);
+        Assert.That(small.LineHits(length * 0.5f, width * 0.3f), Is.True);
+
+        var slam = new BossAttack();
+        float live = slam.RadiusM * 0.85f;
+        Assert.That(slam.IsInEffectVolume(live, 0f), Is.True);
+        Assert.That(
+            slam.IsInEffectVolume(BossStrikeShape.DistanceForVolume(live, portal.StrikeScale), 0f),
+            Is.False);
+
+        portal.Tick(PortalSystem.BossShrinkSec, Actor(1, 0f, 0f), null, boss);
+        Assert.That(portal.BossNarrow, Is.False);
+        Assert.That(portal.StrikeScale, Is.EqualTo(1f).Within(0.001f));
+        BossStrikeShape full = BossStrikeShape.Scale(radius, length, width, portal.StrikeScale);
+        Assert.That(full.CircleHits(radius * 0.75f), Is.True);
+        Assert.That(slam.IsInEffectVolume(BossStrikeShape.DistanceForVolume(live, portal.StrikeScale), 0f), Is.True);
     }
 
     [Test]

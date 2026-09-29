@@ -13,6 +13,7 @@ namespace Dovus.Game
         public static float DamageMult = 1f;
         public static float LifestealAdd;
         public static float BossIncomingMult = 1f;
+        public static float BossStrikeScale = 1f;
         public static float MoveSpeedMult = 1f;
         public static float PlayerDamageTakenMult = 1f;
         public static int PlayerActorId = 1;

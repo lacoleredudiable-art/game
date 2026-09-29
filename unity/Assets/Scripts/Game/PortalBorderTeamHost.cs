@@ -66,6 +66,7 @@ namespace Dovus.Game
             if (Instance == this)
                 Instance = null;
             PortalBorderTeamHooks.Cast -= OnCast;
+            PortalBorderTeamHooks.BossStrikeScale = 1f;
         }
 
         void Update()
@@ -460,6 +461,7 @@ namespace Dovus.Game
             PortalBorderTeamHooks.DamageMult = _border.DamageMult(id) * _team.DamageMult(id) * buff.DamageMult;
             PortalBorderTeamHooks.LifestealAdd = _border.LifestealAdd(id);
             PortalBorderTeamHooks.BossIncomingMult = _team.BossIncomingMult;
+            PortalBorderTeamHooks.BossStrikeScale = _portal.StrikeScale;
             PortalBorderTeamHooks.MoveSpeedMult =
                 _border.ColumnMoveSpeedMult(id) * _team.MoveSpeedMult(id) * buff.MoveSpeedMult;
             PortalBorderTeamHooks.PlayerDamageTakenMult = buff.DamageTakenMult;
