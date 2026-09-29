@@ -6,6 +6,7 @@ using Dovus.Core.Combat;
 using Dovus.Core.Execution;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
+using Dovus.Core.Motion;
 using Dovus.Core.Status;
 using UnityEngine;
 
@@ -66,6 +67,16 @@ namespace Dovus.Game
             StatusKind.Stasis
         };
         static readonly StatusKind[] SlowOnly = { StatusKind.Slow };
+
+        void PullBossToPlayerContact()
+        {
+            if (_boss == null || _player == null)
+                return;
+            if (!ForcedDisplacement.Allows(_bossStatus != null ? _bossStatus.Board : null))
+                return;
+            float playerR = Mathf.Max(0.5f, PlayerBodyRadiusM());
+            _boss.PullToContact(_player.position, playerR, _boss.BodyRadiusM);
+        }
 
         void BeginMechanicWorld(MechanicPlan plan, Vector3 aimDir, Vector3 landedAt, double worldMs)
         {
@@ -250,6 +261,9 @@ namespace Dovus.Game
 
         void TickMechanicWorld(double worldMs)
         {
+            if (_boss != null && _boss.PullActive && _player != null)
+                _boss.UpdatePullContact(_player.position, Mathf.Max(0.5f, PlayerBodyRadiusM()), _boss.BodyRadiusM);
+
             if (_boss != null)
                 _bossMechanicHistory.Record(worldMs, _boss.Home);
 
@@ -341,13 +355,10 @@ namespace Dovus.Game
                 }
             }
 
-            if (volume.Profile.Vortex && bossInside && _boss != null)
-            {
-                double pullMps = MechanicEngine?.Rules.Param("vortex_pull_mps") ?? 0;
-                _boss.MoveHomeToward(
-                    volume.Center,
-                    (float)(pullMps * volume.TickMs / 1000.0));
-            }
+            if (EmiciPull.VortexActs(volume.Profile.Vortex, bossInside)
+                && _boss != null && _player != null
+                && ForcedDisplacement.Allows(_bossStatus != null ? _bossStatus.Board : null))
+                PullBossToPlayerContact();
             if (volume.Profile.Continuous && bossInside)
             {
                 if (volume.Plan.Effects.Any(e => e.Has("akinti")))
@@ -392,7 +403,8 @@ namespace Dovus.Game
                 {
                     float distance = FlatDistance(_player.position, _boss.Home);
                     float maxLength = Mathf.Max(0f, (float)link.Plan.Body.ReachM);
-                    if (maxLength > 0f && distance > maxLength)
+                    if (maxLength > 0f && distance > maxLength
+                        && ForcedDisplacement.Allows(_bossStatus != null ? _bossStatus.Board : null))
                         _boss.MoveHomeToward(_player.position, distance - maxLength);
                 }
                 string linkId = link.Plan != null && !string.IsNullOrEmpty(link.Plan.SkillId)

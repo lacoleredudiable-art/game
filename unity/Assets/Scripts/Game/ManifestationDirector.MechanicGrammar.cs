@@ -201,7 +201,8 @@ namespace Dovus.Game
                             ApplyOnce(boss, StatusKind.Blind, ms, (float)Math.Max(e.Amount, 0.0), applied);
                         break;
                     case ("konum", "cek"):
-                        _bossStatus.ApplyPullToward(e.Has("merkeze") ? center : _player.position);
+                        // Girdap merkezi değil: her zaman oyuncunun önündeki temas noktası.
+                        PullBossToPlayerContact();
                         applied.Add("çekme");
                         break;
                     case ("konum", "it") when e.Has("yukari_firlat") && grammar != null:

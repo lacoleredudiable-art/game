@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Dovus.Core;
+using Dovus.Core.Execution;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Motion;
@@ -11,7 +12,6 @@ namespace Dovus.Game
     public sealed partial class ManifestationDirector
     {
         MotionTemplateCatalog _motionCatalog;
-        bool _motionCatalogTried;
         bool _templateOwnsPosition;
         SkillResolution _templateSkill;
         PendingClosing _templatePending;
@@ -23,9 +23,8 @@ namespace Dovus.Game
         {
             get
             {
-                if (_motionCatalogTried)
+                if (_motionCatalog != null && _motionCatalog.Templates.Count > 0)
                     return _motionCatalog;
-                _motionCatalogTried = true;
                 TextAsset asset = Resources.Load<TextAsset>("ElementSystem/motion-templates");
                 if (asset == null || string.IsNullOrWhiteSpace(asset.text))
                 {
@@ -67,6 +66,24 @@ namespace Dovus.Game
             return PositionOwnership.Prepare(template, steps, fallbacks.PhaseSec, fallbacks.StepM);
         }
 
+        /// <summary>
+        /// Katalog ve gövde ilk cast'ten önce hazır olsun. Başarısız okuma kilitlenmez;
+        /// sonraki cast yeniden dener.
+        /// </summary>
+        void EnsureMotionReady()
+        {
+            if (_player == null)
+                return;
+            if (_motionBody == null)
+                _motionBody = _player.GetComponent<MotionTemplateBody>();
+            if (_motionBody == null)
+                _motionBody = _player.gameObject.AddComponent<MotionTemplateBody>();
+            float arena = _colors != null ? _colors.ArenaHalfSizeM : 50f;
+            float body = PlayerBodyRadiusM();
+            _motionBody.Bind(_clock, arena, body > 0.05f ? body : 0.5f);
+            _ = MotionCatalog;
+        }
+
         bool TryBeginMotionTemplate(SkillResolution skill, PendingClosing pending)
         {
             _templateOwnsPosition = false;
@@ -85,25 +102,21 @@ namespace Dovus.Game
                 _motionBody = _player.gameObject.AddComponent<MotionTemplateBody>();
 
             float arena = _colors != null ? _colors.ArenaHalfSizeM : 50f;
-            _motionBody.Bind(_clock, arena, 0.5f);
             _templateSkill = skill;
             _templatePending = pending;
             _templateChain = _closingChainBonus;
             _templateStatusSent = false;
-            if (MotionAim.IsEnemy(template.Aim))
-                _templateAim = ResolveMotionEnemy(template);
-            else
-            {
-                _templateAim = pending.Target;
-                if (_templateAim == null && !IsFriendlyFieldVerb(skill) && _boss != null)
-                    _templateAim = _boss.transform;
-            }
-
+            _templateAim = ResolveTemplateAim(skill, template);
             Transform aim = _templateAim;
             float bodyR = PlayerBodyRadiusM();
             if (bodyR < 0.05f)
                 bodyR = 0.5f;
+            _motionBody.Bind(_clock, arena, bodyR);
             float stopGap = MotionCatalog.Fallbacks.StopGapM;
+            string weapon = _equippedWeapon != null
+                ? (string.IsNullOrEmpty(_equippedWeapon.AnimationsKey) ? _equippedWeapon.Id : _equippedWeapon.AnimationsKey)
+                : string.Empty;
+            _motionBody.SetAnimContext(MotionCatalog.Anims, weapon, VerbOf(skill.SkillId));
             _motionBody.Play(
                 template,
                 () =>
@@ -111,7 +124,23 @@ namespace Dovus.Game
                     if (aim == null)
                         return default;
                     Vector3 pos = aim.position;
-                    return new MotionTarget(true, pos.x, pos.z, ColliderRadius(aim));
+                    bool hold = _boss != null && _boss.PullActive
+                        && (aim == _boss.transform || aim.IsChildOf(_boss.transform));
+                    bool obstacle = false;
+                    float ox = 0f;
+                    float oz = 0f;
+                    float orad = 0f;
+                    if (_boss != null && _ally != null && aim == _ally.transform)
+                    {
+                        obstacle = true;
+                        Vector3 bossPos = _boss.transform.position;
+                        ox = bossPos.x;
+                        oz = bossPos.z;
+                        orad = BossBodyRadius();
+                    }
+                    return new MotionTarget(
+                        true, pos.x, pos.z, ColliderRadius(aim),
+                        hold, obstacle, ox, oz, orad);
                 },
                 () => _input != null && _input.SkillFingerHeld,
                 OnMotionTemplateHit,
@@ -119,6 +148,16 @@ namespace Dovus.Game
                 stopGap);
             Debug.Log($"[Motion] {skill.SkillId} → {template.Name}");
             return true;
+        }
+
+        static int VerbOf(string skillId)
+        {
+            if (string.IsNullOrEmpty(skillId))
+                return 0;
+            int dash = skillId.IndexOf('-');
+            if (dash <= 0)
+                return 0;
+            return int.TryParse(skillId.Substring(0, dash), out int verb) ? verb : 0;
         }
 
         void OnMotionTemplateHit(MotionHit hit)
@@ -136,7 +175,8 @@ namespace Dovus.Game
                 return;
 
             bool friendly = IsFriendlyFieldVerb(_templateSkill) || IsHealSkill(_templateSkill);
-            bool reached = friendly || BossReachedMotionHit(hit);
+            bool geometry = BossReachedMotionHit(hit);
+            bool reached = friendly || geometry;
             if (!friendly && reached)
             {
                 ApplyClosingDamage(
@@ -148,13 +188,23 @@ namespace Dovus.Game
                     _templateChain);
             }
 
+            // Fiil hasarı kapanışta iner. Emici aktarımın eksi canı base_damage 0 iken
+            // ayrıca boss'a yazılır; yoksa 1-2 gibi vuruşlar iki kez vurur.
+            if (geometry && _templateSkill.BaseDamage <= 0.01f)
+                ApplyDrainDamage(hit.Share);
+
             if (friendly && IsHealSkill(_templateSkill))
             {
-                ApplyClosingHeal(
-                    _templatePending.Closing,
-                    _templateSkill,
-                    hit.Share,
-                    _templateChain);
+                if (DrainNumbers.TryShare(LastMechanicPlan, hit.Share, out _, out float drainHeal) && drainHeal > 0.5f)
+                    ApplyClosingHealAmount(_templateSkill, Mathf.RoundToInt(drainHeal), null, 0f);
+                else
+                {
+                    ApplyClosingHeal(
+                        _templatePending.Closing,
+                        _templateSkill,
+                        hit.Share,
+                        _templateChain);
+                }
             }
 
             bool selfPulse = hit.Anchor is "self" or "ring";
@@ -171,6 +221,16 @@ namespace Dovus.Game
             }
         }
 
+        void ApplyDrainDamage(float share)
+        {
+            if (!DrainNumbers.TryShare(LastMechanicPlan, share, out float damage, out _) || damage <= 0.01f)
+                return;
+            if (_bossStatus != null)
+                _bossStatus.ApplyDamage(damage);
+            else
+                _bossVitals?.ApplyDamage(damage);
+        }
+
         bool BossReachedMotionHit(in MotionHit hit)
         {
             if (_boss == null)
@@ -178,20 +238,59 @@ namespace Dovus.Game
             Vector3 boss = _boss.transform.position;
             float extra = BossBodyRadius();
             var origin = new Vector3(hit.OriginX, boss.y, hit.OriginZ);
+            bool templateHit;
             if (hit.Anchor is "self" or "ring" or "target" or "behind" or "plant" or "target_side"
                 || hit.Shape == "sphere")
             {
                 Vector3 flat = boss - origin;
                 flat.y = 0f;
-                return flat.magnitude <= hit.RadiusM + extra;
+                templateHit = flat.magnitude <= hit.RadiusM + extra;
             }
+            else
+            {
+                Vector3 dir = new Vector3(hit.DirX, 0f, hit.DirZ);
+                if (dir.sqrMagnitude < 0.0001f)
+                    dir = Vector3.forward;
+                dir.Normalize();
+                Vector3 end = origin + dir * Mathf.Max(hit.LengthM, 0.2f);
+                templateHit = DistancePointSegment(boss, origin, end) <= hit.RadiusM + extra;
+            }
+            if (templateHit)
+                return true;
+            return JsonEdgeReachesBoss(boss, extra);
+        }
 
-            Vector3 dir = new Vector3(hit.DirX, 0f, hit.DirZ);
-            if (dir.sqrMagnitude < 0.0001f)
-                dir = Vector3.forward;
-            dir.Normalize();
-            Vector3 end = origin + dir * Mathf.Max(hit.LengthM, 0.2f);
-            return DistancePointSegment(boss, origin, end) <= hit.RadiusM + extra;
+        /// <summary>
+        /// Göğüs ofseti dikeydir (0,35 m); yatay menzil kenardan kenara JSON boyudur.
+        /// Kalıp vuruşu kısa kalsa da fiil hitbox'ı yetiyorsa isabet sayılır.
+        /// </summary>
+        bool JsonEdgeReachesBoss(Vector3 boss, float bossRadius)
+        {
+            if (_player == null || _templateSkill.IsEmpty)
+                return false;
+            float reach = JsonEdgeReachM(_templateSkill);
+            if (reach <= 0f)
+                return false;
+            return MotionCastReach.CenterInReach(
+                FlatDistance(_player.position, boss),
+                PlayerBodyRadiusM(),
+                bossRadius,
+                reach);
+        }
+
+        float JsonEdgeReachM(in SkillResolution skill)
+        {
+            if (!TryVerbHitbox(skill, out VerbHitboxSpec spec))
+                return 0f;
+            int.TryParse(skill.AdjectiveId, out int adjectiveId);
+            int weaponId = EquippedWeaponNumber();
+            float rangeMult = _equippedWeapon != null ? _equippedWeapon.RangeMult : 1f;
+            float weaponScale = _verbData?.WeaponSizeMult(weaponId, rangeMult) ?? rangeMult;
+            float table = _verbData?.AdjectiveSizeMult(adjectiveId) ?? 1f;
+            float engineScale = skill.EngineModifiers["hitbox_scale_mult"].AsFloat(0f);
+            float adjective = HitboxSizing.AdjectiveScale(table, engineScale);
+            adjective *= _slotPassives?.HitboxSizeMult ?? 1f;
+            return HitboxSizing.Resolve(spec, weaponScale, adjective).ReachM;
         }
 
         float BossBodyRadius()
@@ -217,6 +316,31 @@ namespace Dovus.Game
                 return Vector3.Distance(point, a);
             float t = Mathf.Clamp01(Vector3.Dot(point - a, ab) / len2);
             return Vector3.Distance(point, a + ab * t);
+        }
+
+        /// <summary>
+        /// Atıcı duruş hedefi olmaz. Dost kalıbı işaretli dosta yürür; ışınlanma
+        /// gövdeyi öte kenardan geçer. Diğerleri düşmanı kullanır, yoksa bakış.
+        /// </summary>
+        Transform ResolveTemplateAim(SkillResolution skill, MotionTemplate template)
+        {
+            bool ally = _ally != null && _ally.transform != _player;
+            MotionDeliveryAim.Kind kind = MotionDeliveryAim.Choose(
+                template.Aim,
+                skill.TargetMode,
+                skill.Action,
+                MotionDeliveryAim.MovesTowardMarked(template),
+                ally);
+            if (kind == MotionDeliveryAim.Kind.Ally && ally && !MotionDeliveryAim.SwapsPastBody(template))
+                return _ally.transform;
+            if (MotionAim.IsEnemy(template.Aim) || kind == MotionDeliveryAim.Kind.None
+                || MotionDeliveryAim.SwapsPastBody(template))
+            {
+                Transform enemy = ResolveMotionEnemy(template);
+                if (enemy != null && enemy != _player)
+                    return enemy;
+            }
+            return _boss != null && _boss.transform != _player ? _boss.transform : null;
         }
 
         Transform ResolveMotionEnemy(MotionTemplate template)

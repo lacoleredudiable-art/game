@@ -1,6 +1,95 @@
 {
   "version": 1,
-  "note": "Hareket kalıbı katmanı. Fiil türü seçer, kalıp şekli seçer. 144 kombo 101 kalıba, 42 aileye bağlıdır. Aile 1-14 oynanır; 15-42 kayıtlıdır ama motor eski davranışı sürdürür. Sayılar buradadır. Etiketler (portal, sinir_modu, takim_kombosu, silah_kesme) saklanır, henüz uygulanmaz.",
+  "note": "Hareket kalıbı katmanı. Fiil türü seçer, kalıp şekli seçer. 144 kombo 101 kalıba, 42 aileye bağlıdır. Aile 1-42 oynanır. Sayılar buradadır. Etiketler (portal, sinir_modu, takim_kombosu, silah_kesme) saklanır, uygulanmaz. anim_bridge silah klibine giden tek tablodur.",
+  "anim_bridge": {
+    "fallback_state": "Locomotion",
+    "rows": [
+      {
+        "key": "windup",
+        "weapon": 0,
+        "verb": 0,
+        "state": "CastPierce",
+        "trigger": ""
+      },
+      {
+        "key": "lunge",
+        "weapon": 0,
+        "verb": 0,
+        "state": "BasicStrike",
+        "trigger": ""
+      },
+      {
+        "key": "dash",
+        "weapon": 0,
+        "verb": 0,
+        "state": "Locomotion",
+        "trigger": ""
+      },
+      {
+        "key": "backstep",
+        "weapon": 0,
+        "verb": 0,
+        "state": "Locomotion",
+        "trigger": ""
+      },
+      {
+        "key": "sidestep",
+        "weapon": 0,
+        "verb": 0,
+        "state": "Locomotion",
+        "trigger": ""
+      },
+      {
+        "key": "spin",
+        "weapon": 0,
+        "verb": 0,
+        "state": "CastSweep",
+        "trigger": ""
+      },
+      {
+        "key": "leap",
+        "weapon": 0,
+        "verb": 0,
+        "state": "CastSlam",
+        "trigger": ""
+      },
+      {
+        "key": "land",
+        "weapon": 0,
+        "verb": 0,
+        "state": "CastSlam",
+        "trigger": ""
+      },
+      {
+        "key": "hook_throw",
+        "weapon": 0,
+        "verb": 0,
+        "state": "CastShoot",
+        "trigger": ""
+      },
+      {
+        "key": "recover",
+        "weapon": 0,
+        "verb": 0,
+        "state": "Locomotion",
+        "trigger": ""
+      },
+      {
+        "key": "cast",
+        "weapon": 0,
+        "verb": 0,
+        "state": "CastChannel",
+        "trigger": ""
+      },
+      {
+        "key": "dash_fast",
+        "weapon": 0,
+        "verb": 0,
+        "state": "CastPierce",
+        "trigger": ""
+      }
+    ]
+  },
   "tag_labels": {
     "portal": "Portal",
     "sinir_modu": "Sınır modu",
@@ -92,142 +181,142 @@
     {
       "id": 15,
       "name": "Basılı ışın",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 16,
       "name": "Seken mermi",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 17,
       "name": "Atılan küre",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 18,
       "name": "Yere dikilen nesne",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 19,
       "name": "Dışa yayılan dalga",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 20,
       "name": "Dağılan yağmur",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 21,
       "name": "Sis ve körlük",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 22,
       "name": "Yerden yükselen",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 23,
       "name": "Atılıp vurma",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 24,
       "name": "Geri sarma",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 25,
       "name": "Kapı ve ışınlanma",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 26,
       "name": "Geçiş kapısı",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 27,
       "name": "Yem",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 28,
       "name": "Doğru an",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 29,
       "name": "Basılı tutuş",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 30,
       "name": "Çalan vuruş",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 31,
       "name": "Girdap",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 32,
       "name": "Yer tuzağı",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 33,
       "name": "Patlayan ip",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 34,
       "name": "Güdümlü",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 35,
       "name": "Yerde iz",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 36,
       "name": "İp bağı",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 37,
       "name": "Çağrılan yaratık",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 38,
       "name": "Beliren gölge",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 39,
       "name": "Kapıdan akın",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 40,
       "name": "Muhafız",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 41,
       "name": "Yürüyen alan",
-      "implemented": false
+      "implemented": true
     },
     {
       "id": 42,
       "name": "Kum saati",
-      "implemented": false
+      "implemented": true
     }
   ],
   "templates": [
@@ -252,7 +341,8 @@
           "gate": "release",
           "max_hold_sec": 0.9,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "windup"
         },
         {
           "name": "saplama",
@@ -275,7 +365,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         }
       ]
     },
@@ -309,7 +400,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         },
         {
           "name": "pence_2",
@@ -326,7 +418,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         },
         {
           "name": "pence_3",
@@ -343,7 +436,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         }
       ]
     },
@@ -376,7 +470,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "sidestep"
         },
         {
           "name": "sag",
@@ -396,7 +491,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "leap"
         }
       ]
     },
@@ -432,7 +528,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "leap"
         }
       ]
     },
@@ -465,7 +562,8 @@
             "payload": "effect"
           },
           "facing": "hold",
-          "homing": "none"
+          "homing": "none",
+          "anim": "spin"
         }
       ]
     },
@@ -500,14 +598,16 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "ger",
           "motion": "hold",
           "sec": 0.28,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "recover"
         },
         {
           "name": "cek_kes",
@@ -524,7 +624,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         }
       ]
     },
@@ -545,7 +646,8 @@
           "motion": "hold",
           "sec": 0.28,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "cik",
@@ -562,7 +664,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         }
       ]
     },
@@ -600,7 +703,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "leap"
         }
       ]
     },
@@ -621,7 +725,8 @@
           "motion": "hold",
           "sec": 0.22,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "vur",
@@ -638,7 +743,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         }
       ]
     },
@@ -676,7 +782,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         },
         {
           "name": "sirt",
@@ -693,7 +800,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -733,14 +841,16 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         },
         {
           "name": "bekle",
           "motion": "hold",
           "sec": 0.24,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "recover"
         },
         {
           "name": "yanki",
@@ -758,7 +868,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -793,7 +904,8 @@
             "every_sec": 0.5
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -828,7 +940,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         }
       ]
     },
@@ -836,7 +949,7 @@
       "id": "uzaktan_emme",
       "name": "Uzaktan emme",
       "family": 15,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "2-2",
@@ -845,11 +958,32 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "uzat",
           "motion": "hold",
-          "sec": 0.2,
+          "sec": 0.16,
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "em",
+          "motion": "channel",
+          "sec": 2.0,
+          "drift_m": 0.35,
+          "walk_mps": 0.6,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "forward",
+            "length_m": 3.2,
+            "radius_m": 0.35,
+            "at": 0.25,
+            "share": 0.25,
+            "payload": "effect",
+            "every_sec": 0.5
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -870,11 +1004,57 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
+          "name": "at",
+          "motion": "throw",
+          "sec": 0.18,
+          "shot_m": 3.6,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "shot",
+            "length_m": 0.7,
+            "radius_m": 0.4,
+            "at": 0.85,
+            "share": 0.34,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "hook_throw"
+        },
+        {
+          "name": "sek_2",
+          "motion": "hold",
+          "sec": 0.18,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "target",
+            "length_m": 0.7,
+            "radius_m": 0.55,
+            "at": 0.45,
+            "share": 0.33,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "sek_3",
+          "motion": "hold",
+          "sec": 0.18,
+          "side": 1,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "target_side",
+            "length_m": 0.7,
+            "radius_m": 0.55,
+            "at": 0.5,
+            "share": 0.33,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -899,11 +1079,23 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
+          "name": "dik",
+          "motion": "slam",
+          "sec": 0.3,
+          "distance_m": 0.15,
+          "height_m": 0.4,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "self",
+            "length_m": 0.8,
+            "radius_m": 0.55,
+            "at": 0.85,
+            "share": 1,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "land"
         }
       ]
     },
@@ -924,11 +1116,30 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "dokun",
           "motion": "hold",
-          "sec": 0.2,
+          "sec": 0.16,
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "halka",
+          "motion": "spin",
+          "sec": 0.42,
+          "yaw_deg": 80,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "ring",
+            "length_m": 3.2,
+            "radius_m": 3.2,
+            "at": 0.7,
+            "share": 1,
+            "payload": "effect"
+          },
+          "facing": "hold",
+          "homing": "none",
+          "anim": "spin"
         }
       ]
     },
@@ -952,7 +1163,8 @@
           "sec": 0.18,
           "shot_m": 4,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "cek",
@@ -970,7 +1182,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "dash"
         }
       ]
     },
@@ -991,11 +1204,21 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "cokert",
           "motion": "hold",
-          "sec": 0.2,
+          "sec": 0.3,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "target",
+            "length_m": 1.4,
+            "radius_m": 1.25,
+            "at": 0.6,
+            "share": 1,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -1020,11 +1243,25 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
+          "name": "filiz",
+          "motion": "hop",
+          "sec": 0.42,
+          "side": 1,
+          "distance_m": 0,
+          "forward_m": 0.25,
+          "height_m": 0.95,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "target",
+            "length_m": 0.9,
+            "radius_m": 0.75,
+            "at": 0.7,
+            "share": 1,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "leap"
         }
       ]
     },
@@ -1063,7 +1300,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         }
       ]
     },
@@ -1097,7 +1335,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "ters",
@@ -1113,7 +1352,8 @@
             "payload": "none"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -1147,14 +1387,16 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "kos",
           "motion": "hold",
           "sec": 1.0,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "ulak",
@@ -1173,7 +1415,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "sidestep"
         }
       ]
     },
@@ -1194,11 +1437,24 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
+          "name": "isik",
+          "motion": "channel",
+          "sec": 3.0,
+          "drift_m": 1.2,
+          "walk_mps": 1.5,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "forward",
+            "length_m": 3.2,
+            "radius_m": 0.32,
+            "at": 0.0833333,
+            "share": 0.1666667,
+            "payload": "effect",
+            "every_sec": 0.5
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -1206,7 +1462,7 @@
       "id": "isinlan_kes",
       "name": "Işınlan ve kes",
       "family": 23,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "3-1",
@@ -1219,11 +1475,33 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "kilit",
           "motion": "hold",
-          "sec": 0.2,
+          "sec": 0.3,
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "isin",
+          "motion": "blink",
+          "sec": 0.18,
+          "snap_at": 0.4,
+          "distance_m": 5.0,
+          "land": "behind",
+          "behind_m": 1.15,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "behind",
+            "length_m": 0.9,
+            "radius_m": 0.55,
+            "at": 0.72,
+            "share": 1,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "dash"
         }
       ]
     },
@@ -1231,7 +1509,7 @@
       "id": "icinden_emme",
       "name": "İçinden geçip emme",
       "family": 23,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "3-2",
@@ -1243,11 +1521,23 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
+          "name": "gec",
+          "motion": "dash",
+          "sec": 0.28,
+          "distance_m": 3.0,
+          "overshoot_m": 1.15,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "forward",
+            "length_m": 1.6,
+            "radius_m": 0.45,
+            "at": 0.55,
+            "share": 1,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "dash"
         }
       ]
     },
@@ -1281,7 +1571,8 @@
             "payload": "effect"
           },
           "facing": "travel",
-          "homing": "none"
+          "homing": "none",
+          "anim": "leap"
         },
         {
           "name": "sek_2",
@@ -1301,7 +1592,8 @@
             "payload": "effect"
           },
           "facing": "travel",
-          "homing": "none"
+          "homing": "none",
+          "anim": "leap"
         },
         {
           "name": "sek_3",
@@ -1311,6 +1603,7 @@
           "distance_m": 0.55,
           "forward_m": 1.25,
           "height_m": 0.5,
+          "land": "behind",
           "hit": {
             "shape": "sphere",
             "anchor": "self",
@@ -1321,7 +1614,8 @@
             "payload": "effect"
           },
           "facing": "travel",
-          "homing": "none"
+          "homing": "none",
+          "anim": "leap"
         }
       ]
     },
@@ -1329,7 +1623,7 @@
       "id": "geri_sarma",
       "name": "Geri sarma",
       "family": 24,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "3-4",
@@ -1344,11 +1638,38 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "capa",
           "motion": "hold",
-          "sec": 0.2,
+          "sec": 0.14,
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "atil",
+          "motion": "dash",
+          "sec": 0.24,
+          "distance_m": 3.0,
+          "facing": "target",
+          "homing": "track",
+          "anim": "dash"
+        },
+        {
+          "name": "bekle",
+          "motion": "hold",
+          "sec": 2.0,
+          "facing": "hold",
+          "homing": "none",
+          "anim": "recover"
+        },
+        {
+          "name": "don",
+          "motion": "return",
+          "sec": 0.28,
+          "distance_m": 3.0,
+          "facing": "travel",
+          "homing": "none",
+          "anim": "dash"
         }
       ]
     },
@@ -1373,7 +1694,8 @@
           "distance_m": 3.2,
           "overshoot_m": 0,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "dash"
         },
         {
           "name": "patlama",
@@ -1389,7 +1711,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -1411,7 +1734,8 @@
           "sec": 0.16,
           "shot_m": 5,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "cek",
@@ -1420,7 +1744,8 @@
           "distance_m": 2.2,
           "gap_m": 1.15,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "dash"
         },
         {
           "name": "as",
@@ -1441,7 +1766,8 @@
             "payload": "effect"
           },
           "facing": "travel",
-          "homing": "none"
+          "homing": "none",
+          "anim": "leap"
         }
       ]
     },
@@ -1473,14 +1799,16 @@
             "payload": "effect"
           },
           "facing": "travel",
-          "homing": "none"
+          "homing": "none",
+          "anim": "dash"
         },
         {
           "name": "din",
           "motion": "hold",
           "sec": 0.35,
           "facing": "hold",
-          "homing": "none"
+          "homing": "none",
+          "anim": "recover"
         }
       ]
     },
@@ -1506,7 +1834,8 @@
           "height_m": 1.35,
           "gap_m": 0.4,
           "facing": "travel",
-          "homing": "none"
+          "homing": "none",
+          "anim": "leap"
         },
         {
           "name": "cak",
@@ -1524,7 +1853,8 @@
             "payload": "effect"
           },
           "facing": "travel",
-          "homing": "none"
+          "homing": "none",
+          "anim": "land"
         }
       ]
     },
@@ -1532,7 +1862,7 @@
       "id": "iki_kapi",
       "name": "İki kapılı portal",
       "family": 25,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "3-10",
@@ -1551,11 +1881,47 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "birak",
           "motion": "hold",
-          "sec": 0.2,
+          "sec": 0.12,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "self",
+            "length_m": 0.5,
+            "radius_m": 0.4,
+            "at": 0.5,
+            "share": 0.5,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "atil",
+          "motion": "dash",
+          "sec": 0.26,
+          "distance_m": 3.0,
+          "facing": "target",
+          "homing": "track",
+          "anim": "dash"
+        },
+        {
+          "name": "kapi",
+          "motion": "hold",
+          "sec": 0.16,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "self",
+            "length_m": 0.6,
+            "radius_m": 0.45,
+            "at": 0.45,
+            "share": 0.5,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -1563,7 +1929,7 @@
       "id": "yem_kac",
       "name": "Yem bırakıp kaçma",
       "family": 27,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "3-11",
@@ -1572,11 +1938,30 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "birak",
           "motion": "hold",
-          "sec": 0.2,
+          "sec": 0.12,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "self",
+            "length_m": 0.45,
+            "radius_m": 0.4,
+            "at": 0.45,
+            "share": 1,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "kac",
+          "motion": "retreat",
+          "sec": 0.28,
+          "distance_m": 2.8,
+          "facing": "target",
+          "homing": "track",
+          "anim": "backstep"
         }
       ]
     },
@@ -1593,11 +1978,15 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
-          "facing": "target",
-          "homing": "none"
+          "name": "suz",
+          "motion": "channel",
+          "sec": 3.0,
+          "drift_m": 1.1,
+          "walk_mps": 3.4,
+          "height_m": 0.85,
+          "facing": "travel",
+          "homing": "none",
+          "anim": "cast"
         }
       ]
     },
@@ -1605,7 +1994,7 @@
       "id": "tam_zamanli",
       "name": "Tam zamanlı blok",
       "family": 28,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "4-1",
@@ -1620,11 +2009,21 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "kaldir",
           "motion": "hold",
-          "sec": 0.2,
+          "sec": 0.5,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "forward",
+            "length_m": 2.8,
+            "radius_m": 0.5,
+            "at": 0.7,
+            "share": 1,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -1632,7 +2031,7 @@
       "id": "kalkan_calma",
       "name": "Kalkan çalma",
       "family": 30,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "4-2",
@@ -1641,11 +2040,22 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
+          "name": "vur",
+          "motion": "lunge",
           "sec": 0.2,
+          "distance_m": 1.5,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "forward",
+            "length_m": 1.5,
+            "radius_m": 0.4,
+            "at": 0.65,
+            "share": 1,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "lunge"
         }
       ]
     },
@@ -1653,7 +2063,7 @@
       "id": "seken_disk",
       "name": "Seken disk",
       "family": 16,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "4-3",
@@ -1662,11 +2072,41 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
+          "name": "at",
+          "motion": "throw",
           "sec": 0.2,
+          "shot_m": 3.6,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "shot",
+            "length_m": 0.6,
+            "radius_m": 0.35,
+            "at": 0.85,
+            "share": 0.6,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "hook_throw"
+        },
+        {
+          "name": "sek",
+          "motion": "hold",
+          "sec": 0.22,
+          "side": 1,
+          "side_m": 1.4,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "side",
+            "length_m": 0.6,
+            "radius_m": 0.4,
+            "at": 0.5,
+            "share": 0.4,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -1674,7 +2114,7 @@
       "id": "duvar_dikme",
       "name": "Duvar dikme",
       "family": 18,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "4-4",
@@ -1687,11 +2127,21 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "dik",
           "motion": "hold",
-          "sec": 0.2,
+          "sec": 0.32,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "forward",
+            "length_m": 2.8,
+            "radius_m": 0.9,
+            "at": 0.65,
+            "share": 1,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -1716,7 +2166,8 @@
           "motion": "hold",
           "sec": 0.18,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "yelpaze",
@@ -1733,7 +2184,8 @@
             "payload": "effect"
           },
           "facing": "hold",
-          "homing": "none"
+          "homing": "none",
+          "anim": "spin"
         }
       ]
     },
@@ -1741,7 +2193,7 @@
       "id": "duman_duvari",
       "name": "Duman duvarı",
       "family": 18,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "4-7",
@@ -1750,11 +2202,32 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
+          "name": "vur",
+          "motion": "slam",
+          "sec": 0.16,
+          "distance_m": 0.2,
+          "height_m": 0.3,
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "land"
+        },
+        {
+          "name": "duvar",
+          "motion": "fan",
+          "sec": 0.36,
+          "yaw_deg": 40,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "forward",
+            "length_m": 2.8,
+            "radius_m": 1.05,
+            "at": 0.12,
+            "share": 1,
+            "payload": "effect"
+          },
+          "facing": "hold",
+          "homing": "none",
+          "anim": "spin"
         }
       ]
     },
@@ -1779,11 +2252,23 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "cik",
           "motion": "hold",
-          "sec": 0.2,
+          "sec": 0.24,
+          "side": 1,
+          "side_m": 1.25,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "side",
+            "length_m": 0.6,
+            "radius_m": 0.4,
+            "at": 0.55,
+            "share": 1,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -1804,11 +2289,24 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
+          "name": "siper",
+          "motion": "channel",
+          "sec": 3.0,
+          "drift_m": 0.8,
+          "walk_mps": 1.2,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "forward",
+            "length_m": 2.8,
+            "radius_m": 0.55,
+            "at": 0.25,
+            "share": 0.3333333,
+            "payload": "effect",
+            "every_sec": 1.0
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -1831,7 +2329,8 @@
           "distance_m": 0.7,
           "plant": true,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         },
         {
           "name": "uzaklas",
@@ -1839,7 +2338,8 @@
           "sec": 0.26,
           "distance_m": 1.5,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "backstep"
         },
         {
           "name": "patla",
@@ -1855,7 +2355,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -1863,7 +2364,7 @@
       "id": "ceken_girdap",
       "name": "Çeken girdap",
       "family": 31,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "5-2",
@@ -1876,11 +2377,48 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
+          "name": "ac",
+          "motion": "throw",
+          "sec": 0.18,
+          "shot_m": 3.6,
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "hook_throw"
+        },
+        {
+          "name": "cek",
+          "motion": "hold",
+          "sec": 1.0,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "target",
+            "length_m": 1.2,
+            "radius_m": 1.15,
+            "at": 0.5,
+            "share": 0.35,
+            "payload": "effect",
+            "every_sec": 0.5
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "pat",
+          "motion": "hold",
+          "sec": 0.14,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "target",
+            "length_m": 1.3,
+            "radius_m": 1.25,
+            "at": 0.4,
+            "share": 0.3,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -1888,7 +2426,7 @@
       "id": "seken_bomba",
       "name": "Seken bomba",
       "family": 16,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "5-3",
@@ -1897,11 +2435,57 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "at",
+          "motion": "throw",
+          "sec": 0.18,
+          "shot_m": 3.6,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "shot",
+            "length_m": 0.8,
+            "radius_m": 0.5,
+            "at": 0.85,
+            "share": 0.34,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "hook_throw"
+        },
+        {
+          "name": "sek_2",
           "motion": "hold",
           "sec": 0.2,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "target",
+            "length_m": 0.9,
+            "radius_m": 0.75,
+            "at": 0.5,
+            "share": 0.33,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "sek_3",
+          "motion": "hold",
+          "sec": 0.2,
+          "side": -1,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "target_side",
+            "length_m": 0.9,
+            "radius_m": 0.7,
+            "at": 0.5,
+            "share": 0.33,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -1909,7 +2493,7 @@
       "id": "mayin_cakma",
       "name": "Mayın çakma",
       "family": 32,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "5-4",
@@ -1924,11 +2508,30 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "cak",
+          "motion": "hold",
+          "sec": 0.22,
+          "plant": true,
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "bekle",
           "motion": "hold",
           "sec": 0.2,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "plant",
+            "length_m": 0.8,
+            "radius_m": 0.75,
+            "at": 0.4,
+            "share": 1,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "recover"
         }
       ]
     },
@@ -1953,7 +2556,8 @@
           "distance_m": 0.35,
           "height_m": 0.35,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "land"
         },
         {
           "name": "catlak_1",
@@ -1972,7 +2576,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "sidestep"
         },
         {
           "name": "catlak_2",
@@ -1989,7 +2594,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         },
         {
           "name": "catlak_3",
@@ -2008,7 +2614,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "sidestep"
         }
       ]
     },
@@ -2016,7 +2623,7 @@
       "id": "gerilip_kopan",
       "name": "Gerilip kopan bağ",
       "family": 33,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "5-6",
@@ -2025,11 +2632,40 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
+          "name": "yapis",
+          "motion": "lunge",
+          "sec": 0.16,
+          "distance_m": 1.3,
+          "plant": true,
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "lunge"
+        },
+        {
+          "name": "uzak",
+          "motion": "retreat",
+          "sec": 0.28,
+          "distance_m": 1.8,
+          "facing": "target",
+          "homing": "track",
+          "anim": "backstep"
+        },
+        {
+          "name": "kop",
+          "motion": "hold",
+          "sec": 0.14,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "plant",
+            "length_m": 1.0,
+            "radius_m": 0.9,
+            "at": 0.45,
+            "share": 1,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -2037,7 +2673,7 @@
       "id": "sis_bombasi",
       "name": "Sis bombası",
       "family": 21,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "5-7",
@@ -2050,11 +2686,22 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
+          "name": "at",
+          "motion": "throw",
+          "sec": 0.22,
+          "shot_m": 3.6,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "shot",
+            "length_m": 0.7,
+            "radius_m": 0.7,
+            "at": 0.85,
+            "share": 1,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "hook_throw"
         }
       ]
     },
@@ -2079,7 +2726,8 @@
           "motion": "hold",
           "sec": 0.16,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "fiskir",
@@ -2099,7 +2747,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "leap"
         }
       ]
     },
@@ -2120,11 +2769,30 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
+          "name": "at",
+          "motion": "throw",
+          "sec": 0.4,
+          "shot_m": 4.0,
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "hook_throw"
+        },
+        {
+          "name": "car",
+          "motion": "hold",
+          "sec": 0.16,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "target",
+            "length_m": 0.9,
+            "radius_m": 0.85,
+            "at": 0.45,
+            "share": 1,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -2132,7 +2800,7 @@
       "id": "karsi_darbe",
       "name": "Karşı darbe",
       "family": 28,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "5-10",
@@ -2145,11 +2813,30 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "hazir",
           "motion": "hold",
           "sec": 0.2,
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "ters",
+          "motion": "lunge",
+          "sec": 0.16,
+          "distance_m": 1.3,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "forward",
+            "length_m": 1.6,
+            "radius_m": 0.35,
+            "at": 0.55,
+            "share": 1,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "lunge"
         }
       ]
     },
@@ -2157,7 +2844,7 @@
       "id": "patlayan_iz",
       "name": "Patlayan iz",
       "family": 35,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "5-12",
@@ -2166,11 +2853,24 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
+          "name": "kos",
+          "motion": "channel",
+          "sec": 3.0,
+          "drift_m": 2.2,
+          "walk_mps": 1.8,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "forward",
+            "length_m": 1.8,
+            "radius_m": 0.45,
+            "at": 0.15,
+            "share": 0.1666667,
+            "payload": "effect",
+            "every_sec": 0.5
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -2193,7 +2893,8 @@
           "distance_m": 1.6,
           "gap_m": 0.55,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "dash"
         },
         {
           "name": "bas",
@@ -2210,7 +2911,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         }
       ]
     },
@@ -2232,7 +2934,8 @@
           "sec": 0.16,
           "shot_m": 4.2,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "cek",
@@ -2249,7 +2952,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "backstep"
         }
       ]
     },
@@ -2284,7 +2988,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "leap"
         },
         {
           "name": "sek",
@@ -2295,7 +3000,8 @@
           "forward_m": -1.7,
           "height_m": 0.55,
           "facing": "travel",
-          "homing": "none"
+          "homing": "none",
+          "anim": "leap"
         }
       ]
     },
@@ -2303,7 +3009,7 @@
       "id": "karsilikli_kilit",
       "name": "Karşılıklı kilit",
       "family": 29,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "6-4",
@@ -2312,11 +3018,31 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
+          "name": "yapis",
+          "motion": "pull",
+          "sec": 0.24,
+          "distance_m": 1.8,
+          "gap_m": 0.55,
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "dash"
+        },
+        {
+          "name": "tut",
+          "motion": "hold",
+          "sec": 3.0,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "forward",
+            "length_m": 1.3,
+            "radius_m": 0.4,
+            "at": 0.08,
+            "share": 1,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "recover"
         }
       ]
     },
@@ -2324,7 +3050,7 @@
       "id": "yer_tuzagi",
       "name": "Yer tuzağı",
       "family": 32,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "6-5",
@@ -2337,11 +3063,21 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "ser",
           "motion": "hold",
-          "sec": 0.2,
+          "sec": 0.28,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "forward",
+            "length_m": 2.8,
+            "radius_m": 1.05,
+            "at": 0.6,
+            "share": 1,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -2368,11 +3104,30 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
+          "name": "at",
+          "motion": "throw",
           "sec": 0.2,
+          "shot_m": 3.6,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "shot",
+            "length_m": 0.55,
+            "radius_m": 0.3,
+            "at": 0.85,
+            "share": 1,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "hook_throw"
+        },
+        {
+          "name": "bag",
+          "motion": "hold",
+          "sec": 0.45,
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -2380,7 +3135,7 @@
       "id": "goz_bagi",
       "name": "Göz bağı",
       "family": 21,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "6-7",
@@ -2393,11 +3148,22 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
+          "name": "at",
+          "motion": "throw",
           "sec": 0.2,
+          "shot_m": 3.6,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "shot",
+            "length_m": 0.55,
+            "radius_m": 0.32,
+            "at": 0.85,
+            "share": 1,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "hook_throw"
         }
       ]
     },
@@ -2423,7 +3189,8 @@
           "height_m": 1.25,
           "gap_m": 0.7,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "leap"
         },
         {
           "name": "as",
@@ -2440,7 +3207,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "leap"
         }
       ]
     },
@@ -2448,7 +3216,7 @@
       "id": "zamanli_donma",
       "name": "Zamanlı donma",
       "family": 28,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "6-9",
@@ -2461,11 +3229,30 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "bekle",
           "motion": "hold",
-          "sec": 0.2,
+          "sec": 0.34,
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "recover"
+        },
+        {
+          "name": "dokun",
+          "motion": "lunge",
+          "sec": 0.16,
+          "distance_m": 1.6,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "forward",
+            "length_m": 1.5,
+            "radius_m": 0.32,
+            "at": 0.6,
+            "share": 1,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "lunge"
         }
       ]
     },
@@ -2501,7 +3288,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         },
         {
           "name": "arka",
@@ -2518,7 +3306,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -2526,7 +3315,7 @@
       "id": "cember_sarma",
       "name": "Çember çizip sarma",
       "family": 36,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "6-12",
@@ -2535,11 +3324,55 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
+          "name": "sol",
+          "motion": "sidestep",
+          "sec": 0.22,
+          "side": -1,
+          "distance_m": 1.7,
+          "forward_m": 1.15,
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "sidestep"
+        },
+        {
+          "name": "arka",
+          "motion": "hop",
+          "sec": 0.3,
+          "land": "behind",
+          "behind_m": 1.15,
+          "height_m": 0.4,
+          "distance_m": 1.5,
+          "facing": "target",
+          "homing": "track",
+          "anim": "leap"
+        },
+        {
+          "name": "sag",
+          "motion": "sidestep",
+          "sec": 0.22,
+          "side": 1,
+          "distance_m": 1.6,
+          "forward_m": 0.2,
+          "facing": "target",
+          "homing": "track",
+          "anim": "sidestep"
+        },
+        {
+          "name": "sar",
+          "motion": "hold",
+          "sec": 0.16,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "target",
+            "length_m": 1.2,
+            "radius_m": 1.2,
+            "at": 0.4,
+            "share": 1,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -2560,7 +3393,8 @@
           "motion": "hold",
           "sec": 0.12,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "at",
@@ -2577,7 +3411,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         }
       ]
     },
@@ -2608,7 +3443,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "cek",
@@ -2625,7 +3461,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "backstep"
         }
       ]
     },
@@ -2633,7 +3470,7 @@
       "id": "seken_yaratik",
       "name": "Seken yaratık",
       "family": 37,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "7-3",
@@ -2646,11 +3483,66 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
+          "name": "at",
+          "motion": "throw",
+          "sec": 0.16,
+          "shot_m": 3.6,
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "hook_throw"
+        },
+        {
+          "name": "isir_1",
+          "motion": "hold",
+          "sec": 0.16,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "target",
+            "length_m": 0.6,
+            "radius_m": 0.45,
+            "at": 0.5,
+            "share": 0.34,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "isir_2",
+          "motion": "hold",
+          "sec": 0.16,
+          "side": -1,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "target_side",
+            "length_m": 0.6,
+            "radius_m": 0.45,
+            "at": 0.5,
+            "share": 0.33,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "isir_3",
+          "motion": "hold",
+          "sec": 0.16,
+          "side": 1,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "target_side",
+            "length_m": 0.6,
+            "radius_m": 0.45,
+            "at": 0.5,
+            "share": 0.33,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -2658,7 +3550,7 @@
       "id": "dost_ip",
       "name": "Dostun patlattığı ip",
       "family": 33,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "7-6",
@@ -2669,11 +3561,30 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
+          "name": "bag",
+          "motion": "throw",
+          "sec": 0.22,
+          "shot_m": 3.6,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "shot",
+            "length_m": 0.55,
+            "radius_m": 0.3,
+            "at": 0.85,
+            "share": 1,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "hook_throw"
+        },
+        {
+          "name": "ger",
+          "motion": "hold",
+          "sec": 0.4,
+          "facing": "target",
+          "homing": "track",
+          "anim": "recover"
         }
       ]
     },
@@ -2701,14 +3612,16 @@
           "sec": 0.2,
           "shot_m": 4.5,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "bekle",
           "motion": "hold",
           "sec": 1.6,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "recover"
         },
         {
           "name": "patla",
@@ -2724,7 +3637,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -2743,11 +3657,21 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "ac",
           "motion": "hold",
-          "sec": 0.2,
+          "sec": 0.28,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "forward",
+            "length_m": 2.8,
+            "radius_m": 0.7,
+            "at": 0.6,
+            "share": 1,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -2767,11 +3691,21 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "muhur",
           "motion": "hold",
-          "sec": 0.2,
+          "sec": 0.32,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "self",
+            "length_m": 0.5,
+            "radius_m": 0.4,
+            "at": 0.6,
+            "share": 1,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -2790,11 +3724,22 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
+          "name": "at",
+          "motion": "throw",
+          "sec": 0.24,
+          "shot_m": 3.6,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "shot",
+            "length_m": 0.6,
+            "radius_m": 0.35,
+            "at": 0.85,
+            "share": 1,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "hook_throw"
         }
       ]
     },
@@ -2811,11 +3756,21 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "nara",
           "motion": "hold",
-          "sec": 0.2,
-          "facing": "target",
-          "homing": "none"
+          "sec": 0.36,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "ring",
+            "length_m": 3.1,
+            "radius_m": 3.1,
+            "at": 0.55,
+            "share": 1,
+            "payload": "effect"
+          },
+          "facing": "hold",
+          "homing": "none",
+          "anim": "cast"
         }
       ]
     },
@@ -2834,11 +3789,60 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "sol",
           "motion": "hold",
-          "sec": 0.2,
+          "sec": 0.16,
+          "side": -1,
+          "side_m": 1.2,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "side",
+            "length_m": 0.4,
+            "radius_m": 0.3,
+            "at": 0.5,
+            "share": 0,
+            "payload": "none"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "sag",
+          "motion": "sidestep",
+          "sec": 0.2,
+          "side": 1,
+          "distance_m": 1.4,
+          "forward_m": 0.15,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "side",
+            "length_m": 0.4,
+            "radius_m": 0.3,
+            "at": 0.55,
+            "share": 0,
+            "payload": "none"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "sidestep"
+        },
+        {
+          "name": "ip",
+          "motion": "hold",
+          "sec": 0.16,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "forward",
+            "length_m": 2.8,
+            "radius_m": 0.4,
+            "at": 0.5,
+            "share": 1,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -2857,11 +3861,25 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
+          "name": "yuksel",
+          "motion": "hop",
+          "sec": 0.42,
+          "side": 1,
+          "distance_m": 0,
+          "forward_m": 0.3,
+          "height_m": 1.05,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "forward",
+            "length_m": 2.6,
+            "radius_m": 0.7,
+            "at": 0.7,
+            "share": 1,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "leap"
         }
       ]
     },
@@ -2878,11 +3896,31 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
+          "name": "ciz",
+          "motion": "channel",
+          "sec": 0.7,
+          "drift_m": 1.4,
+          "walk_mps": 1.1,
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "ak",
+          "motion": "hold",
+          "sec": 0.24,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "forward",
+            "length_m": 2.8,
+            "radius_m": 0.65,
+            "at": 0.45,
+            "share": 1,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -2890,7 +3928,7 @@
       "id": "cekip_firlat",
       "name": "Çekip fırlatma",
       "family": 31,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "9-2",
@@ -2899,11 +3937,39 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "cek",
           "motion": "hold",
-          "sec": 0.2,
+          "sec": 0.28,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "self",
+            "length_m": 0.7,
+            "radius_m": 0.4,
+            "at": 0.6,
+            "share": 0.4,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "firlat",
+          "motion": "throw",
+          "sec": 0.22,
+          "shot_m": 3.6,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "shot",
+            "length_m": 0.6,
+            "radius_m": 0.32,
+            "at": 0.85,
+            "share": 0.6,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "hook_throw"
         }
       ]
     },
@@ -2920,11 +3986,30 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
+          "name": "at",
+          "motion": "throw",
+          "sec": 0.18,
+          "shot_m": 1.4,
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "hook_throw"
+        },
+        {
+          "name": "yagmur",
+          "motion": "hold",
+          "sec": 0.4,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "ring",
+            "length_m": 3.3,
+            "radius_m": 3.3,
+            "at": 0.55,
+            "share": 1,
+            "payload": "effect"
+          },
+          "facing": "hold",
+          "homing": "none",
+          "anim": "cast"
         }
       ]
     },
@@ -2948,11 +4033,25 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
+          "name": "sutun",
+          "motion": "hop",
+          "sec": 0.48,
+          "side": 1,
+          "distance_m": 0,
+          "forward_m": 0.1,
+          "height_m": 1.2,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "self",
+            "length_m": 0.8,
+            "radius_m": 0.55,
+            "at": 0.72,
+            "share": 1,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "leap"
         }
       ]
     },
@@ -2969,11 +4068,30 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "dokun",
           "motion": "hold",
-          "sec": 0.2,
+          "sec": 0.12,
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "ok",
+          "motion": "throw",
+          "sec": 0.26,
+          "shot_m": 3.6,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "target",
+            "length_m": 0.45,
+            "radius_m": 0.35,
+            "at": 0.75,
+            "share": 1,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "hook_throw"
         }
       ]
     },
@@ -2992,11 +4110,31 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
+          "name": "degis",
+          "motion": "blink",
+          "sec": 0.22,
+          "snap_at": 0.5,
+          "distance_m": 3.0,
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "dash"
+        },
+        {
+          "name": "don",
+          "motion": "hold",
+          "sec": 0.12,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "forward",
+            "length_m": 1.4,
+            "radius_m": 0.4,
+            "at": 0.5,
+            "share": 1,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -3013,11 +4151,32 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "diz",
           "motion": "hold",
-          "sec": 0.2,
-          "facing": "target",
-          "homing": "none"
+          "sec": 0.18,
+          "facing": "hold",
+          "homing": "none",
+          "anim": "cast"
+        },
+        {
+          "name": "nabiz",
+          "motion": "channel",
+          "sec": 3.0,
+          "drift_m": 0,
+          "walk_mps": 0,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "ring",
+            "length_m": 3.1,
+            "radius_m": 3.1,
+            "at": 0.3333333,
+            "share": 0.3333333,
+            "payload": "effect",
+            "every_sec": 1.0
+          },
+          "facing": "hold",
+          "homing": "none",
+          "anim": "cast"
         }
       ]
     },
@@ -3025,7 +4184,7 @@
       "id": "yutan_girdap",
       "name": "Yutan girdap",
       "family": 31,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "10-2",
@@ -3034,11 +4193,30 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "ac",
           "motion": "hold",
-          "sec": 0.2,
+          "sec": 0.18,
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "yut",
+          "motion": "hold",
+          "sec": 3.0,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "forward",
+            "length_m": 2.8,
+            "radius_m": 0.85,
+            "at": 0.25,
+            "share": 0.25,
+            "payload": "effect",
+            "every_sec": 0.75
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -3046,7 +4224,7 @@
       "id": "seken_geri",
       "name": "Seken geri vuruş",
       "family": 16,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "10-3",
@@ -3055,11 +4233,39 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "vur",
+          "motion": "lunge",
+          "sec": 0.16,
+          "distance_m": 1.1,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "forward",
+            "length_m": 1.8,
+            "radius_m": 0.4,
+            "at": 0.6,
+            "share": 0.55,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "lunge"
+        },
+        {
+          "name": "sek",
           "motion": "hold",
           "sec": 0.2,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "target",
+            "length_m": 0.7,
+            "radius_m": 0.6,
+            "at": 0.45,
+            "share": 0.45,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -3080,11 +4286,41 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "ac",
           "motion": "hold",
           "sec": 0.2,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "ring",
+            "length_m": 2.6,
+            "radius_m": 2.6,
+            "at": 0.5,
+            "share": 0.4,
+            "payload": "effect"
+          },
+          "facing": "hold",
+          "homing": "none",
+          "anim": "cast"
+        },
+        {
+          "name": "yuru",
+          "motion": "channel",
+          "sec": 4.0,
+          "drift_m": 1.2,
+          "walk_mps": 1.5,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "ring",
+            "length_m": 2.6,
+            "radius_m": 2.6,
+            "at": 0.25,
+            "share": 0.15,
+            "payload": "effect",
+            "every_sec": 1.0
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -3115,14 +4351,16 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "tut",
           "motion": "hold",
           "sec": 0.7,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "recover"
         }
       ]
     },
@@ -3139,11 +4377,60 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "sol",
           "motion": "hold",
-          "sec": 0.2,
+          "sec": 0.14,
+          "side": -1,
+          "side_m": 1.35,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "side",
+            "length_m": 0.5,
+            "radius_m": 0.35,
+            "at": 0.5,
+            "share": 0.34,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "sag",
+          "motion": "hold",
+          "sec": 0.14,
+          "side": 1,
+          "side_m": 1.35,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "side",
+            "length_m": 0.5,
+            "radius_m": 0.35,
+            "at": 0.5,
+            "share": 0.33,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "geri",
+          "motion": "retreat",
+          "sec": 0.16,
+          "distance_m": 0.9,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "self",
+            "length_m": 0.4,
+            "radius_m": 0.35,
+            "at": 0.6,
+            "share": 0.33,
+            "payload": "effect"
+          },
+          "facing": "travel",
+          "homing": "none",
+          "anim": "backstep"
         }
       ]
     },
@@ -3151,7 +4438,7 @@
       "id": "sirt_saplama",
       "name": "Uzaktan sırt saplama",
       "family": 38,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "11-1",
@@ -3164,11 +4451,29 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "belir",
           "motion": "hold",
-          "sec": 0.2,
+          "sec": 0.18,
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "sap",
+          "motion": "hold",
+          "sec": 0.14,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "behind",
+            "length_m": 0.8,
+            "radius_m": 0.45,
+            "at": 0.55,
+            "share": 1,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -3176,7 +4481,7 @@
       "id": "yapisan",
       "name": "Yapışan yaratık",
       "family": 37,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "11-2",
@@ -3185,11 +4490,40 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
+          "name": "at",
+          "motion": "throw",
+          "sec": 0.18,
+          "shot_m": 3.6,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "shot",
+            "length_m": 0.4,
+            "radius_m": 0.25,
+            "at": 0.85,
+            "share": 0,
+            "payload": "none"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "hook_throw"
+        },
+        {
+          "name": "em",
+          "motion": "hold",
+          "sec": 5.0,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "target",
+            "length_m": 0.6,
+            "radius_m": 0.5,
+            "at": 0.2,
+            "share": 0.2,
+            "payload": "effect",
+            "every_sec": 1.0
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -3197,7 +4531,7 @@
       "id": "taret_dikme",
       "name": "Taret dikme",
       "family": 18,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "11-4",
@@ -3208,11 +4542,39 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "dik",
+          "motion": "hold",
+          "sec": 0.22,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "self",
+            "length_m": 0.4,
+            "radius_m": 0.35,
+            "at": 0.55,
+            "share": 0,
+            "payload": "none"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "ates",
           "motion": "hold",
           "sec": 0.2,
+          "shot_m": 3.6,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "shot",
+            "length_m": 0.55,
+            "radius_m": 0.28,
+            "at": 0.8,
+            "share": 1,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -3220,7 +4582,7 @@
       "id": "dagilan_suru",
       "name": "Dağılan sürü",
       "family": 37,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "11-5",
@@ -3229,11 +4591,57 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "sol",
           "motion": "hold",
-          "sec": 0.2,
+          "sec": 0.14,
+          "side": -1,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "target_side",
+            "length_m": 0.6,
+            "radius_m": 0.5,
+            "at": 0.5,
+            "share": 0.34,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "orta",
+          "motion": "hold",
+          "sec": 0.14,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "target",
+            "length_m": 0.6,
+            "radius_m": 0.5,
+            "at": 0.5,
+            "share": 0.33,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "sag",
+          "motion": "hold",
+          "sec": 0.14,
+          "side": 1,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "target_side",
+            "length_m": 0.6,
+            "radius_m": 0.5,
+            "at": 0.5,
+            "share": 0.33,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -3250,11 +4658,31 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "cik",
           "motion": "hold",
-          "sec": 0.2,
+          "sec": 0.24,
+          "side": 1,
+          "side_m": 1.15,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "side",
+            "length_m": 0.7,
+            "radius_m": 0.45,
+            "at": 0.6,
+            "share": 1,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "dur",
+          "motion": "hold",
+          "sec": 0.28,
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -3273,11 +4701,33 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "bat",
           "motion": "hold",
-          "sec": 0.2,
+          "sec": 0.18,
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "cik",
+          "motion": "hop",
+          "sec": 0.6,
+          "side": 1,
+          "distance_m": 0.9,
+          "forward_m": 0.15,
+          "height_m": 0.85,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "side",
+            "length_m": 0.6,
+            "radius_m": 0.4,
+            "at": 0.75,
+            "share": 1,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "leap"
         }
       ]
     },
@@ -3285,7 +4735,7 @@
       "id": "pesinden_av",
       "name": "Peşinden giden av",
       "family": 34,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "11-9",
@@ -3294,11 +4744,37 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "cagir",
           "motion": "hold",
-          "sec": 0.2,
+          "sec": 0.18,
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "kos",
+          "motion": "hold",
+          "sec": 2.0,
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "isir",
+          "motion": "hold",
+          "sec": 0.14,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "target",
+            "length_m": 0.7,
+            "radius_m": 0.55,
+            "at": 0.5,
+            "share": 1,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -3317,11 +4793,29 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "ac",
           "motion": "hold",
-          "sec": 0.2,
+          "sec": 0.24,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "self",
+            "length_m": 0.8,
+            "radius_m": 0.55,
+            "at": 0.55,
+            "share": 1,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "bekle",
+          "motion": "hold",
+          "sec": 1.0,
+          "facing": "hold",
+          "homing": "none",
+          "anim": "recover"
         }
       ]
     },
@@ -3342,7 +4836,8 @@
           "motion": "hold",
           "sec": 0.18,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "sol",
@@ -3360,7 +4855,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "sag",
@@ -3378,7 +4874,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -3386,7 +4883,7 @@
       "id": "kapidan_akin",
       "name": "Kapıdan akın",
       "family": 39,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "11-12",
@@ -3395,11 +4892,31 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
+          "name": "ac",
           "motion": "hold",
           "sec": 0.2,
+          "plant": true,
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "akin",
+          "motion": "hold",
+          "sec": 4.0,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "target",
+            "length_m": 0.5,
+            "radius_m": 0.4,
+            "at": 0.2,
+            "share": 0.2,
+            "payload": "effect",
+            "every_sec": 0.8
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -3407,7 +4924,7 @@
       "id": "geri_donen_kure",
       "name": "Geri dönen küre",
       "family": 17,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "12-3",
@@ -3416,11 +4933,39 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
+          "name": "at",
+          "motion": "throw",
+          "sec": 0.22,
+          "shot_m": 3.6,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "shot",
+            "length_m": 0.6,
+            "radius_m": 0.4,
+            "at": 0.8,
+            "share": 0.55,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "hook_throw"
+        },
+        {
+          "name": "don",
+          "motion": "hold",
+          "sec": 0.28,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "forward",
+            "length_m": 2.4,
+            "radius_m": 0.4,
+            "at": 0.7,
+            "share": 0.45,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -3428,7 +4973,7 @@
       "id": "kum_saati",
       "name": "Titreyen zaman",
       "family": 42,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "12-7",
@@ -3437,11 +4982,30 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
+          "name": "at",
+          "motion": "throw",
+          "sec": 0.22,
+          "shot_m": 3.6,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "shot",
+            "length_m": 0.55,
+            "radius_m": 0.32,
+            "at": 0.85,
+            "share": 1,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "hook_throw"
+        },
+        {
+          "name": "titr",
+          "motion": "hold",
+          "sec": 0.4,
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -3449,7 +5013,7 @@
       "id": "boss_geri",
       "name": "Boss'u geri sarma",
       "family": 24,
-      "aim": "effect",
+      "aim": "enemy",
       "combos": [
         {
           "id": "12-10",
@@ -3458,11 +5022,30 @@
       ],
       "phases": [
         {
-          "name": "bekliyor",
-          "motion": "hold",
-          "sec": 0.2,
+          "name": "at",
+          "motion": "throw",
+          "sec": 0.22,
+          "shot_m": 3.6,
+          "hit": {
+            "shape": "capsule",
+            "anchor": "shot",
+            "length_m": 0.6,
+            "radius_m": 0.35,
+            "at": 0.85,
+            "share": 1,
+            "payload": "effect"
+          },
           "facing": "target",
-          "homing": "none"
+          "homing": "track",
+          "anim": "hook_throw"
+        },
+        {
+          "name": "sar",
+          "motion": "hold",
+          "sec": 0.24,
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     }

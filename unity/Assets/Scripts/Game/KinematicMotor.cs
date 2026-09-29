@@ -60,6 +60,9 @@ namespace Dovus.Game
         }
 
         public Vector3 Velocity { get; private set; }
+        public float LocoRefMps => _tuning != null ? _tuning.WalkSpeedMps : 6.4f;
+        public float LocoDampSec => _tuning != null ? _tuning.AnimSpeedDampSec : 0.08f;
+        public float LocoMaxPlayback => _tuning != null ? _tuning.LocoMaxPlaybackMult : 1.5f;
 
         void Awake()
         {
@@ -93,8 +96,9 @@ namespace Dovus.Game
             var templateBody = GetComponent<MotionTemplateBody>();
             if (templateBody != null && templateBody.IsDisplacing)
             {
+                // Yeri kalıp yazar. Bacak hızını burada sıfırlamak ayakları donduruyordu;
+                // blend'i kalıbın kendi hızı besler.
                 Velocity = Vector3.zero;
-                _visual?.SetSpeed(0f);
                 return;
             }
 

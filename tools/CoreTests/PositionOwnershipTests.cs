@@ -123,6 +123,113 @@ public class PositionOwnershipTests
     }
 
     [Test]
+    public void OdakliAdim_LandsBehindOnce_GrammarTeleportIsNotApplied()
+    {
+        Assert.That(_motion.TryPlay("3-9", out MotionTemplate blink), Is.True);
+        Assert.That(blink.FamilyId, Is.EqualTo(23));
+        MechanicPlan plan = _grammar.Compose(3, 9, 1);
+        Assert.That(PlayerPositionStat(plan), Is.EqualTo(PositionOwnership.Behind));
+
+        PositionPlayback playback = PositionOwnership.Prepare(
+            blink, Steps(plan), _motion.Fallbacks.PhaseSec, _motion.Fallbacks.StepM);
+        Assert.That(playback.OwnsPosition, Is.True);
+        Assert.That(playback.Template.Phases.Count(p => p.Land == "behind"), Is.EqualTo(1));
+        Assert.That(ReferenceEquals(playback.Template, blink), Is.True, "kalıp zaten arkaya iner, ikinci iniş eklenmez");
+
+        const float bossZ = 4f;
+        const float body = 0.5f;
+        const float bossR = 0.85f;
+        var samples = Tick(playback.Template, new MotionTarget(true, 0f, bossZ, bossR), body, 0.15f);
+        float endZ = samples[^1].Z;
+        Assert.That(endZ, Is.GreaterThan(bossZ), "tam arkada biter");
+        Assert.That(MotionHitGeometry.EdgeGap(0f, endZ, body, 0f, bossZ, bossR), Is.GreaterThan(0.05f));
+        Assert.That(samples[^1].Z, Is.EqualTo(samples.Max(s => s.Z)).Within(0.05f), "arkaya indikten sonra geri ışınlanmaz");
+        AssertCleanBehind(blink, 4.5f);
+        AssertCleanBehind(blink, 2.5f);
+        float reach = MotionCastReach.EdgeReachM(blink);
+        float gate = MotionCastReach.GateRangeM(reach, 0.5f);
+        Assert.That(gate, Is.GreaterThan(4.5f - 0.85f), "4,5 m merkezden kilitlenir");
+    }
+
+    [Test]
+    public void SabitAdim_CloseDash_StopsAtTheBossEdge()
+    {
+        Assert.That(_motion.TryPlay("3-4", out MotionTemplate pinned), Is.True);
+        const float bossZ = 1.7f;
+        const float body = 0.5f;
+        const float bossR = 0.85f;
+        const float gap = 0.15f;
+        var target = new MotionTarget(true, 0f, bossZ, bossR);
+        var runner = new MotionTemplateRunner();
+        runner.Begin(pinned, 0f, 0f, 0f, 0f, 1f, body, gap);
+        float minGap = 99f;
+        for (int i = 0; i < 50 && !runner.Finished; i++)
+        {
+            runner.Tick(0.02f, target, default);
+            float edge = MotionHitGeometry.EdgeGap(runner.X, runner.Z, body, 0f, bossZ, bossR);
+            if (edge < minGap)
+                minGap = edge;
+            if (runner.Elapsed > 0.5f)
+                break;
+        }
+        Assert.That(minGap, Is.GreaterThan(0.04f), "yakın dash boss'un içine girmez");
+        Assert.That(runner.Z, Is.LessThan(bossZ - 0.4f), "öte yana geçmeden kenarda durur");
+    }
+
+    [Test]
+    public void SabitAdim_DashesOut_ThenDashesBackToTheMark()
+    {
+        Assert.That(_motion.TryPlay("3-4", out MotionTemplate pinned), Is.True);
+        Assert.That(pinned.FamilyId, Is.EqualTo(24));
+        MechanicPlan plan = _grammar.Compose(3, 4, 1);
+        Assert.That(PlayerPositionStat(plan), Is.EqualTo(PositionOwnership.ReturnMark));
+
+        PositionPlayback playback = PositionOwnership.Prepare(
+            pinned, Steps(plan), _motion.Fallbacks.PhaseSec, _motion.Fallbacks.StepM);
+        Assert.That(playback.OwnsPosition, Is.True);
+        Assert.That(playback.PlaceReturnMark, Is.True);
+        Assert.That(playback.Template.Phases.Count(p => p.Motion == "return"), Is.EqualTo(1));
+        Assert.That(ReferenceEquals(playback.Template, pinned), Is.True, "dönüş kalıbın içinde, ikinci faz eklenmez");
+
+        const float bossZ = 4f;
+        const float body = 0.5f;
+        const float bossR = 0.85f;
+        var runner = new MotionTemplateRunner();
+        runner.Begin(playback.Template, 0f, 0f, 0f, 0f, 1f, body, 0.15f);
+        Assert.That(runner.ReturnMarkPlaced, Is.True);
+        Assert.That(runner.MarkZ, Is.EqualTo(0f).Within(0.001f));
+
+        var target = new MotionTarget(true, 0f, bossZ, bossR);
+        var stick = new MotionStick(false, 0f, 0f);
+        float peakZ = 0f;
+        float zBeforeReturn = 0f;
+        bool sawReturn = false;
+        float firstReturnStep = 99f;
+        for (int i = 0; i < 400 && !runner.Finished; i++)
+        {
+            float beforeZ = runner.Z;
+            float beforeT = runner.Elapsed;
+            runner.Tick(0.02f, target, stick);
+            if (runner.Z > peakZ)
+                peakZ = runner.Z;
+            if (!sawReturn && beforeT < 2.3f && runner.Elapsed >= 2.3f)
+            {
+                zBeforeReturn = beforeZ;
+                sawReturn = true;
+            }
+            if (sawReturn && firstReturnStep > 90f && runner.Elapsed > 2.38f)
+                firstReturnStep = MathF.Abs(runner.Z - zBeforeReturn);
+        }
+
+        Assert.That(runner.Finished, Is.True);
+        Assert.That(peakZ, Is.GreaterThan(1.5f), "çapadan uzağa atılır");
+        Assert.That(sawReturn, Is.True);
+        Assert.That(firstReturnStep, Is.LessThan(1.2f), "dönüş tek karede ışınlanma değil");
+        Assert.That(runner.Z, Is.EqualTo(0f).Within(0.15f), "işarete geri atılır");
+        Assert.That(MotionHitGeometry.EdgeGap(runner.X, runner.Z, body, 0f, bossZ, bossR), Is.GreaterThan(0.05f));
+    }
+
+    [Test]
     public void MovingTemplate_SuppressesDisplace_AndUsesGrammarDistanceWhenTheCurveIsMissing()
     {
         var emptyDash = Moving(Phase("git", "dash", 0.2f, 0f));
@@ -221,11 +328,10 @@ public class PositionOwnershipTests
         Assert.That(PositionOwnership.SuppressesMove(false, "konum", PositionOwnership.Behind), Is.False);
         Assert.That(PositionOwnership.SuppressesMove(false, "konum", PositionOwnership.ReturnMark), Is.False);
 
-        Assert.That(_motion.TryGet("3-9", out MotionBinding focused), Is.True);
-        Assert.That(focused.Implemented, Is.False);
-        Assert.That(PositionOwnership.MovesPlayer(focused.Template), Is.False);
-        Assert.That(_motion.TryGet("3-4", out MotionBinding pinned), Is.True);
-        Assert.That(PositionOwnership.MovesPlayer(pinned.Template), Is.False);
+        Assert.That(_motion.TryPlay("3-9", out MotionTemplate focused), Is.True);
+        Assert.That(PositionOwnership.MovesPlayer(focused), Is.True);
+        Assert.That(_motion.TryPlay("3-4", out MotionTemplate pinned), Is.True);
+        Assert.That(PositionOwnership.MovesPlayer(pinned), Is.True);
 
         var moving = Moving(Phase("git", "dash", 0.2f, 2f));
         Assert.That(PositionOwnership.MovesPlayer(moving), Is.True);
@@ -283,6 +389,28 @@ public class PositionOwnershipTests
             name, motion, sec, "travel", "none", string.Empty, 0f,
             distance, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f,
             0f, 0f, null, null);
+
+    static void AssertCleanBehind(MotionTemplate template, float bossZ)
+    {
+        const float body = 0.5f;
+        const float bossR = 0.85f;
+        var target = new MotionTarget(true, 0f, bossZ, bossR);
+        var runner = new MotionTemplateRunner();
+        runner.Begin(template, 0f, 0f, 0f, 0f, 1f, body, 0.15f);
+        float minGap = 99f;
+        var stick = new MotionStick(false, 0f, 0f);
+        for (int i = 0; i < 80 && !runner.Finished; i++)
+        {
+            runner.Tick(0.02f, target, stick);
+            float edge = MotionHitGeometry.EdgeGap(runner.X, runner.Z, body, 0f, bossZ, bossR);
+            if (edge < minGap)
+                minGap = edge;
+        }
+        Assert.That(runner.Finished, Is.True, bossZ.ToString("0.0"));
+        Assert.That(runner.Z, Is.GreaterThan(bossZ), "arkada biter " + bossZ.ToString("0.0"));
+        Assert.That(MotionHitGeometry.EdgeGap(runner.X, runner.Z, body, 0f, bossZ, bossR), Is.GreaterThan(0.05f));
+        Assert.That(minGap, Is.GreaterThan(0.04f), "gövdenin içinden geçmez " + bossZ.ToString("0.0"));
+    }
 
     static List<MotionTick> Tick(MotionTemplate template, MotionTarget target, float body, float gap)
     {

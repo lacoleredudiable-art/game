@@ -20,9 +20,15 @@ namespace Dovus.Game
         Func<MotionTarget> _target;
         Func<bool> _held;
         Action<MotionHit> _onHit;
+        MotionAnimTable _anims = MotionAnimTable.BuiltIn;
+        ActorVisual _visual;
+        KinematicMotor _motor;
+        string _weaponKey = string.Empty;
+        int _verbId;
         float _arena = 50f;
         float _body = 0.5f;
         bool _playing;
+        bool _tickedThisFrame;
 
         public bool IsDisplacing => _playing;
 
@@ -30,7 +36,17 @@ namespace Dovus.Game
         {
             _clock = clock;
             _arena = arenaHalfM > 1f ? arenaHalfM : 50f;
+            // Oynayan kalıbın gövde yarıçapı silah değişiminde yeniden yazılmaz.
+            if (_playing)
+                return;
             _body = bodyRadiusM > 0f ? bodyRadiusM : 0.5f;
+        }
+
+        public void SetAnimContext(MotionAnimTable anims, string weaponKey, int verbId)
+        {
+            _anims = anims ?? MotionAnimTable.BuiltIn;
+            _weaponKey = weaponKey ?? string.Empty;
+            _verbId = verbId;
         }
 
         public void Play(
@@ -48,16 +64,33 @@ namespace Dovus.Game
             f.y = 0f;
             if (f.sqrMagnitude < 0.0001f)
                 f = Vector3.forward;
+            if (bodyRadiusM > 0f)
+                _body = bodyRadiusM;
             _runner.Begin(template, p.x, p.y, p.z, f.x, f.z, bodyRadiusM, stopGapM);
             _target = target;
             _held = held;
             _onHit = onHit;
             _playing = !_runner.Finished;
+            _tickedThisFrame = false;
         }
 
         public void Stop() => _playing = false;
 
         void Update()
+        {
+            TickMotion();
+            _tickedThisFrame = true;
+        }
+
+        void LateUpdate()
+        {
+            // Play, Update'ten sonra geldiyse (build ekranı kapanınca ilk cast) bu kare de işlensin.
+            if (!_tickedThisFrame)
+                TickMotion();
+            _tickedThisFrame = false;
+        }
+
+        void TickMotion()
         {
             if (!_playing)
                 return;
@@ -87,8 +120,11 @@ namespace Dovus.Game
             Vector3 pos = ArenaClamp.XZ(new Vector3(tick.X, tick.Y, tick.Z), _arena, _body);
             pos.y = tick.Y;
             transform.position = pos;
+            // Dönüş hem klibi (AnimKey spin) hem gövde yaw'ını sürer. Yalnız transform
+            // döndürmek bacakları dondurup tüm gövdeyi çeviriyordu.
             if (tick.FaceX * tick.FaceX + tick.FaceZ * tick.FaceZ > 0.0001f)
                 transform.rotation = Quaternion.LookRotation(new Vector3(tick.FaceX, 0f, tick.FaceZ), Vector3.up);
+            DriveLegs(tick);
 
             if (tick.Hits != null)
             {
@@ -97,7 +133,30 @@ namespace Dovus.Game
             }
 
             if (tick.Finished)
+            {
                 _playing = false;
+                if (_visual == null)
+                    _visual = GetComponent<ActorVisual>();
+                _visual?.EndMotionAnim();
+            }
+        }
+
+        void DriveLegs(in MotionTick tick)
+        {
+            if (_visual == null)
+                _visual = GetComponent<ActorVisual>();
+            if (_visual == null)
+                return;
+            if (_motor == null)
+                _motor = GetComponent<KinematicMotor>();
+            float refMps = _motor != null ? _motor.LocoRefMps : 6.4f;
+            var blend = LocoBlend.FromVelocity(tick.VelX, tick.VelZ, tick.FaceX, tick.FaceZ, refMps);
+            // Kalıp hızı kısa fazda sönümün gerisinde kalmasın; ayak gövdeyle aynı karede eşleşsin.
+            float damp = 0f;
+            float maxPlayback = LocoBlend.TemplatePlaybackCap;
+            _visual.DriveMotion(
+                blend, tick.AnimKey, tick.AnimSpeed, tick.Spin,
+                _anims, _weaponKey, _verbId, refMps, damp, maxPlayback);
         }
 
         Vector3 WorldStick()

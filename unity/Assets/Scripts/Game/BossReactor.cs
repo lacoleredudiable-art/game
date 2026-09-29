@@ -1,3 +1,4 @@
+using Dovus.Core.Motion;
 using UnityEngine;
 
 namespace Dovus.Game
@@ -24,6 +25,15 @@ namespace Dovus.Game
         float _shakeAmp;
         float _liftVel;
         bool _captured;
+
+        bool _pulling;
+        bool _contactPull;
+        float _pullSpeed;
+        float _pullAge;
+        float _pullDur = DisplacementEase.DurationSec;
+        Vector3 _pullFrom;
+        Vector3 _pullTo;
+        Vector3 _stablePullDir;
 
         // Boss ölümü: kısa çökme pozu (squash).
         Vector3 _baseScale = Vector3.one;
@@ -75,14 +85,71 @@ namespace Dovus.Game
         /// Gramer alanlarının sürekli çekişi: kalıcı Home'u hedefe en fazla distanceM taşır.
         /// Hız/zaman hesabı çağırandadır; burada ek his sayısı yoktur.
         /// </summary>
+        public bool PullActive => _pulling;
+
         public void MoveHomeToward(Vector3 targetWorld, float distanceM)
         {
             if (_collapsed || distanceM <= 0f)
                 return;
+            // Temas çekişi sürerken tasma ikinci bir yer değiştirme yazmaz.
+            if (_pulling && _contactPull)
+                return;
             if (!_captured)
                 CaptureHome();
             targetWorld.y = _home.y;
-            Home = Vector3.MoveTowards(_home, targetWorld, distanceM);
+            _contactPull = false;
+            BeginEasedMove(Vector3.MoveTowards(_home, targetWorld, distanceM));
+        }
+
+        /// <summary>
+        /// Boss'u oyuncunun o anki önündeki temas noktasına çeker.
+        /// Varış her çağrıda yeniden hesaplanır; süre başa sarmaz. Oyuncu itilmez.
+        /// </summary>
+        public void PullToContact(Vector3 playerWorld, float playerRadius, float bossRadius)
+        {
+            if (_collapsed)
+                return;
+            if (!_captured)
+                CaptureHome();
+            if (_stablePullDir.sqrMagnitude < 0.0001f)
+                _stablePullDir = transform.forward.sqrMagnitude > 0.0001f ? transform.forward : Vector3.forward;
+
+            float stableX = _stablePullDir.x;
+            float stableZ = _stablePullDir.z;
+            EmiciPull.Retarget(
+                _pulling && _contactPull,
+                _home.x, _home.z,
+                playerWorld.x, playerWorld.z,
+                playerRadius, bossRadius,
+                ref stableX, ref stableZ,
+                ref _pullSpeed,
+                out float toX, out float toZ,
+                out bool pulling);
+            _stablePullDir = new Vector3(stableX, 0f, stableZ);
+            _pullTo = ClampToArena(new Vector3(toX, _home.y, toZ));
+            _contactPull = true;
+            _pulling = pulling;
+            if (!_pulling)
+                Home = _pullTo;
+        }
+
+        /// <summary>Çekme sürerken varışı oyuncunun güncel yerine taşır. Saati sıfırlamaz.</summary>
+        public void UpdatePullContact(Vector3 playerWorld, float playerRadius, float bossRadius)
+        {
+            if (!_pulling || !_contactPull)
+                return;
+            PullToContact(playerWorld, playerRadius, bossRadius);
+        }
+
+        void BeginEasedMove(Vector3 desired)
+        {
+            _pullFrom = _home;
+            _pullTo = ClampToArena(desired);
+            _pullAge = 0f;
+            _pullDur = DisplacementEase.DurationSec;
+            _pulling = Horizontal(_pullFrom, _pullTo) > 0.02f;
+            if (!_pulling)
+                Home = _pullTo;
         }
 
         public void React(
@@ -160,6 +227,9 @@ namespace Dovus.Game
             if (!_captured)
                 CaptureHome();
 
+            if (_pulling)
+                AdvancePull(dtSec);
+
             float now = (float)worldTimeMs;
 
             if (_collapsed)
@@ -205,6 +275,34 @@ namespace Dovus.Game
             Vector3 p = _home + _visualOffset + shake;
             p.y = y;
             transform.position = p;
+        }
+
+        void AdvancePull(float dtSec)
+        {
+            if (_contactPull)
+            {
+                float x = _home.x;
+                float z = _home.z;
+                EmiciPull.StepToward(ref x, ref z, _pullTo.x, _pullTo.z, _pullSpeed, dtSec, out bool arrived);
+                _home = ClampToArena(new Vector3(x, _home.y, z));
+                if (arrived)
+                    _pulling = false;
+                return;
+            }
+
+            _pullAge += Mathf.Max(0f, dtSec);
+            float u = _pullDur <= 0.01f ? 1f : Mathf.Clamp01(_pullAge / _pullDur);
+            DisplacementEase.Sample(_pullFrom.x, _pullFrom.z, _pullTo.x, _pullTo.z, u, out float xEase, out float zEase);
+            _home = ClampToArena(new Vector3(xEase, _home.y, zEase));
+            if (u >= 1f)
+                _pulling = false;
+        }
+
+        static float Horizontal(Vector3 a, Vector3 b)
+        {
+            float dx = a.x - b.x;
+            float dz = a.z - b.z;
+            return Mathf.Sqrt(dx * dx + dz * dz);
         }
 
         void ApplyCollapseScale(float progress01)
