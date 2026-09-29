@@ -99,12 +99,16 @@ namespace Dovus.Core.Motion
             float[] curve,
             MotionHitSpec hit,
             string land = "",
-            bool plant = false)
+            bool plant = false,
+            string anim = "",
+            float animSpeed = 1f)
         {
             Name = name ?? string.Empty;
             Motion = motion ?? "hold";
             Land = land ?? string.Empty;
             Plant = plant;
+            Anim = string.IsNullOrEmpty(anim) ? MotionAnimTable.FallbackKey(Motion) : anim;
+            AnimSpeed = animSpeed > 0.05f ? animSpeed : 1f;
             DurationSec = durationSec;
             Facing = string.IsNullOrEmpty(facing) ? "target" : facing;
             Homing = string.IsNullOrEmpty(homing) ? "none" : homing;
@@ -153,6 +157,10 @@ namespace Dovus.Core.Motion
         public float SnapAt { get; }
         public float[] Curve { get; }
         public MotionHitSpec Hit { get; }
+        /// <summary>Animator tablosundaki anahtar (windup, lunge, dash, spin…).</summary>
+        public string Anim { get; }
+        /// <summary>Klip oynatma hızı. 1 normal.</summary>
+        public float AnimSpeed { get; }
 
         /// <summary>Aynı faz; mesafe / arkaya iniş gramer yedeğiyle doldurulmuş kopya.</summary>
         public MotionPhase WithTravel(float distanceM, float behindM, string land) =>
@@ -160,7 +168,7 @@ namespace Dovus.Core.Motion
                 Name, Motion, DurationSec, Facing, Homing, Gate, MaxHoldSec,
                 distanceM, ForwardM, Side, SideM, HeightM, YawDeg, GapM, OvershootM,
                 ShotM, DriftM, WalkMps, behindM, SnapAt, Curve, Hit,
-                land ?? Land, Plant);
+                land ?? Land, Plant, Anim, AnimSpeed);
     }
 
     public sealed class MotionTemplate
@@ -235,6 +243,7 @@ namespace Dovus.Core.Motion
         }
 
         public MotionFallbacks Fallbacks { get; }
+        public MotionAnimTable Anims { get; private set; } = MotionAnimTable.BuiltIn;
         public int SkillCount => _bySkill.Count;
         public int TemplateCount => _templates.Count;
         public int FamilyCount { get; private set; }
@@ -270,6 +279,7 @@ namespace Dovus.Core.Motion
                 families[id] = (row["name"].AsString(), row["implemented"].AsBool(false));
             }
             catalog.FamilyCount = families.Count;
+            catalog.Anims = MotionAnimTable.Parse(root);
 
             foreach (JsonValue row in root["templates"].AsArray())
             {
@@ -436,7 +446,21 @@ namespace Dovus.Core.Motion
                 curve,
                 hit,
                 row["land"].AsString(),
-                row["plant"].AsBool(false));
+                row["plant"].AsBool(false),
+                ReadAnim(templateId, name, row),
+                row.Has("anim_speed") ? row["anim_speed"].AsFloat(1f) : 1f);
+        }
+
+        static string ReadAnim(string templateId, string phaseName, JsonValue row)
+        {
+            string anim = row["anim"].AsString();
+            if (!string.IsNullOrEmpty(anim))
+                return anim;
+            string fallback = MotionAnimTable.FallbackKey(row["motion"].AsString("hold"));
+            DesignWarnings.Once(
+                "motion.anim.phase." + templateId + "." + phaseName,
+                "Fazda animasyon anahtarı yok: " + templateId + " " + phaseName + ". Yedek " + fallback + ".");
+            return fallback;
         }
 
         static float Need(JsonValue row, string key, float coded, string warnKey)

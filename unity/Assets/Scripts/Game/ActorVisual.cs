@@ -1,5 +1,7 @@
+using Dovus.Core;
 using Dovus.Core.Grammar;
 using Dovus.Core.Manifestation;
+using Dovus.Core.Motion;
 using UnityEngine;
 
 namespace Dovus.Game
@@ -15,6 +17,8 @@ namespace Dovus.Game
         public const string ParamLocoPlayback = "LocoPlayback";
         /// <summary>Koşu klibinin ölçülmüş zemin hızı (model birimi/sn); binder klipten yazar.</summary>
         public const string ParamLocoRunSpeed = "LocoRunSpeed";
+        public const string ParamForward = "Forward";
+        public const string ParamStrafe = "Strafe";
         public const string ParamFocus = "Focus";
         public const string ParamPierce = "Pierce";
         public const string ParamSpread = "Spread";
@@ -376,6 +380,98 @@ namespace Dovus.Game
 
             _animator.Play(hash, layer, 0f);
             _animator.Update(0f);
+        }
+
+        string _motionKey = string.Empty;
+        float _savedAnimatorSpeed = 1f;
+
+        /// <summary>
+        /// Kalıp fazı: state/trigger tablodan, bacak blend'i kalıbın hızından.
+        /// Dönüş klibi ayrıca gövde yaw'ı ile birlikte gider.
+        /// </summary>
+        public void DriveMotion(
+            in LocoBlend blend,
+            string key,
+            float animSpeed,
+            bool spin,
+            MotionAnimTable table,
+            string weaponKey,
+            int verbId,
+            float refMps,
+            float dampSec,
+            float maxPlayback)
+        {
+            ApplyTemplateLocomotion(blend, refMps, dampSec, maxPlayback);
+            if (string.Equals(_motionKey, key, System.StringComparison.Ordinal))
+                return;
+            _motionKey = key ?? string.Empty;
+            MotionAnimClip clip = (table ?? MotionAnimTable.BuiltIn).Resolve(_motionKey, weaponKey, verbId);
+            PlayMotionClip(clip, animSpeed, spin);
+        }
+
+        public void EndMotionAnim()
+        {
+            _motionKey = string.Empty;
+            if (_animator != null)
+                _animator.speed = _savedAnimatorSpeed > 0.01f ? _savedAnimatorSpeed : 1f;
+        }
+
+        void PlayMotionClip(MotionAnimClip clip, float animSpeed, bool spin)
+        {
+            if (_animator == null || !_animator.isActiveAndEnabled || _animator.runtimeAnimatorController == null)
+                return;
+            TryTrigger(clip.Trigger);
+            bool played = PlayAction(clip.State);
+            if (!played)
+            {
+                DesignWarnings.Once(
+                    "motion.anim.state." + clip.State,
+                    "Animator state yok: " + clip.State + ". Yedek locomotion/saldırı klibi.");
+                played = PlayAction(clip.Fallback ? MotionAnimTable.AttackFallbackState : MotionAnimTable.FallbackState);
+                if (!played)
+                    PlayAction(MotionAnimTable.FallbackState);
+            }
+
+            float rate = animSpeed > 0.05f ? animSpeed : 1f;
+            if (spin || !MotionAnimTable.IsLocomotionKey(clip.Key))
+            {
+                if (_savedAnimatorSpeed <= 0.01f)
+                    _savedAnimatorSpeed = _animator.speed > 0.01f ? _animator.speed : 1f;
+                _animator.speed = rate;
+            }
+            else
+            {
+                _animator.speed = _savedAnimatorSpeed > 0.01f ? _savedAnimatorSpeed : 1f;
+            }
+        }
+
+        void ApplyTemplateLocomotion(in LocoBlend blend, float refMps, float dampSec, float maxPlayback)
+        {
+            SetLocomotion(blend.SpeedMps, refMps, dampSec, maxPlayback);
+            if (blend.Forward < -0.35f && blend.SpeedMps > 0.2f && HasFloat(ParamLocoPlayback))
+            {
+                float playback = _animator.GetFloat(ParamLocoPlayback);
+                _animator.SetFloat(ParamLocoPlayback, -Mathf.Abs(playback < 0.01f ? 1f : playback));
+            }
+            SafeSetFloat(ParamForward, blend.Forward);
+            SafeSetFloat(ParamStrafe, blend.Strafe);
+        }
+
+        void TryTrigger(string trigger)
+        {
+            if (string.IsNullOrEmpty(trigger) || _animator == null)
+                return;
+            foreach (var p in _animator.parameters)
+            {
+                if (p.name == trigger && p.type == AnimatorControllerParameterType.Trigger)
+                {
+                    _animator.SetTrigger(trigger);
+                    return;
+                }
+            }
+            DesignWarnings.Once(
+                "motion.anim.trigger." + trigger,
+                "Animator tetikleyicisi yok: " + trigger + ". State oynatılıyor.");
         }
 
         void SafeSetFloat(string name, float value)

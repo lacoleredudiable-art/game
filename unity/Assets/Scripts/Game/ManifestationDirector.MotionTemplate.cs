@@ -104,6 +104,10 @@ namespace Dovus.Game
             if (bodyR < 0.05f)
                 bodyR = 0.5f;
             float stopGap = MotionCatalog.Fallbacks.StopGapM;
+            string weapon = _equippedWeapon != null
+                ? (string.IsNullOrEmpty(_equippedWeapon.AnimationsKey) ? _equippedWeapon.Id : _equippedWeapon.AnimationsKey)
+                : string.Empty;
+            _motionBody.SetAnimContext(MotionCatalog.Anims, weapon, VerbOf(skill.SkillId));
             _motionBody.Play(
                 template,
                 () =>
@@ -119,6 +123,16 @@ namespace Dovus.Game
                 stopGap);
             Debug.Log($"[Motion] {skill.SkillId} → {template.Name}");
             return true;
+        }
+
+        static int VerbOf(string skillId)
+        {
+            if (string.IsNullOrEmpty(skillId))
+                return 0;
+            int dash = skillId.IndexOf('-');
+            if (dash <= 0)
+                return 0;
+            return int.TryParse(skillId.Substring(0, dash), out int verb) ? verb : 0;
         }
 
         void OnMotionTemplateHit(MotionHit hit)

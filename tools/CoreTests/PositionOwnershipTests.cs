@@ -144,6 +144,36 @@ public class PositionOwnershipTests
         Assert.That(endZ, Is.GreaterThan(bossZ), "tam arkada biter");
         Assert.That(MotionHitGeometry.EdgeGap(0f, endZ, body, 0f, bossZ, bossR), Is.GreaterThan(0.05f));
         Assert.That(samples[^1].Z, Is.EqualTo(samples.Max(s => s.Z)).Within(0.05f), "arkaya indikten sonra geri ışınlanmaz");
+        AssertCleanBehind(blink, 4.5f);
+        AssertCleanBehind(blink, 2.5f);
+        float reach = MotionCastReach.EdgeReachM(blink);
+        float gate = MotionCastReach.GateRangeM(reach, 0.5f);
+        Assert.That(gate, Is.GreaterThan(4.5f - 0.85f), "4,5 m merkezden kilitlenir");
+    }
+
+    [Test]
+    public void SabitAdim_CloseDash_StopsAtTheBossEdge()
+    {
+        Assert.That(_motion.TryPlay("3-4", out MotionTemplate pinned), Is.True);
+        const float bossZ = 1.7f;
+        const float body = 0.5f;
+        const float bossR = 0.85f;
+        const float gap = 0.15f;
+        var target = new MotionTarget(true, 0f, bossZ, bossR);
+        var runner = new MotionTemplateRunner();
+        runner.Begin(pinned, 0f, 0f, 0f, 0f, 1f, body, gap);
+        float minGap = 99f;
+        for (int i = 0; i < 50 && !runner.Finished; i++)
+        {
+            runner.Tick(0.02f, target, default);
+            float edge = MotionHitGeometry.EdgeGap(runner.X, runner.Z, body, 0f, bossZ, bossR);
+            if (edge < minGap)
+                minGap = edge;
+            if (runner.Elapsed > 0.5f)
+                break;
+        }
+        Assert.That(minGap, Is.GreaterThan(0.04f), "yakın dash boss'un içine girmez");
+        Assert.That(runner.Z, Is.LessThan(bossZ - 0.4f), "öte yana geçmeden kenarda durur");
     }
 
     [Test]
@@ -359,6 +389,28 @@ public class PositionOwnershipTests
             name, motion, sec, "travel", "none", string.Empty, 0f,
             distance, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f,
             0f, 0f, null, null);
+
+    static void AssertCleanBehind(MotionTemplate template, float bossZ)
+    {
+        const float body = 0.5f;
+        const float bossR = 0.85f;
+        var target = new MotionTarget(true, 0f, bossZ, bossR);
+        var runner = new MotionTemplateRunner();
+        runner.Begin(template, 0f, 0f, 0f, 0f, 1f, body, 0.15f);
+        float minGap = 99f;
+        var stick = new MotionStick(false, 0f, 0f);
+        for (int i = 0; i < 80 && !runner.Finished; i++)
+        {
+            runner.Tick(0.02f, target, stick);
+            float edge = MotionHitGeometry.EdgeGap(runner.X, runner.Z, body, 0f, bossZ, bossR);
+            if (edge < minGap)
+                minGap = edge;
+        }
+        Assert.That(runner.Finished, Is.True, bossZ.ToString("0.0"));
+        Assert.That(runner.Z, Is.GreaterThan(bossZ), "arkada biter " + bossZ.ToString("0.0"));
+        Assert.That(MotionHitGeometry.EdgeGap(runner.X, runner.Z, body, 0f, bossZ, bossR), Is.GreaterThan(0.05f));
+        Assert.That(minGap, Is.GreaterThan(0.04f), "gövdenin içinden geçmez " + bossZ.ToString("0.0"));
+    }
 
     static List<MotionTick> Tick(MotionTemplate template, MotionTarget target, float body, float gap)
     {

@@ -55,9 +55,40 @@ FAMILIES = [
 ]
 
 
+MOTION_ANIM = {
+    "hold": "cast",
+    "lunge": "lunge",
+    "dash": "dash",
+    "retreat": "backstep",
+    "sidestep": "sidestep",
+    "hop": "leap",
+    "leap": "leap",
+    "slam": "land",
+    "pull": "dash",
+    "spin": "spin",
+    "fan": "spin",
+    "throw": "hook_throw",
+    "hover": "leap",
+    "blink": "dash",
+    "channel": "cast",
+    "return": "dash",
+}
+ANIM_KEYS = {
+    "windup", "lunge", "dash", "backstep", "sidestep",
+    "spin", "leap", "land", "hook_throw", "recover", "cast",
+}
+
+
 def P(name, motion, sec, **kw):
     row = {"name": name, "motion": motion, "sec": sec}
     row.update(kw)
+    if "anim" not in row:
+        if motion == "hold" and row.get("gate") == "release":
+            row["anim"] = "windup"
+        elif motion == "hold" and name in ("bekle", "din", "ger", "tut", "uzaklas"):
+            row["anim"] = "recover"
+        else:
+            row["anim"] = MOTION_ANIM.get(motion, "cast")
     return row
 
 
@@ -415,7 +446,7 @@ PHASES = {
     # İçinden geçiş overshoot ile öte kenarda biter.
     "isinlan_kes": [
         P("kilit", "hold", 0.30, **TRACK),
-        P("isin", "blink", 0.18, snap_at=0.55, distance_m=3.0, land="behind", behind_m=1.15,
+        P("isin", "blink", 0.18, snap_at=0.4, distance_m=5.0, land="behind", behind_m=1.15,
           hit=H("behind", 0.72, 1, shape="sphere", length=0.9, radius=0.55), **TRACK),
     ],
     "icinden_emme": [
@@ -842,6 +873,9 @@ def main():
         if tid not in PHASES:
             raise SystemExit(f"fazsız kalıp: {tid}")
         phases = PHASES[tid]
+        for phase in phases:
+            if phase.get("anim") not in ANIM_KEYS:
+                raise SystemExit(f"anim anahtarı yok: {tid} {phase.get('name')} {phase.get('anim')}")
         templates.append({
             "id": tid,
             "name": info["name"],
@@ -853,7 +887,23 @@ def main():
 
     doc = {
         "version": 1,
-        "note": "Hareket kalıbı katmanı. Fiil türü seçer, kalıp şekli seçer. 144 kombo 101 kalıba, 42 aileye bağlıdır. Aile 1-42 oynanır. Sayılar buradadır. Etiketler (portal, sinir_modu, takim_kombosu, silah_kesme) saklanır, uygulanmaz.",
+        "note": "Hareket kalıbı katmanı. Fiil türü seçer, kalıp şekli seçer. 144 kombo 101 kalıba, 42 aileye bağlıdır. Aile 1-42 oynanır. Sayılar buradadır. Etiketler (portal, sinir_modu, takim_kombosu, silah_kesme) saklanır, uygulanmaz. anim_bridge silah klibine giden tek tablodur.",
+        "anim_bridge": {
+            "fallback_state": "Locomotion",
+            "rows": [
+                {"key": "windup", "weapon": 0, "verb": 0, "state": "CastPierce", "trigger": ""},
+                {"key": "lunge", "weapon": 0, "verb": 0, "state": "BasicStrike", "trigger": ""},
+                {"key": "dash", "weapon": 0, "verb": 0, "state": "Locomotion", "trigger": ""},
+                {"key": "backstep", "weapon": 0, "verb": 0, "state": "Locomotion", "trigger": ""},
+                {"key": "sidestep", "weapon": 0, "verb": 0, "state": "Locomotion", "trigger": ""},
+                {"key": "spin", "weapon": 0, "verb": 0, "state": "CastSweep", "trigger": ""},
+                {"key": "leap", "weapon": 0, "verb": 0, "state": "CastSlam", "trigger": ""},
+                {"key": "land", "weapon": 0, "verb": 0, "state": "CastSlam", "trigger": ""},
+                {"key": "hook_throw", "weapon": 0, "verb": 0, "state": "CastShoot", "trigger": ""},
+                {"key": "recover", "weapon": 0, "verb": 0, "state": "Locomotion", "trigger": ""},
+                {"key": "cast", "weapon": 0, "verb": 0, "state": "CastChannel", "trigger": ""},
+            ],
+        },
         "tag_labels": {
             "portal": "Portal",
             "sinir_modu": "Sınır modu",

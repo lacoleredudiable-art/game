@@ -88,7 +88,12 @@ namespace Dovus.Core.Motion
             float x, float y, float z,
             float faceX, float faceZ,
             bool finished,
-            MotionHit[] hits)
+            MotionHit[] hits,
+            string anim = "",
+            float animSpeed = 1f,
+            float velX = 0f,
+            float velZ = 0f,
+            bool spin = false)
         {
             X = x;
             Y = y;
@@ -97,6 +102,11 @@ namespace Dovus.Core.Motion
             FaceZ = faceZ;
             Finished = finished;
             Hits = hits ?? Array.Empty<MotionHit>();
+            AnimKey = anim ?? string.Empty;
+            AnimSpeed = animSpeed > 0.05f ? animSpeed : 1f;
+            VelX = velX;
+            VelZ = velZ;
+            Spin = spin;
         }
 
         public float X { get; }
@@ -106,6 +116,12 @@ namespace Dovus.Core.Motion
         public float FaceZ { get; }
         public bool Finished { get; }
         public MotionHit[] Hits { get; }
+        public string AnimKey { get; }
+        public float AnimSpeed { get; }
+        public float VelX { get; }
+        public float VelZ { get; }
+        /// <summary>Dönüş klibi ve gövde yaw'ı birlikte sürer.</summary>
+        public bool Spin { get; }
     }
 
     /// <summary>
@@ -201,8 +217,10 @@ namespace Dovus.Core.Motion
         {
             _hits.Clear();
             if (!_active || _finished || dt <= 0f || _template == null)
-                return Capture();
+                return Capture(0f, 0f);
 
+            float x0 = _x;
+            float z0 = _z;
             _lastTarget = target;
             float left = dt;
             int guard = 0;
@@ -251,7 +269,8 @@ namespace Dovus.Core.Motion
                     break;
             }
 
-            return Capture();
+            float inv = 1f / dt;
+            return Capture((_x - x0) * inv, (_z - z0) * inv);
         }
 
         void Advance(MotionPhase phase, float step, float dur, in MotionTarget target, in MotionStick stick)
@@ -675,6 +694,9 @@ namespace Dovus.Core.Motion
                     Approach(ux, uz, len, target, cap: phase.DistanceM);
                     break;
             }
+
+            if (phase.OvershootM <= 0.01f)
+                KeepOutside(target, ref _destX, ref _destZ);
         }
 
         /// <summary>Merkezler, saldıran kenarı + pay + hedef kenarı kadar ayrı durur. İçeri girilmez.</summary>
@@ -728,8 +750,28 @@ namespace Dovus.Core.Motion
             fz = _phaseFaceZ;
         }
 
-        MotionTick Capture() =>
-            new MotionTick(_x, _y, _z, _faceX, _faceZ, _finished, _hits.ToArray());
+        MotionTick Capture(float velX, float velZ)
+        {
+            string anim = string.Empty;
+            float speed = 1f;
+            bool spin = false;
+            if (_template != null && _template.Phases.Count > 0)
+            {
+                int index = _phase;
+                if (index < 0 || index >= _template.Phases.Count)
+                    index = _template.Phases.Count - 1;
+                MotionPhase phase = _template.Phases[index];
+                anim = string.IsNullOrEmpty(phase.Anim)
+                    ? MotionAnimTable.FallbackKey(phase.Motion)
+                    : phase.Anim;
+                speed = phase.AnimSpeed;
+                spin = phase.Motion is "spin" or "fan" || anim == "spin";
+            }
+
+            return new MotionTick(
+                _x, _y, _z, _faceX, _faceZ, _finished, _hits.ToArray(),
+                anim, speed, velX, velZ, spin);
+        }
 
         static float Curve(float[] curve, float u)
         {

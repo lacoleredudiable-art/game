@@ -1,6 +1,88 @@
 {
   "version": 1,
-  "note": "Hareket kalıbı katmanı. Fiil türü seçer, kalıp şekli seçer. 144 kombo 101 kalıba, 42 aileye bağlıdır. Aile 1-42 oynanır. Sayılar buradadır. Etiketler (portal, sinir_modu, takim_kombosu, silah_kesme) saklanır, uygulanmaz.",
+  "note": "Hareket kalıbı katmanı. Fiil türü seçer, kalıp şekli seçer. 144 kombo 101 kalıba, 42 aileye bağlıdır. Aile 1-42 oynanır. Sayılar buradadır. Etiketler (portal, sinir_modu, takim_kombosu, silah_kesme) saklanır, uygulanmaz. anim_bridge silah klibine giden tek tablodur.",
+  "anim_bridge": {
+    "fallback_state": "Locomotion",
+    "rows": [
+      {
+        "key": "windup",
+        "weapon": 0,
+        "verb": 0,
+        "state": "CastPierce",
+        "trigger": ""
+      },
+      {
+        "key": "lunge",
+        "weapon": 0,
+        "verb": 0,
+        "state": "BasicStrike",
+        "trigger": ""
+      },
+      {
+        "key": "dash",
+        "weapon": 0,
+        "verb": 0,
+        "state": "Locomotion",
+        "trigger": ""
+      },
+      {
+        "key": "backstep",
+        "weapon": 0,
+        "verb": 0,
+        "state": "Locomotion",
+        "trigger": ""
+      },
+      {
+        "key": "sidestep",
+        "weapon": 0,
+        "verb": 0,
+        "state": "Locomotion",
+        "trigger": ""
+      },
+      {
+        "key": "spin",
+        "weapon": 0,
+        "verb": 0,
+        "state": "CastSweep",
+        "trigger": ""
+      },
+      {
+        "key": "leap",
+        "weapon": 0,
+        "verb": 0,
+        "state": "CastSlam",
+        "trigger": ""
+      },
+      {
+        "key": "land",
+        "weapon": 0,
+        "verb": 0,
+        "state": "CastSlam",
+        "trigger": ""
+      },
+      {
+        "key": "hook_throw",
+        "weapon": 0,
+        "verb": 0,
+        "state": "CastShoot",
+        "trigger": ""
+      },
+      {
+        "key": "recover",
+        "weapon": 0,
+        "verb": 0,
+        "state": "Locomotion",
+        "trigger": ""
+      },
+      {
+        "key": "cast",
+        "weapon": 0,
+        "verb": 0,
+        "state": "CastChannel",
+        "trigger": ""
+      }
+    ]
+  },
   "tag_labels": {
     "portal": "Portal",
     "sinir_modu": "Sınır modu",
@@ -252,7 +334,8 @@
           "gate": "release",
           "max_hold_sec": 0.9,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "windup"
         },
         {
           "name": "saplama",
@@ -275,7 +358,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         }
       ]
     },
@@ -309,7 +393,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         },
         {
           "name": "pence_2",
@@ -326,7 +411,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         },
         {
           "name": "pence_3",
@@ -343,7 +429,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         }
       ]
     },
@@ -376,7 +463,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "sidestep"
         },
         {
           "name": "sag",
@@ -396,7 +484,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "leap"
         }
       ]
     },
@@ -432,7 +521,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "leap"
         }
       ]
     },
@@ -465,7 +555,8 @@
             "payload": "effect"
           },
           "facing": "hold",
-          "homing": "none"
+          "homing": "none",
+          "anim": "spin"
         }
       ]
     },
@@ -500,14 +591,16 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "ger",
           "motion": "hold",
           "sec": 0.28,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "recover"
         },
         {
           "name": "cek_kes",
@@ -524,7 +617,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         }
       ]
     },
@@ -545,7 +639,8 @@
           "motion": "hold",
           "sec": 0.28,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "cik",
@@ -562,7 +657,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         }
       ]
     },
@@ -600,7 +696,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "leap"
         }
       ]
     },
@@ -621,7 +718,8 @@
           "motion": "hold",
           "sec": 0.22,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "vur",
@@ -638,7 +736,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         }
       ]
     },
@@ -676,7 +775,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         },
         {
           "name": "sirt",
@@ -693,7 +793,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -733,14 +834,16 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         },
         {
           "name": "bekle",
           "motion": "hold",
           "sec": 0.24,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "recover"
         },
         {
           "name": "yanki",
@@ -758,7 +861,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -793,7 +897,8 @@
             "every_sec": 0.5
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -828,7 +933,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         }
       ]
     },
@@ -849,7 +955,8 @@
           "motion": "hold",
           "sec": 0.16,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "em",
@@ -868,7 +975,8 @@
             "every_sec": 0.5
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -903,7 +1011,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "sek_2",
@@ -919,7 +1028,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "sek_3",
@@ -936,7 +1046,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -976,7 +1087,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "land"
         }
       ]
     },
@@ -1001,7 +1113,8 @@
           "motion": "hold",
           "sec": 0.16,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "halka",
@@ -1018,7 +1131,8 @@
             "payload": "effect"
           },
           "facing": "hold",
-          "homing": "none"
+          "homing": "none",
+          "anim": "spin"
         }
       ]
     },
@@ -1042,7 +1156,8 @@
           "sec": 0.18,
           "shot_m": 4,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "cek",
@@ -1060,7 +1175,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "dash"
         }
       ]
     },
@@ -1094,7 +1210,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -1136,7 +1253,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "leap"
         }
       ]
     },
@@ -1175,7 +1293,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         }
       ]
     },
@@ -1209,7 +1328,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "ters",
@@ -1225,7 +1345,8 @@
             "payload": "none"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -1259,14 +1380,16 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "kos",
           "motion": "hold",
           "sec": 1.0,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "ulak",
@@ -1285,7 +1408,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "sidestep"
         }
       ]
     },
@@ -1322,7 +1446,8 @@
             "every_sec": 0.5
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -1347,14 +1472,15 @@
           "motion": "hold",
           "sec": 0.3,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "isin",
           "motion": "blink",
           "sec": 0.18,
-          "snap_at": 0.55,
-          "distance_m": 3.0,
+          "snap_at": 0.4,
+          "distance_m": 5.0,
           "land": "behind",
           "behind_m": 1.15,
           "hit": {
@@ -1367,7 +1493,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "dash"
         }
       ]
     },
@@ -1402,7 +1529,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "dash"
         }
       ]
     },
@@ -1436,7 +1564,8 @@
             "payload": "effect"
           },
           "facing": "travel",
-          "homing": "none"
+          "homing": "none",
+          "anim": "leap"
         },
         {
           "name": "sek_2",
@@ -1456,7 +1585,8 @@
             "payload": "effect"
           },
           "facing": "travel",
-          "homing": "none"
+          "homing": "none",
+          "anim": "leap"
         },
         {
           "name": "sek_3",
@@ -1476,7 +1606,8 @@
             "payload": "effect"
           },
           "facing": "travel",
-          "homing": "none"
+          "homing": "none",
+          "anim": "leap"
         }
       ]
     },
@@ -1503,7 +1634,8 @@
           "motion": "hold",
           "sec": 0.14,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "atil",
@@ -1511,14 +1643,16 @@
           "sec": 0.24,
           "distance_m": 3.0,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "dash"
         },
         {
           "name": "bekle",
           "motion": "hold",
           "sec": 2.0,
           "facing": "hold",
-          "homing": "none"
+          "homing": "none",
+          "anim": "recover"
         },
         {
           "name": "don",
@@ -1526,7 +1660,8 @@
           "sec": 0.28,
           "distance_m": 3.0,
           "facing": "travel",
-          "homing": "none"
+          "homing": "none",
+          "anim": "dash"
         }
       ]
     },
@@ -1551,7 +1686,8 @@
           "distance_m": 3.2,
           "overshoot_m": 0,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "dash"
         },
         {
           "name": "patlama",
@@ -1567,7 +1703,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -1589,7 +1726,8 @@
           "sec": 0.16,
           "shot_m": 5,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "cek",
@@ -1598,7 +1736,8 @@
           "distance_m": 2.2,
           "gap_m": 1.15,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "dash"
         },
         {
           "name": "as",
@@ -1619,7 +1758,8 @@
             "payload": "effect"
           },
           "facing": "travel",
-          "homing": "none"
+          "homing": "none",
+          "anim": "leap"
         }
       ]
     },
@@ -1651,14 +1791,16 @@
             "payload": "effect"
           },
           "facing": "travel",
-          "homing": "none"
+          "homing": "none",
+          "anim": "dash"
         },
         {
           "name": "din",
           "motion": "hold",
           "sec": 0.35,
           "facing": "hold",
-          "homing": "none"
+          "homing": "none",
+          "anim": "recover"
         }
       ]
     },
@@ -1684,7 +1826,8 @@
           "height_m": 1.35,
           "gap_m": 0.4,
           "facing": "travel",
-          "homing": "none"
+          "homing": "none",
+          "anim": "leap"
         },
         {
           "name": "cak",
@@ -1702,7 +1845,8 @@
             "payload": "effect"
           },
           "facing": "travel",
-          "homing": "none"
+          "homing": "none",
+          "anim": "land"
         }
       ]
     },
@@ -1742,7 +1886,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "atil",
@@ -1750,7 +1895,8 @@
           "sec": 0.26,
           "distance_m": 3.0,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "dash"
         },
         {
           "name": "kapi",
@@ -1766,7 +1912,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -1796,7 +1943,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "kac",
@@ -1804,7 +1952,8 @@
           "sec": 0.28,
           "distance_m": 2.8,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "backstep"
         }
       ]
     },
@@ -1828,7 +1977,8 @@
           "walk_mps": 3.4,
           "height_m": 0.85,
           "facing": "travel",
-          "homing": "none"
+          "homing": "none",
+          "anim": "cast"
         }
       ]
     },
@@ -1864,7 +2014,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -1895,7 +2046,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         }
       ]
     },
@@ -1926,7 +2078,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "sek",
@@ -1944,7 +2097,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -1978,7 +2132,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -2003,7 +2158,8 @@
           "motion": "hold",
           "sec": 0.18,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "yelpaze",
@@ -2020,7 +2176,8 @@
             "payload": "effect"
           },
           "facing": "hold",
-          "homing": "none"
+          "homing": "none",
+          "anim": "spin"
         }
       ]
     },
@@ -2043,7 +2200,8 @@
           "distance_m": 0.2,
           "height_m": 0.3,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "land"
         },
         {
           "name": "duvar",
@@ -2060,7 +2218,8 @@
             "payload": "effect"
           },
           "facing": "hold",
-          "homing": "none"
+          "homing": "none",
+          "anim": "spin"
         }
       ]
     },
@@ -2100,7 +2259,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -2137,7 +2297,8 @@
             "every_sec": 1.0
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -2160,7 +2321,8 @@
           "distance_m": 0.7,
           "plant": true,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         },
         {
           "name": "uzaklas",
@@ -2168,7 +2330,8 @@
           "sec": 0.26,
           "distance_m": 1.5,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "backstep"
         },
         {
           "name": "patla",
@@ -2184,7 +2347,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -2210,7 +2374,8 @@
           "sec": 0.18,
           "shot_m": 3.6,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "cek",
@@ -2227,7 +2392,8 @@
             "every_sec": 0.5
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "pat",
@@ -2243,7 +2409,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -2274,7 +2441,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "sek_2",
@@ -2290,7 +2458,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "sek_3",
@@ -2307,7 +2476,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -2335,7 +2505,8 @@
           "sec": 0.22,
           "plant": true,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "bekle",
@@ -2351,7 +2522,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "recover"
         }
       ]
     },
@@ -2376,7 +2548,8 @@
           "distance_m": 0.35,
           "height_m": 0.35,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "land"
         },
         {
           "name": "catlak_1",
@@ -2395,7 +2568,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "sidestep"
         },
         {
           "name": "catlak_2",
@@ -2412,7 +2586,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         },
         {
           "name": "catlak_3",
@@ -2431,7 +2606,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "sidestep"
         }
       ]
     },
@@ -2454,7 +2630,8 @@
           "distance_m": 1.3,
           "plant": true,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         },
         {
           "name": "uzak",
@@ -2462,7 +2639,8 @@
           "sec": 0.28,
           "distance_m": 1.8,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "backstep"
         },
         {
           "name": "kop",
@@ -2478,7 +2656,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -2513,7 +2692,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         }
       ]
     },
@@ -2538,7 +2718,8 @@
           "motion": "hold",
           "sec": 0.16,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "fiskir",
@@ -2558,7 +2739,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "leap"
         }
       ]
     },
@@ -2584,7 +2766,8 @@
           "sec": 0.4,
           "shot_m": 4.0,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "car",
@@ -2600,7 +2783,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -2625,7 +2809,8 @@
           "motion": "hold",
           "sec": 0.2,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "ters",
@@ -2642,7 +2827,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         }
       ]
     },
@@ -2675,7 +2861,8 @@
             "every_sec": 0.5
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -2698,7 +2885,8 @@
           "distance_m": 1.6,
           "gap_m": 0.55,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "dash"
         },
         {
           "name": "bas",
@@ -2715,7 +2903,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         }
       ]
     },
@@ -2737,7 +2926,8 @@
           "sec": 0.16,
           "shot_m": 4.2,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "cek",
@@ -2754,7 +2944,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "backstep"
         }
       ]
     },
@@ -2789,7 +2980,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "leap"
         },
         {
           "name": "sek",
@@ -2800,7 +2992,8 @@
           "forward_m": -1.7,
           "height_m": 0.55,
           "facing": "travel",
-          "homing": "none"
+          "homing": "none",
+          "anim": "leap"
         }
       ]
     },
@@ -2823,7 +3016,8 @@
           "distance_m": 1.8,
           "gap_m": 0.55,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "dash"
         },
         {
           "name": "tut",
@@ -2839,7 +3033,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "recover"
         }
       ]
     },
@@ -2873,7 +3068,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -2914,14 +3110,16 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "bag",
           "motion": "hold",
           "sec": 0.45,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -2956,7 +3154,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         }
       ]
     },
@@ -2982,7 +3181,8 @@
           "height_m": 1.25,
           "gap_m": 0.7,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "leap"
         },
         {
           "name": "as",
@@ -2999,7 +3199,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "leap"
         }
       ]
     },
@@ -3024,7 +3225,8 @@
           "motion": "hold",
           "sec": 0.34,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "recover"
         },
         {
           "name": "dokun",
@@ -3041,7 +3243,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         }
       ]
     },
@@ -3077,7 +3280,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         },
         {
           "name": "arka",
@@ -3094,7 +3298,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -3118,7 +3323,8 @@
           "distance_m": 1.7,
           "forward_m": 1.15,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "sidestep"
         },
         {
           "name": "arka",
@@ -3129,7 +3335,8 @@
           "height_m": 0.4,
           "distance_m": 1.5,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "leap"
         },
         {
           "name": "sag",
@@ -3139,7 +3346,8 @@
           "distance_m": 1.6,
           "forward_m": 0.2,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "sidestep"
         },
         {
           "name": "sar",
@@ -3155,7 +3363,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -3176,7 +3385,8 @@
           "motion": "hold",
           "sec": 0.12,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "at",
@@ -3193,7 +3403,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         }
       ]
     },
@@ -3224,7 +3435,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "cek",
@@ -3241,7 +3453,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "backstep"
         }
       ]
     },
@@ -3267,7 +3480,8 @@
           "sec": 0.16,
           "shot_m": 3.6,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "isir_1",
@@ -3283,7 +3497,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "isir_2",
@@ -3300,7 +3515,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "isir_3",
@@ -3317,7 +3533,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -3350,14 +3567,16 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "ger",
           "motion": "hold",
           "sec": 0.4,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "recover"
         }
       ]
     },
@@ -3385,14 +3604,16 @@
           "sec": 0.2,
           "shot_m": 4.5,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "bekle",
           "motion": "hold",
           "sec": 1.6,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "recover"
         },
         {
           "name": "patla",
@@ -3408,7 +3629,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -3440,7 +3662,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -3473,7 +3696,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -3506,7 +3730,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         }
       ]
     },
@@ -3536,7 +3761,8 @@
             "payload": "effect"
           },
           "facing": "hold",
-          "homing": "none"
+          "homing": "none",
+          "anim": "cast"
         }
       ]
     },
@@ -3570,7 +3796,8 @@
             "payload": "none"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "sag",
@@ -3589,7 +3816,8 @@
             "payload": "none"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "sidestep"
         },
         {
           "name": "ip",
@@ -3605,7 +3833,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -3641,7 +3870,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "leap"
         }
       ]
     },
@@ -3664,7 +3894,8 @@
           "drift_m": 1.4,
           "walk_mps": 1.1,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "ak",
@@ -3680,7 +3911,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -3710,7 +3942,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "firlat",
@@ -3727,7 +3960,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         }
       ]
     },
@@ -3749,7 +3983,8 @@
           "sec": 0.18,
           "shot_m": 1.4,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "yagmur",
@@ -3765,7 +4000,8 @@
             "payload": "effect"
           },
           "facing": "hold",
-          "homing": "none"
+          "homing": "none",
+          "anim": "cast"
         }
       ]
     },
@@ -3806,7 +4042,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "leap"
         }
       ]
     },
@@ -3827,7 +4064,8 @@
           "motion": "hold",
           "sec": 0.12,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "ok",
@@ -3844,7 +4082,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         }
       ]
     },
@@ -3869,7 +4108,8 @@
           "snap_at": 0.5,
           "distance_m": 3.0,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "dash"
         },
         {
           "name": "don",
@@ -3885,7 +4125,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -3906,7 +4147,8 @@
           "motion": "hold",
           "sec": 0.18,
           "facing": "hold",
-          "homing": "none"
+          "homing": "none",
+          "anim": "cast"
         },
         {
           "name": "nabiz",
@@ -3925,7 +4167,8 @@
             "every_sec": 1.0
           },
           "facing": "hold",
-          "homing": "none"
+          "homing": "none",
+          "anim": "cast"
         }
       ]
     },
@@ -3946,7 +4189,8 @@
           "motion": "hold",
           "sec": 0.18,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "yut",
@@ -3963,7 +4207,8 @@
             "every_sec": 0.75
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -3994,7 +4239,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "lunge"
         },
         {
           "name": "sek",
@@ -4010,7 +4256,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -4044,7 +4291,8 @@
             "payload": "effect"
           },
           "facing": "hold",
-          "homing": "none"
+          "homing": "none",
+          "anim": "cast"
         },
         {
           "name": "yuru",
@@ -4063,7 +4311,8 @@
             "every_sec": 1.0
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -4094,14 +4343,16 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "tut",
           "motion": "hold",
           "sec": 0.7,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "recover"
         }
       ]
     },
@@ -4133,7 +4384,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "sag",
@@ -4151,7 +4403,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "geri",
@@ -4168,7 +4421,8 @@
             "payload": "effect"
           },
           "facing": "travel",
-          "homing": "none"
+          "homing": "none",
+          "anim": "backstep"
         }
       ]
     },
@@ -4193,7 +4447,8 @@
           "motion": "hold",
           "sec": 0.18,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "sap",
@@ -4209,7 +4464,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -4240,7 +4496,8 @@
             "payload": "none"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "em",
@@ -4257,7 +4514,8 @@
             "every_sec": 1.0
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -4289,7 +4547,8 @@
             "payload": "none"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "ates",
@@ -4306,7 +4565,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -4337,7 +4597,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "orta",
@@ -4353,7 +4614,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "sag",
@@ -4370,7 +4632,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -4402,14 +4665,16 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "dur",
           "motion": "hold",
           "sec": 0.28,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -4432,7 +4697,8 @@
           "motion": "hold",
           "sec": 0.18,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "cik",
@@ -4452,7 +4718,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "leap"
         }
       ]
     },
@@ -4473,14 +4740,16 @@
           "motion": "hold",
           "sec": 0.18,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "kos",
           "motion": "hold",
           "sec": 2.0,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "isir",
@@ -4496,7 +4765,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -4528,14 +4798,16 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "bekle",
           "motion": "hold",
           "sec": 1.0,
           "facing": "hold",
-          "homing": "none"
+          "homing": "none",
+          "anim": "recover"
         }
       ]
     },
@@ -4556,7 +4828,8 @@
           "motion": "hold",
           "sec": 0.18,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "sol",
@@ -4574,7 +4847,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "sag",
@@ -4592,7 +4866,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -4614,7 +4889,8 @@
           "sec": 0.2,
           "plant": true,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         },
         {
           "name": "akin",
@@ -4631,7 +4907,8 @@
             "every_sec": 0.8
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -4662,7 +4939,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "don",
@@ -4678,7 +4956,8 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -4709,14 +4988,16 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "titr",
           "motion": "hold",
           "sec": 0.4,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     },
@@ -4747,14 +5028,16 @@
             "payload": "effect"
           },
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "hook_throw"
         },
         {
           "name": "sar",
           "motion": "hold",
           "sec": 0.24,
           "facing": "target",
-          "homing": "track"
+          "homing": "track",
+          "anim": "cast"
         }
       ]
     }

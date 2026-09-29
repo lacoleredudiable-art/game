@@ -13,8 +13,18 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 29 Eylül 2026 (kalıp 15–42) ·
+**Son güncelleme:** 29 Eylül 2026 (animasyon kancası) ·
 **Dal:** `feat/motion-templates-2` · **Sıradaki:** Unity Play (bacaklar, dönüş, 3-4, 3-9)
+
+> **29 Eylül — animasyon kancası (Unity Play yok).** Her faz `anim` anahtarı taşır
+> (windup, lunge, dash, backstep, sidestep, spin, leap, land, hook_throw, recover, cast).
+> `anim_bridge` anahtarı state/trigger'a bağlar; silah klibi yalnız bu tablo. Eksik anahtar
+> bir kez uyarır, Locomotion'a düşer. Kalıp oynarken bacak hızı 0'a çekilmez; kalıbın
+> hızı bakışa göre ileri/geri/yan yazılır. Geri adım koşu klibini tersten oynatır. Dönüş
+> (Yayılan Vuruş) CastSweep klibi ve gövde dönüşü birlikte gider. Yan kayma klibi controller'da
+> yok; Strafe sayısı yazılıyor, bacaklar şimdilik koşu hızında döner. Sabit Adım yakın dash'te
+> boss kenarında durur, içine girmez. Odaklı Adım 4,5 m ve 2,5 m'den arkaya iner, ara kare
+> gövdenin içinde değildir. Core test 384/384. Oyun katmanı derlendi. Unity Play yok.
 
 > **29 Eylül — hareket kalıbı bölüm 2–3 (Unity Play yok).** Aile 15–42 de oynanır.
 > 42 aile, 101 kalıp, 144 skill. Hiçbir kombo "kalıp bekliyor" demez. Sayılar
@@ -1490,6 +1500,8 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 - **Vuruş göğüs yüksekliği uydurma (29 Eylül).** `ManifestationTuning.StrikeChestOffsetM`
   = 0.35 m (gövde merkezinin üstü, 2 m gövdede ~1.35 m). Spec'te yok, önerilen.
+- **Animasyon kancası (29 Eylül).** Faz anahtarı + `anim_bridge`. Bacaklar kalıp hızından
+  yürür; dönüş klip + gövde yaw. Yan kayma klibi yok (Strafe parametresi duruyor). Unity Play yok.
 - **Hareket kalıbı bölüm 2–3 (29 Eylül).** Aile 1–42 oynanır (101 kalıp, 144 skill).
   Portal, Sınır modu, Takım kombosu, Silah kesme etiket olarak durur, işlemez.
   Yürüyen balon 4 sn; 10-5 metnindeki 2 sn ayrı gövde değil. Unity Play yok.
