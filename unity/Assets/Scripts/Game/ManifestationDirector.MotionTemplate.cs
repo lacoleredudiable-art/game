@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Dovus.Core;
+using Dovus.Core.Combat;
 using Dovus.Core.Execution;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
@@ -14,6 +15,7 @@ namespace Dovus.Game
         MotionTemplateCatalog _motionCatalog;
         bool _emiciContactPull;
         bool _templateOwnsPosition;
+        readonly SkillCastLease _castLease = new();
         SkillResolution _templateSkill;
         PendingClosing _templatePending;
         float _templateChain;
@@ -89,13 +91,15 @@ namespace Dovus.Game
         {
             _templateOwnsPosition = false;
             _emiciContactPull = false;
+            _castLease.ReleasePosition();
             if (skill.IsEmpty || string.IsNullOrEmpty(skill.SkillId) || _player == null)
                 return false;
             if (!MotionCatalog.TryPlay(skill.SkillId, out MotionTemplate template))
                 return false;
 
             PositionPlayback playback = PreparePositionPlayback(skill, template);
-            _templateOwnsPosition = playback.OwnsPosition;
+            _castLease.Arm(playback.OwnsPosition);
+            _templateOwnsPosition = _castLease.OwnsPosition;
             template = playback.Template ?? template;
 
             if (_motionBody == null)
@@ -414,6 +418,32 @@ namespace Dovus.Game
                 return;
             Destroy(_fuse);
             _fuse = null;
+        }
+
+        /// <summary>
+        /// Dodge kesmesi: kalıp konumu aynı anda bırakılır, süren kapanış ve gövde durur.
+        /// Bekleme geri yazılmaz.
+        /// </summary>
+        void CancelActiveSkillForDodge()
+        {
+            _castLease.CancelForDodge();
+            _templateOwnsPosition = false;
+            if (_motionBody != null)
+                _motionBody.Stop();
+            if (_motionDriver != null)
+                _motionDriver.Stop();
+            AbortCastView(_buildingView);
+            _buildingView = null;
+            for (int i = 0; i < _pending.Count; i++)
+                AbortCastView(_pending[i].View);
+            _pending.Clear();
+            _playerStatus?.ClearCastMobility();
+        }
+
+        static void AbortCastView(LivingEffectView view)
+        {
+            if (view != null && view.Logic != null)
+                view.Logic.Abort();
         }
 
         void SpawnMotionHitVisual(in MotionHit hit)

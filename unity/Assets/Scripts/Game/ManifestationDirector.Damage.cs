@@ -127,6 +127,7 @@ namespace Dovus.Game
                 SkillPower = skillPower * Mathf.Max(0f, effectScale),
                 AttackPower = _passiveDirector?.AttackPower ?? 1f,
                 Multiplier = outMult * runeMult,
+                LandMultiplier = () => _player != null ? PlayerDodgeRig.ConsumeNextHit(_player) : 1f,
                 CanCrit = canCrit && skillPower > 0f,
                 CritChance = DamagePipeline.DefaultCritChance + Mathf.Max(0f, extraCrit),
                 CritMultiplier = DamagePipeline.DefaultCritMultiplier,

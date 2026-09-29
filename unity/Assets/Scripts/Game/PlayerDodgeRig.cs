@@ -1,0 +1,206 @@
+using Dovus.Core.Combat;
+using Dovus.Core.Tuning;
+using UnityEngine;
+
+namespace Dovus.Game
+{
+    /// <summary>
+    /// Oyuncu dodge hakları, i-frame sorgusu ve mükemmel sıyırma.
+    /// Yavaşlama yalnız bu oyuncunun animatörü ve yerel kameradadır;
+    /// Time.timeScale değişmez (çok oyunculu).
+    /// </summary>
+    public sealed class PlayerDodgeRig : MonoBehaviour
+    {
+        GameClock _clock;
+        HexagonInput _input;
+        FollowCamera _camera;
+        ReactionReadout _readout;
+        ActorVisual _visual;
+        NextHitBuff _nextHit = new NextHitBuff();
+        int _perfectPressMs = int.MinValue;
+        float _feelUntilUnscaled = -1f;
+        float _popupUntilUnscaled = -1f;
+        float _savedAnimSpeed = 1f;
+        bool _animSlowed;
+        bool _feelHooked;
+
+        public NextHitBuff NextHit => _nextHit;
+
+        public void Bind(
+            GameClock clock,
+            HexagonInput input,
+            FollowCamera camera,
+            ReactionReadout readout,
+            CombatFeel feel)
+        {
+            _clock = clock;
+            _input = input;
+            _camera = camera;
+            _readout = readout;
+            if (feel != null && !_feelHooked)
+            {
+                feel.Exchanged += OnExchange;
+                _feelHooked = true;
+            }
+        }
+
+        /// <summary>Hasar borusu bunu okur. true ise bu karede vuruş yutulur.</summary>
+        public bool IsInvulnerable
+        {
+            get
+            {
+                DodgeState dodge = _input != null ? _input.Dodge : null;
+                return dodge != null && dodge.IsInvulnerable(WorldMs());
+            }
+        }
+
+        public bool CanBeHit => !IsInvulnerable;
+
+        /// <summary>
+        /// Gelen vuruşun tek sorusu. dodgeable false ise i-frame yutmaz.
+        /// true dönerse hasar yazılmamalı; mükemmel pencereyse ödül burada bir kez verilir.
+        /// </summary>
+        public static bool BlocksIncoming(Component host, bool dodgeable = true)
+        {
+            if (host == null || !dodgeable)
+                return false;
+            PlayerDodgeRig rig = host.GetComponent<PlayerDodgeRig>();
+            return rig != null && rig.TryAbsorbHit();
+        }
+
+        /// <summary>Hasar borusu oyuncunun sıradaki vuruşunda bir kez çarpar. İkinci çağrı 1.</summary>
+        public static float ConsumeNextHit(Component player)
+        {
+            if (player == null)
+                return 1f;
+            PlayerDodgeRig rig = player.GetComponent<PlayerDodgeRig>();
+            return rig != null ? rig._nextHit.Consume() : 1f;
+        }
+
+        public bool TryAbsorbHit()
+        {
+            if (!IsInvulnerable)
+                return false;
+            ConsiderPerfect(WorldMs());
+            return true;
+        }
+
+        void OnExchange(ExchangeResult result)
+        {
+            if (result.Outcome != ExchangeOutcome.Dodged)
+                return;
+            DodgeState dodge = _input != null ? _input.Dodge : null;
+            if (dodge == null || !dodge.PressTimeMs.HasValue)
+                return;
+            int press = dodge.PressTimeMs.Value;
+            int strike = press + result.GapMs;
+            if (!InPerfect(press, strike))
+                return;
+            TriggerPerfect(press);
+        }
+
+        void ConsiderPerfect(int strikeMs)
+        {
+            DodgeState dodge = _input != null ? _input.Dodge : null;
+            if (dodge == null || !dodge.PressTimeMs.HasValue)
+                return;
+            int press = dodge.PressTimeMs.Value;
+            if (!InPerfect(press, strikeMs))
+                return;
+            TriggerPerfect(press);
+        }
+
+        bool InPerfect(int pressMs, int strikeMs)
+        {
+            DodgeTuning tuning = Tuning;
+            return PerfectDodgeRule.InWindow(
+                pressMs,
+                strikeMs,
+                tuning.IframeStartMs,
+                tuning.IframeMs,
+                tuning.PerfectWindowMs);
+        }
+
+        void TriggerPerfect(int pressMs)
+        {
+            if (_perfectPressMs == pressMs)
+                return;
+            _perfectPressMs = pressMs;
+
+            DodgeTuning tuning = Tuning;
+            DodgeChargeBank bank = _input != null ? _input.Charges : null;
+            if (bank != null)
+            {
+                bank.RechargeMult = _input.Dodge != null ? _input.Dodge.CooldownMult : 1f;
+                bank.Refund(tuning.PerfectChargeRefund);
+            }
+
+            _nextHit.Arm(tuning.PerfectNextHitMult);
+            PlayLocalFeel(tuning.PerfectFeelSec);
+            _popupUntilUnscaled = Time.unscaledTime + 0.75f;
+            _readout?.NoteSkill("PERFECT", "sonraki vuruş", new Color(1f, 0.92f, 0.35f));
+            SfxDirector.Play(SfxLibrary.PerfectDodge);
+        }
+
+        void PlayLocalFeel(float seconds)
+        {
+            float dur = Mathf.Max(0.05f, seconds);
+            _feelUntilUnscaled = Time.unscaledTime + dur;
+            _camera?.Punch(6f, 1.5f, 4f, 10f);
+            if (_visual == null)
+                _visual = GetComponent<ActorVisual>();
+            Animator anim = _visual != null ? _visual.Animator : null;
+            if (anim == null)
+                return;
+            if (!_animSlowed)
+                _savedAnimSpeed = anim.speed <= 0.01f ? 1f : anim.speed;
+            anim.speed = 0.2f;
+            _animSlowed = true;
+        }
+
+        void Update()
+        {
+            if (!_animSlowed)
+                return;
+            if (Time.unscaledTime < _feelUntilUnscaled)
+                return;
+            Animator anim = _visual != null ? _visual.Animator : null;
+            if (anim != null)
+                anim.speed = _savedAnimSpeed;
+            _animSlowed = false;
+        }
+
+        void OnGUI()
+        {
+            if (Time.unscaledTime > _popupUntilUnscaled)
+                return;
+            var style = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 42,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleCenter
+            };
+            style.normal.textColor = new Color(1f, 0.92f, 0.35f);
+            float w = 420f;
+            float h = 72f;
+            GUI.Label(new Rect((Screen.width - w) * 0.5f, Screen.height * 0.28f, w, h), "PERFECT", style);
+        }
+
+        void OnDisable()
+        {
+            if (!_animSlowed)
+                return;
+            Animator anim = _visual != null ? _visual.Animator : null;
+            if (anim != null)
+                anim.speed = _savedAnimSpeed;
+            _animSlowed = false;
+        }
+
+        int WorldMs() => _clock != null ? (int)_clock.Director.WorldTimeMs : 0;
+
+        DodgeTuning Tuning =>
+            _input != null && _input.Combat != null && _input.Combat.Dodge != null
+                ? _input.Combat.Dodge
+                : new DodgeTuning();
+    }
+}

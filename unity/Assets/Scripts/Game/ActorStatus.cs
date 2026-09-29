@@ -173,9 +173,12 @@ namespace Dovus.Game
         public float LastThreat { get; private set; }
         public float LastPoise { get; private set; }
 
-        public void ApplyDamage(float raw)
+        public void ApplyDamage(float raw, bool dodgeable = true)
         {
             if (raw <= 0f) return;
+            // İ-frame, hesaptan önce. Yutulan vuruş boruya girmez.
+            if (_playerVitals != null && PlayerDodgeRig.BlocksIncoming(this, dodgeable))
+                return;
             double now = _clock != null ? _clock.Director.WorldTimeMs : 0;
             Armor.Passive = PassiveDirector?.ArmorAdd ?? 0f;
             float taken = (ModeDirector?.DamageTakenMult ?? 1f)

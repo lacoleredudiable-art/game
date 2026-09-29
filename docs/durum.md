@@ -13,8 +13,8 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 29 Eylül 2026 (hasar borusu, zırh, ×4000, Emici hareket) ·
-**Dal:** `feat/damage-armor` · **Sıradaki:** Unity Play (sayılar, zırh, 3-2 / 1-2 / 4-2 / 6-2)
+**Son güncelleme:** 29 Eylül 2026 (hasar borusu + dodge birleşti) ·
+**Dal:** `feat/damage-armor` · **Sıradaki:** Unity Play (sayılar, zırh, Emici, dodge)
 
 > **29 Eylül — hasar ve zırh.** Bütün vuruş, zehir ve boss hasarı tek borudan geçer:
 > güç × saldırı, kritik (varsayılan %10, ×1,5), buff'lar bir kez, zırh delme, LoL zırhı,
@@ -24,9 +24,13 @@
 > pasif, geçici buff. Zafiyet (7-6, 7-9) motor değeri −%20 zırhı gerçekten düşürür;
 > karttaki “−%30” metni değişmedi. Emici: 3-2 hâlâ içinden geçer, 1-2 ve 4-2 yerinde kalıp
 > boss'u çeker, 6-2 geri çekilirken tek karede yığılmaz. Unity Play bu turda yok.
-> Dodge dalı gelince i-frame kapısı borudan önce, mükemmel vuruş çarpanı buff aşamasında.
+> Dodge i-frame'i borudan önce yutar (`ActorStatus` ve `PlayerVitals`). Mükemmel sıyırmanın
+> sonraki vuruş çarpanı buff aşamasında bir kez tüketilir; ıskalama ve yenilmezlikte harcanmaz.
 
-
+> **Dodge (Dragon Nest tarzı).** Kısa kayma ~4 m / 0,25 sn, dokunulmazlık dodge başında ~0,3 sn.
+> 2 hak, her biri ~4 sn'de dolar. Skill ve düz vuruş her an kesilir. Mükemmel sıyırma sonraki
+> vuruşu ×1,3 yapar. Deneme: Play'de sol üst "Dodge deneme" veya F8. `BossTuning.Damage` hâlâ 0.
+> Unity Play doğrulanmadı.
 
 > **30 Eylül — dördüncü koşu: Kılıç 142/144, Asa 143/144. Merge edilmedi.** `feat/motion-templates-2`
 > (`b9df90b`) merge edildi. `dotnet test` 402/402, Unity derlemesi ve konsol temiz (yalnız bilinen
