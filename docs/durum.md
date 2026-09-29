@@ -13,8 +13,29 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 29 Eylül 2026 (PR #25 Unity Play, Bölüm A) ·
-**Dal:** `feat/motion-templates-2` · **Sıradaki:** 3-6 aş fazı, 3-2 boss sıçraması, 3-12 titreme düzeltmesi
+**Son güncelleme:** 29 Eylül 2026 (Play taraması, 144 kombo) ·
+**Dal:** `feat/play-sweep` · **Sıradaki:** kalıp hedefi = oyuncunun kendisi (27 kombo), Emici çekme boss ışınlanması
+
+> **29 Eylül — Play taraması (Bölüm B): 103/144 geçti (Kılıç).** Araç: menü `Dovus/Play Sweep/144
+> kombo - Kılıç` (`Game/Editor/PlaySweep.cs`). Boss durdurulmuş, merkez 3 m, her cast öncesi
+> status/bağ/bölge temizlenir, can/mana dolar. Kontroller: cast, isabet, kalıp sonu konumu
+> (kalıbın çevrimdışı simülasyonuna göre), gövdeye girmedi, tek sistem, konsol hatası, süre, tek
+> kare sıçrama/titreme. Tablo `docs/play-sweep/kilic.csv`, kalanlar `kilic-detay.txt`.
+> **41 kalanın 6 kökü var, konsol hatası 0:**
+> - **27 kombo — kalıp hedefi oyuncunun kendisi.** Kendine/dosta skill'de `_templateAim =
+>   pending.Target` = Player. Kalıp kendinden 1,15 m (0,5+0,5+0,15) uzak durmaya çalışır, her kare
+>   1,15 m sıçrar. 3-12 titremesi budur. 3-3, 3-7, 3-8, 3-12, 4-8, 4-9, 8-8…8-12, 9-7…9-12, 10-5,
+>   10-7…10-12, 11-6, 11-8, 11-10, 11-11. Bazıları boss'un içine girer (3-3, 3-7, 3-8, 8-12, 9-10…).
+> - **4 kombo — Emici (sıfat 2) çekme boss'u tek karede ışınlar:** 3-2 (3,00 m), 5-2 (1,24),
+>   6-2 (3,26, isabet de yok), 12-2 (3,64). Kural 4 ihlali.
+> - **4 kombo — 3 m'de cast reddedildi (menzil kapısı):** 1-3, 1-4, 5-1, 6-1.
+> - **3 kombo — 3 m'den isabet yok:** 1-5 (dönüş yerinde, menzil 1,6 m), 7-1, 7-5.
+> - **2 kombo — boss merkezinden geçer:** 3-6 aş fazı (0,06 m), 6-12 (0,11 m).
+> - **1 kombo — oturumun ilk cast'i kalıbı atlar:** build ekranı kapanır kapanmaz 1-1 kalıpsız,
+>   gramerle 1,5 m kayar. Aynı oturumda tekrar atınca geçer.
+> Araç notları: açık build ekranı saati durdurur (araç önce build'i uygular). Play açılışında bir
+> paket PlayerLoop'u sıfırlıyor; araç tick'i `EditorApplication.update` ile geri takar. Editör
+> odakta değilken tarama yavaşlar. Play sırasında script kaydetmek taramayı siler (domain reload).
 
 > **29 Eylül — PR #25 Unity Play, Bölüm A (11 madde, 16 koşu).** Konsolda script hatası yok
 > (3 ShaderGraph/URP paket hatası var, bizim değil). Araç: `Dovus/Play Sweep` (ayrı dal
@@ -1536,6 +1557,11 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
+- **Play taraması 103/144 (29 Eylül, düzeltilmedi).** Kök: kendine/dosta skill'de kalıp hedefi
+  oyuncunun kendisi (`ManifestationDirector.MotionTemplate.cs`, `_templateAim = pending.Target`)
+  → 27 kombo her kare 1,15 m titrer. Emici çekme boss'u ışınlar (3-2, 5-2, 6-2, 12-2). 1-3, 1-4,
+  5-1, 6-1 3 m'de reddedilir; 1-5, 7-1, 7-5 3 m'den değmez. 6-12 boss merkezinden geçer.
+  Oturumun ilk cast'i kalıbı atlar. Asa (ikinci silah) taraması koşulmadı.
 - **PR #25 Play bulguları (29 Eylül, düzeltilmedi).** 3-6 aş fazı boss merkezinden geçer
   (`side: 1` işlemiyor, yan sapma 0). 3-2'de boss tek karede 3 m sıçrar (çekme anlık; kural 4).
   3-12 süzülme her kare 1,15 m titrer. 2-2 boss'a hasar vermez (dost/şifa dalı), akış çizgisi
