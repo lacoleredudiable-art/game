@@ -13,8 +13,44 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (PR #35 düzeltildi, 4× 1429/1440 → merge) ·
+**Son güncelleme:** 30 Eylül 2026 (Sweep v2 başsız tarama + CI, 1-11 yankı yeri; PR #36 → `b18b751`) ·
 **Dal:** `master` · **Sıradaki:** —
+
+> **Kural: bir PR'ı teslim etmeden önce başsız taramayı koş ve skor tablosunu PR'a yapıştır.**
+> `dotnet run --project tools/SweepV2 -c Release -- --all --gate` (Windows'ta da aynı komut; ~15 sn).
+
+> **30 Eylül — Sweep v2 (başsız Play taraması).** `tools/SweepV2` Unity'siz koşar: Core + Game
+> (Editor hariç) + **değişmemiş** `Game/Editor/PlaySweep.cs` bir UnityEngine/UnityEditor shim'ine
+> (`tools/SweepV2/Shim`) karşı derlenir (`UNITY_EDITOR;SWEEP_HEADLESS`). Yani kontroller, eşikler,
+> CSV ve `-detay.txt` biçimi Play taramasıyla aynı koddur. Sahne `Prototype.unity` gibi kurulur
+> (`PrototypeBootstrap` + sahnedeki `_tuning` alanları YAML'dan; sürüm eskiyse Play'deki gibi
+> varsayılana döner), sabit 1/60 sn kare, `GameClock` 100 ms tavanı, tr-TR kültür (notlar "0,16 sn").
+> Görsel: sahte humanoid (1,8 m kutu, Hips/ayak kemikleri), Animator denetleyicisi yok.
+> - Komutlar: `--all` (1440), `--weapon kilic[,yay]`, `--case 1-11[,2-9]`, `--speed 4` (varsayılan),
+>   `--compare docs/play-sweep/<play>.csv` (kombo kombo uyum), `--gate` (CI kapısı), `--trace`,
+>   `--player-shift M --player-shift-at T` (oyuncuyu kalıp ortasında boss'a doğru taşır),
+>   `--out DIR` (varsayılan `tools/SweepV2/out`, git dışı). Çıktı: `<label>.csv`, `<label>-detay.txt`,
+>   `<label>-ozet.md`.
+> - Kapı (`--gate`, `tools/SweepV2/Host/Report.cs`): her silah ≥142/144; hiçbir vakada oyuncu boss
+>   gövdesinde değil (`gövde`); `yerde` hatası silah başına ≤3. **2-9 beyaz listede** (koruyucu tetik,
+>   yalnız `isabet` kalırsa). Kısmi koşuda beklenmeyen her kalan kapıyı düşürür.
+> - CI: `.github/workflows/sweep-v2.yml` her PR'da `dotnet test tools/CoreTests`, AtomSim derlemesi,
+>   `--all --gate --compare pr35-final-4x.csv`; özet tablo iş özetine, CSV'ler artefakta.
+> - Kalibrasyon (master `f5e7182` ↔ `play-sweep/pr35-final-4x.csv`): başsız 1430/1440 (her silah
+>   143, yalnız 2-9), gövde 0, yerde 0, oyun logunda 0 hata, 1440 kombo 12,4 sn. Uyum **1439/1440**;
+>   tek fark Yumruk 12-4 (Play `sure`: kalıp bang'den 0,16 sn geç, sınır 0,15 — editör kare
+>   takılması; başsız kareler sabit, geçer).
+> - 1-11 yankısı: kalıp dışı bir şey (itme/çekme/ışınlanma/taramanın oyuncu kayması) oyuncuyu
+>   taşırsa `MotionTemplateBody` koşucuyu yeni yere taşır (`MotionTemplateRunner.Rebase`); kalan
+>   fazlar ve yankı vuruşu oyuncunun o anki yerinde açılır, eski yere geri çekme yok. Zamanlama
+>   aynı (+0,31 sn). Başsız: `--weapon kilic --case 1-11 --player-shift 1 --player-shift-at 0.2`
+>   → ikinci vuruş boss'a 1,87 m'de açılır ve 69 600 hasar verir (kaymasız: 2,69 m, hasar yok).
+>   Play 1× (`play-sweep/sweepv2-111-playcheck-1x.csv`, Kılıç): kaymasız ikinci nabız 0,47 → 0,78 sn,
+>   boss'a 2,67 m, hasar yok; 1 m kaymalı 0,78 sn'de boss'a 1,87 m, 104 950 hasar. `dotnet test` 570/570.
+> - Son dal Play 4× (`play-sweep/sweepv2-final-4x.csv`): **1428/1440** — Kılıç 142, Küre 142, diğer
+>   sekizi 143; gövde 0, `yerde` 0. Kalan: 2-9 ×10 + Kılıç 8-8 `sure` (kalıp bang'den 0,26 sn geç) +
+>   Küre 5-3 `sure` (kalıp 0,81/0,58 sn); ikisi de 4× tekrarda geçti (`sweepv2-sure-retry-4x.csv`),
+>   editör takılması. Başsız aynı dalda 1430/1440; bu Play koşusuyla uyum 1438/1440 (fark: o iki `sure`).
 
 > **30 Eylül — PR #35 düzeltmesi + merge.** Master (#34 dahil) #35 dalına iki taraf korunarak
 > birleştirildi. Düzeltmeler: teslim kuyruğu oyuncuyu hiç taşımaz (`ApplyMechanicHitEffects
@@ -1976,9 +2012,19 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   Dev HP doluyken can oranı %30'un altına inmez; koruyucu şifayı hissetmek için Dev HP KAPALI.
   Mana/bekleme yok. Play Sweep 2-9'u her silahta "etki yok" sayar: şifa koruyucu tetikte, tarama
   canı %50'de başlatır (tasarım gereği kabul edildi, 30 Eylül).
-- **PR #35 sonrası (30 Eylül).** 1-11 ikinci nabız kalıbın `yanki` fazında, ilk vuruş yerinde
-  açılır; oyuncu ilerlediyse boss'a 2,67 m uzakta kalır ve hasar vermez (zamanlama doğru, yer
-  tasarım sorusu). Tarama ardışık 11-1'de önceki minyon yaşarken boss'u sıfırlayınca minyon
+- **Sweep v2 başsız tarama (30 Eylül).** Bacak/animasyon sütunları (`bacak`, taban state) Play ile
+  kıyaslanamaz: Animator denetleyicisi yok, görsel sahte humanoid. Hasar sayıları rastgelelik ve
+  yanma tiki zamanlaması yüzünden Play'den birkaç % sapar (geçti/kaldı etkilemez). Kare süresi
+  sabit olduğu için editör takılmasından doğan `sure` kalanları (Yumruk 12-4) başsızda görünmez.
+  Linux CI hiç koşmadı: PR #36'da iş başlamadan düştü (GitHub hesabı ödeme sorunu yüzünden
+  kilitli). Ödeme düzelince `gh run rerun 36752370853`; ilk Linux koşusu (ICU/tr-TR, büyük-küçük
+  harf yolları) doğrulanmadı. Yerel koşu Windows.
+- **1-11 yankı (30 Eylül, Sweep v2 PR'ı).** Yankı artık oyuncunun o anki yerinde açılır; ancak
+  kalıp sırasında çubuk oyuncuyu yürütmez (kalıp yeri yazar), yani "oyuncu hareket etti" yalnız
+  kalıp dışı taşımayla (itme/çekme/ışınlanma) olur. Taramada kaymasız 1-11'de ilk vuruşun boss
+  geri itmesi (~1,05 m) yüzünden yankı yine 2,69 m'de açılır ve hasar vermez; bu, yer değil
+  mesafe sorusu (tasarım). Kalıp içinde çubukla yürüme istenirse ayrı karar.
+- **PR #35 sonrası (30 Eylül).** Tarama ardışık 11-1'de önceki minyon yaşarken boss'u sıfırlayınca minyon
   bir kare merkeze 0,91 m görünür (tarama artığı). Yumruk 12-4 `sure` editör takılması.
 - **PR #35 skill teslimi (30 Eylül, çözüldü — yukarıdaki merge kaydı).** Birleşik 4× taramada (her silah): 12-11 oyuncu
   boss gövdesinde (merkeze 0,22 m, temas 1,35; `RepeatDelivered` → `PulseDelivery` mekanik etkiyi
