@@ -191,8 +191,8 @@ namespace UnityEngine
             {
                 foreach (string ext in TextExt)
                 {
-                    string f = Path.Combine(Root, path.Replace('/', Path.DirectorySeparatorChar) + ext);
-                    if (File.Exists(f))
+                    string f = FindIgnoreCase(Root, path + ext);
+                    if (f != null)
                     {
                         found = new TextAsset(File.ReadAllText(f, Encoding.UTF8)) { name = Path.GetFileName(path) };
                         break;
@@ -201,6 +201,35 @@ namespace UnityEngine
             }
             s_text[path] = found;
             return found;
+        }
+
+        /// <summary>Unity Resources yolu büyük/küçük harfe duyarsız; Linux CI dosya sistemi değil.</summary>
+        static string FindIgnoreCase(string root, string relative)
+        {
+            string exact = Path.Combine(root, relative.Replace('/', Path.DirectorySeparatorChar));
+            if (File.Exists(exact))
+                return exact;
+            string dir = root;
+            string[] parts = relative.Split('/');
+            for (int i = 0; i < parts.Length; i++)
+            {
+                if (!Directory.Exists(dir))
+                    return null;
+                bool last = i == parts.Length - 1;
+                string match = null;
+                foreach (string e in last ? Directory.EnumerateFiles(dir) : Directory.EnumerateDirectories(dir))
+                {
+                    if (string.Equals(Path.GetFileName(e), parts[i], StringComparison.OrdinalIgnoreCase))
+                    {
+                        match = e;
+                        break;
+                    }
+                }
+                if (match == null)
+                    return null;
+                dir = match;
+            }
+            return dir;
         }
 
         public static T[] LoadAll<T>(string path) where T : Object => Array.Empty<T>();

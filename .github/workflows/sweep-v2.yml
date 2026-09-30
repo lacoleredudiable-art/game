@@ -1,0 +1,49 @@
+name: Sweep v2 (headless)
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_NOLOGO: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Core testleri
+        run: dotnet test tools/CoreTests
+
+      - name: AtomSim derlemesi
+        run: dotnet build tools/AtomSim
+
+      - name: Başsız Play taraması (1440 kombo, kapı)
+        run: >
+          dotnet run --project tools/SweepV2 -c Release --
+          --all --gate --quiet
+          --compare docs/play-sweep/pr35-final-4x.csv
+          --out sweep-out --label headless-tum
+
+      - name: Skor tablosu
+        if: always()
+        run: |
+          if [ -f sweep-out/headless-tum-ozet.md ]; then
+            cat sweep-out/headless-tum-ozet.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: CSV + detay
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sweep-v2
+          path: sweep-out/
+          if-no-files-found: warn
