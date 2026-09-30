@@ -108,8 +108,6 @@ namespace Dovus.Core.Grammar
         public ElementPaintNode? Element { get; }
         public string DisplayName { get; }
         public string Id => Resolution.SkillId;
-        public float EffectiveDamageMult => Resolution.DamageMult * Weapon.DamageMult;
-        public float EffectiveCastTimeMult => Weapon.CastTimeMult;
         public bool PassiveEnabled => Weapon.PassiveEnabled;
         public string UiColor => Weapon.UiColor;
     }

@@ -61,13 +61,9 @@ namespace Dovus.Game
 
         SkillMotor _skills;
         SkillFactory _skillFactory;
-        DamageCalculator _damageCalculator;
         ActorStatus _playerStatus;
         ActorStatus _bossStatus;
-        SkillMotionDriver _motionDriver;
         MotionTemplateBody _motionBody;
-        StateBridgeBoard _stateBoard;
-        StateBridgeView _bridgeView;
         AllyDummy _ally;
 
         // --- Ulti (active_modes) — 16 Eylül, güven kaygısına karşılık uçtan uca ---
@@ -176,7 +172,7 @@ namespace Dovus.Game
             int colon = numericId.LastIndexOf(':');
             if (colon >= 0 && colon + 1 < numericId.Length)
                 numericId = numericId.Substring(colon + 1);
-            Debug.Log(
+            DebugConfig.DevLog(
                 $"[WeaponCycle] id={numericId} name={_equippedWeapon.Name} "
                 + $"type={routeType} canonicalType={_equippedWeapon.Type}");
             return _equippedWeapon;
@@ -217,8 +213,10 @@ namespace Dovus.Game
                 : null;
         public event Action<ElementPaintNode> ElementPaintChanged;
 
+#if UNITY_EDITOR
         /// <summary>Bağlama 10 / MCP: ShoutSkill içindeki ApplySkillAnimation yolunu doğrudan dener.</summary>
         public void DebugApplySkillAnimation(SkillResolution skill) => ApplySkillAnimation(skill);
+#endif
 
         public ElementPaintNode? CycleElementPaint()
         {
@@ -227,7 +225,7 @@ namespace Dovus.Game
             _elementPaintIndex = (_elementPaintIndex + 1) % _skills.ElementPaints.Count;
             ElementPaintNode paint = _skills.ElementPaints[_elementPaintIndex];
             _readout?.NoteSkill("Element: " + paint.Name, "isim/VFX boya katmanı", Color.cyan);
-            Debug.Log($"[ElementSystem] element paint={paint.Id}:{paint.Name} ({paint.Vfx})");
+            DebugConfig.DevLog($"[ElementSystem] element paint={paint.Id}:{paint.Name} ({paint.Vfx})");
             return paint;
         }
 
@@ -243,7 +241,7 @@ namespace Dovus.Game
                 ElementPaintNode paint = _skills.ElementPaints[i];
                 ElementPaintChanged?.Invoke(paint);
                 _readout?.NoteSkill("Element: " + paint.Name, "isim/VFX boya katmanı", Color.cyan);
-                Debug.Log($"[ElementSystem] element paint={paint.Id}:{paint.Name} ({paint.Vfx})");
+                DebugConfig.DevLog($"[ElementSystem] element paint={paint.Id}:{paint.Name} ({paint.Vfx})");
                 return true;
             }
             return false;
@@ -258,38 +256,6 @@ namespace Dovus.Game
             return _skillFactory != null
                 ? _skillFactory.EvaluateWeapon(skill, _equippedWeapon)
                 : WeaponSkillCompatibility.Neutral;
-        }
-
-        DamageCalculator EnsureDamageCalculator()
-        {
-            if (_damageCalculator != null)
-                return _damageCalculator;
-
-            if (ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
-            {
-                try
-                {
-                    // Play'te crit ara sıra çıksın diye seed sabit değil.
-                    _damageCalculator = DamageCalculator.FromElementSystemJson(
-                        design.Json,
-                        seed: unchecked((int)System.DateTime.UtcNow.Ticks));
-                    return _damageCalculator;
-                }
-                catch (System.Exception e)
-                {
-                    Debug.LogWarning($"DamageCalculator JSON okunamadı: {e.Message}");
-                }
-            }
-
-            // Resources yoksa: docs/element-sistemi.json crit_system varsayılanları
-            // (base 0.05 / mult 2.0 / max 0.75) — sayı uydurma yok.
-            _damageCalculator = new DamageCalculator(
-                seed: unchecked((int)System.DateTime.UtcNow.Ticks),
-                baseCritChance: 0.05f,
-                critMultiplier: 2f,
-                maxCritChance: 0.75f,
-                adjectiveCritBonus: null);
-            return _damageCalculator;
         }
 
         struct PendingClosing
@@ -334,7 +300,6 @@ namespace Dovus.Game
             (_engine != null && (_engine.State.Phase == SentencePhase.Building
                 || _engine.State.Phase == SentencePhase.Recovering))
             || _pending.Count > 0
-            || (_motionDriver != null && _motionDriver.IsDisplacing)
             || (_motionBody != null && _motionBody.IsDisplacing)
             || (_visual != null && _visual.IsAttackPose);
 
@@ -379,6 +344,7 @@ namespace Dovus.Game
         /// <summary>Bağlama 11 / MCP: revive_block + erase.</summary>
         public RealityEffectDirector RealityDirector => _realityDirector;
 
+#if UNITY_EDITOR
         /// <summary>Editör/prob: Update beklemeden cümle senkronu.</summary>
         public void ForceSync()
         {
@@ -386,6 +352,7 @@ namespace Dovus.Game
                 return;
             SyncFromSentence(_clock.Director.WorldTimeMs);
         }
+#endif
 
         public void Bind(
             GameClock clock,
@@ -540,19 +507,6 @@ namespace Dovus.Game
                 _playerStatus.DamageBlocked += _ => NoteShieldBlockIfGuarding();
             }
 
-            _motionDriver = player.GetComponent<SkillMotionDriver>();
-            if (_motionDriver == null)
-                _motionDriver = player.gameObject.AddComponent<SkillMotionDriver>();
-            _motionDriver.Bind(clock, colors);
-
-            _stateBoard = new StateBridgeBoard();
-            _bridgeView = FindAnyObjectByType<StateBridgeView>();
-            if (_bridgeView == null)
-            {
-                var bridgeGo = new GameObject("StateBridge");
-                _bridgeView = bridgeGo.AddComponent<StateBridgeView>();
-            }
-            _bridgeView.Bind(_stateBoard);
 
             if (_engine != null && !_hooked)
             {
@@ -616,7 +570,6 @@ namespace Dovus.Game
             _boss?.Tick(dtSec, worldMs);
             TickPendingClosings(worldMs);
             TickBossDeath();
-            TickStateBridge(worldMs);
             TickActiveMode(worldMs, dtSec);
             TickPassives(worldMs);
             SyncDashCooldownMult();
@@ -1455,29 +1408,6 @@ namespace Dovus.Game
             return ChainRules.DefaultFromSpec;
         }
 
-        void TickStateBridge(double worldMs)
-        {
-            if (_stateBoard == null || _combat == null)
-                return;
-
-            var motion = _combat.SkillMotion;
-            motion.ArenaHalfSizeM = _colors != null ? _colors.ArenaHalfSizeM : motion.ArenaHalfSizeM;
-            _stateBoard.Tick(worldMs, motion);
-            _bridgeView?.Sync();
-
-            if (_player == null || _motionDriver == null || _motionDriver.IsDisplacing)
-                return;
-            if (_playerStatus != null && _playerStatus.Board.BlocksMovement)
-                return;
-
-            Vector3 p = _player.position;
-            if (_stateBoard.TryTraverse(p.x, p.z, worldMs, motion, out float dx, out float dz))
-            {
-                _motionDriver.WarpInstant(dx, dz);
-                _readout?.NoteSkill("Portal", "köprü geçişi", new Color(0.55f, 0.4f, 1f));
-            }
-        }
-
         void TickBossDeath()
         {
             if (!_deathPending || _clock == null)
@@ -1988,6 +1918,7 @@ namespace Dovus.Game
             _armedSkillId = string.Empty;
         }
 
+#if UNITY_EDITOR
         /// <summary>Editör/prob: kapanış bang zamanını zorla işle (heal vb.).</summary>
         public void ForceTickClosings()
         {
@@ -2018,6 +1949,7 @@ namespace Dovus.Game
                 return;
             TickTimeEffects(_clock.Director.WorldTimeMs);
         }
+#endif
 
         void TickPendingClosings(double worldMs)
         {
@@ -2157,9 +2089,6 @@ namespace Dovus.Game
             SkillExecutorRoute executorRoute = _skillExecutorRouter.Route(skill, _equippedWeapon);
             executorRoute = ApplyMechanicWorldRoute(MechanicPlanFor(skill), executorRoute);
             LastExecutorKind = executorRoute.Kind;
-            // Hareket executor'ı dash'i kendisi başlatır (Sıçrama/Kopyalama tekrarları için).
-            if (!templateOwnsDelivery && executorRoute.Kind != SkillExecutorKind.Movement)
-                ApplySkillMotion(motionPlan, skill);
             ApplySelfCastEffects(skill);
             BeginMechanicPlan(
                 skill,
@@ -2173,13 +2102,11 @@ namespace Dovus.Game
                 && TryLaunchSkillExecutor(executorRoute.Kind, p, skill, motionPlan);
             if (executorStarted)
                 ScheduleFollowUpLaunches(executorRoute.Kind, p, skill, motionPlan);
-            else if (!templateOwnsDelivery && executorRoute.Kind == SkillExecutorKind.Movement)
-                ApplySkillMotion(motionPlan, skill);
             float dealt = 0f;
             if (!executorStarted && !templateOwnsDelivery)
             {
                 if (executorRoute.IsStub)
-                    Debug.Log($"[SkillExecutor] stub → LivingEffect: {executorRoute.Reason}");
+                    DebugConfig.DevLog($"[SkillExecutor] stub → LivingEffect: {executorRoute.Reason}");
                 LastExecutorKind = SkillExecutorKind.Fallback;
                 ApplyBossClosing(logic, p.Closing, skill);
                 bool bossReached = _boss != null && IsClosingInRange(logic, p.Closing);
@@ -2217,7 +2144,7 @@ namespace Dovus.Game
                 || skill.Mechanics.Length > 0;
             if (string.Equals(skill.SkillId, "1-1", StringComparison.Ordinal))
             {
-                Debug.Log(
+                DebugConfig.DevLog(
                     $"[ElementSystem] smoke 1-1 effect applied={LastSkillEffectApplied} "
                     + $"damage={dealt:0.##}");
             }
@@ -2558,9 +2485,6 @@ namespace Dovus.Game
                 _clock,
                 tuning,
                 fieldCenter,
-                startMotion: kind == SkillExecutorKind.Movement
-                    ? () => ApplySkillMotion(ResolveSkillMotion(skill), skill)
-                    : null,
                 applyFlatDamage: kind == SkillExecutorKind.Summon
                     ? raw =>
                     {
@@ -2597,11 +2521,6 @@ namespace Dovus.Game
             go.transform.SetParent(transform, false);
             ISkillExecutor executor = kind switch
             {
-                SkillExecutorKind.MeleeHitbox => go.AddComponent<MeleeHitboxExecutor>(),
-                SkillExecutorKind.Projectile => go.AddComponent<ProjectileExecutor>(),
-                SkillExecutorKind.FieldAura => go.AddComponent<FieldAuraExecutor>(),
-                SkillExecutorKind.Movement => go.AddComponent<MovementExecutor>(),
-                SkillExecutorKind.SelfState => go.AddComponent<SelfStateExecutor>(),
                 SkillExecutorKind.Summon => go.AddComponent<SummonExecutor>(),
                 _ => null
             };
@@ -2614,7 +2533,7 @@ namespace Dovus.Game
             if (kind == SkillExecutorKind.Summon)
                 ApplySpawnIFrame(skill);
             executor.Execute(context);
-            Debug.Log($"[SkillExecutor] {skill.SkillId} → {kind} r={radius:0.##} menzil={range:0.##} süre={durationSec:0.##} x{effectMult:0.##}");
+            DebugConfig.DevLog($"[SkillExecutor] {skill.SkillId} → {kind} r={radius:0.##} menzil={range:0.##} süre={durationSec:0.##} x{effectMult:0.##}");
             return true;
         }
 
@@ -2877,22 +2796,6 @@ namespace Dovus.Game
                 skill, ctx, t,
                 _skills != null ? _skills.SpaceEffects : null,
                 _verbData?.IFrameMsFor(skill.SkillId) ?? 0);
-        }
-
-        void ApplySkillMotion(in SkillMotionPlan plan, SkillResolution skill)
-        {
-            if (plan.IsEmpty || _clock == null)
-                return;
-
-            double worldMs = _clock.Director.WorldTimeMs;
-            if (plan.Kind == SkillMotionKind.PlaceMark)
-            {
-                _stateBoard?.PlaceMark(plan.MarkType, plan.DestX, plan.DestZ, worldMs, _combat.SkillMotion);
-                _bridgeView?.Sync();
-                return;
-            }
-
-            _motionDriver?.Play(plan, worldMs);
         }
 
         void AnnotateMotion(SkillResolution skill, in SkillMotionPlan plan)

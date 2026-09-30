@@ -146,7 +146,7 @@ namespace Dovus.Game
             if (renderer != null)
                 renderer.material.color = new Color(0.35f, 0.7f, 0.95f, 0.8f);
             _mechanicBodies.Add(new MechanicWorldBody { View = wall, UntilMs = untilMs });
-            Debug.Log($"[MechanicWorld] collider {wall.name} size={length:0.#}×{height:0.#} life={(untilMs - (_clock?.Director.WorldTimeMs ?? 0)) / 1000.0:0.#}sn");
+            DebugConfig.DevLog($"[MechanicWorld] collider {wall.name} size={length:0.#}×{height:0.#} life={(untilMs - (_clock?.Director.WorldTimeMs ?? 0)) / 1000.0:0.#}sn");
         }
 
         void SpawnMechanicDecoy(MechanicPlan plan, double worldMs)

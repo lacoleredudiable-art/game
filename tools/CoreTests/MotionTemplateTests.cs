@@ -41,6 +41,26 @@ public class MotionTemplateTests
     }
 
     [Test]
+    public void EverySkillInElementSystem_HasATemplateBinding()
+    {
+        var docsCatalog = MotionTemplateCatalog.FromJson(
+            File.ReadAllText(Path.Combine(RepoRoot(), "docs", "motion-templates.json")));
+        using var doc = System.Text.Json.JsonDocument.Parse(
+            File.ReadAllText(Path.Combine(RepoRoot(), "docs", "element-sistemi.json")));
+        var entries = doc.RootElement.GetProperty("skills_prose_144").GetProperty("entries");
+
+        var ids = new List<string>();
+        foreach (var verb in entries.EnumerateObject())
+        foreach (var skill in verb.Value.EnumerateObject())
+            ids.Add(skill.Name);
+
+        Assert.That(ids, Has.Count.EqualTo(144));
+        var missing = ids.FindAll(id => !docsCatalog.TryGet(id, out MotionBinding binding)
+            || binding.Template == null || binding.Template.Phases.Count == 0);
+        Assert.That(missing, Is.Empty);
+    }
+
+    [Test]
     public void Catalog_StoresTags_WithoutNeedingTheFamilyToBePlayable()
     {
         Assert.That(Tags("1-1"), Does.Contain(MotionTemplateCatalog.TagSilah));

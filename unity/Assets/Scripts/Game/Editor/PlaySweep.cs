@@ -176,7 +176,6 @@ namespace Dovus.Game.EditorTools
         static PlayerVitals _playerVitals;
         static AllyDummy _ally;
         static MotionTemplateBody _body;
-        static SkillMotionDriver _driver;
         static DodgeMotion _dodge;
         static Animator _animator;
         static GameClock _clock;
@@ -196,7 +195,6 @@ namespace Dovus.Game.EditorTools
             public bool Performing;
             public bool Busy;
             public bool Bang;
-            public bool Driver;
             public bool Dodge;
             public bool Teleport;
             public string Phase;
@@ -695,8 +693,6 @@ namespace Dovus.Game.EditorTools
                 return;
             if (_body == null)
                 _body = _player.GetComponent<MotionTemplateBody>();
-            if (_driver == null)
-                _driver = _player.GetComponent<SkillMotionDriver>();
         }
 
         static void NextCase()
@@ -1291,7 +1287,6 @@ namespace Dovus.Game.EditorTools
                 B = _boss.position,
                 Playing = _body != null && _body.IsDisplacing,
                 Performing = Performing(),
-                Driver = _driver != null && _driver.IsDisplacing,
                 Dodge = _dodge != null && _dodge.IsDisplacing,
                 Teleport = PortalBorderTeamHooks.ConsumeIntentionalTeleport(),
                 Yaw = _player.eulerAngles.y,
@@ -1307,7 +1302,7 @@ namespace Dovus.Game.EditorTools
             if (_scheduledBang < 0f && pending > 0)
                 _scheduledBang = (float)((F<double>(pendingList[0], "BangAtWorldMs") - _castMs) / 1000.0);
             f.Bang = !drawing;
-            f.Busy = f.Playing || f.Driver || drawing || pending > 0;
+            f.Busy = f.Playing || drawing || pending > 0;
 
             if (f.Playing && _info != null && _info.Template != null && !_info.AimCaptured)
             {
@@ -1604,7 +1599,6 @@ namespace Dovus.Game.EditorTools
             // 4) tek sistem
             float templateMove = 0f;
             float otherMove = 0f;
-            int driverFrames = 0;
             int dodgeFrames = 0;
             for (int i = 1; i < _frames.Count; i++)
             {
@@ -1619,14 +1613,13 @@ namespace Dovus.Game.EditorTools
                 templateMove += tpl.magnitude;
                 if (!b.Teleport)
                     otherMove += (actual - tpl).magnitude;
-                if (b.Driver) driverFrames++;
                 if (b.Dodge) dodgeFrames++;
             }
             int systems = (templateMove > TemplateMoveM ? 1 : 0) + (otherMove > OtherMoveM ? 1 : 0)
-                          + (driverFrames > 0 ? 1 : 0) + (dodgeFrames > 0 ? 1 : 0);
+                          + (dodgeFrames > 0 ? 1 : 0);
             r.OneSystem = systems <= 1;
             if (!r.OneSystem || otherMove > OtherMoveM)
-                r.Notes.Add($"yer değiştiren: kalıp {templateMove:F2} m, başka {otherMove:F2} m, SkillMotionDriver {driverFrames} kare, dodge {dodgeFrames} kare");
+                r.Notes.Add($"yer değiştiren: kalıp {templateMove:F2} m, başka {otherMove:F2} m, dodge {dodgeFrames} kare");
             // 7) ışınlanma / titreme yok (blink fazı tasarım gereği sıçrar)
             int teleports = 0;
             int reversals = 0;

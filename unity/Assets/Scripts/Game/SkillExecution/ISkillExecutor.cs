@@ -42,7 +42,6 @@ namespace Dovus.Game
             GameClock clock,
             ManifestationTuning tuning,
             Vector3 fieldCenter,
-            Action startMotion = null,
             Action<float> applyFlatDamage = null,
             int spawnCount = 1,
             MechanicPlan mechanicPlan = null,
@@ -51,7 +50,6 @@ namespace Dovus.Game
             bool arcAllies = false)
         {
             FieldCenter = fieldCenter;
-            StartMotion = startMotion;
             ApplyFlatDamage = applyFlatDamage;
             SpawnCount = Mathf.Max(1, spawnCount);
             MechanicPlan = mechanicPlan;
@@ -111,8 +109,6 @@ namespace Dovus.Game
         public GameClock Clock { get; }
         public ManifestationTuning Tuning { get; }
         public Vector3 FieldCenter { get; }
-        /// <summary>Movement: oyuncuyu dash planıyla taşır (executor başlarken bir kez).</summary>
-        public Action StartMotion { get; }
         /// <summary>Summon: minion vuruşu — skill base_damage'ından bağımsız ham hasar.</summary>
         public Action<float> ApplyFlatDamage { get; }
         public int SpawnCount { get; }

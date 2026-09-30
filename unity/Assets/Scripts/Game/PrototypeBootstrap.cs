@@ -27,7 +27,6 @@ namespace Dovus.Game
         [Header("Görsel prefab (Asset Store — boşsa kapsül)")]
         [SerializeField] GameObject _playerVisualPrefab;
         [SerializeField] GameObject _bossVisualPrefab;
-        [SerializeField] GameObject _arenaVisualPrefab;
 
         [Header("v6 build (ana_classes_80 id + 0-2 pasif rün id)")]
         [SerializeField, Min(1)] int _prototypeMainClassId = 1;
@@ -76,7 +75,7 @@ namespace Dovus.Game
             combat.SkillMotion.ArenaHalfSizeM = walkHalf;
             LavaDecor.Build(arena.transform, walkHalf);
             ArenaHorizon.Build(arena.transform, walkHalf);
-            Debug.Log($"[Arena] circle r={walkHalf:0.##}m wallH={_tuning.ArenaWallHeightM:0.#}m");
+            DebugConfig.DevLog($"[Arena] circle r={walkHalf:0.##}m wallH={_tuning.ArenaWallHeightM:0.#}m");
 
             var player = CreateCapsule(
                 "Player",
@@ -158,7 +157,7 @@ namespace Dovus.Game
             var vitals = player.AddComponent<PlayerVitals>();
             // His: heal denemesi — oyuncu da %50 (full iken mend boş döner).
             vitals.Bind(combat.Boss, playerHp, startRatio: 0.5f);
-            vitals.SetDevHp(true);
+            vitals.SetDevHp(DebugConfig.Enabled);
 
             var resource = player.AddComponent<PlayerResource>();
             // docs/element-sistemi.json resource_system: 100 / 8 / 1.5
@@ -177,7 +176,6 @@ namespace Dovus.Game
             var dodgeMotion = player.AddComponent<DodgeMotion>();
             player.AddComponent<PlayerDodgeRig>();
             player.AddComponent<WeaponShortShieldHost>().Bind(clock);
-            player.AddComponent<SkillMotionDriver>();
             player.AddComponent<MotionTemplateBody>();
             player.AddComponent<ActorGrounding>();
 
@@ -278,7 +276,7 @@ namespace Dovus.Game
                 Debug.LogWarning($"[RuneManager] {buildError}; varsayılan build kullanıldı.");
             }
             RuneLoadout loadout = runeManager.Current;
-            Debug.Log(
+            DebugConfig.DevLog(
                 $"[ElementSystem] mainClass={_prototypeMainClassId} build=[{string.Join(",", loadout.RuneIds)}] "
                 + $"passives={loadout.PassiveCount}; SO={assetCatalog?.Runes.Count ?? 0}/"
                 + $"{assetCatalog?.Weapons.Count ?? 0}/{assetCatalog?.Elements.Count ?? 0}");
@@ -384,8 +382,11 @@ namespace Dovus.Game
             lockHud.Configure(input.Engine, combat, _tuning, view.CanvasRoot, vitalsHud.BarCount);
             lockHud.BindVitalsHud(vitalsHud);
 
-            var frameHud = root.AddComponent<FrameTimeHud>();
-            frameHud.Configure(_tuning, view.CanvasRoot);
+            if (DebugConfig.Enabled)
+            {
+                var frameHud = root.AddComponent<FrameTimeHud>();
+                frameHud.Configure(_tuning, view.CanvasRoot);
+            }
 
             var damageHud = root.AddComponent<DamageNumberHud>();
             damageHud.Configure(_tuning, view.CanvasRoot);
@@ -402,8 +403,11 @@ namespace Dovus.Game
 
             var chargeHud = root.AddComponent<DodgeChargeHud>();
             chargeHud.Bind(input, view);
-            var practice = root.AddComponent<DodgePractice>();
-            practice.Bind(player, boss.transform);
+            if (DebugConfig.Enabled)
+            {
+                var practice = root.AddComponent<DodgePractice>();
+                practice.Bind(player, boss.transform);
+            }
 
             var feelGo = new GameObject("CombatFeel");
             feelGo.transform.SetParent(transform, false);
@@ -449,7 +453,7 @@ namespace Dovus.Game
                 equipmentBonus = LoadPrototypeEquipment(out equippedWeapon);
             }
             if (equippedWeapon != null)
-                Debug.Log($"[Equipment] prototip silah={equippedWeapon.Name}; v6 fiil uyumu etkin.");
+                DebugConfig.DevLog($"[Equipment] prototip silah={equippedWeapon.Name}; v6 fiil uyumu etkin.");
             var skillFactory = new SkillFactory(skills, equipmentBonus);
             VerifyBindingPipeline(design, assetCatalog, runeManager, skillFactory, equippedWeapon);
 
@@ -473,7 +477,6 @@ namespace Dovus.Game
                 director.ConfigureVerbExecution(VerbExecutionData.FromJson(design.Json));
                 MobilityCcData mobilityCc = MobilityCcData.FromJson(design.Json);
                 director.ConfigureMobilityCc(mobilityCc);
-                input.BindMobilityCc(mobilityCc);
             }
             view.BindWeaponSwap(director, clock);
             input.WeaponSwapRequested += () => director.TryRequestWeaponSwap();
@@ -494,10 +497,12 @@ namespace Dovus.Game
             elementMenu.Configure(
                 director, skills, playerStatus, _tuning, view.CanvasRoot, elementTransitionMs);
 
-            var v6Panel = root.AddComponent<V611DebugPanel>();
-            v6Panel.Configure(input, director, buildSelect, view.CanvasRoot, vitals);
-
-            CreateTuningPanel(tuningConfig, vitals);
+            if (DebugConfig.Enabled)
+            {
+                var v6Panel = root.AddComponent<V611DebugPanel>();
+                v6Panel.Configure(input, director, buildSelect, view.CanvasRoot, vitals);
+                CreateTuningPanel(tuningConfig, vitals);
+            }
         }
 
         static void LogDesignWarning(string message) => Debug.LogWarning(message);
@@ -526,7 +531,7 @@ namespace Dovus.Game
                     "v6 binding preflight 12/10/6 SO, 36 build skill ve 1-1 smoke bekler.");
             }
 
-            Debug.Log(
+            DebugConfig.DevLog(
                 $"[BindingReady] JSON {design.Version} → SO 12/10/6 → "
                 + $"buildSkills={buildSkills.Count} → smoke={smoke.DisplayName} → "
                 + $"weapon={weapon.Name} → element={assets.Elements[0].DisplayName}");
@@ -642,7 +647,7 @@ namespace Dovus.Game
                 // oturtunca ayak havada kalıyordu. Zemin, ilk animasyon pozunun gerçek köşelerinden.
                 if (TryGetRendererBounds(visual, out Bounds fitted, posed: true))
                     visual.transform.position += Vector3.up * (groundY - fitted.min.y);
-                Debug.Log(
+                DebugConfig.DevLog(
                     $"[VisualScale] {root.name} target={targetHeightM:0.00}m "
                     + $"source={initial.size.y:0.00}m fit={fit:0.000}");
             }

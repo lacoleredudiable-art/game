@@ -270,8 +270,6 @@ namespace Dovus.Core.Combat
         public const float RadiusM = 1.15f;
         public const double RootImmunitySec = 0.5;
         public const double RootImmunityMs = RootImmunitySec * 1000.0;
-        /// <summary>Eski kısa dilim. Yeni tempo okuması bunu kullanmaz.</summary>
-        public const double TempoSyncRefreshMs = 200.0;
         /// <summary>Tempo süresi JSON'da yoksa tek yedek: 1 sn.</summary>
         public const double TempoSyncFallbackMs = 1000.0;
         /// <summary>Tempo gücü JSON'da yoksa tek yedek (hareketin %70'i).</summary>

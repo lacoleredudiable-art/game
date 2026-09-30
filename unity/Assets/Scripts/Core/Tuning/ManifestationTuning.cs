@@ -52,7 +52,6 @@ namespace Dovus.Core.Tuning
         public float SuruFocusReduceAmount = 0.05f;
         public float KabukSpreadMultiplier = 0.55f;
         public float KabukFocusAdd = 0.12f;
-        public float ZehirSpreadAdd = 0.2f;
 
         // Görünür toplama: hedef silüete saniyede ne kadar yaklaşır
         public float MorphLerpPerSec = 3.5f;

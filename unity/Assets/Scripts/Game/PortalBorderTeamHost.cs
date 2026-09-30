@@ -124,7 +124,6 @@ namespace Dovus.Game
             _wasOwning = owns;
 
             SenseBodies(boss);
-            SenseShots(boss);
             ApplyMoves();
             PushHooks(player);
             RefreshAura(player);
@@ -403,26 +402,6 @@ namespace Dovus.Game
                 float radius = reactor != null ? reactor.BodyRadiusM : 0.85f;
                 var bossBody = new Body(900, _boss.position.x, _boss.position.y, _boss.position.z, radius, false, true);
                 _portal.Sense(bossBody, false, boss, out _);
-            }
-        }
-
-        void SenseShots(in Disc boss)
-        {
-            ProjectileExecutor[] shots = FindObjectsOfType<ProjectileExecutor>();
-            for (int i = 0; i < shots.Length; i++)
-            {
-                if (shots[i] == null)
-                    continue;
-                Transform shot = shots[i].transform;
-                for (int c = 0; c < shot.childCount; c++)
-                {
-                    Transform child = shot.GetChild(c);
-                    if (!child.name.StartsWith("Projectile"))
-                        continue;
-                    var body = new Body(child.GetInstanceID(), child.position.x, child.position.y, child.position.z, 0.25f, false, false);
-                    if (_portal.Sense(body, true, boss, out Placement move))
-                        child.position = new Vector3(move.X, child.position.y, move.Z);
-                }
             }
         }
 

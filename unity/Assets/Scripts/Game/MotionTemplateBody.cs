@@ -105,9 +105,6 @@ namespace Dovus.Game
             _stopAfterSample = false;
             EnsureGrounding();
             _grounding.Release();
-            SkillMotionDriver driver = GetComponent<SkillMotionDriver>();
-            if (driver != null && driver.IsDisplacing)
-                driver.Stop();
             if (_visual == null)
                 _visual = GetComponent<ActorVisual>();
             _visual?.EndMotionAnim();

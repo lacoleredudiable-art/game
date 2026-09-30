@@ -129,13 +129,6 @@ namespace Dovus.Core.Combat
             return baseMs * mult;
         }
 
-        /// <summary>
-        /// JSON same_cc "süre_uzar". StatusBoard bunu toplam yapmaz; yeniden gelen etki
-        /// kalan süreyi yeniler (max). Pasif yuva ayrı kuraldır.
-        /// </summary>
-        public bool ExtendSameCc =>
-            string.Equals(SameCcStacking, "süre_uzar", StringComparison.Ordinal);
-
         public bool IsCcVisible(StatusKind candidate, IReadOnlyCollection<StatusKind> active)
         {
             if (!_ccRank.ContainsKey(candidate) || active == null)

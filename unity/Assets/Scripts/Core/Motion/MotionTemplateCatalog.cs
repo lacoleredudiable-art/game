@@ -5,12 +5,6 @@ using Dovus.Core.Grammar;
 
 namespace Dovus.Core.Motion
 {
-    public enum MotionAvailability
-    {
-        Missing = 0,
-        Pending = 1,
-        Ready = 2
-    }
 
     /// <summary>Bir skill'in kalıba bağı. Etiketler mekanik değildir; yalnız saklanır.</summary>
     public sealed class MotionBinding

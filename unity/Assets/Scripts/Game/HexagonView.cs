@@ -630,16 +630,6 @@ namespace Dovus.Game
             rt.anchoredPosition = screenPx;
         }
 
-        static RectTransform CreateDisc(
-            string name,
-            Sprite sprite,
-            Color color,
-            Transform parent,
-            out Image image)
-        {
-            return CreateLayeredDisc(name, sprite, sprite, color, parent, out image, Color.clear);
-        }
-
         /// <summary>
         /// Gölge + rim (daire) + yüz — dodge/rünlerde düz diskten ayrışır.
         /// </summary>

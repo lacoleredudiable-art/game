@@ -149,37 +149,90 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Dovus.Game::Dovus.Game.PrototypeBootstrap
   _tuning:
-    ArenaHalfSizeM: 18
+    ArenaHalfSizeM: 50
+    ArenaWallHeightM: 18
+    ArenaWallThicknessM: 1.4
     ArenaVisualScale: 1
-    WalkSpeedMps: 4.5
+    PlayerVisualHeightM: 1.78
+    BossVisualHeightM: 5
+    CharacterAnimSpeed: 1
+    WalkSpeedMps: 6.4
+    MoveAccelMps2: 52
+    MoveDecelMps2: 64
+    TurnRateDegPerSec: 720
+    MinStickSpeedFrac: 0.42
+    AnimSpeedDampSec: 0.08
+    LocoMaxPlaybackMult: 1.5
+    AnimCrossFadeSec: 0.06
+    BasicStrikeComboResetSec: 1.2
+    UpperBodyCastMinSpeed: 0.15
+    FootstepStrideM: 2.2
+    BossFootstepStrideM: 2.4
     PlayerMaxHp: 22
     JoystickMaxRadiusDp: 72
     JoystickDeadZone: 0.12
-    PentagonCenterXNorm: 0.72
-    PentagonCenterYNorm: 0.4
-    PentagonRadiusDp: 100
-    DotHitRadiusDp: 30
-    CenterHitRadiusDp: 24
+    HudFitShortSideDp: 600
+    HexagonCenterXNorm: 0.78
+    HexagonCenterYNorm: 0.3
+    HexagonRadiusDp: 112
+    DotHitRadiusDp: 34
+    CenterHitRadiusDp: 38
     MirrorForLeftHand: 0
     InkLingerSec: 0.4
     InkWidthDp: 3.5
-    DodgeButtonOffsetXDp: 80
-    DodgeButtonOffsetYDp: -140
-    DodgeButtonRadiusDp: 34
+    DodgeButtonOffsetXDp: 0
+    DodgeButtonOffsetYDp: 0
+    DodgeButtonRadiusDp: 40
     DodgeButtonScreenMarginDp: 8
     DodgeClearanceDp: 40
-    BasicStrikeDot: 5
-    OpenDot1: 1
-    OpenDot2: 1
-    OpenDot3: 0
-    OpenDot4: 0
-    OpenDot5: 1
-    OpenDot6: 1
-    IconDisplayScale: 1.12
+    WeaponSwapButtonRadiusDp: 36
+    WeaponSwapButtonOffsetXDp: 0
+    WeaponSwapButtonOffsetYDp: 0
+    WeaponSwapIconScale: 0.72
+    ElementMenuRadiusDp: 92
+    ElementMenuChipWidthDp: 144
+    ElementMenuChipHeightDp: 48
+    ElementMenuItemWidthDp: 84
+    ElementMenuItemHeightDp: 48
+    ElementMenuAnchorXNorm: 0.86
+    ElementMenuAnchorYNorm: 0.72
+    BasicStrikeDot: 1
+    IconDisplayScale: 1
+    CombatTrayPaddingDp: 22
+    CombatTrayHeaderHeightDp: 22
+    CombatTrayCornerRadiusDp: 20
+    CombatTrayLinkWidthDp: 1.5
     DotVibrationMs: 30
-    FollowSmoothTimeSec: 0.18
-    LookAheadM: 1.4
-    CameraOffset: {x: 0, y: 7, z: -6}
+    FollowSmoothTimeSec: 0.12
+    LookAheadM: 0.65
+    CameraShoulderOffset: {x: 0.45, y: 1, z: -0.35}
+    CameraDistanceM: 3.4
+    CameraLookHeightM: 0.35
+    CameraFovDeg: 56
+    CameraAimDampingSec: 0.1
+    CameraSoftLockRangeM: 18
+    CameraSoftLockStrength: 0.52
+    CameraBossFramingWeight: 0.34
+    CameraBossAimHeightM: 1.45
+    AmbientSky: {r: 0.11, g: 0.13, b: 0.18, a: 1}
+    AmbientEquator: {r: 0.12, g: 0.085, b: 0.07, a: 1}
+    AmbientGround: {r: 0.035, g: 0.03, b: 0.035, a: 1}
+    FogColor: {r: 0.055, g: 0.045, b: 0.065, a: 1}
+    FogDensity: 0.009
+    KeyLightColor: {r: 1, g: 0.78, b: 0.62, a: 1}
+    KeyLightIntensity: 1.35
+    KeyLightEuler: {x: 42, y: -32, z: 0}
+    KeyShadowStrength: 0.72
+    RimLightColor: {r: 0.38, g: 0.55, b: 1, a: 1}
+    RimLightIntensity: 0.18
+    RimLightEuler: {x: 28, y: 145, z: 0}
+    BloomIntensity: 0.42
+    BloomThreshold: 1.05
+    BloomScatter: 0.55
+    PostExposure: -0.08
+    ColorContrast: 18
+    ColorSaturation: -4
+    PostVignetteIntensity: 0.18
     PlayerColor: {r: 0.373, g: 0.941, b: 1, a: 1}
     BossColor: {r: 0.18, g: 0.19, b: 0.22, a: 1}
     GroundColor: {r: 0.38, g: 0.4, b: 0.44, a: 1}
@@ -189,12 +242,12 @@ MonoBehaviour:
     AcidGreen: {r: 0.608, g: 0.91, b: 0.235, a: 1}
     ElementFire: {r: 1, g: 0.42, b: 0.62, a: 1}
     ElementWater: {r: 0.28, g: 0.72, b: 1, a: 1}
-    ElementAir: {r: 0.72, g: 0.82, b: 1, a: 1}
+    ElementAir: {r: 0.5, g: 0.7, b: 0.62, a: 1}
     ElementEarth: {r: 0.62, g: 0.78, b: 0.42, a: 1}
     ElementLight: {r: 1, g: 0.96, b: 0.82, a: 1}
     ElementDark: {r: 0.48, g: 0.28, b: 0.78, a: 1}
-    PentagonDotColor: {r: 0.55, g: 0.62, b: 0.72, a: 0.85}
-    PentagonCenterColor: {r: 0.373, g: 0.941, b: 1, a: 0.9}
+    HexagonDotColor: {r: 0.55, g: 0.62, b: 0.72, a: 0.85}
+    HexagonCenterColor: {r: 0.373, g: 0.941, b: 1, a: 0.9}
     DodgeButtonColor: {r: 0.725, g: 0.549, b: 1, a: 0.9}
     TelegraphHot: {r: 1, g: 0.302, b: 0.141, a: 1}
     TelegraphWarm: {r: 1, g: 0.604, b: 0.235, a: 1}
@@ -220,7 +273,6 @@ MonoBehaviour:
     ThreatPulseHzMin: 4
     ThreatPulseHzMax: 14
     CameraShakePxToM: 0.01
-    AudioBaseCutoffHz: 22000
     EffectLineWidthDefaultM: 0.18
     EffectLineWidthWideM: 0.35
     EffectLineWidthNarrowM: 0.12
@@ -260,23 +312,35 @@ MonoBehaviour:
     BossShakeAmpPerKnockbackM: 0.05
     BossPinShakeAmpM: 0.04
     BossLiftVelocityPerM: 4.5
+    BossTurnRateDegPerSec: 240
+    BossSlamImpactNorm: 0.42
+    BossConeImpactNorm: 0.4
+    BossStaggerMinGapSec: 0.6
+    BossAnimCrossFadeSec: 0.15
+    BossWalkClipMps: 1.4
     BossDeathCollapseSec: 0.85
     BossDeathSquashY: 0.28
     BossDeathSpreadXz: 1.35
     GroundScarCapCount: 60
     ReadoutAnchorRight: 1
     ReadoutPunchInSec: 0.12
-    VitalsBarWidthDp: 220
-    VitalsBarHeightDp: 16
-    VitalsBossBarHeightDp: 12
-    VitalsBossBarWidthDp: 280
+    VitalsBarWidthDp: 224
+    VitalsBarHeightDp: 17
+    VitalsBossBarHeightDp: 24
+    VitalsBossBarWidthDp: 460
     VitalsBarSpacingDp: 6
-    VitalsMarginDp: 18
-    BossVitalsColor: {r: 0.7, g: 0.74, b: 0.8, a: 0.85}
+    VitalsMarginDp: 16
+    VitalsHeaderHeightDp: 18
+    VitalsPanelPaddingDp: 8
+    BossVitalsColor: {r: 0.88, g: 0.16, b: 0.12, a: 0.98}
     StatusIconSizeDp: 28
     StatusIconGapDp: 6
     OrbitDegreesPerDp: 0.35
+    CameraPitchMinDeg: -8
+    CameraPitchMaxDeg: 35
+    OrbitInvertPitch: 0
     SoftAimRangeM: 8
+    SoftAimConeDeg: 70
     DamageFloatFontDp: 28
     DamageFloatCritFontDp: 36
     DamageFloatRisePx: 64
@@ -288,12 +352,18 @@ MonoBehaviour:
     ShowFrameTimeHud: 0
     FrameTimeSampleSec: 0.5
     TargetFrameRateHz: 60
-    ShowDamageNumbers: 0
+    ShowDamageNumbers: 1
+    SkillPreviewWidthDp: 324
+    SkillPreviewHeightDp: 72
+    SkillPreviewGapDp: 10
+    SkillPreviewHoldSec: 0.9
+    SkipBuildSelectOnStart: 0
     ShowSentenceDebugHud: 0
-    TuningVersion: 3
+    TuningVersion: 18
   _playerVisualPrefab: {fileID: 5243334159006450704, guid: d7d66a8d11b166549b25f84080f9a0eb, type: 3}
   _bossVisualPrefab: {fileID: 3688253447631659964, guid: 6bfdf37fb479d1d4fb8381795a140d45, type: 3}
-  _arenaVisualPrefab: {fileID: 7747599323419041020, guid: fdeda39a1df6ddb4d98d1c4ac721bccb, type: 3}
+  _prototypeMainClassId: 1
+  _prototypePassiveRuneIds: 
 --- !u!4 &73949342
 Transform:
   m_ObjectHideFlags: 0

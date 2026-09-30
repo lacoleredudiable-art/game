@@ -28,8 +28,6 @@ namespace Dovus.Core.Combat
 
         public int Ready => _ready;
 
-        public int RechargeMs => NeedMs();
-
         /// <summary>Sıradaki boş hakın doluluk oranı. Depo doluysa 1.</summary>
         public float Fill01
         {

@@ -33,13 +33,7 @@ namespace Dovus.Game
                     return _motionCatalog;
                 TextAsset asset = Resources.Load<TextAsset>("ElementSystem/motion-templates");
                 if (asset == null || string.IsNullOrWhiteSpace(asset.text))
-                {
-                    DesignWarnings.Once(
-                        "motion.catalog",
-                        "motion-templates.json yok. Hareket kalıpları kapalı, eski davranış sürüyor.");
-                    _motionCatalog = MotionTemplateCatalog.Empty;
-                    return _motionCatalog;
-                }
+                    throw new InvalidOperationException("motion-templates.json missing/invalid");
 
                 try
                 {
@@ -47,8 +41,7 @@ namespace Dovus.Game
                 }
                 catch (Exception e)
                 {
-                    DesignWarnings.Once("motion.catalog", "Hareket kalıbı okunamadı: " + e.Message);
-                    _motionCatalog = MotionTemplateCatalog.Empty;
+                    throw new InvalidOperationException("motion-templates.json missing/invalid", e);
                 }
                 return _motionCatalog;
             }
@@ -235,7 +228,7 @@ namespace Dovus.Game
                 OnMotionTemplateHit,
                 bodyR,
                 stopGap);
-            Debug.Log($"[Motion] {skill.SkillId} → {template.Name}");
+            DebugConfig.DevLog($"[Motion] {skill.SkillId} → {template.Name}");
             return true;
         }
 
@@ -536,8 +529,6 @@ namespace Dovus.Game
             _templateOwnsPosition = false;
             if (_motionBody != null)
                 _motionBody.Stop();
-            if (_motionDriver != null)
-                _motionDriver.Stop();
             AbortCastView(_buildingView);
             _buildingView = null;
             for (int i = 0; i < _pending.Count; i++)

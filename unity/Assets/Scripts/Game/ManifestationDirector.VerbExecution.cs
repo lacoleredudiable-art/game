@@ -84,7 +84,7 @@ namespace Dovus.Game
             for (int i = 0; i < _pending.Count; i++)
                 _pending[i].View?.Logic?.Abort();
             if (_pending.Count > 0)
-                Debug.Log($"[Interrupt] startup cancelled by {reason}; count={_pending.Count}");
+                DebugConfig.DevLog($"[Interrupt] startup cancelled by {reason}; count={_pending.Count}");
             _pending.Clear();
             _playerStatus?.ClearCastMobility();
         }

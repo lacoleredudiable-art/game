@@ -68,12 +68,6 @@ namespace Dovus.Game
 
         public void Rebind(StatusBoard board) => _board = board;
 
-        public void SetAnchoredPosition(Vector2 pos)
-        {
-            if (_root != null)
-                _root.anchoredPosition = pos;
-        }
-
         Slot CreateSlot(Transform parent, int index)
         {
             float size = HexagonLayoutScreen.DpToPixels(_tuning.StatusIconSizeDp);

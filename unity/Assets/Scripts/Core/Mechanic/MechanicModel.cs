@@ -100,7 +100,6 @@ namespace Dovus.Core.Mechanic
 
         public bool HasMode(string mode) => Effects.Any(e => e.Modes.Contains(mode));
         public bool HasStat(string stat) => Effects.Any(e => e.Stat == stat);
-        public bool HasLabel(string label) => Labels.Contains(label);
 
         public MechanicEffect Find(string stat, string target = null) =>
             Effects.FirstOrDefault(e => e.Stat == stat && (target == null || e.Target == target));

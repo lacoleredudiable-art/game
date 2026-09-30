@@ -15,7 +15,6 @@ namespace Dovus.Game
         GameClock _clock;
         MoveInput _input;
         DodgeMotion _dodgeMotion;
-        SkillMotionDriver _skillMotion;
         PlayerVitals _vitals;
         ActorStatus _status;
         ActorVisual _visual;
@@ -78,15 +77,6 @@ namespace Dovus.Game
             if (_visual == null)
                 _visual = GetComponent<ActorVisual>();
             if (_dodgeMotion != null && _dodgeMotion.IsDisplacing)
-            {
-                Velocity = Vector3.zero;
-                _visual?.SetSpeed(0f);
-                return;
-            }
-
-            if (_skillMotion == null)
-                _skillMotion = GetComponent<SkillMotionDriver>();
-            if (_skillMotion != null && _skillMotion.IsDisplacing)
             {
                 Velocity = Vector3.zero;
                 _visual?.SetSpeed(0f);

@@ -184,9 +184,6 @@ namespace Dovus.Core.Grammar
             return false;
         }
 
-        public bool TryGetElement(string id, out ElementNode node) =>
-            _elements.TryGetValue(id, out node);
-
         public bool TryGetVerb(string id, out VerbNode node) =>
             _verbs.TryGetValue(id, out node);
 

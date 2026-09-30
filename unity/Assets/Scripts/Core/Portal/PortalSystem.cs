@@ -186,8 +186,6 @@ namespace Dovus.Core.Portal
         public float NarrowLeft { get; private set; }
         public float StrikeScale => BossNarrow ? BossStrikeScale : 1f;
         public bool HasAnchor => _anchor.Alive && _now < _anchor.Until;
-        public float AnchorX => _anchor.X;
-        public float AnchorZ => _anchor.Z;
 
         public static bool IsPortalSkill(string skillId)
         {

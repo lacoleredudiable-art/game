@@ -39,7 +39,6 @@ namespace Dovus.Core.Combat
             _active != null && _linkCount > 0 && _linkCount <= _active.Value.Links.Length
                 ? _active.Value.Links[_linkCount - 1]
                 : 1f;
-        public string LastFinisher => _lastFinisher;
         public bool InBreakPenalty(double worldMs) => worldMs < _penaltyUntilMs;
 
         /// <summary>Zinciri cezasız sıfırlar (ör. silah swap cancels_combo).</summary>

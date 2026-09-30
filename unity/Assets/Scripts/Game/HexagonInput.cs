@@ -134,12 +134,6 @@ namespace Dovus.Game
         public void BindSkillTargetGate(System.Func<SkillResolution, bool> gate) =>
             _skillTargetGate = gate;
 
-        public void BindMobilityCc(MobilityCcData data)
-        {
-            // Dodge kesmesi mobility_cc tablosuna bakmaz; sert CC kapısı yeter.
-            _ = data;
-        }
-
         /// <summary>Bağlama 3: EnforceResourceCost kapısı + yetersiz mana readout.</summary>
         public void BindResource(PlayerResource resource, ReactionReadout readout, SkillMotor skills = null)
         {

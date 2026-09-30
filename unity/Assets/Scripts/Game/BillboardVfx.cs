@@ -77,12 +77,5 @@ namespace Dovus.Game
             _ = _faceCamera;
         }
 
-        public void SetTint(Color tint)
-        {
-            if (_system == null)
-                return;
-            var main = _system.main;
-            main.startColor = tint;
-        }
     }
 }
