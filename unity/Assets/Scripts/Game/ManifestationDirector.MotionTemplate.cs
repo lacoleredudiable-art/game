@@ -198,11 +198,10 @@ namespace Dovus.Game
             _motionBody.NoteSkill(skill.SkillId);
             if (_boss != null)
                 _templateStartCenter = FlatDistance(_player.position, _boss.transform.position);
+            // Emici ilerleyen kalıpta oyuncu hep yerinde; boss'u yalnız çeken plan getirir (4-2 çekmez).
+            _emiciContactPull = EmiciApproach.ShouldHoldCaster(skill.AdjectiveId, template);
             MechanicPlan pullPlan = MechanicPlanFor(skill);
-            _emiciContactPull = pullPlan != null
-                && pullPlan.Body.Pull
-                && EmiciApproach.ShouldHoldCaster(skill.AdjectiveId, template);
-            if (_emiciContactPull)
+            if (_emiciContactPull && pullPlan != null && pullPlan.Body.Pull)
                 PullBossToPlayerContact();
             _motionBody.Play(
                 template,

@@ -815,7 +815,13 @@ namespace Dovus.Core.Motion
                 return;
             }
             if (phase.Homing != "track")
+            {
+                // overshoot_m yoksa düz hamle gövdeyi kesmez. Kenar itmesi merkezi geçince
+                // oyuncuyu tek karede karşı yüze atıyordu (3-7, uzatılmış dash).
+                if (phase.Motion is "dash" or "lunge" && phase.OvershootM <= 0.01f)
+                    StopAtBodyEdge(target);
                 return;
+            }
             switch (phase.Motion)
             {
                 case "dash":
@@ -989,6 +995,32 @@ namespace Dovus.Core.Motion
 
         float Separation(in MotionTarget target) =>
             _bodyRadius + target.RadiusM + _stopGap;
+
+        /// <summary>Faz başından varışa düz yol ayrım çemberine giriyorsa varış giriş noktasıdır.</summary>
+        void StopAtBodyEdge(in MotionTarget target)
+        {
+            float r = Separation(target);
+            float sx = _phaseX - target.X;
+            float sz = _phaseZ - target.Z;
+            float c = sx * sx + sz * sz - r * r;
+            if (c <= 0f)
+                return;
+            float vx = _destX - _phaseX;
+            float vz = _destZ - _phaseZ;
+            float a = vx * vx + vz * vz;
+            if (a < 1e-6f)
+                return;
+            float b = sx * vx + sz * vz;
+            float disc = b * b - a * c;
+            if (b >= 0f || disc < 0f)
+                return;
+            float t = (-b - MathF.Sqrt(disc)) / a;
+            if (t >= 1f)
+                return;
+            t = Math.Max(0f, t);
+            _destX = _phaseX + vx * t;
+            _destZ = _phaseZ + vz * t;
+        }
 
         /// <summary>Atış, tutma ve dönüş oyuncunun ayaklarını yerinden kaldırmaz.</summary>
         static bool FeetPlanted(MotionPhase phase) =>

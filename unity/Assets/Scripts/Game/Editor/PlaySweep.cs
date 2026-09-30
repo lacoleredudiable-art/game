@@ -246,6 +246,8 @@ namespace Dovus.Game.EditorTools
             public float StopGap;
             public string SimAim = "boss";
             public bool AimCaptured;
+            /// <summary>Verinin bildirdiği teslim gecikmesi (mark_delay_sec / rise_delay_sec), kalıp başından.</summary>
+            public float DeliveryDelaySec;
         }
 
         static PlaySweep()
@@ -828,8 +830,9 @@ namespace Dovus.Game.EditorTools
 
             bool started = _frames.Any(x => x.Playing);
             bool idle = !f.Busy;
-            float minRecord = _info.RecoverySec + _info.ExpectedSec + TailSec;
-            float timeout = _info.RecoverySec + _info.ExpectedSec + TimeoutExtraSec;
+            float delivered = Mathf.Max(_info.ExpectedSec, _info.DeliveryDelaySec);
+            float minRecord = _info.RecoverySec + delivered + TailSec;
+            float timeout = _info.RecoverySec + delivered + TimeoutExtraSec;
             if (f.T >= timeout)
             {
                 FinishCase(true);
@@ -1131,6 +1134,7 @@ namespace Dovus.Game.EditorTools
             var catalog = P<MotionTemplateCatalog>(_md, "MotionCatalog");
             if (catalog == null || !catalog.TryPlay(skill.SkillId, out MotionTemplate template))
                 return info;
+            info.DeliveryDelaySec = DeliveryDelaySec(skill, template);
             object playback = Call(_md, "PreparePositionPlayback", skill, template);
             info.Template = (playback as PositionPlayback?)?.Template ?? template;
             foreach (MotionPhase p in info.Template.Phases)
@@ -1147,6 +1151,18 @@ namespace Dovus.Game.EditorTools
             info.StopGap = catalog.Fallbacks.StopGapM;
             Simulate(info, _boss.transform);
             return info;
+        }
+
+        /// <summary>Oyunla aynı teslim kuyruğu: işaretli an / yükseliş gecikmesi kaydı uzatır.</summary>
+        static float DeliveryDelaySec(SkillResolution skill, MotionTemplate template)
+        {
+            if (!(Call(_md, "MechanicPlanFor", skill) is Dovus.Core.Mechanic.MechanicPlan plan)
+                || !Dovus.Game.ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design)
+                || design.Mechanics == null)
+                return 0f;
+            Dovus.Core.Mechanic.TemplateDeliveryOrder order = Dovus.Core.Mechanic.TemplateDelivery.Build(
+                plan, skill.EngineModifiers, template, design.Mechanics.Rules, 1f);
+            return order.DelayedMark || order.RiseDelay ? Mathf.Max(0.05f, order.ActivationDelaySec) : 0f;
         }
 
         /// <summary>Kalıbı çevrimdışı koşturur. aim: oyunun kalıba verdiği hedef (boss, dost ya da yok).</summary>

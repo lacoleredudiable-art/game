@@ -50,6 +50,8 @@ namespace Dovus.Core.Mechanic
         public bool OpeningPulse { get; set; }
         public bool Duplicate { get; set; }
         public float DuplicateDelaySec { get; set; }
+        /// <summary>Kopya nabzı kalıp başından: ilk etki vuruşu + DuplicateDelaySec.</summary>
+        public float DuplicateAtSec { get; set; }
         public float DuplicateDamageMult { get; set; }
         public bool RepeatPrevious { get; set; }
         public int BounceExtra { get; set; }
@@ -99,7 +101,7 @@ namespace Dovus.Core.Mechanic
             if (Duplicate)
             {
                 beats.Add(new DeliveryBeat(
-                    Math.Max(0.05, DuplicateDelaySec),
+                    Math.Max(0.05, DuplicateAtSec > 0f ? DuplicateAtSec : DuplicateDelaySec),
                     DeliveryBeatKind.Duplicate,
                     DuplicateDamageMult <= 0f ? 1f : DuplicateDamageMult,
                     1));
@@ -136,6 +138,8 @@ namespace Dovus.Core.Mechanic
 
     public static class TemplateDelivery
     {
+        const float EchoToleranceSec = 0.05f;
+
         public static TemplateDeliveryOrder Build(
             MechanicPlan plan,
             JsonValue engine,
@@ -183,11 +187,15 @@ namespace Dovus.Core.Mechanic
 
             bool duplicate = engine["duplicate_cast"].AsBool(false)
                 || (plan != null && plan.Effects.Exists(e => e.Has("iki_kez")));
-            order.Duplicate = duplicate;
             float dupDelay = engine["duplicate_delay_sec"].AsFloat(0f);
             if (dupDelay <= 0f && plan != null && plan.Body.CopyDelaySec > 0)
                 dupDelay = (float)plan.Body.CopyDelaySec;
             order.DuplicateDelaySec = dupDelay > 0f ? dupDelay : 0.3f;
+            // Kopya ilk vuruştan sayılır. Kalıp o anda zaten vuruyorsa yankı kalıptadır.
+            float firstHit = FirstEffectHitSec(template);
+            order.DuplicateAtSec = Math.Max(0f, firstHit) + order.DuplicateDelaySec;
+            order.Duplicate = duplicate
+                && !(firstHit >= 0f && HasEffectHitNear(template, order.DuplicateAtSec, EchoToleranceSec));
             order.DuplicateDamageMult = engine.Has("duplicate_damage_mult")
                 ? engine["duplicate_damage_mult"].AsFloat(1f)
                 : (plan != null && plan.Body.ChainMult > 0 ? (float)plan.Body.ChainMult : 1f);
@@ -232,9 +240,43 @@ namespace Dovus.Core.Mechanic
                     order.AbsorbRatio = (float)em.Amount;
             }
 
-            order.BossKnockback = plan != null && plan.Effects.Exists(e =>
-                e.Target == "dusman" && (e.Stat is "can" or "cek" or "it" or "tempo" or "hareket"));
+            // Çeken plan boss'u iterse çekme ile itme çarpışır; çekme kazanır.
+            bool pulls = plan != null && (plan.Body.Pull || plan.Effects.Exists(e => e.Stat == "cek"));
+            order.BossKnockback = !pulls && plan != null && plan.Effects.Exists(e =>
+                e.Target == "dusman" && (e.Stat is "can" or "it" or "tempo" or "hareket"));
             return order;
+        }
+
+        /// <summary>İlk etki vuruşunun kalıp başından saniyesi; yoksa -1.</summary>
+        public static float FirstEffectHitSec(MotionTemplate template)
+        {
+            if (template == null)
+                return -1f;
+            float start = 0f;
+            for (int i = 0; i < template.Phases.Count; i++)
+            {
+                MotionPhase phase = template.Phases[i];
+                MotionHitSpec hit = phase.Hit;
+                if (hit != null && hit.Payload is not ("none" or "marker"))
+                    return start + phase.DurationSec * hit.At;
+                start += phase.DurationSec;
+            }
+            return -1f;
+        }
+
+        static bool HasEffectHitNear(MotionTemplate template, float atSec, float tolSec)
+        {
+            float start = 0f;
+            for (int i = 0; i < template.Phases.Count; i++)
+            {
+                MotionPhase phase = template.Phases[i];
+                MotionHitSpec hit = phase.Hit;
+                if (hit != null && hit.Payload is not ("none" or "marker")
+                    && Math.Abs(start + phase.DurationSec * hit.At - atSec) <= tolSec)
+                    return true;
+                start += phase.DurationSec;
+            }
+            return false;
         }
 
         public static bool HasEffectHit(MotionTemplate template)

@@ -2402,6 +2402,9 @@ namespace Dovus.Game
             Transform target = pending.Target;
             if (target == null && pending.AimMode == SkillAimMode.Targeted && _boss != null)
                 target = _boss.transform;
+            // Kendine doğan minyon/klon da düşmana yürür; hedefsiz aktör vurmaz ve boss'un içinde kalır.
+            if (kind == SkillExecutorKind.Summon && _boss != null && !IsEnemyBody(target))
+                target = _boss.transform;
             if (pending.AimMode == SkillAimMode.Targeted && target != null && target != _player)
             {
                 Vector3 toTarget = target.position - origin;

@@ -133,9 +133,28 @@ public class TemplateDeliveryTests
         foreach (int verb in verbs)
         {
             TemplateDeliveryOrder order = Order(verb, 11);
-            Assert.That(order.Duplicate, Is.True, verb + "-11");
-            DeliveryBeat beat = Beat(order, DeliveryBeatKind.Duplicate);
-            Assert.That(beat.AtSec, Is.EqualTo(0.3f).Within(0.02f), verb + "-11");
+            Assert.That(_motion.TryPlay(verb + "-11", out MotionTemplate template), Is.True);
+            float first = System.Math.Max(0f, TemplateDelivery.FirstEffectHitSec(template));
+            Assert.That(order.DuplicateAtSec, Is.EqualTo(first + 0.3f).Within(0.02f), verb + "-11");
+            // Kopya nabzı kalıpta ya da kuyrukta: ilk vuruştan ~0,3 sn sonra tam bir kez.
+            int pulses = order.Duplicate ? 1 : 0;
+            if (!order.Duplicate)
+            {
+                float t = 0f;
+                foreach (MotionPhase phase in template.Phases)
+                {
+                    if (phase.Hit != null && phase.Hit.Payload is not ("none" or "marker")
+                        && System.Math.Abs(t + phase.DurationSec * phase.Hit.At - order.DuplicateAtSec) <= 0.05f)
+                        pulses++;
+                    t += phase.DurationSec;
+                }
+            }
+            else
+            {
+                DeliveryBeat beat = Beat(order, DeliveryBeatKind.Duplicate);
+                Assert.That(beat.AtSec, Is.EqualTo(order.DuplicateAtSec).Within(0.001), verb + "-11");
+            }
+            Assert.That(pulses, Is.EqualTo(1), verb + "-11");
             Assert.That(Mode(Plan(verb, 11), "iki_kez", "iki_kez") || Plan(verb, 11).Effects.Exists(e => e.Has("iki_kez")),
                 Is.True, verb + "-11");
         }
@@ -298,6 +317,68 @@ public class TemplateDeliveryTests
         Assert.That(flow.GlideHaste, Is.True);
         Assert.That(flow.GlideMagnitude, Is.GreaterThan(1f));
         Assert.That(HasBeat(flow, DeliveryBeatKind.GlideHaste), Is.True);
+    }
+
+    [Test]
+    public void Duplicate_CountsFromTheFirstHit_AndTemplateEchoIsNotDoubled()
+    {
+        // 1-11 kalıbı yankıyı kendisi vuruyor (0,11 → 0,42 sn); kuyruk üçüncü nabız eklemez.
+        TemplateDeliveryOrder echo = Order(1, 11);
+        Assert.That(echo.Duplicate, Is.False);
+        Assert.That(HasBeat(echo, DeliveryBeatKind.Duplicate), Is.False);
+
+        Assert.That(_motion.TryPlay("6-11", out MotionTemplate twoFast), Is.True);
+        float first = TemplateDelivery.FirstEffectHitSec(twoFast);
+        TemplateDeliveryOrder copy = Order(6, 11);
+        Assert.That(copy.Duplicate, Is.True);
+        Assert.That(copy.DuplicateAtSec, Is.EqualTo(first + copy.DuplicateDelaySec).Within(0.001f));
+        Assert.That(Beat(copy, DeliveryBeatKind.Duplicate).AtSec, Is.EqualTo(copy.DuplicateAtSec).Within(0.001));
+    }
+
+    [Test]
+    public void Knockback_NeverOnPullingPlans()
+    {
+        Assert.That(Order(5, 2).BossKnockback, Is.False, "5-2 girdabı çeker, itmez");
+        Assert.That(Order(1, 2).BossKnockback, Is.False, "1-2 emici çeker");
+        Assert.That(Order(1, 6).BossKnockback, Is.True, "1-6 vuruşu iter");
+    }
+
+    [Test]
+    public void EmiciLunge_HoldsTheCasterEvenWhenThePlanDoesNotPull()
+    {
+        Assert.That(_motion.TryPlay("4-2", out MotionTemplate lunge), Is.True);
+        Assert.That(EmiciApproach.ShouldHoldCaster("2", lunge), Is.True);
+        Assert.That(Plan(4, 2).Body.Pull, Is.False, "4-2 boss'u çekmez ama oyuncu yerinde kalır");
+        Assert.That(EmiciApproach.SweepStayCategory("2", lunge), Is.EqualTo("yerinde"));
+    }
+
+    [TestCase(3f, 1f / 60f)]
+    [TestCase(7.06f, 1f / 60f)]
+    [TestCase(7.06f, 1f / 15f)]
+    public void StraightDash_WithoutOvershoot_StopsAtTheBodyEdge(float dashM, float dt)
+    {
+        Assert.That(_motion.TryPlay("3-7", out MotionTemplate smoke), Is.True);
+        MotionTemplate stretched = DashDistance.Apply(smoke, dashM);
+        const float body = 0.5f;
+        const float gap = 0.15f;
+        const float bossR = 0.85f;
+        var target = new MotionTarget(true, 0f, 3f, bossR);
+        var runner = new MotionTemplateRunner();
+        runner.Begin(stretched, 0f, 0f, 0f, 0f, 1f, body, gap);
+        float separation = body + bossR + gap;
+        float px = runner.X;
+        float pz = runner.Z;
+        for (int i = 0; i < 400 && !runner.Finished; i++)
+        {
+            runner.Tick(dt, target, default);
+            float step = System.MathF.Sqrt((runner.X - px) * (runner.X - px) + (runner.Z - pz) * (runner.Z - pz));
+            Assert.That(runner.Z, Is.LessThan(3f), "boss'un karşı yüzüne geçmez");
+            Assert.That(step, Is.LessThanOrEqualTo(dashM * dt / smoke.Phases[0].DurationSec + 0.01f), "tek kare sıçrama yok");
+            px = runner.X;
+            pz = runner.Z;
+        }
+        Assert.That(runner.Finished, Is.True);
+        Assert.That(3f - runner.Z, Is.EqualTo(separation).Within(0.02f));
     }
 
     [Test]

@@ -583,6 +583,16 @@ namespace Dovus.Game
             if (_boss == null || seconds <= 0
                 || !_bossMechanicHistory.TryGetAtOrBefore(worldMs - seconds * 1000.0, out Vector3 past))
                 return;
+            // Geçmiş yer oyuncunun şimdiki gövdesine denk gelebilir; boss temas dışında kalır.
+            if (_player != null)
+            {
+                float x = past.x;
+                float z = past.z;
+                ActorSpacing.PushOutside(
+                    ref x, ref z, _player.position.x, _player.position.z,
+                    Mathf.Max(0.5f, PlayerBodyRadiusM()) + _boss.BodyRadiusM);
+                past = ClampToArena(new Vector3(x, past.y, z));
+            }
             _boss.Home = past;
             bool cancelled = _bossDirector != null && _bossDirector.CancelPreparedAttack(worldMs);
             applied.Add(cancelled ? $"geri sarma {seconds:0.#}sn + cast iptal" : $"geri sarma {seconds:0.#}sn");

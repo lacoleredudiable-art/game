@@ -134,17 +134,24 @@ namespace Dovus.Game
             if (_templateHostileNoted)
                 return;
             _templateHostileNoted = true;
-            TryTemplateKnockback(origin);
+            TryTemplateKnockback();
             TryLandWeaponStun(_deliverySkill.IsEmpty ? _templateSkill : _deliverySkill, false);
             TryTemplateCannonSplash(origin);
         }
 
-        void TryTemplateKnockback(Vector3 from)
+        /// <summary>
+        /// İtme her zaman oyuncudan dışarı. Vuruş noktası boss'un üstünde ya da ötesinde
+        /// olabilir; oradan itmek boss'u oyuncuya yollar (1-6, 5-2).
+        /// </summary>
+        void TryTemplateKnockback()
         {
             if (_deliveryOrder == null || !_deliveryOrder.BossKnockback)
                 return;
-            if (_boss == null || (_bossVitals != null && _bossVitals.IsDown))
+            if (_boss == null || _player == null || (_bossVitals != null && _bossVitals.IsDown))
                 return;
+            if (_boss.PullActive)
+                return;
+            Vector3 from = _player.position;
             SkillResolution skill = _deliverySkill.IsEmpty ? _templateSkill : _deliverySkill;
             if (!skill.IsEmpty && StatusApplicator.IsSelfTargeted(skill))
                 return;
@@ -243,6 +250,7 @@ namespace Dovus.Game
             if (skill.IsEmpty || power <= 0f)
                 return;
             bool friendly = IsFriendlyFieldVerb(skill) || IsHealSkill(skill);
+            MechanicPlan plan = MechanicPlanFor(skill);
             if (!friendly)
             {
                 ApplyClosingDamage(
@@ -253,19 +261,21 @@ namespace Dovus.Game
                     power,
                     _templateChain);
             }
-            else if (IsHealSkill(skill))
+            else if (IsHealSkill(skill) && GuardTriggerDelivery.AllowImmediate(plan, "can"))
             {
                 ApplyClosingHeal(pending.Closing, skill, power, _templateChain);
             }
 
             if (statuses)
             {
-                ApplyClosingStatuses(pending, skill, bossReached: !friendly);
+                if (GuardTriggerDelivery.AllowImmediate(plan, "kalkan"))
+                    ApplyClosingStatuses(pending, skill, bossReached: !friendly);
+                // Kuyruk oyuncuyu taşımaz; oyuncuyu yalnız hareket kalıbı taşır.
                 if (!friendly)
-                {
-                    Vector3 at = _player != null ? _player.position : Vector3.zero;
-                    ApplyMechanicHitEffects(MechanicPlanFor(skill), at);
-                }
+                    ApplyMechanicHitEffects(
+                        plan,
+                        _boss != null ? _boss.transform.position : Vector3.zero,
+                        casterMoves: false);
             }
 
             if (knockback && !friendly && _player != null)
