@@ -43,6 +43,7 @@ namespace Dovus.Game
         public float EffectiveMoveSpeedMult =>
             Board.MoveSpeedMult
             * (ModeDirector?.MoveSpeedMult ?? 1f)
+            * PortalBorderTeamHooks.MoveSpeedMult
             * (CastMobilityActive && _castMobility == Dovus.Core.Grammar.SkillMobility.SlowedMove
                 ? _tuning.SlowSpeedMult
                 : 1f);
@@ -180,6 +181,8 @@ namespace Dovus.Game
             float taken = (ModeDirector?.DamageTakenMult ?? 1f)
                 * (PassiveDirector?.DamageTakenMult ?? 1f)
                 * Board.IncomingDamageMult;
+            if (_playerVitals != null)
+                taken *= PortalBorderTeamHooks.PlayerDamageTakenMult;
             // Kalkanın kısa kalkanı, tahta kalkanıyla aynı son aşamada (f) erir.
             // Dodge yukarıda yuttuysa bu havuza hiç girilmez.
             float shortShield = 0f;

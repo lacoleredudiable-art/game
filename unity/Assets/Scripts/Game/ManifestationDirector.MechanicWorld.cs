@@ -517,6 +517,8 @@ namespace Dovus.Game
 
         float RedirectMechanicDamage(float incoming)
         {
+            if (PortalBorderTeamHooks.TryMiss(PortalBorderTeamHooks.PlayerActorId))
+                return 0f;
             if (_clock == null || incoming <= 0)
                 return incoming;
             double now = _clock.Director.WorldTimeMs;

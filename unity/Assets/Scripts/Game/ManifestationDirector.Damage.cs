@@ -50,6 +50,7 @@ namespace Dovus.Game
             outMult *= _modeDirector?.DamageMult ?? 1f;
             outMult *= _passiveDirector?.DamageMult ?? 1f;
             outMult *= _slotPassives?.DamageMultFor(_slotQueryCastId) ?? 1f;
+            outMult *= PortalBorderTeamHooks.DamageMult;
             outMult *= SelfDamageBuffMult();
             outMult *= chainBonusOverride ?? _closingChainBonus;
             float eqMult = 1f;
@@ -120,7 +121,7 @@ namespace Dovus.Game
             {
                 _bossStatus.Armor.Passive = 0f;
                 armor = _bossStatus.Armor.Effective(now);
-                taken = _bossStatus.Board.IncomingDamageMult;
+                taken = _bossStatus.Board.IncomingDamageMult * PortalBorderTeamHooks.BossIncomingMult;
                 shield = _bossStatus.Board.ShieldRemaining;
             }
 
