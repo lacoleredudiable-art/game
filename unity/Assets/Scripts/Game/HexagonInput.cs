@@ -872,7 +872,7 @@ namespace Dovus.Game
         {
             if (_skills != null)
                 return;
-            _skills = SkillMotorLoader.LoadOrDefault();
+            _skills = SkillMotorLoader.Load();
         }
 
         void NotifyInsufficientMana()

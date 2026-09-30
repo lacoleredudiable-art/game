@@ -29,6 +29,58 @@ public class SkillMotorV611Tests
     static string LoadJson() => File.ReadAllText(JsonPath());
     static SkillMotor Load() => SkillMotor.FromJson(LoadJson());
 
+    static string ResourcesJsonPath()
+    {
+        // tools/CoreTests/bin/<cfg>/<tfm>/ → repo kökü (docs/ ile aynı arama).
+        string docs = JsonPath();
+        string root = Path.GetDirectoryName(Path.GetDirectoryName(docs)!)!;
+        return Path.Combine(root, "unity", "Assets", "Resources", "ElementSystem", "element-sistemi.json");
+    }
+
+    [Test]
+    public void RuntimeResourcesJson_LoadsAsV611Catalog_NoFallbackNeeded()
+    {
+        // Oyun gömülü yedek olmadan yalnız bu dosyayı okur (SkillMotorLoader). Dosya yoksa ya
+        // da ElementSystemJsonLoader'ın kardinalite kontrolünü geçmiyorsa CI kırmızı olmalı.
+        string path = ResourcesJsonPath();
+        Assert.That(File.Exists(path), Is.True, $"Runtime JSON yok: {path}");
+        string json = File.ReadAllText(path);
+        JsonValue root = MiniJson.Parse(json);
+        Assert.That(root["system"]["version"].AsString(), Is.EqualTo("6.1.1"));
+        Assert.That(root["system"]["binding"].AsBool(false), Is.True);
+
+        SkillMotor motor = SkillMotor.FromJson(json);
+        Assert.That(motor.IsV61, Is.True);
+        Assert.That(motor.RuneCount, Is.EqualTo(12));
+        Assert.That(motor.SkillCount, Is.EqualTo(144));
+        Assert.That(motor.ElementPaints.Count, Is.EqualTo(6));
+        Assert.That(EquipmentCatalog.FromJson(json).Items.Count, Is.EqualTo(10));
+        Assert.That(AnimationDatabase.FromJson(json).Count, Is.EqualTo(120));
+    }
+
+    [Test]
+    public void NonV6Json_IsRejected_NoSilentV5Fallback()
+    {
+        const string v5Shaped =
+            "{\"system\":{\"version\":\"5.3\"},\"elements\":[{\"id\":\"1\",\"type\":\"core\"}],"
+            + "\"equipment_system\":{\"examples\":[]}}";
+        Assert.Throws<System.InvalidOperationException>(() => SkillMotor.FromJson(v5Shaped));
+        Assert.Throws<System.InvalidOperationException>(() => EquipmentCatalog.FromJson(v5Shaped));
+    }
+
+    [Test]
+    public void EmptyMotor_ResolvesNothing()
+    {
+        // SkillMotorLoader JSON yokken bunu döner: hata loglanır, skill çözülmez, oyun çökmez.
+        SkillMotor empty = SkillMotor.CreateEmpty();
+        Assert.That(empty.IsV61, Is.False);
+        Assert.That(empty.RuneCount, Is.Zero);
+        Assert.That(empty.SkillCount, Is.Zero);
+        Assert.That(empty.Resolve(new[] { 1 }).IsEmpty, Is.True);
+        Assert.That(empty.Resolve(new[] { 1, 2 }).IsEmpty, Is.True);
+        Assert.That(new RuneManager(empty).Current.RuneIds.Count, Is.GreaterThan(0));
+    }
+
     [Test]
     public void LoadsLockedV611Catalog()
     {

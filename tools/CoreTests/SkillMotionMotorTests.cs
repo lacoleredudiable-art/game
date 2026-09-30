@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.IO;
 using Dovus.Core.Combat;
 using Dovus.Core.Grammar;
 using Dovus.Core.Tuning;
@@ -43,21 +41,6 @@ public class SkillMotionMotorTests
             elementOrigin: "Yıldırım");
 
     static SkillMotionTuning T => new();
-
-    static IReadOnlyList<SpaceEffectNode> LoadSpaceEffects()
-    {
-        string path = Path.GetFullPath(Path.Combine(
-            TestContext.CurrentContext.TestDirectory,
-            "..", "..", "..", "..", "..", "docs", "archive", "element-sistemi-v5.3.json"));
-        if (!File.Exists(path))
-        {
-            path = Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..", "..", "..", "..", "docs", "archive", "element-sistemi-v5.3.json"));
-        }
-        Assert.That(File.Exists(path), Is.True, path);
-        return SkillMotor.FromJson(File.ReadAllText(path)).SpaceEffects;
-    }
 
     [Test]
     public void Teleport_NearBoss_IsZenitsuPass()
@@ -108,52 +91,4 @@ public class SkillMotionMotorTests
         Assert.That(plan.Kind, Is.EqualTo(SkillMotionKind.ZenitsuPass));
     }
 
-    [Test]
-    public void SpaceLayer_PusStealthShift_OverridesBlinkDistance()
-    {
-        IReadOnlyList<SpaceEffectNode> space = LoadSpaceEffects();
-        var ctx = new SkillMotionContext(0f, -10f, 0f, 1f, 0f, 5f, true, 12f);
-        var plan = SkillMotionMotor.Resolve(Teleport(elementOrigin: "Pus"), ctx, T, space);
-        Assert.That(plan.Kind, Is.EqualTo(SkillMotionKind.ShortBlink));
-        // JSON pus_gecisi distance_m=5 (tuning ShortBlink=4 değil)
-        Assert.That(plan.DestZ, Is.EqualTo(-10f + 5f).Within(0.01f));
-    }
-
-    [Test]
-    public void SpaceLayer_AlevShortBlink_UsesDistanceAndIframe()
-    {
-        IReadOnlyList<SpaceEffectNode> space = LoadSpaceEffects();
-        var ctx = new SkillMotionContext(0f, -10f, 0f, 1f, 0f, 5f, true, 12f);
-        var plan = SkillMotionMotor.Resolve(Teleport(elementOrigin: "Alev"), ctx, T, space);
-        Assert.That(plan.Kind, Is.EqualTo(SkillMotionKind.ShortBlink));
-        Assert.That(plan.DestZ, Is.EqualTo(-10f + 3f).Within(0.01f));
-        Assert.That(plan.IframeMs, Is.EqualTo(300));
-    }
-
-    [Test]
-    public void SpaceLayer_PhaseBlink_EngageRangeFromJson()
-    {
-        IReadOnlyList<SpaceEffectNode> space = LoadSpaceEffects();
-        // dist boss = 8.5; JSON phase_blink distance_m=8 → blink; tuning engage=9 → Zenitsu
-        var ctx = new SkillMotionContext(0f, -3.5f, 0f, 1f, 0f, 5f, true, 12f);
-
-        var withJson = SkillMotionMotor.Resolve(Teleport(elementOrigin: "Pus"), ctx, T, space);
-        Assert.That(withJson.Kind, Is.EqualTo(SkillMotionKind.ShortBlink),
-            "JSON engage 8 → 8.5 dışarıda blink");
-
-        var tuningOnly = SkillMotionMotor.Resolve(Teleport(elementOrigin: "Pus"), ctx, T);
-        Assert.That(tuningOnly.Kind, Is.EqualTo(SkillMotionKind.ZenitsuPass),
-            "tuning engage 9 → Zenitsu");
-    }
-
-    [Test]
-    public void SpaceLayer_InvisibleLinkAndTear_DoNotChangeDash()
-    {
-        IReadOnlyList<SpaceEffectNode> space = LoadSpaceEffects();
-        var ctx = new SkillMotionContext(0f, 0f, 1f, 0f, 0f, 5f, true, 12f);
-        var plan = SkillMotionMotor.Resolve(Dash(), ctx, T, space);
-        Assert.That(plan.Kind, Is.EqualTo(SkillMotionKind.ForwardDash));
-        Assert.That(plan.DestX, Is.EqualTo(T.ForwardDashDistanceM).Within(0.01f));
-    }
 }
-

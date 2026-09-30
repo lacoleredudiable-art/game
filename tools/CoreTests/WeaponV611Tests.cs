@@ -28,7 +28,6 @@ public class WeaponV611Tests
         EquipmentCatalog catalog = Load();
         EquipmentItem sword = catalog.FindWeapon(4)!;
 
-        Assert.That(catalog.IsV61, Is.True);
         Assert.That(catalog.Items.Count, Is.EqualTo(10));
         Assert.That(sword.Name, Is.EqualTo("Kılıç"));
         Assert.That(sword.Type, Is.EqualTo("medium"));

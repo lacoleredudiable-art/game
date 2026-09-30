@@ -11,28 +11,19 @@ public class StatusBoardTests
 {
     StatusTuning Tuning() => new();
 
-    // SkillMotorTests.LoadFull ile aynı desen — gerçek verbleri (Kor, zirh_eritme vb.)
-    // görmek için embedded fallback yetmiyor (sadece 1-2 Buhar bileşiği var).
-    static SkillMotor LoadFullMotor()
+    static SkillMotor LoadV6Motor()
     {
         string path = Path.GetFullPath(Path.Combine(
             TestContext.CurrentContext.TestDirectory,
-            "..", "..", "..", "..", "..", "docs", "archive", "element-sistemi-v5.3.json"));
+            "..", "..", "..", "..", "..", "docs", "element-sistemi.json"));
         if (!File.Exists(path))
         {
             path = Path.GetFullPath(Path.Combine(
                 TestContext.CurrentContext.TestDirectory,
-                "..", "..", "..", "..", "docs", "archive", "element-sistemi-v5.3.json"));
+                "..", "..", "..", "..", "docs", "element-sistemi.json"));
         }
         Assert.That(File.Exists(path), Is.True, $"element-sistemi.json bulunamadı: {path}");
         return SkillMotor.FromJson(File.ReadAllText(path));
-    }
-
-    [OneTimeSetUp]
-    public void RebuildReactionTableFromFullJson()
-    {
-        // StatusReactionTable artık elle liste değil — motor.StatusInteractions'tan türetilir.
-        StatusReactionTable.Rebuild(LoadFullMotor().StatusInteractions);
     }
 
     [Test]
@@ -108,67 +99,36 @@ public class StatusBoardTests
     }
 
     [Test]
-    public void Applicator_Buhar_AppliesBlindToTarget()
+    public void Applicator_V6CcSkill_AppliesRootToTargetNotCaster()
     {
-        var motor = SkillMotor.CreateDefault();
-        SkillResolution skill = motor.Resolve(new[] { 1, 2 }); // Buhar Perdesi
+        // 6-2: Kontrol fiili (engine action=cc, cc_kind=root) — hedef tahtasına gider.
+        SkillResolution skill = LoadV6Motor().Resolve(new[] { 6, 2 });
+        Assert.That(skill.Mechanics, Does.Contain("root"));
         var caster = new StatusBoard();
         var target = new StatusBoard();
         var result = StatusApplicator.ApplySkill(skill, caster, target, Tuning());
         Assert.That(result.Knockback, Is.False);
-        Assert.That(target.HasBlind, Is.True);
-        Assert.That(caster.HasBlind, Is.False);
+        Assert.That(target.Has(StatusKind.Root), Is.True);
+        Assert.That(caster.Has(StatusKind.Root), Is.False);
     }
 
     [Test]
-    public void Applicator_SelfFamily_TargetsCaster()
+    public void Applicator_V6CleanseSkill_IsSelfTargeted_AndCleansesCaster()
     {
-        // Gömülü saldiri is damage/projectile → target. Use cleanse verb via synthetic resolution:
-        var skill = SkillMotor.CreateDefault().Resolve(new[] { 5 }); // Aydınlık arındırma — purge family self
+        // 9-1: Arındırma fiili (hitbox self_or_ally, action=cleanse) — caster'ı temizler.
+        SkillResolution skill = LoadV6Motor().Resolve(new[] { 9, 1 });
+        Assert.That(StatusApplicator.IsSelfTargeted(skill), Is.True);
         var caster = new StatusBoard();
         var target = new StatusBoard();
+        caster.Apply(StatusKind.Root, 1000, 1f);
         target.Apply(StatusKind.Root, 1000, 1f);
-        StatusApplicator.ApplySkill(skill, caster, target, Tuning());
-        // Aydınlık mechanics = cleanse → self board cleansed; target root remains if self-targeted
-        Assert.That(StatusApplicator.IsSelfTargeted(skill), Is.True);
+        var result = StatusApplicator.ApplySkill(skill, caster, target, Tuning());
+        Assert.That(result.Cleansed, Is.True);
+        Assert.That(caster.Has(StatusKind.Root), Is.False);
+        Assert.That(target.Has(StatusKind.Root), Is.True);
     }
 
-    // --- 16 Eylül: durum etkileşim tablosu (docs/element-sistemi.json status_interaction_table) ---
-
-    [Test]
-    public void Reaction_BurnThenArmorBreak_AmplifiesArmorBreak()
-    {
-        // "Erimiş Zırh": burn zaten üstündeyken armor_break gelince ×1.5 + 2 sn.
-        var board = new StatusBoard();
-        var t = Tuning();
-        board.Apply(StatusKind.Burn, 2000, t.BurnDamagePerSec);
-        board.Apply(StatusKind.ArmorBreak, 3000, t.ArmorBreakDamageTakenMult);
-        Assert.That(board.IncomingDamageMult, Is.EqualTo(t.ArmorBreakDamageTakenMult * 1.5f).Within(0.001f));
-    }
-
-    [Test]
-    public void Reaction_OrderIndependent_ArmorBreakThenBurn_SameResult()
-    {
-        // Kural sırasız çalışmalı: önce armor_break, sonra burn gelse de aynı tepki.
-        var board = new StatusBoard();
-        var t = Tuning();
-        board.Apply(StatusKind.ArmorBreak, 3000, t.ArmorBreakDamageTakenMult);
-        board.Apply(StatusKind.Burn, 2000, t.BurnDamagePerSec);
-        Assert.That(board.IncomingDamageMult, Is.EqualTo(t.ArmorBreakDamageTakenMult * 1.5f).Within(0.001f));
-    }
-
-    [Test]
-    public void Reaction_HasteThenSlow_BothHalved()
-    {
-        // "Nötrleşme": ikisi de %50 azalır.
-        var board = new StatusBoard();
-        var t = Tuning();
-        board.Apply(StatusKind.Haste, 2000, t.HasteSpeedMult);
-        board.Apply(StatusKind.Slow, 1500, t.SlowSpeedMult);
-        // MoveSpeedMult = slow.Magnitude * haste.Magnitude (BlocksMovement false burada)
-        float expected = (t.SlowSpeedMult * 0.5f) * (t.HasteSpeedMult * 0.5f);
-        Assert.That(board.MoveSpeedMult, Is.EqualTo(expected).Within(0.001f));
-    }
+    // --- StatusBoard'a gömülü sabit kombolar (tablo değil, StatusTuning): burn+poison, shield+burn ---
 
     [Test]
     public void Reaction_BurnPlusPoison_ExtraTickDamage()
@@ -198,18 +158,6 @@ public class StatusBoardTests
     }
 
     [Test]
-    public void Reaction_GrievousWoundsPlusBurn_HealMultChangesTo0_7()
-    {
-        // "Kavurucu Yara": heal_reduction 0.5 → 0.7 (mutlak set, çarpan değil).
-        var board = new StatusBoard();
-        var t = Tuning();
-        board.Apply(StatusKind.GrievousWounds, 2500, t.GrievousHealMult);
-        Assert.That(board.HealEffectivenessMult, Is.EqualTo(0.5f).Within(0.001f));
-        board.Apply(StatusKind.Burn, 2000, t.BurnDamagePerSec);
-        Assert.That(board.HealEffectivenessMult, Is.EqualTo(0.7f).Within(0.001f));
-    }
-
-    [Test]
     public void Applicator_StunPlusKnockbackSameCast_ExtendsStunDuration()
     {
         // "Savrulma Sersemliği": aynı vuruşta stun+knockback → stun süresi +1 sn. Hiçbir gerçek
@@ -236,41 +184,6 @@ public class StatusBoardTests
         Assert.That(target.Has(StatusKind.Stun), Is.True);
         target.Tick(200, t);
         Assert.That(target.Has(StatusKind.Stun), Is.False);
-    }
-
-    [Test]
-    public void Applicator_ReportsTriggeredReaction_ForRealVerb()
-    {
-        // "skilleri attığımda bir etkileşim göremiyorum" (16 Eylül) — Kor (1-3, Ateş
-        // zirh_eritme) mechanics=[armor_break, burn] tek cast'te "Erimiş Zırh"ı tetikler.
-        // ApplySkill artık bunu Result.TriggeredReactions ile bildiriyor (Game katmanı
-        // ReactionReadout'a yazsın diye).
-        var skill = LoadFullMotor().Resolve(new[] { 1, 3 }); // Kor
-        Assert.That(skill.Mechanics, Does.Contain("armor_break"));
-        Assert.That(skill.Mechanics, Does.Contain("burn"));
-
-        var caster = new StatusBoard();
-        var target = new StatusBoard();
-        var result = StatusApplicator.ApplySkill(skill, caster, target, Tuning());
-
-        Assert.That(result.TriggeredReactions.Count, Is.EqualTo(1));
-        Assert.That(result.TriggeredReactions[0].Name, Is.EqualTo("Erimiş Zırh"));
-    }
-
-    [Test]
-    public void Board_ReactionTriggeredEvent_FiresWithCorrectRule()
-    {
-        var board = new StatusBoard();
-        var t = Tuning();
-        StatusReactionRule? fired = null;
-        board.ReactionTriggered += r => fired = r;
-
-        board.Apply(StatusKind.Haste, 2000, t.HasteSpeedMult);
-        Assert.That(fired, Is.Null); // henüz eşleşen ikinci status yok
-
-        board.Apply(StatusKind.Slow, 1500, t.SlowSpeedMult);
-        Assert.That(fired, Is.Not.Null);
-        Assert.That(fired!.Value.Name, Is.EqualTo("Nötrleşme"));
     }
 
     [Test]
@@ -320,20 +233,4 @@ public class StatusBoardTests
         Assert.That(board.Has(StatusKind.Shield), Is.False);
     }
 
-    [Test]
-    public void Savunma_And_Gizlilik_Mechanics_FromFullJson()
-    {
-        var motor = LoadFullMotor();
-        Assert.That(motor.TryGetVerb("savunma", out VerbNode savunma), Is.True);
-        Assert.That(savunma.Mechanics, Does.Contain("shield"));
-        Assert.That(savunma.Mechanics, Does.Contain("damage_reduction"));
-
-        Assert.That(motor.TryGetVerb("gizlilik", out VerbNode gizlilik), Is.True);
-        Assert.That(gizlilik.Mechanics, Does.Contain("stealth"));
-        Assert.That(gizlilik.Mechanics, Does.Not.Contain("fear"));
-
-        Assert.That(motor.TryGetVerb("hiz_gorunmezlik", out VerbNode pus), Is.True);
-        Assert.That(pus.Mechanics, Does.Contain("stealth"));
-        Assert.That(pus.Mechanics, Does.Contain("haste"));
-    }
 }

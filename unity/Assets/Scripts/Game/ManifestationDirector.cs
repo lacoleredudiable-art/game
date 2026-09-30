@@ -220,7 +220,7 @@ namespace Dovus.Game
             return false;
         }
 
-        SkillMotor Skills => _skills ??= SkillMotorLoader.LoadOrDefault();
+        SkillMotor Skills => _skills ??= SkillMotorLoader.Load();
 
         WeaponSkillCompatibility WeaponCompatibilityFor(SkillResolution skill)
         {
@@ -369,7 +369,7 @@ namespace Dovus.Game
             _equipmentBonus = equipmentBonus;
             _playerResource = player != null ? player.GetComponent<PlayerResource>() : null;
             _playerCooldown = player != null ? player.GetComponent<PlayerCooldown>() : null;
-            _skills = skills ?? SkillMotorLoader.LoadOrDefault();
+            _skills = skills ?? SkillMotorLoader.Load();
             _skillFactory = skillFactory ?? new SkillFactory(_skills, _equipmentBonus);
             _animationDatabase = animationDatabase ?? LoadAnimationDatabase();
             _elementPaintIndex = 0;
@@ -1917,7 +1917,6 @@ namespace Dovus.Game
 
             return SkillMotionMotor.Resolve(
                 skill, ctx, t,
-                _skills != null ? _skills.SpaceEffects : null,
                 _verbData?.IFrameMsFor(skill.SkillId) ?? 0);
         }
 
@@ -2134,17 +2133,6 @@ namespace Dovus.Game
 
             if (result.Pull && bossStatus != null && _player != null)
                 bossStatus.ApplyPullToward(_player.position);
-
-            // 16 Eylül: "skilleri attığımda bir etkileşim göremiyorum" raporu — durum
-            // etkileşim tablosu (docs/element-sistemi.json status_interaction_table) mekanik
-            // olarak zaten çalışıyordu, hiçbir görsel sinyali yoktu. Tetiklenen kural varsa
-            // aynı tepki yazısı kanalını mevcut AcidGreen vurgusuyla kullan.
-            if (result.TriggeredReactions.Count > 0 && _readout != null)
-            {
-                StatusReactionRule rule = result.TriggeredReactions[0];
-                _readout.NoteSkill(rule.Name, rule.ReadAs, _colors.AcidGreen);
-                _debugHud?.NoteSkillBang(rule.Name, rule.ReadAs);
-            }
         }
 
         void ApplySlotPassiveOnHit(ActorStatus target)

@@ -25,7 +25,7 @@ namespace Dovus.Game
         public void Configure(SentenceEngine engine, Transform canvasRoot, SkillMotor skills = null, bool show = false)
         {
             _engine = engine;
-            _skills = skills ?? SkillMotor.CreateDefault();
+            _skills = skills ?? SkillMotorLoader.Load();
             _root = new GameObject("SentenceDebug");
             _root.transform.SetParent(canvasRoot, false);
             // Canvas ScreenSpaceCamera'ya geçtiği için layer artık önemli: yeni GameObject
@@ -173,8 +173,11 @@ namespace Dovus.Game
 
         string SkillLine(SentenceState s)
         {
-            if (_skills == null || s.Words.Count == 0)
+            if (s.Words.Count == 0)
                 return null;
+            // JSON yüklenemediyse gömülü yedek yok: boş motor döner, burada açıkça yazılır.
+            if (_skills == null || !_skills.IsV61)
+                return "element-sistemi JSON yok";
             SkillResolution r = _skills.ResolveWords(s.Words);
             if (r.IsEmpty)
                 return null;
