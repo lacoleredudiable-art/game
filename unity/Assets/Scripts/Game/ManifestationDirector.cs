@@ -61,7 +61,6 @@ namespace Dovus.Game
 
         SkillMotor _skills;
         SkillFactory _skillFactory;
-        DamageCalculator _damageCalculator;
         ActorStatus _playerStatus;
         ActorStatus _bossStatus;
         SkillMotionDriver _motionDriver;
@@ -258,38 +257,6 @@ namespace Dovus.Game
             return _skillFactory != null
                 ? _skillFactory.EvaluateWeapon(skill, _equippedWeapon)
                 : WeaponSkillCompatibility.Neutral;
-        }
-
-        DamageCalculator EnsureDamageCalculator()
-        {
-            if (_damageCalculator != null)
-                return _damageCalculator;
-
-            if (ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
-            {
-                try
-                {
-                    // Play'te crit ara sıra çıksın diye seed sabit değil.
-                    _damageCalculator = DamageCalculator.FromElementSystemJson(
-                        design.Json,
-                        seed: unchecked((int)System.DateTime.UtcNow.Ticks));
-                    return _damageCalculator;
-                }
-                catch (System.Exception e)
-                {
-                    Debug.LogWarning($"DamageCalculator JSON okunamadı: {e.Message}");
-                }
-            }
-
-            // Resources yoksa: docs/element-sistemi.json crit_system varsayılanları
-            // (base 0.05 / mult 2.0 / max 0.75) — sayı uydurma yok.
-            _damageCalculator = new DamageCalculator(
-                seed: unchecked((int)System.DateTime.UtcNow.Ticks),
-                baseCritChance: 0.05f,
-                critMultiplier: 2f,
-                maxCritChance: 0.75f,
-                adjectiveCritBonus: null);
-            return _damageCalculator;
         }
 
         struct PendingClosing

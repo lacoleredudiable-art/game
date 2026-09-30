@@ -27,7 +27,6 @@ namespace Dovus.Core.Status
                 _rootImmunityMs = data.RootImmunityMs;
         }
 
-        public double RootImmunityRemainingMs => _rootImmunityRemainingMs;
         public bool IsRootImmune => _rootImmunityRemainingMs > 0;
 
         /// <summary>

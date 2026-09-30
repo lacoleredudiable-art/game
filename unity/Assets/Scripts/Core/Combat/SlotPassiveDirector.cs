@@ -19,7 +19,6 @@ namespace Dovus.Core.Combat
 
         public IReadOnlyList<ActiveSlotPassive> Active => _active;
         public int ActiveCount => _active.Count;
-        public int OpenCastId => _openCastId;
 
         /// <summary>Bu skill cast'i boyunca yeni pasifler bu kimliği dışlar.</summary>
         public int OpenCast()
@@ -69,7 +68,6 @@ namespace Dovus.Core.Combat
 
         /// <summary>Canlı okuma (cast 0): HUD ve gelen hasar. Tetikleyen cast For(castId) kullanır.</summary>
         public float DamageMult => DamageMultFor(0);
-        public float HitboxSizeMult => HitboxSizeMultFor(0);
         public float PoiseDamageMult => PoiseDamageMultFor(0);
         public float LifestealAdd => LifestealAddFor(0);
         public float ReflectRatioAdd => ReflectRatioAddFor(0);
@@ -189,8 +187,6 @@ namespace Dovus.Core.Combat
         /// <summary>Pasif oyuncuyu köklemez. cast_mobility bu yoldan okunmaz.</summary>
         public bool BlocksPlayerMovement => false;
 
-        public bool HasModifier(string key) => HasModifierFor(key, 0);
-
         public bool HasModifierFor(string key, int castId)
         {
             if (string.IsNullOrEmpty(key))
@@ -209,8 +205,6 @@ namespace Dovus.Core.Combat
             }
             return false;
         }
-
-        public float MaxModifier(string key) => MaxFor(key, 0);
 
         public string StringModifier(string key)
         {

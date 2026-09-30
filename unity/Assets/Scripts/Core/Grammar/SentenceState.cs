@@ -95,9 +95,6 @@ namespace Dovus.Core.Grammar
 
         public ClosingHit? LastClosing { get; internal set; }
 
-        /// <summary>Kapanış ödendi, girdi kilitli (§5).</summary>
-        public bool IsRecovering => Phase == SentencePhase.Recovering;
-
         public int AdjectiveCount => Words.Count == 0 ? 0 : Words.Count - 1;
         public int DotCount => Words.Count;
     }

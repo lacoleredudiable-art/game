@@ -203,9 +203,6 @@ namespace Dovus.Game
             return frame * ((double)totalDurationMs / totalFrames);
         }
 
-        public static double FrameToElapsedSeconds(int frame, int totalFrames, int totalDurationMs) =>
-            FrameToElapsedMs(frame, totalFrames, totalDurationMs) / 1000.0;
-
         bool TryPlayState(Animator animator, string stateName)
         {
             if (animator == null || !animator.isActiveAndEnabled

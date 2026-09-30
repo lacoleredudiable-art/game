@@ -72,9 +72,6 @@ namespace Dovus.Game
             return catalog;
         }
 
-        public RuneSO FindRune(int id) =>
-            _runeById.TryGetValue(id, out RuneSO value) ? value : null;
-
         public WeaponSO FindWeapon(int id) =>
             _weaponById.TryGetValue(id, out WeaponSO value) ? value : null;
 

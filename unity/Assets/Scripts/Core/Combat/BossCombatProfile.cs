@@ -29,9 +29,6 @@ namespace Dovus.Core.Combat
         public float Armor { get; }
         public float ArmorHard { get; }
 
-        public float HpFor(bool hard) => hard ? BossMaxHpHard : BossMaxHp;
-        public float ArmorFor(bool hard) => hard ? ArmorHard : Armor;
-
         public static BossCombatProfile FromJson(string json)
         {
             if (string.IsNullOrWhiteSpace(json))

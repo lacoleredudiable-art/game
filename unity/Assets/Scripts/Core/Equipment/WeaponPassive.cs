@@ -258,8 +258,6 @@ namespace Dovus.Core.Equipment
 
         public bool BonusArmed(double nowMs) => _bonusArmed && nowMs < _bonusUntilMs;
 
-        public string BonusId => _bonusArmed ? _bonusId : string.Empty;
-
         public void NoteBlock(double nowMs, float windowSec)
         {
             _counterUntilMs = nowMs + Math.Max(0f, windowSec) * 1000.0;
@@ -330,11 +328,6 @@ namespace Dovus.Core.Equipment
             return spec.Id.Length > 0;
         }
 
-        public void ResetChain()
-        {
-            _chainCount = 0;
-            _chainStartMs = double.NegativeInfinity;
-        }
     }
 
     /// <summary>

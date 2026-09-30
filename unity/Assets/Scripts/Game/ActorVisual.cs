@@ -39,7 +39,6 @@ namespace Dovus.Game
         public const string TriggerDodge = StateDodge;
         public const string TriggerHit = StateHit;
         public const string TriggerDeath = StateDeath;
-        public const string TriggerBasicStrike = StateBasicStrike;
 
         static readonly string[] FamilyStates =
         {
@@ -130,15 +129,6 @@ namespace Dovus.Game
                 return;
 
             CastBodyFamily family = CastBodyMapper.FromVerbAndSilhouette(rune, silhouette);
-            ApplyAxes(silhouette);
-            FireFamily(family);
-        }
-
-        public void PulseFamily(CastBodyFamily family, EffectSilhouette silhouette)
-        {
-            if (_animator == null || !_animator.isActiveAndEnabled)
-                return;
-
             ApplyAxes(silhouette);
             FireFamily(family);
         }

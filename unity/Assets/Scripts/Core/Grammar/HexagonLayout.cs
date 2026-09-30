@@ -23,12 +23,6 @@ namespace Dovus.Core.Grammar
             return distance == 1 ? JumpKind.Short : JumpKind.Long;
         }
 
-        public static bool AreNeighbors(int a, int b) =>
-            IsValidDot(a) && IsValidDot(b) && a != b && CircularDistance(a, b) == 1;
-
-        public static bool AreFar(int a, int b) =>
-            IsValidDot(a) && IsValidDot(b) && a != b && CircularDistance(a, b) == 2;
-
         public static void GetNeighbors(int dot, out int neighborA, out int neighborB)
         {
             neighborA = Wrap(dot - 1);

@@ -105,7 +105,6 @@ namespace Dovus.Core.Combat
         public float ThreatMultiplier => ProductEffect("threat_mult", 1f);
         public float ReflectRatioAdd => SumEffect("reflect_ratio_add");
         public float DashCooldownMult => ProductEffect("dash_cooldown_mult", 1f);
-        public float RevealRadiusMult => ProductEffect("reveal_radius_mult", 1f);
 
         float ProductEffect(string key, float identity)
         {

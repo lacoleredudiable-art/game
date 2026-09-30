@@ -62,14 +62,6 @@ namespace Dovus.Game
         /// <summary>0..1 sinüs nabzı (unscaled zaman).</summary>
         public static float Pulse01(float hz) => 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * hz * Mathf.PI * 2f);
 
-        public static bool IsAnimating(Transform target)
-        {
-            for (int i = 0; i < _tweens.Count; i++)
-                if (_tweens[i].Target == target)
-                    return true;
-            return false;
-        }
-
         static bool RemoveExisting(Transform target, Kind kind, out Tween old)
         {
             for (int i = 0; i < _tweens.Count; i++)

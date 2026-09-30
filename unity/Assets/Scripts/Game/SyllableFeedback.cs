@@ -79,9 +79,6 @@ namespace Dovus.Game
             TryShortVibrate(20L);
         }
 
-        public void PlayForRune(Rune rune, int sentenceDotsAfter) =>
-            PlayForDot((int)rune, sentenceDotsAfter);
-
         static void TryShortVibrate(long durationMs)
         {
             if (durationMs <= 0)
