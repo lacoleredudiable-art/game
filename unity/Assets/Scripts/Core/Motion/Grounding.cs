@@ -114,5 +114,17 @@ namespace Dovus.Core.Motion
 
         public static bool WithinSlack(float feetY, float groundY, bool settled) =>
             MathF.Abs(feetY - groundY) <= (settled ? SettleSlackM : LiveSlackM);
+
+        /// <summary>
+        /// Ayak hatasını görselin local Y kaymasına çevirir.
+        /// Görselin kendi localScale'i kendi konumunu ölçeklemez; dünya kayması yalnız
+        /// ebeveynin Y ölçeğidir. Ebeveyn ölçeği yerine görselin lossyScale'i kullanılırsa
+        /// (boss kapsülü 1,3 ve görsel fit'i büyük) düzeltme eksik kalır, ayak ~5 cm havada durur.
+        /// </summary>
+        public static float LocalOffsetForWorldError(float worldError, float parentLossyScaleY)
+        {
+            float scale = MathF.Abs(parentLossyScaleY) < 0.0001f ? 1f : parentLossyScaleY;
+            return worldError / scale;
+        }
     }
 }

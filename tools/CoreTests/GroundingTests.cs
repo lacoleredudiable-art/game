@@ -157,6 +157,24 @@ public class GroundingTests
         Assert.That(SweepPace.ClampSpeed(1f), Is.EqualTo(1f));
     }
 
+    [Test]
+    public void FootCorrection_UsesParentScale_SoTheBossDoesNotRestFiveCentimetersUp()
+    {
+        // Boss kapsülü Y ölçeği 1,3; görsel fit'i bunu da içerir. lossyScale ile bölmek
+        // dünya hatasının yalnız 1/localScale kadarını indirir.
+        const float parentScale = 1.3f;
+        const float visualLocalScale = 2.15f;
+        const float worldError = 0.11f;
+        float lossy = parentScale * visualLocalScale;
+        float residualIfLossy = worldError - (worldError / lossy) * parentScale;
+        Assert.That(residualIfLossy, Is.GreaterThan(0.05f));
+
+        float local = Grounding.LocalOffsetForWorldError(worldError, parentScale);
+        float residual = worldError - local * parentScale;
+        Assert.That(residual, Is.EqualTo(0f).Within(0.0001f));
+        Assert.That(Grounding.LocalOffsetForWorldError(0.05f, 0f), Is.EqualTo(0.05f).Within(0.0001f));
+    }
+
     static void AssertAir(string id, MotionTemplateCatalog catalog, bool airborne)
     {
         Assert.That(catalog.TryPlay(id, out MotionTemplate template), Is.True, id);

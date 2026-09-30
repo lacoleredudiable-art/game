@@ -24,6 +24,7 @@ namespace Dovus.Game
         float _shakeUntil;
         float _shakeAmp;
         float _liftVel;
+        float _air;
         ActorGrounding _grounding;
         bool _captured;
 
@@ -192,6 +193,7 @@ namespace Dovus.Game
 
             _visualOffset = Vector3.zero;
             _liftVel = 0f;
+            _air = 0f;
             _shakeAmp = Tuning.BossPinShakeAmpM;
             _shakeUntil = (float)worldTimeMs + durationSec * 1000f;
         }
@@ -206,6 +208,7 @@ namespace Dovus.Game
 
             _collapsed = true;
             _liftVel = 0f;
+            _air = 0f;
             _shakeAmp = 0f;
             _shakeUntil = 0f;
             _visualOffset = Vector3.zero;
@@ -260,15 +263,19 @@ namespace Dovus.Game
                 _shakeAmp = 0f;
             }
 
-            // Kaldırma + yerçekimi
-            float y = transform.position.y;
-            y += _liftVel * dtSec;
+            // Kaldırma kapsül zeminine göredir. Home Y havadaki bir örnekten gelirse
+            // boss o yükseklikte kilitleniyordu (7-3 / 7-6 / 7-11, ~5 cm).
+            float ground = PlantedGroundY();
+            _home.y = ground;
+            _air += _liftVel * dtSec;
             _liftVel -= Tuning.BossGravityMps2 * dtSec;
-            if (y <= _home.y)
+            if (_air <= 0f)
             {
-                y = _home.y;
+                _air = 0f;
                 _liftVel = 0f;
             }
+
+            float y = ground + _air;
 
             _visualOffset = Vector3.Lerp(
                 _visualOffset,
@@ -288,15 +295,17 @@ namespace Dovus.Game
             if (_grounding == null)
                 return;
             _grounding.SkipFootLock = collapsed;
-            if (collapsed || y <= _home.y + 0.001f)
-            {
-                _grounding.Follow(_home.y);
-                _grounding.Release();
-            }
+            if (collapsed || _air <= 0.0001f)
+                _grounding.LandNow();
             else
-            {
                 _grounding.Follow(y);
-            }
+        }
+
+        float PlantedGroundY()
+        {
+            if (_grounding == null)
+                _grounding = GetComponent<ActorGrounding>();
+            return _grounding != null ? _grounding.PlantedRootY : _home.y;
         }
 
         void AdvancePull(float dtSec)

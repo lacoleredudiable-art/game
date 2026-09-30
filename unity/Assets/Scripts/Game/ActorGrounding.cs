@@ -50,6 +50,13 @@ namespace Dovus.Game
             _claimed = true;
         }
 
+        /// <summary>Kaldırma bitti. İnişi yeniden başlatmadan zemine yapışır; ayak kilidi bu kare çalışır.</summary>
+        public void LandNow()
+        {
+            _logic.Snap();
+            _claimed = true;
+        }
+
         /// <summary>Cast arası süpürme: inişi beklemeden zemine yapıştır.</summary>
         public void SnapPlanted()
         {
@@ -127,11 +134,10 @@ namespace Dovus.Game
             float error = feet - _footGroundY;
             if (Mathf.Abs(error) < 0.001f)
                 return;
-            float scale = _visual.lossyScale.y;
-            if (Mathf.Abs(scale) < 0.0001f)
-                scale = 1f;
+            Transform parent = _visual.parent;
+            float parentScale = parent != null ? parent.lossyScale.y : 1f;
             Vector3 lp = _visual.localPosition;
-            lp.y -= error / scale;
+            lp.y -= Grounding.LocalOffsetForWorldError(error, parentScale);
             _visual.localPosition = lp;
         }
 
