@@ -9,11 +9,9 @@
     <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
 
-  <!-- Oyunla aynı motor: Core/Mechanic + JSON okuyucusu link'lenir, kopyası tutulmaz. -->
+  <!-- Oyunla aynı motor: Core'un tümü link'lenir (Mechanic → Motion → Combat zinciri), kopyası tutulmaz. -->
   <ItemGroup>
-    <Compile Include="..\..\unity\Assets\Scripts\Core\Mechanic\*.cs" Link="Core\Mechanic\%(Filename)%(Extension)" />
-    <Compile Include="..\..\unity\Assets\Scripts\Core\Grammar\MiniJson.cs" Link="Core\Grammar\MiniJson.cs" />
-    <Compile Include="..\..\unity\Assets\Scripts\Core\Tuning\SkillVisualTuning.cs" Link="Core\Tuning\SkillVisualTuning.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Core\**\*.cs" Link="Core\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>
