@@ -13,8 +13,22 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (portal tarama: konum, yükseklik, 2-6/11-8, sınır) ·
-**Dal:** `feat/portal-border-team` · **Sıradaki:** Kılıç/Asa taramasını bu dalda bir kez daha koş
+**Son güncelleme:** 30 Eylül 2026 (PR #29 Play testi geçti, master'a merge) ·
+**Dal:** `master` · **Sıradaki:** 3-10 dash sonrası kapıdan geri dönüş; Top geri tepme fazında ayak havada (1-3, 6-3, 5-8, 6-8, 7-8)
+
+> **30 Eylül — PR #29 Play testi (`8b104d5`): merge edildi.** Master (`4b17de0`) dala alındı;
+> tek çakışma `durum.md` (iki taraf da tutuldu). `dotnet test` 527/527, `check.py` ve Unity
+> derlemesi temiz, konsolda yalnız bilinen URP/ShaderGraph hataları. 4× tarama
+> (`play-sweep/pr29-4x.csv`): **Kılıç 144/144, Asa 144/144**; `yerde` 0/0, gövde 0, sıçrama 0,
+> hata 0. 9-10, 2-6, 11-8, 9-11, 9-12, 10-8, 10-9, 11-7, 1-3, 8-12 iki silahta geçti (9-10 ışını
+> 8,34 m konumdan çıkarıldı, kalıp sonu merkeze 1,50 m). Gövdeye en yakın 3-2 `icinden_emme`
+> 0,15 m (tasarım gereği geçiş). Elle (panel yöntemleri, 1×, Kılıç `[1,2,3,8,9,10]`): can %15 +
+> 1-2 → aura kalıp başında açık, kalıbın 33/33 karesi boyunca açık (can 0,15→0,40, %20 t=0,46'da
+> aşıldı), kalıp bitince 2. karede kapalı (can 0,40). 3-10: 2 bağlı kapı, geçiş iki yönde çalışır
+> (5,75 m) ama dash bitince oyuncu geri döner (bkz. Bilinen açıklar). Dost ekle + 9-10: tam yer
+> değişimi (0,00 m), dostun Y'si 1,00→1,00 (iki dostla ve yalnız panel dostuyla). 8-1: boss
+> kapıdan geçince vuruş ölçeği 0,70, 2,02 sn. Kimse boss içinde değil (oyuncu en yakın 1,35 m,
+> dost 1,85 m).
 
 > **30 Eylül — Play kalanları (Kılıç 141 / Asa 142).** Master (`aaa81d4`, #32+#28) bu dala alındı.
 > 9-10 ışını konum hesabından da düşülür (sıçrama zaten düşüyordu); yer değiştirmede herkes kendi
@@ -1883,10 +1897,14 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 - **Portal / Sınır / Takım (29 Eylül, `feat/portal-border-team`).** Üç etiket artık işler.
   Silah kesme hâlâ yalnız etikettir (silahlar PR'ında). 8-1 boss vuruşu 2 sn ×0,7. Taret 1 sn,
   12-6 mesafe kopması ve +%50 hız yedeği, 7-6 zırh süresi `ArmorBreakMs`. Unity Play bu turda yok.
-- **PR #29 portal/sınır/takım (30 Eylül, kod; Play tekrar yok).** Play Kılıç 141/144, Asa 142/144
-  idi. Kodda: 9-10 ışını konumdan da çıkar, yer değiştirmede Y korunur, 2-6 kancası zeminde
-  tekrar oturtmaz, 11-8 tetik itişi kalkar, sınır skill bitene kadar açık kalır. Unity Play
-  bu düzeltmede koşulmadı.
+- **3-10 dash bitince oyuncu kapıdan geri döner (30 Eylül, Play, #29 ile master'da).** Kalıp
+  bitince varış kapısı oyuncunun ayağına kurulur ama oyuncu o kapının "içinde" sayılmaz; sonraki
+  karede `Sense` onu çıkış kapısına geçirir. 8 m'den cast: dash 6,5 m, oyuncu başlangıç kapısının
+  1,55 m önüne döner (4,95 m geri). Tarama 3 m'den başladığı için geri dönüş 0,05 m, görünmez.
+  Kapıdan geçiş iki yönde çalışıyor (5,75 m). `NotifyTemplateEnded` varış kapısına sahibini
+  `_inside`'a eklemeli mi, karar/kod gerekli. Birim testi sahibin varış kapısında durmasını denemiyor.
+- **11-10 dostları Y=0'a koyar (30 Eylül, kod okuması).** `GatherTeam` `Placement` Y'si `0f`
+  (9-10'un eski hatası gibi). Play'de denenmedi.
 - **PR #28 Top 1-2 (30 Eylül).** Emici çekmesi + Top geri tepmesi: oyuncu simülasyondan ~1,6 m
   farklı biter, tam taramada bir kez boss gövdesine 1,03 m girdi (tekrarda 0/3, kararsız).
   Yumruk/Kalkan 1-4 hasarsız, Yumruk 2-2 kalıbı 10,9 sn. PR #33 dört vakayı Play'de düzeltiyor
