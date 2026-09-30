@@ -1953,6 +1953,7 @@ namespace Dovus.Game
             }
             castMult *= _modeDirector?.CastTimeMult ?? 1f;
             float atkSpd = _modeDirector?.AttackSpeedMult ?? 1f;
+            atkSpd *= PortalBorderTeamHooks.AttackSpeedMult;
             if (atkSpd > 0f)
                 castMult /= atkSpd;
             recoverySec *= castMult;
@@ -2151,6 +2152,7 @@ namespace Dovus.Game
             ApplyResourceCost(skill);
             SkillMotionPlan motionPlan = ResolveSkillMotion(skill);
             bool templateOwnsDelivery = TryBeginMotionTemplate(skill, p);
+            PortalBorderTeamHooks.NotifyCast(skill.SkillId);
             SkillExecutorRoute executorRoute = _skillExecutorRouter.Route(skill, _equippedWeapon);
             executorRoute = ApplyMechanicWorldRoute(MechanicPlanFor(skill), executorRoute);
             LastExecutorKind = executorRoute.Kind;
@@ -3407,6 +3409,7 @@ namespace Dovus.Game
             float lifesteal = (_modeDirector?.Lifesteal ?? 0f) + (_passiveDirector?.LifestealAdd ?? 0f);
             lifesteal += _slotPassives?.LifestealAddFor(_slotQueryCastId) ?? 0f;
             lifesteal += AdjectiveLifesteal(skill);
+            lifesteal += PortalBorderTeamHooks.LifestealAdd;
             if (lifesteal > 0f)
             {
                 var vitals = _player != null ? _player.GetComponent<PlayerVitals>() : null;

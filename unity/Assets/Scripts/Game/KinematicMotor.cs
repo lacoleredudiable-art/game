@@ -234,7 +234,10 @@ namespace Dovus.Game
         Vector3 PushOutOfObstacles(Vector3 pos)
         {
             Vector3 probe = pos + Vector3.up * 0.9f;
-            int count = Physics.OverlapSphereNonAlloc(probe, _bodyRadiusM, ObstacleBuffer);
+            // Tetik (dost vuruş kapsülü, skill alanı) duvar değildir. 11-8 dostu
+            // yanına çağırınca bu itiş oyuncuya ikinci bir kayma yazıyordu.
+            int count = Physics.OverlapSphereNonAlloc(
+                probe, _bodyRadiusM, ObstacleBuffer, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < count; i++)
             {
                 Collider col = ObstacleBuffer[i];

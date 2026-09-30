@@ -50,6 +50,13 @@ namespace Dovus.Game
             _claimed = true;
         }
 
+        /// <summary>Kalıp fazı: havadaysa eğri, yatay fazdaysa o karede zemin.</summary>
+        public void ApplyMotion(bool airborne, float rootY)
+        {
+            _logic.ApplyMotion(airborne, rootY);
+            _claimed = true;
+        }
+
         /// <summary>Kaldırma bitti. İnişi yeniden başlatmadan zemine yapışır; ayak kilidi bu kare çalışır.</summary>
         public void LandNow()
         {

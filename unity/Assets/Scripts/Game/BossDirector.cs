@@ -1,4 +1,5 @@
 using Dovus.Core.Combat;
+using Dovus.Core.Portal;
 using Dovus.Core.Grammar;
 using Dovus.Core.Tuning;
 using UnityEngine;
@@ -73,7 +74,8 @@ namespace Dovus.Game
         /// <summary>Vuruş anı: etki çözüldü (şok dalgası / alev sunumu). Hasar bundan bağımsız.</summary>
         public event System.Action<BossAttackKind> AttackStruck;
 
-        public float AttackRadiusM => _attack?.RadiusM ?? 0f;
+        public float AttackRadiusM =>
+            (_attack?.RadiusM ?? 0f) * PortalBorderTeamHooks.BossStrikeScale;
         public float AttackArcHalfAngleDeg => _attack?.ArcHalfAngleDeg ?? 180f;
         public Vector3 AttackOrigin => _reactor != null ? _reactor.Home : transform.position;
 
@@ -389,7 +391,7 @@ namespace Dovus.Game
             float p = _attack.WindupMs > 0
                 ? (float)(_phaseElapsedMs / _attack.WindupMs)
                 : 1f;
-            _telegraph?.SetProgress(p, _attack.RadiusM, _attack.Variant);
+            _telegraph?.SetProgress(p, AttackRadiusM, _attack.Variant);
             _feel?.ShowThreat(p);
 
             if (_phaseElapsedMs >= _attack.WindupMs)
@@ -410,7 +412,7 @@ namespace Dovus.Game
                 {
                     Debug.LogException(e);
                 }
-                _telegraph?.Slam(_attack != null ? _attack.RadiusM : 0f);
+                _telegraph?.Slam(AttackRadiusM);
                 if (_attack != null)
                     AttackStruck?.Invoke(_attack.Kind);
             }
@@ -426,7 +428,7 @@ namespace Dovus.Game
             float fade = _attack != null && _attack.RecoveryMs > 0
                 ? 1f - (float)(_phaseElapsedMs / _attack.RecoveryMs)
                 : 0f;
-            _telegraph?.Recover(fade, _attack != null ? _attack.RadiusM : 0f);
+            _telegraph?.Recover(fade, AttackRadiusM);
 
             if (_attack != null && _phaseElapsedMs >= _attack.RecoveryMs)
                 EnterIdle(worldMs);
@@ -648,7 +650,10 @@ namespace Dovus.Game
             }
 
             bool stealthed = PlayerStealthed;
-            bool inVolume = _attack.IsInEffectVolume(dist, angleDeg, _attack.ArcHalfAngleDeg);
+            bool inVolume = _attack.IsInEffectVolume(
+                BossStrikeShape.DistanceForVolume(dist, PortalBorderTeamHooks.BossStrikeScale),
+                angleDeg,
+                _attack.ArcHalfAngleDeg);
             if (!BossStatusMath.VolumeHits(stealthed, inVolume, _attack.ArcHalfAngleDeg))
                 inVolume = false;
             else if (_bossStatus != null
