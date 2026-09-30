@@ -316,6 +316,78 @@ public class MotionTemplateTests
     }
 
     [Test]
+    public void Skill1_11_EchoOpensAtPlayersCurrentPosition_AfterBeingMoved()
+    {
+        var target = new MotionTarget(true, 0f, 3f);
+        var still = new MotionTemplateRunner();
+        still.Begin(Ready("golge_yankisi"), 0f, 0f, 0f, 0f, 1f, 0.5f, 0.15f);
+        var stillHits = new List<MotionHit>();
+        var moved = new MotionTemplateRunner();
+        moved.Begin(Ready("golge_yankisi"), 0f, 0f, 0f, 0f, 1f, 0.5f, 0.15f);
+        var movedHits = new List<MotionHit>();
+
+        bool shifted = false;
+        float shiftedX = 0f, shiftedZ = 0f;
+        float stillX = 0f, stillZ = 0f, movedX = 0f, movedZ = 0f;
+        for (int i = 0; i < 60 && !moved.Finished; i++)
+        {
+            if (!shifted && movedHits.Count == 1 && moved.Elapsed >= 0.2f)
+            {
+                // İlk vuruştan sonra, bekleme fazında oyuncu boss'a 1 m yaklaştı, 0,4 m sola kaydı.
+                moved.Rebase(moved.X - 0.4f, moved.Z + 1f);
+                shiftedX = moved.X;
+                shiftedZ = moved.Z;
+                shifted = true;
+            }
+            MotionTick a = still.Tick(0.02f, target, default);
+            if (a.Hits != null && a.Hits.Length > 0)
+            {
+                stillHits.AddRange(a.Hits);
+                stillX = still.X;
+                stillZ = still.Z;
+            }
+            MotionTick b = moved.Tick(0.02f, target, default);
+            if (b.Hits != null && b.Hits.Length > 0)
+            {
+                movedHits.AddRange(b.Hits);
+                movedX = moved.X;
+                movedZ = moved.Z;
+            }
+        }
+
+        Assert.That(shifted, Is.True);
+        Assert.That(movedHits, Has.Count.EqualTo(2));
+        Assert.That(stillHits, Has.Count.EqualTo(2));
+        MotionHit echo = movedHits[1];
+        MotionHit oldEcho = stillHits[1];
+        Assert.That(echo.Anchor, Is.EqualTo("side"));
+        // Oyuncu taşındığı yerde kalır; kalıp onu ilk vuruşun yerine geri çekmez.
+        Assert.That(movedX, Is.EqualTo(shiftedX).Within(0.01f));
+        Assert.That(movedZ, Is.EqualTo(shiftedZ).Within(0.01f));
+        // Yankı eski yerde değil, oyuncunun şimdiki yerinde açılır: gövdeye uzaklığı aynı,
+        // eski yankı noktasından ise ~1 m uzakta.
+        float Dist(float ax, float az, float bx, float bz) => System.MathF.Sqrt((ax - bx) * (ax - bx) + (az - bz) * (az - bz));
+        Assert.That(Dist(echo.OriginX, echo.OriginZ, movedX, movedZ),
+            Is.EqualTo(Dist(oldEcho.OriginX, oldEcho.OriginZ, stillX, stillZ)).Within(0.02f));
+        Assert.That(Dist(echo.OriginX, echo.OriginZ, oldEcho.OriginX, oldEcho.OriginZ), Is.GreaterThan(0.9f));
+        // Zamanlama değişmez: ikinci darbe ilkinden ~0,31 sn sonra.
+        float gap = echo.TimeSec - movedHits[0].TimeSec;
+        Assert.That(gap, Is.EqualTo(stillHits[1].TimeSec - stillHits[0].TimeSec).Within(0.001f));
+        Assert.That(gap, Is.EqualTo(0.31f).Within(0.03f));
+    }
+
+    [Test]
+    public void Rebase_KeepsReturnMarkInWorld()
+    {
+        var runner = new MotionTemplateRunner();
+        runner.Begin(Ready("golge_yankisi"), 2f, 0f, 1f, 0f, 1f, 0.5f, 0.15f);
+        runner.Tick(0.05f, new MotionTarget(true, 2f, 4f), default);
+        runner.Rebase(runner.X + 1f, runner.Z);
+        Assert.That(runner.MarkX, Is.EqualTo(2f));
+        Assert.That(runner.MarkZ, Is.EqualTo(1f));
+    }
+
+    [Test]
     public void Family12_EchoAfterAThird_CourierWaits_ClonesFlank()
     {
         var echo = Play(Ready("golge_yankisi"), 0.7f, new MotionTarget(true, 0f, 3f));

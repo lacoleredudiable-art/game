@@ -35,6 +35,9 @@ namespace Dovus.Game
         bool _stopAfterSample;
         bool _hasPlayClock;
         double _playStartWorldMs;
+        float _stampedX, _stampedZ;
+        /// <summary>Kalıp dışı taşıma eşiği; arena kenarı kırpması ve kayan nokta titremesi sayılmaz.</summary>
+        const float ExternalMoveEpsM = 0.01f;
 
         public bool IsDisplacing => _playing;
         public float PlayedSec => _runner.Elapsed;
@@ -78,6 +81,8 @@ namespace Dovus.Game
             EnsureGrounding();
             // Zemin, o anki (belki havada kalmış) kök değil; bir kez çakılan yükseklik.
             _runner.Begin(template, p.x, _grounding.PlantedRootY, p.z, f.x, f.z, bodyRadiusM, stopGapM);
+            _stampedX = p.x;
+            _stampedZ = p.z;
             _target = target;
             _held = held;
             _onHit = onHit;
@@ -141,7 +146,10 @@ namespace Dovus.Game
             if (!_tickedThisFrame)
                 TickMotion();
             else if (_playing)
+            {
+                RebaseIfMoved();
                 StampRunner();
+            }
             _tickedThisFrame = false;
         }
 
@@ -154,6 +162,21 @@ namespace Dovus.Game
             Vector3 pos = ArenaClamp.XZ(new Vector3(_runner.X, _grounding.RootY, _runner.Z), _arena, _body);
             pos.y = _grounding.RootY;
             transform.position = pos;
+            _stampedX = pos.x;
+            _stampedZ = pos.z;
+        }
+
+        /// <summary>
+        /// Kalıp dışında biri gövdeyi taşıdıysa koşucu eski yere çekmez; kalan fazlar
+        /// (1-11'in yankısı gibi) oyuncunun şimdiki yerinden açılır.
+        /// </summary>
+        void RebaseIfMoved()
+        {
+            Vector3 p = transform.position;
+            float dx = p.x - _stampedX;
+            float dz = p.z - _stampedZ;
+            if (dx * dx + dz * dz > ExternalMoveEpsM * ExternalMoveEpsM)
+                _runner.Rebase(p.x, p.z);
         }
 
         void TickMotion()
@@ -206,6 +229,7 @@ namespace Dovus.Game
             if (dt <= 0f)
                 return;
 
+            RebaseIfMoved();
             MotionTarget target = _target != null ? _target() : default;
             bool held = _held != null && _held();
             Vector3 stick = WorldStick();
