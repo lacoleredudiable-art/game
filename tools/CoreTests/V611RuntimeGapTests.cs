@@ -109,11 +109,8 @@ public class V611RuntimeGapTests
     }
 
     [Test]
-    public void InterruptAndPoiseRulesAreCorePure()
+    public void PoiseRulesAreCorePure()
     {
-        Assert.That(_mobility.CanInterrupt(CastInterruptPhase.Startup, "dodge"), Is.True);
-        Assert.That(_mobility.CanInterrupt(CastInterruptPhase.Active, "dodge"), Is.False);
-        Assert.That(_mobility.CanInterrupt(CastInterruptPhase.Recovery, "swap"), Is.True);
         Assert.That(_mobility.TryPoiseBreak(26f, _mobility.PoiseThreshold("orta"), out int stunMs), Is.True);
         Assert.That(stunMs, Is.EqualTo(1000));
         Assert.That(_mobility.TryPoiseBreak(25f, _mobility.PoiseThreshold("orta"), out _), Is.False);

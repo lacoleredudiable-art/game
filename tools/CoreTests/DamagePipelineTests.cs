@@ -336,10 +336,10 @@ public class DamagePipelineTests
     [Test]
     public void IgnoreArmor_CapsAtHalf_AndExplicitFullPenStays()
     {
-        Assert.That(ArmorPierce.ApplyIgnoreArmor(0f, false), Is.EqualTo(0f).Within(0.0001f));
-        Assert.That(ArmorPierce.ApplyIgnoreArmor(0.8f, false), Is.EqualTo(0.8f).Within(0.0001f));
-        Assert.That(ArmorPierce.ApplyIgnoreArmor(0f, true), Is.EqualTo(ArmorPierce.IgnoreArmorCap).Within(0.0001f));
-        Assert.That(ArmorPierce.ApplyIgnoreArmor(0.8f, true), Is.EqualTo(ArmorPierce.IgnoreArmorCap).Within(0.0001f));
+        Assert.That(SlotPassiveCombat.CombineArmorPen(0f, false, 0f), Is.EqualTo(0f).Within(0.0001f));
+        Assert.That(SlotPassiveCombat.CombineArmorPen(0.8f, false, 0f), Is.EqualTo(0.8f).Within(0.0001f));
+        Assert.That(SlotPassiveCombat.CombineArmorPen(0f, true, 0f), Is.EqualTo(SlotPassiveCombat.IgnoreArmorPierce).Within(0.0001f));
+        Assert.That(SlotPassiveCombat.IgnoreArmorPierce, Is.EqualTo(0.5f).Within(0.0001f));
 
         DesignWarnings.ResetForTests();
         var motor = SkillMotor.FromJson(File.ReadAllText(ElementPath()));
@@ -351,11 +351,11 @@ public class DamagePipelineTests
         Assert.That(plain.EngineModifiers["ignore_armor"].AsBool(false), Is.False);
 
         // Play: zırh yok sayılınca 1-9 ~365K, 5-9 ~260K. %50 delme zırh 100'ü 50 bırakır.
-        float focused = ThroughArmor(365000f, ArmorPierce.ApplyIgnoreArmor(0f, true));
-        float exploded = ThroughArmor(260000f, ArmorPierce.ApplyIgnoreArmor(0f, true));
+        float focused = ThroughArmor(365000f, SlotPassiveCombat.CombineArmorPen(0f, true, 0f));
+        float exploded = ThroughArmor(260000f, SlotPassiveCombat.CombineArmorPen(0f, true, 0f));
         Assert.That(focused, Is.InRange(150000f, 250000f));
         Assert.That(exploded, Is.InRange(150000f, 250000f));
-        Assert.That(ThroughArmor(365000f, ArmorPierce.ApplyIgnoreArmor(0f, false)), Is.LessThan(focused));
+        Assert.That(ThroughArmor(365000f, SlotPassiveCombat.CombineArmorPen(0f, false, 0f)), Is.LessThan(focused));
 
         var full = DamagePipeline.Resolve(new DamageQuery
         {
@@ -383,7 +383,6 @@ public class DamagePipelineTests
     {
         var shield = new WeaponShortShield();
         shield.Grant(15f, 0, 3f);
-        Assert.That(WeaponShortShieldGate.Apply(dodgeBlocks: true, shield, 40f, 100), Is.EqualTo(0f));
         Assert.That(shield.Points, Is.EqualTo(15f));
 
         DamageOutcome hit = DamagePipeline.Resolve(new DamageQuery

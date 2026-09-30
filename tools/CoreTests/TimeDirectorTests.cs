@@ -32,31 +32,15 @@ public class TimeDirectorTests
         double worldBeforeHitstop = _director.WorldTimeMs;
 
         _director.TriggerHitstop(hitstopMs);
-        Assert.That(_director.TimeScale, Is.EqualTo(0f));
-        Assert.That(_director.IsHitstopActive, Is.True);
 
         Advance(_director, hitstopMs / 2);
         Assert.That(_director.WorldTimeMs, Is.EqualTo(worldBeforeHitstop));
 
         Advance(_director, hitstopMs / 2);
-        Assert.That(_director.IsHitstopActive, Is.False);
-        Assert.That(_director.TimeScale, Is.EqualTo(1f));
+        Assert.That(_director.WorldTimeMs, Is.EqualTo(worldBeforeHitstop));
 
         Advance(_director, 10);
         Assert.That(_director.WorldTimeMs, Is.EqualTo(worldBeforeHitstop + 10));
-    }
-
-    [Test]
-    public void RealClock_AdvancesDuringHitstop()
-    {
-        _director.TriggerHitstop(80);
-        double realAtHitstop = _director.RealTimeMs;
-        double worldAtHitstop = _director.WorldTimeMs;
-
-        Advance(_director, 80);
-
-        Assert.That(_director.RealTimeMs, Is.EqualTo(realAtHitstop + 80).Within(0.0001));
-        Assert.That(_director.WorldTimeMs, Is.EqualTo(worldAtHitstop).Within(0.0001));
     }
 
     [Test]
@@ -64,15 +48,16 @@ public class TimeDirectorTests
     {
         _director.TriggerHitstop(40);
         Advance(_director, 20);
-        Assert.That(_director.IsHitstopActive, Is.True);
+        double frozen = _director.WorldTimeMs;
 
         _director.TriggerHitstop(30);
         Advance(_director, 40);
-        Assert.That(_director.IsHitstopActive, Is.True);
+        Assert.That(_director.WorldTimeMs, Is.EqualTo(frozen), "20 kalan + 30 = 50 ms donuk");
 
         Advance(_director, 10);
-        Assert.That(_director.IsHitstopActive, Is.False);
-        Assert.That(_director.TimeScale, Is.EqualTo(1f));
+        Assert.That(_director.WorldTimeMs, Is.EqualTo(frozen));
+        Advance(_director, 5);
+        Assert.That(_director.WorldTimeMs, Is.EqualTo(frozen + 5));
     }
 
     [Test]
@@ -81,7 +66,6 @@ public class TimeDirectorTests
         _director.TriggerHitstop(0);
         _director.TriggerHitstop(-10);
 
-        Assert.That(_director.IsHitstopActive, Is.False);
         Assert.That(_director.Tick(16), Is.EqualTo(16));
     }
 

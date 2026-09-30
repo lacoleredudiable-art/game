@@ -102,20 +102,6 @@ namespace Dovus.Core.Motion
             }
         }
 
-        /// <summary>Kalıp konumu yönetirken gramer oyuncuyu ışınlamaz / yer değiştirmez.</summary>
-        public static bool SuppressesMove(bool templateMovesPlayer, string atom, string stat) =>
-            templateMovesPlayer && Kind(atom, stat) != PositionStepKind.None;
-
-        /// <summary>
-        /// Bir cast'te oyuncuyu oynatan kaynak sayısı. Kalıp yönetiyorsa gramer eklenmez; ikisi birden olmaz.
-        /// </summary>
-        public static int PositionWriters(bool templateMovesPlayer, bool grammarMovesPlayer)
-        {
-            if (templateMovesPlayer)
-                return 1;
-            return grammarMovesPlayer ? 1 : 0;
-        }
-
         public static void LogSuppressed(string skillId, string stat)
         {
             if (string.IsNullOrEmpty(skillId))

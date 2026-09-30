@@ -8,13 +8,6 @@ using Dovus.Core.Status;
 
 namespace Dovus.Core.Combat
 {
-    public enum CastInterruptPhase : byte
-    {
-        Startup,
-        Active,
-        Recovery
-    }
-
     /// <summary>v6.1.1 mobility_cc verisini parse eder ve saf C# çözümlerini sunar.</summary>
     public sealed class MobilityCcData
     {
@@ -144,14 +137,6 @@ namespace Dovus.Core.Combat
             }
             return true;
         }
-
-        public bool CanInterrupt(CastInterruptPhase phase, string action) => phase switch
-        {
-            CastInterruptPhase.Startup => string.Equals(action, "dodge", StringComparison.Ordinal),
-            CastInterruptPhase.Active => false,
-            CastInterruptPhase.Recovery => action is "dodge" or "swap" or "new_skill",
-            _ => false
-        };
 
         public bool TryPoiseBreak(float incomingDamage, float threshold, out int stunMs)
         {

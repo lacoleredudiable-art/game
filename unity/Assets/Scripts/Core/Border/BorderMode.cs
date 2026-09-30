@@ -134,12 +134,6 @@ namespace Dovus.Core.Border
             return m * ColumnAttack(slot);
         }
 
-        public float BorderAttackSpeedMult(int actorId)
-        {
-            Slot slot = Get(actorId);
-            return slot.Active ? 1f + slot.Attack : 1f;
-        }
-
         public float LifestealAdd(int actorId)
         {
             Slot slot = Get(actorId);
@@ -151,10 +145,6 @@ namespace Dovus.Core.Border
             Slot slot = Get(actorId);
             return slot.Active ? 1f + slot.Damage : 1f;
         }
-
-        public bool ColumnActive(int actorId) => Get(actorId).ColumnOn;
-
-        public float ColumnAttackSpeedMult(int actorId) => ColumnAttack(Get(actorId));
 
         public float ColumnMoveSpeedMult(int actorId) => ColumnAttack(Get(actorId));
 

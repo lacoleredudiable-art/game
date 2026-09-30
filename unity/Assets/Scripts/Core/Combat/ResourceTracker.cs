@@ -4,7 +4,7 @@ namespace Dovus.Core.Combat
 {
     /// <summary>
     /// Mana havuzu — docs/element-sistemi.json global_rules.resource_system.
-    /// Spend sonrası regen_delay_after_cast_sec kadar yenilenme durur, sonra regen_per_sec.
+    /// Consume sonrası regen_delay_after_cast_sec kadar yenilenme durur, sonra regen_per_sec.
     /// Oyuna bağlı değil (PlayerVitals / ManifestationDirector ayrı karar).
     /// </summary>
     public sealed class ResourceTracker
@@ -35,22 +35,6 @@ namespace Dovus.Core.Combat
         public float RegenDelayLeftSec => _regenDelayLeftSec;
 
         public bool CanAfford(float cost) => cost <= 0f || _mana >= cost;
-
-        /// <summary>
-        /// Maliyeti düşer; yetmezse false. cost≤0 ise true (mana değişmez, delay de başlamaz).
-        /// Başarılı harcamada yenilenme gecikmesi yeniden başlar.
-        /// </summary>
-        public bool Spend(float cost)
-        {
-            if (cost <= 0f)
-                return true;
-            if (_mana < cost)
-                return false;
-
-            _mana -= cost;
-            _regenDelayLeftSec = _regenDelayAfterCastSec;
-            return true;
-        }
 
         /// <summary>
         /// Cast'i engellemeden maliyeti uygular (Bağlama 2). Yetmezse 0'a kilitler;

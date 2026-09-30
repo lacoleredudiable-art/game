@@ -5,7 +5,6 @@ using Dovus.Core.Combat;
 using Dovus.Core.Equipment;
 using Dovus.Core.Execution;
 using Dovus.Core.Grammar;
-using Dovus.Core.Layers;
 using Dovus.Core.Manifestation;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Presentation;
@@ -66,13 +65,7 @@ namespace Dovus.Game
         MotionTemplateBody _motionBody;
         AllyDummy _ally;
 
-        // --- Ulti (active_modes) — 16 Eylül, güven kaygısına karşılık uçtan uca ---
-        ActiveModeDirector _modeDirector;
-        ActiveModeHud _modeHud;
-        ActiveModeVfx _modeVfx;
-        AfterimageTrail _afterimage;
-        // --- Pasifler (Bağlama 5) — ulti gibi ama cooldown'suz, birden fazla aynı anda ---
-        PassiveDirector _passiveDirector;
+        // --- Slot pasifleri ---
         SlotPassiveDirector _slotPassives;
         int _slotQueryCastId;
         int _templateSlotCastId;
@@ -85,27 +78,9 @@ namespace Dovus.Game
         SkillNumberCatalog _skillNumbers;
         // --- State machine (player_states ↔ SentencePhase / dodge / CC) ---
         PlayerStateMachine _playerStates;
-        // --- Zincir (Bağlama 6) — son N cast elementi; Links geçmişe yazılmaz ---
-        ChainDirector _chainDirector;
-        ChainRules _chainRules;
-        readonly Queue<int> _recentCastElements = new();
-        float _pendingChainBonus = 1f;   // bir sonraki kapanış (links / finisher_mult)
-        float _closingChainBonus = 1f;  // bu kapanışta ApplyClosing* çarpanı
-        ChainStepResult _lastChainStep = ChainStepResult.None;
-        string _lastFinisherAnnounced = string.Empty;
-        // --- Zone (Bağlama 7) — element_origin ↔ zone_layer.zones ---
-        ZoneDirector _zoneDirector;
-        ZoneFieldView _zoneField;
-        // --- Space link/tear (Karabasan / Hiçlik) ---
-        SpaceDirector _spaceDirector;
-        SpaceDirectorHost _spaceHost;
-        // --- Zaman (Bağlama 8) — echo / extend / delayed_detonation / death_delay ---
-        TimeEffectDirector _timeEffectDirector;
-        readonly List<TimeEffectField> _dueTimeFields = new();
-        bool _deferredBossDeath;
+        // Kapanış çarpanı (ApplyClosing*). v5 zincir katmanı kaldırıldı; hep 1.
+        float _closingChainBonus = 1f;
         HexagonInput _input;
-        // --- Gerçeklik (Bağlama 11) — revive_block + erase ---
-        RealityEffectDirector _realityDirector;
         // --- Ekipman (Bağlama 9) — sabit silah; seçim UI yok ---
         EquipmentItem _equippedWeapon;
         EquipmentBonusResolver _equipmentBonus;
@@ -122,9 +97,7 @@ namespace Dovus.Game
         HexagonView _hexagonView;
         PlayerResource _playerResource;
         PlayerCooldown _playerCooldown;
-        double _lastDamageDealtMs = double.NegativeInfinity;
         double _lastMovedMs = double.NegativeInfinity;
-        float _modeHpDrainAccum;
 
         /// <summary>PrototypeBootstrap'ın atadığı sabit silah (ör. Alev Kılıcı).</summary>
         public EquipmentItem EquippedWeapon => _equippedWeapon;
@@ -319,30 +292,10 @@ namespace Dovus.Game
             return _targeting != null ? _targeting.SelectedTransform : null;
         }
 
-        /// <summary>Bağlama 5 / MCP: Bind sonrası pasif durum makinesi (null = henüz bağlanmadı).</summary>
-        public PassiveDirector PassiveDirector => _passiveDirector;
         public SlotPassiveDirector SlotPassives => _slotPassives;
 
         /// <summary>state_machine.player_states — SentencePhase/dodge/CC ile senkron.</summary>
         public PlayerStateMachine PlayerStates => _playerStates;
-
-        /// <summary>Bağlama 6 / MCP: Bind sonrası zincir durum makinesi.</summary>
-        public ChainDirector ChainDirector => _chainDirector;
-
-        /// <summary>Bağlama 6 / MCP: son duyurulan Finisher metni (boş = henüz yok).</summary>
-        public string LastFinisherAnnounced => _lastFinisherAnnounced;
-
-        /// <summary>Bağlama 6 / MCP: bir sonraki kapanışa bekleyen Links/finisher çarpanı.</summary>
-        public float PendingChainBonus => _pendingChainBonus;
-
-        /// <summary>Bağlama 7 / MCP: Bind sonrası zone yaşam döngüsü.</summary>
-        public ZoneDirector ZoneDirector => _zoneDirector;
-
-        /// <summary>Bağlama 8 / MCP: Bind sonrası zaman alanları (echo vb.).</summary>
-        public TimeEffectDirector TimeEffectDirector => _timeEffectDirector;
-
-        /// <summary>Bağlama 11 / MCP: revive_block + erase.</summary>
-        public RealityEffectDirector RealityDirector => _realityDirector;
 
 #if UNITY_EDITOR
         /// <summary>Editör/prob: Update beklemeden cümle senkronu.</summary>
@@ -371,7 +324,6 @@ namespace Dovus.Game
             ReactionReadout readout = null,
             FollowCamera camera = null,
             AllyDummy ally = null,
-            ActiveModeHud modeHud = null,
             HexagonView hexagonView = null,
             PassiveHud passiveHud = null,
             EquipmentItem equippedWeapon = null,
@@ -409,22 +361,7 @@ namespace Dovus.Game
             _ally = ally;
             _ally?.BindStatusClock(clock, _combat != null ? _combat.Status : null);
             EnsureMotionReady();
-            _modeHud = modeHud;
             _passiveHud = passiveHud;
-            _afterimage = player != null ? player.GetComponent<AfterimageTrail>() : null;
-            _modeVfx = FindAnyObjectByType<ActiveModeVfx>();
-            if (_modeVfx == null)
-            {
-                var vfxGo = new GameObject("ActiveModeVfx");
-                _modeVfx = vfxGo.AddComponent<ActiveModeVfx>();
-            }
-            Transform canvasRoot = modeHud != null ? modeHud.transform.parent : null;
-            if (canvasRoot == null)
-            {
-                var canvas = FindAnyObjectByType<Canvas>();
-                canvasRoot = canvas != null ? canvas.transform : null;
-            }
-            _modeVfx.Bind(player, canvasRoot);
             _hexagonView = hexagonView;
             _equippedWeapon = equippedWeapon;
             RefreshDefenderArmor();
@@ -441,65 +378,14 @@ namespace Dovus.Game
             input.BindPlayerStates(_playerStates, () => _pending.Count > 0);
             var motorForStates = player != null ? player.GetComponent<KinematicMotor>() : null;
             motorForStates?.BindPlayerStates(_playerStates);
-            _modeDirector = new ActiveModeDirector(_skills.ActiveModes);
-            _passiveDirector = new PassiveDirector(_skills.Passives);
             _slotPassives = new SlotPassiveDirector();
             _slotPassiveNeedsWeapon = false;
             if (ElementSystemJsonLoader.TryLoad(out ElementSystemDesign slotDesign))
                 _slotPassiveNeedsWeapon = PassiveSlotPolicy.RequiresWeaponCompatibility(
                     MiniJson.Parse(slotDesign.Json));
-            _chainRules = LoadChainRulesOrDefault();
-            _chainDirector = new ChainDirector(_skills.Chains, _chainRules);
-            _recentCastElements.Clear();
-            _pendingChainBonus = 1f;
             _closingChainBonus = 1f;
-            _lastChainStep = ChainStepResult.None;
-            _lastFinisherAnnounced = string.Empty;
-            _zoneDirector = new ZoneDirector(_skills.MaxActiveZones);
-            _zoneField = FindAnyObjectByType<ZoneFieldView>();
-            if (_zoneField == null)
-            {
-                var zoneGo = new GameObject("ZoneField");
-                _zoneField = zoneGo.AddComponent<ZoneFieldView>();
-            }
-            _zoneField.EnsureRoot();
-            var playerVitals = player != null ? player.GetComponent<PlayerVitals>() : null;
-            int linkCap = _skills.MaxActiveLinks > 0 ? _skills.MaxActiveLinks : 3;
-            SpaceLayerTuning spaceTuning = _combat != null ? _combat.SpaceLayer : new SpaceLayerTuning();
-            _spaceDirector = new SpaceDirector(linkCap, spaceTuning);
-            _spaceHost = FindAnyObjectByType<SpaceDirectorHost>();
-            if (_spaceHost == null)
-            {
-                var spaceGo = new GameObject("SpaceDirector");
-                _spaceHost = spaceGo.AddComponent<SpaceDirectorHost>();
-            }
-            _spaceHost.Bind(
-                _spaceDirector,
-                spaceTuning,
-                player,
-                boss != null ? boss.transform : null,
-                bossVitals,
-                playerVitals,
-                ally);
-            if (_playerStatus != null)
-                _playerStatus.SpaceLinkBreak = () => _spaceHost?.NotifyOwnerDamaged(SpaceDirectorHost.ActorPlayer);
-            int timeCap = _skills.MaxActiveTimeFields > 0
-                ? _skills.MaxActiveTimeFields
-                : Dovus.Core.Combat.TimeEffectDirector.DefaultMaxActiveFields;
-            _timeEffectDirector = new TimeEffectDirector(timeCap);
-            _dueTimeFields.Clear();
-            _realityDirector = new RealityEffectDirector();
-            if (playerVitals != null)
-            {
-                playerVitals.SetReviveBlockedGate(() =>
-                    _realityDirector != null
-                    && _clock != null
-                    && _realityDirector.IsReviveBlocked(_clock.Director.WorldTimeMs));
-            }
             if (_playerStatus != null)
             {
-                _playerStatus.ModeDirector = _modeDirector;
-                _playerStatus.PassiveDirector = _passiveDirector;
                 _playerStatus.SlotPassiveDirector = _slotPassives;
                 _playerStatus.ReflectBossVitals = bossVitals;
                 _playerStatus.IncomingDamageRedirect = RedirectMechanicDamage;
@@ -572,204 +458,30 @@ namespace Dovus.Game
             _boss?.Tick(dtSec, worldMs);
             TickPendingClosings(worldMs);
             TickBossDeath();
-            TickActiveMode(worldMs, dtSec);
             TickPassives(worldMs);
-            SyncDashCooldownMult();
             SyncPlayerStateMachine(worldMs);
             TickWeaponSwap(worldMs);
             TickDelayedLaunches(worldMs);
             TickTemplateDelivery(worldMs);
             TickMechanics(worldMs);
-            TickZones(dtSec);
-            _spaceHost?.Tick(dtSec);
-            TickTimeEffects(worldMs);
             _animationBridge.Tick(worldMs);
-        }
-
-        // --- Ulti (active_modes) ---
-
-        ActiveModeContext BuildModeContext(double worldMs)
-        {
-            var vitals = _player != null ? _player.GetComponent<PlayerVitals>() : null;
-            float hpRatio = vitals != null && vitals.MaxHp > 0 ? (float)vitals.Hp / vitals.MaxHp : 1f;
-            float allyRatio = _ally != null ? _ally.Ratio : 1f;
-
-            int debuffCount = 0;
-            if (_playerStatus != null)
-            {
-                foreach (StatusKind kind in _playerStatus.Board.ActiveKinds)
-                    if (StatusKindUtil.IsDebuff(kind)) debuffCount++;
-            }
-
-            if (_ally != null)
-            {
-                _ally.EnsureStatusBoard();
-                if (_ally.Board != null)
-                {
-                    foreach (StatusKind kind in _ally.Board.ActiveKinds)
-                        if (StatusKindUtil.IsDebuff(kind)) debuffCount++;
-                }
-            }
-
-            return new ActiveModeContext
-            {
-                HpRatio = hpRatio,
-                MinTeamHpRatio = Mathf.Min(hpRatio, allyRatio),
-                SecondsSinceLastDamageDealt = (worldMs - _lastDamageDealtMs) / 1000.0,
-                SecondsSinceLastMoved = (worldMs - _lastMovedMs) / 1000.0,
-                TeamDebuffCount = debuffCount,
-            };
-        }
-
-        void TickActiveMode(double worldMs, float dtSec)
-        {
-            if (_modeDirector == null)
-                return;
-
-            if (_modeDirector.Active == null)
-            {
-                _modeHpDrainAccum = 0f;
-                ClearModePresentation();
-                return;
-            }
-
-            // Sürekli maliyet: HP/sn (Öfke Patlaması) — tam sayıya birikip öyle uygulanır,
-            // yoksa 60 FPS'te her kare 0'a yuvarlanan hasar hiç işlemez.
-            float hpPct = _modeDirector.HpPerSecPercentCost;
-            var vitals = _player != null ? _player.GetComponent<PlayerVitals>() : null;
-            if (hpPct > 0f && vitals != null && !vitals.IsDown)
-            {
-                _modeHpDrainAccum += vitals.MaxHp * (hpPct / 100f) * dtSec;
-                int whole = Mathf.FloorToInt(_modeHpDrainAccum);
-                if (whole > 0)
-                {
-                    _modeHpDrainAccum -= whole;
-                    vitals.ApplyDamage(whole);
-                }
-            }
-
-            SyncModePresentation();
-            TickModeTaunt();
-
-            ActiveModeContext ctx = BuildModeContext(worldMs);
-            if (_modeDirector.Tick(worldMs, ctx))
-            {
-                _modeHud?.Hide();
-                _modeHpDrainAccum = 0f;
-                ClearModePresentation();
-            }
-            else
-            {
-                _modeHud?.UpdateRemaining(_modeDirector.RemainingSec(worldMs));
-            }
-        }
-
-        void SyncModePresentation()
-        {
-            if (_modeDirector?.Active == null)
-                return;
-
-            int after = _modeDirector.AfterimageCount;
-            if (_afterimage != null)
-                _afterimage.CountOverride = after > 0 ? after : -1;
-
-            // VFX her kare Show etmek yerine yalnız aktifken pulse — Show idempotent.
-            ActiveModeNode mode = _modeDirector.Active.Value;
-            Color tint = _colors != null
-                ? _colors.ColorForRune((Rune)Mathf.Clamp(mode.TriggerDot, 1, 6))
-                : Color.cyan;
-            _modeVfx?.Show(mode.VisualAura, mode.VisualScreenEdges, tint);
-        }
-
-        void ClearModePresentation()
-        {
-            if (_afterimage != null)
-                _afterimage.CountOverride = -1;
-            _modeVfx?.Hide();
-        }
-
-        /// <summary>Aşılmaz Duvar taunt_radius_m — boss Taunt durumu (tek oyuncu; strip + okunur).</summary>
-        void TickModeTaunt()
-        {
-            float radius = _modeDirector?.TauntRadiusM ?? 0f;
-            if (radius <= 0f || _bossStatus == null || _player == null || _boss == null)
-                return;
-
-            float dist = Vector3.Distance(
-                new Vector3(_player.position.x, 0f, _player.position.z),
-                new Vector3(_boss.transform.position.x, 0f, _boss.transform.position.z));
-            if (dist > radius)
-                return;
-
-            // Süreyi yenile — mod açıkken taunt düşmesin.
-            double ms = _combat != null ? _combat.Status.TauntMs : 2000;
-            _bossStatus.Board.Apply(StatusKind.Taunt, ms, 1f);
-        }
-
-        /// <summary>Dört-aynı-rün kapanışı geldiğinde (X-X-X-X) ulti tetiklenip tetiklenmediğine bakar.</summary>
-        void TryActivateMode(IReadOnlyList<SentenceWord> words, double worldMs)
-        {
-            if (_modeDirector == null || words == null || words.Count != 4 || _modeDirector.Active != null)
-                return;
-
-            int dot = (int)words[0].Rune;
-            for (int i = 1; i < words.Count; i++)
-                if ((int)words[i].Rune != dot)
-                    return; // aynı elementin 4'lüsü değil — sıradan 4'lü cümle, ulti değil
-
-            ActiveModeContext ctx = BuildModeContext(worldMs);
-            ActiveModeNode? activated = _modeDirector.TryTrigger(dot, ctx, worldMs);
-            if (activated == null)
-                return;
-
-            ActiveModeNode mode = activated.Value;
-            Color tint = _colors != null ? _colors.ColorForRune((Rune)dot) : Color.white;
-            _readout?.NoteSkill(mode.Name, mode.ReadAs, tint);
-            _debugHud?.NoteSkillBang(mode.Name, mode.ReadAs);
-            _modeHud?.ShowActivated(mode.Name, mode.ReadAs, tint);
-            ApplyModeOneShotEffects(mode);
-            SyncModePresentation();
-        }
-
-        /// <summary>
-        /// team_full_cleanse / team_invulnerability_sec / enemy_blind_sec / team_regen_per_sec —
-        /// aktivasyon anında bir kez uygulanır (sürekli tick TickActiveMode'da değil, burada).
-        /// </summary>
-        void ApplyModeOneShotEffects(ActiveModeNode mode)
-        {
-            if (mode.GetEffectBool("team_full_cleanse") && _playerStatus != null)
-                _playerStatus.Board.CleanseHostile();
-
-            float invulnSec = mode.GetEffect("team_invulnerability_sec");
-            if (invulnSec > 0f && _playerStatus != null)
-                _playerStatus.Board.Apply(StatusKind.Stasis, invulnSec * 1000.0, 1f);
-
-            float blindSec = mode.GetEffect("enemy_blind_sec");
-            if (blindSec > 0f && _bossStatus != null)
-                _bossStatus.Board.Apply(StatusKind.Blind, blindSec * 1000.0, 1f);
-
-            float regenPerSec = mode.GetEffect("team_regen_per_sec");
-            if (regenPerSec > 0f && mode.HasDuration && _playerStatus != null)
-                _playerStatus.Board.Apply(StatusKind.Regen, mode.DurationSec * 1000.0, regenPerSec);
         }
 
         // --- Pasifler (Bağlama 5) ---
 
         void TickPassives(double worldMs)
         {
-            _passiveDirector?.Tick(worldMs);
             _slotPassives?.Tick(worldMs);
             TickPassiveEchoes(worldMs);
             TickPassiveFlows(worldMs);
             if (_slotPassives != null && _slotPassives.ActiveCount > 0)
                 _passiveHud?.Sync(_slotPassives.Active, worldMs);
-            else if (_passiveDirector != null)
-                _passiveHud?.Sync(_passiveDirector.Active, worldMs);
+            else
+                _passiveHud?.Refresh();
         }
 
         /// <summary>
-        /// Kapanıştaki rün dizisi bir pasifin trigger_combo'suyla eşleşirse açar.
-        /// Ulti'den farkı: cooldown yok; birden fazla pasif aynı anda aktif olabilir.
+        /// Kapanışın sıfat rünü pasif yuvasındaysa o rünün slot pasifini açar.
         /// </summary>
         void TryTriggerPassive(IReadOnlyList<SentenceWord> words, double worldMs)
         {
@@ -795,284 +507,7 @@ namespace Dovus.Game
                         Color.cyan);
                     _passiveHud?.Sync(_slotPassives.Active, worldMs);
                 }
-                return;
             }
-
-            if (_passiveDirector == null)
-                return;
-            var dots = new int[words.Count];
-            for (int i = 0; i < words.Count; i++)
-                dots[i] = (int)words[i].Rune;
-
-            PassiveNode? triggered = _passiveDirector.TryTrigger(dots, worldMs);
-            if (triggered == null)
-                return;
-
-            PassiveNode p = triggered.Value;
-            Color tint = Color.cyan;
-            if (_colors != null && p.TriggerCombo != null && p.TriggerCombo.Length > 0)
-                tint = _colors.ColorForRune((Rune)p.TriggerCombo[0]);
-            _readout?.NoteSkill(p.Id.Replace('_', ' '), p.Element, tint);
-            _debugHud?.NoteSkillBang(p.Id, p.Element);
-            _passiveHud?.Sync(_passiveDirector.Active, worldMs);
-        }
-
-        // --- Zone (Bağlama 7) ---
-
-        void TickZones(float dtSec)
-        {
-            if (_zoneDirector == null)
-                return;
-
-            _zoneDirector.Tick(dtSec);
-            UpdateZoneMovement();
-            ApplyZoneCrowdControl();
-            _zoneField?.Sync(_zoneDirector.ActiveZones);
-        }
-
-        /// <summary>
-        /// Zone CcKind (skill.Mechanics root/slow) — hedef zone yarıçapındaysa StatusBoard yenile.
-        /// Süre StatusTuning.RootMs / SlowMs (uydurma yok).
-        /// </summary>
-        void ApplyZoneCrowdControl()
-        {
-            if (_zoneDirector == null || _bossStatus == null || _boss == null)
-                return;
-
-            StatusTuning tuning = _combat != null ? _combat.Status : new StatusTuning();
-            Vector3 bossPos = _boss.transform.position;
-            IReadOnlyList<ZoneInstance> zones = _zoneDirector.ActiveZones;
-            for (int i = 0; i < zones.Count; i++)
-            {
-                ZoneInstance z = zones[i];
-                if (string.IsNullOrEmpty(z.CcKind))
-                    continue;
-
-                float dx = bossPos.x - z.X;
-                float dz = bossPos.z - z.Z;
-                float r = z.RadiusM;
-                if (dx * dx + dz * dz > r * r)
-                    continue;
-
-                if (string.Equals(z.CcKind, "root", StringComparison.Ordinal))
-                    _bossStatus.Board.Apply(StatusKind.Root, tuning.RootMs, 1f, "zone:" + z.Id);
-                else if (string.Equals(z.CcKind, "slow", StringComparison.Ordinal))
-                    _bossStatus.Board.Apply(StatusKind.Slow, tuning.SlowMs, tuning.SlowSpeedMult, "zone:" + z.Id);
-            }
-        }
-
-        /// <summary>
-        /// Movement tiplerine hafif takip: player_directed → oyuncu; follow_target → boss.
-        /// static / bilinmeyen → no-op (ZoneDirector zaten reddeder).
-        /// </summary>
-        void UpdateZoneMovement()
-        {
-            IReadOnlyList<ZoneInstance> zones = _zoneDirector.ActiveZones;
-            for (int i = 0; i < zones.Count; i++)
-            {
-                ZoneInstance z = zones[i];
-                if (string.Equals(z.Movement, ZoneMovement.PlayerDirected, StringComparison.Ordinal))
-                {
-                    if (_player == null) continue;
-                    Vector3 p = _player.position;
-                    _zoneDirector.MoveZone(z.Id, p.x, p.y, p.z);
-                }
-                else if (string.Equals(z.Movement, ZoneMovement.FollowTarget, StringComparison.Ordinal))
-                {
-                    Transform target = _boss != null ? _boss.transform : _player;
-                    if (target == null) continue;
-                    Vector3 t = target.position;
-                    _zoneDirector.SetFollowTarget(z.Id, t.x, t.y, t.z);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Skill ElementOrigin, zone_layer.zones[].element ile eşleşirse TrySpawn + görsel Sync.
-        /// Örn. Kaya → kaya_duvari (duration 10s). Radius = ManifestationTuning.ZoneDefaultRadiusM.
-        /// </summary>
-        void TrySpawnZoneForSkill(SkillResolution skill)
-        {
-            if (_zoneDirector == null || _skills == null || skill.IsEmpty)
-                return;
-
-            string origin = skill.ElementOrigin;
-            if (string.IsNullOrEmpty(origin))
-                return;
-
-            ZoneNode? matched = null;
-            for (int i = 0; i < _skills.Zones.Count; i++)
-            {
-                ZoneNode z = _skills.Zones[i];
-                if (!string.Equals(z.Element, origin, StringComparison.OrdinalIgnoreCase))
-                    continue;
-                matched = z;
-                break;
-            }
-
-            if (matched == null)
-                return;
-
-            ZoneNode zone = matched.Value;
-            Vector3 pos = _player != null ? _player.position : Vector3.zero;
-            float radius = ZoneRadiusFromJson(skill);
-
-            float zoneLife = zone.DurationSec + (_slotPassives?.LifetimeAddSecFor(_slotQueryCastId) ?? 0f);
-            if (!_zoneDirector.TrySpawn(
-                    zone.Element,
-                    zone.Movement,
-                    zoneLife,
-                    pos.x, pos.y, pos.z,
-                    radius,
-                    out _,
-                    PickZoneCcKind(skill.Mechanics)))
-                return;
-
-            _zoneField?.Sync(_zoneDirector.ActiveZones);
-        }
-
-        float ZoneRadiusFromJson(in SkillResolution skill)
-        {
-            if (_skillNumbers != null && int.TryParse(skill.VerbId, out int verbId))
-            {
-                float fromJson = _skillNumbers.RadiusM(verbId);
-                if (fromJson > 0f)
-                    return fromJson;
-            }
-
-            DesignWarnings.Once(
-                "zone_radius",
-                "element-sistemi.json alan yarıçapı yok; yedek yarıçap kullanıldı.");
-            return _combat != null
-                ? _combat.Manifestation.ZoneDefaultRadiusM
-                : SkillNumberFallbacks.RadiusM;
-        }
-
-        /// <summary>
-        /// ElementOrigin ↔ space_layer invisible_link (Karabasan) / tear (Hiçlik).
-        /// </summary>
-        void TrySpawnSpaceForSkill(SkillResolution skill)
-        {
-            if (_spaceDirector == null || _skills == null || skill.IsEmpty)
-                return;
-
-            string origin = skill.ElementOrigin;
-            if (string.IsNullOrEmpty(origin))
-                return;
-
-            SpaceLayerTuning tune = _combat != null ? _combat.SpaceLayer : new SpaceLayerTuning();
-            Vector3 playerPos = _player != null ? _player.position : Vector3.zero;
-            Vector3 bossPos = _boss != null ? _boss.transform.position : playerPos + Vector3.forward * 2f;
-
-            for (int i = 0; i < _skills.SpaceEffects.Count; i++)
-            {
-                SpaceEffectNode e = _skills.SpaceEffects[i];
-                if (!string.Equals(e.Element, origin, StringComparison.OrdinalIgnoreCase))
-                    continue;
-
-                if (string.Equals(e.Type, SpaceEffectTypes.InvisibleLink, StringComparison.Ordinal))
-                {
-                    float dur = e.HasDurationSec ? e.DurationSec : 2f;
-                    if (_spaceDirector.TrySpawnLink(
-                            e.Id, dur,
-                            playerPos.x, playerPos.y, playerPos.z,
-                            bossPos.x, bossPos.y, bossPos.z,
-                            SpaceDirectorHost.ActorPlayer, SpaceDirectorHost.ActorBoss,
-                            tune.LinkDrainPerTick, tune.LinkHealPerTick, tune.LinkMaxRangeM,
-                            out _))
-                        _spaceHost?.SyncVisuals();
-                    return;
-                }
-
-                if (string.Equals(e.Type, SpaceEffectTypes.Tear, StringComparison.Ordinal))
-                {
-                    float dur = e.HasDurationSec ? e.DurationSec : 3f;
-                    float dmg = e.HasDamageOnCross ? e.DamageOnCross : 30f;
-                    // Yırtık bang ucunda / oyuncu-boss ortasında.
-                    Vector3 mid = Vector3.Lerp(playerPos, bossPos, 0.55f);
-                    if (_spaceDirector.TrySpawnTear(e.Id, dur, mid.x, 0f, mid.z, dmg, out _))
-                        _spaceHost?.SyncVisuals();
-                    return;
-                }
-            }
-        }
-
-        /// <summary>mechanics dizisinden ilk root/slow — zone CC (kombo tablosu değil, skill verisi).</summary>
-        static string PickZoneCcKind(string[] mechanics)
-        {
-            if (mechanics == null)
-                return string.Empty;
-            for (int i = 0; i < mechanics.Length; i++)
-            {
-                string m = mechanics[i];
-                if (string.Equals(m, "root", StringComparison.OrdinalIgnoreCase))
-                    return "root";
-                if (string.Equals(m, "slow", StringComparison.OrdinalIgnoreCase))
-                    return "slow";
-            }
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// Bağlama 11: ElementOrigin ↔ reality_layer (revive_block / partial_erase / full_erase).
-        /// </summary>
-        void TryApplyRealityForSkill(SkillResolution skill)
-        {
-            if (_realityDirector == null || _skills == null || skill.IsEmpty)
-                return;
-
-            string origin = skill.ElementOrigin;
-            if (string.IsNullOrEmpty(origin))
-                return;
-
-            double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
-            for (int i = 0; i < _skills.RealityEffects.Count; i++)
-            {
-                RealityEffectNode e = _skills.RealityEffects[i];
-                if (!string.Equals(e.Element, origin, StringComparison.OrdinalIgnoreCase))
-                    continue;
-
-                // Readout'a yazma — ShoutSkill DisplayName'i ezmeyelim (eski: effect id
-                // "karabasan koruma silme" 2/3/4'lüyü aynı gösteriyordu). Yan etki debug'da.
-                if (string.Equals(e.Type, RealityEffectTypes.ReviveBlock, StringComparison.Ordinal))
-                {
-                    float dur = e.HasDurationSec ? e.DurationSec : RealityEffectDirector.DefaultReviveBlockSec;
-                    _realityDirector.ApplyReviveBlock(worldMs, dur);
-                    _debugHud?.NoteSkillBang(skill.DisplayName, "diriliş engeli");
-                    return;
-                }
-
-                if (string.Equals(e.Type, RealityEffectTypes.PartialErase, StringComparison.Ordinal))
-                {
-                    StatusBoard board = _bossStatus != null ? _bossStatus.Board : null;
-                    if (e.Targets != null && e.Targets.Count > 0)
-                        _realityDirector.ApplyPartialErase(board, e.Targets);
-                    else
-                        _realityDirector.ApplyPartialErase(board);
-                    _debugHud?.NoteSkillBang(skill.DisplayName, "kısmi silme");
-                    return;
-                }
-
-                if (string.Equals(e.Type, RealityEffectTypes.FullErase, StringComparison.Ordinal))
-                {
-                    StatusBoard board = _bossStatus != null ? _bossStatus.Board : null;
-                    if (e.Targets != null && e.Targets.Count > 0)
-                        _realityDirector.ApplyFullErase(board, e.Targets);
-                    else
-                        _realityDirector.ApplyFullErase(board);
-                    _debugHud?.NoteSkillBang(skill.DisplayName, "tam silme");
-                    return;
-                }
-            }
-        }
-
-        void SyncDashCooldownMult()
-        {
-            if (_input?.Dodge == null)
-                return;
-            float mode = _modeDirector?.DashCooldownMult ?? 1f;
-            float passive = _passiveDirector?.DashCooldownMult ?? 1f;
-            _input.Dodge.CooldownMult = mode * passive;
         }
 
         void SyncPlayerStateMachine(double worldMs)
@@ -1101,115 +536,6 @@ namespace Dovus.Game
                 isDead, isStunned, isDodging, isRooted, isCasting, isDrawing, isRecovering);
         }
 
-        /// <summary>
-        /// Bağlama 8: ElementOrigin ↔ time_layer echo (Alev / alev_yanki).
-        /// Kaynak hasarın damage_ratio kadarını delay_sec sonra uygular.
-        /// </summary>
-        void TryScheduleEchoForSkill(SkillResolution skill, float sourceDamage)
-        {
-            if (_timeEffectDirector == null || _skills == null || skill.IsEmpty || sourceDamage <= 0f)
-                return;
-
-            string origin = skill.ElementOrigin;
-            if (string.IsNullOrEmpty(origin))
-                return;
-
-            for (int i = 0; i < _skills.TimeEffects.Count; i++)
-            {
-                TimeEffectNode e = _skills.TimeEffects[i];
-                if (!string.Equals(e.Type, TimeEffectTypes.Echo, StringComparison.Ordinal))
-                    continue;
-                if (!string.Equals(e.Element, origin, StringComparison.Ordinal))
-                    continue;
-
-                float delay = e.HasDelaySec ? e.DelaySec : 0f;
-                float ratio = e.HasDamageRatio ? e.DamageRatio : 0f;
-                double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
-                _timeEffectDirector.TryScheduleEcho(
-                    e.Id, e.Element, delay, ratio, sourceDamage, worldMs, out _);
-                return;
-            }
-        }
-
-        /// <summary>
-        /// Karabasan delayed_detonation — bang hasarını delay_sec sonra uygular.
-        /// true = hasar ertelendi (şimdi ApplyClosingDamage yazılmasın).
-        /// Yalnızca sıfat <c>trigger_profile=delayed_detonation</c> (Geciktirme) iken —
-        /// aksi halde her 1-6 katlaması aynı 2 sn gecikmeyi alırdı (3'lü/4'lü fark yok).
-        /// </summary>
-        bool TryDeferDamageAsDelayedDetonation(SkillResolution skill, float pendingDamage)
-        {
-            if (_timeEffectDirector == null || _skills == null || skill.IsEmpty || pendingDamage <= 0f)
-                return false;
-
-            if (!SkillWantsDelayedDetonation(skill))
-                return false;
-
-            string origin = skill.ElementOrigin;
-            if (string.IsNullOrEmpty(origin))
-                return false;
-
-            for (int i = 0; i < _skills.TimeEffects.Count; i++)
-            {
-                TimeEffectNode e = _skills.TimeEffects[i];
-                if (!string.Equals(e.Type, TimeEffectTypes.DelayedDetonation, StringComparison.Ordinal))
-                    continue;
-                if (!string.Equals(e.Element, origin, StringComparison.OrdinalIgnoreCase))
-                    continue;
-
-                float delay = e.HasDelaySec ? e.DelaySec : 0f;
-                double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
-                return _timeEffectDirector.TryScheduleDelayedDetonation(
-                    e.Id, e.Element, delay, worldMs, out _, pendingDamage);
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Sıfat engine_modifiers.trigger_profile == delayed_detonation (JSON: geciktirme).
-        /// </summary>
-        static bool SkillWantsDelayedDetonation(SkillResolution skill)
-        {
-            if (skill.IsEmpty || skill.EngineModifiers.IsNull)
-                return false;
-            if (!skill.EngineModifiers.Has("trigger_profile"))
-                return false;
-            string profile = skill.EngineModifiers["trigger_profile"].AsString();
-            return string.Equals(profile, TimeEffectTypes.DelayedDetonation, StringComparison.Ordinal);
-        }
-
-        /// <summary>
-        /// Cehennem death_delay — ölüm beyanını delay_sec erteler (çökme/revive sonra).
-        /// </summary>
-        bool TryDeferBossDeath(SkillResolution skill, double worldMs)
-        {
-            if (_timeEffectDirector == null || _skills == null || skill.IsEmpty)
-                return false;
-
-            string origin = skill.ElementOrigin;
-            if (string.IsNullOrEmpty(origin))
-                return false;
-
-            for (int i = 0; i < _skills.TimeEffects.Count; i++)
-            {
-                TimeEffectNode e = _skills.TimeEffects[i];
-                if (!string.Equals(e.Type, TimeEffectTypes.DeathDelay, StringComparison.Ordinal))
-                    continue;
-                if (!string.Equals(e.Element, origin, StringComparison.Ordinal))
-                    continue;
-
-                float delay = e.HasDelaySec ? e.DelaySec : 0f;
-                if (!_timeEffectDirector.TryScheduleDeathDelay(
-                        e.Id, e.Element, delay, worldMs, out _))
-                    return false;
-                _deferredBossDeath = true;
-                return true;
-            }
-
-            return false;
-        }
-
         void BeginBossDeathSequence(double worldMs)
         {
             _bossDirector?.NotifyBossDown(worldMs);
@@ -1217,197 +543,6 @@ namespace Dovus.Game
             _boss?.BeginCollapse(collapseSec, worldMs);
             _deathReviveAtMs = worldMs + collapseSec * 1000.0;
             _deathPending = true;
-            _deferredBossDeath = false;
-        }
-
-        /// <summary>
-        /// Bağlama 8: ElementOrigin ↔ extend_lifetime (Lav / lav_kalicilik).
-        /// Aktif zone RemainingSec × multiplier (TrySpawn sonrası).
-        /// </summary>
-        void TryExtendZonesForSkill(SkillResolution skill)
-        {
-            if (_zoneDirector == null || _skills == null || skill.IsEmpty)
-                return;
-
-            string origin = skill.ElementOrigin;
-            if (string.IsNullOrEmpty(origin))
-                return;
-
-            float multiplier = 0f;
-            bool found = false;
-            for (int i = 0; i < _skills.TimeEffects.Count; i++)
-            {
-                TimeEffectNode e = _skills.TimeEffects[i];
-                if (!string.Equals(e.Type, TimeEffectTypes.ExtendLifetime, StringComparison.Ordinal))
-                    continue;
-                if (!string.Equals(e.Element, origin, StringComparison.Ordinal))
-                    continue;
-                if (!e.HasMultiplier)
-                    return;
-                multiplier = e.Multiplier;
-                found = true;
-                break;
-            }
-
-            if (!found)
-                return;
-
-            IReadOnlyList<ZoneInstance> zones = _zoneDirector.ActiveZones;
-            for (int i = zones.Count - 1; i >= 0; i--)
-            {
-                ZoneInstance z = zones[i];
-                float next = Dovus.Core.Combat.TimeEffectDirector.ExtendRemainingSec(z.RemainingSec, multiplier);
-                _zoneDirector.TrySetRemainingSec(z.Id, next);
-            }
-
-            _zoneField?.Sync(_zoneDirector.ActiveZones);
-        }
-
-        /// <summary>Bağlama 8: vadesi gelen echo / delayed_detonation / death_delay.</summary>
-        void TickTimeEffects(double worldMs)
-        {
-            if (_timeEffectDirector == null)
-                return;
-
-            _dueTimeFields.Clear();
-            int n = _timeEffectDirector.CollectDue(worldMs, _dueTimeFields);
-            for (int i = 0; i < n; i++)
-            {
-                TimeEffectField field = _dueTimeFields[i];
-                if (string.Equals(field.Type, TimeEffectTypes.Echo, StringComparison.Ordinal))
-                {
-                    ApplyEchoDamage(field.ComputedEchoDamage);
-                    continue;
-                }
-
-                if (string.Equals(field.Type, TimeEffectTypes.DelayedDetonation, StringComparison.Ordinal))
-                {
-                    ApplyEchoDamage(field.ComputedDetonationDamage);
-                    continue;
-                }
-
-                if (string.Equals(field.Type, TimeEffectTypes.DeathDelay, StringComparison.Ordinal)
-                    && _deferredBossDeath
-                    && _bossVitals != null
-                    && _bossVitals.IsDown)
-                {
-                    BeginBossDeathSequence(worldMs);
-                }
-            }
-        }
-
-        /// <summary>Yankı / gecikmeli patlama hasarı — kaynak; tekrar echo planlamaz.</summary>
-        void ApplyEchoDamage(float amount)
-        {
-            if (amount <= 0f || _bossVitals == null || _bossVitals.IsDown)
-                return;
-
-            _damageHud?.ShowDamage(amount, false, BossHitPoint(), DamageTint());
-            _lastDamageDealtMs = _clock != null ? _clock.Director.WorldTimeMs : _lastDamageDealtMs;
-
-            bool killed = _bossVitals.ApplyDamage(amount);
-            var bossVisual = _boss != null ? _boss.GetComponent<BossVisual>() : null;
-            if (killed)
-            {
-                double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
-                BeginBossDeathSequence(worldMs);
-                return;
-            }
-
-            NotifyBossStruck(false, allowHitstop: false);
-            bossVisual?.PlayStagger();
-        }
-
-        /// <summary>
-        /// Bağlama 6: kapanışın fiil elementi (ilk rün) kuyruğa + ChainDirector.
-        /// Links / finisher_mult geçmiş cast'e yazılmaz — yalnızca bir sonraki kapanışa
-        /// (_pendingChainBonus). Bu kapanış önceki pending'i tüketir.
-        /// </summary>
-        float BeginChainClosing(IReadOnlyList<SentenceWord> words, double worldMs)
-        {
-            float bonusForThis = _pendingChainBonus;
-            _pendingChainBonus = 1f;
-            _lastChainStep = ChainStepResult.None;
-
-            if (_chainDirector == null || words == null || words.Count == 0)
-                return bonusForThis;
-
-            int element = (int)words[0].Rune;
-            if (element < 1)
-                return bonusForThis;
-
-            _recentCastElements.Enqueue(element);
-            int max = _chainRules.MaxChainLength > 0 ? _chainRules.MaxChainLength : 6;
-            while (_recentCastElements.Count > max)
-                _recentCastElements.Dequeue();
-
-            _lastChainStep = _chainDirector.RegisterCast(element, worldMs);
-
-            if (_lastChainStep.FinisherTriggered)
-            {
-                float fin = _chainRules.FinisherMult;
-                _pendingChainBonus = fin > 0f ? fin : 1f;
-            }
-            else if (_lastChainStep.Matched)
-            {
-                float link = _lastChainStep.LinkBonus;
-                _pendingChainBonus = link > 0f ? link : 1f;
-            }
-
-            return bonusForThis;
-        }
-
-        void AnnounceChainFinisherIfAny()
-        {
-            if (!_lastChainStep.FinisherTriggered)
-                return;
-
-            string finisher = _lastChainStep.Finisher;
-            if (string.IsNullOrEmpty(finisher))
-                return;
-
-            _lastFinisherAnnounced = finisher;
-            string element = _lastChainStep.Chain != null
-                ? _lastChainStep.Chain.Value.Element
-                : string.Empty;
-            Color tint = Color.cyan;
-            if (_colors != null && _lastChainStep.Chain != null)
-            {
-                // pattern ilk digit = çapa elementi (1..6)
-                int dot = FirstPatternDigit(_lastChainStep.Chain.Value.Pattern);
-                if (dot >= 1 && dot <= 6)
-                    tint = _colors.ColorForRune((Rune)dot);
-            }
-
-            _readout?.NoteSkill(finisher, string.IsNullOrEmpty(element) ? "zincir" : element + " zincir", tint);
-            _debugHud?.NoteSkillBang(finisher, "finisher");
-        }
-
-        static int FirstPatternDigit(string pattern)
-        {
-            if (string.IsNullOrEmpty(pattern))
-                return 0;
-            string[] tokens = pattern.Split('-');
-            if (tokens.Length == 0)
-                return 0;
-            return int.TryParse(tokens[0].Trim(), out int d) ? d : 0;
-        }
-
-        static ChainRules LoadChainRulesOrDefault()
-        {
-            if (ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
-            {
-                try
-                {
-                    return ChainRules.FromJsonRoot(MiniJson.Parse(design.Json));
-                }
-                catch (System.Exception e)
-                {
-                    Debug.LogWarning($"ChainRules JSON okunamadı: {e.Message}");
-                }
-            }
-
-            return ChainRules.DefaultFromSpec;
         }
 
         void TickBossDeath()
@@ -1884,9 +1019,7 @@ namespace Dovus.Game
                 pendingTarget = _armedTarget;
                 FaceTarget(_castFacingTarget);
             }
-            castMult *= _modeDirector?.CastTimeMult ?? 1f;
-            float atkSpd = _modeDirector?.AttackSpeedMult ?? 1f;
-            atkSpd *= PortalBorderTeamHooks.AttackSpeedMult;
+            float atkSpd = PortalBorderTeamHooks.AttackSpeedMult;
             if (atkSpd > 0f)
                 castMult /= atkSpd;
             recoverySec *= castMult;
@@ -1942,14 +1075,6 @@ namespace Dovus.Game
                 _pending[i] = p;
             }
             TickPendingClosings(now);
-        }
-
-        /// <summary>MCP: vadesi gelen time_layer alanlarını (echo) şimdi işle.</summary>
-        public void ForceTickTimeEffects()
-        {
-            if (_clock == null)
-                return;
-            TickTimeEffects(_clock.Director.WorldTimeMs);
         }
 #endif
 
@@ -2023,8 +1148,7 @@ namespace Dovus.Game
                 if ((impactTarget == null || !IsEnemyBody(impactTarget)) && _boss != null)
                     impactTarget = _boss.transform;
                 FaceTarget(impactTarget);
-                _closingChainBonus = 1f; // pending zincir bonusunu yeme
-                _lastChainStep = ChainStepResult.None;
+                _closingChainBonus = 1f;
 
                 // Heal vb. tek-rün skill asla IsBasicStrike olmamalı; yanlış BasicStrikeDot
                 // mend'e kilitliyse mend kaçmasın (mana/CD yine yok — jab).
@@ -2064,7 +1188,6 @@ namespace Dovus.Game
                     ApplyBasicExtras(basicDealt, basicHits);
                     TryLandWeaponStun(SkillResolution.Empty, true);
                 }
-                TryScheduleEchoForSkill(SkillResolution.Empty, basicDealt);
                 SpawnClosingImpact(p);
                 if (logic != null)
                     TryCannonBlast(logic.TipX, logic.TipZ);
@@ -2074,8 +1197,7 @@ namespace Dovus.Game
             if (logic == null)
                 return;
 
-            _closingChainBonus = BeginChainClosing(p.Words, _clock.Director.WorldTimeMs);
-            TryActivateMode(p.Words, _clock.Director.WorldTimeMs);
+            _closingChainBonus = 1f;
             SkillResolution skill = ResolvePendingSkill(p);
             if (skill.IsEmpty || !skill.IsComplete)
             {
@@ -2132,7 +1254,6 @@ namespace Dovus.Game
                         skill,
                         isBasicStrike: false,
                         motionPlan.SlashCommitMult);
-                    TryScheduleEchoForSkill(skill, dealt);
                 }
                 ApplyClosingStatuses(p, skill, bossReached);
                 if (bossReached)
@@ -2141,14 +1262,9 @@ namespace Dovus.Game
             }
 
             ShoutSkill(skill, p.Words);
-            TrySpawnZoneForSkill(skill);
-            TryExtendZonesForSkill(skill);
-            TrySpawnSpaceForSkill(skill);
-            TryApplyRealityForSkill(skill);
             ApplyCooldown(skill, p.Words, cosmeticIfDisabled: true);
             if (!motionPlan.IsEmpty)
                 AnnotateMotion(skill, motionPlan);
-            AnnounceChainFinisherIfAny(); // skill bang'ten sonra Finisher üstte kalsın
             SpawnClosingImpact(p);
             LastResolvedSkillId = skill.SkillId;
             LastSkillEffectApplied = executorStarted
@@ -2398,7 +1514,6 @@ namespace Dovus.Game
             if (tickEffectFraction <= 0f)
                 tickEffectFraction = perTickShare;
             bool arcAllies = HitMods(skill, false, false).ArcAllies;
-            bool echoScheduled = false;
             bool statusesApplied = false;
             float accumulatedHealScale = 0f;
             int appliedHealAmount = 0;
@@ -2422,13 +1537,6 @@ namespace Dovus.Game
                     slashCommitMult,
                     effectFraction * effectMult,
                     executorChainBonus);
-                // Bir projectile/melee tek hit'tir. Tick field'da echo katmanını çoğaltmamak
-                // için yalnız ilk gerçek hasar kaynak olur.
-                if (!echoScheduled && hitDamage > 0f)
-                {
-                    TryScheduleEchoForSkill(skill, hitDamage);
-                    echoScheduled = true;
-                }
                 if (!statusesApplied)
                 {
                     // Dost/kendine alan düşmanca sıfat durumunu yalnız boss alanın içindeyse verir.
@@ -3213,7 +2321,6 @@ namespace Dovus.Game
                 Heal = true,
                 HealPower = amount,
                 HealMultiplier = HealBuffMultiplier(skill),
-                ThreatMultiplier = _passiveDirector?.ThreatMultiplier ?? 1f,
                 ScaleMagnitudes = true
             });
             amount = Mathf.Max(0, Mathf.RoundToInt(healedBy.Amount));
@@ -3279,11 +2386,6 @@ namespace Dovus.Game
             if (healed > 0)
             {
                 ConsumeWeaponBonus(_playerStatus != null ? _playerStatus.Board : null);
-                if (_modeDirector != null && _modeDirector.NotifyHealed())
-                {
-                    _modeHud?.Hide();
-                    ClearModePresentation();
-                }
                 _damageHud?.ShowDamage(-healed);
                 _readout?.NoteSkill(skill.DisplayName, "self +" + healed, new Color(0.4f, 1f, 0.65f));
                 _debugHud?.NoteSkillBang(skill.DisplayName, "self +" + healed);
@@ -3341,23 +2443,14 @@ namespace Dovus.Game
             if (!isBasicStrike)
                 TryConsumeCounterWindow();
 
-            // Karabasan: bang hasarı delay_sec sonra (delayed_detonation).
-            if (!isBasicStrike && TryDeferDamageAsDelayedDetonation(skill, damage))
-            {
-                LastClosingDamageDealt = damage;
-                return damage; // echo kaynağı; CollectDue uygular — şimdi yazma
-            }
-
             RememberHitPoint(BossHitPoint());
             if (!isBasicStrike && !_jsonTickDamage)
                 TryCannonBlast(_lastHitX, _lastHitZ);
             ConsumeWeaponBonus(_bossStatus != null ? _bossStatus.Board : null);
             LastClosingDamageDealt = damage;
             _damageHud?.ShowDamage(damage, isCrit, BossHitPoint(), DamageTint());
-            _lastDamageDealtMs = _clock.Director.WorldTimeMs; // "dealt_damage_recently" (Öfke Patlaması)
 
-            float lifesteal = (_modeDirector?.Lifesteal ?? 0f) + (_passiveDirector?.LifestealAdd ?? 0f);
-            lifesteal += _slotPassives?.LifestealAddFor(_slotQueryCastId) ?? 0f;
+            float lifesteal = _slotPassives?.LifestealAddFor(_slotQueryCastId) ?? 0f;
             lifesteal += AdjectiveLifesteal(skill);
             lifesteal += PortalBorderTeamHooks.LifestealAdd;
             if (lifesteal > 0f)
@@ -3373,8 +2466,6 @@ namespace Dovus.Game
             if (killed)
             {
                 double worldMs = _clock.Director.WorldTimeMs;
-                if (!isBasicStrike && TryDeferBossDeath(skill, worldMs))
-                    return damage;
                 BeginBossDeathSequence(worldMs);
                 return damage;
             }
@@ -3397,7 +2488,7 @@ namespace Dovus.Game
 
         float ExtraCritChanceAdd(in SkillResolution skill)
         {
-            float add = _passiveDirector?.CritChanceAdd ?? 0f;
+            float add = 0f;
             if (!skill.IsEmpty && !skill.EngineModifiers.IsNull &&
                 skill.EngineModifiers.Has("crit_chance_add"))
                 add += Math.Max(0f, skill.EngineModifiers["crit_chance_add"].AsFloat(0f));

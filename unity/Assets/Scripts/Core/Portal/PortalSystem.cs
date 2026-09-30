@@ -221,16 +221,6 @@ namespace Dovus.Core.Portal
             }
         }
 
-        public bool IsSunk(int actorId)
-        {
-            for (int i = 0; i < _rises.Count; i++)
-            {
-                if (_rises[i].ActorId == actorId && !_rises[i].Done)
-                    return true;
-            }
-            return false;
-        }
-
         public void Cast(string skillId, in Body caster, in Body target, IReadOnlyList<Body> allies, in Disc boss)
         {
             switch (skillId)
@@ -391,17 +381,6 @@ namespace Dovus.Core.Portal
                 }
             }
             return false;
-        }
-
-        public void OptOut(int actorId)
-        {
-            for (int i = 0; i < _gathers.Count; i++)
-            {
-                Gather g = _gathers[i];
-                if (g.Done)
-                    continue;
-                g.Skip.Add(actorId);
-            }
         }
 
         public PortalBuff BuffFor(int actorId)

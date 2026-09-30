@@ -20,23 +20,21 @@ public class ResourceTrackerTests
     }
 
     [Test]
-    public void CanAfford_And_Spend_DeductsMana()
+    public void CanAfford_And_Consume_DeductsMana()
     {
         var r = new ResourceTracker();
         Assert.That(r.CanAfford(10f), Is.True);
-        Assert.That(r.Spend(10f), Is.True);
+        r.Consume(10f);
         Assert.That(r.Mana, Is.EqualTo(90f));
         Assert.That(r.CanAfford(91f), Is.False);
-        Assert.That(r.Spend(91f), Is.False);
-        Assert.That(r.Mana, Is.EqualTo(90f), "reddedilen Spend mana değiştirmez");
     }
 
     [Test]
-    public void Spend_ZeroOrNegative_DoesNotStartDelay()
+    public void Consume_ZeroOrNegative_DoesNotStartDelay()
     {
         var r = new ResourceTracker();
-        Assert.That(r.Spend(0f), Is.True);
-        Assert.That(r.Spend(-5f), Is.True);
+        r.Consume(0f);
+        r.Consume(-5f);
         Assert.That(r.Mana, Is.EqualTo(100f));
         Assert.That(r.RegenDelayLeftSec, Is.EqualTo(0f));
     }
@@ -45,7 +43,7 @@ public class ResourceTrackerTests
     public void Tick_WaitsRegenDelay_ThenRegensAtJsonRate()
     {
         var r = new ResourceTracker();
-        Assert.That(r.Spend(40f), Is.True);
+        r.Consume(40f);
         Assert.That(r.Mana, Is.EqualTo(60f));
 
         r.Tick(1.5f);
@@ -60,7 +58,7 @@ public class ResourceTrackerTests
     public void Tick_PartialDelay_ThenLeftoverAppliesRegen()
     {
         var r = new ResourceTracker();
-        r.Spend(16f);
+        r.Consume(16f);
         r.Tick(1.0f);
         Assert.That(r.Mana, Is.EqualTo(84f));
         Assert.That(r.RegenDelayLeftSec, Is.EqualTo(0.5f).Within(0.0001f));
@@ -75,20 +73,20 @@ public class ResourceTrackerTests
     public void Tick_CapsAtMaxMana()
     {
         var r = new ResourceTracker(maxMana: 50f, regenPerSec: 100f, regenDelayAfterCastSec: 0f);
-        r.Spend(10f);
+        r.Consume(10f);
         r.Tick(1f);
         Assert.That(r.Mana, Is.EqualTo(50f));
     }
 
     [Test]
-    public void Spend_RestartsRegenDelay()
+    public void Consume_RestartsRegenDelay()
     {
         var r = new ResourceTracker();
-        r.Spend(10f);
+        r.Consume(10f);
         r.Tick(1.0f);
         Assert.That(r.RegenDelayLeftSec, Is.EqualTo(0.5f).Within(0.0001f));
 
-        r.Spend(5f);
+        r.Consume(5f);
         Assert.That(r.RegenDelayLeftSec, Is.EqualTo(1.5f));
         Assert.That(r.Mana, Is.EqualTo(85f));
     }

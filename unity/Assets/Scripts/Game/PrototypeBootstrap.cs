@@ -391,10 +391,6 @@ namespace Dovus.Game
             var damageHud = root.AddComponent<DamageNumberHud>();
             damageHud.Configure(_tuning, view.CanvasRoot);
 
-            var modeHud = root.AddComponent<ActiveModeHud>();
-            modeHud.Configure(view.CanvasRoot);
-            modeHud.BindBelowBoss(vitalsHud);
-
             var passiveHud = root.AddComponent<PassiveHud>();
             passiveHud.Configure(view);
             passiveHud.BindRunes(runeManager);
@@ -460,7 +456,7 @@ namespace Dovus.Game
             var manGo = new GameObject("Manifestation");
             manGo.transform.SetParent(transform, false);
             var director = manGo.AddComponent<ManifestationDirector>();
-            director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, allyDummy, modeHud, view, passiveHud, equippedWeapon, equipmentBonus, skills, skillFactory, design?.Animations);
+            director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, allyDummy, view, passiveHud, equippedWeapon, equipmentBonus, skills, skillFactory, design?.Animations);
             director.BindTargeting(targeting);
             director.ConfigureWeaponCycle(design?.Equipment.Items);
             if (design != null)

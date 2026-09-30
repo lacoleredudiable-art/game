@@ -195,10 +195,6 @@ namespace Dovus.Core.Equipment
             return magnitude * holyMult;
         }
 
-        /// <summary>Swap yayı varsa o, yoksa pasifin yayı.</summary>
-        public static float ActiveArcDeg(float passiveArcDeg, float armedSwapArcDeg) =>
-            armedSwapArcDeg > 0f ? armedSwapArcDeg : passiveArcDeg;
-
         /// <summary>Poise = taban × skill × silah × swap. Swap yoksa bonus 1.</summary>
         public static float OutgoingPoise(float basePoise, float skillMult, float weaponMult, float bonusMult)
         {
@@ -277,14 +273,6 @@ namespace Dovus.Core.Equipment
         public void CommitHammer(double nowMs, float icdSec)
         {
             _hammerReadyMs = nowMs + Math.Max(0f, icdSec) * 1000.0;
-        }
-
-        public bool TryHammerStun(double nowMs, float icdSec)
-        {
-            if (!HammerReady(nowMs))
-                return false;
-            CommitHammer(nowMs, icdSec);
-            return true;
         }
 
         /// <summary>Art arda skill. Aralık aşılırsa sayaç 1'den başlar. Dönüş bu vuruşun sırası.</summary>

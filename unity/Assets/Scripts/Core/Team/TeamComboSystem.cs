@@ -235,22 +235,6 @@ namespace Dovus.Core.Team
             return pulse;
         }
 
-        public TeamPulse BossStepped(float x, float z)
-        {
-            for (int i = 0; i < _mines.Count; i++)
-            {
-                Mine mine = _mines[i];
-                if (mine.Spent || _now >= mine.Until)
-                    continue;
-                if (Dist(x, z, mine.X, mine.Z) > TriggerRadiusM + mine.BossRadius)
-                    continue;
-                mine.Spent = true;
-                LastMineMult = MinePower;
-                return new TeamPulse(false, 0f, BossIncomingMult, 0f, false, false, MinePower, string.Empty);
-            }
-            return TeamPulse.None;
-        }
-
         public TeamPulse AllyHit(IAllyPlayer ally, float x, float z, bool struckBoss)
         {
             if (ally == null)
@@ -391,19 +375,6 @@ namespace Dovus.Core.Team
         public float MoveSpeedMult(int actorId) => HasteFor(actorId);
 
         public float AttackSpeedMult(int actorId) => HasteFor(actorId);
-
-        public bool RopeLinked(int actorId)
-        {
-            for (int i = 0; i < _haste.Count; i++)
-            {
-                HasteRopeState rope = _haste[i];
-                if (rope.Broken)
-                    continue;
-                if (actorId == rope.A || actorId == rope.B)
-                    return true;
-            }
-            return false;
-        }
 
         readonly List<HasteRopeState> _haste = new();
 

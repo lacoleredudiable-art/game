@@ -12,7 +12,6 @@ namespace Dovus.Core.Tuning
         public ManifestationTuning Manifestation = new ManifestationTuning();
         public StatusTuning Status = new StatusTuning();
         public SkillMotionTuning SkillMotion = new SkillMotionTuning();
-        public SpaceLayerTuning SpaceLayer = new SpaceLayerTuning();
 
         /// <summary>
         /// §5: toplam etki × bu katsayı = boss canından düşen (commit).
@@ -66,7 +65,6 @@ namespace Dovus.Core.Tuning
             Feel.CopyFrom(other.Feel);
             Status.CopyFrom(other.Status);
             SkillMotion.CopyFrom(other.SkillMotion);
-            SpaceLayer.CopyFrom(other.SpaceLayer);
             ClosingDamagePerEffect = other.ClosingDamagePerEffect;
             BasicStrikePower = other.BasicStrikePower;
             SkillPreArmorScale = other.SkillPreArmorScale;

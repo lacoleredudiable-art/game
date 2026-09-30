@@ -91,7 +91,6 @@ public class CombatExchangeTests
         _dodge.Begin(press);
 
         Assert.That(_dodge.IsInvulnerable(StrikeTime), Is.True);
-        Assert.That(_resolver.IsInvulnerableAtStrike(press, StrikeTime), Is.True);
 
         var result = _resolver.Resolve(InVolume(TelegraphStart, StrikeTime, press));
         Assert.That(result.Outcome, Is.EqualTo(ExchangeOutcome.Dodged));
@@ -104,7 +103,6 @@ public class CombatExchangeTests
         _dodge.Begin(press);
 
         Assert.That(_dodge.IsInvulnerable(StrikeTime), Is.False);
-        Assert.That(_resolver.IsInvulnerableAtStrike(press, StrikeTime), Is.False);
 
         var result = _resolver.Resolve(InVolume(TelegraphStart, StrikeTime, press));
         Assert.That(result.Outcome, Is.EqualTo(ExchangeOutcome.Hit));

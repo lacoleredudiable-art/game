@@ -48,8 +48,6 @@ namespace Dovus.Game
             float outMult = 1f;
             if (_playerStatus != null)
                 outMult *= _playerStatus.Board.OutgoingDamageMult;
-            outMult *= _modeDirector?.DamageMult ?? 1f;
-            outMult *= _passiveDirector?.DamageMult ?? 1f;
             outMult *= _slotPassives?.DamageMultFor(_slotQueryCastId) ?? 1f;
             outMult *= PortalBorderTeamHooks.DamageMult;
             outMult *= SelfDamageBuffMult();
@@ -107,13 +105,11 @@ namespace Dovus.Game
                     runeMult *= element;
             }
 
-            float penPct = _passiveDirector?.ArmorPenPercent ?? 0f;
-            float penFlat = _passiveDirector?.ArmorPenFlat ?? 0f;
             bool ignoreArmor = WeaponIgnoresArmor
                 || (!skill.IsEmpty && !skill.EngineModifiers.IsNull
                     && skill.EngineModifiers["ignore_armor"].AsBool(false));
             float slotPen = _slotPassives?.ArmorPenPercentFor(_slotQueryCastId) ?? 0f;
-            penPct = SlotPassiveCombat.CombineArmorPen(penPct, ignoreArmor, slotPen);
+            float penPct = SlotPassiveCombat.CombineArmorPen(0f, ignoreArmor, slotPen);
 
             double now = _clock != null ? _clock.Director.WorldTimeMs : 0;
             float armor = 0f;
@@ -156,21 +152,18 @@ namespace Dovus.Game
             var outcome = DamagePipeline.Resolve(new DamageQuery
             {
                 SkillPower = skillPower * Mathf.Max(0f, effectScale),
-                AttackPower = _passiveDirector?.AttackPower ?? 1f,
                 Multiplier = outMult * runeMult,
                 LandMultiplier = () => _player != null ? PlayerDodgeRig.ConsumeNextHit(_player) : 1f,
                 CanCrit = canCrit && skillPower > 0f,
                 CritChance = DamagePipeline.DefaultCritChance + Mathf.Max(0f, extraCrit),
                 CritMultiplier = DamagePipeline.DefaultCritMultiplier,
                 Armor = armor,
-                ArmorPenFlat = penFlat,
                 ArmorPenPercent = penPct,
                 DamageTakenFactor = taken,
                 Shield = shield,
                 ApplyVariance = true,
                 VarianceSeed = seed,
                 Poise = poise,
-                ThreatMultiplier = _passiveDirector?.ThreatMultiplier ?? 1f,
                 ScaleMagnitudes = true
             });
 
@@ -190,7 +183,6 @@ namespace Dovus.Game
         float HealBuffMultiplier(in SkillResolution skill)
         {
             float healMult = _playerStatus != null ? _playerStatus.Board.HealEffectivenessMult : 1f;
-            healMult *= _passiveDirector?.HealMult ?? 1f;
             healMult *= _closingChainBonus;
             return healMult;
         }

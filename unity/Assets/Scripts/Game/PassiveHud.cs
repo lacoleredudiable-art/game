@@ -46,9 +46,6 @@ namespace Dovus.Game
             Refresh();
         }
 
-        /// <summary>Eski düğüm pasifleri bir rüne bağlı değil; rozet yalnız yuva seçimini gösterir.</summary>
-        public void Sync(IReadOnlyList<ActivePassive> active, double worldMs) => Refresh();
-
         public void Sync(IReadOnlyList<ActiveSlotPassive> active, double worldMs)
         {
             _activeRemainSec.Clear();
@@ -64,7 +61,8 @@ namespace Dovus.Game
             Refresh();
         }
 
-        void Refresh()
+        /// <summary>Aktif slot pasifi yokken rozetleri yuva seçimine göre yeniden çizer.</summary>
+        public void Refresh()
         {
             if (_view == null)
                 return;
