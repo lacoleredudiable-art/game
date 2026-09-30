@@ -13,8 +13,26 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (PR #34/#35 birleşik Play testi → yalnız #34 merge) ·
-**Dal:** `master` · **Sıradaki:** PR #35 tarama açıkları (bkz. Bilinen açıklar)
+**Son güncelleme:** 30 Eylül 2026 (PR #35 düzeltildi, 4× 1429/1440 → merge) ·
+**Dal:** `master` · **Sıradaki:** —
+
+> **30 Eylül — PR #35 düzeltmesi + merge.** Master (#34 dahil) #35 dalına iki taraf korunarak
+> birleştirildi. Düzeltmeler: teslim kuyruğu oyuncuyu hiç taşımaz (`ApplyMechanicHitEffects
+> casterMoves:false`; kuyruk ve minyon hasarı Top geri tepmesini uygulamaz); çeken planda
+> boss itilmez, itme oyuncudan uzağa; emici tutuş çekmeyen planda da oyuncuyu yerinde tutar
+> (4-2); `overshoot_m` olmayan düz dash gövde kenarında durur (3-7 sıçraması yok); yankı ilk
+> vuruştan `copy_delay_sec` sonra, kalıpta zaten yankı varsa ikinci kez yok (1-11 ~0,3 sn);
+> Summon hedefi boss (11-1 vurur); tarama kaydı JSON `mark_delay_sec`/`rise_delay_sec`'i bekler
+> (6-9). 12-11: geri sarma `BossReactor.SnapHome` ile kesin yer (eski itme ofseti ve çekiş
+> düşer, transform aynı karede) + kalıp gövde ayrımını kaydırılmamış hedeften yapar
+> (`MotionTemplateRunner._body`; nişan yine 40 m/s kayar). `dotnet test` 568/568, AtomSim 0 hata.
+> 4× tam tarama `play-sweep/pr35-final-4x.csv` **1429/1440**: Yumruk 142, diğer dokuzu 143;
+> gövde 0, `yerde` 0, betik hatası 0. Kalan: 2-9 ×10 (koruyucu tetik, kabul) + Yumruk 12-4
+> `sure` (kalıp bang'den 0,16 sn geç; önceki taramada geçti, editör takılması). 1× Play kontrolü
+> (`pr35-playcheck-1x.csv`, Kılıç) 9/9: 11-1 minyonu 5,16 sn yaşar, boss'a ~1 sn arayla vurur,
+> merkeze en yakın 1,04 m (sınır 1,00); 12-11 önceki 1-1'i tekrarlar; 2-2 / 4-2 boss'u
+> taşımaz, 1-2 1,58 m çeker; 1-11 ikinci nabız 0,47 → 0,78 sn (+0,31); 6-9 patlaması 2,42 sn;
+> 3-10 8 m'den varış kapısında kalır (sim. 0,00 m).
 
 > **30 Eylül — skill teslimi + minyon/klon (master `9ce4f94` üstüne, merge yok).** Kalıp
 > vuruşu teslimi bitirmiyordu; `TemplateDelivery` kalıpla aynı kuyruğu kurar (çağrı, yankı,
@@ -1958,7 +1976,11 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   Dev HP doluyken can oranı %30'un altına inmez; koruyucu şifayı hissetmek için Dev HP KAPALI.
   Mana/bekleme yok. Play Sweep 2-9'u her silahta "etki yok" sayar: şifa koruyucu tetikte, tarama
   canı %50'de başlatır (tasarım gereği kabul edildi, 30 Eylül).
-- **PR #35 skill teslimi (30 Eylül, merge yok).** Birleşik 4× taramada (her silah): 12-11 oyuncu
+- **PR #35 sonrası (30 Eylül).** 1-11 ikinci nabız kalıbın `yanki` fazında, ilk vuruş yerinde
+  açılır; oyuncu ilerlediyse boss'a 2,67 m uzakta kalır ve hasar vermez (zamanlama doğru, yer
+  tasarım sorusu). Tarama ardışık 11-1'de önceki minyon yaşarken boss'u sıfırlayınca minyon
+  bir kare merkeze 0,91 m görünür (tarama artığı). Yumruk 12-4 `sure` editör takılması.
+- **PR #35 skill teslimi (30 Eylül, çözüldü — yukarıdaki merge kaydı).** Birleşik 4× taramada (her silah): 12-11 oyuncu
   boss gövdesinde (merkeze 0,22 m, temas 1,35; `RepeatDelivered` → `PulseDelivery` mekanik etkiyi
   oyuncu konumunda açıyor, çekiş boss'u oyuncuya getiriyor); 5-2 gövdede (0,03 m, girdap boss'u
   oyuncunun üstüne çekiyor; Yumruk hariç 8–9 silah); 4-2 `konum` (kalıp sonu simülasyondan 1,50 m);
