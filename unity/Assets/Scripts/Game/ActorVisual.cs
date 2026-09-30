@@ -175,6 +175,8 @@ namespace Dovus.Game
                 PlayAction(StateBasicStrike);
         }
 
+        public void ResetBasicChain() => _strikeIndex = 0;
+
         /// <summary>Kuşanılmış silah menzilli teslim yolu mu (mermi cast'i atış klibine düşer).</summary>
         public bool RangedDelivery { get; set; }
 

@@ -100,9 +100,6 @@ namespace Dovus.Game.EditorTools
         const float OtherMoveM = 0.15f;
         // Sıçrama sınırı kare süresine bağlı: en hızlı meşru hareket (3-6 yayı 19,2 m/s) × dt + pay.
         // dt en az 1/60 sn sayılır; hitstop karelerinde sınır 0,2 m'ye düşmesin.
-        const float JumpMaxSpeedMps = 25f;
-        const float JumpMarginM = 0.2f;
-        const float JumpMinDtSec = 1f / 60f;
         const float LegMoveMps = 1.5f;
 
         static readonly int[][] RuneGroups =
@@ -234,14 +231,41 @@ namespace Dovus.Game.EditorTools
             EditorApplication.update += LoopWatchdog;
         }
 
+        [MenuItem("Dovus/Play Sweep/144 kombo - Yumruk")]
+        static void MenuFist() => Launch("yumruk");
+
         [MenuItem("Dovus/Play Sweep/144 kombo - Kılıç")]
         static void MenuSword() => Launch("kilic");
+
+        [MenuItem("Dovus/Play Sweep/144 kombo - Çekiç")]
+        static void MenuHammer() => Launch("cekic");
+
+        [MenuItem("Dovus/Play Sweep/144 kombo - Kalkan")]
+        static void MenuShield() => Launch("kalkan");
+
+        [MenuItem("Dovus/Play Sweep/144 kombo - Yay")]
+        static void MenuBow() => Launch("yay");
+
+        [MenuItem("Dovus/Play Sweep/144 kombo - Top")]
+        static void MenuCannon() => Launch("top");
 
         [MenuItem("Dovus/Play Sweep/144 kombo - Asa")]
         static void MenuStaff() => Launch("asa");
 
+        [MenuItem("Dovus/Play Sweep/144 kombo - Tılsım")]
+        static void MenuTalisman() => Launch("tilsim");
+
+        [MenuItem("Dovus/Play Sweep/144 kombo - Büyü Kitabı")]
+        static void MenuBook() => Launch("kitap");
+
+        [MenuItem("Dovus/Play Sweep/144 kombo - Küre")]
+        static void MenuOrb() => Launch("kure");
+
         [MenuItem("Dovus/Play Sweep/144 kombo - Kılıç + Asa")]
         static void MenuSwordStaff() => Launch("kilic+asa");
+
+        [MenuItem("Dovus/Play Sweep/144 kombo - Tüm silahlar")]
+        static void MenuAllWeapons() => Launch("hepsi");
 
         [MenuItem("Dovus/Play Sweep/Durdur")]
         static void MenuStop() => Stop("menü");
@@ -286,14 +310,37 @@ namespace Dovus.Game.EditorTools
 
         public static void StartPreset(string preset)
         {
-            if (preset == "asa")
+            if (preset == "hepsi")
             {
-                Start(AllCombos("Asa"), preset);
+                var all = new List<PlaySweepCase>();
+                foreach (string name in SweepWeaponNames)
+                    all.AddRange(AllCombos(name));
+                Start(all, preset);
                 return;
             }
-            string second = preset == "kilic+asa" ? "Asa" : "";
-            Start(AllCombos("Kılıç", second), preset, second);
+            if (preset == "kilic+asa")
+            {
+                Start(AllCombos("Kılıç", "Asa"), preset, "Asa");
+                return;
+            }
+            Start(AllCombos(PresetWeapon(preset)), preset);
         }
+
+        static readonly string[] SweepWeaponNames = SweepMotion.WeaponMenuNames;
+
+        static string PresetWeapon(string preset) => preset switch
+        {
+            "yumruk" => "Yumruk",
+            "cekic" => "Çekiç",
+            "kalkan" => "Kalkan",
+            "yay" => "Yay",
+            "top" => "Top",
+            "asa" => "Asa",
+            "tilsim" => "Tılsım",
+            "kitap" => "Büyü Kitabı",
+            "kure" => "Küre",
+            _ => "Kılıç"
+        };
 
         /// <summary>144 kombo, rün grubu çiftlerine göre sıralı (az build değişimi).</summary>
         public static List<PlaySweepCase> AllCombos(string weapon, string secondWeapon = "", float startDistM = 3f)
@@ -1411,7 +1458,7 @@ namespace Dovus.Game.EditorTools
             return r;
         }
 
-        static float JumpLimit(float dt) => JumpMaxSpeedMps * Mathf.Max(dt, JumpMinDtSec) + JumpMarginM;
+        static float JumpLimit(float dt) => SweepMotion.JumpLimit(dt);
 
         static bool IsBlinkPhase(string phase)
         {

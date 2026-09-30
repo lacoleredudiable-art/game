@@ -29,8 +29,14 @@ namespace Dovus.Game
         float _body = 0.5f;
         bool _playing;
         bool _tickedThisFrame;
+        bool _stopAfterSample;
+        bool _hasPlayClock;
+        double _playStartWorldMs;
 
         public bool IsDisplacing => _playing;
+        public float PlayedSec => _runner.Elapsed;
+        public float PlayLengthSec { get; private set; }
+        public string SkillId { get; private set; } = string.Empty;
 
         public void Bind(GameClock clock, float arenaHalfM, float bodyRadiusM)
         {
@@ -70,14 +76,41 @@ namespace Dovus.Game
             _target = target;
             _held = held;
             _onHit = onHit;
+            PlayLengthSec = SumLength(template);
             _playing = !_runner.Finished;
+            _stopAfterSample = false;
+            _hasPlayClock = _clock != null;
+            _playStartWorldMs = _hasPlayClock ? _clock.Director.WorldTimeMs : 0;
             _tickedThisFrame = false;
         }
 
+        public void NoteSkill(string skillId) => SkillId = skillId ?? string.Empty;
+
         public void Stop() => _playing = false;
+
+        static float SumLength(MotionTemplate template)
+        {
+            if (template == null)
+                return 0f;
+            float sum = 0f;
+            for (int i = 0; i < template.Phases.Count; i++)
+                sum += template.Phases[i].DurationSec;
+            return sum;
+        }
 
         void Update()
         {
+            // Bitiş bayrağı bir sonraki kareye kalır: bu karenin ölçümü (tarama PostLateUpdate)
+            // son adımı hâlâ kalıbın yer değiştirmesi olarak görsün. Aynı karede kapatmak
+            // 1,41 m'lik adımı ikinci sistem diye yazıyordu.
+            if (_stopAfterSample)
+            {
+                _stopAfterSample = false;
+                _playing = false;
+                if (_visual == null)
+                    _visual = GetComponent<ActorVisual>();
+                _visual?.EndMotionAnim();
+            }
             TickMotion();
             _tickedThisFrame = true;
         }
@@ -87,7 +120,19 @@ namespace Dovus.Game
             // Play, Update'ten sonra geldiyse (build ekranı kapanınca ilk cast) bu kare de işlensin.
             if (!_tickedThisFrame)
                 TickMotion();
+            else if (_playing)
+                StampRunner();
             _tickedThisFrame = false;
+        }
+
+        /// <summary>
+        /// Klip kök hareketi kalıbın üstüne ikinci bir kayma yazmasın. Konum kalıbın koşucusudur.
+        /// </summary>
+        void StampRunner()
+        {
+            Vector3 pos = ArenaClamp.XZ(new Vector3(_runner.X, _runner.Y, _runner.Z), _arena, _body);
+            pos.y = _runner.Y;
+            transform.position = pos;
         }
 
         void TickMotion()
@@ -101,15 +146,32 @@ namespace Dovus.Game
             if (_dodge != null && _dodge.IsDisplacing)
             {
                 _playing = false;
+                _stopAfterSample = false;
                 return;
             }
             if (_vitals != null && _vitals.IsDown)
             {
                 _playing = false;
+                _stopAfterSample = false;
+                return;
+            }
+
+            if (_runner.Elapsed > PlayLengthSec + 0.05f)
+            {
+                _stopAfterSample = true;
                 return;
             }
 
             float dt = _clock != null ? (float)(_clock.WorldDeltaMs / 1000.0) : Time.deltaTime;
+            if (_hasPlayClock && _clock != null)
+            {
+                // Tarama saati ile koşucu ayrışırsa kalıp yazar süresinden uzun görünür
+                // (Yumruk 2-9: 0,20 sn'lik hamle 0,51 sn oynadı).
+                float world = (float)((_clock.Director.WorldTimeMs - _playStartWorldMs) / 1000.0);
+                float behind = world - _runner.Elapsed;
+                if (behind > dt)
+                    dt = behind;
+            }
             if (dt <= 0f)
                 return;
 
@@ -117,9 +179,7 @@ namespace Dovus.Game
             bool held = _held != null && _held();
             Vector3 stick = WorldStick();
             MotionTick tick = _runner.Tick(dt, target, new MotionStick(held, stick.x, stick.z));
-            Vector3 pos = ArenaClamp.XZ(new Vector3(tick.X, tick.Y, tick.Z), _arena, _body);
-            pos.y = tick.Y;
-            transform.position = pos;
+            StampRunner();
             // Dönüş hem klibi (AnimKey spin) hem gövde yaw'ını sürer. Yalnız transform
             // döndürmek bacakları dondurup tüm gövdeyi çeviriyordu.
             if (tick.FaceX * tick.FaceX + tick.FaceZ * tick.FaceZ > 0.0001f)
@@ -133,12 +193,7 @@ namespace Dovus.Game
             }
 
             if (tick.Finished)
-            {
-                _playing = false;
-                if (_visual == null)
-                    _visual = GetComponent<ActorVisual>();
-                _visual?.EndMotionAnim();
-            }
+                _stopAfterSample = true;
         }
 
         void DriveLegs(in MotionTick tick)

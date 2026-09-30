@@ -13,8 +13,47 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (birleşik test #32/#31/#29 → yalnız #31 merge) ·
-**Dal:** `docs/combined-test-30sep` · **Sıradaki:** PR #28 (silahlar) testi; #32 ve #29 bulut ajanlarında düzeltiliyor
+**Son güncelleme:** 30 Eylül 2026 (PR #28 silahlar + master: #31 pasif yuvaları, birleşik test) ·
+**Dal:** `feat/weapons-10` · **Sıradaki:** Top 1-2 (konum + bir kez gövdeye girme) — merge kararı sahibinde
+
+> **30 Eylül — PR #28 Play testi (`b45ee56`, master + #31 alınmış): merge edilmedi.** `dotnet test` 485/485,
+> `check.py` geçti, Unity derlemesi temiz, konsolda yalnız bilinen URP/ShaderGraph paket hataları.
+> Tüm silahlar 1× (4× #32 ile geliyor, merge edilmedi), iki parça: ilk 1261 vaka + kalan 179
+> (Kitap 35, Küre 144; ilk koşu Play kapanınca kesildi). **1436/1440:** Yumruk 142, Kalkan 143,
+> Top 143, diğer yedi silah 144. Kalanlar: (1) Yumruk ve Kalkan 1-4 hasar/etki yok (boss 2,42 m).
+> (2) Yumruk 2-2 zaman aşımı (kalıp 10,9 sn, beklenen 2,2). (3) **Top 1-2:** oyuncu kalıp
+> simülasyonundan 1,5–1,6 m farklı yerde biter (boss ~2,1 m çekilir); tam taramada bir kez
+> **gövdeye girdi** (merkeze 1,03 m, temas 1,35, t=1,38). 3 tekrar: konum 3/3 kaldı, gövde 0/3.
+> Skor kuralı tuttu, "oyuncu boss içinde değil" kuralı tam taramada bir kez bozuldu → merge yok.
+> Kısa elle kontroller bu turda tekrar koşulmadı (aşağıdaki `4de6aba` ölçümleri duruyor).
+
+> **30 Eylül — tarama artıkları (`hepsi.csv` 1395/1440).** Top'un 0,5 m geri tepmesi hasarlı kalıbın son fazı (`geri_tepme`, 0,12 sn); bu faz varken oyuncuya ayrı konum yazılmaz. Düz top atışı ışının ucunda değil, ilk değdiği boss yüzeyinde patlar ve iter. Yumruk/Kalkan menzil kapısı sessizce yutmaz: menzil dışı hedef kurulur, eksik yol kalıbın başında `kapan` hamlesidir. 6-2 geri adımı cast başındaki menzili silmez. Küre 8-11 kalıbı tek karede bitince tarama onu ikinci kayma sanıyordu; bitiş bir sonraki karenin başına kalır. Yumruk 2-9'da koşucu tarama saatinden geri kalırsa yetişir (0,51 sn → kalıp süresi). Yumruk 2-6 kalıbı zaten 0,52 sn; vaka 0,87 sn'de boşta olup saat 9,6 sn'de kesildi. Kancayı `distance_m` ile kesmek 6-1'i de kısaltır, yapılmadı. Küre basılı tutma / çift dokunuş dinlemez: HUD silah düğmesi (editörde R) eldeyse hedefe yollar, değilse çağırır; yol 0,4 sn. Çizim alanına dokunmaz. Q silah değiştirir. Unity Play bu ortamda yok.
+
+> **30 Eylül — on silah pasifi bağlandı.** Kılıç yayı yakın vuruşta açı kontrolü (144°, dost fiilde yaydaki herkes; swap 180°). Büyü Kitabı sayacı hasardan önce artar, ara dolunca sıfırlanır. Çekiç sersem süresi JSON'dan, 4 sn bekleme yalnız sersem oturunca. Tılsım şifa/kalkan/buff ×1,2, fiil uyumu aranmaz. Kalkan +%20 ilk skill vuruşunda biter. Asa süre uzayınca aynı dilimle yeni vuruş ekler. Çekiç poise ve silah poise çarpanı giden poise'a girer. Yumruk sırt çarpanı yalnız `sirt_vurusu`; gramerde ikinci `arkadan_x1.5` yok. Rün yuvası pasifine dokunulmadı. Unity Play yok.
+
+> **30 Eylül — PR #28 Play testi (`4de6aba`, pasif commit'inden önce): merge edilmedi.** Unity derlemesi temiz, `dotnet test` 455/455,
+> konsolda yalnız bilinen URP/ShaderGraph paket hataları. Tüm silahlar taraması (`hepsi.csv`):
+> Kılıç, Çekiç, Yay, Asa, Tılsım, Büyü Kitabı 144 · Küre 143 · Kalkan 139 · Yumruk 136 · Top 113.
+> Hiçbir kombo sonunda oyuncu boss içinde değil, sıçrama yok. **Hata nedenleri:**
+> (1) Top 31 vaka: top geri tepmesi (0,50 m) tarama "ikinci hareket sistemi" sayıyor — kural mı
+> yanlış, geri tepme mi şablona girmeli, karar gerekli. (2) Yumruk ve Kalkan'da 1-3, 1-4, 5-1,
+> 5-4, 7-4 cast menzil kapısında reddediliyor (3 m başlangıç). (3) Yumruk 2-6 zaman aşımı ve
+> 2-9 süre aşımı (şablon uzun). (4) Yumruk 6-2 hasar/etki yok. (5) Küre 8-11 konum: şablon dışı 1,41 m hareket.
+> **Elle (harness, gerçek dokunma/F2 tuşu enjekte edilemedi, yöntem çağrısıyla):** kurulum ekranında
+> 10 silah seçilebiliyor, 5 çiftin hepsi uygulandı; F2 (`CycleWeapon`) 10 silahı sırayla geziyor;
+> değiştirme 251 ms. Silah kesme: 1-1 %90'ında değiştirince şablon kesiliyor, sıradaki 1-8 hemen
+> kabul (0 ms / değiştirmeden 68 ms), vuruş 500 ms / 567 ms. Küre: 0,45 sn basılı = yerleştir,
+> 0,25 sn = yok, çift dokunma = geri çağır; 0,4 sn'de noktaya gidiyor, 2 sn beklemeden sonra
+> ele dönüyor. Top skill vuruşu: boss 0,50 m, küçük hedef 3,00 m, oyuncu ~0,5 m geri, boss'a en
+> yakın 1,50 m. Kalkan: değiştirmeden sonraki ilk vuruş 3 sn kalkan kuruyor, hasar emiliyor.
+> Tılsım: ilk vuruş boss'tan bir olumsuz etki siliyor. Kitap: ilk cast mana harcamadı (100→100),
+> ikinci 12 harcadı (Kılıç 12). Hasar: 1-9 246–256K (kritik 359K), 5-9 168–173K (kritik 270K);
+> 7-6 sonrası ilk düz vuruş 28K, 7-9 sonrası 32K.
+
+> **30 Eylül — silahlar hasar borusuna bağlandı.** Master (PR #27 dodge, PR #30 boru/zırh/×4000) bu dala alındı. Kalkanın 15 puanlık kısa kalkanı dodge'dan sonra borunun son kalkan aşamasında erir. Silah `base_armor` oyuncunun zırhına gider (Kalkan 25, Çekiç 15, Top 10). JSON `ignore_armor` artık zırhın tamamını silmez, delme %50'de kalır (1-9 ve 5-9). Zafiyet'ten sonraki ilk düz vuruş, kilit boşsa ya da etki bang'den önce yok olduysa da menzildeki boss'a vurur. Tarama: sıçrama sınırı 25 m/s × kare + 0,2 m; 1-2 ve 4-2 yerinde; menüde 10 silah ve tüm silahlar. Unity Play bu ortamda yok.
+
+**Son güncelleme (master notu):** 30 Eylül 2026 (PR #27 + #30 master'a merge) ·
+**Dal:** `master` · **Sıradaki:** yeni sıçrama ölçüsüyle Kılıç/Asa taramasını bir kez daha koş
 
 > **30 Eylül — birleşik test: yalnız PR #31 merge edildi (`8686a72`).** Kılıç + Asa Play taraması:
 > üçü birlikte (#32+#31+#29, 4×) 132/132; yalnız #32 (4×) 141/141; #31+#29 (1×) 135/134;
@@ -1755,6 +1794,17 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
+- **PR #28 Top 1-2 (30 Eylül).** Emici çekmesi + Top geri tepmesi: oyuncu simülasyondan ~1,6 m
+  farklı biter, tam taramada bir kez boss gövdesine 1,03 m girdi (tekrarda 0/3, kararsız).
+  Yumruk/Kalkan 1-4 hasarsız, Yumruk 2-2 kalıbı 10,9 sn.
+- **10 silah taraması (30 Eylül, kod; Play tekrar yok).** `hepsi.csv` 1395/1440 kalanları kodda
+  ele alındı: Top geri tepmesi kalıp fazı, düz atış ilk gövdede patlar, Yumruk/Kalkan menzil
+  dışı `kapan` ile kapanır, 6-2 cast başı menzili korunur, 2-9 koşucu saate yetişir, Küre 8-11
+  bitişi bir sonraki kareye kalır. Küre artık basılı tutma / çift dokunuş dinlemez; HUD silah
+  düğmesi (editörde R) yollar veya çağırır. Yumruk 2-6 kalıbı 0,52 sn, vaka saati 9,6 sn'de
+  kesildi; kancayı kısaltmak 6-1 varışını da keser. Kalkan kısa kalkanı hâlâ değiştirmeden
+  sonraki ilk vuruşta kurulur (JSON). 1440 tarama bu düzeltmelerden sonra Unity Play'de koşulmadı.
+  Gerçek dokunma/fare ve F2 tuşu editörde enjekte edilemedi.
 - **Yoğunlaştırma pasifi menzili daraltır (30 Eylül, Play).** `hitbox_scale_mult` 0,55 hedef/menzil
   kapısına da biniyor: pasif aktifken 3 m'den atılan 1-4 reddedilir, 1,6 m'den geçer. Tasarım mı
   hata mı karar sahibinde.
@@ -1773,8 +1823,8 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   hesaplanırken yer. Zafiyet artık yalnız zırh puanını düşürür (`armor_break` ×1,2 binmez).
   Play'deki tek kare sıçrama, tarama beklentisi, düz vuruş ve zırh 30 Eylül ikinci testte
   doğrulandı. Kalan: 3-6 `as` yayı 19,2 m/s — takılan karede (≥31 ms) 0,6 m eşiğini aşıyor
-  (iki silahta 0,73 m); 1-9/5-9 zırh yok saydığı için 360K/260K (150–250K bandı üstü);
-  Zafiyet skill'inden hemen sonraki ilk düz vuruş 0 hasar.
+  (iki silahta 0,73 m). 1-9/5-9 delmesi kodda %50'ye indirildi; Zafiyet sonrası ilk düz
+  vuruş, etkisi söndüyse de vadesinde menzildeki boss'a iner. İkisi de bu ortamda Play'de doğrulanmadı.
 - **Görsel (29 Eylül, duruyor).** Hitbox VFX yer tutucu küre 1-5 dönüşünü kapatır; 12-7'de kum saati yok.
   2-2 akış çizgisi hâlâ oyuncu→dost, kırmızı değil (hasar yolu ayrı bağlandı).
   Bağ/hacim (`_mechanicLinks`) status temizliğinden sonra da Root/Slow uygulayabiliyor.

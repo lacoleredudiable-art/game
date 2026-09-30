@@ -268,14 +268,15 @@ namespace Dovus.Core.Combat
                 "tempo:" + skillId);
         }
 
-        public void Apply(StatusBoard? self, StatusBoard? enemy, StatusBoard? ally)
+        public void Apply(StatusBoard? self, StatusBoard? enemy, StatusBoard? ally, float hasteMult = 1f)
         {
+            float haste = hasteMult > 0f ? HasteStrength * hasteMult : HasteStrength;
             if (EnemySlow && enemy != null && DurationMs > 0 && SlowStrength > 0f && SlowStrength < 1f)
                 enemy.Apply(StatusKind.Slow, DurationMs, SlowStrength, SourceId);
-            if (SelfHaste && self != null && DurationMs > 0 && HasteStrength > 1f)
-                self.Apply(StatusKind.Haste, DurationMs, HasteStrength, SourceId);
-            if (AllyHaste && ally != null && DurationMs > 0 && HasteStrength > 1f)
-                ally.Apply(StatusKind.Haste, DurationMs, HasteStrength, SourceId);
+            if (SelfHaste && self != null && DurationMs > 0 && haste > 1f)
+                self.Apply(StatusKind.Haste, DurationMs, haste, SourceId);
+            if (AllyHaste && ally != null && DurationMs > 0 && haste > 1f)
+                ally.Apply(StatusKind.Haste, DurationMs, haste, SourceId);
         }
     }
 }

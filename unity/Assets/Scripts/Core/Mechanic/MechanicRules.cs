@@ -114,6 +114,21 @@ namespace Dovus.Core.Mechanic
 
         public double Param(string key) => _grammar["params"][key].AsDouble();
 
+        /// <summary>weapons[].passive alanı. Yoksa fallback.</summary>
+        public double WeaponPassiveNum(int weaponId, string key, double fallback)
+        {
+            foreach (JsonValue w in _root["weapons"].AsArray())
+            {
+                if (w["id"].AsInt() != weaponId)
+                    continue;
+                JsonValue passive = w["passive"];
+                if (passive.IsNull || !passive.Has(key))
+                    return fallback;
+                return passive[key].AsDouble(fallback);
+            }
+            return fallback;
+        }
+
         public JsonValue VerbAtoms(int verb) => _grammar["verb_atoms"][Key(verb)];
 
         /// <summary>Düşmanda karşılığı olmayan stat (ör. boss'ta kalkan yok) yerine kullanılan stat.</summary>

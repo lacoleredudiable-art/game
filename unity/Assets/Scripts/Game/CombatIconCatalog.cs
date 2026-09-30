@@ -96,9 +96,13 @@ namespace Dovus.Game
             return folded switch
             {
                 "yumruk" => 1,
+                "yay" => 2,
                 "hancer" => 2,
+                "buyu kitabi" => 3,
+                "kitap" => 3,
                 "mizrak" => 3,
                 "kilic" => 4,
+                "kure" => 5,
                 "balta" => 5,
                 "cekic" => 6,
                 "top" => 7,

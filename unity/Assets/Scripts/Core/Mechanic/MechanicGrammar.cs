@@ -92,10 +92,15 @@ namespace Dovus.Core.Mechanic
             ["balistik"] = "firlatilma",
             ["isin"] = "hat_kayma",
             ["yerlestirme"] = "isarete_isinlanma",
-            ["govde"] = "kalkan_hucumu"
+            ["govde"] = "kalkan_hucumu",
+            ["ok"] = "ok_kayma",
+            ["sayfa"] = "sayfa_kayma",
+            ["kure"] = "kureye_isinlanma"
         };
 
-        public static bool IsRangedPath(string path) => path == "balistik" || path == "isin" || path == "yerlestirme";
+        public static bool IsRangedPath(string path) =>
+            path == "balistik" || path == "isin" || path == "yerlestirme"
+            || path == "ok" || path == "sayfa" || path == "kure";
 
         /// <summary>Yolun nitel sınıfı: aynı sınıftaki silahlar yalnız sayıyla ayrışır.</summary>
         public static string PathClass(string path)
@@ -112,6 +117,9 @@ namespace Dovus.Core.Mechanic
                 case "isin": return "hat";
                 case "yerlestirme": return "belirme";
                 case "govde": return "govde";
+                case "ok": return "ok";
+                case "sayfa": return "sayfa";
+                case "kure": return "kure";
                 default: return path;
             }
         }
@@ -129,6 +137,9 @@ namespace Dovus.Core.Mechanic
                 case "yerlestirme": return "hedef_noktada";
                 case "isin": return "hat";
                 case "govde": return "sende";
+                case "ok":
+                case "sayfa":
+                case "kure": return "hedef_noktada";
                 default: return "onunde";
             }
         }
@@ -164,6 +175,10 @@ namespace Dovus.Core.Mechanic
                     b.Attached = true;
                     b.LifeSec = Math.Max(b.LifeSec, 1.0);
                     break;
+                case "ok":
+                case "sayfa":
+                    b.SpeedMps = _r.Param("ballistic_speed_mps");
+                    break;
             }
 
             foreach (MechanicEffect e in p.Effects)
@@ -198,14 +213,19 @@ namespace Dovus.Core.Mechanic
         }
 
         /// <summary>weapon_skill_interaction tier C: yalnız uyumlu fiilde.</summary>
-        static void ApplyWeaponIdentity(MechanicPlan p, MechanicWeapon w)
+        void ApplyWeaponIdentity(MechanicPlan p, MechanicWeapon w)
         {
             MechanicBody b = p.Body;
             bool harms = p.Effects.Any(e => e.Atom == "deger" && e.Target == "dusman");
             switch (w.Path)
             {
-                case "temas": b.Traits.Add("seri_vurus_+10"); break;
-                case "durtme": b.Traits.Add("arkadan_x1.5"); break;
+                // Sırt çarpanı sirt_vurusu pasifindedir. İkinci bir arkadan etiketi yazılmaz.
+                case "temas":
+                case "durtme":
+                    break;
+                case "ok": b.Traits.Add("kosu_kritigi"); break;
+                case "sayfa": b.Traits.Add("dolu_sayfa"); break;
+                case "kure": b.Traits.Add("capraz_ates"); break;
                 case "saplama":
                     foreach (MechanicEffect e in p.Effects.Where(e => e.Atom == "deger" && e.Stat == "can" && e.Amount < 0))
                         e.Modes.Add("zirh_delen");
@@ -213,11 +233,18 @@ namespace Dovus.Core.Mechanic
                 case "yay": b.SizeM *= 1.2; break;
                 case "agir_yay": b.Traits.Add("poise_x1.5"); break;
                 case "yere_vurus":
-                    if (harms) Add(p, "hiz", "hareket", "dusman", 0, 0.5, "sersem");
+                    if (harms)
+                    {
+                        double stun = _r.WeaponPassiveNum(w.Id, "stun_sec", 0);
+                        if (stun > 0)
+                            Add(p, "hiz", "hareket", "dusman", 0, stun, "sersem");
+                    }
                     break;
                 case "balistik": b.Traits.Add("sabitken_+50"); break;
                 case "yerlestirme":
-                    foreach (MechanicEffect e in p.Effects.Where(e => e.Atom == "deger" && e.Amount > 0)) e.Amount *= 1.2;
+                    double power = _r.WeaponPassiveNum(w.Id, "power_mult", 1);
+                    foreach (MechanicEffect e in p.Effects.Where(e => e.Atom == "deger" && e.Amount > 0))
+                        e.Amount *= power;
                     break;
                 case "govde": b.Traits.Add("blok_sonrasi_karsi_+20"); break;
             }

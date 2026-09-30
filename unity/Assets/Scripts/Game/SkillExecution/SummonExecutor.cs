@@ -223,6 +223,23 @@ namespace Dovus.Game
                 Destroy(shot, 0.25f);
         }
 
+        public void CollectWithin(float x, float z, float radiusM, List<Transform> into)
+        {
+            if (into == null || radiusM <= 0f)
+                return;
+            float r2 = radiusM * radiusM;
+            for (int i = 0; i < _minions.Count; i++)
+            {
+                Transform body = _minions[i].Body;
+                if (body == null)
+                    continue;
+                float dx = body.position.x - x;
+                float dz = body.position.z - z;
+                if (dx * dx + dz * dz <= r2)
+                    into.Add(body);
+            }
+        }
+
         bool InReach(Vector3 at, float reach)
         {
             int count = Physics.OverlapSphereNonAlloc(at, reach, Hits, Physics.AllLayers, QueryTriggerInteraction.Collide);

@@ -1,4 +1,5 @@
 using Dovus.Core.Combat;
+using Dovus.Core.Equipment;
 using UnityEngine;
 
 namespace Dovus.Game
@@ -29,7 +30,11 @@ namespace Dovus.Game
         public bool CanAfford(float cost) => _tracker == null || _tracker.CanAfford(cost);
 
         /// <summary>Cast maliyeti — engellemez; yetmezse 0. (Bağlama 2 bang yolu.)</summary>
-        public void Consume(float cost) => _tracker?.Consume(cost);
+        public void Consume(float cost) => Consume(cost, false);
+
+        /// <summary>Büyü Kitabı değiştirme bonusu: freeCast ise mana düşmez.</summary>
+        public void Consume(float cost, bool freeCast) =>
+            WeaponManaWaiver.Charge(_tracker, cost, freeCast);
 
         void Update()
         {
