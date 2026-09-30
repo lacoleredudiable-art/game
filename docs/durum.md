@@ -13,8 +13,19 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (PR #33 master alındı: geri tepme yere yapışır, AtomSim) ·
-**Dal:** `cursor/silah-tarama-artiklari-a2ff` · **Sıradaki:** 4× Top taraması Unity Play'de tekrar (bu ortamda yok)
+**Son güncelleme:** 30 Eylül 2026 (PR #33 Play testi geçti, master'a merge) ·
+**Dal:** `master` · **Sıradaki:** 3-10 dash sonrası kapıdan geri dönüş
+
+> **30 Eylül — PR #33 Play testi (`de4bbb0`): merge edildi.** Master (`9ce4f94`, #29) dala
+> alındı; tek çakışma `durum.md` (iki taraf da tutuldu). `dotnet test` 532/532, `tools/AtomSim`
+> ve GameCompile 0 hata, Unity derlemesi temiz, konsolda yalnız bilinen URP/ShaderGraph hataları.
+> 4× tarama (`play-sweep/pr33-4x-r2.csv`): **Yumruk 144, Kalkan 143, Top 144, Kılıç 144**;
+> `yerde` 576/576 (en kötü ayak 0,00 m), gövde 0, hata 0. Top 1-3, 6-3, 5-8, 6-8, 7-8 yerde geçti.
+> Top 1-2 kalıp sonu merkeze 1,40 m (temas 1,35). Yumruk 1-4 / Kalkan 1-4 hasar verdi. Yumruk 2-2
+> kalıp 2,20 sn, toplam 2,60 sn. Kılıç 10-2 3,22 sn (beklenen 3,18) geçti. Tek kalan Kalkan 3-6
+> `sure`: kalıp bang'den 0,16 sn sonra (pay 0,15) — o kare MCP ilerleme sorgusuyla (editörde
+> derleme) çakıştı; tek başına 3/3 geçti (kalıp 0,80 sn). En yakın merkez 3-2 `icinden_emme`
+> 0,11–0,19 m (tasarım gereği geçiş, `govdeye_girmedi` geçti).
 
 > **30 Eylül — tarama artıkları.** Top 1-2: Emici yerinde tutulan kalıba geri tepme eklenmez; geri çekilme boss yarıçapının dışında biter; tarama simülasyonu tutma bayrağını geçer. Yumruk/Kalkan 1-4: planlanan durak hem JSON kenarını hem kendi küresini ıskalıyorsa kapanış yalnız JSON kenarından (0,75 m); kılıç 1-4 ek hamle almaz. Yumruk 2-2: dört vuruş aynı anda ve zaman aşımı notu 11,3 sn (eşik 6,4) tek karelik saat sıçraması; dünya karesi en çok 100 ms. Unity Play / 1440 tekrar yok.
 **Son güncelleme:** 30 Eylül 2026 (PR #29 Play testi geçti, master'a merge) ·
@@ -1894,9 +1905,11 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
-- **Tarama artıkları kodda (30 Eylül).** Top 1-2 geri tepmesi Emici tutmada yok, geri çekilme
-  temasın dışında, Yumruk/Kalkan 1-4 JSON kenarına kapanır, Yumruk 2-2 saati önce 100 ms ile
-  sınırlanır sonra tarama çarpanı uygulanır. 4× Play'de dört hedef vaka geçti; PR merge edilmedi.
+- **Tarama artıkları (30 Eylül, çözüldü, PR #33 merge).** Top 1-2, Yumruk/Kalkan 1-4, Yumruk 2-2
+  ve Top geri tepmesinde ayak havada: 4× `pr33-4x-r2` hepsi geçti. Aşağıdaki "Top geri tepmesi
+  havada", "PR #28 Top 1-2" ve "`tools/AtomSim` derlenmiyor" maddeleri artık tarihsel.
+- **Kalkan 3-6 süre kararsız (30 Eylül, Play).** Tam taramada bir kez kalıp bang'den 0,16 sn sonra
+  (pay 0,15), MCP sorgusunun editör takılmasıyla çakıştı; tek başına 3/3 geçti. Tekrarlarsa bak.
 - **PR #29 portal/sınır/takım (30 Eylül, merge yok).** Kılıç 141/144: 9-10 ışını tek karede
   8,34 m (tarama `konum`), 2-6 kalıbı AllyDummy'yi hedefliyor (`tek_sistem`), 11-8 Kılıç başka
   sistem 0,18 m. Sınır 1-2 ile can %15'te açılıp aynı skill'in can çalmasıyla bir karede
@@ -1906,7 +1919,8 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   önceki sıçramanın inişini taşıyordu. Yatay faz o karede zemine yapışır; hop/leap/slam/hover
   havada kalır. Play tekrar yok.
 - **Kılıç 10-2 süre (30 Eylül, bakıldı, kod yok).** `yutan_girdap` 0,18+3,00 = 3,18 sn. 4×
-  Kılıç 3,39 (pay 3,38); Yumruk 3,28, Kalkan/Top 3,20. Silaha özel süre yok.
+  Kılıç 3,39 (pay 3,38); Yumruk 3,28, Kalkan/Top 3,20. Silaha özel süre yok. `pr33-4x-r2`'de
+  Kılıç 3,22 sn, geçti (sahip kararı: 0,01–0,2 sn uzama kabul).
 - **Portal tarama (30 Eylül).** 9-10 ışını işaretli kare. Vakalar arası kapı ve dost yeri sıfırlanır.
   Kalıp bitişindeki genel itme kalktı (1-3, 2-6, 8-12). Unity Play bu turda yok.
 - **Portal / Sınır / Takım (29 Eylül, `feat/portal-border-team`).** Üç etiket artık işler.

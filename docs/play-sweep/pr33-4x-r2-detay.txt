@@ -1,0 +1,4 @@
+# Play taraması pr33-4x-r2 @ 4x — 575/576 geçti @ 4x (Yumruk: 144/144, Kalkan: 143/144, Top: 144/144, Kılıç: 144/144)
+Yere basma en kötü (havada değil ≤ 0.05 m × kare/(1/60), bitiş+0,30 sn ≤ 0.03 m, hızdan bağımsız): 3-4 canlı 0,00 m / iniş 0,00 m, 10-8 canlı 0,00 m / iniş 0,00 m, 6-10 canlı 0,00 m / iniş 0,00 m, 11-2 canlı 0,00 m / iniş 0,00 m, 12-11 canlı 0,00 m / iniş 0,00 m, 5-6 canlı 0,00 m / iniş 0,00 m, 7-5 canlı 0,00 m / iniş 0,00 m, 12-2 canlı 0,00 m / iniş 0,00 m
+3-6 Bağlayıcı Adım [Kalkan] KALDI: süre — vuruş 1: 0,80s@boss0,00m/oyuncu1,50m; kalıp sonu: merkeze 1,50 m, başlangıçtan 4,50 m, kalıp simülasyonundan 0,00 m; kalıp bang'den 0,16 sn sonra başladı
+
