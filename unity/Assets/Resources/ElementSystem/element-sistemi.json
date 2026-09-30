@@ -154,7 +154,7 @@
       "category": "destek",
       "target_mode": "self_or_ally",
       "base_effect": "Debuff siler",
-      "passive_duration_default": 0
+      "passive_duration_default": 5
     },
     {
       "id": 10,
@@ -180,7 +180,7 @@
       "category": "hareket",
       "target_mode": "self_only",
       "base_effect": "Minion/klon çağırır",
-      "passive_duration_default": 0
+      "passive_duration_default": 5
     },
     {
       "id": 12,

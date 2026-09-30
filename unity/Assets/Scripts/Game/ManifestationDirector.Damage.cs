@@ -49,7 +49,7 @@ namespace Dovus.Game
                 outMult *= _playerStatus.Board.OutgoingDamageMult;
             outMult *= _modeDirector?.DamageMult ?? 1f;
             outMult *= _passiveDirector?.DamageMult ?? 1f;
-            outMult *= _slotPassives?.DamageMult ?? 1f;
+            outMult *= _slotPassives?.DamageMultFor(_slotQueryCastId) ?? 1f;
             outMult *= SelfDamageBuffMult();
             outMult *= chainBonusOverride ?? _closingChainBonus;
             float eqMult = 1f;
@@ -109,7 +109,8 @@ namespace Dovus.Game
             bool ignoreArmor = WeaponIgnoresArmor
                 || (!skill.IsEmpty && !skill.EngineModifiers.IsNull
                     && skill.EngineModifiers["ignore_armor"].AsBool(false));
-            penPct = ArmorPierce.ApplyIgnoreArmor(penPct, ignoreArmor);
+            float slotPen = _slotPassives?.ArmorPenPercentFor(_slotQueryCastId) ?? 0f;
+            penPct = SlotPassiveCombat.CombineArmorPen(penPct, ignoreArmor, slotPen);
 
             double now = _clock != null ? _clock.Director.WorldTimeMs : 0;
             float armor = 0f;
@@ -130,11 +131,14 @@ namespace Dovus.Game
                     ? _equippedWeapon.PoiseMult
                     : 1f;
                 float bonusPoise = HitMods(skill, isBasicStrike, false).PoiseMult;
+                float slotPoise = _slotPassives?.PoiseDamageMultFor(_slotQueryCastId) ?? 1f;
+                if (slotPoise <= 0f)
+                    slotPoise = 1f;
                 poise = WeaponPassiveRules.OutgoingPoise(
                     skill.BasePoise,
                     skill.PoiseDamageMult,
                     weaponPoise,
-                    bonusPoise);
+                    bonusPoise * slotPoise);
             }
 
             bool canCrit = formula || (!isBasicStrike && !skill.IsEmpty && skill.BaseDamage > 0f);

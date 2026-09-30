@@ -13,8 +13,8 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (tarama düzeltmeleri + küre düğmesi, `feat/weapons-10`) ·
-**Dal:** `feat/weapons-10` · **Sıradaki:** Unity Play'de 1440 taramayı bir kez daha koş
+**Son güncelleme:** 30 Eylül 2026 (PR #28 silahlar + master: #31 pasif yuvaları, birleşik test) ·
+**Dal:** `feat/weapons-10` · **Sıradaki:** PR #28 için 1440 taramasını Unity Play'de koş
 
 > **30 Eylül — tarama artıkları (`hepsi.csv` 1395/1440).** Top'un 0,5 m geri tepmesi hasarlı kalıbın son fazı (`geri_tepme`, 0,12 sn); bu faz varken oyuncuya ayrı konum yazılmaz. Düz top atışı ışının ucunda değil, ilk değdiği boss yüzeyinde patlar ve iter. Yumruk/Kalkan menzil kapısı sessizce yutmaz: menzil dışı hedef kurulur, eksik yol kalıbın başında `kapan` hamlesidir. 6-2 geri adımı cast başındaki menzili silmez. Küre 8-11 kalıbı tek karede bitince tarama onu ikinci kayma sanıyordu; bitiş bir sonraki karenin başına kalır. Yumruk 2-9'da koşucu tarama saatinden geri kalırsa yetişir (0,51 sn → kalıp süresi). Yumruk 2-6 kalıbı zaten 0,52 sn; vaka 0,87 sn'de boşta olup saat 9,6 sn'de kesildi. Kancayı `distance_m` ile kesmek 6-1'i de kısaltır, yapılmadı. Küre basılı tutma / çift dokunuş dinlemez: HUD silah düğmesi (editörde R) eldeyse hedefe yollar, değilse çağırır; yol 0,4 sn. Çizim alanına dokunmaz. Q silah değiştirir. Unity Play bu ortamda yok.
 
@@ -43,6 +43,28 @@
 
 **Son güncelleme (master notu):** 30 Eylül 2026 (PR #27 + #30 master'a merge) ·
 **Dal:** `master` · **Sıradaki:** yeni sıçrama ölçüsüyle Kılıç/Asa taramasını bir kez daha koş
+
+> **30 Eylül — birleşik test: yalnız PR #31 merge edildi (`8686a72`).** Kılıç + Asa Play taraması:
+> üçü birlikte (#32+#31+#29, 4×) 132/132; yalnız #32 (4×) 141/141; #31+#29 (1×) 135/134;
+> yalnız #31 (1×) **144/144**. `dotnet test` her kombinasyonda yeşil (#31 tek: 450/450), konsolda
+> yalnız bilinen URP/ShaderGraph paket hataları, oyuncu hiçbir vakada boss içinde bitmiyor
+> (3-2 tasarım gereği içinden geçer). **#31 Play:** pasif [1,9], 1-4 skill'i 1,6 m'den, taban
+> 159K; Yoğunlaştırma aktif ×1,38 (JSON ×1,35), Odaklama ×1,62 (×1,15 × %50 delme ≈ ×1,53, ±%5
+> sapma), ikisi ×2,04. **#32 atlandı:** 7-3/7-6/7-11 boss yerden 0,05 m (silah başına 3 yerde
+> hatası, kural ≤3 tutuyor ama skor 141). **#29 atlandı:** 9-10 takası tek karede 4,66 m + sonraki
+> 6 vaka kaymış konum, 2-6/1-3 `tek_sistem`, 8-12 tek karede 2,25 m. Ayrıntı PR yorumlarında.
+> #29 master'a birleşirken `ActorStatus`/`ManifestationDirector` çakışır; takım çarpanları
+> `ComputeOutgoingHit` ve `ApplyDamage` içindeki `taken`/`outMult`'a taşınmalı. Takım paneli ve
+> yere basma elle kontrolleri koşulmadı.
+
+> **30 Eylül — pasif yuva (0–2) çalışır.** Tetikleyen cast pasifi kendine uygulamaz.
+> Bağlama yavaşı `1 − apply_slow`. Sabitleme oyuncuyu köklemez; sonraki vuruşlara poise ×1.5
+> ve alan/zone ömrüne `lifetime_add` ekler. Poise çarpanı giden vuruşta. Odaklama süresi 5 sn,
+> `ignore_armor` = %50 delme. Kopyalama süresi 5 sn, sonraki cast 0,3 sn sonra bir kez %50 yankı.
+> Sıçrama 6 m içinde seker; yalnız boss varsa `bounce_targets` kadar ek vuruş. Akış vuruşu
+> `channel_sec` / `tick_rate_mult` / `flow_tick_fraction` ile DoT bırakır (−%30 tek başına kalmaz).
+> `passive_slot_system` silah uyumu istemez. Eski `PassiveDirector` ölü; diriltilmedi.
+> Unity Play yok.
 
 > **30 Eylül — karar: 3-6 kare takılması.** `PlaySweep` sıçrama sınırı artık sabit 0,6 m değil:
 > 25 m/s × kare süresi (en az 1/60 sn) + 0,2 m (60 FPS'te 0,62 m, 38 ms'de 1,15 m). Oyuncu ve
@@ -1769,6 +1791,17 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   kesildi; kancayı kısaltmak 6-1 varışını da keser. Kalkan kısa kalkanı hâlâ değiştirmeden
   sonraki ilk vuruşta kurulur (JSON). 1440 tarama bu düzeltmelerden sonra Unity Play'de koşulmadı.
   Gerçek dokunma/fare ve F2 tuşu editörde enjekte edilemedi.
+- **Yoğunlaştırma pasifi menzili daraltır (30 Eylül, Play).** `hitbox_scale_mult` 0,55 hedef/menzil
+  kapısına da biniyor: pasif aktifken 3 m'den atılan 1-4 reddedilir, 1,6 m'den geçer. Tasarım mı
+  hata mı karar sahibinde.
+- **PR #31 bağlayıcı JSON'u değiştirdi.** `passive_duration_default` rün 9 ve 11 için 0 → 5
+  (`docs/element-sistemi.json` ve Resources kopyası). Merge edildi; sayının kaynağı PR'da.
+
+- **Pasif sekme (30 Eylül).** Başka düşman 6 m içindeyse plan ona gider; can yazması yalnız
+  boss kimliğine bağlı. Prototipte ikinci düşman canı yok, yalnız boss varken ek vuruş boss'a iner.
+- **Odaklama delmesi (30 Eylül).** `ignore_armor` artık %50 zırh delme. Eski Play notundaki
+  1-9/5-9 tam zırh yok sayma (360K/260K) bu kuraldan sonra geçersiz; yeni Play yok.
+
 - **Hasar borusu (30 Eylül, kod).** Kritik JSON'da %5 / ×2 durur; canlı vuruş %10 / ×1,5.
   Boss zırhı normal 100, sert 150 (JSON). Canlı dövüş normali kullanır; sert mod anahtarı yok.
   Boss canı 88 milyon; 150–250 milyon için `max_hp` sonra ayarlanır. Ayar paneli sıfırlayınca

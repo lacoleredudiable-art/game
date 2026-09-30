@@ -185,6 +185,7 @@ namespace Dovus.Game
                     .Max());
             if (durationSec <= 0)
                 durationSec = 0.1;
+            durationSec += _slotPassives?.LifetimeAddSecFor(_slotQueryCastId) ?? 0f;
 
             if (profile.Reflector)
             {

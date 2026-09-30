@@ -27,6 +27,7 @@ namespace Dovus.Game
             public SkillMotionPlan Motion;
             public float EffectMult;
             public LivingEffect Logic;
+            public int SlotCastId;
         }
 
         readonly List<DelayedLaunch> _delayedLaunches = new();
@@ -168,7 +169,8 @@ namespace Dovus.Game
                 Skill = skillCopy,
                 Motion = motionCopy,
                 EffectMult = mult,
-                Logic = logic
+                Logic = logic,
+                SlotCastId = _slotQueryCastId
             });
         }
 
@@ -180,7 +182,16 @@ namespace Dovus.Game
                 if (worldMs < d.DueMs)
                     continue;
                 _delayedLaunches.RemoveAt(i);
-                TryLaunchSkillExecutor(d.Kind, d.Pending, d.Skill, d.Motion, d.EffectMult, d.Logic);
+                int prevCast = _slotQueryCastId;
+                _slotQueryCastId = d.SlotCastId;
+                try
+                {
+                    TryLaunchSkillExecutor(d.Kind, d.Pending, d.Skill, d.Motion, d.EffectMult, d.Logic, d.SlotCastId);
+                }
+                finally
+                {
+                    _slotQueryCastId = prevCast;
+                }
             }
         }
 
@@ -203,7 +214,7 @@ namespace Dovus.Game
             if (_playerStatus != null)
                 mult *= _playerStatus.Board.OutgoingDamageMult;
             mult *= _passiveDirector?.DamageMult ?? 1f;
-            mult *= _slotPassives?.DamageMult ?? 1f;
+            mult *= _slotPassives?.DamageMultFor(_slotQueryCastId) ?? 1f;
             mult *= SelfDamageBuffMult();
 
             EnsureBossArmor();
@@ -220,7 +231,8 @@ namespace Dovus.Game
             float penPct = _passiveDirector?.ArmorPenPercent ?? 0f;
             bool ignoreArmor = !skill.IsEmpty && !skill.EngineModifiers.IsNull
                 && skill.EngineModifiers["ignore_armor"].AsBool(false);
-            penPct = ArmorPierce.ApplyIgnoreArmor(penPct, ignoreArmor);
+            float slotPen = _slotPassives?.ArmorPenPercentFor(_slotQueryCastId) ?? 0f;
+            penPct = SlotPassiveCombat.CombineArmorPen(penPct, ignoreArmor, slotPen);
             var dealt = DamagePipeline.Resolve(new DamageQuery
             {
                 SkillPower = raw,
@@ -245,7 +257,7 @@ namespace Dovus.Game
             _damageHud?.ShowDamage(damage, false, BossHitPoint(), DamageTint());
             _lastDamageDealtMs = _clock.Director.WorldTimeMs;
             float lifesteal = AdjectiveLifesteal(skill);
-            lifesteal += _slotPassives?.LifestealAdd ?? 0f;
+            lifesteal += _slotPassives?.LifestealAddFor(_slotQueryCastId) ?? 0f;
             if (lifesteal > 0f && _player != null)
             {
                 var vitals = _player.GetComponent<PlayerVitals>();

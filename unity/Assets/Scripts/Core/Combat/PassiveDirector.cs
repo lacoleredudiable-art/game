@@ -5,11 +5,10 @@ using Dovus.Core.Grammar;
 namespace Dovus.Core.Combat
 {
     /// <summary>
-    /// docs/element-sistemi.json "passives": trigger_combo eşleşince DurationSec kadar
-    /// aktif kalır. ActiveModeDirector'dan farkı: cooldown yok; birden fazla pasif aynı anda
-    /// aktif olabilir (tek "Active" yerine liste). Efektlerin dünyaya uygulanması Game
-    /// katmanı işi — bu sınıf yalnızca durum makinesi.
-    /// Kombo tablosu DEĞİL: her pasif JSON'dan gelir.
+    /// Eski v5 pasif kataloğu. Runtime'da kullanılmaz: SkillMotor.FromJson v6.1 runes
+    /// görünce ParseV61'den döner, ParsePassives çalışmaz; yayımlanan JSON'da passives
+    /// anahtarı yoktur. Canlı pasif yuva SlotPassiveDirector'dur. Bu sınıfı diriltme.
+    /// PassiveDirectorTests v5.3 arşivini yüklemeye devam edebilir.
     /// </summary>
     public sealed class PassiveDirector
     {

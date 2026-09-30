@@ -78,6 +78,12 @@ namespace Dovus.Game
         // --- Pasifler (Bağlama 5) — ulti gibi ama cooldown'suz, birden fazla aynı anda ---
         PassiveDirector _passiveDirector;
         SlotPassiveDirector _slotPassives;
+        int _slotQueryCastId;
+        int _templateSlotCastId;
+        bool _slotPassiveNeedsWeapon;
+        int _passiveBonusDepth;
+        readonly List<PassiveEchoShot> _passiveEchoes = new();
+        readonly PassiveFlowRunner _passiveFlows = new();
         PassiveHud _passiveHud;
         MobilityCcData _mobilityCc;
         SkillNumberCatalog _skillNumbers;
@@ -471,6 +477,10 @@ namespace Dovus.Game
             _modeDirector = new ActiveModeDirector(_skills.ActiveModes);
             _passiveDirector = new PassiveDirector(_skills.Passives);
             _slotPassives = new SlotPassiveDirector();
+            _slotPassiveNeedsWeapon = false;
+            if (ElementSystemJsonLoader.TryLoad(out ElementSystemDesign slotDesign))
+                _slotPassiveNeedsWeapon = PassiveSlotPolicy.RequiresWeaponCompatibility(
+                    MiniJson.Parse(slotDesign.Json));
             _chainRules = LoadChainRulesOrDefault();
             _chainDirector = new ChainDirector(_skills.Chains, _chainRules);
             _recentCastElements.Clear();
@@ -792,6 +802,8 @@ namespace Dovus.Game
         {
             _passiveDirector?.Tick(worldMs);
             _slotPassives?.Tick(worldMs);
+            TickPassiveEchoes(worldMs);
+            TickPassiveFlows(worldMs);
             if (_slotPassives != null && _slotPassives.ActiveCount > 0)
                 _passiveHud?.Sync(_slotPassives.Active, worldMs);
             else if (_passiveDirector != null)
@@ -948,10 +960,11 @@ namespace Dovus.Game
             Vector3 pos = _player != null ? _player.position : Vector3.zero;
             float radius = ZoneRadiusFromJson(skill);
 
+            float zoneLife = zone.DurationSec + (_slotPassives?.LifetimeAddSecFor(_slotQueryCastId) ?? 0f);
             if (!_zoneDirector.TrySpawn(
                     zone.Element,
                     zone.Movement,
-                    zone.DurationSec,
+                    zoneLife,
                     pos.x, pos.y, pos.z,
                     radius,
                     out _,
@@ -2124,11 +2137,14 @@ namespace Dovus.Game
             // Dolu sayfa: sıra hasardan önce artsın. Her 3. skill bu vuruşta sayılır.
             NoteWeaponCast(skill);
 
+            _slotQueryCastId = _slotPassives != null ? _slotPassives.OpenCast() : 0;
+            try
+            {
             WeaponSkillCompatibility compatibility = WeaponCompatibilityFor(skill);
             LastWeaponCompatible = compatibility.Compatible;
             LastWeaponPassiveEnabled = compatibility.PassiveEnabled;
             LastWeaponUiLabel = compatibility.UiLabel;
-            if (compatibility.PassiveEnabled)
+            if (PassiveSlotPolicy.ShouldArm(true, compatibility.PassiveEnabled, _slotPassiveNeedsWeapon))
                 TryTriggerPassive(p.Words, _clock.Director.WorldTimeMs);
 
             ApplyResourceCost(skill);
@@ -2199,6 +2215,80 @@ namespace Dovus.Game
                     $"[ElementSystem] smoke 1-1 effect applied={LastSkillEffectApplied} "
                     + $"damage={dealt:0.##}");
             }
+
+            if (_slotPassives != null
+                && _clock != null
+                && _slotPassives.TryConsumeEcho(_slotQueryCastId, out float echoDelay, out float echoPower))
+            {
+                _passiveEchoes.Add(new PassiveEchoShot
+                {
+                    DueMs = _clock.Director.WorldTimeMs + echoDelay * 1000.0,
+                    Power = echoPower,
+                    SlotCastId = _slotQueryCastId,
+                    Closing = p.Closing,
+                    Skill = skill,
+                    Slash = motionPlan.SlashCommitMult,
+                    Chain = _closingChainBonus
+                });
+            }
+            }
+            finally
+            {
+                _slotPassives?.CloseCast();
+                _slotQueryCastId = 0;
+            }
+        }
+
+        struct PassiveEchoShot
+        {
+            public double DueMs;
+            public float Power;
+            public int SlotCastId;
+            public ClosingHit Closing;
+            public SkillResolution Skill;
+            public float Slash;
+            public float Chain;
+        }
+
+        void TickPassiveEchoes(double worldMs)
+        {
+            for (int i = _passiveEchoes.Count - 1; i >= 0; i--)
+            {
+                PassiveEchoShot echo = _passiveEchoes[i];
+                if (worldMs < echo.DueMs)
+                    continue;
+                _passiveEchoes.RemoveAt(i);
+                int prev = _slotQueryCastId;
+                _slotQueryCastId = echo.SlotCastId;
+                try
+                {
+                    if (IsHealSkill(echo.Skill))
+                        ApplyClosingHeal(echo.Closing, echo.Skill, echo.Power, echo.Chain);
+                    else
+                        ApplyClosingDamage(
+                            echo.Closing,
+                            echo.Skill,
+                            isBasicStrike: false,
+                            echo.Slash,
+                            echo.Power,
+                            echo.Chain);
+                }
+                finally
+                {
+                    _slotQueryCastId = prev;
+                }
+            }
+        }
+
+        void TickPassiveFlows(double worldMs)
+        {
+            if (_bossVitals == null || _bossVitals.IsDown)
+                return;
+            float damage = _passiveFlows.Collect(worldMs);
+            if (damage <= 0f)
+                return;
+            _bossVitals.ApplyDamage(damage);
+            _damageHud?.ShowDamage(damage, false, BossHitPoint(), DamageTint());
         }
 
         void SpawnClosingImpact(PendingClosing p)
@@ -2256,7 +2346,8 @@ namespace Dovus.Game
             SkillResolution skill,
             in SkillMotionPlan motionPlan,
             float effectMult = 1f,
-            LivingEffect capturedLogic = null)
+            LivingEffect capturedLogic = null,
+            int slotCastId = -1)
         {
             LivingEffect logic = capturedLogic
                 ?? (pending.View != null ? pending.View.Logic : null);
@@ -2354,11 +2445,15 @@ namespace Dovus.Game
             bool statusesApplied = false;
             float accumulatedHealScale = 0f;
             int appliedHealAmount = 0;
+            int castId = slotCastId >= 0 ? slotCastId : _slotQueryCastId;
             void ApplyExecutorEffect(float effectFraction)
             {
                 if (effectFraction <= 0f)
                     return;
-
+                int prevCast = _slotQueryCastId;
+                _slotQueryCastId = castId;
+                try
+                {
                 if (!friendly)
                     ApplyBossClosing(logic, pending.Closing, skill);
                 float hitDamage = ApplyClosingDamage(
@@ -2409,6 +2504,11 @@ namespace Dovus.Game
                 LastSkillEffectApplied = hitDamage > 0f
                     || IsHealSkill(skill)
                     || skill.Mechanics.Length > 0;
+                }
+                finally
+                {
+                    _slotQueryCastId = prevCast;
+                }
             }
 
             ApplyWeaponDelivery(
@@ -2446,10 +2546,19 @@ namespace Dovus.Game
                 applyFlatDamage: kind == SkillExecutorKind.Summon
                     ? raw =>
                     {
-                        float bindingDamage = MechanicEngine != null
-                            ? (float)MechanicEngine.Rules.Param("minion_hit_damage")
-                            : raw;
-                        ApplyMinionHit(skill, bindingDamage * effectMult);
+                        int prevCast = _slotQueryCastId;
+                        _slotQueryCastId = castId;
+                        try
+                        {
+                            float bindingDamage = MechanicEngine != null
+                                ? (float)MechanicEngine.Rules.Param("minion_hit_damage")
+                                : raw;
+                            ApplyMinionHit(skill, bindingDamage * effectMult);
+                        }
+                        finally
+                        {
+                            _slotQueryCastId = prevCast;
+                        }
                     }
                     : null,
                 spawnCount: spawnCount,
@@ -2506,9 +2615,10 @@ namespace Dovus.Game
             JsonValue engine = skill.EngineModifiers;
             float tableScale = _verbData?.AdjectiveSizeMult(adjectiveId) ?? 1f;
             float adjectiveScale = HitboxSizing.AdjectiveScale(tableScale, engine["hitbox_scale_mult"].AsFloat(0f));
-            adjectiveScale *= _slotPassives?.HitboxSizeMult ?? 1f;
+            adjectiveScale *= _slotPassives?.HitboxSizeMultFor(_slotQueryCastId) ?? 1f;
             HitboxSize size = HitboxSizing.Resolve(spec, weaponScale, adjectiveScale);
             float lifetimeAdd = Mathf.Max(0f, engine["lifetime_add"].AsFloat(0f));
+            float slotLife = _slotPassives?.LifetimeAddSecFor(_slotQueryCastId) ?? 0f;
 
             switch (kind)
             {
@@ -2525,6 +2635,7 @@ namespace Dovus.Game
                 case SkillExecutorKind.FieldAura:
                     radius = spec.IsRadius ? size.RadiusM : size.ReachM;
                     range = size.ReachM;
+                    durationSec += slotLife;
                     break;
 
                 case SkillExecutorKind.Movement:
@@ -2983,21 +3094,101 @@ namespace Dovus.Game
             if (target == null || _slotPassives == null || _slotPassives.ActiveCount == 0)
                 return;
             StatusTuning tuning = _combat != null ? _combat.Status : new StatusTuning();
-            float rootSec = _slotPassives.MaxModifier("apply_root_sec");
+            int castId = _slotQueryCastId;
+            float rootSec = _slotPassives.RootSecondsFor(castId);
             if (rootSec > 0f)
                 target.Board.Apply(StatusKind.Root, rootSec * 1000.0, 1f, "passive:root");
-            float slow = _slotPassives.MaxModifier("apply_slow");
-            if (slow > 0f)
+            float speed = _slotPassives.SlowSpeedFor(castId);
+            if (speed < 0.999f)
                 target.Board.Apply(
                     StatusKind.Slow,
                     _mobilityCc?.ResolveCcDurationMs(StatusKind.Slow, 0, tuning.SlowMs) ?? tuning.SlowMs,
-                    slow <= 1f ? slow : tuning.SlowSpeedMult,
+                    speed,
                     "passive:slow");
-            if (_slotPassives.HasModifier("accuracy_debuff"))
-                target.Board.Apply(
-                    StatusKind.Blind,
-                    _mobilityCc?.ResolveCcDurationMs(StatusKind.Blind, 0, tuning.BlindMs) ?? tuning.BlindMs,
-                    1f);
+            if (_slotPassives.HasAccuracyDebuff(castId))
+            {
+                double blindMs = (_mobilityCc?.ResolveCcDurationMs(StatusKind.Blind, 0, tuning.BlindMs) ?? tuning.BlindMs)
+                    + _slotPassives.AccuracyLifetimeAddSecFor(castId) * 1000.0;
+                target.Board.Apply(StatusKind.Blind, blindMs, 1f, "passive:blind");
+            }
+        }
+
+        void ApplySlotPassiveHitExtras(float dealt)
+        {
+            if (_passiveBonusDepth > 0 || dealt <= 0f || _slotPassives == null)
+                return;
+            _passiveBonusDepth++;
+            try
+            {
+                ApplySlotBounce(dealt);
+                StartSlotFlow(dealt);
+            }
+            finally
+            {
+                _passiveBonusDepth--;
+            }
+        }
+
+        void ApplySlotBounce(float dealt)
+        {
+            int castId = _slotQueryCastId;
+            int count = _slotPassives.BounceCountFor(castId);
+            float mult = _slotPassives.BounceDamageMultFor(castId);
+            if (count <= 0 || mult <= 0f)
+                return;
+            int sourceId = _boss != null ? _boss.GetInstanceID() : 0;
+            var candidates = new List<PassiveBounceCandidate>();
+            Vector3 from = _boss != null ? _boss.transform.position : (_player != null ? _player.position : Vector3.zero);
+            Targetable[] bodies = FindObjectsByType<Targetable>(FindObjectsSortMode.None);
+            for (int i = 0; i < bodies.Length; i++)
+            {
+                Targetable body = bodies[i];
+                if (body == null || !IsEnemyBody(body.transform))
+                    continue;
+                if (_boss != null && (body.transform == _boss.transform || body.transform.IsChildOf(_boss.transform)))
+                    continue;
+                candidates.Add(new PassiveBounceCandidate(
+                    body.GetInstanceID(),
+                    body.DistanceFrom(from)));
+            }
+
+            List<PassiveBounceHit> hits = PassiveBounce.Plan(dealt, count, mult, sourceId, candidates);
+            for (int i = 0; i < hits.Count; i++)
+                ApplyPassiveBonusHit(hits[i]);
+        }
+
+        void ApplyPassiveBonusHit(PassiveBounceHit hit)
+        {
+            if (hit.Damage <= 0f || _bossVitals == null || _bossVitals.IsDown)
+                return;
+            bool bossHit = _boss == null
+                || hit.TargetId == 0
+                || hit.TargetId == _boss.GetInstanceID();
+            if (!bossHit)
+                return;
+            _bossVitals.ApplyDamage(hit.Damage);
+            _damageHud?.ShowDamage(hit.Damage, false, BossHitPoint(), DamageTint());
+        }
+
+        void StartSlotFlow(float dealt)
+        {
+            int castId = _slotQueryCastId;
+            float channel = _slotPassives.ChannelSecFor(castId);
+            if (channel <= 0f)
+                return;
+            float rate = _slotPassives.TickRateMultFor(castId);
+            float baseTick = _combat != null ? _combat.Manifestation.ExecutorFieldTickSec : 1f;
+            float fraction = PassiveFlowMath.DefaultTickFraction;
+            if (MechanicEngine != null)
+            {
+                double fromJson = MechanicEngine.Rules.Param("flow_tick_fraction");
+                if (fromJson > 0d)
+                    fraction = (float)fromJson;
+            }
+            if (!PassiveFlowMath.TryPlan(channel, rate, dealt, baseTick, fraction, out PassiveFlowPlan plan))
+                return;
+            double now = _clock != null ? _clock.Director.WorldTimeMs : 0d;
+            _passiveFlows.Start(plan, now);
         }
 
         /// <summary>
@@ -3191,7 +3382,7 @@ namespace Dovus.Game
             _lastDamageDealtMs = _clock.Director.WorldTimeMs; // "dealt_damage_recently" (Öfke Patlaması)
 
             float lifesteal = (_modeDirector?.Lifesteal ?? 0f) + (_passiveDirector?.LifestealAdd ?? 0f);
-            lifesteal += _slotPassives?.LifestealAdd ?? 0f;
+            lifesteal += _slotPassives?.LifestealAddFor(_slotQueryCastId) ?? 0f;
             lifesteal += AdjectiveLifesteal(skill);
             if (lifesteal > 0f)
             {
@@ -3214,6 +3405,7 @@ namespace Dovus.Game
 
             NotifyBossStruck(isCrit, allowHitstop: true);
             bossVisual?.PlayStagger();
+            ApplySlotPassiveHitExtras(damage);
             return damage;
         }
 

@@ -50,11 +50,7 @@ namespace Dovus.Game
         public bool EffectiveBlocksMovement =>
             Board.BlocksMovement
             || (ModeDirector?.BlocksMovement ?? false)
-            || (CastMobilityActive && _castMobility == Dovus.Core.Grammar.SkillMobility.Rooted)
-            || string.Equals(
-                SlotPassiveDirector?.StringModifier("cast_mobility"),
-                Dovus.Core.Grammar.SkillMobility.Rooted,
-                System.StringComparison.Ordinal);
+            || (CastMobilityActive && _castMobility == Dovus.Core.Grammar.SkillMobility.Rooted);
 
         public void GrantCastMobility(string mobility, double untilWorldMs)
         {

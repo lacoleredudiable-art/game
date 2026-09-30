@@ -159,6 +159,7 @@ namespace Dovus.Game
 
             float arena = _colors != null ? _colors.ArenaHalfSizeM : 50f;
             _templateSkill = skill;
+            _templateSlotCastId = _slotQueryCastId;
             _templatePending = pending;
             _templateChain = _closingChainBonus;
             _templateStatusSent = false;
@@ -227,6 +228,10 @@ namespace Dovus.Game
 
         void OnMotionTemplateHit(MotionHit hit)
         {
+            int prevCast = _slotQueryCastId;
+            _slotQueryCastId = _templateSlotCastId;
+            try
+            {
             if (hit.Payload == "marker" && hit.Anchor == "plant")
             {
                 SpawnFuse(hit);
@@ -283,6 +288,11 @@ namespace Dovus.Game
                         new Vector3(hit.OriginX, 0f, hit.OriginZ));
                 }
                 _templateStatusSent = true;
+            }
+            }
+            finally
+            {
+                _slotQueryCastId = prevCast;
             }
         }
 
@@ -355,7 +365,7 @@ namespace Dovus.Game
             float table = _verbData?.AdjectiveSizeMult(adjectiveId) ?? 1f;
             float engineScale = skill.EngineModifiers["hitbox_scale_mult"].AsFloat(0f);
             float adjective = HitboxSizing.AdjectiveScale(table, engineScale);
-            adjective *= _slotPassives?.HitboxSizeMult ?? 1f;
+            adjective *= _slotPassives?.HitboxSizeMultFor(_templateSlotCastId) ?? 1f;
             return HitboxSizing.Resolve(spec, weaponScale, adjective).ReachM;
         }
 
