@@ -13,8 +13,27 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (PR #28 silahlar + master: #31 pasif yuvaları, birleşik test) ·
-**Dal:** `master` · **Sıradaki:** Top 1-2 (konum + bir kez gövdeye girme), Yumruk/Kalkan 1-4, Yumruk 2-2
+**Son güncelleme:** 30 Eylül 2026 (PR #32 ayaklar yere merge edildi; PR #29 portal/sınır/takım Play testi, merge yok) ·
+**Dal:** `master` · **Sıradaki:** #29 Kılıç 9-10 / 2-6 / 11-8 + sınır–can çalma çakışması; Top 1-2, Yumruk/Kalkan 1-4, Yumruk 2-2
+
+> **30 Eylül — PR #32 ve #29 Play testi.** **#32 merge edildi** (`6cccf68`): master alındı
+> (çakışma: `durum.md`, `PlaySweep.cs`, `ManifestationDirector.WeaponSwap.cs`,
+> `MotionTemplateBody.cs`, iki taraf da tutuldu), `dotnet test` 493/493, derleme temiz. İlk 4×
+> tarama 272/288'di: master'ın ertelenmiş son karesi (`_stopAfterSample`) sıçrama/süzülme
+> kalıplarında yer ölçüsüne giriyordu → `7f12087` biten koşucunun karesini `yerde`den çıkarır.
+> Sonra Kılıç 144/144, Asa 144/144, `yerde` 0/0, 7-3/7-6/7-11 ayak 0,00, gövdeye girme 0.
+> Elle (Kılıç `[3,6,5,2,1,4]`): 3-6 çekme → 5-2 Emici → 1-2 → 1-4, zemin karelerinde ayak
+> ±0,001 m, bitişten 0,3 sn sonra ±0,001 m, boss'a en yakın 1,35 m (yarıçap 0,85).
+> **#29 merge edilmedi** (`feat/portal-border-team`, dala push yok): master + #32 alındı
+> (çakışma: `durum.md`, `ActorStatus.cs`), `dotnet test` 523/523, derleme temiz. 4× tarama
+> **Kılıç 141/144** (kural ≥142), Asa 142/144; `yerde` 0/0, gövde 0, sıçrama 0. Kalanlar: 9-10
+> iki silah `konum` (ışın tek karede 8,34 m, sınır 2,51 m), 2-6 iki silah `tek_sistem` (kalıp
+> hedefi AllyDummy, kalıp 3,40 m + başka 0,48 m), 11-8 Kılıç `tek_sistem` (başka 0,18 m, sınır
+> 0,15). 9-11, 9-12, 10-8, 10-9, 11-7, 1-3, 8-12 iki silahta geçti. Takım elle: can %15 + 1-2 →
+> sınır **yalnız 1 kare** açık (1-2 can çalması canı %15→%31'e çıkarıyor, eşik 0,20 → Tick
+> kapatıyor); can %80 → kapalı. 3-10: 2 kapı, oyuncu 1,50 m. Panel dostu + 9-10: tam yer
+> değişimi (0,00 m) ama dostun Y'si 1,00→0,00. 8-1: boss kapıdan geçince vuruş ölçeği 0,70,
+> 2,01 sn. Kimse boss içinde değil (en yakın 1,35 m).
 
 > **30 Eylül — boss 5 cm havada.** 4× taramada yalnız 7-3, 7-6, 7-11 (iki silah, iki koşu).
 > Ayak kilidi görselin lossyScale'ine bölüyordu; boss kapsülünün Y ölçeği 1,3 ve görsel fit'i
@@ -1813,6 +1832,11 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
+- **PR #29 portal/sınır/takım (30 Eylül, merge yok).** Kılıç 141/144: 9-10 ışını tek karede
+  8,34 m (tarama `konum`), 2-6 kalıbı AllyDummy'yi hedefliyor (`tek_sistem`), 11-8 Kılıç başka
+  sistem 0,18 m. Sınır 1-2 ile can %15'te açılıp aynı skill'in can çalmasıyla bir karede
+  kapanıyor (%31) — tasarım kararı gerekiyor. 9-10 yer değişiminde dost Y=0'a iniyor
+  (`Placement` Y 0f).
 - **PR #28 Top 1-2 (30 Eylül).** Emici çekmesi + Top geri tepmesi: oyuncu simülasyondan ~1,6 m
   farklı biter, tam taramada bir kez boss gövdesine 1,03 m girdi (tekrarda 0/3, kararsız).
   Yumruk/Kalkan 1-4 hasarsız, Yumruk 2-2 kalıbı 10,9 sn.
