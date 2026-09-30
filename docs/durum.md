@@ -13,8 +13,10 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (PR #28 silahlar + master: #31 pasif yuvaları, birleşik test) ·
-**Dal:** `master` · **Sıradaki:** Top 1-2 (konum + bir kez gövdeye girme), Yumruk/Kalkan 1-4, Yumruk 2-2
+**Son güncelleme:** 30 Eylül 2026 (silah tarama artıkları) ·
+**Dal:** `cursor/silah-tarama-artiklari-a2ff` · **Sıradaki:** 1440 tarama Unity Play'de tekrar (bu ortamda yok)
+
+> **30 Eylül — tarama artıkları.** Top 1-2: Emici yerinde tutulan kalıba geri tepme eklenmez; geri çekilme boss yarıçapının dışında biter; tarama simülasyonu tutma bayrağını geçer. Yumruk/Kalkan 1-4: planlanan durak hem JSON kenarını hem kendi küresini ıskalıyorsa kapanış yalnız JSON kenarından (0,75 m); kılıç 1-4 ek hamle almaz. Yumruk 2-2: dört vuruş aynı anda ve zaman aşımı notu 11,3 sn (eşik 6,4) tek karelik saat sıçraması; dünya karesi en çok 100 ms. Unity Play / 1440 tekrar yok.
 
 > **30 Eylül — PR #28 Play testi (`b45ee56`, master + #31 alınmış): kural gereği merge edilmedi, sahip
 > kararıyla merge edildi (`674d889`); Top 1-2 açığı master'da.** `dotnet test` 485/485,
@@ -1795,9 +1797,9 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
-- **PR #28 Top 1-2 (30 Eylül).** Emici çekmesi + Top geri tepmesi: oyuncu simülasyondan ~1,6 m
-  farklı biter, tam taramada bir kez boss gövdesine 1,03 m girdi (tekrarda 0/3, kararsız).
-  Yumruk/Kalkan 1-4 hasarsız, Yumruk 2-2 kalıbı 10,9 sn.
+- **Tarama artıkları kodda (30 Eylül), Play tekrar yok.** Top 1-2 geri tepmesi Emici tutmada yok,
+  geri çekilme temasın dışında, Yumruk/Kalkan 1-4 JSON kenarına kapanır, Yumruk 2-2 saati kare
+  başına 100 ms ile sınırlı. 1440 tarama bu dalda koşulmadı.
 - **10 silah taraması (30 Eylül, kod; Play tekrar yok).** `hepsi.csv` 1395/1440 kalanları kodda
   ele alındı: Top geri tepmesi kalıp fazı, düz atış ilk gövdede patlar, Yumruk/Kalkan menzil
   dışı `kapan` ile kapanır, 6-2 cast başı menzili korunur, 2-9 koşucu saate yetişir, Küre 8-11

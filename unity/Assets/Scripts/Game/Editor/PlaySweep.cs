@@ -993,7 +993,10 @@ namespace Dovus.Game.EditorTools
             if (aim != null)
             {
                 float r = aim == _boss.transform ? info.BossR : Call<float>(_md, "ColliderRadius", aim);
-                target = new MotionTarget(true, aim.position.x, aim.position.z, r);
+                bool hold = aim == _boss.transform
+                    && EmiciApproach.ShouldHoldCaster(
+                        info.Adj.ToString(CultureInfo.InvariantCulture), info.Template);
+                target = new MotionTarget(true, aim.position.x, aim.position.z, r, hold);
             }
             var runner = new MotionTemplateRunner();
             runner.Begin(info.Template, s.x, s.y, s.z, 0f, 1f, info.PlayerR, info.StopGap);
