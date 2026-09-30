@@ -177,7 +177,6 @@ namespace Dovus.Game
             var dodgeMotion = player.AddComponent<DodgeMotion>();
             player.AddComponent<PlayerDodgeRig>();
             player.AddComponent<WeaponShortShieldHost>().Bind(clock);
-            player.AddComponent<SkillMotionDriver>();
             player.AddComponent<MotionTemplateBody>();
             player.AddComponent<ActorGrounding>();
 

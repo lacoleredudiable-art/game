@@ -63,10 +63,7 @@ namespace Dovus.Game
         SkillFactory _skillFactory;
         ActorStatus _playerStatus;
         ActorStatus _bossStatus;
-        SkillMotionDriver _motionDriver;
         MotionTemplateBody _motionBody;
-        StateBridgeBoard _stateBoard;
-        StateBridgeView _bridgeView;
         AllyDummy _ally;
 
         // --- Ulti (active_modes) — 16 Eylül, güven kaygısına karşılık uçtan uca ---
@@ -301,7 +298,6 @@ namespace Dovus.Game
             (_engine != null && (_engine.State.Phase == SentencePhase.Building
                 || _engine.State.Phase == SentencePhase.Recovering))
             || _pending.Count > 0
-            || (_motionDriver != null && _motionDriver.IsDisplacing)
             || (_motionBody != null && _motionBody.IsDisplacing)
             || (_visual != null && _visual.IsAttackPose);
 
@@ -507,19 +503,6 @@ namespace Dovus.Game
                 _playerStatus.DamageBlocked += _ => NoteShieldBlockIfGuarding();
             }
 
-            _motionDriver = player.GetComponent<SkillMotionDriver>();
-            if (_motionDriver == null)
-                _motionDriver = player.gameObject.AddComponent<SkillMotionDriver>();
-            _motionDriver.Bind(clock, colors);
-
-            _stateBoard = new StateBridgeBoard();
-            _bridgeView = FindAnyObjectByType<StateBridgeView>();
-            if (_bridgeView == null)
-            {
-                var bridgeGo = new GameObject("StateBridge");
-                _bridgeView = bridgeGo.AddComponent<StateBridgeView>();
-            }
-            _bridgeView.Bind(_stateBoard);
 
             if (_engine != null && !_hooked)
             {
@@ -583,7 +566,6 @@ namespace Dovus.Game
             _boss?.Tick(dtSec, worldMs);
             TickPendingClosings(worldMs);
             TickBossDeath();
-            TickStateBridge(worldMs);
             TickActiveMode(worldMs, dtSec);
             TickPassives(worldMs);
             SyncDashCooldownMult();
@@ -1422,29 +1404,6 @@ namespace Dovus.Game
             return ChainRules.DefaultFromSpec;
         }
 
-        void TickStateBridge(double worldMs)
-        {
-            if (_stateBoard == null || _combat == null)
-                return;
-
-            var motion = _combat.SkillMotion;
-            motion.ArenaHalfSizeM = _colors != null ? _colors.ArenaHalfSizeM : motion.ArenaHalfSizeM;
-            _stateBoard.Tick(worldMs, motion);
-            _bridgeView?.Sync();
-
-            if (_player == null || _motionDriver == null || _motionDriver.IsDisplacing)
-                return;
-            if (_playerStatus != null && _playerStatus.Board.BlocksMovement)
-                return;
-
-            Vector3 p = _player.position;
-            if (_stateBoard.TryTraverse(p.x, p.z, worldMs, motion, out float dx, out float dz))
-            {
-                _motionDriver.WarpInstant(dx, dz);
-                _readout?.NoteSkill("Portal", "köprü geçişi", new Color(0.55f, 0.4f, 1f));
-            }
-        }
-
         void TickBossDeath()
         {
             if (!_deathPending || _clock == null)
@@ -2124,9 +2083,6 @@ namespace Dovus.Game
             SkillExecutorRoute executorRoute = _skillExecutorRouter.Route(skill, _equippedWeapon);
             executorRoute = ApplyMechanicWorldRoute(MechanicPlanFor(skill), executorRoute);
             LastExecutorKind = executorRoute.Kind;
-            // Hareket executor'ı dash'i kendisi başlatır (Sıçrama/Kopyalama tekrarları için).
-            if (!templateOwnsDelivery && executorRoute.Kind != SkillExecutorKind.Movement)
-                ApplySkillMotion(motionPlan, skill);
             ApplySelfCastEffects(skill);
             BeginMechanicPlan(
                 skill,
@@ -2140,8 +2096,6 @@ namespace Dovus.Game
                 && TryLaunchSkillExecutor(executorRoute.Kind, p, skill, motionPlan);
             if (executorStarted)
                 ScheduleFollowUpLaunches(executorRoute.Kind, p, skill, motionPlan);
-            else if (!templateOwnsDelivery && executorRoute.Kind == SkillExecutorKind.Movement)
-                ApplySkillMotion(motionPlan, skill);
             float dealt = 0f;
             if (!executorStarted && !templateOwnsDelivery)
             {
@@ -2525,9 +2479,6 @@ namespace Dovus.Game
                 _clock,
                 tuning,
                 fieldCenter,
-                startMotion: kind == SkillExecutorKind.Movement
-                    ? () => ApplySkillMotion(ResolveSkillMotion(skill), skill)
-                    : null,
                 applyFlatDamage: kind == SkillExecutorKind.Summon
                     ? raw =>
                     {
@@ -2564,11 +2515,6 @@ namespace Dovus.Game
             go.transform.SetParent(transform, false);
             ISkillExecutor executor = kind switch
             {
-                SkillExecutorKind.MeleeHitbox => go.AddComponent<MeleeHitboxExecutor>(),
-                SkillExecutorKind.Projectile => go.AddComponent<ProjectileExecutor>(),
-                SkillExecutorKind.FieldAura => go.AddComponent<FieldAuraExecutor>(),
-                SkillExecutorKind.Movement => go.AddComponent<MovementExecutor>(),
-                SkillExecutorKind.SelfState => go.AddComponent<SelfStateExecutor>(),
                 SkillExecutorKind.Summon => go.AddComponent<SummonExecutor>(),
                 _ => null
             };
@@ -2844,22 +2790,6 @@ namespace Dovus.Game
                 skill, ctx, t,
                 _skills != null ? _skills.SpaceEffects : null,
                 _verbData?.IFrameMsFor(skill.SkillId) ?? 0);
-        }
-
-        void ApplySkillMotion(in SkillMotionPlan plan, SkillResolution skill)
-        {
-            if (plan.IsEmpty || _clock == null)
-                return;
-
-            double worldMs = _clock.Director.WorldTimeMs;
-            if (plan.Kind == SkillMotionKind.PlaceMark)
-            {
-                _stateBoard?.PlaceMark(plan.MarkType, plan.DestX, plan.DestZ, worldMs, _combat.SkillMotion);
-                _bridgeView?.Sync();
-                return;
-            }
-
-            _motionDriver?.Play(plan, worldMs);
         }
 
         void AnnotateMotion(SkillResolution skill, in SkillMotionPlan plan)
