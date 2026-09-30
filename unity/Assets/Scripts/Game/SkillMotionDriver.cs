@@ -45,6 +45,9 @@ namespace Dovus.Game
                 return;
 
             _from = transform.position;
+            ActorGrounding grounding = GetComponent<ActorGrounding>();
+            if (grounding != null)
+                _from.y = grounding.PlantedRootY;
             _to = new Vector3(plan.DestX, _from.y, plan.DestZ);
             _face = new Vector3(plan.FaceX, 0f, plan.FaceZ);
             if (_face.sqrMagnitude < 0.0001f)

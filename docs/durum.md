@@ -16,6 +16,12 @@
 **Son güncelleme:** 30 Eylül 2026 (PR #28 silahlar + master: #31 pasif yuvaları, birleşik test) ·
 **Dal:** `master` · **Sıradaki:** Top 1-2 (konum + bir kez gövdeye girme), Yumruk/Kalkan 1-4, Yumruk 2-2
 
+> **30 Eylül — boss 5 cm havada.** 4× taramada yalnız 7-3, 7-6, 7-11 (iki silah, iki koşu).
+> Ayak kilidi görselin lossyScale'ine bölüyordu; boss kapsülünün Y ölçeği 1,3 ve görsel fit'i
+> büyük olduğu için düzeltme eksik kalıyor, stagger pozu ~5 cm havada duruyordu. Kayma artık
+> ebeveyn ölçeğiyle. Kaldırma yüksekliği iç sayaç: sıfırın altına inince kapsül zeminine yapışır,
+> Home Y havadaki örnekten yükselmez. Eşik gevşetilmedi. Unity Play bu düzeltmede yok.
+
 > **30 Eylül — PR #28 Play testi (`b45ee56`, master + #31 alınmış): kural gereği merge edilmedi, sahip
 > kararıyla merge edildi (`674d889`); Top 1-2 açığı master'da.** `dotnet test` 485/485,
 > `check.py` geçti, Unity derlemesi temiz, konsolda yalnız bilinen URP/ShaderGraph paket hataları.
@@ -68,6 +74,18 @@
 > #29 master'a birleşirken `ActorStatus`/`ManifestationDirector` çakışır; takım çarpanları
 > `ComputeOutgoingHit` ve `ApplyDamage` içindeki `taken`/`outMult`'a taşınmalı. Takım paneli ve
 > yere basma elle kontrolleri koşulmadı.
+
+> **30 Eylül — ayak zemini, tarama 4×.** Skill kökü cast başındaki Y'yi zemin sanıyor, Emici
+> çekme kökü mutlak `y=0`'a indiriyordu (kapsül merkezi ~1 m; ayaklar zeminin altına).
+> Hover/channel bitince yükseklik sonraki cast'in zemini oluyordu. `Grounding` + `VerticalCurve`:
+> havadaki faz (`hop/leap/slam/hover`, yüksekliği olan `channel`) eğriyi izler, bitiş ve dodge /
+> silah değişimi / sersemletme / ölüm kısa smoothstep ile çakılı zemine iner. Görsel local Y her
+> kare spawn ofsetine döner, en alçak ayak o zemine kilitlenir. Boss ve dost dummy aynı
+> bileşende. Play Sweep `yerde` sütunu: havada değilken ayak payı 0,05 m × (kare / 1/60);
+> bitişten 0,30 sn sonra 0,03 m (hızdan bağımsız). Menü `Hız/4x` varsayılan, `Hız/1x` ayıklama.
+> `Time.timeScale` ve `GameClock.SimulationScale` aynı çarpan; `fixedDeltaTime` 1× adımında
+> kalır. Cast arası bekleme iki fizik adımı. `1440 kombo - Tüm silahlar` katalogdaki silahları
+> tarar. Unity Play bu turda koşulmadı.
 
 > **30 Eylül — pasif yuva (0–2) çalışır.** Tetikleyen cast pasifi kendine uygulamaz.
 > Bağlama yavaşı `1 − apply_slow`. Sabitleme oyuncuyu köklemez; sonraki vuruşlara poise ×1.5
