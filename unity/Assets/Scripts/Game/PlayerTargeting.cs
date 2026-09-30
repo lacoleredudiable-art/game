@@ -174,7 +174,10 @@ namespace Dovus.Game
             failure = result.Failure;
             if (!result.Allowed)
             {
-                target = null;
+                target = result.Failure == TargetFailure.OutOfRange
+                    && _candidateMap.TryGetValue(result.TargetId, out Targetable far)
+                    ? far.transform
+                    : null;
                 return false;
             }
 

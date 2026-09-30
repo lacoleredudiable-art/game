@@ -455,7 +455,6 @@ namespace Dovus.Game
             var director = manGo.AddComponent<ManifestationDirector>();
             director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, allyDummy, modeHud, view, passiveHud, equippedWeapon, equipmentBonus, skills, skillFactory, design?.Animations);
             director.BindTargeting(targeting);
-            player.gameObject.AddComponent<OrbGestureInput>().Bind(director, input, Camera.main, player);
             director.ConfigureWeaponCycle(design?.Equipment.Items);
             if (design != null)
             {
@@ -475,6 +474,8 @@ namespace Dovus.Game
             }
             view.BindWeaponSwap(director, clock);
             input.WeaponSwapRequested += () => director.TryRequestWeaponSwap();
+            input.WeaponHudRequested += () => director.OnWeaponHudButton();
+            input.OrbCommandRequested += () => director.ToggleOrb();
 
             var preview = root.AddComponent<SkillPreviewHud>();
             preview.Configure(input.Engine, skills, skillFactory, director, _tuning, view.CanvasRoot);

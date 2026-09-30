@@ -1621,6 +1621,18 @@ namespace Dovus.Game
                 : TryResolveLegacyTarget(skill, aimMode, range, out target, out failure);
             if (!allowed)
             {
+                // Menzil dışı sessizce yutulmaz: hedef kalır, kalıp aradaki yolu kapanış fazıyla alır.
+                if (failure == TargetFailure.OutOfRange && target != null
+                    && aimMode == SkillAimMode.Targeted)
+                {
+                    _armedTarget = target;
+                    _armedSkillId = skill.SkillId;
+                    _directionalAttack = false;
+                    _castFacingTarget = target != _player ? target : null;
+                    FaceTarget(AttackLockTarget());
+                    return true;
+                }
+
                 _armedTarget = null;
                 _armedSkillId = string.Empty;
                 _castFacingTarget = null;
@@ -1661,6 +1673,12 @@ namespace Dovus.Game
             {
                 target = _boss.transform;
                 return true;
+            }
+            if (_boss != null)
+            {
+                target = _boss.transform;
+                failure = TargetFailure.OutOfRange;
+                return false;
             }
             target = null;
             failure = TargetFailure.NoTarget;
@@ -1762,6 +1780,8 @@ namespace Dovus.Game
                 facing.z,
                 words,
                 man);
+            if (basicStrike)
+                StopBasicCannonAtFirstBody(logic, pos, facing);
 
             var go = new GameObject(basicStrike ? "LivingEffect_BasicStrike" : "LivingEffect_" + words[0].Rune);
             go.transform.SetParent(transform, false);

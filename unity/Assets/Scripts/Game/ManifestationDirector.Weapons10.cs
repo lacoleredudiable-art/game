@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Dovus.Core.Equipment;
 using Dovus.Core.Execution;
 using Dovus.Core.Grammar;
+using Dovus.Core.Manifestation;
 using Dovus.Core.Status;
 using UnityEngine;
 
@@ -123,6 +124,21 @@ namespace Dovus.Game
         float WeaponCooldownMult() =>
             EquippedProfile != null ? EquippedProfile.CooldownMult : 1f;
 
+        void StopBasicCannonAtFirstBody(LivingEffect logic, Vector3 origin, Vector3 facing)
+        {
+            WeaponCombatProfile profile = EquippedProfile;
+            if (logic == null || profile == null || profile.HitShape != "ballistic" || _boss == null)
+                return;
+            float reach = WeaponBasicReach(profile.BasicReachM > 0f ? profile.BasicReachM : 25f);
+            Vector3 boss = _boss.transform.position;
+            if (!CannonShot.TryImpact(
+                    origin.x, origin.z, facing.x, facing.z, reach,
+                    boss.x, boss.z, BossBodyRadius(),
+                    out _, out _, out float dist))
+                return;
+            logic.StopAt(dist);
+        }
+
         float WeaponBasicReach(float fallback)
         {
             WeaponCombatProfile profile = EquippedProfile;
@@ -215,6 +231,62 @@ namespace Dovus.Game
                 return false;
             Vector3 p = _player.position;
             return _orb.TryRecall(p.x, p.z, _clock.Director.WorldTimeMs, EquippedProfile);
+        }
+
+        /// <summary>
+        /// Küre kuşanılıyken HUD silah düğmesi değiştirmez: eldeyse hedefe yollar, değilse çağırır.
+        /// </summary>
+        public void OnWeaponHudButton()
+        {
+            if (IsOrbWeapon())
+            {
+                ToggleOrb();
+                return;
+            }
+            TryRequestWeaponSwap();
+        }
+
+        /// <summary>Editör kısayolu ve HUD. Çizim alanına dokunmaz.</summary>
+        public bool ToggleOrb()
+        {
+            if (!IsOrbWeapon() || _player == null || _clock == null)
+                return false;
+            if (OrbHudCommand.Tap(_orb.AtHand) == OrbGestureResult.Place)
+            {
+                if (!TryCurrentOrbTarget(out float x, out float z))
+                    return false;
+                return TryPlaceOrb(x, z);
+            }
+            return TryRecallOrb();
+        }
+
+        bool IsOrbWeapon()
+        {
+            WeaponCombatProfile profile = EquippedProfile;
+            return profile != null && profile.HitShape == "orb" && profile.OrbPlaceM > 0f;
+        }
+
+        bool TryCurrentOrbTarget(out float x, out float z)
+        {
+            Transform mark = null;
+            if (_targeting != null && _targeting.Selected != null && _targeting.Selected.IsAvailable)
+                mark = _targeting.Selected.transform;
+            if (mark == null && _boss != null)
+                mark = _boss.transform;
+            if (mark != null && mark != _player)
+            {
+                x = mark.position.x;
+                z = mark.position.z;
+                return true;
+            }
+            Vector3 face = FlatBodyForward();
+            float dist = EquippedProfile != null && EquippedProfile.OrbPlaceM > 0f
+                ? EquippedProfile.OrbPlaceM
+                : 8f;
+            Vector3 p = _player.position;
+            x = p.x + face.x * dist;
+            z = p.z + face.z * dist;
+            return true;
         }
 
         void NoteWeaponCast(in SkillResolution skill)
@@ -429,12 +501,14 @@ namespace Dovus.Game
 
         void TickCannonRecoil()
         {
-            if (!_cannonQueued)
-                return;
-            if (_motionBody != null && _motionBody.IsDisplacing)
-                return;
-            _cannonQueued = false;
-            ApplyCannonBlast(_cannonImpactX, _cannonImpactZ);
+            bool playing = _motionBody != null && _motionBody.IsDisplacing;
+            if (_cannonQueued && !playing)
+            {
+                _cannonQueued = false;
+                ApplyCannonBlast(_cannonImpactX, _cannonImpactZ);
+            }
+            if (!playing)
+                _recoilInTemplate = false;
         }
 
         void ApplyCannonBlast(float impactX, float impactZ)
@@ -461,7 +535,7 @@ namespace Dovus.Game
 
             PushCannonBodies(impactX, impactZ, splash, arena, bossR);
 
-            if (profile.RecoilM <= 0f)
+            if (profile.RecoilM <= 0f || _recoilInTemplate)
                 return;
             Vector3 player = _player.position;
             float dirX = player.x - impactX;

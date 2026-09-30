@@ -41,51 +41,13 @@ namespace Dovus.Core.Equipment
     }
 
     /// <summary>
-    /// Küre yerleştirme girdisi. Uzun basıp bırakmak yerleştirir, kısa çift dokunuş eline çağırır.
-    /// Süreler silahın orb satırından gelir.
+    /// Küre HUD düğmesi. Çizim alanındaki basılı tutma ve çift dokunuş yoktur.
+    /// Eldeyse seçili hedefe gider, dışarıdaysa geri çağrılır. Yolculuk süresi OrbAnchor'da.
     /// </summary>
-    public sealed class OrbGesture
+    public static class OrbHudCommand
     {
-        readonly float _holdMs;
-        readonly float _doubleTapMs;
-        bool _down;
-        double _downMs;
-        double _lastTapMs = double.NegativeInfinity;
-
-        public OrbGesture(float holdSec, float doubleTapSec)
-        {
-            _holdMs = (holdSec > 0f ? holdSec : 0.4f) * 1000f;
-            _doubleTapMs = (doubleTapSec > 0f ? doubleTapSec : 0.3f) * 1000f;
-        }
-
-        public void Press(double nowMs)
-        {
-            _down = true;
-            _downMs = nowMs;
-        }
-
-        public void Cancel() => _down = false;
-
-        public OrbGestureResult Release(double nowMs)
-        {
-            if (!_down)
-                return OrbGestureResult.None;
-            _down = false;
-            if (nowMs - _downMs >= _holdMs)
-            {
-                _lastTapMs = double.NegativeInfinity;
-                return OrbGestureResult.Place;
-            }
-
-            if (nowMs - _lastTapMs <= _doubleTapMs)
-            {
-                _lastTapMs = double.NegativeInfinity;
-                return OrbGestureResult.Recall;
-            }
-
-            _lastTapMs = nowMs;
-            return OrbGestureResult.None;
-        }
+        public static OrbGestureResult Tap(bool atHand) =>
+            atHand ? OrbGestureResult.Place : OrbGestureResult.Recall;
     }
 
     public enum OrbGestureResult

@@ -9,18 +9,10 @@ namespace CoreTests;
 public class WeaponPayoffTests
 {
     [Test]
-    public void OrbGesture_HoldReleasePlaces_DoubleTapRecalls()
+    public void OrbHud_TapSendsWhenAtHand_AndRecallsWhenAway()
     {
-        var gesture = new OrbGesture(0.4f, 0.3f);
-        gesture.Press(0);
-        Assert.That(gesture.Release(100), Is.EqualTo(OrbGestureResult.None));
-        gesture.Press(150);
-        Assert.That(gesture.Release(350), Is.EqualTo(OrbGestureResult.Recall));
-
-        gesture.Press(2000);
-        Assert.That(gesture.Release(2400), Is.EqualTo(OrbGestureResult.Place));
-        gesture.Press(2500);
-        Assert.That(gesture.Release(2600), Is.EqualTo(OrbGestureResult.None));
+        Assert.That(OrbHudCommand.Tap(atHand: true), Is.EqualTo(OrbGestureResult.Place));
+        Assert.That(OrbHudCommand.Tap(atHand: false), Is.EqualTo(OrbGestureResult.Recall));
     }
 
     [Test]

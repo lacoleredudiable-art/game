@@ -13,8 +13,10 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (silah pasifleri, `feat/weapons-10`) ·
-**Dal:** `feat/weapons-10` · **Sıradaki:** Unity Play'de pasifleri ve 1-9/5-9/Zafiyet hasarını gözle doğrula
+**Son güncelleme:** 30 Eylül 2026 (tarama düzeltmeleri + küre düğmesi, `feat/weapons-10`) ·
+**Dal:** `feat/weapons-10` · **Sıradaki:** Unity Play'de 1440 taramayı bir kez daha koş
+
+> **30 Eylül — tarama artıkları (`hepsi.csv` 1395/1440).** Top'un 0,5 m geri tepmesi hasarlı kalıbın son fazı (`geri_tepme`, 0,12 sn); bu faz varken oyuncuya ayrı konum yazılmaz. Düz top atışı ışının ucunda değil, ilk değdiği boss yüzeyinde patlar ve iter. Yumruk/Kalkan menzil kapısı sessizce yutmaz: menzil dışı hedef kurulur, eksik yol kalıbın başında `kapan` hamlesidir. 6-2 geri adımı cast başındaki menzili silmez. Küre 8-11 kalıbı tek karede bitince tarama onu ikinci kayma sanıyordu; bitiş bir sonraki karenin başına kalır. Yumruk 2-9'da koşucu tarama saatinden geri kalırsa yetişir (0,51 sn → kalıp süresi). Yumruk 2-6 kalıbı zaten 0,52 sn; vaka 0,87 sn'de boşta olup saat 9,6 sn'de kesildi. Kancayı `distance_m` ile kesmek 6-1'i de kısaltır, yapılmadı. Küre basılı tutma / çift dokunuş dinlemez: HUD silah düğmesi (editörde R) eldeyse hedefe yollar, değilse çağırır; yol 0,4 sn. Çizim alanına dokunmaz. Q silah değiştirir. Unity Play bu ortamda yok.
 
 > **30 Eylül — on silah pasifi bağlandı.** Kılıç yayı yakın vuruşta açı kontrolü (144°, dost fiilde yaydaki herkes; swap 180°). Büyü Kitabı sayacı hasardan önce artar, ara dolunca sıfırlanır. Çekiç sersem süresi JSON'dan, 4 sn bekleme yalnız sersem oturunca. Tılsım şifa/kalkan/buff ×1,2, fiil uyumu aranmaz. Kalkan +%20 ilk skill vuruşunda biter. Asa süre uzayınca aynı dilimle yeni vuruş ekler. Çekiç poise ve silah poise çarpanı giden poise'a girer. Yumruk sırt çarpanı yalnız `sirt_vurusu`; gramerde ikinci `arkadan_x1.5` yok. Rün yuvası pasifine dokunulmadı. Unity Play yok.
 
@@ -1740,6 +1742,7 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
+- **Yumruk 2-6 (30 Eylül, tarama).** Kalıp 0,52 sn (beklenenle aynı), simülasyon hatası 0, 0,87 sn'de boşta; vaka saati 9,6 sn'de zaman aşımı yazdı. Kanca temasa kadar gider; bunu kısaltmak `sinir_noktasi` (6-1) varışını da keser. Unity Play yok.
 - **Hasar borusu (30 Eylül, kod).** Kritik JSON'da %5 / ×2 durur; canlı vuruş %10 / ×1,5.
   Boss zırhı normal 100, sert 150 (JSON). Canlı dövüş normali kullanır; sert mod anahtarı yok.
   Boss canı 88 milyon; 150–250 milyon için `max_hp` sonra ayarlanır. Ayar paneli sıfırlayınca

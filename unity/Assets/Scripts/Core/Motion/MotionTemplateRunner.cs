@@ -799,7 +799,8 @@ namespace Dovus.Core.Motion
             }
             if (phase.Motion == "pull")
             {
-                // Dost kancası hedefin yakın kenarında biter. distance_m ve silah menzili geçemez.
+                // Dost kancası hedefin yakın kenarında biter. distance_m burayı kısaltmaz:
+                // 40 m ile 2 m aynı temasta durur (6-1 sinir noktası da bu kovalamacayı kullanır).
                 Approach(ux, uz, len, target, cap: 0f);
                 ClampPullDest(target);
                 return;

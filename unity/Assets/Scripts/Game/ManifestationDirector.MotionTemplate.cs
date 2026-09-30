@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Dovus.Core;
 using Dovus.Core.Combat;
+using Dovus.Core.Equipment;
 using Dovus.Core.Execution;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
@@ -21,6 +22,8 @@ namespace Dovus.Game
         float _templateChain;
         bool _templateStatusSent;
         Transform _templateAim;
+        float _templateStartCenter;
+        bool _recoilInTemplate;
 
         MotionTemplateCatalog MotionCatalog
         {
@@ -66,7 +69,52 @@ namespace Dovus.Game
             }
 
             MotionFallbacks fallbacks = MotionCatalog.Fallbacks;
-            return PositionOwnership.Prepare(template, steps, fallbacks.PhaseSec, fallbacks.StepM);
+            PositionPlayback playback = PositionOwnership.Prepare(
+                template, steps, fallbacks.PhaseSec, fallbacks.StepM);
+            MotionTemplate shaped = playback.Template ?? template;
+            bool owns = playback.OwnsPosition;
+
+            if (ShouldCloseToTarget(skill) && _player != null && _boss != null)
+            {
+                float edge = JsonEdgeReachM(skill);
+                edge = Math.Max(edge, MotionCastReach.EdgeReachM(shaped));
+                float center = FlatDistance(_player.position, _boss.transform.position);
+                float meters = CastApproach.Meters(
+                    center, PlayerBodyRadiusM(), BossBodyRadius(), edge,
+                    MotionCastReach.ClosingApproachM(shaped));
+                MotionTemplate closed = CastApproach.Prepend(shaped, meters);
+                if (!ReferenceEquals(closed, shaped))
+                {
+                    shaped = closed;
+                    owns = true;
+                }
+            }
+
+            WeaponCombatProfile profile = EquippedProfile;
+            if (profile != null && profile.HitShape == "ballistic" && profile.RecoilM > 0.01f
+                && skill.BaseDamage > 0.01f)
+            {
+                MotionTemplate recoiled = CannonRecoilMotion.Append(shaped, profile.RecoilM);
+                if (!ReferenceEquals(recoiled, shaped))
+                {
+                    shaped = recoiled;
+                    owns = true;
+                    _recoilInTemplate = true;
+                }
+            }
+
+            if (ReferenceEquals(shaped, playback.Template) && owns == playback.OwnsPosition)
+                return playback;
+            return new PositionPlayback(owns, shaped, playback.PlaceReturnMark);
+        }
+
+        bool ShouldCloseToTarget(in SkillResolution skill)
+        {
+            if (skill.IsEmpty)
+                return false;
+            if (TargetingRules.AimMode(skill) != SkillAimMode.Targeted)
+                return false;
+            return !CardEffectRules.PrefersAlly(skill.TargetMode, skill.Action);
         }
 
         /// <summary>
@@ -91,6 +139,8 @@ namespace Dovus.Game
         {
             _templateOwnsPosition = false;
             _emiciContactPull = false;
+            _recoilInTemplate = false;
+            _templateStartCenter = 0f;
             _castLease.ReleasePosition();
             if (skill.IsEmpty || string.IsNullOrEmpty(skill.SkillId) || _player == null)
                 return false;
@@ -124,6 +174,8 @@ namespace Dovus.Game
                 : string.Empty;
             _motionBody.SetAnimContext(MotionCatalog.Anims, weapon, VerbOf(skill.SkillId));
             _motionBody.NoteSkill(skill.SkillId);
+            if (_boss != null)
+                _templateStartCenter = FlatDistance(_player.position, _boss.transform.position);
             _emiciContactPull = EmiciApproach.ShouldHoldCaster(skill.AdjectiveId, template);
             if (_emiciContactPull)
                 PullBossToPlayerContact();
@@ -284,8 +336,9 @@ namespace Dovus.Game
             float reach = JsonEdgeReachM(_templateSkill);
             if (reach <= 0f)
                 return false;
+            float current = FlatDistance(_player.position, boss);
             return MotionCastReach.CenterInReach(
-                FlatDistance(_player.position, boss),
+                MotionCastReach.CloserCenter(current, _templateStartCenter),
                 PlayerBodyRadiusM(),
                 bossRadius,
                 reach);

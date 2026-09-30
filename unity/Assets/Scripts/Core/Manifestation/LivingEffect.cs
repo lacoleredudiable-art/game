@@ -44,6 +44,7 @@ namespace Dovus.Core.Manifestation
         float _bangRadiusM;
         float _lifetimeAddSec;
         bool _hasPlan;
+        float _rangeCap = -1f;
 
         public LivingEffect(
             Rune verb,
@@ -106,16 +107,34 @@ namespace Dovus.Core.Manifestation
         {
             get
             {
-                if (_hasPlan && _maxRangeM > 0f)
-                    return _maxRangeM;
-                return _verb switch
-                {
-                    Rune.Aydinlik => _tuning.WaveMaxRadiusM,
-                    Rune.Ates => _tuning.NeedleMaxRangeM,
-                    Rune.Su => _tuning.SwarmMaxRadiusM,
-                    _ => _tuning.WaveMaxRadiusM
-                };
+                float raw = UncappedMax();
+                return _rangeCap >= 0f ? MathF.Min(raw, _rangeCap) : raw;
             }
+        }
+
+        /// <summary>
+        /// Ucu bu mesafede keser. Planlı seyahate geçmez; Ates ışını aynı hızla ilerler
+        /// ama uç tavanı aşmaz. Düz top atışı ilk gövdede durur.
+        /// </summary>
+        public void StopAt(float distance)
+        {
+            if (distance < 0f)
+                distance = 0f;
+            _rangeCap = distance;
+            _travel = distance;
+        }
+
+        float UncappedMax()
+        {
+            if (_hasPlan && _maxRangeM > 0f)
+                return _maxRangeM;
+            return _verb switch
+            {
+                Rune.Aydinlik => _tuning.WaveMaxRadiusM,
+                Rune.Ates => _tuning.NeedleMaxRangeM,
+                Rune.Su => _tuning.SwarmMaxRadiusM,
+                _ => _tuning.WaveMaxRadiusM
+            };
         }
 
         /// <summary>SkillMotor + prezentasyon planı — silüet/seyahat/bang.</summary>
