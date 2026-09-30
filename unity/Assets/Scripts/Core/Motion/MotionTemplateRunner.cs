@@ -256,6 +256,32 @@ namespace Dovus.Core.Motion
                 EnterPhase();
         }
 
+        /// <summary>
+        /// Gövdeyi kalıp dışında bir şey taşıdıysa (itme, çekme, ışınlanma) kalan fazlar
+        /// yeni yerden sürer; sonraki vuruşlar oyuncunun o anki konumunda açılır.
+        /// İşaret (dönüş) ve dikilen nokta dünyada kalır.
+        /// </summary>
+        public void Rebase(float x, float z)
+        {
+            if (!_active || _finished)
+                return;
+            float dx = x - _x;
+            float dz = z - _z;
+            if (dx * dx + dz * dz < 1e-8f)
+                return;
+            _x = x;
+            _z = z;
+            _phaseX += dx;
+            _phaseZ += dz;
+            _yieldX += dx;
+            _yieldZ += dz;
+            if (_template.Phases[_phase].Motion != "return")
+            {
+                _destX += dx;
+                _destZ += dz;
+            }
+        }
+
         public MotionTick Tick(float dt, in MotionTarget target, in MotionStick stick)
         {
             _hits.Clear();
