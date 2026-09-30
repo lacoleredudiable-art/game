@@ -84,6 +84,24 @@ namespace Dovus.Core.Team
         float _armorMult = 1f;
         bool _warnedShot;
 
+        public void Clear()
+        {
+            _mines.Clear();
+            _ropes.Clear();
+            _marks.Clear();
+            _links.Clear();
+            _turrets.Clear();
+            _haste.Clear();
+            _ball = default;
+            _hang = default;
+            _now = 0f;
+            _armorUntil = 0f;
+            _armorMult = 1f;
+            TurretShots = 0;
+            LastCopiedSkill = string.Empty;
+            LastMineMult = 0f;
+        }
+
         public float BossIncomingMult => _now < _armorUntil ? _armorMult : 1f;
         public bool AttackBroken => _hang.Active && _now < _hang.Until;
         public int BallPasses => _ball.Passes;

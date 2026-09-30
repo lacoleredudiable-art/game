@@ -26,6 +26,8 @@ namespace Dovus.Core.Border
 
         readonly Dictionary<int, Slot> _slots = new();
 
+        public void Clear() => _slots.Clear();
+
         public bool IsBorderSkill(string skillId) => TryTier(skillId, out _, out _, out _, out _);
 
         public static bool TryTier(string skillId, out float threshold, out float attack, out float life, out float damage)

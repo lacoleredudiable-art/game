@@ -251,6 +251,8 @@ public class PortalBorderTeamTests
         AssertOutside(a.X, a.Z, 0.5f, boss);
         AssertOutside(b.X, b.Z, 0.5f, boss);
         Assert.That(b.TransferDebuffs, Is.True);
+        Assert.That(a.Teleport, Is.True);
+        Assert.That(b.Teleport, Is.True);
         Assert.That(a.Y, Is.EqualTo(0f).Within(0.001f));
 
         var from = new StatusBoard();
@@ -496,6 +498,64 @@ public class PortalBorderTeamTests
         team.Tick(0.2f, all, Boss(0f, 8f));
         Assert.That(team.RopeLinked(1), Is.False);
         Assert.That(team.MoveSpeedMult(1), Is.EqualTo(1f).Within(0.001f));
+    }
+
+    [Test]
+    public void Skill_2_6_ValidTemplateEnd_IsNotSnapped()
+    {
+        var portal = new PortalSystem();
+        var boss = Boss(0f, 4f);
+        Body caster = Actor(1, 0f, 0f, owns: true);
+        Body ally = Actor(2, 0f, 3f);
+        portal.Cast("2-6", caster, ally, null, boss);
+        PortalSystem.HookLanding(0f, 0f, 0.5f, ally.X, ally.Z, ally.Radius, boss, out float x, out float y, out float z);
+        portal.NotifyTemplateEnded(1, x, y, z, 0.5f, boss);
+        IReadOnlyList<Placement> moves = portal.Drain();
+        Assert.That(moves, Has.None.Matches<Placement>(m => m.ActorId == 1));
+        Assert.That(One(moves, 2).Teleport, Is.False);
+    }
+
+    [Test]
+    public void TemplateEnd_WithoutPortal_DoesNotShove()
+    {
+        var portal = new PortalSystem();
+        var boss = Boss(0f, 1.2f);
+        portal.NotifyTemplateEnded(1, 0f, 0f, 1.2f, 0.5f, boss);
+        Assert.That(portal.Drain(), Is.Empty);
+    }
+
+    [Test]
+    public void Clear_DropsPortalAndTeamBetweenCases()
+    {
+        var portal = new PortalSystem();
+        var team = new TeamComboSystem();
+        var border = new BorderMode();
+        var boss = Boss(0f, 6f);
+        portal.Cast("3-10", Actor(1, 0f, 0f, owns: true), default, null, boss);
+        portal.NotifyTemplateEnded(1, 0f, 0f, 2f, 0.5f, boss);
+        Assert.That(portal.Doors.Count, Is.GreaterThan(0));
+        border.OnSkill(1, "1-8", 0.05f);
+        team.Cast("5-4", Ally(1, 0f, 0f), null, null, boss);
+        portal.Clear();
+        team.Clear();
+        border.Clear();
+        Assert.That(portal.Doors, Is.Empty);
+        Assert.That(portal.Drain(), Is.Empty);
+        Assert.That(portal.HasAnchor, Is.False);
+        Assert.That(border.Active(1), Is.False);
+        Assert.That(team.MineAlive, Is.False);
+        portal.NotifyTemplateEnded(1, 0f, 0f, 1.2f, 0.5f, boss);
+        Assert.That(portal.Drain(), Is.Empty);
+    }
+
+    [Test]
+    public void SweepJump_OnlyIntentionalTeleportIsExempt()
+    {
+        const float limit = 0.62f;
+        Assert.That(SweepJumpRule.IsIllegalJump(4.66f, limit, false, true), Is.False);
+        Assert.That(SweepJumpRule.IsIllegalJump(4.66f, limit, true, false), Is.False);
+        Assert.That(SweepJumpRule.IsIllegalJump(4.66f, limit, false, false), Is.True);
+        Assert.That(SweepJumpRule.IsIllegalJump(0.4f, limit, false, false), Is.False);
     }
 
     static void AssertTier(string skill, float below, float threshold, float attack, float life, float damage)

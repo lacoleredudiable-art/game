@@ -49,7 +49,7 @@ namespace Dovus.Core.Portal
 
     public readonly struct Placement
     {
-        public Placement(int actorId, float x, float y, float z, string skillId, bool transferDebuffs)
+        public Placement(int actorId, float x, float y, float z, string skillId, bool transferDebuffs, bool teleport = false)
         {
             ActorId = actorId;
             X = x;
@@ -57,6 +57,7 @@ namespace Dovus.Core.Portal
             Z = z;
             SkillId = skillId ?? string.Empty;
             TransferDebuffs = transferDebuffs;
+            Teleport = teleport;
         }
 
         public int ActorId { get; }
@@ -65,6 +66,8 @@ namespace Dovus.Core.Portal
         public float Z { get; }
         public string SkillId { get; }
         public bool TransferDebuffs { get; }
+        /// <summary>Yer değiştirme, çapa dönüşü veya kapı geçişi. Tarama yalnız bu kareyi ışın sayar.</summary>
+        public bool Teleport { get; }
     }
 
     public readonly struct BackStrike
@@ -283,16 +286,15 @@ namespace Dovus.Core.Portal
             float cz = z;
             if (_hookActor == actorId)
             {
-                HookLanding(_hookFromX, _hookFromZ, radius > 0f ? radius : _hookCasterR, _hookAllyX, _hookAllyZ, _hookAllyR, boss, out cx, out cy, out cz);
+                float r = radius > 0f ? radius : _hookCasterR;
+                bool already = HookAlreadyLanded(x, y, z, r, boss);
                 _hookActor = -1;
-                if (Moved(x, y, z, cx, cy, cz))
-                    _ready.Add(new Placement(actorId, cx, cy, cz, "2-6", false));
-            }
-            else
-            {
-                PushOut(ref cx, ref cz, radius, boss);
-                if (Moved(x, y, z, cx, cy, cz))
-                    _ready.Add(new Placement(actorId, cx, cy, cz, "portal", false));
+                if (!already)
+                {
+                    HookLanding(_hookFromX, _hookFromZ, r, _hookAllyX, _hookAllyZ, _hookAllyR, boss, out cx, out cy, out cz);
+                    if (Moved(x, y, z, cx, cy, cz))
+                        _ready.Add(new Placement(actorId, cx, cy, cz, "2-6", false));
+                }
             }
 
             for (int i = 0; i < _doors.Count; i++)
@@ -315,7 +317,7 @@ namespace Dovus.Core.Portal
                 float px = w.X;
                 float pz = w.Z;
                 PushOut(ref px, ref pz, w.Radius, boss);
-                _ready.Add(new Placement(w.ActorId, px, 0f, pz, w.Skill, w.Transfer));
+                _ready.Add(new Placement(w.ActorId, px, 0f, pz, w.Skill, w.Transfer, w.Teleport));
                 _wait.RemoveAt(i);
             }
         }
@@ -363,9 +365,9 @@ namespace Dovus.Core.Portal
                 PushOut(ref ox, ref oz, body.Radius, boss);
                 if (body.IsBoss)
                     continue;
-                var place = new Placement(body.Id, ox, 0f, oz, door.Skill, false);
+                var place = new Placement(body.Id, ox, 0f, oz, door.Skill, false, true);
                 if (body.TemplateOwns && !projectile)
-                    _wait.Add(new WaitMove(body.Id, body.Id, ox, oz, body.Radius, door.Skill, false));
+                    _wait.Add(new WaitMove(body.Id, body.Id, ox, oz, body.Radius, door.Skill, false, true));
                 else
                 {
                     _ready.Add(place);
@@ -444,7 +446,7 @@ namespace Dovus.Core.Portal
                 float x = caster.X + BesideM;
                 float z = caster.Z;
                 PushOut(ref x, ref z, r.Radius, boss);
-                _ready.Add(new Placement(r.ActorId, x, 0f, z, "11-8", false));
+                _ready.Add(new Placement(r.ActorId, x, 0f, z, "11-8", false, true));
                 _buffs.Add(new Buff(r.ActorId, _now + RiseBuffSec, 1f, 1f + RiseDamageAdd, 1f, 0f));
             }
 
@@ -466,7 +468,7 @@ namespace Dovus.Core.Portal
                     float x = caster.X + MathF.Cos(ang) * BesideM;
                     float z = caster.Z + MathF.Sin(ang) * BesideM;
                     PushOut(ref x, ref z, ally.Radius, boss);
-                    _ready.Add(new Placement(ally.Id, x, 0f, z, "11-10", false));
+                    _ready.Add(new Placement(ally.Id, x, 0f, z, "11-10", false, true));
                     n++;
                 }
             }
@@ -499,6 +501,41 @@ namespace Dovus.Core.Portal
             float s = need / dist;
             x = boss.X + dx * s;
             z = boss.Z + dz * s;
+        }
+
+        /// <summary>Kapı, çapa, kanca ve buff kalmaz. Bir sonraki vaka temiz başlar.</summary>
+        public void Clear()
+        {
+            _doors.Clear();
+            _ready.Clear();
+            _wait.Clear();
+            _buffs.Clear();
+            _rises.Clear();
+            _gathers.Clear();
+            _inside.Clear();
+            _views.Clear();
+            _anchor = default;
+            _hookActor = -1;
+            _now = 0f;
+            NarrowLeft = 0f;
+            Strike = default;
+        }
+
+        /// <summary>
+        /// Kalıp oyuncuyu zaten yere, dostun berisine ve boss'un dışına indirdiyse tekrar oturtma.
+        /// Havada, dostun ötesinde ya da boss'un içindeyse kanca düzeltmesi gerekir.
+        /// </summary>
+        bool HookAlreadyLanded(float x, float y, float z, float radius, in Disc boss)
+        {
+            if (MathF.Abs(y) > 0.05f)
+                return false;
+            if (Overlaps(x, z, radius, boss))
+                return false;
+            float dx = _hookAllyX - _hookFromX;
+            float dz = _hookAllyZ - _hookFromZ;
+            float alongAlly = dx * dx + dz * dz;
+            float along = (x - _hookFromX) * dx + (z - _hookFromZ) * dz;
+            return along <= alongAlly + 0.01f;
         }
 
         /// <summary>
@@ -837,13 +874,13 @@ namespace Dovus.Core.Portal
             bool wait = caster.TemplateOwns;
             if (wait)
             {
-                _wait.Add(new WaitMove(caster.Id, caster.Id, ax, az, caster.Radius, "9-10", false));
-                _wait.Add(new WaitMove(caster.Id, ally.Id, cx, cz, ally.Radius, "9-10", true));
+                _wait.Add(new WaitMove(caster.Id, caster.Id, ax, az, caster.Radius, "9-10", false, true));
+                _wait.Add(new WaitMove(caster.Id, ally.Id, cx, cz, ally.Radius, "9-10", true, true));
             }
             else
             {
-                _ready.Add(new Placement(caster.Id, ax, 0f, az, "9-10", false));
-                _ready.Add(new Placement(ally.Id, cx, 0f, cz, "9-10", true));
+                _ready.Add(new Placement(caster.Id, ax, 0f, az, "9-10", false, true));
+                _ready.Add(new Placement(ally.Id, cx, 0f, cz, "9-10", true, true));
             }
         }
 
@@ -884,9 +921,9 @@ namespace Dovus.Core.Portal
         {
             PushOut(ref x, ref z, radius, boss);
             if (body.TemplateOwns)
-                _wait.Add(new WaitMove(body.Id, body.Id, x, z, radius, skill, transfer));
+                _wait.Add(new WaitMove(body.Id, body.Id, x, z, radius, skill, transfer, true));
             else
-                _ready.Add(new Placement(body.Id, x, 0f, z, skill, transfer));
+                _ready.Add(new Placement(body.Id, x, 0f, z, skill, transfer, true));
         }
 
         Door NewDoor(float x, float z, string skill, float life, bool shots, int owner)
@@ -970,7 +1007,7 @@ namespace Dovus.Core.Portal
 
         readonly struct WaitMove
         {
-            public WaitMove(int waitFor, int actorId, float x, float z, float radius, string skill, bool transfer)
+            public WaitMove(int waitFor, int actorId, float x, float z, float radius, string skill, bool transfer, bool teleport = false)
             {
                 WaitFor = waitFor;
                 ActorId = actorId;
@@ -979,6 +1016,7 @@ namespace Dovus.Core.Portal
                 Radius = radius;
                 Skill = skill;
                 Transfer = transfer;
+                Teleport = teleport;
             }
 
             public int WaitFor { get; }
@@ -988,6 +1026,7 @@ namespace Dovus.Core.Portal
             public float Radius { get; }
             public string Skill { get; }
             public bool Transfer { get; }
+            public bool Teleport { get; }
         }
 
         readonly struct Buff

@@ -13,8 +13,15 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (portal dalı master'a alındı) ·
-**Dal:** `feat/portal-border-team` · **Sıradaki:** tarama düzeltmesi bu dalda
+**Son güncelleme:** 30 Eylül 2026 (portal tarama düzeltmesi, master alındı) ·
+**Dal:** `feat/portal-border-team` · **Sıradaki:** Kılıç/Asa taramasını bu dalda bir kez daha koş
+
+> **30 Eylül — tarama: 9-10 ışını işaretli, vakalar temiz başlıyor.** 9-10 yer değiştirmesi
+> tek karede uzun bir ışındır; tarama yalnız bu işaretli kareyi (ve blink'i) sıçrama saymaz.
+> Başka adım muaf değil. Kalıp bitince her skill oyuncuyu boss'tan itmiyordu artık — 1-3 Asa,
+> 8-12 ve 2-6'nın fazladan sıçraması buydu. 2-6 kalıbı zaten doğru yerde biterse tekrar
+> oturtulmaz. Her vaka kapı, sınır, takım ve dostun yerini sıfırlar; 9-10'dan sonra kayma kalmaz.
+> `dotnet test` 480/480. Unity Play bu ortamda yok.
 
 > **29 Eylül — Portal, Sınır modu ve Takım kombosu artık işliyor** (donmuş 144 kombo metni).
 > Yeni dosyalar: `Core/Border/BorderMode`, `Core/Portal/PortalSystem`, `Core/Team/TeamComboSystem`
@@ -1767,6 +1774,8 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
+- **Portal tarama (30 Eylül).** 9-10 ışını işaretli kare. Vakalar arası kapı ve dost yeri sıfırlanır.
+  Kalıp bitişindeki genel itme kalktı (1-3, 2-6, 8-12). Unity Play bu turda yok.
 - **Portal / Sınır / Takım (29 Eylül, `feat/portal-border-team`).** Üç etiket artık işler.
   Silah kesme hâlâ yalnız etikettir (silahlar PR'ında). 8-1 boss vuruşu 2 sn ×0,7. Taret 1 sn,
   12-6 mesafe kopması ve +%50 hız yedeği, 7-6 zırh süresi `ArmorBreakMs`. Unity Play bu turda yok.

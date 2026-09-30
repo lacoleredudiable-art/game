@@ -15,6 +15,7 @@ namespace Dovus.Game
         public static float BossIncomingMult = 1f;
         public static float BossStrikeScale = 1f;
         public static float MoveSpeedMult = 1f;
+        public static bool IntentionalTeleport;
         public static float PlayerDamageTakenMult = 1f;
         public static int PlayerActorId = 1;
 
@@ -24,6 +25,29 @@ namespace Dovus.Game
         public static event Action<string> Cast;
 
         public static Func<float> Roll;
+
+        public static void ResetModifiers()
+        {
+            AttackSpeedMult = 1f;
+            DamageMult = 1f;
+            LifestealAdd = 0f;
+            BossIncomingMult = 1f;
+            BossStrikeScale = 1f;
+            MoveSpeedMult = 1f;
+            PlayerDamageTakenMult = 1f;
+            IntentionalTeleport = false;
+            Miss.Clear();
+            Taken.Clear();
+        }
+
+        public static void MarkIntentionalTeleport() => IntentionalTeleport = true;
+
+        public static bool ConsumeIntentionalTeleport()
+        {
+            bool flagged = IntentionalTeleport;
+            IntentionalTeleport = false;
+            return flagged;
+        }
 
         public static void NotifyCast(string skillId)
         {

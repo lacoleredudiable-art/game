@@ -66,7 +66,18 @@ namespace Dovus.Game
             if (Instance == this)
                 Instance = null;
             PortalBorderTeamHooks.Cast -= OnCast;
-            PortalBorderTeamHooks.BossStrikeScale = 1f;
+            PortalBorderTeamHooks.ResetModifiers();
+        }
+
+        /// <summary>Tarama vakaları arasında kapı, ışın ve dost buff'ı kalmasın.</summary>
+        public void ResetCase()
+        {
+            _portal.Clear();
+            _team.Clear();
+            _border.Clear();
+            _wasOwning = false;
+            _strikePending = false;
+            PortalBorderTeamHooks.ResetModifiers();
         }
 
         void Update()
@@ -418,6 +429,8 @@ namespace Dovus.Game
                 return;
             if (actor.TemplateOwnsPosition && actor.Id == PortalBorderTeamHooks.PlayerActorId)
                 return;
+            if (move.Teleport && actor.Id == PortalBorderTeamHooks.PlayerActorId)
+                PortalBorderTeamHooks.MarkIntentionalTeleport();
             actor.transform.position = new Vector3(move.X, move.Y, move.Z);
             if (!move.TransferDebuffs)
                 return;
