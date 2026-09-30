@@ -88,11 +88,22 @@ namespace Dovus.Game
                 return 1f;
             int verb = VerbOf(skill.SkillId);
             bool enabled = _equippedWeapon.IsCompatibleWithVerb(verb);
-            return WeaponPassiveRules.SupportPower(
+            float power = WeaponPassiveRules.SupportPower(
                 _equippedWeapon.Profile,
                 enabled,
                 verb,
                 WeaponCompatibilityFor(skill).DamageMult);
+            float heal = HitMods(skill, false, false).HealMult;
+            return heal > 1f ? heal : power;
+        }
+
+        /// <summary>Tılsım kuşanılıyken şifa, kalkan ve buff büyüklüğü. Hasar çarpanı değil.</summary>
+        float WeaponFriendlyScale()
+        {
+            if (EquippedProfile == null || EquippedProfile.Passive.Id != "kutsal_etki")
+                return 1f;
+            float heal = HitMods(SkillResolution.Empty, false, false).HealMult;
+            return heal > 0f ? heal : 1f;
         }
 
         float WeaponCritAdd(in SkillResolution skill, bool isBasicStrike)
@@ -138,10 +149,12 @@ namespace Dovus.Game
                 return;
             if (profile.ReachM > 0f)
                 range = profile.ReachM;
-            if (profile.ArcDeg > 0f)
+            WeaponPassiveMods arcMods = HitMods(skill, false, false);
+            float arc = arcMods.ArcDeg;
+            if (arc > 0f)
             {
                 shape = "cone";
-                angleDeg = profile.ArcDeg;
+                angleDeg = arc;
             }
             else if (!string.IsNullOrEmpty(profile.HitShape))
             {
@@ -246,12 +259,43 @@ namespace Dovus.Game
             _weaponPassives.NoteBlock(_clock.Director.WorldTimeMs, profile.Passive.WindowSec);
         }
 
-        bool HammerStunAllowed(double worldMs)
+        bool HammerStunReady(double worldMs)
         {
             WeaponCombatProfile profile = EquippedProfile;
             if (profile == null || profile.Passive.Id != "yere_cakma")
                 return true;
-            return _weaponPassives.TryHammerStun(worldMs, profile.Passive.IcdSec);
+            return _weaponPassives.HammerReady(worldMs);
+        }
+
+        void CommitHammerStun(double worldMs, bool ready, bool alreadyHad, bool applied)
+        {
+            WeaponCombatProfile profile = EquippedProfile;
+            if (profile == null || profile.Passive.Id != "yere_cakma")
+                return;
+            if (!WeaponPassiveRules.CommitStunOnLand(ready, alreadyHad, applied))
+                return;
+            _weaponPassives.CommitHammer(worldMs, profile.Passive.IcdSec);
+        }
+
+        void TryLandWeaponStun(in SkillResolution skill, bool isBasicStrike)
+        {
+            WeaponPassiveMods mods = HitMods(skill, isBasicStrike, false);
+            if (!mods.Stun || mods.StunSec <= 0f || _bossStatus == null || _clock == null)
+                return;
+            double now = _clock.Director.WorldTimeMs;
+            bool ready = _weaponPassives.HammerReady(now);
+            bool had = _bossStatus.Board.Has(StatusKind.Stun);
+            if (!ready || had)
+                return;
+            _bossStatus.Board.Apply(StatusKind.Stun, mods.StunSec * 1000.0, 1f);
+            CommitHammerStun(now, ready, had, _bossStatus.Board.Has(StatusKind.Stun));
+        }
+
+        void TryConsumeCounterWindow()
+        {
+            if (EquippedProfile == null || EquippedProfile.Passive.Id != "karsi_saldiri" || _clock == null)
+                return;
+            _weaponPassives.TryConsumeBlock(_clock.Director.WorldTimeMs);
         }
 
         void RememberHitPoint(Vector3? point)
@@ -312,7 +356,10 @@ namespace Dovus.Game
             int verb = skill.IsEmpty ? 1 : VerbOf(skill.SkillId);
             bool enabled = isBasicStrike || _equippedWeapon.IsCompatibleWithVerb(verb);
             float sinceMoved = _clock == null ? 99f : (float)((_clock.Director.WorldTimeMs - _lastMovedMs) / 1000.0);
-            int chain = profile.Passive.Id == "dolu_sayfa" ? _weaponPassives.ChainCount : 0;
+            int chain = 0;
+            if (profile.Passive.Id == "dolu_sayfa" && _clock != null)
+                chain = _weaponPassives.EffectiveChain(
+                    _clock.Director.WorldTimeMs, profile.Passive.ChainGapSec);
             var query = new WeaponPassiveQuery(
                 verb,
                 enabled,

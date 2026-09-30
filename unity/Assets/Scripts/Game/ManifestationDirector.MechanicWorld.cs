@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Dovus.Core;
 using Dovus.Core.Combat;
+using Dovus.Core.Equipment;
 using Dovus.Core.Execution;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
@@ -49,6 +50,7 @@ namespace Dovus.Game
             public MechanicEffect Effect;
             public GameObject View;
             public double UntilMs;
+            public bool NeedsHoly;
         }
 
         readonly List<MechanicWorldBody> _mechanicBodies = new();
@@ -101,7 +103,7 @@ namespace Dovus.Game
             {
                 if (!e.Has("koruyucu_tetik"))
                     continue;
-                SpawnGuardTrigger(e, worldMs);
+                SpawnGuardTrigger(e, worldMs, plan.Compatible);
             }
         }
 
@@ -237,7 +239,7 @@ namespace Dovus.Game
             });
         }
 
-        void SpawnGuardTrigger(MechanicEffect effect, double worldMs)
+        void SpawnGuardTrigger(MechanicEffect effect, double worldMs, bool planCompatible)
         {
             double windowSec = MechanicEngine?.Rules.Param("guard_window_sec") ?? 0;
             if (windowSec <= 0)
@@ -251,11 +253,13 @@ namespace Dovus.Game
                 alpha: _combat != null ? _combat.Manifestation.ExecutorFieldDiskAlpha : 0.6f);
             if (view != null)
                 view.name = "MechanicGuardTrigger";
+            bool talisman = EquippedProfile != null && EquippedProfile.Passive.Id == "kutsal_etki";
             _guardTriggers.Add(new GuardTrigger
             {
                 Effect = effect,
                 View = view,
-                UntilMs = worldMs + windowSec * 1000.0
+                UntilMs = worldMs + windowSec * 1000.0,
+                NeedsHoly = talisman && !planCompatible
             });
         }
 
@@ -328,12 +332,14 @@ namespace Dovus.Game
                         _bossStatus?.Board.Apply(StatusKind.Slow, refreshMs, (float)e.Amount, "field:" + volumeId);
                     if ((e.Target == "dost" || e.Target == "kendin") && e.Amount > 1)
                     {
+                        float haste = WeaponPassiveRules.ScaleFriendlyMagnitude(
+                            (float)e.Amount, WeaponFriendlyScale());
                         if (playerInside)
-                            _playerStatus?.Board.Apply(StatusKind.Haste, refreshMs, (float)e.Amount, "field:" + volumeId);
+                            _playerStatus?.Board.Apply(StatusKind.Haste, refreshMs, haste, "field:" + volumeId);
                         if (allyInside)
                         {
                             _ally.EnsureStatusBoard();
-                            _ally.Board.Apply(StatusKind.Haste, refreshMs, (float)e.Amount, "field:" + volumeId);
+                            _ally.Board.Apply(StatusKind.Haste, refreshMs, haste, "field:" + volumeId);
                         }
                     }
                 }
@@ -478,7 +484,8 @@ namespace Dovus.Game
 
                 if (!expired)
                 {
-                    int amount = Mathf.Max(0, Mathf.RoundToInt((float)Math.Abs(guard.Effect.Amount)));
+                    float scale = guard.NeedsHoly ? WeaponFriendlyScale() : 1f;
+                    int amount = Mathf.Max(0, Mathf.RoundToInt((float)Math.Abs(guard.Effect.Amount) * scale));
                     if (guard.Effect.Stat == "can")
                     {
                         if (allyLow)
@@ -493,7 +500,9 @@ namespace Dovus.Game
                     }
                     else if (guard.Effect.Stat == "hasar_buff" && _clock != null)
                     {
-                        _selfDamageBuff = Mathf.Max(_selfDamageBuff, (float)Math.Abs(guard.Effect.Amount));
+                        float buff = WeaponPassiveRules.ScaleFriendlyMagnitude(
+                            (float)Math.Abs(guard.Effect.Amount), scale);
+                        _selfDamageBuff = Mathf.Max(_selfDamageBuff, buff);
                         _selfDamageBuffUntilMs = Math.Max(
                             _selfDamageBuffUntilMs,
                             _clock.Director.WorldTimeMs + Math.Max(100, guard.Effect.DurationSec * 1000.0));

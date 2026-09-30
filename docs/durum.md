@@ -13,8 +13,10 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (10 silah + hasar borusu, `feat/weapons-10`) ·
-**Dal:** `feat/weapons-10` · **Sıradaki:** Unity Play'de silah taraması ve 1-9/5-9/Zafiyet hasarını gözle doğrula
+**Son güncelleme:** 30 Eylül 2026 (silah pasifleri, `feat/weapons-10`) ·
+**Dal:** `feat/weapons-10` · **Sıradaki:** Unity Play'de pasifleri ve 1-9/5-9/Zafiyet hasarını gözle doğrula
+
+> **30 Eylül — on silah pasifi bağlandı.** Kılıç yayı yakın vuruşta açı kontrolü (144°, dost fiilde yaydaki herkes; swap 180°). Büyü Kitabı sayacı hasardan önce artar, ara dolunca sıfırlanır. Çekiç sersem süresi JSON'dan, 4 sn bekleme yalnız sersem oturunca. Tılsım şifa/kalkan/buff ×1,2, fiil uyumu aranmaz. Kalkan +%20 ilk skill vuruşunda biter. Asa süre uzayınca aynı dilimle yeni vuruş ekler. Çekiç poise ve silah poise çarpanı giden poise'a girer. Yumruk sırt çarpanı yalnız `sirt_vurusu`; gramerde ikinci `arkadan_x1.5` yok. Rün yuvası pasifine dokunulmadı. Unity Play yok.
 
 > **30 Eylül — silahlar hasar borusuna bağlandı.** Master (PR #27 dodge, PR #30 boru/zırh/×4000) bu dala alındı. Kalkanın 15 puanlık kısa kalkanı dodge'dan sonra borunun son kalkan aşamasında erir. Silah `base_armor` oyuncunun zırhına gider (Kalkan 25, Çekiç 15, Top 10). JSON `ignore_armor` artık zırhın tamamını silmez, delme %50'de kalır (1-9 ve 5-9). Zafiyet'ten sonraki ilk düz vuruş, kilit boşsa ya da etki bang'den önce yok olduysa da menzildeki boss'a vurur. Tarama: sıçrama sınırı 25 m/s × kare + 0,2 m; 1-2 ve 4-2 yerinde; menüde 10 silah ve tüm silahlar. Unity Play bu ortamda yok.
 

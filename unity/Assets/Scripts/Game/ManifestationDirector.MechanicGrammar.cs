@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Dovus.Core.Combat;
+using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Motion;
@@ -101,7 +102,12 @@ namespace Dovus.Game
                 {
                     case ("hiz", "tempo") when (bodyOnSelf || e.Has("aktarim"))
                         && e.Amount > 1 && e.DurationSec > 0 && self != null:
-                        ApplyOnce(self, StatusKind.Haste, e.DurationSec * 1000.0, (float)e.Amount, applied);
+                        ApplyOnce(
+                            self,
+                            StatusKind.Haste,
+                            e.DurationSec * 1000.0,
+                            WeaponPassiveRules.ScaleFriendlyMagnitude((float)e.Amount, WeaponFriendlyScale()),
+                            applied);
                         break;
                     case ("gorunurluk", "gizlen") when bodyOnSelf && e.DurationSec > 0 && self != null:
                         ApplyOnce(self, StatusKind.Stealth, e.DurationSec * 1000.0, 1f, applied);
@@ -179,16 +185,22 @@ namespace Dovus.Game
                         if (e.Amount <= 0)
                         {
                             bool daze = e.Has("havada") || e.Has("sersem");
-                            if (e.Has("sersem")
-                                && _clock != null
-                                && !HammerStunAllowed(_clock.Director.WorldTimeMs))
+                            bool hammer = e.Has("sersem")
+                                && EquippedProfile != null
+                                && EquippedProfile.Passive.Id == "yere_cakma";
+                            double now = _clock != null ? _clock.Director.WorldTimeMs : 0;
+                            bool ready = !hammer || HammerStunReady(now);
+                            if (hammer && !ready)
                                 break;
                             StatusKind lockKind = CardEffectRules.MovementLockKind(_cardEffect, daze);
+                            bool had = boss.Has(lockKind);
                             ApplyOnce(
                                 boss,
                                 lockKind,
                                 ms, 1f, applied,
                                 lockKind == StatusKind.Root ? "hit:" + plan.SkillId : null);
+                            if (hammer)
+                                CommitHammerStun(now, ready, had, !had && boss.Has(lockKind));
                         }
                         else if (e.Amount < 1)
                             ApplyOnce(boss, StatusKind.Slow, ms, (float)e.Amount, applied);

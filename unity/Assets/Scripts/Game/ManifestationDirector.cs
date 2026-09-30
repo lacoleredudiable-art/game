@@ -2073,11 +2073,14 @@ namespace Dovus.Game
                 bool inReach = BasicTargetStillInReach(impactTarget, basicReach);
                 if (!inReach && _boss != null && impactTarget != _boss.transform)
                     inReach = BasicTargetStillInReach(_boss.transform, basicReach);
-                if (BasicStrikeInput.DealsDamage(capsuleHit, inReach))
+                float strikeArc = HitMods(SkillResolution.Empty, true, false).ArcDeg;
+                float strikeDelta = BasicStrikeYawDeg(impactTarget);
+                if (MeleeArc.StrikeConnects(capsuleHit, inReach, strikeDelta, strikeArc))
                 {
                     if (logic != null)
                         ApplyBossClosingBasic(logic, p.Closing);
                     basicDealt = ApplyClosingDamage(p.Closing, SkillResolution.Empty, isBasicStrike: true, slashCommitMult: 0f);
+                    TryLandWeaponStun(SkillResolution.Empty, true);
                 }
                 TryScheduleEchoForSkill(SkillResolution.Empty, basicDealt);
                 SpawnClosingImpact(p);
@@ -2097,6 +2100,9 @@ namespace Dovus.Game
                 _readout?.NoteDenied("2 rün gerekli");
                 return;
             }
+
+            // Dolu sayfa: sıra hasardan önce artsın. Her 3. skill bu vuruşta sayılır.
+            NoteWeaponCast(skill);
 
             WeaponSkillCompatibility compatibility = WeaponCompatibilityFor(skill);
             LastWeaponCompatible = compatibility.Compatible;
@@ -2253,7 +2259,7 @@ namespace Dovus.Game
                 ? tuning.BasicStrikeRangeM * rangeMult
                 : Mathf.Max(radius, plan.MaxRangeM * rangeMult);
             float speed = plan.SpeedMps > 0f ? plan.SpeedMps : tuning.NeedleSpeedMps;
-            ResolveFieldTiming(skill, plan, tuning, out float durationSec, out float tickSec);
+            ResolveFieldTiming(skill, plan, tuning, out float durationSec, out float tickSec, out float perTickShare);
             int spawnCount = 1;
             ApplyVerbHitboxSizing(kind, skill, tuning, rangeMult, burst, ref radius, ref range, ref durationSec, ref spawnCount);
             string hitboxShape = TryVerbHitbox(skill, out VerbHitboxSpec visualSpec)
@@ -2321,6 +2327,9 @@ namespace Dovus.Game
             float tickEffectFraction = worldProfile != null && worldProfile.Continuous && MechanicEngine != null
                 ? (float)MechanicEngine.Rules.Param("flow_tick_fraction")
                 : 0f;
+            if (tickEffectFraction <= 0f)
+                tickEffectFraction = perTickShare;
+            bool arcAllies = HitMods(skill, false, false).ArcAllies;
             bool echoScheduled = false;
             bool statusesApplied = false;
             float accumulatedHealScale = 0f;
@@ -2426,7 +2435,8 @@ namespace Dovus.Game
                 spawnCount: spawnCount,
                 mechanicPlan: mechanicPlan,
                 activationDelaySec: activationDelaySec,
-                tickEffectFraction: tickEffectFraction);
+                tickEffectFraction: tickEffectFraction,
+                arcAllies: arcAllies);
 
             var go = new GameObject($"{kind}_{skill.SkillId}");
             go.transform.SetParent(transform, false);
@@ -2527,10 +2537,12 @@ namespace Dovus.Game
             in LivingEffectPlan plan,
             ManifestationTuning tuning,
             out float durationSec,
-            out float tickSec)
+            out float tickSec,
+            out float perTickShare)
         {
             durationSec = 0f;
             tickSec = tuning.ExecutorFieldTickSec;
+            perTickShare = 1f;
             if (_presentationCatalog != null
                 && _presentationCatalog.TryGetHitbox(plan.HitboxId, out HitboxNode hitbox))
             {
@@ -2567,6 +2579,8 @@ namespace Dovus.Game
             }
 
             durationSec = Mathf.Max(tuning.BangDurationSec, durationSec);
+            float shareTick = Mathf.Clamp(tickSec, 0.01f, Mathf.Max(0.01f, durationSec));
+            perTickShare = SustainedField.PerTickShare(durationSec, shareTick);
             durationSec *= WeaponDurationMult(skill);
             tickSec = Mathf.Clamp(tickSec, 0.01f, durationSec);
         }
@@ -2637,7 +2651,6 @@ namespace Dovus.Game
         {
             if (skill.IsEmpty || words == null || words.Count == 0)
                 return;
-            NoteWeaponCast(skill);
 
             bool enforce = _combat != null && _combat.EnforceCooldown;
             if (!enforce)
@@ -2904,12 +2917,14 @@ namespace Dovus.Game
 
             if (_ally != null)
                 _ally.EnsureStatusBoard();
+            float friendlyScale = WeaponFriendlyScale();
             var result = StatusApplicator.ApplySkill(
                 skill,
                 friendlyBoard,
                 bossStatus != null ? bossStatus.Board : null,
                 _combat != null ? _combat.Status : new StatusTuning(),
-                _mobilityCc);
+                _mobilityCc,
+                friendlyScale);
 
             // v6 Zaman fiili yalnız aktör durumudur; GameClock/Time.timeScale'a dokunmaz.
             // Süre ve güç kart/JSON'dan gelir. Kart kendine hız diyorsa düşmana yavaş inmez.
@@ -2918,7 +2933,8 @@ namespace Dovus.Game
                 TempoCast.From(skill).Apply(
                     _playerStatus != null ? _playerStatus.Board : friendlyBoard,
                     bossStatus != null ? bossStatus.Board : null,
-                    _ally != null ? _ally.Board : null);
+                    _ally != null ? _ally.Board : null,
+                    friendlyScale);
             }
 
             ApplyArmorShred(skill, bossStatus);
@@ -3135,6 +3151,9 @@ namespace Dovus.Game
                 LastClosingDamageDealt = 0f;
                 return 0f;
             }
+
+            if (!isBasicStrike)
+                TryConsumeCounterWindow();
 
             // Karabasan: bang hasarı delay_sec sonra (delayed_detonation).
             if (!isBasicStrike && TryDeferDamageAsDelayedDetonation(skill, damage))
@@ -3442,6 +3461,19 @@ namespace Dovus.Game
                 ? mark.DistanceFrom(_player.position)
                 : FlatDistance(_player.position, target.position);
             return StrikeCapsule.EdgeInReach(dist, PlayerBodyRadiusM(), reachM);
+        }
+
+        float BasicStrikeYawDeg(Transform target)
+        {
+            if (_player == null || target == null)
+                return 0f;
+            Vector3 to = target.position - _player.position;
+            to.y = 0f;
+            Vector3 fwd = _player.forward;
+            fwd.y = 0f;
+            if (to.sqrMagnitude < 0.0001f || fwd.sqrMagnitude < 0.0001f)
+                return 0f;
+            return Vector3.Angle(fwd, to);
         }
 
         float PlayerBodyRadiusM() => _motor != null ? _motor.BodyRadiusM : 0f;

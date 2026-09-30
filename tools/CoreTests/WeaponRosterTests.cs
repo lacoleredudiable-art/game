@@ -111,8 +111,9 @@ public class WeaponRosterTests
         Assert.That(Eval(8, sustained: false).DurationMult, Is.EqualTo(1f));
 
         Assert.That(WeaponPassiveRules.SupportPower(W(9).Profile, true, 2, 0.6f), Is.EqualTo(1.2f));
-        Assert.That(WeaponPassiveRules.SupportPower(W(9).Profile, true, 1, 0.6f), Is.EqualTo(0.6f));
-        Assert.That(WeaponPassiveRules.SupportPower(W(9).Profile, false, 2, 0.48f), Is.EqualTo(0.48f));
+        Assert.That(WeaponPassiveRules.SupportPower(W(9).Profile, true, 1, 0.6f), Is.EqualTo(1.2f));
+        Assert.That(WeaponPassiveRules.SupportPower(W(9).Profile, false, 4, 0.48f), Is.EqualTo(1.2f));
+        Assert.That(WeaponPassiveRules.SupportPower(W(4).Profile, true, 2, 0.9f), Is.EqualTo(0.9f));
 
         var book = new WeaponPassiveState();
         Assert.That(book.NoteSkill(0, 2f), Is.EqualTo(1));

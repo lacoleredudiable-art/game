@@ -108,9 +108,16 @@ namespace Dovus.Core.Equipment
 
         public static WeaponPassiveMods Evaluate(WeaponCombatProfile profile, in WeaponPassiveQuery query)
         {
-            if (profile == null || !query.PassiveEnabled)
+            if (profile == null)
                 return WeaponPassiveMods.Identity;
             WeaponPassiveSpec spec = profile.Passive;
+            // Kutsal etki kuşanılıyken fiil uyumuna bakmaz: şifa, kalkan ve buff büyüklüğü.
+            if (!query.PassiveEnabled)
+            {
+                if (spec.Id == "kutsal_etki")
+                    return HolyMods(spec.PowerMult);
+                return WeaponPassiveMods.Identity;
+            }
             switch (spec.Id)
             {
                 case "sirt_vurusu":
@@ -118,7 +125,10 @@ namespace Dovus.Core.Equipment
                         return WeaponPassiveMods.Identity;
                     return new WeaponPassiveMods(spec.DamageMult, 1f, 1f, 0f, false, 0f, false, 0f, false, false, 0f, 0f, false, 1f, 1f);
                 case "genis_yay":
-                    return new WeaponPassiveMods(1f, 1f, 1f, 0f, false, 0f, query.SupportVerb, spec.ArcDeg, false, false, 0f, 0f, false, 1f, 1f);
+                    return new WeaponPassiveMods(
+                        1f, 1f, 1f, 0f, false, 0f,
+                        MeleeArc.FriendlyVerb(query.VerbId), spec.ArcDeg,
+                        false, false, 0f, 0f, false, 1f, 1f);
                 case "yere_cakma":
                     if (!query.Harmful)
                         return WeaponPassiveMods.Identity;
@@ -141,9 +151,7 @@ namespace Dovus.Core.Equipment
                         return WeaponPassiveMods.Identity;
                     return new WeaponPassiveMods(1f, 1f, spec.DurationMult, 0f, false, 0f, false, 0f, false, false, 0f, 0f, false, 1f, 1f);
                 case "kutsal_etki":
-                    if (!query.SupportVerb)
-                        return WeaponPassiveMods.Identity;
-                    return new WeaponPassiveMods(1f, spec.PowerMult, 1f, 0f, false, 0f, false, 0f, false, false, 0f, 0f, false, 1f, 1f);
+                    return HolyMods(spec.PowerMult);
                 case "dolu_sayfa":
                     if (spec.EveryNth <= 0 || query.ChainIndex <= 0 || query.ChainIndex % spec.EveryNth != 0)
                         return WeaponPassiveMods.Identity;
@@ -157,13 +165,54 @@ namespace Dovus.Core.Equipment
             }
         }
 
-        /// <summary>Destek fiilinde kutsal etki, silahın düşük güç çarpanının yerine geçer.</summary>
+        static WeaponPassiveMods HolyMods(float power) =>
+            new(1f, power, 1f, 0f, false, 0f, false, 0f, false, false, 0f, 0f, false, 1f, 1f);
+
+        /// <summary>
+        /// Tılsım kuşanılıyken şifa, kalkan ve buff büyüklüğü. Fiil uyumu aranmaz.
+        /// Hasar çarpanının yerine geçmez; o ayrı kalır.
+        /// </summary>
+        public static float HolyMagnitude(WeaponCombatProfile profile)
+        {
+            if (profile != null && profile.Passive.Id == "kutsal_etki" && profile.Passive.PowerMult > 0f)
+                return profile.Passive.PowerMult;
+            return 1f;
+        }
+
+        /// <summary>Kutsal büyüklük. Değilse çağıranın verdiği silah hasar çarpanı.</summary>
         public static float SupportPower(WeaponCombatProfile profile, bool passiveEnabled, int verbId, float weaponDamageMult)
         {
-            if (profile != null && passiveEnabled && profile.Passive.Id == "kutsal_etki" && IsSupportVerb(verbId))
-                return profile.Passive.PowerMult;
+            if (HolyMagnitude(profile) > 1f)
+                return HolyMagnitude(profile);
             return weaponDamageMult > 0f ? weaponDamageMult : 1f;
         }
+
+        /// <summary>Oyuncunun ürettiği şifa, kalkan veya buff miktarı.</summary>
+        public static float ScaleFriendlyMagnitude(float magnitude, float holyMult)
+        {
+            if (magnitude <= 0f || holyMult <= 0f)
+                return magnitude;
+            return magnitude * holyMult;
+        }
+
+        /// <summary>Swap yayı varsa o, yoksa pasifin yayı.</summary>
+        public static float ActiveArcDeg(float passiveArcDeg, float armedSwapArcDeg) =>
+            armedSwapArcDeg > 0f ? armedSwapArcDeg : passiveArcDeg;
+
+        /// <summary>Poise = taban × skill × silah × swap. Swap yoksa bonus 1.</summary>
+        public static float OutgoingPoise(float basePoise, float skillMult, float weaponMult, float bonusMult)
+        {
+            if (basePoise <= 0f)
+                return 0f;
+            float skill = skillMult > 0f ? skillMult : 1f;
+            float weapon = weaponMult > 0f ? weaponMult : 1f;
+            float bonus = bonusMult > 0f ? bonusMult : 1f;
+            return basePoise * skill * weapon * bonus;
+        }
+
+        /// <summary>Sersem beklemesi yalnız sersem gerçekten oturunca başlar.</summary>
+        public static bool CommitStunOnLand(bool ready, bool alreadyHadStun, bool applied) =>
+            ready && !alreadyHadStun && applied;
 
         public static bool AngleInArc(float deltaDeg, float arcDeg)
         {
@@ -193,6 +242,20 @@ namespace Dovus.Core.Equipment
 
         public int ChainCount => _chainCount;
 
+        /// <summary>
+        /// Aralık dolduysa sayaç bayat: 0 döner ve birikmiş sırayı siler.
+        /// Yeni vuruş beklemeden okunur.
+        /// </summary>
+        public int EffectiveChain(double nowMs, float gapSec)
+        {
+            if (nowMs - _chainStartMs > Math.Max(0f, gapSec) * 1000.0)
+            {
+                _chainCount = 0;
+                return 0;
+            }
+            return _chainCount;
+        }
+
         public bool BonusArmed(double nowMs) => _bonusArmed && nowMs < _bonusUntilMs;
 
         public string BonusId => _bonusArmed ? _bonusId : string.Empty;
@@ -202,11 +265,27 @@ namespace Dovus.Core.Equipment
             _counterUntilMs = nowMs + Math.Max(0f, windowSec) * 1000.0;
         }
 
+        /// <summary>Penceredeki ilk skill vuruşu bonusu yer. Sonrakiler yemez.</summary>
+        public bool TryConsumeBlock(double nowMs)
+        {
+            if (!(nowMs < _counterUntilMs))
+                return false;
+            _counterUntilMs = double.NegativeInfinity;
+            return true;
+        }
+
+        public bool HammerReady(double nowMs) => nowMs >= _hammerReadyMs;
+
+        public void CommitHammer(double nowMs, float icdSec)
+        {
+            _hammerReadyMs = nowMs + Math.Max(0f, icdSec) * 1000.0;
+        }
+
         public bool TryHammerStun(double nowMs, float icdSec)
         {
-            if (nowMs < _hammerReadyMs)
+            if (!HammerReady(nowMs))
                 return false;
-            _hammerReadyMs = nowMs + Math.Max(0f, icdSec) * 1000.0;
+            CommitHammer(nowMs, icdSec);
             return true;
         }
 
@@ -256,5 +335,62 @@ namespace Dovus.Core.Equipment
             _chainCount = 0;
             _chainStartMs = double.NegativeInfinity;
         }
+    }
+
+    /// <summary>
+    /// Yakın vuruş yayı. Açı 0 ise yay kapısı yok (eski kapsül kuralı durur).
+    /// </summary>
+    public static class MeleeArc
+    {
+        public static bool FriendlyVerb(int verbId) => verbId is 2 or 4 or 8 or 9;
+
+        public static bool InFront(float deltaDeg, float arcDeg) =>
+            arcDeg <= 0f || WeaponPassiveRules.AngleInArc(deltaDeg, arcDeg);
+
+        /// <summary>
+        /// Menzilde ve yayın içinde. ArcAllies açıksa kilit hedef olmayan dost da girer.
+        /// </summary>
+        public static bool Hits(
+            bool inRange,
+            float deltaDeg,
+            float arcDeg,
+            bool designated,
+            bool ally,
+            bool arcAllies)
+        {
+            if (!inRange || !InFront(deltaDeg, arcDeg))
+                return false;
+            if (arcDeg <= 0f)
+                return designated;
+            return designated || (arcAllies && ally);
+        }
+
+        /// <summary>
+        /// Kapsül ıskalasa da kenar menzili + yay içi vurur.
+        /// Yayın dışı kapsül teması vurmaz. Yay yoksa eski kural.
+        /// </summary>
+        public static bool StrikeConnects(bool capsuleHit, bool edgeInReach, float deltaDeg, float arcDeg)
+        {
+            if (!(capsuleHit || edgeInReach))
+                return false;
+            return InFront(deltaDeg, arcDeg);
+        }
+    }
+
+    /// <summary>
+    /// Süreli alan. Süre uzayınca dilim küçülmez; aynı payla yeni vuruş eklenir.
+    /// </summary>
+    public static class SustainedField
+    {
+        public static int TickCount(float durationSec, float tickSec)
+        {
+            if (durationSec <= 0f)
+                return 1;
+            float tick = tickSec > 0.01f ? tickSec : 0.01f;
+            return Math.Max(1, (int)Math.Ceiling(durationSec / tick - 1e-4f));
+        }
+
+        public static float PerTickShare(float baseDurationSec, float tickSec) =>
+            1f / TickCount(baseDurationSec, tickSec);
     }
 }

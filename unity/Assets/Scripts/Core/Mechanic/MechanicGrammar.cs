@@ -213,14 +213,16 @@ namespace Dovus.Core.Mechanic
         }
 
         /// <summary>weapon_skill_interaction tier C: yalnız uyumlu fiilde.</summary>
-        static void ApplyWeaponIdentity(MechanicPlan p, MechanicWeapon w)
+        void ApplyWeaponIdentity(MechanicPlan p, MechanicWeapon w)
         {
             MechanicBody b = p.Body;
             bool harms = p.Effects.Any(e => e.Atom == "deger" && e.Target == "dusman");
             switch (w.Path)
             {
-                case "temas": b.Traits.Add("arkadan_x1.5"); break;
-                case "durtme": b.Traits.Add("arkadan_x1.5"); break;
+                // Sırt çarpanı sirt_vurusu pasifindedir. İkinci bir arkadan etiketi yazılmaz.
+                case "temas":
+                case "durtme":
+                    break;
                 case "ok": b.Traits.Add("kosu_kritigi"); break;
                 case "sayfa": b.Traits.Add("dolu_sayfa"); break;
                 case "kure": b.Traits.Add("capraz_ates"); break;
@@ -231,11 +233,18 @@ namespace Dovus.Core.Mechanic
                 case "yay": b.SizeM *= 1.2; break;
                 case "agir_yay": b.Traits.Add("poise_x1.5"); break;
                 case "yere_vurus":
-                    if (harms) Add(p, "hiz", "hareket", "dusman", 0, 0.5, "sersem");
+                    if (harms)
+                    {
+                        double stun = _r.WeaponPassiveNum(w.Id, "stun_sec", 0);
+                        if (stun > 0)
+                            Add(p, "hiz", "hareket", "dusman", 0, stun, "sersem");
+                    }
                     break;
                 case "balistik": b.Traits.Add("sabitken_+50"); break;
                 case "yerlestirme":
-                    foreach (MechanicEffect e in p.Effects.Where(e => e.Atom == "deger" && e.Amount > 0)) e.Amount *= 1.2;
+                    double power = _r.WeaponPassiveNum(w.Id, "power_mult", 1);
+                    foreach (MechanicEffect e in p.Effects.Where(e => e.Atom == "deger" && e.Amount > 0))
+                        e.Amount *= power;
                     break;
                 case "govde": b.Traits.Add("blok_sonrasi_karsi_+20"); break;
             }

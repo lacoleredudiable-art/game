@@ -42,7 +42,8 @@ namespace Dovus.Core.Status
             StatusBoard caster,
             StatusBoard target,
             StatusTuning tuning,
-            MobilityCcData? mobilityCc = null)
+            MobilityCcData? mobilityCc = null,
+            float friendlyMagnitude = 1f)
         {
             if (skill.IsEmpty || tuning == null)
                 return new Result(false, false, EmptyReactions);
@@ -97,13 +98,15 @@ namespace Dovus.Core.Status
                         continue;
                     }
 
-                    ApplyKind(board, kind, skill, tuning, mobilityCc, ParseAdjectiveId(skill.AdjectiveId));
+                    ApplyKind(
+                        board, kind, skill, tuning, mobilityCc, ParseAdjectiveId(skill.AdjectiveId),
+                        friendlyMagnitude);
                 }
 
                 // Sıfat engine_modifiers — fiil mechanics dışında ek durum (3’lü/4’lü farkı).
                 ApplyAdjectiveModifiers(
                     skill, board, caster, target, self, ref knockback, ref pull, tuning, mechanics,
-                    mobilityCc, ParseAdjectiveId(skill.AdjectiveId));
+                    mobilityCc, ParseAdjectiveId(skill.AdjectiveId), friendlyMagnitude);
             }
             finally
             {
@@ -131,7 +134,8 @@ namespace Dovus.Core.Status
             StatusTuning tuning,
             string[] mechanics,
             MobilityCcData? mobilityCc,
-            int adjectiveId)
+            int adjectiveId,
+            float friendlyMagnitude)
         {
             JsonValue mods = skill.EngineModifiers;
             if (mods.IsNull || mods.Kind != JsonKind.Object)
@@ -158,7 +162,10 @@ namespace Dovus.Core.Status
                 if (hasteMs <= 0)
                     hasteMs = tuning.HasteMs;
                 if (haste > 1f)
-                    caster.Apply(StatusKind.Haste, hasteMs, haste, EffectSource(skill, "haste"));
+                {
+                    float scaled = friendlyMagnitude > 0f ? haste * friendlyMagnitude : haste;
+                    caster.Apply(StatusKind.Haste, hasteMs, scaled, EffectSource(skill, "haste"));
+                }
             }
 
             if (ModifierTruthy(mods, "apply_knockback") && !self && !HasMech("knockback"))
@@ -309,8 +316,11 @@ namespace Dovus.Core.Status
             SkillResolution skill,
             StatusTuning t,
             MobilityCcData? mobilityCc,
-            int adjectiveId)
+            int adjectiveId,
+            float friendlyMagnitude = 1f)
         {
+            float Friendly(float magnitude) =>
+                friendlyMagnitude > 0f ? magnitude * friendlyMagnitude : magnitude;
             double Duration(double fallback) =>
                 ExplicitOrFallback(
                     skill.EngineModifiers, "cc_duration_sec", kind, adjectiveId, fallback, mobilityCc, skill.SkillJob);
@@ -362,16 +372,16 @@ namespace Dovus.Core.Status
                     board.Apply(kind, t.PoisonMs, t.PoisonDamagePerSec);
                     break;
                 case StatusKind.Shield:
-                    board.Apply(kind, t.ShieldMs, t.ShieldAbsorb);
+                    board.Apply(kind, t.ShieldMs, Friendly(t.ShieldAbsorb));
                     break;
                 case StatusKind.Haste:
-                    board.Apply(kind, t.HasteMs, t.HasteSpeedMult, EffectSource(skill, "haste"));
+                    board.Apply(kind, t.HasteMs, Friendly(t.HasteSpeedMult), EffectSource(skill, "haste"));
                     break;
                 case StatusKind.DamageReduction:
                     board.Apply(kind, t.DamageReductionMs, t.DamageReductionMult);
                     break;
                 case StatusKind.Regen:
-                    board.Apply(kind, t.RegenMs, t.RegenPerSec);
+                    board.Apply(kind, t.RegenMs, Friendly(t.RegenPerSec));
                     break;
             }
         }

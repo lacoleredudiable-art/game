@@ -125,7 +125,17 @@ namespace Dovus.Game
 
             float poise = 0f;
             if (!skill.IsEmpty)
-                poise = skill.BasePoise * (skill.PoiseDamageMult > 0f ? skill.PoiseDamageMult : 1f);
+            {
+                float weaponPoise = _equippedWeapon != null && _equippedWeapon.PoiseMult > 0f
+                    ? _equippedWeapon.PoiseMult
+                    : 1f;
+                float bonusPoise = HitMods(skill, isBasicStrike, false).PoiseMult;
+                poise = WeaponPassiveRules.OutgoingPoise(
+                    skill.BasePoise,
+                    skill.PoiseDamageMult,
+                    weaponPoise,
+                    bonusPoise);
+            }
 
             bool canCrit = formula || (!isBasicStrike && !skill.IsEmpty && skill.BaseDamage > 0f);
             float extraCrit = ExtraCritChanceAdd(skill) + WeaponCritAdd(skill, isBasicStrike);
@@ -191,6 +201,7 @@ namespace Dovus.Game
                 buff = engine["buff_armor"].AsFloat(0f);
             if (buff > 0f && _playerStatus != null)
             {
+                buff = WeaponPassiveRules.ScaleFriendlyMagnitude(buff, WeaponFriendlyScale());
                 float sec = engine["buff_duration_sec"].AsFloat(engine["debuff_duration_sec"].AsFloat(3f));
                 _playerStatus.Armor.GrantBuff(buff, now + Math.Max(0.05f, sec) * 1000.0);
             }
