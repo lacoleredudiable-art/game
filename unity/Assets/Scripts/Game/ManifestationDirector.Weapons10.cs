@@ -18,6 +18,8 @@ namespace Dovus.Game
         readonly WeaponPassiveState _weaponPassives = new();
         readonly OrbAnchor _orb = new();
         readonly CannonRecoil _cannonRecoil = new();
+        /// <summary>Teslim kuyruğu ve çağrılan aktör hasarı oyuncuyu geri tepmez.</summary>
+        bool _casterRecoilSuppressed;
         readonly List<Transform> _cannonBodies = new();
         bool _cannonQueued;
         float _cannonImpactX;
@@ -535,7 +537,7 @@ namespace Dovus.Game
 
             PushCannonBodies(impactX, impactZ, splash, arena, bossR);
 
-            if (profile.RecoilM <= 0f || _recoilInTemplate)
+            if (profile.RecoilM <= 0f || _recoilInTemplate || _casterRecoilSuppressed)
                 return;
             Vector3 player = _player.position;
             float dirX = player.x - impactX;

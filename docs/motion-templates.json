@@ -1459,15 +1459,34 @@
       ]
     },
     {
-      "id": "isinlan_kes",
-      "name": "Işınlan ve kes",
+      "id": "kisa_dash",
+      "name": "Kısa hızlı dash",
       "family": 23,
       "aim": "enemy",
       "combos": [
         {
           "id": "3-1",
           "tags": []
-        },
+        }
+      ],
+      "phases": [
+        {
+          "name": "atil",
+          "motion": "dash",
+          "sec": 0.16,
+          "distance_m": 1.65,
+          "facing": "target",
+          "homing": "track",
+          "anim": "dash"
+        }
+      ]
+    },
+    {
+      "id": "kilitli_adim",
+      "name": "Kilitli adım",
+      "family": 23,
+      "aim": "enemy",
+      "combos": [
         {
           "id": "3-9",
           "tags": []
@@ -1477,16 +1496,16 @@
         {
           "name": "kilit",
           "motion": "hold",
-          "sec": 0.3,
+          "sec": 0.2,
           "facing": "target",
           "homing": "track",
           "anim": "cast"
         },
         {
-          "name": "isin",
+          "name": "adim",
           "motion": "blink",
-          "sec": 0.18,
-          "snap_at": 0.4,
+          "sec": 0.28,
+          "snap_at": 0.45,
           "distance_m": 5.0,
           "land": "behind",
           "behind_m": 1.15,
@@ -1567,7 +1586,7 @@
             "length_m": 0.6,
             "radius_m": 0.45,
             "at": 0.7,
-            "share": 0.34,
+            "share": 0.5,
             "payload": "effect"
           },
           "facing": "travel",
@@ -1582,27 +1601,6 @@
           "distance_m": 1.15,
           "forward_m": 1.15,
           "height_m": 0.5,
-          "hit": {
-            "shape": "sphere",
-            "anchor": "self",
-            "length_m": 0.6,
-            "radius_m": 0.45,
-            "at": 0.7,
-            "share": 0.33,
-            "payload": "effect"
-          },
-          "facing": "travel",
-          "homing": "none",
-          "anim": "leap"
-        },
-        {
-          "name": "sek_3",
-          "motion": "hop",
-          "sec": 0.2,
-          "side": 1,
-          "distance_m": 0.55,
-          "forward_m": 1.25,
-          "height_m": 0.5,
           "land": "behind",
           "hit": {
             "shape": "sphere",
@@ -1610,7 +1608,7 @@
             "length_m": 0.6,
             "radius_m": 0.45,
             "at": 0.7,
-            "share": 0.33,
+            "share": 0.5,
             "payload": "effect"
           },
           "facing": "travel",

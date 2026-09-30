@@ -623,6 +623,7 @@ namespace Dovus.Game
             SyncPlayerStateMachine(worldMs);
             TickWeaponSwap(worldMs);
             TickDelayedLaunches(worldMs);
+            TickTemplateDelivery(worldMs);
             TickMechanics(worldMs);
             TickZones(dtSec);
             _spaceHost?.Tick(dtSec);
@@ -2164,6 +2165,8 @@ namespace Dovus.Game
                 skill,
                 new Vector3(logic.DirX, 0f, logic.DirZ),
                 new Vector3(logic.TipX, _player.position.y, logic.TipZ));
+            if (templateOwnsDelivery)
+                ArmTemplateDelivery(skill, p, motionPlan);
 
             bool executorStarted = !templateOwnsDelivery
                 && executorRoute.Kind != SkillExecutorKind.Fallback
@@ -2350,7 +2353,8 @@ namespace Dovus.Game
             in SkillMotionPlan motionPlan,
             float effectMult = 1f,
             LivingEffect capturedLogic = null,
-            int slotCastId = -1)
+            int slotCastId = -1,
+            float? activationDelayOverride = null)
         {
             LivingEffect logic = capturedLogic
                 ?? (pending.View != null ? pending.View.Logic : null);
@@ -2398,6 +2402,9 @@ namespace Dovus.Game
             Transform target = pending.Target;
             if (target == null && pending.AimMode == SkillAimMode.Targeted && _boss != null)
                 target = _boss.transform;
+            // Kendine doğan minyon/klon da düşmana yürür; hedefsiz aktör vurmaz ve boss'un içinde kalır.
+            if (kind == SkillExecutorKind.Summon && _boss != null && !IsEnemyBody(target))
+                target = _boss.transform;
             if (pending.AimMode == SkillAimMode.Targeted && target != null && target != _player)
             {
                 Vector3 toTarget = target.position - origin;
@@ -2430,14 +2437,19 @@ namespace Dovus.Game
                     spawnCount = Mathf.Max(spawnCount, Mathf.RoundToInt((float)actorEffect.Amount));
             }
             float activationDelaySec = 0f;
-            if (worldProfile != null && worldProfile.RiseDelay && MechanicEngine != null)
-                activationDelaySec = Mathf.Max(
-                    activationDelaySec,
-                    (float)MechanicEngine.Rules.Param("rise_delay_sec"));
-            if (worldProfile != null && worldProfile.DelayedMark && MechanicEngine != null)
-                activationDelaySec = Mathf.Max(
-                    activationDelaySec,
-                    (float)MechanicEngine.Rules.Param("mark_delay_sec"));
+            if (activationDelayOverride.HasValue)
+                activationDelaySec = Mathf.Max(0f, activationDelayOverride.Value);
+            else
+            {
+                if (worldProfile != null && worldProfile.RiseDelay && MechanicEngine != null)
+                    activationDelaySec = Mathf.Max(
+                        activationDelaySec,
+                        (float)MechanicEngine.Rules.Param("rise_delay_sec"));
+                if (worldProfile != null && worldProfile.DelayedMark && MechanicEngine != null)
+                    activationDelaySec = Mathf.Max(
+                        activationDelaySec,
+                        (float)MechanicEngine.Rules.Param("mark_delay_sec"));
+            }
             float tickEffectFraction = worldProfile != null && worldProfile.Continuous && MechanicEngine != null
                 ? (float)MechanicEngine.Rules.Param("flow_tick_fraction")
                 : 0f;
@@ -2454,7 +2466,9 @@ namespace Dovus.Game
                 if (effectFraction <= 0f)
                     return;
                 int prevCast = _slotQueryCastId;
+                bool prevRecoil = _casterRecoilSuppressed;
                 _slotQueryCastId = castId;
+                _casterRecoilSuppressed |= kind == SkillExecutorKind.Summon;
                 try
                 {
                 if (!friendly)
@@ -2511,6 +2525,7 @@ namespace Dovus.Game
                 finally
                 {
                     _slotQueryCastId = prevCast;
+                    _casterRecoilSuppressed = prevRecoil;
                 }
             }
 
@@ -2556,7 +2571,15 @@ namespace Dovus.Game
                             float bindingDamage = MechanicEngine != null
                                 ? (float)MechanicEngine.Rules.Param("minion_hit_damage")
                                 : raw;
-                            ApplyMinionHit(skill, bindingDamage * effectMult);
+                            float dealt = ApplyMinionHit(skill, bindingDamage * effectMult);
+                            bool drains = mechanicPlan != null && mechanicPlan.Effects.Exists(
+                                e => e.Has("can_emen"));
+                            if (drains && dealt > 0.5f && _player != null)
+                            {
+                                PlayerVitals vitals = _player.GetComponent<PlayerVitals>();
+                                if (vitals != null)
+                                    vitals.ApplyHeal(Mathf.RoundToInt(dealt));
+                            }
                         }
                         finally
                         {

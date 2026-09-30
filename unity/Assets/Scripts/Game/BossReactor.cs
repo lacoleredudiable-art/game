@@ -74,6 +74,22 @@ namespace Dovus.Game
             }
         }
 
+        /// <summary>
+        /// Geri sarma gibi kesin yer ataması: Home yazılır, eski itmenin görsel ofseti ve
+        /// süren çekiş bırakılır; yoksa görsel gövde yeni Home'dan eski yöne kayar.
+        /// </summary>
+        public void SnapHome(Vector3 world)
+        {
+            Home = world;
+            _visualOffset = Vector3.zero;
+            _pulling = false;
+            _contactPull = false;
+            // Aynı karede hedef okuyan hareket kalıbı eski görsel yeri görmesin.
+            Vector3 p = _home;
+            p.y = transform.position.y;
+            transform.position = p;
+        }
+
         public void CaptureHome()
         {
             _home = ClampToArena(transform.position);

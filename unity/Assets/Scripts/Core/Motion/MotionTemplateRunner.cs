@@ -184,6 +184,8 @@ namespace Dovus.Core.Motion
         bool _snapped;
         bool _hasTracked;
         MotionTarget _tracked;
+        /// <summary>Kaydırılmamış hedef: nişan yumuşar, gövde ayrımı gerçek yeri kullanır.</summary>
+        MotionTarget _body;
         bool _yieldApproach;
         float _yieldX, _yieldZ;
         float _blendU0 = -1f;
@@ -242,6 +244,7 @@ namespace Dovus.Core.Motion
             _lastTarget = default;
             _hasTracked = false;
             _tracked = default;
+            _body = default;
             _yieldApproach = false;
             _yieldX = x;
             _yieldZ = z;
@@ -266,6 +269,7 @@ namespace Dovus.Core.Motion
             // Nişan noktası en çok 40 m/s kayar; ışınlanma fazı bunu kullanmaz.
             MotionTarget aim = SlewTarget(target, dt);
             _lastTarget = aim;
+            _body = target;
             float left = dt;
             int guard = 0;
             while (left > 0.00001f && !_finished && guard++ < 12)
@@ -815,7 +819,13 @@ namespace Dovus.Core.Motion
                 return;
             }
             if (phase.Homing != "track")
+            {
+                // overshoot_m yoksa düz hamle gövdeyi kesmez. Kenar itmesi merkezi geçince
+                // oyuncuyu tek karede karşı yüze atıyordu (3-7, uzatılmış dash).
+                if (phase.Motion is "dash" or "lunge" && phase.OvershootM <= 0.01f)
+                    StopAtBodyEdge(target);
                 return;
+            }
             switch (phase.Motion)
             {
                 case "dash":
@@ -826,7 +836,7 @@ namespace Dovus.Core.Motion
                         _destZ = _phaseZ + uz * through;
                     }
                     else
-                        Approach(ux, uz, len, target, cap: 0f);
+                        Approach(ux, uz, len, target, cap: phase.DistanceM);
                     break;
                 case "leap":
                     Approach(ux, uz, len, target, cap: 0f);
@@ -990,15 +1000,42 @@ namespace Dovus.Core.Motion
         float Separation(in MotionTarget target) =>
             _bodyRadius + target.RadiusM + _stopGap;
 
+        /// <summary>Faz başından varışa düz yol ayrım çemberine giriyorsa varış giriş noktasıdır.</summary>
+        void StopAtBodyEdge(in MotionTarget target)
+        {
+            float r = Separation(target);
+            float sx = _phaseX - target.X;
+            float sz = _phaseZ - target.Z;
+            float c = sx * sx + sz * sz - r * r;
+            if (c <= 0f)
+                return;
+            float vx = _destX - _phaseX;
+            float vz = _destZ - _phaseZ;
+            float a = vx * vx + vz * vz;
+            if (a < 1e-6f)
+                return;
+            float b = sx * vx + sz * vz;
+            float disc = b * b - a * c;
+            if (b >= 0f || disc < 0f)
+                return;
+            float t = (-b - MathF.Sqrt(disc)) / a;
+            if (t >= 1f)
+                return;
+            t = Math.Max(0f, t);
+            _destX = _phaseX + vx * t;
+            _destZ = _phaseZ + vz * t;
+        }
+
         /// <summary>Atış, tutma ve dönüş oyuncunun ayaklarını yerinden kaldırmaz.</summary>
         static bool FeetPlanted(MotionPhase phase) =>
             phase.Motion is "hold" or "throw" or "spin" or "fan" or "hover";
 
         /// <summary>Dönüş atılması hedefin içine inmez; işaret dışarıdaysa işaret kalır.</summary>
-        void KeepOutside(in MotionTarget target, ref float x, ref float z)
+        void KeepOutside(in MotionTarget aim, ref float x, ref float z)
         {
-            if (!target.Has)
+            if (!aim.Has)
                 return;
+            MotionTarget target = _body.Has ? _body : aim;
             float dx = x - target.X;
             float dz = z - target.Z;
             float dist = MathF.Sqrt(dx * dx + dz * dz);

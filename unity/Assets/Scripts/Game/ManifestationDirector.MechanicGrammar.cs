@@ -159,8 +159,11 @@ namespace Dovus.Game
             return true;
         }
 
-        /// <summary>Gövde düşmana değdiğinde (bir kez): düşmana yönelik atomlar.</summary>
-        void ApplyMechanicHitEffects(MechanicPlan plan, Vector3 center)
+        /// <summary>
+        /// Gövde düşmana değdiğinde (bir kez): düşmana yönelik atomlar.
+        /// casterMoves false: kalıp sonrası teslim kuyruğu oyuncuyu yerinden oynatmaz.
+        /// </summary>
+        void ApplyMechanicHitEffects(MechanicPlan plan, Vector3 center, bool casterMoves = true)
         {
             if (plan == null || _bossStatus == null || _boss == null)
                 return;
@@ -234,6 +237,11 @@ namespace Dovus.Game
                         ApplyOnce(boss, StatusKind.Stun, grammar.Rules.Param("knockup_sec") * 1000.0, 1f, applied);
                         break;
                     case ("konum", "yer_degistir") when _clock != null && _player != null:
+                        if (!casterMoves)
+                        {
+                            applied.Add("yer değiştirme kuyrukta yok");
+                            break;
+                        }
                         if (TemplateOwnsPosition(plan, e.Stat))
                         {
                             applied.Add("yer değiştirme kalıpta");
