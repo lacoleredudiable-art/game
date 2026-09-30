@@ -653,6 +653,18 @@ namespace Dovus.Core.Motion
             float edgeReachM) =>
             centerDistM - Math.Max(0f, attackerRadiusM) - Math.Max(0f, targetRadiusM)
             <= Math.Max(0f, edgeReachM) + 0.02f;
+
+        /// <summary>
+        /// Geri adım cast başındaki menzili silmesin. İkisi de doluysa daha yakın olan sayılır.
+        /// </summary>
+        public static float CloserCenter(float currentCenterM, float castStartCenterM)
+        {
+            if (castStartCenterM <= 0.01f)
+                return currentCenterM;
+            if (currentCenterM <= 0.01f)
+                return castStartCenterM;
+            return Math.Min(currentCenterM, castStartCenterM);
+        }
     }
 
     public static class MotionHitGeometry

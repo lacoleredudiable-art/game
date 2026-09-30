@@ -1,5 +1,6 @@
 using Dovus.Core.Execution;
 using Dovus.Core.Combat;
+using Dovus.Core.Equipment;
 using Dovus.Core.Mechanic;
 using UnityEngine;
 
@@ -63,6 +64,11 @@ namespace Dovus.Game
         void Probe()
         {
             Vector3 origin = Context.Owner != null ? Context.Owner.position : Context.Origin;
+            if (Context.HitboxAngleDeg > 0f)
+            {
+                ProbeArc(origin);
+                return;
+            }
             if (_homing && Context.Target != null)
             {
                 Vector3 to = Context.Target.position - origin;
@@ -114,6 +120,56 @@ namespace Dovus.Game
                 Apply(1f);
                 break;
             }
+        }
+
+        /// <summary>
+        /// Yay açıksa ince kapsül yan hedefi kaçırır. Menzil küresi + öndeki açı.
+        /// </summary>
+        void ProbeArc(Vector3 origin)
+        {
+            float reach = Mathf.Max(Context.RangeM, Context.RadiusM);
+            int count = Physics.OverlapSphereNonAlloc(
+                origin + Vector3.up * Context.RadiusM,
+                reach,
+                Hits,
+                Physics.AllLayers,
+                QueryTriggerInteraction.Collide);
+            if (Context.IsBurst)
+                _applied = true;
+            for (int i = 0; i < count; i++)
+            {
+                if (!ArcHit(Hits[i], origin))
+                    continue;
+                _applied = true;
+                Apply(1f);
+                return;
+            }
+        }
+
+        bool ArcHit(Collider col, Vector3 origin)
+        {
+            if (col == null)
+                return false;
+            Transform hit = col.transform;
+            if (Context.Owner != null && (hit == Context.Owner || hit.IsChildOf(Context.Owner)))
+                return false;
+            Vector3 to = hit.position - origin;
+            to.y = 0f;
+            float delta = to.sqrMagnitude < 0.0001f ? 0f : Vector3.Angle(Context.Direction, to);
+            bool inRange = to.magnitude <= Context.RangeM + Context.RadiusM;
+            bool designated = Context.Target != null
+                && (hit == Context.Target || hit.IsChildOf(Context.Target));
+            bool ally = false;
+            if (Context.ArcAllies && !designated)
+            {
+                Targetable mark = hit.GetComponentInParent<Targetable>();
+                Targetable owner = Context.Owner != null
+                    ? Context.Owner.GetComponentInParent<Targetable>()
+                    : null;
+                ally = mark != null && owner != null && mark != owner && mark.TeamId == owner.TeamId;
+            }
+            return MeleeArc.Hits(
+                inRange, delta, Context.HitboxAngleDeg, designated, ally, Context.ArcAllies);
         }
     }
 }

@@ -47,7 +47,8 @@ namespace Dovus.Game
             int spawnCount = 1,
             MechanicPlan mechanicPlan = null,
             float activationDelaySec = 0f,
-            float tickEffectFraction = 0f)
+            float tickEffectFraction = 0f,
+            bool arcAllies = false)
         {
             FieldCenter = fieldCenter;
             StartMotion = startMotion;
@@ -56,6 +57,7 @@ namespace Dovus.Game
             MechanicPlan = mechanicPlan;
             ActivationDelaySec = Mathf.Max(0f, activationDelaySec);
             TickEffectFraction = Mathf.Max(0f, tickEffectFraction);
+            ArcAllies = arcAllies;
             Skill = skill;
             Owner = owner;
             Target = target;
@@ -117,6 +119,8 @@ namespace Dovus.Game
         public MechanicPlan MechanicPlan { get; }
         public float ActivationDelaySec { get; }
         public float TickEffectFraction { get; }
+        /// <summary>Dost fiilde yaydaki herkes. Düşman vuruşunda yalnız kilit hedef.</summary>
+        public bool ArcAllies { get; }
     }
 
     /// <summary>Unity yaşam döngüsü taşıyan fiziksel executor'lar için ortak taban.</summary>

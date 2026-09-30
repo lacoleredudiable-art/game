@@ -180,6 +180,16 @@ namespace Dovus.Game
             float taken = (ModeDirector?.DamageTakenMult ?? 1f)
                 * (PassiveDirector?.DamageTakenMult ?? 1f)
                 * Board.IncomingDamageMult;
+            // Kalkanın kısa kalkanı, tahta kalkanıyla aynı son aşamada (f) erir.
+            // Dodge yukarıda yuttuysa bu havuza hiç girilmez.
+            float shortShield = 0f;
+            WeaponShortShieldHost shortHost = null;
+            if (_playerVitals != null)
+            {
+                shortHost = GetComponent<WeaponShortShieldHost>();
+                if (shortHost != null && shortHost.Shield.Active(now))
+                    shortShield = shortHost.Shield.Points;
+            }
             var outcome = DamagePipeline.Resolve(new DamageQuery
             {
                 SkillPower = raw,
@@ -188,7 +198,7 @@ namespace Dovus.Game
                 CanCrit = false,
                 Armor = Armor.Effective(now),
                 DamageTakenFactor = taken,
-                Shield = Board.ShieldRemaining,
+                Shield = Board.ShieldRemaining + shortShield,
                 Invulnerable = Board.IsInvulnerable || Board.IsStealthed,
                 Poise = raw,
                 ThreatMultiplier = PassiveDirector?.ThreatMultiplier ?? 1f,
@@ -198,7 +208,14 @@ namespace Dovus.Game
             LastThreat = outcome.Threat;
             LastPoise = outcome.Poise;
             if (outcome.ShieldAbsorbed > 0f)
-                Board.ConsumeShield(outcome.ShieldAbsorbed);
+            {
+                float fromBoard = Mathf.Min(Board.ShieldRemaining, outcome.ShieldAbsorbed);
+                if (fromBoard > 0f)
+                    Board.ConsumeShield(fromBoard);
+                float fromShort = outcome.ShieldAbsorbed - fromBoard;
+                if (fromShort > 0f && shortHost != null)
+                    shortHost.Shield.Consume(fromShort, now);
+            }
             float afterShield = outcome.Amount;
             if (afterShield <= 0f) return;
             if (IncomingDamageRedirect != null)
@@ -216,7 +233,7 @@ namespace Dovus.Game
             else if (_playerVitals != null)
             {
                 DamageTaken?.Invoke(afterShield);
-                if (_playerVitals.ApplyDamage(Mathf.CeilToInt(afterShield)))
+                if (_playerVitals.ApplyDamage(Mathf.CeilToInt(afterShield), dodgeable, shortShieldAlreadyApplied: true))
                     SpaceLinkBreak?.Invoke();
                 else if (afterShield > 0f)
                     SpaceLinkBreak?.Invoke(); // hasar alındı → hat kopar (ölüm şart değil)

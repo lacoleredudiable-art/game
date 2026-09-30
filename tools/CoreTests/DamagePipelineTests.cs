@@ -333,6 +333,109 @@ public class DamagePipelineTests
         Assert.That(ignored.Amount, Is.EqualTo(200f).Within(0.01f));
     }
 
+    [Test]
+    public void IgnoreArmor_CapsAtHalf_AndExplicitFullPenStays()
+    {
+        Assert.That(ArmorPierce.ApplyIgnoreArmor(0f, false), Is.EqualTo(0f).Within(0.0001f));
+        Assert.That(ArmorPierce.ApplyIgnoreArmor(0.8f, false), Is.EqualTo(0.8f).Within(0.0001f));
+        Assert.That(ArmorPierce.ApplyIgnoreArmor(0f, true), Is.EqualTo(ArmorPierce.IgnoreArmorCap).Within(0.0001f));
+        Assert.That(ArmorPierce.ApplyIgnoreArmor(0.8f, true), Is.EqualTo(ArmorPierce.IgnoreArmorCap).Within(0.0001f));
+
+        DesignWarnings.ResetForTests();
+        var motor = SkillMotor.FromJson(File.ReadAllText(ElementPath()));
+        SkillResolution strike = motor.Resolve(new[] { 1, 9 });
+        SkillResolution burst = motor.Resolve(new[] { 5, 9 });
+        SkillResolution plain = motor.Resolve(new[] { 1, 1 });
+        Assert.That(strike.EngineModifiers["ignore_armor"].AsBool(false), Is.True);
+        Assert.That(burst.EngineModifiers["ignore_armor"].AsBool(false), Is.True);
+        Assert.That(plain.EngineModifiers["ignore_armor"].AsBool(false), Is.False);
+
+        // Play: zırh yok sayılınca 1-9 ~365K, 5-9 ~260K. %50 delme zırh 100'ü 50 bırakır.
+        float focused = ThroughArmor(365000f, ArmorPierce.ApplyIgnoreArmor(0f, true));
+        float exploded = ThroughArmor(260000f, ArmorPierce.ApplyIgnoreArmor(0f, true));
+        Assert.That(focused, Is.InRange(150000f, 250000f));
+        Assert.That(exploded, Is.InRange(150000f, 250000f));
+        Assert.That(ThroughArmor(365000f, ArmorPierce.ApplyIgnoreArmor(0f, false)), Is.LessThan(focused));
+
+        var full = DamagePipeline.Resolve(new DamageQuery
+        {
+            SkillPower = 200f,
+            Armor = 100f,
+            ArmorPenPercent = 1f
+        });
+        Assert.That(full.ArmorAfterPen, Is.EqualTo(0f).Within(0.01f));
+        Assert.That(full.Amount, Is.EqualTo(200f).Within(0.01f));
+    }
+
+    [Test]
+    public void WeaponBaseArmor_ReadsTheRoster()
+    {
+        var catalog = WeaponArmorCatalog.FromJson(File.ReadAllText(ElementPath()));
+        Assert.That(catalog.ArmorOf("1"), Is.EqualTo(0f));
+        Assert.That(catalog.ArmorOf("weapon:4"), Is.EqualTo(0f));
+        Assert.That(catalog.ArmorOf("weapon:6"), Is.EqualTo(15f));
+        Assert.That(catalog.ArmorOf("weapon:7"), Is.EqualTo(10f));
+        Assert.That(catalog.ArmorOf("weapon:10"), Is.EqualTo(25f));
+    }
+
+    [Test]
+    public void ShortShield_SoaksInTheFinalStage_AfterDodgeWouldHaveBlocked()
+    {
+        var shield = new WeaponShortShield();
+        shield.Grant(15f, 0, 3f);
+        Assert.That(WeaponShortShieldGate.Apply(dodgeBlocks: true, shield, 40f, 100), Is.EqualTo(0f));
+        Assert.That(shield.Points, Is.EqualTo(15f));
+
+        DamageOutcome hit = DamagePipeline.Resolve(new DamageQuery
+        {
+            SkillPower = 40f,
+            Shield = shield.Points,
+            CanCrit = false,
+            ScaleMagnitudes = true
+        });
+        Assert.That(hit.ShieldAbsorbed, Is.EqualTo(15f).Within(0.01f));
+        Assert.That(hit.Amount, Is.GreaterThan(0f));
+        shield.Consume(hit.ShieldAbsorbed, 100);
+        Assert.That(shield.Points, Is.EqualTo(0f).Within(0.01f));
+    }
+
+    [Test]
+    public void Zafiyet_DoesNotZeroTheFollowingBasic()
+    {
+        var tuning = new Dovus.Core.Tuning.CombatTuning();
+        var sheet = new ArmorSheet { Base = 100f };
+        sheet.ApplyShred(0.30f, 0, 4000);
+        float first = Hit(tuning.BasicStrikePower, sheet.Effective(0), 0.5f);
+        float second = Hit(tuning.BasicStrikePower, sheet.Effective(0), 0.5f);
+        Assert.That(first, Is.GreaterThan(0f));
+        Assert.That(second, Is.EqualTo(first).Within(0.01f));
+
+        sheet.ApplyShred(0.50f, 0, 8000);
+        float afterNine = Hit(tuning.BasicStrikePower, sheet.Effective(0), 0.5f);
+        Assert.That(afterNine, Is.GreaterThan(first));
+
+        Assert.That(BasicStrikePayoff.KeepUntilBang(true, 100, 400), Is.True);
+        Assert.That(BasicStrikePayoff.PayWithoutView(true, 100, 400), Is.False);
+        Assert.That(BasicStrikePayoff.PayWithoutView(true, 400, 400), Is.True);
+        Assert.That(BasicStrikePayoff.PayWithoutView(false, 400, 400), Is.False);
+        Assert.That(Dovus.Core.Motion.BasicStrikeInput.DealsDamage(false, true), Is.True);
+    }
+
+    static float ThroughArmor(float fullIgnoreAmount, float penPct)
+    {
+        DamageOutcome hit = DamagePipeline.Resolve(new DamageQuery
+        {
+            SkillPower = fullIgnoreAmount,
+            Armor = 100f,
+            ArmorPenPercent = penPct,
+            CanCrit = false,
+            ApplyVariance = true,
+            VarianceRoll01 = 0.5f,
+            ScaleMagnitudes = false
+        });
+        return hit.Amount;
+    }
+
     static float Hit(float skillPower, float armor, float variance01)
     {
         DamageOutcome hit = DamagePipeline.Resolve(new DamageQuery

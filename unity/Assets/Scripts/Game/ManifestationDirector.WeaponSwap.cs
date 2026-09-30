@@ -4,6 +4,7 @@ using Dovus.Core.Combat;
 using Dovus.Core.Equipment;
 using Dovus.Core.Execution;
 using Dovus.Core.Grammar;
+using Dovus.Core.Status;
 using UnityEngine;
 
 namespace Dovus.Game
@@ -49,19 +50,38 @@ namespace Dovus.Game
 
             double worldMs = _clock.Director.WorldTimeMs;
             SyncPlayerStateMachine(worldMs);
-            bool allows = _playerStates == null || _playerStates.AllowsSwap;
+            bool tagged = false;
+            bool inWindow = false;
+            if (_motionBody != null && _motionBody.IsDisplacing)
+            {
+                tagged = WeaponSwapCancel.IsTagged(_motionBody.SkillId);
+                inWindow = WeaponSwapCancel.InWindow(_motionBody.PlayedSec, _motionBody.PlayLengthSec, tagged);
+            }
+            bool drawing = _engine != null && _engine.State.Phase == SentencePhase.Building;
+            bool stunned = false;
+            if (_playerStatus != null)
+            {
+                var board = _playerStatus.Board;
+                stunned = board.Has(StatusKind.Stun) || board.Has(StatusKind.Stasis) || board.Has(StatusKind.Fear);
+            }
+            bool dodging = _input?.Dodge != null && _input.Dodge.IsActive((int)worldMs);
+            bool holding = false;
+            bool stateAllows = _playerStates == null || _playerStates.AllowsSwap;
+            bool allows = WeaponSwapCancel.MayBegin(stateAllows, drawing, holding, dodging, stunned, inWindow, tagged);
             WeaponSwapResult result = _weaponSwap.TryBegin(worldMs, allows);
             switch (result)
             {
                 case WeaponSwapResult.Started:
-                    if (_weaponSwap.Rules.RecoveryCancel
-                        && _engine != null
-                        && _engine.State.Phase == SentencePhase.Recovering)
-                        _engine.Abort();
-                    // Değişim oynayan kalıbı keser; kök havada kalmasın.
+                    if (WeaponSwapCancel.CutsRecovery(inWindow)
+                        || (_weaponSwap.Rules.RecoveryCancel
+                            && _engine != null
+                            && _engine.State.Phase == SentencePhase.Recovering))
+                        CutTemplateForSwap(WeaponSwapCancel.UnlocksNextSkill(inWindow, tagged));
+                    // Kesilen ya da boştaki gövde havada kalmasın; pencere dışında oynayan kalıp sürer.
                     if (_motionBody == null && _player != null)
                         _motionBody = _player.GetComponent<MotionTemplateBody>();
-                    _motionBody?.CancelToGround();
+                    if (_motionBody != null && !_motionBody.IsDisplacing)
+                        _motionBody.CancelToGround();
                     Debug.Log($"[WeaponSwap] başladı → {_weaponSwap.Reserve?.Name}");
                     break;
                 case WeaponSwapResult.OnCooldown:
@@ -91,9 +111,10 @@ namespace Dovus.Game
                 return;
 
             // Kalıp Play anında kopyalanmıştır; sonraki cast yeni silahı okur.
-            // Başlayan değişim gövdeyi CancelToGround ile bırakır (yukarıda).
+            // Kesilen ya da boştaki gövde CancelToGround ile zemine iner (yukarıda).
             _equippedWeapon = _weaponSwap.Active;
             LastFactorySkill = null;
+            OnWeaponSwapCompleted(_equippedWeapon);
             SyncCycleIndex();
             if (_weaponSwap.Rules.CancelsCombo)
             {

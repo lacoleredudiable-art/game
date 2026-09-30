@@ -249,11 +249,35 @@ namespace Dovus.Game.EditorTools
             EditorApplication.update += LoopWatchdog;
         }
 
+        [MenuItem("Dovus/Play Sweep/144 kombo - Yumruk")]
+        static void MenuFist() => Launch("yumruk");
+
         [MenuItem("Dovus/Play Sweep/144 kombo - Kılıç")]
         static void MenuSword() => Launch("kilic");
 
+        [MenuItem("Dovus/Play Sweep/144 kombo - Çekiç")]
+        static void MenuHammer() => Launch("cekic");
+
+        [MenuItem("Dovus/Play Sweep/144 kombo - Kalkan")]
+        static void MenuShield() => Launch("kalkan");
+
+        [MenuItem("Dovus/Play Sweep/144 kombo - Yay")]
+        static void MenuBow() => Launch("yay");
+
+        [MenuItem("Dovus/Play Sweep/144 kombo - Top")]
+        static void MenuCannon() => Launch("top");
+
         [MenuItem("Dovus/Play Sweep/144 kombo - Asa")]
         static void MenuStaff() => Launch("asa");
+
+        [MenuItem("Dovus/Play Sweep/144 kombo - Tılsım")]
+        static void MenuTalisman() => Launch("tilsim");
+
+        [MenuItem("Dovus/Play Sweep/144 kombo - Büyü Kitabı")]
+        static void MenuBook() => Launch("kitap");
+
+        [MenuItem("Dovus/Play Sweep/144 kombo - Küre")]
+        static void MenuOrb() => Launch("kure");
 
         [MenuItem("Dovus/Play Sweep/144 kombo - Kılıç + Asa")]
         static void MenuSwordStaff() => Launch("kilic+asa");
@@ -346,14 +370,37 @@ namespace Dovus.Game.EditorTools
                 Start(new List<PlaySweepCase>(), preset);
                 return;
             }
-            if (preset == "asa")
+            if (SweepMotion.IsAllWeapons(preset))
             {
-                Start(AllCombos("Asa"), preset);
+                var all = new List<PlaySweepCase>();
+                foreach (string name in SweepWeaponNames)
+                    all.AddRange(AllCombos(name));
+                Start(all, preset);
                 return;
             }
-            string second = preset == "kilic+asa" ? "Asa" : "";
-            Start(AllCombos("Kılıç", second), preset, second);
+            if (preset == "kilic+asa")
+            {
+                Start(AllCombos("Kılıç", "Asa"), preset, "Asa");
+                return;
+            }
+            Start(AllCombos(PresetWeapon(preset)), preset);
         }
+
+        static readonly string[] SweepWeaponNames = SweepMotion.WeaponMenuNames;
+
+        static string PresetWeapon(string preset) => preset switch
+        {
+            "yumruk" => "Yumruk",
+            "cekic" => "Çekiç",
+            "kalkan" => "Kalkan",
+            "yay" => "Yay",
+            "top" => "Top",
+            "asa" => "Asa",
+            "tilsim" => "Tılsım",
+            "kitap" => "Büyü Kitabı",
+            "kure" => "Küre",
+            _ => "Kılıç"
+        };
 
         /// <summary>144 kombo, rün grubu çiftlerine göre sıralı (az build değişimi).</summary>
         public static List<PlaySweepCase> AllCombos(string weapon, string secondWeapon = "", float startDistM = 3f)

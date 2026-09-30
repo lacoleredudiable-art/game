@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Dovus.Core.Combat;
+using Dovus.Core.Equipment;
 using Dovus.Core.Execution;
 using Dovus.Core.Grammar;
 using Dovus.Core.Manifestation;
@@ -49,6 +50,7 @@ namespace Dovus.Game
 
         void OnPlayerDamageTaken(float incomingDamage)
         {
+            NoteShieldBlockIfGuarding();
             bool crit = _playerStatus != null && _playerStatus.LastHitWasCrit;
             Vector3 at = _player != null ? _player.position + Vector3.up * 1.6f : Vector3.zero;
             _damageHud?.ShowDamage(incomingDamage, crit, at, victimIsPlayer: true);
@@ -104,7 +106,9 @@ namespace Dovus.Game
             double now = _clock.Director.WorldTimeMs;
             float lifetimeAdd = Mathf.Max(0f, engine["lifetime_add"].AsFloat(0f));
 
+            float friendly = WeaponFriendlyScale();
             float buff = engine["buff_damage"].AsFloat(0f) + engine["self_damage_buff"].AsFloat(0f);
+            buff = WeaponPassiveRules.ScaleFriendlyMagnitude(buff, friendly);
             float buffSec = engine["buff_duration_sec"].AsFloat(0f);
             if (buff > 0f && buffSec > 0f)
             {
@@ -113,6 +117,7 @@ namespace Dovus.Game
             }
 
             float reflect = engine["reflect_ratio"].AsFloat(0f);
+            reflect = WeaponPassiveRules.ScaleFriendlyMagnitude(reflect, friendly);
             float reflectSec = engine["reflect_duration_sec"].AsFloat(0f);
             MechanicPlan mechanicPlan = MechanicPlanFor(skill);
             if (reflect > 0f && reflectSec > 0f && _playerStatus != null && HasSelfReflect(mechanicPlan))
@@ -224,11 +229,10 @@ namespace Dovus.Game
                 shield = _bossStatus.Board.ShieldRemaining;
             }
             float penPct = _passiveDirector?.ArmorPenPercent ?? 0f;
-            bool skillIgnoresArmor = !skill.IsEmpty
-                && !skill.EngineModifiers.IsNull
+            bool ignoreArmor = !skill.IsEmpty && !skill.EngineModifiers.IsNull
                 && skill.EngineModifiers["ignore_armor"].AsBool(false);
             float slotPen = _slotPassives?.ArmorPenPercentFor(_slotQueryCastId) ?? 0f;
-            penPct = SlotPassiveCombat.CombineArmorPen(penPct, skillIgnoresArmor, slotPen);
+            penPct = SlotPassiveCombat.CombineArmorPen(penPct, ignoreArmor, slotPen);
             var dealt = DamagePipeline.Resolve(new DamageQuery
             {
                 SkillPower = raw,
