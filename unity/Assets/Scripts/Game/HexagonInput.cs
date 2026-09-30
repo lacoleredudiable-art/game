@@ -62,8 +62,14 @@ namespace Dovus.Game
             Drawing
         }
 
-        /// <summary>Swap düğmesi tap'i / Q tuşu — ManifestationDirector kapıyı kendisi kontrol eder.</summary>
+        /// <summary>Q tuşu: silah değiştir. Küre düğmesi bunu kullanmaz.</summary>
         public event System.Action WeaponSwapRequested;
+
+        /// <summary>HUD silah düğmesi. Küre kuşanılıyken küreyi yollar ya da çağırır.</summary>
+        public event System.Action WeaponHudRequested;
+
+        /// <summary>Editör: R tuşu, çizim alanına dokunmadan küreyi yollar ya da çağırır.</summary>
+        public event System.Action OrbCommandRequested;
 
         /// <summary>Dodge kabul edildi. Süren skill kesilir, kalıp konumu hemen bırakılır.</summary>
         public event System.Action SkillCancelledByDodge;
@@ -418,6 +424,8 @@ namespace Dovus.Game
                 return;
             if (kb.qKey.wasPressedThisFrame)
                 WeaponSwapRequested?.Invoke();
+            if (kb.rKey.wasPressedThisFrame)
+                OrbCommandRequested?.Invoke();
             if (kb.spaceKey.wasPressedThisFrame)
                 TriggerDodge();
         }
@@ -607,7 +615,7 @@ namespace Dovus.Game
                     if (_mode == FingerMode.CenterPending)
                         TriggerCenter();
                     else if (_mode == FingerMode.SwapPending)
-                        WeaponSwapRequested?.Invoke();
+                        WeaponHudRequested?.Invoke();
                     else
                         TriggerDodge();
                 }

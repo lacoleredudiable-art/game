@@ -1,3 +1,4 @@
+using Dovus.Core.Combat;
 using Dovus.Core.Tuning;
 using System;
 using UnityEngine;
@@ -56,12 +57,33 @@ namespace Dovus.Game
             _captured = true;
         }
 
-        public bool ApplyDamage(int amount, bool dodgeable = true)
+        public bool ApplyDamage(int amount, bool dodgeable = true, bool shortShieldAlreadyApplied = false)
         {
             if (IsDown || amount <= 0)
                 return false;
             if (PlayerDodgeRig.BlocksIncoming(this, dodgeable))
                 return false;
+            if (!shortShieldAlreadyApplied)
+            {
+                WeaponShortShieldHost host = GetComponent<WeaponShortShieldHost>();
+                double now = host != null ? host.NowMs : 0;
+                float pool = host != null && host.Shield.Active(now) ? host.Shield.Points : 0f;
+                if (pool > 0f)
+                {
+                    DamageOutcome soaked = DamagePipeline.Resolve(new DamageQuery
+                    {
+                        SkillPower = amount,
+                        Shield = pool,
+                        CanCrit = false,
+                        ScaleMagnitudes = false
+                    });
+                    if (soaked.ShieldAbsorbed > 0f)
+                        host.Shield.Consume(soaked.ShieldAbsorbed, now);
+                    amount = Mathf.CeilToInt(soaked.Amount);
+                    if (amount <= 0)
+                        return false;
+                }
+            }
 
             if (_visual == null)
                 _visual = GetComponent<ActorVisual>();

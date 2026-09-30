@@ -117,7 +117,8 @@ namespace Dovus.Core.Motion
             float animSpeed = 1f,
             float velX = 0f,
             float velZ = 0f,
-            bool spin = false)
+            bool spin = false,
+            bool airborne = false)
         {
             X = x;
             Y = y;
@@ -131,6 +132,7 @@ namespace Dovus.Core.Motion
             VelX = velX;
             VelZ = velZ;
             Spin = spin;
+            Airborne = airborne;
         }
 
         public float X { get; }
@@ -146,6 +148,8 @@ namespace Dovus.Core.Motion
         public float VelZ { get; }
         /// <summary>Dönüş klibi ve gövde yaw'ı birlikte sürer.</summary>
         public bool Spin { get; }
+        /// <summary>Bu kare havadaki bir fazdadır. Bittiği karede false: iniş başlayabilir.</summary>
+        public bool Airborne { get; }
     }
 
     /// <summary>
@@ -380,7 +384,8 @@ namespace Dovus.Core.Motion
                 }
                 _x = _yieldX;
                 _z = _yieldZ;
-                _y = phase.Motion == "pull" ? 0f : _groundY;
+                // Çekme donunca da kök zemin yüksekliğinde kalır. Mutlak 0 kapsülü gömer.
+                _y = _groundY;
                 _shot = u * phase.ShotM;
                 ApplyFacing(phase, u, fx, fz, target);
                 return;
@@ -498,6 +503,9 @@ namespace Dovus.Core.Motion
                     _y = _groundY;
                     break;
             }
+
+            // Yükseklik yalnız havadaki fazın eğrisinden gelir. Çekme dahil yer fazları zemin kökünde.
+            _y = _groundY + phase.HeightAboveGround(uLinear);
 
             // Arkaya iniş ve içinden geçiş kasıtlı olarak gövdeyi keser; bitiş yine dışarıdadır.
             // Atış / tutma ayakları yerinden kaldırmaz. Kenar itmesi boss merkeze gelince
@@ -799,7 +807,8 @@ namespace Dovus.Core.Motion
             }
             if (phase.Motion == "pull")
             {
-                // Dost kancası hedefin yakın kenarında biter. distance_m ve silah menzili geçemez.
+                // Dost kancası hedefin yakın kenarında biter. distance_m burayı kısaltmaz:
+                // 40 m ile 2 m aynı temasta durur (6-1 sinir noktası da bu kovalamacayı kullanır).
                 Approach(ux, uz, len, target, cap: 0f);
                 ClampPullDest(target);
                 return;
@@ -894,9 +903,6 @@ namespace Dovus.Core.Motion
             _z = target.Z + MathF.Sin(angle) * radius;
         }
 
-        /// <summary>Arena zemini. Kanca havadaki giriş yüksekliğini taşımaz (ayaklar y=0).</summary>
-        const float FloorY = 0f;
-
         void PullTravel(float u, in MotionTarget target)
         {
             if (target.HasObstacle && SegmentTooClose(target))
@@ -906,7 +912,6 @@ namespace Dovus.Core.Motion
                 _x = _phaseX + (_destX - _phaseX) * u;
                 _z = _phaseZ + (_destZ - _phaseZ) * u;
             }
-            _y = FloorY;
         }
 
         void ClampPullDest(in MotionTarget target)
@@ -1031,6 +1036,7 @@ namespace Dovus.Core.Motion
             string anim = string.Empty;
             float speed = 1f;
             bool spin = false;
+            bool airborne = false;
             if (_template != null && _template.Phases.Count > 0)
             {
                 int index = _phase;
@@ -1042,11 +1048,11 @@ namespace Dovus.Core.Motion
                     : phase.Anim;
                 speed = phase.AnimSpeed;
                 spin = phase.Motion is "spin" or "fan" || anim == "spin";
+                airborne = phase.Airborne && !_finished;
             }
-
             return new MotionTick(
                 _x, _y, _z, _faceX, _faceZ, _finished, _hits.ToArray(),
-                anim, speed, velX, velZ, spin);
+                anim, speed, velX, velZ, spin, airborne);
         }
 
         static float Curve(float[] curve, float u)

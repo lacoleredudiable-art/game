@@ -108,6 +108,7 @@ namespace Dovus.Game
                 out _);
             var allyHitCollider = ally.AddComponent<CapsuleCollider>();
             allyHitCollider.isTrigger = true;
+            ally.AddComponent<ActorGrounding>();
             var allyDummy = ally.AddComponent<AllyDummy>();
             int playerHp = ScaledPlayerHp();
             allyDummy.Bind(playerHp, startRatio: 0.5f);
@@ -175,9 +176,12 @@ namespace Dovus.Game
 
             var dodgeMotion = player.AddComponent<DodgeMotion>();
             player.AddComponent<PlayerDodgeRig>();
+            player.AddComponent<WeaponShortShieldHost>().Bind(clock);
             player.AddComponent<SkillMotionDriver>();
             player.AddComponent<MotionTemplateBody>();
+            player.AddComponent<ActorGrounding>();
 
+            boss.AddComponent<ActorGrounding>();
             var reactor = boss.AddComponent<BossReactor>();
             reactor.Tuning = _tuning;
             reactor.BodyRadiusM = BossRadiusM;
@@ -473,6 +477,8 @@ namespace Dovus.Game
             }
             view.BindWeaponSwap(director, clock);
             input.WeaponSwapRequested += () => director.TryRequestWeaponSwap();
+            input.WeaponHudRequested += () => director.OnWeaponHudButton();
+            input.OrbCommandRequested += () => director.ToggleOrb();
 
             var preview = root.AddComponent<SkillPreviewHud>();
             preview.Configure(input.Engine, skills, skillFactory, director, _tuning, view.CanvasRoot);

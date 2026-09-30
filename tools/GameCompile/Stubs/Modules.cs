@@ -173,7 +173,7 @@ namespace UnityEngine.InputSystem
     public partial class Keyboard : InputDevice
     {
         public static Keyboard current => null;
-        public KeyControl spaceKey, qKey, escapeKey, eKey, aKey, dKey, wKey, sKey, bKey;
+        public KeyControl spaceKey, qKey, rKey, escapeKey, eKey, aKey, dKey, wKey, sKey, bKey;
         public KeyControl f1Key, f2Key, f8Key, digit1Key, digit2Key, digit3Key, digit4Key, digit5Key, digit6Key;
         public KeyControl downArrowKey, upArrowKey, leftArrowKey, rightArrowKey;
     }

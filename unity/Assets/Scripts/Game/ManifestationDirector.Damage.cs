@@ -63,6 +63,7 @@ namespace Dovus.Game
                 LastWeaponUiLabel = compatibility.UiLabel;
             }
             outMult *= eqMult;
+            outMult *= WeaponOutgoingDamageMult(skill, isBasicStrike);
             LastEquipmentMatchMult = eqMult;
 
             float per = _combat != null ? _combat.ClosingDamagePerEffect : 1f;
@@ -106,11 +107,11 @@ namespace Dovus.Game
 
             float penPct = _passiveDirector?.ArmorPenPercent ?? 0f;
             float penFlat = _passiveDirector?.ArmorPenFlat ?? 0f;
-            bool skillIgnoresArmor = !skill.IsEmpty
-                && !skill.EngineModifiers.IsNull
-                && skill.EngineModifiers["ignore_armor"].AsBool(false);
+            bool ignoreArmor = WeaponIgnoresArmor
+                || (!skill.IsEmpty && !skill.EngineModifiers.IsNull
+                    && skill.EngineModifiers["ignore_armor"].AsBool(false));
             float slotPen = _slotPassives?.ArmorPenPercentFor(_slotQueryCastId) ?? 0f;
-            penPct = SlotPassiveCombat.CombineArmorPen(penPct, skillIgnoresArmor, slotPen);
+            penPct = SlotPassiveCombat.CombineArmorPen(penPct, ignoreArmor, slotPen);
 
             double now = _clock != null ? _clock.Director.WorldTimeMs : 0;
             float armor = 0f;
@@ -127,12 +128,22 @@ namespace Dovus.Game
             float poise = 0f;
             if (!skill.IsEmpty)
             {
+                float weaponPoise = _equippedWeapon != null && _equippedWeapon.PoiseMult > 0f
+                    ? _equippedWeapon.PoiseMult
+                    : 1f;
+                float bonusPoise = HitMods(skill, isBasicStrike, false).PoiseMult;
                 float slotPoise = _slotPassives?.PoiseDamageMultFor(_slotQueryCastId) ?? 1f;
-                poise = SlotPassiveCombat.ScaleOutgoingPoise(skill.BasePoise, skill.PoiseDamageMult, slotPoise);
+                if (slotPoise <= 0f)
+                    slotPoise = 1f;
+                poise = WeaponPassiveRules.OutgoingPoise(
+                    skill.BasePoise,
+                    skill.PoiseDamageMult,
+                    weaponPoise,
+                    bonusPoise * slotPoise);
             }
 
             bool canCrit = formula || (!isBasicStrike && !skill.IsEmpty && skill.BaseDamage > 0f);
-            float extraCrit = ExtraCritChanceAdd(skill);
+            float extraCrit = ExtraCritChanceAdd(skill) + WeaponCritAdd(skill, isBasicStrike);
             int seed = _damageRoll++;
 
             var outcome = DamagePipeline.Resolve(new DamageQuery
@@ -156,6 +167,8 @@ namespace Dovus.Game
                 ScaleMagnitudes = true
             });
 
+            if (outcome.Amount > 0f && ignoreArmor)
+                WeaponIgnoresArmor = false;
             if (outcome.ShieldAbsorbed > 0f && _bossStatus != null)
                 _bossStatus.Board.ConsumeShield(outcome.ShieldAbsorbed);
             if (_bossStatus != null)
@@ -172,8 +185,6 @@ namespace Dovus.Game
             float healMult = _playerStatus != null ? _playerStatus.Board.HealEffectivenessMult : 1f;
             healMult *= _passiveDirector?.HealMult ?? 1f;
             healMult *= _closingChainBonus;
-            if (!skill.IsEmpty)
-                healMult *= WeaponCompatibilityFor(skill).DamageMult;
             return healMult;
         }
 
@@ -195,6 +206,7 @@ namespace Dovus.Game
                 buff = engine["buff_armor"].AsFloat(0f);
             if (buff > 0f && _playerStatus != null)
             {
+                buff = WeaponPassiveRules.ScaleFriendlyMagnitude(buff, WeaponFriendlyScale());
                 float sec = engine["buff_duration_sec"].AsFloat(engine["debuff_duration_sec"].AsFloat(3f));
                 _playerStatus.Armor.GrantBuff(buff, now + Math.Max(0.05f, sec) * 1000.0);
             }

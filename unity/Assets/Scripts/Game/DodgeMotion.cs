@@ -167,7 +167,14 @@ namespace Dovus.Game
             return new Vector3(x, 0f, z);
         }
 
-        Vector3 Place(Vector3 pos) => KeepBossEdge(ClampArena(pos));
+        Vector3 Place(Vector3 pos)
+        {
+            // Kayma yataydır. Y'yi burada ezmek havadaki iptali eski yüksekliğe geri yazıyordu.
+            float y = transform.position.y;
+            pos = KeepBossEdge(ClampArena(pos));
+            pos.y = y;
+            return pos;
+        }
 
         Vector3 KeepBossEdge(Vector3 pos)
         {

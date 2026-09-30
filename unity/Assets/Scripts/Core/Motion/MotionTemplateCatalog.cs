@@ -162,6 +162,16 @@ namespace Dovus.Core.Motion
         /// <summary>Klip oynatma hızı. 1 normal.</summary>
         public float AnimSpeed { get; }
 
+        /// <summary>
+        /// Bu faz kökü yerden kaldırır. Şablon verisindeki hareket + height_m bunu söyler
+        /// (hop/leap/slam/hover, ya da yüksekliği olan channel).
+        /// </summary>
+        public bool Airborne => VerticalCurve.LeavesGround(Motion, HeightM);
+
+        /// <summary>Zemin kökünün üstündeki yükseklik (m). Yer fazında 0.</summary>
+        public float HeightAboveGround(float uLinear) =>
+            VerticalCurve.Height(Motion, HeightM, uLinear);
+
         /// <summary>Aynı faz; mesafe / arkaya iniş gramer yedeğiyle doldurulmuş kopya.</summary>
         public MotionPhase WithTravel(float distanceM, float behindM, string land) =>
             new MotionPhase(
@@ -643,6 +653,18 @@ namespace Dovus.Core.Motion
             float edgeReachM) =>
             centerDistM - Math.Max(0f, attackerRadiusM) - Math.Max(0f, targetRadiusM)
             <= Math.Max(0f, edgeReachM) + 0.02f;
+
+        /// <summary>
+        /// Geri adım cast başındaki menzili silmesin. İkisi de doluysa daha yakın olan sayılır.
+        /// </summary>
+        public static float CloserCenter(float currentCenterM, float castStartCenterM)
+        {
+            if (castStartCenterM <= 0.01f)
+                return currentCenterM;
+            if (currentCenterM <= 0.01f)
+                return castStartCenterM;
+            return Math.Min(currentCenterM, castStartCenterM);
+        }
     }
 
     public static class MotionHitGeometry

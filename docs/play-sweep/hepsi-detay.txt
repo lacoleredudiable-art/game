@@ -1,0 +1,6 @@
+# Play taraması hepsi - 1436/1440 geçti (Yumruk: 142/144, Kılıç: 144/144, Çekiç: 144/144, Kalkan: 143/144, Yay: 144/144, Top: 143/144, Asa: 144/144, Tılsım: 144/144, Büyü Kitabı: 144/144, Küre: 144/144) — iki parça: ilk 1261 + kalan 179 (Kitap 35, Küre 144), 1×
+1-4 Sabit Vuruş [Yumruk] KALDI: isabet — hasar yok, etki görülmedi; vuruş 1: 0,80s@boss2,42m/oyuncu0,00m; kalıp sonu: merkeze 2,40 m, başlangıçtan 0,60 m, kalıp simülasyonundan 0,00 m
+2-2 Emici Şifa [Yumruk] KALDI: süre — zaman aşımı 11,3 sn; vuruş 4: 11,28s@boss0,07m/oyuncu2,72m 11,28s@boss0,07m/oyuncu2,72m 11,28s@boss0,07m/oyuncu2,72m 11,28s@boss0,07m/oyuncu2,72m; kalıp sonu: merkeze 2,65 m, başlangıçtan 0,35 m, kalıp simülasyonundan 0,00 m; kalıp 10,93 sn (beklenen 2,16); cast 11,28 sn'de bitti (beklenen ≤ 3,10)
+1-4 Sabit Vuruş [Kalkan] KALDI: isabet — hasar yok, etki görülmedi; vuruş 1: 0,87s@boss2,42m/oyuncu0,00m; kalıp sonu: merkeze 2,40 m, başlangıçtan 0,60 m, kalıp simülasyonundan 0,00 m
+1-2 Emici Vuruş [Top] KALDI: konum(yerinde→geri), gövde — vuruş 3: 0,83s@boss1,68m/oyuncu1,02m 0,95s@boss1,18m/oyuncu1,02m 1,08s@boss0,61m/oyuncu1,02m; kalıp sonu: merkeze 1,43 m, başlangıçtan 0,51 m, kalıp simülasyonundan 1,51 m, boss 2,08 m kaydı; gövdeye girdi: merkeze 1,03 m (t=1,38, temas 1,35); toparlanma 0,74 sn (tablo 0,26)
+

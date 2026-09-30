@@ -605,6 +605,8 @@ namespace Dovus.Game
 
             if (_motor != null && _motor.Velocity.sqrMagnitude > 0.01f)
                 _lastMovedMs = worldMs;
+            TickOrb(worldMs);
+            TickCannonRecoil();
 
             SyncFromSentence(worldMs);
             ApplyWindowCue();
@@ -1134,7 +1136,7 @@ namespace Dovus.Game
 
             int worldMsInt = (int)worldMs;
             bool isDodging = _input?.Dodge != null && _input.Dodge.IsActive(worldMsInt);
-            bool isCasting = _pending.Count > 0;
+            bool isCasting = _pending.Count > 0 && !SwapDrawUnlocked(worldMs);
             bool isDrawing = _engine != null && _engine.State.Phase == SentencePhase.Building;
             bool isRecovering = _engine != null && _engine.State.Phase == SentencePhase.Recovering;
 
@@ -1632,6 +1634,18 @@ namespace Dovus.Game
                 : TryResolveLegacyTarget(skill, aimMode, range, out target, out failure);
             if (!allowed)
             {
+                // Menzil dışı sessizce yutulmaz: hedef kalır, kalıp aradaki yolu kapanış fazıyla alır.
+                if (failure == TargetFailure.OutOfRange && target != null
+                    && aimMode == SkillAimMode.Targeted)
+                {
+                    _armedTarget = target;
+                    _armedSkillId = skill.SkillId;
+                    _directionalAttack = false;
+                    _castFacingTarget = target != _player ? target : null;
+                    FaceTarget(AttackLockTarget());
+                    return true;
+                }
+
                 _armedTarget = null;
                 _armedSkillId = string.Empty;
                 _castFacingTarget = null;
@@ -1672,6 +1686,12 @@ namespace Dovus.Game
             {
                 target = _boss.transform;
                 return true;
+            }
+            if (_boss != null)
+            {
+                target = _boss.transform;
+                failure = TargetFailure.OutOfRange;
+                return false;
             }
             target = null;
             failure = TargetFailure.NoTarget;
@@ -1773,6 +1793,8 @@ namespace Dovus.Game
                 facing.z,
                 words,
                 man);
+            if (basicStrike)
+                StopBasicCannonAtFirstBody(logic, pos, facing);
 
             var go = new GameObject(basicStrike ? "LivingEffect_BasicStrike" : "LivingEffect_" + words[0].Rune);
             go.transform.SetParent(transform, false);
@@ -2000,14 +2022,27 @@ namespace Dovus.Game
             for (int i = _pending.Count - 1; i >= 0; i--)
             {
                 PendingClosing p = _pending[i];
+                bool basic = IsPendingBasic(p);
                 if (p.View == null || p.View.Logic == null)
                 {
+                    // Unity Destroy sonraki karede view'ı null yapar. Zafiyet kalıbı
+                    // etkiyi bang'den önce söndürürse ilk düz vuruş burada düşüp 0 yazıyordu.
+                    if (BasicStrikePayoff.KeepUntilBang(basic, worldMs, p.BangAtWorldMs))
+                        continue;
+                    if (BasicStrikePayoff.PayWithoutView(basic, worldMs, p.BangAtWorldMs))
+                        FireClosing(p);
                     _pending.RemoveAt(i);
                     continue;
                 }
 
                 if (p.View.Logic.Phase is LivingEffectPhase.Fading or LivingEffectPhase.Dead)
                 {
+                    // Düz vuruş kabul edildi ama etki, skill kalıbı/hitstop yüzünden
+                    // bang'den önce söndüyse hasar yine vadesinde iner. İptal pending'i siler.
+                    if (BasicStrikePayoff.KeepUntilBang(basic, worldMs, p.BangAtWorldMs))
+                        continue;
+                    if (BasicStrikePayoff.PayWithoutView(basic, worldMs, p.BangAtWorldMs))
+                        FireClosing(p);
                     _pending.RemoveAt(i);
                     continue;
                 }
@@ -2020,15 +2055,25 @@ namespace Dovus.Game
             }
         }
 
+        bool IsPendingBasic(PendingClosing p)
+        {
+            if (p.IsBasicStrike || (p.View != null && p.View.IsBasicStrike))
+                return true;
+            if (p.Words == null || p.Words.Count != 1)
+                return false;
+            int basicDot = _colors != null ? _colors.BasicStrikeDot : 1;
+            return (int)p.Words[0].Rune == basicDot;
+        }
+
         void FireClosing(PendingClosing p)
         {
-            LivingEffect logic = p.View.Logic;
-            logic.FireClosingBang();
+            LivingEffect logic = p.View != null ? p.View.Logic : null;
+            logic?.FireClosingBang();
             StampScar(p.View, p.Closing);
 
             // Düz vuruş: jab — skill motoru / mana / CD / zincir / pasif / ulti yok.
             // BasicStrikeDot gramer fiili (varsayılan Ateş) skill cast sayılmaz.
-            bool basic = p.IsBasicStrike || (p.View != null && p.View.IsBasicStrike);
+            bool basic = IsPendingBasic(p);
             if (basic)
             {
                 Transform impactTarget = p.Target;
@@ -2037,6 +2082,10 @@ namespace Dovus.Game
                     CaptureBasicFacing();
                     impactTarget = _castFacingTarget;
                 }
+                // Zafiyet kalıbı bakışı ve kilidi bozar. Kilit boşsa boss menzildeyse o hedeftir;
+                // yoksa ilk düz vuruş kapsülü ıskalayıp 0 yazar, ikincisi normal vurur.
+                if ((impactTarget == null || !IsEnemyBody(impactTarget)) && _boss != null)
+                    impactTarget = _boss.transform;
                 FaceTarget(impactTarget);
                 _closingChainBonus = 1f; // pending zincir bonusunu yeme
                 _lastChainStep = ChainStepResult.None;
@@ -2053,18 +2102,29 @@ namespace Dovus.Game
                 }
 
                 float basicDealt = 0f;
-                float basicReach = _combat.Manifestation.BasicStrikeRangeM;
+                float basicReach = WeaponBasicReach(_combat.Manifestation.BasicStrikeRangeM);
                 bool capsuleHit = IsBossInStrikeCapsule(logic, basicReach);
                 bool inReach = BasicTargetStillInReach(impactTarget, basicReach);
-                if (BasicStrikeInput.DealsDamage(capsuleHit, inReach))
+                if (!inReach && _boss != null && impactTarget != _boss.transform)
+                    inReach = BasicTargetStillInReach(_boss.transform, basicReach);
+                float strikeArc = HitMods(SkillResolution.Empty, true, false).ArcDeg;
+                float strikeDelta = BasicStrikeYawDeg(impactTarget);
+                if (MeleeArc.StrikeConnects(capsuleHit, inReach, strikeDelta, strikeArc))
                 {
-                    ApplyBossClosingBasic(logic, p.Closing);
+                    if (logic != null)
+                        ApplyBossClosingBasic(logic, p.Closing);
                     basicDealt = ApplyClosingDamage(p.Closing, SkillResolution.Empty, isBasicStrike: true, slashCommitMult: 0f);
+                    TryLandWeaponStun(SkillResolution.Empty, true);
                 }
                 TryScheduleEchoForSkill(SkillResolution.Empty, basicDealt);
                 SpawnClosingImpact(p);
+                if (logic != null)
+                    TryCannonBlast(logic.TipX, logic.TipZ);
                 return;
             }
+
+            if (logic == null)
+                return;
 
             _closingChainBonus = BeginChainClosing(p.Words, _clock.Director.WorldTimeMs);
             TryActivateMode(p.Words, _clock.Director.WorldTimeMs);
@@ -2074,6 +2134,9 @@ namespace Dovus.Game
                 _readout?.NoteDenied("2 rün gerekli");
                 return;
             }
+
+            // Dolu sayfa: sıra hasardan önce artsın. Her 3. skill bu vuruşta sayılır.
+            NoteWeaponCast(skill);
 
             _slotQueryCastId = _slotPassives != null ? _slotPassives.OpenCast() : 0;
             try
@@ -2309,7 +2372,7 @@ namespace Dovus.Game
                 ? tuning.BasicStrikeRangeM * rangeMult
                 : Mathf.Max(radius, plan.MaxRangeM * rangeMult);
             float speed = plan.SpeedMps > 0f ? plan.SpeedMps : tuning.NeedleSpeedMps;
-            ResolveFieldTiming(skill, plan, tuning, out float durationSec, out float tickSec);
+            ResolveFieldTiming(skill, plan, tuning, out float durationSec, out float tickSec, out float perTickShare);
             int spawnCount = 1;
             ApplyVerbHitboxSizing(kind, skill, tuning, rangeMult, burst, ref radius, ref range, ref durationSec, ref spawnCount);
             string hitboxShape = TryVerbHitbox(skill, out VerbHitboxSpec visualSpec)
@@ -2377,6 +2440,9 @@ namespace Dovus.Game
             float tickEffectFraction = worldProfile != null && worldProfile.Continuous && MechanicEngine != null
                 ? (float)MechanicEngine.Rules.Param("flow_tick_fraction")
                 : 0f;
+            if (tickEffectFraction <= 0f)
+                tickEffectFraction = perTickShare;
+            bool arcAllies = HitMods(skill, false, false).ArcAllies;
             bool echoScheduled = false;
             bool statusesApplied = false;
             float accumulatedHealScale = 0f;
@@ -2447,6 +2513,9 @@ namespace Dovus.Game
                 }
             }
 
+            ApplyWeaponDelivery(
+                skill, kind, target,
+                ref origin, ref range, ref radius, ref hitboxShape, ref hitboxAngleDeg, ref speed);
             var context = new SkillExecutionContext(
                 skill,
                 _player,
@@ -2497,7 +2566,8 @@ namespace Dovus.Game
                 spawnCount: spawnCount,
                 mechanicPlan: mechanicPlan,
                 activationDelaySec: activationDelaySec,
-                tickEffectFraction: tickEffectFraction);
+                tickEffectFraction: tickEffectFraction,
+                arcAllies: arcAllies);
 
             var go = new GameObject($"{kind}_{skill.SkillId}");
             go.transform.SetParent(transform, false);
@@ -2600,10 +2670,12 @@ namespace Dovus.Game
             in LivingEffectPlan plan,
             ManifestationTuning tuning,
             out float durationSec,
-            out float tickSec)
+            out float tickSec,
+            out float perTickShare)
         {
             durationSec = 0f;
             tickSec = tuning.ExecutorFieldTickSec;
+            perTickShare = 1f;
             if (_presentationCatalog != null
                 && _presentationCatalog.TryGetHitbox(plan.HitboxId, out HitboxNode hitbox))
             {
@@ -2640,6 +2712,9 @@ namespace Dovus.Game
             }
 
             durationSec = Mathf.Max(tuning.BangDurationSec, durationSec);
+            float shareTick = Mathf.Clamp(tickSec, 0.01f, Mathf.Max(0.01f, durationSec));
+            perTickShare = SustainedField.PerTickShare(durationSec, shareTick);
+            durationSec *= WeaponDurationMult(skill);
             tickSec = Mathf.Clamp(tickSec, 0.01f, durationSec);
         }
 
@@ -2656,7 +2731,7 @@ namespace Dovus.Game
             float cost = SkillMobility.ResourceCost(skill);
             if (cost <= 0f)
                 return;
-            _playerResource.Consume(cost);
+            _playerResource.Consume(cost, TryTakeFreeMana());
         }
 
         /// <summary>
@@ -2721,7 +2796,7 @@ namespace Dovus.Game
             if (_playerCooldown == null || string.IsNullOrEmpty(skill.VerbId))
                 return;
 
-            float sec = skill.BaseCooldownSec;
+            float sec = skill.BaseCooldownSec * WeaponCooldownMult();
             double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
             if (!_playerCooldown.TryBeginCast(skill.VerbId, sec, worldMs))
                 return;
@@ -2745,7 +2820,7 @@ namespace Dovus.Game
         {
             if (_hexagonView == null || skill.IsEmpty || words == null || words.Count == 0)
                 return;
-            float sec = skill.BaseCooldownSec;
+            float sec = skill.BaseCooldownSec * WeaponCooldownMult();
             if (sec <= 0f)
                 return;
             _hexagonView.BeginCosmeticCooldown(words[0].Dot, sec);
@@ -2975,12 +3050,14 @@ namespace Dovus.Game
 
             if (_ally != null)
                 _ally.EnsureStatusBoard();
+            float friendlyScale = WeaponFriendlyScale();
             var result = StatusApplicator.ApplySkill(
                 skill,
                 friendlyBoard,
                 bossStatus != null ? bossStatus.Board : null,
                 _combat != null ? _combat.Status : new StatusTuning(),
-                _mobilityCc);
+                _mobilityCc,
+                friendlyScale);
 
             // v6 Zaman fiili yalnız aktör durumudur; GameClock/Time.timeScale'a dokunmaz.
             // Süre ve güç kart/JSON'dan gelir. Kart kendine hız diyorsa düşmana yavaş inmez.
@@ -2989,7 +3066,8 @@ namespace Dovus.Game
                 TempoCast.From(skill).Apply(
                     _playerStatus != null ? _playerStatus.Board : friendlyBoard,
                     bossStatus != null ? bossStatus.Board : null,
-                    _ally != null ? _ally.Board : null);
+                    _ally != null ? _ally.Board : null,
+                    friendlyScale);
             }
 
             ApplyArmorShred(skill, bossStatus);
@@ -3147,7 +3225,8 @@ namespace Dovus.Game
             // 16 Eylül: "Kavurucu Yara" (grievous_wounds+burn) — yanık hedefe gelen heal azalır.
             // Hedefin StatusBoard'u yoksa (ör. AllyDummy) çarpan 1f, davranış eskisiyle aynı.
             float chain = chainBonusOverride ?? _closingChainBonus;
-            float weapon = WeaponCompatibilityFor(skill).DamageMult;
+            // Tılsım şifa/kalkan/güç %120. Boru bunu bir daha çarpmaz.
+            float weapon = WeaponSupportPower(skill);
             float healBase = skill.BaseHeal > 0f
                 ? skill.BaseHeal
                 : closing.TotalEffect * per;
@@ -3220,6 +3299,8 @@ namespace Dovus.Game
                     _damageHud?.ShowDamage(-healed);
                     _readout?.NoteSkill(skill.DisplayName, "ally +" + healed, new Color(0.4f, 1f, 0.65f));
                     _debugHud?.NoteSkillBang(skill.DisplayName, "ally +" + healed);
+                    _ally.EnsureStatusBoard();
+                    ConsumeWeaponBonus(_ally.Board);
                 }
                 return;
             }
@@ -3227,6 +3308,7 @@ namespace Dovus.Game
             healed = playerVitals.ApplyHeal(amount);
             if (healed > 0)
             {
+                ConsumeWeaponBonus(_playerStatus != null ? _playerStatus.Board : null);
                 if (_modeDirector != null && _modeDirector.NotifyHealed())
                 {
                     _modeHud?.Hide();
@@ -3283,6 +3365,9 @@ namespace Dovus.Game
                 return 0f;
             }
 
+            if (!isBasicStrike)
+                TryConsumeCounterWindow();
+
             // Karabasan: bang hasarı delay_sec sonra (delayed_detonation).
             if (!isBasicStrike && TryDeferDamageAsDelayedDetonation(skill, damage))
             {
@@ -3290,6 +3375,10 @@ namespace Dovus.Game
                 return damage; // echo kaynağı; CollectDue uygular — şimdi yazma
             }
 
+            RememberHitPoint(BossHitPoint());
+            if (!isBasicStrike)
+                TryCannonBlast(_lastHitX, _lastHitZ);
+            ConsumeWeaponBonus(_bossStatus != null ? _bossStatus.Board : null);
             LastClosingDamageDealt = damage;
             _damageHud?.ShowDamage(damage, isCrit, BossHitPoint(), DamageTint());
             _lastDamageDealtMs = _clock.Director.WorldTimeMs; // "dealt_damage_recently" (Öfke Patlaması)
@@ -3390,6 +3479,8 @@ namespace Dovus.Game
         /// <summary>Düz vuruş jab — yalnızca kısa sarsıntı; geri itme yok (skill tepkisi değil).</summary>
         void ApplyBossClosingBasic(LivingEffect logic, ClosingHit closing)
         {
+            if (logic == null)
+                return;
             NoteImpactOrigin(logic);
             if (_boss == null || (_bossVitals != null && _bossVitals.IsDown))
                 return;
@@ -3587,10 +3678,25 @@ namespace Dovus.Game
             return StrikeCapsule.EdgeInReach(dist, PlayerBodyRadiusM(), reachM);
         }
 
+        float BasicStrikeYawDeg(Transform target)
+        {
+            if (_player == null || target == null)
+                return 0f;
+            Vector3 to = target.position - _player.position;
+            to.y = 0f;
+            Vector3 fwd = _player.forward;
+            fwd.y = 0f;
+            if (to.sqrMagnitude < 0.0001f || fwd.sqrMagnitude < 0.0001f)
+                return 0f;
+            return Vector3.Angle(fwd, to);
+        }
+
         float PlayerBodyRadiusM() => _motor != null ? _motor.BodyRadiusM : 0f;
 
         bool IsClosingInRange(LivingEffect logic, ClosingHit closing)
         {
+            if (logic == null || _boss == null)
+                return false;
             Vector3 bossPos = _boss.transform.position;
             float dx = bossPos.x - logic.TipX;
             float dz = bossPos.z - logic.TipZ;

@@ -97,7 +97,8 @@ namespace Dovus.Core.Equipment
                     row["identity_passive"].AsString(),
                     verbs,
                     row["animations_key"].AsString(),
-                    row["type"].AsString());
+                    row["type"].AsString(),
+                    WeaponCombatProfile.FromRow(row));
                 catalog._items.Add(item);
                 catalog._byId[item.Id] = item;
             }
