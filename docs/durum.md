@@ -14,9 +14,10 @@
 > yansıtmazlar; körü körüne referans alma.
 
 **Son güncelleme:** 30 Eylül 2026 (PR #28 silahlar + master: #31 pasif yuvaları, birleşik test) ·
-**Dal:** `feat/weapons-10` · **Sıradaki:** Top 1-2 (konum + bir kez gövdeye girme) — merge kararı sahibinde
+**Dal:** `master` · **Sıradaki:** Top 1-2 (konum + bir kez gövdeye girme), Yumruk/Kalkan 1-4, Yumruk 2-2
 
-> **30 Eylül — PR #28 Play testi (`b45ee56`, master + #31 alınmış): merge edilmedi.** `dotnet test` 485/485,
+> **30 Eylül — PR #28 Play testi (`b45ee56`, master + #31 alınmış): kural gereği merge edilmedi, sahip
+> kararıyla merge edildi (`674d889`); Top 1-2 açığı master'da.** `dotnet test` 485/485,
 > `check.py` geçti, Unity derlemesi temiz, konsolda yalnız bilinen URP/ShaderGraph paket hataları.
 > Tüm silahlar 1× (4× #32 ile geliyor, merge edilmedi), iki parça: ilk 1261 vaka + kalan 179
 > (Kitap 35, Küre 144; ilk koşu Play kapanınca kesildi). **1436/1440:** Yumruk 142, Kalkan 143,
