@@ -13,8 +13,21 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (PR #32 ayaklar yere merge edildi; PR #29 portal/sınır/takım Play testi, merge yok) ·
-**Dal:** `master` · **Sıradaki:** #29 Kılıç 9-10 / 2-6 / 11-8 + sınır–can çalma çakışması; Top 1-2, Yumruk/Kalkan 1-4, Yumruk 2-2
+**Son güncelleme:** 30 Eylül 2026 (PR #33 silah tarama artıkları Play testi, merge yok) ·
+**Dal:** `master` · **Sıradaki:** Top geri tepme fazında ayak havada (1-3, 6-3, 5-8, 6-8, 7-8); #29 Kılıç 9-10 / 2-6 / 11-8 + sınır–can çalma çakışması
+
+> **30 Eylül — PR #33 Play testi (`cursor/silah-tarama-artiklari-a2ff`): merge edilmedi.** Master
+> (`aaa81d4`) yerelde alındı; çakışma `durum.md` ve `GameClock.cs` (PR'ın 100 ms kare sınırı +
+> master'ın `SimulationScale` çarpanı: önce gerçek kare sınırlanır, sonra çarpılır). Merge dala
+> push edilmedi. `dotnet test` 497/497, Unity derlemesi temiz, konsolda yalnız bilinen
+> URP/ShaderGraph hataları. 4× tarama (`play-sweep/pr33-4x.csv`): **Yumruk 144, Kalkan 144, Top
+> 139, Kılıç 143** — Top kuralın (≥143) altında. Dört hedef vaka geçti: Top 1-2 oyuncu merkeze
+> 1,35 m (temas 1,35) biter; Yumruk 1-4 hasar 193 496, Kalkan 1-4 61 168; Yumruk 2-2 kalıp
+> 2,20 sn (beklenen 2,16), toplam 2,60 sn; Kılıç 1-4 değişmedi (geçti, 2,80 m). Gövdeye girme 0
+> (3-2 `icinden_emme` 0,15–0,19 m geçiş tasarım gereği). Kalan 5 Top vakası `yerde`: 1-3, 6-3,
+> 5-8, 6-8, 7-8 geri tepme fazında ayak 0,26–0,83 m havada. **Master'da da aynı**
+> (`play-sweep/master-top-4x.csv`, Top 138/144 = bu 5 + 1-2 `konum`), yani #33 kaynaklı değil;
+> #28 geri tepmesi × #32 yer kontrolü. Kılıç 10-2 `yutan_girdap` süre 3,39/3,18 sn.
 
 > **30 Eylül — PR #32 ve #29 Play testi.** **#32 merge edildi** (`6cccf68`): master alındı
 > (çakışma: `durum.md`, `PlaySweep.cs`, `ManifestationDirector.WeaponSwap.cs`,
@@ -1839,7 +1852,14 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   (`Placement` Y 0f).
 - **PR #28 Top 1-2 (30 Eylül).** Emici çekmesi + Top geri tepmesi: oyuncu simülasyondan ~1,6 m
   farklı biter, tam taramada bir kez boss gövdesine 1,03 m girdi (tekrarda 0/3, kararsız).
-  Yumruk/Kalkan 1-4 hasarsız, Yumruk 2-2 kalıbı 10,9 sn.
+  Yumruk/Kalkan 1-4 hasarsız, Yumruk 2-2 kalıbı 10,9 sn. PR #33 dört vakayı Play'de düzeltiyor
+  (4× hepsi geçti) ama merge edilmedi; bkz. aşağıdaki Top `yerde` maddesi.
+- **Top geri tepmesi havada (30 Eylül, Play, master'da).** 4× Top 1-3, 6-3, 5-8, 6-8, 7-8:
+  sıçrama/asma kalıbına eklenen `geri_tepme` fazında ayak 0,26–0,83 m yerden (sınır 0,20).
+  Master ve PR #33'te aynı; Top ≥143 kuralını bu 5 vaka engelliyor.
+- **`tools/AtomSim` derlenmiyor (30 Eylül).** `MechanicVisual.cs` `Dovus.Core.Tuning` /
+  `SkillVisualTuning` buluyor ama AtomSim projesi Tuning'i link'lemiyor (5 hata). CoreTests ve
+  GameCompile temiz.
 - **10 silah taraması (30 Eylül, kod; Play tekrar yok).** `hepsi.csv` 1395/1440 kalanları kodda
   ele alındı: Top geri tepmesi kalıp fazı, düz atış ilk gövdede patlar, Yumruk/Kalkan menzil
   dışı `kapan` ile kapanır, 6-2 cast başı menzili korunur, 2-9 koşucu saate yetişir, Küre 8-11
