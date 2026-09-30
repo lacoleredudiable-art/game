@@ -42,6 +42,7 @@ namespace Dovus.Game
 
         public Canvas Canvas => _canvas;
         public Transform CanvasRoot => _canvas != null ? _canvas.transform : null;
+        public RectTransform DodgeButtonRect => _dodge;
 
         public void Build(
             PrototypeTuning tuning,

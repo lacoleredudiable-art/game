@@ -13,8 +13,10 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (Play taraması dördüncü koşu, Kılıç + Asa) ·
-**Dal:** `feat/play-sweep` · **Sıradaki:** 6-2 tek kare sıçrama, 3-2 kıpırdamıyor (merge kuralı tutmadı, PR #25/#26 açık)
+**Son güncelleme:** 29 Eylül 2026 (dodge i-frame) ·
+**Dal:** `feat/dodge-iframes` · **Sıradaki:** Unity Play'de dodge hissi (aşağıdaki liste). Play taraması (6-2 / 3-2) master'da duruyor, bu dal ona dokunmadı.
+
+> **Dodge (Dragon Nest tarzı, `feat/dodge-iframes`).** Kısa kayma ~4 m / 0,25 sn, dokunulmazlık dodge başında ~0,3 sn. 2 hak, her biri ~4 sn'de dolar (düğmede iki pip). Çubuk yönü, çubuk yoksa geriye. Skill ve düz vuruş her an kesilir (sersem / donma / yıkılma ve ölüm hariç); kesilen skill'in beklemesi geri gelmez, hareket kalıbı konumu hemen bırakır. Boss'un içine düşmez. Mükemmel sıyırma: i-frame'in ilk ~0,15 sn'sinde gelecek vuruş — yerel kamera/animasyon nabzı (global zaman ölçeği yok), 1 hak iadesi, sonraki vuruş ×1,3 (hasar borusu `PlayerDodgeRig.ConsumeNextHit` ile bir kez yer). Gelen hasar kapısı: `ActorStatus.ApplyDamage` (oyuncu) ve `PlayerVitals.ApplyDamage`. Boss'un kendi vuruş çözücüsü hasarı zaten yazmıyorsa mükemmel ödül `CombatFeel.Exchanged` üzerinden gelir. Deneme: Play'de sol üst "Dodge deneme" veya F8. Hasar 22 (eski çakma notu); `BossTuning.Damage` hâlâ 0. Sayılar `DodgeTuning` alanları — JSON'da dodge hak satırı yok. `dotnet test` 412/412, `python3 tools/GameCompile/check.py` geçti. Unity Play doğrulanmadı.
 
 > **30 Eylül — dördüncü koşu: Kılıç 142/144, Asa 143/144. Merge edilmedi.** `feat/motion-templates-2`
 > (`b9df90b`) merge edildi. `dotnet test` 402/402, Unity derlemesi ve konsol temiz (yalnız bilinen

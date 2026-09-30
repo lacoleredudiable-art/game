@@ -56,9 +56,11 @@ namespace Dovus.Game
             _captured = true;
         }
 
-        public bool ApplyDamage(int amount)
+        public bool ApplyDamage(int amount, bool dodgeable = true)
         {
             if (IsDown || amount <= 0)
+                return false;
+            if (PlayerDodgeRig.BlocksIncoming(this, dodgeable))
                 return false;
 
             if (_visual == null)
