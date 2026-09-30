@@ -13,8 +13,17 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (PR #27 + #30 master'a merge) ·
-**Dal:** `master` · **Sıradaki:** yeni sıçrama ölçüsüyle Kılıç/Asa taramasını bir kez daha koş
+**Son güncelleme:** 30 Eylül 2026 (rün pasif yuvaları) ·
+**Dal:** `cursor/rune-passive-slots-1b96` · **Sıradaki:** yeni sıçrama ölçüsüyle Kılıç/Asa taramasını bir kez daha koş
+
+> **30 Eylül — pasif yuva (0–2) çalışır.** Tetikleyen cast pasifi kendine uygulamaz.
+> Bağlama yavaşı `1 − apply_slow`. Sabitleme oyuncuyu köklemez; sonraki vuruşlara poise ×1.5
+> ve alan/zone ömrüne `lifetime_add` ekler. Poise çarpanı giden vuruşta. Odaklama süresi 5 sn,
+> `ignore_armor` = %50 delme. Kopyalama süresi 5 sn, sonraki cast 0,3 sn sonra bir kez %50 yankı.
+> Sıçrama 6 m içinde seker; yalnız boss varsa `bounce_targets` kadar ek vuruş. Akış vuruşu
+> `channel_sec` / `tick_rate_mult` / `flow_tick_fraction` ile DoT bırakır (−%30 tek başına kalmaz).
+> `passive_slot_system` silah uyumu istemez. Eski `PassiveDirector` ölü; diriltilmedi.
+> Unity Play yok.
 
 > **30 Eylül — karar: 3-6 kare takılması.** `PlaySweep` sıçrama sınırı artık sabit 0,6 m değil:
 > 25 m/s × kare süresi (en az 1/60 sn) + 0,2 m (60 FPS'te 0,62 m, 38 ms'de 1,15 m). Oyuncu ve
@@ -1732,6 +1741,11 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 `docs/element-sistemi.json`. Boss verisi `docs/bosses/*.json`.
 
 ## Bilinen açıklar
+
+- **Pasif sekme (30 Eylül).** Başka düşman 6 m içindeyse plan ona gider; can yazması yalnız
+  boss kimliğine bağlı. Prototipte ikinci düşman canı yok, yalnız boss varken ek vuruş boss'a iner.
+- **Odaklama delmesi (30 Eylül).** `ignore_armor` artık %50 zırh delme. Eski Play notundaki
+  1-9/5-9 tam zırh yok sayma (360K/260K) bu kuraldan sonra geçersiz; yeni Play yok.
 
 - **Hasar borusu (30 Eylül, kod).** Kritik JSON'da %5 / ×2 durur; canlı vuruş %10 / ×1,5.
   Boss zırhı normal 100, sert 150 (JSON). Canlı dövüş normali kullanır; sert mod anahtarı yok.
