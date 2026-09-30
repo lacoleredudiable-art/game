@@ -13,10 +13,29 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (silah pasifleri, `feat/weapons-10`) ·
-**Dal:** `feat/weapons-10` · **Sıradaki:** Unity Play'de pasifleri ve 1-9/5-9/Zafiyet hasarını gözle doğrula
+**Son güncelleme:** 30 Eylül 2026 (PR #28 Play testi + silah pasifleri, `feat/weapons-10`) ·
+**Dal:** `feat/weapons-10` · **Sıradaki:** Top geri tepmesi tarama kuralı, Yumruk/Kalkan menzil kapısı, Yumruk 2-6/2-9/6-2, Küre 8-11; pasif commit'inden (`3018c5e`) sonra taramayı tekrar koş
 
 > **30 Eylül — on silah pasifi bağlandı.** Kılıç yayı yakın vuruşta açı kontrolü (144°, dost fiilde yaydaki herkes; swap 180°). Büyü Kitabı sayacı hasardan önce artar, ara dolunca sıfırlanır. Çekiç sersem süresi JSON'dan, 4 sn bekleme yalnız sersem oturunca. Tılsım şifa/kalkan/buff ×1,2, fiil uyumu aranmaz. Kalkan +%20 ilk skill vuruşunda biter. Asa süre uzayınca aynı dilimle yeni vuruş ekler. Çekiç poise ve silah poise çarpanı giden poise'a girer. Yumruk sırt çarpanı yalnız `sirt_vurusu`; gramerde ikinci `arkadan_x1.5` yok. Rün yuvası pasifine dokunulmadı. Unity Play yok.
+
+> **30 Eylül — PR #28 Play testi (`4de6aba`, pasif commit'inden önce): merge edilmedi.** Unity derlemesi temiz, `dotnet test` 455/455,
+> konsolda yalnız bilinen URP/ShaderGraph paket hataları. Tüm silahlar taraması (`hepsi.csv`):
+> Kılıç, Çekiç, Yay, Asa, Tılsım, Büyü Kitabı 144 · Küre 143 · Kalkan 139 · Yumruk 136 · Top 113.
+> Hiçbir kombo sonunda oyuncu boss içinde değil, sıçrama yok. **Hata nedenleri:**
+> (1) Top 31 vaka: top geri tepmesi (0,50 m) tarama "ikinci hareket sistemi" sayıyor — kural mı
+> yanlış, geri tepme mi şablona girmeli, karar gerekli. (2) Yumruk ve Kalkan'da 1-3, 1-4, 5-1,
+> 5-4, 7-4 cast menzil kapısında reddediliyor (3 m başlangıç). (3) Yumruk 2-6 zaman aşımı ve
+> 2-9 süre aşımı (şablon uzun). (4) Yumruk 6-2 hasar/etki yok. (5) Küre 8-11 konum: şablon dışı 1,41 m hareket.
+> **Elle (harness, gerçek dokunma/F2 tuşu enjekte edilemedi, yöntem çağrısıyla):** kurulum ekranında
+> 10 silah seçilebiliyor, 5 çiftin hepsi uygulandı; F2 (`CycleWeapon`) 10 silahı sırayla geziyor;
+> değiştirme 251 ms. Silah kesme: 1-1 %90'ında değiştirince şablon kesiliyor, sıradaki 1-8 hemen
+> kabul (0 ms / değiştirmeden 68 ms), vuruş 500 ms / 567 ms. Küre: 0,45 sn basılı = yerleştir,
+> 0,25 sn = yok, çift dokunma = geri çağır; 0,4 sn'de noktaya gidiyor, 2 sn beklemeden sonra
+> ele dönüyor. Top skill vuruşu: boss 0,50 m, küçük hedef 3,00 m, oyuncu ~0,5 m geri, boss'a en
+> yakın 1,50 m. Kalkan: değiştirmeden sonraki ilk vuruş 3 sn kalkan kuruyor, hasar emiliyor.
+> Tılsım: ilk vuruş boss'tan bir olumsuz etki siliyor. Kitap: ilk cast mana harcamadı (100→100),
+> ikinci 12 harcadı (Kılıç 12). Hasar: 1-9 246–256K (kritik 359K), 5-9 168–173K (kritik 270K);
+> 7-6 sonrası ilk düz vuruş 28K, 7-9 sonrası 32K.
 
 > **30 Eylül — silahlar hasar borusuna bağlandı.** Master (PR #27 dodge, PR #30 boru/zırh/×4000) bu dala alındı. Kalkanın 15 puanlık kısa kalkanı dodge'dan sonra borunun son kalkan aşamasında erir. Silah `base_armor` oyuncunun zırhına gider (Kalkan 25, Çekiç 15, Top 10). JSON `ignore_armor` artık zırhın tamamını silmez, delme %50'de kalır (1-9 ve 5-9). Zafiyet'ten sonraki ilk düz vuruş, kilit boşsa ya da etki bang'den önce yok olduysa da menzildeki boss'a vurur. Tarama: sıçrama sınırı 25 m/s × kare + 0,2 m; 1-2 ve 4-2 yerinde; menüde 10 silah ve tüm silahlar. Unity Play bu ortamda yok.
 
@@ -1740,6 +1759,13 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
+- **10 silah (30 Eylül, PR #28 Play).** Top düz vuruşunun patlama noktası vuruş ucunda (menzil
+  25 m), boss'a değil — düz vuruşta boss ve küçük hedef itilmiyor, yalnız oyuncu geri tepiyor.
+  Skill vuruşunda itme doğru. Kalkan kısa kalkanı değiştirme anında değil, 2 sn içindeki ilk
+  vuruşta kuruluyor (JSON bonusu vuruşla tüketiliyor). Top geri tepmesi `PlaySweep` tek-sistem
+  kuralına takılıyor (31 vaka). Yumruk/Kalkan 1-3, 1-4, 5-1, 5-4, 7-4 menzil kapısı; Yumruk
+  2-6/2-9 şablon süresi, 6-2 etkisiz; Küre 8-11 şablon dışı hareket. Gerçek dokunma/fare ve F2
+  tuşu editörde enjekte edilemedi; Küre jesti ve F2 yöntem çağrısıyla doğrulandı.
 - **Hasar borusu (30 Eylül, kod).** Kritik JSON'da %5 / ×2 durur; canlı vuruş %10 / ×1,5.
   Boss zırhı normal 100, sert 150 (JSON). Canlı dövüş normali kullanır; sert mod anahtarı yok.
   Boss canı 88 milyon; 150–250 milyon için `max_hp` sonra ayarlanır. Ayar paneli sıfırlayınca
