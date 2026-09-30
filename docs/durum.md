@@ -13,8 +13,12 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (PR #30 ikinci Play testi) ·
-**Dal:** `feat/damage-armor` · **Sıradaki:** 3-6 `as` fazı tek kare sıçrama kararı (PR #27/#30 açık, merge yok)
+**Son güncelleme:** 30 Eylül 2026 (PR #27 + #30 master'a merge) ·
+**Dal:** `master` · **Sıradaki:** yeni sıçrama ölçüsüyle Kılıç/Asa taramasını bir kez daha koş
+
+> **30 Eylül — karar: 3-6 kare takılması.** `PlaySweep` sıçrama sınırı artık sabit 0,6 m değil:
+> 25 m/s × kare süresi (en az 1/60 sn) + 0,2 m (60 FPS'te 0,62 m, 38 ms'de 1,15 m). Oyuncu ve
+> boss için aynı. PR #27 ve #30 master'a merge edildi. Yeni ölçüyle Play taraması koşulmadı.
 
 > **30 Eylül — PR #30 ikinci Play testi: Kılıç 143/144, Asa 143/144. Merge edilmedi.**
 > `dotnet test` 434/434, Unity derlemesi temiz; konsolda yalnız bilinen URP/ShaderGraph paket
