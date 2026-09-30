@@ -1,3 +1,0 @@
-# Play taraması asa — 143/144 geçti (Asa: 143/144)
-3-6 Bağlayıcı Adım [Asa] KALDI: sıçrama — vuruş 1: 1,19s@boss0,00m/oyuncu1,54m; kalıp sonu: merkeze 1,54 m, başlangıçtan 4,54 m, kalıp simülasyonundan 0,00 m; tek karede 0,73 m sıçrama (t=1,09, faz as); toparlanma 0,53 sn (tablo 0,26)
-
