@@ -392,6 +392,37 @@ namespace Dovus.Core.Status
         }
 
         /// <summary>
+        /// cleanse_count: en fazla maxCount kötü durum siler — önce sert CC, sonra yumuşak CC,
+        /// sonra debuff; aynı grupta en uzun kalan önce. int.MaxValue = hepsi. Dönüş: silinen sayı.
+        /// </summary>
+        public int CleanseHostile(int maxCount)
+        {
+            if (maxCount <= 0)
+                return 0;
+            var candidates = new List<(int Group, double Remaining, StatusKind Kind)>();
+            foreach (KeyValuePair<StatusKind, StatusEntry> pair in _active)
+            {
+                StatusKind k = pair.Key;
+                int group = StatusKindUtil.IsHardCc(k) ? 0 : StatusKindUtil.IsSoftCc(k) ? 1 : StatusKindUtil.IsDebuff(k) ? 2 : -1;
+                if (group >= 0)
+                    candidates.Add((group, pair.Value.RemainingMs, k));
+            }
+            if (candidates.Count == 0)
+                return 0;
+            if (maxCount >= candidates.Count)
+            {
+                CleanseHostile();
+                return candidates.Count;
+            }
+            candidates.Sort((a, b) => a.Group != b.Group ? a.Group.CompareTo(b.Group) : b.Remaining.CompareTo(a.Remaining));
+            var remove = new List<StatusKind>();
+            for (int i = 0; i < maxCount; i++)
+                remove.Add(candidates[i].Kind);
+            RemoveKinds(remove);
+            return remove.Count;
+        }
+
+        /// <summary>
         /// Belirtilen türleri siler (reality_layer partial_erase / full_erase).
         /// CleanseHostile'a dokunmaz — yalnızca listedekileri kaldırır.
         /// </summary>

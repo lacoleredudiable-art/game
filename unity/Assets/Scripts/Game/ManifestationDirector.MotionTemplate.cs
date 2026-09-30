@@ -274,6 +274,8 @@ namespace Dovus.Game
             bool friendly = IsFriendlyFieldVerb(_templateSkill) || IsHealSkill(_templateSkill);
             bool geometry = BossReachedMotionHit(hit);
             bool arc = !friendly && !geometry && WeaponArcConnects(hit);
+            if (!friendly && !geometry && !arc)
+                arc = AoeReachedMotionHit(hit);
             bool reached = friendly || geometry;
             if (!friendly && (geometry || arc))
             {

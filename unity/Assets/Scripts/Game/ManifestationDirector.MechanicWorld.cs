@@ -35,6 +35,11 @@ namespace Dovus.Game
             public double UntilMs;
             public double NextTickMs;
             public double TickMs;
+            public double StartMs;
+            public SkillResolution Skill;
+            public ClosingHit Closing;
+            public bool Triggered;
+            public double ArmAtMs;
         }
 
         sealed class MechanicLink
@@ -43,6 +48,10 @@ namespace Dovus.Game
             public MechanicPlan Plan;
             public Transform Target;
             public double UntilMs;
+            public SkillResolution Skill;
+            public ClosingHit Closing;
+            public double NextFlowMs;
+            public double FlowTickMs;
         }
 
         sealed class GuardTrigger
@@ -97,7 +106,7 @@ namespace Dovus.Game
             if (profile.Decoy)
                 SpawnMechanicDecoy(plan, worldMs);
             if (profile.TempoField || profile.Cloud || profile.Vortex || profile.CleanseField
-                || profile.Reflector || profile.ProjectileBarrier || profile.Continuous)
+                || profile.Reflector || profile.ProjectileBarrier || profile.Continuous || profile.Payload)
                 SpawnMechanicVolume(plan, profile, center, worldMs);
             if (profile.Link)
                 SpawnMechanicLink(plan, worldMs);
@@ -188,12 +197,15 @@ namespace Dovus.Game
                     .Max());
             if (durationSec <= 0)
                 durationSec = 0.1;
+            if (profile.Payload)
+                durationSec = Math.Max(durationSec, JsonParam("payload_min_life_sec", 3.0));
             durationSec += _slotPassives?.LifetimeAddSecFor(_slotQueryCastId) ?? 0f;
 
             if (profile.Reflector)
             {
-                MechanicEffect reflect = plan.Effects.First(e => e.Stat == "yansit" && e.Target is "dost" or "alan");
-                if (reflect.Target == "dost" && _ally != null)
+                MechanicEffect reflect = plan.Effects.FirstOrDefault(e => e.Stat == "yansit"
+                    && (e.Target is "dost" or "alan" || e.Has("ayna_yuzey")));
+                if (reflect != null && reflect.Target == "dost" && _ally != null)
                     center = _ally.transform.position;
             }
 
@@ -218,7 +230,11 @@ namespace Dovus.Game
                 RadiusM = radius,
                 UntilMs = worldMs + durationSec * 1000.0,
                 NextTickMs = worldMs,
-                TickMs = Math.Max(10, baseTick * 1000.0 / Math.Max(0.01, tickRate))
+                TickMs = Math.Max(10, baseTick * 1000.0 / Math.Max(0.01, tickRate)),
+                StartMs = worldMs,
+                Skill = _jsonCastSkill,
+                Closing = _jsonCastClosing,
+                ArmAtMs = worldMs + JsonEffectRules.TrapArmSec(plan.Body, JsonRules) * 1000.0
             });
         }
 
@@ -232,6 +248,8 @@ namespace Dovus.Game
             line.material = new Material(Shader.Find("Sprites/Default"));
             line.startColor = new Color(0.3f, 0.9f, 1f, 0.85f);
             line.endColor = new Color(0.9f, 0.35f, 1f, 0.85f);
+            double linkTickRate = MechanicEngine?.Rules.AdjNum(plan.Adjective, "tick_rate_mult", 1) ?? 1;
+            double linkTickMs = Math.Max(50, (_combat != null ? _combat.Manifestation.ExecutorFieldTickSec : 1f) * 1000.0 / Math.Max(0.01, linkTickRate));
             _mechanicLinks.Add(new MechanicLink
             {
                 Line = line,
@@ -239,7 +257,11 @@ namespace Dovus.Game
                 Target = plan.Effects.Any(e => e.Target == "dusman")
                     ? (_boss != null ? _boss.transform : null)
                     : (_ally != null ? _ally.transform : _player),
-                UntilMs = worldMs + Math.Max(100, plan.Body.LifeSec * 1000.0)
+                UntilMs = worldMs + Math.Max(100, plan.Body.LifeSec * 1000.0),
+                Skill = _jsonCastSkill,
+                Closing = _jsonCastClosing,
+                FlowTickMs = linkTickMs,
+                NextFlowMs = worldMs + linkTickMs
             });
         }
 
@@ -386,14 +408,17 @@ namespace Dovus.Game
             }
             if (volume.Profile.CleanseField)
             {
+                int cleanseCount = JsonCleanseCount(volume.Skill);
                 if (playerInside)
-                    _playerStatus?.Board.CleanseHostile();
+                    _playerStatus?.Board.CleanseHostile(cleanseCount);
                 if (allyInside)
                 {
                     _ally.EnsureStatusBoard();
-                    _ally.Board.CleanseHostile();
+                    _ally.Board.CleanseHostile(cleanseCount);
                 }
             }
+            if (volume.Profile.Payload)
+                TickVolumePayload(volume, bossInside, playerInside, allyInside, refreshMs);
         }
 
         void TickMechanicLinks(double worldMs)
@@ -418,6 +443,7 @@ namespace Dovus.Game
                         && ForcedDisplacement.Allows(_bossStatus != null ? _bossStatus.Board : null))
                         _boss.MoveHomeToward(_player.position, distance - maxLength);
                 }
+                TickLinkFlow(link, worldMs);
                 string linkId = link.Plan != null && !string.IsNullOrEmpty(link.Plan.SkillId)
                     ? link.Plan.SkillId
                     : "link";
@@ -538,6 +564,8 @@ namespace Dovus.Game
                 return 0f;
             if (_clock == null || incoming <= 0)
                 return incoming;
+            if (TryParry(incoming))
+                return 0f;
             double now = _clock.Director.WorldTimeMs;
             float remaining = incoming;
             foreach (MechanicLink link in _mechanicLinks)
@@ -573,8 +601,12 @@ namespace Dovus.Game
                     || FlatDistance(_player.position, volume.Center) > volume.RadiusM)
                     continue;
                 MechanicEffect reflect = volume.Plan.Effects.FirstOrDefault(e => e.Stat == "yansit");
-                if (reflect != null && reflect.Amount > 0)
-                    _bossVitals.ApplyDamage(incoming * (float)reflect.Amount);
+                if (reflect == null || reflect.Amount <= 0)
+                    continue;
+                float ratio = JsonEffectRules.IsRampReflect(volume.Plan)
+                    ? JsonEffectRules.RampedRatio((float)reflect.Amount, volume.StartMs, volume.UntilMs, now, JsonParam("ramp_max", 1.5))
+                    : (float)reflect.Amount;
+                ApplyReflectedDamage(incoming * ratio);
             }
         }
 
@@ -600,6 +632,7 @@ namespace Dovus.Game
 
         void ApplyStatusTransfer(List<string> applied)
         {
+            _lastStatusTransferMoved = 0;
             if (_bossStatus == null)
                 return;
             StatusBoard source = _ally?.Board ?? _playerStatus?.Board;
@@ -618,6 +651,7 @@ namespace Dovus.Game
                 moved.Add(kind);
             }
             source.RemoveKinds(moved);
+            _lastStatusTransferMoved = moved.Count;
             if (moved.Count > 0)
                 applied.Add("durum aktarma " + string.Join(",", moved));
         }
@@ -633,7 +667,7 @@ namespace Dovus.Game
         }
 
         bool HasSelfReflect(MechanicPlan plan) =>
-            plan != null && plan.Effects.Any(e => e.Stat == "yansit" && e.Target == "kendin");
+            plan != null && !JsonEffectRules.IsWorldMirror(plan) && plan.Effects.Any(e => e.Stat == "yansit" && e.Target == "kendin");
 
         SkillExecutorRoute ApplyMechanicWorldRoute(MechanicPlan plan, SkillExecutorRoute route)
         {

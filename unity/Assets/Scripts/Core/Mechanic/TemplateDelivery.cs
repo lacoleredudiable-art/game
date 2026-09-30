@@ -14,7 +14,8 @@ namespace Dovus.Core.Mechanic
         RepeatPrevious = 5,
         FieldTick = 6,
         Bounce = 7,
-        GlideHaste = 8
+        GlideHaste = 8,
+        Pincer = 9
     }
 
     /// <summary>Kalıp başladıktan sonra çalışacak tek teslim adımı. Skill kimliği yok.</summary>
@@ -67,6 +68,11 @@ namespace Dovus.Core.Mechanic
         public bool CanDrain { get; set; }
         public float AbsorbRatio { get; set; }
         public bool BossKnockback { get; set; }
+        /// <summary>konum:it>dusman itme mesafesi (0 = genel BossKnockbackM).</summary>
+        public float PushM { get; set; }
+        public bool Pincer { get; set; }
+        public float PincerAtSec { get; set; }
+        public float PincerShare { get; set; }
 
         public List<DeliveryBeat> Schedule()
         {
@@ -124,6 +130,9 @@ namespace Dovus.Core.Mechanic
                     BounceDamageMult <= 0f ? 1f : BounceDamageMult,
                     1));
             }
+
+            if (Pincer)
+                beats.Add(new DeliveryBeat(Math.Max(0.05, PincerAtSec), DeliveryBeatKind.Pincer, PincerShare > 0f ? PincerShare : 0.5f, 1));
 
             if (FieldTicks && FieldTickSec > 0.02f && FieldDurationSec > 0.05f)
             {
@@ -244,6 +253,14 @@ namespace Dovus.Core.Mechanic
             bool pulls = plan != null && (plan.Body.Pull || plan.Effects.Exists(e => e.Stat == "cek"));
             order.BossKnockback = !pulls && plan != null && plan.Effects.Exists(e =>
                 e.Target == "dusman" && (e.Stat is "can" or "it" or "tempo" or "hareket"));
+            order.PushM = JsonEffectRules.PushMeters(plan, rules);
+            order.Pincer = JsonEffectRules.WantsPincer(plan) && EffectHitCount(template) < 2;
+            if (order.Pincer)
+            {
+                float pincerDelay = rules != null && rules.Param("pincer_delay_sec") > 0 ? (float)rules.Param("pincer_delay_sec") : 0.2f;
+                order.PincerAtSec = Math.Max(0f, firstHit) + pincerDelay;
+                order.PincerShare = rules != null && rules.Param("pincer_second_share") > 0 ? (float)rules.Param("pincer_second_share") : 0.5f;
+            }
             return order;
         }
 
@@ -277,6 +294,20 @@ namespace Dovus.Core.Mechanic
                 start += phase.DurationSec;
             }
             return false;
+        }
+
+        public static int EffectHitCount(MotionTemplate template)
+        {
+            if (template == null)
+                return 0;
+            int n = 0;
+            for (int i = 0; i < template.Phases.Count; i++)
+            {
+                MotionHitSpec hit = template.Phases[i].Hit;
+                if (hit != null && hit.Payload is not ("none" or "marker"))
+                    n++;
+            }
+            return n;
         }
 
         public static bool HasEffectHit(MotionTemplate template)
