@@ -47,6 +47,7 @@ namespace Dovus.Game
 
         sealed class GuardTrigger
         {
+            public int Id;
             public MechanicEffect Effect;
             public GameObject View;
             public double UntilMs;
@@ -57,6 +58,8 @@ namespace Dovus.Game
         readonly List<MechanicVolume> _mechanicVolumes = new();
         readonly List<MechanicLink> _mechanicLinks = new();
         readonly List<GuardTrigger> _guardTriggers = new();
+        readonly GuardTriggerDelivery.Once _guardOnce = new();
+        int _nextGuardId;
         readonly TimedHistory<Vector3> _bossMechanicHistory = new(5000, 50);
 
         static readonly StatusKind[] PositiveStatuses =
@@ -257,6 +260,7 @@ namespace Dovus.Game
             bool talisman = EquippedProfile != null && EquippedProfile.Passive.Id == "kutsal_etki";
             _guardTriggers.Add(new GuardTrigger
             {
+                Id = ++_nextGuardId,
                 Effect = effect,
                 View = view,
                 UntilMs = worldMs + windowSec * 1000.0,
@@ -483,16 +487,29 @@ namespace Dovus.Game
                 if (!expired && !allyLow && !playerLow)
                     continue;
 
-                if (!expired)
+                if (!expired && _guardOnce.TryApply(guard.Id))
                 {
                     float scale = guard.NeedsHoly ? WeaponFriendlyScale() : 1f;
                     int amount = Mathf.Max(0, Mathf.RoundToInt((float)Math.Abs(guard.Effect.Amount) * scale));
                     if (guard.Effect.Stat == "can")
                     {
-                        if (allyLow)
-                            _ally?.ApplyHeal(amount);
+                        // Miktar gramerden (ham). Diğer şifalar gibi ActorStatus.ApplyHeal ölçekler.
+                        if (allyLow && _ally != null)
+                        {
+                            float healMult = _ally.Board != null ? _ally.Board.HealEffectivenessMult : 1f;
+                            float scaled = DamagePipeline.Resolve(new DamageQuery
+                            {
+                                Heal = true,
+                                HealPower = amount,
+                                HealMultiplier = healMult > 0f ? healMult : 1f,
+                                ScaleMagnitudes = true
+                            }).Amount;
+                            _ally.ApplyHeal(Mathf.CeilToInt(scaled));
+                        }
+                        else if (_playerStatus != null)
+                            _playerStatus.ApplyHeal(amount);
                         else
-                            playerVitals?.ApplyHeal(amount);
+                            playerVitals?.ApplyHeal(Mathf.CeilToInt(CombatScale.Magnitude(amount)));
                     }
                     else if (guard.Effect.Stat == "kalkan")
                     {
@@ -530,18 +547,16 @@ namespace Dovus.Game
                 MechanicEffect share = link.Plan.Effects.FirstOrDefault(e => e.Stat == "hasar_paylasimi");
                 if (share != null && _ally != null)
                 {
-                    float ratio = Mathf.Clamp01((float)share.Amount);
-                    float redirected = remaining * ratio;
-                    _ally.ApplyDamage(Mathf.CeilToInt(redirected));
-                    remaining -= redirected;
+                    remaining = BossStatusMath.SplitShare(remaining, (float)share.Amount, out float redirected);
+                    if (redirected > 0f)
+                        _ally.ApplyDamage(Mathf.CeilToInt(redirected));
                 }
                 MechanicEffect route = link.Plan.Effects.FirstOrDefault(e => e.Stat == "yonlendir");
                 if (route != null && _bossVitals != null && !_bossVitals.IsDown)
                 {
-                    float ratio = Mathf.Clamp01((float)route.Amount);
-                    float redirected = remaining * ratio;
-                    _bossVitals.ApplyDamage(redirected);
-                    remaining -= redirected;
+                    remaining = BossStatusMath.SplitShare(remaining, (float)route.Amount, out float redirected);
+                    if (redirected > 0f)
+                        _bossVitals.ApplyDamage(redirected);
                 }
             }
             return remaining;

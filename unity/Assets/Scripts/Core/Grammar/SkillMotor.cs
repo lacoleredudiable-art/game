@@ -580,7 +580,10 @@ namespace Dovus.Core.Grammar
                     obj["name"].AsString(),
                     obj["name_prefix"].AsString(),
                     obj["color"].AsString(),
-                    obj["vfx"].AsString()));
+                    obj["vfx"].AsString(),
+                    obj.Has("status") ? obj["status"].AsString() : string.Empty,
+                    obj.Has("status_effect") ? obj["status_effect"].AsString() : string.Empty,
+                    obj.Has("status_duration") ? obj["status_duration"].AsFloat(0f) : 0f));
             }
 
             foreach (var group in root["ana_classes_80"]["groups"].AsObject())
@@ -1129,13 +1132,24 @@ namespace Dovus.Core.Grammar
 
     public readonly struct ElementPaintNode
     {
-        public ElementPaintNode(int id, string name, string namePrefix, string colorHex, string vfx)
+        public ElementPaintNode(
+            int id,
+            string name,
+            string namePrefix,
+            string colorHex,
+            string vfx,
+            string status = "",
+            string statusEffect = "",
+            float statusDurationSec = 0f)
         {
             Id = id;
             Name = name ?? string.Empty;
             NamePrefix = namePrefix ?? string.Empty;
             ColorHex = colorHex ?? string.Empty;
             Vfx = vfx ?? string.Empty;
+            Status = status ?? string.Empty;
+            StatusEffect = statusEffect ?? string.Empty;
+            StatusDurationSec = statusDurationSec;
         }
 
         public int Id { get; }
@@ -1143,6 +1157,12 @@ namespace Dovus.Core.Grammar
         public string NamePrefix { get; }
         public string ColorHex { get; }
         public string Vfx { get; }
+        /// <summary>elements[].status — burn, regen, haste, shield, cleanse, weaken.</summary>
+        public string Status { get; }
+        /// <summary>elements[].status_effect metni.</summary>
+        public string StatusEffect { get; }
+        /// <summary>elements[].status_duration saniye.</summary>
+        public float StatusDurationSec { get; }
     }
 
     public readonly struct MainClassNode

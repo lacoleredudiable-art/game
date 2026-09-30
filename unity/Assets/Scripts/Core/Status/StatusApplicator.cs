@@ -282,7 +282,7 @@ namespace Dovus.Core.Status
                     StatusKind.Blind,
                     mobilityCc?.ResolveCcDurationMs(StatusKind.Blind, adjectiveId, tuning.BlindMs)
                         ?? tuning.BlindMs,
-                    1f);
+                    Dovus.Core.Combat.BossStatusMath.BlindChanceFromAccuracy(accuracy));
         }
 
         static bool ModifierTruthy(JsonValue mods, string key)

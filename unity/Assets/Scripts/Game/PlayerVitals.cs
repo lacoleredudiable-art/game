@@ -22,6 +22,10 @@ namespace Dovus.Game
         public int Hp => _hp;
         public int MaxHp { get; private set; }
         public bool IsDown => _respawnAtUnscaled >= 0f;
+        /// <summary>Play Sweep: can düşer, ölüm ve doğuş ışınlaması olmaz.</summary>
+        public bool SuppressDown { get; set; }
+        public bool DevHpEnabled { get; private set; }
+        int _authoredMaxHp;
         public Vector3 SpawnPos => _spawnPos;
 
         /// <summary>Dönüşe kalan gerçek saniye (HUD okur); ayakta ise 0.</summary>
@@ -35,9 +39,31 @@ namespace Dovus.Game
         public void Bind(BossTuning boss, int maxHp, float startRatio = 1f)
         {
             _boss = boss;
-            MaxHp = Mathf.Max(1, maxHp);
+            _authoredMaxHp = Mathf.Max(1, maxHp);
+            DevHpEnabled = false;
+            MaxHp = _authoredMaxHp;
             _hp = Mathf.Clamp(Mathf.RoundToInt(MaxHp * Mathf.Clamp01(startRatio)), 1, MaxHp);
             CaptureSpawn();
+        }
+
+        /// <summary>
+        /// Dev HP açıkken havuz 1_000_000_000. Kapalıyken Bind'deki normal tavan.
+        /// Açılışta can da havuza çekilir; kapanınca normal tavana kırpılır.
+        /// </summary>
+        public void SetDevHp(bool enabled)
+        {
+            if (_authoredMaxHp <= 0)
+                _authoredMaxHp = MaxHp > 0 && MaxHp != DevPlayerHp.Pool ? MaxHp : Mathf.Max(1, MaxHp);
+            DevHpEnabled = enabled;
+            MaxHp = DevPlayerHp.Resolve(enabled, _authoredMaxHp);
+            if (enabled)
+            {
+                _hp = MaxHp;
+                _respawnAtUnscaled = -1f;
+                return;
+            }
+
+            _hp = Mathf.Clamp(_hp, 1, MaxHp);
         }
 
         /// <summary>
@@ -47,7 +73,10 @@ namespace Dovus.Game
         /// </summary>
         public void SetMaxHp(int maxHp)
         {
-            MaxHp = Mathf.Max(1, maxHp);
+            _authoredMaxHp = Mathf.Max(1, maxHp);
+            if (DevHpEnabled)
+                return;
+            MaxHp = _authoredMaxHp;
             _hp = Mathf.Min(_hp, MaxHp);
         }
 
@@ -89,6 +118,8 @@ namespace Dovus.Game
                 _visual = GetComponent<ActorVisual>();
 
             _hp = Mathf.Max(0, _hp - amount);
+            if (SuppressDown && _hp <= 0)
+                _hp = 1;
             if (_hp > 0)
             {
                 _visual?.Trigger(ActorVisual.TriggerHit);

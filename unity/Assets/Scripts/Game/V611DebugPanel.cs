@@ -17,20 +17,24 @@ namespace Dovus.Game
         HexagonInput _input;
         ManifestationDirector _manifestation;
         BuildSelectScreen _buildSelect;
+        PlayerVitals _vitals;
         GameObject _panel;
         Text _status;
         Text _element;
         Text _weapon;
+        Text _devHpLabel;
 
         public void Configure(
             HexagonInput input,
             ManifestationDirector manifestation,
             BuildSelectScreen buildSelect,
-            Transform canvasRoot)
+            Transform canvasRoot,
+            PlayerVitals vitals)
         {
             _input = input;
             _manifestation = manifestation;
             _buildSelect = buildSelect;
+            _vitals = vitals;
 
             Build(canvasRoot);
             Refresh();
@@ -70,6 +74,9 @@ namespace Dovus.Game
             element.onClick.AddListener(CycleElement);
             Button weapon = CreateRowButton(_panel.transform, "SİLAH DEĞİŞTİR (F2)");
             weapon.onClick.AddListener(CycleWeapon);
+            Button devHp = CreateRowButton(_panel.transform, "Dev HP: AÇIK");
+            devHp.onClick.AddListener(ToggleDevHp);
+            _devHpLabel = devHp.GetComponentInChildren<Text>();
 
             _element = CreateLabel(_panel.transform, string.Empty, 15);
             _element.gameObject.AddComponent<LayoutElement>().preferredHeight = 28f;
@@ -119,6 +126,22 @@ namespace Dovus.Game
                 Toggle();
         }
 
+        void ToggleDevHp()
+        {
+            if (_vitals == null)
+                return;
+            _vitals.SetDevHp(!_vitals.DevHpEnabled);
+            RefreshDevHp();
+        }
+
+        void RefreshDevHp()
+        {
+            if (_devHpLabel == null)
+                return;
+            bool on = _vitals != null && _vitals.DevHpEnabled;
+            _devHpLabel.text = on ? "Dev HP: AÇIK" : "Dev HP: KAPALI";
+        }
+
         void CycleElement()
         {
             ElementPaintNode? paint = _manifestation?.CycleElementPaint();
@@ -140,6 +163,7 @@ namespace Dovus.Game
             if (_element != null)
                 _element.text = paint.HasValue ? "Element boya: " + paint.Value.Name : "Element boya: —";
             RefreshWeapon(_manifestation?.EquippedWeapon);
+            RefreshDevHp();
             SetStatus("B build · F1 smoke · F2 silah · E basılı: element radial");
         }
 

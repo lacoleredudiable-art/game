@@ -121,8 +121,24 @@ namespace Dovus.Core.Status
         /// <summary>Stasis = kısa i-frame (dodge dışı skill koruması).</summary>
         public bool IsInvulnerable => Has(StatusKind.Stasis);
 
-        /// <summary>Gizlilik — boss hedef almaz, hasar yutulur.</summary>
+        /// <summary>Gizlilik — boss nişan alamaz. Hasar yutulmaz; yer/AoE değer.</summary>
         public bool IsStealthed => Has(StatusKind.Stealth);
+
+        /// <summary>Kör büyüklüğü ıskalama şansı. 0.3 = %30. 1 = her vuruş ıskalar.</summary>
+        public float BlindMissChance
+        {
+            get
+            {
+                if (!HasBlind || !_active.TryGetValue(StatusKind.Blind, out StatusEntry blind))
+                    return 0f;
+                float magnitude = blind.Magnitude;
+                if (magnitude <= 0f)
+                    return 0f;
+                if (magnitude >= 1f)
+                    return 1f;
+                return magnitude;
+            }
+        }
 
         public int ActiveCount => _active.Count;
 

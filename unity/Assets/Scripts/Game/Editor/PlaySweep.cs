@@ -483,6 +483,8 @@ namespace Dovus.Game.EditorTools
             Application.logMessageReceived -= OnLog;
             if (_bossDirector != null)
                 _bossDirector.enabled = true;
+            if (_playerVitals != null)
+                _playerVitals.SuppressDown = false;
             Status = "durdu: " + why;
             if (Results.Count > 0)
                 WriteOutputs();
@@ -662,6 +664,8 @@ namespace Dovus.Game.EditorTools
             _clock = F<GameClock>(_md, "_clock");
             _skills = F<SkillMotor>(_md, "_skills");
             _playerVitals = _player.GetComponent<PlayerVitals>();
+            if (_playerVitals != null)
+                _playerVitals.SuppressDown = true;
             _dodge = _player.GetComponent<DodgeMotion>();
             var visual = _player.GetComponent<ActorVisual>();
             _animator = visual != null ? F<Animator>(visual, "_animator") : null;
@@ -705,6 +709,8 @@ namespace Dovus.Game.EditorTools
             Application.logMessageReceived -= OnLog;
             if (_bossDirector != null)
                 _bossDirector.enabled = true;
+            if (_playerVitals != null)
+                _playerVitals.SuppressDown = false;
             WriteOutputs();
             Status = "bitti: " + LastSummary;
             Debug.Log("[PlaySweep] " + LastSummary);
@@ -1022,7 +1028,11 @@ namespace Dovus.Game.EditorTools
             if (_bossVitals.IsDown || _bossVitals.Hp < _bossVitals.MaxHp * 0.6f)
                 _bossVitals.Revive();
             if (_playerVitals != null)
+            {
+                _playerVitals.SuppressDown = true;
+                S(_playerVitals, "_respawnAtUnscaled", -1f);
                 S(_playerVitals, "_hp", Math.Max(1, _playerVitals.MaxHp / 2));
+            }
             if (_ally != null)
                 S(_ally, "_hp", Math.Max(1, _ally.MaxHp / 2));
 
