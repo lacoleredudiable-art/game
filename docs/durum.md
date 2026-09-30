@@ -13,8 +13,30 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (Sweep v2 başsız tarama + CI, 1-11 yankı yeri; PR #36 → `b18b751`) ·
-**Dal:** `master` · **Sıradaki:** —
+**Son güncelleme:** 30 Eylül 2026 (Cleanup PR 1 — ölü kod, dal `cleanup-1`, merge bekliyor) ·
+**Dal:** `cleanup-1` · **Sıradaki:** Unity 4× Play taraması + Kılıç portal/sınır/takım kontrolü, sonra merge
+
+> **30 Eylül — Cleanup PR 1 (`cleanup-1`, master `eefa1b1` üstüne).** `.cs`'de 2386 satır silindi, 91 eklendi.
+> - Silindi: `ArenaWalkFit`, `WallColliderFit`, `PlaceholderFactoryProbe`, `DamageCalculator` (+ testi),
+>   kullanılmayan üyeler; `SkillMotionDriver`, `StateBridgeView`, `StateBridgeBoard`; ulaşılamaz
+>   executor'lar (MeleeHitbox/Projectile/FieldAura/Movement/SelfState) ve `PortalBorderTeamHost.SenseShots`.
+> - Hareket kalıbı artık zorunlu: `motion-templates.json` yok/bozuksa `InvalidOperationException`.
+>   Test: `element-sistemi.json`'daki 144 skill'in her birinin `docs/motion-templates.json`'da bağlaması var.
+> - `Game/DebugConfig` (`Debug.isDebugBuild`): release'te dev HP yok, DodgePractice/FrameTimeHud/
+>   V611DebugPanel/AYAR paneli eklenmez, `TeamDebugMenu` kendiliğinden açılmaz, `DevLog` susar.
+>   MD'deki MCP prob kancaları (`ForceSync`, `ForceTick*`, `DebugApplySkillAnimation`) `#if UNITY_EDITOR`.
+> - `OpenDot1-6` kaldırıldı, `IsDotOpen` hep true. `_arenaVisualPrefab`, `SyntyDemoHallBind`,
+>   `ArenaLightmapUtility`, `PrototypeSceneCreator` ve `SyntyVisualBind`'in arena kısmı silindi;
+>   `ArenaVisual_Synty.prefab` silindi. `Resources/Concept` + `Resources/RuneCombo` → `docs/concept/`.
+> - `Prototype.unity` editörde `EnsureRuntimeDefaults()` uygulanıp kaydedildi: `TuningVersion: 18`,
+>   `ArenaHalfSizeM: 50`, Pentagon*/OpenDot*/CameraOffset/AudioBaseCutoffHz anahtarları düştü.
+>   Artık açılışta Inspector ayarı ezilmez.
+> - Eski sweep çiftleri `docs/play-sweep/archive/`; kökte pr35-final-4x, pr35-playcheck-1x, sweepv2-*.
+> - Doğrulanan: `dotnet test` 560/560; Unity derlemesi 0 hata; başsız `--all --gate` 1430/1440
+>   (her silah 143/144, yalnız 2-9), gövde 0, yerde 0; development kapalı Android oyuncu script
+>   derlemesi temiz, release `Dovus.Game.dll`'de `TeamDebugMenu.Boot` ve prob kancaları yok.
+> - **Doğrulanmadı:** Unity 4× Play taraması (editör odakta değilken ~4 fps'e düşüyor, koşu yarıda
+>   kesildi), Kılıç portal/sınır/takım kontrolü, gerçek Android release build'in cihazda açılması.
 
 > **Kural: bir PR'ı teslim etmeden önce başsız taramayı koş ve skor tablosunu PR'a yapıştır.**
 > `dotnet run --project tools/SweepV2 -c Release -- --all --gate` (Windows'ta da aynı komut; ~15 sn).
@@ -2004,6 +2026,10 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
+- **Play Sweep odak ister (30 Eylül, cleanup-1).** Unity penceresi odakta değilken editör ~4 fps'e
+  düşer; MCP ile başlatılan 4× taramada `sure` kontrolleri anlamsızlaşır. Taramayı Unity önde koşun.
+  `IZoneDirector`/`ZoneDirector`/`PlaceholderFactory`/`ZoneFieldView` yorumlarında silinen
+  `StateBridgeBoard`/`StateBridgeView`'a atıf kaldı (yalnız yorum).
 - **Boss durumları (30 Eylül, PR #34).**
   Eski `tuning.json` sürüm 0 ve hasar 0 ise açılışta slam 22 / nefes 18 yazılır.
   Poise tavanı 100 ve sersem 1.5 sn spec'te yok (`karadul.json` sersem 0.4).
