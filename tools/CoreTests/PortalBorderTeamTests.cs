@@ -182,6 +182,28 @@ public class PortalBorderTeamTests
     }
 
     [Test]
+    public void Skill_3_10_CasterStandingInArrivalDoorDoesNotBounce()
+    {
+        var portal = new PortalSystem();
+        var boss = Boss(0f, 8f);
+        Body caster = Actor(1, 0f, 0f, owns: true, y: 1.1f);
+        portal.Cast("3-10", caster, default, null, boss);
+        const float landZ = 4.95f;
+        portal.NotifyTemplateEnded(1, 0f, 1.1f, landZ, 0.5f, boss);
+        Assert.That(portal.Drain(), Is.Empty, "iniş yeni bir ışınlama yazmaz");
+
+        Body standing = Actor(1, 0f, landZ, y: 1.1f);
+        Assert.That(portal.Sense(standing, false, boss, out _), Is.False, "varış kapısının içi yeniden giriş değil");
+        Assert.That(portal.Drain(), Is.Empty);
+
+        Body outside = Actor(1, 0f, landZ + PortalSystem.DoorRadiusM + 0.6f, y: 1.1f);
+        Assert.That(portal.Sense(outside, false, boss, out _), Is.False);
+        Assert.That(portal.Sense(standing, false, boss, out Placement back), Is.True, "çıkıp girince kapı çalışır");
+        Assert.That(back.Y, Is.EqualTo(1.1f).Within(0.001f));
+        Assert.That(back.Z, Is.LessThan(landZ - 1f), "başlangıç kapısına döner");
+    }
+
+    [Test]
     public void Skill_8_1_ShrinkGate()
     {
         var portal = new PortalSystem();
@@ -368,6 +390,25 @@ public class PortalBorderTeamTests
         Assert.That(came.Y, Is.EqualTo(0f).Within(0.001f));
         Assert.That(Dist(came.X, came.Z, caster.X, caster.Z), Is.LessThan(2.2f));
         AssertOutside(came.X, came.Z, 0.5f, boss);
+    }
+
+    [Test]
+    public void Skill_11_10_AlliesKeepGroundHeight()
+    {
+        var portal = new PortalSystem();
+        var boss = Boss(0f, 6f);
+        Body caster = Actor(1, 0f, 0f, y: 1.05f);
+        var allies = new List<Body>
+        {
+            Actor(2, -4f, 1f, y: 1.2f),
+            Actor(3, 4f, 1f, y: 0.9f)
+        };
+        portal.Cast("11-10", caster, default, allies, boss);
+        portal.Tick(PortalSystem.TeamDelaySec, caster, allies, boss);
+        IReadOnlyList<Placement> moves = portal.Drain();
+        Assert.That(One(moves, 2).Y, Is.EqualTo(1.2f).Within(0.001f));
+        Assert.That(One(moves, 3).Y, Is.EqualTo(0.9f).Within(0.001f));
+        Assert.That(moves, Has.None.Matches<Placement>(m => m.ActorId != 2 && m.ActorId != 3));
     }
 
     [Test]

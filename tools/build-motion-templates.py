@@ -121,7 +121,7 @@ ENEMY_AIM = {
     # 15–42. Süreler dondurulmuş 144-kombo metninden (ışın 2/3 sn, fitil beklemesi,
     # geri dönüş 2 sn, süzülme 3 sn, kilit 3 sn). Ara adımlar bölüm 1 yedekleriyle aynı dosyada.
     "uzaktan_emme", "seken_bomba", "seken_disk", "seken_geri",
-    "geri_donen_kure", "sis_bombasi", "goz_bagi", "isinlan_kes", "icinden_emme",
+    "geri_donen_kure", "sis_bombasi", "goz_bagi", "kisa_dash", "kilitli_adim", "icinden_emme",
     "geri_sarma", "boss_geri", "ceken_girdap", "yutan_girdap", "cekip_firlat",
     "gerilip_kopan", "pesinden_av", "mayin_cakma", "dost_ip", "cember_sarma",
     "seken_yaratik", "yapisan", "dagilan_suru", "sirt_saplama", "kapidan_akin",
@@ -156,11 +156,9 @@ PHASES = {
     ],
     "sekmeli_ziplama": [
         P("sek_1", "hop", 0.2, side=1, distance_m=0.7, forward_m=1.35, height_m=0.55,
-          hit=H("self", 0.7, 0.34, shape="sphere", length=0.6, radius=0.45), **TRAVEL),
-        P("sek_2", "hop", 0.2, side=-1, distance_m=1.15, forward_m=1.15, height_m=0.5,
-          hit=H("self", 0.7, 0.33, shape="sphere", length=0.6, radius=0.45), **TRAVEL),
-        P("sek_3", "hop", 0.2, side=1, distance_m=0.55, forward_m=1.25, height_m=0.5,
-          hit=H("self", 0.7, 0.33, shape="sphere", length=0.6, radius=0.45), **TRAVEL),
+          hit=H("self", 0.7, 0.5, shape="sphere", length=0.6, radius=0.45), **TRAVEL),
+        P("sek_2", "hop", 0.2, side=-1, distance_m=1.15, forward_m=1.15, height_m=0.5, land="behind",
+          hit=H("self", 0.7, 0.5, shape="sphere", length=0.6, radius=0.45), **TRAVEL),
     ],
     "basip_sekme": [
         P("bas", "leap", 0.3, distance_m=2.4, height_m=1.15, gap_m=0.45,
@@ -442,11 +440,14 @@ PHASES = {
         P("sutun", "hop", 0.48, side=1, distance_m=0, forward_m=0.1, height_m=1.2,
           hit=H("self", 0.72, 1, shape="sphere", length=0.8, radius=0.55), **TRACK),
     ],
-    # —— 23 Atılıp vurma. Işınlan ve kes boss'un arkasına iner (3-1 ve 3-9 aynı kalıp).
+    # —— 23 Atılıp vurma. 3-1 kısa dash; 3-9 kilitlenip arkaya iner. Aynı kalıp değil.
     # İçinden geçiş overshoot ile öte kenarda biter.
-    "isinlan_kes": [
-        P("kilit", "hold", 0.30, **TRACK),
-        P("isin", "blink", 0.18, snap_at=0.4, distance_m=5.0, land="behind", behind_m=1.15,
+    "kisa_dash": [
+        P("atil", "dash", 0.16, distance_m=1.65, **TRACK),
+    ],
+    "kilitli_adim": [
+        P("kilit", "hold", 0.20, **TRACK),
+        P("adim", "blink", 0.28, snap_at=0.45, distance_m=5.0, land="behind", behind_m=1.15,
           hit=H("behind", 0.72, 1, shape="sphere", length=0.9, radius=0.55), **TRACK),
     ],
     "icinden_emme": [
@@ -724,7 +725,7 @@ ROWS = [
     ("2-10", "ters_es", "Ters eş", 11, [], None),
     ("2-11", "golge_ulak", "Gölge ulak", 12, [], None),
     ("2-12", "basili_isik", "Basılı ışın", 15, [], None),
-    ("3-1", "isinlan_kes", "Işınlan ve kes", 23, [], None),
+    ("3-1", "kisa_dash", "Kısa hızlı dash", 23, [], None),
     ("3-2", "icinden_emme", "İçinden geçip emme", 23, ["sinir_modu"], 0.2),
     ("3-3", "sekmeli_ziplama", "Sekmeli zıplama", 3, [], None),
     ("3-4", "geri_sarma", "Geri sarma", 24, ["portal"], None),
@@ -732,7 +733,7 @@ ROWS = [
     ("3-6", "kanca_cekis", "Kanca çekiş", 7, [], None),
     ("3-7", "duman_kaybolma", "Duman olup kaybolma", 8, [], None),
     ("3-8", "sicrayip_cakilma", "Sıçrayıp çakılma", 4, ["silah_kesme"], None),
-    ("3-9", "isinlan_kes", "Işınlan ve kes", 23, [], None),
+    ("3-9", "kilitli_adim", "Kilitli adım", 23, [], None),
     ("3-10", "iki_kapi", "İki kapılı portal", 25, ["portal", "takim_kombosu"], None),
     ("3-11", "yem_kac", "Yem bırakıp kaçma", 27, [], None),
     ("3-12", "suzulme", "Süzülme", 41, [], None),

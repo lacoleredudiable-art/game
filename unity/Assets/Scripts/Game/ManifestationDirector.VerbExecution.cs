@@ -34,6 +34,8 @@ namespace Dovus.Game
         VerbExecutionData _verbData;
         float _selfDamageBuff;
         double _selfDamageBuffUntilMs;
+        float _emHealRatio;
+        double _emHealUntilMs;
 
         public VerbExecutionData VerbData => _verbData;
 
@@ -50,6 +52,15 @@ namespace Dovus.Game
 
         void OnPlayerDamageTaken(float incomingDamage)
         {
+            if (_emHealRatio > 0f && incomingDamage > 0.5f && _clock != null
+                && _clock.Director.WorldTimeMs < _emHealUntilMs && _player != null)
+            {
+                PlayerVitals vitals = _player.GetComponent<PlayerVitals>();
+                int heal = Mathf.RoundToInt(incomingDamage * _emHealRatio);
+                if (vitals != null && heal > 0)
+                    vitals.ApplyHeal(heal);
+            }
+
             NoteShieldBlockIfGuarding();
             bool crit = _playerStatus != null && _playerStatus.LastHitWasCrit;
             Vector3 at = _player != null ? _player.position + Vector3.up * 1.6f : Vector3.zero;
@@ -122,6 +133,13 @@ namespace Dovus.Game
             MechanicPlan mechanicPlan = MechanicPlanFor(skill);
             if (reflect > 0f && reflectSec > 0f && _playerStatus != null && HasSelfReflect(mechanicPlan))
                 _playerStatus.GrantReflect(reflect, now + (reflectSec + lifetimeAdd) * 1000.0);
+
+            MechanicEffect absorb = mechanicPlan?.Effects.Find(e => e.Stat == "em");
+            if (absorb != null && absorb.Amount > 0)
+            {
+                _emHealRatio = (float)absorb.Amount;
+                _emHealUntilMs = now + Mathf.Max(0.2f, reflectSec + lifetimeAdd) * 1000.0;
+            }
         }
 
         /// <summary>
@@ -204,10 +222,10 @@ namespace Dovus.Game
         }
 
         /// <summary>Minion vuruşu: ham hasar boru hattından (zırh, kritik, ölçek bir kez).</summary>
-        void ApplyMinionHit(in SkillResolution skill, float raw)
+        float ApplyMinionHit(in SkillResolution skill, float raw)
         {
             if (_bossVitals == null || _bossVitals.IsDown || raw <= 0f)
-                return;
+                return 0f;
             raw = DamagePipeline.TuneOutgoingPower(
                 false, raw, 0f, _combat != null ? _combat.SkillPreArmorScale : 1f);
             float mult = skill.DamageMult > 0f ? skill.DamageMult : 1f;
@@ -267,6 +285,7 @@ namespace Dovus.Game
             }
             _bossVitals.ApplyDamage(damage);
             NotifyBossStruck(false, allowHitstop: false);
+            return damage;
         }
 
         /// <summary>Kendine/dost alan boss'a da değiyor mu (düşmanca sıfat durumları için).</summary>

@@ -320,6 +320,23 @@ namespace Dovus.Core.Portal
                 _ready.Add(new Placement(w.ActorId, px, w.Y, pz, w.Skill, w.Transfer, w.Teleport));
                 _wait.RemoveAt(i);
             }
+
+            // İniş kapının içinde biter. Bu kapıya yeni giriş sayılmaz; çıkıp
+            // tekrar girmeden karşı kapıya ışınlanmaz (3-10 dash sonu).
+            RememberStandingInDoor(actorId, cx, cz);
+        }
+
+        void RememberStandingInDoor(int actorId, float x, float z)
+        {
+            for (int i = 0; i < _doors.Count; i++)
+            {
+                Door door = _doors[i];
+                if (door.PendingArrival || _now >= door.Until)
+                    continue;
+                if (Dist(x, z, door.X, door.Z) > DoorRadiusM)
+                    continue;
+                _inside.Add(Key(actorId, door.Id));
+            }
         }
 
         public bool Sense(in Body body, bool projectile, in Disc boss, out Placement move)
@@ -468,7 +485,7 @@ namespace Dovus.Core.Portal
                     float x = caster.X + MathF.Cos(ang) * BesideM;
                     float z = caster.Z + MathF.Sin(ang) * BesideM;
                     PushOut(ref x, ref z, ally.Radius, boss);
-                    _ready.Add(new Placement(ally.Id, x, 0f, z, "11-10", false, true));
+                    _ready.Add(new Placement(ally.Id, x, ally.Y, z, "11-10", false, true));
                     n++;
                 }
             }

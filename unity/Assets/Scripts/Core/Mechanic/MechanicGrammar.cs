@@ -331,7 +331,10 @@ namespace Dovus.Core.Mechanic
 
         void Aktar(MechanicPlan p)
         {
-            p.Body.Pull = true;
+            // Çekme yalnız saldıran ya da gerçekten çeken gövdede. Şifa, kalkan, arınma
+            // ve tempo girdabı boss'u oyuncuya yapıştırmaz. Düşman canı döngüden önce okunur;
+            // yararın eksiye dönmesi çekme sayılmaz.
+            bool offensive = p.Effects.Any(e => e.Stat == "can" && e.Target == "dusman" && e.Amount < 0);
             double steal = _r.AdjNum(p.Adjective, "lifesteal");
             foreach (MechanicEffect e in Snapshot(p))
             {
@@ -370,11 +373,12 @@ namespace Dovus.Core.Mechanic
                         e.Modes.Add("can_emen");
                         break;
                     case ("yon", "yansit"):
-                        e.Stat = "em";
-                        e.Modes.Add("cana_cevir");
+                        // Yansıtma durur. Emme ayrıca cana çevirir; ikisi birden.
+                        Add(p, "deger", "em", "kendin", Math.Abs(e.Amount), e.DurationSec, "cana_cevir");
                         break;
                 }
             }
+            p.Body.Pull = offensive || p.Effects.Any(e => e.Stat == "cek");
             List<MechanicEffect> erasers = p.Effects.Where(e => e.Stat == "mermi_sil").ToList();
             if (erasers.Count == 0) Add(p, "varlik", "mermi_sil", "dusman_nesnesi", 0, 0, "yut");
             else foreach (MechanicEffect e in erasers) e.Modes.Add("yut");

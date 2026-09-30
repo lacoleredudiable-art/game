@@ -375,8 +375,8 @@ public class PlaySweepFixTests
         PositionPlayback staff = PositionOwnership.Prepare(hops, staffSteps, 0.28f, 1.2f);
         Assert.That(staff.Template.Phases.Count, Is.EqualTo(hops.Phases.Count));
         Assert.That(staff.Template.Phases[0].ForwardM, Is.EqualTo(hops.Phases[0].ForwardM));
-        Assert.That(staff.Template.Phases[2].Land, Is.EqualTo("behind"));
-        Assert.That(sword.Template.Phases[2].ForwardM, Is.EqualTo(staff.Template.Phases[2].ForwardM));
+        Assert.That(staff.Template.Phases[^1].Land, Is.EqualTo("behind"));
+        Assert.That(sword.Template.Phases[^1].ForwardM, Is.EqualTo(staff.Template.Phases[^1].ForwardM));
 
         float swordZ = FinishZ(sword.Template, 0.85f);
         float staffZ = FinishZ(staff.Template, 0.85f);

@@ -179,6 +179,13 @@ namespace Dovus.Core.Motion
                 distanceM, ForwardM, Side, SideM, HeightM, YawDeg, GapM, OvershootM,
                 ShotM, DriftM, WalkMps, behindM, SnapAt, Curve, Hit,
                 land ?? Land, Plant, Anim, AnimSpeed);
+
+        public MotionPhase WithHoming(string homing) =>
+            new MotionPhase(
+                Name, Motion, DurationSec, Facing, homing, Gate, MaxHoldSec,
+                DistanceM, ForwardM, Side, SideM, HeightM, YawDeg, GapM, OvershootM,
+                ShotM, DriftM, WalkMps, BehindM, SnapAt, Curve, Hit,
+                Land, Plant, Anim, AnimSpeed);
     }
 
     public sealed class MotionTemplate

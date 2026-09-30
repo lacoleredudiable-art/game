@@ -825,7 +825,7 @@ namespace Dovus.Core.Motion
                         _destZ = _phaseZ + uz * through;
                     }
                     else
-                        Approach(ux, uz, len, target, cap: 0f);
+                        Approach(ux, uz, len, target, cap: phase.DistanceM);
                     break;
                 case "leap":
                     Approach(ux, uz, len, target, cap: 0f);

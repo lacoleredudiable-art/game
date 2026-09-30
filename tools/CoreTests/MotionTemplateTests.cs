@@ -23,7 +23,7 @@ public class MotionTemplateTests
     public void Catalog_MapsEveryCombo_AndAllFortyTwoFamilies()
     {
         Assert.That(_catalog.FamilyCount, Is.EqualTo(42));
-        Assert.That(_catalog.TemplateCount, Is.EqualTo(101));
+        Assert.That(_catalog.TemplateCount, Is.EqualTo(102));
         Assert.That(_catalog.SkillCount, Is.EqualTo(144));
         Assert.That(_catalog.CountImplementedFamilies(), Is.EqualTo(42));
         Assert.That(_catalog.CountReadySkills(), Is.EqualTo(144));
@@ -155,7 +155,7 @@ public class MotionTemplateTests
             side.Hits[1].LengthM, side.Hits[1].RadiusM, side.Hits[1].Anchor, 0f, 3f, 0.85f), Is.True);
 
         var hops = Play(Ready("sekmeli_ziplama"), 1f, new MotionTarget(false, 0f, 0f));
-        Assert.That(hops.Hits, Has.Count.EqualTo(3));
+        Assert.That(hops.Hits, Has.Count.EqualTo(2));
         Assert.That(hops.Z, Is.GreaterThan(2f));
 
         var stomp = Play(Ready("basip_sekme"), 1f, new MotionTarget(true, 0f, 4f));

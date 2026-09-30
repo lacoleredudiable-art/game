@@ -103,6 +103,30 @@ namespace Dovus.Game
                 }
             }
 
+            float dashM = skill.EngineModifiers["dash_distance_m"].AsFloat(0f);
+            if (dashM > 0.05f)
+            {
+                float range = _equippedWeapon != null && _equippedWeapon.RangeMult > 0f
+                    ? _equippedWeapon.RangeMult
+                    : 1f;
+                float box = skill.EngineModifiers["hitbox_scale_mult"].AsFloat(0f);
+                if (box <= 0.01f)
+                    box = 1f;
+                MotionTemplate dashed = DashDistance.Apply(shaped, dashM * range * box);
+                if (!ReferenceEquals(dashed, shaped))
+                {
+                    shaped = dashed;
+                    owns = true;
+                }
+            }
+
+            if (plan != null && plan.Body.Homing)
+            {
+                MotionTemplate homing = HomingDelivery.TrackShots(shaped);
+                if (!ReferenceEquals(homing, shaped))
+                    shaped = homing;
+            }
+
             if (ReferenceEquals(shaped, playback.Template) && owns == playback.OwnsPosition)
                 return playback;
             return new PositionPlayback(owns, shaped, playback.PlaceReturnMark);
@@ -177,7 +201,10 @@ namespace Dovus.Game
             _motionBody.NoteSkill(skill.SkillId);
             if (_boss != null)
                 _templateStartCenter = FlatDistance(_player.position, _boss.transform.position);
-            _emiciContactPull = EmiciApproach.ShouldHoldCaster(skill.AdjectiveId, template);
+            MechanicPlan pullPlan = MechanicPlanFor(skill);
+            _emiciContactPull = pullPlan != null
+                && pullPlan.Body.Pull
+                && EmiciApproach.ShouldHoldCaster(skill.AdjectiveId, template);
             if (_emiciContactPull)
                 PullBossToPlayerContact();
             _motionBody.Play(
@@ -244,10 +271,22 @@ namespace Dovus.Game
             if (hit.Payload == "none" || _templateSkill.IsEmpty)
                 return;
 
+            double now = _clock != null ? _clock.Director.WorldTimeMs : 0;
+            if (ShouldDeferTemplateGameplay(now))
+            {
+                _deliveryStashedShare = Mathf.Max(_deliveryStashedShare, hit.Share);
+                _deliveryStashed = true;
+                return;
+            }
+
+            if (TemplateHitAlreadyDetonated())
+                return;
+
             bool friendly = IsFriendlyFieldVerb(_templateSkill) || IsHealSkill(_templateSkill);
             bool geometry = BossReachedMotionHit(hit);
+            bool arc = !friendly && !geometry && WeaponArcConnects(hit);
             bool reached = friendly || geometry;
-            if (!friendly && reached)
+            if (!friendly && (geometry || arc))
             {
                 ApplyClosingDamage(
                     _templatePending.Closing,
@@ -278,9 +317,9 @@ namespace Dovus.Game
             }
 
             bool selfPulse = hit.Anchor is "self" or "ring";
-            if ((reached || selfPulse) && !_templateStatusSent)
+            if ((reached || selfPulse || arc) && !_templateStatusSent)
             {
-                ApplyClosingStatuses(_templatePending, _templateSkill, bossReached: !friendly && reached);
+                ApplyClosingStatuses(_templatePending, _templateSkill, bossReached: !friendly && (geometry || arc));
                 if (!friendly)
                 {
                     ApplyMechanicHitEffects(
@@ -289,6 +328,9 @@ namespace Dovus.Game
                 }
                 _templateStatusSent = true;
             }
+
+            if (!friendly && (geometry || arc))
+                NoteTemplateHostileHit(new Vector3(hit.OriginX, 0f, hit.OriginZ));
             }
             finally
             {

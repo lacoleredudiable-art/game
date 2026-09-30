@@ -20,6 +20,7 @@ namespace Dovus.Game
             public Transform Body;
             public float NextAttackSec;
             public Vector3 OwnerOffset;
+            public float Hop;
         }
 
         readonly List<Minion> _minions = new();
@@ -33,6 +34,7 @@ namespace Dovus.Game
         int _spawnedCount;
         bool _ringFormation;
         bool _invisibleActor;
+        bool _hopping;
 
         public override SkillExecutorKind Kind => SkillExecutorKind.Summon;
 
@@ -50,6 +52,7 @@ namespace Dovus.Game
                 .FirstOrDefault(e => e.Stat is "aktor_yarat" or "klon");
             _ringFormation = actorEffect?.Has("halka") ?? false;
             _invisibleActor = actorEffect?.Has("gorunmez") ?? false;
+            _hopping = actorEffect?.Has("ziplayan") ?? false;
 
             Vector3 origin = context.Owner != null ? context.Owner.position : context.Origin;
             HitboxVfxRegistry.Create(
@@ -90,12 +93,14 @@ namespace Dovus.Game
             GameObject body = CreateActorBody(at, _spawnSize, index);
             if (body != null)
             {
-                _minions.Add(new Minion
+                var minion = new Minion
                 {
                     Body = body.transform,
                     NextAttackSec = 0f,
                     OwnerOffset = body.transform.position - _spawnOrigin
-                });
+                };
+                _minions.Add(minion);
+                KeepActorOutside(minion);
             }
             _spawnedCount = Mathf.Max(_spawnedCount, index + 1);
         }
@@ -172,6 +177,21 @@ namespace Dovus.Game
                     m.Body.position, desired, t.ExecutorMinionMoveSpeedMps * dt);
             }
 
+            if (_hopping && _actorKind is not (MechanicActorKind.Turret or MechanicActorKind.MirrorClone or MechanicActorKind.Guardian))
+            {
+                float wave = Mathf.Sin(_ageSec * 8f) * _spawnSize;
+                Vector3 hopped = m.Body.position;
+                hopped -= _spawnSide * m.Hop;
+                hopped += _spawnSide * wave;
+                m.Hop = wave;
+                m.Body.position = hopped;
+            }
+
+            KeepActorOutside(m);
+
+            float speed = t.ExecutorMinionMoveSpeedMps;
+            if (_actorKind == MechanicActorKind.Assassin)
+                speed *= 1.35f;
             float attackReach = _actorKind == MechanicActorKind.Turret
                 ? Context.RangeM
                 : t.ExecutorMinionReachM;
@@ -200,7 +220,30 @@ namespace Dovus.Game
             to.y = 0f;
             if (to.sqrMagnitude < 0.0001f)
                 return;
-            m.Body.position += to.normalized * (t.ExecutorMinionMoveSpeedMps * dt);
+            m.Body.position += to.normalized * (speed * dt);
+            KeepActorOutside(m);
+        }
+
+        void KeepActorOutside(Minion m)
+        {
+            if (m.Body == null)
+                return;
+            Vector3 p = m.Body.position;
+            float x = p.x;
+            float z = p.z;
+            float size = Mathf.Max(0.2f, _spawnSize);
+            if (Context.Target != null)
+            {
+                float bossR = 0.85f;
+                Collider col = Context.Target.GetComponentInChildren<Collider>();
+                if (col != null)
+                    bossR = Mathf.Max(col.bounds.extents.x, col.bounds.extents.z);
+                ActorSpacing.PushOutside(ref x, ref z, Context.Target.position.x, Context.Target.position.z, bossR + size * 0.5f + 0.05f);
+            }
+
+            if (Context.Owner != null)
+                ActorSpacing.PushOutside(ref x, ref z, Context.Owner.position.x, Context.Owner.position.z, 0.55f + size * 0.5f);
+            m.Body.position = new Vector3(x, p.y, z);
         }
 
         void SpawnWeaponAttack(Vector3 from)
