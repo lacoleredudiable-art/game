@@ -24,6 +24,7 @@
 !tools/CoreTests/*.csproj
 !tools/AtomSim/*.csproj
 !tools/GameCompile/GameCompile.csproj
+!tools/SweepV2/*.csproj
 tools/GameCompile/gen/
 tools/GameCompile/bin/
 *.unityproj
@@ -62,6 +63,8 @@ unity-import.log
 # dotnet test çıktıları (tools/CoreTests)
 tools/CoreTests/bin/
 tools/AtomSim/bin/
+tools/SweepV2/bin/
+tools/SweepV2/out/
 
 # Ham asset indirmeleri (Blend/OBJ/zip kaynak dosyaları) — Unity'nin gerçekten kullandığı
 # içe aktarılmış hâli unity/Assets/Art/ altında, versiyonlanır. Bu klasör yalnızca

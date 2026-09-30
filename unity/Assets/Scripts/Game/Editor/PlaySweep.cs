@@ -1857,9 +1857,14 @@ namespace Dovus.Game.EditorTools
 
         // ---------------------------------------------------------------- çıktı
 
+        /// <summary>Boşsa docs/play-sweep. Başsız koşucu (tools/SweepV2) kendi klasörünü verir.</summary>
+        public static string OutputDir { get; set; } = "";
+
         static string OutDir()
         {
-            string dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "docs", "play-sweep"));
+            string dir = !string.IsNullOrEmpty(OutputDir)
+                ? Path.GetFullPath(OutputDir)
+                : Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "docs", "play-sweep"));
             Directory.CreateDirectory(dir);
             return dir;
         }
