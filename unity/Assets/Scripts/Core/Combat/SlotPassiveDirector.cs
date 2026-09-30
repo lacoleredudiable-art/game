@@ -112,16 +112,19 @@ namespace Dovus.Core.Combat
             return result;
         }
 
-        public bool HasAccuracyDebuff(int castId)
+        public bool HasAccuracyDebuff(int castId) => AccuracyDebuffFor(castId) > 0f;
+
+        /// <summary>Bulandırma accuracy_debuff. Kör ıskalama şansı budur (0.3 = %30).</summary>
+        public float AccuracyDebuffFor(int castId)
         {
+            float result = 0f;
             for (int i = 0; i < _active.Count; i++)
             {
                 if (!Applies(_active[i], castId))
                     continue;
-                if (_active[i].Modifiers["accuracy_debuff"].AsFloat(0f) > 0f)
-                    return true;
+                result = Math.Max(result, _active[i].Modifiers["accuracy_debuff"].AsFloat(0f));
             }
-            return false;
+            return result;
         }
 
         /// <summary>ignore_armor = zırh delme %50. Tam yok sayma değil.</summary>

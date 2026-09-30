@@ -13,8 +13,8 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (skill teslimi + minyon/klon, merge yok) ·
-**Dal:** `cursor/skill-delivery-minions-0295` · **Sıradaki:** Top geri tepme fazında ayak havada (1-3, 6-3, 5-8, 6-8, 7-8); LABEL-ONLY JSON ve mana/cooldown
+**Son güncelleme:** 30 Eylül 2026 (PR #34/#35 birleşik Play testi → yalnız #34 merge) ·
+**Dal:** `master` · **Sıradaki:** PR #35 tarama açıkları (bkz. Bilinen açıklar)
 
 > **30 Eylül — skill teslimi + minyon/klon (master `9ce4f94` üstüne, merge yok).** Kalıp
 > vuruşu teslimi bitirmiyordu; `TemplateDelivery` kalıpla aynı kuyruğu kurar (çağrı, yankı,
@@ -24,6 +24,57 @@
 > Minyon boss ve oyuncunun dışında durur; `can_emen` vuruşu iyileştirir. 3-10 varış kapısı
 > `_inside` sayılır, çıkmadan geri ışın yok. 11-10 dostun Y'sini korur. 3-4 zırh sayısı JSON'da
 > yok; dönen adım + durum nabzı duruyor. `dotnet test` 541/541, `check.py` temiz. Unity Play yok.
+
+> **30 Eylül — PR #35 + #34 birleşik Play testi: yalnız #34 merge edildi.** Geçici dalda master +
+> #35 + #34: çakışmalar `durum.md` (iki taraf), `BossDirector.cs` (#34 `inVolume` süzgeci + #29
+> portal ölçekli mesafe), `ManifestationDirector.MotionTemplate.cs` (#34 kalkan "bir kez öde"
+> kapısı + #35 `geometry || arc`); #35 `PulseDelivery` de aynı kapıdan geçirildi. `tools/AtomSim`
+> #35'le derlenmiyordu (`TemplateDelivery` → `Core/Motion`); Core'un tümü link'lenince 0 hata.
+> `dotnet test` 561/561. 4× tam tarama (`play-sweep/pr35-34-4x.csv`) **1379/1440**, her silah
+> 135–139 → merge yok. Tek PR tekrarları: #35 tek başına (`attr-pr35.csv`) 4-2, 12-11, 6-9, 5-2,
+> 3-7, 1-6 hatalarını üretir; 2-9 ise #34'ten (koruyucu tetik, tasarım gereği kabul). #34 tek
+> başına (`pr34-4x.csv`) 1389/1440; 40 dağınık `sure` hatası editör takılması — ölçüm sırasında
+> MCP sorgusu olmadan tekrarı (`pr34-sure-retry.csv`) 40/40. Düzeltilmiş: dokuz silah 143, Tılsım
+> 142 (2-9 + 6-3 `konum`); gövde 0, `yerde` 0, betik hatası 0. Elle (birleşik dalda, 1×, Kılıç):
+> Dev HP açık slam iner / bar dolu, kapalı gerçek can düşer + ölüm + doğuş, panelden geri açık;
+> Kör 0,30 → 30 saldırıda 12 ıska; Faz 2 + Sessiz 14 windup 0 nefes; Silahsız 10 windup 0 slam;
+> Çekiç + rün 4 poise 0 → ~1,6 sn sersem → bar dolu; gizlilikte boss dönmez, slam diskte vurur.
+
+> **30 Eylül — boss hasarı ve durum etkileri (`cursor/boss-status-effects-ca3b`).**
+> (1) Açılış `Boss.Damage` / `FireConeDamage` sıfırlamıyor. Varsayılan slam 22, nefes 18
+> (`karadul.json`). Eski kayıt 0 ise `BossDamageMigration` bir kez 22/18 yazar; sürüm
+> güncelse bilinçli 0 durur.
+> (2) V6 panelinde **Dev HP** varsayılan AÇIK, havuz 1_000_000_000. KAPALI normal can.
+> Sonsuz diriliş ve boss otomatik dirilişi duruyor. Play Sweep `SuppressDown`: oyuncu canı
+> 1'in altına inmez, tarama ölüm ışınlanmasından düşmez.
+> (3) Kör = `accuracy_debuff` ıskalama (0.3 → %30). Sessiz = ateş konisi yok. Silahsız = slam yok.
+> Zayıf = giden hasar düşer. Süre skill verisinden. x-7 `kor` ve rün 7 Bulandırma aynı kör
+> şansını basar (rün 7 süre BlindMs 1400 + lifetime_add 3 sn = 4400 ms). Element durumundan
+> boss'a yalnız Ateş yanığı ve Karanlık zayıf iner; Su/Hava/Toprak/Aydınlık kendine yazılır.
+> (4) Poise barı. Vuruş `base_poise` × `poise_damage_mult` × silah `poise_mult` × swap × rün 4 ×1.5.
+> 0'da sersem, sonra bar doluyor. **Sapma:** tavan 100 (spec yazmıyor). Sersem 1.5 sn
+> (`karadul.json` `stagger_duration_sec` 0.4).
+> (5) Gizlilik artık yenilmezlik değil. Boss hedefi bırakır, nişan alamaz; yer/tam daire
+> (yay ≥180°) değer, dar koni değmez.
+> (6) `koruyucu_tetik` 2-9 / 4-9 / 8-9 ölçekli iner ve tetik başına bir kez: kalıp aynı
+> cast'te şifayı/kalkanı/hasar buff'ını tekrar basmaz.
+> (7) Kalkanın emdiği hasar da yansır; blok `DamageBlocked` ile karşı saldırı notunu düşürür.
+> Paylaşım kalkan sonrası kalan üzerinden.
+> (8) `hasar_buff>dusman` (8-2, 8-10) Weaken.
+> **30 Eylül — PR #33 Play testi (`de4bbb0`): merge edildi.** Master (`9ce4f94`, #29) dala
+> alındı; tek çakışma `durum.md` (iki taraf da tutuldu). `dotnet test` 532/532, `tools/AtomSim`
+> ve GameCompile 0 hata, Unity derlemesi temiz, konsolda yalnız bilinen URP/ShaderGraph hataları.
+> 4× tarama (`play-sweep/pr33-4x-r2.csv`): **Yumruk 144, Kalkan 143, Top 144, Kılıç 144**;
+> `yerde` 576/576 (en kötü ayak 0,00 m), gövde 0, hata 0. Top 1-3, 6-3, 5-8, 6-8, 7-8 yerde geçti.
+> Top 1-2 kalıp sonu merkeze 1,40 m (temas 1,35). Yumruk 1-4 / Kalkan 1-4 hasar verdi. Yumruk 2-2
+> kalıp 2,20 sn, toplam 2,60 sn. Kılıç 10-2 3,22 sn (beklenen 3,18) geçti. Tek kalan Kalkan 3-6
+> `sure`: kalıp bang'den 0,16 sn sonra (pay 0,15) — o kare MCP ilerleme sorgusuyla (editörde
+> derleme) çakıştı; tek başına 3/3 geçti (kalıp 0,80 sn). En yakın merkez 3-2 `icinden_emme`
+> 0,11–0,19 m (tasarım gereği geçiş, `govdeye_girmedi` geçti).
+
+> **30 Eylül — tarama artıkları.** Top 1-2: Emici yerinde tutulan kalıba geri tepme eklenmez; geri çekilme boss yarıçapının dışında biter; tarama simülasyonu tutma bayrağını geçer. Yumruk/Kalkan 1-4: planlanan durak hem JSON kenarını hem kendi küresini ıskalıyorsa kapanış yalnız JSON kenarından (0,75 m); kılıç 1-4 ek hamle almaz. Yumruk 2-2: dört vuruş aynı anda ve zaman aşımı notu 11,3 sn (eşik 6,4) tek karelik saat sıçraması; dünya karesi en çok 100 ms. Unity Play / 1440 tekrar yok.
+**Son güncelleme:** 30 Eylül 2026 (PR #29 Play testi geçti, master'a merge) ·
+**Dal:** `master` · **Sıradaki:** 3-10 dash sonrası kapıdan geri dönüş; Top geri tepme fazında ayak havada (1-3, 6-3, 5-8, 6-8, 7-8)
 
 > **30 Eylül — PR #29 Play testi (`8b104d5`): merge edildi.** Master (`4b17de0`) dala alındı;
 > tek çakışma `durum.md` (iki taraf da tutuldu). `dotnet test` 527/527, `check.py` ve Unity
@@ -73,17 +124,15 @@
 **Dal:** `master` · **Sıradaki:** Top geri tepme fazında ayak havada (1-3, 6-3, 5-8, 6-8, 7-8); #29 Kılıç 9-10 / 2-6 / 11-8 + sınır–can çalma çakışması
 
 > **30 Eylül — PR #33 Play testi (`cursor/silah-tarama-artiklari-a2ff`): merge edilmedi.** Master
-> (`aaa81d4`) yerelde alındı; çakışma `durum.md` ve `GameClock.cs` (PR'ın 100 ms kare sınırı +
-> master'ın `SimulationScale` çarpanı: önce gerçek kare sınırlanır, sonra çarpılır). Merge dala
-> push edilmedi. `dotnet test` 497/497, Unity derlemesi temiz, konsolda yalnız bilinen
-> URP/ShaderGraph hataları. 4× tarama (`play-sweep/pr33-4x.csv`): **Yumruk 144, Kalkan 144, Top
-> 139, Kılıç 143** — Top kuralın (≥143) altında. Dört hedef vaka geçti: Top 1-2 oyuncu merkeze
-> 1,35 m (temas 1,35) biter; Yumruk 1-4 hasar 193 496, Kalkan 1-4 61 168; Yumruk 2-2 kalıp
-> 2,20 sn (beklenen 2,16), toplam 2,60 sn; Kılıç 1-4 değişmedi (geçti, 2,80 m). Gövdeye girme 0
-> (3-2 `icinden_emme` 0,15–0,19 m geçiş tasarım gereği). Kalan 5 Top vakası `yerde`: 1-3, 6-3,
-> 5-8, 6-8, 7-8 geri tepme fazında ayak 0,26–0,83 m havada. **Master'da da aynı**
-> (`play-sweep/master-top-4x.csv`, Top 138/144 = bu 5 + 1-2 `konum`), yani #33 kaynaklı değil;
-> #28 geri tepmesi × #32 yer kontrolü. Kılıç 10-2 `yutan_girdap` süre 3,39/3,18 sn.
+> (`4b17de0`, #32 ayak + 4×) alındı. `GameClock`: önce gerçek kare 100 ms ile sınırlanır, sonra
+> `SimulationScale` çarpılır. 4× tarama (`play-sweep/pr33-4x.csv`): **Yumruk 144, Kalkan 144, Top
+> 139, Kılıç 143**. Dört hedef vaka geçti: Top 1-2 merkeze 1,35 m; Yumruk/Kalkan 1-4 hasar var;
+> Yumruk 2-2 kalıp 2,20 sn. Kalan 5 Top `yerde` (1-3, 6-3, 5-8, 6-8, 7-8) geri tepmede ayak
+> 0,26–0,83 m: yatay faz artık o karede zemine yapışır; hop/leap/slam/hover havada kalır, tarama
+> onları atlar. Skill kimliği yazılmadı. Kılıç 10-2 `yutan_girdap` 3,39/3,18 sn: kalıp 3,18 sn,
+> pay +0,20; aynı kalıp diğer silahlarda 3,20–3,28 ve geçer. Kılıca özel süre çarpanı yok;
+> 4× kare artığı payı 0,01 aşıyor. Eşik gevşetilmedi. `tools/AtomSim` `SkillVisualTuning`'i
+> link'liyor. `dotnet test` 498/498, AtomSim derleniyor. Unity Play bu düzeltmede yok.
 
 > **30 Eylül — PR #32 ve #29 Play testi.** **#32 merge edildi** (`6cccf68`): master alındı
 > (çakışma: `durum.md`, `PlaySweep.cs`, `ManifestationDirector.WeaponSwap.cs`,
@@ -1901,6 +1950,42 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
+- **Boss durumları (30 Eylül, PR #34).**
+  Eski `tuning.json` sürüm 0 ve hasar 0 ise açılışta slam 22 / nefes 18 yazılır.
+  Poise tavanı 100 ve sersem 1.5 sn spec'te yok (`karadul.json` sersem 0.4).
+  Element kendine buff'ları (Su regen, Hava haste, Toprak kalkan, Aydınlık arınma) boss'a
+  yazılmaz. Koruyucu tetik eşiğin altındayken bir kez öder; kalıp aynı cast'i ödemez.
+  Dev HP doluyken can oranı %30'un altına inmez; koruyucu şifayı hissetmek için Dev HP KAPALI.
+  Mana/bekleme yok. Play Sweep 2-9'u her silahta "etki yok" sayar: şifa koruyucu tetikte, tarama
+  canı %50'de başlatır (tasarım gereği kabul edildi, 30 Eylül).
+- **PR #35 skill teslimi (30 Eylül, merge yok).** Birleşik 4× taramada (her silah): 12-11 oyuncu
+  boss gövdesinde (merkeze 0,22 m, temas 1,35; `RepeatDelivered` → `PulseDelivery` mekanik etkiyi
+  oyuncu konumunda açıyor, çekiş boss'u oyuncuya getiriyor); 5-2 gövdede (0,03 m, girdap boss'u
+  oyuncunun üstüne çekiyor; Yumruk hariç 8–9 silah); 4-2 `konum` (kalıp sonu simülasyondan 1,50 m);
+  6-9 "hasar yok" (x-9 patlaması ~2,4 sn'de, tarama kaydı daha önce kapanıyor); 3-7 tek karede
+  3,00 m sıçrama (Yay/Kitap/Küre/Top/Asa/Tılsım); tek başına 1-6 `konum` 5 silahta (sim. 1,21 m);
+  Çekiç 1-9 / 5-9 hasar yok; Top 1-8 `tek_sistem`. Elle: 11-1 minyonu boss'a hiç vurmuyor ve
+  gövdede duruyor (merkeze 0,70 m, boss r 0,85) — teslim kuyruğu `SpawnActors` hedefi `null`
+  geçiyor olabilir; 1-11 ikinci nabız ilk vuruştan 0,20 sn sonra (beklenen ~0,3). Geçenler: 11-11
+  klon, 12-11 önceki skill'i tekrarlar (1-1 hasar, 11-1 minyon), 2-2/4-2 çekmez / 1-2 1,82 m çeker,
+  6-9 2,42 sn'de patlar, 6-12 dört tik, 3-10 8 m'den varış kapısında kalır. Betik hatası 0.
+  AtomSim düzeltmesi ve `PulseDelivery` kapısı geçici dalda kaldı; #35 yeniden açılırken gerekir.
+- **Tarama artıkları (30 Eylül, çözüldü, PR #33 merge).** Top 1-2, Yumruk/Kalkan 1-4, Yumruk 2-2
+  ve Top geri tepmesinde ayak havada: 4× `pr33-4x-r2` hepsi geçti. Aşağıdaki "Top geri tepmesi
+  havada", "PR #28 Top 1-2" ve "`tools/AtomSim` derlenmiyor" maddeleri artık tarihsel.
+- **Kalkan 3-6 süre kararsız (30 Eylül, Play).** Tam taramada bir kez kalıp bang'den 0,16 sn sonra
+  (pay 0,15), MCP sorgusunun editör takılmasıyla çakıştı; tek başına 3/3 geçti. Tekrarlarsa bak.
+- **PR #29 portal/sınır/takım (30 Eylül, merge yok).** Kılıç 141/144: 9-10 ışını tek karede
+  8,34 m (tarama `konum`), 2-6 kalıbı AllyDummy'yi hedefliyor (`tek_sistem`), 11-8 Kılıç başka
+  sistem 0,18 m. Sınır 1-2 ile can %15'te açılıp aynı skill'in can çalmasıyla bir karede
+  kapanıyor (%31) — tasarım kararı gerekiyor. 9-10 yer değişiminde dost Y=0'a iniyor
+  (`Placement` Y 0f).
+- **Top geri tepmesi havada (30 Eylül, kod).** 4× Top 1-3, 6-3, 5-8, 6-8, 7-8: `geri_tepme`
+  önceki sıçramanın inişini taşıyordu. Yatay faz o karede zemine yapışır; hop/leap/slam/hover
+  havada kalır. Play tekrar yok.
+- **Kılıç 10-2 süre (30 Eylül, bakıldı, kod yok).** `yutan_girdap` 0,18+3,00 = 3,18 sn. 4×
+  Kılıç 3,39 (pay 3,38); Yumruk 3,28, Kalkan/Top 3,20. Silaha özel süre yok. `pr33-4x-r2`'de
+  Kılıç 3,22 sn, geçti (sahip kararı: 0,01–0,2 sn uzama kabul).
 - **Portal tarama (30 Eylül).** 9-10 ışını işaretli kare. Vakalar arası kapı ve dost yeri sıfırlanır.
   Kalıp bitişindeki genel itme kalktı (1-3, 2-6, 8-12). Unity Play bu turda yok.
 - **Portal / Sınır / Takım (29 Eylül, `feat/portal-border-team`).** Üç etiket artık işler.

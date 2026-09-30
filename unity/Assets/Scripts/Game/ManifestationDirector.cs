@@ -537,6 +537,7 @@ namespace Dovus.Game
                 _playerStatus.ReflectBossVitals = bossVitals;
                 _playerStatus.IncomingDamageRedirect = RedirectMechanicDamage;
                 _playerStatus.DamageTaken += OnPlayerDamageTaken;
+                _playerStatus.DamageBlocked += _ => NoteShieldBlockIfGuarding();
             }
 
             _motionDriver = player.GetComponent<SkillMotionDriver>();
@@ -3089,6 +3090,8 @@ namespace Dovus.Game
 
             ApplyArmorShred(skill, bossStatus);
             ApplySlotPassiveOnHit(bossStatus);
+            if (bossStatus != null)
+                ApplyElementStatusToBoss(bossStatus.Board);
 
             if (result.Knockback && bossStatus != null && _player != null)
                 bossStatus.ApplyKnockbackFrom(_player.position);
@@ -3124,12 +3127,30 @@ namespace Dovus.Game
                     _mobilityCc?.ResolveCcDurationMs(StatusKind.Slow, 0, tuning.SlowMs) ?? tuning.SlowMs,
                     speed,
                     "passive:slow");
-            if (_slotPassives.HasAccuracyDebuff(castId))
+            float accuracy = _slotPassives.AccuracyDebuffFor(castId);
+            if (accuracy > 0f)
             {
-                double blindMs = (_mobilityCc?.ResolveCcDurationMs(StatusKind.Blind, 0, tuning.BlindMs) ?? tuning.BlindMs)
-                    + _slotPassives.AccuracyLifetimeAddSecFor(castId) * 1000.0;
-                target.Board.Apply(StatusKind.Blind, blindMs, 1f, "passive:blind");
+                double blindMs = BossStatusMath.BlindDurationMs(
+                    _mobilityCc?.ResolveCcDurationMs(StatusKind.Blind, 0, tuning.BlindMs) ?? tuning.BlindMs,
+                    _slotPassives.AccuracyLifetimeAddSecFor(castId));
+                target.Board.Apply(
+                    StatusKind.Blind,
+                    blindMs,
+                    BossStatusMath.BlindChanceFromAccuracy(accuracy),
+                    "passive:blind");
             }
+        }
+
+        /// <summary>Seçili elementin boss'a giden durumu (Ateş burn, Karanlık weaken). Süre JSON'dan.</summary>
+        void ApplyElementStatusToBoss(StatusBoard boss)
+        {
+            ElementPaintNode? paint = SelectedElementPaint;
+            if (!paint.HasValue || boss == null)
+                return;
+            ElementPaintNode node = paint.Value;
+            if (!ElementBossStatusRules.TryForBoss(node.Status, node.StatusEffect, node.StatusDurationSec, out ElementBossStatus apply))
+                return;
+            boss.Apply(apply.Kind, apply.DurationMs, apply.Magnitude, "element:" + node.Id);
         }
 
         void ApplySlotPassiveHitExtras(float dealt)
@@ -3373,6 +3394,8 @@ namespace Dovus.Game
 
             DamageOutcome dealt = ComputeOutgoingHit(
                 closing, skill, isBasicStrike, slashCommitMult, effectScale, chainBonusOverride);
+            if (dealt.Poise > 0f)
+                _bossDirector?.ApplyPoiseDamage(dealt.Poise);
             float damage = dealt.Amount;
             bool isCrit = dealt.WasCrit;
 

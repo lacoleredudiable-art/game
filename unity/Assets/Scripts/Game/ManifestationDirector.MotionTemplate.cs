@@ -76,12 +76,9 @@ namespace Dovus.Game
 
             if (ShouldCloseToTarget(skill) && _player != null && _boss != null)
             {
-                float edge = JsonEdgeReachM(skill);
-                edge = Math.Max(edge, MotionCastReach.EdgeReachM(shaped));
                 float center = FlatDistance(_player.position, _boss.transform.position);
-                float meters = CastApproach.Meters(
-                    center, PlayerBodyRadiusM(), BossBodyRadius(), edge,
-                    MotionCastReach.ClosingApproachM(shaped));
+                float meters = MotionCastReach.ApproachMeters(
+                    center, PlayerBodyRadiusM(), BossBodyRadius(), JsonEdgeReachM(skill), shaped);
                 MotionTemplate closed = CastApproach.Prepend(shaped, meters);
                 if (!ReferenceEquals(closed, shaped))
                 {
@@ -91,8 +88,8 @@ namespace Dovus.Game
             }
 
             WeaponCombatProfile profile = EquippedProfile;
-            if (profile != null && profile.HitShape == "ballistic" && profile.RecoilM > 0.01f
-                && skill.BaseDamage > 0.01f)
+            if (profile != null && CannonRecoilMotion.Applies(
+                    profile.HitShape, profile.RecoilM, skill.BaseDamage, skill.AdjectiveId, shaped))
             {
                 MotionTemplate recoiled = CannonRecoilMotion.Append(shaped, profile.RecoilM);
                 if (!ReferenceEquals(recoiled, shaped))
@@ -302,7 +299,9 @@ namespace Dovus.Game
             if (geometry && _templateSkill.BaseDamage <= 0.01f)
                 ApplyDrainDamage(hit.Share);
 
-            if (friendly && IsHealSkill(_templateSkill))
+            // 2-9 şifası koruyucu tetikte bir kez iner; kalıp vuruşu aynı cast'i ödemez.
+            if (friendly && IsHealSkill(_templateSkill)
+                && GuardTriggerDelivery.AllowImmediate(LastMechanicPlan, "can"))
             {
                 if (DrainNumbers.TryShare(LastMechanicPlan, hit.Share, out _, out float drainHeal) && drainHeal > 0.5f)
                     ApplyClosingHealAmount(_templateSkill, Mathf.RoundToInt(drainHeal), null, 0f);
@@ -319,7 +318,9 @@ namespace Dovus.Game
             bool selfPulse = hit.Anchor is "self" or "ring";
             if ((reached || selfPulse || arc) && !_templateStatusSent)
             {
-                ApplyClosingStatuses(_templatePending, _templateSkill, bossReached: !friendly && (geometry || arc));
+                // 4-9 kalkanı da tetiğin; StatusApplicator aynı cast'te kalkan basmasın.
+                if (GuardTriggerDelivery.AllowImmediate(LastMechanicPlan, "kalkan"))
+                    ApplyClosingStatuses(_templatePending, _templateSkill, bossReached: !friendly && (geometry || arc));
                 if (!friendly)
                 {
                     ApplyMechanicHitEffects(

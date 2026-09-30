@@ -17,6 +17,7 @@ namespace Dovus.Game
         [Serializable]
         sealed class SaveData
         {
+            public int version;
             public CombatTuning combat = new CombatTuning();
             public PrototypeTuning.PanelFields prototype = new PrototypeTuning.PanelFields();
         }
@@ -38,7 +39,12 @@ namespace Dovus.Game
 
         public string ToJson()
         {
-            var data = new SaveData { combat = Combat, prototype = Prototype.ToPanelFields() };
+            var data = new SaveData
+            {
+                version = BossDamageMigration.Version,
+                combat = Combat,
+                prototype = Prototype.ToPanelFields()
+            };
             return JsonUtility.ToJson(data, true);
         }
 
@@ -79,8 +85,11 @@ namespace Dovus.Game
 
                 if (data.combat != null)
                     Combat.CopyFrom(data.combat);
+                bool rewrite = BossDamageMigration.Apply(Combat.Boss, data.version);
                 if (data.prototype != null)
                     Prototype.ApplyPanelFields(data.prototype);
+                if (rewrite)
+                    Save();
                 return true;
             }
             catch (Exception e)

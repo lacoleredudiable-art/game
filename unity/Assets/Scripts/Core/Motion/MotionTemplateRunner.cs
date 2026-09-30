@@ -420,6 +420,7 @@ namespace Dovus.Core.Motion
                     _x = _phaseX - fx * (u * phase.DistanceM);
                     _z = _phaseZ - fz * (u * phase.DistanceM);
                     _y = _groundY;
+                    KeepOutside(target, ref _x, ref _z);
                     break;
                 case "sidestep":
                     _x = _phaseX + rx * side * u * phase.DistanceM + fx * u * phase.ForwardM;

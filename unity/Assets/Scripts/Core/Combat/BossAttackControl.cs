@@ -65,5 +65,31 @@ namespace Dovus.Core.Combat
                 speed = 1f;
             return new BossAttackGate(true, false, speed);
         }
+
+        /// <summary>
+        /// Sersemlik her saldırıyı keser. Silence özel/cast (FireCone) başlatmayı ve
+        /// hazırlığı keser. Disarm temel/yakın (Slam) başlatmayı ve hazırlığı keser.
+        /// Süre tahtadaki durumdan gelir; bu kapı yalnız o anı okur.
+        /// </summary>
+        public static BossAttackGate Gate(
+            StatusBoard board,
+            BossAttackMotion motion,
+            BossAttackKind kind,
+            bool staggered)
+        {
+            if (staggered)
+                return new BossAttackGate(false, true, 1f);
+
+            BossAttackGate gate = Evaluate(board, motion);
+            if (!gate.CanStart || board == null)
+                return gate;
+
+            bool special = kind == BossAttackKind.FireCone;
+            if (special && board.HasEffective(StatusKind.Silence))
+                return new BossAttackGate(false, true, gate.PhaseSpeed);
+            if (!special && board.HasDisarm)
+                return new BossAttackGate(false, true, gate.PhaseSpeed);
+            return gate;
+        }
     }
 }

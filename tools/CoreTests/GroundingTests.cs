@@ -44,6 +44,73 @@ public class GroundingTests
     }
 
     [Test]
+    public void Recoil_SnapsToGround_WhileLaunchPhasesStayAirborne()
+    {
+        var catalog = MotionTemplateCatalog.FromJson(File.ReadAllText(JsonPath()));
+        string[] launched = { "1-3", "6-3", "5-8", "6-8", "7-8", "8-8" };
+        for (int i = 0; i < launched.Length; i++)
+        {
+            Assert.That(catalog.TryPlay(launched[i], out MotionTemplate template), Is.True, launched[i]);
+            bool anyAir = false;
+            for (int p = 0; p < template.Phases.Count; p++)
+            {
+                if (template.Phases[p].Airborne)
+                    anyAir = true;
+            }
+            Assert.That(anyAir, Is.True, launched[i]);
+            MotionTemplate recoiled = CannonRecoilMotion.Append(template, 0.5f);
+            MotionPhase last = recoiled.Phases[recoiled.Phases.Count - 1];
+            Assert.That(last.Name, Is.EqualTo(CannonRecoilMotion.PhaseName), launched[i]);
+            Assert.That(last.Motion, Is.EqualTo("retreat"), launched[i]);
+            Assert.That(last.Airborne, Is.False, launched[i]);
+            Assert.That(last.HeightAboveGround(0.5f), Is.EqualTo(0f).Within(0.0001f), launched[i]);
+        }
+
+        var g = new Grounding();
+        g.Plant(1f);
+        g.ApplyMotion(true, 1f + 0.83f);
+        Assert.That(g.RootY, Is.EqualTo(1.83f).Within(0.001f));
+        Assert.That(g.Holding, Is.True);
+
+        g.ApplyMotion(false, 1f);
+        Assert.That(g.RootY, Is.EqualTo(1f).Within(0.001f));
+        Assert.That(g.Landing, Is.False);
+        Assert.That(g.OnGround, Is.True);
+
+        var runner = new MotionTemplateRunner();
+        runner.Begin(
+            new MotionTemplate("sek", "sek", 1, "test", true, new[]
+            {
+                Phase("sag", "hop", 0.28f, height: 0.8f, distance: 1f),
+                Phase("geri_tepme", "retreat", 0.12f, distance: 0.5f)
+            }),
+            0f, 1f, -2f, 0f, 1f);
+        var body = new Grounding();
+        body.Plant(1f);
+        bool sawAir = false;
+        bool sawRecoil = false;
+        var boss = new MotionTarget(true, 0f, 0f, 0.85f);
+        for (int i = 0; i < 40 && !runner.Finished; i++)
+        {
+            MotionTick tick = runner.Tick(1f / 60f, boss, default);
+            body.ApplyMotion(tick.Airborne, tick.Y);
+            if (tick.Airborne)
+            {
+                sawAir = true;
+                continue;
+            }
+
+            sawRecoil = true;
+            Assert.That(tick.Y, Is.EqualTo(1f).Within(0.02f));
+            Assert.That(body.RootY, Is.EqualTo(1f).Within(0.001f));
+            Assert.That(body.OnGround, Is.True);
+        }
+
+        Assert.That(sawAir, Is.True);
+        Assert.That(sawRecoil, Is.True);
+    }
+
+    [Test]
     public void Pull_KeepsThePlantedRoot_InsteadOfSinkingToZero()
     {
         var runner = new MotionTemplateRunner();

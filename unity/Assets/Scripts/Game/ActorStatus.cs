@@ -25,6 +25,9 @@ namespace Dovus.Game
         /// <summary>Kalkan sonrası gerçek gelen hasar; radial kesme ve poise için.</summary>
         public event System.Action<float> DamageTaken;
 
+        /// <summary>Kalkan vuruşu yuttu (can düşmese de). Karşı saldırı penceresi bunu dinler.</summary>
+        public event System.Action<float> DamageBlocked;
+
         /// <summary>
         /// Can bağı / yönlendirme adaptörü. Gelen miktarı takım arkadaşına veya düşmana
         /// paylaştırır ve oyuncuda kalacak miktarı döndürür.
@@ -202,7 +205,7 @@ namespace Dovus.Game
                 Armor = Armor.Effective(now),
                 DamageTakenFactor = taken,
                 Shield = Board.ShieldRemaining + shortShield,
-                Invulnerable = Board.IsInvulnerable || Board.IsStealthed,
+                Invulnerable = BossStatusMath.DamageInvulnerable(Board.IsInvulnerable),
                 Poise = raw,
                 ThreatMultiplier = PassiveDirector?.ThreatMultiplier ?? 1f,
                 ScaleMagnitudes = true
@@ -220,16 +223,14 @@ namespace Dovus.Game
                     shortHost.Shield.Consume(fromShort, now);
             }
             float afterShield = outcome.Amount;
+            if (outcome.ShieldAbsorbed > 0f)
+                DamageBlocked?.Invoke(outcome.ShieldAbsorbed);
+            float reflectBase = BossStatusMath.ReflectBase(afterShield, outcome.ShieldAbsorbed, scaled: true);
+            TryReflect(reflectBase);
             if (afterShield <= 0f) return;
             if (IncomingDamageRedirect != null)
                 afterShield = Mathf.Max(0f, IncomingDamageRedirect(afterShield));
             if (afterShield <= 0f) return;
-
-            float reflect = (PassiveDirector?.ReflectRatioAdd ?? 0f) + ActiveSkillReflectRatio;
-            reflect += SlotPassiveDirector?.ReflectRatioAdd ?? 0f;
-            BossVitals reflectTarget = ReflectBossVitals ?? (_playerVitals != null ? null : _bossVitals);
-            if (reflect > 0f && _playerVitals != null && reflectTarget != null && !reflectTarget.IsDown)
-                reflectTarget.ApplyDamage(afterShield * reflect);
 
             if (_bossVitals != null)
                 _bossVitals.ApplyDamage(afterShield);
@@ -241,6 +242,18 @@ namespace Dovus.Game
                 else if (afterShield > 0f)
                     SpaceLinkBreak?.Invoke(); // hasar alındı → hat kopar (ölüm şart değil)
             }
+        }
+
+        void TryReflect(float reflectBase)
+        {
+            if (reflectBase <= 0f || _playerVitals == null)
+                return;
+            float reflect = (PassiveDirector?.ReflectRatioAdd ?? 0f) + ActiveSkillReflectRatio;
+            reflect += SlotPassiveDirector?.ReflectRatioAdd ?? 0f;
+            BossVitals reflectTarget = ReflectBossVitals;
+            if (reflect <= 0f || reflectTarget == null || reflectTarget.IsDown)
+                return;
+            reflectTarget.ApplyDamage(reflectBase * reflect);
         }
 
         public void ApplyHeal(float amount)

@@ -85,7 +85,10 @@ public class CombatTuningDefaultsTests
             Assert.That(t.Boss.GenisWindupMs, Is.EqualTo(640));
             Assert.That(t.Boss.GenisRadiusM, Is.EqualTo(8.0f));
             Assert.That(t.Boss.MaxSameVariantStreak, Is.EqualTo(2));
-            Assert.That(t.Boss.Damage, Is.EqualTo(0));
+            Assert.That(t.Boss.Damage, Is.EqualTo(22));
+            Assert.That(t.Boss.FireConeDamage, Is.EqualTo(18));
+            Assert.That(t.Boss.PoiseMax, Is.EqualTo(100f));
+            Assert.That(t.Boss.StaggerDurationSec, Is.EqualTo(1.5f));
             Assert.That(t.Boss.IdleMinMs, Is.EqualTo(700));
             Assert.That(t.Boss.IdleMaxMs, Is.EqualTo(1500));
             Assert.That(t.Boss.ApproachSpeedMps, Is.EqualTo(2.2f));

@@ -26,6 +26,7 @@ namespace Dovus.Game
         PrototypeTuning _colors;
         BossReactor _reactor;
         BossAttack _attack;
+        BossPoise _poise;
         ExchangeResolver _resolver;
         DodgeState _dodge;
         SentenceEngine _engine;
@@ -64,6 +65,8 @@ namespace Dovus.Game
         public event System.Action<int> BossPhaseChanged;
 
         public BossVitals Vitals => _bossVitals;
+        public float PoiseRatio => _poise != null ? _poise.Ratio : 1f;
+        public bool IsPoiseStaggered => _poise != null && _poise.IsStaggered;
 
         /// <summary>Windup başladı (ses/sunum).</summary>
         public event System.Action<BossAttackKind> AttackWindupStarted;
@@ -122,6 +125,7 @@ namespace Dovus.Game
             _colors = colors;
             _reactor = reactor;
             _attack = new BossAttack(combat.Boss);
+            _poise = new BossPoise(combat.Boss.PoiseMax);
             _resolver = new ExchangeResolver(combat);
             _dodge = input.Dodge;
             _engine = input.Engine;
@@ -207,6 +211,7 @@ namespace Dovus.Game
         {
             bool wasPhase2 = _phase2Announced;
             _phase2Announced = false;
+            _poise?.Reset();
             _visual?.NotifyRevived();
             if (wasPhase2)
                 BossPhaseChanged?.Invoke(1);
@@ -227,6 +232,29 @@ namespace Dovus.Game
             return true;
         }
 
+        /// <summary>Oyuncu vuruşunun poise hasarı. 0'da sersemlik; süre BossTuning.StaggerDurationSec.</summary>
+        public bool ApplyPoiseDamage(float amount)
+        {
+            if (_poise == null || _combat == null || amount <= 0f)
+                return false;
+            if (_bossVitals != null && _bossVitals.IsDown)
+                return false;
+            bool broke = _poise.ApplyHit(amount, _combat.Boss.StaggerDurationSec);
+            if (broke)
+                BeginPoiseStagger();
+            return broke;
+        }
+
+        void BeginPoiseStagger()
+        {
+            _telegraph?.Hide();
+            _feel?.ClearThreat();
+            _phase = Phase.Idle;
+            _strikeResolved = true;
+            _visual?.SetSpeed(0f);
+            _visual?.PlayStagger();
+        }
+
         void Update()
         {
             EnsureRuntime();
@@ -235,6 +263,7 @@ namespace Dovus.Game
 
             double worldMs = _clock.Director.WorldTimeMs;
             float dtSec = (float)(_clock.WorldDeltaMs / 1000.0);
+            _poise?.Tick(dtSec);
             HandlePlayerDown(worldMs);
 
             // Boss ölümünde çökme pozu sürerken saldırı yok (§11 noktalama).
@@ -246,9 +275,20 @@ namespace Dovus.Game
                 return;
             }
 
-            if (_phase == Phase.Windup && _bossStatus != null)
+            if (_poise != null && _poise.IsStaggered)
             {
-                BossAttackGate gate = BossAttackControl.Evaluate(_bossStatus.Board, CurrentMotion());
+                _telegraph?.Hide();
+                _feel?.ClearThreat();
+                if (_phase != Phase.Idle)
+                    _phase = Phase.Idle;
+                _visual?.SetSpeed(0f);
+                return;
+            }
+
+            if (_phase == Phase.Windup && _bossStatus != null && _attack != null)
+            {
+                BossAttackGate gate = BossAttackControl.Gate(
+                    _bossStatus.Board, CurrentMotion(), _attack.Kind, staggered: false);
                 if (gate.CancelWindup)
                 {
                     _telegraph?.Hide();
@@ -256,24 +296,6 @@ namespace Dovus.Game
                     EnterIdle(worldMs);
                     return;
                 }
-            }
-
-            // Oyuncu gizlilikte: boss yaklaşmaz / vurmaz (telegraph iptal).
-            if (_playerStatus != null && _playerStatus.Board.IsStealthed)
-            {
-                if (_phase is Phase.Windup or Phase.Active)
-                {
-                    _telegraph?.Hide();
-                    _feel?.ClearThreat();
-                    EnterIdle(worldMs);
-                }
-                else
-                {
-                    _telegraph?.Hide();
-                    _feel?.ClearThreat();
-                    _visual?.SetSpeed(0f);
-                }
-                return;
             }
 
             switch (_phase)
@@ -350,9 +372,11 @@ namespace Dovus.Game
                     && !BossAttackControl.Evaluate(_bossStatus.Board, BossAttackMotion.Standing).CanStart)
                     return;
                 // Saldırı (ve Slam ise varyantı) telegraf başlamadan seçilir — tell windup'ta okunur (§11).
-                SelectNextAttack();
-                if (_bossStatus != null
-                    && !BossAttackControl.Evaluate(_bossStatus.Board, CurrentMotion()).CanStart)
+                if (!SelectNextAttack())
+                    return;
+                if (_bossStatus != null && _attack != null
+                    && !BossAttackControl.Gate(
+                        _bossStatus.Board, CurrentMotion(), _attack.Kind, staggered: false).CanStart)
                     return;
                 EnterWindup(worldMs);
             }
@@ -475,10 +499,10 @@ namespace Dovus.Game
         /// üç ritminden biri. İkisi de "aynısı üst üste MaxSame...Streak'i geçemez" desenini
         /// paylaşır (§11/T13 dersi).
         /// </summary>
-        void SelectNextAttack()
+        bool SelectNextAttack()
         {
             if (_attack == null || _combat == null)
-                return;
+                return false;
 
             // karadul.json faz tasarımı: Faz 1 "Uyanış" (100-50% can) yalnızca slam; Faz 2
             // "Öfke" (50-0%) fire_cone'u da açar.
@@ -487,13 +511,23 @@ namespace Dovus.Game
             BossAttackKind kind = enraged
                 ? BossAttackKindPicker.Pick(_lastAttackKind, _attackKindStreak, _combat.Boss.MaxSameAttackKindStreak, _rng)
                 : BossAttackKind.Slam;
+            if (!AttackKindAllowed(kind))
+            {
+                BossAttackKind alt = kind == BossAttackKind.FireCone
+                    ? BossAttackKind.Slam
+                    : BossAttackKind.FireCone;
+                if (enraged && AttackKindAllowed(alt))
+                    kind = alt;
+                else
+                    return false;
+            }
             _attackKindStreak = BossAttackKindPicker.NextStreak(_lastAttackKind, _attackKindStreak, kind);
             _lastAttackKind = kind;
 
             if (kind == BossAttackKind.FireCone)
             {
                 _attack.ApplyFireCone();
-                return;
+                return true;
             }
 
             SlamVariant picked = SlamVariantPicker.Pick(
@@ -504,12 +538,31 @@ namespace Dovus.Game
             _variantStreak = SlamVariantPicker.NextStreak(_lastVariant, _variantStreak, picked);
             _lastVariant = picked;
             _attack.ApplyVariant(picked);
+            return true;
         }
+
+        bool AttackKindAllowed(BossAttackKind kind)
+        {
+            if (_bossStatus == null)
+                return true;
+            return BossAttackControl.Gate(
+                _bossStatus.Board,
+                BossAttackControl.MotionOf(kind),
+                kind,
+                staggered: false).CanStart;
+        }
+
+        bool PlayerStealthed => _playerStatus != null && _playerStatus.Board.IsStealthed;
 
         void Approach(float dtSec)
         {
             if (_player == null || dtSec <= 0f)
                 return;
+            if (PlayerStealthed)
+            {
+                _visual?.SetSpeed(0f);
+                return;
+            }
 
             float speedMult = 1f;
             if (_bossStatus != null)
@@ -551,7 +604,7 @@ namespace Dovus.Game
         /// <summary>Yaklaşırken dönüş hız sınırlı; windup başındaki kilitleme (FacePlayer) anlık kalır.</summary>
         void TurnTowardPlayer(float dtSec)
         {
-            if (_player == null)
+            if (_player == null || PlayerStealthed)
                 return;
             Vector3 to = _player.position - _reactor.Home;
             to.y = 0f;
@@ -564,7 +617,7 @@ namespace Dovus.Game
 
         void FacePlayer()
         {
-            if (_player == null)
+            if (_player == null || PlayerStealthed)
                 return;
             Vector3 to = _player.position - _reactor.Home;
             to.y = 0f;
@@ -596,6 +649,17 @@ namespace Dovus.Game
                 }
             }
 
+            bool stealthed = PlayerStealthed;
+            bool inVolume = _attack.IsInEffectVolume(
+                BossStrikeShape.DistanceForVolume(dist, PortalBorderTeamHooks.BossStrikeScale),
+                angleDeg,
+                _attack.ArcHalfAngleDeg);
+            if (!BossStatusMath.VolumeHits(stealthed, inVolume, _attack.ArcHalfAngleDeg))
+                inVolume = false;
+            else if (_bossStatus != null
+                && BossStatusMath.Misses(_bossStatus.Board, (float)_rng.NextDouble()))
+                inVolume = false;
+
             int? press = _dodge?.PressTimeMs;
             // Eski basış bu telegrafa ait değil → "geç kaldın". Eşik basma anı DEĞİL, i-frame
             // sonu: telegraf başlarken dokunulmazlık hâlâ açıksa basış bu saldırıya aittir ve
@@ -608,10 +672,7 @@ namespace Dovus.Game
                 TelegraphStartMs = _telegraphStartMs,
                 StrikeTimeMs = _strikeWorldMs > 0 ? _strikeWorldMs : _attack.StrikeTimeMs(_telegraphStartMs),
                 DodgePressMs = press,
-                InEffectVolume = _attack.IsInEffectVolume(
-                    BossStrikeShape.DistanceForVolume(dist, PortalBorderTeamHooks.BossStrikeScale),
-                    angleDeg,
-                    _attack.ArcHalfAngleDeg)
+                InEffectVolume = inVolume
             };
 
             ExchangeResult result = _resolver.Resolve(input);
@@ -620,7 +681,7 @@ namespace Dovus.Game
             if (result.Outcome == ExchangeOutcome.Hit)
             {
                 _engine?.Abort();
-                float raw = _attack.Damage;
+                float raw = BossStatusMath.OutgoingDamage(_attack.Damage, _bossStatus != null ? _bossStatus.Board : null);
                 // Shield / stasis (skill i-frame) ActorStatus üzerinden — düz vitals bypass yok.
                 if (_playerStatus != null)
                     _playerStatus.ApplyDamage(raw);

@@ -237,25 +237,13 @@ namespace Dovus.Game
         }
 
         /// <summary>
-        /// Havadaki faz eğriyi yazar. Yer fazı ya da biten hover/channel kısa inişle zemine döner;
-        /// eğri zaten zemindeyse zıplama olmaz.
+        /// Havadaki faz eğriyi yazar. Geri tepme ve diğer yatay fazlar o karede zemine yapışır;
+        /// önceki sıçramanın inişi geri tepmeyi havada bırakmaz.
         /// </summary>
         void ApplyVertical(in MotionTick tick)
         {
             EnsureGrounding();
-            if (tick.Airborne)
-            {
-                _grounding.Follow(tick.Y);
-            }
-            else if (Mathf.Abs(tick.Y - _grounding.PlantedRootY) > 0.02f)
-            {
-                _grounding.Follow(tick.Y);
-                _grounding.Release();
-            }
-            else
-            {
-                _grounding.Release();
-            }
+            _grounding.ApplyMotion(tick.Airborne, tick.Y);
 
             Vector3 p = transform.position;
             p.y = _grounding.RootY;
