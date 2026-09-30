@@ -1,8 +1,3 @@
-# Play taraması kilic — 138/144 geçti (Kılıç: 138/144)
-1-2 Emici Vuruş [Kılıç] KALDI: konum(ön→yerinde) — vuruş 3: 0,44s@boss1,64m/oyuncu1,02m 0,56s@boss1,15m/oyuncu1,02m 0,69s@boss0,60m/oyuncu1,02m; kalıp sonu: merkeze 1,49 m, başlangıçtan 0,00 m, kalıp simülasyonundan 1,50 m, boss 1,51 m kaydı
-4-2 Emici Kalkan [Kılıç] KALDI: konum(ön→yerinde) — vuruş 1: 0,53s@boss1,25m/oyuncu1,28m; kalıp sonu: merkeze 2,24 m, başlangıçtan 0,00 m, kalıp simülasyonundan 1,50 m, boss 0,76 m kaydı
-5-2 Emici Patlama [Kılıç] KALDI: konum(yerinde→arka), sıçrama — vuruş 3: 1,04s@boss0,00m/oyuncu1,50m 1,54s@boss0,00m/oyuncu1,50m 1,59s@boss0,00m/oyuncu1,50m; kalıp sonu: merkeze 1,50 m, başlangıçtan 2,00 m, kalıp simülasyonundan 2,00 m, boss 2,50 m kaydı; tek karede 2,94 m sıçrama (t=1,20, faz cek)
-10-2 Emici Yansı [Kılıç] KALDI: konum(yerinde→geri), sıçrama — hasarsız skill (base_damage 0): etki hareketin kendisi; vuruş 4: 1,33s@boss0,88m/oyuncu2,38m 2,08s@boss0,88m/oyuncu2,38m 2,84s@boss0,88m/oyuncu2,38m 3,59s@boss0,88m/oyuncu2,38m; kalıp sonu: merkeze 1,50 m, başlangıçtan 1,37 m, kalıp simülasyonundan 1,37 m, boss 2,87 m kaydı; tek karede 2,93 m sıçrama (t=1,35, faz yut)
-11-2 Emici Çağrı [Kılıç] KALDI: konum(yerinde→geri), sıçrama — hasarsız skill (base_damage 0): etki hareketin kendisi; vuruş 6: 0,57s@boss0,20m/oyuncu2,58m 1,58s@boss0,00m/oyuncu1,50m 2,59s@boss0,00m/oyuncu1,50m 3,59s@boss0,00m/oyuncu1,50m 4,59s@boss0,00m/oyuncu1,50m 5,59s@boss0,00m/oyuncu1,50m; kalıp sonu: merkeze 1,50 m, başlangıçtan 1,39 m, kalıp simülasyonundan 1,39 m, boss 3,11 m kaydı; tek karede 2,94 m sıçrama (t=2,25, faz em)
-12-2 Emici Zaman [Kılıç] KALDI: konum(yerinde→geri) — vuruş 3: 1,09s@boss0,00m/oyuncu1,50m 1,59s@boss0,00m/oyuncu1,50m 1,64s@boss0,00m/oyuncu1,50m; kalıp sonu: merkeze 1,50 m, başlangıçtan 0,92 m, kalıp simülasyonundan 0,92 m, boss 2,42 m kaydı
+# Play taraması kilic — 143/144 geçti (Kılıç: 143/144)
+3-6 Bağlayıcı Adım [Kılıç] KALDI: sıçrama — vuruş 1: 1,03s@boss0,00m/oyuncu1,50m; kalıp sonu: merkeze 1,50 m, başlangıçtan 4,50 m, kalıp simülasyonundan 0,00 m; tek karede 0,73 m sıçrama (t=1,01, faz as)
 

@@ -13,8 +13,26 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (PR #30 Play düzeltmeleri, kod) ·
-**Dal:** `feat/damage-armor` · **Sıradaki:** bu düzeltmelerin Unity Play'i (PR #30 açık, merge yok)
+**Son güncelleme:** 30 Eylül 2026 (PR #30 ikinci Play testi) ·
+**Dal:** `feat/damage-armor` · **Sıradaki:** 3-6 `as` fazı tek kare sıçrama kararı (PR #27/#30 açık, merge yok)
+
+> **30 Eylül — PR #30 ikinci Play testi: Kılıç 143/144, Asa 143/144. Merge edilmedi.**
+> `dotnet test` 434/434, Unity derlemesi temiz; konsolda yalnız bilinen URP/ShaderGraph paket
+> hataları. Oyuncu hiçbir kombo sonunda boss içinde değil. Tek hata iki silahta da **3-6**:
+> `as` fazında tek karede 0,73 m sıçrama (araç eşiği 0,6 m). Yay 19,2 m/s, 60 FPS'te kare
+> başı 0,32 m; 0,73 m ≈ 38 ms'lik bir kare. İlk Kılıç koşusunda 3-6 geçti, 1-6 (yavaş
+> editör karesi) kaldı; 3×(3-6 Asa + 1-6 Kılıç) mini koşu 6/6 geçti. Yani takılan karede
+> çıkıyor ama iki tam koşuda aynı yerde tekrarladı; 30 FPS'te bu yay kare başı ~0,64 m olur.
+> Kural "tek kare sıçrama yok" dediği için merge yok — karar sahibinde (eşik mi, yay hızı mı).
+> 1-2, 4-2, 5-2, 10-2, 11-2, 12-2 iki silahta "yerinde", başlangıçtan 0,00 m, sıçrama yok;
+> 3-2 arkaya iniyor, 6-2 geri. **Elle:** boss'a doğru dodge 1,5/1,8/2,0/2,2 m'den hep yakın
+> yüzde 1,50 m'de duruyor (temas 1,35); en büyük kare adımı 0,61 m @17 ms — açık alandaki
+> normal dodge adımı 0,62–0,66 m, fazladan atlama yok. Boss zırhı 100. Düz vuruş 23,8–25,8K.
+> Skill: 1-1 205–221K, 1-9 361–371K ve 5-9 251–269K (ikisi de `zirh_yoksay`, ×2 zırhsız →
+> bant üstü), kritik 5-9 394K. 7-6: 0,6 sn'de zırh 100→70, düz vuruş ~24,7K→28,6K (+%16).
+> 7-9: 2,27 sn'de 100→50, düz vuruş →32,7K (+%32), 1-1 ~213K→292K (+%37). Zafiyet
+> skill'inden hemen sonraki ilk düz vuruş 0 hasar verdi (ok=True), ikincisi normal.
+> Bu makinede editör boşta kalınca kareler yavaşlıyor; tarama sırasında sistem uyanık tutuldu.
 
 > **30 Eylül — Play kalanları, kod.** Dodge boss'a doğru atılınca yakın yüzde durur
 > (`DodgeEdge.StopBeforeCrossing`); uzak yüze ışınlanmaz. Atış, tutma ve dönüş fazları
@@ -1716,8 +1734,10 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   Boss canı 88 milyon; 150–250 milyon için `max_hp` sonra ayarlanır. Ayar paneli sıfırlayınca
   can 22'ye dönebilir (ölçek bağlama yalnız açılışta). Geciken patlama kalkanı vuruş
   hesaplanırken yer. Zafiyet artık yalnız zırh puanını düşürür (`armor_break` ×1,2 binmez).
-  Play'deki tek kare sıçrama, tarama beklentisi, düz vuruş ve zırh kodda düzeltildi;
-  bu tur Unity Play'de doğrulanmadı.
+  Play'deki tek kare sıçrama, tarama beklentisi, düz vuruş ve zırh 30 Eylül ikinci testte
+  doğrulandı. Kalan: 3-6 `as` yayı 19,2 m/s — takılan karede (≥31 ms) 0,6 m eşiğini aşıyor
+  (iki silahta 0,73 m); 1-9/5-9 zırh yok saydığı için 360K/260K (150–250K bandı üstü);
+  Zafiyet skill'inden hemen sonraki ilk düz vuruş 0 hasar.
 - **Görsel (29 Eylül, duruyor).** Hitbox VFX yer tutucu küre 1-5 dönüşünü kapatır; 12-7'de kum saati yok.
   2-2 akış çizgisi hâlâ oyuncu→dost, kırmızı değil (hasar yolu ayrı bağlandı).
   Bağ/hacim (`_mechanicLinks`) status temizliğinden sonra da Root/Slow uygulayabiliyor.
