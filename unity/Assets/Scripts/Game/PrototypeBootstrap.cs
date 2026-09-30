@@ -108,6 +108,7 @@ namespace Dovus.Game
                 out _);
             var allyHitCollider = ally.AddComponent<CapsuleCollider>();
             allyHitCollider.isTrigger = true;
+            ally.AddComponent<ActorGrounding>();
             var allyDummy = ally.AddComponent<AllyDummy>();
             int playerHp = ScaledPlayerHp();
             allyDummy.Bind(playerHp, startRatio: 0.5f);
@@ -177,7 +178,9 @@ namespace Dovus.Game
             player.AddComponent<PlayerDodgeRig>();
             player.AddComponent<SkillMotionDriver>();
             player.AddComponent<MotionTemplateBody>();
+            player.AddComponent<ActorGrounding>();
 
+            boss.AddComponent<ActorGrounding>();
             var reactor = boss.AddComponent<BossReactor>();
             reactor.Tuning = _tuning;
             reactor.BodyRadiusM = BossRadiusM;

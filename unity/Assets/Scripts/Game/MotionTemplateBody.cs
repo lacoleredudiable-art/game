@@ -1,5 +1,6 @@
 using System;
 using Dovus.Core.Motion;
+using Dovus.Core.Status;
 using UnityEngine;
 
 namespace Dovus.Game
@@ -22,6 +23,8 @@ namespace Dovus.Game
         Action<MotionHit> _onHit;
         MotionAnimTable _anims = MotionAnimTable.BuiltIn;
         ActorVisual _visual;
+        ActorGrounding _grounding;
+        ActorStatus _status;
         KinematicMotor _motor;
         string _weaponKey = string.Empty;
         int _verbId;
@@ -66,7 +69,9 @@ namespace Dovus.Game
                 f = Vector3.forward;
             if (bodyRadiusM > 0f)
                 _body = bodyRadiusM;
-            _runner.Begin(template, p.x, p.y, p.z, f.x, f.z, bodyRadiusM, stopGapM);
+            EnsureGrounding();
+            // Zemin, o anki (belki havada kalmış) kök değil; bir kez çakılan yükseklik.
+            _runner.Begin(template, p.x, _grounding.PlantedRootY, p.z, f.x, f.z, bodyRadiusM, stopGapM);
             _target = target;
             _held = held;
             _onHit = onHit;
@@ -74,7 +79,21 @@ namespace Dovus.Game
             _tickedThisFrame = false;
         }
 
-        public void Stop() => _playing = false;
+        public void Stop() => CancelToGround();
+
+        /// <summary>Dodge, silah değişimi, sersemletme, ölüm: eğriyi bırak, kısa inişle zemine dön.</summary>
+        public void CancelToGround()
+        {
+            _playing = false;
+            EnsureGrounding();
+            _grounding.Release();
+            SkillMotionDriver driver = GetComponent<SkillMotionDriver>();
+            if (driver != null && driver.IsDisplacing)
+                driver.Stop();
+            if (_visual == null)
+                _visual = GetComponent<ActorVisual>();
+            _visual?.EndMotionAnim();
+        }
 
         void Update()
         {
@@ -98,14 +117,26 @@ namespace Dovus.Game
                 _dodge = GetComponent<DodgeMotion>();
             if (_vitals == null)
                 _vitals = GetComponent<PlayerVitals>();
+            if (_status == null)
+                _status = GetComponent<ActorStatus>();
+            bool stunned = _status != null
+                && (_status.Board.Has(StatusKind.Stun) || _status.Board.Has(StatusKind.Fear));
             if (_dodge != null && _dodge.IsDisplacing)
             {
-                _playing = false;
+                if (_playing)
+                    CancelToGround();
                 return;
             }
             if (_vitals != null && _vitals.IsDown)
             {
-                _playing = false;
+                if (_playing)
+                    CancelToGround();
+                return;
+            }
+            if (stunned)
+            {
+                if (_playing)
+                    CancelToGround();
                 return;
             }
 
@@ -117,9 +148,9 @@ namespace Dovus.Game
             bool held = _held != null && _held();
             Vector3 stick = WorldStick();
             MotionTick tick = _runner.Tick(dt, target, new MotionStick(held, stick.x, stick.z));
-            Vector3 pos = ArenaClamp.XZ(new Vector3(tick.X, tick.Y, tick.Z), _arena, _body);
-            pos.y = tick.Y;
+            Vector3 pos = ArenaClamp.XZ(new Vector3(tick.X, transform.position.y, tick.Z), _arena, _body);
             transform.position = pos;
+            ApplyVertical(tick);
             // Dönüş hem klibi (AnimKey spin) hem gövde yaw'ını sürer. Yalnız transform
             // döndürmek bacakları dondurup tüm gövdeyi çeviriyordu.
             if (tick.FaceX * tick.FaceX + tick.FaceZ * tick.FaceZ > 0.0001f)
@@ -139,6 +170,40 @@ namespace Dovus.Game
                     _visual = GetComponent<ActorVisual>();
                 _visual?.EndMotionAnim();
             }
+        }
+
+        void EnsureGrounding()
+        {
+            if (_grounding == null)
+                _grounding = GetComponent<ActorGrounding>();
+            if (_grounding == null)
+                _grounding = gameObject.AddComponent<ActorGrounding>();
+        }
+
+        /// <summary>
+        /// Havadaki faz eğriyi yazar. Yer fazı ya da biten hover/channel kısa inişle zemine döner;
+        /// eğri zaten zemindeyse zıplama olmaz.
+        /// </summary>
+        void ApplyVertical(in MotionTick tick)
+        {
+            EnsureGrounding();
+            if (tick.Airborne)
+            {
+                _grounding.Follow(tick.Y);
+            }
+            else if (Mathf.Abs(tick.Y - _grounding.PlantedRootY) > 0.02f)
+            {
+                _grounding.Follow(tick.Y);
+                _grounding.Release();
+            }
+            else
+            {
+                _grounding.Release();
+            }
+
+            Vector3 p = transform.position;
+            p.y = _grounding.RootY;
+            transform.position = p;
         }
 
         void DriveLegs(in MotionTick tick)

@@ -13,8 +13,20 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (PR #27 + #30 master'a merge) ·
-**Dal:** `master` · **Sıradaki:** yeni sıçrama ölçüsüyle Kılıç/Asa taramasını bir kez daha koş
+**Son güncelleme:** 30 Eylül 2026 (ayak zemini + tarama hızı) ·
+**Dal:** `cursor/feet-grounding-a485` · **Sıradaki:** Unity Play'de yere basma ve 4× tarama (bu ortamda yok)
+
+> **30 Eylül — ayak zemini, tarama 4×.** Skill kökü cast başındaki Y'yi zemin sanıyor, Emici
+> çekme kökü mutlak `y=0`'a indiriyordu (kapsül merkezi ~1 m; ayaklar zeminin altına).
+> Hover/channel bitince yükseklik sonraki cast'in zemini oluyordu. `Grounding` + `VerticalCurve`:
+> havadaki faz (`hop/leap/slam/hover`, yüksekliği olan `channel`) eğriyi izler, bitiş ve dodge /
+> silah değişimi / sersemletme / ölüm kısa smoothstep ile çakılı zemine iner. Görsel local Y her
+> kare spawn ofsetine döner, en alçak ayak o zemine kilitlenir. Boss ve dost dummy aynı
+> bileşende. Play Sweep `yerde` sütunu: havada değilken ayak payı 0,05 m × (kare / 1/60);
+> bitişten 0,30 sn sonra 0,03 m (hızdan bağımsız). Menü `Hız/4x` varsayılan, `Hız/1x` ayıklama.
+> `Time.timeScale` ve `GameClock.SimulationScale` aynı çarpan; `fixedDeltaTime` 1× adımında
+> kalır. Cast arası bekleme iki fizik adımı. `1440 kombo - Tüm silahlar` katalogdaki silahları
+> tarar. Unity Play bu turda koşulmadı.
 
 > **30 Eylül — karar: 3-6 kare takılması.** `PlaySweep` sıçrama sınırı artık sabit 0,6 m değil:
 > 25 m/s × kare süresi (en az 1/60 sn) + 0,2 m (60 FPS'te 0,62 m, 38 ms'de 1,15 m). Oyuncu ve

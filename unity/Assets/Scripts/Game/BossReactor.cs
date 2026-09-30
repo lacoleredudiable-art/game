@@ -24,6 +24,7 @@ namespace Dovus.Game
         float _shakeUntil;
         float _shakeAmp;
         float _liftVel;
+        ActorGrounding _grounding;
         bool _captured;
 
         bool _pulling;
@@ -241,6 +242,7 @@ namespace Dovus.Game
                 Vector3 flat = _home;
                 flat.y = _home.y;
                 transform.position = flat;
+                NotifyGround(flat.y, collapsed: true);
                 return;
             }
 
@@ -275,6 +277,26 @@ namespace Dovus.Game
             Vector3 p = _home + _visualOffset + shake;
             p.y = y;
             transform.position = p;
+            NotifyGround(y, collapsed: false);
+        }
+
+        /// <summary>Kaldırma havadadır. İnince kök zemin yüksekliğine yapışır; görsel ofset birikmez.</summary>
+        void NotifyGround(float y, bool collapsed)
+        {
+            if (_grounding == null)
+                _grounding = GetComponent<ActorGrounding>();
+            if (_grounding == null)
+                return;
+            _grounding.SkipFootLock = collapsed;
+            if (collapsed || y <= _home.y + 0.001f)
+            {
+                _grounding.Follow(_home.y);
+                _grounding.Release();
+            }
+            else
+            {
+                _grounding.Follow(y);
+            }
         }
 
         void AdvancePull(float dtSec)

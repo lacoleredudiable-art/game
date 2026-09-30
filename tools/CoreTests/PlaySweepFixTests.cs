@@ -355,8 +355,9 @@ public class PlaySweepFixTests
         float farZ = RunPull(far, ally, 5f, out float farY, out float farMin);
         float nearZ = RunPull(near, ally, 5f, out float nearY, out float nearMin);
         Assert.That(farZ, Is.EqualTo(nearZ).Within(0.08f), "silah menzili kancayı uzatmaz");
-        Assert.That(farY, Is.EqualTo(0f).Within(0.001f));
-        Assert.That(nearY, Is.EqualTo(0f).Within(0.001f));
+        // Çekme height_m ile havalanmaz ve mutlak y=0'a gömülmez; başlangıç kökü zemindir.
+        Assert.That(farY, Is.EqualTo(5f).Within(0.001f));
+        Assert.That(nearY, Is.EqualTo(5f).Within(0.001f));
         float sep = Body + Body + Stop;
         Assert.That(farZ, Is.LessThan(6f - Body));
         Assert.That(MathF.Abs(farZ - (6f - sep)), Is.LessThan(0.35f));
