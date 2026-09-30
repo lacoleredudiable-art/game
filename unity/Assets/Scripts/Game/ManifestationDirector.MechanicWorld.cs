@@ -593,7 +593,7 @@ namespace Dovus.Game
                     Mathf.Max(0.5f, PlayerBodyRadiusM()) + _boss.BodyRadiusM);
                 past = ClampToArena(new Vector3(x, past.y, z));
             }
-            _boss.Home = past;
+            _boss.SnapHome(past);
             bool cancelled = _bossDirector != null && _bossDirector.CancelPreparedAttack(worldMs);
             applied.Add(cancelled ? $"geri sarma {seconds:0.#}sn + cast iptal" : $"geri sarma {seconds:0.#}sn");
         }

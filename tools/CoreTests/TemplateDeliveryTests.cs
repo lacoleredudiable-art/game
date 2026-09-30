@@ -382,6 +382,33 @@ public class TemplateDeliveryTests
     }
 
     [Test]
+    public void TrackDash_TargetSnapsCloserMidPhase_NeverEndsInsideSeparation()
+    {
+        // 12-11: kuyruk atılma sürerken boss'u geri sarar; hedef her karede canlı okunur.
+        Assert.That(_motion.TryPlay("12-11", out MotionTemplate rewind), Is.True);
+        const float body = 0.5f;
+        const float gap = 0.15f;
+        const float bossR = 0.85f;
+        var runner = new MotionTemplateRunner();
+        runner.Begin(rewind, 0f, 0f, 0f, 0f, 1f, body, gap);
+        float bossZ = 6.35f;
+        bool snapped = false;
+        for (int i = 0; i < 600 && !runner.Finished; i++)
+        {
+            if (!snapped && runner.Z > 0.8f)
+            {
+                bossZ = runner.Z + body + bossR;
+                snapped = true;
+            }
+            runner.Tick(1f / 15f, new MotionTarget(true, 0f, bossZ, bossR), default);
+            if (snapped)
+                Assert.That(bossZ - runner.Z, Is.GreaterThanOrEqualTo(body + bossR - 0.01f), "gövdeye girmez");
+        }
+        Assert.That(snapped, Is.True);
+        Assert.That(runner.Finished, Is.True);
+    }
+
+    [Test]
     public void ActorSpacing_PushesAPointOutOfTheBoss()
     {
         float x = 0.2f;

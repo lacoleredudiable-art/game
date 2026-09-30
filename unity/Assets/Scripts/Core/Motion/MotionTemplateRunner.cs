@@ -184,6 +184,8 @@ namespace Dovus.Core.Motion
         bool _snapped;
         bool _hasTracked;
         MotionTarget _tracked;
+        /// <summary>Kaydırılmamış hedef: nişan yumuşar, gövde ayrımı gerçek yeri kullanır.</summary>
+        MotionTarget _body;
         bool _yieldApproach;
         float _yieldX, _yieldZ;
         float _blendU0 = -1f;
@@ -242,6 +244,7 @@ namespace Dovus.Core.Motion
             _lastTarget = default;
             _hasTracked = false;
             _tracked = default;
+            _body = default;
             _yieldApproach = false;
             _yieldX = x;
             _yieldZ = z;
@@ -266,6 +269,7 @@ namespace Dovus.Core.Motion
             // Nişan noktası en çok 40 m/s kayar; ışınlanma fazı bunu kullanmaz.
             MotionTarget aim = SlewTarget(target, dt);
             _lastTarget = aim;
+            _body = target;
             float left = dt;
             int guard = 0;
             while (left > 0.00001f && !_finished && guard++ < 12)
@@ -1027,10 +1031,11 @@ namespace Dovus.Core.Motion
             phase.Motion is "hold" or "throw" or "spin" or "fan" or "hover";
 
         /// <summary>Dönüş atılması hedefin içine inmez; işaret dışarıdaysa işaret kalır.</summary>
-        void KeepOutside(in MotionTarget target, ref float x, ref float z)
+        void KeepOutside(in MotionTarget aim, ref float x, ref float z)
         {
-            if (!target.Has)
+            if (!aim.Has)
                 return;
+            MotionTarget target = _body.Has ? _body : aim;
             float dx = x - target.X;
             float dz = z - target.Z;
             float dist = MathF.Sqrt(dx * dx + dz * dz);
