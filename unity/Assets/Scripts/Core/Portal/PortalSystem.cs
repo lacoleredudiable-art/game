@@ -317,7 +317,7 @@ namespace Dovus.Core.Portal
                 float px = w.X;
                 float pz = w.Z;
                 PushOut(ref px, ref pz, w.Radius, boss);
-                _ready.Add(new Placement(w.ActorId, px, 0f, pz, w.Skill, w.Transfer, w.Teleport));
+                _ready.Add(new Placement(w.ActorId, px, w.Y, pz, w.Skill, w.Transfer, w.Teleport));
                 _wait.RemoveAt(i);
             }
         }
@@ -365,9 +365,9 @@ namespace Dovus.Core.Portal
                 PushOut(ref ox, ref oz, body.Radius, boss);
                 if (body.IsBoss)
                     continue;
-                var place = new Placement(body.Id, ox, 0f, oz, door.Skill, false, true);
+                var place = new Placement(body.Id, ox, body.Y, oz, door.Skill, false, true);
                 if (body.TemplateOwns && !projectile)
-                    _wait.Add(new WaitMove(body.Id, body.Id, ox, oz, body.Radius, door.Skill, false, true));
+                    _wait.Add(new WaitMove(body.Id, body.Id, ox, body.Y, oz, body.Radius, door.Skill, false, true));
                 else
                 {
                     _ready.Add(place);
@@ -446,7 +446,7 @@ namespace Dovus.Core.Portal
                 float x = caster.X + BesideM;
                 float z = caster.Z;
                 PushOut(ref x, ref z, r.Radius, boss);
-                _ready.Add(new Placement(r.ActorId, x, 0f, z, "11-8", false, true));
+                _ready.Add(new Placement(r.ActorId, x, r.Y, z, "11-8", false, true));
                 _buffs.Add(new Buff(r.ActorId, _now + RiseBuffSec, 1f, 1f + RiseDamageAdd, 1f, 0f));
             }
 
@@ -522,13 +522,13 @@ namespace Dovus.Core.Portal
         }
 
         /// <summary>
-        /// Kalıp oyuncuyu zaten yere, dostun berisine ve boss'un dışına indirdiyse tekrar oturtma.
-        /// Havada, dostun ötesinde ya da boss'un içindeyse kanca düzeltmesi gerekir.
+        /// Kalıp oyuncuyu dostun berisine ve boss'un dışına indirdiyse tekrar oturtma.
+        /// Zemin yüksekliği (ayaklar ~1 m) kancayı yeniden tetiklemez.
+        /// Dostun ötesinde ya da boss'un içindeyse kanca düzeltmesi gerekir.
         /// </summary>
         bool HookAlreadyLanded(float x, float y, float z, float radius, in Disc boss)
         {
-            if (MathF.Abs(y) > 0.05f)
-                return false;
+            _ = y;
             if (Overlaps(x, z, radius, boss))
                 return false;
             float dx = _hookAllyX - _hookFromX;
@@ -703,7 +703,7 @@ namespace Dovus.Core.Portal
                 _hookAllyZ = ally.Z;
                 _hookAllyR = ally.Radius;
                 _hookCasterR = caster.Radius;
-                _wait.Add(new WaitMove(caster.Id, ally.Id, x, z, ally.Radius, "2-6", false));
+                _wait.Add(new WaitMove(caster.Id, ally.Id, x, y, z, ally.Radius, "2-6", false));
                 return;
             }
 
@@ -874,13 +874,13 @@ namespace Dovus.Core.Portal
             bool wait = caster.TemplateOwns;
             if (wait)
             {
-                _wait.Add(new WaitMove(caster.Id, caster.Id, ax, az, caster.Radius, "9-10", false, true));
-                _wait.Add(new WaitMove(caster.Id, ally.Id, cx, cz, ally.Radius, "9-10", true, true));
+                _wait.Add(new WaitMove(caster.Id, caster.Id, ax, caster.Y, az, caster.Radius, "9-10", false, true));
+                _wait.Add(new WaitMove(caster.Id, ally.Id, cx, ally.Y, cz, ally.Radius, "9-10", true, true));
             }
             else
             {
-                _ready.Add(new Placement(caster.Id, ax, 0f, az, "9-10", false, true));
-                _ready.Add(new Placement(ally.Id, cx, 0f, cz, "9-10", true, true));
+                _ready.Add(new Placement(caster.Id, ax, caster.Y, az, "9-10", false, true));
+                _ready.Add(new Placement(ally.Id, cx, ally.Y, cz, "9-10", true, true));
             }
         }
 
@@ -892,7 +892,8 @@ namespace Dovus.Core.Portal
             {
                 ActorId = ally.Id,
                 At = _now + RiseDelaySec,
-                Radius = ally.Radius
+                Radius = ally.Radius,
+                Y = ally.Y
             });
         }
 
@@ -921,9 +922,9 @@ namespace Dovus.Core.Portal
         {
             PushOut(ref x, ref z, radius, boss);
             if (body.TemplateOwns)
-                _wait.Add(new WaitMove(body.Id, body.Id, x, z, radius, skill, transfer, true));
+                _wait.Add(new WaitMove(body.Id, body.Id, x, body.Y, z, radius, skill, transfer, true));
             else
-                _ready.Add(new Placement(body.Id, x, 0f, z, skill, transfer, true));
+                _ready.Add(new Placement(body.Id, x, body.Y, z, skill, transfer, true));
         }
 
         Door NewDoor(float x, float z, string skill, float life, bool shots, int owner)
@@ -1007,11 +1008,12 @@ namespace Dovus.Core.Portal
 
         readonly struct WaitMove
         {
-            public WaitMove(int waitFor, int actorId, float x, float z, float radius, string skill, bool transfer, bool teleport = false)
+            public WaitMove(int waitFor, int actorId, float x, float y, float z, float radius, string skill, bool transfer, bool teleport = false)
             {
                 WaitFor = waitFor;
                 ActorId = actorId;
                 X = x;
+                Y = y;
                 Z = z;
                 Radius = radius;
                 Skill = skill;
@@ -1022,6 +1024,7 @@ namespace Dovus.Core.Portal
             public int WaitFor { get; }
             public int ActorId { get; }
             public float X { get; }
+            public float Y { get; }
             public float Z { get; }
             public float Radius { get; }
             public string Skill { get; }
@@ -1054,6 +1057,7 @@ namespace Dovus.Core.Portal
             public int ActorId;
             public float At;
             public float Radius;
+            public float Y;
             public bool Done;
         }
 

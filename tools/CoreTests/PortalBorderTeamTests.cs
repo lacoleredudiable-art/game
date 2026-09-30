@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Dovus.Core.Border;
 using Dovus.Core.Combat;
+using Dovus.Core.Motion;
 using Dovus.Core.Portal;
 using Dovus.Core.Status;
 using Dovus.Core.Team;
@@ -25,11 +26,29 @@ public class PortalBorderTeamTests
         Assert.That(mode.DamageMult(1), Is.EqualTo(1.20f).Within(0.001f));
         mode.Tick(1, 0.20f, 0.1f);
         Assert.That(mode.Active(1), Is.True, "eşiğe eşitken açık kalır");
+        Assert.That(mode.Tick(1, 0.31f, 0.1f), Is.False, "skill bitmeden kapanmaz");
+        Assert.That(mode.Active(1), Is.True);
+        mode.EndCast(1);
         Assert.That(mode.Tick(1, 0.21f, 0.1f), Is.True);
         Assert.That(mode.Active(1), Is.False);
         Assert.That(mode.AttackSpeedMult(1), Is.EqualTo(1f).Within(0.001f));
         Assert.That(mode.LifestealAdd(1), Is.EqualTo(0f).Within(0.001f));
         Assert.That(mode.DamageMult(1), Is.EqualTo(1f).Within(0.001f));
+    }
+
+    [Test]
+    public void Skill_1_2_LifestealStaysForTheCast()
+    {
+        var mode = new BorderMode();
+        Assert.That(mode.OnSkill(1, "1-2", 0.15f), Is.True);
+        Assert.That(mode.Active(1), Is.True);
+        Assert.That(mode.LifestealAdd(1), Is.EqualTo(BorderMode.Tier20Life).Within(0.001f));
+        Assert.That(mode.Tick(1, 0.31f, 0.05f), Is.False);
+        Assert.That(mode.Active(1), Is.True, "can %31 olsa da skill bitene kadar aura açık");
+        mode.EndCast(1);
+        Assert.That(mode.Active(1), Is.True);
+        Assert.That(mode.Tick(1, 0.31f, 0.05f), Is.True);
+        Assert.That(mode.Active(1), Is.False);
     }
 
     [Test]
@@ -254,6 +273,7 @@ public class PortalBorderTeamTests
         Assert.That(a.Teleport, Is.True);
         Assert.That(b.Teleport, Is.True);
         Assert.That(a.Y, Is.EqualTo(0f).Within(0.001f));
+        Assert.That(b.Y, Is.EqualTo(0f).Within(0.001f));
 
         var from = new StatusBoard();
         var to = new StatusBoard();
@@ -264,6 +284,32 @@ public class PortalBorderTeamTests
         Assert.That(from.Has(StatusKind.Poison), Is.False);
         Assert.That(from.Has(StatusKind.Haste), Is.True);
         Assert.That(to.Has(StatusKind.Poison), Is.True);
+    }
+
+    [Test]
+    public void Skill_9_10_KeepsEachGroundHeight()
+    {
+        var portal = new PortalSystem();
+        var boss = Boss(0f, 8f);
+        Body caster = Actor(1, 0f, 0f, owns: true, y: 1f);
+        Body ally = Actor(2, 0f, 3f, y: 1.2f);
+        portal.Cast("9-10", caster, ally, null, boss);
+        portal.NotifyTemplateEnded(1, 0f, 1f, 0f, 0.5f, boss);
+        IReadOnlyList<Placement> moves = portal.Drain();
+        Assert.That(One(moves, 1).Y, Is.EqualTo(1f).Within(0.001f));
+        Assert.That(One(moves, 2).Y, Is.EqualTo(1.2f).Within(0.001f));
+    }
+
+    [Test]
+    public void Skill_2_6_WithoutAllyAimsAtBoss()
+    {
+        Assert.That(
+            MotionDeliveryAim.Choose("effect", "enemy_only", "heal", true, false),
+            Is.EqualTo(MotionDeliveryAim.Kind.None),
+            "dost yokken kalıp düşmana gider");
+        Assert.That(
+            MotionDeliveryAim.Choose("effect", "self_or_ally", "heal", true, true),
+            Is.EqualTo(MotionDeliveryAim.Kind.Ally));
     }
 
     [Test]
@@ -501,6 +547,19 @@ public class PortalBorderTeamTests
     }
 
     [Test]
+    public void Skill_2_6_GroundHeightNearSide_IsNotSnapped()
+    {
+        var portal = new PortalSystem();
+        var boss = Boss(0f, 6f);
+        Body caster = Actor(1, 0f, 0f, owns: true, y: 1f);
+        Body ally = Actor(2, 0f, 3f, y: 1f);
+        portal.Cast("2-6", caster, ally, null, boss);
+        portal.NotifyTemplateEnded(1, 0f, 1f, 1.5f, 0.5f, boss);
+        IReadOnlyList<Placement> moves = portal.Drain();
+        Assert.That(moves, Has.None.Matches<Placement>(m => m.ActorId == 1));
+    }
+
+    [Test]
     public void Skill_2_6_ValidTemplateEnd_IsNotSnapped()
     {
         var portal = new PortalSystem();
@@ -556,6 +615,12 @@ public class PortalBorderTeamTests
         Assert.That(SweepJumpRule.IsIllegalJump(4.66f, limit, true, false), Is.False);
         Assert.That(SweepJumpRule.IsIllegalJump(4.66f, limit, false, false), Is.True);
         Assert.That(SweepJumpRule.IsIllegalJump(0.4f, limit, false, false), Is.False);
+
+        float ox = 0f;
+        float oz = 0f;
+        SweepJumpRule.NoteTeleport(ref ox, ref oz, 1f, 0f, false);
+        SweepJumpRule.NoteTeleport(ref ox, ref oz, 8.34f, 0f, true);
+        Assert.That(9.34f - ox, Is.EqualTo(1f).Within(0.001f), "konum ışın adımını saymaz");
     }
 
     static void AssertTier(string skill, float below, float threshold, float attack, float life, float damage)

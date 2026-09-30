@@ -79,6 +79,7 @@ namespace Dovus.Core.Border
                 return false;
 
             slot.Active = true;
+            slot.HoldCast = true;
             slot.Threshold = threshold;
             slot.Attack = attack;
             slot.Life = life;
@@ -87,12 +88,24 @@ namespace Dovus.Core.Border
             return true;
         }
 
-        /// <summary>Can eşiğin üstündeyse modu kapatır. Eşitken açık kalır.</summary>
+        /// <summary>
+        /// Skill bitti. Eşik bir sonraki Tick'te yeniden bakılır.
+        /// Aynı skill'in can çalması bitene kadar aura kapanmaz.
+        /// </summary>
+        public void EndCast(int actorId)
+        {
+            Get(actorId).HoldCast = false;
+        }
+
+        /// <summary>
+        /// Can eşiğin üstündeyse modu kapatır. Eşitken açık kalır.
+        /// Skill sürerken (HoldCast) kapanmaz; eşik cast anında bakıldı.
+        /// </summary>
         public bool Tick(int actorId, float hpRatio, float dtSec)
         {
             Slot slot = Get(actorId);
             bool ended = false;
-            if (slot.Active && hpRatio > slot.Threshold)
+            if (slot.Active && !slot.HoldCast && hpRatio > slot.Threshold)
             {
                 slot.Active = false;
                 ended = true;
@@ -178,6 +191,7 @@ namespace Dovus.Core.Border
         sealed class Slot
         {
             public bool Active;
+            public bool HoldCast;
             public float Threshold;
             public float Attack;
             public float Life;

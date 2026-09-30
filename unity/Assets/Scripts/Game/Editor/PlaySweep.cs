@@ -1480,21 +1480,42 @@ namespace Dovus.Game.EditorTools
                 r.Notes.Add($"vuruş {_hitOrigins.Count}: " + string.Join(" ", parts));
             }
 
-            // 2) konum — kalıp bittiği karede, boss'un o anki yerine göre
+            // 2) konum — kalıp bittiği karede, boss'un o anki yerine göre.
+            // İşaretli ışın (9-10 yer değiştirme) tek karede uzun bir adımdır; konum
+            // hesabı o adımı ve sonrasını ışınsız yere indirir. Sıçrama kuralı ayrı.
             Vector3 start = _pre.P;
             int endIdx = i1 >= 0 && i1 + 1 < _frames.Count ? i1 + 1 : _frames.Count - 1;
             Frame end = _frames[endIdx];
-            float maxExc = _frames.Take(endIdx + 1).Max(x => Flat(x.P - start).magnitude);
-            r.ActualPos = Category(start, end.P, end.B, maxExc);
+            float offX = 0f;
+            float offZ = 0f;
+            float maxExc = 0f;
+            Vector3 scored = start;
+            int lastFrame = endIdx < _frames.Count ? endIdx : _frames.Count - 1;
+            for (int i = 0; i <= lastFrame; i++)
+            {
+                Vector3 p = _frames[i].P;
+                if (i > 0 && _frames[i].Teleport)
+                {
+                    Vector3 step = Flat(p - _frames[i - 1].P);
+                    SweepJumpRule.NoteTeleport(ref offX, ref offZ, step.x, step.z, true);
+                }
+                p.x -= offX;
+                p.z -= offZ;
+                maxExc = Mathf.Max(maxExc, Flat(p - start).magnitude);
+                scored = p;
+            }
+            r.ActualPos = Category(start, scored, end.B, maxExc);
             r.ExpectedPos = string.IsNullOrEmpty(_info.ExpectedCat) ? "?" : _info.ExpectedCat;
-            float simErr = _info.HasSim ? Flat(end.P - _info.SimFinal).magnitude : 0f;
+            float simErr = _info.HasSim ? Flat(scored - _info.SimFinal).magnitude : 0f;
+            float beam = Mathf.Sqrt(offX * offX + offZ * offZ);
             bool steered = c.Stick.sqrMagnitude > 0.0001f;
             bool bossMoved = Flat(end.B - _pre.B).magnitude > 0.1f;
             r.Position = steered
                          || (r.ActualPos == r.ExpectedPos && (!_info.HasSim || simErr <= SimMatchM || bossMoved));
-            r.Notes.Add($"kalıp sonu: merkeze {Flat(end.P - end.B).magnitude:F2} m, başlangıçtan {Flat(end.P - start).magnitude:F2} m, " +
+            r.Notes.Add($"kalıp sonu: merkeze {Flat(scored - end.B).magnitude:F2} m, başlangıçtan {Flat(scored - start).magnitude:F2} m, " +
                         $"kalıp simülasyonundan {simErr:F2} m" + (bossMoved ? $", boss {Flat(end.B - _pre.B).magnitude:F2} m kaydı" : "") +
                         (steered ? ", çubukla yönlendirildi" : "") +
+                        (beam > 0.05f ? $", ışın {beam:F2} m konumdan çıkarıldı" : "") +
                         (_info.SimAim != "boss" ? $", kalıp hedefi {_info.SimAim}" : ""));
 
             // 3) boss gövdesine girmedi

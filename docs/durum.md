@@ -13,8 +13,16 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (portal tarama düzeltmesi, master alındı) ·
+**Son güncelleme:** 30 Eylül 2026 (portal tarama: konum, yükseklik, 2-6/11-8, sınır) ·
 **Dal:** `feat/portal-border-team` · **Sıradaki:** Kılıç/Asa taramasını bu dalda bir kez daha koş
+
+> **30 Eylül — Play kalanları (Kılıç 141 / Asa 142).** Master (`aaa81d4`, #32+#28) bu dala alındı.
+> 9-10 ışını konum hesabından da düşülür (sıçrama zaten düşüyordu); yer değiştirmede herkes kendi
+> zemin yüksekliğini korur. 2-6 kancası, kalıp dostun berisinde bittiyse oyuncuyu tekrar oturtmaz
+> (ayak ~1 m bunu bozmuyordu). Dost yokken 2-6 boss'u hedefler. 11-8'de dostun tetik kapsülü
+> motoru itmesin diye tetikler duvar sayılmaz. Sınır eşiği cast anında bakılır; aynı skill'in
+> can çalması (%15→%31) aura'yı skill bitene kadar kapatmaz, bitince sonraki Tick bakar.
+> `dotnet test` 527/527. Unity Play bu turda yok.
 
 > **30 Eylül — tarama: 9-10 ışını işaretli, vakalar temiz başlıyor.** 9-10 yer değiştirmesi
 > tek karede uzun bir ışındır; tarama yalnız bu işaretli kareyi (ve blink'i) sıçrama saymaz.
@@ -1859,11 +1867,10 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 - **Portal / Sınır / Takım (29 Eylül, `feat/portal-border-team`).** Üç etiket artık işler.
   Silah kesme hâlâ yalnız etikettir (silahlar PR'ında). 8-1 boss vuruşu 2 sn ×0,7. Taret 1 sn,
   12-6 mesafe kopması ve +%50 hız yedeği, 7-6 zırh süresi `ArmorBreakMs`. Unity Play bu turda yok.
-- **PR #29 portal/sınır/takım (30 Eylül, merge yok).** Kılıç 141/144: 9-10 ışını tek karede
-  8,34 m (tarama `konum`), 2-6 kalıbı AllyDummy'yi hedefliyor (`tek_sistem`), 11-8 Kılıç başka
-  sistem 0,18 m. Sınır 1-2 ile can %15'te açılıp aynı skill'in can çalmasıyla bir karede
-  kapanıyor (%31) — tasarım kararı gerekiyor. 9-10 yer değişiminde dost Y=0'a iniyor
-  (`Placement` Y 0f).
+- **PR #29 portal/sınır/takım (30 Eylül, kod; Play tekrar yok).** Play Kılıç 141/144, Asa 142/144
+  idi. Kodda: 9-10 ışını konumdan da çıkar, yer değiştirmede Y korunur, 2-6 kancası zeminde
+  tekrar oturtmaz, 11-8 tetik itişi kalkar, sınır skill bitene kadar açık kalır. Unity Play
+  bu düzeltmede koşulmadı.
 - **PR #28 Top 1-2 (30 Eylül).** Emici çekmesi + Top geri tepmesi: oyuncu simülasyondan ~1,6 m
   farklı biter, tam taramada bir kez boss gövdesine 1,03 m girdi (tekrarda 0/3, kararsız).
   Yumruk/Kalkan 1-4 hasarsız, Yumruk 2-2 kalıbı 10,9 sn.

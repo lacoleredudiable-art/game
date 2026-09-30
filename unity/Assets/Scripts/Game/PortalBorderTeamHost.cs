@@ -34,6 +34,7 @@ namespace Dovus.Game
         GameClock _clock;
         GameObject _aura;
         bool _wasOwning;
+        bool _borderReleasePending;
         bool _strikePending;
         string _line = "Takım menüsü hazır";
         int _nextId = 2;
@@ -76,6 +77,7 @@ namespace Dovus.Game
             _team.Clear();
             _border.Clear();
             _wasOwning = false;
+            _borderReleasePending = false;
             _strikePending = false;
             PortalBorderTeamHooks.ResetModifiers();
         }
@@ -92,6 +94,11 @@ namespace Dovus.Game
             if (player == null)
                 return;
 
+            if (_borderReleasePending)
+            {
+                _border.EndCast(player.Id);
+                _borderReleasePending = false;
+            }
             _border.Tick(player.Id, player.HpRatio, dt);
             for (int i = 0; i < _actors.Count; i++)
             {
@@ -111,6 +118,8 @@ namespace Dovus.Game
             {
                 Vector3 p = _player.position;
                 _portal.NotifyTemplateEnded(player.Id, p.x, p.y, p.z, player.Radius, boss);
+                // Skill bitti. Bu karedeki Tick aura'yı tuttu; sonraki kare eşiğe bakar.
+                _border.EndCast(player.Id);
             }
             _wasOwning = owns;
 
@@ -295,6 +304,8 @@ namespace Dovus.Game
             player.TemplateOwnsPosition = _motion != null && _motion.IsDisplacing;
             Disc boss = BossDisc();
             _border.OnSkill(player.Id, skillId, player.HpRatio);
+            if (_motion == null || !_motion.IsDisplacing)
+                _borderReleasePending = true;
             Body caster = ToBody(player);
             Body target = FirstOther(player);
             _portal.Cast(skillId, caster, target, _bodies, boss);

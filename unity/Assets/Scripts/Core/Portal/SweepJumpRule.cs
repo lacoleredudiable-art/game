@@ -12,5 +12,17 @@ namespace Dovus.Core.Portal
                 return false;
             return stepM > limitM;
         }
+
+        /// <summary>
+        /// Işın karesinin yatay adımı sonraki konum hesabından düşülür.
+        /// Kalıbın kendi blink'i burada işaretlenmez; yalnız kasıtlı ışın.
+        /// </summary>
+        public static void NoteTeleport(ref float offsetX, ref float offsetZ, float stepX, float stepZ, bool teleport)
+        {
+            if (!teleport)
+                return;
+            offsetX += stepX;
+            offsetZ += stepZ;
+        }
     }
 }
