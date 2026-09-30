@@ -192,7 +192,9 @@ namespace Dovus.Game
         void PlayDeliveryBeat(ArmedBeat beat)
         {
             int prev = _slotQueryCastId;
+            bool prevRecoil = _casterRecoilSuppressed;
             _slotQueryCastId = _deliverySlotCastId;
+            _casterRecoilSuppressed = true;
             try
             {
                 switch (beat.Kind)
@@ -236,6 +238,7 @@ namespace Dovus.Game
             finally
             {
                 _slotQueryCastId = prev;
+                _casterRecoilSuppressed = prevRecoil;
             }
         }
 

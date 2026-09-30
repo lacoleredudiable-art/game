@@ -2466,7 +2466,9 @@ namespace Dovus.Game
                 if (effectFraction <= 0f)
                     return;
                 int prevCast = _slotQueryCastId;
+                bool prevRecoil = _casterRecoilSuppressed;
                 _slotQueryCastId = castId;
+                _casterRecoilSuppressed |= kind == SkillExecutorKind.Summon;
                 try
                 {
                 if (!friendly)
@@ -2523,6 +2525,7 @@ namespace Dovus.Game
                 finally
                 {
                     _slotQueryCastId = prevCast;
+                    _casterRecoilSuppressed = prevRecoil;
                 }
             }
 
