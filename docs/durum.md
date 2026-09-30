@@ -13,8 +13,23 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (PR #34/#35 birleşik Play testi) ·
+**Son güncelleme:** 30 Eylül 2026 (PR #34/#35 birleşik Play testi → yalnız #34 merge) ·
 **Dal:** `master` · **Sıradaki:** PR #35 tarama açıkları (bkz. Bilinen açıklar)
+
+> **30 Eylül — PR #35 + #34 birleşik Play testi: yalnız #34 merge edildi.** Geçici dalda master +
+> #35 + #34: çakışmalar `durum.md` (iki taraf), `BossDirector.cs` (#34 `inVolume` süzgeci + #29
+> portal ölçekli mesafe), `ManifestationDirector.MotionTemplate.cs` (#34 kalkan "bir kez öde"
+> kapısı + #35 `geometry || arc`); #35 `PulseDelivery` de aynı kapıdan geçirildi. `tools/AtomSim`
+> #35'le derlenmiyordu (`TemplateDelivery` → `Core/Motion`); Core'un tümü link'lenince 0 hata.
+> `dotnet test` 561/561. 4× tam tarama (`play-sweep/pr35-34-4x.csv`) **1379/1440**, her silah
+> 135–139 → merge yok. Tek PR tekrarları: #35 tek başına (`attr-pr35.csv`) 4-2, 12-11, 6-9, 5-2,
+> 3-7, 1-6 hatalarını üretir; 2-9 ise #34'ten (koruyucu tetik, tasarım gereği kabul). #34 tek
+> başına (`pr34-4x.csv`) 1389/1440; 40 dağınık `sure` hatası editör takılması — ölçüm sırasında
+> MCP sorgusu olmadan tekrarı (`pr34-sure-retry.csv`) 40/40. Düzeltilmiş: dokuz silah 143, Tılsım
+> 142 (2-9 + 6-3 `konum`); gövde 0, `yerde` 0, betik hatası 0. Elle (birleşik dalda, 1×, Kılıç):
+> Dev HP açık slam iner / bar dolu, kapalı gerçek can düşer + ölüm + doğuş, panelden geri açık;
+> Kör 0,30 → 30 saldırıda 12 ıska; Faz 2 + Sessiz 14 windup 0 nefes; Silahsız 10 windup 0 slam;
+> Çekiç + rün 4 poise 0 → ~1,6 sn sersem → bar dolu; gizlilikte boss dönmez, slam diskte vurur.
 
 > **30 Eylül — boss hasarı ve durum etkileri (`cursor/boss-status-effects-ca3b`).**
 > (1) Açılış `Boss.Damage` / `FireConeDamage` sıfırlamıyor. Varsayılan slam 22, nefes 18
@@ -1932,7 +1947,20 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
   Element kendine buff'ları (Su regen, Hava haste, Toprak kalkan, Aydınlık arınma) boss'a
   yazılmaz. Koruyucu tetik eşiğin altındayken bir kez öder; kalıp aynı cast'i ödemez.
   Dev HP doluyken can oranı %30'un altına inmez; koruyucu şifayı hissetmek için Dev HP KAPALI.
-  Mana/bekleme, 10-2 yansıma, x-2 girdap, çağrılar, 3-x kalıplar bu turda yok.
+  Mana/bekleme yok. Play Sweep 2-9'u her silahta "etki yok" sayar: şifa koruyucu tetikte, tarama
+  canı %50'de başlatır (tasarım gereği kabul edildi, 30 Eylül).
+- **PR #35 skill teslimi (30 Eylül, merge yok).** Birleşik 4× taramada (her silah): 12-11 oyuncu
+  boss gövdesinde (merkeze 0,22 m, temas 1,35; `RepeatDelivered` → `PulseDelivery` mekanik etkiyi
+  oyuncu konumunda açıyor, çekiş boss'u oyuncuya getiriyor); 5-2 gövdede (0,03 m, girdap boss'u
+  oyuncunun üstüne çekiyor; Yumruk hariç 8–9 silah); 4-2 `konum` (kalıp sonu simülasyondan 1,50 m);
+  6-9 "hasar yok" (x-9 patlaması ~2,4 sn'de, tarama kaydı daha önce kapanıyor); 3-7 tek karede
+  3,00 m sıçrama (Yay/Kitap/Küre/Top/Asa/Tılsım); tek başına 1-6 `konum` 5 silahta (sim. 1,21 m);
+  Çekiç 1-9 / 5-9 hasar yok; Top 1-8 `tek_sistem`. Elle: 11-1 minyonu boss'a hiç vurmuyor ve
+  gövdede duruyor (merkeze 0,70 m, boss r 0,85) — teslim kuyruğu `SpawnActors` hedefi `null`
+  geçiyor olabilir; 1-11 ikinci nabız ilk vuruştan 0,20 sn sonra (beklenen ~0,3). Geçenler: 11-11
+  klon, 12-11 önceki skill'i tekrarlar (1-1 hasar, 11-1 minyon), 2-2/4-2 çekmez / 1-2 1,82 m çeker,
+  6-9 2,42 sn'de patlar, 6-12 dört tik, 3-10 8 m'den varış kapısında kalır. Betik hatası 0.
+  AtomSim düzeltmesi ve `PulseDelivery` kapısı geçici dalda kaldı; #35 yeniden açılırken gerekir.
 - **Tarama artıkları (30 Eylül, çözüldü, PR #33 merge).** Top 1-2, Yumruk/Kalkan 1-4, Yumruk 2-2
   ve Top geri tepmesinde ayak havada: 4× `pr33-4x-r2` hepsi geçti. Aşağıdaki "Top geri tepmesi
   havada", "PR #28 Top 1-2" ve "`tools/AtomSim` derlenmiyor" maddeleri artık tarihsel.

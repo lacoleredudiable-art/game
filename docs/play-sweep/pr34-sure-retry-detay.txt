@@ -1,0 +1,3 @@
+# Play taraması pr34-sure-retry @ 4x — 40/40 geçti @ 4x (Yumruk: 2/2, Kılıç: 3/3, Küre: 6/6, Çekiç: 6/6, Top: 6/6, Asa: 6/6, Tılsım: 4/4, Kalkan: 7/7)
+Yere basma en kötü (havada değil ≤ 0.05 m × kare/(1/60), bitiş+0,30 sn ≤ 0.03 m, hızdan bağımsız): 9-12 canlı 0,00 m / iniş 0,00 m, 1-3 canlı 0,00 m / iniş 0,00 m, 3-4 canlı 0,00 m / iniş 0,00 m, 11-12 canlı 0,00 m / iniş 0,00 m, 3-4 canlı 0,00 m / iniş 0,00 m, 6-7 canlı 0,00 m / iniş 0,00 m, 3-7 canlı 0,00 m / iniş 0,00 m, 8-11 canlı 0,00 m / iniş 0,00 m
+
