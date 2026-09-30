@@ -29,7 +29,7 @@ namespace Dovus.Game
 
         void Update()
         {
-            RealDeltaMs = Time.unscaledDeltaTime * 1000.0;
+            RealDeltaMs = FrameDelta.ClampMs(Time.unscaledDeltaTime * 1000.0);
             double scale = SimulationScale < 0f ? 0.0 : SimulationScale;
             WorldDeltaMs = Paused ? 0.0 : Director.Tick(RealDeltaMs * scale);
         }

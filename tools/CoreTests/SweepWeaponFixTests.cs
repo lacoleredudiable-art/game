@@ -1,8 +1,10 @@
+using System.Collections.Generic;
 using System.IO;
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using Dovus.Core.Manifestation;
 using Dovus.Core.Motion;
+using Dovus.Core.Time;
 using Dovus.Core.Tuning;
 using NUnit.Framework;
 
@@ -141,6 +143,94 @@ public class SweepWeaponFixTests
         float moved = System.MathF.Sqrt(runner.X * runner.X + (runner.Z - 2f) * (runner.Z - 2f));
         float authored = System.MathF.Sqrt(1.4f * 1.4f + 0.2f * 0.2f);
         Assert.That(moved, Is.EqualTo(authored).Within(0.08f));
+    }
+
+    [Test]
+    public void EmiciCannon_IsNotRecoiled_AndHeldSimStays()
+    {
+        Assert.That(_catalog.TryPlay("1-2", out MotionTemplate pull), Is.True);
+        Assert.That(CannonRecoilMotion.Applies("ballistic", 0.5f, 40f, "2", pull), Is.False);
+        Assert.That(CannonRecoilMotion.Applies("ballistic", 0.5f, 40f, "1", pull), Is.True);
+
+        var held = new MotionTarget(true, 0f, 0f, BossR, true);
+        var runner = new MotionTemplateRunner();
+        runner.Begin(pull, 0f, 0f, 3f, 0f, -1f, Body, 0.15f);
+        int guard = 0;
+        while (!runner.Finished && guard++ < 300)
+            runner.Tick(1f / 60f, held, default);
+        float moved = System.MathF.Sqrt(runner.X * runner.X + (runner.Z - 3f) * (runner.Z - 3f));
+        Assert.That(moved, Is.LessThan(0.05f));
+    }
+
+    [Test]
+    public void Retreat_EndsOutsideTheBoss()
+    {
+        var phase = new MotionPhase(
+            "geri_tepme", "retreat", 0.12f, "travel", "none", "", 0f,
+            0.5f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f,
+            0f, 0f, null, null);
+        var template = new MotionTemplate("tepme", "tepme", 0, "tepme", true, new[] { phase });
+        var boss = new MotionTarget(true, 0f, 0f, BossR);
+        var runner = new MotionTemplateRunner();
+        runner.Begin(template, 0f, 0f, 0f, 0f, 1f, Body, 0.15f);
+        int guard = 0;
+        while (!runner.Finished && guard++ < 30)
+            runner.Tick(1f / 60f, boss, default);
+        float dist = System.MathF.Sqrt(runner.X * runner.X + runner.Z * runner.Z);
+        Assert.That(dist, Is.GreaterThanOrEqualTo(Body + BossR + 0.15f - 0.02f));
+    }
+
+    [Test]
+    public void ShortWeaponSlam_ClosesToTheJsonEdge_SwordDoesNotLunge()
+    {
+        Assert.That(_catalog.TryPlay("1-4", out MotionTemplate slam), Is.True);
+        // Fiil 1 kapsül 1,5 m × silah menzil 0,5 × sıfat 4 boy 1 = 0,75. Kılıç menzil 1 → 1,5.
+        const float fistEdge = 0.75f;
+        const float swordEdge = 1.5f;
+        float fist = MotionCastReach.ApproachMeters(3f, Body, BossR, fistEdge, slam);
+        float sword = MotionCastReach.ApproachMeters(3f, Body, BossR, swordEdge, slam);
+        Assert.That(sword, Is.EqualTo(0f).Within(0.001f));
+        float closing = MotionCastReach.ClosingApproachM(slam);
+        Assert.That(MotionCastReach.CenterInReach(3f - fist - closing, Body, BossR, fistEdge), Is.True);
+        float inflated = System.Math.Max(fistEdge, MotionCastReach.EdgeReachM(slam));
+        float old = CastApproach.Meters(3f, Body, BossR, inflated, closing);
+        Assert.That(MotionCastReach.CenterInReach(3f - old - closing, Body, BossR, fistEdge), Is.False);
+    }
+
+    [Test]
+    public void RemotePull_ClampedHitchDoesNotDumpChannelHits()
+    {
+        Assert.That(FrameDelta.ClampMs(16), Is.EqualTo(16).Within(0.001));
+        Assert.That(FrameDelta.ClampMs(11000), Is.EqualTo(FrameDelta.MaxFrameMs).Within(0.001));
+        Assert.That(_catalog.TryPlay("2-2", out MotionTemplate pull), Is.True);
+
+        List<float> dumped = HitTimes(pull, 11f, 11f);
+        Assert.That(dumped.Count, Is.EqualTo(4));
+        Assert.That(dumped[3] - dumped[0], Is.LessThan(0.05f));
+
+        float step = (float)(FrameDelta.MaxFrameMs / 1000.0);
+        List<float> spread = HitTimes(pull, step, 1f / 60f);
+        Assert.That(spread.Count, Is.EqualTo(4));
+        Assert.That(spread[3] - spread[0], Is.GreaterThan(1f));
+        Assert.That(spread[3], Is.LessThanOrEqualTo(Sum(pull) + 0.05f));
+    }
+
+    static List<float> HitTimes(MotionTemplate template, float firstDt, float laterDt)
+    {
+        var times = new List<float>();
+        var runner = new MotionTemplateRunner();
+        var boss = new MotionTarget(true, 0f, 0f, BossR);
+        runner.Begin(template, 0f, 0f, 3f, 0f, -1f, Body, 0.15f);
+        bool first = true;
+        int guard = 0;
+        while (!runner.Finished && guard++ < 800)
+        {
+            MotionTick tick = runner.Tick(first ? firstDt : laterDt, boss, default);
+            first = false;
+            for (int i = 0; i < tick.Hits.Length; i++)
+                times.Add(runner.Elapsed);
+        }
+        return times;
     }
 
     static float FinishZ(MotionTemplate template, MotionTarget boss)

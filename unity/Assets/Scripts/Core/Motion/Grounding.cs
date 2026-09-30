@@ -89,6 +89,28 @@ namespace Dovus.Core.Motion
             _y = _groundY;
         }
 
+        /// <summary>
+        /// Havada kalan faz eğriyi yazar. Yatay faz (geri tepme dahil) o karede zemine yapışır;
+        /// yumuşak iniş yalnız eğrisi hâlâ yerden yüksek olan faza kalır. Skill kimliği aranmaz.
+        /// </summary>
+        public void ApplyMotion(bool airborne, float rootY)
+        {
+            if (airborne)
+            {
+                Follow(rootY);
+                return;
+            }
+
+            if (MathF.Abs(rootY - _groundY) > 0.02f)
+            {
+                Follow(rootY);
+                Release();
+                return;
+            }
+
+            Snap();
+        }
+
         public void Tick(float dt)
         {
             if (!_landing)

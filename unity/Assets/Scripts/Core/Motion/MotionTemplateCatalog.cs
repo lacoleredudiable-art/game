@@ -645,6 +645,57 @@ namespace Dovus.Core.Motion
             return Math.Max(json + ClosingApproachM(template), authored);
         }
 
+        /// <summary>
+        /// Kendi üstündeki küre. Yarıçap menzil diye eklenince oyuncu yarıçapıyla iki kez sayılır
+        /// ve kısa silah (yumruk/kalkan 1-4) vuruşun gerisinde durur.
+        /// </summary>
+        public static float SelfSphereRadiusM(MotionTemplate template)
+        {
+            if (template == null)
+                return 0f;
+            float best = 0f;
+            for (int i = 0; i < template.Phases.Count; i++)
+            {
+                MotionHitSpec hit = template.Phases[i].Hit;
+                if (hit == null || hit.Payload == "none" || hit.Payload == "marker")
+                    continue;
+                if (hit.Anchor is not ("self" or "ring"))
+                    continue;
+                if (hit.RadiusM > best)
+                    best = hit.RadiusM;
+            }
+            return best;
+        }
+
+        /// <summary>
+        /// 3 m başlangıçta kapanış metre. Kalıp kenarı JSON'dan büyükse ve planlanan durak
+        /// hem JSON kenarını hem kendi küresini ıskalıyorsa metre yalnız JSON kenarındandır.
+        /// JSON'u zaten yeten silah (kılıç 1-4) ek hamle almaz.
+        /// </summary>
+        public static float ApproachMeters(
+            float centerDistM,
+            float playerRadiusM,
+            float targetRadiusM,
+            float jsonEdgeM,
+            MotionTemplate template)
+        {
+            float templateEdge = EdgeReachM(template);
+            float closing = ClosingApproachM(template);
+            float edge = Math.Max(Math.Max(0f, jsonEdgeM), templateEdge);
+            float meters = CastApproach.Meters(
+                centerDistM, playerRadiusM, targetRadiusM, edge, closing);
+            float sphere = SelfSphereRadiusM(template);
+            if (sphere <= 0.01f || jsonEdgeM <= 0.01f || jsonEdgeM + 0.001f >= edge)
+                return meters;
+            float stop = centerDistM - meters - closing;
+            bool jsonHits = CenterInReach(stop, playerRadiusM, targetRadiusM, jsonEdgeM);
+            bool sphereHits = stop <= sphere + Math.Max(0f, targetRadiusM) + 0.02f;
+            if (jsonHits || sphereHits)
+                return meters;
+            return CastApproach.Meters(
+                centerDistM, playerRadiusM, targetRadiusM, jsonEdgeM, closing);
+        }
+
         /// <summary>Merkez mesafesi, kenardan kenara JSON menziline sığıyor mu.</summary>
         public static bool CenterInReach(
             float centerDistM,
