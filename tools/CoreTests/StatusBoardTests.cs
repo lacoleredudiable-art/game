@@ -79,9 +79,9 @@ public class StatusBoardTests
     {
         var board = new StatusBoard();
         board.Apply(StatusKind.Shield, 2000, 10f);
-        Assert.That(board.AbsorbDamage(4f), Is.EqualTo(0f).Within(0.01f));
+        board.ConsumeShield(4f);
         Assert.That(board.ShieldRemaining, Is.EqualTo(6f).Within(0.01f));
-        Assert.That(board.AbsorbDamage(20f), Is.EqualTo(14f).Within(0.01f));
+        board.ConsumeShield(6f);
         Assert.That(board.Has(StatusKind.Shield), Is.False);
     }
 
@@ -91,7 +91,6 @@ public class StatusBoardTests
         var board = new StatusBoard();
         board.Apply(StatusKind.Stasis, 700, 1f);
         Assert.That(board.IsInvulnerable, Is.True);
-        Assert.That(board.AbsorbDamage(99f), Is.EqualTo(0f));
         Assert.That(board.Has(StatusKind.Stasis), Is.True);
     }
 
@@ -304,7 +303,6 @@ public class StatusBoardTests
         var board = new StatusBoard();
         board.Apply(StatusKind.Stealth, 4000, 1f);
         Assert.That(board.IsStealthed, Is.True);
-        Assert.That(board.AbsorbDamage(40f), Is.EqualTo(0f));
     }
 
     [Test]
@@ -316,9 +314,10 @@ public class StatusBoardTests
 
         var board = new StatusBoard();
         board.Apply(StatusKind.Shield, t.ShieldMs, t.ShieldAbsorb);
-        Assert.That(board.AbsorbDamage(30f), Is.EqualTo(0f).Within(0.01f));
+        board.ConsumeShield(30f);
         Assert.That(board.ShieldRemaining, Is.EqualTo(20f).Within(0.01f));
-        Assert.That(board.AbsorbDamage(25f), Is.EqualTo(5f).Within(0.01f));
+        board.ConsumeShield(20f);
+        Assert.That(board.Has(StatusKind.Shield), Is.False);
     }
 
     [Test]

@@ -117,11 +117,7 @@ namespace Dovus.Game
             OnWeaponSwapCompleted(_equippedWeapon);
             SyncCycleIndex();
             if (_weaponSwap.Rules.CancelsCombo)
-            {
-                _chainDirector?.Reset();
-                _lastChainStep = ChainStepResult.None;
                 _closingChainBonus = 1f;
-            }
             LogLoadout("swap");
         }
 

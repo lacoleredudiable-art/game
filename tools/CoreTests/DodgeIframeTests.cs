@@ -52,7 +52,8 @@ public class DodgeIframeTests
         Assert.That(lease.EffectsLive, Is.True);
         Assert.That(lease.CooldownSpent, Is.True);
 
-        Assert.That(DodgeCancelRules.TryCancel(lease, dead: false, stun: false, freeze: false, knockdown: false), Is.True);
+        Assert.That(DodgeCancelRules.Allowed(dead: false, stun: false, freeze: false, knockdown: false), Is.True);
+        lease.CancelForDodge();
         Assert.That(lease.OwnsPosition, Is.False);
         Assert.That(lease.EffectsLive, Is.False);
         Assert.That(lease.CooldownSpent, Is.True);
@@ -65,8 +66,8 @@ public class DodgeIframeTests
         lease.Arm(true);
 
         Assert.That(DodgeCancelRules.Allowed(dead: false, stun: true, freeze: false, knockdown: false), Is.False);
-        Assert.That(DodgeCancelRules.TryCancel(lease, dead: false, stun: false, freeze: true, knockdown: false), Is.False);
-        Assert.That(DodgeCancelRules.TryCancel(lease, dead: false, stun: false, freeze: false, knockdown: true), Is.False);
+        Assert.That(DodgeCancelRules.Allowed(dead: false, stun: false, freeze: true, knockdown: false), Is.False);
+        Assert.That(DodgeCancelRules.Allowed(dead: false, stun: false, freeze: false, knockdown: true), Is.False);
         Assert.That(lease.OwnsPosition, Is.True);
         Assert.That(lease.EffectsLive, Is.True);
     }

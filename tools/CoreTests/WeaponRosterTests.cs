@@ -94,9 +94,10 @@ public class WeaponRosterTests
         Assert.That(slam.Stun, Is.True);
         Assert.That(slam.StunSec, Is.EqualTo(0.5f));
         var hammer = new WeaponPassiveState();
-        Assert.That(hammer.TryHammerStun(0, W(6).Profile.Passive.IcdSec), Is.True);
-        Assert.That(hammer.TryHammerStun(3000, W(6).Profile.Passive.IcdSec), Is.False);
-        Assert.That(hammer.TryHammerStun(4000, W(6).Profile.Passive.IcdSec), Is.True);
+        Assert.That(hammer.HammerReady(0), Is.True);
+        hammer.CommitHammer(0, W(6).Profile.Passive.IcdSec);
+        Assert.That(hammer.HammerReady(3000), Is.False);
+        Assert.That(hammer.HammerReady(4000), Is.True);
 
         Assert.That(Eval(10, blocked: false).DamageMult, Is.EqualTo(1f));
         Assert.That(Eval(10, blocked: true).DamageMult, Is.EqualTo(1.2f));

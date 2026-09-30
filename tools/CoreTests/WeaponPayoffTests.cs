@@ -46,10 +46,9 @@ public class WeaponPayoffTests
     {
         var shield = new WeaponShortShield();
         shield.Grant(15f, 0, 3f);
-        Assert.That(WeaponShortShieldGate.Apply(dodgeBlocks: true, shield, 10f, 100), Is.EqualTo(0f));
         Assert.That(shield.Points, Is.EqualTo(15f));
 
-        Assert.That(WeaponShortShieldGate.Apply(false, shield, 10f, 100), Is.EqualTo(0f));
+        Assert.That(shield.Absorb(10f, 100), Is.EqualTo(0f));
         Assert.That(shield.Points, Is.EqualTo(5f));
         Assert.That(shield.Absorb(8f, 2000), Is.EqualTo(3f));
         Assert.That(shield.Points, Is.EqualTo(0f));

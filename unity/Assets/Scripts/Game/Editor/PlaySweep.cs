@@ -214,7 +214,6 @@ namespace Dovus.Game.EditorTools
             public float PlayerMove;
             public float PlayerAction;
             public float Shield;
-            public int Zones;
             public float Feet;
             public float FootGround;
             public float BossFeet;
@@ -738,19 +737,12 @@ namespace Dovus.Game.EditorTools
             }
             RefreshBody();
             bool busy = Performing() || (_body != null && _body.IsDisplacing) || BossPulling();
-            var zones = _md.ZoneDirector;
-            bool zonesLeft = zones != null && zones.ActiveZones.Count > 0;
             bool worldLeft = MechanicLeftovers() > 0;
             double waited = NowMs - _stageMs;
-            if ((busy || zonesLeft || worldLeft) && waited < 6000)
+            if ((busy || worldLeft) && waited < 6000)
                 return;
             if (busy)
                 ForceClean();
-            if (zonesLeft)
-            {
-                foreach (var z in zones.ActiveZones.ToList())
-                    zones.Remove(z.Id);
-            }
             if (worldLeft)
                 ClearMechanicWorld();
             _stage = Stage.Setup;
@@ -1075,9 +1067,7 @@ namespace Dovus.Game.EditorTools
             if (cooldown != null)
                 cooldown.Bind(cooldown.GlobalCooldownSec > 0f ? cooldown.GlobalCooldownSec : 0.3f, 1);
 
-            F<ChainDirector>(_md, "_chainDirector")?.Reset();
             S(_md, "_closingChainBonus", 1f);
-            S(_md, "_pendingChainBonus", 1f);
             _input.Dodge?.Reset();
             _ally?.GetComponent<ActorGrounding>()?.SnapPlanted();
         }
@@ -1293,7 +1283,6 @@ namespace Dovus.Game.EditorTools
                 BossHp = _bossVitals.Hp,
                 PlayerHp = _playerVitals != null ? _playerVitals.Hp : 0,
                 AllyHp = _ally != null ? _ally.Hp : 0,
-                Zones = _md.ZoneDirector != null ? _md.ZoneDirector.ActiveZones.Count : 0,
             };
             SentencePhase sentence = _input.Engine != null ? _input.Engine.State.Phase : SentencePhase.Idle;
             bool drawing = sentence == SentencePhase.Building || sentence == SentencePhase.Recovering;
@@ -1510,9 +1499,6 @@ namespace Dovus.Game.EditorTools
             int allyHeal = _frames.Max(x => x.AllyHp) - _pre.AllyHp;
             if (allyHeal > 0)
                 effects.Add($"dost +{allyHeal} can");
-            int zones = _frames.Max(x => x.Zones);
-            if (zones > 0)
-                effects.Add($"alan {zones}");
             int roots = _player.gameObject.scene.rootCount - _pre.RootCount;
             r.Effects = string.Join(", ", effects);
             r.Hit = r.Damage > 0.01f || effects.Count > 0;

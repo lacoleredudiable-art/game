@@ -11,16 +11,7 @@ namespace Dovus.Game
     {
         public StatusBoard Board { get; } = new StatusBoard();
 
-        /// <summary>
-        /// 16 Eylül: ulti (active_modes) çarpanları StatusBoard'a KARIŞTIRILMADI — StatusKind
-        /// enum'u element-sistemi.json "mechanics" id'leriyle birebir (durum etkileşim tablosu
-        /// bunlara göre kurulu); ulti tamamen ayrı bir eksen. Yalnızca oyuncunun ActorStatus'una
-        /// bağlanır (bkz. ManifestationDirector.Bind), boss'unki hep null kalır.
-        /// </summary>
-        public ActiveModeDirector ModeDirector { get; set; }
-
-        /// <summary>Pasif çarpanları (damage_taken / armor / reflect) — yalnız oyuncu.</summary>
-        public PassiveDirector PassiveDirector { get; set; }
+        /// <summary>Slot pasif çarpanları (reflect) — yalnız oyuncu.</summary>
         public SlotPassiveDirector SlotPassiveDirector { get; set; }
 
         /// <summary>Kalkan sonrası gerçek gelen hasar; radial kesme ve poise için.</summary>
@@ -35,9 +26,6 @@ namespace Dovus.Game
         /// </summary>
         public System.Func<float, float> IncomingDamageRedirect { get; set; }
 
-        /// <summary>Karabasan hattı: oyuncu hasar alınca koparma (SpaceDirectorHost).</summary>
-        public System.Action SpaceLinkBreak { get; set; }
-
         string _castMobility = string.Empty;
         double _castMobilityUntilMs;
 
@@ -46,7 +34,6 @@ namespace Dovus.Game
         /// <summary>KinematicMotor bunu okur — düşman CC'sinden ayrı cast mobility.</summary>
         public float EffectiveMoveSpeedMult =>
             Board.MoveSpeedMult
-            * (ModeDirector?.MoveSpeedMult ?? 1f)
             * PortalBorderTeamHooks.MoveSpeedMult
             * (CastMobilityActive && _castMobility == Dovus.Core.Grammar.SkillMobility.SlowedMove
                 ? _tuning.SlowSpeedMult
@@ -54,7 +41,6 @@ namespace Dovus.Game
 
         public bool EffectiveBlocksMovement =>
             Board.BlocksMovement
-            || (ModeDirector?.BlocksMovement ?? false)
             || (CastMobilityActive && _castMobility == Dovus.Core.Grammar.SkillMobility.Rooted);
 
         public void GrantCastMobility(string mobility, double untilWorldMs)
@@ -183,10 +169,7 @@ namespace Dovus.Game
             if (_playerVitals != null && PlayerDodgeRig.BlocksIncoming(this, dodgeable))
                 return;
             double now = _clock != null ? _clock.Director.WorldTimeMs : 0;
-            Armor.Passive = PassiveDirector?.ArmorAdd ?? 0f;
-            float taken = (ModeDirector?.DamageTakenMult ?? 1f)
-                * (PassiveDirector?.DamageTakenMult ?? 1f)
-                * Board.IncomingDamageMult;
+            float taken = Board.IncomingDamageMult;
             if (_playerVitals != null)
                 taken *= PortalBorderTeamHooks.PlayerDamageTakenMult;
             // Kalkanın kısa kalkanı, tahta kalkanıyla aynı son aşamada (f) erir.
@@ -210,7 +193,6 @@ namespace Dovus.Game
                 Shield = Board.ShieldRemaining + shortShield,
                 Invulnerable = BossStatusMath.DamageInvulnerable(Board.IsInvulnerable),
                 Poise = raw,
-                ThreatMultiplier = PassiveDirector?.ThreatMultiplier ?? 1f,
                 ScaleMagnitudes = true
             });
             LastHitWasCrit = outcome.WasCrit;
@@ -240,10 +222,7 @@ namespace Dovus.Game
             else if (_playerVitals != null)
             {
                 DamageTaken?.Invoke(afterShield);
-                if (_playerVitals.ApplyDamage(Mathf.CeilToInt(afterShield), dodgeable, shortShieldAlreadyApplied: true))
-                    SpaceLinkBreak?.Invoke();
-                else if (afterShield > 0f)
-                    SpaceLinkBreak?.Invoke(); // hasar alındı → hat kopar (ölüm şart değil)
+                _playerVitals.ApplyDamage(Mathf.CeilToInt(afterShield), dodgeable, shortShieldAlreadyApplied: true);
             }
         }
 
@@ -251,7 +230,7 @@ namespace Dovus.Game
         {
             if (reflectBase <= 0f || _playerVitals == null)
                 return;
-            float reflect = (PassiveDirector?.ReflectRatioAdd ?? 0f) + ActiveSkillReflectRatio;
+            float reflect = ActiveSkillReflectRatio;
             reflect += SlotPassiveDirector?.ReflectRatioAdd ?? 0f;
             BossVitals reflectTarget = ReflectBossVitals;
             if (reflect <= 0f || reflectTarget == null || reflectTarget.IsDown)
@@ -267,21 +246,18 @@ namespace Dovus.Game
             if (amount <= 0f)
                 return;
             // 16 Eylül: "Kavurucu Yara" — yanık hedefte pasif regen tick'i de azalır.
-            float healMult = Board.HealEffectivenessMult * (PassiveDirector?.HealMult ?? 1f);
+            float healMult = Board.HealEffectivenessMult;
             var healedOutcome = DamagePipeline.Resolve(new DamageQuery
             {
                 Heal = true,
                 HealPower = amount,
                 HealMultiplier = healMult,
-                ThreatMultiplier = PassiveDirector?.ThreatMultiplier ?? 1f,
                 ScaleMagnitudes = true
             });
             LastThreat = healedOutcome.Threat;
             if (_playerVitals != null)
             {
-                int healed = _playerVitals.ApplyHeal(Mathf.CeilToInt(healedOutcome.Amount));
-                if (healed > 0)
-                    ModeDirector?.NotifyHealed(); // "healer iyileştirirse biter" (Kan Çılgınlığı)
+                _playerVitals.ApplyHeal(Mathf.CeilToInt(healedOutcome.Amount));
             }
         }
 

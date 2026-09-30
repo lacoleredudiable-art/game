@@ -113,12 +113,5 @@ namespace Dovus.Core.Combat
                 return DodgeGrade.Temiz;
             return DodgeGrade.Siyirdi;
         }
-
-        public bool IsInvulnerableAtStrike(int dodgePressMs, int strikeTimeMs)
-        {
-            int iframeStart = dodgePressMs + _dodge.IframeStartMs;
-            int iframeEnd = iframeStart + _dodge.IframeMs;
-            return strikeTimeMs >= iframeStart && strikeTimeMs < iframeEnd;
-        }
     }
 }

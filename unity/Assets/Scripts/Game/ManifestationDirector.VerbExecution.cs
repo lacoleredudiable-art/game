@@ -234,7 +234,6 @@ namespace Dovus.Game
             float mult = skill.DamageMult > 0f ? skill.DamageMult : 1f;
             if (_playerStatus != null)
                 mult *= _playerStatus.Board.OutgoingDamageMult;
-            mult *= _passiveDirector?.DamageMult ?? 1f;
             mult *= _slotPassives?.DamageMultFor(_slotQueryCastId) ?? 1f;
             mult *= SelfDamageBuffMult();
 
@@ -249,34 +248,29 @@ namespace Dovus.Game
                 taken = _bossStatus.Board.IncomingDamageMult;
                 shield = _bossStatus.Board.ShieldRemaining;
             }
-            float penPct = _passiveDirector?.ArmorPenPercent ?? 0f;
             bool ignoreArmor = !skill.IsEmpty && !skill.EngineModifiers.IsNull
                 && skill.EngineModifiers["ignore_armor"].AsBool(false);
             float slotPen = _slotPassives?.ArmorPenPercentFor(_slotQueryCastId) ?? 0f;
-            penPct = SlotPassiveCombat.CombineArmorPen(penPct, ignoreArmor, slotPen);
+            float penPct = SlotPassiveCombat.CombineArmorPen(0f, ignoreArmor, slotPen);
             var dealt = DamagePipeline.Resolve(new DamageQuery
             {
                 SkillPower = raw,
-                AttackPower = _passiveDirector?.AttackPower ?? 1f,
                 Multiplier = mult,
                 CanCrit = !skill.IsEmpty && skill.BaseDamage > 0f,
                 CritChance = DamagePipeline.DefaultCritChance + Mathf.Max(0f, ExtraCritChanceAdd(skill)),
                 Armor = armor,
-                ArmorPenFlat = _passiveDirector?.ArmorPenFlat ?? 0f,
                 ArmorPenPercent = penPct,
                 DamageTakenFactor = taken,
                 Shield = shield,
                 ApplyVariance = true,
                 VarianceSeed = _damageRoll++,
                 Poise = skill.IsEmpty ? 0f : skill.BasePoise,
-                ThreatMultiplier = _passiveDirector?.ThreatMultiplier ?? 1f,
                 ScaleMagnitudes = true
             });
             if (dealt.ShieldAbsorbed > 0f && _bossStatus != null)
                 _bossStatus.Board.ConsumeShield(dealt.ShieldAbsorbed);
             float damage = dealt.Amount;
             _damageHud?.ShowDamage(damage, false, BossHitPoint(), DamageTint());
-            _lastDamageDealtMs = _clock.Director.WorldTimeMs;
             float lifesteal = AdjectiveLifesteal(skill);
             lifesteal += _slotPassives?.LifestealAddFor(_slotQueryCastId) ?? 0f;
             if (lifesteal > 0f && _player != null)

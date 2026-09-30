@@ -72,7 +72,7 @@ public class PositionOwnershipTests
             bool grammarMoves = PlayerPositionStat(plan) != null;
             bool templateMoves = PositionOwnership.MovesPlayer(binding.Template);
             Assert.That(
-                PositionOwnership.PositionWriters(templateMoves, grammarMoves),
+                PositionOwnershipOracle.PositionWriters(templateMoves, grammarMoves),
                 Is.LessThanOrEqualTo(1),
                 id);
             if (!templateMoves || !grammarMoves)
@@ -85,14 +85,14 @@ public class PositionOwnershipTests
                 _motion.Fallbacks.StepM);
             Assert.That(playback.OwnsPosition, Is.True, id);
             Assert.That(
-                PositionOwnership.SuppressesMove(true, "konum", PlayerPositionStat(plan)),
+                PositionOwnershipOracle.SuppressesMove(true, "konum", PlayerPositionStat(plan)),
                 Is.True,
                 id);
         }
 
-        Assert.That(PositionOwnership.PositionWriters(templateMovesPlayer: true, grammarMovesPlayer: true), Is.EqualTo(1));
-        Assert.That(PositionOwnership.PositionWriters(templateMovesPlayer: false, grammarMovesPlayer: true), Is.EqualTo(1));
-        Assert.That(PositionOwnership.PositionWriters(templateMovesPlayer: false, grammarMovesPlayer: false), Is.EqualTo(0));
+        Assert.That(PositionOwnershipOracle.PositionWriters(templateMovesPlayer: true, grammarMovesPlayer: true), Is.EqualTo(1));
+        Assert.That(PositionOwnershipOracle.PositionWriters(templateMovesPlayer: false, grammarMovesPlayer: true), Is.EqualTo(1));
+        Assert.That(PositionOwnershipOracle.PositionWriters(templateMovesPlayer: false, grammarMovesPlayer: false), Is.EqualTo(0));
     }
 
     [Test]
@@ -236,7 +236,7 @@ public class PositionOwnershipTests
         var step = new GrammarPositionStep(PositionOwnership.Displace, 2.4);
         PositionPlayback filled = PositionOwnership.Prepare(emptyDash, new[] { step }, 0.28f, 1.2f);
         Assert.That(filled.OwnsPosition, Is.True);
-        Assert.That(PositionOwnership.SuppressesMove(true, "konum", PositionOwnership.Displace), Is.True);
+        Assert.That(PositionOwnershipOracle.SuppressesMove(true, "konum", PositionOwnership.Displace), Is.True);
         Assert.That(filled.Template.Phases[0].DistanceM, Is.EqualTo(2.4f).Within(0.001f));
         Assert.That(filled.Template.Phases.Count, Is.EqualTo(1));
 
@@ -252,7 +252,7 @@ public class PositionOwnershipTests
         var step = new GrammarPositionStep(PositionOwnership.Behind, 3.0);
         PositionPlayback playback = PositionOwnership.Prepare(dash, new[] { step }, 0.28f, 1.2f);
         Assert.That(playback.OwnsPosition, Is.True);
-        Assert.That(PositionOwnership.SuppressesMove(true, "konum", PositionOwnership.Behind), Is.True);
+        Assert.That(PositionOwnershipOracle.SuppressesMove(true, "konum", PositionOwnership.Behind), Is.True);
         Assert.That(playback.Template.Phases.Count(p => p.Land == "behind"), Is.EqualTo(1));
 
         const float bossZ = 4f;
@@ -269,7 +269,7 @@ public class PositionOwnershipTests
         PositionPlayback playback = PositionOwnership.Prepare(dash, new[] { step }, 0.28f, 1.2f);
         Assert.That(playback.PlaceReturnMark, Is.True);
         Assert.That(playback.Template.Phases[^1].Motion, Is.EqualTo("return"));
-        Assert.That(PositionOwnership.SuppressesMove(true, "konum", PositionOwnership.ReturnMark), Is.True);
+        Assert.That(PositionOwnershipOracle.SuppressesMove(true, "konum", PositionOwnership.ReturnMark), Is.True);
 
         const float bossZ = 1.5f;
         const float body = 0.5f;
@@ -324,9 +324,9 @@ public class PositionOwnershipTests
         PositionPlayback playback = PositionOwnership.Prepare(still, new[] { swap }, 0.28f, 1.2f);
         Assert.That(playback.OwnsPosition, Is.False);
         Assert.That(ReferenceEquals(playback.Template, still), Is.True);
-        Assert.That(PositionOwnership.SuppressesMove(false, "konum", PositionOwnership.Displace), Is.False);
-        Assert.That(PositionOwnership.SuppressesMove(false, "konum", PositionOwnership.Behind), Is.False);
-        Assert.That(PositionOwnership.SuppressesMove(false, "konum", PositionOwnership.ReturnMark), Is.False);
+        Assert.That(PositionOwnershipOracle.SuppressesMove(false, "konum", PositionOwnership.Displace), Is.False);
+        Assert.That(PositionOwnershipOracle.SuppressesMove(false, "konum", PositionOwnership.Behind), Is.False);
+        Assert.That(PositionOwnershipOracle.SuppressesMove(false, "konum", PositionOwnership.ReturnMark), Is.False);
 
         Assert.That(_motion.TryPlay("3-9", out MotionTemplate focused), Is.True);
         Assert.That(PositionOwnership.MovesPlayer(focused), Is.True);
@@ -340,8 +340,8 @@ public class PositionOwnershipTests
         Assert.That(PositionOwnership.Kind("konum", "portal"), Is.EqualTo(PositionStepKind.None));
         Assert.That(PositionOwnership.Kind("hiz", "hareket"), Is.EqualTo(PositionStepKind.None));
         Assert.That(PositionOwnership.Kind("deger", "can"), Is.EqualTo(PositionStepKind.None));
-        Assert.That(PositionOwnership.SuppressesMove(true, "konum", "cek"), Is.False);
-        Assert.That(PositionOwnership.SuppressesMove(true, "hiz", "hareket"), Is.False);
+        Assert.That(PositionOwnershipOracle.SuppressesMove(true, "konum", "cek"), Is.False);
+        Assert.That(PositionOwnershipOracle.SuppressesMove(true, "hiz", "hareket"), Is.False);
     }
 
     [Test]

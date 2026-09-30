@@ -44,17 +44,4 @@ namespace Dovus.Core.Equipment
             return taken;
         }
     }
-
-    /// <summary>Dodge kapısı önce. Kalkan yalnız dodge yutmadıysa puan yer.</summary>
-    public static class WeaponShortShieldGate
-    {
-        public static float Apply(bool dodgeBlocks, WeaponShortShield shield, float incoming, double nowMs)
-        {
-            if (dodgeBlocks)
-                return 0f;
-            if (incoming <= 0f || shield == null)
-                return incoming;
-            return shield.Absorb(incoming, nowMs);
-        }
-    }
 }

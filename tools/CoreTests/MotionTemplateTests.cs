@@ -671,7 +671,7 @@ public class MotionTemplateTests
             }
             bool templateMoves = PositionOwnership.MovesPlayer(binding.Template);
             Assert.That(
-                PositionOwnership.PositionWriters(templateMoves, grammarMoves),
+                PositionOwnershipOracle.PositionWriters(templateMoves, grammarMoves),
                 Is.LessThanOrEqualTo(1),
                 id);
         }

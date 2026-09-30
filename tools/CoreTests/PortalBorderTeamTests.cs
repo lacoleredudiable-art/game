@@ -78,14 +78,13 @@ public class PortalBorderTeamTests
         var high = new BorderMode();
         high.OnSkill(1, "12-8", 0.50f);
         Assert.That(high.Active(1), Is.False);
-        Assert.That(high.ColumnActive(1), Is.True);
-        Assert.That(high.ColumnAttackSpeedMult(1), Is.EqualTo(1.20f).Within(0.001f));
+        Assert.That(high.ColumnMoveSpeedMult(1), Is.EqualTo(1.20f).Within(0.001f));
         high.Tick(1, 0.50f, 2.5f);
-        Assert.That(high.ColumnAttackSpeedMult(1), Is.EqualTo(1.35f).Within(0.001f));
+        Assert.That(high.ColumnMoveSpeedMult(1), Is.EqualTo(1.35f).Within(0.001f));
         high.Tick(1, 0.50f, 2.5f);
-        Assert.That(high.ColumnAttackSpeedMult(1), Is.EqualTo(1.50f).Within(0.001f));
+        Assert.That(high.ColumnMoveSpeedMult(1), Is.EqualTo(1.50f).Within(0.001f));
         high.Tick(1, 0.50f, 0.1f);
-        Assert.That(high.ColumnActive(1), Is.False);
+        Assert.That(high.ColumnMoveSpeedMult(1), Is.EqualTo(1f).Within(0.001f));
 
         var low = new BorderMode();
         low.OnSkill(1, "12-8", 0.05f);
@@ -364,29 +363,25 @@ public class PortalBorderTeamTests
         var boss = Boss(0f, 5f);
         Body caster = Actor(1, 0f, 0f);
         portal.Cast("11-8", caster, Actor(2, 4f, 4f), null, boss);
-        Assert.That(portal.IsSunk(2), Is.True);
         portal.Tick(0.6f, caster, null, boss);
         Placement rose = One(portal.Drain(), 2);
         Assert.That(rose.Y, Is.EqualTo(0f).Within(0.001f));
         Assert.That(Dist(rose.X, rose.Z, caster.X, caster.Z), Is.LessThan(2f));
         AssertOutside(rose.X, rose.Z, 0.5f, boss);
         Assert.That(portal.BuffFor(2).DamageMult, Is.EqualTo(1.10f).Within(0.001f));
-        Assert.That(portal.IsSunk(2), Is.False);
     }
 
     [Test]
-    public void Skill_11_10_TeamGateOptOut()
+    public void Skill_11_10_TeamGateGathers()
     {
         var portal = new PortalSystem();
         var boss = Boss(0f, 6f);
         Body caster = Actor(1, 0f, 0f);
         var allies = new List<Body> { Actor(2, -4f, 1f), Actor(3, 4f, 1f) };
         portal.Cast("11-10", caster, default, allies, boss);
-        portal.OptOut(3);
         portal.Tick(1f, caster, allies, boss);
         IReadOnlyList<Placement> moves = portal.Drain();
         Placement came = One(moves, 2);
-        Assert.That(moves, Has.None.Matches<Placement>(m => m.ActorId == 3));
         Assert.That(came.Y, Is.EqualTo(0f).Within(0.001f));
         Assert.That(Dist(came.X, came.Z, caster.X, caster.Z), Is.LessThan(2.2f));
         AssertOutside(came.X, came.Z, 0.5f, boss);
@@ -427,7 +422,7 @@ public class PortalBorderTeamTests
     }
 
     [Test]
-    public void Skill_5_4_MineByAllyOrBoss()
+    public void Skill_5_4_MineByAlly()
     {
         var team = new TeamComboSystem();
         var boss = Boss(0f, 6f);
@@ -438,17 +433,6 @@ public class PortalBorderTeamTests
         Assert.That(team.AllyUsedSkill(caster, "1-1", mx, mz).MineMult, Is.EqualTo(0f).Within(0.001f));
         TeamPulse byAlly = team.AllyUsedSkill(friend, "1-1", mx, mz);
         Assert.That(byAlly.MineMult, Is.EqualTo(2f).Within(0.001f));
-
-        var again = new TeamComboSystem();
-        again.Cast("5-4", caster, null, new[] { friend }, boss);
-        again.TryMine(out mx, out mz);
-        Assert.That(again.BossStepped(mx, mz).MineMult, Is.EqualTo(2f).Within(0.001f));
-
-        var stale = new TeamComboSystem();
-        stale.Cast("5-4", caster, null, new[] { friend }, boss);
-        stale.Tick(6.1f, new[] { caster, friend }, boss);
-        stale.TryMine(out _, out _);
-        Assert.That(stale.BossStepped(0f, 3f).MineMult, Is.EqualTo(0f).Within(0.001f));
     }
 
     [Test]
@@ -580,10 +564,9 @@ public class PortalBorderTeamTests
         Assert.That(team.AttackSpeedMult(2), Is.EqualTo(1.50f).Within(0.001f));
         friend.Z = 0.1f;
         team.Tick(0.2f, all, Boss(0f, 8f));
-        Assert.That(team.RopeLinked(1), Is.True);
+        Assert.That(team.MoveSpeedMult(1), Is.EqualTo(1.50f).Within(0.001f));
         friend.X = 6f;
         team.Tick(0.2f, all, Boss(0f, 8f));
-        Assert.That(team.RopeLinked(1), Is.False);
         Assert.That(team.MoveSpeedMult(1), Is.EqualTo(1f).Within(0.001f));
     }
 
@@ -670,7 +653,7 @@ public class PortalBorderTeamTests
         Assert.That(mode.OnSkill(1, skill, threshold), Is.False, skill + " eşikte açılmaz");
         Assert.That(mode.OnSkill(1, skill, below), Is.True, skill);
         Assert.That(mode.Threshold(1), Is.EqualTo(threshold).Within(0.001f));
-        Assert.That(mode.BorderAttackSpeedMult(1), Is.EqualTo(attack).Within(0.001f));
+        Assert.That(mode.AttackSpeedMult(1) / mode.ColumnMoveSpeedMult(1), Is.EqualTo(attack).Within(0.001f));
         Assert.That(mode.LifestealAdd(1), Is.EqualTo(life).Within(0.001f));
         Assert.That(mode.DamageMult(1), Is.EqualTo(damage).Within(0.001f));
         Assert.That(mode.AuraLabel(1), Does.Contain("Sınır"));

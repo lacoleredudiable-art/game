@@ -58,7 +58,7 @@ namespace Dovus.Core.Grammar
         /// <summary>
         /// docs/element-sistemi.json "active_modes" (ulti): aynı elementin 4'lüsü (X-X-X-X).
         /// 16 Eylül: "v5.2.1 hiç aktif olmadı" güven kaygısına karşılık motor artık bunu da
-        /// okuyor — tetikleme/efekt uygulaması Core/Combat/ActiveModeDirector işi.
+        /// okuyor. v6.1'de boş; uygulama katmanı (ActiveModeDirector) kaldırıldı.
         /// </summary>
         public IReadOnlyList<ActiveModeNode> ActiveModes => _activeModes;
 

@@ -337,26 +337,6 @@ namespace Dovus.Core.Status
             }
         }
 
-        /// <summary>Kalkan hasar emer; stasis/stealth tüm hasarı yutar. Kalan hasarı döner.</summary>
-        public float AbsorbDamage(float amount)
-        {
-            if (amount <= 0f)
-                return amount;
-            if (IsInvulnerable || IsStealthed)
-                return 0f;
-            if (!Has(StatusKind.Shield))
-                return amount;
-
-            StatusEntry s = _active[StatusKind.Shield];
-            float absorbed = Math.Min(s.Magnitude, amount);
-            s.Magnitude -= absorbed;
-            if (s.Magnitude <= 0.01f)
-                _active.Remove(StatusKind.Shield);
-            else
-                _active[StatusKind.Shield] = s;
-            return amount - absorbed;
-        }
-
         /// <summary>Pipeline kalkan payını hesapladı; havuzdan düşülür.</summary>
         public void ConsumeShield(float absorbed)
         {

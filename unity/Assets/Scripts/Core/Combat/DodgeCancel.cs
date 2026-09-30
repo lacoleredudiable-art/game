@@ -11,15 +11,6 @@ namespace Dovus.Core.Combat
 
         public static bool Allowed(bool dead, bool stun, bool freeze, bool knockdown) =>
             !dead && !HardLock(stun, freeze, knockdown);
-
-        /// <summary>İzin varsa kalıbın konumunu hemen bırakır. İzin yoksa kira olduğu gibi kalır.</summary>
-        public static bool TryCancel(SkillCastLease lease, bool dead, bool stun, bool freeze, bool knockdown)
-        {
-            if (lease == null || !Allowed(dead, stun, freeze, knockdown))
-                return false;
-            lease.CancelForDodge();
-            return true;
-        }
     }
 
     /// <summary>

@@ -134,7 +134,7 @@ public class WeaponPassiveFixTests
         EquipmentItem sword = W(4);
         state.ArmSwapBonus(sword.Profile.Id, sword.Profile.SwapBonusId, 0, sword.Profile.SwapBonus.WindowSec);
         Assert.That(state.PeekBonus(sword.Profile.Id, 100, out WeaponSwapBonusSpec arc, sword.Profile), Is.True);
-        float liveArc = WeaponPassiveRules.ActiveArcDeg(sword.Profile.Passive.ArcDeg, arc.ArcDeg);
+        float liveArc = arc.ArcDeg > 0f ? arc.ArcDeg : sword.Profile.Passive.ArcDeg;
         Assert.That(liveArc, Is.EqualTo(180f));
         Assert.That(MeleeArc.InFront(89f, liveArc), Is.True);
         Assert.That(MeleeArc.InFront(89f, 144f), Is.False);
