@@ -35,7 +35,11 @@ namespace Dovus.Core.Tuning
 
         public int ActiveMs = 90;
         public int RecoveryMs = 720;
-        public int Damage = 0;
+        /// <summary>
+        /// Yere çakma hasarı. docs/bosses/karadul.json tuning.maps_to BossTuning.Damage = 22.
+        /// Prototip bunu açılışta sıfırlamaz; kayıtlı ayar (TryLoad) bu varsayılanın üstüne yazar.
+        /// </summary>
+        public int Damage = 22;
         public int IdleMinMs = 700;
         public int IdleMaxMs = 1500;
         public float ApproachSpeedMps = 2.2f;
@@ -45,6 +49,18 @@ namespace Dovus.Core.Tuning
 
         // Boss can tavanı — dovus-sistemi.md §11
         public float MaxHp = 120f;
+
+        /// <summary>
+        /// Poise tavanı. Spec bir tavan yazmıyor; base_poise 15–20 ve silah poise_mult
+        /// (çekiç 1.8, swap 2) ile birkaç ağır vuruş kırsın diye 100. docs/durum.md sapma.
+        /// </summary>
+        public float PoiseMax = 100f;
+
+        /// <summary>
+        /// Poise 0 olunca sersemlik süresi. karadul.json vitals.stagger_duration_sec 0.4 yazar;
+        /// bu prototip turu 1.5 sn istiyor. Ayar değeri, koda gömülü his değil. docs/durum.md.
+        /// </summary>
+        public float StaggerDurationSec = 1.5f;
 
         public void CopyFrom(BossTuning other)
         {
@@ -68,6 +84,8 @@ namespace Dovus.Core.Tuning
             ApproachSpeedMps = other.ApproachSpeedMps;
             RespawnMaxSec = other.RespawnMaxSec;
             MaxHp = other.MaxHp;
+            PoiseMax = other.PoiseMax;
+            StaggerDurationSec = other.StaggerDurationSec;
         }
 
         public void ResetToDefaults() => CopyFrom(new BossTuning());

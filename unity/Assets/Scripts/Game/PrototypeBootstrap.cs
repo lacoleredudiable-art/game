@@ -66,9 +66,8 @@ namespace Dovus.Game
             // kaydedilmiş değerlerle doğar, sonradan "sıçrayan" bir düzeltme karesi olmaz.
             var tuningConfig = TuningConfig.Create(combat, _tuning);
             tuningConfig.TryLoad();
-            // His denemesi: boss vurmasın (kayıtlı ayar ezmesin).
-            combat.Boss.Damage = 0;
-            combat.Boss.FireConeDamage = 0; // 16 Eylül: ikinci saldırı da bu deneyin kapsamında.
+            // Boss hasarı tuning'den (karadul slam 22 / fire cone 18). Kayıtlı ayar bunu ezer;
+            // açılışta sıfırlanmaz. Oyuncu canı Dev HP ile korunur (V6 paneli).
             var clock = gameObject.AddComponent<GameClock>();
 
             var arena = CreateArena();
@@ -159,6 +158,7 @@ namespace Dovus.Game
             var vitals = player.AddComponent<PlayerVitals>();
             // His: heal denemesi — oyuncu da %50 (full iken mend boş döner).
             vitals.Bind(combat.Boss, playerHp, startRatio: 0.5f);
+            vitals.SetDevHp(true);
 
             var resource = player.AddComponent<PlayerResource>();
             // docs/element-sistemi.json resource_system: 100 / 8 / 1.5
@@ -495,7 +495,7 @@ namespace Dovus.Game
                 director, skills, playerStatus, _tuning, view.CanvasRoot, elementTransitionMs);
 
             var v6Panel = root.AddComponent<V611DebugPanel>();
-            v6Panel.Configure(input, director, buildSelect, view.CanvasRoot);
+            v6Panel.Configure(input, director, buildSelect, view.CanvasRoot, vitals);
 
             CreateTuningPanel(tuningConfig, vitals);
         }

@@ -205,6 +205,10 @@ namespace Dovus.Game
                         else if (e.Amount < 1)
                             ApplyOnce(boss, StatusKind.Slow, ms, (float)e.Amount, applied);
                         break;
+                    case ("deger", "hasar_buff"):
+                        if (BossStatusMath.TryEnemyDamageDebuff(e.Amount, e.DurationSec, out float weaken, out double weakenMs))
+                            ApplyOnce(boss, StatusKind.Weaken, weakenMs, weaken, applied);
+                        break;
                     case ("gorunurluk", "kor"):
                         if (CardEffectRules.AccuracyIsSlow(_cardEffect))
                         {

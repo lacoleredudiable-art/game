@@ -20,12 +20,14 @@ namespace Dovus.Game
         RectTransform _bossRoot;
         RectTransform _playerPanel;
         RectTransform _bossBg;
+        RectTransform _poiseBg;
         RectTransform _playerBg;
         RectTransform _manaBg;
         RectTransform _allyBg;
         Image _playerFill;
         Image _manaFill;
         Image _bossFill;
+        Image _poiseFill;
         Image _allyFill;
         Image _playerSheen;
         Image _manaSheen;
@@ -130,6 +132,11 @@ namespace Dovus.Game
             CreatePhaseNotches(_bossBg, _bossData);
             _bossLabel = CreateLabel(_bossBg, "BossHp");
             _bossLabel.alignment = TextAnchor.MiddleCenter;
+            _poiseFill = CreateBar(_bossRoot, "Poise", out _poiseBg, out _);
+            _poiseFill.color = new Color(0.95f, 0.72f, 0.25f, 1f);
+            Text poiseLabel = CreateLabel(_poiseBg, "Poise");
+            poiseLabel.alignment = TextAnchor.MiddleCenter;
+            poiseLabel.text = "POISE";
             CreateCastBar(_bossRoot);
             CreatePhaseBanner(canvasRoot);
 
@@ -568,10 +575,17 @@ namespace Dovus.Game
                 _bossName.rectTransform.sizeDelta = new Vector2(bossW, nameH);
                 _bossBg.anchoredPosition = new Vector2(-bossW * 0.5f, -nameH);
                 _bossBg.sizeDelta = new Vector2(bossW, bossH);
-                // Cast barı boss barının altında; etiketi barın üstünde durur.
+                float poiseGap = HexagonLayoutScreen.DpToPixels(3f);
+                float poiseH = Mathf.Max(6f, bossH * 0.42f);
+                if (_poiseBg != null)
+                {
+                    _poiseBg.anchoredPosition = new Vector2(-bossW * 0.5f, -(nameH + bossH + poiseGap));
+                    _poiseBg.sizeDelta = new Vector2(bossW, poiseH);
+                }
+                // Cast barı poise barının altında; etiketi barın üstünde durur.
                 float castLabelH = HexagonLayoutScreen.DpToPixels(th.CastLabelDp + 4f);
                 float castH = HexagonLayoutScreen.DpToPixels(th.CastBarHeightDp);
-                float castTop = nameH + bossH + castLabelH;
+                float castTop = nameH + bossH + poiseGap + poiseH + castLabelH;
                 if (_castRoot != null)
                 {
                     _castRoot.anchoredPosition = new Vector2(0f, -castTop);
@@ -660,6 +674,13 @@ namespace Dovus.Game
                 if (_bossLabel != null)
                     _bossLabel.text = "HP   " + Mathf.CeilToInt(_bossVitals.Hp) + "  /  "
                         + Mathf.CeilToInt(_bossVitals.MaxHp);
+                if (_poiseFill != null && _bossDirector != null)
+                {
+                    _poiseFill.fillAmount = Mathf.Clamp01(_bossDirector.PoiseRatio);
+                    _poiseFill.color = _bossDirector.IsPoiseStaggered
+                        ? new Color(0.95f, 0.32f, 0.18f, 1f)
+                        : new Color(0.95f, 0.72f, 0.25f, 1f);
+                }
             }
 
             if (_hasAlly && _ally != null && _allyFill != null)

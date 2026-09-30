@@ -13,8 +13,29 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (PR #33 silah tarama artıkları Play testi, merge yok) ·
-**Dal:** `master` · **Sıradaki:** Top geri tepme fazında ayak havada (1-3, 6-3, 5-8, 6-8, 7-8); #29 Kılıç 9-10 / 2-6 / 11-8 + sınır–can çalma çakışması
+**Son güncelleme:** 30 Eylül 2026 (boss hasarı ve durum etkileri, merge yok) ·
+**Dal:** `cursor/boss-status-effects-ca3b` · **Sıradaki:** Unity Play listesi (bu not); Top geri tepme fazında ayak havada (1-3, 6-3, 5-8, 6-8, 7-8); #29 Kılıç 9-10 / 2-6 / 11-8 + sınır–can çalma çakışması
+
+> **30 Eylül — boss hasarı ve durum etkileri (`cursor/boss-status-effects-ca3b`): merge edilmedi.**
+> `dotnet test` 506/506. Unity Play bu ortamda yok.
+> (1) Açılış `Boss.Damage` / `FireConeDamage` sıfırlamıyor. Varsayılan slam 22, nefes 18
+> (`karadul.json`). Kayıtlı ayar hâlâ 0 ise AYAR sıfırlanana kadar 0 kalır.
+> (2) V6 panelinde **Dev HP** varsayılan AÇIK, havuz 1_000_000_000. KAPALI normal can.
+> Sonsuz diriliş ve boss otomatik dirilişi duruyor. Play Sweep `SuppressDown`: oyuncu canı
+> 1'in altına inmez, tarama ölüm ışınlanmasından düşmez.
+> (3) Kör = `accuracy_debuff` ıskalama (0.3 → %30). Sessiz = ateş konisi yok. Silahsız = slam yok.
+> Zayıf = giden hasar düşer. Süre skill verisinden. x-7 `kor` ve rün 7 Bulandırma aynı kör
+> şansını basar (rün 7 süre BlindMs 1400 + lifetime_add 3 sn = 4400 ms). Element durumundan
+> boss'a yalnız Ateş yanığı ve Karanlık zayıf iner; Su/Hava/Toprak/Aydınlık kendine yazılır.
+> (4) Poise barı. Vuruş `base_poise` × `poise_damage_mult` × silah `poise_mult` × swap × rün 4 ×1.5.
+> 0'da sersem, sonra bar doluyor. **Sapma:** tavan 100 (spec yazmıyor). Sersem 1.5 sn
+> (`karadul.json` `stagger_duration_sec` 0.4).
+> (5) Gizlilik artık yenilmezlik değil. Boss hedefi bırakır, nişan alamaz; yer/tam daire
+> (yay ≥180°) değer, dar koni değmez.
+> (6) `koruyucu_tetik` 2-9 / 4-9 / 8-9 şifası `ActorStatus.ApplyHeal` ile ölçeklenir.
+> (7) Kalkanın emdiği hasar da yansır; blok `DamageBlocked` ile karşı saldırı notunu düşürür.
+> Paylaşım kalkan sonrası kalan üzerinden.
+> (8) `hasar_buff>dusman` (8-2, 8-10) Weaken.
 
 > **30 Eylül — PR #33 Play testi (`cursor/silah-tarama-artiklari-a2ff`): merge edilmedi.** Master
 > (`aaa81d4`) yerelde alındı; çakışma `durum.md` ve `GameClock.cs` (PR'ın 100 ms kare sınırı +
@@ -1845,6 +1866,13 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
+- **Boss durumları Play'de doğrulanmadı (30 Eylül).** `dotnet test` 506/506. Unity Play yok.
+  Kayıtlı `BossTuning.Damage = 0` açılışta artık ezilmiyor; eski kayıt 0 ise slam 0 kalır
+  (AYAR sıfırla). Poise tavanı 100 ve sersem 1.5 sn spec'te yok (`karadul.json` sersem 0.4).
+  Element kendine buff'ları (Su regen, Hava haste, Toprak kalkan, Aydınlık arınma) boss'a
+  yazılmaz. Koruyucu tetik şifası kalıp anındaki şifayla çift inebilir (B3, ayrılmadı).
+  Dev HP doluyken can oranı %30'un altına inmez; koruyucu şifayı hissetmek için Dev HP KAPALI.
+  Mana/bekleme, 10-2 yansıma, x-2 girdap, çağrılar, 3-x kalıplar bu turda yok.
 - **PR #29 portal/sınır/takım (30 Eylül, merge yok).** Kılıç 141/144: 9-10 ışını tek karede
   8,34 m (tarama `konum`), 2-6 kalıbı AllyDummy'yi hedefliyor (`tek_sistem`), 11-8 Kılıç başka
   sistem 0,18 m. Sınır 1-2 ile can %15'te açılıp aynı skill'in can çalmasıyla bir karede
