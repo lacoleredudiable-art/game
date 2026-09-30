@@ -35,6 +35,13 @@ namespace Dovus.Game.EditorTools
         public float BossShiftX;
         public float BossShiftAtSec = 0.2f;
         public float BossShiftDurSec = 0.3f;
+        /// <summary>
+        /// Kalıp başladıktan PlayerShiftAtSec sonra oyuncu boss'a doğru bu kadar taşınır
+        /// (eksi: uzaklaşır). Kalıp dışı yer değişimi; tek-sistem ölçümü bunu görür.
+        /// </summary>
+        public float PlayerShiftM;
+        public float PlayerShiftAtSec = 0.2f;
+        public float PlayerShiftDurSec = 0.1f;
         /// <summary>Kalıp zamanı (sn). Editör o anda duraklar; ekran görüntüsü için.</summary>
         public float[] PauseAtSec;
         /// <summary>Kalıp StickAtSec'e gelince çubuk bu yöne basılır, kalıp bitince bırakılır.</summary>
@@ -149,6 +156,8 @@ namespace Dovus.Game.EditorTools
         static Vector3 _allyStart;
         static bool _allyStartSet;
         static bool _bossShifted;
+        static float _playerShiftDone;
+        static Vector3 _playerShiftDir;
         static Snapshot _pre;
         static CaseInfo _info;
         /// <summary>ManifestationDirector._pending[0].BangAtWorldMs, cast anına göre sn; castMult dahil.</summary>
@@ -795,6 +804,8 @@ namespace Dovus.Game.EditorTools
             _pauseIndex = 0;
             _bossShifted = false;
             _bossHome = _boss.position;
+            _playerShiftDone = 0f;
+            _playerShiftDir = Vector3.zero;
             _pre = Snap();
             RefreshBody();
             bool ok = _input.TryDebugCastSkill(c.Verb, c.Adj);
@@ -820,6 +831,7 @@ namespace Dovus.Game.EditorTools
             ScanHitVfx(f.T);
             float templateT = TemplateTime();
             ApplyBossShift(c, templateT);
+            ApplyPlayerShift(c, templateT);
             ApplyStick(c, templateT, f.Playing);
             if (c.PauseAtSec != null && _pauseIndex < c.PauseAtSec.Length && templateT >= c.PauseAtSec[_pauseIndex])
             {
@@ -870,6 +882,26 @@ namespace Dovus.Game.EditorTools
             Vector3 p = _bossHome + new Vector3(c.BossShiftX * k, 0f, 0f);
             _boss.position = new Vector3(p.x, _boss.position.y, p.z);
             _bossShifted = true;
+        }
+
+        /// <summary>Kaymanın yalnız bu karelik payı eklenir; kalıp oyuncuyu yeni yerinden sürdürür.</summary>
+        static void ApplyPlayerShift(PlaySweepCase c, float templateT)
+        {
+            if (Mathf.Abs(c.PlayerShiftM) < 0.001f || templateT < c.PlayerShiftAtSec)
+                return;
+            if (_playerShiftDir.sqrMagnitude < 0.0001f)
+            {
+                Vector3 d = _boss.position - _player.position;
+                d.y = 0f;
+                _playerShiftDir = d.sqrMagnitude > 0.0001f ? d.normalized : Vector3.forward;
+            }
+            float k = Mathf.Clamp01((templateT - c.PlayerShiftAtSec) / Mathf.Max(0.01f, c.PlayerShiftDurSec));
+            float want = c.PlayerShiftM * k;
+            float step = want - _playerShiftDone;
+            if (Mathf.Abs(step) < 0.0001f)
+                return;
+            _player.position += _playerShiftDir * step;
+            _playerShiftDone = want;
         }
 
         static void ApplyStick(PlaySweepCase c, float templateT, bool playing)
@@ -1922,7 +1954,8 @@ namespace Dovus.Game.EditorTools
         {
             _detail.AppendLine($"=== {c.Label} {c.Id} {r.Name} [{r.Weapon}] başlangıç {c.StartDistM:F1} m, kalıp {r.Template}, " +
                                $"boss r={_info.BossR:F2}, oyuncu r={_info.PlayerR:F2}, temas {r.Contact:F2}" +
-                               (Mathf.Abs(c.BossShiftX) > 0.001f ? $", boss kayması {c.BossShiftX:F1} m" : ""));
+                               (Mathf.Abs(c.BossShiftX) > 0.001f ? $", boss kayması {c.BossShiftX:F1} m" : "") +
+                               (Mathf.Abs(c.PlayerShiftM) > 0.001f ? $", oyuncu kayması {c.PlayerShiftM:F1} m @{c.PlayerShiftAtSec:F2} sn" : ""));
             _detail.AppendLine($"  sonuç: {(r.Pass ? "GEÇTİ" : "KALDI")} isabet={r.Hit} konum={r.ExpectedPos}→{r.ActualPos} gövde={r.NotInside} " +
                                $"tek={r.OneSystem} hata={r.NoErrors} süre={r.OnTime} sıçrama_yok={r.NoTeleport} yerde={r.Grounded} " +
                                $"ayak={r.FootLiveM:F2}/{r.FootSettleM:F2} hasar={r.Damage:F1} etki=[{r.Effects}] bacak=[{r.Legs}]");

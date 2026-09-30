@@ -115,6 +115,8 @@ namespace SweepV2
                     c.Stick = o.Stick.Value;
                     c.StickAtSec = o.StickAtSec;
                 }
+                c.PlayerShiftM = o.PlayerShiftM;
+                c.PlayerShiftAtSec = o.PlayerShiftAtSec;
             }
             if (cases.Count == 0)
             {
@@ -244,6 +246,8 @@ namespace SweepV2
         public string SecondWeapon;
         public Vector2? Stick;
         public float StickAtSec = 0.5f;
+        public float PlayerShiftM;
+        public float PlayerShiftAtSec = 0.2f;
         public readonly List<string> Weapons = new();
         public readonly HashSet<string> Cases = new();
 
@@ -258,6 +262,7 @@ namespace SweepV2
             "  --compare CSV         Play CSV ile kombo kombo karşılaştır (ör. docs/play-sweep/pr35-final-4x.csv)\n" +
             "  --gate                CI kapısı: silah başına ≥142/144, gövdeye giren yok, yerde hatası ≤3; 2-9 muaf\n" +
             "  --stick X,Y --stick-at T   kalıp T sn'ye gelince oyuncu çubuğa basar (hareket testi)\n" +
+            "  --player-shift M --player-shift-at T   kalıp T sn'de oyuncu boss'a doğru M m taşınır (1-11 yankı testi)\n" +
             "  --trace               her kombo için kare izi detay dosyasına\n" +
             "  --verbose / --quiet";
 
@@ -303,6 +308,8 @@ namespace SweepV2
                         break;
                     }
                     case "--stick-at": o.StickAtSec = float.Parse(Next(), CultureInfo.InvariantCulture); break;
+                    case "--player-shift": o.PlayerShiftM = float.Parse(Next(), CultureInfo.InvariantCulture); break;
+                    case "--player-shift-at": o.PlayerShiftAtSec = float.Parse(Next(), CultureInfo.InvariantCulture); break;
                     default: throw new ArgumentException("Bilinmeyen argüman: " + a);
                 }
             }
