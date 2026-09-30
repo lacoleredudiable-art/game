@@ -1,70 +1,47 @@
 # Ajanlar için kurallar
 
-Mobil kooperatif boss dövüşü oyunu. Şu an alfa prototip aşaması.
-
-> Bu dosya her ajanın bağlamına otomatik giriyor, yani her satırı her görevde ödüyoruz.
-> O yüzden kısa. Detay burada değil, görevinin işaret ettiği bölümde.
+Mobil kooperatif boss dövüşü, alfa prototip. Bu dosya her görevde bağlama girer: yalnız sert kurallar.
 
 ## Değişmez kurallar
+1. `unity/Assets/Scripts/Core` saf C#: `using UnityEngine` yasak, zaman parametre olarak geçer.
+2. Sahne koddan kurulur (`PrototypeBootstrap`). `.unity` / `.prefab` YAML dosyaları **asla** elle düzenlenmez.
+3. **Tek hareket sistemi:** skill sırasında oyuncuyu/boss'u yalnız hareket kalıbı taşır
+   (`Core/Motion/MotionTemplateRunner` + `Game/MotionTemplateBody`). İkinci bir hareket yolu ekleme;
+   `SkillMotionDriver` / `SkillMotionMotor` / executor hareketi ölü, canlandırma. Kalıp dışı konum
+   yazan her şey `Core/Motion/PositionOwnership`'e kayıtlı olmalı.
+4. Ayarlanabilir her şey veri. Skill sayısı `docs/element-sistemi.json` `engine` / `adjective_mods`'tan,
+   his sayısı ilgili `Core/Tuning/*.cs` varsayılanından gelir. Sayı uydurma; yoksa varsayılan koy,
+   yoruma "spec'te yok" yaz, PR açıklamasına geç.
+5. Hiçbir fiil anlık vurmaz. Kombo tablosu / skill kimliğiyle beyaz liste yazılmaz; davranış gramerden doğar.
+6. `docs/element-sistemi.json` bağlayıcıdır (v6.1.1) ve
+   `unity/Assets/Resources/ElementSystem/element-sistemi.json` ile **bayt bayt aynı** kalır (ikisini birlikte değiştir).
+   `motion-templates.json` elle düzenlenmez: `python3 tools/build-motion-templates.py` iki kopyayı birden yazar.
 
-Bunlar görevden bağımsız, hepsi geçerli. İhlali geri dönüşü pahalı hatalardır.
+## Okuma
+- Repoyu tarama. Yalnız görev prompt'unun adını verdiği dosya ve satırları oku.
+- **`docs/` altını görev bir dosyayı açıkça adlandırmadıkça okuma** (`durum.md` dahil).
+  `element-sistemi.json`'dan yalnız istenen bölümü oku.
+- Asla okuma: `unity/Library/`, `unity/Temp/`, `unity/obj/`, `unity/Logs/`, `docs/archive/`, `docs/play-sweep/*.csv`.
+- Başka görevin dosyasına dokunma. Kapsam dışı bir hata görürsen düzeltme, PR açıklamasına yaz.
 
-1. **`Assets/Scripts/Core` saf C#** — `using UnityEngine` yasak. Zaman parametre olarak geçer.
-2. **Sahne koddan kurulur.** `.unity` / `.prefab` YAML dosyaları elle düzenlenmez.
-3. **Ayarlanabilir her şey veri.** His sayıları koda gömülmez; ScriptableObject/config alanı olur.
-4. **Hiçbir fiil anlık vurmaz.** Her etki dünyada yaşar (yol alır/sürer), yoksa sıfat kabul edemez.
-5. **Sıfat davranış ve silüeti değiştirir.** Sayısal karşılığı varsa yalnızca bağlayıcı JSON'daki `engine` / `adjective_mods` verisinden gelir.
-6. **Kombo tablosu yazılmaz.** Hiçbir dizi elle tanımlanmaz; her şey gramerden doğar.
+## Komutlar (hepsi repo kökünden)
+- Test: `dotnet test tools/CoreTests` (yeni Core dosyası otomatik link'lenir; test = `tools/CoreTests/<Sistem>Tests.cs`, `namespace CoreTests;`, `[TestFixture]`).
+- Gramer kontrolü: `dotnet run --project tools/AtomSim` → "0 hata" olmalı; gramer/`mechanic_grammar` değiştiyse `tools/AtomSim/out/` commit edilir.
+- Başsız tarama: `dotnet run --project tools/SweepV2 -c Release -- --all --gate` (~15 sn).
+  Alt küme: `--weapon kilic --case 1-11`. Play ile kıyas: `--compare docs/play-sweep/pr35-final-4x.csv`.
+- Game katmanı derleme: `python3 tools/GameCompile/check.py` (CoreTests içinden de koşar).
 
-## Bağlayıcı tasarım — v6.1.1
+## CI kapısı
+`.github/workflows/sweep-v2.yml` her PR'da: CoreTests → AtomSim derlemesi →
+`SweepV2 --all --gate --compare docs/play-sweep/pr35-final-4x.csv`.
+Kapı: her silah ≥142/144, oyuncu boss gövdesinde 0, `yerde` hatası silah başına ≤3 (2-9 beyaz listede).
+Kırmızı CI ile merge yok. Kapı eşiğini veya beyaz listeyi görev açıkça istemeden değiştirme.
 
-Tek doğruluk kaynağı `docs/element-sistemi.json`'dır. Sistem 12 çift yüzlü ründür
-(fiil + sıfat); build 12'den tekrarsız 6 rün seçer ve 2-rün grameri 144 skill üretir.
-Element prototipte yalnız VFX/isim katmanıdır. Global slow-mo yoktur; Zaman
-`enemy_slow` / `self_haste` uygular. Pasif yuva 0-2, silahlar çarpan + animasyon +
-hitbox + **teslim yolu**dur: fiilin ne yaptığını değil, dünyaya nasıl çıktığını değiştirir.
-v6.1.1 ekleri: `ana_classes_80`, `skills_prose_144`, `hitbox_vfx`, `mobility_cc`,
-`uyumsuz_cizim`, `presentation`, `changelog_v6_1`, `design_warnings`, `mechanic_grammar`
-(Skill = Sıfat.kural(Silah.teslim(Fiil.atomlar)); motor `Core/Mechanic`, kontrol `tools/AtomSim`).
-Runtime sırası: `ElementSystemJsonLoader` → 12/10/6 SO katalog → `SkillFactory` →
-`RuneManager` → `SkillMotor`. Altı ekran slotu `RuneLoadout` ile 12 ründen seçilir.
-Radial element UI ile tam hitbox/VFX/presentation henüz stub'dır. 1–8 Unity Play'de
-doğrulanmadan eski SO/listeleri silme veya v5 davranışını canlı motora geri ekleme.
-
-## Çalışma düzeni
-
-- **Repoyu tarama.** Sadece görevinin "ÖNCE OKU" satırındaki dosya ve bölümleri oku.
-  Belgeler uzun; ilgisiz bölümü okumak bağlamı doldurur ve kapsam dışı "iyileştirme" riskini artırır.
-- **Asla okumayacağın yerler:** `unity/Library/`, `unity/Temp/`, `unity/obj/`, `unity/Logs/`.
-- **Başka görevin dosyalarına dokunma.** Eksik/yanlış bir şey görürsen düzeltme,
-  `docs/durum.md`'nin "Bilinen açıklar" bölümüne yaz.
-- **Sayı uydurma.** Bir element/skill değeri gerekiyorsa `docs/element-sistemi.json`'dan al.
- Bir his değeri (hitstop, dodge, kamera vb.) gerekiyorsa ilgili `Core/Tuning/*.cs` sınıfının
- mevcut varsayılanından al. Hiçbirinde yoksa varsayılan koy, yoruma referans bırak,
- `docs/durum.md`'ye de geç.
-- **Başlarken `git fetch && git log --oneline origin/master -5`.** 16 Eylül'de `master`
-  günlerce fark edilmeden ayrıştı (paralel bir "v4.2 element spec" hattı) — bir oturumluk iş
-  boşa gitmesin diye çözüldü ama pahalıydı. Yerel `master` ile `origin/master` arasında commit
-  farkı varsa **önce onu** çöz, üstüne inşa etme.
-- **Bitince `docs/durum.md`'yi güncelle** — bir sonraki ajan repoyu taramak zorunda kalmasın.
-- **Kapanışta söyle:** kabul kriterlerinden hangisini doğrulayamadın.
-- Küçük ve anlamlı commit'ler; her görev kendi dalında.
-- **Dalı kendin kapat.** `dotnet test` yeşilse `master`'a merge edip push et; kimseye sorma.
-  PR'ı yalnızca **karar** gerektiren bir şey çıktıysa açık bırak — spec'te cevabı olmayan bir
-  soru, ya da doğrulayamadığın bir kabul kriteri. Onun dışında commit trafiği sahibine sorulmaz.
-
-## Dosya haritası
-
-| Dosya | Ne için |
-|---|---|
-| `docs/durum.md` | Nerede kaldık, ne üretildi. **İlk buraya bak.** |
-| `docs/gorev-listesi.md` | Görevler ve prompt'lar |
-| `docs/element-sistemi.json` | **v6.1.1 bağlayıcı** element/skill verisi — sayılar ve kurallar burada |
-| `docs/element-sistemi.md` | İnsan-okunur tarihsel/açıklayıcı notlar; JSON bağlayıcıdır |
-| `docs/unity-notlari.md` | Unity/sahne/Android build operasyonel tuzakları (tasarım değil) |
-| `docs/prezentasyon-katmani.json` | Trajectory/hitbox/animasyon/VFX verisi — element sisteminden bağımsız, motor okur |
-
-> 16 Eylül 2026: `dovus-sistemi.md` / `tasarim-ozeti.md` / `teknoloji-kararlari.md` /
-> `his-kontrol-listesi.md` / `t0-kurulum.md` / `alis-sepeti.md` / `animasyon-omurgasi.md`
-> silindi — beşgen/3-rün alfa prototipine aitti, altıgen/6-element sistemine geçildikten
-> sonra kafa karıştırıyordu. Git geçmişinde duruyor.
+## Git ve teslim
+- Başlarken `git fetch && git log --oneline origin/master -5`. Yerel `master` geride/ayrışıksa önce onu çöz.
+- Her görev kendi dalında, küçük commit'lerle.
+- **Sonuçları PR açıklamasına yaz:** ne değişti, test sayısı, başsız tarama skor tablosu
+  (`<label>-ozet.md`), doğrulayamadığın kabul kriterleri, spec'te olmayan varsayılanlar.
+- **`docs/durum.md`'ye ekleme yapma.** Yalnız görevin o dosyadaki bir açığı kapattıysa o satırı aynı PR'da sil.
+- `dotnet test` + CI yeşilse `master`'a merge et. PR'ı yalnız karar gerektiren bir soru ya da
+  doğrulanamayan kabul kriteri varsa açık bırak.
