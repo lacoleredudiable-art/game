@@ -98,7 +98,8 @@ namespace Dovus.Game.EditorTools
         const float SimMatchM = 0.75f;
         const float TemplateMoveM = 0.05f;
         const float OtherMoveM = 0.15f;
-        const float TeleportM = 0.6f;
+        // Sıçrama sınırı kare süresine bağlı: en hızlı meşru hareket (3-6 yayı 19,2 m/s) × dt + pay.
+        // dt en az 1/60 sn sayılır; hitstop karelerinde sınır 0,2 m'ye düşmesin.
         const float LegMoveMps = 1.5f;
 
         static readonly int[][] RuneGroups =
@@ -163,6 +164,7 @@ namespace Dovus.Game.EditorTools
         struct Frame
         {
             public float T;
+            public float Dt;
             public Vector3 P;
             public Vector3 B;
             public Vector3 Runner;
@@ -214,6 +216,7 @@ namespace Dovus.Game.EditorTools
             public bool DamageSkill;
             public bool HasHitPhase;
             public string ExpectedCat = "";
+            public int Adj;
             public Vector3 SimFinal;
             public bool HasSim;
             public Vector3 SimStart;
@@ -323,11 +326,7 @@ namespace Dovus.Game.EditorTools
             Start(AllCombos(PresetWeapon(preset)), preset);
         }
 
-        static readonly string[] SweepWeaponNames =
-        {
-            "Yumruk", "Kılıç", "Çekiç", "Kalkan", "Yay",
-            "Top", "Asa", "Tılsım", "Büyü Kitabı", "Küre"
-        };
+        static readonly string[] SweepWeaponNames = SweepMotion.WeaponMenuNames;
 
         static string PresetWeapon(string preset) => preset switch
         {
@@ -954,6 +953,7 @@ namespace Dovus.Game.EditorTools
         static CaseInfo Describe(PlaySweepCase c)
         {
             var info = new CaseInfo();
+            info.Adj = c.Adj;
             SkillResolution skill = _skills.Resolve(new[] { c.Verb, c.Adj });
             info.Name = skill.DisplayName;
             info.DamageSkill = skill.BaseDamage > 0f || skill.BaseHeal > 0f;
@@ -1006,7 +1006,9 @@ namespace Dovus.Game.EditorTools
             info.SimFinal = new Vector3(runner.X, s.y, runner.Z);
             info.HasSim = true;
             info.SimAim = aim == null ? "yok" : aim == _boss.transform ? "boss" : aim.name;
-            info.ExpectedCat = DesignCategory(info.Template) ?? Category(s, info.SimFinal, b, maxExc);
+            string stay = EmiciApproach.SweepStayCategory(
+                info.Adj.ToString(CultureInfo.InvariantCulture), info.Template);
+            info.ExpectedCat = stay ?? DesignCategory(info.Template) ?? Category(s, info.SimFinal, b, maxExc);
         }
 
         static string DesignCategory(MotionTemplate t)
@@ -1068,6 +1070,7 @@ namespace Dovus.Game.EditorTools
             var f = new Frame
             {
                 T = (float)((NowMs - _castMs) / 1000.0),
+                Dt = Time.unscaledDeltaTime,
                 P = _player.position,
                 B = _boss.position,
                 Playing = _body != null && _body.IsDisplacing,
@@ -1324,8 +1327,6 @@ namespace Dovus.Game.EditorTools
             // 4) tek sistem
             float templateMove = 0f;
             float otherMove = 0f;
-            float maxJump = 0f;
-            float jumpAt = 0f;
             int driverFrames = 0;
             int dodgeFrames = 0;
             for (int i = 1; i < _frames.Count; i++)
@@ -1342,11 +1343,6 @@ namespace Dovus.Game.EditorTools
                 otherMove += (actual - tpl).magnitude;
                 if (b.Driver) driverFrames++;
                 if (b.Dodge) dodgeFrames++;
-                if (actual.magnitude > maxJump)
-                {
-                    maxJump = actual.magnitude;
-                    jumpAt = b.T;
-                }
             }
             int systems = (templateMove > TemplateMoveM ? 1 : 0) + (otherMove > OtherMoveM ? 1 : 0)
                           + (driverFrames > 0 ? 1 : 0) + (dodgeFrames > 0 ? 1 : 0);
@@ -1356,10 +1352,24 @@ namespace Dovus.Game.EditorTools
             // 7) ışınlanma / titreme yok (blink fazı tasarım gereği sıçrar)
             int teleports = 0;
             int reversals = 0;
+            float maxJump = 0f;
+            float jumpAt = 0f;
+            float jumpLimit = 0f;
+            float jumpDt = 0f;
+            float worstRatio = 0f;
             for (int i = 1; i < _frames.Count; i++)
             {
                 Vector3 step = Flat(_frames[i].P - _frames[i - 1].P);
-                if (step.magnitude > TeleportM && !IsBlinkPhase(_frames[i].Phase))
+                float stepLimit = JumpLimit(_frames[i].Dt);
+                if (step.magnitude / stepLimit > worstRatio)
+                {
+                    worstRatio = step.magnitude / stepLimit;
+                    maxJump = step.magnitude;
+                    jumpAt = _frames[i].T;
+                    jumpLimit = stepLimit;
+                    jumpDt = _frames[i].Dt;
+                }
+                if (step.magnitude > stepLimit && !IsBlinkPhase(_frames[i].Phase))
                     teleports++;
                 if (i >= 2)
                 {
@@ -1370,26 +1380,31 @@ namespace Dovus.Game.EditorTools
             }
             r.NoTeleport = teleports == 0 && reversals < 3;
             string phaseAtJump = FrameAt(jumpAt).Phase;
-            if (maxJump > TeleportM)
-                r.Notes.Add($"tek karede {maxJump:F2} m sıçrama (t={jumpAt:F2}{(string.IsNullOrEmpty(phaseAtJump) ? "" : ", faz " + phaseAtJump)}" +
+            if (maxJump > jumpLimit)
+                r.Notes.Add($"tek karede {maxJump:F2} m sıçrama (sınır {jumpLimit:F2} m @ {jumpDt * 1000f:F0} ms, t={jumpAt:F2}{(string.IsNullOrEmpty(phaseAtJump) ? "" : ", faz " + phaseAtJump)}" +
                             (IsBlinkPhase(phaseAtJump) ? ", blink tasarım gereği" : "") + ")");
             if (reversals >= 3)
                 r.Notes.Add($"titreme: {reversals} karede ≥0,2 m ileri-geri");
             float bossJump = 0f;
             float bossJumpAt = 0f;
+            float bossLimit = 0f;
+            float bossRatio = 0f;
             for (int i = 1; i < _frames.Count; i++)
             {
                 float step = Flat(_frames[i].B - _frames[i - 1].B).magnitude;
-                if (step > bossJump)
+                float stepLimit = JumpLimit(_frames[i].Dt);
+                if (step / stepLimit > bossRatio)
                 {
+                    bossRatio = step / stepLimit;
                     bossJump = step;
                     bossJumpAt = _frames[i].T;
+                    bossLimit = stepLimit;
                 }
             }
-            if (bossJump > TeleportM)
+            if (bossJump > bossLimit)
             {
                 r.NoTeleport = false;
-                r.Notes.Add($"boss tek karede {bossJump:F2} m sıçradı (t={bossJumpAt:F2})");
+                r.Notes.Add($"boss tek karede {bossJump:F2} m sıçradı (sınır {bossLimit:F2} m, t={bossJumpAt:F2})");
             }
 
             // 5) hata yok
@@ -1442,6 +1457,8 @@ namespace Dovus.Game.EditorTools
             r.Legs = LegSummary();
             return r;
         }
+
+        static float JumpLimit(float dt) => SweepMotion.JumpLimit(dt);
 
         static bool IsBlinkPhase(string phase)
         {

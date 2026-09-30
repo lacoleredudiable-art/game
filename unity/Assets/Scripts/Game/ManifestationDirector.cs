@@ -159,6 +159,7 @@ namespace Dovus.Game
 
             _cycleWeaponIndex = (_cycleWeaponIndex + 1) % _cycleWeapons.Count;
             _equippedWeapon = _cycleWeapons[_cycleWeaponIndex];
+            RefreshDefenderArmor();
             LastFactorySkill = null;
             _weaponSwap?.ReplaceActive(_equippedWeapon);
 
@@ -453,6 +454,8 @@ namespace Dovus.Game
             _modeVfx.Bind(player, canvasRoot);
             _hexagonView = hexagonView;
             _equippedWeapon = equippedWeapon;
+            RefreshDefenderArmor();
+            EnsureBossArmor();
             _equipmentBonus = equipmentBonus;
             _playerResource = player != null ? player.GetComponent<PlayerResource>() : null;
             _playerCooldown = player != null ? player.GetComponent<PlayerCooldown>() : null;
@@ -1985,14 +1988,27 @@ namespace Dovus.Game
             for (int i = _pending.Count - 1; i >= 0; i--)
             {
                 PendingClosing p = _pending[i];
+                bool basic = IsPendingBasic(p);
                 if (p.View == null || p.View.Logic == null)
                 {
+                    // Unity Destroy sonraki karede view'ı null yapar. Zafiyet kalıbı
+                    // etkiyi bang'den önce söndürürse ilk düz vuruş burada düşüp 0 yazıyordu.
+                    if (BasicStrikePayoff.KeepUntilBang(basic, worldMs, p.BangAtWorldMs))
+                        continue;
+                    if (BasicStrikePayoff.PayWithoutView(basic, worldMs, p.BangAtWorldMs))
+                        FireClosing(p);
                     _pending.RemoveAt(i);
                     continue;
                 }
 
                 if (p.View.Logic.Phase is LivingEffectPhase.Fading or LivingEffectPhase.Dead)
                 {
+                    // Düz vuruş kabul edildi ama etki, skill kalıbı/hitstop yüzünden
+                    // bang'den önce söndüyse hasar yine vadesinde iner. İptal pending'i siler.
+                    if (BasicStrikePayoff.KeepUntilBang(basic, worldMs, p.BangAtWorldMs))
+                        continue;
+                    if (BasicStrikePayoff.PayWithoutView(basic, worldMs, p.BangAtWorldMs))
+                        FireClosing(p);
                     _pending.RemoveAt(i);
                     continue;
                 }
@@ -2005,15 +2021,25 @@ namespace Dovus.Game
             }
         }
 
+        bool IsPendingBasic(PendingClosing p)
+        {
+            if (p.IsBasicStrike || (p.View != null && p.View.IsBasicStrike))
+                return true;
+            if (p.Words == null || p.Words.Count != 1)
+                return false;
+            int basicDot = _colors != null ? _colors.BasicStrikeDot : 1;
+            return (int)p.Words[0].Rune == basicDot;
+        }
+
         void FireClosing(PendingClosing p)
         {
-            LivingEffect logic = p.View.Logic;
-            logic.FireClosingBang();
+            LivingEffect logic = p.View != null ? p.View.Logic : null;
+            logic?.FireClosingBang();
             StampScar(p.View, p.Closing);
 
             // Düz vuruş: jab — skill motoru / mana / CD / zincir / pasif / ulti yok.
             // BasicStrikeDot gramer fiili (varsayılan Ateş) skill cast sayılmaz.
-            bool basic = p.IsBasicStrike || (p.View != null && p.View.IsBasicStrike);
+            bool basic = IsPendingBasic(p);
             if (basic)
             {
                 Transform impactTarget = p.Target;
@@ -2022,6 +2048,10 @@ namespace Dovus.Game
                     CaptureBasicFacing();
                     impactTarget = _castFacingTarget;
                 }
+                // Zafiyet kalıbı bakışı ve kilidi bozar. Kilit boşsa boss menzildeyse o hedeftir;
+                // yoksa ilk düz vuruş kapsülü ıskalayıp 0 yazar, ikincisi normal vurur.
+                if ((impactTarget == null || !IsEnemyBody(impactTarget)) && _boss != null)
+                    impactTarget = _boss.transform;
                 FaceTarget(impactTarget);
                 _closingChainBonus = 1f; // pending zincir bonusunu yeme
                 _lastChainStep = ChainStepResult.None;
@@ -2041,16 +2071,23 @@ namespace Dovus.Game
                 float basicReach = WeaponBasicReach(_combat.Manifestation.BasicStrikeRangeM);
                 bool capsuleHit = IsBossInStrikeCapsule(logic, basicReach);
                 bool inReach = BasicTargetStillInReach(impactTarget, basicReach);
+                if (!inReach && _boss != null && impactTarget != _boss.transform)
+                    inReach = BasicTargetStillInReach(_boss.transform, basicReach);
                 if (BasicStrikeInput.DealsDamage(capsuleHit, inReach))
                 {
-                    ApplyBossClosingBasic(logic, p.Closing);
+                    if (logic != null)
+                        ApplyBossClosingBasic(logic, p.Closing);
                     basicDealt = ApplyClosingDamage(p.Closing, SkillResolution.Empty, isBasicStrike: true, slashCommitMult: 0f);
                 }
                 TryScheduleEchoForSkill(SkillResolution.Empty, basicDealt);
                 SpawnClosingImpact(p);
-                TryCannonBlast(logic.TipX, logic.TipZ);
+                if (logic != null)
+                    TryCannonBlast(logic.TipX, logic.TipZ);
                 return;
             }
+
+            if (logic == null)
+                return;
 
             _closingChainBonus = BeginChainClosing(p.Words, _clock.Director.WorldTimeMs);
             TryActivateMode(p.Words, _clock.Director.WorldTimeMs);
@@ -2884,6 +2921,7 @@ namespace Dovus.Game
                     _ally != null ? _ally.Board : null);
             }
 
+            ApplyArmorShred(skill, bossStatus);
             ApplySlotPassiveOnHit(bossStatus);
 
             if (result.Knockback && bossStatus != null && _player != null)
@@ -2957,14 +2995,13 @@ namespace Dovus.Game
             float per = _combat != null ? _combat.ClosingDamagePerEffect : 1f;
             // 16 Eylül: "Kavurucu Yara" (grievous_wounds+burn) — yanık hedefe gelen heal azalır.
             // Hedefin StatusBoard'u yoksa (ör. AllyDummy) çarpan 1f, davranış eskisiyle aynı.
-            float healMult = _playerStatus != null ? _playerStatus.Board.HealEffectivenessMult : 1f;
-            healMult *= _passiveDirector?.HealMult ?? 1f;
-            healMult *= chainBonusOverride ?? _closingChainBonus;
-            healMult *= WeaponSupportPower(skill);
+            float chain = chainBonusOverride ?? _closingChainBonus;
+            // Tılsım şifa/kalkan/güç %120. Boru bunu bir daha çarpmaz.
+            float weapon = WeaponSupportPower(skill);
             float healBase = skill.BaseHeal > 0f
                 ? skill.BaseHeal
                 : closing.TotalEffect * per;
-            return Mathf.Max(0, Mathf.RoundToInt(healBase * healMult * effectScale));
+            return Mathf.Max(0, Mathf.RoundToInt(healBase * chain * weapon * effectScale));
         }
 
         void ApplyClosingHealAmount(
@@ -2974,6 +3011,19 @@ namespace Dovus.Game
             float fieldRadiusM,
             Transform preferredTarget = null)
         {
+            if (amount <= 0)
+                return;
+            DamageOutcome healedBy = DamagePipeline.Resolve(new DamageQuery
+            {
+                Heal = true,
+                HealPower = amount,
+                HealMultiplier = HealBuffMultiplier(skill),
+                ThreatMultiplier = _passiveDirector?.ThreatMultiplier ?? 1f,
+                ScaleMagnitudes = true
+            });
+            amount = Mathf.Max(0, Mathf.RoundToInt(healedBy.Amount));
+            if (_playerStatus != null)
+                _playerStatus.LastThreat = healedBy.Threat;
             if (amount <= 0)
                 return;
 
@@ -3075,80 +3125,16 @@ namespace Dovus.Game
             if (effectScale <= 0f)
                 return 0f;
 
-            float outMult = 1f;
-            if (_playerStatus != null)
-                outMult = _playerStatus.Board.OutgoingDamageMult;
-            outMult *= _modeDirector?.DamageMult ?? 1f; // ulti: Öfke Patlaması ×1.8, Kan Çılgınlığı ×2.0
-            outMult *= _passiveDirector?.DamageMult ?? 1f; // pasif: alev_hiddeti ×1.15 × karanlik_sessizligi ×1.2 …
-            outMult *= _slotPassives?.DamageMult ?? 1f;
-            outMult *= SelfDamageBuffMult(); // Güçlendirme buff_damage / Yükseltme self_damage_buff
-            outMult *= chainBonusOverride ?? _closingChainBonus;
-            float eqMult = 1f;
-            if (_equipmentBonus != null && !isBasicStrike && !skill.IsEmpty)
-            {
-                WeaponSkillCompatibility compatibility = WeaponCompatibilityFor(skill);
-                eqMult = compatibility.DamageMult;
-                LastWeaponCompatible = compatibility.Compatible;
-                LastWeaponPassiveEnabled = compatibility.PassiveEnabled;
-                LastWeaponUiLabel = compatibility.UiLabel;
-            }
-            outMult *= eqMult;
-            outMult *= WeaponOutgoingDamageMult(skill, isBasicStrike);
-            LastEquipmentMatchMult = eqMult;
-
-            bool isCrit = false;
-            float damage;
-            float extraCrit = ExtraCritChanceAdd(skill) + WeaponCritAdd(skill, isBasicStrike);
-            if (_combat != null && _combat.UseFormulaDamage &&
-                !isBasicStrike && !skill.IsEmpty && skill.BaseDamage > 0f)
-            {
-                // length.damage_mult JSON'da 1.0 (anti-ladder); SkillResolution taşımıyor.
-                DamageHit hit = EnsureDamageCalculator().Compute(
-                    in skill,
-                    lengthDamageMult: 1f,
-                    resistance: 0f,
-                    weaknessBonus: 1f,
-                    extraCritChanceAdd: extraCrit);
-                damage = hit.Amount * outMult;
-                isCrit = hit.WasCrit;
-            }
-            else
-            {
-                damage = ClosingDamageMath.Compute(
-                    closing.TotalEffect,
-                    _combat != null ? _combat.ClosingDamagePerEffect : 1f,
-                    skill,
-                    isBasicStrike,
-                    outMult,
-                    _skillNumbers != null ? _skillNumbers.VerbDamageReference : 0f);
-                if (extraCrit > 0f && damage > 0f)
-                {
-                    DamageHit critHit = EnsureDamageCalculator().ApplyExtraCrit(damage, extraCrit);
-                    damage = critHit.Amount;
-                    isCrit = critHit.WasCrit;
-                }
-            }
-
-            // Teleport fiili BaseDamage=0; Zenitsu kesisi commit × SlashCommitMult.
-            if (damage <= 0f && slashCommitMult > 0f && closing.TotalEffect > 0f)
-            {
-                float per = _combat != null ? _combat.ClosingDamagePerEffect : 1f;
-                damage = closing.TotalEffect * per * slashCommitMult * outMult;
-            }
-
-            damage *= effectScale;
-            if (damage > 0f && _player != null)
-                damage *= PlayerDodgeRig.ConsumeNextHit(_player);
+            DamageOutcome dealt = ComputeOutgoingHit(
+                closing, skill, isBasicStrike, slashCommitMult, effectScale, chainBonusOverride);
+            float damage = dealt.Amount;
+            bool isCrit = dealt.WasCrit;
 
             if (damage <= 0f)
             {
                 LastClosingDamageDealt = 0f;
                 return 0f;
             }
-
-            // Armor break boss'ta incoming mult
-            if (_bossStatus != null)
-                damage *= _bossStatus.Board.IncomingDamageMult;
 
             // Karabasan: bang hasarı delay_sec sonra (delayed_detonation).
             if (!isBasicStrike && TryDeferDamageAsDelayedDetonation(skill, damage))
@@ -3259,6 +3245,8 @@ namespace Dovus.Game
         /// <summary>Düz vuruş jab — yalnızca kısa sarsıntı; geri itme yok (skill tepkisi değil).</summary>
         void ApplyBossClosingBasic(LivingEffect logic, ClosingHit closing)
         {
+            if (logic == null)
+                return;
             NoteImpactOrigin(logic);
             if (_boss == null || (_bossVitals != null && _bossVitals.IsDown))
                 return;
@@ -3460,6 +3448,8 @@ namespace Dovus.Game
 
         bool IsClosingInRange(LivingEffect logic, ClosingHit closing)
         {
+            if (logic == null || _boss == null)
+                return false;
             Vector3 bossPos = _boss.transform.position;
             float dx = bossPos.x - logic.TipX;
             float dz = bossPos.z - logic.TipZ;

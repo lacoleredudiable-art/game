@@ -1,3 +1,4 @@
+using Dovus.Core.Combat;
 using Dovus.Core.Tuning;
 using System;
 using UnityEngine;
@@ -66,9 +67,22 @@ namespace Dovus.Game
             {
                 WeaponShortShieldHost host = GetComponent<WeaponShortShieldHost>();
                 double now = host != null ? host.NowMs : 0;
-                amount = Mathf.CeilToInt(WeaponShortShieldHost.Absorb(this, amount, now));
-                if (amount <= 0)
-                    return false;
+                float pool = host != null && host.Shield.Active(now) ? host.Shield.Points : 0f;
+                if (pool > 0f)
+                {
+                    DamageOutcome soaked = DamagePipeline.Resolve(new DamageQuery
+                    {
+                        SkillPower = amount,
+                        Shield = pool,
+                        CanCrit = false,
+                        ScaleMagnitudes = false
+                    });
+                    if (soaked.ShieldAbsorbed > 0f)
+                        host.Shield.Consume(soaked.ShieldAbsorbed, now);
+                    amount = Mathf.CeilToInt(soaked.Amount);
+                    if (amount <= 0)
+                        return false;
+                }
             }
 
             if (_visual == null)

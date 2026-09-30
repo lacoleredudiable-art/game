@@ -370,7 +370,7 @@ namespace Dovus.Core.Motion
             float dt)
         {
             Axis(phase, target, out float fx, out float fz);
-            if (target.HoldApproach)
+            if (EmiciApproach.Freezes(phase, target.HoldApproach))
             {
                 if (!_yieldApproach)
                 {
@@ -500,9 +500,10 @@ namespace Dovus.Core.Motion
             }
 
             // Arkaya iniş ve içinden geçiş kasıtlı olarak gövdeyi keser; bitiş yine dışarıdadır.
-            // Diğer fazlar her karede kenarın dışında tutulur.
+            // Atış / tutma ayakları yerinden kaldırmaz. Kenar itmesi boss merkeze gelince
+            // oyuncuyu karşı yüze ışınlıyordu (5-2, 10-2, 11-2, 12-2).
             bool crossesBody = phase.Land == "behind" || phase.OvershootM > 0.01f;
-            if (!crossesBody)
+            if (!crossesBody && !FeetPlanted(phase))
                 KeepOutside(target, ref _x, ref _z);
 
             ApplyFacing(phase, u, fx, fz, target);
@@ -982,6 +983,10 @@ namespace Dovus.Core.Motion
 
         float Separation(in MotionTarget target) =>
             _bodyRadius + target.RadiusM + _stopGap;
+
+        /// <summary>Atış, tutma ve dönüş oyuncunun ayaklarını yerinden kaldırmaz.</summary>
+        static bool FeetPlanted(MotionPhase phase) =>
+            phase.Motion is "hold" or "throw" or "spin" or "fan" or "hover";
 
         /// <summary>Dönüş atılması hedefin içine inmez; işaret dışarıdaysa işaret kalır.</summary>
         void KeepOutside(in MotionTarget target, ref float x, ref float z)

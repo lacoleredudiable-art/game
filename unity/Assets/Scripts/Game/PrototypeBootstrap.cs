@@ -109,7 +109,8 @@ namespace Dovus.Game
             var allyHitCollider = ally.AddComponent<CapsuleCollider>();
             allyHitCollider.isTrigger = true;
             var allyDummy = ally.AddComponent<AllyDummy>();
-            allyDummy.Bind(_tuning.PlayerMaxHp, startRatio: 0.5f);
+            int playerHp = ScaledPlayerHp();
+            allyDummy.Bind(playerHp, startRatio: 0.5f);
 
             var boss = CreateCapsule(
                 "Boss",
@@ -156,7 +157,7 @@ namespace Dovus.Game
 
             var vitals = player.AddComponent<PlayerVitals>();
             // His: heal denemesi — oyuncu da %50 (full iken mend boş döner).
-            vitals.Bind(combat.Boss, _tuning.PlayerMaxHp, startRatio: 0.5f);
+            vitals.Bind(combat.Boss, playerHp, startRatio: 0.5f);
 
             var resource = player.AddComponent<PlayerResource>();
             // docs/element-sistemi.json resource_system: 100 / 8 / 1.5
@@ -183,7 +184,7 @@ namespace Dovus.Game
             reactor.BodyRadiusM = BossRadiusM;
             reactor.CaptureHome();
 
-            var bossVitals = new BossVitals(combat.Boss.MaxHp);
+            var bossVitals = new BossVitals(ScaledBossHp(combat.Boss.MaxHp));
             ally.AddComponent<Targetable>().Configure(
                 teamId: 0,
                 displayName: "ALLY",
@@ -204,6 +205,27 @@ namespace Dovus.Game
             // LavDecor.Build — eski arena-wide kırmızı ember noktaları kalktı.
             BillboardVfx.CreateEmberField(boss.transform, new Color(1f, 0.45f, 0.12f), rate: 14f);
             CreateHexagon(clock, combat, player.transform, pose, reactor, bossVitals, dodgeMotion, afterimage, vitals, telegraph, follow, tuningConfig, allyDummy, resource, cooldown);
+        }
+
+        /// <summary>
+        /// Can JSON'dan, tek katsayı ile. Kayıtlı panel sayısı (22) ölçeklenmez;
+        /// JSON yoksa tuning tavanı katsayı ile büyür. docs/durum.md
+        /// </summary>
+        int ScaledPlayerHp()
+        {
+            if (ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
+            {
+                float hp = BossCombatProfile.FromJson(design.Json).PlayerMaxHp;
+                return Mathf.Max(1, Mathf.RoundToInt(hp));
+            }
+            return Mathf.Max(1, CombatScale.MagnitudeInt(_tuning.PlayerMaxHp));
+        }
+
+        float ScaledBossHp(float tuningMaxHp)
+        {
+            if (ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
+                return Mathf.Max(1f, BossCombatProfile.FromJson(design.Json).BossMaxHp);
+            return Mathf.Max(1f, CombatScale.Magnitude(tuningMaxHp));
         }
 
         void CreateHexagon(

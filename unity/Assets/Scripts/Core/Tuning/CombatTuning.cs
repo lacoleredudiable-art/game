@@ -22,6 +22,18 @@ namespace Dovus.Core.Tuning
         public float ClosingDamagePerEffect = 3.5f;
 
         /// <summary>
+        /// Düz vuruşun ölçeklenmemiş gücü. Zırh 100 (%50) sonrası ×4000 ile ~25K
+        /// (20–30K bandı, ±%5 sapma içinde). Eski yol totalEffect×3,5 ≈ 14K idi.
+        /// </summary>
+        public float BasicStrikePower = 12.5f;
+
+        /// <summary>
+        /// Skill gücü zırhtan önce bununla çarpılır. Zırh 100 hasarı yarıya indirdiği için
+        /// 2, eski 175–222K bandını korur. Delme ve Zafiyet kırılması bundan sonra işler.
+        /// </summary>
+        public float SkillPreArmorScale = 2f;
+
+        /// <summary>
         /// true olunca DamageCalculator kullanılır, false=eski ClosingDamageMath.
         /// 17 Eyl sahip: deneme süresinde formül+crit açık.
         /// </summary>
@@ -56,6 +68,8 @@ namespace Dovus.Core.Tuning
             SkillMotion.CopyFrom(other.SkillMotion);
             SpaceLayer.CopyFrom(other.SpaceLayer);
             ClosingDamagePerEffect = other.ClosingDamagePerEffect;
+            BasicStrikePower = other.BasicStrikePower;
+            SkillPreArmorScale = other.SkillPreArmorScale;
             UseFormulaDamage = other.UseFormulaDamage;
             EnforceResourceCost = other.EnforceResourceCost;
             EnforceCooldown = other.EnforceCooldown;

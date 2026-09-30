@@ -1,9 +1,8 @@
 namespace Dovus.Core.Equipment
 {
     /// <summary>
-    /// Silah değiştirme kalkanı: kısa süreli puan. Gelen hasar kapısında,
-    /// dodge yuttuktan sonra tüketilir. Hasar formülünün içinde değildir;
-    /// hasar borusu bunu kendi azaltma adımına sonra taşıyabilir.
+    /// Silah değiştirme kalkanı: kısa süreli puan.
+    /// Dodge yuttuktan sonra hasar borusunun son azaltma/kalkan aşamasına girer.
     /// </summary>
     public sealed class WeaponShortShield
     {
@@ -26,11 +25,23 @@ namespace Dovus.Core.Equipment
         {
             if (incoming <= 0f || !Active(nowMs))
                 return incoming;
-            float taken = incoming < _points ? incoming : _points;
+            float taken = Consume(incoming, nowMs);
+            return incoming - taken;
+        }
+
+        /// <summary>
+        /// Boru aşama (f) kalkanı zaten hasardan düştü.
+        /// Burada yalnız havuz puanı iner; hasar ikinci kez kesilmez.
+        /// </summary>
+        public float Consume(float points, double nowMs)
+        {
+            if (points <= 0f || !Active(nowMs))
+                return 0f;
+            float taken = points < _points ? points : _points;
             _points -= taken;
             if (_points <= 0.01f)
                 _points = 0f;
-            return incoming - taken;
+            return taken;
         }
     }
 

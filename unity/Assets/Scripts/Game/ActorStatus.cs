@@ -168,26 +168,59 @@ namespace Dovus.Game
             }
         }
 
+        public ArmorSheet Armor { get; } = new ArmorSheet();
+        public bool LastHitWasCrit { get; set; }
+        public float LastThreat { get; set; }
+        public float LastPoise { get; set; }
+
         public void ApplyDamage(float raw, bool dodgeable = true)
         {
             if (raw <= 0f) return;
-            // Dodge i-frame kapısı. Hasar formülüne girmeden yutulur.
-            // Hasar borusu aynı sorguyu PlayerDodgeRig.BlocksIncoming ile kurabilir.
+            // İ-frame, hesaptan önce. Yutulan vuruş boruya girmez.
             if (_playerVitals != null && PlayerDodgeRig.BlocksIncoming(this, dodgeable))
                 return;
+            double now = _clock != null ? _clock.Director.WorldTimeMs : 0;
+            Armor.Passive = PassiveDirector?.ArmorAdd ?? 0f;
+            float taken = (ModeDirector?.DamageTakenMult ?? 1f)
+                * (PassiveDirector?.DamageTakenMult ?? 1f)
+                * Board.IncomingDamageMult;
+            // Kalkanın kısa kalkanı, tahta kalkanıyla aynı son aşamada (f) erir.
+            // Dodge yukarıda yuttuysa bu havuza hiç girilmez.
+            float shortShield = 0f;
+            WeaponShortShieldHost shortHost = null;
             if (_playerVitals != null)
             {
-                double now = _clock != null ? _clock.Director.WorldTimeMs : 0;
-                raw = WeaponShortShieldHost.Absorb(this, raw, now);
-                if (raw <= 0f)
-                    return;
+                shortHost = GetComponent<WeaponShortShieldHost>();
+                if (shortHost != null && shortHost.Shield.Active(now))
+                    shortShield = shortHost.Shield.Points;
             }
-            float modeMult = ModeDirector?.DamageTakenMult ?? 1f;
-            float passiveTaken = PassiveDirector?.DamageTakenMult ?? 1f;
-            float armor = PassiveDirector?.ArmorAdd ?? 0f;
-            float armorMult = 1f - Mathf.Clamp(armor, 0f, 0.9f);
-            float incoming = raw * Board.IncomingDamageMult * modeMult * passiveTaken * armorMult;
-            float afterShield = Board.AbsorbDamage(incoming);
+            var outcome = DamagePipeline.Resolve(new DamageQuery
+            {
+                SkillPower = raw,
+                AttackPower = 1f,
+                Multiplier = 1f,
+                CanCrit = false,
+                Armor = Armor.Effective(now),
+                DamageTakenFactor = taken,
+                Shield = Board.ShieldRemaining + shortShield,
+                Invulnerable = Board.IsInvulnerable || Board.IsStealthed,
+                Poise = raw,
+                ThreatMultiplier = PassiveDirector?.ThreatMultiplier ?? 1f,
+                ScaleMagnitudes = true
+            });
+            LastHitWasCrit = outcome.WasCrit;
+            LastThreat = outcome.Threat;
+            LastPoise = outcome.Poise;
+            if (outcome.ShieldAbsorbed > 0f)
+            {
+                float fromBoard = Mathf.Min(Board.ShieldRemaining, outcome.ShieldAbsorbed);
+                if (fromBoard > 0f)
+                    Board.ConsumeShield(fromBoard);
+                float fromShort = outcome.ShieldAbsorbed - fromBoard;
+                if (fromShort > 0f && shortHost != null)
+                    shortHost.Shield.Consume(fromShort, now);
+            }
+            float afterShield = outcome.Amount;
             if (afterShield <= 0f) return;
             if (IncomingDamageRedirect != null)
                 afterShield = Mathf.Max(0f, IncomingDamageRedirect(afterShield));
@@ -216,9 +249,19 @@ namespace Dovus.Game
             if (amount <= 0f)
                 return;
             // 16 Eylül: "Kavurucu Yara" — yanık hedefte pasif regen tick'i de azalır.
+            float healMult = Board.HealEffectivenessMult * (PassiveDirector?.HealMult ?? 1f);
+            var healedOutcome = DamagePipeline.Resolve(new DamageQuery
+            {
+                Heal = true,
+                HealPower = amount,
+                HealMultiplier = healMult,
+                ThreatMultiplier = PassiveDirector?.ThreatMultiplier ?? 1f,
+                ScaleMagnitudes = true
+            });
+            LastThreat = healedOutcome.Threat;
             if (_playerVitals != null)
             {
-                int healed = _playerVitals.ApplyHeal(Mathf.CeilToInt(amount * Board.HealEffectivenessMult));
+                int healed = _playerVitals.ApplyHeal(Mathf.CeilToInt(healedOutcome.Amount));
                 if (healed > 0)
                     ModeDirector?.NotifyHealed(); // "healer iyileştirirse biter" (Kan Çılgınlığı)
             }
