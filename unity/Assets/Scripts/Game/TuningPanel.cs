@@ -383,6 +383,10 @@ namespace Dovus.Game
             AddHeader("ÖLÇÜM (T11/T12)");
             AddBoolButton("Kare süresi göstergesi", () => p.ShowFrameTimeHud, v => p.ShowFrameTimeHud = v, "AÇIK", "KAPALI");
             AddBoolButton("Hasar sayısı", () => p.ShowDamageNumbers, v => p.ShowDamageNumbers = v, "AÇIK", "KAPALI");
+            AddBoolButton("Mana/Soğuma (JSON)",
+                () => c.EnforceResourceCost && c.EnforceCooldown,
+                v => { c.EnforceResourceCost = v; c.EnforceCooldown = v; },
+                "AÇIK", "KAPALI");
         }
 
         // ---- Satır inşası -----------------------------------------------------------------

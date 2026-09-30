@@ -38,10 +38,12 @@ namespace Dovus.Core.Mechanic
                 && (e.Has("arinma_alani") || e.Has("aura") || e.Has("bag_bagisiklik")));
             GuardTrigger = plan.Effects.Any(e => e.Has("koruyucu_tetik"));
             DelayedMark = plan.Effects.Any(e => e.Has("isaretli_an"));
-            Reflector = plan.Effects.Any(e => e.Stat == "yansit" && e.Target is "dost" or "alan");
+            Reflector = plan.Effects.Any(e => e.Stat == "yansit" && (e.Target is "dost" or "alan" || e.Has("ayna_yuzey")));
             DamageShare = plan.Effects.Any(e => e.Stat == "hasar_paylasimi");
             StatusTransfer = plan.Effects.Any(e => e.Stat == "durum_aktar");
             BuffPurge = plan.Effects.Any(e => e.Stat == "iyi_durum_sil");
+            Payload = JsonEffectRules.NeedsPayloadVolume(plan);
+            Trap = JsonEffectRules.HasPayload(plan, VolumePayloadKind.Trap);
 
             var actor = plan.Effects.FirstOrDefault(e => e.Stat is "aktor_yarat" or "klon");
             if (actor == null)
@@ -78,6 +80,8 @@ namespace Dovus.Core.Mechanic
         public bool DamageShare { get; }
         public bool StatusTransfer { get; }
         public bool BuffPurge { get; }
+        public bool Payload { get; }
+        public bool Trap { get; }
         public MechanicActorKind ActorKind { get; }
 
         public static MechanicWorldProfile From(MechanicPlan plan) =>

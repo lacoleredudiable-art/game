@@ -35,6 +35,8 @@ namespace Dovus.Game
         bool _ringFormation;
         bool _invisibleActor;
         bool _hopping;
+        bool _growing;
+        float _rampMax = 1.5f;
 
         public override SkillExecutorKind Kind => SkillExecutorKind.Summon;
 
@@ -53,6 +55,9 @@ namespace Dovus.Game
             _ringFormation = actorEffect?.Has("halka") ?? false;
             _invisibleActor = actorEffect?.Has("gorunmez") ?? false;
             _hopping = actorEffect?.Has("ziplayan") ?? false;
+            _growing = context.MechanicPlan != null && JsonEffectRules.AnyActorGrows(context.MechanicPlan);
+            if (_growing && ElementSystemJsonLoader.TryLoad(out ElementSystemDesign growDesign) && growDesign.Mechanics != null)
+                _rampMax = Mathf.Max(1f, (float)growDesign.Mechanics.Rules.Param("ramp_max"));
 
             Vector3 origin = context.Owner != null ? context.Owner.position : context.Origin;
             HitboxVfxRegistry.Create(
@@ -205,7 +210,10 @@ namespace Dovus.Game
                     _statusesApplied = true;
                     Apply(1f);
                 }
-                Context.ApplyFlatDamage?.Invoke(t.ExecutorMinionHitDamage);
+                float growth = _growing
+                    ? JsonEffectRules.RampedRatio(1f, 0, Context.DurationSec * 1000.0, _ageSec * 1000.0, _rampMax)
+                    : 1f;
+                Context.ApplyFlatDamage?.Invoke(t.ExecutorMinionHitDamage * growth);
                 SpawnWeaponAttack(m.Body.position);
                 GameObject fx = PlaceholderFactory.CreateImpact("tick", Context.ColorKey, Context.Target.position, transform.parent);
                 if (fx != null)

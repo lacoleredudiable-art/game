@@ -173,6 +173,11 @@ namespace Dovus.Game
 
             foreach (MechanicEffect e in plan.Effects)
             {
+                if (e.Atom == "deger" && e.Stat == "zirh" && e.Target == "kendin" && e.Has("aktarim"))
+                {
+                    ApplyStolenArmor(e, applied);
+                    continue;
+                }
                 if (e.Target != "dusman")
                     continue;
                 double ms = e.DurationSec * 1000.0;
@@ -259,11 +264,16 @@ namespace Dovus.Game
                     case ("varlik", "durum_aktar"):
                         ApplyStatusTransfer(applied);
                         break;
+                    case ("varlik", "durum_ekle"):
+                        ApplyStatusAdd(e, applied);
+                        break;
                     case ("varlik", "iyi_durum_sil"):
                         PurgeBossBuffs(applied);
                         break;
                 }
             }
+            if (JsonEffectRules.LiftsBoss(plan))
+                LiftBoss(applied);
             if (applied.Count > 0)
                 DebugConfig.DevLog($"[Mechanic] isabet {plan.SkillId}/{plan.WeaponName}: {string.Join(", ", applied)}");
         }
@@ -295,6 +305,7 @@ namespace Dovus.Game
             }
             TickPortals(worldMs);
             TickMechanicWorld(worldMs);
+            TickJsonEffects(worldMs);
         }
 
         Vector3 ClampToArena(Vector3 pos) =>

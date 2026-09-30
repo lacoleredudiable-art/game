@@ -503,8 +503,9 @@ namespace Dovus.Game
                 _playerStatus.SlotPassiveDirector = _slotPassives;
                 _playerStatus.ReflectBossVitals = bossVitals;
                 _playerStatus.IncomingDamageRedirect = RedirectMechanicDamage;
+                _playerStatus.ReflectSink = ApplyReflectedDamage;
                 _playerStatus.DamageTaken += OnPlayerDamageTaken;
-                _playerStatus.DamageBlocked += _ => NoteShieldBlockIfGuarding();
+                _playerStatus.DamageBlocked += _ => { NoteShieldBlockIfGuarding(); OnJsonShieldBlocked(); };
             }
 
 
@@ -537,6 +538,7 @@ namespace Dovus.Game
             {
                 _playerStatus.DamageTaken -= OnPlayerDamageTaken;
                 _playerStatus.IncomingDamageRedirect = null;
+                _playerStatus.ReflectSink = null;
             }
         }
 
@@ -2034,6 +2036,14 @@ namespace Dovus.Game
                     ApplyClosingHeal(p.Closing, basicSkill);
                     return;
                 }
+                double basicNow = _clock != null ? _clock.Director.WorldTimeMs : 0;
+                if (!BasicCadenceReady(basicNow))
+                {
+                    _readout?.NoteDenied("Düz vuruş", "hazır değil");
+                    return;
+                }
+                _lastBasicStrikeMs = basicNow;
+                int basicHits = BasicHitsNow();
 
                 float basicDealt = 0f;
                 float basicReach = WeaponBasicReach(_combat.Manifestation.BasicStrikeRangeM);
@@ -2047,7 +2057,11 @@ namespace Dovus.Game
                 {
                     if (logic != null)
                         ApplyBossClosingBasic(logic, p.Closing);
-                    basicDealt = ApplyClosingDamage(p.Closing, SkillResolution.Empty, isBasicStrike: true, slashCommitMult: 0f);
+                    basicDealt = ApplyClosingDamage(
+                        p.Closing, SkillResolution.Empty, isBasicStrike: true, slashCommitMult: 0f,
+                        effectScale: JsonEffectRules.BasicSubHitScale(basicHits));
+                    ScheduleBasicSubHits(p.Closing, basicHits, basicReach);
+                    ApplyBasicExtras(basicDealt, basicHits);
                     TryLandWeaponStun(SkillResolution.Empty, true);
                 }
                 TryScheduleEchoForSkill(SkillResolution.Empty, basicDealt);
@@ -2090,6 +2104,7 @@ namespace Dovus.Game
             executorRoute = ApplyMechanicWorldRoute(MechanicPlanFor(skill), executorRoute);
             LastExecutorKind = executorRoute.Kind;
             ApplySelfCastEffects(skill);
+            NoteJsonCast(skill, p.Closing);
             BeginMechanicPlan(
                 skill,
                 new Vector3(logic.DirX, 0f, logic.DirZ),
@@ -2984,7 +2999,11 @@ namespace Dovus.Game
                 bossStatus != null ? bossStatus.Board : null,
                 _combat != null ? _combat.Status : new StatusTuning(),
                 _mobilityCc,
-                friendlyScale);
+                friendlyScale,
+                cleanseCount: JsonCleanseCount(skill));
+            _lastFriendlyWasAlly = targetsAlly;
+            ShareFriendlyStatuses(skill, friendlyBoard);
+            ApplyPurgePower(skill, result.CleansedCount);
 
             // v6 Zaman fiili yalnız aktör durumudur; GameClock/Time.timeScale'a dokunmaz.
             // Süre ve güç kart/JSON'dan gelir. Kart kendine hız diyorsa düşmana yavaş inmez.
@@ -3223,36 +3242,40 @@ namespace Dovus.Game
             if (!allyNeeds && !selfNeeds)
             {
                 _readout?.NoteSkill(skill.DisplayName, "zaten full", new Color(0.7f, 0.9f, 0.75f));
+                ApplyHealOverflow(skill, amount, 0, false);
                 return;
             }
 
-            bool healAlly = preferAlly && allyNeeds;
-            if (!preferAlly && !preferSelf && allyNeeds && selfNeeds)
-            {
-                float allyR = _ally.Ratio;
-                float selfR = (float)playerVitals.Hp / playerVitals.MaxHp;
-                // Eşitse kendine — "kendime heal" denemesi.
-                healAlly = allyR < selfR;
-            }
-            else if (!preferSelf && !preferAlly)
-                healAlly = allyNeeds;
+            JsonEffectRules.SelectHealTargets(
+                allyNeeds,
+                selfNeeds,
+                allyNeeds ? _ally.Ratio : 1f,
+                selfNeeds ? (float)playerVitals.Hp / playerVitals.MaxHp : 1f,
+                preferAlly,
+                preferSelf,
+                FriendlyTargetCap(skill),
+                out bool healAlly,
+                out bool healSelf);
 
-            int healed;
             if (healAlly)
             {
-                healed = _ally.ApplyHeal(amount);
-                if (healed > 0)
+                int healedAlly = _ally.ApplyHeal(amount);
+                _lastFriendlyWasAlly = true;
+                if (healedAlly > 0)
                 {
-                    _damageHud?.ShowDamage(-healed);
-                    _readout?.NoteSkill(skill.DisplayName, "ally +" + healed, new Color(0.4f, 1f, 0.65f));
-                    _debugHud?.NoteSkillBang(skill.DisplayName, "ally +" + healed);
+                    _damageHud?.ShowDamage(-healedAlly);
+                    _readout?.NoteSkill(skill.DisplayName, "ally +" + healedAlly, new Color(0.4f, 1f, 0.65f));
+                    _debugHud?.NoteSkillBang(skill.DisplayName, "ally +" + healedAlly);
                     _ally.EnsureStatusBoard();
                     ConsumeWeaponBonus(_ally.Board);
                 }
-                return;
+                ApplyHealOverflow(skill, amount, healedAlly, true);
             }
+            if (!healSelf)
+                return;
 
-            healed = playerVitals.ApplyHeal(amount);
+            int healed = playerVitals.ApplyHeal(amount);
+            _lastFriendlyWasAlly = false;
             if (healed > 0)
             {
                 ConsumeWeaponBonus(_playerStatus != null ? _playerStatus.Board : null);
@@ -3265,6 +3288,7 @@ namespace Dovus.Game
                 _readout?.NoteSkill(skill.DisplayName, "self +" + healed, new Color(0.4f, 1f, 0.65f));
                 _debugHud?.NoteSkillBang(skill.DisplayName, "self +" + healed);
             }
+            ApplyHealOverflow(skill, amount, healed, false);
         }
 
         static float FlatDistance(Vector3 a, Vector3 b)
@@ -3325,7 +3349,7 @@ namespace Dovus.Game
             }
 
             RememberHitPoint(BossHitPoint());
-            if (!isBasicStrike)
+            if (!isBasicStrike && !_jsonTickDamage)
                 TryCannonBlast(_lastHitX, _lastHitZ);
             ConsumeWeaponBonus(_bossStatus != null ? _bossStatus.Board : null);
             LastClosingDamageDealt = damage;

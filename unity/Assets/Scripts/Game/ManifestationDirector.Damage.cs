@@ -2,6 +2,7 @@ using System;
 using Dovus.Core.Combat;
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
+using Dovus.Core.Mechanic;
 using UnityEngine;
 
 namespace Dovus.Game
@@ -52,6 +53,7 @@ namespace Dovus.Game
             outMult *= _slotPassives?.DamageMultFor(_slotQueryCastId) ?? 1f;
             outMult *= PortalBorderTeamHooks.DamageMult;
             outMult *= SelfDamageBuffMult();
+            outMult *= ConsumeOverflowBonus(isBasicStrike);
             outMult *= chainBonusOverride ?? _closingChainBonus;
             float eqMult = 1f;
             if (_equipmentBonus != null && !isBasicStrike && !skill.IsEmpty)
@@ -124,6 +126,11 @@ namespace Dovus.Game
                 taken = _bossStatus.Board.IncomingDamageMult * PortalBorderTeamHooks.BossIncomingMult;
                 shield = _bossStatus.Board.ShieldRemaining;
             }
+            if (!skill.IsEmpty && JsonEffectRules.PiercesDefenses(MechanicPlanFor(skill)?.Body))
+            {
+                shield = 0f;                  // delici: boss kalkanını deler
+                taken = Mathf.Max(taken, 1f); // ve hasar azaltmasını yok sayar
+            }
 
             float poise = 0f;
             if (!skill.IsEmpty)
@@ -190,12 +197,12 @@ namespace Dovus.Game
 
         void ApplyArmorShred(in SkillResolution skill, ActorStatus target)
         {
-            if (target == null || skill.IsEmpty || skill.EngineModifiers.IsNull)
+            if (skill.IsEmpty || skill.EngineModifiers.IsNull)
                 return;
             JsonValue engine = skill.EngineModifiers;
             float debuff = engine["debuff_armor"].AsFloat(0f);
             double now = _clock != null ? _clock.Director.WorldTimeMs : 0;
-            if (debuff < 0f)
+            if (debuff < 0f && target != null)
             {
                 float sec = engine["debuff_duration_sec"].AsFloat(4f);
                 target.Armor.ApplyShred(-debuff, now, now + Math.Max(0.05f, sec) * 1000.0);

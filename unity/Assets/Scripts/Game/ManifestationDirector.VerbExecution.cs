@@ -122,6 +122,7 @@ namespace Dovus.Game
             buff = WeaponPassiveRules.ScaleFriendlyMagnitude(buff, friendly);
             float buffSec = engine["buff_duration_sec"].AsFloat(0f);
             MechanicPlan mechanicPlan = MechanicPlanFor(skill);
+            CaptureBuffOverflow(mechanicPlan, now);
             // 8-9 hasar_buff koruyucu tetiktedir; kalıp/cast anında bir daha yazılmaz.
             if (buff > 0f && buffSec > 0f && GuardTriggerDelivery.AllowImmediate(mechanicPlan, "hasar_buff"))
             {
@@ -141,6 +142,7 @@ namespace Dovus.Game
                 _emHealRatio = (float)absorb.Amount;
                 _emHealUntilMs = now + Mathf.Max(0.2f, reflectSec + lifetimeAdd) * 1000.0;
             }
+            ApplyJsonSelfCast(mechanicPlan, reflect, reflectSec + lifetimeAdd, now);
         }
 
         /// <summary>

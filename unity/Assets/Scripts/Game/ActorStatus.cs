@@ -1,3 +1,4 @@
+using System;
 using Dovus.Core.Combat;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
@@ -78,6 +79,8 @@ namespace Dovus.Game
 
         /// <summary>Oyuncu reflect pasifi için boss canı (Bind'de bossVitals yoksa ayrıca set).</summary>
         public BossVitals ReflectBossVitals { get; set; }
+        /// <summary>Doluysa yansıyan hasar buraya gider (bölünen yansıma vb.); boşsa doğrudan boss'a.</summary>
+        public Action<float> ReflectSink { get; set; }
 
         float _skillReflectRatio;
         double _skillReflectUntilMs;
@@ -253,7 +256,10 @@ namespace Dovus.Game
             BossVitals reflectTarget = ReflectBossVitals;
             if (reflect <= 0f || reflectTarget == null || reflectTarget.IsDown)
                 return;
-            reflectTarget.ApplyDamage(reflectBase * reflect);
+            if (ReflectSink != null)
+                ReflectSink(reflectBase * reflect);
+            else
+                reflectTarget.ApplyDamage(reflectBase * reflect);
         }
 
         public void ApplyHeal(float amount)

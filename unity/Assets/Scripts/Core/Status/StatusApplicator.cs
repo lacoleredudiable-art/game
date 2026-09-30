@@ -12,8 +12,9 @@ namespace Dovus.Core.Status
     {
         public readonly struct Result
         {
-            public Result(bool knockback, bool cleansed, IReadOnlyList<StatusReactionRule> triggeredReactions, bool pull = false)
+            public Result(bool knockback, bool cleansed, IReadOnlyList<StatusReactionRule> triggeredReactions, bool pull = false, int cleansedCount = 0)
             {
+                CleansedCount = cleansedCount;
                 Knockback = knockback;
                 Cleansed = cleansed;
                 TriggeredReactions = triggeredReactions;
@@ -23,6 +24,8 @@ namespace Dovus.Core.Status
             public bool Knockback { get; }
             public bool Pull { get; }
             public bool Cleansed { get; }
+            /// <summary>cleanse_count: bu cast'te silinen kötü durum sayısı.</summary>
+            public int CleansedCount { get; }
 
             /// <summary>
             /// 16 Eylül: bu cast sırasında ateşlenen durum etkileşim kuralları (varsa) —
@@ -43,7 +46,8 @@ namespace Dovus.Core.Status
             StatusBoard target,
             StatusTuning tuning,
             MobilityCcData? mobilityCc = null,
-            float friendlyMagnitude = 1f)
+            float friendlyMagnitude = 1f,
+            int cleanseCount = 0)
         {
             if (skill.IsEmpty || tuning == null)
                 return new Result(false, false, EmptyReactions);
@@ -56,6 +60,7 @@ namespace Dovus.Core.Status
             bool knockback = false;
             bool pull = false;
             bool cleansed = false;
+            int cleansedCount = 0;
             string[] mechanics = skill.Mechanics ?? System.Array.Empty<string>();
 
             // "Savrulma Sersemliği" (docs/element-sistemi.json status_interaction_table):
@@ -78,7 +83,12 @@ namespace Dovus.Core.Status
                     string id = mechanics[i];
                     if (id == "cleanse")
                     {
-                        board.CleanseHostile();
+                        int want = cleanseCount > 0
+                            ? cleanseCount
+                            : skill.EngineModifiers != null && !skill.EngineModifiers.IsNull
+                                ? skill.EngineModifiers["cleanse_count"].AsInt(0)
+                                : 0;
+                        cleansedCount += board.CleanseHostile(want > 0 ? want : int.MaxValue);
                         cleansed = true;
                         continue;
                     }
@@ -113,7 +123,7 @@ namespace Dovus.Core.Status
                 board.ReactionTriggered -= OnReaction;
             }
 
-            return new Result(knockback, cleansed, triggered, pull);
+            return new Result(knockback, cleansed, triggered, pull, cleansedCount);
         }
 
         /// <summary>
@@ -372,8 +382,13 @@ namespace Dovus.Core.Status
                     board.Apply(kind, t.PoisonMs, t.PoisonDamagePerSec);
                     break;
                 case StatusKind.Shield:
-                    board.Apply(kind, t.ShieldMs, Friendly(t.ShieldAbsorb));
+                {
+                    float absorb = skill.EngineModifiers != null && !skill.EngineModifiers.IsNull
+                        ? skill.EngineModifiers["shield_absorb"].AsFloat(0f)
+                        : 0f;
+                    board.Apply(kind, t.ShieldMs, Friendly(absorb > 0f ? absorb : t.ShieldAbsorb));
                     break;
+                }
                 case StatusKind.Haste:
                     board.Apply(kind, t.HasteMs, Friendly(t.HasteSpeedMult), EffectSource(skill, "haste"));
                     break;

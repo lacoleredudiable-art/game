@@ -153,9 +153,17 @@ namespace Dovus.Game
                 return;
             Vector3 from = _player.position;
             SkillResolution skill = _deliverySkill.IsEmpty ? _templateSkill : _deliverySkill;
-            if (!skill.IsEmpty && StatusApplicator.IsSelfTargeted(skill))
+            float push = _deliveryOrder.PushM;
+            bool landingWave = push > 0f && JsonEffectRules.LandingWavePush(MechanicPlanFor(skill));
+            if (!skill.IsEmpty && StatusApplicator.IsSelfTargeted(skill) && !landingWave)
                 return;
             float knock = _combat != null ? _combat.Manifestation.BossKnockbackM : 1.35f;
+            // JSON itme mesafesi yalnız zorla yer değiştirmeye izin varken; yoksa eski genel itme.
+            if (push > 0f && ForcedDisplacement.Allows(_bossStatus != null ? _bossStatus.Board : null))
+            {
+                knock = push;
+                JsonLog($"itme {knock:0.##}m" + (landingWave ? " (iniş dalgası)" : ""));
+            }
             float shake = _combat != null ? _combat.Manifestation.BossShakeSec * 0.45f : 0.12f;
             double now = _clock != null ? _clock.Director.WorldTimeMs : 0;
             _boss.React(from, knock, 0.05f, shake, now);
@@ -221,10 +229,19 @@ namespace Dovus.Game
                         PulseDelivery(_deliverySkill, _deliveryPending, _deliveryMotion, share * beat.Power, true, true);
                         break;
                     case DeliveryBeatKind.Duplicate:
-                    case DeliveryBeatKind.Bounce:
                         PulseDelivery(_deliverySkill, _deliveryPending, _deliveryMotion, beat.Power, false, false);
                         break;
+                    case DeliveryBeatKind.Bounce:
+                        if (!TryBounceFriendly(beat.Power))
+                            PulseDelivery(_deliverySkill, _deliveryPending, _deliveryMotion, beat.Power, false, false);
+                        break;
+                    case DeliveryBeatKind.Pincer:
+                        PulseDelivery(_deliverySkill, _deliveryPending, _deliveryMotion, beat.Power, false, false);
+                        JsonLog($"kıskaç ikinci vuruş ×{beat.Power:0.##}");
+                        break;
                     case DeliveryBeatKind.FieldTick:
+                        if (!LandingFieldAllows(_deliverySkill))
+                            break;
                         PulseDelivery(_deliverySkill, _deliveryPending, _deliveryMotion, beat.Power, false, false);
                         break;
                     case DeliveryBeatKind.RepeatPrevious:

@@ -993,7 +993,9 @@
               "label": "Sabitleme",
               "poise_damage_mult": 1.5,
               "lifetime_add": 2.0,
-              "cast_mobility": "rooted"
+              "cast_mobility": "rooted",
+              "armor_add": 25,
+              "buff_duration_sec": 3.0
             },
             "prose_mechanic": "Dash + armor",
             "prose_feel": "Güvenli",
@@ -7445,7 +7447,19 @@
       "decoy_life_sec": 2.0,
       "flow_tick_fraction": 0.33,
       "glide_speed_mult": 1.5,
-      "minion_hit_damage": 6
+      "minion_hit_damage": 6,
+      "it_push_m": 2.0,
+      "it_hard_mult": 1.25,
+      "knockup_lift_m": 0.8,
+      "trap_trigger_mult": 0.5,
+      "trap_arm_sec": 0.5,
+      "mine_arm_sec": 1.0,
+      "payload_min_life_sec": 3.0,
+      "split_reflect_delay_sec": 0.25,
+      "pincer_delay_sec": 0.2,
+      "pincer_second_share": 0.5,
+      "cleanse_power_per_status": 0.1,
+      "shield_shock_radius_m": 3.0
     },
   
     "checks": {
