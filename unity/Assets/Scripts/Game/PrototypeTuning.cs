@@ -112,15 +112,6 @@ namespace Dovus.Game
         [Header("Düz vuruş (§5, T6.2)")]
         public int BasicStrikeDot = 1;
 
-        // Altı element rünü — hepsi açık (element-sistemi.json).
-        [Header("Açık rünler (§4)")]
-        public bool OpenDot1 = true;
-        public bool OpenDot2 = true;
-        public bool OpenDot3 = true;
-        public bool OpenDot4 = true;
-        public bool OpenDot5 = true;
-        public bool OpenDot6 = true;
-
         [Header("Altıgen ikon")]
         // 1.0 — görsel disk hit'ten şişmesin, komşu boşluğu yemesin.
         public float IconDisplayScale = 1.0f;
@@ -410,14 +401,6 @@ namespace Dovus.Game
         {
             if (TuningVersion < CurrentVersion)
                 MigrateToCurrent();
-
-            // Prototip: altı çekirdek her zaman açık — eski sahne false'larını her açılışta ezer.
-            OpenDot1 = true;
-            OpenDot2 = true;
-            OpenDot3 = true;
-            OpenDot4 = true;
-            OpenDot5 = true;
-            OpenDot6 = true;
 
             BasicStrikeDot = 1;
             ShowDamageNumbers = true;
@@ -719,16 +702,7 @@ namespace Dovus.Game
             _ => InkCyan
         };
 
-        public bool IsDotOpen(int dot) => dot switch
-        {
-            1 => OpenDot1,
-            2 => OpenDot2,
-            3 => OpenDot3,
-            4 => OpenDot4,
-            5 => OpenDot5,
-            6 => OpenDot6,
-            _ => false
-        };
+        public bool IsDotOpen(int dot) => true;
 
         /// <summary>
         /// T10: `PrototypeTuning`'in tamamı (renkler, altıgen konumu, arena...) ayar paneline

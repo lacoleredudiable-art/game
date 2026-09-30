@@ -228,7 +228,7 @@ namespace Dovus.Game
                 OnMotionTemplateHit,
                 bodyR,
                 stopGap);
-            Debug.Log($"[Motion] {skill.SkillId} → {template.Name}");
+            DebugConfig.DevLog($"[Motion] {skill.SkillId} → {template.Name}");
             return true;
         }
 

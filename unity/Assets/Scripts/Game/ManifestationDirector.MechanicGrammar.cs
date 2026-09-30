@@ -79,7 +79,7 @@ namespace Dovus.Game
             _cardEffect = skill.SkillJob ?? string.Empty;
             if (plan == null)
                 return;
-            Debug.Log($"[Mechanic] {plan.SkillId}/{plan.WeaponName}: {MechanicDescriber.ShortTitle(plan)} — {plan.Description}");
+            DebugConfig.DevLog($"[Mechanic] {plan.SkillId}/{plan.WeaponName}: {MechanicDescriber.ShortTitle(plan)} — {plan.Description}");
             ApplyMechanicSelfEffects(plan, aimDir);
             if (_clock != null)
                 BeginMechanicWorld(plan, aimDir, landedAt, _clock.Director.WorldTimeMs);
@@ -148,7 +148,7 @@ namespace Dovus.Game
                 }
             }
             if (applied.Count > 0)
-                Debug.Log($"[Mechanic] kendine {plan.SkillId}/{plan.WeaponName}: {string.Join(", ", applied)}");
+                DebugConfig.DevLog($"[Mechanic] kendine {plan.SkillId}/{plan.WeaponName}: {string.Join(", ", applied)}");
         }
 
         bool TemplateOwnsPosition(MechanicPlan plan, string stat)
@@ -265,7 +265,7 @@ namespace Dovus.Game
                 }
             }
             if (applied.Count > 0)
-                Debug.Log($"[Mechanic] isabet {plan.SkillId}/{plan.WeaponName}: {string.Join(", ", applied)}");
+                DebugConfig.DevLog($"[Mechanic] isabet {plan.SkillId}/{plan.WeaponName}: {string.Join(", ", applied)}");
         }
 
         static void ApplyOnce(

@@ -82,7 +82,7 @@ namespace Dovus.Game
                         _motionBody = _player.GetComponent<MotionTemplateBody>();
                     if (_motionBody != null && !_motionBody.IsDisplacing)
                         _motionBody.CancelToGround();
-                    Debug.Log($"[WeaponSwap] başladı → {_weaponSwap.Reserve?.Name}");
+                    DebugConfig.DevLog($"[WeaponSwap] başladı → {_weaponSwap.Reserve?.Name}");
                     break;
                 case WeaponSwapResult.OnCooldown:
                     _readout?.NoteDenied("swap soğumada");
@@ -104,7 +104,7 @@ namespace Dovus.Game
                 && _input.Dodge.IsActive((int)worldMs)
                 && _weaponSwap.CancelByDodge())
             {
-                Debug.Log("[WeaponSwap] dodge iptal etti");
+                DebugConfig.DevLog("[WeaponSwap] dodge iptal etti");
             }
 
             if (!_weaponSwap.Tick(worldMs))
@@ -162,7 +162,7 @@ namespace Dovus.Game
         {
             if (_weaponSwap == null)
                 return;
-            Debug.Log(
+            DebugConfig.DevLog(
                 $"[WeaponSwap] {reason}: aktif={_weaponSwap.Active?.Name ?? "—"} "
                 + $"yedek={_weaponSwap.Reserve?.Name ?? "—"}");
         }

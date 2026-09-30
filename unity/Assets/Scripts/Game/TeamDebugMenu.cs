@@ -11,6 +11,7 @@ namespace Dovus.Game
         string _skill = "5-4";
         bool _open = true;
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Boot()
         {
@@ -20,6 +21,7 @@ namespace Dovus.Game
             go.AddComponent<TeamDebugMenu>();
             DontDestroyOnLoad(go);
         }
+#endif
 
         void OnGUI()
         {

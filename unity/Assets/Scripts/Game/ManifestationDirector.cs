@@ -172,7 +172,7 @@ namespace Dovus.Game
             int colon = numericId.LastIndexOf(':');
             if (colon >= 0 && colon + 1 < numericId.Length)
                 numericId = numericId.Substring(colon + 1);
-            Debug.Log(
+            DebugConfig.DevLog(
                 $"[WeaponCycle] id={numericId} name={_equippedWeapon.Name} "
                 + $"type={routeType} canonicalType={_equippedWeapon.Type}");
             return _equippedWeapon;
@@ -213,8 +213,10 @@ namespace Dovus.Game
                 : null;
         public event Action<ElementPaintNode> ElementPaintChanged;
 
+#if UNITY_EDITOR
         /// <summary>Bağlama 10 / MCP: ShoutSkill içindeki ApplySkillAnimation yolunu doğrudan dener.</summary>
         public void DebugApplySkillAnimation(SkillResolution skill) => ApplySkillAnimation(skill);
+#endif
 
         public ElementPaintNode? CycleElementPaint()
         {
@@ -223,7 +225,7 @@ namespace Dovus.Game
             _elementPaintIndex = (_elementPaintIndex + 1) % _skills.ElementPaints.Count;
             ElementPaintNode paint = _skills.ElementPaints[_elementPaintIndex];
             _readout?.NoteSkill("Element: " + paint.Name, "isim/VFX boya katmanı", Color.cyan);
-            Debug.Log($"[ElementSystem] element paint={paint.Id}:{paint.Name} ({paint.Vfx})");
+            DebugConfig.DevLog($"[ElementSystem] element paint={paint.Id}:{paint.Name} ({paint.Vfx})");
             return paint;
         }
 
@@ -239,7 +241,7 @@ namespace Dovus.Game
                 ElementPaintNode paint = _skills.ElementPaints[i];
                 ElementPaintChanged?.Invoke(paint);
                 _readout?.NoteSkill("Element: " + paint.Name, "isim/VFX boya katmanı", Color.cyan);
-                Debug.Log($"[ElementSystem] element paint={paint.Id}:{paint.Name} ({paint.Vfx})");
+                DebugConfig.DevLog($"[ElementSystem] element paint={paint.Id}:{paint.Name} ({paint.Vfx})");
                 return true;
             }
             return false;
@@ -342,6 +344,7 @@ namespace Dovus.Game
         /// <summary>Bağlama 11 / MCP: revive_block + erase.</summary>
         public RealityEffectDirector RealityDirector => _realityDirector;
 
+#if UNITY_EDITOR
         /// <summary>Editör/prob: Update beklemeden cümle senkronu.</summary>
         public void ForceSync()
         {
@@ -349,6 +352,7 @@ namespace Dovus.Game
                 return;
             SyncFromSentence(_clock.Director.WorldTimeMs);
         }
+#endif
 
         public void Bind(
             GameClock clock,
@@ -1914,6 +1918,7 @@ namespace Dovus.Game
             _armedSkillId = string.Empty;
         }
 
+#if UNITY_EDITOR
         /// <summary>Editör/prob: kapanış bang zamanını zorla işle (heal vb.).</summary>
         public void ForceTickClosings()
         {
@@ -1944,6 +1949,7 @@ namespace Dovus.Game
                 return;
             TickTimeEffects(_clock.Director.WorldTimeMs);
         }
+#endif
 
         void TickPendingClosings(double worldMs)
         {
@@ -2100,7 +2106,7 @@ namespace Dovus.Game
             if (!executorStarted && !templateOwnsDelivery)
             {
                 if (executorRoute.IsStub)
-                    Debug.Log($"[SkillExecutor] stub → LivingEffect: {executorRoute.Reason}");
+                    DebugConfig.DevLog($"[SkillExecutor] stub → LivingEffect: {executorRoute.Reason}");
                 LastExecutorKind = SkillExecutorKind.Fallback;
                 ApplyBossClosing(logic, p.Closing, skill);
                 bool bossReached = _boss != null && IsClosingInRange(logic, p.Closing);
@@ -2138,7 +2144,7 @@ namespace Dovus.Game
                 || skill.Mechanics.Length > 0;
             if (string.Equals(skill.SkillId, "1-1", StringComparison.Ordinal))
             {
-                Debug.Log(
+                DebugConfig.DevLog(
                     $"[ElementSystem] smoke 1-1 effect applied={LastSkillEffectApplied} "
                     + $"damage={dealt:0.##}");
             }
@@ -2527,7 +2533,7 @@ namespace Dovus.Game
             if (kind == SkillExecutorKind.Summon)
                 ApplySpawnIFrame(skill);
             executor.Execute(context);
-            Debug.Log($"[SkillExecutor] {skill.SkillId} → {kind} r={radius:0.##} menzil={range:0.##} süre={durationSec:0.##} x{effectMult:0.##}");
+            DebugConfig.DevLog($"[SkillExecutor] {skill.SkillId} → {kind} r={radius:0.##} menzil={range:0.##} süre={durationSec:0.##} x{effectMult:0.##}");
             return true;
         }
 
