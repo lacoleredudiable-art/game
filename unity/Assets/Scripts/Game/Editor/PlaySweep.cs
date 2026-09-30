@@ -57,6 +57,9 @@ namespace Dovus.Game.EditorTools
         public bool NoErrors;
         public bool OnTime;
         public bool NoTeleport;
+        public bool Grounded;
+        public float FootLiveM;
+        public float FootSettleM;
         public string ExpectedPos = "";
         public string ActualPos = "";
         public float Damage;
@@ -69,7 +72,7 @@ namespace Dovus.Game.EditorTools
         public string Legs = "";
         public readonly List<string> Notes = new();
 
-        public bool Pass => Cast && Hit && Position && NotInside && OneSystem && NoErrors && OnTime && NoTeleport;
+        public bool Pass => Cast && Hit && Position && NotInside && OneSystem && NoErrors && OnTime && NoTeleport && Grounded;
     }
 
     /// <summary>
@@ -82,12 +85,16 @@ namespace Dovus.Game.EditorTools
     public static class PlaySweep
     {
         const string PendingKey = "Dovus.PlaySweep.Pending";
+        const string SpeedKey = "Dovus.PlaySweep.Speed";
+        const string SpeedSetKey = "Dovus.PlaySweep.SpeedSet";
+        const string Speed4Path = "Dovus/Play Sweep/Hız/4x (varsayılan)";
+        const string Speed1Path = "Dovus/Play Sweep/Hız/1x (ayıklama)";
         const string ScenePath = "Assets/Scenes/Prototype.unity";
         const BindingFlags BF = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
         // Ölçüm eşikleri — araç ayarı, oyun hissi değil.
-        const float SettleSec = 0.35f;
-        const float IdleHoldSec = 0.25f;
+        // Cast arası bekleme SweepPace: iki fizik adımı + bir referans kare.
+        // Gözlem kuyruğu oyun süresi; hız duvar saatini kısaltır, bu süreyi değil.
         const float TailSec = 0.6f;
         const float TimeoutExtraSec = 4f;
         const float TemplateTolSec = 0.2f;
@@ -98,8 +105,6 @@ namespace Dovus.Game.EditorTools
         const float SimMatchM = 0.75f;
         const float TemplateMoveM = 0.05f;
         const float OtherMoveM = 0.15f;
-        // Sıçrama sınırı kare süresine bağlı: en hızlı meşru hareket (3-6 yayı 19,2 m/s) × dt + pay.
-        // dt en az 1/60 sn sayılır; hitstop karelerinde sınır 0,2 m'ye düşmesin.
         const float LegMoveMps = 1.5f;
 
         static readonly int[][] RuneGroups =
@@ -116,6 +121,12 @@ namespace Dovus.Game.EditorTools
         public static readonly List<PlaySweepResult> Results = new();
 
         static List<PlaySweepCase> _cases;
+        static float _speed = SweepPace.DefaultSpeed;
+        static bool _expandWeapons;
+        static bool _paceSaved;
+        static float _savedTimeScale = 1f;
+        static float _savedFixed = 0.02f;
+        static float _savedMaxDelta = 0.333f;
         static string _label = "";
         static string _secondWeapon = "";
         static int _index;
@@ -169,6 +180,7 @@ namespace Dovus.Game.EditorTools
             public Vector3 B;
             public Vector3 Runner;
             public bool Playing;
+            public bool RunnerDone;
             public bool Performing;
             public bool Busy;
             public bool Bang;
@@ -192,6 +204,13 @@ namespace Dovus.Game.EditorTools
             public float PlayerAction;
             public float Shield;
             public int Zones;
+            public float Feet;
+            public float FootGround;
+            public float BossFeet;
+            public float BossFootGround;
+            public float AllyFeet;
+            public float AllyFootGround;
+            public bool Airborne;
         }
 
         struct Snapshot
@@ -264,11 +283,47 @@ namespace Dovus.Game.EditorTools
         [MenuItem("Dovus/Play Sweep/144 kombo - Kılıç + Asa")]
         static void MenuSwordStaff() => Launch("kilic+asa");
 
-        [MenuItem("Dovus/Play Sweep/144 kombo - Tüm silahlar")]
-        static void MenuAllWeapons() => Launch("hepsi");
+        [MenuItem("Dovus/Play Sweep/1440 kombo - Tüm silahlar", false, 15)]
+        static void MenuAllWeapons() => Launch("tum");
+
+        [MenuItem(Speed4Path, false, 30)]
+        static void ChooseSpeed4() => StoreSpeed(SweepPace.DefaultSpeed);
+
+        [MenuItem(Speed4Path, true)]
+        static bool ValidateSpeed4()
+        {
+            Menu.SetChecked(Speed4Path, ChosenSpeed() >= 1.5f);
+            return !Running;
+        }
+
+        [MenuItem(Speed1Path, false, 31)]
+        static void ChooseSpeed1() => StoreSpeed(SweepPace.DebugSpeed);
+
+        [MenuItem(Speed1Path, true)]
+        static bool ValidateSpeed1()
+        {
+            Menu.SetChecked(Speed1Path, ChosenSpeed() < 1.5f);
+            return !Running;
+        }
 
         [MenuItem("Dovus/Play Sweep/Durdur")]
         static void MenuStop() => Stop("menü");
+
+        static float ChosenSpeed()
+        {
+            if (!SessionState.GetBool(SpeedSetKey, false))
+                return SweepPace.DefaultSpeed;
+            return SweepPace.ClampSpeed(SessionState.GetFloat(SpeedKey, SweepPace.DefaultSpeed));
+        }
+
+        static void StoreSpeed(float speed)
+        {
+            SessionState.SetBool(SpeedSetKey, true);
+            SessionState.SetFloat(SpeedKey, SweepPace.ClampSpeed(speed));
+        }
+
+        static float SettleSec => SweepPace.SettleWaitSec(_savedFixed);
+        static float IdleHoldSec => SweepPace.IdleHoldSec;
 
         /// <summary>Menü girişi. Play kapalıysa sahneyi açar, Play'e girer, sonra başlar.</summary>
         public static void Launch(string preset)
@@ -310,7 +365,13 @@ namespace Dovus.Game.EditorTools
 
         public static void StartPreset(string preset)
         {
-            if (preset == "hepsi")
+            _expandWeapons = preset == "tum";
+            if (_expandWeapons)
+            {
+                Start(new List<PlaySweepCase>(), preset);
+                return;
+            }
+            if (SweepMotion.IsAllWeapons(preset))
             {
                 var all = new List<PlaySweepCase>();
                 foreach (string name in SweepWeaponNames)
@@ -363,6 +424,21 @@ namespace Dovus.Game.EditorTools
                 .ToList();
         }
 
+        /// <summary>Katalogdaki her silah × 144 kombo. Sahne bağlandıktan sonra doldurulur.</summary>
+        static List<PlaySweepCase> AllWeaponCases()
+        {
+            var list = new List<PlaySweepCase>();
+            if (_md == null)
+                return list;
+            foreach (EquipmentItem w in _md.AvailableWeapons)
+            {
+                if (w == null || string.IsNullOrEmpty(w.Name))
+                    continue;
+                list.AddRange(AllCombos(w.Name));
+            }
+            return list;
+        }
+
         public static void Start(List<PlaySweepCase> cases, string label, string secondWeapon = "")
         {
             if (!EditorApplication.isPlaying)
@@ -372,6 +448,7 @@ namespace Dovus.Game.EditorTools
             }
 
             _cases = cases ?? new List<PlaySweepCase>();
+            _speed = ChosenSpeed();
             _label = string.IsNullOrEmpty(label) ? "sweep" : label;
             _secondWeapon = secondWeapon ?? "";
             _index = 0;
@@ -384,6 +461,7 @@ namespace Dovus.Game.EditorTools
             Running = true;
             Status = "sahne bekleniyor";
             Application.runInBackground = true;
+            ApplyPace();
             Application.logMessageReceived -= OnLog;
             Application.logMessageReceived += OnLog;
             InstallLoop(true);
@@ -394,7 +472,9 @@ namespace Dovus.Game.EditorTools
             if (!Running)
                 return;
             Running = false;
+            _expandWeapons = false;
             InstallLoop(false);
+            ClearPace();
             Application.logMessageReceived -= OnLog;
             if (_bossDirector != null)
                 _bossDirector.enabled = true;
@@ -444,10 +524,44 @@ namespace Dovus.Game.EditorTools
 
         static double NowMs => _clock != null ? _clock.Director.WorldTimeMs : Time.timeAsDouble * 1000.0;
 
+        /// <summary>
+        /// timeScale ve GameClock aynı çarpan. fixedDeltaTime 1× adımında kalır;
+        /// maximumDeltaTime dünya saniyesi olduğu için çarpanla büyür.
+        /// </summary>
+        static void ApplyPace()
+        {
+            if (!_paceSaved)
+            {
+                _savedTimeScale = Time.timeScale;
+                _savedFixed = Time.fixedDeltaTime > 0f ? Time.fixedDeltaTime : 0.02f;
+                _savedMaxDelta = Time.maximumDeltaTime > 0f ? Time.maximumDeltaTime : 1f / 3f;
+                _paceSaved = true;
+            }
+
+            Time.timeScale = _speed;
+            Time.fixedDeltaTime = SweepPace.FixedStepSec(_savedFixed);
+            Time.maximumDeltaTime = SweepPace.MaxDeltaSec(_savedMaxDelta, _speed);
+            if (_clock != null)
+                _clock.SimulationScale = _speed;
+        }
+
+        static void ClearPace()
+        {
+            if (_clock != null)
+                _clock.SimulationScale = 1f;
+            if (!_paceSaved)
+                return;
+            Time.timeScale = _savedTimeScale;
+            Time.fixedDeltaTime = _savedFixed;
+            Time.maximumDeltaTime = _savedMaxDelta;
+            _paceSaved = false;
+        }
+
         static void Tick()
         {
             if (!Running || !Application.isPlaying)
                 return;
+            ApplyPace();
             try
             {
                 switch (_stage)
@@ -455,6 +569,16 @@ namespace Dovus.Game.EditorTools
                     case Stage.WaitScene:
                         if (++_waitFrames < 30 || !BindScene())
                             return;
+                        if (_expandWeapons && _cases.Count == 0)
+                        {
+                            _cases = AllWeaponCases();
+                            _expandWeapons = false;
+                            if (_cases.Count == 0)
+                            {
+                                Stop("silah kataloğu boş");
+                                return;
+                            }
+                        }
                         if (!_bossStartSet)
                         {
                             _bossStart = _boss.position;
@@ -565,7 +689,9 @@ namespace Dovus.Game.EditorTools
         static void Finish()
         {
             Running = false;
+            _expandWeapons = false;
             InstallLoop(false);
+            ClearPace();
             Application.logMessageReceived -= OnLog;
             if (_bossDirector != null)
                 _bossDirector.enabled = true;
@@ -693,7 +819,8 @@ namespace Dovus.Game.EditorTools
             }
             if (!started && f.T < _info.RecoverySec + 1.0f)
                 return;
-            if (idle && f.T >= minRecord && IdleFor() >= IdleHoldSec)
+            if (idle && f.T >= minRecord && IdleFor() >= IdleHoldSec
+                && TemplateEndedFor() >= Grounding.SettleAfterSec)
                 FinishCase(false);
         }
 
@@ -899,6 +1026,7 @@ namespace Dovus.Game.EditorTools
             S(_md, "_closingChainBonus", 1f);
             S(_md, "_pendingChainBonus", 1f);
             _input.Dodge?.Reset();
+            _ally?.GetComponent<ActorGrounding>()?.SnapPlanted();
         }
 
         /// <summary>
@@ -909,10 +1037,12 @@ namespace Dovus.Game.EditorTools
         {
             if (_bossReactor == null || BossPulling())
                 return;
-            if (Flat(_boss.position - _bossStart).magnitude < 0.05f)
-                return;
-            _bossReactor.Home = _bossStart;
-            _boss.position = new Vector3(_bossStart.x, _boss.position.y, _bossStart.z);
+            if (Flat(_boss.position - _bossStart).magnitude >= 0.05f)
+            {
+                _bossReactor.Home = _bossStart;
+                _boss.position = new Vector3(_bossStart.x, _boss.position.y, _bossStart.z);
+            }
+            _boss.GetComponent<ActorGrounding>()?.SnapPlanted();
             Physics.SyncTransforms();
         }
 
@@ -920,6 +1050,7 @@ namespace Dovus.Game.EditorTools
         {
             Vector3 b = _boss.position;
             _player.position = new Vector3(b.x, _player.position.y, b.z - dist);
+            _player.GetComponent<ActorGrounding>()?.SnapPlanted();
             _player.rotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
             Physics.SyncTransforms();
             var targeting = F<PlayerTargeting>(_md, "_targeting");
@@ -1073,7 +1204,7 @@ namespace Dovus.Game.EditorTools
             var f = new Frame
             {
                 T = (float)((NowMs - _castMs) / 1000.0),
-                Dt = Time.unscaledDeltaTime,
+                Dt = SweepPace.EffectiveFrameSec(Time.unscaledDeltaTime, _speed),
                 P = _player.position,
                 B = _boss.position,
                 Playing = _body != null && _body.IsDisplacing,
@@ -1107,6 +1238,7 @@ namespace Dovus.Game.EditorTools
             if (runner is MotionTemplateRunner mr)
             {
                 f.Runner = new Vector3(mr.X, mr.Y, mr.Z);
+                f.RunnerDone = mr.Finished;
                 int phase = F<int>(mr, "_phase");
                 var tpl = F<MotionTemplate>(mr, "_template");
                 f.Phase = tpl != null && phase >= 0 && phase < tpl.Phases.Count ? tpl.Phases[phase].Name : "";
@@ -1139,7 +1271,45 @@ namespace Dovus.Game.EditorTools
                 f.PlayerAction = b.ActionSpeedMult;
                 f.Shield = b.ShieldRemaining;
             }
+            f.Airborne = f.Playing && PhaseLeavesGround(f.Phase);
+            f.Feet = FeetOrRoot(_player);
+            f.FootGround = FootGroundOf(_player);
+            f.BossFeet = FeetOrRoot(_boss);
+            f.BossFootGround = FootGroundOf(_boss);
+            if (_ally != null)
+            {
+                f.AllyFeet = FeetOrRoot(_ally.transform);
+                f.AllyFootGround = FootGroundOf(_ally.transform);
+            }
             return f;
+        }
+
+        static float FeetOrRoot(Transform actor)
+        {
+            float y = ActorGrounding.MeasureFeet(actor);
+            if (float.IsPositiveInfinity(y) && actor != null)
+                return actor.position.y;
+            return y;
+        }
+
+        static float FootGroundOf(Transform actor)
+        {
+            ActorGrounding g = actor != null ? actor.GetComponent<ActorGrounding>() : null;
+            if (g != null && g.HasFootGround)
+                return g.FootGroundY;
+            return 0f;
+        }
+
+        static bool PhaseLeavesGround(string phase)
+        {
+            if (string.IsNullOrEmpty(phase) || _info?.Template == null)
+                return false;
+            foreach (MotionPhase p in _info.Template.Phases)
+            {
+                if (p.Name == phase)
+                    return p.Airborne;
+            }
+            return false;
         }
 
         static float SafeFloat(string name)
@@ -1410,6 +1580,9 @@ namespace Dovus.Game.EditorTools
                 r.Notes.Add($"boss tek karede {bossJump:F2} m sıçradı (sınır {bossLimit:F2} m, t={bossJumpAt:F2})");
             }
 
+            // 8) ayaklar yerde — havada olmayan kareler ve skill bitiminden 0,3 sn sonra
+            EvaluateGround(r);
+
             // 5) hata yok
             var errors = _logs.Where(l => l.StartsWith("ERROR") || l.StartsWith("SWEEP-EXC")).ToList();
             r.NoErrors = errors.Count == 0;
@@ -1461,7 +1634,95 @@ namespace Dovus.Game.EditorTools
             return r;
         }
 
-        static float JumpLimit(float dt) => SweepMotion.JumpLimit(dt);
+        static float TemplateEndedFor()
+        {
+            int last = -1;
+            for (int i = 0; i < _frames.Count; i++)
+            {
+                if (_frames[i].Playing)
+                    last = i;
+            }
+            if (last < 0)
+                return _frames.Count > 0 ? _frames[_frames.Count - 1].T : 0f;
+            return _frames[_frames.Count - 1].T - _frames[last].T;
+        }
+
+        static void EvaluateGround(PlaySweepResult r)
+        {
+            float live = 0f;
+            float breach = 0f;
+            float breachAt = 0f;
+            float breachDt = SweepPace.ReferenceFrameSec;
+            float breachLimit = SweepPace.GroundSlack(SweepPace.ReferenceFrameSec);
+            string breachPhase = "";
+            float worstRatio = 0f;
+            bool liveOk = true;
+            int lastPlay = -1;
+            for (int i = 0; i < _frames.Count; i++)
+            {
+                Frame f = _frames[i];
+                // Biten kalıbın ertelenmiş son karesi (tarama sıçrama ölçüsü için) iniş sayılır.
+                if (!f.Playing || f.RunnerDone)
+                    continue;
+                lastPlay = i;
+                if (f.Airborne)
+                    continue;
+                float err = Mathf.Abs(f.Feet - f.FootGround);
+                if (err > live)
+                    live = err;
+                float limit = SweepPace.GroundSlack(f.Dt);
+                float ratio = limit > 0.0001f ? err / limit : err;
+                if (ratio > worstRatio)
+                {
+                    worstRatio = ratio;
+                    breach = err;
+                    breachAt = f.T;
+                    breachDt = f.Dt;
+                    breachLimit = limit;
+                    breachPhase = f.Phase;
+                }
+                if (err > limit + 0.0001f)
+                    liveOk = false;
+            }
+
+            r.FootLiveM = live;
+            float endT = lastPlay >= 0 ? _frames[lastPlay].T : 0f;
+            float want = endT + Grounding.SettleAfterSec;
+            Frame settle = _frames[_frames.Count - 1];
+            bool haveSettle = false;
+            for (int i = 0; i < _frames.Count; i++)
+            {
+                if (_frames[i].T + 0.0001f >= want)
+                {
+                    settle = _frames[i];
+                    haveSettle = true;
+                    break;
+                }
+            }
+
+            float settleErr = Mathf.Abs(settle.Feet - settle.FootGround);
+            r.FootSettleM = settleErr;
+            // Bitiş ölçüsü nokta örneği; hızla gevşemez. Canlı eşik kare süresiyle ölçeklenir.
+            bool settleOk = haveSettle && settleErr <= Grounding.SettleSlackM + 0.0001f;
+            r.Grounded = liveOk && settleOk;
+            if (!liveOk)
+                r.Notes.Add($"ayak yerden {breach:F2} m (havada değil, sınır {breachLimit:F2} m @ {breachDt * 1000f:F0} ms, t={breachAt:F2}" +
+                            (string.IsNullOrEmpty(breachPhase) ? "" : ", faz " + breachPhase) + ")");
+            if (!haveSettle)
+                r.Notes.Add("ayak inişi: skill bitiminden 0,30 sn ölçülemedi");
+            else if (!settleOk)
+                r.Notes.Add($"skill bitiminden {Grounding.SettleAfterSec:F2} sn sonra ayak {settleErr:F2} m (sınır {Grounding.SettleSlackM:F2} m)");
+
+            float bossErr = Mathf.Abs(settle.BossFeet - settle.BossFootGround);
+            float allyErr = Mathf.Abs(settle.AllyFeet - settle.AllyFootGround);
+            if (bossErr > Grounding.LiveSlackM || allyErr > Grounding.LiveSlackM)
+            {
+                r.Grounded = false;
+                r.Notes.Add($"zemin dışı: boss {bossErr:F2} m, dost {allyErr:F2} m");
+            }
+        }
+
+        static float JumpLimit(float dt) => SweepPace.JumpLimit(dt);
 
         static bool IsBlinkPhase(string phase)
         {
@@ -1533,20 +1794,20 @@ namespace Dovus.Game.EditorTools
             int pass = Results.Count(r => r.Pass);
             var byWeapon = Results.GroupBy(r => r.Case.Weapon)
                 .Select(g => $"{g.Key}: {g.Count(r => r.Pass)}/{g.Count()}");
-            LastSummary = $"{pass}/{Results.Count} geçti ({string.Join(", ", byWeapon)})";
+            LastSummary = $"{pass}/{Results.Count} geçti @ {_speed:0.#}x ({string.Join(", ", byWeapon)})";
 
             var csv = new StringBuilder();
-            csv.AppendLine("kombo,isim,silah,kalip,cast,isabet,konum,govdeye_girmedi,tek_sistem,hata_yok,sure,sicrama_yok,gecti,"
-                           + "beklenen_konum,gercek_konum,hasar,etki,min_merkez_m,temas_m,kalip_sn,beklenen_sn,toplam_sn,bacak,notlar");
+            csv.AppendLine("kombo,isim,silah,kalip,cast,isabet,konum,govdeye_girmedi,tek_sistem,hata_yok,sure,sicrama_yok,yerde,gecti,"
+                           + "beklenen_konum,gercek_konum,hasar,etki,min_merkez_m,temas_m,kalip_sn,beklenen_sn,toplam_sn,ayak_m,inis_m,bacak,notlar");
             foreach (PlaySweepResult r in Results)
             {
                 csv.AppendLine(string.Join(",", new[]
                 {
                     r.Case.Id, Q(r.Name), Q(r.Weapon), Q(r.Template), B(r.Cast), B(r.Hit), B(r.Position),
-                    B(r.NotInside), B(r.OneSystem), B(r.NoErrors), B(r.OnTime), B(r.NoTeleport), B(r.Pass),
+                    B(r.NotInside), B(r.OneSystem), B(r.NoErrors), B(r.OnTime), B(r.NoTeleport), B(r.Grounded), B(r.Pass),
                     Q(r.ExpectedPos), Q(r.ActualPos), N(r.Damage), Q(r.Effects),
                     N(r.MinDist == float.MaxValue ? 0f : r.MinDist), N(r.Contact), N(r.TemplateSec),
-                    N(r.ExpectedSec), N(r.TotalSec), Q(r.Legs), Q(string.Join("; ", r.Notes)),
+                    N(r.ExpectedSec), N(r.TotalSec), N(r.FootLiveM), N(r.FootSettleM), Q(r.Legs), Q(string.Join("; ", r.Notes)),
                 }));
             }
 
@@ -1555,7 +1816,9 @@ namespace Dovus.Game.EditorTools
             File.WriteAllText(Path.Combine(dir, safe + ".csv"), csv.ToString(), new UTF8Encoding(false));
 
             var detail = new StringBuilder();
-            detail.AppendLine("# Play taraması " + _label + " — " + LastSummary);
+            detail.AppendLine("# Play taraması " + _label + " @ " + _speed.ToString("0.#", CultureInfo.InvariantCulture)
+                               + "x — " + LastSummary);
+            detail.AppendLine(WorstFeet());
             foreach (PlaySweepResult r in Results.Where(x => !x.Pass))
             {
                 var failed = new List<string>();
@@ -1567,6 +1830,7 @@ namespace Dovus.Game.EditorTools
                 if (r.Cast && !r.NoErrors) failed.Add("hata");
                 if (r.Cast && !r.OnTime) failed.Add("süre");
                 if (r.Cast && !r.NoTeleport) failed.Add("sıçrama");
+                if (r.Cast && !r.Grounded) failed.Add("yerde");
                 detail.AppendLine($"{r.Case.Id} {r.Name} [{r.Weapon}] KALDI: {string.Join(", ", failed)} — {string.Join("; ", r.Notes)}");
             }
             detail.AppendLine();
@@ -1580,7 +1844,8 @@ namespace Dovus.Game.EditorTools
                                $"boss r={_info.BossR:F2}, oyuncu r={_info.PlayerR:F2}, temas {r.Contact:F2}" +
                                (Mathf.Abs(c.BossShiftX) > 0.001f ? $", boss kayması {c.BossShiftX:F1} m" : ""));
             _detail.AppendLine($"  sonuç: {(r.Pass ? "GEÇTİ" : "KALDI")} isabet={r.Hit} konum={r.ExpectedPos}→{r.ActualPos} gövde={r.NotInside} " +
-                               $"tek={r.OneSystem} hata={r.NoErrors} süre={r.OnTime} sıçrama_yok={r.NoTeleport} hasar={r.Damage:F1} etki=[{r.Effects}] bacak=[{r.Legs}]");
+                               $"tek={r.OneSystem} hata={r.NoErrors} süre={r.OnTime} sıçrama_yok={r.NoTeleport} yerde={r.Grounded} " +
+                               $"ayak={r.FootLiveM:F2}/{r.FootSettleM:F2} hasar={r.Damage:F1} etki=[{r.Effects}] bacak=[{r.Legs}]");
             foreach (string n in r.Notes)
                 _detail.AppendLine("  not: " + n);
             foreach (string l in _logs.Distinct().Take(12))
@@ -1615,6 +1880,24 @@ namespace Dovus.Game.EditorTools
                     marks.Add($"VURUŞ@boss{Flat(_hitOrigins[k] - _frames[i].B).magnitude:F2}m");
             }
             return marks.Count > 0 ? " | " + string.Join(" ", marks) : "";
+        }
+
+        static string WorstFeet()
+        {
+            if (Results.Count == 0)
+                return "Yere basma: ölçüm yok";
+            var ranked = Results
+                .Select(r => (r, err: Mathf.Max(r.FootLiveM, r.FootSettleM)))
+                .OrderByDescending(x => x.err)
+                .Take(8)
+                .ToList();
+            string list = string.Join(", ", ranked.Select(x =>
+                $"{x.r.Case.Id} canlı {x.r.FootLiveM:F2} m / iniş {x.r.FootSettleM:F2} m"));
+            return "Yere basma en kötü (havada değil ≤ "
+                   + Grounding.LiveSlackM.ToString("F2", CultureInfo.InvariantCulture)
+                   + " m × kare/(1/60), bitiş+0,30 sn ≤ "
+                   + Grounding.SettleSlackM.ToString("F2", CultureInfo.InvariantCulture)
+                   + " m, hızdan bağımsız): " + list;
         }
 
         static string Q(string s) => "\"" + (s ?? "").Replace("\"", "'") + "\"";

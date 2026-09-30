@@ -21,10 +21,17 @@ namespace Dovus.Game
         /// <summary>Menü (build seçimi) açıkken dünya saati durur; gerçek saat UI için akar.</summary>
         public bool Paused { get; set; }
 
+        /// <summary>
+        /// Play Sweep dünya hızı. 1 iken saat duvar zamanıdır; dövüş <c>Time.timeScale</c> yazmaz.
+        /// Tarama bunu timeScale ile aynı değere çeker. Fizik adımı (fixedDeltaTime) ayrı kalır.
+        /// </summary>
+        public float SimulationScale { get; set; } = 1f;
+
         void Update()
         {
             RealDeltaMs = FrameDelta.ClampMs(Time.unscaledDeltaTime * 1000.0);
-            WorldDeltaMs = Paused ? 0.0 : Director.Tick(RealDeltaMs);
+            double scale = SimulationScale < 0f ? 0.0 : SimulationScale;
+            WorldDeltaMs = Paused ? 0.0 : Director.Tick(RealDeltaMs * scale);
         }
     }
 }

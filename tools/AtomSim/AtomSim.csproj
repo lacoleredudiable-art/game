@@ -13,6 +13,7 @@
   <ItemGroup>
     <Compile Include="..\..\unity\Assets\Scripts\Core\Mechanic\*.cs" Link="Core\Mechanic\%(Filename)%(Extension)" />
     <Compile Include="..\..\unity\Assets\Scripts\Core\Grammar\MiniJson.cs" Link="Core\Grammar\MiniJson.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Core\Tuning\SkillVisualTuning.cs" Link="Core\Tuning\SkillVisualTuning.cs" />
   </ItemGroup>
 
 </Project>

@@ -77,6 +77,11 @@ namespace Dovus.Game
                             && _engine != null
                             && _engine.State.Phase == SentencePhase.Recovering))
                         CutTemplateForSwap(WeaponSwapCancel.UnlocksNextSkill(inWindow, tagged));
+                    // Kesilen ya da boştaki gövde havada kalmasın; pencere dışında oynayan kalıp sürer.
+                    if (_motionBody == null && _player != null)
+                        _motionBody = _player.GetComponent<MotionTemplateBody>();
+                    if (_motionBody != null && !_motionBody.IsDisplacing)
+                        _motionBody.CancelToGround();
                     Debug.Log($"[WeaponSwap] başladı → {_weaponSwap.Reserve?.Name}");
                     break;
                 case WeaponSwapResult.OnCooldown:
@@ -105,8 +110,8 @@ namespace Dovus.Game
             if (!_weaponSwap.Tick(worldMs))
                 return;
 
-            // Silah değişimi oynayan kalıbı durdurmaz ve menzil çarpanını yoluna yazmaz.
             // Kalıp Play anında kopyalanmıştır; sonraki cast yeni silahı okur.
+            // Kesilen ya da boştaki gövde CancelToGround ile zemine iner (yukarıda).
             _equippedWeapon = _weaponSwap.Active;
             LastFactorySkill = null;
             OnWeaponSwapCompleted(_equippedWeapon);
