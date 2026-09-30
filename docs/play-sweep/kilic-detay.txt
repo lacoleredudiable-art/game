@@ -1,4 +1,3 @@
-# Play taraması kilic — 142/144 geçti (Kılıç: 142/144)
-3-2 Emici Adım [Kılıç] KALDI: konum(arka→yerinde) — hasarsız skill (base_damage 0): etki hareketin kendisi; vuruş 1: 0,52s@boss1,02m/oyuncu1,36m; kalıp sonu: merkeze 1,90 m, başlangıçtan 0,00 m, kalıp simülasyonundan 5,65 m, boss 1,10 m kaydı
-6-2 Emici Bağ [Kılıç] KALDI: sıçrama — vuruş 1: 0,70s@boss0,47m/oyuncu1,36m; kalıp sonu: merkeze 2,95 m, başlangıçtan 1,60 m, kalıp simülasyonundan 0,00 m, boss 1,65 m kaydı; tek karede 0,66 m sıçrama (t=0,82, faz cek)
+# Play taraması kilic — 143/144 geçti (Kılıç: 143/144)
+3-6 Bağlayıcı Adım [Kılıç] KALDI: sıçrama — vuruş 1: 1,03s@boss0,00m/oyuncu1,50m; kalıp sonu: merkeze 1,50 m, başlangıçtan 4,50 m, kalıp simülasyonundan 0,00 m; tek karede 0,73 m sıçrama (t=1,01, faz as)
 

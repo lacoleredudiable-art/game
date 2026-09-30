@@ -1,3 +1,3 @@
 # Play taraması asa — 143/144 geçti (Asa: 143/144)
-3-2 Emici Adım [Asa] KALDI: konum(arka→yerinde) — hasarsız skill (base_damage 0): etki hareketin kendisi; vuruş 1: 0,68s@boss1,02m/oyuncu1,36m; kalıp sonu: merkeze 1,90 m, başlangıçtan 0,00 m, kalıp simülasyonundan 5,65 m, boss 1,10 m kaydı; toparlanma 0,53 sn (tablo 0,26)
+3-6 Bağlayıcı Adım [Asa] KALDI: sıçrama — vuruş 1: 1,19s@boss0,00m/oyuncu1,54m; kalıp sonu: merkeze 1,54 m, başlangıçtan 4,54 m, kalıp simülasyonundan 0,00 m; tek karede 0,73 m sıçrama (t=1,09, faz as); toparlanma 0,53 sn (tablo 0,26)
 

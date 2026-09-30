@@ -1,3 +1,4 @@
+using Dovus.Core.Combat;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using UnityEngine;
@@ -161,9 +162,26 @@ namespace Dovus.Game
                 return;
             float payload = _statusBoard.Tick(_clock.WorldDeltaMs, _statusTuning);
             if (payload > 0f)
-                ApplyDamage(Mathf.CeilToInt(payload));
+            {
+                var hit = DamagePipeline.Resolve(new DamageQuery
+                {
+                    SkillPower = payload,
+                    CanCrit = false,
+                    ScaleMagnitudes = true,
+                    Poise = payload
+                });
+                ApplyDamage(Mathf.CeilToInt(hit.Amount));
+            }
             else if (payload < 0f)
-                ApplyHeal(Mathf.CeilToInt(-payload));
+            {
+                var heal = DamagePipeline.Resolve(new DamageQuery
+                {
+                    Heal = true,
+                    HealPower = -payload,
+                    ScaleMagnitudes = true
+                });
+                ApplyHeal(Mathf.CeilToInt(heal.Amount));
+            }
         }
     }
 }

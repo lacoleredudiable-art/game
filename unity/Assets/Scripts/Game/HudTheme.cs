@@ -18,6 +18,7 @@ namespace Dovus.Game
         public Color DamageTextColor = new(0.95f, 0.93f, 0.88f, 1f);
         public Color CritTextColor = new(0.95f, 0.88f, 0.55f, 1f);
         public Color HealColor = new(0.45f, 0.9f, 0.75f, 1f);
+        public Color PlayerHitColor = new(0.95f, 0.28f, 0.22f, 1f);
         /// <summary>Gecikmeli hasar barı. Önerilen.</summary>
         public Color GhostColor = new(1f, 0.93f, 0.78f, 0.9f);
         public Color FlashColor = Color.white;

@@ -51,11 +51,7 @@ namespace Dovus.Game
         public bool EffectiveBlocksMovement =>
             Board.BlocksMovement
             || (ModeDirector?.BlocksMovement ?? false)
-            || (CastMobilityActive && _castMobility == Dovus.Core.Grammar.SkillMobility.Rooted)
-            || string.Equals(
-                SlotPassiveDirector?.StringModifier("cast_mobility"),
-                Dovus.Core.Grammar.SkillMobility.Rooted,
-                System.StringComparison.Ordinal);
+            || (CastMobilityActive && _castMobility == Dovus.Core.Grammar.SkillMobility.Rooted);
 
         public void GrantCastMobility(string mobility, double untilWorldMs)
         {
@@ -169,16 +165,44 @@ namespace Dovus.Game
             }
         }
 
-        public void ApplyDamage(float raw)
+        public ArmorSheet Armor { get; } = new ArmorSheet();
+        public bool LastHitWasCrit { get; set; }
+        public float LastThreat { get; set; }
+        public float LastPoise { get; set; }
+
+        public void ApplyDamage(float raw, bool dodgeable = true)
         {
             if (raw <= 0f) return;
-            float modeMult = ModeDirector?.DamageTakenMult ?? 1f;
-            float passiveTaken = PassiveDirector?.DamageTakenMult ?? 1f;
-            float armor = PassiveDirector?.ArmorAdd ?? 0f;
-            float armorMult = 1f - Mathf.Clamp(armor, 0f, 0.9f);
-            float incoming = raw * Board.IncomingDamageMult * modeMult * passiveTaken * armorMult
-                * (_playerVitals != null ? PortalBorderTeamHooks.PlayerDamageTakenMult : 1f);
-            float afterShield = Board.AbsorbDamage(incoming);
+            // İ-frame, hesaptan önce. Yutulan vuruş boruya girmez.
+            if (_playerVitals != null && PlayerDodgeRig.BlocksIncoming(this, dodgeable))
+                return;
+            double now = _clock != null ? _clock.Director.WorldTimeMs : 0;
+            Armor.Passive = PassiveDirector?.ArmorAdd ?? 0f;
+            float taken = (ModeDirector?.DamageTakenMult ?? 1f)
+                * (PassiveDirector?.DamageTakenMult ?? 1f)
+                * Board.IncomingDamageMult;
+            if (_playerVitals != null)
+                taken *= PortalBorderTeamHooks.PlayerDamageTakenMult;
+            var outcome = DamagePipeline.Resolve(new DamageQuery
+            {
+                SkillPower = raw,
+                AttackPower = 1f,
+                Multiplier = 1f,
+                CanCrit = false,
+                Armor = Armor.Effective(now),
+                DamageTakenFactor = taken,
+                Shield = Board.ShieldRemaining,
+                Invulnerable = Board.IsInvulnerable || Board.IsStealthed,
+                Poise = raw,
+                ThreatMultiplier = PassiveDirector?.ThreatMultiplier ?? 1f,
+                ScaleMagnitudes = true
+            });
+            LastHitWasCrit = outcome.WasCrit;
+            LastThreat = outcome.Threat;
+            LastPoise = outcome.Poise;
+            if (outcome.ShieldAbsorbed > 0f)
+                Board.ConsumeShield(outcome.ShieldAbsorbed);
+            float afterShield = outcome.Amount;
             if (afterShield <= 0f) return;
             if (IncomingDamageRedirect != null)
                 afterShield = Mathf.Max(0f, IncomingDamageRedirect(afterShield));
@@ -207,9 +231,19 @@ namespace Dovus.Game
             if (amount <= 0f)
                 return;
             // 16 Eylül: "Kavurucu Yara" — yanık hedefte pasif regen tick'i de azalır.
+            float healMult = Board.HealEffectivenessMult * (PassiveDirector?.HealMult ?? 1f);
+            var healedOutcome = DamagePipeline.Resolve(new DamageQuery
+            {
+                Heal = true,
+                HealPower = amount,
+                HealMultiplier = healMult,
+                ThreatMultiplier = PassiveDirector?.ThreatMultiplier ?? 1f,
+                ScaleMagnitudes = true
+            });
+            LastThreat = healedOutcome.Threat;
             if (_playerVitals != null)
             {
-                int healed = _playerVitals.ApplyHeal(Mathf.CeilToInt(amount * Board.HealEffectivenessMult));
+                int healed = _playerVitals.ApplyHeal(Mathf.CeilToInt(healedOutcome.Amount));
                 if (healed > 0)
                     ModeDirector?.NotifyHealed(); // "healer iyileştirirse biter" (Kan Çılgınlığı)
             }
