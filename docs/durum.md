@@ -13,10 +13,83 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 29 Eylül 2026 (dodge i-frame) ·
-**Dal:** `feat/dodge-iframes` · **Sıradaki:** Unity Play'de dodge hissi (aşağıdaki liste). Play taraması (6-2 / 3-2) master'da duruyor, bu dal ona dokunmadı.
+**Son güncelleme:** 30 Eylül 2026 (PR #27 + #30 master'a merge) ·
+**Dal:** `master` · **Sıradaki:** yeni sıçrama ölçüsüyle Kılıç/Asa taramasını bir kez daha koş
 
-> **Dodge (Dragon Nest tarzı, `feat/dodge-iframes`).** Kısa kayma ~4 m / 0,25 sn, dokunulmazlık dodge başında ~0,3 sn. 2 hak, her biri ~4 sn'de dolar (düğmede iki pip). Çubuk yönü, çubuk yoksa geriye. Skill ve düz vuruş her an kesilir (sersem / donma / yıkılma ve ölüm hariç); kesilen skill'in beklemesi geri gelmez, hareket kalıbı konumu hemen bırakır. Boss'un içine düşmez. Mükemmel sıyırma: i-frame'in ilk ~0,15 sn'sinde gelecek vuruş — yerel kamera/animasyon nabzı (global zaman ölçeği yok), 1 hak iadesi, sonraki vuruş ×1,3 (hasar borusu `PlayerDodgeRig.ConsumeNextHit` ile bir kez yer). Gelen hasar kapısı: `ActorStatus.ApplyDamage` (oyuncu) ve `PlayerVitals.ApplyDamage`. Boss'un kendi vuruş çözücüsü hasarı zaten yazmıyorsa mükemmel ödül `CombatFeel.Exchanged` üzerinden gelir. Deneme: Play'de sol üst "Dodge deneme" veya F8. Hasar 22 (eski çakma notu); `BossTuning.Damage` hâlâ 0. Sayılar `DodgeTuning` alanları — JSON'da dodge hak satırı yok. `dotnet test` 412/412, `python3 tools/GameCompile/check.py` geçti. Unity Play doğrulanmadı.
+> **30 Eylül — karar: 3-6 kare takılması.** `PlaySweep` sıçrama sınırı artık sabit 0,6 m değil:
+> 25 m/s × kare süresi (en az 1/60 sn) + 0,2 m (60 FPS'te 0,62 m, 38 ms'de 1,15 m). Oyuncu ve
+> boss için aynı. PR #27 ve #30 master'a merge edildi. Yeni ölçüyle Play taraması koşulmadı.
+
+> **30 Eylül — PR #30 ikinci Play testi: Kılıç 143/144, Asa 143/144. Merge edilmedi.**
+> `dotnet test` 434/434, Unity derlemesi temiz; konsolda yalnız bilinen URP/ShaderGraph paket
+> hataları. Oyuncu hiçbir kombo sonunda boss içinde değil. Tek hata iki silahta da **3-6**:
+> `as` fazında tek karede 0,73 m sıçrama (araç eşiği 0,6 m). Yay 19,2 m/s, 60 FPS'te kare
+> başı 0,32 m; 0,73 m ≈ 38 ms'lik bir kare. İlk Kılıç koşusunda 3-6 geçti, 1-6 (yavaş
+> editör karesi) kaldı; 3×(3-6 Asa + 1-6 Kılıç) mini koşu 6/6 geçti. Yani takılan karede
+> çıkıyor ama iki tam koşuda aynı yerde tekrarladı; 30 FPS'te bu yay kare başı ~0,64 m olur.
+> Kural "tek kare sıçrama yok" dediği için merge yok — karar sahibinde (eşik mi, yay hızı mı).
+> 1-2, 4-2, 5-2, 10-2, 11-2, 12-2 iki silahta "yerinde", başlangıçtan 0,00 m, sıçrama yok;
+> 3-2 arkaya iniyor, 6-2 geri. **Elle:** boss'a doğru dodge 1,5/1,8/2,0/2,2 m'den hep yakın
+> yüzde 1,50 m'de duruyor (temas 1,35); en büyük kare adımı 0,61 m @17 ms — açık alandaki
+> normal dodge adımı 0,62–0,66 m, fazladan atlama yok. Boss zırhı 100. Düz vuruş 23,8–25,8K.
+> Skill: 1-1 205–221K, 1-9 361–371K ve 5-9 251–269K (ikisi de `zirh_yoksay`, ×2 zırhsız →
+> bant üstü), kritik 5-9 394K. 7-6: 0,6 sn'de zırh 100→70, düz vuruş ~24,7K→28,6K (+%16).
+> 7-9: 2,27 sn'de 100→50, düz vuruş →32,7K (+%32), 1-1 ~213K→292K (+%37). Zafiyet
+> skill'inden hemen sonraki ilk düz vuruş 0 hasar verdi (ok=True), ikincisi normal.
+> Bu makinede editör boşta kalınca kareler yavaşlıyor; tarama sırasında sistem uyanık tutuldu.
+
+> **30 Eylül — Play kalanları, kod.** Dodge boss'a doğru atılınca yakın yüzde durur
+> (`DodgeEdge.StopBeforeCrossing`); uzak yüze ışınlanmaz. Atış, tutma ve dönüş fazları
+> kenar itmesiyle yer değiştirmez; yürüyen kalıbın kendi adımı durur. 5-2, 10-2, 11-2,
+> 12-2 boss oyuncunun içinden geçse de oyuncu yerinde kalır. 1-2 ve 4-2
+> oyun davranışı aynı (oyuncu yerinde, boss temasa gelir); tarama beklentisi artık "yerinde".
+> Boss zırhı JSON: normal 100 (%50), sert 150 (%40 alınır). Canlı dövüş normal zırhı okur;
+> sert mod anahtarı yok. Skill gücü zırhtan önce ×2 (`SkillPreArmorScale`) — 175–222K bandı
+> durur, delme ve kırılma sonra işler. Düz vuruş tabanı `BasicStrikePower` 12,5 → zırh sonrası
+> ~25K (20–30K). Zafiyet 7-6 −%30, 7-9 −%50 yalnız zırh puanını düşürür; `armor_break` ×1,2
+> artık üstüne binmez. `dotnet test` 434/434, `python3 tools/GameCompile/check.py` geçti.
+> Unity Play bu düzeltmelerde yok.
+
+
+
+> **30 Eylül — PR #30 Play testi: Kılıç 138/144, Asa 140/144. Merge edilmedi** (kural 142+).
+> `dotnet test` 429/429, Unity derlemesi ve konsol temiz. Master'da son koşu 142/143 idi.
+> **Yeni kalanlar (Emici):** 5-2 (iki silah) ve 11-2 (iki silah) `cek`/`em` fazında oyuncu
+> tek karede ~2,93 m sıçrıyor; 10-2 Kılıç aynı (faz `yut`); 12-2 Kılıç "yerinde" yerine
+> "geri" bitiyor. Hepsinde isabet merkezi boss'ta (0,00 m), oyuncu 1,50 m'ye oturuyor.
+> **Araç beklentisi eski:** 1-2 ve 4-2 (iki silah) oyuncu yerinde (0,00 m), boss temasa
+> (1,35 m) geliyor — PR'ın istediği bu, ama araç kalıp simülasyonuna göre "ön" bekliyor.
+> 3-2 içinden geçip arkaya iniyor (geçti), 6-2 Kılıç sıçrama yok (geçti).
+> **Elle ölçüm:** dodge çubuk yönüne ~4,1 m (kayıtlı ayar 3,8 m + süzülme), çubuksuz geri;
+> 2 hak, 3. basış reddedilir, hak 4,0 / 8,0 sn'de dolar; skill ve düz vuruşu keser (hasar 0);
+> Stun/Stasis'te dodge yok. Boss'a doğru dodge hiç içeride bitmiyor (≥1,50 m, temas 1,35)
+> ama 1,5–2,2 m'den atılınca boss'un **üstünden tek karede 2,6–3,0 m atlayıp** arkaya iniyor.
+> F8: dodge'suz 88.000 hasar; basış→vuruş 249 ms hasar 0, PERFECT yok; 67/116 ms PERFECT,
+> hak geri, sonraki vuruş ×1,30 bir kez (hasar alınca da korunur); 450 ms geç → 88.000.
+> Can: boss 88.000.000, oyuncu 400.000. Yüzen sayılar: düz vuruş 13,5–14,5K (beklenen
+> 20–30K değil), Zafiyet vuruşu 18–22K, skill 175–222K; kritik "279.7K!" altın, 32 px
+> (normal 25 px); oyuncuya "88K" kırmızı; iyileştirme "+32K" yeşil. M biçimi görülmedi
+> (1M üstü vuruş yok). Bu makinedeki kayıtlı ayarda `ShowDamageNumbers` kapalı — ölçüm
+> için oturumda açıldı. **Zafiyet:** 7-1/7-9 sonrası boss `ArmorBreak` → gelen hasar ×1,20,
+> sonraki 1-1 ~×1,2. Zırh kırılması (−%18/−%22) ise etkisiz: boss zırhı JSON'da 0,15, LoL
+> formülünde bu ~%0,15 azaltma demek (zırh birimi uyuşmuyor, bkz. Bilinen açıklar).
+
+> **29 Eylül — hasar ve zırh.** Bütün vuruş, zehir ve boss hasarı tek borudan geçer:
+> güç × saldırı, kritik (varsayılan %10, ×1,5), buff'lar bir kez, zırh delme, LoL zırhı,
+> en fazla %90 azaltma, ±%5 sapma. İyileştirme zırha girmez. Tehdit değeri her olayda durur.
+> Can ve hasar JSON'u bozmadan ×4000 (oyuncu ~400 bin, boss ~88 milyon; 150–250 milyon
+> hedefi sonra `max_hp` ile). Yüzen sayılar K/M, havuzlu. Zırh: silah alanı (şimdilik 0),
+> pasif, geçici buff. Zafiyet (7-6, 7-9) motor değeri −%20 zırhı gerçekten düşürür;
+> karttaki “−%30” metni değişmedi. Emici: 3-2 hâlâ içinden geçer, 1-2 ve 4-2 yerinde kalıp
+> boss'u çeker, 6-2 geri çekilirken tek karede yığılmaz. Unity Play bu turda yok.
+> Dodge i-frame'i borudan önce yutar (`ActorStatus` ve `PlayerVitals`). Mükemmel sıyırmanın
+> sonraki vuruş çarpanı buff aşamasında bir kez tüketilir; ıskalama ve yenilmezlikte harcanmaz.
+> `dotnet test` 429/429, `python3 tools/GameCompile/check.py` geçti. Unity Play yok.
+
+> **Dodge (Dragon Nest tarzı).** Kısa kayma ~4 m / 0,25 sn, dokunulmazlık dodge başında ~0,3 sn.
+> 2 hak, her biri ~4 sn'de dolar. Skill ve düz vuruş her an kesilir. Mükemmel sıyırma sonraki
+> vuruşu ×1,3 yapar. Deneme: Play'de sol üst "Dodge deneme" veya F8. `BossTuning.Damage` hâlâ 0.
+> Unity Play doğrulanmadı.
 
 > **30 Eylül — dördüncü koşu: Kılıç 142/144, Asa 143/144. Merge edilmedi.** `feat/motion-templates-2`
 > (`b9df90b`) merge edildi. `dotnet test` 402/402, Unity derlemesi ve konsol temiz (yalnız bilinen
@@ -1660,10 +1733,15 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
-- **Play taraması Kılıç 142/144, Asa 143/144 (30 Eylül, dördüncü koşu, skill kodu düzeltilmedi).**
-  3-2 oyuncu hiç kıpırdamaz (içinden geçip arkaya inmeli). 6-2 Kılıç `cek` fazında tek karede
-  0,66 m sıçrar. 1-2 / 4-2'de oyuncu 1,5 m ileri yürür, boss gelmez (çakışma yok). Merge kuralı
-  tutmadı; PR #25 ve #26 açık.
+- **Hasar borusu (30 Eylül, kod).** Kritik JSON'da %5 / ×2 durur; canlı vuruş %10 / ×1,5.
+  Boss zırhı normal 100, sert 150 (JSON). Canlı dövüş normali kullanır; sert mod anahtarı yok.
+  Boss canı 88 milyon; 150–250 milyon için `max_hp` sonra ayarlanır. Ayar paneli sıfırlayınca
+  can 22'ye dönebilir (ölçek bağlama yalnız açılışta). Geciken patlama kalkanı vuruş
+  hesaplanırken yer. Zafiyet artık yalnız zırh puanını düşürür (`armor_break` ×1,2 binmez).
+  Play'deki tek kare sıçrama, tarama beklentisi, düz vuruş ve zırh 30 Eylül ikinci testte
+  doğrulandı. Kalan: 3-6 `as` yayı 19,2 m/s — takılan karede (≥31 ms) 0,6 m eşiğini aşıyor
+  (iki silahta 0,73 m); 1-9/5-9 zırh yok saydığı için 360K/260K (150–250K bandı üstü);
+  Zafiyet skill'inden hemen sonraki ilk düz vuruş 0 hasar.
 - **Görsel (29 Eylül, duruyor).** Hitbox VFX yer tutucu küre 1-5 dönüşünü kapatır; 12-7'de kum saati yok.
   2-2 akış çizgisi hâlâ oyuncu→dost, kırmızı değil (hasar yolu ayrı bağlandı).
   Bağ/hacim (`_mechanicLinks`) status temizliğinden sonra da Root/Slow uygulayabiliyor.

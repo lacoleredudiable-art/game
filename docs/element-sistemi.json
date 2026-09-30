@@ -2122,7 +2122,7 @@
             "passive": "6 sn pasif: Bağlama",
             "engine": {
               "action": "debuff",
-              "debuff_armor": -0.2,
+              "debuff_armor": -0.3,
               "debuff_duration_sec": 4.0,
               "base_damage": 5,
               "base_cost": 12,
@@ -2184,11 +2184,11 @@
             "id": "7-9",
             "name": "Odaklı Zafiyet",
             "adjective": "Odaklama",
-            "effect": "Armor -%30",
+            "effect": "Armor -%50",
             "passive": "6 sn pasif: Odaklama",
             "engine": {
               "action": "debuff",
-              "debuff_armor": -0.2,
+              "debuff_armor": -0.5,
               "debuff_duration_sec": 4.0,
               "base_damage": 5,
               "base_cost": 12,
@@ -2199,7 +2199,7 @@
               "damage_mult": 1.15,
               "max_targets": 1
             },
-            "prose_mechanic": "Armor -%30",
+            "prose_mechanic": "Armor -%50",
             "prose_feel": "Delici",
             "prose_visual": "Kırmızı hedef"
           },
@@ -4338,7 +4338,8 @@
     },
     "boss_stats_default": {
       "max_hp": 22000,
-      "armor": 0.15,
+      "armor": 100,
+      "armor_hard": 150,
       "magic_resist": 0.1,
       "poise_bar": 3500,
       "stagger_duration_sec": 7
@@ -6180,7 +6181,7 @@
         },
         "7-9": {
           "name": "Odaklı Zafiyet",
-          "mechanic": "Armor -%30",
+          "mechanic": "Armor -%50",
           "feel": "Delici",
           "visual": "Kırmızı hedef"
         },

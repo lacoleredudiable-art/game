@@ -342,6 +342,19 @@ namespace Dovus.Core.Status
             return amount - absorbed;
         }
 
+        /// <summary>Pipeline kalkan payını hesapladı; havuzdan düşülür.</summary>
+        public void ConsumeShield(float absorbed)
+        {
+            if (absorbed <= 0f || !Has(StatusKind.Shield))
+                return;
+            StatusEntry s = _active[StatusKind.Shield];
+            s.Magnitude -= absorbed;
+            if (s.Magnitude <= 0.01f)
+                _active.Remove(StatusKind.Shield);
+            else
+                _active[StatusKind.Shield] = s;
+        }
+
         public void CleanseHostile()
         {
             bool hadLock = AttackLockPresent();

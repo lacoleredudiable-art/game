@@ -144,6 +144,27 @@ public class DodgeIframeTests
     }
 
     [Test]
+    public void Edge_DodgeTowardBoss_StopsOnTheNearFace()
+    {
+        float x = 0f;
+        float z = 4f;
+        DodgeEdge.StopBeforeCrossing(ref x, ref z, 0f, 0f, 0f, 1.8f, 1.5f);
+        Assert.That(x, Is.EqualTo(0f).Within(0.02f));
+        Assert.That(z, Is.EqualTo(0.3f).Within(0.02f));
+        Assert.That(z, Is.LessThan(1.8f));
+
+        float awayX = 0f;
+        float awayZ = -4f;
+        DodgeEdge.StopBeforeCrossing(ref awayX, ref awayZ, 0f, 0f, 0f, 1.8f, 1.5f);
+        Assert.That(awayZ, Is.EqualTo(-4f).Within(0.001f));
+
+        float shortX = 0f;
+        float shortZ = 0.2f;
+        DodgeEdge.StopBeforeCrossing(ref shortX, ref shortZ, 0f, 0f, 0f, 1.8f, 1.5f);
+        Assert.That(shortZ, Is.EqualTo(0.2f).Within(0.001f));
+    }
+
+    [Test]
     public void Direction_UsesStick_OrBackpedal()
     {
         DodgeDirection.Resolve(0f, 1f, 1f, 0f, out float x, out float z);

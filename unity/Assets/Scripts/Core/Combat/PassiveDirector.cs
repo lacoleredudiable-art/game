@@ -100,6 +100,10 @@ namespace Dovus.Core.Combat
         public float CritChanceAdd => SumEffect("crit_chance_add");
         public float LifestealAdd => SumEffect("lifesteal_add");
         public float ArmorAdd => SumEffect("armor_add");
+        public float ArmorPenFlat => SumEffect("armor_pen_flat");
+        public float ArmorPenPercent => SumEffect("armor_pen_percent");
+        public float AttackPower => 1f + SumEffect("attack_power_add");
+        public float ThreatMultiplier => ProductEffect("threat_mult", 1f);
         public float ReflectRatioAdd => SumEffect("reflect_ratio_add");
         public float DashCooldownMult => ProductEffect("dash_cooldown_mult", 1f);
         public float RevealRadiusMult => ProductEffect("reveal_radius_mult", 1f);

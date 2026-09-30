@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Dovus.Core.Combat;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,7 +10,7 @@ namespace Dovus.Game
     /// </summary>
     public sealed class DamageNumberHud : MonoBehaviour
     {
-        const int PoolSize = 12;
+        const int PoolSize = 24;
 
         PrototypeTuning _tuning;
         Camera _cam;
@@ -69,7 +70,7 @@ namespace Dovus.Game
         /// Negatif amount = heal. <paramref name="worldPos"/> isabet noktası (yoksa boss üstü);
         /// <paramref name="tint"/> element rengi (kritik altın, heal yeşil kalır).
         /// </summary>
-        public void ShowDamage(float amount, bool isCrit = false, Vector3? worldPos = null, Color? tint = null)
+        public void ShowDamage(float amount, bool isCrit = false, Vector3? worldPos = null, Color? tint = null, bool victimIsPlayer = false)
         {
             if (_tuning == null || !_tuning.ShowDamageNumbers)
                 return;
@@ -88,10 +89,10 @@ namespace Dovus.Game
                     world = boss.transform.position + Vector3.up * 2.2f;
             }
 
-            ShowAt(world, amount, isCrit, tint);
+            ShowAt(world, amount, isCrit, tint, victimIsPlayer);
         }
 
-        public void ShowAt(Vector3 worldPos, float amount, bool isCrit = false, Color? tint = null)
+        public void ShowAt(Vector3 worldPos, float amount, bool isCrit = false, Color? tint = null, bool victimIsPlayer = false)
         {
             if (_tuning == null || !_tuning.ShowDamageNumbers)
                 return;
@@ -112,19 +113,25 @@ namespace Dovus.Game
             HudTheme th = HudTheme.Current;
             if (heal)
             {
-                f.Text.text = "+" + (-amount).ToString("0.#");
+                f.Text.text = "+" + DamageNumberFormat.Format(-amount);
                 f.Text.color = th.HealColor;
                 f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(_tuning.DamageFloatFontDp));
             }
             else if (isCrit)
             {
-                f.Text.text = Mathf.RoundToInt(amount) + "!";
+                f.Text.text = DamageNumberFormat.Format(amount) + "!";
                 f.Text.color = th.CritTextColor;
                 f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(_tuning.DamageFloatCritFontDp));
             }
+            else if (victimIsPlayer)
+            {
+                f.Text.text = DamageNumberFormat.Format(amount);
+                f.Text.color = th.PlayerHitColor;
+                f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(_tuning.DamageFloatFontDp));
+            }
             else
             {
-                f.Text.text = Mathf.RoundToInt(amount).ToString();
+                f.Text.text = DamageNumberFormat.Format(amount);
                 // Element rengi beyaza doğru açılır: koyu element tonları da okunur kalsın.
                 f.Text.color = tint.HasValue ? Color.Lerp(tint.Value, th.DamageTextColor, 0.35f) : th.DamageTextColor;
                 f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(_tuning.DamageFloatFontDp));

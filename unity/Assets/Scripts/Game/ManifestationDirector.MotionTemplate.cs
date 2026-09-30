@@ -13,6 +13,7 @@ namespace Dovus.Game
     public sealed partial class ManifestationDirector
     {
         MotionTemplateCatalog _motionCatalog;
+        bool _emiciContactPull;
         bool _templateOwnsPosition;
         readonly SkillCastLease _castLease = new();
         SkillResolution _templateSkill;
@@ -89,6 +90,7 @@ namespace Dovus.Game
         bool TryBeginMotionTemplate(SkillResolution skill, PendingClosing pending)
         {
             _templateOwnsPosition = false;
+            _emiciContactPull = false;
             _castLease.ReleasePosition();
             if (skill.IsEmpty || string.IsNullOrEmpty(skill.SkillId) || _player == null)
                 return false;
@@ -121,6 +123,9 @@ namespace Dovus.Game
                 ? (string.IsNullOrEmpty(_equippedWeapon.AnimationsKey) ? _equippedWeapon.Id : _equippedWeapon.AnimationsKey)
                 : string.Empty;
             _motionBody.SetAnimContext(MotionCatalog.Anims, weapon, VerbOf(skill.SkillId));
+            _emiciContactPull = EmiciApproach.ShouldHoldCaster(skill.AdjectiveId, template);
+            if (_emiciContactPull)
+                PullBossToPlayerContact();
             _motionBody.Play(
                 template,
                 () =>
@@ -128,8 +133,11 @@ namespace Dovus.Game
                     if (aim == null)
                         return default;
                     Vector3 pos = aim.position;
-                    bool hold = _boss != null && _boss.PullActive
+                    bool bossAim = _boss != null
                         && (aim == _boss.transform || aim.IsChildOf(_boss.transform));
+                    bool hold = bossAim
+                        && (_emiciContactPull || _boss.PullActive)
+                        && !EmiciApproach.TemplatePassesThrough(template);
                     bool obstacle = false;
                     float ox = 0f;
                     float oz = 0f;

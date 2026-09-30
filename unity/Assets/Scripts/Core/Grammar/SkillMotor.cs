@@ -640,8 +640,8 @@ namespace Dovus.Core.Grammar
                 Add("cleanse");
             else if (action == "shield")
                 Add("shield");
-            else if (action == "debuff" && engine["debuff_armor"].AsFloat(0f) != 0f)
-                Add("armor_break");
+            // Zırh düşürme tek mekanizma: engine debuff_armor → ArmorSheet kırılması.
+            // Ayrı armor_break durumu gelen hasarı bir de ×1,2 çarpardı.
 
             return mechanics.ToArray();
         }
