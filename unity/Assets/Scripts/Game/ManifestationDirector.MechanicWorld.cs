@@ -47,6 +47,7 @@ namespace Dovus.Game
 
         sealed class GuardTrigger
         {
+            public int Id;
             public MechanicEffect Effect;
             public GameObject View;
             public double UntilMs;
@@ -57,6 +58,8 @@ namespace Dovus.Game
         readonly List<MechanicVolume> _mechanicVolumes = new();
         readonly List<MechanicLink> _mechanicLinks = new();
         readonly List<GuardTrigger> _guardTriggers = new();
+        readonly GuardTriggerDelivery.Once _guardOnce = new();
+        int _nextGuardId;
         readonly TimedHistory<Vector3> _bossMechanicHistory = new(5000, 50);
 
         static readonly StatusKind[] PositiveStatuses =
@@ -257,6 +260,7 @@ namespace Dovus.Game
             bool talisman = EquippedProfile != null && EquippedProfile.Passive.Id == "kutsal_etki";
             _guardTriggers.Add(new GuardTrigger
             {
+                Id = ++_nextGuardId,
                 Effect = effect,
                 View = view,
                 UntilMs = worldMs + windowSec * 1000.0,
@@ -483,7 +487,7 @@ namespace Dovus.Game
                 if (!expired && !allyLow && !playerLow)
                     continue;
 
-                if (!expired)
+                if (!expired && _guardOnce.TryApply(guard.Id))
                 {
                     float scale = guard.NeedsHoly ? WeaponFriendlyScale() : 1f;
                     int amount = Mathf.Max(0, Mathf.RoundToInt((float)Math.Abs(guard.Effect.Amount) * scale));

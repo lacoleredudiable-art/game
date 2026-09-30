@@ -110,7 +110,9 @@ namespace Dovus.Game
             float buff = engine["buff_damage"].AsFloat(0f) + engine["self_damage_buff"].AsFloat(0f);
             buff = WeaponPassiveRules.ScaleFriendlyMagnitude(buff, friendly);
             float buffSec = engine["buff_duration_sec"].AsFloat(0f);
-            if (buff > 0f && buffSec > 0f)
+            MechanicPlan mechanicPlan = MechanicPlanFor(skill);
+            // 8-9 hasar_buff koruyucu tetiktedir; kalıp/cast anında bir daha yazılmaz.
+            if (buff > 0f && buffSec > 0f && GuardTriggerDelivery.AllowImmediate(mechanicPlan, "hasar_buff"))
             {
                 _selfDamageBuff = buff;
                 _selfDamageBuffUntilMs = now + (buffSec + lifetimeAdd) * 1000.0;
@@ -119,7 +121,6 @@ namespace Dovus.Game
             float reflect = engine["reflect_ratio"].AsFloat(0f);
             reflect = WeaponPassiveRules.ScaleFriendlyMagnitude(reflect, friendly);
             float reflectSec = engine["reflect_duration_sec"].AsFloat(0f);
-            MechanicPlan mechanicPlan = MechanicPlanFor(skill);
             if (reflect > 0f && reflectSec > 0f && _playerStatus != null && HasSelfReflect(mechanicPlan))
                 _playerStatus.GrantReflect(reflect, now + (reflectSec + lifetimeAdd) * 1000.0);
         }

@@ -215,6 +215,53 @@ public class BossStatusTruthTests
     }
 
     [Test]
+    public void SavedZeroBossDamage_MigratesOnce_LaterZeroStays()
+    {
+        var old = new BossTuning { Damage = 0, FireConeDamage = 0 };
+        Assert.That(BossDamageMigration.Apply(old, storedVersion: 0), Is.True);
+        Assert.That(old.Damage, Is.EqualTo(22));
+        Assert.That(old.FireConeDamage, Is.EqualTo(18));
+        Assert.That(new BossTuning().StaggerDurationSec, Is.EqualTo(1.5f).Within(0.001f));
+
+        old.Damage = 0;
+        old.FireConeDamage = 0;
+        Assert.That(BossDamageMigration.Apply(old, BossDamageMigration.Version), Is.False);
+        Assert.That(old.Damage, Is.EqualTo(0));
+        Assert.That(old.FireConeDamage, Is.EqualTo(0));
+
+        var custom = new BossTuning { Damage = 28, FireConeDamage = 12 };
+        Assert.That(BossDamageMigration.Apply(custom, storedVersion: 0), Is.True);
+        Assert.That(custom.Damage, Is.EqualTo(28));
+        Assert.That(custom.FireConeDamage, Is.EqualTo(12));
+    }
+
+    [Test]
+    public void GuardTrigger_PaysOnce_TemplateDoesNotAlsoHeal()
+    {
+        var once = new GuardTriggerDelivery.Once();
+        (int verb, string stat)[] rows = { (2, "can"), (4, "kalkan"), (8, "hasar_buff") };
+        foreach ((int verb, string stat) in rows)
+        {
+            MechanicPlan plan = _grammar.Compose(verb, 9, 1);
+            Assert.That(GuardTriggerDelivery.Owns(plan, stat), Is.True, verb + "-9");
+            Assert.That(GuardTriggerDelivery.AllowImmediate(plan, stat), Is.False, verb + "-9 kalıp susar");
+
+            MechanicEffect effect = plan.Effects.First(e => e.Stat == stat && e.Has("koruyucu_tetik"));
+            int id = verb * 10 + 9;
+            float immediate = GuardTriggerDelivery.AllowImmediate(plan, stat) ? (float)effect.Amount : 0f;
+            float first = once.TryApply(id) ? (float)Math.Abs(effect.Amount) : 0f;
+            float second = once.TryApply(id) ? (float)Math.Abs(effect.Amount) : 0f;
+            Assert.That(immediate, Is.EqualTo(0f));
+            Assert.That(first, Is.GreaterThan(0f));
+            Assert.That(second, Is.EqualTo(0f), verb + "-9 ikinci ödeme yok");
+            Assert.That(immediate + first + second, Is.EqualTo(first).Within(0.001f));
+        }
+
+        MechanicPlan plain = _grammar.Compose(2, 1, 1);
+        Assert.That(GuardTriggerDelivery.AllowImmediate(plain, "can"), Is.True);
+    }
+
+    [Test]
     public void ShieldReflectAndRedirect_FireWhenBossDamageLands()
     {
         DamageOutcome soaked = DamagePipeline.Resolve(new DamageQuery

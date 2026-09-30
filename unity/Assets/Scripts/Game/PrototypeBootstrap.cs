@@ -66,8 +66,8 @@ namespace Dovus.Game
             // kaydedilmiş değerlerle doğar, sonradan "sıçrayan" bir düzeltme karesi olmaz.
             var tuningConfig = TuningConfig.Create(combat, _tuning);
             tuningConfig.TryLoad();
-            // Boss hasarı tuning'den (karadul slam 22 / fire cone 18). Kayıtlı ayar bunu ezer;
-            // açılışta sıfırlanmaz. Oyuncu canı Dev HP ile korunur (V6 paneli).
+            // Boss hasarı tuning'den (karadul slam 22 / fire cone 18). Eski kayıtlı 0,
+            // TryLoad içinde bir kez bu varsayılanlara çekilir. Oyuncu canı Dev HP ile korunur.
             var clock = gameObject.AddComponent<GameClock>();
 
             var arena = CreateArena();

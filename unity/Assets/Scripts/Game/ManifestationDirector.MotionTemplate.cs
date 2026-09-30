@@ -263,7 +263,9 @@ namespace Dovus.Game
             if (geometry && _templateSkill.BaseDamage <= 0.01f)
                 ApplyDrainDamage(hit.Share);
 
-            if (friendly && IsHealSkill(_templateSkill))
+            // 2-9 şifası koruyucu tetikte bir kez iner; kalıp vuruşu aynı cast'i ödemez.
+            if (friendly && IsHealSkill(_templateSkill)
+                && GuardTriggerDelivery.AllowImmediate(LastMechanicPlan, "can"))
             {
                 if (DrainNumbers.TryShare(LastMechanicPlan, hit.Share, out _, out float drainHeal) && drainHeal > 0.5f)
                     ApplyClosingHealAmount(_templateSkill, Mathf.RoundToInt(drainHeal), null, 0f);
@@ -280,7 +282,9 @@ namespace Dovus.Game
             bool selfPulse = hit.Anchor is "self" or "ring";
             if ((reached || selfPulse) && !_templateStatusSent)
             {
-                ApplyClosingStatuses(_templatePending, _templateSkill, bossReached: !friendly && reached);
+                // 4-9 kalkanı da tetiğin; StatusApplicator aynı cast'te kalkan basmasın.
+                if (GuardTriggerDelivery.AllowImmediate(LastMechanicPlan, "kalkan"))
+                    ApplyClosingStatuses(_templatePending, _templateSkill, bossReached: !friendly && reached);
                 if (!friendly)
                 {
                     ApplyMechanicHitEffects(

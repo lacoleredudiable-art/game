@@ -17,9 +17,10 @@
 **Dal:** `cursor/boss-status-effects-ca3b` · **Sıradaki:** Unity Play listesi (bu not); Top geri tepme fazında ayak havada (1-3, 6-3, 5-8, 6-8, 7-8); #29 Kılıç 9-10 / 2-6 / 11-8 + sınır–can çalma çakışması
 
 > **30 Eylül — boss hasarı ve durum etkileri (`cursor/boss-status-effects-ca3b`): merge edilmedi.**
-> `dotnet test` 506/506. Unity Play bu ortamda yok.
+> `dotnet test` 508/508. Unity Play bu ortamda yok.
 > (1) Açılış `Boss.Damage` / `FireConeDamage` sıfırlamıyor. Varsayılan slam 22, nefes 18
-> (`karadul.json`). Kayıtlı ayar hâlâ 0 ise AYAR sıfırlanana kadar 0 kalır.
+> (`karadul.json`). Eski kayıt 0 ise `BossDamageMigration` bir kez 22/18 yazar; sürüm
+> güncelse bilinçli 0 durur.
 > (2) V6 panelinde **Dev HP** varsayılan AÇIK, havuz 1_000_000_000. KAPALI normal can.
 > Sonsuz diriliş ve boss otomatik dirilişi duruyor. Play Sweep `SuppressDown`: oyuncu canı
 > 1'in altına inmez, tarama ölüm ışınlanmasından düşmez.
@@ -32,7 +33,8 @@
 > (`karadul.json` `stagger_duration_sec` 0.4).
 > (5) Gizlilik artık yenilmezlik değil. Boss hedefi bırakır, nişan alamaz; yer/tam daire
 > (yay ≥180°) değer, dar koni değmez.
-> (6) `koruyucu_tetik` 2-9 / 4-9 / 8-9 şifası `ActorStatus.ApplyHeal` ile ölçeklenir.
+> (6) `koruyucu_tetik` 2-9 / 4-9 / 8-9 ölçekli iner ve tetik başına bir kez: kalıp aynı
+> cast'te şifayı/kalkanı/hasar buff'ını tekrar basmaz.
 > (7) Kalkanın emdiği hasar da yansır; blok `DamageBlocked` ile karşı saldırı notunu düşürür.
 > Paylaşım kalkan sonrası kalan üzerinden.
 > (8) `hasar_buff>dusman` (8-2, 8-10) Weaken.
@@ -1866,11 +1868,11 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 
 ## Bilinen açıklar
 
-- **Boss durumları Play'de doğrulanmadı (30 Eylül).** `dotnet test` 506/506. Unity Play yok.
-  Kayıtlı `BossTuning.Damage = 0` açılışta artık ezilmiyor; eski kayıt 0 ise slam 0 kalır
-  (AYAR sıfırla). Poise tavanı 100 ve sersem 1.5 sn spec'te yok (`karadul.json` sersem 0.4).
+- **Boss durumları Play'de doğrulanmadı (30 Eylül).** Unity Play yok.
+  Eski `tuning.json` sürüm 0 ve hasar 0 ise açılışta slam 22 / nefes 18 yazılır.
+  Poise tavanı 100 ve sersem 1.5 sn spec'te yok (`karadul.json` sersem 0.4).
   Element kendine buff'ları (Su regen, Hava haste, Toprak kalkan, Aydınlık arınma) boss'a
-  yazılmaz. Koruyucu tetik şifası kalıp anındaki şifayla çift inebilir (B3, ayrılmadı).
+  yazılmaz. Koruyucu tetik eşiğin altındayken bir kez öder; kalıp aynı cast'i ödemez.
   Dev HP doluyken can oranı %30'un altına inmez; koruyucu şifayı hissetmek için Dev HP KAPALI.
   Mana/bekleme, 10-2 yansıma, x-2 girdap, çağrılar, 3-x kalıplar bu turda yok.
 - **PR #29 portal/sınır/takım (30 Eylül, merge yok).** Kılıç 141/144: 9-10 ışını tek karede

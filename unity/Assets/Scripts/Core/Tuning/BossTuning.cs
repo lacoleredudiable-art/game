@@ -37,7 +37,7 @@ namespace Dovus.Core.Tuning
         public int RecoveryMs = 720;
         /// <summary>
         /// Yere çakma hasarı. docs/bosses/karadul.json tuning.maps_to BossTuning.Damage = 22.
-        /// Prototip bunu açılışta sıfırlamaz; kayıtlı ayar (TryLoad) bu varsayılanın üstüne yazar.
+        /// Eski kayıt 0 ise BossDamageMigration bir kez 22'ye çeker; güncel sürüm bilinçli 0'ı korur.
         /// </summary>
         public int Damage = 22;
         public int IdleMinMs = 700;
