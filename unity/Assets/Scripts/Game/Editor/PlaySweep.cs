@@ -180,6 +180,7 @@ namespace Dovus.Game.EditorTools
             public Vector3 B;
             public Vector3 Runner;
             public bool Playing;
+            public bool RunnerDone;
             public bool Performing;
             public bool Busy;
             public bool Bang;
@@ -1234,6 +1235,7 @@ namespace Dovus.Game.EditorTools
             if (runner is MotionTemplateRunner mr)
             {
                 f.Runner = new Vector3(mr.X, mr.Y, mr.Z);
+                f.RunnerDone = mr.Finished;
                 int phase = F<int>(mr, "_phase");
                 var tpl = F<MotionTemplate>(mr, "_template");
                 f.Phase = tpl != null && phase >= 0 && phase < tpl.Phases.Count ? tpl.Phases[phase].Name : "";
@@ -1656,7 +1658,8 @@ namespace Dovus.Game.EditorTools
             for (int i = 0; i < _frames.Count; i++)
             {
                 Frame f = _frames[i];
-                if (!f.Playing)
+                // Biten kalıbın ertelenmiş son karesi (tarama sıçrama ölçüsü için) iniş sayılır.
+                if (!f.Playing || f.RunnerDone)
                     continue;
                 lastPlay = i;
                 if (f.Airborne)
