@@ -13,14 +13,27 @@
 > "rün", ya da silinen dosyalara link geçebilir — onlar o an doğruydu, güncel mimariyi
 > yansıtmazlar; körü körüne referans alma.
 
-**Son güncelleme:** 30 Eylül 2026 (boss inişi, master #31 merge) ·
+**Son güncelleme:** 30 Eylül 2026 (boss inişi, master `f315dab`) ·
 **Dal:** `cursor/feet-grounding-a485` · **Sıradaki:** Unity Play 4× Kılıç/Asa — 7-3, 7-6, 7-11 boss yerde mi
 
 > **30 Eylül — boss 5 cm havada.** 4× taramada yalnız 7-3, 7-6, 7-11 (iki silah, iki koşu).
 > Ayak kilidi görselin lossyScale'ine bölüyordu; boss kapsülünün Y ölçeği 1,3 ve görsel fit'i
 > büyük olduğu için düzeltme eksik kalıyor, stagger pozu ~5 cm havada duruyordu. Kayma artık
 > ebeveyn ölçeğiyle. Kaldırma yüksekliği iç sayaç: sıfırın altına inince kapsül zeminine yapışır,
-> Home Y havadaki örnekten yükselmez. Eşik gevşetilmedi.
+> Home Y havadaki örnekten yükselmez. Eşik gevşetilmedi. Unity Play bu düzeltmede yok.
+
+> **30 Eylül — birleşik test: yalnız PR #31 merge edildi (`8686a72`).** Kılıç + Asa Play taraması:
+> üçü birlikte (#32+#31+#29, 4×) 132/132; yalnız #32 (4×) 141/141; #31+#29 (1×) 135/134;
+> yalnız #31 (1×) **144/144**. `dotnet test` her kombinasyonda yeşil (#31 tek: 450/450), konsolda
+> yalnız bilinen URP/ShaderGraph paket hataları, oyuncu hiçbir vakada boss içinde bitmiyor
+> (3-2 tasarım gereği içinden geçer). **#31 Play:** pasif [1,9], 1-4 skill'i 1,6 m'den, taban
+> 159K; Yoğunlaştırma aktif ×1,38 (JSON ×1,35), Odaklama ×1,62 (×1,15 × %50 delme ≈ ×1,53, ±%5
+> sapma), ikisi ×2,04. **#32 atlandı:** 7-3/7-6/7-11 boss yerden 0,05 m (silah başına 3 yerde
+> hatası, kural ≤3 tutuyor ama skor 141). **#29 atlandı:** 9-10 takası tek karede 4,66 m + sonraki
+> 6 vaka kaymış konum, 2-6/1-3 `tek_sistem`, 8-12 tek karede 2,25 m. Ayrıntı PR yorumlarında.
+> #29 master'a birleşirken `ActorStatus`/`ManifestationDirector` çakışır; takım çarpanları
+> `ComputeOutgoingHit` ve `ApplyDamage` içindeki `taken`/`outMult`'a taşınmalı. Takım paneli ve
+> yere basma elle kontrolleri koşulmadı.
 
 > **30 Eylül — ayak zemini, tarama 4×.** Skill kökü cast başındaki Y'yi zemin sanıyor, Emici
 > çekme kökü mutlak `y=0`'a indiriyordu (kapsül merkezi ~1 m; ayaklar zeminin altına).
@@ -1759,6 +1772,12 @@ Güncel API yüzeyi için kaynak koddur: `Dovus.Core.*` (saf C#, AGENTS kural 1)
 `docs/element-sistemi.json`. Boss verisi `docs/bosses/*.json`.
 
 ## Bilinen açıklar
+
+- **Yoğunlaştırma pasifi menzili daraltır (30 Eylül, Play).** `hitbox_scale_mult` 0,55 hedef/menzil
+  kapısına da biniyor: pasif aktifken 3 m'den atılan 1-4 reddedilir, 1,6 m'den geçer. Tasarım mı
+  hata mı karar sahibinde.
+- **PR #31 bağlayıcı JSON'u değiştirdi.** `passive_duration_default` rün 9 ve 11 için 0 → 5
+  (`docs/element-sistemi.json` ve Resources kopyası). Merge edildi; sayının kaynağı PR'da.
 
 - **Pasif sekme (30 Eylül).** Başka düşman 6 m içindeyse plan ona gider; can yazması yalnız
   boss kimliğine bağlı. Prototipte ikinci düşman canı yok, yalnız boss varken ek vuruş boss'a iner.
