@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using Dovus.Core.Combat;
+using Dovus.Core.Portal;
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using Dovus.Core.Motion;
@@ -145,6 +146,8 @@ namespace Dovus.Game.EditorTools
         static Vector3 _bossHome;
         static Vector3 _bossStart;
         static bool _bossStartSet;
+        static Vector3 _allyStart;
+        static bool _allyStartSet;
         static bool _bossShifted;
         static Snapshot _pre;
         static CaseInfo _info;
@@ -186,6 +189,7 @@ namespace Dovus.Game.EditorTools
             public bool Bang;
             public bool Driver;
             public bool Dodge;
+            public bool Teleport;
             public string Phase;
             public string Base;
             public string Upper;
@@ -350,6 +354,7 @@ namespace Dovus.Game.EditorTools
             if (change == PlayModeStateChange.EnteredPlayMode)
             {
                 _bossStartSet = false;
+                _allyStartSet = false;
                 string pending = SessionState.GetString(PendingKey, "");
                 if (!string.IsNullOrEmpty(pending))
                 {
@@ -583,6 +588,11 @@ namespace Dovus.Game.EditorTools
                         {
                             _bossStart = _boss.position;
                             _bossStartSet = true;
+                            if (_ally != null)
+                            {
+                                _allyStart = _ally.transform.position;
+                                _allyStartSet = true;
+                            }
                         }
                         NextCase();
                         break;
@@ -749,6 +759,7 @@ namespace Dovus.Game.EditorTools
             EnsureWeapon(c.Weapon);
             ResetActors();
             ResetBossPosition();
+            ResetSweepActors();
             PlacePlayer(c.StartDistM);
             _stage = Stage.Settle;
             _stageMs = NowMs;
@@ -762,6 +773,7 @@ namespace Dovus.Game.EditorTools
             if (BossPulling() && NowMs - _stageMs < 3000.0)
                 return;
             PlaySweepCase c = _cases[_index];
+            ResetSweepActors();
             PlacePlayer(c.StartDistM);
             _info = Describe(c);
             _frames.Clear();
@@ -1046,6 +1058,18 @@ namespace Dovus.Game.EditorTools
             Physics.SyncTransforms();
         }
 
+        /// <summary>Portal, sınır ve takım bir sonraki vakaya taşmasın. Dost başlangıç yerine döner.</summary>
+        static void ResetSweepActors()
+        {
+            PortalBorderTeamHost.Instance?.ResetCase();
+            if (_ally == null || !_allyStartSet)
+                return;
+            if (Flat(_ally.transform.position - _allyStart).magnitude < 0.02f)
+                return;
+            _ally.transform.position = new Vector3(_allyStart.x, _allyStart.y, _allyStart.z);
+            Physics.SyncTransforms();
+        }
+
         static void PlacePlayer(float dist)
         {
             Vector3 b = _boss.position;
@@ -1211,6 +1235,7 @@ namespace Dovus.Game.EditorTools
                 Performing = Performing(),
                 Driver = _driver != null && _driver.IsDisplacing,
                 Dodge = _dodge != null && _dodge.IsDisplacing,
+                Teleport = PortalBorderTeamHooks.ConsumeIntentionalTeleport(),
                 Yaw = _player.eulerAngles.y,
                 BossHp = _bossVitals.Hp,
                 PlayerHp = _playerVitals != null ? _playerVitals.Hp : 0,
@@ -1458,21 +1483,42 @@ namespace Dovus.Game.EditorTools
                 r.Notes.Add($"vuruş {_hitOrigins.Count}: " + string.Join(" ", parts));
             }
 
-            // 2) konum — kalıp bittiği karede, boss'un o anki yerine göre
+            // 2) konum — kalıp bittiği karede, boss'un o anki yerine göre.
+            // İşaretli ışın (9-10 yer değiştirme) tek karede uzun bir adımdır; konum
+            // hesabı o adımı ve sonrasını ışınsız yere indirir. Sıçrama kuralı ayrı.
             Vector3 start = _pre.P;
             int endIdx = i1 >= 0 && i1 + 1 < _frames.Count ? i1 + 1 : _frames.Count - 1;
             Frame end = _frames[endIdx];
-            float maxExc = _frames.Take(endIdx + 1).Max(x => Flat(x.P - start).magnitude);
-            r.ActualPos = Category(start, end.P, end.B, maxExc);
+            float offX = 0f;
+            float offZ = 0f;
+            float maxExc = 0f;
+            Vector3 scored = start;
+            int lastFrame = endIdx < _frames.Count ? endIdx : _frames.Count - 1;
+            for (int i = 0; i <= lastFrame; i++)
+            {
+                Vector3 p = _frames[i].P;
+                if (i > 0 && _frames[i].Teleport)
+                {
+                    Vector3 step = Flat(p - _frames[i - 1].P);
+                    SweepJumpRule.NoteTeleport(ref offX, ref offZ, step.x, step.z, true);
+                }
+                p.x -= offX;
+                p.z -= offZ;
+                maxExc = Mathf.Max(maxExc, Flat(p - start).magnitude);
+                scored = p;
+            }
+            r.ActualPos = Category(start, scored, end.B, maxExc);
             r.ExpectedPos = string.IsNullOrEmpty(_info.ExpectedCat) ? "?" : _info.ExpectedCat;
-            float simErr = _info.HasSim ? Flat(end.P - _info.SimFinal).magnitude : 0f;
+            float simErr = _info.HasSim ? Flat(scored - _info.SimFinal).magnitude : 0f;
+            float beam = Mathf.Sqrt(offX * offX + offZ * offZ);
             bool steered = c.Stick.sqrMagnitude > 0.0001f;
             bool bossMoved = Flat(end.B - _pre.B).magnitude > 0.1f;
             r.Position = steered
                          || (r.ActualPos == r.ExpectedPos && (!_info.HasSim || simErr <= SimMatchM || bossMoved));
-            r.Notes.Add($"kalıp sonu: merkeze {Flat(end.P - end.B).magnitude:F2} m, başlangıçtan {Flat(end.P - start).magnitude:F2} m, " +
+            r.Notes.Add($"kalıp sonu: merkeze {Flat(scored - end.B).magnitude:F2} m, başlangıçtan {Flat(scored - start).magnitude:F2} m, " +
                         $"kalıp simülasyonundan {simErr:F2} m" + (bossMoved ? $", boss {Flat(end.B - _pre.B).magnitude:F2} m kaydı" : "") +
                         (steered ? ", çubukla yönlendirildi" : "") +
+                        (beam > 0.05f ? $", ışın {beam:F2} m konumdan çıkarıldı" : "") +
                         (_info.SimAim != "boss" ? $", kalıp hedefi {_info.SimAim}" : ""));
 
             // 3) boss gövdesine girmedi
@@ -1513,7 +1559,8 @@ namespace Dovus.Game.EditorTools
                 else if (a.Playing)
                     tpl = Flat(b.Runner - a.Runner);
                 templateMove += tpl.magnitude;
-                otherMove += (actual - tpl).magnitude;
+                if (!b.Teleport)
+                    otherMove += (actual - tpl).magnitude;
                 if (b.Driver) driverFrames++;
                 if (b.Dodge) dodgeFrames++;
             }
@@ -1542,7 +1589,7 @@ namespace Dovus.Game.EditorTools
                     jumpLimit = stepLimit;
                     jumpDt = _frames[i].Dt;
                 }
-                if (step.magnitude > stepLimit && !IsBlinkPhase(_frames[i].Phase))
+                if (SweepJumpRule.IsIllegalJump(step.magnitude, stepLimit, IsBlinkPhase(_frames[i].Phase), _frames[i].Teleport))
                     teleports++;
                 if (i >= 2)
                 {
@@ -1552,10 +1599,12 @@ namespace Dovus.Game.EditorTools
                 }
             }
             r.NoTeleport = teleports == 0 && reversals < 3;
-            string phaseAtJump = FrameAt(jumpAt).Phase;
+            Frame jumpFrame = FrameAt(jumpAt);
+            string phaseAtJump = jumpFrame.Phase;
+            string designed = jumpFrame.Teleport ? ", ışın tasarım gereği" : IsBlinkPhase(phaseAtJump) ? ", blink tasarım gereği" : "";
             if (maxJump > jumpLimit)
                 r.Notes.Add($"tek karede {maxJump:F2} m sıçrama (sınır {jumpLimit:F2} m @ {jumpDt * 1000f:F0} ms, t={jumpAt:F2}{(string.IsNullOrEmpty(phaseAtJump) ? "" : ", faz " + phaseAtJump)}" +
-                            (IsBlinkPhase(phaseAtJump) ? ", blink tasarım gereği" : "") + ")");
+                            designed + ")");
             if (reversals >= 3)
                 r.Notes.Add($"titreme: {reversals} karede ≥0,2 m ileri-geri");
             float bossJump = 0f;
