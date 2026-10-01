@@ -55,6 +55,7 @@ public class JsonEffectCoverageTests
         ("mode", "can_emen", "unity/Assets/Scripts/Game/ManifestationDirector.cs", "\"can_emen\""),
         ("mode", "cana_cevir", "unity/Assets/Scripts/Game/ManifestationDirector.VerbExecution.cs", "_emHealRatio"),
         ("mode", "dalga", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"dalga\""),
+        ("mode", "dikkat_ceker", "unity/Assets/Scripts/Game/ManifestationDirector.MechanicWorld.cs", "\"dikkat_ceker\""),
         ("mode", "dokunulana", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"dokunulana\""),
         ("mode", "dondur", "unity/Assets/Scripts/Game/ManifestationDirector.MechanicGrammar.cs", "\"dondur\""),
         ("mode", "dosttan_dosta", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"dosttan_dosta\""),
@@ -97,6 +98,7 @@ public class JsonEffectCoverageTests
         ("mode", "taret", "unity/Assets/Scripts/Core/Mechanic/MechanicWorldProfile.cs", "\"taret\""),
         ("mode", "tasar", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"tasar\""),
         ("mode", "tasma", "unity/Assets/Scripts/Game/ManifestationDirector.MechanicWorld.cs", "MoveHomeToward"),
+        ("mode", "ters_kontrol", "unity/Assets/Scripts/Game/ManifestationDirector.MechanicGrammar.cs", "\"ters_kontrol\""),
         ("mode", "tek_hedef", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"tek_hedef\""),
         ("mode", "ters_hedef", "unity/Assets/Scripts/Game/ManifestationDirector.MechanicWorld.cs", "PurgeBossBuffs"),
         ("mode", "ters_kopya", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"ters_kopya\""),
@@ -215,14 +217,12 @@ public class JsonEffectCoverageTests
         ["bag_hatti"] = "mermi_sil mode (boss design)",
         ["seker"] = "chain to next hostile target, needs small monsters (boss design)",
         ["sekmeli"] = "dash chain between hostile targets, needs small monsters (boss design)",
-        ["dikkat_ceker"] = "decoy draws boss aggro: boss AI retargeting (boss design)",
-        ["ters_kontrol"] = "reversed boss movement: boss AI (boss design)",
     };
 
     static readonly string[] ExpectedDeferred =
     {
         "mermi_sil", "yut", "engel", "geri_gonder", "delici", "sis_perdesi", "hedefli", "yukselen_perde",
-        "surekli_perde", "bag_hatti", "seker", "sekmeli", "dikkat_ceker", "ters_kontrol"
+        "surekli_perde", "bag_hatti", "seker", "sekmeli"
     };
 
     string _root = null!;

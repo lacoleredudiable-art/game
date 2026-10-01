@@ -158,6 +158,11 @@ namespace Dovus.Game
             DebugConfig.DevLog($"[MechanicWorld] collider {wall.name} size={length:0.#}×{height:0.#} life={(untilMs - (_clock?.Director.WorldTimeMs ?? 0)) / 1000.0:0.#}sn");
         }
 
+        HostileTargets _hostileTargets;
+
+        /// <summary>Boss hedef kaydı: dikkat çeken yemler (dikkat_ceker) buraya yazılır.</summary>
+        public void BindHostileTargets(HostileTargets targets) => _hostileTargets = targets;
+
         void SpawnMechanicDecoy(MechanicPlan plan, double worldMs)
         {
             MechanicEffect decoy = plan.Find("yem_kopya");
@@ -179,6 +184,22 @@ namespace Dovus.Game
                 View = body,
                 UntilMs = worldMs + Math.Max(100, decoy.DurationSec * 1000.0)
             });
+            // dikkat_ceker: yem yaşadığı sürece (decoy_life_sec) boss'un hedefi; boss vuruşu onu yok eder.
+            if (decoy.Has("dikkat_ceker") && _hostileTargets != null)
+            {
+                _hostileTargets.Register(
+                    body.transform,
+                    TargetKind.Decoy,
+                    Mathf.Max(0.05f, size * 0.5f),
+                    alive: () => body != null,
+                    taunting: () => true,
+                    kill: () =>
+                    {
+                        if (body != null)
+                            Destroy(body);
+                    });
+                DebugConfig.DevLog($"[Mechanic] yem dikkat çekiyor: {plan.SkillId}/{plan.WeaponName} {decoy.DurationSec:0.#}sn");
+            }
         }
 
         void SpawnMechanicVolume(

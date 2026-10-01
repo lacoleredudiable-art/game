@@ -9,6 +9,8 @@ namespace Dovus.Game
     /// <summary>
     /// Takım arkadaşı dummy — heal denemesi için. Başlangıç can oranı varsayılan %50.
     /// Dünya üstü bar + HUD (VitalsHud) birlikte okunur.
+    /// Boss onu da hedef alır (<see cref="HostileTargets"/>): vuruşun ally_damage_mult kadarını alır,
+    /// can 0'da düşer ve ally_revive_sec (dünya saati) sonra ally_revive_ratio canla kalkar.
     /// </summary>
     public sealed class AllyDummy : MonoBehaviour
     {
@@ -21,8 +23,17 @@ namespace Dovus.Game
         StatusBoard _statusBoard;
         GameClock _clock;
         StatusTuning _statusTuning = new();
+        TargetingConfig _life = new();
+        double _downAtMs = -1;
 
         public int Hp => _hp;
+        public bool IsDown => _hp <= 0;
+
+        /// <summary>Kalkışa kalan süre (sn); düşmemişse 0.</summary>
+        public float SecondsUntilRevive =>
+            _downAtMs < 0 || _clock == null
+                ? 0f
+                : Mathf.Max(0f, (float)((_downAtMs + _life.AllyReviveSec * 1000.0 - _clock.Director.WorldTimeMs) / 1000.0));
         public int MaxHp => _maxHp;
         public float Ratio => _maxHp > 0 ? (float)_hp / _maxHp : 0f;
         public StatusBoard Board => _statusBoard;
@@ -39,8 +50,12 @@ namespace Dovus.Game
             EnsureStatusBoard();
         }
 
+        /// <summary>karadul.json targeting: hasar çarpanı ve kalkış süresi/oranı.</summary>
+        public void ConfigureLife(TargetingConfig life) => _life = life ?? new TargetingConfig();
+
         public void Bind(int maxHp, float startRatio = 0.5f)
         {
+            _downAtMs = -1;
             _maxHp = Mathf.Max(1, maxHp);
             _hp = Mathf.Clamp(Mathf.RoundToInt(_maxHp * Mathf.Clamp01(startRatio)), 1, _maxHp);
             EnsureBillboard();
@@ -49,7 +64,7 @@ namespace Dovus.Game
 
         public int ApplyHeal(int amount)
         {
-            if (amount <= 0 || _hp >= _maxHp)
+            if (amount <= 0 || _hp >= _maxHp || IsDown)
                 return 0;
             int before = _hp;
             _hp = Mathf.Min(_maxHp, _hp + amount);
@@ -67,8 +82,55 @@ namespace Dovus.Game
             if (amount <= 0 || _hp <= 0)
                 return false;
             _hp = Mathf.Max(0, _hp - amount);
+            if (_hp <= 0 && _downAtMs < 0)
+                _downAtMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
             RefreshLabel();
             return _hp <= 0;
+        }
+
+        /// <summary>
+        /// Boss vuruşu: ham hasar × ally_damage_mult, oyuncu yoluyla aynı boru (ölçek, alınan hasar
+        /// çarpanı, kalkan emer, stasis yutar). Dost dodge atamaz. Döner: düştü mü.
+        /// </summary>
+        public bool ApplyBossDamage(float raw)
+        {
+            float scaledRaw = AllyLifeRules.AllyRawDamage(raw, _life);
+            if (scaledRaw <= 0f || IsDown)
+                return false;
+            EnsureStatusBoard();
+            var outcome = DamagePipeline.Resolve(new DamageQuery
+            {
+                SkillPower = scaledRaw,
+                AttackPower = 1f,
+                Multiplier = 1f,
+                CanCrit = false,
+                DamageTakenFactor = _statusBoard.IncomingDamageMult,
+                Shield = _statusBoard.ShieldRemaining,
+                Invulnerable = BossStatusMath.DamageInvulnerable(_statusBoard.IsInvulnerable),
+                Poise = scaledRaw,
+                ScaleMagnitudes = true
+            });
+            if (outcome.ShieldAbsorbed > 0f)
+                _statusBoard.ConsumeShield(Mathf.Min(_statusBoard.ShieldRemaining, outcome.ShieldAbsorbed));
+            if (outcome.Amount <= 0f)
+                return false;
+            return ApplyDamage(Mathf.CeilToInt(outcome.Amount));
+        }
+
+        void TickRevive()
+        {
+            if (_clock == null || !IsDown)
+                return;
+            double now = _clock.Director.WorldTimeMs;
+            if (_downAtMs < 0)
+                _downAtMs = now;
+            if (!AllyLifeRules.ReviveDue(_downAtMs, now, _life))
+                return;
+            _downAtMs = -1;
+            _statusBoard?.Clear();
+            _hp = AllyLifeRules.ReviveHp(_maxHp, _life);
+            RefreshLabel();
+            DebugConfig.DevLog($"[Ally] kalktı: {_hp}/{_maxHp}");
         }
 
         void EnsureBillboard()
@@ -135,7 +197,7 @@ namespace Dovus.Game
         void RefreshLabel()
         {
             if (_label != null)
-                _label.text = "ALLY " + _hp + "/" + _maxHp;
+                _label.text = IsDown ? "ALLY DÜŞTÜ" : "ALLY " + _hp + "/" + _maxHp;
             if (_fill != null)
                 _fill.fillAmount = Ratio;
         }
@@ -158,7 +220,8 @@ namespace Dovus.Game
 
         void Update()
         {
-            if (_statusBoard == null || _clock == null)
+            TickRevive();
+            if (_statusBoard == null || _clock == null || IsDown)
                 return;
             float payload = _statusBoard.Tick(_clock.WorldDeltaMs, _statusTuning);
             if (payload > 0f)

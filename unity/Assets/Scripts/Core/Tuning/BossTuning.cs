@@ -62,6 +62,12 @@ namespace Dovus.Core.Tuning
         /// </summary>
         public float StaggerDurationSec = 1.5f;
 
+        /// <summary>
+        /// ters_kontrol süresi, etki kendi süresini taşımıyorsa. Spec'te yok: gramer bugün her
+        /// ters_kontrol etkisine 1.5 sn veriyor; aynı değer yedek olarak burada.
+        /// </summary>
+        public float ReverseFallbackSec = 1.5f;
+
         public void CopyFrom(BossTuning other)
         {
             WindupMs = other.WindupMs;
@@ -86,6 +92,7 @@ namespace Dovus.Core.Tuning
             MaxHp = other.MaxHp;
             PoiseMax = other.PoiseMax;
             StaggerDurationSec = other.StaggerDurationSec;
+            ReverseFallbackSec = other.ReverseFallbackSec;
         }
 
         public void ResetToDefaults() => CopyFrom(new BossTuning());
