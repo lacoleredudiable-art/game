@@ -219,7 +219,7 @@ namespace Dovus.Game
             DotAccepted?.Invoke(adjectiveSlot);
             _syllable?.PlayForDot(adjectiveSlot, 2);
             FlushInkBreak();
-            Debug.Log($"[ElementSystem] smoke cast accepted: {verbRuneId}-{adjectiveRuneId}");
+            DebugConfig.DevLog($"[ElementSystem] smoke cast accepted: {verbRuneId}-{adjectiveRuneId}");
             return true;
         }
 

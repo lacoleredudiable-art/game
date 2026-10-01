@@ -215,11 +215,8 @@ namespace Dovus.Game
             var rend = body.GetComponent<MeshRenderer>();
             if (rend == null || rend.sharedMaterial == null)
                 return;
-            Material mat = rend.material;
-            if (mat.HasProperty("_BaseColor"))
-                mat.SetColor("_BaseColor", color);
-            else
-                mat.color = color;
+            // O11: her karede renk değişir; rend.material telegraf başına 2 örnek sızdırıyordu → property block.
+            SharedTint.Paint(rend, color);
         }
 
         static Material MakeMat()

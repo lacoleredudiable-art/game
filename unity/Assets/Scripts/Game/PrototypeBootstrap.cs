@@ -54,6 +54,14 @@ namespace Dovus.Game
         {
             QualitySettings.vSyncCount = 0;
             Application.targetFrameRate = Mathf.Max(1, _tuning.TargetFrameRateHz);
+            // S14: uzun telegraf/izleme anında ekran kararmasın (dövüş sahnesi boyunca).
+            Screen.sleepTimeout = SleepTimeout.NeverSleep;
+        }
+
+        void OnDestroy()
+        {
+            // S14: sahneden çıkınca sistem ayarına dön.
+            Screen.sleepTimeout = SleepTimeout.SystemSetting;
         }
 
         void BuildWorld()
@@ -64,7 +72,9 @@ namespace Dovus.Game
             // (CopyFrom yolu — referans kimliği korunur). Böylece arena/oyuncu/boss ilk kareden
             // kaydedilmiş değerlerle doğar, sonradan "sıçrayan" bir düzeltme karesi olmaz.
             var tuningConfig = TuningConfig.Create(combat, _tuning);
-            tuningConfig.TryLoad();
+            // O5/K2: kayıtlı ayar yalnız debug'da yüklenir (release'te panel yok, kod varsayılanı geçerli).
+            if (DebugConfig.Enabled)
+                tuningConfig.TryLoad();
             // Boss hasarı tuning'den (karadul slam 22 / fire cone 18). Eski kayıtlı 0,
             // TryLoad içinde bir kez bu varsayılanlara çekilir. Oyuncu canı Dev HP ile korunur.
             var clock = gameObject.AddComponent<GameClock>();
@@ -109,7 +119,8 @@ namespace Dovus.Game
             ally.AddComponent<ActorGrounding>();
             var allyDummy = ally.AddComponent<AllyDummy>();
             int playerHp = ScaledPlayerHp();
-            allyDummy.Bind(playerHp, startRatio: 0.5f);
+            // O6: başlangıç oranı tek debug anahtarında (varsayılan 1.0).
+            allyDummy.Bind(playerHp, startRatio: DebugConfig.StartHpRatio);
 
             var boss = CreateCapsule(
                 "Boss",
@@ -155,10 +166,10 @@ namespace Dovus.Game
             boss.AddComponent<HitFlash>().Bind(combat.Feel);
 
             var vitals = player.AddComponent<PlayerVitals>();
-            // His: heal denemesi — oyuncu da %50 (full iken mend boş döner).
-            vitals.Bind(combat.Boss, playerHp, startRatio: 0.5f);
+            // O6: heal denemesi için %50 başlangıç DebugConfig.HalfHpStart ile (varsayılan kapalı).
+            vitals.Bind(combat.Boss, playerHp, startRatio: DebugConfig.StartHpRatio);
             vitals.BindClock(clock);
-            vitals.SetDevHp(DebugConfig.Enabled);
+            vitals.SetDevHp(DebugConfig.DevHpActive);
 
             var resource = player.AddComponent<PlayerResource>();
             // docs/element-sistemi.json resource_system: 100 / 8 / 1.5
@@ -321,7 +332,7 @@ namespace Dovus.Game
                 var motor = player.GetComponent<KinematicMotor>();
                 motor?.BindCamera(follow);
             }
-            debug.Configure(input.Engine, view.CanvasRoot, skills, _tuning.ShowSentenceDebugHud);
+            debug.Configure(input.Engine, view.CanvasRoot, skills, DebugConfig.Enabled && _tuning.ShowSentenceDebugHud);
             debug.BindVitals(vitals);
             input.BindVitals(vitals);
 

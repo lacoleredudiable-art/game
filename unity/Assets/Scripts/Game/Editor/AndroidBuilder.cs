@@ -20,38 +20,76 @@ namespace Dovus.Game.EditorTools
         const string ApplicationId = "com.dovus.prototip";
         const string OutputDirRelativeToRepo = "build/android";
         const string ApkName = "dovus-prototip.apk";
+        const string ReleaseApkName = "dovus-prototip-release.apk";
 
+        /// <summary>
+        /// K2 (denetim C): debug kapısının define'ı. Dev APK bu define ile derlenir (DebugConfig açık:
+        /// dev HP, test panelleri, tuning.json, DevLog). Release APK'da yok → hepsi kapalı.
+        /// </summary>
+        public const string DebugDefine = "DOVUS_DEBUG";
+
+        /// <summary>Dev APK (eski menü adı korunur): Development + DOVUS_DEBUG.</summary>
         [MenuItem("Dovus/Build Android APK")]
         public static void BuildFromMenu()
         {
-            BuildReport report = Build(DefaultOutputPath());
+            BuildReport report = Build(DefaultOutputPath(), release: false);
             if (report.summary.result == BuildResult.Succeeded)
                 EditorUtility.RevealInFinder(report.summary.outputPath);
         }
 
-        /// <summary>Batchmode girişi: `-executeMethod Dovus.Game.EditorTools.AndroidBuilder.BuildFromCommandLine`.</summary>
+        /// <summary>K2: release APK — Development yok, DOVUS_DEBUG yok (normal can, panel yok).</summary>
+        [MenuItem("Dovus/Build Android APK (release)")]
+        public static void BuildReleaseFromMenu()
+        {
+            BuildReport report = Build(DefaultOutputPath(release: true), release: true);
+            if (report.summary.result == BuildResult.Succeeded)
+                EditorUtility.RevealInFinder(report.summary.outputPath);
+        }
+
+        /// <summary>
+        /// Batchmode girişi: `-executeMethod Dovus.Game.EditorTools.AndroidBuilder.BuildFromCommandLine`.
+        /// `-dovusRelease` release APK alır; `-dovusOutput <yol>` çıktı yolu.
+        /// </summary>
         public static void BuildFromCommandLine()
         {
-            string output = ArgValue("-dovusOutput") ?? DefaultOutputPath();
-            BuildReport report = Build(output);
+            bool release = HasArg("-dovusRelease");
+            string output = ArgValue("-dovusOutput") ?? DefaultOutputPath(release);
+            BuildReport report = Build(output, release);
             bool ok = report.summary.result == BuildResult.Succeeded;
 
             if (Application.isBatchMode)
                 EditorApplication.Exit(ok ? 0 : 1);
         }
 
-        /// <summary>Otomasyon girişi: verilen yola build alır, başarıyı döner (menü/CLI yan etkisi yok).</summary>
+        /// <summary>Otomasyon girişi: verilen yola dev build alır, başarıyı döner (menü/CLI yan etkisi yok).</summary>
         public static bool BuildTo(string outputPath)
         {
-            return Build(outputPath).summary.result == BuildResult.Succeeded;
+            return BuildTo(outputPath, release: false);
         }
 
-        public static string DefaultOutputPath()
+        /// <summary>Otomasyon girişi: release=true → release APK (K2).</summary>
+        public static bool BuildTo(string outputPath, bool release)
+        {
+            return Build(outputPath, release).summary.result == BuildResult.Succeeded;
+        }
+
+        public static string DefaultOutputPath() => DefaultOutputPath(release: false);
+
+        public static string DefaultOutputPath(bool release)
         {
             // Application.dataPath = <repo>/unity/Assets
             string repoRoot = Path.GetFullPath(Path.Combine(Application.dataPath, "..", ".."));
-            return Path.Combine(repoRoot, OutputDirRelativeToRepo, ApkName);
+            return Path.Combine(repoRoot, OutputDirRelativeToRepo, release ? ReleaseApkName : ApkName);
         }
+
+        /// <summary>K2: build türüne göre seçenekler ve ek define'lar (saf; test edilebilir).</summary>
+        public static BuildOptions OptionsFor(bool release) =>
+            release
+                ? BuildOptions.CleanBuildCache
+                : BuildOptions.Development | BuildOptions.CleanBuildCache;
+
+        public static string[] DefinesFor(bool release) =>
+            release ? Array.Empty<string>() : new[] { DebugDefine };
 
         /// <summary>
         /// Sahne koddan kuruluyor (AGENTS kural 2), yani hiçbir materyal bir asset'te durmuyor:
@@ -68,7 +106,7 @@ namespace Dovus.Game.EditorTools
             "Universal Render Pipeline/Particles/Unlit", // FeelVfx, CastFlash, LivingEffectView, LavaDecor, BillboardVfx
         };
 
-        static BuildReport Build(string outputPath)
+        static BuildReport Build(string outputPath, bool release)
         {
             ApplyPlayerSettings();
             EnsureAlwaysIncludedShaders();
@@ -95,11 +133,13 @@ namespace Dovus.Game.EditorTools
                 locationPathName = outputPath,
                 target = BuildTarget.Android,
                 targetGroup = BuildTargetGroup.Android,
-                // Ölçüm turu geliştirme build'i istiyor (görev metni). Script debugging ve
+                // Dev: ölçüm turu geliştirme build'i istiyor (görev metni). Script debugging ve
                 // profiler bağlantısı AÇILMADI: ikisi de kare süresini kendileri şişirip
                 // "60 fps'e yakın mı" sorusunu ölçülemez hale getirir.
+                // Release (K2): Development yok, DOVUS_DEBUG yok → DebugConfig kapalı.
                 // CleanBuildCache: incremental Bee bazen eski Data files bırakıyor (telefon APK).
-                options = BuildOptions.Development | BuildOptions.CleanBuildCache
+                options = OptionsFor(release),
+                extraScriptingDefines = DefinesFor(release)
             };
 
             BuildReport report = BuildPipeline.BuildPlayer(options);
@@ -107,7 +147,7 @@ namespace Dovus.Game.EditorTools
 
             if (summary.result == BuildResult.Succeeded)
             {
-                Debug.Log($"[T11] APK hazır: {summary.outputPath} " +
+                Debug.Log($"[T11] APK hazır ({(release ? "release" : "dev")}): {summary.outputPath} " +
                           $"({summary.totalSize / (1024f * 1024f):0.0} MB, {summary.totalTime.TotalSeconds:0} sn)");
             }
             else
@@ -203,6 +243,17 @@ namespace Dovus.Game.EditorTools
                 serialized.ApplyModifiedProperties();
                 AssetDatabase.SaveAssets();
             }
+        }
+
+        static bool HasArg(string name)
+        {
+            string[] args = Environment.GetCommandLineArgs();
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (string.Equals(args[i], name, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            return false;
         }
 
         static string ArgValue(string name)

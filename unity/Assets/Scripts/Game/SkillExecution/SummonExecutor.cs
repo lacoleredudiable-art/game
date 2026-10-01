@@ -33,6 +33,9 @@ namespace Dovus.Game
         float _spawnSize;
         int _spawnedCount;
         bool _ringFormation;
+        string _weaponPathClass;
+        Transform _targetColliderOwner;
+        Collider _targetCollider;
         bool _invisibleActor;
         bool _hopping;
         bool _growing;
@@ -52,6 +55,8 @@ namespace Dovus.Game
                 && MechanicWorldProfile.From(context.MechanicPlan).Continuous;
             MechanicEffect actorEffect = context.MechanicPlan?.Effects
                 .FirstOrDefault(e => e.Stat is "aktor_yarat" or "klon");
+            // O11: saldırı başına LINQ yerine cast başına bir kez.
+            _weaponPathClass = actorEffect?.Modes.FirstOrDefault(m => m.StartsWith("silahla:"));
             _ringFormation = actorEffect?.Has("halka") ?? false;
             _invisibleActor = actorEffect?.Has("gorunmez") ?? false;
             _hopping = actorEffect?.Has("ziplayan") ?? false;
@@ -138,7 +143,7 @@ namespace Dovus.Game
                 };
                 if (_invisibleActor)
                     tint.a = 0.25f;
-                renderer.material.color = tint;
+                SharedTint.Apply(renderer, tint);
             }
             return body;
         }
@@ -243,7 +248,13 @@ namespace Dovus.Game
             if (Context.Target != null)
             {
                 float bossR = 0.85f;
-                Collider col = Context.Target.GetComponentInChildren<Collider>();
+                // O11: minyon başına her kare GetComponentInChildren yerine hedef başına bir kez.
+                if (_targetColliderOwner != Context.Target)
+                {
+                    _targetColliderOwner = Context.Target;
+                    _targetCollider = Context.Target.GetComponentInChildren<Collider>();
+                }
+                Collider col = _targetCollider;
                 if (col != null)
                     bossR = Mathf.Max(col.bounds.extents.x, col.bounds.extents.z);
                 ActorSpacing.PushOutside(ref x, ref z, Context.Target.position.x, Context.Target.position.z, bossR + size * 0.5f + 0.05f);
@@ -258,9 +269,7 @@ namespace Dovus.Game
         {
             if (Context.Target == null)
                 return;
-            MechanicEffect actor = Context.MechanicPlan?.Effects
-                .FirstOrDefault(e => e.Stat is "aktor_yarat" or "klon");
-            string pathClass = actor?.Modes.FirstOrDefault(m => m.StartsWith("silahla:"));
+            string pathClass = _weaponPathClass;
             bool ranged = pathClass is "silahla:ucan" or "silahla:hat" or "silahla:belirme";
             if (!ranged)
                 return;

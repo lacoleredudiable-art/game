@@ -7,6 +7,14 @@ namespace CoreTests;
 [TestFixture]
 public class GameLayerCompileTests
 {
+    internal static bool IsCi()
+    {
+        string ci = System.Environment.GetEnvironmentVariable("CI");
+        return !string.IsNullOrEmpty(ci)
+            && !string.Equals(ci, "false", System.StringComparison.OrdinalIgnoreCase)
+            && ci != "0";
+    }
+
     [Test]
     public void RuntimeGameScripts_CompileWithoutTheUnityEditor()
     {
@@ -18,8 +26,11 @@ public class GameLayerCompileTests
 
         if (!PythonLaunch.TryResolve(out string fileName, out string prefix))
         {
-            Assert.Ignore(
-                "Python yok (python3, python, py -3 denendi). Oyun katmanı derlemesi atlandı.");
+            const string missing = "Python yok (python3, python, py -3 denendi). Oyun katmanı derlemesi atlandı.";
+            // S13: CI'da (CI=true) sessiz atlama yok — oyun katmanı derlenmeden yeşil görünmesin.
+            if (IsCi())
+                Assert.Fail("CI: " + missing);
+            Assert.Ignore(missing);
         }
 
         var start = new ProcessStartInfo

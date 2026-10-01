@@ -4,6 +4,8 @@ namespace Dovus.Core.Tuning
     /// Eski tuning.json slam/nefes hasarını 0 yazıyordu (prototip sıfırlaması).
     /// Sürüm 0 kayıtta 0 görürse karadul varsayılanına çeker. Sürüm güncelse
     /// bilinçli 0'a dokunulmaz.
+    /// O5 (denetim C): TuningConfig artık <see cref="TuningSchema"/> ile eski kaydı tamamen atıyor;
+    /// bu sınıf geriye dönük test ve belge için duruyor (oyun yolu çağırmıyor).
     /// </summary>
     public static class BossDamageMigration
     {

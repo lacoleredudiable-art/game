@@ -15,7 +15,7 @@ namespace Dovus.Game
             if (ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
             {
                 SkillMotor motor = design.SkillMotor;
-                Debug.Log(
+                DebugConfig.DevLog(
                     $"[JSONLoader] v{motor.Version}: "
                     + $"{motor.RuneCount} runes, {motor.SkillCount} skills, "
                     + $"default build [{string.Join(",", motor.DefaultLoadout.RuneIds)}]");

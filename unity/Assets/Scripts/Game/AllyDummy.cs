@@ -14,6 +14,18 @@ namespace Dovus.Game
     /// </summary>
     public sealed class AllyDummy : MonoBehaviour
     {
+        // O11: PortalBorderTeamHost her kare FindObjectsOfType<AllyDummy> yapıyordu → etkin kayıt.
+        static readonly System.Collections.Generic.List<AllyDummy> s_live = new System.Collections.Generic.List<AllyDummy>();
+        public static System.Collections.Generic.IReadOnlyList<AllyDummy> Live => s_live;
+
+        void OnEnable()
+        {
+            if (!s_live.Contains(this))
+                s_live.Add(this);
+        }
+
+        void OnDisable() => s_live.Remove(this);
+
         int _hp;
         int _maxHp;
         Text _label;

@@ -224,14 +224,25 @@ namespace Dovus.Game
             return go;
         }
 
+        // O11: renk başına TEK paylaşılan materyal. Eskiden her etki/iz new Material + Shader.Find
+        // yapıyordu ve Destroy(go) materyali silmiyordu (cast başına ~2 materyal sızıntısı, D3).
+        static readonly Dictionary<int, Material> GlowCache = new Dictionary<int, Material>();
+        static Shader _glowShader;
+
         // LivingEffectView / GroundScarField ile aynı saydam Unlit deseni.
         static Material MakeGlowMat(Color c)
         {
-            var shader = FindTransparentUnlitShader();
-            var mat = new Material(shader);
-            ConfigureTransparentFallback(mat);
             c.a = Mathf.Clamp01(c.a > 0.01f ? c.a : 0.95f);
+            Color32 q = c;
+            int key = (q.r << 24) | (q.g << 16) | (q.b << 8) | q.a;
+            if (GlowCache.TryGetValue(key, out Material cached) && cached != null)
+                return cached;
+            if (_glowShader == null)
+                _glowShader = FindTransparentUnlitShader();
+            var mat = new Material(_glowShader);
+            ConfigureTransparentFallback(mat);
             SetMatColor(mat, c);
+            GlowCache[key] = mat;
             return mat;
         }
 

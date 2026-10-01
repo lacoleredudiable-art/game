@@ -140,7 +140,7 @@ namespace Dovus.Game
             go.transform.position = pos;
             var renderer = go.GetComponent<Renderer>();
             if (renderer != null)
-                renderer.material.color = new Color(0.35f, 0.9f, 0.55f);
+                SharedTint.Apply(renderer, new Color(0.35f, 0.9f, 0.55f));
             var dummy = go.AddComponent<AllyDummy>();
             int maxHp = _vitals != null ? _vitals.MaxHp : 30;
             dummy.Bind(maxHp, 0.7f);
@@ -343,6 +343,22 @@ namespace Dovus.Game
             return true;
         }
 
+        Transform _reactorOwner;
+        BossReactor _reactorCache;
+
+        /// <summary>O11: her kare GetComponent yerine boss başına bir kez.</summary>
+        BossReactor CachedBossReactor()
+        {
+            if (_boss == null)
+                return null;
+            if (_reactorOwner != _boss || _reactorCache == null)
+            {
+                _reactorOwner = _boss;
+                _reactorCache = _boss.GetComponent<BossReactor>();
+            }
+            return _reactorCache;
+        }
+
         void RefreshActors()
         {
             _actors.Clear();
@@ -359,8 +375,8 @@ namespace Dovus.Game
                 _actors.Add(actor);
             }
 
-            AllyDummy[] dummies = FindObjectsOfType<AllyDummy>();
-            for (int i = 0; i < dummies.Length; i++)
+            System.Collections.Generic.IReadOnlyList<AllyDummy> dummies = AllyDummy.Live;
+            for (int i = 0; i < dummies.Count; i++)
             {
                 AllyDummy dummy = dummies[i];
                 if (dummy == null)
@@ -395,7 +411,7 @@ namespace Dovus.Game
             }
             if (_boss != null)
             {
-                BossReactor reactor = _boss.GetComponent<BossReactor>();
+                BossReactor reactor = CachedBossReactor();
                 float radius = reactor != null ? reactor.BodyRadiusM : 0.85f;
                 var bossBody = new Body(900, _boss.position.x, _boss.position.y, _boss.position.z, radius, false, true);
                 _portal.Sense(bossBody, false, boss, out _);
@@ -481,7 +497,7 @@ namespace Dovus.Game
                 _aura.transform.localScale = new Vector3(1.6f, 0.02f, 1.6f);
                 Renderer renderer = _aura.GetComponent<Renderer>();
                 if (renderer != null)
-                    renderer.material.color = new Color(1f, 0.2f, 0.25f, 0.85f);
+                    SharedTint.Apply(renderer, new Color(1f, 0.2f, 0.25f, 0.85f));
             }
             if (_aura != null)
                 _aura.SetActive(on);
@@ -508,7 +524,7 @@ namespace Dovus.Game
                 gate.transform.localScale = new Vector3(door.Radius * 2f, 0.03f, door.Radius * 2f);
                 Renderer renderer = gate.GetComponent<Renderer>();
                 if (renderer != null)
-                    renderer.material.color = new Color(0.45f, 0.35f, 1f, 0.9f);
+                    SharedTint.Apply(renderer, new Color(0.45f, 0.35f, 1f, 0.9f));
                 _visuals.Add(gate);
             }
             if (_team.TryMine(out float mx, out float mz))
@@ -530,7 +546,7 @@ namespace Dovus.Game
             go.transform.localScale = Vector3.one * 0.45f;
             Renderer renderer = go.GetComponent<Renderer>();
             if (renderer != null)
-                renderer.material.color = color;
+                SharedTint.Apply(renderer, color);
             return go;
         }
 
@@ -545,7 +561,7 @@ namespace Dovus.Game
             go.transform.localScale = Vector3.one * 0.7f;
             Renderer renderer = go.GetComponent<Renderer>();
             if (renderer != null)
-                renderer.material.color = color;
+                SharedTint.Apply(renderer, color);
             Destroy(go, 0.6f);
         }
 
@@ -595,7 +611,7 @@ namespace Dovus.Game
         {
             if (_boss == null)
                 return Disc.None;
-            BossReactor reactor = _boss.GetComponent<BossReactor>();
+            BossReactor reactor = CachedBossReactor();
             float radius = reactor != null && reactor.BodyRadiusM > 0.1f ? reactor.BodyRadiusM : 0.85f;
             return new Disc(true, _boss.position.x, _boss.position.z, radius, PortalSystem.ClearGapM);
         }

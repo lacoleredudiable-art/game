@@ -131,6 +131,7 @@ namespace Dovus.Game
             if (_vitals == null)
                 return;
             _vitals.SetDevHp(!_vitals.DevHpEnabled);
+            DebugConfig.DevHp = _vitals.DevHpEnabled;
             RefreshDevHp();
         }
 
