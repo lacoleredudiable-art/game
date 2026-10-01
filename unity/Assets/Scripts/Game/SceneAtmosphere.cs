@@ -48,27 +48,9 @@ namespace Dovus.Game
             var volume = fx.AddComponent<Volume>();
             volume.isGlobal = true;
             volume.priority = 1f;
-            var profile = ScriptableObject.CreateInstance<VolumeProfile>();
-            volume.profile = profile;
 
-            var tone = profile.Add<Tonemapping>(true);
-            tone.mode.Override(TonemappingMode.Neutral);
-
-            var bloom = profile.Add<Bloom>(true);
-            bloom.threshold.Override(Mathf.Max(0f, tuning.BloomThreshold));
-            bloom.intensity.Override(Mathf.Max(0f, tuning.BloomIntensity));
-            bloom.scatter.Override(Mathf.Clamp01(tuning.BloomScatter));
-            bloom.tint.Override(tuning.BloomTint);
-
-            var colorAdj = profile.Add<ColorAdjustments>(true);
-            colorAdj.postExposure.Override(tuning.PostExposure);
-            colorAdj.contrast.Override(tuning.ColorContrast);
-            colorAdj.saturation.Override(tuning.ColorSaturation);
-            colorAdj.colorFilter.Override(tuning.ColorFilterTint);
-
-            var vignette = profile.Add<Vignette>(true);
-            vignette.intensity.Override(Mathf.Clamp01(tuning.PostVignetteIntensity));
-            vignette.smoothness.Override(0.45f);
+            var look = fx.AddComponent<LookPresetController>();
+            look.Initialize(volume, sun);
         }
 
         static void CreateRimLight(PrototypeTuning tuning)

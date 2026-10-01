@@ -24,8 +24,30 @@ namespace Dovus.Game
         }
 #endif
 
+#if UNITY_EDITOR || DOVUS_DEBUG
+        bool _chromeVisible = true;
+        System.Action<bool> _chromeApply;
+
+        void Awake()
+        {
+            _chromeApply = v => _chromeVisible = v;
+            DebugPanelsChrome.Register(_chromeApply);
+            _chromeVisible = DebugPanelsChrome.Visible;
+        }
+
+        void OnDestroy()
+        {
+            if (_chromeApply != null)
+                DebugPanelsChrome.Unregister(_chromeApply);
+        }
+#endif
+
         void OnGUI()
         {
+#if UNITY_EDITOR || DOVUS_DEBUG
+            if (!_chromeVisible)
+                return;
+#endif
             PortalBorderTeamHost host = PortalBorderTeamHost.Instance;
             if (host == null)
                 return;

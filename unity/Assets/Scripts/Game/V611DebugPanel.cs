@@ -19,6 +19,7 @@ namespace Dovus.Game
         BuildSelectScreen _buildSelect;
         PlayerVitals _vitals;
         GameObject _panel;
+        GameObject _toggleGo;
         Text _status;
         Text _element;
         Text _weapon;
@@ -45,6 +46,7 @@ namespace Dovus.Game
             // Üst şeritte AYAR'ın solu: sol üst köşe oyuncu barlarının başlığını örtüyordu.
             var toggle = CreateButton(canvasRoot, "V6", new Vector2(0.80f, 0.90f), new Vector2(0.855f, 0.975f));
             toggle.onClick.AddListener(Toggle);
+            _toggleGo = toggle.gameObject;
 
             _panel = new GameObject("V611SimpleControls");
             _panel.transform.SetParent(canvasRoot, false);
@@ -87,6 +89,11 @@ namespace Dovus.Game
 
             _panel.SetActive(false);
             IsOpen = false;
+
+#if UNITY_EDITOR || DOVUS_DEBUG
+            DebugPanelsChrome.Register(ApplyChrome);
+            ApplyChrome(DebugPanelsChrome.Visible);
+#endif
         }
 
         void Update()
@@ -94,13 +101,29 @@ namespace Dovus.Game
             Keyboard keyboard = Keyboard.current;
             if (keyboard == null)
                 return;
-            if (keyboard.f1Key.wasPressedThisFrame)
-                SmokeCast();
-            if (keyboard.f2Key.wasPressedThisFrame)
-                CycleWeapon();
             if (keyboard.bKey.wasPressedThisFrame)
                 OpenBuildSelect();
         }
+
+#if UNITY_EDITOR || DOVUS_DEBUG
+        void ApplyChrome(bool visible)
+        {
+            if (_toggleGo != null)
+                _toggleGo.SetActive(visible);
+            if (!visible)
+            {
+                IsOpen = false;
+                if (_panel != null)
+                    _panel.SetActive(false);
+            }
+        }
+
+        void OnDestroy()
+        {
+            DebugPanelsChrome.Unregister(ApplyChrome);
+            IsOpen = false;
+        }
+#endif
 
         void OpenBuildSelect()
         {
@@ -187,11 +210,6 @@ namespace Dovus.Game
         {
             if (_status != null)
                 _status.text = value;
-        }
-
-        void OnDestroy()
-        {
-            IsOpen = false;
         }
 
         static Button CreateRowButton(Transform parent, string text)

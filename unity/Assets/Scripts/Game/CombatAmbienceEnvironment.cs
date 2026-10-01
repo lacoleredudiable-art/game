@@ -46,22 +46,23 @@ namespace Dovus.Game
             }
 
             CircularArena.SetWallRenderersVisible(arenaRoot, false);
-            if (assets.GroundMaterial != null)
-                CircularArena.SetFloorMaterial(arenaRoot, assets.GroundMaterial);
 
             Vector3 center = arenaRoot.transform.position;
             // Yakın öğeler (zemin/sis) arena yarıçapıyla ölçeklenir; Ground_Far/Skyline zaten
             // ufka kadar büyük tasarlandı (147→2026→1280 m), onlar sabit kalır (native ölçek 1).
             float nearScale = Mathf.Max(0.1f, walkHalfM) / CombatAmbienceAssets.DesignBoundaryRadiusM;
+            Material groundMat = CreateScaledGroundMaterial(assets.GroundMaterial, nearScale);
+            if (groundMat != null)
+                CircularArena.SetFloorMaterial(arenaRoot, groundMat);
 
             var root = new GameObject("CombatAmbience");
             root.transform.SetParent(arenaRoot.transform, false);
             root.transform.position = center;
 
             PlaceEnvMesh(
-                assets.GroundNearModel, assets.GroundMaterial, root.transform,
+                assets.GroundNearModel, groundMat ?? assets.GroundMaterial, root.transform,
                 new Vector3(nearScale, nearScale * NearGroundHeightSquash, nearScale), "Ground_Near");
-            PlaceEnvMesh(assets.GroundFarModel, assets.GroundMaterial, root.transform, 1f, "Ground_Far");
+            PlaceEnvMesh(assets.GroundFarModel, groundMat ?? assets.GroundMaterial, root.transform, 1f, "Ground_Far");
             PlaceEnvMesh(assets.SkylineModel, assets.SkylineMaterial, root.transform, 1f, "Skyline_Far");
             PlaceEnvMesh(assets.EdgeMistModel, assets.EdgeMistMaterial, root.transform, nearScale, "EdgeMist");
 
@@ -155,6 +156,27 @@ namespace Dovus.Game
                 r.shadowCastingMode = ShadowCastingMode.Off;
                 r.receiveShadows = false;
             }
+        }
+
+        /// <summary>
+        /// Deneme sahnesi groundTiling≈7; mesh ölçeği UV tekrarını bozmasın diye runtime kopya.
+        /// </summary>
+        static Material CreateScaledGroundMaterial(Material source, float nearScale)
+        {
+            if (source == null)
+                return null;
+
+            var mat = new Material(source);
+            Vector2 baseSt = source.GetTextureScale("_BaseMap");
+            if (baseSt.sqrMagnitude < 0.0001f)
+                baseSt = new Vector2(1f / 7f, 1f / 7f);
+            mat.SetTextureScale("_BaseMap", baseSt * nearScale);
+            mat.SetTextureScale("_MainTex", baseSt * nearScale);
+            Vector2 detailSt = source.GetTextureScale("_DetailAlbedoMap");
+            if (detailSt.sqrMagnitude < 0.0001f)
+                detailSt = new Vector2(3.888889f, 3.888889f);
+            mat.SetTextureScale("_DetailAlbedoMap", detailSt * nearScale);
+            return mat;
         }
     }
 }

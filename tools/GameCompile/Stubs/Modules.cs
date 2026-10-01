@@ -287,6 +287,45 @@ namespace UnityEngine.Rendering.Universal
         public int value;
         public void Override(TonemappingMode v) { value = (int)v; }
     }
+    public partial class ScriptableRendererData : UnityEngine.ScriptableObject
+    {
+        public System.Collections.Generic.List<ScriptableRendererFeature> rendererFeatures;
+    }
+    public partial class ScriptableRendererFeature : UnityEngine.ScriptableObject
+    {
+        public bool isActive;
+        public void SetActive(bool active) { isActive = active; }
+    }
+    public partial class UniversalRenderPipelineAsset : UnityEngine.Rendering.RenderPipelineAsset
+    {
+        public float renderScale;
+        public int msaaSampleCount;
+        public int mainLightShadowmapResolution;
+        public bool supportsCameraDepthTexture;
+        public ScriptableRendererData[] rendererDataList;
+        protected override UnityEngine.Rendering.RenderPipeline CreatePipeline() => null;
+    }
+    public partial class ShadowsMidtonesHighlights : VolumeComponent
+    {
+        public Vector4Parameter shadows, midtones, highlights;
+    }
+    public partial class Vector4Parameter
+    {
+        public UnityEngine.Vector4 value;
+        public void Override(UnityEngine.Vector4 v) { value = v; }
+    }
+    public partial class WhiteBalance : VolumeComponent
+    {
+        public FloatParameter temperature;
+    }
+}
+
+namespace UnityEngine.Rendering
+{
+    public partial class GraphicsSettings
+    {
+        public static UnityEngine.Rendering.RenderPipelineAsset currentRenderPipeline;
+    }
 }
 
 namespace UnityEngine.TextCore.LowLevel

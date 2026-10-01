@@ -903,5 +903,32 @@ namespace UnityEngine.Rendering.Universal
         public ClampedFloatParameter intensity = new(0f, 0f, 1f);
     }
 
-    public class UniversalRenderPipelineAsset : ScriptableObject { }
+    public class ScriptableRendererFeature : ScriptableObject
+    {
+        public bool isActive;
+        public void SetActive(bool active) => isActive = active;
+    }
+
+    public class ScriptableRendererData : ScriptableObject
+    {
+        public System.Collections.Generic.List<ScriptableRendererFeature> rendererFeatures =
+            new System.Collections.Generic.List<ScriptableRendererFeature>();
+    }
+
+    public class UniversalRenderPipelineAsset : ScriptableObject
+    {
+        public float renderScale;
+        public int msaaSampleCount;
+        public int mainLightShadowmapResolution;
+        public bool supportsCameraDepthTexture;
+        public ScriptableRendererData[] rendererDataList;
+    }
+}
+
+namespace UnityEngine.Rendering
+{
+    public static class GraphicsSettings
+    {
+        public static ScriptableObject currentRenderPipeline;
+    }
 }

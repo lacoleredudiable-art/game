@@ -51,7 +51,22 @@ namespace Dovus.Game
 
             // Telefonda / varsayılanda kapalı — premium HUD'u boğuyordu.
             _root.SetActive(show);
+
+#if UNITY_EDITOR || DOVUS_DEBUG
+            DebugPanelsChrome.Register(ApplyChrome);
+            ApplyChrome(DebugPanelsChrome.Visible);
+#endif
         }
+
+#if UNITY_EDITOR || DOVUS_DEBUG
+        void ApplyChrome(bool visible)
+        {
+            if (_root != null)
+                _root.SetActive(visible);
+        }
+
+        void OnDestroy() => DebugPanelsChrome.Unregister(ApplyChrome);
+#endif
         public void NoteDodge(bool abortedSentence)
         {
             Note(abortedSentence ? "DODGE (cümle iptal)" : "DODGE (kilit kesildi)");

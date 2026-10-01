@@ -547,6 +547,7 @@ namespace Dovus.Game
                 var v6Panel = root.AddComponent<V611DebugPanel>();
                 v6Panel.Configure(input, director, buildSelect, view.CanvasRoot, vitals);
                 CreateTuningPanel(tuningConfig, vitals);
+                root.AddComponent<DebugPanelsController>();
             }
         }
 
