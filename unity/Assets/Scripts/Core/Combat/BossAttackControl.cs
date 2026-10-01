@@ -38,8 +38,13 @@ namespace Dovus.Core.Combat
             {
                 BossAttackKind.Slam => BossAttackMotion.Standing,
                 BossAttackKind.FireCone => BossAttackMotion.Standing,
+                BossAttackKind.Volley => BossAttackMotion.Standing,
                 _ => BossAttackMotion.Standing
             };
+
+        /// <summary>Özel/cast saldırı: Silence keser, Disarm kesmez (FireCone ve Volley).</summary>
+        public static bool IsSpecial(BossAttackKind kind) =>
+            kind is BossAttackKind.FireCone or BossAttackKind.Volley;
 
         public static bool IsMovement(BossAttackMotion motion) =>
             motion is BossAttackMotion.Charge or BossAttackMotion.Leap or BossAttackMotion.Dash;
@@ -67,7 +72,7 @@ namespace Dovus.Core.Combat
         }
 
         /// <summary>
-        /// Sersemlik her saldırıyı keser. Silence özel/cast (FireCone) başlatmayı ve
+        /// Sersemlik her saldırıyı keser. Silence özel/cast (FireCone, Volley) başlatmayı ve
         /// hazırlığı keser. Disarm temel/yakın (Slam) başlatmayı ve hazırlığı keser.
         /// Süre tahtadaki durumdan gelir; bu kapı yalnız o anı okur.
         /// </summary>
@@ -84,7 +89,7 @@ namespace Dovus.Core.Combat
             if (!gate.CanStart || board == null)
                 return gate;
 
-            bool special = kind == BossAttackKind.FireCone;
+            bool special = IsSpecial(kind);
             if (special && board.HasEffective(StatusKind.Silence))
                 return new BossAttackGate(false, true, gate.PhaseSpeed);
             if (!special && board.HasDisarm)

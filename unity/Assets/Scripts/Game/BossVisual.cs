@@ -102,9 +102,11 @@ namespace Dovus.Game
         {
             if (_dead || !Ready())
                 return;
-            string state = kind == BossAttackKind.FireCone ? StateBreath : StateSlam;
+            // Zehir Tükürüğü ağızdan çıkar: nefes klibini paylaşır.
+            bool mouth = kind is BossAttackKind.FireCone or BossAttackKind.Volley;
+            string state = mouth ? StateBreath : StateSlam;
             float impactNorm = _tuning == null ? 0.42f
-                : kind == BossAttackKind.FireCone ? _tuning.BossConeImpactNorm : _tuning.BossSlamImpactNorm;
+                : mouth ? _tuning.BossConeImpactNorm : _tuning.BossSlamImpactNorm;
             float clipLen = ClipLength(state);
             if (clipLen > 0f && HasParam(ParamActionSpeed))
             {

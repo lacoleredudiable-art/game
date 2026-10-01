@@ -6,7 +6,8 @@ namespace Dovus.Core.Tuning
     {
         public int StartupMs = 10;
         public int IframeStartMs = 0;
-        public int IframeMs = 300;
+        /// <summary>element-sistemi.json player_stats.i_frame_on_dodge_ms (karadul.json maps_to aynı).</summary>
+        public int IframeMs = 260;
         public float DistanceM = 4f;
         public int DurationMs = 250;
         public float CurveExp = 3.6f;

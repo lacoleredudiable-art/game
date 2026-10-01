@@ -42,6 +42,7 @@ namespace Dovus.Game
         ActorStatus _playerStatus;
         BossVisual _visual;
         HostileTargets _targets;
+        HostileProjectileHost _projectiles;
         Transform _target;
         int _targetId = -1;
         TargetKind _targetKind = TargetKind.Player;
@@ -181,6 +182,9 @@ namespace Dovus.Game
         }
 
         public void ClearReverse() => _reverseUntilMs = -1;
+
+        /// <summary>Zehir Tükürüğü mermilerinin sahibi. Bağlanmazsa Volley seçilmez (eski Slam/FireCone).</summary>
+        public void BindProjectiles(HostileProjectileHost host) => _projectiles = host;
 
         /// <summary>
         /// Script recompile Bind alanlarını siler; Awake yeniden çağrılmaz.
@@ -534,38 +538,44 @@ namespace Dovus.Game
         }
 
         /// <summary>
-        /// 16 Eylül — önce SALDIRI TÜRÜ (Slam / FireCone) seçilir, Slam ise ardından
-        /// üç ritminden biri. İkisi de "aynısı üst üste MaxSame...Streak'i geçemez" desenini
-        /// paylaşır (§11/T13 dersi).
+        /// Önce SALDIRI TÜRÜ, Slam ise ardından üç ritminden biri. İkisi de "aynısı üst üste
+        /// MaxSame...Streak'i geçemez" desenini paylaşır (§11/T13 dersi). İzinli küme karadul.json
+        /// fazlarından: faz 1 {Slam, Volley}, öfke {Slam, FireCone, Volley}; CC kapısının kestiği
+        /// türler önceden elenir (Disarm Slam'i, Silence FireCone/Volley'i keser).
         /// </summary>
         bool SelectNextAttack()
         {
             if (_attack == null || _combat == null)
                 return false;
 
-            // karadul.json faz tasarımı: Faz 1 "Uyanış" (100-50% can) yalnızca slam; Faz 2
-            // "Öfke" (50-0%) fire_cone'u da açar.
             bool enraged = IsEnraged();
-
-            BossAttackKind kind = enraged
-                ? BossAttackKindPicker.Pick(_lastAttackKind, _attackKindStreak, _combat.Boss.MaxSameAttackKindStreak, _rng)
-                : BossAttackKind.Slam;
-            if (!AttackKindAllowed(kind))
+            System.ReadOnlySpan<BossAttackKind> phaseKinds = BossAttackKindPicker.AllowedFor(enraged);
+            System.Span<BossAttackKind> allowed = stackalloc BossAttackKind[phaseKinds.Length];
+            int n = 0;
+            for (int i = 0; i < phaseKinds.Length; i++)
             {
-                BossAttackKind alt = kind == BossAttackKind.FireCone
-                    ? BossAttackKind.Slam
-                    : BossAttackKind.FireCone;
-                if (enraged && AttackKindAllowed(alt))
-                    kind = alt;
-                else
-                    return false;
+                BossAttackKind k = phaseKinds[i];
+                if (k == BossAttackKind.Volley && _projectiles == null)
+                    continue;
+                if (AttackKindAllowed(k))
+                    allowed[n++] = k;
             }
+            if (n == 0)
+                return false;
+
+            BossAttackKind kind = BossAttackKindPicker.Pick(
+                _lastAttackKind, _attackKindStreak, _combat.Boss.MaxSameAttackKindStreak, _rng, allowed.Slice(0, n));
             _attackKindStreak = BossAttackKindPicker.NextStreak(_lastAttackKind, _attackKindStreak, kind);
             _lastAttackKind = kind;
 
             if (kind == BossAttackKind.FireCone)
             {
                 _attack.ApplyFireCone();
+                return true;
+            }
+            if (kind == BossAttackKind.Volley)
+            {
+                _attack.ApplyVolley(enraged);
                 return true;
             }
 
@@ -721,6 +731,12 @@ namespace Dovus.Game
             if (_attack == null || _resolver == null)
                 return;
 
+            if (_attack.Kind == BossAttackKind.Volley)
+            {
+                FireVolley();
+                return;
+            }
+
             // Körlük bir vuruşta bir kez zar atar; aynı ıska bütün kurbanlara geçerli.
             bool? blindMiss = null;
             bool Blind()
@@ -757,6 +773,10 @@ namespace Dovus.Game
             if (!BossStatusMath.VolumeHits(stealthed, inVolume, _attack.ArcHalfAngleDeg))
                 inVolume = false;
             else if (Blind())
+                inVolume = false;
+            // F1: skill hareketi / çağırma anı i-frame'i (donmayan pencere) vuruşu boşa çıkarır;
+            // dodge gibi sayılmaz ama cümle de kırılmaz.
+            else if (_player != null && _player.GetComponent<PlayerDodgeRig>() is PlayerDodgeRig rig && rig.IsSkillInvulnerable)
                 inVolume = false;
 
             int? press = _dodge?.PressTimeMs;
@@ -796,6 +816,43 @@ namespace Dovus.Game
                         Dovus.Core.Status.StatusKind.GrievousWounds, _combat.Status.GrievousMs, _combat.Status.GrievousHealMult);
                 }
             }
+        }
+
+        /// <summary>
+        /// Zehir Tükürüğü: hedefe (oyuncu / dost / yem) ortalanmış yelpaze. ters_kontrol açıksa
+        /// yelpaze tersine döner. Körlük ıska zarı atmaz, yelpazeyi %50 açar. Hacim testi yok —
+        /// isabet mermi çarpışmasında (HostileProjectileHost: i-frame geçirir, yem emer).
+        /// </summary>
+        void FireVolley()
+        {
+            if (_projectiles == null || _reactor == null)
+                return;
+            Vector3 origin = _reactor.Home;
+            Transform aim = AimTarget();
+            Vector3 dir = aim != null ? aim.position - origin : transform.forward;
+            dir.y = 0f;
+            if (IsReversed && aim != null)
+                dir = -dir;
+            if (dir.sqrMagnitude < 0.0001f)
+                dir = transform.forward;
+            dir.y = 0f;
+            dir.Normalize();
+
+            float spread = _attack.VolleySpreadDeg;
+            bool blind = _bossStatus != null && BossStatusMath.BlindMissChance(_bossStatus.Board) > 0f;
+            if (blind)
+                spread *= 1.5f;
+            int count = Mathf.Max(1, _attack.VolleyCount);
+            float raw = BossStatusMath.OutgoingDamage(_attack.Damage, _bossStatus != null ? _bossStatus.Board : null);
+            float start = count > 1 ? -spread * 0.5f : 0f;
+            float step = count > 1 ? spread / (count - 1) : 0f;
+            Vector3 from = origin + dir * (_reactor.BodyRadiusM + _attack.VolleyRadiusM);
+            for (int i = 0; i < count; i++)
+            {
+                Vector3 d = Quaternion.AngleAxis(start + step * i, Vector3.up) * dir;
+                _projectiles.Spawn(from, d * _attack.VolleySpeedMps, _attack.VolleyRadiusM, raw, _attack.VolleyLifeSec, _targetId);
+            }
+            DebugConfig.DevLog($"[Boss] Zehir Tükürüğü {count} mermi yelpaze {spread:0}°" + (blind ? " (kör)" : "") + $" hedef={CurrentTargetKind}");
         }
 
         /// <summary>

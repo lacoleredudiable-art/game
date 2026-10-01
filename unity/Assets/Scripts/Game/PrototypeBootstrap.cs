@@ -482,6 +482,13 @@ namespace Dovus.Game
             director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, allyDummy, view, passiveHud, equippedWeapon, equipmentBonus, skills, skillFactory, design?.Animations);
             director.BindTargeting(targeting);
             director.BindHostileTargets(hostileTargets);
+
+            // Düşman mermileri (Zehir Tükürüğü). Sayılar karadul.json "volley".
+            BossEncounterData.ApplyVolley(combat.Boss);
+            var projectileHost = directorGo.AddComponent<HostileProjectileHost>();
+            projectileHost.Bind(clock, hostileTargets, player, playerStatus, vitals, boss.transform, boss.BodyRadiusM);
+            bossDir.BindProjectiles(projectileHost);
+            director.BindProjectiles(projectileHost);
             director.ConfigureWeaponCycle(design?.Equipment.Items);
             if (design != null)
             {

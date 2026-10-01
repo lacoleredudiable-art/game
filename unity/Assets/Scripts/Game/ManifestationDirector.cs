@@ -1220,6 +1220,7 @@ namespace Dovus.Game
 
             ApplyResourceCost(skill);
             SkillMotionPlan motionPlan = ResolveSkillMotion(skill);
+            ApplySkillMotionIframe(skill, motionPlan);
             bool templateOwnsDelivery = TryBeginMotionTemplate(skill, p);
             PortalBorderTeamHooks.NotifyCast(skill.SkillId);
             SkillExecutorRoute executorRoute = _skillExecutorRouter.Route(skill, _equippedWeapon);
@@ -1918,6 +1919,21 @@ namespace Dovus.Game
             return SkillMotionMotor.Resolve(
                 skill, ctx, t,
                 _verbData?.IFrameMsFor(skill.SkillId) ?? 0);
+        }
+
+        /// <summary>
+        /// F1: hareket planının i-frame'i (SkillMotionPlan.IframeMs) hareket başlarken açılır.
+        /// Donmayan pencere (PlayerDodgeRig.SkillIframe) — Stasis değil, oyuncu hareket eder.
+        /// </summary>
+        void ApplySkillMotionIframe(in SkillResolution skill, in SkillMotionPlan plan)
+        {
+            if (plan.IsEmpty || plan.IframeMs <= 0 || _player == null)
+                return;
+            PlayerDodgeRig rig = _player.GetComponent<PlayerDodgeRig>();
+            if (rig == null)
+                return;
+            rig.OpenSkillIframe(plan.IframeMs);
+            DebugConfig.DevLog($"[Mechanic] i-frame {skill.SkillId} {plan.Kind} {plan.IframeMs} ms");
         }
 
         void AnnotateMotion(SkillResolution skill, in SkillMotionPlan plan)

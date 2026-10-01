@@ -216,12 +216,17 @@ namespace Dovus.Game
             }
         }
 
-        /// <summary>mobility_cc.i_frame "minion_spawn_aninda" (11-10) — spawn anında kısa koruma.</summary>
+        /// <summary>
+        /// mobility_cc.i_frame "minion_spawn_aninda" (11-10) — spawn anında kısa koruma.
+        /// F1: eskiden Stasis'ti ve oyuncuyu ~0,3 sn donduruyordu (BlocksMovement + BlocksCast);
+        /// artık skill hareketleriyle aynı donmayan dokunulmazlık penceresi. Düşmana etkisi yok.
+        /// </summary>
         void ApplySpawnIFrame(in SkillResolution skill)
         {
             int ms = _verbData?.IFrameMsFor(skill.SkillId) ?? 0;
-            if (ms > 0 && _playerStatus != null)
-                _playerStatus.Board.Apply(StatusKind.Stasis, ms, 1f);
+            if (ms <= 0 || _player == null)
+                return;
+            _player.GetComponent<PlayerDodgeRig>()?.OpenSkillIframe(ms);
         }
 
         /// <summary>Minion vuruşu: ham hasar boru hattından (zırh, kritik, ölçek bir kez).</summary>

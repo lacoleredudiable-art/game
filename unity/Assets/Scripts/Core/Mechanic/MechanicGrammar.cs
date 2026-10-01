@@ -38,6 +38,7 @@ namespace Dovus.Core.Mechanic
             BuildVerb(p);
             ApplyWeapon(p, weapon);
             if (adjective > 0) ApplyAdjective(p);
+            ApplySkillDecoy(p);
             ResolveConflicts(p);
             MechanicLabeler.Label(p);
             FindContradictions(p);
@@ -621,6 +622,17 @@ namespace Dovus.Core.Mechanic
                     default: e.Modes.Add("iki_kez"); break;
                 }
             }
+        }
+
+        /// <summary>
+        /// JSON skill bayrağı decoy_aggro (D17, kullanıcı onaylı): yem/klon diye anlatılan skill
+        /// başladığın yerde 3-11 gibi dikkat çeken bir yem bırakır. Sıfat kuralı zaten yem verdiyse dokunmaz.
+        /// </summary>
+        void ApplySkillDecoy(MechanicPlan p)
+        {
+            if (p.Adjective <= 0 || !_r.SkillLeavesDecoy(p.Verb, p.Adjective) || p.Find("yem_kopya") != null)
+                return;
+            Add(p, "varlik", "yem_kopya", "kendin", 1, _r.Param("decoy_life_sec"), "dikkat_ceker");
         }
 
         void Surekli(MechanicPlan p)

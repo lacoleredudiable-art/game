@@ -71,6 +71,11 @@ namespace Dovus.Game
                 FeelVfx.FireCone(mouth, fwd, _boss.AttackArcHalfAngleDeg, _boss.AttackRadiusM);
                 SfxDirector.Play(SfxLibrary.BossFire);
             }
+            else if (kind == BossAttackKind.Volley)
+            {
+                // Mermiler kendi görünür; şok dalgası çizilmez.
+                SfxDirector.Play(SfxLibrary.BossFire);
+            }
             else
             {
                 FeelVfx.SlamImpact(_boss.AttackOrigin, _boss.AttackRadiusM);

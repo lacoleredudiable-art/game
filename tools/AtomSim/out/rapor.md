@@ -26,7 +26,7 @@ Kurallar: `docs/element-sistemi.json` → `mechanic_grammar`. Motor: `Core/Mecha
 - Küre = Top: 9
 - Top = Tılsım: 9
 
-- Özel mekanik etiketi olmayan (yalnız Delici/Seken/Dalga gibi genel desen): **463**
+- Özel mekanik etiketi olmayan (yalnız Delici/Seken/Dalga gibi genel desen): **442**
 
 ## Etiket sıklığı (1440 içinde)
 
@@ -44,6 +44,7 @@ Kurallar: `docs/element-sistemi.json` → `mechanic_grammar`. Motor: `Core/Mecha
 | Uzak yansıtıcı | 96 |
 | Delici | 50 |
 | Girdap | 50 |
+| Yem kopya | 50 |
 | Havaya atma | 40 |
 | Kıskaç | 40 |
 | Tuzak | 36 |
@@ -75,7 +76,6 @@ Kurallar: `docs/element-sistemi.json` → `mechanic_grammar`. Motor: `Core/Mecha
 | Görünmez geçiş | 10 |
 | Arkaya ışınlanma | 10 |
 | Portal | 10 |
-| Yem kopya | 10 |
 | Süzülme | 10 |
 | İçe çöküş | 10 |
 | Bağla çekme | 10 |
@@ -178,7 +178,7 @@ Kurallar: `docs/element-sistemi.json` → `mechanic_grammar`. Motor: `Core/Mecha
 - **4-8 Yükselen Savunma** — _Yükselen_ — kılıç yayı → küre 1.5m, önünde yay (katı, yerden yükselir, gücü artar, uyumsuz silah). Etkiler: kalkan→dost 40 [buyuyen]; hasar_buff→sen 0.1 3sn [yukselen]
 - **4-9 Odaklı Savunma** — _Koruyucu tetik, Güdümlü_ — kılıç yayı → küre 1.5m, önünde yay (katı, hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: kalkan→dost 46 [koruyucu_tetik]
 - **4-10 Aynalı Savunma** — _Ters kopya, Ayna eşli_ — kılıç yayı → küre 1.5m, önünde yay (katı, karşı noktada eşi, uyumsuz silah). Etkiler: kalkan→dost 40; can→düşman -12 [ters_kopya]; yansit→sen 0.3 2sn [ayna_sifati]
-- **4-11 Kopya Savunma** — _Çift_ — kılıç yayı → küre 1.5m, önünde yay (katı, 2 kez (kopya), uyumsuz silah). Etkiler: kalkan→dost 40 [iki_kez]
+- **4-11 Kopya Savunma** — _Yem kopya, Çift_ — kılıç yayı → küre 1.5m, önünde yay (katı, 2 kez (kopya), uyumsuz silah). Etkiler: kalkan→dost 40 [iki_kez]; yem_kopya→sen 1 2sn [dikkat_ceker]
 - **4-12 Akan Savunma** — _Akış_ — kılıç yayı → küre 1.5m, önünde yay (katı, sürekli akar, tik tik, uyumsuz silah). Etkiler: kalkan→dost 28 3sn [akis]
 
 ### 5 Patlama
@@ -258,7 +258,7 @@ Kurallar: `docs/element-sistemi.json` → `mechanic_grammar`. Motor: `Core/Mecha
 - **9-8 Yükselen Arındırma** — _Arınıp güçlenme, Yükselen_ — kılıç yayı → küre 3m, önünde yay (yerden yükselir, gücü artar). Etkiler: durum_sil→dost 1 [guce_cevir]; mermi_sil→düşman mermisi [yukselen_perde]; hasar_buff→sen 0.1 3sn [yukselen]
 - **9-9 Odaklı Arındırma** — _Tam arındırma, Güdümlü_ — kılıç yayı → küre 3m, önünde yay (hedefe kilitli, tek hedef). Etkiler: durum_sil→dost 99 [tumunu_sil]; mermi_sil→düşman mermisi [hedefli]
 - **9-10 Aynalı Arındırma** — _Buff silme, Mermi geri gönderme, Ayna eşli_ — kılıç yayı → küre 3m, önünde yay (karşı noktada eşi). Etkiler: iyi_durum_sil→düşman 1 [ters_hedef]; mermi_sil→düşman mermisi [geri_gonder]; yansit→sen 0.3 2sn [ayna_sifati]
-- **9-11 Kopya Arındırma** — _Çift_ — kılıç yayı → küre 3m, önünde yay (2 kez (kopya)). Etkiler: durum_sil→dost 1 [iki_kez]; mermi_sil→düşman mermisi [iki_kez]
+- **9-11 Kopya Arındırma** — _Yem kopya, Çift_ — kılıç yayı → küre 3m, önünde yay (2 kez (kopya)). Etkiler: durum_sil→dost 1 [iki_kez]; mermi_sil→düşman mermisi [iki_kez]; yem_kopya→sen 1 2sn [dikkat_ceker]
 - **9-12 Akan Arındırma** — _Akış_ — kılıç yayı → küre 3m, önünde yay (sürekli akar, tik tik). Etkiler: durum_sil→dost 1 [aura]; mermi_sil→düşman mermisi [surekli_perde]
 
 ### 10 Yansıma
@@ -270,11 +270,11 @@ Kurallar: `docs/element-sistemi.json` → `mechanic_grammar`. Motor: `Core/Mecha
 - **10-4 Sabit Yansıma** — _Ayna yüzey, Uzak yansıtıcı_ — kılıç yayı → küre 1.5m, önünde yay (yerinde çapalı, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [ayna_yuzey,dunyada,silahla:yay]
 - **10-5 Yayılan Yansıma** — _Uzak yansıtıcı, Dalga_ — kılıç yayı → küre 2.7m, önünde yay (dışa büyür, cephe geçerken, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [aura,dunyada,silahla:yay]
 - **10-6 Bağlayıcı Yansıma** — _Uzak yansıtıcı, Hasar yönlendirme, Bağ_ — kılıç yayı → bağ 1.5m, önünde yay (sen↔hedef bağı, tik tik, uyumsuz silah). Etkiler: yonlendir→düşman 0.5 2sn [bag,dunyada,silahla:yay]; hareket→düşman 1.5sn [bag_ucu]; hareket→düşman 0.7 2sn [bag_ucu,yavas]
-- **10-7 Bulandırıcı Yansıma** — _Sis, Uzak yansıtıcı_ — kılıç yayı → bulut 1.5m, önünde yay (sis hacmi, tik tik, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [dunyada,gizli,silahla:yay]; gizlen→dost 5sn [bulut_ici]; kor→düşman 0.3 5sn [bulut_ici]
+- **10-7 Bulandırıcı Yansıma** — _Yem kopya, Sis, Uzak yansıtıcı_ — kılıç yayı → bulut 1.5m, önünde yay (sis hacmi, tik tik, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [dunyada,gizli,silahla:yay]; gizlen→dost 5sn [bulut_ici]; kor→düşman 0.3 5sn [bulut_ici]; yem_kopya→sen 1 2sn [dikkat_ceker]
 - **10-8 Yükselen Yansıma** — _Uzak yansıtıcı, Yükselen_ — kılıç yayı → küre 1.5m, önünde yay (yerden yükselir, gücü artar, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [artan_oran,dunyada,silahla:yay]; hasar_buff→sen 0.1 3sn [yukselen]
 - **10-9 Odaklı Yansıma** — _Uzak yansıtıcı, Kusursuz savuşturma, Güdümlü_ — kılıç yayı → küre 1.5m, önünde yay (hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 1 2sn [dunyada,savusturma,silahla:yay]
 - **10-10 Aynalı Yansıma** — _Uzak yansıtıcı, Bölünen yansıma, Ayna eşli_ — kılıç yayı → küre 1.5m, önünde yay (karşı noktada eşi, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [bolunen,dunyada,silahla:yay]; yansit→sen 0.3 2sn [ayna_sifati]
-- **10-11 Kopya Yansıma** — _Uzak yansıtıcı, Çift_ — kılıç yayı → küre 1.5m, önünde yay (2 kez (kopya), uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [dunyada,iki_kez,silahla:yay]
+- **10-11 Kopya Yansıma** — _Yem kopya, Uzak yansıtıcı, Çift_ — kılıç yayı → küre 1.5m, önünde yay (2 kez (kopya), uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [dunyada,iki_kez,silahla:yay]; yem_kopya→sen 1 2sn [dikkat_ceker]
 - **10-12 Akan Yansıma** — _Uzak yansıtıcı, Akış_ — kılıç yayı → küre 1.5m, önünde yay (sürekli akar, tik tik, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 3sn [dunyada,silahla:yay,surekli]
 
 ### 11 Çağırma
@@ -372,7 +372,7 @@ Kurallar: `docs/element-sistemi.json` → `mechanic_grammar`. Motor: `Core/Mecha
 - **4-8 Yükselen Savunma** — _Yükselen_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (katı, yerden yükselir, gücü artar, uyumsuz silah). Etkiler: kalkan→dost 40 [buyuyen]; hasar_buff→sen 0.1 3sn [yukselen]
 - **4-9 Odaklı Savunma** — _Koruyucu tetik, Güdümlü_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (katı, hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: kalkan→dost 46 [koruyucu_tetik]
 - **4-10 Aynalı Savunma** — _Ters kopya, Ayna eşli_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (katı, karşı noktada eşi, uyumsuz silah). Etkiler: kalkan→dost 40; can→düşman -12 [ters_kopya]; yansit→sen 0.3 2sn [ayna_sifati]
-- **4-11 Kopya Savunma** — _Çift_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (katı, 2 kez (kopya), uyumsuz silah). Etkiler: kalkan→dost 40 [iki_kez]
+- **4-11 Kopya Savunma** — _Yem kopya, Çift_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (katı, 2 kez (kopya), uyumsuz silah). Etkiler: kalkan→dost 40 [iki_kez]; yem_kopya→sen 1 2sn [dikkat_ceker]
 - **4-12 Akan Savunma** — _İnen akış alanı, Akış_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (katı, sürekli akar, tik tik, uyumsuz silah). Etkiler: kalkan→dost 28 3sn [akis]
 
 ### 5 Patlama
@@ -452,7 +452,7 @@ Kurallar: `docs/element-sistemi.json` → `mechanic_grammar`. Motor: `Core/Mecha
 - **9-8 Yükselen Arındırma** — _Arınıp güçlenme, Yükselen_ — top mermisi (yay çizip düşer) → küre 2.5m, hedef noktada (yerden yükselir, gücü artar, uyumsuz silah). Etkiler: durum_sil→dost 1 [guce_cevir]; mermi_sil→düşman mermisi [yukselen_perde]; hasar_buff→sen 0.1 3sn [yukselen]
 - **9-9 Odaklı Arındırma** — _Tam arındırma, Güdümlü_ — top mermisi (yay çizip düşer) → küre 2.5m, hedef noktada (hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: durum_sil→dost 99 [tumunu_sil]; mermi_sil→düşman mermisi [hedefli]
 - **9-10 Aynalı Arındırma** — _Buff silme, Mermi geri gönderme, Ayna eşli_ — top mermisi (yay çizip düşer) → küre 2.5m, hedef noktada (karşı noktada eşi, uyumsuz silah). Etkiler: iyi_durum_sil→düşman 1 [ters_hedef]; mermi_sil→düşman mermisi [geri_gonder]; yansit→sen 0.3 2sn [ayna_sifati]
-- **9-11 Kopya Arındırma** — _Çift_ — top mermisi (yay çizip düşer) → küre 2.5m, hedef noktada (2 kez (kopya), uyumsuz silah). Etkiler: durum_sil→dost 1 [iki_kez]; mermi_sil→düşman mermisi [iki_kez]
+- **9-11 Kopya Arındırma** — _Yem kopya, Çift_ — top mermisi (yay çizip düşer) → küre 2.5m, hedef noktada (2 kez (kopya), uyumsuz silah). Etkiler: durum_sil→dost 1 [iki_kez]; mermi_sil→düşman mermisi [iki_kez]; yem_kopya→sen 1 2sn [dikkat_ceker]
 - **9-12 Akan Arındırma** — _İnen akış alanı, Akış_ — top mermisi (yay çizip düşer) → küre 2.5m, hedef noktada (sürekli akar, tik tik, uyumsuz silah). Etkiler: durum_sil→dost 1 [aura]; mermi_sil→düşman mermisi [surekli_perde]
 
 ### 10 Yansıma
@@ -464,11 +464,11 @@ Kurallar: `docs/element-sistemi.json` → `mechanic_grammar`. Motor: `Core/Mecha
 - **10-4 Sabit Yansıma** — _Ayna yüzey, Uzak yansıtıcı_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (yerinde çapalı, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [ayna_yuzey,dunyada,silahla:ucan]
 - **10-5 Yayılan Yansıma** — _Uzak yansıtıcı, Dalga_ — top mermisi (yay çizip düşer) → küre 2.7m, hedef noktada (dışa büyür, cephe geçerken, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [aura,dunyada,silahla:ucan]
 - **10-6 Bağlayıcı Yansıma** — _Uzak yansıtıcı, Hasar yönlendirme, Bağ_ — top mermisi (yay çizip düşer) → bağ 1.5m, hedef noktada (sen↔hedef bağı, tik tik, uyumsuz silah). Etkiler: yonlendir→düşman 0.5 2sn [bag,dunyada,silahla:ucan]; hareket→düşman 1.5sn [bag_ucu]; hareket→düşman 0.7 2sn [bag_ucu,yavas]
-- **10-7 Bulandırıcı Yansıma** — _Sis, Uzak yansıtıcı_ — top mermisi (yay çizip düşer) → bulut 1.5m, hedef noktada (sis hacmi, tik tik, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [dunyada,gizli,silahla:ucan]; gizlen→dost 5sn [bulut_ici]; kor→düşman 0.3 5sn [bulut_ici]
+- **10-7 Bulandırıcı Yansıma** — _Yem kopya, Sis, Uzak yansıtıcı_ — top mermisi (yay çizip düşer) → bulut 1.5m, hedef noktada (sis hacmi, tik tik, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [dunyada,gizli,silahla:ucan]; gizlen→dost 5sn [bulut_ici]; kor→düşman 0.3 5sn [bulut_ici]; yem_kopya→sen 1 2sn [dikkat_ceker]
 - **10-8 Yükselen Yansıma** — _Uzak yansıtıcı, Yükselen_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (yerden yükselir, gücü artar, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [artan_oran,dunyada,silahla:ucan]; hasar_buff→sen 0.1 3sn [yukselen]
 - **10-9 Odaklı Yansıma** — _Uzak yansıtıcı, Kusursuz savuşturma, Güdümlü_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (hedefe kilitli, tek hedef, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 1 2sn [dunyada,savusturma,silahla:ucan]
 - **10-10 Aynalı Yansıma** — _Uzak yansıtıcı, Bölünen yansıma, Ayna eşli_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (karşı noktada eşi, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [bolunen,dunyada,silahla:ucan]; yansit→sen 0.3 2sn [ayna_sifati]
-- **10-11 Kopya Yansıma** — _Uzak yansıtıcı, Çift_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (2 kez (kopya), uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [dunyada,iki_kez,silahla:ucan]
+- **10-11 Kopya Yansıma** — _Yem kopya, Uzak yansıtıcı, Çift_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (2 kez (kopya), uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 2sn [dunyada,iki_kez,silahla:ucan]; yem_kopya→sen 1 2sn [dikkat_ceker]
 - **10-12 Akan Yansıma** — _Uzak yansıtıcı, İnen akış alanı, Akış_ — top mermisi (yay çizip düşer) → küre 1.5m, hedef noktada (sürekli akar, tik tik, uyumsuz silah). Etkiler: yansit→gövdenin olduğu yer 0.5 3sn [dunyada,silahla:ucan,surekli]
 
 ### 11 Çağırma
@@ -625,7 +625,6 @@ Kurallar: `docs/element-sistemi.json` → `mechanic_grammar`. Motor: `Core/Mecha
 - 1-6 Bağlayıcı Saldırı: 9 silah — _Bağ_
 - 1-9 Odaklı Saldırı: 9 silah — _Güdümlü_
 - 10-1 Yoğun Yansıma: 1 silah — _Sert_
-- 10-11 Kopya Yansıma: 1 silah — _Çift_
 - 10-12 Akan Yansıma: 1 silah — _Akış_
 - 10-3 Sıçrayan Yansıma: 1 silah — _Seken_
 - 10-5 Yayılan Yansıma: 1 silah — _Dalga_
@@ -641,7 +640,6 @@ Kurallar: `docs/element-sistemi.json` → `mechanic_grammar`. Motor: `Core/Mecha
 - 2-3 Sıçrayan İyileştirme: 10 silah — _Seken_
 - 2-5 Yayılan İyileştirme: 10 silah — _Dalga_
 - 2-8 Yükselen İyileştirme: 10 silah — _Yükselen_
-- 4-11 Kopya Savunma: 10 silah — _Çift_
 - 4-12 Akan Savunma: 9 silah — _Akış_
 - 4-3 Sıçrayan Savunma: 10 silah — _Seken_
 - 4-5 Yayılan Savunma: 10 silah — _Dalga_
@@ -667,7 +665,6 @@ Kurallar: `docs/element-sistemi.json` → `mechanic_grammar`. Motor: `Core/Mecha
 - 8-5 Yayılan Güçlendirme: 10 silah — _Dalga_
 - 8-8 Yükselen Güçlendirme: 10 silah — _Yükselen_
 - 9-1 Yoğun Arındırma: 10 silah — _Sert_
-- 9-11 Kopya Arındırma: 10 silah — _Çift_
 - 9-12 Akan Arındırma: 9 silah — _Akış_
 - 9-3 Sıçrayan Arındırma: 10 silah — _Seken_
 - 9-5 Yayılan Arındırma: 10 silah — _Dalga_

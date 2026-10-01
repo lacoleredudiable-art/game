@@ -292,6 +292,7 @@ namespace Dovus.Game
             }
             if (JsonEffectRules.LiftsBoss(plan))
                 LiftBoss(applied);
+            ProjectileEraseOnHit(plan, center);
             if (applied.Count > 0)
                 DebugConfig.DevLog($"[Mechanic] isabet {plan.SkillId}/{plan.WeaponName}: {string.Join(", ", applied)}");
         }
@@ -323,6 +324,7 @@ namespace Dovus.Game
             }
             TickPortals(worldMs);
             TickMechanicWorld(worldMs);
+            TickProjectileErase(worldMs);
             TickJsonEffects(worldMs);
         }
 

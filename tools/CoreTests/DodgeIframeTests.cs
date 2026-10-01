@@ -15,10 +15,10 @@ public class DodgeIframeTests
         dodge.Begin(1000);
 
         Assert.That(tuning.IframeStartMs, Is.EqualTo(0));
-        Assert.That(tuning.IframeMs, Is.EqualTo(300));
+        Assert.That(tuning.IframeMs, Is.EqualTo(260));
         Assert.That(dodge.IsInvulnerable(1000), Is.True);
-        Assert.That(dodge.IsInvulnerable(1299), Is.True);
-        Assert.That(dodge.IsInvulnerable(1300), Is.False);
+        Assert.That(dodge.IsInvulnerable(1259), Is.True);
+        Assert.That(dodge.IsInvulnerable(1260), Is.False);
         Assert.That(dodge.IsInvulnerable(999), Is.False);
     }
 

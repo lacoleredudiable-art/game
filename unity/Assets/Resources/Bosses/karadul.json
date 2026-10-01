@@ -28,18 +28,17 @@
         "phase": 1,
         "name": "Uyanış",
         "range": [100, 50],
-        "attacks": ["slam"],
+        "attacks": ["slam", "volley"],
         "mandatory": [],
-        "notes": "Mevcut BossDirector: YAKIN / GEÇ / GENİŞ. Bir ıskalanan çakma ≈ ölüm (Damage 22 = PlayerMaxHp 22)."
+        "notes": "BossDirector: Yere Çakma (YAKIN / GEÇ / GENİŞ) + Zehir Tükürüğü (3 mermi). Bir ıskalanan çakma ≈ ölüm (Damage 22 = PlayerMaxHp 22)."
       },
       {
         "phase": 2,
         "name": "Öfke",
         "range": [50, 0],
-        "attacks": ["slam"],
+        "attacks": ["slam", "fire_cone", "volley"],
         "mandatory": [],
-        "future_attacks": ["fire_cone"],
-        "notes": "fire_cone henüz motor yok — Cehennem Nefesi (can_yakma) fiiline map edilecek."
+        "notes": "Öfke: Cehennem Nefesi (fire_cone) açılır, Zehir Tükürüğü 5 mermi (count_enraged)."
       }
     ]
   },
@@ -64,11 +63,26 @@
       "verb_id": "can_yakma",
       "adjective_id": "yakicilik",
       "animation_type": "melee_punch",
-      "implemented": false,
+      "implemented": true,
       "windup_ms": 800,
       "damage": 18,
       "hitbox": "cone",
       "mechanics": ["grievous_wounds", "burn"]
+    },
+    {
+      "id": "volley",
+      "name": "Zehir Tükürüğü",
+      "animation_type": "cast_projectile",
+      "implemented": true,
+      "windup_ms": 700,
+      "count": 3,
+      "count_enraged": 5,
+      "spread_deg": 30,
+      "speed_mps": 7,
+      "damage": 6,
+      "radius_m": 0.35,
+      "life_sec": 3,
+      "notes": "Hedefe (oyuncu / dost / yem) yelpaze mermi; hacim testi yok. Körlük yelpazeyi %50 açar. Dodge i-frame ve skill i-frame mermiyi geçirir; 9-x mermi_sil skill'leri siler/yutar/geri gönderir."
     },
     {
       "id": "shadow_cut",

@@ -26,6 +26,27 @@ namespace Dovus.Game
 
         public NextHitBuff NextHit => _nextHit;
 
+        /// <summary>
+        /// Skill hareketi / çağırma anı dokunulmazlığı (F1): 3-7 dash 400 ms, ışınlanma 220 ms,
+        /// 11-10 çağırma anı... Stasis değil — oyuncu donmaz, yalnız pencere içindeki vuruş yutulur.
+        /// </summary>
+        public SkillIframeWindow SkillIframe { get; } = new SkillIframeWindow();
+
+        public void OpenSkillIframe(int durationMs)
+        {
+            if (durationMs > 0)
+                SkillIframe.Open(WorldMs(), durationMs);
+        }
+
+        public bool IsSkillInvulnerable => SkillIframe.IsActive(WorldMs());
+
+        /// <summary>Dodge ya da skill i-frame'i açık mı (mermi bunu okur; mükemmel sıyırma ödülü vermez).</summary>
+        public static bool IsInvulnerableNow(Component host)
+        {
+            PlayerDodgeRig rig = host != null ? host.GetComponent<PlayerDodgeRig>() : null;
+            return rig != null && (rig.IsInvulnerable || rig.IsSkillInvulnerable);
+        }
+
         public void Bind(
             GameClock clock,
             HexagonInput input,
@@ -65,7 +86,10 @@ namespace Dovus.Game
             if (host == null || !dodgeable)
                 return false;
             PlayerDodgeRig rig = host.GetComponent<PlayerDodgeRig>();
-            return rig != null && rig.TryAbsorbHit();
+            if (rig == null)
+                return false;
+            // Skill i-frame'i ödülsüz yutar; dodge penceresi mükemmel sıyırmayı burada değerlendirir.
+            return rig.TryAbsorbHit() || rig.IsSkillInvulnerable;
         }
 
         /// <summary>Hasar borusu oyuncunun sıradaki vuruşunda bir kez çarpar. İkinci çağrı 1.</summary>

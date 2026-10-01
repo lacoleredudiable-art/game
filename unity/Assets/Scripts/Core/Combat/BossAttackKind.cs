@@ -8,6 +8,8 @@ namespace Dovus.Core.Combat
     public enum BossAttackKind
     {
         Slam,
-        FireCone
+        FireCone,
+        /// <summary>Zehir Tükürüğü (karadul.json "volley"): hedefe yelpaze mermi; hacim testi yok.</summary>
+        Volley
     }
 }
