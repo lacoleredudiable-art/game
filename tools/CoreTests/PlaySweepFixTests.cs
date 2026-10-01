@@ -264,7 +264,7 @@ public class PlaySweepFixTests
         Assert.That(MotionAnimTable.IsKnown(LocoBlend.DashFastKey), Is.True);
         MotionAnimClip clip = _catalog.Anims.Resolve(LocoBlend.DashFastKey, 0, 0);
         Assert.That(clip.Fallback, Is.False);
-        Assert.That(clip.State, Is.EqualTo("CastPierce"));
+        Assert.That(clip.State, Is.EqualTo("Dodge"));
     }
 
     [Test]

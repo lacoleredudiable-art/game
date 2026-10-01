@@ -162,19 +162,20 @@ namespace Dovus.Core.Motion
 
         static List<Row> DefaultRows()
         {
+            // O-anim(c): JSON anim_bridge ile birebir — bkz. tools/build-motion-templates.py.
             var rows = new List<Row>();
             Add(rows, "windup", "CastPierce");
             Add(rows, "lunge", "BasicStrike");
-            Add(rows, "dash", "Locomotion");
-            Add(rows, "backstep", "Locomotion");
-            Add(rows, "sidestep", "Locomotion");
-            Add(rows, "spin", "CastSweep");
-            Add(rows, "leap", "CastSlam");
-            Add(rows, "land", "CastSlam");
-            Add(rows, "hook_throw", "CastShoot");
+            Add(rows, "dash", "Dodge");
+            Add(rows, "backstep", "Backstep");
+            Add(rows, "sidestep", "Sidestep");
+            Add(rows, "spin", "Spin");
+            Add(rows, "leap", "JumpAttack");
+            Add(rows, "land", "JumpAttack");
+            Add(rows, "hook_throw", "Throw");
             Add(rows, "recover", "Locomotion");
             Add(rows, "cast", "CastChannel");
-            Add(rows, "dash_fast", "CastPierce");
+            Add(rows, "dash_fast", "Dodge");
             return rows;
         }
 

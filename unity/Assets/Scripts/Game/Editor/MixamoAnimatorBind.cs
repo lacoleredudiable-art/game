@@ -22,11 +22,16 @@ namespace Dovus.Game.EditorTools
         const string PlayerDir = MixamoDir + "/Player";
         const string BossDir = MixamoDir + "/Boss";
         const string OutDir = "Assets/Art/Mixamo/Animators";
-        const string PlayerCtrl = OutDir + "/Player_Synty.controller";
+        internal const string PlayerCtrl = OutDir + "/Player_Synty.controller";
         const string BossCtrl = OutDir + "/Boss_Synty.controller";
         const string UpperBodyMask = OutDir + "/UpperBody.mask";
         const string PlayerVisual = "Assets/Art/Synty/Prefabs/PlayerVisual_Synty.prefab";
         const string BossVisualPrefab = "Assets/Art/Synty/Prefabs/BossVisual_Synty.prefab";
+
+        // O-anim(c): "sakin" his — aksiyondan dönüş geçişi. Hold durumlarında (CastChannel/
+        // CastGuard) ayrıca HoldReturnSec kullanılır ("~0,2 sn döngüden lokomosyona").
+        const float ActionReturnSec = 0.15f;
+        const float HoldReturnSec = 0.2f;
 
         [MenuItem("Dovus/Synty/Bind Mixamo Animator")]
         public static void Bind()
@@ -50,6 +55,7 @@ namespace Dovus.Game.EditorTools
             BuildPlayerController(new ClipSource(player, shared));
             AlignPlayerLocoFeet();
             BuildBossController(new ClipSource(boss, shared));
+            string archetypeLog = MixamoArchetypeBind.Build();
 
             AssignController(PlayerVisual, PlayerCtrl);
             AssignController(BossVisualPrefab, BossCtrl);
@@ -57,6 +63,8 @@ namespace Dovus.Game.EditorTools
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log($"[MixamoBind] OK — shared={shared.Count} player={player.Count} boss={boss.Count} clip.");
+            if (!string.IsNullOrEmpty(archetypeLog))
+                Debug.Log("[MixamoBind] arketip override:\n" + archetypeLog);
         }
 
         /// <summary>Rol klasörü önce, ortak klasör sonra.</summary>
@@ -102,8 +110,25 @@ namespace Dovus.Game.EditorTools
             AnimationClip strikeB = c.PickPrimary("strike b", "slash 2", "attack 2") ?? sweep;
             AnimationClip strikeC = c.PickPrimary("strike c", "slash 3", "attack 3") ?? slam;
 
+            // O-anim(c): yeni hareket anahtarı state'leri (bkz. tools/build-motion-templates.py
+            // anim_bridge) — klipler arketip havuzundan (Mixamo/Archetypes), temelde ortak klip yok.
+            // Shared_Dodge_Backward/Shared_Dodge_Left henüz hiçbir tools/mixamo-jobs listesinde değil;
+            // bulunamazsa state klipsiz kalır (HasState true, motion null — hata değil).
+            Dictionary<string, AnimationClip> archetypeClips = MixamoArchetypeBind.CollectAllArchetypeClips();
+            archetypeClips.TryGetValue("Shared_Dodge_Backward", out AnimationClip backstep);
+            archetypeClips.TryGetValue("Shared_Dodge_Left", out AnimationClip sidestep);
+            archetypeClips.TryGetValue("Hammer_JumpAttack", out AnimationClip jumpAttack);
+            archetypeClips.TryGetValue("Hammer_Spin", out AnimationClip spin);
+            archetypeClips.TryGetValue("Shared_Throw", out AnimationClip throwClip);
+
+            Debug.Log($"[MixamoBind] CastPierce temel klip={pierce?.name ?? "yok"} CastSweep temel klip={sweep?.name ?? "yok"}");
+
             var ac = LoadOrCreate(PlayerCtrl);
             EnsureParam(ac, "Speed", AnimatorControllerParameterType.Float);
+            // O-anim(c): CastChannel/CastGuard döngü (hold) sinyali — ManifestationDirector.TickCastHold
+            // her kare bu bool'ları yazar, binder'daki dönüş geçişi bunlar false olmadan tetiklenmez.
+            EnsureParam(ac, ActorVisual.ParamChannelHold, AnimatorControllerParameterType.Bool);
+            EnsureParam(ac, ActorVisual.ParamGuardHold, AnimatorControllerParameterType.Bool);
 
             var sm = ResetBaseLayer(ac);
             var loco = sm.AddState("Locomotion", new Vector3(300, 0, 0));
@@ -133,18 +158,28 @@ namespace Dovus.Game.EditorTools
             Debug.Log($"[MixamoBind] locomotion zemin hızı (model/sn): yürüme={walkSpeed:F2} koşu={runSpeed:F2} ölçüldü={measured}");
             sm.defaultState = loco;
 
-            AddActionState(sm, "Dodge", dodge, 300, 80, 0.85f, 0.06f);
-            AddActionState(sm, "Hit", hit, 300, 160, 0.8f, 0.1f);
-            AddActionState(sm, "CastPierce", pierce, 520, 0, 0.8f, 0.1f);
-            AddActionState(sm, "CastSweep", sweep, 520, 80, 0.8f, 0.1f);
-            AddActionState(sm, "CastSlam", slam, 520, 160, 0.8f, 0.1f);
-            AddActionState(sm, "CastChannel", channel, 520, 240, 0.8f, 0.12f);
-            AddActionState(sm, "CastGuard", guard, 520, 320, 0.8f, 0.12f);
-            AddActionState(sm, "CastShoot", shoot, 520, 400, 0.8f, 0.1f);
+            AddActionState(sm, "Dodge", dodge, 300, 80, 0.85f, ActionReturnSec);
+            AddActionState(sm, "Hit", hit, 300, 160, 0.8f, ActionReturnSec);
+            AddActionState(sm, "CastPierce", pierce, 520, 0, 0.8f, ActionReturnSec);
+            AddActionState(sm, "CastSweep", sweep, 520, 80, 0.8f, ActionReturnSec);
+            AddActionState(sm, "CastSlam", slam, 520, 160, 0.8f, ActionReturnSec);
+            // Hold: ChannelHold/GuardHold true iken dönüş geçişi kilitli (bkz. AddActionState holdParam).
+            AddActionState(sm, "CastChannel", channel, 520, 240, 0.8f, HoldReturnSec, ActorVisual.ParamChannelHold);
+            AddActionState(sm, "CastGuard", guard, 520, 320, 0.8f, HoldReturnSec, ActorVisual.ParamGuardHold);
+            AddActionState(sm, "CastShoot", shoot, 520, 400, 0.8f, ActionReturnSec);
             AddActionState(sm, "Death", death, 300, 240, -1f, 0f);
-            AddActionState(sm, "BasicStrike", strikeA, 740, 0, 0.78f, 0.08f);
-            AddActionState(sm, "BasicStrikeB", strikeB, 740, 80, 0.78f, 0.08f);
-            AddActionState(sm, "BasicStrikeC", strikeC, 740, 160, 0.78f, 0.08f);
+            AddActionState(sm, "BasicStrike", strikeA, 740, 0, 0.78f, ActionReturnSec);
+            AddActionState(sm, "BasicStrikeB", strikeB, 740, 80, 0.78f, ActionReturnSec);
+            AddActionState(sm, "BasicStrikeC", strikeC, 740, 160, 0.78f, ActionReturnSec);
+
+            // O-anim(c): hareket anahtarı state'leri — Dodge gibi tek gövde, Upper kopyası yok
+            // (motion template zaten gövdeyi taşır, bkz. AGENTS "tek hareket sistemi").
+            AddActionState(sm, "Backstep", backstep, 300, 400, 0.85f, ActionReturnSec);
+            AddActionState(sm, "Sidestep", sidestep, 300, 480, 0.85f, ActionReturnSec);
+            AddMirroredState(sm, "SidestepRight", sidestep, 300, 560, 0.85f, ActionReturnSec);
+            AddActionState(sm, "JumpAttack", jumpAttack, 300, 640, 0.85f, ActionReturnSec);
+            AddActionState(sm, "Spin", spin, 300, 720, 0.85f, ActionReturnSec);
+            AddActionState(sm, "Throw", throwClip, 300, 800, 0.85f, ActionReturnSec);
 
             BuildUpperBodyLayer(ac, pierce, sweep, slam, channel, guard, shoot, strikeA, strikeB, strikeC);
             EditorUtility.SetDirty(ac);
@@ -193,8 +228,14 @@ namespace Dovus.Game.EditorTools
                 var back = st.AddTransition(empty);
                 back.hasExitTime = true;
                 back.exitTime = 0.85f;
-                back.duration = 0.12f;
+                // Hold karşılığı üst gövde: CastChannel/CastGuard taşırken de aynı kilit uygulanır.
+                string holdParam = names[i] == "UpperCastChannel" ? ActorVisual.ParamChannelHold
+                    : names[i] == "UpperCastGuard" ? ActorVisual.ParamGuardHold
+                    : null;
+                back.duration = holdParam != null ? HoldReturnSec : ActionReturnSec;
                 back.hasFixedDuration = true;
+                if (holdParam != null)
+                    back.AddCondition(AnimatorConditionMode.IfNot, 0, holdParam);
             }
 
             layers.Add(new AnimatorControllerLayer
@@ -506,12 +547,34 @@ namespace Dovus.Game.EditorTools
         }
 
         static void AddActionState(AnimatorStateMachine sm, string name, AnimationClip clip, float x, float y,
-            float exitTime, float blendSec)
+            float exitTime, float blendSec, string holdParam = null)
         {
             var st = sm.AddState(name, new Vector3(x, y, 0));
             st.motion = clip;
             if (exitTime <= 0f)
                 return;
+            var toLoco = st.AddTransition(sm.defaultState);
+            toLoco.hasExitTime = true;
+            toLoco.exitTime = exitTime;
+            toLoco.duration = blendSec;
+            toLoco.hasFixedDuration = true;
+            // Hold sinyali true iken dönüşü engeller: klip Loop Time olduğundan her turda tekrar
+            // dener, sinyal bitince (false) ilk uygun turda ~blendSec'le lokomosyona döner.
+            if (!string.IsNullOrEmpty(holdParam))
+                toLoco.AddCondition(AnimatorConditionMode.IfNot, 0, holdParam);
+        }
+
+        /// <summary>
+        /// O-anim(c): sağ yön klibi yok — humanoid mirror ile aynı sol klip ters oynar
+        /// (<see cref="ActorVisual.DriveMotion"/> blend.Strafe &gt; 0'da bu state'i seçer).
+        /// </summary>
+        static void AddMirroredState(AnimatorStateMachine sm, string name, AnimationClip clip, float x, float y,
+            float exitTime, float blendSec)
+        {
+            var st = sm.AddState(name, new Vector3(x, y, 0));
+            st.motion = clip;
+            st.mirrorParameterActive = false;
+            st.mirror = true;
             var toLoco = st.AddTransition(sm.defaultState);
             toLoco.hasExitTime = true;
             toLoco.exitTime = exitTime;
@@ -537,6 +600,11 @@ namespace Dovus.Game.EditorTools
             }
             ac.AddParameter(new AnimatorControllerParameter { name = name, type = type, defaultFloat = defaultFloat });
         }
+
+        /// <summary>O-anim(c): CastChannel/CastGuard hold klipleri — döngü isteyen tek seferlik olmayan klipler.</summary>
+        static bool IsHoldClipName(string fileName) =>
+            fileName is "Player_Block_Hold" or "SS_Block" or "Fist_Block"
+                or "Player_Spell_Cast" or "Caster_2H_Cast" or "Bow_Draw";
 
         static void ForceHumanoidOnMixamoFbxs()
         {
@@ -568,7 +636,10 @@ namespace Dovus.Game.EditorTools
                 // gelir; runtime (BossVisual/ActorVisual) klibi adıyla bulabilsin diye dosya adı verilir.
                 string fileName = Path.GetFileNameWithoutExtension(path);
                 string lower = fileName.ToLowerInvariant();
-                bool loop = lower.Contains("idle") || lower.Contains("walk") || lower.Contains("run");
+                // O-anim(c): basılı/kanal tutuş klipleri de döngü — sürdürülen cast/kalkan sinyali
+                // kesilene kadar Animator'da döner (bkz. ActorVisual.SetHoldFlags).
+                bool loop = lower.Contains("idle") || lower.Contains("walk") || lower.Contains("run")
+                    || IsHoldClipName(fileName);
                 // Oyuncu locomotion'ı yerinde oynar: kök dönüşü (gövde yönüne göre), yüksekliği ve XZ'si
                 // poza gömülür; yön farkını AlignPlayerLocoFeet ölçüp rotationOffset'e yazar. Bu Mixamo
                 // dosyalarında "Original" kök gövdeye göre ~42° dönük (duruşta bile ayaklar yana bakıyor).

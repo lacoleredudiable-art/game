@@ -436,6 +436,8 @@ namespace Dovus.Game
                 _engine.SentenceCompleted += OnSentenceCompleted;
                 _hooked = true;
             }
+            // Açılış görseli: elde silah + arketip controller ilk kareden doğru olsun.
+            SyncVisualDelivery();
         }
 
         public void BindTargeting(PlayerTargeting targeting)
@@ -545,10 +547,25 @@ namespace Dovus.Game
             TickPassives(worldMs);
             SyncPlayerStateMachine(worldMs);
             TickWeaponSwap(worldMs);
+            TickCastHold(worldMs);
             TickDelayedLaunches(worldMs);
             TickTemplateDelivery(worldMs);
             TickMechanics(worldMs);
             _animationBridge.Tick(worldMs);
+        }
+
+        /// <summary>
+        /// O-anim(c): CastChannel/CastGuard döngü (hold) sinyali — var olan sürdürülen cast
+        /// (<see cref="SustainedSkillActive"/>) ve kalkan (ShieldRemaining) durumlarından okunur,
+        /// yeni oyun durumu eklenmez. Binder bu bool'ları Animator koşullarına bağlar.
+        /// </summary>
+        void TickCastHold(double worldMs)
+        {
+            if (_visual == null)
+                return;
+            bool channelHeld = SustainedSkillActive(worldMs);
+            bool guardHeld = _playerStatus != null && _playerStatus.Board.ShieldRemaining > 0.01f;
+            _visual.SetHoldFlags(channelHeld, guardHeld);
         }
 
         // --- Pasifler (Bağlama 5) ---

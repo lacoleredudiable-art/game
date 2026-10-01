@@ -22,6 +22,7 @@ namespace Dovus.Game
                 return;
             _visual.RangedDelivery = _equippedWeapon != null
                 && string.Equals(_equippedWeapon.Type, "ranged", System.StringComparison.Ordinal);
+            _visual.SetWeapon(_equippedWeapon != null ? _equippedWeapon.AnimationsKey : string.Empty);
             if (_animationBridge.StatePlayer == null)
                 _animationBridge.StatePlayer = _visual.PlayAction;
         }

@@ -17,6 +17,10 @@ namespace Dovus.Game
         public const string ParamLocoPlayback = "LocoPlayback";
         /// <summary>Koşu klibinin ölçülmüş zemin hızı (model birimi/sn); binder klipten yazar.</summary>
         public const string ParamLocoRunSpeed = "LocoRunSpeed";
+        /// <summary>O-anim(c): CastChannel döngüsü sürerken true — binder'daki dönüş geçişini kilitler.</summary>
+        public const string ParamChannelHold = "ChannelHold";
+        /// <summary>O-anim(c): CastGuard (blok) döngüsü sürerken true — binder'daki dönüş geçişini kilitler.</summary>
+        public const string ParamGuardHold = "GuardHold";
         public const string ParamForward = "Forward";
         public const string ParamStrafe = "Strafe";
         public const string ParamFocus = "Focus";
@@ -113,6 +117,9 @@ namespace Dovus.Game
             _animator = animator;
             _upperLayer = -2;
             _hideWhenVisualPresent = hideWhenPresent;
+            _baseController = animator != null ? animator.runtimeAnimatorController : null;
+            _currentWeaponKey = null;
+            _handProps = null;
             if (_animator != null && _hideWhenVisualPresent != null)
             {
                 for (int i = 0; i < _hideWhenVisualPresent.Length; i++)
@@ -121,6 +128,73 @@ namespace Dovus.Game
                         _hideWhenVisualPresent[i].enabled = false;
                 }
             }
+        }
+
+        // --- Silah arketipi: controller override (sunum) --------------------------------------
+
+        RuntimeAnimatorController _baseController;
+        WeaponVisualRegistry _weaponRegistry;
+        bool _weaponRegistryLoaded;
+        string _currentWeaponKey;
+        WeaponHandProps _handProps;
+
+        /// <summary>Ağır silah arketiplerinde (Çekiç/Top) donuk his: temel hız çarpanı.</summary>
+        const float HeavyAnimSpeed = 0.9f;
+
+        /// <summary>
+        /// docs/element-sistemi.json weapons[].animations_key — arketip override controller'ını
+        /// uygular (yoksa temel controller'da kalır, hata yok — Mixamo override'lar bu PC dışında
+        /// gitignored olduğundan boş olabilir). İdempotent: aynı anahtar tekrar gelirse no-op.
+        /// </summary>
+        public void SetWeapon(string animationsKey)
+        {
+            animationsKey ??= string.Empty;
+            if (string.Equals(_currentWeaponKey, animationsKey, System.StringComparison.Ordinal))
+                return;
+            _currentWeaponKey = animationsKey;
+
+            if (!_weaponRegistryLoaded)
+            {
+                _weaponRegistry = Resources.Load<WeaponVisualRegistry>("Animation/WeaponVisualRegistry");
+                _weaponRegistryLoaded = true;
+            }
+
+            string archetype = WeaponArchetypeMap.ArchetypeFor(animationsKey);
+            ApplyArchetypeController(archetype);
+
+            float speed = archetype is WeaponArchetypeMap.Hammer or WeaponArchetypeMap.Gun ? HeavyAnimSpeed : 1f;
+            if (_animator != null)
+                _animator.speed = speed;
+            _savedAnimatorSpeed = speed;
+
+            ApplyHandProps(animationsKey);
+        }
+
+        /// <summary>Elde silah prop'u: sağ/sol el kemiğine takılı mesh, SetWeapon ile birlikte değişir.</summary>
+        void ApplyHandProps(string animationsKey)
+        {
+            if (_animator == null)
+                return;
+            if (_handProps == null)
+                _handProps = _animator.GetComponent<WeaponHandProps>();
+            if (_handProps == null)
+                _handProps = _animator.gameObject.AddComponent<WeaponHandProps>();
+            _handProps.Apply(animationsKey);
+        }
+
+        void ApplyArchetypeController(string archetypeKey)
+        {
+            if (_animator == null)
+                return;
+            RuntimeAnimatorController ctrl = _weaponRegistry != null
+                ? _weaponRegistry.FindOverride(archetypeKey)
+                : null;
+            RuntimeAnimatorController target = ctrl != null ? ctrl : _baseController;
+            if (_animator.runtimeAnimatorController == target)
+                return;
+            _animator.runtimeAnimatorController = target;
+            _upperLayer = -2;
+            _motionKey = string.Empty;
         }
 
         public void PulseRune(Rune rune, EffectSilhouette silhouette)
@@ -403,7 +477,22 @@ namespace Dovus.Game
                 return;
             _motionKey = playKey ?? string.Empty;
             MotionAnimClip clip = (table ?? MotionAnimTable.BuiltIn).Resolve(_motionKey, weaponKey, verbId);
+            clip = ApplySidestepMirror(clip, blend.Strafe);
             PlayMotionClip(clip, animSpeed, spin);
+        }
+
+        /// <summary>
+        /// O-anim(c): yön zaten blend.Strafe'de ucuzca bilindiğinden "Sidestep" tek klibi sağa
+        /// giderken Animator'ın humanoid mirror'ıyla "SidestepRight"e döner; state yoksa (ör.
+        /// eski override controller) solda kalır — <see cref="PlayAction"/> HasState ile korur.
+        /// </summary>
+        MotionAnimClip ApplySidestepMirror(MotionAnimClip clip, float strafe)
+        {
+            if (strafe <= 0.15f || !string.Equals(clip.State, "Sidestep", System.StringComparison.Ordinal))
+                return clip;
+            if (_animator == null || !_animator.HasState(0, Animator.StringToHash("SidestepRight")))
+                return clip;
+            return new MotionAnimClip(clip.Key, "SidestepRight", clip.Trigger, clip.Fallback);
         }
 
         public void EndMotionAnim()
@@ -491,6 +580,31 @@ namespace Dovus.Game
                 if (p.name == name && p.type == AnimatorControllerParameterType.Float)
                 {
                     _animator.SetFloat(name, value);
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// O-anim(c): ManifestationDirector'daki var olan sürdürülen cast / kalkan sinyallerini
+        /// Animator'a iletir — binder bu bool'lara göre CastChannel/CastGuard'ın otomatik dönüş
+        /// geçişini kilitler (bkz. MixamoAnimatorBind). Parametre yoksa no-op.
+        /// </summary>
+        public void SetHoldFlags(bool channelHeld, bool guardHeld)
+        {
+            SafeSetBool(ParamChannelHold, channelHeld);
+            SafeSetBool(ParamGuardHold, guardHeld);
+        }
+
+        void SafeSetBool(string name, bool value)
+        {
+            if (_animator == null || !_animator.isActiveAndEnabled || _animator.runtimeAnimatorController == null)
+                return;
+            foreach (var p in _animator.parameters)
+            {
+                if (p.name == name && p.type == AnimatorControllerParameterType.Bool)
+                {
+                    _animator.SetBool(name, value);
                     return;
                 }
             }
