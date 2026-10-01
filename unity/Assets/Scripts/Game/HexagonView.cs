@@ -141,6 +141,8 @@ namespace Dovus.Game
             for (int dot = 1; dot <= n; dot++)
                 CreateCooldownLabel(dot, canvasGo.transform);
 
+            BuildDrawCaption(canvasGo.transform);
+
             if (overlayCam != null)
                 SetLayerRecursively(canvasGo, FirstLayer(overlayCam.cullingMask));
 
@@ -207,6 +209,8 @@ namespace Dovus.Game
             Layout();
             TickCooldowns();
             RefreshWeaponSwapButton();
+            LayoutDrawCaption(Screen.width, Screen.height);
+            TickDrawCaption();
         }
 
         /// <summary>Kapalı rün ya da soğumada: gri ton.</summary>
