@@ -53,7 +53,10 @@ namespace Dovus.Game
             float nearScale = Mathf.Max(0.1f, walkHalfM) / CombatAmbienceAssets.DesignBoundaryRadiusM;
             Material groundMat = CreateScaledGroundMaterial(assets.GroundMaterial, nearScale);
             if (groundMat != null)
+            {
                 CircularArena.SetFloorMaterial(arenaRoot, groundMat);
+                DesaturateFloorTint(arenaRoot, groundMat);
+            }
 
             var root = new GameObject("CombatAmbience");
             root.transform.SetParent(arenaRoot.transform, false);
@@ -161,6 +164,20 @@ namespace Dovus.Game
         /// <summary>
         /// Deneme sahnesi groundTiling≈7; mesh ölçeği UV tekrarını bozmasın diye runtime kopya.
         /// </summary>
+        static void DesaturateFloorTint(GameObject arenaRoot, Material groundMat)
+        {
+            Transform floor = arenaRoot.transform.Find("Floor");
+            MeshRenderer rend = floor != null ? floor.GetComponent<MeshRenderer>() : null;
+            if (rend == null || groundMat == null)
+                return;
+            var mat = new Material(groundMat);
+            if (mat.HasProperty("_BaseColor"))
+                mat.SetColor("_BaseColor", Color.white);
+            if (mat.HasProperty("_Color"))
+                mat.SetColor("_Color", Color.white);
+            rend.sharedMaterial = mat;
+        }
+
         static Material CreateScaledGroundMaterial(Material source, float nearScale)
         {
             if (source == null)

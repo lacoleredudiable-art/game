@@ -83,7 +83,10 @@ namespace Dovus.Game
             // Daire salonda duvarlar CircularArena'da collider'lı; eski mesh fit yok.
             float walkHalf = _tuning.ArenaHalfSizeM;
             combat.SkillMotion.ArenaHalfSizeM = walkHalf;
-            LavaDecor.Build(arena.transform, walkHalf);
+            // Deneme sahnesi portu: lav çatlakları CombatAmbience'te; eski turuncu LavaDecor diskleri
+            // tüm arena diskini sıcak boyuyordu (look v2 — yalnızca çatlak sıcak kalmalı).
+            if (Resources.Load<CombatAmbienceAssets>(CombatAmbienceAssets.ResourcePath) == null)
+                LavaDecor.Build(arena.transform, walkHalf);
             CombatAmbienceEnvironment.Build(arena, walkHalf, _tuning);
             DebugConfig.DevLog($"[Arena] circle r={walkHalf:0.##}m wallH={_tuning.ArenaWallHeightM:0.#}m");
 

@@ -60,10 +60,10 @@ namespace Dovus.Game.EditorTools
             colorAdj.colorFilter.Override(new Color(0.95f, 0.975f, 1f));
 
             var bloom = profile.Add<Bloom>(true);
-            bloom.threshold.Override(0.95f);
-            bloom.intensity.Override(0.65f);
-            bloom.scatter.Override(0.55f);
-            bloom.tint.Override(new Color(1f, 0.86f, 0.72f));
+            bloom.threshold.Override(1.05f);
+            bloom.intensity.Override(0.48f);
+            bloom.scatter.Override(0.5f);
+            bloom.tint.Override(new Color(1f, 0.92f, 0.82f));
 
             var vignette = profile.Add<Vignette>(true);
             vignette.intensity.Override(0.12f);
@@ -90,24 +90,42 @@ namespace Dovus.Game.EditorTools
         {
             if (profile.TryGet(out ColorAdjustments colorAdj))
             {
-                colorAdj.contrast.Override(-2f);
-                colorAdj.postExposure.Override(0.06f);
-                colorAdj.colorFilter.Override(new Color(0.92f, 0.96f, 1f));
+                colorAdj.contrast.Override(12f);
+                colorAdj.postExposure.Override(0.28f);
+                colorAdj.saturation.Override(-18f);
+                colorAdj.colorFilter.Override(new Color(0.88f, 0.93f, 1.04f));
             }
 
             if (profile.TryGet(out ShadowsMidtonesHighlights smh))
-                smh.shadows.Override(new Vector4(0.9f, 0.94f, 1.03f, -0.1f));
+            {
+                smh.shadows.Override(new Vector4(0.82f, 0.88f, 1.08f, -0.22f));
+                smh.midtones.Override(new Vector4(0.94f, 0.96f, 1.02f, 0.04f));
+                smh.highlights.Override(new Vector4(1.04f, 1.03f, 0.98f, 0.08f));
+            }
 
             if (profile.TryGet(out Vignette vignette))
-                vignette.intensity.Override(0.2f);
+                vignette.intensity.Override(0.28f);
+
+            if (profile.TryGet(out Bloom bloom))
+            {
+                bloom.threshold.Override(1.25f);
+                bloom.intensity.Override(0.35f);
+            }
         }
 
         static void TuneC(VolumeProfile profile)
         {
             if (profile.TryGet(out ColorAdjustments colorAdj))
             {
-                colorAdj.postExposure.Override(0.02f);
-                colorAdj.contrast.Override(-6f);
+                colorAdj.postExposure.Override(0.12f);
+                colorAdj.contrast.Override(6f);
+                colorAdj.saturation.Override(-22f);
+            }
+
+            if (profile.TryGet(out Bloom bloom))
+            {
+                bloom.threshold.Override(1.18f);
+                bloom.intensity.Override(0.42f);
             }
         }
 
@@ -201,7 +219,7 @@ namespace Dovus.Game.EditorTools
                 radius.floatValue = 0.22f;
             var intensity = so.FindProperty("m_Settings.m_Intensity");
             if (intensity != null)
-                intensity.floatValue = 0.35f;
+                intensity.floatValue = 0.42f;
             var samples = so.FindProperty("m_Settings.m_SampleCount");
             if (samples != null)
                 samples.intValue = 0;
