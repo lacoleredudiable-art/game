@@ -538,6 +538,10 @@ namespace Dovus.Game
             elementMenu.Configure(
                 director, skills, playerStatus, _tuning, view.CanvasRoot, elementTransitionMs);
 
+            // Release düzeltmesi: uGUI düğmeleri (BUILD SEÇ, BUILD) EventSystem olmadan dokunuş
+            // almaz. EventSystem eskiden yalnız debug ayar paneliyle kuruluyordu; release
+            // APK'da (DebugConfig.Enabled=false) hiç yoktu. Artık her build'de kurulur.
+            EnsureEventSystem();
             if (DebugConfig.Enabled)
             {
                 var v6Panel = root.AddComponent<V611DebugPanel>();
@@ -608,13 +612,22 @@ namespace Dovus.Game
         /// </summary>
         static void CreateTuningPanel(TuningConfig tuningConfig, PlayerVitals vitals)
         {
-            var esGo = new GameObject("EventSystem");
-            esGo.AddComponent<EventSystem>();
-            esGo.AddComponent<InputSystemUIInputModule>();
-
             var panelGo = new GameObject("TuningPanel");
             var panel = panelGo.AddComponent<TuningPanel>();
             panel.Configure(tuningConfig, vitals);
+        }
+
+        /// <summary>
+        /// Tek EventSystem + InputSystemUIInputModule (proje yalnız Yeni Input System). Debug'dan
+        /// bağımsız: release'te BUILD SEÇ ekranının uGUI düğmeleri buna muhtaç.
+        /// </summary>
+        static void EnsureEventSystem()
+        {
+            if (EventSystem.current != null)
+                return;
+            var esGo = new GameObject("EventSystem");
+            esGo.AddComponent<EventSystem>();
+            esGo.AddComponent<InputSystemUIInputModule>();
         }
 
         static void AttachOverlayToMain(Camera main, Camera overlay)
