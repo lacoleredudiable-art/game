@@ -22,7 +22,7 @@ namespace Dovus.Game.EditorTools
         const string PlayerDir = MixamoDir + "/Player";
         const string BossDir = MixamoDir + "/Boss";
         const string OutDir = "Assets/Art/Mixamo/Animators";
-        const string PlayerCtrl = OutDir + "/Player_Synty.controller";
+        internal const string PlayerCtrl = OutDir + "/Player_Synty.controller";
         const string BossCtrl = OutDir + "/Boss_Synty.controller";
         const string UpperBodyMask = OutDir + "/UpperBody.mask";
         const string PlayerVisual = "Assets/Art/Synty/Prefabs/PlayerVisual_Synty.prefab";
@@ -50,6 +50,7 @@ namespace Dovus.Game.EditorTools
             BuildPlayerController(new ClipSource(player, shared));
             AlignPlayerLocoFeet();
             BuildBossController(new ClipSource(boss, shared));
+            string archetypeLog = MixamoArchetypeBind.Build();
 
             AssignController(PlayerVisual, PlayerCtrl);
             AssignController(BossVisualPrefab, BossCtrl);
@@ -57,6 +58,8 @@ namespace Dovus.Game.EditorTools
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log($"[MixamoBind] OK — shared={shared.Count} player={player.Count} boss={boss.Count} clip.");
+            if (!string.IsNullOrEmpty(archetypeLog))
+                Debug.Log("[MixamoBind] arketip override:\n" + archetypeLog);
         }
 
         /// <summary>Rol klasörü önce, ortak klasör sonra.</summary>
@@ -101,6 +104,8 @@ namespace Dovus.Game.EditorTools
             AnimationClip strikeA = c.PickPrimary("strike a", "slash 1", "slash") ?? pierce;
             AnimationClip strikeB = c.PickPrimary("strike b", "slash 2", "attack 2") ?? sweep;
             AnimationClip strikeC = c.PickPrimary("strike c", "slash 3", "attack 3") ?? slam;
+
+            Debug.Log($"[MixamoBind] CastPierce temel klip={pierce?.name ?? "yok"} CastSweep temel klip={sweep?.name ?? "yok"}");
 
             var ac = LoadOrCreate(PlayerCtrl);
             EnsureParam(ac, "Speed", AnimatorControllerParameterType.Float);

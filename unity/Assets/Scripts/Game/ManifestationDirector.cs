@@ -436,6 +436,8 @@ namespace Dovus.Game
                 _engine.SentenceCompleted += OnSentenceCompleted;
                 _hooked = true;
             }
+            // Açılış görseli: elde silah + arketip controller ilk kareden doğru olsun.
+            SyncVisualDelivery();
         }
 
         public void BindTargeting(PlayerTargeting targeting)

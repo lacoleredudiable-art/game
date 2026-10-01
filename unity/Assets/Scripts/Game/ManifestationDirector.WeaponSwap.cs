@@ -39,6 +39,7 @@ namespace Dovus.Game
             LastFactorySkill = null;
             _weaponSwap?.SetLoadout(primary, secondary);
             SyncCycleIndex();
+            SyncVisualDelivery();
             LogLoadout("build");
         }
 
@@ -133,6 +134,7 @@ namespace Dovus.Game
             LastFactorySkill = null;
             OnWeaponSwapCompleted(_equippedWeapon);
             SyncCycleIndex();
+            SyncVisualDelivery();
             if (_weaponSwap.Rules.CancelsCombo)
                 _closingChainBonus = 1f;
             LogLoadout("swap");

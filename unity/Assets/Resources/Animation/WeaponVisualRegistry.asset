@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97038a1d023462b4cb5f0565a1839e55, type: 3}
+  m_Name: WeaponVisualRegistry
+  m_EditorClassIdentifier: Dovus.Game::Dovus.Game.WeaponVisualRegistry
+  _archetypes:
+  - ArchetypeKey: SwordShield
+    Override: {fileID: 22100000, guid: d7946f1ee05f3fd42be6710bd3a3a80f, type: 2}
+  - ArchetypeKey: Hammer
+    Override: {fileID: 22100000, guid: 3590a1685e2cf14479b8b7090b0bfd72, type: 2}
+  - ArchetypeKey: Fist
+    Override: {fileID: 22100000, guid: f20d9453f1d406c438fae61a3e2183dc, type: 2}
+  - ArchetypeKey: Bow
+    Override: {fileID: 22100000, guid: a3eef744fa196ab4db28ed726ca027be, type: 2}
+  - ArchetypeKey: Caster
+    Override: {fileID: 22100000, guid: b22b825d21a9ad24193bbdc876e55279, type: 2}
+  - ArchetypeKey: Gun
+    Override: {fileID: 22100000, guid: 19540a800e54b6645821e4bbce7202b5, type: 2}
+  _props: []

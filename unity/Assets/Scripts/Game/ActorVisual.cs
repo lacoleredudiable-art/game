@@ -113,6 +113,8 @@ namespace Dovus.Game
             _animator = animator;
             _upperLayer = -2;
             _hideWhenVisualPresent = hideWhenPresent;
+            _baseController = animator != null ? animator.runtimeAnimatorController : null;
+            _currentWeaponKey = null;
             if (_animator != null && _hideWhenVisualPresent != null)
             {
                 for (int i = 0; i < _hideWhenVisualPresent.Length; i++)
@@ -121,6 +123,58 @@ namespace Dovus.Game
                         _hideWhenVisualPresent[i].enabled = false;
                 }
             }
+        }
+
+        // --- Silah arketipi: controller override (sunum) --------------------------------------
+
+        RuntimeAnimatorController _baseController;
+        WeaponVisualRegistry _weaponRegistry;
+        bool _weaponRegistryLoaded;
+        string _currentWeaponKey;
+
+        /// <summary>Ağır silah arketiplerinde (Çekiç/Top) donuk his: temel hız çarpanı.</summary>
+        const float HeavyAnimSpeed = 0.9f;
+
+        /// <summary>
+        /// docs/element-sistemi.json weapons[].animations_key — arketip override controller'ını
+        /// uygular (yoksa temel controller'da kalır, hata yok — Mixamo override'lar bu PC dışında
+        /// gitignored olduğundan boş olabilir). İdempotent: aynı anahtar tekrar gelirse no-op.
+        /// </summary>
+        public void SetWeapon(string animationsKey)
+        {
+            animationsKey ??= string.Empty;
+            if (string.Equals(_currentWeaponKey, animationsKey, System.StringComparison.Ordinal))
+                return;
+            _currentWeaponKey = animationsKey;
+
+            if (!_weaponRegistryLoaded)
+            {
+                _weaponRegistry = Resources.Load<WeaponVisualRegistry>("Animation/WeaponVisualRegistry");
+                _weaponRegistryLoaded = true;
+            }
+
+            string archetype = WeaponArchetypeMap.ArchetypeFor(animationsKey);
+            ApplyArchetypeController(archetype);
+
+            float speed = archetype is WeaponArchetypeMap.Hammer or WeaponArchetypeMap.Gun ? HeavyAnimSpeed : 1f;
+            if (_animator != null)
+                _animator.speed = speed;
+            _savedAnimatorSpeed = speed;
+        }
+
+        void ApplyArchetypeController(string archetypeKey)
+        {
+            if (_animator == null)
+                return;
+            RuntimeAnimatorController ctrl = _weaponRegistry != null
+                ? _weaponRegistry.FindOverride(archetypeKey)
+                : null;
+            RuntimeAnimatorController target = ctrl != null ? ctrl : _baseController;
+            if (_animator.runtimeAnimatorController == target)
+                return;
+            _animator.runtimeAnimatorController = target;
+            _upperLayer = -2;
+            _motionKey = string.Empty;
         }
 
         public void PulseRune(Rune rune, EffectSilhouette silhouette)
