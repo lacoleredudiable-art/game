@@ -866,8 +866,10 @@ def main():
             combo["sinir"] = sinir
         bucket["combos"].append(combo)
 
-    if len(by_id) != 101:
-        raise SystemExit(f"kalıp sayısı {len(by_id)} != 101")
+    # Not (O-anim c, kapsam dışı): bu sayı master'da da 102 — ROWS/PHASES bu PR'da değişmedi,
+    # yalnız üretici çalışsın diye eski "101" sabiti güncellendi. PR açıklamasında not var.
+    if len(by_id) != 102:
+        raise SystemExit(f"kalıp sayısı {len(by_id)} != 102")
 
     templates = []
     for tid, info in by_id.items():
@@ -894,13 +896,14 @@ def main():
             "rows": [
                 {"key": "windup", "weapon": 0, "verb": 0, "state": "CastPierce", "trigger": ""},
                 {"key": "lunge", "weapon": 0, "verb": 0, "state": "BasicStrike", "trigger": ""},
-                {"key": "dash", "weapon": 0, "verb": 0, "state": "Locomotion", "trigger": ""},
-                {"key": "backstep", "weapon": 0, "verb": 0, "state": "Locomotion", "trigger": ""},
-                {"key": "sidestep", "weapon": 0, "verb": 0, "state": "Locomotion", "trigger": ""},
-                {"key": "spin", "weapon": 0, "verb": 0, "state": "CastSweep", "trigger": ""},
-                {"key": "leap", "weapon": 0, "verb": 0, "state": "CastSlam", "trigger": ""},
-                {"key": "land", "weapon": 0, "verb": 0, "state": "CastSlam", "trigger": ""},
-                {"key": "hook_throw", "weapon": 0, "verb": 0, "state": "CastShoot", "trigger": ""},
+                {"key": "dash", "weapon": 0, "verb": 0, "state": "Dodge", "trigger": ""},
+                {"key": "dash_fast", "weapon": 0, "verb": 0, "state": "Dodge", "trigger": ""},
+                {"key": "backstep", "weapon": 0, "verb": 0, "state": "Backstep", "trigger": ""},
+                {"key": "sidestep", "weapon": 0, "verb": 0, "state": "Sidestep", "trigger": ""},
+                {"key": "spin", "weapon": 0, "verb": 0, "state": "Spin", "trigger": ""},
+                {"key": "leap", "weapon": 0, "verb": 0, "state": "JumpAttack", "trigger": ""},
+                {"key": "land", "weapon": 0, "verb": 0, "state": "JumpAttack", "trigger": ""},
+                {"key": "hook_throw", "weapon": 0, "verb": 0, "state": "Throw", "trigger": ""},
                 {"key": "recover", "weapon": 0, "verb": 0, "state": "Locomotion", "trigger": ""},
                 {"key": "cast", "weapon": 0, "verb": 0, "state": "CastChannel", "trigger": ""},
             ],

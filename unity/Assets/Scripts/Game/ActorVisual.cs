@@ -17,6 +17,10 @@ namespace Dovus.Game
         public const string ParamLocoPlayback = "LocoPlayback";
         /// <summary>Koşu klibinin ölçülmüş zemin hızı (model birimi/sn); binder klipten yazar.</summary>
         public const string ParamLocoRunSpeed = "LocoRunSpeed";
+        /// <summary>O-anim(c): CastChannel döngüsü sürerken true — binder'daki dönüş geçişini kilitler.</summary>
+        public const string ParamChannelHold = "ChannelHold";
+        /// <summary>O-anim(c): CastGuard (blok) döngüsü sürerken true — binder'daki dönüş geçişini kilitler.</summary>
+        public const string ParamGuardHold = "GuardHold";
         public const string ParamForward = "Forward";
         public const string ParamStrafe = "Strafe";
         public const string ParamFocus = "Focus";
@@ -473,7 +477,22 @@ namespace Dovus.Game
                 return;
             _motionKey = playKey ?? string.Empty;
             MotionAnimClip clip = (table ?? MotionAnimTable.BuiltIn).Resolve(_motionKey, weaponKey, verbId);
+            clip = ApplySidestepMirror(clip, blend.Strafe);
             PlayMotionClip(clip, animSpeed, spin);
+        }
+
+        /// <summary>
+        /// O-anim(c): yön zaten blend.Strafe'de ucuzca bilindiğinden "Sidestep" tek klibi sağa
+        /// giderken Animator'ın humanoid mirror'ıyla "SidestepRight"e döner; state yoksa (ör.
+        /// eski override controller) solda kalır — <see cref="PlayAction"/> HasState ile korur.
+        /// </summary>
+        MotionAnimClip ApplySidestepMirror(MotionAnimClip clip, float strafe)
+        {
+            if (strafe <= 0.15f || !string.Equals(clip.State, "Sidestep", System.StringComparison.Ordinal))
+                return clip;
+            if (_animator == null || !_animator.HasState(0, Animator.StringToHash("SidestepRight")))
+                return clip;
+            return new MotionAnimClip(clip.Key, "SidestepRight", clip.Trigger, clip.Fallback);
         }
 
         public void EndMotionAnim()
@@ -561,6 +580,31 @@ namespace Dovus.Game
                 if (p.name == name && p.type == AnimatorControllerParameterType.Float)
                 {
                     _animator.SetFloat(name, value);
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// O-anim(c): ManifestationDirector'daki var olan sürdürülen cast / kalkan sinyallerini
+        /// Animator'a iletir — binder bu bool'lara göre CastChannel/CastGuard'ın otomatik dönüş
+        /// geçişini kilitler (bkz. MixamoAnimatorBind). Parametre yoksa no-op.
+        /// </summary>
+        public void SetHoldFlags(bool channelHeld, bool guardHeld)
+        {
+            SafeSetBool(ParamChannelHold, channelHeld);
+            SafeSetBool(ParamGuardHold, guardHeld);
+        }
+
+        void SafeSetBool(string name, bool value)
+        {
+            if (_animator == null || !_animator.isActiveAndEnabled || _animator.runtimeAnimatorController == null)
+                return;
+            foreach (var p in _animator.parameters)
+            {
+                if (p.name == name && p.type == AnimatorControllerParameterType.Bool)
+                {
+                    _animator.SetBool(name, value);
                     return;
                 }
             }

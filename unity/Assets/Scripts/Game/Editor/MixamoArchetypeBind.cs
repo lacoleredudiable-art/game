@@ -161,8 +161,12 @@ namespace Dovus.Game.EditorTools
             return map;
         }
 
-        /// <summary>Mixamo/Archetypes altındaki (Shared + her arketip klasörü) tüm klipler, dosya adıyla.</summary>
-        static Dictionary<string, AnimationClip> CollectAllArchetypeClips()
+        /// <summary>
+        /// Mixamo/Archetypes altındaki (Shared + her arketip klasörü) tüm klipler, dosya adıyla.
+        /// internal: MixamoAnimatorBind temel controller'ın Backstep/Sidestep/JumpAttack/Spin/Throw
+        /// state'lerini aynı havuzdan besler (bkz. görev notu O-anim c).
+        /// </summary>
+        internal static Dictionary<string, AnimationClip> CollectAllArchetypeClips()
         {
             var map = new Dictionary<string, AnimationClip>();
             if (!AssetDatabase.IsValidFolder(ArchetypesDir))
@@ -205,6 +209,10 @@ namespace Dovus.Game.EditorTools
                     m["CastPierce"] = "Hammer_Overhead";
                     m["CastSweep"] = "Hammer_Horizontal";
                     m["Hit"] = "Shared_React_Large_Front";
+                    // O-anim(c): temel controller'ın leap/land/spin anahtarı zaten bu klipler —
+                    // açık override, klip kaynağı ileride değişirse Çekiç kendi klibinde kalsın.
+                    m["JumpAttack"] = "Hammer_JumpAttack";
+                    m["Spin"] = "Hammer_Spin";
                     break;
                 case WeaponArchetypeMap.Fist:
                     m["LocomotionIdle"] = "Fist_Idle";

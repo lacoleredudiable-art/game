@@ -16,7 +16,7 @@ public class MotionAnimTests
     public void EveryPhase_DeclaresAKnownAnimKey()
     {
         var catalog = Load();
-        Assert.That(catalog.Anims.Resolve("spin", 0, 0).State, Is.EqualTo("CastSweep"));
+        Assert.That(catalog.Anims.Resolve("spin", 0, 0).State, Is.EqualTo("Spin"));
         Assert.That(catalog.Anims.Resolve("lunge", 0, 0).State, Is.EqualTo("BasicStrike"));
         Assert.That(catalog.Anims.Resolve("dash", 0, 0).Fallback, Is.False);
 

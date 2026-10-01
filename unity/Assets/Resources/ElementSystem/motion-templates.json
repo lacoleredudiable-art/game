@@ -22,49 +22,56 @@
         "key": "dash",
         "weapon": 0,
         "verb": 0,
-        "state": "Locomotion",
+        "state": "Dodge",
+        "trigger": ""
+      },
+      {
+        "key": "dash_fast",
+        "weapon": 0,
+        "verb": 0,
+        "state": "Dodge",
         "trigger": ""
       },
       {
         "key": "backstep",
         "weapon": 0,
         "verb": 0,
-        "state": "Locomotion",
+        "state": "Backstep",
         "trigger": ""
       },
       {
         "key": "sidestep",
         "weapon": 0,
         "verb": 0,
-        "state": "Locomotion",
+        "state": "Sidestep",
         "trigger": ""
       },
       {
         "key": "spin",
         "weapon": 0,
         "verb": 0,
-        "state": "CastSweep",
+        "state": "Spin",
         "trigger": ""
       },
       {
         "key": "leap",
         "weapon": 0,
         "verb": 0,
-        "state": "CastSlam",
+        "state": "JumpAttack",
         "trigger": ""
       },
       {
         "key": "land",
         "weapon": 0,
         "verb": 0,
-        "state": "CastSlam",
+        "state": "JumpAttack",
         "trigger": ""
       },
       {
         "key": "hook_throw",
         "weapon": 0,
         "verb": 0,
-        "state": "CastShoot",
+        "state": "Throw",
         "trigger": ""
       },
       {
@@ -79,13 +86,6 @@
         "weapon": 0,
         "verb": 0,
         "state": "CastChannel",
-        "trigger": ""
-      },
-      {
-        "key": "dash_fast",
-        "weapon": 0,
-        "verb": 0,
-        "state": "CastPierce",
         "trigger": ""
       }
     ]
@@ -1482,49 +1482,6 @@
       ]
     },
     {
-      "id": "kilitli_adim",
-      "name": "Kilitli adım",
-      "family": 23,
-      "aim": "enemy",
-      "combos": [
-        {
-          "id": "3-9",
-          "tags": []
-        }
-      ],
-      "phases": [
-        {
-          "name": "kilit",
-          "motion": "hold",
-          "sec": 0.2,
-          "facing": "target",
-          "homing": "track",
-          "anim": "cast"
-        },
-        {
-          "name": "adim",
-          "motion": "blink",
-          "sec": 0.28,
-          "snap_at": 0.45,
-          "distance_m": 5.0,
-          "land": "behind",
-          "behind_m": 1.15,
-          "hit": {
-            "shape": "sphere",
-            "anchor": "behind",
-            "length_m": 0.9,
-            "radius_m": 0.55,
-            "at": 0.72,
-            "share": 1,
-            "payload": "effect"
-          },
-          "facing": "target",
-          "homing": "track",
-          "anim": "dash"
-        }
-      ]
-    },
-    {
       "id": "icinden_emme",
       "name": "İçinden geçip emme",
       "family": 23,
@@ -1853,6 +1810,49 @@
           "facing": "travel",
           "homing": "none",
           "anim": "land"
+        }
+      ]
+    },
+    {
+      "id": "kilitli_adim",
+      "name": "Kilitli adım",
+      "family": 23,
+      "aim": "enemy",
+      "combos": [
+        {
+          "id": "3-9",
+          "tags": []
+        }
+      ],
+      "phases": [
+        {
+          "name": "kilit",
+          "motion": "hold",
+          "sec": 0.2,
+          "facing": "target",
+          "homing": "track",
+          "anim": "cast"
+        },
+        {
+          "name": "adim",
+          "motion": "blink",
+          "sec": 0.28,
+          "snap_at": 0.45,
+          "distance_m": 5.0,
+          "land": "behind",
+          "behind_m": 1.15,
+          "hit": {
+            "shape": "sphere",
+            "anchor": "behind",
+            "length_m": 0.9,
+            "radius_m": 0.55,
+            "at": 0.72,
+            "share": 1,
+            "payload": "effect"
+          },
+          "facing": "target",
+          "homing": "track",
+          "anim": "dash"
         }
       ]
     },
