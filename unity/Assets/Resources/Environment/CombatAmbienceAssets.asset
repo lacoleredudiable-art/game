@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3edc19754e7153438c6242259acab97, type: 3}
+  m_Name: CombatAmbienceAssets
+  m_EditorClassIdentifier: Dovus.Game::Dovus.Game.CombatAmbienceAssets
+  GroundNearModel: {fileID: 919132149155446097, guid: 3db9213d31a7dc14cbac0fb7c6999e8b, type: 3}
+  GroundFarModel: {fileID: 919132149155446097, guid: bd9ee2af8d034054f8e1de647858a254, type: 3}
+  GroundMaterial: {fileID: 2100000, guid: 86d80f461cc0cbe44a6f04b0fa5f14d6, type: 2}
+  SkylineModel: {fileID: 919132149155446097, guid: c46cdc3d4f33d484f8df68326b610892, type: 3}
+  SkylineMaterial: {fileID: 2100000, guid: 0740ccc5b5e30404b8cd9242946bb0d4, type: 2}
+  EdgeMistModel: {fileID: 919132149155446097, guid: 3a571f6cfd39da64c84149b2283d8cf7, type: 3}
+  EdgeMistMaterial: {fileID: 2100000, guid: 45ab9bc3ee1a6194793d2984a66cbac0, type: 2}
+  LavaCracksModel: {fileID: 919132149155446097, guid: 443bc50c6735c5f45b2fe8f5f8c95fa6, type: 3}
+  LavaCracksMaterial: {fileID: 2100000, guid: 0b5ee696208456e45b1b9c289ad90c77, type: 2}
+  Rocks:
+  - Model: {fileID: 919132149155446097, guid: ee1a88fb2c5b35148bafabeaec938caf, type: 3}
+    Material: {fileID: 2100000, guid: e410a353ae105084ea1e84d4619895b9, type: 2}
+  - Model: {fileID: 919132149155446097, guid: ab86794dd0a3b594db76d7f51438a6ca, type: 3}
+    Material: {fileID: 2100000, guid: 66acf6aa261587048a942aa292a03d01, type: 2}
+  - Model: {fileID: 919132149155446097, guid: 920c7486e904c4141bbf8966e4ed9259, type: 3}
+    Material: {fileID: 2100000, guid: 3e796ef57818bfc4f8d209a937630456, type: 2}
+  - Model: {fileID: 919132149155446097, guid: 9cb66def325e7bb4580d4b20a75f5d63, type: 3}
+    Material: {fileID: 2100000, guid: 79a4cd0cdcf71314c9f73962bd8d1049, type: 2}
+  - Model: {fileID: 919132149155446097, guid: 9e2d6251b630dec4c90940c2fda2831c, type: 3}
+    Material: {fileID: 2100000, guid: 6f31699b852dc5a409f572af299dca5c, type: 2}

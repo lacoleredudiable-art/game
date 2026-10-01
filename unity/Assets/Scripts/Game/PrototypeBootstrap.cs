@@ -84,7 +84,7 @@ namespace Dovus.Game
             float walkHalf = _tuning.ArenaHalfSizeM;
             combat.SkillMotion.ArenaHalfSizeM = walkHalf;
             LavaDecor.Build(arena.transform, walkHalf);
-            ArenaHorizon.Build(arena.transform, walkHalf);
+            CombatAmbienceEnvironment.Build(arena, walkHalf, _tuning);
             DebugConfig.DevLog($"[Arena] circle r={walkHalf:0.##}m wallH={_tuning.ArenaWallHeightM:0.#}m");
 
             var player = CreateCapsule(

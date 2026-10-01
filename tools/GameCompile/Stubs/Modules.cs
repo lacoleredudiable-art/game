@@ -280,7 +280,13 @@ namespace UnityEngine.Rendering.Universal
         public UnityEngine.Color value;
         public void Override(UnityEngine.Color v) { value = v; }
     }
-    public partial class TonemappingModeParameter { public int value; }
+    // Ambiyans portu: SceneAtmosphere Tonemapping.mode.Override(TonemappingMode.Neutral) kullanıyor.
+    public enum TonemappingMode { None, Neutral, ACES }
+    public partial class TonemappingModeParameter
+    {
+        public int value;
+        public void Override(TonemappingMode v) { value = (int)v; }
+    }
 }
 
 namespace UnityEngine.TextCore.LowLevel

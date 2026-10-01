@@ -31,6 +31,32 @@ namespace Dovus.Game
             return root;
         }
 
+        /// <summary>
+        /// Ambiyans portu: duvar görselini saklar, BoxCollider'lara (KinematicMotor push-out)
+        /// dokunmaz. Açık ova görünümü için "Walls" render'ları kapatılır, fiziksel sınır aynı kalır.
+        /// </summary>
+        public static void SetWallRenderersVisible(GameObject arenaRoot, bool visible)
+        {
+            if (arenaRoot == null)
+                return;
+            Transform walls = arenaRoot.transform.Find("Walls");
+            if (walls == null)
+                return;
+            foreach (MeshRenderer r in walls.GetComponentsInChildren<MeshRenderer>(true))
+                r.enabled = visible;
+        }
+
+        /// <summary>Yalnız zemin görselini değiştirir (collider yoktu, Build'de de yok — dokunulmaz).</summary>
+        public static void SetFloorMaterial(GameObject arenaRoot, Material material)
+        {
+            if (arenaRoot == null || material == null)
+                return;
+            Transform floor = arenaRoot.transform.Find("Floor");
+            MeshRenderer rend = floor != null ? floor.GetComponent<MeshRenderer>() : null;
+            if (rend != null)
+                rend.sharedMaterial = material;
+        }
+
         static void BuildFloor(Transform parent, float radiusM, Color color)
         {
             // Unity Cylinder: çap 1, yükseklik 2 — düz disk için Y küçültülür.
