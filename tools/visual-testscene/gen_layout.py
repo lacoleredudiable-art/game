@@ -116,7 +116,12 @@ for k in range(8):  # far cracks
     a0=rng.uniform(0,2*np.pi); r0=rng.uniform(30,70)
     walk((r0*math.cos(a0),r0*math.sin(a0)),rng.uniform(0,2*np.pi),rng.uniform(10,30),rng.uniform(0.15,0.35))
 CV=[];CUV=[];CF=[]
+def near_cam(x,z): return z<-3.0 and abs(x)<5.0   # v2: no crack tips right under the camera start (looked like a flame)
 for pts,w in cracks:
+    keep=np.array([not near_cam(p[0],p[1]) for p in pts])
+    if not keep.all():  # trim leading/trailing points only
+        idx=np.where(keep)[0]
+        pts=pts[idx[0]:idx[-1]+1] if len(idx) else pts[:0]
     if len(pts)<3: continue
     seglen=np.r_[0,np.cumsum(np.linalg.norm(np.diff(pts,axis=0),axis=1))]; L=seglen[-1]
     base=len(CV)
@@ -132,11 +137,13 @@ for pts,w in cracks:
 for k in range(40):
     pts,w=cracks[rng.integers(0,len(cracks))]; p=pts[rng.integers(0,len(pts))]+rng.normal(0,0.6,2)
     if np.hypot(*p)<2: continue
-    rad=rng.uniform(0.18,0.55); seg=10; c=len(CV)
-    CV.append([p[0],mesh_h(*p)+0.035,p[1]]); CUV.append([0.5,rng.uniform(0,50)])
+    rad=rng.uniform(0.18,0.55); seg=10; c=len(CV); v0=rng.uniform(0,50)
+    rrs=[rad*rng.uniform(0.6,1.25) for j in range(seg)]   # same rng draws as v1
+    if near_cam(p[0],p[1]): continue
+    CV.append([p[0],mesh_h(*p)+0.035,p[1]]); CUV.append([0.5,v0])
     for j in range(seg):
-        t=2*np.pi*j/seg; rr=rad*rng.uniform(0.6,1.25); q=p+rr*np.array([math.cos(t),math.sin(t)])
-        CV.append([q[0],mesh_h(*q)+0.033,q[1]]); CUV.append([0.0,CUV[c][1]])
+        t=2*np.pi*j/seg; q=p+rrs[j]*np.array([math.cos(t),math.sin(t)])
+        CV.append([q[0],mesh_h(*q)+0.033,q[1]]); CUV.append([0.0,v0])
     for j in range(seg): CF.append([c,c+1+j,c+1+(j+1)%seg])
 CV=np.array(CV); CF=np.array(CF)
 # make all faces face up (Unity CW) using RH normal test
@@ -229,7 +236,7 @@ lava_lights=[]
 for pts,w in cracks[:2]+cracks[2:12]:
     for i in range(0,len(pts),9):
         x,z=pts[i]
-        if np.hypot(x,z)<45: lava_lights.append(dict(pos=[round(x,2),round(float(height(x,z))+0.6,2),round(z,2)],range=round(3+8*w,2),intensity=round(1.2+3*w,2)))
+        if np.hypot(x,z)<45: lava_lights.append(dict(pos=[round(x,2),round(float(height(x,z))+0.6,2),round(z,2)],range=round(3+8*w,2),intensity=round((1.2+3*w)*0.65,2)))  # v2: x0.65, less orange cast on rocks
 lava_lights=lava_lights[:24]
 probes=[]
 for x in range(-15,16,6):
@@ -241,7 +248,7 @@ look=dict(fogColor=[0.690,0.718,0.737],fogDensity=0.0045,
           sunColor=[0.86,0.89,0.92],sunIntensity=0.85,sunEuler=[52.0,-30.0,0.0],shadowStrength=0.38,
           postExposure=0.15,contrast=-14.0,saturation=-22.0,colorFilter=[0.95,0.975,1.0],temperature=-8.0,
           bloomThreshold=0.95,bloomIntensity=0.65,bloomScatter=0.55,bloomTint=[1.0,0.86,0.72],vignette=0.12,
-          lavaEdge=[0.06,0.045,0.04],lavaCore=[4.2,1.05,0.18],lavaPulse=0.25,
+          lavaEdge=[0.06,0.045,0.04],lavaCore=[4.2,0.62,0.08],lavaPulse=0.25,
           skyBottom=[0.47,0.51,0.54],skyTop=[0.62,0.66,0.69],skyFogStrength=0.72,
           mistColor=[0.72,0.745,0.76],mistAlpha=0.38,
           dragonColor=[0.33,0.38,0.41],eyeColor=[5.0,2.2,0.5],rockTint=[0.86,0.89,0.92],groundTint=[0.95,0.97,1.0])

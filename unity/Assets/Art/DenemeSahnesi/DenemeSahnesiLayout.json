@@ -1339,7 +1339,7 @@
     -5.5
    ],
    "range": 6.36,
-   "intensity": 2.46
+   "intensity": 1.6
   },
   {
    "pos": [
@@ -1348,7 +1348,7 @@
     8.11
    ],
    "range": 3.68,
-   "intensity": 1.45
+   "intensity": 0.95
   },
   {
    "pos": [
@@ -1357,7 +1357,7 @@
     4.6
    ],
    "range": 3.68,
-   "intensity": 1.45
+   "intensity": 0.95
   },
   {
    "pos": [
@@ -1366,7 +1366,7 @@
     22.65
    ],
    "range": 4.23,
-   "intensity": 1.66
+   "intensity": 1.08
   },
   {
    "pos": [
@@ -1375,7 +1375,7 @@
     22.04
    ],
    "range": 4.23,
-   "intensity": 1.66
+   "intensity": 1.08
   },
   {
    "pos": [
@@ -1384,7 +1384,7 @@
     17.48
    ],
    "range": 4.23,
-   "intensity": 1.66
+   "intensity": 1.08
   },
   {
    "pos": [
@@ -1393,7 +1393,7 @@
     12.17
    ],
    "range": 4.23,
-   "intensity": 1.66
+   "intensity": 1.08
   },
   {
    "pos": [
@@ -1402,7 +1402,7 @@
     7.59
    ],
    "range": 4.23,
-   "intensity": 1.66
+   "intensity": 1.08
   },
   {
    "pos": [
@@ -1411,7 +1411,7 @@
     16.71
    ],
    "range": 3.68,
-   "intensity": 1.45
+   "intensity": 0.95
   },
   {
    "pos": [
@@ -1420,7 +1420,7 @@
     13.01
    ],
    "range": 3.68,
-   "intensity": 1.45
+   "intensity": 0.95
   },
   {
    "pos": [
@@ -1429,7 +1429,7 @@
     8.96
    ],
    "range": 3.68,
-   "intensity": 1.45
+   "intensity": 0.95
   },
   {
    "pos": [
@@ -1438,7 +1438,7 @@
     11.89
    ],
    "range": 3.68,
-   "intensity": 1.45
+   "intensity": 0.95
   },
   {
    "pos": [
@@ -1447,7 +1447,7 @@
     9.65
    ],
    "range": 3.68,
-   "intensity": 1.45
+   "intensity": 0.95
   },
   {
    "pos": [
@@ -1456,7 +1456,7 @@
     10.2
    ],
    "range": 3.68,
-   "intensity": 1.45
+   "intensity": 0.95
   },
   {
    "pos": [
@@ -1465,7 +1465,7 @@
     5.27
    ],
    "range": 3.68,
-   "intensity": 1.45
+   "intensity": 0.95
   },
   {
    "pos": [
@@ -1474,7 +1474,7 @@
     19.66
    ],
    "range": 4.23,
-   "intensity": 1.66
+   "intensity": 1.08
   },
   {
    "pos": [
@@ -1483,7 +1483,7 @@
     14.34
    ],
    "range": 4.23,
-   "intensity": 1.66
+   "intensity": 1.08
   },
   {
    "pos": [
@@ -1492,7 +1492,7 @@
     11.87
    ],
    "range": 4.23,
-   "intensity": 1.66
+   "intensity": 1.08
   },
   {
    "pos": [
@@ -1501,7 +1501,7 @@
     9.79
    ],
    "range": 4.23,
-   "intensity": 1.66
+   "intensity": 1.08
   },
   {
    "pos": [
@@ -1510,7 +1510,7 @@
     6.23
    ],
    "range": 4.23,
-   "intensity": 1.66
+   "intensity": 1.08
   },
   {
    "pos": [
@@ -1519,7 +1519,7 @@
     -3.0
    ],
    "range": 5.24,
-   "intensity": 2.04
+   "intensity": 1.33
   },
   {
    "pos": [
@@ -1528,7 +1528,7 @@
     2.35
    ],
    "range": 5.24,
-   "intensity": 2.04
+   "intensity": 1.33
   },
   {
    "pos": [
@@ -1537,7 +1537,7 @@
     7.48
    ],
    "range": 5.24,
-   "intensity": 2.04
+   "intensity": 1.33
   },
   {
    "pos": [
@@ -1546,7 +1546,7 @@
     12.69
    ],
    "range": 5.24,
-   "intensity": 2.04
+   "intensity": 1.33
   }
  ],
  "boundary": {
@@ -1853,8 +1853,8 @@
   ],
   "lavaCore": [
    4.2,
-   1.05,
-   0.18
+   0.62,
+   0.08
   ],
   "lavaPulse": 0.25,
   "skyBottom": [

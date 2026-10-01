@@ -32,7 +32,7 @@ Material:
     - _AmbientBoost: 1
     - _RimPower: 3
     - _RimStrength: 0.22
-    - _Saturation: 0.55
+    - _Saturation: 0.35
     - _Wrap: 0.5
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}

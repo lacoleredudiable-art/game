@@ -100,7 +100,7 @@ namespace Dovus.Visual.EditorTools
         public float[] bloomTint = { 1f, 0.86f, 0.72f };
         public float vignette = 0.12f;
         public float[] lavaEdge = { 0.06f, 0.045f, 0.04f };
-        public float[] lavaCore = { 4.2f, 1.05f, 0.18f };
+        public float[] lavaCore = { 4.2f, 0.62f, 0.08f };
         public float lavaPulse = 0.25f;
         public float[] skyBottom = { 0.47f, 0.51f, 0.54f };
         public float[] skyTop = { 0.62f, 0.66f, 0.69f };

@@ -7,7 +7,7 @@ Shader "Dovus/Visual/SoftHero"
     {
         [MainTexture] _BaseMap ("Albedo", 2D) = "white" {}
         [MainColor] _BaseColor ("Color", Color) = (1, 1, 1, 1)
-        _Saturation ("Saturation", Range(0, 1)) = 0.55
+        _Saturation ("Saturation", Range(0, 1)) = 0.35
         _Tint ("Grade tint", Color) = (0.93, 0.96, 1.0, 1)
         _Wrap ("Wrap (soft terminator)", Range(0, 1)) = 0.5
         _AmbientBoost ("Ambient boost", Range(0, 2)) = 1.0

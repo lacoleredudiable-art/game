@@ -90,7 +90,11 @@ Shader "Dovus/Visual/LavaEmissive"
             {
                 UNITY_SETUP_INSTANCE_ID(input);
                 float across = 1.0 - abs(input.uv.x * 2.0 - 1.0);
-                float core = smoothstep(1.0 - _CoreWidth, 1.0, across);
+                // v2: keep the hot core at least ~2 px wide so distant cracks don't break into dashes/sparkle
+                // (shading aliasing that MSAA cannot fix); energy is partly compensated when widened.
+                float aaW = fwidth(across) * 2.0;
+                float coreW = max(_CoreWidth, aaW);
+                float core = smoothstep(1.0 - coreW, 1.0, across) * lerp(1.0, _CoreWidth / coreW, 0.6);
                 float band = smoothstep(0.1, 1.0, across);
                 float t = _Time.y * _PulseSpeed;
                 float along = input.uv.y * _PulseScale;
