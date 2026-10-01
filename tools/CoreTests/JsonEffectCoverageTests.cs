@@ -192,6 +192,26 @@ public class JsonEffectCoverageTests
         ("trait", "cit", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"cit\""),
         ("trait", "inen_akis_alani", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"inen_akis_alani\""),
         ("basic", "ally_heal", "unity/Assets/Scripts/Game/ManifestationDirector.JsonEffects.cs", "BasicAllyHeal"),
+        ("stat", "mermi_sil", "unity/Assets/Scripts/Game/ManifestationDirector.Projectiles.cs", "ProjectileEraseRules.For"),
+        ("stat", "mermi_sil", "unity/Assets/Scripts/Game/HostileProjectileHost.cs", "HostileProjectiles"),
+        ("mode", "yut", "unity/Assets/Scripts/Core/Mechanic/ProjectileEraseRules.cs", "\"yut\""),
+        ("mode", "yut", "unity/Assets/Scripts/Game/ManifestationDirector.Projectiles.cs", "EraseMode.Absorb"),
+        ("mode", "engel", "unity/Assets/Scripts/Core/Mechanic/ProjectileEraseRules.cs", "\"engel\""),
+        ("mode", "geri_gonder", "unity/Assets/Scripts/Core/Mechanic/ProjectileEraseRules.cs", "\"geri_gonder\""),
+        ("mode", "geri_gonder", "unity/Assets/Scripts/Game/ManifestationDirector.Projectiles.cs", "ReflectProjectile"),
+        ("mode", "delici", "unity/Assets/Scripts/Core/Mechanic/ProjectileEraseRules.cs", "\"delici\""),
+        ("mode", "delici", "unity/Assets/Scripts/Game/ManifestationDirector.Projectiles.cs", "EraseLine"),
+        ("mode", "sis_perdesi", "unity/Assets/Scripts/Core/Mechanic/ProjectileEraseRules.cs", "\"sis_perdesi\""),
+        ("mode", "sis_perdesi", "unity/Assets/Scripts/Game/HostileProjectileHost.cs", "InShroud"),
+        ("mode", "hedefli", "unity/Assets/Scripts/Core/Mechanic/ProjectileEraseRules.cs", "\"hedefli\""),
+        ("mode", "hedefli", "unity/Assets/Scripts/Game/ManifestationDirector.Projectiles.cs", "EraseMostUrgent"),
+        ("mode", "yukselen_perde", "unity/Assets/Scripts/Core/Mechanic/ProjectileEraseRules.cs", "\"yukselen_perde\""),
+        ("mode", "yukselen_perde", "unity/Assets/Scripts/Game/ManifestationDirector.Projectiles.cs", "spec.GrowTo"),
+        ("mode", "surekli_perde", "unity/Assets/Scripts/Core/Mechanic/ProjectileEraseRules.cs", "\"surekli_perde\""),
+        ("mode", "surekli_perde", "unity/Assets/Scripts/Game/ManifestationDirector.Projectiles.cs", "EraseShape.Follow"),
+        ("mode", "bag_hatti", "unity/Assets/Scripts/Core/Mechanic/ProjectileEraseRules.cs", "\"bag_hatti\""),
+        ("mode", "bag_hatti", "unity/Assets/Scripts/Game/ManifestationDirector.Projectiles.cs", "EraseAlongLink"),
+        ("engine", "decoy_aggro", "unity/Assets/Scripts/Core/Mechanic/MechanicRules.cs", "\"decoy_aggro\""),
         ("basic", "boss_push_m", "unity/Assets/Scripts/Game/ManifestationDirector.Weapons10.cs", "BossPushM"),
         ("basic", "hits", "unity/Assets/Scripts/Game/ManifestationDirector.JsonEffects.cs", "BasicHits"),
         ("basic", "interval_sec", "unity/Assets/Scripts/Game/ManifestationDirector.JsonEffects.cs", "BasicIntervalSec"),
@@ -205,24 +225,13 @@ public class JsonEffectCoverageTests
     // Boss tasarımına ertelenenler — yalnız bunlar handler'sız kalabilir.
     static readonly Dictionary<string, string> Deferred = new(StringComparer.Ordinal)
     {
-        ["mermi_sil"] = "projectile deletion (boss design)",
-        ["yut"] = "mermi_sil mode (boss design)",
-        ["engel"] = "mermi_sil mode (boss design)",
-        ["geri_gonder"] = "mermi_sil mode (boss design)",
-        ["delici"] = "mermi_sil mode on 9-1 (boss design)",
-        ["sis_perdesi"] = "mermi_sil mode (boss design)",
-        ["hedefli"] = "mermi_sil mode (boss design)",
-        ["yukselen_perde"] = "mermi_sil mode (boss design)",
-        ["surekli_perde"] = "mermi_sil mode (boss design)",
-        ["bag_hatti"] = "mermi_sil mode (boss design)",
         ["seker"] = "chain to next hostile target, needs small monsters (boss design)",
         ["sekmeli"] = "dash chain between hostile targets, needs small monsters (boss design)",
     };
 
     static readonly string[] ExpectedDeferred =
     {
-        "mermi_sil", "yut", "engel", "geri_gonder", "delici", "sis_perdesi", "hedefli", "yukselen_perde",
-        "surekli_perde", "bag_hatti", "seker", "sekmeli"
+        "seker", "sekmeli"
     };
 
     string _root = null!;

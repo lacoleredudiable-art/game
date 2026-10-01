@@ -185,6 +185,7 @@ namespace Dovus.Game.EditorTools
         static Animator _animator;
         static GameClock _clock;
         static SkillMotor _skills;
+        static HostileProjectileHost _projectiles;
 
         enum Stage { WaitScene, Idle, Setup, Settle, Record, Done }
 
@@ -228,6 +229,8 @@ namespace Dovus.Game.EditorTools
             public bool Airborne;
             public bool BossReversed;
             public bool DecoyAggro;
+            public int ProjectilesAlive;
+            public int ReflectedAlive;
         }
 
         struct Snapshot
@@ -253,6 +256,11 @@ namespace Dovus.Game.EditorTools
             public bool HasHitPhase;
             public bool ExpectsReverse;
             public bool ExpectsDecoyAggro;
+            /// <summary>mermi_sil ailesi: düzenek mermisi ve etki kontrolleri (plan verisinden).</summary>
+            public bool ExpectsErase;
+            public bool ExpectsAbsorb;
+            public bool ExpectsReflect;
+            public bool ExpectsLinkErase;
             public string ExpectedCat = "";
             public int Adj;
             public Vector3 SimFinal;
@@ -680,6 +688,7 @@ namespace Dovus.Game.EditorTools
             _ally = F<AllyDummy>(_md, "_ally");
             _clock = F<GameClock>(_md, "_clock");
             _skills = F<SkillMotor>(_md, "_skills");
+            _projectiles = F<HostileProjectileHost>(_md, "_projectiles");
             _playerVitals = _player.GetComponent<PlayerVitals>();
             if (_playerVitals != null)
                 _playerVitals.SuppressDown = true;
@@ -726,6 +735,7 @@ namespace Dovus.Game.EditorTools
                 _bossDirector.enabled = true;
             if (_playerVitals != null)
                 _playerVitals.SuppressDown = false;
+            _projectiles?.ClearAll();
             WriteOutputs();
             Status = "bitti: " + LastSummary;
             Debug.Log("[PlaySweep] " + LastSummary);
@@ -804,6 +814,7 @@ namespace Dovus.Game.EditorTools
             _bossHome = _boss.position;
             _playerShiftDone = 0f;
             _playerShiftDir = Vector3.zero;
+            PrepareProjectileFixture();
             _pre = Snap();
             RefreshBody();
             bool ok = _input.TryDebugCastSkill(c.Verb, c.Adj);
@@ -839,7 +850,8 @@ namespace Dovus.Game.EditorTools
             }
 
             bool started = _frames.Any(x => x.Playing);
-            bool idle = !f.Busy;
+            // Geri gönderilen mermi boss'a varana dek vaka bitmez (geri_gonder: boss canı düşmeli).
+            bool idle = !f.Busy && f.ReflectedAlive == 0;
             float delivered = Mathf.Max(_info.ExpectedSec, _info.DeliveryDelaySec);
             float minRecord = _info.RecoverySec + delivered + TailSec;
             float timeout = _info.RecoverySec + delivered + TimeoutExtraSec;
@@ -1082,6 +1094,8 @@ namespace Dovus.Game.EditorTools
 
             S(_md, "_closingChainBonus", 1f);
             _input.Dodge?.Reset();
+            _player.GetComponent<PlayerDodgeRig>()?.SkillIframe.Clear();
+            _projectiles?.ClearAll();
             _ally?.GetComponent<ActorGrounding>()?.SnapPlanted();
         }
 
@@ -1106,6 +1120,50 @@ namespace Dovus.Game.EditorTools
             if (threshold <= 0.05)
                 return;
             S(_ally, "_hp", Math.Max(1, (int)Math.Floor((threshold - 0.05) * _ally.MaxHp)));
+        }
+
+        /// <summary>
+        /// mermi_sil düzeneği: plan mermi siliyorsa (skill kimliği yok, gramer planından) cast anında
+        /// boss tarafından dosta doğru süzülen yavaş, ZARARSIZ düzenek mermileri doğar — dostun,
+        /// oyuncunun, oyuncu↔boss hattının ve oyuncu↔dost bağının üstünde. Zararsız: dostlara
+        /// çarpmaz, yalnız silme/yutma/geri gönderme/perde kurallarını sınar. Sayaçlar burada sıfırlanır.
+        /// </summary>
+        static void PrepareProjectileFixture()
+        {
+            if (_projectiles == null)
+                return;
+            _projectiles.ClearAll();
+            _projectiles.Sim.ResetCounters();
+            if (_info == null || !_info.ExpectsErase)
+                return;
+            var combat = F<Dovus.Core.Tuning.CombatTuning>(_md, "_combat");
+            float dmg = combat != null ? combat.Boss.VolleyDamage : 6f;
+            float radius = combat != null ? combat.Boss.VolleyRadiusM : 0.35f;
+            const float speed = 0.3f;
+            const float life = 10f;
+            Vector3 b = Flat(_boss.position);
+            Vector3 p = Flat(_player.position);
+            void Toward(Vector3 at, Vector3 friend)
+            {
+                Vector3 v = friend - at;
+                v.y = 0f;
+                v = v.sqrMagnitude > 0.0001f ? v.normalized * speed : Vector3.zero;
+                _projectiles.Spawn(at, v, radius, dmg, life, targetId: 1, harmless: true);
+            }
+            Vector3 pb = (b - p).sqrMagnitude > 0.0001f ? (b - p).normalized : Vector3.forward;
+            Toward(p + pb * 1.2f, p);
+            Toward(Vector3.Lerp(p, b, 0.5f), p);
+            Toward(Vector3.Lerp(p, b, 0.8f), p);
+            if (_ally != null)
+            {
+                Vector3 a = Flat(_ally.transform.position);
+                Vector3 ab = (b - a).sqrMagnitude > 0.0001f ? (b - a).normalized : Vector3.forward;
+                Vector3 side = new Vector3(-ab.z, 0f, ab.x);
+                Toward(a + ab * 0.6f, a);
+                Toward(a + side * 0.6f, a);
+                Toward(Vector3.Lerp(p, a, 0.5f), a);
+            }
+            _projectiles.Sim.ResetCounters();
         }
 
         /// <summary>
@@ -1183,6 +1241,11 @@ namespace Dovus.Game.EditorTools
             {
                 info.ExpectsReverse = keys.Effects.Any(e => e.Target == "dusman" && e.Has("ters_kontrol"));
                 info.ExpectsDecoyAggro = keys.Effects.Any(e => e.Has("dikkat_ceker"));
+                Dovus.Core.Mechanic.MechanicEffect erase = keys.Effects.FirstOrDefault(e => e.Stat == "mermi_sil");
+                info.ExpectsErase = erase != null;
+                info.ExpectsAbsorb = erase != null && erase.Has("yut");
+                info.ExpectsReflect = erase != null && erase.Has("geri_gonder");
+                info.ExpectsLinkErase = erase != null && erase.Has("bag_hatti") && keys.Body.Link;
             }
             info.BossR = Call<float>(_md, "BossBodyRadius");
             float pr = Call<float>(_md, "PlayerBodyRadiusM");
@@ -1327,6 +1390,8 @@ namespace Dovus.Game.EditorTools
                 BossReversed = _bossDirector != null && _bossDirector.IsReversed,
                 DecoyAggro = _bossDirector != null && _bossDirector.Targets != null
                     && _bossDirector.Targets.DecoyHoldsAggro(),
+                ProjectilesAlive = _projectiles != null ? _projectiles.Sim.AliveCount : 0,
+                ReflectedAlive = ReflectedAlive(),
             };
             SentencePhase sentence = _input.Engine != null ? _input.Engine.State.Phase : SentencePhase.Idle;
             bool drawing = sentence == SentencePhase.Building || sentence == SentencePhase.Recovering;
@@ -1393,6 +1458,20 @@ namespace Dovus.Game.EditorTools
                 f.AllyFootGround = FootGroundOf(_ally.transform);
             }
             return f;
+        }
+
+        static int ReflectedAlive()
+        {
+            if (_projectiles == null)
+                return 0;
+            int n = 0;
+            for (int i = 0; i < _projectiles.Sim.MaxAlive; i++)
+            {
+                Projectile p = _projectiles.Sim.Slot(i);
+                if (p.Alive && p.Team == 0)
+                    n++;
+            }
+            return n;
         }
 
         static float FeetOrRoot(Transform actor)
@@ -1563,6 +1642,8 @@ namespace Dovus.Game.EditorTools
                     r.Notes.Add("dikkat_ceker: yem boss hedefi olmadı");
                 }
             }
+            if (_info.ExpectsErase)
+                EvaluateProjectiles(r, effects, heal);
             int roots = _player.gameObject.scene.rootCount - _pre.RootCount;
             r.Effects = string.Join(", ", effects);
             r.Hit = r.Damage > 0.01f || effects.Count > 0;
@@ -1795,6 +1876,52 @@ namespace Dovus.Game.EditorTools
             if (last < 0)
                 return _frames.Count > 0 ? _frames[_frames.Count - 1].T : 0f;
             return _frames[_frames.Count - 1].T - _frames[last].T;
+        }
+
+        /// <summary>
+        /// mermi_sil etkisi: düzenek mermisinden en az biri silinmeli / yutulmalı / geri dönmeli / perdeye
+        /// girmeli. yut: yutma + oyuncu canı arttı. geri_gonder: geri dönüş + boss canı düştü.
+        /// bag_hatti: bağ şeridi sildi. Canlı mermi hiçbir karede tavanı (40) aşmamalı.
+        /// </summary>
+        static void EvaluateProjectiles(PlaySweepResult r, List<string> effects, int heal)
+        {
+            if (_projectiles == null)
+            {
+                r.Effect = false;
+                r.Notes.Add("mermi_sil: mermi sahibi yok");
+                return;
+            }
+            HostileProjectiles sim = _projectiles.Sim;
+            int erased = sim.ErasedTotal, absorbed = sim.AbsorbedTotal, reflected = sim.ReflectedTotal;
+            int shrouded = sim.ShroudedTotal, linked = sim.LinkErasedTotal;
+            int any = erased + absorbed + reflected + shrouded + linked;
+            effects.Add($"mermi sil {erased} yut {absorbed} dön {reflected} perde {shrouded} bağ {linked}");
+            if (any < 1)
+            {
+                r.Effect = false;
+                r.Notes.Add("mermi_sil: düzenek mermisi silinmedi");
+            }
+            if (_info.ExpectsAbsorb && (absorbed < 1 || heal <= 0))
+            {
+                r.Effect = false;
+                r.Notes.Add($"yut: yutulan {absorbed}, oyuncu canı +{heal}");
+            }
+            if (_info.ExpectsReflect && (reflected < 1 || r.Damage <= 0.01f))
+            {
+                r.Effect = false;
+                r.Notes.Add($"geri_gonder: dönen {reflected}, boss hasarı {r.Damage:F1}");
+            }
+            if (_info.ExpectsLinkErase && linked < 1)
+            {
+                r.Effect = false;
+                r.Notes.Add("bag_hatti: bağ şeridi mermi silmedi");
+            }
+            int peak = Math.Max(sim.PeakAlive, _frames.Count > 0 ? _frames.Max(x => x.ProjectilesAlive) : 0);
+            if (peak > HostileProjectiles.DefaultMaxAlive)
+            {
+                r.Effect = false;
+                r.Notes.Add($"mermi tavanı aşıldı: {peak}");
+            }
         }
 
         static void EvaluateGround(PlaySweepResult r)

@@ -1411,7 +1411,8 @@
               "label": "Kopyalama",
               "duplicate_cast": true,
               "duplicate_delay_sec": 0.3,
-              "duplicate_damage_mult": 1.0
+              "duplicate_damage_mult": 1.0,
+              "decoy_aggro": true
             },
             "prose_mechanic": "İki katman",
             "prose_feel": "İkiz",
@@ -2788,7 +2789,8 @@
               "label": "Kopyalama",
               "duplicate_cast": true,
               "duplicate_delay_sec": 0.3,
-              "duplicate_damage_mult": 1.0
+              "duplicate_damage_mult": 1.0,
+              "decoy_aggro": true
             },
             "prose_mechanic": "İki kez tetiklenir",
             "prose_feel": "İkiz",
@@ -2975,7 +2977,8 @@
               "hitbox": "self",
               "label": "Bulandırma",
               "accuracy_debuff": 0.3,
-              "lifetime_add": 3.0
+              "lifetime_add": 3.0,
+              "decoy_aggro": true
             },
             "prose_mechanic": "Yansı + kör etme",
             "prose_feel": "Şaşırtıcı",
@@ -3063,7 +3066,8 @@
               "label": "Kopyalama",
               "duplicate_cast": true,
               "duplicate_delay_sec": 0.3,
-              "duplicate_damage_mult": 1.0
+              "duplicate_damage_mult": 1.0,
+              "decoy_aggro": true
             },
             "prose_mechanic": "İki kez tetiklenir",
             "prose_feel": "İkiz",
@@ -7459,7 +7463,10 @@
       "pincer_delay_sec": 0.2,
       "pincer_second_share": 0.5,
       "cleanse_power_per_status": 0.1,
-      "shield_shock_radius_m": 3.0
+      "shield_shock_radius_m": 3.0,
+      "erase_line_width_m": 1.0,
+      "targeted_erase_per_sec": 2.0,
+      "projectile_reflect_mult": 1.0
     },
   
     "checks": {

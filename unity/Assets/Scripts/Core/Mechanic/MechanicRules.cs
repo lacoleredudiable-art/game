@@ -114,6 +114,23 @@ namespace Dovus.Core.Mechanic
 
         public double Param(string key) => _grammar["params"][key].AsDouble();
 
+        /// <summary>
+        /// skills.by_verb[v].skills[id "v-a"].engine[key] (bool). Skill satırı yoksa false.
+        /// Gramer yalnız "decoy_aggro"yu okur: açıklaması yem/klon olan skill (4-11, 9-11, 10-7, 10-11)
+        /// dikkat çeken yem bırakır — kullanıcı onaylı bağlayıcı JSON kararı (D17), fiil×sıfat dalı değil.
+        /// </summary>
+        public bool SkillEngineFlag(int verb, int adjective, string key)
+        {
+            string id = Key(verb) + "-" + Key(adjective);
+            foreach (JsonValue s in _root["skills"]["by_verb"][Key(verb)]["skills"].AsArray())
+                if (s["id"].AsString() == id)
+                    return s["engine"][key].AsBool(false);
+            return false;
+        }
+
+        /// <summary>Gramerin okuduğu skill bayrağı (bkz. <see cref="SkillEngineFlag"/>).</summary>
+        public bool SkillLeavesDecoy(int verb, int adjective) => SkillEngineFlag(verb, adjective, "decoy_aggro");
+
         /// <summary>weapons[].passive alanı. Yoksa fallback.</summary>
         public double WeaponPassiveNum(int weaponId, string key, double fallback)
         {

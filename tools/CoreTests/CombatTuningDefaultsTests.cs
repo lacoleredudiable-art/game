@@ -16,7 +16,7 @@ public class CombatTuningDefaultsTests
         {
             Assert.That(t.Dodge.StartupMs, Is.EqualTo(10));
             Assert.That(t.Dodge.IframeStartMs, Is.EqualTo(0));
-            Assert.That(t.Dodge.IframeMs, Is.EqualTo(300));
+            Assert.That(t.Dodge.IframeMs, Is.EqualTo(260));
             Assert.That(t.Dodge.DistanceM, Is.EqualTo(4f));
             Assert.That(t.Dodge.DurationMs, Is.EqualTo(250));
             Assert.That(t.Dodge.MaxCharges, Is.EqualTo(2));

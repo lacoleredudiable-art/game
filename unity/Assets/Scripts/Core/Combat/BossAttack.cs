@@ -16,6 +16,7 @@ namespace Dovus.Core.Combat
         SlamVariant _variant;
         BossAttackKind _kind = BossAttackKind.Slam;
         float _arcHalfAngleDeg = 180f;
+        int _volleyCount;
 
         public BossAttack(BossTuning? tuning = null)
         {
@@ -31,12 +32,26 @@ namespace Dovus.Core.Combat
         public float RadiusM => _radiusM;
         /// <summary>Tam daire (Slam) = 180; FireCone daha dar bir yay.</summary>
         public float ArcHalfAngleDeg => _arcHalfAngleDeg;
-        public int Damage => _kind == BossAttackKind.FireCone ? _tuning.FireConeDamage : _tuning.Damage;
+        public int Damage => _kind switch
+        {
+            BossAttackKind.FireCone => _tuning.FireConeDamage,
+            BossAttackKind.Volley => _tuning.VolleyDamage,
+            _ => _tuning.Damage
+        };
+
+        /// <summary>Volley: bu salvodaki mermi sayısı (öfkede count_enraged).</summary>
+        public int VolleyCount => _kind == BossAttackKind.Volley ? _volleyCount : 0;
+        /// <summary>Volley yelpazesinin TAM açısı (derece). Körlük çağıranda +%50 genişletir.</summary>
+        public float VolleySpreadDeg => _tuning.VolleySpreadDeg;
+        public float VolleySpeedMps => _tuning.VolleySpeedMps;
+        public float VolleyRadiusM => _tuning.VolleyRadiusM;
+        public float VolleyLifeSec => _tuning.VolleyLifeSec;
 
         /// <summary>Bir sonraki çakmanın ritmini ayarlar (Slam) — telegraf başlamadan çağrılır.</summary>
         public void ApplyVariant(SlamVariant variant)
         {
             _kind = BossAttackKind.Slam;
+            _volleyCount = 0;
             _variant = variant;
             _windupMs = _tuning.WindupMsFor(variant);
             _radiusM = _tuning.RadiusMFor(variant);
@@ -50,10 +65,25 @@ namespace Dovus.Core.Combat
         public void ApplyFireCone()
         {
             _kind = BossAttackKind.FireCone;
+            _volleyCount = 0;
             _variant = SlamVariant.Yakin;
             _windupMs = _tuning.FireConeWindupMs;
             _radiusM = _tuning.FireConeRadiusM;
             _arcHalfAngleDeg = _tuning.FireConeArcHalfAngleDeg;
+        }
+
+        /// <summary>
+        /// Zehir Tükürüğü (karadul.json "volley"): yelpaze mermi. Telegraf dar yay (yarı açı =
+        /// yelpazenin yarısı), boyu VolleyTelegraphRangeM. Vuruş anında hacim testi yapılmaz.
+        /// </summary>
+        public void ApplyVolley(bool enraged)
+        {
+            _kind = BossAttackKind.Volley;
+            _variant = SlamVariant.Yakin;
+            _windupMs = _tuning.VolleyWindupMs;
+            _radiusM = _tuning.VolleyTelegraphRangeM;
+            _arcHalfAngleDeg = Math.Max(1f, _tuning.VolleySpreadDeg * 0.5f);
+            _volleyCount = Math.Max(1, enraged ? _tuning.VolleyCountEnraged : _tuning.VolleyCount);
         }
 
         public int StrikeTimeMs(int telegraphStartMs) => telegraphStartMs + WindupMs;

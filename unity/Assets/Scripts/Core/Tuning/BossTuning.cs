@@ -30,8 +30,22 @@ namespace Dovus.Core.Tuning
         public int FireConeDamage = 18;
         public float FireConeRadiusM = 6.0f;
         public float FireConeArcHalfAngleDeg = 40f;
-        /// <summary>Aynı saldırı TÜRÜnün (Slam/FireCone) üst üste tekrar tavanı — SlamVariant'la aynı desen.</summary>
+        /// <summary>Aynı saldırı TÜRÜnün (Slam/FireCone/Volley) üst üste tekrar tavanı — SlamVariant'la aynı desen.</summary>
         public int MaxSameAttackKindStreak = 2;
+
+        // Zehir Tükürüğü — karadul.json "volley" (BossEncounterData yükler; bunlar dosyayla aynı
+        // varsayılanlar). Oyuncu canı 22: mermi 6 → tam salvo ≈ %80 can.
+        public int VolleyWindupMs = 700;
+        public int VolleyCount = 3;
+        public int VolleyCountEnraged = 5;
+        /// <summary>Yelpazenin TAM açısı (derece).</summary>
+        public float VolleySpreadDeg = 30f;
+        public float VolleySpeedMps = 7f;
+        public int VolleyDamage = 6;
+        public float VolleyRadiusM = 0.35f;
+        public float VolleyLifeSec = 3f;
+        /// <summary>Telegraf yayının boyu (yalnız çizim; vuruş hacmi yok). Spec'te yok, his değeri.</summary>
+        public float VolleyTelegraphRangeM = 8f;
 
         public int ActiveMs = 90;
         public int RecoveryMs = 720;
@@ -82,6 +96,15 @@ namespace Dovus.Core.Tuning
             FireConeRadiusM = other.FireConeRadiusM;
             FireConeArcHalfAngleDeg = other.FireConeArcHalfAngleDeg;
             MaxSameAttackKindStreak = other.MaxSameAttackKindStreak;
+            VolleyWindupMs = other.VolleyWindupMs;
+            VolleyCount = other.VolleyCount;
+            VolleyCountEnraged = other.VolleyCountEnraged;
+            VolleySpreadDeg = other.VolleySpreadDeg;
+            VolleySpeedMps = other.VolleySpeedMps;
+            VolleyDamage = other.VolleyDamage;
+            VolleyRadiusM = other.VolleyRadiusM;
+            VolleyLifeSec = other.VolleyLifeSec;
+            VolleyTelegraphRangeM = other.VolleyTelegraphRangeM;
             ActiveMs = other.ActiveMs;
             RecoveryMs = other.RecoveryMs;
             Damage = other.Damage;

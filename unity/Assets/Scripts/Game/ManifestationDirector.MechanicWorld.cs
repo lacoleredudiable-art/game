@@ -40,6 +40,10 @@ namespace Dovus.Game
             public ClosingHit Closing;
             public bool Triggered;
             public double ArmAtMs;
+            /// <summary>mermi_sil: bu hacmin düşman mermisine kuralı (boş = yok). MD.Projectiles uygular.</summary>
+            public EraseSpec Erase;
+            public double NextEraseMs;
+            public bool TwiceDone;
         }
 
         sealed class MechanicLink
@@ -110,6 +114,8 @@ namespace Dovus.Game
                 SpawnMechanicVolume(plan, profile, center, worldMs);
             if (profile.Link)
                 SpawnMechanicLink(plan, worldMs);
+            if (profile.ProjectileBarrier)
+                BeginProjectileErase(plan, aimDir, center);
 
             foreach (MechanicEffect e in plan.Effects)
             {
@@ -255,7 +261,9 @@ namespace Dovus.Game
                 StartMs = worldMs,
                 Skill = _jsonCastSkill,
                 Closing = _jsonCastClosing,
-                ArmAtMs = worldMs + JsonEffectRules.TrapArmSec(plan.Body, JsonRules) * 1000.0
+                ArmAtMs = worldMs + JsonEffectRules.TrapArmSec(plan.Body, JsonRules) * 1000.0,
+                Erase = profile.ProjectileBarrier ? ProjectileEraseSpec(plan) : default,
+                NextEraseMs = worldMs
             });
         }
 
