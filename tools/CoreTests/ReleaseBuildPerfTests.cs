@@ -197,4 +197,25 @@ public class ReleaseBuildPerfTests
         string q = File.ReadAllText(Path.Combine(Root(), "unity", "ProjectSettings", "QualitySettings.asset"));
         Assert.That(q, Does.Match(@"m_PerPlatformDefaultQuality:\r?\n    Android: 1"));
     }
+
+    /// <summary>
+    /// Release APK'da BUILD SEÇ dokunuş almıyordu: tek EventSystem debug ayar paneliyle
+    /// (DebugConfig.Enabled kapısı içinde) kuruluyordu. EventSystem kapının DIŞINDA kurulmalı.
+    /// </summary>
+    [Test]
+    public void EventSystem_IsCreated_OutsideDebugGate()
+    {
+        string boot = Game("PrototypeBootstrap.cs");
+        int ensure = boot.IndexOf("EnsureEventSystem();", System.StringComparison.Ordinal);
+        int gate = boot.IndexOf("CreateTuningPanel(tuningConfig, vitals);", System.StringComparison.Ordinal);
+        Assert.That(ensure, Is.GreaterThan(0));
+        Assert.That(gate, Is.GreaterThan(ensure));
+        string between = boot.Substring(ensure, gate - ensure);
+        Assert.That(between, Does.Contain("if (DebugConfig.Enabled)"), "EnsureEventSystem debug kapısından ÖNCE çağrılmalı");
+        int body = boot.IndexOf("static void CreateTuningPanel(", System.StringComparison.Ordinal);
+        int next = boot.IndexOf("static void EnsureEventSystem(", System.StringComparison.Ordinal);
+        Assert.That(next, Is.GreaterThan(body));
+        Assert.That(boot.Substring(body, next - body), Does.Not.Contain("AddComponent<EventSystem>"));
+        Assert.That(boot, Does.Contain("AddComponent<InputSystemUIInputModule>()"));
+    }
 }
