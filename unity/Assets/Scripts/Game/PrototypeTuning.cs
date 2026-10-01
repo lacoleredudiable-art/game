@@ -162,7 +162,9 @@ namespace Dovus.Game
         public Color BloomTint = new Color(1f, 0.86f, 0.72f);
         public float PostExposure = 0.15f;
         public float ColorContrast = -14f;
-        public float ColorSaturation = -22f;
+        /// <summary>Spec "~%35 doygunluk düşüşü" (task-ambience-fix); PR #43'ün gönderdiği -22
+        /// değil, görevin kendi istediği oran — sahnede görünür olmalı.</summary>
+        public float ColorSaturation = -35f;
         public Color ColorFilterTint = new Color(0.95f, 0.975f, 1f);
         public float PostVignetteIntensity = 0.12f;
         /// <summary>Ufuk siluet/kayaları görünür kalsın diye uzak kırpma düzlemi büyütüldü (eski 120m).</summary>
@@ -402,7 +404,7 @@ namespace Dovus.Game
         // tasarımcının bilinçli 0'ı (ör. nabzı kapatmak) artık ezilmez (T8.1).
         [HideInInspector] public int TuningVersion = CurrentVersion;
 
-        const int CurrentVersion = 18;
+        const int CurrentVersion = 19;
 
         /// <summary>Sürümü geçmiş serileşmiş kopyayı bu sürümün varsayılanlarına çeker.</summary>
         public void EnsureRuntimeDefaults()
@@ -697,6 +699,37 @@ namespace Dovus.Game
             CameraPitchMinDeg = fresh.CameraPitchMinDeg;
             CameraPitchMaxDeg = fresh.CameraPitchMaxDeg;
             OrbitInvertPitch = fresh.OrbitInvertPitch;
+
+            // v19 (task-ambience-fix): sahnede serileşmiş eski (gece/karanlık) atmosfer
+            // değerleri v16'dan beri hiç kod varsayılanına çekilmemişti — AmbientSky/FogColor/
+            // BackgroundColor gibi alanlar zaten vardı, yalnızca değerleri değişti, bu yüzden
+            // önceki migrate bloğu bir kez çalışıp sürümü kilitledikten sonra yeni gri/sis
+            // varsayılanları hiçbir zaman uygulanmadı (sahne hâlâ koyu lacivert gökyüzü/sis
+            // gösteriyordu). Bu blok atmosferi açıkça güncel koda zorlar.
+            AmbientSky = fresh.AmbientSky;
+            AmbientEquator = fresh.AmbientEquator;
+            AmbientGround = fresh.AmbientGround;
+            FogColor = fresh.FogColor;
+            FogDensity = fresh.FogDensity;
+            KeyLightColor = fresh.KeyLightColor;
+            KeyLightIntensity = fresh.KeyLightIntensity;
+            KeyLightEuler = fresh.KeyLightEuler;
+            KeyShadowStrength = fresh.KeyShadowStrength;
+            RimLightColor = fresh.RimLightColor;
+            RimLightIntensity = fresh.RimLightIntensity;
+            RimLightEuler = fresh.RimLightEuler;
+            BloomIntensity = fresh.BloomIntensity;
+            BloomThreshold = fresh.BloomThreshold;
+            BloomScatter = fresh.BloomScatter;
+            BloomTint = fresh.BloomTint;
+            PostExposure = fresh.PostExposure;
+            ColorContrast = fresh.ColorContrast;
+            ColorSaturation = fresh.ColorSaturation;
+            ColorFilterTint = fresh.ColorFilterTint;
+            PostVignetteIntensity = fresh.PostVignetteIntensity;
+            CameraFarClipM = fresh.CameraFarClipM;
+            GroundColor = fresh.GroundColor;
+            BackgroundColor = fresh.BackgroundColor;
 
             TuningVersion = CurrentVersion;
         }

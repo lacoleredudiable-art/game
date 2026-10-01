@@ -21,6 +21,16 @@ namespace Dovus.Game
         const int RockCount = 22;
         const float RockMinScale = 1.0f;
         const float RockMaxScale = 1.8f;
+        // Ground_Near kendi rölyefiyle geldi (ölçeklendikten sonra ~4 m'ye kadar tümsek) —
+        // telefon referansındaki (phone-shot.png) düz lav ovasına uymuyordu ve bir tümsek
+        // kamera mesafesine (~2 m göz yüksekliği) girip "ekranı dolduran koyu kaya" yanılsaması
+        // yaratıyordu (task-ambience-fix problem 1/3). Yükseklik ayrı sıkıştırılır, taban izi
+        // (collider'sız, salt görsel) değişmez.
+        const float NearGroundHeightSquash = 0.22f;
+        // Kayalar sabit Y'de dururken Ground_Near'ın (sıkıştırılmış) rölyefi hâlâ bu seviyenin
+        // biraz üstüne çıkabilir — taban gömülü kalsın diye kayalar eskisinden (−0.3) biraz
+        // daha derine gömülür (problem 3: "kaya havada yüzüyor").
+        const float RockGroundYM = -0.6f;
 
         public static void Build(GameObject arenaRoot, float walkHalfM, PrototypeTuning tuning)
         {
@@ -48,7 +58,9 @@ namespace Dovus.Game
             root.transform.SetParent(arenaRoot.transform, false);
             root.transform.position = center;
 
-            PlaceEnvMesh(assets.GroundNearModel, assets.GroundMaterial, root.transform, nearScale, "Ground_Near");
+            PlaceEnvMesh(
+                assets.GroundNearModel, assets.GroundMaterial, root.transform,
+                new Vector3(nearScale, nearScale * NearGroundHeightSquash, nearScale), "Ground_Near");
             PlaceEnvMesh(assets.GroundFarModel, assets.GroundMaterial, root.transform, 1f, "Ground_Far");
             PlaceEnvMesh(assets.SkylineModel, assets.SkylineMaterial, root.transform, 1f, "Skyline_Far");
             PlaceEnvMesh(assets.EdgeMistModel, assets.EdgeMistMaterial, root.transform, nearScale, "EdgeMist");
@@ -66,7 +78,10 @@ namespace Dovus.Game
             BuildRockRing(assets, root.transform, walkHalfM, Mathf.Max(1f, tuning?.ArenaWallThicknessM ?? 1.4f));
         }
 
-        static GameObject PlaceEnvMesh(GameObject model, Material mat, Transform parent, float scale, string name)
+        static GameObject PlaceEnvMesh(GameObject model, Material mat, Transform parent, float scale, string name) =>
+            PlaceEnvMesh(model, mat, parent, Vector3.one * scale, name);
+
+        static GameObject PlaceEnvMesh(GameObject model, Material mat, Transform parent, Vector3 scale, string name)
         {
             if (model == null)
                 return null;
@@ -74,7 +89,7 @@ namespace Dovus.Game
             go.name = name;
             go.transform.localPosition = Vector3.zero;
             go.transform.localRotation = Quaternion.identity;
-            go.transform.localScale = Vector3.one * scale;
+            go.transform.localScale = scale;
             SetMaterial(go, mat);
             SetShadowsOff(go);
             return go;
@@ -102,7 +117,7 @@ namespace Dovus.Game
                 float t = (i + (float)rng.NextDouble() * 0.8f) / RockCount;
                 float angle = t * Mathf.PI * 2f;
                 float radius = Mathf.Lerp(innerR, outerR, (float)rng.NextDouble());
-                var pos = new Vector3(Mathf.Sin(angle) * radius, -0.3f, Mathf.Cos(angle) * radius);
+                var pos = new Vector3(Mathf.Sin(angle) * radius, RockGroundYM, Mathf.Cos(angle) * radius);
 
                 var go = UnityEngine.Object.Instantiate(kind.Model, rocksRoot.transform);
                 go.name = $"{kind.Model.name}_{i:00}";

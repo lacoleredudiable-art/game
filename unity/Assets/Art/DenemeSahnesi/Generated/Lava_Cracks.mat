@@ -25,9 +25,9 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _CoreWidth: 0.45
+    - _CoreWidth: 0.16
     - _FogStrength: 1
-    - _Intensity: 1
+    - _Intensity: 0.55
     - _PulseAmount: 0.25
     - _PulseScale: 0.35
     - _PulseSpeed: 0.6
