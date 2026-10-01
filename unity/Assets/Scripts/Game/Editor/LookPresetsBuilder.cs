@@ -34,10 +34,12 @@ namespace Dovus.Game.EditorTools
             var b = BuildBaseProfile();
             SetBloomThreshold(b, 1.12f);
             AddCoolGrade(b);
+            StrengthenB(b);
             SaveProfile("Look_B_Keskin", b);
             var c = BuildBaseProfile();
             SetBloomThreshold(c, 1.12f);
             AddCoolGrade(c);
+            TuneC(c);
             SaveProfile("Look_C_Gelismis", c);
         }
 
@@ -82,6 +84,31 @@ namespace Dovus.Game.EditorTools
             smh.shadows.Override(new Vector4(0.98f, 1f, 1.02f, 0f));
             smh.midtones.Override(new Vector4(0.96f, 0.98f, 1f, 0f));
             smh.highlights.Override(new Vector4(1f, 1f, 1f, 0f));
+        }
+
+        static void StrengthenB(VolumeProfile profile)
+        {
+            if (profile.TryGet(out ColorAdjustments colorAdj))
+            {
+                colorAdj.contrast.Override(-2f);
+                colorAdj.postExposure.Override(0.06f);
+                colorAdj.colorFilter.Override(new Color(0.92f, 0.96f, 1f));
+            }
+
+            if (profile.TryGet(out ShadowsMidtonesHighlights smh))
+                smh.shadows.Override(new Vector4(0.9f, 0.94f, 1.03f, -0.1f));
+
+            if (profile.TryGet(out Vignette vignette))
+                vignette.intensity.Override(0.2f);
+        }
+
+        static void TuneC(VolumeProfile profile)
+        {
+            if (profile.TryGet(out ColorAdjustments colorAdj))
+            {
+                colorAdj.postExposure.Override(0.02f);
+                colorAdj.contrast.Override(-6f);
+            }
         }
 
         static void SaveProfile(string name, VolumeProfile profile)
@@ -171,7 +198,10 @@ namespace Dovus.Game.EditorTools
                 down.boolValue = true;
             var radius = so.FindProperty("m_Settings.m_Radius");
             if (radius != null)
-                radius.floatValue = 0.3f;
+                radius.floatValue = 0.22f;
+            var intensity = so.FindProperty("m_Settings.m_Intensity");
+            if (intensity != null)
+                intensity.floatValue = 0.35f;
             var samples = so.FindProperty("m_Settings.m_SampleCount");
             if (samples != null)
                 samples.intValue = 0;
