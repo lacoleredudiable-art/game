@@ -510,7 +510,7 @@ namespace Dovus.Game
                 Destroy(col);
             Renderer renderer = _fuse.GetComponent<Renderer>();
             if (renderer != null)
-                renderer.material.color = new Color(1f, 0.42f, 0.08f);
+                SharedTint.Apply(renderer, new Color(1f, 0.42f, 0.08f));
         }
 
         void ClearFuse()

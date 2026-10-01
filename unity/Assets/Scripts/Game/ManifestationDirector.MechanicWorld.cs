@@ -159,7 +159,7 @@ namespace Dovus.Game
             wall.transform.localScale = new Vector3(length, height, thickness);
             Renderer renderer = wall.GetComponent<Renderer>();
             if (renderer != null)
-                renderer.material.color = new Color(0.35f, 0.7f, 0.95f, 0.8f);
+                SharedTint.Apply(renderer, new Color(0.35f, 0.7f, 0.95f, 0.8f));
             _mechanicBodies.Add(new MechanicWorldBody { View = wall, UntilMs = untilMs });
             DebugConfig.DevLog($"[MechanicWorld] collider {wall.name} size={length:0.#}×{height:0.#} life={(untilMs - (_clock?.Director.WorldTimeMs ?? 0)) / 1000.0:0.#}sn");
         }
@@ -184,7 +184,7 @@ namespace Dovus.Game
             body.transform.localScale = new Vector3(size, size * 1.8f, size);
             Renderer renderer = body.GetComponent<Renderer>();
             if (renderer != null)
-                renderer.material.color = new Color(0.2f, 0.9f, 1f, 0.45f);
+                SharedTint.Apply(renderer, new Color(0.2f, 0.9f, 1f, 0.45f));
             _mechanicBodies.Add(new MechanicWorldBody
             {
                 View = body,
@@ -274,7 +274,7 @@ namespace Dovus.Game
             LineRenderer line = go.AddComponent<LineRenderer>();
             line.positionCount = 2;
             line.startWidth = line.endWidth = Mathf.Max(0.02f, (float)plan.Body.SizeM * 0.1f);
-            line.material = new Material(Shader.Find("Sprites/Default"));
+            line.sharedMaterial = SharedTint.ForShader("Sprites/Default");
             line.startColor = new Color(0.3f, 0.9f, 1f, 0.85f);
             line.endColor = new Color(0.9f, 0.35f, 1f, 0.85f);
             double linkTickRate = MechanicEngine?.Rules.AdjNum(plan.Adjective, "tick_rate_mult", 1) ?? 1;
@@ -531,7 +531,7 @@ namespace Dovus.Game
         void TickGuardTriggers(double worldMs)
         {
             double threshold = MechanicEngine?.Rules.Param("guard_threshold") ?? 0;
-            PlayerVitals playerVitals = _player != null ? _player.GetComponent<PlayerVitals>() : null;
+            PlayerVitals playerVitals = CachedPlayerVitals();
             for (int i = _guardTriggers.Count - 1; i >= 0; i--)
             {
                 GuardTrigger guard = _guardTriggers[i];

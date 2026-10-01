@@ -176,13 +176,22 @@ namespace Dovus.Game
             return pos;
         }
 
+        Transform _reactorOwner;
+        BossReactor _reactorCache;
+
         Vector3 KeepBossEdge(Vector3 pos)
         {
             if (_boss == null)
                 return pos;
             float body = _motor != null ? _motor.BodyRadiusM : 0.5f;
             float bossR = 0.85f;
-            BossReactor reactor = _boss.GetComponent<BossReactor>();
+            // O11: yer değiştirme karesi başına GetComponent yerine boss başına bir kez.
+            if (_reactorOwner != _boss || _reactorCache == null)
+            {
+                _reactorOwner = _boss;
+                _reactorCache = _boss.GetComponent<BossReactor>();
+            }
+            BossReactor reactor = _reactorCache;
             if (reactor != null && reactor.BodyRadiusM > 0.01f)
                 bossR = reactor.BodyRadiusM;
             float gap = _tuning != null ? _tuning.EdgeGapM : 0.15f;

@@ -55,7 +55,7 @@ namespace Dovus.Game
             if (_emHealRatio > 0f && incomingDamage > 0.5f && _clock != null
                 && _clock.Director.WorldTimeMs < _emHealUntilMs && _player != null)
             {
-                PlayerVitals vitals = _player.GetComponent<PlayerVitals>();
+                PlayerVitals vitals = CachedPlayerVitals();
                 int heal = Mathf.RoundToInt(incomingDamage * _emHealRatio);
                 if (vitals != null && heal > 0)
                     vitals.ApplyHeal(heal);
@@ -283,7 +283,7 @@ namespace Dovus.Game
             lifesteal += _slotPassives?.LifestealAddFor(_slotQueryCastId) ?? 0f;
             if (lifesteal > 0f && _player != null)
             {
-                var vitals = _player.GetComponent<PlayerVitals>();
+                var vitals = CachedPlayerVitals();
                 int heal = Mathf.RoundToInt(damage * lifesteal);
                 if (vitals != null && heal > 0)
                     vitals.ApplyHeal(heal);

@@ -291,7 +291,7 @@ namespace Dovus.Game
             string weaponNames = _weapons.Count > 0
                 ? string.Join("+", _weapons.ConvertAll(w => w.Name))
                 : "—";
-            Debug.Log(
+            DebugConfig.DevLog(
                 $"[BuildSelect] build=[{string.Join(",", loadout.RuneIds)}] class={className} silah={weaponNames}");
             Close();
         }

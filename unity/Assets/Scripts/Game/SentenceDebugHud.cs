@@ -103,7 +103,8 @@ namespace Dovus.Game
 
         void LateUpdate()
         {
-            if (_text == null || _engine == null)
+            // O11: gizliyken her kare metin kurma (telefonda varsayılan gizli).
+            if (_text == null || _engine == null || _root == null || !_root.activeSelf)
                 return;
 
             var sb = new StringBuilder(64);

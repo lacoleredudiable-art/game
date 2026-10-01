@@ -26,6 +26,21 @@ namespace Dovus.Game
         CombatTuning _combat;
         PrototypeTuning _colors;
         Transform _player;
+        PlayerVitals _playerVitalsCache;
+        Transform _playerVitalsOwner;
+
+        /// <summary>O11: her kare / her vuruş GetComponent yerine oyuncu başına bir kez.</summary>
+        PlayerVitals CachedPlayerVitals()
+        {
+            if (_player == null)
+                return null;
+            if (_playerVitalsOwner != _player || _playerVitalsCache == null)
+            {
+                _playerVitalsOwner = _player;
+                _playerVitalsCache = _player.GetComponent<PlayerVitals>();
+            }
+            return _playerVitalsCache;
+        }
         ActorPose _pose;
         ActorVisual _visual;
         BossReactor _boss;
@@ -584,7 +599,7 @@ namespace Dovus.Game
             if (_playerStates == null)
                 return;
 
-            var vitals = _player != null ? _player.GetComponent<PlayerVitals>() : null;
+            var vitals = CachedPlayerVitals();
             bool isDead = vitals != null && vitals.IsDown;
             bool isStunned = false;
             bool isRooted = false;
@@ -1691,7 +1706,7 @@ namespace Dovus.Game
                                 e => e.Has("can_emen"));
                             if (drains && dealt > 0.5f && _player != null)
                             {
-                                PlayerVitals vitals = _player.GetComponent<PlayerVitals>();
+                                PlayerVitals vitals = CachedPlayerVitals();
                                 if (vitals != null)
                                     vitals.ApplyHeal(Mathf.RoundToInt(dealt));
                             }
@@ -2286,8 +2301,8 @@ namespace Dovus.Game
             int sourceId = _boss != null ? _boss.GetInstanceID() : 0;
             var candidates = new List<PassiveBounceCandidate>();
             Vector3 from = _boss != null ? _boss.transform.position : (_player != null ? _player.position : Vector3.zero);
-            Targetable[] bodies = FindObjectsByType<Targetable>(FindObjectsSortMode.None);
-            for (int i = 0; i < bodies.Length; i++)
+            IReadOnlyList<Targetable> bodies = Targetable.Live;
+            for (int i = 0; i < bodies.Count; i++)
             {
                 Targetable body = bodies[i];
                 if (body == null || !IsEnemyBody(body.transform))
@@ -2400,7 +2415,7 @@ namespace Dovus.Game
             if (amount <= 0)
                 return;
 
-            var playerVitals = _player != null ? _player.GetComponent<PlayerVitals>() : null;
+            var playerVitals = CachedPlayerVitals();
             bool spatial = fieldCenter.HasValue && fieldRadiusM > 0f;
             bool preferAlly = _ally != null && preferredTarget == _ally.transform;
             // Seçilen dost, dost menzili kapısından geçti. Silahın dar alanı onu elemez.
@@ -2528,7 +2543,7 @@ namespace Dovus.Game
             lifesteal += PortalBorderTeamHooks.LifestealAdd;
             if (lifesteal > 0f)
             {
-                var vitals = _player != null ? _player.GetComponent<PlayerVitals>() : null;
+                var vitals = CachedPlayerVitals();
                 int healAmt = Mathf.RoundToInt(damage * lifesteal);
                 if (vitals != null && healAmt > 0)
                     vitals.ApplyHeal(healAmt); // Kan Çılgınlığı kendi hasarından beslenir — NotifyHealed BİLEREK çağrılmaz

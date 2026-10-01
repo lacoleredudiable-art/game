@@ -22,6 +22,18 @@ namespace Dovus.Game
         public string DisplayName => string.IsNullOrEmpty(_displayName) ? name : _displayName;
         public bool IsAvailable => _available == null || _available();
 
+        // O11: sahne araması (FindObjectsByType) yerine etkin hedef kaydı (hedefleme, sekme, top sıçraması).
+        static readonly List<Targetable> s_live = new List<Targetable>();
+        public static IReadOnlyList<Targetable> Live => s_live;
+
+        void OnEnable()
+        {
+            if (!s_live.Contains(this))
+                s_live.Add(this);
+        }
+
+        void OnDisable() => s_live.Remove(this);
+
         public void Configure(int teamId, string displayName, Func<bool> available = null)
         {
             _teamId = teamId;
@@ -224,8 +236,8 @@ namespace Dovus.Game
             if (_owner == null)
                 return;
 
-            Targetable[] targets = FindObjectsByType<Targetable>(FindObjectsSortMode.None);
-            for (int i = 0; i < targets.Length; i++)
+            IReadOnlyList<Targetable> targets = Targetable.Live;
+            for (int i = 0; i < targets.Count; i++)
             {
                 Targetable candidate = targets[i];
                 if (candidate == null || candidate.transform == _owner)

@@ -562,9 +562,9 @@ namespace Dovus.Game
                     summons[i].CollectWithin(impactX, impactZ, splash, _cannonBodies);
             }
 
-            Targetable[] targets = FindObjectsByType<Targetable>(FindObjectsSortMode.None);
+            IReadOnlyList<Targetable> targets = Targetable.Live;
             float splashSq = splash * splash;
-            for (int i = 0; i < targets.Length; i++)
+            for (int i = 0; i < targets.Count; i++)
             {
                 Targetable target = targets[i];
                 if (target == null)

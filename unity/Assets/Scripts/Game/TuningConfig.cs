@@ -29,6 +29,13 @@ namespace Dovus.Game
 
         public static string FilePath => Path.Combine(Application.persistentDataPath, FileName);
 
+        /// <summary>O5: eski sürümlü kaydın yedeği (atılan değerler kaybolmasın).</summary>
+        public static string StaleBackupPath(int storedVersion) =>
+            Path.Combine(Application.persistentDataPath, $"tuning.v{storedVersion}.bak.json");
+
+        /// <summary>Son TryLoad eski kaydı attıysa true (panel/test okur).</summary>
+        public bool LastLoadDiscardedStale { get; private set; }
+
         public static TuningConfig Create(CombatTuning combat, PrototypeTuning prototype)
         {
             var config = CreateInstance<TuningConfig>();
@@ -41,7 +48,7 @@ namespace Dovus.Game
         {
             var data = new SaveData
             {
-                version = BossDamageMigration.Version,
+                version = TuningSchema.Version,
                 combat = Combat,
                 prototype = Prototype.ToPanelFields()
             };
@@ -70,6 +77,7 @@ namespace Dovus.Game
         /// </summary>
         public bool TryLoad()
         {
+            LastLoadDiscardedStale = false;
             try
             {
                 if (!File.Exists(FilePath))
@@ -83,13 +91,30 @@ namespace Dovus.Game
                 if (data == null)
                     return false;
 
+                // O5: eski sürüm sessizce kazanmaz. Kod varsayılanları kalır; eski dosya yedeklenir,
+                // güncel sürümle yeniden yazılır. (BossDamageMigration'ın v0 düzeltmesi bunu kapsar.)
+                if (TuningSchema.Decide(data.version) == TuningSchema.LoadDecision.DiscardStale)
+                {
+                    LastLoadDiscardedStale = true;
+                    try
+                    {
+                        File.Copy(FilePath, StaleBackupPath(data.version), true);
+                    }
+                    catch (Exception copyError)
+                    {
+                        Debug.LogWarning($"[T10] Eski ayar yedeklenemedi: {copyError.Message}");
+                    }
+                    Debug.LogWarning(
+                        $"[T10] tuning.json sürüm {data.version} < {TuningSchema.Version}: eski değerler uygulanmadı, " +
+                        $"kod varsayılanları geçerli (yedek: {StaleBackupPath(data.version)}).");
+                    Save();
+                    return false;
+                }
+
                 if (data.combat != null)
                     Combat.CopyFrom(data.combat);
-                bool rewrite = BossDamageMigration.Apply(Combat.Boss, data.version);
                 if (data.prototype != null)
                     Prototype.ApplyPanelFields(data.prototype);
-                if (rewrite)
-                    Save();
                 return true;
             }
             catch (Exception e)

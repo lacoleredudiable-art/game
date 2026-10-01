@@ -9,9 +9,10 @@ namespace Dovus.Game
     public sealed class TeamDebugMenu : MonoBehaviour
     {
         string _skill = "5-4";
-        bool _open = true;
+        // K2: varsayılan kapalı (HUD'un sol üstünü kaplıyordu); yalnız editör / DOVUS_DEBUG dev build.
+        bool _open = false;
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
+#if UNITY_EDITOR || DOVUS_DEBUG
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Boot()
         {

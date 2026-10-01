@@ -169,9 +169,9 @@ namespace Dovus.Game
                 v.transform.position = new Vector3(p.X, 1.1f, p.Z);
                 Renderer r = v.GetComponent<Renderer>();
                 if (r != null)
-                    r.material.color = p.Team == 0
+                    SharedTint.Apply(r, p.Team == 0
                         ? new Color(0.4f, 0.9f, 1f, 0.9f)
-                        : p.Harmless ? new Color(0.9f, 0.9f, 0.3f, 0.7f) : new Color(0.45f, 0.95f, 0.2f, 0.9f);
+                        : p.Harmless ? new Color(0.9f, 0.9f, 0.3f, 0.7f) : new Color(0.45f, 0.95f, 0.2f, 0.9f));
             }
         }
 
