@@ -76,18 +76,28 @@ namespace Dovus.Game
                 return null;
 
             go.transform.SetParent(hand, false);
+            Vector3 localPos = Vector3.zero;
+            Quaternion localRot = Quaternion.identity;
+            Vector3 localScale = Vector3.one;
             if (entry != null)
             {
-                go.transform.localPosition = isRight ? entry.RightLocalPosition : entry.LeftLocalPosition;
-                go.transform.localRotation = Quaternion.Euler(isRight ? entry.RightLocalEulerAngles : entry.LeftLocalEulerAngles);
-                go.transform.localScale = isRight ? entry.RightLocalScale : entry.LeftLocalScale;
+                localPos = isRight ? entry.RightLocalPosition : entry.LeftLocalPosition;
+                localRot = Quaternion.Euler(isRight ? entry.RightLocalEulerAngles : entry.LeftLocalEulerAngles);
+                localScale = isRight ? entry.RightLocalScale : entry.LeftLocalScale;
             }
-            else
+
+            WeaponGripProfile grip = _animator.GetComponentInParent<WeaponGripProfile>();
+            if (grip != null)
             {
-                go.transform.localPosition = Vector3.zero;
-                go.transform.localRotation = Quaternion.identity;
-                go.transform.localScale = Vector3.one;
+                if (isRight)
+                    grip.ApplyRight(ref localPos, ref localRot, ref localScale);
+                else
+                    grip.ApplyLeft(ref localPos, ref localRot, ref localScale);
             }
+
+            go.transform.localPosition = localPos;
+            go.transform.localRotation = localRot;
+            go.transform.localScale = localScale;
             StripForProp(go);
             return go;
         }
