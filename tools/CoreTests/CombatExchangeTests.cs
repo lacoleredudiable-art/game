@@ -31,10 +31,10 @@ public class CombatExchangeTests
             InEffectVolume = true
         };
 
-    [TestCase(90, DodgeGrade.Mukemmel)]
-    [TestCase(91, DodgeGrade.Harika)]
-    [TestCase(160, DodgeGrade.Harika)]
-    [TestCase(161, DodgeGrade.Temiz)]
+    [TestCase(149, DodgeGrade.Mukemmel)]
+    [TestCase(150, DodgeGrade.Harika)]
+    [TestCase(190, DodgeGrade.Harika)]
+    [TestCase(191, DodgeGrade.Temiz)]
     [TestCase(220, DodgeGrade.Temiz)]
     [TestCase(221, DodgeGrade.Siyirdi)]
     public void GradeFromGap_ThresholdsAreInclusiveAtBoundaries(int gapMs, DodgeGrade expected)
@@ -48,8 +48,8 @@ public class CombatExchangeTests
     /// `GradeFromGap` yine doğru cevabı verir ama oyunda o derece hiç oluşmaz.
     /// </summary>
     [TestCase(60, DodgeGrade.Mukemmel)]
-    [TestCase(140, DodgeGrade.Harika)]
-    [TestCase(200, DodgeGrade.Temiz)]
+    [TestCase(170, DodgeGrade.Harika)]
+    [TestCase(205, DodgeGrade.Temiz)]
     [TestCase(240, DodgeGrade.Siyirdi)]
     public void Resolve_ProducesEveryGrade_WithinIframeWindow(int gapMs, DodgeGrade expected)
     {

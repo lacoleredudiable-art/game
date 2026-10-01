@@ -41,10 +41,9 @@ namespace Dovus.Game
             c.Dodge.DistanceM = 4.6f;
             c.Dodge.DurationMs = 340;
             c.Dodge.GlideTailMs = 260;
-            c.Dodge.CooldownMs = 590;
             p.DodgeGlideSpeedMps = 2.4f;
 
-            c.Grade.MukemmelGapMaxMs = 110;
+            c.Dodge.PerfectWindowMs = 170; // O2: tek pencere, < HARİKA
             c.Grade.HarikaGapMaxMs = 190;
             c.Grade.TemizGapMaxMs = 240; // < IframeMs (260)
 
@@ -83,10 +82,9 @@ namespace Dovus.Game
             c.Dodge.DistanceM = 3.4f;
             c.Dodge.DurationMs = 200;
             c.Dodge.GlideTailMs = 150;
-            c.Dodge.CooldownMs = 280;
             p.DodgeGlideSpeedMps = 4.2f;
 
-            c.Grade.MukemmelGapMaxMs = 70;
+            c.Dodge.PerfectWindowMs = 120; // O2: tek pencere, < HARİKA
             c.Grade.HarikaGapMaxMs = 130;
             c.Grade.TemizGapMaxMs = 190; // < IframeMs (260)
 

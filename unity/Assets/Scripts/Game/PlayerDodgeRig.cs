@@ -19,7 +19,6 @@ namespace Dovus.Game
         NextHitBuff _nextHit = new NextHitBuff();
         int _perfectPressMs = int.MinValue;
         float _feelUntilUnscaled = -1f;
-        float _popupUntilUnscaled = -1f;
         float _savedAnimSpeed = 1f;
         bool _animSlowed;
         bool _feelHooked;
@@ -120,7 +119,8 @@ namespace Dovus.Game
             int strike = press + result.GapMs;
             if (!InPerfect(press, strike))
                 return;
-            TriggerPerfect(press);
+            // O2: okumadaki derece zaten "PERFECT" yazıyor (aynı pencere) — ikinci yazı yok.
+            TriggerPerfect(press, announce: false);
         }
 
         void ConsiderPerfect(int strikeMs)
@@ -131,7 +131,8 @@ namespace Dovus.Game
             int press = dodge.PressTimeMs.Value;
             if (!InPerfect(press, strikeMs))
                 return;
-            TriggerPerfect(press);
+            // Mermi/skill emişi derece üretmez: tek yazı burada.
+            TriggerPerfect(press, announce: true);
         }
 
         bool InPerfect(int pressMs, int strikeMs)
@@ -145,7 +146,7 @@ namespace Dovus.Game
                 tuning.PerfectWindowMs);
         }
 
-        void TriggerPerfect(int pressMs)
+        void TriggerPerfect(int pressMs, bool announce)
         {
             if (_perfectPressMs == pressMs)
                 return;
@@ -161,8 +162,9 @@ namespace Dovus.Game
 
             _nextHit.Arm(tuning.PerfectNextHitMult, WorldMs(), tuning.PerfectNextHitWindowMs);
             PlayLocalFeel(tuning.PerfectFeelSec);
-            _popupUntilUnscaled = Time.unscaledTime + 0.75f;
-            _readout?.NoteSkill("PERFECT", "sonraki vuruş", new Color(1f, 0.92f, 0.35f));
+            // O2: ayrı OnGUI "PERFECT" etiketi kaldırıldı (çift yazı + her kare yeni GUIStyle).
+            if (announce)
+                _readout?.NoteSkill("PERFECT", "sonraki vuruş güçlü", new Color(1f, 0.92f, 0.35f));
             SfxDirector.Play(SfxLibrary.PerfectDodge);
         }
 
@@ -192,22 +194,6 @@ namespace Dovus.Game
             if (anim != null)
                 anim.speed = _savedAnimSpeed;
             _animSlowed = false;
-        }
-
-        void OnGUI()
-        {
-            if (Time.unscaledTime > _popupUntilUnscaled)
-                return;
-            var style = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 42,
-                fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.MiddleCenter
-            };
-            style.normal.textColor = new Color(1f, 0.92f, 0.35f);
-            float w = 420f;
-            float h = 72f;
-            GUI.Label(new Rect((Screen.width - w) * 0.5f, Screen.height * 0.28f, w, h), "PERFECT", style);
         }
 
         void OnDisable()

@@ -74,7 +74,7 @@ namespace Dovus.Game
             {
                 string grade = result.Grade switch
                 {
-                    DodgeGrade.Mukemmel => "MÜKEMMEL",
+                    DodgeGrade.Mukemmel => "PERFECT",
                     DodgeGrade.Harika => "HARİKA",
                     DodgeGrade.Temiz => "TEMİZ",
                     DodgeGrade.Siyirdi => "SIYIRDI",

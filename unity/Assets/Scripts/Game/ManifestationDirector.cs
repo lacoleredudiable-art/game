@@ -1288,6 +1288,7 @@ namespace Dovus.Game
             SkillMotionPlan motionPlan = ResolveSkillMotion(skill);
             ApplySkillMotionIframe(skill, motionPlan);
             bool templateOwnsDelivery = TryBeginMotionTemplate(skill, p);
+            NoteSustainedCast(skill);
             PortalBorderTeamHooks.NotifyCast(skill.SkillId);
             SkillExecutorRoute executorRoute = _skillExecutorRouter.Route(skill, _equippedWeapon);
             executorRoute = ApplyMechanicWorldRoute(MechanicPlanFor(skill), executorRoute);

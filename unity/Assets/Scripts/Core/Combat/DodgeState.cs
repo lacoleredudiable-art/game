@@ -18,7 +18,7 @@ namespace Dovus.Core.Combat
         }
 
         /// <summary>
-        /// Ulti/pasif dash_cooldown_mult çarpımı (0 = serbest dodge). IsOnCooldown bunu kullanır.
+        /// Ulti/pasif dash_cooldown_mult çarpımı. Hak dolum süresine (DodgeCharges.RechargeMult) aktarılır.
         /// </summary>
         public float CooldownMult { get; set; } = 1f;
 
@@ -42,18 +42,6 @@ namespace Dovus.Core.Combat
             int elapsed = worldTimeMs - _pressTimeMs;
             int totalMs = _tuning.StartupMs + _tuning.DurationMs + _tuning.GlideTailMs;
             return elapsed >= 0 && elapsed < totalMs;
-        }
-
-        public bool IsOnCooldown(int worldTimeMs)
-        {
-            if (_pressTimeMs < 0)
-                return false;
-
-            float mult = CooldownMult;
-            if (mult < 0f)
-                mult = 0f;
-            int cd = (int)Math.Round(_tuning.CooldownMs * mult);
-            return worldTimeMs < _pressTimeMs + cd;
         }
 
         /// <summary>

@@ -311,10 +311,9 @@ namespace Dovus.Game
             AddFloatSlider("Eğri üssü", 1f, 6f, () => c.Dodge.CurveExp, v => c.Dodge.CurveExp = v, "", "0.00");
             AddIntSlider("Kayma kuyruğu", 0, 500, () => c.Dodge.GlideTailMs, v => c.Dodge.GlideTailMs = v, "ms");
             AddFloatSlider("Kayma hızı", 0f, 10f, () => p.DodgeGlideSpeedMps, v => p.DodgeGlideSpeedMps = v, "m/s", "0.00");
-            AddIntSlider("Bekleme (cooldown)", 0, 1200, () => c.Dodge.CooldownMs, v => c.Dodge.CooldownMs = v, "ms");
-            AddIntSlider("Tap süresi eşiği", 50, 400, () => c.Dodge.TapMaxMs, v => c.Dodge.TapMaxMs = v, "ms");
             AddIntSlider("Tap hareket eşiği", 4, 40, () => c.Dodge.TapMaxMoveDp, v => c.Dodge.TapMaxMoveDp = v, "dp");
-            AddIntSlider("MÜKEMMEL eşiği", 20, 300, () => c.Grade.MukemmelGapMaxMs, v => c.Grade.MukemmelGapMaxMs = v, "ms");
+            // O2: tek mükemmel pencere (PERFECT derecesi + iade + sonraki vuruş).
+            AddIntSlider("PERFECT penceresi", 20, 300, () => c.Dodge.PerfectWindowMs, v => c.Dodge.PerfectWindowMs = v, "ms");
             AddIntSlider("HARİKA eşiği", 40, 350, () => c.Grade.HarikaGapMaxMs, v => c.Grade.HarikaGapMaxMs = v, "ms");
             // §6: bu eşik IframeMs'den küçük kalmalı yoksa SIYIRDI bandı hiç üretilemez.
             AddIntSlider("TEMİZ eşiği", 60, 400, () => c.Grade.TemizGapMaxMs,

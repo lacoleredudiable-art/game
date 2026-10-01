@@ -17,7 +17,7 @@ public class CombatTuningDefaultsTests
             Assert.That(t.Dodge.StartupMs, Is.EqualTo(10));
             Assert.That(t.Dodge.IframeStartMs, Is.EqualTo(0));
             Assert.That(t.Dodge.IframeMs, Is.EqualTo(260));
-            Assert.That(t.Dodge.DistanceM, Is.EqualTo(4f));
+            Assert.That(t.Dodge.DistanceM, Is.EqualTo(3.8f));
             Assert.That(t.Dodge.DurationMs, Is.EqualTo(250));
             Assert.That(t.Dodge.MaxCharges, Is.EqualTo(2));
             Assert.That(t.Dodge.ChargeRechargeMs, Is.EqualTo(4000));
@@ -26,15 +26,10 @@ public class CombatTuningDefaultsTests
             Assert.That(t.Dodge.PerfectChargeRefund, Is.EqualTo(1f));
             Assert.That(t.Dodge.CurveExp, Is.EqualTo(3.6f));
             Assert.That(t.Dodge.GlideTailMs, Is.EqualTo(120));
-            Assert.That(t.Dodge.CooldownMs, Is.EqualTo(360));
         });
 
-        // Ayrı dodge düğmesinin tap eşiği
-        Assert.Multiple(() =>
-        {
-            Assert.That(t.Dodge.TapMaxMs, Is.EqualTo(180));
-            Assert.That(t.Dodge.TapMaxMoveDp, Is.EqualTo(12));
-        });
+        // Merkez düğmenin sürükleme eşiği (O1: süre eşiği yok)
+        Assert.That(t.Dodge.TapMaxMoveDp, Is.EqualTo(12));
 
         // §5 Cümle + §3 bekletme
         Assert.Multiple(() =>
@@ -68,8 +63,7 @@ public class CombatTuningDefaultsTests
         // §6 Derecelendirme
         Assert.Multiple(() =>
         {
-            Assert.That(t.Grade.MukemmelGapMaxMs, Is.EqualTo(90));
-            Assert.That(t.Grade.HarikaGapMaxMs, Is.EqualTo(160));
+            Assert.That(t.Grade.HarikaGapMaxMs, Is.EqualTo(190));
             Assert.That(t.Grade.TemizGapMaxMs, Is.EqualTo(220));
         });
 
@@ -143,7 +137,8 @@ public class CombatTuningDefaultsTests
     {
         var t = new CombatTuning();
 
-        Assert.That(t.Grade.MukemmelGapMaxMs, Is.LessThan(t.Grade.HarikaGapMaxMs));
+        Assert.That(t.Dodge.IframeStartMs + t.Dodge.PerfectWindowMs, Is.LessThan(t.Grade.HarikaGapMaxMs),
+            "PERFECT penceresinden sonra HARİKA bandı kalmalı");
         Assert.That(t.Grade.HarikaGapMaxMs, Is.LessThan(t.Grade.TemizGapMaxMs));
         Assert.That(t.Grade.TemizGapMaxMs, Is.LessThan(t.Dodge.IframeMs),
             "son eşik pencereden küçük olmalı, yoksa SIYIRDI bandı yok olur");

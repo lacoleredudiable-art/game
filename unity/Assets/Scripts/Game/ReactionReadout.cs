@@ -309,7 +309,8 @@ namespace Dovus.Game
 
         static string GradeLabel(DodgeGrade? g) => g switch
         {
-            DodgeGrade.Mukemmel => "MÜKEMMEL",
+            // O2: tek mükemmel tanımı, tek yazı.
+            DodgeGrade.Mukemmel => "PERFECT",
             DodgeGrade.Harika => "HARİKA",
             DodgeGrade.Temiz => "TEMİZ",
             DodgeGrade.Siyirdi => "SIYIRDI",
@@ -318,7 +319,7 @@ namespace Dovus.Game
 
         static string GradeMessage(DodgeGrade? g) => g switch
         {
-            DodgeGrade.Mukemmel => "tepki süren mükemmel",
+            DodgeGrade.Mukemmel => "sonraki vuruş güçlü",
             DodgeGrade.Harika => "neredeyse kusursuz",
             DodgeGrade.Temiz => "iyi okudun",
             DodgeGrade.Siyirdi => "biraz erken bastın",

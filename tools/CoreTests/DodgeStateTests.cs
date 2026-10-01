@@ -7,23 +7,24 @@ namespace CoreTests;
 [TestFixture]
 public class DodgeStateTests
 {
+    /// <summary>S2: tek kapı haklardır — aynı karede ikinci basış hak varsa kabul edilir.</summary>
     [Test]
-    public void CooldownMult_Zero_AllowsImmediateReDodge()
+    public void Charges_AreTheOnlyGate_BackToBackDodgeAllowedWithCharge()
     {
-        var tuning = new DodgeTuning { CooldownMs = 420 };
-        var dodge = new DodgeState(tuning) { CooldownMult = 0f };
-        dodge.Begin(1000);
-        Assert.That(dodge.IsOnCooldown(1000), Is.False);
-        Assert.That(dodge.IsOnCooldown(1001), Is.False);
+        var tuning = new DodgeTuning();
+        var charges = new DodgeChargeBank(tuning);
+        Assert.That(charges.TrySpend(0), Is.True);
+        Assert.That(charges.TrySpend(1), Is.True, "2 hak: arka arkaya ikinci kaçış serbest");
+        Assert.That(charges.TrySpend(2), Is.False, "hak bitti");
     }
 
     [Test]
-    public void CooldownMult_Half_ShortensWindow()
+    public void Begin_StartsIframeAtPress()
     {
-        var tuning = new DodgeTuning { CooldownMs = 400 };
-        var dodge = new DodgeState(tuning) { CooldownMult = 0.5f };
-        dodge.Begin(0);
-        Assert.That(dodge.IsOnCooldown(199), Is.True);
-        Assert.That(dodge.IsOnCooldown(200), Is.False);
+        var dodge = new DodgeState(new DodgeTuning());
+        dodge.Begin(1000);
+        Assert.That(dodge.IsInvulnerable(1000), Is.True);
+        Assert.That(dodge.IsInvulnerable(1259), Is.True);
+        Assert.That(dodge.IsInvulnerable(1260), Is.False);
     }
 }

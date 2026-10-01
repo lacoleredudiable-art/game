@@ -508,8 +508,9 @@ namespace Dovus.Game
             }
             view.BindWeaponSwap(director, clock);
             input.WeaponSwapRequested += () => director.TryRequestWeaponSwap();
-            input.WeaponHudRequested += () => director.OnWeaponHudButton();
             input.OrbCommandRequested += () => director.ToggleOrb();
+            // K3: silah düğmesi dokunuşu her zaman değiştirir; Küre'de uzun basma (orb.hold_sec) küreyi yollar.
+            input.SwapHoldCommandSec = () => director.SwapButtonHoldSec;
 
             var preview = root.AddComponent<SkillPreviewHud>();
             preview.Configure(input.Engine, skills, skillFactory, director, _tuning, view.CanvasRoot);
