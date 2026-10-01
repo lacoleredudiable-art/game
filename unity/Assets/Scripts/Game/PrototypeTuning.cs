@@ -139,33 +139,43 @@ namespace Dovus.Game
         [Range(0f, 1f)] public float CameraBossFramingWeight = 0.34f;
         public float CameraBossAimHeightM = 1.45f;
 
-        [Header("Arena atmosferi — mobil URP")]
-        public Color AmbientSky = new Color(0.11f, 0.13f, 0.18f);
-        public Color AmbientEquator = new Color(0.12f, 0.085f, 0.07f);
-        public Color AmbientGround = new Color(0.035f, 0.03f, 0.035f);
-        public Color FogColor = new Color(0.055f, 0.045f, 0.065f);
-        public float FogDensity = 0.009f;
-        public Color KeyLightColor = new Color(1f, 0.78f, 0.62f);
-        public float KeyLightIntensity = 1.35f;
-        public Vector3 KeyLightEuler = new Vector3(42f, -32f, 0f);
-        public float KeyShadowStrength = 0.72f;
+        // Ambiyans portu (PR #43 "deneme sahnesi"): gri bulutlu ışık, ~%35 doygunluk düşüşü,
+        // açık gri sis — sert/sakin ama her şey görünür (karanlık değil, renkli değil). Sıcak
+        // vurgu yalnız lav (LavaDecor/LavaCracks) ve VFX'te kalır. docs'ta sayı yok — PR #43'ün
+        // kendi commit'lerinde kullandığı değerler (DenemeSahnesi_PostFX.asset) buraya taşındı.
+        [Header("Arena atmosferi — mobil URP (ambiyans: PR #43 açık gri lav ovası)")]
+        public Color AmbientSky = new Color(0.66f, 0.70f, 0.73f);
+        public Color AmbientEquator = new Color(0.52f, 0.55f, 0.58f);
+        public Color AmbientGround = new Color(0.30f, 0.30f, 0.31f);
+        public Color FogColor = new Color(0.69f, 0.718f, 0.737f);
+        public float FogDensity = 0.0045f;
+        public Color KeyLightColor = new Color(0.86f, 0.89f, 0.92f);
+        public float KeyLightIntensity = 0.85f;
+        public Vector3 KeyLightEuler = new Vector3(52f, -30f, 0f);
+        public float KeyShadowStrength = 0.38f;
         public Color RimLightColor = new Color(0.38f, 0.55f, 1f);
         public float RimLightIntensity = 0.18f;
         public Vector3 RimLightEuler = new Vector3(28f, 145f, 0f);
-        public float BloomIntensity = 0.42f;
-        public float BloomThreshold = 1.05f;
+        public float BloomIntensity = 0.65f;
+        public float BloomThreshold = 0.95f;
         public float BloomScatter = 0.55f;
-        public float PostExposure = -0.08f;
-        public float ColorContrast = 18f;
-        public float ColorSaturation = -4f;
-        public float PostVignetteIntensity = 0.18f;
+        public Color BloomTint = new Color(1f, 0.86f, 0.72f);
+        public float PostExposure = 0.15f;
+        public float ColorContrast = -14f;
+        /// <summary>Spec "~%35 doygunluk düşüşü" (task-ambience-fix); PR #43'ün gönderdiği -22
+        /// değil, görevin kendi istediği oran — sahnede görünür olmalı.</summary>
+        public float ColorSaturation = -35f;
+        public Color ColorFilterTint = new Color(0.95f, 0.975f, 1f);
+        public float PostVignetteIntensity = 0.12f;
+        /// <summary>Ufuk siluet/kayaları görünür kalsın diye uzak kırpma düzlemi büyütüldü (eski 120m).</summary>
+        public float CameraFarClipM = 320f;
 
         // Mevcut prototip paleti: nötr boss gövdesi, sıcak telegraf ve element renkleri.
         [Header("Renk dili (§10)")]
         public Color PlayerColor = new Color(0.373f, 0.941f, 1f);
         public Color BossColor = new Color(0.18f, 0.19f, 0.22f);
-        public Color GroundColor = new Color(0.38f, 0.4f, 0.44f);
-        public Color BackgroundColor = new Color(0.14f, 0.13f, 0.125f);
+        public Color GroundColor = new Color(0.44f, 0.46f, 0.49f);
+        public Color BackgroundColor = new Color(0.69f, 0.718f, 0.737f);
         public Color InkPurple = new Color(0.725f, 0.549f, 1f);   // #B98CFF
         public Color InkCyan = new Color(0.373f, 0.941f, 1f);     // #5FF0FF
         public Color AcidGreen = new Color(0.608f, 0.910f, 0.235f); // #9BE83C — §10 zehir birikintisi
@@ -394,7 +404,7 @@ namespace Dovus.Game
         // tasarımcının bilinçli 0'ı (ör. nabzı kapatmak) artık ezilmez (T8.1).
         [HideInInspector] public int TuningVersion = CurrentVersion;
 
-        const int CurrentVersion = 18;
+        const int CurrentVersion = 19;
 
         /// <summary>Sürümü geçmiş serileşmiş kopyayı bu sürümün varsayılanlarına çeker.</summary>
         public void EnsureRuntimeDefaults()
@@ -649,6 +659,9 @@ namespace Dovus.Game
             ColorContrast = fresh.ColorContrast;
             ColorSaturation = fresh.ColorSaturation;
             PostVignetteIntensity = fresh.PostVignetteIntensity;
+            BloomTint = fresh.BloomTint;
+            ColorFilterTint = fresh.ColorFilterTint;
+            CameraFarClipM = fresh.CameraFarClipM;
 
             // v17: premium combat HUD — 44dp+ kontroller, ikonlu tepsi ve pasif yuvaları.
             HexagonCenterXNorm = fresh.HexagonCenterXNorm;
@@ -686,6 +699,37 @@ namespace Dovus.Game
             CameraPitchMinDeg = fresh.CameraPitchMinDeg;
             CameraPitchMaxDeg = fresh.CameraPitchMaxDeg;
             OrbitInvertPitch = fresh.OrbitInvertPitch;
+
+            // v19 (task-ambience-fix): sahnede serileşmiş eski (gece/karanlık) atmosfer
+            // değerleri v16'dan beri hiç kod varsayılanına çekilmemişti — AmbientSky/FogColor/
+            // BackgroundColor gibi alanlar zaten vardı, yalnızca değerleri değişti, bu yüzden
+            // önceki migrate bloğu bir kez çalışıp sürümü kilitledikten sonra yeni gri/sis
+            // varsayılanları hiçbir zaman uygulanmadı (sahne hâlâ koyu lacivert gökyüzü/sis
+            // gösteriyordu). Bu blok atmosferi açıkça güncel koda zorlar.
+            AmbientSky = fresh.AmbientSky;
+            AmbientEquator = fresh.AmbientEquator;
+            AmbientGround = fresh.AmbientGround;
+            FogColor = fresh.FogColor;
+            FogDensity = fresh.FogDensity;
+            KeyLightColor = fresh.KeyLightColor;
+            KeyLightIntensity = fresh.KeyLightIntensity;
+            KeyLightEuler = fresh.KeyLightEuler;
+            KeyShadowStrength = fresh.KeyShadowStrength;
+            RimLightColor = fresh.RimLightColor;
+            RimLightIntensity = fresh.RimLightIntensity;
+            RimLightEuler = fresh.RimLightEuler;
+            BloomIntensity = fresh.BloomIntensity;
+            BloomThreshold = fresh.BloomThreshold;
+            BloomScatter = fresh.BloomScatter;
+            BloomTint = fresh.BloomTint;
+            PostExposure = fresh.PostExposure;
+            ColorContrast = fresh.ColorContrast;
+            ColorSaturation = fresh.ColorSaturation;
+            ColorFilterTint = fresh.ColorFilterTint;
+            PostVignetteIntensity = fresh.PostVignetteIntensity;
+            CameraFarClipM = fresh.CameraFarClipM;
+            GroundColor = fresh.GroundColor;
+            BackgroundColor = fresh.BackgroundColor;
 
             TuningVersion = CurrentVersion;
         }

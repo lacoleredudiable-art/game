@@ -17,10 +17,11 @@ namespace Dovus.Game
             RenderSettings.ambientEquatorColor = tuning.AmbientEquator;
             RenderSettings.ambientGroundColor = tuning.AmbientGround;
 
-            // Açık daire arena: düşük ambient + hafif sis, karakter silüetini fondan ayırır.
+            // Açık gri lav ovası (ambiyans portu, PR #43): hafif üstel sis — arena içi (yakın)
+            // kırpılmaz, yalnız ufuktaki dağ/kaya silueti uzaklıkla kalınlaşır (okunabilirlik §3).
             RenderSettings.skybox = null;
             RenderSettings.fog = true;
-            RenderSettings.fogMode = FogMode.ExponentialSquared;
+            RenderSettings.fogMode = FogMode.Exponential;
             RenderSettings.fogColor = tuning.FogColor;
             RenderSettings.fogDensity = Mathf.Max(0f, tuning.FogDensity);
 
@@ -28,7 +29,7 @@ namespace Dovus.Game
             {
                 camera.clearFlags = CameraClearFlags.SolidColor;
                 camera.backgroundColor = tuning.BackgroundColor;
-                camera.farClipPlane = 120f;
+                camera.farClipPlane = Mathf.Max(50f, tuning.CameraFarClipM);
                 camera.fieldOfView = tuning.CameraFovDeg;
             }
 
@@ -50,16 +51,20 @@ namespace Dovus.Game
             var profile = ScriptableObject.CreateInstance<VolumeProfile>();
             volume.profile = profile;
 
+            var tone = profile.Add<Tonemapping>(true);
+            tone.mode.Override(TonemappingMode.Neutral);
+
             var bloom = profile.Add<Bloom>(true);
             bloom.threshold.Override(Mathf.Max(0f, tuning.BloomThreshold));
             bloom.intensity.Override(Mathf.Max(0f, tuning.BloomIntensity));
             bloom.scatter.Override(Mathf.Clamp01(tuning.BloomScatter));
-            bloom.tint.Override(Color.white);
+            bloom.tint.Override(tuning.BloomTint);
 
             var colorAdj = profile.Add<ColorAdjustments>(true);
             colorAdj.postExposure.Override(tuning.PostExposure);
             colorAdj.contrast.Override(tuning.ColorContrast);
             colorAdj.saturation.Override(tuning.ColorSaturation);
+            colorAdj.colorFilter.Override(tuning.ColorFilterTint);
 
             var vignette = profile.Add<Vignette>(true);
             vignette.intensity.Override(Mathf.Clamp01(tuning.PostVignetteIntensity));
