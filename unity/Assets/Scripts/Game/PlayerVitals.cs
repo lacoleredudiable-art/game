@@ -7,20 +7,23 @@ namespace Dovus.Game
 {
     /// <summary>
     /// Oyuncu canı ve ölüm. Spec §11 hasar 22 verir, oyuncu tavanı yok —
-    /// bir çakma = ölüm ki respawn döngüsü denenebilsin. Süre gerçek saat.
+    /// bir çakma = ölüm ki respawn döngüsü denenebilsin.
+    /// O4: dönüş süresi dünya saatiyle işler (duraklatmada durur; saat bağlı değilse gerçek saat);
+    /// düşüşte ve dönüşte oyuncu durum panosu temizlenir (yanma/zehir/sersem/kök taşınmaz).
     /// </summary>
     public sealed class PlayerVitals : MonoBehaviour
     {
         BossTuning _boss;
         int _hp;
-        float _respawnAtUnscaled = -1f;
+        float _respawnAtSec = -1f;
+        GameClock _clock;
         Vector3 _spawnPos;
         bool _captured;
         ActorVisual _visual;
 
         public int Hp => _hp;
         public int MaxHp { get; private set; }
-        public bool IsDown => _respawnAtUnscaled >= 0f;
+        public bool IsDown => _respawnAtSec >= 0f;
         /// <summary>Play Sweep: can düşer, ölüm ve doğuş ışınlaması olmaz.</summary>
         public bool SuppressDown { get; set; }
         public bool DevHpEnabled { get; private set; }
@@ -28,7 +31,16 @@ namespace Dovus.Game
         public Vector3 SpawnPos => _spawnPos;
 
         /// <summary>Dönüşe kalan gerçek saniye (HUD okur); ayakta ise 0.</summary>
-        public float RespawnInSec => IsDown ? Mathf.Max(0f, _respawnAtUnscaled - Time.unscaledTime) : 0f;
+        public float RespawnInSec => IsDown ? Mathf.Max(0f, _respawnAtSec - NowSec()) : 0f;
+
+        /// <summary>O4: dönüş zamanlayıcısı için dünya saati.</summary>
+        public void BindClock(GameClock clock) => _clock = clock;
+
+        float NowSec() => _clock != null && _clock.Director != null
+            ? (float)(_clock.Director.WorldTimeMs / 1000.0)
+            : Time.unscaledTime;
+
+        void ClearStatusBoard() => GetComponent<ActorStatus>()?.Board.Clear();
 
         public void Bind(BossTuning boss, int maxHp, float startRatio = 1f)
         {
@@ -53,7 +65,7 @@ namespace Dovus.Game
             if (enabled)
             {
                 _hp = MaxHp;
-                _respawnAtUnscaled = -1f;
+                _respawnAtSec = -1f;
                 return;
             }
 
@@ -122,7 +134,8 @@ namespace Dovus.Game
 
             _visual?.Trigger(ActorVisual.TriggerDeath);
             float wait = _boss != null ? _boss.RespawnMaxSec : 2f;
-            _respawnAtUnscaled = Time.unscaledTime + wait;
+            _respawnAtSec = NowSec() + wait;
+            ClearStatusBoard();
             return true;
         }
 
@@ -140,7 +153,7 @@ namespace Dovus.Game
 
         public void Tick()
         {
-            if (!IsDown || Time.unscaledTime < _respawnAtUnscaled)
+            if (!IsDown || NowSec() < _respawnAtSec)
                 return;
 
             if (!_captured)
@@ -148,7 +161,8 @@ namespace Dovus.Game
 
             transform.position = _spawnPos;
             _hp = MaxHp;
-            _respawnAtUnscaled = -1f;
+            _respawnAtSec = -1f;
+            ClearStatusBoard();
             if (_visual == null)
                 _visual = GetComponent<ActorVisual>();
             _visual?.ResetToLocomotion();

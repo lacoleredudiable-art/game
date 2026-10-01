@@ -20,6 +20,8 @@ namespace Dovus.Core.Tuning
         public int ChargeRechargeMs = 4000;
         public int PerfectWindowMs = 150;
         public float PerfectNextHitMult = 1.3f;
+        /// <summary>S1: mükemmel sıyırmanın ×PerfectNextHitMult bonusu bu süre içinde vurulmazsa düşer (his varsayılanı; spec'te yok).</summary>
+        public int PerfectNextHitWindowMs = 2000;
         public float PerfectChargeRefund = 1f;
         public float PerfectFeelSec = 0.2f;
         public float EdgeGapM = 0.15f;
@@ -47,6 +49,7 @@ namespace Dovus.Core.Tuning
             ChargeRechargeMs = other.ChargeRechargeMs;
             PerfectWindowMs = other.PerfectWindowMs;
             PerfectNextHitMult = other.PerfectNextHitMult;
+            PerfectNextHitWindowMs = other.PerfectNextHitWindowMs;
             PerfectChargeRefund = other.PerfectChargeRefund;
             PerfectFeelSec = other.PerfectFeelSec;
             EdgeGapM = other.EdgeGapM;

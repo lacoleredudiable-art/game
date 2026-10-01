@@ -6,12 +6,24 @@ namespace Dovus.Core.Combat
     /// Boss canı — saf C# (PlayerVitals'in Unity'li deseninin Core karşılığı).
     /// Can 0 → IsDown; yeniden doğuş <see cref="Revive"/> ile dışarıdan tetiklenir.
     /// Zaman parametre olarak geçer; bu sınıf zamanı tutmaz. Spec §11.
+    /// K1: her hasar yolu (kapanış, DoT, yansıma, minyon, emme, yönlendirme, takım) buradan geçer;
+    /// ölüm ve can değişimi TEK yerden <see cref="Died"/> / <see cref="HpChanged"/> olaylarıyla duyurulur.
+    /// Ölüm/diriliş akışı ve ileride boss bölüm geçişleri (%65/%30) bu kancaya abone olur.
     /// </summary>
     public sealed class BossVitals
     {
         float _hp;
         float _maxHp;
         bool _isDown;
+
+        /// <summary>Can 0'a indiği an, hangi hasar yolundan gelirse gelsin, ölüm başına bir kez.</summary>
+        public event Action Died;
+
+        /// <summary>Her gerçek can kaybında (önceki, sonraki). Bölüm eşikleri <see cref="CrossedBelow"/> ile okur.</summary>
+        public event Action<float, float> HpChanged;
+
+        /// <summary><see cref="Revive"/> sonrası (ölüm zamanlayıcısı dışarıdan dirilişi de görsün).</summary>
+        public event Action Revived;
 
         public BossVitals(float maxHp = 120f)
         {
@@ -38,12 +50,27 @@ namespace Dovus.Core.Combat
             if (_isDown || amount <= 0f)
                 return false;
 
+            float before = _hp;
             _hp = Math.Max(0f, _hp - amount);
-            if (_hp > 0f)
+            bool killed = _hp <= 0f;
+            if (killed)
+                _isDown = true;
+            if (_hp < before)
+                HpChanged?.Invoke(before, _hp);
+            if (!killed)
                 return false;
 
-            _isDown = true;
+            Died?.Invoke();
             return true;
+        }
+
+        /// <summary>Can oranı bu vuruşta eşiğin altına indi mi (before &gt; eşik ≥ after). Bölüm geçişleri için.</summary>
+        public static bool CrossedBelow(float hpBefore, float hpAfter, float maxHp, float ratio)
+        {
+            if (maxHp <= 0f)
+                return false;
+            float threshold = maxHp * ratio;
+            return hpBefore > threshold && hpAfter <= threshold;
         }
 
         /// <summary>Tam canla ayağa kalkar (§11: noktalama, bitiş değil).</summary>
@@ -51,6 +78,7 @@ namespace Dovus.Core.Combat
         {
             _hp = _maxHp;
             _isDown = false;
+            Revived?.Invoke();
         }
     }
 }

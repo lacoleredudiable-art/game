@@ -98,7 +98,7 @@ namespace Dovus.Game
             if (player == null)
                 return 1f;
             PlayerDodgeRig rig = player.GetComponent<PlayerDodgeRig>();
-            return rig != null ? rig._nextHit.Consume() : 1f;
+            return rig != null ? rig._nextHit.Consume(rig.WorldMs()) : 1f;
         }
 
         public bool TryAbsorbHit()
@@ -159,7 +159,7 @@ namespace Dovus.Game
                 bank.Refund(tuning.PerfectChargeRefund);
             }
 
-            _nextHit.Arm(tuning.PerfectNextHitMult);
+            _nextHit.Arm(tuning.PerfectNextHitMult, WorldMs(), tuning.PerfectNextHitWindowMs);
             PlayLocalFeel(tuning.PerfectFeelSec);
             _popupUntilUnscaled = Time.unscaledTime + 0.75f;
             _readout?.NoteSkill("PERFECT", "sonraki vuruş", new Color(1f, 0.92f, 0.35f));

@@ -799,13 +799,22 @@ namespace Dovus.Game
 
             if (result.Outcome == ExchangeOutcome.Hit)
             {
-                _engine?.Abort();
                 float raw = BossStatusMath.OutgoingDamage(_attack.Damage, _bossStatus != null ? _bossStatus.Board : null);
                 // Shield / stasis (skill i-frame) ActorStatus üzerinden — düz vitals bypass yok.
+                bool landed;
                 if (_playerStatus != null)
+                {
                     _playerStatus.ApplyDamage(raw);
+                    landed = _playerStatus.LastAppliedDamage > 0f;
+                }
                 else
+                {
                     _vitals?.ApplyDamage(Mathf.CeilToInt(raw));
+                    landed = raw > 0f;
+                }
+                // S6: kalkan/stasis vuruşu tamamen emdiyse cümle/kanal kesilmez.
+                if (landed)
+                    _engine?.Abort();
 
                 // fire_cone mekanikleri (karadul.json: grievous_wounds + burn).
                 if (_attack.Kind == BossAttackKind.FireCone && _playerStatus != null && _combat != null)

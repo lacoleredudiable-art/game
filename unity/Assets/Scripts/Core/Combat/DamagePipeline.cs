@@ -16,8 +16,9 @@ namespace Dovus.Core.Combat
     /// </summary>
     public static class DamagePipeline
     {
-        public const float DefaultCritChance = 0.10f;
-        public const float DefaultCritMultiplier = 1.5f;
+        /// <summary>O7: element-sistemi.json crit_system (base 0.05, ×2.0). Oyun <see cref="CritSystem"/>'i JSON'dan okur.</summary>
+        public const float DefaultCritChance = CritSystem.DefaultBaseChance;
+        public const float DefaultCritMultiplier = CritSystem.DefaultMultiplier;
         public const float VarianceHalf = 0.05f;
         public const float MinDamageTakenFactor = 0.10f;
 

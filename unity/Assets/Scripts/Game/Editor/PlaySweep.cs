@@ -1073,12 +1073,14 @@ namespace Dovus.Game.EditorTools
             _bossStatus?.Board.Clear();
             _playerStatus?.Board.Clear();
             _ally?.Board?.Clear();
+            // O7: kritik/sapma zarı her vakada aynı tohumdan — tarama deterministik kalır.
+            _md?.ReseedCombatRng(CombatRng.SweepSeed);
             if (_bossVitals.IsDown || _bossVitals.Hp < _bossVitals.MaxHp * 0.6f)
                 _bossVitals.Revive();
             if (_playerVitals != null)
             {
                 _playerVitals.SuppressDown = true;
-                S(_playerVitals, "_respawnAtUnscaled", -1f);
+                S(_playerVitals, "_respawnAtSec", -1f);
                 S(_playerVitals, "_hp", Math.Max(1, _playerVitals.MaxHp / 2));
             }
             if (_ally != null)

@@ -10,7 +10,27 @@ namespace Dovus.Game
     public sealed partial class ManifestationDirector
     {
         WeaponArmorCatalog _weaponArmor;
-        int _damageRoll;
+        /// <summary>O7: tek kalıcı savaş zarı. Oyunda oturum tohumu; tarama/test <see cref="ReseedCombatRng"/> ile sabit tohum.</summary>
+        readonly CombatRng _combatRng = new CombatRng(CombatRng.SessionSeed());
+        CritSystem? _critSystem;
+
+        /// <summary>Play Sweep / testler: deterministik kritik ve sapma.</summary>
+        public void ReseedCombatRng(int seed) => _combatRng.Reseed(seed);
+
+        public int CombatRngSeed => _combatRng.Seed;
+
+        /// <summary>element-sistemi.json crit_system (base 0.05, ×2.0, tavan 0.75).</summary>
+        CritSystem Crits
+        {
+            get
+            {
+                if (_critSystem == null)
+                    _critSystem = ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design)
+                        ? CritSystem.FromJson(MiniJson.Parse(design.Json))
+                        : CritSystem.Default;
+                return _critSystem.Value;
+            }
+        }
 
         void RefreshDefenderArmor()
         {
@@ -105,9 +125,11 @@ namespace Dovus.Game
                     runeMult *= element;
             }
 
-            bool ignoreArmor = WeaponIgnoresArmor
-                || (!skill.IsEmpty && !skill.EngineModifiers.IsNull
-                    && skill.EngineModifiers["ignore_armor"].AsBool(false));
+            bool skillIgnoresArmor = !skill.IsEmpty && !skill.EngineModifiers.IsNull
+                && skill.EngineModifiers["ignore_armor"].AsBool(false);
+            // O8: Yay'ın "sonraki vuruş zırh yok" bonusu yalnız gerçekten işe yaradığında (skill zaten delmiyorsa) tüketilir.
+            bool weaponArmorBonus = WeaponIgnoresArmor && !skillIgnoresArmor;
+            bool ignoreArmor = WeaponIgnoresArmor || skillIgnoresArmor;
             float slotPen = _slotPassives?.ArmorPenPercentFor(_slotQueryCastId) ?? 0f;
             float penPct = SlotPassiveCombat.CombineArmorPen(0f, ignoreArmor, slotPen);
 
@@ -147,7 +169,6 @@ namespace Dovus.Game
 
             bool canCrit = formula || (!isBasicStrike && !skill.IsEmpty && skill.BaseDamage > 0f);
             float extraCrit = ExtraCritChanceAdd(skill) + WeaponCritAdd(skill, isBasicStrike);
-            int seed = _damageRoll++;
 
             var outcome = DamagePipeline.Resolve(new DamageQuery
             {
@@ -155,19 +176,20 @@ namespace Dovus.Game
                 Multiplier = outMult * runeMult,
                 LandMultiplier = () => _player != null ? PlayerDodgeRig.ConsumeNextHit(_player) : 1f,
                 CanCrit = canCrit && skillPower > 0f,
-                CritChance = DamagePipeline.DefaultCritChance + Mathf.Max(0f, extraCrit),
-                CritMultiplier = DamagePipeline.DefaultCritMultiplier,
+                CritChance = Crits.ChanceWith(extraCrit),
+                CritMultiplier = Crits.Multiplier,
+                CritRoll01 = _combatRng.NextRoll01(),
                 Armor = armor,
                 ArmorPenPercent = penPct,
                 DamageTakenFactor = taken,
                 Shield = shield,
                 ApplyVariance = true,
-                VarianceSeed = seed,
+                VarianceRoll01 = _combatRng.NextRoll01(),
                 Poise = poise,
                 ScaleMagnitudes = true
             });
 
-            if (outcome.Amount > 0f && ignoreArmor)
+            if (outcome.Amount > 0f && weaponArmorBonus)
                 WeaponIgnoresArmor = false;
             if (outcome.ShieldAbsorbed > 0f && _bossStatus != null)
                 _bossStatus.Board.ConsumeShield(outcome.ShieldAbsorbed);

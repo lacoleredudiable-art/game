@@ -55,8 +55,8 @@ namespace Dovus.Game
         bool _posedForRecovery;
 
         // Boss ölümü: çökme süresi bitince Revive.
-        bool _deathPending;
-        double _deathReviveAtMs;
+        /// <summary>K1: ölüm → çöküş → diriliş; <see cref="BossVitals.Died"/> her hasar yolundan tetikler.</summary>
+        readonly BossDeathSchedule _bossDeath = new BossDeathSchedule();
 
         SkillMotor _skills;
         SkillFactory _skillFactory;
@@ -348,13 +348,34 @@ namespace Dovus.Game
             _pose = pose;
             _visual = player != null ? player.GetComponent<ActorVisual>() : null;
             _boss = boss;
+            if (_bossVitals != null)
+            {
+                _bossVitals.Died -= OnBossDied;
+                _bossVitals.Revived -= OnBossRevivedExternally;
+            }
             _bossVitals = bossVitals;
+            if (_bossVitals != null)
+            {
+                _bossVitals.Died -= OnBossDied;
+                _bossVitals.Died += OnBossDied;
+                _bossVitals.Revived -= OnBossRevivedExternally;
+                _bossVitals.Revived += OnBossRevivedExternally;
+            }
             _scars = scars;
             _damageHud = damageHud;
             _bossDirector = bossDirector;
             _motor = player.GetComponent<KinematicMotor>();
+            if (_playerStatus != null)
+            {
+                _playerStatus.DamageTaken -= OnPlayerDamageTaken;
+                _playerStatus.DamageBlocked -= OnPlayerDamageBlocked;
+            }
+            if (_bossStatus != null)
+                _bossStatus.DamageOverTimeDealt -= OnBossDamageOverTime;
             _playerStatus = playerStatus;
             _bossStatus = bossStatus;
+            if (_bossStatus != null)
+                _bossStatus.DamageOverTimeDealt += OnBossDamageOverTime;
             _debugHud = debugHud;
             _readout = readout;
             _camera = camera;
@@ -391,7 +412,7 @@ namespace Dovus.Game
                 _playerStatus.IncomingDamageRedirect = RedirectMechanicDamage;
                 _playerStatus.ReflectSink = ApplyReflectedDamage;
                 _playerStatus.DamageTaken += OnPlayerDamageTaken;
-                _playerStatus.DamageBlocked += _ => { NoteShieldBlockIfGuarding(); OnJsonShieldBlocked(); };
+                _playerStatus.DamageBlocked += OnPlayerDamageBlocked;
             }
 
 
@@ -416,13 +437,61 @@ namespace Dovus.Game
                 : null;
         }
 
+        /// <summary>S16: lambda değil metot — OnDestroy'da bırakılabilsin.</summary>
+        void OnPlayerDamageBlocked(float absorbed)
+        {
+            NoteShieldBlockIfGuarding();
+            OnJsonShieldBlocked();
+        }
+
+        /// <summary>K1: boss canı hangi yoldan 0'a inerse insin (DoT, yansıma, minyon, emme, takım…).</summary>
+        void OnBossDied()
+        {
+            if (_clock == null)
+                return;
+            BeginBossDeathSequence(_clock.Director.WorldTimeMs);
+        }
+
+        /// <summary>
+        /// Biri (Play Sweep, dev aracı) ölüm sırası bitmeden boss'u diriltirse bekleyen diriliş iptal —
+        /// yoksa sonraki tur ortasında ikinci bir Revive canı fulleyebilirdi. Kendi dirilişimiz
+        /// TryRevive'da önce bekleyeni kapattığı için burada no-op.
+        /// </summary>
+        void OnBossRevivedExternally()
+        {
+            if (!_bossDeath.Pending)
+                return;
+            _bossDeath.Cancel();
+            _boss?.EndCollapse();
+            if (_clock != null)
+                _bossDirector?.NotifyBossRevived(_clock.Director.WorldTimeMs);
+        }
+
+        /// <summary>S4: boss'taki yanma/zehir tikinin hasar sayısı.</summary>
+        void OnBossDamageOverTime(float amount)
+        {
+            if (amount <= 0f || _boss == null)
+                return;
+            _damageHud?.ShowDamage(amount, false, BossHitPoint(), DamageTint());
+        }
+
         void OnDestroy()
         {
             if (_engine != null && _hooked)
                 _engine.SentenceCompleted -= OnSentenceCompleted;
+            if (_input != null)
+                _input.SkillCancelledByDodge -= CancelActiveSkillForDodge;
+            if (_bossVitals != null)
+            {
+                _bossVitals.Died -= OnBossDied;
+                _bossVitals.Revived -= OnBossRevivedExternally;
+            }
+            if (_bossStatus != null)
+                _bossStatus.DamageOverTimeDealt -= OnBossDamageOverTime;
             if (_playerStatus != null)
             {
                 _playerStatus.DamageTaken -= OnPlayerDamageTaken;
+                _playerStatus.DamageBlocked -= OnPlayerDamageBlocked;
                 _playerStatus.IncomingDamageRedirect = null;
                 _playerStatus.ReflectSink = null;
             }
@@ -536,24 +605,21 @@ namespace Dovus.Game
                 isDead, isStunned, isDodging, isRooted, isCasting, isDrawing, isRecovering);
         }
 
+        /// <summary>Yalnız <see cref="OnBossDied"/>'dan (K1 tek kanca).</summary>
         void BeginBossDeathSequence(double worldMs)
         {
-            _bossDirector?.NotifyBossDown(worldMs);
             float collapseSec = _colors != null ? _colors.BossDeathCollapseSec : 0.85f;
+            if (!_bossDeath.Begin(worldMs, collapseSec))
+                return;
+            _bossDirector?.NotifyBossDown(worldMs);
             _boss?.BeginCollapse(collapseSec, worldMs);
-            _deathReviveAtMs = worldMs + collapseSec * 1000.0;
-            _deathPending = true;
         }
 
         void TickBossDeath()
         {
-            if (!_deathPending || _clock == null)
+            if (_clock == null || !_bossDeath.TryRevive(_clock.Director.WorldTimeMs))
                 return;
 
-            if (_clock.Director.WorldTimeMs < _deathReviveAtMs)
-                return;
-
-            _deathPending = false;
             _bossVitals?.Revive();
             _boss?.EndCollapse();
             _bossDirector?.NotifyBossRevived(_clock.Director.WorldTimeMs);
@@ -2345,14 +2411,16 @@ namespace Dovus.Game
             bool selfNeeds = playerVitals != null && selfInRange
                 && !playerVitals.IsDown && playerVitals.Hp < playerVitals.MaxHp;
             bool preferSelf = _player != null && preferredTarget == _player;
+            // O4: düşmüş oyuncuya iyileştirme "zaten full" değil "düştü" yazar.
+            bool selfDown = playerVitals != null && playerVitals.IsDown;
             if ((preferAlly && !allyNeeds) || (preferSelf && !selfNeeds))
             {
-                _readout?.NoteSkill(skill.DisplayName, "zaten full", new Color(0.7f, 0.9f, 0.75f));
+                _readout?.NoteSkill(skill.DisplayName, preferSelf && selfDown ? "düştü" : "zaten full", new Color(0.7f, 0.9f, 0.75f));
                 return;
             }
             if (!allyNeeds && !selfNeeds)
             {
-                _readout?.NoteSkill(skill.DisplayName, "zaten full", new Color(0.7f, 0.9f, 0.75f));
+                _readout?.NoteSkill(skill.DisplayName, selfDown ? "düştü" : "zaten full", new Color(0.7f, 0.9f, 0.75f));
                 ApplyHealOverflow(skill, amount, 0, false);
                 return;
             }
@@ -2465,14 +2533,11 @@ namespace Dovus.Game
                     vitals.ApplyHeal(healAmt); // Kan Çılgınlığı kendi hasarından beslenir — NotifyHealed BİLEREK çağrılmaz
             }
 
+            // K1: ölüm akışı BossVitals.Died → OnBossDied (bütün yollar için tek yer).
             bool killed = _bossVitals.ApplyDamage(damage);
             var bossVisual = _boss != null ? _boss.GetComponent<BossVisual>() : null;
             if (killed)
-            {
-                double worldMs = _clock.Director.WorldTimeMs;
-                BeginBossDeathSequence(worldMs);
                 return damage;
-            }
 
             NotifyBossStruck(isCrit, allowHitstop: true);
             bossVisual?.PlayStagger();
