@@ -65,17 +65,17 @@ public class DamagePipelineTests
             SkillPower = 100f,
             CanCrit = true,
             CritChance = -1f,
-            CritRoll01 = 0.09f
+            CritRoll01 = 0.049f
         });
         Assert.That(crit.WasCrit, Is.True);
-        Assert.That(crit.Amount, Is.EqualTo(150f).Within(0.01f));
+        Assert.That(crit.Amount, Is.EqualTo(200f).Within(0.01f));
 
         var miss = DamagePipeline.Resolve(new DamageQuery
         {
             SkillPower = 100f,
             CanCrit = true,
             CritChance = DamagePipeline.DefaultCritChance,
-            CritRoll01 = 0.10f
+            CritRoll01 = 0.05f
         });
         Assert.That(miss.WasCrit, Is.False);
         Assert.That(miss.Amount, Is.EqualTo(100f).Within(0.01f));
@@ -334,12 +334,12 @@ public class DamagePipelineTests
     }
 
     [Test]
-    public void IgnoreArmor_CapsAtHalf_AndExplicitFullPenStays()
+    public void IgnoreArmor_PiercesFully_AndExplicitPenStays()
     {
         Assert.That(SlotPassiveCombat.CombineArmorPen(0f, false, 0f), Is.EqualTo(0f).Within(0.0001f));
         Assert.That(SlotPassiveCombat.CombineArmorPen(0.8f, false, 0f), Is.EqualTo(0.8f).Within(0.0001f));
         Assert.That(SlotPassiveCombat.CombineArmorPen(0f, true, 0f), Is.EqualTo(SlotPassiveCombat.IgnoreArmorPierce).Within(0.0001f));
-        Assert.That(SlotPassiveCombat.IgnoreArmorPierce, Is.EqualTo(0.5f).Within(0.0001f));
+        Assert.That(SlotPassiveCombat.IgnoreArmorPierce, Is.EqualTo(1f).Within(0.0001f));
 
         DesignWarnings.ResetForTests();
         var motor = SkillMotor.FromJson(File.ReadAllText(ElementPath()));
@@ -350,11 +350,11 @@ public class DamagePipelineTests
         Assert.That(burst.EngineModifiers["ignore_armor"].AsBool(false), Is.True);
         Assert.That(plain.EngineModifiers["ignore_armor"].AsBool(false), Is.False);
 
-        // Play: zırh yok sayılınca 1-9 ~365K, 5-9 ~260K. %50 delme zırh 100'ü 50 bırakır.
+        // O8 (kullanıcı onayı, 1 Ekim): ignore_armor zırhı %100 deler → 1-9 ~365K, 5-9 ~260K tam geçer.
         float focused = ThroughArmor(365000f, SlotPassiveCombat.CombineArmorPen(0f, true, 0f));
         float exploded = ThroughArmor(260000f, SlotPassiveCombat.CombineArmorPen(0f, true, 0f));
-        Assert.That(focused, Is.InRange(150000f, 250000f));
-        Assert.That(exploded, Is.InRange(150000f, 250000f));
+        Assert.That(focused, Is.EqualTo(365000f).Within(1f));
+        Assert.That(exploded, Is.EqualTo(260000f).Within(1f));
         Assert.That(ThroughArmor(365000f, SlotPassiveCombat.CombineArmorPen(0f, false, 0f)), Is.LessThan(focused));
 
         var full = DamagePipeline.Resolve(new DamageQuery

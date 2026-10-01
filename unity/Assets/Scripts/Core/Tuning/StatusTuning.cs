@@ -13,6 +13,8 @@ namespace Dovus.Core.Tuning
         public int SlowMs = 1500;
         public float SlowSpeedMult = 0.55f;
         public int BlindMs = 1400;
+        /// <summary>S7: büyüklük vermeyen kör yolları için ıska şansı (JSON accuracy_debuff 0.3 ile aynı). 1 = %100 ıska tuzağıydı.</summary>
+        public float BlindMissChance = 0.3f;
         public int FearMs = 900;
         public int DisarmMs = 1000;
         public int TauntMs = 1200;
@@ -68,6 +70,7 @@ namespace Dovus.Core.Tuning
             SlowMs = other.SlowMs;
             SlowSpeedMult = other.SlowSpeedMult;
             BlindMs = other.BlindMs;
+            BlindMissChance = other.BlindMissChance;
             FearMs = other.FearMs;
             DisarmMs = other.DisarmMs;
             TauntMs = other.TauntMs;

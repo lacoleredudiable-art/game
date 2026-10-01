@@ -35,7 +35,6 @@ namespace Dovus.Game
         GameObject _aura;
         bool _wasOwning;
         bool _borderReleasePending;
-        bool _strikePending;
         string _line = "Takım menüsü hazır";
         int _nextId = 2;
 
@@ -78,7 +77,6 @@ namespace Dovus.Game
             _border.Clear();
             _wasOwning = false;
             _borderReleasePending = false;
-            _strikePending = false;
             PortalBorderTeamHooks.ResetModifiers();
         }
 
@@ -128,8 +126,6 @@ namespace Dovus.Game
             PushHooks(player);
             RefreshAura(player);
             RefreshVisuals();
-            if (_strikePending)
-                ApplyBackStrike();
         }
 
         public void SpawnAlly()
@@ -311,9 +307,10 @@ namespace Dovus.Game
             TeamPulse pulse = _team.Cast(skillId, player, FindAlly(target.Id), _allies, boss);
             ApplyPulse(pulse);
             ApplyMoves();
+            // O3: eski ApplyBackStrike (önceki vuruşun zırh sonrası hasarını ikinci kez zırhtan geçiren görünmez
+            // üçüncü vuruş) kaldırıldı; 1-10'un sırt vuruşu kalıbın sirtta_kapi fazında. Yalnız görsel kalır.
             if (skillId == "1-10" && _portal.Strike.Active)
             {
-                _strikePending = true;
                 Burst(new Vector3(_portal.Strike.X, 1.1f, _portal.Strike.Z), new Color(0.75f, 0.75f, 1f));
             }
             if (_border.Active(player.Id))
@@ -438,22 +435,11 @@ namespace Dovus.Game
                 _bossStatus.Board.Apply(StatusKind.Stun, pulse.StunSec * 1000.0, 1f, "takim");
             if (pulse.Burned)
             {
-                var tuning = new StatusTuning();
-                _bossStatus.Board.Apply(StatusKind.Burn, 1000.0, tuning.BurnDamagePerSec, "8-6");
+                // S17: yüklenen/panelden değişen tuning (ActorStatus.Bind'deki _combat.Status), varsayılan değil.
+                _bossStatus.Board.Apply(StatusKind.Burn, 1000.0, _bossStatus.Tuning.BurnDamagePerSec, "8-6");
             }
             if (pulse.MineMult > 1f)
                 _line = "Mayın x" + pulse.MineMult.ToString("0");
-        }
-
-        void ApplyBackStrike()
-        {
-            _strikePending = false;
-            ManifestationDirector director = FindAnyObjectByType<ManifestationDirector>();
-            if (director == null || _bossStatus == null)
-                return;
-            float damage = director.LastClosingDamageDealt;
-            if (damage > 0f)
-                _bossStatus.ApplyDamage(damage);
         }
 
         void PushHooks(TeamActor player)

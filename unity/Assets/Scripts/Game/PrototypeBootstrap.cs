@@ -157,6 +157,7 @@ namespace Dovus.Game
             var vitals = player.AddComponent<PlayerVitals>();
             // His: heal denemesi — oyuncu da %50 (full iken mend boş döner).
             vitals.Bind(combat.Boss, playerHp, startRatio: 0.5f);
+            vitals.BindClock(clock);
             vitals.SetDevHp(DebugConfig.Enabled);
 
             var resource = player.AddComponent<PlayerResource>();

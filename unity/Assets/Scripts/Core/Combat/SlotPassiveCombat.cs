@@ -9,8 +9,8 @@ namespace Dovus.Core.Combat
     /// </summary>
     public static class SlotPassiveCombat
     {
-        /// <summary>Yeni kural: ignore_armor = %50 delme, tam yok sayma değil.</summary>
-        public const float IgnoreArmorPierce = 0.5f;
+        /// <summary>O8 (kullanıcı kararı): ignore_armor = zırhı %100 deler ("Zırh yoksayar").</summary>
+        public const float IgnoreArmorPierce = 1f;
 
         /// <summary>Pasif kopya bir kez, bu güçle. Skill sıfatının duplicate_damage_mult'u ayrıdır.</summary>
         public const float EchoPower = 0.5f;

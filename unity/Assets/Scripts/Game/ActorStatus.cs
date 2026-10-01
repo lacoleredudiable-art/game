@@ -115,7 +115,12 @@ namespace Dovus.Game
                 return;
 
             if (payload > 0f)
-                ApplyDamage(payload);
+            {
+                // S4: DoT tiki (yanma/zehir) kaçışla yutulmaz ve zırhı deler (tasarım kararı); boss'ta sayı gösterilir.
+                ApplyDamage(payload, dodgeable: false, pierceArmor: true);
+                if (_bossVitals != null && LastAppliedDamage > 0f)
+                    DamageOverTimeDealt?.Invoke(LastAppliedDamage);
+            }
             else
                 ApplyHeal(-payload);
         }
@@ -158,12 +163,17 @@ namespace Dovus.Game
         }
 
         public ArmorSheet Armor { get; } = new ArmorSheet();
+        /// <summary>Son ApplyDamage çağrısında cana (boss/oyuncu) gerçekten geçen hasar; kalkan/i-frame/Stasis yuttuysa 0 (S6).</summary>
+        public float LastAppliedDamage { get; private set; }
+        /// <summary>S4: boss'a işleyen DoT tiki (hasar sayısı için).</summary>
+        public event Action<float> DamageOverTimeDealt;
         public bool LastHitWasCrit { get; set; }
         public float LastThreat { get; set; }
         public float LastPoise { get; set; }
 
-        public void ApplyDamage(float raw, bool dodgeable = true)
+        public void ApplyDamage(float raw, bool dodgeable = true, bool pierceArmor = false)
         {
+            LastAppliedDamage = 0f;
             if (raw <= 0f) return;
             // İ-frame, hesaptan önce. Yutulan vuruş boruya girmez.
             if (_playerVitals != null && PlayerDodgeRig.BlocksIncoming(this, dodgeable))
@@ -188,7 +198,7 @@ namespace Dovus.Game
                 AttackPower = 1f,
                 Multiplier = 1f,
                 CanCrit = false,
-                Armor = Armor.Effective(now),
+                Armor = pierceArmor ? 0f : Armor.Effective(now),
                 DamageTakenFactor = taken,
                 Shield = Board.ShieldRemaining + shortShield,
                 Invulnerable = BossStatusMath.DamageInvulnerable(Board.IsInvulnerable),
@@ -218,9 +228,13 @@ namespace Dovus.Game
             if (afterShield <= 0f) return;
 
             if (_bossVitals != null)
+            {
+                LastAppliedDamage = afterShield;
                 _bossVitals.ApplyDamage(afterShield);
+            }
             else if (_playerVitals != null)
             {
+                LastAppliedDamage = afterShield;
                 DamageTaken?.Invoke(afterShield);
                 _playerVitals.ApplyDamage(Mathf.CeilToInt(afterShield), dodgeable, shortShieldAlreadyApplied: true);
             }

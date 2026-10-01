@@ -119,7 +119,7 @@ public class SlotPassiveRuneTests
     }
 
     [Test]
-    public void Rune9_Odaklama_PiercesHalfArmorForItsDuration()
+    public void Rune9_Odaklama_IgnoresArmorForItsDuration()
     {
         Assert.That(_motor.TryGetRune(9, out RuneDefinition rune), Is.True);
         Assert.That(rune.PassiveDurationDefault, Is.EqualTo(5f).Within(0.001f));
@@ -129,7 +129,7 @@ public class SlotPassiveRuneTests
         Assert.That(director.DamageMultFor(later), Is.EqualTo(1.15f).Within(0.001f));
 
         float pen = SlotPassiveCombat.CombineArmorPen(0f, skillIgnoresArmor: true, slotPen: 0f);
-        Assert.That(pen, Is.EqualTo(0.5f).Within(0.001f));
+        Assert.That(pen, Is.EqualTo(1f).Within(0.001f));
         DamageOutcome open = DamagePipeline.Resolve(new DamageQuery
         {
             SkillPower = 200f,
@@ -141,9 +141,9 @@ public class SlotPassiveRuneTests
             SkillPower = 200f,
             Armor = 100f
         });
-        Assert.That(open.ArmorAfterPen, Is.EqualTo(50f).Within(0.01f));
+        Assert.That(open.ArmorAfterPen, Is.EqualTo(0f).Within(0.01f));
         Assert.That(open.Amount, Is.GreaterThan(closed.Amount));
-        Assert.That(open.Amount, Is.LessThan(200f));
+        Assert.That(open.Amount, Is.EqualTo(200f).Within(0.01f));
     }
 
     [Test]

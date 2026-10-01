@@ -174,11 +174,18 @@ namespace Dovus.Core.Status
             if (ModifierTruthy(mods, "apply_confuse") && !self)
             {
                 if (!HasMech("blind"))
+                {
+                    // S7: büyüklük 1 = her vuruş ıska idi; accuracy_debuff varsa o, yoksa tuning varsayılanı.
+                    float confuseAccuracy = mods.Has("accuracy_debuff")
+                        ? mods["accuracy_debuff"].AsFloat(0f)
+                        : 0f;
                     board.Apply(
                         StatusKind.Blind,
                         mobilityCc?.ResolveCcDurationMs(StatusKind.Blind, adjectiveId, tuning.BlindMs)
                             ?? tuning.BlindMs,
-                        1f);
+                        Dovus.Core.Combat.BossStatusMath.BlindChanceFromAccuracy(
+                            confuseAccuracy > 0f ? confuseAccuracy : tuning.BlindMissChance));
+                }
                 if (!HasMech("slow"))
                     board.Apply(
                         StatusKind.Slow,
@@ -324,12 +331,15 @@ namespace Dovus.Core.Status
                     board.Apply(kind, Duration(t.SlowMs), t.SlowSpeedMult, EffectSource(skill, "slow"));
                     break;
                 case StatusKind.Blind:
-                    board.Apply(kind, Duration(t.BlindMs), 1f);
+                    // S7: %100 ıska tuzağı yerine tuning ıska şansı.
+                    board.Apply(kind, Duration(t.BlindMs),
+                        Dovus.Core.Combat.BossStatusMath.BlindChanceFromAccuracy(t.BlindMissChance));
                     break;
                 case StatusKind.Disarm:
                     board.Apply(kind, Duration(t.DisarmMs), 1f);
                     break;
                 case StatusKind.Taunt:
+                    // S7 notu: Taunt uygulanıyor ama boss hedeflemesi henüz okumuyor (dikkat_ceker boss tasarım PR'ına).
                     board.Apply(kind, Duration(t.TauntMs), 1f);
                     break;
                 case StatusKind.Fear:

@@ -262,20 +262,23 @@ namespace Dovus.Game
                 SkillPower = raw,
                 Multiplier = mult,
                 CanCrit = !skill.IsEmpty && skill.BaseDamage > 0f,
-                CritChance = DamagePipeline.DefaultCritChance + Mathf.Max(0f, ExtraCritChanceAdd(skill)),
+                CritChance = Crits.ChanceWith(ExtraCritChanceAdd(skill)),
+                CritMultiplier = Crits.Multiplier,
+                CritRoll01 = _combatRng.NextRoll01(),
                 Armor = armor,
                 ArmorPenPercent = penPct,
                 DamageTakenFactor = taken,
                 Shield = shield,
                 ApplyVariance = true,
-                VarianceSeed = _damageRoll++,
+                VarianceRoll01 = _combatRng.NextRoll01(),
                 Poise = skill.IsEmpty ? 0f : skill.BasePoise,
                 ScaleMagnitudes = true
             });
             if (dealt.ShieldAbsorbed > 0f && _bossStatus != null)
                 _bossStatus.Board.ConsumeShield(dealt.ShieldAbsorbed);
             float damage = dealt.Amount;
-            _damageHud?.ShowDamage(damage, false, BossHitPoint(), DamageTint());
+            // S8: minyon kritikleri de gösterilir.
+            _damageHud?.ShowDamage(damage, dealt.WasCrit, BossHitPoint(), DamageTint());
             float lifesteal = AdjectiveLifesteal(skill);
             lifesteal += _slotPassives?.LifestealAddFor(_slotQueryCastId) ?? 0f;
             if (lifesteal > 0f && _player != null)
