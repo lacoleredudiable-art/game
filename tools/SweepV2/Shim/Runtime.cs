@@ -368,6 +368,7 @@ namespace UnityEngine
         public static float shadowDistance { get; set; } = 50f;
         public static int shadowCascades { get; set; } = 2;
         public static int pixelLightCount { get; set; } = 4;
+        public static bool realtimeReflectionProbes { get; set; }
         public static void SetQualityLevel(int index) { }
         public static void SetQualityLevel(int index, bool applyExpensiveChanges) { }
     }
@@ -411,12 +412,15 @@ namespace UnityEngine
         public int resolution;
         public Vector3 size;
         public float intensity;
+        public ReflectionProbeClearFlags clearFlags;
+        public Color backgroundColor;
         public void RenderProbe() { }
     }
 
     public enum ReflectionProbeMode { Baked, Custom, Realtime }
     public enum ReflectionProbeRefreshMode { OnAwake, EveryFrame, ViaScripting }
     public enum ReflectionProbeTimeSlicingMode { AllFacesAtOnce, IndividualFaces, NoTimeSlicing }
+    public enum ReflectionProbeClearFlags { Skybox, SolidColor }
 }
 
 namespace UnityEngine.Rendering

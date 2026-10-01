@@ -850,6 +850,7 @@ namespace UnityEngine.Rendering.Universal
     public enum CameraRenderType { Base, Overlay }
     public enum AntialiasingMode { None, FastApproximateAntialiasing, SubpixelMorphologicalAntiAliasing, TemporalAntiAliasing }
     public enum TonemappingMode { None, Neutral, ACES }
+    public enum CameraOverrideOption { UsePipelineSettings, On, Off }
 
     public class UniversalAdditionalCameraData : MonoBehaviour
     {
@@ -860,6 +861,7 @@ namespace UnityEngine.Rendering.Universal
         public AntialiasingMode antialiasing { get; set; }
         public bool stopNaN { get; set; }
         public bool dithering { get; set; }
+        public CameraOverrideOption requiresDepthOption { get; set; }
     }
 
     public class UniversalAdditionalLightData : MonoBehaviour { }
@@ -915,6 +917,8 @@ namespace UnityEngine.Rendering.Universal
             new System.Collections.Generic.List<ScriptableRendererFeature>();
     }
 
+    public enum UpscalingFilterSelection { Auto, Linear, FSR, STP }
+
     public class UniversalRenderPipelineAsset : ScriptableObject
     {
         public float renderScale;
@@ -922,6 +926,9 @@ namespace UnityEngine.Rendering.Universal
         public int mainLightShadowmapResolution;
         public bool supportsCameraDepthTexture;
         public ScriptableRendererData[] rendererDataList;
+        public UpscalingFilterSelection upscalingFilter;
+        public bool fsrOverrideSharpness;
+        public float fsrSharpness;
     }
 }
 

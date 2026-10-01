@@ -238,8 +238,10 @@ namespace UnityEngine.Rendering.Universal
         public CameraRenderType renderType;
         public List<Camera> cameraStack;
         public bool renderPostProcessing;
+        public CameraOverrideOption requiresDepthOption;
     }
     public enum CameraRenderType { Base, Overlay }
+    public enum CameraOverrideOption { UsePipelineSettings, On, Off }
     public partial class Volume : UnityEngine.MonoBehaviour { public bool isGlobal; public float weight; public VolumeProfile profile; }
     public partial class VolumeProfile : UnityEngine.ScriptableObject
     {
@@ -296,6 +298,7 @@ namespace UnityEngine.Rendering.Universal
         public bool isActive;
         public void SetActive(bool active) { isActive = active; }
     }
+    public enum UpscalingFilterSelection { Auto, Linear, FSR, STP }
     public partial class UniversalRenderPipelineAsset : UnityEngine.Rendering.RenderPipelineAsset
     {
         public float renderScale;
@@ -303,6 +306,9 @@ namespace UnityEngine.Rendering.Universal
         public int mainLightShadowmapResolution;
         public bool supportsCameraDepthTexture;
         public ScriptableRendererData[] rendererDataList;
+        public UpscalingFilterSelection upscalingFilter;
+        public bool fsrOverrideSharpness;
+        public float fsrSharpness;
         protected override UnityEngine.Rendering.RenderPipeline CreatePipeline() => null;
     }
     public partial class ShadowsMidtonesHighlights : VolumeComponent

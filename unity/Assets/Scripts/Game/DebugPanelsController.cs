@@ -55,7 +55,14 @@ namespace Dovus.Game
             btn.targetGraphic = img;
             btn.onClick.AddListener(Toggle);
 
-            var label = rect.gameObject.AddComponent<Text>();
+            var labelGo = new GameObject("Label");
+            labelGo.transform.SetParent(rect, false);
+            var labelRect = labelGo.AddComponent<RectTransform>();
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = Vector2.zero;
+            labelRect.offsetMax = Vector2.zero;
+            var label = labelGo.AddComponent<Text>();
             label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             if (label.font == null)
                 label.font = Resources.GetBuiltinResource<Font>("Arial.ttf");

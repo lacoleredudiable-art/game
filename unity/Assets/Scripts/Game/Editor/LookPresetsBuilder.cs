@@ -88,45 +88,60 @@ namespace Dovus.Game.EditorTools
 
         static void StrengthenB(VolumeProfile profile)
         {
+            // task-look-v2b problem 2: A/B ayrımı modest kaldı (gameplay |A-B| 18.4, hedef >=20) —
+            // kontrast/SMH/vinyet daha güçlü, bloom daha çekingen (daha "keskin", daha az yumuşak parlama).
             if (profile.TryGet(out ColorAdjustments colorAdj))
             {
-                colorAdj.contrast.Override(12f);
-                colorAdj.postExposure.Override(0.28f);
-                colorAdj.saturation.Override(-18f);
-                colorAdj.colorFilter.Override(new Color(0.88f, 0.93f, 1.04f));
+                colorAdj.contrast.Override(27f);
+                colorAdj.postExposure.Override(0.2f);
+                colorAdj.saturation.Override(-14f);
+                colorAdj.colorFilter.Override(new Color(0.87f, 0.92f, 1.05f));
             }
 
             if (profile.TryGet(out ShadowsMidtonesHighlights smh))
             {
-                smh.shadows.Override(new Vector4(0.82f, 0.88f, 1.08f, -0.22f));
-                smh.midtones.Override(new Vector4(0.94f, 0.96f, 1.02f, 0.04f));
-                smh.highlights.Override(new Vector4(1.04f, 1.03f, 0.98f, 0.08f));
+                smh.shadows.Override(new Vector4(0.72f, 0.79f, 1.11f, -0.37f));
+                smh.midtones.Override(new Vector4(0.91f, 0.94f, 1.04f, 0.03f));
+                smh.highlights.Override(new Vector4(1.1f, 1.08f, 0.95f, 0.15f));
             }
 
             if (profile.TryGet(out Vignette vignette))
-                vignette.intensity.Override(0.28f);
+                vignette.intensity.Override(0.36f);
 
             if (profile.TryGet(out Bloom bloom))
             {
-                bloom.threshold.Override(1.25f);
-                bloom.intensity.Override(0.35f);
+                bloom.threshold.Override(1.3f);
+                bloom.intensity.Override(0.28f);
             }
         }
 
         static void TuneC(VolumeProfile profile)
         {
+            // task-look-v2b problem 2: C, B'den belirgin daha "zengin" olsun (hedef gameplay >=12) —
+            // ağırlık SSAO/yansıma probuna (runtime, LookPresets/LookPresetController) kayar, burada
+            // profil tarafı B'nin keskinliğinden ayrışsın diye daha yüksek pozlama/doygunluk/bloom alır.
             if (profile.TryGet(out ColorAdjustments colorAdj))
             {
-                colorAdj.postExposure.Override(0.12f);
-                colorAdj.contrast.Override(6f);
-                colorAdj.saturation.Override(-22f);
+                colorAdj.postExposure.Override(0.24f);
+                colorAdj.contrast.Override(9f);
+                colorAdj.saturation.Override(-15f);
+            }
+
+            if (profile.TryGet(out ShadowsMidtonesHighlights smh))
+            {
+                smh.shadows.Override(new Vector4(0.9f, 0.94f, 1.05f, -0.08f));
+                smh.midtones.Override(new Vector4(0.97f, 0.98f, 1.01f, 0.02f));
+                smh.highlights.Override(new Vector4(1.03f, 1.02f, 0.99f, 0.05f));
             }
 
             if (profile.TryGet(out Bloom bloom))
             {
-                bloom.threshold.Override(1.18f);
-                bloom.intensity.Override(0.42f);
+                bloom.threshold.Override(1.05f);
+                bloom.intensity.Override(0.52f);
             }
+
+            if (profile.TryGet(out Vignette vignette))
+                vignette.intensity.Override(0.16f);
         }
 
         static void SaveProfile(string name, VolumeProfile profile)
@@ -211,18 +226,26 @@ namespace Dovus.Game.EditorTools
 
             ssao.SetActive(false);
             var so = new SerializedObject(ssao);
-            var down = so.FindProperty("m_Settings.m_Downsample");
+            // Alan adları "m_Settings" içinde "m_" ön eki TAŞIMIYOR (bkz. URP 17
+            // ScreenSpaceAmbientOcclusionSettings: Downsample/Radius/Intensity/...). Eski yol
+            // ("m_Settings.m_Radius" vb.) FindProperty'den null dönüyordu, null kontrolleri de
+            // sessizce atlıyordu — SSAO hiçbir zaman bu değerleri almadı, URP varsayılanlarında
+            // kaldı (Radius=0.035 çok küçük, creases'te görünmüyordu). task-look-v2b problem 2.
+            var down = so.FindProperty("m_Settings.Downsample");
             if (down != null)
                 down.boolValue = true;
-            var radius = so.FindProperty("m_Settings.m_Radius");
+            var radius = so.FindProperty("m_Settings.Radius");
             if (radius != null)
-                radius.floatValue = 0.22f;
-            var intensity = so.FindProperty("m_Settings.m_Intensity");
+                radius.floatValue = 0.42f;
+            var intensity = so.FindProperty("m_Settings.Intensity");
             if (intensity != null)
-                intensity.floatValue = 0.42f;
-            var samples = so.FindProperty("m_Settings.m_SampleCount");
-            if (samples != null)
-                samples.intValue = 0;
+                intensity.floatValue = 0.85f;
+            var directLighting = so.FindProperty("m_Settings.DirectLightingStrength");
+            if (directLighting != null)
+                directLighting.floatValue = 0.25f;
+            var falloff = so.FindProperty("m_Settings.Falloff");
+            if (falloff != null)
+                falloff.floatValue = 50f;
             so.ApplyModifiedPropertiesWithoutUndo();
 
             EditorUtility.SetDirty(renderer);

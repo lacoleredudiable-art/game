@@ -55,15 +55,18 @@ namespace Dovus.Game.EditorTools
                     ctrl?.ForceProbeRender();
                 }
                 log.AppendLine(LookPresets.DescribeActiveSettings());
-                CaptureCamera(Camera.main, $"look-{p}-gameplay.png");
-                CaptureWide($"look-{p}-wide.png");
+                CaptureCamera(Camera.main, Path.Combine(OutDir, $"look-{p}-gameplay.png"));
+                CaptureWide(Path.Combine(OutDir, $"look-{p}-wide.png"));
             }
             Debug.Log("[LookCapture]\n" + log);
         }
 
-        public static void CapturePreset(char preset)
+        public static void CapturePreset(char preset) => CapturePreset(preset, OutDir);
+
+        /// <summary>task-look-v2b doğrulama: v2 çıktısını ezmeden ayrı bir tanı klasörüne yakalar.</summary>
+        public static void CapturePreset(char preset, string outDir)
         {
-            Directory.CreateDirectory(OutDir);
+            Directory.CreateDirectory(outDir);
             preset = char.ToUpperInvariant(preset);
             LookPresets.Apply(preset);
             if (preset == 'C')
@@ -72,8 +75,8 @@ namespace Dovus.Game.EditorTools
                 ctrl?.ForceProbeRender();
             }
             Debug.Log("[LookCapture] " + LookPresets.DescribeActiveSettings());
-            CaptureCamera(Camera.main, $"look-{preset}-gameplay.png");
-            CaptureWide($"look-{preset}-wide.png");
+            CaptureCamera(Camera.main, Path.Combine(outDir, $"look-{preset}-gameplay.png"));
+            CaptureWide(Path.Combine(outDir, $"look-{preset}-wide.png"));
         }
 
         public static string HashGameplayPngs()
@@ -97,11 +100,18 @@ namespace Dovus.Game.EditorTools
             return hex.ToString();
         }
 
-        static void CaptureWide(string fileName)
+        static void CaptureWide(string outputPath)
         {
             var camGo = new GameObject("LookCaptureWide");
             var cam = camGo.AddComponent<Camera>();
-            cam.clearFlags = CameraClearFlags.Skybox;
+            // Gökyüzü (task-look-v2b problem 1): bu tanı kamerası eskiden CameraClearFlags.Skybox
+            // kullanıyordu; RenderSettings.skybox kasıtlı olarak null (SceneAtmosphere.Apply, sis +
+            // düz renk tasarımı), bu yüzden Unity'nin yeni kameralar için varsayılan arka plan rengine
+            // (stok mavi, ~RGB 45,80,140) düşüyordu — gerçek oyun kamerası hiç bu yola girmiyor çünkü
+            // SolidColor + tuning grisini açıkça ayarlıyor. Tanı kamerası artık "kaynak" değeri —
+            // Camera.main'in o anki (ön ayara göre) arka plan rengini — kopyalar.
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = Camera.main != null ? Camera.main.backgroundColor : new Color(0.56f, 0.6f, 0.66f);
             cam.fieldOfView = 55f;
             var target = new Vector3(0f, 0f, 25f);
             cam.transform.position = new Vector3(0f, 9f, -38f);
@@ -109,11 +119,12 @@ namespace Dovus.Game.EditorTools
             cam.farClipPlane = 600f;
             var urpData = camGo.AddComponent<UniversalAdditionalCameraData>();
             urpData.renderPostProcessing = true;
-            CaptureCamera(cam, fileName);
+            LookPresets.ApplyCameraOverrides(cam, LookPresets.ActiveRequiresDepthTexture);
+            CaptureCamera(cam, outputPath);
             Object.DestroyImmediate(camGo);
         }
 
-        static void CaptureCamera(Camera cam, string fileName)
+        static void CaptureCamera(Camera cam, string outputPath)
         {
             if (cam == null)
                 return;
@@ -122,6 +133,7 @@ namespace Dovus.Game.EditorTools
             if (urp == null)
                 urp = cam.gameObject.AddComponent<UniversalAdditionalCameraData>();
             urp.renderPostProcessing = true;
+            LookPresets.ApplyCameraOverrides(cam, LookPresets.ActiveRequiresDepthTexture);
 
             VolumeManager.instance.Update(cam.transform, cam.cullingMask);
 
@@ -141,7 +153,7 @@ namespace Dovus.Game.EditorTools
 
             byte[] png = tex.EncodeToPNG();
             Object.DestroyImmediate(tex);
-            File.WriteAllBytes(Path.Combine(OutDir, fileName), png);
+            File.WriteAllBytes(outputPath, png);
         }
     }
 }
