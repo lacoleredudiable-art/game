@@ -61,6 +61,28 @@ namespace Dovus.Core.Combat
         public bool AllowsDodge =>
             string.Equals(CanDodge, "true", StringComparison.Ordinal);
 
+        /// <summary>
+        /// S3: girdinin kaçış kapısı. <c>can_dodge</c> "false" olan durum reddeder (stunned, dead).
+        /// "dodging"te anahtar yok (ayrıştırıcı "false" okur) ama zincir kaçışı haklar yönetir (2 hak) →
+        /// serbest. İstisna "casting": aynı JSON
+        /// (cast fazları "kesilebilir (dodge)", animasyon geçişi skill_to_dodge "iptal") kaçışla
+        /// iptali tanımlıyor; state_machine.casting.can_dodge:false bununla çelişiyor. Muhafazakâr
+        /// seçim: mevcut davranış (kaçış cast'i keser) korunur, çelişki PR'da not edildi.
+        /// </summary>
+        public bool AllowsDodgeGate
+        {
+            get
+            {
+                if (!string.Equals(CanDodge, "false", StringComparison.Ordinal))
+                    return true;
+                return string.Equals(CurrentId, CastingStateId, StringComparison.Ordinal)
+                       || string.Equals(CurrentId, DodgingStateId, StringComparison.Ordinal);
+            }
+        }
+
+        public const string CastingStateId = "casting";
+        public const string DodgingStateId = "dodging";
+
         public string CanSwap => Current.CanSwap;
 
         public bool AllowsSwap =>

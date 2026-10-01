@@ -236,17 +236,10 @@ namespace Dovus.Game
         }
 
         /// <summary>
-        /// Küre kuşanılıyken HUD silah düğmesi değiştirmez: eldeyse hedefe yollar, değilse çağırır.
+        /// K3: silah düğmesi dokunuşu her zaman <see cref="TryRequestWeaponSwap"/>. Küre kuşanılıyken
+        /// düğmeyi bu kadar (JSON weapons[].orb.hold_sec) basılı tutmak <see cref="ToggleOrb"/> yapar; 0 = uzun basma yok.
         /// </summary>
-        public void OnWeaponHudButton()
-        {
-            if (IsOrbWeapon())
-            {
-                ToggleOrb();
-                return;
-            }
-            TryRequestWeaponSwap();
-        }
+        public float SwapButtonHoldSec => IsOrbWeapon() ? EquippedProfile.OrbHoldSec : 0f;
 
         /// <summary>Editör kısayolu ve HUD. Çizim alanına dokunmaz.</summary>
         public bool ToggleOrb()

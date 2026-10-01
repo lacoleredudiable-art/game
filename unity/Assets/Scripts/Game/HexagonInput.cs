@@ -45,10 +45,8 @@ namespace Dovus.Game
         bool _centerStrikeArmed;
 
         // Çizim parmağından bağımsız ikinci yuva: cümle sürerken panik dodge (§2).
+        // O1: kaçış basınca tetiklenir; yuva yalnız parmak kalkana kadar tutulur (kamera almasın).
         int? _dodgeFingerId;
-        Vector2 _dodgePressOrigin;
-        double _dodgePressRealMs;
-        bool _dodgeTapAlive;
 
         /// <summary>İkinci rün hâlâ basılıyken yükleme fazı bekler.</summary>
         public bool SkillFingerHeld => _mode == FingerMode.Drawing;
@@ -57,19 +55,23 @@ namespace Dovus.Game
         {
             None,
             CenterPending,
-            DodgePending,
             SwapPending,
             Drawing
         }
 
-        /// <summary>Q tuşu: silah değiştir. Küre düğmesi bunu kullanmaz.</summary>
+        /// <summary>Q tuşu ve dokunmatik silah düğmesi: silah değiştir (K3: Küre'de de).</summary>
         public event System.Action WeaponSwapRequested;
 
-        /// <summary>HUD silah düğmesi. Küre kuşanılıyken küreyi yollar ya da çağırır.</summary>
-        public event System.Action WeaponHudRequested;
-
-        /// <summary>Editör: R tuşu, çizim alanına dokunmadan küreyi yollar ya da çağırır.</summary>
+        /// <summary>R tuşu ve silah düğmesinde uzun basma (Küre, JSON orb.hold_sec): küreyi yollar ya da çağırır.</summary>
         public event System.Action OrbCommandRequested;
+
+        /// <summary>
+        /// K3: silah düğmesinin uzun basma komutu eşiği (sn). 0 = yok → düğme basınca değiştirir.
+        /// Küre kuşanılıyken JSON orb.hold_sec (0,4).
+        /// </summary>
+        public System.Func<float> SwapHoldCommandSec;
+
+        bool _swapHoldFired;
 
         /// <summary>Dodge kabul edildi. Süren skill kesilir, kalıp konumu hemen bırakılır.</summary>
         public event System.Action SkillCancelledByDodge;
@@ -269,7 +271,6 @@ namespace Dovus.Game
             EnhancedTouchSupport.Disable();
             _fingerId = null;
             _dodgeFingerId = null;
-            _dodgeTapAlive = false;
             EndPointer(cancelled: true);
         }
 
@@ -320,7 +321,6 @@ namespace Dovus.Game
                     _fingerId = null;
                     _mouseHeld = false;
                     _dodgeFingerId = null;
-                    _dodgeTapAlive = false;
                     EndPointer(cancelled: true);
                 }
                 return;
@@ -328,6 +328,7 @@ namespace Dovus.Game
 
             HandleKeyboardDodge();
             HandleMouse();
+            TickSwapHold();
             TickDwell();
         }
 
@@ -470,13 +471,12 @@ namespace Dovus.Game
             if (_fingerId.HasValue)
             {
                 // Çizim parmağı meşgul: yalnızca dodge düğmesi ikinci parmağı kabul eder (§2).
+                // O1: basınca kaçar; yuva parmak kalkana kadar tutulur.
                 if (_dodgeFingerId.HasValue || !HitDodgeButton(pos))
                     return;
 
                 _dodgeFingerId = finger.index;
-                _dodgePressOrigin = pos;
-                _dodgePressRealMs = NowRealMs();
-                _dodgeTapAlive = true;
+                TriggerDodge();
                 return;
             }
 
@@ -491,13 +491,7 @@ namespace Dovus.Game
         void OnFingerMove(Finger finger)
         {
             if (_dodgeFingerId.HasValue && finger.index == _dodgeFingerId.Value)
-            {
-                // İkinci parmak: eşiği aşan sürükleme dodge'u iptal eder (çizim yuvası dolu).
-                float moveDp = PixelsToDp(Vector2.Distance(finger.screenPosition, _dodgePressOrigin));
-                if (moveDp > _combat.Dodge.TapMaxMoveDp)
-                    _dodgeTapAlive = false;
                 return;
-            }
 
             if (!_fingerId.HasValue || finger.index != _fingerId.Value)
                 return;
@@ -509,12 +503,7 @@ namespace Dovus.Game
         {
             if (_dodgeFingerId.HasValue && finger.index == _dodgeFingerId.Value)
             {
-                bool dodgeCancelled = finger.currentTouch.phase == TouchPhase.Canceled;
-                double heldMs = NowRealMs() - _dodgePressRealMs;
                 _dodgeFingerId = null;
-                if (!dodgeCancelled && _dodgeTapAlive && heldMs <= _combat.Dodge.TapMaxMs)
-                    TriggerDodge();
-                _dodgeTapAlive = false;
                 return;
             }
 
@@ -535,16 +524,26 @@ namespace Dovus.Game
             _dwellWorldMs = 0;
             _dwellReported = 0;
             _lastInkPx = null;
+            _swapHoldFired = false;
 
             // Hit sırası: dodge düğmesi → merkez → nokta (§2).
+            // O1: kaçış basınca tetiklenir; düğmeden sürükleyip çizme yolu kaldırıldı.
             if (HitDodgeButton(pos))
             {
-                _mode = FingerMode.DodgePending;
+                _mode = FingerMode.None;
+                TriggerDodge();
                 return;
             }
 
+            // K3/O1: uzun basma komutu yoksa basınca değiştirir; Küre'de bırakınca (eşik altı) değiştirir.
             if (HitSwapButton(pos))
             {
+                if (TouchButtonGesture.SwapFiresOnPress(SwapHoldSec()))
+                {
+                    _mode = FingerMode.None;
+                    WeaponSwapRequested?.Invoke();
+                    return;
+                }
                 _mode = FingerMode.SwapPending;
                 return;
             }
@@ -568,8 +567,8 @@ namespace Dovus.Game
             if (_mode == FingerMode.SwapPending)
                 return;
 
-            // Merkezden ve dodge düğmesinden eşiği aşan sürükleme çizimdir (§2).
-            if (_mode == FingerMode.CenterPending || _mode == FingerMode.DodgePending)
+            // Merkezden eşiği aşan sürükleme çizimdir (§2).
+            if (_mode == FingerMode.CenterPending)
             {
                 float moveDp = PixelsToDp(Vector2.Distance(pos, _pressOrigin));
                 if (moveDp > _combat.Dodge.TapMaxMoveDp)
@@ -597,22 +596,18 @@ namespace Dovus.Game
 
         void EndPointer(bool cancelled)
         {
-            bool pendingTap = _mode == FingerMode.CenterPending
-                || _mode == FingerMode.DodgePending
-                || _mode == FingerMode.SwapPending;
-            if (pendingTap && !cancelled)
+            // O1: süre sınırı yok — uzun basış sessizce düşmez.
+            double heldSec = (NowRealMs() - _pressRealMs) / 1000.0;
+            if (_mode == FingerMode.CenterPending)
             {
-                double heldMs = NowRealMs() - _pressRealMs;
                 float moveDp = PixelsToDp(Vector2.Distance(_lastPos, _pressOrigin));
-                if (heldMs <= _combat.Dodge.TapMaxMs && moveDp <= _combat.Dodge.TapMaxMoveDp)
-                {
-                    if (_mode == FingerMode.CenterPending)
-                        TriggerCenter();
-                    else if (_mode == FingerMode.SwapPending)
-                        WeaponHudRequested?.Invoke();
-                    else
-                        TriggerDodge();
-                }
+                if (TouchButtonGesture.CenterFiresOnRelease(moveDp, _combat.Dodge.TapMaxMoveDp, cancelled))
+                    TriggerCenter();
+            }
+            else if (_mode == FingerMode.SwapPending && !_swapHoldFired
+                && TouchButtonGesture.SwapOnRelease(heldSec, SwapHoldSec(), cancelled))
+            {
+                WeaponSwapRequested?.Invoke();
             }
 
             _mode = FingerMode.None;
@@ -621,6 +616,21 @@ namespace Dovus.Game
             _dwellReported = 0;
             _lastInkPx = null;
             _mouseHeld = false;
+            _swapHoldFired = false;
+        }
+
+        float SwapHoldSec() => SwapHoldCommandSec != null ? SwapHoldCommandSec() : 0f;
+
+        /// <summary>K3: Küre'de silah düğmesini eşik kadar basılı tutmak küreyi yollar/çağırır (bir kez).</summary>
+        void TickSwapHold()
+        {
+            if (_mode != FingerMode.SwapPending || _swapHoldFired)
+                return;
+            double heldSec = (NowRealMs() - _pressRealMs) / 1000.0;
+            if (!TouchButtonGesture.HoldCommandDue(heldSec, SwapHoldSec()))
+                return;
+            _swapHoldFired = true;
+            OrbCommandRequested?.Invoke();
         }
 
         void TryRegisterDotAt(Vector2 pos)
@@ -914,13 +924,18 @@ namespace Dovus.Game
                 knockdown = board.Has(StatusKind.Knockback);
             }
 
-            if (!DodgeCancelRules.Allowed(dead, stun, freeze, knockdown))
+            // S3: state_machine can_dodge kapısı bağlı (yalnız JSON'da açıkça false olan durumlar;
+            // casting istisnası PlayerStateMachine.AllowsDodgeGate'te).
+            SyncPlayerStateFromWorld();
+            bool stateAllows = _playerStates == null || _playerStates.AllowsDodgeGate;
+            if (!stateAllows || !DodgeCancelRules.Allowed(dead, stun, freeze, knockdown))
             {
                 _readout?.NoteDenied("dodge yok");
                 _syllable?.PlayDenied();
                 return;
             }
 
+            // S2: tek kapı haklar (eski ölü cooldown yolu kaldırıldı).
             if (_charges != null)
             {
                 _charges.RechargeMult = _dodge.CooldownMult;
@@ -931,8 +946,6 @@ namespace Dovus.Game
                     return;
                 }
             }
-            else if (_dodge.IsOnCooldown(worldMs))
-                return;
 
             bool wasBuilding = _engine != null && _engine.State.Phase == SentencePhase.Building;
             _engine?.Abort();

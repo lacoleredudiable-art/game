@@ -528,6 +528,7 @@ namespace Dovus.Game
         void CancelActiveSkillForDodge()
         {
             _castLease.CancelForDodge();
+            _sustainedCast.Clear();
             _templateOwnsPosition = false;
             if (_motionBody != null)
                 _motionBody.Stop();

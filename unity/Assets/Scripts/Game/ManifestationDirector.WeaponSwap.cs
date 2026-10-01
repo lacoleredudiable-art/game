@@ -42,6 +42,22 @@ namespace Dovus.Game
             LogLoadout("build");
         }
 
+        readonly SustainedCastLock _sustainedCast = new SustainedCastLock();
+
+        bool SustainedSkillActive(double worldMs) => _sustainedCast.Active(worldMs);
+
+        /// <summary>O10: kanallı/basılı skill cast edildi → süresi boyunca swap kilitli.</summary>
+        void NoteSustainedCast(in SkillResolution skill)
+        {
+            if (!IsSustained(skill) || _clock == null)
+                return;
+            double sec = skill.EngineModifiers.IsNull ? 0.0 : skill.EngineModifiers["channel_sec"].AsFloat(0f);
+            if (_motionBody != null && _motionBody.IsDisplacing
+                && string.Equals(_motionBody.SkillId, skill.SkillId, System.StringComparison.Ordinal))
+                sec = System.Math.Max(sec, _motionBody.PlayLengthSec);
+            _sustainedCast.Begin(_clock.Director.WorldTimeMs, sec);
+        }
+
         /// <summary>Swap butonu / Q tuşu. Reddedilirse sebep readout'a düşer.</summary>
         public WeaponSwapResult TryRequestWeaponSwap()
         {
@@ -65,7 +81,8 @@ namespace Dovus.Game
                 stunned = board.Has(StatusKind.Stun) || board.Has(StatusKind.Stasis) || board.Has(StatusKind.Fear);
             }
             bool dodging = _input?.Dodge != null && _input.Dodge.IsActive((int)worldMs);
-            bool holding = false;
+            // O10: kanallı/basılı skill (channel_sec ya da IsSustained) sürerken kilit; etiketli pencere istisnası MayBegin'de.
+            bool holding = SustainedSkillActive(worldMs);
             bool stateAllows = _playerStates == null || _playerStates.AllowsSwap;
             bool allows = WeaponSwapCancel.MayBegin(stateAllows, drawing, holding, dodging, stunned, inWindow, tagged);
             WeaponSwapResult result = _weaponSwap.TryBegin(worldMs, allows);

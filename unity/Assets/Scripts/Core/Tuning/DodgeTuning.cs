@@ -8,16 +8,19 @@ namespace Dovus.Core.Tuning
         public int IframeStartMs = 0;
         /// <summary>element-sistemi.json player_stats.i_frame_on_dodge_ms (karadul.json maps_to aynı).</summary>
         public int IframeMs = 260;
-        public float DistanceM = 4f;
+        /// <summary>S2: element-sistemi.json player_stats.dodge_distance_m (test eşitliği korur).</summary>
+        public float DistanceM = 3.8f;
         public int DurationMs = 250;
         public float CurveExp = 3.6f;
         public int GlideTailMs = 120;
-        public int CooldownMs = 360;
+        // S2: CooldownMs (360) kaldırıldı — haklar her zaman var olduğu için hiç okunmuyordu.
+        // JSON dodge_cooldown_sec 0.42 Adım 5'teki 2×6 sn hak çalışmasında ele alınacak.
 
         // Dragon Nest tarzı hak + mükemmel sıyırma. Sayılar his varsayılanı;
         // element-sistemi.json'da dodge hak alanı yok (durum.md).
         public int MaxCharges = 2;
         public int ChargeRechargeMs = 4000;
+        /// <summary>O2: TEK mükemmel pencere — PERFECT derecesi, yük iadesi ve sonraki vuruş bonusu (spec'te yok → 150).</summary>
         public int PerfectWindowMs = 150;
         public float PerfectNextHitMult = 1.3f;
         /// <summary>S1: mükemmel sıyırmanın ×PerfectNextHitMult bonusu bu süre içinde vurulmazsa düşer (his varsayılanı; spec'te yok).</summary>
@@ -27,8 +30,8 @@ namespace Dovus.Core.Tuning
         public float EdgeGapM = 0.15f;
         public int TelegraphLeadMs = 700;
 
-        // Altıgen dışındaki ayrı dodge düğmesinin tap eşikleri.
-        public int TapMaxMs = 180;
+        // Merkez düğmenin sürükleme eşiği (aşan sürükleme çizimdir). O1: süre eşiği (TapMaxMs 180)
+        // kaldırıldı — kaçış/silah basınca tetiklenir, uzun basış düşmez.
         public int TapMaxMoveDp = 12;
 
         /// <summary>T10: canlı panelin "Sıfırla" ve JSON yükleme yolu — alanları TEK TEK
@@ -42,8 +45,6 @@ namespace Dovus.Core.Tuning
             DurationMs = other.DurationMs;
             CurveExp = other.CurveExp;
             GlideTailMs = other.GlideTailMs;
-            CooldownMs = other.CooldownMs;
-            TapMaxMs = other.TapMaxMs;
             TapMaxMoveDp = other.TapMaxMoveDp;
             MaxCharges = other.MaxCharges;
             ChargeRechargeMs = other.ChargeRechargeMs;
