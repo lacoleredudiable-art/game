@@ -22,6 +22,7 @@ namespace Dovus.Game.EditorTools
         const string OutDir = "Assets/Art/Mixamo/Animators/Archetypes";
         const string RegistryDir = "Assets/Resources/Animation";
         const string RegistryPath = RegistryDir + "/WeaponVisualRegistry.asset";
+        const string QuatWeaponsDir = "Assets/Art/Quaternius/Characters/RPG Characters - Nov 2020/FBX/Only Weapons";
 
         /// <summary>Çalıştırır; log metnini döner (boş = temel controller yok, atlandı).</summary>
         public static string Build()
@@ -58,9 +59,83 @@ namespace Dovus.Game.EditorTools
                 log.Append('\n');
             }
 
+            BindProps(registry);
+
             EditorUtility.SetDirty(registry);
             AssetDatabase.SaveAssets();
             return log.ToString();
+        }
+
+        /// <summary>
+        /// Elde silah prop referansları (Animasyon b). WeaponKey = weapons[].animations_key
+        /// (<see cref="WeaponArchetypeMap"/> girdileriyle birebir). Quaternius "Only Weapons" FBX
+        /// kılıç/hançer/yay/asa için; kalkan/çekiç/kitap/küre/tılsım/top'ta referans boş bırakılır —
+        /// <see cref="WeaponHandProps"/> boş referansta primitive placeholder kurar. Ölçekler mesh
+        /// local bounds'una göre hesaplandı (görev hedefi: kılıç ~0,9 m, asa ~1,6 m).
+        /// "yumruk" bilinçli olarak kayıtsız: spec'te prop yok (çıplak el).
+        /// </summary>
+        static void BindProps(WeaponVisualRegistry registry)
+        {
+            SetProp(registry, "kilic",
+                LoadWeaponMesh("Warrior_Sword"), Vector3.zero, Vector3.zero, Vector3.one * 28.3f,
+                null, new Vector3(0.03f, 0f, 0.05f), Vector3.zero, Vector3.one);
+
+            SetProp(registry, "kalkan",
+                LoadWeaponMesh("Rogue_Dagger"), Vector3.zero, Vector3.zero, Vector3.one * 34.7f,
+                null, new Vector3(0.03f, 0f, 0.05f), Vector3.zero, Vector3.one);
+
+            SetProp(registry, "cekic",
+                null, new Vector3(0f, 0f, 0.07f), Vector3.zero, Vector3.one,
+                null, Vector3.zero, Vector3.zero, Vector3.one);
+
+            SetProp(registry, "yay",
+                null, Vector3.zero, Vector3.zero, Vector3.one,
+                LoadWeaponMesh("Ranger_Bow"), Vector3.zero, new Vector3(0f, 90f, 0f), Vector3.one * 32.6f);
+
+            SetProp(registry, "asa",
+                LoadWeaponMesh("Wizard_Staff"), Vector3.zero, Vector3.zero, Vector3.one * 61.5f,
+                null, Vector3.zero, Vector3.zero, Vector3.one);
+
+            SetProp(registry, "kitap",
+                null, Vector3.zero, Vector3.zero, Vector3.one,
+                null, new Vector3(0.03f, 0.02f, 0.06f), Vector3.zero, Vector3.one);
+
+            SetProp(registry, "kure",
+                null, Vector3.zero, Vector3.zero, Vector3.one,
+                null, new Vector3(0.02f, 0.03f, 0.05f), Vector3.zero, Vector3.one);
+
+            SetProp(registry, "tilsim",
+                null, new Vector3(0.02f, 0.02f, 0.04f), Vector3.zero, Vector3.one,
+                null, Vector3.zero, Vector3.zero, Vector3.one);
+
+            SetProp(registry, "top",
+                null, new Vector3(0.02f, 0.02f, 0.05f), new Vector3(0f, 90f, 0f), Vector3.one,
+                null, Vector3.zero, Vector3.zero, Vector3.one);
+        }
+
+        static GameObject LoadWeaponMesh(string fileName) =>
+            AssetDatabase.LoadAssetAtPath<GameObject>(QuatWeaponsDir + "/" + fileName + ".fbx");
+
+        static void SetProp(
+            WeaponVisualRegistry registry, string weaponKey,
+            GameObject rightPrefab, Vector3 rightPos, Vector3 rightRot, Vector3 rightScale,
+            GameObject leftPrefab, Vector3 leftPos, Vector3 leftRot, Vector3 leftScale)
+        {
+            List<WeaponVisualRegistry.PropEntry> list = registry.Props;
+            WeaponVisualRegistry.PropEntry entry = list.Find(p => p != null && p.WeaponKey == weaponKey);
+            if (entry == null)
+            {
+                entry = new WeaponVisualRegistry.PropEntry { WeaponKey = weaponKey };
+                list.Add(entry);
+            }
+            entry.RightHandPrefab = rightPrefab;
+            entry.RightLocalPosition = rightPos;
+            entry.RightLocalEulerAngles = rightRot;
+            entry.RightLocalScale = rightScale;
+            entry.LeftHandPrefab = leftPrefab;
+            entry.LeftLocalPosition = leftPos;
+            entry.LeftLocalEulerAngles = leftRot;
+            entry.LeftLocalScale = leftScale;
         }
 
         /// <summary>Base state adı → o state'in o anki klibi (Locomotion idle/walk/run blend tree yaprakları dahil).</summary>

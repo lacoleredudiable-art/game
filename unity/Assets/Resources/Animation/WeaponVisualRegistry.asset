@@ -25,4 +25,85 @@ MonoBehaviour:
     Override: {fileID: 22100000, guid: b22b825d21a9ad24193bbdc876e55279, type: 2}
   - ArchetypeKey: Gun
     Override: {fileID: 22100000, guid: 19540a800e54b6645821e4bbce7202b5, type: 2}
-  _props: []
+  _props:
+  - WeaponKey: kilic
+    RightHandPrefab: {fileID: 919132149155446097, guid: c230a3e33ed3d474c9d0412727fdf63b, type: 3}
+    RightLocalPosition: {x: 0, y: 0, z: 0}
+    RightLocalEulerAngles: {x: 0, y: 0, z: 0}
+    RightLocalScale: {x: 28.3, y: 28.3, z: 28.3}
+    LeftHandPrefab: {fileID: 0}
+    LeftLocalPosition: {x: 0.03, y: 0, z: 0.05}
+    LeftLocalEulerAngles: {x: 0, y: 0, z: 0}
+    LeftLocalScale: {x: 1, y: 1, z: 1}
+  - WeaponKey: kalkan
+    RightHandPrefab: {fileID: 919132149155446097, guid: 89c7523825c49db4fb52dfe564678272, type: 3}
+    RightLocalPosition: {x: 0, y: 0, z: 0}
+    RightLocalEulerAngles: {x: 0, y: 0, z: 0}
+    RightLocalScale: {x: 34.7, y: 34.7, z: 34.7}
+    LeftHandPrefab: {fileID: 0}
+    LeftLocalPosition: {x: 0.03, y: 0, z: 0.05}
+    LeftLocalEulerAngles: {x: 0, y: 0, z: 0}
+    LeftLocalScale: {x: 1, y: 1, z: 1}
+  - WeaponKey: cekic
+    RightHandPrefab: {fileID: 0}
+    RightLocalPosition: {x: 0, y: 0, z: 0.07}
+    RightLocalEulerAngles: {x: 0, y: 0, z: 0}
+    RightLocalScale: {x: 1, y: 1, z: 1}
+    LeftHandPrefab: {fileID: 0}
+    LeftLocalPosition: {x: 0, y: 0, z: 0}
+    LeftLocalEulerAngles: {x: 0, y: 0, z: 0}
+    LeftLocalScale: {x: 1, y: 1, z: 1}
+  - WeaponKey: yay
+    RightHandPrefab: {fileID: 0}
+    RightLocalPosition: {x: 0, y: 0, z: 0}
+    RightLocalEulerAngles: {x: 0, y: 0, z: 0}
+    RightLocalScale: {x: 1, y: 1, z: 1}
+    LeftHandPrefab: {fileID: 919132149155446097, guid: 56c878ac8d79ec4438481b79b4ff207b, type: 3}
+    LeftLocalPosition: {x: 0, y: 0, z: 0}
+    LeftLocalEulerAngles: {x: 0, y: 90, z: 0}
+    LeftLocalScale: {x: 32.6, y: 32.6, z: 32.6}
+  - WeaponKey: asa
+    RightHandPrefab: {fileID: 919132149155446097, guid: 82faa59cd10a96440952fc21d4b6b4b1, type: 3}
+    RightLocalPosition: {x: 0, y: 0, z: 0}
+    RightLocalEulerAngles: {x: 0, y: 0, z: 0}
+    RightLocalScale: {x: 61.5, y: 61.5, z: 61.5}
+    LeftHandPrefab: {fileID: 0}
+    LeftLocalPosition: {x: 0, y: 0, z: 0}
+    LeftLocalEulerAngles: {x: 0, y: 0, z: 0}
+    LeftLocalScale: {x: 1, y: 1, z: 1}
+  - WeaponKey: kitap
+    RightHandPrefab: {fileID: 0}
+    RightLocalPosition: {x: 0, y: 0, z: 0}
+    RightLocalEulerAngles: {x: 0, y: 0, z: 0}
+    RightLocalScale: {x: 1, y: 1, z: 1}
+    LeftHandPrefab: {fileID: 0}
+    LeftLocalPosition: {x: 0.03, y: 0.02, z: 0.06}
+    LeftLocalEulerAngles: {x: 0, y: 0, z: 0}
+    LeftLocalScale: {x: 1, y: 1, z: 1}
+  - WeaponKey: kure
+    RightHandPrefab: {fileID: 0}
+    RightLocalPosition: {x: 0, y: 0, z: 0}
+    RightLocalEulerAngles: {x: 0, y: 0, z: 0}
+    RightLocalScale: {x: 1, y: 1, z: 1}
+    LeftHandPrefab: {fileID: 0}
+    LeftLocalPosition: {x: 0.02, y: 0.03, z: 0.05}
+    LeftLocalEulerAngles: {x: 0, y: 0, z: 0}
+    LeftLocalScale: {x: 1, y: 1, z: 1}
+  - WeaponKey: tilsim
+    RightHandPrefab: {fileID: 0}
+    RightLocalPosition: {x: 0.02, y: 0.02, z: 0.04}
+    RightLocalEulerAngles: {x: 0, y: 0, z: 0}
+    RightLocalScale: {x: 1, y: 1, z: 1}
+    LeftHandPrefab: {fileID: 0}
+    LeftLocalPosition: {x: 0, y: 0, z: 0}
+    LeftLocalEulerAngles: {x: 0, y: 0, z: 0}
+    LeftLocalScale: {x: 1, y: 1, z: 1}
+  - WeaponKey: top
+    RightHandPrefab: {fileID: 0}
+    RightLocalPosition: {x: 0.02, y: 0.02, z: 0.05}
+    RightLocalEulerAngles: {x: 0, y: 90, z: 0}
+    RightLocalScale: {x: 1, y: 1, z: 1}
+    LeftHandPrefab: {fileID: 0}
+    LeftLocalPosition: {x: 0, y: 0, z: 0}
+    LeftLocalEulerAngles: {x: 0, y: 0, z: 0}
+    LeftLocalScale: {x: 1, y: 1, z: 1}

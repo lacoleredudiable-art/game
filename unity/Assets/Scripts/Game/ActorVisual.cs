@@ -115,6 +115,7 @@ namespace Dovus.Game
             _hideWhenVisualPresent = hideWhenPresent;
             _baseController = animator != null ? animator.runtimeAnimatorController : null;
             _currentWeaponKey = null;
+            _handProps = null;
             if (_animator != null && _hideWhenVisualPresent != null)
             {
                 for (int i = 0; i < _hideWhenVisualPresent.Length; i++)
@@ -131,6 +132,7 @@ namespace Dovus.Game
         WeaponVisualRegistry _weaponRegistry;
         bool _weaponRegistryLoaded;
         string _currentWeaponKey;
+        WeaponHandProps _handProps;
 
         /// <summary>Ağır silah arketiplerinde (Çekiç/Top) donuk his: temel hız çarpanı.</summary>
         const float HeavyAnimSpeed = 0.9f;
@@ -160,6 +162,20 @@ namespace Dovus.Game
             if (_animator != null)
                 _animator.speed = speed;
             _savedAnimatorSpeed = speed;
+
+            ApplyHandProps(animationsKey);
+        }
+
+        /// <summary>Elde silah prop'u: sağ/sol el kemiğine takılı mesh, SetWeapon ile birlikte değişir.</summary>
+        void ApplyHandProps(string animationsKey)
+        {
+            if (_animator == null)
+                return;
+            if (_handProps == null)
+                _handProps = _animator.GetComponent<WeaponHandProps>();
+            if (_handProps == null)
+                _handProps = _animator.gameObject.AddComponent<WeaponHandProps>();
+            _handProps.Apply(animationsKey);
         }
 
         void ApplyArchetypeController(string archetypeKey)
