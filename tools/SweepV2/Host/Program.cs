@@ -260,7 +260,7 @@ namespace SweepV2
             "  --out DIR             çıktı klasörü (varsayılan tools/SweepV2/out)\n" +
             "  --label NAME          dosya adı (varsayılan headless-tum / headless-<silah>)\n" +
             "  --compare CSV         Play CSV ile kombo kombo karşılaştır (ör. docs/play-sweep/pr35-final-4x.csv)\n" +
-            "  --gate                CI kapısı: silah başına ≥142/144, gövdeye giren yok, yerde hatası ≤3; 2-9 muaf\n" +
+            "  --gate                CI kapısı: silah başına ≥142/144, gövdeye giren yok, yerde hatası ≤3; muaf kombo yok\n" +
             "  --stick X,Y --stick-at T   kalıp T sn'ye gelince oyuncu çubuğa basar (hareket testi)\n" +
             "  --player-shift M --player-shift-at T   kalıp T sn'de oyuncu boss'a doğru M m taşınır (1-11 yankı testi)\n" +
             "  --trace               her kombo için kare izi detay dosyasına\n" +

@@ -160,6 +160,22 @@ namespace Dovus.Game
         }
 
         /// <summary>
+        /// mechanic_grammar "ters_kontrol" (TersCevir × hareket): boss'un kontrolü süre boyunca ters —
+        /// yaklaşma hedeften uzaklaşır, windup kilidi ters yöne bakar. Kök/yavaşlatma ayrıca uygulanır.
+        /// Süre etkinin kendi süresi; yoksa BossTuning.ReverseFallbackSec.
+        /// </summary>
+        void ApplyBossReverse(MechanicEffect e, List<string> applied)
+        {
+            if (_bossDirector == null || _clock == null)
+                return;
+            double sec = e.DurationSec > 0
+                ? e.DurationSec
+                : (_combat != null ? _combat.Boss.ReverseFallbackSec : 1.5f);
+            _bossDirector.ApplyReverse(_clock.Director.WorldTimeMs + sec * 1000.0);
+            applied.Add("ters kontrol");
+        }
+
+        /// <summary>
         /// Gövde düşmana değdiğinde (bir kez): düşmana yönelik atomlar.
         /// casterMoves false: kalıp sonrası teslim kuyruğu oyuncuyu yerinden oynatmaz.
         /// </summary>
@@ -193,6 +209,8 @@ namespace Dovus.Game
                             ApplyOnce(boss, StatusKind.Slow, ms, (float)e.Amount, applied);
                         break;
                     case ("hiz", "hareket"):
+                        if (e.Has("ters_kontrol"))
+                            ApplyBossReverse(e, applied);
                         if (hasteCard && !CardEffectRules.Names(_cardEffect, "root"))
                             break;
                         if (e.Amount <= 0)

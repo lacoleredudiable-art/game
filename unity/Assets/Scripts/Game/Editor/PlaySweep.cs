@@ -66,6 +66,11 @@ namespace Dovus.Game.EditorTools
         public bool OnTime;
         public bool NoTeleport;
         public bool Grounded;
+        /// <summary>
+        /// Planın taşıdığı boss etkisi görüldü mü (yalnız o anahtar varsa sınanır):
+        /// ters_kontrol → boss ters kontrolde; dikkat_ceker → yem boss aggro'sunu tutuyor.
+        /// </summary>
+        public bool Effect = true;
         public float FootLiveM;
         public float FootSettleM;
         public string ExpectedPos = "";
@@ -80,7 +85,7 @@ namespace Dovus.Game.EditorTools
         public string Legs = "";
         public readonly List<string> Notes = new();
 
-        public bool Pass => Cast && Hit && Position && NotInside && OneSystem && NoErrors && OnTime && NoTeleport && Grounded;
+        public bool Pass => Cast && Hit && Position && NotInside && OneSystem && NoErrors && OnTime && NoTeleport && Grounded && Effect;
     }
 
     /// <summary>
@@ -221,6 +226,8 @@ namespace Dovus.Game.EditorTools
             public float AllyFeet;
             public float AllyFootGround;
             public bool Airborne;
+            public bool BossReversed;
+            public bool DecoyAggro;
         }
 
         struct Snapshot
@@ -244,6 +251,8 @@ namespace Dovus.Game.EditorTools
             public bool PassThrough;
             public bool DamageSkill;
             public bool HasHitPhase;
+            public bool ExpectsReverse;
+            public bool ExpectsDecoyAggro;
             public string ExpectedCat = "";
             public int Adj;
             public Vector3 SimFinal;
@@ -763,6 +772,7 @@ namespace Dovus.Game.EditorTools
             }
             EnsureWeapon(c.Weapon);
             ResetActors();
+            PrepareGuardFixture(c);
             ResetBossPosition();
             ResetSweepActors();
             PlacePlayer(c.StartDistM);
@@ -1044,7 +1054,10 @@ namespace Dovus.Game.EditorTools
         static void ResetActors()
         {
             if (_bossDirector != null)
+            {
                 _bossDirector.enabled = false;
+                _bossDirector.ClearReverse();
+            }
             _bossStatus?.Board.Clear();
             _playerStatus?.Board.Clear();
             _ally?.Board?.Clear();
@@ -1070,6 +1083,29 @@ namespace Dovus.Game.EditorTools
             S(_md, "_closingChainBonus", 1f);
             _input.Dodge?.Reset();
             _ally?.GetComponent<ActorGrounding>()?.SnapPlanted();
+        }
+
+        /// <summary>
+        /// Koruyucu tetik (koruyucu_tetik can / kalkan) yalnız dost ya da oyuncu canı
+        /// guard_threshold altına inince öder. Taramada boss kapalı, kimse vurmaz; bu yüzden
+        /// planı tetik taşıyan kombolarda dost eşiğin 0.05 altında başlar. Skill kimliği yok:
+        /// plan gramerden, eşik mechanic_grammar.params'tan okunur.
+        /// </summary>
+        static void PrepareGuardFixture(PlaySweepCase c)
+        {
+            if (_ally == null)
+                return;
+            SkillResolution skill = _skills.Resolve(new[] { c.Verb, c.Adj });
+            if (!(Call(_md, "MechanicPlanFor", skill) is Dovus.Core.Mechanic.MechanicPlan plan))
+                return;
+            if (!Dovus.Core.Mechanic.GuardTriggerDelivery.Owns(plan, "can")
+                && !Dovus.Core.Mechanic.GuardTriggerDelivery.Owns(plan, "kalkan"))
+                return;
+            var grammar = P<Dovus.Core.Mechanic.MechanicGrammar>(_md, "MechanicEngine");
+            double threshold = grammar != null ? grammar.Rules.Param("guard_threshold") : 0;
+            if (threshold <= 0.05)
+                return;
+            S(_ally, "_hp", Math.Max(1, (int)Math.Floor((threshold - 0.05) * _ally.MaxHp)));
         }
 
         /// <summary>
@@ -1143,6 +1179,11 @@ namespace Dovus.Game.EditorTools
             SkillResolution skill = _skills.Resolve(new[] { c.Verb, c.Adj });
             info.Name = skill.DisplayName;
             info.DamageSkill = skill.BaseDamage > 0f || skill.BaseHeal > 0f;
+            if (Call(_md, "MechanicPlanFor", skill) is Dovus.Core.Mechanic.MechanicPlan keys)
+            {
+                info.ExpectsReverse = keys.Effects.Any(e => e.Target == "dusman" && e.Has("ters_kontrol"));
+                info.ExpectsDecoyAggro = keys.Effects.Any(e => e.Has("dikkat_ceker"));
+            }
             info.BossR = Call<float>(_md, "BossBodyRadius");
             float pr = Call<float>(_md, "PlayerBodyRadiusM");
             info.PlayerR = pr < 0.05f ? 0.5f : pr;
@@ -1283,6 +1324,9 @@ namespace Dovus.Game.EditorTools
                 BossHp = _bossVitals.Hp,
                 PlayerHp = _playerVitals != null ? _playerVitals.Hp : 0,
                 AllyHp = _ally != null ? _ally.Hp : 0,
+                BossReversed = _bossDirector != null && _bossDirector.IsReversed,
+                DecoyAggro = _bossDirector != null && _bossDirector.Targets != null
+                    && _bossDirector.Targets.DecoyHoldsAggro(),
             };
             SentencePhase sentence = _input.Engine != null ? _input.Engine.State.Phase : SentencePhase.Idle;
             bool drawing = sentence == SentencePhase.Building || sentence == SentencePhase.Recovering;
@@ -1499,6 +1543,26 @@ namespace Dovus.Game.EditorTools
             int allyHeal = _frames.Max(x => x.AllyHp) - _pre.AllyHp;
             if (allyHeal > 0)
                 effects.Add($"dost +{allyHeal} can");
+            if (_info.ExpectsReverse)
+            {
+                if (_frames.Any(x => x.BossReversed))
+                    effects.Add("boss ters kontrol");
+                else
+                {
+                    r.Effect = false;
+                    r.Notes.Add("ters_kontrol: boss ters kontrole girmedi");
+                }
+            }
+            if (_info.ExpectsDecoyAggro)
+            {
+                if (_frames.Any(x => x.DecoyAggro))
+                    effects.Add("yem boss aggro");
+                else
+                {
+                    r.Effect = false;
+                    r.Notes.Add("dikkat_ceker: yem boss hedefi olmadı");
+                }
+            }
             int roots = _player.gameObject.scene.rootCount - _pre.RootCount;
             r.Effects = string.Join(", ", effects);
             r.Hit = r.Damage > 0.01f || effects.Count > 0;
@@ -1888,14 +1952,14 @@ namespace Dovus.Game.EditorTools
             LastSummary = $"{pass}/{Results.Count} geçti @ {_speed:0.#}x ({string.Join(", ", byWeapon)})";
 
             var csv = new StringBuilder();
-            csv.AppendLine("kombo,isim,silah,kalip,cast,isabet,konum,govdeye_girmedi,tek_sistem,hata_yok,sure,sicrama_yok,yerde,gecti,"
+            csv.AppendLine("kombo,isim,silah,kalip,cast,isabet,konum,govdeye_girmedi,tek_sistem,hata_yok,sure,sicrama_yok,yerde,etki_kontrol,gecti,"
                            + "beklenen_konum,gercek_konum,hasar,etki,min_merkez_m,temas_m,kalip_sn,beklenen_sn,toplam_sn,ayak_m,inis_m,bacak,notlar");
             foreach (PlaySweepResult r in Results)
             {
                 csv.AppendLine(string.Join(",", new[]
                 {
                     r.Case.Id, Q(r.Name), Q(r.Weapon), Q(r.Template), B(r.Cast), B(r.Hit), B(r.Position),
-                    B(r.NotInside), B(r.OneSystem), B(r.NoErrors), B(r.OnTime), B(r.NoTeleport), B(r.Grounded), B(r.Pass),
+                    B(r.NotInside), B(r.OneSystem), B(r.NoErrors), B(r.OnTime), B(r.NoTeleport), B(r.Grounded), B(r.Effect), B(r.Pass),
                     Q(r.ExpectedPos), Q(r.ActualPos), N(r.Damage), Q(r.Effects),
                     N(r.MinDist == float.MaxValue ? 0f : r.MinDist), N(r.Contact), N(r.TemplateSec),
                     N(r.ExpectedSec), N(r.TotalSec), N(r.FootLiveM), N(r.FootSettleM), Q(r.Legs), Q(string.Join("; ", r.Notes)),
@@ -1922,6 +1986,7 @@ namespace Dovus.Game.EditorTools
                 if (r.Cast && !r.OnTime) failed.Add("süre");
                 if (r.Cast && !r.NoTeleport) failed.Add("sıçrama");
                 if (r.Cast && !r.Grounded) failed.Add("yerde");
+                if (r.Cast && !r.Effect) failed.Add("etki");
                 detail.AppendLine($"{r.Case.Id} {r.Name} [{r.Weapon}] KALDI: {string.Join(", ", failed)} — {string.Join("; ", r.Notes)}");
             }
             detail.AppendLine();

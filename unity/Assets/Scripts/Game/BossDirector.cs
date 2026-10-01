@@ -10,6 +10,8 @@ namespace Dovus.Game
     /// Prototip boss döngüsü: idle yaklaşma + YERE ÇAKMA üç ritmi (§11).
     /// Yaklaşma Home'a yazılır — transform'a değil (T7.2 geri tepme kalıcılığı).
     /// Varyant idle'da seçilir; ExchangeResolver yalnızca aktif windup/radius görür.
+    /// Hedef (oyuncu / dost / dikkat çeken yem) her idle döngüsünün başında <see cref="HostileTargets"/>
+    /// ile seçilir; yaklaşma ve windup kilidi hedefe bakar, vuruş hacmi kayıtlı HER dostu sınar.
     /// </summary>
     public sealed class BossDirector : MonoBehaviour
     {
@@ -39,6 +41,11 @@ namespace Dovus.Game
         ActorStatus _bossStatus;
         ActorStatus _playerStatus;
         BossVisual _visual;
+        HostileTargets _targets;
+        Transform _target;
+        int _targetId = -1;
+        TargetKind _targetKind = TargetKind.Player;
+        double _reverseUntilMs = -1;
 
         Phase _phase = Phase.Idle;
         double _phaseStartedWorldMs;
@@ -108,6 +115,15 @@ namespace Dovus.Game
         }
         public SlamVariant? ActiveVariant => _attack?.Variant;
 
+        /// <summary>Şu anki hedef (HUD halkası, tarama sondası). Kayıt yoksa oyuncu.</summary>
+        public Transform CurrentTarget => _targets != null ? _target : _player;
+        public TargetKind CurrentTargetKind => _targets != null ? _targetKind : TargetKind.Player;
+        public HostileTargets Targets => _targets;
+
+        /// <summary>mechanic_grammar ters_kontrol: yaklaşma hedeften uzaklaşır, windup kilidi ters yöne bakar.</summary>
+        public bool IsReversed =>
+            _reverseUntilMs > 0 && _clock != null && _clock.Director.WorldTimeMs < _reverseUntilMs;
+
         public void Bind(
             GameClock clock,
             CombatTuning combat,
@@ -149,6 +165,22 @@ namespace Dovus.Game
         public void BindPlayerStatus(ActorStatus status) => _playerStatus = status;
 
         public void BindVisual(BossVisual visual) => _visual = visual;
+
+        /// <summary>Hedef kaydı (oyuncu, dost, yemler). Bağlanmazsa boss eskisi gibi yalnız oyuncuyu kovalar.</summary>
+        public void BindTargets(HostileTargets targets)
+        {
+            _targets = targets;
+            PickTarget();
+        }
+
+        /// <summary>ters_kontrol: verilen dünya saatine kadar kontrol ters (uzar, kısalmaz).</summary>
+        public void ApplyReverse(double untilWorldMs)
+        {
+            if (untilWorldMs > _reverseUntilMs)
+                _reverseUntilMs = untilWorldMs;
+        }
+
+        public void ClearReverse() => _reverseUntilMs = -1;
 
         /// <summary>
         /// Script recompile Bind alanlarını siler; Awake yeniden çağrılmaz.
@@ -203,6 +235,7 @@ namespace Dovus.Game
             _telegraph?.Hide();
             _feel?.ClearThreat();
             _visual?.PlayDeath();
+            ClearReverse();
             EnterIdle(worldMs);
         }
 
@@ -213,6 +246,7 @@ namespace Dovus.Game
             _phase2Announced = false;
             _poise?.Reset();
             _visual?.NotifyRevived();
+            ClearReverse();
             if (wasPhase2)
                 BossPhaseChanged?.Invoke(1);
             EnterIdle(worldMs);
@@ -364,6 +398,9 @@ namespace Dovus.Game
                 return;
             }
 
+            if (_targets != null && _targets.ShouldRetarget(_targetId))
+                PickTarget();
+
             Approach(dtSec);
 
             if (worldMs >= _idleUntilWorldMs)
@@ -445,6 +482,8 @@ namespace Dovus.Game
             int hi = System.Math.Max(_combat.Boss.IdleMinMs, _combat.Boss.IdleMaxMs);
             int wait = _rng.Next(lo, hi + 1);
             _idleUntilWorldMs = worldMs + wait;
+            // Hedef saldırı başına bir kez: bu idle'da ona yürünür, windup ona kilitlenir.
+            PickTarget();
             _telegraph?.Hide();
             if (_bossVitals == null || !_bossVitals.IsDown)
                 _visual?.PlayIdle();
@@ -458,7 +497,7 @@ namespace Dovus.Game
             _strikeWorldMs = 0;
             _telegraphStartMs = (int)worldMs;
             _strikeResolved = false;
-            FacePlayer();
+            FaceTarget();
             _visual?.SetSpeed(0f);
             if (_attack != null)
             {
@@ -554,11 +593,49 @@ namespace Dovus.Game
 
         bool PlayerStealthed => _playerStatus != null && _playerStatus.Board.IsStealthed;
 
+        /// <summary>Kayıt yoksa eski davranış: oyuncu, gizliyse hedef yok.</summary>
+        void PickTarget()
+        {
+            if (_targets == null)
+            {
+                _target = _player;
+                _targetKind = TargetKind.Player;
+                _targetId = -1;
+                return;
+            }
+            _targetId = _targets.Pick(_rng.NextDouble());
+            HostileTargets.Entry e = _targetId >= 0 ? _targets.Find(_targetId) : null;
+            _target = e?.Transform;
+            _targetKind = e?.Kind ?? TargetKind.Player;
+            if (e == null)
+                _targetId = -1;
+        }
+
+        /// <summary>Hedef dönüşümü; gizli oyuncu (kayıtsız eski yol) ya da geçersiz hedefte null.</summary>
+        Transform AimTarget()
+        {
+            if (_targets == null)
+                return _player != null && !PlayerStealthed ? _player : null;
+            return _target;
+        }
+
+        float AimTargetRadius()
+        {
+            if (_targets != null)
+            {
+                HostileTargets.Entry e = _targetId >= 0 ? _targets.Find(_targetId) : null;
+                if (e != null && e.Kind != TargetKind.Player)
+                    return e.RadiusM;
+            }
+            return _playerMotor != null ? _playerMotor.BodyRadiusM : 0.5f;
+        }
+
         void Approach(float dtSec)
         {
-            if (_player == null || dtSec <= 0f)
+            if (dtSec <= 0f)
                 return;
-            if (PlayerStealthed)
+            Transform aim = AimTarget();
+            if (aim == null)
             {
                 _visual?.SetSpeed(0f);
                 return;
@@ -581,46 +658,58 @@ namespace Dovus.Game
             }
 
             Vector3 home = _reactor.Home;
-            Vector3 to = _player.position - home;
+            Vector3 to = aim.position - home;
             to.y = 0f;
-            float pad = _colors != null ? _colors.BossApproachStopPadM : 0.35f;
-            float stop = _reactor.BodyRadiusM + (_playerMotor != null ? _playerMotor.BodyRadiusM : 0.5f) + pad;
-            if (to.sqrMagnitude <= stop * stop)
+            bool reversed = IsReversed;
+            if (!reversed)
+            {
+                float pad = _colors != null ? _colors.BossApproachStopPadM : 0.35f;
+                float stop = _reactor.BodyRadiusM + AimTargetRadius() + pad;
+                if (to.sqrMagnitude <= stop * stop)
+                {
+                    _visual?.SetSpeed(0f);
+                    return;
+                }
+            }
+            else if (to.sqrMagnitude <= 0.0001f)
             {
                 _visual?.SetSpeed(0f);
                 return;
             }
 
+            // ters_kontrol: aynı hızla hedeften UZAĞA yürür (yaklaşma vektörü ters).
+            Vector3 dir = reversed ? -to.normalized : to.normalized;
             float groundMps = _combat.Boss.ApproachSpeedMps * speedMult;
-            home += to.normalized * groundMps * dtSec;
+            home += dir * groundMps * dtSec;
             _reactor.Home = home;
             _visual?.SetWalk(groundMps);
-            TurnTowardPlayer(dtSec);
+            TurnToward(dir, dtSec);
         }
 
         bool IsEnraged() =>
             _bossVitals != null && _bossVitals.MaxHp > 0f && (_bossVitals.Hp / _bossVitals.MaxHp) <= 0.5f;
 
-        /// <summary>Yaklaşırken dönüş hız sınırlı; windup başındaki kilitleme (FacePlayer) anlık kalır.</summary>
-        void TurnTowardPlayer(float dtSec)
+        /// <summary>Yürürken dönüş hız sınırlı (yürüme yönüne); windup başındaki kilitleme (FaceTarget) anlık kalır.</summary>
+        void TurnToward(Vector3 dir, float dtSec)
         {
-            if (_player == null || PlayerStealthed)
-                return;
-            Vector3 to = _player.position - _reactor.Home;
-            to.y = 0f;
-            if (to.sqrMagnitude <= 0.01f)
+            dir.y = 0f;
+            if (dir.sqrMagnitude <= 0.0001f)
                 return;
             float rate = _colors != null ? _colors.BossTurnRateDegPerSec : 240f;
             transform.rotation = Quaternion.RotateTowards(
-                transform.rotation, Quaternion.LookRotation(to.normalized, Vector3.up), rate * dtSec);
+                transform.rotation, Quaternion.LookRotation(dir.normalized, Vector3.up), rate * dtSec);
         }
 
-        void FacePlayer()
+        /// <summary>Windup kilidi hedefe; ters_kontrol açıksa 180° ters (koni/salvo geri gider, slam 360° etkilenmez).</summary>
+        void FaceTarget()
         {
-            if (_player == null || PlayerStealthed)
+            Transform aim = AimTarget();
+            if (aim == null)
                 return;
-            Vector3 to = _player.position - _reactor.Home;
+            Vector3 to = aim.position - _reactor.Home;
             to.y = 0f;
+            if (IsReversed)
+                to = -to;
             if (to.sqrMagnitude > 0.01f)
                 transform.rotation = Quaternion.LookRotation(to.normalized, Vector3.up);
         }
@@ -631,6 +720,17 @@ namespace Dovus.Game
                 return;
             if (_attack == null || _resolver == null)
                 return;
+
+            // Körlük bir vuruşta bir kez zar atar; aynı ıska bütün kurbanlara geçerli.
+            bool? blindMiss = null;
+            bool Blind()
+            {
+                blindMiss ??= _bossStatus != null
+                    && BossStatusMath.Misses(_bossStatus.Board, (float)_rng.NextDouble());
+                return blindMiss.Value;
+            }
+
+            ResolveOtherFriendlies(Blind);
 
             float dist = 0f;
             float angleDeg = 0f;
@@ -656,8 +756,7 @@ namespace Dovus.Game
                 _attack.ArcHalfAngleDeg);
             if (!BossStatusMath.VolumeHits(stealthed, inVolume, _attack.ArcHalfAngleDeg))
                 inVolume = false;
-            else if (_bossStatus != null
-                && BossStatusMath.Misses(_bossStatus.Board, (float)_rng.NextDouble()))
+            else if (Blind())
                 inVolume = false;
 
             int? press = _dodge?.PressTimeMs;
@@ -694,6 +793,56 @@ namespace Dovus.Game
                     _playerStatus.Board.Apply(
                         Dovus.Core.Status.StatusKind.Burn, _combat.Status.BurnMs, _combat.Status.BurnDamagePerSec);
                     _playerStatus.Board.Apply(
+                        Dovus.Core.Status.StatusKind.GrievousWounds, _combat.Status.GrievousMs, _combat.Status.GrievousHealMult);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Vuruş hacmi hedef değil, ALAN: oyuncu dışındaki her kayıtlı dost sınanır (slam 360°,
+        /// koni yaya bakar). Dost: dodge yok, hasar ally_damage_mult ile; koni yanığı da geçer.
+        /// Yem: hacimdeyse yok olur (aggro biter). Oyuncu yolu aşağıda, bugünkü kodun aynısı.
+        /// </summary>
+        void ResolveOtherFriendlies(System.Func<bool> blind)
+        {
+            if (_targets == null || _reactor == null)
+                return;
+            var entries = _targets.Entries;
+            for (int i = entries.Count - 1; i >= 0; i--)
+            {
+                HostileTargets.Entry e = entries[i];
+                if (e.Kind == TargetKind.Player || !e.IsAlive)
+                    continue;
+                Vector3 d = e.Transform.position - _reactor.Home;
+                d.y = 0f;
+                float dist = d.magnitude;
+                float angleDeg = 0f;
+                if (dist > 0.01f)
+                {
+                    Vector3 forward = transform.forward;
+                    forward.y = 0f;
+                    angleDeg = Vector3.SignedAngle(forward, d, Vector3.up);
+                }
+                bool inVolume = _attack.IsInEffectVolume(
+                    BossStrikeShape.DistanceForVolume(dist, PortalBorderTeamHooks.BossStrikeScale),
+                    angleDeg,
+                    _attack.ArcHalfAngleDeg);
+                if (!BossStatusMath.VolumeHits(e.IsStealthed, inVolume, _attack.ArcHalfAngleDeg) || blind())
+                    continue;
+
+                if (e.Kind == TargetKind.Decoy)
+                {
+                    e.Kill?.Invoke();
+                    continue;
+                }
+                float raw = BossStatusMath.OutgoingDamage(_attack.Damage, _bossStatus != null ? _bossStatus.Board : null);
+                e.Damage?.Invoke(raw);
+                AllyDummy ally = _attack.Kind == BossAttackKind.FireCone ? e.Transform.GetComponent<AllyDummy>() : null;
+                if (ally != null && _combat != null && ally.Board != null && !ally.IsDown)
+                {
+                    ally.Board.Apply(
+                        Dovus.Core.Status.StatusKind.Burn, _combat.Status.BurnMs, _combat.Status.BurnDamagePerSec);
+                    ally.Board.Apply(
                         Dovus.Core.Status.StatusKind.GrievousWounds, _combat.Status.GrievousMs, _combat.Status.GrievousHealMult);
                 }
             }

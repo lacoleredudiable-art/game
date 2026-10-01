@@ -422,6 +422,29 @@ namespace Dovus.Game
             if (playerStatus != null)
                 bossDir.BindPlayerStatus(playerStatus);
             bossDir.BindVisual(boss.GetComponent<BossVisual>());
+
+            // Boss hedefleri: oyuncu + dost kukla (+ MD'nin dikkat çeken yemleri). Sayılar karadul.json targeting.
+            var hostileTargets = directorGo.AddComponent<HostileTargets>();
+            TargetingConfig targetingConfig = BossEncounterData.LoadTargeting();
+            hostileTargets.Configure(targetingConfig);
+            hostileTargets.Register(
+                player,
+                TargetKind.Player,
+                PlayerRadiusM,
+                alive: () => vitals == null || !vitals.IsDown,
+                stealthed: () => playerStatus != null && playerStatus.Board.IsStealthed);
+            if (allyDummy != null)
+            {
+                allyDummy.ConfigureLife(targetingConfig);
+                hostileTargets.Register(
+                    allyDummy.transform,
+                    TargetKind.Ally,
+                    PlayerRadiusM * 0.95f,
+                    alive: () => !allyDummy.IsDown,
+                    stealthed: () => allyDummy.Board != null && allyDummy.Board.IsStealthed,
+                    damage: raw => allyDummy.ApplyBossDamage(raw));
+            }
+            bossDir.BindTargets(hostileTargets);
             vitalsHud.BindBoss(bossDir);
 
             feelGo.AddComponent<SfxDirector>();
@@ -458,6 +481,7 @@ namespace Dovus.Game
             var director = manGo.AddComponent<ManifestationDirector>();
             director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, allyDummy, view, passiveHud, equippedWeapon, equipmentBonus, skills, skillFactory, design?.Animations);
             director.BindTargeting(targeting);
+            director.BindHostileTargets(hostileTargets);
             director.ConfigureWeaponCycle(design?.Equipment.Items);
             if (design != null)
             {

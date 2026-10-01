@@ -10,8 +10,11 @@ namespace SweepV2
     /// <summary>Skor tablosu, CI kapısı ve Play CSV karşılaştırması.</summary>
     sealed class Report
     {
-        /// <summary>Tasarım gereği kalır: 2-9 kalıbı dost kukla hedefler (guard tetikleyici), boss'a hasar yok.</summary>
-        public static readonly HashSet<string> Whitelist = new() { "2-9" };
+        /// <summary>
+        /// Muaf kombo yok. 2-9 eskiden muaftı (koruyucu tetik, dost %50 canla hiç ödemiyordu);
+        /// boss tasarımı PR 1'den beri tarama dostu tetik skillerinde guard_threshold altında başlatır.
+        /// </summary>
+        public static readonly HashSet<string> Whitelist = new();
 
         public const int MinPassPerWeapon = 142;
         public const int WeaponCases = 144;
@@ -53,7 +56,7 @@ namespace SweepV2
         /// <summary>Muafiyet yalnız "isabet" kalışı içindir; aynı kombo gövde/yerde/süre vb. ile kalırsa muaf değil.</summary>
         static bool IsWhitelisted(PlaySweepResult r) =>
             Whitelist.Contains(r.Case.Id) && r.Cast && !r.Hit && r.Position && r.NotInside && r.OneSystem
-            && r.NoErrors && r.OnTime && r.NoTeleport && r.Grounded;
+            && r.NoErrors && r.OnTime && r.NoTeleport && r.Grounded && r.Effect;
 
         public static string FailedChecks(PlaySweepResult r)
         {
@@ -67,6 +70,7 @@ namespace SweepV2
             if (r.Cast && !r.OnTime) f.Add("süre");
             if (r.Cast && !r.NoTeleport) f.Add("sıçrama");
             if (r.Cast && !r.Grounded) f.Add("yerde");
+            if (r.Cast && !r.Effect) f.Add("etki");
             return string.Join("+", f);
         }
 
