@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Dovus.Core.Combat;
 using Dovus.Core.Grammar;
 using Dovus.Core.Tuning;
@@ -12,12 +11,11 @@ namespace Dovus.Core.Status
     {
         public readonly struct Result
         {
-            public Result(bool knockback, bool cleansed, IReadOnlyList<StatusReactionRule> triggeredReactions, bool pull = false, int cleansedCount = 0)
+            public Result(bool knockback, bool cleansed, bool pull = false, int cleansedCount = 0)
             {
                 CleansedCount = cleansedCount;
                 Knockback = knockback;
                 Cleansed = cleansed;
-                TriggeredReactions = triggeredReactions;
                 Pull = pull;
             }
 
@@ -26,15 +24,7 @@ namespace Dovus.Core.Status
             public bool Cleansed { get; }
             /// <summary>cleanse_count: bu cast'te silinen kötü durum sayısı.</summary>
             public int CleansedCount { get; }
-
-            /// <summary>
-            /// 16 Eylül: bu cast sırasında ateşlenen durum etkileşim kuralları (varsa) —
-            /// Game katmanı bunu ekrana yazsın diye (bkz. StatusBoard.ReactionTriggered).
-            /// </summary>
-            public IReadOnlyList<StatusReactionRule> TriggeredReactions { get; }
         }
-
-        static readonly IReadOnlyList<StatusReactionRule> EmptyReactions = System.Array.Empty<StatusReactionRule>();
 
         /// <summary>
         /// self hitbox → caster board; aksi halde target board.
@@ -50,12 +40,12 @@ namespace Dovus.Core.Status
             int cleanseCount = 0)
         {
             if (skill.IsEmpty || tuning == null)
-                return new Result(false, false, EmptyReactions);
+                return new Result(false, false);
 
             bool self = IsSelfTargeted(skill);
             StatusBoard board = self ? caster : target;
             if (board == null)
-                return new Result(false, false, EmptyReactions);
+                return new Result(false, false);
 
             bool knockback = false;
             bool pull = false;
@@ -63,67 +53,52 @@ namespace Dovus.Core.Status
             int cleansedCount = 0;
             string[] mechanics = skill.Mechanics ?? System.Array.Empty<string>();
 
-            // "Savrulma Sersemliği" (docs/element-sistemi.json status_interaction_table):
-            // aynı vuruşta stun + knockback birlikteyse stun süresi uzar. Knockback kalıcı bir
-            // status değil (anlık bayrak) — StatusBoard'un durum tablosu bunu göremez, o yüzden
-            // burada, "aynı cast" bilgisiyle özel işleniyor.
+            // "Savrulma Sersemliği": aynı vuruşta stun + knockback birlikteyse stun süresi uzar
+            // (StatusTuning.StunKnockbackDurationAddMs). Knockback kalıcı bir status değil
+            // (anlık bayrak); "aynı cast" bilgisiyle burada özel işleniyor.
             bool hasKnockbackThisCast = System.Array.IndexOf(mechanics, "knockback") >= 0;
 
-            // 16 Eylül: "etkileşim göremiyorum" raporu — bu cast sırasında ateşlenen kuralları
-            // topla, Game katmanı ekrana yazsın (StatusBoard mekanik olarak zaten uyguluyordu,
-            // sadece görünmüyordu).
-            var triggered = new List<StatusReactionRule>();
-            void OnReaction(StatusReactionRule r) => triggered.Add(r);
-            board.ReactionTriggered += OnReaction;
-
-            try
+            for (int i = 0; i < mechanics.Length; i++)
             {
-                for (int i = 0; i < mechanics.Length; i++)
+                string id = mechanics[i];
+                if (id == "cleanse")
                 {
-                    string id = mechanics[i];
-                    if (id == "cleanse")
-                    {
-                        int want = cleanseCount > 0
-                            ? cleanseCount
-                            : skill.EngineModifiers != null && !skill.EngineModifiers.IsNull
-                                ? skill.EngineModifiers["cleanse_count"].AsInt(0)
-                                : 0;
-                        cleansedCount += board.CleanseHostile(want > 0 ? want : int.MaxValue);
-                        cleansed = true;
-                        continue;
-                    }
-
-                    if (!StatusKindUtil.TryParse(id, out StatusKind kind) || kind == StatusKind.None)
-                        continue;
-
-                    if (kind == StatusKind.Knockback)
-                    {
-                        knockback = !self;
-                        continue;
-                    }
-
-                    if (kind == StatusKind.Stun && hasKnockbackThisCast)
-                    {
-                        board.Apply(kind, tuning.StunMs + tuning.StunKnockbackDurationAddMs, 1f);
-                        continue;
-                    }
-
-                    ApplyKind(
-                        board, kind, skill, tuning, mobilityCc, ParseAdjectiveId(skill.AdjectiveId),
-                        friendlyMagnitude);
+                    int want = cleanseCount > 0
+                        ? cleanseCount
+                        : skill.EngineModifiers != null && !skill.EngineModifiers.IsNull
+                            ? skill.EngineModifiers["cleanse_count"].AsInt(0)
+                            : 0;
+                    cleansedCount += board.CleanseHostile(want > 0 ? want : int.MaxValue);
+                    cleansed = true;
+                    continue;
                 }
 
-                // Sıfat engine_modifiers — fiil mechanics dışında ek durum (3’lü/4’lü farkı).
-                ApplyAdjectiveModifiers(
-                    skill, board, caster, target, self, ref knockback, ref pull, tuning, mechanics,
-                    mobilityCc, ParseAdjectiveId(skill.AdjectiveId), friendlyMagnitude);
-            }
-            finally
-            {
-                board.ReactionTriggered -= OnReaction;
+                if (!StatusKindUtil.TryParse(id, out StatusKind kind) || kind == StatusKind.None)
+                    continue;
+
+                if (kind == StatusKind.Knockback)
+                {
+                    knockback = !self;
+                    continue;
+                }
+
+                if (kind == StatusKind.Stun && hasKnockbackThisCast)
+                {
+                    board.Apply(kind, tuning.StunMs + tuning.StunKnockbackDurationAddMs, 1f);
+                    continue;
+                }
+
+                ApplyKind(
+                    board, kind, skill, tuning, mobilityCc, ParseAdjectiveId(skill.AdjectiveId),
+                    friendlyMagnitude);
             }
 
-            return new Result(knockback, cleansed, triggered, pull, cleansedCount);
+            // Sıfat engine_modifiers — fiil mechanics dışında ek durum (3’lü/4’lü farkı).
+            ApplyAdjectiveModifiers(
+                skill, board, caster, target, self, ref knockback, ref pull, tuning, mechanics,
+                mobilityCc, ParseAdjectiveId(skill.AdjectiveId), friendlyMagnitude);
+
+            return new Result(knockback, cleansed, pull, cleansedCount);
         }
 
         /// <summary>

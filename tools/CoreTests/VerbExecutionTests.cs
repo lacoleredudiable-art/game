@@ -83,7 +83,7 @@ public class VerbExecutionTests
 
         SkillResolution ghost = _motor.Resolve(new[] { 3, 7 });
         SkillMotionPlan ghostPlan = SkillMotionMotor.Resolve(
-            ghost, ctx, tuning, null, _data.IFrameMsFor(ghost.SkillId));
+            ghost, ctx, tuning, _data.IFrameMsFor(ghost.SkillId));
         Assert.That(ghostPlan.IframeMs, Is.EqualTo(400));
     }
 

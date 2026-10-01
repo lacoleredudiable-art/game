@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Dovus.Core.Grammar;
 using Dovus.Core.Tuning;
 
@@ -81,19 +80,10 @@ namespace Dovus.Core.Combat
         public float ArenaHalfSizeM { get; }
     }
 
-    /// <summary>JSON space_layer.effects[].type — yalnızca mevcut hareketlere eşlenenler uygulanır.</summary>
-    public static class SpaceEffectTypes
-    {
-        public const string ShortBlink = "short_blink";
-        public const string PhaseBlink = "phase_blink";
-        public const string StealthShift = "stealth_shift";
-        public const string InvisibleLink = "invisible_link";
-        public const string Tear = "tear";
-    }
-
     /// <summary>
     /// Fiil + sıfat → hareket/işaret planı. Kombo tablosu yok; action / verb_id / adjective_id.
-    /// space_layer eşleşen effect varsa distance/i_frame JSON otoritesi (tuning yedek).
+    /// Mesafe/i-frame SkillMotionTuning'den; dash mesafesi v6 engine dash_distance_m.
+    /// (v5 space_layer dalı CLEANUP-2b ile kaldırıldı; v6 JSON'da bu katman yoktu.)
     /// </summary>
     public static class SkillMotionMotor
     {
@@ -103,7 +93,6 @@ namespace Dovus.Core.Combat
             SkillResolution skill,
             in SkillMotionContext ctx,
             SkillMotionTuning tuning,
-            IReadOnlyList<SpaceEffectNode>? spaceEffects = null,
             int dashIFrameMs = 0)
         {
             if (skill.IsEmpty || tuning == null)
@@ -116,19 +105,18 @@ namespace Dovus.Core.Combat
                 if (IsAnchorAdjective(skill))
                     return PlaceMarkAtCaster(ctx, tuning);
 
-                float engage = ResolvePhaseEngageRangeM(tuning, spaceEffects);
-                if (ctx.BossAlive && Distance(ctx.CasterX, ctx.CasterZ, ctx.BossX, ctx.BossZ) <= engage)
-                    return ZenitsuBehindBoss(ctx, tuning, fx, fz, spaceEffects);
+                if (ctx.BossAlive
+                    && Distance(ctx.CasterX, ctx.CasterZ, ctx.BossX, ctx.BossZ) <= tuning.ZenitsuEngageRangeM)
+                    return ZenitsuBehindBoss(ctx, tuning, fx, fz);
 
-                ResolveBlinkScalars(skill, tuning, spaceEffects, out float blinkDist, out int blinkIframe);
                 return BlinkAlong(
                     SkillMotionKind.ShortBlink,
                     ctx, tuning, fx, fz,
-                    blinkDist, tuning.BlinkDurationSec, blinkIframe, 0f);
+                    tuning.ShortBlinkDistanceM, tuning.BlinkDurationSec, 0, 0f);
             }
 
             if (IsLightningSlash(skill) && ctx.BossAlive)
-                return ZenitsuBehindBoss(ctx, tuning, fx, fz, spaceEffects);
+                return ZenitsuBehindBoss(ctx, tuning, fx, fz);
 
             if (IsDashVerb(skill))
             {
@@ -159,8 +147,7 @@ namespace Dovus.Core.Combat
             in SkillMotionContext ctx,
             SkillMotionTuning t,
             float fx,
-            float fz,
-            IReadOnlyList<SpaceEffectNode>? spaceEffects)
+            float fz)
         {
             float dx = ctx.CasterX - ctx.BossX;
             float dz = ctx.CasterZ - ctx.BossZ;
@@ -181,96 +168,14 @@ namespace Dovus.Core.Combat
             float faceZ = ctx.BossZ - destZ;
             NormalizeFacing(faceX, faceZ, out faceX, out faceZ);
 
-            int iframeMs = t.ZenitsuIframeMs;
-            float slash = t.ZenitsuSlashCommitMult;
-            if (TryFindSpace(spaceEffects, "Yıldırım", SpaceEffectTypes.PhaseBlink, out SpaceEffectNode phase)
-                || TryFindSpace(spaceEffects, null, SpaceEffectTypes.PhaseBlink, out phase))
-            {
-                if (phase.HasIFrameMs)
-                    iframeMs = phase.IFrameMs;
-                if (phase.HasDamageOnPass && !phase.DamageOnPass)
-                    slash = 0f;
-            }
-
             return new SkillMotionPlan(
                 SkillMotionKind.ZenitsuPass,
                 destX, destZ,
                 faceX, faceZ,
                 t.ZenitsuDurationSec,
-                iframeMs,
-                slash,
+                t.ZenitsuIframeMs,
+                t.ZenitsuSlashCommitMult,
                 string.Empty);
-        }
-
-        static void ResolveBlinkScalars(
-            SkillResolution skill,
-            SkillMotionTuning tuning,
-            IReadOnlyList<SpaceEffectNode>? spaceEffects,
-            out float distanceM,
-            out int iframeMs)
-        {
-            distanceM = tuning.ShortBlinkDistanceM;
-            iframeMs = 0;
-
-            if (TryPickBlinkEffect(spaceEffects, skill, out SpaceEffectNode fx))
-            {
-                if (fx.HasDistanceM)
-                    distanceM = fx.DistanceM;
-                if (fx.HasIFrameMs)
-                    iframeMs = fx.IFrameMs;
-            }
-        }
-
-        /// <summary>
-        /// Blink tip seçimi: ElementOrigin → ElementName → FlavorElement → ilk stealth/short.
-        /// Origin Alev iken Name=Pus olsa bile Alev short_blink kazanır.
-        /// </summary>
-        static bool TryPickBlinkEffect(
-            IReadOnlyList<SpaceEffectNode>? effects,
-            SkillResolution skill,
-            out SpaceEffectNode found)
-        {
-            found = default;
-            if (effects == null || effects.Count == 0)
-                return false;
-
-            if (TryBlinkForElement(effects, skill.ElementOrigin, out found))
-                return true;
-            if (TryBlinkForElement(effects, skill.ElementName, out found))
-                return true;
-            if (TryBlinkForElement(effects, skill.FlavorElement, out found))
-                return true;
-            if (TryFindSpace(effects, null, SpaceEffectTypes.StealthShift, out found))
-                return true;
-            return TryFindSpace(effects, null, SpaceEffectTypes.ShortBlink, out found);
-        }
-
-        static bool TryBlinkForElement(
-            IReadOnlyList<SpaceEffectNode>? effects,
-            string element,
-            out SpaceEffectNode found)
-        {
-            found = default;
-            if (string.IsNullOrEmpty(element))
-                return false;
-            // stealth_shift ve short_blink aynı "blink" ailesi — element hangisine sahipse o.
-            if (TryFindSpace(effects, element, SpaceEffectTypes.StealthShift, out found))
-                return true;
-            return TryFindSpace(effects, element, SpaceEffectTypes.ShortBlink, out found);
-        }
-
-        static float ResolvePhaseEngageRangeM(
-            SkillMotionTuning tuning,
-            IReadOnlyList<SpaceEffectNode>? spaceEffects)
-        {
-            // phase_blink.distance_m → Zenitsu engage (durum.md karşılaştırma tablosu).
-            if (TryFindSpace(spaceEffects, "Yıldırım", SpaceEffectTypes.PhaseBlink, out SpaceEffectNode phase)
-                || TryFindSpace(spaceEffects, null, SpaceEffectTypes.PhaseBlink, out phase))
-            {
-                if (phase.HasDistanceM)
-                    return phase.DistanceM;
-            }
-            return tuning.ZenitsuEngageRangeM;
         }
 
         static SkillMotionPlan BlinkAlong(
@@ -293,35 +198,6 @@ namespace Dovus.Core.Combat
                 iframeMs,
                 slashMult,
                 string.Empty);
-        }
-
-        /// <summary>
-        /// ElementOrigin / ElementName / FlavorElement ile effect.Element eşleşir.
-        /// elementHint null → yalnızca tip (ilk eşleşen).
-        /// </summary>
-        public static bool TryFindSpace(
-            IReadOnlyList<SpaceEffectNode>? effects,
-            string? elementHint,
-            string type,
-            out SpaceEffectNode found)
-        {
-            found = default;
-            if (effects == null || effects.Count == 0 || string.IsNullOrEmpty(type))
-                return false;
-
-            for (int i = 0; i < effects.Count; i++)
-            {
-                SpaceEffectNode e = effects[i];
-                if (!string.Equals(e.Type, type, StringComparison.Ordinal))
-                    continue;
-                if (string.IsNullOrEmpty(elementHint)
-                    || string.Equals(e.Element, elementHint, StringComparison.OrdinalIgnoreCase))
-                {
-                    found = e;
-                    return true;
-                }
-            }
-            return false;
         }
 
         public static bool IsTeleportVerb(SkillResolution skill)

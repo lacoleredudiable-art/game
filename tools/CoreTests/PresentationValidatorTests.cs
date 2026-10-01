@@ -32,7 +32,7 @@ public class PresentationValidatorTests
         PresentationCatalog.FromJson(File.ReadAllText(FindDocsFile("prezentasyon-katmani.json")));
 
     static string LoadElementJson() =>
-        File.ReadAllText(FindDocsFile(Path.Combine("archive", "element-sistemi-v5.3.json")));
+        File.ReadAllText(FindDocsFile("element-sistemi.json"));
 
     static SkillResolution ResolutionWith(string hitbox, string animationType) =>
         new SkillResolution(
@@ -87,51 +87,33 @@ public class PresentationValidatorTests
     }
 
     [Test]
-    public void AllVerbBaseHitboxes_CheckedAgainstPresentationCatalog()
+    public void AllV6VerbBaseHitboxes_CheckedAgainstPresentationCatalog()
     {
+        // v6.1.1 verb_base: 12 fiil. Motorun fiil hitbox'ı JSON ile birebir; prezentasyon
+        // kataloğunda bulunmayan hitbox id'leri açıkça listelenir (runtime CastPresentation
+        // bunları varsayılan animasyona düşürür).
         string elementJson = LoadElementJson();
         var motor = SkillMotor.FromJson(elementJson);
-        var catalog = LoadPresentation();
-        var validator = new PresentationValidator(catalog);
+        var validator = new PresentationValidator(LoadPresentation());
 
-        JsonValue root = MiniJson.Parse(elementJson);
-        IReadOnlyList<JsonValue> verbs = root["verbs"].AsArray();
-        Assert.That(verbs.Count, Is.EqualTo(motor.VerbCount));
-
+        JsonValue verbBase = MiniJson.Parse(elementJson)["verb_base"];
         var missingHitboxIds = new SortedSet<string>(System.StringComparer.Ordinal);
-        var missingHitboxVerbs = new List<string>();
-        var missingAnimIds = new SortedSet<string>(System.StringComparer.Ordinal);
         int checkedCount = 0;
 
-        foreach (JsonValue verbRow in verbs)
+        foreach (var kv in verbBase.AsObject())
         {
-            string verbId = verbRow["id"].AsString();
-            Assert.That(motor.TryGetVerb(verbId, out VerbNode verb), Is.True, verbId);
+            Assert.That(motor.TryGetVerb(kv.Key, out VerbNode verb), Is.True, kv.Key);
+            string hitbox = kv.Value["hitbox"].AsString();
+            Assert.That(verb.Hitbox, Is.EqualTo(hitbox), kv.Key);
 
-            string baseHitbox = verbRow["engine_base_stats"]["base_hitbox"].AsString();
-            string animationType = verbRow["animation_type"].AsString();
-            Assert.That(verb.Hitbox, Is.EqualTo(baseHitbox), verbId);
-            Assert.That(verb.AnimationType, Is.EqualTo(animationType), verbId);
-
-            PresentationValidationResult result = validator.Validate(
-                ResolutionWith(baseHitbox, animationType));
+            PresentationValidationResult result = validator.Validate(ResolutionWith(hitbox, ""));
             checkedCount++;
-
             if (!result.HitboxFound)
-            {
-                missingHitboxIds.Add(baseHitbox);
-                missingHitboxVerbs.Add($"{verbId}:{baseHitbox}");
-            }
-
-            if (!result.AnimationFound)
-                missingAnimIds.Add(animationType);
+                missingHitboxIds.Add(hitbox);
         }
 
-        Assert.That(checkedCount, Is.EqualTo(42), "Tüm fiiller tek tek doğrulanmalı.");
-        // docs/durum.md: SkillResolution.Hitbox "target_ally" prezentasyon katmanında yok
-        // (cc_arindirma, hiz_buff, kalkan_transferi, arindirma, kutsal_kalkan, dirilis).
-        Assert.That(missingHitboxIds, Is.EqualTo(new[] { "target_ally" }));
-        Assert.That(missingHitboxVerbs.Count, Is.EqualTo(6));
-        Assert.That(missingAnimIds, Is.Empty);
+        Assert.That(checkedCount, Is.EqualTo(motor.RuneCount), "Tüm v6 fiilleri tek tek doğrulanmalı.");
+        // Bilinen katalog boşlukları (v6 fiil hitbox id'leri presentation kataloğunda yok) — yeni boşluk eklenirse test kırılır.
+        Assert.That(missingHitboxIds, Is.EqualTo(new[] { "dash_line", "self_or_ally", "target" }));
     }
 }

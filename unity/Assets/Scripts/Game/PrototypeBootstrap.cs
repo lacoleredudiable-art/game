@@ -266,7 +266,7 @@ namespace Dovus.Game
                 design = loaded;
                 assetCatalog = ElementSystemAssetCatalog.CreateRuntime(design);
             }
-            SkillMotor skills = design?.SkillMotor ?? SkillMotorLoader.LoadOrDefault();
+            SkillMotor skills = design?.SkillMotor ?? SkillMotorLoader.Load();
             var runeManager = new RuneManager(skills);
             if (!runeManager.TrySelectMainClass(
                     _prototypeMainClassId,
@@ -540,7 +540,7 @@ namespace Dovus.Game
         {
             weapon = null;
             if (!ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
-                return new EquipmentBonusResolver(string.Empty);
+                return new EquipmentBonusResolver();
 
             try
             {
@@ -551,7 +551,7 @@ namespace Dovus.Game
             catch (System.Exception e)
             {
                 Debug.LogWarning($"[Equipment] katalog okunamadı: {e.Message}");
-                return new EquipmentBonusResolver(string.Empty);
+                return new EquipmentBonusResolver();
             }
         }
 

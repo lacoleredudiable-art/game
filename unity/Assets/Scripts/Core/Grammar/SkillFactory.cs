@@ -16,7 +16,7 @@ namespace Dovus.Core.Grammar
         public SkillFactory(SkillMotor motor, EquipmentBonusResolver equipment)
         {
             _motor = motor ?? throw new ArgumentNullException(nameof(motor));
-            _equipment = equipment ?? new EquipmentBonusResolver(string.Empty);
+            _equipment = equipment ?? new EquipmentBonusResolver();
         }
 
         public Skill Create(

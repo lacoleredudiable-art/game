@@ -16,11 +16,11 @@ public class SkillWorldPlannerTests
     {
         string fromTest = Path.GetFullPath(Path.Combine(
             TestContext.CurrentContext.TestDirectory,
-            "..", "..", "..", "..", "..", "docs", "archive", "element-sistemi-v5.3.json"));
+            "..", "..", "..", "..", "..", "docs", "element-sistemi.json"));
         if (File.Exists(fromTest)) return fromTest;
         string fromCwd = Path.GetFullPath(Path.Combine(
             Directory.GetCurrentDirectory(),
-            "..", "..", "..", "..", "docs", "archive", "element-sistemi-v5.3.json"));
+            "..", "..", "..", "..", "docs", "element-sistemi.json"));
         Assert.That(File.Exists(fromCwd), Is.True, $"element-sistemi.json yok: {fromCwd}");
         return fromCwd;
     }
@@ -43,63 +43,25 @@ public class SkillWorldPlannerTests
         PresentationCatalog.FromJson(File.ReadAllText(PresentationJsonPath()));
 
     [Test]
-    public void Pair_AtesTopu_Vs_Triple_Yayma_BangRadiusDiffers()
+    public void HitboxScaleMult_ScalesBangRadius_SameVerbHitbox()
     {
-        // 1-1 Keskinlik hitbox_scale 0.3; 1-1-2 Yayma 2.5 (+ expanding_wave shim)
+        // v6: 5-1 (Yoğunlaştırma, hitbox_scale_mult 0.55) ve 5-5 (1.8) aynı ground_ring
+        // hitbox'ını paylaşır; bang yarıçapı yalnız engine hitbox_scale_mult oranında değişir.
         SkillMotor m = Motor();
         PresentationCatalog cat = Catalog();
         var tuning = new ManifestationTuning();
 
-        LivingEffectPlan pair = SkillWorldPlanner.Build(m.Resolve(new[] { 1, 1 }), cat, tuning);
-        LivingEffectPlan triple = SkillWorldPlanner.Build(m.Resolve(new[] { 1, 1, 2 }), cat, tuning);
+        SkillResolution small = m.Resolve(new[] { 5, 1 });
+        SkillResolution large = m.Resolve(new[] { 5, 5 });
+        Assert.That(small.Hitbox, Is.EqualTo(large.Hitbox));
+        LivingEffectPlan a = SkillWorldPlanner.Build(small, cat, tuning);
+        LivingEffectPlan b = SkillWorldPlanner.Build(large, cat, tuning);
 
-        Assert.That(pair.HasPlan, Is.True);
-        Assert.That(triple.HasPlan, Is.True);
-        Assert.That(triple.BangRadiusM, Is.GreaterThan(pair.BangRadiusM * 3f),
-            $"pair={pair.BangRadiusM} triple={triple.BangRadiusM}");
-        Assert.That(triple.TravelKind, Is.EqualTo(LivingTravelKind.ExpandingRadial));
-        Assert.That(triple.Silhouette.Spread, Is.GreaterThan(pair.Silhouette.Spread));
-    }
-
-    [Test]
-    public void Yayma_HitboxOverride_ExpandingWave_TreatedAsTrajectory()
-    {
-        SkillResolution r = Motor().Resolve(new[] { 1, 1, 2 });
-        Assert.That(r.AdjectiveId, Is.EqualTo("yayma"));
-        // JSON düzeltmesi: trajectory_override=expanding_wave, hitbox=radial_burst
-        SkillWorldPlanner.ResolveIds(r, Catalog(), out string traj, out string hb);
-        Assert.That(traj, Is.EqualTo("expanding_wave"));
-        Assert.That(hb, Is.EqualTo("radial_burst"));
-    }
-
-    [Test]
-    public void LengthEconomy_Triple_ResourceAndCastAndMobility()
-    {
-        SkillResolution pair = Motor().Resolve(new[] { 1, 1 });
-        SkillResolution triple = Motor().Resolve(new[] { 1, 1, 2 });
-        Assert.That(triple.LengthResourceCostMult, Is.EqualTo(1.5f).Within(0.01f));
-        Assert.That(triple.LengthCastMult, Is.EqualTo(1.4f).Within(0.01f));
-        Assert.That(SkillMobility.ResourceCost(triple),
-            Is.EqualTo(pair.BaseResourceCost * 1.5f).Within(0.01f));
-        Assert.That(SkillMobility.CastTimeMult(triple), Is.EqualTo(1.4f).Within(0.01f));
-        Assert.That(SkillMobility.Resolve(triple), Is.EqualTo(SkillMobility.SlowedMove));
-    }
-
-    [Test]
-    public void LengthEconomy_Quad_IsRooted()
-    {
-        SkillResolution quad = Motor().Resolve(new[] { 1, 1, 1, 1 });
-        Assert.That(quad.LengthCastMult, Is.EqualTo(2.0f).Within(0.01f));
-        Assert.That(SkillMobility.Resolve(quad), Is.EqualTo(SkillMobility.Rooted));
-    }
-
-    [Test]
-    public void FromSkill_UsesAdjectiveAxis_NotIntermediateRunes()
-    {
-        SkillResolution r = Motor().Resolve(new[] { 1, 1, 2 }); // Alev + Yayma (wave)
-        EffectSilhouette s = SilhouetteBuilder.FromSkill(r, new ManifestationTuning());
-        Assert.That(s.Spread, Is.GreaterThan(0.3f));
-        Assert.That(r.SilhouetteAxis, Is.EqualTo("wave"));
+        Assert.That(a.HasPlan, Is.True);
+        Assert.That(b.HasPlan, Is.True);
+        float expectedRatio = large.HitboxScaleMult / small.HitboxScaleMult;
+        Assert.That(b.BangRadiusM / a.BangRadiusM, Is.EqualTo(expectedRatio).Within(0.001f),
+            $"small={a.BangRadiusM} large={b.BangRadiusM}");
     }
 
     [Test]
@@ -107,29 +69,30 @@ public class SkillWorldPlannerTests
     {
         var words = new[] { new SentenceWord(Rune.Ates, JumpKind.None, 0) };
         var effect = new LivingEffect(Rune.Ates, 0, 0, 0, 1, words, new ManifestationTuning());
+        // v6 1-2: Saldırı (projectile) → düz ilerleyen canlı efekt.
         LivingEffectPlan plan = SkillWorldPlanner.Build(
-            Motor().Resolve(new[] { 1, 1, 2 }), Catalog(), new ManifestationTuning());
+            Motor().Resolve(new[] { 1, 2 }), Catalog(), new ManifestationTuning());
         effect.ApplyPlan(plan);
 
         Assert.That(effect.HasSkillPlan, Is.True);
         Assert.That(effect.BangRadiusM, Is.EqualTo(plan.BangRadiusM).Within(0.01f));
-        Assert.That(effect.TravelKind, Is.EqualTo(LivingTravelKind.ExpandingRadial));
+        Assert.That(effect.TravelKind, Is.EqualTo(plan.TravelKind));
         effect.Tick(0.2f);
         Assert.That(effect.Travel, Is.GreaterThan(0f));
     }
 
     [Test]
-    public void StatusApplicator_ApplySlow_FromAdjectiveModifiers()
+    public void StatusApplicator_ApplySlow_FromV6EngineModifiers()
     {
-        // 1-4 Lav skill kartı → sıfat agirlik (apply_slow: 0.4)
-        SkillResolution skill = Motor().Resolve(new[] { 1, 4 });
-        Assert.That(skill.AdjectiveId, Is.EqualTo("agirlik"));
+        // v6 1-6: Saldırı × Bağlama → engine apply_slow (JSON'dan, elle sayı yok).
+        SkillResolution skill = Motor().Resolve(new[] { 1, 6 });
         Assert.That(skill.EngineModifiers.Has("apply_slow"), Is.True);
 
         var target = new StatusBoard();
         var caster = new StatusBoard();
         StatusApplicator.ApplySkill(skill, caster, target, new StatusTuning());
         Assert.That(target.Has(StatusKind.Slow), Is.True);
+        Assert.That(caster.Has(StatusKind.Slow), Is.False);
     }
 
     [Test]

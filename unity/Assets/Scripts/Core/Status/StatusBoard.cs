@@ -51,14 +51,6 @@ namespace Dovus.Core.Status
             }
         }
 
-        /// <summary>
-        /// 16 Eylül: "skilleri attığımda bir etkileşim göremiyorum" raporu — mekanik zaten
-        /// çalışıyordu (sayılar değişiyordu), ama hiçbir görsel/ses sinyali yoktu. Bu event
-        /// bir reaksiyon tetiklendiğinde (isim+açıklama ile) ateşlenir; Game katmanı
-        /// (ManifestationDirector → ReactionReadout) bunu ekrana yazar.
-        /// </summary>
-        public event Action<StatusReactionRule>? ReactionTriggered;
-
         public bool BlocksMovement =>
             HasEffective(StatusKind.Stun) || HasEffective(StatusKind.Root) || Has(StatusKind.Stasis)
             || HasEffective(StatusKind.Fear);
@@ -253,8 +245,6 @@ namespace Dovus.Core.Status
             if (IsAttackLockKind(kind) && _attackLockImmunity && _attackLockImmunityRemainingMs > 0)
                 return;
 
-            ApplyReactions(kind, ref durationMs, ref magnitude);
-
             if (_active.TryGetValue(kind, out StatusEntry existing))
             {
                 // Aynı etki yeniden gelince süre yenilenir: max(kalan, yeni). Eklenmez.
@@ -290,51 +280,6 @@ namespace Dovus.Core.Status
             magnitude = 0f;
             totalDurationMs = 0;
             return false;
-        }
-
-        /// <summary>
-        /// 16 Eylül — durum etkileşim tablosu (docs/element-sistemi.json
-        /// status_interaction_table). `kind` uygulanırken tahtada zaten bulunan başka bir
-        /// status'la eşleşen bir kural varsa: gelen değerler (ref parametreler) ve/veya o
-        /// mevcut status'un entry'si buna göre değişir.
-        /// </summary>
-        void ApplyReactions(StatusKind kind, ref double incomingDurationMs, ref float incomingMagnitude)
-        {
-            if (_active.Count == 0)
-                return;
-
-            var others = new List<StatusKind>(_active.Keys);
-            for (int i = 0; i < others.Count; i++)
-            {
-                StatusKind other = others[i];
-                if (other == kind)
-                    continue;
-                if (!StatusReactionTable.TryGetRule(kind, other, out StatusReactionRule rule, out bool incomingIsA))
-                    continue;
-
-                bool affectsIncoming = rule.Target == ReactionTarget.Both
-                    || (rule.Target == ReactionTarget.A && incomingIsA)
-                    || (rule.Target == ReactionTarget.B && !incomingIsA);
-                bool affectsOther = rule.Target == ReactionTarget.Both
-                    || (rule.Target == ReactionTarget.A && !incomingIsA)
-                    || (rule.Target == ReactionTarget.B && incomingIsA);
-
-                if (affectsIncoming)
-                {
-                    incomingMagnitude = rule.MagnitudeSet ?? incomingMagnitude * rule.MagnitudeMult;
-                    incomingDurationMs = incomingDurationMs * rule.DurationMult + rule.DurationAddMs;
-                }
-
-                if (affectsOther && _active.TryGetValue(other, out StatusEntry otherEntry))
-                {
-                    otherEntry.Magnitude = rule.MagnitudeSet ?? otherEntry.Magnitude * rule.MagnitudeMult;
-                    otherEntry.RemainingMs = otherEntry.RemainingMs * rule.DurationMult + rule.DurationAddMs;
-                    _active[other] = otherEntry;
-                    MirrorTempoSources(other, rule);
-                }
-
-                ReactionTriggered?.Invoke(rule);
-            }
         }
 
         /// <summary>Pipeline kalkan payını hesapladı; havuzdan düşülür.</summary>
@@ -458,7 +403,6 @@ namespace Dovus.Core.Status
             if (_rootImmunityRemainingMs > 0)
                 return;
 
-            ApplyReactions(StatusKind.Root, ref durationMs, ref magnitude);
             if (durationMs <= 0)
                 return;
 
@@ -551,7 +495,6 @@ namespace Dovus.Core.Status
             double durationMs,
             float magnitude)
         {
-            ApplyReactions(kind, ref durationMs, ref magnitude);
             if (durationMs <= 0)
                 return;
 
@@ -631,36 +574,6 @@ namespace Dovus.Core.Status
             }
 
             _active[kind] = new StatusEntry(longest, strongest, longest);
-        }
-
-        /// <summary>
-        /// Tepki tahtadaki yavaş/hızı değiştirdiyse kaynak süreleri de aynı oranda gider.
-        /// Yoksa bir sonraki tik tepkiyi siler.
-        /// </summary>
-        void MirrorTempoSources(StatusKind kind, StatusReactionRule rule)
-        {
-            Dictionary<string, TempoSource>? sources = kind switch
-            {
-                StatusKind.Slow => _slowSources,
-                StatusKind.Haste => _hasteSources,
-                _ => null
-            };
-            if (sources == null || sources.Count == 0)
-                return;
-
-            var keys = new List<string>(sources.Keys);
-            for (int i = 0; i < keys.Count; i++)
-            {
-                TempoSource source = sources[keys[i]];
-                source.RemainingMs = Math.Max(0, source.RemainingMs * rule.DurationMult + rule.DurationAddMs);
-                source.Magnitude = rule.MagnitudeSet ?? source.Magnitude * rule.MagnitudeMult;
-                if (source.RemainingMs <= 0)
-                    sources.Remove(keys[i]);
-                else
-                    sources[keys[i]] = source;
-            }
-
-            PublishTempo(kind, sources);
         }
 
         static float StrongerSlow(float current, float candidate)

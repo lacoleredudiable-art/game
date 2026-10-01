@@ -1,16 +1,12 @@
-using System;
-using System.Globalization;
-
 namespace Dovus.Core.Equipment
 {
     /// <summary>
-    /// equipment_system.rules.element_match_bonus — silah elementi cast edilen skill
-    /// elementiyle eşleşirse çarpan; aksi halde 1. Yüzde JSON metninden türetilir
-    /// (SkillMotor.ParseDefenseDropMult sayı-çıkarma deseni); elle "10" yazılmaz.
+    /// v6.1.1 silah × fiil uyumu (weapons[].compatible_verbs + uyumsuz_cizim çarpanları).
+    /// Katalogsuz kurulursa nötrdür (her fiil uyumlu, yalnız silahın kendi çarpanları).
+    /// v5 element_match_bonus yolu CLEANUP-2b ile kaldırıldı.
     /// </summary>
     public sealed class EquipmentBonusResolver
     {
-        readonly float _matchMult;
         readonly bool _usesVerbCompatibility;
         readonly float _compatibleDamageMult = 1f;
         readonly float _compatibleCastTimeMult = 1f;
@@ -21,15 +17,14 @@ namespace Dovus.Core.Equipment
         readonly string _compatibleUiLabel = string.Empty;
         readonly string _incompatibleUiLabel = string.Empty;
 
-        public EquipmentBonusResolver(string elementMatchBonusText)
+        /// <summary>Katalogsuz nötr çözücü (JSON yüklenemediğinde).</summary>
+        public EquipmentBonusResolver()
         {
-            _matchMult = ParseMatchBonusMult(elementMatchBonusText);
         }
 
         public EquipmentBonusResolver(EquipmentCatalog catalog)
-            : this(catalog?.ElementMatchBonusText ?? string.Empty)
         {
-            if (catalog == null || !catalog.IsV61)
+            if (catalog == null)
                 return;
             _usesVerbCompatibility = true;
             _compatibleDamageMult = catalog.CompatibleDamageMult;
@@ -40,29 +35,6 @@ namespace Dovus.Core.Equipment
             _incompatibleUiColor = catalog.IncompatibleUiColor;
             _compatibleUiLabel = catalog.CompatibleUiLabel;
             _incompatibleUiLabel = catalog.IncompatibleUiLabel;
-        }
-
-        /// <summary>"+%10 etki" → 1.1f. Yüzde yoksa 1f.</summary>
-        public float MatchBonusMult => _matchMult;
-
-        /// <summary>
-        /// Silah elementi skill elementiyle aynıysa match çarpanı, değilse 1.
-        /// Oyuncu şu an sabit tek ekipman varsayılır — seçim UI'ı yok.
-        /// </summary>
-        public float Resolve(string weaponElement, string skillElement)
-        {
-            if (string.IsNullOrEmpty(weaponElement) || string.IsNullOrEmpty(skillElement))
-                return 1f;
-            if (!string.Equals(weaponElement, skillElement, StringComparison.Ordinal))
-                return 1f;
-            return _matchMult;
-        }
-
-        public float Resolve(EquipmentItem? weapon, string skillElement)
-        {
-            if (weapon == null || weapon.Slot != EquipmentSlot.Weapon)
-                return 1f;
-            return Resolve(weapon.Element, skillElement);
         }
 
         /// <summary>
@@ -85,25 +57,6 @@ namespace Dovus.Core.Equipment
                 compatible,
                 compatible ? _compatibleUiColor : _incompatibleUiColor,
                 compatible ? _compatibleUiLabel : _incompatibleUiLabel);
-        }
-
-        /// <summary>"+%10 etki" / "savunma %50 düşer" tarzı metinden ilk yüzde → 1+N/100.</summary>
-        public static float ParseMatchBonusMult(string bonusText)
-        {
-            if (string.IsNullOrEmpty(bonusText))
-                return 1f;
-
-            int i = 0;
-            while (i < bonusText.Length && !char.IsDigit(bonusText[i])) i++;
-            int start = i;
-            while (i < bonusText.Length && char.IsDigit(bonusText[i])) i++;
-            if (i == start)
-                return 1f;
-
-            int percent = int.Parse(
-                bonusText.Substring(start, i - start),
-                CultureInfo.InvariantCulture);
-            return 1f + percent / 100f;
         }
     }
 
