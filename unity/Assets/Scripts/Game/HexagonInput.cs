@@ -42,6 +42,18 @@ namespace Dovus.Game
         // segmenti çizildikten sonra Break edilmeli. Bayrak + FlushInkBreak bunu sıralar.
         bool _inkBreakPending;
         bool _sentenceHooked;
+
+        // Denetim B ek — çizim tanıma: iki örnek arası parça taranır (StrokeDotTracker, CoreTests ölçer).
+        readonly StrokeDotTracker _stroke = new StrokeDotTracker();
+        readonly System.Collections.Generic.List<int> _strokeHits = new System.Collections.Generic.List<int>(6);
+        readonly float[] _dotXs = new float[Dovus.Core.Grammar.HexagonLayout.DotCount];
+        readonly float[] _dotYs = new float[Dovus.Core.Grammar.HexagonLayout.DotCount];
+        int _strokeFedFrame = -1;
+        int _strokeAccepted;
+        bool _strokeDenialShown;
+        // Geri bildirim: çizimle kurulan cümle kapanınca şerit parlar + rün adları yazılır.
+        bool _drawnSentence;
+        bool _inkFlashPending;
         bool _centerStrikeArmed;
 
         // Çizim parmağından bağımsız ikinci yuva: cümle sürerken panik dodge (§2).
@@ -102,6 +114,9 @@ namespace Dovus.Game
 
         /// <summary>Motor bir dokunuşu kabul etti (0 = merkez düz vuruş). Yalnız UI juice için.</summary>
         public event System.Action<int> DotAccepted;
+
+        /// <summary>Çizim geri bildirimi yazısı (metin, tanındı mı) — HexagonView altıgenin üstünde gösterir.</summary>
+        public event System.Action<string, bool> DrawCaption;
 
         /// <summary>16 Eylül: CameraOrbitInput'un "bu parmak zaten çiziyor/dodge'a ait" kontrolü için.</summary>
         public int? ClaimedFingerId => _fingerId;
@@ -287,9 +302,17 @@ namespace Dovus.Game
         /// §5: cümle sınırı görülür — mürekkep şeridi kopar. AddSegment henüz çizilmediyse
         /// bayrak bırakılır; <see cref="FlushInkBreak"/> kapanış segmentinden sonra Break eder.
         /// </summary>
-        void OnSentenceCompleted(CompletedSentence _)
+        void OnSentenceCompleted(CompletedSentence sentence)
         {
             _inkBreakPending = true;
+            // Denetim B ek: çizimle kurulan cümle tanındı → şerit parlar, rün adları yazılır.
+            bool drawn = _drawnSentence;
+            _drawnSentence = false;
+            if (!drawn || sentence == null || sentence.Phase == SentencePhase.Aborted
+                || sentence.Words == null || sentence.Words.Count == 0)
+                return;
+            _inkFlashPending = true;
+            DrawCaption?.Invoke(DrawFeedback.RuneChain(sentence.Words), true);
         }
 
         void FlushInkBreak()
@@ -297,7 +320,8 @@ namespace Dovus.Game
             if (!_inkBreakPending)
                 return;
 
-            _ink?.Break();
+            _ink?.Break(_inkFlashPending);
+            _inkFlashPending = false;
             _lastInkPx = null;
             _inkBreakPending = false;
         }
@@ -328,6 +352,7 @@ namespace Dovus.Game
 
             HandleKeyboardDodge();
             HandleMouse();
+            TickStrokeSettle();
             TickSwapHold();
             TickDwell();
         }
@@ -555,7 +580,7 @@ namespace Dovus.Game
             }
 
             _mode = FingerMode.Drawing;
-            TryRegisterDotAt(pos);
+            BeginStroke(pos);
         }
 
         void MovePointer(Vector2 pos)
@@ -575,29 +600,98 @@ namespace Dovus.Game
                 {
                     _mode = FingerMode.Drawing;
                     _lastInkPx = _pressOrigin;
-                    TryRegisterDotAt(pos);
+                    BeginStroke(_pressOrigin);
+                    FeedStroke(pos);
                 }
 
                 return;
             }
 
-            int? hit = HitDot(pos);
-            if (!hit.HasValue)
+            FeedStroke(pos);
+        }
+
+        /// <summary>Denetim B ek: çizim başı — nokta konumları tazelenir, ham iz açılır.</summary>
+        void BeginStroke(Vector2 pos)
+        {
+            _strokeAccepted = 0;
+            _strokeDenialShown = false;
+            int n = _dotXs.Length;
+            for (int dot = 1; dot <= n; dot++)
             {
-                // Noktadan çıkınca dwell kesilir; geri dönüş tekrar kayıt için serbest.
-                _activeDot = null;
+                Vector2 p = HexagonLayoutScreen.DotPx(dot, _tuning, Screen.width, Screen.height);
+                _dotXs[dot - 1] = p.x;
+                _dotYs[dot - 1] = p.y;
+            }
+            _ink?.RawBegin(pos);
+            _stroke.Begin(pos.x, pos.y,
+                HexagonLayoutScreen.DotHitRadiusPx(_tuning),
+                HexagonLayoutScreen.DpToPixels(12f),
+                HexagonLayoutScreen.DpToPixels(1.5f),
+                _dotXs, _dotYs, _strokeHits);
+            _strokeFedFrame = Time.frameCount;
+            ApplyStrokeHits(pos);
+        }
+
+        /// <summary>
+        /// Denetim B ek: önceki örnekten bu örneğe parça taranır; giriş sırasıyla gelen noktalar
+        /// kaydedilir (hızlı çizgi noktayı atlamaz, uzak sıçrama aradakini sıyırınca eklemez).
+        /// </summary>
+        void FeedStroke(Vector2 pos)
+        {
+            if (_mode != FingerMode.Drawing)
+                return;
+            _ink?.RawAppend(pos);
+            _stroke.Move(pos.x, pos.y, _dotXs, _dotYs, _strokeHits);
+            _strokeFedFrame = Time.frameCount;
+            ApplyStrokeHits(pos);
+        }
+
+        /// <summary>
+        /// Dokunuşta parmak durunca Move gelmez: bu karede örnek gelmediyse aynı yer sıfır adımla
+        /// beslenir (halkada durma kaydı). Örnek gelen karede çalışmaz — yoksa her örnek "durdu" sayılır.
+        /// </summary>
+        void TickStrokeSettle()
+        {
+            if (_mode != FingerMode.Drawing || _strokeFedFrame == Time.frameCount)
+                return;
+            _stroke.Move(_lastPos.x, _lastPos.y, _dotXs, _dotYs, _strokeHits);
+            ApplyStrokeHits(_lastPos);
+        }
+
+        void ApplyStrokeHits(Vector2 pos)
+        {
+            for (int i = 0; i < _strokeHits.Count && _mode == FingerMode.Drawing; i++)
+                TryRegisterDot(_strokeHits[i]);
+
+            // Dwell: yalnız parmak hâlâ o noktadaysa sürer; çıkınca kesilir, dönüş yeniden kayıt.
+            int? under = HitDot(pos);
+            if (!under.HasValue || under != _activeDot)
+            {
+                if (!under.HasValue)
+                    _activeDot = null;
                 _dwellWorldMs = 0;
                 _dwellReported = 0;
-                return;
             }
-
-            TryRegisterDotAt(pos);
         }
 
         void EndPointer(bool cancelled)
         {
             // O1: süre sınırı yok — uzun basış sessizce düşmez.
             double heldSec = (NowRealMs() - _pressRealMs) / 1000.0;
+            if (_mode == FingerMode.Drawing)
+            {
+                if (!cancelled)
+                {
+                    _stroke.End(_lastPos.x, _lastPos.y, _dotXs, _dotYs, _strokeHits);
+                    for (int i = 0; i < _strokeHits.Count; i++)
+                        TryRegisterDot(_strokeHits[i]);
+                }
+                bool failed = DrawFeedback.OnStrokeEnd(true, _strokeAccepted, _strokeDenialShown, cancelled)
+                    == DrawFeedback.StrokeOutcome.Unrecognized;
+                _ink?.RawEnd(failed);
+                if (failed)
+                    DrawCaption?.Invoke(DrawFeedback.Unrecognized, false);
+            }
             if (_mode == FingerMode.CenterPending)
             {
                 float moveDp = PixelsToDp(Vector2.Distance(_lastPos, _pressOrigin));
@@ -633,12 +727,13 @@ namespace Dovus.Game
             OrbCommandRequested?.Invoke();
         }
 
-        void TryRegisterDotAt(Vector2 pos)
+        /// <summary>
+        /// Tarayıcının (StrokeDotTracker) verdiği nokta. Tekrarı tarayıcı süzer; burada yalnız
+        /// motor kapıları. Her red bir yazı gösterir (kapalı rün dahil) — sessiz red yok.
+        /// </summary>
+        void TryRegisterDot(int dot)
         {
-            int? hit = HitDot(pos);
-            if (!hit.HasValue)
-                return;
-
+            int? hit = dot;
             if (_activeDot == hit.Value)
                 return;
 
@@ -649,15 +744,23 @@ namespace Dovus.Game
             {
                 _readout?.NoteDenied("çizilemez");
                 _syllable?.PlayDenied();
+                _strokeDenialShown = true;
                 return;
             }
 
             if (!_tuning.IsDotOpen(hit.Value))
             {
                 // Kapalı rün: motora/ses/mürekkep yok; aktif tut ki komşuya sızmasın.
+                // Denetim B ek: artık sessiz değil — çizgi başına bir kez "kapalı rün".
                 _activeDot = hit.Value;
                 _dwellWorldMs = 0;
                 _dwellReported = 0;
+                if (!_strokeDenialShown)
+                {
+                    _readout?.NoteDenied(DrawFeedback.ClosedRune);
+                    _syllable?.PlayDenied();
+                    _strokeDenialShown = true;
+                }
                 return;
             }
 
@@ -667,15 +770,18 @@ namespace Dovus.Game
                 _activeDot = hit.Value;
                 _dwellWorldMs = 0;
                 _dwellReported = 0;
+                _strokeDenialShown = true;
                 return;
             }
 
             if (!TryAllowProspectiveTarget(hit.Value))
             {
+                // Hedef kapısı (TryArmSkillTarget) kendi red yazısını gösterir.
                 _activeDot = hit.Value;
                 _dwellWorldMs = 0;
                 _dwellReported = 0;
                 _syllable?.PlayDenied();
+                _strokeDenialShown = true;
                 return;
             }
 
@@ -685,6 +791,8 @@ namespace Dovus.Game
             // SentenceCompleted OnDotTouched içinde ateşlenebilir; kapanış segmenti için
             // from'u önce sakla, Break'i segmentten sonra FlushInkBreak yapsın.
             Vector2? inkFrom = _lastInkPx;
+            _drawnSentence = true;
+            _strokeAccepted++;
             _engine.OnDotTouched(hit.Value, worldMs);
             DotAccepted?.Invoke(hit.Value);
 
@@ -953,6 +1061,8 @@ namespace Dovus.Game
             SkillCancelledByDodge?.Invoke();
             _dodge.Begin(worldMs);
             _debugHud?.NoteDodge(wasBuilding);
+            if (_mode == FingerMode.Drawing)
+                _ink?.RawEnd(false);
             _mode = FingerMode.None;
             _activeDot = null;
             _lastInkPx = null;

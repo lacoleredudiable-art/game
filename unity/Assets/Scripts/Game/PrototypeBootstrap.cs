@@ -310,6 +310,7 @@ namespace Dovus.Game
             input.Combat = combat;
             input.Bind(clock, ink, syllable, debug, skills, loadout);
             input.DotAccepted += view.NotifyPressed;
+            input.DrawCaption += view.ShowDrawCaption;
 
             // 16 Eylül: "kamera sabit" bug raporu — MoveInput/HexagonInput'un parmaklarına
             // dokunmadan üçüncü bir parmakla (veya editörde sağ-tık sürükleyerek) 360° orbit.
