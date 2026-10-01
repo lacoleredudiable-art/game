@@ -91,7 +91,7 @@ namespace Dovus.Game.EditorTools
                 if (mat.HasProperty("_EmissionColor"))
                 {
                     mat.EnableKeyword("_EMISSION");
-                    mat.SetColor("_EmissionColor", new Color(0.04f, 0.038f, 0.035f));
+                    mat.SetColor("_EmissionColor", new Color(0.055f, 0.052f, 0.048f));
                     mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
                 }
                 EditorUtility.SetDirty(mat);

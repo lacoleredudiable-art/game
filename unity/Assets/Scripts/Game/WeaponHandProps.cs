@@ -59,10 +59,23 @@ namespace Dovus.Game
 
         void ClearCurrent()
         {
-            if (_rightInstance != null) Destroy(_rightInstance);
-            if (_leftInstance != null) Destroy(_leftInstance);
-            _rightInstance = null;
-            _leftInstance = null;
+            if (_rightInstance != null)
+            {
+                if (Application.isPlaying)
+                    Destroy(_rightInstance);
+                else
+                    DestroyImmediate(_rightInstance);
+                _rightInstance = null;
+            }
+
+            if (_leftInstance != null)
+            {
+                if (Application.isPlaying)
+                    Destroy(_leftInstance);
+                else
+                    DestroyImmediate(_leftInstance);
+                _leftInstance = null;
+            }
         }
 
         GameObject Spawn(string key, WeaponVisualRegistry.PropEntry entry, Transform hand, bool isRight)
@@ -79,14 +92,16 @@ namespace Dovus.Game
             Vector3 localPos = Vector3.zero;
             Quaternion localRot = Quaternion.identity;
             Vector3 localScale = Vector3.one;
+            WeaponGripProfile grip = _animator.GetComponentInParent<WeaponGripProfile>();
             if (entry != null)
             {
                 localPos = isRight ? entry.RightLocalPosition : entry.LeftLocalPosition;
                 localRot = Quaternion.Euler(isRight ? entry.RightLocalEulerAngles : entry.LeftLocalEulerAngles);
                 localScale = isRight ? entry.RightLocalScale : entry.LeftLocalScale;
+                if (grip != null && WeaponGripProfile.IsMixamoRig(_animator) && prefab != null)
+                    localScale = Vector3.one;
             }
 
-            WeaponGripProfile grip = _animator.GetComponentInParent<WeaponGripProfile>();
             if (grip != null)
             {
                 if (isRight)
@@ -98,8 +113,118 @@ namespace Dovus.Game
             go.transform.localPosition = localPos;
             go.transform.localRotation = localRot;
             go.transform.localScale = localScale;
+
+            if (grip != null && WeaponGripProfile.IsMixamoRig(_animator))
+                FitMixamoPropWorldSize(go, key, isRight);
+
             StripForProp(go);
             return go;
+        }
+
+        /// <summary>Mixamo el kemiği ölçeği Synty'den farklı — dünya bounds hedefi registry ile aynı kalır.</summary>
+        static void FitMixamoPropWorldSize(GameObject go, string weaponKey, bool isRight)
+        {
+            if (!TryRendererBounds(go, out Bounds bounds))
+                return;
+            float current = Mathf.Max(bounds.size.x, bounds.size.y, bounds.size.z);
+            float target = TargetMaxExtentM(weaponKey, isRight);
+            if (current < 1e-4f || target <= 0f)
+                return;
+            float factor = target / current;
+            go.transform.localScale *= factor;
+        }
+
+        static float TargetMaxExtentM(string weaponKey, bool isRight)
+        {
+            if (isRight)
+            {
+                return weaponKey switch
+                {
+                    "kilic" => 0.92f,
+                    "kalkan" => 0.38f,
+                    "cekic" => 1.12f,
+                    "asa" => 1.65f,
+                    "tilsim" => 0.12f,
+                    "top" => 0.45f,
+                    _ => 0f,
+                };
+            }
+
+            return weaponKey switch
+            {
+                "kilic" => 0.62f,
+                "kalkan" => 0.92f,
+                "yay" => 1.05f,
+                "kitap" => 0.24f,
+                "kure" => 0.16f,
+                _ => 0f,
+            };
+        }
+
+        static bool TryRendererBounds(GameObject root, out Bounds bounds)
+        {
+            bounds = default;
+            Renderer[] rs = root.GetComponentsInChildren<Renderer>();
+            if (rs == null || rs.Length == 0)
+                return false;
+            bounds = rs[0].bounds;
+            for (int i = 1; i < rs.Length; i++)
+                bounds.Encapsulate(rs[i].bounds);
+            return bounds.size.sqrMagnitude > 1e-8f;
+        }
+
+        /// <summary>Play doğrulama: eldeki prop dünya ölçüsü / lossyScale (Paladin vs Synty kıyas).</summary>
+        public static void LogPropDiagnostics(Animator animator, string tag)
+        {
+            if (animator == null)
+                return;
+            LogHandProp(animator, HumanBodyBones.RightHand, "right", tag);
+            LogHandProp(animator, HumanBodyBones.LeftHand, "left", tag);
+        }
+
+        static void LogHandProp(Animator animator, HumanBodyBones bone, string side, string tag)
+        {
+            Transform hand = animator.GetBoneTransform(bone);
+            if (hand == null)
+            {
+                DebugConfig.DevLog($"[PropDiag] {tag} {side} hand=null");
+                return;
+            }
+
+            if (hand.childCount == 0)
+            {
+                DebugConfig.DevLog($"[PropDiag] {tag} {side} (empty) handLossy={hand.lossyScale}");
+                return;
+            }
+
+            for (int i = 0; i < hand.childCount; i++)
+            {
+                Transform child = hand.GetChild(i);
+                if (!IsWeaponPropRoot(child.name))
+                    continue;
+                if (!TryRendererBounds(child.gameObject, out Bounds b))
+                {
+                    DebugConfig.DevLog($"[PropDiag] {tag} {side} {child.name} no-renderer handLossy={hand.lossyScale}");
+                    continue;
+                }
+
+                DebugConfig.DevLog(
+                    $"[PropDiag] {tag} {side} {child.name} bounds={b.size} lossyScale={child.lossyScale} "
+                    + $"localPos={child.localPosition} localEuler={child.localEulerAngles}");
+            }
+        }
+
+        static bool IsWeaponPropRoot(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return false;
+            if (name.IndexOf("mixamorig", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                return false;
+            if (name.StartsWith("Finger", System.StringComparison.OrdinalIgnoreCase)
+                || name.StartsWith("IndexFinger", System.StringComparison.OrdinalIgnoreCase)
+                || name.StartsWith("Thumb", System.StringComparison.OrdinalIgnoreCase))
+                return false;
+            return true;
         }
 
         static void StripForProp(GameObject go)
