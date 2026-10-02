@@ -50,7 +50,11 @@ namespace Dovus.Game
         readonly float[] _dotYs = new float[Dovus.Core.Grammar.HexagonLayout.DotCount];
         int _strokeFedFrame = -1;
         int _strokeAccepted;
-        bool _strokeDenialShown;
+        DrawFeedback.DenialKind _strokeDenial;
+        float _strokeLengthPx;
+        Vector2 _strokePrevPx;
+        readonly System.Collections.Generic.List<Vector2> _strokeAcceptedPx =
+            new System.Collections.Generic.List<Vector2>(6);
         // Geri bildirim: çizimle kurulan cümle kapanınca şerit parlar + rün adları yazılır.
         bool _drawnSentence;
         bool _inkFlashPending;
@@ -614,7 +618,10 @@ namespace Dovus.Game
         void BeginStroke(Vector2 pos)
         {
             _strokeAccepted = 0;
-            _strokeDenialShown = false;
+            _strokeDenial = DrawFeedback.DenialKind.None;
+            _strokeLengthPx = 0f;
+            _strokePrevPx = pos;
+            _strokeAcceptedPx.Clear();
             int n = _dotXs.Length;
             for (int dot = 1; dot <= n; dot++)
             {
@@ -640,6 +647,8 @@ namespace Dovus.Game
         {
             if (_mode != FingerMode.Drawing)
                 return;
+            _strokeLengthPx += Vector2.Distance(_strokePrevPx, pos);
+            _strokePrevPx = pos;
             _ink?.RawAppend(pos);
             _stroke.Move(pos.x, pos.y, _dotXs, _dotYs, _strokeHits);
             _strokeFedFrame = Time.frameCount;
@@ -686,11 +695,31 @@ namespace Dovus.Game
                     for (int i = 0; i < _strokeHits.Count; i++)
                         TryRegisterDot(_strokeHits[i]);
                 }
-                bool failed = DrawFeedback.OnStrokeEnd(true, _strokeAccepted, _strokeDenialShown, cancelled)
-                    == DrawFeedback.StrokeOutcome.Unrecognized;
-                _ink?.RawEnd(failed);
-                if (failed)
-                    DrawCaption?.Invoke(DrawFeedback.Unrecognized, false);
+                float strokeLengthDp = PixelsToDp(_strokeLengthPx);
+                DrawFeedback.StrokeOutcome outcome = DrawFeedback.OnStrokeEnd(
+                    true, _strokeAccepted, _strokeDenial, cancelled, strokeLengthDp);
+                if (outcome == DrawFeedback.StrokeOutcome.None
+                    && _strokeAccepted > 0
+                    && _strokeAcceptedPx.Count >= 1)
+                    _ink?.RawEnd(false, _strokeAcceptedPx);
+                else if (outcome == DrawFeedback.StrokeOutcome.TooShort
+                    || outcome == DrawFeedback.StrokeOutcome.Unrecognized
+                    || outcome == DrawFeedback.StrokeOutcome.Cooldown)
+                    _ink?.RawEnd(true);
+                else
+                    _ink?.RawEnd(false);
+
+                string caption = DrawFeedback.CaptionFor(outcome);
+                if (!string.IsNullOrEmpty(caption))
+                    DrawCaption?.Invoke(caption, false);
+
+                if (!cancelled
+                    && _strokeAccepted >= 1
+                    && outcome == DrawFeedback.StrokeOutcome.None)
+                {
+                    long ms = _tuning != null ? _tuning.DotVibrationMs : 30L;
+                    FeelHaptics.Pulse((int)ms);
+                }
             }
             if (_mode == FingerMode.CenterPending)
             {
@@ -744,7 +773,7 @@ namespace Dovus.Game
             {
                 _readout?.NoteDenied("çizilemez");
                 _syllable?.PlayDenied();
-                _strokeDenialShown = true;
+                _strokeDenial = DrawFeedback.DenialKind.Other;
                 return;
             }
 
@@ -755,11 +784,11 @@ namespace Dovus.Game
                 _activeDot = hit.Value;
                 _dwellWorldMs = 0;
                 _dwellReported = 0;
-                if (!_strokeDenialShown)
+                if (_strokeDenial == DrawFeedback.DenialKind.None)
                 {
                     _readout?.NoteDenied(DrawFeedback.ClosedRune);
                     _syllable?.PlayDenied();
-                    _strokeDenialShown = true;
+                    _strokeDenial = DrawFeedback.DenialKind.Other;
                 }
                 return;
             }
@@ -770,7 +799,10 @@ namespace Dovus.Game
                 _activeDot = hit.Value;
                 _dwellWorldMs = 0;
                 _dwellReported = 0;
-                _strokeDenialShown = true;
+                if (WouldStartSentence() && !CanCooldownVerbDot(hit.Value))
+                    _strokeDenial = DrawFeedback.DenialKind.Cooldown;
+                else
+                    _strokeDenial = DrawFeedback.DenialKind.Other;
                 return;
             }
 
@@ -781,7 +813,7 @@ namespace Dovus.Game
                 _dwellWorldMs = 0;
                 _dwellReported = 0;
                 _syllable?.PlayDenied();
-                _strokeDenialShown = true;
+                _strokeDenial = DrawFeedback.DenialKind.Other;
                 return;
             }
 
@@ -793,6 +825,7 @@ namespace Dovus.Game
             Vector2? inkFrom = _lastInkPx;
             _drawnSentence = true;
             _strokeAccepted++;
+            _strokeAcceptedPx.Add(dotPx);
             _engine.OnDotTouched(hit.Value, worldMs);
             DotAccepted?.Invoke(hit.Value);
 

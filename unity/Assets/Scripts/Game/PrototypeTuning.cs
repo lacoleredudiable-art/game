@@ -79,6 +79,10 @@ namespace Dovus.Game
         public bool MirrorForLeftHand = false;
         public float InkLingerSec = 0.40f;
         public float InkWidthDp = 3.5f;
+        /// <summary>Ham çizim izi genişlik çarpanı (InkWidthDp tabanı). spec'te yok — varsayılan</summary>
+        public float InkRawWidthScale = 0.9f;
+        /// <summary>Ham iz baş ucunda cyan→beyaz parlaklık (1 = tam). spec'te yok — varsayılan</summary>
+        public float InkRawGlow = 1f;
 
         // §2: dodge hex dışı (sağ-alt); offset ek kaydırma (varsayılan 0).
         [Header("Dodge düğmesi (§2, T6.2)")]
@@ -461,6 +465,8 @@ namespace Dovus.Game
             if (SkillPreviewHoldSec <= 0.01f) SkillPreviewHoldSec = 0.9f;
             if (DotHitRadiusDp <= 0.01f) DotHitRadiusDp = 34f;
             if (CenterHitRadiusDp <= 0.01f) CenterHitRadiusDp = 38f;
+            if (InkRawWidthScale <= 0f) InkRawWidthScale = 0.9f;
+            if (InkRawGlow <= 0f) InkRawGlow = 1f;
             if (DodgeButtonRadiusDp <= 0.01f) DodgeButtonRadiusDp = 40f;
             if (WeaponSwapButtonRadiusDp <= 0.01f) WeaponSwapButtonRadiusDp = 36f;
             if (DodgeClearanceDp <= 0.01f) DodgeClearanceDp = 40f;

@@ -54,7 +54,7 @@ namespace Dovus.Game
         }
 
         /// <summary>dotIndex 1..6; sentenceDotsAfter = cümledeki nokta sayısı (perde yükselir).</summary>
-        public void PlayForDot(int dot, int sentenceDotsAfter)
+        public void PlayForDot(int dot, int sentenceDotsAfter, bool playHaptic = false)
         {
             if (dot < 1 || dot > HexagonLayout.DotCount || _clips[dot] == null)
                 return;
@@ -63,6 +63,8 @@ namespace Dovus.Game
             _source.pitch = Mathf.Clamp(pitch, 0.85f, 1.55f);
             _source.PlayOneShot(_clips[dot], 0.7f);
 
+            if (!playHaptic)
+                return;
             long ms = _tuning != null ? _tuning.DotVibrationMs : 30L;
             FeelHaptics.Pulse((int)ms);
         }
