@@ -47,6 +47,9 @@ namespace Dovus.Game
         /// <summary>Sis perdesi: bu noktadaki dost mermiyle vurulamaz (MD.Projectiles doldurur).</summary>
         public Func<Vector3, bool> InShroud { get; set; }
 
+        /// <summary>Boss volley mermisi oyuncuya isabet ettikten sonra (hasar uygulandıktan sonra).</summary>
+        public Action OnPlayerProjectileHit { get; set; }
+
         public void Bind(
             GameClock clock,
             HostileTargets targets,
@@ -135,6 +138,7 @@ namespace Dovus.Game
                             _playerStatus.ApplyDamage(p.Damage, dodgeable: false);
                         else
                             _playerVitals?.ApplyDamage(Mathf.CeilToInt(p.Damage));
+                        OnPlayerProjectileHit?.Invoke();
                         break;
                     }
                     Sim.Delete(p.Id, ProjectileEventKind.HitFriendly);
