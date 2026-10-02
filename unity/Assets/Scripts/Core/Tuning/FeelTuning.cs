@@ -51,8 +51,10 @@ namespace Dovus.Core.Tuning
         public int PlayerHitHapticMs = 25;
         public int PerfectDodgeAfterimageCount = 5;
         public int PerfectDodgeAfterimageLifeMs = 200;
+        public bool HitImpactEnabled = true;
         public int HitImpactMaxConcurrent = 8;
         public float HitImpactLifeSec = 0.35f;
+        public bool FeelHapticsEnabled = true;
         public float BossFlinchOffsetM = 0.06f;
         public int BossFlinchMs = 80;
 
@@ -119,8 +121,10 @@ namespace Dovus.Core.Tuning
             PlayerHitHapticMs = other.PlayerHitHapticMs;
             PerfectDodgeAfterimageCount = other.PerfectDodgeAfterimageCount;
             PerfectDodgeAfterimageLifeMs = other.PerfectDodgeAfterimageLifeMs;
+            HitImpactEnabled = other.HitImpactEnabled;
             HitImpactMaxConcurrent = other.HitImpactMaxConcurrent;
             HitImpactLifeSec = other.HitImpactLifeSec;
+            FeelHapticsEnabled = other.FeelHapticsEnabled;
             BossFlinchOffsetM = other.BossFlinchOffsetM;
             BossFlinchMs = other.BossFlinchMs;
 

@@ -48,6 +48,12 @@ namespace Dovus.Game
         /// <summary>Kamera soft-lock'u uygulandıktan sonraki yaw; kamera-göreli hareket bunu kullanır.</summary>
         public float MovementYawDeg => _resolvedYawDeg;
 
+        /// <summary>Yumuşatılmış geri çekilme mesafesi (doğrulama / tuning paneli).</summary>
+        public float ResolvedDistanceM => _resolvedDistanceM;
+
+        /// <summary>0–1 windup geri çekilme karışımı.</summary>
+        public float WindupPullback01 => _windupPullback;
+
         public Transform BossTarget
         {
             get => _bossTarget;

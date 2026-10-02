@@ -85,6 +85,8 @@ namespace Dovus.Game
             combat.SkillMotion.ArenaHalfSizeM = walkHalf;
             // Deneme sahnesi portu: lav çatlakları CombatAmbience'te; eski turuncu LavaDecor diskleri
             // tüm arena diskini sıcak boyuyordu (look v2 — yalnızca çatlak sıcak kalmalı).
+            if (Resources.Load<Material>("Presentation/ParticlesUnlitAnchor") == null)
+                Debug.LogWarning("[Feel] Presentation/ParticlesUnlitAnchor yok — parçacık shader strip riski.");
             if (Resources.Load<CombatAmbienceAssets>(CombatAmbienceAssets.ResourcePath) == null)
                 LavaDecor.Build(arena.transform, walkHalf);
             CombatAmbienceEnvironment.Build(arena, walkHalf, _tuning);
@@ -445,6 +447,7 @@ namespace Dovus.Game
             visualFreeze.Bind(follow, playerAnim);
             feel.BindPresentation(visualFreeze, afterimage, player.transform);
             HitImpactFx.Configure(combat.Feel);
+            FeelHaptics.Configure(combat.Feel);
             var bossFlinch = boss.gameObject.GetComponent<BossHitFlinch>() ?? boss.gameObject.AddComponent<BossHitFlinch>();
             bossFlinch.Bind(combat.Feel, bossAnim);
             player.GetComponent<PlayerDodgeRig>()?.Bind(clock, input, follow, readout, feel);
@@ -487,6 +490,8 @@ namespace Dovus.Game
 
             feelGo.AddComponent<SfxDirector>();
             feelGo.AddComponent<PresentationFx>().Bind(bossDir, dodgeMotion, feel, input, follow, combat);
+            var feelVerify = feelGo.AddComponent<FeelPlayVerify>();
+            feelVerify.Bind(follow, player.transform);
             var playerSteps = player.gameObject.AddComponent<FootstepEmitter>();
             playerSteps.StrideM = _tuning.FootstepStrideM;
             var bossSteps = boss.gameObject.AddComponent<FootstepEmitter>();

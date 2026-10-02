@@ -24,6 +24,17 @@ namespace Dovus.Game
                 s_live.Add(this);
         }
 
+        void Start()
+        {
+            // Görsel child varsa yeşil kapsül placeholder'ı asla gösterme (feel-pack doğrulama).
+            if (transform.Find("Visual") != null)
+            {
+                var rend = GetComponent<Renderer>();
+                if (rend != null)
+                    rend.enabled = false;
+            }
+        }
+
         void OnDisable() => s_live.Remove(this);
 
         int _hp;

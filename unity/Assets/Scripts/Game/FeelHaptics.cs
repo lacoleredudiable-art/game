@@ -1,3 +1,4 @@
+using Dovus.Core.Tuning;
 using UnityEngine;
 
 namespace Dovus.Game
@@ -5,9 +6,15 @@ namespace Dovus.Game
     /// <summary>Kısa dokunsal geri bildirim — editör/başsız no-op, Android'de ms süreli titreşim.</summary>
     public static class FeelHaptics
     {
+        static FeelTuning _feel;
+
+        public static void Configure(FeelTuning feel) => _feel = feel;
+
         public static void Pulse(int durationMs)
         {
             if (durationMs <= 0)
+                return;
+            if (_feel != null && !_feel.FeelHapticsEnabled)
                 return;
             TryShortVibrate(durationMs);
         }

@@ -16,8 +16,6 @@ namespace Dovus.Game
         static readonly Queue<ParticleSystem> MagicPool = new();
         static readonly Queue<ParticleSystem> SplashPool = new();
         static readonly List<Active> Live = new();
-        static Material _additiveMat;
-        static Material _alphaMat;
         static int _liveCount;
 
         struct Active
@@ -36,7 +34,7 @@ namespace Dovus.Game
 
         public static void Play(Vector3 worldPoint, string archetype, Color elementTint, bool isCrit, Transform bossRoot)
         {
-            if (_feel == null || _feel.HitImpactMaxConcurrent <= 0)
+            if (_feel == null || !_feel.HitImpactEnabled || _feel.HitImpactMaxConcurrent <= 0)
                 return;
 
             TrimLive();
@@ -114,10 +112,10 @@ namespace Dovus.Game
         static void EmitSplash(Vector3 pos, float life)
         {
             ParticleSystem ps = Rent(PoolSplash, SplashPool, false);
-            ConfigureBurst(ps, pos, Quaternion.Euler(-90f, Random.Range(0f, 360f), 0f), 6, life, 0.08f, 0.6f, 0.22f);
-            Color dark = new(0.45f, 0.04f, 0.06f, 0.75f);
+            ConfigureBurst(ps, pos, Quaternion.Euler(-90f, Random.Range(0f, 360f), 0f), 4, life * 0.9f, 0.05f, 0.35f, 0.14f);
+            Color dark = new(0.32f, 0.03f, 0.05f, 0.55f);
             FadeColor(ps, dark, new Color(dark.r, dark.g, dark.b, 0f));
-            Track(ps, life, PoolSplash);
+            Track(ps, life * 0.9f, PoolSplash);
         }
 
         static void Track(ParticleSystem ps, float life, int poolKind)
@@ -187,7 +185,7 @@ namespace Dovus.Game
             em.rateOverTime = 0f;
             var r = go.GetComponent<ParticleSystemRenderer>();
             r.renderMode = ParticleSystemRenderMode.Billboard;
-            r.sharedMaterial = additive ? AdditiveMat() : AlphaMat();
+            r.sharedMaterial = additive ? PresentationParticleMaterials.AdditiveTextured : PresentationParticleMaterials.AlphaTextured;
             r.shadowCastingMode = ShadowCastingMode.Off;
             r.receiveShadows = false;
             return ps;
@@ -221,37 +219,5 @@ namespace Dovus.Game
             col.color = g;
         }
 
-        static Material AdditiveMat()
-        {
-            if (_additiveMat != null)
-                return _additiveMat;
-            _additiveMat = MakeParticleMat(true);
-            return _additiveMat;
-        }
-
-        static Material AlphaMat()
-        {
-            if (_alphaMat != null)
-                return _alphaMat;
-            _alphaMat = MakeParticleMat(false);
-            return _alphaMat;
-        }
-
-        static Material MakeParticleMat(bool additive)
-        {
-            Shader shader = Shader.Find("Universal Render Pipeline/Particles/Unlit") ?? Shader.Find("Sprites/Default");
-            var m = new Material(shader) { name = "HitImpactMat" };
-            if (m.HasProperty("_Surface"))
-            {
-                m.SetFloat("_Surface", 1f);
-                m.SetFloat("_Blend", additive ? 2f : 0f);
-                m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-                m.SetInt("_SrcBlend", (int)BlendMode.SrcAlpha);
-                m.SetInt("_DstBlend", (int)(additive ? BlendMode.One : BlendMode.OneMinusSrcAlpha));
-                m.SetInt("_ZWrite", 0);
-            }
-            m.renderQueue = (int)RenderQueue.Transparent;
-            return m;
-        }
     }
 }
