@@ -1810,6 +1810,74 @@ namespace Dovus.Game.EditorTools
             File.WriteAllBytes(outputPath, tex.EncodeToPNG());
             Object.DestroyImmediate(tex);
         }
+
+        /// <summary>cw-3: gerçek oyun kamerası + açık alan yerleşimi (Editor yakalama).</summary>
+        public const string CamWeaponOutDir = @"C:\Users\lacol\_cleanup\camweap";
+
+        public static void CamWeaponRender(string fileName)
+        {
+            Directory.CreateDirectory(CamWeaponOutDir);
+            LookPresets.Apply('B');
+            RenderToFile(Camera.main, Path.Combine(CamWeaponOutDir, fileName));
+        }
+
+        public static void CamWeaponSnapOpen() => SnapOpenFightPlacement();
+
+        public static void CamWeaponPrepareSolo()
+        {
+            Directory.CreateDirectory(CamWeaponOutDir);
+            LookPresets.Apply('B');
+            HideTransientOnly(true);
+            SetBlockersHidden(true);
+            PauseBossAi();
+            ClearCombatParticlesOnly();
+        }
+
+        public static void CamWeaponRestoreFight()
+        {
+            HideTransientOnly(false);
+            SetBlockersHidden(false);
+            ResumeBossAi();
+            Transform player = FindPlayerRoot();
+            if (player != null)
+                player.gameObject.SetActive(true);
+            var ally = Object.FindAnyObjectByType<AllyDummy>(FindObjectsInactive.Include);
+            if (ally != null)
+                ally.gameObject.SetActive(true);
+        }
+
+        public static void CamWeaponCaptureIdleFront34(Transform root, string fileName, out float frontDot, out float screenFill)
+        {
+            frontDot = 0f;
+            screenFill = 0f;
+            if (root == null)
+                return;
+            string path = Path.Combine(CamWeaponOutDir, fileName);
+            Vector3 face = FlatForward(root);
+            TryCharacterBounds(root, out Bounds bounds);
+            float h = Mathf.Max(0.5f, bounds.size.y);
+            float fov = 38f;
+            float margin = 1.06f;
+            float dist = (h / TargetFill) / (2f * Mathf.Tan(fov * 0.5f * Mathf.Deg2Rad)) * margin;
+            Vector3 camDir = Quaternion.AngleAxis(37f, Vector3.up) * (-face);
+            frontDot = Vector3.Dot(face, camDir.normalized);
+            Vector3 focus = bounds.center;
+            Vector3 camPos = focus - camDir * dist;
+            camPos.y = focus.y;
+            var camGo = new GameObject("Cw3WeaponCam");
+            var cam = camGo.AddComponent<Camera>();
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = Camera.main != null ? Camera.main.backgroundColor : new Color(0.56f, 0.6f, 0.66f);
+            cam.fieldOfView = fov;
+            cam.nearClipPlane = 0.1f;
+            cam.farClipPlane = 80f;
+            cam.transform.SetPositionAndRotation(camPos, Quaternion.LookRotation(focus - camPos, Vector3.up));
+            camGo.AddComponent<UniversalAdditionalCameraData>().renderPostProcessing = true;
+            LookPresets.ApplyCameraOverrides(cam, LookPresets.ActiveRequiresDepthTexture);
+            screenFill = ComputeScreenHeightFill(bounds, cam);
+            RenderToFile(cam, path);
+            Object.DestroyImmediate(camGo);
+        }
     }
 }
 #endif
