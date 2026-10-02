@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System.IO;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using Dovus.Core.Combat;
@@ -13,14 +14,22 @@ namespace Dovus.Game.EditorTools
     /// <summary>feel-pack (3/3) yakalama: lava görünür, gerçek vuruş karesi, %60 kadraj.</summary>
     public static class FeelCapture
     {
-        public const string OutDir = @"C:\Users\lacol\_cleanup\feel";
+        public const string OutDir = @"C:\Users\lacol\_cleanup\feel\v2";
         const int W = 1600;
         const int H = 900;
         const float TargetFill = 0.60f;
 
         static Renderer[] _hiddenTransient;
+        static BossDirector _pausedBoss;
         static float _lastStrikeT;
         static float _lastStrikeMetric;
+        public static float LoggedDefaultCameraDistM;
+        public static float LoggedLockOnCameraDistM;
+        public static float LoggedWindupCameraDistM;
+        public static float LastIdleScreenFillPct;
+        public static float LastStrikeScreenFillPct;
+        public static float LastSwordAngleFromVerticalDeg;
+        public static float LastStrikeNormalizedT => _lastStrikeT;
 
         public static void PrepareSession()
         {
@@ -69,58 +78,140 @@ namespace Dovus.Game.EditorTools
             }
         }
 
-        public static void CaptureGameplayBoss()
+        public static void EnsureFightReady()
+        {
+            Directory.CreateDirectory(OutDir);
+            LookPresets.Apply('B');
+            AnimPreview.EnterFight();
+            AnimPreview.Equip("kilic");
+            HideTransientOnly(true);
+            SetBlockersHidden(false);
+            ResumeBossAi();
+        }
+
+        public static void LogDefaultCameraDistance()
+        {
+            LoggedDefaultCameraDistM = SampleCameraToPlayerDist();
+            Debug.Log($"[FeelCapture] camera distance default={LoggedDefaultCameraDistM:F2}m");
+        }
+
+        public static void CaptureGameplayDefault()
         {
             Directory.CreateDirectory(OutDir);
             LookPresets.Apply('B');
             AnimPreview.Equip("kilic");
-            Thread.Sleep(200);
-            RenderToFile(Camera.main, Path.Combine(OutDir, "gameplay-boss.png"));
+            SetBlockersHidden(false);
+            ResumeBossAi();
+            Thread.Sleep(250);
+            LogDefaultCameraDistance();
+            RenderToFile(Camera.main, Path.Combine(OutDir, "gameplay-default.png"));
         }
 
         public static void CaptureLockOn()
         {
-            PrepareSession();
-            Transform player = FindPlayerRoot();
-            var boss = Object.FindAnyObjectByType<BossDirector>();
-            if (player == null || boss == null)
-                return;
+            Directory.CreateDirectory(OutDir);
+            LookPresets.Apply('B');
+            HideTransientOnly(true);
             SetBlockersHidden(false);
-            Thread.Sleep(300);
+            ResumeBossAi();
+            SnapPlayerForLockOnFraming();
+            Thread.Sleep(350);
+            LoggedLockOnCameraDistM = SampleCameraToPlayerDist();
+            Debug.Log($"[FeelCapture] camera distance lock-on={LoggedLockOnCameraDistM:F2}m (default was {LoggedDefaultCameraDistM:F2}m)");
             RenderToFile(Camera.main, Path.Combine(OutDir, "lockon.png"));
         }
 
-        public static void CaptureWindupPullback()
+        static bool _windupWatchActive;
+
+        /// <summary>Play modunda gerçek karelerle ~%50 windup yakalayıcı (RunCommand sonrası devam eder).</summary>
+        public static void ScheduleWindupCapture(int maxFrames = 7200)
+        {
+            if (_windupWatchActive)
+                return;
+            _windupWatchActive = true;
+            int frames = 0;
+            void Tick()
+            {
+                frames++;
+                ResumeBossAi();
+                if (TryCaptureWindupPullback())
+                {
+                    EditorApplication.update -= Tick;
+                    _windupWatchActive = false;
+                    return;
+                }
+
+                if (frames >= maxFrames)
+                {
+                    Debug.LogWarning("[FeelCapture] windup schedule timed out");
+                    EditorApplication.update -= Tick;
+                    _windupWatchActive = false;
+                }
+            }
+
+            EditorApplication.update += Tick;
+        }
+
+        /// <summary>Boss AI açıkken ~%50 windup'ta yakalar; hazır değilse false.</summary>
+        public static bool TryCaptureWindupPullback()
         {
             Directory.CreateDirectory(OutDir);
             LookPresets.Apply('B');
             SetBlockersHidden(false);
-            var follow = Object.FindAnyObjectByType<FollowCamera>();
+            ResumeBossAi();
             var boss = Object.FindAnyObjectByType<BossDirector>();
-            float normalDist = follow != null && Camera.main != null
-                ? Vector3.Distance(Camera.main.transform.position, FindPlayerRoot().position)
-                : 0f;
-            Debug.Log($"[FeelCapture] windup camera distance normal={normalDist:F2}m");
-            if (boss != null)
+            if (boss == null || !boss.IsWindingUp)
+                return false;
+            float p = boss.WindupProgress01;
+            if (p < 0.42f || p > 0.58f)
             {
-                for (int i = 0; i < 240 && boss.WindupProgress01 < 0.15f; i++)
-                    Thread.Sleep(50);
+                Debug.Log($"[FeelCapture] windup wait progress={p:F2}");
+                return false;
             }
 
-            float windupDist = follow != null && Camera.main != null
-                ? Vector3.Distance(Camera.main.transform.position, FindPlayerRoot().position)
-                : 0f;
-            Debug.Log($"[FeelCapture] windup camera distance during={windupDist:F2}m");
+            LoggedWindupCameraDistM = SampleCameraToPlayerDist();
+            Debug.Log(
+                $"[FeelCapture] camera distance windup={LoggedWindupCameraDistM:F2}m (default={LoggedDefaultCameraDistM:F2}m lock-on={LoggedLockOnCameraDistM:F2}m) progress={p:F2}");
             RenderToFile(Camera.main, Path.Combine(OutDir, "windup-pullback.png"));
+            return true;
+        }
+
+        public static void PrepareImpactShot()
+        {
+            Directory.CreateDirectory(OutDir);
+            LookPresets.Apply('B');
+            HideTransientOnly(true);
+            SetBlockersHidden(false);
+            PauseBossAi();
+            ClearCombatParticlesOnly();
+            var feel = Object.FindAnyObjectByType<CombatFeel>();
+            feel?.ClearThreat();
+            AnimPreview.Equip("kilic");
         }
 
         public static void CaptureImpactSparks()
         {
-            PrepareSession();
-            SetBlockersHidden(false);
             AnimPreview.Strike();
-            Thread.Sleep(350);
+            Thread.Sleep(120);
             RenderToFile(Camera.main, Path.Combine(OutDir, "impact-sparks.png"));
+            ResumeBossAi();
+        }
+
+        public static string HashAllCapturePngs()
+        {
+            var sb = new StringBuilder();
+            foreach (string name in new[]
+                     {
+                         "gameplay-default.png", "lockon.png", "windup-pullback.png", "impact-sparks.png",
+                         "damage-vignette.png", "paladin-idle.png", "paladin-strike.png"
+                     })
+            {
+                string path = Path.Combine(OutDir, name);
+                sb.Append(name).Append('=').Append(File.Exists(path) ? Sha256File(path) : "missing").Append(' ');
+            }
+
+            Debug.Log("[FeelCapture] sha256 " + sb);
+            return sb.ToString().TrimEnd();
         }
 
         public static void CaptureDamageVignette()
@@ -136,7 +227,7 @@ namespace Dovus.Game.EditorTools
 
         public static void CapturePaladinStrike()
         {
-            PrepareSession();
+            PrepareSoloShot();
             Transform root = FindPlayerRoot();
             Animator anim = root != null ? root.GetComponentInChildren<Animator>() : null;
             float t = SampleStrikeTime(anim, out float metric);
@@ -146,12 +237,12 @@ namespace Dovus.Game.EditorTools
             if (anim != null)
                 ApplyStrikeSample(anim, t);
             CaptureSolo(root, true, "paladin-strike.png", strikePose: true);
-            LogPixelHeight(Path.Combine(OutDir, "paladin-strike.png"), "paladin-strike");
+            LastStrikeScreenFillPct = LogPixelHeight(Path.Combine(OutDir, "paladin-strike.png"), "paladin-strike");
         }
 
         public static void CapturePaladinIdle()
         {
-            PrepareSession();
+            PrepareSoloShot();
             Transform root = FindPlayerRoot();
             Animator anim = root != null ? root.GetComponentInChildren<Animator>() : null;
             if (anim != null)
@@ -159,10 +250,12 @@ namespace Dovus.Game.EditorTools
                 anim.Play("Locomotion", 0, 0f);
                 anim.Update(0f);
                 ResnapProps();
+                WeaponHandProps.LogMixamoSwordAngle(anim, "feel-idle");
+                LastSwordAngleFromVerticalDeg = ReadLastSwordAngleFromLog(anim);
             }
 
             CaptureSolo(root, true, "paladin-idle.png", strikePose: false);
-            LogPixelHeight(Path.Combine(OutDir, "paladin-idle.png"), "paladin-idle");
+            LastIdleScreenFillPct = LogPixelHeight(Path.Combine(OutDir, "paladin-idle.png"), "paladin-idle");
         }
 
         public static void CaptureSyntyAlly()
@@ -288,8 +381,41 @@ namespace Dovus.Game.EditorTools
             var urp = camGo.AddComponent<UniversalAdditionalCameraData>();
             urp.renderPostProcessing = true;
             LookPresets.ApplyCameraOverrides(cam, LookPresets.ActiveRequiresDepthTexture);
+            float screenFill = ComputeScreenHeightFill(bounds, cam);
+            Debug.Log($"[FeelCapture] screenFill {fileName}={screenFill * 100f:F1}%");
+            if (!strikePose && fileName.Contains("idle"))
+                LastIdleScreenFillPct = screenFill * 100f;
+            if (strikePose)
+                LastStrikeScreenFillPct = screenFill * 100f;
             RenderToFile(cam, path);
             Object.DestroyImmediate(camGo);
+        }
+
+        static float ComputeScreenHeightFill(Bounds bounds, Camera cam)
+        {
+            Vector3 c = bounds.center;
+            Vector3 e = bounds.extents;
+            Vector3[] corners =
+            {
+                c + new Vector3(e.x, e.y, e.z), c + new Vector3(e.x, e.y, -e.z),
+                c + new Vector3(e.x, -e.y, e.z), c + new Vector3(e.x, -e.y, -e.z),
+                c + new Vector3(-e.x, e.y, e.z), c + new Vector3(-e.x, e.y, -e.z),
+                c + new Vector3(-e.x, -e.y, e.z), c + new Vector3(-e.x, -e.y, -e.z)
+            };
+            float minY = 1f;
+            float maxY = 0f;
+            bool any = false;
+            foreach (Vector3 world in corners)
+            {
+                Vector3 vp = cam.WorldToViewportPoint(world);
+                if (vp.z <= 0f)
+                    continue;
+                any = true;
+                minY = Mathf.Min(minY, vp.y);
+                maxY = Mathf.Max(maxY, vp.y);
+            }
+
+            return any ? Mathf.Clamp01(maxY - minY) : 0f;
         }
 
         static void HideTransientOnly(bool hide)
@@ -329,7 +455,8 @@ namespace Dovus.Game.EditorTools
 
         static void SetBlockersHidden(bool hide)
         {
-            foreach (AllyDummy ally in AllyDummy.Live)
+            var allies = new System.Collections.Generic.List<AllyDummy>(AllyDummy.Live);
+            foreach (AllyDummy ally in allies)
             {
                 if (ally != null)
                     ally.gameObject.SetActive(!hide);
@@ -338,6 +465,107 @@ namespace Dovus.Game.EditorTools
             var boss = Object.FindAnyObjectByType<BossDirector>();
             if (boss != null)
                 boss.gameObject.SetActive(!hide);
+        }
+
+        static void PrepareSoloShot()
+        {
+            Directory.CreateDirectory(OutDir);
+            LookPresets.Apply('B');
+            HideTransientOnly(true);
+            SetBlockersHidden(true);
+            PauseBossAi();
+            ClearCombatParticlesOnly();
+            AnimPreview.Equip("kilic");
+            Thread.Sleep(200);
+        }
+
+        static void PauseBossAi()
+        {
+            if (_pausedBoss == null)
+                _pausedBoss = Object.FindAnyObjectByType<BossDirector>();
+            if (_pausedBoss != null)
+                _pausedBoss.enabled = false;
+        }
+
+        static void ResumeBossAi()
+        {
+            if (_pausedBoss != null)
+            {
+                _pausedBoss.enabled = true;
+                _pausedBoss = null;
+            }
+        }
+
+        static void ClearCombatParticlesOnly()
+        {
+            foreach (ParticleSystem ps in Object.FindObjectsByType<ParticleSystem>(FindObjectsSortMode.None))
+            {
+                if (ps == null)
+                    continue;
+                string path = GetPath(ps.transform);
+                if (path.IndexOf("Lava", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                    continue;
+                ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            }
+        }
+
+        static void SnapPlayerForLockOnFraming()
+        {
+            Transform player = FindPlayerRoot();
+            var boss = Object.FindAnyObjectByType<BossDirector>();
+            if (player == null || boss == null)
+                return;
+            Vector3 toBoss = boss.transform.position - player.position;
+            toBoss.y = 0f;
+            float want = 7.5f;
+            if (toBoss.sqrMagnitude < 0.01f)
+                toBoss = Vector3.forward;
+            float extra = Mathf.Max(0f, toBoss.magnitude - want);
+            if (extra > 0.05f)
+                player.position += toBoss.normalized * extra;
+        }
+
+        static float SampleCameraToPlayerDist()
+        {
+            Transform player = FindPlayerRoot();
+            if (player == null || Camera.main == null)
+                return 0f;
+            var follow = Object.FindAnyObjectByType<FollowCamera>();
+            if (follow != null)
+                return follow.ResolvedDistanceM;
+            return Vector3.Distance(Camera.main.transform.position, player.position);
+        }
+
+        static float ReadLastSwordAngleFromLog(Animator anim)
+        {
+            Transform hand = anim.GetBoneTransform(HumanBodyBones.RightHand);
+            if (hand == null)
+                return 0f;
+            Transform blade = null;
+            foreach (Transform t in hand.GetComponentsInChildren<Transform>(true))
+            {
+                if (t.name.IndexOf("Sword", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    blade = t;
+                    break;
+                }
+            }
+
+            if (blade == null)
+                return 0f;
+            Vector3 tip = blade.position + blade.up * 0.45f;
+            Vector3 dir = (tip - hand.position).normalized;
+            return Vector3.Angle(dir, Vector3.up);
+        }
+
+        static string Sha256File(string path)
+        {
+            using var sha = SHA256.Create();
+            byte[] hash = sha.ComputeHash(File.ReadAllBytes(path));
+            var hex = new StringBuilder(hash.Length * 2);
+            foreach (byte b in hash)
+                hex.Append(b.ToString("x2"));
+            return hex.ToString();
         }
 
         static void ResnapProps()
@@ -366,10 +594,10 @@ namespace Dovus.Game.EditorTools
             return any;
         }
 
-        static void LogPixelHeight(string pngPath, string label)
+        static float LogPixelHeight(string pngPath, string label)
         {
             if (!File.Exists(pngPath))
-                return;
+                return 0f;
             byte[] bytes = File.ReadAllBytes(pngPath);
             var tex = new Texture2D(2, 2);
             tex.LoadImage(bytes);
@@ -390,7 +618,9 @@ namespace Dovus.Game.EditorTools
 
             Object.DestroyImmediate(tex);
             int height = maxY >= minY ? maxY - minY + 1 : 0;
-            Debug.Log($"[FeelCapture] pixelHeight {label}={height} ({100f * height / H:F1}% of {H})");
+            float pct = 100f * height / H;
+            Debug.Log($"[FeelCapture] pixelHeight {label}={height} ({pct:F1}% of {H})");
+            return pct;
         }
 
         static Transform FindPlayerRoot()
