@@ -52,10 +52,12 @@ namespace Dovus.Game
             // ufka kadar büyük tasarlandı (147→2026→1280 m), onlar sabit kalır (native ölçek 1).
             float nearScale = Mathf.Max(0.1f, walkHalfM) / CombatAmbienceAssets.DesignBoundaryRadiusM;
             Material groundMat = CreateScaledGroundMaterial(assets.GroundMaterial, nearScale);
-            if (groundMat != null)
+            float floorScale = Mathf.Max(0.1f, walkHalfM * 2f) / CombatAmbienceAssets.DesignBoundaryRadiusM;
+            Material floorMat = CreateScaledGroundMaterial(assets.GroundMaterial, floorScale);
+            if (floorMat != null)
             {
-                CircularArena.SetFloorMaterial(arenaRoot, groundMat);
-                DesaturateFloorTint(arenaRoot, groundMat);
+                ReplaceArenaFloorWithPlanarQuad(arenaRoot, walkHalfM, floorMat);
+                DesaturateFloorTint(arenaRoot, floorMat);
             }
 
             var root = new GameObject("CombatAmbience");
@@ -164,10 +166,33 @@ namespace Dovus.Game
         /// <summary>
         /// Deneme sahnesi groundTiling≈7; mesh ölçeği UV tekrarını bozmasın diye runtime kopya.
         /// </summary>
+        /// <summary>Cylinder kapak UV'si radyal gerer; oyun alanı diski düz quad ile kaplanır (collider yok).</summary>
+        static void ReplaceArenaFloorWithPlanarQuad(GameObject arenaRoot, float arenaRadiusM, Material floorMat)
+        {
+            Transform floor = arenaRoot.transform.Find("Floor");
+            if (floor == null || floorMat == null)
+                return;
+
+            MeshRenderer old = floor.GetComponent<MeshRenderer>();
+            if (old != null)
+                old.enabled = false;
+
+            float diameter = Mathf.Max(4f, arenaRadiusM) * 2f;
+            var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            quad.name = "Floor_Planar";
+            quad.transform.SetParent(floor, false);
+            quad.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            quad.transform.localPosition = new Vector3(0f, 0.06f, 0f);
+            quad.transform.localScale = new Vector3(diameter, diameter, 1f);
+            Object.Destroy(quad.GetComponent<Collider>());
+            SetMaterial(quad, floorMat);
+            SetShadowsOff(quad);
+        }
+
         static void DesaturateFloorTint(GameObject arenaRoot, Material groundMat)
         {
             Transform floor = arenaRoot.transform.Find("Floor");
-            MeshRenderer rend = floor != null ? floor.GetComponent<MeshRenderer>() : null;
+            MeshRenderer rend = floor != null ? floor.GetComponentInChildren<MeshRenderer>(true) : null;
             if (rend == null || groundMat == null)
                 return;
             var mat = new Material(groundMat);
@@ -178,22 +203,50 @@ namespace Dovus.Game
             rend.sharedMaterial = mat;
         }
 
-        static Material CreateScaledGroundMaterial(Material source, float nearScale)
+        static Material CreateScaledGroundMaterial(Material source, float meshScaleXZ)
         {
             if (source == null)
                 return null;
 
             var mat = new Material(source);
+            ApplyGroundTiling(mat, source, meshScaleXZ);
+            return mat;
+        }
+
+        /// <summary>Mesh XZ ölçeğiyle dünya texel yoğunluğu sabit; detail farklı tiling ile grid kırılır.</summary>
+        static void ApplyGroundTiling(Material mat, Material source, float meshScaleXZ)
+        {
             Vector2 baseSt = source.GetTextureScale("_BaseMap");
             if (baseSt.sqrMagnitude < 0.0001f)
                 baseSt = new Vector2(1f / 7f, 1f / 7f);
-            mat.SetTextureScale("_BaseMap", baseSt * nearScale);
-            mat.SetTextureScale("_MainTex", baseSt * nearScale);
+            Vector2 worldBase = baseSt * meshScaleXZ;
+            mat.SetTextureScale("_BaseMap", worldBase);
+            mat.SetTextureScale("_MainTex", worldBase);
+            if (mat.HasProperty("_BumpMap"))
+                mat.SetTextureScale("_BumpMap", worldBase);
+
             Vector2 detailSt = source.GetTextureScale("_DetailAlbedoMap");
             if (detailSt.sqrMagnitude < 0.0001f)
                 detailSt = new Vector2(3.888889f, 3.888889f);
-            mat.SetTextureScale("_DetailAlbedoMap", detailSt * nearScale);
-            return mat;
+            const float detailMul = 3f;
+            Vector2 detailWorld = detailSt * meshScaleXZ * (detailMul / 3.888889f);
+            mat.SetTextureScale("_DetailAlbedoMap", detailWorld * 2f);
+            if (mat.HasProperty("_DetailNormalMap"))
+            {
+                Vector2 detailNormSt = source.GetTextureScale("_DetailNormalMap");
+                if (detailNormSt.sqrMagnitude < 0.0001f)
+                    detailNormSt = new Vector2(5.2f, 5.2f);
+                mat.SetTextureScale("_DetailNormalMap", detailNormSt * meshScaleXZ * (detailMul / 3.888889f) * 1.35f);
+            }
+
+            mat.EnableKeyword("_DETAIL_MULX2");
+            if (mat.HasProperty("_DetailNormalMapScale"))
+                mat.SetFloat("_DetailNormalMapScale", 0.85f);
+            if (mat.HasProperty("_BumpScale"))
+            {
+                float bump = source.HasProperty("_BumpScale") ? source.GetFloat("_BumpScale") : 0.9f;
+                mat.SetFloat("_BumpScale", Mathf.Clamp(bump < 0.01f ? 0.9f : bump, 0.8f, 1f));
+            }
         }
     }
 }

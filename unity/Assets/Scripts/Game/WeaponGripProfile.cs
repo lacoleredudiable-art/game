@@ -61,15 +61,15 @@ namespace Dovus.Game
         /// <summary>Paladin / Mixamo oyuncu görseli için önerilen kılıç tutuşu (editor binder yazır).</summary>
         public static GripOffset DefaultMixamoRightSword() => new GripOffset
         {
-            LocalPosition = new Vector3(0.02f, 0.03f, 0.05f),
-            LocalEulerAngles = new Vector3(-75f, 95f, -15f),
+            LocalPosition = new Vector3(0.03f, 0.02f, 0.05f),
+            LocalEulerAngles = new Vector3(45f, 210f, 0f),
             LocalScale = Vector3.one,
         };
 
         public static GripOffset DefaultMixamoLeftShield() => new GripOffset
         {
-            LocalPosition = new Vector3(0.03f, 0.02f, 0.05f),
-            LocalEulerAngles = new Vector3(-8f, 12f, 92f),
+            LocalPosition = new Vector3(0.05f, 0.18f, -0.02f),
+            LocalEulerAngles = new Vector3(8f, 195f, 92f),
             LocalScale = Vector3.one,
         };
 

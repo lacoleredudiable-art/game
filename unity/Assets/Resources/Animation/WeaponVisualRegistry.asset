@@ -31,8 +31,8 @@ MonoBehaviour:
     RightLocalPosition: {x: 0, y: 0, z: 0}
     RightLocalEulerAngles: {x: 0, y: 0, z: 0}
     RightLocalScale: {x: 28.3, y: 28.3, z: 28.3}
-    LeftHandPrefab: {fileID: 0}
-    LeftLocalPosition: {x: 0.03, y: 0, z: 0.05}
+    LeftHandPrefab: {fileID: 8069052543990601149, guid: 83d0664aec8618047bbdcfb98a9b0e2d, type: 3}
+    LeftLocalPosition: {x: 0, y: 0, z: 0}
     LeftLocalEulerAngles: {x: 0, y: 0, z: 0}
     LeftLocalScale: {x: 1, y: 1, z: 1}
   - WeaponKey: kalkan

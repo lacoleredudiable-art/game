@@ -51,7 +51,7 @@ namespace Dovus.Game
 
             WeaponVisualRegistry.PropEntry entry = _registry != null ? _registry.FindProps(weaponKey) : null;
             Transform right = _animator.GetBoneTransform(HumanBodyBones.RightHand);
-            Transform left = _animator.GetBoneTransform(HumanBodyBones.LeftHand);
+            Transform left = ResolveLeftAttachBone(weaponKey);
 
             _rightInstance = Spawn(weaponKey, entry, right, isRight: true);
             _leftInstance = Spawn(weaponKey, entry, left, isRight: false);
@@ -76,6 +76,19 @@ namespace Dovus.Game
                     DestroyImmediate(_leftInstance);
                 _leftInstance = null;
             }
+        }
+
+        Transform ResolveLeftAttachBone(string weaponKey)
+        {
+            Transform hand = _animator.GetBoneTransform(HumanBodyBones.LeftHand);
+            if (weaponKey == "kilic" && WeaponGripProfile.IsMixamoRig(_animator))
+            {
+                Transform forearm = _animator.GetBoneTransform(HumanBodyBones.LeftLowerArm);
+                if (forearm != null)
+                    return forearm;
+            }
+
+            return hand;
         }
 
         GameObject Spawn(string key, WeaponVisualRegistry.PropEntry entry, Transform hand, bool isRight)
@@ -152,7 +165,7 @@ namespace Dovus.Game
 
             return weaponKey switch
             {
-                "kilic" => 0.62f,
+                "kilic" => 0.65f,
                 "kalkan" => 0.92f,
                 "yay" => 1.05f,
                 "kitap" => 0.24f,
