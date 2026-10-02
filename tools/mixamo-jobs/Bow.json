@@ -1,0 +1,8 @@
+[
+  { "label": "Bow_Idle", "query": "Standing Aim Idle 01", "overdrive": 0 },
+  { "label": "Bow_Run", "query": "Standing Run Forward", "desc": "Running Forward With Bow", "overdrive": 0 },
+  { "label": "Bow_Draw", "query": "Standing Draw Arrow", "overdrive": 0 },
+  { "label": "Bow_Recoil", "query": "Standing Aim Recoil", "overdrive": 0.4 },
+  { "label": "Bow_Overdraw", "query": "Standing Aim Overdraw", "overdrive": 0 },
+  { "label": "Bow_Dive", "query": "Standing Dive Forward", "overdrive": 0 }
+]

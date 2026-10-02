@@ -1,0 +1,9 @@
+[
+  { "label": "Hammer_Idle", "query": "Great Sword Idle", "desc": "Great Sword Idle", "overdrive": 0 },
+  { "label": "Hammer_Run", "query": "Great Sword Run", "desc": "Great Sword Run", "overdrive": 0 },
+  { "label": "Hammer_Overhead", "query": "Standing Melee Attack Downward", "overdrive": 0 },
+  { "label": "Hammer_Slash", "query": "Great Sword Slash", "desc": "Great Sword Power Slash", "overdrive": 0 },
+  { "label": "Hammer_Horizontal", "query": "Standing Melee Attack Horizontal", "overdrive": 0 },
+  { "label": "Hammer_JumpAttack", "query": "Great Sword Jump Attack", "overdrive": 0 },
+  { "label": "Hammer_Spin", "query": "Great Sword High Spin Attack", "overdrive": 0 }
+]

@@ -1,0 +1,11 @@
+[
+  { "label": "Caster_Idle", "query": "Standing Idle", "desc": "Standing Idle", "overdrive": 0 },
+  { "label": "Caster_Run", "query": "Standing Run Forward", "desc": "Running Forwards", "overdrive": 0 },
+  { "label": "Caster_1H_Attack01", "query": "Standing 1H Magic Attack 01", "overdrive": 0 },
+  { "label": "Caster_1H_Attack02", "query": "Standing 1H Magic Attack 02", "overdrive": 0 },
+  { "label": "Caster_2H_Attack01", "query": "Standing 2H Magic Attack 01", "overdrive": 0 },
+  { "label": "Caster_2H_Area", "query": "Standing 2H Magic Area Attack 01", "overdrive": 0 },
+  { "label": "Caster_1H_Cast", "query": "Standing 1H Cast Spell 01", "overdrive": 0 },
+  { "label": "Caster_2H_Cast", "query": "Standing 2H Cast Spell 01", "overdrive": 0 },
+  { "label": "Caster_WideArm", "query": "Wide Arm Spell Casting", "overdrive": 0 }
+]

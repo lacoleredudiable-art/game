@@ -1,0 +1,5 @@
+[
+  { "label": "SS_Kick", "query": "Sword And Shield Kick", "desc": "Sword And Shield Sparta Kick", "overdrive": 0 },
+  { "label": "SS_Block", "query": "Sword And Shield Block", "desc": "Sword And Shield Idle To Block", "overdrive": 0 },
+  { "label": "SS_Death", "query": "Sword And Shield Death", "desc": "Sword And Shield Falling Back Death", "overdrive": 0 }
+]
