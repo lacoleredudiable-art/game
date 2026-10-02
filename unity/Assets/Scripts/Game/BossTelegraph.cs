@@ -29,6 +29,9 @@ namespace Dovus.Game
         Mesh _discMesh;
         float _coneMeshArc = -1f;
         float _arcHalfDeg = 180f;
+        bool _worldAnchor;
+        Vector3 _anchorWorld;
+        BossAttackKind? _anchorKind;
         AudioSource _tone;
         AudioClip _clip;
         Vector3 _baseScale;
@@ -50,6 +53,21 @@ namespace Dovus.Game
         /// </summary>
         public void SetShape(float arcHalfAngleDeg) => _arcHalfDeg = arcHalfAngleDeg;
 
+        /// <summary>Ağ Örme / Sıçrayış: telegraf boss yerine dünya noktasında çizilir.</summary>
+        public void SetWorldAnchor(BossAttackKind kind, Vector3 world)
+        {
+            _worldAnchor = true;
+            _anchorKind = kind;
+            _anchorWorld = world;
+            _anchorWorld.y = DiscHeightY;
+        }
+
+        public void ClearWorldAnchor()
+        {
+            _worldAnchor = false;
+            _anchorKind = null;
+        }
+
         /// <summary>
         /// Windup: p 0→1. radiusM aktif varyantın etki yarıçapı.
         /// GENİŞ disk baştan tam boyutta; GEÇ tonu yavaş yükselir, poz erken gerilip tutulur.
@@ -57,6 +75,31 @@ namespace Dovus.Game
         public void SetProgress(float progress01, float radiusM, SlamVariant variant)
         {
             float p = Mathf.Clamp01(progress01);
+
+            if (_worldAnchor && _anchorKind == BossAttackKind.WebField)
+            {
+                float webRadius = radiusM * Mathf.Max(0.12f, p);
+                DrawDiscAt(
+                    _anchorWorld,
+                    webRadius,
+                    Color.Lerp(Color.white, new Color(0.92f, 0.95f, 1f), p),
+                    0.14f + 0.2f * p);
+                if (_tone != null && _tone.isPlaying)
+                    _tone.Stop();
+                return;
+            }
+
+            if (_worldAnchor && _anchorKind == BossAttackKind.Pounce)
+            {
+                DrawDiscAt(
+                    _anchorWorld,
+                    radiusM,
+                    Color.Lerp(new Color(1f, 0.25f, 0.2f), new Color(1f, 0.1f, 0.08f), p),
+                    0.22f + 0.18f * p);
+                if (_tone != null && _tone.isPlaying)
+                    _tone.Stop();
+                return;
+            }
 
             float drawnRadius = variant == SlamVariant.Genis
                 ? radiusM
@@ -119,6 +162,7 @@ namespace Dovus.Game
                 _disc.gameObject.SetActive(false);
             if (_cone != null && _cone.gameObject.activeSelf)
                 _cone.gameObject.SetActive(false);
+            ClearWorldAnchor();
             ApplyPose(1f, 1f);
             if (_tone != null && _tone.isPlaying)
                 _tone.Stop();
@@ -138,6 +182,21 @@ namespace Dovus.Game
                 Destroy(_discMat);
             if (_clip != null)
                 Destroy(_clip);
+        }
+
+        void DrawDiscAt(Vector3 world, float radiusM, Color color, float alpha)
+        {
+            if (_disc == null)
+                return;
+            if (_cone != null && _cone.gameObject.activeSelf)
+                _cone.gameObject.SetActive(false);
+            if (!_disc.gameObject.activeSelf)
+                _disc.gameObject.SetActive(true);
+            _disc.position = new Vector3(world.x, DiscHeightY, world.z);
+            _disc.localScale = new Vector3(radiusM * 2f, DiscThicknessScale, radiusM * 2f);
+            Color c = color;
+            c.a = alpha;
+            SetMatColor(_discMat, c);
         }
 
         void DrawDisc(float radiusM, Color color, float alpha)

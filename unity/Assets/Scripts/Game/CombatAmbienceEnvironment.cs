@@ -18,7 +18,9 @@ namespace Dovus.Game
         // dışarıda başlar — yoksa büyük bir kaya kamerayı yutup ekranı tek renge boyar.
         const float OuterRingMarginM = 14f;
         const float OuterRingDepthM = 14f;
-        const int RockCount = 22;
+        /// <summary>50 m yarıçaplı arena referansındaki kaya adedi; çevreyle ölçeklenir (min 12).</summary>
+        const int RockCountAtRefWalkHalfM = 22;
+        const float RockCountRefWalkHalfM = 50f;
         const float RockMinScale = 1.0f;
         const float RockMaxScale = 1.8f;
         // Ground_Near kendi rölyefiyle geldi (ölçeklendikten sonra ~4 m'ye kadar tümsek) —
@@ -31,6 +33,11 @@ namespace Dovus.Game
         // biraz üstüne çıkabilir — taban gömülü kalsın diye kayalar eskisinden (−0.3) biraz
         // daha derine gömülür (problem 3: "kaya havada yüzüyor").
         const float RockGroundYM = -0.6f;
+        const int EdgePropCount = 14;
+        const float EdgePropInnerMarginM = 2f;
+        const float EdgePropOuterMarginM = 6f;
+        const float EdgePropMinScale = 0.75f;
+        const float EdgePropMaxScale = 1.35f;
 
         public static void Build(GameObject arenaRoot, float walkHalfM, PrototypeTuning tuning)
         {
@@ -82,7 +89,23 @@ namespace Dovus.Game
             }
 
             BuildRockRing(assets, root.transform, walkHalfM, Mathf.Max(1f, tuning?.ArenaWallThicknessM ?? 1.4f));
+            BuildEdgeProps(assets, root.transform, walkHalfM);
             CameraAmbienceColliders.EnsureOnCombatAmbience(root.transform);
+        }
+
+        /// <summary>RenderSettings sis mesafeleri arena yarıçapına göre (SceneAtmosphere çağırır).</summary>
+        public static void ConfigureArenaFog(PrototypeTuning tuning)
+        {
+            if (tuning == null)
+                return;
+
+            float walkHalf = Mathf.Max(0.1f, tuning.ArenaHalfSizeM);
+            RenderSettings.fog = true;
+            RenderSettings.fogColor = tuning.FogColor;
+            // spec'te yok — varsayılan: doğrusal sis, yürüme yarıçapına oranlı.
+            RenderSettings.fogMode = FogMode.Linear;
+            RenderSettings.fogStartDistance = walkHalf * 0.9f;
+            RenderSettings.fogEndDistance = walkHalf * 3f;
         }
 
         static GameObject PlaceEnvMesh(GameObject model, Material mat, Transform parent, float scale, string name) =>
@@ -112,16 +135,19 @@ namespace Dovus.Game
 
             float innerR = walkHalfM + wallThicknessM * 0.5f + OuterRingMarginM;
             float outerR = innerR + OuterRingDepthM;
+            int rockCount = Mathf.Max(
+                12,
+                Mathf.RoundToInt(RockCountAtRefWalkHalfM * (walkHalfM / RockCountRefWalkHalfM)));
             // Sabit seed: başsız tarama (SweepV2) her koşuda aynı sahneyi kursun (determinizm).
             var rng = new System.Random(1337);
 
-            for (int i = 0; i < RockCount; i++)
+            for (int i = 0; i < rockCount; i++)
             {
                 CombatAmbienceAssets.RockKind kind = assets.Rocks[i % assets.Rocks.Length];
                 if (kind.Model == null)
                     continue;
 
-                float t = (i + (float)rng.NextDouble() * 0.8f) / RockCount;
+                float t = (i + (float)rng.NextDouble() * 0.8f) / rockCount;
                 float angle = t * Mathf.PI * 2f;
                 float radius = Mathf.Lerp(innerR, outerR, (float)rng.NextDouble());
                 var pos = new Vector3(Mathf.Sin(angle) * radius, RockGroundYM, Mathf.Cos(angle) * radius);
@@ -137,6 +163,50 @@ namespace Dovus.Game
                 SetMaterial(go, kind.Material);
                 SetShadowsOff(go);
             }
+        }
+
+        static void BuildEdgeProps(CombatAmbienceAssets assets, Transform parent, float walkHalfM)
+        {
+            if (assets.EdgeProps == null || assets.EdgeProps.Length == 0)
+                return;
+
+            var edgeRoot = new GameObject("EdgeProps_Boundary");
+            edgeRoot.transform.SetParent(parent, false);
+
+            float innerR = walkHalfM + EdgePropInnerMarginM;
+            float outerR = walkHalfM + EdgePropOuterMarginM;
+            var rng = new System.Random(9001);
+
+            for (int i = 0; i < EdgePropCount; i++)
+            {
+                GameObject prefab = assets.EdgeProps[i % assets.EdgeProps.Length];
+                if (prefab == null)
+                    continue;
+
+                float t = (i + (float)rng.NextDouble() * 0.7f) / EdgePropCount;
+                float angle = t * Mathf.PI * 2f;
+                float radius = Mathf.Lerp(innerR, outerR, (float)rng.NextDouble());
+                var pos = new Vector3(Mathf.Sin(angle) * radius, RockGroundYM, Mathf.Cos(angle) * radius);
+
+                var go = UnityEngine.Object.Instantiate(prefab, edgeRoot.transform);
+                go.name = $"{prefab.name}_{i:00}";
+                go.transform.localPosition = pos;
+                go.transform.localRotation = Quaternion.Euler(
+                    (float)(rng.NextDouble() * 8f - 4f),
+                    (float)(rng.NextDouble() * 360f),
+                    (float)(rng.NextDouble() * 8f - 4f));
+                go.transform.localScale = Vector3.one * (EdgePropMinScale + (float)rng.NextDouble() * (EdgePropMaxScale - EdgePropMinScale));
+                StripColliders(go);
+                SetShadowsOff(go);
+            }
+        }
+
+        static void StripColliders(GameObject go)
+        {
+            if (go == null)
+                return;
+            foreach (Collider c in go.GetComponentsInChildren<Collider>(true))
+                UnityEngine.Object.Destroy(c);
         }
 
         static void SetMaterial(GameObject go, Material material)

@@ -92,9 +92,10 @@ namespace Dovus.Game
             CombatAmbienceEnvironment.Build(arena, walkHalf, _tuning);
             DebugConfig.DevLog($"[Arena] circle r={walkHalf:0.##}m wallH={_tuning.ArenaWallHeightM:0.#}m");
 
+            float spawnMaxR = walkHalf * 0.4f;
             var player = CreateCapsule(
                 "Player",
-                new Vector3(0f, PlayerHeightM * 0.5f, -2f),
+                ClampSpawnXZ(new Vector3(0f, PlayerHeightM * 0.5f, -2f), spawnMaxR),
                 PlayerRadiusM,
                 PlayerHeightM,
                 _tuning.PlayerColor);
@@ -108,7 +109,7 @@ namespace Dovus.Game
 
             var ally = CreateCapsule(
                 "AllyDummy",
-                new Vector3(-3.2f, PlayerHeightM * 0.5f, -1.2f),
+                ClampSpawnXZ(new Vector3(-3.2f, PlayerHeightM * 0.5f, -1.2f), spawnMaxR),
                 PlayerRadiusM * 0.95f,
                 PlayerHeightM,
                 new Color(0.35f, 0.85f, 0.55f));
@@ -137,9 +138,11 @@ namespace Dovus.Game
             // O6: başlangıç oranı tek debug anahtarında (varsayılan 1.0).
             allyDummy.Bind(playerHp, startRatio: DebugConfig.StartHpRatio);
 
+            float bossSpawnZ = 5f * Mathf.Max(1f, _tuning.ArenaVisualScale * 0.55f);
+            bossSpawnZ = Mathf.Clamp(bossSpawnZ, -spawnMaxR, spawnMaxR);
             var boss = CreateCapsule(
                 "Boss",
-                new Vector3(0f, BossHeightM * 0.5f, 5f * Mathf.Max(1f, _tuning.ArenaVisualScale * 0.55f)),
+                ClampSpawnXZ(new Vector3(0f, BossHeightM * 0.5f, bossSpawnZ), spawnMaxR),
                 BossRadiusM,
                 BossHeightM,
                 _tuning.BossColor);
@@ -149,7 +152,7 @@ namespace Dovus.Game
             bossHitCollider.isTrigger = true;
             AttachVisual(
                 boss,
-                _bossVisualPrefab,
+                ResolveBossVisualPrefab(_bossVisualPrefab),
                 _tuning.BossVisualHeightM,
                 boss.transform.position.y - BossHeightM * 0.5f,
                 _tuning.CharacterAnimSpeed,
@@ -208,6 +211,7 @@ namespace Dovus.Game
             player.AddComponent<ActorGrounding>();
 
             boss.AddComponent<ActorGrounding>();
+            boss.AddComponent<MotionTemplateBody>();
             var reactor = boss.AddComponent<BossReactor>();
             reactor.Tuning = _tuning;
             reactor.ConfigureFeel(combat.Feel);
@@ -470,7 +474,7 @@ namespace Dovus.Game
 
             // Boss hedefleri: oyuncu + dost kukla (+ MD'nin dikkat çeken yemleri). Sayılar karadul.json targeting.
             var hostileTargets = directorGo.AddComponent<HostileTargets>();
-            TargetingConfig targetingConfig = BossEncounterData.LoadTargeting();
+            TargetingConfig targetingConfig = BossEncounterData.LoadTargeting(_tuning.ActiveBossResourcePath);
             hostileTargets.Configure(targetingConfig);
             hostileTargets.Register(
                 player,
@@ -531,11 +535,18 @@ namespace Dovus.Game
             director.BindHostileTargets(hostileTargets);
 
             // Düşman mermileri (Zehir Tükürüğü). Sayılar karadul.json "volley".
-            BossEncounterData.ApplyVolley(combat.Boss);
+            BossEncounterData.ApplyVolley(combat.Boss, _tuning.ActiveBossResourcePath);
             var projectileHost = directorGo.AddComponent<HostileProjectileHost>();
             projectileHost.Bind(clock, hostileTargets, player, playerStatus, vitals, boss.transform, boss.BodyRadiusM);
             bossDir.BindProjectiles(projectileHost);
             director.BindProjectiles(projectileHost);
+
+            boss.GetComponent<MotionTemplateBody>()?.Bind(
+                clock, combat.SkillMotion.ArenaHalfSizeM, BossRadiusM);
+            var webFields = directorGo.AddComponent<WebFieldView>();
+            webFields.Bind(clock, combat, bossDir, bossVitals, player, playerStatus);
+            if (allyDummy != null)
+                webFields.RegisterAlly(allyDummy);
             director.ConfigureWeaponCycle(design?.Equipment.Items);
             if (design != null)
             {
@@ -703,6 +714,17 @@ namespace Dovus.Game
             Resources.Load<GameObject>("PlayerVisualOverride") ?? sceneDefault;
 
         /// <summary>
+        /// Ağların Kraliçesi: <c>Bosses/Visuals/AglarinKralicesi</c> prefab (Editor menüsüyle üretilir);
+        /// yoksa sahnedeki karadul görseli.
+        /// </summary>
+        GameObject ResolveBossVisualPrefab(GameObject sceneDefault)
+        {
+            if (_tuning.ActiveBossId != "aglarin_kralicesi")
+                return sceneDefault;
+            return Resources.Load<GameObject>("Bosses/Visuals/AglarinKralicesi") ?? sceneDefault;
+        }
+
+        /// <summary>
         /// Asset Store prefab'ı kökün child'ı olur; mantık kökte kalır (motor/pose/reactor).
         /// Ayak pivot'u varsayılır — local Y ofseti prefab'a göre sonra ayarlanır.
         /// </summary>
@@ -857,6 +879,22 @@ namespace Dovus.Game
                 + Vector3.back * _tuning.CameraDistanceM;
             camGo.transform.position = target.position + startOffset;
             return follow;
+        }
+
+        /// <summary>Başlangıç spawn'ları arena merkezinden en fazla <paramref name="maxRadiusM"/> içinde tutar.</summary>
+        static Vector3 ClampSpawnXZ(Vector3 worldPos, float maxRadiusM)
+        {
+            if (maxRadiusM <= 0.01f)
+                return worldPos;
+            var xz = new Vector2(worldPos.x, worldPos.z);
+            float maxR = maxRadiusM;
+            if (xz.sqrMagnitude > maxR * maxR)
+            {
+                xz = xz.normalized * maxR;
+                worldPos.x = xz.x;
+                worldPos.z = xz.y;
+            }
+            return worldPos;
         }
 
         static void ApplyColor(GameObject go, Color color)

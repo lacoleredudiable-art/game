@@ -41,5 +41,8 @@ namespace Dovus.Game
 
         [Header("Kayalar (PolyHaven CC0 — oyun alanı dışına, collider'sız)")]
         public RockKind[] Rocks;
+
+        [Header("Kenar detay (Quaternius CC0 — duvar hemen dışı, collider'sız)")]
+        public GameObject[] EdgeProps;
     }
 }

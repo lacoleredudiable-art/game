@@ -326,6 +326,14 @@ namespace Dovus.Game
         public float BossPinShakeAmpM = 0.04f;
         public float BossLiftVelocityPerM = 4.5f;
 
+        [Header("Boss karşılaşma")]
+        /// <summary>Resources/Bosses/{id}.json — varsayılan Ağların Kraliçesi; karadul yedek.</summary>
+        public string ActiveBossId = "aglarin_kralicesi";
+
+        /// <summary><c>Resources.Load</c> yolu: <c>Bosses/</c> + id (<c>_</c> → <c>-</c>).</summary>
+        public string ActiveBossResourcePath =>
+            "Bosses/" + (string.IsNullOrWhiteSpace(ActiveBossId) ? "karadul" : ActiveBossId.Replace('_', '-'));
+
         // Boss animasyon sunumu (his turu Faz 1). Hepsi önerilen — klip değişince göz kontrolü.
         [Header("Boss animasyon (his turu)")]
         public float BossTurnRateDegPerSec = 240f;
@@ -437,7 +445,7 @@ namespace Dovus.Game
         // tasarımcının bilinçli 0'ı (ör. nabzı kapatmak) artık ezilmez (T8.1).
         [HideInInspector] public int TuningVersion = CurrentVersion;
 
-        const int CurrentVersion = 20;
+        const int CurrentVersion = 21;
 
         /// <summary>Sürümü geçmiş serileşmiş kopyayı bu sürümün varsayılanlarına çeker.</summary>
         public void EnsureRuntimeDefaults()
@@ -499,6 +507,7 @@ namespace Dovus.Game
             if (UpperBodyCastMinSpeed <= 0f) UpperBodyCastMinSpeed = 0.15f;
             if (FootstepStrideM <= 0.05f) FootstepStrideM = 2.2f;
             if (BossFootstepStrideM <= 0.05f) BossFootstepStrideM = 2.4f;
+            if (string.IsNullOrWhiteSpace(ActiveBossId)) ActiveBossId = "karadul";
             if (BossTurnRateDegPerSec <= 0.01f) BossTurnRateDegPerSec = 240f;
             if (BossSlamImpactNorm <= 0.01f) BossSlamImpactNorm = 0.42f;
             if (BossConeImpactNorm <= 0.01f) BossConeImpactNorm = 0.40f;
@@ -806,6 +815,10 @@ namespace Dovus.Game
             // bilinçli özelleştirmeyi korumak için yalnızca eski varsayılan ±0.01.
             if (Mathf.Abs(ArenaHalfSizeM - 50f) <= 0.01f)
                 ArenaHalfSizeM = fresh.ArenaHalfSizeM;
+
+            // v21: varsayılan boss karadul → aglarin_kralicesi; yalnız eski varsayılan taşınır.
+            if (ActiveBossId == "karadul")
+                ActiveBossId = fresh.ActiveBossId;
 
             TuningVersion = CurrentVersion;
         }

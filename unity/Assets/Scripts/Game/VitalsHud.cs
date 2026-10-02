@@ -126,7 +126,7 @@ namespace Dovus.Game
             _bossRoot.anchorMax = new Vector2(0.5f, 1f);
             _bossRoot.pivot = new Vector2(0.5f, 1f);
 
-            _bossData = BossHudData.Load();
+            _bossData = BossHudData.Load(tuning.ActiveBossResourcePath);
             _bossName = CreateBossName(_bossRoot, _bossData);
             _bossFill = CreateBar(_bossRoot, "Boss", out _bossBg, out _bossSheen, out _bossJuice);
             CreatePhaseNotches(_bossBg, _bossData);
