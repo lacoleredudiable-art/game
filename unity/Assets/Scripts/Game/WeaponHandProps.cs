@@ -176,7 +176,10 @@ namespace Dovus.Game
             }
 
             Vector3 handPos = hand.position;
-            Vector3 tip = blade.position + blade.up * EstimateBladeHalfLength(blade);
+            // ff-4: Warrior_Sword mesh'inin uzunluk ekseni local Z (blade.forward) — bounds
+            // ölçümü (mesh.vertices) grip ucu +Z'de, kabza 0'a yakın gösterdi. Önceki blade.up
+            // (Y) varsayımı yanlış eksendi → ölçülen açı gerçek bıçak yönünü yansıtmıyordu.
+            Vector3 tip = blade.position + blade.forward * EstimateBladeHalfLength(blade);
             Vector3 shaft = tip - handPos;
             float angleFromUp = shaft.sqrMagnitude > 1e-6f
                 ? Vector3.Angle(Vector3.up, shaft)

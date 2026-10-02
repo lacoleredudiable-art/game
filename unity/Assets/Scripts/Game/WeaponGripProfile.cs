@@ -58,11 +58,16 @@ namespace Dovus.Game
             return animator.transform.name.IndexOf("mixamorig", System.StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
-        /// <summary>Paladin / Mixamo oyuncu görseli için önerilen kılıç tutuşu (editor binder yazır).</summary>
+        /// <summary>
+        /// Paladin / Mixamo oyuncu görseli için önerilen kılıç tutuşu (editor binder yazır).
+        /// ff-4: idle'da ~127° (aşağı/öne) ölçülüyordu — dikeyden 30–45° öne-yukarı hedefine
+        /// (mixamorig:RightHand uzayında analitik çözüm: blade.forward ≈ dikeyden 37.5°, yan
+        /// kayma yok) güncellendi. <see cref="WeaponHandProps.LogMixamoSwordAngle"/> doğrular.
+        /// </summary>
         public static GripOffset DefaultMixamoRightSword() => new GripOffset
         {
             LocalPosition = new Vector3(0.03f, 0.02f, 0.05f),
-            LocalEulerAngles = new Vector3(28f, 210f, -36f),
+            LocalEulerAngles = new Vector3(9.32f, 239.23f, 343.32f),
             LocalScale = Vector3.one,
         };
 
