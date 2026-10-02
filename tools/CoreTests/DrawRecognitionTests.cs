@@ -1,300 +1,351 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
 using Dovus.Core.Combat;
+using Dovus.Core.Grammar;
 using NUnit.Framework;
 
 namespace CoreTests;
 
+/// <summary>
+/// Çizim tanıma ölçümü (denetim B ek). Altıgende rün yolları gürültülü, elle çizilmiş gibi üretilir:
+/// hedef nişan hatası σ 8 dp, yay ±%12, 1,5 dp titreme, segment 80–200 ms (hızlı: 50–90 ms),
+/// %10 kare atlaması, 120 / 60 / 30 fps örnekleme; yarısı merkezden, yarısı ilk noktadan başlar.
+/// Geçme = kayıtlı nokta dizisi hedef diziyle BİREBİR aynı (eksik ya da fazla rün yok).
+/// Eski kural (yalnız örnek noktası) ile yeni kural (<see cref="StrokeDotTracker"/>) aynı yollarda ölçülür.
+/// Ölçü dp: altıgen yarıçapı 104 (telefon tabanı) ve 112, nokta yarıçapı 34 (PrototypeTuning).
+/// </summary>
 [TestFixture]
-public sealed class DrawRecognitionTests
+public class DrawRecognitionTests
 {
-    const float CornerRadius = 200f;
-    const float DotRadius = 34f;
-    const float MinSegment = 12f;
+    const float DotR = 34f;
+    const float MinSeg = 12f;
     const float Settle = 1.5f;
-    const float SpeedPxPerSec = 900f;
-    const float NoisePx = 6f;
-    const int SeedsPerScenario = 50;
+    const int PerShape = 300;
 
-    static readonly float[] DotX = new float[6];
-    static readonly float[] DotY = new float[6];
-
-    [OneTimeSetUp]
-    public void OneTimeSetUp()
+    static readonly (string Name, int[] Seq)[] Shapes =
     {
+        ("komşu", new[] { 1, 2 }),
+        ("uzak", new[] { 1, 3 }),
+        ("karşı", new[] { 1, 4 }),
+        ("zincir", new[] { 1, 2, 3 }),
+        ("üçgen", new[] { 1, 3, 5 }),
+        ("altıgen", new[] { 1, 2, 3, 4 }),
+        ("zigzag", new[] { 1, 3, 2, 4 }),
+        ("karşı-dön", new[] { 1, 4, 2 }),
+    };
+
+    static (float[] X, float[] Y) Dots(float r)
+    {
+        var x = new float[6];
+        var y = new float[6];
         for (int i = 0; i < 6; i++)
         {
-            double ang = i * Math.PI / 3.0;
-            DotX[i] = CornerRadius * (float)Math.Cos(ang);
-            DotY[i] = CornerRadius * (float)Math.Sin(ang);
+            double a = (90 - 60 * i) * Math.PI / 180.0;
+            x[i] = (float)(r * Math.Cos(a));
+            y[i] = (float)(r * Math.Sin(a));
         }
+        return (x, y);
     }
 
-    static List<int> TraceStroke(IReadOnlyList<float> sx, IReadOnlyList<float> sy)
+    static double Gauss(Random rng, double sigma)
     {
-        var tracker = new StrokeDotTracker();
-        var step = new List<int>();
-        var acc = new List<int>();
-        tracker.Begin(sx[0], sy[0], DotRadius, MinSegment, Settle, DotX, DotY, step);
-        acc.AddRange(step);
-        for (int i = 1; i < sx.Count - 1; i++)
+        double u1 = 1.0 - rng.NextDouble(), u2 = rng.NextDouble();
+        return sigma * Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Cos(2.0 * Math.PI * u2);
+    }
+
+    static List<(float x, float y)> Generate(int[] seq, float[] dx, float[] dy, Random rng, int fps, bool fast)
+    {
+        const double aim = 8.0;
+        (double x, double y) start;
+        int first = 0;
+        if (rng.NextDouble() < 0.5)
         {
-            tracker.Move(sx[i], sy[i], DotX, DotY, step);
-            acc.AddRange(step);
+            start = (Gauss(rng, 6), Gauss(rng, 6));
         }
-        tracker.End(sx[sx.Count - 1], sy[sy.Count - 1], DotX, DotY, step);
-        acc.AddRange(step);
-        return acc;
-    }
-
-    static void SamplePolyline(
-        IReadOnlyList<(float x, float y)> waypoints,
-        float fps,
-        int seed,
-        List<float> sx,
-        List<float> sy)
-    {
-        sx.Clear();
-        sy.Clear();
-        var rng = new Random(seed);
-        float dt = 1f / fps;
-        float stepLen = SpeedPxPerSec * dt;
-
-        for (int w = 0; w < waypoints.Count - 1; w++)
+        else
         {
-            float ax = waypoints[w].x;
-            float ay = waypoints[w].y;
-            float bx = waypoints[w + 1].x;
-            float by = waypoints[w + 1].y;
-            float dx = bx - ax;
-            float dy = by - ay;
-            float seg = (float)Math.Sqrt(dx * dx + dy * dy);
-            if (seg < 1e-4f)
-                continue;
-            float ux = dx / seg;
-            float uy = dy / seg;
-            float px = -uy;
-            float py = ux;
-            float t = 0f;
-            if (sx.Count == 0)
-            {
-                float n0 = (float)(rng.NextDouble() * 2.0 - 1.0) * NoisePx;
-                sx.Add(ax + px * n0);
-                sy.Add(ay + py * n0);
-            }
-            while (t + stepLen < seg)
-            {
-                t += stepLen;
-                float n = (float)(rng.NextDouble() * 2.0 - 1.0) * NoisePx;
-                sx.Add(ax + ux * t + px * n);
-                sy.Add(ay + uy * t + py * n);
-            }
-
-            float nEnd = (float)(rng.NextDouble() * 2.0 - 1.0) * NoisePx;
-            sx.Add(bx + px * nEnd);
-            sy.Add(by + py * nEnd);
+            start = (dx[seq[0] - 1] + Gauss(rng, aim), dy[seq[0] - 1] + Gauss(rng, aim));
+            first = 1;
         }
-    }
 
-    static float Dist(float ax, float ay, float bx, float by)
-    {
-        float dx = bx - ax;
-        float dy = by - ay;
-        return (float)Math.Sqrt(dx * dx + dy * dy);
-    }
-
-    static (float x, float y) DotCenter(int dot1Based) =>
-        (DotX[dot1Based - 1], DotY[dot1Based - 1]);
-
-    static (float x, float y) PointOnDotRing(int dot1Based, float distFromCenter)
-    {
-        var (cx, cy) = DotCenter(dot1Based);
-        float len = (float)Math.Sqrt(cx * cx + cy * cy);
-        if (len < 1e-4f)
-            return (cx + distFromCenter, cy);
-        float ux = cx / len;
-        float uy = cy / len;
-        return (cx + ux * distFromCenter, cy + uy * distFromCenter);
-    }
-
-    static List<(float x, float y)> Straight123Waypoints()
-    {
-        return new List<(float, float)>
+        var segs = new List<((double x, double y) a, (double x, double y) b, double dur, double bow, double dwell)>();
+        var cur = start;
+        for (int i = first; i < seq.Length; i++)
         {
-            DotCenter(1),
-            DotCenter(2),
-            DotCenter(3)
-        };
-    }
+            var tgt = (dx[seq[i] - 1] + Gauss(rng, aim), dy[seq[i] - 1] + Gauss(rng, aim));
+            double dur = fast ? 0.05 + rng.NextDouble() * 0.04 : 0.08 + rng.NextDouble() * 0.12;
+            double bow = -0.12 + rng.NextDouble() * 0.24;
+            segs.Add((cur, tgt, dur, bow, rng.NextDouble() * 0.04));
+            cur = tgt;
+        }
 
-    static List<(float x, float y)> CornerTurnWaypoints()
-    {
-        var d1 = DotCenter(1);
-        var d2 = DotCenter(2);
-        var d3 = DotCenter(3);
-        float ax = d2.x - d1.x;
-        float ay = d2.y - d1.y;
-        float len12 = (float)Math.Sqrt(ax * ax + ay * ay);
-        ax /= len12;
-        ay /= len12;
-        float bx = d3.x - d2.x;
-        float by = d3.y - d2.y;
-        float len23 = (float)Math.Sqrt(bx * bx + by * by);
-        bx /= len23;
-        by /= len23;
-        float inset = 55f;
-        return new List<(float, float)>
+        (double x, double y)? Pos(double t)
         {
-            d1,
-            (d2.x - ax * inset, d2.y - ay * inset),
-            d2,
-            (d2.x + bx * inset, d2.y + by * inset),
-            d3
-        };
-    }
-
-    static List<(float x, float y)> RingFinish14Waypoints()
-    {
-        var d1 = DotCenter(1);
-        var d4 = DotCenter(4);
-        var end = PointOnDotRing(4, 30f);
-        return new List<(float, float)> { d1, d4, end };
-    }
-
-    static List<(float x, float y)> FalsePositive14Waypoints()
-    {
-        var d1 = DotCenter(1);
-        var d4 = DotCenter(4);
-        float graze = DotRadius * 0.85f;
-        var mid = OffsetFromCenterTowardPerp(d1, d4, graze);
-        return new List<(float, float)> { d1, mid, d4 };
-    }
-
-    static (float x, float y) OffsetFromCenterTowardPerp(
-        (float x, float y) a, (float x, float y) b, float targetDistFromDot)
-    {
-        float mx = (a.x + b.x) * 0.5f;
-        float my = (a.y + b.y) * 0.5f;
-        float dx = b.x - a.x;
-        float dy = b.y - a.y;
-        float len = (float)Math.Sqrt(dx * dx + dy * dy);
-        float px = -dy / len;
-        float py = dx / len;
-        float bestX = mx;
-        float bestY = my;
-        float bestErr = float.MaxValue;
-        for (int i = 0; i < 6; i++)
-        {
-            if (i + 1 == 1 || i + 1 == 4)
-                continue;
-            float cx = DotX[i];
-            float cy = DotY[i];
-            for (int s = -1; s <= 1; s += 2)
+            foreach (var s in segs)
             {
-                float ox = mx + px * s * 80f;
-                float oy = my + py * s * 80f;
-                float d = Dist(ox, oy, cx, cy);
-                float err = Math.Abs(d - targetDistFromDot);
-                if (err < bestErr)
+                if (t <= s.dur)
                 {
-                    bestErr = err;
-                    bestX = ox;
-                    bestY = oy;
+                    double u = t / s.dur;
+                    double mx = (s.a.x + s.b.x) / 2, my = (s.a.y + s.b.y) / 2;
+                    double len = Math.Max(1e-6, Math.Sqrt((s.b.x - s.a.x) * (s.b.x - s.a.x) + (s.b.y - s.a.y) * (s.b.y - s.a.y)));
+                    double px = -(s.b.y - s.a.y) / len, py = (s.b.x - s.a.x) / len;
+                    double cx = mx + px * s.bow * len, cy = my + py * s.bow * len;
+                    return ((1 - u) * (1 - u) * s.a.x + 2 * (1 - u) * u * cx + u * u * s.b.x,
+                        (1 - u) * (1 - u) * s.a.y + 2 * (1 - u) * u * cy + u * u * s.b.y);
+                }
+                t -= s.dur;
+                if (t <= s.dwell)
+                    return s.b;
+                t -= s.dwell;
+            }
+            return null;
+        }
+
+        var outPts = new List<(float, float)>();
+        double time = 0;
+        while (true)
+        {
+            var p = Pos(time);
+            if (p == null)
+            {
+                var end = segs[segs.Count - 1].b;
+                outPts.Add(((float)end.x, (float)end.y));
+                break;
+            }
+            outPts.Add(((float)(p.Value.x + Gauss(rng, 1.5)), (float)(p.Value.y + Gauss(rng, 1.5))));
+            time += (1.0 / fps) * (rng.NextDouble() < 0.1 ? 2 : 1);
+        }
+        return outPts;
+    }
+
+    static List<int> RunOld(List<(float x, float y)> s, float[] dx, float[] dy)
+    {
+        var got = new List<int>();
+        int active = 0;
+        foreach (var p in s)
+        {
+            int h = StrokeDotSweep.Inside(p.x, p.y, dx, dy, DotR);
+            if (h == 0) { active = 0; continue; }
+            if (h != active) { got.Add(h); active = h; }
+        }
+        return got;
+    }
+
+    static List<int> RunNew(List<(float x, float y)> s, float[] dx, float[] dy)
+    {
+        var got = new List<int>();
+        var tmp = new List<int>();
+        var tracker = new StrokeDotTracker();
+        tracker.Begin(s[0].x, s[0].y, DotR, MinSeg, Settle, dx, dy, tmp);
+        got.AddRange(tmp);
+        for (int i = 1; i < s.Count; i++)
+        {
+            tracker.Move(s[i].x, s[i].y, dx, dy, tmp);
+            got.AddRange(tmp);
+        }
+        tracker.End(s[^1].x, s[^1].y, dx, dy, tmp);
+        got.AddRange(tmp);
+        return got;
+    }
+
+    static int[] Rot(int[] seq, int k) => seq.Select(d => ((d - 1 + k) % 6) + 1).ToArray();
+
+    /// <summary>(şekil, koşul) → (eski %, yeni %).</summary>
+    static Dictionary<(string, string), (double Old, double New)> Measure()
+    {
+        var res = new Dictionary<(string, string), (double, double)>();
+        foreach (float hexR in new[] { 104f, 112f })
+        {
+            var (dx, dy) = Dots(hexR);
+            foreach (int fps in new[] { 120, 60, 30 })
+            foreach (bool fast in new[] { false, true })
+            {
+                var rng = new Random(1234 + fps + (fast ? 7 : 0) + (int)hexR);
+                string cond = $"R{hexR} {fps}fps {(fast ? "hızlı" : "normal")}";
+                foreach (var (name, seq) in Shapes)
+                {
+                    int okOld = 0, okNew = 0;
+                    for (int k = 0; k < PerShape; k++)
+                    {
+                        int[] target = Rot(seq, k % 6);
+                        var samples = Generate(target, dx, dy, rng, fps, fast);
+                        if (RunOld(samples, dx, dy).SequenceEqual(target)) okOld++;
+                        if (RunNew(samples, dx, dy).SequenceEqual(target)) okNew++;
+                    }
+                    res[(name, cond)] = (100.0 * okOld / PerShape, 100.0 * okNew / PerShape);
                 }
             }
         }
-        return (bestX, bestY);
+        return res;
     }
 
-    static bool SequenceEquals(IReadOnlyList<int> got, IReadOnlyList<int> expected)
-    {
-        if (got.Count != expected.Count)
-            return false;
-        for (int i = 0; i < got.Count; i++)
-        {
-            if (got[i] != expected[i])
-                return false;
-        }
-        return true;
-    }
+    static Dictionary<(string, string), (double Old, double New)>? _cache;
+    static Dictionary<(string, string), (double Old, double New)> Results => _cache ??= Measure();
 
-    static float HitRate(string name, float fps, int seedBase,
-        Func<List<(float x, float y)>> waypoints,
-        IReadOnlyList<int> expected)
+    [Test]
+    public void PrintPerShapeTable()
     {
-        var sx = new List<float>();
-        var sy = new List<float>();
-        int hits = 0;
-        for (int s = 0; s < SeedsPerScenario; s++)
-        {
-            SamplePolyline(waypoints(), fps, seedBase + s, sx, sy);
-            var got = TraceStroke(sx, sy);
-            if (SequenceEquals(got, expected))
-                hits++;
-        }
-        float rate = hits / (float)SeedsPerScenario;
-        TestContext.WriteLine($"{name} / {fps} fps / {rate:P1}");
-        return rate;
+        var sb = new StringBuilder();
+        var conds = Results.Keys.Select(k => k.Item2).Distinct().ToList();
+        sb.AppendLine("| Şekil | " + string.Join(" | ", conds) + " |");
+        foreach (var (name, _) in Shapes)
+            sb.AppendLine("| " + name + " | " + string.Join(" | ",
+                conds.Select(c => $"{Results[(name, c)].Old:0}→{Results[(name, c)].New:0}")) + " |");
+        TestContext.Out.WriteLine(sb.ToString());
+        Assert.Pass(sb.ToString());
     }
 
     [Test]
-    public void StraightPass_123()
+    public void NormalSpeed_EveryShape_AtLeast97Percent()
     {
-        var expected = new List<int> { 1, 2, 3 };
-        float r60 = HitRate("StraightPass", 60f, 1000, Straight123Waypoints, expected);
-        float r30 = HitRate("StraightPass", 30f, 2000, Straight123Waypoints, expected);
-        Assert.That(r60, Is.EqualTo(1f));
-        Assert.That(r30, Is.EqualTo(1f));
+        foreach (var kv in Results.Where(k => k.Key.Item2.Contains("normal")))
+            Assert.That(kv.Value.New, Is.GreaterThanOrEqualTo(97.0), $"{kv.Key.Item1} {kv.Key.Item2}");
     }
 
     [Test]
-    public void CornerTurn_123()
+    public void FastStrokes_60And120fps_EveryShape_AtLeast97Percent()
     {
-        var expected = new List<int> { 1, 2, 3 };
-        float r60 = HitRate("CornerTurn", 60f, 3000, CornerTurnWaypoints, expected);
-        float r30 = HitRate("CornerTurn", 30f, 4000, CornerTurnWaypoints, expected);
-        Assert.That(r60, Is.EqualTo(1f));
-        Assert.That(r30, Is.EqualTo(1f));
+        foreach (var kv in Results.Where(k => k.Key.Item2.Contains("hızlı") && !k.Key.Item2.Contains("30fps")))
+            Assert.That(kv.Value.New, Is.GreaterThanOrEqualTo(97.0), $"{kv.Key.Item1} {kv.Key.Item2}");
+    }
+
+    /// <summary>30 fps + 50–90 ms segment = segment başına 2–3 kare; uç durum. Taban 88, ortalama ≥ 95.</summary>
+    [Test]
+    public void FastStrokes_30fps_Floor88_Average95()
+    {
+        var fast = Results.Where(k => k.Key.Item2.Contains("30fps hızlı")).ToList();
+        foreach (var kv in fast)
+            Assert.That(kv.Value.New, Is.GreaterThanOrEqualTo(88.0), $"{kv.Key.Item1} {kv.Key.Item2}");
+        Assert.That(fast.Average(k => k.Value.New), Is.GreaterThanOrEqualTo(95.0));
     }
 
     [Test]
-    public void RingFinish_14()
+    public void NewRule_NeverWorseThanOld_ByMoreThanNoise()
     {
-        var expected = new List<int> { 1, 4 };
-        float r60 = HitRate("RingFinish", 60f, 5000, RingFinish14Waypoints, expected);
-        float r30 = HitRate("RingFinish", 30f, 6000, RingFinish14Waypoints, expected);
-        Assert.That(r60, Is.EqualTo(1f));
-        Assert.That(r30, Is.EqualTo(1f));
+        foreach (var kv in Results)
+            Assert.That(kv.Value.New, Is.GreaterThanOrEqualTo(kv.Value.Old - 1.5), $"{kv.Key.Item1} {kv.Key.Item2}");
+        Assert.That(Results.Average(k => k.Value.New), Is.GreaterThan(Results.Average(k => k.Value.Old)));
     }
 
     [Test]
-    public void FalsePositive_GrazeNeighbors_14Only()
+    public void FastSwipe_AcrossDot_BetweenSamples_IsRegistered()
     {
-        var expected = new List<int> { 1, 4 };
-        var sx = new List<float>();
-        var sy = new List<float>();
-        int hits = 0;
-        for (int s = 0; s < SeedsPerScenario; s++)
+        var (dx, dy) = Dots(112f);
+        var tracker = new StrokeDotTracker();
+        var got = new List<int>();
+        var tmp = new List<int>();
+        // Merkezden dot 1'in üstünden geçip (örnek yok) dışarı: eski kural kaçırır.
+        tracker.Begin(0f, 60f, DotR, MinSeg, Settle, dx, dy, tmp);
+        got.AddRange(tmp);
+        tracker.Move(0f, 160f, dx, dy, tmp);
+        got.AddRange(tmp);
+        Assert.That(got, Is.EqualTo(new[] { 1 }));
+        Assert.That(RunOld(new List<(float, float)> { (0f, 60f), (0f, 160f) }, dx, dy), Is.Empty);
+    }
+
+    [Test]
+    public void Graze_OfMiddleDot_OnFarJump_IsNotRegistered()
+    {
+        var (dx, dy) = Dots(112f);
+        var tracker = new StrokeDotTracker();
+        var tmp = new List<int>();
+        var got = new List<int>();
+        tracker.Begin(dx[0], dy[0], DotR, MinSeg, Settle, dx, dy, tmp);
+        got.AddRange(tmp);
+        // 1→3, dot 2'nin halkasını 30 dp'den sıyırarak (çekirdek 27 dp dışında) geçer.
+        float mx = dx[1] - 30f * dx[1] / 112f, my = dy[1] - 30f * dy[1] / 112f;
+        tracker.Move(mx, my, dx, dy, tmp);
+        got.AddRange(tmp);
+        tracker.Move(dx[2], dy[2], dx, dy, tmp);
+        got.AddRange(tmp);
+        tracker.End(dx[2], dy[2], dx, dy, tmp);
+        got.AddRange(tmp);
+        Assert.That(got, Is.EqualTo(new[] { 1, 3 }));
+    }
+
+    [Test]
+    public void SameDot_NotRegisteredTwice_WithoutLeaving()
+    {
+        var (dx, dy) = Dots(112f);
+        var tracker = new StrokeDotTracker();
+        var tmp = new List<int>();
+        var got = new List<int>();
+        tracker.Begin(dx[0], dy[0], DotR, MinSeg, Settle, dx, dy, tmp);
+        got.AddRange(tmp);
+        for (int i = 0; i < 10; i++)
         {
-            SamplePolyline(FalsePositive14Waypoints(), 60f, 7000 + s, sx, sy);
-            var got = TraceStroke(sx, sy);
-            if (SequenceEquals(got, expected))
-                hits++;
+            tracker.Move(dx[0] + (i % 2) * 3f, dy[0] + 2f, dx, dy, tmp);
+            got.AddRange(tmp);
         }
-        float rate60 = hits / (float)SeedsPerScenario;
-        TestContext.WriteLine($"FalsePositive / 60 fps / {rate60:P1}");
-        Assert.That(rate60, Is.EqualTo(1f));
+        Assert.That(got, Is.EqualTo(new[] { 1 }));
+    }
 
-        hits = 0;
-        for (int s = 0; s < SeedsPerScenario; s++)
+    // --- Geri bildirim kuralları ---
+
+    [Test]
+    public void StrokeEnd_NoAcceptedDot_IsUnrecognized_UnlessDeniedOrCancelled()
+    {
+        Assert.That(DrawFeedback.OnStrokeEnd(true, 0, false, false), Is.EqualTo(DrawFeedback.StrokeOutcome.Unrecognized));
+        Assert.That(DrawFeedback.OnStrokeEnd(true, 1, false, false), Is.EqualTo(DrawFeedback.StrokeOutcome.None));
+        Assert.That(DrawFeedback.OnStrokeEnd(true, 0, true, false), Is.EqualTo(DrawFeedback.StrokeOutcome.None), "mana/soğuma/kapalı rün yazısı zaten gösterildi");
+        Assert.That(DrawFeedback.OnStrokeEnd(true, 0, false, true), Is.EqualTo(DrawFeedback.StrokeOutcome.None), "panel/kilit iptali sessiz");
+        Assert.That(DrawFeedback.OnStrokeEnd(false, 0, false, false), Is.EqualTo(DrawFeedback.StrokeOutcome.None), "merkez/dodge/swap çizim değil");
+        Assert.That(DrawFeedback.Unrecognized, Is.EqualTo("şekil tanınmadı"));
+    }
+
+    [Test]
+    public void RuneChain_JoinsDisplayNames()
+    {
+        var words = new List<SentenceWord>
         {
-            SamplePolyline(FalsePositive14Waypoints(), 30f, 8000 + s, sx, sy);
-            var got = TraceStroke(sx, sy);
-            if (SequenceEquals(got, expected))
-                hits++;
-        }
-        float rate30 = hits / (float)SeedsPerScenario;
-        TestContext.WriteLine($"FalsePositive / 30 fps / {rate30:P1}");
-        Assert.That(rate30, Is.EqualTo(1f));
+            new SentenceWord(Dovus.Core.Grammar.Rune.Saldiri, JumpKind.None, 0),
+            new SentenceWord(Dovus.Core.Grammar.Rune.Patlama, JumpKind.None, 0),
+        };
+        Assert.That(DrawFeedback.RuneChain(words), Is.EqualTo("Saldırı → Patlama"));
+        Assert.That(DrawFeedback.RuneChain(new List<SentenceWord>()), Is.EqualTo(string.Empty));
+    }
+
+    [Test]
+    public void Flash_And_Caption_Curves()
+    {
+        Assert.That(DrawFeedback.FlashMix(0f), Is.EqualTo(1f));
+        Assert.That(DrawFeedback.FlashMix(DrawFeedback.FlashFraction), Is.EqualTo(0f));
+        Assert.That(DrawFeedback.FlashMix(DrawFeedback.FlashFraction / 2f), Is.EqualTo(0.5f).Within(1e-4));
+        Assert.That(DrawFeedback.CaptionAlpha(0.1f), Is.EqualTo(1f));
+        Assert.That(DrawFeedback.CaptionAlpha(DrawFeedback.CaptionSec), Is.EqualTo(0f));
+        Assert.That(DrawFeedback.CaptionAlpha(DrawFeedback.CaptionSec * 0.875f), Is.EqualTo(0.5f).Within(1e-3));
+        Assert.That(DrawFeedback.FailFadeSec, Is.InRange(0.3f, 0.6f), "kısa kırmızı sönme");
+    }
+
+    static string Root()
+    {
+        var dir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
+        while (dir != null && !Directory.Exists(Path.Combine(dir.FullName, "unity", "Assets")))
+            dir = dir.Parent;
+        return dir!.FullName;
+    }
+
+    static string Game(string rel) =>
+        File.ReadAllText(Path.Combine(Root(), "unity", "Assets", "Scripts", rel));
+
+    [Test]
+    public void Game_WiresTrackerAndFeedback()
+    {
+        string input = Game("Game/HexagonInput.cs");
+        Assert.That(input, Does.Contain("StrokeDotTracker"));
+        Assert.That(input, Does.Not.Contain("TryRegisterDotAt"), "nokta kaydı yalnız tarayıcıdan");
+        Assert.That(input, Does.Contain("DrawFeedback.CaptionFor(outcome)"));
+        Assert.That(input, Does.Contain("DrawFeedback.ClosedRune"));
+        Assert.That(input, Does.Contain("_ink?.Break(_inkFlashPending)"));
+        Assert.That(input, Does.Contain("_ink?.RawEnd(false, _strokeAcceptedPx)"));
+        Assert.That(input, Does.Contain("TickStrokeSettle()"));
+        string ink = Game("Game/InkTrail.cs");
+        Assert.That(ink, Does.Contain("public void RawBegin("));
+        Assert.That(ink, Does.Contain("public void Break(bool flash)"));
+        Assert.That(Game("Game/PrototypeBootstrap.cs"), Does.Contain("input.DrawCaption += view.ShowDrawCaption;"));
+        Assert.That(Game("Game/HexagonView.cs"), Does.Contain("BuildDrawCaption(canvasGo.transform);"));
     }
 }
