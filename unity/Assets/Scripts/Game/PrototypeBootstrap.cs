@@ -92,9 +92,10 @@ namespace Dovus.Game
             CombatAmbienceEnvironment.Build(arena, walkHalf, _tuning);
             DebugConfig.DevLog($"[Arena] circle r={walkHalf:0.##}m wallH={_tuning.ArenaWallHeightM:0.#}m");
 
+            float spawnMaxR = walkHalf * 0.4f;
             var player = CreateCapsule(
                 "Player",
-                new Vector3(0f, PlayerHeightM * 0.5f, -2f),
+                ClampSpawnXZ(new Vector3(0f, PlayerHeightM * 0.5f, -2f), spawnMaxR),
                 PlayerRadiusM,
                 PlayerHeightM,
                 _tuning.PlayerColor);
@@ -108,7 +109,7 @@ namespace Dovus.Game
 
             var ally = CreateCapsule(
                 "AllyDummy",
-                new Vector3(-3.2f, PlayerHeightM * 0.5f, -1.2f),
+                ClampSpawnXZ(new Vector3(-3.2f, PlayerHeightM * 0.5f, -1.2f), spawnMaxR),
                 PlayerRadiusM * 0.95f,
                 PlayerHeightM,
                 new Color(0.35f, 0.85f, 0.55f));
@@ -136,9 +137,11 @@ namespace Dovus.Game
             // O6: başlangıç oranı tek debug anahtarında (varsayılan 1.0).
             allyDummy.Bind(playerHp, startRatio: DebugConfig.StartHpRatio);
 
+            float bossSpawnZ = 5f * Mathf.Max(1f, _tuning.ArenaVisualScale * 0.55f);
+            bossSpawnZ = Mathf.Clamp(bossSpawnZ, -spawnMaxR, spawnMaxR);
             var boss = CreateCapsule(
                 "Boss",
-                new Vector3(0f, BossHeightM * 0.5f, 5f * Mathf.Max(1f, _tuning.ArenaVisualScale * 0.55f)),
+                ClampSpawnXZ(new Vector3(0f, BossHeightM * 0.5f, bossSpawnZ), spawnMaxR),
                 BossRadiusM,
                 BossHeightM,
                 _tuning.BossColor);
@@ -863,6 +866,22 @@ namespace Dovus.Game
                 + Vector3.back * _tuning.CameraDistanceM;
             camGo.transform.position = target.position + startOffset;
             return follow;
+        }
+
+        /// <summary>Başlangıç spawn'ları arena merkezinden en fazla <paramref name="maxRadiusM"/> içinde tutar.</summary>
+        static Vector3 ClampSpawnXZ(Vector3 worldPos, float maxRadiusM)
+        {
+            if (maxRadiusM <= 0.01f)
+                return worldPos;
+            var xz = new Vector2(worldPos.x, worldPos.z);
+            float maxR = maxRadiusM;
+            if (xz.sqrMagnitude > maxR * maxR)
+            {
+                xz = xz.normalized * maxR;
+                worldPos.x = xz.x;
+                worldPos.z = xz.y;
+            }
+            return worldPos;
         }
 
         static void ApplyColor(GameObject go, Color color)
