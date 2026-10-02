@@ -209,7 +209,7 @@ public class ReleaseBuildPerfTests
     {
         string boot = Game("PrototypeBootstrap.cs");
         int ensure = boot.IndexOf("EnsureEventSystem();", System.StringComparison.Ordinal);
-        int gate = boot.IndexOf("CreateTuningPanel(tuningConfig, vitals);", System.StringComparison.Ordinal);
+        int gate = boot.IndexOf("CreateTuningPanel(tuningConfig, vitals, follow);", System.StringComparison.Ordinal);
         Assert.That(ensure, Is.GreaterThan(0));
         Assert.That(gate, Is.GreaterThan(ensure));
         string between = boot.Substring(ensure, gate - ensure);

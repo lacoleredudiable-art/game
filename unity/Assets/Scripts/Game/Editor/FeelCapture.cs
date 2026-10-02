@@ -2,7 +2,6 @@
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
 using Dovus.Core.Combat;
 using Dovus.Game;
 using UnityEditor;
@@ -14,7 +13,7 @@ namespace Dovus.Game.EditorTools
     /// <summary>feel-pack (3/3) yakalama: lava görünür, gerçek vuruş karesi, %60 kadraj.</summary>
     public static class FeelCapture
     {
-        public const string OutDir = @"C:\Users\lacol\_cleanup\feel\v2";
+        public const string OutDir = @"C:\Users\lacol\_cleanup\feel\v3";
         const int W = 1600;
         const int H = 900;
         const float TargetFill = 0.60f;
@@ -26,6 +25,9 @@ namespace Dovus.Game.EditorTools
         public static float LoggedDefaultCameraDistM;
         public static float LoggedLockOnCameraDistM;
         public static float LoggedWindupCameraDistM;
+        public static float LoggedWindupPullback01;
+        public static float LoggedBossHeadViewportY;
+        public static float LoggedPlayerViewportY;
         public static float LastIdleScreenFillPct;
         public static float LastStrikeScreenFillPct;
         public static float LastSwordAngleFromVerticalDeg;
@@ -36,7 +38,6 @@ namespace Dovus.Game.EditorTools
             Directory.CreateDirectory(OutDir);
             LookPresets.Apply('B');
             HideTransientOnly(true);
-            Thread.Sleep(400);
         }
 
         public static void EndSession() => HideTransientOnly(false);
@@ -91,34 +92,93 @@ namespace Dovus.Game.EditorTools
 
         public static void LogDefaultCameraDistance()
         {
-            LoggedDefaultCameraDistM = SampleCameraToPlayerDist();
-            Debug.Log($"[FeelCapture] camera distance default={LoggedDefaultCameraDistM:F2}m");
+            LoggedDefaultCameraDistM = SampleResolvedDistance();
+            Debug.Log(
+                $"[FeelCapture] camera distance default resolved={LoggedDefaultCameraDistM:F2}m raw={SampleCameraToPlayerDist():F2}m pullback={SampleWindupPullback():F2}");
         }
 
-        public static void CaptureGameplayDefault()
+        static bool _defaultCaptureActive;
+
+        /// <summary>
+        /// ff-4: Thread.Sleep ana iş parçacığını durdurduğu için hiç kare çalışmıyordu
+        /// (FollowCamera.LateUpdate hiç tetiklenmiyordu) → varsayılan/lock-on kareleri birebir
+        /// aynıydı. Gerçek Play karesi bekleyen EditorApplication.update zamanlayıcısı (bkz.
+        /// ScheduleWindupCapture) ile değiştirildi.
+        /// </summary>
+        public static void CaptureGameplayDefault(int settleFrames = 24)
         {
+            if (_defaultCaptureActive)
+                return;
+            _defaultCaptureActive = true;
             Directory.CreateDirectory(OutDir);
             LookPresets.Apply('B');
             AnimPreview.Equip("kilic");
             SetBlockersHidden(false);
             ResumeBossAi();
-            Thread.Sleep(250);
-            LogDefaultCameraDistance();
-            RenderToFile(Camera.main, Path.Combine(OutDir, "gameplay-default.png"));
+            var follow = Object.FindAnyObjectByType<FollowCamera>();
+            if (follow != null)
+                follow.LockOnActive = false;
+            SnapGameplayBossSeparation();
+            ScheduleFrames(settleFrames, () =>
+            {
+                _defaultCaptureActive = false;
+                LogDefaultCameraDistance();
+                LoggedBossHeadViewportY = SampleBossHeadViewportY();
+                LoggedPlayerViewportY = SamplePlayerViewportY();
+                Debug.Log(
+                    $"[FeelCapture] viewport bossHeadY={LoggedBossHeadViewportY:F2} playerY={LoggedPlayerViewportY:F2} (player lower third ~0.33)");
+                RenderToFile(Camera.main, Path.Combine(OutDir, "gameplay-default.png"));
+            });
         }
 
-        public static void CaptureLockOn()
+        static bool _lockOnCaptureActive;
+
+        public static void CaptureLockOn(int settleFrames = 28)
         {
+            if (_lockOnCaptureActive)
+                return;
+            _lockOnCaptureActive = true;
             Directory.CreateDirectory(OutDir);
             LookPresets.Apply('B');
             HideTransientOnly(true);
             SetBlockersHidden(false);
             ResumeBossAi();
+            var follow = Object.FindAnyObjectByType<FollowCamera>();
+            if (follow != null)
+                follow.LockOnActive = true;
             SnapPlayerForLockOnFraming();
-            Thread.Sleep(350);
-            LoggedLockOnCameraDistM = SampleCameraToPlayerDist();
-            Debug.Log($"[FeelCapture] camera distance lock-on={LoggedLockOnCameraDistM:F2}m (default was {LoggedDefaultCameraDistM:F2}m)");
-            RenderToFile(Camera.main, Path.Combine(OutDir, "lockon.png"));
+            ScheduleFrames(settleFrames, () =>
+            {
+                _lockOnCaptureActive = false;
+                LoggedLockOnCameraDistM = SampleResolvedDistance();
+                Debug.Log(
+                    $"[FeelCapture] camera distance lock-on resolved={LoggedLockOnCameraDistM:F2}m raw={SampleCameraToPlayerDist():F2}m "
+                    + $"(default resolved was {LoggedDefaultCameraDistM:F2}m) pullback={SampleWindupPullback():F2}");
+                RenderToFile(Camera.main, Path.Combine(OutDir, "lockon.png"));
+            });
+        }
+
+        /// <summary>Gerçek Play karesi bekleyen genel zamanlayıcı (Thread.Sleep YASAK — bkz. yukarı not).</summary>
+        static void ScheduleFrames(int frames, System.Action onDone)
+        {
+            int left = Mathf.Max(1, frames);
+            void Tick()
+            {
+                ResumeBossAi();
+                left--;
+                if (left > 0)
+                    return;
+                EditorApplication.update -= Tick;
+                onDone();
+            }
+
+            EditorApplication.update += Tick;
+        }
+
+        static float SampleWindupPullback()
+        {
+            var follow = Object.FindAnyObjectByType<FollowCamera>();
+            return follow != null ? follow.WindupPullback01 : 0f;
         }
 
         static bool _windupWatchActive;
@@ -169,9 +229,11 @@ namespace Dovus.Game.EditorTools
                 return false;
             }
 
-            LoggedWindupCameraDistM = SampleCameraToPlayerDist();
+            LoggedWindupCameraDistM = SampleResolvedDistance();
+            LoggedWindupPullback01 = SampleWindupPullback();
             Debug.Log(
-                $"[FeelCapture] camera distance windup={LoggedWindupCameraDistM:F2}m (default={LoggedDefaultCameraDistM:F2}m lock-on={LoggedLockOnCameraDistM:F2}m) progress={p:F2}");
+                $"[FeelCapture] camera distance windup resolved={LoggedWindupCameraDistM:F2}m (default={LoggedDefaultCameraDistM:F2}m lock-on={LoggedLockOnCameraDistM:F2}m) "
+                + $"pullback={LoggedWindupPullback01:F2} progress={p:F2}");
             RenderToFile(Camera.main, Path.Combine(OutDir, "windup-pullback.png"));
             return true;
         }
@@ -189,13 +251,60 @@ namespace Dovus.Game.EditorTools
             AnimPreview.Equip("kilic");
         }
 
-        public static void CaptureImpactSparks()
+        static bool _impactCaptureActive;
+
+        /// <summary>Gerçek hasar sayısı spawn olana kadar poll; 2 kare sonra yakala.</summary>
+        public static void ScheduleImpactSparksCapture(int maxFrames = 900)
         {
-            AnimPreview.Strike();
-            Thread.Sleep(120);
-            RenderToFile(Camera.main, Path.Combine(OutDir, "impact-sparks.png"));
-            ResumeBossAi();
+            if (_impactCaptureActive)
+                return;
+            _impactCaptureActive = true;
+            PrepareImpactShot();
+            SnapPlayerNearBossForStrike();
+            bool struck = false;
+            int afterHitFrames = -1;
+            int frames = 0;
+            void Tick()
+            {
+                frames++;
+                if (!struck)
+                {
+                    struck = AnimPreview.Strike();
+                    if (!struck)
+                        Debug.LogWarning("[FeelCapture] impact strike cast failed");
+                }
+
+                if (TryFindActiveBossDamageNumber())
+                {
+                    if (afterHitFrames < 0)
+                        afterHitFrames = 0;
+                    else
+                        afterHitFrames++;
+                }
+
+                if (afterHitFrames >= 2)
+                {
+                    EditorApplication.update -= Tick;
+                    _impactCaptureActive = false;
+                    RenderToFile(Camera.main, Path.Combine(OutDir, "impact-sparks.png"));
+                    ResumeBossAi();
+                    return;
+                }
+
+                if (frames >= maxFrames)
+                {
+                    Debug.LogWarning("[FeelCapture] impact schedule timed out");
+                    EditorApplication.update -= Tick;
+                    _impactCaptureActive = false;
+                    RenderToFile(Camera.main, Path.Combine(OutDir, "impact-sparks.png"));
+                    ResumeBossAi();
+                }
+            }
+
+            EditorApplication.update += Tick;
         }
+
+        public static void CaptureImpactSparks(int settleFrames = 8) => ScheduleImpactSparksCapture(settleFrames * 60);
 
         public static string HashAllCapturePngs()
         {
@@ -203,7 +312,7 @@ namespace Dovus.Game.EditorTools
             foreach (string name in new[]
                      {
                          "gameplay-default.png", "lockon.png", "windup-pullback.png", "impact-sparks.png",
-                         "damage-vignette.png", "paladin-idle.png", "paladin-strike.png"
+                         "damage-vignette.png", "paladin-idle.png", "paladin-strike.png", "telegraph-closeup.png"
                      })
             {
                 string path = Path.Combine(OutDir, name);
@@ -220,9 +329,7 @@ namespace Dovus.Game.EditorTools
             LookPresets.Apply('B');
             var feel = Object.FindAnyObjectByType<CombatFeel>();
             feel?.OnExchange(new ExchangeResult { Outcome = ExchangeOutcome.Hit });
-
-            Thread.Sleep(200);
-            RenderToFile(Camera.main, Path.Combine(OutDir, "damage-vignette.png"));
+            ScheduleFrames(8, () => RenderToFile(Camera.main, Path.Combine(OutDir, "damage-vignette.png")));
         }
 
         public static void CapturePaladinStrike()
@@ -237,7 +344,7 @@ namespace Dovus.Game.EditorTools
             if (anim != null)
                 ApplyStrikeSample(anim, t);
             CaptureSolo(root, true, "paladin-strike.png", strikePose: true);
-            LastStrikeScreenFillPct = LogPixelHeight(Path.Combine(OutDir, "paladin-strike.png"), "paladin-strike");
+            LogPixelHeight(Path.Combine(OutDir, "paladin-strike.png"), "paladin-strike");
         }
 
         public static void CapturePaladinIdle()
@@ -255,7 +362,7 @@ namespace Dovus.Game.EditorTools
             }
 
             CaptureSolo(root, true, "paladin-idle.png", strikePose: false);
-            LastIdleScreenFillPct = LogPixelHeight(Path.Combine(OutDir, "paladin-idle.png"), "paladin-idle");
+            LogPixelHeight(Path.Combine(OutDir, "paladin-idle.png"), "paladin-idle");
         }
 
         public static void CaptureSyntyAlly()
@@ -476,7 +583,237 @@ namespace Dovus.Game.EditorTools
             PauseBossAi();
             ClearCombatParticlesOnly();
             AnimPreview.Equip("kilic");
-            Thread.Sleep(200);
+        }
+
+        static bool _telegraphWatchActive;
+
+        /// <summary>Boss slam diski mid-windup — yakın kamera, zemin görünür.</summary>
+        public static void ScheduleTelegraphCloseupCapture(int maxFrames = 7200)
+        {
+            if (_telegraphWatchActive)
+                return;
+            _telegraphWatchActive = true;
+            Directory.CreateDirectory(OutDir);
+            LookPresets.Apply('B');
+            SetBlockersHidden(false);
+            ResumeBossAi();
+            int frames = 0;
+            void Tick()
+            {
+                frames++;
+                ResumeBossAi();
+                var boss = Object.FindAnyObjectByType<BossDirector>();
+                if (boss != null && boss.IsWindingUp)
+                {
+                    float p = boss.WindupProgress01;
+                    if (p >= 0.42f && p <= 0.58f && TryCaptureTelegraphCloseup())
+                    {
+                        EditorApplication.update -= Tick;
+                        _telegraphWatchActive = false;
+                        return;
+                    }
+                }
+
+                if (frames >= maxFrames)
+                {
+                    Debug.LogWarning("[FeelCapture] telegraph schedule timed out");
+                    EditorApplication.update -= Tick;
+                    _telegraphWatchActive = false;
+                }
+            }
+
+            EditorApplication.update += Tick;
+        }
+
+        static bool TryCaptureTelegraphCloseup()
+        {
+            Transform disc = FindActiveSlamDisc();
+            if (disc == null)
+                return false;
+            Vector3 focus = disc.position + Vector3.up * 0.05f;
+            Vector3 toDisc = focus - (FindPlayerRoot()?.position ?? focus);
+            toDisc.y = 0f;
+            if (toDisc.sqrMagnitude < 0.01f)
+                toDisc = Vector3.forward;
+            Vector3 camPos = focus - toDisc.normalized * 3.2f + Vector3.up * 1.35f;
+            var camGo = new GameObject("FeelTelegraphCam");
+            var cam = camGo.AddComponent<Camera>();
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = Camera.main != null ? Camera.main.backgroundColor : new Color(0.56f, 0.6f, 0.66f);
+            cam.fieldOfView = 42f;
+            cam.nearClipPlane = 0.08f;
+            cam.farClipPlane = 120f;
+            cam.transform.SetPositionAndRotation(camPos, Quaternion.LookRotation(focus - camPos, Vector3.up));
+            var urp = camGo.AddComponent<UniversalAdditionalCameraData>();
+            urp.renderPostProcessing = true;
+            Debug.Log($"[FeelCapture] telegraph-closeup disc={focus} progress windup");
+            RenderToFile(cam, Path.Combine(OutDir, "telegraph-closeup.png"));
+            Object.DestroyImmediate(camGo);
+            return true;
+        }
+
+        public static void LogPairwisePixelDiffs()
+        {
+            float dLock = MeanAbsPixelDiff("gameplay-default.png", "lockon.png");
+            float dWind = MeanAbsPixelDiff("gameplay-default.png", "windup-pullback.png");
+            Debug.Log(
+                $"[FeelCapture] pixel-diff meanAbs default-vs-lockon={dLock:F4} default-vs-windup={dWind:F4} (need >{6f / 255f:F4})");
+        }
+
+        public static float MeanAbsPixelDiff(string fileA, string fileB)
+        {
+            string pathA = Path.Combine(OutDir, fileA);
+            string pathB = Path.Combine(OutDir, fileB);
+            if (!File.Exists(pathA) || !File.Exists(pathB))
+                return 0f;
+            var ta = LoadRgb(pathA);
+            var tb = LoadRgb(pathB);
+            if (ta.width != tb.width || ta.height != tb.height)
+            {
+                Object.DestroyImmediate(ta);
+                Object.DestroyImmediate(tb);
+                return 0f;
+            }
+
+            Color[] pa = ta.GetPixels();
+            Color[] pb = tb.GetPixels();
+            double sum = 0;
+            for (int i = 0; i < pa.Length; i++)
+            {
+                sum += (System.Math.Abs(pa[i].r - pb[i].r) + System.Math.Abs(pa[i].g - pb[i].g)
+                    + System.Math.Abs(pa[i].b - pb[i].b)) / 3.0;
+            }
+
+            Object.DestroyImmediate(ta);
+            Object.DestroyImmediate(tb);
+            return (float)(sum / pa.Length);
+        }
+
+        static Texture2D LoadRgb(string path)
+        {
+            var tex = new Texture2D(2, 2);
+            tex.LoadImage(File.ReadAllBytes(path));
+            return tex;
+        }
+
+        public static void BuildContactSheet()
+        {
+            string[] names =
+            {
+                "gameplay-default.png", "lockon.png", "windup-pullback.png", "impact-sparks.png",
+                "damage-vignette.png", "paladin-idle.png", "paladin-strike.png", "telegraph-closeup.png"
+            };
+            const int sheetW = 1200;
+            const int labelH = 28;
+            int cols = 2;
+            int cellW = sheetW / cols;
+            int cellH = (int)(cellW * (H / (float)W));
+            int rows = (names.Length + cols - 1) / cols;
+            int sheetH = rows * (cellH + labelH);
+            var sheet = new Texture2D(sheetW, sheetH, TextureFormat.RGB24, false);
+            var fill = new Color(0.12f, 0.12f, 0.14f);
+            for (int y = 0; y < sheetH; y++)
+            for (int x = 0; x < sheetW; x++)
+                sheet.SetPixel(x, y, fill);
+            for (int i = 0; i < names.Length; i++)
+            {
+                string path = Path.Combine(OutDir, names[i]);
+                if (!File.Exists(path))
+                    continue;
+                var src = LoadRgb(path);
+                int col = i % cols;
+                int row = i / cols;
+                int ox = col * cellW;
+                int oy = row * (cellH + labelH) + labelH;
+                BlitFit(src, sheet, ox, oy, cellW, cellH);
+                Object.DestroyImmediate(src);
+                DrawLabelBar(sheet, ox, row * (cellH + labelH), cellW, labelH, names[i]);
+            }
+
+            sheet.Apply();
+            string outPath = Path.Combine(OutDir, "contact-sheet.png");
+            File.WriteAllBytes(outPath, sheet.EncodeToPNG());
+            Object.DestroyImmediate(sheet);
+            Debug.Log("[FeelCapture] contact-sheet " + outPath);
+        }
+
+        static void BlitFit(Texture2D src, Texture2D dst, int ox, int oy, int dw, int dh)
+        {
+            for (int y = 0; y < dh; y++)
+            for (int x = 0; x < dw; x++)
+            {
+                float u = x / (float)(dw - 1);
+                float v = y / (float)(dh - 1);
+                Color c = src.GetPixelBilinear(u, v);
+                dst.SetPixel(ox + x, oy + y, c);
+            }
+        }
+
+        static void DrawLabelBar(Texture2D sheet, int ox, int oy, int w, int h, string label)
+        {
+            var bar = new Color(0.22f, 0.22f, 0.26f);
+            for (int y = oy; y < oy + h; y++)
+            for (int x = ox; x < ox + w; x++)
+                sheet.SetPixel(x, y, bar);
+            // Basit ASCII damga (yalnız dosya adı — tam font gerektirmez)
+            int cursor = ox + 8;
+            foreach (char ch in label)
+            {
+                StampChar(sheet, ch, cursor, oy + 6);
+                cursor += 9;
+            }
+        }
+
+        static void StampChar(Texture2D tex, char ch, int x, int y)
+        {
+            // 5x7 minimal blok harf
+            string glyph = ch switch
+            {
+                'a' or 'A' => "01110|10001|11111|10001|10001",
+                'b' or 'B' => "11110|10001|11110|10001|11110",
+                'c' or 'C' => "01111|10000|10000|10000|01111",
+                'd' or 'D' => "11110|10001|10001|10001|11110",
+                'e' or 'E' => "11111|10000|11110|10000|11111",
+                'g' or 'G' => "01111|10000|10011|10001|01110",
+                'h' or 'H' => "10001|10001|11111|10001|10001",
+                'i' or 'I' => "11111|00100|00100|00100|11111",
+                'k' or 'K' => "10001|10010|11100|10010|10001",
+                'l' or 'L' => "10000|10000|10000|10000|11111",
+                'm' or 'M' => "10001|11011|10101|10001|10001",
+                'n' or 'N' => "10001|11001|10101|10011|10001",
+                'o' or 'O' => "01110|10001|10001|10001|01110",
+                'p' or 'P' => "11110|10001|11110|10000|10000",
+                'r' or 'R' => "11110|10001|11110|10100|10001",
+                's' or 'S' => "01111|10000|01110|00001|11110",
+                't' or 'T' => "11111|00100|00100|00100|00100",
+                'u' or 'U' => "10001|10001|10001|10001|01110",
+                'w' or 'W' => "10001|10001|10101|10101|01010",
+                'y' or 'Y' => "10001|10001|01110|00100|00100",
+                '-' => "00000|00000|11111|00000|00000",
+                '.' => "00000|00000|00000|00000|00100",
+                '0' => "01110|10001|10001|10001|01110",
+                '1' => "00100|01100|00100|00100|01110",
+                '2' => "01110|10001|00110|01000|11111",
+                '3' => "11110|00001|01110|00001|11110",
+                '4' => "10010|10010|11111|00010|00010",
+                '5' => "11111|10000|11110|00001|11110",
+                '6' => "01110|10000|11110|10001|01110",
+                '7' => "11111|00001|00010|00100|01000",
+                '8' => "01110|10001|01110|10001|01110",
+                '9' => "01110|10001|01111|00001|01110",
+                _ => "00000|00000|00000|00000|00000"
+            };
+            string[] rows = glyph.Split('|');
+            for (int ry = 0; ry < rows.Length; ry++)
+            for (int rx = 0; rx < rows[ry].Length; rx++)
+            {
+                if (rows[ry][rx] != '1')
+                    continue;
+                int px = x + rx;
+                int py = y + (rows.Length - 1 - ry);
+                if (px >= 0 && px < tex.width && py >= 0 && py < tex.height)
+                    tex.SetPixel(px, py, Color.white);
+            }
         }
 
         static void PauseBossAi()
@@ -511,29 +848,124 @@ namespace Dovus.Game.EditorTools
 
         static void SnapPlayerForLockOnFraming()
         {
+            SnapBossSeparationM(7.5f);
+        }
+
+        /// <summary>Boss 8–12 m önde (oyuncu–boss yatay mesafe).</summary>
+        static void SnapGameplayBossSeparation()
+        {
+            SnapBossSeparationM(10f, 8f, 12f);
+        }
+
+        static void SnapBossSeparationM(float want, float min = -1f, float max = -1f)
+        {
             Transform player = FindPlayerRoot();
             var boss = Object.FindAnyObjectByType<BossDirector>();
             if (player == null || boss == null)
                 return;
             Vector3 toBoss = boss.transform.position - player.position;
             toBoss.y = 0f;
-            float want = 7.5f;
             if (toBoss.sqrMagnitude < 0.01f)
                 toBoss = Vector3.forward;
-            float extra = Mathf.Max(0f, toBoss.magnitude - want);
+            float sep = toBoss.magnitude;
+            if (min > 0f && sep < min)
+            {
+                boss.transform.position += toBoss.normalized * (min - sep);
+                return;
+            }
+
+            if (max > 0f && sep > max)
+            {
+                player.position += toBoss.normalized * (sep - max);
+                return;
+            }
+
+            float extra = Mathf.Max(0f, sep - want);
             if (extra > 0.05f)
                 player.position += toBoss.normalized * extra;
         }
 
+        static void SnapPlayerNearBossForStrike()
+        {
+            Transform player = FindPlayerRoot();
+            var boss = Object.FindAnyObjectByType<BossDirector>();
+            if (player == null || boss == null)
+                return;
+            Vector3 toBoss = boss.transform.position - player.position;
+            toBoss.y = 0f;
+            if (toBoss.sqrMagnitude < 0.01f)
+                toBoss = Vector3.forward;
+            float want = 2.8f;
+            float sep = toBoss.magnitude;
+            if (sep > want + 0.05f)
+                player.position += toBoss.normalized * (sep - want);
+        }
+
+        static float SampleBossHeadViewportY()
+        {
+            var follow = Object.FindAnyObjectByType<FollowCamera>();
+            if (follow == null || follow.BossTarget == null || Camera.main == null)
+                return -1f;
+            Vector3 head = follow.BossTarget.position + Vector3.up * follow.Tuning.CameraBossAimHeightM;
+            Vector3 vp = Camera.main.WorldToViewportPoint(head);
+            return vp.z > 0f ? vp.y : -1f;
+        }
+
+        static float SamplePlayerViewportY()
+        {
+            Transform player = FindPlayerRoot();
+            if (player == null || Camera.main == null)
+                return -1f;
+            Vector3 chest = player.position + Vector3.up * 1.1f;
+            Vector3 vp = Camera.main.WorldToViewportPoint(chest);
+            return vp.z > 0f ? vp.y : -1f;
+        }
+
+        static bool TryFindActiveBossDamageNumber()
+        {
+            foreach (Transform t in Object.FindObjectsByType<Transform>(FindObjectsSortMode.None))
+            {
+                if (t == null || !t.gameObject.activeInHierarchy || t.name.IndexOf("Float_", System.StringComparison.Ordinal) < 0)
+                    continue;
+                var text = t.GetComponent<UnityEngine.UI.Text>();
+                if (text == null || !text.gameObject.activeSelf)
+                    continue;
+                Color c = text.color;
+                if (c.r < 0.65f || c.g > 0.35f)
+                    continue;
+                if (string.IsNullOrEmpty(text.text) || text.text.StartsWith("+", System.StringComparison.Ordinal))
+                    continue;
+                return true;
+            }
+
+            return false;
+        }
+
+        static Transform FindActiveSlamDisc()
+        {
+            foreach (Transform t in Object.FindObjectsByType<Transform>(FindObjectsSortMode.None))
+            {
+                if (t != null && t.name == "SlamDisc" && t.gameObject.activeInHierarchy)
+                    return t;
+            }
+
+            return null;
+        }
+
+        /// <summary>Gerçek kamera↔oyuncu metre mesafesi (ham, FollowCamera'nın yumuşatılmış hedefinden ayrı).</summary>
         static float SampleCameraToPlayerDist()
         {
             Transform player = FindPlayerRoot();
             if (player == null || Camera.main == null)
                 return 0f;
-            var follow = Object.FindAnyObjectByType<FollowCamera>();
-            if (follow != null)
-                return follow.ResolvedDistanceM;
             return Vector3.Distance(Camera.main.transform.position, player.position);
+        }
+
+        /// <summary>FollowCamera.ResolvedDistanceM — yumuşatılmış hedef mesafe (ff-4 doğrulama).</summary>
+        static float SampleResolvedDistance()
+        {
+            var follow = Object.FindAnyObjectByType<FollowCamera>();
+            return follow != null ? follow.ResolvedDistanceM : SampleCameraToPlayerDist();
         }
 
         static float ReadLastSwordAngleFromLog(Animator anim)
@@ -553,7 +985,7 @@ namespace Dovus.Game.EditorTools
 
             if (blade == null)
                 return 0f;
-            Vector3 tip = blade.position + blade.up * 0.45f;
+            Vector3 tip = blade.position + blade.forward * 0.45f;
             Vector3 dir = (tip - hand.position).normalized;
             return Vector3.Angle(dir, Vector3.up);
         }

@@ -576,7 +576,7 @@ namespace Dovus.Game
             {
                 var v6Panel = root.AddComponent<V611DebugPanel>();
                 v6Panel.Configure(input, director, buildSelect, view.CanvasRoot, vitals);
-                CreateTuningPanel(tuningConfig, vitals);
+                CreateTuningPanel(tuningConfig, vitals, follow);
                 root.AddComponent<DebugPanelsController>();
             }
         }
@@ -641,11 +641,11 @@ namespace Dovus.Game
         /// bir EventSystem + bir input modülü ister; InputSystemUIInputModule seçildi çünkü
         /// proje zaten Yeni Input System üstünde (Unity.InputSystem asmdef referansı).
         /// </summary>
-        static void CreateTuningPanel(TuningConfig tuningConfig, PlayerVitals vitals)
+        static void CreateTuningPanel(TuningConfig tuningConfig, PlayerVitals vitals, FollowCamera follow)
         {
             var panelGo = new GameObject("TuningPanel");
             var panel = panelGo.AddComponent<TuningPanel>();
-            panel.Configure(tuningConfig, vitals);
+            panel.Configure(tuningConfig, vitals, follow);
         }
 
         /// <summary>

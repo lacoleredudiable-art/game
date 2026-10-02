@@ -34,6 +34,7 @@ namespace Dovus.Game
         Transform _fill;
         Material _mat;
         Mesh _coneMesh;
+        static Texture2D _glowTex;
 
         public bool Dodgeable { get; private set; } = true;
         public float Fill01 { get; private set; }
@@ -123,8 +124,11 @@ namespace Dovus.Game
             else
                 fill = full * Mathf.Max(0.05f, u);
             _fill.localScale = fill;
-            Paint(_outline, new Color(1f, 0.35f, 0.12f, 0.28f));
-            Paint(_fill, Color.Lerp(new Color(1f, 0.72f, 0.2f, 0.45f), new Color(1f, 0.15f, 0.08f, 0.85f), u));
+            // ff-4: "büyük solid turuncu disk çok yüksek sesliydi" — dolum alfası 0.85'e kadar
+            // çıkıyordu. Dolum/çevre artık ~0.25-0.35 tavanlı, yarıçap kenarında yumuşak/parlak
+            // ince bir "rim" (bkz. GlowTexture) ile okunabilir kalır.
+            Paint(_outline, new Color(1f, 0.35f, 0.12f, 0.26f));
+            Paint(_fill, Color.Lerp(new Color(1f, 0.72f, 0.2f, 0.22f), new Color(1f, 0.15f, 0.08f, 0.34f), u));
         }
 
         Vector3 FullScale()
@@ -152,17 +156,24 @@ namespace Dovus.Game
             const int seg = 28;
             var mesh = new Mesh { name = "TelegraphDisc" };
             var verts = new Vector3[seg + 1];
+            var uvs = new Vector2[seg + 1];
             var tris = new int[seg * 3];
             verts[0] = Vector3.zero;
+            uvs[0] = new Vector2(0.5f, 0.5f); // merkez: GlowTexture'da d=0
             for (int i = 0; i < seg; i++)
             {
                 float a = i / (float)seg * Mathf.PI * 2f;
-                verts[i + 1] = new Vector3(Mathf.Cos(a) * 0.5f, 0f, Mathf.Sin(a) * 0.5f);
+                float cx = Mathf.Cos(a);
+                float sz = Mathf.Sin(a);
+                verts[i + 1] = new Vector3(cx * 0.5f, 0f, sz * 0.5f);
+                // Kenar (d=1): GlowTexture'ın merkeze göre 0.5 uzaklığı — parlak ince rim orada.
+                uvs[i + 1] = new Vector2(cx * 0.5f + 0.5f, sz * 0.5f + 0.5f);
                 tris[i * 3] = 0;
                 tris[i * 3 + 1] = i + 1;
                 tris[i * 3 + 2] = i == seg - 1 ? 1 : i + 2;
             }
             mesh.vertices = verts;
+            mesh.uv = uvs;
             mesh.triangles = tris;
             mesh.RecalculateNormals();
             return mesh;
@@ -178,6 +189,12 @@ namespace Dovus.Game
                 new Vector3(0.5f, 0f, 1f),
                 new Vector3(-0.5f, 0f, 1f)
             };
+            // Şerit radyal değil — GlowTexture'ın düz merkez bölgesini (d=0, taban alfa) örnekler.
+            mesh.uv = new[]
+            {
+                new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+            };
             mesh.triangles = new[] { 0, 2, 1, 0, 3, 2 };
             mesh.RecalculateNormals();
             return mesh;
@@ -189,13 +206,19 @@ namespace Dovus.Game
                 _coneMesh = new Mesh { name = "TelegraphCone" };
             const int seg = 16;
             var verts = new Vector3[seg + 2];
+            var uvs = new Vector2[seg + 2];
             var tris = new int[seg * 3];
             verts[0] = Vector3.zero;
+            uvs[0] = new Vector2(0.5f, 0.5f);
             float half = _arcHalf * Mathf.Deg2Rad;
             for (int i = 0; i <= seg; i++)
             {
                 float a = Mathf.Lerp(-half, half, i / (float)seg);
-                verts[i + 1] = new Vector3(Mathf.Sin(a), 0f, Mathf.Cos(a));
+                float x = Mathf.Sin(a);
+                float z = Mathf.Cos(a);
+                verts[i + 1] = new Vector3(x, 0f, z);
+                // Birim yarıçap köşeleri: GlowTexture'da d=1 (rim).
+                uvs[i + 1] = new Vector2(x * 0.5f + 0.5f, z * 0.5f + 0.5f);
             }
             for (int i = 0; i < seg; i++)
             {
@@ -205,6 +228,7 @@ namespace Dovus.Game
             }
             _coneMesh.Clear();
             _coneMesh.vertices = verts;
+            _coneMesh.uv = uvs;
             _coneMesh.triangles = tris;
             _coneMesh.RecalculateNormals();
             return _coneMesh;
@@ -233,7 +257,46 @@ namespace Dovus.Game
                 mat.SetInt("_ZWrite", 0);
                 mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
             }
+            mat.mainTexture = GlowTexture();
+            if (mat.HasProperty("_BaseMap"))
+                mat.SetTexture("_BaseMap", GlowTexture());
             return mat;
+        }
+
+        /// <summary>
+        /// ff-4: dolgu alfası tavanlandı ama tek düz renk hâlâ "büyük solid disk" gibi okunur —
+        /// kenara yakın parlak ince bir rim + merkeze ve dış kenara doğru yumuşak sönme (64×64,
+        /// URP güvenli — Shader.Find yok, mevcut Sprites/Default/Unlit materyaline uygulanır).
+        /// </summary>
+        static Texture2D GlowTexture()
+        {
+            if (_glowTex != null)
+                return _glowTex;
+            const int size = 64;
+            const float half = size * 0.5f;
+            _glowTex = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            {
+                wrapMode = TextureWrapMode.Clamp,
+                name = "TelegraphGlow"
+            };
+            for (int y = 0; y < size; y++)
+            for (int x = 0; x < size; x++)
+            {
+                float d = Mathf.Sqrt((x - half) * (x - half) + (y - half) * (y - half)) / half;
+                float a;
+                if (d <= 0.70f)
+                    a = 0.55f;
+                else if (d <= 0.88f)
+                    a = Mathf.Lerp(0.55f, 1f, (d - 0.70f) / 0.18f);
+                else
+                    a = Mathf.Lerp(1f, 0.1f, Mathf.Clamp01((d - 0.88f) / 0.12f));
+                if (d > 1f)
+                    a = 0f;
+                _glowTex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+            }
+
+            _glowTex.Apply(false, true);
+            return _glowTex;
         }
 
         void HideSoon()

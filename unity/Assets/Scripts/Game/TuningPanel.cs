@@ -53,6 +53,7 @@ namespace Dovus.Game
 
         TuningConfig _config;
         PlayerVitals _vitals;
+        FollowCamera _followCamera;
         GameObject _contentRoot;
         GameObject _toggleGo;
         Text _toggleLabel;
@@ -64,10 +65,11 @@ namespace Dovus.Game
         bool _dirty;
         float _saveDebounceRemaining;
 
-        public void Configure(TuningConfig config, PlayerVitals vitals)
+        public void Configure(TuningConfig config, PlayerVitals vitals, FollowCamera followCamera = null)
         {
             _config = config;
             _vitals = vitals;
+            _followCamera = followCamera;
 
             var canvasGo = new GameObject("TuningPanelCanvas");
             canvasGo.transform.SetParent(transform, false);
@@ -351,6 +353,11 @@ namespace Dovus.Game
             AddFloatSlider("Toparlanma · 4 nokta", 0.02f, 1.6f, () => c.Sentence.Steps[3].RecoverySec, v => c.Sentence.Steps[3].RecoverySec = v, "sn", "0.00");
 
             AddHeader("KAMERA (§8)");
+            AddBoolButton(
+                "Lock-on (Tab)",
+                () => _followCamera != null && _followCamera.LockOnActive,
+                v => { if (_followCamera != null) _followCamera.LockOnActive = v; },
+                "AÇIK", "KAPALI");
             AddFloatSlider("Takip yumuşatma", 0.02f, 0.5f, () => p.FollowSmoothTimeSec, v => p.FollowSmoothTimeSec = v, "sn", "0.00");
             AddFloatSlider("Önden bakış", 0f, 4f, () => p.LookAheadM, v => p.LookAheadM = v, "m", "0.00");
             AddFloatSlider("Mesafe (varsayılan)", 3f, 10f, () => p.CameraDistanceM, v => p.CameraDistanceM = v, "m", "0.00");

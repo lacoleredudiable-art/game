@@ -26,11 +26,13 @@ namespace Dovus.Game
         Material _discMat;
         Transform _cone;
         Mesh _coneMesh;
+        Mesh _discMesh;
         float _coneMeshArc = -1f;
         float _arcHalfDeg = 180f;
         AudioSource _tone;
         AudioClip _clip;
         Vector3 _baseScale;
+        static Texture2D _glowTex;
 
         public void Bind(PrototypeTuning colors, BossTuning boss, Transform bossXform)
         {
@@ -60,10 +62,12 @@ namespace Dovus.Game
                 ? radiusM
                 : radiusM * Mathf.Max(0.12f, p);
 
+            // ff-4: "büyük solid turuncu disk çok yüksek sesliydi" — 0.35..0.85 tavanı 0.16..0.33'e
+            // indirildi; okunabilirlik artık kenardaki parlak ince rim'den gelir (bkz. GlowTexture).
             DrawDisc(
                 drawnRadius,
                 Color.Lerp(_colors.TelegraphWarm, _colors.TelegraphHot, p),
-                0.35f + 0.5f * p);
+                0.16f + 0.17f * p);
 
             // GEÇ: hazırlık pozu daha erken dolup uzun tutulur (windup zaten 900 ms).
             float poseT = variant == SlamVariant.Gec
@@ -89,7 +93,7 @@ namespace Dovus.Game
         /// </summary>
         public void Slam(float radiusM)
         {
-            DrawDisc(radiusM, _colors.TelegraphHot, 0.9f);
+            DrawDisc(radiusM, _colors.TelegraphHot, 0.34f);
             ApplySlamPose(1f);
             if (_tone != null && _tone.isPlaying)
                 _tone.Stop();
@@ -105,7 +109,7 @@ namespace Dovus.Game
                 return;
             }
 
-            DrawDisc(radiusM, _colors.TelegraphHot, 0.5f * t);
+            DrawDisc(radiusM, _colors.TelegraphHot, 0.34f * t);
             ApplySlamPose(t);
         }
 
@@ -128,6 +132,8 @@ namespace Dovus.Game
                 Destroy(_cone.gameObject);
             if (_coneMesh != null)
                 Destroy(_coneMesh);
+            if (_discMesh != null)
+                Destroy(_discMesh);
             if (_discMat != null)
                 Destroy(_discMat);
             if (_clip != null)
@@ -198,13 +204,19 @@ namespace Dovus.Game
         {
             _coneMeshArc = arcHalfDeg;
             var verts = new Vector3[ConeSegments + 2];
+            var uvs = new Vector2[ConeSegments + 2];
             var tris = new int[ConeSegments * 3];
             verts[0] = Vector3.zero;
+            uvs[0] = new Vector2(0.5f, 0.5f);
             float half = arcHalfDeg * Mathf.Deg2Rad;
             for (int i = 0; i <= ConeSegments; i++)
             {
                 float a = Mathf.Lerp(-half, half, i / (float)ConeSegments);
-                verts[i + 1] = new Vector3(Mathf.Sin(a), 0f, Mathf.Cos(a));
+                float x = Mathf.Sin(a);
+                float z = Mathf.Cos(a);
+                verts[i + 1] = new Vector3(x, 0f, z);
+                // Birim yarıçap kenarı: GlowTexture d=1 (parlak ince rim).
+                uvs[i + 1] = new Vector2(x * 0.5f + 0.5f, z * 0.5f + 0.5f);
             }
             for (int i = 0; i < ConeSegments; i++)
             {
@@ -214,6 +226,7 @@ namespace Dovus.Game
             }
             _coneMesh.Clear();
             _coneMesh.vertices = verts;
+            _coneMesh.uv = uvs;
             _coneMesh.triangles = tris;
             _coneMesh.RecalculateNormals();
             _coneMesh.RecalculateBounds();
@@ -236,13 +249,45 @@ namespace Dovus.Game
         void BuildDisc()
         {
             var go = new GameObject("SlamDisc");
-            go.AddComponent<MeshFilter>().sharedMesh = PrimitiveMesh.Get(PrimitiveType.Cylinder);
+            // ff-4: Cylinder'ın kendi UV'si radyal glow'u okuyamıyordu — düz, merkezden-UV'li
+            // özel disk mesh'ine geçildi (AttackTelegraph.DiscMesh ile aynı desen).
+            _discMesh = BuildDiscMesh();
+            go.AddComponent<MeshFilter>().sharedMesh = _discMesh;
             var rend = go.AddComponent<MeshRenderer>();
             rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             rend.receiveShadows = false;
             _discMat = MakeDiscMat();
             rend.sharedMaterial = _discMat;
             _disc = go.transform;
+        }
+
+        /// <summary>Birim çaplı düz disk (XZ), UV merkezi (0.5,0.5) — GlowTexture radyal okuması için.</summary>
+        static Mesh BuildDiscMesh()
+        {
+            const int seg = 32;
+            var mesh = new Mesh { name = "SlamDisc" };
+            var verts = new Vector3[seg + 1];
+            var uvs = new Vector2[seg + 1];
+            var tris = new int[seg * 3];
+            verts[0] = Vector3.zero;
+            uvs[0] = new Vector2(0.5f, 0.5f);
+            for (int i = 0; i < seg; i++)
+            {
+                float a = i / (float)seg * Mathf.PI * 2f;
+                float cx = Mathf.Cos(a);
+                float sz = Mathf.Sin(a);
+                verts[i + 1] = new Vector3(cx * 0.5f, 0f, sz * 0.5f);
+                uvs[i + 1] = new Vector2(cx * 0.5f + 0.5f, sz * 0.5f + 0.5f);
+                tris[i * 3] = 0;
+                tris[i * 3 + 1] = i + 1;
+                tris[i * 3 + 2] = i == seg - 1 ? 1 : i + 2;
+            }
+            mesh.vertices = verts;
+            mesh.uv = uvs;
+            mesh.triangles = tris;
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            return mesh;
         }
 
         void BuildTone()
@@ -269,8 +314,46 @@ namespace Dovus.Game
                 mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
             }
 
+            mat.mainTexture = GlowTexture();
+            if (mat.HasProperty("_BaseMap"))
+                mat.SetTexture("_BaseMap", GlowTexture());
             SetMatColor(mat, _colors.TelegraphWarm);
             return mat;
+        }
+
+        /// <summary>
+        /// ff-4: aynı radyal rim/yumuşak-sönme deseni (bkz. AttackTelegraph.GlowTexture) — büyük
+        /// solid disk yerine kenarda parlak ince rim, merkezde ve dış kenarda yumuşak sönme.
+        /// </summary>
+        static Texture2D GlowTexture()
+        {
+            if (_glowTex != null)
+                return _glowTex;
+            const int size = 64;
+            const float half = size * 0.5f;
+            _glowTex = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            {
+                wrapMode = TextureWrapMode.Clamp,
+                name = "SlamTelegraphGlow"
+            };
+            for (int y = 0; y < size; y++)
+            for (int x = 0; x < size; x++)
+            {
+                float d = Mathf.Sqrt((x - half) * (x - half) + (y - half) * (y - half)) / half;
+                float a;
+                if (d <= 0.70f)
+                    a = 0.55f;
+                else if (d <= 0.88f)
+                    a = Mathf.Lerp(0.55f, 1f, (d - 0.70f) / 0.18f);
+                else
+                    a = Mathf.Lerp(1f, 0.1f, Mathf.Clamp01((d - 0.88f) / 0.12f));
+                if (d > 1f)
+                    a = 0f;
+                _glowTex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+            }
+
+            _glowTex.Apply(false, true);
+            return _glowTex;
         }
 
         static void SetMatColor(Material mat, Color c)

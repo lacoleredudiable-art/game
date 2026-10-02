@@ -31,6 +31,11 @@ namespace Dovus.Game
                 m.SetInt("_ZWrite", 0);
             }
 
+            // ff-4: elle çizilen quad mesh'leri (billboard hale, yer gölgesi) hangi yöne baksa
+            // görünsün — partikül sprite'ları da zaten çift yönlü görünür, zararsız.
+            if (m.HasProperty("_Cull"))
+                m.SetInt("_Cull", (int)CullMode.Off);
+
             m.renderQueue = (int)RenderQueue.Transparent;
             Texture2D dot = SoftDotTexture();
             if (m.HasProperty("_BaseMap"))

@@ -1,6 +1,7 @@
 using System;
 using Dovus.Core.Combat;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Dovus.Game
 {
@@ -23,7 +24,20 @@ namespace Dovus.Game
         Transform _boss;
         float _bossRadiusM = 1f;
         GameObject[] _views;
+        Transform[] _coreViews;
+        Transform[] _glowViews;
+        Transform[] _shadowViews;
         double _lastMs = -1;
+        static Material _coreMat;
+
+        // ff-4: "oyuncunun yanındaki solid yeşil top'lar" — bu mermiler (boss volley). Düz
+        // doygun küreler çok yüksek sesliydi; artık koyu kor çekirdek + sıcak yumuşak hale +
+        // yerde soluk gölge/halka (gri dünya, sıcak vurgu kuralı — bkz. AGENTS.md "Art rule").
+        const float CoreScale = 0.45f;
+        const float GlowScale = 1.3f;
+        const float ShadowScale = 1f;
+        const float ShadowGroundY = 0.03f;
+        const float ProjectileFlightY = 1.1f;
 
         public HostileProjectiles Sim { get; } = new HostileProjectiles();
 
@@ -143,7 +157,14 @@ namespace Dovus.Game
         void SyncViews()
         {
             if (_views == null)
+            {
                 _views = new GameObject[Sim.MaxAlive];
+                _coreViews = new Transform[Sim.MaxAlive];
+                _glowViews = new Transform[Sim.MaxAlive];
+                _shadowViews = new Transform[Sim.MaxAlive];
+            }
+
+            Transform cam = Camera.main != null ? Camera.main.transform : null;
             for (int i = 0; i < Sim.MaxAlive; i++)
             {
                 Projectile p = Sim.Slot(i);
@@ -155,24 +176,93 @@ namespace Dovus.Game
                     continue;
                 }
                 if (v == null)
-                {
-                    v = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    Destroy(v.GetComponent<Collider>());
-                    v.name = "HostileProjectile";
-                    v.transform.SetParent(transform, true);
-                    _views[i] = v;
-                }
+                    v = BuildView(i);
                 if (!v.activeSelf)
                     v.SetActive(true);
+
                 float d = p.RadiusM * 2f;
-                v.transform.localScale = new Vector3(d, d, d);
-                v.transform.position = new Vector3(p.X, 1.1f, p.Z);
-                Renderer r = v.GetComponent<Renderer>();
-                if (r != null)
-                    SharedTint.Apply(r, p.Team == 0
-                        ? new Color(0.4f, 0.9f, 1f, 0.9f)
-                        : p.Harmless ? new Color(0.9f, 0.9f, 0.3f, 0.7f) : new Color(0.45f, 0.95f, 0.2f, 0.9f));
+                v.transform.position = new Vector3(p.X, ProjectileFlightY, p.Z);
+
+                Transform core = _coreViews[i];
+                core.localScale = new Vector3(d, d, d) * CoreScale;
+
+                Transform glow = _glowViews[i];
+                glow.localScale = new Vector3(d, d, d) * GlowScale;
+                if (cam != null)
+                    glow.rotation = Quaternion.LookRotation(glow.position - cam.position, Vector3.up);
+
+                Transform shadow = _shadowViews[i];
+                shadow.localScale = new Vector3(d, d, d) * ShadowScale;
+
+                (Color coreColor, Color glowColor) = TintFor(p.Team, p.Harmless);
+                SharedTint.Apply(core.GetComponent<Renderer>(), coreColor);
+                SharedTint.Apply(glow.GetComponent<Renderer>(), glowColor);
             }
+        }
+
+        GameObject BuildView(int slot)
+        {
+            var root = new GameObject("HostileProjectile");
+            root.transform.SetParent(transform, true);
+            _views[slot] = root;
+
+            var core = new GameObject("Core");
+            core.transform.SetParent(root.transform, false);
+            core.AddComponent<MeshFilter>().sharedMesh = PrimitiveMesh.Get(PrimitiveType.Sphere);
+            var coreR = core.AddComponent<MeshRenderer>();
+            coreR.shadowCastingMode = ShadowCastingMode.Off;
+            coreR.receiveShadows = false;
+            coreR.sharedMaterial = CoreMat();
+            _coreViews[slot] = core.transform;
+
+            var glow = new GameObject("Glow");
+            glow.transform.SetParent(root.transform, false);
+            glow.AddComponent<MeshFilter>().sharedMesh = PrimitiveMesh.Get(PrimitiveType.Quad);
+            var glowR = glow.AddComponent<MeshRenderer>();
+            glowR.shadowCastingMode = ShadowCastingMode.Off;
+            glowR.receiveShadows = false;
+            glowR.sharedMaterial = PresentationParticleMaterials.AdditiveTextured;
+            _glowViews[slot] = glow.transform;
+
+            // Yerde soluk gölge/halka — kamera açılı olduğundan yüzen çekirdek/hale her zaman
+            // tam isabet yarıçapını okutmaz; bu sabit yere yakın disk okunabilirliği garantiler.
+            var shadow = new GameObject("Shadow");
+            shadow.transform.SetParent(root.transform, false);
+            shadow.transform.localPosition = Vector3.down * (ProjectileFlightY - ShadowGroundY);
+            shadow.transform.localRotation = Quaternion.Euler(-90f, 0f, 0f);
+            shadow.AddComponent<MeshFilter>().sharedMesh = PrimitiveMesh.Get(PrimitiveType.Quad);
+            var shadowR = shadow.AddComponent<MeshRenderer>();
+            shadowR.shadowCastingMode = ShadowCastingMode.Off;
+            shadowR.receiveShadows = false;
+            shadowR.sharedMaterial = PresentationParticleMaterials.AlphaTextured;
+            SharedTint.Apply(shadowR, new Color(0.03f, 0.03f, 0.03f, 0.4f));
+            _shadowViews[slot] = shadow.transform;
+
+            return root;
+        }
+
+        static Material CoreMat()
+        {
+            if (_coreMat != null)
+                return _coreMat;
+            Shader shader = Shader.Find("Universal Render Pipeline/Simple Lit")
+                ?? Shader.Find("Universal Render Pipeline/Lit")
+                ?? Shader.Find("Standard");
+            _coreMat = new Material(shader) { name = "HostileProjectileCore" };
+            return _coreMat;
+        }
+
+        /// <summary>
+        /// Desatüre edilmiş uçuş rengi: düşman (gerçek hasar) sıcak kor vurgusu alır (grey dünya,
+        /// sıcak vurgu kuralı — lav/VFX); dost (yansıtılmış, takım 0) soğuk/soluk, zararsız nötr gri.
+        /// </summary>
+        static (Color core, Color glow) TintFor(byte team, bool harmless)
+        {
+            if (team == 0)
+                return (new Color(0.20f, 0.24f, 0.30f, 0.95f), new Color(0.45f, 0.62f, 0.75f, 0.40f));
+            if (harmless)
+                return (new Color(0.34f, 0.33f, 0.30f, 0.9f), new Color(0.6f, 0.58f, 0.52f, 0.28f));
+            return (new Color(0.24f, 0.10f, 0.06f, 0.95f), new Color(0.95f, 0.48f, 0.16f, 0.5f));
         }
 
         static float Flat(float x, float z, Vector3 b)

@@ -10,9 +10,10 @@ namespace Dovus.Game
         float _nextScan;
         bool _loggedGreen;
         bool _loggedCamera;
-        bool _loggedLockOn;
         bool _loggedWindup;
         int _shaderErrorCount = -1;
+        int _lockOnLogCount;
+        float _lastLockOnSepM = -1f;
 
         public void Bind(FollowCamera follow, Transform player)
         {
@@ -40,26 +41,31 @@ namespace Dovus.Game
 
             if (_follow != null && _player != null)
             {
-                float framing = SampleFramingWeight();
                 float dist = _follow.ResolvedDistanceM;
                 float height = _follow.transform.position.y - _player.position.y;
                 float pitch = _follow.OrbitPitchDeg;
 
-                if (!_loggedCamera && framing < 0.25f)
+                // ff-4: eski bug "framing>0.55 == lock-on" idi (menzil yakınlığı = her zaman
+                // lock-on gibi okunuyordu). Artık gerçek FollowCamera.LockOnActive bayrağı okunur.
+                if (!_loggedCamera && !_follow.LockOnActive)
                 {
+                    float headY = SampleBossHeadViewportY();
                     DebugConfig.DevLog(
-                        $"[Feel2Verify] camera default dist={dist:F2}m height={height:F2}m pitch={pitch:F1}°");
+                        $"[Feel2Verify] camera default dist={dist:F2}m height={height:F2}m pitch={pitch:F1}° bossHeadViewportY={headY:F2}");
                     _loggedCamera = true;
                 }
 
-                if (!_loggedLockOn && framing > 0.55f)
+                if (_follow.LockOnActive && _lockOnLogCount < 2
+                    && (_lastLockOnSepM < 0f || Mathf.Abs(dist - _lastLockOnSepM) > 0.15f))
                 {
+                    _lastLockOnSepM = dist;
+                    _lockOnLogCount++;
+                    float sep = SampleBossSeparationM();
                     DebugConfig.DevLog(
-                        $"[Feel2Verify] camera lock-on dist={dist:F2}m height={height:F2}m pitch={pitch:F1}° framing={framing:F2}");
-                    _loggedLockOn = true;
+                        $"[Feel2Verify] camera lock-on #{_lockOnLogCount} dist={dist:F2}m height={height:F2}m pitch={pitch:F1}° sep={sep:F2}m");
                 }
 
-                if (!_loggedWindup && _follow.WindupPullback01 > 0.45f)
+                if (!_loggedWindup && _follow.WindupPullback01 > 0.3f)
                 {
                     DebugConfig.DevLog(
                         $"[Feel2Verify] camera windup dist={dist:F2}m height={height:F2}m pullback={_follow.WindupPullback01:F2}");
@@ -68,16 +74,26 @@ namespace Dovus.Game
             }
         }
 
-        float SampleFramingWeight()
+        float SampleBossSeparationM()
         {
             if (_follow == null || _follow.BossTarget == null || _player == null)
                 return 0f;
             Vector3 toBoss = _follow.BossTarget.position - _player.position;
             toBoss.y = 0f;
-            var tuning = _follow.Tuning;
-            float range = Mathf.Max(0.01f, tuning.CameraSoftLockRangeM);
-            float distanceWeight = 1f - Mathf.SmoothStep(0.72f, 1f, toBoss.magnitude / range);
-            return Mathf.Clamp01(distanceWeight);
+            return toBoss.magnitude;
+        }
+
+        /// <summary>Boss baş noktasının ekran viewport Y'si (0 alt, 1 üst) — &lt;0.95 kadrajda demektir.</summary>
+        float SampleBossHeadViewportY()
+        {
+            if (_follow == null || _follow.BossTarget == null)
+                return -1f;
+            Camera cam = _follow.GetComponent<Camera>();
+            if (cam == null)
+                return -1f;
+            Vector3 head = _follow.BossTarget.position + Vector3.up * _follow.Tuning.CameraBossAimHeightM;
+            Vector3 vp = cam.WorldToViewportPoint(head);
+            return vp.z > 0f ? vp.y : -1f;
         }
 
         public static int CountErrorShaderRenderers()
