@@ -129,6 +129,7 @@ namespace Dovus.Game.EditorTools
             // her kare bu bool'ları yazar, binder'daki dönüş geçişi bunlar false olmadan tetiklenmez.
             EnsureParam(ac, ActorVisual.ParamChannelHold, AnimatorControllerParameterType.Bool);
             EnsureParam(ac, ActorVisual.ParamGuardHold, AnimatorControllerParameterType.Bool);
+            EnsureParam(ac, ActorVisual.ParamStrikeSpeed, AnimatorControllerParameterType.Float, 1f);
 
             var sm = ResetBaseLayer(ac);
             var loco = sm.AddState("Locomotion", new Vector3(300, 0, 0));
@@ -168,9 +169,12 @@ namespace Dovus.Game.EditorTools
             AddActionState(sm, "CastGuard", guard, 520, 320, 0.8f, HoldReturnSec, ActorVisual.ParamGuardHold);
             AddActionState(sm, "CastShoot", shoot, 520, 400, 0.8f, ActionReturnSec);
             AddActionState(sm, "Death", death, 300, 240, -1f, 0f);
-            AddActionState(sm, "BasicStrike", strikeA, 740, 0, 0.78f, ActionReturnSec);
-            AddActionState(sm, "BasicStrikeB", strikeB, 740, 80, 0.78f, ActionReturnSec);
-            AddActionState(sm, "BasicStrikeC", strikeC, 740, 160, 0.78f, ActionReturnSec);
+            AddActionState(sm, "BasicStrike", strikeA, 740, 0, 0.78f, ActionReturnSec,
+                speedParam: ActorVisual.ParamStrikeSpeed);
+            AddActionState(sm, "BasicStrikeB", strikeB, 740, 80, 0.78f, ActionReturnSec,
+                speedParam: ActorVisual.ParamStrikeSpeed);
+            AddActionState(sm, "BasicStrikeC", strikeC, 740, 160, 0.78f, ActionReturnSec,
+                speedParam: ActorVisual.ParamStrikeSpeed);
 
             // O-anim(c): hareket anahtarı state'leri — Dodge gibi tek gövde, Upper kopyası yok
             // (motion template zaten gövdeyi taşır, bkz. AGENTS "tek hareket sistemi").
@@ -225,6 +229,11 @@ namespace Dovus.Game.EditorTools
             {
                 var st = sm.AddState(names[i], new Vector3(520, i * 80, 0));
                 st.motion = clips[i];
+                if (names[i] is "UpperBasicStrike" or "UpperBasicStrikeB" or "UpperBasicStrikeC")
+                {
+                    st.speedParameterActive = true;
+                    st.speedParameter = ActorVisual.ParamStrikeSpeed;
+                }
                 var back = st.AddTransition(empty);
                 back.hasExitTime = true;
                 back.exitTime = 0.85f;
@@ -547,10 +556,15 @@ namespace Dovus.Game.EditorTools
         }
 
         static void AddActionState(AnimatorStateMachine sm, string name, AnimationClip clip, float x, float y,
-            float exitTime, float blendSec, string holdParam = null)
+            float exitTime, float blendSec, string holdParam = null, string speedParam = null)
         {
             var st = sm.AddState(name, new Vector3(x, y, 0));
             st.motion = clip;
+            if (!string.IsNullOrEmpty(speedParam))
+            {
+                st.speedParameterActive = true;
+                st.speedParameter = speedParam;
+            }
             if (exitTime <= 0f)
                 return;
             var toLoco = st.AddTransition(sm.defaultState);

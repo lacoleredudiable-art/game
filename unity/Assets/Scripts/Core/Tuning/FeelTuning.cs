@@ -17,6 +17,8 @@ namespace Dovus.Core.Tuning
         public int HitstopBossHammerMs = 80;
         public int ImpactFrameMs = 33;
         public int PostHitSilenceMs = 120;
+        // spec'te yok — his varsayılanı; görsel, hasar anını değiştirmez
+        public float BasicStrikeAnimSpeed = 1.2f;
 
         public float CameraPerfectZoomKick = 0.14f;
         public float CameraDodgeZoomKick = 0.08f;
@@ -94,6 +96,7 @@ namespace Dovus.Core.Tuning
             HitstopBossHammerMs = other.HitstopBossHammerMs;
             ImpactFrameMs = other.ImpactFrameMs;
             PostHitSilenceMs = other.PostHitSilenceMs;
+            BasicStrikeAnimSpeed = other.BasicStrikeAnimSpeed;
 
             CameraPerfectZoomKick = other.CameraPerfectZoomKick;
             CameraDodgeZoomKick = other.CameraDodgeZoomKick;

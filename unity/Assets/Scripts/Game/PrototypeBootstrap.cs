@@ -125,6 +125,7 @@ namespace Dovus.Game
                 allyVisual.Bind(allyAnim, ally.GetComponent<Renderer>());
                 allyVisual.CrossFadeSec = _tuning.AnimCrossFadeSec;
                 allyVisual.StrikeComboResetSec = _tuning.BasicStrikeComboResetSec;
+                allyVisual.BasicStrikeAnimSpeed = combat.Feel.BasicStrikeAnimSpeed;
                 allyVisual.UpperBodyMinSpeed = _tuning.UpperBodyCastMinSpeed;
                 allyVisual.SetWeapon("kilic");
             }
@@ -169,6 +170,7 @@ namespace Dovus.Game
                 visual.Bind(playerAnim, player.GetComponent<Renderer>());
             visual.CrossFadeSec = _tuning.AnimCrossFadeSec;
             visual.StrikeComboResetSec = _tuning.BasicStrikeComboResetSec;
+            visual.BasicStrikeAnimSpeed = combat.Feel.BasicStrikeAnimSpeed;
             visual.UpperBodyMinSpeed = _tuning.UpperBodyCastMinSpeed;
 
             var bossVisual = boss.AddComponent<BossVisual>();

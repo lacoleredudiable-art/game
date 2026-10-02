@@ -21,6 +21,8 @@ namespace Dovus.Game
         public const string ParamChannelHold = "ChannelHold";
         /// <summary>O-anim(c): CastGuard (blok) döngüsü sürerken true — binder'daki dönüş geçişini kilitler.</summary>
         public const string ParamGuardHold = "GuardHold";
+        /// <summary>Düz vuruş klip hız çarpanı (state speedParameter); hasar zamanlamasından bağımsız.</summary>
+        public const string ParamStrikeSpeed = "StrikeSpeed";
         public const string ParamForward = "Forward";
         public const string ParamStrafe = "Strafe";
         public const string ParamFocus = "Focus";
@@ -120,6 +122,7 @@ namespace Dovus.Game
             _baseController = animator != null ? animator.runtimeAnimatorController : null;
             _currentWeaponKey = null;
             _handProps = null;
+            _strikeSpeedParamCached = -1;
             if (_animator != null && _hideWhenVisualPresent != null)
             {
                 for (int i = 0; i < _hideWhenVisualPresent.Length; i++)
@@ -200,6 +203,7 @@ namespace Dovus.Game
             _animator.runtimeAnimatorController = target;
             _upperLayer = -2;
             _motionKey = string.Empty;
+            _strikeSpeedParamCached = -1;
         }
 
         public void PulseRune(Rune rune, EffectSilhouette silhouette)
@@ -231,6 +235,7 @@ namespace Dovus.Game
         /// </summary>
         public void PulseBasicStrike()
         {
+            ApplyStrikeSpeedBeforeAction();
             if (RangedDelivery && PlayAction(StateCastShoot))
                 return;
 
@@ -252,10 +257,15 @@ namespace Dovus.Game
         /// <summary>Düz vuruş döngüsü sıfırlanma süresi (sn).</summary>
         public float StrikeComboResetSec { get; set; } = 1.2f;
 
+        /// <summary>Düz vuruş klip hızı (Animator StrikeSpeed); HeavyAnimSpeed ile çarpılmaz.</summary>
+        public float BasicStrikeAnimSpeed { get; set; } = 1f;
+
         /// <summary>Speed parametresi bu eşiğin üstündeyse aksiyon üst gövde katmanına gider.</summary>
         public float UpperBodyMinSpeed { get; set; } = 0.15f;
 
         int _strikeIndex;
+        /// <summary>-1 = bilinmiyor, 0 = parametre yok, 1 = var.</summary>
+        int _strikeSpeedParamCached = -1;
         float _lastStrikeTime = float.NegativeInfinity;
         int _upperLayer = -2;
 
@@ -324,6 +334,16 @@ namespace Dovus.Game
                     return true;
             }
             return false;
+        }
+
+        void ApplyStrikeSpeedBeforeAction()
+        {
+            if (_animator == null || !_animator.isActiveAndEnabled || _animator.runtimeAnimatorController == null)
+                return;
+            if (_strikeSpeedParamCached < 0)
+                _strikeSpeedParamCached = HasFloat(ParamStrikeSpeed) ? 1 : 0;
+            if (_strikeSpeedParamCached == 1)
+                _animator.SetFloat(ParamStrikeSpeed, BasicStrikeAnimSpeed);
         }
 
         /// <summary>Aksiyon state'ine crossfade süresi (0 = sert kesim).</summary>
