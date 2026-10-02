@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Dovus.Core.Combat;
 using UnityEngine;
 
@@ -33,6 +34,21 @@ namespace Dovus.Game
         float _windupVelocity;
         bool _windupHooked;
         Quaternion _aimRotation;
+        Transform[] _ignoreRoots;
+        int _collisionLayerMask;
+        bool _collisionFilterLogged;
+        float _smoothedAlongDistM;
+        float _alongDistVelocity;
+        float _collisionPulledInM;
+        float _lockOnShoulderSign = 1f;
+        float _lastLockOnOverlapPct = 1f;
+        static readonly RaycastHit[] CollisionHits = new RaycastHit[8];
+
+        /// <summary>Son karede pivot→istenen mesafe ekseninde scenery çekişi (m).</summary>
+        public float CollisionPulledInM => _collisionPulledInM;
+
+        /// <summary>Lock-on: oyuncu ekran dikdörtgeninin boss örtüsüne göre görünür oranı (0–1).</summary>
+        public float LockOnPlayerVisibleRatio => _lastLockOnOverlapPct;
 
         /// <summary>Görsel hitstop sırasında kamera takibini dondur (simülasyon saati değil).</summary>
         public float VisualHoldUntilUnscaled { get; set; }
@@ -105,6 +121,31 @@ namespace Dovus.Game
         }
 
         void OnDisable() => UnhookBossDirector();
+
+        /// <summary>Karakter/VFX kökleri spherecast'ten çıkar; layer mask bind'de kurulur.</summary>
+        public void BindCollisionFiltering(Transform playerRoot, Transform bossRoot, Transform allyRoot = null)
+        {
+            var roots = new List<Transform>(3);
+            if (playerRoot != null)
+                roots.Add(playerRoot);
+            if (bossRoot != null)
+                roots.Add(bossRoot);
+            if (allyRoot != null)
+                roots.Add(allyRoot);
+            _ignoreRoots = roots.ToArray();
+
+            int blocker = LayerMask.NameToLayer("CameraBlocker");
+            _collisionLayerMask = blocker >= 0
+                ? LayerMask.GetMask("Default", "CameraBlocker")
+                : LayerMask.GetMask("Default");
+            if (!_collisionFilterLogged)
+            {
+                DebugConfig.DevLog(
+                    $"[FollowCamera] collision mask layers={(blocker >= 0 ? "Default+CameraBlocker" : "Default only")} "
+                    + $"ignoreRoots={_ignoreRoots.Length} (player/boss/ally, triggers skipped)");
+                _collisionFilterLogged = true;
+            }
+        }
 
         /// <summary>Boss windup telegrafı — yalnız sunum; boss zamanlamasına dokunulmaz.</summary>
         public void BindBossDirector(BossDirector director)
@@ -213,11 +254,21 @@ namespace Dovus.Game
                 Mathf.Infinity,
                 dt);
 
+            Vector3 playerAim = _target.position + lookAhead * 0.35f
+                + Vector3.up * _tuning.CameraLookHeightM;
+
             Vector3 shoulder = _tuning.CameraShoulderOffset;
             shoulder.y += _windupPullback * _tuning.CameraWindupExtraHeightM;
+            if (LockOnActive)
+            {
+                _lockOnShoulderSign = ResolveLockOnShoulderSign(playerAim, dt);
+                shoulder.x += _lockOnShoulderSign * _tuning.CameraLockOnShoulderSideM;
+            }
+
             Vector3 localOffset = shoulder + Vector3.back * _resolvedDistanceM;
             Vector3 offset = Quaternion.Euler(OrbitPitchDeg, _resolvedYawDeg, 0f) * localOffset;
             Vector3 desired = _target.position + offset + lookAhead + _shakeOffset;
+            desired = ApplyCameraCollision(playerAim, desired, dt);
 
             transform.position = Vector3.SmoothDamp(
                 transform.position,
@@ -227,20 +278,17 @@ namespace Dovus.Game
                 Mathf.Infinity,
                 dt);
 
-            Vector3 playerAim = _target.position + lookAhead * 0.35f
-                + Vector3.up * _tuning.CameraLookHeightM;
             Vector3 lookTarget = playerAim;
             if (_bossTarget != null)
             {
                 Vector3 bossAim = _bossTarget.position + Vector3.up * _tuning.CameraBossAimHeightM;
                 if (LockOnActive)
                 {
-                    // Lock-on: bakış oyuncu–boss orta noktası (ikisi de kadrajda kalsın).
-                    lookTarget = Vector3.Lerp(playerAim, bossAim, 0.5f);
+                    lookTarget = Vector3.Lerp(playerAim, bossAim, _tuning.CameraLockOnLookBlendToBoss);
+                    UpdateLockOnScreenOverlap();
                 }
                 else if (framing > 0f)
                 {
-                    // Varsayılan: boss menzildeyken yumuşak çerçeveleme (lock-on DEĞİL).
                     float blend = Mathf.Clamp01(_tuning.CameraBossFramingWeight) * framing;
                     lookTarget = Vector3.Lerp(playerAim, bossAim, blend);
                 }
@@ -344,6 +392,192 @@ namespace Dovus.Game
             float range = Mathf.Max(0.01f, _tuning.CameraSoftLockRangeM);
             float distanceWeight = 1f - Mathf.SmoothStep(0.72f, 1f, toBoss.magnitude / range);
             return Mathf.Clamp01(distanceWeight);
+        }
+
+        Vector3 ApplyCameraCollision(Vector3 pivot, Vector3 desiredWorld, float dt)
+        {
+            Vector3 delta = desiredWorld - pivot;
+            float targetAlong = delta.magnitude;
+            if (targetAlong < 0.02f)
+            {
+                _collisionPulledInM = 0f;
+                return desiredWorld;
+            }
+
+            Vector3 dir = delta / targetAlong;
+            float blockedAlong = targetAlong;
+            float radius = Mathf.Max(0.05f, _tuning.CameraCollisionSphereRadiusM);
+            int hitCount = Physics.SphereCastNonAlloc(
+                pivot,
+                radius,
+                dir,
+                CollisionHits,
+                targetAlong,
+                _collisionLayerMask,
+                QueryTriggerInteraction.Ignore);
+            float best = targetAlong;
+            for (int i = 0; i < hitCount; i++)
+            {
+                RaycastHit h = CollisionHits[i];
+                if (!IsBlockingCollider(h.collider))
+                    continue;
+                float along = h.distance - _tuning.CameraCollisionMarginM;
+                if (along < best)
+                    best = along;
+            }
+
+            blockedAlong = Mathf.Max(_tuning.CameraCollisionMinDistanceM, best);
+            bool pullingIn = blockedAlong < _smoothedAlongDistM - 0.001f;
+            float smooth = pullingIn
+                ? _tuning.CameraCollisionPullInSmoothSec
+                : _tuning.CameraCollisionPullOutSmoothSec;
+            if (_smoothedAlongDistM <= 0.01f)
+                _smoothedAlongDistM = targetAlong;
+            _smoothedAlongDistM = Mathf.SmoothDamp(
+                _smoothedAlongDistM,
+                Mathf.Min(targetAlong, blockedAlong),
+                ref _alongDistVelocity,
+                Mathf.Max(0.001f, smooth),
+                Mathf.Infinity,
+                dt);
+            _collisionPulledInM = Mathf.Max(0f, targetAlong - _smoothedAlongDistM);
+            return pivot + dir * _smoothedAlongDistM;
+        }
+
+        bool IsBlockingCollider(Collider col)
+        {
+            if (col == null || col.isTrigger)
+                return false;
+            if (_ignoreRoots != null)
+            {
+                Transform t = col.transform;
+                for (int r = 0; r < _ignoreRoots.Length; r++)
+                {
+                    Transform root = _ignoreRoots[r];
+                    if (root != null && t.IsChildOf(root))
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        float ResolveLockOnShoulderSign(Vector3 playerAim, float dt)
+        {
+            if (_cam == null)
+                _cam = GetComponent<Camera>();
+            if (_cam == null || _bossTarget == null)
+                return _lockOnShoulderSign;
+
+            float scorePos = ScoreShoulderSide(+1f, playerAim);
+            float scoreNeg = ScoreShoulderSide(-1f, playerAim);
+            float pick = scorePos >= scoreNeg ? 1f : -1f;
+            if (Mathf.Abs(pick - _lockOnShoulderSign) > 0.01f)
+            {
+                float lead = pick > 0f ? scorePos - scoreNeg : scoreNeg - scorePos;
+                if (lead < _tuning.CameraLockOnShoulderFlipHysteresis)
+                    pick = _lockOnShoulderSign;
+            }
+
+            return pick;
+        }
+
+        float ScoreShoulderSide(float sign, Vector3 playerAim)
+        {
+            Vector3 shoulder = _tuning.CameraShoulderOffset;
+            shoulder.x += sign * _tuning.CameraLockOnShoulderSideM;
+            Vector3 localOffset = shoulder + Vector3.back * _resolvedDistanceM;
+            Vector3 offset = Quaternion.Euler(OrbitPitchDeg, _resolvedYawDeg, 0f) * localOffset;
+            Vector3 camPos = _target.position + offset;
+            Vector3 lookTarget = Vector3.Lerp(playerAim, _bossTarget.position + Vector3.up * _tuning.CameraBossAimHeightM,
+                _tuning.CameraLockOnLookBlendToBoss);
+            Quaternion rot = Quaternion.LookRotation(lookTarget - camPos, Vector3.up);
+            Vector3 playerVp = WorldToViewport(rot, camPos, _target.position + Vector3.up * 0.9f);
+            // Oyuncu sol üçte birde (+), boss üst yarıda — skor.
+            float playerSide = playerVp.x < 0.42f ? 1f : playerVp.x > 0.58f ? 0.35f : 0.7f;
+            float playerLow = playerVp.y < 0.55f ? 1f : 0.5f;
+            return playerSide * playerLow;
+        }
+
+        static Vector3 WorldToViewport(Quaternion camRot, Vector3 camPos, Vector3 world)
+        {
+            Vector3 local = Quaternion.Inverse(camRot) * (world - camPos);
+            if (local.z <= 0.05f)
+                return new Vector3(0.5f, 0.5f, -1f);
+            float fov = 60f;
+            float tan = Mathf.Tan(fov * 0.5f * Mathf.Deg2Rad);
+            float vx = 0.5f + 0.5f * (local.x / (local.z * tan));
+            float vy = 0.5f + 0.5f * (local.y / (local.z * tan));
+            return new Vector3(vx, vy, local.z);
+        }
+
+        void UpdateLockOnScreenOverlap()
+        {
+            if (_cam == null || _bossTarget == null)
+                return;
+            Rect player = ProjectActorRect(_target, 0.9f, 0.45f);
+            Rect boss = ProjectActorRect(_bossTarget, _tuning.CameraBossAimHeightM, 1.2f);
+            float playerArea = player.width * player.height;
+            if (playerArea < 1e-5f)
+            {
+                _lastLockOnOverlapPct = 1f;
+                return;
+            }
+
+            float overlap = RectIntersectionArea(player, boss);
+            _lastLockOnOverlapPct = Mathf.Clamp01(1f - overlap / playerArea);
+        }
+
+        Rect ProjectActorRect(Transform actor, float centerUpM, float halfHeightM)
+        {
+            Vector3 c = actor.position + Vector3.up * centerUpM;
+            Vector3 top = c + Vector3.up * halfHeightM;
+            Vector3 bottom = c - Vector3.up * halfHeightM;
+            Vector3 left = c - transform.right * 0.35f;
+            Vector3 right = c + transform.right * 0.35f;
+            Vector3[] pts =
+            {
+                _cam.WorldToViewportPoint(top),
+                _cam.WorldToViewportPoint(bottom),
+                _cam.WorldToViewportPoint(left),
+                _cam.WorldToViewportPoint(right)
+            };
+            float minX = 1f, maxX = 0f, minY = 1f, maxY = 0f;
+            for (int i = 0; i < pts.Length; i++)
+            {
+                if (pts[i].z <= 0f)
+                    continue;
+                minX = Mathf.Min(minX, pts[i].x);
+                maxX = Mathf.Max(maxX, pts[i].x);
+                minY = Mathf.Min(minY, pts[i].y);
+                maxY = Mathf.Max(maxY, pts[i].y);
+            }
+
+            if (maxX < minX)
+                return Rect.zero;
+            return Rect.MinMaxRect(minX, minY, maxX, maxY);
+        }
+
+        static float RectIntersectionArea(Rect a, Rect b)
+        {
+            float xMin = Mathf.Max(a.xMin, b.xMin);
+            float xMax = Mathf.Min(a.xMax, b.xMax);
+            float yMin = Mathf.Max(a.yMin, b.yMin);
+            float yMax = Mathf.Min(a.yMax, b.yMax);
+            if (xMax <= xMin || yMax <= yMin)
+                return 0f;
+            return (xMax - xMin) * (yMax - yMin);
+        }
+
+        /// <summary>Play doğrulama: mevcut yerleşimde overlap yüzdesini logla (sunum).</summary>
+        public void LogLockOnOverlap(float separationLabelM)
+        {
+            LockOnActive = true;
+            UpdateLockOnScreenOverlap();
+            float occludedPct = (1f - _lastLockOnOverlapPct) * 100f;
+            DebugConfig.DevLog(
+                $"[FollowCamera] lock-on overlap sep={separationLabelM:F1}m playerVisible={_lastLockOnOverlapPct * 100f:F1}% "
+                + $"bossOccludesPlayer={occludedPct:F1}%");
         }
 
         void AdvancePunch()

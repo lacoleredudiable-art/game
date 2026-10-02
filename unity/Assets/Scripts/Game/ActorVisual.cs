@@ -146,10 +146,12 @@ namespace Dovus.Game
         /// uygular (yoksa temel controller'da kalır, hata yok — Mixamo override'lar bu PC dışında
         /// gitignored olduğundan boş olabilir). İdempotent: aynı anahtar tekrar gelirse no-op.
         /// </summary>
-        public void SetWeapon(string animationsKey)
+        public void SetWeapon(string animationsKey) => SetWeapon(animationsKey, force: false);
+
+        public void SetWeapon(string animationsKey, bool force)
         {
             animationsKey ??= string.Empty;
-            if (string.Equals(_currentWeaponKey, animationsKey, System.StringComparison.Ordinal))
+            if (!force && string.Equals(_currentWeaponKey, animationsKey, System.StringComparison.Ordinal))
                 return;
             _currentWeaponKey = animationsKey;
 
@@ -167,11 +169,11 @@ namespace Dovus.Game
                 _animator.speed = speed;
             _savedAnimatorSpeed = speed;
 
-            ApplyHandProps(animationsKey);
+            ApplyHandProps(animationsKey, force);
         }
 
         /// <summary>Elde silah prop'u: sağ/sol el kemiğine takılı mesh, SetWeapon ile birlikte değişir.</summary>
-        void ApplyHandProps(string animationsKey)
+        void ApplyHandProps(string animationsKey, bool force = false)
         {
             if (_animator == null)
                 return;
@@ -179,7 +181,10 @@ namespace Dovus.Game
                 _handProps = _animator.GetComponent<WeaponHandProps>();
             if (_handProps == null)
                 _handProps = _animator.gameObject.AddComponent<WeaponHandProps>();
-            _handProps.Apply(animationsKey);
+            if (force)
+                _handProps.ForceApply(animationsKey);
+            else
+                _handProps.Apply(animationsKey);
         }
 
         void ApplyArchetypeController(string archetypeKey)

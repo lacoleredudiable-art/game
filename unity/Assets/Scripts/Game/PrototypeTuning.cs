@@ -97,6 +97,13 @@ namespace Dovus.Game
         [Range(0.4f, 1f), Tooltip("Swap yüzü içindeki silah ikonunun çap oranı.")]
         public float WeaponSwapIconScale = 0.72f;
 
+        [Header("Lock-on düğmesi (mobil)")]
+        public float LockOnButtonRadiusDp = 36f;
+        public float LockOnButtonOffsetXDp = 0f;
+        public float LockOnButtonOffsetYDp = 52f;
+        public Color LockOnButtonColor = new Color(0.55f, 0.72f, 0.88f, 0.9f);
+        public Color LockOnButtonActiveColor = new Color(0.95f, 0.82f, 0.45f, 0.95f);
+
         [Header("Element radial (v6.1.1)")]
         /// <summary>JSON yalnız 6 konum/300 ms verir; ekran yarıçapı için prototip varsayılanı.</summary>
         public float ElementMenuRadiusDp = 92f;
@@ -151,6 +158,15 @@ namespace Dovus.Game
         public float CameraWindupSmoothSec = 0.28f;
         /// <summary>Slam dışı geniş telegraf (FireCone vb.) için yarıçap eşiği (m).</summary>
         public float CameraWindupMinRadiusM = 3.5f;
+        public float CameraCollisionSphereRadiusM = 0.25f;
+        public float CameraCollisionMarginM = 0.12f;
+        public float CameraCollisionMinDistanceM = 1.2f;
+        public float CameraCollisionPullInSmoothSec = 0.05f;
+        public float CameraCollisionPullOutSmoothSec = 0.35f;
+        /// <summary>Lock-on omuz üstü yatay ofset (m).</summary>
+        public float CameraLockOnShoulderSideM = 1.1f;
+        public float CameraLockOnShoulderFlipHysteresis = 0.12f;
+        [Range(0.35f, 0.75f)] public float CameraLockOnLookBlendToBoss = 0.58f;
 
         // Ambiyans portu (PR #43 "deneme sahnesi"): gri bulutlu ışık, ~%35 doygunluk düşüşü,
         // açık gri sis — sert/sakin ama her şey görünür (karanlık değil, renkli değil). Sıcak
@@ -496,6 +512,14 @@ namespace Dovus.Game
             if (CameraLockOnDistanceSmoothSec <= 0.01f) CameraLockOnDistanceSmoothSec = 0.22f;
             if (CameraWindupDistanceMul < 1f) CameraWindupDistanceMul = 1.42f;
             if (CameraWindupSmoothSec <= 0.01f) CameraWindupSmoothSec = 0.28f;
+            if (CameraCollisionSphereRadiusM <= 0.01f) CameraCollisionSphereRadiusM = 0.25f;
+            if (CameraCollisionMarginM < 0f) CameraCollisionMarginM = 0.12f;
+            if (CameraCollisionMinDistanceM <= 0.1f) CameraCollisionMinDistanceM = 1.2f;
+            if (CameraCollisionPullInSmoothSec <= 0.001f) CameraCollisionPullInSmoothSec = 0.05f;
+            if (CameraCollisionPullOutSmoothSec <= 0.01f) CameraCollisionPullOutSmoothSec = 0.35f;
+            if (CameraLockOnShoulderSideM <= 0.01f) CameraLockOnShoulderSideM = 1.1f;
+            if (CameraLockOnShoulderFlipHysteresis <= 0f) CameraLockOnShoulderFlipHysteresis = 0.12f;
+            if (LockOnButtonRadiusDp <= 0.01f) LockOnButtonRadiusDp = 36f;
             if (FogDensity <= 0f) FogDensity = 0.0032f;
             if (KeyLightIntensity <= 0f) KeyLightIntensity = 1.35f;
             if (BloomThreshold <= 0f) BloomThreshold = 1.05f;
@@ -668,6 +692,19 @@ namespace Dovus.Game
             CameraWindupExtraHeightM = fresh.CameraWindupExtraHeightM;
             CameraWindupSmoothSec = fresh.CameraWindupSmoothSec;
             CameraWindupMinRadiusM = fresh.CameraWindupMinRadiusM;
+            CameraCollisionSphereRadiusM = fresh.CameraCollisionSphereRadiusM;
+            CameraCollisionMarginM = fresh.CameraCollisionMarginM;
+            CameraCollisionMinDistanceM = fresh.CameraCollisionMinDistanceM;
+            CameraCollisionPullInSmoothSec = fresh.CameraCollisionPullInSmoothSec;
+            CameraCollisionPullOutSmoothSec = fresh.CameraCollisionPullOutSmoothSec;
+            CameraLockOnShoulderSideM = fresh.CameraLockOnShoulderSideM;
+            CameraLockOnShoulderFlipHysteresis = fresh.CameraLockOnShoulderFlipHysteresis;
+            CameraLockOnLookBlendToBoss = fresh.CameraLockOnLookBlendToBoss;
+            LockOnButtonRadiusDp = fresh.LockOnButtonRadiusDp;
+            LockOnButtonOffsetXDp = fresh.LockOnButtonOffsetXDp;
+            LockOnButtonOffsetYDp = fresh.LockOnButtonOffsetYDp;
+            LockOnButtonColor = fresh.LockOnButtonColor;
+            LockOnButtonActiveColor = fresh.LockOnButtonActiveColor;
             AmbientSky = fresh.AmbientSky;
             AmbientEquator = fresh.AmbientEquator;
             AmbientGround = fresh.AmbientGround;

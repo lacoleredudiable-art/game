@@ -24,6 +24,10 @@ namespace Dovus.Game.EditorTools
         const string RegistryPath = RegistryDir + "/WeaponVisualRegistry.asset";
         const string QuatWeaponsDir = "Assets/Art/Quaternius/Characters/RPG Characters - Nov 2020/FBX/Only Weapons";
         const string ShieldPrefabPath = QuaterniusShieldBind.PrefabPath;
+        const string StaffPrefabPath = QuaterniusCc0PropsBind.StaffPrefab;
+        const string OrbPrefabPath = QuaterniusCc0PropsBind.OrbPrefab;
+        const string TalismanPrefabPath = QuaterniusCc0PropsBind.TalismanPrefab;
+        const string CannonPrefabPath = QuaterniusCc0PropsBind.CannonPrefab;
 
         /// <summary>Çalıştırır; log metnini döner (boş = temel controller yok, atlandı).</summary>
         public static string Build()
@@ -83,7 +87,7 @@ namespace Dovus.Game.EditorTools
 
             SetProp(registry, "kalkan",
                 LoadWeaponMesh("Rogue_Dagger"), Vector3.zero, Vector3.zero, Vector3.one * 34.7f,
-                null, new Vector3(0.03f, 0f, 0.05f), Vector3.zero, Vector3.one);
+                LoadShieldPrefab(), Vector3.zero, Vector3.zero, Vector3.one);
 
             SetProp(registry, "cekic",
                 null, new Vector3(0f, 0f, 0.07f), Vector3.zero, Vector3.one,
@@ -94,23 +98,23 @@ namespace Dovus.Game.EditorTools
                 LoadWeaponMesh("Ranger_Bow"), Vector3.zero, new Vector3(0f, 90f, 0f), Vector3.one * 32.6f);
 
             SetProp(registry, "asa",
-                LoadWeaponMesh("Wizard_Staff"), Vector3.zero, Vector3.zero, Vector3.one * 61.5f,
+                LoadPropPrefab(StaffPrefabPath), Vector3.zero, Vector3.zero, Vector3.one,
                 null, Vector3.zero, Vector3.zero, Vector3.one);
 
             SetProp(registry, "kitap",
                 null, Vector3.zero, Vector3.zero, Vector3.one,
-                null, new Vector3(0.03f, 0.02f, 0.06f), Vector3.zero, Vector3.one);
+                null, Vector3.zero, Vector3.zero, Vector3.one);
 
             SetProp(registry, "kure",
                 null, Vector3.zero, Vector3.zero, Vector3.one,
-                null, new Vector3(0.02f, 0.03f, 0.05f), Vector3.zero, Vector3.one);
+                LoadPropPrefab(OrbPrefabPath), Vector3.zero, Vector3.zero, Vector3.one);
 
             SetProp(registry, "tilsim",
-                null, new Vector3(0.02f, 0.02f, 0.04f), Vector3.zero, Vector3.one,
+                LoadPropPrefab(TalismanPrefabPath), Vector3.zero, Vector3.zero, Vector3.one,
                 null, Vector3.zero, Vector3.zero, Vector3.one);
 
             SetProp(registry, "top",
-                null, new Vector3(0.02f, 0.02f, 0.05f), new Vector3(0f, 90f, 0f), Vector3.one,
+                LoadPropPrefab(CannonPrefabPath), Vector3.zero, Vector3.zero, Vector3.one,
                 null, Vector3.zero, Vector3.zero, Vector3.one);
         }
 
@@ -119,6 +123,9 @@ namespace Dovus.Game.EditorTools
 
         static GameObject LoadShieldPrefab() =>
             AssetDatabase.LoadAssetAtPath<GameObject>(ShieldPrefabPath);
+
+        static GameObject LoadPropPrefab(string path) =>
+            string.IsNullOrEmpty(path) ? null : AssetDatabase.LoadAssetAtPath<GameObject>(path);
 
         static void SetProp(
             WeaponVisualRegistry registry, string weaponKey,

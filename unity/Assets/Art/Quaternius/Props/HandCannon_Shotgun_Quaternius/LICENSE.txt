@@ -1,0 +1,2 @@
+Hand cannon: 'Shotgun' (Weapon_DoubleShotgun) by Quaternius, released under CC0 1.0 Public Domain.
+Source: https://poly.pizza/m/nusk0Rwvrc (GLB https://static.poly.pizza/24a04dec-f4cb-42e2-98cb-10c7c9e7ddb1.glb), converted to OBJ.

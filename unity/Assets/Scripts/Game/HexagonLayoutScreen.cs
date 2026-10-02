@@ -116,6 +116,26 @@ namespace Dovus.Game
         public static float DodgeButtonRadiusPx(PrototypeTuning tuning) =>
             DpToPixels(tuning.DodgeButtonRadiusDp);
 
+        /// <summary>Lock-on: dodge'un üstünde, aynı sağ-alt küme içinde.</summary>
+        public static Vector2 LockOnButtonPx(PrototypeTuning tuning, int screenWidth, int screenHeight)
+        {
+            Vector2 dodge = DodgeButtonPx(tuning, screenWidth, screenHeight);
+            float lockR = LockOnButtonRadiusPx(tuning);
+            float dodgeR = DodgeButtonRadiusPx(tuning);
+            float gap = DpToPixels(12f);
+            Vector2 p = dodge + new Vector2(
+                DpToPixels(tuning.LockOnButtonOffsetXDp),
+                dodgeR + lockR + gap + DpToPixels(tuning.LockOnButtonOffsetYDp));
+            Rect safe = SafeRectPx();
+            float edge = lockR + DpToPixels(tuning.DodgeButtonScreenMarginDp);
+            p.x = Mathf.Clamp(p.x, safe.xMin + edge, safe.xMax - edge);
+            p.y = Mathf.Clamp(p.y, safe.yMin + edge, safe.yMax - edge);
+            return p;
+        }
+
+        public static float LockOnButtonRadiusPx(PrototypeTuning tuning) =>
+            DpToPixels(tuning.LockOnButtonRadiusDp);
+
         /// <summary>
         /// Silah swap: dodge'un altıgene göre simetriği (sol-alt), çizim yarısında kalır.
         /// </summary>

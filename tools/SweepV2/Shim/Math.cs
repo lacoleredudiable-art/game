@@ -1150,6 +1150,8 @@ namespace UnityEngine
         public Rect(Vector2 position, Vector2 size) { _x = position.x; _y = position.y; _w = size.x; _h = size.y; }
 
         public static Rect zero => new(0, 0, 0, 0);
+        public static Rect MinMaxRect(float xmin, float ymin, float xmax, float ymax) =>
+            new Rect(xmin, ymin, xmax - xmin, ymax - ymin);
         public float x { get => _x; set => _x = value; }
         public float y { get => _y; set => _y = value; }
         public float width { get => _w; set => _w = value; }

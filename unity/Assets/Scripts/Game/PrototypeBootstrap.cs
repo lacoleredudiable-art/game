@@ -228,7 +228,7 @@ namespace Dovus.Game
             telegraph.Bind(_tuning, combat.Boss, boss.transform);
 
             var sun = CreateSun();
-            FollowCamera follow = CreateCamera(player.transform, boss.transform);
+            FollowCamera follow = CreateCamera(player.transform, boss.transform, allyDummy?.transform);
             SceneAtmosphere.Apply(sun, Camera.main, _tuning);
             // LavDecor.Build — eski arena-wide kırmızı ember noktaları kalktı.
             BillboardVfx.CreateEmberField(boss.transform, new Color(1f, 0.45f, 0.12f), rate: 14f);
@@ -309,6 +309,8 @@ namespace Dovus.Game
                 + $"{assetCatalog?.Weapons.Count ?? 0}/{assetCatalog?.Elements.Count ?? 0}");
             var view = root.AddComponent<HexagonView>();
             view.Build(_tuning, overlay.Cam, skills, loadout);
+            if (follow != null)
+                view.BindLockOn(follow);
 
             // 16 Eylül: sol yarıdaki sanal çubuk fonksiyonel olarak zaten çalışıyordu, hiç
             // görseli yoktu (bug raporu). MoveInput'un mantığına dokunmuyor, sadece çiziyor.
@@ -343,7 +345,7 @@ namespace Dovus.Game
             if (follow != null)
             {
                 var orbit = root.AddComponent<CameraOrbitInput>();
-                orbit.Bind(follow, player.GetComponent<MoveInput>(), input, _tuning);
+                orbit.Bind(follow, player.GetComponent<MoveInput>(), input, _tuning, view);
                 var motor = player.GetComponent<KinematicMotor>();
                 motor?.BindCamera(follow);
             }
@@ -829,7 +831,7 @@ namespace Dovus.Game
             return light;
         }
 
-        FollowCamera CreateCamera(Transform target, Transform boss)
+        FollowCamera CreateCamera(Transform target, Transform boss, Transform allyRoot = null)
         {
             var camGo = new GameObject("Main Camera");
             camGo.tag = "MainCamera";
@@ -848,6 +850,7 @@ namespace Dovus.Game
             follow.Tuning = _tuning;
             follow.Target = target;
             follow.BossTarget = boss;
+            follow.BindCollisionFiltering(target, boss, allyRoot);
             Vector3 startOffset = _tuning.CameraShoulderOffset
                 + Vector3.back * _tuning.CameraDistanceM;
             camGo.transform.position = target.position + startOffset;
