@@ -98,7 +98,7 @@ namespace Dovus.Game
                 _tuning.PlayerColor);
             AttachVisual(
                 player,
-                _playerVisualPrefab,
+                ResolvePlayerVisualPrefab(_playerVisualPrefab),
                 _tuning.PlayerVisualHeightM,
                 player.transform.position.y - PlayerHeightM * 0.5f,
                 _tuning.CharacterAnimSpeed,
@@ -663,6 +663,13 @@ namespace Dovus.Game
                 _tuning.GroundColor,
                 wall);
         }
+
+        /// <summary>
+        /// Yerel Mixamo override (<c>Resources/PlayerVisualOverride</c>, gitignored) varsa oyuncu onu kullanır;
+        /// CI/headless'ta asset yok → sahnedeki Synty referansı.
+        /// </summary>
+        static GameObject ResolvePlayerVisualPrefab(GameObject sceneDefault) =>
+            Resources.Load<GameObject>("PlayerVisualOverride") ?? sceneDefault;
 
         /// <summary>
         /// Asset Store prefab'ı kökün child'ı olur; mantık kökte kalır (motor/pose/reactor).
