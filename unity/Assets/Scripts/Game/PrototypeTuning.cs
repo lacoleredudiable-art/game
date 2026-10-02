@@ -326,6 +326,10 @@ namespace Dovus.Game
         public float BossPinShakeAmpM = 0.04f;
         public float BossLiftVelocityPerM = 4.5f;
 
+        [Header("Boss karşılaşma")]
+        /// <summary>Resources/Bosses/{id}.json — varsayılan karadul (CI kapısı).</summary>
+        public string ActiveBossId = "karadul";
+
         // Boss animasyon sunumu (his turu Faz 1). Hepsi önerilen — klip değişince göz kontrolü.
         [Header("Boss animasyon (his turu)")]
         public float BossTurnRateDegPerSec = 240f;
@@ -499,6 +503,7 @@ namespace Dovus.Game
             if (UpperBodyCastMinSpeed <= 0f) UpperBodyCastMinSpeed = 0.15f;
             if (FootstepStrideM <= 0.05f) FootstepStrideM = 2.2f;
             if (BossFootstepStrideM <= 0.05f) BossFootstepStrideM = 2.4f;
+            if (string.IsNullOrWhiteSpace(ActiveBossId)) ActiveBossId = "karadul";
             if (BossTurnRateDegPerSec <= 0.01f) BossTurnRateDegPerSec = 240f;
             if (BossSlamImpactNorm <= 0.01f) BossSlamImpactNorm = 0.42f;
             if (BossConeImpactNorm <= 0.01f) BossConeImpactNorm = 0.40f;
