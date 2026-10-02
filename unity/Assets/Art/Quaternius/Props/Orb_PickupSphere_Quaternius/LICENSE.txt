@@ -1,0 +1,2 @@
+Orb: the central sphere of 'Pickup Sphere' by Quaternius, released under CC0 1.0 Public Domain.
+Source: https://poly.pizza/m/1xtAc12dmv (GLB https://static.poly.pizza/6a161332-261b-480c-aec2-8464ae78055f.glb); only the central sphere kept, converted to OBJ.

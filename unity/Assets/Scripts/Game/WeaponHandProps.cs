@@ -32,10 +32,18 @@ namespace Dovus.Game
         }
 
         /// <summary>weapons[].animations_key (örn. "kilic"). Idempotent: aynı anahtar no-op.</summary>
-        public void Apply(string weaponKey)
+        public void Apply(string weaponKey) => Apply(weaponKey, force: false);
+
+        public void ForceApply(string weaponKey)
+        {
+            _currentKey = "\u0000";
+            Apply(weaponKey, force: true);
+        }
+
+        void Apply(string weaponKey, bool force)
         {
             weaponKey ??= string.Empty;
-            if (string.Equals(_currentKey, weaponKey, System.StringComparison.Ordinal))
+            if (!force && string.Equals(_currentKey, weaponKey, System.StringComparison.Ordinal))
                 return;
             string previousKey = _currentKey;
             _currentKey = weaponKey;
@@ -86,7 +94,8 @@ namespace Dovus.Game
         Transform ResolveLeftAttachBone(string weaponKey)
         {
             Transform hand = _animator.GetBoneTransform(HumanBodyBones.LeftHand);
-            if (weaponKey == "kilic" && WeaponGripProfile.IsMixamoRig(_animator))
+            if (WeaponGripProfile.IsMixamoRig(_animator)
+                && (weaponKey == "kilic" || weaponKey == "kalkan"))
             {
                 Transform forearm = _animator.GetBoneTransform(HumanBodyBones.LeftLowerArm);
                 if (forearm != null)
@@ -121,12 +130,7 @@ namespace Dovus.Game
             }
 
             if (grip != null && WeaponGripProfile.IsMixamoRig(_animator))
-            {
-                if (isRight)
-                    grip.ApplyRight(ref localPos, ref localRot, ref localScale);
-                else
-                    grip.ApplyLeft(ref localPos, ref localRot, ref localScale);
-            }
+                grip.ApplyMixamoWeapon(key, isRight, ref localPos, ref localRot, ref localScale);
 
             go.transform.localPosition = localPos;
             go.transform.localRotation = localRot;
@@ -138,7 +142,26 @@ namespace Dovus.Game
                 FitPropWorldSize(go, key, isRight);
 
             StripForProp(go);
+            if (key == "kure" && !isRight)
+                go.AddComponent<WeaponPropIdleMotion>();
+            if (key == "asa" && isRight && WeaponGripProfile.IsMixamoRig(_animator))
+                TryAddStaffHeadGlow(go);
             return go;
+        }
+
+        static void TryAddStaffHeadGlow(GameObject staffRoot)
+        {
+            if (!TryRendererBounds(staffRoot, out Bounds b))
+                return;
+            var glow = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            glow.name = "StaffHeadGlow";
+            Destroy(glow.GetComponent<Collider>());
+            glow.transform.SetParent(staffRoot.transform, false);
+            glow.transform.localPosition = new Vector3(0f, b.max.y - b.center.y + 0.02f, 0f);
+            glow.transform.localScale = Vector3.one * 0.06f;
+            var r = glow.GetComponent<Renderer>();
+            r.sharedMaterial = OrbMat();
+            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         }
 
         void SyncSyntyAtlasHandItems(string weaponKey)
@@ -231,9 +254,9 @@ namespace Dovus.Game
                     "kilic" => 0.92f,
                     "kalkan" => 0.38f,
                     "cekic" => 1.12f,
-                    "asa" => 1.65f,
-                    "tilsim" => 0.12f,
-                    "top" => 0.45f,
+                    "asa" => 1.68f,
+                    "tilsim" => 0.32f,
+                    "top" => 0.92f,
                     _ => 0f,
                 };
             }
@@ -242,9 +265,9 @@ namespace Dovus.Game
             {
                 "kilic" => 0.65f,
                 "kalkan" => 0.92f,
-                "yay" => 1.05f,
-                "kitap" => 0.24f,
-                "kure" => 0.16f,
+                "yay" => 1.22f,
+                "kitap" => 0.26f,
+                "kure" => 0.18f,
                 _ => 0f,
             };
         }
@@ -301,6 +324,8 @@ namespace Dovus.Game
                     + $"localPos={child.localPosition} localEuler={child.localEulerAngles}");
             }
         }
+
+        public static bool IsWeaponPropRootName(string name) => IsWeaponPropRoot(name);
 
         static bool IsWeaponPropRoot(string name)
         {
@@ -463,5 +488,115 @@ namespace Dovus.Game
         static Material WoodMat() => _woodMat ??= MakeMat(new Color(0.22f, 0.18f, 0.15f));
         static Material ClothMat() => _clothMat ??= MakeMat(new Color(0.58f, 0.55f, 0.50f));
         static Material OrbMat() => _orbMat ??= MakeMat(new Color(0.40f, 0.46f, 0.48f), new Color(0.12f, 0.30f, 0.33f) * 0.35f);
+
+        /// <summary>Play doğrulama: el kemiği → prop grip uzaklığı, boyut, görünürlük (cw-2).</summary>
+        public static void LogWeaponPropVerification(Animator animator, string weaponKey, Camera cam, string tag)
+        {
+            if (animator == null)
+                return;
+            bool mixamo = WeaponGripProfile.IsMixamoRig(animator);
+            LogWeaponSide(animator, weaponKey, cam, tag, HumanBodyBones.RightHand, "right", mixamo);
+            LogWeaponSide(animator, weaponKey, cam, tag, HumanBodyBones.LeftHand, "left", mixamo);
+        }
+
+        static void LogWeaponSide(
+            Animator animator, string weaponKey, Camera cam, string tag,
+            HumanBodyBones bone, string side, bool mixamo)
+        {
+            Transform hand = animator.GetBoneTransform(bone);
+            if (hand == null)
+                return;
+            if (mixamo && weaponKey is "kilic" or "kalkan" && side == "left")
+            {
+                Transform forearm = animator.GetBoneTransform(HumanBodyBones.LeftLowerArm);
+                if (forearm != null)
+                    hand = forearm;
+            }
+
+            Transform prop = FindPropOnBone(hand);
+            if (prop == null)
+            {
+                if (ExpectsPropOnSide(weaponKey, side))
+                    DebugConfig.DevLog($"[WeaponProp] {tag} {weaponKey} {side} missing");
+                return;
+            }
+
+            Vector3 grip = prop.position;
+            float gap = Vector3.Distance(hand.position, grip);
+            float angleUp = LongAxisAngleFromUp(prop);
+            if (!TryRendererBounds(prop.gameObject, out Bounds b))
+            {
+                DebugConfig.DevLog($"[WeaponProp] {tag} {weaponKey} {side} {prop.name} no-renderer gap={gap:F3}");
+                return;
+            }
+
+            bool visible = IsPropVisible(prop.gameObject, cam);
+            bool torsoHit = PropIntersectsTorso(animator, b);
+            DebugConfig.DevLog(
+                $"[WeaponProp] {tag} {weaponKey} {side} name={prop.name} hand={side} gapM={gap:F3} "
+                + $"angleUp={angleUp:F1} size={b.size} visible={visible} torsoHit={torsoHit}");
+        }
+
+        static bool ExpectsPropOnSide(string weaponKey, string side) => weaponKey switch
+        {
+            "kilic" => side == "right" || side == "left",
+            "kalkan" => true,
+            "cekic" or "asa" or "tilsim" or "top" => side == "right",
+            "yay" or "kitap" or "kure" => side == "left",
+            _ => false,
+        };
+
+        static Transform FindPropOnBone(Transform hand)
+        {
+            for (int i = 0; i < hand.childCount; i++)
+            {
+                Transform child = hand.GetChild(i);
+                if (IsWeaponPropRoot(child.name))
+                    return child;
+            }
+
+            return null;
+        }
+
+        static float LongAxisAngleFromUp(Transform prop)
+        {
+            Vector3 axis = prop.up;
+            if (TryRendererBounds(prop.gameObject, out Bounds b))
+            {
+                Vector3 size = b.size;
+                if (size.x >= size.y && size.x >= size.z)
+                    axis = prop.right;
+                else if (size.z >= size.x && size.z >= size.y)
+                    axis = prop.forward;
+            }
+
+            return axis.sqrMagnitude > 1e-6f ? Vector3.Angle(Vector3.up, axis) : 0f;
+        }
+
+        static bool IsPropVisible(GameObject propRoot, Camera cam)
+        {
+            if (cam == null || propRoot == null)
+                return false;
+            foreach (Renderer r in propRoot.GetComponentsInChildren<Renderer>())
+            {
+                if (r == null || !r.enabled)
+                    continue;
+                Vector3 c = cam.WorldToViewportPoint(r.bounds.center);
+                if (c.z > 0f && c.x >= 0f && c.x <= 1f && c.y >= 0f && c.y <= 1f)
+                    return true;
+            }
+
+            return false;
+        }
+
+        static bool PropIntersectsTorso(Animator animator, Bounds propBounds)
+        {
+            Transform chest = animator.GetBoneTransform(HumanBodyBones.Spine)
+                ?? animator.GetBoneTransform(HumanBodyBones.Chest);
+            if (chest == null)
+                return false;
+            Bounds torso = new Bounds(chest.position, new Vector3(0.45f, 0.55f, 0.35f));
+            return torso.Intersects(propBounds);
+        }
     }
 }

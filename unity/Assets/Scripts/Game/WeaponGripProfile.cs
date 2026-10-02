@@ -37,6 +37,99 @@ namespace Dovus.Game
             Apply(_left, ref localPos, ref localRot, ref localScale);
         }
 
+        /// <summary>Mixamo Paladin: silah anahtarına göre ek tutuş (Synty'ye uygulanmaz).</summary>
+        public void ApplyMixamoWeapon(string weaponKey, bool isRight, ref Vector3 localPos, ref Quaternion localRot, ref Vector3 localScale)
+        {
+            if (weaponKey == "kilic")
+            {
+                if (isRight)
+                    Apply(_right, ref localPos, ref localRot, ref localScale);
+                else
+                    Apply(_left, ref localPos, ref localRot, ref localScale);
+                return;
+            }
+
+            if (TryGetMixamoWeaponOffset(weaponKey, isRight, out GripOffset o))
+                Apply(o, ref localPos, ref localRot, ref localScale);
+        }
+
+        public static bool TryGetMixamoWeaponOffset(string weaponKey, bool isRight, out GripOffset offset)
+        {
+            offset = default;
+            switch (weaponKey)
+            {
+                case "kalkan" when isRight:
+                    offset = new GripOffset
+                    {
+                        LocalPosition = new Vector3(0.02f, 0.01f, 0.03f),
+                        LocalEulerAngles = new Vector3(8f, 195f, 92f),
+                        LocalScale = Vector3.one,
+                    };
+                    return true;
+                case "kalkan" when !isRight:
+                    offset = DefaultMixamoLeftShield();
+                    return true;
+                case "yay" when !isRight:
+                    offset = new GripOffset
+                    {
+                        LocalPosition = new Vector3(0.02f, 0.03f, 0.01f),
+                        LocalEulerAngles = new Vector3(-6f, 92f, 78f),
+                        LocalScale = Vector3.one,
+                    };
+                    return true;
+                case "kitap" when !isRight:
+                    offset = new GripOffset
+                    {
+                        LocalPosition = new Vector3(0.01f, 0.02f, 0.02f),
+                        LocalEulerAngles = new Vector3(-12f, 8f, 92f),
+                        LocalScale = Vector3.one,
+                    };
+                    return true;
+                case "asa" when isRight:
+                    offset = new GripOffset
+                    {
+                        LocalPosition = new Vector3(0.02f, 0f, 0.04f),
+                        LocalEulerAngles = new Vector3(10f, 188f, 96f),
+                        LocalScale = Vector3.one,
+                    };
+                    return true;
+                case "kure" when !isRight:
+                    offset = new GripOffset
+                    {
+                        LocalPosition = new Vector3(0f, 0.10f, 0.02f),
+                        LocalEulerAngles = Vector3.zero,
+                        LocalScale = Vector3.one,
+                    };
+                    return true;
+                case "tilsim" when isRight:
+                    offset = new GripOffset
+                    {
+                        LocalPosition = new Vector3(0.02f, 0.01f, 0.03f),
+                        LocalEulerAngles = new Vector3(18f, 200f, 88f),
+                        LocalScale = Vector3.one,
+                    };
+                    return true;
+                case "top" when isRight:
+                    offset = new GripOffset
+                    {
+                        LocalPosition = new Vector3(0.01f, 0.02f, 0.02f),
+                        LocalEulerAngles = new Vector3(-4f, 188f, 92f),
+                        LocalScale = Vector3.one,
+                    };
+                    return true;
+                case "cekic" when isRight:
+                    offset = new GripOffset
+                    {
+                        LocalPosition = new Vector3(0f, 0f, 0.02f),
+                        LocalEulerAngles = new Vector3(6f, 188f, 94f),
+                        LocalScale = Vector3.one,
+                    };
+                    return true;
+            }
+
+            return false;
+        }
+
         static void Apply(GripOffset o, ref Vector3 localPos, ref Quaternion localRot, ref Vector3 localScale)
         {
             localPos += o.LocalPosition;
@@ -73,7 +166,7 @@ namespace Dovus.Game
 
         public static GripOffset DefaultMixamoLeftShield() => new GripOffset
         {
-            LocalPosition = new Vector3(0.04f, 0.16f, 0.02f),
+            LocalPosition = new Vector3(0.02f, 0.06f, 0.01f),
             // Quaternius Shield_Heater dekor yüzü +Z; ön cepheye (~sol-ön) bakacak şekilde forearm eksenine paralel.
             LocalEulerAngles = new Vector3(-8f, 210f, 88f),
             LocalScale = Vector3.one,
