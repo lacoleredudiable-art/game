@@ -91,34 +91,88 @@ namespace Dovus.Game.EditorTools
 
         public static void LogDefaultCameraDistance()
         {
-            LoggedDefaultCameraDistM = SampleCameraToPlayerDist();
-            Debug.Log($"[FeelCapture] camera distance default={LoggedDefaultCameraDistM:F2}m");
+            LoggedDefaultCameraDistM = SampleResolvedDistance();
+            Debug.Log(
+                $"[FeelCapture] camera distance default resolved={LoggedDefaultCameraDistM:F2}m raw={SampleCameraToPlayerDist():F2}m pullback={SampleWindupPullback():F2}");
         }
 
-        public static void CaptureGameplayDefault()
+        static bool _defaultCaptureActive;
+
+        /// <summary>
+        /// ff-4: Thread.Sleep ana iş parçacığını durdurduğu için hiç kare çalışmıyordu
+        /// (FollowCamera.LateUpdate hiç tetiklenmiyordu) → varsayılan/lock-on kareleri birebir
+        /// aynıydı. Gerçek Play karesi bekleyen EditorApplication.update zamanlayıcısı (bkz.
+        /// ScheduleWindupCapture) ile değiştirildi.
+        /// </summary>
+        public static void CaptureGameplayDefault(int settleFrames = 24)
         {
+            if (_defaultCaptureActive)
+                return;
+            _defaultCaptureActive = true;
             Directory.CreateDirectory(OutDir);
             LookPresets.Apply('B');
             AnimPreview.Equip("kilic");
             SetBlockersHidden(false);
             ResumeBossAi();
-            Thread.Sleep(250);
-            LogDefaultCameraDistance();
-            RenderToFile(Camera.main, Path.Combine(OutDir, "gameplay-default.png"));
+            var follow = Object.FindAnyObjectByType<FollowCamera>();
+            if (follow != null)
+                follow.LockOnActive = false;
+            ScheduleFrames(settleFrames, () =>
+            {
+                _defaultCaptureActive = false;
+                LogDefaultCameraDistance();
+                RenderToFile(Camera.main, Path.Combine(OutDir, "gameplay-default.png"));
+            });
         }
 
-        public static void CaptureLockOn()
+        static bool _lockOnCaptureActive;
+
+        public static void CaptureLockOn(int settleFrames = 28)
         {
+            if (_lockOnCaptureActive)
+                return;
+            _lockOnCaptureActive = true;
             Directory.CreateDirectory(OutDir);
             LookPresets.Apply('B');
             HideTransientOnly(true);
             SetBlockersHidden(false);
             ResumeBossAi();
+            var follow = Object.FindAnyObjectByType<FollowCamera>();
+            if (follow != null)
+                follow.LockOnActive = true;
             SnapPlayerForLockOnFraming();
-            Thread.Sleep(350);
-            LoggedLockOnCameraDistM = SampleCameraToPlayerDist();
-            Debug.Log($"[FeelCapture] camera distance lock-on={LoggedLockOnCameraDistM:F2}m (default was {LoggedDefaultCameraDistM:F2}m)");
-            RenderToFile(Camera.main, Path.Combine(OutDir, "lockon.png"));
+            ScheduleFrames(settleFrames, () =>
+            {
+                _lockOnCaptureActive = false;
+                LoggedLockOnCameraDistM = SampleResolvedDistance();
+                Debug.Log(
+                    $"[FeelCapture] camera distance lock-on resolved={LoggedLockOnCameraDistM:F2}m raw={SampleCameraToPlayerDist():F2}m "
+                    + $"(default resolved was {LoggedDefaultCameraDistM:F2}m) pullback={SampleWindupPullback():F2}");
+                RenderToFile(Camera.main, Path.Combine(OutDir, "lockon.png"));
+            });
+        }
+
+        /// <summary>Gerçek Play karesi bekleyen genel zamanlayıcı (Thread.Sleep YASAK — bkz. yukarı not).</summary>
+        static void ScheduleFrames(int frames, System.Action onDone)
+        {
+            int left = Mathf.Max(1, frames);
+            void Tick()
+            {
+                ResumeBossAi();
+                left--;
+                if (left > 0)
+                    return;
+                EditorApplication.update -= Tick;
+                onDone();
+            }
+
+            EditorApplication.update += Tick;
+        }
+
+        static float SampleWindupPullback()
+        {
+            var follow = Object.FindAnyObjectByType<FollowCamera>();
+            return follow != null ? follow.WindupPullback01 : 0f;
         }
 
         static bool _windupWatchActive;
@@ -169,9 +223,10 @@ namespace Dovus.Game.EditorTools
                 return false;
             }
 
-            LoggedWindupCameraDistM = SampleCameraToPlayerDist();
+            LoggedWindupCameraDistM = SampleResolvedDistance();
             Debug.Log(
-                $"[FeelCapture] camera distance windup={LoggedWindupCameraDistM:F2}m (default={LoggedDefaultCameraDistM:F2}m lock-on={LoggedLockOnCameraDistM:F2}m) progress={p:F2}");
+                $"[FeelCapture] camera distance windup resolved={LoggedWindupCameraDistM:F2}m (default={LoggedDefaultCameraDistM:F2}m lock-on={LoggedLockOnCameraDistM:F2}m) "
+                + $"pullback={SampleWindupPullback():F2} progress={p:F2}");
             RenderToFile(Camera.main, Path.Combine(OutDir, "windup-pullback.png"));
             return true;
         }
@@ -189,12 +244,20 @@ namespace Dovus.Game.EditorTools
             AnimPreview.Equip("kilic");
         }
 
-        public static void CaptureImpactSparks()
+        static bool _impactCaptureActive;
+
+        public static void CaptureImpactSparks(int settleFrames = 8)
         {
+            if (_impactCaptureActive)
+                return;
+            _impactCaptureActive = true;
             AnimPreview.Strike();
-            Thread.Sleep(120);
-            RenderToFile(Camera.main, Path.Combine(OutDir, "impact-sparks.png"));
-            ResumeBossAi();
+            ScheduleFrames(settleFrames, () =>
+            {
+                _impactCaptureActive = false;
+                RenderToFile(Camera.main, Path.Combine(OutDir, "impact-sparks.png"));
+                ResumeBossAi();
+            });
         }
 
         public static string HashAllCapturePngs()
@@ -525,15 +588,20 @@ namespace Dovus.Game.EditorTools
                 player.position += toBoss.normalized * extra;
         }
 
+        /// <summary>Gerçek kamera↔oyuncu metre mesafesi (ham, FollowCamera'nın yumuşatılmış hedefinden ayrı).</summary>
         static float SampleCameraToPlayerDist()
         {
             Transform player = FindPlayerRoot();
             if (player == null || Camera.main == null)
                 return 0f;
-            var follow = Object.FindAnyObjectByType<FollowCamera>();
-            if (follow != null)
-                return follow.ResolvedDistanceM;
             return Vector3.Distance(Camera.main.transform.position, player.position);
+        }
+
+        /// <summary>FollowCamera.ResolvedDistanceM — yumuşatılmış hedef mesafe (ff-4 doğrulama).</summary>
+        static float SampleResolvedDistance()
+        {
+            var follow = Object.FindAnyObjectByType<FollowCamera>();
+            return follow != null ? follow.ResolvedDistanceM : SampleCameraToPlayerDist();
         }
 
         static float ReadLastSwordAngleFromLog(Animator anim)

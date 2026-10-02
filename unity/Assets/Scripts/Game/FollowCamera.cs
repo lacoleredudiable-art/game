@@ -54,6 +54,15 @@ namespace Dovus.Game
         /// <summary>0–1 windup geri çekilme karışımı.</summary>
         public float WindupPullback01 => _windupPullback;
 
+        /// <summary>
+        /// ff-4: gerçek lock-on durumu. Kapalı: oyuncu merkezli takip, alt üçte bir, boss
+        /// menzildeyken yumuşak yaw/çerçeve (<see cref="BossFramingWeight"/>). Açık: bakış
+        /// hedefi oyuncu–boss orta noktası (boss baş yüksekliği dahil), mesafe ayrıma göre
+        /// büyür (lock-on min/max'e kenetli). Panel satırı, Tab tuşu (bkz. CameraOrbitInput) ve
+        /// yakalama API'si bunu değiştirir.
+        /// </summary>
+        public bool LockOnActive { get; set; }
+
         public Transform BossTarget
         {
             get => _bossTarget;
@@ -195,7 +204,7 @@ namespace Dovus.Game
             UpdateWindupPullback(dt);
 
             float framing = BossFramingWeight();
-            float desiredDistance = ResolveCameraDistance(framing);
+            float desiredDistance = ResolveCameraDistance();
             _resolvedDistanceM = Mathf.SmoothDamp(
                 _resolvedDistanceM,
                 desiredDistance,
@@ -221,11 +230,20 @@ namespace Dovus.Game
             Vector3 playerAim = _target.position + lookAhead * 0.35f
                 + Vector3.up * _tuning.CameraLookHeightM;
             Vector3 lookTarget = playerAim;
-            if (framing > 0f && _bossTarget != null)
+            if (_bossTarget != null)
             {
                 Vector3 bossAim = _bossTarget.position + Vector3.up * _tuning.CameraBossAimHeightM;
-                float blend = Mathf.Clamp01(_tuning.CameraBossFramingWeight) * framing;
-                lookTarget = Vector3.Lerp(playerAim, bossAim, blend);
+                if (LockOnActive)
+                {
+                    // Lock-on: bakış oyuncu–boss orta noktası (ikisi de kadrajda kalsın).
+                    lookTarget = Vector3.Lerp(playerAim, bossAim, 0.5f);
+                }
+                else if (framing > 0f)
+                {
+                    // Varsayılan: boss menzildeyken yumuşak çerçeveleme (lock-on DEĞİL).
+                    float blend = Mathf.Clamp01(_tuning.CameraBossFramingWeight) * framing;
+                    lookTarget = Vector3.Lerp(playerAim, bossAim, blend);
+                }
             }
 
             Quaternion look = Quaternion.LookRotation(lookTarget - transform.position, Vector3.up);
@@ -241,10 +259,12 @@ namespace Dovus.Game
             }
         }
 
-        float ResolveCameraDistance(float framingWeight)
+        float ResolveCameraDistance()
         {
             float distance = _tuning.CameraDistanceM;
-            if (framingWeight > 0f && _bossTarget != null)
+            // Mesafe büyümesi SADECE gerçek lock-on'da (ff-4) — menzil yakınlığıyla değil,
+            // yoksa varsayılan == lock-on olur (eski bug).
+            if (LockOnActive && _bossTarget != null)
             {
                 Vector3 toBoss = _bossTarget.position - _target.position;
                 toBoss.y = 0f;
@@ -252,7 +272,7 @@ namespace Dovus.Game
                     toBoss.magnitude * _tuning.CameraLockOnDistancePerSepM,
                     _tuning.CameraLockOnMaxExtraDistanceM);
                 distance = Mathf.Clamp(
-                    distance + extra * framingWeight,
+                    distance + extra,
                     _tuning.CameraLockOnMinDistanceM,
                     _tuning.CameraLockOnMaxDistanceM);
             }
@@ -287,14 +307,22 @@ namespace Dovus.Game
             {
                 Vector3 toBoss = _bossTarget.position - _target.position;
                 toBoss.y = 0f;
-                float range = Mathf.Max(0.01f, _tuning.CameraSoftLockRangeM);
-                if (toBoss.sqrMagnitude <= range * range && toBoss.sqrMagnitude > 0.001f)
+                if (LockOnActive && toBoss.sqrMagnitude > 0.001f)
                 {
-                    float bossYaw = Mathf.Atan2(toBoss.x, toBoss.z) * Mathf.Rad2Deg;
-                    desired = Mathf.LerpAngle(
-                        OrbitYawDeg,
-                        bossYaw,
-                        Mathf.Clamp01(_tuning.CameraSoftLockStrength));
+                    // Lock-on: menzilden bağımsız tam yaw kenetleme (konum da boss'a döner).
+                    desired = Mathf.Atan2(toBoss.x, toBoss.z) * Mathf.Rad2Deg;
+                }
+                else
+                {
+                    float range = Mathf.Max(0.01f, _tuning.CameraSoftLockRangeM);
+                    if (toBoss.sqrMagnitude <= range * range && toBoss.sqrMagnitude > 0.001f)
+                    {
+                        float bossYaw = Mathf.Atan2(toBoss.x, toBoss.z) * Mathf.Rad2Deg;
+                        desired = Mathf.LerpAngle(
+                            OrbitYawDeg,
+                            bossYaw,
+                            Mathf.Clamp01(_tuning.CameraSoftLockStrength));
+                    }
                 }
             }
 

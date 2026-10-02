@@ -64,11 +64,22 @@ namespace Dovus.Game
         void Update()
         {
             HandleMouseOrbit();
+            HandleLockOnKey();
             if (_camera != null)
             {
                 _camera.OrbitYawDeg = _yawDeg;
                 _camera.OrbitPitchDeg = _pitchDeg;
             }
+        }
+
+        /// <summary>ff-4: Tab ile gerçek lock-on açma/kapama (editör/masaüstü klavyesi).</summary>
+        void HandleLockOnKey()
+        {
+            if (_camera == null)
+                return;
+            var kb = Keyboard.current;
+            if (kb != null && kb.tabKey.wasPressedThisFrame)
+                _camera.LockOnActive = !_camera.LockOnActive;
         }
 
         void HandleMouseOrbit()
