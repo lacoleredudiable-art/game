@@ -17,13 +17,9 @@ namespace Dovus.Game
             RenderSettings.ambientEquatorColor = tuning.AmbientEquator;
             RenderSettings.ambientGroundColor = tuning.AmbientGround;
 
-            // Açık gri lav ovası (ambiyans portu, PR #43): hafif üstel sis — arena içi (yakın)
-            // kırpılmaz, yalnız ufuktaki dağ/kaya silueti uzaklıkla kalınlaşır (okunabilirlik §3).
+            // Açık gri lav ovası (ambiyans portu, PR #43): doğrusal sis arena yarıçapına ölçeklenir.
             RenderSettings.skybox = null;
-            RenderSettings.fog = true;
-            RenderSettings.fogMode = FogMode.Exponential;
-            RenderSettings.fogColor = tuning.FogColor;
-            RenderSettings.fogDensity = Mathf.Max(0f, tuning.FogDensity);
+            CombatAmbienceEnvironment.ConfigureArenaFog(tuning);
 
             if (camera != null)
             {
