@@ -14,15 +14,19 @@ namespace Dovus.Game
         DodgeMotion _dodge;
         CombatFeel _feel;
         HexagonInput _input;
+        FollowCamera _follow;
+        CombatTuning _combat;
         Transform _bossTf;
 
-        public void Bind(BossDirector boss, DodgeMotion dodge, CombatFeel feel, HexagonInput input)
+        public void Bind(BossDirector boss, DodgeMotion dodge, CombatFeel feel, HexagonInput input, FollowCamera follow = null, CombatTuning combat = null)
         {
             Unbind();
             _boss = boss;
             _dodge = dodge;
             _feel = feel;
             _input = input;
+            _follow = follow;
+            _combat = combat;
             _bossTf = boss != null ? boss.transform : null;
 
             if (_boss != null)
@@ -80,6 +84,10 @@ namespace Dovus.Game
             {
                 FeelVfx.SlamImpact(_boss.AttackOrigin, _boss.AttackRadiusM);
                 SfxDirector.Play(SfxLibrary.BossSlam);
+                float px = _combat != null ? _combat.Feel.ShakeBossSlamPx : 19f;
+                float decay = _combat != null ? _combat.Feel.ShakeDecay : 6f;
+                _follow?.AddShakePxAtLeast(px, decay);
+                DebugConfig.DevLog($"[Feel2Verify] boss-slam shake={px}px");
             }
         }
 

@@ -154,37 +154,15 @@ namespace Dovus.Game
                 text.fontSize = Mathf.Max(1, Mathf.FloorToInt(max * bandWidth / preferred));
         }
 
-        /// <summary>CombatFeel.OnExchange her sonucu buraya iletir.</summary>
+        /// <summary>CombatFeel artık dodge/vurulma büyük yazısını tetiklemez (feel-2).</summary>
         public void NoteExchange(ExchangeResult result)
         {
             if (_feel == null)
                 return;
 
-            if (result.Outcome == ExchangeOutcome.Dodged)
-            {
-                _streak++;
-                float reactionSec = Mathf.Max(0f, result.ReactionMs) / 1000f;
-                if (_bestReactionSec < 0f || reactionSec < _bestReactionSec)
-                    _bestReactionSec = reactionSec;
-
-                _accent = GradeColor(result.Grade);
-                _main.text = $"{reactionSec:0.00} sn  {GradeLabel(result.Grade)}";
-                _sub.text = GradeMessage(result.Grade);
-                _needsFit = true;
-                Show();
-            }
-            else if (result.Outcome == ExchangeOutcome.Hit)
-            {
-                _streak = 0;
-                // Vurulma sebebi nötr renkte.
-                _accent = _tuning.HexagonDotColor;
-                _main.text = result.HitReasonText ?? "vuruldun";
-                _sub.text = string.Empty;
-                _needsFit = true;
-                Show();
-            }
-
-            // Safe (menzil dışı) bu büyük yazıyı tetiklemez; SentenceDebugHud zaten not ediyor.
+            // Yalnız skill/kapanış/deny yazıları kalır — dodge derecesi ve vurulma sebebi gösterilmez.
+            if (result.Outcome == ExchangeOutcome.Dodged || result.Outcome == ExchangeOutcome.Hit)
+                return;
         }
 
         /// <summary>Kapanış bang'inde skill adı — "farklı iş" havasının yazı katmanı.</summary>

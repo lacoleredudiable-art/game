@@ -489,7 +489,7 @@ namespace Dovus.Game
         {
             if (amount <= 0f || _boss == null)
                 return;
-            _damageHud?.ShowDamage(amount, false, BossHitPoint(), DamageTint());
+            _damageHud?.ShowDamage(amount, false, BossHitPoint(), DamageTint(), victimIsBoss: true);
         }
 
         void OnDestroy()
@@ -1452,7 +1452,7 @@ namespace Dovus.Game
             if (damage <= 0f)
                 return;
             _bossVitals.ApplyDamage(damage);
-            _damageHud?.ShowDamage(damage, false, BossHitPoint(), DamageTint());
+            _damageHud?.ShowDamage(damage, false, BossHitPoint(), DamageTint(), victimIsBoss: true);
         }
 
         void SpawnClosingImpact(PendingClosing p)
@@ -2346,7 +2346,7 @@ namespace Dovus.Game
             if (!bossHit)
                 return;
             _bossVitals.ApplyDamage(hit.Damage);
-            _damageHud?.ShowDamage(hit.Damage, false, BossHitPoint(), DamageTint());
+            _damageHud?.ShowDamage(hit.Damage, false, BossHitPoint(), DamageTint(), victimIsBoss: true);
         }
 
         void StartSlotFlow(float dealt)
@@ -2553,7 +2553,7 @@ namespace Dovus.Game
                 TryCannonBlast(_lastHitX, _lastHitZ);
             ConsumeWeaponBonus(_bossStatus != null ? _bossStatus.Board : null);
             LastClosingDamageDealt = damage;
-            _damageHud?.ShowDamage(damage, isCrit, BossHitPoint(), DamageTint());
+            _damageHud?.ShowDamage(damage, isCrit, BossHitPoint(), DamageTint(), victimIsBoss: true);
 
             float lifesteal = _slotPassives?.LifestealAddFor(_slotQueryCastId) ?? 0f;
             lifesteal += AdjectiveLifesteal(skill);

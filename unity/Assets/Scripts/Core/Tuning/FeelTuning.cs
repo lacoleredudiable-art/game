@@ -10,6 +10,11 @@ namespace Dovus.Core.Tuning
         public int HitstopPerfectMs = 90;
         public int HitstopPlayerHitMs = 130;
         public int HitstopBossHitMs = 70;
+        // Oyuncu→boss görsel dondurma (ms) — silah arketipine göre (feel-2).
+        public int HitstopBossLightMs = 50;
+        public int HitstopBossSwordMs = 62;
+        public int HitstopBossHeavyMs = 70;
+        public int HitstopBossHammerMs = 80;
         public int ImpactFrameMs = 33;
         public int PostHitSilenceMs = 120;
 
@@ -26,9 +31,24 @@ namespace Dovus.Core.Tuning
         // Bossa isabet: art arda tick/çoklu vuruş hitstop'u üst üste yığmasın. Önerilen (durum.md).
         public int BossHitHitstopMinGapMs = 140;
         public float BossHitShakePx = 4f;
-        // Gövde beyaz parlaması (MaterialPropertyBlock). Önerilen (durum.md).
+        public float ShakeBossLightPx = 4f;
+        public float ShakeBossMediumPx = 6f;
+        public float ShakeBossHeavyPx = 12f;
+        public float ShakeBossSlamPx = 19f;
+        public float BossHitCritShakeMult = 1.75f;
+        // Gövde parlaması (MaterialPropertyBlock). Önerilen (durum.md).
         public int HitFlashMs = 90;
+        public int BossHitFlashMs = 90;
         public float HitFlashStrength = 0.85f;
+        public float PlayerHitVignetteSec = 0.30f;
+        public int PerfectDodgeHapticMs = 25;
+        public int PlayerHitHapticMs = 25;
+        public int PerfectDodgeAfterimageCount = 5;
+        public int PerfectDodgeAfterimageLifeMs = 200;
+        public int HitImpactMaxConcurrent = 8;
+        public float HitImpactLifeSec = 0.35f;
+        public float BossFlinchOffsetM = 0.06f;
+        public int BossFlinchMs = 80;
 
         // Kapanış kamera vuruşu — SkillFeel.CameraKick'teki gömülü değerler aynen taşındı.
         public float SkillKickStrike = 3.2f;
@@ -60,6 +80,10 @@ namespace Dovus.Core.Tuning
             HitstopPerfectMs = other.HitstopPerfectMs;
             HitstopPlayerHitMs = other.HitstopPlayerHitMs;
             HitstopBossHitMs = other.HitstopBossHitMs;
+            HitstopBossLightMs = other.HitstopBossLightMs;
+            HitstopBossSwordMs = other.HitstopBossSwordMs;
+            HitstopBossHeavyMs = other.HitstopBossHeavyMs;
+            HitstopBossHammerMs = other.HitstopBossHammerMs;
             ImpactFrameMs = other.ImpactFrameMs;
             PostHitSilenceMs = other.PostHitSilenceMs;
 
@@ -75,8 +99,23 @@ namespace Dovus.Core.Tuning
 
             BossHitHitstopMinGapMs = other.BossHitHitstopMinGapMs;
             BossHitShakePx = other.BossHitShakePx;
+            ShakeBossLightPx = other.ShakeBossLightPx;
+            ShakeBossMediumPx = other.ShakeBossMediumPx;
+            ShakeBossHeavyPx = other.ShakeBossHeavyPx;
+            ShakeBossSlamPx = other.ShakeBossSlamPx;
+            BossHitCritShakeMult = other.BossHitCritShakeMult;
             HitFlashMs = other.HitFlashMs;
+            BossHitFlashMs = other.BossHitFlashMs;
             HitFlashStrength = other.HitFlashStrength;
+            PlayerHitVignetteSec = other.PlayerHitVignetteSec;
+            PerfectDodgeHapticMs = other.PerfectDodgeHapticMs;
+            PlayerHitHapticMs = other.PlayerHitHapticMs;
+            PerfectDodgeAfterimageCount = other.PerfectDodgeAfterimageCount;
+            PerfectDodgeAfterimageLifeMs = other.PerfectDodgeAfterimageLifeMs;
+            HitImpactMaxConcurrent = other.HitImpactMaxConcurrent;
+            HitImpactLifeSec = other.HitImpactLifeSec;
+            BossFlinchOffsetM = other.BossFlinchOffsetM;
+            BossFlinchMs = other.BossFlinchMs;
 
             SkillKickStrike = other.SkillKickStrike;
             SkillShakeStrikePx = other.SkillShakeStrikePx;

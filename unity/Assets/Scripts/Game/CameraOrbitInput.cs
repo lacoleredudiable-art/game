@@ -36,6 +36,8 @@ namespace Dovus.Game
             _moveInput = moveInput;
             _hexagonInput = hexagonInput;
             _tuning = tuning;
+            if (_tuning != null)
+                _pitchDeg = _tuning.CameraDefaultPitchDeg;
         }
 
         void OnEnable()

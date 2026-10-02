@@ -27,6 +27,7 @@ namespace Dovus.Game
         FeelTuning _feel;
         Color _tint = Color.white;
         float _startUnscaled = -1f;
+        int _durationMs = 90;
         bool _active;
 
         public int RendererCount => _slots.Count;
@@ -66,9 +67,18 @@ namespace Dovus.Game
 
         public void Flash(Color tint)
         {
-            if (_feel == null || _feel.HitFlashMs <= 0 || _feel.HitFlashStrength <= 0f || _slots.Count == 0)
+            Flash(tint, -1);
+        }
+
+        public void Flash(Color tint, int durationMsOverride)
+        {
+            if (_feel == null || _feel.HitFlashStrength <= 0f || _slots.Count == 0)
+                return;
+            int ms = durationMsOverride > 0 ? durationMsOverride : _feel.HitFlashMs;
+            if (ms <= 0)
                 return;
             _tint = tint;
+            _durationMs = ms;
             _startUnscaled = Time.unscaledTime;
             _active = true;
         }
@@ -77,7 +87,7 @@ namespace Dovus.Game
         {
             if (!_active)
                 return;
-            float dur = Mathf.Max(0.001f, _feel.HitFlashMs / 1000f);
+            float dur = Mathf.Max(0.001f, _durationMs / 1000f);
             float t = (Time.unscaledTime - _startUnscaled) / dur;
             if (t >= 1f)
             {

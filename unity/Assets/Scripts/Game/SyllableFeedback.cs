@@ -64,7 +64,7 @@ namespace Dovus.Game
             _source.PlayOneShot(_clips[dot], 0.7f);
 
             long ms = _tuning != null ? _tuning.DotVibrationMs : 30L;
-            TryShortVibrate(ms);
+            FeelHaptics.Pulse((int)ms);
         }
 
         /// <summary>Bağlama 3: yetersiz mana — düşük kısa buzz (hece frekanslarından ayrı).</summary>
@@ -76,43 +76,7 @@ namespace Dovus.Game
                 _denyClip = BuildClip("deny", 120f);
             _source.pitch = 0.85f;
             _source.PlayOneShot(_denyClip, 0.45f);
-            TryShortVibrate(20L);
-        }
-
-        static void TryShortVibrate(long durationMs)
-        {
-            if (durationMs <= 0)
-                return;
-
-#if UNITY_ANDROID && !UNITY_EDITOR
-            try
-            {
-                using var player = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-                using var activity = player.GetStatic<AndroidJavaObject>("currentActivity");
-                using var vibrator = activity.Call<AndroidJavaObject>("getSystemService", "vibrator");
-                if (vibrator == null)
-                    return;
-
-                using var version = new AndroidJavaClass("android.os.Build$VERSION");
-                int sdk = version.GetStatic<int>("SDK_INT");
-                if (sdk >= 26)
-                {
-                    using var effectClass = new AndroidJavaClass("android.os.VibrationEffect");
-                    // DEFAULT_AMPLITUDE = -1
-                    using var effect = effectClass.CallStatic<AndroidJavaObject>(
-                        "createOneShot", durationMs, -1);
-                    vibrator.Call("vibrate", effect);
-                }
-                else
-                {
-                    vibrator.Call("vibrate", durationMs);
-                }
-            }
-            catch (System.Exception)
-            {
-                // Emülatör / izin yok — sessizce atla.
-            }
-#endif
+            FeelHaptics.Pulse(20);
         }
 
         static AudioClip BuildClip(string syllable, float hz)

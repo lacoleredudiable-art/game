@@ -116,7 +116,16 @@ namespace Dovus.Game
                 _tuning.PlayerVisualHeightM,
                 ally.transform.position.y - PlayerHeightM * 0.5f,
                 _tuning.CharacterAnimSpeed,
-                out _);
+                out var allyAnim);
+            if (allyAnim != null)
+            {
+                var allyVisual = ally.AddComponent<ActorVisual>();
+                allyVisual.Bind(allyAnim, ally.GetComponent<Renderer>());
+                allyVisual.CrossFadeSec = _tuning.AnimCrossFadeSec;
+                allyVisual.StrikeComboResetSec = _tuning.BasicStrikeComboResetSec;
+                allyVisual.UpperBodyMinSpeed = _tuning.UpperBodyCastMinSpeed;
+                allyVisual.SetWeapon("kilic");
+            }
             var allyHitCollider = ally.AddComponent<CapsuleCollider>();
             allyHitCollider.isTrigger = true;
             ally.AddComponent<ActorGrounding>();
@@ -424,8 +433,19 @@ namespace Dovus.Game
             var feelGo = new GameObject("CombatFeel");
             feelGo.transform.SetParent(transform, false);
             var feel = feelGo.AddComponent<CombatFeel>();
+            var visualFreeze = feelGo.AddComponent<VisualFreeze>();
             feel.Bind(clock, follow, combat, _tuning, overlay.Cam, debug, readout);
             feel.BindActors(player.GetComponent<HitFlash>(), boss.GetComponent<HitFlash>());
+            var playerVisual = player.GetComponent<ActorVisual>();
+            var bossVisualComp = boss.GetComponent<BossVisual>();
+            Animator playerAnim = playerVisual != null ? playerVisual.Animator : null;
+            Animator bossAnim = bossVisualComp != null ? bossVisualComp.Animator : null;
+            // Boss isabet hitstop: yalnız oyuncu animatörü — boss donunca ayak kemikleri ölçümü kayıyor (sweep yerde).
+            visualFreeze.Bind(follow, playerAnim);
+            feel.BindPresentation(visualFreeze, afterimage, player.transform);
+            HitImpactFx.Configure(combat.Feel);
+            var bossFlinch = boss.gameObject.GetComponent<BossHitFlinch>() ?? boss.gameObject.AddComponent<BossHitFlinch>();
+            bossFlinch.Bind(combat.Feel, bossAnim);
             player.GetComponent<PlayerDodgeRig>()?.Bind(clock, input, follow, readout, feel);
             var overlayHud = feelGo.AddComponent<CombatOverlayHud>();
             overlayHud.Configure(vitals, bossVitals, player, boss.transform, overlay.Cam);
@@ -438,6 +458,7 @@ namespace Dovus.Game
             if (playerStatus != null)
                 bossDir.BindPlayerStatus(playerStatus);
             bossDir.BindVisual(boss.GetComponent<BossVisual>());
+            follow?.BindBossDirector(bossDir);
 
             // Boss hedefleri: oyuncu + dost kukla (+ MD'nin dikkat çeken yemleri). Sayılar karadul.json targeting.
             var hostileTargets = directorGo.AddComponent<HostileTargets>();
@@ -464,7 +485,7 @@ namespace Dovus.Game
             vitalsHud.BindBoss(bossDir);
 
             feelGo.AddComponent<SfxDirector>();
-            feelGo.AddComponent<PresentationFx>().Bind(bossDir, dodgeMotion, feel, input);
+            feelGo.AddComponent<PresentationFx>().Bind(bossDir, dodgeMotion, feel, input, follow, combat);
             var playerSteps = player.gameObject.AddComponent<FootstepEmitter>();
             playerSteps.StrideM = _tuning.FootstepStrideM;
             var bossSteps = boss.gameObject.AddComponent<FootstepEmitter>();

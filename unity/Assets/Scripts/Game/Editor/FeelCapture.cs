@@ -1,0 +1,467 @@
+#if UNITY_EDITOR
+using System.IO;
+using System.Text;
+using System.Threading;
+using Dovus.Core.Combat;
+using Dovus.Game;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.Rendering.Universal;
+
+namespace Dovus.Game.EditorTools
+{
+    /// <summary>feel-pack (3/3) yakalama: lava görünür, gerçek vuruş karesi, %60 kadraj.</summary>
+    public static class FeelCapture
+    {
+        public const string OutDir = @"C:\Users\lacol\_cleanup\feel";
+        const int W = 1600;
+        const int H = 900;
+        const float TargetFill = 0.60f;
+
+        static Renderer[] _hiddenTransient;
+        static float _lastStrikeT;
+        static float _lastStrikeMetric;
+
+        public static void PrepareSession()
+        {
+            Directory.CreateDirectory(OutDir);
+            LookPresets.Apply('B');
+            HideTransientOnly(true);
+            Thread.Sleep(400);
+        }
+
+        public static void EndSession() => HideTransientOnly(false);
+
+        public static void LogPropWorldSizes()
+        {
+            Transform player = FindPlayerRoot();
+            var ally = Object.FindAnyObjectByType<AllyDummy>(FindObjectsInactive.Include);
+            Animator pAnim = player != null ? player.GetComponentInChildren<Animator>() : null;
+            Animator aAnim = ally != null ? ally.GetComponentInChildren<Animator>() : null;
+            if (pAnim != null)
+                WeaponHandProps.LogPropDiagnostics(pAnim, "Paladin");
+            if (aAnim != null)
+                WeaponHandProps.LogPropDiagnostics(aAnim, "SyntyAlly");
+        }
+
+        public static void LogGreenEllipsoidFindings()
+        {
+            Transform player = FindPlayerRoot();
+            if (player == null)
+                return;
+            Vector3 p = player.position;
+            foreach (Renderer r in Object.FindObjectsByType<Renderer>(FindObjectsSortMode.None))
+            {
+                if (r == null || !r.enabled || !r.gameObject.activeInHierarchy)
+                    continue;
+                if (r is ParticleSystemRenderer or LineRenderer or TrailRenderer)
+                    continue;
+                Color c = ReadColor(r);
+                if (c.g < 0.7f || c.r > 0.55f || c.b > 0.55f)
+                    continue;
+                if (r.bounds.size.magnitude < 0.35f || r.bounds.size.magnitude > 2.5f)
+                    continue;
+                float d = Vector3.Distance(r.bounds.center, p);
+                if (d > 3f)
+                    continue;
+                Debug.Log(
+                    $"[FeelCapture] green-prop path={GetPath(r.transform)} size={r.bounds.size} dist={d:F2}m mat={r.sharedMaterial?.name}");
+            }
+        }
+
+        public static void CaptureGameplayBoss()
+        {
+            Directory.CreateDirectory(OutDir);
+            LookPresets.Apply('B');
+            AnimPreview.Equip("kilic");
+            Thread.Sleep(200);
+            RenderToFile(Camera.main, Path.Combine(OutDir, "gameplay-boss.png"));
+        }
+
+        public static void CaptureLockOn()
+        {
+            PrepareSession();
+            Transform player = FindPlayerRoot();
+            var boss = Object.FindAnyObjectByType<BossDirector>();
+            if (player == null || boss == null)
+                return;
+            SetBlockersHidden(false);
+            Thread.Sleep(300);
+            RenderToFile(Camera.main, Path.Combine(OutDir, "lockon.png"));
+        }
+
+        public static void CaptureWindupPullback()
+        {
+            Directory.CreateDirectory(OutDir);
+            LookPresets.Apply('B');
+            SetBlockersHidden(false);
+            var follow = Object.FindAnyObjectByType<FollowCamera>();
+            var boss = Object.FindAnyObjectByType<BossDirector>();
+            float normalDist = follow != null && Camera.main != null
+                ? Vector3.Distance(Camera.main.transform.position, FindPlayerRoot().position)
+                : 0f;
+            Debug.Log($"[FeelCapture] windup camera distance normal={normalDist:F2}m");
+            if (boss != null)
+            {
+                for (int i = 0; i < 240 && boss.WindupProgress01 < 0.15f; i++)
+                    Thread.Sleep(50);
+            }
+
+            float windupDist = follow != null && Camera.main != null
+                ? Vector3.Distance(Camera.main.transform.position, FindPlayerRoot().position)
+                : 0f;
+            Debug.Log($"[FeelCapture] windup camera distance during={windupDist:F2}m");
+            RenderToFile(Camera.main, Path.Combine(OutDir, "windup-pullback.png"));
+        }
+
+        public static void CaptureImpactSparks()
+        {
+            PrepareSession();
+            SetBlockersHidden(false);
+            AnimPreview.Strike();
+            Thread.Sleep(350);
+            RenderToFile(Camera.main, Path.Combine(OutDir, "impact-sparks.png"));
+        }
+
+        public static void CaptureDamageVignette()
+        {
+            Directory.CreateDirectory(OutDir);
+            LookPresets.Apply('B');
+            var feel = Object.FindAnyObjectByType<CombatFeel>();
+            feel?.OnExchange(new ExchangeResult { Outcome = ExchangeOutcome.Hit });
+
+            Thread.Sleep(200);
+            RenderToFile(Camera.main, Path.Combine(OutDir, "damage-vignette.png"));
+        }
+
+        public static void CapturePaladinStrike()
+        {
+            PrepareSession();
+            Transform root = FindPlayerRoot();
+            Animator anim = root != null ? root.GetComponentInChildren<Animator>() : null;
+            float t = SampleStrikeTime(anim, out float metric);
+            _lastStrikeT = t;
+            _lastStrikeMetric = metric;
+            Debug.Log($"[FeelCapture] strike t={t:F3} metric={metric:F3}");
+            if (anim != null)
+                ApplyStrikeSample(anim, t);
+            CaptureSolo(root, true, "paladin-strike.png", strikePose: true);
+            LogPixelHeight(Path.Combine(OutDir, "paladin-strike.png"), "paladin-strike");
+        }
+
+        public static void CapturePaladinIdle()
+        {
+            PrepareSession();
+            Transform root = FindPlayerRoot();
+            Animator anim = root != null ? root.GetComponentInChildren<Animator>() : null;
+            if (anim != null)
+            {
+                anim.Play("Locomotion", 0, 0f);
+                anim.Update(0f);
+                ResnapProps();
+            }
+
+            CaptureSolo(root, true, "paladin-idle.png", strikePose: false);
+            LogPixelHeight(Path.Combine(OutDir, "paladin-idle.png"), "paladin-idle");
+        }
+
+        public static void CaptureSyntyAlly()
+        {
+            PrepareSession();
+            Transform player = FindPlayerRoot();
+            var ally = Object.FindAnyObjectByType<AllyDummy>(FindObjectsInactive.Include);
+            if (player != null)
+                player.gameObject.SetActive(false);
+            if (ally != null)
+            {
+                ally.gameObject.SetActive(true);
+                var av = ally.GetComponent<ActorVisual>();
+                av?.SetWeapon("kilic");
+                ResnapProps();
+                CaptureSolo(ally.transform, true, "synty-ally.png", strikePose: false);
+                LogPixelHeight(Path.Combine(OutDir, "synty-ally.png"), "synty-ally");
+            }
+
+            if (player != null)
+                player.gameObject.SetActive(true);
+        }
+
+        static float SampleStrikeTime(Animator anim, out float bestMetric)
+        {
+            bestMetric = -1f;
+            if (anim == null)
+                return 0.42f;
+            AnimationClip clip = FindStrikeClip(anim);
+            if (clip == null)
+                return 0.42f;
+            Transform chest = anim.GetBoneTransform(HumanBodyBones.UpperChest)
+                ?? anim.GetBoneTransform(HumanBodyBones.Chest)
+                ?? anim.transform;
+            Transform root = anim.transform;
+            Vector3 fwd = FlatForward(root);
+            bool was = anim.enabled;
+            anim.enabled = false;
+            float bestT = 0.42f;
+            float clipLen = clip.length;
+            for (int i = 1; i <= 24; i++)
+            {
+                float u = 0.05f + (i / 25f) * 0.90f;
+                float tSec = u * clipLen;
+                clip.SampleAnimation(anim.gameObject, tSec);
+                ResnapProps();
+                Transform hand = anim.GetBoneTransform(HumanBodyBones.RightHand);
+                if (hand == null)
+                    continue;
+                float dot = Vector3.Dot(hand.position - chest.position, fwd);
+                float metric = dot + hand.position.y * 0.01f;
+                if (metric > bestMetric)
+                {
+                    bestMetric = metric;
+                    bestT = u;
+                }
+            }
+
+            anim.enabled = was;
+            return bestT;
+        }
+
+        static void ApplyStrikeSample(Animator anim, float normalizedT)
+        {
+            AnimationClip clip = FindStrikeClip(anim);
+            if (clip == null)
+                return;
+            bool was = anim.enabled;
+            anim.enabled = false;
+            clip.SampleAnimation(anim.gameObject, normalizedT * clip.length);
+            anim.enabled = was;
+            ResnapProps();
+        }
+
+        static AnimationClip FindStrikeClip(Animator anim)
+        {
+            if (anim.runtimeAnimatorController is AnimatorOverrideController aoc)
+            {
+                var list = new System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<AnimationClip, AnimationClip>>();
+                aoc.GetOverrides(list);
+                foreach (var kv in list)
+                {
+                    if (kv.Key != null && kv.Key.name.IndexOf("Strike", System.StringComparison.OrdinalIgnoreCase) >= 0 && kv.Value != null)
+                        return kv.Value;
+                }
+            }
+
+            foreach (AnimationClip c in anim.runtimeAnimatorController.animationClips)
+            {
+                if (c.name.IndexOf("Strike", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                    return c;
+            }
+
+            return null;
+        }
+
+        static void CaptureSolo(Transform root, bool front, string fileName, bool strikePose)
+        {
+            if (root == null)
+                return;
+            string path = Path.Combine(OutDir, fileName);
+            Vector3 face = FlatForward(root);
+            Bounds bounds;
+            TryCharacterBounds(root, out bounds);
+            float h = Mathf.Max(0.5f, bounds.size.y);
+            float fov = 38f;
+            float margin = 1.06f;
+            float dist = (h / TargetFill) / (2f * Mathf.Tan(fov * 0.5f * Mathf.Deg2Rad)) * margin;
+            Vector3 camDir = front ? face : -face;
+            if (strikePose)
+                camDir = Quaternion.AngleAxis(35f, Vector3.up) * face;
+            Vector3 focus = bounds.center;
+            Vector3 camPos = focus - camDir * dist;
+            camPos.y = focus.y;
+            var camGo = new GameObject("FeelCaptureCam");
+            var cam = camGo.AddComponent<Camera>();
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = Camera.main != null ? Camera.main.backgroundColor : new Color(0.56f, 0.6f, 0.66f);
+            cam.fieldOfView = fov;
+            cam.nearClipPlane = 0.1f;
+            cam.farClipPlane = 80f;
+            cam.transform.SetPositionAndRotation(camPos, Quaternion.LookRotation(focus - camPos, Vector3.up));
+            var urp = camGo.AddComponent<UniversalAdditionalCameraData>();
+            urp.renderPostProcessing = true;
+            LookPresets.ApplyCameraOverrides(cam, LookPresets.ActiveRequiresDepthTexture);
+            RenderToFile(cam, path);
+            Object.DestroyImmediate(camGo);
+        }
+
+        static void HideTransientOnly(bool hide)
+        {
+            if (hide)
+            {
+                var list = new System.Collections.Generic.List<Renderer>();
+                foreach (Transform t in Object.FindObjectsByType<Transform>(FindObjectsSortMode.None))
+                {
+                    if (t == null || t.name != "FireConeTelegraph")
+                        continue;
+                    foreach (Renderer r in t.GetComponentsInChildren<Renderer>(true))
+                        list.Add(r);
+                }
+
+                _hiddenTransient = list.ToArray();
+                foreach (Renderer r in _hiddenTransient)
+                {
+                    if (r != null)
+                    {
+                        r.enabled = false;
+                        Debug.Log($"[FeelCapture] hidden transient path={GetPath(r.transform)} type=FireConeTelegraph");
+                    }
+                }
+            }
+            else if (_hiddenTransient != null)
+            {
+                foreach (Renderer r in _hiddenTransient)
+                {
+                    if (r != null)
+                        r.enabled = true;
+                }
+
+                _hiddenTransient = null;
+            }
+        }
+
+        static void SetBlockersHidden(bool hide)
+        {
+            foreach (AllyDummy ally in AllyDummy.Live)
+            {
+                if (ally != null)
+                    ally.gameObject.SetActive(!hide);
+            }
+
+            var boss = Object.FindAnyObjectByType<BossDirector>();
+            if (boss != null)
+                boss.gameObject.SetActive(!hide);
+        }
+
+        static void ResnapProps()
+        {
+            foreach (WeaponHandProps whp in Object.FindObjectsByType<WeaponHandProps>(FindObjectsSortMode.None))
+                whp?.Apply("kilic");
+        }
+
+        static bool TryCharacterBounds(Transform root, out Bounds bounds)
+        {
+            bounds = default;
+            bool any = false;
+            foreach (SkinnedMeshRenderer smr in root.GetComponentsInChildren<SkinnedMeshRenderer>())
+            {
+                if (smr == null)
+                    continue;
+                if (!any)
+                {
+                    bounds = smr.bounds;
+                    any = true;
+                }
+                else
+                    bounds.Encapsulate(smr.bounds);
+            }
+
+            return any;
+        }
+
+        static void LogPixelHeight(string pngPath, string label)
+        {
+            if (!File.Exists(pngPath))
+                return;
+            byte[] bytes = File.ReadAllBytes(pngPath);
+            var tex = new Texture2D(2, 2);
+            tex.LoadImage(bytes);
+            int minY = H, maxY = 0;
+            Color[] px = tex.GetPixels();
+            for (int y = 0; y < tex.height; y++)
+            {
+                for (int x = 0; x < tex.width; x++)
+                {
+                    Color c = px[y * tex.width + x];
+                    if (c.grayscale > 0.08f && c.a > 0.5f)
+                    {
+                        minY = Mathf.Min(minY, y);
+                        maxY = Mathf.Max(maxY, y);
+                    }
+                }
+            }
+
+            Object.DestroyImmediate(tex);
+            int height = maxY >= minY ? maxY - minY + 1 : 0;
+            Debug.Log($"[FeelCapture] pixelHeight {label}={height} ({100f * height / H:F1}% of {H})");
+        }
+
+        static Transform FindPlayerRoot()
+        {
+            foreach (Transform t in Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (t != null && t.name == "Player" && t.gameObject.scene.isLoaded)
+                    return t;
+            }
+
+            return null;
+        }
+
+        static Vector3 FlatForward(Transform root)
+        {
+            Vector3 f = root.forward;
+            f.y = 0f;
+            return f.sqrMagnitude < 0.01f ? Vector3.forward : f.normalized;
+        }
+
+        static Color ReadColor(Renderer r)
+        {
+            if (r.sharedMaterial == null)
+                return Color.black;
+            if (r.sharedMaterial.HasProperty("_BaseColor"))
+                return r.sharedMaterial.GetColor("_BaseColor");
+            if (r.sharedMaterial.HasProperty("_Color"))
+                return r.sharedMaterial.GetColor("_Color");
+            return Color.black;
+        }
+
+        static string GetPath(Transform t)
+        {
+            if (t == null)
+                return "";
+            var sb = new StringBuilder(t.name);
+            while (t.parent != null)
+            {
+                t = t.parent;
+                sb.Insert(0, '/');
+                sb.Insert(0, t.name);
+            }
+
+            return sb.ToString();
+        }
+
+        static void RenderToFile(Camera cam, string outputPath)
+        {
+            if (cam == null)
+                return;
+            var urp = cam.GetComponent<UniversalAdditionalCameraData>()
+                ?? cam.gameObject.AddComponent<UniversalAdditionalCameraData>();
+            urp.renderPostProcessing = true;
+            LookPresets.ApplyCameraOverrides(cam, LookPresets.ActiveRequiresDepthTexture);
+            var rt = new RenderTexture(W, H, 24, RenderTextureFormat.ARGB32);
+            var prev = cam.targetTexture;
+            var prevActive = RenderTexture.active;
+            cam.targetTexture = rt;
+            cam.Render();
+            RenderTexture.active = rt;
+            var tex = new Texture2D(W, H, TextureFormat.RGB24, false);
+            tex.ReadPixels(new Rect(0, 0, W, H), 0, 0);
+            tex.Apply();
+            cam.targetTexture = prev;
+            RenderTexture.active = prevActive;
+            rt.Release();
+            Object.DestroyImmediate(rt);
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? OutDir);
+            File.WriteAllBytes(outputPath, tex.EncodeToPNG());
+            Object.DestroyImmediate(tex);
+        }
+    }
+}
+#endif

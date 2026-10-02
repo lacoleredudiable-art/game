@@ -278,7 +278,7 @@ namespace Dovus.Game
                 _bossStatus.Board.ConsumeShield(dealt.ShieldAbsorbed);
             float damage = dealt.Amount;
             // S8: minyon kritikleri de gösterilir.
-            _damageHud?.ShowDamage(damage, dealt.WasCrit, BossHitPoint(), DamageTint());
+            _damageHud?.ShowDamage(damage, dealt.WasCrit, BossHitPoint(), DamageTint(), victimIsBoss: true);
             float lifesteal = AdjectiveLifesteal(skill);
             lifesteal += _slotPassives?.LifestealAddFor(_slotQueryCastId) ?? 0f;
             if (lifesteal > 0f && _player != null)

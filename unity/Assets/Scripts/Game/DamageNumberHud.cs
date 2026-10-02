@@ -70,7 +70,7 @@ namespace Dovus.Game
         /// Negatif amount = heal. <paramref name="worldPos"/> isabet noktası (yoksa boss üstü);
         /// <paramref name="tint"/> element rengi (kritik altın, heal yeşil kalır).
         /// </summary>
-        public void ShowDamage(float amount, bool isCrit = false, Vector3? worldPos = null, Color? tint = null, bool victimIsPlayer = false)
+        public void ShowDamage(float amount, bool isCrit = false, Vector3? worldPos = null, Color? tint = null, bool victimIsPlayer = false, bool victimIsBoss = false)
         {
             if (_tuning == null || !_tuning.ShowDamageNumbers)
                 return;
@@ -89,10 +89,10 @@ namespace Dovus.Game
                     world = boss.transform.position + Vector3.up * 2.2f;
             }
 
-            ShowAt(world, amount, isCrit, tint, victimIsPlayer);
+            ShowAt(world, amount, isCrit, tint, victimIsPlayer, victimIsBoss);
         }
 
-        public void ShowAt(Vector3 worldPos, float amount, bool isCrit = false, Color? tint = null, bool victimIsPlayer = false)
+        public void ShowAt(Vector3 worldPos, float amount, bool isCrit = false, Color? tint = null, bool victimIsPlayer = false, bool victimIsBoss = false)
         {
             if (_tuning == null || !_tuning.ShowDamageNumbers)
                 return;
@@ -116,6 +116,19 @@ namespace Dovus.Game
                 f.Text.text = "+" + DamageNumberFormat.Format(-amount);
                 f.Text.color = th.HealColor;
                 f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(_tuning.DamageFloatFontDp));
+            }
+            else if (victimIsBoss)
+            {
+                f.Text.text = isCrit ? DamageNumberFormat.Format(amount) + "!" : DamageNumberFormat.Format(amount);
+                f.Text.color = isCrit
+                    ? new Color(1f, 0.42f, 0.38f, 1f)
+                    : new Color(0.88f, 0.14f, 0.16f, 1f);
+                f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(
+                    isCrit ? _tuning.DamageFloatCritFontDp : _tuning.DamageFloatFontDp));
+                var outline = f.Text.GetComponent<Outline>();
+                if (outline != null)
+                    outline.effectColor = new Color(0.04f, 0.02f, 0.02f, 0.9f);
+                DebugConfig.DevLog($"[Feel2Verify] boss-damage-number crit={isCrit} color={f.Text.color}");
             }
             else if (isCrit)
             {
