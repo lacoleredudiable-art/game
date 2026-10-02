@@ -16,7 +16,7 @@ namespace Dovus.Core.Combat
     public sealed class StrokeDotTracker
     {
         public const float CoreFraction = 0.8f;
-        public const float CornerFraction = 1.3f;
+        public const float CornerFraction = 1.4f;
         public const float CornerTurnDeg = 60f;
 
         readonly List<StrokeDotSweep.Hit> _scratch = new List<StrokeDotSweep.Hit>(6);

@@ -32,12 +32,22 @@ namespace Dovus.Game
         static readonly Color FailColor = new Color(1f, 0.28f, 0.25f, 1f);
         LineRenderer _raw;
         readonly Vector3[] _rawPts = new Vector3[RawMax];
+        readonly Vector2[] _rawScreenPx = new Vector2[RawMax];
+        readonly Vector2[] _rawSnapFromPx = new Vector2[RawMax];
+        readonly Vector2[] _rawSnapToPx = new Vector2[RawMax];
         int _rawCount;
         Vector2 _rawLastPx;
         bool _rawLive;
         float _rawFadeBorn = -1f;
         float _rawFadeLife;
         bool _rawFailed;
+        bool _rawSnapping;
+        float _rawSnapBorn;
+        float _rawBaseStartWidth;
+        float _rawBaseEndWidth;
+        static readonly Color RawHeadWhite = Color.white;
+        /// <summary>spec'te yok — varsayılan</summary>
+        const float RawSnapSec = 0.12f;
 
         struct Trail
         {
@@ -93,15 +103,15 @@ namespace Dovus.Game
             {
                 _raw = CreateLine();
                 _raw.gameObject.name = "InkRaw";
-                _raw.startWidth *= 0.6f;
-                _raw.endWidth = _raw.startWidth;
-                _raw.sortingOrder = 9;
+                _raw.sortingOrder = 11;
             }
+            ApplyRawWidthScale();
             _raw.enabled = true;
             _rawCount = 0;
             _rawLive = true;
             _rawFadeBorn = -1f;
             _rawFailed = false;
+            _rawSnapping = false;
             PushRaw(screenPx);
             ApplyRaw(1f);
         }
@@ -125,20 +135,52 @@ namespace Dovus.Game
         }
 
         /// <summary>Çizim bitti: tanınmadıysa kırmızı söner, değilse kısa sürede söner.</summary>
-        public void RawEnd(bool failed)
+        public void RawEnd(bool failed) => RawEnd(failed, null);
+
+        /// <summary>Çizim bitti; başarılıda isteğe bağlı tanınan yola oturma.</summary>
+        public void RawEnd(bool failed, IReadOnlyList<Vector2> snapPathScreenPx)
         {
             if (_raw == null || !_rawLive)
                 return;
             _rawLive = false;
             _rawFailed = failed;
+            _rawSnapping = false;
+            if (failed)
+            {
+                if (_rawCount == 1)
+                    PushRaw(_rawLastPx + new Vector2(0.5f, 0.5f));
+                else if (_rawCount >= 2)
+                    ApplyFailDispersion();
+                _raw.startWidth = _rawBaseStartWidth * 1.6f;
+                _raw.endWidth = _rawBaseEndWidth * 1.6f;
+                _rawFadeBorn = Time.unscaledTime;
+                _rawFadeLife = DrawFeedback.FailFadeSec;
+                ApplyRaw(1f);
+                return;
+            }
+
+            if (snapPathScreenPx != null && snapPathScreenPx.Count >= 2 && _rawCount >= 1)
+            {
+                for (int i = 0; i < _rawCount; i++)
+                {
+                    _rawSnapFromPx[i] = _rawScreenPx[i];
+                    _rawSnapToPx[i] = ClosestPointOnPolyline(snapPathScreenPx, _rawScreenPx[i]);
+                }
+                _rawSnapping = true;
+                _rawSnapBorn = Time.unscaledTime;
+                _rawFadeBorn = -1f;
+                ApplyRaw(1f);
+                return;
+            }
+
             _rawFadeBorn = Time.unscaledTime;
-            _rawFadeLife = failed ? DrawFeedback.FailFadeSec : DrawFeedback.RawFadeSec;
-            if (failed && _rawCount == 1)
-                PushRaw(_rawLastPx + new Vector2(0.5f, 0.5f));
+            _rawFadeLife = DrawFeedback.RawFadeSec;
+            ApplyRaw(1f);
         }
 
         void PushRaw(Vector2 screenPx)
         {
+            _rawScreenPx[_rawCount] = screenPx;
             _rawPts[_rawCount++] = _overlay.ScreenToWorld(screenPx);
             _rawLastPx = screenPx;
             _raw.positionCount = _rawCount;
@@ -146,14 +188,95 @@ namespace Dovus.Game
                 _raw.SetPosition(i, _rawPts[i]);
         }
 
+        void ApplyRawWidthScale()
+        {
+            float w = HexagonLayoutScreen.DpToPixels(_tuning.InkWidthDp);
+            float scale = _tuning.InkRawWidthScale > 0f ? _tuning.InkRawWidthScale : 0.9f;
+            _rawBaseStartWidth = w * scale;
+            _rawBaseEndWidth = w * scale;
+            _raw.startWidth = _rawBaseStartWidth;
+            _raw.endWidth = _rawBaseEndWidth;
+        }
+
         void ApplyRaw(float alpha)
         {
-            Color a = _rawFailed ? FailColor : _tuning.InkCyan;
-            Color b = _rawFailed ? FailColor : _tuning.InkPurple;
-            a.a *= 0.6f * alpha;
-            b.a *= 0.35f * alpha;
-            _raw.startColor = b;
-            _raw.endColor = a;
+            if (_rawFailed)
+            {
+                Color c = FailColor;
+                c.a *= alpha;
+                _raw.startColor = c;
+                _raw.endColor = c;
+                return;
+            }
+
+            float glow = _tuning.InkRawGlow > 0f ? _tuning.InkRawGlow : 1f;
+            Color head = Color.Lerp(_tuning.InkCyan, RawHeadWhite, 0.45f * glow);
+            head.a = 0.95f * alpha;
+            Color tail = _tuning.InkPurple;
+            tail.a = 0.55f * alpha;
+            _raw.startColor = tail;
+            _raw.endColor = head;
+        }
+
+        void ApplyFailDispersion()
+        {
+            for (int i = 0; i < _rawCount; i++)
+            {
+                Vector2 p = _rawScreenPx[i];
+                Vector2 tangent;
+                if (i == 0)
+                    tangent = _rawScreenPx[1] - _rawScreenPx[0];
+                else if (i == _rawCount - 1)
+                    tangent = _rawScreenPx[i] - _rawScreenPx[i - 1];
+                else
+                    tangent = _rawScreenPx[i + 1] - _rawScreenPx[i - 1];
+                if (tangent.sqrMagnitude < 0.01f)
+                    tangent = Vector2.right;
+                tangent.Normalize();
+                Vector2 normal = new Vector2(-tangent.y, tangent.x);
+                float ampDp = FailDispersionAmpDp(i);
+                float sign = (HashU32(i) & 1) == 0 ? 1f : -1f;
+                Vector2 off = normal * (sign * HexagonLayoutScreen.DpToPixels(ampDp));
+                _rawScreenPx[i] = p + off;
+                _rawPts[i] = _overlay.ScreenToWorld(_rawScreenPx[i]);
+                _raw.SetPosition(i, _rawPts[i]);
+            }
+        }
+
+        static float FailDispersionAmpDp(int index)
+        {
+            float t = (HashU32(index) & 0xffff) / 65535f;
+            return 8f + t * 6f;
+        }
+
+        static uint HashU32(int index)
+        {
+            unchecked
+            {
+                return (uint)(index * 1103515245 + 12345);
+            }
+        }
+
+        static Vector2 ClosestPointOnPolyline(IReadOnlyList<Vector2> path, Vector2 p)
+        {
+            Vector2 best = path[0];
+            float bestD2 = (p - best).sqrMagnitude;
+            for (int i = 0; i < path.Count - 1; i++)
+            {
+                Vector2 a = path[i];
+                Vector2 b = path[i + 1];
+                Vector2 ab = b - a;
+                float len2 = ab.sqrMagnitude;
+                float t = len2 > 1e-6f ? Mathf.Clamp01(Vector2.Dot(p - a, ab) / len2) : 0f;
+                Vector2 q = a + ab * t;
+                float d2 = (p - q).sqrMagnitude;
+                if (d2 < bestD2)
+                {
+                    bestD2 = d2;
+                    best = q;
+                }
+            }
+            return best;
         }
 
         void TickRaw(float now)
@@ -165,6 +288,28 @@ namespace Dovus.Game
                 ApplyRaw(1f);
                 return;
             }
+            if (_rawSnapping)
+            {
+                float su = (now - _rawSnapBorn) / Mathf.Max(0.001f, RawSnapSec);
+                float st = su >= 1f ? 1f : su;
+                for (int i = 0; i < _rawCount; i++)
+                {
+                    Vector2 px = Vector2.Lerp(_rawSnapFromPx[i], _rawSnapToPx[i], st);
+                    _rawScreenPx[i] = px;
+                    _rawPts[i] = _overlay.ScreenToWorld(px);
+                    _raw.SetPosition(i, _rawPts[i]);
+                }
+                ApplyRaw(1f);
+                if (su >= 1f)
+                {
+                    _rawSnapping = false;
+                    _rawFadeBorn = now;
+                    _rawFadeLife = DrawFeedback.RawFadeSec;
+                }
+                return;
+            }
+            if (_rawFadeBorn < 0f)
+                return;
             float u = (now - _rawFadeBorn) / Mathf.Max(0.01f, _rawFadeLife);
             if (u >= 1f)
             {

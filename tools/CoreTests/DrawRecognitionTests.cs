@@ -293,7 +293,7 @@ public class DrawRecognitionTests
         Assert.That(DrawFeedback.OnStrokeEnd(true, 0, true, false), Is.EqualTo(DrawFeedback.StrokeOutcome.None), "mana/soğuma/kapalı rün yazısı zaten gösterildi");
         Assert.That(DrawFeedback.OnStrokeEnd(true, 0, false, true), Is.EqualTo(DrawFeedback.StrokeOutcome.None), "panel/kilit iptali sessiz");
         Assert.That(DrawFeedback.OnStrokeEnd(false, 0, false, false), Is.EqualTo(DrawFeedback.StrokeOutcome.None), "merkez/dodge/swap çizim değil");
-        Assert.That(DrawFeedback.Unrecognized, Is.EqualTo("tanınmadı"));
+        Assert.That(DrawFeedback.Unrecognized, Is.EqualTo("şekil tanınmadı"));
     }
 
     [Test]
@@ -337,10 +337,10 @@ public class DrawRecognitionTests
         string input = Game("Game/HexagonInput.cs");
         Assert.That(input, Does.Contain("StrokeDotTracker"));
         Assert.That(input, Does.Not.Contain("TryRegisterDotAt"), "nokta kaydı yalnız tarayıcıdan");
-        Assert.That(input, Does.Contain("DrawFeedback.Unrecognized"));
+        Assert.That(input, Does.Contain("DrawFeedback.CaptionFor(outcome)"));
         Assert.That(input, Does.Contain("DrawFeedback.ClosedRune"));
         Assert.That(input, Does.Contain("_ink?.Break(_inkFlashPending)"));
-        Assert.That(input, Does.Contain("_ink?.RawEnd(failed)"));
+        Assert.That(input, Does.Contain("_ink?.RawEnd(false, _strokeAcceptedPx)"));
         Assert.That(input, Does.Contain("TickStrokeSettle()"));
         string ink = Game("Game/InkTrail.cs");
         Assert.That(ink, Does.Contain("public void RawBegin("));

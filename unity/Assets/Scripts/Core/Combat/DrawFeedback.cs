@@ -5,13 +5,18 @@ using Dovus.Core.Grammar;
 namespace Dovus.Core.Combat
 {
     /// <summary>
-    /// Çizim geri bildirimi (denetim B ek): tanınan çizimde rün adları, tanınmayanda "tanınmadı".
+    /// Çizim geri bildirimi (denetim B ek): tanınan çizimde rün adları, tanınmayanda "şekil tanınmadı".
     /// Saf kurallar (Unity'siz); HexagonInput/InkTrail/HexagonView yalnız gösterir.
     /// </summary>
     public static class DrawFeedback
     {
-        public const string Unrecognized = "tanınmadı";
+        public const string Unrecognized = "şekil tanınmadı";
         public const string ClosedRune = "kapalı rün";
+        public const string TooShort = "çok kısa";
+        public const string OnCooldown = "cooldown'da";
+
+        /// <summary>spec'te yok — varsayılan</summary>
+        public const float TooShortDp = 24f;
 
         /// <summary>Tanınan şekil izinin parlama ömrü çarpanı (InkLingerSec × bu).</summary>
         public const float FlashLifeScale = 1.6f;
@@ -24,21 +29,55 @@ namespace Dovus.Core.Combat
         /// <summary>Etiketin ekranda kalma süresi (sn); son çeyrekte söner.</summary>
         public const float CaptionSec = 0.9f;
 
+        public enum DenialKind
+        {
+            None,
+            Cooldown,
+            Other
+        }
+
         public enum StrokeOutcome
         {
             None,
-            Unrecognized
+            TooShort,
+            Unrecognized,
+            Cooldown
         }
 
         /// <summary>
         /// Çizim parmağı kalktı. Hiç nokta kabul edilmediyse ve başka bir red yazısı (mana, soğuma,
-        /// kapalı rün, hedef) gösterilmediyse "tanınmadı". İptal (panel/kilit) sessizdir.
+        /// kapalı rün, hedef) gösterilmediyse "şekil tanınmadı". İptal (panel/kilit) sessizdir.
         /// </summary>
         public static StrokeOutcome OnStrokeEnd(bool wasDrawing, int acceptedDots, bool denialShown, bool cancelled)
         {
-            if (!wasDrawing || cancelled || acceptedDots > 0 || denialShown)
+            return OnStrokeEnd(wasDrawing, acceptedDots,
+                denialShown ? DenialKind.Other : DenialKind.None,
+                cancelled, float.MaxValue);
+        }
+
+        public static StrokeOutcome OnStrokeEnd(bool wasDrawing, int acceptedDots, DenialKind denial,
+            bool cancelled, float strokeLengthDp)
+        {
+            if (!wasDrawing || cancelled || acceptedDots > 0)
                 return StrokeOutcome.None;
+            if (denial == DenialKind.Cooldown)
+                return StrokeOutcome.Cooldown;
+            if (denial == DenialKind.Other)
+                return StrokeOutcome.None;
+            if (strokeLengthDp < TooShortDp)
+                return StrokeOutcome.TooShort;
             return StrokeOutcome.Unrecognized;
+        }
+
+        public static string CaptionFor(StrokeOutcome o)
+        {
+            return o switch
+            {
+                StrokeOutcome.TooShort => TooShort,
+                StrokeOutcome.Unrecognized => Unrecognized,
+                StrokeOutcome.Cooldown => OnCooldown,
+                _ => string.Empty
+            };
         }
 
         /// <summary>"Saldırı → Patlama" — cümlenin rün adları sırayla.</summary>
