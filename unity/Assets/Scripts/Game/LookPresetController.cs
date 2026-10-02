@@ -21,9 +21,9 @@ namespace Dovus.Game
             _sun = sun;
             LookPresets.Bind(this, volume, sun);
 
-            char preset = 'A';
+            char preset = 'B';
 #if UNITY_EDITOR || DOVUS_DEBUG
-            string saved = PlayerPrefs.GetString(LookPresets.PlayerPrefsKey, "A");
+            string saved = PlayerPrefs.GetString(LookPresets.PlayerPrefsKey, "B");
             if (!string.IsNullOrEmpty(saved))
                 preset = char.ToUpperInvariant(saved[0]);
 #endif

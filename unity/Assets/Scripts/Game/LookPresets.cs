@@ -12,7 +12,7 @@ namespace Dovus.Game
     /// </summary>
     public static class LookPresets
     {
-        public const string PlayerPrefsKey = "dovus.look";
+        public const string PlayerPrefsKey = "dovus.look.v2";
 
         const string ResourceFolder = "Look/Look_";
 
@@ -47,7 +47,7 @@ namespace Dovus.Game
         static bool _ssaoCached;
         static bool _ssaoWasActive;
 
-        public static char Active { get; private set; } = 'A';
+        public static char Active { get; private set; } = 'B';
 
         /// <summary>Aktif ön ayar derinlik dokusu/SSAO gerektiriyor mu (yalnız 'C').</summary>
         public static bool ActiveRequiresDepthTexture => Active == 'C';
@@ -66,7 +66,7 @@ namespace Dovus.Game
         {
             preset = char.ToUpperInvariant(preset);
             if (preset != 'A' && preset != 'B' && preset != 'C')
-                preset = 'A';
+                preset = 'B';
 
             Active = preset;
             if (_volume != null)
@@ -141,7 +141,11 @@ namespace Dovus.Game
             _savedUpscalingFilter = urp.upscalingFilter;
             _savedFsrOverrideSharpness = urp.fsrOverrideSharpness;
             _savedFsrSharpness = urp.fsrSharpness;
+#if UNITY_EDITOR && !SWEEP_HEADLESS
+            _savedRealtimeReflectionProbes = LookPresetsAssetGuard.RealtimeProbesFromDisk(QualitySettings.GetQualityLevel());
+#else
             _savedRealtimeReflectionProbes = QualitySettings.realtimeReflectionProbes;
+#endif
             _urpCached = true;
         }
 
@@ -218,9 +222,11 @@ namespace Dovus.Game
 
             // C'de gerçek zamanlı yansıma probu çalışsın: proje Very Low/Low kalite seviyesinde
             // realtimeReflectionProbes kapalı geliyor (QualitySettings.asset) — probu etkisiz kılıyordu.
-            QualitySettings.realtimeReflectionProbes = preset == 'C'
+            bool targetProbes = preset == 'C'
                 ? true
                 : (_urpCached ? _savedRealtimeReflectionProbes : QualitySettings.realtimeReflectionProbes);
+            if (QualitySettings.realtimeReflectionProbes != targetProbes)
+                QualitySettings.realtimeReflectionProbes = targetProbes;
 
             ApplySsaoActive(ssao);
         }
@@ -412,7 +418,7 @@ namespace Dovus.Game
         }
     }
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR && !SWEEP_HEADLESS
     /// <summary>
     /// task-look-v2b problem 3: <see cref="LookPresets"/>'in play-mode-içi statik cache'i (CacheUrpIfNeeded)
     /// domain reload sınırları arasında yanlış bir "temel" değeri kalıcı kılabilir (bir önceki koşu düzgün
@@ -425,6 +431,9 @@ namespace Dovus.Game
     /// </summary>
     static class LookPresetsAssetGuard
     {
+        internal static bool RealtimeProbesFromDisk(int qualityLevel) =>
+            ReadRealtimeProbesFromQualityAsset(qualityLevel);
+
         const string KeyHasSnapshot = "dovus.look.guard.hasSnapshot";
         const string KeyRenderScale = "dovus.look.guard.renderScale";
         const string KeyMsaa = "dovus.look.guard.msaa";
@@ -435,6 +444,8 @@ namespace Dovus.Game
         const string KeyShadowDistance = "dovus.look.guard.shadowDistance";
         const string KeyShadowCascades = "dovus.look.guard.shadowCascades";
         const string KeyRealtimeProbes = "dovus.look.guard.realtimeProbes";
+        const string KeyQualityLevel = "dovus.look.guard.qualityLevel";
+        const string QualitySettingsAssetPath = "ProjectSettings/QualitySettings.asset";
 
         [InitializeOnLoadMethod]
         static void Register()
@@ -447,7 +458,7 @@ namespace Dovus.Game
         {
             if (state == PlayModeStateChange.ExitingEditMode)
                 Snapshot();
-            else if (state == PlayModeStateChange.ExitingPlayMode)
+            else if (state == PlayModeStateChange.EnteredEditMode)
                 Restore();
         }
 
@@ -460,6 +471,9 @@ namespace Dovus.Game
                 return;
             }
 
+            int qualityLevel = QualitySettings.GetQualityLevel();
+            SessionState.SetInt(KeyQualityLevel, qualityLevel);
+
             SessionState.SetFloat(KeyRenderScale, urp.renderScale);
             SessionState.SetInt(KeyMsaa, urp.msaaSampleCount);
             SessionState.SetInt(KeyShadowRes, urp.mainLightShadowmapResolution);
@@ -468,7 +482,8 @@ namespace Dovus.Game
             SessionState.SetFloat(KeyFsrSharpness, urp.fsrSharpness);
             SessionState.SetFloat(KeyShadowDistance, QualitySettings.shadowDistance);
             SessionState.SetInt(KeyShadowCascades, QualitySettings.shadowCascades);
-            SessionState.SetBool(KeyRealtimeProbes, QualitySettings.realtimeReflectionProbes);
+            // Play öncesi bellekteki runtime değil, diskteki QualitySettings.asset (preset C sızdırmasını yutmasın).
+            SessionState.SetBool(KeyRealtimeProbes, ReadRealtimeProbesFromQualityAsset(qualityLevel));
             SessionState.SetBool(KeyHasSnapshot, true);
         }
 
@@ -489,10 +504,56 @@ namespace Dovus.Game
                 EditorUtility.ClearDirty(urp);
             }
 
-            QualitySettings.shadowDistance = SessionState.GetFloat(KeyShadowDistance, QualitySettings.shadowDistance);
-            QualitySettings.shadowCascades = SessionState.GetInt(KeyShadowCascades, QualitySettings.shadowCascades);
-            QualitySettings.realtimeReflectionProbes = SessionState.GetBool(KeyRealtimeProbes, QualitySettings.realtimeReflectionProbes);
+            float shadowDistance = SessionState.GetFloat(KeyShadowDistance, QualitySettings.shadowDistance);
+            if (QualitySettings.shadowDistance != shadowDistance)
+                QualitySettings.shadowDistance = shadowDistance;
+            int shadowCascades = SessionState.GetInt(KeyShadowCascades, QualitySettings.shadowCascades);
+            if (QualitySettings.shadowCascades != shadowCascades)
+                QualitySettings.shadowCascades = shadowCascades;
+
+            int qualityLevel = SessionState.GetInt(KeyQualityLevel, QualitySettings.GetQualityLevel());
+            bool realtimeProbes = SessionState.GetBool(KeyRealtimeProbes, ReadRealtimeProbesFromQualityAsset(qualityLevel));
+            if (QualitySettings.realtimeReflectionProbes != realtimeProbes)
+                QualitySettings.realtimeReflectionProbes = realtimeProbes;
+            WriteRealtimeProbesToQualityAsset(qualityLevel, realtimeProbes);
+
             SessionState.SetBool(KeyHasSnapshot, false);
+        }
+
+        static bool ReadRealtimeProbesFromQualityAsset(int qualityLevel)
+        {
+            foreach (Object asset in AssetDatabase.LoadAllAssetsAtPath(QualitySettingsAssetPath))
+            {
+                var so = new SerializedObject(asset);
+                SerializedProperty levels = so.FindProperty("m_QualitySettings");
+                if (levels == null || qualityLevel < 0 || qualityLevel >= levels.arraySize)
+                    continue;
+                SerializedProperty prop = levels.GetArrayElementAtIndex(qualityLevel).FindPropertyRelative("realtimeReflectionProbes");
+                if (prop != null)
+                    return prop.boolValue;
+            }
+
+            return QualitySettings.realtimeReflectionProbes;
+        }
+
+        static void WriteRealtimeProbesToQualityAsset(int qualityLevel, bool value)
+        {
+            foreach (Object asset in AssetDatabase.LoadAllAssetsAtPath(QualitySettingsAssetPath))
+            {
+                var so = new SerializedObject(asset);
+                SerializedProperty levels = so.FindProperty("m_QualitySettings");
+                if (levels == null || qualityLevel < 0 || qualityLevel >= levels.arraySize)
+                    continue;
+                SerializedProperty prop = levels.GetArrayElementAtIndex(qualityLevel).FindPropertyRelative("realtimeReflectionProbes");
+                if (prop == null || prop.boolValue == value)
+                {
+                    EditorUtility.ClearDirty(asset);
+                    continue;
+                }
+
+                prop.boolValue = value;
+                so.ApplyModifiedPropertiesWithoutUndo();
+            }
         }
     }
 #endif
