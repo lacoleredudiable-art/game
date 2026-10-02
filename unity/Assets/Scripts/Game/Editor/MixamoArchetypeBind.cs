@@ -23,6 +23,7 @@ namespace Dovus.Game.EditorTools
         const string RegistryDir = "Assets/Resources/Animation";
         const string RegistryPath = RegistryDir + "/WeaponVisualRegistry.asset";
         const string QuatWeaponsDir = "Assets/Art/Quaternius/Characters/RPG Characters - Nov 2020/FBX/Only Weapons";
+        const string ShieldPrefabPath = QuaterniusShieldBind.PrefabPath;
 
         /// <summary>Çalıştırır; log metnini döner (boş = temel controller yok, atlandı).</summary>
         public static string Build()
@@ -78,7 +79,7 @@ namespace Dovus.Game.EditorTools
         {
             SetProp(registry, "kilic",
                 LoadWeaponMesh("Warrior_Sword"), Vector3.zero, Vector3.zero, Vector3.one * 28.3f,
-                null, new Vector3(0.03f, 0f, 0.05f), Vector3.zero, Vector3.one);
+                LoadShieldPrefab(), Vector3.zero, Vector3.zero, Vector3.one);
 
             SetProp(registry, "kalkan",
                 LoadWeaponMesh("Rogue_Dagger"), Vector3.zero, Vector3.zero, Vector3.one * 34.7f,
@@ -115,6 +116,9 @@ namespace Dovus.Game.EditorTools
 
         static GameObject LoadWeaponMesh(string fileName) =>
             AssetDatabase.LoadAssetAtPath<GameObject>(QuatWeaponsDir + "/" + fileName + ".fbx");
+
+        static GameObject LoadShieldPrefab() =>
+            AssetDatabase.LoadAssetAtPath<GameObject>(ShieldPrefabPath);
 
         static void SetProp(
             WeaponVisualRegistry registry, string weaponKey,
