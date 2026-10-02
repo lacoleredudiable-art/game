@@ -80,6 +80,7 @@ namespace Dovus.Game
         static void EmitSpark(Vector3 pos, Color tint, float mult, float life)
         {
             ParticleSystem ps = Rent(PoolSpark, SparkPool, true);
+            ApplyTexture(ps, KenneyVfxTextures.TexHit, true);
             ConfigureBurst(ps, pos, Quaternion.identity, Mathf.RoundToInt(10 * mult), life, 0.08f, 4.5f * mult, 0.06f);
             FadeColor(ps, Color.white, tint);
             Track(ps, life, PoolSpark);
@@ -88,12 +89,14 @@ namespace Dovus.Game
         static void EmitBlunt(Vector3 pos, float mult, float life)
         {
             ParticleSystem ps = Rent(PoolBlunt, BluntPool, false);
+            ApplyTexture(ps, KenneyVfxTextures.TexEarth, false);
             ConfigureBurst(ps, pos, Quaternion.identity, Mathf.RoundToInt(14 * mult), life, 0.12f, 3.2f * mult, 0.1f);
             Color stone = new(0.62f, 0.58f, 0.54f, 0.9f);
             FadeColor(ps, stone, new Color(0.45f, 0.42f, 0.4f, 0f));
             Track(ps, life, PoolBlunt);
 
             ParticleSystem dust = Rent(PoolBlunt, BluntPool, false);
+            ApplyTexture(dust, KenneyVfxTextures.TexAir, false);
             ConfigureBurst(dust, pos, Quaternion.Euler(-90f, 0f, 0f), Mathf.RoundToInt(8 * mult), life * 1.1f, 0.15f, 1.2f, 0.18f);
             Color grey = new(0.55f, 0.52f, 0.5f, 0.55f);
             FadeColor(dust, grey, new Color(grey.r, grey.g, grey.b, 0f));
@@ -104,6 +107,7 @@ namespace Dovus.Game
         {
             Color burst = tint.a > 0.01f ? tint : new Color(0.55f, 0.75f, 1f, 1f);
             ParticleSystem ps = Rent(PoolMagic, MagicPool, true);
+            ApplyTexture(ps, KenneyVfxTextures.ClosestElementName(burst), true);
             ConfigureBurst(ps, pos, Quaternion.identity, Mathf.RoundToInt(16 * mult), life, 0.1f, 5f * mult, 0.09f);
             FadeColor(ps, burst, Color.Lerp(burst, Color.white, 0.4f));
             Track(ps, life, PoolMagic);
@@ -112,6 +116,7 @@ namespace Dovus.Game
         static void EmitSplash(Vector3 pos, float life)
         {
             ParticleSystem ps = Rent(PoolSplash, SplashPool, false);
+            ApplyTexture(ps, KenneyVfxTextures.TexDark, false);
             ConfigureBurst(ps, pos, Quaternion.Euler(-90f, Random.Range(0f, 360f), 0f), 4, life * 0.9f, 0.05f, 0.35f, 0.14f);
             Color dark = new(0.32f, 0.03f, 0.05f, 0.55f);
             FadeColor(ps, dark, new Color(dark.r, dark.g, dark.b, 0f));
@@ -185,7 +190,7 @@ namespace Dovus.Game
             em.rateOverTime = 0f;
             var r = go.GetComponent<ParticleSystemRenderer>();
             r.renderMode = ParticleSystemRenderMode.Billboard;
-            r.sharedMaterial = additive ? PresentationParticleMaterials.AdditiveTextured : PresentationParticleMaterials.AlphaTextured;
+            r.sharedMaterial = KenneyVfxTextures.GetParticleMaterial(KenneyVfxTextures.TexHit, additive);
             r.shadowCastingMode = ShadowCastingMode.Off;
             r.receiveShadows = false;
             return ps;
@@ -206,6 +211,14 @@ namespace Dovus.Game
             sh.enabled = true;
             sh.shapeType = ParticleSystemShapeType.Sphere;
             sh.radius = radius;
+        }
+
+        static void ApplyTexture(ParticleSystem ps, string texName, bool additive)
+        {
+            if (ps == null)
+                return;
+            var r = ps.GetComponent<ParticleSystemRenderer>();
+            r.sharedMaterial = KenneyVfxTextures.GetParticleMaterial(texName, additive);
         }
 
         static void FadeColor(ParticleSystem ps, Color from, Color to)

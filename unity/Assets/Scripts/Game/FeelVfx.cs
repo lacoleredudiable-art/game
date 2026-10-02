@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -14,9 +13,9 @@ namespace Dovus.Game
         /// <summary>Düz arena zemini (zemin collider'ı yok); yere oturan efektler bunu kullanır.</summary>
         public const float GroundY = 0.03f;
 
-        static Texture2D _dot;
         static Texture2D _crack;
-        static readonly Dictionary<int, Material> Materials = new();
+
+        public static void Configure(PrototypeTuning tuning) => KenneyVfxTextures.Configure(tuning);
 
         public static void HitSpark(Vector3 pos, Color tint, bool crit)
         {
@@ -30,7 +29,7 @@ namespace Dovus.Game
             }
 
             float mult = crit ? lib.CritSparkMult : 1f;
-            ParticleSystem ps = NewBurst("HitSpark", pos, Quaternion.identity, additive: true);
+            ParticleSystem ps = NewBurst("HitSpark", pos, Quaternion.identity, additive: true, KenneyVfxTextures.TexHit);
             var main = ps.main;
             main.startLifetime = new ParticleSystem.MinMaxCurve(lib.HitSparkLifeSec * 0.6f, lib.HitSparkLifeSec);
             main.startSpeed = new ParticleSystem.MinMaxCurve(lib.HitSparkSpeed * 0.5f, lib.HitSparkSpeed * mult);
@@ -114,7 +113,7 @@ namespace Dovus.Game
             if (lib.TrySpawn(VfxLibrary.FireCone, origin, rot, null, reachM) != null)
                 return;
 
-            ParticleSystem ps = NewBurst("FireCone", origin, rot, additive: true);
+            ParticleSystem ps = NewBurst("FireCone", origin, rot, additive: true, KenneyVfxTextures.TexFire);
             var main = ps.main;
             main.duration = lib.FlameSec;
             float life = reachM / Mathf.Max(0.1f, lib.FlameSpeed);
@@ -140,7 +139,7 @@ namespace Dovus.Game
         static void Dust(string name, Vector3 ground, int count, float life, float size, float speed, Color color,
             float ringRadius = 0.25f)
         {
-            ParticleSystem ps = NewBurst(name, ground, Quaternion.Euler(-90f, 0f, 0f), additive: false);
+            ParticleSystem ps = NewBurst(name, ground, Quaternion.Euler(-90f, 0f, 0f), additive: false, KenneyVfxTextures.TexEarth);
             var main = ps.main;
             main.startLifetime = new ParticleSystem.MinMaxCurve(life * 0.7f, life);
             main.startSpeed = new ParticleSystem.MinMaxCurve(speed * 0.4f, speed);
@@ -165,7 +164,7 @@ namespace Dovus.Game
             ps.Play();
         }
 
-        static ParticleSystem NewBurst(string name, Vector3 pos, Quaternion rot, bool additive)
+        static ParticleSystem NewBurst(string name, Vector3 pos, Quaternion rot, bool additive, string kenneyTex)
         {
             var go = new GameObject(name);
             go.transform.SetPositionAndRotation(pos, rot);
@@ -182,7 +181,7 @@ namespace Dovus.Game
             em.rateOverTime = 0f;
             var r = go.GetComponent<ParticleSystemRenderer>();
             r.renderMode = ParticleSystemRenderMode.Billboard;
-            r.sharedMaterial = Mat(additive, textured: true);
+            r.sharedMaterial = KenneyVfxTextures.GetParticleMaterial(kenneyTex, additive);
             r.shadowCastingMode = ShadowCastingMode.Off;
             r.receiveShadows = false;
             return ps;
@@ -209,12 +208,14 @@ namespace Dovus.Game
 
         static Material Mat(bool additive, bool textured, bool crack = false)
         {
-            int key = (additive ? 1 : 0) | (textured ? 2 : 0) | (crack ? 4 : 0);
-            if (Materials.TryGetValue(key, out Material m) && m != null)
-                return m;
+            if (!textured)
+                return KenneyVfxTextures.GetParticleMaterial(null, additive);
 
-            Shader shader = Shader.Find("Universal Render Pipeline/Particles/Unlit") ?? Shader.Find("Sprites/Default");
-            m = new Material(shader) { name = "FeelVfx_" + key };
+            if (crack && KenneyVfxTextures.Load(KenneyVfxTextures.SlamCrackTexture) != null)
+                return KenneyVfxTextures.GetParticleMaterial(KenneyVfxTextures.SlamCrackTexture, additive);
+
+            Shader shader = PresentationParticleMaterials.ResolveShaderPublic();
+            var m = new Material(shader) { name = "FeelVfx_Crack" };
             if (m.HasProperty("_Surface"))
             {
                 m.SetFloat("_Surface", 1f);
@@ -226,33 +227,11 @@ namespace Dovus.Game
                 m.SetInt("_ZWrite", 0);
             }
             m.renderQueue = (int)RenderQueue.Transparent;
-            if (textured)
-            {
-                Texture2D tex = crack ? CrackTexture() : DotTexture();
-                if (m.HasProperty("_BaseMap"))
-                    m.SetTexture("_BaseMap", tex);
-                m.mainTexture = tex;
-            }
-            Materials[key] = m;
+            Texture2D tex = CrackTexture();
+            if (m.HasProperty("_BaseMap"))
+                m.SetTexture("_BaseMap", tex);
+            m.mainTexture = tex;
             return m;
-        }
-
-        static Texture2D DotTexture()
-        {
-            if (_dot != null)
-                return _dot;
-            const int size = 32;
-            _dot = new Texture2D(size, size, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, name = "FxDot" };
-            float half = (size - 1) * 0.5f;
-            for (int y = 0; y < size; y++)
-            for (int x = 0; x < size; x++)
-            {
-                float d = Mathf.Sqrt((x - half) * (x - half) + (y - half) * (y - half)) / half;
-                float a = Mathf.Clamp01(1f - d);
-                _dot.SetPixel(x, y, new Color(1f, 1f, 1f, a * a));
-            }
-            _dot.Apply(false, true);
-            return _dot;
         }
 
         /// <summary>Merkezden dışa kırık çizgiler; beyaz maske, renk FxTween'den.</summary>

@@ -36,6 +36,7 @@ namespace Dovus.Game
         {
             _tuning ??= new PrototypeTuning();
             _tuning.EnsureRuntimeDefaults();
+            FeelVfx.Configure(_tuning);
             HexagonLayoutScreen.FitShortSideDp = _tuning.HudFitShortSideDp;
 #if !UNITY_EDITOR
             // Development APK konsolu CapsuleCollider spam'i ile HUD'u örtüyordu.

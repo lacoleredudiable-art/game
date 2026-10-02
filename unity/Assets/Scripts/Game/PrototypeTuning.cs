@@ -222,6 +222,16 @@ namespace Dovus.Game
         public Color ElementLight = new Color(1f, 0.96f, 0.82f);      // Aydınlık
         public Color ElementDark = new Color(0.48f, 0.28f, 0.78f);    // Karanlık
 
+        [Header("Kenney parçacık dokuları (Resources/Vfx/Kenney, uzantı yok)")]
+        public string VfxTexFire = "flame_02";
+        public string VfxTexWater = "circle_03";
+        public string VfxTexAir = "twirl_01";
+        public string VfxTexEarth = "dirt_01";
+        public string VfxTexLight = "star_04";
+        public string VfxTexDark = "magic_04";
+        public string VfxTexHit = "spark_05";
+        public string VfxTexInk = "light_01";
+
         public Color HexagonDotColor = new Color(0.55f, 0.62f, 0.72f, 0.85f);
         // T6.2: merkez artık "vur" demek — oyuncu rengine çekildi (§10 camgöbeği).
         public Color HexagonCenterColor = new Color(0.373f, 0.941f, 1f, 0.9f);
@@ -445,7 +455,7 @@ namespace Dovus.Game
         // tasarımcının bilinçli 0'ı (ör. nabzı kapatmak) artık ezilmez (T8.1).
         [HideInInspector] public int TuningVersion = CurrentVersion;
 
-        const int CurrentVersion = 21;
+        const int CurrentVersion = 22;
 
         /// <summary>Sürümü geçmiş serileşmiş kopyayı bu sürümün varsayılanlarına çeker.</summary>
         public void EnsureRuntimeDefaults()
@@ -475,6 +485,14 @@ namespace Dovus.Game
             if (CenterHitRadiusDp <= 0.01f) CenterHitRadiusDp = 38f;
             if (InkRawWidthScale <= 0f) InkRawWidthScale = 0.9f;
             if (InkRawGlow <= 0f) InkRawGlow = 1f;
+            if (string.IsNullOrWhiteSpace(VfxTexFire)) VfxTexFire = "flame_02";
+            if (string.IsNullOrWhiteSpace(VfxTexWater)) VfxTexWater = "circle_03";
+            if (string.IsNullOrWhiteSpace(VfxTexAir)) VfxTexAir = "twirl_01";
+            if (string.IsNullOrWhiteSpace(VfxTexEarth)) VfxTexEarth = "dirt_01";
+            if (string.IsNullOrWhiteSpace(VfxTexLight)) VfxTexLight = "star_04";
+            if (string.IsNullOrWhiteSpace(VfxTexDark)) VfxTexDark = "magic_04";
+            if (string.IsNullOrWhiteSpace(VfxTexHit)) VfxTexHit = "spark_05";
+            if (string.IsNullOrWhiteSpace(VfxTexInk)) VfxTexInk = "light_01";
             if (DodgeButtonRadiusDp <= 0.01f) DodgeButtonRadiusDp = 40f;
             if (WeaponSwapButtonRadiusDp <= 0.01f) WeaponSwapButtonRadiusDp = 36f;
             if (DodgeClearanceDp <= 0.01f) DodgeClearanceDp = 40f;
@@ -819,6 +837,15 @@ namespace Dovus.Game
             // v21: varsayılan boss karadul → aglarin_kralicesi; yalnız eski varsayılan taşınır.
             if (ActiveBossId == "karadul")
                 ActiveBossId = fresh.ActiveBossId;
+
+            VfxTexFire = fresh.VfxTexFire;
+            VfxTexWater = fresh.VfxTexWater;
+            VfxTexAir = fresh.VfxTexAir;
+            VfxTexEarth = fresh.VfxTexEarth;
+            VfxTexLight = fresh.VfxTexLight;
+            VfxTexDark = fresh.VfxTexDark;
+            VfxTexHit = fresh.VfxTexHit;
+            VfxTexInk = fresh.VfxTexInk;
 
             TuningVersion = CurrentVersion;
         }
