@@ -10,6 +10,10 @@ namespace Dovus.Core.Combat
         Slam,
         FireCone,
         /// <summary>Zehir Tükürüğü (karadul.json "volley"): hedefe yelpaze mermi; hacim testi yok.</summary>
-        Volley
+        Volley,
+        /// <summary>Ağ Örme (aglarin-kralicesi "web_field"): hedef konumunda kalıcı disk; anlık hasar yok.</summary>
+        WebField,
+        /// <summary>Sıçrayış (aglarin-kralicesi "pounce"): iniş noktasında dairesel vuruş.</summary>
+        Pounce
     }
 }

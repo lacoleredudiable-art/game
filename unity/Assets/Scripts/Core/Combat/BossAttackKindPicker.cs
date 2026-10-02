@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Dovus.Core.Tuning;
 
 namespace Dovus.Core.Combat
 {
@@ -48,5 +50,49 @@ namespace Dovus.Core.Combat
 
         public static int NextStreak(BossAttackKind? last, int currentStreak, BossAttackKind picked) =>
             last.HasValue && last.Value == picked ? currentStreak + 1 : 1;
+
+        /// <summary>Boss JSON saldırı id'lerini enum'a çevirir; bilinmeyen id atlanır.</summary>
+        public static BossAttackKind[] FromIds(IReadOnlyList<string> kinds)
+        {
+            if (kinds == null || kinds.Count == 0)
+                return Array.Empty<BossAttackKind>();
+
+            var buf = new List<BossAttackKind>(kinds.Count);
+            for (int i = 0; i < kinds.Count; i++)
+            {
+                if (TryMapId(kinds[i], out BossAttackKind k))
+                    buf.Add(k);
+            }
+            return buf.ToArray();
+        }
+
+        static bool TryMapId(string id, out BossAttackKind kind)
+        {
+            switch (id)
+            {
+                case "slam":
+                    kind = BossAttackKind.Slam;
+                    return true;
+                case "fire_cone":
+                    kind = BossAttackKind.FireCone;
+                    return true;
+                case "volley":
+                    kind = BossAttackKind.Volley;
+                    return true;
+                case "web_field":
+                    kind = BossAttackKind.WebField;
+                    return true;
+                case "pounce":
+                    kind = BossAttackKind.Pounce;
+                    return true;
+                default:
+                    kind = default;
+                    return false;
+            }
+        }
+
+        /// <summary>Sıçrayış seçimi: hedef boss'tan PounceMinRangeM–PounceMaxRangeM arasında mı?</summary>
+        public static bool PounceInRange(float distM, BossTuning t) =>
+            t != null && distM >= t.PounceMinRangeM && distM <= t.PounceMaxRangeM;
     }
 }
