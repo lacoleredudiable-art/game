@@ -480,9 +480,9 @@ namespace Dovus.Game
             SessionState.SetInt(KeyUpscalingFilter, (int)urp.upscalingFilter);
             SessionState.SetBool(KeyFsrOverride, urp.fsrOverrideSharpness);
             SessionState.SetFloat(KeyFsrSharpness, urp.fsrSharpness);
-            SessionState.SetFloat(KeyShadowDistance, QualitySettings.shadowDistance);
-            SessionState.SetInt(KeyShadowCascades, QualitySettings.shadowCascades);
-            // Play öncesi bellekteki runtime değil, diskteki QualitySettings.asset (preset C sızdırmasını yutmasın).
+            ReadShadowFromQualityAsset(qualityLevel, out float diskShadowDistance, out int diskShadowCascades);
+            SessionState.SetFloat(KeyShadowDistance, diskShadowDistance);
+            SessionState.SetInt(KeyShadowCascades, diskShadowCascades);
             SessionState.SetBool(KeyRealtimeProbes, ReadRealtimeProbesFromQualityAsset(qualityLevel));
             SessionState.SetBool(KeyHasSnapshot, true);
         }
@@ -504,14 +504,15 @@ namespace Dovus.Game
                 EditorUtility.ClearDirty(urp);
             }
 
+            int qualityLevel = SessionState.GetInt(KeyQualityLevel, QualitySettings.GetQualityLevel());
             float shadowDistance = SessionState.GetFloat(KeyShadowDistance, QualitySettings.shadowDistance);
+            int shadowCascades = SessionState.GetInt(KeyShadowCascades, QualitySettings.shadowCascades);
             if (QualitySettings.shadowDistance != shadowDistance)
                 QualitySettings.shadowDistance = shadowDistance;
-            int shadowCascades = SessionState.GetInt(KeyShadowCascades, QualitySettings.shadowCascades);
             if (QualitySettings.shadowCascades != shadowCascades)
                 QualitySettings.shadowCascades = shadowCascades;
+            WriteShadowToQualityAsset(qualityLevel, shadowDistance, shadowCascades);
 
-            int qualityLevel = SessionState.GetInt(KeyQualityLevel, QualitySettings.GetQualityLevel());
             bool realtimeProbes = SessionState.GetBool(KeyRealtimeProbes, ReadRealtimeProbesFromQualityAsset(qualityLevel));
             if (QualitySettings.realtimeReflectionProbes != realtimeProbes)
                 QualitySettings.realtimeReflectionProbes = realtimeProbes;
@@ -522,18 +523,67 @@ namespace Dovus.Game
 
         static bool ReadRealtimeProbesFromQualityAsset(int qualityLevel)
         {
+            if (TryQualityLevelProperty(qualityLevel, "realtimeReflectionProbes", out SerializedProperty prop) && prop.propertyType == SerializedPropertyType.Boolean)
+                return prop.boolValue;
+            return QualitySettings.realtimeReflectionProbes;
+        }
+
+        static void ReadShadowFromQualityAsset(int qualityLevel, out float shadowDistance, out int shadowCascades)
+        {
+            shadowDistance = QualitySettings.shadowDistance;
+            shadowCascades = QualitySettings.shadowCascades;
+            if (TryQualityLevelProperty(qualityLevel, "shadowDistance", out SerializedProperty distProp) && distProp.propertyType == SerializedPropertyType.Float)
+                shadowDistance = distProp.floatValue;
+            if (TryQualityLevelProperty(qualityLevel, "shadowCascades", out SerializedProperty cascProp) && cascProp.propertyType == SerializedPropertyType.Integer)
+                shadowCascades = cascProp.intValue;
+        }
+
+        static void WriteShadowToQualityAsset(int qualityLevel, float shadowDistance, int shadowCascades)
+        {
             foreach (Object asset in AssetDatabase.LoadAllAssetsAtPath(QualitySettingsAssetPath))
             {
                 var so = new SerializedObject(asset);
                 SerializedProperty levels = so.FindProperty("m_QualitySettings");
                 if (levels == null || qualityLevel < 0 || qualityLevel >= levels.arraySize)
                     continue;
-                SerializedProperty prop = levels.GetArrayElementAtIndex(qualityLevel).FindPropertyRelative("realtimeReflectionProbes");
+                SerializedProperty level = levels.GetArrayElementAtIndex(qualityLevel);
+                SerializedProperty distProp = level.FindPropertyRelative("shadowDistance");
+                SerializedProperty cascProp = level.FindPropertyRelative("shadowCascades");
+                bool dirty = false;
+                if (distProp != null && Mathf.Abs(distProp.floatValue - shadowDistance) > 0.0001f)
+                {
+                    distProp.floatValue = shadowDistance;
+                    dirty = true;
+                }
+
+                if (cascProp != null && cascProp.intValue != shadowCascades)
+                {
+                    cascProp.intValue = shadowCascades;
+                    dirty = true;
+                }
+
+                if (dirty)
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                else
+                    EditorUtility.ClearDirty(asset);
+            }
+        }
+
+        static bool TryQualityLevelProperty(int qualityLevel, string relativeName, out SerializedProperty prop)
+        {
+            prop = null;
+            foreach (Object asset in AssetDatabase.LoadAllAssetsAtPath(QualitySettingsAssetPath))
+            {
+                var so = new SerializedObject(asset);
+                SerializedProperty levels = so.FindProperty("m_QualitySettings");
+                if (levels == null || qualityLevel < 0 || qualityLevel >= levels.arraySize)
+                    continue;
+                prop = levels.GetArrayElementAtIndex(qualityLevel).FindPropertyRelative(relativeName);
                 if (prop != null)
-                    return prop.boolValue;
+                    return true;
             }
 
-            return QualitySettings.realtimeReflectionProbes;
+            return false;
         }
 
         static void WriteRealtimeProbesToQualityAsset(int qualityLevel, bool value)

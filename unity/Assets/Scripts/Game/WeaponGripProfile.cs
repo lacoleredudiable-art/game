@@ -68,8 +68,9 @@ namespace Dovus.Game
 
         public static GripOffset DefaultMixamoLeftShield() => new GripOffset
         {
-            LocalPosition = new Vector3(0.05f, 0.18f, -0.02f),
-            LocalEulerAngles = new Vector3(8f, 195f, 92f),
+            LocalPosition = new Vector3(0.04f, 0.16f, 0.02f),
+            // Quaternius Shield_Heater dekor yüzü +Z; ön cepheye (~sol-ön) bakacak şekilde forearm eksenine paralel.
+            LocalEulerAngles = new Vector3(-8f, 210f, 88f),
             LocalScale = Vector3.one,
         };
 
