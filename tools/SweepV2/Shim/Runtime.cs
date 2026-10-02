@@ -369,6 +369,7 @@ namespace UnityEngine
         public static int shadowCascades { get; set; } = 2;
         public static int pixelLightCount { get; set; } = 4;
         public static bool realtimeReflectionProbes { get; set; }
+        public static int GetQualityLevel() => 0;
         public static void SetQualityLevel(int index) { }
         public static void SetQualityLevel(int index, bool applyExpensiveChanges) { }
     }
