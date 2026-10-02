@@ -1,4 +1,5 @@
 using Dovus.Core.Motion;
+using Dovus.Core.Tuning;
 using UnityEngine;
 
 namespace Dovus.Game
@@ -27,6 +28,8 @@ namespace Dovus.Game
         float _air;
         ActorGrounding _grounding;
         bool _captured;
+        int _knockupIntegrateHoldMs = 140;
+        double _knockupIntegrateHoldUntilMs;
 
         bool _pulling;
         bool _contactPull;
@@ -97,6 +100,12 @@ namespace Dovus.Game
             _baseScale = transform.localScale;
             if (_baseScale.sqrMagnitude < 1e-6f)
                 _baseScale = Vector3.one;
+        }
+
+        public void ConfigureFeel(FeelTuning feel)
+        {
+            if (feel != null && feel.BossKnockupIntegrateHoldMs > 0)
+                _knockupIntegrateHoldMs = feel.BossKnockupIntegrateHoldMs;
         }
 
         /// <summary>
@@ -199,6 +208,10 @@ namespace Dovus.Game
             _liftVel = Mathf.Max(_liftVel, liftM * Tuning.BossLiftVelocityPerM);
             _shakeAmp = Mathf.Max(_shakeAmp, Tuning.BossShakeAmpBaseM + knockbackM * Tuning.BossShakeAmpPerKnockbackM);
             _shakeUntil = (float)worldTimeMs + shakeSec * 1000f;
+            if (_knockupIntegrateHoldMs > 0)
+                _knockupIntegrateHoldUntilMs = System.Math.Max(
+                    _knockupIntegrateHoldUntilMs,
+                    worldTimeMs + _knockupIntegrateHoldMs);
         }
 
         /// <summary>Kabuk kapanışı: yerinde sabitle (kısa kilit).</summary>
@@ -283,12 +296,15 @@ namespace Dovus.Game
             // boss o yükseklikte kilitleniyordu (7-3 / 7-6 / 7-11, ~5 cm).
             float ground = PlantedGroundY();
             _home.y = ground;
-            _air += _liftVel * dtSec;
-            _liftVel -= Tuning.BossGravityMps2 * dtSec;
-            if (_air <= 0f)
+            if (worldTimeMs >= _knockupIntegrateHoldUntilMs)
             {
-                _air = 0f;
-                _liftVel = 0f;
+                _air += _liftVel * dtSec;
+                _liftVel -= Tuning.BossGravityMps2 * dtSec;
+                if (_air <= 0f)
+                {
+                    _air = 0f;
+                    _liftVel = 0f;
+                }
             }
 
             float y = ground + _air;

@@ -130,24 +130,24 @@ namespace Dovus.Game
         public float LookAheadM = 0.65f;
         /// <summary>Oyuncu köküne göre omuz pivotu; mesafe ayrıca geriye uygulanır.</summary>
         public Vector3 CameraShoulderOffset = new Vector3(0.42f, 1.12f, -0.28f);
-        public float CameraDistanceM = 4.6f;
-        public float CameraLookHeightM = 0.42f;
+        public float CameraDistanceM = 5.85f;
+        public float CameraLookHeightM = 0.38f;
         public float CameraFovDeg = 54f;
         public float CameraAimDampingSec = 0.12f;
         public float CameraSoftLockRangeM = 20f;
         [Range(0f, 1f)] public float CameraSoftLockStrength = 0.58f;
         /// <summary>Soft-lock aktifken bakış: oyuncu→boss arası (0=oyuncu, 1=boss).</summary>
         [Range(0f, 1f)] public float CameraBossFramingWeight = 0.40f;
-        public float CameraBossAimHeightM = 1.45f;
-        public float CameraDefaultPitchDeg = 18f;
-        public float CameraLockOnMinDistanceM = 4.0f;
-        public float CameraLockOnMaxDistanceM = 7.5f;
+        public float CameraBossAimHeightM = 2.05f;
+        public float CameraDefaultPitchDeg = 21f;
+        public float CameraLockOnMinDistanceM = 5.2f;
+        public float CameraLockOnMaxDistanceM = 8.8f;
         /// <summary>Boss mesafesi arttıkça mesafe artışı (m / m ayrım).</summary>
-        public float CameraLockOnDistancePerSepM = 0.11f;
-        public float CameraLockOnMaxExtraDistanceM = 2.4f;
+        public float CameraLockOnDistancePerSepM = 0.14f;
+        public float CameraLockOnMaxExtraDistanceM = 3.1f;
         public float CameraLockOnDistanceSmoothSec = 0.22f;
-        public float CameraWindupDistanceMul = 1.25f;
-        public float CameraWindupExtraHeightM = 0.35f;
+        public float CameraWindupDistanceMul = 1.42f;
+        public float CameraWindupExtraHeightM = 0.68f;
         public float CameraWindupSmoothSec = 0.28f;
         /// <summary>Slam dışı geniş telegraf (FireCone vb.) için yarıçap eşiği (m).</summary>
         public float CameraWindupMinRadiusM = 3.5f;
@@ -486,15 +486,15 @@ namespace Dovus.Game
             if (ArenaHalfSizeM <= 0.01f) ArenaHalfSizeM = 50f;
             if (ArenaWallHeightM <= 0.01f) ArenaWallHeightM = 18f;
             if (ArenaWallThicknessM <= 0.01f) ArenaWallThicknessM = 1.4f;
-            if (CameraDistanceM <= 0.01f) CameraDistanceM = 4.6f;
+            if (CameraDistanceM <= 0.01f) CameraDistanceM = 5.85f;
             if (CameraFovDeg <= 1f) CameraFovDeg = 54f;
             if (CameraAimDampingSec <= 0f) CameraAimDampingSec = 0.12f;
             if (CameraSoftLockRangeM <= 0f) CameraSoftLockRangeM = 20f;
             if (CameraBossAimHeightM <= 0f) CameraBossAimHeightM = 1.45f;
-            if (CameraLockOnMinDistanceM <= 0.01f) CameraLockOnMinDistanceM = 4.0f;
-            if (CameraLockOnMaxDistanceM <= CameraLockOnMinDistanceM) CameraLockOnMaxDistanceM = 7.5f;
+            if (CameraLockOnMinDistanceM <= 0.01f) CameraLockOnMinDistanceM = 5.2f;
+            if (CameraLockOnMaxDistanceM <= CameraLockOnMinDistanceM) CameraLockOnMaxDistanceM = 8.8f;
             if (CameraLockOnDistanceSmoothSec <= 0.01f) CameraLockOnDistanceSmoothSec = 0.22f;
-            if (CameraWindupDistanceMul < 1f) CameraWindupDistanceMul = 1.25f;
+            if (CameraWindupDistanceMul < 1f) CameraWindupDistanceMul = 1.42f;
             if (CameraWindupSmoothSec <= 0.01f) CameraWindupSmoothSec = 0.28f;
             if (FogDensity <= 0f) FogDensity = 0.0032f;
             if (KeyLightIntensity <= 0f) KeyLightIntensity = 1.35f;
@@ -793,6 +793,16 @@ namespace Dovus.Game
             public float FollowSmoothTimeSec;
             public float LookAheadM;
             public float CameraShakePxToM;
+            public float CameraDistanceM;
+            public float CameraLookHeightM;
+            public float CameraDefaultPitchDeg;
+            public float CameraBossAimHeightM;
+            public float CameraLockOnMinDistanceM;
+            public float CameraLockOnMaxDistanceM;
+            public float CameraLockOnDistancePerSepM;
+            public float CameraLockOnMaxExtraDistanceM;
+            public float CameraWindupDistanceMul;
+            public float CameraWindupExtraHeightM;
             public bool ReadoutAnchorRight;
             public float ReadoutPunchInSec;
             // T11: telefonda panelden açılıp kapanır ve kapatılınca öyle kalır. Eski bir
@@ -810,6 +820,16 @@ namespace Dovus.Game
             FollowSmoothTimeSec = FollowSmoothTimeSec,
             LookAheadM = LookAheadM,
             CameraShakePxToM = CameraShakePxToM,
+            CameraDistanceM = CameraDistanceM,
+            CameraLookHeightM = CameraLookHeightM,
+            CameraDefaultPitchDeg = CameraDefaultPitchDeg,
+            CameraBossAimHeightM = CameraBossAimHeightM,
+            CameraLockOnMinDistanceM = CameraLockOnMinDistanceM,
+            CameraLockOnMaxDistanceM = CameraLockOnMaxDistanceM,
+            CameraLockOnDistancePerSepM = CameraLockOnDistancePerSepM,
+            CameraLockOnMaxExtraDistanceM = CameraLockOnMaxExtraDistanceM,
+            CameraWindupDistanceMul = CameraWindupDistanceMul,
+            CameraWindupExtraHeightM = CameraWindupExtraHeightM,
             ReadoutAnchorRight = ReadoutAnchorRight,
             ReadoutPunchInSec = ReadoutPunchInSec,
             ShowFrameTimeHud = ShowFrameTimeHud,
@@ -825,6 +845,16 @@ namespace Dovus.Game
             FollowSmoothTimeSec = f.FollowSmoothTimeSec;
             LookAheadM = f.LookAheadM;
             CameraShakePxToM = f.CameraShakePxToM;
+            CameraDistanceM = f.CameraDistanceM;
+            CameraLookHeightM = f.CameraLookHeightM;
+            CameraDefaultPitchDeg = f.CameraDefaultPitchDeg;
+            CameraBossAimHeightM = f.CameraBossAimHeightM;
+            CameraLockOnMinDistanceM = f.CameraLockOnMinDistanceM;
+            CameraLockOnMaxDistanceM = f.CameraLockOnMaxDistanceM;
+            CameraLockOnDistancePerSepM = f.CameraLockOnDistancePerSepM;
+            CameraLockOnMaxExtraDistanceM = f.CameraLockOnMaxExtraDistanceM;
+            CameraWindupDistanceMul = f.CameraWindupDistanceMul;
+            CameraWindupExtraHeightM = f.CameraWindupExtraHeightM;
             ReadoutAnchorRight = f.ReadoutAnchorRight;
             ReadoutPunchInSec = f.ReadoutPunchInSec;
             ShowFrameTimeHud = f.ShowFrameTimeHud;

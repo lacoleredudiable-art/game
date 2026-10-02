@@ -138,6 +138,7 @@ namespace SweepV2
             skin.sharedMesh = mesh;
 
             var hips = Child(root.transform, "Hips", new Vector3(0f, heightM * 0.53f, 0f));
+            Child(root.transform, "Chest", new Vector3(0f, heightM * 0.85f, 0f));
             Child(hips, "LeftFoot", new Vector3(-0.1f, 0.08f - heightM * 0.53f, 0f));
             Child(hips, "RightFoot", new Vector3(0.1f, 0.08f - heightM * 0.53f, 0f));
             Child(hips, "LeftToes", new Vector3(-0.1f, 0.03f - heightM * 0.53f, 0.12f));
