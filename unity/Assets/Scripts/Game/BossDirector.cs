@@ -1,6 +1,9 @@
+using System.Collections.Generic;
 using Dovus.Core.Combat;
 using Dovus.Core.Portal;
 using Dovus.Core.Grammar;
+using Dovus.Core.Motion;
+using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using UnityEngine;
 
@@ -41,6 +44,10 @@ namespace Dovus.Game
         ActorStatus _bossStatus;
         ActorStatus _playerStatus;
         BossVisual _visual;
+        MotionTemplateBody _motionBody;
+        bool _pounceLeapActive;
+        float _pounceLandX;
+        float _pounceLandZ;
         HostileTargets _targets;
         HostileProjectileHost _projectiles;
         Transform _target;
@@ -65,6 +72,16 @@ namespace Dovus.Game
         int _attackKindStreak;
 
         bool _phase2Announced;
+
+        bool _bossEncounterLoaded;
+        BossAttackKind[] _phase1AttackKinds = System.Array.Empty<BossAttackKind>();
+        BossAttackKind[] _phase2AttackKinds = System.Array.Empty<BossAttackKind>();
+        readonly Dictionary<BossAttackKind, BossEncounterData.BossAttackEntry> _attackEntriesByKind = new();
+        BossEncounterData.BossAttackEntry _activeAttackEntry;
+        BossEncounterData.BossOnHitStatus _volleyOnHit;
+
+        /// <summary>Ağ Örme windup başında kilitlenen hedef (3.4 alan sunumu).</summary>
+        public Vector3 LastWebFieldTarget { get; private set; }
 
         /// <summary>karadul.json faz sırası: 1 = Uyanış, 2 = Öfke (can ≤ %50).</summary>
         public int BossPhase => _phase2Announced ? 2 : 1;
@@ -153,6 +170,7 @@ namespace Dovus.Game
             _feel = feel;
             _playerMotor = player.GetComponent<KinematicMotor>();
             _originHome = reactor.Home;
+            TryLoadBossEncounter();
             EnterIdle(clock.Director.WorldTimeMs);
         }
 
@@ -184,7 +202,12 @@ namespace Dovus.Game
         public void ClearReverse() => _reverseUntilMs = -1;
 
         /// <summary>Zehir Tükürüğü mermilerinin sahibi. Bağlanmazsa Volley seçilmez (eski Slam/FireCone).</summary>
-        public void BindProjectiles(HostileProjectileHost host) => _projectiles = host;
+        public void BindProjectiles(HostileProjectileHost host)
+        {
+            _projectiles = host;
+            if (_projectiles != null)
+                _projectiles.OnPlayerProjectileHit = OnVolleyProjectilePlayerHit;
+        }
 
         /// <summary>
         /// Script recompile Bind alanlarını siler; Awake yeniden çağrılmaz.
@@ -231,6 +254,35 @@ namespace Dovus.Game
 
             if (_visual == null)
                 _visual = GetComponent<BossVisual>();
+
+            _motionBody ??= GetComponent<MotionTemplateBody>();
+
+            TryLoadBossEncounter();
+        }
+
+        bool IsAglarinQueen() =>
+            _colors != null && _colors.ActiveBossId == "aglarin_kralicesi";
+
+        void TryLoadBossEncounter()
+        {
+            if (_bossEncounterLoaded || _colors == null)
+                return;
+            _bossEncounterLoaded = true;
+
+            string bossId = _colors.ActiveBossId;
+            if (string.IsNullOrWhiteSpace(bossId))
+                return;
+
+            string path = "Bosses/" + bossId.Replace('_', '-');
+            _phase1AttackKinds = BossEncounterData.LoadPhaseAttackKinds(path, 1);
+            _phase2AttackKinds = BossEncounterData.LoadPhaseAttackKinds(path, 2);
+            IReadOnlyList<BossEncounterData.BossAttackEntry> attacks = BossEncounterData.LoadAttacks(path);
+            if (attacks.Count == 0 && _phase1AttackKinds.Length == 0 && _phase2AttackKinds.Length == 0)
+                return;
+
+            _attackEntriesByKind.Clear();
+            for (int i = 0; i < attacks.Count; i++)
+                _attackEntriesByKind[attacks[i].Kind] = attacks[i];
         }
 
         /// <summary>§11: can 0 — saldırı döngüsü durur, telegraf kapanır.</summary>
@@ -353,6 +405,21 @@ namespace Dovus.Game
             }
         }
 
+        void LateUpdate()
+        {
+            if (!_pounceLeapActive || _motionBody == null || _reactor == null)
+                return;
+            if (_motionBody.IsDisplacing)
+            {
+                Vector3 p = transform.position;
+                p.y = _reactor.Home.y;
+                _reactor.Home = p;
+                return;
+            }
+            _reactor.SnapHome(new Vector3(_pounceLandX, _reactor.Home.y, _pounceLandZ));
+            _pounceLeapActive = false;
+        }
+
         void HandlePlayerDown(double worldMs)
         {
             bool down = _vitals != null && _vitals.IsDown;
@@ -441,7 +508,8 @@ namespace Dovus.Game
 
         void TickActive(double worldMs)
         {
-            if (!_strikeResolved)
+            bool airborne = _pounceLeapActive && _attack != null && _attack.Kind == BossAttackKind.Pounce;
+            if (!_strikeResolved && !airborne)
             {
                 // ResolveStrike NRE olsa bile Active'de kilitlenmeyelim.
                 _strikeResolved = true;
@@ -453,12 +521,15 @@ namespace Dovus.Game
                 {
                     Debug.LogException(e);
                 }
-                _telegraph?.Slam(AttackRadiusM);
+                if (_attack != null && _attack.Kind is BossAttackKind.WebField or BossAttackKind.Pounce)
+                    _telegraph?.Hide();
+                else
+                    _telegraph?.Slam(AttackRadiusM);
                 if (_attack != null)
                     AttackStruck?.Invoke(_attack.Kind);
             }
 
-            if (_attack != null && worldMs >= _attack.ActiveEndMs(_telegraphStartMs))
+            if (_attack != null && _strikeResolved && worldMs >= _attack.ActiveEndMs(_telegraphStartMs))
                 EnterRecovery(worldMs);
         }
 
@@ -505,6 +576,19 @@ namespace Dovus.Game
             _visual?.SetSpeed(0f);
             if (_attack != null)
             {
+                if (_attack.Kind == BossAttackKind.WebField)
+                {
+                    Transform aim = AimTarget();
+                    LastWebFieldTarget = aim != null ? aim.position : _reactor.Home;
+                    _telegraph?.SetWorldAnchor(BossAttackKind.WebField, LastWebFieldTarget);
+                }
+                else if (_attack.Kind == BossAttackKind.Pounce)
+                {
+                    Vector3 land = new Vector3(_attack.LandingX, _reactor.Home.y, _attack.LandingZ);
+                    _telegraph?.SetWorldAnchor(BossAttackKind.Pounce, land);
+                }
+                else
+                    _telegraph?.ClearWorldAnchor();
                 _telegraph?.SetShape(_attack.ArcHalfAngleDeg);
                 _visual?.PlayWindup(_attack.Kind, _attack.WindupMs);
                 AttackWindupStarted?.Invoke(_attack.Kind);
@@ -518,6 +602,43 @@ namespace Dovus.Game
             _phaseElapsedMs = 0;
             _strikeWorldMs = (int)worldMs;
             _visual?.PlaySlam();
+            if (IsAglarinQueen()
+                && _attack != null
+                && _attack.Kind == BossAttackKind.Pounce
+                && _motionBody != null
+                && _reactor != null
+                && _combat != null)
+            {
+                BeginPounceLeap();
+            }
+        }
+
+        void BeginPounceLeap()
+        {
+            Vector3 home = _reactor.Home;
+            _pounceLandX = _attack.LandingX;
+            _pounceLandZ = _attack.LandingZ;
+            float dx = _pounceLandX - home.x;
+            float dz = _pounceLandZ - home.z;
+            float dist = Mathf.Sqrt(dx * dx + dz * dz);
+            if (dist < 0.05f)
+                return;
+            Vector3 fwd = new Vector3(dx / dist, 0f, dz / dist);
+            transform.rotation = Quaternion.LookRotation(fwd, Vector3.up);
+            float airSec = Mathf.Max(0.05f, _combat.Boss.PounceAirSec);
+            float heightM = MotionFallbacks.Coded.HeightM;
+            var phase = new MotionPhase(
+                "pounce", "leap", airSec, "travel", "none", string.Empty, 0f,
+                dist, 0f, 0f, 0f, heightM, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, null, null);
+            var template = new MotionTemplate(
+                "boss_pounce", "boss_pounce", 0, "boss", true, new[] { phase });
+            _pounceLeapActive = true;
+            _motionBody.Play(
+                template,
+                () => new MotionTarget(true, _pounceLandX, _pounceLandZ),
+                () => false,
+                null,
+                _reactor.BodyRadiusM);
         }
 
         void EnterRecovery(double worldMs)
@@ -549,13 +670,30 @@ namespace Dovus.Game
                 return false;
 
             bool enraged = IsEnraged();
-            System.ReadOnlySpan<BossAttackKind> phaseKinds = BossAttackKindPicker.AllowedFor(enraged);
+            System.ReadOnlySpan<BossAttackKind> phaseKinds = enraged
+                ? (_phase2AttackKinds.Length > 0
+                    ? _phase2AttackKinds
+                    : BossAttackKindPicker.AllowedFor(true))
+                : (_phase1AttackKinds.Length > 0
+                    ? _phase1AttackKinds
+                    : BossAttackKindPicker.AllowedFor(false));
             System.Span<BossAttackKind> allowed = stackalloc BossAttackKind[phaseKinds.Length];
             int n = 0;
+            Transform aim = AimTarget();
+            float pounceDist = 0f;
+            if (aim != null && _reactor != null)
+            {
+                Vector3 toAim = aim.position - _reactor.Home;
+                toAim.y = 0f;
+                pounceDist = toAim.magnitude;
+            }
             for (int i = 0; i < phaseKinds.Length; i++)
             {
                 BossAttackKind k = phaseKinds[i];
                 if (k == BossAttackKind.Volley && _projectiles == null)
+                    continue;
+                if (k == BossAttackKind.Pounce
+                    && (aim == null || !BossAttackKindPicker.PounceInRange(pounceDist, _combat.Boss)))
                     continue;
                 if (AttackKindAllowed(k))
                     allowed[n++] = k;
@@ -567,6 +705,9 @@ namespace Dovus.Game
                 _lastAttackKind, _attackKindStreak, _combat.Boss.MaxSameAttackKindStreak, _rng, allowed.Slice(0, n));
             _attackKindStreak = BossAttackKindPicker.NextStreak(_lastAttackKind, _attackKindStreak, kind);
             _lastAttackKind = kind;
+            _activeAttackEntry = _attackEntriesByKind.TryGetValue(kind, out BossEncounterData.BossAttackEntry entry)
+                ? entry
+                : null;
 
             if (kind == BossAttackKind.FireCone)
             {
@@ -576,6 +717,20 @@ namespace Dovus.Game
             if (kind == BossAttackKind.Volley)
             {
                 _attack.ApplyVolley(enraged);
+                return true;
+            }
+            if (kind == BossAttackKind.WebField)
+            {
+                _attack.ApplyWebField();
+                return true;
+            }
+            if (kind == BossAttackKind.Pounce)
+            {
+                Vector3 land = aim != null ? aim.position : _reactor.Home;
+                float arenaR = _combat.SkillMotion.ArenaHalfSizeM - _combat.Boss.PounceWallMarginM;
+                land = ArenaClamp.XZ(land, Mathf.Max(0f, arenaR), 0f);
+                _attack.SetLanding(land.x, land.z);
+                _attack.ApplyPounce();
                 return true;
             }
 
@@ -737,6 +892,9 @@ namespace Dovus.Game
                 return;
             }
 
+            if (_attack.Kind == BossAttackKind.WebField)
+                return;
+
             // Körlük bir vuruşta bir kez zar atar; aynı ıska bütün kurbanlara geçerli.
             bool? blindMiss = null;
             bool Blind()
@@ -748,11 +906,12 @@ namespace Dovus.Game
 
             ResolveOtherFriendlies(Blind);
 
+            Vector3 strikeOrigin = StrikeVolumeOrigin();
             float dist = 0f;
             float angleDeg = 0f;
-            if (_player != null && _reactor != null)
+            if (_player != null)
             {
-                Vector3 d = _player.position - _reactor.Home;
+                Vector3 d = _player.position - strikeOrigin;
                 d.y = 0f;
                 dist = d.magnitude;
                 if (dist > 0.01f)
@@ -816,15 +975,94 @@ namespace Dovus.Game
                 if (landed)
                     _engine?.Abort();
 
-                // fire_cone mekanikleri (karadul.json: grievous_wounds + burn).
                 if (_attack.Kind == BossAttackKind.FireCone && _playerStatus != null && _combat != null)
-                {
-                    _playerStatus.Board.Apply(
-                        Dovus.Core.Status.StatusKind.Burn, _combat.Status.BurnMs, _combat.Status.BurnDamagePerSec);
-                    _playerStatus.Board.Apply(
-                        Dovus.Core.Status.StatusKind.GrievousWounds, _combat.Status.GrievousMs, _combat.Status.GrievousHealMult);
-                }
+                    ApplyFireConeMechanics(_playerStatus.Board);
             }
+        }
+
+        Vector3 StrikeVolumeOrigin()
+        {
+            if (_attack != null && _attack.Kind == BossAttackKind.Pounce && _reactor != null)
+                return new Vector3(_attack.LandingX, _reactor.Home.y, _attack.LandingZ);
+            return _reactor != null ? _reactor.Home : transform.position;
+        }
+
+        void ApplyFireConeMechanics(StatusBoard board)
+        {
+            if (board == null || _combat == null)
+                return;
+            IReadOnlyList<string> mechs = _activeAttackEntry?.Mechanics;
+            if (mechs == null || mechs.Count == 0)
+            {
+                board.Apply(StatusKind.Burn, _combat.Status.BurnMs, _combat.Status.BurnDamagePerSec);
+                board.Apply(StatusKind.GrievousWounds, _combat.Status.GrievousMs, _combat.Status.GrievousHealMult);
+                return;
+            }
+            ApplyBossMechanics(board, mechs);
+        }
+
+        void ApplyBossMechanics(StatusBoard board, IReadOnlyList<string> mechanics)
+        {
+            if (board == null || _combat == null || mechanics == null)
+                return;
+            StatusTuning t = _combat.Status;
+            for (int i = 0; i < mechanics.Count; i++)
+            {
+                if (!StatusKindUtil.TryParse(mechanics[i], out StatusKind kind) || kind == StatusKind.None)
+                    continue;
+                ApplyBossMechanicKind(board, kind, t, durationSec: 0f);
+            }
+        }
+
+        void ApplyBossMechanicKind(StatusBoard board, StatusKind kind, StatusTuning t, float durationSec)
+        {
+            double ms = durationSec > 0f ? durationSec * 1000.0 : 0;
+            switch (kind)
+            {
+                case StatusKind.Burn:
+                    board.Apply(kind, ms > 0 ? ms : t.BurnMs, t.BurnDamagePerSec);
+                    break;
+                case StatusKind.GrievousWounds:
+                    board.Apply(kind, ms > 0 ? ms : t.GrievousMs, t.GrievousHealMult);
+                    break;
+                case StatusKind.Poison:
+                    board.Apply(kind, ms > 0 ? ms : t.PoisonMs, t.PoisonDamagePerSec);
+                    break;
+                case StatusKind.Weaken:
+                    board.Apply(kind, ms > 0 ? ms : t.WeakenMs, t.WeakenOutgoingMult);
+                    break;
+                case StatusKind.ArmorBreak:
+                    board.Apply(kind, ms > 0 ? ms : t.ArmorBreakMs, t.ArmorBreakDamageTakenMult);
+                    break;
+                case StatusKind.Slow:
+                    board.Apply(kind, ms > 0 ? ms : t.SlowMs, t.SlowSpeedMult);
+                    break;
+                case StatusKind.Blind:
+                    board.Apply(kind, ms > 0 ? ms : t.BlindMs,
+                        BossStatusMath.BlindChanceFromAccuracy(t.BlindMissChance));
+                    break;
+                case StatusKind.Root:
+                    board.Apply(kind, ms > 0 ? ms : t.RootMs, 1f);
+                    break;
+                case StatusKind.Silence:
+                    board.Apply(kind, ms > 0 ? ms : t.SilenceMs, 1f);
+                    break;
+                case StatusKind.Stun:
+                    board.Apply(kind, ms > 0 ? ms : t.StunMs, 1f);
+                    break;
+                case StatusKind.Disarm:
+                    board.Apply(kind, ms > 0 ? ms : t.DisarmMs, 1f);
+                    break;
+            }
+        }
+
+        void OnVolleyProjectilePlayerHit()
+        {
+            if (!_volleyOnHit.IsValid || _playerStatus == null || _combat == null)
+                return;
+            if (!StatusKindUtil.TryParse(_volleyOnHit.Id, out StatusKind kind) || kind == StatusKind.None)
+                return;
+            ApplyBossMechanicKind(_playerStatus.Board, kind, _combat.Status, _volleyOnHit.DurationSec);
         }
 
         /// <summary>
@@ -836,6 +1074,9 @@ namespace Dovus.Game
         {
             if (_projectiles == null || _reactor == null)
                 return;
+            _volleyOnHit = _activeAttackEntry != null && _activeAttackEntry.OnHitStatus.IsValid
+                ? _activeAttackEntry.OnHitStatus
+                : default;
             Vector3 origin = _reactor.Home;
             Transform aim = AimTarget();
             Vector3 dir = aim != null ? aim.position - origin : transform.forward;
@@ -873,13 +1114,14 @@ namespace Dovus.Game
         {
             if (_targets == null || _reactor == null)
                 return;
+            Vector3 strikeOrigin = StrikeVolumeOrigin();
             var entries = _targets.Entries;
             for (int i = entries.Count - 1; i >= 0; i--)
             {
                 HostileTargets.Entry e = entries[i];
                 if (e.Kind == TargetKind.Player || !e.IsAlive)
                     continue;
-                Vector3 d = e.Transform.position - _reactor.Home;
+                Vector3 d = e.Transform.position - strikeOrigin;
                 d.y = 0f;
                 float dist = d.magnitude;
                 float angleDeg = 0f;
@@ -905,12 +1147,7 @@ namespace Dovus.Game
                 e.Damage?.Invoke(raw);
                 AllyDummy ally = _attack.Kind == BossAttackKind.FireCone ? e.Transform.GetComponent<AllyDummy>() : null;
                 if (ally != null && _combat != null && ally.Board != null && !ally.IsDown)
-                {
-                    ally.Board.Apply(
-                        Dovus.Core.Status.StatusKind.Burn, _combat.Status.BurnMs, _combat.Status.BurnDamagePerSec);
-                    ally.Board.Apply(
-                        Dovus.Core.Status.StatusKind.GrievousWounds, _combat.Status.GrievousMs, _combat.Status.GrievousHealMult);
-                }
+                    ApplyFireConeMechanics(ally.Board);
             }
         }
     }

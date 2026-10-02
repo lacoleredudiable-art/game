@@ -8,8 +8,8 @@ using UnityEngine;
 namespace Dovus.Game
 {
     /// <summary>
-    /// Boss HUD metinleri <c>Resources/Bosses/karadul.json</c>'dan: ad, alt başlık, faz adları ve
-    /// eşikleri, saldırı adları. Saldırı eşlemesi enum adından (FireCone → fire_cone) doğar.
+    /// Boss HUD metinleri <c>Resources/Bosses/*.json</c>: ad, alt başlık, faz adları ve
+    /// eşikleri, saldırı adları. Saldırı kind'ı JSON'dan veya karadul uyumu için id'den eşlenir.
     /// </summary>
     public sealed class BossHudData
     {
@@ -18,6 +18,7 @@ namespace Dovus.Game
 
         readonly List<(int Phase, string Name, float UpperFrac)> _phases = new();
         readonly Dictionary<string, string> _attackNames = new();
+        readonly Dictionary<BossAttackKind, string> _attackNamesByKind = new();
 
         public IReadOnlyList<(int Phase, string Name, float UpperFrac)> Phases => _phases;
 
@@ -41,7 +42,14 @@ namespace Dovus.Game
                     data._phases.Add((p["phase"].AsInt(), p["name"].AsString(string.Empty), upper));
                 }
                 foreach (JsonValue a in root["attacks"].AsArray())
-                    data._attackNames[a["id"].AsString(string.Empty)] = a["name"].AsString(string.Empty);
+                {
+                    string id = a["id"].AsString(string.Empty);
+                    string display = a["name"].AsString(string.Empty);
+                    data._attackNames[id] = display;
+                    BossAttackKind? kind = BossEncounterData.ResolveKind(a);
+                    if (kind.HasValue && !string.IsNullOrEmpty(display))
+                        data._attackNamesByKind[kind.Value] = display;
+                }
             }
             catch (System.Exception e)
             {
@@ -62,6 +70,8 @@ namespace Dovus.Game
 
         public string AttackName(BossAttackKind kind)
         {
+            if (_attackNamesByKind.TryGetValue(kind, out string byKind) && !string.IsNullOrEmpty(byKind))
+                return byKind;
             string id = SnakeCase(kind.ToString());
             return _attackNames.TryGetValue(id, out string name) && !string.IsNullOrEmpty(name)
                 ? name

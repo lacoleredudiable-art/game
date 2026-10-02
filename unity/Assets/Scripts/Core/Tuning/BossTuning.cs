@@ -47,6 +47,21 @@ namespace Dovus.Core.Tuning
         /// <summary>Telegraf yayının boyu (yalnız çizim; vuruş hacmi yok). Spec'te yok, his değeri.</summary>
         public float VolleyTelegraphRangeM = 8f;
 
+        // Ağ Örme / Sıçrayış — spec'te yok — docs/bosses/aglarin-kralicesi.md
+        public int WebFieldWindupMs = 900;
+        public float WebFieldRadiusM = 3.0f;
+        public float WebFieldLifeSec = 8f;
+        public int WebFieldMaxCount = 3;
+        public float WebFieldRefreshSec = 0.25f;
+        public float WebFieldMinCenterDistM = 4f;
+        public int PounceWindupMs = 1000;
+        public int PounceDamage = 14;
+        public float PounceLandRadiusM = 3.0f;
+        public float PounceMinRangeM = 4f;
+        public float PounceMaxRangeM = 12f;
+        public float PounceAirSec = 0.45f;
+        public float PounceWallMarginM = 2f;
+
         public int ActiveMs = 90;
         public int RecoveryMs = 720;
         /// <summary>
@@ -105,6 +120,19 @@ namespace Dovus.Core.Tuning
             VolleyRadiusM = other.VolleyRadiusM;
             VolleyLifeSec = other.VolleyLifeSec;
             VolleyTelegraphRangeM = other.VolleyTelegraphRangeM;
+            WebFieldWindupMs = other.WebFieldWindupMs;
+            WebFieldRadiusM = other.WebFieldRadiusM;
+            WebFieldLifeSec = other.WebFieldLifeSec;
+            WebFieldMaxCount = other.WebFieldMaxCount;
+            WebFieldRefreshSec = other.WebFieldRefreshSec;
+            WebFieldMinCenterDistM = other.WebFieldMinCenterDistM;
+            PounceWindupMs = other.PounceWindupMs;
+            PounceDamage = other.PounceDamage;
+            PounceLandRadiusM = other.PounceLandRadiusM;
+            PounceMinRangeM = other.PounceMinRangeM;
+            PounceMaxRangeM = other.PounceMaxRangeM;
+            PounceAirSec = other.PounceAirSec;
+            PounceWallMarginM = other.PounceWallMarginM;
             ActiveMs = other.ActiveMs;
             RecoveryMs = other.RecoveryMs;
             Damage = other.Damage;

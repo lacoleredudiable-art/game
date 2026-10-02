@@ -1,0 +1,7 @@
+Spider by Quaternius, released under CC0 1.0 Public Domain.
+Author: Quaternius (https://quaternius.com/)
+Source page: https://poly.pizza/m/yRYJiAJyiM
+Download: https://static.poly.pizza/4259fbdb-afb5-4d40-9108-363625dd6b6e.zip (FBX Spider.fbx, stored as Spider_Quaternius.fbx)
+License: https://creativecommons.org/publicdomain/zero/1.0/
+
+Animations (embedded): Spider_Idle, Spider_Walk, Spider_Attack, Spider_Jump, Spider_Death.

@@ -17,6 +17,8 @@ namespace Dovus.Core.Combat
         BossAttackKind _kind = BossAttackKind.Slam;
         float _arcHalfAngleDeg = 180f;
         int _volleyCount;
+        float _landingX;
+        float _landingZ;
 
         public BossAttack(BossTuning? tuning = null)
         {
@@ -36,8 +38,15 @@ namespace Dovus.Core.Combat
         {
             BossAttackKind.FireCone => _tuning.FireConeDamage,
             BossAttackKind.Volley => _tuning.VolleyDamage,
+            BossAttackKind.WebField => 0,
+            BossAttackKind.Pounce => _tuning.PounceDamage,
             _ => _tuning.Damage
         };
+
+        /// <summary>Pounce: windup başında kilitlenen iniş X (dünya).</summary>
+        public float LandingX => _landingX;
+        /// <summary>Pounce: windup başında kilitlenen iniş Z (dünya).</summary>
+        public float LandingZ => _landingZ;
 
         /// <summary>Volley: bu salvodaki mermi sayısı (öfkede count_enraged).</summary>
         public int VolleyCount => _kind == BossAttackKind.Volley ? _volleyCount : 0;
@@ -86,6 +95,35 @@ namespace Dovus.Core.Combat
             _volleyCount = Math.Max(1, enraged ? _tuning.VolleyCountEnraged : _tuning.VolleyCount);
         }
 
+        /// <summary>Ağ Örme: hedef konumunda disk telegrafı; anlık hasar yok.</summary>
+        public void ApplyWebField()
+        {
+            _kind = BossAttackKind.WebField;
+            _volleyCount = 0;
+            _variant = SlamVariant.Yakin;
+            _windupMs = _tuning.WebFieldWindupMs;
+            _radiusM = _tuning.WebFieldRadiusM;
+            _arcHalfAngleDeg = 180f;
+        }
+
+        /// <summary>Sıçrayış: iniş dairesi; hasar iniş anında. İniş noktası windup öncesi SetLanding ile verilir.</summary>
+        public void ApplyPounce()
+        {
+            _kind = BossAttackKind.Pounce;
+            _volleyCount = 0;
+            _variant = SlamVariant.Yakin;
+            _windupMs = _tuning.PounceWindupMs;
+            _radiusM = _tuning.PounceLandRadiusM;
+            _arcHalfAngleDeg = 180f;
+        }
+
+        /// <summary>Pounce windup başında kilitlenen iniş konumu (dünya XZ).</summary>
+        public void SetLanding(float x, float z)
+        {
+            _landingX = x;
+            _landingZ = z;
+        }
+
         public int StrikeTimeMs(int telegraphStartMs) => telegraphStartMs + WindupMs;
 
         public int ActiveEndMs(int telegraphStartMs) => telegraphStartMs + WindupMs + ActiveMs;
@@ -96,6 +134,7 @@ namespace Dovus.Core.Combat
         /// <summary>
         /// Oyuncu etki hacminde mi? Mesafe yarıçap içinde ve açı yayı içinde olmalı.
         /// Tam daire için arcHalfAngleDeg = 180 (veya daha büyük).
+        /// Pounce'ta çağıran mesafeyi iniş noktasından verir (boss gövdesinden değil).
         /// </summary>
         public bool IsInEffectVolume(float distanceM, float angleFromForwardDeg, float arcHalfAngleDeg = 180f)
         {

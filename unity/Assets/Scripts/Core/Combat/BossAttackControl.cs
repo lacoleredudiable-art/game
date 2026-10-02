@@ -39,12 +39,14 @@ namespace Dovus.Core.Combat
                 BossAttackKind.Slam => BossAttackMotion.Standing,
                 BossAttackKind.FireCone => BossAttackMotion.Standing,
                 BossAttackKind.Volley => BossAttackMotion.Standing,
+                BossAttackKind.WebField => BossAttackMotion.Standing,
+                BossAttackKind.Pounce => BossAttackMotion.Leap,
                 _ => BossAttackMotion.Standing
             };
 
-        /// <summary>Özel/cast saldırı: Silence keser, Disarm kesmez (FireCone ve Volley).</summary>
+        /// <summary>Özel/cast saldırı: Silence keser, Disarm kesmez (FireCone, Volley, WebField).</summary>
         public static bool IsSpecial(BossAttackKind kind) =>
-            kind is BossAttackKind.FireCone or BossAttackKind.Volley;
+            kind is BossAttackKind.FireCone or BossAttackKind.Volley or BossAttackKind.WebField;
 
         public static bool IsMovement(BossAttackMotion motion) =>
             motion is BossAttackMotion.Charge or BossAttackMotion.Leap or BossAttackMotion.Dash;

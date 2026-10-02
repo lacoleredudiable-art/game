@@ -151,7 +151,7 @@ namespace Dovus.Game
             bossHitCollider.isTrigger = true;
             AttachVisual(
                 boss,
-                _bossVisualPrefab,
+                ResolveBossVisualPrefab(_bossVisualPrefab),
                 _tuning.BossVisualHeightM,
                 boss.transform.position.y - BossHeightM * 0.5f,
                 _tuning.CharacterAnimSpeed,
@@ -209,6 +209,7 @@ namespace Dovus.Game
             player.AddComponent<ActorGrounding>();
 
             boss.AddComponent<ActorGrounding>();
+            boss.AddComponent<MotionTemplateBody>();
             var reactor = boss.AddComponent<BossReactor>();
             reactor.Tuning = _tuning;
             reactor.ConfigureFeel(combat.Feel);
@@ -471,7 +472,7 @@ namespace Dovus.Game
 
             // Boss hedefleri: oyuncu + dost kukla (+ MD'nin dikkat çeken yemleri). Sayılar karadul.json targeting.
             var hostileTargets = directorGo.AddComponent<HostileTargets>();
-            TargetingConfig targetingConfig = BossEncounterData.LoadTargeting();
+            TargetingConfig targetingConfig = BossEncounterData.LoadTargeting(_tuning.ActiveBossResourcePath);
             hostileTargets.Configure(targetingConfig);
             hostileTargets.Register(
                 player,
@@ -532,11 +533,18 @@ namespace Dovus.Game
             director.BindHostileTargets(hostileTargets);
 
             // Düşman mermileri (Zehir Tükürüğü). Sayılar karadul.json "volley".
-            BossEncounterData.ApplyVolley(combat.Boss);
+            BossEncounterData.ApplyVolley(combat.Boss, _tuning.ActiveBossResourcePath);
             var projectileHost = directorGo.AddComponent<HostileProjectileHost>();
             projectileHost.Bind(clock, hostileTargets, player, playerStatus, vitals, boss.transform, boss.BodyRadiusM);
             bossDir.BindProjectiles(projectileHost);
             director.BindProjectiles(projectileHost);
+
+            boss.GetComponent<MotionTemplateBody>()?.Bind(
+                clock, combat.SkillMotion.ArenaHalfSizeM, BossRadiusM);
+            var webFields = directorGo.AddComponent<WebFieldView>();
+            webFields.Bind(clock, combat, bossDir, bossVitals, player, playerStatus);
+            if (allyDummy != null)
+                webFields.RegisterAlly(allyDummy);
             director.ConfigureWeaponCycle(design?.Equipment.Items);
             if (design != null)
             {
@@ -702,6 +710,17 @@ namespace Dovus.Game
         /// </summary>
         static GameObject ResolvePlayerVisualPrefab(GameObject sceneDefault) =>
             Resources.Load<GameObject>("PlayerVisualOverride") ?? sceneDefault;
+
+        /// <summary>
+        /// Ağların Kraliçesi: <c>Bosses/Visuals/AglarinKralicesi</c> prefab (Editor menüsüyle üretilir);
+        /// yoksa sahnedeki karadul görseli.
+        /// </summary>
+        GameObject ResolveBossVisualPrefab(GameObject sceneDefault)
+        {
+            if (_tuning.ActiveBossId != "aglarin_kralicesi")
+                return sceneDefault;
+            return Resources.Load<GameObject>("Bosses/Visuals/AglarinKralicesi") ?? sceneDefault;
+        }
 
         /// <summary>
         /// Asset Store prefab'ı kökün child'ı olur; mantık kökte kalır (motor/pose/reactor).
