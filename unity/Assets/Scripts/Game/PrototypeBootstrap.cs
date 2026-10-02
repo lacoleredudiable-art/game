@@ -206,6 +206,7 @@ namespace Dovus.Game
             player.AddComponent<ActorGrounding>();
 
             boss.AddComponent<ActorGrounding>();
+            boss.AddComponent<MotionTemplateBody>();
             var reactor = boss.AddComponent<BossReactor>();
             reactor.Tuning = _tuning;
             reactor.ConfigureFeel(combat.Feel);
@@ -534,6 +535,13 @@ namespace Dovus.Game
             projectileHost.Bind(clock, hostileTargets, player, playerStatus, vitals, boss.transform, boss.BodyRadiusM);
             bossDir.BindProjectiles(projectileHost);
             director.BindProjectiles(projectileHost);
+
+            boss.GetComponent<MotionTemplateBody>()?.Bind(
+                clock, combat.SkillMotion.ArenaHalfSizeM, BossRadiusM);
+            var webFields = directorGo.AddComponent<WebFieldView>();
+            webFields.Bind(clock, combat, bossDir, bossVitals, player, playerStatus);
+            if (allyDummy != null)
+                webFields.RegisterAlly(allyDummy);
             director.ConfigureWeaponCycle(design?.Equipment.Items);
             if (design != null)
             {

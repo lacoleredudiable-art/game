@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Dovus.Core.Combat;
 using Dovus.Core.Portal;
 using Dovus.Core.Grammar;
+using Dovus.Core.Motion;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using UnityEngine;
@@ -43,6 +44,10 @@ namespace Dovus.Game
         ActorStatus _bossStatus;
         ActorStatus _playerStatus;
         BossVisual _visual;
+        MotionTemplateBody _motionBody;
+        bool _pounceLeapActive;
+        float _pounceLandX;
+        float _pounceLandZ;
         HostileTargets _targets;
         HostileProjectileHost _projectiles;
         Transform _target;
@@ -250,8 +255,13 @@ namespace Dovus.Game
             if (_visual == null)
                 _visual = GetComponent<BossVisual>();
 
+            _motionBody ??= GetComponent<MotionTemplateBody>();
+
             TryLoadBossEncounter();
         }
+
+        bool IsAglarinQueen() =>
+            _colors != null && _colors.ActiveBossId == "aglarin_kralicesi";
 
         void TryLoadBossEncounter()
         {
@@ -395,6 +405,21 @@ namespace Dovus.Game
             }
         }
 
+        void LateUpdate()
+        {
+            if (!_pounceLeapActive || _motionBody == null || _reactor == null)
+                return;
+            if (_motionBody.IsDisplacing)
+            {
+                Vector3 p = transform.position;
+                p.y = _reactor.Home.y;
+                _reactor.Home = p;
+                return;
+            }
+            _reactor.SnapHome(new Vector3(_pounceLandX, _reactor.Home.y, _pounceLandZ));
+            _pounceLeapActive = false;
+        }
+
         void HandlePlayerDown(double worldMs)
         {
             bool down = _vitals != null && _vitals.IsDown;
@@ -483,7 +508,8 @@ namespace Dovus.Game
 
         void TickActive(double worldMs)
         {
-            if (!_strikeResolved)
+            bool airborne = _pounceLeapActive && _attack != null && _attack.Kind == BossAttackKind.Pounce;
+            if (!_strikeResolved && !airborne)
             {
                 // ResolveStrike NRE olsa bile Active'de kilitlenmeyelim.
                 _strikeResolved = true;
@@ -495,12 +521,15 @@ namespace Dovus.Game
                 {
                     Debug.LogException(e);
                 }
-                _telegraph?.Slam(AttackRadiusM);
+                if (_attack != null && _attack.Kind is BossAttackKind.WebField or BossAttackKind.Pounce)
+                    _telegraph?.Hide();
+                else
+                    _telegraph?.Slam(AttackRadiusM);
                 if (_attack != null)
                     AttackStruck?.Invoke(_attack.Kind);
             }
 
-            if (_attack != null && worldMs >= _attack.ActiveEndMs(_telegraphStartMs))
+            if (_attack != null && _strikeResolved && worldMs >= _attack.ActiveEndMs(_telegraphStartMs))
                 EnterRecovery(worldMs);
         }
 
@@ -551,7 +580,15 @@ namespace Dovus.Game
                 {
                     Transform aim = AimTarget();
                     LastWebFieldTarget = aim != null ? aim.position : _reactor.Home;
+                    _telegraph?.SetWorldAnchor(BossAttackKind.WebField, LastWebFieldTarget);
                 }
+                else if (_attack.Kind == BossAttackKind.Pounce)
+                {
+                    Vector3 land = new Vector3(_attack.LandingX, _reactor.Home.y, _attack.LandingZ);
+                    _telegraph?.SetWorldAnchor(BossAttackKind.Pounce, land);
+                }
+                else
+                    _telegraph?.ClearWorldAnchor();
                 _telegraph?.SetShape(_attack.ArcHalfAngleDeg);
                 _visual?.PlayWindup(_attack.Kind, _attack.WindupMs);
                 AttackWindupStarted?.Invoke(_attack.Kind);
@@ -565,6 +602,43 @@ namespace Dovus.Game
             _phaseElapsedMs = 0;
             _strikeWorldMs = (int)worldMs;
             _visual?.PlaySlam();
+            if (IsAglarinQueen()
+                && _attack != null
+                && _attack.Kind == BossAttackKind.Pounce
+                && _motionBody != null
+                && _reactor != null
+                && _combat != null)
+            {
+                BeginPounceLeap();
+            }
+        }
+
+        void BeginPounceLeap()
+        {
+            Vector3 home = _reactor.Home;
+            _pounceLandX = _attack.LandingX;
+            _pounceLandZ = _attack.LandingZ;
+            float dx = _pounceLandX - home.x;
+            float dz = _pounceLandZ - home.z;
+            float dist = Mathf.Sqrt(dx * dx + dz * dz);
+            if (dist < 0.05f)
+                return;
+            Vector3 fwd = new Vector3(dx / dist, 0f, dz / dist);
+            transform.rotation = Quaternion.LookRotation(fwd, Vector3.up);
+            float airSec = Mathf.Max(0.05f, _combat.Boss.PounceAirSec);
+            float heightM = MotionFallbacks.Coded.HeightM;
+            var phase = new MotionPhase(
+                "pounce", "leap", airSec, "travel", "none", string.Empty, 0f,
+                dist, 0f, 0f, 0f, heightM, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, null, null);
+            var template = new MotionTemplate(
+                "boss_pounce", "boss_pounce", 0, "boss", true, new[] { phase });
+            _pounceLeapActive = true;
+            _motionBody.Play(
+                template,
+                () => new MotionTarget(true, _pounceLandX, _pounceLandZ),
+                () => false,
+                null,
+                _reactor.BodyRadiusM);
         }
 
         void EnterRecovery(double worldMs)

@@ -51,6 +51,8 @@ namespace Dovus.Core.Motion
         public const string Displace = "yer_degistir";
         public const string Behind = "hedefin_arkasina";
         public const string ReturnMark = "isaret_geri_don";
+        /// <summary>Boss Sıçrayış: kalıp bittiğinde BossReactor.Home inişe yazılır (gramer konumu değil).</summary>
+        public const string BossLeapHome = "boss_leap_home";
 
         public static PositionStepKind Kind(string atom, string stat)
         {
