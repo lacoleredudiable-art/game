@@ -330,6 +330,10 @@ namespace Dovus.Game
         /// <summary>Resources/Bosses/{id}.json — varsayılan karadul (CI kapısı).</summary>
         public string ActiveBossId = "karadul";
 
+        /// <summary><c>Resources.Load</c> yolu: <c>Bosses/</c> + id (<c>_</c> → <c>-</c>).</summary>
+        public string ActiveBossResourcePath =>
+            "Bosses/" + (string.IsNullOrWhiteSpace(ActiveBossId) ? "karadul" : ActiveBossId.Replace('_', '-'));
+
         // Boss animasyon sunumu (his turu Faz 1). Hepsi önerilen — klip değişince göz kontrolü.
         [Header("Boss animasyon (his turu)")]
         public float BossTurnRateDegPerSec = 240f;
