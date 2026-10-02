@@ -232,6 +232,72 @@ namespace Dovus.Game
             return true;
         }
 
+        /// <summary>Düz vuruş: katalogdaki basic_strike lunge; hasar zamanlamasına dokunmaz.</summary>
+        bool TryBeginBasicStrikeStep()
+        {
+            if (_player == null)
+                return false;
+            EnsureMotionReady();
+            // Kira yalnız dodge'da ya da sonraki kalıp başında sıfırlanır; bitmiş bir kalıbın kirası adımı kesmesin.
+            if (_motionBody == null || _motionBody.IsDisplacing)
+                return false;
+
+            MotionTemplate template = MotionCatalog.BasicStrike;
+            if (template == null || template.Phases.Count == 0)
+                return false;
+
+            Transform aim = ResolveMotionEnemy(template);
+            if (aim == null || aim == _player)
+                return false;
+
+            var steps = new List<GrammarPositionStep>();
+            MotionFallbacks fallbacks = MotionCatalog.Fallbacks;
+            PositionPlayback playback = PositionOwnership.Prepare(
+                template, steps, fallbacks.PhaseSec, fallbacks.StepM);
+            template = playback.Template ?? template;
+            if (!playback.OwnsPosition)
+                return false;
+
+            _castLease.Arm(true);
+            _templateOwnsPosition = true;
+            _templateSkill = SkillResolution.Empty;
+            _templatePending = default;
+            _templateChain = 0f;
+            _templateStatusSent = false;
+            _templateAim = aim;
+            _emiciContactPull = false;
+            _recoilInTemplate = false;
+            if (_boss != null)
+                _templateStartCenter = FlatDistance(_player.position, _boss.transform.position);
+
+            float bodyR = PlayerBodyRadiusM();
+            if (bodyR < 0.05f)
+                bodyR = 0.5f;
+            float arena = _colors != null ? _colors.ArenaHalfSizeM : 50f;
+            _motionBody.Bind(_clock, arena, bodyR);
+            string weapon = _equippedWeapon != null
+                ? (string.IsNullOrEmpty(_equippedWeapon.AnimationsKey) ? _equippedWeapon.Id : _equippedWeapon.AnimationsKey)
+                : string.Empty;
+            _motionBody.SetAnimContext(MotionCatalog.Anims, weapon, 0);
+            _motionBody.NoteSkill(string.Empty);
+            float stopGap = fallbacks.StopGapM;
+            _motionBody.Play(
+                template,
+                () =>
+                {
+                    if (aim == null)
+                        return default;
+                    Vector3 pos = aim.position;
+                    return new MotionTarget(true, pos.x, pos.z, ColliderRadius(aim));
+                },
+                () => false,
+                _ => { },
+                bodyR,
+                stopGap);
+            DebugConfig.DevLog($"[Motion] basic_strike → {template.Name}");
+            return true;
+        }
+
         static int VerbOf(string skillId)
         {
             if (string.IsNullOrEmpty(skillId))

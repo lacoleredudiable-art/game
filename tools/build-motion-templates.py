@@ -847,6 +847,15 @@ ROWS = [
     ("12-12", "yuruyen_balon", "Yürüyen balon", 41, [], None),
 ]
 
+# spec'te yok — his varsayılanı
+BASIC_STRIKE = {
+    "id": "basic_strike",
+    "name": "Düz vuruş adımı",
+    "family": 13,
+    "aim": "enemy",
+    "phases": [P("vur", "lunge", 0.12, distance_m=0.6, anim="lunge")],
+}
+
 
 def main():
     expected = {f"{v}-{a}" for v in range(1, 13) for a in range(1, 13)}
@@ -930,6 +939,7 @@ def main():
             for i, name, done in FAMILIES
         ],
         "templates": templates,
+        "basic_strike": BASIC_STRIKE,
     }
     text = json.dumps(doc, ensure_ascii=False, indent=2) + "\n"
     for path in OUTS:

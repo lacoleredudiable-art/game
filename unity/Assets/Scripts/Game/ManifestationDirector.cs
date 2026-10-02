@@ -1073,6 +1073,7 @@ namespace Dovus.Game
                 {
                     SyncVisualDelivery();
                     _visual?.PulseBasicStrike();
+                    TryBeginBasicStrikeStep();
                     _pose?.PulseRune(sentence.Words[0].Rune, _clock.Director.WorldTimeMs);
                 }
                 else

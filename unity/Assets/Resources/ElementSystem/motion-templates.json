@@ -5047,5 +5047,20 @@
         }
       ]
     }
-  ]
+  ],
+  "basic_strike": {
+    "id": "basic_strike",
+    "name": "Düz vuruş adımı",
+    "family": 13,
+    "aim": "enemy",
+    "phases": [
+      {
+        "name": "vur",
+        "motion": "lunge",
+        "sec": 0.12,
+        "distance_m": 0.6,
+        "anim": "lunge"
+      }
+    ]
+  }
 }

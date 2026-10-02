@@ -20,6 +20,28 @@ public class MotionTemplateTests
     }
 
     [Test]
+    public void Catalog_ReadsBasicStrike_WithoutChangingTemplateCount()
+    {
+        Assert.That(_catalog.TemplateCount, Is.EqualTo(102));
+        Assert.That(_catalog.BasicStrike, Is.Not.Null);
+        Assert.That(_catalog.BasicStrike.Phases.Count, Is.EqualTo(1));
+        Assert.That(_catalog.BasicStrike.Phases[0].Motion, Is.EqualTo("lunge"));
+        Assert.That(_catalog.BasicStrike.Phases[0].DistanceM, Is.EqualTo(0.6f).Within(0.001f));
+        Assert.That(_catalog.BasicStrike.Phases[0].Homing, Is.EqualTo("none"));
+        Assert.That(MotionAim.IsEnemy(_catalog.BasicStrike.Aim), Is.True);
+    }
+
+    [Test]
+    public void BasicStrike_Lunge_StopsAtBody_AndCapsDistance()
+    {
+        var boss = new MotionTarget(true, 0f, 4f, 0.85f);
+        var step = Play(_catalog.BasicStrike, 0.12f, boss, bodyRadius: 0.5f);
+        Assert.That(MotionHitGeometry.EdgeGap(step.X, step.Z, 0.5f, 0f, 4f, 0.85f), Is.GreaterThan(0.05f));
+        float travel = System.MathF.Sqrt(step.X * step.X + step.Z * step.Z);
+        Assert.That(travel, Is.LessThanOrEqualTo(0.6f + 0.02f));
+    }
+
+    [Test]
     public void Catalog_MapsEveryCombo_AndAllFortyTwoFamilies()
     {
         Assert.That(_catalog.FamilyCount, Is.EqualTo(42));
