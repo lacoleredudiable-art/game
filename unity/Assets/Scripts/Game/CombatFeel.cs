@@ -35,6 +35,9 @@ namespace Dovus.Game
 
         HitFlash _playerFlash;
         HitFlash _bossFlash;
+        VisualFreeze _visualFreeze;
+        AfterimageTrail _afterimage;
+        Transform _playerTransform;
         float _lastBossHitstopUnscaled = -999f;
 
         public ExchangeResult? LastExchange { get; private set; }
@@ -48,24 +51,49 @@ namespace Dovus.Game
             _bossFlash = bossFlash;
         }
 
+        public void BindPresentation(VisualFreeze visualFreeze, AfterimageTrail afterimage, Transform playerTransform)
+        {
+            _visualFreeze = visualFreeze;
+            _afterimage = afterimage;
+            _playerTransform = playerTransform;
+        }
+
         /// <summary>
-        /// Oyuncu vuruşu bossa değdi: kısa hitstop + hafif sarsıntı + gövde parlaması.
+        /// Oyuncu vuruşu bossa değdi: görsel hitstop + sarsıntı + kırmızı gövde parlaması.
         /// Art arda isabetler <see cref="FeelTuning.BossHitHitstopMinGapMs"/> içinde hitstop yığmaz.
         /// </summary>
-        public void OnBossStruck(bool isCrit, bool allowHitstop = true)
+        public void OnBossStruck(bool isCrit, bool allowHitstop = true, string weaponArchetype = null)
         {
-            _bossFlash?.Flash(isCrit ? _colors.TelegraphWarm : Color.white);
-            if (_combat == null || !allowHitstop)
+            FeelTuning feel = _combat != null ? _combat.Feel : null;
+            Color bossRed = new(0.92f, 0.12f, 0.14f, 1f);
+            Color bossCritRed = new(1f, 0.35f, 0.32f, 1f);
+            int flashMs = feel != null ? feel.BossHitFlashMs : 90;
+            _bossFlash?.Flash(isCrit ? bossCritRed : bossRed, flashMs);
+            if (_combat == null || feel == null)
                 return;
-            FeelTuning feel = _combat.Feel;
+
+            string archetype = string.IsNullOrEmpty(weaponArchetype)
+                ? WeaponArchetypeMap.SwordShield
+                : weaponArchetype;
+            float shakePx = FeelWeaponPresentation.BossHitShakePx(feel, archetype, isCrit);
+            if (shakePx > 0f)
+                _follow?.AddShakePxAtLeast(shakePx, feel.ShakeDecay);
+
+            if (!allowHitstop)
+                return;
+
             float now = Time.unscaledTime;
             if ((now - _lastBossHitstopUnscaled) * 1000f < feel.BossHitHitstopMinGapMs)
                 return;
             _lastBossHitstopUnscaled = now;
-            if (feel.HitstopBossHitMs > 0)
-                _clock?.Director.TriggerHitstop(feel.HitstopBossHitMs);
-            if (feel.BossHitShakePx > 0f)
-                _follow?.AddShakePxAtLeast(isCrit ? feel.BossHitShakePx * 2f : feel.BossHitShakePx, feel.ShakeDecay);
+
+            int stopMs = FeelWeaponPresentation.BossHitstopMs(feel, archetype);
+            if (stopMs > 0 && _visualFreeze != null)
+            {
+                _visualFreeze.Trigger(stopMs / 1000f);
+                DebugConfig.DevLog(
+                    $"[Feel2Verify] boss-hit visual-freeze {stopMs}ms archetype={archetype} shake={shakePx:0.#}px");
+            }
         }
 
         public void Bind(
@@ -118,20 +146,40 @@ namespace Dovus.Game
                     : feel.CameraDodgeZoomKick;
                 _follow?.Punch(kick, feel.CameraRollDeg, feel.ShakePerfectPx, feel.ShakeDecay);
                 _impactUntil = Time.unscaledTime + feel.ImpactFrameMs / 1000f;
+
+                if (result.Grade == DodgeGrade.Mukemmel)
+                {
+                    FeelHaptics.Pulse(feel.PerfectDodgeHapticMs);
+                    if (_afterimage != null && _playerTransform != null)
+                    {
+                        _afterimage.EmitBurst(
+                            _playerTransform.position,
+                            _playerTransform.rotation,
+                            _playerTransform.lossyScale,
+                            feel.PerfectDodgeAfterimageCount,
+                            feel.PerfectDodgeAfterimageLifeMs);
+                    }
+
+                    DebugConfig.DevLog(
+                        $"[Feel2Verify] perfect-dodge haptic={feel.PerfectDodgeHapticMs}ms afterimages={feel.PerfectDodgeAfterimageCount}");
+                }
             }
             else if (result.Outcome == ExchangeOutcome.Hit)
             {
                 _clock.Director.TriggerHitstop(feel.HitstopPlayerHitMs);
                 _follow?.Punch(feel.CameraDodgeZoomKick, feel.CameraRollDeg, feel.ShakeHitPx, feel.ShakeDecay);
                 _playerFlash?.Flash(_colors.TelegraphHot);
-                _vignetteUntil = Time.unscaledTime + _colors.VignetteHoldSec;
+                float hold = feel.PlayerHitVignetteSec > 0f ? feel.PlayerHitVignetteSec : _colors.VignetteHoldSec;
+                _vignetteUntil = Time.unscaledTime + hold;
+                FeelHaptics.Pulse(feel.PlayerHitHapticMs);
+                DebugConfig.DevLog(
+                    $"[Feel2Verify] player-hit vignette={hold:0.00}s haptic={feel.PlayerHitHapticMs}ms shake={feel.ShakeHitPx}px");
             }
 
             // Safe de yazılır (T8.1): dodge oyuncuyu etki hacminin dışına taşıdığında ekranda
             // hiçbir şey olmaması "neden derece almadım" sorusunu cevapsız bırakıyordu (§6).
             _hud?.NoteExchange(result);
-            // Büyük, parlak tepki yazısı (T9) — Safe'i göstermez, sadece Dodged/Hit (§6).
-            _readout?.NoteExchange(result);
+            // Büyük tepki yazısı kaldırıldı (feel-2): MÜKEMMEL / geç kaldın metni yok.
             Exchanged?.Invoke(result);
         }
 

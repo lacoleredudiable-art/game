@@ -9,7 +9,7 @@ namespace Dovus.Core.Tuning
     /// </summary>
     public static class TuningSchema
     {
-        public const int Version = 2;
+        public const int Version = 3;
 
         public enum LoadDecision
         {

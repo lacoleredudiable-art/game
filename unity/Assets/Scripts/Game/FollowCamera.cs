@@ -34,6 +34,9 @@ namespace Dovus.Game
         bool _windupHooked;
         Quaternion _aimRotation;
 
+        /// <summary>Görsel hitstop sırasında kamera takibini dondur (simülasyon saati değil).</summary>
+        public float VisualHoldUntilUnscaled { get; set; }
+
         /// <summary>
         /// 16 Eylül: "kamera sabit, döndüremiyorum" bug raporu. Oyuncu etrafında yatay dönüş —
         /// CombatFeel/§8 tuning'e dokunmadan; 0 iken davranış birebir eskisiyle aynı (T8/T8.1
@@ -170,6 +173,10 @@ namespace Dovus.Game
                 return;
 
             AdvanceShake();
+
+            float now = Time.unscaledTime;
+            if (now < VisualHoldUntilUnscaled)
+                return;
 
             Vector3 targetVelocity = _targetMotor != null ? _targetMotor.Velocity : Vector3.zero;
 

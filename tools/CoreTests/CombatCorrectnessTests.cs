@@ -311,7 +311,7 @@ public class CombatCorrectnessTests
     public void S8_MinionCrit_IsShown()
     {
         Assert.That(Game("ManifestationDirector.VerbExecution.cs"),
-            Does.Contain("ShowDamage(damage, dealt.WasCrit, BossHitPoint(), DamageTint())"));
+            Does.Contain("ShowDamage(damage, dealt.WasCrit, BossHitPoint(), DamageTint(), victimIsBoss: true)"));
     }
 
     [Test]

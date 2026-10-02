@@ -433,8 +433,18 @@ namespace Dovus.Game
             var feelGo = new GameObject("CombatFeel");
             feelGo.transform.SetParent(transform, false);
             var feel = feelGo.AddComponent<CombatFeel>();
+            var visualFreeze = feelGo.AddComponent<VisualFreeze>();
             feel.Bind(clock, follow, combat, _tuning, overlay.Cam, debug, readout);
             feel.BindActors(player.GetComponent<HitFlash>(), boss.GetComponent<HitFlash>());
+            var playerVisual = player.GetComponent<ActorVisual>();
+            var bossVisualComp = boss.GetComponent<BossVisual>();
+            Animator playerAnim = playerVisual != null ? playerVisual.Animator : null;
+            Animator bossAnim = bossVisualComp != null ? bossVisualComp.Animator : null;
+            visualFreeze.Bind(follow, playerAnim, bossAnim);
+            feel.BindPresentation(visualFreeze, afterimage, player.transform);
+            HitImpactFx.Configure(combat.Feel);
+            var bossFlinch = boss.gameObject.GetComponent<BossHitFlinch>() ?? boss.gameObject.AddComponent<BossHitFlinch>();
+            bossFlinch.Bind(combat.Feel, bossAnim != null ? bossAnim.transform : boss.transform);
             player.GetComponent<PlayerDodgeRig>()?.Bind(clock, input, follow, readout, feel);
             var overlayHud = feelGo.AddComponent<CombatOverlayHud>();
             overlayHud.Configure(vitals, bossVitals, player, boss.transform, overlay.Cam);
@@ -474,7 +484,7 @@ namespace Dovus.Game
             vitalsHud.BindBoss(bossDir);
 
             feelGo.AddComponent<SfxDirector>();
-            feelGo.AddComponent<PresentationFx>().Bind(bossDir, dodgeMotion, feel, input);
+            feelGo.AddComponent<PresentationFx>().Bind(bossDir, dodgeMotion, feel, input, follow, combat);
             var playerSteps = player.gameObject.AddComponent<FootstepEmitter>();
             playerSteps.StrideM = _tuning.FootstepStrideM;
             var bossSteps = boss.gameObject.AddComponent<FootstepEmitter>();

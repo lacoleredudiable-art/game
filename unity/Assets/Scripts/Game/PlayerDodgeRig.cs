@@ -163,8 +163,6 @@ namespace Dovus.Game
             _nextHit.Arm(tuning.PerfectNextHitMult, WorldMs(), tuning.PerfectNextHitWindowMs);
             PlayLocalFeel(tuning.PerfectFeelSec);
             // O2: ayrı OnGUI "PERFECT" etiketi kaldırıldı (çift yazı + her kare yeni GUIStyle).
-            if (announce)
-                _readout?.NoteSkill("PERFECT", "sonraki vuruş güçlü", new Color(1f, 0.92f, 0.35f));
             SfxDirector.Play(SfxLibrary.PerfectDodge);
         }
 

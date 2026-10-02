@@ -72,6 +72,31 @@ namespace Dovus.Game
             _live.Add(g);
         }
 
+        /// <summary>Mükemmel sıyırma: kısa, seyrek hayalet patlaması.</summary>
+        public void EmitBurst(Vector3 position, Quaternion rotation, Vector3 scale, int count, int lifeMs)
+        {
+            if (_feel == null || count <= 0 || lifeMs <= 0)
+                return;
+
+            float lifeSec = lifeMs / 1000f;
+            for (int i = 0; i < count; i++)
+            {
+                while (_live.Count >= Mathf.Max(count, Count))
+                    Retire(0);
+
+                Ghost g = _pool.Count > 0 ? _pool.Dequeue() : CreateGhost();
+                float angle = (i + 0.5f) / count * Mathf.PI * 2f;
+                Vector3 offset = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * 0.12f;
+                g.Xform.position = position + offset;
+                g.Xform.rotation = rotation;
+                g.Xform.localScale = scale * 0.92f;
+                g.Xform.gameObject.SetActive(true);
+                g.DieAtUnscaled = Time.unscaledTime + lifeSec;
+                SetAlpha(g.Rend, _alpha * 0.85f);
+                _live.Add(g);
+            }
+        }
+
         public void Clear()
         {
             for (int i = _live.Count - 1; i >= 0; i--)
