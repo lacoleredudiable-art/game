@@ -327,8 +327,8 @@ namespace Dovus.Game
         public float BossLiftVelocityPerM = 4.5f;
 
         [Header("Boss karşılaşma")]
-        /// <summary>Resources/Bosses/{id}.json — varsayılan karadul (CI kapısı).</summary>
-        public string ActiveBossId = "karadul";
+        /// <summary>Resources/Bosses/{id}.json — varsayılan Ağların Kraliçesi; karadul yedek.</summary>
+        public string ActiveBossId = "aglarin_kralicesi";
 
         /// <summary><c>Resources.Load</c> yolu: <c>Bosses/</c> + id (<c>_</c> → <c>-</c>).</summary>
         public string ActiveBossResourcePath =>
@@ -445,7 +445,7 @@ namespace Dovus.Game
         // tasarımcının bilinçli 0'ı (ör. nabzı kapatmak) artık ezilmez (T8.1).
         [HideInInspector] public int TuningVersion = CurrentVersion;
 
-        const int CurrentVersion = 20;
+        const int CurrentVersion = 21;
 
         /// <summary>Sürümü geçmiş serileşmiş kopyayı bu sürümün varsayılanlarına çeker.</summary>
         public void EnsureRuntimeDefaults()
@@ -815,6 +815,10 @@ namespace Dovus.Game
             // bilinçli özelleştirmeyi korumak için yalnızca eski varsayılan ±0.01.
             if (Mathf.Abs(ArenaHalfSizeM - 50f) <= 0.01f)
                 ArenaHalfSizeM = fresh.ArenaHalfSizeM;
+
+            // v21: varsayılan boss karadul → aglarin_kralicesi; yalnız eski varsayılan taşınır.
+            if (ActiveBossId == "karadul")
+                ActiveBossId = fresh.ActiveBossId;
 
             TuningVersion = CurrentVersion;
         }
