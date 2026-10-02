@@ -16,6 +16,7 @@ namespace Dovus.Game
         FollowCamera _camera;
         MoveInput _moveInput;
         HexagonInput _hexagonInput;
+        HexagonView _hexView;
         PrototypeTuning _tuning;
         int? _orbitFingerId;
         Vector2 _lastPos;
@@ -30,11 +31,13 @@ namespace Dovus.Game
             FollowCamera camera,
             MoveInput moveInput,
             HexagonInput hexagonInput,
-            PrototypeTuning tuning = null)
+            PrototypeTuning tuning = null,
+            HexagonView hexView = null)
         {
             _camera = camera;
             _moveInput = moveInput;
             _hexagonInput = hexagonInput;
+            _hexView = hexView;
             _tuning = tuning;
             if (_tuning != null)
                 _pitchDeg = _tuning.CameraDefaultPitchDeg;
@@ -79,7 +82,10 @@ namespace Dovus.Game
                 return;
             var kb = Keyboard.current;
             if (kb != null && kb.tabKey.wasPressedThisFrame)
+            {
                 _camera.LockOnActive = !_camera.LockOnActive;
+                _hexView?.RefreshLockOnVisual();
+            }
         }
 
         void HandleMouseOrbit()

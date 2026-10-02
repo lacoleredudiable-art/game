@@ -137,6 +137,7 @@ namespace Dovus.Game
             _dodge.SetAsLastSibling();
 
             BuildWeaponSwapButton(fallback, canvasGo.transform);
+            BuildLockOnButton(fallback, canvasGo.transform);
 
             for (int dot = 1; dot <= n; dot++)
                 CreateCooldownLabel(dot, canvasGo.transform);
@@ -422,6 +423,8 @@ namespace Dovus.Game
                 _dodgeLabel.fontSize = Mathf.RoundToInt(dodgeR * 0.38f);
             _dodge.SetAsLastSibling();
             LayoutWeaponSwapButton(w, h);
+            LayoutLockOnButton(w, h);
+            RefreshLockOnVisual();
             LayoutCombatTray(c, dotR);
         }
 

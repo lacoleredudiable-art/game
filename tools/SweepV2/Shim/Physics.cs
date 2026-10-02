@@ -686,4 +686,33 @@ namespace UnityEngine
 
         static List<Component> ToArrayList(this IReadOnlyList<Component> list) => new(list);
     }
+
+    public struct LayerMask
+    {
+        int _value;
+        public static implicit operator int(LayerMask mask) => mask._value;
+        public static implicit operator LayerMask(int value) => new LayerMask { _value = value };
+
+        public static int GetMask(params string[] layerNames)
+        {
+            int mask = 0;
+            foreach (string name in layerNames)
+            {
+                int layer = NameToLayer(name);
+                if (layer >= 0)
+                    mask |= 1 << layer;
+            }
+
+            return mask;
+        }
+
+        public static int NameToLayer(string layerName)
+        {
+            if (string.Equals(layerName, "Default", StringComparison.Ordinal))
+                return 0;
+            if (string.Equals(layerName, "CameraBlocker", StringComparison.Ordinal))
+                return 31;
+            return -1;
+        }
+    }
 }

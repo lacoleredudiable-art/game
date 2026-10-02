@@ -368,6 +368,14 @@ namespace Dovus.Game
             AddFloatSlider("Lock-on max mesafe", 4f, 12f, () => p.CameraLockOnMaxDistanceM, v => p.CameraLockOnMaxDistanceM = v, "m", "0.00");
             AddFloatSlider("Lock-on mesafe / ayrım", 0f, 0.3f, () => p.CameraLockOnDistancePerSepM, v => p.CameraLockOnDistancePerSepM = v, "", "0.00");
             AddFloatSlider("Lock-on ekstra tavan", 0f, 5f, () => p.CameraLockOnMaxExtraDistanceM, v => p.CameraLockOnMaxExtraDistanceM = v, "m", "0.00");
+            AddFloatSlider("Lock-on omuz yatay", 0.5f, 1.6f, () => p.CameraLockOnShoulderSideM, v => p.CameraLockOnShoulderSideM = v, "m", "0.00");
+            AddFloatSlider("Çarpışma yarıçapı", 0.08f, 0.5f, () => p.CameraCollisionSphereRadiusM, v => p.CameraCollisionSphereRadiusM = v, "m", "0.00");
+            AddFloatSlider("Çarpışma payı", 0f, 0.35f, () => p.CameraCollisionMarginM, v => p.CameraCollisionMarginM = v, "m", "0.00");
+            AddFloatSlider("Çarpışma min mesafe", 0.6f, 2.5f, () => p.CameraCollisionMinDistanceM, v => p.CameraCollisionMinDistanceM = v, "m", "0.00");
+            AddFloatSlider("Çarpışma içeri (sn)", 0.01f, 0.15f, () => p.CameraCollisionPullInSmoothSec, v => p.CameraCollisionPullInSmoothSec = v, "sn", "0.00");
+            AddFloatSlider("Çarpışma dışarı (sn)", 0.1f, 0.8f, () => p.CameraCollisionPullOutSmoothSec, v => p.CameraCollisionPullOutSmoothSec = v, "sn", "0.00");
+            if (_followCamera != null)
+                AddReadout("CollisionPulledInM", () => $"{_followCamera.CollisionPulledInM:F2} m");
             AddFloatSlider("Windup mesafe çarpanı", 1f, 1.8f, () => p.CameraWindupDistanceMul, v => p.CameraWindupDistanceMul = v, "×", "0.00");
             AddFloatSlider("Windup ekstra yükseklik", 0f, 1.5f, () => p.CameraWindupExtraHeightM, v => p.CameraWindupExtraHeightM = v, "m", "0.00");
             AddFloatSlider("Piksel→metre (sarsıntı)", 0.001f, 0.05f, () => p.CameraShakePxToM, v => p.CameraShakePxToM = v, "", "0.000");
@@ -453,6 +461,19 @@ namespace Dovus.Game
             label.fontStyle = FontStyle.Bold;
             label.color = new Color(0.373f, 0.941f, 1f, 0.95f);
             label.alignment = TextAnchor.LowerLeft;
+        }
+
+        void AddReadout(string label, Func<string> getter)
+        {
+            var go = new GameObject("Readout_" + label);
+            go.transform.SetParent(_scrollContent, false);
+            go.AddComponent<LayoutElement>().preferredHeight = RowHeight * 0.65f;
+            var labelText = CreateLabel(go.transform, string.Empty, 14);
+            labelText.alignment = TextAnchor.MiddleLeft;
+            labelText.color = new Color(0.82f, 0.88f, 0.95f, 0.9f);
+            void Refresh() => labelText.text = $"{label}: {getter()}";
+            Refresh();
+            _refreshActions.Add(Refresh);
         }
 
         void AddFloatSlider(string label, float min, float max, Func<float> getter, Action<float> setter, string unit, string format)

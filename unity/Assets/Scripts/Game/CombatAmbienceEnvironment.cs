@@ -82,6 +82,7 @@ namespace Dovus.Game
             }
 
             BuildRockRing(assets, root.transform, walkHalfM, Mathf.Max(1f, tuning?.ArenaWallThicknessM ?? 1.4f));
+            CameraAmbienceColliders.EnsureOnCombatAmbience(root.transform);
         }
 
         static GameObject PlaceEnvMesh(GameObject model, Material mat, Transform parent, float scale, string name) =>
