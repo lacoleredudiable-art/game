@@ -439,6 +439,14 @@ namespace Dovus.Game
             _lineMaterial = new Material(shader != null ? shader : Shader.Find("Hidden/Internal-Colored"));
             if (_lineMaterial.HasProperty("_Color"))
                 _lineMaterial.SetColor("_Color", Color.white);
+
+            Texture2D inkTex = KenneyVfxTextures.Load(KenneyVfxTextures.TexInk);
+            if (inkTex != null)
+            {
+                if (_lineMaterial.HasProperty("_BaseMap"))
+                    _lineMaterial.SetTexture("_BaseMap", inkTex);
+                _lineMaterial.mainTexture = inkTex;
+            }
         }
     }
 }
