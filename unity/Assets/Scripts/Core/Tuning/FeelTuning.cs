@@ -30,6 +30,12 @@ namespace Dovus.Core.Tuning
 
         // Bossa isabet: art arda tick/çoklu vuruş hitstop'u üst üste yığmasın. Önerilen (durum.md).
         public int BossHitHitstopMinGapMs = 140;
+        /// <summary>
+        /// Görsel boss hitstop sim saatini durdurmaz; oyuncu→boss isabet sonrası bu kadar ms knockup
+        /// dikey integrasyonu donar (eski world-pause'ın boss havadayken sıfırladığı dt). spec'te yok;
+        /// 80 ms tek vuruş (HitstopBossHammerMs) yetmedi; Top 5-8/7-8 için 140 ms (= BossHitHitstopMinGapMs).
+        /// </summary>
+        public int BossKnockupIntegrateHoldMs = 140;
         public float BossHitShakePx = 4f;
         public float ShakeBossLightPx = 4f;
         public float ShakeBossMediumPx = 6f;
@@ -98,6 +104,7 @@ namespace Dovus.Core.Tuning
             AfterimageLifeMs = other.AfterimageLifeMs;
 
             BossHitHitstopMinGapMs = other.BossHitHitstopMinGapMs;
+            BossKnockupIntegrateHoldMs = other.BossKnockupIntegrateHoldMs;
             BossHitShakePx = other.BossHitShakePx;
             ShakeBossLightPx = other.ShakeBossLightPx;
             ShakeBossMediumPx = other.ShakeBossMediumPx;

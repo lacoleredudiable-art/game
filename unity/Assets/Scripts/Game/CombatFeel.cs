@@ -90,17 +90,12 @@ namespace Dovus.Game
             int stopMs = FeelWeaponPresentation.BossHitstopMs(feel, archetype);
             if (stopMs <= 0)
                 return;
-#if SWEEP_HEADLESS
-            // Başsız sweep adım zamanı master ile aynı kalsın (feel-2 görsel dondurma sim saatini durdurmuyor).
-            _clock?.Director.TriggerHitstop(stopMs);
-#else
             if (_visualFreeze != null)
             {
                 _visualFreeze.Trigger(stopMs / 1000f);
                 DebugConfig.DevLog(
                     $"[Feel2Verify] boss-hit visual-freeze {stopMs}ms archetype={archetype} shake={shakePx:0.#}px");
             }
-#endif
         }
 
         public void Bind(

@@ -206,6 +206,7 @@ namespace Dovus.Game
             boss.AddComponent<ActorGrounding>();
             var reactor = boss.AddComponent<BossReactor>();
             reactor.Tuning = _tuning;
+            reactor.ConfigureFeel(combat.Feel);
             reactor.BodyRadiusM = BossRadiusM;
             reactor.CaptureHome();
 
