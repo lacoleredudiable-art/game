@@ -15,10 +15,24 @@ namespace Dovus.Game.EditorTools
         public const string TalismanPrefab = PropsRoot + "/Talisman_Necklace_Quaternius/Talisman_Necklace.prefab";
         public const string CannonPrefab = PropsRoot + "/HandCannon_Shotgun_Quaternius/HandCannon_Shotgun.prefab";
 
+        public const string RockBoulderPrefab = PropsRoot + "/Rock_Boulder_Quaternius/Rock_Boulder.prefab";
+        public const string LogFallenPrefab = PropsRoot + "/Log_Fallen_Quaternius/Log_Fallen.prefab";
+        public const string BoneSkullPrefab = PropsRoot + "/Bone_Skull_Quaternius/Bone_Skull.prefab";
+
+        public static readonly string[] AmbienceEdgePropPrefabPaths =
+        {
+            RockBoulderPrefab,
+            LogFallenPrefab,
+            BoneSkullPrefab,
+        };
+
         const string StaffObj = PropsRoot + "/Staff_Quaternius/Staff_Quaternius.obj";
         const string OrbObj = PropsRoot + "/Orb_PickupSphere_Quaternius/Orb_PickupSphere_Quaternius.obj";
         const string TalismanObj = PropsRoot + "/Talisman_Necklace_Quaternius/Talisman_Necklace_Quaternius.obj";
         const string CannonObj = PropsRoot + "/HandCannon_Shotgun_Quaternius/HandCannon_Shotgun_Quaternius.obj";
+        const string RockBoulderObj = PropsRoot + "/Rock_Boulder_Quaternius/Rock_Boulder_Quaternius.obj";
+        const string LogFallenObj = PropsRoot + "/Log_Fallen_Quaternius/Log_Fallen_Quaternius.obj";
+        const string BoneSkullObj = PropsRoot + "/Bone_Skull_Quaternius/Bone_Skull_Quaternius.obj";
 
         [MenuItem("Dovus/Art/Import Quaternius CC0 Props")]
         public static void ImportAll()
@@ -37,20 +51,32 @@ namespace Dovus.Game.EditorTools
                 new Color(0.42f, 0.41f, 0.40f), 0.65f, 0.38f);
             Material cannonWood = EnsureLitMat(PropsRoot + "/HandCannon_Shotgun_Quaternius/Mat_Cannon_Wood.mat",
                 new Color(0.19f, 0.16f, 0.13f), 0f, 0.2f);
+            Material rockMat = EnsureLitMat(PropsRoot + "/Rock_Boulder_Quaternius/Mat_Rock_Boulder.mat",
+                new Color(0.40f, 0.38f, 0.36f), 0f, 0.16f);
+            Material logMat = EnsureLitMat(PropsRoot + "/Log_Fallen_Quaternius/Mat_Log_Fallen.mat",
+                new Color(0.22f, 0.17f, 0.13f), 0f, 0.2f);
+            Material boneMat = EnsureLitMat(PropsRoot + "/Bone_Skull_Quaternius/Mat_Bone_Skull.mat",
+                new Color(0.72f, 0.68f, 0.62f), 0f, 0.22f);
 
             ConfigureObjImporter(StaffObj);
             ConfigureObjImporter(OrbObj);
             ConfigureObjImporter(TalismanObj);
             ConfigureObjImporter(CannonObj);
+            ConfigureObjImporter(RockBoulderObj);
+            ConfigureObjImporter(LogFallenObj);
+            ConfigureObjImporter(BoneSkullObj);
             AssetDatabase.Refresh();
 
             BuildStaffPrefab(wood, woodDark);
             BuildOrbPrefab(orbGlow);
             BuildTalismanPrefab(talismanMetal);
             BuildCannonPrefab(cannonMetal, cannonWood);
+            BuildAmbienceEdgePrefab(RockBoulderObj, rockMat, "Rock_Boulder", RockBoulderPrefab);
+            BuildAmbienceEdgePrefab(LogFallenObj, logMat, "Log_Fallen", LogFallenPrefab);
+            BuildAmbienceEdgePrefab(BoneSkullObj, boneMat, "Bone_Skull", BoneSkullPrefab);
 
             AssetDatabase.SaveAssets();
-            Debug.Log("[Cc0PropsBind] Staff/Orb/Talisman/Cannon prefabs ready under " + PropsRoot);
+            Debug.Log("[Cc0PropsBind] Staff/Orb/Talisman/Cannon + ambience edge prefabs ready under " + PropsRoot);
         }
 
         static void BuildStaffPrefab(Material wood, Material crook)
@@ -113,6 +139,25 @@ namespace Dovus.Game.EditorTools
             meshGo.transform.SetParent(root.transform, false);
             OffsetChildToGrip(root, meshGo, gripFractionFromMinX: 0.22f, longAxis: Vector3.right);
             SavePrefab(root, CannonPrefab);
+        }
+
+        static void BuildAmbienceEdgePrefab(string objPath, Material mat, string rootName, string prefabPath)
+        {
+            var meshGo = LoadMeshRoot(objPath);
+            if (meshGo == null)
+                return;
+            foreach (Renderer r in meshGo.GetComponentsInChildren<Renderer>(true))
+            {
+                var mats = r.sharedMaterials;
+                for (int i = 0; i < mats.Length; i++)
+                    mats[i] = mat;
+                r.sharedMaterials = mats;
+            }
+
+            var root = new GameObject(rootName);
+            meshGo.transform.SetParent(root.transform, false);
+            meshGo.transform.localPosition = Vector3.zero;
+            SavePrefab(root, prefabPath);
         }
 
         static GameObject LoadMeshRoot(string objPath)

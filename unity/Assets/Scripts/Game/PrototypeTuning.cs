@@ -11,7 +11,7 @@ namespace Dovus.Game
     {
         [Header("Arena")]
         /// <summary>Daire salon yarıçapı (çap = 2×). Eski kare yarım-kenar adı korundu.</summary>
-        public float ArenaHalfSizeM = 50f;
+        public float ArenaHalfSizeM = 25f;
         /// <summary>Çevre duvar yüksekliği (tavansız salon).</summary>
         public float ArenaWallHeightM = 18f;
         /// <summary>Çevre duvar kalınlığı.</summary>
@@ -437,7 +437,7 @@ namespace Dovus.Game
         // tasarımcının bilinçli 0'ı (ör. nabzı kapatmak) artık ezilmez (T8.1).
         [HideInInspector] public int TuningVersion = CurrentVersion;
 
-        const int CurrentVersion = 19;
+        const int CurrentVersion = 20;
 
         /// <summary>Sürümü geçmiş serileşmiş kopyayı bu sürümün varsayılanlarına çeker.</summary>
         public void EnsureRuntimeDefaults()
@@ -505,7 +505,7 @@ namespace Dovus.Game
             if (BossStaggerMinGapSec <= 0f) BossStaggerMinGapSec = 0.6f;
             if (BossAnimCrossFadeSec <= 0f) BossAnimCrossFadeSec = 0.15f;
             if (BossWalkClipMps <= 0.01f) BossWalkClipMps = 1.4f;
-            if (ArenaHalfSizeM <= 0.01f) ArenaHalfSizeM = 50f;
+            if (ArenaHalfSizeM <= 0.01f) ArenaHalfSizeM = 25f;
             if (ArenaWallHeightM <= 0.01f) ArenaWallHeightM = 18f;
             if (ArenaWallThicknessM <= 0.01f) ArenaWallThicknessM = 1.4f;
             if (CameraDistanceM <= 0.01f) CameraDistanceM = 5.85f;
@@ -801,6 +801,11 @@ namespace Dovus.Game
             CameraFarClipM = fresh.CameraFarClipM;
             GroundColor = fresh.GroundColor;
             BackgroundColor = fresh.BackgroundColor;
+
+            // v20: salon yarıçapı 50 m → 25 m. v19'da kilitlenmiş sahnelerde serileşmiş 50 kalabiliyordu;
+            // bilinçli özelleştirmeyi korumak için yalnızca eski varsayılan ±0.01.
+            if (Mathf.Abs(ArenaHalfSizeM - 50f) <= 0.01f)
+                ArenaHalfSizeM = fresh.ArenaHalfSizeM;
 
             TuningVersion = CurrentVersion;
         }
