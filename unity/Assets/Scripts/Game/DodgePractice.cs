@@ -18,11 +18,23 @@ namespace Dovus.Game
         bool _dodgeable = true;
         AttackTelegraph _live;
 
+        bool _chromeVisible = true;
+
         public void Bind(Transform player, Transform boss)
         {
             _player = player;
             _boss = boss;
+#if UNITY_EDITOR || DOVUS_DEBUG
+            DebugPanelsChrome.Register(ApplyChrome);
+            ApplyChrome(DebugPanelsChrome.Visible);
+#endif
         }
+
+#if UNITY_EDITOR || DOVUS_DEBUG
+        void ApplyChrome(bool visible) => _chromeVisible = visible;
+
+        void OnDestroy() => DebugPanelsChrome.Unregister(ApplyChrome);
+#endif
 
         void Update()
         {
@@ -33,6 +45,10 @@ namespace Dovus.Game
 
         void OnGUI()
         {
+#if UNITY_EDITOR || DOVUS_DEBUG
+            if (!_chromeVisible)
+                return;
+#endif
             GUI.Box(new Rect(8f, 72f, 210f, 132f), "Dodge deneme");
             _dodgeable = GUI.Toggle(new Rect(16f, 98f, 190f, 22f), _dodgeable, "Sıyrılabilir");
             if (GUI.Button(new Rect(16f, 122f, 190f, 22f), "Daire (F8)"))

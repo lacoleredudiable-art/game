@@ -208,6 +208,9 @@ namespace UnityEngine
         public void SetTexture(int id, Texture t) => _props["#" + id] = t;
         public Texture GetTexture(string name) => _props.TryGetValue(name, out object v) ? v as Texture : null;
         public Texture GetTexture(int id) => _props.TryGetValue("#" + id, out object v) ? v as Texture : null;
+        public void SetTextureScale(string name, Vector2 scale) => _props[name + "_scale"] = scale;
+        public Vector2 GetTextureScale(string name) =>
+            _props.TryGetValue(name + "_scale", out object v) && v is Vector2 s ? s : Vector2.one;
         public void EnableKeyword(string k) { }
         public void DisableKeyword(string k) { }
         public bool IsKeywordEnabled(string k) => false;

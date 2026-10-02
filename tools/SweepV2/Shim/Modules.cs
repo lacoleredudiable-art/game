@@ -850,6 +850,7 @@ namespace UnityEngine.Rendering.Universal
     public enum CameraRenderType { Base, Overlay }
     public enum AntialiasingMode { None, FastApproximateAntialiasing, SubpixelMorphologicalAntiAliasing, TemporalAntiAliasing }
     public enum TonemappingMode { None, Neutral, ACES }
+    public enum CameraOverrideOption { UsePipelineSettings, On, Off }
 
     public class UniversalAdditionalCameraData : MonoBehaviour
     {
@@ -860,6 +861,7 @@ namespace UnityEngine.Rendering.Universal
         public AntialiasingMode antialiasing { get; set; }
         public bool stopNaN { get; set; }
         public bool dithering { get; set; }
+        public CameraOverrideOption requiresDepthOption { get; set; }
     }
 
     public class UniversalAdditionalLightData : MonoBehaviour { }
@@ -903,5 +905,37 @@ namespace UnityEngine.Rendering.Universal
         public ClampedFloatParameter intensity = new(0f, 0f, 1f);
     }
 
-    public class UniversalRenderPipelineAsset : ScriptableObject { }
+    public class ScriptableRendererFeature : ScriptableObject
+    {
+        public bool isActive;
+        public void SetActive(bool active) => isActive = active;
+    }
+
+    public class ScriptableRendererData : ScriptableObject
+    {
+        public System.Collections.Generic.List<ScriptableRendererFeature> rendererFeatures =
+            new System.Collections.Generic.List<ScriptableRendererFeature>();
+    }
+
+    public enum UpscalingFilterSelection { Auto, Linear, FSR, STP }
+
+    public class UniversalRenderPipelineAsset : ScriptableObject
+    {
+        public float renderScale;
+        public int msaaSampleCount;
+        public int mainLightShadowmapResolution;
+        public bool supportsCameraDepthTexture;
+        public ScriptableRendererData[] rendererDataList;
+        public UpscalingFilterSelection upscalingFilter;
+        public bool fsrOverrideSharpness;
+        public float fsrSharpness;
+    }
+}
+
+namespace UnityEngine.Rendering
+{
+    public static class GraphicsSettings
+    {
+        public static ScriptableObject currentRenderPipeline;
+    }
 }

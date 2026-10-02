@@ -90,7 +90,27 @@ namespace Dovus.Game
 
             _contentRoot.SetActive(false);
             IsOpen = false;
+
+#if UNITY_EDITOR || DOVUS_DEBUG
+            DebugPanelsChrome.Register(ApplyChrome);
+            ApplyChrome(DebugPanelsChrome.Visible);
+#endif
         }
+
+#if UNITY_EDITOR || DOVUS_DEBUG
+        void ApplyChrome(bool visible)
+        {
+            if (_toggleGo != null)
+                _toggleGo.SetActive(visible);
+            if (!visible)
+            {
+                IsOpen = false;
+                if (_contentRoot != null)
+                    _contentRoot.SetActive(false);
+            }
+        }
+
+#endif
 
         void BuildToggleButton(Transform parent)
         {
@@ -599,7 +619,13 @@ namespace Dovus.Game
 
         void OnApplicationQuit() => FlushSaveIfDirty();
 
-        void OnDestroy() => FlushSaveIfDirty();
+        void OnDestroy()
+        {
+#if UNITY_EDITOR || DOVUS_DEBUG
+            DebugPanelsChrome.Unregister(ApplyChrome);
+#endif
+            FlushSaveIfDirty();
+        }
 
         // ---- Düşük seviye UI yardımcıları ---------------------------------------------------
 

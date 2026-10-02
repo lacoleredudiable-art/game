@@ -148,7 +148,7 @@ namespace Dovus.Game
         public Color AmbientEquator = new Color(0.52f, 0.55f, 0.58f);
         public Color AmbientGround = new Color(0.30f, 0.30f, 0.31f);
         public Color FogColor = new Color(0.69f, 0.718f, 0.737f);
-        public float FogDensity = 0.0045f;
+        public float FogDensity = 0.0032f;
         public Color KeyLightColor = new Color(0.86f, 0.89f, 0.92f);
         public float KeyLightIntensity = 0.85f;
         public Vector3 KeyLightEuler = new Vector3(52f, -30f, 0f);
@@ -478,7 +478,7 @@ namespace Dovus.Game
             if (CameraAimDampingSec <= 0f) CameraAimDampingSec = 0.10f;
             if (CameraSoftLockRangeM <= 0f) CameraSoftLockRangeM = 18f;
             if (CameraBossAimHeightM <= 0f) CameraBossAimHeightM = 1.45f;
-            if (FogDensity <= 0f) FogDensity = 0.009f;
+            if (FogDensity <= 0f) FogDensity = 0.0032f;
             if (KeyLightIntensity <= 0f) KeyLightIntensity = 1.35f;
             if (BloomThreshold <= 0f) BloomThreshold = 1.05f;
         }

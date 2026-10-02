@@ -20,12 +20,14 @@ namespace Dovus.Game
         float _windowWorstMs;
 
         bool _appliedVisible;
+        GameObject _root;
 
         public void Configure(PrototypeTuning tuning, Transform canvasRoot)
         {
             _tuning = tuning;
 
             var go = new GameObject("FrameTimeHud");
+            _root = go;
             go.transform.SetParent(canvasRoot, false);
             // Overlay kameranın cullingMask'i yalnızca UI; yeni GameObject Default'ta doğar (T8.1).
             if (canvasRoot != null)
@@ -52,7 +54,22 @@ namespace Dovus.Game
             // harmanlanır (T8.1 denetimi 12, T9.1 madde 2).
             _appliedVisible = true;
             ApplyVisibility(_tuning != null && _tuning.ShowFrameTimeHud);
+
+#if UNITY_EDITOR || DOVUS_DEBUG
+            DebugPanelsChrome.Register(ApplyChrome);
+            ApplyChrome(DebugPanelsChrome.Visible);
+#endif
         }
+
+#if UNITY_EDITOR || DOVUS_DEBUG
+        void ApplyChrome(bool visible)
+        {
+            if (_root != null)
+                _root.SetActive(visible && (_tuning == null || _tuning.ShowFrameTimeHud));
+        }
+
+        void OnDestroy() => DebugPanelsChrome.Unregister(ApplyChrome);
+#endif
 
         void ApplyVisibility(bool visible)
         {

@@ -122,6 +122,12 @@ namespace UnityEditor
         public static bool GetChecked(string menuPath) => false;
     }
 
+    public static class EditorUtility
+    {
+        public static void SetDirty(UnityEngine.Object target) { }
+        public static void ClearDirty(UnityEngine.Object target) { }
+    }
+
     public static class SessionState
     {
         static readonly Dictionary<string, object> s_values = new();

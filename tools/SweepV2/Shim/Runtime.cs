@@ -354,12 +354,22 @@ namespace UnityEngine
         public static void Vibrate() { }
     }
 
+    public static class PlayerPrefs
+    {
+        public static string GetString(string key, string defaultValue = "") => defaultValue;
+        public static void SetString(string key, string value) { }
+        public static void Save() { }
+    }
+
     public static class QualitySettings
     {
         public static int vSyncCount { get; set; }
         public static int antiAliasing { get; set; }
         public static float shadowDistance { get; set; } = 50f;
+        public static int shadowCascades { get; set; } = 2;
         public static int pixelLightCount { get; set; } = 4;
+        public static bool realtimeReflectionProbes { get; set; }
+        public static int GetQualityLevel() => 0;
         public static void SetQualityLevel(int index) { }
         public static void SetQualityLevel(int index, bool applyExpensiveChanges) { }
     }
@@ -391,6 +401,27 @@ namespace UnityEngine
         public static int hotControl { get; set; }
         public static int keyboardControl { get; set; }
     }
+}
+
+namespace UnityEngine
+{
+    public sealed class ReflectionProbe : Behaviour
+    {
+        public ReflectionProbeMode mode;
+        public ReflectionProbeRefreshMode refreshMode;
+        public ReflectionProbeTimeSlicingMode timeSlicingMode;
+        public int resolution;
+        public Vector3 size;
+        public float intensity;
+        public ReflectionProbeClearFlags clearFlags;
+        public Color backgroundColor;
+        public void RenderProbe() { }
+    }
+
+    public enum ReflectionProbeMode { Baked, Custom, Realtime }
+    public enum ReflectionProbeRefreshMode { OnAwake, EveryFrame, ViaScripting }
+    public enum ReflectionProbeTimeSlicingMode { AllFacesAtOnce, IndividualFaces, NoTimeSlicing }
+    public enum ReflectionProbeClearFlags { Skybox, SolidColor }
 }
 
 namespace UnityEngine.Rendering
