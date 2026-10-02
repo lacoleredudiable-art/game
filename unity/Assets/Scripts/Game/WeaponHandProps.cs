@@ -67,28 +67,68 @@ namespace Dovus.Game
             SyncSyntyAtlasHandItems(weaponKey);
         }
 
+        /// <summary>
+        /// Takip edilen alanlar + el bone'larına doğrudan takılı her eski prop kökü (binder/force-
+        /// refresh sonrası tutarsızlık, görsel değişimi) temizlenir. Play'de <see cref="Destroy"/>
+        /// kare sonuna kadar ertelenir; aynı kare içinde (Play doğrulama) tekrar sorgulanırsa eski
+        /// obje hâlâ hand bone'un çocuğu görünürdü (cw-2s bulgusu: silah değişince önceki prop
+        /// ölçümlerde kalıyordu). Bu yüzden önce <see cref="Transform.SetParent"/>(null) + pasifleştir
+        /// (anında hand bone sorgusundan çıkar, görünmez olur), gerçek <see cref="Destroy"/>/
+        /// <see cref="DestroyImmediate"/> sonra gelsin fark etmez.
+        /// </summary>
         void ClearCurrent(string previousKey)
         {
-            if (_rightInstance != null)
-            {
-                if (Application.isPlaying)
-                    Destroy(_rightInstance);
-                else
-                    DestroyImmediate(_rightInstance);
-                _rightInstance = null;
-            }
+            DetachAndDestroy(ref _rightInstance);
+            DetachAndDestroy(ref _leftInstance);
 
-            if (_leftInstance != null)
+            if (_animator != null)
             {
-                if (Application.isPlaying)
-                    Destroy(_leftInstance);
-                else
-                    DestroyImmediate(_leftInstance);
-                _leftInstance = null;
+                SweepPropRoots(_animator.GetBoneTransform(HumanBodyBones.RightHand));
+                SweepPropRoots(_animator.GetBoneTransform(HumanBodyBones.LeftHand));
+                // Forearm yalnız Mixamo'da ek takma noktası (bkz. ResolveLeftAttachBone); Synty'de
+                // bu bone'un çocuğu gerçek "Hand_L" el kemiği — IsWeaponPropRoot adıyla ayırt
+                // edemez, süpürülürse rig kırılır. Mixamo'da forearm çocuğu hep "mixamorig:*"
+                // (ayrı korumalı) olduğundan güvenli.
+                if (WeaponGripProfile.IsMixamoRig(_animator))
+                    SweepPropRoots(_animator.GetBoneTransform(HumanBodyBones.LeftLowerArm));
             }
 
             if (_animator != null && previousKey is "kilic" or "kalkan")
                 SetSyntyAtlasHandItems(_animator, show: true);
+        }
+
+        static void DetachAndDestroy(ref GameObject go)
+        {
+            if (go == null)
+                return;
+            DestroyPropObject(go);
+            go = null;
+        }
+
+        /// <summary>Bone'un doğrudan çocukları arasında kalan her prop kökünü (takip edilmeyenler
+        /// dahil — örn. görsel yeniden kurulumundan sızan kalıntı) temizler.</summary>
+        static void SweepPropRoots(Transform bone)
+        {
+            if (bone == null)
+                return;
+            for (int i = bone.childCount - 1; i >= 0; i--)
+            {
+                Transform child = bone.GetChild(i);
+                if (IsWeaponPropRoot(child.name))
+                    DestroyPropObject(child.gameObject);
+            }
+        }
+
+        static void DestroyPropObject(GameObject go)
+        {
+            if (go == null)
+                return;
+            go.transform.SetParent(null, false);
+            go.SetActive(false);
+            if (Application.isPlaying)
+                Destroy(go);
+            else
+                DestroyImmediate(go);
         }
 
         Transform ResolveLeftAttachBone(string weaponKey)
