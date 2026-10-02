@@ -440,11 +440,12 @@ namespace Dovus.Game
             var bossVisualComp = boss.GetComponent<BossVisual>();
             Animator playerAnim = playerVisual != null ? playerVisual.Animator : null;
             Animator bossAnim = bossVisualComp != null ? bossVisualComp.Animator : null;
-            visualFreeze.Bind(follow, playerAnim, bossAnim);
+            // Boss isabet hitstop: yalnız oyuncu animatörü — boss donunca ayak kemikleri ölçümü kayıyor (sweep yerde).
+            visualFreeze.Bind(follow, playerAnim);
             feel.BindPresentation(visualFreeze, afterimage, player.transform);
             HitImpactFx.Configure(combat.Feel);
             var bossFlinch = boss.gameObject.GetComponent<BossHitFlinch>() ?? boss.gameObject.AddComponent<BossHitFlinch>();
-            bossFlinch.Bind(combat.Feel, bossAnim != null ? bossAnim.transform : boss.transform);
+            bossFlinch.Bind(combat.Feel, bossAnim);
             player.GetComponent<PlayerDodgeRig>()?.Bind(clock, input, follow, readout, feel);
             var overlayHud = feelGo.AddComponent<CombatOverlayHud>();
             overlayHud.Configure(vitals, bossVitals, player, boss.transform, overlay.Cam);

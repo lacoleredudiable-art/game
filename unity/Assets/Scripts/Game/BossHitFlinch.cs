@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Dovus.Game
 {
-    /// <summary>İsabet yönünde kısa yerel itme — simülasyon konumu değil, görsel kök.</summary>
+    /// <summary>İsabet yönünde kısa göğüs ofseti — ayak/kök simülasyonu değil, yalnız üst gövde.</summary>
     public sealed class BossHitFlinch : MonoBehaviour
     {
         FeelTuning _feel;
@@ -12,10 +12,27 @@ namespace Dovus.Game
         Vector3 _kickLocal;
         float _untilUnscaled;
 
-        public void Bind(FeelTuning feel, Transform visualRoot = null)
+        public void Bind(FeelTuning feel, Animator animator)
         {
             _feel = feel;
-            _visualRoot = visualRoot != null ? visualRoot : transform;
+            _visualRoot = null;
+            if (animator != null)
+            {
+                if (animator.isHuman)
+                {
+                    Transform chest = animator.GetBoneTransform(HumanBodyBones.Chest)
+                        ?? animator.GetBoneTransform(HumanBodyBones.UpperChest)
+                        ?? animator.GetBoneTransform(HumanBodyBones.Spine);
+                    if (chest != null)
+                        _visualRoot = chest;
+                }
+
+                if (_visualRoot == null && animator.transform != transform)
+                    _visualRoot = animator.transform;
+            }
+
+            if (_visualRoot == null)
+                _visualRoot = transform;
             _baseLocal = _visualRoot.localPosition;
         }
 
@@ -23,6 +40,8 @@ namespace Dovus.Game
         {
             if (_feel == null || _feel.BossFlinchMs <= 0 || _feel.BossFlinchOffsetM <= 0f)
                 return;
+
+            _baseLocal = _visualRoot.localPosition;
 
             Vector3 dir = worldHit - bossCenter;
             dir.y = 0f;
@@ -32,6 +51,7 @@ namespace Dovus.Game
             Vector3 local = _visualRoot.parent != null
                 ? _visualRoot.parent.InverseTransformDirection(dir)
                 : dir;
+            local.y = 0f;
             _kickLocal = local * _feel.BossFlinchOffsetM;
             _untilUnscaled = Time.unscaledTime + _feel.BossFlinchMs / 1000f;
         }

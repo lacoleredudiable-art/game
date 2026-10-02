@@ -134,6 +134,8 @@ namespace Dovus.Game
 
             if (grip != null && WeaponGripProfile.IsMixamoRig(_animator))
                 FitMixamoPropWorldSize(go, key, isRight);
+            else if (prefab != null)
+                FitPropWorldSize(go, key, isRight);
 
             StripForProp(go);
             return go;
@@ -202,7 +204,10 @@ namespace Dovus.Game
             return Mathf.Max(b.extents.y, b.extents.z) * 0.85f;
         }
 
-        static void FitMixamoPropWorldSize(GameObject go, string weaponKey, bool isRight)
+        static void FitMixamoPropWorldSize(GameObject go, string weaponKey, bool isRight) =>
+            FitPropWorldSize(go, weaponKey, isRight);
+
+        static void FitPropWorldSize(GameObject go, string weaponKey, bool isRight)
         {
             if (!TryRendererBounds(go, out Bounds bounds))
                 return;

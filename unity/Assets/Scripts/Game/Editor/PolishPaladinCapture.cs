@@ -223,7 +223,6 @@ namespace Dovus.Game.EditorTools
                     if (path.IndexOf("Telegraph", System.StringComparison.OrdinalIgnoreCase) >= 0
                         || path.IndexOf("HitboxVfx", System.StringComparison.OrdinalIgnoreCase) >= 0
                         || path.IndexOf("FireCone", System.StringComparison.OrdinalIgnoreCase) >= 0
-                        || path.IndexOf("LavaCracks", System.StringComparison.OrdinalIgnoreCase) >= 0
                         || path.IndexOf("LavaDecor", System.StringComparison.OrdinalIgnoreCase) >= 0
                         || path.IndexOf("LavaPool", System.StringComparison.OrdinalIgnoreCase) >= 0)
                     {
