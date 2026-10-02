@@ -62,7 +62,7 @@ namespace Dovus.Game
         public static GripOffset DefaultMixamoRightSword() => new GripOffset
         {
             LocalPosition = new Vector3(0.03f, 0.02f, 0.05f),
-            LocalEulerAngles = new Vector3(45f, 210f, 0f),
+            LocalEulerAngles = new Vector3(28f, 210f, -36f),
             LocalScale = Vector3.one,
         };
 

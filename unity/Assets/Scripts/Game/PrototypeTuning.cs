@@ -129,15 +129,28 @@ namespace Dovus.Game
         public float FollowSmoothTimeSec = 0.12f;
         public float LookAheadM = 0.65f;
         /// <summary>Oyuncu köküne göre omuz pivotu; mesafe ayrıca geriye uygulanır.</summary>
-        public Vector3 CameraShoulderOffset = new Vector3(0.45f, 1.0f, -0.35f);
-        public float CameraDistanceM = 3.4f;
-        public float CameraLookHeightM = 0.35f;
-        public float CameraFovDeg = 56f;
-        public float CameraAimDampingSec = 0.10f;
-        public float CameraSoftLockRangeM = 18f;
-        [Range(0f, 1f)] public float CameraSoftLockStrength = 0.52f;
-        [Range(0f, 1f)] public float CameraBossFramingWeight = 0.34f;
+        public Vector3 CameraShoulderOffset = new Vector3(0.42f, 1.12f, -0.28f);
+        public float CameraDistanceM = 4.6f;
+        public float CameraLookHeightM = 0.42f;
+        public float CameraFovDeg = 54f;
+        public float CameraAimDampingSec = 0.12f;
+        public float CameraSoftLockRangeM = 20f;
+        [Range(0f, 1f)] public float CameraSoftLockStrength = 0.58f;
+        /// <summary>Soft-lock aktifken bakış: oyuncu→boss arası (0=oyuncu, 1=boss).</summary>
+        [Range(0f, 1f)] public float CameraBossFramingWeight = 0.40f;
         public float CameraBossAimHeightM = 1.45f;
+        public float CameraDefaultPitchDeg = 18f;
+        public float CameraLockOnMinDistanceM = 4.0f;
+        public float CameraLockOnMaxDistanceM = 7.5f;
+        /// <summary>Boss mesafesi arttıkça mesafe artışı (m / m ayrım).</summary>
+        public float CameraLockOnDistancePerSepM = 0.11f;
+        public float CameraLockOnMaxExtraDistanceM = 2.4f;
+        public float CameraLockOnDistanceSmoothSec = 0.22f;
+        public float CameraWindupDistanceMul = 1.25f;
+        public float CameraWindupExtraHeightM = 0.35f;
+        public float CameraWindupSmoothSec = 0.28f;
+        /// <summary>Slam dışı geniş telegraf (FireCone vb.) için yarıçap eşiği (m).</summary>
+        public float CameraWindupMinRadiusM = 3.5f;
 
         // Ambiyans portu (PR #43 "deneme sahnesi"): gri bulutlu ışık, ~%35 doygunluk düşüşü,
         // açık gri sis — sert/sakin ama her şey görünür (karanlık değil, renkli değil). Sıcak
@@ -473,11 +486,16 @@ namespace Dovus.Game
             if (ArenaHalfSizeM <= 0.01f) ArenaHalfSizeM = 50f;
             if (ArenaWallHeightM <= 0.01f) ArenaWallHeightM = 18f;
             if (ArenaWallThicknessM <= 0.01f) ArenaWallThicknessM = 1.4f;
-            if (CameraDistanceM <= 0.01f) CameraDistanceM = 3.4f;
-            if (CameraFovDeg <= 1f) CameraFovDeg = 56f;
-            if (CameraAimDampingSec <= 0f) CameraAimDampingSec = 0.10f;
-            if (CameraSoftLockRangeM <= 0f) CameraSoftLockRangeM = 18f;
+            if (CameraDistanceM <= 0.01f) CameraDistanceM = 4.6f;
+            if (CameraFovDeg <= 1f) CameraFovDeg = 54f;
+            if (CameraAimDampingSec <= 0f) CameraAimDampingSec = 0.12f;
+            if (CameraSoftLockRangeM <= 0f) CameraSoftLockRangeM = 20f;
             if (CameraBossAimHeightM <= 0f) CameraBossAimHeightM = 1.45f;
+            if (CameraLockOnMinDistanceM <= 0.01f) CameraLockOnMinDistanceM = 4.0f;
+            if (CameraLockOnMaxDistanceM <= CameraLockOnMinDistanceM) CameraLockOnMaxDistanceM = 7.5f;
+            if (CameraLockOnDistanceSmoothSec <= 0.01f) CameraLockOnDistanceSmoothSec = 0.22f;
+            if (CameraWindupDistanceMul < 1f) CameraWindupDistanceMul = 1.25f;
+            if (CameraWindupSmoothSec <= 0.01f) CameraWindupSmoothSec = 0.28f;
             if (FogDensity <= 0f) FogDensity = 0.0032f;
             if (KeyLightIntensity <= 0f) KeyLightIntensity = 1.35f;
             if (BloomThreshold <= 0f) BloomThreshold = 1.05f;
@@ -640,6 +658,16 @@ namespace Dovus.Game
             CameraSoftLockStrength = fresh.CameraSoftLockStrength;
             CameraBossFramingWeight = fresh.CameraBossFramingWeight;
             CameraBossAimHeightM = fresh.CameraBossAimHeightM;
+            CameraDefaultPitchDeg = fresh.CameraDefaultPitchDeg;
+            CameraLockOnMinDistanceM = fresh.CameraLockOnMinDistanceM;
+            CameraLockOnMaxDistanceM = fresh.CameraLockOnMaxDistanceM;
+            CameraLockOnDistancePerSepM = fresh.CameraLockOnDistancePerSepM;
+            CameraLockOnMaxExtraDistanceM = fresh.CameraLockOnMaxExtraDistanceM;
+            CameraLockOnDistanceSmoothSec = fresh.CameraLockOnDistanceSmoothSec;
+            CameraWindupDistanceMul = fresh.CameraWindupDistanceMul;
+            CameraWindupExtraHeightM = fresh.CameraWindupExtraHeightM;
+            CameraWindupSmoothSec = fresh.CameraWindupSmoothSec;
+            CameraWindupMinRadiusM = fresh.CameraWindupMinRadiusM;
             AmbientSky = fresh.AmbientSky;
             AmbientEquator = fresh.AmbientEquator;
             AmbientGround = fresh.AmbientGround;

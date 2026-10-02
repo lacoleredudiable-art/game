@@ -116,7 +116,16 @@ namespace Dovus.Game
                 _tuning.PlayerVisualHeightM,
                 ally.transform.position.y - PlayerHeightM * 0.5f,
                 _tuning.CharacterAnimSpeed,
-                out _);
+                out var allyAnim);
+            if (allyAnim != null)
+            {
+                var allyVisual = ally.AddComponent<ActorVisual>();
+                allyVisual.Bind(allyAnim, ally.GetComponent<Renderer>());
+                allyVisual.CrossFadeSec = _tuning.AnimCrossFadeSec;
+                allyVisual.StrikeComboResetSec = _tuning.BasicStrikeComboResetSec;
+                allyVisual.UpperBodyMinSpeed = _tuning.UpperBodyCastMinSpeed;
+                allyVisual.SetWeapon("kilic");
+            }
             var allyHitCollider = ally.AddComponent<CapsuleCollider>();
             allyHitCollider.isTrigger = true;
             ally.AddComponent<ActorGrounding>();
@@ -438,6 +447,7 @@ namespace Dovus.Game
             if (playerStatus != null)
                 bossDir.BindPlayerStatus(playerStatus);
             bossDir.BindVisual(boss.GetComponent<BossVisual>());
+            follow?.BindBossDirector(bossDir);
 
             // Boss hedefleri: oyuncu + dost kukla (+ MD'nin dikkat çeken yemleri). Sayılar karadul.json targeting.
             var hostileTargets = directorGo.AddComponent<HostileTargets>();

@@ -37,6 +37,7 @@ namespace Dovus.Game
             weaponKey ??= string.Empty;
             if (string.Equals(_currentKey, weaponKey, System.StringComparison.Ordinal))
                 return;
+            string previousKey = _currentKey;
             _currentKey = weaponKey;
 
             if (!_registryLoaded)
@@ -45,7 +46,7 @@ namespace Dovus.Game
                 _registryLoaded = true;
             }
 
-            ClearCurrent();
+            ClearCurrent(previousKey);
             if (_animator == null)
                 return;
 
@@ -55,9 +56,10 @@ namespace Dovus.Game
 
             _rightInstance = Spawn(weaponKey, entry, right, isRight: true);
             _leftInstance = Spawn(weaponKey, entry, left, isRight: false);
+            SyncSyntyAtlasHandItems(weaponKey);
         }
 
-        void ClearCurrent()
+        void ClearCurrent(string previousKey)
         {
             if (_rightInstance != null)
             {
@@ -76,6 +78,9 @@ namespace Dovus.Game
                     DestroyImmediate(_leftInstance);
                 _leftInstance = null;
             }
+
+            if (_animator != null && previousKey is "kilic" or "kalkan")
+                SetSyntyAtlasHandItems(_animator, show: true);
         }
 
         Transform ResolveLeftAttachBone(string weaponKey)
@@ -115,7 +120,7 @@ namespace Dovus.Game
                     localScale = Vector3.one;
             }
 
-            if (grip != null)
+            if (grip != null && WeaponGripProfile.IsMixamoRig(_animator))
             {
                 if (isRight)
                     grip.ApplyRight(ref localPos, ref localRot, ref localScale);
@@ -134,7 +139,69 @@ namespace Dovus.Game
             return go;
         }
 
-        /// <summary>Mixamo el kemiği ölçeği Synty'den farklı — dünya bounds hedefi registry ile aynı kalır.</summary>
+        void SyncSyntyAtlasHandItems(string weaponKey)
+        {
+            if (_animator == null || WeaponGripProfile.IsMixamoRig(_animator))
+                return;
+            bool hideAtlas = weaponKey is "kilic" or "kalkan";
+            SetSyntyAtlasHandItems(_animator, show: !hideAtlas);
+        }
+
+        static void SetSyntyAtlasHandItems(Animator animator, bool show)
+        {
+            if (animator == null)
+                return;
+            foreach (Transform t in animator.GetComponentsInChildren<Transform>(true))
+            {
+                if (t.name == "SM_Item_Sword" || t.name == "SM_Item_Shield")
+                    t.gameObject.SetActive(show);
+            }
+        }
+
+        /// <summary>Mixamo kılıç: el + uç konumu ve dikeyden açı (derece) — feel doğrulama.</summary>
+        public static void LogMixamoSwordAngle(Animator animator, string tag)
+        {
+            if (animator == null || !WeaponGripProfile.IsMixamoRig(animator))
+                return;
+            Transform hand = animator.GetBoneTransform(HumanBodyBones.RightHand);
+            if (hand == null)
+                return;
+            Transform blade = FindRightSwordProp(hand);
+            if (blade == null)
+            {
+                DebugConfig.DevLog($"[SwordAngle] {tag} no prop");
+                return;
+            }
+
+            Vector3 handPos = hand.position;
+            Vector3 tip = blade.position + blade.up * EstimateBladeHalfLength(blade);
+            Vector3 shaft = tip - handPos;
+            float angleFromUp = shaft.sqrMagnitude > 1e-6f
+                ? Vector3.Angle(Vector3.up, shaft)
+                : 0f;
+            DebugConfig.DevLog(
+                $"[SwordAngle] {tag} hand={handPos} tip={tip} angleFromVertical={angleFromUp:0.0}°");
+        }
+
+        static Transform FindRightSwordProp(Transform hand)
+        {
+            for (int i = 0; i < hand.childCount; i++)
+            {
+                Transform child = hand.GetChild(i);
+                if (IsWeaponPropRoot(child.name))
+                    return child;
+            }
+
+            return null;
+        }
+
+        static float EstimateBladeHalfLength(Transform propRoot)
+        {
+            if (!TryRendererBounds(propRoot.gameObject, out Bounds b))
+                return 0.35f;
+            return Mathf.Max(b.extents.y, b.extents.z) * 0.85f;
+        }
+
         static void FitMixamoPropWorldSize(GameObject go, string weaponKey, bool isRight)
         {
             if (!TryRendererBounds(go, out Bounds bounds))

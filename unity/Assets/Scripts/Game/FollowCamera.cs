@@ -1,3 +1,4 @@
+using Dovus.Core.Combat;
 using UnityEngine;
 
 namespace Dovus.Game
@@ -13,6 +14,7 @@ namespace Dovus.Game
 
         KinematicMotor _targetMotor;
         Camera _cam;
+        BossDirector _bossDirector;
         Vector3 _velocity;
         Vector3 _shakeOffset;
         float _shakeAmplitude;
@@ -25,6 +27,11 @@ namespace Dovus.Game
         float _punchDecay = 6f;
         float _resolvedYawDeg;
         float _yawVelocity;
+        float _resolvedDistanceM;
+        float _distanceVelocity;
+        float _windupPullback;
+        float _windupVelocity;
+        bool _windupHooked;
         Quaternion _aimRotation;
 
         /// <summary>
@@ -74,8 +81,50 @@ namespace Dovus.Game
                 _aimRotation = transform.rotation;
             }
             _resolvedYawDeg = OrbitYawDeg;
+            _resolvedDistanceM = _tuning.CameraDistanceM;
             if (_targetMotor == null && _target != null)
                 _targetMotor = _target.GetComponent<KinematicMotor>();
+        }
+
+        void OnDisable() => UnhookBossDirector();
+
+        /// <summary>Boss windup telegrafı — yalnız sunum; boss zamanlamasına dokunulmaz.</summary>
+        public void BindBossDirector(BossDirector director)
+        {
+            if (_bossDirector == director)
+                return;
+            UnhookBossDirector();
+            _bossDirector = director;
+            if (_bossDirector != null)
+            {
+                _bossDirector.AttackWindupStarted += OnBossWindupStarted;
+                _windupHooked = true;
+            }
+        }
+
+        void UnhookBossDirector()
+        {
+            if (_windupHooked && _bossDirector != null)
+                _bossDirector.AttackWindupStarted -= OnBossWindupStarted;
+            _windupHooked = false;
+            _bossDirector = null;
+        }
+
+        void OnBossWindupStarted(BossAttackKind kind)
+        {
+            if (!IsBigWindupTelegraph(kind))
+                return;
+            _windupPullback = 1f;
+        }
+
+        bool IsBigWindupTelegraph(BossAttackKind kind)
+        {
+            if (kind == BossAttackKind.Slam)
+                return true;
+            if (_bossDirector == null)
+                return kind == BossAttackKind.FireCone;
+            return kind == BossAttackKind.FireCone
+                || _bossDirector.AttackRadiusM >= _tuning.CameraWindupMinRadiusM;
         }
 
         /// <summary>
@@ -130,8 +179,21 @@ namespace Dovus.Game
                 : Vector3.zero;
             float dt = Mathf.Max(0.0001f, Time.unscaledDeltaTime);
             ResolveYaw(dt);
-            Vector3 localOffset = _tuning.CameraShoulderOffset
-                + Vector3.back * _tuning.CameraDistanceM;
+            UpdateWindupPullback(dt);
+
+            float framing = BossFramingWeight();
+            float desiredDistance = ResolveCameraDistance(framing);
+            _resolvedDistanceM = Mathf.SmoothDamp(
+                _resolvedDistanceM,
+                desiredDistance,
+                ref _distanceVelocity,
+                Mathf.Max(0.01f, _tuning.CameraLockOnDistanceSmoothSec),
+                Mathf.Infinity,
+                dt);
+
+            Vector3 shoulder = _tuning.CameraShoulderOffset;
+            shoulder.y += _windupPullback * _tuning.CameraWindupExtraHeightM;
+            Vector3 localOffset = shoulder + Vector3.back * _resolvedDistanceM;
             Vector3 offset = Quaternion.Euler(OrbitPitchDeg, _resolvedYawDeg, 0f) * localOffset;
             Vector3 desired = _target.position + offset + lookAhead + _shakeOffset;
 
@@ -143,14 +205,16 @@ namespace Dovus.Game
                 Mathf.Infinity,
                 dt);
 
-            Vector3 lookTarget = _target.position + lookAhead * 0.35f
+            Vector3 playerAim = _target.position + lookAhead * 0.35f
                 + Vector3.up * _tuning.CameraLookHeightM;
-            float bossWeight = BossFramingWeight();
-            if (bossWeight > 0f)
+            Vector3 lookTarget = playerAim;
+            if (framing > 0f && _bossTarget != null)
             {
-                Vector3 bossPoint = _bossTarget.position + Vector3.up * _tuning.CameraBossAimHeightM;
-                lookTarget = Vector3.Lerp(lookTarget, bossPoint, bossWeight);
+                Vector3 bossAim = _bossTarget.position + Vector3.up * _tuning.CameraBossAimHeightM;
+                float blend = Mathf.Clamp01(_tuning.CameraBossFramingWeight) * framing;
+                lookTarget = Vector3.Lerp(playerAim, bossAim, blend);
             }
+
             Quaternion look = Quaternion.LookRotation(lookTarget - transform.position, Vector3.up);
             float aimBlend = 1f - Mathf.Exp(-dt / Mathf.Max(0.001f, _tuning.CameraAimDampingSec));
             _aimRotation = Quaternion.Slerp(_aimRotation, look, aimBlend);
@@ -162,6 +226,45 @@ namespace Dovus.Game
                 _baseFov = Mathf.Clamp(_tuning.CameraFovDeg, 35f, 85f);
                 _cam.fieldOfView = _baseFov * (1f - _fovKick * _punchT);
             }
+        }
+
+        float ResolveCameraDistance(float framingWeight)
+        {
+            float distance = _tuning.CameraDistanceM;
+            if (framingWeight > 0f && _bossTarget != null)
+            {
+                Vector3 toBoss = _bossTarget.position - _target.position;
+                toBoss.y = 0f;
+                float extra = Mathf.Min(
+                    toBoss.magnitude * _tuning.CameraLockOnDistancePerSepM,
+                    _tuning.CameraLockOnMaxExtraDistanceM);
+                distance = Mathf.Clamp(
+                    distance + extra * framingWeight,
+                    _tuning.CameraLockOnMinDistanceM,
+                    _tuning.CameraLockOnMaxDistanceM);
+            }
+
+            float windupMul = Mathf.Lerp(1f, _tuning.CameraWindupDistanceMul, _windupPullback);
+            return distance * windupMul;
+        }
+
+        void UpdateWindupPullback(float dt)
+        {
+            float target = 0f;
+            if (_bossDirector != null && _bossDirector.WindupProgress01 > 0f
+                && _bossDirector.CurrentAttackKind.HasValue
+                && IsBigWindupTelegraph(_bossDirector.CurrentAttackKind.Value))
+            {
+                target = 1f;
+            }
+
+            _windupPullback = Mathf.SmoothDamp(
+                _windupPullback,
+                target,
+                ref _windupVelocity,
+                Mathf.Max(0.01f, _tuning.CameraWindupSmoothSec),
+                Mathf.Infinity,
+                dt);
         }
 
         void ResolveYaw(float dt)
@@ -199,7 +302,7 @@ namespace Dovus.Game
             toBoss.y = 0f;
             float range = Mathf.Max(0.01f, _tuning.CameraSoftLockRangeM);
             float distanceWeight = 1f - Mathf.SmoothStep(0.72f, 1f, toBoss.magnitude / range);
-            return Mathf.Clamp01(_tuning.CameraBossFramingWeight) * distanceWeight;
+            return Mathf.Clamp01(distanceWeight);
         }
 
         void AdvancePunch()
