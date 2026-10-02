@@ -1,0 +1,8 @@
+[
+  { "label": "Fist_Idle", "query": "Fighting Idle", "overdrive": 0 },
+  { "label": "Fist_Jab", "query": "Lead Jab", "desc": "Med Head Jab", "overdrive": 0.3 },
+  { "label": "Fist_Cross", "query": "Cross Punch", "overdrive": 0 },
+  { "label": "Fist_Hook", "query": "Hook Punch", "overdrive": 0 },
+  { "label": "Fist_Uppercut", "query": "Uppercut", "desc": "Standing Left Uppercut Punch", "overdrive": 0 },
+  { "label": "Fist_Block", "query": "Body Block", "desc": "Blocking Body With Arms", "overdrive": 0 }
+]

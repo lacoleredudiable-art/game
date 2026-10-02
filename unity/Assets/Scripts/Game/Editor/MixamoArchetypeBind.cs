@@ -252,7 +252,7 @@ namespace Dovus.Game.EditorTools
                     break;
                 case WeaponArchetypeMap.Gun:
                     m["LocomotionIdle"] = "Gun_Idle";
-                    m["LocomotionRun"] = "Hammer_Run"; // Top: kendi koşu klibi yok (görev notu).
+                    m["LocomotionRun"] = "Gun_Run";
                     m["CastShoot"] = "Gun_Fire";
                     m["CastPierce"] = "Gun_Fire";
                     m["CastSweep"] = "Gun_Reload";

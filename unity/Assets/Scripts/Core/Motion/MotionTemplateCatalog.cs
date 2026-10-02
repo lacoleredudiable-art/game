@@ -259,6 +259,8 @@ namespace Dovus.Core.Motion
         public int TemplateCount => _templates.Count;
         public int FamilyCount { get; private set; }
         public IReadOnlyList<MotionTemplate> Templates => _templates;
+        /// <summary>Düz vuruş adımı; kombo listesine dahil değil.</summary>
+        public MotionTemplate BasicStrike { get; private set; }
 
         public static MotionTemplateCatalog Empty { get; } =
             new MotionTemplateCatalog(MotionFallbacks.Coded);
@@ -328,6 +330,25 @@ namespace Dovus.Core.Motion
                     float sinir = combo.Has("sinir") ? combo["sinir"].AsFloat(0f) : 0f;
                     catalog._bySkill[skillId] = new MotionBinding(template, family.Implemented, tags, sinir);
                 }
+            }
+
+            if (root.Has("basic_strike") && root["basic_strike"].Kind == JsonKind.Object)
+            {
+                JsonValue row = root["basic_strike"];
+                int familyId = row["family"].AsInt(0);
+                families.TryGetValue(familyId, out var family);
+                string templateId = row["id"].AsString("basic_strike");
+                var phases = new List<MotionPhase>();
+                foreach (JsonValue phase in row["phases"].AsArray())
+                    phases.Add(ParsePhase(templateId, phase, fallbacks));
+                catalog.BasicStrike = new MotionTemplate(
+                    templateId,
+                    row["name"].AsString(),
+                    familyId,
+                    family.Name,
+                    family.Implemented,
+                    phases,
+                    row["aim"].AsString(MotionAim.Enemy));
             }
 
             return catalog;

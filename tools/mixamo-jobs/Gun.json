@@ -1,0 +1,6 @@
+[
+  { "label": "Gun_Idle", "query": "Rifle Aiming Idle", "overdrive": 0 },
+  { "label": "Gun_Run", "query": "Rifle Run", "desc": "Rifle Run", "overdrive": 0 },
+  { "label": "Gun_Fire", "query": "Firing Rifle", "desc": "Firing A Rifle While Standing", "overdrive": 0 },
+  { "label": "Gun_Reload", "query": "Reloading", "desc": "Reloading Rifle While Standing", "overdrive": 0 }
+]
