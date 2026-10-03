@@ -44,9 +44,9 @@ namespace Dovus.App.Casting
             }
 
             port.NoteWeaponCast(skill);
+            port.OpenSlotCast();
             try
             {
-                port.OpenSlotCast();
                 WeaponSkillCompatibility compatibility = port.Compatibility(skill);
                 port.PublishCompatibility(compatibility);
                 if (port.ShouldArmPassive(compatibility))

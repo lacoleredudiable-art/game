@@ -82,8 +82,6 @@ public class CastPipelineTests
         public int OpenSlotCast()
         {
             Record();
-            if (ThrowAfterOpen)
-                throw new InvalidOperationException("boom");
             return 7;
         }
 
@@ -93,6 +91,8 @@ public class CastPipelineTests
         public WeaponSkillCompatibility Compatibility(SkillResolution skill)
         {
             Record();
+            if (ThrowAfterOpen)
+                throw new InvalidOperationException("boom");
             return WeaponSkillCompatibility.Neutral;
         }
 
