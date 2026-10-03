@@ -112,17 +112,17 @@ namespace Dovus.Game.Skills
         {
             if (skill.IsEmpty || _clock == null)
                 return;
-            JsonValue engine = skill.EngineModifiers;
+            var engine = skill.Engine;
             if (engine.IsNull)
                 return;
 
             double now = _clock.Director.WorldTimeMs;
-            float lifetimeAdd = Mathf.Max(0f, engine["lifetime_add"].AsFloat(0f));
+            float lifetimeAdd = Mathf.Max(0f, engine.LifetimeAdd(0f));
 
             float friendly = WeaponFriendlyScale();
-            float buff = engine["buff_damage"].AsFloat(0f) + engine["self_damage_buff"].AsFloat(0f);
+            float buff = engine.BuffDamage(0f) + engine.SelfDamageBuff(0f);
             buff = WeaponPassiveRules.ScaleFriendlyMagnitude(buff, friendly);
-            float buffSec = engine["buff_duration_sec"].AsFloat(0f);
+            float buffSec = engine.BuffDurationSec(0f);
             MechanicPlan mechanicPlan = MechanicPlanFor(skill);
             CaptureBuffOverflow(mechanicPlan, now);
             // 8-9 hasar_buff koruyucu tetiktedir; kalıp/cast anında bir daha yazılmaz.
@@ -132,9 +132,9 @@ namespace Dovus.Game.Skills
                 _selfDamageBuffUntilMs = now + (buffSec + lifetimeAdd) * 1000.0;
             }
 
-            float reflect = engine["reflect_ratio"].AsFloat(0f);
+            float reflect = engine.ReflectRatio(0f);
             reflect = WeaponPassiveRules.ScaleFriendlyMagnitude(reflect, friendly);
-            float reflectSec = engine["reflect_duration_sec"].AsFloat(0f);
+            float reflectSec = engine.ReflectDurationSec(0f);
             if (reflect > 0f && reflectSec > 0f && _playerStatus != null && HasSelfReflect(mechanicPlan))
                 _playerStatus.GrantReflect(reflect, now + (reflectSec + lifetimeAdd) * 1000.0);
 
@@ -160,26 +160,26 @@ namespace Dovus.Game.Skills
         {
             if (_clock == null || skill.IsEmpty || pending.View == null)
                 return;
-            JsonValue engine = skill.EngineModifiers;
+            var engine = skill.Engine;
             double now = _clock.Director.WorldTimeMs;
             LivingEffect logic = pending.View.Logic;
             SkillResolution skillCopy = skill;
             SkillMotionPlan motionCopy = motion;
 
-            if (engine["duplicate_cast"].AsBool(false))
+            if (engine.DuplicateCast(false))
             {
-                float delay = Mathf.Max(0f, engine["duplicate_delay_sec"].AsFloat(0f));
-                float mult = engine.Has("duplicate_damage_mult")
-                    ? engine["duplicate_damage_mult"].AsFloat(1f)
+                float delay = Mathf.Max(0f, engine.DuplicateDelaySec(0f));
+                float mult = engine.HasDuplicateDamageMult
+                    ? engine.DuplicateDamageMult(1f)
                     : 1f;
                 Enqueue(now + delay * 1000.0, mult);
             }
 
-            if (kind == SkillExecutorKind.Movement && engine["bounce_targets"].AsInt(0) > 0)
+            if (kind == SkillExecutorKind.Movement && engine.BounceTargets(0) > 0)
             {
                 float dashSec = _combat != null ? _combat.SkillMotion.DashDurationSec : 0f;
-                float mult = engine.Has("bounce_damage_mult")
-                    ? engine["bounce_damage_mult"].AsFloat(1f)
+                float mult = engine.HasBounceDamageMult
+                    ? engine.BounceDamageMult(1f)
                     : 1f;
                 Enqueue(now + dashSec * 1000.0, mult);
             }
@@ -255,8 +255,8 @@ namespace Dovus.Game.Skills
                 taken = _bossStatus.Board.IncomingDamageMult;
                 shield = _bossStatus.Board.ShieldRemaining;
             }
-            bool ignoreArmor = !skill.IsEmpty && !skill.EngineModifiers.IsNull
-                && skill.EngineModifiers["ignore_armor"].AsBool(false);
+            bool ignoreArmor = !skill.IsEmpty && !skill.Engine.IsNull
+                && skill.Engine.IgnoreArmor(false);
             float slotPen = _slotPassives?.ArmorPenPercentFor(_slotQueryCastId) ?? 0f;
             float penPct = SlotPassiveCombat.CombineArmorPen(0f, ignoreArmor, slotPen);
             var dealt = DamagePipeline.Resolve(new DamageQuery

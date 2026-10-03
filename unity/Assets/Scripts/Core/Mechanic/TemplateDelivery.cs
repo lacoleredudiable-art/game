@@ -154,27 +154,33 @@ namespace Dovus.Core.Mechanic
             JsonValue engine,
             MotionTemplate template,
             MechanicRules rules,
+            float fieldTickBaseSec) =>
+            Build(plan, new Dovus.Core.Data.SkillEngineModifiers(engine), template, rules, fieldTickBaseSec);
+
+        public static TemplateDeliveryOrder Build(
+            MechanicPlan plan,
+            Dovus.Core.Data.SkillEngineModifiers engine,
+            MotionTemplate template,
+            MechanicRules rules,
             float fieldTickBaseSec)
         {
             var order = new TemplateDeliveryOrder();
-            if (engine.IsNull)
-                engine = default;
 
             bool actor = plan != null && plan.Effects.Exists(e => e.Stat is "aktor_yarat" or "klon");
             order.SpawnActors = actor;
             if (actor)
             {
-                int count = engine["minion_count"].AsInt(1);
+                int count = engine.MinionCount(1);
                 MechanicEffect actorEffect = plan.Effects.Find(e => e.Stat is "aktor_yarat" or "klon");
                 if (actorEffect != null && actorEffect.Amount >= 1)
                     count = Math.Max(count, (int)Math.Round(actorEffect.Amount));
                 order.ActorCount = Math.Max(1, count);
-                float life = engine["minion_duration_sec"].AsFloat(0f);
+                float life = engine.MinionDurationSec(0f);
                 if (life <= 0f && plan.Body.LifeSec > 0)
                     life = (float)plan.Body.LifeSec;
                 if (life <= 0f)
                     life = 5f;
-                life += Math.Max(0f, engine["lifetime_add"].AsFloat(0f));
+                life += Math.Max(0f, engine.LifetimeAdd(0f));
                 order.ActorDurationSec = life;
                 double hit = rules != null ? rules.Param("minion_hit_damage") : 6;
                 order.ActorHitDamage = hit > 0 ? (float)hit : 6f;
@@ -194,9 +200,9 @@ namespace Dovus.Core.Mechanic
             order.OpeningPulse = !HasEffectHit(template);
             order.Homing = plan != null && plan.Body.Homing;
 
-            bool duplicate = engine["duplicate_cast"].AsBool(false)
+            bool duplicate = engine.DuplicateCast(false)
                 || (plan != null && plan.Effects.Exists(e => e.Has("iki_kez")));
-            float dupDelay = engine["duplicate_delay_sec"].AsFloat(0f);
+            float dupDelay = engine.DuplicateDelaySec(0f);
             if (dupDelay <= 0f && plan != null && plan.Body.CopyDelaySec > 0)
                 dupDelay = (float)plan.Body.CopyDelaySec;
             order.DuplicateDelaySec = dupDelay > 0f ? dupDelay : 0.3f;
@@ -205,28 +211,28 @@ namespace Dovus.Core.Mechanic
             order.DuplicateAtSec = Math.Max(0f, firstHit) + order.DuplicateDelaySec;
             order.Duplicate = duplicate
                 && !(firstHit >= 0f && HasEffectHitNear(template, order.DuplicateAtSec, EchoToleranceSec));
-            order.DuplicateDamageMult = engine.Has("duplicate_damage_mult")
-                ? engine["duplicate_damage_mult"].AsFloat(1f)
+            order.DuplicateDamageMult = engine.HasDuplicateDamageMult
+                ? engine.DuplicateDamageMult(1f)
                 : (plan != null && plan.Body.ChainMult > 0 ? (float)plan.Body.ChainMult : 1f);
 
             order.RepeatPrevious = plan != null && plan.Effects.Exists(e => e.Stat == "onceki_skill_tekrar");
 
-            int bounces = engine["bounce_targets"].AsInt(0);
+            int bounces = engine.BounceTargets(0);
             if (plan != null && plan.Body.Chain > bounces)
                 bounces = plan.Body.Chain;
             order.BounceExtra = Math.Max(0, bounces - 1);
-            order.BounceDamageMult = engine.Has("bounce_damage_mult")
-                ? engine["bounce_damage_mult"].AsFloat(1f)
+            order.BounceDamageMult = engine.HasBounceDamageMult
+                ? engine.BounceDamageMult(1f)
                 : (plan != null ? (float)plan.Body.ChainMult : 1f);
 
             bool akis = plan != null && plan.Effects.Exists(e => e.Has("akis"));
             bool templateTicks = TemplateHasEvery(template);
             order.FieldTicks = akis && !templateTicks;
-            float channel = engine["channel_sec"].AsFloat(0f);
+            float channel = engine.ChannelSec(0f);
             if (channel <= 0f && plan != null)
                 channel = (float)plan.Body.LifeSec;
             order.FieldDurationSec = channel;
-            float rate = Math.Max(0.01f, engine["tick_rate_mult"].AsFloat(1f));
+            float rate = Math.Max(0.01f, engine.TickRateMult(1f));
             float tickBase = fieldTickBaseSec > 0.05f ? fieldTickBaseSec : 1f;
             order.FieldTickSec = tickBase / rate;
             float fraction = rules != null ? (float)rules.Param("flow_tick_fraction") : 0.33f;

@@ -60,19 +60,19 @@ namespace Dovus.Game.Skills
         }
 
         int FriendlyTargetCap(in SkillResolution skill) =>
-            JsonEffectRules.FriendlyCap(!skill.IsEmpty && !skill.EngineModifiers.IsNull
-                ? skill.EngineModifiers["max_targets"].AsInt(0)
+            JsonEffectRules.FriendlyCap(!skill.IsEmpty && !skill.Engine.IsNull
+                ? skill.Engine.MaxTargets(0)
                 : 0);
 
         int JsonCleanseCount(in SkillResolution skill) =>
             JsonEffectRules.CleanseCount(
-                !skill.IsEmpty && !skill.EngineModifiers.IsNull ? skill.EngineModifiers["cleanse_count"].AsInt(0) : 0,
+                !skill.IsEmpty && !skill.Engine.IsNull ? skill.Engine.CleanseCount(0) : 0,
                 MechanicPlanFor(skill));
 
         float ShieldAbsorbFor(in SkillResolution skill)
         {
-            float absorb = !skill.IsEmpty && !skill.EngineModifiers.IsNull
-                ? skill.EngineModifiers["shield_absorb"].AsFloat(0f)
+            float absorb = !skill.IsEmpty && !skill.Engine.IsNull
+                ? skill.Engine.ShieldAbsorb(0f)
                 : 0f;
             return absorb > 0f ? absorb : JsonStatusTuning.ShieldAbsorb;
         }
@@ -278,7 +278,7 @@ namespace Dovus.Game.Skills
                 return;
             float bonus = JsonEffectRules.PurgePower(removed, JsonParam("cleanse_power_per_status", 0.1));
             double now = JsonNow;
-            float sec = !skill.EngineModifiers.IsNull ? skill.EngineModifiers["buff_duration_sec"].AsFloat(3f) : 3f;
+            float sec = !skill.Engine.IsNull ? skill.Engine.BuffDurationSec(3f) : 3f;
             _selfDamageBuff = (now < _selfDamageBuffUntilMs ? _selfDamageBuff : 0f) + bonus;
             _selfDamageBuffUntilMs = Math.Max(_selfDamageBuffUntilMs, now + Math.Max(0.5f, sec) * 1000.0);
             _readout?.NoteSkill(skill.DisplayName, $"güç +{bonus * 100f:0}%", new Color(1f, 0.8f, 0.4f));
@@ -509,8 +509,8 @@ namespace Dovus.Game.Skills
         // ---- template hits ----
         bool AoeReachedMotionHit(in MotionHit hit)
         {
-            if (_boss == null || _templateSkill.IsEmpty || _templateSkill.EngineModifiers.IsNull
-                || !_templateSkill.EngineModifiers["aoe"].AsBool(false))
+            if (_boss == null || _templateSkill.IsEmpty || _templateSkill.Engine.IsNull
+                || !_templateSkill.Engine.Aoe(false))
                 return false;
             Vector3 b = _boss.transform.position;
             float dist = FlatDistance(b, new Vector3(hit.OriginX, b.y, hit.OriginZ));

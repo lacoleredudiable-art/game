@@ -97,13 +97,13 @@ namespace Dovus.Game.Skills
                 }
             }
 
-            float dashM = skill.EngineModifiers["dash_distance_m"].AsFloat(0f);
+            float dashM = skill.Engine.DashDistanceM(0f);
             if (dashM > 0.05f)
             {
                 float range = _equippedWeapon != null && _equippedWeapon.RangeMult > 0f
                     ? _equippedWeapon.RangeMult
                     : 1f;
-                float box = skill.EngineModifiers["hitbox_scale_mult"].AsFloat(0f);
+                float box = skill.Engine.HitboxScaleMult(0f);
                 if (box <= 0.01f)
                     box = 1f;
                 MotionTemplate dashed = DashDistance.Apply(shaped, dashM * range * box);
@@ -470,7 +470,7 @@ namespace Dovus.Game.Skills
             float rangeMult = _equippedWeapon != null ? _equippedWeapon.RangeMult : 1f;
             float weaponScale = _verbData?.WeaponSizeMult(weaponId, rangeMult) ?? rangeMult;
             float table = _verbData?.AdjectiveSizeMult(adjectiveId) ?? 1f;
-            float engineScale = skill.EngineModifiers["hitbox_scale_mult"].AsFloat(0f);
+            float engineScale = skill.Engine.HitboxScaleMult(0f);
             float adjective = HitboxSizing.AdjectiveScale(table, engineScale);
             adjective *= _slotPassives?.HitboxSizeMultFor(_templateSlotCastId) ?? 1f;
             return HitboxSizing.Resolve(spec, weaponScale, adjective).ReachM;

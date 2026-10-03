@@ -1294,7 +1294,7 @@ namespace Dovus.Game.Editor
                 || design.Mechanics == null)
                 return 0f;
             Dovus.Core.Mechanic.TemplateDeliveryOrder order = Dovus.Core.Mechanic.TemplateDelivery.Build(
-                plan, skill.EngineModifiers, template, design.Mechanics.Rules, 1f);
+                plan, skill.Engine, template, design.Mechanics.Rules, 1f);
             return order.DelayedMark || order.RiseDelay ? Mathf.Max(0.05f, order.ActivationDelaySec) : 0f;
         }
 

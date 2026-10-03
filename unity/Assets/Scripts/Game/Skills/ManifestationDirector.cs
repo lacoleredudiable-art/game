@@ -613,7 +613,7 @@ namespace Dovus.Game.Skills
                         adjectiveRuneId,
                         rune.AdjectiveFace,
                         rune.PassiveDurationDefault,
-                        adjective.EngineModifiers,
+                        adjective.Engine,
                         worldMs))
                 {
                     _readout?.NoteSkill(
@@ -1795,12 +1795,12 @@ namespace Dovus.Game.Skills
             int.TryParse(skill.AdjectiveId, out int adjectiveId);
             int weaponId = EquippedWeaponNumber();
             float weaponScale = _verbData?.WeaponSizeMult(weaponId, rangeMult) ?? rangeMult;
-            JsonValue engine = skill.EngineModifiers;
+            var engine = skill.Engine;
             float tableScale = _verbData?.AdjectiveSizeMult(adjectiveId) ?? 1f;
-            float adjectiveScale = HitboxSizing.AdjectiveScale(tableScale, engine["hitbox_scale_mult"].AsFloat(0f));
+            float adjectiveScale = HitboxSizing.AdjectiveScale(tableScale, engine.HitboxScaleMult(0f));
             adjectiveScale *= _slotPassives?.HitboxSizeMultFor(_slotQueryCastId) ?? 1f;
             HitboxSize size = HitboxSizing.Resolve(spec, weaponScale, adjectiveScale);
-            float lifetimeAdd = Mathf.Max(0f, engine["lifetime_add"].AsFloat(0f));
+            float lifetimeAdd = Mathf.Max(0f, engine.LifetimeAdd(0f));
             float slotLife = _slotPassives?.LifetimeAddSecFor(_slotQueryCastId) ?? 0f;
 
             switch (kind)
@@ -1830,7 +1830,7 @@ namespace Dovus.Game.Skills
                 case SkillExecutorKind.SelfState:
                     radius = size.RadiusM;
                     range = size.ReachM;
-                    float stateSec = engine["reflect_duration_sec"].AsFloat(0f);
+                    float stateSec = engine.ReflectDurationSec(0f);
                     if (stateSec > 0f)
                         durationSec = stateSec + lifetimeAdd;
                     break;
@@ -1838,10 +1838,10 @@ namespace Dovus.Game.Skills
                 case SkillExecutorKind.Summon:
                     radius = size.RadiusM;
                     range = size.ReachM;
-                    float minionSec = engine["minion_duration_sec"].AsFloat(0f);
+                    float minionSec = engine.MinionDurationSec(0f);
                     if (minionSec > 0f)
                         durationSec = minionSec + lifetimeAdd;
-                    spawnCount = Mathf.Max(1, engine["minion_count"].AsInt(1));
+                    spawnCount = Mathf.Max(1, engine.MinionCount(1));
                     break;
             }
         }
@@ -1864,18 +1864,18 @@ namespace Dovus.Game.Skills
                 tickSec = hitbox.GetFloat("tick_interval_sec", tickSec);
             }
 
-            JsonValue engine = skill.EngineModifiers;
-            float tickRateMult = Mathf.Max(0.01f, engine["tick_rate_mult"].AsFloat(1f));
+            var engine = skill.Engine;
+            float tickRateMult = Mathf.Max(0.01f, engine.TickRateMult(1f));
             tickSec /= tickRateMult;
             if (durationSec <= 0f && !engine.IsNull)
             {
                 durationSec = Mathf.Max(
-                    engine["channel_sec"].AsFloat(0f),
+                    engine.ChannelSec(0f),
                     Mathf.Max(
-                        engine["cc_duration_sec"].AsFloat(0f),
+                        engine.CcDurationSec(0f),
                         Mathf.Max(
-                            engine["buff_duration_sec"].AsFloat(0f),
-                            engine["tempo_duration_sec"].AsFloat(0f))));
+                            engine.BuffDurationSec(0f),
+                            engine.TempoDurationSec(0f))));
             }
 
             if (durationSec <= 0f)
@@ -2595,20 +2595,19 @@ namespace Dovus.Game.Skills
 
         static float AdjectiveLifesteal(in SkillResolution skill)
         {
-            if (skill.IsEmpty || skill.EngineModifiers.IsNull)
+            if (skill.IsEmpty || skill.Engine.IsNull)
                 return 0f;
             // v6 adjective_mods.2 "lifesteal"; eski katalog "apply_lifesteal".
-            JsonValue mods = skill.EngineModifiers;
-            float v = mods.Has("lifesteal") ? mods["lifesteal"].AsFloat(0f) : mods["apply_lifesteal"].AsFloat(0f);
+            var mods = skill.Engine;
+            float v = mods.HasLifesteal ? mods.Lifesteal(0f) : mods.ApplyLifesteal(0f);
             return Math.Max(0f, v);
         }
 
         float ExtraCritChanceAdd(in SkillResolution skill)
         {
             float add = 0f;
-            if (!skill.IsEmpty && !skill.EngineModifiers.IsNull &&
-                skill.EngineModifiers.Has("crit_chance_add"))
-                add += Math.Max(0f, skill.EngineModifiers["crit_chance_add"].AsFloat(0f));
+            if (!skill.IsEmpty && !skill.Engine.IsNull && skill.Engine.HasCritChanceAdd)
+                add += Math.Max(0f, skill.Engine.CritChanceAdd(0f));
             return add;
         }
 

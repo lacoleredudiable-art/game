@@ -54,7 +54,7 @@ namespace Dovus.Game.Skills
         {
             if (!IsSustained(skill) || _clock == null)
                 return;
-            double sec = skill.EngineModifiers.IsNull ? 0.0 : skill.EngineModifiers["channel_sec"].AsFloat(0f);
+            double sec = skill.Engine.IsNull ? 0.0 : skill.Engine.ChannelSec(0f);
             if (_motionBody != null && _motionBody.IsDisplacing
                 && string.Equals(_motionBody.SkillId, skill.SkillId, System.StringComparison.Ordinal))
                 sec = System.Math.Max(sec, _motionBody.PlayLengthSec);

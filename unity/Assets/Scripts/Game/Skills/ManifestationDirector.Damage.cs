@@ -121,15 +121,15 @@ namespace Dovus.Game.Skills
                 _combat != null ? _combat.BasicStrikePower : 0f,
                 _combat != null ? _combat.SkillPreArmorScale : 1f);
 
-            if (!skill.IsEmpty && !skill.EngineModifiers.IsNull && skill.EngineModifiers.Has("element_mult"))
+            if (!skill.IsEmpty && !skill.Engine.IsNull && skill.Engine.HasElementMult)
             {
-                float element = skill.EngineModifiers["element_mult"].AsFloat(1f);
+                float element = skill.Engine.ElementMult(1f);
                 if (element > 0f)
                     runeMult *= element;
             }
 
-            bool skillIgnoresArmor = !skill.IsEmpty && !skill.EngineModifiers.IsNull
-                && skill.EngineModifiers["ignore_armor"].AsBool(false);
+            bool skillIgnoresArmor = !skill.IsEmpty && !skill.Engine.IsNull
+                && skill.Engine.IgnoreArmor(false);
             // O8: Yay'ın "sonraki vuruş zırh yok" bonusu yalnız gerçekten işe yaradığında (skill zaten delmiyorsa) tüketilir.
             bool weaponArmorBonus = WeaponIgnoresArmor && !skillIgnoresArmor;
             bool ignoreArmor = WeaponIgnoresArmor || skillIgnoresArmor;
@@ -214,24 +214,24 @@ namespace Dovus.Game.Skills
 
         void ApplyArmorShred(in SkillResolution skill, ActorStatus target)
         {
-            if (skill.IsEmpty || skill.EngineModifiers.IsNull)
+            if (skill.IsEmpty || skill.Engine.IsNull)
                 return;
-            JsonValue engine = skill.EngineModifiers;
-            float debuff = engine["debuff_armor"].AsFloat(0f);
+            var engine = skill.Engine;
+            float debuff = engine.DebuffArmor(0f);
             double now = _clock != null ? _clock.Director.WorldTimeMs : 0;
             if (debuff < 0f && target != null)
             {
-                float sec = engine["debuff_duration_sec"].AsFloat(4f);
+                float sec = engine.DebuffDurationSec(4f);
                 target.Armor.ApplyShred(-debuff, now, now + Math.Max(0.05f, sec) * 1000.0);
             }
 
-            float buff = engine["armor_add"].AsFloat(0f);
+            float buff = engine.ArmorAdd(0f);
             if (Mathf.Abs(buff) < 0.001f)
-                buff = engine["buff_armor"].AsFloat(0f);
+                buff = engine.BuffArmor(0f);
             if (buff > 0f && _playerStatus != null)
             {
                 buff = WeaponPassiveRules.ScaleFriendlyMagnitude(buff, WeaponFriendlyScale());
-                float sec = engine["buff_duration_sec"].AsFloat(engine["debuff_duration_sec"].AsFloat(3f));
+                float sec = engine.BuffDurationSec(engine.DebuffDurationSec(3f));
                 _playerStatus.Armor.GrantBuff(buff, now + Math.Max(0.05f, sec) * 1000.0);
             }
         }

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Dovus.Core.Data;
+using Dovus.Core.Shared;
 
 namespace Dovus.Core.Grammar
 {
@@ -697,6 +699,7 @@ namespace Dovus.Core.Grammar
         /// </summary>
         public JsonValue EngineModifiers { get; }
         public JsonValue Raw { get; }
+        public SkillEngineModifiers Engine => new SkillEngineModifiers(EngineModifiers);
     }
 
     /// <summary>docs/element-sistemi.json state_machine.player_states[id] — bkz. ParseStateMachine.</summary>
@@ -855,6 +858,9 @@ namespace Dovus.Core.Grammar
         public JsonValue Special { get; }
         public JsonValue ZoneEffect { get; }
         public JsonValue EngineModifiers { get; }
+        public SkillEngineModifiers Engine => new SkillEngineModifiers(EngineModifiers);
+        public SkillId TypedSkillId => new SkillId(SkillId);
+        public ElementId TypedElement => new ElementId(ElementId);
         public bool CritEligible { get; }
         public string ElementOrigin { get; }
         public string DamageType { get; }

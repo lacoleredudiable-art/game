@@ -58,11 +58,11 @@ namespace Dovus.Game.Feel
                 parts.Add(skill.SilhouetteAxis);
             if (skill.HitboxScaleMult > 0f && System.Math.Abs(skill.HitboxScaleMult - 1f) > 0.05f)
                 parts.Add("alan×" + skill.HitboxScaleMult.ToString("0.#"));
-            if (!skill.EngineModifiers.IsNull)
+            if (!skill.Engine.IsNull)
             {
-                string traj = skill.EngineModifiers["trajectory_override"].AsString();
+                string traj = skill.Engine.TrajectoryOverride("");
                 if (string.IsNullOrEmpty(traj))
-                    traj = skill.EngineModifiers["hitbox_override"].AsString();
+                    traj = skill.Engine.HitboxOverride("");
                 if (!string.IsNullOrEmpty(traj))
                     parts.Add(traj);
             }

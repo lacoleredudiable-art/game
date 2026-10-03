@@ -11,7 +11,7 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 
 ## Aşama 2 — Mimari (kuzen önerisi) (davranış değişmeden, adım adım)
 - [~] 2.1 Game'i konu klasörlerine ayır + namespace = klasör (Dovus.<Katman>.<Konu>)
-- [ ] 2.2 Güçlü ID tipleri (SkillId, WeaponId, RuneId, ElementId, ActorId) + JSON mapper (ham JsonValue Game'e sızmaz)
+- [~] 2.2 Güçlü ID tipleri (SkillId, WeaponId, RuneId, ElementId, ActorId) + JSON mapper (ham JsonValue Game'e sızmaz)
 - [ ] 2.3 Application assembly + IClock / IRng; mana/diriliş oyun saatine, tohumsuz Random'lar CombatRng'ye
 - [ ] 2.4 CastPipeline (ManifestationDirector.cs:1316–1332 taşınır; komut al → olay yay)
 - [ ] 2.5 Oyuncu can/diriliş → Application (Player aggregate)

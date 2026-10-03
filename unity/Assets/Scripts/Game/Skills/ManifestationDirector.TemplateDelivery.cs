@@ -66,7 +66,7 @@ namespace Dovus.Game.Skills
             float tick = _combat != null ? _combat.Manifestation.ExecutorFieldTickSec : 1f;
             _deliveryOrder = TemplateDelivery.Build(
                 LastMechanicPlan,
-                skill.EngineModifiers,
+                skill.Engine,
                 template,
                 MechanicEngine != null ? MechanicEngine.Rules : null,
                 tick);

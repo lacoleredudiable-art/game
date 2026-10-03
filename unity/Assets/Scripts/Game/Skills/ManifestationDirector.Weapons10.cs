@@ -446,10 +446,9 @@ namespace Dovus.Game.Skills
 
         static bool IsSustained(in SkillResolution skill)
         {
-            if (skill.IsEmpty || skill.EngineModifiers.IsNull)
+            if (skill.IsEmpty || skill.Engine.IsNull)
                 return false;
-            JsonValue engine = skill.EngineModifiers;
-            if (engine["channel_sec"].AsFloat(0f) > 0f)
+            if (skill.Engine.ChannelSec(0f) > 0f)
                 return true;
             string id = skill.SkillId;
             return id is "1-12" or "12-12" or "2-12" or "5-12" or "8-12";
