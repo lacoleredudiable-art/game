@@ -14,12 +14,29 @@ namespace Dovus.App.Casting
 
     public readonly struct CastOutcome
     {
-        public string SkillId { get; init; }
-        public bool ExecutorStarted { get; init; }
-        public bool TemplateOwnsDelivery { get; init; }
-        public float Dealt { get; init; }
-        public bool EffectApplied { get; init; }
-        public bool Denied { get; init; }
+        // Unity'de Dovus.App ayrı assembly: init için IsExternalInit polyfill'i yok (Core'unki internal) → ctor.
+        public CastOutcome(
+            string skillId,
+            bool executorStarted,
+            bool templateOwnsDelivery,
+            float dealt,
+            bool effectApplied,
+            bool denied)
+        {
+            SkillId = skillId;
+            ExecutorStarted = executorStarted;
+            TemplateOwnsDelivery = templateOwnsDelivery;
+            Dealt = dealt;
+            EffectApplied = effectApplied;
+            Denied = denied;
+        }
+
+        public string SkillId { get; }
+        public bool ExecutorStarted { get; }
+        public bool TemplateOwnsDelivery { get; }
+        public float Dealt { get; }
+        public bool EffectApplied { get; }
+        public bool Denied { get; }
     }
 
     public sealed class CastPipeline
@@ -34,11 +51,7 @@ namespace Dovus.App.Casting
             if (skill.IsEmpty || !skill.IsComplete)
             {
                 port.NoteDeniedNeedsTwoRunes();
-                var denied = new CastOutcome
-                {
-                    SkillId = skill.SkillId,
-                    Denied = true
-                };
+                var denied = new CastOutcome(skill.SkillId, false, false, 0f, false, denied: true);
                 Completed?.Invoke(denied);
                 return denied;
             }
@@ -99,14 +112,8 @@ namespace Dovus.App.Casting
 
                 port.TrySchedulePassiveEcho(ctx, skill, in motionPlan);
 
-                var outcome = new CastOutcome
-                {
-                    SkillId = skill.SkillId,
-                    ExecutorStarted = executorStarted,
-                    TemplateOwnsDelivery = templateOwnsDelivery,
-                    Dealt = dealt,
-                    EffectApplied = effectApplied
-                };
+                var outcome = new CastOutcome(
+                    skill.SkillId, executorStarted, templateOwnsDelivery, dealt, effectApplied, denied: false);
                 Completed?.Invoke(outcome);
                 return outcome;
             }
