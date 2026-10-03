@@ -1,10 +1,13 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Dovus.Game
 {
     /// <summary>Ayar sahnesi: ele yakın kadraj, sürükleyerek orbit (basit).</summary>
     public sealed class SettingsSceneGripCamera : MonoBehaviour
     {
+        const float MouseDegreesPerPixel = 0.15f;
+
         FollowCamera _follow;
         float _yawDeg;
         float _pitchDeg = 18f;
@@ -34,14 +37,15 @@ namespace Dovus.Game
             if (_follow == null)
                 return;
 
-            if (Input.GetMouseButton(0))
+            var mouse = Mouse.current;
+            if (mouse != null && mouse.leftButton.isPressed)
             {
-                _yawDeg += Input.GetAxis("Mouse X") * 2.5f;
-                _pitchDeg = Mathf.Clamp(_pitchDeg - Input.GetAxis("Mouse Y") * 2f, -12f, 55f);
+                Vector2 delta = mouse.delta.ReadValue();
+                _yawDeg -= delta.x * MouseDegreesPerPixel;
+                _pitchDeg = Mathf.Clamp(_pitchDeg - delta.y * MouseDegreesPerPixel, -12f, 55f);
                 _follow.OrbitYawDeg = _yawDeg;
                 _follow.OrbitPitchDeg = _pitchDeg;
             }
         }
-
     }
 }
