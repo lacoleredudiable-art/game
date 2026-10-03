@@ -21,6 +21,7 @@
   -->
   <ItemGroup>
     <Compile Include="..\..\unity\Assets\Scripts\Core\**\*.cs" Link="Core\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\..\unity\Assets\Scripts\App\**\*.cs" Link="App\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>

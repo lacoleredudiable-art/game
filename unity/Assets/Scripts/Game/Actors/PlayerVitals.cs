@@ -1,6 +1,7 @@
 using Dovus.Core.Combat;
 using Dovus.Core.Tuning;
 using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Game.Weapons;
 using System;
 using UnityEngine;
@@ -38,9 +39,9 @@ namespace Dovus.Game.Actors
         /// <summary>O4: dönüş zamanlayıcısı için dünya saati.</summary>
         public void BindClock(GameClock clock) => _clock = clock;
 
-        float NowSec() => _clock != null && _clock.Director != null
-            ? (float)(_clock.Director.WorldTimeMs / 1000.0)
-            : Time.unscaledTime;
+        float NowSec() => _clock != null
+            ? (float)(_clock.World.NowMs / 1000.0)
+            : (float)(UnityUnscaledClock.Default.NowMs / 1000.0);
 
         void ClearStatusBoard() => GetComponent<ActorStatus>()?.Board.Clear();
 

@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <Compile Include="..\..\unity\Assets\Scripts\Core\**\*.cs" Link="Core\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\..\unity\Assets\Scripts\App\**\*.cs" Link="App\%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="..\..\unity\Assets\Scripts\Game\**\*.cs" Exclude="..\..\unity\Assets\Scripts\Game\Editor\**" Link="Game\%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="..\SweepV2\Shim\**\*.cs" Link="Shim\%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="*.cs" />

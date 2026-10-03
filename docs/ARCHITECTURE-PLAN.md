@@ -36,7 +36,7 @@ unity/Assets/Scripts/
 │  ├─ Boss/          Boss (aggregate), BossAttack, BossPhase, BossBrain, WebField
 │  ├─ Actors/        Player (aggregate: Hp, Resource, Cooldown, Status), Ally   ← PlayerVitals/ActorStatus'tan
 │  └─ Team/          TeamCombo, Portal, Border, ModifierSet (oyuncu başına) ← PortalBorderTeamHooks'tan
-├─ Application/                     Dovus.Application.asmdef   (saf C#, ref: Domain)
+├─ Application/                     Dovus.Application.asmdef   (saf C#, ref: Domain) — gerçek asmdef adı **Dovus.App** (`App/`, `Application` Unity API ile çakışır)
 │  ├─ Casting/       CastPipeline (MD:1316–1332'nin yeni evi), CastCommand, CastResult/Events
 │  ├─ Boss/          BossEncounterService
 │  └─ Simulation/    CombatSimulation.Tick(dt, commands) → events (co-op'ta host'ta koşar)

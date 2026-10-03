@@ -14,6 +14,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="gen/unity/Assets/Scripts/Core/**/*.cs" />
+    <Compile Include="gen/unity/Assets/Scripts/App/**/*.cs" />
     <Compile Include="gen/unity/Assets/Scripts/Game/**/*.cs" />
     <Compile Include="Stubs/Modules.cs" />
     <Compile Include="CompileShims.cs" />

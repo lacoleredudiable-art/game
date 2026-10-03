@@ -16,6 +16,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\unity\Assets\Scripts\Core\**\*.cs" Link="Core\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\..\unity\Assets\Scripts\App\**\*.cs" Link="App\%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="..\..\unity\Assets\Scripts\Game\**\*.cs" Link="Game\%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Remove="..\..\unity\Assets\Tests\**\*.cs" />
   </ItemGroup>
