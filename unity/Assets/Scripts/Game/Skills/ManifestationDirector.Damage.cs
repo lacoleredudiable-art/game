@@ -29,7 +29,7 @@ namespace Dovus.Game.Skills
             {
                 if (_critSystem == null)
                     _critSystem = ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design)
-                        ? CritSystem.FromJson(MiniJson.Parse(design.Json))
+                        ? CritSystem.FromJson(design.Json)
                         : CritSystem.Default;
                 return _critSystem.Value;
             }

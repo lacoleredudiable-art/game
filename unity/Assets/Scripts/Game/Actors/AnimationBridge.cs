@@ -1,4 +1,3 @@
-using Dovus.Core.Grammar;
 using Dovus.Core.Presentation;
 using Dovus.Game.Skills;
 using System;
@@ -275,33 +274,16 @@ namespace Dovus.Game.Actors
             _nextEveryTickFrame = 0;
             _everyTickEndFrame = 0;
 
-            JsonValue d = node.DamageAppliedAtFrame;
-            if (d == null || d.IsNull)
-                return;
-
-            if (d.Kind == JsonKind.String)
+            if (AnimationDamageSchedule.TryReadEveryTick(node, out int tickStart, out int tickEnd))
             {
-                string s = d.AsString();
-                if (string.Equals(s, "every_tick", StringComparison.Ordinal))
-                {
-                    _damageEveryTick = true;
-                    int[] active = node.ActiveFrames;
-                    if (active != null && active.Length >= 2)
-                    {
-                        _nextEveryTickFrame = active[0];
-                        _everyTickEndFrame = active[1];
-                    }
-                    else
-                    {
-                        _nextEveryTickFrame = 0;
-                        _everyTickEndFrame = Math.Max(0, node.TotalFrames - 1);
-                    }
-                }
+                _damageEveryTick = true;
+                _nextEveryTickFrame = tickStart;
+                _everyTickEndFrame = tickEnd;
                 return;
             }
 
-            if (d.Kind == JsonKind.Number)
-                _damageFrame = d.AsInt();
+            if (AnimationDamageSchedule.TryReadSingleFrame(node, out int frame))
+                _damageFrame = frame;
         }
     }
 }

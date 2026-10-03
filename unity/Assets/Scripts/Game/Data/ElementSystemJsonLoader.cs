@@ -1,3 +1,4 @@
+using Dovus.Core.Data;
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
@@ -35,12 +36,13 @@ namespace Dovus.Game.Data
 
             try
             {
-                JsonValue root = MiniJson.Parse(asset.text);
-                string version = root["system"]["version"].AsString();
+                if (!ElementSystemHeader.TryParse(asset.text, 300, out ElementSystemHeader header))
+                    throw new InvalidOperationException("element-sistemi kökü okunamadı.");
+                string version = header.Version;
                 if (!string.Equals(version, RequiredVersion, StringComparison.Ordinal))
                     throw new InvalidOperationException(
                         $"element-sistemi version {version}; {RequiredVersion} bekleniyor.");
-                if (!root["system"]["binding"].AsBool(false))
+                if (!header.Binding)
                     throw new InvalidOperationException("element-sistemi binding=true değil.");
 
                 SkillMotor motor = SkillMotor.FromJson(asset.text);

@@ -1,5 +1,5 @@
 using Dovus.Core.Combat;
-using Dovus.Core.Grammar;
+using Dovus.Core.Data;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -9,7 +9,7 @@ namespace Dovus.Game.Boss
 {
     /// <summary>
     /// Boss HUD metinleri <c>Resources/Bosses/*.json</c>: ad, alt başlık, faz adları ve
-    /// eşikleri, saldırı adları. Saldırı kind'ı JSON'dan veya karadul uyumu için id'den eşlenir.
+    /// eşikleri, saldırı adları.
     /// </summary>
     public sealed class BossHudData
     {
@@ -32,24 +32,15 @@ namespace Dovus.Game.Boss
                 return data;
             try
             {
-                JsonValue root = MiniJson.Parse(asset.text);
-                data.Name = root["name"].AsString(data.Name);
-                data.Subtitle = root["subtitle"].AsString(string.Empty);
-                foreach (JsonValue p in root["vitals"]["phases"].AsArray())
-                {
-                    IReadOnlyList<JsonValue> range = p["range"].AsArray();
-                    float upper = range.Count > 0 ? range[0].AsFloat(100f) / 100f : 1f;
-                    data._phases.Add((p["phase"].AsInt(), p["name"].AsString(string.Empty), upper));
-                }
-                foreach (JsonValue a in root["attacks"].AsArray())
-                {
-                    string id = a["id"].AsString(string.Empty);
-                    string display = a["name"].AsString(string.Empty);
-                    data._attackNames[id] = display;
-                    BossAttackKind? kind = BossEncounterData.ResolveKind(a);
-                    if (kind.HasValue && !string.IsNullOrEmpty(display))
-                        data._attackNamesByKind[kind.Value] = display;
-                }
+                if (!BossEncounterMapper.TryParseHud(asset.text, out BossHudSnapshot snap))
+                    return data;
+                data.Name = snap.Name;
+                data.Subtitle = snap.Subtitle;
+                data._phases.AddRange(snap.Phases);
+                foreach (KeyValuePair<string, string> kv in snap.AttackNamesById)
+                    data._attackNames[kv.Key] = kv.Value;
+                foreach (KeyValuePair<BossAttackKind, string> kv in snap.AttackNamesByKind)
+                    data._attackNamesByKind[kv.Key] = kv.Value;
             }
             catch (System.Exception e)
             {

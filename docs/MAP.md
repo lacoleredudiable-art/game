@@ -13,6 +13,7 @@
 | Skill atma — görsel/VFX | `Game/Skills/ManifestationDirector.CastPresentation.cs`, `Game/Skills/ManifestationDirector.MotionTemplate.cs`, `Game/Vfx/FeelVfx.cs`, `Game/Vfx/PresentationFx.cs` | `ManifestationDirector.Update` |
 | Rün / cümle grameri | `Core/Grammar/Rune.cs`, `Core/Grammar/RuneLoadout.cs`, `Core/Grammar/RuneManager.cs`, `Core/Grammar/HexagonLayout.cs` | `RuneManager.TrySelect`, `SentenceEngine` |
 | Skill verisi (JSON) | `docs/element-sistemi.json`, `unity/Assets/Resources/ElementSystem/element-sistemi.json` | `SkillMotor.FromJson` (Core), `ElementSystemJsonLoader.TryLoad` (Game) |
+| JSON mapper'lar | `Core/Data/BossEncounterMapper.cs`, `Core/Data/VfxBindingMapper.cs`, `Core/Data/ElementSystemHeader.cs` | `BossEncounterMapper.TryParseHud`, `VfxBindingMapper.TryParse`, `ElementSystemHeader.TryParse` |
 | Hareket kalıbı — Core | `Core/Motion/MotionTemplateRunner.cs`, `Core/Motion/MotionTemplateCatalog.cs`, `Core/Motion/PositionOwnership.cs` | `MotionTemplateRunner.Tick`, `PositionOwnership.Prepare` |
 | Hareket kalıbı — Game | `Game/Actors/MotionTemplateBody.cs`, `docs/motion-templates.json` (üretim: `tools/build-motion-templates.py`) | `MotionTemplateBody.TickMotion` |
 | Hasar / kritik | `Core/Combat/DamagePipeline.cs`, `Core/Combat/CritSystem.cs`, `Core/Combat/ClosingDamageMath.cs` | `DamagePipeline.Resolve` |

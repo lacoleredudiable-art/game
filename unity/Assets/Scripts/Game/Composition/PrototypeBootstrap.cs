@@ -1,5 +1,6 @@
 using Dovus.Core;
 using Dovus.Core.Combat;
+using Dovus.Core.Data;
 using Dovus.Core.Equipment;
 using Dovus.Core.Execution;
 using Dovus.Core.Grammar;
@@ -592,9 +593,9 @@ namespace Dovus.Game.Composition
             buildSelect.Configure(skills, runeManager, input, view, clock, director, !_tuning.SkipBuildSelectOnStart);
 
             int elementTransitionMs = 300;
-            if (design != null)
-                elementTransitionMs = MiniJson.Parse(design.Json)["element_system"]["selection"]
-                    ["transition_time_ms"].AsInt(300);
+            if (design != null
+                && ElementSystemHeader.TryParse(design.Json, elementTransitionMs, out ElementSystemHeader elementHdr))
+                elementTransitionMs = elementHdr.SelectionTransitionMs;
             var elementMenu = root.AddComponent<ElementRadialMenu>();
             elementMenu.Configure(
                 director, skills, playerStatus, _tuning, view.CanvasRoot, elementTransitionMs);
