@@ -179,7 +179,7 @@ namespace Dovus.Game
             panel.SetCaptureUiVisible(true);
             DodgePractice.SuppressImGui = false;
 
-            Debug.Log("[GripCapture] v2 kaydedildi: " + OutDir);
+            DebugConfig.DevLog("[GripCapture] v2 kaydedildi: " + OutDir);
         }
 
         static IEnumerator SaveScreenshot(string weapon, string angle)

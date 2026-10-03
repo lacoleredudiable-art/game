@@ -60,10 +60,9 @@ namespace Dovus.Game
 
             WeaponVisualRegistry.PropEntry entry = _registry != null ? _registry.FindProps(weaponKey) : null;
             Transform right = _animator.GetBoneTransform(HumanBodyBones.RightHand);
-            Transform left = ResolveLeftAttachBone(weaponKey);
-
+            Transform leftBone = ResolveLeftAttachBone(weaponKey, entry);
             _rightInstance = Spawn(weaponKey, entry, right, isRight: true);
-            _leftInstance = Spawn(weaponKey, entry, left, isRight: false);
+            _leftInstance = Spawn(weaponKey, entry, leftBone, isRight: false);
             SyncSyntyAtlasHandItems(weaponKey);
         }
 
@@ -131,9 +130,11 @@ namespace Dovus.Game
                 DestroyImmediate(go);
         }
 
-        Transform ResolveLeftAttachBone(string weaponKey)
+        Transform ResolveLeftAttachBone(string weaponKey, WeaponVisualRegistry.PropEntry entry)
         {
             Transform hand = _animator.GetBoneTransform(HumanBodyBones.LeftHand);
+            if (entry?.LeftHandPrefab != null)
+                return hand;
             if (WeaponGripProfile.IsMixamoRig(_animator)
                 && (weaponKey == "kilic" || weaponKey == "kalkan"))
             {
@@ -181,7 +182,7 @@ namespace Dovus.Game
             StripForProp(go);
             if (key == "kure")
             {
-                Debug.Log(
+                DebugConfig.DevLog(
                     $"[GripSpawn] kure parent={hand.name} isRight={isRight} "
                     + $"localPos={go.transform.localPosition} world={go.transform.position}");
                 go.AddComponent<WeaponPropIdleMotion>();
@@ -423,7 +424,7 @@ namespace Dovus.Game
         GameObject BuildPrimitive(string key, bool isRight) => key switch
         {
             "kilic" => isRight ? BuildSwordFallback() : BuildRoundShield(),
-            "kalkan" => isRight ? BuildSwordFallback(0.55f) : BuildBigShield(),
+            "kalkan" => isRight ? null : BuildBigShield(),
             "cekic" => isRight ? BuildHammer() : null,
             "yay" => isRight ? null : BuildBowFallback(),
             "asa" => isRight ? BuildStaffFallback() : null,

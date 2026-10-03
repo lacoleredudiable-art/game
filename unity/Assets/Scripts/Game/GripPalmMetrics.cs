@@ -62,11 +62,11 @@ namespace Dovus.Game
         {
             if (!s.HasProp)
             {
-                Debug.Log($"[GripPalm] {s.WeaponKey} {(s.IsRight ? "R" : "L")} prop=yok");
+                DebugConfig.DevLog($"[GripPalm] {s.WeaponKey} {(s.IsRight ? "R" : "L")} prop=yok");
                 return;
             }
 
-            Debug.Log(
+            DebugConfig.DevLog(
                 $"[GripPalm] {s.WeaponKey} {(s.IsRight ? "R" : "L")} parent={s.ParentBoneName} "
                 + $"grip→palm={s.GripToPalmM * 100f:F1}cm grip→bone={s.GripToBoneM * 100f:F1}cm gripChild={s.HasGripChild}");
         }

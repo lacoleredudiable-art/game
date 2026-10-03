@@ -75,7 +75,7 @@ namespace Dovus.Game
             WeaponFeelStore.EnsureLoaded();
             BuildUi();
             SelectWeapon(_selectedWeaponKey);
-            Debug.Log("[SettingsScene] Ayar paneli hazır.");
+            DebugConfig.DevLog("[SettingsScene] Ayar paneli hazır.");
         }
 
         void BuildUi()
@@ -452,7 +452,7 @@ namespace Dovus.Game
             string state = !string.IsNullOrEmpty(_director?.LastAnimationState)
                 ? _director.LastAnimationState
                 : DescribeAnimatorState(_playerRoot);
-            Debug.Log($"[SettingsScene] basicStrike ok=true animState={state}");
+            DebugConfig.DevLog($"[SettingsScene] basicStrike ok=true animState={state}");
             ShowStatus($"Düz vuruş ({state})");
         }
 
@@ -460,7 +460,7 @@ namespace Dovus.Game
         {
             string right = FindHandPropName(_gripRoot, HumanBodyBones.RightHand);
             string left = FindHandPropName(_gripRoot, HumanBodyBones.LeftHand);
-            Debug.Log($"[SettingsScene] weapon={weaponKey} dummyRightProp={right ?? "(yok)"} dummyLeftProp={left ?? "(yok)"}");
+            DebugConfig.DevLog($"[SettingsScene] weapon={weaponKey} dummyRightProp={right ?? "(yok)"} dummyLeftProp={left ?? "(yok)"}");
         }
 
         static string FindHandPropName(Transform root, HumanBodyBones bone)
@@ -517,7 +517,7 @@ namespace Dovus.Game
             }
 
             ShowStatus("kopyalandı");
-            Debug.Log($"[SettingsScene] grip JSON kopyalandı ({json.Length} char) → {WeaponGripClipboardJson.ExportFilePath}");
+            DebugConfig.DevLog($"[SettingsScene] grip JSON kopyalandı ({json.Length} char) → {WeaponGripClipboardJson.ExportFilePath}");
         }
 
         void SaveToDisk()
