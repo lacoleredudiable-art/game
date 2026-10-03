@@ -6,6 +6,7 @@ using Dovus.Core.Tuning;
 using Dovus.Game.Actors;
 using Dovus.Game.Boss;
 using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Game.Vfx;
 using System.Collections.Generic;
 using UnityEngine;
@@ -62,7 +63,7 @@ namespace Dovus.Game.Team
         {
             Instance = this;
             PortalBorderTeamHooks.Cast += OnCast;
-            PortalBorderTeamHooks.Roll = () => Random.value;
+            PortalBorderTeamHooks.Roll = () => (float)UnityRng.Default.NextDouble();
         }
 
         void OnDisable()

@@ -1,5 +1,7 @@
 using Dovus.Core.Combat;
 using Dovus.Core.Equipment;
+using Dovus.Core.Shared;
+using Dovus.Game.Platform;
 using UnityEngine;
 
 namespace Dovus.Game.Actors
@@ -12,6 +14,7 @@ namespace Dovus.Game.Actors
     public sealed class PlayerResource : MonoBehaviour
     {
         ResourceTracker _tracker;
+        IClock _clock = UnityFrameClock.Default;
 
         public float Mana => _tracker != null ? _tracker.Mana : 0f;
         public float MaxMana => _tracker != null ? _tracker.MaxMana : 0f;
@@ -40,7 +43,7 @@ namespace Dovus.Game.Actors
         {
             if (_tracker == null)
                 return;
-            _tracker.Tick(Time.deltaTime);
+            _tracker.Tick(_clock.DeltaSec);
         }
     }
 }

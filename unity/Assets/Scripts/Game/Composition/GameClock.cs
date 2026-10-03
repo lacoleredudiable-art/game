@@ -1,3 +1,5 @@
+using Dovus.App.Time;
+using Dovus.Core.Shared;
 using Dovus.Core.Time;
 using UnityEngine;
 
@@ -11,8 +13,19 @@ namespace Dovus.Game.Composition
     public sealed class GameClock : MonoBehaviour
     {
         TimeDirector _director;
+        TimeDirectorClock _worldClock;
 
         public TimeDirector Director => _director ??= new TimeDirector();
+
+        public IClock World
+        {
+            get
+            {
+                if (_worldClock == null)
+                    _worldClock = new TimeDirectorClock(Director);
+                return _worldClock;
+            }
+        }
 
         public double WorldDeltaMs { get; private set; }
 
@@ -32,6 +45,9 @@ namespace Dovus.Game.Composition
             RealDeltaMs = FrameDelta.ClampMs(Time.unscaledDeltaTime * 1000.0);
             double scale = SimulationScale < 0f ? 0.0 : SimulationScale;
             WorldDeltaMs = Paused ? 0.0 : Director.Tick(RealDeltaMs * scale);
+            if (_worldClock == null)
+                _worldClock = new TimeDirectorClock(Director);
+            _worldClock.Advance(WorldDeltaMs);
         }
     }
 }
