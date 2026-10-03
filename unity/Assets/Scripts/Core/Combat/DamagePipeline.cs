@@ -1,4 +1,5 @@
 using System;
+using Dovus.Core.Shared;
 
 namespace Dovus.Core.Combat
 {
@@ -22,7 +23,7 @@ namespace Dovus.Core.Combat
         public const float VarianceHalf = 0.05f;
         public const float MinDamageTakenFactor = 0.10f;
 
-        static readonly Random Shared = new Random();
+        static IRng s_rng = global::Dovus.Core.Shared.CombatRng.Unseeded();
 
         /// <summary>
         /// Düz vuruş kendi tabanını kullanır. Skill gücü zırhtan önce ölçeklenir.
@@ -55,7 +56,9 @@ namespace Dovus.Core.Combat
                 amount = CombatScale.Magnitude(amount);
 
             bool crit = false;
-            Random rng = query.VarianceSeed >= 0 ? new Random(query.VarianceSeed) : Shared;
+            IRng rng = query.VarianceSeed >= 0
+                ? global::Dovus.Core.Shared.CombatRng.Seeded(query.VarianceSeed)
+                : s_rng;
             if (query.CanCrit && amount > 0f)
             {
                 float chance = query.CritChance < 0f ? DefaultCritChance : query.CritChance;
