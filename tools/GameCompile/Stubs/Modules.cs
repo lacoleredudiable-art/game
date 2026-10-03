@@ -168,6 +168,7 @@ namespace UnityEngine.InputSystem
         public static Mouse current => null;
         public ButtonControl leftButton;
         public Vector2Control position;
+        public Vector2Control delta;
     }
     public partial class Pointer : InputDevice { }
     public partial class Keyboard : InputDevice

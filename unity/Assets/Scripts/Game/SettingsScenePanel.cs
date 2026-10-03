@@ -58,6 +58,7 @@ namespace Dovus.Game
             WeaponFeelStore.EnsureLoaded();
             BuildUi();
             SelectWeapon(_selectedWeaponKey);
+            Debug.Log("[SettingsScene] Ayar paneli hazır.");
         }
 
         void BuildUi()
