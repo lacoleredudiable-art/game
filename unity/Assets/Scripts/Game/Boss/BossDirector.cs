@@ -169,7 +169,7 @@ namespace Dovus.Game.Boss
             _playerMotor = player.GetComponent<KinematicMotor>();
             _originHome = reactor.Home;
             TryLoadBossEncounter();
-            _brain = new BossBrain(_rng, new BossBrainPort(this));
+            _brain ??= new BossBrain(_rng, new BossBrainPort(this)); // tekrar Bind: eski alanlar gibi durum korunur
             _brain.EnterIdle(clock.Director.WorldTimeMs);
         }
 
