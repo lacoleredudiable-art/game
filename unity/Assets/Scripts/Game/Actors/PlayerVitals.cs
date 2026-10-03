@@ -1,9 +1,9 @@
+using Dovus.App.Actors;
 using Dovus.Core.Combat;
 using Dovus.Core.Tuning;
 using Dovus.Game.Composition;
 using Dovus.Game.Platform;
 using Dovus.Game.Weapons;
-using System;
 using UnityEngine;
 
 namespace Dovus.Game.Actors
@@ -16,25 +16,28 @@ namespace Dovus.Game.Actors
     /// </summary>
     public sealed class PlayerVitals : MonoBehaviour
     {
+        readonly PlayerHealth _health = new PlayerHealth();
         BossTuning _boss;
-        int _hp;
-        float _respawnAtSec = -1f;
         GameClock _clock;
         Vector3 _spawnPos;
         bool _captured;
         ActorVisual _visual;
 
-        public int Hp => _hp;
-        public int MaxHp { get; private set; }
-        public bool IsDown => _respawnAtSec >= 0f;
+        public PlayerHealth Health => _health;
+        public int Hp => _health.Hp;
+        public int MaxHp => _health.MaxHp;
+        public bool IsDown => _health.IsDown;
         /// <summary>Play Sweep: can düşer, ölüm ve doğuş ışınlaması olmaz.</summary>
-        public bool SuppressDown { get; set; }
-        public bool DevHpEnabled { get; private set; }
-        int _authoredMaxHp;
+        public bool SuppressDown
+        {
+            get => _health.SuppressDown;
+            set => _health.SuppressDown = value;
+        }
+        public bool DevHpEnabled => _health.DevHpEnabled;
         public Vector3 SpawnPos => _spawnPos;
 
         /// <summary>Dönüşe kalan gerçek saniye (HUD okur); ayakta ise 0.</summary>
-        public float RespawnInSec => IsDown ? Mathf.Max(0f, _respawnAtSec - NowSec()) : 0f;
+        public float RespawnInSec => _health.RespawnInSec(NowSec());
 
         /// <summary>O4: dönüş zamanlayıcısı için dünya saati.</summary>
         public void BindClock(GameClock clock) => _clock = clock;
@@ -48,10 +51,7 @@ namespace Dovus.Game.Actors
         public void Bind(BossTuning boss, int maxHp, float startRatio = 1f)
         {
             _boss = boss;
-            _authoredMaxHp = Mathf.Max(1, maxHp);
-            DevHpEnabled = false;
-            MaxHp = _authoredMaxHp;
-            _hp = Mathf.Clamp(Mathf.RoundToInt(MaxHp * Mathf.Clamp01(startRatio)), 1, MaxHp);
+            _health.Bind(maxHp, startRatio);
             CaptureSpawn();
         }
 
@@ -59,35 +59,17 @@ namespace Dovus.Game.Actors
         /// Dev HP açıkken havuz 1_000_000_000. Kapalıyken Bind'deki normal tavan.
         /// Açılışta can da havuza çekilir; kapanınca normal tavana kırpılır.
         /// </summary>
-        public void SetDevHp(bool enabled)
-        {
-            if (_authoredMaxHp <= 0)
-                _authoredMaxHp = MaxHp > 0 && MaxHp != DevPlayerHp.Pool ? MaxHp : Mathf.Max(1, MaxHp);
-            DevHpEnabled = enabled;
-            MaxHp = DevPlayerHp.Resolve(enabled, _authoredMaxHp);
-            if (enabled)
-            {
-                _hp = MaxHp;
-                _respawnAtSec = -1f;
-                return;
-            }
-
-            _hp = Mathf.Clamp(_hp, 1, MaxHp);
-        }
+        public void SetDevHp(bool enabled) => _health.SetDevHp(enabled);
 
         /// <summary>
         /// T10: panel slider'ı `PlayerMaxHp`'i canlı değiştirebilsin diye — `Bind` tek seferlik
         /// (bir sonraki respawn'a kadar eski tavanda kalırdı). Güncel can, yeni tavana kırpılır
         /// (tavan düşürülürse anında ölüm YOK — kırpma, hasar değil).
         /// </summary>
-        public void SetMaxHp(int maxHp)
-        {
-            _authoredMaxHp = Mathf.Max(1, maxHp);
-            if (DevHpEnabled)
-                return;
-            MaxHp = _authoredMaxHp;
-            _hp = Mathf.Min(_hp, MaxHp);
-        }
+        public void SetMaxHp(int maxHp) => _health.SetMaxHp(maxHp);
+
+        /// <summary>Play sweep vakası: yarı can, diriliş zamanlayıcısı sıfır (eski private alan yansıması).</summary>
+        public void ResetForSweepCase() => _health.ResetForSweepCase();
 
         public void CaptureSpawn()
         {
@@ -126,45 +108,34 @@ namespace Dovus.Game.Actors
             if (_visual == null)
                 _visual = GetComponent<ActorVisual>();
 
-            _hp = Mathf.Max(0, _hp - amount);
-            if (SuppressDown && _hp <= 0)
-                _hp = 1;
-            if (_hp > 0)
+            float wait = _boss != null ? _boss.RespawnMaxSec : 2f;
+            HpLossResult loss = _health.ApplyHpLoss(amount, NowSec(), wait);
+            if (loss.Kind == HpLossKind.Hit)
             {
                 _visual?.Trigger(ActorVisual.TriggerHit);
                 return false;
             }
 
             _visual?.Trigger(ActorVisual.TriggerDeath);
-            float wait = _boss != null ? _boss.RespawnMaxSec : 2f;
-            _respawnAtSec = NowSec() + wait;
             ClearStatusBoard();
             return true;
         }
 
         /// <summary>İyileştirme — tavanı aşmaz. Gerçekten eklenen canı döner.</summary>
-        public int ApplyHeal(int amount)
-        {
-            if (IsDown || amount <= 0 || _hp >= MaxHp)
-                return 0;
-            int before = _hp;
-            _hp = Mathf.Min(MaxHp, _hp + amount);
-            return _hp - before;
-        }
+        public int ApplyHeal(int amount) => _health.ApplyHeal(amount);
 
         void Update() => Tick();
 
         public void Tick()
         {
-            if (!IsDown || NowSec() < _respawnAtSec)
+            if (!_health.ReviveDue(NowSec()))
                 return;
 
             if (!_captured)
                 CaptureSpawn();
 
             transform.position = _spawnPos;
-            _hp = MaxHp;
-            _respawnAtSec = -1f;
+            _health.Revive();
             ClearStatusBoard();
             if (_visual == null)
                 _visual = GetComponent<ActorVisual>();
