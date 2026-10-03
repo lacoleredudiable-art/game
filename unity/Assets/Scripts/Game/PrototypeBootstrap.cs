@@ -12,7 +12,7 @@ using UnityEngine.Rendering.Universal;
 namespace Dovus.Game
 {
     /// <summary>
-    /// Tek sahne kökü: arena, oyuncu, boss, kamera ve ışığı çalışma anında kurar.
+    /// Tek sahne kÃ¶kÃ¼: arena, oyuncu, boss, kamera ve Ä±ÅŸÄ±ÄŸÄ± Ã§alÄ±ÅŸma anÄ±nda kurar.
     /// </summary>
     public sealed class PrototypeBootstrap : MonoBehaviour
     {
@@ -24,22 +24,37 @@ namespace Dovus.Game
 
         [SerializeField] PrototypeTuning _tuning = new();
 
-        [Header("Görsel prefab (Asset Store — boşsa kapsül)")]
+        [Header("GÃ¶rsel prefab (Asset Store â€” boÅŸsa kapsÃ¼l)")]
         [SerializeField] GameObject _playerVisualPrefab;
         [SerializeField] GameObject _bossVisualPrefab;
 
-        [Header("v6 build (ana_classes_80 id + 0-2 pasif rün id)")]
+        [Header("v6 build (ana_classes_80 id + 0-2 pasif rÃ¼n id)")]
         [SerializeField, Min(1)] int _prototypeMainClassId = 1;
         [SerializeField] int[] _prototypePassiveRuneIds = new int[0];
 
+        [Header("Ayar sahnesi â€” boss'suz dÃ¼z zemin, kukla + tutuÅŸ paneli")]
+        [SerializeField] bool _settingsScene;
+
         void Awake()
         {
+            if (!_settingsScene
+                && string.Equals(gameObject.scene.name, "Settings", System.StringComparison.Ordinal))
+            {
+                _settingsScene = true;
+            }
+
             _tuning ??= new PrototypeTuning();
             _tuning.EnsureRuntimeDefaults();
+            if (_settingsScene)
+            {
+                _tuning.SkipBuildSelectOnStart = true;
+                _tuning.ShowDamageNumbers = true;
+                WeaponFeelStore.EnsureLoaded();
+            }
             FeelVfx.Configure(_tuning);
             HexagonLayoutScreen.FitShortSideDp = _tuning.HudFitShortSideDp;
 #if !UNITY_EDITOR
-            // Development APK konsolu CapsuleCollider spam'i ile HUD'u örtüyordu.
+            // Development APK konsolu CapsuleCollider spam'i ile HUD'u Ã¶rtÃ¼yordu.
             Debug.developerConsoleVisible = false;
 #endif
             ApplyFrameRateTarget();
@@ -47,21 +62,21 @@ namespace Dovus.Game
         }
 
         /// <summary>
-        /// T11 hedefi sabit 60 fps. Android'de varsayılan tavan cihazın ekran tazeleme hızıdır
-        /// (120 Hz bir telefonda oyun 120'ye tırmanmaya çalışır ve kare süresi dalgalanır), o
-        /// yüzden tavan açıkça yazılır. vSync sayacı sıfırlanmazsa targetFrameRate yok sayılır.
+        /// T11 hedefi sabit 60 fps. Android'de varsayÄ±lan tavan cihazÄ±n ekran tazeleme hÄ±zÄ±dÄ±r
+        /// (120 Hz bir telefonda oyun 120'ye tÄ±rmanmaya Ã§alÄ±ÅŸÄ±r ve kare sÃ¼resi dalgalanÄ±r), o
+        /// yÃ¼zden tavan aÃ§Ä±kÃ§a yazÄ±lÄ±r. vSync sayacÄ± sÄ±fÄ±rlanmazsa targetFrameRate yok sayÄ±lÄ±r.
         /// </summary>
         void ApplyFrameRateTarget()
         {
             QualitySettings.vSyncCount = 0;
             Application.targetFrameRate = Mathf.Max(1, _tuning.TargetFrameRateHz);
-            // S14: uzun telegraf/izleme anında ekran kararmasın (dövüş sahnesi boyunca).
+            // S14: uzun telegraf/izleme anÄ±nda ekran kararmasÄ±n (dÃ¶vÃ¼ÅŸ sahnesi boyunca).
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
         }
 
         void OnDestroy()
         {
-            // S14: sahneden çıkınca sistem ayarına dön.
+            // S14: sahneden Ã§Ä±kÄ±nca sistem ayarÄ±na dÃ¶n.
             Screen.sleepTimeout = SleepTimeout.SystemSetting;
         }
 
@@ -69,28 +84,43 @@ namespace Dovus.Game
         {
             var combat = new CombatTuning();
 
-            // T10: kayıtlı ayar, DÜNYA kurulmadan önce combat/_tuning'in İÇİNE kopyalanır
-            // (CopyFrom yolu — referans kimliği korunur). Böylece arena/oyuncu/boss ilk kareden
-            // kaydedilmiş değerlerle doğar, sonradan "sıçrayan" bir düzeltme karesi olmaz.
+            if (_settingsScene)
+            {
+                // Settings.unity DefaultGameObjects ile gelen kamera; Bootstrap kendi kamerasÄ±nÄ± kurar.
+                var staleCam = GameObject.Find("Main Camera");
+                if (staleCam != null)
+                    Destroy(staleCam);
+            }
+
+            // T10: kayÄ±tlÄ± ayar, DÃœNYA kurulmadan Ã¶nce combat/_tuning'in Ä°Ã‡Ä°NE kopyalanÄ±r
+            // (CopyFrom yolu â€” referans kimliÄŸi korunur). BÃ¶ylece arena/oyuncu/boss ilk kareden
+            // kaydedilmiÅŸ deÄŸerlerle doÄŸar, sonradan "sÄ±Ã§rayan" bir dÃ¼zeltme karesi olmaz.
             var tuningConfig = TuningConfig.Create(combat, _tuning);
-            // O5/K2: kayıtlı ayar yalnız debug'da yüklenir (release'te panel yok, kod varsayılanı geçerli).
+            // O5/K2: kayÄ±tlÄ± ayar yalnÄ±z debug'da yÃ¼klenir (release'te panel yok, kod varsayÄ±lanÄ± geÃ§erli).
             if (DebugConfig.Enabled)
                 tuningConfig.TryLoad();
-            // Boss hasarı tuning'den (karadul slam 22 / fire cone 18). Eski kayıtlı 0,
-            // TryLoad içinde bir kez bu varsayılanlara çekilir. Oyuncu canı Dev HP ile korunur.
+            if (_settingsScene)
+                WeaponFeelStore.TryLoad();
+            // Boss hasarÄ± tuning'den (karadul slam 22 / fire cone 18). Eski kayÄ±tlÄ± 0,
+            // TryLoad iÃ§inde bir kez bu varsayÄ±lanlara Ã§ekilir. Oyuncu canÄ± Dev HP ile korunur.
             var clock = gameObject.AddComponent<GameClock>();
 
             var arena = CreateArena();
-            // Daire salonda duvarlar CircularArena'da collider'lı; eski mesh fit yok.
+            // Daire salonda duvarlar CircularArena'da collider'lÄ±; eski mesh fit yok.
             float walkHalf = _tuning.ArenaHalfSizeM;
+            if (_settingsScene)
+                walkHalf = Mathf.Min(walkHalf, 14f);
             combat.SkillMotion.ArenaHalfSizeM = walkHalf;
-            // Deneme sahnesi portu: lav çatlakları CombatAmbience'te; eski turuncu LavaDecor diskleri
-            // tüm arena diskini sıcak boyuyordu (look v2 — yalnızca çatlak sıcak kalmalı).
-            if (Resources.Load<Material>("Presentation/ParticlesUnlitAnchor") == null)
-                Debug.LogWarning("[Feel] Presentation/ParticlesUnlitAnchor yok — parçacık shader strip riski.");
-            if (Resources.Load<CombatAmbienceAssets>(CombatAmbienceAssets.ResourcePath) == null)
-                LavaDecor.Build(arena.transform, walkHalf);
-            CombatAmbienceEnvironment.Build(arena, walkHalf, _tuning);
+            // Deneme sahnesi portu: lav Ã§atlaklarÄ± CombatAmbience'te; eski turuncu LavaDecor diskleri
+            // tÃ¼m arena diskini sÄ±cak boyuyordu (look v2 â€” yalnÄ±zca Ã§atlak sÄ±cak kalmalÄ±).
+            if (!_settingsScene)
+            {
+                if (Resources.Load<Material>("Presentation/ParticlesUnlitAnchor") == null)
+                    Debug.LogWarning("[Feel] Presentation/ParticlesUnlitAnchor yok â€” parÃ§acÄ±k shader strip riski.");
+                if (Resources.Load<CombatAmbienceAssets>(CombatAmbienceAssets.ResourcePath) == null)
+                    LavaDecor.Build(arena.transform, walkHalf);
+                CombatAmbienceEnvironment.Build(arena, walkHalf, _tuning);
+            }
             DebugConfig.DevLog($"[Arena] circle r={walkHalf:0.##}m wallH={_tuning.ArenaWallHeightM:0.#}m");
 
             float spawnMaxR = walkHalf * 0.4f;
@@ -108,15 +138,22 @@ namespace Dovus.Game
                 _tuning.CharacterAnimSpeed,
                 out var playerAnim);
 
-            var ally = CreateCapsule(
+            int playerHp = ScaledPlayerHp();
+
+            var ally = _settingsScene
+                ? null
+                : CreateCapsule(
                 "AllyDummy",
                 ClampSpawnXZ(new Vector3(-3.2f, PlayerHeightM * 0.5f, -1.2f), spawnMaxR),
                 PlayerRadiusM * 0.95f,
                 PlayerHeightM,
                 new Color(0.35f, 0.85f, 0.55f));
+            AllyDummy allyDummy = null;
+            if (ally != null)
+            {
             AttachVisual(
                 ally,
-                _playerVisualPrefab,
+                ResolvePlayerVisualPrefab(_playerVisualPrefab),
                 _tuning.PlayerVisualHeightM,
                 ally.transform.position.y - PlayerHeightM * 0.5f,
                 _tuning.CharacterAnimSpeed,
@@ -134,30 +171,54 @@ namespace Dovus.Game
             var allyHitCollider = ally.AddComponent<CapsuleCollider>();
             allyHitCollider.isTrigger = true;
             ally.AddComponent<ActorGrounding>();
-            var allyDummy = ally.AddComponent<AllyDummy>();
-            int playerHp = ScaledPlayerHp();
-            // O6: başlangıç oranı tek debug anahtarında (varsayılan 1.0).
+            allyDummy = ally.AddComponent<AllyDummy>();
+            // O6: baÅŸlangÄ±Ã§ oranÄ± tek debug anahtarÄ±nda (varsayÄ±lan 1.0).
             allyDummy.Bind(playerHp, startRatio: DebugConfig.StartHpRatio);
+            }
 
-            float bossSpawnZ = 5f * Mathf.Max(1f, _tuning.ArenaVisualScale * 0.55f);
+            float bossSpawnZ = _settingsScene ? 4.5f : 5f * Mathf.Max(1f, _tuning.ArenaVisualScale * 0.55f);
             bossSpawnZ = Mathf.Clamp(bossSpawnZ, -spawnMaxR, spawnMaxR);
+            string bossName = _settingsScene ? "TrainingDummy" : "Boss";
+            float dummyRadius = _settingsScene ? PlayerRadiusM : BossRadiusM;
+            float dummyHeight = _settingsScene ? PlayerHeightM : BossHeightM;
             var boss = CreateCapsule(
-                "Boss",
-                ClampSpawnXZ(new Vector3(0f, BossHeightM * 0.5f, bossSpawnZ), spawnMaxR),
-                BossRadiusM,
-                BossHeightM,
-                _tuning.BossColor);
-            // SkillExecutor overlap/projectile yolu için gerçek fizik hedefi. Primitive mesh
-            // bilinçli collider'sız kurulur; yalnız aktör hedef kapsülü burada eklenir.
+                bossName,
+                ClampSpawnXZ(new Vector3(0f, dummyHeight * 0.5f, bossSpawnZ), spawnMaxR),
+                dummyRadius,
+                dummyHeight,
+                _settingsScene ? _tuning.PlayerColor : _tuning.BossColor);
             var bossHitCollider = boss.AddComponent<CapsuleCollider>();
             bossHitCollider.isTrigger = true;
+            GameObject dummyVisualPrefab = _settingsScene
+                ? ResolvePlayerVisualPrefab(_playerVisualPrefab)
+                : ResolveBossVisualPrefab(_bossVisualPrefab);
+            float dummyVisualHeight = _settingsScene ? _tuning.PlayerVisualHeightM : _tuning.BossVisualHeightM;
             AttachVisual(
                 boss,
-                ResolveBossVisualPrefab(_bossVisualPrefab),
-                _tuning.BossVisualHeightM,
-                boss.transform.position.y - BossHeightM * 0.5f,
+                dummyVisualPrefab,
+                dummyVisualHeight,
+                boss.transform.position.y - dummyHeight * 0.5f,
                 _tuning.CharacterAnimSpeed,
                 out var bossAnim);
+
+            TrainingDummy trainingDummy = null;
+            BossVitals bossVitals;
+            if (_settingsScene)
+            {
+                bossVitals = new BossVitals(1_000_000f);
+                trainingDummy = boss.AddComponent<TrainingDummy>();
+                trainingDummy.Bind(bossVitals, "KUKLA");
+                var dummyVisual = boss.AddComponent<ActorVisual>();
+                if (bossAnim != null)
+                    dummyVisual.Bind(bossAnim, boss.GetComponent<Renderer>());
+                dummyVisual.SetWeapon("kilic");
+                boss.AddComponent<WeaponGripProfile>();
+                boss.AddComponent<WeaponHandProps>();
+            }
+            else
+            {
+                bossVitals = new BossVitals(ScaledBossHp(combat.Boss.MaxHp));
+            }
 
             player.AddComponent<MoveInput>().Tuning = _tuning;
 
@@ -176,20 +237,24 @@ namespace Dovus.Game
             visual.StrikeComboResetSec = _tuning.BasicStrikeComboResetSec;
             visual.BasicStrikeAnimSpeed = combat.Feel.BasicStrikeAnimSpeed;
             visual.UpperBodyMinSpeed = _tuning.UpperBodyCastMinSpeed;
-
-            var bossVisual = boss.AddComponent<BossVisual>();
-            if (bossAnim != null)
-                bossVisual.Bind(bossAnim, boss.GetComponent<Renderer>());
-            bossVisual.Configure(_tuning);
+            if (!_settingsScene)
+            {
+                var bossVisual = boss.AddComponent<BossVisual>();
+                if (bossAnim != null)
+                    bossVisual.Bind(bossAnim, boss.GetComponent<Renderer>());
+                bossVisual.Configure(_tuning);
+            }
 
             player.AddComponent<HitFlash>().Bind(combat.Feel);
             boss.AddComponent<HitFlash>().Bind(combat.Feel);
 
             var vitals = player.AddComponent<PlayerVitals>();
-            // O6: heal denemesi için %50 başlangıç DebugConfig.HalfHpStart ile (varsayılan kapalı).
+            // O6: heal denemesi iÃ§in %50 baÅŸlangÄ±Ã§ DebugConfig.HalfHpStart ile (varsayÄ±lan kapalÄ±).
             vitals.Bind(combat.Boss, playerHp, startRatio: DebugConfig.StartHpRatio);
             vitals.BindClock(clock);
             vitals.SetDevHp(DebugConfig.DevHpActive);
+            if (_settingsScene)
+                vitals.SetDevHp(true);
 
             var resource = player.AddComponent<PlayerResource>();
             // docs/element-sistemi.json resource_system: 100 / 8 / 1.5
@@ -216,35 +281,55 @@ namespace Dovus.Game
             var reactor = boss.AddComponent<BossReactor>();
             reactor.Tuning = _tuning;
             reactor.ConfigureFeel(combat.Feel);
-            reactor.BodyRadiusM = BossRadiusM;
+            reactor.BodyRadiusM = _settingsScene ? PlayerRadiusM : BossRadiusM;
             reactor.CaptureHome();
 
-            var bossVitals = new BossVitals(ScaledBossHp(combat.Boss.MaxHp));
-            ally.AddComponent<Targetable>().Configure(
-                teamId: 0,
-                displayName: "ALLY",
-                available: () => allyDummy.Hp > 0);
+            if (ally != null)
+            {
+                ally.AddComponent<Targetable>().Configure(
+                    teamId: 0,
+                    displayName: "ALLY",
+                    available: () => allyDummy.Hp > 0);
+            }
+
             boss.AddComponent<Targetable>().Configure(
                 teamId: 1,
-                displayName: "BOSS",
+                displayName: _settingsScene ? "KUKLA" : "BOSS",
                 available: () => !bossVitals.IsDown);
             playerStatus.Bind(null, combat.Status, vitals, null, null);
             bossStatus.Bind(null, combat.Status, null, bossVitals, reactor);
 
-            var telegraph = boss.AddComponent<BossTelegraph>();
-            telegraph.Bind(_tuning, combat.Boss, boss.transform);
+            var telegraph = _settingsScene ? null : boss.AddComponent<BossTelegraph>();
+            if (telegraph != null)
+                telegraph.Bind(_tuning, combat.Boss, boss.transform);
 
             var sun = CreateSun();
             FollowCamera follow = CreateCamera(player.transform, boss.transform, allyDummy?.transform);
             SceneAtmosphere.Apply(sun, Camera.main, _tuning);
-            // LavDecor.Build — eski arena-wide kırmızı ember noktaları kalktı.
-            BillboardVfx.CreateEmberField(boss.transform, new Color(1f, 0.45f, 0.12f), rate: 14f);
-            CreateHexagon(clock, combat, player.transform, pose, reactor, bossVitals, dodgeMotion, afterimage, vitals, telegraph, follow, tuningConfig, allyDummy, resource, cooldown);
+            if (!_settingsScene)
+                BillboardVfx.CreateEmberField(boss.transform, new Color(1f, 0.45f, 0.12f), rate: 14f);
+            CreateHexagon(
+                clock,
+                combat,
+                player.transform,
+                pose,
+                reactor,
+                bossVitals,
+                dodgeMotion,
+                afterimage,
+                vitals,
+                telegraph,
+                follow,
+                tuningConfig,
+                allyDummy,
+                resource,
+                cooldown,
+                trainingDummy);
         }
 
         /// <summary>
-        /// Can JSON'dan, tek katsayı ile. Kayıtlı panel sayısı (22) ölçeklenmez;
-        /// JSON yoksa tuning tavanı katsayı ile büyür. docs/durum.md
+        /// Can JSON'dan, tek katsayÄ± ile. KayÄ±tlÄ± panel sayÄ±sÄ± (22) Ã¶lÃ§eklenmez;
+        /// JSON yoksa tuning tavanÄ± katsayÄ± ile bÃ¼yÃ¼r. docs/durum.md
         /// </summary>
         int ScaledPlayerHp()
         {
@@ -278,7 +363,8 @@ namespace Dovus.Game
             TuningConfig tuningConfig,
             AllyDummy allyDummy = null,
             PlayerResource resource = null,
-            PlayerCooldown cooldown = null)
+            PlayerCooldown cooldown = null,
+            TrainingDummy trainingDummy = null)
         {
             var root = new GameObject("Hexagon");
             root.transform.SetParent(transform, false);
@@ -307,7 +393,7 @@ namespace Dovus.Game
                     _prototypePassiveRuneIds,
                     out string buildError))
             {
-                Debug.LogWarning($"[RuneManager] {buildError}; varsayılan build kullanıldı.");
+                Debug.LogWarning($"[RuneManager] {buildError}; varsayÄ±lan build kullanÄ±ldÄ±.");
             }
             RuneLoadout loadout = runeManager.Current;
             DebugConfig.DevLog(
@@ -319,8 +405,8 @@ namespace Dovus.Game
             if (follow != null)
                 view.BindLockOn(follow);
 
-            // 16 Eylül: sol yarıdaki sanal çubuk fonksiyonel olarak zaten çalışıyordu, hiç
-            // görseli yoktu (bug raporu). MoveInput'un mantığına dokunmuyor, sadece çiziyor.
+            // 16 EylÃ¼l: sol yarÄ±daki sanal Ã§ubuk fonksiyonel olarak zaten Ã§alÄ±ÅŸÄ±yordu, hiÃ§
+            // gÃ¶rseli yoktu (bug raporu). MoveInput'un mantÄ±ÄŸÄ±na dokunmuyor, sadece Ã§iziyor.
             var moveInput = player.GetComponent<MoveInput>();
             if (moveInput != null)
             {
@@ -347,8 +433,8 @@ namespace Dovus.Game
             input.DotAccepted += view.NotifyPressed;
             input.DrawCaption += view.ShowDrawCaption;
 
-            // 16 Eylül: "kamera sabit" bug raporu — MoveInput/HexagonInput'un parmaklarına
-            // dokunmadan üçüncü bir parmakla (veya editörde sağ-tık sürükleyerek) 360° orbit.
+            // 16 EylÃ¼l: "kamera sabit" bug raporu â€” MoveInput/HexagonInput'un parmaklarÄ±na
+            // dokunmadan Ã¼Ã§Ã¼ncÃ¼ bir parmakla (veya editÃ¶rde saÄŸ-tÄ±k sÃ¼rÃ¼kleyerek) 360Â° orbit.
             if (follow != null)
             {
                 var orbit = root.AddComponent<CameraOrbitInput>();
@@ -387,7 +473,7 @@ namespace Dovus.Game
             var vitalsHud = root.AddComponent<VitalsHud>();
             vitalsHud.Configure(vitals, bossVitals, _tuning, view.CanvasRoot, allyDummy, resource);
 
-            // Status strips — gerçek StatusBoard
+            // Status strips â€” gerÃ§ek StatusBoard
             if (playerStatus != null)
             {
                 var playerStrip = root.AddComponent<StatusIconStrip>();
@@ -439,7 +525,8 @@ namespace Dovus.Game
             if (DebugConfig.Enabled)
             {
                 var practice = root.AddComponent<DodgePractice>();
-                practice.Bind(player, boss.transform);
+                if (!_settingsScene)
+                    practice.Bind(player, boss.transform);
             }
 
             var feelGo = new GameObject("CombatFeel");
@@ -450,9 +537,14 @@ namespace Dovus.Game
             feel.BindActors(player.GetComponent<HitFlash>(), boss.GetComponent<HitFlash>());
             var playerVisual = player.GetComponent<ActorVisual>();
             var bossVisualComp = boss.GetComponent<BossVisual>();
+            var dummyVisualComp = boss.GetComponent<ActorVisual>();
             Animator playerAnim = playerVisual != null ? playerVisual.Animator : null;
-            Animator bossAnim = bossVisualComp != null ? bossVisualComp.Animator : null;
-            // Boss isabet hitstop: yalnız oyuncu animatörü — boss donunca ayak kemikleri ölçümü kayıyor (sweep yerde).
+            Animator bossAnim = bossVisualComp != null
+                ? bossVisualComp.Animator
+                : dummyVisualComp != null
+                    ? dummyVisualComp.Animator
+                    : null;
+            // Boss isabet hitstop: yalnÄ±z oyuncu animatÃ¶rÃ¼ â€” boss donunca ayak kemikleri Ã¶lÃ§Ã¼mÃ¼ kayÄ±yor (sweep yerde).
             visualFreeze.Bind(follow, playerAnim);
             feel.BindPresentation(visualFreeze, afterimage, player.transform);
             HitImpactFx.Configure(combat.Feel);
@@ -463,8 +555,12 @@ namespace Dovus.Game
             var overlayHud = feelGo.AddComponent<CombatOverlayHud>();
             overlayHud.Configure(vitals, bossVitals, player, boss.transform, overlay.Cam);
 
+            BossDirector bossDir = null;
+            HostileTargets hostileTargets = null;
+            if (!_settingsScene)
+            {
             var directorGo = boss.gameObject;
-            var bossDir = directorGo.AddComponent<BossDirector>();
+            bossDir = directorGo.AddComponent<BossDirector>();
             bossDir.Bind(clock, combat, _tuning, boss, input, player, vitals, bossVitals, telegraph, feel);
             if (bossStatus != null)
                 bossDir.BindStatus(bossStatus);
@@ -473,8 +569,8 @@ namespace Dovus.Game
             bossDir.BindVisual(boss.GetComponent<BossVisual>());
             follow?.BindBossDirector(bossDir);
 
-            // Boss hedefleri: oyuncu + dost kukla (+ MD'nin dikkat çeken yemleri). Sayılar karadul.json targeting.
-            var hostileTargets = directorGo.AddComponent<HostileTargets>();
+            // Boss hedefleri: oyuncu + dost kukla (+ MD'nin dikkat Ã§eken yemleri). SayÄ±lar karadul.json targeting.
+            hostileTargets = directorGo.AddComponent<HostileTargets>();
             TargetingConfig targetingConfig = BossEncounterData.LoadTargeting(_tuning.ActiveBossResourcePath);
             hostileTargets.Configure(targetingConfig);
             hostileTargets.Register(
@@ -499,6 +595,13 @@ namespace Dovus.Game
 
             feelGo.AddComponent<SfxDirector>();
             feelGo.AddComponent<PresentationFx>().Bind(bossDir, dodgeMotion, feel, input, follow, combat);
+            }
+
+            if (_settingsScene)
+            {
+                feelGo.AddComponent<SfxDirector>();
+            }
+
             var feelVerify = feelGo.AddComponent<FeelPlayVerify>();
             feelVerify.Bind(follow, player.transform);
             var playerSteps = player.gameObject.AddComponent<FootstepEmitter>();
@@ -533,21 +636,26 @@ namespace Dovus.Game
             var director = manGo.AddComponent<ManifestationDirector>();
             director.Bind(clock, input, player, pose, boss, bossVitals, scars, _tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, allyDummy, view, passiveHud, equippedWeapon, equipmentBonus, skills, skillFactory, design?.Animations);
             director.BindTargeting(targeting);
-            director.BindHostileTargets(hostileTargets);
+            if (!_settingsScene)
+            {
+                director.BindHostileTargets(hostileTargets);
 
-            // Düşman mermileri (Zehir Tükürüğü). Sayılar karadul.json "volley".
-            BossEncounterData.ApplyVolley(combat.Boss, _tuning.ActiveBossResourcePath);
-            var projectileHost = directorGo.AddComponent<HostileProjectileHost>();
-            projectileHost.Bind(clock, hostileTargets, player, playerStatus, vitals, boss.transform, boss.BodyRadiusM);
-            bossDir.BindProjectiles(projectileHost);
-            director.BindProjectiles(projectileHost);
+                // DÃ¼ÅŸman mermileri (Zehir TÃ¼kÃ¼rÃ¼ÄŸÃ¼). SayÄ±lar karadul.json "volley".
+                BossEncounterData.ApplyVolley(combat.Boss, _tuning.ActiveBossResourcePath);
+                var directorGo = boss.gameObject;
+                var projectileHost = directorGo.AddComponent<HostileProjectileHost>();
+                projectileHost.Bind(clock, hostileTargets, player, playerStatus, vitals, boss.transform, boss.BodyRadiusM);
+                bossDir.BindProjectiles(projectileHost);
+                director.BindProjectiles(projectileHost);
+
+                var webFields = directorGo.AddComponent<WebFieldView>();
+                webFields.Bind(clock, combat, bossDir, bossVitals, player, playerStatus);
+                if (allyDummy != null)
+                    webFields.RegisterAlly(allyDummy);
+            }
 
             boss.GetComponent<MotionTemplateBody>()?.Bind(
-                clock, combat.SkillMotion.ArenaHalfSizeM, BossRadiusM);
-            var webFields = directorGo.AddComponent<WebFieldView>();
-            webFields.Bind(clock, combat, bossDir, bossVitals, player, playerStatus);
-            if (allyDummy != null)
-                webFields.RegisterAlly(allyDummy);
+                clock, combat.SkillMotion.ArenaHalfSizeM, _settingsScene ? PlayerRadiusM : BossRadiusM);
             director.ConfigureWeaponCycle(design?.Equipment.Items);
             if (design != null)
             {
@@ -567,7 +675,7 @@ namespace Dovus.Game
             view.BindWeaponSwap(director, clock);
             input.WeaponSwapRequested += () => director.TryRequestWeaponSwap();
             input.OrbCommandRequested += () => director.ToggleOrb();
-            // K3: silah düğmesi dokunuşu her zaman değiştirir; Küre'de uzun basma (orb.hold_sec) küreyi yollar.
+            // K3: silah dÃ¼ÄŸmesi dokunuÅŸu her zaman deÄŸiÅŸtirir; KÃ¼re'de uzun basma (orb.hold_sec) kÃ¼reyi yollar.
             input.SwapHoldCommandSec = () => director.SwapButtonHoldSec;
 
             var preview = root.AddComponent<SkillPreviewHud>();
@@ -584,10 +692,23 @@ namespace Dovus.Game
             elementMenu.Configure(
                 director, skills, playerStatus, _tuning, view.CanvasRoot, elementTransitionMs);
 
-            // Release düzeltmesi: uGUI düğmeleri (BUILD SEÇ, BUILD) EventSystem olmadan dokunuş
-            // almaz. EventSystem eskiden yalnız debug ayar paneliyle kuruluyordu; release
-            // APK'da (DebugConfig.Enabled=false) hiç yoktu. Artık her build'de kurulur.
+            // Release dÃ¼zeltmesi: uGUI dÃ¼ÄŸmeleri (BUILD SEÃ‡, BUILD) EventSystem olmadan dokunuÅŸ
+            // almaz. EventSystem eskiden yalnÄ±z debug ayar paneliyle kuruluyordu; release
+            // APK'da (DebugConfig.Enabled=false) hiÃ§ yoktu. ArtÄ±k her build'de kurulur.
             EnsureEventSystem();
+            if (_settingsScene && trainingDummy != null)
+            {
+                Transform gripRoot = trainingDummy.transform;
+                var applier = gripRoot.gameObject.AddComponent<WeaponFeelApplier>();
+                applier.Bind(director, combat, gripRoot);
+                applier.ApplyWeapon("kilic");
+                var settingsPanel = root.AddComponent<SettingsScenePanel>();
+                settingsPanel.Configure(director, input, clock, applier, skills, follow, _tuning, gripRoot);
+                var gripCam = root.AddComponent<SettingsSceneGripCamera>();
+                Animator gripAnim = gripRoot.GetComponentInChildren<Animator>();
+                gripCam.Bind(follow, gripAnim, _tuning);
+            }
+
             if (DebugConfig.Enabled)
             {
                 var v6Panel = root.AddComponent<V611DebugPanel>();
@@ -608,7 +729,7 @@ namespace Dovus.Game
         {
             if (design == null || assets == null || runes == null || factory == null || weapon == null)
             {
-                Debug.LogWarning("[BindingReady] v6.1.1 preflight atlandı: bağımlılık eksik.");
+                Debug.LogWarning("[BindingReady] v6.1.1 preflight atlandÄ±: baÄŸÄ±mlÄ±lÄ±k eksik.");
                 return;
             }
 
@@ -624,13 +745,13 @@ namespace Dovus.Game
             }
 
             DebugConfig.DevLog(
-                $"[BindingReady] JSON {design.Version} → SO 12/10/6 → "
-                + $"buildSkills={buildSkills.Count} → smoke={smoke.DisplayName} → "
-                + $"weapon={weapon.Name} → element={assets.Elements[0].DisplayName}");
+                $"[BindingReady] JSON {design.Version} â†’ SO 12/10/6 â†’ "
+                + $"buildSkills={buildSkills.Count} â†’ smoke={smoke.DisplayName} â†’ "
+                + $"weapon={weapon.Name} â†’ element={assets.Elements[0].DisplayName}");
         }
 
         /// <summary>
-        /// Resources element-sistemi v6.1.1 → prototip Kılıç. Seçim UI ayrı sunum işi.
+        /// Resources element-sistemi v6.1.1 â†’ prototip KÄ±lÄ±Ã§. SeÃ§im UI ayrÄ± sunum iÅŸi.
         /// </summary>
         static EquipmentBonusResolver LoadPrototypeEquipment(out EquipmentItem weapon)
         {
@@ -646,16 +767,16 @@ namespace Dovus.Game
             }
             catch (System.Exception e)
             {
-                Debug.LogWarning($"[Equipment] katalog okunamadı: {e.Message}");
+                Debug.LogWarning($"[Equipment] katalog okunamadÄ±: {e.Message}");
                 return new EquipmentBonusResolver();
             }
         }
 
         /// <summary>
-        /// T10: uGUI Slider/Button ilk kez sahneye giriyor — proje şimdiye kadar hep elle
-        /// hit-test eden EnhancedTouch kullanıyordu (HexagonInput/MoveInput). Standart Slider
-        /// bir EventSystem + bir input modülü ister; InputSystemUIInputModule seçildi çünkü
-        /// proje zaten Yeni Input System üstünde (Unity.InputSystem asmdef referansı).
+        /// T10: uGUI Slider/Button ilk kez sahneye giriyor â€” proje ÅŸimdiye kadar hep elle
+        /// hit-test eden EnhancedTouch kullanÄ±yordu (HexagonInput/MoveInput). Standart Slider
+        /// bir EventSystem + bir input modÃ¼lÃ¼ ister; InputSystemUIInputModule seÃ§ildi Ã§Ã¼nkÃ¼
+        /// proje zaten Yeni Input System Ã¼stÃ¼nde (Unity.InputSystem asmdef referansÄ±).
         /// </summary>
         static void CreateTuningPanel(TuningConfig tuningConfig, PlayerVitals vitals, FollowCamera follow)
         {
@@ -665,8 +786,8 @@ namespace Dovus.Game
         }
 
         /// <summary>
-        /// Tek EventSystem + InputSystemUIInputModule (proje yalnız Yeni Input System). Debug'dan
-        /// bağımsız: release'te BUILD SEÇ ekranının uGUI düğmeleri buna muhtaç.
+        /// Tek EventSystem + InputSystemUIInputModule (proje yalnÄ±z Yeni Input System). Debug'dan
+        /// baÄŸÄ±msÄ±z: release'te BUILD SEÃ‡ ekranÄ±nÄ±n uGUI dÃ¼ÄŸmeleri buna muhtaÃ§.
         /// </summary>
         static void EnsureEventSystem()
         {
@@ -697,26 +818,32 @@ namespace Dovus.Game
 
         GameObject CreateArena()
         {
-            // Sahip: 100 m çap daire, yüksek duvar, tavansız — Long_Hall avize/sütun görüşü kesiyordu.
-            Color wall = new Color(0.28f, 0.26f, 0.24f);
+            if (_settingsScene)
+            {
+                Color wall = new Color(0.32f, 0.30f, 0.28f);
+                return FlatArena.Build(Mathf.Min(_tuning.ArenaHalfSizeM, 14f), _tuning.GroundColor, wall);
+            }
+
+            // Sahip: 100 m Ã§ap daire, yÃ¼ksek duvar, tavansÄ±z â€” Long_Hall avize/sÃ¼tun gÃ¶rÃ¼ÅŸÃ¼ kesiyordu.
+            Color wallCircle = new Color(0.28f, 0.26f, 0.24f);
             return CircularArena.Build(
                 _tuning.ArenaHalfSizeM,
                 _tuning.ArenaWallHeightM,
                 _tuning.ArenaWallThicknessM,
                 _tuning.GroundColor,
-                wall);
+                wallCircle);
         }
 
         /// <summary>
-        /// Yerel Mixamo override (<c>Resources/PlayerVisualOverride</c>, gitignored) varsa oyuncu onu kullanır;
-        /// CI/headless'ta asset yok → sahnedeki Synty referansı.
+        /// Yerel Mixamo override (<c>Resources/PlayerVisualOverride</c>, gitignored) varsa oyuncu onu kullanÄ±r;
+        /// CI/headless'ta asset yok â†’ sahnedeki Synty referansÄ±.
         /// </summary>
         static GameObject ResolvePlayerVisualPrefab(GameObject sceneDefault) =>
             Resources.Load<GameObject>("PlayerVisualOverride") ?? sceneDefault;
 
         /// <summary>
-        /// Ağların Kraliçesi: <c>Bosses/Visuals/AglarinKralicesi</c> prefab (Editor menüsüyle üretilir);
-        /// yoksa sahnedeki karadul görseli.
+        /// AÄŸlarÄ±n KraliÃ§esi: <c>Bosses/Visuals/AglarinKralicesi</c> prefab (Editor menÃ¼sÃ¼yle Ã¼retilir);
+        /// yoksa sahnedeki karadul gÃ¶rseli.
         /// </summary>
         GameObject ResolveBossVisualPrefab(GameObject sceneDefault)
         {
@@ -726,8 +853,8 @@ namespace Dovus.Game
         }
 
         /// <summary>
-        /// Asset Store prefab'ı kökün child'ı olur; mantık kökte kalır (motor/pose/reactor).
-        /// Ayak pivot'u varsayılır — local Y ofseti prefab'a göre sonra ayarlanır.
+        /// Asset Store prefab'Ä± kÃ¶kÃ¼n child'Ä± olur; mantÄ±k kÃ¶kte kalÄ±r (motor/pose/reactor).
+        /// Ayak pivot'u varsayÄ±lÄ±r â€” local Y ofseti prefab'a gÃ¶re sonra ayarlanÄ±r.
         /// </summary>
         static void AttachVisual(
             GameObject root,
@@ -746,8 +873,8 @@ namespace Dovus.Game
             visual.transform.localPosition = Vector3.zero;
             visual.transform.localRotation = Quaternion.identity;
 
-            // Gameplay kökü kapsül mesh'ini ölçekliyor (boss'ta XZ ve Y farklı). Görsel bu
-            // ölçeği miras alırsa karakter ezilip genişliyordu; önce dünya ölçeğini 1'e çeker.
+            // Gameplay kÃ¶kÃ¼ kapsÃ¼l mesh'ini Ã¶lÃ§ekliyor (boss'ta XZ ve Y farklÄ±). GÃ¶rsel bu
+            // Ã¶lÃ§eÄŸi miras alÄ±rsa karakter ezilip geniÅŸliyordu; Ã¶nce dÃ¼nya Ã¶lÃ§eÄŸini 1'e Ã§eker.
             Vector3 parentScale = root.transform.lossyScale;
             visual.transform.localScale = new Vector3(
                 1f / Mathf.Max(0.0001f, parentScale.x),
@@ -762,8 +889,8 @@ namespace Dovus.Game
             {
                 float fit = Mathf.Max(0.1f, targetHeightM) / initial.size.y;
                 visual.transform.localScale *= fit;
-                // Skinned mesh'in hazır bounds'u dolgulu (Synty'de tabanın ~10 cm altı); ona
-                // oturtunca ayak havada kalıyordu. Zemin, ilk animasyon pozunun gerçek köşelerinden.
+                // Skinned mesh'in hazÄ±r bounds'u dolgulu (Synty'de tabanÄ±n ~10 cm altÄ±); ona
+                // oturtunca ayak havada kalÄ±yordu. Zemin, ilk animasyon pozunun gerÃ§ek kÃ¶ÅŸelerinden.
                 if (TryGetRendererBounds(visual, out Bounds fitted, posed: true))
                     visual.transform.position += Vector3.up * (groundY - fitted.min.y);
                 DebugConfig.DevLog(
@@ -827,8 +954,8 @@ namespace Dovus.Game
         }
 
         /// <summary>
-        /// Mesh'i doğrudan ata (MeshFilter+MeshRenderer) — CreatePrimitive'in otomatik
-        /// Collider'ı hiç oluşmaz (teknoloji-kararlari §4).
+        /// Mesh'i doÄŸrudan ata (MeshFilter+MeshRenderer) â€” CreatePrimitive'in otomatik
+        /// Collider'Ä± hiÃ§ oluÅŸmaz (teknoloji-kararlari Â§4).
         /// </summary>
         static GameObject CreateMeshObject(string name, PrimitiveType type)
         {
@@ -848,7 +975,7 @@ namespace Dovus.Game
             light.shadows = LightShadows.Soft;
             sunGo.transform.rotation = Quaternion.Euler(48f, -32f, 0f);
             RenderSettings.sun = light;
-            // Synty Generic_Basic atlas karanlıkta flat görünür — fill ambient.
+            // Synty Generic_Basic atlas karanlÄ±kta flat gÃ¶rÃ¼nÃ¼r â€” fill ambient.
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
             RenderSettings.ambientSkyColor = new Color(0.45f, 0.48f, 0.55f);
             RenderSettings.ambientEquatorColor = new Color(0.28f, 0.26f, 0.24f);
@@ -882,7 +1009,7 @@ namespace Dovus.Game
             return follow;
         }
 
-        /// <summary>Başlangıç spawn'ları arena merkezinden en fazla <paramref name="maxRadiusM"/> içinde tutar.</summary>
+        /// <summary>BaÅŸlangÄ±Ã§ spawn'larÄ± arena merkezinden en fazla <paramref name="maxRadiusM"/> iÃ§inde tutar.</summary>
         static Vector3 ClampSpawnXZ(Vector3 worldPos, float maxRadiusM)
         {
             if (maxRadiusM <= 0.01f)

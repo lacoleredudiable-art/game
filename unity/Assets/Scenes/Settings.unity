@@ -1,0 +1,615 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!29 &1
+OcclusionCullingSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_OcclusionBakeSettings:
+    smallestOccluder: 5
+    smallestHole: 0.25
+    backfaceThreshold: 100
+  m_SceneGUID: 00000000000000000000000000000000
+  m_OcclusionCullingData: {fileID: 0}
+--- !u!104 &2
+RenderSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 10
+  m_Fog: 0
+  m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  m_FogMode: 3
+  m_FogDensity: 0.01
+  m_LinearFogStart: 0
+  m_LinearFogEnd: 300
+  m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+  m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+  m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+  m_AmbientIntensity: 1
+  m_AmbientMode: 0
+  m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
+  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_HaloStrength: 0.5
+  m_FlareStrength: 1
+  m_FlareFadeSpeed: 3
+  m_HaloTexture: {fileID: 0}
+  m_SpotCookie: {fileID: 10001, guid: 0000000000000000e000000000000000, type: 0}
+  m_DefaultReflectionMode: 0
+  m_DefaultReflectionResolution: 128
+  m_ReflectionBounces: 1
+  m_ReflectionIntensity: 1
+  m_CustomReflection: {fileID: 0}
+  m_Sun: {fileID: 0}
+  m_UseRadianceAmbientProbe: 0
+--- !u!157 &3
+LightmapSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 13
+  m_BakeOnSceneLoad: 0
+  m_GISettings:
+    serializedVersion: 2
+    m_BounceScale: 1
+    m_IndirectOutputScale: 1
+    m_AlbedoBoost: 1
+    m_EnvironmentLightingMode: 0
+    m_EnableBakedLightmaps: 1
+    m_EnableRealtimeLightmaps: 0
+  m_LightmapEditorSettings:
+    serializedVersion: 12
+    m_Resolution: 2
+    m_BakeResolution: 40
+    m_AtlasSize: 1024
+    m_AO: 0
+    m_AOMaxDistance: 1
+    m_CompAOExponent: 1
+    m_CompAOExponentDirect: 0
+    m_ExtractAmbientOcclusion: 0
+    m_Padding: 2
+    m_LightmapParameters: {fileID: 0}
+    m_LightmapsBakeMode: 1
+    m_TextureCompression: 1
+    m_ReflectionCompression: 2
+    m_MixedBakeMode: 2
+    m_BakeBackend: 2
+    m_PVRSampling: 1
+    m_PVRDirectSampleCount: 32
+    m_PVRSampleCount: 512
+    m_PVRBounces: 2
+    m_PVREnvironmentSampleCount: 256
+    m_PVREnvironmentReferencePointCount: 2048
+    m_PVRFilteringMode: 1
+    m_PVRDenoiserTypeDirect: 1
+    m_PVRDenoiserTypeIndirect: 1
+    m_PVRDenoiserTypeAO: 1
+    m_PVRFilterTypeDirect: 0
+    m_PVRFilterTypeIndirect: 0
+    m_PVRFilterTypeAO: 0
+    m_PVREnvironmentMIS: 1
+    m_PVRCulling: 1
+    m_PVRFilteringGaussRadiusDirect: 1
+    m_PVRFilteringGaussRadiusIndirect: 1
+    m_PVRFilteringGaussRadiusAO: 1
+    m_PVRFilteringAtrousPositionSigmaDirect: 0.5
+    m_PVRFilteringAtrousPositionSigmaIndirect: 2
+    m_PVRFilteringAtrousPositionSigmaAO: 1
+    m_ExportTrainingData: 0
+    m_TrainingDataDestination: TrainingData
+    m_LightProbeSampleCountMultiplier: 4
+  m_LightingDataAsset: {fileID: 20201, guid: 0000000000000000f000000000000000, type: 0}
+  m_LightingSettings: {fileID: 0}
+--- !u!196 &4
+NavMeshSettings:
+  serializedVersion: 2
+  m_ObjectHideFlags: 0
+  m_BuildSettings:
+    serializedVersion: 3
+    agentTypeID: 0
+    agentRadius: 0.5
+    agentHeight: 2
+    agentSlope: 45
+    agentClimb: 0.4
+    ledgeDropHeight: 0
+    maxJumpAcrossDistance: 0
+    minRegionArea: 2
+    manualCellSize: 0
+    cellSize: 0.16666667
+    manualTileSize: 0
+    tileSize: 256
+    buildHeightMesh: 0
+    maxJobWorkers: 0
+    preserveTilesOutsideBounds: 0
+    debug:
+      m_Flags: 0
+  m_NavMeshData: {fileID: 0}
+--- !u!1 &328619738
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 328619740}
+  - component: {fileID: 328619739}
+  m_Layer: 0
+  m_Name: SettingsBootstrap
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &328619739
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 328619738}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be36e77759996a54eb17e5f53a7862d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Dovus.Game::Dovus.Game.PrototypeBootstrap
+  _tuning:
+    ArenaHalfSizeM: 25
+    ArenaWallHeightM: 18
+    ArenaWallThicknessM: 1.4
+    ArenaVisualScale: 1
+    PlayerVisualHeightM: 1.78
+    BossVisualHeightM: 5
+    CharacterAnimSpeed: 1
+    WalkSpeedMps: 6.4
+    MoveAccelMps2: 52
+    MoveDecelMps2: 64
+    TurnRateDegPerSec: 720
+    MinStickSpeedFrac: 0.42
+    AnimSpeedDampSec: 0.08
+    LocoMaxPlaybackMult: 1.5
+    AnimCrossFadeSec: 0.06
+    BasicStrikeComboResetSec: 1.2
+    UpperBodyCastMinSpeed: 0.15
+    FootstepStrideM: 2.2
+    BossFootstepStrideM: 2.4
+    PlayerMaxHp: 22
+    JoystickMaxRadiusDp: 72
+    JoystickDeadZone: 0.12
+    HudFitShortSideDp: 600
+    HexagonCenterXNorm: 0.78
+    HexagonCenterYNorm: 0.3
+    HexagonRadiusDp: 112
+    DotHitRadiusDp: 34
+    CenterHitRadiusDp: 38
+    MirrorForLeftHand: 0
+    InkLingerSec: 0.4
+    InkWidthDp: 3.5
+    InkRawWidthScale: 0.9
+    InkRawGlow: 1
+    DodgeButtonOffsetXDp: 0
+    DodgeButtonOffsetYDp: 0
+    DodgeButtonRadiusDp: 40
+    DodgeButtonScreenMarginDp: 10
+    DodgeClearanceDp: 40
+    WeaponSwapButtonRadiusDp: 36
+    WeaponSwapButtonOffsetXDp: 0
+    WeaponSwapButtonOffsetYDp: 0
+    WeaponSwapIconScale: 0.72
+    LockOnButtonRadiusDp: 36
+    LockOnButtonOffsetXDp: 0
+    LockOnButtonOffsetYDp: 52
+    LockOnButtonColor: {r: 0.55, g: 0.72, b: 0.88, a: 0.9}
+    LockOnButtonActiveColor: {r: 0.95, g: 0.82, b: 0.45, a: 0.95}
+    ElementMenuRadiusDp: 92
+    ElementMenuChipWidthDp: 144
+    ElementMenuChipHeightDp: 48
+    ElementMenuItemWidthDp: 84
+    ElementMenuItemHeightDp: 48
+    ElementMenuAnchorXNorm: 0.86
+    ElementMenuAnchorYNorm: 0.72
+    BasicStrikeDot: 1
+    IconDisplayScale: 1
+    CombatTrayPaddingDp: 22
+    CombatTrayHeaderHeightDp: 22
+    CombatTrayCornerRadiusDp: 20
+    CombatTrayLinkWidthDp: 1.5
+    DotVibrationMs: 30
+    FollowSmoothTimeSec: 0.12
+    LookAheadM: 0.65
+    CameraShoulderOffset: {x: 0.42, y: 1.12, z: -0.28}
+    CameraDistanceM: 5.85
+    CameraLookHeightM: 0.38
+    CameraFovDeg: 54
+    CameraAimDampingSec: 0.12
+    CameraSoftLockRangeM: 20
+    CameraSoftLockStrength: 0.58
+    CameraBossFramingWeight: 0.4
+    CameraBossAimHeightM: 2.05
+    CameraDefaultPitchDeg: 21
+    CameraLockOnMinDistanceM: 5.2
+    CameraLockOnMaxDistanceM: 8.8
+    CameraLockOnDistancePerSepM: 0.14
+    CameraLockOnMaxExtraDistanceM: 3.1
+    CameraLockOnDistanceSmoothSec: 0.22
+    CameraWindupDistanceMul: 1.42
+    CameraWindupExtraHeightM: 0.68
+    CameraWindupSmoothSec: 0.28
+    CameraWindupMinRadiusM: 3.5
+    CameraCollisionSphereRadiusM: 0.25
+    CameraCollisionMarginM: 0.12
+    CameraCollisionMinDistanceM: 1.2
+    CameraCollisionPullInSmoothSec: 0.05
+    CameraCollisionPullOutSmoothSec: 0.35
+    CameraLockOnShoulderSideM: 1.1
+    CameraLockOnShoulderFlipHysteresis: 0.12
+    CameraLockOnLookBlendToBoss: 0.58
+    AmbientSky: {r: 0.66, g: 0.7, b: 0.73, a: 1}
+    AmbientEquator: {r: 0.52, g: 0.55, b: 0.58, a: 1}
+    AmbientGround: {r: 0.3, g: 0.3, b: 0.31, a: 1}
+    FogColor: {r: 0.69, g: 0.718, b: 0.737, a: 1}
+    FogDensity: 0.0032
+    KeyLightColor: {r: 0.86, g: 0.89, b: 0.92, a: 1}
+    KeyLightIntensity: 0.85
+    KeyLightEuler: {x: 52, y: -30, z: 0}
+    KeyShadowStrength: 0.38
+    RimLightColor: {r: 0.38, g: 0.55, b: 1, a: 1}
+    RimLightIntensity: 0.18
+    RimLightEuler: {x: 28, y: 145, z: 0}
+    BloomIntensity: 0.65
+    BloomThreshold: 0.95
+    BloomScatter: 0.55
+    BloomTint: {r: 1, g: 0.86, b: 0.72, a: 1}
+    PostExposure: 0.15
+    ColorContrast: -14
+    ColorSaturation: -35
+    ColorFilterTint: {r: 0.95, g: 0.975, b: 1, a: 1}
+    PostVignetteIntensity: 0.12
+    CameraFarClipM: 320
+    PlayerColor: {r: 0.373, g: 0.941, b: 1, a: 1}
+    BossColor: {r: 0.18, g: 0.19, b: 0.22, a: 1}
+    GroundColor: {r: 0.44, g: 0.46, b: 0.49, a: 1}
+    BackgroundColor: {r: 0.69, g: 0.718, b: 0.737, a: 1}
+    InkPurple: {r: 0.725, g: 0.549, b: 1, a: 1}
+    InkCyan: {r: 0.373, g: 0.941, b: 1, a: 1}
+    AcidGreen: {r: 0.608, g: 0.91, b: 0.235, a: 1}
+    ElementFire: {r: 1, g: 0.42, b: 0.62, a: 1}
+    ElementWater: {r: 0.28, g: 0.72, b: 1, a: 1}
+    ElementAir: {r: 0.5, g: 0.7, b: 0.62, a: 1}
+    ElementEarth: {r: 0.62, g: 0.78, b: 0.42, a: 1}
+    ElementLight: {r: 1, g: 0.96, b: 0.82, a: 1}
+    ElementDark: {r: 0.48, g: 0.28, b: 0.78, a: 1}
+    VfxTexFire: flame_02
+    VfxTexWater: circle_03
+    VfxTexAir: twirl_01
+    VfxTexEarth: dirt_01
+    VfxTexLight: star_04
+    VfxTexDark: magic_04
+    VfxTexHit: spark_05
+    VfxTexInk: light_01
+    HexagonDotColor: {r: 0.55, g: 0.62, b: 0.72, a: 0.85}
+    HexagonCenterColor: {r: 0.373, g: 0.941, b: 1, a: 0.9}
+    DodgeButtonColor: {r: 0.725, g: 0.549, b: 1, a: 0.9}
+    TelegraphHot: {r: 1, g: 0.302, b: 0.141, a: 1}
+    TelegraphWarm: {r: 1, g: 0.604, b: 0.235, a: 1}
+    WindowCueUrgentRatio: 0.3
+    WindowCuePulseHz: 2
+    WindowCueUrgentHz: 8
+    WindowCuePulseAmp: 0.45
+    DodgeGlideSpeedMps: 3.5
+    TelegraphStretch: 0.28
+    TelegraphSquash: 0.18
+    TelegraphSlamSquash: 0.22
+    TelegraphTonePitchMin: 0.55
+    TelegraphTonePitchMax: 1.8
+    TelegraphToneVolumeMin: 0.12
+    TelegraphToneVolumeMax: 0.4
+    BossApproachStopPadM: 0.35
+    AfterimageAlpha: 0.55
+    ImpactFadeSec: 0.04
+    VignetteHoldSec: 0.85
+    VignetteFadeSec: 0.45
+    VignetteAlpha: 0.55
+    ThreatAlphaMax: 0.35
+    ThreatPulseHzMin: 4
+    ThreatPulseHzMax: 14
+    CameraShakePxToM: 0.01
+    EffectLineWidthDefaultM: 0.28
+    EffectLineWidthWideM: 0.55
+    EffectLineWidthNarrowM: 0.16
+    EffectSarsintiWidthWideM: 0.22
+    EffectSarsintiWidthNarrowM: 0.1
+    EffectShowMinFocus: 0.2
+    EffectIgneShowMinSpread: 0.2
+    EffectFocusRingMax: 0.35
+    EffectFocusArcMax: 0.75
+    EffectPierceNeedleShowMin: 0.45
+    EffectFocusSwarmAlongLineMin: 0.45
+    EffectBlobScaleBaseM: 0.38
+    EffectBlobScalePerSpreadM: 0.18
+    EffectNeedleThickWideM: 0.35
+    EffectNeedleThickNarrowM: 0.14
+    EffectNeedleLenBaseM: 0.7
+    EffectNeedleLenPerPierceM: 0.5
+    EffectNeedleWindupLenMul: 1.55
+    EffectNeedleArrivalLenMul: 0.72
+    EffectNeedleAfterimageAlpha: 0.35
+    EffectSwarmJitterM: 0.65
+    EffectSwarmMinBlobs: 4
+    EffectSarsintiGroundY: 0.02
+    EffectSarsintiMassWidthMul: 1.35
+    EffectBasicStrikeLenM: 0.9
+    EffectBasicStrikeThickM: 0.16
+    EffectBasicStrikeHeightM: 0.55
+    ActorPoseDurationMs: 180
+    PoseIgne: {x: 0.78, y: 0.88, z: 1.35}
+    PoseSuru: {x: 1.35, y: 0.9, z: 1.1}
+    PoseSarsinti: {x: 1.2, y: 0.55, z: 1.2}
+    PoseKabuk: {x: 1.15, y: 1.05, z: 1.15}
+    PoseZehir: {x: 1.05, y: 0.95, z: 1.25}
+    BossGravityMps2: 22
+    BossRecoilEaseDecayPerSec: 3.2
+    BossShakeAmpBaseM: 0.12
+    BossShakeAmpPerKnockbackM: 0.05
+    BossPinShakeAmpM: 0.04
+    BossLiftVelocityPerM: 4.5
+    ActiveBossId: aglarin_kralicesi
+    BossTurnRateDegPerSec: 240
+    BossSlamImpactNorm: 0.42
+    BossConeImpactNorm: 0.4
+    BossStaggerMinGapSec: 0.6
+    BossAnimCrossFadeSec: 0.15
+    BossWalkClipMps: 1.4
+    BossDeathCollapseSec: 0.85
+    BossDeathSquashY: 0.28
+    BossDeathSpreadXz: 1.35
+    GroundScarCapCount: 60
+    ReadoutAnchorRight: 1
+    ReadoutPunchInSec: 0.12
+    VitalsBarWidthDp: 224
+    VitalsBarHeightDp: 17
+    VitalsBossBarHeightDp: 24
+    VitalsBossBarWidthDp: 460
+    VitalsBarSpacingDp: 6
+    VitalsMarginDp: 16
+    VitalsHeaderHeightDp: 18
+    VitalsPanelPaddingDp: 8
+    BossVitalsColor: {r: 0.88, g: 0.16, b: 0.12, a: 0.98}
+    StatusIconSizeDp: 28
+    StatusIconGapDp: 6
+    OrbitDegreesPerDp: 0.35
+    CameraPitchMinDeg: -8
+    CameraPitchMaxDeg: 35
+    OrbitInvertPitch: 0
+    SoftAimRangeM: 8
+    SoftAimConeDeg: 70
+    DamageFloatFontDp: 28
+    DamageFloatCritFontDp: 36
+    DamageFloatRisePx: 64
+    DamageFloatHoldSec: 0.35
+    DamageFloatFadeSec: 0.45
+    DamageFloatPunchScale: 1.25
+    RecoveryLockHeightDp: 10
+    RecoveryLockGapDp: 8
+    ShowFrameTimeHud: 0
+    FrameTimeSampleSec: 0.5
+    TargetFrameRateHz: 60
+    ShowDamageNumbers: 1
+    SkillPreviewWidthDp: 324
+    SkillPreviewHeightDp: 72
+    SkillPreviewGapDp: 10
+    SkillPreviewHoldSec: 0.9
+    SkipBuildSelectOnStart: 0
+    ShowSentenceDebugHud: 0
+    TuningVersion: 22
+  _playerVisualPrefab: {fileID: 0}
+  _bossVisualPrefab: {fileID: 0}
+  _prototypeMainClassId: 1
+  _prototypePassiveRuneIds: 
+  _settingsScene: 1
+--- !u!4 &328619740
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 328619738}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &485511550
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 485511552}
+  - component: {fileID: 485511551}
+  m_Layer: 0
+  m_Name: Directional Light
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!108 &485511551
+Light:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 485511550}
+  m_Enabled: 1
+  serializedVersion: 13
+  m_Type: 1
+  m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
+  m_Intensity: 1
+  m_Range: 10
+  m_SpotAngle: 30
+  m_InnerSpotAngle: 21.80208
+  m_CookieSize2D: {x: 0.5, y: 0.5}
+  m_Shadows:
+    m_Type: 2
+    m_Resolution: -1
+    m_CustomResolution: -1
+    m_Strength: 1
+    m_Bias: 0.05
+    m_NormalBias: 0.4
+    m_NearPlane: 0.2
+    m_CullingMatrixOverride:
+      e00: 1
+      e01: 0
+      e02: 0
+      e03: 0
+      e10: 0
+      e11: 1
+      e12: 0
+      e13: 0
+      e20: 0
+      e21: 0
+      e22: 1
+      e23: 0
+      e30: 0
+      e31: 0
+      e32: 0
+      e33: 1
+    m_UseCullingMatrixOverride: 0
+  m_Cookie: {fileID: 0}
+  m_DrawHalo: 0
+  m_Flare: {fileID: 0}
+  m_RenderMode: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RenderingLayerMask: 1
+  m_Lightmapping: 4
+  m_LightShadowCasterMode: 0
+  m_AreaSize: {x: 1, y: 1}
+  m_BounceIntensity: 1
+  m_ColorTemperature: 6570
+  m_UseColorTemperature: 0
+  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_UseBoundingSphereOverride: 0
+  m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
+  m_ShapeRadius: 0.025
+  m_ShadowAngle: 0
+  m_LightUnit: 1
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
+--- !u!4 &485511552
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 485511550}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
+  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1 &951375204
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 951375207}
+  - component: {fileID: 951375206}
+  - component: {fileID: 951375205}
+  m_Layer: 0
+  m_Name: Main Camera
+  m_TagString: MainCamera
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!81 &951375205
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 951375204}
+  m_Enabled: 1
+--- !u!20 &951375206
+Camera:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 951375204}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_ClearFlags: 1
+  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_projectionMatrixMode: 1
+  m_GateFitMode: 2
+  m_FOVAxisMode: 0
+  m_Iso: 200
+  m_ShutterSpeed: 0.005
+  m_Aperture: 16
+  m_FocusDistance: 10
+  m_FocalLength: 50
+  m_BladeCount: 5
+  m_Curvature: {x: 2, y: 11}
+  m_BarrelClipping: 0.25
+  m_Anamorphism: 0
+  m_SensorSize: {x: 36, y: 24}
+  m_LensShift: {x: 0, y: 0}
+  m_NormalizedViewPortRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+  near clip plane: 0.3
+  far clip plane: 1000
+  field of view: 60
+  orthographic: 0
+  orthographic size: 5
+  m_Depth: -1
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RenderingPath: -1
+  m_TargetTexture: {fileID: 0}
+  m_TargetDisplay: 0
+  m_TargetEye: 3
+  m_HDR: 1
+  m_AllowMSAA: 1
+  m_AllowDynamicResolution: 0
+  m_ForceIntoRT: 0
+  m_OcclusionCulling: 1
+  m_StereoConvergence: 10
+  m_StereoSeparation: 0.022
+--- !u!4 &951375207
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 951375204}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1660057539 &9223372036854775807
+SceneRoots:
+  m_ObjectHideFlags: 0
+  m_Roots:
+  - {fileID: 951375207}
+  - {fileID: 485511552}
+  - {fileID: 328619740}
