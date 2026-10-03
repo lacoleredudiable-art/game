@@ -45,8 +45,8 @@ MonoBehaviour:
     LeftLocalEulerAngles: {x: 0, y: 0, z: 0}
     LeftLocalScale: {x: 1, y: 1, z: 1}
   - WeaponKey: cekic
-    RightHandPrefab: {fileID: 0}
-    RightLocalPosition: {x: 0, y: 0, z: 0.07}
+    RightHandPrefab: {fileID: 4663812074607237629, guid: ae8550da33907154ba165c961f42b8c4, type: 3}
+    RightLocalPosition: {x: 0, y: 0, z: 0}
     RightLocalEulerAngles: {x: 0, y: 0, z: 0}
     RightLocalScale: {x: 1, y: 1, z: 1}
     LeftHandPrefab: {fileID: 0}
