@@ -1250,60 +1250,9 @@ namespace Dovus.Game.Skills
             bool basic = IsPendingBasic(p);
             if (basic)
             {
-                Transform impactTarget = p.Target;
-                if (impactTarget == null || impactTarget == _player || !IsEnemyBody(impactTarget))
-                {
-                    CaptureBasicFacing();
-                    impactTarget = _castFacingTarget;
-                }
-                // Zafiyet kalıbı bakışı ve kilidi bozar. Kilit boşsa boss menzildeyse o hedeftir;
-                // yoksa ilk düz vuruş kapsülü ıskalayıp 0 yazar, ikincisi normal vurur.
-                if ((impactTarget == null || !IsEnemyBody(impactTarget)) && _boss != null)
-                    impactTarget = _boss.transform;
-                FaceTarget(impactTarget);
-                _closingChainBonus = 1f;
-
-                // Heal vb. tek-rün skill asla IsBasicStrike olmamalı; yanlış BasicStrikeDot
-                // mend'e kilitliyse mend kaçmasın (mana/CD yine yok — jab).
-                SkillResolution basicSkill = ResolvePendingSkill(p);
-                if (IsHealSkill(basicSkill))
-                {
-                    ApplyClosingStatuses(p, basicSkill);
-                    ShoutSkill(basicSkill, p.Words);
-                    ApplyClosingHeal(p.Closing, basicSkill);
-                    return;
-                }
-                double basicNow = _clock != null ? _clock.Director.WorldTimeMs : 0;
-                if (!BasicCadenceReady(basicNow))
-                {
-                    _readout?.NoteDenied("Düz vuruş", "hazır değil");
-                    return;
-                }
-                _lastBasicStrikeMs = basicNow;
-                int basicHits = BasicHitsNow();
-
-                float basicDealt = 0f;
-                float basicReach = WeaponBasicReach(_combat.Manifestation.BasicStrikeRangeM);
-                bool capsuleHit = IsBossInStrikeCapsule(logic, basicReach);
-                bool inReach = BasicTargetStillInReach(impactTarget, basicReach);
-                if (!inReach && _boss != null && impactTarget != _boss.transform)
-                    inReach = BasicTargetStillInReach(_boss.transform, basicReach);
-                float strikeArc = HitMods(SkillResolution.Empty, true, false).ArcDeg;
-                float strikeDelta = BasicStrikeYawDeg(impactTarget);
-                if (MeleeArc.StrikeConnects(capsuleHit, inReach, strikeDelta, strikeArc))
-                {
-                    if (logic != null)
-                        ApplyBossClosingBasic(logic, p.Closing);
-                    basicDealt = ApplyClosingDamage(
-                        p.Closing, SkillResolution.Empty, isBasicStrike: true, slashCommitMult: 0f,
-                        effectScale: JsonEffectRules.BasicSubHitScale(basicHits));
-                    ScheduleBasicSubHits(p.Closing, basicHits, basicReach);
-                    ApplyBasicExtras(basicDealt, basicHits);
-                    TryLandWeaponStun(SkillResolution.Empty, true);
-                }
-                SpawnClosingImpact(p);
-                if (logic != null)
-                    TryCannonBlast(logic.TipX, logic.TipZ);
+                _castPort ??= new CastPort(this);
+                _castPort.BeginClosing(logic);
+                _castPipeline.RunBasic(p, _castPort);
                 return;
             }
 
@@ -1311,6 +1260,7 @@ namespace Dovus.Game.Skills
                 return;
 
             _castPort ??= new CastPort(this);
+            _castPort.BeginClosing(logic);
             _castPipeline.RunSkill(p, _castPort);
         }
 
