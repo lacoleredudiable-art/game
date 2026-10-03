@@ -1,6 +1,6 @@
-using System.IO;
 using Dovus.Core.Equipment;
 using NUnit.Framework;
+using System.IO;
 
 namespace CoreTests;
 

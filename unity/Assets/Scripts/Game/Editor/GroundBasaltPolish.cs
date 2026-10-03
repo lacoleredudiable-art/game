@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace Dovus.Game.EditorTools
+namespace Dovus.Game.Editor
 {
     /// <summary>Ground_Basalt: detail breakup + normal strength (committed asset, task polish).</summary>
     public static class GroundBasaltPolish

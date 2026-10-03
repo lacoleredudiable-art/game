@@ -1,11 +1,11 @@
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
 using Dovus.Core.Combat;
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using Dovus.Core.Tuning;
 using NUnit.Framework;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace CoreTests;
 
@@ -109,7 +109,7 @@ public class CombatCorrectnessTests
     [Test]
     public void K1_DeathSequence_StartsOnlyFromTheDiedHook()
     {
-        string md = Game("ManifestationDirector.cs");
+        string md = Game("Skills/ManifestationDirector.cs");
         string all = string.Concat(Directory.GetFiles(GameDir(), "*.cs", SearchOption.AllDirectories)
             .Select(File.ReadAllText));
         int calls = Regex.Matches(all, @"BeginBossDeathSequence\(").Count;
@@ -124,7 +124,7 @@ public class CombatCorrectnessTests
     [Test]
     public void O3_PortalBackStrike_NoSecondDamage()
     {
-        string host = Game("PortalBorderTeamHost.cs");
+        string host = Game("Team/PortalBorderTeamHost.cs");
         Assert.That(host, Does.Not.Contain("void ApplyBackStrike"));
         Assert.That(host, Does.Not.Contain("ApplyBackStrike("));
         Assert.That(host, Does.Not.Contain("_strikePending"));
@@ -135,11 +135,11 @@ public class CombatCorrectnessTests
     [Test]
     public void O4_PlayerRespawn_UsesWorldClock_AndClearsStatus()
     {
-        string vitals = Game("PlayerVitals.cs");
+        string vitals = Game("Actors/PlayerVitals.cs");
         Assert.That(vitals, Does.Not.Contain("_respawnAtUnscaled"));
         Assert.That(vitals, Does.Contain("public void BindClock(GameClock clock)"));
         Assert.That(Regex.Matches(vitals, @"ClearStatusBoard\(\);").Count, Is.GreaterThanOrEqualTo(2));
-        Assert.That(Game("PrototypeBootstrap.cs"), Does.Contain("vitals.BindClock(clock)"));
+        Assert.That(Game("Composition/PrototypeBootstrap.cs"), Does.Contain("vitals.BindClock(clock)"));
     }
 
     // ── O7: kritik tasarımla eşleşir (5% ×2), deterministik zar ─────────────
@@ -218,8 +218,8 @@ public class CombatCorrectnessTests
     [Test]
     public void O7_GameUsesOneSeededRng_NotSequentialSeeds()
     {
-        string dmg = Game("ManifestationDirector.Damage.cs");
-        string verb = Game("ManifestationDirector.VerbExecution.cs");
+        string dmg = Game("Skills/ManifestationDirector.Damage.cs");
+        string verb = Game("Skills/ManifestationDirector.VerbExecution.cs");
         Assert.That(dmg + verb, Does.Not.Contain("_damageRoll"));
         Assert.That(dmg + verb, Does.Not.Contain("VarianceSeed"));
         Assert.That(dmg, Does.Contain("CombatRng.SessionSeed()"));
@@ -241,7 +241,7 @@ public class CombatCorrectnessTests
         });
         Assert.That(hit.Amount, Is.EqualTo(200f).Within(0.01f));
 
-        string dmg = Game("ManifestationDirector.Damage.cs");
+        string dmg = Game("Skills/ManifestationDirector.Damage.cs");
         Assert.That(dmg, Does.Contain("bool weaponArmorBonus = WeaponIgnoresArmor && !skillIgnoresArmor;"));
         Assert.That(dmg, Does.Contain("if (outcome.Amount > 0f && weaponArmorBonus)"));
     }
@@ -270,10 +270,10 @@ public class CombatCorrectnessTests
     [Test]
     public void S4_DotTick_PiercesArmor_IsUndodgeable_AndShowsNumber()
     {
-        string status = Game("ActorStatus.cs");
+        string status = Game("Actors/ActorStatus.cs");
         Assert.That(status, Does.Contain("ApplyDamage(payload, dodgeable: false, pierceArmor: true)"));
         Assert.That(status, Does.Contain("DamageOverTimeDealt?.Invoke(LastAppliedDamage)"));
-        Assert.That(Game("ManifestationDirector.cs"), Does.Contain("DamageOverTimeDealt += OnBossDamageOverTime"));
+        Assert.That(Game("Skills/ManifestationDirector.cs"), Does.Contain("DamageOverTimeDealt += OnBossDamageOverTime"));
     }
 
     // ── S6: kalkanın emdiği vuruş cümleyi kesmez ────────────────────────────
@@ -281,7 +281,7 @@ public class CombatCorrectnessTests
     [Test]
     public void S6_ShieldAbsorbedHit_DoesNotAbortSentence()
     {
-        string boss = Game("BossDirector.cs");
+        string boss = Game("Boss/BossDirector.cs");
         int apply = boss.IndexOf("_playerStatus.ApplyDamage(raw);");
         int abort = boss.IndexOf("_engine?.Abort();", apply);
         Assert.That(apply, Is.GreaterThan(0));
@@ -310,14 +310,14 @@ public class CombatCorrectnessTests
     [Test]
     public void S8_MinionCrit_IsShown()
     {
-        Assert.That(Game("ManifestationDirector.VerbExecution.cs"),
+        Assert.That(Game("Skills/ManifestationDirector.VerbExecution.cs"),
             Does.Contain("ShowDamage(damage, dealt.WasCrit, BossHitPoint(), DamageTint(), victimIsBoss: true)"));
     }
 
     [Test]
     public void S16_EventsUnsubscribedOnDestroy_AndBlockedIsNotALambda()
     {
-        string md = Game("ManifestationDirector.cs");
+        string md = Game("Skills/ManifestationDirector.cs");
         Assert.That(md, Does.Not.Contain("DamageBlocked += _ =>"));
         string destroy = Body(md, "void OnDestroy()");
         foreach (string unsub in new[]
@@ -331,7 +331,7 @@ public class CombatCorrectnessTests
     [Test]
     public void S17_PortalPulseBurn_UsesTuning()
     {
-        string host = Game("PortalBorderTeamHost.cs");
+        string host = Game("Team/PortalBorderTeamHost.cs");
         Assert.That(host, Does.Contain("Tuning.BurnDamagePerSec"));
     }
 

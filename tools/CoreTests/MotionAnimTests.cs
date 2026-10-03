@@ -1,8 +1,8 @@
-using System.IO;
 using Dovus.Core;
 using Dovus.Core.Grammar;
 using Dovus.Core.Motion;
 using NUnit.Framework;
+using System.IO;
 
 namespace CoreTests;
 

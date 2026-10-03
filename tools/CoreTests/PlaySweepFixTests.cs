@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using Dovus.Core;
 using Dovus.Core.Combat;
 using Dovus.Core.Execution;
@@ -8,6 +5,9 @@ using Dovus.Core.Mechanic;
 using Dovus.Core.Motion;
 using Dovus.Core.Status;
 using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace CoreTests;
 

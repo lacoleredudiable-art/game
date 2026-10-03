@@ -1,3 +1,4 @@
+using Dovus.Game.Weapons;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -5,7 +6,7 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 
-namespace Dovus.Game.EditorTools
+namespace Dovus.Game.Editor
 {
     /// <summary>
     /// Player_Synty.controller tabanından silah arketipi başına AnimatorOverrideController üretir

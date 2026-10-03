@@ -1,8 +1,9 @@
+using Dovus.Game.Weapons;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace Dovus.Game.EditorTools
+namespace Dovus.Game.Editor
 {
     /// <summary>
     /// Paladin (J Nordstrom) → gitignored <c>Resources/PlayerVisualOverride.prefab</c>.

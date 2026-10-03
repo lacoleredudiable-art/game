@@ -1,11 +1,11 @@
-using System;
-using System.IO;
-using System.Text.RegularExpressions;
 using Dovus.Core.Combat;
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using Dovus.Core.Tuning;
 using NUnit.Framework;
+using System;
+using System.IO;
+using System.Text.RegularExpressions;
 
 namespace CoreTests;
 
@@ -82,8 +82,8 @@ public class TouchDodgeSwapTests
     [Test]
     public void Perfect_FeedbackText_IsPERFECT()
     {
-        Assert.That(Game("Game/PlayerDodgeRig.cs"), Does.Not.Contain("void OnGUI"), "büyük ikinci popup kaldırıldı");
-        Assert.That(Game("Game/PlayerDodgeRig.cs"), Does.Contain("\"PERFECT\""));
+        Assert.That(Game("Game/Actors/PlayerDodgeRig.cs"), Does.Not.Contain("void OnGUI"), "büyük ikinci popup kaldırıldı");
+        Assert.That(Game("Game/Actors/PlayerDodgeRig.cs"), Does.Contain("\"PERFECT\""));
         Assert.That(Game("Core/Tuning/GradeTuning.cs"), Does.Not.Contain("MukemmelGapMaxMs"));
     }
 
@@ -127,7 +127,7 @@ public class TouchDodgeSwapTests
     [Test]
     public void TriggerDodge_UsesStateGate()
     {
-        string src = Game("Game/HexagonInput.cs");
+        string src = Game("Game/Casting/HexagonInput.cs");
         Assert.That(src, Does.Contain("AllowsDodgeGate"));
         Assert.That(src, Does.Not.Contain("IsOnCooldown"));
         Assert.That(src, Does.Not.Contain("WeaponHudRequested"));
@@ -161,10 +161,10 @@ public class TouchDodgeSwapTests
     [Test]
     public void Director_WiresSustainedLock()
     {
-        Assert.That(Game("Game/ManifestationDirector.WeaponSwap.cs"), Does.Contain("bool holding = SustainedSkillActive(worldMs);"));
-        Assert.That(Game("Game/ManifestationDirector.cs"), Does.Contain("NoteSustainedCast(skill);"));
-        Assert.That(Game("Game/ManifestationDirector.MotionTemplate.cs"), Does.Contain("_sustainedCast.Clear();"));
-        Assert.That(Game("Game/ManifestationDirector.Weapons10.cs"), Does.Not.Contain("OnWeaponHudButton"));
-        Assert.That(Game("Game/ManifestationDirector.Weapons10.cs"), Does.Contain("SwapButtonHoldSec"));
+        Assert.That(Game("Game/Skills/ManifestationDirector.WeaponSwap.cs"), Does.Contain("bool holding = SustainedSkillActive(worldMs);"));
+        Assert.That(Game("Game/Skills/ManifestationDirector.cs"), Does.Contain("NoteSustainedCast(skill);"));
+        Assert.That(Game("Game/Skills/ManifestationDirector.MotionTemplate.cs"), Does.Contain("_sustainedCast.Clear();"));
+        Assert.That(Game("Game/Skills/ManifestationDirector.Weapons10.cs"), Does.Not.Contain("OnWeaponHudButton"));
+        Assert.That(Game("Game/Skills/ManifestationDirector.Weapons10.cs"), Does.Contain("SwapButtonHoldSec"));
     }
 }

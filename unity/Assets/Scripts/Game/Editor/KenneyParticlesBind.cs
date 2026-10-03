@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace Dovus.Game.EditorTools
+namespace Dovus.Game.Editor
 {
     /// <summary>Kenney PNG import ayarları — mobil alpha, clamp, 256 Android.</summary>
     public static class KenneyParticlesBind

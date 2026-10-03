@@ -1,11 +1,11 @@
+using Dovus.Core.Tuning;
+using NUnit.Framework;
 using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Dovus.Core.Tuning;
-using NUnit.Framework;
 
 namespace CoreTests;
 
@@ -27,7 +27,7 @@ public class ReleaseBuildPerfTests
     [Test]
     public void DebugGate_IsDefineBased_NotDevelopmentBuild()
     {
-        string src = Game("DebugConfig.cs");
+        string src = Game("DevTools/DebugConfig.cs");
         Assert.That(src, Does.Not.Contain("isDebugBuild"));
         Assert.That(src, Does.Contain("#if UNITY_EDITOR || DOVUS_DEBUG"));
         Assert.That(src, Does.Contain("[Conditional(\"UNITY_EDITOR\"), Conditional(\"DOVUS_DEBUG\")]"));
@@ -50,12 +50,12 @@ public class ReleaseBuildPerfTests
     [Test]
     public void DebugUi_OnlyBehindGate()
     {
-        string boot = Game("PrototypeBootstrap.cs");
+        string boot = Game("Composition/PrototypeBootstrap.cs");
         Assert.That(Regex.Matches(boot, @"if \(DebugConfig\.Enabled\)\s*\{\s*var frameHud").Count, Is.EqualTo(1));
         Assert.That(Regex.Matches(boot, @"if \(DebugConfig\.Enabled\)\s*\{\s*var practice").Count, Is.EqualTo(1));
         Assert.That(Regex.Matches(boot, @"if \(DebugConfig\.Enabled\)\s*\{\s*var v6Panel").Count, Is.EqualTo(1));
         Assert.That(boot, Does.Contain("DebugConfig.Enabled && _tuning.ShowSentenceDebugHud"));
-        string team = Game("TeamDebugMenu.cs");
+        string team = Game("DevTools/TeamDebugMenu.cs");
         Assert.That(team, Does.Contain("bool _open = false;"));
         Assert.That(team, Does.Contain("#if UNITY_EDITOR || DOVUS_DEBUG"));
         Assert.That(team, Does.Not.Contain("DEVELOPMENT_BUILD"));
@@ -66,11 +66,11 @@ public class ReleaseBuildPerfTests
     [Test]
     public void StartHp_IsFullByDefault_DevHpSeparateSwitch()
     {
-        string boot = Game("PrototypeBootstrap.cs");
+        string boot = Game("Composition/PrototypeBootstrap.cs");
         Assert.That(boot, Does.Not.Contain("startRatio: 0.5f"));
         Assert.That(Regex.Matches(boot, @"startRatio: DebugConfig\.StartHpRatio").Count, Is.EqualTo(2));
         Assert.That(boot, Does.Contain("vitals.SetDevHp(DebugConfig.DevHpActive);"));
-        string cfg = Game("DebugConfig.cs");
+        string cfg = Game("DevTools/DebugConfig.cs");
         Assert.That(cfg, Does.Contain("public static bool HalfHpStart = false;"));
         Assert.That(cfg, Does.Contain("StartHpRatio => Enabled && HalfHpStart ? 0.5f : 1f"));
         Assert.That(cfg, Does.Contain("DevHpActive => Enabled && DevHp && !HalfHpStart"));
@@ -110,11 +110,11 @@ public class ReleaseBuildPerfTests
     [Test]
     public void TuningConfig_UsesSchema_LoadOnlyInDebug()
     {
-        string cfg = Game("TuningConfig.cs");
+        string cfg = Game("Config/TuningConfig.cs");
         Assert.That(cfg, Does.Contain("version = TuningSchema.Version"));
         Assert.That(cfg, Does.Contain("TuningSchema.Decide(data.version) == TuningSchema.LoadDecision.DiscardStale"));
         Assert.That(cfg, Does.Not.Contain("BossDamageMigration.Apply"));
-        Assert.That(Game("PrototypeBootstrap.cs"), Does.Match(@"if \(DebugConfig\.Enabled\)\s*tuningConfig\.TryLoad\(\);"));
+        Assert.That(Game("Composition/PrototypeBootstrap.cs"), Does.Match(@"if \(DebugConfig\.Enabled\)\s*tuningConfig\.TryLoad\(\);"));
     }
 
     // --- O11 ---
@@ -122,15 +122,15 @@ public class ReleaseBuildPerfTests
     [Test]
     public void NoPerFrameSearches_InHotPaths()
     {
-        Assert.That(Game("PortalBorderTeamHost.cs"), Does.Not.Contain("FindObjectsOfType<AllyDummy>"));
-        Assert.That(Regex.Matches(Game("PortalBorderTeamHost.cs"), @"_boss\.GetComponent<BossReactor>\(\)").Count, Is.EqualTo(1),
+        Assert.That(Game("Team/PortalBorderTeamHost.cs"), Does.Not.Contain("FindObjectsOfType<AllyDummy>"));
+        Assert.That(Regex.Matches(Game("Team/PortalBorderTeamHost.cs"), @"_boss\.GetComponent<BossReactor>\(\)").Count, Is.EqualTo(1),
             "yalnız CachedBossReactor içinde");
-        Assert.That(Game("DodgeMotion.cs"), Does.Contain("_reactorCache"));
-        foreach (string f in new[] { "PlayerTargeting.cs", "ManifestationDirector.cs", "ManifestationDirector.Weapons10.cs" })
+        Assert.That(Game("Actors/DodgeMotion.cs"), Does.Contain("_reactorCache"));
+        foreach (string f in new[] { "Actors/PlayerTargeting.cs", "Skills/ManifestationDirector.cs", "Skills/ManifestationDirector.Weapons10.cs" })
             Assert.That(Game(f), Does.Not.Contain("FindObjectsByType<Targetable>"), f);
-        foreach (string f in new[] { "ManifestationDirector.cs", "ManifestationDirector.VerbExecution.cs", "ManifestationDirector.MechanicWorld.cs" })
+        foreach (string f in new[] { "Skills/ManifestationDirector.cs", "Skills/ManifestationDirector.VerbExecution.cs", "Skills/ManifestationDirector.MechanicWorld.cs" })
             Assert.That(Regex.Matches(Game(f), @"(?<!_playerVitalsCache = )_player\.GetComponent<PlayerVitals>\(\)").Count, Is.EqualTo(0), f);
-        string summon = Game("SkillExecution/SummonExecutor.cs");
+        string summon = Game("Skills/Execution/SummonExecutor.cs");
         Assert.That(summon, Does.Contain("_weaponPathClass"));
         Assert.That(summon, Does.Contain("_targetCollider"));
     }
@@ -140,9 +140,9 @@ public class ReleaseBuildPerfTests
     {
         foreach (string f in new[]
                  {
-                     "ManifestationDirector.MechanicWorld.cs", "ManifestationDirector.MotionTemplate.cs",
-                     "SkillExecution/SummonExecutor.cs", "PortalBorderTeamHost.cs", "HostileProjectileHost.cs",
-                     "AttackTelegraph.cs"
+                     "Skills/ManifestationDirector.MechanicWorld.cs", "Skills/ManifestationDirector.MotionTemplate.cs",
+                     "Skills/Execution/SummonExecutor.cs", "Team/PortalBorderTeamHost.cs", "Boss/HostileProjectileHost.cs",
+                     "Boss/AttackTelegraph.cs"
                  })
         {
             string src = Game(f);
@@ -150,7 +150,7 @@ public class ReleaseBuildPerfTests
             Assert.That(src, Does.Not.Contain("rend.material;"), f);
             Assert.That(src, Does.Not.Contain("new Material(Shader.Find(\"Sprites/Default\"))"), f);
         }
-        Assert.That(Game("PlaceholderFactory.cs"), Does.Contain("GlowCache"));
+        Assert.That(Game("Composition/PlaceholderFactory.cs"), Does.Contain("GlowCache"));
     }
 
     [Test]
@@ -196,7 +196,7 @@ public class ReleaseBuildPerfTests
     [Test]
     public void Android_ScreenStaysOn_QualityChosen()
     {
-        string boot = Game("PrototypeBootstrap.cs");
+        string boot = Game("Composition/PrototypeBootstrap.cs");
         Assert.That(boot, Does.Contain("Screen.sleepTimeout = SleepTimeout.NeverSleep;"));
         Assert.That(boot, Does.Contain("Screen.sleepTimeout = SleepTimeout.SystemSetting;"));
         string q = File.ReadAllText(Path.Combine(Root(), "unity", "ProjectSettings", "QualitySettings.asset"));
@@ -210,7 +210,7 @@ public class ReleaseBuildPerfTests
     [Test]
     public void EventSystem_IsCreated_OutsideDebugGate()
     {
-        string boot = Game("PrototypeBootstrap.cs");
+        string boot = Game("Composition/PrototypeBootstrap.cs");
         int ensure = boot.IndexOf("EnsureEventSystem();", System.StringComparison.Ordinal);
         int gate = boot.IndexOf("CreateTuningPanel(tuningConfig, vitals, follow);", System.StringComparison.Ordinal);
         Assert.That(ensure, Is.GreaterThan(0));

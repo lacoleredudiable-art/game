@@ -1,5 +1,3 @@
-using System.IO;
-using System.Linq;
 using Dovus.Core.Combat;
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
@@ -7,6 +5,8 @@ using Dovus.Core.Mechanic;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using NUnit.Framework;
+using System.IO;
+using System.Linq;
 
 namespace CoreTests;
 

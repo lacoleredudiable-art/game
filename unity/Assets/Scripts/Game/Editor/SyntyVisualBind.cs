@@ -1,10 +1,11 @@
+using Dovus.Game.Composition;
 using System.IO;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Dovus.Game.EditorTools
+namespace Dovus.Game.Editor
 {
     /// <summary>
     /// POLYGON Dungeon Pack → PrototypeBootstrap görselleri.

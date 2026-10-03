@@ -1,6 +1,6 @@
-using System.IO;
 using Dovus.Core.Combat;
 using NUnit.Framework;
+using System.IO;
 
 namespace CoreTests;
 
@@ -46,7 +46,7 @@ public sealed class SkillIframeWindowTests
     [Test]
     public void SpawnIframe_11_10_NoLongerFreezesPlayer()
     {
-        string src = File.ReadAllText(Path.Combine(Root(), "unity", "Assets", "Scripts", "Game", "ManifestationDirector.VerbExecution.cs"));
+        string src = File.ReadAllText(Path.Combine(Root(), "unity", "Assets", "Scripts", "Game", "Skills", "ManifestationDirector.VerbExecution.cs"));
         int at = src.IndexOf("void ApplySpawnIFrame", System.StringComparison.Ordinal);
         Assert.That(at, Is.GreaterThan(0));
         string body = src.Substring(at, src.IndexOf("}", src.IndexOf("{", at), System.StringComparison.Ordinal) - at);
@@ -57,7 +57,7 @@ public sealed class SkillIframeWindowTests
     [Test]
     public void MotionIframe_IsApplied_InGame()
     {
-        string src = File.ReadAllText(Path.Combine(Root(), "unity", "Assets", "Scripts", "Game", "ManifestationDirector.cs"));
+        string src = File.ReadAllText(Path.Combine(Root(), "unity", "Assets", "Scripts", "Game", "Skills", "ManifestationDirector.cs"));
         Assert.That(src, Does.Contain("ApplySkillMotionIframe(skill, motionPlan)"));
         Assert.That(src, Does.Contain("rig.OpenSkillIframe(plan.IframeMs)"));
     }

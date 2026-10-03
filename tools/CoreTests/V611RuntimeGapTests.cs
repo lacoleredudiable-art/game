@@ -1,9 +1,9 @@
-using System.IO;
 using Dovus.Core.Combat;
 using Dovus.Core.Execution;
 using Dovus.Core.Grammar;
 using Dovus.Core.Status;
 using NUnit.Framework;
+using System.IO;
 
 namespace CoreTests;
 

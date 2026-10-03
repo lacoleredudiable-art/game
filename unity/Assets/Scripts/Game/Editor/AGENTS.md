@@ -7,3 +7,6 @@ Kök `AGENTS.md`. Runtime oyun kodu `Game/` (Editor altı hariç).
 - **Capture script'leri:** Tek seferlik görsel/anim kaydı; runtime davranışa bağlama. PLAN 0.4'te temizlik adayı.
 - **Play Sweep:** Editörde 144/1440 kombo; başsız eşdeğeri `tools/SweepV2`.
 - **Yeni Editor kodu:** `GameCompile` Editor klasörünü derlemez; runtime'a taşımadan önce `check.py` ile runtime tarafını doğrula.
+- **Unity batchmode (editör kapalı veya başka proje kopyası; açık editörün projesinde batchmode çalışmaz):**
+  - Eksik script denetimi: `Unity.exe -batchmode -projectPath <proje> -executeMethod Dovus.Game.Editor.MissingScriptAudit.Run -auditOut <dosya> -logFile <log>`
+  - PlayMode smoke: `Unity.exe -batchmode -projectPath <proje> -runTests -testPlatform PlayMode -testResults <xml> -smokeOut <dosya> -logFile <log>`

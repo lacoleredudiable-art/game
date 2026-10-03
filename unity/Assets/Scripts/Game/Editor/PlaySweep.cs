@@ -1,4 +1,19 @@
 #if UNITY_EDITOR
+using Dovus.Core.Combat;
+using Dovus.Core.Equipment;
+using Dovus.Core.Grammar;
+using Dovus.Core.Motion;
+using Dovus.Core.Portal;
+using Dovus.Core.Status;
+using Dovus.Game.Actors;
+using Dovus.Game.Boss;
+using Dovus.Game.Casting;
+using Dovus.Game.Composition;
+using Dovus.Game.Data;
+using Dovus.Game.Hud;
+using Dovus.Game.Skills;
+using Dovus.Game.Skills.Execution;
+using Dovus.Game.Team;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,19 +22,13 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Dovus.Core.Combat;
-using Dovus.Core.Portal;
-using Dovus.Core.Equipment;
-using Dovus.Core.Grammar;
-using Dovus.Core.Motion;
-using Dovus.Core.Status;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.LowLevel;
 using UnityEngine.PlayerLoop;
 
-namespace Dovus.Game.EditorTools
+namespace Dovus.Game.Editor
 {
     /// <summary>Tek cast: fiil + sıfat, boss'a merkez mesafesi, silah.</summary>
     public sealed class PlaySweepCase
@@ -1281,7 +1290,7 @@ namespace Dovus.Game.EditorTools
         static float DeliveryDelaySec(SkillResolution skill, MotionTemplate template)
         {
             if (!(Call(_md, "MechanicPlanFor", skill) is Dovus.Core.Mechanic.MechanicPlan plan)
-                || !Dovus.Game.ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design)
+                || !ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design)
                 || design.Mechanics == null)
                 return 0f;
             Dovus.Core.Mechanic.TemplateDeliveryOrder order = Dovus.Core.Mechanic.TemplateDelivery.Build(

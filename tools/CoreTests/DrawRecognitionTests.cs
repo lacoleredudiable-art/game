@@ -1,11 +1,11 @@
+using Dovus.Core.Combat;
+using Dovus.Core.Grammar;
+using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Dovus.Core.Combat;
-using Dovus.Core.Grammar;
-using NUnit.Framework;
 
 namespace CoreTests;
 
@@ -334,7 +334,7 @@ public class DrawRecognitionTests
     [Test]
     public void Game_WiresTrackerAndFeedback()
     {
-        string input = Game("Game/HexagonInput.cs");
+        string input = Game("Game/Casting/HexagonInput.cs");
         Assert.That(input, Does.Contain("StrokeDotTracker"));
         Assert.That(input, Does.Not.Contain("TryRegisterDotAt"), "nokta kaydı yalnız tarayıcıdan");
         Assert.That(input, Does.Contain("DrawFeedback.CaptionFor(outcome)"));
@@ -342,10 +342,10 @@ public class DrawRecognitionTests
         Assert.That(input, Does.Contain("_ink?.Break(_inkFlashPending)"));
         Assert.That(input, Does.Contain("_ink?.RawEnd(false, _strokeAcceptedPx)"));
         Assert.That(input, Does.Contain("TickStrokeSettle()"));
-        string ink = Game("Game/InkTrail.cs");
+        string ink = Game("Game/Casting/InkTrail.cs");
         Assert.That(ink, Does.Contain("public void RawBegin("));
         Assert.That(ink, Does.Contain("public void Break(bool flash)"));
-        Assert.That(Game("Game/PrototypeBootstrap.cs"), Does.Contain("input.DrawCaption += view.ShowDrawCaption;"));
-        Assert.That(Game("Game/HexagonView.cs"), Does.Contain("BuildDrawCaption(canvasGo.transform);"));
+        Assert.That(Game("Game/Composition/PrototypeBootstrap.cs"), Does.Contain("input.DrawCaption += view.ShowDrawCaption;"));
+        Assert.That(Game("Game/Casting/HexagonView.cs"), Does.Contain("BuildDrawCaption(canvasGo.transform);"));
     }
 }

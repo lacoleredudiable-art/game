@@ -1,11 +1,12 @@
 #if UNITY_EDITOR
+using Dovus.Game.Arena;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
-namespace Dovus.Game.EditorTools
+namespace Dovus.Game.Editor
 {
     public static class LookPresetsBuilder
     {
