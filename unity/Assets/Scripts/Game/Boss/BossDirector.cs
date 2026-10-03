@@ -1,3 +1,4 @@
+using Dovus.App.Boss;
 using Dovus.Core.Combat;
 using Dovus.Core.Data;
 using Dovus.Core.Grammar;
@@ -73,11 +74,7 @@ namespace Dovus.Game.Boss
         bool _playerWasDown;
         Vector3 _originHome;
         readonly System.Random _rng = new();
-
-        SlamVariant? _lastVariant;
-        int _variantStreak;
-        BossAttackKind? _lastAttackKind;
-        int _attackKindStreak;
+        readonly BossAttackSelector _attackSelector = new();
 
         bool _phase2Announced;
 
@@ -678,15 +675,6 @@ namespace Dovus.Game.Boss
                 return false;
 
             bool enraged = IsEnraged();
-            System.ReadOnlySpan<BossAttackKind> phaseKinds = enraged
-                ? (_phase2AttackKinds.Length > 0
-                    ? _phase2AttackKinds
-                    : BossAttackKindPicker.AllowedFor(true))
-                : (_phase1AttackKinds.Length > 0
-                    ? _phase1AttackKinds
-                    : BossAttackKindPicker.AllowedFor(false));
-            System.Span<BossAttackKind> allowed = stackalloc BossAttackKind[phaseKinds.Length];
-            int n = 0;
             Transform aim = AimTarget();
             float pounceDist = 0f;
             if (aim != null && _reactor != null)
@@ -695,24 +683,27 @@ namespace Dovus.Game.Boss
                 toAim.y = 0f;
                 pounceDist = toAim.magnitude;
             }
-            for (int i = 0; i < phaseKinds.Length; i++)
-            {
-                BossAttackKind k = phaseKinds[i];
-                if (k == BossAttackKind.Volley && _projectiles == null)
-                    continue;
-                if (k == BossAttackKind.Pounce
-                    && (aim == null || !BossAttackKindPicker.PounceInRange(pounceDist, _combat.Boss)))
-                    continue;
-                if (AttackKindAllowed(k))
-                    allowed[n++] = k;
-            }
-            if (n == 0)
+
+            if (!_attackSelector.TrySelect(
+                    enraged,
+                    _phase1AttackKinds,
+                    _phase2AttackKinds,
+                    k =>
+                    {
+                        if (k == BossAttackKind.Volley && _projectiles == null)
+                            return false;
+                        if (k == BossAttackKind.Pounce
+                            && (aim == null || !BossAttackKindPicker.PounceInRange(pounceDist, _combat.Boss)))
+                            return false;
+                        return AttackKindAllowed(k);
+                    },
+                    _combat.Boss.MaxSameAttackKindStreak,
+                    _combat.Boss.MaxSameVariantStreak,
+                    _rng,
+                    out BossAttackChoice choice))
                 return false;
 
-            BossAttackKind kind = BossAttackKindPicker.Pick(
-                _lastAttackKind, _attackKindStreak, _combat.Boss.MaxSameAttackKindStreak, _rng, allowed.Slice(0, n));
-            _attackKindStreak = BossAttackKindPicker.NextStreak(_lastAttackKind, _attackKindStreak, kind);
-            _lastAttackKind = kind;
+            BossAttackKind kind = choice.Kind;
             _activeAttackEntry = _attackEntriesByKind.TryGetValue(kind, out BossAttackEntry entry)
                 ? entry
                 : null;
@@ -742,14 +733,7 @@ namespace Dovus.Game.Boss
                 return true;
             }
 
-            SlamVariant picked = SlamVariantPicker.Pick(
-                _lastVariant,
-                _variantStreak,
-                _combat.Boss.MaxSameVariantStreak,
-                _rng);
-            _variantStreak = SlamVariantPicker.NextStreak(_lastVariant, _variantStreak, picked);
-            _lastVariant = picked;
-            _attack.ApplyVariant(picked);
+            _attack.ApplyVariant(choice.Variant.Value);
             return true;
         }
 
