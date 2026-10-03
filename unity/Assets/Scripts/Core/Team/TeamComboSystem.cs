@@ -77,6 +77,7 @@ namespace Dovus.Core.Team
         readonly List<Mark> _marks = new();
         readonly List<Link> _links = new();
         readonly List<Turret> _turrets = new();
+        readonly IReadOnlyDictionary<string, TeamOp> _ops;
         Ball _ball;
         Hang _hang;
         float _now;
@@ -167,48 +168,43 @@ namespace Dovus.Core.Team
             return false;
         }
 
-        public static bool IsTeamSkill(string skillId)
+        public static bool IsTeamSkill(string skillId) =>
+            TeamOpTable.TryLegacy(skillId, out TeamOp op) && op != TeamOp.None;
+
+        public TeamComboSystem()
+            : this(null)
         {
-            switch (skillId)
-            {
-                case "3-10":
-                case "5-4":
-                case "6-8":
-                case "7-6":
-                case "7-9":
-                case "8-3":
-                case "8-6":
-                case "10-10":
-                case "11-4":
-                case "12-6":
-                    return true;
-                default:
-                    return false;
-            }
+        }
+
+        public TeamComboSystem(IReadOnlyDictionary<string, TeamOp> ops)
+        {
+            _ops = ops ?? TeamOpTable.Legacy;
         }
 
         public TeamPulse Cast(string skillId, IAllyPlayer caster, IAllyPlayer target, IReadOnlyList<IAllyPlayer> allies, in Disc boss)
         {
             if (caster == null || !IsTeamSkill(skillId))
                 return TeamPulse.None;
-            switch (skillId)
+            TeamOp op = TeamOpTable.Resolve(skillId, _ops);
+            switch (op)
             {
-                case "5-4":
+                case TeamOp.Mine:
                     return PlantMine(caster, boss);
-                case "6-8":
+                case TeamOp.HangBoss:
                     return HangBoss(caster);
-                case "7-6":
+                case TeamOp.Rope:
                     return PlantRope(caster, boss);
-                case "7-9":
+                case TeamOp.Mark:
                     return ArmMark(caster);
-                case "8-3":
+                case TeamOp.Ball:
                     return ThrowBall(caster, target, allies);
-                case "8-6":
+                case TeamOp.Link:
                     return LinkPair(caster, target, allies, boss);
-                case "11-4":
+                case TeamOp.Turret:
                     return PlantTurret(caster);
-                case "12-6":
+                case TeamOp.HasteRope:
                     return HasteRope(caster, target, allies);
+                case TeamOp.Marker:
                 default:
                     return TeamPulse.None;
             }

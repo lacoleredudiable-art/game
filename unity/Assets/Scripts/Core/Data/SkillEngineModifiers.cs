@@ -1,4 +1,6 @@
 using Dovus.Core.Grammar;
+using Dovus.Core.Portal;
+using Dovus.Core.Team;
 
 namespace Dovus.Core.Data
 {
@@ -52,5 +54,9 @@ namespace Dovus.Core.Data
         public float TempoDurationSec(float fallback) => _raw["tempo_duration_sec"].AsFloat(fallback);
         public float TickRateMult(float fallback) => _raw["tick_rate_mult"].AsFloat(fallback);
         public string TrajectoryOverride(string fallback) => _raw["trajectory_override"].AsString(fallback);
+
+        public PortalOp PortalOp() => SkillMechanicOpParse.ParsePortalOp(_raw["portal_op"].AsString());
+
+        public TeamOp TeamOp() => SkillMechanicOpParse.ParseTeamOp(_raw["team_op"].AsString());
     }
 }

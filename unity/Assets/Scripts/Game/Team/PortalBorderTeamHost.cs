@@ -7,6 +7,7 @@ using Dovus.Core.Tuning;
 using Dovus.Game.Actors;
 using Dovus.Game.Boss;
 using Dovus.Game.Composition;
+using Dovus.Game.Data;
 using Dovus.Game.Platform;
 using Dovus.Game.Vfx;
 using System.Collections.Generic;
@@ -24,8 +25,8 @@ namespace Dovus.Game.Team
         public static PortalBorderTeamHost Instance { get; private set; }
 
         readonly BorderMode _border = new();
-        readonly PortalSystem _portal = new();
-        readonly TeamComboSystem _team = new();
+        readonly PortalSystem _portal;
+        readonly TeamComboSystem _team;
         readonly List<TeamActor> _actors = new();
         readonly List<Body> _bodies = new();
         readonly List<IAllyPlayer> _allies = new();
@@ -49,6 +50,20 @@ namespace Dovus.Game.Team
         public PortalSystem Portal => _portal;
         public TeamComboSystem Team => _team;
         public int Spawned => _spawned.Count;
+
+        public PortalBorderTeamHost()
+        {
+            if (ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
+            {
+                _portal = new PortalSystem(PortalOpTable.FromMotor(design.SkillMotor));
+                _team = new TeamComboSystem(TeamOpTable.FromMotor(design.SkillMotor));
+            }
+            else
+            {
+                _portal = new PortalSystem();
+                _team = new TeamComboSystem();
+            }
+        }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Boot()
