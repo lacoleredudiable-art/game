@@ -629,7 +629,7 @@ namespace Dovus.Game
             return slider;
         }
 
-        static Text CreateLabel(Transform parent, string text, int size)
+        Text CreateLabel(Transform parent, string text, int size)
         {
             var go = new GameObject("Label");
             go.transform.SetParent(parent, false);
