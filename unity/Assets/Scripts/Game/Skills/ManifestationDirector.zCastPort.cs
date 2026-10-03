@@ -21,6 +21,10 @@ namespace Dovus.Game.Skills
         {
             readonly ManifestationDirector _md;
             Transform _basicImpactTarget;
+            LivingEffect _closingLogic;
+
+            /// <summary>FireClosing başında yakalanan logic (eski koddaki yerel değişkenle aynı örnek).</summary>
+            internal void BeginClosing(LivingEffect logic) => _closingLogic = logic;
 
             internal CastPort(ManifestationDirector md) => _md = md;
 
@@ -88,7 +92,7 @@ namespace Dovus.Game.Skills
 
             public void BeginMechanicPlan(PendingClosing ctx, SkillResolution skill)
             {
-                LivingEffect logic = ctx.View != null ? ctx.View.Logic : null;
+                LivingEffect logic = _closingLogic;
                 if (logic == null)
                     return;
                 _md.BeginMechanicPlan(
@@ -123,7 +127,7 @@ namespace Dovus.Game.Skills
                 in SkillMotionPlan motion,
                 in SkillExecutorRoute route)
             {
-                LivingEffect logic = ctx.View != null ? ctx.View.Logic : null;
+                LivingEffect logic = _closingLogic;
                 if (logic == null)
                     return 0f;
 
@@ -226,7 +230,7 @@ namespace Dovus.Game.Skills
 
             public bool IsBossInStrikeCapsule(PendingClosing ctx, float reachM)
             {
-                LivingEffect logic = ctx.View != null ? ctx.View.Logic : null;
+                LivingEffect logic = _closingLogic;
                 return _md.IsBossInStrikeCapsule(logic, reachM);
             }
 
@@ -244,10 +248,10 @@ namespace Dovus.Game.Skills
             public float BasicStrikeYawDeg() => _md.BasicStrikeYawDeg(_basicImpactTarget);
 
             public bool HasLivingLogic(PendingClosing ctx) =>
-                ctx.View != null && ctx.View.Logic != null;
+                _closingLogic != null;
 
             public void ApplyBossClosingBasic(PendingClosing ctx) =>
-                _md.ApplyBossClosingBasic(ctx.View.Logic, ctx.Closing);
+                _md.ApplyBossClosingBasic(_closingLogic, ctx.Closing);
 
             public float ApplyBasicStrikeDamage(PendingClosing ctx, float effectScale) =>
                 _md.ApplyClosingDamage(
@@ -272,7 +276,7 @@ namespace Dovus.Game.Skills
 
             public void TryCannonBlast(PendingClosing ctx)
             {
-                LivingEffect logic = ctx.View.Logic;
+                LivingEffect logic = _closingLogic;
                 _md.TryCannonBlast(logic.TipX, logic.TipZ);
             }
         }

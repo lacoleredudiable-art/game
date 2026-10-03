@@ -1251,6 +1251,7 @@ namespace Dovus.Game.Skills
             if (basic)
             {
                 _castPort ??= new CastPort(this);
+                _castPort.BeginClosing(logic);
                 _castPipeline.RunBasic(p, _castPort);
                 return;
             }
@@ -1259,6 +1260,7 @@ namespace Dovus.Game.Skills
                 return;
 
             _castPort ??= new CastPort(this);
+            _castPort.BeginClosing(logic);
             _castPipeline.RunSkill(p, _castPort);
         }
 
