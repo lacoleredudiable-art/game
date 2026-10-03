@@ -25,7 +25,7 @@
 | Silah / ekipman / pasif | `Core/Equipment/EquipmentCatalog.cs`, `Core/Equipment/WeaponSwap.cs`, `Core/Combat/SlotPassiveDirector.cs`, `Game/Weapons/WeaponSO.cs` | `WeaponSwap`, `SlotPassiveDirector` |
 | Silah görselleri / el prop | `Game/Weapons/WeaponVisualRegistry.cs`, `Game/Weapons/WeaponHandProps.cs`, `Game/Weapons/WeaponArchetypeMap.cs`, `Game/Actors/ActorVisual.cs` | `WeaponVisualRegistry` (SO), `WeaponHandProps.Awake` |
 | Portal / sınır / takım | `Core/Portal/PortalSystem.cs`, `Core/Border/BorderMode.cs`, `Core/Team/TeamComboSystem.cs`, `Game/Team/PortalBorderTeamHost.cs` | `PortalSystem.Cast`, `PortalSystem.Tick`, `PortalBorderTeamHost.Update` |
-| Oyuncu can / mana / diriliş | `Game/Actors/PlayerVitals.cs`, `Game/Actors/PlayerResource.cs`, `Core/Combat/ResourceTracker.cs` | `PlayerVitals.Tick`, `PlayerResource.Update` |
+| Oyuncu can / mana / diriliş | `App/Actors/PlayerHealth.cs`, `Game/Actors/PlayerVitals.cs`, `Game/Actors/PlayerResource.cs`, `Core/Combat/ResourceTracker.cs` | `PlayerVitals.Tick`, `PlayerResource.Update` |
 | HUD | `Game/Hud/VitalsHud.cs`, `Game/Hud/CombatOverlayHud.cs`, `Game/Hud/SkillPreviewHud.cs`, `Game/Hud/PassiveHud.cs`, `Game/Hud/DamageNumberHud.cs` | ilgili `Update` / `Tick*` |
 | Kamera | `Game/Cameras/FollowCamera.cs`, `Game/Cameras/CameraOrbitInput.cs`, `Game/Cameras/CameraAmbienceColliders.cs` | `FollowCamera.Update`, `FollowCamera.ResolveYaw` |
 | VFX / SFX | `Game/Vfx/VfxLibrary.cs`, `Game/Audio/SfxDirector.cs`, `Game/Audio/SfxLibrary.cs`, `Game/Vfx/HitImpactFx.cs`, `Game/ComposedSkillVfx.cs` | `SfxDirector.Awake`, `VfxLibrary` |
