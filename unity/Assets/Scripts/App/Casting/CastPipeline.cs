@@ -3,6 +3,7 @@ using Dovus.Core.Combat;
 using Dovus.Core.Equipment;
 using Dovus.Core.Execution;
 using Dovus.Core.Grammar;
+using Dovus.Core.Mechanic;
 
 namespace Dovus.App.Casting
 {
@@ -10,6 +11,24 @@ namespace Dovus.App.Casting
     {
         public CastStarted(string skillId) => SkillId = skillId ?? string.Empty;
         public string SkillId { get; }
+    }
+
+    public readonly struct BasicOutcome
+    {
+        public BasicOutcome(bool healed, bool deniedCadence, bool connected, float dealt, int hits)
+        {
+            Healed = healed;
+            DeniedCadence = deniedCadence;
+            Connected = connected;
+            Dealt = dealt;
+            Hits = hits;
+        }
+
+        public bool Healed { get; }
+        public bool DeniedCadence { get; }
+        public bool Connected { get; }
+        public float Dealt { get; }
+        public int Hits { get; }
     }
 
     public readonly struct CastOutcome
@@ -43,6 +62,62 @@ namespace Dovus.App.Casting
     {
         public event Action<CastStarted> Started;
         public event Action<CastOutcome> Completed;
+        public event Action<BasicOutcome> BasicCompleted;
+
+        public BasicOutcome RunBasic<TCtx>(TCtx ctx, IBasicStrikePort<TCtx> port)
+        {
+            port.ResolveImpactTarget(ctx);
+            port.ResetClosingChainBonus();
+            SkillResolution basicSkill = port.ResolveSkill(ctx);
+            if (port.IsHealSkill(basicSkill))
+            {
+                port.ApplyClosingStatuses(ctx, basicSkill);
+                port.ShoutSkill(basicSkill, ctx);
+                port.ApplyClosingHeal(ctx, basicSkill);
+                var healed = new BasicOutcome(true, false, false, 0f, 0);
+                BasicCompleted?.Invoke(healed);
+                return healed;
+            }
+
+            double basicNow = port.WorldTimeMs();
+            if (!port.BasicCadenceReady(basicNow))
+            {
+                port.NoteDeniedCadence();
+                var deniedCadence = new BasicOutcome(false, true, false, 0f, 0);
+                BasicCompleted?.Invoke(deniedCadence);
+                return deniedCadence;
+            }
+
+            port.SetLastBasicStrikeMs(basicNow);
+            int basicHits = port.BasicHitsNow();
+            float basicReach = port.BasicStrikeReachM();
+            bool capsuleHit = port.IsBossInStrikeCapsule(ctx, basicReach);
+            bool inReach = port.EvaluateBasicInReach(basicReach);
+            float strikeArc = port.BasicStrikeArcDeg();
+            float strikeDelta = port.BasicStrikeYawDeg();
+
+            float basicDealt = 0f;
+            bool connected = false;
+            if (MeleeArc.StrikeConnects(capsuleHit, inReach, strikeDelta, strikeArc))
+            {
+                connected = true;
+                if (port.HasLivingLogic(ctx))
+                    port.ApplyBossClosingBasic(ctx);
+                basicDealt = port.ApplyBasicStrikeDamage(
+                    ctx, JsonEffectRules.BasicSubHitScale(basicHits));
+                port.ScheduleBasicSubHits(ctx, basicHits, basicReach);
+                port.ApplyBasicExtras(basicDealt, basicHits);
+                port.TryLandWeaponStunBasic();
+            }
+
+            port.SpawnClosingImpact(ctx);
+            if (port.HasLivingLogic(ctx))
+                port.TryCannonBlast(ctx);
+
+            var outcome = new BasicOutcome(false, false, connected, basicDealt, basicHits);
+            BasicCompleted?.Invoke(outcome);
+            return outcome;
+        }
 
         public CastOutcome RunSkill<TCtx>(TCtx ctx, ICastPort<TCtx> port)
         {

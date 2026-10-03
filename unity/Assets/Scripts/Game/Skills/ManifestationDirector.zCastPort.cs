@@ -17,9 +17,10 @@ namespace Dovus.Game.Skills
 
         bool CastPortIsHealSkill(SkillResolution skill) => IsHealSkill(skill);
 
-        sealed class CastPort : ICastPort<PendingClosing>
+        sealed class CastPort : ICastPort<PendingClosing>, IBasicStrikePort<PendingClosing>
         {
             readonly ManifestationDirector _md;
+            Transform _basicImpactTarget;
 
             internal CastPort(ManifestationDirector md) => _md = md;
 
@@ -192,6 +193,87 @@ namespace Dovus.Game.Skills
                     Slash = motion.SlashCommitMult,
                     Chain = _md._closingChainBonus
                 });
+            }
+
+            public void ResolveImpactTarget(PendingClosing ctx)
+            {
+                Transform impactTarget = ctx.Target;
+                if (impactTarget == null || impactTarget == _md._player || !_md.IsEnemyBody(impactTarget))
+                {
+                    _md.CaptureBasicFacing();
+                    impactTarget = _md._castFacingTarget;
+                }
+                if ((impactTarget == null || !_md.IsEnemyBody(impactTarget)) && _md._boss != null)
+                    impactTarget = _md._boss.transform;
+                _md.FaceTarget(impactTarget);
+                _basicImpactTarget = impactTarget;
+            }
+
+            public double WorldTimeMs() =>
+                _md._clock != null ? _md._clock.Director.WorldTimeMs : 0;
+
+            public bool BasicCadenceReady(double now) => _md.BasicCadenceReady(now);
+
+            public void NoteDeniedCadence() =>
+                _md._readout?.NoteDenied("Düz vuruş", "hazır değil");
+
+            public void SetLastBasicStrikeMs(double now) => _md._lastBasicStrikeMs = now;
+
+            public int BasicHitsNow() => _md.BasicHitsNow();
+
+            public float BasicStrikeReachM() =>
+                _md.WeaponBasicReach(_md._combat.Manifestation.BasicStrikeRangeM);
+
+            public bool IsBossInStrikeCapsule(PendingClosing ctx, float reachM)
+            {
+                LivingEffect logic = ctx.View != null ? ctx.View.Logic : null;
+                return _md.IsBossInStrikeCapsule(logic, reachM);
+            }
+
+            public bool EvaluateBasicInReach(float reachM)
+            {
+                bool inReach = _md.BasicTargetStillInReach(_basicImpactTarget, reachM);
+                if (!inReach && _md._boss != null && _basicImpactTarget != _md._boss.transform)
+                    inReach = _md.BasicTargetStillInReach(_md._boss.transform, reachM);
+                return inReach;
+            }
+
+            public float BasicStrikeArcDeg() =>
+                _md.HitMods(SkillResolution.Empty, true, false).ArcDeg;
+
+            public float BasicStrikeYawDeg() => _md.BasicStrikeYawDeg(_basicImpactTarget);
+
+            public bool HasLivingLogic(PendingClosing ctx) =>
+                ctx.View != null && ctx.View.Logic != null;
+
+            public void ApplyBossClosingBasic(PendingClosing ctx) =>
+                _md.ApplyBossClosingBasic(ctx.View.Logic, ctx.Closing);
+
+            public float ApplyBasicStrikeDamage(PendingClosing ctx, float effectScale) =>
+                _md.ApplyClosingDamage(
+                    ctx.Closing,
+                    SkillResolution.Empty,
+                    isBasicStrike: true,
+                    slashCommitMult: 0f,
+                    effectScale: effectScale);
+
+            public void ScheduleBasicSubHits(PendingClosing ctx, int hits, float reach) =>
+                _md.ScheduleBasicSubHits(ctx.Closing, hits, reach);
+
+            public void ApplyBasicExtras(float dealt, int hits) => _md.ApplyBasicExtras(dealt, hits);
+
+            public void TryLandWeaponStunBasic() => _md.TryLandWeaponStun(SkillResolution.Empty, true);
+
+            public void ApplyClosingStatuses(PendingClosing ctx, SkillResolution skill) =>
+                _md.ApplyClosingStatuses(ctx, skill);
+
+            public void ApplyClosingHeal(PendingClosing ctx, SkillResolution skill) =>
+                _md.ApplyClosingHeal(ctx.Closing, skill);
+
+            public void TryCannonBlast(PendingClosing ctx)
+            {
+                LivingEffect logic = ctx.View.Logic;
+                _md.TryCannonBlast(logic.TipX, logic.TipZ);
             }
         }
     }
