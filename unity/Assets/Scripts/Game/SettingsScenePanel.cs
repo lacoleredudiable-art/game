@@ -223,6 +223,8 @@ namespace Dovus.Game
             slow.onClick.AddListener(ToggleSlowMo);
             var strike = CreateButton(row.transform, "VURUŞ");
             strike.onClick.AddListener(TriggerBasicStrike);
+            var back = CreateButton(row.transform, "OYUNA DÖN");
+            back.onClick.AddListener(SceneFlow.LoadPrototype);
         }
 
         /// <summary>Play doğrulama / panel butonları.</summary>
@@ -647,7 +649,7 @@ namespace Dovus.Game
             return t;
         }
 
-        static Button CreateButton(Transform parent, string text)
+        Button CreateButton(Transform parent, string text)
         {
             var go = new GameObject("Btn_" + text);
             go.transform.SetParent(parent, false);

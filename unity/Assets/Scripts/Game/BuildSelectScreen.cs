@@ -430,6 +430,14 @@ namespace Dovus.Game
             openRect.anchoredPosition = new Vector2(-12f, -12f);
             open.onClick.AddListener(Open);
 
+            Button settings = CreateButton(hudSafe, "AYAR", 16, ButtonColor);
+            var settingsRect = (RectTransform)settings.transform;
+            settingsRect.anchorMin = settingsRect.anchorMax = new Vector2(1f, 1f);
+            settingsRect.pivot = new Vector2(1f, 1f);
+            settingsRect.sizeDelta = new Vector2(120f, 48f);
+            settingsRect.anchoredPosition = new Vector2(-12f, -68f);
+            settings.onClick.AddListener(SceneFlow.LoadSettings);
+
             _screen = new GameObject("BuildSelectScreen");
             _screen.transform.SetParent(canvasGo.transform, false);
             RectTransform screenRect = _screen.AddComponent<RectTransform>();
@@ -651,12 +659,16 @@ namespace Dovus.Game
             _status = CreateText(side, string.Empty, 16, new Color(1f, 0.85f, 0.4f, 1f), TextAnchor.MiddleCenter);
             Place(_status.rectTransform, 0.04f, 0.26f, 0.96f, 0.33f);
 
+            Button settingsScene = CreateButton(side, "AYAR SAHNESİ", 16, ButtonColor);
+            Place((RectTransform)settingsScene.transform, 0.04f, 0.18f, 0.96f, 0.25f);
+            settingsScene.onClick.AddListener(SceneFlow.LoadSettings);
+
             Button clear = CreateButton(side, "TEMİZLE", 18, ButtonColor);
-            Place((RectTransform)clear.transform, 0.04f, 0.12f, 0.34f, 0.25f);
+            Place((RectTransform)clear.transform, 0.04f, 0.04f, 0.34f, 0.16f);
             clear.onClick.AddListener(ClearSelection);
 
             _startButton = CreateButton(side, "SAVAŞA BAŞLA", 22, AccentColor);
-            Place((RectTransform)_startButton.transform, 0.38f, 0.12f, 0.96f, 0.25f);
+            Place((RectTransform)_startButton.transform, 0.38f, 0.04f, 0.96f, 0.16f);
             _startButton.onClick.AddListener(ApplyAndStart);
             _startImage = (Image)_startButton.targetGraphic;
             _startLabel = _startButton.GetComponentInChildren<Text>();
