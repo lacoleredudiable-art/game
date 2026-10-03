@@ -162,7 +162,7 @@ public class TouchDodgeSwapTests
     public void Director_WiresSustainedLock()
     {
         Assert.That(Game("Game/Skills/ManifestationDirector.WeaponSwap.cs"), Does.Contain("bool holding = SustainedSkillActive(worldMs);"));
-        Assert.That(Game("Game/Skills/ManifestationDirector.cs"), Does.Contain("NoteSustainedCast(skill);"));
+        Assert.That(Game("Game/Skills/ManifestationDirector.zCastPort.cs"), Does.Contain("NoteSustainedCast(skill)"));
         Assert.That(Game("Game/Skills/ManifestationDirector.MotionTemplate.cs"), Does.Contain("_sustainedCast.Clear();"));
         Assert.That(Game("Game/Skills/ManifestationDirector.Weapons10.cs"), Does.Not.Contain("OnWeaponHudButton"));
         Assert.That(Game("Game/Skills/ManifestationDirector.Weapons10.cs"), Does.Contain("SwapButtonHoldSec"));

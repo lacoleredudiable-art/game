@@ -10,10 +10,10 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 - [x] 0.4 Ölü kod temizliği: tek seferlik capture script'leri, 85 eski branch, eski taslak PR'lar (#6 #8 #9 #10 #43 — kullanıcı onayıyla)
 
 ## Aşama 2 — Mimari (kuzen önerisi) (davranış değişmeden, adım adım)
-- [~] 2.1 Game'i konu klasörlerine ayır + namespace = klasör (Dovus.<Katman>.<Konu>)
+- [x] 2.1 Game'i konu klasörlerine ayır + namespace = klasör (Dovus.<Katman>.<Konu>)
 - [x] 2.2 Güçlü ID tipleri (SkillId, WeaponId, RuneId, ElementId, ActorId) + JSON mapper (ham JsonValue Game'e sızmaz)
 - [x] 2.3 Application assembly + IClock / IRng; mana/diriliş oyun saatine, tohumsuz Random'lar CombatRng'ye
-- [ ] 2.4 CastPipeline (ManifestationDirector.cs:1316–1332 taşınır; komut al → olay yay)
+- [~] 2.4 CastPipeline (ManifestationDirector.cs:1316–1332 taşınır; komut al → olay yay)
 - [ ] 2.5 Oyuncu can/diriliş → Application (Player aggregate)
 - [ ] 2.6 Boss AI → Application (BossBrain)
 - [ ] 2.7 Statik çarpanlar oyuncu başına; PortalSystem/TeamComboSystem switch'leri → JSON etiketleri; pasifler enum

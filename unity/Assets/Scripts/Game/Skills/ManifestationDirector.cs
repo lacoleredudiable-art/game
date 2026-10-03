@@ -1,3 +1,4 @@
+using Dovus.App.Casting;
 using Dovus.Core;
 using Dovus.Core.Combat;
 using Dovus.Core.Equipment;
@@ -35,6 +36,17 @@ namespace Dovus.Game.Skills
     /// </summary>
     public sealed partial class ManifestationDirector : MonoBehaviour
     {
+        struct PendingClosing
+        {
+            public LivingEffectView View;
+            public ClosingHit Closing;
+            public double BangAtWorldMs;
+            public List<SentenceWord> Words;
+            public bool IsBasicStrike;
+            public Transform Target;
+            public SkillAimMode AimMode;
+        }
+
         GameClock _clock;
         SentenceEngine _engine;
         CombatTuning _combat;
@@ -258,17 +270,6 @@ namespace Dovus.Game.Skills
             return _skillFactory != null
                 ? _skillFactory.EvaluateWeapon(skill, _equippedWeapon)
                 : WeaponSkillCompatibility.Neutral;
-        }
-
-        struct PendingClosing
-        {
-            public LivingEffectView View;
-            public ClosingHit Closing;
-            public double BangAtWorldMs;
-            public List<SentenceWord> Words;
-            public bool IsBasicStrike;
-            public Transform Target;
-            public SkillAimMode AimMode;
         }
 
         public LivingEffect ActiveLogic => _buildingView?.Logic;
@@ -1309,112 +1310,8 @@ namespace Dovus.Game.Skills
             if (logic == null)
                 return;
 
-            _closingChainBonus = 1f;
-            SkillResolution skill = ResolvePendingSkill(p);
-            if (skill.IsEmpty || !skill.IsComplete)
-            {
-                _readout?.NoteDenied("2 rün gerekli");
-                return;
-            }
-
-            // Dolu sayfa: sıra hasardan önce artsın. Her 3. skill bu vuruşta sayılır.
-            NoteWeaponCast(skill);
-
-            _slotQueryCastId = _slotPassives != null ? _slotPassives.OpenCast() : 0;
-            try
-            {
-            WeaponSkillCompatibility compatibility = WeaponCompatibilityFor(skill);
-            LastWeaponCompatible = compatibility.Compatible;
-            LastWeaponPassiveEnabled = compatibility.PassiveEnabled;
-            LastWeaponUiLabel = compatibility.UiLabel;
-            if (PassiveSlotPolicy.ShouldArm(true, compatibility.PassiveEnabled, _slotPassiveNeedsWeapon))
-                TryTriggerPassive(p.Words, _clock.Director.WorldTimeMs);
-
-            ApplyResourceCost(skill);
-            SkillMotionPlan motionPlan = ResolveSkillMotion(skill);
-            ApplySkillMotionIframe(skill, motionPlan);
-            bool templateOwnsDelivery = TryBeginMotionTemplate(skill, p);
-            NoteSustainedCast(skill);
-            PortalBorderTeamHooks.NotifyCast(skill.SkillId);
-            SkillExecutorRoute executorRoute = _skillExecutorRouter.Route(skill, _equippedWeapon);
-            executorRoute = ApplyMechanicWorldRoute(MechanicPlanFor(skill), executorRoute);
-            LastExecutorKind = executorRoute.Kind;
-            ApplySelfCastEffects(skill);
-            NoteJsonCast(skill, p.Closing);
-            BeginMechanicPlan(
-                skill,
-                new Vector3(logic.DirX, 0f, logic.DirZ),
-                new Vector3(logic.TipX, _player.position.y, logic.TipZ));
-            if (templateOwnsDelivery)
-                ArmTemplateDelivery(skill, p, motionPlan);
-
-            bool executorStarted = !templateOwnsDelivery
-                && executorRoute.Kind != SkillExecutorKind.Fallback
-                && TryLaunchSkillExecutor(executorRoute.Kind, p, skill, motionPlan);
-            if (executorStarted)
-                ScheduleFollowUpLaunches(executorRoute.Kind, p, skill, motionPlan);
-            float dealt = 0f;
-            if (!executorStarted && !templateOwnsDelivery)
-            {
-                if (executorRoute.IsStub)
-                    DebugConfig.DevLog($"[SkillExecutor] stub → LivingEffect: {executorRoute.Reason}");
-                LastExecutorKind = SkillExecutorKind.Fallback;
-                ApplyBossClosing(logic, p.Closing, skill);
-                bool bossReached = _boss != null && IsClosingInRange(logic, p.Closing);
-                if (bossReached)
-                {
-                    dealt = ApplyClosingDamage(
-                        p.Closing,
-                        skill,
-                        isBasicStrike: false,
-                        motionPlan.SlashCommitMult);
-                }
-                ApplyClosingStatuses(p, skill, bossReached);
-                if (bossReached)
-                    ApplyMechanicHitEffects(LastMechanicPlan, new Vector3(logic.TipX, 0f, logic.TipZ));
-                ApplyClosingHeal(p.Closing, skill);
-            }
-
-            ShoutSkill(skill, p.Words);
-            ApplyCooldown(skill, p.Words, cosmeticIfDisabled: true);
-            if (!motionPlan.IsEmpty)
-                AnnotateMotion(skill, motionPlan);
-            SpawnClosingImpact(p);
-            LastResolvedSkillId = skill.SkillId;
-            LastSkillEffectApplied = executorStarted
-                || templateOwnsDelivery
-                || dealt > 0f
-                || IsHealSkill(skill)
-                || !motionPlan.IsEmpty
-                || skill.Mechanics.Length > 0;
-            if (string.Equals(skill.SkillId, "1-1", StringComparison.Ordinal))
-            {
-                DebugConfig.DevLog(
-                    $"[ElementSystem] smoke 1-1 effect applied={LastSkillEffectApplied} "
-                    + $"damage={dealt:0.##}");
-            }
-
-            if (_slotPassives != null
-                && _clock != null
-                && _slotPassives.TryConsumeEcho(_slotQueryCastId, out float echoDelay, out float echoPower))
-            {
-                _passiveEchoes.Add(new PassiveEchoShot
-                {
-                    DueMs = _clock.Director.WorldTimeMs + echoDelay * 1000.0,
-                    Power = echoPower,
-                    SlotCastId = _slotQueryCastId,
-                    Closing = p.Closing,
-                    Skill = skill,
-                    Slash = motionPlan.SlashCommitMult,
-                    Chain = _closingChainBonus
-                });
-            }
-            }
-            finally
-            {
-                _slotPassives?.CloseCast();
-                _slotQueryCastId = 0;
-            }
+            _castPort ??= new CastPort(this);
+            _castPipeline.RunSkill(p, _castPort);
         }
 
         struct PassiveEchoShot
