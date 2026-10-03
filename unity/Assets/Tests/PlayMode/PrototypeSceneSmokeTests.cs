@@ -42,11 +42,11 @@ namespace Dovus.Tests.PlayMode
 
             Application.logMessageReceived -= OnLog;
 
-            Assert.That(Object.FindAnyObjectByType<PrototypeBootstrap>(), Is.Not.Null, "PrototypeBootstrap");
-            Assert.That(Object.FindAnyObjectByType<ManifestationDirector>(), Is.Not.Null, "ManifestationDirector");
-            Assert.That(Object.FindAnyObjectByType<BossDirector>(), Is.Not.Null, "BossDirector");
-            Assert.That(Object.FindAnyObjectByType<PlayerVitals>(), Is.Not.Null, "PlayerVitals");
-            Assert.That(Object.FindAnyObjectByType<HexagonInput>(), Is.Not.Null, "HexagonInput");
+            Assert.That(UnityEngine.Object.FindAnyObjectByType<PrototypeBootstrap>(), Is.Not.Null, "PrototypeBootstrap");
+            Assert.That(UnityEngine.Object.FindAnyObjectByType<ManifestationDirector>(), Is.Not.Null, "ManifestationDirector");
+            Assert.That(UnityEngine.Object.FindAnyObjectByType<BossDirector>(), Is.Not.Null, "BossDirector");
+            Assert.That(UnityEngine.Object.FindAnyObjectByType<PlayerVitals>(), Is.Not.Null, "PlayerVitals");
+            Assert.That(UnityEngine.Object.FindAnyObjectByType<HexagonInput>(), Is.Not.Null, "HexagonInput");
 
             int exceptionCount = 0;
             foreach (string line in _collected)
@@ -66,7 +66,7 @@ namespace Dovus.Tests.PlayMode
         static void WriteSmokeLog(IReadOnlyList<string> lines)
         {
             string path = ResolveSmokeOutPath();
-            string? dir = Path.GetDirectoryName(path);
+            string dir = Path.GetDirectoryName(path);
             if (!string.IsNullOrEmpty(dir))
                 Directory.CreateDirectory(dir);
 
@@ -78,14 +78,14 @@ namespace Dovus.Tests.PlayMode
 
         static string ResolveSmokeOutPath()
         {
-            string? fromArg = GetCommandLineArgValue("-smokeOut");
+            string fromArg = GetCommandLineArgValue("-smokeOut");
             if (!string.IsNullOrWhiteSpace(fromArg))
                 return Path.GetFullPath(fromArg);
 
             return Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Temp", "playmode-smoke.txt"));
         }
 
-        static string? GetCommandLineArgValue(string flag)
+        static string GetCommandLineArgValue(string flag)
         {
             string[] args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++)
