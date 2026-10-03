@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using Dovus.App.Team;
 
 namespace Dovus.Game.Team
 {
@@ -9,35 +9,65 @@ namespace Dovus.Game.Team
     /// </summary>
     public static class PortalBorderTeamHooks
     {
-        public static float AttackSpeedMult = 1f;
-        public static float DamageMult = 1f;
-        public static float LifestealAdd;
-        public static float BossIncomingMult = 1f;
-        public static float BossStrikeScale = 1f;
-        public static float MoveSpeedMult = 1f;
-        public static bool IntentionalTeleport;
-        public static float PlayerDamageTakenMult = 1f;
-        public static int PlayerActorId = 1;
+        public static TeamModifierTable Table { get; } = new();
 
-        static readonly Dictionary<int, float> Miss = new();
-        static readonly Dictionary<int, float> Taken = new();
+        public static float AttackSpeedMult
+        {
+            get => Table.For(PlayerActorId).AttackSpeedMult;
+            set => SetPlayerModifiers(Table.For(PlayerActorId), value, null, null, null, null);
+        }
+
+        public static float DamageMult
+        {
+            get => Table.For(PlayerActorId).DamageMult;
+            set => SetPlayerModifiers(Table.For(PlayerActorId), null, value, null, null, null);
+        }
+
+        public static float LifestealAdd
+        {
+            get => Table.For(PlayerActorId).LifestealAdd;
+            set => SetPlayerModifiers(Table.For(PlayerActorId), null, null, value, null, null);
+        }
+
+        public static float BossIncomingMult
+        {
+            get => Table.BossIncomingMult;
+            set => Table.BossIncomingMult = value;
+        }
+
+        public static float BossStrikeScale
+        {
+            get => Table.BossStrikeScale;
+            set => Table.BossStrikeScale = value;
+        }
+
+        public static float MoveSpeedMult
+        {
+            get => Table.For(PlayerActorId).MoveSpeedMult;
+            set => SetPlayerModifiers(Table.For(PlayerActorId), null, null, null, value, null);
+        }
+
+        public static bool IntentionalTeleport;
+        public static float PlayerDamageTakenMult
+        {
+            get => Table.For(PlayerActorId).DamageTakenMult;
+            set => SetPlayerModifiers(Table.For(PlayerActorId), null, null, null, null, value);
+        }
+
+        public static int PlayerActorId = 1;
 
         public static event Action<string> Cast;
 
-        public static Func<float> Roll;
+        public static Func<float> Roll
+        {
+            get => Table.Roll;
+            set => Table.Roll = value;
+        }
 
         public static void ResetModifiers()
         {
-            AttackSpeedMult = 1f;
-            DamageMult = 1f;
-            LifestealAdd = 0f;
-            BossIncomingMult = 1f;
-            BossStrikeScale = 1f;
-            MoveSpeedMult = 1f;
-            PlayerDamageTakenMult = 1f;
+            Table.Reset();
             IntentionalTeleport = false;
-            Miss.Clear();
-            Taken.Clear();
         }
 
         public static void MarkIntentionalTeleport() => IntentionalTeleport = true;
@@ -55,33 +85,31 @@ namespace Dovus.Game.Team
                 Cast?.Invoke(skillId);
         }
 
-        public static void SetMiss(int actorId, float chance)
-        {
-            if (chance <= 0f)
-                Miss.Remove(actorId);
-            else
-                Miss[actorId] = chance;
-        }
+        public static void SetMiss(int actorId, float chance) => Table.SetMiss(actorId, chance);
 
-        public static void SetTaken(int actorId, float mult)
-        {
-            if (mult <= 0f)
-                mult = 1f;
-            if (Math.Abs(mult - 1f) < 0.0001f)
-                Taken.Remove(actorId);
-            else
-                Taken[actorId] = mult;
-        }
+        public static void SetTaken(int actorId, float mult) => Table.SetTaken(actorId, mult);
 
-        public static float DamageTakenMult(int actorId) =>
-            Taken.TryGetValue(actorId, out float mult) ? mult : 1f;
+        public static float DamageTakenMult(int actorId) => Table.DamageTakenMult(actorId);
 
-        public static bool TryMiss(int actorId)
+        public static bool TryMiss(int actorId) => Table.TryMiss(actorId);
+
+        static void SetPlayerModifiers(
+            ActorModifiers current,
+            float? attackSpeedMult,
+            float? damageMult,
+            float? lifestealAdd,
+            float? moveSpeedMult,
+            float? damageTakenMult)
         {
-            if (!Miss.TryGetValue(actorId, out float chance) || chance <= 0f)
-                return false;
-            float roll = Roll != null ? Roll() : 1f;
-            return roll < chance;
+            Table.Set(
+                PlayerActorId,
+                new ActorModifiers(
+                    attackSpeedMult ?? current.AttackSpeedMult,
+                    damageMult ?? current.DamageMult,
+                    lifestealAdd ?? current.LifestealAdd,
+                    moveSpeedMult ?? current.MoveSpeedMult,
+                    damageTakenMult ?? current.DamageTakenMult,
+                    current.MissChance));
         }
     }
 }
