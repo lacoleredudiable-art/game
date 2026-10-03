@@ -3,7 +3,7 @@
 .SYNOPSIS
   Repo doğrulama: GameCompile, CoreTests, AtomSim, SweepV2 kapısı.
 .PARAMETER Skip
-  Virgülle ayrılmış adımlar: gamecompile, coretests, atomsim, sweep
+  Virgülle ayrılmış adımlar: gamecompile, coretests, integration, atomsim, sweep
 .PARAMETER Quick
   Sweep adımını atla.
 #>
@@ -120,7 +120,35 @@ if (-not (Test-StepSkipped 'coretests')) {
     }
 }
 
-# (c) AtomSim
+# (c) IntegrationTests
+if (-not (Test-StepSkipped 'integration')) {
+    $results += Invoke-VerifyStep -Key 'integration' -Title 'IntegrationTests' -Run {
+        dotnet test (Join-Path $RepoRoot 'tools\IntegrationTests') --nologo -v q
+    } -NoteFromLog {
+        param($t, $code)
+        $passed = 0
+        $failed = 0
+        if ($t -match 'Passed!\s*-\s*Failed:\s*(\d+),\s*Passed:\s*(\d+)') {
+            $failed = [int]$Matches[1]
+            $passed = [int]$Matches[2]
+        } elseif ($t -match 'Başarısız:\s*(\d+),\s*Başarılı:\s*(\d+)') {
+            $failed = [int]$Matches[1]
+            $passed = [int]$Matches[2]
+        } elseif ($t -match 'Toplam:\s*(\d+)') {
+            $passed = [int]$Matches[1]
+            if ($t -match 'Başarısız:\s*(\d+)') { $failed = [int]$Matches[1] }
+            elseif ($t -match 'Failed:\s*(\d+)') { $failed = [int]$Matches[1] }
+        } elseif ($t -match 'Passed:\s*(\d+).*Failed:\s*(\d+)') {
+            $passed = [int]$Matches[1]
+            $failed = [int]$Matches[2]
+        }
+        $sum = "Passed $passed, Failed $failed"
+        if ($code -ne 0) { return "$sum (exit $code)" }
+        return $sum
+    }
+}
+
+# (d) AtomSim
 if (-not (Test-StepSkipped 'atomsim')) {
     $results += Invoke-VerifyStep -Key 'atomsim' -Title 'AtomSim' -Run {
         dotnet run --project (Join-Path $RepoRoot 'tools\AtomSim')
@@ -135,7 +163,7 @@ if (-not (Test-StepSkipped 'atomsim')) {
     }
 }
 
-# (d) SweepV2
+# (e) SweepV2
 $runSweep = (-not $Quick) -and (-not (Test-StepSkipped 'sweep'))
 if ($runSweep) {
     $sweepOut = Join-Path $OutDir 'sweep'

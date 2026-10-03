@@ -33,6 +33,7 @@
 | Debug / dev | `Game/DebugConfig.cs`, `Game/DebugPanelsController.cs`, `Game/V611DebugPanel.cs`, `Game/SentenceDebugHud.cs`, `Game/TuningPanel.cs` | `DebugPanelsController`, `V611DebugPanel.Update` |
 | Editor menüleri | `Game/Editor/PlaySweep.cs`, `Game/Editor/FeelCapture*.cs`, `Game/Editor/*Bind.cs`, `Game/Editor/AndroidBuilder.cs` | `[MenuItem("Dovus/...")]` |
 | Testler — Core | `tools/CoreTests/*Tests.cs` | `dotnet test tools/CoreTests` |
+| Testler — Integration | `tools/IntegrationTests/*Tests.cs` | `dotnet test tools/IntegrationTests` |
 | Araç — gramer | `tools/AtomSim/Program.cs` | `dotnet run --project tools/AtomSim` |
 | Araç — başsız tarama | `tools/SweepV2/Host/Program.cs`, `tools/SweepV2/Shim/*` | `SweepV2.Program.Main` |
 | Araç — Game derleme | `tools/GameCompile/check.py`, `tools/GameCompile/GameCompile.csproj` | `python tools/GameCompile/check.py` |
