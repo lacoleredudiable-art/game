@@ -13,12 +13,14 @@ namespace Dovus.Game
         ActorVisual _visual;
         string _lastKey = "\u0000";
         float _baseBangSec = 0.22f;
+        bool _followDirectorEquipped = true;
 
-        public void Bind(ManifestationDirector director, CombatTuning combat, Transform player)
+        public void Bind(ManifestationDirector director, CombatTuning combat, Transform subject, bool followDirectorEquipped = true)
         {
             _director = director;
             _combat = combat;
-            _visual = player != null ? player.GetComponent<ActorVisual>() : null;
+            _followDirectorEquipped = followDirectorEquipped;
+            _visual = subject != null ? subject.GetComponent<ActorVisual>() : null;
             if (_combat?.Manifestation != null)
                 _baseBangSec = _combat.Manifestation.BasicStrikeBangSec;
             WeaponFeelStore.EnsureLoaded();
@@ -26,7 +28,7 @@ namespace Dovus.Game
 
         void LateUpdate()
         {
-            if (_director == null)
+            if (!_followDirectorEquipped || _director == null)
                 return;
             var weapon = _director.EquippedWeapon;
             string key = weapon?.AnimationsKey ?? string.Empty;

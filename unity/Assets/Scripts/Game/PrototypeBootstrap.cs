@@ -700,10 +700,10 @@ namespace Dovus.Game
             {
                 Transform gripRoot = trainingDummy.transform;
                 var applier = gripRoot.gameObject.AddComponent<WeaponFeelApplier>();
-                applier.Bind(director, combat, gripRoot);
+                applier.Bind(director, combat, gripRoot, followDirectorEquipped: false);
                 applier.ApplyWeapon("kilic");
                 var settingsPanel = root.AddComponent<SettingsScenePanel>();
-                settingsPanel.Configure(director, input, clock, applier, skills, follow, _tuning, gripRoot);
+                settingsPanel.Configure(director, input, clock, applier, skills, follow, _tuning, gripRoot, player);
                 var gripCam = root.AddComponent<SettingsSceneGripCamera>();
                 Animator gripAnim = gripRoot.GetComponentInChildren<Animator>();
                 gripCam.Bind(follow, gripAnim, _tuning);

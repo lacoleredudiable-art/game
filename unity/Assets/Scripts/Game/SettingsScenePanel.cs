@@ -24,6 +24,8 @@ namespace Dovus.Game
         WeaponFeelApplier _applier;
         SkillMotor _skills;
         WeaponVisualRegistry _registry;
+        Transform _gripRoot;
+        Transform _playerRoot;
         RectTransform _content;
         Text _status;
         Text _weaponLabel;
@@ -47,13 +49,16 @@ namespace Dovus.Game
             SkillMotor skills,
             FollowCamera follow = null,
             PrototypeTuning tuning = null,
-            Transform gripSubject = null)
+            Transform gripSubject = null,
+            Transform playerRoot = null)
         {
             _director = director;
             _input = input;
             _clock = clock;
             _applier = applier;
             _skills = skills;
+            _gripRoot = gripSubject;
+            _playerRoot = playerRoot;
             _registry = Resources.Load<WeaponVisualRegistry>("Animation/WeaponVisualRegistry");
             WeaponFeelStore.EnsureLoaded();
             BuildUi();
@@ -206,7 +211,7 @@ namespace Dovus.Game
             var slow = CreateButton(row.transform, "YAVAŞ ×0.25");
             slow.onClick.AddListener(ToggleSlowMo);
             var strike = CreateButton(row.transform, "VURUŞ");
-            strike.onClick.AddListener(() => CastSkill(1, 1));
+            strike.onClick.AddListener(TriggerBasicStrike);
         }
 
         void SelectWeapon(string key)
@@ -232,6 +237,7 @@ namespace Dovus.Game
             RebuildGripSliders();
             if (_weaponLabel != null)
                 _weaponLabel.text = "Silah: " + (w?.Name ?? key);
+            LogGripProp(key);
         }
 
         EquipmentItem FindWeapon(string key)
@@ -375,6 +381,66 @@ namespace Dovus.Game
         {
             bool ok = _input != null && _input.TryDebugCastSkill(verb, adj);
             ShowStatus(ok ? $"Skill {verb}-{adj} gönderildi" : "Skill reddedildi (build?)");
+        }
+
+        void TriggerBasicStrike()
+        {
+            bool ok = _input != null && _input.TryDebugBasicStrike();
+            if (ok)
+                StartCoroutine(LogBasicStrikeAnimNextFrame());
+            else
+                ShowStatus("Düz vuruş reddedildi");
+        }
+
+        System.Collections.IEnumerator LogBasicStrikeAnimNextFrame()
+        {
+            yield return null;
+            string state = !string.IsNullOrEmpty(_director?.LastAnimationState)
+                ? _director.LastAnimationState
+                : DescribeAnimatorState(_playerRoot);
+            Debug.Log($"[SettingsScene] basicStrike ok=true animState={state}");
+            ShowStatus($"Düz vuruş ({state})");
+        }
+
+        void LogGripProp(string weaponKey)
+        {
+            string right = FindHandPropName(_gripRoot, HumanBodyBones.RightHand);
+            string left = FindHandPropName(_gripRoot, HumanBodyBones.LeftHand);
+            Debug.Log($"[SettingsScene] weapon={weaponKey} dummyRightProp={right ?? "(yok)"} dummyLeftProp={left ?? "(yok)"}");
+        }
+
+        static string FindHandPropName(Transform root, HumanBodyBones bone)
+        {
+            if (root == null)
+                return null;
+            var anim = root.GetComponentInChildren<Animator>();
+            if (anim == null)
+                return null;
+            Transform hand = anim.GetBoneTransform(bone);
+            if (hand == null)
+                return null;
+            for (int i = 0; i < hand.childCount; i++)
+            {
+                Transform child = hand.GetChild(i);
+                if (WeaponHandProps.IsWeaponPropRootName(child.name))
+                    return child.name;
+            }
+
+            return null;
+        }
+
+        static string DescribeAnimatorState(Transform root)
+        {
+            if (root == null)
+                return "?";
+            var visual = root.GetComponent<ActorVisual>();
+            Animator anim = visual != null ? visual.Animator : root.GetComponentInChildren<Animator>();
+            if (anim == null)
+                return "no-anim";
+            AnimatorClipInfo[] clips = anim.GetCurrentAnimatorClipInfo(0);
+            if (clips != null && clips.Length > 0 && clips[0].clip != null)
+                return clips[0].clip.name;
+            return anim.GetCurrentAnimatorStateInfo(0).shortNameHash.ToString();
         }
 
         void SaveToDisk()

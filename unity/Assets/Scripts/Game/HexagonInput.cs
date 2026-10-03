@@ -195,6 +195,33 @@ namespace Dovus.Game
         /// v6 ladder smoke path: aynı SentenceEngine event zincirinden iki rün cast eder.
         /// ManifestationDirector normal cast gibi alır; ayrı hasar/skill yolu yoktur.
         /// </summary>
+        /// <summary>Ayar sahnesi / debug: merkez düz vuruş (BasicStrikeDot), skill cast değil.</summary>
+        public bool TryDebugBasicStrike()
+        {
+            EnsureRuntime();
+            if (_engine == null || InputLocked)
+                return false;
+
+            double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
+            SyncPlayerStateFromWorld();
+            bool engineOk = _engine.State.Phase == SentencePhase.Idle
+                || _engine.State.Phase == SentencePhase.Recovering
+                || _engine.State.Phase == SentencePhase.Resolved
+                || _engine.State.Phase == SentencePhase.Aborted;
+            if (!BasicStrikeInput.AllowsCenterStrike(AllowsDrawNow, _centerStrikeArmed, engineOk))
+                return false;
+
+            int runeId = _tuning.BasicStrikeDot;
+            if (!_engine.BeginBasicStrike(runeId, worldMs))
+                return false;
+            _engine.Commit();
+            DotAccepted?.Invoke(0);
+            FlushInkBreak();
+            _syllable?.PlayForDot(runeId, 1);
+            _debugHud?.NoteBasicStrike();
+            return true;
+        }
+
         public bool TryDebugCastSkill(int verbRuneId, int adjectiveRuneId)
         {
             EnsureRuntime();
