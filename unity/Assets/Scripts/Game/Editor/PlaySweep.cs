@@ -1089,8 +1089,7 @@ namespace Dovus.Game.Editor
             if (_playerVitals != null)
             {
                 _playerVitals.SuppressDown = true;
-                S(_playerVitals, "_respawnAtSec", -1f);
-                S(_playerVitals, "_hp", Math.Max(1, _playerVitals.MaxHp / 2));
+                _playerVitals.ResetForSweepCase();
             }
             if (_ally != null)
                 S(_ally, "_hp", Math.Max(1, _ally.MaxHp / 2));
