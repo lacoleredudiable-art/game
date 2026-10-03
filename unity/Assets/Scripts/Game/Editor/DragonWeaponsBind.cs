@@ -19,8 +19,6 @@ namespace Dovus.Game.EditorTools
         const string RegistryDir = "Assets/Resources/Animation";
         const string RegistryPath = RegistryDir + "/WeaponVisualRegistry.asset";
 
-        static readonly Color EmissionTint = new Color(1f, 0.45f, 0.15f) * 0.6f;
-
         [MenuItem("Tools/Weapons/Bind Dragon Props")]
         public static void BindAll()
         {
@@ -116,14 +114,16 @@ namespace Dovus.Game.EditorTools
             if (mat.HasProperty("_Metallic"))
                 mat.SetFloat("_Metallic", 0f);
             if (mat.HasProperty("_Smoothness"))
-                mat.SetFloat("_Smoothness", 0.35f);
+                mat.SetFloat("_Smoothness", 0.12f);
+            if (mat.HasProperty("_SpecularHighlights"))
+                mat.SetFloat("_SpecularHighlights", 0f);
 
-            mat.EnableKeyword("_EMISSION");
+            mat.DisableKeyword("_EMISSION");
             if (mat.HasProperty("_EmissionColor"))
-                mat.SetColor("_EmissionColor", EmissionTint);
-            if (baseMap != null && mat.HasProperty("_EmissionMap"))
-                mat.SetTexture("_EmissionMap", baseMap);
-            mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
+                mat.SetColor("_EmissionColor", Color.black);
+            if (mat.HasProperty("_EmissionMap"))
+                mat.SetTexture("_EmissionMap", null);
+            mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.EmissiveIsBlack;
 
             EditorUtility.SetDirty(mat);
             return mat;
