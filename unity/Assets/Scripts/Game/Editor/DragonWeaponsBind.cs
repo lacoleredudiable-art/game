@@ -53,6 +53,41 @@ namespace Dovus.Game.EditorTools
             new("top", "Top", DragonHand.Right, doubleSided: true),
         };
 
+        /// <summary>Yalnız Kure FBX/prefab; registry tutuş vektörleri korunur.</summary>
+        public static void BindKureForPipeline()
+        {
+            DragonWeaponRow row = System.Array.Find(Weapons, w => w.WeaponKey == "kure");
+            ConfigureTextureImporter(BaseColorPath(row));
+            ConfigureFbxImporter(FbxPath(row));
+            AssetDatabase.Refresh();
+
+            WeaponVisualRegistry registry = AssetDatabase.LoadAssetAtPath<WeaponVisualRegistry>(RegistryPath);
+            if (registry == null)
+            {
+                Debug.LogError("[DragonWeaponsBind] missing registry");
+                return;
+            }
+
+            WeaponVisualRegistry.PropEntry entry = FindOrCreateEntry(registry, "kure");
+            Vector3 pos = entry.RightLocalPosition;
+            Vector3 rot = entry.RightLocalEulerAngles;
+            Vector3 scale = entry.RightLocalScale;
+
+            Texture2D baseMap = AssetDatabase.LoadAssetAtPath<Texture2D>(BaseColorPath(row));
+            Material mat = EnsureDragonMat(MatPath(row), baseMap, row.DoubleSided);
+            GameObject prefab = BuildWeaponPrefab(row, mat);
+            if (prefab == null)
+                return;
+
+            entry.RightHandPrefab = prefab;
+            entry.RightLocalPosition = pos;
+            entry.RightLocalEulerAngles = rot;
+            entry.RightLocalScale = scale;
+            EditorUtility.SetDirty(registry);
+            AssetDatabase.SaveAssets();
+            Debug.Log("[DragonWeaponsBind] Kure rebound (registry grip kept).");
+        }
+
         [MenuItem("Tools/Weapons/Bind Dragon Props")]
         public static void BindAll()
         {
