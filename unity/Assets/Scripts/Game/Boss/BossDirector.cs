@@ -25,16 +25,9 @@ namespace Dovus.Game.Boss
     /// Hedef (oyuncu / dost / dikkat çeken yem) her idle döngüsünün başında <see cref="HostileTargets"/>
     /// ile seçilir; yaklaşma ve windup kilidi hedefe bakar, vuruş hacmi kayıtlı HER dostu sınar.
     /// </summary>
-    public sealed class BossDirector : MonoBehaviour
+    public sealed partial class BossDirector : MonoBehaviour
     {
-        enum Phase
-        {
-            Idle,
-            Windup,
-            Active,
-            Recovery
-        }
-
+        BossBrain _brain;
         GameClock _clock;
         CombatTuning _combat;
         PrototypeTuning _colors;
@@ -64,13 +57,6 @@ namespace Dovus.Game.Boss
         TargetKind _targetKind = TargetKind.Player;
         double _reverseUntilMs = -1;
 
-        Phase _phase = Phase.Idle;
-        double _phaseStartedWorldMs;
-        double _phaseElapsedMs;
-        double _idleUntilWorldMs;
-        int _telegraphStartMs;
-        int _strikeWorldMs;
-        bool _strikeResolved;
         bool _playerWasDown;
         Vector3 _originHome;
         readonly System.Random _rng = new();
@@ -109,31 +95,38 @@ namespace Dovus.Game.Boss
         public float AttackArcHalfAngleDeg => _attack?.ArcHalfAngleDeg ?? 180f;
         public Vector3 AttackOrigin => _reactor != null ? _reactor.Home : transform.position;
 
-        public bool IsWindingUp => _phase == Phase.Windup;
-        public BossAttackKind? CurrentAttackKind => _phase is Phase.Windup or Phase.Active ? _attack?.Kind : null;
+        public bool IsWindingUp => _brain != null && _brain.Phase == BossBrainPhase.Windup;
+        public BossAttackKind? CurrentAttackKind =>
+            _brain != null && _brain.Phase is BossBrainPhase.Windup or BossBrainPhase.Active
+                ? _attack?.Kind
+                : null;
 
         /// <summary>Windup ilerlemesi 0→1 (windup dışında 0) — boss cast barı okur.</summary>
         public float WindupProgress01 =>
-            _phase == Phase.Windup && _attack != null && _attack.WindupMs > 0
-                ? Mathf.Clamp01((float)(_phaseElapsedMs / _attack.WindupMs))
+            _brain != null
+            && _brain.Phase == BossBrainPhase.Windup
+            && _attack != null
+            && _attack.WindupMs > 0
+                ? Mathf.Clamp01((float)(_brain.PhaseElapsedMs / _attack.WindupMs))
                 : 0f;
-        public int TelegraphStartMs => _telegraphStartMs;
+        public int TelegraphStartMs => _brain != null ? _brain.TelegraphStartMs : 0;
         public int StrikeTimeMs
         {
             get
             {
                 if (_attack == null)
                     return 0;
-                if (_strikeWorldMs > 0 && _phase is Phase.Active or Phase.Recovery)
-                    return _strikeWorldMs;
-                if (_phase == Phase.Windup && _attack.WindupMs > 0)
+                if (_brain != null && _brain.StrikeWorldMs > 0
+                    && _brain.Phase is BossBrainPhase.Active or BossBrainPhase.Recovery)
+                    return _brain.StrikeWorldMs;
+                if (_brain != null && _brain.Phase == BossBrainPhase.Windup && _attack.WindupMs > 0)
                 {
                     float speed = Mathf.Max(0.05f, CurrentPhaseSpeed());
-                    double remain = System.Math.Max(0, _attack.WindupMs - _phaseElapsedMs);
-                    double now = _clock != null ? _clock.Director.WorldTimeMs : _phaseStartedWorldMs;
+                    double remain = System.Math.Max(0, _attack.WindupMs - _brain.PhaseElapsedMs);
+                    double now = _clock != null ? _clock.Director.WorldTimeMs : _brain.PhaseStartedWorldMs;
                     return (int)(now + remain / speed);
                 }
-                return _attack.StrikeTimeMs(_telegraphStartMs);
+                return _attack.StrikeTimeMs(_brain != null ? _brain.TelegraphStartMs : 0);
             }
         }
         public SlamVariant? ActiveVariant => _attack?.Variant;
@@ -176,7 +169,8 @@ namespace Dovus.Game.Boss
             _playerMotor = player.GetComponent<KinematicMotor>();
             _originHome = reactor.Home;
             TryLoadBossEncounter();
-            EnterIdle(clock.Director.WorldTimeMs);
+            _brain ??= new BossBrain(_rng, new BossBrainPort(this)); // tekrar Bind: eski alanlar gibi durum korunur
+            _brain.EnterIdle(clock.Director.WorldTimeMs);
         }
 
         public void BindStatus(ActorStatus status)
@@ -297,7 +291,7 @@ namespace Dovus.Game.Boss
             _feel?.ClearThreat();
             _visual?.PlayDeath();
             ClearReverse();
-            EnterIdle(worldMs);
+            _brain?.EnterIdle(worldMs);
         }
 
         /// <summary>§11: tam canla yeniden doğuş — idle beklemeden devam.</summary>
@@ -310,7 +304,7 @@ namespace Dovus.Game.Boss
             ClearReverse();
             if (wasPhase2)
                 BossPhaseChanged?.Invoke(1);
-            EnterIdle(worldMs);
+            _brain?.EnterIdle(worldMs);
         }
 
         /// <summary>
@@ -319,11 +313,11 @@ namespace Dovus.Game.Boss
         /// </summary>
         public bool CancelPreparedAttack(double worldMs)
         {
-            if (_phase != Phase.Windup)
+            if (_brain == null || _brain.Phase != BossBrainPhase.Windup)
                 return false;
             _telegraph?.Hide();
             _feel?.ClearThreat();
-            EnterIdle(worldMs);
+            _brain.EnterIdle(worldMs);
             return true;
         }
 
@@ -344,8 +338,7 @@ namespace Dovus.Game.Boss
         {
             _telegraph?.Hide();
             _feel?.ClearThreat();
-            _phase = Phase.Idle;
-            _strikeResolved = true;
+            _brain?.ForceIdleWithoutEnter(markStrikeResolved: true);
             _visual?.SetSpeed(0f);
             _visual?.PlayStagger();
         }
@@ -374,13 +367,15 @@ namespace Dovus.Game.Boss
             {
                 _telegraph?.Hide();
                 _feel?.ClearThreat();
-                if (_phase != Phase.Idle)
-                    _phase = Phase.Idle;
+                _brain?.EnsurePhaseIdleIfNot();
                 _visual?.SetSpeed(0f);
                 return;
             }
 
-            if (_phase == Phase.Windup && _bossStatus != null && _attack != null)
+            if (_brain != null
+                && _brain.Phase == BossBrainPhase.Windup
+                && _bossStatus != null
+                && _attack != null)
             {
                 BossAttackGate gate = BossAttackControl.Gate(
                     _bossStatus.Board, CurrentMotion(), _attack.Kind, staggered: false);
@@ -388,26 +383,12 @@ namespace Dovus.Game.Boss
                 {
                     _telegraph?.Hide();
                     _feel?.ClearThreat();
-                    EnterIdle(worldMs);
+                    _brain.EnterIdle(worldMs);
                     return;
                 }
             }
 
-            switch (_phase)
-            {
-                case Phase.Idle:
-                    TickIdle(worldMs, dtSec);
-                    break;
-                case Phase.Windup:
-                    TickWindup(worldMs, _clock.WorldDeltaMs);
-                    break;
-                case Phase.Active:
-                    TickActive(worldMs);
-                    break;
-                case Phase.Recovery:
-                    TickRecovery(worldMs, _clock.WorldDeltaMs);
-                    break;
-            }
+            _brain?.Tick(worldMs, dtSec, _clock.WorldDeltaMs);
         }
 
         void LateUpdate()
@@ -442,181 +423,14 @@ namespace Dovus.Game.Boss
 
                 _telegraph?.Hide();
                 _feel?.ClearThreat();
-                EnterIdle(worldMs);
+                _brain?.EnterIdle(worldMs);
             }
 
             _playerWasDown = down;
         }
 
-        void TickIdle(double worldMs, float dtSec)
-        {
-            _telegraph?.Hide();
-            _feel?.ClearThreat();
-
-            if (_vitals != null && _vitals.IsDown)
-            {
-                _idleUntilWorldMs = worldMs + _combat.Boss.IdleMinMs;
-                return;
-            }
-
-            if (!_phase2Announced && IsEnraged())
-            {
-                _phase2Announced = true;
-                _visual?.PlayRoar();
-                BossPhaseChanged?.Invoke(2);
-            }
-
-            // Kükreme klibi bitene kadar yürümez / saldırmaz (sunum; saldırı sırası değişmez).
-            if (_visual != null && _visual.IsBusy)
-            {
-                _visual.SetSpeed(0f);
-                _idleUntilWorldMs = System.Math.Max(_idleUntilWorldMs, worldMs + _combat.Boss.IdleMinMs);
-                return;
-            }
-
-            if (_targets != null && _targets.ShouldRetarget(_targetId))
-                PickTarget();
-
-            Approach(dtSec);
-
-            if (worldMs >= _idleUntilWorldMs)
-            {
-                if (_bossStatus != null
-                    && !BossAttackControl.Evaluate(_bossStatus.Board, BossAttackMotion.Standing).CanStart)
-                    return;
-                // Saldırı (ve Slam ise varyantı) telegraf başlamadan seçilir — tell windup'ta okunur (§11).
-                if (!SelectNextAttack())
-                    return;
-                if (_bossStatus != null && _attack != null
-                    && !BossAttackControl.Gate(
-                        _bossStatus.Board, CurrentMotion(), _attack.Kind, staggered: false).CanStart)
-                    return;
-                EnterWindup(worldMs);
-            }
-        }
-
-        void TickWindup(double worldMs, double worldDtMs)
-        {
-            if (_attack == null)
-                return;
-
-            _phaseElapsedMs += System.Math.Max(0, worldDtMs) * CurrentPhaseSpeed();
-            float p = _attack.WindupMs > 0
-                ? (float)(_phaseElapsedMs / _attack.WindupMs)
-                : 1f;
-            _telegraph?.SetProgress(p, AttackRadiusM, _attack.Variant);
-            _feel?.ShowThreat(p);
-
-            if (_phaseElapsedMs >= _attack.WindupMs)
-                EnterActive(worldMs);
-        }
-
-        void TickActive(double worldMs)
-        {
-            bool airborne = _pounceLeapActive && _attack != null && _attack.Kind == BossAttackKind.Pounce;
-            if (!_strikeResolved && !airborne)
-            {
-                // ResolveStrike NRE olsa bile Active'de kilitlenmeyelim.
-                _strikeResolved = true;
-                try
-                {
-                    ResolveStrike();
-                }
-                catch (System.Exception e)
-                {
-                    Debug.LogException(e);
-                }
-                if (_attack != null && _attack.Kind is BossAttackKind.WebField or BossAttackKind.Pounce)
-                    _telegraph?.Hide();
-                else
-                    _telegraph?.Slam(AttackRadiusM);
-                if (_attack != null)
-                    AttackStruck?.Invoke(_attack.Kind);
-            }
-
-            if (_attack != null && _strikeResolved && worldMs >= _attack.ActiveEndMs(_telegraphStartMs))
-                EnterRecovery(worldMs);
-        }
-
-        void TickRecovery(double worldMs, double worldDtMs)
-        {
-            _feel?.ClearThreat();
-            _phaseElapsedMs += System.Math.Max(0, worldDtMs) * CurrentPhaseSpeed();
-            float fade = _attack != null && _attack.RecoveryMs > 0
-                ? 1f - (float)(_phaseElapsedMs / _attack.RecoveryMs)
-                : 0f;
-            _telegraph?.Recover(fade, AttackRadiusM);
-
-            if (_attack != null && _phaseElapsedMs >= _attack.RecoveryMs)
-                EnterIdle(worldMs);
-        }
-
-        void EnterIdle(double worldMs)
-        {
-            _phase = Phase.Idle;
-            _phaseStartedWorldMs = worldMs;
-            // T10: panelin Min/Max slider'ları BAĞIMSIZ hareket eder; Min > Max olursa
-            // Random.Next negatif aralıkla ArgumentOutOfRangeException fırlatır (tüm boss
-            // döngüsünü kilitler). Min/Max burada garantiye alınıyor, slider'lara dokunulmadı.
-            int lo = System.Math.Min(_combat.Boss.IdleMinMs, _combat.Boss.IdleMaxMs);
-            int hi = System.Math.Max(_combat.Boss.IdleMinMs, _combat.Boss.IdleMaxMs);
-            int wait = _rng.Next(lo, hi + 1);
-            _idleUntilWorldMs = worldMs + wait;
-            // Hedef saldırı başına bir kez: bu idle'da ona yürünür, windup ona kilitlenir.
-            PickTarget();
-            _telegraph?.Hide();
-            if (_bossVitals == null || !_bossVitals.IsDown)
-                _visual?.PlayIdle();
-        }
-
-        void EnterWindup(double worldMs)
-        {
-            _phase = Phase.Windup;
-            _phaseStartedWorldMs = worldMs;
-            _phaseElapsedMs = 0;
-            _strikeWorldMs = 0;
-            _telegraphStartMs = (int)worldMs;
-            _strikeResolved = false;
-            FaceTarget();
-            _visual?.SetSpeed(0f);
-            if (_attack != null)
-            {
-                if (_attack.Kind == BossAttackKind.WebField)
-                {
-                    Transform aim = AimTarget();
-                    LastWebFieldTarget = aim != null ? aim.position : _reactor.Home;
-                    _telegraph?.SetWorldAnchor(BossAttackKind.WebField, LastWebFieldTarget);
-                }
-                else if (_attack.Kind == BossAttackKind.Pounce)
-                {
-                    Vector3 land = new Vector3(_attack.LandingX, _reactor.Home.y, _attack.LandingZ);
-                    _telegraph?.SetWorldAnchor(BossAttackKind.Pounce, land);
-                }
-                else
-                    _telegraph?.ClearWorldAnchor();
-                _telegraph?.SetShape(_attack.ArcHalfAngleDeg);
-                _visual?.PlayWindup(_attack.Kind, _attack.WindupMs);
-                AttackWindupStarted?.Invoke(_attack.Kind);
-            }
-        }
-
-        void EnterActive(double worldMs)
-        {
-            _phase = Phase.Active;
-            _phaseStartedWorldMs = worldMs;
-            _phaseElapsedMs = 0;
-            _strikeWorldMs = (int)worldMs;
-            _visual?.PlaySlam();
-            if (IsAglarinQueen()
-                && _attack != null
-                && _attack.Kind == BossAttackKind.Pounce
-                && _motionBody != null
-                && _reactor != null
-                && _combat != null)
-            {
-                BeginPounceLeap();
-            }
-        }
+        BossAttackMotion CurrentMotion() =>
+            _attack == null ? BossAttackMotion.Standing : BossAttackControl.MotionOf(_attack.Kind);
 
         void BeginPounceLeap()
         {
@@ -645,16 +459,6 @@ namespace Dovus.Game.Boss
                 null,
                 _reactor.BodyRadiusM);
         }
-
-        void EnterRecovery(double worldMs)
-        {
-            _phase = Phase.Recovery;
-            _phaseStartedWorldMs = worldMs;
-            _phaseElapsedMs = 0;
-        }
-
-        BossAttackMotion CurrentMotion() =>
-            _attack == null ? BossAttackMotion.Standing : BossAttackControl.MotionOf(_attack.Kind);
 
         float CurrentPhaseSpeed()
         {
@@ -934,13 +738,15 @@ namespace Dovus.Game.Boss
             // Eski basış bu telegrafa ait değil → "geç kaldın". Eşik basma anı DEĞİL, i-frame
             // sonu: telegraf başlarken dokunulmazlık hâlâ açıksa basış bu saldırıya aittir ve
             // sebebi "erken bastın" olmalı — `press < telegraphStart` bunu da yutuyordu (T8.1).
-            if (press.HasValue && _dodge != null && _dodge.IframeEndMs(press.Value) < _telegraphStartMs)
+            if (press.HasValue && _dodge != null && _dodge.IframeEndMs(press.Value) < TelegraphStartMs)
                 press = null;
 
             var input = new ExchangeInput
             {
-                TelegraphStartMs = _telegraphStartMs,
-                StrikeTimeMs = _strikeWorldMs > 0 ? _strikeWorldMs : _attack.StrikeTimeMs(_telegraphStartMs),
+                TelegraphStartMs = TelegraphStartMs,
+                StrikeTimeMs = _brain != null && _brain.StrikeWorldMs > 0
+                    ? _brain.StrikeWorldMs
+                    : _attack.StrikeTimeMs(TelegraphStartMs),
                 DodgePressMs = press,
                 InEffectVolume = inVolume
             };
