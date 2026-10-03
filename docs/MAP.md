@@ -34,6 +34,7 @@
 | Editor menüleri | `Game/Editor/PlaySweep.cs`, `Game/Editor/FeelCapture*.cs`, `Game/Editor/*Bind.cs`, `Game/Editor/AndroidBuilder.cs` | `[MenuItem("Dovus/...")]` |
 | Testler — Core | `tools/CoreTests/*Tests.cs` | `dotnet test tools/CoreTests` |
 | Testler — Integration | `tools/IntegrationTests/*Tests.cs` | `dotnet test tools/IntegrationTests` |
+| Git dışı asset yedeği (Synty/Mixamo/VFX) | `docs/asset-yedegi.md`, `tools/IntegrationTests/known-missing-asset-guids.txt` | yedek zip: PC `C:\Users\lacol\_backup\` |
 | Araç — gramer | `tools/AtomSim/Program.cs` | `dotnet run --project tools/AtomSim` |
 | Araç — başsız tarama | `tools/SweepV2/Host/Program.cs`, `tools/SweepV2/Shim/*` | `SweepV2.Program.Main` |
 | Araç — Game derleme | `tools/GameCompile/check.py`, `tools/GameCompile/GameCompile.csproj` | `python tools/GameCompile/check.py` |
