@@ -21,13 +21,20 @@ namespace Dovus.Game.EditorTools
             public readonly string FolderName;
             public readonly DragonHand Hand;
             public readonly bool PreserveOppositeHand;
+            public readonly bool DoubleSided;
+            public readonly string[] ExtraLeftHandWeaponKeys;
 
-            public DragonWeaponRow(string weaponKey, string folderName, DragonHand hand, bool preserveOppositeHand = false)
+            public DragonWeaponRow(
+                string weaponKey, string folderName, DragonHand hand,
+                bool preserveOppositeHand = false, bool doubleSided = false,
+                string[] extraLeftHandWeaponKeys = null)
             {
                 WeaponKey = weaponKey;
                 FolderName = folderName;
                 Hand = hand;
                 PreserveOppositeHand = preserveOppositeHand;
+                DoubleSided = doubleSided;
+                ExtraLeftHandWeaponKeys = extraLeftHandWeaponKeys ?? System.Array.Empty<string>();
             }
         }
 
@@ -36,6 +43,8 @@ namespace Dovus.Game.EditorTools
             new("cekic", "Cekic", DragonHand.Right),
             new("kilic", "Kilic", DragonHand.Right, preserveOppositeHand: true),
             new("kitap", "Kitap", DragonHand.Left),
+            new("kalkan", "Kalkan", DragonHand.Left, preserveOppositeHand: true, doubleSided: true,
+                extraLeftHandWeaponKeys: new[] { "kilic" }),
         };
 
         [MenuItem("Tools/Weapons/Bind Dragon Props")]
@@ -59,7 +68,7 @@ namespace Dovus.Game.EditorTools
             foreach (DragonWeaponRow row in Weapons)
             {
                 Texture2D baseMap = AssetDatabase.LoadAssetAtPath<Texture2D>(BaseColorPath(row));
-                Material mat = EnsureDragonMat(MatPath(row), baseMap);
+                Material mat = EnsureDragonMat(MatPath(row), baseMap, row.DoubleSided);
                 GameObject prefab = BuildWeaponPrefab(row, mat);
                 if (prefab == null)
                     continue;
@@ -119,6 +128,14 @@ namespace Dovus.Game.EditorTools
                 return;
             }
 
+            if (row.PreserveOppositeHand)
+            {
+                SetLeftHand(registry, row.WeaponKey, prefab, Vector3.zero, Vector3.zero, Vector3.one);
+                foreach (string extraKey in row.ExtraLeftHandWeaponKeys)
+                    SetLeftHand(registry, extraKey, prefab, Vector3.zero, Vector3.zero, Vector3.one);
+                return;
+            }
+
             SetLeftHand(registry, row.WeaponKey, prefab, Vector3.zero, Vector3.zero, Vector3.one);
             SetRightHand(registry, row.WeaponKey, null, Vector3.zero, Vector3.zero, Vector3.one);
         }
@@ -172,7 +189,7 @@ namespace Dovus.Game.EditorTools
             entry.LeftLocalScale = leftScale;
         }
 
-        static Material EnsureDragonMat(string matPath, Texture2D baseMap)
+        static Material EnsureDragonMat(string matPath, Texture2D baseMap, bool doubleSided)
         {
             var mat = AssetDatabase.LoadAssetAtPath<Material>(matPath);
             if (mat == null)
@@ -193,6 +210,8 @@ namespace Dovus.Game.EditorTools
                 mat.SetFloat("_Smoothness", 0.12f);
             if (mat.HasProperty("_SpecularHighlights"))
                 mat.SetFloat("_SpecularHighlights", 0f);
+            if (mat.HasProperty("_Cull"))
+                mat.SetFloat("_Cull", doubleSided ? 0f : 2f);
 
             mat.DisableKeyword("_EMISSION");
             if (mat.HasProperty("_EmissionColor"))
