@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using Dovus.Core.Tuning;
-using Dovus.Game;
+using Dovus.Game.Config;
 using NUnit.Framework;
 using UnityEngine;
 
