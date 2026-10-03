@@ -171,7 +171,7 @@ namespace Dovus.Game
                 FitPropWorldSize(go, key, isRight);
 
             StripForProp(go);
-            if (key == "kure" && !isRight)
+            if (key == "kure")
                 go.AddComponent<WeaponPropIdleMotion>();
             if (key == "asa" && isRight && WeaponGripProfile.IsMixamoRig(_animator))
                 TryAddStaffHeadGlow(go);
@@ -310,6 +310,7 @@ namespace Dovus.Game
                     "asa" => 1.68f,
                     "tilsim" => 0.32f,
                     "top" => 0.92f,
+                    "kure" => 0.18f,
                     _ => 0f,
                 };
             }

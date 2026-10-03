@@ -103,7 +103,7 @@ namespace Dovus.Game.EditorTools
                     WriteGrip(entry, right: true, right, PropForward(), PropUp(), right.G, -right.N, right.N * 0.02f + right.F * 0.04f);
                     break;
                 case GripKind.BowLeft:
-                    WriteGrip(entry, right: false, left, PropForward(), PropUp(), left.G, -left.N, left.N * 0.02f + left.F * 0.04f);
+                    WriteGrip(entry, right: false, left, PropForward(), PropUp(), left.G, -left.N, left.N * 0.02f + left.F * 0.07f);
                     break;
                 case GripKind.ShieldLeft:
                     Vector3 forearm = ForearmAxis(animator, false);
@@ -115,7 +115,7 @@ namespace Dovus.Game.EditorTools
                 case GripKind.PalmRight:
                     Vector3 pos = right.N * -0.04f + right.F * 0.05f;
                     if (key == "kure")
-                        pos += Vector3.up * 0.03f;
+                        pos += right.F * 0.03f;
                     WriteGrip(entry, right: true, right, PropForward(), PropUp(), -right.N, -right.G, pos);
                     break;
                 case GripKind.FistRight:

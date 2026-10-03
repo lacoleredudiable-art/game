@@ -59,7 +59,7 @@ MonoBehaviour:
     RightLocalEulerAngles: {x: 0, y: 0, z: 0}
     RightLocalScale: {x: 1, y: 1, z: 1}
     LeftHandPrefab: {fileID: 344190506664302374, guid: bc9793ddfaf2bd043b760259187b600f, type: 3}
-    LeftLocalPosition: {x: 0.012541522, y: 0.040000066, z: -0.01557899}
+    LeftLocalPosition: {x: 0.012541522, y: 0.070000066, z: -0.01557899}
     LeftLocalEulerAngles: {x: 0.000022198115, y: 231.16492, z: 269.99982}
     LeftLocalScale: {x: 1, y: 1, z: 1}
   - WeaponKey: asa
