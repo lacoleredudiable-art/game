@@ -214,7 +214,8 @@ namespace Dovus.Game
             strike.onClick.AddListener(TriggerBasicStrike);
         }
 
-        void SelectWeapon(string key)
+        /// <summary>Play doğrulama / panel butonları.</summary>
+        public void SelectWeapon(string key)
         {
             _selectedWeaponKey = key;
             EquipmentItem w = FindWeapon(key);
