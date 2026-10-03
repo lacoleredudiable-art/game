@@ -18,6 +18,7 @@ Mobil kooperatif boss dövüşü, alfa prototip. Bu dosya her görevde bağlama 
    `motion-templates.json` elle düzenlenmez: `python3 tools/build-motion-templates.py` iki kopyayı birden yazar.
 
 ## Okuma
+- Önce `docs/MAP.md`; iş listesi `docs/PLAN.md`; hedef mimari `docs/ARCHITECTURE-PLAN.md`; görev şablonu `docs/agent-task-template.md`; doğrulama `tools/verify.ps1`.
 - Repoyu tarama. Yalnız görev prompt'unun adını verdiği dosya ve satırları oku.
 - **`docs/` altını görev bir dosyayı açıkça adlandırmadıkça okuma** (`durum.md` dahil).
   `element-sistemi.json`'dan yalnız istenen bölümü oku.
