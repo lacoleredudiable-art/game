@@ -13,7 +13,7 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 - [x] 2.1 Game'i konu klasörlerine ayır + namespace = klasör (Dovus.<Katman>.<Konu>)
 - [x] 2.2 Güçlü ID tipleri (SkillId, WeaponId, RuneId, ElementId, ActorId) + JSON mapper (ham JsonValue Game'e sızmaz)
 - [x] 2.3 Application assembly + IClock / IRng; mana/diriliş oyun saatine, tohumsuz Random'lar CombatRng'ye
-- [~] 2.4 CastPipeline (ManifestationDirector.cs:1316–1332 taşınır; komut al → olay yay)
+- [x] 2.4 CastPipeline (ManifestationDirector.cs:1316–1332 taşınır; komut al → olay yay)
 - [ ] 2.5 Oyuncu can/diriliş → Application (Player aggregate)
 - [ ] 2.6 Boss AI → Application (BossBrain)
 - [ ] 2.7 Statik çarpanlar oyuncu başına; PortalSystem/TeamComboSystem switch'leri → JSON etiketleri; pasifler enum
