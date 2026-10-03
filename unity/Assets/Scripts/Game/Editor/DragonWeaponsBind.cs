@@ -7,39 +7,86 @@ using UnityEngine;
 
 namespace Dovus.Game.EditorTools
 {
-    /// <summary>Dragon silah FBX → URP Lit + prefab + <see cref="WeaponVisualRegistry"/> (çekiç).</summary>
+    /// <summary>Dragon silah FBX → URP Lit + prefab + <see cref="WeaponVisualRegistry"/>.</summary>
     public static class DragonWeaponsBind
     {
-        const string CekicRoot = "Assets/Art/Weapons/Dragon/Cekic";
-        const string CekicFbx = CekicRoot + "/Weapon_Cekic.fbx";
-        const string CekicBaseColor = CekicRoot + "/Textures/Cekic_BaseColor.png";
-        const string CekicMatPath = CekicRoot + "/Cekic_Mat.mat";
-        const string CekicPrefabPath = CekicRoot + "/Weapon_Cekic.prefab";
+        const string DragonRoot = "Assets/Art/Weapons/Dragon";
+        const string RegistryPath = "Assets/Resources/Animation/WeaponVisualRegistry.asset";
 
-        const string RegistryDir = "Assets/Resources/Animation";
-        const string RegistryPath = RegistryDir + "/WeaponVisualRegistry.asset";
+        enum DragonHand { Right, Left }
+
+        readonly struct DragonWeaponRow
+        {
+            public readonly string WeaponKey;
+            public readonly string FolderName;
+            public readonly DragonHand Hand;
+            public readonly bool PreserveOppositeHand;
+
+            public DragonWeaponRow(string weaponKey, string folderName, DragonHand hand, bool preserveOppositeHand = false)
+            {
+                WeaponKey = weaponKey;
+                FolderName = folderName;
+                Hand = hand;
+                PreserveOppositeHand = preserveOppositeHand;
+            }
+        }
+
+        static readonly DragonWeaponRow[] Weapons =
+        {
+            new("cekic", "Cekic", DragonHand.Right),
+            new("kilic", "Kilic", DragonHand.Right, preserveOppositeHand: true),
+            new("kitap", "Kitap", DragonHand.Left),
+        };
 
         [MenuItem("Tools/Weapons/Bind Dragon Props")]
         public static void BindAll()
         {
-            ConfigureTextureImporter(CekicBaseColor);
-            ConfigureFbxImporter(CekicFbx);
+            foreach (DragonWeaponRow row in Weapons)
+            {
+                ConfigureTextureImporter(BaseColorPath(row));
+                ConfigureFbxImporter(FbxPath(row));
+            }
+
             AssetDatabase.Refresh();
 
-            Texture2D baseMap = AssetDatabase.LoadAssetAtPath<Texture2D>(CekicBaseColor);
-            Material mat = EnsureCekicMat(baseMap);
-            BuildCekicPrefab(mat);
-            BindCekicRegistry();
+            WeaponVisualRegistry registry = AssetDatabase.LoadAssetAtPath<WeaponVisualRegistry>(RegistryPath);
+            if (registry == null)
+            {
+                Debug.LogError("[DragonWeaponsBind] missing registry " + RegistryPath);
+                return;
+            }
 
+            foreach (DragonWeaponRow row in Weapons)
+            {
+                Texture2D baseMap = AssetDatabase.LoadAssetAtPath<Texture2D>(BaseColorPath(row));
+                Material mat = EnsureDragonMat(MatPath(row), baseMap);
+                GameObject prefab = BuildWeaponPrefab(row, mat);
+                if (prefab == null)
+                    continue;
+                BindRegistryRow(registry, row, prefab);
+            }
+
+            EditorUtility.SetDirty(registry);
             AssetDatabase.SaveAssets();
-            Debug.Log("[DragonWeaponsBind] Weapon_Cekic prefab + registry cekic ready.");
+            Debug.Log("[DragonWeaponsBind] Dragon weapons bound (" + Weapons.Length + ").");
         }
 
-        static void BuildCekicPrefab(Material mat)
+        static string WeaponRoot(DragonWeaponRow row) => DragonRoot + "/" + row.FolderName;
+
+        static string FbxPath(DragonWeaponRow row) => WeaponRoot(row) + "/Weapon_" + row.FolderName + ".fbx";
+
+        static string BaseColorPath(DragonWeaponRow row) =>
+            WeaponRoot(row) + "/Textures/" + row.FolderName + "_BaseColor.png";
+
+        static string MatPath(DragonWeaponRow row) => WeaponRoot(row) + "/" + row.FolderName + "_Mat.mat";
+
+        static string PrefabPath(DragonWeaponRow row) => WeaponRoot(row) + "/Weapon_" + row.FolderName + ".prefab";
+
+        static GameObject BuildWeaponPrefab(DragonWeaponRow row, Material mat)
         {
-            GameObject meshGo = LoadMeshRoot(CekicFbx);
+            GameObject meshGo = LoadMeshRoot(FbxPath(row));
             if (meshGo == null)
-                return;
+                return null;
 
             foreach (Renderer r in meshGo.GetComponentsInChildren<Renderer>(true))
             {
@@ -49,28 +96,64 @@ namespace Dovus.Game.EditorTools
                 r.sharedMaterials = mats;
             }
 
-            var root = new GameObject("Weapon_Cekic");
+            string prefabPath = PrefabPath(row);
+            var root = new GameObject("Weapon_" + row.FolderName);
             meshGo.transform.SetParent(root.transform, false);
             meshGo.transform.localPosition = Vector3.zero;
             meshGo.transform.localRotation = Quaternion.identity;
             meshGo.transform.localScale = Vector3.one;
-            SavePrefab(root, CekicPrefabPath);
+            SavePrefab(root, prefabPath);
+            return AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
         }
 
-        static void BindCekicRegistry()
+        static void BindRegistryRow(WeaponVisualRegistry registry, DragonWeaponRow row, GameObject prefab)
         {
-            WeaponVisualRegistry registry = AssetDatabase.LoadAssetAtPath<WeaponVisualRegistry>(RegistryPath);
-            if (registry == null)
+            if (row.Hand == DragonHand.Right)
             {
-                Debug.LogError("[DragonWeaponsBind] missing registry " + RegistryPath);
+                if (row.PreserveOppositeHand)
+                    SetRightHand(registry, row.WeaponKey, prefab, Vector3.zero, Vector3.zero, Vector3.one);
+                else
+                    SetProp(registry, row.WeaponKey,
+                        prefab, Vector3.zero, Vector3.zero, Vector3.one,
+                        null, Vector3.zero, Vector3.zero, Vector3.one);
                 return;
             }
 
-            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(CekicPrefabPath);
-            SetProp(registry, "cekic",
-                prefab, Vector3.zero, Vector3.zero, Vector3.one,
-                null, Vector3.zero, Vector3.zero, Vector3.one);
-            EditorUtility.SetDirty(registry);
+            SetLeftHand(registry, row.WeaponKey, prefab, Vector3.zero, Vector3.zero, Vector3.one);
+            SetRightHand(registry, row.WeaponKey, null, Vector3.zero, Vector3.zero, Vector3.one);
+        }
+
+        static WeaponVisualRegistry.PropEntry FindOrCreateEntry(WeaponVisualRegistry registry, string weaponKey)
+        {
+            List<WeaponVisualRegistry.PropEntry> list = registry.Props;
+            WeaponVisualRegistry.PropEntry entry = list.Find(p => p != null && p.WeaponKey == weaponKey);
+            if (entry != null)
+                return entry;
+            entry = new WeaponVisualRegistry.PropEntry { WeaponKey = weaponKey };
+            list.Add(entry);
+            return entry;
+        }
+
+        static void SetRightHand(
+            WeaponVisualRegistry registry, string weaponKey,
+            GameObject prefab, Vector3 pos, Vector3 rot, Vector3 scale)
+        {
+            WeaponVisualRegistry.PropEntry entry = FindOrCreateEntry(registry, weaponKey);
+            entry.RightHandPrefab = prefab;
+            entry.RightLocalPosition = pos;
+            entry.RightLocalEulerAngles = rot;
+            entry.RightLocalScale = scale;
+        }
+
+        static void SetLeftHand(
+            WeaponVisualRegistry registry, string weaponKey,
+            GameObject prefab, Vector3 pos, Vector3 rot, Vector3 scale)
+        {
+            WeaponVisualRegistry.PropEntry entry = FindOrCreateEntry(registry, weaponKey);
+            entry.LeftHandPrefab = prefab;
+            entry.LeftLocalPosition = pos;
+            entry.LeftLocalEulerAngles = rot;
+            entry.LeftLocalScale = scale;
         }
 
         static void SetProp(
@@ -78,14 +161,7 @@ namespace Dovus.Game.EditorTools
             GameObject rightPrefab, Vector3 rightPos, Vector3 rightRot, Vector3 rightScale,
             GameObject leftPrefab, Vector3 leftPos, Vector3 leftRot, Vector3 leftScale)
         {
-            List<WeaponVisualRegistry.PropEntry> list = registry.Props;
-            WeaponVisualRegistry.PropEntry entry = list.Find(p => p != null && p.WeaponKey == weaponKey);
-            if (entry == null)
-            {
-                entry = new WeaponVisualRegistry.PropEntry { WeaponKey = weaponKey };
-                list.Add(entry);
-            }
-
+            WeaponVisualRegistry.PropEntry entry = FindOrCreateEntry(registry, weaponKey);
             entry.RightHandPrefab = rightPrefab;
             entry.RightLocalPosition = rightPos;
             entry.RightLocalEulerAngles = rightRot;
@@ -96,15 +172,15 @@ namespace Dovus.Game.EditorTools
             entry.LeftLocalScale = leftScale;
         }
 
-        static Material EnsureCekicMat(Texture2D baseMap)
+        static Material EnsureDragonMat(string matPath, Texture2D baseMap)
         {
-            var mat = AssetDatabase.LoadAssetAtPath<Material>(CekicMatPath);
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(matPath);
             if (mat == null)
             {
                 Shader shader = Shader.Find("Universal Render Pipeline/Lit")
                     ?? Shader.Find("Universal Render Pipeline/Simple Lit");
                 mat = new Material(shader);
-                AssetDatabase.CreateAsset(mat, CekicMatPath);
+                AssetDatabase.CreateAsset(mat, matPath);
             }
 
             if (baseMap != null && mat.HasProperty("_BaseMap"))
