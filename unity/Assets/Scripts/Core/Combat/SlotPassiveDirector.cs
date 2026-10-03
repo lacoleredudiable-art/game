@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Dovus.Core.Data;
 using Dovus.Core.Grammar;
 
 namespace Dovus.Core.Combat
@@ -28,6 +29,9 @@ namespace Dovus.Core.Combat
         }
 
         public void CloseCast() => _openCastId = 0;
+
+        public bool Activate(int runeId, string name, float durationSec, SkillEngineModifiers modifiers, double worldMs) =>
+            Activate(runeId, name, durationSec, modifiers.Raw, worldMs);
 
         public bool Activate(int runeId, string name, float durationSec, JsonValue modifiers, double worldMs)
         {
