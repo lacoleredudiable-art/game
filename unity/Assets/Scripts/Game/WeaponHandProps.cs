@@ -159,26 +159,15 @@ namespace Dovus.Game
             Vector3 localPos = Vector3.zero;
             Quaternion localRot = Quaternion.identity;
             Vector3 localScale = Vector3.one;
-            WeaponGripProfile grip = _animator.GetComponentInParent<WeaponGripProfile>();
             if (entry != null)
-            {
-                localPos = isRight ? entry.RightLocalPosition : entry.LeftLocalPosition;
-                localRot = Quaternion.Euler(isRight ? entry.RightLocalEulerAngles : entry.LeftLocalEulerAngles);
-                localScale = isRight ? entry.RightLocalScale : entry.LeftLocalScale;
-                if (grip != null && WeaponGripProfile.IsMixamoRig(_animator) && prefab != null)
-                    localScale = Vector3.one;
-            }
-
-            if (grip != null && WeaponGripProfile.IsMixamoRig(_animator))
-                grip.ApplyMixamoWeapon(key, isRight, ref localPos, ref localRot, ref localScale);
+                WeaponGripProfile.ApplyRegistry(entry, isRight, ref localPos, ref localRot, ref localScale);
 
             go.transform.localPosition = localPos;
             go.transform.localRotation = localRot;
             go.transform.localScale = localScale;
+            AlignPropToGripPivot(go.transform);
 
-            if (grip != null && WeaponGripProfile.IsMixamoRig(_animator))
-                FitMixamoPropWorldSize(go, key, isRight);
-            else if (prefab != null)
+            if (prefab != null && !WeaponGripProfile.IsMixamoRig(_animator))
                 FitPropWorldSize(go, key, isRight);
 
             StripForProp(go);
@@ -270,8 +259,32 @@ namespace Dovus.Game
             return Mathf.Max(b.extents.y, b.extents.z) * 0.85f;
         }
 
-        static void FitMixamoPropWorldSize(GameObject go, string weaponKey, bool isRight) =>
-            FitPropWorldSize(go, weaponKey, isRight);
+        static void AlignPropToGripPivot(Transform propRoot)
+        {
+            if (propRoot == null)
+                return;
+            Transform grip = FindGripChild(propRoot);
+            if (grip == null)
+                return;
+
+            Vector3 scaledGrip = Vector3.Scale(grip.localPosition, propRoot.localScale);
+            propRoot.localPosition -= propRoot.localRotation * scaledGrip;
+            propRoot.localRotation *= Quaternion.Inverse(grip.localRotation);
+        }
+
+        static Transform FindGripChild(Transform root)
+        {
+            if (root.name.Equals("Grip", System.StringComparison.OrdinalIgnoreCase))
+                return root;
+            for (int i = 0; i < root.childCount; i++)
+            {
+                Transform found = FindGripChild(root.GetChild(i));
+                if (found != null)
+                    return found;
+            }
+
+            return null;
+        }
 
         static void FitPropWorldSize(GameObject go, string weaponKey, bool isRight)
         {
