@@ -33,6 +33,13 @@ namespace Dovus.Core.Combat
             return Math.Min(MaxChance, Math.Max(0f, c));
         }
 
+        public static CritSystem FromJson(string json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+                return Default;
+            return FromJson(MiniJson.Parse(json));
+        }
+
         public static CritSystem FromJson(JsonValue root)
         {
             if (root == null || root.IsNull)

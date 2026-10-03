@@ -41,6 +41,13 @@ namespace Dovus.Core.Combat
     /// </summary>
     public static class PassiveSlotPolicy
     {
+        public static bool RequiresWeaponCompatibility(string json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+                return false;
+            return RequiresWeaponCompatibility(MiniJson.Parse(json));
+        }
+
         public static bool RequiresWeaponCompatibility(JsonValue root)
         {
             if (root.IsNull)
