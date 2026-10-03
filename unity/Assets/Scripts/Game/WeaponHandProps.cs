@@ -165,14 +165,27 @@ namespace Dovus.Game
             go.transform.localPosition = localPos;
             go.transform.localRotation = localRot;
             go.transform.localScale = localScale;
-            AlignPropToGripPivot(go.transform);
 
-            if (prefab != null && !WeaponGripProfile.IsMixamoRig(_animator))
+            bool fitWorldSize = prefab != null
+                && (!WeaponGripProfile.IsMixamoRig(_animator) || key is "kure" or "tilsim");
+            AlignPropToGripPivot(go.transform);
+            if (fitWorldSize)
+            {
                 FitPropWorldSize(go, key, isRight);
+                AlignPropToGripPivot(go.transform);
+            }
+
+            if (WeaponGripProfile.IsMixamoRig(_animator))
+                GripPalmMetrics.NudgePropGripToPalm(hand, go.transform);
 
             StripForProp(go);
             if (key == "kure")
+            {
+                Debug.Log(
+                    $"[GripSpawn] kure parent={hand.name} isRight={isRight} "
+                    + $"localPos={go.transform.localPosition} world={go.transform.position}");
                 go.AddComponent<WeaponPropIdleMotion>();
+            }
             if (key == "asa" && isRight && WeaponGripProfile.IsMixamoRig(_animator))
                 TryAddStaffHeadGlow(go);
             return go;
@@ -415,7 +428,7 @@ namespace Dovus.Game
             "yay" => isRight ? null : BuildBowFallback(),
             "asa" => isRight ? BuildStaffFallback() : null,
             "kitap" => isRight ? null : BuildBook(),
-            "kure" => isRight ? null : BuildOrb(),
+            "kure" => null,
             "tilsim" => isRight ? BuildTalisman() : null,
             "top" => isRight ? BuildCannon() : null,
             _ => null, // "yumruk" ve bilinmeyen anahtarlar: çıplak el.

@@ -35,6 +35,7 @@ namespace Dovus.Game
         bool _slowMo;
         float _touchUiScale = 1f;
         float _sliderRowHeight = 52f;
+        GameObject _uiRoot;
 
         readonly (int verb, int adj, string label)[] _skillPresets =
         {
@@ -43,6 +44,14 @@ namespace Dovus.Game
             (2, 1, "2-1"),
             (3, 1, "3-1"),
         };
+
+        public Transform GripRoot => _gripRoot;
+
+        public void SetCaptureUiVisible(bool visible)
+        {
+            if (_uiRoot != null)
+                _uiRoot.SetActive(visible);
+        }
 
         public void Configure(
             ManifestationDirector director,
@@ -76,6 +85,7 @@ namespace Dovus.Game
             _sliderRowHeight = Mathf.Max(48f, 52f * _touchUiScale);
 
             var canvasGo = new GameObject("SettingsSceneCanvas");
+            _uiRoot = canvasGo;
             canvasGo.transform.SetParent(transform, false);
             var canvas = canvasGo.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -279,22 +289,52 @@ namespace Dovus.Game
                 return;
             }
 
-            AddHeader("TUTUŞ — SAĞ EL (registry)");
-            AddGripSliders(
-                () => grip.RightLocalPosition,
-                v => grip.RightLocalPosition = v,
-                () => grip.RightLocalEulerAngles,
-                v => grip.RightLocalEulerAngles = v,
-                () => grip.RightLocalScale,
-                v => grip.RightLocalScale = v);
-            AddHeader("TUTUŞ — SOL EL (registry)");
-            AddGripSliders(
-                () => grip.LeftLocalPosition,
-                v => grip.LeftLocalPosition = v,
-                () => grip.LeftLocalEulerAngles,
-                v => grip.LeftLocalEulerAngles = v,
-                () => grip.LeftLocalScale,
-                v => grip.LeftLocalScale = v);
+            bool primaryRight = WeaponGripHands.PrimaryIsRight(_selectedWeaponKey);
+            bool showRight = WeaponGripHands.UsesRightProp(grip);
+            bool showLeft = WeaponGripHands.UsesLeftProp(grip);
+
+            if (primaryRight && showRight)
+            {
+                AddHeader("TUTUŞ — SAĞ EL (aktif)");
+                AddGripSliders(
+                    () => grip.RightLocalPosition,
+                    v => grip.RightLocalPosition = v,
+                    () => grip.RightLocalEulerAngles,
+                    v => grip.RightLocalEulerAngles = v,
+                    () => grip.RightLocalScale,
+                    v => grip.RightLocalScale = v);
+            }
+            else if (!primaryRight && showLeft)
+            {
+                AddHeader("TUTUŞ — SOL EL (aktif)");
+                AddGripSliders(
+                    () => grip.LeftLocalPosition,
+                    v => grip.LeftLocalPosition = v,
+                    () => grip.LeftLocalEulerAngles,
+                    v => grip.LeftLocalEulerAngles = v,
+                    () => grip.LeftLocalScale,
+                    v => grip.LeftLocalScale = v);
+            }
+
+            if (primaryRight && showLeft)
+            {
+                AddHeader("TUTUŞ — SOL EL (registry)");
+                AddGripSliders(
+                    () => grip.LeftLocalPosition,
+                    v => grip.LeftLocalPosition = v,
+                    () => grip.LeftLocalEulerAngles,
+                    v => grip.LeftLocalEulerAngles = v,
+                    () => grip.LeftLocalScale,
+                    v => grip.LeftLocalScale = v);
+            }
+            else if (!primaryRight && showRight)
+            {
+                AddHeader("TUTUŞ — SAĞ EL (kullanılmıyor)");
+            }
+            else if (!showRight && !showLeft)
+            {
+                AddHeader("TUTUŞ — prop yok");
+            }
 
             WeaponFeelStore.WeaponEntry entry = WeaponFeelStore.Get(_selectedWeaponKey);
             AddHeader("VURUŞ KARESİ");

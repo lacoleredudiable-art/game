@@ -27,12 +27,29 @@ namespace Dovus.Game
             Directory.CreateDirectory(OutDir);
 
             var registry = Resources.Load<WeaponVisualRegistry>("Animation/WeaponVisualRegistry");
-            TrainingDummy dummy = Object.FindObjectOfType<TrainingDummy>();
-            Transform characterRoot = dummy != null ? dummy.transform : null;
+            Transform characterRoot = panel.GripRoot;
+            if (characterRoot == null)
+            {
+                TrainingDummy dummy = Object.FindObjectOfType<TrainingDummy>();
+                characterRoot = dummy != null ? dummy.transform : null;
+            }
+
             if (characterRoot == null)
             {
                 var actor = Object.FindObjectOfType<ActorVisual>();
                 characterRoot = actor != null ? actor.transform : null;
+            }
+
+            var hiddenActors = new List<GameObject>();
+            foreach (ActorVisual av in Object.FindObjectsOfType<ActorVisual>())
+            {
+                if (av == null)
+                    continue;
+                Transform t = av.transform;
+                if (t == characterRoot || t.IsChildOf(characterRoot))
+                    continue;
+                hiddenActors.Add(av.gameObject);
+                av.gameObject.SetActive(false);
             }
 
             if (characterRoot == null || registry == null || panel == null)
@@ -47,6 +64,26 @@ namespace Dovus.Game
             {
                 animator.speed = 0f;
                 animator.Update(0f);
+            }
+
+            panel.SetCaptureUiVisible(false);
+            DodgePractice.SuppressImGui = true;
+            var hiddenCanvases = new List<Canvas>();
+            foreach (Canvas cv in Object.FindObjectsOfType<Canvas>())
+            {
+                if (cv == null || !cv.enabled)
+                    continue;
+                hiddenCanvases.Add(cv);
+                cv.enabled = false;
+            }
+
+            var disabledIdle = new List<WeaponPropIdleMotion>();
+            foreach (WeaponPropIdleMotion idle in Object.FindObjectsOfType<WeaponPropIdleMotion>())
+            {
+                if (idle == null || !idle.enabled)
+                    continue;
+                disabledIdle.Add(idle);
+                idle.enabled = false;
             }
 
             var disabledCams = new List<Camera>();
@@ -76,7 +113,9 @@ namespace Dovus.Game
                 yield return null;
                 yield return new WaitForEndOfFrame();
 
-                HumanBodyBones bone = ResolveGripBone(key, registry);
+                HumanBodyBones bone = WeaponGripHands.PrimaryIsRight(key)
+                    ? HumanBodyBones.RightHand
+                    : HumanBodyBones.LeftHand;
                 Transform hand = animator != null ? animator.GetBoneTransform(bone) : null;
                 if (hand == null)
                 {
@@ -84,16 +123,34 @@ namespace Dovus.Game
                     continue;
                 }
 
-                Vector3 focus = hand.position;
-                PlaceCam(cam, focus, focus + ForwardOffset(characterRoot) * -HandCamDistM + Vector3.up * 0.04f);
+                Transform prop = GripPalmMetrics.FindPropOnHandPublic(hand);
+                Vector3 focus = prop != null ? prop.position : hand.position;
+                bool rightHand = bone == HumanBodyBones.RightHand;
+                Vector3 charRight = RightOffset(characterRoot);
+                Vector3 palmOut = -hand.forward;
+                if (palmOut.sqrMagnitude < 1e-6f)
+                    palmOut = ForwardOffset(characterRoot);
+                palmOut.Normalize();
+
+                PlaceCam(cam, focus, focus + palmOut * HandCamDistM + Vector3.up * 0.05f);
                 yield return SaveScreenshot(key, "front");
 
-                PlaceCam(cam, focus, focus + RightOffset(characterRoot) * HandCamDistM);
+                PlaceCam(cam, focus, focus + charRight * (rightHand ? HandCamDistM : -HandCamDistM) + Vector3.up * 0.03f);
                 yield return SaveScreenshot(key, "side");
 
                 Vector3 topDiag = (-ForwardOffset(characterRoot) * 0.55f + RightOffset(characterRoot) * 0.45f + Vector3.up * 0.65f).normalized;
                 PlaceCam(cam, focus, focus + topDiag * HandCamDistM);
                 yield return SaveScreenshot(key, "topdiag");
+
+                bool isRight = rightHand;
+                GripPalmMetrics.Sample sample = GripPalmMetrics.Measure(animator, key, isRight);
+                GripPalmMetrics.LogSample(sample);
+            }
+
+            foreach (GameObject go in hiddenActors)
+            {
+                if (go != null)
+                    go.SetActive(true);
             }
 
             Screen.SetResolution(savedW, savedH, false);
@@ -106,6 +163,21 @@ namespace Dovus.Game
 
             if (animator != null)
                 animator.speed = savedAnimSpeed;
+
+            foreach (WeaponPropIdleMotion idle in disabledIdle)
+            {
+                if (idle != null)
+                    idle.enabled = true;
+            }
+
+            foreach (Canvas cv in hiddenCanvases)
+            {
+                if (cv != null)
+                    cv.enabled = true;
+            }
+
+            panel.SetCaptureUiVisible(true);
+            DodgePractice.SuppressImGui = false;
 
             Debug.Log("[GripCapture] v2 kaydedildi: " + OutDir);
         }

@@ -114,8 +114,6 @@ namespace Dovus.Game.EditorTools
                     break;
                 case GripKind.PalmRight:
                     Vector3 pos = right.N * -0.04f + right.F * 0.05f;
-                    if (key == "kure")
-                        pos += right.F * 0.03f;
                     WriteGrip(entry, right: true, right, PropForward(), PropUp(), -right.N, -right.G, pos);
                     break;
                 case GripKind.FistRight:

@@ -11,6 +11,9 @@ namespace Dovus.Game
     /// </summary>
     public sealed class DodgePractice : MonoBehaviour
     {
+        /// <summary>Grip ekran görüntüsü vb. sırasında OnGUI kapalı.</summary>
+        public static bool SuppressImGui { get; set; }
+
         const int PracticeDamage = 22;
 
         Transform _player;
@@ -45,6 +48,8 @@ namespace Dovus.Game
 
         void OnGUI()
         {
+            if (SuppressImGui)
+                return;
 #if UNITY_EDITOR || DOVUS_DEBUG
             if (!_chromeVisible)
                 return;
