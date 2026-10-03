@@ -21,6 +21,7 @@
 | Dodge — Core | `Core/Combat/DodgeState.cs`, `Core/Combat/DodgeChargeBank.cs`, `Core/Combat/PerfectDodge.cs`, `Core/Combat/DodgeCancel.cs` | `DodgeState` (durum geçişleri) |
 | Dodge — Game | `Game/Actors/DodgeMotion.cs`, `Game/Actors/PlayerDodgeRig.cs`, `Game/Hud/DodgeChargeHud.cs` | `DodgeMotion.Update`, `PlayerDodgeRig.Update` |
 | Boss — Core | `Core/Combat/BossVitals.cs`, `Core/Combat/BossAttack.cs`, `Core/Combat/BossPoise.cs`, `Core/Combat/ExchangeResolver.cs`, `Core/Combat/BossAttackKindPicker.cs` | `ExchangeResolver.Resolve`, `BossVitals` |
+| Boss — App | `App/Boss/BossAttackSelector.cs` | `BossAttackSelector.TrySelect` |
 | Boss — Game | `Game/Boss/BossDirector.cs`, `Game/Boss/BossReactor.cs`, `Game/Boss/BossVisual.cs`, `Game/Boss/BossTelegraph.cs`, `Game/Boss/HostileTargets.cs` | `BossDirector.Update` |
 | Silah / ekipman / pasif | `Core/Equipment/EquipmentCatalog.cs`, `Core/Equipment/WeaponSwap.cs`, `Core/Combat/SlotPassiveDirector.cs`, `Game/Weapons/WeaponSO.cs` | `WeaponSwap`, `SlotPassiveDirector` |
 | Silah görselleri / el prop | `Game/Weapons/WeaponVisualRegistry.cs`, `Game/Weapons/WeaponHandProps.cs`, `Game/Weapons/WeaponArchetypeMap.cs`, `Game/Actors/ActorVisual.cs` | `WeaponVisualRegistry` (SO), `WeaponHandProps.Awake` |
