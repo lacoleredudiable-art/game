@@ -26,6 +26,7 @@
 !tools/GameCompile/GameCompile.csproj
 !tools/SweepV2/*.csproj
 !tools/IntegrationTests/*.csproj
+!tools/UnityCompile/*.csproj
 tools/GameCompile/gen/
 tools/GameCompile/bin/
 *.unityproj
@@ -66,6 +67,7 @@ tools/CoreTests/bin/
 tools/AtomSim/bin/
 tools/SweepV2/bin/
 tools/IntegrationTests/bin/
+tools/UnityCompile/bin/
 tools/SweepV2/out/
 tools/verify-out/
 

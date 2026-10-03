@@ -1,0 +1,68 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <UnityEditorData Condition="'$(UnityEditorData)' == ''">$(UNITY_EDITOR_DATA)</UnityEditorData>
+    <UnityEditorData Condition="'$(UnityEditorData)' == ''">C:\Program Files\Unity\Hub\Editor\6000.4.4f1\Editor\Data</UnityEditorData>
+    <DovusScriptAssemblies Condition="'$(DovusScriptAssemblies)' == ''">$(DOVUS_SCRIPT_ASSEMBLIES)</DovusScriptAssemblies>
+    <DovusScriptAssemblies Condition="'$(DovusScriptAssemblies)' == ''">C:\Users\lacol\.cursor\mobilegame\unity\Library\ScriptAssemblies</DovusScriptAssemblies>
+    <DefineConstants>UNITY_EDITOR;UNITY_6000_0_OR_NEWER;UNITY_2023_1_OR_NEWER;UNITY_2022_1_OR_NEWER;UNITY_2021_1_OR_NEWER;UNITY_ANDROID;ENABLE_INPUT_SYSTEM</DefineConstants>
+    <NoWarn>$(NoWarn);CS0067;CS0108;CS0114;CS0162;CS0168;CS0169;CS0219;CS0414;CS0618;CS0649;CS8321;CS0109;CS0436</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\unity\Assets\Scripts\Core\**\*.cs" Link="Core\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\..\unity\Assets\Scripts\Game\**\*.cs" Link="Game\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="$(UnityEditorData)\Managed\UnityEngine\*.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="$(UnityEditorData)\NetStandard\ref\2.1.0\netstandard.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="$(DovusScriptAssemblies)\Unity.InputSystem.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="$(DovusScriptAssemblies)\Unity.TextMeshPro.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="$(DovusScriptAssemblies)\Unity.RenderPipelines.Core.Runtime.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="$(DovusScriptAssemblies)\Unity.RenderPipelines.Universal.Runtime.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="$(DovusScriptAssemblies)\Unity.Mathematics.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="$(DovusScriptAssemblies)\Unity.Collections.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="$(DovusScriptAssemblies)\Unity.Burst.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="$(DovusScriptAssemblies)\Unity.RenderPipeline.Universal.ShaderLibrary.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="$(DovusScriptAssemblies)\Unity.RenderPipelines.Core.Runtime.Shared.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="$(DovusScriptAssemblies)\Unity.RenderPipelines.GPUDriven.Runtime.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="$(DovusScriptAssemblies)\Unity.InputSystem.ForUI.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="$(DovusScriptAssemblies)\UnityEngine.UI.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="$(DovusScriptAssemblies)\UnityEditor.UI.dll">
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>
