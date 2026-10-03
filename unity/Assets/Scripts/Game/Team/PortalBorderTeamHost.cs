@@ -1,3 +1,4 @@
+using Dovus.App.Team;
 using Dovus.Core.Border;
 using Dovus.Core.Portal;
 using Dovus.Core.Status;
@@ -467,14 +468,17 @@ namespace Dovus.Game.Team
         {
             int id = player.Id;
             PortalBuff buff = _portal.BuffFor(id);
-            PortalBorderTeamHooks.AttackSpeedMult = _border.AttackSpeedMult(id) * _team.AttackSpeedMult(id);
-            PortalBorderTeamHooks.DamageMult = _border.DamageMult(id) * _team.DamageMult(id) * buff.DamageMult;
-            PortalBorderTeamHooks.LifestealAdd = _border.LifestealAdd(id);
-            PortalBorderTeamHooks.BossIncomingMult = _team.BossIncomingMult;
-            PortalBorderTeamHooks.BossStrikeScale = _portal.StrikeScale;
-            PortalBorderTeamHooks.MoveSpeedMult =
-                _border.ColumnMoveSpeedMult(id) * _team.MoveSpeedMult(id) * buff.MoveSpeedMult;
-            PortalBorderTeamHooks.PlayerDamageTakenMult = buff.DamageTakenMult;
+            var table = PortalBorderTeamHooks.Table;
+            table.Set(
+                id,
+                new ActorModifiers(
+                    _border.AttackSpeedMult(id) * _team.AttackSpeedMult(id),
+                    _border.DamageMult(id) * _team.DamageMult(id) * buff.DamageMult,
+                    _border.LifestealAdd(id),
+                    _border.ColumnMoveSpeedMult(id) * _team.MoveSpeedMult(id) * buff.MoveSpeedMult,
+                    buff.DamageTakenMult));
+            table.BossIncomingMult = _team.BossIncomingMult;
+            table.BossStrikeScale = _portal.StrikeScale;
             PortalBorderTeamHooks.SetMiss(id, buff.MissChance);
             PortalBorderTeamHooks.SetTaken(id, buff.DamageTakenMult);
             for (int i = 0; i < _actors.Count; i++)
