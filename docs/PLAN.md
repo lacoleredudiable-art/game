@@ -7,7 +7,7 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 - [x] 0.1 docs/PLAN.md (bu dosya) + docs/ARCHITECTURE-PLAN.md + docs/MAP.md (konu → dosya → giriş noktası) + klasör başına kısa AGENTS.md + Composer görev şablonu + verify.ps1 (derle + Core test + 1440 kapı + gramer → tek özet)
 - [x] 0.2 Integration testler: JSON→skill eşleme (144), asset referans testi (VfxLibrary/WeaponVisualRegistry/proplar), kayıt/ayar round-trip; CI'ya bağla
 - [x] 0.3 Git dışı asset yedeği (Synty/Mixamo/VFX → yedek klasör veya Git LFS kararı)
-- [ ] 0.4 Ölü kod temizliği: tek seferlik capture script'leri, 85 eski branch, eski taslak PR'lar (#6 #8 #9 #10 #43 — kullanıcı onayıyla)
+- [x] 0.4 Ölü kod temizliği: tek seferlik capture script'leri, 85 eski branch, eski taslak PR'lar (#6 #8 #9 #10 #43 — kullanıcı onayıyla)
 
 ## Aşama 2 — Mimari (kuzen önerisi) (davranış değişmeden, adım adım)
 - [ ] 2.1 Game'i konu klasörlerine ayır + namespace = klasör (Dovus.<Katman>.<Konu>)
