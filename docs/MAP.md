@@ -31,7 +31,7 @@
 | Tuning | `Game/PrototypeTuning.cs`, `Game/TuningConfig.cs`, `Core/Tuning/*.cs` | `PrototypeTuning.EnsureRuntimeDefaults`, `TuningSchema` |
 | Sahne kurulumu | `Game/PrototypeBootstrap.cs`, `Game/PlaceholderFactory.cs`, `Game/CircularArena.cs` | `PrototypeBootstrap.Awake` |
 | Debug / dev | `Game/DebugConfig.cs`, `Game/DebugPanelsController.cs`, `Game/V611DebugPanel.cs`, `Game/SentenceDebugHud.cs`, `Game/TuningPanel.cs` | `DebugPanelsController`, `V611DebugPanel.Update` |
-| Editor menüleri | `Game/Editor/PlaySweep.cs`, `Game/Editor/FeelCapture*.cs`, `Game/Editor/*Bind.cs`, `Game/Editor/AndroidBuilder.cs` | `[MenuItem("Dovus/...")]` |
+| Editor menüleri | `Game/Editor/PlaySweep.cs`, `Game/Editor/*Bind.cs`, `Game/Editor/AndroidBuilder.cs` | `[MenuItem("Dovus/...")]` |
 | Testler — Core | `tools/CoreTests/*Tests.cs` | `dotnet test tools/CoreTests` |
 | Testler — Integration | `tools/IntegrationTests/*Tests.cs` | `dotnet test tools/IntegrationTests` |
 | Git dışı asset yedeği (Synty/Mixamo/VFX) | `docs/asset-yedegi.md`, `tools/IntegrationTests/known-missing-asset-guids.txt` | yedek zip: PC `C:\Users\lacol\_backup\` |
