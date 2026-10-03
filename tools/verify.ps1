@@ -3,7 +3,7 @@
 .SYNOPSIS
   Repo doğrulama: GameCompile, CoreTests, AtomSim, SweepV2 kapısı.
 .PARAMETER Skip
-  Virgülle ayrılmış adımlar: gamecompile, coretests, integration, atomsim, sweep
+  Virgülle ayrılmış adımlar: gamecompile, unitycompile, coretests, integration, atomsim, sweep
 .PARAMETER Quick
   Sweep adımını atla.
 #>
@@ -57,6 +57,7 @@ function Invoke-VerifyStep {
             if ($n) {
                 $note = $n
                 if ($n -eq 'kapı satırı bulunamadı') { $status = 'FAIL' }
+                if ($n -eq 'SKIP') { $status = 'SKIP' }
             }
         }
     } catch {
@@ -89,6 +90,19 @@ if (-not (Test-StepSkipped 'gamecompile')) {
             if ($code -ne 0) { return "exit $code" }
             return 'derleme OK'
         }
+    }
+}
+
+# (a2) UnityCompile (yerel Unity 6; SKIP CI'da değil)
+if (-not (Test-StepSkipped 'unitycompile')) {
+    $results += Invoke-VerifyStep -Key 'unitycompile' -Title 'UnityCompile' -Run {
+        powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $RepoRoot 'tools\UnityCompile\check.ps1')
+    } -NoteFromLog {
+        param($t, $code)
+        if ($t -match 'SKIP:\s*Unity 6 bulunamadı') { return 'SKIP' }
+        if ($code -ne 0) { return "exit $code" }
+        if ($t -match 'unity scripts compiled') { return ($t.Trim() -split "`n" | Select-Object -Last 1).Trim() }
+        return 'derleme OK'
     }
 }
 
