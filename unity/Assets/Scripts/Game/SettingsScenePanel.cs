@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.IO;
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using Dovus.Core.Tuning;
@@ -32,6 +33,8 @@ namespace Dovus.Game
         float _statusUntil;
         string _selectedWeaponKey = "kilic";
         bool _slowMo;
+        float _touchUiScale = 1f;
+        float _sliderRowHeight = 52f;
 
         readonly (int verb, int adj, string label)[] _skillPresets =
         {
@@ -68,13 +71,19 @@ namespace Dovus.Game
 
         void BuildUi()
         {
+            float dpi = Screen.dpi > 10f ? Screen.dpi : 160f;
+            _touchUiScale = Mathf.Clamp(dpi / 160f, 1f, 2.6f);
+            _sliderRowHeight = Mathf.Max(48f, 52f * _touchUiScale);
+
             var canvasGo = new GameObject("SettingsSceneCanvas");
             canvasGo.transform.SetParent(transform, false);
             var canvas = canvasGo.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.sortingOrder = 900;
-            canvasGo.AddComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            canvasGo.GetComponent<CanvasScaler>().referenceResolution = new Vector2(1600, 900);
+            var scaler = canvasGo.AddComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1600f / _touchUiScale, 900f / _touchUiScale);
+            scaler.matchWidthOrHeight = 0.5f;
             canvasGo.AddComponent<GraphicRaycaster>();
 
             var card = new GameObject("Panel");
@@ -151,6 +160,8 @@ namespace Dovus.Game
             var bakeRegistry = CreateButton(saveRow.transform, "REGISTRY'YE YAZ");
             bakeRegistry.onClick.AddListener(BakeGripToRegistry);
 #endif
+            var copyJson = CreateButton(saveRow.transform, "KOPYALA");
+            copyJson.onClick.AddListener(CopyGripJsonToClipboard);
             var save = CreateButton(saveRow.transform, "KAYDET");
             save.onClick.AddListener(SaveToDisk);
 
@@ -444,6 +455,29 @@ namespace Dovus.Game
             return anim.GetCurrentAnimatorStateInfo(0).shortNameHash.ToString();
         }
 
+        void CopyGripJsonToClipboard()
+        {
+            if (_registry == null)
+            {
+                ShowStatus("Registry yüklenemedi");
+                return;
+            }
+
+            string json = WeaponGripClipboardJson.SerializeRegistry(_registry);
+            GUIUtility.systemCopyBuffer = json;
+            try
+            {
+                File.WriteAllText(WeaponGripClipboardJson.ExportFilePath, json);
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning("[SettingsScene] export dosyası yazılamadı: " + e.Message);
+            }
+
+            ShowStatus("kopyalandı");
+            Debug.Log($"[SettingsScene] grip JSON kopyalandı ({json.Length} char) → {WeaponGripClipboardJson.ExportFilePath}");
+        }
+
         void SaveToDisk()
         {
             WeaponFeelStore.Save();
@@ -531,8 +565,8 @@ namespace Dovus.Game
         {
             var go = new GameObject("Header");
             go.transform.SetParent(_content, false);
-            go.AddComponent<LayoutElement>().preferredHeight = 32f;
-            var label = CreateLabel(go.transform, text, 16);
+            go.AddComponent<LayoutElement>().preferredHeight = Mathf.Max(32f, 32f * _touchUiScale);
+            var label = CreateLabel(go.transform, text, Mathf.RoundToInt(16f * _touchUiScale));
             label.fontStyle = FontStyle.Bold;
             label.color = new Color(0.45f, 0.92f, 1f);
         }
@@ -541,8 +575,8 @@ namespace Dovus.Game
         {
             var row = new GameObject("Row");
             row.transform.SetParent(_content, false);
-            row.AddComponent<LayoutElement>().preferredHeight = 52f;
-            var text = CreateLabel(row.transform, label, 14);
+            row.AddComponent<LayoutElement>().preferredHeight = _sliderRowHeight;
+            var text = CreateLabel(row.transform, label, Mathf.RoundToInt(14f * _touchUiScale));
             var textRect = text.GetComponent<RectTransform>();
             textRect.anchorMin = new Vector2(0f, 0.5f);
             textRect.anchorMax = new Vector2(1f, 1f);
@@ -617,12 +651,12 @@ namespace Dovus.Game
         {
             var go = new GameObject("Btn_" + text);
             go.transform.SetParent(parent, false);
-            go.AddComponent<LayoutElement>().preferredHeight = 36f;
+            go.AddComponent<LayoutElement>().preferredHeight = Mathf.Max(48f, 36f * _touchUiScale);
             var img = go.AddComponent<Image>();
             img.color = new Color(0.35f, 0.9f, 1f, 0.18f);
             var btn = go.AddComponent<Button>();
             btn.targetGraphic = img;
-            var label = CreateLabel(go.transform, text, 13);
+            var label = CreateLabel(go.transform, text, Mathf.RoundToInt(13f * _touchUiScale));
             label.alignment = TextAnchor.MiddleCenter;
             label.fontStyle = FontStyle.Bold;
             return btn;
