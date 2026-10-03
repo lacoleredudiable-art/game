@@ -1,4 +1,5 @@
 using Dovus.Core.Combat;
+using Dovus.Core.Data;
 using Dovus.Core.Grammar;
 using Dovus.Core.Motion;
 using Dovus.Core.Portal;
@@ -83,9 +84,9 @@ namespace Dovus.Game.Boss
         bool _bossEncounterLoaded;
         BossAttackKind[] _phase1AttackKinds = System.Array.Empty<BossAttackKind>();
         BossAttackKind[] _phase2AttackKinds = System.Array.Empty<BossAttackKind>();
-        readonly Dictionary<BossAttackKind, BossEncounterData.BossAttackEntry> _attackEntriesByKind = new();
-        BossEncounterData.BossAttackEntry _activeAttackEntry;
-        BossEncounterData.BossOnHitStatus _volleyOnHit;
+        readonly Dictionary<BossAttackKind, BossAttackEntry> _attackEntriesByKind = new();
+        BossAttackEntry _activeAttackEntry;
+        BossOnHitStatus _volleyOnHit;
 
         /// <summary>Ağ Örme windup başında kilitlenen hedef (3.4 alan sunumu).</summary>
         public Vector3 LastWebFieldTarget { get; private set; }
@@ -283,7 +284,7 @@ namespace Dovus.Game.Boss
             string path = "Bosses/" + bossId.Replace('_', '-');
             _phase1AttackKinds = BossEncounterData.LoadPhaseAttackKinds(path, 1);
             _phase2AttackKinds = BossEncounterData.LoadPhaseAttackKinds(path, 2);
-            IReadOnlyList<BossEncounterData.BossAttackEntry> attacks = BossEncounterData.LoadAttacks(path);
+            IReadOnlyList<BossAttackEntry> attacks = BossEncounterData.LoadAttacks(path);
             if (attacks.Count == 0 && _phase1AttackKinds.Length == 0 && _phase2AttackKinds.Length == 0)
                 return;
 
@@ -712,7 +713,7 @@ namespace Dovus.Game.Boss
                 _lastAttackKind, _attackKindStreak, _combat.Boss.MaxSameAttackKindStreak, _rng, allowed.Slice(0, n));
             _attackKindStreak = BossAttackKindPicker.NextStreak(_lastAttackKind, _attackKindStreak, kind);
             _lastAttackKind = kind;
-            _activeAttackEntry = _attackEntriesByKind.TryGetValue(kind, out BossEncounterData.BossAttackEntry entry)
+            _activeAttackEntry = _attackEntriesByKind.TryGetValue(kind, out BossAttackEntry entry)
                 ? entry
                 : null;
 

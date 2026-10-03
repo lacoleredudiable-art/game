@@ -1,4 +1,4 @@
-using Dovus.Core.Grammar;
+using Dovus.Core.Data;
 using Dovus.Game.Skills;
 using Dovus.Game.Vfx;
 using System;
@@ -288,7 +288,10 @@ namespace Dovus.Game.Composition
             {
                 try
                 {
-                    ParseCatalog(MiniJson.Parse(asset.text));
+                    if (VfxBindingMapper.TryParse(asset.text, out VfxBindingData catalog))
+                        ApplyCatalog(catalog);
+                    else
+                        LoadEmbeddedFallback();
                     return;
                 }
                 catch (Exception e)
@@ -301,26 +304,22 @@ namespace Dovus.Game.Composition
             LoadEmbeddedFallback();
         }
 
-        static void ParseCatalog(JsonValue root)
+        static void ApplyCatalog(VfxBindingData data)
         {
-            JsonValue vb = root["vfx_binding"];
-
-            foreach (KeyValuePair<string, JsonValue> kv in vb["element_colors"].AsObject())
+            foreach (KeyValuePair<string, string> kv in data.ElementPrimaryHex)
             {
-                string hex = kv.Value["primary"].AsString();
-                if (TryParseHexColor(hex, out Color c))
+                if (TryParseHexColor(kv.Value, out Color c))
                     ElementPrimary[kv.Key] = c;
             }
 
-            foreach (KeyValuePair<string, JsonValue> kv in vb["trail_vfx"].AsObject())
+            foreach ((string id, string style) in data.TrailEntries)
             {
-                TrailStyles.Add(kv.Key);
-                string style = kv.Value["vfx_style"].AsString();
-                TrailUsesLine[kv.Key] = IsLineVfxStyle(style);
+                TrailStyles.Add(id);
+                TrailUsesLine[id] = IsLineVfxStyle(style);
             }
 
-            foreach (KeyValuePair<string, JsonValue> kv in vb["impact_vfx"].AsObject())
-                ImpactStyles.Add(kv.Key);
+            foreach (string id in data.ImpactStyleIds)
+                ImpactStyles.Add(id);
         }
 
         /// <summary>
