@@ -23,6 +23,9 @@ jobs:
       - name: Core testleri
         run: dotnet test tools/CoreTests
 
+      - name: Integration testleri
+        run: dotnet test tools/IntegrationTests
+
       - name: AtomSim derlemesi
         run: dotnet build tools/AtomSim
 
