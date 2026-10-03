@@ -65,6 +65,7 @@ tools/CoreTests/bin/
 tools/AtomSim/bin/
 tools/SweepV2/bin/
 tools/SweepV2/out/
+tools/verify-out/
 
 # Ham asset indirmeleri (Blend/OBJ/zip kaynak dosyaları) — Unity'nin gerçekten kullandığı
 # içe aktarılmış hâli unity/Assets/Art/ altında, versiyonlanır. Bu klasör yalnızca
