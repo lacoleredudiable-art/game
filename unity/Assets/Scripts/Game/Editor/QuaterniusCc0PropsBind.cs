@@ -3,7 +3,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace Dovus.Game.EditorTools
+namespace Dovus.Game.Editor
 {
     /// <summary>CC0 Quaternius silah prop'ları → URP Lit + prefab (cw-2).</summary>
     public static class QuaterniusCc0PropsBind

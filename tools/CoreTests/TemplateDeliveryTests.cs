@@ -1,9 +1,9 @@
-using System.Collections.Generic;
-using System.IO;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Motion;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.IO;
 
 namespace CoreTests;
 

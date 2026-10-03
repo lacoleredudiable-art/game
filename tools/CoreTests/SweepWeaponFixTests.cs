@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.IO;
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using Dovus.Core.Manifestation;
@@ -7,6 +5,8 @@ using Dovus.Core.Motion;
 using Dovus.Core.Time;
 using Dovus.Core.Tuning;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.IO;
 
 namespace CoreTests;
 

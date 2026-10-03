@@ -1,7 +1,7 @@
-using System.Collections.Generic;
 using Dovus.Core.Combat;
 using Dovus.Core.Tuning;
 using NUnit.Framework;
+using System.Collections.Generic;
 
 namespace CoreTests;
 

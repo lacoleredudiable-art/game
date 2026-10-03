@@ -1,9 +1,10 @@
 #if UNITY_EDITOR
+using Dovus.Game.Arena;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace Dovus.Game.EditorTools
+namespace Dovus.Game.Editor
 {
     /// <summary>
     /// <see cref="CombatAmbienceAssets"/> Resources asset'ine Quaternius CC0 kenar prop prefab referansları yazır.

@@ -1,16 +1,18 @@
 #if UNITY_EDITOR
+using Dovus.Game.Arena;
+using Dovus.Game.Boss;
+using Dovus.Game.Editor;
+using Dovus.Game.Vfx;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-using Dovus.Game;
-using Dovus.Game.EditorTools;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
-namespace Dovus.Game.EditorTools
+namespace Dovus.Game.Editor
 {
     /// <summary>Play Mode'da look A/B/C yakalama (task-look.md / v2).</summary>
     public static class LookCapture

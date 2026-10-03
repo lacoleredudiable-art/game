@@ -1,13 +1,13 @@
 #if UNITY_EDITOR
+using Dovus.Game.Boss;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
-using Dovus.Game;
 
-namespace Dovus.Game.EditorTools
+namespace Dovus.Game.Editor
 {
     /// <summary>
     /// CC0 Quaternius Spider → boss AnimatorController + AglarinKralicesi visual prefab.

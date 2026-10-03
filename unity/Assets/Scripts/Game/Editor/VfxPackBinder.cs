@@ -1,9 +1,11 @@
+using Dovus.Game.Skills.Execution;
+using Dovus.Game.Vfx;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace Dovus.Game.EditorTools
+namespace Dovus.Game.Editor
 {
     /// <summary>
     /// Cartoon FX Remaster Free + Particle Pack prefab'larını <c>Resources/VfxLibrary.asset</c>

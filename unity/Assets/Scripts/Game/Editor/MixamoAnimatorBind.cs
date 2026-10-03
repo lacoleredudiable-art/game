@@ -1,3 +1,7 @@
+using Dovus.Game.Actors;
+using Dovus.Game.Boss;
+using Dovus.Game.Config;
+using Dovus.Game.Skills;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -5,7 +9,7 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 
-namespace Dovus.Game.EditorTools
+namespace Dovus.Game.Editor
 {
     /// <summary>
     /// Assets/Art/Mixamo/**.fbx → Humanoid AnimatorController → Synty visuals.

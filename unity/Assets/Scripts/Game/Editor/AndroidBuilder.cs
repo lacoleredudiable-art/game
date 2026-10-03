@@ -1,4 +1,9 @@
 #if UNITY_EDITOR
+using Dovus.Game.Arena;
+using Dovus.Game.Composition;
+using Dovus.Game.DevTools;
+using Dovus.Game.Skills;
+using Dovus.Game.Vfx;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +13,7 @@ using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 
-namespace Dovus.Game.EditorTools
+namespace Dovus.Game.Editor
 {
     /// <summary>
     /// T11: Android APK üretimi. Ayarlar burada kodla yazılıyor ki build tek tıkla (ya da

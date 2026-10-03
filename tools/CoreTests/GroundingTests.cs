@@ -1,7 +1,7 @@
-using System;
-using System.IO;
 using Dovus.Core.Motion;
 using NUnit.Framework;
+using System;
+using System.IO;
 
 namespace CoreTests;
 

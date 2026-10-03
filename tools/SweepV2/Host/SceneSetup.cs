@@ -1,3 +1,6 @@
+using Dovus.Game.Actors;
+using Dovus.Game.Composition;
+using Dovus.Game.Config;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -5,7 +8,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Dovus.Game;
 using UnityEngine;
 
 namespace SweepV2

@@ -1,10 +1,14 @@
-using System.Linq;
 using Dovus.Core.Equipment;
+using Dovus.Game.Casting;
+using Dovus.Game.DevTools;
+using Dovus.Game.Hud;
+using Dovus.Game.Skills;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Dovus.Game.EditorTools
+namespace Dovus.Game.Editor
 {
     /// <summary>
     /// Animasyon (b) elde silah sunumu için Play Mode yardımcıları — Unity_RunCommand

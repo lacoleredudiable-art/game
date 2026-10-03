@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Dovus.Game.EditorTools;
+using Dovus.Game.Editor;
 
 namespace SweepV2
 {

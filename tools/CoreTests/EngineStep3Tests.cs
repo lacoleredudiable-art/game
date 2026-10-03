@@ -1,10 +1,10 @@
-using System.Globalization;
-using System.IO;
-using System.Text.RegularExpressions;
 using Dovus.Core;
 using Dovus.Core.Combat;
 using Dovus.Core.Grammar;
 using NUnit.Framework;
+using System.Globalization;
+using System.IO;
+using System.Text.RegularExpressions;
 
 namespace CoreTests;
 

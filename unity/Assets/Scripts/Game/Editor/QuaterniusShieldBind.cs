@@ -3,7 +3,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace Dovus.Game.EditorTools
+namespace Dovus.Game.Editor
 {
     /// <summary>CC0 Quaternius heater shield → URP Lit materials + prefab (task polish).</summary>
     public static class QuaterniusShieldBind

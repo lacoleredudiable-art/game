@@ -1,8 +1,8 @@
-using System.Collections.Generic;
 using Dovus.Core.Grammar;
 using Dovus.Core.Manifestation;
 using Dovus.Core.Tuning;
 using NUnit.Framework;
+using System.Collections.Generic;
 
 namespace CoreTests;
 
