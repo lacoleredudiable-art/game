@@ -40,7 +40,10 @@
 | Araç — başsız tarama | `tools/SweepV2/Host/Program.cs`, `tools/SweepV2/Shim/*` | `SweepV2.Program.Main` |
 | Araç — Game derleme | `tools/GameCompile/check.py`, `tools/GameCompile/GameCompile.csproj` | `python tools/GameCompile/check.py` |
 | CI | `.github/workflows/sweep-v2.yml` | workflow `sweep` job |
-| Zaman / saat | `Core/Time/TimeDirector.cs`, `Game/Composition/GameClock.cs` | `TimeDirector.Tick`, `GameClock.Update` |
+| Zaman / saat | `Core/Time/TimeDirector.cs`, `App/Time/TimeDirectorClock.cs`, `Game/Composition/GameClock.cs` | `TimeDirector.Tick`, `GameClock.Update`, `GameClock.World` |
+| App (Dovus.App) | `App/Time/TimeDirectorClock.cs`, `App/Time/ManualClock.cs`, `App/AGENTS.md` | `TimeDirectorClock.Advance` |
+| Platform adaptörleri | `Game/Platform/UnityFrameClock.cs`, `Game/Platform/UnityUnscaledClock.cs`, `Game/Platform/UnityRng.cs` | `UnityFrameClock.Default`, `UnityRng.Default` |
+| IClock / IRng (Core) | `Core/Shared/IClock.cs`, `Core/Shared/IRng.cs`, `Core/Shared/CombatRng.cs` | `IClock.DeltaSec`, `CombatRng.Seeded` |
 | Mekanik gramer | `Core/Mechanic/MechanicGrammar.cs`, `Core/Mechanic/MechanicRules.cs`, `Game/Skills/ManifestationDirector.MechanicGrammar.cs` | `MechanicGrammar.Compose` |
 | Canlı efekt / plan | `Core/Manifestation/LivingEffect.cs`, `Core/Manifestation/SkillWorldPlanner.cs` | `LivingEffect.Tick`, `SkillWorldPlanner.Plan` |
 | Hedefleme | `Core/Combat/TargetPicker.cs`, `Core/Combat/TargetingRules.cs`, `Game/Actors/PlayerTargeting.cs` | `PlayerTargeting.Update` |

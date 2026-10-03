@@ -42,6 +42,7 @@ def main():
     if GEN.exists():
         shutil.rmtree(GEN)
     copy_tree("unity/Assets/Scripts/Core")
+    copy_tree("unity/Assets/Scripts/App")
     copy_tree("unity/Assets/Scripts/Game")
     dotnet = str(DOTNET if DOTNET.exists() else "dotnet")
     proc = subprocess.run(
