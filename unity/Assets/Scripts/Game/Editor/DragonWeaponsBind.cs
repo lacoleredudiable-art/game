@@ -45,6 +45,12 @@ namespace Dovus.Game.EditorTools
             new("kitap", "Kitap", DragonHand.Left),
             new("kalkan", "Kalkan", DragonHand.Left, preserveOppositeHand: true, doubleSided: true,
                 extraLeftHandWeaponKeys: new[] { "kilic" }),
+            new("yay", "Yay", DragonHand.Left, doubleSided: true),
+            new("asa", "Asa", DragonHand.Right, doubleSided: true),
+            new("kure", "Kure", DragonHand.Right, doubleSided: true),
+            new("tilsim", "Tilsim", DragonHand.Right, doubleSided: true),
+            new("yumruk", "Yumruk", DragonHand.Right, doubleSided: true),
+            new("top", "Top", DragonHand.Right, doubleSided: true),
         };
 
         [MenuItem("Tools/Weapons/Bind Dragon Props")]

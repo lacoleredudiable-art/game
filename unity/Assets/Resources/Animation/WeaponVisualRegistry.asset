@@ -58,12 +58,12 @@ MonoBehaviour:
     RightLocalPosition: {x: 0, y: 0, z: 0}
     RightLocalEulerAngles: {x: 0, y: 0, z: 0}
     RightLocalScale: {x: 1, y: 1, z: 1}
-    LeftHandPrefab: {fileID: 919132149155446097, guid: 56c878ac8d79ec4438481b79b4ff207b, type: 3}
+    LeftHandPrefab: {fileID: 344190506664302374, guid: bc9793ddfaf2bd043b760259187b600f, type: 3}
     LeftLocalPosition: {x: 0, y: 0, z: 0}
-    LeftLocalEulerAngles: {x: 0, y: 90, z: 0}
-    LeftLocalScale: {x: 32.6, y: 32.6, z: 32.6}
+    LeftLocalEulerAngles: {x: 0, y: 0, z: 0}
+    LeftLocalScale: {x: 1, y: 1, z: 1}
   - WeaponKey: asa
-    RightHandPrefab: {fileID: 4176462889980434858, guid: 59e1c5be3ed0f044d8a1300e52ed498e, type: 3}
+    RightHandPrefab: {fileID: 147224283865741495, guid: 589ec1ad2f885f746aa8b3f33a01381c, type: 3}
     RightLocalPosition: {x: 0, y: 0, z: 0}
     RightLocalEulerAngles: {x: 0, y: 0, z: 0}
     RightLocalScale: {x: 1, y: 1, z: 1}
@@ -81,16 +81,16 @@ MonoBehaviour:
     LeftLocalEulerAngles: {x: 0, y: 0, z: 0}
     LeftLocalScale: {x: 1, y: 1, z: 1}
   - WeaponKey: kure
-    RightHandPrefab: {fileID: 0}
+    RightHandPrefab: {fileID: 326741379151526202, guid: a8cdc8065e23f6f46a285a4d75a77c5b, type: 3}
     RightLocalPosition: {x: 0, y: 0, z: 0}
     RightLocalEulerAngles: {x: 0, y: 0, z: 0}
     RightLocalScale: {x: 1, y: 1, z: 1}
-    LeftHandPrefab: {fileID: 6811752690207411298, guid: 8f1a1c94cd7701c4e93565cddd2e1a5f, type: 3}
+    LeftHandPrefab: {fileID: 0}
     LeftLocalPosition: {x: 0, y: 0, z: 0}
     LeftLocalEulerAngles: {x: 0, y: 0, z: 0}
     LeftLocalScale: {x: 1, y: 1, z: 1}
   - WeaponKey: tilsim
-    RightHandPrefab: {fileID: 4940777479938280326, guid: def0a9306332f7b47b0a7c5aa60133f5, type: 3}
+    RightHandPrefab: {fileID: 2595047024624771116, guid: feb83298e0e02f346a429c84acb7d8cd, type: 3}
     RightLocalPosition: {x: 0, y: 0, z: 0}
     RightLocalEulerAngles: {x: 0, y: 0, z: 0}
     RightLocalScale: {x: 1, y: 1, z: 1}
@@ -99,7 +99,16 @@ MonoBehaviour:
     LeftLocalEulerAngles: {x: 0, y: 0, z: 0}
     LeftLocalScale: {x: 1, y: 1, z: 1}
   - WeaponKey: top
-    RightHandPrefab: {fileID: 280456251797240697, guid: 40a64e1fe960dd44080752130a0ee800, type: 3}
+    RightHandPrefab: {fileID: 8939256625421916142, guid: 1280d4ed112325b4cbb0fec95f9112b4, type: 3}
+    RightLocalPosition: {x: 0, y: 0, z: 0}
+    RightLocalEulerAngles: {x: 0, y: 0, z: 0}
+    RightLocalScale: {x: 1, y: 1, z: 1}
+    LeftHandPrefab: {fileID: 0}
+    LeftLocalPosition: {x: 0, y: 0, z: 0}
+    LeftLocalEulerAngles: {x: 0, y: 0, z: 0}
+    LeftLocalScale: {x: 1, y: 1, z: 1}
+  - WeaponKey: yumruk
+    RightHandPrefab: {fileID: 9054165394990556061, guid: a0856f4eb6f945c429c864214f522996, type: 3}
     RightLocalPosition: {x: 0, y: 0, z: 0}
     RightLocalEulerAngles: {x: 0, y: 0, z: 0}
     RightLocalScale: {x: 1, y: 1, z: 1}
