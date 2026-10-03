@@ -9,7 +9,7 @@
 | Skill atma — girdi | `Game/Casting/HexagonInput.cs`, `Game/Casting/MoveInput.cs`, `Game/Casting/JoystickView.cs` | `HexagonInput.Update` |
 | Skill atma — cümle | `Core/Grammar/SentenceEngine.cs`, `Core/Grammar/SentenceState.cs` | `SentenceEngine.OnDotTouched`, `SentenceEngine.Commit`, `SentenceEngine.Tick` |
 | Skill atma — çözüm | `Core/Grammar/SkillMotor.cs`, `Game/Data/SkillMotorLoader.cs`, `Game/Data/ElementSystemJsonLoader.cs` | `SkillMotor.Resolve`, `SkillMotor.ResolveWords`, `SkillMotorLoader.Load` |
-| Skill atma — yürütme | `Game/Skills/ManifestationDirector.cs`, `Game/Skills/ManifestationDirector.VerbExecution.cs`, `Core/Execution/SkillExecutorRouter.cs`, `Game/Skills/Execution/ISkillExecutor.cs` | `ManifestationDirector.OnSentenceCompleted`, `SkillExecutorRouter.Route` |
+| Skill atma — yürütme | `App/Casting/CastPipeline.cs`, `Game/Skills/ManifestationDirector.cs`, `Game/Skills/ManifestationDirector.VerbExecution.cs`, `Core/Execution/SkillExecutorRouter.cs`, `Game/Skills/Execution/ISkillExecutor.cs` | `CastPipeline.RunSkill`, `ManifestationDirector.OnSentenceCompleted`, `SkillExecutorRouter.Route` |
 | Skill atma — görsel/VFX | `Game/Skills/ManifestationDirector.CastPresentation.cs`, `Game/Skills/ManifestationDirector.MotionTemplate.cs`, `Game/Vfx/FeelVfx.cs`, `Game/Vfx/PresentationFx.cs` | `ManifestationDirector.Update` |
 | Rün / cümle grameri | `Core/Grammar/Rune.cs`, `Core/Grammar/RuneLoadout.cs`, `Core/Grammar/RuneManager.cs`, `Core/Grammar/HexagonLayout.cs` | `RuneManager.TrySelect`, `SentenceEngine` |
 | Skill verisi (JSON) | `docs/element-sistemi.json`, `unity/Assets/Resources/ElementSystem/element-sistemi.json` | `SkillMotor.FromJson` (Core), `ElementSystemJsonLoader.TryLoad` (Game) |

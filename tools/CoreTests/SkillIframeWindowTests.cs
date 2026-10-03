@@ -57,8 +57,9 @@ public sealed class SkillIframeWindowTests
     [Test]
     public void MotionIframe_IsApplied_InGame()
     {
+        string castPort = File.ReadAllText(Path.Combine(Root(), "unity", "Assets", "Scripts", "Game", "Skills", "ManifestationDirector.zCastPort.cs"));
+        Assert.That(castPort, Does.Contain("ApplySkillMotionIframe(skill, motion)"));
         string src = File.ReadAllText(Path.Combine(Root(), "unity", "Assets", "Scripts", "Game", "Skills", "ManifestationDirector.cs"));
-        Assert.That(src, Does.Contain("ApplySkillMotionIframe(skill, motionPlan)"));
         Assert.That(src, Does.Contain("rig.OpenSkillIframe(plan.IframeMs)"));
     }
 }
