@@ -222,7 +222,7 @@ namespace Dovus.Game.Skills
                             bool daze = e.Has("havada") || e.Has("sersem");
                             bool hammer = e.Has("sersem")
                                 && EquippedProfile != null
-                                && EquippedProfile.Passive.Id == "yere_cakma";
+                                && EquippedProfile.Passive.Kind == WeaponPassiveKind.YereCakma;
                             double now = _clock != null ? _clock.Director.WorldTimeMs : 0;
                             bool ready = !hammer || HammerStunReady(now);
                             if (hammer && !ready)

@@ -165,6 +165,7 @@ namespace Dovus.Core.Equipment
             float baseCrit)
         {
             Id = id ?? string.Empty;
+            Kind = WeaponPassiveKinds.Parse(Id);
             DamageMult = damageMult > 0f ? damageMult : 1f;
             ArcDeg = arcDeg;
             StunSec = stunSec;
@@ -182,6 +183,7 @@ namespace Dovus.Core.Equipment
         }
 
         public string Id { get; }
+        public WeaponPassiveKind Kind { get; }
         public float DamageMult { get; }
         public float ArcDeg { get; }
         public float StunSec { get; }

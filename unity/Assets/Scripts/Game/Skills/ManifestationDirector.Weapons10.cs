@@ -106,7 +106,7 @@ namespace Dovus.Game.Skills
         /// <summary>Tılsım kuşanılıyken şifa, kalkan ve buff büyüklüğü. Hasar çarpanı değil.</summary>
         float WeaponFriendlyScale()
         {
-            if (EquippedProfile == null || EquippedProfile.Passive.Id != "kutsal_etki")
+            if (EquippedProfile == null || EquippedProfile.Passive.Kind != WeaponPassiveKind.KutsalEtki)
                 return 1f;
             float heal = HitMods(SkillResolution.Empty, false, false).HealMult;
             return heal > 0f ? heal : 1f;
@@ -204,7 +204,7 @@ namespace Dovus.Game.Skills
                 if (profile.OrbSpellM > 0f)
                     range = profile.OrbSpellM;
             }
-            if (profile.Passive.Id == "uzun_buyu" && angleDeg <= 0f && profile.SwapBonus.AreaMult > 1f
+            if (profile.Passive.Kind == WeaponPassiveKind.UzunBuyu && angleDeg <= 0f && profile.SwapBonus.AreaMult > 1f
                 && _weaponPassives.BonusArmed(_clock != null ? _clock.Director.WorldTimeMs : 0))
             {
                 range *= profile.SwapBonus.AreaMult;
@@ -292,7 +292,7 @@ namespace Dovus.Game.Skills
             WeaponCombatProfile profile = EquippedProfile;
             if (profile == null || _clock == null || skill.IsEmpty)
                 return;
-            if (profile.Passive.Id == "dolu_sayfa")
+            if (profile.Passive.Kind == WeaponPassiveKind.DoluSayfa)
                 _weaponPassives.NoteSkill(_clock.Director.WorldTimeMs, profile.Passive.ChainGapSec);
         }
 
@@ -315,7 +315,7 @@ namespace Dovus.Game.Skills
         void NoteShieldBlockIfGuarding()
         {
             WeaponCombatProfile profile = EquippedProfile;
-            if (profile == null || profile.Passive.Id != "karsi_saldiri" || _clock == null || _player == null)
+            if (profile == null || profile.Passive.Kind != WeaponPassiveKind.KarsiSaldiri || _clock == null || _player == null)
                 return;
             if (!PerformingAttack && (_engine == null || _engine.State.Phase != SentencePhase.Recovering))
                 return;
@@ -332,7 +332,7 @@ namespace Dovus.Game.Skills
         bool HammerStunReady(double worldMs)
         {
             WeaponCombatProfile profile = EquippedProfile;
-            if (profile == null || profile.Passive.Id != "yere_cakma")
+            if (profile == null || profile.Passive.Kind != WeaponPassiveKind.YereCakma)
                 return true;
             return _weaponPassives.HammerReady(worldMs);
         }
@@ -340,7 +340,7 @@ namespace Dovus.Game.Skills
         void CommitHammerStun(double worldMs, bool ready, bool alreadyHad, bool applied)
         {
             WeaponCombatProfile profile = EquippedProfile;
-            if (profile == null || profile.Passive.Id != "yere_cakma")
+            if (profile == null || profile.Passive.Kind != WeaponPassiveKind.YereCakma)
                 return;
             if (!WeaponPassiveRules.CommitStunOnLand(ready, alreadyHad, applied))
                 return;
@@ -363,7 +363,7 @@ namespace Dovus.Game.Skills
 
         void TryConsumeCounterWindow()
         {
-            if (EquippedProfile == null || EquippedProfile.Passive.Id != "karsi_saldiri" || _clock == null)
+            if (EquippedProfile == null || EquippedProfile.Passive.Kind != WeaponPassiveKind.KarsiSaldiri || _clock == null)
                 return;
             _weaponPassives.TryConsumeBlock(_clock.Director.WorldTimeMs);
         }
@@ -396,9 +396,9 @@ namespace Dovus.Game.Skills
             if (!peek)
                 WeaponIgnoresArmor = bonus.IgnoreArmor;
             float damage = mods.DamageMult * bonus.DamageMult;
-            if (bonus.CountsAsBackstab && EquippedProfile.Passive.Id == "sirt_vurusu")
+            if (bonus.CountsAsBackstab && EquippedProfile.Passive.Kind == WeaponPassiveKind.SirtVurusu)
                 damage *= EquippedProfile.Passive.DamageMult;
-            if (bonus.CountsAsStill && EquippedProfile.Passive.Id == "sabit_nisan")
+            if (bonus.CountsAsStill && EquippedProfile.Passive.Kind == WeaponPassiveKind.SabitNisan)
                 damage *= EquippedProfile.Passive.DamageMult;
             return new WeaponPassiveMods(
                 damage,
@@ -427,7 +427,7 @@ namespace Dovus.Game.Skills
             bool enabled = isBasicStrike || _equippedWeapon.IsCompatibleWithVerb(verb);
             float sinceMoved = _clock == null ? 99f : (float)((_clock.Director.WorldTimeMs - _lastMovedMs) / 1000.0);
             int chain = 0;
-            if (profile.Passive.Id == "dolu_sayfa" && _clock != null)
+            if (profile.Passive.Kind == WeaponPassiveKind.DoluSayfa && _clock != null)
                 chain = _weaponPassives.EffectiveChain(
                     _clock.Director.WorldTimeMs, profile.Passive.ChainGapSec);
             var query = new WeaponPassiveQuery(
