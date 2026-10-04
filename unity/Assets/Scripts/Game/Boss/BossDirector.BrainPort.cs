@@ -76,7 +76,7 @@ namespace Dovus.Game.Boss
             public float AttackRadiusM => _d.AttackRadiusM;
 
             public bool IsPounceAirborne =>
-                _d._pounceLeapActive && _d._attack != null && _d._attack.Kind == BossAttackKind.Pounce;
+                _d._poiseState.PounceLeapActive && _d._attack != null && _d._attack.Kind == BossAttackKind.Pounce;
 
             public void ResolveStrike() => _d.ResolveStrike();
 
