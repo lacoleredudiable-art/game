@@ -113,7 +113,7 @@ namespace Dovus.Game.Hud
             if (ms > _windowWorstMs)
                 _windowWorstMs = ms;
 
-            float sample = Mathf.Max(HudDefaults.RecoveryCutHoldFillThreshold, _tuning.Hud.FrameTimeSampleSec);
+            float sample = Mathf.Max(HudDefaults.FrameTimeSampleMinSec, _tuning.Hud.FrameTimeSampleSec);
             if (_windowSec < sample || _windowFrames == 0)
                 return;
 

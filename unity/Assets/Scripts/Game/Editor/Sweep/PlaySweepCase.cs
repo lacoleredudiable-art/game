@@ -37,6 +37,7 @@ using UnityEngine.PlayerLoop;
 
 namespace Dovus.Game.Editor
 {
+    /// <summary>Tek cast: fiil + sıfat, boss'a merkez mesafesi, silah.</summary>
     public sealed class PlaySweepCase
     {
         public int Verb;

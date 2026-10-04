@@ -15,5 +15,6 @@ namespace Dovus.Game.Hud
         public const float StatusIconInsetMult = 0.14f;
         public const float FlashFadeMinSec = 0.01f;
         public const int FrameTimeHudStringCapacity = 64;
+        public const float FrameTimeSampleMinSec = 0.05f;
     }
 }
