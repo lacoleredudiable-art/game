@@ -294,9 +294,14 @@ public class JsonEffectCoverageTests
     {
         if (File.ReadAllText(path).Contains(token, StringComparison.Ordinal))
             return true;
+        string dir = Path.GetDirectoryName(path)!;
+        string stem = Path.GetFileNameWithoutExtension(path).Split('.')[0];
+        if (Directory.GetFiles(dir, $"{stem}*.cs")
+            .Any(f => !string.Equals(f, path, StringComparison.OrdinalIgnoreCase)
+                      && File.ReadAllText(f).Contains(token, StringComparison.Ordinal)))
+            return true;
         if (!path.Replace('\\', '/').Contains("/Game/Skills/Mechanics/", StringComparison.Ordinal))
             return false;
-        string dir = Path.GetDirectoryName(path)!;
         return Directory.GetFiles(dir, "*.cs").Any(f => File.ReadAllText(f).Contains(token, StringComparison.Ordinal));
     }
 
