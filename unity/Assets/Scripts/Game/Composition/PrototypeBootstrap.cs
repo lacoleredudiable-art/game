@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Boss;
+using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
 using Dovus.Core.Casting;
@@ -19,17 +19,17 @@ using UnityEngine;
 namespace Dovus.Game.Composition
 {
     /// <summary>
-    /// Tek sahne kÃ¶kÃ¼: arena, oyuncu, boss, kamera ve Ä±ÅŸÄ±ÄŸÄ± Ã§alÄ±ÅŸma anÄ±nda kurar.
+    /// Tek sahne kökü: arena, oyuncu, boss, kamera ve ışığı çalışma anında kurar.
     /// </summary>
     public sealed class PrototypeBootstrap : MonoBehaviour
     {
         [SerializeField] PrototypeTuning _tuning = new();
 
-        [Header("GÃ¶rsel prefab (Asset Store â€” boÅŸsa kapsÃ¼l)")]
+        [Header("Görsel prefab (Asset Store — boşsa kapsül)")]
         [SerializeField] GameObject _playerVisualPrefab;
         [SerializeField] GameObject _bossVisualPrefab;
 
-        [Header("v6 build (ana_classes_80 id + 0-2 pasif rÃ¼n id)")]
+        [Header("v6 build (ana_classes_80 id + 0-2 pasif rün id)")]
         [SerializeField, Min(1)] int _prototypeMainClassId = 1;
         [SerializeField] int[] _prototypePassiveRuneIds = new int[0];
 

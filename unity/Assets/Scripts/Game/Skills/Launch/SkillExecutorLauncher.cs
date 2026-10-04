@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Boss;
+using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
 using Dovus.Core.Casting;
@@ -282,7 +282,7 @@ namespace Dovus.Game.Skills.Launch
             if (kind == SkillExecutorKind.Summon)
                 _host.ApplySpawnIFrame(skill);
             executor.Execute(context);
-            DebugConfig.DevLog($"[SkillExecutor] {skill.SkillId} â†’ {kind} r={radius:0.##} menzil={range:0.##} sÃ¼re={durationSec:0.##} x{effectMult:0.##}");
+            DebugConfig.DevLog($"[SkillExecutor] {skill.SkillId} → {kind} r={radius:0.##} menzil={range:0.##} süre={durationSec:0.##} x{effectMult:0.##}");
             return true;
         }
     }

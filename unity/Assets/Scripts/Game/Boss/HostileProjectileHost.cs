@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Boss;
+using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
 using Dovus.Core.Casting;
@@ -16,11 +16,11 @@ using UnityEngine.Rendering;
 namespace Dovus.Game.Boss
 {
     /// <summary>
-    /// DÃ¼ÅŸman mermilerinin dÃ¼nyadaki tek sahibi: saf <see cref="HostileProjectiles"/>'Ä± GameClock dÃ¼nya
-    /// saatiyle ilerletir, havuzlu collider'sÄ±z kÃ¼re Ã§izer, dostlarla dÃ¼z daire Ã§arpÄ±ÅŸmasÄ± yapar.
-    /// Oyuncu: dodge ya da skill i-frame'i aÃ§Ä±kken mermi geÃ§er; yoksa ActorStatus.ApplyDamage(dodgeable:false).
-    /// Dost: HostileTargets hasar geri Ã§aÄŸrÄ±sÄ± (ally_damage_mult orada). Yem: mermiyi emer ve Ã¶lÃ¼r.
-    /// Geri gÃ¶nderilmiÅŸ (takÄ±m 0) mermi boss'a Ã§arpar, hasar ReflectSink'ten (MD.ApplyReflectedDamage).
+    /// Düşman mermilerinin dünyadaki tek sahibi: saf <see cref="HostileProjectiles"/>'ı GameClock dünya
+    /// saatiyle ilerletir, havuzlu collider'sız küre çizer, dostlarla düz daire çarpışması yapar.
+    /// Oyuncu: dodge ya da skill i-frame'i açıkken mermi geçer; yoksa ActorStatus.ApplyDamage(dodgeable:false).
+    /// Dost: HostileTargets hasar geri çağrısı (ally_damage_mult orada). Yem: mermiyi emer ve ölür.
+    /// Geri gönderilmiş (takım 0) mermi boss'a çarpar, hasar ReflectSink'ten (MD.ApplyReflectedDamage).
     /// </summary>
     public sealed class HostileProjectileHost : MonoBehaviour
     {
@@ -40,9 +40,9 @@ namespace Dovus.Game.Boss
         double _lastMs = -1;
         static Material _coreMat;
 
-        // ff-4: "oyuncunun yanÄ±ndaki solid yeÅŸil top'lar" â€” bu mermiler (boss volley). DÃ¼z
-        // doygun kÃ¼reler Ã§ok yÃ¼ksek sesliydi; artÄ±k koyu kor Ã§ekirdek + sÄ±cak yumuÅŸak hale +
-        // yerde soluk gÃ¶lge/halka (gri dÃ¼nya, sÄ±cak vurgu kuralÄ± â€” bkz. AGENTS.md "Art rule").
+        // ff-4: "oyuncunun yanındaki solid yeşil top'lar" — bu mermiler (boss volley). Düz
+        // doygun küreler çok yüksek sesliydi; artık koyu kor çekirdek + sıcak yumuşak hale +
+        // yerde soluk gölge/halka (gri dünya, sıcak vurgu kuralı — bkz. AGENTS.md "Art rule").
         const float CoreScale = 0.45f;
         const float GlowScale = 1.3f;
         const float ShadowScale = 1f;
@@ -51,13 +51,13 @@ namespace Dovus.Game.Boss
 
         public HostileProjectiles Sim { get; } = new HostileProjectiles();
 
-        /// <summary>TakÄ±m 0 mermisi boss'a Ã§arptÄ±: ham hasar (MD yansÄ±ma Ã§arpanÄ±nÄ± uygular).</summary>
+        /// <summary>Takım 0 mermisi boss'a çarptı: ham hasar (MD yansıma çarpanını uygular).</summary>
         public Action<float> ReflectSink { get; set; }
 
         /// <summary>Sis perdesi: bu noktadaki dost mermiyle vurulamaz (MD.Projectiles doldurur).</summary>
         public Func<Vector3, bool> InShroud { get; set; }
 
-        /// <summary>Boss volley mermisi oyuncuya isabet ettikten sonra (hasar uygulandÄ±ktan sonra).</summary>
+        /// <summary>Boss volley mermisi oyuncuya isabet ettikten sonra (hasar uygulandıktan sonra).</summary>
         public Action OnPlayerProjectileHit { get; set; }
 
         public void Bind(
@@ -165,7 +165,7 @@ namespace Dovus.Game.Boss
         {
             if (e.Kind is ProjectileEventKind.Spawned or ProjectileEventKind.Expired or ProjectileEventKind.Cleared)
                 return;
-            DebugConfig.DevLog($"[Mechanic] json mermi {e.Kind} #{e.Id} ({e.X:0.#},{e.Z:0.#}) canlÄ±={Sim.AliveCount}");
+            DebugConfig.DevLog($"[Mechanic] json mermi {e.Kind} #{e.Id} ({e.X:0.#},{e.Z:0.#}) canlı={Sim.AliveCount}");
         }
 
         void SyncViews()
@@ -238,8 +238,8 @@ namespace Dovus.Game.Boss
             glowR.sharedMaterial = PresentationParticleMaterials.AdditiveTextured;
             _glowViews[slot] = glow.transform;
 
-            // Yerde soluk gÃ¶lge/halka â€” kamera aÃ§Ä±lÄ± olduÄŸundan yÃ¼zen Ã§ekirdek/hale her zaman
-            // tam isabet yarÄ±Ã§apÄ±nÄ± okutmaz; bu sabit yere yakÄ±n disk okunabilirliÄŸi garantiler.
+            // Yerde soluk gölge/halka — kamera açılı olduğundan yüzen çekirdek/hale her zaman
+            // tam isabet yarıçapını okutmaz; bu sabit yere yakın disk okunabilirliği garantiler.
             var shadow = new GameObject("Shadow");
             shadow.transform.SetParent(root.transform, false);
             shadow.transform.localPosition = Vector3.down * (ProjectileFlightY - ShadowGroundY);
@@ -267,8 +267,8 @@ namespace Dovus.Game.Boss
         }
 
         /// <summary>
-        /// DesatÃ¼re edilmiÅŸ uÃ§uÅŸ rengi: dÃ¼ÅŸman (gerÃ§ek hasar) sÄ±cak kor vurgusu alÄ±r (grey dÃ¼nya,
-        /// sÄ±cak vurgu kuralÄ± â€” lav/VFX); dost (yansÄ±tÄ±lmÄ±ÅŸ, takÄ±m 0) soÄŸuk/soluk, zararsÄ±z nÃ¶tr gri.
+        /// Desatüre edilmiş uçuş rengi: düşman (gerçek hasar) sıcak kor vurgusu alır (grey dünya,
+        /// sıcak vurgu kuralı — lav/VFX); dost (yansıtılmış, takım 0) soğuk/soluk, zararsız nötr gri.
         /// </summary>
         static (Color core, Color glow) TintFor(byte team, bool harmless)
         {

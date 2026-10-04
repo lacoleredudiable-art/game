@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Boss;
+using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
 using Dovus.Core.Casting;
@@ -14,9 +14,9 @@ using UnityEngine;
 namespace Dovus.Game.Actors
 {
     /// <summary>
-    /// Oyuncu mana havuzu â€” PlayerVitals'a paralel (HP'ye dokunmaz).
-    /// docs/element-sistemi.json global_rules.resource_system varsayÄ±lanlarÄ±.
-    /// BaÄŸlama 2: Consume yetersizse 0'a kilitler. BaÄŸlama 3: CanAfford + EnforceResourceCost.
+    /// Oyuncu mana havuzu — PlayerVitals'a paralel (HP'ye dokunmaz).
+    /// docs/element-sistemi.json global_rules.resource_system varsayılanları.
+    /// Bağlama 2: Consume yetersizse 0'a kilitler. Bağlama 3: CanAfford + EnforceResourceCost.
     /// </summary>
     public sealed class PlayerResource : MonoBehaviour
     {
@@ -36,20 +36,20 @@ namespace Dovus.Game.Actors
             _tracker = new ResourceTracker(maxMana, regenPerSec, regenDelayAfterCastSec);
         }
 
-        /// <summary>DÃ¼nya saati â€” duraklatma/hit-stop'ta mana yenilenmez (fail-safe: baÄŸlanmazsa kare saati).</summary>
+        /// <summary>Dünya saati — duraklatma/hit-stop'ta mana yenilenmez (fail-safe: bağlanmazsa kare saati).</summary>
         public void BindClock(GameClock clock)
         {
             if (clock != null)
                 _clock = clock.World;
         }
 
-        /// <summary>CombatTuning.EnforceResourceCost kapÄ±sÄ± â€” tracker yoksa true (fail-open).</summary>
+        /// <summary>CombatTuning.EnforceResourceCost kapısı — tracker yoksa true (fail-open).</summary>
         public bool CanAfford(float cost) => _tracker == null || _tracker.CanAfford(cost);
 
-        /// <summary>Cast maliyeti â€” engellemez; yetmezse 0. (BaÄŸlama 2 bang yolu.)</summary>
+        /// <summary>Cast maliyeti — engellemez; yetmezse 0. (Bağlama 2 bang yolu.)</summary>
         public void Consume(float cost) => Consume(cost, false);
 
-        /// <summary>BÃ¼yÃ¼ KitabÄ± deÄŸiÅŸtirme bonusu: freeCast ise mana dÃ¼ÅŸmez.</summary>
+        /// <summary>Büyü Kitabı değiştirme bonusu: freeCast ise mana düşmez.</summary>
         public void Consume(float cost, bool freeCast) =>
             WeaponManaWaiver.Charge(_tracker, cost, freeCast);
 

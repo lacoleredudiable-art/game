@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Boss;
+using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
 using Dovus.Core.Casting;
@@ -18,9 +18,9 @@ using UnityEngine;
 namespace Dovus.Game.Composition.Builders
 {
     /// <summary>
-    /// Oyuncu + dost + boss zinciri. Nesne oluÅŸturma ve AddComponent SIRASI eski
-    /// PrototypeBootstrap.BuildWorld ile birebir aynÄ±dÄ±r (oyuncu/boss bileÅŸenleri iÃ§ iÃ§e;
-    /// Awake/OnEnable sÄ±rasÄ± ve Ã¶rnek kimlikleri buna baÄŸlÄ±) â€” sÄ±rayÄ± deÄŸiÅŸtirme.
+    /// Oyuncu + dost + boss zinciri. Nesne oluşturma ve AddComponent SIRASI eski
+    /// PrototypeBootstrap.BuildWorld ile birebir aynıdır (oyuncu/boss bileşenleri iç içe;
+    /// Awake/OnEnable sırası ve örnek kimlikleri buna bağlı) — sırayı değiştirme.
     /// </summary>
     public sealed class ActorsBuilder
     {
@@ -89,7 +89,7 @@ namespace Dovus.Game.Composition.Builders
                 CompositionConstants.BossRadiusM,
                 CompositionConstants.BossHeightM,
                 tuning.Visuals.BossColor);
-            // SkillExecutor overlap/projectile yolu iÃ§in gerÃ§ek fizik hedefi.
+            // SkillExecutor overlap/projectile yolu için gerçek fizik hedefi.
             var bossHitCollider = ctx.Boss.AddComponent<CapsuleCollider>();
             bossHitCollider.isTrigger = true;
             VisualAttach.Attach(

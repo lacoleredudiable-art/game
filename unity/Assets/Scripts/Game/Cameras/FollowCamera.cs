@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Boss;
+using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
 using Dovus.Core.Casting;
@@ -16,7 +16,7 @@ using UnityEngine;
 namespace Dovus.Game.Cameras
 {
     /// <summary>
-    /// YumuÅŸak takip + hafif Ã¶nden bakÄ±ÅŸ. T8 sarsÄ±ntÄ±/yumruk iÃ§in AddShake API'si.
+    /// Yumuşak takip + hafif önden bakış. T8 sarsıntı/yumruk için AddShake API'si.
     /// </summary>
     public sealed class FollowCamera : MonoBehaviour
     {
@@ -55,38 +55,38 @@ namespace Dovus.Game.Cameras
         float _lastLockOnOverlapPct = 1f;
         static readonly RaycastHit[] CollisionHits = new RaycastHit[8];
 
-        /// <summary>Son karede pivotâ†’istenen mesafe ekseninde scenery Ã§ekiÅŸi (m).</summary>
+        /// <summary>Son karede pivot→istenen mesafe ekseninde scenery çekişi (m).</summary>
         public float CollisionPulledInM => _collisionPulledInM;
 
-        /// <summary>Lock-on: oyuncu ekran dikdÃ¶rtgeninin boss Ã¶rtÃ¼sÃ¼ne gÃ¶re gÃ¶rÃ¼nÃ¼r oranÄ± (0â€“1).</summary>
+        /// <summary>Lock-on: oyuncu ekran dikdörtgeninin boss örtüsüne göre görünür oranı (0–1).</summary>
         public float LockOnPlayerVisibleRatio => _lastLockOnOverlapPct;
 
-        /// <summary>GÃ¶rsel hitstop sÄ±rasÄ±nda kamera takibini dondur (simÃ¼lasyon saati deÄŸil).</summary>
+        /// <summary>Görsel hitstop sırasında kamera takibini dondur (simülasyon saati değil).</summary>
         public float VisualHoldUntilUnscaled { get; set; }
 
         /// <summary>
-        /// 16 EylÃ¼l: "kamera sabit, dÃ¶ndÃ¼remiyorum" bug raporu. Oyuncu etrafÄ±nda yatay dÃ¶nÃ¼ÅŸ â€”
-        /// CombatFeel/Â§8 tuning'e dokunmadan; 0 iken davranÄ±ÅŸ birebir eskisiyle aynÄ± (T8/T8.1
-        /// tuning'i bozmuyoruz). <see cref="CameraOrbitInput"/> tarafÄ±ndan sÃ¼rÃ¼lÃ¼r.
+        /// 16 Eylül: "kamera sabit, döndüremiyorum" bug raporu. Oyuncu etrafında yatay dönüş —
+        /// CombatFeel/§8 tuning'e dokunmadan; 0 iken davranış birebir eskisiyle aynı (T8/T8.1
+        /// tuning'i bozmuyoruz). <see cref="CameraOrbitInput"/> tarafından sürülür.
         /// </summary>
         public float OrbitYawDeg { get; set; }
-        /// <summary>Omuz ofsetinin yatay eksende eÄŸimi (+ = kamera yÃ¼kselir, aÅŸaÄŸÄ± bakar). 0 = eski kadraj.</summary>
+        /// <summary>Omuz ofsetinin yatay eksende eğimi (+ = kamera yükselir, aşağı bakar). 0 = eski kadraj.</summary>
         public float OrbitPitchDeg { get; set; }
-        /// <summary>Kamera soft-lock'u uygulandÄ±ktan sonraki yaw; kamera-gÃ¶reli hareket bunu kullanÄ±r.</summary>
+        /// <summary>Kamera soft-lock'u uygulandıktan sonraki yaw; kamera-göreli hareket bunu kullanır.</summary>
         public float MovementYawDeg => _resolvedYawDeg;
 
-        /// <summary>YumuÅŸatÄ±lmÄ±ÅŸ geri Ã§ekilme mesafesi (doÄŸrulama / tuning paneli).</summary>
+        /// <summary>Yumuşatılmış geri çekilme mesafesi (doğrulama / tuning paneli).</summary>
         public float ResolvedDistanceM => _resolvedDistanceM;
 
-        /// <summary>0â€“1 windup geri Ã§ekilme karÄ±ÅŸÄ±mÄ±.</summary>
+        /// <summary>0–1 windup geri çekilme karışımı.</summary>
         public float WindupPullback01 => _windupPullback;
 
         /// <summary>
-        /// ff-4: gerÃ§ek lock-on durumu. KapalÄ±: oyuncu merkezli takip, alt Ã¼Ã§te bir, boss
-        /// menzildeyken yumuÅŸak yaw/Ã§erÃ§eve (<see cref="BossFramingWeight"/>). AÃ§Ä±k: bakÄ±ÅŸ
-        /// hedefi oyuncuâ€“boss orta noktasÄ± (boss baÅŸ yÃ¼ksekliÄŸi dahil), mesafe ayrÄ±ma gÃ¶re
-        /// bÃ¼yÃ¼r (lock-on min/max'e kenetli). Panel satÄ±rÄ±, Tab tuÅŸu (bkz. CameraOrbitInput) ve
-        /// yakalama API'si bunu deÄŸiÅŸtirir.
+        /// ff-4: gerçek lock-on durumu. Kapalı: oyuncu merkezli takip, alt üçte bir, boss
+        /// menzildeyken yumuşak yaw/çerçeve (<see cref="BossFramingWeight"/>). Açık: bakış
+        /// hedefi oyuncu–boss orta noktası (boss baş yüksekliği dahil), mesafe ayrıma göre
+        /// büyür (lock-on min/max'e kenetli). Panel satırı, Tab tuşu (bkz. CameraOrbitInput) ve
+        /// yakalama API'si bunu değiştirir.
         /// </summary>
         public bool LockOnActive { get; set; }
 
@@ -133,7 +133,7 @@ namespace Dovus.Game.Cameras
 
         void OnDisable() => UnhookBossDirector();
 
-        /// <summary>Karakter/VFX kÃ¶kleri spherecast'ten Ã§Ä±kar; layer mask bind'de kurulur.</summary>
+        /// <summary>Karakter/VFX kökleri spherecast'ten çıkar; layer mask bind'de kurulur.</summary>
         public void BindCollisionFiltering(Transform playerRoot, Transform bossRoot, Transform allyRoot = null)
         {
             var roots = new List<Transform>(3);
@@ -158,7 +158,7 @@ namespace Dovus.Game.Cameras
             }
         }
 
-        /// <summary>Boss windup telegrafÄ± â€” yalnÄ±z sunum; boss zamanlamasÄ±na dokunulmaz.</summary>
+        /// <summary>Boss windup telegrafı — yalnız sunum; boss zamanlamasına dokunulmaz.</summary>
         public void BindBossDirector(BossDirector director)
         {
             if (_bossDirector == director)
@@ -198,8 +198,8 @@ namespace Dovus.Game.Cameras
         }
 
         /// <summary>
-        /// SÄ±yÄ±rma/vurulma yumruÄŸu: FOV sÄ±Ã§ramasÄ±, kÄ±sa roll, sarsÄ±ntÄ±. Animasyon
-        /// Ã¶lÃ§eklenmemiÅŸ saatle sÃ¶ner â€” dÃ¼nya yavaÅŸken bile keskin (Â§8).
+        /// Sıyırma/vurulma yumruğu: FOV sıçraması, kısa roll, sarsıntı. Animasyon
+        /// ölçeklenmemiş saatle söner — dünya yavaşken bile keskin (§8).
         /// </summary>
         public void Punch(float fovKick, float rollDeg, float shakePx, float decay)
         {
@@ -208,12 +208,12 @@ namespace Dovus.Game.Cameras
             _punchT = 1f;
             _punchDecay = Mathf.Max(0.5f, decay);
             float duration = 2f / _punchDecay;
-            // Â§8 sarsÄ±ntÄ±yÄ± PÄ°KSEL veriyor, kamera METRE ile sarsÄ±lÄ±yor; dÃ¶nÃ¼ÅŸÃ¼m spec'te yok (T8.1).
+            // §8 sarsıntıyı PİKSEL veriyor, kamera METRE ile sarsılıyor; dönüşüm spec'te yok (T8.1).
             float pxToM = _tuning != null ? _tuning.Hud.CameraShakePxToM : 0.01f;
             AddShake(shakePx * pxToM, duration);
         }
 
-        /// <summary>SÃ¼ren daha gÃ¼Ã§lÃ¼ bir sarsÄ±ntÄ±yÄ± (Ã¶r. skill kick) ezmeden piksel sarsÄ±ntÄ± ekler.</summary>
+        /// <summary>Süren daha güçlü bir sarsıntıyı (ör. skill kick) ezmeden piksel sarsıntı ekler.</summary>
         public void AddShakePxAtLeast(float shakePx, float decay)
         {
             float pxToM = _tuning != null ? _tuning.Hud.CameraShakePxToM : 0.01f;
@@ -321,8 +321,8 @@ namespace Dovus.Game.Cameras
         float ResolveCameraDistance()
         {
             float distance = _tuning.Camera.CameraDistanceM;
-            // Mesafe bÃ¼yÃ¼mesi SADECE gerÃ§ek lock-on'da (ff-4) â€” menzil yakÄ±nlÄ±ÄŸÄ±yla deÄŸil,
-            // yoksa varsayÄ±lan == lock-on olur (eski bug).
+            // Mesafe büyümesi SADECE gerçek lock-on'da (ff-4) — menzil yakınlığıyla değil,
+            // yoksa varsayılan == lock-on olur (eski bug).
             if (LockOnActive && _bossTarget != null)
             {
                 Vector3 toBoss = _bossTarget.position - _target.position;
@@ -368,7 +368,7 @@ namespace Dovus.Game.Cameras
                 toBoss.y = 0f;
                 if (LockOnActive && toBoss.sqrMagnitude > 0.001f)
                 {
-                    // Lock-on: menzilden baÄŸÄ±msÄ±z tam yaw kenetleme (konum da boss'a dÃ¶ner).
+                    // Lock-on: menzilden bağımsız tam yaw kenetleme (konum da boss'a döner).
                     desired = Mathf.Atan2(toBoss.x, toBoss.z) * Mathf.Rad2Deg;
                 }
                 else
@@ -504,7 +504,7 @@ namespace Dovus.Game.Cameras
                 _tuning.Camera.CameraLockOnLookBlendToBoss);
             Quaternion rot = Quaternion.LookRotation(lookTarget - camPos, Vector3.up);
             Vector3 playerVp = WorldToViewport(rot, camPos, _target.position + Vector3.up * 0.9f);
-            // Oyuncu sol Ã¼Ã§te birde (+), boss Ã¼st yarÄ±da â€” skor.
+            // Oyuncu sol üçte birde (+), boss üst yarıda — skor.
             float playerSide = playerVp.x < 0.42f ? 1f : playerVp.x > 0.58f ? 0.35f : 0.7f;
             float playerLow = playerVp.y < 0.55f ? 1f : 0.5f;
             return playerSide * playerLow;

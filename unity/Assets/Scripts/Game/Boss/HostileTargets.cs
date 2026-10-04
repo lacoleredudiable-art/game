@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Boss;
+using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
 using Dovus.Core.Casting;
@@ -12,9 +12,9 @@ using UnityEngine;
 namespace Dovus.Game.Boss
 {
     /// <summary>
-    /// DÃ¼ÅŸman tarafÄ±nÄ±n (boss; sonra kÃ¼Ã§Ã¼k canavarlar) hedef alabileceÄŸi dostlarÄ±n kaydÄ±.
-    /// Oyuncu, dost kukla ve dikkat Ã§eken yemler buraya yazÄ±lÄ±r; seÃ§im saf
-    /// <see cref="TargetPicker"/>'da. Yok olan (Destroy edilmiÅŸ) dÃ¶nÃ¼ÅŸÃ¼mler kendiliÄŸinden dÃ¼ÅŸer.
+    /// Düşman tarafının (boss; sonra küçük canavarlar) hedef alabileceği dostların kaydı.
+    /// Oyuncu, dost kukla ve dikkat çeken yemler buraya yazılır; seçim saf
+    /// <see cref="TargetPicker"/>'da. Yok olan (Destroy edilmiş) dönüşümler kendiliğinden düşer.
     /// </summary>
     public sealed class HostileTargets : MonoBehaviour
     {
@@ -27,9 +27,9 @@ namespace Dovus.Game.Boss
             public Func<bool> Alive;
             public Func<bool> Stealthed;
             public Func<bool> Taunting;
-            /// <summary>Boss ham hasarÄ± (DamagePipeline Ã¶ncesi). Null: hasar almaz.</summary>
+            /// <summary>Boss ham hasarı (DamagePipeline öncesi). Null: hasar almaz.</summary>
             public Action<float> Damage;
-            /// <summary>Yem: vurulunca yok olur. Null: Ã¶ldÃ¼rÃ¼lemez.</summary>
+            /// <summary>Yem: vurulunca yok olur. Null: öldürülemez.</summary>
             public Action Kill;
 
             public bool IsAlive => Transform != null && (Alive == null || Alive());
@@ -91,12 +91,12 @@ namespace Dovus.Game.Boss
             return null;
         }
 
-        /// <summary>AÄŸÄ±rlÄ±klÄ± seÃ§im; roll01 Ã§aÄŸÄ±ranÄ±n tohumlu rastgelesinden. âˆ’1: geÃ§erli hedef yok.</summary>
+        /// <summary>Ağırlıklı seçim; roll01 çağıranın tohumlu rastgelesinden. −1: geçerli hedef yok.</summary>
         public int Pick(double roll01) => TargetPicker.Pick(Candidates(), Config, roll01);
 
         public bool ShouldRetarget(int currentId) => TargetPicker.ShouldRetarget(Candidates(), currentId, Config);
 
-        /// <summary>Tarama sondasÄ±: ÅŸu an dikkat Ã§eken canlÄ± bir yem var mÄ± (seÃ§im yem Ã¶nceliÄŸiyle bunu dÃ¶ndÃ¼rÃ¼r).</summary>
+        /// <summary>Tarama sondası: şu an dikkat çeken canlı bir yem var mı (seçim yem önceliğiyle bunu döndürür).</summary>
         public bool DecoyHoldsAggro()
         {
             int id = TargetPicker.Pick(Candidates(), Config, 0.5);

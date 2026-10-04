@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Input;
+using Dovus.Core.Input;
 using Dovus.Core.Element;
 using Dovus.Core.Grammar;
 using Dovus.Game.Config;
@@ -8,8 +8,8 @@ using UnityEngine;
 namespace Dovus.Game.Casting
 {
     /// <summary>
-    /// Her kaydedilen nokta: kÄ±sa titreÅŸim + Ã§alÄ±ÅŸma anÄ±nda Ã¼retilmiÅŸ hece sesi (Â§9).
-    /// Dosya baÄŸÄ±mlÄ±lÄ±ÄŸÄ± yok â€” AudioClip.Create. Hece adÄ± Core RuneInfo'dan.
+    /// Her kaydedilen nokta: kısa titreşim + çalışma anında üretilmiş hece sesi (§9).
+    /// Dosya bağımlılığı yok — AudioClip.Create. Hece adı Core RuneInfo'dan.
     /// </summary>
     public sealed class SyllableFeedback : MonoBehaviour
     {
@@ -18,15 +18,15 @@ namespace Dovus.Game.Casting
         readonly AudioClip[] _clips = new AudioClip[7]; // index 1..6
         AudioClip _denyClip;
 
-        // Frekanslar spec'te yok; hece adÄ±/sÄ±rasÄ± RuneInfo'dan gelir.
+        // Frekanslar spec'te yok; hece adı/sırası RuneInfo'dan gelir.
         static readonly float[] BaseHz =
         {
             0f,
-            440f, // 1 AteÅŸ
-            494f, // 2 AydÄ±nlÄ±k
-            370f, // 3 YÄ±ldÄ±rÄ±m
+            440f, // 1 Ateş
+            494f, // 2 Aydınlık
+            370f, // 3 Yıldırım
             330f, // 4 Su
-            294f, // 5 KaranlÄ±k
+            294f, // 5 Karanlık
             262f  // 6 Toprak
         };
 
@@ -57,7 +57,7 @@ namespace Dovus.Game.Casting
                 Destroy(_denyClip);
         }
 
-        /// <summary>dotIndex 1..6; sentenceDotsAfter = cÃ¼mledeki nokta sayÄ±sÄ± (perde yÃ¼kselir).</summary>
+        /// <summary>dotIndex 1..6; sentenceDotsAfter = cümledeki nokta sayısı (perde yükselir).</summary>
         public void PlayForDot(int dot, int sentenceDotsAfter, bool playHaptic = false)
         {
             if (dot < 1 || dot > HexagonLayout.DotCount || _clips[dot] == null)
@@ -73,7 +73,7 @@ namespace Dovus.Game.Casting
             FeelHaptics.Pulse((int)ms);
         }
 
-        /// <summary>BaÄŸlama 3: yetersiz mana â€” dÃ¼ÅŸÃ¼k kÄ±sa buzz (hece frekanslarÄ±ndan ayrÄ±).</summary>
+        /// <summary>Bağlama 3: yetersiz mana — düşük kısa buzz (hece frekanslarından ayrı).</summary>
         public void PlayDenied()
         {
             if (_source == null)
@@ -97,7 +97,7 @@ namespace Dovus.Game.Casting
             {
                 float t = i / (float)sampleRate;
                 float env = 1f - t / durationSec;
-                env *= env; // hÄ±zlÄ± sÃ¶nÃ¼m â€” hece tÄ±kÄ±rtÄ±sÄ±
+                env *= env; // hızlı sönüm — hece tıkırtısı
                 data[i] = Mathf.Sin(2f * Mathf.PI * hz * t) * env * 0.55f;
             }
 

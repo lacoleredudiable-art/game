@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Boss;
+using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
 using Dovus.Core.Casting;
@@ -18,8 +18,8 @@ using UnityEngine;
 namespace Dovus.Game.Vfx
 {
     /// <summary>
-    /// DÃ¶vÃ¼ÅŸ olaylarÄ±nÄ± efekt + sese baÄŸlar: boss windup/vuruÅŸ/kÃ¼kreme, dodge, perfect dodge,
-    /// oyuncu isabeti, UI dokunuÅŸu. YalnÄ±z dinler; oyun durumuna yazmaz.
+    /// Dövüş olaylarını efekt + sese bağlar: boss windup/vuruş/kükreme, dodge, perfect dodge,
+    /// oyuncu isabeti, UI dokunuşu. Yalnız dinler; oyun durumuna yazmaz.
     /// </summary>
     public sealed class PresentationFx : MonoBehaviour
     {
@@ -90,7 +90,7 @@ namespace Dovus.Game.Vfx
             }
             else if (kind == BossAttackKind.Volley)
             {
-                // Mermiler kendi gÃ¶rÃ¼nÃ¼r; ÅŸok dalgasÄ± Ã§izilmez.
+                // Mermiler kendi görünür; şok dalgası çizilmez.
                 SfxDirector.Play(SfxLibrary.BossFire);
             }
             else

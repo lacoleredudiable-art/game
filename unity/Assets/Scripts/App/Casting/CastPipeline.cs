@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
@@ -39,7 +39,7 @@ namespace Dovus.App.Casting
 
     public readonly struct CastOutcome
     {
-        // Unity'de Dovus.App ayrÄ± assembly: init iÃ§in IsExternalInit polyfill'i yok (Core'unki internal) â†’ ctor.
+        // Unity'de Dovus.App ayrı assembly: init için IsExternalInit polyfill'i yok (Core'unki internal) → ctor.
         public CastOutcome(
             string skillId,
             bool executorStarted,

@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Boss;
+using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
 using Dovus.Core.Casting;
@@ -19,13 +19,13 @@ using UnityEngine.UI;
 namespace Dovus.Game.Feel
 {
     /// <summary>
-    /// SÄ±yÄ±rma/vurulma hissi: hitstop, impact frame, vinyet, kamera yumruÄŸu.
-    /// Ekran katmanÄ± Overlay deÄŸil â€” Overlay kamera Ã¼zerinde Screen Space Camera (Â§10).
+    /// Sıyırma/vurulma hissi: hitstop, impact frame, vinyet, kamera yumruğu.
+    /// Ekran katmanı Overlay değil — Overlay kamera üzerinde Screen Space Camera (§10).
     ///
-    /// T8.1: kullanÄ±lmayan tam ekran katman KAPALI tutulur (alfa 0 bir Image yine de geometri
-    /// Ã¼retip harmanlanÄ±r â€” mobilde Ã¼Ã§ kat overdraw). Vinyet artÄ±k dÃ¼z dolgu deÄŸil kenardan
-    /// iÃ§eri sÃ¶nen bir maske: Â§10'un "telegraf en okunabilir katman" kuralÄ± iÃ§in ekranÄ±n
-    /// ortasÄ± aÃ§Ä±k kalmak zorunda. Renkler `PrototypeTuning`'den â€” ikinci kopya yok.
+    /// T8.1: kullanılmayan tam ekran katman KAPALI tutulur (alfa 0 bir Image yine de geometri
+    /// üretip harmanlanır — mobilde üç kat overdraw). Vinyet artık düz dolgu değil kenardan
+    /// içeri sönen bir maske: §10'un "telegraf en okunabilir katman" kuralı için ekranın
+    /// ortası açık kalmak zorunda. Renkler `PrototypeTuning`'den — ikinci kopya yok.
     /// </summary>
     public sealed class CombatFeel : MonoBehaviour
     {
@@ -55,7 +55,7 @@ namespace Dovus.Game.Feel
 
         public ExchangeResult? LastExchange { get; private set; }
 
-        /// <summary>Boss vuruÅŸu Ã§Ã¶zÃ¼ldÃ¼ (dodge / isabet / gÃ¼venli) â€” ses sunumu dinler.</summary>
+        /// <summary>Boss vuruşu çözüldü (dodge / isabet / güvenli) — ses sunumu dinler.</summary>
         public event System.Action<ExchangeResult> Exchanged;
 
         public void BindActors(HitFlash playerFlash, HitFlash bossFlash)
@@ -72,8 +72,8 @@ namespace Dovus.Game.Feel
         }
 
         /// <summary>
-        /// Oyuncu vuruÅŸu bossa deÄŸdi: gÃ¶rsel hitstop + sarsÄ±ntÄ± + kÄ±rmÄ±zÄ± gÃ¶vde parlamasÄ±.
-        /// Art arda isabetler <see cref="FeelTuning.BossHitHitstopMinGapMs"/> iÃ§inde hitstop yÄ±ÄŸmaz.
+        /// Oyuncu vuruşu bossa değdi: görsel hitstop + sarsıntı + kırmızı gövde parlaması.
+        /// Art arda isabetler <see cref="FeelTuning.BossHitHitstopMinGapMs"/> içinde hitstop yığmaz.
         /// </summary>
         public void OnBossStruck(bool isCrit, bool allowHitstop = true, string weaponArchetype = null)
         {
@@ -130,7 +130,7 @@ namespace Dovus.Game.Feel
             BuildCanvas(overlayCam);
         }
 
-        /// <summary>Windup tehdidi sÄ±cak telegraf rengiyle; ekran kenarÄ±nda, ortasÄ± aÃ§Ä±k.</summary>
+        /// <summary>Windup tehdidi sıcak telegraf rengiyle; ekran kenarında, ortası açık.</summary>
         public void ShowThreat(float progress01)
         {
             if (_threatFlash == null)
@@ -193,10 +193,10 @@ namespace Dovus.Game.Feel
                     $"[Feel2Verify] player-hit vignette={hold:0.00}s haptic={feel.PlayerHitHapticMs}ms shake={feel.ShakeHitPx}px");
             }
 
-            // Safe de yazÄ±lÄ±r (T8.1): dodge oyuncuyu etki hacminin dÄ±ÅŸÄ±na taÅŸÄ±dÄ±ÄŸÄ±nda ekranda
-            // hiÃ§bir ÅŸey olmamasÄ± "neden derece almadÄ±m" sorusunu cevapsÄ±z bÄ±rakÄ±yordu (Â§6).
+            // Safe de yazılır (T8.1): dodge oyuncuyu etki hacminin dışına taşıdığında ekranda
+            // hiçbir şey olmaması "neden derece almadım" sorusunu cevapsız bırakıyordu (§6).
             _hud?.NoteExchange(result);
-            // BÃ¼yÃ¼k tepki yazÄ±sÄ± kaldÄ±rÄ±ldÄ± (feel-2): MÃœKEMMEL / geÃ§ kaldÄ±n metni yok.
+            // Büyük tepki yazısı kaldırıldı (feel-2): MÜKEMMEL / geç kaldın metni yok.
             Exchanged?.Invoke(result);
         }
 
@@ -281,7 +281,7 @@ namespace Dovus.Game.Feel
             return img;
         }
 
-        /// <summary>Kenardan iÃ§eri sÃ¶nen maske: ekranÄ±n ortasÄ± (ve boss telegrafÄ±) aÃ§Ä±k kalÄ±r.</summary>
+        /// <summary>Kenardan içeri sönen maske: ekranın ortası (ve boss telegrafı) açık kalır.</summary>
         static Sprite CreateEdgeMaskSprite()
         {
             const int size = 64;

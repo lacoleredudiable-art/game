@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Boss;
+using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
 using Dovus.Core.Casting;
@@ -26,8 +26,8 @@ using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 namespace Dovus.Game.Casting
 {
     /// <summary>
-    /// SaÄŸ yarÄ± altÄ±gen Ã§izim girdisi + merkez tap (dÃ¼z vuruÅŸ / erken kapanÄ±ÅŸ) + altÄ±genin
-    /// dÄ±ÅŸÄ±ndaki dodge dÃ¼ÄŸmesi (Â§2). YalnÄ±zca Core motoruna bildirir.
+    /// Sağ yarı altıgen çizim girdisi + merkez tap (düz vuruş / erken kapanış) + altıgenin
+    /// dışındaki dodge düğmesi (§2). Yalnızca Core motoruna bildirir.
     /// </summary>
     public sealed class HexagonInput : MonoBehaviour
     {
@@ -39,18 +39,18 @@ namespace Dovus.Game.Casting
         PointerRouter _pointer;
         bool _eventsHooked;
 
-        /// <summary>Ä°kinci rÃ¼n hÃ¢lÃ¢ basÄ±lÄ±yken yÃ¼kleme fazÄ± bekler.</summary>
+        /// <summary>İkinci rün hâlâ basılıyken yükleme fazı bekler.</summary>
         public bool SkillFingerHeld => _session.Mode == FingerMode.Drawing;
 
-        /// <summary>Q tuÅŸu ve dokunmatik silah dÃ¼ÄŸmesi: silah deÄŸiÅŸtir (K3: KÃ¼re'de de).</summary>
+        /// <summary>Q tuşu ve dokunmatik silah düğmesi: silah değiştir (K3: Küre'de de).</summary>
         public event System.Action WeaponSwapRequested;
 
-        /// <summary>R tuÅŸu ve silah dÃ¼ÄŸmesinde uzun basma (KÃ¼re, JSON orb.hold_sec): kÃ¼reyi yollar ya da Ã§aÄŸÄ±rÄ±r.</summary>
+        /// <summary>R tuşu ve silah düğmesinde uzun basma (Küre, JSON orb.hold_sec): küreyi yollar ya da çağırır.</summary>
         public event System.Action OrbCommandRequested;
 
         /// <summary>
-        /// K3: silah dÃ¼ÄŸmesinin uzun basma komutu eÅŸiÄŸi (sn). 0 = yok â†’ dÃ¼ÄŸme basÄ±nca deÄŸiÅŸtirir.
-        /// KÃ¼re kuÅŸanÄ±lÄ±yken JSON orb.hold_sec (0,4).
+        /// K3: silah düğmesinin uzun basma komutu eşiği (sn). 0 = yok → düğme basınca değiştirir.
+        /// Küre kuşanılıyken JSON orb.hold_sec (0,4).
         /// </summary>
         public System.Func<float> SwapHoldCommandSec
         {
@@ -58,7 +58,7 @@ namespace Dovus.Game.Casting
             set => _session.SwapHoldCommandSec = value;
         }
 
-        /// <summary>Dodge kabul edildi. SÃ¼ren skill kesilir, kalÄ±p konumu hemen bÄ±rakÄ±lÄ±r.</summary>
+        /// <summary>Dodge kabul edildi. Süren skill kesilir, kalıp konumu hemen bırakılır.</summary>
         public event System.Action SkillCancelledByDodge;
 
         public PrototypeTuning Tuning
@@ -85,22 +85,22 @@ namespace Dovus.Game.Casting
         public DodgeState Dodge => _session.Dodge;
         public DodgeChargeBank Charges => _session.Charges;
 
-        /// <summary>Motor bir dokunuÅŸu kabul etti (0 = merkez dÃ¼z vuruÅŸ). YalnÄ±z UI juice iÃ§in.</summary>
+        /// <summary>Motor bir dokunuşu kabul etti (0 = merkez düz vuruş). Yalnız UI juice için.</summary>
         public event System.Action<int> DotAccepted;
 
-        /// <summary>Ã‡izim geri bildirimi yazÄ±sÄ± (metin, tanÄ±ndÄ± mÄ±) â€” HexagonView altÄ±genin Ã¼stÃ¼nde gÃ¶sterir.</summary>
+        /// <summary>Çizim geri bildirimi yazısı (metin, tanındı mı) — HexagonView altıgenin üstünde gösterir.</summary>
         public event System.Action<string, bool> DrawCaption;
 
-        /// <summary>16 EylÃ¼l: CameraOrbitInput'un "bu parmak zaten Ã§iziyor/dodge'a ait" kontrolÃ¼ iÃ§in.</summary>
+        /// <summary>16 Eylül: CameraOrbitInput'un "bu parmak zaten çiziyor/dodge'a ait" kontrolü için.</summary>
         public int? ClaimedFingerId => _session.FingerId;
         public int? ClaimedDodgeFingerId => _session.DodgeFingerId;
 
-        /// <summary>Ã–lÃ¼ oyuncu yazamaz ve dodge atamaz (T8.1).</summary>
+        /// <summary>Ölü oyuncu yazamaz ve dodge atamaz (T8.1).</summary>
         public void BindVitals(PlayerVitals vitals) => _session.Vitals = vitals;
 
         public void BindStatus(ActorStatus status) => _session.Status = status;
 
-        /// <summary>state_machine.player_states â€” Ã§izim/dodge kapÄ±sÄ±.</summary>
+        /// <summary>state_machine.player_states — çizim/dodge kapısı.</summary>
         public void BindPlayerStates(PlayerStateMachine states, System.Func<bool> isCasting = null)
         {
             _session.PlayerStates = states;
@@ -108,13 +108,13 @@ namespace Dovus.Game.Casting
         }
 
         /// <summary>
-        /// Ä°kinci rÃ¼n motora verilmeden hedef/menzil kontrolÃ¼. false ise cÃ¼mle ilk rÃ¼nde
-        /// kalÄ±r; mana ve cooldown kapanÄ±ÅŸta harcanmadÄ±ÄŸÄ± iÃ§in reddedilen cast Ã¼cretsizdir.
+        /// İkinci rün motora verilmeden hedef/menzil kontrolü. false ise cümle ilk ründe
+        /// kalır; mana ve cooldown kapanışta harcanmadığı için reddedilen cast ücretsizdir.
         /// </summary>
         public void BindSkillTargetGate(System.Func<SkillResolution, bool> gate) =>
             _session.SkillTargetGate = gate;
 
-        /// <summary>BaÄŸlama 3: EnforceResourceCost kapÄ±sÄ± + yetersiz mana readout.</summary>
+        /// <summary>Bağlama 3: EnforceResourceCost kapısı + yetersiz mana readout.</summary>
         public void BindResource(PlayerResource resource, ReactionReadout readout, SkillMotor skills = null)
         {
             _session.Resource = resource;
@@ -122,7 +122,7 @@ namespace Dovus.Game.Casting
             _session.Skills = skills;
         }
 
-        /// <summary>BaÄŸlama 4: EnforceCooldown kapÄ±sÄ± + soÄŸuma readout (dodge'a dokunmaz).</summary>
+        /// <summary>Bağlama 4: EnforceCooldown kapısı + soğuma readout (dodge'a dokunmaz).</summary>
         public void BindCooldown(PlayerCooldown cooldown, ReactionReadout readout = null, SkillMotor skills = null)
         {
             _session.Cooldown = cooldown;
@@ -143,8 +143,8 @@ namespace Dovus.Game.Casting
         }
 
         /// <summary>
-        /// v6 ladder smoke path: aynÄ± SentenceEngine event zincirinden iki rÃ¼n cast eder.
-        /// ManifestationDirector normal cast gibi alÄ±r; ayrÄ± hasar/skill yolu yoktur.
+        /// v6 ladder smoke path: aynı SentenceEngine event zincirinden iki rün cast eder.
+        /// ManifestationDirector normal cast gibi alır; ayrı hasar/skill yolu yoktur.
         /// </summary>
         public bool TryDebugCastSkill(int verbRuneId, int adjectiveRuneId)
         {
@@ -305,8 +305,8 @@ namespace Dovus.Game.Casting
         }
 
         /// <summary>
-        /// BaÄŸlama 3â€“4 / MCP: cÃ¼mle baÅŸlatma kapÄ±sÄ±. true = devam, false = reddedildi
-        /// (readout + deny sesi zaten gÃ¶sterildi). Dodge / recovery'ye dokunmaz.
+        /// Bağlama 3–4 / MCP: cümle başlatma kapısı. true = devam, false = reddedildi
+        /// (readout + deny sesi zaten gösterildi). Dodge / recovery'ye dokunmaz.
         /// </summary>
         public bool TryAllowSentenceStart(int verbDot)
         {
@@ -314,14 +314,14 @@ namespace Dovus.Game.Casting
             return _gate.TryAllowSentenceStart(verbDot);
         }
 
-        /// <summary>Hedef seÃ§imi, altÄ±gen/dodge/swap tap'lerini dÃ¼nya tap'i saymasÄ±n.</summary>
+        /// <summary>Hedef seçimi, altıgen/dodge/swap tap'lerini dünya tap'i saymasın.</summary>
         public bool IsCombatControlAt(Vector2 pos)
         {
             EnsureServices();
             return _pointer.IsCombatControlAt(pos);
         }
 
-        /// <summary>Sol yarÄ± sanal Ã§ubuktur; oradaki dokunuÅŸ hedef seÃ§mez.</summary>
+        /// <summary>Sol yarı sanal çubuktur; oradaki dokunuş hedef seçmez.</summary>
         public bool IsStickHalf(Vector2 pos)
         {
             EnsureServices();

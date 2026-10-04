@@ -1,4 +1,4 @@
-﻿using Dovus.App.Boss;
+using Dovus.App.Boss;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
@@ -185,8 +185,8 @@ namespace Dovus.Game.Boss
                 }
 
                 DebugConfig.DevLog(
-                    $"[Boss] Zehir TÃ¼kÃ¼rÃ¼ÄŸÃ¼ {layout.Count} mermi yelpaze {spread:0}Â°"
-                    + (blind ? " (kÃ¶r)" : "")
+                    $"[Boss] Zehir Tükürüğü {layout.Count} mermi yelpaze {spread:0}°"
+                    + (blind ? " (kör)" : "")
                     + $" hedef={_d.CurrentTargetKind}");
             }
 

@@ -1,4 +1,4 @@
-﻿using Dovus.App.Casting;
+using Dovus.App.Casting;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
@@ -94,12 +94,12 @@ namespace Dovus.Game.Skills.Closing
             bool selfDown = playerVitals != null && playerVitals.IsDown;
             if ((preferAlly && !allyNeeds) || (preferSelf && !selfNeeds))
             {
-                _host.Readout?.NoteSkill(skill.DisplayName, preferSelf && selfDown ? "dÃ¼ÅŸtÃ¼" : "zaten full", new Color(0.7f, 0.9f, 0.75f));
+                _host.Readout?.NoteSkill(skill.DisplayName, preferSelf && selfDown ? "düştü" : "zaten full", new Color(0.7f, 0.9f, 0.75f));
                 return;
             }
             if (!allyNeeds && !selfNeeds)
             {
-                _host.Readout?.NoteSkill(skill.DisplayName, selfDown ? "dÃ¼ÅŸtÃ¼" : "zaten full", new Color(0.7f, 0.9f, 0.75f));
+                _host.Readout?.NoteSkill(skill.DisplayName, selfDown ? "düştü" : "zaten full", new Color(0.7f, 0.9f, 0.75f));
                 _host.ApplyHealOverflow(skill, amount, 0, false);
                 return;
             }

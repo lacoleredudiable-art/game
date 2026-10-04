@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Boss;
+using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Casting;
 using Dovus.Core.Status;
@@ -12,9 +12,9 @@ using UnityEngine.InputSystem;
 namespace Dovus.Game.DevTools
 {
     /// <summary>
-    /// Play denemesi: yerde bir uyarÄ± doÄŸar, sÃ¼re bitince oyuncuya vuruÅŸ gelir.
-    /// F8 daire. MenÃ¼ koni / ÅŸerit ve "sÄ±yrÄ±labilir" bayraÄŸÄ±nÄ± seÃ§er.
-    /// Hasar 22 â€” PlayerVitals baÅŸlÄ±ÄŸÄ±ndaki spec Ã§akmasÄ±. BossTuning.Damage ÅŸu an 0.
+    /// Play denemesi: yerde bir uyarı doğar, süre bitince oyuncuya vuruş gelir.
+    /// F8 daire. Menü koni / şerit ve "sıyrılabilir" bayrağını seçer.
+    /// Hasar 22 — PlayerVitals başlığındaki spec çakması. BossTuning.Damage şu an 0.
     /// </summary>
     public sealed class DodgePractice : MonoBehaviour
     {
@@ -57,12 +57,12 @@ namespace Dovus.Game.DevTools
                 return;
 #endif
             GUI.Box(new Rect(8f, 72f, 210f, 132f), "Dodge deneme");
-            _dodgeable = GUI.Toggle(new Rect(16f, 98f, 190f, 22f), _dodgeable, "SÄ±yrÄ±labilir");
+            _dodgeable = GUI.Toggle(new Rect(16f, 98f, 190f, 22f), _dodgeable, "Sıyrılabilir");
             if (GUI.Button(new Rect(16f, 122f, 190f, 22f), "Daire (F8)"))
                 Spawn(TelegraphShape.Circle);
             if (GUI.Button(new Rect(16f, 146f, 92f, 22f), "Koni"))
                 Spawn(TelegraphShape.Cone);
-            if (GUI.Button(new Rect(114f, 146f, 92f, 22f), "Åerit"))
+            if (GUI.Button(new Rect(114f, 146f, 92f, 22f), "Şerit"))
                 Spawn(TelegraphShape.Line);
         }
 

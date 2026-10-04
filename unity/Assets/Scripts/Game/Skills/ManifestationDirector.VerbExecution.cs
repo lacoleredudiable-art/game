@@ -1,4 +1,4 @@
-﻿using Dovus.App.Casting;
+using Dovus.App.Casting;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
@@ -20,8 +20,8 @@ using UnityEngine;
 namespace Dovus.Game.Skills
 {
     /// <summary>
-    /// v6 fiil executor'larÄ±nÄ±n JSON verisi (hitbox_vfx.fiil_hitbox, mobility_cc.i_frame),
-    /// cast anÄ±ndaki kendine etkiler (reflect / damage buff) ve Kopyalama/SÄ±Ã§rama tekrarlarÄ±.
+    /// v6 fiil executor'larının JSON verisi (hitbox_vfx.fiil_hitbox, mobility_cc.i_frame),
+    /// cast anındaki kendine etkiler (reflect / damage buff) ve Kopyalama/Sıçrama tekrarları.
     /// </summary>
     public sealed partial class ManifestationDirector
     {
@@ -77,7 +77,7 @@ namespace Dovus.Game.Skills
             ReflectFromWorldVolumes(incomingDamage);
             if (_mobilityCc == null || PendingList.Count == 0)
                 return;
-            // Poise, Ã¶lÃ§eklenmiÅŸ can hasarÄ±yla deÄŸil eski (kÃ¼Ã§Ã¼k) vuruÅŸ sayÄ±sÄ±yla kÄ±rÄ±lÄ±r.
+            // Poise, ölçeklenmiş can hasarıyla değil eski (küçük) vuruş sayısıyla kırılır.
             float poiseDamage = _playerStatus != null && _playerStatus.LastPoise > 0f
                 ? _playerStatus.LastPoise
                 : incomingDamage / CombatScale.DamageAndHp;
@@ -112,8 +112,8 @@ namespace Dovus.Game.Skills
         }
 
         /// <summary>
-        /// GÃ¼Ã§lendirme buff_damage + YÃ¼kseltme self_damage_buff (buff_duration_sec) ve
-        /// YansÄ±ma/Aynalama reflect_ratio (reflect_duration_sec). lifetime_add sÃ¼reye eklenir.
+        /// Güçlendirme buff_damage + Yükseltme self_damage_buff (buff_duration_sec) ve
+        /// Yansıma/Aynalama reflect_ratio (reflect_duration_sec). lifetime_add süreye eklenir.
         /// </summary>
         void ApplySelfCastEffects(in SkillResolution skill)
         {
@@ -132,7 +132,7 @@ namespace Dovus.Game.Skills
             float buffSec = engine.BuffDurationSec(0f);
             MechanicPlan mechanicPlan = MechanicPlanFor(skill);
             CaptureBuffOverflow(mechanicPlan, now);
-            // 8-9 hasar_buff koruyucu tetiktedir; kalÄ±p/cast anÄ±nda bir daha yazÄ±lmaz.
+            // 8-9 hasar_buff koruyucu tetiktedir; kalıp/cast anında bir daha yazılmaz.
             if (buff > 0f && buffSec > 0f && GuardTriggerDelivery.AllowImmediate(mechanicPlan, "hasar_buff"))
             {
                 _selfDamageBuff = buff;
@@ -155,9 +155,9 @@ namespace Dovus.Game.Skills
         }
 
         /// <summary>
-        /// Kopyalama duplicate_cast â†’ duplicate_delay_sec sonra aynÄ± executor (duplicate_damage_mult).
-        /// Hareket + SÄ±Ã§rama bounce_targets â†’ dash bitince ikinci adÄ±m (bounce_damage_mult;
-        /// hitbox_vfx.sifat_override.3 chain_count=2, skill 3-3 "Ã‡ift dash").
+        /// Kopyalama duplicate_cast → duplicate_delay_sec sonra aynı executor (duplicate_damage_mult).
+        /// Hareket + Sıçrama bounce_targets → dash bitince ikinci adım (bounce_damage_mult;
+        /// hitbox_vfx.sifat_override.3 chain_count=2, skill 3-3 "Çift dash").
         /// </summary>
         void ScheduleFollowUpLaunches(
             SkillExecutorKind kind,
@@ -226,9 +226,9 @@ namespace Dovus.Game.Skills
         }
 
         /// <summary>
-        /// mobility_cc.i_frame "minion_spawn_aninda" (11-10) â€” spawn anÄ±nda kÄ±sa koruma.
+        /// mobility_cc.i_frame "minion_spawn_aninda" (11-10) — spawn anında kısa koruma.
         /// F1: eskiden Stasis'ti ve oyuncuyu ~0,3 sn donduruyordu (BlocksMovement + BlocksCast);
-        /// artÄ±k skill hareketleriyle aynÄ± donmayan dokunulmazlÄ±k penceresi. DÃ¼ÅŸmana etkisi yok.
+        /// artık skill hareketleriyle aynı donmayan dokunulmazlık penceresi. Düşmana etkisi yok.
         /// </summary>
         void ApplySpawnIFrame(in SkillResolution skill)
         {
@@ -238,7 +238,7 @@ namespace Dovus.Game.Skills
             _player.GetComponent<PlayerDodgeRig>()?.OpenSkillIframe(ms);
         }
 
-        /// <summary>Minion vuruÅŸu: ham hasar boru hattÄ±ndan (zÄ±rh, kritik, Ã¶lÃ§ek bir kez).</summary>
+        /// <summary>Minion vuruşu: ham hasar boru hattından (zırh, kritik, ölçek bir kez).</summary>
         float ApplyMinionHit(in SkillResolution skill, float raw)
         {
             if (_bossVitals == null || _bossVitals.IsDown || raw <= 0f)
@@ -286,7 +286,7 @@ namespace Dovus.Game.Skills
             if (dealt.ShieldAbsorbed > 0f && _bossStatus != null)
                 _bossStatus.Board.ConsumeShield(dealt.ShieldAbsorbed);
             float damage = dealt.Amount;
-            // S8: minyon kritikleri de gÃ¶sterilir.
+            // S8: minyon kritikleri de gösterilir.
             _damageHud?.ShowDamage(damage, dealt.WasCrit, BossHitPoint(), DamageTint(), victimIsBoss: true);
             float lifesteal = ClosingHealRules.AdjectiveLifesteal(skill);
             lifesteal += _slotPassives?.LifestealAddFor(_slotQueryCastId) ?? 0f;
@@ -302,7 +302,7 @@ namespace Dovus.Game.Skills
             return damage;
         }
 
-        /// <summary>Kendine/dost alan boss'a da deÄŸiyor mu (dÃ¼ÅŸmanca sÄ±fat durumlarÄ± iÃ§in).</summary>
+        /// <summary>Kendine/dost alan boss'a da değiyor mu (düşmanca sıfat durumları için).</summary>
         bool BossWithin(Vector3 center, float radiusM)
         {
             if (_boss == null)

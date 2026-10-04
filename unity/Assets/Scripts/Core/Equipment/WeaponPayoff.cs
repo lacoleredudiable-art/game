@@ -9,7 +9,7 @@ using Dovus.Core.Status;
 
 namespace Dovus.Core.Equipment
 {
-    /// <summary>T─▒ls─▒m de─şi┼ştirme bonusu: hedefteki bir k├Ât├╝ durumu siler, di─şerleri kal─▒r.</summary>
+    /// <summary>Tılsım değiştirme bonusu: hedefteki bir kötü durumu siler, diğerleri kalır.</summary>
     public static class OneNegativeCleanse
     {
         public static bool TryRemove(StatusBoard board)
@@ -35,7 +35,7 @@ namespace Dovus.Core.Equipment
             StatusKindUtil.IsHardCc(kind) || StatusKindUtil.IsSoftCc(kind) || StatusKindUtil.IsDebuff(kind);
     }
 
-    /// <summary>B├╝y├╝ Kitab─▒ de─şi┼ştirme bonusu: o vuru┼ş mana yemez.</summary>
+    /// <summary>Büyü Kitabı değiştirme bonusu: o vuruş mana yemez.</summary>
     public static class WeaponManaWaiver
     {
         public static void Charge(ResourceTracker tracker, float cost, bool freeCast)
@@ -47,8 +47,8 @@ namespace Dovus.Core.Equipment
     }
 
     /// <summary>
-    /// K├╝re HUD d├╝─şmesi. ├çizim alan─▒ndaki bas─▒l─▒ tutma ve ├ğift dokunu┼ş yoktur.
-    /// Eldeyse se├ğili hedefe gider, d─▒┼şar─▒daysa geri ├ğa─şr─▒l─▒r. Yolculuk s├╝resi OrbAnchor'da.
+    /// Küre HUD düğmesi. Çizim alanındaki basılı tutma ve çift dokunuş yoktur.
+    /// Eldeyse seçili hedefe gider, dışarıdaysa geri çağrılır. Yolculuk süresi OrbAnchor'da.
     /// </summary>
     public static class OrbHudCommand
     {

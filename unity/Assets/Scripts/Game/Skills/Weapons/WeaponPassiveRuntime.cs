@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Boss;
+using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
 using Dovus.Core.Casting;
@@ -31,7 +31,7 @@ namespace Dovus.Game.Skills.Weapons
 
 
 
-        /// <summary>Yay deÄŸiÅŸtirme bonusu: sÄ±radaki vuruÅŸ zÄ±rhÄ± yok sayar.</summary>
+        /// <summary>Yay değiştirme bonusu: sıradaki vuruş zırhı yok sayar.</summary>
         public bool SwapDrawUnlocked(double worldMs) => worldMs < _swapInstantDrawUntilMs;
 
         public float WeaponOutgoingDamageMult(in SkillResolution skill, bool isBasicStrike)
@@ -80,7 +80,7 @@ namespace Dovus.Game.Skills.Weapons
             return heal > 1f ? heal : power;
         }
 
-        /// <summary>TÄ±lsÄ±m kuÅŸanÄ±lÄ±yken ÅŸifa, kalkan ve buff bÃ¼yÃ¼klÃ¼ÄŸÃ¼. Hasar Ã§arpanÄ± deÄŸil.</summary>
+        /// <summary>Tılsım kuşanılıyken şifa, kalkan ve buff büyüklüğü. Hasar çarpanı değil.</summary>
         public float WeaponFriendlyScale()
         {
             if (_host.EquippedProfile == null || _host.EquippedProfile.Passive.Kind != WeaponPassiveKind.KutsalEtki)

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Dovus.Core;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
@@ -207,7 +207,7 @@ namespace Dovus.Game.Skills.Mechanics
                     int amount = Mathf.Max(0, Mathf.RoundToInt((float)Math.Abs(guard.Effect.Amount) * scale));
                     if (guard.Effect.Stat == "can")
                     {
-                        // Miktar gramerden (ham). DiÄŸer ÅŸifalar gibi ActorStatus.ApplyHeal Ã¶lÃ§ekler.
+                        // Miktar gramerden (ham). Diğer şifalar gibi ActorStatus.ApplyHeal ölçekler.
                         if (allyLow && _host.Ally != null)
                         {
                             float healMult = _host.Ally.Board != null ? _host.Ally.Board.HealEffectivenessMult : 1f;

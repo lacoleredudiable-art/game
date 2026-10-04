@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
@@ -36,30 +36,30 @@ using UnityEngine.PlayerLoop;
 
 namespace Dovus.Game.Editor
 {
-    /// <summary>Tek cast: fiil + sÄ±fat, boss'a merkez mesafesi, silah.</summary>
+    /// <summary>Tek cast: fiil + sıfat, boss'a merkez mesafesi, silah.</summary>
     public sealed class PlaySweepCase
     {
         public int Verb;
         public int Adj;
         public float StartDistM = 3f;
-        public string Weapon = "KÄ±lÄ±Ã§";
+        public string Weapon = "Kılıç";
         public string Label = "";
-        /// <summary>Kare kare iz detay dosyasÄ±na yazÄ±lÄ±r.</summary>
+        /// <summary>Kare kare iz detay dosyasına yazılır.</summary>
         public bool Trace;
-        /// <summary>KalÄ±p baÅŸladÄ±ktan BossShiftAtSec sonra boss X ekseninde bu kadar kayar.</summary>
+        /// <summary>Kalıp başladıktan BossShiftAtSec sonra boss X ekseninde bu kadar kayar.</summary>
         public float BossShiftX;
         public float BossShiftAtSec = 0.2f;
         public float BossShiftDurSec = 0.3f;
         /// <summary>
-        /// KalÄ±p baÅŸladÄ±ktan PlayerShiftAtSec sonra oyuncu boss'a doÄŸru bu kadar taÅŸÄ±nÄ±r
-        /// (eksi: uzaklaÅŸÄ±r). KalÄ±p dÄ±ÅŸÄ± yer deÄŸiÅŸimi; tek-sistem Ã¶lÃ§Ã¼mÃ¼ bunu gÃ¶rÃ¼r.
+        /// Kalıp başladıktan PlayerShiftAtSec sonra oyuncu boss'a doğru bu kadar taşınır
+        /// (eksi: uzaklaşır). Kalıp dışı yer değişimi; tek-sistem ölçümü bunu görür.
         /// </summary>
         public float PlayerShiftM;
         public float PlayerShiftAtSec = 0.2f;
         public float PlayerShiftDurSec = 0.1f;
-        /// <summary>KalÄ±p zamanÄ± (sn). EditÃ¶r o anda duraklar; ekran gÃ¶rÃ¼ntÃ¼sÃ¼ iÃ§in.</summary>
+        /// <summary>Kalıp zamanı (sn). Editör o anda duraklar; ekran görüntüsü için.</summary>
         public float[] PauseAtSec;
-        /// <summary>KalÄ±p StickAtSec'e gelince Ã§ubuk bu yÃ¶ne basÄ±lÄ±r, kalÄ±p bitince bÄ±rakÄ±lÄ±r.</summary>
+        /// <summary>Kalıp StickAtSec'e gelince çubuk bu yöne basılır, kalıp bitince bırakılır.</summary>
         public Vector2 Stick;
         public float StickAtSec = 0.5f;
 
@@ -82,8 +82,8 @@ namespace Dovus.Game.Editor
         public bool NoTeleport;
         public bool Grounded;
         /// <summary>
-        /// PlanÄ±n taÅŸÄ±dÄ±ÄŸÄ± boss etkisi gÃ¶rÃ¼ldÃ¼ mÃ¼ (yalnÄ±z o anahtar varsa sÄ±nanÄ±r):
-        /// ters_kontrol â†’ boss ters kontrolde; dikkat_ceker â†’ yem boss aggro'sunu tutuyor.
+        /// Planın taşıdığı boss etkisi görüldü mü (yalnız o anahtar varsa sınanır):
+        /// ters_kontrol → boss ters kontrolde; dikkat_ceker → yem boss aggro'sunu tutuyor.
         /// </summary>
         public bool Effect = true;
         public float FootLiveM;
@@ -104,10 +104,10 @@ namespace Dovus.Game.Editor
     }
 
     /// <summary>
-    /// Play Mode kombo taramasÄ±. Boss'u durdurur, oyuncuyu boss'a verilen mesafeye koyar,
-    /// her komboyu TryDebugCastSkill ile atar ve kare sonunda (PostLateUpdate) Ã¶lÃ§er.
-    /// Skill koduna dokunmaz; yalnÄ±z Ã¶lÃ§er ve raporlar.
-    /// Ã‡Ä±ktÄ±: docs/play-sweep/&lt;etiket&gt;.csv ve &lt;etiket&gt;-detay.txt.
+    /// Play Mode kombo taraması. Boss'u durdurur, oyuncuyu boss'a verilen mesafeye koyar,
+    /// her komboyu TryDebugCastSkill ile atar ve kare sonunda (PostLateUpdate) ölçer.
+    /// Skill koduna dokunmaz; yalnız ölçer ve raporlar.
+    /// Çıktı: docs/play-sweep/&lt;etiket&gt;.csv ve &lt;etiket&gt;-detay.txt.
     /// </summary>
     [InitializeOnLoad]
     public static class PlaySweep
@@ -115,14 +115,14 @@ namespace Dovus.Game.Editor
         const string PendingKey = "Dovus.PlaySweep.Pending";
         const string SpeedKey = "Dovus.PlaySweep.Speed";
         const string SpeedSetKey = "Dovus.PlaySweep.SpeedSet";
-        const string Speed4Path = "Dovus/Play Sweep/HÄ±z/4x (varsayÄ±lan)";
-        const string Speed1Path = "Dovus/Play Sweep/HÄ±z/1x (ayÄ±klama)";
+        const string Speed4Path = "Dovus/Play Sweep/Hız/4x (varsayılan)";
+        const string Speed1Path = "Dovus/Play Sweep/Hız/1x (ayıklama)";
         const string ScenePath = "Assets/Scenes/Prototype.unity";
         const BindingFlags BF = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        // Ã–lÃ§Ã¼m eÅŸikleri â€” araÃ§ ayarÄ±, oyun hissi deÄŸil.
-        // Cast arasÄ± bekleme SweepPace: iki fizik adÄ±mÄ± + bir referans kare.
-        // GÃ¶zlem kuyruÄŸu oyun sÃ¼resi; hÄ±z duvar saatini kÄ±saltÄ±r, bu sÃ¼reyi deÄŸil.
+        // Ölçüm eşikleri — araç ayarı, oyun hissi değil.
+        // Cast arası bekleme SweepPace: iki fizik adımı + bir referans kare.
+        // Gözlem kuyruğu oyun süresi; hız duvar saatini kısaltır, bu süreyi değil.
         const float TailSec = 0.6f;
         const float TimeoutExtraSec = 4f;
         const float TemplateTolSec = 0.2f;
@@ -141,10 +141,10 @@ namespace Dovus.Game.Editor
         };
 
         public static bool Running { get; private set; }
-        public static string Status { get; private set; } = "boÅŸta";
+        public static string Status { get; private set; } = "boşta";
         public static string LastSummary { get; private set; } = "";
         public static string PausedAt { get; private set; } = "";
-        /// <summary>TakÄ±lmayÄ± ayÄ±klamak iÃ§in: aÅŸama ve aÅŸamada geÃ§en dÃ¼nya sÃ¼resi.</summary>
+        /// <summary>Takılmayı ayıklamak için: aşama ve aşamada geçen dünya süresi.</summary>
         public static string StageInfo => Running ? $"{_stage} {(NowMs - _stageMs) / 1000.0:F1} sn" : "-";
         public static readonly List<PlaySweepResult> Results = new();
 
@@ -180,10 +180,10 @@ namespace Dovus.Game.Editor
         static Vector3 _playerShiftDir;
         static Snapshot _pre;
         static CaseInfo _info;
-        /// <summary>ManifestationDirector._pending[0].BangAtWorldMs, cast anÄ±na gÃ¶re sn; castMult dahil.</summary>
+        /// <summary>ManifestationDirector._pending[0].BangAtWorldMs, cast anına göre sn; castMult dahil.</summary>
         static float _scheduledBang = -1f;
 
-        // Sahne referanslarÄ±
+        // Sahne referansları
         static ManifestationDirector _md;
         static HexagonInput _input;
         static Transform _player;
@@ -271,7 +271,7 @@ namespace Dovus.Game.Editor
             public bool HasHitPhase;
             public bool ExpectsReverse;
             public bool ExpectsDecoyAggro;
-            /// <summary>mermi_sil ailesi: dÃ¼zenek mermisi ve etki kontrolleri (plan verisinden).</summary>
+            /// <summary>mermi_sil ailesi: düzenek mermisi ve etki kontrolleri (plan verisinden).</summary>
             public bool ExpectsErase;
             public bool ExpectsAbsorb;
             public bool ExpectsReflect;
@@ -284,7 +284,7 @@ namespace Dovus.Game.Editor
             public float StopGap;
             public string SimAim = "boss";
             public bool AimCaptured;
-            /// <summary>Verinin bildirdiÄŸi teslim gecikmesi (mark_delay_sec / rise_delay_sec), kalÄ±p baÅŸÄ±ndan.</summary>
+            /// <summary>Verinin bildirdiği teslim gecikmesi (mark_delay_sec / rise_delay_sec), kalıp başından.</summary>
             public float DeliveryDelaySec;
         }
 
@@ -297,10 +297,10 @@ namespace Dovus.Game.Editor
         [MenuItem("Dovus/Play Sweep/144 kombo - Yumruk")]
         static void MenuFist() => Launch("yumruk");
 
-        [MenuItem("Dovus/Play Sweep/144 kombo - KÄ±lÄ±Ã§")]
+        [MenuItem("Dovus/Play Sweep/144 kombo - Kılıç")]
         static void MenuSword() => Launch("kilic");
 
-        [MenuItem("Dovus/Play Sweep/144 kombo - Ã‡ekiÃ§")]
+        [MenuItem("Dovus/Play Sweep/144 kombo - Çekiç")]
         static void MenuHammer() => Launch("cekic");
 
         [MenuItem("Dovus/Play Sweep/144 kombo - Kalkan")]
@@ -315,19 +315,19 @@ namespace Dovus.Game.Editor
         [MenuItem("Dovus/Play Sweep/144 kombo - Asa")]
         static void MenuStaff() => Launch("asa");
 
-        [MenuItem("Dovus/Play Sweep/144 kombo - TÄ±lsÄ±m")]
+        [MenuItem("Dovus/Play Sweep/144 kombo - Tılsım")]
         static void MenuTalisman() => Launch("tilsim");
 
-        [MenuItem("Dovus/Play Sweep/144 kombo - BÃ¼yÃ¼ KitabÄ±")]
+        [MenuItem("Dovus/Play Sweep/144 kombo - Büyü Kitabı")]
         static void MenuBook() => Launch("kitap");
 
-        [MenuItem("Dovus/Play Sweep/144 kombo - KÃ¼re")]
+        [MenuItem("Dovus/Play Sweep/144 kombo - Küre")]
         static void MenuOrb() => Launch("kure");
 
-        [MenuItem("Dovus/Play Sweep/144 kombo - KÄ±lÄ±Ã§ + Asa")]
+        [MenuItem("Dovus/Play Sweep/144 kombo - Kılıç + Asa")]
         static void MenuSwordStaff() => Launch("kilic+asa");
 
-        [MenuItem("Dovus/Play Sweep/1440 kombo - TÃ¼m silahlar", false, 15)]
+        [MenuItem("Dovus/Play Sweep/1440 kombo - Tüm silahlar", false, 15)]
         static void MenuAllWeapons() => Launch("tum");
 
         [MenuItem(Speed4Path, false, 30)]
@@ -351,7 +351,7 @@ namespace Dovus.Game.Editor
         }
 
         [MenuItem("Dovus/Play Sweep/Durdur")]
-        static void MenuStop() => Stop("menÃ¼");
+        static void MenuStop() => Stop("menü");
 
         static float ChosenSpeed()
         {
@@ -369,7 +369,7 @@ namespace Dovus.Game.Editor
         static float SettleSec => SweepPace.SettleWaitSec(_savedFixed);
         static float IdleHoldSec => SweepPace.IdleHoldSec;
 
-        /// <summary>MenÃ¼ giriÅŸi. Play kapalÄ±ysa sahneyi aÃ§ar, Play'e girer, sonra baÅŸlar.</summary>
+        /// <summary>Menü girişi. Play kapalıysa sahneyi açar, Play'e girer, sonra başlar.</summary>
         public static void Launch(string preset)
         {
             if (EditorApplication.isPlaying)
@@ -404,7 +404,7 @@ namespace Dovus.Game.Editor
             }
             else if (change == PlayModeStateChange.ExitingPlayMode && Running)
             {
-                Stop("Play kapandÄ±");
+                Stop("Play kapandı");
             }
         }
 
@@ -426,7 +426,7 @@ namespace Dovus.Game.Editor
             }
             if (preset == "kilic+asa")
             {
-                Start(AllCombos("KÄ±lÄ±Ã§", "Asa"), preset, "Asa");
+                Start(AllCombos("Kılıç", "Asa"), preset, "Asa");
                 return;
             }
             Start(AllCombos(PresetWeapon(preset)), preset);
@@ -437,18 +437,18 @@ namespace Dovus.Game.Editor
         static string PresetWeapon(string preset) => preset switch
         {
             "yumruk" => "Yumruk",
-            "cekic" => "Ã‡ekiÃ§",
+            "cekic" => "Çekiç",
             "kalkan" => "Kalkan",
             "yay" => "Yay",
             "top" => "Top",
             "asa" => "Asa",
-            "tilsim" => "TÄ±lsÄ±m",
-            "kitap" => "BÃ¼yÃ¼ KitabÄ±",
-            "kure" => "KÃ¼re",
-            _ => "KÄ±lÄ±Ã§"
+            "tilsim" => "Tılsım",
+            "kitap" => "Büyü Kitabı",
+            "kure" => "Küre",
+            _ => "Kılıç"
         };
 
-        /// <summary>144 kombo, rÃ¼n grubu Ã§iftlerine gÃ¶re sÄ±ralÄ± (az build deÄŸiÅŸimi).</summary>
+        /// <summary>144 kombo, rün grubu çiftlerine göre sıralı (az build değişimi).</summary>
         public static List<PlaySweepCase> AllCombos(string weapon, string secondWeapon = "", float startDistM = 3f)
         {
             var list = new List<PlaySweepCase>();
@@ -469,7 +469,7 @@ namespace Dovus.Game.Editor
                 .ToList();
         }
 
-        /// <summary>Katalogdaki her silah Ã— 144 kombo. Sahne baÄŸlandÄ±ktan sonra doldurulur.</summary>
+        /// <summary>Katalogdaki her silah × 144 kombo. Sahne bağlandıktan sonra doldurulur.</summary>
         static List<PlaySweepCase> AllWeaponCases()
         {
             var list = new List<PlaySweepCase>();
@@ -488,7 +488,7 @@ namespace Dovus.Game.Editor
         {
             if (!EditorApplication.isPlaying)
             {
-                Status = "Play kapalÄ±";
+                Status = "Play kapalı";
                 return;
             }
 
@@ -530,7 +530,7 @@ namespace Dovus.Game.Editor
                 WriteOutputs();
         }
 
-        // ---------------------------------------------------------------- dÃ¶ngÃ¼
+        // ---------------------------------------------------------------- döngü
 
         struct SweepTick { }
 
@@ -562,7 +562,7 @@ namespace Dovus.Game.Editor
             return false;
         }
 
-        /// <summary>Play aÃ§Ä±lÄ±ÅŸÄ±nda paketler PlayerLoop'u sÄ±fÄ±rlayabiliyor; tick kaybolursa geri takÄ±lÄ±r.</summary>
+        /// <summary>Play açılışında paketler PlayerLoop'u sıfırlayabiliyor; tick kaybolursa geri takılır.</summary>
         static void LoopWatchdog()
         {
             if (Running && EditorApplication.isPlaying && !LoopInstalled())
@@ -572,8 +572,8 @@ namespace Dovus.Game.Editor
         static double NowMs => _clock != null ? _clock.Director.WorldTimeMs : Time.timeAsDouble * 1000.0;
 
         /// <summary>
-        /// timeScale ve GameClock aynÄ± Ã§arpan. fixedDeltaTime 1Ã— adÄ±mÄ±nda kalÄ±r;
-        /// maximumDeltaTime dÃ¼nya saniyesi olduÄŸu iÃ§in Ã§arpanla bÃ¼yÃ¼r.
+        /// timeScale ve GameClock aynı çarpan. fixedDeltaTime 1× adımında kalır;
+        /// maximumDeltaTime dünya saniyesi olduğu için çarpanla büyür.
         /// </summary>
         static void ApplyPace()
         {
@@ -622,7 +622,7 @@ namespace Dovus.Game.Editor
                             _expandWeapons = false;
                             if (_cases.Count == 0)
                             {
-                                Stop("silah kataloÄŸu boÅŸ");
+                                Stop("silah kataloğu boş");
                                 return;
                             }
                         }
@@ -656,7 +656,7 @@ namespace Dovus.Game.Editor
             {
                 Exception inner = e is TargetInvocationException t && t.InnerException != null ? t.InnerException : e;
                 _logs.Add("SWEEP-EXC " + inner.GetType().Name + ": " + inner.Message);
-                Debug.LogWarning("[PlaySweep] araÃ§ hatasÄ±: " + inner);
+                Debug.LogWarning("[PlaySweep] araç hatası: " + inner);
                 try
                 {
                     if (_stage == Stage.Record)
@@ -666,20 +666,20 @@ namespace Dovus.Game.Editor
                     else if (_stage == Stage.Setup || _stage == Stage.Settle)
                     {
                         PlaySweepResult r = NewResult(_cases[_index]);
-                        r.Notes.Add("araÃ§ hatasÄ±: " + inner.Message);
+                        r.Notes.Add("araç hatası: " + inner.Message);
                         Results.Add(r);
                         _index++;
                         NextCase();
                     }
                     else
                     {
-                        Stop("araÃ§ hatasÄ±");
+                        Stop("araç hatası");
                     }
                 }
                 catch (Exception again)
                 {
                     Debug.LogWarning("[PlaySweep] durduruldu: " + again);
-                    Stop("araÃ§ hatasÄ±");
+                    Stop("araç hatası");
                 }
             }
         }
@@ -716,8 +716,8 @@ namespace Dovus.Game.Editor
         }
 
         /// <summary>
-        /// GÃ¶vde bileÅŸenleri geÃ§ eklenebilir (build ekranÄ± aÃ§Ä±kken Idle atlanÄ±r, gÃ¶vde bang'de doÄŸabilir).
-        /// BoÅŸ ya da yok edilmiÅŸ referans her Ã§aÄŸrÄ±da yeniden aranÄ±r.
+        /// Gövde bileşenleri geç eklenebilir (build ekranı açıkken Idle atlanır, gövde bang'de doğabilir).
+        /// Boş ya da yok edilmiş referans her çağrıda yeniden aranır.
         /// </summary>
         static void RefreshBody()
         {
@@ -756,7 +756,7 @@ namespace Dovus.Game.Editor
             Debug.Log("[PlaySweep] " + LastSummary);
         }
 
-        // ---------------------------------------------------------------- aÅŸamalar
+        // ---------------------------------------------------------------- aşamalar
 
         static void TickIdle()
         {
@@ -764,7 +764,7 @@ namespace Dovus.Game.Editor
                 _bossDirector.enabled = false;
             if (BuildSelectScreen.IsOpen)
             {
-                // AÃ§Ä±k build ekranÄ± saati durdurur; bekleme dÃ¼nya saatine bakar, hiÃ§ bitmez.
+                // Açık build ekranı saati durdurur; bekleme dünya saatine bakar, hiç bitmez.
                 _stage = Stage.Setup;
                 _stageMs = NowMs;
                 return;
@@ -809,7 +809,7 @@ namespace Dovus.Game.Editor
         {
             if (NowMs - _stageMs < SettleSec * 1000.0)
                 return;
-            // Ã–nceki Emici Ã§ekmesi sÃ¼rerken boss oyuncunun eski yerine kayar; yeni cast o kaymayÄ± devralÄ±r.
+            // Önceki Emici çekmesi sürerken boss oyuncunun eski yerine kayar; yeni cast o kaymayı devralır.
             if (BossPulling() && NowMs - _stageMs < 3000.0)
                 return;
             PlaySweepCase c = _cases[_index];
@@ -859,13 +859,13 @@ namespace Dovus.Game.Editor
             ApplyStick(c, templateT, f.Playing);
             if (c.PauseAtSec != null && _pauseIndex < c.PauseAtSec.Length && templateT >= c.PauseAtSec[_pauseIndex])
             {
-                PausedAt = $"{c.Id} kalÄ±p t={templateT:F2} (istenen {c.PauseAtSec[_pauseIndex]:F2})";
+                PausedAt = $"{c.Id} kalıp t={templateT:F2} (istenen {c.PauseAtSec[_pauseIndex]:F2})";
                 _pauseIndex++;
                 EditorApplication.isPaused = true;
             }
 
             bool started = _frames.Any(x => x.Playing);
-            // Geri gÃ¶nderilen mermi boss'a varana dek vaka bitmez (geri_gonder: boss canÄ± dÃ¼ÅŸmeli).
+            // Geri gönderilen mermi boss'a varana dek vaka bitmez (geri_gonder: boss canı düşmeli).
             bool idle = !f.Busy && f.ReflectedAlive == 0;
             float delivered = Mathf.Max(_info.ExpectedSec, _info.DeliveryDelaySec);
             float minRecord = _info.RecoverySec + delivered + TailSec;
@@ -909,7 +909,7 @@ namespace Dovus.Game.Editor
             _bossShifted = true;
         }
 
-        /// <summary>KaymanÄ±n yalnÄ±z bu karelik payÄ± eklenir; kalÄ±p oyuncuyu yeni yerinden sÃ¼rdÃ¼rÃ¼r.</summary>
+        /// <summary>Kaymanın yalnız bu karelik payı eklenir; kalıp oyuncuyu yeni yerinden sürdürür.</summary>
         static void ApplyPlayerShift(PlaySweepCase c, float templateT)
         {
             if (Mathf.Abs(c.PlayerShiftM) < 0.001f || templateT < c.PlayerShiftAtSec)
@@ -1009,7 +1009,7 @@ namespace Dovus.Game.Editor
             current = _input.Engine?.Loadout;
             if (current == null || !current.RuneIds.Contains(v) || !current.RuneIds.Contains(a))
             {
-                error = "build uygulanmadÄ± [" + string.Join(",", ids) + "]";
+                error = "build uygulanmadı [" + string.Join(",", ids) + "]";
                 return false;
             }
             return true;
@@ -1047,10 +1047,10 @@ namespace Dovus.Game.Editor
             _player.GetComponent<ActorVisual>()?.EndMotionAnim();
             _input.Engine?.Abort();
             (F<object>(_md, "_pending") as IList)?.Clear();
-            _logs.Add("Ã¶nceki cast 6 sn'de bitmedi, zorla temizlendi");
+            _logs.Add("önceki cast 6 sn'de bitmedi, zorla temizlendi");
         }
 
-        /// <summary>BaÄŸ/hacim/tuzak: status board temizlense de sonraki casta Root/Slow ve boss Ã§ekiÅŸi taÅŸÄ±r.</summary>
+        /// <summary>Bağ/hacim/tuzak: status board temizlense de sonraki casta Root/Slow ve boss çekişi taşır.</summary>
         static int MechanicLeftovers() =>
             _md != null ? Convert.ToInt32(Call(_md, "MechanicWorldLeftoverCount") ?? 0) : 0;
 
@@ -1066,7 +1066,7 @@ namespace Dovus.Game.Editor
             _bossStatus?.Board.Clear();
             _playerStatus?.Board.Clear();
             _ally?.Board?.Clear();
-            // O7: kritik/sapma zarÄ± her vakada aynÄ± tohumdan â€” tarama deterministik kalÄ±r.
+            // O7: kritik/sapma zarı her vakada aynı tohumdan — tarama deterministik kalır.
             _md?.ReseedCombatRng(CombatRng.SweepSeed);
             if (_bossVitals.IsDown || _bossVitals.Hp < _bossVitals.MaxHp * 0.6f)
                 _bossVitals.Revive();
@@ -1094,10 +1094,10 @@ namespace Dovus.Game.Editor
         }
 
         /// <summary>
-        /// Koruyucu tetik (koruyucu_tetik can / kalkan) yalnÄ±z dost ya da oyuncu canÄ±
-        /// guard_threshold altÄ±na inince Ã¶der. Taramada boss kapalÄ±, kimse vurmaz; bu yÃ¼zden
-        /// planÄ± tetik taÅŸÄ±yan kombolarda dost eÅŸiÄŸin 0.05 altÄ±nda baÅŸlar. Skill kimliÄŸi yok:
-        /// plan gramerden, eÅŸik mechanic_grammar.params'tan okunur.
+        /// Koruyucu tetik (koruyucu_tetik can / kalkan) yalnız dost ya da oyuncu canı
+        /// guard_threshold altına inince öder. Taramada boss kapalı, kimse vurmaz; bu yüzden
+        /// planı tetik taşıyan kombolarda dost eşiğin 0.05 altında başlar. Skill kimliği yok:
+        /// plan gramerden, eşik mechanic_grammar.params'tan okunur.
         /// </summary>
         static void PrepareGuardFixture(PlaySweepCase c)
         {
@@ -1117,10 +1117,10 @@ namespace Dovus.Game.Editor
         }
 
         /// <summary>
-        /// mermi_sil dÃ¼zeneÄŸi: plan mermi siliyorsa (skill kimliÄŸi yok, gramer planÄ±ndan) cast anÄ±nda
-        /// boss tarafÄ±ndan dosta doÄŸru sÃ¼zÃ¼len yavaÅŸ, ZARARSIZ dÃ¼zenek mermileri doÄŸar â€” dostun,
-        /// oyuncunun, oyuncuâ†”boss hattÄ±nÄ±n ve oyuncuâ†”dost baÄŸÄ±nÄ±n Ã¼stÃ¼nde. ZararsÄ±z: dostlara
-        /// Ã§arpmaz, yalnÄ±z silme/yutma/geri gÃ¶nderme/perde kurallarÄ±nÄ± sÄ±nar. SayaÃ§lar burada sÄ±fÄ±rlanÄ±r.
+        /// mermi_sil düzeneği: plan mermi siliyorsa (skill kimliği yok, gramer planından) cast anında
+        /// boss tarafından dosta doğru süzülen yavaş, ZARARSIZ düzenek mermileri doğar — dostun,
+        /// oyuncunun, oyuncu↔boss hattının ve oyuncu↔dost bağının üstünde. Zararsız: dostlara
+        /// çarpmaz, yalnız silme/yutma/geri gönderme/perde kurallarını sınar. Sayaçlar burada sıfırlanır.
         /// </summary>
         static void PrepareProjectileFixture()
         {
@@ -1161,8 +1161,8 @@ namespace Dovus.Game.Editor
         }
 
         /// <summary>
-        /// Emici Ã§ekmeleri boss'u her vakada oyuncuya taÅŸÄ±r; toplanan kayma dostu (sabit) uzakta bÄ±rakÄ±r.
-        /// Her vaka boss'un tarama baÅŸÄ±ndaki yerinden baÅŸlar.
+        /// Emici çekmeleri boss'u her vakada oyuncuya taşır; toplanan kayma dostu (sabit) uzakta bırakır.
+        /// Her vaka boss'un tarama başındaki yerinden başlar.
         /// </summary>
         static void ResetBossPosition()
         {
@@ -1177,7 +1177,7 @@ namespace Dovus.Game.Editor
             Physics.SyncTransforms();
         }
 
-        /// <summary>Portal, sÄ±nÄ±r ve takÄ±m bir sonraki vakaya taÅŸmasÄ±n. Dost baÅŸlangÄ±Ã§ yerine dÃ¶ner.</summary>
+        /// <summary>Portal, sınır ve takım bir sonraki vakaya taşmasın. Dost başlangıç yerine döner.</summary>
         static void ResetSweepActors()
         {
             PortalBorderTeamHost.Instance?.ResetCase();
@@ -1205,7 +1205,7 @@ namespace Dovus.Game.Editor
         static string RejectReason(PlaySweepCase c)
         {
             if (P<bool>(_input, "InputLocked"))
-                return "girdi kilitli (dÃ¼ÅŸÃ¼k can ya da BlocksCast)";
+                return "girdi kilitli (düşük can ya da BlocksCast)";
             RuneLoadout loadout = _input.Engine?.Loadout;
             bool hasVerb = false, hasAdj = false;
             for (int slot = 1; loadout != null && slot <= RuneLoadout.SlotCount; slot++)
@@ -1214,12 +1214,12 @@ namespace Dovus.Game.Editor
                 hasAdj |= loadout.RuneIdAtSlot(slot) == c.Adj;
             }
             if (!hasVerb || !hasAdj)
-                return "rÃ¼n build'de yok";
+                return "rün build'de yok";
             var gate = F<Func<SkillResolution, bool>>(_input, "_skillTargetGate");
             if (gate != null && !gate(_skills.Resolve(new[] { c.Verb, c.Adj })))
             {
                 string why = _logs.LastOrDefault(l => !l.StartsWith("SWEEP"));
-                return "hedef/menzil kapÄ±sÄ±" + (string.IsNullOrEmpty(why) ? "" : " â€” " + why);
+                return "hedef/menzil kapısı" + (string.IsNullOrEmpty(why) ? "" : " — " + why);
             }
             return "bilinmiyor";
         }
@@ -1269,7 +1269,7 @@ namespace Dovus.Game.Editor
             return info;
         }
 
-        /// <summary>Oyunla aynÄ± teslim kuyruÄŸu: iÅŸaretli an / yÃ¼kseliÅŸ gecikmesi kaydÄ± uzatÄ±r.</summary>
+        /// <summary>Oyunla aynı teslim kuyruğu: işaretli an / yükseliş gecikmesi kaydı uzatır.</summary>
         static float DeliveryDelaySec(SkillResolution skill, MotionTemplate template)
         {
             if (!(Call(_md, "MechanicPlanFor", skill) is Dovus.Core.Mechanic.MechanicPlan plan)
@@ -1281,7 +1281,7 @@ namespace Dovus.Game.Editor
             return order.DelayedMark || order.RiseDelay ? Mathf.Max(0.05f, order.ActivationDelaySec) : 0f;
         }
 
-        /// <summary>KalÄ±bÄ± Ã§evrimdÄ±ÅŸÄ± koÅŸturur. aim: oyunun kalÄ±ba verdiÄŸi hedef (boss, dost ya da yok).</summary>
+        /// <summary>Kalıbı çevrimdışı koşturur. aim: oyunun kalıba verdiği hedef (boss, dost ya da yok).</summary>
         static void Simulate(CaseInfo info, Transform aim)
         {
             Vector3 s = info.SimStart;
@@ -1323,7 +1323,7 @@ namespace Dovus.Game.Editor
                     back = true;
             }
             if (back)
-                return "baÅŸlangÄ±Ã§";
+                return "başlangıç";
             return behind ? "arka" : null;
         }
 
@@ -1331,7 +1331,7 @@ namespace Dovus.Game.Editor
         {
             float moved = Flat(final - start).magnitude;
             if (maxExcursion > 0.6f && moved < 0.5f)
-                return "baÅŸlangÄ±Ã§";
+                return "başlangıç";
             if (moved < InPlaceM)
                 return "yerinde";
             Vector3 toStart = Flat(start - boss).normalized;
@@ -1345,10 +1345,10 @@ namespace Dovus.Game.Editor
                 return "geri";
             if (lateral > 0.6f && lateral > Mathf.Abs(startDist - along))
                 return "yan";
-            return "Ã¶n";
+            return "ön";
         }
 
-        // ---------------------------------------------------------------- Ã¶lÃ§Ã¼m
+        // ---------------------------------------------------------------- ölçüm
 
         static bool Performing() => P<bool>(_md, "PerformingAttack");
 
@@ -1547,7 +1547,7 @@ namespace Dovus.Game.Editor
             }
         }
 
-        // ---------------------------------------------------------------- deÄŸerlendirme
+        // ---------------------------------------------------------------- değerlendirme
 
         static PlaySweepResult NewResult(PlaySweepCase c)
         {
@@ -1582,9 +1582,9 @@ namespace Dovus.Game.Editor
             int i0 = _frames.FindIndex(x => x.Playing);
             int i1 = _frames.FindLastIndex(x => x.Playing);
             if (timedOut)
-                r.Notes.Add($"zaman aÅŸÄ±mÄ± {last.T:F1} sn");
+                r.Notes.Add($"zaman aşımı {last.T:F1} sn");
 
-            // 1) isabet ya da amaÃ§lanan etki
+            // 1) isabet ya da amaçlanan etki
             r.Damage = _pre.BossHp - _frames.Min(x => x.BossHp);
             var effects = new List<string>();
             var preBoss = new HashSet<string>();
@@ -1603,10 +1603,10 @@ namespace Dovus.Game.Editor
                 effects.Add("oyuncu:" + string.Join("+", playerKinds));
             float bossSlow = _frames.Min(x => Mathf.Min(x.BossMove, x.BossAction));
             if (bossSlow < 0.999f)
-                effects.Add($"boss hÄ±z x{bossSlow:F2}");
+                effects.Add($"boss hız x{bossSlow:F2}");
             float haste = _frames.Max(x => Mathf.Max(x.PlayerMove, x.PlayerAction));
             if (haste > 1.001f)
-                effects.Add($"oyuncu hÄ±z x{haste:F2}");
+                effects.Add($"oyuncu hız x{haste:F2}");
             float shield = _frames.Max(x => x.Shield);
             if (shield > 0.01f)
                 effects.Add($"kalkan {shield:F0}");
@@ -1633,7 +1633,7 @@ namespace Dovus.Game.Editor
                 else
                 {
                     r.Effect = false;
-                    r.Notes.Add("dikkat_ceker: yem boss hedefi olmadÄ±");
+                    r.Notes.Add("dikkat_ceker: yem boss hedefi olmadı");
                 }
             }
             if (_info.ExpectsErase)
@@ -1644,11 +1644,11 @@ namespace Dovus.Game.Editor
             if (!r.Hit && !_info.DamageSkill && (!_info.HasHitPhase || _hitOrigins.Count > 0))
             {
                 r.Hit = true;
-                r.Notes.Add("hasarsÄ±z skill (base_damage 0): etki hareketin kendisi");
+                r.Notes.Add("hasarsız skill (base_damage 0): etki hareketin kendisi");
             }
             else if (!r.Hit)
             {
-                r.Notes.Add("hasar yok, etki gÃ¶rÃ¼lmedi" + (roots > 0 ? $" (+{roots} sahne nesnesi)" : ""));
+                r.Notes.Add("hasar yok, etki görülmedi" + (roots > 0 ? $" (+{roots} sahne nesnesi)" : ""));
             }
             if (_hitOrigins.Count > 0)
             {
@@ -1658,12 +1658,12 @@ namespace Dovus.Game.Editor
                     Frame at = FrameAt(_hitTimes[i]);
                     parts.Add($"{_hitTimes[i]:F2}s@boss{Flat(_hitOrigins[i] - at.B).magnitude:F2}m/oyuncu{Flat(_hitOrigins[i] - at.P).magnitude:F2}m");
                 }
-                r.Notes.Add($"vuruÅŸ {_hitOrigins.Count}: " + string.Join(" ", parts));
+                r.Notes.Add($"vuruş {_hitOrigins.Count}: " + string.Join(" ", parts));
             }
 
-            // 2) konum â€” kalÄ±p bittiÄŸi karede, boss'un o anki yerine gÃ¶re.
-            // Ä°ÅŸaretli Ä±ÅŸÄ±n (9-10 yer deÄŸiÅŸtirme) tek karede uzun bir adÄ±mdÄ±r; konum
-            // hesabÄ± o adÄ±mÄ± ve sonrasÄ±nÄ± Ä±ÅŸÄ±nsÄ±z yere indirir. SÄ±Ã§rama kuralÄ± ayrÄ±.
+            // 2) konum — kalıp bittiği karede, boss'un o anki yerine göre.
+            // İşaretli ışın (9-10 yer değiştirme) tek karede uzun bir adımdır; konum
+            // hesabı o adımı ve sonrasını ışınsız yere indirir. Sıçrama kuralı ayrı.
             Vector3 start = _pre.P;
             int endIdx = i1 >= 0 && i1 + 1 < _frames.Count ? i1 + 1 : _frames.Count - 1;
             Frame end = _frames[endIdx];
@@ -1693,13 +1693,13 @@ namespace Dovus.Game.Editor
             bool bossMoved = Flat(end.B - _pre.B).magnitude > 0.1f;
             r.Position = steered
                          || (r.ActualPos == r.ExpectedPos && (!_info.HasSim || simErr <= SimMatchM || bossMoved));
-            r.Notes.Add($"kalÄ±p sonu: merkeze {Flat(scored - end.B).magnitude:F2} m, baÅŸlangÄ±Ã§tan {Flat(scored - start).magnitude:F2} m, " +
-                        $"kalÄ±p simÃ¼lasyonundan {simErr:F2} m" + (bossMoved ? $", boss {Flat(end.B - _pre.B).magnitude:F2} m kaydÄ±" : "") +
-                        (steered ? ", Ã§ubukla yÃ¶nlendirildi" : "") +
-                        (beam > 0.05f ? $", Ä±ÅŸÄ±n {beam:F2} m konumdan Ã§Ä±karÄ±ldÄ±" : "") +
-                        (_info.SimAim != "boss" ? $", kalÄ±p hedefi {_info.SimAim}" : ""));
+            r.Notes.Add($"kalıp sonu: merkeze {Flat(scored - end.B).magnitude:F2} m, başlangıçtan {Flat(scored - start).magnitude:F2} m, " +
+                        $"kalıp simülasyonundan {simErr:F2} m" + (bossMoved ? $", boss {Flat(end.B - _pre.B).magnitude:F2} m kaydı" : "") +
+                        (steered ? ", çubukla yönlendirildi" : "") +
+                        (beam > 0.05f ? $", ışın {beam:F2} m konumdan çıkarıldı" : "") +
+                        (_info.SimAim != "boss" ? $", kalıp hedefi {_info.SimAim}" : ""));
 
-            // 3) boss gÃ¶vdesine girmedi
+            // 3) boss gövdesine girmedi
             r.MinDist = float.MaxValue;
             float minRest = float.MaxValue;
             float minAt = 0f;
@@ -1719,7 +1719,7 @@ namespace Dovus.Game.Editor
             float limit = r.Contact - InsideTolM;
             r.NotInside = _info.PassThrough ? minRest >= limit : r.MinDist >= limit;
             if (r.MinDist < limit)
-                r.Notes.Add($"gÃ¶vdeye girdi: merkeze {r.MinDist:F2} m (t={minAt:F2}, temas {r.Contact:F2})" + (_info.PassThrough ? " geÃ§iÅŸ tasarÄ±m gereÄŸi" : ""));
+                r.Notes.Add($"gövdeye girdi: merkeze {r.MinDist:F2} m (t={minAt:F2}, temas {r.Contact:F2})" + (_info.PassThrough ? " geçiş tasarım gereği" : ""));
 
             // 4) tek sistem
             float templateMove = 0f;
@@ -1744,8 +1744,8 @@ namespace Dovus.Game.Editor
                           + (dodgeFrames > 0 ? 1 : 0);
             r.OneSystem = systems <= 1;
             if (!r.OneSystem || otherMove > OtherMoveM)
-                r.Notes.Add($"yer deÄŸiÅŸtiren: kalÄ±p {templateMove:F2} m, baÅŸka {otherMove:F2} m, dodge {dodgeFrames} kare");
-            // 7) Ä±ÅŸÄ±nlanma / titreme yok (blink fazÄ± tasarÄ±m gereÄŸi sÄ±Ã§rar)
+                r.Notes.Add($"yer değiştiren: kalıp {templateMove:F2} m, başka {otherMove:F2} m, dodge {dodgeFrames} kare");
+            // 7) ışınlanma / titreme yok (blink fazı tasarım gereği sıçrar)
             int teleports = 0;
             int reversals = 0;
             float maxJump = 0f;
@@ -1777,12 +1777,12 @@ namespace Dovus.Game.Editor
             r.NoTeleport = teleports == 0 && reversals < 3;
             Frame jumpFrame = FrameAt(jumpAt);
             string phaseAtJump = jumpFrame.Phase;
-            string designed = jumpFrame.Teleport ? ", Ä±ÅŸÄ±n tasarÄ±m gereÄŸi" : IsBlinkPhase(phaseAtJump) ? ", blink tasarÄ±m gereÄŸi" : "";
+            string designed = jumpFrame.Teleport ? ", ışın tasarım gereği" : IsBlinkPhase(phaseAtJump) ? ", blink tasarım gereği" : "";
             if (maxJump > jumpLimit)
-                r.Notes.Add($"tek karede {maxJump:F2} m sÄ±Ã§rama (sÄ±nÄ±r {jumpLimit:F2} m @ {jumpDt * 1000f:F0} ms, t={jumpAt:F2}{(string.IsNullOrEmpty(phaseAtJump) ? "" : ", faz " + phaseAtJump)}" +
+                r.Notes.Add($"tek karede {maxJump:F2} m sıçrama (sınır {jumpLimit:F2} m @ {jumpDt * 1000f:F0} ms, t={jumpAt:F2}{(string.IsNullOrEmpty(phaseAtJump) ? "" : ", faz " + phaseAtJump)}" +
                             designed + ")");
             if (reversals >= 3)
-                r.Notes.Add($"titreme: {reversals} karede â‰¥0,2 m ileri-geri");
+                r.Notes.Add($"titreme: {reversals} karede ≥0,2 m ileri-geri");
             float bossJump = 0f;
             float bossJumpAt = 0f;
             float bossLimit = 0f;
@@ -1802,10 +1802,10 @@ namespace Dovus.Game.Editor
             if (bossJump > bossLimit)
             {
                 r.NoTeleport = false;
-                r.Notes.Add($"boss tek karede {bossJump:F2} m sÄ±Ã§radÄ± (sÄ±nÄ±r {bossLimit:F2} m, t={bossJumpAt:F2})");
+                r.Notes.Add($"boss tek karede {bossJump:F2} m sıçradı (sınır {bossLimit:F2} m, t={bossJumpAt:F2})");
             }
 
-            // 8) ayaklar yerde â€” havada olmayan kareler ve skill bitiminden 0,3 sn sonra
+            // 8) ayaklar yerde — havada olmayan kareler ve skill bitiminden 0,3 sn sonra
             EvaluateGround(r);
 
             // 5) hata yok
@@ -1815,13 +1815,13 @@ namespace Dovus.Game.Editor
                 r.Notes.Add("hata: " + string.Join(" | ", errors.Take(2)));
             var warns = _logs.Where(l => l.StartsWith("WARN")).Distinct().Take(2).ToList();
             if (warns.Count > 0)
-                r.Notes.Add("uyarÄ±: " + string.Join(" | ", warns.Select(w => w.Substring(5))));
+                r.Notes.Add("uyarı: " + string.Join(" | ", warns.Select(w => w.Substring(5))));
 
-            // 6) sÃ¼re
+            // 6) süre
             if (i0 < 0)
             {
                 r.OnTime = false;
-                r.Notes.Add("kalÄ±p hiÃ§ oynamadÄ±");
+                r.Notes.Add("kalıp hiç oynamadı");
             }
             else
             {
@@ -1848,11 +1848,11 @@ namespace Dovus.Game.Editor
                 if (bang > _info.RecoverySec + StartTolSec)
                     r.Notes.Add($"toparlanma {bang:F2} sn (tablo {_info.RecoverySec:F2})");
                 if (!startOk)
-                    r.Notes.Add($"kalÄ±p bang'den {tStart - bang:F2} sn sonra baÅŸladÄ±");
+                    r.Notes.Add($"kalıp bang'den {tStart - bang:F2} sn sonra başladı");
                 if (!templateOk)
-                    r.Notes.Add($"kalÄ±p {r.TemplateSec:F2} sn (beklenen {_info.ExpectedSec:F2})");
+                    r.Notes.Add($"kalıp {r.TemplateSec:F2} sn (beklenen {_info.ExpectedSec:F2})");
                 if (!totalOk)
-                    r.Notes.Add($"cast {r.TotalSec:F2} sn'de bitti (beklenen â‰¤ {totalLimit:F2})");
+                    r.Notes.Add($"cast {r.TotalSec:F2} sn'de bitti (beklenen ≤ {totalLimit:F2})");
             }
 
             r.Legs = LegSummary();
@@ -1873,9 +1873,9 @@ namespace Dovus.Game.Editor
         }
 
         /// <summary>
-        /// mermi_sil etkisi: dÃ¼zenek mermisinden en az biri silinmeli / yutulmalÄ± / geri dÃ¶nmeli / perdeye
-        /// girmeli. yut: yutma + oyuncu canÄ± arttÄ±. geri_gonder: geri dÃ¶nÃ¼ÅŸ + boss canÄ± dÃ¼ÅŸtÃ¼.
-        /// bag_hatti: baÄŸ ÅŸeridi sildi. CanlÄ± mermi hiÃ§bir karede tavanÄ± (40) aÅŸmamalÄ±.
+        /// mermi_sil etkisi: düzenek mermisinden en az biri silinmeli / yutulmalı / geri dönmeli / perdeye
+        /// girmeli. yut: yutma + oyuncu canı arttı. geri_gonder: geri dönüş + boss canı düştü.
+        /// bag_hatti: bağ şeridi sildi. Canlı mermi hiçbir karede tavanı (40) aşmamalı.
         /// </summary>
         static void EvaluateProjectiles(PlaySweepResult r, List<string> effects, int heal)
         {
@@ -1889,32 +1889,32 @@ namespace Dovus.Game.Editor
             int erased = sim.ErasedTotal, absorbed = sim.AbsorbedTotal, reflected = sim.ReflectedTotal;
             int shrouded = sim.ShroudedTotal, linked = sim.LinkErasedTotal;
             int any = erased + absorbed + reflected + shrouded + linked;
-            effects.Add($"mermi sil {erased} yut {absorbed} dÃ¶n {reflected} perde {shrouded} baÄŸ {linked}");
+            effects.Add($"mermi sil {erased} yut {absorbed} dön {reflected} perde {shrouded} bağ {linked}");
             if (any < 1)
             {
                 r.Effect = false;
-                r.Notes.Add("mermi_sil: dÃ¼zenek mermisi silinmedi");
+                r.Notes.Add("mermi_sil: düzenek mermisi silinmedi");
             }
             if (_info.ExpectsAbsorb && (absorbed < 1 || heal <= 0))
             {
                 r.Effect = false;
-                r.Notes.Add($"yut: yutulan {absorbed}, oyuncu canÄ± +{heal}");
+                r.Notes.Add($"yut: yutulan {absorbed}, oyuncu canı +{heal}");
             }
             if (_info.ExpectsReflect && (reflected < 1 || r.Damage <= 0.01f))
             {
                 r.Effect = false;
-                r.Notes.Add($"geri_gonder: dÃ¶nen {reflected}, boss hasarÄ± {r.Damage:F1}");
+                r.Notes.Add($"geri_gonder: dönen {reflected}, boss hasarı {r.Damage:F1}");
             }
             if (_info.ExpectsLinkErase && linked < 1)
             {
                 r.Effect = false;
-                r.Notes.Add("bag_hatti: baÄŸ ÅŸeridi mermi silmedi");
+                r.Notes.Add("bag_hatti: bağ şeridi mermi silmedi");
             }
             int peak = Math.Max(sim.PeakAlive, _frames.Count > 0 ? _frames.Max(x => x.ProjectilesAlive) : 0);
             if (peak > HostileProjectiles.DefaultMaxAlive)
             {
                 r.Effect = false;
-                r.Notes.Add($"mermi tavanÄ± aÅŸÄ±ldÄ±: {peak}");
+                r.Notes.Add($"mermi tavanı aşıldı: {peak}");
             }
         }
 
@@ -1932,7 +1932,7 @@ namespace Dovus.Game.Editor
             for (int i = 0; i < _frames.Count; i++)
             {
                 Frame f = _frames[i];
-                // Biten kalÄ±bÄ±n ertelenmiÅŸ son karesi (tarama sÄ±Ã§rama Ã¶lÃ§Ã¼sÃ¼ iÃ§in) iniÅŸ sayÄ±lÄ±r.
+                // Biten kalıbın ertelenmiş son karesi (tarama sıçrama ölçüsü için) iniş sayılır.
                 if (!f.Playing || f.RunnerDone)
                     continue;
                 lastPlay = i;
@@ -1973,23 +1973,23 @@ namespace Dovus.Game.Editor
 
             float settleErr = Mathf.Abs(settle.Feet - settle.FootGround);
             r.FootSettleM = settleErr;
-            // BitiÅŸ Ã¶lÃ§Ã¼sÃ¼ nokta Ã¶rneÄŸi; hÄ±zla gevÅŸemez. CanlÄ± eÅŸik kare sÃ¼resiyle Ã¶lÃ§eklenir.
+            // Bitiş ölçüsü nokta örneği; hızla gevşemez. Canlı eşik kare süresiyle ölçeklenir.
             bool settleOk = haveSettle && settleErr <= Grounding.SettleSlackM + 0.0001f;
             r.Grounded = liveOk && settleOk;
             if (!liveOk)
-                r.Notes.Add($"ayak yerden {breach:F2} m (havada deÄŸil, sÄ±nÄ±r {breachLimit:F2} m @ {breachDt * 1000f:F0} ms, t={breachAt:F2}" +
+                r.Notes.Add($"ayak yerden {breach:F2} m (havada değil, sınır {breachLimit:F2} m @ {breachDt * 1000f:F0} ms, t={breachAt:F2}" +
                             (string.IsNullOrEmpty(breachPhase) ? "" : ", faz " + breachPhase) + ")");
             if (!haveSettle)
-                r.Notes.Add("ayak iniÅŸi: skill bitiminden 0,30 sn Ã¶lÃ§Ã¼lemedi");
+                r.Notes.Add("ayak inişi: skill bitiminden 0,30 sn ölçülemedi");
             else if (!settleOk)
-                r.Notes.Add($"skill bitiminden {Grounding.SettleAfterSec:F2} sn sonra ayak {settleErr:F2} m (sÄ±nÄ±r {Grounding.SettleSlackM:F2} m)");
+                r.Notes.Add($"skill bitiminden {Grounding.SettleAfterSec:F2} sn sonra ayak {settleErr:F2} m (sınır {Grounding.SettleSlackM:F2} m)");
 
             float bossErr = Mathf.Abs(settle.BossFeet - settle.BossFootGround);
             float allyErr = Mathf.Abs(settle.AllyFeet - settle.AllyFootGround);
             if (bossErr > Grounding.LiveSlackM || allyErr > Grounding.LiveSlackM)
             {
                 r.Grounded = false;
-                r.Notes.Add($"zemin dÄ±ÅŸÄ±: boss {bossErr:F2} m, dost {allyErr:F2} m");
+                r.Notes.Add($"zemin dışı: boss {bossErr:F2} m, dost {allyErr:F2} m");
             }
         }
 
@@ -2019,7 +2019,7 @@ namespace Dovus.Game.Editor
             return best;
         }
 
-        /// <summary>Oyuncu â‰¥1,5 m/s giderken bacak klibinin oynadÄ±ÄŸÄ± kare oranÄ±.</summary>
+        /// <summary>Oyuncu ≥1,5 m/s giderken bacak klibinin oynadığı kare oranı.</summary>
         static string LegSummary()
         {
             int moving = 0;
@@ -2047,13 +2047,13 @@ namespace Dovus.Game.Editor
             if (moving == 0)
                 return "";
             return legs > 0
-                ? $"{legs}/{moving} kare koÅŸu, ayak/gÃ¶vde hÄ±z oranÄ± {ratio / legs:F2}"
-                : $"0/{moving} kare koÅŸu";
+                ? $"{legs}/{moving} kare koşu, ayak/gövde hız oranı {ratio / legs:F2}"
+                : $"0/{moving} kare koşu";
         }
 
-        // ---------------------------------------------------------------- Ã§Ä±ktÄ±
+        // ---------------------------------------------------------------- çıktı
 
-        /// <summary>BoÅŸsa docs/play-sweep. BaÅŸsÄ±z koÅŸucu (tools/SweepV2) kendi klasÃ¶rÃ¼nÃ¼ verir.</summary>
+        /// <summary>Boşsa docs/play-sweep. Başsız koşucu (tools/SweepV2) kendi klasörünü verir.</summary>
         public static string OutputDir { get; set; } = "";
 
         static string OutDir()
@@ -2070,7 +2070,7 @@ namespace Dovus.Game.Editor
             int pass = Results.Count(r => r.Pass);
             var byWeapon = Results.GroupBy(r => r.Case.Weapon)
                 .Select(g => $"{g.Key}: {g.Count(r => r.Pass)}/{g.Count()}");
-            LastSummary = $"{pass}/{Results.Count} geÃ§ti @ {_speed:0.#}x ({string.Join(", ", byWeapon)})";
+            LastSummary = $"{pass}/{Results.Count} geçti @ {_speed:0.#}x ({string.Join(", ", byWeapon)})";
 
             var csv = new StringBuilder();
             csv.AppendLine("kombo,isim,silah,kalip,cast,isabet,konum,govdeye_girmedi,tek_sistem,hata_yok,sure,sicrama_yok,yerde,etki_kontrol,gecti,"
@@ -2092,23 +2092,23 @@ namespace Dovus.Game.Editor
             File.WriteAllText(Path.Combine(dir, safe + ".csv"), csv.ToString(), new UTF8Encoding(false));
 
             var detail = new StringBuilder();
-            detail.AppendLine("# Play taramasÄ± " + _label + " @ " + _speed.ToString("0.#", CultureInfo.InvariantCulture)
-                               + "x â€” " + LastSummary);
+            detail.AppendLine("# Play taraması " + _label + " @ " + _speed.ToString("0.#", CultureInfo.InvariantCulture)
+                               + "x — " + LastSummary);
             detail.AppendLine(WorstFeet());
             foreach (PlaySweepResult r in Results.Where(x => !x.Pass))
             {
                 var failed = new List<string>();
                 if (!r.Cast) failed.Add("cast");
                 if (r.Cast && !r.Hit) failed.Add("isabet");
-                if (r.Cast && !r.Position) failed.Add($"konum({r.ExpectedPos}â†’{r.ActualPos})");
-                if (r.Cast && !r.NotInside) failed.Add("gÃ¶vde");
+                if (r.Cast && !r.Position) failed.Add($"konum({r.ExpectedPos}→{r.ActualPos})");
+                if (r.Cast && !r.NotInside) failed.Add("gövde");
                 if (r.Cast && !r.OneSystem) failed.Add("tek-sistem");
                 if (r.Cast && !r.NoErrors) failed.Add("hata");
-                if (r.Cast && !r.OnTime) failed.Add("sÃ¼re");
-                if (r.Cast && !r.NoTeleport) failed.Add("sÄ±Ã§rama");
+                if (r.Cast && !r.OnTime) failed.Add("süre");
+                if (r.Cast && !r.NoTeleport) failed.Add("sıçrama");
                 if (r.Cast && !r.Grounded) failed.Add("yerde");
                 if (r.Cast && !r.Effect) failed.Add("etki");
-                detail.AppendLine($"{r.Case.Id} {r.Name} [{r.Weapon}] KALDI: {string.Join(", ", failed)} â€” {string.Join("; ", r.Notes)}");
+                detail.AppendLine($"{r.Case.Id} {r.Name} [{r.Weapon}] KALDI: {string.Join(", ", failed)} — {string.Join("; ", r.Notes)}");
             }
             detail.AppendLine();
             detail.Append(_detail);
@@ -2117,12 +2117,12 @@ namespace Dovus.Game.Editor
 
         static void WriteTrace(PlaySweepCase c, PlaySweepResult r)
         {
-            _detail.AppendLine($"=== {c.Label} {c.Id} {r.Name} [{r.Weapon}] baÅŸlangÄ±Ã§ {c.StartDistM:F1} m, kalÄ±p {r.Template}, " +
+            _detail.AppendLine($"=== {c.Label} {c.Id} {r.Name} [{r.Weapon}] başlangıç {c.StartDistM:F1} m, kalıp {r.Template}, " +
                                $"boss r={_info.BossR:F2}, oyuncu r={_info.PlayerR:F2}, temas {r.Contact:F2}" +
-                               (Mathf.Abs(c.BossShiftX) > 0.001f ? $", boss kaymasÄ± {c.BossShiftX:F1} m" : "") +
-                               (Mathf.Abs(c.PlayerShiftM) > 0.001f ? $", oyuncu kaymasÄ± {c.PlayerShiftM:F1} m @{c.PlayerShiftAtSec:F2} sn" : ""));
-            _detail.AppendLine($"  sonuÃ§: {(r.Pass ? "GEÃ‡TÄ°" : "KALDI")} isabet={r.Hit} konum={r.ExpectedPos}â†’{r.ActualPos} gÃ¶vde={r.NotInside} " +
-                               $"tek={r.OneSystem} hata={r.NoErrors} sÃ¼re={r.OnTime} sÄ±Ã§rama_yok={r.NoTeleport} yerde={r.Grounded} " +
+                               (Mathf.Abs(c.BossShiftX) > 0.001f ? $", boss kayması {c.BossShiftX:F1} m" : "") +
+                               (Mathf.Abs(c.PlayerShiftM) > 0.001f ? $", oyuncu kayması {c.PlayerShiftM:F1} m @{c.PlayerShiftAtSec:F2} sn" : ""));
+            _detail.AppendLine($"  sonuç: {(r.Pass ? "GEÇTİ" : "KALDI")} isabet={r.Hit} konum={r.ExpectedPos}→{r.ActualPos} gövde={r.NotInside} " +
+                               $"tek={r.OneSystem} hata={r.NoErrors} süre={r.OnTime} sıçrama_yok={r.NoTeleport} yerde={r.Grounded} " +
                                $"ayak={r.FootLiveM:F2}/{r.FootSettleM:F2} hasar={r.Damage:F1} etki=[{r.Effects}] bacak=[{r.Legs}]");
             foreach (string n in r.Notes)
                 _detail.AppendLine("  not: " + n);
@@ -2130,7 +2130,7 @@ namespace Dovus.Game.Editor
                 _detail.AppendLine("  log: " + l);
             Vector3 start = _pre.P;
             Vector3 back = Flat(start - _pre.B).normalized;
-            _detail.AppendLine("  t | faz | merkez_m | taraf(+Ã¶n/-arka) | yan_m | hÄ±z_mps | yaw | taban_state(norm) | Ã¼st_state | Speed | Playback | bossHP | oyuncuHP");
+            _detail.AppendLine("  t | faz | merkez_m | taraf(+ön/-arka) | yan_m | hız_mps | yaw | taban_state(norm) | üst_state | Speed | Playback | bossHP | oyuncuHP");
             for (int i = 0; i < _frames.Count; i++)
             {
                 Frame f = _frames[i];
@@ -2155,7 +2155,7 @@ namespace Dovus.Game.Editor
             for (int k = 0; k < _hitTimes.Count; k++)
             {
                 if (_hitTimes[k] > tPrev && _hitTimes[k] <= t0)
-                    marks.Add($"VURUÅ@boss{Flat(_hitOrigins[k] - _frames[i].B).magnitude:F2}m");
+                    marks.Add($"VURUŞ@boss{Flat(_hitOrigins[k] - _frames[i].B).magnitude:F2}m");
             }
             return marks.Count > 0 ? " | " + string.Join(" ", marks) : "";
         }
@@ -2163,26 +2163,26 @@ namespace Dovus.Game.Editor
         static string WorstFeet()
         {
             if (Results.Count == 0)
-                return "Yere basma: Ã¶lÃ§Ã¼m yok";
+                return "Yere basma: ölçüm yok";
             var ranked = Results
                 .Select(r => (r, err: Mathf.Max(r.FootLiveM, r.FootSettleM)))
                 .OrderByDescending(x => x.err)
                 .Take(8)
                 .ToList();
             string list = string.Join(", ", ranked.Select(x =>
-                $"{x.r.Case.Id} canlÄ± {x.r.FootLiveM:F2} m / iniÅŸ {x.r.FootSettleM:F2} m"));
-            return "Yere basma en kÃ¶tÃ¼ (havada deÄŸil â‰¤ "
+                $"{x.r.Case.Id} canlı {x.r.FootLiveM:F2} m / iniş {x.r.FootSettleM:F2} m"));
+            return "Yere basma en kötü (havada değil ≤ "
                    + Grounding.LiveSlackM.ToString("F2", CultureInfo.InvariantCulture)
-                   + " m Ã— kare/(1/60), bitiÅŸ+0,30 sn â‰¤ "
+                   + " m × kare/(1/60), bitiş+0,30 sn ≤ "
                    + Grounding.SettleSlackM.ToString("F2", CultureInfo.InvariantCulture)
-                   + " m, hÄ±zdan baÄŸÄ±msÄ±z): " + list;
+                   + " m, hızdan bağımsız): " + list;
         }
 
         static string Q(string s) => "\"" + (s ?? "").Replace("\"", "'") + "\"";
         static string B(bool b) => b ? "1" : "0";
         static string N(float f) => f.ToString("F2", CultureInfo.InvariantCulture);
 
-        // ---------------------------------------------------------------- yardÄ±mcÄ±lar
+        // ---------------------------------------------------------------- yardımcılar
 
         static void CollectStateNames()
         {

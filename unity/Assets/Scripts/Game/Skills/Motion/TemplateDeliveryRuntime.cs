@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Boss;
+using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
 using Dovus.Core.Casting;
@@ -152,7 +152,7 @@ namespace Dovus.Game.Skills.Motion
         }
 
         /// <summary>
-        /// Ä°tme her zaman oyuncudan dÄ±ÅŸarÄ±. VuruÅŸ noktasÄ± boss'un Ã¼stÃ¼nde ya da Ã¶tesinde
+        /// İtme her zaman oyuncudan dışarı. Vuruş noktası boss'un üstünde ya da ötesinde
         /// olabilir; oradan itmek boss'u oyuncuya yollar (1-6, 5-2).
         /// </summary>
         void TryTemplateKnockback()
@@ -170,11 +170,11 @@ namespace Dovus.Game.Skills.Motion
             if (!skill.IsEmpty && StatusApplicator.IsSelfTargeted(skill) && !landingWave)
                 return;
             float knock = _host.Combat != null ? _host.Combat.Manifestation.BossKnockbackM : 1.35f;
-            // JSON itme mesafesi yalnÄ±z zorla yer deÄŸiÅŸtirmeye izin varken; yoksa eski genel itme.
+            // JSON itme mesafesi yalnız zorla yer değiştirmeye izin varken; yoksa eski genel itme.
             if (push > 0f && ForcedDisplacement.Allows(_host.BossStatus != null ? _host.BossStatus.Board : null))
             {
                 knock = push;
-                _host.JsonLog($"itme {knock:0.##}m" + (landingWave ? " (iniÅŸ dalgasÄ±)" : ""));
+                _host.JsonLog($"itme {knock:0.##}m" + (landingWave ? " (iniş dalgası)" : ""));
             }
             float shake = _host.Combat != null ? _host.Combat.Manifestation.BossShakeSec * 0.45f : 0.12f;
             double now = _host.Clock != null ? _host.Clock.Director.WorldTimeMs : 0;
@@ -249,7 +249,7 @@ namespace Dovus.Game.Skills.Motion
                         break;
                     case DeliveryBeatKind.Pincer:
                         PulseDelivery(_skill, _pending, _motion, beat.Power, false, false);
-                        _host.JsonLog($"kÄ±skaÃ§ ikinci vuruÅŸ Ã—{beat.Power:0.##}");
+                        _host.JsonLog($"kıskaç ikinci vuruş ×{beat.Power:0.##}");
                         break;
                     case DeliveryBeatKind.FieldTick:
                         if (!_host.LandingFieldAllows(_skill))
@@ -302,7 +302,7 @@ namespace Dovus.Game.Skills.Motion
             {
                 if (GuardTriggerDelivery.AllowImmediate(plan, "kalkan"))
                     _host.ApplyClosingStatuses(pending, skill, bossReached: !friendly);
-                // Kuyruk oyuncuyu taÅŸÄ±maz; oyuncuyu yalnÄ±z hareket kalÄ±bÄ± taÅŸÄ±r.
+                // Kuyruk oyuncuyu taşımaz; oyuncuyu yalnız hareket kalıbı taşır.
                 if (!friendly)
                     _host.ApplyMechanicHitEffects(
                         plan,

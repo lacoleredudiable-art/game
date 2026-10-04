@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Boss;
+using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
 using Dovus.Core.Casting;
@@ -35,7 +35,7 @@ public sealed class MechanicVolume
             public ClosingHit Closing;
             public bool Triggered;
             public double ArmAtMs;
-            /// <summary>mermi_sil: bu hacmin dÃ¼ÅŸman mermisine kuralÄ± (boÅŸ = yok). MD.Projectiles uygular.</summary>
+            /// <summary>mermi_sil: bu hacmin düşman mermisine kuralı (boş = yok). MD.Projectiles uygular.</summary>
             public EraseSpec Erase;
             public double NextEraseMs;
             public bool TwiceDone;

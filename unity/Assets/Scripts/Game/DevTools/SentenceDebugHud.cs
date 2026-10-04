@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Boss;
+using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
 using Dovus.Core.Casting;
@@ -16,7 +16,7 @@ using UnityEngine.UI;
 
 namespace Dovus.Game.DevTools
 {
-    /// <summary>Fiil + sÄ±fat debug metni â€” kabul kriteri doÄŸrulama.</summary>
+    /// <summary>Fiil + sıfat debug metni — kabul kriteri doğrulama.</summary>
     public sealed class SentenceDebugHud : MonoBehaviour
     {
         const float NoteHoldSec = 1.2f;
@@ -37,8 +37,8 @@ namespace Dovus.Game.DevTools
             _skills = skills ?? SkillMotorLoader.Load();
             _root = new GameObject("SentenceDebug");
             _root.transform.SetParent(canvasRoot, false);
-            // Canvas ScreenSpaceCamera'ya geÃ§tiÄŸi iÃ§in layer artÄ±k Ã¶nemli: yeni GameObject
-            // Default'ta doÄŸuyor ve Overlay kameranÄ±n cullingMask'i yalnÄ±zca UI (T8.1).
+            // Canvas ScreenSpaceCamera'ya geçtiği için layer artık önemli: yeni GameObject
+            // Default'ta doğuyor ve Overlay kameranın cullingMask'i yalnızca UI (T8.1).
             if (canvasRoot != null)
                 _root.layer = canvasRoot.gameObject.layer;
             var rect = _root.AddComponent<RectTransform>();
@@ -58,7 +58,7 @@ namespace Dovus.Game.DevTools
             _text.verticalOverflow = VerticalWrapMode.Overflow;
             _text.raycastTarget = false;
 
-            // Telefonda / varsayÄ±landa kapalÄ± â€” premium HUD'u boÄŸuyordu.
+            // Telefonda / varsayılanda kapalı — premium HUD'u boğuyordu.
             _root.SetActive(show);
 
 #if UNITY_EDITOR || DOVUS_DEBUG
@@ -78,12 +78,12 @@ namespace Dovus.Game.DevTools
 #endif
         public void NoteDodge(bool abortedSentence)
         {
-            Note(abortedSentence ? "DODGE (cÃ¼mle iptal)" : "DODGE (kilit kesildi)");
+            Note(abortedSentence ? "DODGE (cümle iptal)" : "DODGE (kilit kesildi)");
         }
 
-        public void NoteCommit() => Note("ERKEN KAPANIÅ (merkez Ã¶der)");
+        public void NoteCommit() => Note("ERKEN KAPANIŞ (merkez öder)");
 
-        public void NoteBasicStrike() => Note("DÃœZ VURUÅ");
+        public void NoteBasicStrike() => Note("DÜZ VURUŞ");
 
         public void NoteSkillBang(string title, string mechanics)
         {
@@ -99,8 +99,8 @@ namespace Dovus.Game.DevTools
                 string grade = result.Grade switch
                 {
                     DodgeGrade.Mukemmel => "PERFECT",
-                    DodgeGrade.Harika => "HARÄ°KA",
-                    DodgeGrade.Temiz => "TEMÄ°Z",
+                    DodgeGrade.Harika => "HARİKA",
+                    DodgeGrade.Temiz => "TEMİZ",
                     DodgeGrade.Siyirdi => "SIYIRDI",
                     _ => "SIYIRMA"
                 };
@@ -114,9 +114,9 @@ namespace Dovus.Game.DevTools
                 return;
             }
 
-            // Etki hacminin dÄ±ÅŸÄ±ndaydÄ±: derece yok. Yazmazsak oyuncu "neden derece almadÄ±m"
-            // sorusunu cevapsÄ±z bÄ±rakÄ±yor (T8.1).
-            Note("MENZÄ°L DIÅI (derece yok)");
+            // Etki hacminin dışındaydı: derece yok. Yazmazsak oyuncu "neden derece almadım"
+            // sorusunu cevapsız bırakıyor (T8.1).
+            Note("MENZİL DIŞI (derece yok)");
         }
 
         void Note(string text)
@@ -127,7 +127,7 @@ namespace Dovus.Game.DevTools
 
         void LateUpdate()
         {
-            // O11: gizliyken her kare metin kurma (telefonda varsayÄ±lan gizli).
+            // O11: gizliyken her kare metin kurma (telefonda varsayılan gizli).
             if (_text == null || _engine == null || _root == null || !_root.activeSelf)
                 return;
 
@@ -138,7 +138,7 @@ namespace Dovus.Game.DevTools
                 string skill = SkillLine(s);
                 if (!string.IsNullOrEmpty(skill))
                     sb.Append(skill).Append('\n');
-                sb.Append("Ã§izim: ");
+                sb.Append("çizim: ");
                 AppendWords(sb, s);
                 sb.Append("\npencere: ").Append(s.RemainingWindowMs.ToString("0")).Append(" ms");
             }
@@ -147,27 +147,27 @@ namespace Dovus.Game.DevTools
                 string skill = SkillLine(s);
                 if (!string.IsNullOrEmpty(skill))
                     sb.Append(skill).Append('\n');
-                sb.Append("kapanÄ±ÅŸ: ");
+                sb.Append("kapanış: ");
                 AppendWords(sb, s);
                 if (s.LastClosing.HasValue)
-                    sb.Append(" â†’ ").Append(Name(s.LastClosing.Value.Type));
-                // Â§5: toparlanma bir poz deÄŸil, kilitli sÃ¼re. Kesme becerisi burada okunur.
+                    sb.Append(" → ").Append(Name(s.LastClosing.Value.Type));
+                // §5: toparlanma bir poz değil, kilitli süre. Kesme becerisi burada okunur.
                 sb.Append("\nkilit: ").Append(s.RemainingRecoveryMs.ToString("0")).Append(" ms");
             }
             else if (s.Phase == SentencePhase.Aborted)
             {
-                sb.Append("iptal (Ã¶deme yok)");
+                sb.Append("iptal (ödeme yok)");
             }
             else
             {
-                sb.Append("altÄ±gen: sÃ¼rÃ¼kle Â· merkez: vur Â· disk: dodge");
+                sb.Append("altıgen: sürükle · merkez: vur · disk: dodge");
             }
 
             if (_vitals != null)
             {
                 sb.Append('\n');
                 if (_vitals.IsDown)
-                    sb.Append("Ã¶lÃ¼m â€” dÃ¶nÃ¼ÅŸ ").Append(_vitals.RespawnInSec.ToString("0.0")).Append(" sn");
+                    sb.Append("ölüm — dönüş ").Append(_vitals.RespawnInSec.ToString("0.0")).Append(" sn");
                 else
                     sb.Append("can: ").Append(_vitals.Hp).Append('/').Append(_vitals.MaxHp);
             }
@@ -200,7 +200,7 @@ namespace Dovus.Game.DevTools
         {
             if (s.Words.Count == 0)
                 return null;
-            // JSON yÃ¼klenemediyse gÃ¶mÃ¼lÃ¼ yedek yok: boÅŸ motor dÃ¶ner, burada aÃ§Ä±kÃ§a yazÄ±lÄ±r.
+            // JSON yüklenemediyse gömülü yedek yok: boş motor döner, burada açıkça yazılır.
             if (_skills == null || !_skills.IsV61)
                 return "element-sistemi JSON yok";
             SkillResolution r = _skills.ResolveWords(s.Words);
@@ -208,7 +208,7 @@ namespace Dovus.Game.DevTools
                 return null;
             string line = r.DisplayName;
             if (!string.IsNullOrEmpty(r.VerbName))
-                line += "  Â·  " + r.VerbName;
+                line += "  ·  " + r.VerbName;
             if (!string.IsNullOrEmpty(r.AdjectiveName) && s.Words.Count >= 1)
                 line += " / " + r.AdjectiveName;
             if (!string.IsNullOrEmpty(r.SilhouetteAxis)
@@ -217,7 +217,7 @@ namespace Dovus.Game.DevTools
                 line += " {" + r.SilhouetteAxis + "}";
             if (r.HitboxScaleMult > 0f && System.Math.Abs(r.HitboxScaleMult - 1f) > 0.05f
                 && s.Words.Count >= 2)
-                line += " Ã—" + r.HitboxScaleMult.ToString("0.#");
+                line += " ×" + r.HitboxScaleMult.ToString("0.#");
             if (r.Mechanics != null && r.Mechanics.Length > 0)
                 line += "  [" + string.Join(",", r.Mechanics) + "]";
             return line;

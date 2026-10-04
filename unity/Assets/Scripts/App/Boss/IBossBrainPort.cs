@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
@@ -19,7 +19,7 @@ namespace Dovus.App.Boss
 
         bool IsPlayerDown { get; }
 
-        /// <summary>Faz 2 duyurusu gerekiyorsa yapar (kÃ¼kreme sunumu).</summary>
+        /// <summary>Faz 2 duyurusu gerekiyorsa yapar (kükreme sunumu).</summary>
         void TryAnnouncePhase2Roar();
 
         bool IsVisualBusy { get; }

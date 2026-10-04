@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Equipment;
+using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using Dovus.Game.Actors;
 using Dovus.Game.Casting;
@@ -12,7 +12,7 @@ namespace Dovus.Game.DevTools
 {
     /// <summary>
     /// v6 implementation ladder controls: deterministic 1-1 smoke cast and element paint cycle.
-    /// Build seÃ§imi <see cref="BuildSelectScreen"/>'dedir (B kÄ±sayolu onu aÃ§ar).
+    /// Build seçimi <see cref="BuildSelectScreen"/>'dedir (B kısayolu onu açar).
     /// </summary>
     public sealed class V611DebugPanel : MonoBehaviour
     {
@@ -47,7 +47,7 @@ namespace Dovus.Game.DevTools
 
         void Build(Transform canvasRoot)
         {
-            // Ãœst ÅŸeritte AYAR'Ä±n solu: sol Ã¼st kÃ¶ÅŸe oyuncu barlarÄ±nÄ±n baÅŸlÄ±ÄŸÄ±nÄ± Ã¶rtÃ¼yordu.
+            // Üst şeritte AYAR'ın solu: sol üst köşe oyuncu barlarının başlığını örtüyordu.
             var toggle = CreateButton(canvasRoot, "V6", new Vector2(0.80f, 0.90f), new Vector2(0.855f, 0.975f));
             toggle.onClick.AddListener(Toggle);
             _toggleGo = toggle.gameObject;
@@ -68,19 +68,19 @@ namespace Dovus.Game.DevTools
             vertical.childControlHeight = true;
             vertical.childForceExpandHeight = false;
 
-            Text heading = CreateLabel(_panel.transform, "V6.1.1 â€” BASÄ°T DOÄRULAMA", 17);
+            Text heading = CreateLabel(_panel.transform, "V6.1.1 — BASİT DOĞRULAMA", 17);
             heading.alignment = TextAnchor.MiddleCenter;
             heading.gameObject.AddComponent<LayoutElement>().preferredHeight = 34f;
 
-            Button build = CreateRowButton(_panel.transform, "BUILD SEÃ‡ (B)");
+            Button build = CreateRowButton(_panel.transform, "BUILD SEÇ (B)");
             build.onClick.AddListener(OpenBuildSelect);
             Button smoke = CreateRowButton(_panel.transform, "TEST 1-1 (F1)");
             smoke.onClick.AddListener(SmokeCast);
-            Button element = CreateRowButton(_panel.transform, "ELEMENT DEÄÄ°ÅTÄ°R (E)");
+            Button element = CreateRowButton(_panel.transform, "ELEMENT DEĞİŞTİR (E)");
             element.onClick.AddListener(CycleElement);
-            Button weapon = CreateRowButton(_panel.transform, "SÄ°LAH DEÄÄ°ÅTÄ°R (F2)");
+            Button weapon = CreateRowButton(_panel.transform, "SİLAH DEĞİŞTİR (F2)");
             weapon.onClick.AddListener(CycleWeapon);
-            Button devHp = CreateRowButton(_panel.transform, "Dev HP: AÃ‡IK");
+            Button devHp = CreateRowButton(_panel.transform, "Dev HP: AÇIK");
             devHp.onClick.AddListener(ToggleDevHp);
             _devHpLabel = devHp.GetComponentInChildren<Text>();
 
@@ -147,8 +147,8 @@ namespace Dovus.Game.DevTools
         {
             bool accepted = _input != null && _input.TryDebugCastSkill(1, 1);
             SetStatus(accepted
-                ? "1-1 aynÄ± canlÄ± cast yoluna gÃ¶nderildi."
-                : "1-1 iÃ§in SaldÄ±rÄ± rÃ¼nÃ¼ build'de olmalÄ±.");
+                ? "1-1 aynı canlı cast yoluna gönderildi."
+                : "1-1 için Saldırı rünü build'de olmalı.");
             if (accepted && IsOpen)
                 Toggle();
         }
@@ -167,7 +167,7 @@ namespace Dovus.Game.DevTools
             if (_devHpLabel == null)
                 return;
             bool on = _vitals != null && _vitals.DevHpEnabled;
-            _devHpLabel.text = on ? "Dev HP: AÃ‡IK" : "Dev HP: KAPALI";
+            _devHpLabel.text = on ? "Dev HP: AÇIK" : "Dev HP: KAPALI";
         }
 
         void CycleElement()
@@ -182,17 +182,17 @@ namespace Dovus.Game.DevTools
             EquipmentItem weapon = _manifestation?.CycleEquippedWeapon();
             RefreshWeapon(weapon);
             if (weapon != null)
-                SetStatus("Silah: " + weapon.Name + " Â· F1 ile 1-1 dene");
+                SetStatus("Silah: " + weapon.Name + " · F1 ile 1-1 dene");
         }
 
         void Refresh()
         {
             ElementPaintNode? paint = _manifestation?.SelectedElementPaint;
             if (_element != null)
-                _element.text = paint.HasValue ? "Element boya: " + paint.Value.Name : "Element boya: â€”";
+                _element.text = paint.HasValue ? "Element boya: " + paint.Value.Name : "Element boya: —";
             RefreshWeapon(_manifestation?.EquippedWeapon);
             RefreshDevHp();
-            SetStatus("B build Â· F1 smoke Â· F2 silah Â· E basÄ±lÄ±: element radial");
+            SetStatus("B build · F1 smoke · F2 silah · E basılı: element radial");
         }
 
         void RefreshWeapon(EquipmentItem weapon)
@@ -201,7 +201,7 @@ namespace Dovus.Game.DevTools
                 return;
             if (weapon == null)
             {
-                _weapon.text = "Silah: â€”";
+                _weapon.text = "Silah: —";
                 return;
             }
             string route = Dovus.Core.Casting.SkillExecutorRouter.IsRangedWeapon(weapon)

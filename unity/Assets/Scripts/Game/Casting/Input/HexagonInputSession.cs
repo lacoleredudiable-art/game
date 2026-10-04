@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Boss;
+using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
 using Dovus.Core.Casting;
@@ -19,7 +19,7 @@ using UnityEngine;
 
 namespace Dovus.Game.Casting.Input
 {
-    /// <summary>HexagonInput paylaÅŸÄ±lan durum ve servis referanslarÄ± (MonoBehaviour deÄŸil).</summary>
+    /// <summary>HexagonInput paylaşılan durum ve servis referansları (MonoBehaviour değil).</summary>
     public sealed class HexagonInputSession
     {
         public PrototypeTuning Tuning = new();

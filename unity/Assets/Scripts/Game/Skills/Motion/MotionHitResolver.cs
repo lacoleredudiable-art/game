@@ -1,4 +1,4 @@
-﻿using Dovus.Core;
+using Dovus.Core;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
@@ -69,12 +69,12 @@ namespace Dovus.Game.Skills.Motion
                     _host.Motion.TemplateChain);
             }
 
-            // Fiil hasarÄ± kapanÄ±ÅŸta iner. Emici aktarÄ±mÄ±n eksi canÄ± base_damage 0 iken
-            // ayrÄ±ca boss'a yazÄ±lÄ±r; yoksa 1-2 gibi vuruÅŸlar iki kez vurur.
+            // Fiil hasarı kapanışta iner. Emici aktarımın eksi canı base_damage 0 iken
+            // ayrıca boss'a yazılır; yoksa 1-2 gibi vuruşlar iki kez vurur.
             if (geometry && _host.Motion.TemplateSkill.BaseDamage <= 0.01f)
                 ApplyDrainDamage(hit.Share);
 
-            // 2-9 ÅŸifasÄ± koruyucu tetikte bir kez iner; kalÄ±p vuruÅŸu aynÄ± cast'i Ã¶demez.
+            // 2-9 şifası koruyucu tetikte bir kez iner; kalıp vuruşu aynı cast'i ödemez.
             if (friendly && _host.IsHealSkill(_host.Motion.TemplateSkill)
                 && GuardTriggerDelivery.AllowImmediate(_host.LastMechanicPlan, "can"))
             {
@@ -93,7 +93,7 @@ namespace Dovus.Game.Skills.Motion
             bool selfPulse = hit.Anchor is "self" or "ring";
             if ((reached || selfPulse || arc) && !_host.Motion.TemplateStatusSent)
             {
-                // 4-9 kalkanÄ± da tetiÄŸin; StatusApplicator aynÄ± cast'te kalkan basmasÄ±n.
+                // 4-9 kalkanı da tetiğin; StatusApplicator aynı cast'te kalkan basmasın.
                 if (GuardTriggerDelivery.AllowImmediate(_host.LastMechanicPlan, "kalkan"))
                     _host.ApplyClosingStatuses(_host.Motion.TemplatePending, _host.Motion.TemplateSkill, bossReached: !friendly && (geometry || arc));
                 if (!friendly)
@@ -154,8 +154,8 @@ namespace Dovus.Game.Skills.Motion
         }
 
         /// <summary>
-        /// GÃ¶ÄŸÃ¼s ofseti dikeydir (0,35 m); yatay menzil kenardan kenara JSON boyudur.
-        /// KalÄ±p vuruÅŸu kÄ±sa kalsa da fiil hitbox'Ä± yetiyorsa isabet sayÄ±lÄ±r.
+        /// Göğüs ofseti dikeydir (0,35 m); yatay menzil kenardan kenara JSON boyudur.
+        /// Kalıp vuruşu kısa kalsa da fiil hitbox'ı yetiyorsa isabet sayılır.
         /// </summary>
         public bool JsonEdgeReachesBoss(Vector3 boss, float bossRadius)
         {
@@ -196,7 +196,7 @@ namespace Dovus.Game.Skills.Motion
             {
                 DesignWarnings.Once(
                     "motion.boss_radius",
-                    "Boss gÃ¶vdesi okunamadÄ±. VuruÅŸ payÄ± yedek 0.6 m.");
+                    "Boss gövdesi okunamadı. Vuruş payı yedek 0.6 m.");
                 return 0.6f;
             }
             return Mathf.Max(col.bounds.extents.x, col.bounds.extents.z);

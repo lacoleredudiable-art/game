@@ -1,4 +1,4 @@
-﻿using Dovus.App.Actors;
+using Dovus.App.Actors;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
@@ -15,10 +15,10 @@ using UnityEngine;
 namespace Dovus.Game.Actors
 {
     /// <summary>
-    /// Oyuncu canÄ± ve Ã¶lÃ¼m. Spec Â§11 hasar 22 verir, oyuncu tavanÄ± yok â€”
-    /// bir Ã§akma = Ã¶lÃ¼m ki respawn dÃ¶ngÃ¼sÃ¼ denenebilsin.
-    /// O4: dÃ¶nÃ¼ÅŸ sÃ¼resi dÃ¼nya saatiyle iÅŸler (duraklatmada durur; saat baÄŸlÄ± deÄŸilse gerÃ§ek saat);
-    /// dÃ¼ÅŸÃ¼ÅŸte ve dÃ¶nÃ¼ÅŸte oyuncu durum panosu temizlenir (yanma/zehir/sersem/kÃ¶k taÅŸÄ±nmaz).
+    /// Oyuncu canı ve ölüm. Spec §11 hasar 22 verir, oyuncu tavanı yok —
+    /// bir çakma = ölüm ki respawn döngüsü denenebilsin.
+    /// O4: dönüş süresi dünya saatiyle işler (duraklatmada durur; saat bağlı değilse gerçek saat);
+    /// düşüşte ve dönüşte oyuncu durum panosu temizlenir (yanma/zehir/sersem/kök taşınmaz).
     /// </summary>
     public sealed class PlayerVitals : MonoBehaviour
     {
@@ -33,7 +33,7 @@ namespace Dovus.Game.Actors
         public int Hp => _health.Hp;
         public int MaxHp => _health.MaxHp;
         public bool IsDown => _health.IsDown;
-        /// <summary>Play Sweep: can dÃ¼ÅŸer, Ã¶lÃ¼m ve doÄŸuÅŸ Ä±ÅŸÄ±nlamasÄ± olmaz.</summary>
+        /// <summary>Play Sweep: can düşer, ölüm ve doğuş ışınlaması olmaz.</summary>
         public bool SuppressDown
         {
             get => _health.SuppressDown;
@@ -42,10 +42,10 @@ namespace Dovus.Game.Actors
         public bool DevHpEnabled => _health.DevHpEnabled;
         public Vector3 SpawnPos => _spawnPos;
 
-        /// <summary>DÃ¶nÃ¼ÅŸe kalan gerÃ§ek saniye (HUD okur); ayakta ise 0.</summary>
+        /// <summary>Dönüşe kalan gerçek saniye (HUD okur); ayakta ise 0.</summary>
         public float RespawnInSec => _health.RespawnInSec(NowSec());
 
-        /// <summary>O4: dÃ¶nÃ¼ÅŸ zamanlayÄ±cÄ±sÄ± iÃ§in dÃ¼nya saati.</summary>
+        /// <summary>O4: dönüş zamanlayıcısı için dünya saati.</summary>
         public void BindClock(GameClock clock) => _clock = clock;
 
         float NowSec() => _clock != null
@@ -62,19 +62,19 @@ namespace Dovus.Game.Actors
         }
 
         /// <summary>
-        /// Dev HP aÃ§Ä±kken havuz 1_000_000_000. KapalÄ±yken Bind'deki normal tavan.
-        /// AÃ§Ä±lÄ±ÅŸta can da havuza Ã§ekilir; kapanÄ±nca normal tavana kÄ±rpÄ±lÄ±r.
+        /// Dev HP açıkken havuz 1_000_000_000. Kapalıyken Bind'deki normal tavan.
+        /// Açılışta can da havuza çekilir; kapanınca normal tavana kırpılır.
         /// </summary>
         public void SetDevHp(bool enabled) => _health.SetDevHp(enabled);
 
         /// <summary>
-        /// T10: panel slider'Ä± `PlayerMaxHp`'i canlÄ± deÄŸiÅŸtirebilsin diye â€” `Bind` tek seferlik
-        /// (bir sonraki respawn'a kadar eski tavanda kalÄ±rdÄ±). GÃ¼ncel can, yeni tavana kÄ±rpÄ±lÄ±r
-        /// (tavan dÃ¼ÅŸÃ¼rÃ¼lÃ¼rse anÄ±nda Ã¶lÃ¼m YOK â€” kÄ±rpma, hasar deÄŸil).
+        /// T10: panel slider'ı `PlayerMaxHp`'i canlı değiştirebilsin diye — `Bind` tek seferlik
+        /// (bir sonraki respawn'a kadar eski tavanda kalırdı). Güncel can, yeni tavana kırpılır
+        /// (tavan düşürülürse anında ölüm YOK — kırpma, hasar değil).
         /// </summary>
         public void SetMaxHp(int maxHp) => _health.SetMaxHp(maxHp);
 
-        /// <summary>Play sweep vakasÄ±: yarÄ± can, diriliÅŸ zamanlayÄ±cÄ±sÄ± sÄ±fÄ±r (eski private alan yansÄ±masÄ±).</summary>
+        /// <summary>Play sweep vakası: yarı can, diriliş zamanlayıcısı sıfır (eski private alan yansıması).</summary>
         public void ResetForSweepCase() => _health.ResetForSweepCase();
 
         public void CaptureSpawn()
@@ -127,7 +127,7 @@ namespace Dovus.Game.Actors
             return true;
         }
 
-        /// <summary>Ä°yileÅŸtirme â€” tavanÄ± aÅŸmaz. GerÃ§ekten eklenen canÄ± dÃ¶ner.</summary>
+        /// <summary>İyileştirme — tavanı aşmaz. Gerçekten eklenen canı döner.</summary>
         public int ApplyHeal(int amount) => _health.ApplyHeal(amount);
 
         void Update() => Tick();

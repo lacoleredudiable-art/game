@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Boss;
+using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
 using Dovus.Core.Casting;
@@ -18,8 +18,8 @@ using UnityEngine;
 namespace Dovus.Game.Data
 {
     /// <summary>
-    /// Binding sÄ±ra adÄ±m 1: tek canonical Resources JSON'u bir kez yÃ¼kler ve bÃ¼tÃ¼n
-    /// tÃ¼keticilere aynÄ± parse edilmiÅŸ tasarÄ±mÄ± verir.
+    /// Binding sıra adım 1: tek canonical Resources JSON'u bir kez yükler ve bütün
+    /// tüketicilere aynı parse edilmiş tasarımı verir.
     /// </summary>
     public static class ElementSystemJsonLoader
     {
@@ -47,13 +47,13 @@ namespace Dovus.Game.Data
             {
                 ElementSystemDocument doc = ElementSystemDocument.Parse(asset.text);
                 if (!ElementSystemHeader.TryParse(doc, 300, out ElementSystemHeader header))
-                    throw new InvalidOperationException("element-sistemi kÃ¶kÃ¼ okunamadÄ±.");
+                    throw new InvalidOperationException("element-sistemi kökü okunamadı.");
                 string version = header.Version;
                 if (!string.Equals(version, RequiredVersion, StringComparison.Ordinal))
                     throw new InvalidOperationException(
                         $"element-sistemi version {version}; {RequiredVersion} bekleniyor.");
                 if (!header.Binding)
-                    throw new InvalidOperationException("element-sistemi binding=true deÄŸil.");
+                    throw new InvalidOperationException("element-sistemi binding=true değil.");
 
                 SkillMotor motor = SkillMotor.FromDocument(doc);
                 EquipmentCatalog equipment = EquipmentCatalog.FromDocument(doc);
@@ -73,7 +73,7 @@ namespace Dovus.Game.Data
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[JSONLoader] v6.1.1 yÃ¼klenemedi: {e.Message}");
+                Debug.LogWarning($"[JSONLoader] v6.1.1 yüklenemedi: {e.Message}");
                 design = null;
                 return false;
             }
@@ -84,7 +84,7 @@ namespace Dovus.Game.Data
             if (TryLoad(out ElementSystemDesign design))
                 return design;
             throw new InvalidOperationException(
-                $"Resources/{ResourcePath}.json canonical v{RequiredVersion} yÃ¼klenemedi.");
+                $"Resources/{ResourcePath}.json canonical v{RequiredVersion} yüklenemedi.");
         }
 
         public static void ClearCache() => _cached = null;
@@ -133,7 +133,7 @@ namespace Dovus.Game.Data
                 }
                 catch (Exception e)
                 {
-                    Debug.LogWarning($"[Mechanic] mechanic_grammar yÃ¼klenemedi: {e.Message}");
+                    Debug.LogWarning($"[Mechanic] mechanic_grammar yüklenemedi: {e.Message}");
                     _mechanics = null;
                 }
                 return _mechanics;

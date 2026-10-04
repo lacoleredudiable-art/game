@@ -10,10 +10,10 @@ using Dovus.Core.Passives;
 namespace Dovus.Core.Equipment
 {
     /// <summary>
-    /// Top g├╝llesinin itmesi ve geri tepmesi. Kenar kural─▒ dodge ile ayn─▒:
-    /// <see cref="DodgeEdge.KeepOutside"/> boss g├Âvdesinin i├ğine b─▒rakmaz,
-    /// daire arena g├Âvdeyi d─▒┼şar─▒da tutar. Hareket kal─▒b─▒ konumun sahibi
-    /// iken bu ad─▒m ├ğa─şr─▒lmaz; kuyruk kal─▒p bitince uygulan─▒r.
+    /// Top güllesinin itmesi ve geri tepmesi. Kenar kuralı dodge ile aynı:
+    /// <see cref="DodgeEdge.KeepOutside"/> boss gövdesinin içine bırakmaz,
+    /// daire arena gövdeyi dışarıda tutar. Hareket kalıbı konumun sahibi
+    /// iken bu adım çağrılmaz; kuyruk kalıp bitince uygulanır.
     /// </summary>
     public static class CannonBlast
     {
@@ -57,7 +57,7 @@ namespace Dovus.Core.Equipment
         }
     }
 
-    /// <summary>Kal─▒p bitene kadar bekleyen geri tepme. Kal─▒p s├╝rerken konum yaz─▒lmaz.</summary>
+    /// <summary>Kalıp bitene kadar bekleyen geri tepme. Kalıp sürerken konum yazılmaz.</summary>
     public sealed class CannonRecoil
     {
         float _dirX;

@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Boss;
+using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
 using Dovus.Core.Casting;
@@ -11,7 +11,7 @@ using UnityEngine.UI;
 
 namespace Dovus.Game.Hud
 {
-    /// <summary>Dodge dÃ¼ÄŸmesinin Ã¼stÃ¼nde iki hak pip'i; dolmakta olan pip fill ile akar.</summary>
+    /// <summary>Dodge düğmesinin üstünde iki hak pip'i; dolmakta olan pip fill ile akar.</summary>
     public sealed class DodgeChargeHud : MonoBehaviour
     {
         HexagonInput _input;

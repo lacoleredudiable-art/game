@@ -12,8 +12,8 @@ using Dovus.Core.Tuning;
 namespace Dovus.Core.Grammar
 {
     /// <summary>
-    /// C├╝mle gramer durum makinesi. Zaman parametre olarak gelir (d├╝nya saati).
-    /// Kombo tablosu yok ÔÇö her dizi ┬ğ3/┬ğ5 kurallar─▒ndan t├╝retilir.
+    /// Cümle gramer durum makinesi. Zaman parametre olarak gelir (dünya saati).
+    /// Kombo tablosu yok — her dizi §3/§5 kurallarından türetilir.
     /// </summary>
     public sealed class SentenceEngine
     {
@@ -38,7 +38,7 @@ namespace Dovus.Core.Grammar
         public SentenceState State { get; }
         public RuneLoadout Loadout => _loadout;
 
-        /// <summary>Build se├ğimi yaln─▒z ├ğizim yokken de─şi┼şir; event abonelikleri korunur.</summary>
+        /// <summary>Build seçimi yalnız çizim yokken değişir; event abonelikleri korunur.</summary>
         public bool TrySetLoadout(RuneLoadout loadout)
         {
             if (loadout == null || State.Phase == SentencePhase.Building)
@@ -54,8 +54,8 @@ namespace Dovus.Core.Grammar
         public event Action<CompletedSentence>? SentenceCompleted;
 
         /// <summary>
-        /// Merkez d├╝z vuru┼ş. Slot s─▒ras─▒na bakmaz: r├╝n 1 hangi yuvada olursa olsun
-        /// fiil Sald─▒r─▒'d─▒r. Slot 0 ekran noktas─▒ de─şildir.
+        /// Merkez düz vuruş. Slot sırasına bakmaz: rün 1 hangi yuvada olursa olsun
+        /// fiil Saldırı'dır. Slot 0 ekran noktası değildir.
         /// </summary>
         public bool BeginBasicStrike(int runeId, double worldTimeMs)
         {
@@ -74,14 +74,14 @@ namespace Dovus.Core.Grammar
             return true;
         }
 
-        /// <summary>Noktaya dokunu┼ş. Ge├ğersiz nokta yok say─▒l─▒r.</summary>
+        /// <summary>Noktaya dokunuş. Geçersiz nokta yok sayılır.</summary>
         public void OnDotTouched(int dot, double worldTimeMs)
         {
             CatchUp(worldTimeMs);
             if (!RuneInfo.TryFromDot(dot, _loadout, out Rune rune))
                 return;
 
-            // Recovering: yeni fiil kilidi keser (┬ğ5) ÔÇö BeginFresh kalan s├╝reyi s─▒f─▒rlar.
+            // Recovering: yeni fiil kilidi keser (§5) — BeginFresh kalan süreyi sıfırlar.
             if (State.Phase == SentencePhase.Resolved || State.Phase == SentencePhase.Aborted
                 || State.Phase == SentencePhase.Recovering)
                 BeginFresh();
@@ -92,7 +92,7 @@ namespace Dovus.Core.Grammar
                 return;
             }
 
-            // Building: kapasite doluysa ├Ânce kapat, sonra yeni fiil
+            // Building: kapasite doluysa önce kapat, sonra yeni fiil
             if (_words.Count >= _tuning.MaxSentenceDots)
             {
                 ResolveWithClosing();
@@ -105,8 +105,8 @@ namespace Dovus.Core.Grammar
         }
 
         /// <summary>
-        /// Noktada bekleme e┼şi─şi doldu (┬ğ3: dwellMs, en fazla dwellMaxStacks).
-        /// S─▒fat yuvas─▒ harcamaz; yaln─▒zca son kelimeyi yo─şunla┼şt─▒r─▒r.
+        /// Noktada bekleme eşiği doldu (§3: dwellMs, en fazla dwellMaxStacks).
+        /// Sıfat yuvası harcamaz; yalnızca son kelimeyi yoğunlaştırır.
         /// </summary>
         public void OnDwell(double worldTimeMs)
         {
@@ -126,9 +126,9 @@ namespace Dovus.Core.Grammar
         }
 
         /// <summary>
-        /// Erken kapan─▒┼ş (┬ğ5): c├╝mle kurulurken merkeze basmak, o uzunlu─şun ├Âdemesini al─▒r.
-        /// Dodge'un tersi ÔÇö merkez ├Âder, dodge bat─▒r─▒r. Idle/Recovering'de sessizce hi├ğbir ┼şey
-        /// yapmaz; d├╝z vuru┼şu girdi katman─▒ OnDotTouched + Commit ile kurar.
+        /// Erken kapanış (§5): cümle kurulurken merkeze basmak, o uzunluğun ödemesini alır.
+        /// Dodge'un tersi — merkez öder, dodge batırır. Idle/Recovering'de sessizce hiçbir şey
+        /// yapmaz; düz vuruşu girdi katmanı OnDotTouched + Commit ile kurar.
         /// </summary>
         public void Commit()
         {
@@ -138,7 +138,7 @@ namespace Dovus.Core.Grammar
             ResolveWithClosing();
         }
 
-        /// <summary>D├╝nya zaman─▒ ilerlemesi; pencere bitince kapan─▒┼ş ├╝retir.</summary>
+        /// <summary>Dünya zamanı ilerlemesi; pencere bitince kapanış üretir.</summary>
         public void Tick(double dtMs)
         {
             if (dtMs < 0)
@@ -147,8 +147,8 @@ namespace Dovus.Core.Grammar
         }
 
         /// <summary>
-        /// Pencereyi mutlak d├╝nya saatine hizalar. OnDotTouched/OnDwell Tick'i beklemeden
-        /// (kare yuvarlamas─▒ ~16 ms) kalan s├╝reyi yer. Ayn─▒ ana kadar zaten uygulanm─▒┼şsa no-op.
+        /// Pencereyi mutlak dünya saatine hizalar. OnDotTouched/OnDwell Tick'i beklemeden
+        /// (kare yuvarlaması ~16 ms) kalan süreyi yer. Aynı ana kadar zaten uygulanmışsa no-op.
         /// </summary>
         void CatchUp(double worldTimeMs)
         {
@@ -177,7 +177,7 @@ namespace Dovus.Core.Grammar
             if (State.Phase != SentencePhase.Building || _words.Count == 0)
                 return;
 
-            // Max c├╝mle: uzatma penceresi yok; zaten ├ğ├Âz├╝lm├╝┼ş olmal─▒
+            // Max cümle: uzatma penceresi yok; zaten çözülmüş olmalı
             if (_words.Count >= _tuning.MaxSentenceDots)
                 return;
 
@@ -193,8 +193,8 @@ namespace Dovus.Core.Grammar
         }
 
         /// <summary>
-        /// Dodge veya vurulma. Building'de yat─▒r─▒m batar (kapan─▒┼ş ve ├Âd├╝l yok); Recovering'de
-        /// yaln─▒zca kilidi keser ÔÇö ├Âdenmi┼ş kapan─▒┼ş (History ve LastClosing) yerinde kal─▒r (┬ğ5).
+        /// Dodge veya vurulma. Building'de yatırım batar (kapanış ve ödül yok); Recovering'de
+        /// yalnızca kilidi keser — ödenmiş kapanış (History ve LastClosing) yerinde kalır (§5).
         /// </summary>
         public void Abort()
         {
@@ -251,15 +251,15 @@ namespace Dovus.Core.Grammar
 
         void ArmWindowAfterHit()
         {
-            // Vuru┼ş sonras─▒ uzatma penceresi ÔÇö T1: CancelWindowForDots(noktaSay─▒s─▒)
+            // Vuruş sonrası uzatma penceresi — T1: CancelWindowForDots(noktaSayısı)
             _armedWindowMs = _tuning.CancelWindowForDots(_words.Count);
             _remainingWindowMs = _armedWindowMs;
         }
 
         /// <summary>
-        /// ┬ğ3: bekleme parma─ş─▒n s├╝resini ├Âder, iptal penceresini de─şil ÔÇö bir y─▒─ş─▒n dolunca
-        /// pencere bekleme ba┼şlamadan ├Ânceki h├óline d├Âner. Donmasayd─▒ iki y─▒─ş─▒n (2├ù220 ms)
-        /// fiilin 420 ms'lik penceresine s─▒─şmaz, dwellMaxStacks = 2 ula┼ş─▒lamaz olurdu.
+        /// §3: bekleme parmağın süresini öder, iptal penceresini değil — bir yığın dolunca
+        /// pencere bekleme başlamadan önceki hâline döner. Donmasaydı iki yığın (2×220 ms)
+        /// fiilin 420 ms'lik penceresine sığmaz, dwellMaxStacks = 2 ulaşılamaz olurdu.
         /// </summary>
         void FreezeWindowForDwell()
         {
@@ -288,9 +288,9 @@ namespace Dovus.Core.Grammar
         {
             _history.Add(completed);
 
-            // Kapan─▒┼ş ├╝reten HER yol (Commit, d├Ârd├╝nc├╝ nokta, pencere zaman a┼ş─▒m─▒) toparlanma
-            // kilidine girer; s├╝re ┬ğ5 tablosundan gelir. Kay─▒ttaki faz Resolved kal─▒r ÔÇö ge├ğmi┼ş
-            // ve ├Âd├╝l okunuyor.
+            // Kapanış üreten HER yol (Commit, dördüncü nokta, pencere zaman aşımı) toparlanma
+            // kilidine girer; süre §5 tablosundan gelir. Kayıttaki faz Resolved kalır — geçmiş
+            // ve ödül okunuyor.
             if (completed.Closing.HasValue)
             {
                 _remainingRecoveryMs =
@@ -327,7 +327,7 @@ namespace Dovus.Core.Grammar
             State.RemainingWindowMs = 0;
             State.ArmedWindowMs = 0;
             State.RemainingRecoveryMs = 0;
-            // LastClosing bilin├ğli korunur ÔÇö son ├Âdeme okunabilsin
+            // LastClosing bilinçli korunur — son ödeme okunabilsin
         }
 
         SentenceWord[] SnapshotWords()

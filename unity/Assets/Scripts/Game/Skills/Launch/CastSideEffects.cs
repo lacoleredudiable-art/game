@@ -1,4 +1,4 @@
-﻿using Dovus.App.Casting;
+using Dovus.App.Casting;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
@@ -156,10 +156,10 @@ namespace Dovus.Game.Skills.Launch
         {
             string tag = plan.Kind switch
             {
-                SkillMotionKind.ZenitsuPass => "Zenitsu geÃ§iÅŸ",
-                SkillMotionKind.ShortBlink => "Ä±ÅŸÄ±nlanma",
+                SkillMotionKind.ZenitsuPass => "Zenitsu geçiş",
+                SkillMotionKind.ShortBlink => "ışınlanma",
                 SkillMotionKind.ForwardDash => "dash",
-                SkillMotionKind.PlaceMark => "iÅŸaret",
+                SkillMotionKind.PlaceMark => "işaret",
                 _ => null
             };
             if (tag == null) return;

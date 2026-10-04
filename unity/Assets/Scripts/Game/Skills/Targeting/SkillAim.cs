@@ -1,4 +1,4 @@
-﻿using Dovus.App.Casting;
+using Dovus.App.Casting;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
@@ -164,8 +164,8 @@ namespace Dovus.Game.Skills.Targeting
                 ArmedSkillId = string.Empty;
                 CastFacingTarget = null;
                 _host.Readout?.NoteDenied(
-                    failure == TargetFailure.OutOfRange ? "menzil dÄ±ÅŸÄ±" : "hedef yok",
-                    "mana ve soÄŸuma harcanmadÄ±");
+                    failure == TargetFailure.OutOfRange ? "menzil dışı" : "hedef yok",
+                    "mana ve soğuma harcanmadı");
                 return false;
             }
 

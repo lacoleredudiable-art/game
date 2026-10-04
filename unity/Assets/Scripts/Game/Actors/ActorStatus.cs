@@ -1,4 +1,4 @@
-﻿using Dovus.App.Team;
+using Dovus.App.Team;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
@@ -17,23 +17,23 @@ using UnityEngine;
 
 namespace Dovus.Game.Actors
 {
-    /// <summary>StatusBoard taÅŸÄ±yÄ±cÄ±sÄ± â€” oyuncu veya boss.</summary>
+    /// <summary>StatusBoard taşıyıcısı — oyuncu veya boss.</summary>
     public sealed class ActorStatus : MonoBehaviour
     {
         public StatusBoard Board { get; } = new StatusBoard();
 
-        /// <summary>Slot pasif Ã§arpanlarÄ± (reflect) â€” yalnÄ±z oyuncu.</summary>
+        /// <summary>Slot pasif çarpanları (reflect) — yalnız oyuncu.</summary>
         public SlotPassiveDirector SlotPassiveDirector { get; set; }
 
-        /// <summary>Kalkan sonrasÄ± gerÃ§ek gelen hasar; radial kesme ve poise iÃ§in.</summary>
+        /// <summary>Kalkan sonrası gerçek gelen hasar; radial kesme ve poise için.</summary>
         public event System.Action<float> DamageTaken;
 
-        /// <summary>Kalkan vuruÅŸu yuttu (can dÃ¼ÅŸmese de). KarÅŸÄ± saldÄ±rÄ± penceresi bunu dinler.</summary>
+        /// <summary>Kalkan vuruşu yuttu (can düşmese de). Karşı saldırı penceresi bunu dinler.</summary>
         public event System.Action<float> DamageBlocked;
 
         /// <summary>
-        /// Can baÄŸÄ± / yÃ¶nlendirme adaptÃ¶rÃ¼. Gelen miktarÄ± takÄ±m arkadaÅŸÄ±na veya dÃ¼ÅŸmana
-        /// paylaÅŸtÄ±rÄ±r ve oyuncuda kalacak miktarÄ± dÃ¶ndÃ¼rÃ¼r.
+        /// Can bağı / yönlendirme adaptörü. Gelen miktarı takım arkadaşına veya düşmana
+        /// paylaştırır ve oyuncuda kalacak miktarı döndürür.
         /// </summary>
         public System.Func<float, float> IncomingDamageRedirect { get; set; }
 
@@ -42,7 +42,7 @@ namespace Dovus.Game.Actors
 
         bool CastMobilityActive => _clock != null && _clock.Director.WorldTimeMs < _castMobilityUntilMs;
 
-        /// <summary>KinematicMotor bunu okur â€” dÃ¼ÅŸman CC'sinden ayrÄ± cast mobility.</summary>
+        /// <summary>KinematicMotor bunu okur — düşman CC'sinden ayrı cast mobility.</summary>
         public float EffectiveMoveSpeedMult =>
             Board.MoveSpeedMult
             * ActorStatusTeamMoveSpeed.TeamMoveSpeedMult(
@@ -77,15 +77,15 @@ namespace Dovus.Game.Actors
         bool _stealthVisual;
         Renderer[] _renderers;
 
-        /// <summary>Oyuncu reflect pasifi iÃ§in boss canÄ± (Bind'de bossVitals yoksa ayrÄ±ca set).</summary>
+        /// <summary>Oyuncu reflect pasifi için boss canı (Bind'de bossVitals yoksa ayrıca set).</summary>
         public BossVitals ReflectBossVitals { get; set; }
-        /// <summary>Doluysa yansÄ±yan hasar buraya gider (bÃ¶lÃ¼nen yansÄ±ma vb.); boÅŸsa doÄŸrudan boss'a.</summary>
+        /// <summary>Doluysa yansıyan hasar buraya gider (bölünen yansıma vb.); boşsa doğrudan boss'a.</summary>
         public Action<float> ReflectSink { get; set; }
 
         float _skillReflectRatio;
         double _skillReflectUntilMs;
 
-        /// <summary>YansÄ±ma fiili / Aynalama sÄ±fatÄ±: reflect_ratio, reflect_duration_sec boyunca.</summary>
+        /// <summary>Yansıma fiili / Aynalama sıfatı: reflect_ratio, reflect_duration_sec boyunca.</summary>
         public void GrantReflect(float ratio, double untilWorldMs)
         {
             if (ratio <= 0f)
@@ -130,7 +130,7 @@ namespace Dovus.Game.Actors
 
             if (payload > 0f)
             {
-                // S4: DoT tiki (yanma/zehir) kaÃ§Ä±ÅŸla yutulmaz ve zÄ±rhÄ± deler (tasarÄ±m kararÄ±); boss'ta sayÄ± gÃ¶sterilir.
+                // S4: DoT tiki (yanma/zehir) kaçışla yutulmaz ve zırhı deler (tasarım kararı); boss'ta sayı gösterilir.
                 ApplyDamage(payload, dodgeable: false, pierceArmor: true);
                 if (_bossVitals != null && LastAppliedDamage > 0f)
                     DamageOverTimeDealt?.Invoke(LastAppliedDamage);
@@ -139,7 +139,7 @@ namespace Dovus.Game.Actors
                 ApplyHeal(-payload);
         }
 
-        /// <summary>Gizlilik: camgÃ¶beÄŸi yarÄ± saydam (oyuncu efekt rengi kuralÄ±).</summary>
+        /// <summary>Gizlilik: camgöbeği yarı saydam (oyuncu efekt rengi kuralı).</summary>
         void SyncStealthVisual()
         {
             bool stealth = Board.IsStealthed;
@@ -177,9 +177,9 @@ namespace Dovus.Game.Actors
         }
 
         public ArmorSheet Armor { get; } = new ArmorSheet();
-        /// <summary>Son ApplyDamage Ã§aÄŸrÄ±sÄ±nda cana (boss/oyuncu) gerÃ§ekten geÃ§en hasar; kalkan/i-frame/Stasis yuttuysa 0 (S6).</summary>
+        /// <summary>Son ApplyDamage çağrısında cana (boss/oyuncu) gerçekten geçen hasar; kalkan/i-frame/Stasis yuttuysa 0 (S6).</summary>
         public float LastAppliedDamage { get; private set; }
-        /// <summary>S4: boss'a iÅŸleyen DoT tiki (hasar sayÄ±sÄ± iÃ§in).</summary>
+        /// <summary>S4: boss'a işleyen DoT tiki (hasar sayısı için).</summary>
         public event Action<float> DamageOverTimeDealt;
         public bool LastHitWasCrit { get; set; }
         public float LastThreat { get; set; }
@@ -189,15 +189,15 @@ namespace Dovus.Game.Actors
         {
             LastAppliedDamage = 0f;
             if (raw <= 0f) return;
-            // Ä°-frame, hesaptan Ã¶nce. Yutulan vuruÅŸ boruya girmez.
+            // İ-frame, hesaptan önce. Yutulan vuruş boruya girmez.
             if (_playerVitals != null && PlayerDodgeRig.BlocksIncoming(this, dodgeable))
                 return;
             double now = _clock != null ? _clock.Director.WorldTimeMs : 0;
             float taken = Board.IncomingDamageMult;
             if (_playerVitals != null)
                 taken *= PortalBorderTeamHooks.PlayerDamageTakenMult;
-            // KalkanÄ±n kÄ±sa kalkanÄ±, tahta kalkanÄ±yla aynÄ± son aÅŸamada (f) erir.
-            // Dodge yukarÄ±da yuttuysa bu havuza hiÃ§ girilmez.
+            // Kalkanın kısa kalkanı, tahta kalkanıyla aynı son aşamada (f) erir.
+            // Dodge yukarıda yuttuysa bu havuza hiç girilmez.
             float shortShield = 0f;
             WeaponShortShieldHost shortHost = null;
             if (_playerVitals != null)
@@ -273,7 +273,7 @@ namespace Dovus.Game.Actors
         {
             if (amount <= 0f)
                 return;
-            // 16 EylÃ¼l: "Kavurucu Yara" â€” yanÄ±k hedefte pasif regen tick'i de azalÄ±r.
+            // 16 Eylül: "Kavurucu Yara" — yanık hedefte pasif regen tick'i de azalır.
             float healMult = Board.HealEffectivenessMult;
             var healedOutcome = DamagePipeline.Resolve(new DamageQuery
             {
@@ -301,12 +301,12 @@ namespace Dovus.Game.Actors
                 _clock != null ? _clock.Director.WorldTimeMs : 0);
         }
 
-        /// <summary>Ã§ekme sÄ±fatÄ± â€” boss'u towardWorld yÃ¶nÃ¼ne (oyuncuya) Ã§eker.</summary>
+        /// <summary>çekme sıfatı — boss'u towardWorld yönüne (oyuncuya) çeker.</summary>
         public void ApplyPullToward(Vector3 towardWorld)
         {
             if (_reactor == null)
                 return;
-            // React fromWorld'dan uzaÄŸa iter; karÅŸÄ± taraftan itince pull olur.
+            // React fromWorld'dan uzağa iter; karşı taraftan itince pull olur.
             Vector3 pos = transform.position;
             Vector3 away = pos + (pos - towardWorld);
             _reactor.React(

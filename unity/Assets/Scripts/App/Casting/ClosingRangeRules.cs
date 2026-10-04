@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Element;
+using Dovus.Core.Element;
 using Dovus.Core.Grammar;
 using Dovus.Core.Manifestation;
 using System;

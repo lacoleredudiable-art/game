@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Boss;
+using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
 using Dovus.Core.Casting;
@@ -18,8 +18,8 @@ using UnityEngine;
 namespace Dovus.Game.Skills
 {
     /// <summary>
-    /// weapon_skill_interaction.swap: build'de 2 silah, savaÅŸta aralarÄ±nda swap.
-    /// Silah uyumu/Ã§arpan/pasif/executor yolu her cast'te EquippedWeapon'dan okunur.
+    /// weapon_skill_interaction.swap: build'de 2 silah, savaşta aralarında swap.
+    /// Silah uyumu/çarpan/pasif/executor yolu her cast'te EquippedWeapon'dan okunur.
     /// </summary>
     public sealed partial class ManifestationDirector
     {
@@ -27,7 +27,7 @@ namespace Dovus.Game.Skills
 
         public WeaponSwapState WeaponSwap => _weaponSwap;
 
-        /// <summary>Build ekranÄ±ndaki silah seÃ§imi iÃ§in canonical 10 silah (id sÄ±rasÄ±).</summary>
+        /// <summary>Build ekranındaki silah seçimi için canonical 10 silah (id sırası).</summary>
         public IReadOnlyList<EquipmentItem> AvailableWeapons
         {
             get
@@ -43,7 +43,7 @@ namespace Dovus.Game.Skills
                 return;
             _weaponSwap = new WeaponSwapState(rules);
             _weaponSwap.SetLoadout(_equippedWeapon, DefaultReserveWeapon(_equippedWeapon));
-            LogLoadout("baÅŸlangÄ±Ã§");
+            LogLoadout("başlangıç");
         }
 
         public void SetWeaponLoadout(EquipmentItem primary, EquipmentItem secondary)
@@ -62,7 +62,7 @@ namespace Dovus.Game.Skills
 
         bool SustainedSkillActive(double worldMs) => _sustainedCast.Active(worldMs);
 
-        /// <summary>O10: kanallÄ±/basÄ±lÄ± skill cast edildi â†’ sÃ¼resi boyunca swap kilitli.</summary>
+        /// <summary>O10: kanallı/basılı skill cast edildi → süresi boyunca swap kilitli.</summary>
         void NoteSustainedCast(in SkillResolution skill)
         {
             if (!IsSustained(skill) || _clock == null)
@@ -74,7 +74,7 @@ namespace Dovus.Game.Skills
             _sustainedCast.Begin(_clock.Director.WorldTimeMs, sec);
         }
 
-        /// <summary>Swap butonu / Q tuÅŸu. Reddedilirse sebep readout'a dÃ¼ÅŸer.</summary>
+        /// <summary>Swap butonu / Q tuşu. Reddedilirse sebep readout'a düşer.</summary>
         public WeaponSwapResult TryRequestWeaponSwap()
         {
             if (_weaponSwap == null || _clock == null)
@@ -97,7 +97,7 @@ namespace Dovus.Game.Skills
                 stunned = board.Has(StatusKind.Stun) || board.Has(StatusKind.Stasis) || board.Has(StatusKind.Fear);
             }
             bool dodging = _input?.Dodge != null && _input.Dodge.IsActive((int)worldMs);
-            // O10: kanallÄ±/basÄ±lÄ± skill (channel_sec ya da IsSustained) sÃ¼rerken kilit; etiketli pencere istisnasÄ± MayBegin'de.
+            // O10: kanallı/basılı skill (channel_sec ya da IsSustained) sürerken kilit; etiketli pencere istisnası MayBegin'de.
             bool holding = SustainedSkillActive(worldMs);
             bool stateAllows = _playerStates == null || _playerStates.AllowsSwap;
             bool allows = WeaponSwapCancel.MayBegin(stateAllows, drawing, holding, dodging, stunned, inWindow, tagged);
@@ -110,18 +110,18 @@ namespace Dovus.Game.Skills
                             && _engine != null
                             && _engine.State.Phase == SentencePhase.Recovering))
                         CutTemplateForSwap(WeaponSwapCancel.UnlocksNextSkill(inWindow, tagged));
-                    // Kesilen ya da boÅŸtaki gÃ¶vde havada kalmasÄ±n; pencere dÄ±ÅŸÄ±nda oynayan kalÄ±p sÃ¼rer.
+                    // Kesilen ya da boştaki gövde havada kalmasın; pencere dışında oynayan kalıp sürer.
                     if (_motionBody == null && _player != null)
                         _motionBody = _player.GetComponent<MotionTemplateBody>();
                     if (_motionBody != null && !_motionBody.IsDisplacing)
                         _motionBody.CancelToGround();
-                    DebugConfig.DevLog($"[WeaponSwap] baÅŸladÄ± â†’ {_weaponSwap.Reserve?.Name}");
+                    DebugConfig.DevLog($"[WeaponSwap] başladı → {_weaponSwap.Reserve?.Name}");
                     break;
                 case WeaponSwapResult.OnCooldown:
-                    _readout?.NoteDenied("swap soÄŸumada");
+                    _readout?.NoteDenied("swap soğumada");
                     break;
                 case WeaponSwapResult.StateBlocked:
-                    _readout?.NoteDenied("ÅŸimdi swap yok");
+                    _readout?.NoteDenied("şimdi swap yok");
                     break;
             }
             return result;
@@ -143,8 +143,8 @@ namespace Dovus.Game.Skills
             if (!_weaponSwap.Tick(worldMs))
                 return;
 
-            // KalÄ±p Play anÄ±nda kopyalanmÄ±ÅŸtÄ±r; sonraki cast yeni silahÄ± okur.
-            // Kesilen ya da boÅŸtaki gÃ¶vde CancelToGround ile zemine iner (yukarÄ±da).
+            // Kalıp Play anında kopyalanmıştır; sonraki cast yeni silahı okur.
+            // Kesilen ya da boştaki gövde CancelToGround ile zemine iner (yukarıda).
             _equippedWeapon = _weaponSwap.Active;
             LastFactorySkill = null;
             OnWeaponSwapCompleted(_equippedWeapon);
@@ -156,8 +156,8 @@ namespace Dovus.Game.Skills
         }
 
         /// <summary>
-        /// Build seÃ§imi yapÄ±lmadan aÃ§Ä±lÄ±ÅŸ: birincil yakÄ±n ise ilk ranged silah, deÄŸilse ilk
-        /// yakÄ±n silah yedek olur â€” swap farkÄ± ilk denemede gÃ¶rÃ¼nsÃ¼n diye.
+        /// Build seçimi yapılmadan açılış: birincil yakın ise ilk ranged silah, değilse ilk
+        /// yakın silah yedek olur — swap farkı ilk denemede görünsün diye.
         /// </summary>
         EquipmentItem DefaultReserveWeapon(EquipmentItem primary)
         {
@@ -186,8 +186,8 @@ namespace Dovus.Game.Skills
             if (_weaponSwap == null)
                 return;
             DebugConfig.DevLog(
-                $"[WeaponSwap] {reason}: aktif={_weaponSwap.Active?.Name ?? "â€”"} "
-                + $"yedek={_weaponSwap.Reserve?.Name ?? "â€”"}");
+                $"[WeaponSwap] {reason}: aktif={_weaponSwap.Active?.Name ?? "—"} "
+                + $"yedek={_weaponSwap.Reserve?.Name ?? "—"}");
         }
     }
 }

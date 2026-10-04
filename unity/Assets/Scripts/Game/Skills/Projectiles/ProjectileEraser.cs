@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Boss;
+using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
 using Dovus.Core.Casting;
@@ -84,7 +84,7 @@ namespace Dovus.Game.Skills.Projectiles
             if (healed > 0f && _host.PlayerStatus != null)
                 _host.PlayerStatus.ApplyHeal(healed);
             if (done > 0)
-                JsonEffectRuntime.JsonLog($"mermi gÃ¶vde yolu {spec.Mode} {plan.SkillId}: {done} ({spec})" + (healed > 0f ? $" +{healed:0.#} can" : ""));
+                JsonEffectRuntime.JsonLog($"mermi gövde yolu {spec.Mode} {plan.SkillId}: {done} ({spec})" + (healed > 0f ? $" +{healed:0.#} can" : ""));
         }
 
         bool ApplyEraseMode(int pid, in EraseSpec spec, ref float healed)
@@ -190,7 +190,7 @@ namespace Dovus.Game.Skills.Projectiles
             int n = _host.Projectiles.Sim.QueryCircle(center.x, center.z, radius, _eraseIds, team: 1);
             for (int i = 0; i < n; i++)
                 _host.Projectiles.Sim.Delete(_eraseIds[i], ProjectileEventKind.Erased);
-            JsonEffectRuntime.JsonLog($"mermi iki_kez {id}: kopya vuruÅŸu {n} silindi");
+            JsonEffectRuntime.JsonLog($"mermi iki_kez {id}: kopya vuruşu {n} silindi");
         }
 
         bool ReflectProjectile(int id)
@@ -231,7 +231,7 @@ namespace Dovus.Game.Skills.Projectiles
                 }
             }
             if (best > 0 && _host.Projectiles.Sim.Delete(best, ProjectileEventKind.Erased))
-                JsonEffectRuntime.JsonLog($"mermi hedefli {id}: #{best} silindi (Ã§arpmaya {(double.IsPositiveInfinity(bestMs) ? "âˆ" : (bestMs / 1000.0).ToString("0.##"))} sn)");
+                JsonEffectRuntime.JsonLog($"mermi hedefli {id}: #{best} silindi (çarpmaya {(double.IsPositiveInfinity(bestMs) ? "∞" : (bestMs / 1000.0).ToString("0.##"))} sn)");
         }
 
         void EraseAlongLink(MechanicLink link, in EraseSpec spec)
@@ -265,7 +265,7 @@ namespace Dovus.Game.Skills.Projectiles
             double raw = _host.JsonRules != null ? _host.JsonRules.Param("projectile_reflect_mult") : 0;
             float mult = raw > 0 ? (float)raw : 1f;
             float amount = projectileDamage * mult;
-            JsonEffectRuntime.JsonLog($"mermi geri dÃ¶ndÃ¼ â†’ boss {amount:0.#}");
+            JsonEffectRuntime.JsonLog($"mermi geri döndü → boss {amount:0.#}");
             _host.ApplyReflectedDamage(amount);
         }
     }

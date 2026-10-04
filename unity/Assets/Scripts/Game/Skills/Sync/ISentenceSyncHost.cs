@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Grammar;
+using Dovus.Core.Grammar;
 using Dovus.Core.Status;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;

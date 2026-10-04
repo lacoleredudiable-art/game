@@ -1,4 +1,4 @@
-﻿using Dovus.App.Casting;
+using Dovus.App.Casting;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
@@ -186,7 +186,7 @@ namespace Dovus.Game.Skills.Closing
                 }
                 catch (Exception e)
                 {
-                    Debug.LogWarning($"[SkillFactory] pair Ã§Ã¶zÃ¼lemedi: {e.Message}");
+                    Debug.LogWarning($"[SkillFactory] pair çözülemedi: {e.Message}");
                     return SkillResolution.Empty;
                 }
             }

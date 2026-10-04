@@ -1,4 +1,4 @@
-﻿using Dovus.Core;
+using Dovus.Core;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
@@ -211,7 +211,7 @@ namespace Dovus.Game.Composition.Builders
         {
             if (design == null || assets == null || runes == null || factory == null || weapon == null)
             {
-                Debug.LogWarning("[BindingReady] v6.1.1 preflight atlandÄ±: baÄŸÄ±mlÄ±lÄ±k eksik.");
+                Debug.LogWarning("[BindingReady] v6.1.1 preflight atlandı: bağımlılık eksik.");
                 return;
             }
 
@@ -227,9 +227,9 @@ namespace Dovus.Game.Composition.Builders
             }
 
             DebugConfig.DevLog(
-                $"[BindingReady] JSON {design.Version} â†’ SO 12/10/6 â†’ "
-                + $"buildSkills={buildSkills.Count} â†’ smoke={smoke.DisplayName} â†’ "
-                + $"weapon={weapon.Name} â†’ element={assets.Elements[0].DisplayName}");
+                $"[BindingReady] JSON {design.Version} → SO 12/10/6 → "
+                + $"buildSkills={buildSkills.Count} → smoke={smoke.DisplayName} → "
+                + $"weapon={weapon.Name} → element={assets.Elements[0].DisplayName}");
         }
 
         static EquipmentBonusResolver LoadPrototypeEquipment(out EquipmentItem weapon)
@@ -246,7 +246,7 @@ namespace Dovus.Game.Composition.Builders
             }
             catch (System.Exception e)
             {
-                Debug.LogWarning($"[Equipment] katalog okunamadÄ±: {e.Message}");
+                Debug.LogWarning($"[Equipment] katalog okunamadı: {e.Message}");
                 return new EquipmentBonusResolver();
             }
         }

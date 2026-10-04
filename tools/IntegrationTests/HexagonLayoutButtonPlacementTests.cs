@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Dovus.Core.Input;
 using Dovus.Game.Casting;
 using Dovus.Game.Config;

@@ -1,4 +1,4 @@
-﻿using Dovus.Core;
+using Dovus.Core;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
@@ -67,7 +67,7 @@ namespace Dovus.Game.Skills.Motion
             {
                 DesignWarnings.Once(
                     "motion.boss_radius",
-                    "Boss gÃ¶vdesi okunamadÄ±. VuruÅŸ payÄ± yedek 0.6 m.");
+                    "Boss gövdesi okunamadı. Vuruş payı yedek 0.6 m.");
                 return 0.6f;
             }
             return Mathf.Max(col.bounds.extents.x, col.bounds.extents.z);
@@ -180,7 +180,7 @@ namespace Dovus.Game.Skills.Motion
         }
 
         /// <summary>
-        /// Katalog ve gÃ¶vde ilk cast'ten Ã¶nce hazÄ±r olsun. BaÅŸarÄ±sÄ±z okuma kilitlenmez;
+        /// Katalog ve gövde ilk cast'ten önce hazır olsun. Başarısız okuma kilitlenmez;
         /// sonraki cast yeniden dener.
         /// </summary>
         public void EnsureMotionReady()
@@ -233,7 +233,7 @@ namespace Dovus.Game.Skills.Motion
             _host.MotionBody.NoteSkill(skill.SkillId);
             if (_host.Boss != null)
                 _templateStartCenter = _host.FlatDistance(_host.Player.position, _host.Boss.transform.position);
-            // Emici ilerleyen kalÄ±pta oyuncu hep yerinde; boss'u yalnÄ±z Ã§eken plan getirir (4-2 Ã§ekmez).
+            // Emici ilerleyen kalıpta oyuncu hep yerinde; boss'u yalnız çeken plan getirir (4-2 çekmez).
             _emiciContactPull = EmiciApproach.ShouldHoldCaster(skill.AdjectiveId, template);
             MechanicPlan pullPlan = _host.MechanicPlanFor(skill);
             if (_emiciContactPull && pullPlan != null && pullPlan.Body.Pull)
@@ -270,17 +270,17 @@ namespace Dovus.Game.Skills.Motion
                 hit => _host.MotionHitResolver.OnMotionTemplateHit(hit),
                 bodyR,
                 stopGap);
-            DebugConfig.DevLog($"[Motion] {skill.SkillId} â†’ {template.Name}");
+            DebugConfig.DevLog($"[Motion] {skill.SkillId} → {template.Name}");
             return true;
         }
 
-        /// <summary>DÃ¼z vuruÅŸ: katalogdaki basic_strike lunge; hasar zamanlamasÄ±na dokunmaz.</summary>
+        /// <summary>Düz vuruş: katalogdaki basic_strike lunge; hasar zamanlamasına dokunmaz.</summary>
         public bool TryBeginBasicStrikeStep()
         {
             if (_host.Player == null)
                 return false;
             EnsureMotionReady();
-            // Kira yalnÄ±z dodge'da ya da sonraki kalÄ±p baÅŸÄ±nda sÄ±fÄ±rlanÄ±r; bitmiÅŸ bir kalÄ±bÄ±n kirasÄ± adÄ±mÄ± kesmesin.
+            // Kira yalnız dodge'da ya da sonraki kalıp başında sıfırlanır; bitmiş bir kalıbın kirası adımı kesmesin.
             if (_host.MotionBody == null || _host.MotionBody.IsDisplacing)
                 return false;
 
@@ -336,7 +336,7 @@ namespace Dovus.Game.Skills.Motion
                 _ => { },
                 bodyR,
                 stopGap);
-            DebugConfig.DevLog($"[Motion] basic_strike â†’ {template.Name}");
+            DebugConfig.DevLog($"[Motion] basic_strike → {template.Name}");
             return true;
         }
 
@@ -351,8 +351,8 @@ namespace Dovus.Game.Skills.Motion
         }
 
         /// <summary>
-        /// AtÄ±cÄ± duruÅŸ hedefi olmaz. Dost kalÄ±bÄ± iÅŸaretli dosta yÃ¼rÃ¼r; Ä±ÅŸÄ±nlanma
-        /// gÃ¶vdeyi Ã¶te kenardan geÃ§er. DiÄŸerleri dÃ¼ÅŸmanÄ± kullanÄ±r, yoksa bakÄ±ÅŸ.
+        /// Atıcı duruş hedefi olmaz. Dost kalıbı işaretli dosta yürür; ışınlanma
+        /// gövdeyi öte kenardan geçer. Diğerleri düşmanı kullanır, yoksa bakış.
         /// </summary>
         Transform ResolveTemplateAim(SkillResolution skill, MotionTemplate template)
         {
@@ -445,8 +445,8 @@ namespace Dovus.Game.Skills.Motion
         }
 
         /// <summary>
-        /// Dodge kesmesi: kalÄ±p konumu aynÄ± anda bÄ±rakÄ±lÄ±r, sÃ¼ren kapanÄ±ÅŸ ve gÃ¶vde durur.
-        /// Bekleme geri yazÄ±lmaz.
+        /// Dodge kesmesi: kalıp konumu aynı anda bırakılır, süren kapanış ve gövde durur.
+        /// Bekleme geri yazılmaz.
         /// </summary>
         public void CancelActiveSkillForDodge()
         {

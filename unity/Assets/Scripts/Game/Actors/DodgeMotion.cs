@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Boss;
+using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
 using Dovus.Core.Casting;
@@ -17,8 +17,8 @@ using UnityEngine;
 namespace Dovus.Game.Actors
 {
     /// <summary>
-    /// DodgeState yer deÄŸiÅŸtirme oranÄ±nÄ± oyuncu transform'una uygular (Â§6).
-    /// YÃ¶n: son hareket; o da yoksa bossun tersi.
+    /// DodgeState yer değiştirme oranını oyuncu transform'una uygular (§6).
+    /// Yön: son hareket; o da yoksa bossun tersi.
     /// </summary>
     [DefaultExecutionOrder(10)]
     public sealed class DodgeMotion : MonoBehaviour
@@ -46,7 +46,7 @@ namespace Dovus.Game.Actors
         public Vector3 LastSlideStart { get; private set; }
         public bool IsBound => _dodge != null && _clock != null;
 
-        /// <summary>Kayma baÅŸladÄ±: baÅŸlangÄ±Ã§ konumu + yÃ¶n (toz/ses sunumu).</summary>
+        /// <summary>Kayma başladı: başlangıç konumu + yön (toz/ses sunumu).</summary>
         public event System.Action<Vector3, Vector3> SlideStarted;
 
         public void Bind(
@@ -111,10 +111,10 @@ namespace Dovus.Game.Actors
 
             if (!_dodge.IsActive(worldMs))
             {
-                // Kare takÄ±lÄ±rsa (editÃ¶r odaÄŸÄ±, MCP) aktif pencere tek karede atlanabilir;
-                // baÅŸlamÄ±ÅŸ kaymayÄ± sonuna taÅŸÄ±. Glide kuyruÄŸu KORUNUR: eskiden burada
-                // atÄ±lÄ±yordu ve her dodge'un son karesinde oyuncu ~1 m geriye zÄ±plÄ±yordu,
-                // yani Â§6'nÄ±n "yaÄŸ gibi kayma"sÄ± gÃ¶rÃ¼nmÃ¼yordu (T8.1).
+                // Kare takılırsa (editör odağı, MCP) aktif pencere tek karede atlanabilir;
+                // başlamış kaymayı sonuna taşı. Glide kuyruğu KORUNUR: eskiden burada
+                // atılıyordu ve her dodge'un son karesinde oyuncu ~1 m geriye zıplıyordu,
+                // yani §6'nın "yağ gibi kayma"sı görünmüyordu (T8.1).
                 if (IsDisplacing && _tuning != null)
                 {
                     float dist = _tuning.DistanceM * (_dodge != null ? _dodge.DistanceMultiplier : 1f);
@@ -183,7 +183,7 @@ namespace Dovus.Game.Actors
 
         Vector3 Place(Vector3 pos)
         {
-            // Kayma yataydÄ±r. Y'yi burada ezmek havadaki iptali eski yÃ¼ksekliÄŸe geri yazÄ±yordu.
+            // Kayma yataydır. Y'yi burada ezmek havadaki iptali eski yüksekliğe geri yazıyordu.
             float y = transform.position.y;
             pos = KeepBossEdge(ClampArena(pos));
             pos.y = y;
@@ -199,7 +199,7 @@ namespace Dovus.Game.Actors
                 return pos;
             float body = _motor != null ? _motor.BodyRadiusM : 0.5f;
             float bossR = 0.85f;
-            // O11: yer deÄŸiÅŸtirme karesi baÅŸÄ±na GetComponent yerine boss baÅŸÄ±na bir kez.
+            // O11: yer değiştirme karesi başına GetComponent yerine boss başına bir kez.
             if (_reactorOwner != _boss || _reactorCache == null)
             {
                 _reactorOwner = _boss;
@@ -236,9 +236,9 @@ namespace Dovus.Game.Actors
         }
 
         /// <summary>
-        /// Â§6 "sÃ¶nen artÄ±k hÄ±z". Ana hareketin ortalama hÄ±zÄ± (3.8/0.26 = 14.6 m/s) buraya
-        /// konulamaz: eÄŸri u=1'de hÄ±zÄ± sÄ±fÄ±ra indirdiÄŸi iÃ§in o deÄŸer ikinci bir atÄ±lÄ±m gibi
-        /// okunuyordu. BÃ¼yÃ¼klÃ¼k artÄ±k veri (T8.1).
+        /// §6 "sönen artık hız". Ana hareketin ortalama hızı (3.8/0.26 = 14.6 m/s) buraya
+        /// konulamaz: eğri u=1'de hızı sıfıra indirdiği için o değer ikinci bir atılım gibi
+        /// okunuyordu. Büyüklük artık veri (T8.1).
         /// </summary>
         float GlideSpeedMps() => _colors != null ? _colors.Player.DodgeGlideSpeedMps : 3.5f;
 

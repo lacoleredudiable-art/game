@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Boss;
+using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
 using Dovus.Core.Casting;
@@ -40,7 +40,7 @@ namespace Dovus.Core.Data
             return TargetingConfig.FromJson(document.Root);
         }
 
-        /// <summary>Volley kind'lÄ± saldÄ±rÄ± satÄ±rÄ±nÄ± BossTuning'e yazar.</summary>
+        /// <summary>Volley kind'lı saldırı satırını BossTuning'e yazar.</summary>
         public static bool ApplyVolley(BossTuning tuning, string json)
         {
             if (tuning == null || !TryParseDocument(json, out BossEncounterDocument doc))
@@ -70,7 +70,7 @@ namespace Dovus.Core.Data
             return false;
         }
 
-        /// <summary><c>kind</c> yoksa karadul uyumu iÃ§in <c>id</c> slam / fire_cone / volley eÅŸlenir.</summary>
+        /// <summary><c>kind</c> yoksa karadul uyumu için <c>id</c> slam / fire_cone / volley eşlenir.</summary>
         public static BossAttackKind? ResolveKind(JsonValue attack)
         {
             if (attack == null || attack.IsNull)

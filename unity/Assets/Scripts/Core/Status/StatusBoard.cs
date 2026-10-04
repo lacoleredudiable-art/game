@@ -9,7 +9,7 @@ using Dovus.Core.Tuning;
 namespace Dovus.Core.Status
 {
     /// <summary>
-    /// Tek akt├Âr ├╝zerindeki durumlar. Unity bilmez ÔÇö s├╝re d├╝nya ms ile akar.
+    /// Tek aktör üzerindeki durumlar. Unity bilmez — süre dünya ms ile akar.
     /// </summary>
     public sealed class StatusBoard
     {
@@ -33,14 +33,14 @@ namespace Dovus.Core.Status
         public bool IsRootImmune => _rootImmunityRemainingMs > 0;
 
         /// <summary>
-        /// Boss tahtas─▒nda a├ğ─▒k. Sersemlik bitince k─▒sa ba─ş─▒┼ş─▒kl─▒k ba┼şlar;
-        /// ayn─▒ CC s├╝reyi ├╝st ├╝ste ekleyip d├Âv├╝┼ş├╝ kilitleyemez.
+        /// Boss tahtasında açık. Sersemlik bitince kısa bağışıklık başlar;
+        /// aynı CC süreyi üst üste ekleyip dövüşü kilitleyemez.
         /// </summary>
         public void EnableAttackLockImmunity() => _attackLockImmunity = true;
 
         public bool IsAttackLockImmune => _attackLockImmunityRemainingMs > 0;
 
-        /// <summary>Yava┼şlatma ve h─▒z ├ğarpan─▒. K├Âk/sersemlik bunu s─▒f─▒rlamaz; hareket ayr─▒ kal─▒r.</summary>
+        /// <summary>Yavaşlatma ve hız çarpanı. Kök/sersemlik bunu sıfırlamaz; hareket ayrı kalır.</summary>
         public float ActionSpeedMult
         {
             get
@@ -101,8 +101,8 @@ namespace Dovus.Core.Status
                 : 1f;
 
         /// <summary>
-        /// 16 Eyl├╝l: GrievousWounds'un magnitude'u eskiden hep 1f'ti (kullan─▒lm─▒yordu).
-        /// Art─▒k gelen heal'e ├ğarp─▒l─▒r ÔÇö "Kavurucu Yara" (grievous+burn) tepkisi bunu hedefler.
+        /// 16 Eylül: GrievousWounds'un magnitude'u eskiden hep 1f'ti (kullanılmıyordu).
+        /// Artık gelen heal'e çarpılır — "Kavurucu Yara" (grievous+burn) tepkisi bunu hedefler.
         /// </summary>
         public float HealEffectivenessMult =>
             Has(StatusKind.GrievousWounds) && _active.TryGetValue(StatusKind.GrievousWounds, out StatusEntry gw)
@@ -112,13 +112,13 @@ namespace Dovus.Core.Status
         public float ShieldRemaining =>
             _active.TryGetValue(StatusKind.Shield, out StatusEntry s) ? s.Magnitude : 0f;
 
-        /// <summary>Stasis = k─▒sa i-frame (dodge d─▒┼ş─▒ skill korumas─▒).</summary>
+        /// <summary>Stasis = kısa i-frame (dodge dışı skill koruması).</summary>
         public bool IsInvulnerable => Has(StatusKind.Stasis);
 
-        /// <summary>Gizlilik ÔÇö boss ni┼şan alamaz. Hasar yutulmaz; yer/AoE de─şer.</summary>
+        /// <summary>Gizlilik — boss nişan alamaz. Hasar yutulmaz; yer/AoE değer.</summary>
         public bool IsStealthed => Has(StatusKind.Stealth);
 
-        /// <summary>K├Âr b├╝y├╝kl├╝─ş├╝ ─▒skalama ┼şans─▒. 0.3 = %30. 1 = her vuru┼ş ─▒skalar.</summary>
+        /// <summary>Kör büyüklüğü ıskalama şansı. 0.3 = %30. 1 = her vuruş ıskalar.</summary>
         public float BlindMissChance
         {
             get
@@ -139,18 +139,18 @@ namespace Dovus.Core.Status
         public bool Has(StatusKind kind) =>
             kind != StatusKind.None && _active.ContainsKey(kind);
 
-        /// <summary>CC priority_table'da ba┼şka bir aktif CC taraf─▒ndan gizlenmiyorsa true.</summary>
+        /// <summary>CC priority_table'da başka bir aktif CC tarafından gizlenmiyorsa true.</summary>
         public bool HasEffective(StatusKind kind) =>
             Has(kind) && (_mobilityCc == null || _mobilityCc.IsCcVisible(kind, _active.Keys));
 
         public IReadOnlyCollection<StatusKind> ActiveKinds => _active.Keys;
 
         /// <summary>
-        /// S├╝releri ilerlet; burn/poison/regen tick hasar─▒/heal d├Âner (pozitif = hasar,
-        /// negatif = heal). 16 Eyl├╝l: burn/poison art─▒k `tuning`'in sabit de─şerini de─şil,
-        /// entry'nin KEND─░ magnitude'unu okuyor ÔÇö durum etkile┼şim tablosu (Apply) bunu
-        /// de─şi┼ştirebildi─şi i├ğin (├Ârn. "S├╝r├╝nen Alev": slow+burn ÔåÆ burn ├ù1.3) art─▒k ger├ğek
-        /// bir etkisi var; eskiden magnitude saklan─▒p hi├ğ okunmuyordu.
+        /// Süreleri ilerlet; burn/poison/regen tick hasarı/heal döner (pozitif = hasar,
+        /// negatif = heal). 16 Eylül: burn/poison artık `tuning`'in sabit değerini değil,
+        /// entry'nin KENDİ magnitude'unu okuyor — durum etkileşim tablosu (Apply) bunu
+        /// değiştirebildiği için (örn. "Sürünen Alev": slow+burn → burn ×1.3) artık gerçek
+        /// bir etkisi var; eskiden magnitude saklanıp hiç okunmuyordu.
         /// </summary>
         public float Tick(double worldDtMs, StatusTuning tuning)
         {
@@ -197,7 +197,7 @@ namespace Dovus.Core.Status
                     refreshed.Add(new KeyValuePair<StatusKind, StatusEntry>(kv.Key, e));
             }
 
-            // "Zehirli Ate┼ş": burn + poison ayn─▒ anda ÔåÆ ekstra tick (docs/element-sistemi.json).
+            // "Zehirli Ateş": burn + poison aynı anda → ekstra tick (docs/element-sistemi.json).
             if (burnTickThisFrame > 0f && _active.ContainsKey(StatusKind.Poison))
                 tickPayload += tuning.BurnPoisonComboBonusPerSec * dtSec;
 
@@ -207,8 +207,8 @@ namespace Dovus.Core.Status
             for (int i = 0; i < expired.Count; i++)
                 _active.Remove(expired[i]);
 
-            // "Yanan Kalkan": burn tick'i kalkan─▒ da a┼ş─▒nd─▒r─▒r. foreach bitti─şi i├ğin dict
-            // art─▒k g├╝venle mutasyona a├ğ─▒k.
+            // "Yanan Kalkan": burn tick'i kalkanı da aşındırır. foreach bittiği için dict
+            // artık güvenle mutasyona açık.
             if (burnTickThisFrame > 0f && _active.TryGetValue(StatusKind.Shield, out StatusEntry shieldAfter))
             {
                 shieldAfter.Magnitude = Math.Max(0f, shieldAfter.Magnitude - burnTickThisFrame * tuning.ShieldBurnDrainRatio);
@@ -250,10 +250,10 @@ namespace Dovus.Core.Status
 
             if (_active.TryGetValue(kind, out StatusEntry existing))
             {
-                // Ayn─▒ etki yeniden gelince s├╝re yenilenir: max(kalan, yeni). Eklenmez.
-                // same_cc "s├╝re_uzar" ve status_no_stacking ikinci kopyay─▒ yasakl─▒yor;
-                // tempo ba─ş─▒ her tikte kart s├╝resini ├╝st ├╝ste bindirmesin.
-                // Pasif yuva ayr─▒d─▒r (same_passive) ve burada de─şi┼şmez.
+                // Aynı etki yeniden gelince süre yenilenir: max(kalan, yeni). Eklenmez.
+                // same_cc "süre_uzar" ve status_no_stacking ikinci kopyayı yasaklıyor;
+                // tempo bağı her tikte kart süresini üst üste bindirmesin.
+                // Pasif yuva ayrıdır (same_passive) ve burada değişmez.
                 existing.RemainingMs = Math.Max(existing.RemainingMs, durationMs);
                 existing.Magnitude = Math.Max(existing.Magnitude, magnitude);
                 existing.TotalDurationMs = Math.Max(existing.TotalDurationMs, existing.RemainingMs);
@@ -264,7 +264,7 @@ namespace Dovus.Core.Status
             _active[kind] = new StatusEntry(durationMs, magnitude, durationMs);
         }
 
-        /// <summary>HUD: kalan s├╝re + magnitude + halka oran─▒ i├ğin toplam s├╝re.</summary>
+        /// <summary>HUD: kalan süre + magnitude + halka oranı için toplam süre.</summary>
         public bool TryGet(
             StatusKind kind,
             out double remainingMs,
@@ -285,7 +285,7 @@ namespace Dovus.Core.Status
             return false;
         }
 
-        /// <summary>Pipeline kalkan pay─▒n─▒ hesaplad─▒; havuzdan d├╝┼ş├╝l├╝r.</summary>
+        /// <summary>Pipeline kalkan payını hesapladı; havuzdan düşülür.</summary>
         public void ConsumeShield(float absorbed)
         {
             if (absorbed <= 0f || !Has(StatusKind.Shield))
@@ -320,8 +320,8 @@ namespace Dovus.Core.Status
         }
 
         /// <summary>
-        /// cleanse_count: en fazla maxCount k├Ât├╝ durum siler ÔÇö ├Ânce sert CC, sonra yumu┼şak CC,
-        /// sonra debuff; ayn─▒ grupta en uzun kalan ├Ânce. int.MaxValue = hepsi. D├Ân├╝┼ş: silinen say─▒.
+        /// cleanse_count: en fazla maxCount kötü durum siler — önce sert CC, sonra yumuşak CC,
+        /// sonra debuff; aynı grupta en uzun kalan önce. int.MaxValue = hepsi. Dönüş: silinen sayı.
         /// </summary>
         public int CleanseHostile(int maxCount)
         {
@@ -351,8 +351,8 @@ namespace Dovus.Core.Status
         }
 
         /// <summary>
-        /// Belirtilen t├╝rleri siler (reality_layer partial_erase / full_erase).
-        /// CleanseHostile'a dokunmaz ÔÇö yaln─▒zca listedekileri kald─▒r─▒r.
+        /// Belirtilen türleri siler (reality_layer partial_erase / full_erase).
+        /// CleanseHostile'a dokunmaz — yalnızca listedekileri kaldırır.
         /// </summary>
         public void RemoveKinds(IReadOnlyList<StatusKind> kinds)
         {
@@ -487,8 +487,8 @@ namespace Dovus.Core.Status
         }
 
         /// <summary>
-        /// Yava┼şlatma ve h─▒z: ayn─▒ kaynak s├╝reyi yeniler (max), farkl─▒ kaynaklar toplanmaz.
-        /// G├╝├ğte en g├╝├ğl├╝ olan kal─▒r (yava┼şta k├╝├ğ├╝k ├ğarpan, h─▒zda b├╝y├╝k ├ğarpan). Ba─ş─▒┼ş─▒kl─▒k yok.
+        /// Yavaşlatma ve hız: aynı kaynak süreyi yeniler (max), farklı kaynaklar toplanmaz.
+        /// Güçte en güçlü olan kalır (yavaşta küçük çarpan, hızda büyük çarpan). Bağışıklık yok.
         /// </summary>
         void ApplyTempo(
             Dictionary<string, TempoSource> sources,
@@ -611,7 +611,7 @@ namespace Dovus.Core.Status
 
             public double RemainingMs;
             public float Magnitude;
-            /// <summary>Apply an─▒ndaki s├╝re ÔÇö HUD radial fill i├ğin.</summary>
+            /// <summary>Apply anındaki süre — HUD radial fill için.</summary>
             public double TotalDurationMs;
         }
     }

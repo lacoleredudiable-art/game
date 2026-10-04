@@ -1,4 +1,4 @@
-﻿using Dovus.Core;
+using Dovus.Core;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
@@ -69,8 +69,8 @@ namespace Dovus.Game.Skills.Mechanics
         }
 
         /// <summary>
-        /// DÃ¼nya/baÄŸ tiki hasarÄ±: normal hasar hattÄ±, ama silahÄ±n vuruÅŸ-Ã¼stÃ¼ itmesi (Top top patlamasÄ±
-        /// ve geri tepmesi) tetiklenmez â€” tik bir hareket sistemi deÄŸildir.
+        /// Dünya/bağ tiki hasarı: normal hasar hattı, ama silahın vuruş-üstü itmesi (Top top patlaması
+        /// ve geri tepmesi) tetiklenmez — tik bir hareket sistemi değildir.
         /// </summary>
         public float ApplyJsonTickDamage(ClosingHit closing, in SkillResolution skill, float scale)
         {
@@ -127,7 +127,7 @@ namespace Dovus.Game.Skills.Mechanics
             if (JsonEffectRules.IsParry(plan))
             {
                 _parry.Arm(untilMs, JsonEffectRules.ParryRatio(plan));
-                JsonLog($"savuÅŸturma penceresi {(untilMs - now) / 1000.0:0.##}sn");
+                JsonLog($"savuşturma penceresi {(untilMs - now) / 1000.0:0.##}sn");
             }
             if (JsonEffectRules.IsSplitReflect(plan))
                 _reflectSplitUntilMs = untilMs;
@@ -148,13 +148,13 @@ namespace Dovus.Game.Skills.Mechanics
             ApplyMirroredDebuff(plan);
         }
 
-        /// <summary>8-1 taÅŸma: gÃ¼Ã§ buff'Ä± zaten aÃ§Ä±kken yenisi gelirse eskisi bir sonraki vuruÅŸa tek seferlik ek olur.</summary>
+        /// <summary>8-1 taşma: güç buff'ı zaten açıkken yenisi gelirse eskisi bir sonraki vuruşa tek seferlik ek olur.</summary>
         public void CaptureBuffOverflow(MechanicPlan plan, double now)
         {
             if (!JsonEffectRules.Overflows(plan, "hasar_buff") || now >= _host.SelfDamageBuffUntilMs || _host.SelfDamageBuff <= 0f)
                 return;
             _host.OverflowNextHitBonus = _host.SelfDamageBuff;
-            JsonLog($"taÅŸma â†’ sonraki vuruÅŸ +{_host.OverflowNextHitBonus * 100f:0}%");
+            JsonLog($"taşma → sonraki vuruş +{_host.OverflowNextHitBonus * 100f:0}%");
         }
 
         public float ConsumeOverflowBonus(bool isBasicStrike)
@@ -166,7 +166,7 @@ namespace Dovus.Game.Skills.Mechanics
             return mult;
         }
 
-        /// <summary>4-1 taÅŸma: kalkan vuruÅŸla kÄ±rÄ±lÄ±nca yakÄ±ndaki boss itilir.</summary>
+        /// <summary>4-1 taşma: kalkan vuruşla kırılınca yakındaki boss itilir.</summary>
         public void OnJsonShieldBlocked()
         {
             double now = JsonNow;
@@ -179,8 +179,8 @@ namespace Dovus.Game.Skills.Mechanics
                 || _host.FlatDistance(_host.Player.position, _host.Boss.transform.position) > JsonParam("shield_shock_radius_m", 3.0))
                 return;
             PushBossFromPlayer((float)JsonParam("it_push_m", 2.0), now);
-            _host.Readout?.NoteSkill("TaÅŸma", "kalkan kÄ±rÄ±ldÄ± â†’ ÅŸok", new Color(0.6f, 0.85f, 1f));
-            JsonLog("kalkan kÄ±rÄ±ldÄ± â†’ ÅŸok");
+            _host.Readout?.NoteSkill("Taşma", "kalkan kırıldı → şok", new Color(0.6f, 0.85f, 1f));
+            JsonLog("kalkan kırıldı → şok");
         }
 
         // ---- incoming damage ----
@@ -189,8 +189,8 @@ namespace Dovus.Game.Skills.Mechanics
             if (!_parry.TryConsume(JsonNow, incoming, out float reflected))
                 return false;
             ApplyReflectedDamage(reflected);
-            _host.Readout?.NoteSkill("SavuÅŸturma", "+" + Mathf.RoundToInt(reflected), new Color(1f, 0.9f, 0.5f));
-            JsonLog($"savuÅŸturma {incoming:0.#} yutuldu, {reflected:0.#} geri");
+            _host.Readout?.NoteSkill("Savuşturma", "+" + Mathf.RoundToInt(reflected), new Color(1f, 0.9f, 0.5f));
+            JsonLog($"savuşturma {incoming:0.#} yutuldu, {reflected:0.#} geri");
             return true;
         }
 
@@ -203,7 +203,7 @@ namespace Dovus.Game.Skills.Mechanics
             {
                 JsonEffectRules.SplitReflect(amount, out float first, out float second);
                 _host.BossVitals.ApplyDamage(first);
-                JsonLog($"bÃ¶lÃ¼nen yansÄ±ma {first:0.#}+{second:0.#}");
+                JsonLog($"bölünen yansıma {first:0.#}+{second:0.#}");
                 _host.ScheduleAfter(now, (float)JsonParam("split_reflect_delay_sec", 0.25), () =>
                 {
                     if (_host.BossVitals != null && !_host.BossVitals.IsDown)
@@ -223,7 +223,7 @@ namespace Dovus.Game.Skills.Mechanics
             if (flat <= 0f)
                 return;
             _host.PlayerStatus.Armor.GrantBuff(flat, JsonNow + Math.Max(0.5, e.DurationSec) * 1000.0);
-            applied.Add($"zÄ±rh Ã§alma +{flat:0.#}");
+            applied.Add($"zırh çalma +{flat:0.#}");
         }
 
         public void ApplyStatusAdd(MechanicEffect e, List<string> applied)
@@ -232,7 +232,7 @@ namespace Dovus.Game.Skills.Mechanics
                 return;
             if (_host.LastStatusTransferMoved > 0)
             {
-                applied.Add("durum ekle: aktarÄ±m yaptÄ±");
+                applied.Add("durum ekle: aktarım yaptı");
                 return;
             }
             StatusTuning t = JsonStatusTuning;
@@ -240,7 +240,7 @@ namespace Dovus.Game.Skills.Mechanics
             _host.BossStatus.Board.Apply(StatusKind.Weaken, t.WeakenMs, t.WeakenOutgoingMult, "durum_ekle");
             if (n >= 2)
                 _host.BossStatus.Board.Apply(StatusKind.ArmorBreak, t.ArmorBreakMs, t.ArmorBreakDamageTakenMult, "durum_ekle");
-            applied.Add("durum ekle Ã—" + n);
+            applied.Add("durum ekle ×" + n);
         }
 
         public void LiftBoss(List<string> applied)
@@ -272,8 +272,8 @@ namespace Dovus.Game.Skills.Mechanics
             float sec = !skill.Engine.IsNull ? skill.Engine.BuffDurationSec(3f) : 3f;
             _host.SelfDamageBuff = (now < _host.SelfDamageBuffUntilMs ? _host.SelfDamageBuff : 0f) + bonus;
             _host.SelfDamageBuffUntilMs = Math.Max(_host.SelfDamageBuffUntilMs, now + Math.Max(0.5f, sec) * 1000.0);
-            _host.Readout?.NoteSkill(skill.DisplayName, $"gÃ¼Ã§ +{bonus * 100f:0}%", new Color(1f, 0.8f, 0.4f));
-            JsonLog($"gÃ¼ce Ã§evir {removed} durum â†’ +{bonus * 100f:0}%");
+            _host.Readout?.NoteSkill(skill.DisplayName, $"güç +{bonus * 100f:0}%", new Color(1f, 0.8f, 0.4f));
+            JsonLog($"güce çevir {removed} durum → +{bonus * 100f:0}%");
         }
 
         public void ShareFriendlyStatuses(in SkillResolution skill, StatusBoard applied)
@@ -293,10 +293,10 @@ namespace Dovus.Game.Skills.Mechanics
             if (applied.TryGet(StatusKind.Shield, out double rem, out float mag, out _) && mag > 0f && other.ShieldRemaining < mag)
             {
                 other.Apply(StatusKind.Shield, rem, mag, "yayma:" + skill.SkillId);
-                JsonLog($"kalkan paylaÅŸÄ±ldÄ± {mag:0.#}");
+                JsonLog($"kalkan paylaşıldı {mag:0.#}");
             }
             if (string.Equals(skill.Action, "cleanse", StringComparison.Ordinal))
-                JsonLog("arÄ±nma paylaÅŸÄ±ldÄ± " + other.CleanseHostile(_host.JsonCleanseCount(skill)));
+                JsonLog("arınma paylaşıldı " + other.CleanseHostile(_host.JsonCleanseCount(skill)));
         }
 
         public void ApplyHealOverflow(in SkillResolution skill, int amount, int healed, bool toAlly)
@@ -315,11 +315,11 @@ namespace Dovus.Game.Skills.Mechanics
                 return;
             float shield = over / CombatScale.DamageAndHp;
             board.Apply(StatusKind.Shield, JsonStatusTuning.ShieldMs, board.ShieldRemaining + shield, "tasar:" + skill.SkillId);
-            _host.Readout?.NoteSkill(skill.DisplayName, "taÅŸma â†’ kalkan " + over, new Color(0.6f, 0.85f, 1f));
-            JsonLog("taÅŸma â†’ kalkan " + over);
+            _host.Readout?.NoteSkill(skill.DisplayName, "taşma → kalkan " + over, new Color(0.6f, 0.85f, 1f));
+            JsonLog("taşma → kalkan " + over);
         }
 
-        /// <summary>dosttan_dosta: sekme beat'i sÄ±radaki dosta (oyuncu â†” ally) gider.</summary>
+        /// <summary>dosttan_dosta: sekme beat'i sıradaki dosta (oyuncu ↔ ally) gider.</summary>
         public bool TryBounceFriendly(float power)
         {
             SkillResolution skill = _host.DeliverySkill;
@@ -349,11 +349,11 @@ namespace Dovus.Game.Skills.Mechanics
                     board.CleanseHostile(_host.JsonCleanseCount(skill));
             }
             _host.LastFriendlyWasAlly = toAlly;
-            JsonLog("dosttan dosta â†’ " + (toAlly ? "ally" : "self"));
+            JsonLog("dosttan dosta → " + (toAlly ? "ally" : "self"));
             return true;
         }
 
-        /// <summary>inen_akis_alani: akÄ±ÅŸ tiki yalnÄ±z iniÅŸ alanÄ±ndaki hedefe (x-12 Top).</summary>
+        /// <summary>inen_akis_alani: akış tiki yalnız iniş alanındaki hedefe (x-12 Top).</summary>
         public bool LandingFieldAllows(in SkillResolution skill)
         {
             MechanicPlan plan = _host.MechanicPlanFor(skill);
@@ -409,7 +409,7 @@ namespace Dovus.Game.Skills.Mechanics
                 _host.ScheduleAfter(now, (float)JsonEffectRules.BasicSubHitDelaySec(i, w.BasicIntervalSec), () =>
                 {
                     if (_host.Boss != null && _host.BasicTargetStillInReach(_host.Boss.transform, reach))
-                        JsonLog($"dÃ¼z vuruÅŸ alt-vuruÅŸ {_host.ApplyClosingDamage(closing, SkillResolution.Empty, true, 0f, scale, 1f):0.#}");
+                        JsonLog($"düz vuruş alt-vuruş {_host.ApplyClosingDamage(closing, SkillResolution.Empty, true, 0f, scale, 1f):0.#}");
                 });
             }
         }
@@ -421,7 +421,7 @@ namespace Dovus.Game.Skills.Mechanics
                 return;
             string label = JsonEffectRules.BasicKindLabel(w.BasicKind, hits);
             if (label.Length > 0)
-                _host.DebugHud?.NoteSkillBang("DÃ¼z vuruÅŸ", label);
+                _host.DebugHud?.NoteSkillBang("Düz vuruş", label);
             if (w.BasicAllyHeal <= 0f || _host.Ally == null || _host.Ally.Hp >= _host.Ally.MaxHp)
                 return;
             DamageOutcome heal = DamagePipeline.Resolve(new DamageQuery
@@ -435,8 +435,8 @@ namespace Dovus.Game.Skills.Mechanics
             if (healed > 0)
             {
                 _host.DamageHud?.ShowDamage(-healed);
-                _host.Readout?.NoteSkill("MÃ¼hÃ¼r", "ally +" + healed, new Color(0.4f, 1f, 0.65f));
-                JsonLog("mÃ¼hÃ¼r ally +" + healed);
+                _host.Readout?.NoteSkill("Mühür", "ally +" + healed, new Color(0.4f, 1f, 0.65f));
+                JsonLog("mühür ally +" + healed);
             }
         }
     

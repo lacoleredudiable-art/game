@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Boss;
+using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
 using Dovus.Core.Casting;
@@ -11,13 +11,13 @@ using UnityEngine;
 namespace Dovus.Game.Boss
 {
     /// <summary>
-    /// Boss Animator kancasÄ±. Controller state'lerine crossfade ile gider (Mixamo controller'da
-    /// trigger yok); state yoksa eski trigger adÄ±na dÃ¼ÅŸer, o da yoksa no-op.
+    /// Boss Animator kancası. Controller state'lerine crossfade ile gider (Mixamo controller'da
+    /// trigger yok); state yoksa eski trigger adına düşer, o da yoksa no-op.
     ///
-    /// Tell'i veri belirler, klip deÄŸil: windup'ta saldÄ±rÄ± klibinin hÄ±zÄ±, darbe karesi
+    /// Tell'i veri belirler, klip değil: windup'ta saldırı klibinin hızı, darbe karesi
     /// (<see cref="PrototypeTuning.BossSlamImpactNorm"/>) tam <c>WindupMs</c> sonunda gelecek
-    /// ÅŸekilde <see cref="ParamActionSpeed"/> ile Ã¶lÃ§eklenir. YÃ¼rÃ¼me adÄ±mÄ± yaklaÅŸma hÄ±zÄ±na
-    /// <see cref="ParamLocoSpeed"/> ile eÅŸlenir (ayak kaymasÄ± olmasÄ±n).
+    /// şekilde <see cref="ParamActionSpeed"/> ile ölçeklenir. Yürüme adımı yaklaşma hızına
+    /// <see cref="ParamLocoSpeed"/> ile eşlenir (ayak kayması olmasın).
     /// </summary>
     public sealed class BossVisual : MonoBehaviour
     {
@@ -32,7 +32,7 @@ namespace Dovus.Game.Boss
         public const string StateStagger = "BossStagger";
         public const string StateDeath = "BossDeath";
 
-        // Eski (Quaternius) controller trigger adlarÄ± â€” state yoksa bunlara dÃ¼ÅŸÃ¼lÃ¼r.
+        // Eski (Quaternius) controller trigger adları — state yoksa bunlara düşülür.
         public const string TriggerIdle = "Idle";
         public const string TriggerWindup = "Windup";
         public const string TriggerSlam = "Slam";
@@ -50,7 +50,7 @@ namespace Dovus.Game.Boss
 
         public Animator Animator => _animator;
 
-        /// <summary>SaldÄ±rÄ±/kÃ¼kreme klibi oynuyor mu (stagger bunu kesmez).</summary>
+        /// <summary>Saldırı/kükreme klibi oynuyor mu (stagger bunu kesmez).</summary>
         public bool IsBusy => Time.unscaledTime < _busyUntilUnscaled;
 
         public void Bind(Animator animator, params Renderer[] hideWhenPresent)
@@ -69,7 +69,7 @@ namespace Dovus.Game.Boss
 
         public void Configure(PrototypeTuning tuning) => _tuning = tuning;
 
-        /// <summary>0 = dur; &gt;0 = yÃ¼rÃ¼, adÄ±m hÄ±zÄ± <paramref name="groundMps"/>'ye eÅŸlenir.</summary>
+        /// <summary>0 = dur; &gt;0 = yürü, adım hızı <paramref name="groundMps"/>'ye eşlenir.</summary>
         public void SetWalk(float groundMps)
         {
             if (!Ready())
@@ -104,12 +104,12 @@ namespace Dovus.Game.Boss
                 FireTrigger(TriggerIdle);
         }
 
-        /// <summary>Windup baÅŸÄ±: saldÄ±rÄ± klibi, darbe karesi windup sonuna denk gelecek hÄ±zda.</summary>
+        /// <summary>Windup başı: saldırı klibi, darbe karesi windup sonuna denk gelecek hızda.</summary>
         public void PlayWindup(BossAttackKind kind, int windupMs)
         {
             if (_dead || !Ready())
                 return;
-            // Zehir TÃ¼kÃ¼rÃ¼ÄŸÃ¼ aÄŸÄ±zdan Ã§Ä±kar: nefes klibini paylaÅŸÄ±r.
+            // Zehir Tükürüğü ağızdan çıkar: nefes klibini paylaşır.
             bool mouth = kind is BossAttackKind.FireCone or BossAttackKind.Volley;
             string state = mouth ? StateBreath : StateSlam;
             float impactNorm = _tuning == null ? 0.42f
@@ -127,7 +127,7 @@ namespace Dovus.Game.Boss
                 FireTrigger(TriggerWindup);
         }
 
-        /// <summary>Aktif pencere: klibin kalanÄ± doÄŸal hÄ±zda.</summary>
+        /// <summary>Aktif pencere: klibin kalanı doğal hızda.</summary>
         public void PlaySlam()
         {
             if (_dead || !Ready())
@@ -207,7 +207,7 @@ namespace Dovus.Game.Boss
             return false;
         }
 
-        /// <summary>Runtime'da stateâ†’klip eÅŸlemesi okunamaz; bind aracÄ±nÄ±n seÃ§tiÄŸi adlarla aynÄ± iÄŸnelerle bulunur.</summary>
+        /// <summary>Runtime'da state→klip eşlemesi okunamaz; bind aracının seçtiği adlarla aynı iğnelerle bulunur.</summary>
         float ClipLength(string state)
         {
             AnimationClip clip = FindClipFor(state);

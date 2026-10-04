@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Boss;
+using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
 using Dovus.Core.Casting;
@@ -216,7 +216,7 @@ namespace Dovus.Game.Casting.Input
 
             if (!_s.AllowsDrawNow)
             {
-                _s.Readout?.NoteDenied("Ã§izilemez");
+                _s.Readout?.NoteDenied("çizilemez");
                 _s.Syllable?.PlayDenied();
                 _s.StrokeDenial = DrawFeedback.DenialKind.Other;
                 return;

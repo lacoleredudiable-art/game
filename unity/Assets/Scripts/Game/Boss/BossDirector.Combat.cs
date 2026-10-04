@@ -1,4 +1,4 @@
-﻿using Dovus.App.Boss;
+using Dovus.App.Boss;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;

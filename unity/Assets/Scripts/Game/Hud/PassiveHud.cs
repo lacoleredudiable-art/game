@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Boss;
+using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
 using Dovus.Core.Casting;
@@ -13,8 +13,8 @@ using UnityEngine;
 namespace Dovus.Game.Hud
 {
     /// <summary>
-    /// 0â€“2 pasif rÃ¼nÃ¼ altÄ±gendeki dÃ¼ÄŸmesinin Ã¼stÃ¼nde "PASÄ°F" rozetiyle gÃ¶sterir; pasif etkinken
-    /// rozet kalan sÃ¼reyi taÅŸÄ±r. AyrÄ± panel yok (29 Eyl: telefonda gereksiz yer kaplÄ±yordu).
+    /// 0–2 pasif rünü altıgendeki düğmesinin üstünde "PASİF" rozetiyle gösterir; pasif etkinken
+    /// rozet kalan süreyi taşır. Ayrı panel yok (29 Eyl: telefonda gereksiz yer kaplıyordu).
     /// </summary>
     public sealed class PassiveHud : MonoBehaviour
     {
@@ -68,7 +68,7 @@ namespace Dovus.Game.Hud
             Refresh();
         }
 
-        /// <summary>Aktif slot pasifi yokken rozetleri yuva seÃ§imine gÃ¶re yeniden Ã§izer.</summary>
+        /// <summary>Aktif slot pasifi yokken rozetleri yuva seçimine göre yeniden çizer.</summary>
         public void Refresh()
         {
             if (_view == null)

@@ -50,11 +50,11 @@ namespace Dovus.Core.Team
     }
 
     /// <summary>
-    /// Tak─▒m kombosu: bir oyuncunun b─▒rakt─▒─ş─▒ i┼şi ba┼şka oyuncu bitirir.
-    /// Hasar form├╝l├╝ burada yok; yaln─▒z ├ğarpan ve s├╝re d├Âner.
-    /// Taret at─▒┼ş aral─▒─ş─▒ metinde yok ÔÇö yedek 1 sn (DesignWarnings).
-    /// 7-6 z─▒rh s├╝resi metinde yok ÔÇö StatusTuning.ArmorBreakMs.
-    /// 12-6 kopma, ba─ş kurulurkenki mesafenin ├╝st├╝d├╝r. H─▒z JSON'da 0; yedek +%50.
+    /// Takım kombosu: bir oyuncunun bıraktığı işi başka oyuncu bitirir.
+    /// Hasar formülü burada yok; yalnız çarpan ve süre döner.
+    /// Taret atış aralığı metinde yok — yedek 1 sn (DesignWarnings).
+    /// 7-6 zırh süresi metinde yok — StatusTuning.ArmorBreakMs.
+    /// 12-6 kopma, bağ kurulurkenki mesafenin üstüdür. Hız JSON'da 0; yedek +%50.
     /// </summary>
     public sealed class TeamComboSystem
     {
@@ -188,7 +188,7 @@ namespace Dovus.Core.Team
             _ops = ops ?? TeamOpTable.Legacy;
         }
 
-        /// <summary>Op tablosunu sonradan ba─şla (Unity MonoBehaviour ctor'unda Resources y├╝klenemez; host Awake'te ├ğa─ş─▒r─▒r).</summary>
+        /// <summary>Op tablosunu sonradan bağla (Unity MonoBehaviour ctor'unda Resources yüklenemez; host Awake'te çağırır).</summary>
         public void UseOps(IReadOnlyDictionary<string, TeamOp> ops) => _ops = ops ?? TeamOpTable.Legacy;
 
         public TeamPulse Cast(string skillId, IAllyPlayer caster, IAllyPlayer target, IReadOnlyList<IAllyPlayer> allies, in Disc boss)
@@ -340,7 +340,7 @@ namespace Dovus.Core.Team
                 _warnedShot = true;
                 DesignWarnings.Once(
                     "team.turret.rate",
-                    "144 kombo taret at─▒┼ş aral─▒─ş─▒ vermez; yedek 1 sn kullan─▒ld─▒.");
+                    "144 kombo taret atış aralığı vermez; yedek 1 sn kullanıldı.");
             }
 
             for (int i = 0; i < _turrets.Count; i++)
@@ -523,7 +523,7 @@ namespace Dovus.Core.Team
             {
                 DesignWarnings.Once(
                     "team.haste",
-                    "12-6 h─▒z─▒ element-sistemi.json self_haste 0; yedek +%50 kullan─▒ld─▒.");
+                    "12-6 hızı element-sistemi.json self_haste 0; yedek +%50 kullanıldı.");
             }
             _haste.Add(new HasteRopeState
             {

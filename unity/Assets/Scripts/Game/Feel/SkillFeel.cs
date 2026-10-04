@@ -1,4 +1,4 @@
-﻿using Dovus.Core.Element;
+using Dovus.Core.Element;
 using Dovus.Core.Grammar;
 using Dovus.Game.Cameras;
 using Dovus.Game.Config;
@@ -8,12 +8,12 @@ using UnityEngine;
 namespace Dovus.Game.Feel
 {
     /// <summary>
-    /// Element rengi (Ã§izgi) + aileye gÃ¶re boss tepki/kamera.
-    /// Mevcut AteÅŸ rengi sÄ±cak magenta.
+    /// Element rengi (çizgi) + aileye göre boss tepki/kamera.
+    /// Mevcut Ateş rengi sıcak magenta.
     /// </summary>
     public static class SkillFeel
     {
-        /// <summary>Fiil rÃ¼nÃ¼ Ã§izgi, sÄ±fat/son rÃ¼n blob â€” basit Ã§izgiler element renginde.</summary>
+        /// <summary>Fiil rünü çizgi, sıfat/son rün blob — basit çizgiler element renginde.</summary>
         public static void ElementPalette(
             IReadOnlyList<SentenceWord> words,
             PrototypeTuning t,
@@ -41,11 +41,11 @@ namespace Dovus.Game.Feel
         {
             if (mechanics == null || mechanics.Length == 0)
                 return string.Empty;
-            return string.Join(" Â· ", mechanics);
+            return string.Join(" · ", mechanics);
         }
 
         /// <summary>
-        /// SÄ±fat katkÄ±sÄ± â€” HUD â€œetkiâ€ satÄ±rÄ±nda 3â€™lÃ¼/4â€™lÃ¼ farkÄ± gÃ¶rÃ¼nsÃ¼n.
+        /// Sıfat katkısı — HUD “etki” satırında 3’lü/4’lü farkı görünsün.
         /// </summary>
         public static string AdjectiveShort(SkillResolution skill)
         {
@@ -58,7 +58,7 @@ namespace Dovus.Game.Feel
                 && !string.Equals(skill.SilhouetteAxis, "none", System.StringComparison.Ordinal))
                 parts.Add(skill.SilhouetteAxis);
             if (skill.HitboxScaleMult > 0f && System.Math.Abs(skill.HitboxScaleMult - 1f) > 0.05f)
-                parts.Add("alanÃ—" + skill.HitboxScaleMult.ToString("0.#"));
+                parts.Add("alan×" + skill.HitboxScaleMult.ToString("0.#"));
             if (!skill.Engine.IsNull)
             {
                 string traj = skill.Engine.TrajectoryOverride("");
@@ -67,10 +67,10 @@ namespace Dovus.Game.Feel
                 if (!string.IsNullOrEmpty(traj))
                     parts.Add(traj);
             }
-            return parts.Count == 0 ? string.Empty : string.Join(" Â· ", parts);
+            return parts.Count == 0 ? string.Empty : string.Join(" · ", parts);
         }
 
-        /// <summary>KapanÄ±ÅŸta kamera vuruÅŸu â€” aileye gÃ¶re aÄŸÄ±rlÄ±k.</summary>
+        /// <summary>Kapanışta kamera vuruşu — aileye göre ağırlık.</summary>
         public static void CameraKick(string verbFamily, FollowCamera cam, Dovus.Core.Tuning.FeelTuning feel)
         {
             if (cam == null || feel == null)

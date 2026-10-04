@@ -1,4 +1,4 @@
-﻿using Dovus.App.Casting;
+using Dovus.App.Casting;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
@@ -20,7 +20,7 @@ namespace Dovus.Game.Skills
     public sealed partial class ManifestationDirector
     {
         WeaponArmorCatalog _weaponArmor;
-        /// <summary>O7: tek kalÄ±cÄ± savaÅŸ zarÄ±. Oyunda oturum tohumu; tarama/test <see cref="ReseedCombatRng"/> ile sabit tohum.</summary>
+        /// <summary>O7: tek kalıcı savaş zarı. Oyunda oturum tohumu; tarama/test <see cref="ReseedCombatRng"/> ile sabit tohum.</summary>
         readonly CombatRng _combatRng = new CombatRng(CombatRng.SessionSeed());
         CritSystem? _critSystem;
 
@@ -29,7 +29,7 @@ namespace Dovus.Game.Skills
 
         public int CombatRngSeed => _combatRng.Seed;
 
-        /// <summary>element-sistemi.json crit_system (base 0.05, Ã—2.0, tavan 0.75).</summary>
+        /// <summary>element-sistemi.json crit_system (base 0.05, ×2.0, tavan 0.75).</summary>
         CritSystem Crits
         {
             get
@@ -137,7 +137,7 @@ namespace Dovus.Game.Skills
 
             bool skillIgnoresArmor = !skill.IsEmpty && !skill.Engine.IsNull
                 && skill.Engine.IgnoreArmor(false);
-            // O8: Yay'Ä±n "sonraki vuruÅŸ zÄ±rh yok" bonusu yalnÄ±z gerÃ§ekten iÅŸe yaradÄ±ÄŸÄ±nda (skill zaten delmiyorsa) tÃ¼ketilir.
+            // O8: Yay'ın "sonraki vuruş zırh yok" bonusu yalnız gerçekten işe yaradığında (skill zaten delmiyorsa) tüketilir.
             bool weaponArmorBonus = WeaponIgnoresArmor && !skillIgnoresArmor;
             bool ignoreArmor = WeaponIgnoresArmor || skillIgnoresArmor;
             float slotPen = _slotPassives?.ArmorPenPercentFor(_slotQueryCastId) ?? 0f;
@@ -156,8 +156,8 @@ namespace Dovus.Game.Skills
             }
             if (!skill.IsEmpty && JsonEffectRules.PiercesDefenses(MechanicPlanFor(skill)?.Body))
             {
-                shield = 0f;                  // delici: boss kalkanÄ±nÄ± deler
-                taken = Mathf.Max(taken, 1f); // ve hasar azaltmasÄ±nÄ± yok sayar
+                shield = 0f;                  // delici: boss kalkanını deler
+                taken = Mathf.Max(taken, 1f); // ve hasar azaltmasını yok sayar
             }
 
             float poise = 0f;
