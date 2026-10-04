@@ -125,8 +125,6 @@ namespace Dovus.Game.Actors
             ? _selected.transform
             : null;
 
-        public event Action<Targetable> SelectionChanged;
-
         public void Bind(
             Transform owner,
             int ownerTeamId,
@@ -335,7 +333,6 @@ namespace Dovus.Game.Actors
                 return;
             _selected = target;
             RefreshPresentation();
-            SelectionChanged?.Invoke(_selected);
         }
 
         bool InputBlocked() =>

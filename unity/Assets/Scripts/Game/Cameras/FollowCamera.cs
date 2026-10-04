@@ -574,17 +574,6 @@ namespace Dovus.Game.Cameras
             return (xMax - xMin) * (yMax - yMin);
         }
 
-        /// <summary>Play doğrulama: mevcut yerleşimde overlap yüzdesini logla (sunum).</summary>
-        public void LogLockOnOverlap(float separationLabelM)
-        {
-            LockOnActive = true;
-            UpdateLockOnScreenOverlap();
-            float occludedPct = (1f - _lastLockOnOverlapPct) * 100f;
-            DebugConfig.DevLog(
-                $"[FollowCamera] lock-on overlap sep={separationLabelM:F1}m playerVisible={_lastLockOnOverlapPct * 100f:F1}% "
-                + $"bossOccludesPlayer={occludedPct:F1}%");
-        }
-
         void AdvancePunch()
         {
             if (_punchT <= 0f)

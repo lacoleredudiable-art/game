@@ -80,8 +80,6 @@ namespace Dovus.Game.Actors
             }
         }
 
-        public bool CanBeHit => !IsInvulnerable;
-
         /// <summary>
         /// Gelen vuruşun tek sorusu. dodgeable false ise i-frame yutmaz.
         /// true dönerse hasar yazılmamalı; mükemmel pencereyse ödül burada bir kez verilir.

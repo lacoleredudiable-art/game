@@ -7,7 +7,8 @@ Mobil kooperatif boss dövüşü, alfa prototip. Bu dosya her görevde bağlama 
 2. Sahne koddan kurulur (`PrototypeBootstrap`). `.unity` / `.prefab` YAML dosyaları **asla** elle düzenlenmez.
 3. **Tek hareket sistemi:** skill sırasında oyuncuyu/boss'u yalnız hareket kalıbı taşır
    (`Core/Motion/MotionTemplateRunner` + `Game/MotionTemplateBody`). İkinci bir hareket yolu ekleme;
-   `SkillMotionDriver` / `SkillMotionMotor` / executor hareketi ölü, canlandırma. Kalıp dışı konum
+   `SkillMotionDriver` / executor hareketi ölü, canlandırma; `SkillMotionMotor` yalnız saf plan üretir
+   (tür, i-frame, hedef) — konumu yalnız `MotionTemplateRunner` yazar. Kalıp dışı konum
    yazan her şey `Core/Motion/PositionOwnership`'e kayıtlı olmalı.
 4. Ayarlanabilir her şey veri. Skill sayısı `docs/element-sistemi.json` `engine` / `adjective_mods`'tan,
    his sayısı ilgili `Core/Tuning/*.cs` varsayılanından gelir. Sayı uydurma; yoksa varsayılan koy,

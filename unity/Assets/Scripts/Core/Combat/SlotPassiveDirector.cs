@@ -191,25 +191,6 @@ namespace Dovus.Core.Combat
         /// <summary>Pasif oyuncuyu köklemez. cast_mobility bu yoldan okunmaz.</summary>
         public bool BlocksPlayerMovement => false;
 
-        public bool HasModifierFor(string key, int castId)
-        {
-            if (string.IsNullOrEmpty(key))
-                return false;
-            for (int i = 0; i < _active.Count; i++)
-            {
-                if (!Applies(_active[i], castId))
-                    continue;
-                JsonValue value = _active[i].Modifiers[key];
-                if (value.Kind == JsonKind.Bool && value.AsBool(false))
-                    return true;
-                if (value.Kind == JsonKind.Number && value.AsFloat(0f) != 0f)
-                    return true;
-                if (value.Kind == JsonKind.String && !string.IsNullOrEmpty(value.AsString()))
-                    return true;
-            }
-            return false;
-        }
-
         public string StringModifier(string key)
         {
             if (string.Equals(key, "cast_mobility", StringComparison.Ordinal))

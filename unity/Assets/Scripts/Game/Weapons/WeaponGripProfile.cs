@@ -27,16 +27,6 @@ namespace Dovus.Game.Weapons
             };
         }
 
-        public void ApplyRight(ref Vector3 localPos, ref Quaternion localRot, ref Vector3 localScale)
-        {
-            Apply(_right, ref localPos, ref localRot, ref localScale);
-        }
-
-        public void ApplyLeft(ref Vector3 localPos, ref Quaternion localRot, ref Vector3 localScale)
-        {
-            Apply(_left, ref localPos, ref localRot, ref localScale);
-        }
-
         /// <summary>Mixamo Paladin: silah anahtarına göre ek tutuş (Synty'ye uygulanmaz).</summary>
         public void ApplyMixamoWeapon(string weaponKey, bool isRight, ref Vector3 localPos, ref Quaternion localRot, ref Vector3 localScale)
         {

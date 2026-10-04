@@ -27,7 +27,7 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 - [x] 1.6 Kullanıcı kararı + iş: skill metni ↔ sayı (Denetim D) — doğru kaynak JSON mu metin mi?
 
 ## Aşama 2B — Kalan mimari (kuzenin 32 maddesinin tamamı) [Aşama 3'ten sonra]
-- [ ] 2B.1 Ölü kod taraması + silme (A17, C8); ActorModifiers.MissChance, kullanılmayan dodge kancası
+- [x] 2B.1 Ölü kod taraması + silme (A17, C8); ActorModifiers.MissChance, kullanılmayan dodge kancası
 - [ ] 2B.2 ManifestationDirector'ı tamamen böl (A1, A9): kalan skill akışı, VFX, HUD, takım → App/Game servisleri; dosya ≤500 satır
 - [ ] 2B.3 HexagonInput böl (A2): girdi / skill tetik / UI ayrı
 - [ ] 2B.4 BossDirector kalan Unity mantığı → App (A3)

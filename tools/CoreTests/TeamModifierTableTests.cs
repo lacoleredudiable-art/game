@@ -16,7 +16,6 @@ public class TeamModifierTableTests
         Assert.That(mods.LifestealAdd, Is.EqualTo(0f));
         Assert.That(mods.MoveSpeedMult, Is.EqualTo(1f));
         Assert.That(mods.DamageTakenMult, Is.EqualTo(1f));
-        Assert.That(mods.MissChance, Is.EqualTo(0f));
         Assert.That(table.BossIncomingMult, Is.EqualTo(1f));
         Assert.That(table.BossStrikeScale, Is.EqualTo(1f));
     }

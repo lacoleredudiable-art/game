@@ -55,4 +55,4 @@
 | Build seçim ekranı | `Game/Hud/BuildSelectScreen.cs` | `BuildSelectScreen` |
 | Doğrulama tek komut | `tools/verify.ps1` | `powershell -File tools/verify.ps1` |
 
-*Not:* `SkillMotionMotor` / eski hareket sürücüleri ölü; skill sırasında konum yalnız `MotionTemplateRunner` + `MotionTemplateBody` (kök `AGENTS.md` §3).
+*Not:* `SkillMotionMotor` yalnız saf plan üretir (tür, i-frame, hedef); `SkillMotionDriver` ölü. Skill sırasında konum yalnız `MotionTemplateRunner` + `MotionTemplateBody` (kök `AGENTS.md` §3).
