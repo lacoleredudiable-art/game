@@ -36,17 +36,6 @@ namespace Dovus.Game.Skills
     /// </summary>
     public sealed partial class ManifestationDirector : MonoBehaviour
     {
-        struct PendingClosing
-        {
-            public LivingEffectView View;
-            public ClosingHit Closing;
-            public double BangAtWorldMs;
-            public List<SentenceWord> Words;
-            public bool IsBasicStrike;
-            public Transform Target;
-            public SkillAimMode AimMode;
-        }
-
         GameClock _clock;
         SentenceEngine _engine;
         CombatTuning _combat;
@@ -125,9 +114,7 @@ namespace Dovus.Game.Skills
         readonly SkillExecutorRouter _skillExecutorRouter = new();
         readonly List<EquipmentItem> _cycleWeapons = new();
         int _cycleWeaponIndex = -1;
-        // --- Animasyon (Bağlama 10) — PresentationCatalog → AnimationBridge; PulseRune kalır ---
-        PresentationCatalog _presentationCatalog;
-        PresentationValidator _presentationValidator;
+        // --- Animasyon (Bağlama 10) — SkillPresentation → AnimationBridge; PulseRune kalır ---
         AnimationDatabase _animationDatabase;
         readonly HashSet<string> _missingAnimationBindings = new();
         readonly AnimationBridge _animationBridge = new();
@@ -226,7 +213,11 @@ namespace Dovus.Game.Skills
 
 #if UNITY_EDITOR
         /// <summary>Bağlama 10 / MCP: ShoutSkill içindeki ApplySkillAnimation yolunu doğrudan dener.</summary>
-        public void DebugApplySkillAnimation(SkillResolution skill) => ApplySkillAnimation(skill);
+        public void DebugApplySkillAnimation(SkillResolution skill)
+        {
+            EnsureLaunchServices();
+            _skillPresentation.ApplySkillAnimation(skill);
+        }
 #endif
 
         public ElementPaintNode? CycleElementPaint()
@@ -421,7 +412,8 @@ namespace Dovus.Game.Skills
             _skillFactory = skillFactory ?? new SkillFactory(_skills, _equipmentBonus);
             _animationDatabase = animationDatabase ?? LoadAnimationDatabase();
             _elementPaintIndex = 0;
-            EnsurePresentationCatalog();
+            EnsureLaunchServices();
+            _skillPresentation.EnsureCatalog();
             _playerStates = new PlayerStateMachine(_skills.PlayerStates);
             input.BindPlayerStates(_playerStates, () => _pending.Count > 0);
             var motorForStates = player != null ? player.GetComponent<KinematicMotor>() : null;
@@ -450,6 +442,8 @@ namespace Dovus.Game.Skills
             // Açılış görseli: elde silah + arketip controller ilk kareden doğru olsun.
             SyncVisualDelivery();
             EnsureClosingServices();
+            EnsureLaunchServices();
+            _skillPresentation.EnsureCatalog();
         }
 
         public void BindTargeting(PlayerTargeting targeting)
@@ -897,7 +891,7 @@ namespace Dovus.Game.Skills
                 : new ManifestationTuning();
             SkillExecutorRoute route = _skillExecutorRouter.Route(skill, _equippedWeapon);
             route = ApplyMechanicWorldRoute(MechanicPlanFor(skill), route);
-            LivingEffectPlan plan = SkillWorldPlanner.Build(skill, _presentationCatalog, tuning);
+            LivingEffectPlan plan = SkillWorldPlanner.Build(skill, PresentationCatalog, tuning);
             float rangeMult = _equippedWeapon != null ? _equippedWeapon.RangeMult : 1f;
             bool burst = string.Equals(skill.VerbId, "5", StringComparison.Ordinal);
             float radius = plan.BangRadiusM > 0f ? plan.BangRadiusM : tuning.TravelHitRadiusM;
@@ -1002,7 +996,7 @@ namespace Dovus.Game.Skills
 
             EnsurePresentationCatalog();
             ManifestationTuning man = _combat != null ? _combat.Manifestation : new ManifestationTuning();
-            LivingEffectPlan plan = SkillWorldPlanner.Build(skill, _presentationCatalog, man);
+            LivingEffectPlan plan = SkillWorldPlanner.Build(skill, PresentationCatalog, man);
             logic.ApplyPlan(plan);
         }
 
@@ -1335,13 +1329,14 @@ namespace Dovus.Game.Skills
             {
                 SkillResolution skill = ResolveSkillWords(p.Words);
                 EnsurePresentationCatalog();
-                if (_presentationCatalog != null && !skill.IsEmpty)
+                var catalog = PresentationCatalog;
+                if (catalog != null && !skill.IsEmpty)
                 {
                     LivingEffectPlan plan = SkillWorldPlanner.Build(
-                        skill, _presentationCatalog,
+                        skill, catalog,
                         _combat != null ? _combat.Manifestation : new ManifestationTuning());
                     if (!string.IsNullOrEmpty(plan.TrajectoryId)
-                        && _presentationCatalog.TryGetTrajectory(plan.TrajectoryId, out TrajectoryNode traj))
+                        && catalog.TryGetTrajectory(plan.TrajectoryId, out TrajectoryNode traj))
                     {
                         trailStyle = traj.GetString("vfx_trail_type", string.Empty);
                         if (plan.TravelKind == LivingTravelKind.ExpandingRadial
@@ -1375,256 +1370,11 @@ namespace Dovus.Game.Skills
             int slotCastId = -1,
             float? activationDelayOverride = null)
         {
-            LivingEffect logic = capturedLogic
-                ?? (pending.View != null ? pending.View.Logic : null);
-            if (_player == null || logic == null)
-                return false;
-
-            EnsurePresentationCatalog();
-            ManifestationTuning tuning = _combat != null
-                ? _combat.Manifestation
-                : new ManifestationTuning();
-            LivingEffectPlan plan = SkillWorldPlanner.Build(skill, _presentationCatalog, tuning);
-
-            float rangeMult = _equippedWeapon != null ? _equippedWeapon.RangeMult : 1f;
-            bool burst = string.Equals(skill.VerbId, "5", StringComparison.Ordinal);
-            float radius = plan.BangRadiusM > 0f ? plan.BangRadiusM : tuning.TravelHitRadiusM;
-            // Tek hedefli yakın vuruş kapsülü bang yarıçapıyla şişmez; yalnız Patlama alandır.
-            if (kind == SkillExecutorKind.MeleeHitbox && !burst)
-                radius = tuning.TravelHitRadiusM;
-            float range = kind == SkillExecutorKind.MeleeHitbox
-                ? tuning.BasicStrikeRangeM * rangeMult
-                : Mathf.Max(radius, plan.MaxRangeM * rangeMult);
-            float speed = plan.SpeedMps > 0f ? plan.SpeedMps : tuning.NeedleSpeedMps;
-            ResolveFieldTiming(skill, plan, tuning, out float durationSec, out float tickSec, out float perTickShare);
-            int spawnCount = 1;
-            ApplyVerbHitboxSizing(kind, skill, tuning, rangeMult, burst, ref radius, ref range, ref durationSec, ref spawnCount);
-            string hitboxShape = TryVerbHitbox(skill, out VerbHitboxSpec visualSpec)
-                ? visualSpec.Shape
-                : "sphere";
-            float hitboxAngleDeg = hitboxShape == "cone" ? visualSpec.SizeB : 0f;
-            int elementId = SelectedElementPaint?.Id ?? 1;
-            int.TryParse(skill.VerbId, out int verbVfxId);
-            int.TryParse(skill.AdjectiveId, out int adjectiveVfxId);
-            string vfxKey = _verbData?.VfxKey(
-                SelectedElementPaint?.Name ?? elementId.ToString(),
-                verbVfxId,
-                adjectiveVfxId) ?? string.Empty;
-            string vfxColorHex = SelectedElementPaint?.ColorHex ?? string.Empty;
-            if (_verbData != null
-                && _verbData.TryGetElementColor(elementId, out ElementVfxColor vfxColor)
-                && !string.IsNullOrEmpty(vfxColor.Primary))
-                vfxColorHex = vfxColor.Primary;
-
-            Vector3 origin = _player.position;
-            Vector3 direction = new(logic.DirX, 0f, logic.DirZ);
-            Transform target = pending.Target;
-            if (target == null && pending.AimMode == SkillAimMode.Targeted && _boss != null)
-                target = _boss.transform;
-            // Kendine doğan minyon/klon da düşmana yürür; hedefsiz aktör vurmaz ve boss'un içinde kalır.
-            if (kind == SkillExecutorKind.Summon && _boss != null && !IsEnemyBody(target))
-                target = _boss.transform;
-            if (pending.AimMode == SkillAimMode.Targeted && target != null && target != _player)
-            {
-                Vector3 toTarget = target.position - origin;
-                toTarget.y = 0f;
-                if (toTarget.sqrMagnitude > 0.0001f)
-                    direction = toTarget.normalized;
-            }
-            bool friendly = IsFriendlyFieldVerb(skill) || kind == SkillExecutorKind.SelfState;
-            Vector3 fieldCenter = pending.AimMode == SkillAimMode.Targeted && target != null
-                ? target.position
-                : friendly || hitboxShape == "cone"
-                    ? origin
-                    : new Vector3(logic.TipX, origin.y, logic.TipZ);
-            float slashCommitMult = motionPlan.SlashCommitMult;
-            float executorChainBonus = _closingChainBonus;
-            string colorKey = SelectedElementPaint?.Name
-                ?? (pending.Words != null && pending.Words.Count > 0
-                    ? pending.Words[0].Rune.ToString()
-                    : string.Empty);
-
-            MechanicPlan mechanicPlan = MechanicPlanFor(skill);
-            MechanicWorldProfile worldProfile = mechanicPlan != null
-                ? MechanicWorldProfile.From(mechanicPlan)
-                : null;
-            if (kind == SkillExecutorKind.Summon && mechanicPlan != null)
-            {
-                MechanicEffect actorEffect = mechanicPlan.Effects.Find(
-                    e => e.Stat is "aktor_yarat" or "klon");
-                if (actorEffect != null && actorEffect.Amount > 0)
-                    spawnCount = Mathf.Max(spawnCount, Mathf.RoundToInt((float)actorEffect.Amount));
-            }
-            float activationDelaySec = 0f;
-            if (activationDelayOverride.HasValue)
-                activationDelaySec = Mathf.Max(0f, activationDelayOverride.Value);
-            else
-            {
-                if (worldProfile != null && worldProfile.RiseDelay && MechanicEngine != null)
-                    activationDelaySec = Mathf.Max(
-                        activationDelaySec,
-                        (float)MechanicEngine.Rules.Param("rise_delay_sec"));
-                if (worldProfile != null && worldProfile.DelayedMark && MechanicEngine != null)
-                    activationDelaySec = Mathf.Max(
-                        activationDelaySec,
-                        (float)MechanicEngine.Rules.Param("mark_delay_sec"));
-            }
-            float tickEffectFraction = worldProfile != null && worldProfile.Continuous && MechanicEngine != null
-                ? (float)MechanicEngine.Rules.Param("flow_tick_fraction")
-                : 0f;
-            if (tickEffectFraction <= 0f)
-                tickEffectFraction = perTickShare;
-            bool arcAllies = HitMods(skill, false, false).ArcAllies;
-            bool statusesApplied = false;
-            float accumulatedHealScale = 0f;
-            int appliedHealAmount = 0;
-            int castId = slotCastId >= 0 ? slotCastId : _slotQueryCastId;
-            void ApplyExecutorEffect(float effectFraction)
-            {
-                if (effectFraction <= 0f)
-                    return;
-                int prevCast = _slotQueryCastId;
-                bool prevRecoil = _casterRecoilSuppressed;
-                _slotQueryCastId = castId;
-                _casterRecoilSuppressed |= kind == SkillExecutorKind.Summon;
-                try
-                {
-                if (!friendly)
-                    ApplyBossClosing(logic, pending.Closing, skill);
-                float hitDamage = ApplyClosingDamage(
-                    pending.Closing,
-                    skill,
-                    isBasicStrike: false,
-                    slashCommitMult,
-                    effectFraction * effectMult,
-                    executorChainBonus);
-                if (!statusesApplied)
-                {
-                    // Dost/kendine alan düşmanca sıfat durumunu yalnız boss alanın içindeyse verir.
-                    bool bossReached = !friendly
-                        || BossWithin(_player != null ? _player.position : origin, radius);
-                    if (worldProfile == null || !worldProfile.GuardTrigger)
-                    {
-                        ApplyClosingStatuses(pending, skill, bossReached);
-                        if (bossReached)
-                            ApplyMechanicHitEffects(mechanicPlan, fieldCenter);
-                    }
-                    statusesApplied = true;
-                }
-                if (IsHealSkill(skill) && (worldProfile == null || !worldProfile.GuardTrigger))
-                {
-                    accumulatedHealScale = Mathf.Min(1f, accumulatedHealScale + effectFraction);
-                    int targetTotal = CalculateClosingHealAmount(
-                        pending.Closing,
-                        skill,
-                        accumulatedHealScale,
-                        executorChainBonus);
-                    int delta = Mathf.Max(0, targetTotal - appliedHealAmount);
-                    if (delta > 0)
-                    {
-                        Vector3? healCenter = kind == SkillExecutorKind.FieldAura && friendly
-                            ? fieldCenter
-                            : null;
-                        ApplyClosingHealAmount(skill, delta, healCenter, radius, target);
-                        appliedHealAmount += delta;
-                    }
-                }
-                LastSkillEffectApplied = hitDamage > 0f
-                    || IsHealSkill(skill)
-                    || skill.Mechanics.Length > 0;
-                }
-                finally
-                {
-                    _slotQueryCastId = prevCast;
-                    _casterRecoilSuppressed = prevRecoil;
-                }
-            }
-
-            ApplyWeaponDelivery(
-                skill, kind, target,
-                ref origin, ref range, ref radius, ref hitboxShape, ref hitboxAngleDeg, ref speed);
-            var context = new SkillExecutionContext(
-                skill,
-                _player,
-                target,
-                pending.AimMode,
-                origin,
-                direction,
-                tuning.BangDurationSec,
-                tuning.ExecutorMeleeWindowOpen01,
-                tuning.ExecutorMeleeWindowClose01,
-                radius,
-                range,
-                speed,
-                durationSec,
-                tickSec,
-                burst,
-                friendly,
-                colorKey,
-                hitboxShape,
-                hitboxAngleDeg,
-                vfxKey,
-                vfxColorHex,
-                ApplyExecutorEffect,
-                _clock,
-                tuning,
-                fieldCenter,
-                applyFlatDamage: kind == SkillExecutorKind.Summon
-                    ? raw =>
-                    {
-                        int prevCast = _slotQueryCastId;
-                        _slotQueryCastId = castId;
-                        try
-                        {
-                            float bindingDamage = MechanicEngine != null
-                                ? (float)MechanicEngine.Rules.Param("minion_hit_damage")
-                                : raw;
-                            float dealt = ApplyMinionHit(skill, bindingDamage * effectMult);
-                            bool drains = mechanicPlan != null && mechanicPlan.Effects.Exists(
-                                e => e.Has("can_emen"));
-                            if (drains && dealt > 0.5f && _player != null)
-                            {
-                                PlayerVitals vitals = CachedPlayerVitals();
-                                if (vitals != null)
-                                    vitals.ApplyHeal(Mathf.RoundToInt(dealt));
-                            }
-                        }
-                        finally
-                        {
-                            _slotQueryCastId = prevCast;
-                        }
-                    }
-                    : null,
-                spawnCount: spawnCount,
-                mechanicPlan: mechanicPlan,
-                activationDelaySec: activationDelaySec,
-                tickEffectFraction: tickEffectFraction,
-                arcAllies: arcAllies);
-
-            var go = new GameObject($"{kind}_{skill.SkillId}");
-            go.transform.SetParent(transform, false);
-            ISkillExecutor executor = kind switch
-            {
-                SkillExecutorKind.Summon => go.AddComponent<SummonExecutor>(),
-                _ => null
-            };
-            if (executor == null)
-            {
-                Destroy(go);
-                return false;
-            }
-
-            if (kind == SkillExecutorKind.Summon)
-                ApplySpawnIFrame(skill);
-            executor.Execute(context);
-            DebugConfig.DevLog($"[SkillExecutor] {skill.SkillId} → {kind} r={radius:0.##} menzil={range:0.##} süre={durationSec:0.##} x{effectMult:0.##}");
-            return true;
+            EnsureLaunchServices();
+            return _executorLauncher.TryLaunch(
+                kind, pending, skill, motionPlan, effectMult, capturedLogic, slotCastId, activationDelayOverride);
         }
 
-        /// <summary>
-        /// hitbox_vfx.fiil_hitbox boyutları: final = base × weapon.range_mult × sifat_override.size_mult.
-        /// Süreli fiiller süreyi engine'den alır (+ lifetime_add).
-        /// </summary>
         void ApplyVerbHitboxSizing(
             SkillExecutorKind kind,
             in SkillResolution skill,
@@ -1636,279 +1386,63 @@ namespace Dovus.Game.Skills
             ref float durationSec,
             ref int spawnCount)
         {
-            if (!TryVerbHitbox(skill, out VerbHitboxSpec spec))
-                return;
-            int.TryParse(skill.AdjectiveId, out int adjectiveId);
-            int weaponId = EquippedWeaponNumber();
-            float weaponScale = _verbData?.WeaponSizeMult(weaponId, rangeMult) ?? rangeMult;
-            var engine = skill.Engine;
-            float tableScale = _verbData?.AdjectiveSizeMult(adjectiveId) ?? 1f;
-            float adjectiveScale = HitboxSizing.AdjectiveScale(tableScale, engine.HitboxScaleMult(0f));
-            adjectiveScale *= _slotPassives?.HitboxSizeMultFor(_slotQueryCastId) ?? 1f;
-            HitboxSize size = HitboxSizing.Resolve(spec, weaponScale, adjectiveScale);
-            float lifetimeAdd = Mathf.Max(0f, engine.LifetimeAdd(0f));
-            float slotLife = _slotPassives?.LifetimeAddSecFor(_slotQueryCastId) ?? 0f;
-
-            switch (kind)
-            {
-                case SkillExecutorKind.MeleeHitbox:
-                    range = size.ReachM;
-                    radius = size.RadiusM;
-                    break;
-
-                case SkillExecutorKind.Projectile:
-                    radius = size.RadiusM;
-                    range = size.ReachM;
-                    break;
-
-                case SkillExecutorKind.FieldAura:
-                    radius = spec.IsRadius ? size.RadiusM : size.ReachM;
-                    range = size.ReachM;
-                    durationSec += slotLife;
-                    break;
-
-                case SkillExecutorKind.Movement:
-                    radius = size.RadiusM;
-                    float dashSec = _combat != null ? _combat.SkillMotion.DashDurationSec : 0f;
-                    durationSec = Mathf.Max(size.DurationSec, dashSec);
-                    break;
-
-                case SkillExecutorKind.SelfState:
-                    radius = size.RadiusM;
-                    range = size.ReachM;
-                    float stateSec = engine.ReflectDurationSec(0f);
-                    if (stateSec > 0f)
-                        durationSec = stateSec + lifetimeAdd;
-                    break;
-
-                case SkillExecutorKind.Summon:
-                    radius = size.RadiusM;
-                    range = size.ReachM;
-                    float minionSec = engine.MinionDurationSec(0f);
-                    if (minionSec > 0f)
-                        durationSec = minionSec + lifetimeAdd;
-                    spawnCount = Mathf.Max(1, engine.MinionCount(1));
-                    break;
-            }
+            EnsureLaunchServices();
+            _hitboxSizing.ApplyVerbHitboxSizing(
+                kind, skill, tuning, rangeMult, burst, ref radius, ref range, ref durationSec, ref spawnCount);
         }
 
-        void ResolveFieldTiming(
-            in SkillResolution skill,
-            in LivingEffectPlan plan,
-            ManifestationTuning tuning,
-            out float durationSec,
-            out float tickSec,
-            out float perTickShare)
-        {
-            durationSec = 0f;
-            tickSec = tuning.ExecutorFieldTickSec;
-            perTickShare = 1f;
-            if (_presentationCatalog != null
-                && _presentationCatalog.TryGetHitbox(plan.HitboxId, out HitboxNode hitbox))
-            {
-                durationSec = hitbox.GetFloat("lifetime_sec_default", 0f);
-                tickSec = hitbox.GetFloat("tick_interval_sec", tickSec);
-            }
-
-            var engine = skill.Engine;
-            float tickRateMult = Mathf.Max(0.01f, engine.TickRateMult(1f));
-            tickSec /= tickRateMult;
-            if (durationSec <= 0f && !engine.IsNull)
-            {
-                durationSec = Mathf.Max(
-                    engine.ChannelSec(0f),
-                    Mathf.Max(
-                        engine.CcDurationSec(0f),
-                        Mathf.Max(
-                            engine.BuffDurationSec(0f),
-                            engine.TempoDurationSec(0f))));
-            }
-
-            if (durationSec <= 0f)
-            {
-                StatusTuning status = _combat != null ? _combat.Status : new StatusTuning();
-                durationSec = skill.VerbId switch
-                {
-                    "2" => status.RegenMs / 1000f,
-                    "4" => status.ShieldMs / 1000f,
-                    "6" => status.RootMs / 1000f,
-                    "8" => status.HasteMs / 1000f,
-                    "12" => status.SlowMs / 1000f,
-                    _ => tuning.BangDurationSec
-                };
-            }
-
-            durationSec = Mathf.Max(tuning.BangDurationSec, durationSec);
-            float shareTick = Mathf.Clamp(tickSec, 0.01f, Mathf.Max(0.01f, durationSec));
-            perTickShare = SustainedField.PerTickShare(durationSec, shareTick);
-            durationSec *= WeaponDurationMult(skill);
-            tickSec = Mathf.Clamp(tickSec, 0.01f, durationSec);
-        }
-
-        static bool IsFriendlyFieldVerb(in SkillResolution skill) =>
-            skill.VerbId is "2" or "4" or "8" or "9";
-
-        /// <summary>
-        /// Bağlama 2: base_resource_cost düşer; yetersiz mana cast'i engellemez (0'a kilit).
-        /// </summary>
         void ApplyResourceCost(SkillResolution skill)
         {
-            if (_playerResource == null || skill.IsEmpty)
-                return;
-            float cost = SkillMobility.ResourceCost(skill);
-            if (cost <= 0f)
-                return;
-            _playerResource.Consume(cost, TryTakeFreeMana());
+            EnsureLaunchServices();
+            _castSideEffects.ApplyResourceCost(skill);
         }
 
-        /// <summary>
-        /// mobility_cc fiil + sıfat + silah çözümü → oyuncu Slow/Root (KinematicMotor okur).
-        /// </summary>
         void ApplyCastMobility(SkillResolution skill, float durationSec)
         {
-            if (_playerStatus == null || skill.IsEmpty || durationSec <= 0f)
-                return;
-
-            string mob;
-            if (_mobilityCc != null
-                && int.TryParse(skill.VerbId, out int verbId)
-                && int.TryParse(skill.AdjectiveId, out int adjectiveId))
-            {
-                int weaponId = 0;
-                if (_equippedWeapon != null)
-                {
-                    string id = _equippedWeapon.Id ?? string.Empty;
-                    int colon = id.LastIndexOf(':');
-                    int.TryParse(colon >= 0 ? id.Substring(colon + 1) : id, out weaponId);
-                }
-                mob = _mobilityCc.ResolveMobility(
-                    verbId, adjectiveId, weaponId, _equippedWeapon?.MobilityMod ?? 0);
-            }
-            else
-            {
-                mob = SkillMobility.Resolve(skill);
-            }
-            double now = _clock != null ? _clock.Director.WorldTimeMs : 0;
-            _playerStatus.GrantCastMobility(mob, now + durationSec * 1000.0);
+            EnsureLaunchServices();
+            _castSideEffects.ApplyCastMobility(skill, durationSec);
         }
 
-        /// <summary>Building sırasında length≥3 mobiliteyi kısa yenile (cümlenin riski).</summary>
         void RefreshBuildingMobility(IReadOnlyList<SentenceWord> words)
         {
-            if (words == null || words.Count < 3 || _skills == null)
-                return;
-            SkillResolution skill = ResolveSkillWords(words);
-            if (skill.IsEmpty)
-                return;
-            ApplyCastMobility(skill, 0.45f);
+            EnsureLaunchServices();
+            _castSideEffects.RefreshBuildingMobility(words);
         }
 
-        /// <summary>
-        /// EnforceCooldown=false: cosmeticIfDisabled ise Görev 12 kozmetik radial (birebir).
-        /// true: CooldownTracker + radial gerçek kalan süre (basic dahil).
-        /// </summary>
         void ApplyCooldown(SkillResolution skill, IReadOnlyList<SentenceWord> words, bool cosmeticIfDisabled)
         {
-            if (skill.IsEmpty || words == null || words.Count == 0)
-                return;
-
-            bool enforce = _combat != null && _combat.EnforceCooldown;
-            if (!enforce)
-            {
-                if (cosmeticIfDisabled)
-                    PulseCosmeticCooldown(skill, words);
-                return;
-            }
-
-            string comboKey = ComboCooldownKey.For(skill);
-            if (_playerCooldown == null || string.IsNullOrEmpty(comboKey))
-                return;
-
-            float sec = skill.BaseCooldownSec * WeaponCooldownMult();
-            double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
-            if (!_playerCooldown.TryBeginCast(comboKey, sec, worldMs))
-                return;
-
-            if (_hexagonView == null || sec <= 0f)
-                return;
-
-            _hexagonView.BeginTrackedCooldown(
-                words[0].Dot,
-                comboKey,
-                sec,
-                _playerCooldown,
-                _clock);
-        }
-
-        /// <summary>
-        /// ui_rules.cooldown_display — yalnızca görsel (EnforceCooldown=false).
-        /// Fiil rünü (ilk kelime) etrafında base_cooldown_sec kadar radial dolum.
-        /// </summary>
-        void PulseCosmeticCooldown(SkillResolution skill, IReadOnlyList<SentenceWord> words)
-        {
-            if (_hexagonView == null || skill.IsEmpty || words == null || words.Count == 0)
-                return;
-            float sec = skill.BaseCooldownSec * WeaponCooldownMult();
-            if (sec <= 0f)
-                return;
-            _hexagonView.BeginCosmeticCooldown(words[0].Dot, sec);
+            EnsureLaunchServices();
+            _castSideEffects.ApplyCooldown(skill, words, cosmeticIfDisabled);
         }
 
         SkillMotionPlan ResolveSkillMotion(SkillResolution skill)
         {
-            if (skill.IsEmpty || _combat == null || _player == null)
-                return SkillMotionPlan.None;
-
-            var t = _combat.SkillMotion;
-            t.ArenaHalfSizeM = _colors != null ? _colors.ArenaHalfSizeM : t.ArenaHalfSizeM;
-
-            Vector3 face = _player.forward;
-            face.y = 0f;
-            if (face.sqrMagnitude < 0.0001f)
-                face = Vector3.forward;
-
-            Vector3 bossPos = _boss != null ? _boss.transform.position : Vector3.zero;
-            bool bossAlive = _bossVitals == null || !_bossVitals.IsDown;
-
-            var ctx = new SkillMotionContext(
-                _player.position.x, _player.position.z,
-                face.x, face.z,
-                bossPos.x, bossPos.z,
-                bossAlive,
-                t.ArenaHalfSizeM);
-
-            return SkillMotionMotor.Resolve(
-                skill, ctx, t,
-                _verbData?.IFrameMsFor(skill.SkillId) ?? 0);
+            EnsureLaunchServices();
+            return _castSideEffects.ResolveSkillMotion(skill);
         }
 
-        /// <summary>
-        /// F1: hareket planının i-frame'i (SkillMotionPlan.IframeMs) hareket başlarken açılır.
-        /// Donmayan pencere (PlayerDodgeRig.SkillIframe) — Stasis değil, oyuncu hareket eder.
-        /// </summary>
         void ApplySkillMotionIframe(in SkillResolution skill, in SkillMotionPlan plan)
         {
-            if (plan.IsEmpty || plan.IframeMs <= 0 || _player == null)
-                return;
-            PlayerDodgeRig rig = _player.GetComponent<PlayerDodgeRig>();
-            if (rig == null)
-                return;
-            rig.OpenSkillIframe(plan.IframeMs);
-            DebugConfig.DevLog($"[Mechanic] i-frame {skill.SkillId} {plan.Kind} {plan.IframeMs} ms");
+            EnsureLaunchServices();
+            _castSideEffects.ApplySkillMotionIframe(skill, plan);
         }
 
         void AnnotateMotion(SkillResolution skill, in SkillMotionPlan plan)
         {
-            string tag = plan.Kind switch
-            {
-                SkillMotionKind.ZenitsuPass => "Zenitsu geçiş",
-                SkillMotionKind.ShortBlink => "ışınlanma",
-                SkillMotionKind.ForwardDash => "dash",
-                SkillMotionKind.PlaceMark => "işaret",
-                _ => null
-            };
-            if (tag == null) return;
-            _debugHud?.NoteSkillBang(skill.DisplayName, tag);
+            EnsureLaunchServices();
+            _castSideEffects.AnnotateMotion(skill, plan);
+        }
+
+        void ShoutSkill(SkillResolution skill, IReadOnlyList<SentenceWord> words)
+        {
+            EnsureLaunchServices();
+            _skillPresentation.ShoutSkill(skill, words);
+        }
+
+        void ApplySkillAnimation(SkillResolution skill)
+        {
+            EnsureLaunchServices();
+            _skillPresentation.ApplySkillAnimation(skill);
         }
 
         SkillResolution ResolveSkillWords(IReadOnlyList<SentenceWord> words)
@@ -1940,125 +1474,8 @@ namespace Dovus.Game.Skills
             return ResolveSkillWords(p.Words);
         }
 
-        void ShoutSkill(SkillResolution skill, IReadOnlyList<SentenceWord> words)
-        {
-            if (skill.IsEmpty)
-                return;
-
-            string mech = SkillFeel.MechanicShort(skill.Mechanics);
-            string adj = SkillFeel.AdjectiveShort(skill);
-            string paintedName = LastFactorySkill != null
-                && string.Equals(LastFactorySkill.Id, skill.SkillId, StringComparison.Ordinal)
-                    ? LastFactorySkill.DisplayName
-                    : skill.DisplayName;
-            ElementPaintNode? paint = SelectedElementPaint;
-            if ((LastFactorySkill == null || LastFactorySkill.Id != skill.SkillId)
-                && paint.HasValue && !string.IsNullOrEmpty(paint.Value.NamePrefix))
-                paintedName = paint.Value.NamePrefix + " " + paintedName;
-            string bangNote = string.IsNullOrEmpty(adj)
-                ? mech
-                : (string.IsNullOrEmpty(mech) ? adj : mech + " | " + adj);
-            MechanicPlan mechanic = LastMechanicPlan;
-            if (mechanic != null && string.Equals(mechanic.SkillId, skill.SkillId, StringComparison.Ordinal))
-            {
-                string title = MechanicDescriber.ShortTitle(mechanic);
-                bangNote = string.IsNullOrEmpty(bangNote) ? title : title + " | " + bangNote;
-            }
-            _debugHud?.NoteSkillBang(paintedName, bangNote);
-            // Skill adı altıgen üstündeki SkillPreviewHud'da; büyük ReactionReadout dodge/tepki içindir.
-            SkillFeel.CameraKick(skill.VerbFamily, _camera, _combat?.Feel);
-            // PulseRune (PulseActor) kalır — AnimationBridge eklenir, yerine geçmez.
-            SyncVisualDelivery();
-            ApplySkillAnimation(skill);
-            StartCastVfxTimer(skill, words);
-            SfxDirector.Play(SfxLibrary.CastPrefix + skill.VerbFamily);
-        }
-
-        /// <summary>
-        /// Bağlama 10: SkillResolution.AnimationType → PresentationCatalog → AnimationBridge.
-        /// Quaternius'ta karşılığı yoksa SafeSetFloat gibi sessiz atlar (hata yok).
-        /// </summary>
-        void ApplySkillAnimation(SkillResolution skill)
-        {
-            LastAnimationTypeId = string.Empty;
-            LastAnimationState = string.Empty;
-            LastAnimationPlayApplied = false;
-            LastAnimationClip = string.Empty;
-            LastAnimationUsedFallback = false;
-
-            if (skill.IsEmpty || _visual == null || _visual.Animator == null)
-                return;
-
-            if (_skills != null && _skills.IsV61)
-            {
-                int verbId = int.TryParse(skill.VerbId, out int parsed) ? parsed : 0;
-                string weaponKey = _equippedWeapon?.AnimationsKey ?? string.Empty;
-                string bindingKey = weaponKey + ":" + verbId;
-                if (_animationDatabase != null
-                    && _animationDatabase.TryGet(weaponKey, verbId, out AnimationBinding binding))
-                {
-                    LastAnimationTypeId = bindingKey;
-                    LastAnimationState = binding.AnimatorState;
-                    LastAnimationPlayApplied =
-                        _animationBridge.PlayBinding(binding, _visual.Animator);
-                    LastAnimationClip = _animationBridge.LastClipName;
-                    LastAnimationUsedFallback = _animationBridge.LastUsedFallbackState;
-                }
-                else if (_missingAnimationBindings.Add(bindingKey))
-                {
-                    Debug.LogWarning($"[AnimationDatabase] binding yok, cast no-op: {bindingKey}");
-                }
-                return;
-            }
-
-            EnsurePresentationCatalog();
-            if (_presentationValidator == null || _presentationCatalog == null)
-                return;
-
-            PresentationValidationResult check = _presentationValidator.Validate(skill);
-            LastAnimationTypeId = check.AnimationTypeId;
-            if (!check.AnimationFound)
-                return;
-
-            if (!_presentationCatalog.TryGetAnimation(check.AnimationTypeId, out AnimationFrameNode node))
-                return;
-
-            LastAnimationState = AnimationBridge.MapToQuaterniusState(node.AnimatorState);
-            // ActorVisual.Play yolu — animation_type doğrudan state'e (çift kaynak senkron).
-            if (!string.IsNullOrEmpty(check.AnimationTypeId))
-            {
-                EffectSilhouette axes = default;
-                _visual.PulseAnimationType(check.AnimationTypeId, axes);
-                LastAnimationState = ActorVisual.AnimationTypeToState(check.AnimationTypeId);
-                LastAnimationPlayApplied = true;
-                return;
-            }
-
-            double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
-            LastAnimationPlayApplied = _animationBridge.Play(node, _visual.Animator, worldMs);
-        }
-
-        void EnsurePresentationCatalog()
-        {
-            if (_presentationCatalog != null && _presentationValidator != null)
-                return;
-
-            const string resourcePath = "Presentation/prezentasyon-katmani";
-            var asset = Resources.Load<TextAsset>(resourcePath);
-            if (asset == null || string.IsNullOrWhiteSpace(asset.text))
-                return;
-
-            try
-            {
-                _presentationCatalog = PresentationCatalog.FromJson(asset.text);
-                _presentationValidator = new PresentationValidator(_presentationCatalog);
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning(
-                    $"[ManifestationDirector] prezentasyon-katmani okunamadı: {e.Message}");
-            }
-        }
+        static bool IsFriendlyFieldVerb(in SkillResolution skill) =>
+            skill.VerbId is "2" or "4" or "8" or "9";
 
         void ApplyClosingStatuses(PendingClosing p, SkillResolution skill, bool bossReached = true)
         {
