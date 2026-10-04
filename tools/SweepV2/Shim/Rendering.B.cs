@@ -448,10 +448,6 @@ namespace UnityEngine
         public static bool pause { get; set; }
     }
 
-    public class AudioLowPassFilter : Behaviour
-    {
-        public float cutoffFrequency { get; set; } = 5000f;
-    }
 }
 
 namespace UnityEngine.Rendering

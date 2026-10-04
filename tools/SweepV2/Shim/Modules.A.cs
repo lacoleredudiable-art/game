@@ -80,11 +80,6 @@ namespace UnityEngine.UI
         public void SetNativeSize() { }
     }
 
-    public class RawImage : MaskableGraphic
-    {
-        public Texture texture { get; set; }
-        public Rect uvRect { get; set; } = new(0, 0, 1, 1);
-    }
 
     public class Text : MaskableGraphic
     {
@@ -156,32 +151,6 @@ namespace UnityEngine.UI
         public ButtonClickedEvent onClick { get; set; } = new();
     }
 
-    public class Toggle : Selectable
-    {
-        public class ToggleEvent : UnityEvent<bool> { }
-        bool _isOn;
-        public ToggleEvent onValueChanged { get; set; } = new();
-        public Graphic graphic { get; set; }
-        public ToggleGroup group { get; set; }
-
-        public bool isOn
-        {
-            get => _isOn;
-            set
-            {
-                if (_isOn == value) return;
-                _isOn = value;
-                onValueChanged.Invoke(value);
-            }
-        }
-
-        public void SetIsOnWithoutNotify(bool value) => _isOn = value;
-    }
-
-    public class ToggleGroup : UIBehaviour
-    {
-        public bool allowSwitchOff { get; set; }
-    }
 
     public class Slider : Selectable
     {
@@ -218,20 +187,7 @@ namespace UnityEngine.UI
         public void SetValueWithoutNotify(float v) => _value = Mathf.Clamp(v, minValue, maxValue);
     }
 
-    public class InputField : Selectable
-    {
-        public class SubmitEvent : UnityEvent<string> { }
-        public string text { get; set; } = "";
-        public SubmitEvent onEndEdit { get; set; } = new();
-        public SubmitEvent onValueChanged { get; set; } = new();
-    }
 
-    public class Dropdown : Selectable
-    {
-        public class DropdownEvent : UnityEvent<int> { }
-        public int value { get; set; }
-        public DropdownEvent onValueChanged { get; set; } = new();
-    }
 
     public class CanvasScaler : UIBehaviour
     {
@@ -251,10 +207,6 @@ namespace UnityEngine.UI
         public bool ignoreReversedGraphics { get; set; } = true;
     }
 
-    public class Mask : UIBehaviour
-    {
-        public bool showMaskGraphic { get; set; } = true;
-    }
 
     public class RectMask2D : UIBehaviour { }
 
@@ -279,14 +231,6 @@ namespace UnityEngine.UI
     public class HorizontalLayoutGroup : HorizontalOrVerticalLayoutGroup { }
     public class VerticalLayoutGroup : HorizontalOrVerticalLayoutGroup { }
 
-    public class GridLayoutGroup : LayoutGroup
-    {
-        public enum Constraint { Flexible, FixedColumnCount, FixedRowCount }
-        public Vector2 cellSize { get; set; } = new(100, 100);
-        public Vector2 spacing { get; set; }
-        public Constraint constraint { get; set; }
-        public int constraintCount { get; set; } = 2;
-    }
 
     public class LayoutElement : UIBehaviour
     {
@@ -342,17 +286,7 @@ namespace UnityEngine.UI
         public float size { get; set; }
     }
 
-    public static class LayoutRebuilder
-    {
-        public static void ForceRebuildLayoutImmediate(RectTransform layoutRoot) { }
-        public static void MarkLayoutForRebuild(RectTransform rect) { }
-    }
 
-    public static class LayoutUtility
-    {
-        public static float GetPreferredWidth(RectTransform rect) => rect != null ? rect.sizeDelta.x : 0f;
-        public static float GetPreferredHeight(RectTransform rect) => rect != null ? rect.sizeDelta.y : 0f;
-    }
 }
 
 namespace TMPro
@@ -444,11 +378,6 @@ namespace TMPro
 
     public class TextMeshProUGUI : TMP_Text { }
 
-    public class TextMeshPro : TMP_Text
-    {
-        public UnityEngine.Renderer renderer => GetComponent<UnityEngine.MeshRenderer>();
-        public int sortingOrder { get; set; }
-    }
 }
 
 namespace UnityEngine.TextCore.LowLevel
@@ -521,6 +450,4 @@ namespace UnityEngine.EventSystems
     public interface IPointerExitHandler : IEventSystemHandler { void OnPointerExit(PointerEventData eventData); }
     public interface IBeginDragHandler : IEventSystemHandler { void OnBeginDrag(PointerEventData eventData); }
     public interface IDragHandler : IEventSystemHandler { void OnDrag(PointerEventData eventData); }
-    public interface IEndDragHandler : IEventSystemHandler { void OnEndDrag(PointerEventData eventData); }
-    public interface IScrollHandler : IEventSystemHandler { void OnScroll(PointerEventData eventData); }
 }

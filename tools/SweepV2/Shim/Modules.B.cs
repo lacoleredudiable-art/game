@@ -39,10 +39,6 @@ namespace UnityEngine.InputSystem
         public void WarpCursorPosition(Vector2 position) { }
     }
 
-    public class Touchscreen : Pointer
-    {
-        public static Touchscreen current => null;
-    }
 
     public enum Key
     {
@@ -134,28 +130,9 @@ namespace UnityEngine.InputSystem
         public Controls.KeyControl f12Key => this[Key.F12];
     }
 
-    public class Gamepad : InputDevice
-    {
-        public static Gamepad current => null;
-    }
 
     public enum TouchPhase { None, Began, Moved, Ended, Canceled, Stationary }
 
-    public enum InputActionType { Value, Button, PassThrough }
-
-    public class InputAction
-    {
-        public InputAction() { }
-        public InputAction(string name = null, InputActionType type = InputActionType.Value, string binding = null) { }
-        public void Enable() { }
-        public void Disable() { }
-        public bool enabled => false;
-        public TValue ReadValue<TValue>() where TValue : struct => default;
-        public bool WasPressedThisFrame() => false;
-        public bool WasReleasedThisFrame() => false;
-        public bool IsPressed() => false;
-        public void AddBinding(string path) { }
-    }
 }
 
 namespace UnityEngine.InputSystem.Controls
@@ -180,10 +157,6 @@ namespace UnityEngine.InputSystem.Controls
         public AxisControl y { get; } = new();
     }
 
-    public class TouchControl : InputControl
-    {
-        public Vector2Control position { get; } = new();
-    }
 }
 
 namespace UnityEngine.InputSystem.UI
@@ -267,10 +240,6 @@ namespace UnityEngine.Rendering
         public ClampedFloatParameter(float value, float min, float max, bool overrideState = false) : base(value, overrideState) { }
     }
 
-    public class MinFloatParameter : FloatParameter
-    {
-        public MinFloatParameter(float value, float min, bool overrideState = false) : base(value, overrideState) { }
-    }
 
     public class ColorParameter : VolumeParameter<Color>
     {
@@ -278,10 +247,6 @@ namespace UnityEngine.Rendering
         public ColorParameter(Color value, bool hdr, bool showAlpha, bool showEyeDropper, bool overrideState = false) : base(value, overrideState) { }
     }
 
-    public class BoolParameter : VolumeParameter<bool>
-    {
-        public BoolParameter(bool value, bool overrideState = false) : base(value, overrideState) { }
-    }
 
     public class VolumeProfile : ScriptableObject
     {
@@ -326,7 +291,7 @@ namespace UnityEngine.Rendering.Universal
 {
     public enum CameraRenderType { Base, Overlay }
     public enum AntialiasingMode { None, FastApproximateAntialiasing, SubpixelMorphologicalAntiAliasing, TemporalAntiAliasing }
-    public enum TonemappingMode { None, Neutral, ACES }
+
     public enum CameraOverrideOption { UsePipelineSettings, On, Off }
 
     public class UniversalAdditionalCameraData : MonoBehaviour
@@ -341,46 +306,9 @@ namespace UnityEngine.Rendering.Universal
         public CameraOverrideOption requiresDepthOption { get; set; }
     }
 
-    public class UniversalAdditionalLightData : MonoBehaviour { }
 
-    public class Bloom : VolumeComponent
-    {
-        public MinFloatParameter threshold = new(0.9f, 0f);
-        public MinFloatParameter intensity = new(0f, 0f);
-        public ClampedFloatParameter scatter = new(0.7f, 0f, 1f);
-        public ColorParameter tint = new(Color.white);
-    }
 
-    public class ColorAdjustments : VolumeComponent
-    {
-        public FloatParameter postExposure = new(0f);
-        public ClampedFloatParameter contrast = new(0f, -100f, 100f);
-        public ColorParameter colorFilter = new(Color.white);
-        public ClampedFloatParameter hueShift = new(0f, -180f, 180f);
-        public ClampedFloatParameter saturation = new(0f, -100f, 100f);
-    }
 
-    public class Vignette : VolumeComponent
-    {
-        public ColorParameter color = new(Color.black);
-        public ClampedFloatParameter intensity = new(0f, 0f, 1f);
-        public ClampedFloatParameter smoothness = new(0.2f, 0.01f, 1f);
-    }
-
-    public class TonemappingModeParameter : VolumeParameter<TonemappingMode>
-    {
-        public TonemappingModeParameter(TonemappingMode value, bool overrideState = false) : base(value, overrideState) { }
-    }
-
-    public class Tonemapping : VolumeComponent
-    {
-        public TonemappingModeParameter mode = new(TonemappingMode.None);
-    }
-
-    public class ChromaticAberration : VolumeComponent
-    {
-        public ClampedFloatParameter intensity = new(0f, 0f, 1f);
-    }
 
     public class ScriptableRendererFeature : ScriptableObject
     {
