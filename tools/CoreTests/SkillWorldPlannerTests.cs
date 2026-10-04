@@ -108,7 +108,7 @@ public class SkillWorldPlannerTests
         var mods = MiniJson.Parse(
             "{\"apply_pull\":true,\"apply_stealth\":true,\"apply_confuse\":true}");
         var skill = SkillResolution.Build(
-            "t", "Test", "Test", "t", "job",
+            "t", "Test", "Test", (SkillId)"t", "job",
             "v", "V", "strike", "damage",
             10f, 0f, "single_target", "free_move", Array.Empty<string>(),
             "cekme", "Çekme", "none",

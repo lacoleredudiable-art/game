@@ -8,6 +8,7 @@ using Dovus.Core.Passives;
 using Dovus.Core.Equipment;
 using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
+using Dovus.Core.Shared;
 
 namespace Dovus.App.Casting
 {
@@ -30,7 +31,7 @@ namespace Dovus.App.Casting
         void ApplyMotionIframe(SkillResolution skill, in SkillMotionPlan motion);
         bool TryBeginMotionTemplate(SkillResolution skill, TCtx ctx);
         void NoteSustainedCast(SkillResolution skill);
-        void NotifyCast(string skillId);
+        void NotifyCast(SkillId skillId);
 
         SkillExecutorRoute Route(SkillResolution skill);
         SkillExecutorRoute ApplyMechanicWorldRoute(SkillResolution skill, SkillExecutorRoute route);
@@ -63,7 +64,7 @@ namespace Dovus.App.Casting
         void ApplyCooldown(SkillResolution skill, TCtx ctx, bool cosmeticIfDisabled);
         void SpawnClosingImpact(TCtx ctx);
 
-        void SetLastResolvedSkillId(string skillId);
+        void SetLastResolvedSkillId(SkillId skillId);
         bool IsHealSkill(SkillResolution skill);
         void SetLastSkillEffectApplied(bool applied);
 

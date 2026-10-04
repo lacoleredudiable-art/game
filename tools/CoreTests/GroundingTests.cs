@@ -2,6 +2,7 @@ using Dovus.Core.Motion;
 using NUnit.Framework;
 using System;
 using System.IO;
+using Dovus.Core.Shared;
 
 namespace CoreTests;
 
@@ -39,7 +40,7 @@ public class GroundingTests
         AssertAir("6-3", catalog, true);
         AssertAir("6-8", catalog, true);
         AssertAir("8-4", catalog, true);
-        Assert.That(catalog.TryPlay("8-1", out MotionTemplate door), Is.True);
+        Assert.That(catalog.TryPlay((SkillId)"8-1", out MotionTemplate door), Is.True);
         Assert.That(door.Phases[0].Airborne, Is.False, "8-1 yerde duran bir tutuş");
     }
 
@@ -50,7 +51,7 @@ public class GroundingTests
         string[] launched = { "1-3", "6-3", "5-8", "6-8", "7-8", "8-8" };
         for (int i = 0; i < launched.Length; i++)
         {
-            Assert.That(catalog.TryPlay(launched[i], out MotionTemplate template), Is.True, launched[i]);
+            Assert.That(catalog.TryPlay((SkillId)launched[i], out MotionTemplate template), Is.True, launched[i]);
             bool anyAir = false;
             for (int p = 0; p < template.Phases.Count; p++)
             {
@@ -244,7 +245,7 @@ public class GroundingTests
 
     static void AssertAir(string id, MotionTemplateCatalog catalog, bool airborne)
     {
-        Assert.That(catalog.TryPlay(id, out MotionTemplate template), Is.True, id);
+        Assert.That(catalog.TryPlay((SkillId)id, out MotionTemplate template), Is.True, id);
         bool any = false;
         for (int i = 0; i < template.Phases.Count; i++)
         {

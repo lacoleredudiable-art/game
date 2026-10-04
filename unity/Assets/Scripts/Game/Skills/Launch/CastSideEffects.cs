@@ -8,6 +8,7 @@ using Dovus.Core.Hud;
 using Dovus.Core.Passives;
 using Dovus.Core.Grammar;
 using Dovus.Core.Motion;
+using Dovus.Core.Shared;
 using Dovus.Game.Actors;
 using Dovus.Game.Diagnostics;
 using System.Collections.Generic;
@@ -138,7 +139,7 @@ namespace Dovus.Game.Skills.Launch
 
             return SkillMotionMotor.Resolve(
                 skill, ctx, t,
-                _host.VerbData?.IFrameMsFor(skill.Identity.Id) ?? 0);
+                _host.VerbData?.IFrameMsFor((SkillId)skill.Identity.Id) ?? 0);
         }
 
         public void ApplySkillMotionIframe(in SkillResolution skill, in SkillMotionPlan plan)

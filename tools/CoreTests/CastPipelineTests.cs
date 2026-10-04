@@ -9,6 +9,7 @@ using Dovus.Core.Passives;
 using Dovus.Core.Equipment;
 using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
+using Dovus.Core.Shared;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -51,9 +52,9 @@ public class CastPipelineTests
         nameof(ICastPort<object>.ResetSlotQueryCastId),
     };
 
-    static SkillResolution CompleteStrike(string skillId = "2-3") =>
+    static SkillResolution CompleteStrike(SkillId skillId = default) =>
         SkillResolution.Build(
-            "1", "Ateş", "Test", skillId, "job",
+            "1", "Ateş", "Test", skillId.IsEmpty ? (SkillId)"2-3" : skillId, "job",
             "saldiri", "Saldırı", "strike", "damage",
             10f, 15f, "projectile", "free_move", new[] { "burn" },
             "yogunlastirma", "Yoğunlaştırma", "focus",
@@ -120,7 +121,7 @@ public class CastPipelineTests
         }
 
         public void NoteSustainedCast(SkillResolution skill) => Record();
-        public void NotifyCast(string skillId) => Record();
+        public void NotifyCast(SkillId skillId) => Record();
 
         public SkillExecutorRoute Route(SkillResolution skill)
         {
@@ -168,7 +169,7 @@ public class CastPipelineTests
 
         public void ApplyCooldown(SkillResolution skill, int ctx, bool cosmeticIfDisabled) => Record();
         public void SpawnClosingImpact(int ctx) => Record();
-        public void SetLastResolvedSkillId(string skillId) => Record();
+        public void SetLastResolvedSkillId(SkillId skillId) => Record();
         public bool IsHealSkill(SkillResolution skill)
         {
             Record();
@@ -195,7 +196,7 @@ public class CastPipelineTests
         var port = new RecordingPort
         {
             ResolveResult = SkillResolution.Build(
-                "1", "Ateş", "X", "t", "job",
+                "1", "Ateş", "X", (SkillId)"t", "job",
                 "saldiri", "Saldırı", "strike", "damage",
                 1f, 1f, "projectile", "free_move", Array.Empty<string>(),
                 "y", "Y", "focus",

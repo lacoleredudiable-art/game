@@ -1,4 +1,5 @@
 using System;
+using Dovus.Core.Shared;
 
 namespace Dovus.Core.Equipment
 {
@@ -15,17 +16,17 @@ namespace Dovus.Core.Equipment
 
         public static readonly string[] TaggedSkillIds =
         {
-            "1-1", "1-4", "1-5", "1-8", "1-12",
-            "3-5", "3-8", "5-5", "6-3", "10-1"
+            SkillIds.DenseStrike, SkillIds.FixedStrike, SkillIds.SpreadStrike, SkillIds.RisingStrike, SkillIds.FlowingStrike,
+            SkillIds.SpreadStep, SkillIds.RisingStep, SkillIds.SpreadBlast, SkillIds.LeapingHead, SkillIds.DenseReflect
         };
 
-        public static bool IsTagged(string skillId)
+        public static bool IsTagged(SkillId skillId)
         {
-            if (string.IsNullOrEmpty(skillId))
+            if (skillId.IsEmpty)
                 return false;
             for (int i = 0; i < TaggedSkillIds.Length; i++)
             {
-                if (string.Equals(TaggedSkillIds[i], skillId, StringComparison.Ordinal))
+                if (string.Equals(TaggedSkillIds[i], skillId.Value, StringComparison.Ordinal))
                     return true;
             }
             return false;

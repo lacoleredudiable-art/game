@@ -10,6 +10,7 @@ using Dovus.Core.Tuning;
 using NUnit.Framework;
 using System.IO;
 using System.Linq;
+using Dovus.Core.Shared;
 
 namespace CoreTests;
 
@@ -183,7 +184,7 @@ public class WeaponPassiveFixTests
 
     static SkillResolution ShieldSkill() =>
         SkillResolution.Build(
-            "1", "Ates", "Kalkan", "4-1", "",
+            "1", "Ates", "Kalkan", (SkillId)"4-1", "",
             "4", "Kalkan", "guard", "shield",
             0f, 0f, "self", "", new[] { "shield" },
             "1", "Sert", "",

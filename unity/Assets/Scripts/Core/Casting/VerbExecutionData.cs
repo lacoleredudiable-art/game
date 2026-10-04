@@ -41,14 +41,14 @@ namespace Dovus.Core.Casting
                 && _hitboxes.TryGetValue(verbId, out spec);
         }
 
-        /// <summary>Skill id'si ("3-7") için i-frame; condition'a bakılmaz, çağıran anı seçer.</summary>
-        public int IFrameMsFor(string skillId)
+        /// <summary>Skill id'si (verb-adjective) için i-frame; condition'a bakılmaz, çağıran anı seçer.</summary>
+        public int IFrameMsFor(SkillId skillId)
         {
-            if (string.IsNullOrEmpty(skillId))
+            if (skillId.IsEmpty)
                 return 0;
             for (int i = 0; i < _iFrames.Count; i++)
             {
-                if (string.Equals(_iFrames[i].Source, skillId, StringComparison.Ordinal))
+                if (string.Equals(_iFrames[i].Source, skillId.Value, StringComparison.Ordinal))
                     return _iFrames[i].DurationMs;
             }
             return 0;

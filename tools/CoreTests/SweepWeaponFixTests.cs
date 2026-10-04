@@ -9,6 +9,7 @@ using Dovus.Core.Tuning;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.IO;
+using Dovus.Core.Shared;
 
 namespace CoreTests;
 
@@ -34,7 +35,7 @@ public class SweepWeaponFixTests
     [Test]
     public void CannonRecoil_IsATemplatePhase_NotASecondWriter()
     {
-        Assert.That(_catalog.TryPlay("5-6", out MotionTemplate shot), Is.True);
+        Assert.That(_catalog.TryPlay((SkillId)"5-6", out MotionTemplate shot), Is.True);
         MotionTemplate with = CannonRecoilMotion.Append(shot, 0.5f);
         Assert.That(CannonRecoilMotion.Contains(with), Is.True);
         Assert.That(with.Phases.Count, Is.EqualTo(shot.Phases.Count + 1));
@@ -83,7 +84,7 @@ public class SweepWeaponFixTests
         string[] gated = { "1-3", "1-4", "5-1", "5-4", "7-4" };
         for (int i = 0; i < gated.Length; i++)
         {
-            Assert.That(_catalog.TryPlay(gated[i], out MotionTemplate template), Is.True, gated[i]);
+            Assert.That(_catalog.TryPlay((SkillId)gated[i], out MotionTemplate template), Is.True, gated[i]);
             float already = MotionCastReach.ClosingApproachM(template);
             float meters = CastApproach.Meters(3f, Body, BossR, shortEdge, already);
             MotionTemplate closed = CastApproach.Prepend(template, meters);
@@ -102,8 +103,8 @@ public class SweepWeaponFixTests
     [Test]
     public void FistHook_StaysInsideAuthoredDistanceAndTime()
     {
-        Assert.That(_catalog.TryPlay("2-6", out MotionTemplate hook), Is.True);
-        Assert.That(_catalog.TryPlay("2-9", out MotionTemplate mark), Is.True);
+        Assert.That(_catalog.TryPlay((SkillId)"2-6", out MotionTemplate hook), Is.True);
+        Assert.That(_catalog.TryPlay((SkillId)"2-9", out MotionTemplate mark), Is.True);
         float hookSec = Sum(hook);
         float markSec = Sum(mark);
         var ally = new MotionTarget(true, -3.2f, -1.2f, Body);
@@ -131,8 +132,8 @@ public class SweepWeaponFixTests
     [Test]
     public void OrbCourier_SidestepIsTheOnlyDisplacement()
     {
-        Assert.That(_catalog.TryPlay("8-11", out MotionTemplate courier), Is.True);
-        Assert.That(_catalog.TryPlay("2-11", out MotionTemplate heal), Is.True);
+        Assert.That(_catalog.TryPlay((SkillId)"8-11", out MotionTemplate courier), Is.True);
+        Assert.That(_catalog.TryPlay((SkillId)"2-11", out MotionTemplate heal), Is.True);
         Assert.That(courier.Phases.Count, Is.EqualTo(heal.Phases.Count));
         PositionPlayback playback = PositionOwnership.Prepare(
             courier, System.Array.Empty<GrammarPositionStep>(), 0.28f, 1.2f);
@@ -150,7 +151,7 @@ public class SweepWeaponFixTests
     [Test]
     public void EmiciCannon_IsNotRecoiled_AndHeldSimStays()
     {
-        Assert.That(_catalog.TryPlay("1-2", out MotionTemplate pull), Is.True);
+        Assert.That(_catalog.TryPlay((SkillId)"1-2", out MotionTemplate pull), Is.True);
         Assert.That(CannonRecoilMotion.Applies("ballistic", 0.5f, 40f, "2", pull), Is.False);
         Assert.That(CannonRecoilMotion.Applies("ballistic", 0.5f, 40f, "1", pull), Is.True);
 
@@ -185,7 +186,7 @@ public class SweepWeaponFixTests
     [Test]
     public void ShortWeaponSlam_ClosesToTheJsonEdge_SwordDoesNotLunge()
     {
-        Assert.That(_catalog.TryPlay("1-4", out MotionTemplate slam), Is.True);
+        Assert.That(_catalog.TryPlay((SkillId)"1-4", out MotionTemplate slam), Is.True);
         // Fiil 1 kapsül 1,5 m × silah menzil 0,5 × sıfat 4 boy 1 = 0,75. Kılıç menzil 1 → 1,5.
         const float fistEdge = 0.75f;
         const float swordEdge = 1.5f;
@@ -204,7 +205,7 @@ public class SweepWeaponFixTests
     {
         Assert.That(FrameDelta.ClampMs(16), Is.EqualTo(16).Within(0.001));
         Assert.That(FrameDelta.ClampMs(11000), Is.EqualTo(FrameDelta.MaxFrameMs).Within(0.001));
-        Assert.That(_catalog.TryPlay("2-2", out MotionTemplate pull), Is.True);
+        Assert.That(_catalog.TryPlay((SkillId)"2-2", out MotionTemplate pull), Is.True);
 
         List<float> dumped = HitTimes(pull, 11f, 11f);
         Assert.That(dumped.Count, Is.EqualTo(4));

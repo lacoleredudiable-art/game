@@ -5,6 +5,7 @@ using Dovus.Core.Motion;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.IO;
+using Dovus.Core.Shared;
 
 namespace CoreTests;
 
@@ -326,7 +327,7 @@ public partial class MotionTemplateTests
     [Test]
     public void EnemyAim_IgnoresSelfEffectTarget()
     {
-        Assert.That(_catalog.TryGet("3-6", out MotionBinding hook), Is.True);
+        Assert.That(_catalog.TryGet((SkillId)"3-6", out MotionBinding hook), Is.True);
         Assert.That(hook.Template.Aim, Is.EqualTo(MotionAim.Enemy));
         Assert.That(MotionAim.TryResolveEnemy(
             hasSelectedEnemy: true, 2f, 5f,

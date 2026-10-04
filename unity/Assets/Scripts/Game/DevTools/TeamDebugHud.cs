@@ -1,3 +1,4 @@
+using Dovus.Core.Shared;
 using Dovus.Game.Actors;
 using Dovus.Game.Team;
 using UnityEngine;
@@ -10,7 +11,7 @@ namespace Dovus.Game.DevTools
     /// </summary>
     public sealed class TeamDebugHud : MonoBehaviour
     {
-        string _skill = "5-4";
+        string _skill = SkillIds.FixedBlast;
         // K2: varsayılan kapalı (HUD'un sol üstünü kaplıyordu); yalnız editör / DOVUS_DEBUG dev build.
         bool _open = false;
 
@@ -78,7 +79,7 @@ namespace Dovus.Game.DevTools
             if (GUILayout.Button("Dost ekle (" + host.Spawned + "/4)"))
                 host.SpawnAlly();
 
-            _skill = GUILayout.TextField(_skill ?? "1-1");
+            _skill = GUILayout.TextField(_skill ?? SkillIds.DenseStrike);
             TeamActorHost[] actors = FindObjectsOfType<TeamActorHost>();
             for (int i = 0; i < actors.Length; i++)
             {
@@ -90,7 +91,7 @@ namespace Dovus.Game.DevTools
                 if (GUILayout.Button("Vur"))
                     host.CommandHit(actor);
                 if (GUILayout.Button("Skil"))
-                    host.CommandSkillAt(actor, _skill);
+                    host.CommandSkillAt(actor, (SkillId)_skill);
                 if (GUILayout.Button("Pas"))
                     host.PassBall(actor);
                 GUILayout.EndHorizontal();

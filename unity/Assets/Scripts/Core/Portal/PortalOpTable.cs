@@ -12,24 +12,24 @@ namespace Dovus.Core.Portal
         static Dictionary<string, PortalOp> BuildLegacy() =>
             new Dictionary<string, PortalOp>(StringComparer.Ordinal)
             {
-                ["1-10"] = PortalOp.BackDoor,
-                ["2-6"] = PortalOp.Hook,
-                ["3-4"] = PortalOp.AnchorOrRecall,
-                ["3-10"] = PortalOp.Pair,
-                ["8-1"] = PortalOp.Gate,
-                ["8-8"] = PortalOp.MirrorGate,
-                ["9-10"] = PortalOp.Swap,
-                ["10-10"] = PortalOp.Mirror,
-                ["11-8"] = PortalOp.Sink,
-                ["11-10"] = PortalOp.GatherTeam,
+                [SkillIds.MirrorStrike] = PortalOp.BackDoor,
+                [SkillIds.OpeningHeal] = PortalOp.Hook,
+                [SkillIds.FixedStep] = PortalOp.AnchorOrRecall,
+                [SkillIds.MirrorStep] = PortalOp.Pair,
+                [SkillIds.DenseAscent] = PortalOp.Gate,
+                [SkillIds.RisingAscent] = PortalOp.MirrorGate,
+                [SkillIds.MirrorPurify] = PortalOp.Swap,
+                [SkillIds.MirrorReflect] = PortalOp.Mirror,
+                [SkillIds.RisingSummon] = PortalOp.Sink,
+                [SkillIds.MirrorSummon] = PortalOp.GatherTeam,
             };
 
-        public static bool TryLegacy(string skillId, out PortalOp op) =>
-            Legacy.TryGetValue(skillId ?? string.Empty, out op);
+        public static bool TryLegacy(SkillId skillId, out PortalOp op) =>
+            Legacy.TryGetValue(skillId.Value, out op);
 
-        public static PortalOp Resolve(string skillId, IReadOnlyDictionary<string, PortalOp> table)
+        public static PortalOp Resolve(SkillId skillId, IReadOnlyDictionary<string, PortalOp> table)
         {
-            if (table != null && table.TryGetValue(skillId ?? string.Empty, out PortalOp op))
+            if (table != null && table.TryGetValue(skillId.Value, out PortalOp op))
                 return op;
             return PortalOp.None;
         }

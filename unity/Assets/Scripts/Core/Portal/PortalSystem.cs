@@ -62,7 +62,7 @@ namespace Dovus.Core.Portal
         public float StrikeScale => BossNarrow ? BossStrikeScale : 1f;
         public bool HasAnchor => _anchor.Alive && _now < _anchor.Until;
 
-        public bool IsPortalSkill(string skillId) =>
+        public bool IsPortalSkill(SkillId skillId) =>
             PortalOpTable.Resolve(skillId, _ops) != PortalOp.None;
 
         public PortalSystem()
@@ -86,13 +86,13 @@ namespace Dovus.Core.Portal
                 for (int i = 0; i < _doors.Count; i++)
                 {
                     Door d = _doors[i];
-                    _views.Add(new DoorView(d.Id, d.Link, d.X, d.Z, DoorRadiusM, d.Skill, d.Until - _now, d.ShotsOnly));
+                    _views.Add(new DoorView(d.Id, d.Link, d.X, d.Z, DoorRadiusM, (SkillId)d.Skill, d.Until - _now, d.ShotsOnly));
                 }
                 return _views;
             }
         }
 
-        public void Cast(string skillId, in Body caster, in Body target, IReadOnlyList<Body> allies, in Disc boss)
+        public void Cast(SkillId skillId, in Body caster, in Body target, IReadOnlyList<Body> allies, in Disc boss)
         {
             PortalOp op = PortalOpTable.Resolve(skillId, _ops);
             switch (op)
@@ -153,7 +153,7 @@ namespace Dovus.Core.Portal
                 {
                     HookLanding(_hookFromX, _hookFromZ, r, _hookAllyX, _hookAllyZ, _hookAllyR, boss, out cx, out cy, out cz);
                     if (Moved(x, y, z, cx, cy, cz))
-                        _ready.Add(new Placement(actorId, cx, cy, cz, "2-6", false));
+                        _ready.Add(new Placement(actorId, cx, cy, cz, (SkillId)SkillIds.OpeningHeal, false));
                 }
             }
 
@@ -177,7 +177,7 @@ namespace Dovus.Core.Portal
                 float px = w.X;
                 float pz = w.Z;
                 PushOut(ref px, ref pz, w.Radius, boss);
-                _ready.Add(new Placement(w.ActorId, px, w.Y, pz, w.Skill, w.Transfer, w.Teleport));
+                _ready.Add(new Placement(w.ActorId, px, w.Y, pz, (SkillId)w.Skill, w.Transfer, w.Teleport));
                 _wait.RemoveAt(i);
             }
 
@@ -242,7 +242,7 @@ namespace Dovus.Core.Portal
                 PushOut(ref ox, ref oz, body.Radius, boss);
                 if (body.IsBoss)
                     continue;
-                var place = new Placement(body.Id, ox, body.Y, oz, door.Skill, false, true);
+                var place = new Placement(body.Id, ox, body.Y, oz, (SkillId)door.Skill, false, true);
                 if (body.TemplateOwns && !projectile)
                     _wait.Add(new WaitMove(body.Id, body.Id, ox, body.Y, oz, body.Radius, door.Skill, false, true));
                 else
@@ -312,7 +312,7 @@ namespace Dovus.Core.Portal
                 float x = caster.X + BesideM;
                 float z = caster.Z;
                 PushOut(ref x, ref z, r.Radius, boss);
-                _ready.Add(new Placement(r.ActorId, x, r.Y, z, "11-8", false, true));
+                _ready.Add(new Placement(r.ActorId, x, r.Y, z, (SkillId)SkillIds.RisingSummon, false, true));
                 _buffs.Add(new Buff(r.ActorId, _now + RiseBuffSec, 1f, 1f + RiseDamageAdd, 1f, 0f));
             }
 
@@ -334,7 +334,7 @@ namespace Dovus.Core.Portal
                     float x = caster.X + MathF.Cos(ang) * BesideM;
                     float z = caster.Z + MathF.Sin(ang) * BesideM;
                     PushOut(ref x, ref z, ally.Radius, boss);
-                    _ready.Add(new Placement(ally.Id, x, ally.Y, z, "11-10", false, true));
+                    _ready.Add(new Placement(ally.Id, x, ally.Y, z, (SkillId)SkillIds.MirrorSummon, false, true));
                     n++;
                 }
             }

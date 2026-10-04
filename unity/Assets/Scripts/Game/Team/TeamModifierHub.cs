@@ -1,5 +1,6 @@
 using System;
 using Dovus.App.Team;
+using Dovus.Core.Shared;
 
 namespace Dovus.Game.Team
 {
@@ -82,10 +83,10 @@ namespace Dovus.Game.Team
             return flagged;
         }
 
-        public void NotifyCast(string skillId)
+        public void NotifyCast(SkillId skillId)
         {
-            if (!string.IsNullOrEmpty(skillId))
-                Cast?.Invoke(skillId);
+            if (!skillId.IsEmpty)
+                Cast?.Invoke(skillId.Value);
         }
 
         public void SetMiss(int actorId, float chance) => Table.SetMiss(actorId, chance);

@@ -11,6 +11,7 @@ using Dovus.Core.Grammar;
 using Dovus.Core.Manifestation;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Motion;
+using Dovus.Core.Shared;
 using Dovus.Core.Presentation;
 using Dovus.Core.Tuning;
 using Dovus.Game.Actors;
@@ -58,6 +59,6 @@ namespace Dovus.Game.Skills.Targeting
             ref float durationSec,
             ref int spawnCount);
 
-        bool TryGetMotionBinding(string skillId, out MotionBinding binding);
+        bool TryGetMotionBinding(SkillId skillId, out MotionBinding binding);
     }
 }

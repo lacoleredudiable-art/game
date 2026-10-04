@@ -10,6 +10,7 @@ using Dovus.Core.Equipment;
 using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
+using Dovus.Core.Shared;
 
 namespace Dovus.App.Casting
 {
@@ -86,7 +87,7 @@ namespace Dovus.App.Casting
             if (skill.IsEmpty || !skill.IsComplete)
             {
                 DenialRequested?.Invoke(new CastDenialRequested(CastDenialReason.NeedsTwoRunes));
-                var denied = new CastOutcome(skill.Identity.Id, false, false, 0f, false, denied: true);
+                var denied = new CastOutcome((SkillId)skill.Identity.Id, false, false, 0f, false, denied: true);
                 Completed?.Invoke(denied);
                 return denied;
             }
@@ -105,8 +106,9 @@ namespace Dovus.App.Casting
                 port.ApplyMotionIframe(skill, in motionPlan);
                 bool templateOwnsDelivery = port.TryBeginMotionTemplate(skill, ctx);
                 port.NoteSustainedCast(skill);
-                port.NotifyCast(skill.Identity.Id);
-                Started?.Invoke(new CastStarted(skill.Identity.Id));
+                var resolvedId = (SkillId)skill.Identity.Id;
+                port.NotifyCast(resolvedId);
+                Started?.Invoke(new CastStarted(resolvedId));
 
                 SkillExecutorRoute executorRoute = port.Route(skill);
                 executorRoute = port.ApplyMechanicWorldRoute(skill, executorRoute);
@@ -132,7 +134,7 @@ namespace Dovus.App.Casting
                 if (!motionPlan.IsEmpty)
                     MotionAnnotationRequested?.Invoke(new CastMotionAnnotationRequested(skill, in motionPlan));
                 port.SpawnClosingImpact(ctx);
-                port.SetLastResolvedSkillId(skill.Identity.Id);
+                port.SetLastResolvedSkillId(resolvedId);
 
                 bool effectApplied = executorStarted
                     || templateOwnsDelivery
@@ -142,13 +144,13 @@ namespace Dovus.App.Casting
                     || skill.Mechanics.Length > 0;
                 port.SetLastSkillEffectApplied(effectApplied);
 
-                if (string.Equals(skill.Identity.Id, "1-1", StringComparison.Ordinal))
+                if (resolvedId.Value == SkillIds.DenseStrike)
                     port.LogSmokeOneOne(skill, effectApplied, dealt);
 
                 port.TrySchedulePassiveEcho(ctx, skill, in motionPlan);
 
                 var outcome = new CastOutcome(
-                    skill.Identity.Id, executorStarted, templateOwnsDelivery, dealt, effectApplied, denied: false);
+                    resolvedId, executorStarted, templateOwnsDelivery, dealt, effectApplied, denied: false);
                 Completed?.Invoke(outcome);
                 return outcome;
             }

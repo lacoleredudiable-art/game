@@ -12,6 +12,7 @@ using Dovus.Core.Status;
 using Dovus.Core.Team;
 using NUnit.Framework;
 using System.Collections.Generic;
+using Dovus.Core.Shared;
 
 namespace CoreTests;
 
@@ -20,8 +21,8 @@ public partial class TeamComboTests
     static void AssertTier(string skill, float below, float threshold, float attack, float life, float damage)
     {
         var mode = new BorderMode();
-        Assert.That(mode.OnSkill(1, skill, threshold), Is.False, skill + " eşikte açılmaz");
-        Assert.That(mode.OnSkill(1, skill, below), Is.True, skill);
+        Assert.That(mode.OnSkill(1, (SkillId)skill, threshold), Is.False, skill + " eşikte açılmaz");
+        Assert.That(mode.OnSkill(1, (SkillId)skill, below), Is.True, skill);
         Assert.That(mode.Threshold(1), Is.EqualTo(threshold).Within(0.001f));
         Assert.That(mode.AttackSpeedMult(1) / mode.ColumnMoveSpeedMult(1), Is.EqualTo(attack).Within(0.001f));
         Assert.That(mode.LifestealAdd(1), Is.EqualTo(life).Within(0.001f));

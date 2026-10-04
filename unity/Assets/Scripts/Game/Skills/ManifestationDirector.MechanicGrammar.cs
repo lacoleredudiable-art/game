@@ -10,6 +10,7 @@ using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Motion;
+using Dovus.Core.Shared;
 using Dovus.Core.Portal;
 using Dovus.Core.Status;
 using Dovus.Game.Actors;
@@ -130,7 +131,7 @@ namespace Dovus.Game.Skills
                         applied.Add($"işaret → {e.DurationSec:0.#}sn sonra dönüş");
                         break;
                     case ("konum", "portal"):
-                        if (TeamPortal.IsPortalSkill(plan.SkillId))
+                        if (TeamPortal.IsPortalSkill((SkillId)plan.SkillId))
                         {
                             applied.Add("portal sistemi");
                             break;
@@ -153,7 +154,7 @@ namespace Dovus.Game.Skills
         {
             if (!_templateOwnsPosition || plan == null)
                 return false;
-            PositionOwnership.LogSuppressed(plan.SkillId, stat);
+            PositionOwnership.LogSuppressed((SkillId)plan.SkillId, stat);
             return true;
         }
 

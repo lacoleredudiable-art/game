@@ -18,6 +18,7 @@ Kod tanımlayıcıları İngilizce; JSON / fiil kimlikleri / tuning panel alanla
 | `kutsal_etki` | `WeaponPassiveKind.HolyEffect` | Pasif: kutsal etki |
 | `dolu_sayfa` | `WeaponPassiveKind.FullPage` | Pasif: dolu sayfa |
 | `capraz_ates` | `WeaponPassiveKind.CrossFire` | Pasif: çapraz ateş |
+| skill `verb-adjective` id (ör. `3-10`) | `SkillIds` (`Core/Shared/SkillIds.cs`) + `SkillId` | Kodda `"3-10"` literal yok; sabit adı JSON skill adından PascalCase. Public API `SkillId` alır; sözlük anahtarı `string` kalır. |
 
 | (rün id 1..12) | `Rune` (`Attack`, `Heal`, …) | Mekanik rün; **element değil**. Türkçe UI: `RuneInfo.DisplayName`. Eski log/sweep dizesi: `RuneInfo.LegacySerializationName` (v6 `Saldiri` …). |
 | `elements[]` id | `ElementId` / `ElementPaintNode` | Boya / sınıf elementi; rün enum'undan ayrı kavram. |

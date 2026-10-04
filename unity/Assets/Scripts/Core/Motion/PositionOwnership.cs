@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Dovus.Core;
+using Dovus.Core.Shared;
 
 namespace Dovus.Core.Motion
 {
@@ -68,13 +69,12 @@ namespace Dovus.Core.Motion
             }
         }
 
-        public static void LogSuppressed(string skillId, string stat)
+        public static void LogSuppressed(SkillId skillId, string stat)
         {
-            if (string.IsNullOrEmpty(skillId))
-                skillId = "?";
+            string label = skillId.IsEmpty ? "?" : skillId.Value;
             DesignWarnings.Once(
-                "motion.pos." + skillId,
-                "Hareket kalıbı konumu yönetiyor; gramer konum adımı atlandı: " + skillId + " " + stat);
+                "motion.pos." + label,
+                "Hareket kalıbı konumu yönetiyor; gramer konum adımı atlandı: " + label + " " + stat);
         }
 
         public static PositionPlayback Prepare(

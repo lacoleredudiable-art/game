@@ -72,9 +72,9 @@ public class VerbExecutionTests
     [Test]
     public void IFramesComeFromMobilityCc()
     {
-        Assert.That(_data.IFrameMsFor("3-7"), Is.EqualTo(400));
-        Assert.That(_data.IFrameMsFor("11-10"), Is.EqualTo(300));
-        Assert.That(_data.IFrameMsFor("1-1"), Is.EqualTo(0));
+        Assert.That(_data.IFrameMsFor((SkillId)"3-7"), Is.EqualTo(400));
+        Assert.That(_data.IFrameMsFor((SkillId)"11-10"), Is.EqualTo(300));
+        Assert.That(_data.IFrameMsFor((SkillId)"1-1"), Is.EqualTo(0));
     }
 
     [Test]
@@ -90,7 +90,7 @@ public class VerbExecutionTests
 
         SkillResolution ghost = _motor.Resolve(new[] { 3, 7 });
         SkillMotionPlan ghostPlan = SkillMotionMotor.Resolve(
-            ghost, ctx, tuning, _data.IFrameMsFor(ghost.Identity.Id));
+            ghost, ctx, tuning, _data.IFrameMsFor((SkillId)ghost.Identity.Id));
         Assert.That(ghostPlan.IframeMs, Is.EqualTo(400));
     }
 

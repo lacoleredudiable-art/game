@@ -24,6 +24,15 @@ public class IdsTests
     }
 
     [Test]
+    public void SkillId_Default_IsEmptyStringValue()
+    {
+        var id = default(SkillId);
+        Assert.That(id.Value, Is.EqualTo(string.Empty));
+        Assert.That(id.IsEmpty, Is.True);
+        Assert.That(id.ToString(), Is.EqualTo(string.Empty));
+    }
+
+    [Test]
     public void WeaponId_RuneId_ElementId_ActorId_ShareSameSemantics()
     {
         Assert.That(new WeaponId("kilic"), Is.EqualTo((WeaponId)"kilic"));

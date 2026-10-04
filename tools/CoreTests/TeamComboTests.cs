@@ -12,6 +12,7 @@ using Dovus.Core.Status;
 using Dovus.Core.Team;
 using NUnit.Framework;
 using System.Collections.Generic;
+using Dovus.Core.Shared;
 
 namespace CoreTests;
 
@@ -24,9 +25,9 @@ public partial class TeamComboTests
     public void Threshold_OnBelow_OffAbove()
     {
         var mode = new BorderMode();
-        Assert.That(mode.OnSkill(1, "1-2", 0.20f), Is.False);
+        Assert.That(mode.OnSkill(1, (SkillId)"1-2", 0.20f), Is.False);
         Assert.That(mode.Active(1), Is.False);
-        Assert.That(mode.OnSkill(1, "1-2", 0.19f), Is.True);
+        Assert.That(mode.OnSkill(1, (SkillId)"1-2", 0.19f), Is.True);
         Assert.That(mode.AttackSpeedMult(1), Is.EqualTo(1.30f).Within(0.001f));
         Assert.That(mode.LifestealAdd(1), Is.EqualTo(0.25f).Within(0.001f));
         Assert.That(mode.DamageMult(1), Is.EqualTo(1.20f).Within(0.001f));
@@ -46,7 +47,7 @@ public partial class TeamComboTests
     public void Skill_1_2_LifestealStaysForTheCast()
     {
         var mode = new BorderMode();
-        Assert.That(mode.OnSkill(1, "1-2", 0.15f), Is.True);
+        Assert.That(mode.OnSkill(1, (SkillId)"1-2", 0.15f), Is.True);
         Assert.That(mode.Active(1), Is.True);
         Assert.That(mode.LifestealAdd(1), Is.EqualTo(BorderMode.Tier20Life).Within(0.001f));
         Assert.That(mode.Tick(1, 0.31f, 0.05f), Is.False);
@@ -62,7 +63,7 @@ public partial class TeamComboTests
     {
         AssertTier("1-2", 0.19f, 0.20f, 1.30f, 0.25f, 1.20f);
         var mode = new BorderMode();
-        Assert.That(mode.OnSkill(1, "1-2", 0.50f), Is.False);
+        Assert.That(mode.OnSkill(1, (SkillId)"1-2", 0.50f), Is.False);
     }
 
     [Test]
@@ -82,7 +83,7 @@ public partial class TeamComboTests
     {
         AssertTier("12-8", 0.09f, 0.10f, 1.50f, 0.40f, 1.35f);
         var high = new BorderMode();
-        high.OnSkill(1, "12-8", 0.50f);
+        high.OnSkill(1, (SkillId)"12-8", 0.50f);
         Assert.That(high.Active(1), Is.False);
         Assert.That(high.ColumnMoveSpeedMult(1), Is.EqualTo(1.20f).Within(0.001f));
         high.Tick(1, 0.50f, 2.5f);
@@ -93,7 +94,7 @@ public partial class TeamComboTests
         Assert.That(high.ColumnMoveSpeedMult(1), Is.EqualTo(1f).Within(0.001f));
 
         var low = new BorderMode();
-        low.OnSkill(1, "12-8", 0.05f);
+        low.OnSkill(1, (SkillId)"12-8", 0.05f);
         Assert.That(low.AttackSpeedMult(1), Is.EqualTo(1.50f * 1.20f).Within(0.001f));
     }
 
@@ -102,7 +103,7 @@ public partial class TeamComboTests
     {
         var portal = new PortalSystem();
         var boss = Boss(0f, 5f);
-        portal.Cast("1-10", Actor(1, 0f, 0f), default, null, boss);
+        portal.Cast((SkillId)"1-10", Actor(1, 0f, 0f), default, null, boss);
         Assert.That(portal.Strike.Active, Is.True);
         AssertOutside(portal.Strike.X, portal.Strike.Z, 0.2f, boss);
         float toward = (boss.X - portal.Strike.X) * portal.Strike.DirX
@@ -118,7 +119,7 @@ public partial class TeamComboTests
         var boss = Boss(0f, 4f);
         Body caster = Actor(1, 0f, 0f, owns: true, y: 2f);
         Body ally = Actor(2, 0f, 8f);
-        portal.Cast("2-6", caster, ally, null, boss);
+        portal.Cast((SkillId)"2-6", caster, ally, null, boss);
         Assert.That(portal.Drain(), Is.Empty, "kalıp bitene kadar yer değişmez");
 
         portal.NotifyTemplateEnded(1, 0f, 2f, 9f, 0.5f, boss);
@@ -142,14 +143,14 @@ public partial class TeamComboTests
         var portal = new PortalSystem();
         var boss = Boss(10f, 10f);
         Body caster = Actor(1, 0f, 0f, owns: true);
-        portal.Cast("3-4", caster, default, null, boss);
+        portal.Cast((SkillId)"3-4", caster, default, null, boss);
         Assert.That(portal.HasAnchor, Is.True);
         Assert.That(portal.Drain(), Is.Empty);
 
         var near = Actor(2, 1f, 0f);
         var far = Actor(3, 8f, 0f);
         var allies = new List<Body> { near, far };
-        portal.Cast("3-4", Actor(1, 4f, 0f, owns: true), default, allies, boss);
+        portal.Cast((SkillId)"3-4", Actor(1, 4f, 0f, owns: true), default, allies, boss);
         IReadOnlyList<Placement> now = portal.Drain();
         Assert.That(now, Has.None.Matches<Placement>(m => m.ActorId == 1));
         Placement recalled = One(now, 2);
@@ -167,10 +168,10 @@ public partial class TeamComboTests
     [Test]
     public void Skill_3_10_TwoDoorsPassAlliesAndShots()
     {
-        Assert.That(new TeamComboSystem().IsTeamSkill("3-10"), Is.True);
+        Assert.That(new TeamComboSystem().IsTeamSkill((SkillId)"3-10"), Is.True);
         var portal = new PortalSystem();
         var boss = Boss(0f, 3f);
-        portal.Cast("3-10", Actor(1, 0f, 0f, owns: true), default, null, boss);
+        portal.Cast((SkillId)"3-10", Actor(1, 0f, 0f, owns: true), default, null, boss);
         portal.NotifyTemplateEnded(1, 0f, 0f, 6f, 0.5f, boss);
         portal.Drain();
 
@@ -192,7 +193,7 @@ public partial class TeamComboTests
         var portal = new PortalSystem();
         var boss = Boss(0f, 8f);
         Body caster = Actor(1, 0f, 0f, owns: true, y: 1.1f);
-        portal.Cast("3-10", caster, default, null, boss);
+        portal.Cast((SkillId)"3-10", caster, default, null, boss);
         const float landZ = 4.95f;
         portal.NotifyTemplateEnded(1, 0f, 1.1f, landZ, 0.5f, boss);
         Assert.That(portal.Drain(), Is.Empty, "iniş yeni bir ışınlama yazmaz");
@@ -214,7 +215,7 @@ public partial class TeamComboTests
         var portal = new PortalSystem();
         var boss = Boss(0f, 8f);
         Body ally = Actor(2, 0f, 4f);
-        portal.Cast("8-1", Actor(1, 0f, 0f), ally, null, boss);
+        portal.Cast((SkillId)"8-1", Actor(1, 0f, 0f), ally, null, boss);
         DoorView gate = portal.Doors[0];
         Body walking = Actor(2, gate.X, gate.Z);
         portal.Sense(walking, false, boss, out _);
@@ -236,7 +237,7 @@ public partial class TeamComboTests
     {
         var portal = new PortalSystem();
         var boss = Boss(0f, 8f);
-        portal.Cast("8-1", Actor(1, 0f, 0f), Actor(2, 0f, 4f), null, boss);
+        portal.Cast((SkillId)"8-1", Actor(1, 0f, 0f), Actor(2, 0f, 4f), null, boss);
         DoorView gate = portal.Doors[0];
         portal.Sense(new Body(9, gate.X, 0f, gate.Z, 0.85f, false, true), false, boss, out _);
 
@@ -272,7 +273,7 @@ public partial class TeamComboTests
     {
         var portal = new PortalSystem();
         var boss = Boss(0f, 8f);
-        portal.Cast("8-8", Actor(1, 0f, 0f), Actor(2, 0f, 4f), null, boss);
+        portal.Cast((SkillId)"8-8", Actor(1, 0f, 0f), Actor(2, 0f, 4f), null, boss);
         DoorView gate = portal.Doors[0];
         portal.Sense(Actor(2, gate.X, gate.Z), false, boss, out _);
         PortalBuff buff = portal.BuffFor(2);
@@ -288,7 +289,7 @@ public partial class TeamComboTests
         var boss = Boss(0f, 5f);
         Body caster = Actor(1, 0f, 0f, owns: true);
         Body ally = Actor(2, 0f, 5f);
-        portal.Cast("9-10", caster, ally, null, boss);
+        portal.Cast((SkillId)"9-10", caster, ally, null, boss);
         Assert.That(portal.Drain(), Is.Empty);
         portal.NotifyTemplateEnded(1, 0f, 0f, 0f, 0.5f, boss);
         IReadOnlyList<Placement> moves = portal.Drain();

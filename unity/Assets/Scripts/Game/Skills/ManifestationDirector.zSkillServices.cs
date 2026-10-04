@@ -7,6 +7,7 @@ using Dovus.Core.Hud;
 using Dovus.Core.Passives;
 using Dovus.Core.Manifestation;
 using Dovus.Core.Motion;
+using Dovus.Core.Shared;
 using Dovus.Core.Equipment;
 using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
@@ -165,7 +166,7 @@ namespace Dovus.Game.Skills
             public void RaiseElementPaintChanged(ElementPaintNode paint) =>
                 _md.ElementPaintChanged?.Invoke(paint);
 
-            public bool TryGetMotionBinding(string skillId, out MotionBinding binding) =>
+            public bool TryGetMotionBinding(SkillId skillId, out MotionBinding binding) =>
                 _md.MotionCatalog.TryGet(skillId, out binding);
 
             public void ClearClosingStamp(LivingEffect logic) =>

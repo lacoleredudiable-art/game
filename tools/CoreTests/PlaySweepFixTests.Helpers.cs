@@ -14,6 +14,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Dovus.Core.Shared;
 
 namespace CoreTests;
 
@@ -70,14 +71,14 @@ public partial class PlaySweepFixTests
 
     void AssertOutside(string id)
     {
-        Assert.That(_catalog.TryPlay(id, out MotionTemplate template), Is.True, id);
+        Assert.That(_catalog.TryPlay((SkillId)id, out MotionTemplate template), Is.True, id);
         Trace run = Play(template, new MotionTarget(true, 0f, 3f, BossR), followCaster: false);
         Assert.That(run.MinBoss, Is.GreaterThanOrEqualTo(Contact - 0.05f), id + " " + run.MinBoss.ToString("0.00"));
     }
 
     void AssertCast(VerbExecutionData data, string id, int verb, int adjective, float engineScale)
     {
-        Assert.That(_catalog.TryPlay(id, out MotionTemplate template), Is.True, id);
+        Assert.That(_catalog.TryPlay((SkillId)id, out MotionTemplate template), Is.True, id);
         float edge = Edge(data, verb, adjective, engineScale, template);
         Assert.That(
             MotionCastReach.CenterInReach(3f, Body, BossR, edge),

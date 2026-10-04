@@ -1,6 +1,7 @@
 using Dovus.App.Casting;
 using Dovus.Core.Grammar;
 using NUnit.Framework;
+using Dovus.Core.Shared;
 
 namespace CoreTests;
 
@@ -9,7 +10,7 @@ public class ClosingHealRulesTests
 {
     static SkillResolution Skill(string verbFamily, string action, float baseHeal = 0f) =>
         SkillResolution.Build(
-            "1", "Su", "T", "t", "job",
+            "1", "Su", "T", (SkillId)"t", "job",
             "iyilestirme", "İyileştirme", verbFamily, action,
             0f, 0f, "self_aura", "free_move", new[] { "regen" },
             "yayma", "Yayma", "wave",

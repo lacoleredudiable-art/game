@@ -8,6 +8,7 @@ using Dovus.Core.Passives;
 using Dovus.Core.Equipment;
 using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
+using Dovus.Core.Shared;
 using Dovus.Core.Manifestation;
 using Dovus.Core.Status;
 using Dovus.Game.Actors;
@@ -352,7 +353,7 @@ namespace Dovus.Game.Skills.Weapons
             if (skill.Engine.ChannelSec(0f) > 0f)
                 return true;
             string id = skill.Identity.Id;
-            return id is "1-12" or "12-12" or "2-12" or "5-12" or "8-12";
+            return id is SkillIds.FlowingStrike or SkillIds.FlowingTime or SkillIds.FlowingHeal or SkillIds.FlowingBlast or SkillIds.FlowingAscent;
         }
 
         float BehindAngleDeg()

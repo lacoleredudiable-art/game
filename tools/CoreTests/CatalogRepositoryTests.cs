@@ -57,8 +57,8 @@ public class CatalogRepositoryTests
             for (int a = 1; a <= 12; a++)
             {
                 string id = v + "-" + a;
-                bool aOk = catalog.TryGet(id, out MotionBinding b1);
-                bool bOk = parserOnly.TryGet(id, out MotionBinding b2);
+                bool aOk = catalog.TryGet((SkillId)id, out MotionBinding b1);
+                bool bOk = parserOnly.TryGet((SkillId)id, out MotionBinding b2);
                 Assert.That(bOk, Is.EqualTo(aOk), id);
                 if (!aOk)
                     continue;
@@ -95,6 +95,6 @@ public class CatalogRepositoryTests
     {
         IMotionTemplateRepository repo = MotionTemplateCatalog.FromJson(MotionJson());
         Assert.That(repo.SkillCount, Is.GreaterThan(100));
-        Assert.That(repo.TryPlay("1-1", out _), Is.True);
+        Assert.That(repo.TryPlay((SkillId)"1-1", out _), Is.True);
     }
 }

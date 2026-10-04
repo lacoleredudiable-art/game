@@ -59,9 +59,9 @@ namespace Dovus.Core.Motion
             float sinir) =>
             _bySkill[skillId] = new MotionBinding(template, familyImplemented, tags, sinir);
 
-        public bool TryGet(string skillId, out MotionBinding binding)
+        public bool TryGet(SkillId skillId, out MotionBinding binding)
         {
-            if (!string.IsNullOrEmpty(skillId) && _bySkill.TryGetValue(skillId, out MotionBinding found))
+            if (!skillId.IsEmpty && _bySkill.TryGetValue(skillId.Value, out MotionBinding found))
             {
                 binding = found;
                 return true;
@@ -77,14 +77,14 @@ namespace Dovus.Core.Motion
         /// <summary>
         /// Oynatılacak kalıp. Aile bitmemişse false döner, bir kez uyarır; çağıran eski yolu kullanır.
         /// </summary>
-        public bool TryPlay(string skillId, out MotionTemplate template)
+        public bool TryPlay(SkillId skillId, out MotionTemplate template)
         {
             template = null;
             if (!TryGet(skillId, out MotionBinding binding))
             {
                 DesignWarnings.Once(
-                    "motion.missing." + skillId,
-                    "Hareket kalıbı yok: " + skillId + ". Eski davranış sürüyor.");
+                    "motion.missing." + skillId.Value,
+                    "Hareket kalıbı yok: " + skillId.Value + ". Eski davranış sürüyor.");
                 return false;
             }
 

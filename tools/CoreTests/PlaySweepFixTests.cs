@@ -14,6 +14,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Dovus.Core.Shared;
 
 namespace CoreTests;
 
@@ -57,7 +58,7 @@ public partial class PlaySweepFixTests
         var failures = new List<string>();
         foreach (string id in SelfJitter)
         {
-            Assert.That(_catalog.TryPlay(id, out MotionTemplate template), Is.True, id);
+            Assert.That(_catalog.TryPlay((SkillId)id, out MotionTemplate template), Is.True, id);
             VerbFace(id, out string mode, out string action);
             bool ally = true;
             MotionDeliveryAim.Kind kind = MotionDeliveryAim.Choose(
@@ -89,7 +90,7 @@ public partial class PlaySweepFixTests
     [Test]
     public void FollowingCaster_Jitters_EnemyTarget_DoesNot()
     {
-        Assert.That(_catalog.TryPlay("3-12", out MotionTemplate glide), Is.True);
+        Assert.That(_catalog.TryPlay((SkillId)"3-12", out MotionTemplate glide), Is.True);
         Trace self = Play(glide, new MotionTarget(true, 0f, 0f, Body), followCaster: true);
         Trace enemy = Play(glide, new MotionTarget(true, 0f, 3f, BossR), followCaster: false);
         Assert.That(self.Reversals, Is.GreaterThanOrEqualTo(3), "kendi hedefi ileri-geri iter");
@@ -107,7 +108,7 @@ public partial class PlaySweepFixTests
     [Test]
     public void Thorn_HitsTheBossItFlewThrough()
     {
-        Assert.That(_catalog.TryPlay("7-1", out MotionTemplate thorn), Is.True);
+        Assert.That(_catalog.TryPlay((SkillId)"7-1", out MotionTemplate thorn), Is.True);
         Trace run = Play(thorn, new MotionTarget(true, 0f, 3f, BossR), followCaster: false);
         bool hit = false;
         foreach (MotionHit h in run.Hits)
@@ -125,7 +126,7 @@ public partial class PlaySweepFixTests
     [Test]
     public void Fan_KeepsTheOpeningAim()
     {
-        Assert.That(_catalog.TryPlay("7-5", out MotionTemplate fan), Is.True);
+        Assert.That(_catalog.TryPlay((SkillId)"7-5", out MotionTemplate fan), Is.True);
         Trace run = Play(fan, new MotionTarget(true, 0f, 3f, BossR), followCaster: false);
         MotionHit? shot = null;
         foreach (MotionHit h in run.Hits)
@@ -231,7 +232,7 @@ public partial class PlaySweepFixTests
     [Test]
     public void HoppingStep_LandsBehind_ForEveryBossRadius()
     {
-        Assert.That(_catalog.TryPlay("3-3", out MotionTemplate hops), Is.True);
+        Assert.That(_catalog.TryPlay((SkillId)"3-3", out MotionTemplate hops), Is.True);
         foreach (float bossR in new[] { 0.70f, 0.85f, 0.93f })
         {
             var runner = new MotionTemplateRunner();

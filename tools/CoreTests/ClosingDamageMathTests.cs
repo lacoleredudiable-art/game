@@ -7,6 +7,7 @@ using Dovus.Core.Hud;
 using Dovus.Core.Passives;
 using Dovus.Core.Grammar;
 using NUnit.Framework;
+using Dovus.Core.Shared;
 
 namespace CoreTests;
 
@@ -15,7 +16,7 @@ public class ClosingDamageMathTests
 {
     static SkillResolution Strike(float baseDamage, float damageMult = 1f) =>
         SkillResolution.Build(
-            "1", "Ateş", "Test", "t", "job",
+            "1", "Ateş", "Test", (SkillId)"t", "job",
             "saldiri", "Saldırı", "strike", "damage",
             baseDamage, 15f, "projectile", "free_move", new[] { "burn" },
             "yogunlastirma", "Yoğunlaştırma", "focus",
@@ -25,7 +26,7 @@ public class ClosingDamageMathTests
 
     static SkillResolution Heal() =>
         SkillResolution.Build(
-            "2", "Su", "İyileştirme", "t", "job",
+            "2", "Su", "İyileştirme", (SkillId)"t", "job",
             "iyilestirme", "İyileştirme", "mend", "heal",
             0f, 0f, "self_aura", "free_move", new[] { "regen" },
             "yayma", "Yayma", "wave",

@@ -52,10 +52,10 @@ public class SkillMechanicTagTests
     {
         var portalOps = new Dictionary<string, PortalOp> { ["9-9"] = PortalOp.Swap };
         var teamOps = new Dictionary<string, TeamOp> { ["9-9"] = TeamOp.Mine };
-        Assert.That(PortalOpTable.Resolve("1-1", portalOps), Is.EqualTo(PortalOp.None));
-        Assert.That(TeamOpTable.Resolve("1-1", teamOps), Is.EqualTo(TeamOp.None));
-        Assert.That(new PortalSystem().IsPortalSkill("1-1"), Is.False);
-        Assert.That(new TeamComboSystem().IsTeamSkill("1-1"), Is.False);
+        Assert.That(PortalOpTable.Resolve((SkillId)"1-1", portalOps), Is.EqualTo(PortalOp.None));
+        Assert.That(TeamOpTable.Resolve((SkillId)"1-1", teamOps), Is.EqualTo(TeamOp.None));
+        Assert.That(new PortalSystem().IsPortalSkill((SkillId)"1-1"), Is.False);
+        Assert.That(new TeamComboSystem().IsTeamSkill((SkillId)"1-1"), Is.False);
     }
 
     [Test]
@@ -64,8 +64,8 @@ public class SkillMechanicTagTests
         var team = new TeamComboSystem(TeamOpTable.FromMotor(LoadMotor()));
         Disc boss = new Disc(true, 0f, 4f, 0.85f, PortalSystem.ClearGapM);
         FakeAlly ally = new FakeAlly { Id = 1 };
-        Assert.That(team.Cast("3-10", ally, null, new[] { ally }, boss), Is.EqualTo(TeamPulse.None));
-        Assert.That(team.Cast("10-10", ally, null, new[] { ally }, boss), Is.EqualTo(TeamPulse.None));
+        Assert.That(team.Cast((SkillId)"3-10", ally, null, new[] { ally }, boss), Is.EqualTo(TeamPulse.None));
+        Assert.That(team.Cast((SkillId)"10-10", ally, null, new[] { ally }, boss), Is.EqualTo(TeamPulse.None));
     }
 
     [Test]
@@ -82,8 +82,8 @@ public class SkillMechanicTagTests
         {
             legacy.Clear();
             tagged.Clear();
-            legacy.Cast(id, caster, ally, null, boss);
-            tagged.Cast(id, caster, ally, null, boss);
+            legacy.Cast((SkillId)id, caster, ally, null, boss);
+            tagged.Cast((SkillId)id, caster, ally, null, boss);
             Assert.That(tagged.Doors.Count, Is.EqualTo(legacy.Doors.Count), id);
             Assert.That(tagged.Drain().Count, Is.EqualTo(legacy.Drain().Count), id);
             Assert.That(tagged.HasAnchor, Is.EqualTo(legacy.HasAnchor), id);
@@ -107,8 +107,8 @@ public class SkillMechanicTagTests
                 continue;
             legacy.Clear();
             tagged.Clear();
-            TeamPulse a = legacy.Cast(kv.Key, caster, target, allies, boss);
-            TeamPulse b = tagged.Cast(kv.Key, caster, target, allies, boss);
+            TeamPulse a = legacy.Cast((SkillId)kv.Key, caster, target, allies, boss);
+            TeamPulse b = tagged.Cast((SkillId)kv.Key, caster, target, allies, boss);
             Assert.That(b.Stunned, Is.EqualTo(a.Stunned), kv.Key);
             Assert.That(b.StunSec, Is.EqualTo(a.StunSec).Within(1e-4f), kv.Key);
             Assert.That(b.BossIncomingMult, Is.EqualTo(a.BossIncomingMult).Within(1e-4f), kv.Key);

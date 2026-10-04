@@ -11,6 +11,7 @@ using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Motion;
+using Dovus.Core.Shared;
 using Dovus.Core.Status;
 using Dovus.Game.Actors;
 using Dovus.Game.Diagnostics;
@@ -56,7 +57,7 @@ namespace Dovus.Game.Skills.Motion
 
         public MotionTemplateCatalog Catalog => MotionCatalog;
 
-        public bool TryPlayTemplate(string skillId, out MotionTemplate template) =>
+        public bool TryPlayTemplate(SkillId skillId, out MotionTemplate template) =>
             MotionCatalog.TryPlay(skillId, out template);
 
         public float BossBodyRadius()
@@ -204,7 +205,7 @@ namespace Dovus.Game.Skills.Motion
             _castLease.ReleasePosition();
             if (skill.IsEmpty || string.IsNullOrEmpty(skill.Identity.Id) || _host.Player == null)
                 return false;
-            if (!MotionCatalog.TryPlay(skill.Identity.Id, out MotionTemplate template))
+            if (!MotionCatalog.TryPlay((SkillId)skill.Identity.Id, out MotionTemplate template))
                 return false;
 
             PositionPlayback playback = PreparePositionPlayback(skill, template);
@@ -231,7 +232,7 @@ namespace Dovus.Game.Skills.Motion
                 ? (string.IsNullOrEmpty(_host.EquippedWeapon.AnimationsKey) ? _host.EquippedWeapon.Id : _host.EquippedWeapon.AnimationsKey)
                 : string.Empty;
             _host.MotionBody.SetAnimContext(MotionCatalog.Anims, weapon, VerbOf(skill.Identity.Id));
-            _host.MotionBody.NoteSkill(skill.Identity.Id);
+            _host.MotionBody.NoteSkill((SkillId)skill.Identity.Id);
             if (_host.Boss != null)
                 _templateStartCenter = _host.FlatDistance(_host.Player.position, _host.Boss.transform.position);
             // Emici ilerleyen kalıpta oyuncu hep yerinde; boss'u yalnız çeken plan getirir (4-2 çekmez).
@@ -322,7 +323,7 @@ namespace Dovus.Game.Skills.Motion
                 ? (string.IsNullOrEmpty(_host.EquippedWeapon.AnimationsKey) ? _host.EquippedWeapon.Id : _host.EquippedWeapon.AnimationsKey)
                 : string.Empty;
             _host.MotionBody.SetAnimContext(MotionCatalog.Anims, weapon, 0);
-            _host.MotionBody.NoteSkill(string.Empty);
+            _host.MotionBody.NoteSkill(default);
             float stopGap = fallbacks.StopGapM;
             _host.MotionBody.Play(
                 template,

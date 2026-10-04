@@ -2,6 +2,7 @@ using Dovus.App.Casting;
 using Dovus.Core.Casting;
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
+using Dovus.Core.Shared;
 using NUnit.Framework;
 using System.Collections.Generic;
 
@@ -10,9 +11,9 @@ namespace CoreTests;
 [TestFixture]
 public class CastPipelinePresentationTests
 {
-    static SkillResolution CompleteStrike(string skillId = "2-3") =>
+    static SkillResolution CompleteStrike(SkillId skillId = default) =>
         SkillResolution.Build(
-            "1", "Ateş", "Test", skillId, "job",
+            "1", "Ateş", "Test", skillId.IsEmpty ? (SkillId)"2-3" : skillId, "job",
             "saldiri", "Saldırı", "strike", "damage",
             10f, 15f, "projectile", "free_move", new[] { "burn" },
             "yogunlastirma", "Yoğunlaştırma", "focus",
@@ -37,7 +38,7 @@ public class CastPipelinePresentationTests
         public void ApplyMotionIframe(SkillResolution skill, in SkillMotionPlan motion) { }
         public bool TryBeginMotionTemplate(SkillResolution skill, int ctx) => false;
         public void NoteSustainedCast(SkillResolution skill) { }
-        public void NotifyCast(string skillId) { }
+        public void NotifyCast(SkillId skillId) { }
         public SkillExecutorRoute Route(SkillResolution skill) =>
             new(SkillExecutorKind.MeleeHitbox, false, string.Empty);
         public SkillExecutorRoute ApplyMechanicWorldRoute(SkillResolution skill, SkillExecutorRoute route) => route;
@@ -63,7 +64,7 @@ public class CastPipelinePresentationTests
             in SkillExecutorRoute route) => 0f;
         public void ApplyCooldown(SkillResolution skill, int ctx, bool cosmeticIfDisabled) { }
         public void SpawnClosingImpact(int ctx) { }
-        public void SetLastResolvedSkillId(string skillId) { }
+        public void SetLastResolvedSkillId(SkillId skillId) { }
         public bool IsHealSkill(SkillResolution skill) => false;
         public void SetLastSkillEffectApplied(bool applied) { }
         public void LogSmokeOneOne(SkillResolution skill, bool effectApplied, float dealt) { }
@@ -102,7 +103,7 @@ public class CastPipelinePresentationTests
         var port = new GameplayPort
         {
             ResolveResult = SkillResolution.Build(
-                "1", "Ateş", "X", "t", "job",
+                "1", "Ateş", "X", (SkillId)"t", "job",
                 "saldiri", "Saldırı", "strike", "damage",
                 1f, 1f, "projectile", "free_move", System.Array.Empty<string>(),
                 "y", "Y", "focus",
@@ -134,7 +135,7 @@ public class CastPipelinePresentationTests
     {
         public void ResolveImpactTarget(int ctx) { }
         public void ResetClosingChainBonus() { }
-        public SkillResolution ResolveSkill(int ctx) => CompleteStrike("1-1");
+        public SkillResolution ResolveSkill(int ctx) => CompleteStrike((SkillId)"1-1");
         public bool IsHealSkill(SkillResolution skill) => true;
         public void ApplyClosingStatuses(int ctx, SkillResolution skill) { }
         public void ApplyClosingHeal(int ctx, SkillResolution skill) { }

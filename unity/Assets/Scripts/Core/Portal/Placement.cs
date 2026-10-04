@@ -8,13 +8,13 @@ namespace Dovus.Core.Portal
 {
     public readonly struct Placement
     {
-        public Placement(int actorId, float x, float y, float z, string skillId, bool transferDebuffs, bool teleport = false)
+        public Placement(int actorId, float x, float y, float z, SkillId skillId, bool transferDebuffs, bool teleport = false)
         {
             ActorId = actorId;
             X = x;
             Y = y;
             Z = z;
-            SkillId = skillId ?? string.Empty;
+            SkillId = skillId;
             TransferDebuffs = transferDebuffs;
             Teleport = teleport;
         }
@@ -23,7 +23,7 @@ namespace Dovus.Core.Portal
         public float X { get; }
         public float Y { get; }
         public float Z { get; }
-        public string SkillId { get; }
+        public SkillId SkillId { get; }
         public bool TransferDebuffs { get; }
         /// <summary>Yer değiştirme, çapa dönüşü veya kapı geçişi. Tarama yalnız bu kareyi ışın sayar.</summary>
         public bool Teleport { get; }

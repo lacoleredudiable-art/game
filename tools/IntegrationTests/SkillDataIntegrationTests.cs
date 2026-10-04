@@ -54,7 +54,7 @@ public class SkillDataIntegrationTests
             Assert.That(skill.Identity.Verb.IsEmpty, Is.False, $"{id} VerbId");
             Assert.That(skill.Identity.VerbName, Is.Not.Empty, $"{id} VerbName");
             Assert.That(string.IsNullOrEmpty(skill.Presentation.Hitbox.ToString()), Is.False, $"{id} Hitbox");
-            Assert.That(motion.TryGet(id, out _), Is.True, $"{id} motion");
+            Assert.That(motion.TryGet((SkillId)id, out _), Is.True, $"{id} motion");
 
             if (!string.IsNullOrEmpty(skill.Identity.Element))
                 lex.AssertInSet(skill.Identity.Element, JsonLexicon.ElementIds, $"{id} ElementId");

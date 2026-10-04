@@ -175,12 +175,12 @@ public class SkillMotorV611Tests
         AnimationDatabase database = AnimationDatabase.FromJson(LoadJson());
 
         Assert.That(database.Count, Is.EqualTo(120));
-        Assert.That(database.TryGet("kilic", 1, out AnimationBinding strike), Is.True);
+        Assert.That(database.TryGet((SkillId)"kilic", 1, out AnimationBinding strike), Is.True);
         Assert.That(strike.DisplayName, Is.EqualTo("Geniş Kesme"));
         Assert.That(strike.AnimatorState, Is.EqualTo("CastPierce"));
-        Assert.That(database.TryGet("kilic", 5, out AnimationBinding blast), Is.True);
+        Assert.That(database.TryGet((SkillId)"kilic", 5, out AnimationBinding blast), Is.True);
         Assert.That(blast.AnimatorState, Is.EqualTo("CastSlam"));
-        Assert.That(database.TryGet("missing", 1, out _), Is.False);
+        Assert.That(database.TryGet((SkillId)"missing", 1, out _), Is.False);
     }
 
     [Test]

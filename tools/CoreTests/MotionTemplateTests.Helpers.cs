@@ -5,6 +5,7 @@ using Dovus.Core.Motion;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.IO;
+using Dovus.Core.Shared;
 
 namespace CoreTests;
 
@@ -70,7 +71,7 @@ public partial class MotionTemplateTests
     {
         string path = JsonPath();
         var catalog = MotionTemplateCatalog.FromJson(File.ReadAllText(path));
-        Assert.That(catalog.TryGet(skill, out MotionBinding binding), Is.True, skill);
+        Assert.That(catalog.TryGet((SkillId)skill, out MotionBinding binding), Is.True, skill);
         return new List<string>(binding.Tags);
     }
 

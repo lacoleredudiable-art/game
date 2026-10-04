@@ -59,13 +59,13 @@ public class TeamModifierHubTests
         TeamComboSystem team = new TeamComboSystem();
         foreach (string id in PortalOpTable.Legacy.Keys)
         {
-            bool legacyPortal = PortalOpTable.TryLegacy(id, out var pop) && pop != PortalOp.None;
-            bool legacyTeam = TeamOpTable.TryLegacy(id, out var top) && top != TeamOp.None;
-            Assert.That(portal.IsPortalSkill(id), Is.EqualTo(legacyPortal), id);
-            Assert.That(team.IsTeamSkill(id), Is.EqualTo(legacyTeam), id);
+            bool legacyPortal = PortalOpTable.TryLegacy((SkillId)id, out var pop) && pop != PortalOp.None;
+            bool legacyTeam = TeamOpTable.TryLegacy((SkillId)id, out var top) && top != TeamOp.None;
+            Assert.That(portal.IsPortalSkill((SkillId)id), Is.EqualTo(legacyPortal), id);
+            Assert.That(team.IsTeamSkill((SkillId)id), Is.EqualTo(legacyTeam), id);
         }
-        Assert.That(portal.IsPortalSkill("1-1"), Is.False);
-        Assert.That(team.IsTeamSkill("1-1"), Is.False);
+        Assert.That(portal.IsPortalSkill((SkillId)"1-1"), Is.False);
+        Assert.That(team.IsTeamSkill((SkillId)"1-1"), Is.False);
     }
 
     [Test]

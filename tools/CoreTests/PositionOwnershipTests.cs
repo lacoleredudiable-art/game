@@ -68,7 +68,7 @@ public class PositionOwnershipTests
         for (int adjective = 1; adjective <= 12; adjective++)
         {
             string id = verb + "-" + adjective;
-            Assert.That(_motion.TryGet(id, out MotionBinding binding), Is.True, id);
+            Assert.That(_motion.TryGet((SkillId)id, out MotionBinding binding), Is.True, id);
             MechanicPlan plan = _grammar.Compose(verb, adjective, 1);
             bool grammarMoves = PlayerPositionStat(plan) != null;
             bool templateMoves = PositionOwnership.MovesPlayer(binding.Template);
@@ -99,7 +99,7 @@ public class PositionOwnershipTests
     [Test]
     public void BaglayiciAdim_LandsBehindOnce_GrammarSwapIsNotApplied()
     {
-        Assert.That(_motion.TryPlay("3-6", out MotionTemplate hook), Is.True);
+        Assert.That(_motion.TryPlay((SkillId)"3-6", out MotionTemplate hook), Is.True);
         MechanicPlan plan = _grammar.Compose(3, 6, 1);
         Assert.That(PlayerPositionStat(plan), Is.EqualTo(PositionOwnership.Displace));
 
@@ -126,7 +126,7 @@ public class PositionOwnershipTests
     [Test]
     public void OdakliAdim_LandsBehindOnce_GrammarTeleportIsNotApplied()
     {
-        Assert.That(_motion.TryPlay("3-9", out MotionTemplate blink), Is.True);
+        Assert.That(_motion.TryPlay((SkillId)"3-9", out MotionTemplate blink), Is.True);
         Assert.That(blink.FamilyId, Is.EqualTo(23));
         MechanicPlan plan = _grammar.Compose(3, 9, 1);
         Assert.That(PlayerPositionStat(plan), Is.EqualTo(PositionOwnership.Behind));
@@ -155,7 +155,7 @@ public class PositionOwnershipTests
     [Test]
     public void SabitAdim_CloseDash_StopsAtTheBossEdge()
     {
-        Assert.That(_motion.TryPlay("3-4", out MotionTemplate pinned), Is.True);
+        Assert.That(_motion.TryPlay((SkillId)"3-4", out MotionTemplate pinned), Is.True);
         const float bossZ = 1.7f;
         const float body = 0.5f;
         const float bossR = 0.85f;
@@ -180,7 +180,7 @@ public class PositionOwnershipTests
     [Test]
     public void SabitAdim_DashesOut_ThenDashesBackToTheMark()
     {
-        Assert.That(_motion.TryPlay("3-4", out MotionTemplate pinned), Is.True);
+        Assert.That(_motion.TryPlay((SkillId)"3-4", out MotionTemplate pinned), Is.True);
         Assert.That(pinned.FamilyId, Is.EqualTo(24));
         MechanicPlan plan = _grammar.Compose(3, 4, 1);
         Assert.That(PlayerPositionStat(plan), Is.EqualTo(PositionOwnership.ReturnMark));
@@ -329,9 +329,9 @@ public class PositionOwnershipTests
         Assert.That(PositionOwnershipOracle.SuppressesMove(false, "konum", PositionOwnership.Behind), Is.False);
         Assert.That(PositionOwnershipOracle.SuppressesMove(false, "konum", PositionOwnership.ReturnMark), Is.False);
 
-        Assert.That(_motion.TryPlay("3-9", out MotionTemplate focused), Is.True);
+        Assert.That(_motion.TryPlay((SkillId)"3-9", out MotionTemplate focused), Is.True);
         Assert.That(PositionOwnership.MovesPlayer(focused), Is.True);
-        Assert.That(_motion.TryPlay("3-4", out MotionTemplate pinned), Is.True);
+        Assert.That(_motion.TryPlay((SkillId)"3-4", out MotionTemplate pinned), Is.True);
         Assert.That(PositionOwnership.MovesPlayer(pinned), Is.True);
 
         var moving = Moving(Phase("git", "dash", 0.2f, 2f));
@@ -350,11 +350,11 @@ public class PositionOwnershipTests
     {
         int logs = 0;
         DesignWarnings.Warned += _ => logs++;
-        PositionOwnership.LogSuppressed("3-6", PositionOwnership.Displace);
-        PositionOwnership.LogSuppressed("3-6", PositionOwnership.Behind);
+        PositionOwnership.LogSuppressed((SkillId)"3-6", PositionOwnership.Displace);
+        PositionOwnership.LogSuppressed((SkillId)"3-6", PositionOwnership.Behind);
         Assert.That(logs, Is.EqualTo(1));
         Assert.That(DesignWarnings.WasWarned("motion.pos.3-6"), Is.True);
-        PositionOwnership.LogSuppressed("3-9", PositionOwnership.Behind);
+        PositionOwnership.LogSuppressed((SkillId)"3-9", PositionOwnership.Behind);
         Assert.That(logs, Is.EqualTo(2));
     }
 

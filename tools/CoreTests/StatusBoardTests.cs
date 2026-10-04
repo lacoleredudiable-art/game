@@ -7,6 +7,7 @@ using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using NUnit.Framework;
 using System.IO;
+using Dovus.Core.Shared;
 
 namespace CoreTests;
 
@@ -168,7 +169,7 @@ public class StatusBoardTests
         // fiilde ikisi birden yok (bkz. element-sistemi.json) — sentetik SkillResolution ile
         // StatusApplicator'ın özel dalını tek başına test ediyoruz.
         var skill = SkillResolution.Build(
-            elementId: "test", elementName: "Test", displayName: "Test", skillId: "t", skillJob: "job",
+            elementId: "test", elementName: "Test", displayName: "Test", skillId: (SkillId)"t", skillJob: "job",
             verbId: "test_verb", verbName: "Test", verbFamily: "control", action: "stun_knockback",
             baseDamage: 20f, basePoise: 30f, hitbox: "single_target", castMobility: "free_move",
             mechanics: new[] { "stun", "knockback" },

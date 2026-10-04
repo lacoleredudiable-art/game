@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Dovus.Core.Shared;
 
 namespace Dovus.Core.Motion
 {
@@ -12,9 +13,9 @@ namespace Dovus.Core.Motion
         IReadOnlyList<MotionTemplate> Templates { get; }
         MotionTemplate BasicStrike { get; }
 
-        bool TryGet(string skillId, out MotionBinding binding);
+        bool TryGet(SkillId skillId, out MotionBinding binding);
         bool TryGetTemplate(string templateId, out MotionTemplate template);
-        bool TryPlay(string skillId, out MotionTemplate template);
+        bool TryPlay(SkillId skillId, out MotionTemplate template);
         int CountImplementedFamilies();
         int CountReadySkills();
     }

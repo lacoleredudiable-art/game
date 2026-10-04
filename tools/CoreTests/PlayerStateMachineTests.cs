@@ -9,6 +9,7 @@ using Dovus.Core.Grammar;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.IO;
+using Dovus.Core.Shared;
 
 namespace CoreTests;
 
@@ -36,7 +37,7 @@ public class PlayerStateMachineTests
 
     static PlayerStateNode Require(PlayerStateMachine sm, string id)
     {
-        Assert.That(sm.TryGet(id, out PlayerStateNode node), Is.True, $"state yok: {id}");
+        Assert.That(sm.TryGet((SkillId)id, out PlayerStateNode node), Is.True, $"state yok: {id}");
         return node;
     }
 

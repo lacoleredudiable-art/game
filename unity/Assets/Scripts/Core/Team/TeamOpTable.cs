@@ -12,24 +12,24 @@ namespace Dovus.Core.Team
         static Dictionary<string, TeamOp> BuildLegacy() =>
             new Dictionary<string, TeamOp>(StringComparer.Ordinal)
             {
-                ["3-10"] = TeamOp.Marker,
-                ["5-4"] = TeamOp.Mine,
-                ["6-8"] = TeamOp.HangBoss,
-                ["7-6"] = TeamOp.Rope,
-                ["7-9"] = TeamOp.Mark,
-                ["8-3"] = TeamOp.Ball,
-                ["8-6"] = TeamOp.Link,
-                ["10-10"] = TeamOp.Marker,
-                ["11-4"] = TeamOp.Turret,
-                ["12-6"] = TeamOp.HasteRope,
+                [SkillIds.MirrorStep] = TeamOp.Marker,
+                [SkillIds.FixedBlast] = TeamOp.Mine,
+                [SkillIds.RisingHead] = TeamOp.HangBoss,
+                [SkillIds.OpeningVulnerability] = TeamOp.Rope,
+                [SkillIds.FocusedVulnerability] = TeamOp.Mark,
+                [SkillIds.LeapingAscent] = TeamOp.Ball,
+                [SkillIds.OpeningAscent] = TeamOp.Link,
+                [SkillIds.MirrorReflect] = TeamOp.Marker,
+                [SkillIds.FixedSummon] = TeamOp.Turret,
+                [SkillIds.OpeningTime] = TeamOp.HasteRope,
             };
 
-        public static bool TryLegacy(string skillId, out TeamOp op) =>
-            Legacy.TryGetValue(skillId ?? string.Empty, out op);
+        public static bool TryLegacy(SkillId skillId, out TeamOp op) =>
+            Legacy.TryGetValue(skillId.Value, out op);
 
-        public static TeamOp Resolve(string skillId, IReadOnlyDictionary<string, TeamOp> table)
+        public static TeamOp Resolve(SkillId skillId, IReadOnlyDictionary<string, TeamOp> table)
         {
-            if (table != null && table.TryGetValue(skillId ?? string.Empty, out TeamOp op))
+            if (table != null && table.TryGetValue(skillId.Value, out TeamOp op))
                 return op;
             return TeamOp.None;
         }
