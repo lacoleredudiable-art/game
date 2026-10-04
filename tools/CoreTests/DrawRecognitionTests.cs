@@ -334,13 +334,15 @@ public class DrawRecognitionTests
     [Test]
     public void Game_WiresTrackerAndFeedback()
     {
+        string session = Game("Game/Casting/Input/HexagonInputSession.cs");
+        string stroke = Game("Game/Casting/Input/StrokeCaster.cs");
         string input = Game("Game/Casting/HexagonInput.cs");
-        Assert.That(input, Does.Contain("StrokeDotTracker"));
-        Assert.That(input, Does.Not.Contain("TryRegisterDotAt"), "nokta kaydı yalnız tarayıcıdan");
-        Assert.That(input, Does.Contain("DrawFeedback.CaptionFor(outcome)"));
-        Assert.That(input, Does.Contain("DrawFeedback.ClosedRune"));
-        Assert.That(input, Does.Contain("_ink?.Break(_inkFlashPending)"));
-        Assert.That(input, Does.Contain("_ink?.RawEnd(false, _strokeAcceptedPx)"));
+        Assert.That(session, Does.Contain("StrokeDotTracker"));
+        Assert.That(stroke, Does.Not.Contain("TryRegisterDotAt"), "nokta kaydı yalnız tarayıcıdan");
+        Assert.That(stroke, Does.Contain("DrawFeedback.CaptionFor(outcome)"));
+        Assert.That(stroke, Does.Contain("DrawFeedback.ClosedRune"));
+        Assert.That(stroke, Does.Contain("_s.Ink?.Break(_s.InkFlashPending)"));
+        Assert.That(stroke, Does.Contain("_s.Ink?.RawEnd(false, _s.StrokeAcceptedPx)"));
         Assert.That(input, Does.Contain("TickStrokeSettle()"));
         string ink = Game("Game/Casting/InkTrail.cs");
         Assert.That(ink, Does.Contain("public void RawBegin("));
