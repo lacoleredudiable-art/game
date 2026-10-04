@@ -54,8 +54,8 @@ namespace Dovus.Game.Editor
                 error = "PrototypeBootstrap bileşeni yok.";
                 return false;
             }
-
-            boot.SceneTuning.SyncSectionsFromLegacyFlatFields();
+            // Values were already copied legacy -> sections in OnAfterDeserialize (only while SectionsVersion < 1);
+            // no explicit re-sync here, so re-running the tool never overwrites edited sections with stale legacy values.
             EditorUtility.SetDirty(boot);
             EditorSceneManager.MarkSceneDirty(scene);
             if (!EditorSceneManager.SaveScene(scene))

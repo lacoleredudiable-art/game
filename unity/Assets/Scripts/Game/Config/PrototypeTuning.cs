@@ -74,8 +74,8 @@ namespace Dovus.Game.Config
             if (Input.ElementMenuChipHeightDp <= 0.01f) Input.ElementMenuChipHeightDp = 48f;
             if (Input.ElementMenuItemWidthDp <= 0.01f) Input.ElementMenuItemWidthDp = 84f;
             if (Input.ElementMenuItemHeightDp <= 0.01f) Input.ElementMenuItemHeightDp = 48f;
-            if (ElementMenuAnchorXNorm <= 0.01f) ElementMenuAnchorXNorm = 0.16f;
-            if (ElementMenuAnchorYNorm <= 0.01f) ElementMenuAnchorYNorm = 0.27f;
+            if (Input.ElementMenuAnchorXNorm <= 0.01f) Input.ElementMenuAnchorXNorm = 0.16f;
+            if (Input.ElementMenuAnchorYNorm <= 0.01f) Input.ElementMenuAnchorYNorm = 0.27f;
             if (Input.HudFitShortSideDp < 0f) Input.HudFitShortSideDp = 600f;
             if (Camera.CameraPitchMaxDeg < Camera.CameraPitchMinDeg) { Camera.CameraPitchMinDeg = -8f; Camera.CameraPitchMaxDeg = 35f; }
             if (Player.PlayerVisualHeightM <= 0.01f) Player.PlayerVisualHeightM = 1.78f;
@@ -280,8 +280,8 @@ namespace Dovus.Game.Config
             Camera.CameraFovDeg = fresh.Camera.CameraFovDeg;
             Camera.CameraAimDampingSec = fresh.Camera.CameraAimDampingSec;
             Camera.CameraSoftLockRangeM = fresh.Camera.CameraSoftLockRangeM;
-            CameraSoftLockStrength = fresh.CameraSoftLockStrength;
-            CameraBossFramingWeight = fresh.CameraBossFramingWeight;
+            Camera.CameraSoftLockStrength = fresh.Camera.CameraSoftLockStrength;
+            Camera.CameraBossFramingWeight = fresh.Camera.CameraBossFramingWeight;
             Camera.CameraBossAimHeightM = fresh.Camera.CameraBossAimHeightM;
             Camera.CameraDefaultPitchDeg = fresh.Camera.CameraDefaultPitchDeg;
             Camera.CameraLockOnMinDistanceM = fresh.Camera.CameraLockOnMinDistanceM;
@@ -300,7 +300,7 @@ namespace Dovus.Game.Config
             Camera.CameraCollisionPullOutSmoothSec = fresh.Camera.CameraCollisionPullOutSmoothSec;
             Camera.CameraLockOnShoulderSideM = fresh.Camera.CameraLockOnShoulderSideM;
             Camera.CameraLockOnShoulderFlipHysteresis = fresh.Camera.CameraLockOnShoulderFlipHysteresis;
-            CameraLockOnLookBlendToBoss = fresh.CameraLockOnLookBlendToBoss;
+            Camera.CameraLockOnLookBlendToBoss = fresh.Camera.CameraLockOnLookBlendToBoss;
             Input.LockOnButtonRadiusDp = fresh.Input.LockOnButtonRadiusDp;
             Input.LockOnButtonOffsetXDp = fresh.Input.LockOnButtonOffsetXDp;
             Input.LockOnButtonOffsetYDp = fresh.Input.LockOnButtonOffsetYDp;
@@ -346,8 +346,8 @@ namespace Dovus.Game.Config
             Input.ElementMenuChipHeightDp = fresh.Input.ElementMenuChipHeightDp;
             Input.ElementMenuItemWidthDp = fresh.Input.ElementMenuItemWidthDp;
             Input.ElementMenuItemHeightDp = fresh.Input.ElementMenuItemHeightDp;
-            ElementMenuAnchorXNorm = fresh.ElementMenuAnchorXNorm;
-            ElementMenuAnchorYNorm = fresh.ElementMenuAnchorYNorm;
+            Input.ElementMenuAnchorXNorm = fresh.Input.ElementMenuAnchorXNorm;
+            Input.ElementMenuAnchorYNorm = fresh.Input.ElementMenuAnchorYNorm;
             Hud.VitalsBarWidthDp = fresh.Hud.VitalsBarWidthDp;
             Hud.VitalsBarHeightDp = fresh.Hud.VitalsBarHeightDp;
             Hud.VitalsBossBarHeightDp = fresh.Hud.VitalsBossBarHeightDp;
@@ -360,8 +360,8 @@ namespace Dovus.Game.Config
             // v18: telefon HUD'u — kısa kenara sığdırma, sağ element düğmesi, kamera eğimi.
             Input.HudFitShortSideDp = fresh.Input.HudFitShortSideDp;
             Input.HexagonCenterXNorm = fresh.Input.HexagonCenterXNorm;
-            ElementMenuAnchorXNorm = fresh.ElementMenuAnchorXNorm;
-            ElementMenuAnchorYNorm = fresh.ElementMenuAnchorYNorm;
+            Input.ElementMenuAnchorXNorm = fresh.Input.ElementMenuAnchorXNorm;
+            Input.ElementMenuAnchorYNorm = fresh.Input.ElementMenuAnchorYNorm;
             Camera.CameraPitchMinDeg = fresh.Camera.CameraPitchMinDeg;
             Camera.CameraPitchMaxDeg = fresh.Camera.CameraPitchMaxDeg;
             Camera.OrbitInvertPitch = fresh.Camera.OrbitInvertPitch;

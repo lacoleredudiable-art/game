@@ -129,8 +129,10 @@ namespace Dovus.Game.Config
         private float CameraAimDampingSec = 0.12f;
         [SerializeField, HideInInspector]
         private float CameraSoftLockRangeM = 20f;
-        [Range(0f, 1f)] public float CameraSoftLockStrength = 0.58f;
-        [Range(0f, 1f)] public float CameraBossFramingWeight = 0.40f;
+        [SerializeField, HideInInspector]
+        private float CameraSoftLockStrength = 0.58f;
+        [SerializeField, HideInInspector]
+        private float CameraBossFramingWeight = 0.40f;
         [SerializeField, HideInInspector]
         private float CameraBossAimHeightM = 2.05f;
         [SerializeField, HideInInspector]
@@ -167,7 +169,8 @@ namespace Dovus.Game.Config
         private float CameraLockOnShoulderSideM = 1.1f;
         [SerializeField, HideInInspector]
         private float CameraLockOnShoulderFlipHysteresis = 0.12f;
-        [Range(0.35f, 0.75f)] public float CameraLockOnLookBlendToBoss = 0.58f;
+        [SerializeField, HideInInspector]
+        private float CameraLockOnLookBlendToBoss = 0.58f;
         [Header("Kamera orbit")]
         [SerializeField, HideInInspector]
         private float OrbitDegreesPerDp = 0.35f;
@@ -354,8 +357,10 @@ namespace Dovus.Game.Config
         private float ElementMenuItemWidthDp = 84f;
         [SerializeField, HideInInspector]
         private float ElementMenuItemHeightDp = 48f;
-        [Range(0f, 1f)] public float ElementMenuAnchorXNorm = 0.86f;
-        [Range(0f, 1f)] public float ElementMenuAnchorYNorm = 0.72f;
+        [SerializeField, HideInInspector]
+        private float ElementMenuAnchorXNorm = 0.86f;
+        [SerializeField, HideInInspector]
+        private float ElementMenuAnchorYNorm = 0.72f;
         [Header("Düz vuruş (§5, T6.2)")]
         [SerializeField, HideInInspector]
         private int BasicStrikeDot = 1;

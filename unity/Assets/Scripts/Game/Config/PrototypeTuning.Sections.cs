@@ -103,6 +103,11 @@ namespace Dovus.Game.Config
             Hud.CameraShakePxToM = CameraShakePxToM;
             Camera.CameraShoulderOffset = CameraShoulderOffset;
             Camera.CameraSoftLockRangeM = CameraSoftLockRangeM;
+            Camera.CameraSoftLockStrength = CameraSoftLockStrength;
+            Camera.CameraBossFramingWeight = CameraBossFramingWeight;
+            Camera.CameraLockOnLookBlendToBoss = CameraLockOnLookBlendToBoss;
+            Input.ElementMenuAnchorXNorm = ElementMenuAnchorXNorm;
+            Input.ElementMenuAnchorYNorm = ElementMenuAnchorYNorm;
             Camera.CameraWindupDistanceMul = CameraWindupDistanceMul;
             Camera.CameraWindupExtraHeightM = CameraWindupExtraHeightM;
             Camera.CameraWindupMinRadiusM = CameraWindupMinRadiusM;

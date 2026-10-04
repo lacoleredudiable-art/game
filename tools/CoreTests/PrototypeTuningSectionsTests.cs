@@ -45,7 +45,7 @@ public class PrototypeTuningSectionsTests
     {
         var legacy = CollectLegacyFieldNames(Read("PrototypeTuning.Legacy.cs"));
         var fromCopy = CollectCopyLegacyRhsNames(Read("PrototypeTuning.Sections.cs"));
-        Assert.That(legacy.Count, Is.EqualTo(242), "legacy düz alan sayısı");
+        Assert.That(legacy.Count, Is.EqualTo(247), "legacy düz alan sayısı");
         Assert.That(fromCopy.SetEquals(legacy), Is.True, "CopyLegacyFlatFieldsToSections legacy kümesini kapsamalı");
     }
 
