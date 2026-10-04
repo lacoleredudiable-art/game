@@ -339,6 +339,11 @@ namespace Dovus.Game.DevTools
             AddIntSlider("Kayma kuyruğu", 0, 500, () => c.Dodge.GlideTailMs, v => c.Dodge.GlideTailMs = v, "ms");
             AddFloatSlider("Kayma hızı", 0f, 10f, () => p.DodgeGlideSpeedMps, v => p.DodgeGlideSpeedMps = v, "m/s", "0.00");
             AddIntSlider("Tap hareket eşiği", 4, 40, () => c.Dodge.TapMaxMoveDp, v => c.Dodge.TapMaxMoveDp = v, "dp");
+            AddIntSlider("Hak dolumu", 1000, 12000, () => c.Dodge.ChargeRechargeMs, v => c.Dodge.ChargeRechargeMs = v, "ms");
+            AddIntSlider("Çift basış penceresi", 50, 500, () => c.Dodge.DoubleTapWindowMs, v => c.Dodge.DoubleTapWindowMs = v, "ms");
+            AddIntSlider("Birleşik i-frame", 200, 1200, () => c.Dodge.CombinedIframeMs, v => c.Dodge.CombinedIframeMs = v, "ms");
+            AddFloatSlider("Birleşik mesafe ×", 1f, 3f, () => c.Dodge.CombinedDistanceMult, v => c.Dodge.CombinedDistanceMult = v, "", "0.00");
+            AddFloatSlider("Birleşik süre ×", 1f, 3f, () => c.Dodge.CombinedDurationMult, v => c.Dodge.CombinedDurationMult = v, "", "0.00");
             // O2: tek mükemmel pencere (PERFECT derecesi + iade + sonraki vuruş).
             AddIntSlider("PERFECT penceresi", 20, 300, () => c.Dodge.PerfectWindowMs, v => c.Dodge.PerfectWindowMs = v, "ms");
             AddIntSlider("HARİKA eşiği", 40, 350, () => c.Grade.HarikaGapMaxMs, v => c.Grade.HarikaGapMaxMs = v, "ms");

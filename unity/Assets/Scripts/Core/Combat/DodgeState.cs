@@ -11,6 +11,9 @@ namespace Dovus.Core.Combat
     {
         readonly DodgeTuning _tuning;
         int _pressTimeMs = -1;
+        bool _combined;
+        int _promotedAtMs = -1;
+        float _ratioAtPromote;
 
         public DodgeState(DodgeTuning? tuning = null)
         {
@@ -24,15 +27,44 @@ namespace Dovus.Core.Combat
 
         public int? PressTimeMs => _pressTimeMs >= 0 ? _pressTimeMs : null;
 
+        public bool IsCombined => _combined;
+
         public void Begin(int pressTimeMs)
         {
             _pressTimeMs = pressTimeMs;
+            _combined = false;
+            _promotedAtMs = -1;
+            _ratioAtPromote = 0f;
+        }
+
+        public void PromoteToCombined(int worldTimeMs)
+        {
+            if (_pressTimeMs < 0 || _combined)
+                return;
+
+            // Review fix: ratio is relative to the multiplied distance after promotion, so scale it
+            // down by the distance multiplier to keep the displacement continuous (no jump).
+            _ratioAtPromote = GetDisplacementRatio(worldTimeMs) / CombinedDistanceScale;
+            _promotedAtMs = worldTimeMs;
+            _combined = true;
         }
 
         public void Reset()
         {
             _pressTimeMs = -1;
+            _combined = false;
+            _promotedAtMs = -1;
+            _ratioAtPromote = 0f;
         }
+
+        public float DistanceMultiplier => _combined ? _tuning.CombinedDistanceMult : 1f;
+
+        float CombinedDistanceScale => Math.Max(0.001f, _tuning.CombinedDistanceMult);
+
+        public int MoveDurationMs =>
+            _combined
+                ? Math.Max(1, (int)Math.Round(_tuning.DurationMs * _tuning.CombinedDurationMult))
+                : _tuning.DurationMs;
 
         public bool IsActive(int worldTimeMs)
         {
@@ -40,12 +72,13 @@ namespace Dovus.Core.Combat
                 return false;
 
             int elapsed = worldTimeMs - _pressTimeMs;
-            int totalMs = _tuning.StartupMs + _tuning.DurationMs + _tuning.GlideTailMs;
+            int totalMs = _tuning.StartupMs + MoveDurationMs + _tuning.GlideTailMs;
             return elapsed >= 0 && elapsed < totalMs;
         }
 
         /// <summary>
         /// Dokunulmazlık penceresi: [basma + iframeStart, basma + iframeStart + iframe).
+        /// Birleşik dodge: iframeStart'tan itibaren CombinedIframeMs.
         /// </summary>
         public bool IsInvulnerable(int worldTimeMs)
         {
@@ -53,13 +86,18 @@ namespace Dovus.Core.Combat
                 return false;
 
             int start = _pressTimeMs + _tuning.IframeStartMs;
-            int end = start + _tuning.IframeMs;
+            int end = _combined
+                ? _pressTimeMs + _tuning.IframeStartMs + _tuning.CombinedIframeMs
+                : start + _tuning.IframeMs;
             return worldTimeMs >= start && worldTimeMs < end;
         }
 
         public int IframeStartMs(int pressTimeMs) => pressTimeMs + _tuning.IframeStartMs;
 
-        public int IframeEndMs(int pressTimeMs) => pressTimeMs + _tuning.IframeStartMs + _tuning.IframeMs;
+        public int IframeEndMs(int pressTimeMs) =>
+            _combined
+                ? pressTimeMs + _tuning.IframeStartMs + _tuning.CombinedIframeMs
+                : pressTimeMs + _tuning.IframeStartMs + _tuning.IframeMs;
 
         /// <summary>Hareket eğrisi s(u) = 1 - (1-u)^curveExp.</summary>
         public float EvaluateCurve(float u)
@@ -81,9 +119,35 @@ namespace Dovus.Core.Combat
                 return 0f;
 
             int moveElapsed = elapsed - _tuning.StartupMs;
-            if (moveElapsed <= _tuning.DurationMs)
+            int durationMs = MoveDurationMs;
+
+            if (_combined && _promotedAtMs >= 0)
             {
-                float u = moveElapsed / (float)_tuning.DurationMs;
+                int promoteElapsed = _promotedAtMs - _pressTimeMs - _tuning.StartupMs;
+                if (promoteElapsed < 0)
+                    promoteElapsed = 0;
+
+                if (moveElapsed <= promoteElapsed)
+                {
+                    int preDur = _tuning.DurationMs;
+                    if (preDur <= 0)
+                        return 1f;
+                    float uPre = moveElapsed / (float)preDur;
+                    return EvaluateCurve(uPre) / CombinedDistanceScale;
+                }
+
+                int remainDur = durationMs - promoteElapsed;
+                if (remainDur <= 0)
+                    return 1f;
+
+                int afterPromote = moveElapsed - promoteElapsed;
+                float u = afterPromote / (float)remainDur;
+                return _ratioAtPromote + (1f - _ratioAtPromote) * EvaluateCurve(u);
+            }
+
+            if (moveElapsed <= durationMs)
+            {
+                float u = moveElapsed / (float)durationMs;
                 return EvaluateCurve(u);
             }
 
@@ -99,7 +163,7 @@ namespace Dovus.Core.Combat
                 return 0f;
 
             int elapsed = worldTimeMs - _pressTimeMs;
-            int moveEnd = _tuning.StartupMs + _tuning.DurationMs;
+            int moveEnd = _tuning.StartupMs + MoveDurationMs;
             if (elapsed <= moveEnd)
                 return 0f;
 

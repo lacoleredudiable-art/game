@@ -1119,23 +1119,28 @@ namespace Dovus.Game.Casting
                 return;
             }
 
-            // S2: tek kapı haklar (eski ölü cooldown yolu kaldırıldı).
             if (_charges != null)
             {
                 _charges.RechargeMult = _dodge.CooldownMult;
-                if (!_charges.TrySpend(worldMs))
+                DodgeChain.PressOutcome outcome = DodgeChain.TryConsumePress(
+                    worldMs, _dodge, _charges, _combat.Dodge);
+                if (outcome == DodgeChain.PressOutcome.DeniedNoCharge)
                 {
                     _readout?.NoteDenied("dodge yok");
                     _syllable?.PlayDenied();
                     return;
                 }
+
+                if (outcome == DodgeChain.PressOutcome.UpgradedCombined)
+                    return;
             }
+            else
+                _dodge.Begin(worldMs);
 
             bool wasBuilding = _engine != null && _engine.State.Phase == SentencePhase.Building;
             _engine?.Abort();
             FlushInkBreak();
             SkillCancelledByDodge?.Invoke();
-            _dodge.Begin(worldMs);
             _debugHud?.NoteDodge(wasBuilding);
             if (_mode == FingerMode.Drawing)
                 _ink?.RawEnd(false);

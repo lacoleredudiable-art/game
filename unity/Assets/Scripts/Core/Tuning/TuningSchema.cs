@@ -7,10 +7,11 @@ namespace Dovus.Core.Tuning
     /// Sürüm 1 = BossDamageMigration dönemi. Sürüm 2 = denetim A/B/C varsayılanları
     /// (i-frame 260, kaçış 3,8 m, tek PERFECT 150 ms / HARİKA 190, kör %30, PERFECT bonusu 2 sn).
     /// Sürüm 9 = EnforceCooldown ve EnforceResourceCost varsayılan true (1.1b).
+    /// Sürüm 10 = dodge 2×6 sn dolum + birleşik dodge ayarları (PLAN 1.3).
     /// </summary>
     public static class TuningSchema
     {
-        public const int Version = 9;
+        public const int Version = 10;
 
         public enum LoadDecision
         {

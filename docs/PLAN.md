@@ -22,7 +22,7 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 ## Aşama 3 — Oynanış doğruluğu (küçük, somut hatalar) [mimariden sonra]
 - [x] 1.1 Cooldown + mana açık (EnforceCooldown/EnforceResourceCost) — kombo bazlı CD kararı
 - [x] 1.2 Dünya donması kalksın (dodge 90 ms / vurulma 130 ms → sadece görsel)
-- [ ] 1.3 Dodge: 6 sn dolum + çift basış birleşik dodge (uzun i-frame)
+- [x] 1.3 Dodge: 6 sn dolum + çift basış birleşik dodge (uzun i-frame)
 - [ ] 1.5 Yanlış silah ikonları (Yay/Kitap/Küre) + lock-on düğmesi rün paneliyle çakışma
 - [ ] 1.6 Kullanıcı kararı + iş: skill metni ↔ sayı (Denetim D) — doğru kaynak JSON mu metin mi?
 

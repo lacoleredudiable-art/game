@@ -111,7 +111,8 @@ namespace Dovus.Game.Actors
                 // yani §6'nın "yağ gibi kayma"sı görünmüyordu (T8.1).
                 if (IsDisplacing && _tuning != null)
                 {
-                    transform.position = Place(_startPos + _dir * _tuning.DistanceM + _glideExtra);
+                    float dist = _tuning.DistanceM * (_dodge != null ? _dodge.DistanceMultiplier : 1f);
+                    transform.position = Place(_startPos + _dir * dist + _glideExtra);
                     LastAppliedRatio = 1f;
                 }
 
@@ -120,7 +121,8 @@ namespace Dovus.Game.Actors
             }
 
             float ratio = _dodge.GetDisplacementRatio(worldMs);
-            Vector3 target = _startPos + _dir * _tuning.DistanceM * ratio;
+            float distanceM = _tuning.DistanceM * _dodge.DistanceMultiplier;
+            Vector3 target = _startPos + _dir * distanceM * ratio;
 
             float glide = _dodge.GetGlideVelocityRatio(worldMs);
             if (glide > 0f)
