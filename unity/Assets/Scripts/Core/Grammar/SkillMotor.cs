@@ -426,7 +426,7 @@ namespace Dovus.Core.Grammar
             }
 
             if (action == "cc")
-                Add(Dovus.Core.Combat.CardEffectRules.CcKind(effectText, engine["cc_kind"].AsString()));
+                Add(Dovus.Core.Status.CardEffectRules.CcKind(effectText, engine["cc_kind"].AsString()));
             else if (action == "cleanse")
                 Add("cleanse");
             else if (action == "shield")

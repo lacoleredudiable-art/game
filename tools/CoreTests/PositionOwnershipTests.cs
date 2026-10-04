@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
+using Dovus.Core.Shared;
 namespace CoreTests;
 
 [TestFixture]

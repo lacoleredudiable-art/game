@@ -2,6 +2,7 @@ using Dovus.Core.Combat;
 using Dovus.Core.Equipment;
 using Dovus.Core.Execution;
 using Dovus.Core.Grammar;
+using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using Dovus.Game.Casting;
 using Dovus.Game.Config;

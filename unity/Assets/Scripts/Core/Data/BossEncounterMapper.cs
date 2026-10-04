@@ -3,6 +3,7 @@ using Dovus.Core.Grammar;
 using Dovus.Core.Tuning;
 using System.Collections.Generic;
 
+using Dovus.Core.Shared;
 namespace Dovus.Core.Data
 {
     public static class BossEncounterMapper

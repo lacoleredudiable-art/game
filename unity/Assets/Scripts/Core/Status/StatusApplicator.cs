@@ -1,5 +1,5 @@
-using Dovus.Core.Combat;
 using Dovus.Core.Grammar;
+using Dovus.Core.Shared;
 using Dovus.Core.Tuning;
 
 namespace Dovus.Core.Status
@@ -183,7 +183,7 @@ namespace Dovus.Core.Status
                         StatusKind.Blind,
                         mobilityCc?.ResolveCcDurationMs(StatusKind.Blind, adjectiveId, tuning.BlindMs)
                             ?? tuning.BlindMs,
-                        Dovus.Core.Combat.BossStatusMath.BlindChanceFromAccuracy(
+                        StatusMath.BlindChanceFromAccuracy(
                             confuseAccuracy > 0f ? confuseAccuracy : tuning.BlindMissChance));
                 }
                 if (!HasMech("slow"))
@@ -274,7 +274,7 @@ namespace Dovus.Core.Status
                     StatusKind.Blind,
                     mobilityCc?.ResolveCcDurationMs(StatusKind.Blind, adjectiveId, tuning.BlindMs)
                         ?? tuning.BlindMs,
-                    Dovus.Core.Combat.BossStatusMath.BlindChanceFromAccuracy(accuracy));
+                    StatusMath.BlindChanceFromAccuracy(accuracy));
         }
 
         static bool ModifierTruthy(JsonValue mods, string key)
@@ -333,7 +333,7 @@ namespace Dovus.Core.Status
                 case StatusKind.Blind:
                     // S7: %100 ıska tuzağı yerine tuning ıska şansı.
                     board.Apply(kind, Duration(t.BlindMs),
-                        Dovus.Core.Combat.BossStatusMath.BlindChanceFromAccuracy(t.BlindMissChance));
+                        StatusMath.BlindChanceFromAccuracy(t.BlindMissChance));
                     break;
                 case StatusKind.Disarm:
                     board.Apply(kind, Duration(t.DisarmMs), 1f);

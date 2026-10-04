@@ -3,6 +3,7 @@ using Dovus.Core.Grammar;
 using Dovus.Core.Presentation;
 using Dovus.Core.Tuning;
 
+using Dovus.Core.Shared;
 namespace Dovus.Core.Manifestation
 {
     /// <summary>

@@ -5,6 +5,7 @@ using Dovus.Core.Execution;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Presentation;
+using Dovus.Core.Status;
 using NUnit.Framework;
 using System.IO;
 

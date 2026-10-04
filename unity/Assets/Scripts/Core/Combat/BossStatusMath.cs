@@ -95,14 +95,8 @@ namespace Dovus.Core.Combat
             Math.Max(0d, baseMs) + Math.Max(0d, lifetimeAddSec) * 1000.0;
 
         /// <summary>accuracy_debuff büyüklüğünü kör ıskalama şansına kırpar.</summary>
-        public static float BlindChanceFromAccuracy(float accuracy)
-        {
-            if (accuracy <= 0f)
-                return 0f;
-            if (accuracy >= 1f)
-                return 1f;
-            return accuracy;
-        }
+        public static float BlindChanceFromAccuracy(float accuracy) =>
+            StatusMath.BlindChanceFromAccuracy(accuracy);
 
         /// <summary>
         /// Kalkanın emdiği (ölçeksiz havuz) + cana geçen hasar. Yansıma ikisini de görür;

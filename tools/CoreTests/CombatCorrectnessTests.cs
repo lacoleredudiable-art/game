@@ -147,7 +147,7 @@ public class CombatCorrectnessTests
     [Test]
     public void O7_CritSystem_ReadsDesignJson()
     {
-        CritSystem crit = CritSystem.FromJson(MiniJson.Parse(File.ReadAllText(Docs("element-sistemi.json"))));
+        CritSystem crit = CritSystem.FromJson(Dovus.Core.Shared.MiniJson.Parse(File.ReadAllText(Docs("element-sistemi.json"))));
         Assert.That(crit.BaseChance, Is.EqualTo(0.05f).Within(1e-5f));
         Assert.That(crit.Multiplier, Is.EqualTo(2f).Within(1e-5f));
         Assert.That(crit.MaxChance, Is.EqualTo(0.75f).Within(1e-5f));
@@ -162,7 +162,7 @@ public class CombatCorrectnessTests
     [Test]
     public void O7_CritSystem_MissingJson_FallsBackToDesignDefaults()
     {
-        CritSystem crit = CritSystem.FromJson(MiniJson.Parse("{}"));
+        CritSystem crit = CritSystem.FromJson(Dovus.Core.Shared.MiniJson.Parse("{}"));
         Assert.That(crit.BaseChance, Is.EqualTo(0.05f).Within(1e-5f));
         Assert.That(crit.Multiplier, Is.EqualTo(2f).Within(1e-5f));
     }

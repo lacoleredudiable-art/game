@@ -1,3 +1,5 @@
+using Dovus.Core.Shared;
+
 ﻿using Dovus.Core;
 using Dovus.Core.Data;
 using Dovus.Core.Grammar;
@@ -14,7 +16,7 @@ public class SkillTextNumberTests
 {
     static readonly string[] ForbiddenEffectNumberSources =
     {
-        "unity/Assets/Scripts/Core/Combat/CardEffectRules.cs",
+        "unity/Assets/Scripts/Core/Status/CardEffectRules.cs",
     };
 
     static readonly string[] ForbiddenCompatibilityLiteralSources =

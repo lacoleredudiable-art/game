@@ -1,9 +1,9 @@
 using System;
 using Dovus.Core;
 using Dovus.Core.Grammar;
-using Dovus.Core.Status;
+using Dovus.Core.Shared;
 
-namespace Dovus.Core.Combat
+namespace Dovus.Core.Status
 {
     /// <summary>
     /// Kart metni (skill.effect) ile uygulanan durum türünü aynı hizada tutar.
@@ -132,7 +132,7 @@ namespace Dovus.Core.Combat
             DesignWarnings.Once(
                 "self_haste",
                 "element-sistemi.json kendine hız sayısı yok; yedek +%50 kullanıldı.");
-            return 1f + SkillNumberFallbacks.SelfHasteBonus;
+            return 1f + StatusDefaults.SelfHasteBonus;
         }
 
         public static bool SharesHasteWithAlly(string effect) =>
@@ -167,7 +167,7 @@ namespace Dovus.Core.Combat
                 durationMs = durationSec * 1000.0;
             else
             {
-                durationMs = SkillNumberFallbacks.TempoSyncFallbackMs;
+                durationMs = StatusDefaults.TempoSyncFallbackMs;
                 missing = true;
             }
 
@@ -175,7 +175,7 @@ namespace Dovus.Core.Combat
                 slowStrength = strength;
             else
             {
-                slowStrength = SkillNumberFallbacks.TempoSyncFallbackStrength;
+                slowStrength = StatusDefaults.TempoSyncFallbackStrength;
                 missing = true;
             }
 

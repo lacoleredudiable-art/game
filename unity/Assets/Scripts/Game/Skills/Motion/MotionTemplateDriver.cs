@@ -5,6 +5,7 @@ using Dovus.Core.Execution;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Motion;
+using Dovus.Core.Status;
 using Dovus.Game.Actors;
 using Dovus.Game.DevTools;
 using Dovus.Game.Skills.Execution;

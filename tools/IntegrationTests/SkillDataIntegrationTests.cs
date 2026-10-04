@@ -7,6 +7,7 @@ using Dovus.Core.Grammar;
 using Dovus.Core.Motion;
 using NUnit.Framework;
 
+using Dovus.Core.Shared;
 namespace IntegrationTests;
 
 [TestFixture]
