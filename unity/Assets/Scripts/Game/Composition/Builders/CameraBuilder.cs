@@ -15,10 +15,10 @@ namespace Dovus.Game.Composition.Builders
             camGo.tag = "MainCamera";
             var camera = camGo.AddComponent<Camera>();
             camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = tuning.BackgroundColor;
+            camera.backgroundColor = tuning.Visuals.BackgroundColor;
             camera.nearClipPlane = 0.2f;
             camera.farClipPlane = 250f;
-            camera.fieldOfView = tuning.CameraFovDeg;
+            camera.fieldOfView = tuning.Camera.CameraFovDeg;
 
             camGo.AddComponent<AudioListener>();
             var camData = camGo.AddComponent<UniversalAdditionalCameraData>();
@@ -29,8 +29,8 @@ namespace Dovus.Game.Composition.Builders
             follow.Target = ctx.Player.transform;
             follow.BossTarget = ctx.Boss.transform;
             follow.BindCollisionFiltering(ctx.Player.transform, ctx.Boss.transform, ctx.AllyDummy?.transform);
-            Vector3 startOffset = tuning.CameraShoulderOffset
-                + Vector3.back * tuning.CameraDistanceM;
+            Vector3 startOffset = tuning.Camera.CameraShoulderOffset
+                + Vector3.back * tuning.Camera.CameraDistanceM;
             camGo.transform.position = ctx.Player.transform.position + startOffset;
             ctx.FollowCamera = follow;
             return follow;

@@ -26,9 +26,9 @@ namespace Dovus.Game.Composition.Builders
             {
                 var playerStrip = root.AddComponent<StatusIconStrip>();
                 float stripY = vitalsHud.PlayerStackBottomCanvasY
-                    - HexagonLayoutScreen.DpToPixels(tuning.StatusIconGapDp + 4f);
+                    - HexagonLayoutScreen.DpToPixels(tuning.Hud.StatusIconGapDp + 4f);
                 float left = HexagonLayoutScreen.SafeLeftInsetPx()
-                    + HexagonLayoutScreen.DpToPixels(tuning.VitalsMarginDp);
+                    + HexagonLayoutScreen.DpToPixels(tuning.Hud.VitalsMarginDp);
                 playerStrip.Configure(
                     playerStatus.Board, tuning, view.CanvasRoot,
                     new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f),
@@ -39,7 +39,7 @@ namespace Dovus.Game.Composition.Builders
             {
                 var bossStrip = root.AddComponent<StatusIconStrip>();
                 float stripY = vitalsHud.BossStackBottomCanvasY
-                    - HexagonLayoutScreen.DpToPixels(tuning.StatusIconGapDp + 2f);
+                    - HexagonLayoutScreen.DpToPixels(tuning.Hud.StatusIconGapDp + 2f);
                 bossStrip.Configure(
                     bossStatus.Board, tuning, view.CanvasRoot,
                     new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),

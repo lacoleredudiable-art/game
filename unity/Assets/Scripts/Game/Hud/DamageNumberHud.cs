@@ -76,7 +76,7 @@ namespace Dovus.Game.Hud
         /// </summary>
         public void ShowDamage(float amount, bool isCrit = false, Vector3? worldPos = null, Color? tint = null, bool victimIsPlayer = false, bool victimIsBoss = false)
         {
-            if (_tuning == null || !_tuning.ShowDamageNumbers)
+            if (_tuning == null || !_tuning.Hud.ShowDamageNumbers)
                 return;
 
             Vector3 world = _cam != null
@@ -98,7 +98,7 @@ namespace Dovus.Game.Hud
 
         public void ShowAt(Vector3 worldPos, float amount, bool isCrit = false, Color? tint = null, bool victimIsPlayer = false, bool victimIsBoss = false)
         {
-            if (_tuning == null || !_tuning.ShowDamageNumbers)
+            if (_tuning == null || !_tuning.Hud.ShowDamageNumbers)
                 return;
 
             Floater f = _pool[_next];
@@ -119,7 +119,7 @@ namespace Dovus.Game.Hud
             {
                 f.Text.text = "+" + DamageNumberFormat.Format(-amount);
                 f.Text.color = th.HealColor;
-                f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(_tuning.DamageFloatFontDp));
+                f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(_tuning.Hud.DamageFloatFontDp));
             }
             else if (victimIsBoss)
             {
@@ -128,7 +128,7 @@ namespace Dovus.Game.Hud
                     ? new Color(1f, 0.42f, 0.38f, 1f)
                     : new Color(0.88f, 0.14f, 0.16f, 1f);
                 f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(
-                    isCrit ? _tuning.DamageFloatCritFontDp : _tuning.DamageFloatFontDp));
+                    isCrit ? _tuning.Hud.DamageFloatCritFontDp : _tuning.Hud.DamageFloatFontDp));
                 var outline = f.Text.GetComponent<Outline>();
                 if (outline != null)
                     outline.effectColor = new Color(0.04f, 0.02f, 0.02f, 0.9f);
@@ -138,20 +138,20 @@ namespace Dovus.Game.Hud
             {
                 f.Text.text = DamageNumberFormat.Format(amount) + "!";
                 f.Text.color = th.CritTextColor;
-                f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(_tuning.DamageFloatCritFontDp));
+                f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(_tuning.Hud.DamageFloatCritFontDp));
             }
             else if (victimIsPlayer)
             {
                 f.Text.text = DamageNumberFormat.Format(amount);
                 f.Text.color = th.PlayerHitColor;
-                f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(_tuning.DamageFloatFontDp));
+                f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(_tuning.Hud.DamageFloatFontDp));
             }
             else
             {
                 f.Text.text = DamageNumberFormat.Format(amount);
                 // Element rengi beyaza doğru açılır: koyu element tonları da okunur kalsın.
                 f.Text.color = tint.HasValue ? Color.Lerp(tint.Value, th.DamageTextColor, 0.35f) : th.DamageTextColor;
-                f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(_tuning.DamageFloatFontDp));
+                f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(_tuning.Hud.DamageFloatFontDp));
             }
 
             _pool[idx] = f;
@@ -164,10 +164,10 @@ namespace Dovus.Game.Hud
             if (_cam == null)
                 _cam = Camera.main;
 
-            float hold = _tuning.DamageFloatHoldSec;
-            float fade = _tuning.DamageFloatFadeSec;
-            float rise = _tuning.DamageFloatRisePx;
-            float punch = _tuning.DamageFloatPunchScale;
+            float hold = _tuning.Hud.DamageFloatHoldSec;
+            float fade = _tuning.Hud.DamageFloatFadeSec;
+            float rise = _tuning.Hud.DamageFloatRisePx;
+            float punch = _tuning.Hud.DamageFloatPunchScale;
 
             for (int i = 0; i < _pool.Count; i++)
             {

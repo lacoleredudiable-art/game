@@ -116,19 +116,19 @@ namespace Dovus.Game.Casting
                 CreateCooldownOverlay(dot, ringSprite, canvasGo.transform, underDots: false);
 
             _center = CreateLayeredDisc(
-                "Center", fallback, fallback, _tuning.HexagonCenterColor, canvasGo.transform, out _centerFace,
+                "Center", fallback, fallback, _tuning.Visuals.HexagonCenterColor, canvasGo.transform, out _centerFace,
                 new Color(0.85f, 0.98f, 1f, 0.55f));
             _centerLabel = CreateLabel(_center, "⚔");
             _centerLabel.fontSize = 28;
             _centerLabel.color = new Color(0.05f, 0.1f, 0.14f, 0.95f);
 
             _dodge = CreateLayeredDisc(
-                "DodgeButton", fallback, fallback, _tuning.DodgeButtonColor, canvasGo.transform, out Image dodgeImg,
+                "DodgeButton", fallback, fallback, _tuning.Visuals.DodgeButtonColor, canvasGo.transform, out Image dodgeImg,
                 new Color(0.55f, 0.95f, 1f, 0.7f));
             dodgeImg.color = new Color(
-                _tuning.DodgeButtonColor.r,
-                _tuning.DodgeButtonColor.g,
-                _tuning.DodgeButtonColor.b,
+                _tuning.Visuals.DodgeButtonColor.r,
+                _tuning.Visuals.DodgeButtonColor.g,
+                _tuning.Visuals.DodgeButtonColor.b,
                 0.92f);
             _dodgeLabel = CreateLabel(_dodge, "DODGE");
             _dodgeLabel.fontSize = 15;
@@ -298,7 +298,7 @@ namespace Dovus.Game.Casting
             if (_cdFills == null || _tuning == null)
                 return;
 
-            Color accent = _tuning.InkCyan;
+            Color accent = _tuning.Visuals.InkCyan;
             for (int dot = 1; dot < _cdFills.Length; dot++)
             {
                 float rem = _cdRemainingSec[dot];
@@ -392,7 +392,7 @@ namespace Dovus.Game.Casting
             {
                 Vector2 px = HexagonLayoutScreen.DotPx(dot, _tuning, w, h);
                 float mul = _dotIcons != null && _dotIcons[dot] != null
-                    ? Mathf.Max(0.5f, _tuning.IconDisplayScale)
+                    ? Mathf.Max(0.5f, _tuning.Input.IconDisplayScale)
                     : 1f;
                 float diam = dotR * 2f * mul;
                 Place(_dots[dot], px, diam, w, h);
@@ -442,7 +442,7 @@ namespace Dovus.Game.Casting
 
         Color RuneFallbackColor(int dot)
         {
-            Color c = (dot & 1) == 0 ? _tuning.InkPurple : _tuning.InkCyan;
+            Color c = (dot & 1) == 0 ? _tuning.Visuals.InkPurple : _tuning.Visuals.InkCyan;
             c.a = _tuning.IsDotOpen(dot) ? 0.92f : 0.28f;
             return c;
         }
@@ -467,7 +467,7 @@ namespace Dovus.Game.Casting
                 return tint;
             }
 
-            Color c = _tuning.HexagonDotColor;
+            Color c = _tuning.Visuals.HexagonDotColor;
             if (_tuning.IsDotOpen(dot))
                 return c;
             return new Color(c.r, c.g, c.b, c.a * 0.28f);
@@ -521,7 +521,7 @@ namespace Dovus.Game.Casting
             go.transform.SetParent(parent, false);
             _tray = go.AddComponent<RectTransform>();
             var image = go.AddComponent<Image>();
-            image.sprite = CreateRoundedRectSprite(_tuning.CombatTrayCornerRadiusDp);
+            image.sprite = CreateRoundedRectSprite(_tuning.Input.CombatTrayCornerRadiusDp);
             image.type = Image.Type.Sliced;
             image.color = th.PanelSoftColor;
             image.raycastTarget = false;
@@ -570,8 +570,8 @@ namespace Dovus.Game.Casting
         {
             if (_tray == null)
                 return;
-            float padding = HexagonLayoutScreen.DpToPixels(_tuning.CombatTrayPaddingDp);
-            float header = HexagonLayoutScreen.DpToPixels(_tuning.CombatTrayHeaderHeightDp);
+            float padding = HexagonLayoutScreen.DpToPixels(_tuning.Input.CombatTrayPaddingDp);
+            float header = HexagonLayoutScreen.DpToPixels(_tuning.Input.CombatTrayHeaderHeightDp);
             float radius = HexagonLayoutScreen.RadiusPx(_tuning);
             float width = (radius + dotRadius + padding) * 2f;
             float height = width + header;
@@ -591,7 +591,7 @@ namespace Dovus.Game.Casting
             {
                 Vector2 a = HexagonLayoutScreen.DotPx(i + 1, _tuning, Screen.width, Screen.height);
                 Vector2 b = HexagonLayoutScreen.DotPx((i + 1) % _trayLinks.Length + 1, _tuning, Screen.width, Screen.height);
-                LayoutLink(_trayLinks[i], a, b, HexagonLayoutScreen.DpToPixels(_tuning.CombatTrayLinkWidthDp));
+                LayoutLink(_trayLinks[i], a, b, HexagonLayoutScreen.DpToPixels(_tuning.Input.CombatTrayLinkWidthDp));
             }
         }
 

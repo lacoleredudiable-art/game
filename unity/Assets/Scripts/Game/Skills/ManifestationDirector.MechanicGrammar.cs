@@ -316,7 +316,7 @@ namespace Dovus.Game.Skills
         }
 
         Vector3 ClampToArena(Vector3 pos) =>
-            _motor != null ? ArenaClamp.XZ(pos, _motor.Tuning.ArenaHalfSizeM, _motor.BodyRadiusM) : pos;
+            _motor != null ? ArenaClamp.XZ(pos, _motor.Tuning.Arena.ArenaHalfSizeM, _motor.BodyRadiusM) : pos;
 
         void TeleportPlayer(Vector3 pos)
         {

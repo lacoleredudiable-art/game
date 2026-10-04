@@ -12,7 +12,7 @@ namespace Dovus.Game.Composition.Builders
 
         public static GameObject ResolveBossVisualPrefab(PrototypeTuning tuning, GameObject sceneDefault)
         {
-            if (tuning.ActiveBossId != "aglarin_kralicesi")
+            if (tuning.Boss.ActiveBossId != "aglarin_kralicesi")
                 return sceneDefault;
             return Resources.Load<GameObject>("Bosses/Visuals/AglarinKralicesi") ?? sceneDefault;
         }

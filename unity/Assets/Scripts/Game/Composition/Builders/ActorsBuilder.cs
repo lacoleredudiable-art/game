@@ -33,13 +33,13 @@ namespace Dovus.Game.Composition.Builders
                     spawnMaxR),
                 CompositionConstants.PlayerRadiusM,
                 CompositionConstants.PlayerHeightM,
-                tuning.PlayerColor);
+                tuning.Visuals.PlayerColor);
             VisualAttach.Attach(
                 ctx.Player,
                 VisualAttach.ResolvePlayerVisualPrefab(ctx.PlayerVisualPrefab),
-                tuning.PlayerVisualHeightM,
+                tuning.Player.PlayerVisualHeightM,
                 ctx.Player.transform.position.y - CompositionConstants.PlayerHeightM * 0.5f,
-                tuning.CharacterAnimSpeed,
+                tuning.Player.CharacterAnimSpeed,
                 out var playerAnim);
 
             ctx.Ally = VisualAttach.CreateCapsule(
@@ -53,18 +53,18 @@ namespace Dovus.Game.Composition.Builders
             VisualAttach.Attach(
                 ctx.Ally,
                 ctx.PlayerVisualPrefab,
-                tuning.PlayerVisualHeightM,
+                tuning.Player.PlayerVisualHeightM,
                 ctx.Ally.transform.position.y - CompositionConstants.PlayerHeightM * 0.5f,
-                tuning.CharacterAnimSpeed,
+                tuning.Player.CharacterAnimSpeed,
                 out var allyAnim);
             if (allyAnim != null)
             {
                 var allyVisual = ctx.Ally.AddComponent<ActorVisual>();
                 allyVisual.Bind(allyAnim, ctx.Ally.GetComponent<Renderer>());
-                allyVisual.CrossFadeSec = tuning.AnimCrossFadeSec;
-                allyVisual.StrikeComboResetSec = tuning.BasicStrikeComboResetSec;
+                allyVisual.CrossFadeSec = tuning.Player.AnimCrossFadeSec;
+                allyVisual.StrikeComboResetSec = tuning.Player.BasicStrikeComboResetSec;
                 allyVisual.BasicStrikeAnimSpeed = combat.Feel.BasicStrikeAnimSpeed;
-                allyVisual.UpperBodyMinSpeed = tuning.UpperBodyCastMinSpeed;
+                allyVisual.UpperBodyMinSpeed = tuning.Player.UpperBodyCastMinSpeed;
                 allyVisual.SetWeapon("kilic");
             }
             var allyHitCollider = ctx.Ally.AddComponent<CapsuleCollider>();
@@ -73,7 +73,7 @@ namespace Dovus.Game.Composition.Builders
             ctx.AllyDummy = ctx.Ally.AddComponent<AllyDummy>();
             ctx.AllyDummy.Bind(playerHp, startRatio: DebugConfig.StartHpRatio);
 
-            float bossSpawnZ = 5f * Mathf.Max(1f, tuning.ArenaVisualScale * 0.55f);
+            float bossSpawnZ = 5f * Mathf.Max(1f, tuning.Arena.ArenaVisualScale * 0.55f);
             bossSpawnZ = Mathf.Clamp(bossSpawnZ, -spawnMaxR, spawnMaxR);
             ctx.Boss = VisualAttach.CreateCapsule(
                 "Boss",
@@ -82,16 +82,16 @@ namespace Dovus.Game.Composition.Builders
                     spawnMaxR),
                 CompositionConstants.BossRadiusM,
                 CompositionConstants.BossHeightM,
-                tuning.BossColor);
+                tuning.Visuals.BossColor);
             // SkillExecutor overlap/projectile yolu için gerçek fizik hedefi.
             var bossHitCollider = ctx.Boss.AddComponent<CapsuleCollider>();
             bossHitCollider.isTrigger = true;
             VisualAttach.Attach(
                 ctx.Boss,
                 VisualAttach.ResolveBossVisualPrefab(tuning, ctx.BossVisualPrefab),
-                tuning.BossVisualHeightM,
+                tuning.Player.BossVisualHeightM,
                 ctx.Boss.transform.position.y - CompositionConstants.BossHeightM * 0.5f,
-                tuning.CharacterAnimSpeed,
+                tuning.Player.CharacterAnimSpeed,
                 out var bossAnim);
 
             ctx.Player.AddComponent<MoveInput>().Tuning = tuning;
@@ -107,10 +107,10 @@ namespace Dovus.Game.Composition.Builders
             var visual = ctx.Player.AddComponent<ActorVisual>();
             if (playerAnim != null)
                 visual.Bind(playerAnim, ctx.Player.GetComponent<Renderer>());
-            visual.CrossFadeSec = tuning.AnimCrossFadeSec;
-            visual.StrikeComboResetSec = tuning.BasicStrikeComboResetSec;
+            visual.CrossFadeSec = tuning.Player.AnimCrossFadeSec;
+            visual.StrikeComboResetSec = tuning.Player.BasicStrikeComboResetSec;
             visual.BasicStrikeAnimSpeed = combat.Feel.BasicStrikeAnimSpeed;
-            visual.UpperBodyMinSpeed = tuning.UpperBodyCastMinSpeed;
+            visual.UpperBodyMinSpeed = tuning.Player.UpperBodyCastMinSpeed;
 
             var bossVisual = ctx.Boss.AddComponent<BossVisual>();
             if (bossAnim != null)

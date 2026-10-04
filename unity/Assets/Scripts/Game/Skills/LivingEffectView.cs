@@ -105,15 +105,15 @@ namespace Dovus.Game.Skills
 
         void BuildVisuals()
         {
-            _lineMat = MakeMat(_colors.InkCyan);
-            _blobMat = MakeMat(_colors.InkPurple);
-            _ghostMat = MakeMat(_colors.InkCyan);
+            _lineMat = MakeMat(_colors.Visuals.InkCyan);
+            _blobMat = MakeMat(_colors.Visuals.InkPurple);
+            _ghostMat = MakeMat(_colors.Visuals.InkCyan);
 
             var lineGo = new GameObject("WaveLine");
             lineGo.transform.SetParent(transform, false);
             _line = lineGo.AddComponent<LineRenderer>();
             _line.sharedMaterial = _lineMat;
-            _lineBaseWidth = _colors.EffectLineWidthDefaultM;
+            _lineBaseWidth = _colors.Visuals.EffectLineWidthDefaultM;
             _line.widthMultiplier = _lineBaseWidth;
             _line.positionCount = 0;
             _line.useWorldSpace = true;
@@ -183,7 +183,7 @@ namespace Dovus.Game.Skills
                 new[]
                 {
                     new GradientColorKey(Color.white, 0f),
-                    new GradientColorKey(_colors != null ? _colors.InkCyan : Color.cyan, 1f)
+                    new GradientColorKey(_colors != null ? _colors.Visuals.InkCyan : Color.cyan, 1f)
                 },
                 new[]
                 {
@@ -225,24 +225,24 @@ namespace Dovus.Game.Skills
                 ? Mathf.Clamp01(_logic.Travel / _logic.MaxRange)
                 : 0f;
             float urgent = 1f - _windowRemaining01;
-            if (_windowRemaining01 > _colors.WindowCueUrgentRatio)
+            if (_windowRemaining01 > _colors.Hud.WindowCueUrgentRatio)
                 urgent *= 0.45f;
             float place = Mathf.Max(urgent, travel01 * 0.35f);
-            float hz = Mathf.Lerp(_colors.WindowCuePulseHz, _colors.WindowCueUrgentHz, place);
+            float hz = Mathf.Lerp(_colors.Hud.WindowCuePulseHz, _colors.Hud.WindowCueUrgentHz, place);
             // Nabız AŞAĞI modüle eder: yukarı çarpmak taban alfa 0.95 iken Clamp01'e takılıyor
             // ve ipucu hiç görünmüyordu (T8.1). §8/T2 "pencereyi dalgadan oku" buna bağlı.
             float wave = 0.5f + 0.5f * Mathf.Sin(_logic.AgeSec * hz * Mathf.PI * 2f);
-            alpha = Mathf.Clamp01(alpha * (1f - _colors.WindowCuePulseAmp * place * wave));
+            alpha = Mathf.Clamp01(alpha * (1f - _colors.Hud.WindowCuePulseAmp * place * wave));
 
-            Color cyan = _hasSkillTint ? _skillLine : _colors.InkCyan;
+            Color cyan = _hasSkillTint ? _skillLine : _colors.Visuals.InkCyan;
             cyan.a = alpha;
-            Color purple = _hasSkillTint ? _skillBlob : _colors.InkPurple;
+            Color purple = _hasSkillTint ? _skillBlob : _colors.Visuals.InkPurple;
             purple.a = alpha;
             SetMatColor(_lineMat, Color.Lerp(cyan, purple, _hasSkillTint ? 0.2f : 0.35f + 0.4f * s.Spread));
             SetMatColor(_blobMat, purple);
 
             Color ghost = cyan;
-            ghost.a = alpha * _colors.EffectNeedleAfterimageAlpha;
+            ghost.a = alpha * _colors.Visuals.EffectNeedleAfterimageAlpha;
             SetMatColor(_ghostMat, ghost);
 
             // Düz vuruş: kısa jab — halka/sürü/iğne cümle silüetlerinden ayrı.
@@ -274,7 +274,7 @@ namespace Dovus.Game.Skills
             {
                 // Aşağıdan yukarı: genişlerken yükselir (kütle / yerden çıkış).
                 float peak = _tuning.WaveRiseHeightM * (0.55f + 0.9f * s.Lift);
-                return Mathf.Lerp(_colors.EffectSarsintiGroundY, peak, travel01);
+                return Mathf.Lerp(_colors.Visuals.EffectSarsintiGroundY, peak, travel01);
             }
 
             return 0.08f + 0.35f * s.Lift;
@@ -285,7 +285,7 @@ namespace Dovus.Game.Skills
             _ = s;
             _ = alpha;
             _line.positionCount = 0;
-            _lineBaseWidth = _colors.EffectLineWidthDefaultM;
+            _lineBaseWidth = _colors.Visuals.EffectLineWidthDefaultM;
 
             if (_needle == null)
                 return;
@@ -295,7 +295,7 @@ namespace Dovus.Game.Skills
                 dir = Vector3.forward;
 
             float dist = Mathf.Min(_logic.TipDistance, _tuning.BasicStrikeRangeM);
-            float y = _colors.EffectBasicStrikeHeightM;
+            float y = _colors.Visuals.EffectBasicStrikeHeightM;
             Vector3 origin = new Vector3(_logic.OriginX, y, _logic.OriginZ);
             // Uç, kısa menzilin ortasına yakın — "tek vuruşluk jab", uçan iğne değil.
             Vector3 tip = origin + dir * Mathf.Max(0.35f, dist * 0.55f);
@@ -303,8 +303,8 @@ namespace Dovus.Game.Skills
             _needle.gameObject.SetActive(true);
             _needle.position = tip;
             _needle.rotation = Quaternion.LookRotation(dir, Vector3.up) * Quaternion.Euler(90f, 0f, 0f);
-            float thick = _colors.EffectBasicStrikeThickM;
-            float len = _colors.EffectBasicStrikeLenM;
+            float thick = _colors.Visuals.EffectBasicStrikeThickM;
+            float len = _colors.Visuals.EffectBasicStrikeLenM;
             if (_logic.Phase == LivingEffectPhase.Banging)
                 len *= 1f + 0.25f * Mathf.Sin(_logic.BangAgeSec * 40f);
             _needle.localScale = new Vector3(thick, len * 0.5f, thick);
@@ -312,32 +312,32 @@ namespace Dovus.Game.Skills
 
         void DrawWave(Vector3 origin, Vector3 dir, float radius, EffectSilhouette s, float y)
         {
-            if (_logic.Verb != Rune.Toprak && s.Focus < _colors.EffectShowMinFocus && _logic.Verb != Rune.Hava && _logic.Verb != Rune.Karanlik)
+            if (_logic.Verb != Rune.Toprak && s.Focus < _colors.Visuals.EffectShowMinFocus && _logic.Verb != Rune.Hava && _logic.Verb != Rune.Karanlik)
             {
                 _line.positionCount = 0;
-                _lineBaseWidth = _colors.EffectLineWidthDefaultM;
+                _lineBaseWidth = _colors.Visuals.EffectLineWidthDefaultM;
                 return;
             }
 
             // İĞNE fiilinde ana gövde iğne; dalga çizgisi yok
-            if (_logic.Verb == Rune.Ates && s.Spread < _colors.EffectIgneShowMinSpread)
+            if (_logic.Verb == Rune.Ates && s.Spread < _colors.Visuals.EffectIgneShowMinSpread)
             {
                 _line.positionCount = 0;
-                _lineBaseWidth = _colors.EffectLineWidthDefaultM;
+                _lineBaseWidth = _colors.Visuals.EffectLineWidthDefaultM;
                 return;
             }
 
             // SÜRÜ: cephe çizgisi yok — dağınık bulut blobs ile okunur.
-            if ((_logic.Verb == Rune.Hava || _logic.Verb == Rune.Karanlik) && s.Focus < _colors.EffectFocusSwarmAlongLineMin)
+            if ((_logic.Verb == Rune.Hava || _logic.Verb == Rune.Karanlik) && s.Focus < _colors.Visuals.EffectFocusSwarmAlongLineMin)
             {
                 _line.positionCount = 0;
-                _lineBaseWidth = _colors.EffectLineWidthDefaultM;
+                _lineBaseWidth = _colors.Visuals.EffectLineWidthDefaultM;
                 return;
             }
 
             float focus = s.Focus;
-            float baseWidth = _colors.EffectLineWidthDefaultM;
-            if (focus < _colors.EffectFocusRingMax)
+            float baseWidth = _colors.Visuals.EffectLineWidthDefaultM;
+            if (focus < _colors.Visuals.EffectFocusRingMax)
             {
                 // Halka
                 _line.loop = true;
@@ -350,10 +350,10 @@ namespace Dovus.Game.Skills
                     _line.SetPosition(i, p);
                 }
             }
-            else if (focus < _colors.EffectFocusArcMax)
+            else if (focus < _colors.Visuals.EffectFocusArcMax)
             {
                 // Yaya daralma — boss yönüne doğru koridor
-                float halfArc = Mathf.Lerp(Mathf.PI, 0.35f, (focus - _colors.EffectFocusRingMax) / (_colors.EffectFocusArcMax - _colors.EffectFocusRingMax));
+                float halfArc = Mathf.Lerp(Mathf.PI, 0.35f, (focus - _colors.Visuals.EffectFocusRingMax) / (_colors.Visuals.EffectFocusArcMax - _colors.Visuals.EffectFocusRingMax));
                 float facing = Mathf.Atan2(dir.x, dir.z);
                 int segs = 24;
                 _line.loop = false;
@@ -376,14 +376,14 @@ namespace Dovus.Game.Skills
                 tip.y = y;
                 _line.SetPosition(0, origin);
                 _line.SetPosition(1, tip);
-                baseWidth = Mathf.Lerp(_colors.EffectLineWidthWideM, _colors.EffectLineWidthNarrowM, s.Pierce);
+                baseWidth = Mathf.Lerp(_colors.Visuals.EffectLineWidthWideM, _colors.Visuals.EffectLineWidthNarrowM, s.Pierce);
             }
 
             if (_logic.Verb == Rune.Toprak)
             {
-                baseWidth = Mathf.Lerp(_colors.EffectSarsintiWidthWideM, _colors.EffectSarsintiWidthNarrowM, focus);
+                baseWidth = Mathf.Lerp(_colors.Visuals.EffectSarsintiWidthWideM, _colors.Visuals.EffectSarsintiWidthNarrowM, focus);
                 // Kütle: geniş halka daha kalın okunur.
-                baseWidth *= Mathf.Lerp(1f, _colors.EffectSarsintiMassWidthMul, 1f - focus);
+                baseWidth *= Mathf.Lerp(1f, _colors.Visuals.EffectSarsintiMassWidthMul, 1f - focus);
             }
 
             // Taban her karede burada baştan hesaplanır (birikmez) — PulseBang bunun üstüne
@@ -395,7 +395,7 @@ namespace Dovus.Game.Skills
         void DrawNeedle(Vector3 origin, Vector3 dir, float dist, EffectSilhouette s, float travel01)
         {
             bool show = _logic.Verb == Rune.Ates || _logic.Verb == Rune.Aydinlik
-                || s.Pierce > _colors.EffectPierceNeedleShowMin;
+                || s.Pierce > _colors.Visuals.EffectPierceNeedleShowMin;
             if (!show || _needle == null)
             {
                 if (_needle != null) _needle.gameObject.SetActive(false);
@@ -404,8 +404,8 @@ namespace Dovus.Game.Skills
             }
 
             _needle.gameObject.SetActive(true);
-            float thick = Mathf.Lerp(_colors.EffectNeedleThickWideM, _colors.EffectNeedleThickNarrowM, s.Pierce);
-            float len = _colors.EffectNeedleLenBaseM + _colors.EffectNeedleLenPerPierceM * s.Pierce;
+            float thick = Mathf.Lerp(_colors.Visuals.EffectNeedleThickWideM, _colors.Visuals.EffectNeedleThickNarrowM, s.Pierce);
+            float len = _colors.Visuals.EffectNeedleLenBaseM + _colors.Visuals.EffectNeedleLenPerPierceM * s.Pierce;
 
             if (_logic.Verb == Rune.Ates || _logic.Verb == Rune.Aydinlik)
             {
@@ -442,7 +442,7 @@ namespace Dovus.Game.Skills
                 // Gerilme: kökte uzar, yerinde — henüz fırlamadı.
                 HideNeedleGhosts();
                 float t = age / windup;
-                float stretch = Mathf.Lerp(1f, _colors.EffectNeedleWindupLenMul, t);
+                float stretch = Mathf.Lerp(1f, _colors.Visuals.EffectNeedleWindupLenMul, t);
                 _needle.position = origin + dir * (len * 0.25f * t);
                 if (dir.sqrMagnitude > 1e-4f)
                     _needle.rotation = Quaternion.LookRotation(dir, Vector3.up) * Quaternion.Euler(90f, 0f, 0f);
@@ -483,7 +483,7 @@ namespace Dovus.Game.Skills
             _needle.position = end;
             if (dir.sqrMagnitude > 1e-4f)
                 _needle.rotation = Quaternion.LookRotation(dir, Vector3.up) * Quaternion.Euler(90f, 0f, 0f);
-            float holdLen = len * _colors.EffectNeedleArrivalLenMul;
+            float holdLen = len * _colors.Visuals.EffectNeedleArrivalLenMul;
             _needle.localScale = new Vector3(thick * 1.05f, holdLen * 0.5f, thick * 1.05f);
         }
 
@@ -493,7 +493,7 @@ namespace Dovus.Game.Skills
             if (_logic.Verb == Rune.Hava || _logic.Verb == Rune.Karanlik)
             {
                 // Fiil SÜRÜ: her zaman dağınık bulut — sıfır yayılmada bile birkaç gövde.
-                float minB = _colors.EffectSwarmMinBlobs;
+                float minB = _colors.Visuals.EffectSwarmMinBlobs;
                 count = Mathf.RoundToInt(Mathf.Lerp(minB, _blobs.Length, Mathf.Clamp01(s.Spread)));
             }
             else
@@ -536,7 +536,7 @@ namespace Dovus.Game.Skills
 
                 float u = (i + 1) / (count + 1f);
                 float along = reach * u;
-                float jitter = _colors.EffectSwarmJitterM;
+                float jitter = _colors.Visuals.EffectSwarmJitterM;
                 // Düzensiz ofset (sabit hash) — düzenli halka değil.
                 float jx = Pseudo(i, 1) * jitter * (0.5f + s.Spread);
                 float jz = Pseudo(i, 2) * jitter * (0.5f + s.Spread);
@@ -544,7 +544,7 @@ namespace Dovus.Game.Skills
                              * (0.4f + s.Spread);
 
                 Vector3 p;
-                if (s.Focus > _colors.EffectFocusSwarmAlongLineMin || _logic.Verb == Rune.Ates)
+                if (s.Focus > _colors.Visuals.EffectFocusSwarmAlongLineMin || _logic.Verb == Rune.Ates)
                 {
                     p = origin + dir * along + right * (side * (1f - s.Focus * 0.7f) + jx * 0.35f)
                         + dir * jz * 0.2f;
@@ -560,7 +560,7 @@ namespace Dovus.Game.Skills
 
                 p.y = origin.y + 0.18f + 0.35f * s.Lift * Mathf.Abs(Mathf.Sin(localAge * 5.5f + i));
                 _blobs[i].position = p;
-                float sc = _colors.EffectBlobScaleBaseM + _colors.EffectBlobScalePerSpreadM * s.Spread;
+                float sc = _colors.Visuals.EffectBlobScaleBaseM + _colors.Visuals.EffectBlobScalePerSpreadM * s.Spread;
                 sc *= 0.85f + 0.3f * (0.5f + 0.5f * Pseudo(i, 4));
                 // Yatay wisp — eski “top sürü” silüetini kırar.
                 _blobs[i].localScale = new Vector3(sc * 1.35f, sc * 0.35f, sc * 1.35f);
@@ -595,7 +595,7 @@ namespace Dovus.Game.Skills
                 tip.y = origin.y + 0.3f;
                 _bangPs.transform.position = tip;
                 var main = _bangPs.main;
-                main.startColor = _hasSkillTint ? _skillLine : (_colors != null ? _colors.InkCyan : Color.cyan);
+                main.startColor = _hasSkillTint ? _skillLine : (_colors != null ? _colors.Visuals.InkCyan : Color.cyan);
                 _bangPs.Play();
             }
         }

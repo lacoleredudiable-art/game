@@ -97,7 +97,7 @@ namespace Dovus.Game.Casting
             Place(_swap, p, diameter, w, h);
             if (_swapFace != null)
             {
-                float inset = diameter * (1f - Mathf.Clamp01(_tuning.WeaponSwapIconScale)) * 0.5f;
+                float inset = diameter * (1f - Mathf.Clamp01(_tuning.Input.WeaponSwapIconScale)) * 0.5f;
                 _swapFace.rectTransform.offsetMin = new Vector2(inset, inset);
                 _swapFace.rectTransform.offsetMax = new Vector2(-inset, -inset);
             }
@@ -129,7 +129,7 @@ namespace Dovus.Game.Casting
             if (_centerFace != null)
             {
                 _centerFace.sprite = activeIcon != null ? activeIcon : CreateCircleSprite();
-                _centerFace.color = activeIcon != null ? HudTheme.Current.RuneFaceTint : _tuning.HexagonCenterColor;
+                _centerFace.color = activeIcon != null ? HudTheme.Current.RuneFaceTint : _tuning.Visuals.HexagonCenterColor;
             }
             if (_centerLabel != null)
                 _centerLabel.enabled = activeIcon == null;

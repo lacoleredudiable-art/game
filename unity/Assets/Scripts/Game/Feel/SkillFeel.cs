@@ -19,8 +19,8 @@ namespace Dovus.Game.Feel
             out Color line,
             out Color blob)
         {
-            Color cyan = t != null ? t.InkCyan : new Color(0.373f, 0.941f, 1f);
-            Color purple = t != null ? t.InkPurple : new Color(0.725f, 0.549f, 1f);
+            Color cyan = t != null ? t.Visuals.InkCyan : new Color(0.373f, 0.941f, 1f);
+            Color purple = t != null ? t.Visuals.InkPurple : new Color(0.725f, 0.549f, 1f);
 
             if (words == null || words.Count == 0 || t == null)
             {

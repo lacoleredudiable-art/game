@@ -153,6 +153,172 @@ MonoBehaviour:
     ArenaWallHeightM: 18
     ArenaWallThicknessM: 1.4
     ArenaVisualScale: 1
+    AmbientSky: {r: 0.11, g: 0.13, b: 0.18, a: 1}
+    AmbientEquator: {r: 0.12, g: 0.085, b: 0.07, a: 1}
+    AmbientGround: {r: 0.035, g: 0.03, b: 0.035, a: 1}
+    FogColor: {r: 0.055, g: 0.045, b: 0.065, a: 1}
+    FogDensity: 0.009
+    KeyLightColor: {r: 1, g: 0.78, b: 0.62, a: 1}
+    KeyLightIntensity: 1.35
+    KeyLightEuler: {x: 42, y: -32, z: 0}
+    KeyShadowStrength: 0.72
+    RimLightColor: {r: 0.38, g: 0.55, b: 1, a: 1}
+    RimLightIntensity: 0.18
+    RimLightEuler: {x: 28, y: 145, z: 0}
+    BloomIntensity: 0.42
+    BloomThreshold: 1.05
+    BloomScatter: 0.55
+    BloomTint: {r: 1, g: 0.86, b: 0.72, a: 1}
+    PostExposure: -0.08
+    ColorContrast: 18
+    ColorSaturation: -4
+    ColorFilterTint: {r: 0.95, g: 0.975, b: 1, a: 1}
+    PostVignetteIntensity: 0.18
+    CameraFarClipM: 320
+    TelegraphStretch: 0.28
+    TelegraphSquash: 0.18
+    TelegraphSlamSquash: 0.22
+    TelegraphTonePitchMin: 0.55
+    TelegraphTonePitchMax: 1.8
+    TelegraphToneVolumeMin: 0.12
+    TelegraphToneVolumeMax: 0.4
+    BossApproachStopPadM: 0.35
+    BossGravityMps2: 22
+    BossRecoilEaseDecayPerSec: 3.2
+    BossShakeAmpBaseM: 0.12
+    BossShakeAmpPerKnockbackM: 0.05
+    BossPinShakeAmpM: 0.04
+    BossLiftVelocityPerM: 4.5
+    ActiveBossId: aglarin_kralicesi
+    BossTurnRateDegPerSec: 240
+    BossSlamImpactNorm: 0.42
+    BossConeImpactNorm: 0.4
+    BossStaggerMinGapSec: 0.6
+    BossAnimCrossFadeSec: 0.15
+    BossWalkClipMps: 1.4
+    BossDeathCollapseSec: 0.85
+    BossDeathSquashY: 0.28
+    BossDeathSpreadXz: 1.35
+    FollowSmoothTimeSec: 0.12
+    LookAheadM: 0.65
+    CameraShoulderOffset: {x: 0.45, y: 1, z: -0.35}
+    CameraDistanceM: 3.4
+    CameraLookHeightM: 0.35
+    CameraFovDeg: 56
+    CameraAimDampingSec: 0.1
+    CameraSoftLockRangeM: 18
+    CameraSoftLockStrength: 0.52
+    CameraBossFramingWeight: 0.34
+    CameraBossAimHeightM: 1.45
+    CameraDefaultPitchDeg: 21
+    CameraLockOnMinDistanceM: 5.2
+    CameraLockOnMaxDistanceM: 8.8
+    CameraLockOnDistancePerSepM: 0.14
+    CameraLockOnMaxExtraDistanceM: 3.1
+    CameraLockOnDistanceSmoothSec: 0.22
+    CameraWindupDistanceMul: 1.42
+    CameraWindupExtraHeightM: 0.68
+    CameraWindupSmoothSec: 0.28
+    CameraWindupMinRadiusM: 3.5
+    CameraCollisionSphereRadiusM: 0.25
+    CameraCollisionMarginM: 0.12
+    CameraCollisionMinDistanceM: 1.2
+    CameraCollisionPullInSmoothSec: 0.05
+    CameraCollisionPullOutSmoothSec: 0.35
+    CameraLockOnShoulderSideM: 1.1
+    CameraLockOnShoulderFlipHysteresis: 0.12
+    CameraLockOnLookBlendToBoss: 0.58
+    OrbitDegreesPerDp: 0.35
+    CameraPitchMinDeg: -8
+    CameraPitchMaxDeg: 35
+    OrbitInvertPitch: 0
+    SoftAimRangeM: 8
+    SoftAimConeDeg: 70
+    WindowCueUrgentRatio: 0.3
+    WindowCuePulseHz: 2
+    WindowCueUrgentHz: 8
+    WindowCuePulseAmp: 0.45
+    AfterimageAlpha: 0.55
+    ImpactFadeSec: 0.04
+    VignetteHoldSec: 0.85
+    VignetteFadeSec: 0.45
+    VignetteAlpha: 0.55
+    ThreatAlphaMax: 0.35
+    ThreatPulseHzMin: 4
+    ThreatPulseHzMax: 14
+    CameraShakePxToM: 0.01
+    ReadoutAnchorRight: 1
+    ReadoutPunchInSec: 0.12
+    VitalsBarWidthDp: 224
+    VitalsBarHeightDp: 17
+    VitalsBossBarHeightDp: 24
+    VitalsBossBarWidthDp: 460
+    VitalsBarSpacingDp: 6
+    VitalsMarginDp: 16
+    VitalsHeaderHeightDp: 18
+    VitalsPanelPaddingDp: 8
+    BossVitalsColor: {r: 0.88, g: 0.16, b: 0.12, a: 0.98}
+    StatusIconSizeDp: 28
+    StatusIconGapDp: 6
+    DamageFloatFontDp: 28
+    DamageFloatCritFontDp: 36
+    DamageFloatRisePx: 64
+    DamageFloatHoldSec: 0.35
+    DamageFloatFadeSec: 0.45
+    DamageFloatPunchScale: 1.25
+    RecoveryLockHeightDp: 10
+    RecoveryLockGapDp: 8
+    ShowFrameTimeHud: 0
+    FrameTimeSampleSec: 0.5
+    TargetFrameRateHz: 60
+    ShowDamageNumbers: 1
+    SkillPreviewWidthDp: 324
+    SkillPreviewHeightDp: 72
+    SkillPreviewGapDp: 10
+    SkillPreviewHoldSec: 0.9
+    SkipBuildSelectOnStart: 0
+    ShowSentenceDebugHud: 0
+    JoystickMaxRadiusDp: 72
+    JoystickDeadZone: 0.12
+    HudFitShortSideDp: 600
+    HexagonCenterXNorm: 0.78
+    HexagonCenterYNorm: 0.3
+    HexagonRadiusDp: 112
+    DotHitRadiusDp: 34
+    CenterHitRadiusDp: 38
+    MirrorForLeftHand: 0
+    InkLingerSec: 0.4
+    InkWidthDp: 3.5
+    InkRawWidthScale: 0.9
+    InkRawGlow: 1
+    DodgeButtonOffsetXDp: 0
+    DodgeButtonOffsetYDp: 0
+    DodgeButtonRadiusDp: 40
+    DodgeButtonScreenMarginDp: 8
+    DodgeClearanceDp: 40
+    WeaponSwapButtonRadiusDp: 36
+    WeaponSwapButtonOffsetXDp: 0
+    WeaponSwapButtonOffsetYDp: 0
+    WeaponSwapIconScale: 0.72
+    LockOnButtonRadiusDp: 36
+    LockOnButtonOffsetXDp: 0
+    LockOnButtonOffsetYDp: 52
+    LockOnButtonColor: {r: 0.55, g: 0.72, b: 0.88, a: 0.9}
+    LockOnButtonActiveColor: {r: 0.95, g: 0.82, b: 0.45, a: 0.95}
+    ElementMenuRadiusDp: 92
+    ElementMenuChipWidthDp: 144
+    ElementMenuChipHeightDp: 48
+    ElementMenuItemWidthDp: 84
+    ElementMenuItemHeightDp: 48
+    ElementMenuAnchorXNorm: 0.86
+    ElementMenuAnchorYNorm: 0.72
+    BasicStrikeDot: 1
+    IconDisplayScale: 1
+    CombatTrayPaddingDp: 22
+    CombatTrayHeaderHeightDp: 22
+    CombatTrayCornerRadiusDp: 20
+    CombatTrayLinkWidthDp: 1.5
+    DotVibrationMs: 30
     PlayerVisualHeightM: 1.78
     BossVisualHeightM: 5
     CharacterAnimSpeed: 1
@@ -169,70 +335,7 @@ MonoBehaviour:
     FootstepStrideM: 2.2
     BossFootstepStrideM: 2.4
     PlayerMaxHp: 22
-    JoystickMaxRadiusDp: 72
-    JoystickDeadZone: 0.12
-    HudFitShortSideDp: 600
-    HexagonCenterXNorm: 0.78
-    HexagonCenterYNorm: 0.3
-    HexagonRadiusDp: 112
-    DotHitRadiusDp: 34
-    CenterHitRadiusDp: 38
-    MirrorForLeftHand: 0
-    InkLingerSec: 0.4
-    InkWidthDp: 3.5
-    DodgeButtonOffsetXDp: 0
-    DodgeButtonOffsetYDp: 0
-    DodgeButtonRadiusDp: 40
-    DodgeButtonScreenMarginDp: 8
-    DodgeClearanceDp: 40
-    WeaponSwapButtonRadiusDp: 36
-    WeaponSwapButtonOffsetXDp: 0
-    WeaponSwapButtonOffsetYDp: 0
-    WeaponSwapIconScale: 0.72
-    ElementMenuRadiusDp: 92
-    ElementMenuChipWidthDp: 144
-    ElementMenuChipHeightDp: 48
-    ElementMenuItemWidthDp: 84
-    ElementMenuItemHeightDp: 48
-    ElementMenuAnchorXNorm: 0.86
-    ElementMenuAnchorYNorm: 0.72
-    BasicStrikeDot: 1
-    IconDisplayScale: 1
-    CombatTrayPaddingDp: 22
-    CombatTrayHeaderHeightDp: 22
-    CombatTrayCornerRadiusDp: 20
-    CombatTrayLinkWidthDp: 1.5
-    DotVibrationMs: 30
-    FollowSmoothTimeSec: 0.12
-    LookAheadM: 0.65
-    CameraShoulderOffset: {x: 0.45, y: 1, z: -0.35}
-    CameraDistanceM: 3.4
-    CameraLookHeightM: 0.35
-    CameraFovDeg: 56
-    CameraAimDampingSec: 0.1
-    CameraSoftLockRangeM: 18
-    CameraSoftLockStrength: 0.52
-    CameraBossFramingWeight: 0.34
-    CameraBossAimHeightM: 1.45
-    AmbientSky: {r: 0.11, g: 0.13, b: 0.18, a: 1}
-    AmbientEquator: {r: 0.12, g: 0.085, b: 0.07, a: 1}
-    AmbientGround: {r: 0.035, g: 0.03, b: 0.035, a: 1}
-    FogColor: {r: 0.055, g: 0.045, b: 0.065, a: 1}
-    FogDensity: 0.009
-    KeyLightColor: {r: 1, g: 0.78, b: 0.62, a: 1}
-    KeyLightIntensity: 1.35
-    KeyLightEuler: {x: 42, y: -32, z: 0}
-    KeyShadowStrength: 0.72
-    RimLightColor: {r: 0.38, g: 0.55, b: 1, a: 1}
-    RimLightIntensity: 0.18
-    RimLightEuler: {x: 28, y: 145, z: 0}
-    BloomIntensity: 0.42
-    BloomThreshold: 1.05
-    BloomScatter: 0.55
-    PostExposure: -0.08
-    ColorContrast: 18
-    ColorSaturation: -4
-    PostVignetteIntensity: 0.18
+    DodgeGlideSpeedMps: 3.5
     PlayerColor: {r: 0.373, g: 0.941, b: 1, a: 1}
     BossColor: {r: 0.18, g: 0.19, b: 0.22, a: 1}
     GroundColor: {r: 0.38, g: 0.4, b: 0.44, a: 1}
@@ -246,33 +349,19 @@ MonoBehaviour:
     ElementEarth: {r: 0.62, g: 0.78, b: 0.42, a: 1}
     ElementLight: {r: 1, g: 0.96, b: 0.82, a: 1}
     ElementDark: {r: 0.48, g: 0.28, b: 0.78, a: 1}
+    VfxTexFire: flame_02
+    VfxTexWater: circle_03
+    VfxTexAir: twirl_01
+    VfxTexEarth: dirt_01
+    VfxTexLight: star_04
+    VfxTexDark: magic_04
+    VfxTexHit: spark_05
+    VfxTexInk: light_01
     HexagonDotColor: {r: 0.55, g: 0.62, b: 0.72, a: 0.85}
     HexagonCenterColor: {r: 0.373, g: 0.941, b: 1, a: 0.9}
     DodgeButtonColor: {r: 0.725, g: 0.549, b: 1, a: 0.9}
     TelegraphHot: {r: 1, g: 0.302, b: 0.141, a: 1}
     TelegraphWarm: {r: 1, g: 0.604, b: 0.235, a: 1}
-    WindowCueUrgentRatio: 0.3
-    WindowCuePulseHz: 2
-    WindowCueUrgentHz: 8
-    WindowCuePulseAmp: 0.45
-    DodgeGlideSpeedMps: 3.5
-    TelegraphStretch: 0.28
-    TelegraphSquash: 0.18
-    TelegraphSlamSquash: 0.22
-    TelegraphTonePitchMin: 0.55
-    TelegraphTonePitchMax: 1.8
-    TelegraphToneVolumeMin: 0.12
-    TelegraphToneVolumeMax: 0.4
-    BossApproachStopPadM: 0.35
-    AfterimageAlpha: 0.55
-    ImpactFadeSec: 0.04
-    VignetteHoldSec: 0.85
-    VignetteFadeSec: 0.45
-    VignetteAlpha: 0.55
-    ThreatAlphaMax: 0.35
-    ThreatPulseHzMin: 4
-    ThreatPulseHzMax: 14
-    CameraShakePxToM: 0.01
     EffectLineWidthDefaultM: 0.18
     EffectLineWidthWideM: 0.35
     EffectLineWidthNarrowM: 0.12
@@ -306,59 +395,262 @@ MonoBehaviour:
     PoseSarsinti: {x: 1.2, y: 0.55, z: 1.2}
     PoseKabuk: {x: 1.15, y: 1.05, z: 1.15}
     PoseZehir: {x: 1.05, y: 0.95, z: 1.25}
-    BossGravityMps2: 22
-    BossRecoilEaseDecayPerSec: 3.2
-    BossShakeAmpBaseM: 0.12
-    BossShakeAmpPerKnockbackM: 0.05
-    BossPinShakeAmpM: 0.04
-    BossLiftVelocityPerM: 4.5
-    BossTurnRateDegPerSec: 240
-    BossSlamImpactNorm: 0.42
-    BossConeImpactNorm: 0.4
-    BossStaggerMinGapSec: 0.6
-    BossAnimCrossFadeSec: 0.15
-    BossWalkClipMps: 1.4
-    BossDeathCollapseSec: 0.85
-    BossDeathSquashY: 0.28
-    BossDeathSpreadXz: 1.35
     GroundScarCapCount: 60
-    ReadoutAnchorRight: 1
-    ReadoutPunchInSec: 0.12
-    VitalsBarWidthDp: 224
-    VitalsBarHeightDp: 17
-    VitalsBossBarHeightDp: 24
-    VitalsBossBarWidthDp: 460
-    VitalsBarSpacingDp: 6
-    VitalsMarginDp: 16
-    VitalsHeaderHeightDp: 18
-    VitalsPanelPaddingDp: 8
-    BossVitalsColor: {r: 0.88, g: 0.16, b: 0.12, a: 0.98}
-    StatusIconSizeDp: 28
-    StatusIconGapDp: 6
-    OrbitDegreesPerDp: 0.35
-    CameraPitchMinDeg: -8
-    CameraPitchMaxDeg: 35
-    OrbitInvertPitch: 0
-    SoftAimRangeM: 8
-    SoftAimConeDeg: 70
-    DamageFloatFontDp: 28
-    DamageFloatCritFontDp: 36
-    DamageFloatRisePx: 64
-    DamageFloatHoldSec: 0.35
-    DamageFloatFadeSec: 0.45
-    DamageFloatPunchScale: 1.25
-    RecoveryLockHeightDp: 10
-    RecoveryLockGapDp: 8
-    ShowFrameTimeHud: 0
-    FrameTimeSampleSec: 0.5
-    TargetFrameRateHz: 60
-    ShowDamageNumbers: 1
-    SkillPreviewWidthDp: 324
-    SkillPreviewHeightDp: 72
-    SkillPreviewGapDp: 10
-    SkillPreviewHoldSec: 0.9
-    SkipBuildSelectOnStart: 0
-    ShowSentenceDebugHud: 0
+    Arena:
+      ArenaHalfSizeM: 50
+      ArenaWallHeightM: 18
+      ArenaWallThicknessM: 1.4
+      ArenaVisualScale: 1
+      AmbientSky: {r: 0.11, g: 0.13, b: 0.18, a: 1}
+      AmbientEquator: {r: 0.12, g: 0.085, b: 0.07, a: 1}
+      AmbientGround: {r: 0.035, g: 0.03, b: 0.035, a: 1}
+      FogColor: {r: 0.055, g: 0.045, b: 0.065, a: 1}
+      FogDensity: 0.009
+      KeyLightColor: {r: 1, g: 0.78, b: 0.62, a: 1}
+      KeyLightIntensity: 1.35
+      KeyLightEuler: {x: 42, y: -32, z: 0}
+      KeyShadowStrength: 0.72
+      RimLightColor: {r: 0.38, g: 0.55, b: 1, a: 1}
+      RimLightIntensity: 0.18
+      RimLightEuler: {x: 28, y: 145, z: 0}
+      BloomIntensity: 0.42
+      BloomThreshold: 1.05
+      BloomScatter: 0.55
+      BloomTint: {r: 1, g: 0.86, b: 0.72, a: 1}
+      PostExposure: -0.08
+      ColorContrast: 18
+      ColorSaturation: -4
+      ColorFilterTint: {r: 0.95, g: 0.975, b: 1, a: 1}
+      PostVignetteIntensity: 0.18
+      CameraFarClipM: 320
+    Boss:
+      TelegraphStretch: 0.28
+      TelegraphSquash: 0.18
+      TelegraphSlamSquash: 0.22
+      TelegraphTonePitchMin: 0.55
+      TelegraphTonePitchMax: 1.8
+      TelegraphToneVolumeMin: 0.12
+      TelegraphToneVolumeMax: 0.4
+      BossApproachStopPadM: 0.35
+      BossGravityMps2: 22
+      BossRecoilEaseDecayPerSec: 3.2
+      BossShakeAmpBaseM: 0.12
+      BossShakeAmpPerKnockbackM: 0.05
+      BossPinShakeAmpM: 0.04
+      BossLiftVelocityPerM: 4.5
+      ActiveBossId: aglarin_kralicesi
+      BossTurnRateDegPerSec: 240
+      BossSlamImpactNorm: 0.42
+      BossConeImpactNorm: 0.4
+      BossStaggerMinGapSec: 0.6
+      BossAnimCrossFadeSec: 0.15
+      BossWalkClipMps: 1.4
+      BossDeathCollapseSec: 0.85
+      BossDeathSquashY: 0.28
+      BossDeathSpreadXz: 1.35
+    Camera:
+      FollowSmoothTimeSec: 0.12
+      LookAheadM: 0.65
+      CameraShoulderOffset: {x: 0.45, y: 1, z: -0.35}
+      CameraDistanceM: 3.4
+      CameraLookHeightM: 0.35
+      CameraFovDeg: 56
+      CameraAimDampingSec: 0.1
+      CameraSoftLockRangeM: 18
+      CameraSoftLockStrength: 0.52
+      CameraBossFramingWeight: 0.34
+      CameraBossAimHeightM: 1.45
+      CameraDefaultPitchDeg: 21
+      CameraLockOnMinDistanceM: 5.2
+      CameraLockOnMaxDistanceM: 8.8
+      CameraLockOnDistancePerSepM: 0.14
+      CameraLockOnMaxExtraDistanceM: 3.1
+      CameraLockOnDistanceSmoothSec: 0.22
+      CameraWindupDistanceMul: 1.42
+      CameraWindupExtraHeightM: 0.68
+      CameraWindupSmoothSec: 0.28
+      CameraWindupMinRadiusM: 3.5
+      CameraCollisionSphereRadiusM: 0.25
+      CameraCollisionMarginM: 0.12
+      CameraCollisionMinDistanceM: 1.2
+      CameraCollisionPullInSmoothSec: 0.05
+      CameraCollisionPullOutSmoothSec: 0.35
+      CameraLockOnShoulderSideM: 1.1
+      CameraLockOnShoulderFlipHysteresis: 0.12
+      CameraLockOnLookBlendToBoss: 0.58
+      OrbitDegreesPerDp: 0.35
+      CameraPitchMinDeg: -8
+      CameraPitchMaxDeg: 35
+      OrbitInvertPitch: 0
+      SoftAimRangeM: 8
+      SoftAimConeDeg: 70
+    Hud:
+      WindowCueUrgentRatio: 0.3
+      WindowCuePulseHz: 2
+      WindowCueUrgentHz: 8
+      WindowCuePulseAmp: 0.45
+      AfterimageAlpha: 0.55
+      ImpactFadeSec: 0.04
+      VignetteHoldSec: 0.85
+      VignetteFadeSec: 0.45
+      VignetteAlpha: 0.55
+      ThreatAlphaMax: 0.35
+      ThreatPulseHzMin: 4
+      ThreatPulseHzMax: 14
+      CameraShakePxToM: 0.01
+      ReadoutAnchorRight: 1
+      ReadoutPunchInSec: 0.12
+      VitalsBarWidthDp: 224
+      VitalsBarHeightDp: 17
+      VitalsBossBarHeightDp: 24
+      VitalsBossBarWidthDp: 460
+      VitalsBarSpacingDp: 6
+      VitalsMarginDp: 16
+      VitalsHeaderHeightDp: 18
+      VitalsPanelPaddingDp: 8
+      BossVitalsColor: {r: 0.88, g: 0.16, b: 0.12, a: 0.98}
+      StatusIconSizeDp: 28
+      StatusIconGapDp: 6
+      DamageFloatFontDp: 28
+      DamageFloatCritFontDp: 36
+      DamageFloatRisePx: 64
+      DamageFloatHoldSec: 0.35
+      DamageFloatFadeSec: 0.45
+      DamageFloatPunchScale: 1.25
+      RecoveryLockHeightDp: 10
+      RecoveryLockGapDp: 8
+      ShowFrameTimeHud: 0
+      FrameTimeSampleSec: 0.5
+      TargetFrameRateHz: 60
+      ShowDamageNumbers: 1
+      SkillPreviewWidthDp: 324
+      SkillPreviewHeightDp: 72
+      SkillPreviewGapDp: 10
+      SkillPreviewHoldSec: 0.9
+      SkipBuildSelectOnStart: 0
+      ShowSentenceDebugHud: 0
+    Input:
+      JoystickMaxRadiusDp: 72
+      JoystickDeadZone: 0.12
+      HudFitShortSideDp: 600
+      HexagonCenterXNorm: 0.78
+      HexagonCenterYNorm: 0.3
+      HexagonRadiusDp: 112
+      DotHitRadiusDp: 34
+      CenterHitRadiusDp: 38
+      MirrorForLeftHand: 0
+      InkLingerSec: 0.4
+      InkWidthDp: 3.5
+      InkRawWidthScale: 0.9
+      InkRawGlow: 1
+      DodgeButtonOffsetXDp: 0
+      DodgeButtonOffsetYDp: 0
+      DodgeButtonRadiusDp: 40
+      DodgeButtonScreenMarginDp: 8
+      DodgeClearanceDp: 40
+      WeaponSwapButtonRadiusDp: 36
+      WeaponSwapButtonOffsetXDp: 0
+      WeaponSwapButtonOffsetYDp: 0
+      WeaponSwapIconScale: 0.72
+      LockOnButtonRadiusDp: 36
+      LockOnButtonOffsetXDp: 0
+      LockOnButtonOffsetYDp: 52
+      LockOnButtonColor: {r: 0.55, g: 0.72, b: 0.88, a: 0.9}
+      LockOnButtonActiveColor: {r: 0.95, g: 0.82, b: 0.45, a: 0.95}
+      ElementMenuRadiusDp: 92
+      ElementMenuChipWidthDp: 144
+      ElementMenuChipHeightDp: 48
+      ElementMenuItemWidthDp: 84
+      ElementMenuItemHeightDp: 48
+      ElementMenuAnchorXNorm: 0.86
+      ElementMenuAnchorYNorm: 0.72
+      BasicStrikeDot: 1
+      IconDisplayScale: 1
+      CombatTrayPaddingDp: 22
+      CombatTrayHeaderHeightDp: 22
+      CombatTrayCornerRadiusDp: 20
+      CombatTrayLinkWidthDp: 1.5
+      DotVibrationMs: 30
+    Player:
+      PlayerVisualHeightM: 1.78
+      BossVisualHeightM: 5
+      CharacterAnimSpeed: 1
+      WalkSpeedMps: 6.4
+      MoveAccelMps2: 52
+      MoveDecelMps2: 64
+      TurnRateDegPerSec: 720
+      MinStickSpeedFrac: 0.42
+      AnimSpeedDampSec: 0.08
+      LocoMaxPlaybackMult: 1.5
+      AnimCrossFadeSec: 0.06
+      BasicStrikeComboResetSec: 1.2
+      UpperBodyCastMinSpeed: 0.15
+      FootstepStrideM: 2.2
+      BossFootstepStrideM: 2.4
+      PlayerMaxHp: 22
+      DodgeGlideSpeedMps: 3.5
+    Visuals:
+      PlayerColor: {r: 0.373, g: 0.941, b: 1, a: 1}
+      BossColor: {r: 0.18, g: 0.19, b: 0.22, a: 1}
+      GroundColor: {r: 0.38, g: 0.4, b: 0.44, a: 1}
+      BackgroundColor: {r: 0.12, g: 0.14, b: 0.18, a: 1}
+      InkPurple: {r: 0.725, g: 0.549, b: 1, a: 1}
+      InkCyan: {r: 0.373, g: 0.941, b: 1, a: 1}
+      AcidGreen: {r: 0.608, g: 0.91, b: 0.235, a: 1}
+      ElementFire: {r: 1, g: 0.42, b: 0.62, a: 1}
+      ElementWater: {r: 0.28, g: 0.72, b: 1, a: 1}
+      ElementAir: {r: 0.5, g: 0.7, b: 0.62, a: 1}
+      ElementEarth: {r: 0.62, g: 0.78, b: 0.42, a: 1}
+      ElementLight: {r: 1, g: 0.96, b: 0.82, a: 1}
+      ElementDark: {r: 0.48, g: 0.28, b: 0.78, a: 1}
+      VfxTexFire: flame_02
+      VfxTexWater: circle_03
+      VfxTexAir: twirl_01
+      VfxTexEarth: dirt_01
+      VfxTexLight: star_04
+      VfxTexDark: magic_04
+      VfxTexHit: spark_05
+      VfxTexInk: light_01
+      HexagonDotColor: {r: 0.55, g: 0.62, b: 0.72, a: 0.85}
+      HexagonCenterColor: {r: 0.373, g: 0.941, b: 1, a: 0.9}
+      DodgeButtonColor: {r: 0.725, g: 0.549, b: 1, a: 0.9}
+      TelegraphHot: {r: 1, g: 0.302, b: 0.141, a: 1}
+      TelegraphWarm: {r: 1, g: 0.604, b: 0.235, a: 1}
+      EffectLineWidthDefaultM: 0.18
+      EffectLineWidthWideM: 0.35
+      EffectLineWidthNarrowM: 0.12
+      EffectSarsintiWidthWideM: 0.22
+      EffectSarsintiWidthNarrowM: 0.1
+      EffectShowMinFocus: 0.2
+      EffectIgneShowMinSpread: 0.2
+      EffectFocusRingMax: 0.35
+      EffectFocusArcMax: 0.75
+      EffectPierceNeedleShowMin: 0.45
+      EffectFocusSwarmAlongLineMin: 0.45
+      EffectBlobScaleBaseM: 0.28
+      EffectBlobScalePerSpreadM: 0.12
+      EffectNeedleThickWideM: 0.35
+      EffectNeedleThickNarrowM: 0.14
+      EffectNeedleLenBaseM: 0.7
+      EffectNeedleLenPerPierceM: 0.5
+      EffectNeedleWindupLenMul: 1.55
+      EffectNeedleArrivalLenMul: 0.72
+      EffectNeedleAfterimageAlpha: 0.35
+      EffectSwarmJitterM: 0.65
+      EffectSwarmMinBlobs: 4
+      EffectSarsintiGroundY: 0.02
+      EffectSarsintiMassWidthMul: 1.35
+      EffectBasicStrikeLenM: 0.9
+      EffectBasicStrikeThickM: 0.16
+      EffectBasicStrikeHeightM: 0.55
+      ActorPoseDurationMs: 180
+      PoseIgne: {x: 0.78, y: 0.88, z: 1.35}
+      PoseSuru: {x: 1.35, y: 0.9, z: 1.1}
+      PoseSarsinti: {x: 1.2, y: 0.55, z: 1.2}
+      PoseKabuk: {x: 1.15, y: 1.05, z: 1.15}
+      PoseZehir: {x: 1.05, y: 0.95, z: 1.25}
+      GroundScarCapCount: 60
+    SectionsVersion: 1
     TuningVersion: 18
   _playerVisualPrefab: {fileID: 5243334159006450704, guid: d7d66a8d11b166549b25f84080f9a0eb, type: 3}
   _bossVisualPrefab: {fileID: 3688253447631659964, guid: 6bfdf37fb479d1d4fb8381795a140d45, type: 3}

@@ -55,7 +55,7 @@ namespace Dovus.Game.Skills.Weapons
                 return;
             float splash = profile.BasicRadiusM > 0f ? profile.BasicRadiusM : 3f;
             float bossPush = profile.BossPushM > 0f ? profile.BossPushM : 0.5f;
-            float arena = _host.Motor != null ? _host.Motor.Tuning.ArenaHalfSizeM : 50f;
+            float arena = _host.Motor != null ? _host.Motor.Tuning.Arena.ArenaHalfSizeM : 50f;
             float playerR = _host.PlayerBodyRadiusM();
             float bossR = 0.85f;
             if (_host.Boss != null && _host.Boss.BodyRadiusM > 0.01f)

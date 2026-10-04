@@ -41,15 +41,15 @@ namespace Dovus.Game.Actors
 
             _poseScale = rune switch
             {
-                Dovus.Core.Grammar.Rune.Ates => Tuning.PoseIgne,
-                Dovus.Core.Grammar.Rune.Su => Tuning.PoseSuru,
-                Dovus.Core.Grammar.Rune.Aydinlik => Tuning.PoseSarsinti,
-                Dovus.Core.Grammar.Rune.Hava => Tuning.PoseKabuk,
-                Dovus.Core.Grammar.Rune.Toprak => Tuning.PoseZehir,
-                Dovus.Core.Grammar.Rune.Karanlik => Tuning.PoseKabuk,
+                Dovus.Core.Grammar.Rune.Ates => Tuning.Visuals.PoseIgne,
+                Dovus.Core.Grammar.Rune.Su => Tuning.Visuals.PoseSuru,
+                Dovus.Core.Grammar.Rune.Aydinlik => Tuning.Visuals.PoseSarsinti,
+                Dovus.Core.Grammar.Rune.Hava => Tuning.Visuals.PoseKabuk,
+                Dovus.Core.Grammar.Rune.Toprak => Tuning.Visuals.PoseZehir,
+                Dovus.Core.Grammar.Rune.Karanlik => Tuning.Visuals.PoseKabuk,
                 _ => Vector3.one
             };
-            _poseUntilWorldMs = (float)worldTimeMs + Tuning.ActorPoseDurationMs;
+            _poseUntilWorldMs = (float)worldTimeMs + Tuning.Visuals.ActorPoseDurationMs;
         }
 
         public void BeginRecovery(float durationSec, double worldTimeMs)
@@ -88,7 +88,7 @@ namespace Dovus.Game.Actors
 
             if (now < _poseUntilWorldMs)
             {
-                float u = (_poseUntilWorldMs - now) / Tuning.ActorPoseDurationMs;
+                float u = (_poseUntilWorldMs - now) / Tuning.Visuals.ActorPoseDurationMs;
                 Vector3 s = Vector3.Lerp(Vector3.one, _poseScale, Mathf.Clamp01(u));
                 transform.localScale = Vector3.Scale(_baseScale, s);
                 return;

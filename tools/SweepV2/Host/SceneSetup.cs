@@ -73,25 +73,61 @@ namespace SweepV2
             }
         }
 
-        /// <summary>Sahne YAML'ındaki `_tuning:` bloğu → alan alan. Yazılmayan alanlar C# varsayılanında kalır (Unity gibi).</summary>
+        /// <summary>
+        /// Sahne YAML'ındaki `_tuning:` bloğu → alan alan. Yazılmayan alanlar C# varsayılanında kalır (Unity gibi).
+        /// 2B.5b: düz (legacy) anahtarlar + iç içe bölüm blokları (`    Arena:` altında 6 boşluklu anahtarlar) okunur;
+        /// bölüm bloklarından SONRA gelen kök anahtarlar (TuningVersion, SectionsVersion) da okunur. Unity'deki
+        /// OnAfterDeserialize gibi: SectionsVersion &lt; 1 ise düz değerler bölümlere kopyalanır.
+        /// </summary>
         static int ApplySceneTuning(PrototypeTuning tuning, string[] lines)
         {
             int start = Array.FindIndex(lines, l => l.TrimEnd() == "  _tuning:");
             if (start < 0) throw new InvalidDataException("Prototype.unity: _tuning bloğu yok");
             int applied = 0;
-            var num = new Regex(@"^    (\w+): (.+)$");
+            var rootKey = new Regex(@"^    (\w+):(?: (.*))?$");
+            var nestedKey = new Regex(@"^      (\w+): (.+)$");
+            object section = null;
             for (int i = start + 1; i < lines.Length; i++)
             {
-                Match m = num.Match(lines[i]);
+                Match n = nestedKey.Match(lines[i]);
+                if (n.Success)
+                {
+                    if (section != null && TrySetField(section, n.Groups[1].Value, n.Groups[2].Value))
+                        applied++;
+                    continue;
+                }
+
+                Match m = rootKey.Match(lines[i]);
                 if (!m.Success) break;
-                FieldInfo f = typeof(PrototypeTuning).GetField(m.Groups[1].Value, BF);
-                if (f == null) continue;
-                object v = Parse(f.FieldType, m.Groups[2].Value.Trim());
-                if (v == null) continue;
-                f.SetValue(tuning, v);
-                applied++;
+                string value = m.Groups[2].Success ? m.Groups[2].Value.Trim() : "";
+                if (value.Length == 0)
+                {
+                    FieldInfo sf = typeof(PrototypeTuning).GetField(m.Groups[1].Value, BF);
+                    section = sf != null && sf.FieldType.Namespace == "Dovus.Game.Config.Sections"
+                        ? sf.GetValue(tuning)
+                        : null;
+                    continue;
+                }
+
+                section = null;
+                if (TrySetField(tuning, m.Groups[1].Value, value))
+                    applied++;
             }
+
+            FieldInfo version = typeof(PrototypeTuning).GetField("SectionsVersion", BF);
+            if (version == null || (int)version.GetValue(tuning) < 1)
+                tuning.SyncSectionsFromLegacyFlatFields();
             return applied;
+        }
+
+        static bool TrySetField(object target, string name, string raw)
+        {
+            FieldInfo f = target.GetType().GetField(name, BF);
+            if (f == null) return false;
+            object v = Parse(f.FieldType, raw.Trim());
+            if (v == null) return false;
+            f.SetValue(target, v);
+            return true;
         }
 
         static object Parse(Type t, string s)

@@ -56,7 +56,7 @@ public class ReleaseBuildPerfTests
         Assert.That(Regex.Matches(hud, @"if \(DebugConfig\.Enabled\)\s*\{\s*var frameHud").Count, Is.EqualTo(1));
         Assert.That(Regex.Matches(hud, @"if \(DebugConfig\.Enabled\)\s*\{\s*var practice").Count, Is.EqualTo(1));
         Assert.That(Regex.Matches(debug, @"if \(DebugConfig\.Enabled\)\s*\{\s*var v6Panel").Count, Is.EqualTo(1));
-        Assert.That(hex, Does.Contain("DebugConfig.Enabled && _tuning.ShowSentenceDebugHud"));
+        Assert.That(hex, Does.Contain("DebugConfig.Enabled && _tuning.Hud.ShowSentenceDebugHud"));
         string team = Game("DevTools/TeamDebugMenu.cs");
         Assert.That(team, Does.Contain("bool _open = false;"));
         Assert.That(team, Does.Contain("#if UNITY_EDITOR || DOVUS_DEBUG"));

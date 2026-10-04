@@ -130,7 +130,7 @@ namespace Dovus.Game.Hud
             _bossRoot.anchorMax = new Vector2(0.5f, 1f);
             _bossRoot.pivot = new Vector2(0.5f, 1f);
 
-            _bossData = BossHudData.Load(tuning.ActiveBossResourcePath);
+            _bossData = BossHudData.Load(tuning.Boss.ActiveBossResourcePath);
             _bossName = CreateBossName(_bossRoot, _bossData);
             _bossFill = CreateBar(_bossRoot, "Boss", out _bossBg, out _bossSheen, out _bossJuice);
             CreatePhaseNotches(_bossBg, _bossData);
@@ -515,33 +515,33 @@ namespace Dovus.Game.Hud
         {
             float topInset = HexagonLayoutScreen.SafeTopInsetPx();
             float leftInset = HexagonLayoutScreen.SafeLeftInsetPx();
-            float margin = HexagonLayoutScreen.DpToPixels(_tuning.VitalsMarginDp);
-            float w = HexagonLayoutScreen.DpToPixels(_tuning.VitalsBarWidthDp);
-            float h = HexagonLayoutScreen.DpToPixels(_tuning.VitalsBarHeightDp);
-            float bossW = HexagonLayoutScreen.DpToPixels(_tuning.VitalsBossBarWidthDp);
-            float bossH = HexagonLayoutScreen.DpToPixels(_tuning.VitalsBossBarHeightDp);
-            float spacing = HexagonLayoutScreen.DpToPixels(_tuning.VitalsBarSpacingDp);
-            float pad = HexagonLayoutScreen.DpToPixels(_tuning.VitalsPanelPaddingDp);
-            float headerH = HexagonLayoutScreen.DpToPixels(_tuning.VitalsHeaderHeightDp);
+            float margin = HexagonLayoutScreen.DpToPixels(_tuning.Hud.VitalsMarginDp);
+            float w = HexagonLayoutScreen.DpToPixels(_tuning.Hud.VitalsBarWidthDp);
+            float h = HexagonLayoutScreen.DpToPixels(_tuning.Hud.VitalsBarHeightDp);
+            float bossW = HexagonLayoutScreen.DpToPixels(_tuning.Hud.VitalsBossBarWidthDp);
+            float bossH = HexagonLayoutScreen.DpToPixels(_tuning.Hud.VitalsBossBarHeightDp);
+            float spacing = HexagonLayoutScreen.DpToPixels(_tuning.Hud.VitalsBarSpacingDp);
+            float pad = HexagonLayoutScreen.DpToPixels(_tuning.Hud.VitalsPanelPaddingDp);
+            float headerH = HexagonLayoutScreen.DpToPixels(_tuning.Hud.VitalsHeaderHeightDp);
             Rect safe = HexagonLayoutScreen.SafeRectPx();
             bossW = Mathf.Min(bossW, safe.width - margin * 2f);
 
             bool sizeChanged =
-                !Mathf.Approximately(_tuning.VitalsBarWidthDp, _appliedWidthDp) ||
-                !Mathf.Approximately(_tuning.VitalsBarHeightDp, _appliedHeightDp) ||
-                !Mathf.Approximately(_tuning.VitalsBossBarHeightDp, _appliedBossHDp) ||
-                !Mathf.Approximately(_tuning.VitalsBossBarWidthDp, _appliedBossWDp) ||
-                !Mathf.Approximately(_tuning.VitalsBarSpacingDp, _appliedSpacingDp) ||
-                !Mathf.Approximately(_tuning.VitalsMarginDp, _appliedMarginDp);
+                !Mathf.Approximately(_tuning.Hud.VitalsBarWidthDp, _appliedWidthDp) ||
+                !Mathf.Approximately(_tuning.Hud.VitalsBarHeightDp, _appliedHeightDp) ||
+                !Mathf.Approximately(_tuning.Hud.VitalsBossBarHeightDp, _appliedBossHDp) ||
+                !Mathf.Approximately(_tuning.Hud.VitalsBossBarWidthDp, _appliedBossWDp) ||
+                !Mathf.Approximately(_tuning.Hud.VitalsBarSpacingDp, _appliedSpacingDp) ||
+                !Mathf.Approximately(_tuning.Hud.VitalsMarginDp, _appliedMarginDp);
 
             if (sizeChanged || true)
             {
-                _appliedWidthDp = _tuning.VitalsBarWidthDp;
-                _appliedHeightDp = _tuning.VitalsBarHeightDp;
-                _appliedBossHDp = _tuning.VitalsBossBarHeightDp;
-                _appliedBossWDp = _tuning.VitalsBossBarWidthDp;
-                _appliedSpacingDp = _tuning.VitalsBarSpacingDp;
-                _appliedMarginDp = _tuning.VitalsMarginDp;
+                _appliedWidthDp = _tuning.Hud.VitalsBarWidthDp;
+                _appliedHeightDp = _tuning.Hud.VitalsBarHeightDp;
+                _appliedBossHDp = _tuning.Hud.VitalsBossBarHeightDp;
+                _appliedBossWDp = _tuning.Hud.VitalsBossBarWidthDp;
+                _appliedSpacingDp = _tuning.Hud.VitalsBarSpacingDp;
+                _appliedMarginDp = _tuning.Hud.VitalsMarginDp;
 
                 int rows = BarCount;
                 float panelH = headerH + rows * h + (rows - 1) * spacing + pad * 2f;
@@ -598,9 +598,9 @@ namespace Dovus.Game.Hud
                 BossStackBottomCanvasY = -(topInset + margin * 0.5f + castTop + castH);
             }
 
-            if (_appliedBossColor != _tuning.BossVitalsColor)
+            if (_appliedBossColor != _tuning.Hud.BossVitalsColor)
             {
-                _appliedBossColor = _tuning.BossVitalsColor;
+                _appliedBossColor = _tuning.Hud.BossVitalsColor;
                 _bossFill.color = _appliedBossColor;
             }
 

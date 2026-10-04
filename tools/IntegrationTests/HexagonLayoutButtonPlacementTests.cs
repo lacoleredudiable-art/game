@@ -36,7 +36,7 @@ public class HexagonLayoutButtonPlacementTests
 
     static void AssertNoHudOverlap(PrototypeTuning tuning, int w, int h, bool mirror)
     {
-        tuning.MirrorForLeftHand = mirror;
+        tuning.Input.MirrorForLeftHand = mirror;
         float gap = HexagonLayoutScreen.DpToPixels(12f);
         Vector2 panel = HexagonLayoutScreen.CenterPx(tuning, w, h);
         float fitted = HexagonLayoutScreen.FittedRadiusPx(tuning, w, h);

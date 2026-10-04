@@ -50,7 +50,7 @@ namespace Dovus.Game.Hud
         {
             _feel = feel;
             _tuning = tuning;
-            bool right = tuning.ReadoutAnchorRight;
+            bool right = tuning.Hud.ReadoutAnchorRight;
 
             var go = new GameObject("ReactionReadout");
             go.transform.SetParent(canvasRoot, false);
@@ -90,7 +90,7 @@ namespace Dovus.Game.Hud
         /// </summary>
         void ApplyTuningLayout()
         {
-            bool right = _tuning.ReadoutAnchorRight;
+            bool right = _tuning.Hud.ReadoutAnchorRight;
             if (right != _appliedAnchorRight)
             {
                 _appliedAnchorRight = right;
@@ -189,7 +189,7 @@ namespace Dovus.Game.Hud
                 return;
 
             _accent = _tuning != null
-                ? _tuning.HexagonDotColor
+                ? _tuning.Visuals.HexagonDotColor
                 : new Color(0.55f, 0.62f, 0.72f, 0.85f);
             _main.text = title;
             _sub.text = detail ?? string.Empty;
@@ -248,7 +248,7 @@ namespace Dovus.Game.Hud
             {
                 ShowGraphics();
                 float alpha = t <= holdSec ? 1f : Mathf.Clamp01(1f - (t - holdSec) / fadeSec);
-                float punchT = Mathf.Clamp01(t / Mathf.Max(0.001f, _tuning.ReadoutPunchInSec));
+                float punchT = Mathf.Clamp01(t / Mathf.Max(0.001f, _tuning.Hud.ReadoutPunchInSec));
                 float scale = Mathf.Lerp(_feel.ReadoutPunchScale, 1f, punchT);
                 _root.localScale = Vector3.one * scale;
 

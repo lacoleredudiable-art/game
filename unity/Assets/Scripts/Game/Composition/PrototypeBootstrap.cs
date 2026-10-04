@@ -38,7 +38,7 @@ namespace Dovus.Game.Composition
             _tuning ??= new PrototypeTuning();
             _tuning.EnsureRuntimeDefaults();
             FeelVfx.Configure(_tuning);
-            HexagonLayoutScreen.FitShortSideDp = _tuning.HudFitShortSideDp;
+            HexagonLayoutScreen.FitShortSideDp = _tuning.Input.HudFitShortSideDp;
 #if !UNITY_EDITOR
             Debug.developerConsoleVisible = false;
 #endif
@@ -49,7 +49,7 @@ namespace Dovus.Game.Composition
         void ApplyFrameRateTarget()
         {
             QualitySettings.vSyncCount = 0;
-            Application.targetFrameRate = Mathf.Max(1, _tuning.TargetFrameRateHz);
+            Application.targetFrameRate = Mathf.Max(1, _tuning.Hud.TargetFrameRateHz);
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
         }
 
@@ -97,7 +97,7 @@ namespace Dovus.Game.Composition
                 float hp = BossCombatProfile.FromDocument(design.Document).PlayerMaxHp;
                 return Mathf.Max(1, Mathf.RoundToInt(hp));
             }
-            return Mathf.Max(1, CombatScale.MagnitudeInt(_tuning.PlayerMaxHp));
+            return Mathf.Max(1, CombatScale.MagnitudeInt(_tuning.Player.PlayerMaxHp));
         }
 
         internal float ScaledBossHp(float tuningMaxHp)

@@ -67,7 +67,7 @@ namespace Dovus.Game.Casting
 
             if (!playHaptic)
                 return;
-            long ms = _tuning != null ? _tuning.DotVibrationMs : 30L;
+            long ms = _tuning != null ? _tuning.Input.DotVibrationMs : 30L;
             FeelHaptics.Pulse((int)ms);
         }
 

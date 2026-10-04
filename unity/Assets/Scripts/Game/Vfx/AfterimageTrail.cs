@@ -50,8 +50,8 @@ namespace Dovus.Game.Vfx
         {
             _feel = feel;
             _colors = colors;
-            _alpha = colors.AfterimageAlpha;
-            _mat = MakeMat(colors.PlayerColor, _alpha);
+            _alpha = colors.Hud.AfterimageAlpha;
+            _mat = MakeMat(colors.Visuals.PlayerColor, _alpha);
         }
 
         public void Emit(Vector3 position, Quaternion rotation, Vector3 scale)

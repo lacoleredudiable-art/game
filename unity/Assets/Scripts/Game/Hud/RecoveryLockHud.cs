@@ -95,34 +95,34 @@ namespace Dovus.Game.Hud
 
         void ApplyTuningLayout()
         {
-            float w = HexagonLayoutScreen.DpToPixels(_tuning.VitalsBarWidthDp);
-            float h = HexagonLayoutScreen.DpToPixels(_tuning.RecoveryLockHeightDp);
-            float gap = HexagonLayoutScreen.DpToPixels(_tuning.RecoveryLockGapDp);
+            float w = HexagonLayoutScreen.DpToPixels(_tuning.Hud.VitalsBarWidthDp);
+            float h = HexagonLayoutScreen.DpToPixels(_tuning.Hud.RecoveryLockHeightDp);
+            float gap = HexagonLayoutScreen.DpToPixels(_tuning.Hud.RecoveryLockGapDp);
             float left = HexagonLayoutScreen.SafeLeftInsetPx()
-                + HexagonLayoutScreen.DpToPixels(_tuning.VitalsMarginDp);
+                + HexagonLayoutScreen.DpToPixels(_tuning.Hud.VitalsMarginDp);
 
             float topY;
             if (_vitalsHud != null)
                 topY = _vitalsHud.PlayerStackBottomCanvasY - gap
-                    - HexagonLayoutScreen.DpToPixels(_tuning.StatusIconSizeDp + _tuning.StatusIconGapDp);
+                    - HexagonLayoutScreen.DpToPixels(_tuning.Hud.StatusIconSizeDp + _tuning.Hud.StatusIconGapDp);
             else
             {
                 int rows = _vitalsBarCount;
                 float vitalsStackDp =
-                    _tuning.VitalsBarHeightDp * rows
-                    + _tuning.VitalsBarSpacingDp * Mathf.Max(0, rows - 1)
-                    + _tuning.RecoveryLockGapDp;
+                    _tuning.Hud.VitalsBarHeightDp * rows
+                    + _tuning.Hud.VitalsBarSpacingDp * Mathf.Max(0, rows - 1)
+                    + _tuning.Hud.RecoveryLockGapDp;
                 topY = -(HexagonLayoutScreen.SafeTopInsetPx()
-                    + HexagonLayoutScreen.DpToPixels(_tuning.VitalsMarginDp + vitalsStackDp));
+                    + HexagonLayoutScreen.DpToPixels(_tuning.Hud.VitalsMarginDp + vitalsStackDp));
             }
 
             _root.anchoredPosition = new Vector2(left, topY);
             _root.sizeDelta = new Vector2(w, h);
             _bg.anchoredPosition = Vector2.zero;
             _bg.sizeDelta = new Vector2(w, h);
-            _appliedWidthDp = _tuning.VitalsBarWidthDp;
-            _appliedHeightDp = _tuning.RecoveryLockHeightDp;
-            _appliedMarginDp = _tuning.VitalsMarginDp;
+            _appliedWidthDp = _tuning.Hud.VitalsBarWidthDp;
+            _appliedHeightDp = _tuning.Hud.RecoveryLockHeightDp;
+            _appliedMarginDp = _tuning.Hud.VitalsMarginDp;
         }
 
         void LateUpdate()
@@ -133,8 +133,8 @@ namespace Dovus.Game.Hud
             ApplyTuningLayout();
 
             // §10: camgöbeği dolgu, mor zemin — boss tehdit paleti yok.
-            _fill.color = _tuning.InkCyan;
-            Color bg = _tuning.InkPurple;
+            _fill.color = _tuning.Visuals.InkCyan;
+            Color bg = _tuning.Visuals.InkPurple;
             bg.a = 0.35f;
             _bgImg.color = bg;
 

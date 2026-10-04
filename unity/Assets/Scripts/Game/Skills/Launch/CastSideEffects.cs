@@ -111,7 +111,7 @@ namespace Dovus.Game.Skills.Launch
                 return SkillMotionPlan.None;
 
             var t = _host.Combat.SkillMotion;
-            t.ArenaHalfSizeM = _host.Colors != null ? _host.Colors.ArenaHalfSizeM : t.ArenaHalfSizeM;
+            t.ArenaHalfSizeM = _host.Colors != null ? _host.Colors.Arena.ArenaHalfSizeM : t.ArenaHalfSizeM;
 
             UnityEngine.Vector3 face = _host.Player.forward;
             face.y = 0f;

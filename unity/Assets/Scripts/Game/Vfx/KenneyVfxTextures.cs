@@ -20,14 +20,14 @@ namespace Dovus.Game.Vfx
 
         public static void Configure(PrototypeTuning tuning) => _tuning = tuning;
 
-        public static string TexFire => NameOrDefault(_tuning?.VfxTexFire, "flame_02");
-        public static string TexWater => NameOrDefault(_tuning?.VfxTexWater, "circle_03");
-        public static string TexAir => NameOrDefault(_tuning?.VfxTexAir, "twirl_01");
-        public static string TexEarth => NameOrDefault(_tuning?.VfxTexEarth, "dirt_01");
-        public static string TexLight => NameOrDefault(_tuning?.VfxTexLight, "star_04");
-        public static string TexDark => NameOrDefault(_tuning?.VfxTexDark, "magic_04");
-        public static string TexHit => NameOrDefault(_tuning?.VfxTexHit, "spark_05");
-        public static string TexInk => NameOrDefault(_tuning?.VfxTexInk, "light_01");
+        public static string TexFire => NameOrDefault(_tuning?.Visuals.VfxTexFire, "flame_02");
+        public static string TexWater => NameOrDefault(_tuning?.Visuals.VfxTexWater, "circle_03");
+        public static string TexAir => NameOrDefault(_tuning?.Visuals.VfxTexAir, "twirl_01");
+        public static string TexEarth => NameOrDefault(_tuning?.Visuals.VfxTexEarth, "dirt_01");
+        public static string TexLight => NameOrDefault(_tuning?.Visuals.VfxTexLight, "star_04");
+        public static string TexDark => NameOrDefault(_tuning?.Visuals.VfxTexDark, "magic_04");
+        public static string TexHit => NameOrDefault(_tuning?.Visuals.VfxTexHit, "spark_05");
+        public static string TexInk => NameOrDefault(_tuning?.Visuals.VfxTexInk, "light_01");
 
         /// <summary>Element tint rengine en yakın çekirdek rün dokusu.</summary>
         public static string ClosestElementName(Color tint)
@@ -37,12 +37,12 @@ namespace Dovus.Game.Vfx
 
             float best = float.MaxValue;
             string pick = TexDark;
-            Compare(tint, _tuning.ElementFire, TexFire, ref best, ref pick);
-            Compare(tint, _tuning.ElementWater, TexWater, ref best, ref pick);
-            Compare(tint, _tuning.ElementAir, TexAir, ref best, ref pick);
-            Compare(tint, _tuning.ElementEarth, TexEarth, ref best, ref pick);
-            Compare(tint, _tuning.ElementLight, TexLight, ref best, ref pick);
-            Compare(tint, _tuning.ElementDark, TexDark, ref best, ref pick);
+            Compare(tint, _tuning.Visuals.ElementFire, TexFire, ref best, ref pick);
+            Compare(tint, _tuning.Visuals.ElementWater, TexWater, ref best, ref pick);
+            Compare(tint, _tuning.Visuals.ElementAir, TexAir, ref best, ref pick);
+            Compare(tint, _tuning.Visuals.ElementEarth, TexEarth, ref best, ref pick);
+            Compare(tint, _tuning.Visuals.ElementLight, TexLight, ref best, ref pick);
+            Compare(tint, _tuning.Visuals.ElementDark, TexDark, ref best, ref pick);
             return pick;
         }
 

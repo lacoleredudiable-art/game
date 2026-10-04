@@ -105,7 +105,7 @@ namespace Dovus.Game.Hud
             Skill cast = _manifestation?.LastFactorySkill;
             bool newCast = cast != null && !ReferenceEquals(cast, _lastCast);
             _lastCast = cast;
-            float hold = _tuning != null ? _tuning.SkillPreviewHoldSec : 0.9f;
+            float hold = _tuning != null ? _tuning.Hud.SkillPreviewHoldSec : 0.9f;
             if (drawing || newCast)
                 _visibleUntil = Time.unscaledTime + hold;
             HudTheme theme = HudTheme.Current;
@@ -179,9 +179,9 @@ namespace Dovus.Game.Hud
             float top = center.y
                 + HexagonLayoutScreen.RadiusPx(_tuning)
                 + HexagonLayoutScreen.DotHitRadiusPx(_tuning)
-                + HexagonLayoutScreen.DpToPixels(_tuning.SkillPreviewGapDp);
-            float width = HexagonLayoutScreen.DpToPixels(_tuning.SkillPreviewWidthDp);
-            float height = HexagonLayoutScreen.DpToPixels(_tuning.SkillPreviewHeightDp);
+                + HexagonLayoutScreen.DpToPixels(_tuning.Hud.SkillPreviewGapDp);
+            float width = HexagonLayoutScreen.DpToPixels(_tuning.Hud.SkillPreviewWidthDp);
+            float height = HexagonLayoutScreen.DpToPixels(_tuning.Hud.SkillPreviewHeightDp);
 
             Rect safe = HexagonLayoutScreen.SafeRectPx();
             float half = width * 0.5f;

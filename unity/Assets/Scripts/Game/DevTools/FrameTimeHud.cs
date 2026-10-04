@@ -54,7 +54,7 @@ namespace Dovus.Game.DevTools
             // Kapalıyken bileşen DEVRE DIŞI: alfa 0 bir Graphic yine de geometri üretip
             // harmanlanır (T8.1 denetimi 12, T9.1 madde 2).
             _appliedVisible = true;
-            ApplyVisibility(_tuning != null && _tuning.ShowFrameTimeHud);
+            ApplyVisibility(_tuning != null && _tuning.Hud.ShowFrameTimeHud);
 
 #if UNITY_EDITOR || DOVUS_DEBUG
             DebugPanelsChrome.Register(ApplyChrome);
@@ -66,7 +66,7 @@ namespace Dovus.Game.DevTools
         void ApplyChrome(bool visible)
         {
             if (_root != null)
-                _root.SetActive(visible && (_tuning == null || _tuning.ShowFrameTimeHud));
+                _root.SetActive(visible && (_tuning == null || _tuning.Hud.ShowFrameTimeHud));
         }
 
         void OnDestroy() => DebugPanelsChrome.Unregister(ApplyChrome);
@@ -97,7 +97,7 @@ namespace Dovus.Game.DevTools
                 return;
 
             // T9.1 deseni: panelin canlı yazdığı alan her karede karşılaştırılır, değiştiyse uygulanır.
-            ApplyVisibility(_tuning.ShowFrameTimeHud);
+            ApplyVisibility(_tuning.Hud.ShowFrameTimeHud);
             if (!_appliedVisible)
                 return;
 
@@ -112,7 +112,7 @@ namespace Dovus.Game.DevTools
             if (ms > _windowWorstMs)
                 _windowWorstMs = ms;
 
-            float sample = Mathf.Max(0.05f, _tuning.FrameTimeSampleSec);
+            float sample = Mathf.Max(0.05f, _tuning.Hud.FrameTimeSampleSec);
             if (_windowSec < sample || _windowFrames == 0)
                 return;
 
@@ -122,7 +122,7 @@ namespace Dovus.Game.DevTools
             _sb.Clear();
             _sb.Append(avgMs.ToString("0.0")).Append(" ms · ").Append(fps.ToString("0")).Append(" fps");
             _sb.Append("\nen kötü ").Append(_windowWorstMs.ToString("0.0")).Append(" ms");
-            _sb.Append(" · hedef ").Append(_tuning.TargetFrameRateHz);
+            _sb.Append(" · hedef ").Append(_tuning.Hud.TargetFrameRateHz);
             _text.text = _sb.ToString();
 
             ResetWindow();

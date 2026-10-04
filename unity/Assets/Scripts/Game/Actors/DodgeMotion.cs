@@ -234,14 +234,14 @@ namespace Dovus.Game.Actors
         /// konulamaz: eğri u=1'de hızı sıfıra indirdiği için o değer ikinci bir atılım gibi
         /// okunuyordu. Büyüklük artık veri (T8.1).
         /// </summary>
-        float GlideSpeedMps() => _colors != null ? _colors.DodgeGlideSpeedMps : 3.5f;
+        float GlideSpeedMps() => _colors != null ? _colors.Player.DodgeGlideSpeedMps : 3.5f;
 
         Vector3 ClampArena(Vector3 pos)
         {
             if (_motor == null)
                 return pos;
 
-            return ArenaClamp.XZ(pos, _motor.Tuning.ArenaHalfSizeM, _motor.BodyRadiusM);
+            return ArenaClamp.XZ(pos, _motor.Tuning.Arena.ArenaHalfSizeM, _motor.BodyRadiusM);
         }
     }
 }

@@ -181,7 +181,7 @@ namespace Dovus.Game.Skills.Motion
             if (profile == null || profile.HitShape != "ballistic")
                 return;
             float splash = profile.BasicRadiusM > 0f ? profile.BasicRadiusM : 3f;
-            float arena = _host.Motor != null ? _host.Motor.Tuning.ArenaHalfSizeM : 50f;
+            float arena = _host.Motor != null ? _host.Motor.Tuning.Arena.ArenaHalfSizeM : 50f;
             float bossR = _host.Boss != null && _host.Boss.BodyRadiusM > 0.01f ? _host.Boss.BodyRadiusM : 0.85f;
             _host.Cannon.PushCannonBodies(origin.x, origin.z, splash, arena, bossR);
         }

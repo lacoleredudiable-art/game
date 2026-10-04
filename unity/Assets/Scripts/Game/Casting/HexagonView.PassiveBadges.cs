@@ -58,7 +58,7 @@ namespace Dovus.Game.Casting
             rt.offsetMin = Vector2.zero;
             rt.offsetMax = Vector2.zero;
             var bg = go.AddComponent<Image>();
-            bg.sprite = CreateRoundedRectSprite(_tuning.CombatTrayCornerRadiusDp);
+            bg.sprite = CreateRoundedRectSprite(_tuning.Input.CombatTrayCornerRadiusDp);
             bg.type = Image.Type.Sliced;
             bg.raycastTarget = false;
             var outline = go.AddComponent<Outline>();

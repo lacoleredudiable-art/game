@@ -107,7 +107,7 @@ namespace Dovus.Game.Composition.Builders
                 var motor = player.GetComponent<KinematicMotor>();
                 motor?.BindCamera(follow);
             }
-            debug.Configure(input.Engine, view.CanvasRoot, skills, DebugConfig.Enabled && _tuning.ShowSentenceDebugHud);
+            debug.Configure(input.Engine, view.CanvasRoot, skills, DebugConfig.Enabled && _tuning.Hud.ShowSentenceDebugHud);
             debug.BindVitals(vitals);
             input.BindVitals(vitals);
 

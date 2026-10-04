@@ -107,7 +107,7 @@ namespace Dovus.Game.Boss
             bool mouth = kind is BossAttackKind.FireCone or BossAttackKind.Volley;
             string state = mouth ? StateBreath : StateSlam;
             float impactNorm = _tuning == null ? 0.42f
-                : mouth ? _tuning.BossConeImpactNorm : _tuning.BossSlamImpactNorm;
+                : mouth ? _tuning.Boss.BossConeImpactNorm : _tuning.Boss.BossSlamImpactNorm;
             float clipLen = ClipLength(state);
             if (clipLen > 0f && HasParam(ParamActionSpeed))
             {
@@ -136,7 +136,7 @@ namespace Dovus.Game.Boss
         {
             if (_dead || !Ready() || IsBusy)
                 return;
-            float gap = _tuning != null ? _tuning.BossStaggerMinGapSec : 0.6f;
+            float gap = _tuning != null ? _tuning.Boss.BossStaggerMinGapSec : 0.6f;
             if (Time.unscaledTime - _lastStaggerUnscaled < gap)
                 return;
             _lastStaggerUnscaled = Time.unscaledTime;
@@ -167,7 +167,7 @@ namespace Dovus.Game.Boss
             PlayIdle();
         }
 
-        float BlendSec() => _tuning != null ? _tuning.BossAnimCrossFadeSec : 0.15f;
+        float BlendSec() => _tuning != null ? _tuning.Boss.BossAnimCrossFadeSec : 0.15f;
 
         bool Ready() =>
             _animator != null && _animator.isActiveAndEnabled && _animator.runtimeAnimatorController != null;
@@ -238,7 +238,7 @@ namespace Dovus.Game.Boss
         {
             if (_walkClipMps >= 0f)
                 return _walkClipMps;
-            float fallback = _tuning != null ? _tuning.BossWalkClipMps : 1.4f;
+            float fallback = _tuning != null ? _tuning.Boss.BossWalkClipMps : 1.4f;
             AnimationClip walk = FindClipFor(StateLocomotion);
             float mps = walk != null ? walk.averageSpeed.magnitude : 0f;
             if (mps > 0.05f && _animator.isHuman)
