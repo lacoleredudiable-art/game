@@ -190,7 +190,7 @@ namespace Dovus.Core.Mechanic
 
         public static float PayloadScale(VolumePayloadKind kind, double flowFraction, double trapMult, float growth)
         {
-            double f = flowFraction > 0 ? flowFraction : MechanicDefaults.LitN033;
+            double f = flowFraction > 0 ? flowFraction : MechanicDefaults.DefaultFlowFraction;
             switch (kind)
             {
                 case VolumePayloadKind.Totem:

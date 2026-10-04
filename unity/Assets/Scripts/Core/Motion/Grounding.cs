@@ -69,7 +69,7 @@ namespace Dovus.Core.Motion
             if (_landing)
                 return;
             _holding = false;
-            if (MathF.Abs(_y - _groundY) <= MotionDefaults.LitN00005f)
+            if (MathF.Abs(_y - _groundY) <= MotionDefaults.GroundSnapEpsilonM)
             {
                 _y = _groundY;
                 return;
@@ -101,7 +101,7 @@ namespace Dovus.Core.Motion
                 return;
             }
 
-            if (MathF.Abs(rootY - _groundY) > MotionDefaults.LitN002f)
+            if (MathF.Abs(rootY - _groundY) > MotionDefaults.GroundReleaseDeltaM)
             {
                 Follow(rootY);
                 Release();
@@ -117,7 +117,7 @@ namespace Dovus.Core.Motion
                 return;
             _landT += MathF.Max(0f, dt);
             float u = LandSec <= 0.0001f ? 1f : Math.Clamp(_landT / LandSec, 0f, 1f);
-            float s = u * u * (MotionDefaults.Lit3f - 2f * u);
+            float s = u * u * (MotionDefaults.SmoothStepThree - 2f * u);
             _y = _landFrom + (_groundY - _landFrom) * s;
             if (u >= 1f)
             {

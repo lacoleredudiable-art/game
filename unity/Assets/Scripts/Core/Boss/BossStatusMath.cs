@@ -163,13 +163,13 @@ namespace Dovus.Core.Boss
                 apply = new ElementBossStatus(
                     StatusKind.Burn,
                     durationSec * BossStatusMathDefaults.SecToMs,
-                    FirstNumber(statusEffect, BossStatusMathDefaults.Lit3f));
+                    FirstNumber(statusEffect, BossStatusMathDefaults.DefaultBurnDps));
                 return true;
             }
 
             if (string.Equals(status, "weaken", StringComparison.OrdinalIgnoreCase))
             {
-                float percent = FirstNumber(statusEffect, BossStatusMathDefaults.Lit15f);
+                float percent = FirstNumber(statusEffect, BossStatusMathDefaults.DefaultWeakenPercent);
                 if (percent < 0f)
                     percent = -percent;
                 if (percent > 100f)

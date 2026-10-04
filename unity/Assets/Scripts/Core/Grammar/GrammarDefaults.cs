@@ -4,8 +4,8 @@ namespace Dovus.Core.Grammar
     public static class GrammarDefaults
     {
         public const double SecToMs = 1000.0;
-        public const float LitN075f = 0.75f;
-        public const int Lit144 = 144;
-        public const int Lit32 = 32;
+        public const float CaptionFadeStartRatio = 0.75f;
+        public const int ExpectedV61SkillCount = 144;
+        public const int DrawCaptionBufferCapacity = 32;
     }
 }

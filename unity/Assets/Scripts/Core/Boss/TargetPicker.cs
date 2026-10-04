@@ -45,9 +45,9 @@ namespace Dovus.Core.Boss
     /// </summary>
     public sealed class TargetingConfig
     {
-        public float AllyWeight = BossDefaults.LitN03f;
+        public float AllyWeight = BossDefaults.AllyTargetWeight;
         public float AllyDamageMult = 0.5f;
-        public float AllyReviveSec = BossDefaults.Lit8f;
+        public float AllyReviveSec = BossDefaults.AllyReviveSec;
         public float AllyReviveRatio = 0.5f;
         public bool DecoyPriority = true;
 
@@ -101,7 +101,7 @@ namespace Dovus.Core.Boss
             if (total <= 0)
                 return -1;
 
-            double r = Math.Max(0, Math.Min(BossDefaults.RollClamp999f, roll01)) * total;
+            double r = Math.Max(0, Math.Min(BossDefaults.RollClampMax, roll01)) * total;
             int lastValid = -1;
             for (int i = 0; i < candidates.Count; i++)
             {

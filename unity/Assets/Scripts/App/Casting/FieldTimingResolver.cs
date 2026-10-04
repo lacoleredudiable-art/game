@@ -30,7 +30,7 @@ namespace Dovus.App.Casting
                 durationSec = catalogLifetimeSec;
 
             var engine = skill.Engine;
-            float tickRateMult = Math.Max(CastingDefaults.MinTick01f, engine.TickRateMult(1f));
+            float tickRateMult = Math.Max(CastingDefaults.MinTickSec, engine.TickRateMult(1f));
             tickSec /= tickRateMult;
             if (durationSec <= 0f && !engine.IsNull)
             {
@@ -57,10 +57,10 @@ namespace Dovus.App.Casting
             }
 
             durationSec = Math.Max(bangDurationSec, durationSec);
-            float shareTick = Clamp(tickSec, CastingDefaults.MinTick01f, Math.Max(CastingDefaults.MinTick01f, durationSec));
+            float shareTick = Clamp(tickSec, CastingDefaults.MinTickSec, Math.Max(CastingDefaults.MinTickSec, durationSec));
             perTickShare = SustainedField.PerTickShare(durationSec, shareTick);
             durationSec *= weaponDurationMult > 0f ? weaponDurationMult : 1f;
-            tickSec = Clamp(tickSec, CastingDefaults.MinTick01f, durationSec);
+            tickSec = Clamp(tickSec, CastingDefaults.MinTickSec, durationSec);
         }
 
         static float Clamp(float value, float min, float max) =>

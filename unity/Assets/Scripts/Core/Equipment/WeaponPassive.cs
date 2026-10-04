@@ -367,7 +367,7 @@ namespace Dovus.Core.Equipment
         {
             if (durationSec <= 0f)
                 return 1;
-            float tick = tickSec > WeaponPassiveDefaults.MinTick01f ? tickSec : WeaponPassiveDefaults.MinTick01f;
+            float tick = tickSec > WeaponPassiveDefaults.MinTickSec ? tickSec : WeaponPassiveDefaults.MinTickSec;
             return Math.Max(1, (int)Math.Ceiling(durationSec / tick - 1e-4f));
         }
 

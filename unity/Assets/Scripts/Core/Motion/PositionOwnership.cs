@@ -98,7 +98,7 @@ namespace Dovus.Core.Motion
                 case "return":
                     return true;
                 case "channel":
-                    return phase.DriftM > PositionOwnershipDefaults.Epsilon01f || phase.WalkMps > PositionOwnershipDefaults.Epsilon01f;
+                    return phase.DriftM > PositionOwnershipDefaults.MinDistM || phase.WalkMps > PositionOwnershipDefaults.MinDistM;
                 default:
                     return phase.Land == "behind";
             }
@@ -146,10 +146,10 @@ namespace Dovus.Core.Motion
                 }
             }
 
-            float fallback = grammarDistance > PositionOwnershipDefaults.LitN001
+            float fallback = grammarDistance > PositionOwnershipDefaults.GrammarDistMinM
                 ? (float)grammarDistance
-                : (fallbackDistanceM > PositionOwnershipDefaults.Epsilon01f ? fallbackDistanceM : MotionFallbacks.Coded.StepM);
-            float dashSec = returnDashSec > PositionOwnershipDefaults.Epsilon01f ? returnDashSec : MotionFallbacks.Coded.PhaseSec;
+                : (fallbackDistanceM > PositionOwnershipDefaults.MinDistM ? fallbackDistanceM : MotionFallbacks.Coded.StepM);
+            float dashSec = returnDashSec > PositionOwnershipDefaults.MinDistM ? returnDashSec : MotionFallbacks.Coded.PhaseSec;
 
             var phases = new List<MotionPhase>(template.Phases.Count + 2);
             bool hasCurve = false;
@@ -206,7 +206,7 @@ namespace Dovus.Core.Motion
                 return false;
             if (phase.Land == "behind")
                 return true;
-            if (phase.DistanceM > PositionOwnershipDefaults.Epsilon01f || phase.ForwardM > PositionOwnershipDefaults.Epsilon01f || phase.DriftM > PositionOwnershipDefaults.Epsilon01f)
+            if (phase.DistanceM > PositionOwnershipDefaults.MinDistM || phase.ForwardM > PositionOwnershipDefaults.MinDistM || phase.DriftM > PositionOwnershipDefaults.MinDistM)
                 return true;
             if (phase.Motion is "pull" or "blink" or "return")
                 return true;
@@ -230,7 +230,7 @@ namespace Dovus.Core.Motion
         static MotionPhase BehindFallback(float sec, float distanceM) =>
             new MotionPhase(
                 "arkaya", "hop", sec, "target", "track", string.Empty, 0f,
-                distanceM, 0f, 1f, 0f, PositionOwnershipDefaults.LitN04f, 0f, 0f, 0f, 0f, 0f, 0f,
+                distanceM, 0f, 1f, 0f, PositionOwnershipDefaults.SlideDurationSec, 0f, 0f, 0f, 0f, 0f, 0f,
                 distanceM, 0f, null, null, "behind", false);
 
         static MotionPhase ReturnFallback(float sec, float distanceM) =>

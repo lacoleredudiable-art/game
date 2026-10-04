@@ -18,7 +18,7 @@ namespace Dovus.Core.Casting
         int _activeCasts;
 
         /// <summary>Varsayılanlar JSON cooldown_rules: 0.3s GCD, max 1 eşzamanlı cast.</summary>
-        public CooldownTracker(float globalCooldownSec = CooldownTrackerDefaults.LitN03f, int maxConcurrentCasts = 1)
+        public CooldownTracker(float globalCooldownSec = CooldownTrackerDefaults.DefaultGlobalCooldownSec, int maxConcurrentCasts = 1)
         {
             _globalCooldownSec = Math.Max(0f, globalCooldownSec);
             _maxConcurrentCasts = Math.Max(1, maxConcurrentCasts);

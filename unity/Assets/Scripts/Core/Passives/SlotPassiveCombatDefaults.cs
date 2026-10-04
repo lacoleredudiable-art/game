@@ -4,7 +4,7 @@ namespace Dovus.Core.Passives
     public static class SlotPassiveCombatDefaults
     {
         public const double SecToMs = 1000.0;
-        public const float MinTick01f = 0.01f;
-        public const int Lit64 = 64;
+        public const float MinTickSec = 0.01f;
+        public const int ChannelTickGuardMax = 64;
     }
 }

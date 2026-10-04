@@ -13,7 +13,7 @@ namespace Dovus.Core.Motion
         public static float Smooth(float u)
         {
             u = Math.Clamp(u, 0f, 1f);
-            return u * u * (MotionDefaults.Lit3f - 2f * u);
+            return u * u * (MotionDefaults.SmoothStepThree - 2f * u);
         }
 
         public static void Sample(

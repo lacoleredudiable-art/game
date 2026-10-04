@@ -4,6 +4,6 @@ namespace Dovus.Core.Casting
     public static class CooldownTrackerDefaults
     {
         public const double SecToMs = 1000.0;
-        public const float LitN03f = 0.3f;
+        public const float DefaultGlobalCooldownSec = 0.3f;
     }
 }

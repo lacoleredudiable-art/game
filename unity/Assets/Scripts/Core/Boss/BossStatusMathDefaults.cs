@@ -5,7 +5,7 @@ namespace Dovus.Core.Boss
     {
         public const double SecToMs = 1000.0;
         public const float OutgoingMultCap999f = 0.999f;
-        public const float Lit15f = 15f;
-        public const float Lit3f = 3f;
+        public const float DefaultWeakenPercent = 15f;
+        public const float DefaultBurnDps = 3f;
     }
 }

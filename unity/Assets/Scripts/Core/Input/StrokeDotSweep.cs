@@ -61,7 +61,7 @@ namespace Dovus.Core.Input
                     if (a < 1e-6f)
                         continue;
                     float b = 2f * (fx * dx + fy * dy);
-                    float disc = b * b - InputDefaults.Lit4f * a * c;
+                    float disc = b * b - InputDefaults.DiscriminantFourMult * a * c;
                     if (disc < 0f)
                         continue;
                     t = (-b - (float)Math.Sqrt(disc)) / (2f * a);

@@ -22,7 +22,7 @@ namespace Dovus.Core.Motion
             float dist = MathF.Sqrt(dx * dx + dz * dz);
             float ux;
             float uz;
-            if (dist > EmiciPullDefaults.LitN008f)
+            if (dist > EmiciPullDefaults.MinBossSeparationM)
             {
                 ux = dx / dist;
                 uz = dz / dist;
@@ -54,7 +54,7 @@ namespace Dovus.Core.Motion
         {
             float now = Distance(bossX, bossZ, playerX, playerZ);
             float then = Distance(destX, destZ, playerX, playerZ);
-            return then <= now + EmiciPullDefaults.LitN002f;
+            return then <= now + EmiciPullDefaults.PullDistEpsilonM;
         }
 
         public static float Distance(float ax, float az, float bx, float bz)
@@ -86,7 +86,7 @@ namespace Dovus.Core.Motion
         {
             float dx = homeX - playerX;
             float dz = homeZ - playerZ;
-            if (dx * dx + dz * dz > EmiciPullDefaults.LitN00064f)
+            if (dx * dx + dz * dz > EmiciPullDefaults.HomeOffsetDistSqrMin)
             {
                 stableX = dx;
                 stableZ = dz;
@@ -99,7 +99,7 @@ namespace Dovus.Core.Motion
             float dist = Distance(homeX, homeZ, toX, toZ);
             if (!alreadyPulling)
                 speed = dist / DisplacementEase.DurationSec;
-            pulling = dist > EmiciPullDefaults.LitN002f;
+            pulling = dist > EmiciPullDefaults.PullDistEpsilonM;
         }
 
         /// <summary>Varışa doğru sabit hız. Hedefi geçmez; içerdeyse temas noktasına kadar dışarı yürür, ışınlanmaz.</summary>
@@ -113,7 +113,7 @@ namespace Dovus.Core.Motion
             float dz = toZ - homeZ;
             float dist = MathF.Sqrt(dx * dx + dz * dz);
             float step = MathF.Max(0f, speed) * MathF.Max(0f, dt);
-            if (dist <= EmiciPullDefaults.LitN002f || dist <= step)
+            if (dist <= EmiciPullDefaults.PullDistEpsilonM || dist <= step)
             {
                 homeX = toX;
                 homeZ = toZ;

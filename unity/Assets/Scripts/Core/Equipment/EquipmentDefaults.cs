@@ -4,6 +4,6 @@ namespace Dovus.Core.Equipment
     public static class EquipmentDefaults
     {
         public const double SecToMs = 1000.0;
-        public const float Epsilon01f = 0.01f;
+        public const float MinDistM = 0.01f;
     }
 }

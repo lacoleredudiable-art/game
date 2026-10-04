@@ -19,8 +19,8 @@ namespace Dovus.Core.Shared
         /// <summary>Varsayılanlar JSON resource_system: 100 / 8 / 1.5.</summary>
         public ResourceTracker(
             float maxMana = 100f,
-            float regenPerSec = SharedDefaults.Lit8f,
-            float regenDelayAfterCastSec = SharedDefaults.Lit15f)
+            float regenPerSec = SharedDefaults.RegenPerSec,
+            float regenDelayAfterCastSec = SharedDefaults.RegenDelayAfterCastSec)
         {
             _maxMana = Math.Max(0f, maxMana);
             _regenPerSec = Math.Max(0f, regenPerSec);

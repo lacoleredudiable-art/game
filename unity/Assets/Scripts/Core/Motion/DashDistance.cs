@@ -10,7 +10,7 @@ namespace Dovus.Core.Motion
     {
         public static MotionTemplate Apply(MotionTemplate template, float dashM)
         {
-            if (template == null || dashM <= MotionDefaults.Min05f)
+            if (template == null || dashM <= MotionDefaults.MinDashM)
                 return template;
             bool changed = false;
             var phases = new List<MotionPhase>(template.Phases.Count);

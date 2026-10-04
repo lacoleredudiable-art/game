@@ -37,7 +37,7 @@ namespace Dovus.Core.Equipment
         {
             if (profile == null || nowMs < _nextMoveMs)
                 return false;
-            float max = profile.OrbPlaceM > 0f ? profile.OrbPlaceM : OrbAnchorDefaults.Lit8f;
+            float max = profile.OrbPlaceM > 0f ? profile.OrbPlaceM : OrbAnchorDefaults.DefaultOrbPlaceM;
             float dx = targetX - handX;
             float dz = targetZ - handZ;
             float dist = (float)Math.Sqrt(dx * dx + dz * dz);
@@ -52,7 +52,7 @@ namespace Dovus.Core.Equipment
             _toX = targetX;
             _toZ = targetZ;
             _moveStartMs = nowMs;
-            float sec = profile.OrbMoveSec > 0f ? profile.OrbMoveSec : OrbAnchorDefaults.LitN04f;
+            float sec = profile.OrbMoveSec > 0f ? profile.OrbMoveSec : OrbAnchorDefaults.DefaultOrbMoveSec;
             _moveEndMs = nowMs + sec * OrbAnchorDefaults.SecToMs;
             _nextMoveMs = nowMs + (profile.OrbCooldownSec > 0f ? profile.OrbCooldownSec : 2f) * OrbAnchorDefaults.SecToMs;
             _moving = true;
@@ -69,7 +69,7 @@ namespace Dovus.Core.Equipment
             _toX = handX;
             _toZ = handZ;
             _moveStartMs = nowMs;
-            float sec = profile.OrbMoveSec > 0f ? profile.OrbMoveSec : OrbAnchorDefaults.LitN04f;
+            float sec = profile.OrbMoveSec > 0f ? profile.OrbMoveSec : OrbAnchorDefaults.DefaultOrbMoveSec;
             _moveEndMs = nowMs + sec * OrbAnchorDefaults.SecToMs;
             _nextMoveMs = nowMs + (profile.OrbCooldownSec > 0f ? profile.OrbCooldownSec : 2f) * OrbAnchorDefaults.SecToMs;
             _moving = true;
@@ -95,7 +95,7 @@ namespace Dovus.Core.Equipment
                 _moving = false;
                 float dx = _x - handX;
                 float dz = _z - handZ;
-                _atHand = dx * dx + dz * dz < OrbAnchorDefaults.LitN004f;
+                _atHand = dx * dx + dz * dz < OrbAnchorDefaults.AtHandDistSqrMax;
             }
         }
     }

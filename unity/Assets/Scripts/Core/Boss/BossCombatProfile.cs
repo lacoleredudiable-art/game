@@ -47,7 +47,7 @@ namespace Dovus.Core.Boss
             JsonValue player = root["global_rules"]["player_stats"];
             JsonValue boss = root["global_rules"]["boss_stats_default"];
             float playerHp = player["max_hp"].AsFloat(100f);
-            float bossHp = boss["max_hp"].AsFloat(BossDefaults.Lit22000f);
+            float bossHp = boss["max_hp"].AsFloat(BossDefaults.FallbackBossMaxHp);
             float bossHard = boss.Has("max_hp_hard") ? boss["max_hp_hard"].AsFloat(bossHp) : bossHp;
             float armor = boss["armor"].AsFloat(0f);
             float armorHard = boss.Has("armor_hard") ? boss["armor_hard"].AsFloat(armor) : armor;

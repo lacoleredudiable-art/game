@@ -35,14 +35,14 @@ namespace Dovus.Core.Motion
             string adjectiveId,
             MotionTemplate template)
         {
-            if (hitShape != "ballistic" || recoilM <= MotionDefaults.Epsilon01f || baseDamage <= MotionDefaults.Epsilon01f)
+            if (hitShape != "ballistic" || recoilM <= MotionDefaults.MinDistM || baseDamage <= MotionDefaults.MinDistM)
                 return false;
             return !EmiciApproach.ShouldHoldCaster(adjectiveId, template);
         }
 
         public static MotionTemplate Append(MotionTemplate template, float recoilM)
         {
-            if (template == null || recoilM <= MotionDefaults.Epsilon01f || Contains(template))
+            if (template == null || recoilM <= MotionDefaults.MinDistM || Contains(template))
                 return template;
             var phases = new List<MotionPhase>(template.Phases.Count + 1);
             for (int i = 0; i < template.Phases.Count; i++)

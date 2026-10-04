@@ -75,7 +75,7 @@ namespace Dovus.Core.Mechanic
             p.Body.Shape = hb.Shape;
             p.Body.SizeM = hb.SizeA;
             double longest = p.Effects.Count > 0 ? p.Effects.Max(x => x.DurationSec) : 0;
-            p.Body.LifeSec = hb.Timed ? Math.Max(0.5, longest) : MechanicDefaults.LitN02;
+            p.Body.LifeSec = hb.Timed ? Math.Max(0.5, longest) : MechanicDefaults.MinTimedBodyLifeSec;
             string perm = va["body"]["permeability"].AsString();
             if (perm.Length > 0) p.Body.Permeability = perm;
             p.Trace.Add($"fiil: {p.VerbName} → {string.Join(", ", p.Effects)} | gövde {hb.Shape} {hb.SizeA}m");
@@ -171,7 +171,7 @@ namespace Dovus.Core.Mechanic
                     break;
                 case "isin":
                     b.Contact = "tik";
-                    b.LifeSec = Math.Max(b.LifeSec, _r.Param("beam_channel_sec") * (p.Compatible ? MechanicDefaults.Lit13 : 1.0));
+                    b.LifeSec = Math.Max(b.LifeSec, _r.Param("beam_channel_sec") * (p.Compatible ? MechanicDefaults.BeamChannelLifeMult : 1.0));
                     break;
                 case "govde":
                     b.Attached = true;
@@ -314,7 +314,7 @@ namespace Dovus.Core.Mechanic
                         if (e.Amount > 0 && e.Target != "dusman") e.Modes.Add("tasar");
                         break;
                     case "hiz":
-                        if (e.Stat == "tempo") e.Amount = Math.Max(MechanicDefaults.Min05f, 1 - (1 - e.Amount) * _r.Param("dense_rate_mult"));
+                        if (e.Stat == "tempo") e.Amount = Math.Max(MechanicDefaults.MinDenseRateFloor, 1 - (1 - e.Amount) * _r.Param("dense_rate_mult"));
                         e.Modes.Add("sert");
                         break;
                     case "konum":

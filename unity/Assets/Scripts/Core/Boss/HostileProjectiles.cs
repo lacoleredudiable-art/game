@@ -112,7 +112,7 @@ namespace Dovus.Core.Boss
                 Z = z,
                 VX = vx,
                 VZ = vz,
-                RadiusM = Math.Max(BossDefaults.Epsilon01f, radiusM),
+                RadiusM = Math.Max(BossDefaults.MinDistM, radiusM),
                 Damage = Math.Max(0f, damage),
                 SpawnMs = nowMs,
                 DieMs = nowMs + Math.Max(1.0, lifeMs),
@@ -299,7 +299,7 @@ namespace Dovus.Core.Boss
             float abx = bx - ax;
             float abz = bz - az;
             float len2 = abx * abx + abz * abz;
-            float t = len2 > BossDefaults.Len2Epsilon1e8f ? ((px - ax) * abx + (pz - az) * abz) / len2 : 0f;
+            float t = len2 > BossDefaults.SegmentLen2EpsilonSqr ? ((px - ax) * abx + (pz - az) * abz) / len2 : 0f;
             t = Math.Clamp(t, 0f, 1f);
             float cx = ax + abx * t - px;
             float cz = az + abz * t - pz;

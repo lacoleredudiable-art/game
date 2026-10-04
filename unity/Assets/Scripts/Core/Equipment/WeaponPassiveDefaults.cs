@@ -4,6 +4,6 @@ namespace Dovus.Core.Equipment
     public static class WeaponPassiveDefaults
     {
         public const double SecToMs = 1000.0;
-        public const float MinTick01f = 0.01f;
+        public const float MinTickSec = 0.01f;
     }
 }

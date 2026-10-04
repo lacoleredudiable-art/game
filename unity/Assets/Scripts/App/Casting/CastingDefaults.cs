@@ -4,8 +4,8 @@ namespace Dovus.App.Casting
     public static class CastingDefaults
     {
         public const double SecToMs = 1000.0;
-        public const float MinTick01f = 0.01f;
-        public const float Min10f = 0.1f;
+        public const float MinTickSec = 0.01f;
+        public const float MinSoftAimRangeM = 0.1f;
         public const float ReachFraction035f = 0.35f;
     }
 }

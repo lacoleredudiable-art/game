@@ -9,7 +9,7 @@ namespace Dovus.Core.Motion
         public static bool IsEmici(string adjectiveId) => adjectiveId == "2";
 
         public static bool PassesThrough(MotionPhase phase) =>
-            phase != null && (phase.OvershootM > MotionDefaults.Epsilon01f || phase.Land == "behind");
+            phase != null && (phase.OvershootM > MotionDefaults.MinDistM || phase.Land == "behind");
 
         /// <summary>Hedefe yaklaşan hamle. Geri çekilme, atış ve tutma buna girmez.</summary>
         public static bool AdvancesToward(MotionPhase phase)

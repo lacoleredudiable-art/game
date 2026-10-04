@@ -88,7 +88,7 @@ namespace Dovus.Core.Input
 
         public static void EnforceClearance(ref float x, ref float y, float buttonRadius, ReadOnlySpan<Circle2> forbidden, float gap)
         {
-            for (int pass = 0; pass < HudButtonPlacementDefaults.Lit24; pass++)
+            for (int pass = 0; pass < HudButtonPlacementDefaults.OverlapPassCount; pass++)
             {
                 if (!OverlapsAny(x, y, buttonRadius, forbidden, gap))
                     return;
@@ -136,13 +136,13 @@ namespace Dovus.Core.Input
                 len = 1f;
             }
 
-            for (int push = 0; push < HudButtonPlacementDefaults.Lit64 && OverlapsAny(x, y, buttonRadius, forbidden, gap); push++)
+            for (int push = 0; push < HudButtonPlacementDefaults.OverlapPushMaxCount && OverlapsAny(x, y, buttonRadius, forbidden, gap); push++)
             {
-                x += dx / len * MathF.Max(gap * HudButtonPlacementDefaults.LitN025f, 2f);
-                y += dy / len * MathF.Max(gap * HudButtonPlacementDefaults.LitN025f, 2f);
+                x += dx / len * MathF.Max(gap * HudButtonPlacementDefaults.GapPushRatio, 2f);
+                y += dy / len * MathF.Max(gap * HudButtonPlacementDefaults.GapPushRatio, 2f);
             }
 
-            for (int iter = 0; iter < HudButtonPlacementDefaults.Lit96; iter++)
+            for (int iter = 0; iter < HudButtonPlacementDefaults.LayoutIterMaxCount; iter++)
             {
                 bool any = false;
                 var button = new Circle2(x, y, buttonRadius);

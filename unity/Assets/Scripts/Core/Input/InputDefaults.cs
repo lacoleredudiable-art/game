@@ -4,6 +4,6 @@ namespace Dovus.Core.Input
     public static class InputDefaults
     {
         public const double RadToDeg = 180.0;
-        public const float Lit4f = 4f;
+        public const float DiscriminantFourMult = 4f;
     }
 }
