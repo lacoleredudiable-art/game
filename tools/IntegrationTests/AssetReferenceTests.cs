@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Dovus.Game.Assets;
 using NUnit.Framework;
 
 namespace IntegrationTests;
@@ -30,6 +31,51 @@ public class AssetReferenceTests
 
     static string BaselinePath =>
         Path.Combine(RepoPaths.Root, "tools", "IntegrationTests", "known-missing-asset-guids.txt");
+
+    static string AssetReferencesReportPath => RepoPaths.Docs("asset-references.md");
+
+    [Test]
+    public void RuntimeResourcePaths_MatchKnownMissingReport()
+    {
+        var scan = RuntimeResourcePathScanner.Scan(RepoPaths.UnityAssets);
+        Assert.That(File.Exists(AssetReferencesReportPath), Is.True, AssetReferencesReportPath);
+
+        string markdown = File.ReadAllText(AssetReferencesReportPath);
+        RuntimeResourcePathScanner.ParseKnownMissingFromReport(
+            markdown, out HashSet<string> knownResources, out HashSet<string> knownShaders);
+
+        var actualResources = new HashSet<string>(scan.MissingResources, StringComparer.Ordinal);
+        var actualShaders = new HashSet<string>(scan.MissingShaders, StringComparer.Ordinal);
+
+        if (!knownResources.SetEquals(actualResources))
+        {
+            var extra = actualResources.Except(knownResources).OrderBy(s => s).ToList();
+            var stale = knownResources.Except(actualResources).OrderBy(s => s).ToList();
+            Assert.Fail(
+                "Resources bilinen eksikler raporuyla uyuşmuyor."
+                + (extra.Count > 0 ? " Yeni eksik: " + string.Join(", ", extra) : "")
+                + (stale.Count > 0 ? " Artık var (raporu güncelle): " + string.Join(", ", stale) : ""));
+        }
+
+        if (!knownShaders.SetEquals(actualShaders))
+        {
+            var extra = actualShaders.Except(knownShaders).OrderBy(s => s).ToList();
+            var stale = knownShaders.Except(actualShaders).OrderBy(s => s).ToList();
+            Assert.Fail(
+                "Shader bilinen eksikler raporuyla uyuşmuyor."
+                + (extra.Count > 0 ? " Yeni eksik: " + string.Join(", ", extra) : "")
+                + (stale.Count > 0 ? " Artık var (raporu güncelle): " + string.Join(", ", stale) : ""));
+        }
+    }
+
+    [Test, Explicit("docs/asset-references.md raporunu yeniden üret")]
+    public void GenerateAssetReferencesReport()
+    {
+        var scan = RuntimeResourcePathScanner.Scan(RepoPaths.UnityAssets);
+        string markdown = RuntimeResourcePathScanner.FormatReportMarkdown(scan, DateTime.UtcNow);
+        File.WriteAllText(AssetReferencesReportPath, markdown);
+        TestContext.Out.WriteLine($"Wrote {AssetReferencesReportPath}");
+    }
 
     [Test]
     public void ResourceAssetGuids_ResolveOrMatchKnownMissingBaseline()
