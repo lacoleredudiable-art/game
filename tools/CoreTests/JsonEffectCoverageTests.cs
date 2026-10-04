@@ -29,33 +29,33 @@ public class JsonEffectCoverageTests
     // kind, key, evidence file (repo-relative), token that must appear in that file
     static readonly (string Kind, string Key, string File, string Token)[] Handlers =
     {
-        ("mode", "akinti", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "\"akinti\""),
+        ("mode", "akinti", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicVolumeTicker.cs", "\"akinti\""),
         ("mode", "akis", "unity/Assets/Scripts/Core/Mechanic/TemplateDelivery.cs", "\"akis\""),
         ("mode", "aktarim", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicGrammar.cs", "\"aktarim\""),
-        ("mode", "alan", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "\"alan\""),
-        ("mode", "ardinda_kopya", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "SpawnMechanicDecoy"),
-        ("mode", "arinma_alani", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "\"arinma_alani\""),
+        ("mode", "alan", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicVolumeTicker.cs", "\"alan\""),
+        ("mode", "ardinda_kopya", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicWorldRuntime.cs", "SpawnMechanicDecoy"),
+        ("mode", "arinma_alani", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicVolumeTicker.cs", "\"arinma_alani\""),
         ("mode", "artan_oran", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"artan_oran\""),
-        ("mode", "aura", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "\"aura\""),
+        ("mode", "aura", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicVolumeTicker.cs", "\"aura\""),
         ("mode", "ayna_klon", "unity/Assets/Scripts/Core/Mechanic/MechanicWorldProfile.cs", "\"ayna_klon\""),
         ("mode", "ayna_sifati", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.VerbExecution.cs", "GrantReflect"),
         ("mode", "ayna_yuzey", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"ayna_yuzey\""),
         ("mode", "bag", "unity/Assets/Scripts/Core/Mechanic/MechanicModel.cs", "\"bag\""),
         ("mode", "bag_akisi", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"bag_akisi\""),
-        ("mode", "bag_bagisiklik", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "\"bag_bagisiklik\""),
+        ("mode", "bag_bagisiklik", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicVolumeTicker.cs", "\"bag_bagisiklik\""),
         ("mode", "bag_boyunca", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicGrammar.cs", "PullBossToPlayerContact"),
-        ("mode", "bag_ucu", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "\"link:\""),
+        ("mode", "bag_ucu", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicVolumeTicker.cs", "\"link:\""),
         ("mode", "bagli_muhafiz", "unity/Assets/Scripts/Core/Mechanic/MechanicWorldProfile.cs", "\"bagli_muhafiz\""),
-        ("mode", "bataklik", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "\"bataklik\""),
+        ("mode", "bataklik", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicVolumeTicker.cs", "\"bataklik\""),
         ("mode", "bolunen", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"bolunen\""),
-        ("mode", "bulut_ici", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "\"bulut_ici\""),
+        ("mode", "bulut_ici", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicVolumeTicker.cs", "\"bulut_ici\""),
         ("mode", "bulut_tik", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"bulut_tik\""),
         ("mode", "buyuyen", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"buyuyen\""),
-        ("mode", "can_bagi", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "\"hasar_paylasimi\""),
+        ("mode", "can_bagi", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicVolumeTicker.cs", "\"hasar_paylasimi\""),
         ("mode", "can_emen", "unity/Assets/Scripts/Game/Skills/Launch/SkillExecutorLauncher.cs", "\"can_emen\""),
         ("mode", "cana_cevir", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.VerbExecution.cs", "_emHealRatio"),
         ("mode", "dalga", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"dalga\""),
-        ("mode", "dikkat_ceker", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "\"dikkat_ceker\""),
+        ("mode", "dikkat_ceker", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicVolumeTicker.cs", "\"dikkat_ceker\""),
         ("mode", "dokunulana", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"dokunulana\""),
         ("mode", "dondur", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicGrammar.cs", "\"dondur\""),
         ("mode", "dosttan_dosta", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"dosttan_dosta\""),
@@ -63,7 +63,7 @@ public class JsonEffectCoverageTests
         ("mode", "emme", "unity/Assets/Scripts/Core/Mechanic/DrainNumbers.cs", "TryShare"),
         ("mode", "faz", "unity/Assets/Scripts/Core/Motion/MotionTemplateCatalog.cs", "\"faz\""),
         ("mode", "geri_donus", "unity/Assets/Scripts/Core/Motion/PositionOwnership.cs", "\"isaret_geri_don\""),
-        ("mode", "geri_sarma", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "RewindBoss"),
+        ("mode", "geri_sarma", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicWorldRuntime.cs", "RewindBoss"),
         ("mode", "gizli", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"gizli\""),
         ("mode", "gorunmez", "unity/Assets/Scripts/Game/Skills/Execution/SummonExecutor.cs", "\"gorunmez\""),
         ("mode", "gorunmez_gecis", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicGrammar.cs", "StatusKind.Stealth"),
@@ -81,13 +81,13 @@ public class JsonEffectCoverageTests
         ("mode", "isinlanma", "unity/Assets/Scripts/Core/Motion/PositionOwnership.cs", "\"hedefin_arkasina\""),
         ("mode", "iskalamaz", "unity/Assets/Scripts/Core/Mechanic/TemplateDelivery.cs", "order.Homing"),
         ("mode", "kiskac", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"kiskac\""),
-        ("mode", "koruyucu_tetik", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "\"koruyucu_tetik\""),
+        ("mode", "koruyucu_tetik", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicVolumeTicker.cs", "\"koruyucu_tetik\""),
         ("mode", "merkeze", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicGrammar.cs", "PullBossToPlayerContact"),
         ("mode", "portal_cifti", "unity/Assets/Scripts/Core/Portal/PortalSystem.cs", "IsPortalSkill"),
         ("mode", "sana_dogru", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicGrammar.cs", "PullBossToPlayerContact"),
         ("mode", "savusturma", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"savusturma\""),
         ("mode", "senin_kopyan", "unity/Assets/Scripts/Game/Skills/Execution/SummonExecutor.cs", "\"klon\""),
-        ("mode", "senkron", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "\"senkron\""),
+        ("mode", "senkron", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicVolumeTicker.cs", "\"senkron\""),
         ("mode", "sersem", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicGrammar.cs", "\"sersem\""),
         ("mode", "sert", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"sert\""),
         ("mode", "sicrayip_cakil", "docs/motion-templates.json", "\"3-8\""),
@@ -97,21 +97,21 @@ public class JsonEffectCoverageTests
         ("mode", "suzulme", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.TemplateDelivery.cs", "\"suzulme\""),
         ("mode", "taret", "unity/Assets/Scripts/Core/Mechanic/MechanicWorldProfile.cs", "\"taret\""),
         ("mode", "tasar", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"tasar\""),
-        ("mode", "tasma", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "MoveHomeToward"),
+        ("mode", "tasma", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicVolumeTicker.cs", "MoveHomeToward"),
         ("mode", "ters_kontrol", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicGrammar.cs", "\"ters_kontrol\""),
         ("mode", "tek_hedef", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"tek_hedef\""),
-        ("mode", "ters_hedef", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "PurgeBossBuffs"),
+        ("mode", "ters_hedef", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicWorldRuntime.cs", "PurgeBossBuffs"),
         ("mode", "ters_kopya", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"ters_kopya\""),
-        ("mode", "titrer", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "\"titrer\""),
+        ("mode", "titrer", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicVolumeTicker.cs", "\"titrer\""),
         ("mode", "totem", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"totem\""),
         ("mode", "tumunu_sil", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"tumunu_sil\""),
         ("mode", "tuzak", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"tuzak\""),
         ("mode", "uzun", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicGrammar.cs", "case (\"hiz\", \"hareket\")"),
         ("mode", "yanki", "unity/Assets/Scripts/Core/Mechanic/TemplateDelivery.cs", "\"onceki_skill_tekrar\""),
-        ("mode", "yavas", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "\"link:\""),
+        ("mode", "yavas", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicVolumeTicker.cs", "\"link:\""),
         ("mode", "yukari_firlat", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicGrammar.cs", "\"yukari_firlat\""),
         ("mode", "yukselen", "unity/Assets/Scripts/Core/Data/SkillEngineModifiers.cs", "\"self_damage_buff\""),
-        ("mode", "zaman_alani", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "\"zaman_alani\""),
+        ("mode", "zaman_alani", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicVolumeTicker.cs", "\"zaman_alani\""),
         ("mode", "ziplayan", "unity/Assets/Scripts/Game/Skills/Execution/SummonExecutor.cs", "\"ziplayan\""),
         ("mode", "zirh_yoksay", "unity/Assets/Scripts/Core/Data/SkillEngineModifiers.cs", "\"ignore_armor\""),
         ("stat", "aktor_yarat", "unity/Assets/Scripts/Game/Skills/Launch/SkillExecutorLauncher.cs", "\"aktor_yarat\""),
@@ -119,13 +119,13 @@ public class JsonEffectCoverageTests
         ("stat", "cek", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicGrammar.cs", "\"cek\""),
         ("stat", "durum_aktar", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicGrammar.cs", "\"durum_aktar\""),
         ("stat", "durum_ekle", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicGrammar.cs", "\"durum_ekle\""),
-        ("stat", "durum_sil", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "\"durum_sil\""),
+        ("stat", "durum_sil", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicVolumeTicker.cs", "\"durum_sil\""),
         ("stat", "em", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.VerbExecution.cs", "\"em\""),
         ("stat", "geri_sar", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicGrammar.cs", "\"geri_sar\""),
         ("stat", "gizlen", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicGrammar.cs", "\"gizlen\""),
         ("stat", "hareket", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicGrammar.cs", "\"hareket\""),
-        ("stat", "hasar_buff", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "\"hasar_buff\""),
-        ("stat", "hasar_paylasimi", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "\"hasar_paylasimi\""),
+        ("stat", "hasar_buff", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicVolumeTicker.cs", "\"hasar_buff\""),
+        ("stat", "hasar_paylasimi", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicVolumeTicker.cs", "\"hasar_paylasimi\""),
         ("stat", "hedefin_arkasina", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicGrammar.cs", "\"hedefin_arkasina\""),
         ("stat", "isaret_geri_don", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicGrammar.cs", "\"isaret_geri_don\""),
         ("stat", "it", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicGrammar.cs", "\"it\""),
@@ -133,14 +133,14 @@ public class JsonEffectCoverageTests
         ("stat", "kalkan", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MotionTemplate.cs", "\"kalkan\""),
         ("stat", "kendini_tasi", "docs/motion-templates.json", "\"3-1\""),
         ("stat", "klon", "unity/Assets/Scripts/Game/Skills/Launch/SkillExecutorLauncher.cs", "\"klon\""),
-        ("stat", "kor", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "\"kor\""),
+        ("stat", "kor", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicVolumeTicker.cs", "\"kor\""),
         ("stat", "onceki_skill_tekrar", "unity/Assets/Scripts/Core/Mechanic/TemplateDelivery.cs", "\"onceki_skill_tekrar\""),
         ("stat", "portal", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicGrammar.cs", "\"portal\""),
-        ("stat", "tempo", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "\"tempo\""),
-        ("stat", "yansit", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "\"yansit\""),
-        ("stat", "yem_kopya", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "\"yem_kopya\""),
+        ("stat", "tempo", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicVolumeTicker.cs", "\"tempo\""),
+        ("stat", "yansit", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicVolumeTicker.cs", "\"yansit\""),
+        ("stat", "yem_kopya", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicVolumeTicker.cs", "\"yem_kopya\""),
         ("stat", "yer_degistir", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicGrammar.cs", "\"yer_degistir\""),
-        ("stat", "yonlendir", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "\"yonlendir\""),
+        ("stat", "yonlendir", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicVolumeTicker.cs", "\"yonlendir\""),
         ("stat", "zirh", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicGrammar.cs", "\"zirh\""),
         ("engine", "accuracy_debuff", "unity/Assets/Scripts/Core/Status/StatusApplicator.cs", "\"accuracy_debuff\""),
         ("engine", "action", "unity/Assets/Scripts/Core/Grammar/SkillMotor.cs", "\"action\""),
@@ -189,11 +189,11 @@ public class JsonEffectCoverageTests
         ("engine", "shield_absorb", "unity/Assets/Scripts/Core/Status/StatusApplicator.cs", "\"shield_absorb\""),
         ("engine", "tempo_duration_sec", "unity/Assets/Scripts/Core/Data/SkillEngineModifiers.cs", "\"tempo_duration_sec\""),
         ("engine", "team_op", "unity/Assets/Scripts/Core/Data/SkillEngineModifiers.cs", "\"team_op\""),
-        ("engine", "tick_rate_mult", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicWorld.cs", "\"tick_rate_mult\""),
+        ("engine", "tick_rate_mult", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicWorldRuntime.cs", "\"tick_rate_mult\""),
         ("trait", "mayin", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"mayin\""),
         ("trait", "cit", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"cit\""),
         ("trait", "inen_akis_alani", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"inen_akis_alani\""),
-        ("basic", "ally_heal", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.JsonEffects.cs", "BasicAllyHeal"),
+        ("basic", "ally_heal", "unity/Assets/Scripts/Game/Skills/Mechanics/JsonEffectRuntime.cs", "BasicAllyHeal"),
         ("stat", "mermi_sil", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.Projectiles.cs", "ProjectileEraseRules.For"),
         ("stat", "mermi_sil", "unity/Assets/Scripts/Game/Boss/HostileProjectileHost.cs", "HostileProjectiles"),
         ("mode", "yut", "unity/Assets/Scripts/Core/Mechanic/ProjectileEraseRules.cs", "\"yut\""),
@@ -215,9 +215,9 @@ public class JsonEffectCoverageTests
         ("mode", "bag_hatti", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.Projectiles.cs", "EraseAlongLink"),
         ("engine", "decoy_aggro", "unity/Assets/Scripts/Core/Mechanic/MechanicRules.cs", "\"decoy_aggro\""),
         ("basic", "boss_push_m", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.Weapons10.cs", "BossPushM"),
-        ("basic", "hits", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.JsonEffects.cs", "BasicHits"),
-        ("basic", "interval_sec", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.JsonEffects.cs", "BasicIntervalSec"),
-        ("basic", "kind", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.JsonEffects.cs", "BasicKind"),
+        ("basic", "hits", "unity/Assets/Scripts/Game/Skills/Mechanics/JsonEffectRuntime.cs", "BasicHits"),
+        ("basic", "interval_sec", "unity/Assets/Scripts/Game/Skills/Mechanics/JsonEffectRuntime.cs", "BasicIntervalSec"),
+        ("basic", "kind", "unity/Assets/Scripts/Game/Skills/Mechanics/JsonEffectRuntime.cs", "BasicKind"),
         ("basic", "radius_m", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.TemplateDelivery.cs", "BasicRadiusM"),
         ("basic", "reach_m", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.Weapons10.cs", "BasicReachM"),
         ("basic", "recoil_m", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.Weapons10.cs", "RecoilM"),
@@ -288,6 +288,16 @@ public class JsonEffectCoverageTests
                 }
     }
 
+    static bool EvidenceContains(string path, string token)
+    {
+        if (File.ReadAllText(path).Contains(token, StringComparison.Ordinal))
+            return true;
+        if (!path.Replace('\\', '/').Contains("/Game/Skills/Mechanics/", StringComparison.Ordinal))
+            return false;
+        string dir = Path.GetDirectoryName(path)!;
+        return Directory.GetFiles(dir, "*.cs").Any(f => File.ReadAllText(f).Contains(token, StringComparison.Ordinal));
+    }
+
     [Test]
     public void EveryJsonEffectKey_HasHandlerOrIsDeferred()
     {
@@ -311,7 +321,7 @@ public class JsonEffectCoverageTests
                         failures.Add($"{kind.Key}:{key} — evidence {row.File} is a producer/label file");
                     else if (!File.Exists(path))
                         failures.Add($"{kind.Key}:{key} — evidence file missing: {row.File}");
-                    else if (!File.ReadAllText(path).Contains(row.Token, StringComparison.Ordinal))
+                    else if (!EvidenceContains(path, row.Token))
                         failures.Add($"{kind.Key}:{key} — token {row.Token} not found in {row.File}");
                 }
             }
