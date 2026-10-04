@@ -385,16 +385,6 @@ namespace UnityEngine
         public override int GetHashCode() => HashCode.Combine(x, y, z, w);
     }
 
-    public struct Vector2Int
-    {
-        public int x, y;
-        public Vector2Int(int x, int y) { this.x = x; this.y = y; }
-    }
 
-    public struct Vector3Int
-    {
-        public int x, y, z;
-        public Vector3Int(int x, int y, int z) { this.x = x; this.y = y; this.z = z; }
-    }
 
 }
