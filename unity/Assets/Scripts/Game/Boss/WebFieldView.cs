@@ -8,7 +8,7 @@ using Dovus.Core.Passives;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using Dovus.Game.Actors;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using System.Collections.Generic;
 using Dovus.Game.Assets;
 using UnityEngine;

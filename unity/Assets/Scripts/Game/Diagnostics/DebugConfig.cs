@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace Dovus.Game.DevTools
+namespace Dovus.Game.Diagnostics
 {
     /// <summary>
     /// K2 (denetim C): debug kapısı build türünden AYRI. Editörde ya da <c>DOVUS_DEBUG</c> define'ı ile

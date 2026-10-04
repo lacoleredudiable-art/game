@@ -1,7 +1,6 @@
 #if UNITY_EDITOR
 using Dovus.Game.Arena;
-using Dovus.Game.Composition;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Skills;
 using Dovus.Game.Vfx;
 using System;

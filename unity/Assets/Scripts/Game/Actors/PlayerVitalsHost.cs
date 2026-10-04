@@ -7,7 +7,7 @@ using Dovus.Core.Input;
 using Dovus.Core.Hud;
 using Dovus.Core.Passives;
 using Dovus.Core.Tuning;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Game.Platform;
 using Dovus.Game.Weapons;
 using UnityEngine;

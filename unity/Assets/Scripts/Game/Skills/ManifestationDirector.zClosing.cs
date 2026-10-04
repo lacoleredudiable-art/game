@@ -12,10 +12,10 @@ using Dovus.Core.Mechanic;
 using Dovus.Core.Status;
 using Dovus.Game.Actors;
 using Dovus.Game.Boss;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Core.Tuning;
 using Dovus.Game.Data;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Hud;
 using Dovus.Game.Skills.Closing;
 using Dovus.Game.Team;
@@ -78,7 +78,7 @@ namespace Dovus.Game.Skills
             public bool LastFriendlyWasAlly { set => _md._lastFriendlyWasAlly = value; }
             public float ClosingChainBonus => _md._closingChainBonus;
             public ReactionReadoutHud Readout => _md._readout;
-            public SentenceDebugHud DebugHud => _md._debugHud;
+            public ISentenceDebugSink DebugHud => _md._debugHud;
             public KinematicMotorController Motor => _md._motor;
             public GroundScarFieldView Scars => _md._scars;
             public bool JsonTickDamage => _md._jsonTickDamage;

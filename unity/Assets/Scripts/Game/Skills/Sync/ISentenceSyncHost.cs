@@ -9,7 +9,7 @@ using Dovus.Core.Hud;
 using Dovus.Core.Passives;
 using Dovus.Game.Actors;
 using Dovus.Game.Casting;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Game.Skills.Flow;
 
 namespace Dovus.Game.Skills.Sync

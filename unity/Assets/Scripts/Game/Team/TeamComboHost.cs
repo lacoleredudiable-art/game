@@ -6,7 +6,7 @@ using Dovus.Core.Team;
 using Dovus.Core.Tuning;
 using Dovus.Game.Actors;
 using Dovus.Game.Boss;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Game.Data;
 using Dovus.Game.Platform;
 using Dovus.Game.Vfx;

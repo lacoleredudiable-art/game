@@ -2,7 +2,7 @@ using Dovus.Core.Input;
 using Dovus.Core.Element;
 using Dovus.Core.Grammar;
 using Dovus.Game.Actors;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Game.Config;
 using Dovus.Game.Hud;
 using Dovus.Game.Skills;

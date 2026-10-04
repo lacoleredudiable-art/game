@@ -18,7 +18,7 @@ using Dovus.Game.Audio;
 using Dovus.Game.Boss;
 using Dovus.Game.Cameras;
 using Dovus.Game.Casting;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Game.Data;
 using Dovus.Game.Hud;
 using Dovus.Game.Skills.Execution;
@@ -26,7 +26,7 @@ using Dovus.Game.Skills.Launch;
 using Dovus.Game.Skills.Presentation;
 using Dovus.App.Casting;
 using Dovus.Game.Config;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Vfx;
 using System.Collections.Generic;
 using UnityEngine;
@@ -203,7 +203,7 @@ namespace Dovus.Game.Skills
                 set => _md.LastFactorySkill = value;
             }
             public MechanicPlan LastMechanicPlan => _md.LastMechanicPlan;
-            public SentenceDebugHud DebugHud => _md._debugHud;
+            public ISentenceDebugSink DebugHud => _md._debugHud;
             public bool TryTakeFreeMana() => _md.TryTakeFreeMana();
             public float WeaponCooldownMult() => _md.WeaponCooldownMult();
             public SkillResolution ResolveSkillWords(IReadOnlyList<SentenceWord> words) =>

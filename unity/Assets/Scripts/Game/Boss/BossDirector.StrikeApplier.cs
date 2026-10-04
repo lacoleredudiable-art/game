@@ -10,7 +10,7 @@ using Dovus.Core.Portal;
 using Dovus.Core.Status;
 using Dovus.Game.Actors;
 using Dovus.Game.Casting;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Feel;
 using Dovus.Game.Team;
 using System.Collections.Generic;

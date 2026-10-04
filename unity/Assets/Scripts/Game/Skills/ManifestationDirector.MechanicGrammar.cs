@@ -16,7 +16,7 @@ using Dovus.Game.Actors;
 using Dovus.Game.Team;
 using Dovus.Game.Boss;
 using Dovus.Game.Data;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using System;
 using System.Collections.Generic;
 using UnityEngine;

@@ -12,7 +12,7 @@ using Dovus.Core.Mechanic;
 using Dovus.Core.Motion;
 using Dovus.Game.Actors;
 using Dovus.Game.Boss;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Vfx;
 using UnityEngine;
 

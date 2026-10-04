@@ -9,7 +9,7 @@ using Dovus.Game.Boss;
 using Dovus.Game.Cameras;
 using Dovus.Game.Casting;
 using Dovus.Game.Config;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;

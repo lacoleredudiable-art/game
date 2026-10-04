@@ -1,5 +1,5 @@
 using Dovus.Core.Equipment;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Game.Hud;
 using Dovus.Game.Skills;
 using UnityEngine;

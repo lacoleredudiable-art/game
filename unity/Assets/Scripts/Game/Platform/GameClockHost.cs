@@ -3,7 +3,7 @@ using Dovus.Core.Shared;
 using Dovus.Core.Time;
 using UnityEngine;
 
-namespace Dovus.Game.Composition
+namespace Dovus.Game.Platform
 {
     /// <summary>
     /// Core TimeDirector'ı Unity kare döngüsüne bağlar. Simülasyon ölçeklenmiş dt ile ilerler.

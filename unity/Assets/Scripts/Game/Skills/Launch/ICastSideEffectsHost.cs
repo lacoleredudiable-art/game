@@ -12,12 +12,12 @@ using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using Dovus.Game.Casting;
 using Dovus.Game.Config;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Game.Data;
 using Dovus.Game.Actors;
 using Dovus.Game.Boss;
 using Dovus.Core.Mechanic;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Hud;
 using System.Collections.Generic;
 using UnityEngine;
@@ -44,7 +44,7 @@ namespace Dovus.Game.Skills.Launch
         ElementPaintNode? SelectedElementPaint { get; }
         Skill LastFactorySkill { get; set; }
         MechanicPlan LastMechanicPlan { get; }
-        SentenceDebugHud DebugHud { get; }
+        ISentenceDebugSink DebugHud { get; }
 
         bool TryTakeFreeMana();
         float WeaponCooldownMult();

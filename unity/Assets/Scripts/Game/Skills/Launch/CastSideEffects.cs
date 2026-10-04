@@ -9,7 +9,7 @@ using Dovus.Core.Passives;
 using Dovus.Core.Grammar;
 using Dovus.Core.Motion;
 using Dovus.Game.Actors;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using System.Collections.Generic;
 
 namespace Dovus.Game.Skills.Launch

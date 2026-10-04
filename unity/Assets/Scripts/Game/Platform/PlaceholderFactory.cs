@@ -7,7 +7,7 @@ using System.Globalization;
 using Dovus.Game.Assets;
 using UnityEngine;
 
-namespace Dovus.Game.Composition
+namespace Dovus.Game.Platform
 {
     /// <summary>
     /// VFX asset yokken trail/impact için renkli primitive (küre veya çizgi).

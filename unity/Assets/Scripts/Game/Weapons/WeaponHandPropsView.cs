@@ -1,5 +1,5 @@
 using Dovus.Game.Actors;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Assets;
 using UnityEngine;
 

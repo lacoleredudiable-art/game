@@ -3,6 +3,7 @@ using Dovus.Game.Cameras;
 using Dovus.Game.Casting;
 using Dovus.Game.Config;
 using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Hud;
 using Dovus.Game.Skills;
 using UnityEngine;

@@ -1,5 +1,6 @@
 using Dovus.Game.Casting;
 using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Hud;
 using UnityEngine;
 

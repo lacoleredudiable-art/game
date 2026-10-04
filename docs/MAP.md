@@ -47,9 +47,10 @@
 | Araç — başsız tarama | `tools/SweepV2/Host/Program.cs`, `tools/SweepV2/Shim/*` (Unity shim; davranış doğrulaması) | `SweepV2.Program.Main` |
 | Araç — Game derleme | `tools/GameCompile/check.py`, `tools/GameCompile/GameCompile.csproj` | `python tools/GameCompile/check.py` |
 | CI | `.github/workflows/sweep-v2.yml` | workflow `sweep` job |
-| Zaman / saat | `Core/Time/TimeDirector.cs`, `App/Time/TimeDirectorClock.cs`, `Game/Composition/GameClockHost.cs` | `TimeDirector.Tick`, `GameClockHost.Update`, `GameClockHost.World` |
+| Zaman / saat | `Core/Time/TimeDirector.cs`, `App/Time/TimeDirectorClock.cs`, `Game/Platform/GameClockHost.cs` | `TimeDirector.Tick`, `GameClockHost.Update`, `GameClockHost.World` |
 | App (Dovus.App) | `App/Time/TimeDirectorClock.cs`, `App/Time/ManualClock.cs`, `App/AGENTS.md` | `TimeDirectorClock.Advance` |
-| Platform adaptörleri | `Game/Platform/UnityFrameClock.cs`, `Game/Platform/UnityUnscaledClock.cs`, `Game/Platform/UnityRng.cs` | `UnityFrameClock.Default`, `UnityRng.Default` |
+| Platform adaptörleri | `Game/Platform/UnityFrameClock.cs`, `Game/Platform/UnityUnscaledClock.cs`, `Game/Platform/UnityRng.cs`, `Game/Platform/GameClockHost.cs`, `Game/Platform/AssetCatalog.cs`, `Game/Platform/PlaceholderFactory.cs` | `UnityFrameClock.Default`, `GameClockHost.World`, `AssetCatalog.Standalone` |
+| Debug kapısı / HUD arayüzleri | `Game/Diagnostics/DebugConfig.cs`, `Game/Diagnostics/ISentenceDebugSink.cs` | `DebugConfig.Enabled`, `ISentenceDebugSink.NoteSkillBang` |
 | IClock / IRng (Core) | `Core/Shared/IClock.cs`, `Core/Shared/IRng.cs`, `Core/Shared/CombatRng.cs` | `IClock.DeltaSec`, `CombatRng.Seeded` |
 | Mekanik gramer | `Core/Mechanic/MechanicGrammar.cs`, `Core/Mechanic/MechanicRules.cs`, `Game/Skills/ManifestationDirector.MechanicGrammar.cs` | `MechanicGrammar.Compose` |
 | Canlı efekt / plan | `Core/Manifestation/LivingEffect.cs`, `Core/Manifestation/SkillWorldPlanner.cs` | `LivingEffect.Tick`, `SkillWorldPlanner.Plan` |

@@ -8,7 +8,7 @@ using Dovus.Core.Passives;
 using Dovus.Game.Actors;
 using Dovus.Game.Boss;
 using Dovus.Game.Config;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Feel;
 using System.Collections.Generic;
 using UnityEngine;

@@ -9,7 +9,7 @@ using Dovus.Core.Tuning;
 using Dovus.Core.Mechanic;
 using Dovus.Game.Actors;
 using Dovus.Game.Boss;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Game.Data;
 using Dovus.Game.Skills.Mechanics;
 using Dovus.Game.Skills.Projectiles;

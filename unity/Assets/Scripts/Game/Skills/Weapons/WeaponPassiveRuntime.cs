@@ -13,7 +13,6 @@ using Dovus.Core.Status;
 using Dovus.Game.Actors;
 using Dovus.Game.Boss;
 using Dovus.Game.Casting;
-using Dovus.Game.Composition;
 using Dovus.Game.Skills.Execution;
 using Dovus.Game.Weapons;
 using System;

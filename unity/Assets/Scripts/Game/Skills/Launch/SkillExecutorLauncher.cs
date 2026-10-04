@@ -13,7 +13,7 @@ using Dovus.Core.Mechanic;
 using Dovus.Core.Tuning;
 using Dovus.Game.Actors;
 using Dovus.Game.Data;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Skills.Execution;
 using Dovus.Game.Skills;
 using System;

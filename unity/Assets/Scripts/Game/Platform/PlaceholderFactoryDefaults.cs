@@ -1,4 +1,4 @@
-namespace Dovus.Game.Composition
+namespace Dovus.Game.Platform
 {
     /// <summary>PlaceholderFactory disk ve çizgi (PLAN 2B.11e).</summary>
     public static class PlaceholderFactoryDefaults

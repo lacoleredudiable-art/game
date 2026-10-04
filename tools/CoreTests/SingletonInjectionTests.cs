@@ -39,7 +39,7 @@ public class SingletonInjectionTests
             string rel = Path.GetRelativePath(
                 Path.Combine(Root(), "unity", "Assets", "Scripts", "Game"), path);
             if (string.Equals(rel, "Composition\\AssetCatalog.cs", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(rel, "Composition/AssetCatalog.cs", StringComparison.Ordinal))
+                || string.Equals(rel, "Platform/AssetCatalog.cs", StringComparison.Ordinal))
                 continue;
             // İzinli istisna: host yaşam döngüsü AfterSceneLoad Boot + DontDestroyOnLoad (davranış korunur, 2B.8b inceleme).
             bool teamHost = rel.Replace('\\', '/') == "Team/TeamComboHost.cs";
@@ -57,7 +57,7 @@ public class SingletonInjectionTests
     [Test]
     public void AssetCatalog_FallbackHudTheme_WhenResourceMissing()
     {
-        string catalog = Game("Composition/AssetCatalog.cs");
+        string catalog = Game("Platform/AssetCatalog.cs");
         Assert.That(catalog, Does.Contain("ResolveHudTheme()"));
         Assert.That(catalog, Does.Contain("CreateInstance<HudTheme>()"));
         string theme = Game("Hud/HudTheme.cs");

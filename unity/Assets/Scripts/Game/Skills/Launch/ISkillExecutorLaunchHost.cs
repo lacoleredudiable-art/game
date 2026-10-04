@@ -13,7 +13,7 @@ using Dovus.Core.Presentation;
 using Dovus.Core.Tuning;
 using Dovus.Core.Equipment;
 using Dovus.Game.Actors;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Game.Data;
 using Dovus.Game.Skills;
 using Dovus.Game.Skills.Execution;

@@ -46,6 +46,7 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 - [ ] 2B.14 DDD: Rune/Element dili (A26), tek Skill modeli (A27), ID tiplerinin tam benimsenmesi + SkillResolution sadeleşme (A28, A30) — **[x] (a) A26 rün dili + A27 skill-model.md + SkillCatalogEntry**; **[x] (b) A28/A30 SkillResolution grupları + wire enum'lar + Game JsonValue kapısı**
 - [ ] 2B.15 DDD: Player/Actor varlıkları, hedef=ActorId (A29); skill yan etkileri → olaylar (A31); repository arayüzleri, katalog = parser/factory/depo ayrımı (A32) — **[x] (a) Actor varlıkları, ActorRegistry/ActorViewRegistry, PlayerTargeting ActorId**; **[x] (b) CastPipeline sunum olayları + ISkill/IMotionTemplate repository/parser ayrımı (Presentation/Equipment katalogları PR dışı)**
 - [x] 2B.16 Ajan dostu: sabit açılı otomatik ekran görüntüsü aracı (C5); Unity derlemesi CI'da değilse not
+- [x] 2B.18a Game katman döngüleri (A7): Platform/Diagnostics yaprakları, `ISentenceDebugSink`, `GameLayeringTests`
 - Kural: davranış değişmez (sweep hash + test sayıları), Composer only, her madde 1–3 PR.
 
 ## Aşama 4 — Oyun sistemleri

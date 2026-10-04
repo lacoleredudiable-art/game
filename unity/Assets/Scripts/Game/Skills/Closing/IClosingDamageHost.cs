@@ -10,7 +10,7 @@ using Dovus.Core.Manifestation;
 using Dovus.Game.Actors;
 using Dovus.Core.Tuning;
 using Dovus.Game.Boss;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Game.Feel;
 using Dovus.Game.Hud;
 using Dovus.Core.Status;

@@ -13,10 +13,10 @@ using Dovus.Core.Tuning;
 using Dovus.Game.Actors;
 using Dovus.Game.Cameras;
 using Dovus.Game.Casting.Input;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Game.Config;
 using Dovus.Game.Data;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Feel;
 using Dovus.Game.Hud;
 using Dovus.Game.Skills;
@@ -193,7 +193,7 @@ namespace Dovus.Game.Casting
             GameClockHost clock,
             InkTrailView ink,
             SyllableFeedbackView syllable,
-            SentenceDebugHud debugHud,
+            ISentenceDebugSink debugHud,
             SkillMotor skills = null,
             RuneLoadout loadout = null)
         {

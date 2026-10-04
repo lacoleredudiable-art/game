@@ -13,7 +13,7 @@ using Dovus.Core.Manifestation;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Status;
 using Dovus.Game.Actors;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using System.Collections.Generic;
 using UnityEngine;
 
