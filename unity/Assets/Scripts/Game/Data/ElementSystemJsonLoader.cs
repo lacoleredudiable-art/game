@@ -6,7 +6,6 @@ using Dovus.Core.Element;
 using Dovus.Core.Grammar;
 using Dovus.Core.Presentation;
 using Dovus.Core.Mechanic;
-using Dovus.Game.Platform;
 using System;
 using UnityEngine;
 namespace Dovus.Game.Data
@@ -17,11 +16,11 @@ namespace Dovus.Game.Data
     /// </summary>
     public static class ElementSystemJsonLoader
     {
-        public const string ResourcePath = AssetCatalog.ElementResourcePath;
-        public const string RequiredVersion = AssetCatalog.ElementRequiredVersion;
+        public const string ResourcePath = ElementSystemRuntimeCache.ResourcePath;
+        public const string RequiredVersion = ElementSystemRuntimeCache.RequiredVersion;
 
         public static bool TryLoad(out ElementSystemDesign design) =>
-            AssetCatalog.Standalone.TryGetElementDesign(out design);
+            ElementSystemRuntimeCache.TryGet(out design);
 
         public static ElementSystemDesign LoadRequired()
         {
@@ -31,6 +30,6 @@ namespace Dovus.Game.Data
                 $"Resources/{ResourcePath}.json canonical v{RequiredVersion} yüklenemedi.");
         }
 
-        public static void ClearCache() => AssetCatalog.ResetStandaloneForEditor();
+        public static void ClearCache() => ElementSystemRuntimeCache.ResetForEditor();
     }
 }

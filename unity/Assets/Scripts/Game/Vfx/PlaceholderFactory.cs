@@ -1,13 +1,11 @@
 using Dovus.Core.Data;
-using Dovus.Game.Skills;
-using Dovus.Game.Vfx;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Dovus.Game.Assets;
 using UnityEngine;
 
-namespace Dovus.Game.Platform
+namespace Dovus.Game.Vfx
 {
     /// <summary>
     /// VFX asset yokken trail/impact için renkli primitive (küre veya çizgi).

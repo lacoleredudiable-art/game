@@ -8,8 +8,10 @@ using Dovus.Game.Config;
 using Dovus.Game.Platform;
 using Dovus.Game.Platform;
 using Dovus.Game.Data;
-using Dovus.Game.DevTools;
 using Dovus.Game.Diagnostics;
+#if UNITY_EDITOR || DOVUS_DEBUG
+using Dovus.Game.DevTools;
+#endif
 using Dovus.Game.Hud;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
@@ -45,7 +47,7 @@ namespace Dovus.Game.Composition.Builders
 
             ElementSystemDesign design = null;
             ElementSystemAssetCatalog assetCatalog = null;
-            if (ctx.Assets.TryGetElementDesign(out ElementSystemDesign loaded))
+            if (ElementSystemJsonLoader.TryLoad(out ElementSystemDesign loaded))
             {
                 design = loaded;
                 assetCatalog = ElementSystemAssetCatalog.CreateRuntime(design);
@@ -95,7 +97,11 @@ namespace Dovus.Game.Composition.Builders
             var syllable = root.AddComponent<SyllableFeedbackView>();
             syllable.Configure(_tuning);
             ctx.SyllableFeedbackView = syllable;
+#if UNITY_EDITOR || DOVUS_DEBUG
             var debug = root.AddComponent<SentenceDebugHud>();
+#else
+            ISentenceDebugSink debug = null;
+#endif
             ctx.SentenceDebugHud = debug;
 
             var input = root.AddComponent<HexagonInputController>();
@@ -114,8 +120,10 @@ namespace Dovus.Game.Composition.Builders
                 var motor = player.GetComponent<KinematicMotorController>();
                 motor?.BindCamera(follow);
             }
+#if UNITY_EDITOR || DOVUS_DEBUG
             debug.Configure(input.Engine, view.CanvasRoot, skills, DebugConfig.Enabled && _tuning.Hud.ShowSentenceDebugHud);
             debug.BindVitals(vitals);
+#endif
             input.BindVitals(vitals);
 
             var playerStatus = ctx.PlayerStatus;

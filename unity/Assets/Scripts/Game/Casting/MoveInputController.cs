@@ -1,6 +1,6 @@
 using Dovus.Game.Cameras;
 using Dovus.Game.Config;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Hud;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -77,7 +77,8 @@ namespace Dovus.Game.Casting
         void Update()
         {
             // T10: panel açıkken hareket girdisi de susar (bkz. HexagonInputController.PanelBlocking).
-            if (TuningPanelHud.IsOpen || BuildSelectHud.IsOpen || (_elementMenu != null && _elementMenu.IsMenuOpen))
+            if ((DebugPanelInput.State?.TuningPanelOpen ?? false) || BuildSelectHud.IsOpen
+                || (_elementMenu != null && _elementMenu.IsMenuOpen))
             {
                 if (_stickFingerId.HasValue)
                 {
@@ -113,7 +114,7 @@ namespace Dovus.Game.Casting
 
         void OnFingerDown(Finger finger)
         {
-            if (_stickFingerId.HasValue || TuningPanelHud.IsOpen || BuildSelectHud.IsOpen
+            if (_stickFingerId.HasValue || (DebugPanelInput.State?.TuningPanelOpen ?? false) || BuildSelectHud.IsOpen
                 || (_elementMenu != null && _elementMenu.HitHoldChipAt(finger.screenPosition)))
                 return;
 

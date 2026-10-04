@@ -55,8 +55,8 @@ unity/Assets/Scripts/
 │  ├─ Environment/   CircularArena, LavaDecor, SceneAtmosphere, CombatAmbience*
 │  ├─ Audio/         SfxDirector, SfxLibrary
 │  └─ Config/        InputTuning, CameraTuning, HudTuning, ArenaTuning… (PrototypeTuning'in parçaları)
-├─ Composition/                     Dovus.Composition.asmdef: GameBootstrap (eski PrototypeBootstrap)
-├─ DevTools/                        Dovus.DevTools.asmdef (define: DOVUS_DEBUG): TuningPanel, V611→DebugPanel,
+├─ Composition/                     Dovus.Game.Composition.asmdef: GameBootstrapHost, AssetCatalog, Builders
+├─ DevTools/                        Dovus.Game.DevTools.asmdef (define: UNITY_EDITOR || DOVUS_DEBUG): TuningPanel, V611→DebugPanel,
 │                                   TeamDebugMenu, FrameTimeHud, DodgePractice, FeelPlayVerify
 └─ Editor/                          Dovus.Editor.asmdef: Build/, AssetBinding/ (…Bind), Sweep/ (PlaySweep)
                                     — tek seferlik *Capture*/*Cw* script'leri arşiv dalına

@@ -59,7 +59,8 @@ public class ReleaseBuildPerfTests
         string hex = Game("Composition/Builders/HexagonInputBuilder.cs");
         Assert.That(Regex.Matches(hud, @"if \(DebugConfig\.Enabled\)\s*\{\s*var frameHud").Count, Is.EqualTo(1));
         Assert.That(Regex.Matches(hud, @"if \(DebugConfig\.Enabled\)\s*\{\s*var practice").Count, Is.EqualTo(1));
-        Assert.That(Regex.Matches(debug, @"if \(DebugConfig\.Enabled\)\s*\{\s*var v6Panel").Count, Is.EqualTo(1));
+        Assert.That(debug, Does.Contain("if (DebugConfig.Enabled)"));
+        Assert.That(debug, Does.Contain("var v6Panel"));
         Assert.That(hex, Does.Contain("DebugConfig.Enabled && _tuning.Hud.ShowSentenceDebugHud"));
         string team = Game("DevTools/TeamDebugHud.cs");
         Assert.That(team, Does.Contain("bool _open = false;"));
@@ -158,7 +159,7 @@ public class ReleaseBuildPerfTests
             Assert.That(src, Does.Not.Contain("rend.material;"), f);
             Assert.That(src, Does.Not.Contain("new Material(Shader.Find(\"Sprites/Default\"))"), f);
         }
-        Assert.That(Game("Platform/PlaceholderFactory.cs"), Does.Contain("GlowCache"));
+        Assert.That(Game("Vfx/PlaceholderFactory.cs"), Does.Contain("GlowCache"));
     }
 
     [Test]

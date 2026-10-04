@@ -19,7 +19,6 @@ using Dovus.Game.Audio;
 using Dovus.Game.Boss;
 using Dovus.Game.Casting;
 using Dovus.Game.Data;
-using Dovus.Game.DevTools;
 using Dovus.Game.Diagnostics;
 using Dovus.Game.Feel;
 using Dovus.Game.Hud;
@@ -57,9 +56,10 @@ namespace Dovus.Game.Composition.Builders
             var cooldown = ctx.PlayerCooldownHost;
             var root = ctx.HexagonRoot;
 
-            PlaceholderFactory.Bind(ctx.Assets.Vfx);
-            HitboxVfxRegistry.Bind(ctx.Assets.Vfx);
-            ComposedSkillVfxView.Bind(ctx.Assets.Vfx);
+            var vfxLib = VfxLibraryStandalone.Shared;
+            PlaceholderFactory.Bind(vfxLib);
+            HitboxVfxRegistry.Bind(vfxLib);
+            ComposedSkillVfxView.Bind(vfxLib);
 
             if (ctx.AllyDummyController != null)
                 ctx.AllyDummyController.BindTeam(ctx.TeamAccess);
@@ -128,8 +128,10 @@ namespace Dovus.Game.Composition.Builders
             ctx.Sfx = sfx;
             ctx.Player.GetComponent<PlayerDodgeController>()?.BindSfx(sfx);
             feelGo.AddComponent<PresentationFxView>().Bind(bossDir, ctx.DodgeMotionController, feel, input, sfx, follow, combat);
-            var feelVerify = feelGo.AddComponent<FeelPlayVerifyController>();
+#if UNITY_EDITOR || DOVUS_DEBUG
+            var feelVerify = feelGo.AddComponent<Dovus.Game.DevTools.FeelPlayVerifyController>();
             feelVerify.Bind(follow, player);
+#endif
             var playerSteps = ctx.Player.gameObject.AddComponent<FootstepView>();
             playerSteps.StrideM = tuning.Player.FootstepStrideM;
             playerSteps.Bind(sfx);

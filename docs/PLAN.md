@@ -49,6 +49,7 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 - [x] 2B.18a Game katman döngüleri (A7): Platform/Diagnostics yaprakları, `ISentenceDebugSink`, `GameLayeringTests`
 - [x] 2B.18b skill ID sabitleri + tipli SkillId (A14/A28)
 - [x] 2B.19 test ağı: normalize sweep hash kapısı, 144/144, Play fark listesi, PlaySweep tipli erişim
+- [x] 2B.20 Game katmanları + DevTools asmdef
 - Kural: davranış değişmez (sweep hash + test sayıları), Composer only, her madde 1–3 PR.
 
 ## Aşama 4 — Oyun sistemleri
