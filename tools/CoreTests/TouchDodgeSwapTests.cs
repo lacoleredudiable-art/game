@@ -127,7 +127,7 @@ public class TouchDodgeSwapTests
     [Test]
     public void TriggerDodge_UsesStateGate()
     {
-        string src = Game("Game/Casting/HexagonInput.cs");
+        string src = Game("Game/Casting/Input/DodgeTrigger.cs");
         Assert.That(src, Does.Contain("AllowsDodgeGate"));
         Assert.That(src, Does.Not.Contain("IsOnCooldown"));
         Assert.That(src, Does.Not.Contain("WeaponHudRequested"));

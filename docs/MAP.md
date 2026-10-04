@@ -6,7 +6,7 @@
 
 | Konu | Dosya(lar) | Giriş noktası |
 |------|------------|---------------|
-| Skill atma — girdi | `Game/Casting/HexagonInput.cs`, `Game/Casting/MoveInput.cs`, `Game/Casting/JoystickView.cs` | `HexagonInput.Update` |
+| Skill atma — girdi | `Game/Casting/HexagonInput.cs` (orkestratör), `Game/Casting/Input/` (`PointerRouter`, `StrokeCaster`, `CastGate`, `DodgeTrigger`, `CastFeedback`), `Game/Casting/MoveInput.cs`, `Game/Casting/JoystickView.cs` | `HexagonInput.Update` |
 | Skill atma — cümle | `Core/Grammar/SentenceEngine.cs`, `Core/Grammar/SentenceState.cs` | `SentenceEngine.OnDotTouched`, `SentenceEngine.Commit`, `SentenceEngine.Tick` |
 | Skill atma — çözüm | `Core/Grammar/SkillMotor.cs`, `Game/Data/SkillMotorLoader.cs`, `Game/Data/ElementSystemJsonLoader.cs` | `SkillMotor.Resolve`, `SkillMotor.ResolveWords`, `SkillMotorLoader.Load` |
 | Skill atma — yürütme | `App/Casting/CastPipeline.cs`, `Game/Skills/ManifestationDirector.cs`, `Game/Skills/ManifestationDirector.VerbExecution.cs`, `Core/Execution/SkillExecutorRouter.cs`, `Game/Skills/Execution/ISkillExecutor.cs` | `CastPipeline.RunSkill`, `CastPipeline.RunBasic`, `ManifestationDirector.OnSentenceCompleted`, `SkillExecutorRouter.Route` |
