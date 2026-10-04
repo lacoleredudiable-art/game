@@ -49,14 +49,6 @@ namespace Dovus.Game.Actors
         /// <summary>Kayma başladı: başlangıç konumu + yön (toz/ses sunumu).</summary>
         public event System.Action<Vector3, Vector3> SlideStarted;
 
-        void Awake()
-        {
-            _input = GetComponent<MoveInput>();
-            _motor = GetComponent<KinematicMotor>();
-            _vitals = GetComponent<PlayerVitals>();
-            _visual = GetComponent<ActorVisual>();
-        }
-
         public void Bind(
             GameClock clock,
             HexagonInput input,
@@ -140,6 +132,8 @@ namespace Dovus.Game.Actors
             _dir = ResolveDirection();
             _afterimage?.Clear();
             IsDisplacing = true;
+            if (_visual == null)
+                _visual = GetComponent<ActorVisual>();
             _visual?.Trigger(ActorVisual.TriggerDodge);
             SlideStarted?.Invoke(_startPos, _dir);
         }

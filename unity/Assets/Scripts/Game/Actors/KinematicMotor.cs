@@ -80,15 +80,14 @@ namespace Dovus.Game.Actors
         {
             _tuning ??= new PrototypeTuning();
             _input = GetComponent<MoveInput>();
-            _dodgeMotion = GetComponent<DodgeMotion>();
-            _visual = GetComponent<ActorVisual>();
-            _vitals = GetComponent<PlayerVitals>();
-            _status = GetComponent<ActorStatus>();
-            _templateBody = GetComponent<MotionTemplateBody>();
         }
 
         void Update()
         {
+            if (_dodgeMotion == null)
+                _dodgeMotion = GetComponent<DodgeMotion>();
+            if (_visual == null)
+                _visual = GetComponent<ActorVisual>();
             if (_dodgeMotion != null && _dodgeMotion.IsDisplacing)
             {
                 Velocity = Vector3.zero;
@@ -96,6 +95,9 @@ namespace Dovus.Game.Actors
                 return;
             }
 
+            // Önbellek tembel: MotionTemplateBody bu bileşenden SONRA eklenir (Awake'te henüz yok).
+            if (_templateBody == null)
+                _templateBody = GetComponent<MotionTemplateBody>();
             if (_templateBody != null && _templateBody.IsDisplacing)
             {
                 // Yeri kalıp yazar. Bacak hızını burada sıfırlamak ayakları donduruyordu;
@@ -103,6 +105,11 @@ namespace Dovus.Game.Actors
                 Velocity = Vector3.zero;
                 return;
             }
+
+            if (_vitals == null)
+                _vitals = GetComponent<PlayerVitals>();
+            if (_status == null)
+                _status = GetComponent<ActorStatus>();
 
             if (_vitals != null && _vitals.IsDown)
             {
