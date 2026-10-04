@@ -1,17 +1,12 @@
 using Dovus.Core.Boss;
-using Dovus.Core.Dodge;
-using Dovus.Core.Damage;
 using Dovus.Core.Casting;
-using Dovus.Core.Input;
-using Dovus.Core.Hud;
-using Dovus.Core.Passives;
 using Dovus.Core.Data;
 using Dovus.Core.Equipment;
-using Dovus.Core.Casting;
 using Dovus.Core.Element;
 using Dovus.Core.Grammar;
-using Dovus.Core.Mechanic;
 using Dovus.Core.Presentation;
+using Dovus.Core.Mechanic;
+using Dovus.Game.Composition;
 using System;
 using UnityEngine;
 
@@ -23,61 +18,11 @@ namespace Dovus.Game.Data
     /// </summary>
     public static class ElementSystemJsonLoader
     {
-        public const string ResourcePath = "ElementSystem/element-sistemi";
-        public const string RequiredVersion = "6.1.1";
+        public const string ResourcePath = AssetCatalog.ElementResourcePath;
+        public const string RequiredVersion = AssetCatalog.ElementRequiredVersion;
 
-        static ElementSystemDesign _cached;
-
-        public static bool TryLoad(out ElementSystemDesign design)
-        {
-            if (_cached != null)
-            {
-                design = _cached;
-                return true;
-            }
-
-            TextAsset asset = Resources.Load<TextAsset>(ResourcePath);
-            if (asset == null || string.IsNullOrWhiteSpace(asset.text))
-            {
-                design = null;
-                return false;
-            }
-
-            try
-            {
-                ElementSystemDocument doc = ElementSystemDocument.Parse(asset.text);
-                if (!ElementSystemHeader.TryParse(doc, 300, out ElementSystemHeader header))
-                    throw new InvalidOperationException("element-sistemi kökü okunamadı.");
-                string version = header.Version;
-                if (!string.Equals(version, RequiredVersion, StringComparison.Ordinal))
-                    throw new InvalidOperationException(
-                        $"element-sistemi version {version}; {RequiredVersion} bekleniyor.");
-                if (!header.Binding)
-                    throw new InvalidOperationException("element-sistemi binding=true değil.");
-
-                SkillMotor motor = SkillMotor.FromDocument(doc);
-                EquipmentCatalog equipment = EquipmentCatalog.FromDocument(doc);
-                AnimationDatabase animations = AnimationDatabase.FromDocument(doc);
-                if (motor.RuneCount != 12 || motor.SkillCount != 144
-                    || equipment.Items.Count != 10 || motor.ElementPaints.Count != 6
-                    || animations.Count != 120)
-                {
-                    throw new InvalidOperationException(
-                        "v6.1.1 cardinality: 12 rune / 144 skill / 10 weapon / 6 element / 120 animation beklenir.");
-                }
-
-                _cached = new ElementSystemDesign(
-                    asset.text, doc, version, motor, equipment, animations);
-                design = _cached;
-                return true;
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning($"[JSONLoader] v6.1.1 yüklenemedi: {e.Message}");
-                design = null;
-                return false;
-            }
-        }
+        public static bool TryLoad(out ElementSystemDesign design) =>
+            AssetCatalog.Standalone.TryGetElementDesign(out design);
 
         public static ElementSystemDesign LoadRequired()
         {
@@ -87,7 +32,7 @@ namespace Dovus.Game.Data
                 $"Resources/{ResourcePath}.json canonical v{RequiredVersion} yüklenemedi.");
         }
 
-        public static void ClearCache() => _cached = null;
+        public static void ClearCache() => AssetCatalog.ResetStandaloneForEditor();
     }
 
     public sealed class ElementSystemDesign

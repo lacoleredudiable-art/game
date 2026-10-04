@@ -98,25 +98,7 @@ namespace Dovus.Game.Vfx
         public Color FlameColorA = new(1f, 0.85f, 0.35f, 1f);
         public Color FlameColorB = new(0.95f, 0.25f, 0.05f, 0f);
 
-        static VfxLibrary _current;
         Dictionary<string, Entry> _map;
-
-        public static VfxLibrary Current
-        {
-            get
-            {
-                if (_current == null)
-                {
-                    _current = Resources.Load<VfxLibrary>("VfxLibrary");
-                    if (_current == null)
-                    {
-                        _current = CreateInstance<VfxLibrary>();
-                        _current.hideFlags = HideFlags.DontSave;
-                    }
-                }
-                return _current;
-            }
-        }
 
         /// <summary>Zincirdeki ilk bulunan prefab; hiçbiri yoksa false (çağıran prosedürel çizer).</summary>
         public bool TryResolve(string key, out GameObject prefab, out float lifetimeSec) =>

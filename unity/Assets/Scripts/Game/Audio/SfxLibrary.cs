@@ -67,25 +67,7 @@ namespace Dovus.Game.Audio
             (CastPrefix + "special", 0.5f, 0.9f, 1.05f, 0.06f),
         };
 
-        static SfxLibrary _current;
         Dictionary<string, Entry> _map;
-
-        public static SfxLibrary Current
-        {
-            get
-            {
-                if (_current == null)
-                {
-                    _current = Resources.Load<SfxLibrary>("SfxLibrary");
-                    if (_current == null)
-                    {
-                        _current = CreateInstance<SfxLibrary>();
-                        _current.hideFlags = HideFlags.DontSave;
-                    }
-                }
-                return _current;
-            }
-        }
 
         public bool TryGet(string id, out Entry entry)
         {

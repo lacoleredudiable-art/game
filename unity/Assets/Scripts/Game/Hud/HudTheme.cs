@@ -146,26 +146,8 @@ namespace Dovus.Game.Hud
         public float StatusBlinkUnderSec = 1.5f;
         public float StatusBlinkHz = 4f;
 
-        static HudTheme _current;
         static Font _font;
         static TMP_FontAsset _tmpFont;
-
-        public static HudTheme Current
-        {
-            get
-            {
-                if (_current == null)
-                {
-                    _current = Resources.Load<HudTheme>("HudTheme");
-                    if (_current == null)
-                    {
-                        _current = CreateInstance<HudTheme>();
-                        _current.hideFlags = HideFlags.DontSave;
-                    }
-                }
-                return _current;
-            }
-        }
 
         /// <summary>uGUI Text fontu (Türkçe glifli OFL); yoksa Unity yerleşik fontu.</summary>
         public static Font LegacyFont
