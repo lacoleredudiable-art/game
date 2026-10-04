@@ -24,6 +24,9 @@ namespace Dovus.Game.Boss
         public const float SfxSpatialBlend = 0.35f;
 
         public const float PlanarDirEpsilonSqr = 0.0001f;
+
+        public const int WarningToneHz = 220;
+        public const float SfxToneAmplitude = 0.35f;
     }
 
 }
