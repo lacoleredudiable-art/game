@@ -44,11 +44,12 @@ namespace Dovus.Game.Skills
                 _castVfxColor = line;
             }
 
-            EnsurePresentationCatalog();
-            if (_presentationValidator == null || _presentationCatalog == null)
+            EnsureLaunchServices();
+            _skillPresentation.EnsureCatalog();
+            if (_skillPresentation.Validator == null || _skillPresentation.Catalog == null)
                 return;
-            string typeId = _presentationValidator.Validate(skill).AnimationTypeId;
-            if (string.IsNullOrEmpty(typeId) || !_presentationCatalog.TryGetAnimation(typeId, out AnimationFrameNode node))
+            string typeId = _skillPresentation.Validator.Validate(skill).AnimationTypeId;
+            if (string.IsNullOrEmpty(typeId) || !_skillPresentation.Catalog.TryGetAnimation(typeId, out AnimationFrameNode node))
             {
                 // v6.1 skill'in animation_type'ı yok: oynayan controller state'inin
                 // prezentasyon karşılığı (animator_state eşlemesi) kare verisini verir.
@@ -63,9 +64,11 @@ namespace Dovus.Game.Skills
             found = default;
             if (string.IsNullOrEmpty(controllerState))
                 return false;
+            if (_skillPresentation?.Catalog == null)
+                return false;
             string preferPrefix = _visual != null && _visual.RangedDelivery ? "cast_" : "melee_";
             bool any = false;
-            foreach (var kv in _presentationCatalog.Animations)
+            foreach (var kv in _skillPresentation.Catalog.Animations)
             {
                 if (AnimationBridge.MapToQuaterniusState(kv.Value.AnimatorState) != controllerState)
                     continue;

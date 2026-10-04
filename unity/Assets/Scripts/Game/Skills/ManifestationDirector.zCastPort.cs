@@ -60,12 +60,23 @@ namespace Dovus.Game.Skills
             public void TryTriggerPassive(PendingClosing ctx) =>
                 _md.TryTriggerPassive(ctx.Words, _md._clock.Director.WorldTimeMs);
 
-            public void ApplyResourceCost(SkillResolution skill) => _md.ApplyResourceCost(skill);
+            public void ApplyResourceCost(SkillResolution skill)
+            {
+                _md.EnsureLaunchServices();
+                _md._castSideEffects.ApplyResourceCost(skill);
+            }
 
-            public SkillMotionPlan ResolveMotion(SkillResolution skill) => _md.ResolveSkillMotion(skill);
+            public SkillMotionPlan ResolveMotion(SkillResolution skill)
+            {
+                _md.EnsureLaunchServices();
+                return _md._castSideEffects.ResolveSkillMotion(skill);
+            }
 
-            public void ApplyMotionIframe(SkillResolution skill, in SkillMotionPlan motion) =>
-                _md.ApplySkillMotionIframe(skill, motion);
+            public void ApplyMotionIframe(SkillResolution skill, in SkillMotionPlan motion)
+            {
+                _md.EnsureLaunchServices();
+                _md._castSideEffects.ApplySkillMotionIframe(skill, motion);
+            }
 
             public bool TryBeginMotionTemplate(SkillResolution skill, PendingClosing ctx) =>
                 _md.TryBeginMotionTemplate(skill, ctx);
@@ -111,8 +122,11 @@ namespace Dovus.Game.Skills
                 SkillExecutorKind kind,
                 PendingClosing ctx,
                 SkillResolution skill,
-                in SkillMotionPlan motion) =>
-                _md.TryLaunchSkillExecutor(kind, ctx, skill, motion);
+                in SkillMotionPlan motion)
+            {
+                _md.EnsureLaunchServices();
+                return _md._executorLauncher.TryLaunch(kind, ctx, skill, motion);
+            }
 
             public void ScheduleFollowUps(
                 SkillExecutorKind kind,
@@ -153,14 +167,23 @@ namespace Dovus.Game.Skills
                 return dealt;
             }
 
-            public void ShoutSkill(SkillResolution skill, PendingClosing ctx) =>
-                _md.ShoutSkill(skill, ctx.Words);
+            public void ShoutSkill(SkillResolution skill, PendingClosing ctx)
+            {
+                _md.EnsureLaunchServices();
+                _md._skillPresentation.ShoutSkill(skill, ctx.Words);
+            }
 
-            public void ApplyCooldown(SkillResolution skill, PendingClosing ctx, bool cosmeticIfDisabled) =>
-                _md.ApplyCooldown(skill, ctx.Words, cosmeticIfDisabled);
+            public void ApplyCooldown(SkillResolution skill, PendingClosing ctx, bool cosmeticIfDisabled)
+            {
+                _md.EnsureLaunchServices();
+                _md._castSideEffects.ApplyCooldown(skill, ctx.Words, cosmeticIfDisabled);
+            }
 
-            public void AnnotateMotion(SkillResolution skill, in SkillMotionPlan motion) =>
-                _md.AnnotateMotion(skill, motion);
+            public void AnnotateMotion(SkillResolution skill, in SkillMotionPlan motion)
+            {
+                _md.EnsureLaunchServices();
+                _md._castSideEffects.AnnotateMotion(skill, motion);
+            }
 
             public void SpawnClosingImpact(PendingClosing ctx) => _md.SpawnClosingImpact(ctx);
 
