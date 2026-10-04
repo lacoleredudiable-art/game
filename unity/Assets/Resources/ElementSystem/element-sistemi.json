@@ -407,7 +407,7 @@
             "name": "Emici Vuruş",
             "adjective": "Emme",
             "effect": "Vurur, %30 can çalar",
-            "passive": "5 sn boyunca vuruşlar can çalar",
+            "passive": "7 sn boyunca vuruşlar can çalar",
             "engine": {
               "action": "damage",
               "base_damage": 40,
@@ -450,7 +450,7 @@
             "name": "Sabit Vuruş",
             "adjective": "Sabitleme",
             "effect": "Poise ×1.5",
-            "passive": "5 sn boyunca yerinde kalırsın, poise kırma ×1.5",
+            "passive": "7 sn boyunca yerinde kalırsın, poise kırma ×1.5",
             "engine": {
               "action": "damage",
               "base_damage": 40,
@@ -494,7 +494,7 @@
             "name": "Bağlayıcı Vuruş",
             "adjective": "Bağlama",
             "effect": "1.5 sn root",
-            "passive": "5 sn boyunca vuruşlar hedefi yavaşlatır",
+            "passive": "4 sn boyunca vuruşlar hedefi yavaşlatır",
             "engine": {
               "action": "damage",
               "base_damage": 40,
@@ -515,7 +515,7 @@
             "name": "Bulandırıcı Vuruş",
             "adjective": "Bulandırma",
             "effect": "İsabet -%30, 3 sn",
-            "passive": "5 sn boyunca vuruşlar isabet düşürür",
+            "passive": "6 sn boyunca vuruşlar isabet düşürür",
             "engine": {
               "action": "damage",
               "base_damage": 40,
@@ -623,7 +623,7 @@
             "name": "Akan Vuruş",
             "adjective": "Akış",
             "effect": "3 sn ardışık seri",
-            "passive": "5 sn boyunca sürekli vuruş akışı",
+            "passive": "4 sn boyunca sürekli vuruş akışı",
             "engine": {
               "action": "damage",
               "base_damage": 40,
@@ -3405,7 +3405,7 @@
             "name": "Yoğun Zaman",
             "adjective": "Yoğunlaştırma",
             "effect": "Tek düşman hızı %30 düşer, 1 sn (global timescale yok)",
-            "passive": "4 sn: tempo debuff güçlenir",
+            "passive": "5 sn: tempo debuff güçlenir",
             "engine": {
               "action": "tempo",
               "enemy_slow": 0.7,
@@ -3430,7 +3430,7 @@
             "name": "Emici Zaman",
             "adjective": "Emme",
             "effect": "Düşman yavaşlat + can çal",
-            "passive": "4 sn: tempo can çalar",
+            "passive": "7 sn: tempo can çalar",
             "engine": {
               "action": "tempo",
               "enemy_slow": 0.7,
@@ -3454,7 +3454,7 @@
             "name": "Sıçrayan Zaman",
             "adjective": "Sıçrama",
             "effect": "Tempo debuff 2. hedefe seker",
-            "passive": "4 sn: tempo seker",
+            "passive": "5 sn: tempo seker",
             "engine": {
               "action": "tempo",
               "enemy_slow": 0.7,
@@ -3479,7 +3479,7 @@
             "name": "Sabit Zaman",
             "adjective": "Sabitleme",
             "effect": "1 sn düşman yavaşlatma alanı (%30)",
-            "passive": "4 sn: kalıcı tempo alanı",
+            "passive": "7 sn: kalıcı tempo alanı",
             "engine": {
               "action": "tempo",
               "enemy_slow": 0.7,
@@ -3504,7 +3504,7 @@
             "name": "Yayılan Zaman",
             "adjective": "Yayma",
             "effect": "Alan düşman yavaşlatma",
-            "passive": "4 sn: geniş tempo alanı",
+            "passive": "5 sn: geniş tempo alanı",
             "engine": {
               "action": "tempo",
               "enemy_slow": 0.7,
@@ -3554,7 +3554,7 @@
             "name": "Bulandırıcı Zaman",
             "adjective": "Bulandırma",
             "effect": "Yavaşlatma + isabet düşürme",
-            "passive": "4 sn: tempo isabet bozar",
+            "passive": "6 sn: tempo isabet bozar",
             "engine": {
               "action": "tempo",
               "enemy_slow": 0.7,
@@ -3578,7 +3578,7 @@
             "name": "Yükselen Zaman",
             "adjective": "Yükseltme",
             "effect": "Kendine +%50 hareket/cast hızı, 3 sn (dünya saati sabit)",
-            "passive": "4 sn: self haste",
+            "passive": "5 sn: self haste",
             "engine": {
               "action": "tempo",
               "enemy_slow": 0.7,
@@ -3602,7 +3602,7 @@
             "name": "Odaklı Zaman",
             "adjective": "Odaklama",
             "effect": "Tek hedefe 1 sn ağır yavaşlatma",
-            "passive": "4 sn: odaklı tempo",
+            "passive": "5 sn: odaklı tempo",
             "engine": {
               "action": "tempo",
               "enemy_slow": 0.7,
@@ -3627,7 +3627,7 @@
             "name": "Aynalı Zaman",
             "adjective": "Aynalama",
             "effect": "Tempo + yansıma",
-            "passive": "4 sn: tempo yansıtır",
+            "passive": "5 sn: tempo yansıtır",
             "engine": {
               "action": "tempo",
               "enemy_slow": 0.7,
@@ -3651,7 +3651,7 @@
             "name": "Kopya Zaman",
             "adjective": "Kopyalama",
             "effect": "Tempo etkisi iki kez (gecikmeli)",
-            "passive": "4 sn: çift tempo",
+            "passive": "5 sn: çift tempo",
             "engine": {
               "action": "tempo",
               "enemy_slow": 0.7,

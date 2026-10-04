@@ -1,4 +1,4 @@
-using Dovus.Core;
+﻿using Dovus.Core;
 using Dovus.Core.Data;
 using Dovus.Core.Grammar;
 using NUnit.Framework;
@@ -65,11 +65,21 @@ public class SkillTextNumberTests
             foreach (JsonValue skill in verbBlock["skills"].AsArray())
             {
                 string passive = skill["passive"].AsString();
-                if (!passive.Contains(" sn pasif: ", StringComparison.Ordinal))
-                    continue;
-
                 string id = skill["id"].AsString();
                 int adjId = int.Parse(id.Split('-')[1], CultureInfo.InvariantCulture);
+                if (!passive.Contains(" sn pasif: ", StringComparison.Ordinal))
+                {
+                    // "{N} sn boyunca ..." / "{N} sn: ...": baştaki süre de sıfat rününün süresi olmalı.
+                    var lead = System.Text.RegularExpressions.Regex.Match(passive, @"^(\d+(?:\.\d+)?) sn[ :]");
+                    if (lead.Success)
+                    {
+                        string want = SkillTextNumbers.FormatDurationSeconds(durations[adjId]);
+                        if (lead.Groups[1].Value != want)
+                            mismatches.AppendLine($"{id}: expected leading '{want} sn', got '{passive}'");
+                    }
+                    continue;
+                }
+
                 string adjective = skill.Has("adjective")
                     ? skill["adjective"].AsString()
                     : faces[adjId];

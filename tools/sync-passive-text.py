@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Regenerate skills[*].passive lines that use '{N} sn pasif: {sıfat}' from rune passive_duration_default.
+Other passive texts that start with a duration ('{N} sn boyunca ...', '{N} sn: ...') get only that leading
+number replaced (the runtime slot passive always lasts the adjective rune's passive_duration_default).
 
 Does not json.dump — only replaces passive string values in place (both JSON copies stay byte-aligned).
 """
@@ -34,6 +36,9 @@ def passive_text(adjective: str, duration: float) -> str:
     return f"{format_duration(duration)} sn pasif: {adjective}"
 
 
+LEADING_DURATION = re.compile(r"^(\d+(?:\.\d+)?)( sn[ :])")
+
+
 def expected_passives(root: dict) -> dict[str, str]:
     durations = {int(r["id"]): float(r["passive_duration_default"]) for r in root["runes"]}
     faces = {int(r["id"]): r["adjective_face"] for r in root["runes"]}
@@ -41,10 +46,13 @@ def expected_passives(root: dict) -> dict[str, str]:
     for block in root["skills"]["by_verb"].values():
         for skill in block["skills"]:
             passive = skill.get("passive", "")
-            if " sn pasif: " not in passive:
-                continue
             sid = skill["id"]
             adj_id = int(sid.split("-", 1)[1])
+            if " sn pasif: " not in passive:
+                if LEADING_DURATION.match(passive):
+                    dur_text = format_duration(durations[adj_id])
+                    out[sid] = LEADING_DURATION.sub(lambda m: dur_text + m.group(2), passive, count=1)
+                continue
             adj = skill.get("adjective") or faces[adj_id]
             out[sid] = passive_text(adj, durations[adj_id])
     return out
