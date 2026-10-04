@@ -9,22 +9,22 @@ namespace Dovus.Game.Weapons
         public const float BladeHalfLengthFallbackM = 0.35f;
         public const float BladeHalfLengthBoundsMult = 0.85f;
 
-        public const float RightKilicMaxExtentM = 0.92f;
-        public const float RightKalkanMaxExtentM = 0.38f;
+        public const float RightSwordMaxExtentM = 0.92f;
+        public const float RightShieldMaxExtentM = 0.38f;
         public const float RightCekicMaxExtentM = 1.12f;
-        public const float RightAsaMaxExtentM = 1.68f;
+        public const float RightStaffMaxExtentM = 1.68f;
         public const float RightTilsimMaxExtentM = 0.32f;
         public const float RightTopMaxExtentM = 0.92f;
 
-        public const float LeftKilicMaxExtentM = 0.65f;
-        public const float LeftKalkanMaxExtentM = 0.92f;
-        public const float LeftYayMaxExtentM = 1.22f;
+        public const float LeftSwordMaxExtentM = 0.65f;
+        public const float LeftShieldMaxExtentM = 0.92f;
+        public const float LeftBowMaxExtentM = 1.22f;
         public const float LeftKitapMaxExtentM = 0.26f;
         public const float LeftKureMaxExtentM = 0.18f;
 
         public const float BoundsMinSqrMag = 1e-8f;
 
-        public const float KalkanRightSwordFallbackLengthM = 0.55f;
+        public const float ShieldRightSwordFallbackLengthM = 0.55f;
 
         public const float SwordFallbackDefaultLengthM = 0.9f;
         public const float SwordBladeCenterAlongMult = 0.42f;

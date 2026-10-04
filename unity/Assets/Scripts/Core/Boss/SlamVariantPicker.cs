@@ -11,7 +11,7 @@ namespace Dovus.Core.Boss
     {
         static readonly SlamVariant[] All =
         {
-            SlamVariant.Yakin,
+            SlamVariant.Near,
             SlamVariant.Gec,
             SlamVariant.Genis
         };

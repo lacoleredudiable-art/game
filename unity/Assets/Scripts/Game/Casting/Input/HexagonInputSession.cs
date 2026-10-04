@@ -16,10 +16,9 @@ using Dovus.Game.Feel;
 using Dovus.Game.Hud;
 using Dovus.Game.Skills;
 using UnityEngine;
-
 namespace Dovus.Game.Casting.Input
 {
-    /// <summary>HexagonInput paylaşılan durum ve servis referansları (MonoBehaviour değil).</summary>
+/// <summary>HexagonInput paylaşılan durum ve servis referansları (MonoBehaviour değil).</summary>
     public sealed class HexagonInputSession
     {
         public GameTuning Tuning = new();
@@ -86,13 +85,5 @@ namespace Dovus.Game.Casting.Input
             || (Status != null && Status.Board.BlocksCast);
 
         public bool AllowsDrawNow => PlayerStates == null || PlayerStates.AllowsDraw;
-    }
-
-    public enum FingerMode
-    {
-        None,
-        CenterPending,
-        SwapPending,
-        Drawing
     }
 }

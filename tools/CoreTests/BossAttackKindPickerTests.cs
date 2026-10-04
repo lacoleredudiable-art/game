@@ -103,7 +103,7 @@ public sealed class BossAttackKindPickerTests
         Assert.That(a.ArcHalfAngleDeg, Is.EqualTo(15f));
         a.ApplyVolley(true);
         Assert.That(a.VolleyCount, Is.EqualTo(5));
-        a.ApplyVariant(SlamVariant.Yakin);
+        a.ApplyVariant(SlamVariant.Near);
         Assert.That(a.VolleyCount, Is.EqualTo(0));
         Assert.That(a.Damage, Is.EqualTo(22));
     }

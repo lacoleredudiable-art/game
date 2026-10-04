@@ -66,43 +66,5 @@ namespace Dovus.Game.Editor
 
         public string Id => Verb + "-" + Adj;
     }
-
-    public sealed class PlaySweepResult
-    {
-        public PlaySweepCase Case;
-        public string Name = "";
-        public string Template = "";
-        public string Weapon = "";
-        public bool Cast;
-        public bool Hit;
-        public bool Position;
-        public bool NotInside;
-        public bool OneSystem;
-        public bool NoErrors;
-        public bool OnTime;
-        public bool NoTeleport;
-        public bool Grounded;
-        /// <summary>
-        /// Planın taşıdığı boss etkisi görüldü mü (yalnız o anahtar varsa sınanır):
-        /// ters_kontrol → boss ters kontrolde; dikkat_ceker → yem boss aggro'sunu tutuyor.
-        /// </summary>
-        public bool Effect = true;
-        public float FootLiveM;
-        public float FootSettleM;
-        public string ExpectedPos = "";
-        public string ActualPos = "";
-        public float Damage;
-        public float MinDist;
-        public float Contact;
-        public float TemplateSec;
-        public float ExpectedSec;
-        public float TotalSec;
-        public string Effects = "";
-        public string Legs = "";
-        public readonly List<string> Notes = new();
-
-        public bool Pass => Cast && Hit && Position && NotInside && OneSystem && NoErrors && OnTime && NoTeleport && Grounded && Effect;
-    }
-
 }
 #endif

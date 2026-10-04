@@ -18,91 +18,10 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.EnhancedTouch;
 using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 using UnityEngine.UI;
-
 namespace Dovus.Game.Actors
 {
-    /// <summary>Bir dünya aktörünü oyuncu başına seçilebilir hedef yapar.</summary>
-    public sealed class Targetable : MonoBehaviour
-    {
-        int _teamId;
-        string _displayName = string.Empty;
-        Func<bool> _available;
-        Collider _collider;
-
-        public int TeamId => _teamId;
-        public string DisplayName => string.IsNullOrEmpty(_displayName) ? name : _displayName;
-        public bool IsAvailable => _available == null || _available();
-
-        // O11: sahne taraması yerine etkin hedef kaydı (hedefleme, sekme, top sıçraması).
-        static readonly List<Targetable> s_live = new List<Targetable>();
-        public static IReadOnlyList<Targetable> Live => s_live;
-
-        void OnEnable()
-        {
-            if (!s_live.Contains(this))
-                s_live.Add(this);
-        }
-
-        void OnDisable() => s_live.Remove(this);
-
-        public void Configure(int teamId, string displayName, Func<bool> available = null)
-        {
-            _teamId = teamId;
-            _displayName = displayName ?? string.Empty;
-            _available = available;
-            _collider = GetComponent<Collider>();
-        }
-
-        public float DistanceFrom(Vector3 origin)
-        {
-            _collider ??= GetComponent<Collider>();
-            // ClosestPoint tetikleyici collider'da güvenilir değil (Unity noktayı geri verir,
-            // mesafe 0 olur ve her düşman menzilde sanılır). Bounds tetikten etkilenmez.
-            Vector3 point = _collider != null
-                ? _collider.bounds.ClosestPoint(origin)
-                : transform.position;
-            point.y = origin.y;
-            return Vector3.Distance(origin, point);
-        }
-
-        public float MarkerRadius(float padding)
-        {
-            _collider ??= GetComponent<Collider>();
-            if (_collider == null)
-                return Mathf.Max(0.1f, padding);
-            Bounds b = _collider.bounds;
-            return Mathf.Max(b.extents.x, b.extents.z) + padding;
-        }
-
-        public float GroundY
-        {
-            get
-            {
-                _collider ??= GetComponent<Collider>();
-                return _collider != null ? _collider.bounds.min.y : transform.position.y;
-            }
-        }
-    }
-
-    /// <summary>Hedef işaretinin ayarlanabilir sunum verisi; sahne runtime kurulduğu için bileşende yaşar.</summary>
+/// <summary>Bir dünya aktörünü oyuncu başına seçilebilir hedef yapar.</summary>
     [Serializable]
-    public sealed class TargetingPresentationTuning
-    {
-        public float RingPaddingM = PlayerTargetingDefaults.RingPaddingM;
-        public float RingWidthM = PlayerTargetingDefaults.RingWidthM;
-        public float RingGroundOffsetM = PlayerTargetingDefaults.RingGroundOffsetM;
-        public int RingSegments = PlayerTargetingDefaults.RingSegments;
-        public Color EnemyColor = new(1f, 0.28f, 0.16f, 0.95f);
-        public Color AllyColor = new(0.25f, 1f, 0.58f, 0.95f);
-        public Vector2 FrameSizePx = new(PlayerTargetingDefaults.FrameWidthPx, PlayerTargetingDefaults.FrameHeightPx);
-        public Vector2 FrameOffsetPx = new(0f, -PlayerTargetingDefaults.FrameOffsetYPx);
-        public int FrameFontPx = PlayerTargetingDefaults.FrameFontPx;
-    }
-
-    /// <summary>
-    /// Oyuncuya özel seçim + otomatik hedef çözümü. Static hedef durumu tutmaz; gelecekte her
-    /// co-op oyuncusu kendi örneğini ve takım kimliğini taşıyabilir.
-    /// </summary>
     public sealed class PlayerTargeting : MonoBehaviour
     {
         [SerializeField] TargetingPresentationTuning _presentation = new();

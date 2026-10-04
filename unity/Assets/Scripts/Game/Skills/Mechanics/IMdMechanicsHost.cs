@@ -21,10 +21,9 @@ using Dovus.Game.Hud;
 using Dovus.Game.Team;
 using System;
 using UnityEngine;
-
 namespace Dovus.Game.Skills.Mechanics
 {
-    public interface IMdMechanicsHost
+public interface IMdMechanicsHost
     {
         Transform Player { get; }
         AllyDummy Ally { get; }
@@ -109,10 +108,4 @@ namespace Dovus.Game.Skills.Mechanics
         void DestroyUnityObject(UnityEngine.Object obj);
         void DestroyUnityObject(UnityEngine.Object obj, float delaySeconds);
     }
-
-    public interface IMechanicWorldHost : IMdMechanicsHost { }
-
-    public interface IJsonEffectHost : IMdMechanicsHost { }
-
-    public interface IMechanicPortalsHost : IMdMechanicsHost { }
 }

@@ -60,14 +60,6 @@ public sealed class NamingConventionTests
         Assert.That(hits, Is.Empty, () => "Legacy ad geçen dosyalar: " + string.Join(", ", hits));
     }
 
-    static readonly HashSet<string> KnownFileStemMonoExceptions = new(StringComparer.OrdinalIgnoreCase)
-    {
-        // Birden fazla üst düzey MonoBehaviour (2B.13 dosya=tip).
-        "Actors/PlayerTargeting.cs",
-        // Dosya adı arayüz; taban sınıf SkillExecutor.
-        "Skills/Execution/ISkillExecutor.cs",
-    };
-
     [Test]
     public void Game_MonoBehaviour_PrimaryClassNameMatchesFileName()
     {
@@ -86,9 +78,6 @@ public sealed class NamingConventionTests
                 names.Add(m.Groups[1].Value);
 
             if (names.Count == 0)
-                continue;
-
-            if (KnownFileStemMonoExceptions.Contains(rel))
                 continue;
 
             if (names.Any(n => string.Equals(n, stem, StringComparison.Ordinal)))

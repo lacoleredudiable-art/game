@@ -20,9 +20,9 @@ public class FileLayoutTests
         + @"(class|struct|enum|interface|record|delegate)\s+([A-Za-z_][A-Za-z0-9_]*)",
         RegexOptions.Compiled);
 
-    static IEnumerable<string> CoreAndAppCsFiles()
+    static IEnumerable<string> LayerCsFiles(params string[] layers)
     {
-        foreach (string layer in new[] { "Core", "App" })
+        foreach (string layer in layers)
         {
             string root = Path.Combine(ScriptsRoot, layer);
             if (!Directory.Exists(root))
@@ -31,6 +31,10 @@ public class FileLayoutTests
                 yield return path;
         }
     }
+
+    static IEnumerable<string> CoreAndAppCsFiles() => LayerCsFiles("Core", "App");
+
+    static IEnumerable<string> GameCsFiles() => LayerCsFiles("Game");
 
     static bool IsCodeLine(string line)
     {
@@ -105,6 +109,35 @@ public class FileLayoutTests
             if (nonPartial.Count == 0 && types.Count > 0)
             {
                 // partial-only file (e.g. ManifestationDirector.Topic.cs) — name must match stem
+                if (types[0].Name != expectedTypeName)
+                    problems.Add($"{path}: partial type {types[0].Name} vs file {expectedTypeName}");
+            }
+        }
+
+        Assert.That(problems, Is.Empty, string.Join("\n", problems));
+    }
+
+    [Test]
+    public void Game_each_file_has_at_most_one_top_level_type_and_name_matches_file()
+    {
+        var problems = new List<string>();
+        foreach (string path in GameCsFiles())
+        {
+            string fileName = Path.GetFileNameWithoutExtension(path);
+            string expectedTypeName = fileName.Split('.')[0];
+
+            List<(string Name, bool Partial)> types = TopLevelTypesInFile(path);
+            var nonPartial = types.Where(t => !t.Partial).ToList();
+            if (nonPartial.Count > 1)
+            {
+                problems.Add($"{path}: {nonPartial.Count} top-level types ({string.Join(", ", nonPartial.Select(t => t.Name))})");
+                continue;
+            }
+
+            if (nonPartial.Count == 1 && nonPartial[0].Name != expectedTypeName)
+                problems.Add($"{path}: file {expectedTypeName} vs type {nonPartial[0].Name}");
+            if (nonPartial.Count == 0 && types.Count > 0)
+            {
                 if (types[0].Name != expectedTypeName)
                     problems.Add($"{path}: partial type {types[0].Name} vs file {expectedTypeName}");
             }

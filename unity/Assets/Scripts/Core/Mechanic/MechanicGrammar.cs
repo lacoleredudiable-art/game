@@ -278,7 +278,7 @@ namespace Dovus.Core.Mechanic
                 case "kilitle": Kilitle(p); break;
                 case "ters_cevir": TersCevir(p); break;
                 case "cogalt": Cogalt(p); break;
-                case "surekli": Surekli(p); break;
+                case "surekli": Continuous(p); break;
                 default: throw new InvalidOperationException("mechanic_grammar: bilinmeyen op " + op);
             }
             p.Trace.Add($"sıfat: {p.AdjectiveName} ({op}) → {string.Join(", ", p.Effects)}");
@@ -636,7 +636,7 @@ namespace Dovus.Core.Mechanic
             Add(p, "varlik", "yem_kopya", "kendin", 1, _r.Param("decoy_life_sec"), "dikkat_ceker");
         }
 
-        void Surekli(MechanicPlan p)
+        void Continuous(MechanicPlan p)
         {
             MechanicBody b = p.Body;
             double channel = _r.AdjNum(p.Adjective, "channel_sec");

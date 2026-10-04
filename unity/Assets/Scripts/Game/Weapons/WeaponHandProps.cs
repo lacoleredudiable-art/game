@@ -294,10 +294,10 @@ namespace Dovus.Game.Weapons
             {
                 return weaponKey switch
                 {
-                    "kilic" => WeaponHandPropsDefaults.RightKilicMaxExtentM,
-                    "kalkan" => WeaponHandPropsDefaults.RightKalkanMaxExtentM,
+                    "kilic" => WeaponHandPropsDefaults.RightSwordMaxExtentM,
+                    "kalkan" => WeaponHandPropsDefaults.RightShieldMaxExtentM,
                     "cekic" => WeaponHandPropsDefaults.RightCekicMaxExtentM,
-                    "asa" => WeaponHandPropsDefaults.RightAsaMaxExtentM,
+                    "asa" => WeaponHandPropsDefaults.RightStaffMaxExtentM,
                     "tilsim" => WeaponHandPropsDefaults.RightTilsimMaxExtentM,
                     "top" => WeaponHandPropsDefaults.RightTopMaxExtentM,
                     _ => 0f,
@@ -306,9 +306,9 @@ namespace Dovus.Game.Weapons
 
             return weaponKey switch
             {
-                "kilic" => WeaponHandPropsDefaults.LeftKilicMaxExtentM,
-                "kalkan" => WeaponHandPropsDefaults.LeftKalkanMaxExtentM,
-                "yay" => WeaponHandPropsDefaults.LeftYayMaxExtentM,
+                "kilic" => WeaponHandPropsDefaults.LeftSwordMaxExtentM,
+                "kalkan" => WeaponHandPropsDefaults.LeftShieldMaxExtentM,
+                "yay" => WeaponHandPropsDefaults.LeftBowMaxExtentM,
                 "kitap" => WeaponHandPropsDefaults.LeftKitapMaxExtentM,
                 "kure" => WeaponHandPropsDefaults.LeftKureMaxExtentM,
                 _ => 0f,
@@ -358,7 +358,7 @@ namespace Dovus.Game.Weapons
         GameObject BuildPrimitive(string key, bool isRight) => key switch
         {
             "kilic" => isRight ? BuildSwordFallback() : BuildRoundShield(),
-            "kalkan" => isRight ? BuildSwordFallback(WeaponHandPropsDefaults.KalkanRightSwordFallbackLengthM) : BuildBigShield(),
+            "kalkan" => isRight ? BuildSwordFallback(WeaponHandPropsDefaults.ShieldRightSwordFallbackLengthM) : BuildBigShield(),
             "cekic" => isRight ? BuildHammer() : null,
             "yay" => isRight ? null : BuildBowFallback(),
             "asa" => isRight ? BuildStaffFallback() : null,

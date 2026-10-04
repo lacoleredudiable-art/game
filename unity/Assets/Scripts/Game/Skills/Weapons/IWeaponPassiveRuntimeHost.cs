@@ -18,10 +18,9 @@ using Dovus.Game.Data;
 using Dovus.Game.Skills.Execution;
 using Dovus.Game.Weapons;
 using UnityEngine;
-
 namespace Dovus.Game.Skills.Weapons
 {
-    public interface IWeaponPassiveRuntimeHost
+public interface IWeaponPassiveRuntimeHost
     {
         Transform Player { get; }
         AllyDummy Ally { get; }
@@ -54,38 +53,5 @@ namespace Dovus.Game.Skills.Weapons
         void EndMotionAnim();
         void AbortRecoveringSentence();
         void SetSwapInstantDrawUntil(double worldMs);
-    }
-
-    public interface IOrbControllerHost
-    {
-        Transform Player { get; }
-        PlayerTargeting Targeting { get; }
-        BossReactor Boss { get; }
-        GameClock Clock { get; }
-        WeaponCombatProfile EquippedProfile { get; }
-        Vector3 FlatBodyForward();
-    }
-
-    public interface ICannonBlastHost
-    {
-        Transform Player { get; }
-        BossReactor Boss { get; }
-        AllyDummy Ally { get; }
-        KinematicMotor Motor { get; }
-        MotionTemplateBody MotionBody { get; }
-        bool RecoilInTemplate { get; }
-        void SetRecoilInTemplate(bool value);
-        bool CasterRecoilSuppressed { get; set; }
-        double WorldTimeMs { get; }
-        WeaponCombatProfile EquippedProfile { get; }
-        float PlayerBodyRadiusM();
-        void StopMotionBody();
-        void EndMotionAnim();
-        void AbortRecoveringSentence();
-        void SetSwapInstantDrawUntil(double worldMs);
-        SentenceEngine Engine { get; }
-        ActorVisual Visual { get; }
-        WeaponSwapState WeaponSwap { get; }
-        GameClock Clock { get; }
     }
 }

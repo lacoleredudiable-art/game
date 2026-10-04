@@ -3,6 +3,7 @@
 Mobil kooperatif boss dövüşü, alfa prototip. Bu dosya her görevde bağlama girer: yalnız sert kurallar.
 
 ## Değişmez kurallar
+0. **Tek dil:** kod tanımlayıcıları İngilizce; yorumlar Türkçe olabilir; JSON/fiil kimlikleri gibi veri sözcükleri yalnız sabit/sözlükten (`docs/naming.md`, `docs/glossary.md`).
 1. `unity/Assets/Scripts/Core` saf C#: `using UnityEngine` yasak, zaman parametre olarak geçer.
 2. Sahne koddan kurulur (`GameBootstrap`). `.unity` / `.prefab` YAML dosyaları **asla** elle düzenlenmez.
 3. **Tek hareket sistemi:** skill sırasında oyuncuyu/boss'u yalnız hareket kalıbı taşır

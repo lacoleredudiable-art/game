@@ -255,12 +255,12 @@ namespace Dovus.Game.Skills.Closing
                 case Rune.Hava:
                     if (!IsClosingInRange(logic, closing))
                         return;
-                    _host.Boss.Pin(ClosingDamageDefaults.HavaPinSec, worldMs);
+                    _host.Boss.Pin(ClosingDamageDefaults.AirPinSec, worldMs);
                     return;
                 case Rune.Toprak:
-                    knock = man.BossKnockbackM * ClosingDamageDefaults.ToprakKnockMult;
+                    knock = man.BossKnockbackM * ClosingDamageDefaults.EarthKnockMult;
                     lift = 0f;
-                    shake = man.BossShakeSec * ClosingDamageDefaults.ToprakShakeMult;
+                    shake = man.BossShakeSec * ClosingDamageDefaults.EarthShakeMult;
                     break;
             }
 

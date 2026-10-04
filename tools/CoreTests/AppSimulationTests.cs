@@ -305,7 +305,7 @@ public class AppSimulationTests
         {
             var tuning = new BossTuning { WindupMs = 100, ActiveMs = 50, RecoveryMs = 80 };
             var a = new BossAttack(tuning);
-            a.ApplyVariant(SlamVariant.Yakin);
+            a.ApplyVariant(SlamVariant.Near);
             return a;
         }
     }

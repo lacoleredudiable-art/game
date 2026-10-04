@@ -14,13 +14,7 @@ using UnityEngine;
 
 namespace Dovus.Game.Skills.Mechanics
 {
-public sealed class MechanicWorldBody
-        {
-            public GameObject View;
-            public double UntilMs;
-        }
-
-public sealed class MechanicVolume
+    public sealed class MechanicVolume
         {
             public GameObject View;
             public MechanicPlan Plan;
@@ -39,26 +33,5 @@ public sealed class MechanicVolume
             public EraseSpec Erase;
             public double NextEraseMs;
             public bool TwiceDone;
-        }
-
-public sealed class MechanicLink
-        {
-            public LineRenderer Line;
-            public MechanicPlan Plan;
-            public Transform Target;
-            public double UntilMs;
-            public SkillResolution Skill;
-            public ClosingHit Closing;
-            public double NextFlowMs;
-            public double FlowTickMs;
-        }
-
-public sealed class GuardTrigger
-        {
-            public int Id;
-            public MechanicEffect Effect;
-            public GameObject View;
-            public double UntilMs;
-            public bool NeedsHoly;
         }
 }

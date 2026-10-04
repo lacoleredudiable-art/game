@@ -14,10 +14,9 @@ using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using Dovus.Game.Data;
 using UnityEngine;
-
 namespace Dovus.Game.Skills.Launch
 {
-    public sealed class HitboxSizingApplier
+public sealed class HitboxSizingApplier
     {
         readonly ISkillExecutorLaunchHost _host;
 
@@ -107,10 +106,5 @@ namespace Dovus.Game.Skills.Launch
             _host is IWeaponDurationMultHost weaponHost
                 ? weaponHost.WeaponDurationMult(skill)
                 : 1f;
-    }
-
-    public interface IWeaponDurationMultHost
-    {
-        float WeaponDurationMult(in SkillResolution skill);
     }
 }
