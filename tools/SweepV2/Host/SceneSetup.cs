@@ -75,9 +75,9 @@ namespace SweepV2
 
         /// <summary>
         /// Sahne YAML'ındaki `_tuning:` bloğu → alan alan. Yazılmayan alanlar C# varsayılanında kalır (Unity gibi).
-        /// 2B.5b: düz (legacy) anahtarlar + iç içe bölüm blokları (`    Arena:` altında 6 boşluklu anahtarlar) okunur;
-        /// bölüm bloklarından SONRA gelen kök anahtarlar (TuningVersion, SectionsVersion) da okunur. Unity'deki
-        /// OnAfterDeserialize gibi: SectionsVersion &lt; 1 ise düz değerler bölümlere kopyalanır.
+        /// 2B.5b+: iç içe bölüm blokları (`    Arena:` altında 6 boşluklu anahtarlar) okunur;
+        /// bölüm bloklarından SONRA gelen kök anahtarlar (TuningVersion, SectionsVersion) da okunur.
+        /// Yetim düz anahtarlar artık alan bulamaz → yok sayılır (2B.5c).
         /// </summary>
         static int ApplySceneTuning(PrototypeTuning tuning, string[] lines)
         {
@@ -114,9 +114,6 @@ namespace SweepV2
                     applied++;
             }
 
-            FieldInfo version = typeof(PrototypeTuning).GetField("SectionsVersion", BF);
-            if (version == null || (int)version.GetValue(tuning) < 1)
-                tuning.SyncSectionsFromLegacyFlatFields();
             return applied;
         }
 
