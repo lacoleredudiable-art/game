@@ -8,6 +8,7 @@ using Dovus.Core.Passives;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using Dovus.Core.Shared;
 
 namespace CoreTests;
 

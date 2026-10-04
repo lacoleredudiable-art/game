@@ -4,7 +4,7 @@ using Dovus.Core.Shared;
 namespace Dovus.Core.Casting
 {
     /// <summary>
-    /// Kombo soğuma anahtarı — çözülmüş skill kimliği (ör. "8-9"); boşsa fiil id yedeği.
+    /// Kombo soğuma anahtarı — çözülmüş skill kimliği (ör. 8-9); boşsa fiil id yedeği.
     /// </summary>
     public static class ComboCooldownKey
     {

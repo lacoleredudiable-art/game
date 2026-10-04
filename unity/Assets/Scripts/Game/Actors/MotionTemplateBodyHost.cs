@@ -1,4 +1,5 @@
 using Dovus.Core.Motion;
+using Dovus.Core.Shared;
 using Dovus.Core.Status;
 using Dovus.Game.Cameras;
 using Dovus.Game.Casting;
@@ -45,7 +46,7 @@ namespace Dovus.Game.Actors
         public bool IsDisplacing => _playing;
         public float PlayedSec => _runner.Elapsed;
         public float PlayLengthSec { get; private set; }
-        public string SkillId { get; private set; } = string.Empty;
+        public SkillId SkillId { get; private set; }
 
         public void Bind(GameClockHost clock, float arenaHalfM, float bodyRadiusM)
         {
@@ -106,7 +107,7 @@ namespace Dovus.Game.Actors
             _tickedThisFrame = false;
         }
 
-        public void NoteSkill(string skillId) => SkillId = skillId ?? string.Empty;
+        public void NoteSkill(SkillId skillId) => SkillId = skillId;
 
         public void Stop() => CancelToGround();
 

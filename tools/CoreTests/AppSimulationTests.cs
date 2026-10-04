@@ -79,7 +79,7 @@ public class AppSimulationTests
     public void ClosingHeal_ComputeThenApply_RoundsLikeVitals()
     {
         var skill = SkillResolution.Build(
-            "1", "Ateş", "Test", "2-3", "job",
+            "1", "Ateş", "Test", (SkillId)"2-3", "job",
             "mend", "Mend", "heal", "heal",
             0f, 0f, "projectile", "free_move", Array.Empty<string>(),
             "y", "Y", "focus",
@@ -117,7 +117,7 @@ public class AppSimulationTests
         var port = new SimCastPort
         {
             ResolveResult = SkillResolution.Build(
-                "1", "Ateş", "X", "t", "job",
+                "1", "Ateş", "X", (SkillId)"t", "job",
                 "saldiri", "Saldırı", "strike", "damage",
                 1f, 1f, "projectile", "free_move", Array.Empty<string>(),
                 "y", "Y", "focus",
@@ -229,7 +229,7 @@ public class AppSimulationTests
         public void ApplyMotionIframe(SkillResolution skill, in SkillMotionPlan motion) { }
         public bool TryBeginMotionTemplate(SkillResolution skill, int ctx) => false;
         public void NoteSustainedCast(SkillResolution skill) { }
-        public void NotifyCast(string skillId) => Record(nameof(NotifyCast));
+        public void NotifyCast(SkillId skillId) => Record(nameof(NotifyCast));
         public SkillExecutorRoute Route(SkillResolution skill) => new(SkillExecutorKind.MeleeHitbox, false, string.Empty);
         public SkillExecutorRoute ApplyMechanicWorldRoute(SkillResolution skill, SkillExecutorRoute route) => route;
         public void SetLastExecutorKind(SkillExecutorKind kind) { }
@@ -242,7 +242,7 @@ public class AppSimulationTests
         public float ApplyFallbackDelivery(int ctx, SkillResolution skill, in SkillMotionPlan motion, in SkillExecutorRoute route) => 0f;
         public void ApplyCooldown(SkillResolution skill, int ctx, bool cosmeticIfDisabled) { }
         public void SpawnClosingImpact(int ctx) { }
-        public void SetLastResolvedSkillId(string skillId) { }
+        public void SetLastResolvedSkillId(SkillId skillId) { }
         public bool IsHealSkill(SkillResolution skill) => false;
         public void SetLastSkillEffectApplied(bool applied) { }
         public void LogSmokeOneOne(SkillResolution skill, bool effectApplied, float dealt) { }

@@ -5,6 +5,7 @@ using Dovus.Core.Motion;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.IO;
+using Dovus.Core.Shared;
 
 namespace CoreTests;
 
@@ -119,7 +120,7 @@ public partial class MotionTemplateTests
         for (int adjective = 1; adjective <= 12; adjective++)
         {
             string id = verb + "-" + adjective;
-            Assert.That(_catalog.TryGet(id, out MotionBinding binding), Is.True, id);
+            Assert.That(_catalog.TryGet((SkillId)id, out MotionBinding binding), Is.True, id);
             var plan = grammar.Compose(verb, adjective, 1);
             bool grammarMoves = false;
             foreach (var effect in plan.Effects)

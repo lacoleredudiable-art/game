@@ -9,6 +9,7 @@ using Dovus.Core.Passives;
 using Dovus.Core.Equipment;
 using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
+using Dovus.Core.Shared;
 using Dovus.Core.Manifestation;
 using Dovus.Game.Diagnostics;
 using Dovus.Game.Team;
@@ -79,7 +80,7 @@ namespace Dovus.Game.Skills
 
             public void NoteSustainedCast(SkillResolution skill) => _md.NoteSustainedCast(skill);
 
-            public void NotifyCast(string skillId) => _md.TeamHub.NotifyCast(skillId);
+            public void NotifyCast(SkillId skillId) => _md.TeamHub.NotifyCast(skillId);
 
             public SkillExecutorRoute Route(SkillResolution skill) =>
                 _md._skillExecutorRouter.Route(skill, _md._equippedWeapon);
@@ -170,7 +171,7 @@ namespace Dovus.Game.Skills
 
             public void SpawnClosingImpact(PendingClosing ctx) => _md.SpawnClosingImpact(ctx);
 
-            public void SetLastResolvedSkillId(string skillId) => _md.LastResolvedSkillId = skillId;
+            public void SetLastResolvedSkillId(SkillId skillId) => _md.LastResolvedSkillId = skillId.Value;
 
             public bool IsHealSkill(SkillResolution skill) => _md.CastPortIsHealSkill(skill);
 

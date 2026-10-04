@@ -12,6 +12,7 @@ using NUnit.Framework;
 using System;
 using System.IO;
 using System.Linq;
+using Dovus.Core.Shared;
 
 namespace CoreTests;
 
@@ -50,7 +51,7 @@ public class JsonEffectRulesTests
     TemplateDeliveryOrder Order(int verb, int adjective, int weapon = 4)
     {
         string id = verb + "-" + adjective;
-        Assert.That(_motion.TryPlay(id, out MotionTemplate template), Is.True, id);
+        Assert.That(_motion.TryPlay((SkillId)id, out MotionTemplate template), Is.True, id);
         var skill = _motor.Resolve(new[] { verb, adjective });
         return TemplateDelivery.Build(Plan(verb, adjective, weapon), skill.Engine, template, _grammar.Rules, 1f);
     }

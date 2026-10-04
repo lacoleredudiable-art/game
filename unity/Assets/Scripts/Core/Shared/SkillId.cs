@@ -4,9 +4,11 @@ namespace Dovus.Core.Shared
 {
     public readonly struct SkillId : IEquatable<SkillId>
     {
-        public SkillId(string? value) => Value = value ?? string.Empty;
+        readonly string? _value;
 
-        public string Value { get; }
+        public SkillId(string? value) => _value = value;
+
+        public string Value => _value ?? string.Empty;
         public bool IsEmpty => Value.Length == 0;
 
         public bool Equals(SkillId other) => string.Equals(Value, other.Value, StringComparison.Ordinal);

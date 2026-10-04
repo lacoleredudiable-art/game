@@ -14,6 +14,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Dovus.Core.Shared;
 
 namespace CoreTests;
 
@@ -120,7 +121,7 @@ public partial class PlaySweepFixTests
     [Test]
     public void WeaponSwapScale_DoesNotChangeBehindLanding()
     {
-        Assert.That(_catalog.TryPlay("3-3", out MotionTemplate hops), Is.True);
+        Assert.That(_catalog.TryPlay((SkillId)"3-3", out MotionTemplate hops), Is.True);
         var swordSteps = new[] { new GrammarPositionStep("yer_degistir", 3f) };
         var staffSteps = new[] { new GrammarPositionStep("yer_degistir", 7.5f) };
         PositionPlayback sword = PositionOwnership.Prepare(hops, swordSteps, 0.28f, 1.2f);

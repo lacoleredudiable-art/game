@@ -4,6 +4,7 @@ using Dovus.Core.Motion;
 using NUnit.Framework;
 using System;
 using System.IO;
+using Dovus.Core.Shared;
 
 namespace CoreTests;
 
@@ -151,7 +152,7 @@ public class WeaponRosterTests
         Assert.That(WeaponSwapCancel.TaggedSkillIds, Has.Length.EqualTo(10));
         foreach (string id in WeaponSwapCancel.TaggedSkillIds)
         {
-            Assert.That(_motion.TryGet(id, out MotionBinding binding), Is.True, id);
+            Assert.That(_motion.TryGet((SkillId)id, out MotionBinding binding), Is.True, id);
             Assert.That(binding.HasTag(MotionTemplateCatalog.TagSilah), Is.True, id);
             Assert.That(WeaponSwapCancel.InWindow(0.49f, 1f, true), Is.False, id);
             Assert.That(WeaponSwapCancel.InWindow(0.50f, 1f, true), Is.True, id);
@@ -228,7 +229,7 @@ public class WeaponRosterTests
     [Test]
     public void TemplateTravel_IsIdentical_ForAllTenWeapons()
     {
-        Assert.That(_motion.TryPlay("3-3", out MotionTemplate hops), Is.True);
+        Assert.That(_motion.TryPlay((SkillId)"3-3", out MotionTemplate hops), Is.True);
         var grammar = new MechanicGrammar(MechanicRules.FromJson(_elements));
         float authored = FinishZ(hops);
         float? shared = null;

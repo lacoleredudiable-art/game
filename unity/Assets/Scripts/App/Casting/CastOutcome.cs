@@ -10,6 +10,7 @@ using Dovus.Core.Equipment;
 using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
+using Dovus.Core.Shared;
 
 namespace Dovus.App.Casting
 {
@@ -17,7 +18,7 @@ namespace Dovus.App.Casting
     {
         // Unity'de Dovus.App ayrı assembly: init için IsExternalInit polyfill'i yok (Core'unki internal) → ctor.
         public CastOutcome(
-            string skillId,
+            SkillId skillId,
             bool executorStarted,
             bool templateOwnsDelivery,
             float dealt,
@@ -32,7 +33,7 @@ namespace Dovus.App.Casting
             Denied = denied;
         }
 
-        public string SkillId { get; }
+        public SkillId SkillId { get; }
         public bool ExecutorStarted { get; }
         public bool TemplateOwnsDelivery { get; }
         public float Dealt { get; }

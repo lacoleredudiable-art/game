@@ -40,7 +40,7 @@ public class PresentationValidatorTests
             elementId: "",
             elementName: "",
             displayName: "test",
-            skillId: "",
+            skillId: (SkillId)"",
             skillJob: "",
             verbId: "",
             verbName: "",

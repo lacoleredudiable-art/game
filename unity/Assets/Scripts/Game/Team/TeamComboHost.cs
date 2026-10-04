@@ -1,4 +1,5 @@
 using Dovus.App.Team;
+using Dovus.Core.Shared;
 using Dovus.Core.Border;
 using Dovus.Core.Portal;
 using Dovus.Core.Status;
@@ -185,18 +186,19 @@ namespace Dovus.Game.Team
             player.LastSkillId = skillId;
             player.TemplateOwnsPosition = _motion != null && _motion.IsDisplacing;
             Disc boss = BossDisc();
-            _border.OnSkill(player.Id, skillId, player.HpRatio);
+            var typedId = (SkillId)skillId;
+            _border.OnSkill(player.Id, typedId, player.HpRatio);
             if (_motion == null || !_motion.IsDisplacing)
                 _borderReleasePending = true;
             Body caster = ToBody(player);
             Body target = FirstOther(player);
-            _portal.Cast(skillId, caster, target, _bodies, boss);
-            TeamPulse pulse = _team.Cast(skillId, player, FindAlly(target.Id), _allies, boss);
+            _portal.Cast(typedId, caster, target, _bodies, boss);
+            TeamPulse pulse = _team.Cast(typedId, player, FindAlly(target.Id), _allies, boss);
             ApplyPulse(pulse);
             ApplyMoves();
             // O3: eski ApplyBackStrike (önceki vuruşun zırh sonrası hasarını ikinci kez zırhtan geçiren görünmez
             // üçüncü vuruş) kaldırıldı; 1-10'un sırt vuruşu kalıbın sirtta_kapi fazında. Yalnız görsel kalır.
-            if (skillId == "1-10" && _portal.Strike.Active)
+            if (typedId.Value == SkillIds.MirrorStrike && _portal.Strike.Active)
             {
                 Burst(new Vector3(_portal.Strike.X, TeamComboDefaults.PortalStrikeMarkerY, _portal.Strike.Z), new Color(0.75f, 0.75f, 1f));
             }
@@ -240,7 +242,7 @@ namespace Dovus.Game.Team
             if (pulse.Burned)
             {
                 // S17: yüklenen/panelden değişen tuning (ActorStatusHost.Bind'deki _combat.Status), varsayılan değil.
-                _bossStatus.Board.Apply(StatusKind.Burn, TeamComboDefaults.SecToMs, _bossStatus.Tuning.BurnDamagePerSec, "8-6");
+                _bossStatus.Board.Apply(StatusKind.Burn, TeamComboDefaults.SecToMs, _bossStatus.Tuning.BurnDamagePerSec, SkillIds.OpeningAscent);
             }
             if (pulse.MineMult > TeamComboDefaults.MineMultActiveThreshold)
                 _line = "Mayın x" + pulse.MineMult.ToString("0");

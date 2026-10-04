@@ -8,6 +8,7 @@ using Dovus.Core.Passives;
 using Dovus.Core.Grammar;
 using Dovus.Core.Tuning;
 using NUnit.Framework;
+using Dovus.Core.Shared;
 
 namespace CoreTests;
 
@@ -16,7 +17,7 @@ public class SkillMotionMotorTests
 {
     static SkillResolution Teleport(string adjectiveId = "sizma", string elementOrigin = "Pus") =>
         SkillResolution.Build(
-            "3-2", "Pus", "Pus Adımı", "pus_adimi", "job",
+            "3-2", "Pus", "Pus Adımı", (SkillId)"pus_adimi", "job",
             "kisisel_isinlanma", "Kişisel Işınlanma", "motion", "self_teleport",
             0f, 0f, "self", "free_move", new[] { "stasis" },
             adjectiveId, adjectiveId, "none",
@@ -27,7 +28,7 @@ public class SkillMotionMotorTests
 
     static SkillResolution Dash() =>
         SkillResolution.Build(
-            "3", "Hava", "Hareket", "h", "job",
+            "3", "Hava", "Hareket", (SkillId)"h", "job",
             "hareket", "Hareket", "motion", "dash",
             0f, 0f, "self", "free_move", new[] { "haste" },
             "tasima", "Taşıma", "none",
@@ -37,7 +38,7 @@ public class SkillMotionMotorTests
 
     static SkillResolution Lightning() =>
         SkillResolution.Build(
-            "3-5", "Yıldırım", "Şimşek Geçişi", "simsek", "job",
+            "3-5", "Yıldırım", "Şimşek Geçişi", (SkillId)"simsek", "job",
             "zincirleme", "Zincirleme", "strike", "chain",
             45f, 20f, "chain_projectile", "slowed_move", new[] { "stun" },
             "isnlama", "Işınlama", "none",

@@ -11,11 +11,11 @@ namespace Dovus.Core.Grammar
     {
         public ElementNode(
             string id, string name, string type, string verbId, string adjectiveId,
-            string skillId, string skillName, string skillJob,
+            SkillId skillId, string skillName, string skillJob,
             string identity, JsonValue specialMechanics, JsonValue zoneEffect, JsonValue raw)
         {
             Id = id; Name = name; Type = type; VerbId = verbId; AdjectiveId = adjectiveId;
-            SkillId = skillId; SkillName = skillName; SkillJob = skillJob;
+            SkillId = skillId.Value; SkillName = skillName; SkillJob = skillJob;
             Identity = identity; SpecialMechanics = specialMechanics; ZoneEffect = zoneEffect;
             Raw = raw;
         }

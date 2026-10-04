@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Dovus.Core.Shared;
 
 namespace Dovus.Core.Border
 {
@@ -28,20 +29,20 @@ namespace Dovus.Core.Border
 
         public void Clear() => _slots.Clear();
 
-        public static bool TryTier(string skillId, out float threshold, out float attack, out float life, out float damage)
+        public static bool TryTier(SkillId skillId, out float threshold, out float attack, out float life, out float damage)
         {
-            switch (skillId)
+            switch (skillId.Value)
             {
-                case "1-2":
-                case "3-2":
-                case "8-2":
+                case SkillIds.AbsorbStrike:
+                case SkillIds.AbsorbStep:
+                case SkillIds.AbsorbAscent:
                     threshold = Tier20;
                     attack = Tier20Attack;
                     life = Tier20Life;
                     damage = Tier20Damage;
                     return true;
-                case "1-8":
-                case "12-8":
+                case SkillIds.RisingStrike:
+                case SkillIds.RisingTime:
                     threshold = Tier10;
                     attack = Tier10Attack;
                     life = Tier10Life;
@@ -60,10 +61,10 @@ namespace Dovus.Core.Border
         /// Eşik altı açar (eşit değil). Üstünde açmaz ve açık modu da kapatmaz.
         /// 12-8 sütunu cana bakmadan başlar.
         /// </summary>
-        public bool OnSkill(int actorId, string skillId, float hpRatio)
+        public bool OnSkill(int actorId, SkillId skillId, float hpRatio)
         {
             Slot slot = Get(actorId);
-            if (skillId == "12-8")
+            if (skillId.Value == SkillIds.RisingTime)
             {
                 slot.ColumnOn = true;
                 slot.ColumnLeft = ColumnSec;
@@ -82,7 +83,7 @@ namespace Dovus.Core.Border
             slot.Attack = attack;
             slot.Life = life;
             slot.Damage = damage;
-            slot.Source = skillId ?? string.Empty;
+            slot.Source = skillId.Value;
             return true;
         }
 

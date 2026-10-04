@@ -9,6 +9,7 @@ using Dovus.Core.Passives;
 using Dovus.Core.Equipment;
 using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
+using Dovus.Core.Shared;
 using Dovus.Core.Manifestation;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Status;
@@ -232,7 +233,7 @@ namespace Dovus.Game.Skills
         /// </summary>
         void ApplySpawnIFrame(in SkillResolution skill)
         {
-            int ms = _verbData?.IFrameMsFor(skill.Identity.Id) ?? 0;
+            int ms = _verbData?.IFrameMsFor((SkillId)skill.Identity.Id) ?? 0;
             if (ms <= 0 || _player == null)
                 return;
             _player.GetComponent<PlayerDodgeController>()?.OpenSkillIframe(ms);

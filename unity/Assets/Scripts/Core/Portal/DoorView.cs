@@ -8,14 +8,14 @@ namespace Dovus.Core.Portal
 {
     public readonly struct DoorView
     {
-        public DoorView(int id, int linkId, float x, float z, float radius, string skillId, float lifeSec, bool projectilesOnly)
+        public DoorView(int id, int linkId, float x, float z, float radius, SkillId skillId, float lifeSec, bool projectilesOnly)
         {
             Id = id;
             LinkId = linkId;
             X = x;
             Z = z;
             Radius = radius;
-            SkillId = skillId ?? string.Empty;
+            SkillId = skillId;
             LifeSec = lifeSec;
             ProjectilesOnly = projectilesOnly;
         }
@@ -25,7 +25,7 @@ namespace Dovus.Core.Portal
         public float X { get; }
         public float Z { get; }
         public float Radius { get; }
-        public string SkillId { get; }
+        public SkillId SkillId { get; }
         public float LifeSec { get; }
         public bool ProjectilesOnly { get; }
     }

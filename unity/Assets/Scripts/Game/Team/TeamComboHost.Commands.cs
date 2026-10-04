@@ -9,6 +9,7 @@ using Dovus.Game.Boss;
 using Dovus.Game.Data;
 using Dovus.Game.Platform;
 using Dovus.Game.Vfx;
+using Dovus.Core.Shared;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -51,12 +52,12 @@ namespace Dovus.Game.Team
             _line = "Can %" + Mathf.RoundToInt(ratio * TeamComboDefaults.HpPercentScale);
         }
 
-        public void CommandCast(TeamActorHost actor, string skillId)
+        public void CommandCast(TeamActorHost actor, SkillId skillId)
         {
-            if (!Bind() || actor == null || string.IsNullOrEmpty(skillId))
+            if (!Bind() || actor == null || skillId.IsEmpty)
                 return;
             RefreshActors();
-            actor.LastSkillId = skillId;
+            actor.LastSkillId = skillId.Value;
             Disc boss = BossDisc();
             _border.OnSkill(actor.Id, skillId, actor.HpRatio);
             Body body = ToBody(actor);
@@ -65,7 +66,7 @@ namespace Dovus.Game.Team
             TeamPulse pulse = _team.Cast(skillId, actor, FindAlly(target.Id), _allies, boss);
             ApplyPulse(pulse);
             ApplyMoves();
-            _line = actor.name + " → " + skillId;
+            _line = actor.name + " → " + skillId.Value;
         }
 
         public void CommandHit(TeamActorHost actor)
@@ -98,7 +99,7 @@ namespace Dovus.Game.Team
             _line = actor.name + " vurdu x" + mult.ToString("0.00");
         }
 
-        public void CommandSkillAt(TeamActorHost actor, string skillId)
+        public void CommandSkillAt(TeamActorHost actor, SkillId skillId)
         {
             if (actor == null)
                 return;

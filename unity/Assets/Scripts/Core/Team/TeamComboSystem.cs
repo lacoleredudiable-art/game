@@ -142,7 +142,7 @@ namespace Dovus.Core.Team
             return false;
         }
 
-        public bool IsTeamSkill(string skillId) =>
+        public bool IsTeamSkill(SkillId skillId) =>
             TeamOpTable.Resolve(skillId, _ops) != TeamOp.None;
 
         public TeamComboSystem()
@@ -158,7 +158,7 @@ namespace Dovus.Core.Team
         /// <summary>Op tablosunu sonradan bağla (Unity MonoBehaviour ctor'unda Resources yüklenemez; host Awake'te çağırır).</summary>
         public void UseOps(IReadOnlyDictionary<string, TeamOp> ops) => _ops = ops ?? TeamOpTable.Legacy;
 
-        public TeamPulse Cast(string skillId, IAllyPlayer caster, IAllyPlayer target, IReadOnlyList<IAllyPlayer> allies, in Disc boss)
+        public TeamPulse Cast(SkillId skillId, IAllyPlayer caster, IAllyPlayer target, IReadOnlyList<IAllyPlayer> allies, in Disc boss)
         {
             if (caster == null || !IsTeamSkill(skillId))
                 return TeamPulse.None;
@@ -187,7 +187,7 @@ namespace Dovus.Core.Team
             }
         }
 
-        public TeamPulse AllyUsedSkill(IAllyPlayer ally, string skillId, float x, float z)
+        public TeamPulse AllyUsedSkill(IAllyPlayer ally, SkillId skillId, float x, float z)
         {
             if (ally == null)
                 return TeamPulse.None;

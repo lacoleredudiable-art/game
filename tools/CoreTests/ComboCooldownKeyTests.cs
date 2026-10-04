@@ -7,6 +7,7 @@ using Dovus.Core.Hud;
 using Dovus.Core.Passives;
 using Dovus.Core.Grammar;
 using NUnit.Framework;
+using Dovus.Core.Shared;
 
 namespace CoreTests;
 
@@ -20,7 +21,7 @@ public class ComboCooldownKeyTests
             elementId: string.Empty,
             elementName: string.Empty,
             displayName: "test",
-            skillId: "8-9",
+            skillId: (SkillId)"8-9",
             skillJob: string.Empty,
             verbId: "8",
             verbName: string.Empty,
@@ -53,7 +54,7 @@ public class ComboCooldownKeyTests
             elementId: string.Empty,
             elementName: string.Empty,
             displayName: "verb",
-            skillId: string.Empty,
+            skillId: default,
             skillJob: string.Empty,
             verbId: "12",
             verbName: string.Empty,

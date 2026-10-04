@@ -1,6 +1,7 @@
 using Dovus.Core.Motion;
 using NUnit.Framework;
 using System.IO;
+using Dovus.Core.Shared;
 
 namespace CoreTests;
 
@@ -27,7 +28,7 @@ public class EmiciApproachTests
     [Test]
     public void EmiciAdim_DashesThrough_EvenWhileAPullIsHeld()
     {
-        Assert.That(_catalog.TryPlay("3-2", out MotionTemplate template), Is.True);
+        Assert.That(_catalog.TryPlay((SkillId)"3-2", out MotionTemplate template), Is.True);
         Assert.That(EmiciApproach.TemplatePassesThrough(template), Is.True);
         Assert.That(EmiciApproach.ShouldHoldCaster("2", template), Is.False);
         Assert.That(EmiciApproach.Freezes(template.Phases[0], holdApproach: true), Is.False);
@@ -49,7 +50,7 @@ public class EmiciApproachTests
     {
         foreach (string id in new[] { "1-2", "4-2" })
         {
-            Assert.That(_catalog.TryPlay(id, out MotionTemplate template), Is.True, id);
+            Assert.That(_catalog.TryPlay((SkillId)id, out MotionTemplate template), Is.True, id);
             Assert.That(EmiciApproach.ShouldHoldCaster("2", template), Is.True, id);
             Assert.That(EmiciApproach.TemplatePassesThrough(template), Is.False, id);
 
@@ -90,7 +91,7 @@ public class EmiciApproachTests
     [Test]
     public void EmiciBag_RetreatsWithoutAOneFrameJump()
     {
-        Assert.That(_catalog.TryPlay("6-2", out MotionTemplate template), Is.True);
+        Assert.That(_catalog.TryPlay((SkillId)"6-2", out MotionTemplate template), Is.True);
         Assert.That(EmiciApproach.ShouldHoldCaster("2", template), Is.False);
         MotionPhase retreat = null;
         for (int i = 0; i < template.Phases.Count; i++)
@@ -122,9 +123,9 @@ public class EmiciApproachTests
     [Test]
     public void EmiciStaySkills_ExpectYerinde_PassThroughDoesNot()
     {
-        Assert.That(_catalog.TryPlay("1-2", out MotionTemplate claw), Is.True);
-        Assert.That(_catalog.TryPlay("4-2", out MotionTemplate ward), Is.True);
-        Assert.That(_catalog.TryPlay("3-2", out MotionTemplate step), Is.True);
+        Assert.That(_catalog.TryPlay((SkillId)"1-2", out MotionTemplate claw), Is.True);
+        Assert.That(_catalog.TryPlay((SkillId)"4-2", out MotionTemplate ward), Is.True);
+        Assert.That(_catalog.TryPlay((SkillId)"3-2", out MotionTemplate step), Is.True);
         Assert.That(EmiciApproach.SweepStayCategory("2", claw), Is.EqualTo("yerinde"));
         Assert.That(EmiciApproach.SweepStayCategory("2", ward), Is.EqualTo("yerinde"));
         Assert.That(EmiciApproach.SweepStayCategory("2", step), Is.Null);
@@ -135,7 +136,7 @@ public class EmiciApproachTests
     {
         foreach (string id in new[] { "5-2", "10-2", "11-2", "12-2" })
         {
-            Assert.That(_catalog.TryPlay(id, out MotionTemplate template), Is.True, id);
+            Assert.That(_catalog.TryPlay((SkillId)id, out MotionTemplate template), Is.True, id);
             var runner = new MotionTemplateRunner();
             runner.Begin(template, 0f, 0f, 0f, 0f, 1f, Body, Stop);
             float maxStep = 0f;

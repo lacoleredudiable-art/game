@@ -4,6 +4,7 @@ using Dovus.Core.Motion;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.IO;
+using Dovus.Core.Shared;
 
 namespace CoreTests;
 
@@ -41,7 +42,7 @@ public class TemplateDeliveryTests
     TemplateDeliveryOrder Order(int verb, int adjective, int weapon = 1)
     {
         string id = verb + "-" + adjective;
-        Assert.That(_motion.TryPlay(id, out MotionTemplate template), Is.True, id);
+        Assert.That(_motion.TryPlay((SkillId)id, out MotionTemplate template), Is.True, id);
         MechanicPlan plan = _grammar.Compose(verb, adjective, weapon);
         var skill = _motor.Resolve(new[] { verb, adjective });
         return TemplateDelivery.Build(plan, skill.Engine, template, _grammar.Rules, 1f);
@@ -133,7 +134,7 @@ public class TemplateDeliveryTests
         foreach (int verb in verbs)
         {
             TemplateDeliveryOrder order = Order(verb, 11);
-            Assert.That(_motion.TryPlay(verb + "-11", out MotionTemplate template), Is.True);
+            Assert.That(_motion.TryPlay((SkillId)(verb + "-11"), out MotionTemplate template), Is.True);
             float first = System.Math.Max(0f, TemplateDelivery.FirstEffectHitSec(template));
             Assert.That(order.DuplicateAtSec, Is.EqualTo(first + 0.3f).Within(0.02f), verb + "-11");
             // Kopya nabzı kalıpta ya da kuyrukta: ilk vuruştan ~0,3 sn sonra tam bir kez.
@@ -164,7 +165,7 @@ public class TemplateDeliveryTests
         Assert.That(echo.OpeningPulse, Is.True);
         Assert.That(HasBeat(echo, DeliveryBeatKind.RepeatPrevious), Is.True);
         Assert.That(HasBeat(echo, DeliveryBeatKind.Resolve), Is.True);
-        Assert.That(TemplateDelivery.HasEffectHit(_motion.TryPlay("12-11", out MotionTemplate yanki) ? yanki : null), Is.False);
+        Assert.That(TemplateDelivery.HasEffectHit(_motion.TryPlay((SkillId)"12-11", out MotionTemplate yanki) ? yanki : null), Is.False);
     }
 
     [Test]
@@ -204,7 +205,7 @@ public class TemplateDeliveryTests
     [Test]
     public void Homing_TracksThrowPhases_WithoutMovingTheCaster()
     {
-        Assert.That(_motion.TryPlay("1-6", out MotionTemplate bomb), Is.True);
+        Assert.That(_motion.TryPlay((SkillId)"1-6", out MotionTemplate bomb), Is.True);
         Assert.That(bomb.Phases[0].Motion, Is.EqualTo("throw"));
         MotionPhase shot = bomb.Phases[0].WithHoming("none");
         var bare = bomb.WithPhases(new[] { shot });
@@ -231,7 +232,7 @@ public class TemplateDeliveryTests
     [Test]
     public void DashDistance_CapsTravel_AndShortDashStaysShort()
     {
-        Assert.That(_motion.TryPlay("3-1", out MotionTemplate dash), Is.True);
+        Assert.That(_motion.TryPlay((SkillId)"3-1", out MotionTemplate dash), Is.True);
         Assert.That(dash.Phases[0].DistanceM, Is.EqualTo(1.65f).Within(0.01f));
         MotionTemplate same = DashDistance.Apply(dash, 3f * 0.55f);
         Assert.That(same.Phases[0].DistanceM, Is.EqualTo(1.65f).Within(0.01f));
@@ -290,9 +291,9 @@ public class TemplateDeliveryTests
     [Test]
     public void StepTemplates_SplitShortDashLockAndTwoHops()
     {
-        Assert.That(_motion.TryPlay("3-1", out MotionTemplate shortDash), Is.True);
-        Assert.That(_motion.TryPlay("3-9", out MotionTemplate locked), Is.True);
-        Assert.That(_motion.TryPlay("3-3", out MotionTemplate hops), Is.True);
+        Assert.That(_motion.TryPlay((SkillId)"3-1", out MotionTemplate shortDash), Is.True);
+        Assert.That(_motion.TryPlay((SkillId)"3-9", out MotionTemplate locked), Is.True);
+        Assert.That(_motion.TryPlay((SkillId)"3-3", out MotionTemplate hops), Is.True);
         Assert.That(shortDash.Id, Is.Not.EqualTo(locked.Id));
         Assert.That(shortDash.Phases[0].Motion, Is.EqualTo("dash"));
         Assert.That(shortDash.Phases[0].Land, Is.Not.EqualTo("behind"));
@@ -307,8 +308,8 @@ public class TemplateDeliveryTests
         Assert.That(hops.Phases.Count, Is.EqualTo(2));
         Assert.That(hops.Phases[^1].Land, Is.EqualTo("behind"));
 
-        Assert.That(_motion.TryPlay("3-4", out MotionTemplate pin), Is.True);
-        Assert.That(_motion.TryPlay("3-12", out MotionTemplate glide), Is.True);
+        Assert.That(_motion.TryPlay((SkillId)"3-4", out MotionTemplate pin), Is.True);
+        Assert.That(_motion.TryPlay((SkillId)"3-12", out MotionTemplate glide), Is.True);
         Assert.That(TemplateDelivery.HasEffectHit(pin), Is.False);
         Assert.That(TemplateDelivery.HasEffectHit(glide), Is.False);
         Assert.That(Order(3, 4).OpeningPulse, Is.True);
@@ -327,7 +328,7 @@ public class TemplateDeliveryTests
         Assert.That(echo.Duplicate, Is.False);
         Assert.That(HasBeat(echo, DeliveryBeatKind.Duplicate), Is.False);
 
-        Assert.That(_motion.TryPlay("6-11", out MotionTemplate twoFast), Is.True);
+        Assert.That(_motion.TryPlay((SkillId)"6-11", out MotionTemplate twoFast), Is.True);
         float first = TemplateDelivery.FirstEffectHitSec(twoFast);
         TemplateDeliveryOrder copy = Order(6, 11);
         Assert.That(copy.Duplicate, Is.True);
@@ -346,7 +347,7 @@ public class TemplateDeliveryTests
     [Test]
     public void EmiciLunge_HoldsTheCasterEvenWhenThePlanDoesNotPull()
     {
-        Assert.That(_motion.TryPlay("4-2", out MotionTemplate lunge), Is.True);
+        Assert.That(_motion.TryPlay((SkillId)"4-2", out MotionTemplate lunge), Is.True);
         Assert.That(EmiciApproach.ShouldHoldCaster("2", lunge), Is.True);
         Assert.That(Plan(4, 2).Body.Pull, Is.False, "4-2 boss'u çekmez ama oyuncu yerinde kalır");
         Assert.That(EmiciApproach.SweepStayCategory("2", lunge), Is.EqualTo("yerinde"));
@@ -357,7 +358,7 @@ public class TemplateDeliveryTests
     [TestCase(7.06f, 1f / 15f)]
     public void StraightDash_WithoutOvershoot_StopsAtTheBodyEdge(float dashM, float dt)
     {
-        Assert.That(_motion.TryPlay("3-7", out MotionTemplate smoke), Is.True);
+        Assert.That(_motion.TryPlay((SkillId)"3-7", out MotionTemplate smoke), Is.True);
         MotionTemplate stretched = DashDistance.Apply(smoke, dashM);
         const float body = 0.5f;
         const float gap = 0.15f;
@@ -385,7 +386,7 @@ public class TemplateDeliveryTests
     public void TrackDash_TargetSnapsCloserMidPhase_NeverEndsInsideSeparation()
     {
         // 12-11: kuyruk atılma sürerken boss'u geri sarar; hedef her karede canlı okunur.
-        Assert.That(_motion.TryPlay("12-11", out MotionTemplate rewind), Is.True);
+        Assert.That(_motion.TryPlay((SkillId)"12-11", out MotionTemplate rewind), Is.True);
         const float body = 0.5f;
         const float gap = 0.15f;
         const float bossR = 0.85f;

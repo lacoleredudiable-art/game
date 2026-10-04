@@ -5,6 +5,7 @@ using Dovus.Core.Motion;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.IO;
+using Dovus.Core.Shared;
 
 namespace CoreTests;
 
@@ -55,7 +56,7 @@ public partial class MotionTemplateTests
         for (int adjective = 1; adjective <= 12; adjective++)
         {
             string id = verb + "-" + adjective;
-            Assert.That(_catalog.TryGet(id, out MotionBinding binding), Is.True, id);
+            Assert.That(_catalog.TryGet((SkillId)id, out MotionBinding binding), Is.True, id);
             Assert.That(binding.Template.Phases.Count, Is.GreaterThan(0), id);
         }
 
@@ -78,7 +79,7 @@ public partial class MotionTemplateTests
             ids.Add(skill.Name);
 
         Assert.That(ids, Has.Count.EqualTo(144));
-        var missing = ids.FindAll(id => !docsCatalog.TryGet(id, out MotionBinding binding)
+        var missing = ids.FindAll(id => !docsCatalog.TryGet((SkillId)id, out MotionBinding binding)
             || binding.Template == null || binding.Template.Phases.Count == 0);
         Assert.That(missing, Is.Empty);
     }
@@ -88,16 +89,16 @@ public partial class MotionTemplateTests
     {
         Assert.That(Tags("1-1"), Does.Contain(MotionTemplateCatalog.TagSilah));
         Assert.That(Tags("1-2"), Does.Contain(MotionTemplateCatalog.TagSinir));
-        Assert.That(_catalog.TryGet("1-2", out MotionBinding claw), Is.True);
+        Assert.That(_catalog.TryGet((SkillId)"1-2", out MotionBinding claw), Is.True);
         Assert.That(claw.SinirThreshold, Is.EqualTo(0.2f).Within(0.001f));
-        Assert.That(_catalog.TryGet("1-8", out MotionBinding lift), Is.True);
+        Assert.That(_catalog.TryGet((SkillId)"1-8", out MotionBinding lift), Is.True);
         Assert.That(lift.SinirThreshold, Is.EqualTo(0.1f).Within(0.001f));
         Assert.That(lift.HasTag(MotionTemplateCatalog.TagSilah), Is.True);
         Assert.That(Tags("1-10"), Does.Contain(MotionTemplateCatalog.TagPortal));
         Assert.That(Tags("4-10"), Does.Not.Contain(MotionTemplateCatalog.TagPortal));
         Assert.That(Tags("6-8"), Does.Contain(MotionTemplateCatalog.TagTakim));
         Assert.That(Tags("10-1"), Does.Contain(MotionTemplateCatalog.TagSilah));
-        Assert.That(_catalog.TryPlay("10-1", out MotionTemplate parry), Is.True);
+        Assert.That(_catalog.TryPlay((SkillId)"10-1", out MotionTemplate parry), Is.True);
         Assert.That(parry.FamilyId, Is.EqualTo(28));
         Assert.That(Tags("3-10"), Does.Contain(MotionTemplateCatalog.TagPortal));
         Assert.That(Tags("3-10"), Does.Contain(MotionTemplateCatalog.TagTakim));
@@ -118,14 +119,14 @@ public partial class MotionTemplateTests
         for (int adjective = 1; adjective <= 12; adjective++)
         {
             string id = verb + "-" + adjective;
-            Assert.That(_catalog.TryPlay(id, out MotionTemplate template), Is.True, id);
+            Assert.That(_catalog.TryPlay((SkillId)id, out MotionTemplate template), Is.True, id);
             Assert.That(template.Implemented, Is.True, id);
             Assert.That(template.Phases.Count, Is.GreaterThan(0), id);
             Assert.That(template.Phases[0].Name, Is.Not.EqualTo("bekliyor"), id);
         }
 
         Assert.That(pending, Is.EqualTo(0));
-        Assert.That(_catalog.TryPlay("0-0", out _), Is.False);
+        Assert.That(_catalog.TryPlay((SkillId)"0-0", out _), Is.False);
         Assert.That(DesignWarnings.WasWarned("motion.missing.0-0"), Is.True);
     }
 
@@ -147,7 +148,7 @@ public partial class MotionTemplateTests
         var catalog = MotionTemplateCatalog.FromJson(json);
         MotionTemplateCatalog.FromJson(json);
         Assert.That(warnings, Is.EqualTo(1));
-        Assert.That(catalog.TryPlay("1-1", out MotionTemplate template), Is.True);
+        Assert.That(catalog.TryPlay((SkillId)"1-1", out MotionTemplate template), Is.True);
         Assert.That(template.Phases[0].DurationSec, Is.EqualTo(0.41f).Within(0.001f));
     }
 }

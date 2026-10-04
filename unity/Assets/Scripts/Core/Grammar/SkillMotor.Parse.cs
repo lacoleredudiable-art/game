@@ -55,7 +55,7 @@ namespace Dovus.Core.Grammar
 
                 // Eski tüketicilerin sözlük API'si korunur; içerik v6 rünlerinden üretilir.
                 motor._elements[key] = new ElementNode(
-                    key, name, "core", key, key, string.Empty, string.Empty,
+                    key, name, "core", key, key, default, string.Empty,
                     obj["base_effect"].AsString(), string.Empty,
                     JsonValue.Null, JsonValue.Null, obj);
 

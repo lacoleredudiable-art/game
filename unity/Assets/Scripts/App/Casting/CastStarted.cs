@@ -10,12 +10,13 @@ using Dovus.Core.Equipment;
 using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
+using Dovus.Core.Shared;
 
 namespace Dovus.App.Casting
 {
     public readonly struct CastStarted
     {
-        public CastStarted(string skillId) => SkillId = skillId ?? string.Empty;
-        public string SkillId { get; }
+        public CastStarted(SkillId skillId) => SkillId = skillId;
+        public SkillId SkillId { get; }
     }
 }

@@ -343,7 +343,7 @@ public class JsonEffectCoverageTests
         foreach (MechanicPlan plan in _plans)
         {
             bool yol = plan.Effects.Any(e => e.Modes.Any(m => m.StartsWith("yol:", StringComparison.Ordinal)));
-            if (yol && !_motion.TryPlay(plan.Verb + "-" + plan.Adjective, out _))
+            if (yol && !_motion.TryPlay((SkillId)(plan.Verb + "-" + plan.Adjective), out _))
                 failures.Add($"{plan.Verb}-{plan.Adjective}: yol: mode without motion template");
         }
         string summon = File.ReadAllText(Path.Combine(_root, "unity", "Assets", "Scripts", "Game", "Skills", "Execution", "SummonExecutor.cs"));

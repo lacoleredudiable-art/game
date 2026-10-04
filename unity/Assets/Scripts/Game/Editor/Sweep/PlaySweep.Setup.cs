@@ -11,6 +11,7 @@ using Dovus.Core.Passives;
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using Dovus.Core.Motion;
+using SkillId = Dovus.Core.Shared.SkillId;
 using Dovus.Core.Portal;
 using Dovus.Core.Status;
 using Dovus.Game.Actors;
@@ -320,7 +321,7 @@ namespace Dovus.Game.Editor
                 info.RecoverySec = combat != null ? combat.Sentence.StepForDots(2).RecoverySec : 0.26f;
 
                 var catalog = P<MotionTemplateCatalog>(_md, "MotionCatalog");
-                if (catalog == null || !catalog.TryPlay(skill.Identity.Id, out MotionTemplate template))
+                if (catalog == null || !catalog.TryPlay((SkillId)skill.Identity.Id, out MotionTemplate template))
                     return info;
                 info.DeliveryDelaySec = DeliveryDelaySec(skill, template);
                 object playback = Call(_md, "PreparePositionPlayback", skill, template);
