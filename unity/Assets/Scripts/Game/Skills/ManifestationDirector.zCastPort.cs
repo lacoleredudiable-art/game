@@ -228,7 +228,7 @@ namespace Dovus.Game.Skills
                 if (impactTarget == null || impactTarget == _md._player || !_md.IsEnemyBody(impactTarget))
                 {
                     _md.CaptureBasicFacing();
-                    impactTarget = _md._castFacingTarget;
+                    impactTarget = _md.CastFacingTarget;
                 }
                 if ((impactTarget == null || !_md.IsEnemyBody(impactTarget)) && _md._boss != null)
                     impactTarget = _md._boss.transform;
