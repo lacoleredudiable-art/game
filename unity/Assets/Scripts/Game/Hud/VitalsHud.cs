@@ -192,7 +192,7 @@ namespace Dovus.Game.Hud
         {
             foreach (var p in data.Phases)
             {
-                if (p.UpperFrac <= 0.001f || p.UpperFrac >= 0.999f)
+                if (p.UpperFrac <= 0.001f || p.UpperFrac >= VitalsHudDefaults.FillFullThreshold)
                     continue;
                 var go = new GameObject("PhaseNotch" + p.Phase);
                 go.transform.SetParent(bossBg, false);
@@ -269,7 +269,7 @@ namespace Dovus.Game.Hud
                 float age = Time.unscaledTime - _bannerShownAt;
                 _bannerGroup.alpha = age <= th.BannerHoldSec
                     ? 1f
-                    : 1f - Mathf.Clamp01((age - th.BannerHoldSec) / Mathf.Max(0.01f, th.BannerFadeSec));
+                    : 1f - Mathf.Clamp01((age - th.BannerHoldSec) / Mathf.Max(VitalsHudDefaults.MinClampZeroPt, th.BannerFadeSec));
             }
 
             if (_castGroup == null)
@@ -299,7 +299,7 @@ namespace Dovus.Game.Hud
             else
             {
                 _castShown = false;
-                _castGroup.alpha = Mathf.MoveTowards(_castGroup.alpha, 0f, Time.unscaledDeltaTime / Mathf.Max(0.01f, th.BannerFadeSec));
+                _castGroup.alpha = Mathf.MoveTowards(_castGroup.alpha, 0f, Time.unscaledDeltaTime / Mathf.Max(VitalsHudDefaults.alpha, th.BannerFadeSec));
             }
         }
 
@@ -513,7 +513,7 @@ namespace Dovus.Game.Hud
             rect.anchorMax = new Vector2(0.5f, 1f);
             rect.pivot = new Vector2(0.5f, 1f);
             rect.sizeDelta = new Vector2(400f, 18f);
-            float subPct = th.BossNameDp > 0f ? th.BossSubtitleDp / th.BossNameDp * 100f : 70f;
+            float subPct = th.BossNameDp > 0f ? th.BossSubtitleDp / th.BossNameDp * 100f : VitalsHudDefaults.subPct;
             text.text = string.IsNullOrEmpty(data.Subtitle)
                 ? data.Upper(data.Name)
                 : data.Upper(data.Name) + "  <size=" + subPct.ToString("0") + "%><alpha=#AA>" + data.Subtitle + "</size>";
@@ -582,21 +582,21 @@ namespace Dovus.Game.Hud
                 PlayerStackBottomCanvasY = -(topInset + margin + panelH);
 
                 HudTheme th = _theme;
-                float nameH = HexagonLayoutScreen.DpToPixels(th.BossNameDp + 4f);
+                float nameH = HexagonLayoutScreen.DpToPixels(th.BossNameDp + VitalsHudDefaults.nameH);
                 _bossRoot.anchoredPosition = new Vector2(0f, -(topInset + margin * 0.5f));
                 _bossName.rectTransform.anchoredPosition = Vector2.zero;
                 _bossName.rectTransform.sizeDelta = new Vector2(bossW, nameH);
                 _bossBg.anchoredPosition = new Vector2(-bossW * 0.5f, -nameH);
                 _bossBg.sizeDelta = new Vector2(bossW, bossH);
-                float poiseGap = HexagonLayoutScreen.DpToPixels(3f);
-                float poiseH = Mathf.Max(6f, bossH * 0.42f);
+                float poiseGap = HexagonLayoutScreen.DpToPixels(VitalsHudDefaults.poiseGap);
+                float poiseH = Mathf.Max(VitalsHudDefaults.poiseH, bossH * VitalsHudDefaults.BossPoiseHeightMult);
                 if (_poiseBg != null)
                 {
                     _poiseBg.anchoredPosition = new Vector2(-bossW * 0.5f, -(nameH + bossH + poiseGap));
                     _poiseBg.sizeDelta = new Vector2(bossW, poiseH);
                 }
                 // Cast barı poise barının altında; etiketi barın üstünde durur.
-                float castLabelH = HexagonLayoutScreen.DpToPixels(th.CastLabelDp + 4f);
+                float castLabelH = HexagonLayoutScreen.DpToPixels(th.CastLabelDp + VitalsHudDefaults.castLabelH);
                 float castH = HexagonLayoutScreen.DpToPixels(th.CastBarHeightDp);
                 float castTop = nameH + bossH + poiseGap + poiseH + castLabelH;
                 if (_castRoot != null)

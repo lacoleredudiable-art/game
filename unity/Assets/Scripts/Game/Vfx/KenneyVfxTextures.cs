@@ -33,7 +33,7 @@ namespace Dovus.Game.Vfx
         /// <summary>Element tint rengine en yakın çekirdek rün dokusu.</summary>
         public static string ClosestElementName(Color tint)
         {
-            if (_tuning == null || tint.a <= 0.01f)
+            if (_tuning == null || tint.a <= VfxDefaults.tuning)
                 return TexDark;
 
             float best = float.MaxValue;
@@ -75,7 +75,7 @@ namespace Dovus.Game.Vfx
         public static Material GetParticleMaterial(string fileName, bool additive)
         {
             string name = string.IsNullOrWhiteSpace(fileName) ? null : fileName.Trim();
-            long cacheKey = ((long)(name ?? string.Empty).GetHashCode() << 1) | (additive ? 1L : 0L);
+            long cacheKey = ((long)(name ?? string.Empty).GetHashCode() << 1) | (additive ? VfxDefaults.cacheKey : VfxDefaults.CacheKeyAdditiveBit);
             if (Materials.TryGetValue(cacheKey, out Material mat) && mat != null)
                 return mat;
 

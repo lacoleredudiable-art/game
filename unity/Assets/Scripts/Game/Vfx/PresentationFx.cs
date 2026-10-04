@@ -86,7 +86,7 @@ namespace Dovus.Game.Vfx
             {
                 Vector3 fwd = _bossTf.forward;
                 fwd.y = 0f;
-                Vector3 mouth = _boss.AttackOrigin + fwd.normalized * 0.6f + Vector3.up * 1.4f;
+                Vector3 mouth = _boss.AttackOrigin + fwd.normalized * VfxDefaults.mouth + Vector3.up * VfxDefaults.BossMouthLiftM;
                 FeelVfx.FireCone(mouth, fwd, _boss.AttackArcHalfAngleDeg, _boss.AttackRadiusM);
                 _sfx?.Play(SfxLibrary.BossFire);
             }
@@ -99,8 +99,8 @@ namespace Dovus.Game.Vfx
             {
                 FeelVfx.SlamImpact(_boss.AttackOrigin, _boss.AttackRadiusM);
                 _sfx?.Play(SfxLibrary.BossSlam);
-                float px = _combat != null ? _combat.Feel.ShakeBossSlamPx : 19f;
-                float decay = _combat != null ? _combat.Feel.ShakeDecay : 6f;
+                float px = _combat != null ? _combat.Feel.ShakeBossSlamPx : VfxDefaults.px;
+                float decay = _combat != null ? _combat.Feel.ShakeDecay : VfxDefaults.decay;
                 _follow?.AddShakePxAtLeast(px, decay);
                 DebugConfig.DevLog($"[Feel2Verify] boss-slam shake={px}px");
             }

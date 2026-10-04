@@ -39,19 +39,19 @@ namespace Dovus.Game.Vfx
             float mult = crit ? lib.CritSparkMult : 1f;
             ParticleSystem ps = NewBurst("HitSpark", pos, Quaternion.identity, additive: true, KenneyVfxTextures.TexHit);
             var main = ps.main;
-            main.startLifetime = new ParticleSystem.MinMaxCurve(lib.HitSparkLifeSec * 0.6f, lib.HitSparkLifeSec);
+            main.startLifetime = new ParticleSystem.MinMaxCurve(lib.HitSparkLifeSec * FeelVfxDefaults.startLifetime, lib.HitSparkLifeSec);
             main.startSpeed = new ParticleSystem.MinMaxCurve(lib.HitSparkSpeed * 0.5f, lib.HitSparkSpeed * mult);
             main.startSize = lib.HitSparkSize * mult;
-            main.gravityModifier = 0.6f;
+            main.gravityModifier = FeelVfxDefaults.gravityModifier;
             Burst(ps, Mathf.RoundToInt(lib.HitSparkCount * mult));
             var sh = ps.shape;
             sh.shapeType = ParticleSystemShapeType.Sphere;
-            sh.radius = 0.1f;
+            sh.radius = FeelVfxDefaults.radius;
             FadeColor(ps, Color.white, tint);
             var r = ps.GetComponent<ParticleSystemRenderer>();
             r.renderMode = ParticleSystemRenderMode.Stretch;
-            r.velocityScale = 0.035f;
-            r.lengthScale = 1.2f;
+            r.velocityScale = FeelVfxDefaults.velocityScale;
+            r.lengthScale = FeelVfxDefaults.lengthScale;
             ps.Play();
         }
 
@@ -62,7 +62,7 @@ namespace Dovus.Game.Vfx
             Quaternion rot = dir.sqrMagnitude > 0.0001f ? Quaternion.LookRotation(-dir) : Quaternion.identity;
             if (lib.TrySpawn(VfxLibrary.DodgeDust, ground, rot) != null)
                 return;
-            Dust("DodgeDust", ground, lib.DodgeDustCount, lib.DodgeDustLifeSec, lib.DodgeDustSize, 2.6f, lib.DustColor);
+            Dust("DodgeDust", ground, lib.DodgeDustCount, lib.DodgeDustLifeSec, lib.DodgeDustSize, FeelVfxDefaults.DustColorConst, lib.DustColor);
         }
 
         public static void FootDust(Vector3 pos, bool boss)
@@ -72,8 +72,8 @@ namespace Dovus.Game.Vfx
             if (lib.TrySpawn(boss ? VfxLibrary.BossStepDust : VfxLibrary.FootDust, ground, Quaternion.identity) != null)
                 return;
             float m = boss ? lib.BossStepDustMult : 1f;
-            Dust("FootDust", ground, Mathf.RoundToInt(lib.FootDustCount * m), lib.FootDustLifeSec * (boss ? 1.5f : 1f),
-                lib.FootDustSize * m, 0.9f * m, lib.DustColor);
+            Dust("FootDust", ground, Mathf.RoundToInt(lib.FootDustCount * m), lib.FootDustLifeSec * (boss ? FeelVfxDefaults.BossConst : 1f),
+                lib.FootDustSize * m, FeelVfxDefaults.FootDustSpeedMult * m, lib.DustColor);
         }
 
         public static void SlamImpact(Vector3 center, float radiusM)
@@ -88,14 +88,14 @@ namespace Dovus.Game.Vfx
             if (!wave)
             {
                 var go = new GameObject("SlamShockwave");
-                go.transform.position = ground + Vector3.up * 0.02f;
+                go.transform.position = ground + Vector3.up * FeelVfxDefaults.position;
                 var line = go.AddComponent<LineRenderer>();
                 line.sharedMaterial = Mat(additive: true, textured: false);
                 line.shadowCastingMode = ShadowCastingMode.Off;
                 line.receiveShadows = false;
                 FxTween.Ring(line, lib.ShockwaveColor, radiusM, lib.ShockwaveWidthM, lib.ShockwaveSec);
-                Dust("SlamDust", ground, lib.DodgeDustCount * 2, lib.DodgeDustLifeSec * 1.4f,
-                    lib.DodgeDustSize * 1.6f, radiusM * 1.6f, lib.DustColor, ringRadius: radiusM * 0.25f);
+                Dust("SlamDust", ground, lib.DodgeDustCount * 2, lib.DodgeDustLifeSec * FeelVfxDefaults.DodgeDustLifeSecConst,
+                    lib.DodgeDustSize * FeelVfxDefaults.RadiusMConst, radiusM * FeelVfxDefaults.RadiusMConst, lib.DustColor, ringRadius: radiusM * FeelVfxDefaults.DodgeRingRadiusMult);
             }
 
             if (!crack)
@@ -103,7 +103,7 @@ namespace Dovus.Game.Vfx
                 var go = new GameObject("GroundCrack");
                 go.transform.position = ground;
                 go.transform.rotation = Quaternion.Euler(90f, Random.Range(0f, 360f), 0f);
-                go.transform.localScale = Vector3.one * radiusM * 1.3f;
+                go.transform.localScale = Vector3.one * radiusM * FeelVfxDefaults.localScale;
                 go.AddComponent<MeshFilter>().sharedMesh = PrimitiveMesh.Get(PrimitiveType.Quad);
                 var mr = go.AddComponent<MeshRenderer>();
                 mr.sharedMaterial = Mat(additive: false, textured: true, crack: true);
@@ -124,9 +124,9 @@ namespace Dovus.Game.Vfx
             ParticleSystem ps = NewBurst("FireCone", origin, rot, additive: true, KenneyVfxTextures.TexFire);
             var main = ps.main;
             main.duration = lib.FlameSec;
-            float life = reachM / Mathf.Max(0.1f, lib.FlameSpeed);
-            main.startLifetime = new ParticleSystem.MinMaxCurve(life * 0.7f, life);
-            main.startSpeed = new ParticleSystem.MinMaxCurve(lib.FlameSpeed * 0.8f, lib.FlameSpeed);
+            float life = reachM / Mathf.Max(FeelVfxDefaults.life, lib.FlameSpeed);
+            main.startLifetime = new ParticleSystem.MinMaxCurve(life * FeelVfxDefaults.DustLifetimeMinMult, life);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(lib.FlameSpeed * FeelVfxDefaults.startSpeed, lib.FlameSpeed);
             main.startSize = new ParticleSystem.MinMaxCurve(lib.FlameSize * 0.5f, lib.FlameSize);
             main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
             main.maxParticles = Mathf.CeilToInt(lib.FlameRate * life) + 8;
@@ -135,25 +135,25 @@ namespace Dovus.Game.Vfx
             var sh = ps.shape;
             sh.enabled = true;
             sh.shapeType = ParticleSystemShapeType.Cone;
-            sh.angle = Mathf.Clamp(halfAngleDeg, 1f, 89f);
-            sh.radius = 0.25f;
+            sh.angle = Mathf.Clamp(halfAngleDeg, 1f, FeelVfxDefaults.angle);
+            sh.radius = FeelVfxDefaults.DustRingRadiusM;
             var size = ps.sizeOverLifetime;
             size.enabled = true;
-            size.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 0.6f, 1f, 1.8f));
+            size.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, FeelVfxDefaults.size, 1f, FeelVfxDefaults.FlameSizeOverLifeMaxMult));
             FadeColor(ps, lib.FlameColorA, lib.FlameColorB);
             ps.Play();
         }
 
         static void Dust(string name, Vector3 ground, int count, float life, float size, float speed, Color color,
-            float ringRadius = 0.25f)
+            float ringRadius = FeelVfxDefaults.ringRadius)
         {
             ParticleSystem ps = NewBurst(name, ground, Quaternion.Euler(-90f, 0f, 0f), additive: false, KenneyVfxTextures.TexEarth);
             var main = ps.main;
-            main.startLifetime = new ParticleSystem.MinMaxCurve(life * 0.7f, life);
-            main.startSpeed = new ParticleSystem.MinMaxCurve(speed * 0.4f, speed);
-            main.startSize = new ParticleSystem.MinMaxCurve(size * 0.6f, size);
+            main.startLifetime = new ParticleSystem.MinMaxCurve(life * FeelVfxDefaults.FlameLifetimeMinMult, life);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(speed * FeelVfxDefaults.DustSpeedMinMult, speed);
+            main.startSize = new ParticleSystem.MinMaxCurve(size * FeelVfxDefaults.startSize, size);
             main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
-            main.gravityModifier = -0.05f;
+            main.gravityModifier = -FeelVfxDefaults.DustRiseGravityMult;
             Burst(ps, count);
             var sh = ps.shape;
             sh.shapeType = ParticleSystemShapeType.Circle;
@@ -161,11 +161,11 @@ namespace Dovus.Game.Vfx
             sh.radiusThickness = 0f;
             var sizeLt = ps.sizeOverLifetime;
             sizeLt.enabled = true;
-            sizeLt.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 0.5f, 1f, 1.5f));
+            sizeLt.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 0.5f, 1f, FeelVfxDefaults.BurstSizeOverLifeMaxMult));
             var limit = ps.limitVelocityOverLifetime;
             limit.enabled = true;
-            limit.limit = speed * 0.3f;
-            limit.dampen = 0.25f;
+            limit.limit = speed * FeelVfxDefaults.limit;
+            limit.dampen = FeelVfxDefaults.dampen;
             Color end = color;
             end.a = 0f;
             FadeColor(ps, color, end);
@@ -181,10 +181,10 @@ namespace Dovus.Game.Vfx
             var main = ps.main;
             main.loop = false;
             main.playOnAwake = false;
-            main.duration = 0.1f;
+            main.duration = FeelVfxDefaults.duration;
             main.simulationSpace = ParticleSystemSimulationSpace.World;
             main.stopAction = ParticleSystemStopAction.Destroy;
-            main.maxParticles = 64;
+            main.maxParticles = FeelVfxDefaults.maxParticles;
             var em = ps.emission;
             em.rateOverTime = 0f;
             var r = go.GetComponent<ParticleSystemRenderer>();
@@ -198,7 +198,7 @@ namespace Dovus.Game.Vfx
         static void Burst(ParticleSystem ps, int count)
         {
             var em = ps.emission;
-            em.SetBursts(new[] { new ParticleSystem.Burst(0f, (short)Mathf.Clamp(count, 1, 200)) });
+            em.SetBursts(new[] { new ParticleSystem.Burst(0f, (short)Mathf.Clamp(count, 1, FeelVfxDefaults.Ps)) });
             var main = ps.main;
             main.maxParticles = Mathf.Max(main.maxParticles, count);
         }
@@ -210,7 +210,7 @@ namespace Dovus.Game.Vfx
             var g = new Gradient();
             g.SetKeys(
                 new[] { new GradientColorKey(from, 0f), new GradientColorKey(to, 1f) },
-                new[] { new GradientAlphaKey(from.a, 0f), new GradientAlphaKey(from.a * 0.8f, 0.4f), new GradientAlphaKey(0f, 1f) });
+                new[] { new GradientAlphaKey(from.a, 0f), new GradientAlphaKey(from.a * FeelVfxDefaults.GradientZeroPtEightF, FeelVfxDefaults.GradientZeroPtFourF), new GradientAlphaKey(0f, 1f) });
             col.color = g;
         }
 
@@ -254,24 +254,24 @@ namespace Dovus.Game.Vfx
             const int arms = 9;
             for (int a = 0; a < arms; a++)
             {
-                float ang = (a + (float)rng.NextDouble() * 0.6f) / arms * Mathf.PI * 2f;
+                float ang = (a + (float)rng.NextDouble() * FeelVfxDefaults.ang) / arms * Mathf.PI * 2f;
                 Vector2 p = new(size * 0.5f, size * 0.5f);
-                float len = size * (0.28f + (float)rng.NextDouble() * 0.2f);
-                float width = 2.4f;
+                float len = size * (FeelVfxDefaults.len + (float)rng.NextDouble() * FeelVfxDefaults.SparkLenJitterMult);
+                float width = FeelVfxDefaults.width;
                 for (float t = 0f; t < len; t += 1f)
                 {
-                    ang += ((float)rng.NextDouble() - 0.5f) * 0.25f;
+                    ang += ((float)rng.NextDouble() - 0.5f) * FeelVfxDefaults.NextDoubleConst;
                     p += new Vector2(Mathf.Cos(ang), Mathf.Sin(ang));
-                    float w = width * (1f - t / len) + 0.6f;
+                    float w = width * (1f - t / len) + FeelVfxDefaults.w;
                     Stamp(px, size, p, w);
-                    if (rng.NextDouble() < 0.03)
+                    if (rng.NextDouble() < FeelVfxDefaults.SparkBranchChance)
                     {
-                        float bAng = ang + (rng.NextDouble() < 0.5 ? 0.7f : -0.7f);
+                        float bAng = ang + (rng.NextDouble() < 0.5 ? FeelVfxDefaults.bAng : -FeelVfxDefaults.bAng);
                         Vector2 q = p;
-                        for (int k = 0; k < len * 0.25f; k++)
+                        for (int k = 0; k < len * FeelVfxDefaults.k; k++)
                         {
                             q += new Vector2(Mathf.Cos(bAng), Mathf.Sin(bAng));
-                            Stamp(px, size, q, w * 0.6f);
+                            Stamp(px, size, q, w * FeelVfxDefaults.WConst);
                         }
                     }
                 }

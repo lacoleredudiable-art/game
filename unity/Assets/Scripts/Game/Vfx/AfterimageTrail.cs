@@ -27,7 +27,7 @@ namespace Dovus.Game.Vfx
         FeelTuning _feel;
         GameTuning _colors;
         Material _mat;
-        float _alpha = 0.55f;
+        float _alpha = AfterimageTrailDefaults.alpha;
         int _countOverride = -1;
 
         /// <summary>Ulti afterimage_count — &lt;0 ise FeelTuning.AfterimageCount.</summary>
@@ -88,13 +88,13 @@ namespace Dovus.Game.Vfx
 
                 Ghost g = _pool.Count > 0 ? _pool.Dequeue() : CreateGhost();
                 float angle = (i + 0.5f) / count * Mathf.PI * 2f;
-                Vector3 offset = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * 0.12f;
+                Vector3 offset = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * AfterimageTrailDefaults.offset;
                 g.Xform.position = position + offset;
                 g.Xform.rotation = rotation;
-                g.Xform.localScale = scale * 0.92f;
+                g.Xform.localScale = scale * AfterimageTrailDefaults.localScale;
                 g.Xform.gameObject.SetActive(true);
                 g.DieAtUnscaled = Time.unscaledTime + lifeSec;
-                SetAlpha(g.Rend, _alpha * 0.85f);
+                SetAlpha(g.Rend, _alpha * AfterimageTrailDefaults.AlphaConst);
                 _live.Add(g);
             }
         }
@@ -108,7 +108,7 @@ namespace Dovus.Game.Vfx
         void Update()
         {
             float now = Time.unscaledTime;
-            float life = _feel != null ? _feel.AfterimageLifeMs / 1000f : 0.32f;
+            float life = _feel != null ? _feel.AfterimageLifeMs / 1000f : AfterimageTrailDefaults.life;
             for (int i = _live.Count - 1; i >= 0; i--)
             {
                 Ghost g = _live[i];

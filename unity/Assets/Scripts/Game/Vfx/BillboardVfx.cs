@@ -12,19 +12,19 @@ namespace Dovus.Game.Vfx
         [SerializeField] ParticleSystem _system;
         [SerializeField] bool _faceCamera = true;
 
-        public static BillboardVfx CreateEmberField(Transform parent, Color tint, float rate = 18f)
+        public static BillboardVfx CreateEmberField(Transform parent, Color tint, float rate = BillboardVfxDefaults.EmberSpawnRate)
         {
             var go = new GameObject("BillboardEmbers");
             go.transform.SetParent(parent, false);
-            go.transform.localPosition = Vector3.up * 0.2f;
+            go.transform.localPosition = Vector3.up * BillboardVfxDefaults.EmberEmitterLiftM;
 
             var ps = go.AddComponent<ParticleSystem>();
             var main = ps.main;
-            main.startLifetime = 1.4f;
-            main.startSize = 0.08f;
+            main.startLifetime = BillboardVfxDefaults.EmberStartLifetimeSec;
+            main.startSize = BillboardVfxDefaults.EmberStartSizeM;
             main.startColor = tint;
-            main.startSpeed = 0.35f;
-            main.maxParticles = 64;
+            main.startSpeed = BillboardVfxDefaults.EmberStartSpeedMps;
+            main.maxParticles = BillboardVfxDefaults.EmberMaxParticles;
             main.simulationSpace = ParticleSystemSimulationSpace.World;
             main.loop = true;
             main.playOnAwake = true;
@@ -34,7 +34,7 @@ namespace Dovus.Game.Vfx
 
             var shape = ps.shape;
             shape.shapeType = ParticleSystemShapeType.Circle;
-            shape.radius = 2.5f;
+            shape.radius = BillboardVfxDefaults.EmberShapeRadiusM;
             shape.rotation = new Vector3(-90f, 0f, 0f);
 
             var colorOverLife = ps.colorOverLifetime;
@@ -49,7 +49,7 @@ namespace Dovus.Game.Vfx
                 new[]
                 {
                     new GradientAlphaKey(0f, 0f),
-                    new GradientAlphaKey(0.85f, 0.15f),
+                    new GradientAlphaKey(BillboardVfxDefaults.EmberAlphaPeak, BillboardVfxDefaults.EmberAlphaMidTime),
                     new GradientAlphaKey(0f, 1f)
                 });
             colorOverLife.color = grad;

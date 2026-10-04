@@ -60,9 +60,9 @@ namespace Dovus.Game.Arena
             Vector3 center = arenaRoot.transform.position;
             // Yakın öğeler (zemin/sis) arena yarıçapıyla ölçeklenir; Ground_Far/Skyline zaten
             // ufka kadar büyük tasarlandı (147→2026→1280 m), onlar sabit kalır (native ölçek 1).
-            float nearScale = Mathf.Max(0.1f, walkHalfM) / CombatAmbienceAssets.DesignBoundaryRadiusM;
+            float nearScale = Mathf.Max(CombatAmbienceEnvironmentDefaults.NearScaleMin, walkHalfM) / CombatAmbienceAssets.DesignBoundaryRadiusM;
             Material groundMat = CreateScaledGroundMaterial(assets.GroundMaterial, nearScale);
-            float floorScale = Mathf.Max(0.1f, walkHalfM * 2f) / CombatAmbienceAssets.DesignBoundaryRadiusM;
+            float floorScale = Mathf.Max(CombatAmbienceEnvironmentDefaults.FloorScaleMin, walkHalfM * 2f) / CombatAmbienceAssets.DesignBoundaryRadiusM;
             Material floorMat = CreateScaledGroundMaterial(assets.GroundMaterial, floorScale);
             if (floorMat != null)
             {
@@ -88,10 +88,10 @@ namespace Dovus.Game.Arena
                     assets.LavaCracksModel, assets.LavaCracksMaterial, root.transform,
                     nearScale * 0.5f, "LavaCracks");
                 if (cracks != null)
-                    cracks.transform.localPosition = new Vector3(0f, 0.015f, 0f);
+                    cracks.transform.localPosition = new Vector3(0f, CombatAmbienceEnvironmentDefaults.CracksLiftM, 0f);
             }
 
-            BuildRockRing(assets, root.transform, walkHalfM, Mathf.Max(1f, tuning?.Arena.ArenaWallThicknessM ?? 1.4f));
+            BuildRockRing(assets, root.transform, walkHalfM, Mathf.Max(1f, tuning?.Arena.ArenaWallThicknessM ?? CombatAmbienceEnvironmentDefaults.WallThicknessFallbackM));
             BuildEdgeProps(assets, root.transform, walkHalfM);
             CameraAmbienceColliders.EnsureOnCombatAmbience(root.transform);
         }
@@ -102,13 +102,13 @@ namespace Dovus.Game.Arena
             if (tuning == null)
                 return;
 
-            float walkHalf = Mathf.Max(0.1f, tuning.Arena.ArenaHalfSizeM);
+            float walkHalf = Mathf.Max(CombatAmbienceEnvironmentDefaults.WalkHalfMinM, tuning.Arena.ArenaHalfSizeM);
             RenderSettings.fog = true;
             RenderSettings.fogColor = tuning.Arena.FogColor;
             // spec'te yok — varsayılan: doğrusal sis, yürüme yarıçapına oranlı.
             RenderSettings.fogMode = FogMode.Linear;
-            RenderSettings.fogStartDistance = walkHalf * 0.9f;
-            RenderSettings.fogEndDistance = walkHalf * 3f;
+            RenderSettings.fogStartDistance = walkHalf * CombatAmbienceEnvironmentDefaults.FogStartDistanceMult;
+            RenderSettings.fogEndDistance = walkHalf * CombatAmbienceEnvironmentDefaults.FogEndDistanceMult;
         }
 
         static GameObject PlaceEnvMesh(GameObject model, Material mat, Transform parent, float scale, string name) =>
@@ -142,7 +142,7 @@ namespace Dovus.Game.Arena
                 12,
                 Mathf.RoundToInt(RockCountAtRefWalkHalfM * (walkHalfM / RockCountRefWalkHalfM)));
             // Sabit seed: başsız tarama (SweepV2) her koşuda aynı sahneyi kursun (determinizm).
-            var rng = new System.Random(1337);
+            var rng = new System.Random(CombatAmbienceEnvironmentDefaults.RockRngSeed);
 
             for (int i = 0; i < rockCount; i++)
             {
@@ -150,7 +150,7 @@ namespace Dovus.Game.Arena
                 if (kind.Model == null)
                     continue;
 
-                float t = (i + (float)rng.NextDouble() * 0.8f) / rockCount;
+                float t = (i + (float)rng.NextDouble() * CombatAmbienceEnvironmentDefaults.RockRingScatterMult) / rockCount;
                 float angle = t * Mathf.PI * 2f;
                 float radius = Mathf.Lerp(innerR, outerR, (float)rng.NextDouble());
                 var pos = new Vector3(Mathf.Sin(angle) * radius, RockGroundYM, Mathf.Cos(angle) * radius);
@@ -159,9 +159,9 @@ namespace Dovus.Game.Arena
                 go.name = $"{kind.Model.name}_{i:00}";
                 go.transform.localPosition = pos;
                 go.transform.localRotation = Quaternion.Euler(
-                    (float)(rng.NextDouble() * 10f - 5f),
+                    (float)(rng.NextDouble() * CombatAmbienceEnvironmentDefaults.RockJitterSpanM - CombatAmbienceEnvironmentDefaults.RockJitterHalfSpanM),
                     (float)(rng.NextDouble() * 360f),
-                    (float)(rng.NextDouble() * 10f - 5f));
+                    (float)(rng.NextDouble() * CombatAmbienceEnvironmentDefaults.RockJitterSpanM - CombatAmbienceEnvironmentDefaults.RockJitterHalfSpanM));
                 go.transform.localScale = Vector3.one * (RockMinScale + (float)rng.NextDouble() * (RockMaxScale - RockMinScale));
                 SetMaterial(go, kind.Material);
                 SetShadowsOff(go);
@@ -178,7 +178,7 @@ namespace Dovus.Game.Arena
 
             float innerR = walkHalfM + EdgePropInnerMarginM;
             float outerR = walkHalfM + EdgePropOuterMarginM;
-            var rng = new System.Random(9001);
+            var rng = new System.Random(CombatAmbienceEnvironmentDefaults.EdgePropRngSeed);
 
             for (int i = 0; i < EdgePropCount; i++)
             {
@@ -186,7 +186,7 @@ namespace Dovus.Game.Arena
                 if (prefab == null)
                     continue;
 
-                float t = (i + (float)rng.NextDouble() * 0.7f) / EdgePropCount;
+                float t = (i + (float)rng.NextDouble() * CombatAmbienceEnvironmentDefaults.EdgePropScatterMult) / EdgePropCount;
                 float angle = t * Mathf.PI * 2f;
                 float radius = Mathf.Lerp(innerR, outerR, (float)rng.NextDouble());
                 var pos = new Vector3(Mathf.Sin(angle) * radius, RockGroundYM, Mathf.Cos(angle) * radius);
@@ -195,9 +195,9 @@ namespace Dovus.Game.Arena
                 go.name = $"{prefab.name}_{i:00}";
                 go.transform.localPosition = pos;
                 go.transform.localRotation = Quaternion.Euler(
-                    (float)(rng.NextDouble() * 8f - 4f),
+                    (float)(rng.NextDouble() * CombatAmbienceEnvironmentDefaults.EdgeJitterSpanM - CombatAmbienceEnvironmentDefaults.EdgeJitterHalfSpanM),
                     (float)(rng.NextDouble() * 360f),
-                    (float)(rng.NextDouble() * 8f - 4f));
+                    (float)(rng.NextDouble() * CombatAmbienceEnvironmentDefaults.EdgeJitterSpanM - CombatAmbienceEnvironmentDefaults.EdgeJitterHalfSpanM));
                 go.transform.localScale = Vector3.one * (EdgePropMinScale + (float)rng.NextDouble() * (EdgePropMaxScale - EdgePropMinScale));
                 StripColliders(go);
                 SetShadowsOff(go);
@@ -251,12 +251,12 @@ namespace Dovus.Game.Arena
             if (old != null)
                 old.enabled = false;
 
-            float diameter = Mathf.Max(4f, arenaRadiusM) * 2f;
+            float diameter = Mathf.Max(CombatAmbienceEnvironmentDefaults.ArenaFloorDiameterMinM, arenaRadiusM) * 2f;
             var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
             quad.name = "Floor_Planar";
             quad.transform.SetParent(floor, false);
             quad.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-            quad.transform.localPosition = new Vector3(0f, 0.06f, 0f);
+            quad.transform.localPosition = new Vector3(0f, CombatAmbienceEnvironmentDefaults.FloorDecalLiftM, 0f);
             quad.transform.localScale = new Vector3(diameter, diameter, 1f);
             Object.Destroy(quad.GetComponent<Collider>());
             SetMaterial(quad, floorMat);
@@ -292,7 +292,7 @@ namespace Dovus.Game.Arena
         {
             Vector2 baseSt = source.GetTextureScale("_BaseMap");
             if (baseSt.sqrMagnitude < 0.0001f)
-                baseSt = new Vector2(1f / 7f, 1f / 7f);
+                baseSt = new Vector2(1f / CombatAmbienceEnvironmentDefaults.RockTileDivisor, 1f / CombatAmbienceEnvironmentDefaults.RockTileDivisor);
             Vector2 worldBase = baseSt * meshScaleXZ;
             mat.SetTextureScale("_BaseMap", worldBase);
             mat.SetTextureScale("_MainTex", worldBase);
@@ -301,25 +301,25 @@ namespace Dovus.Game.Arena
 
             Vector2 detailSt = source.GetTextureScale("_DetailAlbedoMap");
             if (detailSt.sqrMagnitude < 0.0001f)
-                detailSt = new Vector2(3.888889f, 3.888889f);
+                detailSt = new Vector2(CombatAmbienceEnvironmentDefaults.DetailSt, CombatAmbienceEnvironmentDefaults.DetailSt);
             const float detailMul = 3f;
-            Vector2 detailWorld = detailSt * meshScaleXZ * (detailMul / 3.888889f);
+            Vector2 detailWorld = detailSt * meshScaleXZ * (detailMul / CombatAmbienceEnvironmentDefaults.DetailWorldDivisor);
             mat.SetTextureScale("_DetailAlbedoMap", detailWorld * 2f);
             if (mat.HasProperty("_DetailNormalMap"))
             {
                 Vector2 detailNormSt = source.GetTextureScale("_DetailNormalMap");
                 if (detailNormSt.sqrMagnitude < 0.0001f)
-                    detailNormSt = new Vector2(5.2f, 5.2f);
-                mat.SetTextureScale("_DetailNormalMap", detailNormSt * meshScaleXZ * (detailMul / 3.888889f) * 1.35f);
+                    detailNormSt = new Vector2(CombatAmbienceEnvironmentDefaults.DetailNormalSt, CombatAmbienceEnvironmentDefaults.DetailNormalSt);
+                mat.SetTextureScale("_DetailNormalMap", detailNormSt * meshScaleXZ * (detailMul / CombatAmbienceEnvironmentDefaults.DetailWorldDivisor) * CombatAmbienceEnvironmentDefaults.TextureDetailScaleMult);
             }
 
             mat.EnableKeyword("_DETAIL_MULX2");
             if (mat.HasProperty("_DetailNormalMapScale"))
-                mat.SetFloat("_DetailNormalMapScale", 0.85f);
+                mat.SetFloat("_DetailNormalMapScale", CombatAmbienceEnvironmentDefaults.DetailNormalMapScale);
             if (mat.HasProperty("_BumpScale"))
             {
-                float bump = source.HasProperty("_BumpScale") ? source.GetFloat("_BumpScale") : 0.9f;
-                mat.SetFloat("_BumpScale", Mathf.Clamp(bump < 0.01f ? 0.9f : bump, 0.8f, 1f));
+                float bump = source.HasProperty("_BumpScale") ? source.GetFloat("_BumpScale") : CombatAmbienceEnvironmentDefaults.BumpFallback;
+                mat.SetFloat("_BumpScale", Mathf.Clamp(bump < CombatAmbienceEnvironmentDefaults.BumpFloorThreshold ? CombatAmbienceEnvironmentDefaults.BumpScaleFallback : bump, CombatAmbienceEnvironmentDefaults.BumpScaleClampMin, CombatAmbienceEnvironmentDefaults.BumpScaleClampMax));
             }
         }
     }

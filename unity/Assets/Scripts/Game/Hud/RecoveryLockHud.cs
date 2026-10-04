@@ -139,7 +139,7 @@ namespace Dovus.Game.Hud
             // §10: camgöbeği dolgu, mor zemin — boss tehdit paleti yok.
             _fill.color = _tuning.Visuals.InkCyan;
             Color bg = _tuning.Visuals.InkPurple;
-            bg.a = 0.35f;
+            bg.a = HudDefaults.a;
             _bgImg.color = bg;
 
             SentenceState s = _engine.State;
@@ -157,7 +157,7 @@ namespace Dovus.Game.Hud
             {
                 // Kesildi (§5): kalan anında 0 — bar bir an boş görünür, sonra kapanır.
                 // Doğal erime zaten fillAmount≈0 ile geldiyse flaş gerekmez.
-                if (_visible && _fill.fillAmount > 0.05f && _cutHoldUntilUnscaled < 0f)
+                if (_visible && _fill.fillAmount > HudDefaults.CutHoldUntilUnscaledConst && _cutHoldUntilUnscaled < 0f)
                 {
                     _fill.fillAmount = 0f;
                     _cutHoldUntilUnscaled = Time.unscaledTime + CutHoldSec;
@@ -180,7 +180,7 @@ namespace Dovus.Game.Hud
         float ArmMs(SentenceState s)
         {
             if (s.LastClosing.HasValue)
-                return (float)(_sentence.StepForDots(s.LastClosing.Value.DotCount).RecoverySec * 1000.0);
+                return (float)(_sentence.StepForDots(s.LastClosing.Value.DotCount).RecoverySec * HudDefaults.SecToMs);
 
             // LastClosing yoksa (olmamalı) kalanı tavan kabul et — sıfır bölme yok.
             return Mathf.Max(1f, (float)s.RemainingRecoveryMs);

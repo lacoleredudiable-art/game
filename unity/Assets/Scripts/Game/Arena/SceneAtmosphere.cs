@@ -26,7 +26,7 @@ namespace Dovus.Game.Arena
             {
                 camera.clearFlags = CameraClearFlags.SolidColor;
                 camera.backgroundColor = tuning.Visuals.BackgroundColor;
-                camera.farClipPlane = Mathf.Max(50f, tuning.Arena.CameraFarClipM);
+                camera.farClipPlane = Mathf.Max(ArenaDefaults.farClipPlane, tuning.Arena.CameraFarClipM);
                 camera.fieldOfView = tuning.Camera.CameraFovDeg;
             }
 

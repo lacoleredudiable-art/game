@@ -70,32 +70,32 @@ namespace Dovus.Game.Vfx
 
         [Header("Prosedürel yedek — hepsi önerilen (docs/durum.md his turu Faz 4)")]
         public int HitSparkCount = 14;
-        public float HitSparkSpeed = 7f;
-        public float HitSparkLifeSec = 0.22f;
-        public float HitSparkSize = 0.09f;
-        public float CritSparkMult = 1.8f;
+        public float HitSparkSpeed = VfxLibraryDefaults.HitSparkSpeed;
+        public float HitSparkLifeSec = VfxLibraryDefaults.HitSparkLifeSec;
+        public float HitSparkSize = VfxLibraryDefaults.HitSparkSize;
+        public float CritSparkMult = VfxLibraryDefaults.CritSparkMult;
 
         public int DodgeDustCount = 16;
-        public float DodgeDustLifeSec = 0.45f;
-        public float DodgeDustSize = 0.45f;
+        public float DodgeDustLifeSec = VfxLibraryDefaults.DodgeDustLifeSec;
+        public float DodgeDustSize = VfxLibraryDefaults.DodgeDustSize;
         public Color DustColor = new(0.62f, 0.56f, 0.5f, 0.55f);
 
         public int FootDustCount = 4;
-        public float FootDustLifeSec = 0.35f;
-        public float FootDustSize = 0.22f;
-        public float BossStepDustMult = 3f;
+        public float FootDustLifeSec = VfxLibraryDefaults.FootDustLifeSec;
+        public float FootDustSize = VfxLibraryDefaults.FootDustSize;
+        public float BossStepDustMult = VfxLibraryDefaults.BossStepDustMult;
 
-        public float ShockwaveSec = 0.45f;
-        public float ShockwaveWidthM = 0.35f;
+        public float ShockwaveSec = VfxLibraryDefaults.ShockwaveSec;
+        public float ShockwaveWidthM = VfxLibraryDefaults.ShockwaveWidthM;
         public Color ShockwaveColor = new(1f, 0.78f, 0.5f, 0.85f);
-        public float CrackHoldSec = 1.4f;
-        public float CrackFadeSec = 0.6f;
+        public float CrackHoldSec = VfxLibraryDefaults.CrackHoldSec;
+        public float CrackFadeSec = VfxLibraryDefaults.CrackFadeSec;
         public Color CrackColor = new(0.08f, 0.05f, 0.04f, 0.85f);
 
         public float FlameSec = 0.5f;
-        public int FlameRate = 220;
-        public float FlameSpeed = 11f;
-        public float FlameSize = 0.7f;
+        public int FlameRate = VfxLibraryDefaults.FlameRate;
+        public float FlameSpeed = VfxLibraryDefaults.FlameSpeed;
+        public float FlameSize = VfxLibraryDefaults.FlameSize;
         public Color FlameColorA = new(1f, 0.85f, 0.35f, 1f);
         public Color FlameColorB = new(0.95f, 0.25f, 0.05f, 0f);
 

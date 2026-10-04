@@ -109,16 +109,16 @@ namespace Dovus.Game.Hud
             Skill cast = _manifestation?.LastFactorySkill;
             bool newCast = cast != null && !ReferenceEquals(cast, _lastCast);
             _lastCast = cast;
-            float hold = _tuning != null ? _tuning.Hud.SkillPreviewHoldSec : 0.9f;
+            float hold = _tuning != null ? _tuning.Hud.SkillPreviewHoldSec : HudDefaults.hold;
             if (drawing || newCast)
                 _visibleUntil = Time.unscaledTime + hold;
             HudTheme theme = _theme;
             bool visible = _visibleUntil > Time.unscaledTime;
             if (visible && !_wasVisible)
-                UiJuice.PunchScale(_rect, theme.SkillCardPopScale, theme.JuiceSec * 1.4f);
+                UiJuice.PunchScale(_rect, theme.SkillCardPopScale, theme.JuiceSec * HudDefaults.JuiceSecConst);
             _wasVisible = visible;
             _group.alpha = Mathf.Clamp01(
-                (_visibleUntil - Time.unscaledTime) / Mathf.Max(0.01f, theme.SkillCardFadeSec));
+                (_visibleUntil - Time.unscaledTime) / Mathf.Max(HudDefaults.MinClampZeroPt, theme.SkillCardFadeSec));
 
             int elementId = _manifestation?.SelectedElementPaint?.Id ?? 0;
             string weaponId = _manifestation?.EquippedWeapon?.Id ?? string.Empty;

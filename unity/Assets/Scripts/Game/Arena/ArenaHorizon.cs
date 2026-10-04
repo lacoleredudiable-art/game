@@ -20,12 +20,12 @@ namespace Dovus.Game.Arena
             root.transform.rotation = Quaternion.identity;
             root.transform.localScale = Vector3.one;
 
-            float half = Mathf.Max(12f, walkHalfM);
+            float half = Mathf.Max(ArenaHorizonDefaults.half, walkHalfM);
 
             // Unity Plane = 10×10 m; scale 1 → 10 m kenar.
-            CreatePlane(root.transform, "SurroundGround", half * 3.5f, -0.05f,
+            CreatePlane(root.transform, "SurroundGround", half * ArenaHorizonDefaults.HalfConst, -ArenaHorizonDefaults.FarPlaneYOffsetM,
                 new Color(0.40f, 0.38f, 0.36f));
-            CreatePlane(root.transform, "FarGround", half * 7f, -0.12f,
+            CreatePlane(root.transform, "FarGround", half * ArenaHorizonDefaults.MidPlaneExtentMult, -ArenaHorizonDefaults.NearPlaneYOffsetM,
                 new Color(0.33f, 0.31f, 0.30f));
         }
 
@@ -35,7 +35,7 @@ namespace Dovus.Game.Arena
             go.name = name;
             go.transform.SetParent(parent, false);
             go.transform.localPosition = new Vector3(0f, y, 0f);
-            float s = (halfExtentM * 2f) / 10f;
+            float s = (halfExtentM * 2f) / ArenaHorizonDefaults.s;
             go.transform.localScale = new Vector3(s, 1f, s);
             Object.Destroy(go.GetComponent<Collider>());
 
@@ -56,7 +56,7 @@ namespace Dovus.Game.Arena
             if (mat.HasProperty("_Color"))
                 mat.SetColor("_Color", color);
             if (mat.HasProperty("_Smoothness"))
-                mat.SetFloat("_Smoothness", 0.05f);
+                mat.SetFloat("_Smoothness", ArenaHorizonDefaults.MatZeroPt);
             if (mat.HasProperty("_Metallic"))
                 mat.SetFloat("_Metallic", 0f);
             return mat;

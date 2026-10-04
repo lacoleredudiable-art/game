@@ -19,9 +19,9 @@ namespace Dovus.Game.Arena
             Color floorColor,
             Color wallColor)
         {
-            float r = Mathf.Max(4f, radiusM);
-            float h = Mathf.Max(4f, wallHeightM);
-            float thick = Mathf.Max(0.4f, wallThicknessM);
+            float r = Mathf.Max(CircularArenaDefaults.MinRadiusM, radiusM);
+            float h = Mathf.Max(CircularArenaDefaults.MinWallHeightM, wallHeightM);
+            float thick = Mathf.Max(CircularArenaDefaults.MinWallThicknessM, wallThicknessM);
 
             var root = new GameObject("Arena_Circle");
             root.transform.position = Vector3.zero;
@@ -54,8 +54,8 @@ namespace Dovus.Game.Arena
             var floor = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             floor.name = "Floor";
             floor.transform.SetParent(parent, false);
-            floor.transform.localPosition = new Vector3(0f, -0.05f, 0f);
-            floor.transform.localScale = new Vector3(radiusM * 2f, 0.05f, radiusM * 2f);
+            floor.transform.localPosition = new Vector3(0f, -CircularArenaDefaults.FloorSinkM, 0f);
+            floor.transform.localScale = new Vector3(radiusM * 2f, CircularArenaDefaults.FloorThicknessM, radiusM * 2f);
             Object.Destroy(floor.GetComponent<Collider>());
             ApplyLit(floor, color, receiveShadows: true, castShadows: false);
         }
@@ -80,7 +80,7 @@ namespace Dovus.Game.Arena
                     wallHeightM * 0.5f,
                     Mathf.Cos(ang) * midR);
                 seg.transform.localRotation = Quaternion.Euler(0f, ang * Mathf.Rad2Deg, 0f);
-                seg.transform.localScale = new Vector3(thicknessM, wallHeightM, chord * 1.05f);
+                seg.transform.localScale = new Vector3(thicknessM, wallHeightM, chord * CircularArenaDefaults.WallChordOvershootMult);
                 ApplyLit(seg, color, receiveShadows: true, castShadows: true);
                 // CreatePrimitive BoxCollider bırakılır — WallColliderFit'e gerek yok.
             }
@@ -101,7 +101,7 @@ namespace Dovus.Game.Arena
             if (mat.HasProperty("_Color"))
                 mat.SetColor("_Color", color);
             if (mat.HasProperty("_Smoothness"))
-                mat.SetFloat("_Smoothness", 0.08f);
+                mat.SetFloat("_Smoothness", CircularArenaDefaults.WallSmoothness);
             if (mat.HasProperty("_Metallic"))
                 mat.SetFloat("_Metallic", 0f);
             rend.sharedMaterial = mat;
