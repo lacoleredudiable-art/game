@@ -347,7 +347,7 @@ public class DrawRecognitionTests
         string ink = Game("Game/Casting/InkTrail.cs");
         Assert.That(ink, Does.Contain("public void RawBegin("));
         Assert.That(ink, Does.Contain("public void Break(bool flash)"));
-        Assert.That(Game("Game/Composition/PrototypeBootstrap.cs"), Does.Contain("input.DrawCaption += view.ShowDrawCaption;"));
+        Assert.That(Game("Game/Composition/Builders/HexagonInputBuilder.cs"), Does.Contain("input.DrawCaption += view.ShowDrawCaption;"));
         Assert.That(Game("Game/Casting/HexagonView.cs"), Does.Contain("BuildDrawCaption(canvasGo.transform);"));
     }
 }

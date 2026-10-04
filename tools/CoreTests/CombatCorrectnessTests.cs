@@ -139,7 +139,7 @@ public class CombatCorrectnessTests
         Assert.That(vitals, Does.Not.Contain("_respawnAtUnscaled"));
         Assert.That(vitals, Does.Contain("public void BindClock(GameClock clock)"));
         Assert.That(Regex.Matches(vitals, @"ClearStatusBoard\(\);").Count, Is.GreaterThanOrEqualTo(2));
-        Assert.That(Game("Composition/PrototypeBootstrap.cs"), Does.Contain("vitals.BindClock(clock)"));
+        Assert.That(Game("Composition/Builders/PlayerBuilder.cs"), Does.Contain("vitals.BindClock(clock)"));
     }
 
     // ── O7: kritik tasarımla eşleşir (5% ×2), deterministik zar ─────────────

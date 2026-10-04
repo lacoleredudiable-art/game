@@ -50,11 +50,13 @@ public class ReleaseBuildPerfTests
     [Test]
     public void DebugUi_OnlyBehindGate()
     {
-        string boot = Game("Composition/PrototypeBootstrap.cs");
-        Assert.That(Regex.Matches(boot, @"if \(DebugConfig\.Enabled\)\s*\{\s*var frameHud").Count, Is.EqualTo(1));
-        Assert.That(Regex.Matches(boot, @"if \(DebugConfig\.Enabled\)\s*\{\s*var practice").Count, Is.EqualTo(1));
-        Assert.That(Regex.Matches(boot, @"if \(DebugConfig\.Enabled\)\s*\{\s*var v6Panel").Count, Is.EqualTo(1));
-        Assert.That(boot, Does.Contain("DebugConfig.Enabled && _tuning.ShowSentenceDebugHud"));
+        string hud = Game("Composition/Builders/HudBuilder.cs");
+        string debug = Game("Composition/Builders/DebugToolsBuilder.cs");
+        string hex = Game("Composition/Builders/HexagonInputBuilder.cs");
+        Assert.That(Regex.Matches(hud, @"if \(DebugConfig\.Enabled\)\s*\{\s*var frameHud").Count, Is.EqualTo(1));
+        Assert.That(Regex.Matches(hud, @"if \(DebugConfig\.Enabled\)\s*\{\s*var practice").Count, Is.EqualTo(1));
+        Assert.That(Regex.Matches(debug, @"if \(DebugConfig\.Enabled\)\s*\{\s*var v6Panel").Count, Is.EqualTo(1));
+        Assert.That(hex, Does.Contain("DebugConfig.Enabled && _tuning.ShowSentenceDebugHud"));
         string team = Game("DevTools/TeamDebugMenu.cs");
         Assert.That(team, Does.Contain("bool _open = false;"));
         Assert.That(team, Does.Contain("#if UNITY_EDITOR || DOVUS_DEBUG"));
@@ -66,10 +68,10 @@ public class ReleaseBuildPerfTests
     [Test]
     public void StartHp_IsFullByDefault_DevHpSeparateSwitch()
     {
-        string boot = Game("Composition/PrototypeBootstrap.cs");
-        Assert.That(boot, Does.Not.Contain("startRatio: 0.5f"));
-        Assert.That(Regex.Matches(boot, @"startRatio: DebugConfig\.StartHpRatio").Count, Is.EqualTo(2));
-        Assert.That(boot, Does.Contain("vitals.SetDevHp(DebugConfig.DevHpActive);"));
+        string player = Game("Composition/Builders/PlayerBuilder.cs");
+        Assert.That(player, Does.Not.Contain("startRatio: 0.5f"));
+        Assert.That(Regex.Matches(player, @"startRatio: DebugConfig\.StartHpRatio").Count, Is.EqualTo(2));
+        Assert.That(player, Does.Contain("vitals.SetDevHp(DebugConfig.DevHpActive);"));
         string cfg = Game("DevTools/DebugConfig.cs");
         Assert.That(cfg, Does.Contain("public static bool HalfHpStart = false;"));
         Assert.That(cfg, Does.Contain("StartHpRatio => Enabled && HalfHpStart ? 0.5f : 1f"));
@@ -212,17 +214,19 @@ public class ReleaseBuildPerfTests
     [Test]
     public void EventSystem_IsCreated_OutsideDebugGate()
     {
-        string boot = Game("Composition/PrototypeBootstrap.cs");
-        int ensure = boot.IndexOf("EnsureEventSystem();", System.StringComparison.Ordinal);
-        int gate = boot.IndexOf("CreateTuningPanel(tuningConfig, vitals, follow);", System.StringComparison.Ordinal);
+        string debug = Game("Composition/Builders/DebugToolsBuilder.cs");
+        string arena = Game("Composition/Builders/ArenaBuilder.cs");
+        int ensure = debug.IndexOf("EnsureEventSystem();", System.StringComparison.Ordinal);
+        int gate = debug.IndexOf("CreateTuningPanel(ctx.TuningConfig, ctx.PlayerVitals, ctx.FollowCamera);", System.StringComparison.Ordinal);
         Assert.That(ensure, Is.GreaterThan(0));
         Assert.That(gate, Is.GreaterThan(ensure));
-        string between = boot.Substring(ensure, gate - ensure);
+        string between = debug.Substring(ensure, gate - ensure);
         Assert.That(between, Does.Contain("if (DebugConfig.Enabled)"), "EnsureEventSystem debug kapısından ÖNCE çağrılmalı");
-        int body = boot.IndexOf("static void CreateTuningPanel(", System.StringComparison.Ordinal);
-        int next = boot.IndexOf("static void EnsureEventSystem(", System.StringComparison.Ordinal);
-        Assert.That(next, Is.GreaterThan(body));
-        Assert.That(boot.Substring(body, next - body), Does.Not.Contain("AddComponent<EventSystem>"));
-        Assert.That(boot, Does.Contain("AddComponent<InputSystemUIInputModule>()"));
+        int body = debug.IndexOf("static void CreateTuningPanel(", System.StringComparison.Ordinal);
+        int next = arena.IndexOf("public static void EnsureEventSystem(", System.StringComparison.Ordinal);
+        Assert.That(body, Is.GreaterThan(0));
+        Assert.That(next, Is.GreaterThan(0));
+        Assert.That(debug.Substring(body, debug.Length - body), Does.Not.Contain("AddComponent<EventSystem>"));
+        Assert.That(arena, Does.Contain("AddComponent<InputSystemUIInputModule>()"));
     }
 }
