@@ -53,10 +53,10 @@ namespace Dovus.Game.Hud
         {
             null,
             "UI/Weapons/weapon-01-yumruk",
-            "UI/Weapons/weapon-02-hancer",
-            "UI/Weapons/weapon-03-mizrak",
+            "UI/Weapons/weapon-02-yay",
+            "UI/Weapons/weapon-03-kitap",
             "UI/Weapons/weapon-04-kilic",
-            "UI/Weapons/weapon-05-balta",
+            "UI/Weapons/weapon-05-kure",
             "UI/Weapons/weapon-06-cekic",
             "UI/Weapons/weapon-07-top",
             "UI/Weapons/weapon-08-asa",
