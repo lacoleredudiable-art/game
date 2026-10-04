@@ -90,7 +90,7 @@ public class VerbExecutionTests
 
         SkillResolution ghost = _motor.Resolve(new[] { 3, 7 });
         SkillMotionPlan ghostPlan = SkillMotionMotor.Resolve(
-            ghost, ctx, tuning, _data.IFrameMsFor(ghost.SkillId));
+            ghost, ctx, tuning, _data.IFrameMsFor(ghost.Identity.Id));
         Assert.That(ghostPlan.IframeMs, Is.EqualTo(400));
     }
 
@@ -122,15 +122,15 @@ public class VerbExecutionTests
     [Test]
     public void SummonAndReflectEngineCarryDurations()
     {
-        JsonValue summon = _motor.Resolve(new[] { 11, 1 }).EngineModifiers;
+        JsonValue summon = _motor.Resolve(new[] { 11, 1 }).Engine.Raw;
         Assert.That(summon["minion_count"].AsInt(0), Is.EqualTo(1));
         Assert.That(summon["minion_duration_sec"].AsFloat(0f), Is.EqualTo(5f).Within(1e-4));
 
-        JsonValue reflect = _motor.Resolve(new[] { 10, 1 }).EngineModifiers;
+        JsonValue reflect = _motor.Resolve(new[] { 10, 1 }).Engine.Raw;
         Assert.That(reflect["reflect_ratio"].AsFloat(0f), Is.EqualTo(0.5f).Within(1e-4));
         Assert.That(reflect["reflect_duration_sec"].AsFloat(0f), Is.EqualTo(2f).Within(1e-4));
 
-        JsonValue copy = _motor.Resolve(new[] { 11, 11 }).EngineModifiers;
+        JsonValue copy = _motor.Resolve(new[] { 11, 11 }).Engine.Raw;
         Assert.That(copy["duplicate_cast"].AsBool(false), Is.True);
         Assert.That(copy["duplicate_delay_sec"].AsFloat(0f), Is.EqualTo(0.3f).Within(1e-4));
     }

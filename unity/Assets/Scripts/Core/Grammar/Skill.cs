@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Dovus.Core.Element;
+using Dovus.Core.Shared;
 using Dovus.Core.Equipment;
 
 namespace Dovus.Core.Grammar
@@ -16,14 +17,14 @@ namespace Dovus.Core.Grammar
             Resolution = resolution;
             Weapon = weapon;
             Element = element;
-            DisplayName = displayName ?? resolution.DisplayName;
+            DisplayName = displayName ?? resolution.Identity.DisplayName;
         }
 
         public SkillResolution Resolution { get; }
         public WeaponSkillCompatibility Weapon { get; }
         public ElementPaintNode? Element { get; }
         public string DisplayName { get; }
-        public string Id => Resolution.SkillId;
+        public SkillId Id => Resolution.Identity.Id;
         public bool PassiveEnabled => Weapon.PassiveEnabled;
         public string UiColor => Weapon.UiColor;
     }

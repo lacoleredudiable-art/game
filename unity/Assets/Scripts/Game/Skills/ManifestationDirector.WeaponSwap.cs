@@ -69,7 +69,7 @@ namespace Dovus.Game.Skills
                 return;
             double sec = skill.Engine.IsNull ? 0.0 : skill.Engine.ChannelSec(0f);
             if (_motionBody != null && _motionBody.IsDisplacing
-                && string.Equals(_motionBody.SkillId, skill.SkillId, System.StringComparison.Ordinal))
+                && string.Equals(_motionBody.SkillId, skill.Identity.Id, System.StringComparison.Ordinal))
                 sec = System.Math.Max(sec, _motionBody.PlayLengthSec);
             _sustainedCast.Begin(_clock.Director.WorldTimeMs, sec);
         }

@@ -25,8 +25,8 @@ namespace Dovus.Core.Presentation
         /// </summary>
         public PresentationValidationResult Validate(in SkillResolution resolution)
         {
-            string hitboxId = resolution.Hitbox ?? string.Empty;
-            string animationId = resolution.AnimationType ?? string.Empty;
+            string hitboxId = resolution.Presentation.Hitbox;
+            string animationId = resolution.Presentation.AnimationType;
 
             bool hitboxFound = !string.IsNullOrEmpty(hitboxId)
                 && _catalog.TryGetHitbox(hitboxId, out _);

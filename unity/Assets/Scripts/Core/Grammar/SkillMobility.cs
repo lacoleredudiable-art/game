@@ -21,11 +21,11 @@ namespace Dovus.Core.Grammar
             if (skill.IsEmpty)
                 return FreeMove;
 
-            string verbMob = Normalize(skill.CastMobility);
-            if (string.Equals(skill.VerbFamily, "motion", StringComparison.Ordinal))
+            string verbMob = Normalize(skill.Targeting.CastMobility);
+            if (string.Equals(skill.Presentation.VerbFamily, "motion", StringComparison.Ordinal))
                 return verbMob;
 
-            string lenMob = Normalize(skill.LengthMobility);
+            string lenMob = Normalize(skill.Length.Mobility);
             return MostRestrictive(lenMob, verbMob);
         }
 
@@ -59,10 +59,10 @@ namespace Dovus.Core.Grammar
         /// <summary>LengthCastMult × sıfat cast_time_mult (yoksa 1).</summary>
         public static float CastTimeMult(in SkillResolution skill)
         {
-            float m = skill.LengthCastMult > 0f ? skill.LengthCastMult : 1f;
-            if (!skill.EngineModifiers.IsNull && skill.EngineModifiers.Has("cast_time_mult"))
+            float m = skill.Length.CastMult > 0f ? skill.Length.CastMult : 1f;
+            if (!skill.Engine.IsNull && skill.Engine.Has("cast_time_mult"))
             {
-                float adj = skill.EngineModifiers["cast_time_mult"].AsFloat(1f);
+                float adj = skill.Engine.Field("cast_time_mult").AsFloat(1f);
                 if (adj > 0f)
                     m *= adj;
             }
@@ -72,10 +72,10 @@ namespace Dovus.Core.Grammar
         /// <summary>base_resource_cost × length.resource_cost_mult.</summary>
         public static float ResourceCost(in SkillResolution skill)
         {
-            float baseCost = skill.BaseResourceCost;
+            float baseCost = skill.Costs.BaseResourceCost;
             if (baseCost <= 0f)
                 return 0f;
-            float len = skill.LengthResourceCostMult > 0f ? skill.LengthResourceCostMult : 1f;
+            float len = skill.Length.ResourceCostMult > 0f ? skill.Length.ResourceCostMult : 1f;
             return baseCost * len;
         }
     }

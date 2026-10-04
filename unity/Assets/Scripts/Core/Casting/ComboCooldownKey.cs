@@ -1,4 +1,5 @@
 using Dovus.Core.Grammar;
+using Dovus.Core.Shared;
 
 namespace Dovus.Core.Casting
 {
@@ -9,9 +10,9 @@ namespace Dovus.Core.Casting
     {
         public static string For(in SkillResolution skill)
         {
-            if (!string.IsNullOrEmpty(skill.SkillId))
-                return skill.SkillId;
-            return skill.VerbId ?? string.Empty;
+            if (!skill.Identity.Id.IsEmpty)
+                return skill.Identity.Id;
+            return skill.Identity.Verb;
         }
     }
 }

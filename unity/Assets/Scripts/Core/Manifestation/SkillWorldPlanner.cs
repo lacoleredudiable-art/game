@@ -22,7 +22,7 @@ namespace Dovus.Core.Manifestation
                 return LivingEffectPlan.Empty;
 
             ResolveIds(skill, catalog, out string trajectoryId, out string hitboxId);
-            LivingTravelKind kind = TravelKindFrom(trajectoryId, hitboxId, skill.Hitbox);
+            LivingTravelKind kind = TravelKindFrom(trajectoryId, hitboxId, skill.Presentation.Hitbox);
             EffectSilhouette silhouette = SilhouetteBuilder.FromSkill(skill, tuning);
 
             float speed = tuning.WaveSpeedMps;
@@ -44,7 +44,7 @@ namespace Dovus.Core.Manifestation
             }
             else
             {
-                ApplyLegacySpeedRange(kind, skill.Hitbox, tuning, ref speed, ref maxRange);
+                ApplyLegacySpeedRange(kind, skill.Presentation.Hitbox, tuning, ref speed, ref maxRange);
             }
 
             if (catalog != null && catalog.TryGetHitbox(hitboxId, out HitboxNode hb))
@@ -59,15 +59,15 @@ namespace Dovus.Core.Manifestation
                     bangRadius = MathF.Max(width * ManifestationDefaults.BangWidthRadiusMult, tuning.TravelHitRadiusM);
             }
 
-            float scale = skill.HitboxScaleMult > 0f ? skill.HitboxScaleMult : 1f;
+            float scale = skill.Scaling.HitboxScaleMult > 0f ? skill.Scaling.HitboxScaleMult : 1f;
             bangRadius *= scale;
 
             // Yayılma sıfatı: menzili de biraz aç (expanding_wave max_radius ile uyumlu).
             if (kind == LivingTravelKind.ExpandingRadial && scale > 1f)
                 maxRange = MathF.Max(maxRange, bangRadius * ManifestationDefaults.BangRangePaddingMult);
 
-            if (!skill.EngineModifiers.IsNull && skill.EngineModifiers.Has("lifetime_add"))
-                lifetimeAdd = skill.EngineModifiers["lifetime_add"].AsFloat(0f);
+            if (!skill.Engine.IsNull && skill.Engine.Has("lifetime_add"))
+                lifetimeAdd = skill.Engine.Field("lifetime_add").AsFloat(0f);
 
             return new LivingEffectPlan(
                 silhouette,
@@ -91,17 +91,17 @@ namespace Dovus.Core.Manifestation
             out string trajectoryId,
             out string hitboxId)
         {
-            hitboxId = skill.Hitbox ?? string.Empty;
+            hitboxId = skill.Presentation.Hitbox;
             trajectoryId = DefaultTrajectoryForHitbox(hitboxId);
 
-            JsonValue mods = skill.EngineModifiers;
+            SkillEngineModifiers mods = skill.Engine;
             if (!mods.IsNull)
             {
-                string trajOver = mods["trajectory_override"].AsString();
+                string trajOver = mods.ReadString("trajectory_override");
                 if (!string.IsNullOrEmpty(trajOver))
                     trajectoryId = trajOver;
 
-                string hbOver = mods["hitbox_override"].AsString();
+                string hbOver = mods.ReadString("hitbox_override");
                 if (!string.IsNullOrEmpty(hbOver))
                 {
                     // Veri shim: expanding_wave / radial_burst bazen hitbox_override’da.

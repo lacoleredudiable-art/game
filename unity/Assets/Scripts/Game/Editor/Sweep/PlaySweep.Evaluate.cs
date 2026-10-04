@@ -46,7 +46,7 @@ namespace Dovus.Game.Editor
                 var r = new PlaySweepResult { Case = c, Weapon = c.Weapon };
                 try
                 {
-                    r.Name = _skills.Resolve(new[] { c.Verb, c.Adj }).DisplayName;
+                    r.Name = _skills.Resolve(new[] { c.Verb, c.Adj }).Identity.DisplayName;
                 }
                 catch
                 {

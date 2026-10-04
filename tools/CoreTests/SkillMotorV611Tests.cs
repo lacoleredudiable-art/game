@@ -127,16 +127,16 @@ public class SkillMotorV611Tests
         SkillResolution preview = motor.Resolve(new[] { 1 });
         Assert.That(preview.IsEmpty, Is.False);
         Assert.That(preview.IsComplete, Is.False);
-        Assert.That(preview.VerbName, Is.EqualTo("Saldırı"));
+        Assert.That(preview.Identity.VerbName, Is.EqualTo("Saldırı"));
 
         SkillResolution pair = motor.Resolve(new[] { 1, 2 });
         Assert.That(pair.IsComplete, Is.True);
-        Assert.That(pair.SkillId, Is.EqualTo("1-2"));
-        Assert.That(pair.DisplayName, Is.EqualTo("Emici Vuruş"));
-        Assert.That(pair.VerbId, Is.EqualTo("1"));
-        Assert.That(pair.AdjectiveId, Is.EqualTo("2"));
-        Assert.That(pair.BaseDamage, Is.EqualTo(40f));
-        Assert.That(pair.DamageMult, Is.EqualTo(0.95f));
+        Assert.That(pair.Identity.Id.Value, Is.EqualTo("1-2"));
+        Assert.That(pair.Identity.DisplayName, Is.EqualTo("Emici Vuruş"));
+        Assert.That(pair.Identity.Verb.Value, Is.EqualTo("1"));
+        Assert.That(pair.Identity.Adjective.Value, Is.EqualTo("2"));
+        Assert.That(pair.Combat.BaseDamage, Is.EqualTo(40f));
+        Assert.That(pair.Scaling.DamageMult, Is.EqualTo(0.95f));
 
         Assert.That(motor.Resolve(new[] { 1, 2, 3 }).IsEmpty, Is.True);
     }
@@ -163,10 +163,10 @@ public class SkillMotorV611Tests
     {
         SkillResolution zaman = Load().Resolve(new[] { 12, 1 });
 
-        Assert.That(zaman.Action, Is.EqualTo("tempo"));
-        Assert.That(zaman.EngineModifiers["enemy_slow"].AsFloat(), Is.EqualTo(0.7f));
-        Assert.That(zaman.EngineModifiers["self_haste"].AsFloat(), Is.EqualTo(0f));
-        Assert.That(zaman.EngineModifiers["no_global_timescale"].AsBool(), Is.True);
+        Assert.That(zaman.Presentation.Action.ToString(), Is.EqualTo("tempo"));
+        Assert.That(zaman.Engine.Field("enemy_slow").AsFloat(), Is.EqualTo(0.7f));
+        Assert.That(zaman.Engine.Field("self_haste").AsFloat(), Is.EqualTo(0f));
+        Assert.That(zaman.Engine.Field("no_global_timescale").AsBool(), Is.True);
     }
 
     [Test]

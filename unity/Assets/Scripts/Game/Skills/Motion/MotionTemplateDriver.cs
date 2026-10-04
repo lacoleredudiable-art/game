@@ -131,7 +131,7 @@ namespace Dovus.Game.Skills.Motion
 
             WeaponCombatProfile profile = _host.EquippedProfile;
             if (profile != null && CannonRecoilMotion.Applies(
-                    profile.HitShape, profile.RecoilM, skill.BaseDamage, skill.AdjectiveId, shaped))
+                    profile.HitShape, profile.RecoilM, skill.Combat.BaseDamage, skill.Identity.Adjective, shaped))
             {
                 MotionTemplate recoiled = CannonRecoilMotion.Append(shaped, profile.RecoilM);
                 if (!ReferenceEquals(recoiled, shaped))
@@ -177,7 +177,7 @@ namespace Dovus.Game.Skills.Motion
                 return false;
             if (TargetingRules.AimMode(skill) != SkillAimMode.Targeted)
                 return false;
-            return !CardEffectRules.PrefersAlly(skill.TargetMode, skill.Action);
+            return !CardEffectRules.PrefersAlly(skill.Targeting.Mode, skill.Presentation.Action);
         }
 
         /// <summary>
@@ -202,9 +202,9 @@ namespace Dovus.Game.Skills.Motion
             _recoilInTemplate = false;
             _templateStartCenter = 0f;
             _castLease.ReleasePosition();
-            if (skill.IsEmpty || string.IsNullOrEmpty(skill.SkillId) || _host.Player == null)
+            if (skill.IsEmpty || string.IsNullOrEmpty(skill.Identity.Id) || _host.Player == null)
                 return false;
-            if (!MotionCatalog.TryPlay(skill.SkillId, out MotionTemplate template))
+            if (!MotionCatalog.TryPlay(skill.Identity.Id, out MotionTemplate template))
                 return false;
 
             PositionPlayback playback = PreparePositionPlayback(skill, template);
@@ -230,12 +230,12 @@ namespace Dovus.Game.Skills.Motion
             string weapon = _host.EquippedWeapon != null
                 ? (string.IsNullOrEmpty(_host.EquippedWeapon.AnimationsKey) ? _host.EquippedWeapon.Id : _host.EquippedWeapon.AnimationsKey)
                 : string.Empty;
-            _host.MotionBody.SetAnimContext(MotionCatalog.Anims, weapon, VerbOf(skill.SkillId));
-            _host.MotionBody.NoteSkill(skill.SkillId);
+            _host.MotionBody.SetAnimContext(MotionCatalog.Anims, weapon, VerbOf(skill.Identity.Id));
+            _host.MotionBody.NoteSkill(skill.Identity.Id);
             if (_host.Boss != null)
                 _templateStartCenter = _host.FlatDistance(_host.Player.position, _host.Boss.transform.position);
             // Emici ilerleyen kalıpta oyuncu hep yerinde; boss'u yalnız çeken plan getirir (4-2 çekmez).
-            _emiciContactPull = EmiciApproach.ShouldHoldCaster(skill.AdjectiveId, template);
+            _emiciContactPull = EmiciApproach.ShouldHoldCaster(skill.Identity.Adjective, template);
             MechanicPlan pullPlan = _host.MechanicPlanFor(skill);
             if (_emiciContactPull && pullPlan != null && pullPlan.Body.Pull)
                 _host.PullBossToPlayerContact();
@@ -271,7 +271,7 @@ namespace Dovus.Game.Skills.Motion
                 hit => _host.MotionHitResolver.OnMotionTemplateHit(hit),
                 bodyR,
                 stopGap);
-            DebugConfig.DevLog($"[Motion] {skill.SkillId} → {template.Name}");
+            DebugConfig.DevLog($"[Motion] {skill.Identity.Id} → {template.Name}");
             return true;
         }
 
@@ -360,8 +360,8 @@ namespace Dovus.Game.Skills.Motion
             bool ally = _host.Ally != null && _host.Ally.transform != _host.Player;
             MotionDeliveryAim.Kind kind = MotionDeliveryAim.Choose(
                 template.Aim,
-                skill.TargetMode,
-                skill.Action,
+                skill.Targeting.Mode,
+                skill.Presentation.Action,
                 MotionDeliveryAim.MovesTowardMarked(template),
                 ally);
             if (kind == MotionDeliveryAim.Kind.Ally && ally && !MotionDeliveryAim.SwapsPastBody(template))
@@ -478,7 +478,7 @@ namespace Dovus.Game.Skills.Motion
             Vector3 pos = new Vector3(hit.OriginX, _host.Player != null ? _host.Player.position.y + MotionTemplateDriverDefaults.HitFxHeightAbovePlayerM : MotionTemplateDriverDefaults.HitFxHeightAbovePlayerM, hit.OriginZ);
             Vector3 dir = new Vector3(hit.DirX, 0f, hit.DirZ);
             GameObject fx = HitboxVfxRegistry.Create(
-                "motion-" + _templateSkill.SkillId,
+                "motion-" + _templateSkill.Identity.Id,
                 shape,
                 _host.SelectedElementPaint?.ColorHex ?? "#f2d48a",
                 pos,

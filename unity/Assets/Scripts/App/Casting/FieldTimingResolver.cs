@@ -1,3 +1,4 @@
+using Dovus.Core.Element;
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using System;
@@ -45,15 +46,17 @@ namespace Dovus.App.Casting
 
             if (durationSec <= 0f)
             {
-                durationSec = skill.VerbId switch
-                {
-                    "2" => regenSec,
-                    "4" => shieldSec,
-                    "6" => rootSec,
-                    "8" => hasteSec,
-                    "12" => slowSec,
-                    _ => bangDurationSec
-                };
+                durationSec = RuneIdGrammar.TryAsRune(skill.Identity.Verb, out var verbRune)
+                    ? verbRune switch
+                    {
+                        Rune.Heal => regenSec,
+                        Rune.Defense => shieldSec,
+                        Rune.Control => rootSec,
+                        Rune.Empower => hasteSec,
+                        Rune.Time => slowSec,
+                        _ => bangDurationSec
+                    }
+                    : bangDurationSec;
             }
 
             durationSec = Math.Max(bangDurationSec, durationSec);

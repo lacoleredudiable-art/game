@@ -206,18 +206,18 @@ namespace Dovus.Game.DevTools
             SkillResolution r = _skills.ResolveWords(s.Words);
             if (r.IsEmpty)
                 return null;
-            string line = r.DisplayName;
-            if (!string.IsNullOrEmpty(r.VerbName))
-                line += "  ·  " + r.VerbName;
-            if (!string.IsNullOrEmpty(r.AdjectiveName) && s.Words.Count >= 1)
-                line += " / " + r.AdjectiveName;
-            if (!string.IsNullOrEmpty(r.SilhouetteAxis)
-                && !string.Equals(r.SilhouetteAxis, "none", System.StringComparison.Ordinal)
+            string line = r.Identity.DisplayName;
+            if (!string.IsNullOrEmpty(r.Identity.VerbName))
+                line += "  ·  " + r.Identity.VerbName;
+            if (!string.IsNullOrEmpty(r.Identity.AdjectiveName) && s.Words.Count >= 1)
+                line += " / " + r.Identity.AdjectiveName;
+            if (!string.IsNullOrEmpty(r.Presentation.SilhouetteAxis)
+                && !string.Equals(r.Presentation.SilhouetteAxis, "none", System.StringComparison.Ordinal)
                 && s.Words.Count >= 3)
-                line += " {" + r.SilhouetteAxis + "}";
-            if (r.HitboxScaleMult > 0f && System.Math.Abs(r.HitboxScaleMult - 1f) > 0.05f
+                line += " {" + r.Presentation.SilhouetteAxis + "}";
+            if (r.Scaling.HitboxScaleMult > 0f && System.Math.Abs(r.Scaling.HitboxScaleMult - 1f) > 0.05f
                 && s.Words.Count >= 2)
-                line += " ×" + r.HitboxScaleMult.ToString("0.#");
+                line += " ×" + r.Scaling.HitboxScaleMult.ToString("0.#");
             if (r.Mechanics != null && r.Mechanics.Length > 0)
                 line += "  [" + string.Join(",", r.Mechanics) + "]";
             return line;

@@ -63,7 +63,7 @@ namespace Dovus.Game.Skills.Mechanics
             if (trapFires && !v.Triggered)
             {
                 v.Triggered = true;
-                _host.Readout?.NoteSkill(v.Skill.DisplayName, "tuzak tetiklendi", new Color(1f, 0.6f, 0.3f));
+                _host.Readout?.NoteSkill(v.Skill.Identity.DisplayName, "tuzak tetiklendi", new Color(1f, 0.6f, 0.3f));
                 JsonEffectRuntime.JsonLog("tuzak tetiklendi " + v.Plan.SkillId);
                 if (!JsonEffectRules.TrapRepeats(v.Plan.Body))
                     v.UntilMs = Math.Min(v.UntilMs, now + VolumePayloadApplierDefaults.TrapUntilCapMs);

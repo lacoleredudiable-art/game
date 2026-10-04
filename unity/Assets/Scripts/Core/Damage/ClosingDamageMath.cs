@@ -39,12 +39,12 @@ namespace Dovus.Core.Damage
                 return commit * outMult;
 
             // Heal / dash / shield: can yemez; status yolu ayrı.
-            if (skill.BaseDamage <= 0f)
+            if (skill.Combat.BaseDamage <= 0f)
                 return 0f;
 
-            float adj = skill.DamageMult > 0f ? skill.DamageMult : 1f;
+            float adj = skill.Scaling.DamageMult > 0f ? skill.Scaling.DamageMult : 1f;
             float reference = verbDamageReference > 0f ? verbDamageReference : VerbDamageReference;
-            float verbScale = skill.BaseDamage / reference;
+            float verbScale = skill.Combat.BaseDamage / reference;
             return commit * verbScale * adj * outMult;
         }
     }

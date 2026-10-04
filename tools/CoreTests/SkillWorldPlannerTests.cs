@@ -60,13 +60,13 @@ public class SkillWorldPlannerTests
 
         SkillResolution small = m.Resolve(new[] { 5, 1 });
         SkillResolution large = m.Resolve(new[] { 5, 5 });
-        Assert.That(small.Hitbox, Is.EqualTo(large.Hitbox));
+        Assert.That(small.Presentation.Hitbox, Is.EqualTo(large.Presentation.Hitbox));
         LivingEffectPlan a = SkillWorldPlanner.Build(small, cat, tuning);
         LivingEffectPlan b = SkillWorldPlanner.Build(large, cat, tuning);
 
         Assert.That(a.HasPlan, Is.True);
         Assert.That(b.HasPlan, Is.True);
-        float expectedRatio = large.HitboxScaleMult / small.HitboxScaleMult;
+        float expectedRatio = large.Scaling.HitboxScaleMult / small.Scaling.HitboxScaleMult;
         Assert.That(b.BangRadiusM / a.BangRadiusM, Is.EqualTo(expectedRatio).Within(0.001f),
             $"small={a.BangRadiusM} large={b.BangRadiusM}");
     }
@@ -93,7 +93,7 @@ public class SkillWorldPlannerTests
     {
         // v6 1-6: Saldırı × Bağlama → engine apply_slow (JSON'dan, elle sayı yok).
         SkillResolution skill = Motor().Resolve(new[] { 1, 6 });
-        Assert.That(skill.EngineModifiers.Has("apply_slow"), Is.True);
+        Assert.That(skill.Engine.Has("apply_slow"), Is.True);
 
         var target = new StatusBoard();
         var caster = new StatusBoard();
@@ -107,7 +107,7 @@ public class SkillWorldPlannerTests
     {
         var mods = MiniJson.Parse(
             "{\"apply_pull\":true,\"apply_stealth\":true,\"apply_confuse\":true}");
-        var skill = new SkillResolution(
+        var skill = SkillResolution.Build(
             "t", "Test", "Test", "t", "job",
             "v", "V", "strike", "damage",
             10f, 0f, "single_target", "free_move", Array.Empty<string>(),

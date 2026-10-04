@@ -37,8 +37,8 @@ namespace Dovus.Game.Skills.Launch
 
             string mob;
             if (_host.MobilityCc != null
-                && int.TryParse(skill.VerbId, out int verbId)
-                && int.TryParse(skill.AdjectiveId, out int adjectiveId))
+                && int.TryParse(skill.Identity.Verb, out int verbId)
+                && int.TryParse(skill.Identity.Adjective, out int adjectiveId))
             {
                 int weaponId = 0;
                 if (_host.EquippedWeapon != null)
@@ -85,7 +85,7 @@ namespace Dovus.Game.Skills.Launch
             if (_host.PlayerCooldownHost == null || string.IsNullOrEmpty(comboKey))
                 return;
 
-            float sec = skill.BaseCooldownSec * _host.WeaponCooldownMult();
+            float sec = skill.Costs.BaseCooldownSec * _host.WeaponCooldownMult();
             double worldMs = _host.Clock != null ? _host.Clock.Director.WorldTimeMs : 0;
             if (!_host.PlayerCooldownHost.TryBeginCast(comboKey, sec, worldMs))
                 return;
@@ -105,7 +105,7 @@ namespace Dovus.Game.Skills.Launch
         {
             if (_host.HexagonView == null || skill.IsEmpty || words == null || words.Count == 0)
                 return;
-            float sec = skill.BaseCooldownSec * _host.WeaponCooldownMult();
+            float sec = skill.Costs.BaseCooldownSec * _host.WeaponCooldownMult();
             if (sec <= 0f)
                 return;
             _host.HexagonView.BeginCosmeticCooldown(words[0].Dot, sec);
@@ -138,7 +138,7 @@ namespace Dovus.Game.Skills.Launch
 
             return SkillMotionMotor.Resolve(
                 skill, ctx, t,
-                _host.VerbData?.IFrameMsFor(skill.SkillId) ?? 0);
+                _host.VerbData?.IFrameMsFor(skill.Identity.Id) ?? 0);
         }
 
         public void ApplySkillMotionIframe(in SkillResolution skill, in SkillMotionPlan plan)
@@ -149,7 +149,7 @@ namespace Dovus.Game.Skills.Launch
             if (rig == null)
                 return;
             rig.OpenSkillIframe(plan.IframeMs);
-            DebugConfig.DevLog($"[Mechanic] i-frame {skill.SkillId} {plan.Kind} {plan.IframeMs} ms");
+            DebugConfig.DevLog($"[Mechanic] i-frame {skill.Identity.Id} {plan.Kind} {plan.IframeMs} ms");
         }
 
         public void AnnotateMotion(SkillResolution skill, in SkillMotionPlan plan)
@@ -163,7 +163,7 @@ namespace Dovus.Game.Skills.Launch
                 _ => null
             };
             if (tag == null) return;
-            _host.DebugHud?.NoteSkillBang(skill.DisplayName, tag);
+            _host.DebugHud?.NoteSkillBang(skill.Identity.DisplayName, tag);
         }
     }
 }

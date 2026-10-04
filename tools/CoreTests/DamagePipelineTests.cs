@@ -308,9 +308,9 @@ public class DamagePipelineTests
         var motor = SkillMotor.FromJson(File.ReadAllText(ElementPath()));
         SkillResolution weak = motor.Resolve(new[] { 7, 6 });
         SkillResolution nine = motor.Resolve(new[] { 7, 9 });
-        Assert.That(weak.EngineModifiers["debuff_armor"].AsFloat(0f), Is.EqualTo(-0.3f).Within(0.0001f));
-        Assert.That(nine.EngineModifiers["debuff_armor"].AsFloat(0f), Is.EqualTo(-0.5f).Within(0.0001f));
-        Assert.That(nine.EngineModifiers["ignore_armor"].AsBool(false), Is.True);
+        Assert.That(weak.Engine.Field("debuff_armor").AsFloat(0f), Is.EqualTo(-0.3f).Within(0.0001f));
+        Assert.That(nine.Engine.Field("debuff_armor").AsFloat(0f), Is.EqualTo(-0.5f).Within(0.0001f));
+        Assert.That(nine.Engine.Field("ignore_armor").AsBool(false), Is.True);
         Assert.That(weak.Mechanics, Does.Not.Contain("armor_break"));
         Assert.That(nine.Mechanics, Does.Not.Contain("armor_break"));
 
@@ -352,9 +352,9 @@ public class DamagePipelineTests
         SkillResolution strike = motor.Resolve(new[] { 1, 9 });
         SkillResolution burst = motor.Resolve(new[] { 5, 9 });
         SkillResolution plain = motor.Resolve(new[] { 1, 1 });
-        Assert.That(strike.EngineModifiers["ignore_armor"].AsBool(false), Is.True);
-        Assert.That(burst.EngineModifiers["ignore_armor"].AsBool(false), Is.True);
-        Assert.That(plain.EngineModifiers["ignore_armor"].AsBool(false), Is.False);
+        Assert.That(strike.Engine.Field("ignore_armor").AsBool(false), Is.True);
+        Assert.That(burst.Engine.Field("ignore_armor").AsBool(false), Is.True);
+        Assert.That(plain.Engine.Field("ignore_armor").AsBool(false), Is.False);
 
         // O8 (kullanıcı onayı, 1 Ekim): ignore_armor zırhı %100 deler → 1-9 ~365K, 5-9 ~260K tam geçer.
         float focused = ThroughArmor(365000f, SlotPassiveCombat.CombineArmorPen(0f, true, 0f));

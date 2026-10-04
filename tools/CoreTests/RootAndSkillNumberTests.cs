@@ -102,10 +102,10 @@ public class RootAndSkillNumberTests
 
         SkillMotor motor = SkillMotor.FromJson(json);
         SkillResolution skill = motor.Resolve(new[] { 6, 6 });
-        Assert.That(skill.EngineModifiers["cc_duration_sec"].AsFloat(0f), Is.EqualTo(1.5f).Within(0.001f));
-        Assert.That(skill.BaseCooldownSec, Is.EqualTo(skill.EngineModifiers["base_cooldown"].AsFloat(0f)).Within(0.001f));
-        Assert.That(skill.BaseResourceCost, Is.EqualTo(skill.EngineModifiers["base_cost"].AsFloat(0f)).Within(0.001f));
-        Assert.That(skill.BaseDamage, Is.EqualTo(skill.EngineModifiers["base_damage"].AsFloat(0f)).Within(0.001f));
+        Assert.That(skill.Engine.Field("cc_duration_sec").AsFloat(0f), Is.EqualTo(1.5f).Within(0.001f));
+        Assert.That(skill.Costs.BaseCooldownSec, Is.EqualTo(skill.Engine.Field("base_cooldown").AsFloat(0f)).Within(0.001f));
+        Assert.That(skill.Costs.BaseResourceCost, Is.EqualTo(skill.Engine.Field("base_cost").AsFloat(0f)).Within(0.001f));
+        Assert.That(skill.Combat.BaseDamage, Is.EqualTo(skill.Engine.Field("base_damage").AsFloat(0f)).Within(0.001f));
 
         var board = new StatusBoard();
         StatusApplicator.ApplySkill(skill, new StatusBoard(), board, new StatusTuning());

@@ -56,5 +56,18 @@ namespace Dovus.Core.Grammar
         public PortalOp PortalOp() => SkillMechanicOpParse.ParsePortalOp(_raw["portal_op"].AsString());
 
         public TeamOp TeamOp() => SkillMechanicOpParse.ParseTeamOp(_raw["team_op"].AsString());
+
+        public bool Has(string field) => _raw.Has(field);
+
+        public float ReadFloat(string field, float fallback = 0f) => _raw[field].AsFloat(fallback);
+
+        public bool ReadBool(string field, bool fallback = false) => _raw[field].AsBool(fallback);
+
+        public int ReadInt(string field, int fallback = 0) => _raw[field].AsInt(fallback);
+
+        public string ReadString(string field, string fallback = "") => _raw[field].AsString(fallback);
+
+        /// <summary>Core/test: key erişimi. Game katmanı kullanmaz.</summary>
+        public JsonValue Field(string field) => _raw[field];
     }
 }

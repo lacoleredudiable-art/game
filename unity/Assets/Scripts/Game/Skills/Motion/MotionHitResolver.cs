@@ -71,7 +71,7 @@ namespace Dovus.Game.Skills.Motion
 
             // Fiil hasarı kapanışta iner. Emici aktarımın eksi canı base_damage 0 iken
             // ayrıca boss'a yazılır; yoksa 1-2 gibi vuruşlar iki kez vurur.
-            if (geometry && _host.Motion.TemplateSkill.BaseDamage <= MotionHitResolverDefaults.GeometryDamageEpsilon)
+            if (geometry && _host.Motion.TemplateSkill.Combat.BaseDamage <= MotionHitResolverDefaults.GeometryDamageEpsilon)
                 ApplyDrainDamage(hit.Share);
 
             // 2-9 şifası koruyucu tetikte bir kez iner; kalıp vuruşu aynı cast'i ödemez.
@@ -176,7 +176,7 @@ namespace Dovus.Game.Skills.Motion
         {
             if (!_host.TryVerbHitbox(skill, out VerbHitboxSpec spec))
                 return 0f;
-            int.TryParse(skill.AdjectiveId, out int adjectiveId);
+            int.TryParse(skill.Identity.Adjective, out int adjectiveId);
             int weaponId = _host.EquippedWeaponNumber();
             float rangeMult = _host.EquippedWeapon != null ? _host.EquippedWeapon.RangeMult : 1f;
             float weaponScale = _host.VerbData?.WeaponSizeMult(weaponId, rangeMult) ?? rangeMult;

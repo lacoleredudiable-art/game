@@ -37,7 +37,7 @@ namespace Dovus.Core.Casting
         public bool TryGetHitbox(in SkillResolution skill, out VerbHitboxSpec spec)
         {
             spec = default;
-            return int.TryParse(skill.VerbId, NumberStyles.Integer, CultureInfo.InvariantCulture, out int verbId)
+            return int.TryParse(skill.Identity.Verb, NumberStyles.Integer, CultureInfo.InvariantCulture, out int verbId)
                 && _hitboxes.TryGetValue(verbId, out spec);
         }
 

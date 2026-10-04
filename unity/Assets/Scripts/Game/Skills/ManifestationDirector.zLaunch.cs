@@ -110,7 +110,7 @@ namespace Dovus.Game.Skills
                 _md.TryVerbHitbox(skill, out spec);
             public bool IsEnemyBody(Transform body) => _md.IsEnemyBody(body);
             public bool IsFriendlyFieldVerb(in SkillResolution skill) =>
-                skill.VerbId is "2" or "4" or "8" or "9";
+                SkillVerbRouting.IsFieldAuraVerb(skill.Identity.Verb);
             public MechanicPlan MechanicPlanFor(SkillResolution skill) => _md.MechanicPlanFor(skill);
             public WeaponPassiveMods HitMods(in SkillResolution skill, bool isBasicStrike, bool consumeBonus) =>
                 _md.HitMods(skill, isBasicStrike, consumeBonus);

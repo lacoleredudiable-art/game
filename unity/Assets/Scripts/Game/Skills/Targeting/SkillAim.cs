@@ -153,7 +153,7 @@ namespace Dovus.Game.Skills.Targeting
                     && aimMode == SkillAimMode.Targeted)
                 {
                     ArmedTarget = target;
-                    ArmedSkillId = skill.SkillId;
+                    ArmedSkillId = skill.Identity.Id;
                     DirectionalAttack = false;
                     CastFacingTarget = target != _host.Player ? target : null;
                     FaceTarget(AttackLockTarget());
@@ -170,7 +170,7 @@ namespace Dovus.Game.Skills.Targeting
             }
 
             ArmedTarget = target;
-            ArmedSkillId = skill.SkillId;
+            ArmedSkillId = skill.Identity.Id;
             DirectionalAttack = aimMode == SkillAimMode.Directional;
             CastFacingTarget = aimMode == SkillAimMode.Targeted && target != _host.Player
                 ? target
@@ -196,8 +196,8 @@ namespace Dovus.Game.Skills.Targeting
             out TargetFailure failure)
         {
             failure = TargetFailure.None;
-            if (aimMode != SkillAimMode.Targeted || skill.TargetMode == "self_only"
-                || skill.TargetMode == "self_or_ally")
+            if (aimMode != SkillAimMode.Targeted || skill.Targeting.Mode == "self_only"
+                || skill.Targeting.Mode == "self_or_ally")
             {
                 target = _host.Player;
                 return true;
@@ -222,7 +222,7 @@ namespace Dovus.Game.Skills.Targeting
 
         public float TargetingRangeFor(in SkillResolution skill)
         {
-            if (CardEffectRules.PrefersAlly(skill.TargetMode, skill.Action))
+            if (CardEffectRules.PrefersAlly(skill.Targeting.Mode, skill.Presentation.Action))
             {
                 float allyRange = _host.SkillNumbers != null
                     ? _host.SkillNumbers.AllySkillRangeM
@@ -240,7 +240,7 @@ namespace Dovus.Game.Skills.Targeting
             route = _host.ApplyMechanicWorldRoute(_host.MechanicPlanFor(skill), route);
             LivingEffectPlan plan = SkillWorldPlanner.Build(skill, _host.PresentationCatalog, tuning);
             float rangeMult = _host.EquippedWeapon != null ? _host.EquippedWeapon.RangeMult : 1f;
-            bool burst = string.Equals(skill.VerbId, "5", StringComparison.Ordinal);
+            bool burst = string.Equals(skill.Identity.Verb, "5", StringComparison.Ordinal);
             float radius = plan.BangRadiusM > 0f ? plan.BangRadiusM : tuning.TravelHitRadiusM;
             if (route.Kind == SkillExecutorKind.MeleeHitbox && !burst)
                 radius = tuning.TravelHitRadiusM;
@@ -254,7 +254,7 @@ namespace Dovus.Game.Skills.Targeting
                 ref radius, ref range, ref duration, ref spawnCount);
             float edge = Mathf.Max(SkillAimDefaults.MinRadiusM, range);
             if (!skill.IsEmpty
-                && _host.TryGetMotionBinding(skill.SkillId, out MotionBinding motion)
+                && _host.TryGetMotionBinding(skill.Identity.Id, out MotionBinding motion)
                 && motion.Implemented)
                 edge = MotionCastReach.ComboEdgeReach(edge, motion.Template);
             return MotionCastReach.GateRangeM(edge, _host.PlayerBodyRadiusM());

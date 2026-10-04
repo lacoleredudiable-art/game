@@ -36,7 +36,7 @@ public class PresentationValidatorTests
         File.ReadAllText(FindDocsFile("element-sistemi.json"));
 
     static SkillResolution ResolutionWith(string hitbox, string animationType) =>
-        new SkillResolution(
+        SkillResolution.Build(
             elementId: "",
             elementName: "",
             displayName: "test",

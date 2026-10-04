@@ -69,8 +69,8 @@ namespace Dovus.Core.Status
                 {
                     int want = cleanseCount > 0
                         ? cleanseCount
-                        : skill.EngineModifiers != null && !skill.EngineModifiers.IsNull
-                            ? skill.EngineModifiers["cleanse_count"].AsInt(0)
+                        : !skill.Engine.IsNull
+                            ? skill.Engine.Field("cleanse_count").AsInt(0)
                             : 0;
                     cleansedCount += board.CleanseHostile(want > 0 ? want : int.MaxValue);
                     cleansed = true;
@@ -93,14 +93,14 @@ namespace Dovus.Core.Status
                 }
 
                 ApplyKind(
-                    board, kind, skill, tuning, mobilityCc, ParseAdjectiveId(skill.AdjectiveId),
+                    board, kind, skill, tuning, mobilityCc, ParseAdjectiveId(skill.Identity.Adjective),
                     friendlyMagnitude);
             }
 
             // Sıfat engine_modifiers — fiil mechanics dışında ek durum (3’lü/4’lü farkı).
             ApplyAdjectiveModifiers(
                 skill, board, caster, target, self, ref knockback, ref pull, tuning, mechanics,
-                mobilityCc, ParseAdjectiveId(skill.AdjectiveId), friendlyMagnitude);
+                mobilityCc, ParseAdjectiveId(skill.Identity.Adjective), friendlyMagnitude);
 
             return new Result(knockback, cleansed, pull, cleansedCount);
         }
@@ -126,24 +126,24 @@ namespace Dovus.Core.Status
             int adjectiveId,
             float friendlyMagnitude)
         {
-            JsonValue mods = skill.EngineModifiers;
+            JsonValue mods = skill.Engine.Raw;
             if (mods.IsNull || mods.Kind != JsonKind.Object)
                 return;
 
             bool HasMech(string id) => System.Array.IndexOf(mechanics, id) >= 0;
-            bool hitsEnemy = CardEffectRules.HarmfulHitsEnemy(skill.TargetMode, skill.Action, skill.SkillJob);
+            bool hitsEnemy = CardEffectRules.HarmfulHitsEnemy(skill.Targeting.Mode, skill.Presentation.Action, skill.Identity.SkillJob);
             StatusBoard hostile = hitsEnemy ? (self ? target : board) : null;
 
             if (hostile != null)
                 ApplyHostileAdjectiveModifiers(
                     mods, hostile, skill, tuning, mechanics, mobilityCc, adjectiveId);
 
-            if (CardEffectRules.WantsSelfHaste(skill.SkillJob)
-                && !string.Equals(skill.Action, "tempo", System.StringComparison.OrdinalIgnoreCase)
+            if (CardEffectRules.WantsSelfHaste(skill.Identity.SkillJob)
+                && !string.Equals(skill.Presentation.Action, "tempo", System.StringComparison.OrdinalIgnoreCase)
                 && caster != null)
             {
                 float haste = CardEffectRules.HasteMagnitude(
-                    skill.SkillJob,
+                    skill.Identity.SkillJob,
                     mods["self_haste"].AsFloat(0f),
                     mods["enemy_slow"].AsFloat(0f),
                     mods["self_damage_buff"].AsFloat(0f));
@@ -210,8 +210,8 @@ namespace Dovus.Core.Status
             int adjectiveId)
         {
             bool HasMech(string id) => System.Array.IndexOf(mechanics, id) >= 0;
-            bool keepEnemyLock = !CardEffectRules.WantsSelfHaste(skill.SkillJob)
-                || CardEffectRules.Names(skill.SkillJob, "root");
+            bool keepEnemyLock = !CardEffectRules.WantsSelfHaste(skill.Identity.SkillJob)
+                || CardEffectRules.Names(skill.Identity.SkillJob, "root");
 
             if (keepEnemyLock && mods.Has("apply_slow") && !HasMech("slow"))
             {
@@ -231,7 +231,7 @@ namespace Dovus.Core.Status
             if (keepEnemyLock && ModifierTruthy(mods, "apply_root") && !HasMech("root"))
                 board.Apply(
                     StatusKind.Root,
-                    ExplicitOrFallback(mods, "cc_duration_sec", StatusKind.Root, adjectiveId, tuning.RootMs, mobilityCc, skill.SkillJob),
+                    ExplicitOrFallback(mods, "cc_duration_sec", StatusKind.Root, adjectiveId, tuning.RootMs, mobilityCc, skill.Identity.SkillJob),
                     1f,
                     RootSource(skill, "adj"));
             float rootSec = mods["apply_root_sec"].AsFloat(0f);
@@ -264,7 +264,7 @@ namespace Dovus.Core.Status
             // Kart "yavaşlatma" diyorsa isabet cezası kör değil yavaşlatmadır.
             // Kart "kör" veya "isabet" diyorsa eski kör eşlemesi kalır.
             float accuracy = mods["accuracy_debuff"].AsFloat(0f);
-            if (accuracy > 0f && CardEffectRules.AccuracyIsSlow(skill.SkillJob) && !HasMech("slow"))
+            if (accuracy > 0f && CardEffectRules.AccuracyIsSlow(skill.Identity.SkillJob) && !HasMech("slow"))
             {
                 float mult = accuracy <= 1f ? accuracy : tuning.SlowSpeedMult;
                 double slowMs = mods["lifetime_add"].AsFloat(0f) * StatusDefaults.SecToMs;
@@ -297,12 +297,12 @@ namespace Dovus.Core.Status
 
         public static bool IsSelfTargeted(SkillResolution skill)
         {
-            string hit = skill.Hitbox ?? string.Empty;
+            string hit = skill.Presentation.Hitbox;
             if (hit is "self" or "self_aura" or "target_ally" or "self_or_ally")
                 return true;
-            if (skill.TargetMode is "self_only" or "self_or_ally")
+            if (skill.Targeting.Mode.ToString() is "self_only" or "self_or_ally")
                 return true;
-            string family = skill.VerbFamily ?? string.Empty;
+            string family = skill.Presentation.VerbFamily;
             return family is "mend" or "guard" or "purge";
         }
 
@@ -319,7 +319,7 @@ namespace Dovus.Core.Status
                 friendlyMagnitude > 0f ? magnitude * friendlyMagnitude : magnitude;
             double Duration(double fallback) =>
                 ExplicitOrFallback(
-                    skill.EngineModifiers, "cc_duration_sec", kind, adjectiveId, fallback, mobilityCc, skill.SkillJob);
+                    skill.Engine.Raw, "cc_duration_sec", kind, adjectiveId, fallback, mobilityCc, skill.Identity.SkillJob);
             switch (kind)
             {
                 case StatusKind.Stun:
@@ -372,8 +372,8 @@ namespace Dovus.Core.Status
                     break;
                 case StatusKind.Shield:
                 {
-                    float absorb = skill.EngineModifiers != null && !skill.EngineModifiers.IsNull
-                        ? skill.EngineModifiers["shield_absorb"].AsFloat(0f)
+                    float absorb = !skill.Engine.IsNull
+                        ? skill.Engine.Field("shield_absorb").AsFloat(0f)
                         : 0f;
                     board.Apply(kind, t.ShieldMs, Friendly(absorb > 0f ? absorb : t.ShieldAbsorb));
                     break;
@@ -417,7 +417,7 @@ namespace Dovus.Core.Status
         }
 
         static string EffectSource(SkillResolution skill, string part) =>
-            "skill:" + (string.IsNullOrEmpty(skill.SkillId) ? "unknown" : skill.SkillId) + ":" + part;
+            "skill:" + (string.IsNullOrEmpty(skill.Identity.Id) ? "unknown" : skill.Identity.Id) + ":" + part;
 
         static string RootSource(SkillResolution skill, string part) =>
             EffectSource(skill, part);

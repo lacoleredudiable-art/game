@@ -24,8 +24,8 @@ namespace Dovus.Core.Manifestation
             if (skill.IsEmpty)
                 return default;
 
-            EffectSilhouette s = VerbFamilySeed(skill.VerbFamily, skill.Hitbox);
-            s = ApplySilhouetteAxis(s, skill.SilhouetteAxis, tuning);
+            EffectSilhouette s = VerbFamilySeed(skill.Presentation.VerbFamily, skill.Presentation.Hitbox);
+            s = ApplySilhouetteAxis(s, skill.Presentation.SilhouetteAxis, tuning);
             return s.Clamped();
         }
 

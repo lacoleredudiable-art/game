@@ -99,14 +99,14 @@ namespace Dovus.Game.Skills
             float per = _combat != null ? _combat.ClosingDamagePerEffect : 1f;
             float reference = _skillNumbers != null ? _skillNumbers.VerbDamageReference : 0f;
             bool formula = _combat != null && _combat.UseFormulaDamage
-                && !isBasicStrike && !skill.IsEmpty && skill.BaseDamage > 0f;
+                && !isBasicStrike && !skill.IsEmpty && skill.Combat.BaseDamage > 0f;
 
             float skillPower;
             float runeMult = 1f;
             if (formula)
             {
-                skillPower = skill.BaseDamage;
-                runeMult = skill.DamageMult > 0f ? skill.DamageMult : 1f;
+                skillPower = skill.Combat.BaseDamage;
+                runeMult = skill.Scaling.DamageMult > 0f ? skill.Scaling.DamageMult : 1f;
             }
             else
             {
@@ -171,13 +171,13 @@ namespace Dovus.Game.Skills
                 if (slotPoise <= 0f)
                     slotPoise = 1f;
                 poise = WeaponPassiveRules.OutgoingPoise(
-                    skill.BasePoise,
-                    skill.PoiseDamageMult,
+                    skill.Combat.BasePoise,
+                    skill.Scaling.PoiseDamageMult,
                     weaponPoise,
                     bonusPoise * slotPoise);
             }
 
-            bool canCrit = formula || (!isBasicStrike && !skill.IsEmpty && skill.BaseDamage > 0f);
+            bool canCrit = formula || (!isBasicStrike && !skill.IsEmpty && skill.Combat.BaseDamage > 0f);
             float extraCrit = ClosingHealRules.ExtraCritChanceAdd(skill) + WeaponCritAdd(skill, isBasicStrike);
 
             var outcome = DamagePipeline.Resolve(new DamageQuery

@@ -176,7 +176,7 @@ namespace Dovus.Game.Skills.Closing
             float shake = man.BossShakeSec;
             double worldMs = _host.Clock.Director.WorldTimeMs;
 
-            string family = skill.IsEmpty ? string.Empty : skill.VerbFamily;
+            string family = skill.IsEmpty ? string.Empty : skill.Presentation.VerbFamily;
             if (!string.IsNullOrEmpty(family))
             {
                 switch (family)

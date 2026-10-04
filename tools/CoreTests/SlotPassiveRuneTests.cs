@@ -258,7 +258,7 @@ public class SlotPassiveRuneTests
             runeId,
             rune.AdjectiveFace,
             rune.PassiveDurationDefault,
-            adjective.EngineModifiers,
+            adjective.Engine,
             worldMs: 0), Is.True);
         director.CloseCast();
         laterCast = director.OpenCast();

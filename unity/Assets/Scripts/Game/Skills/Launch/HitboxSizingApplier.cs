@@ -35,7 +35,7 @@ public sealed class HitboxSizingApplier
         {
             if (!_host.TryVerbHitbox(skill, out VerbHitboxSpec spec))
                 return;
-            int.TryParse(skill.AdjectiveId, out int adjectiveId);
+            int.TryParse(skill.Identity.Adjective, out int adjectiveId);
             int weaponId = _host.EquippedWeaponNumber();
             float weaponScale = _host.VerbData?.WeaponSizeMult(weaponId, rangeMult) ?? rangeMult;
             var engine = skill.Engine;

@@ -136,7 +136,7 @@ namespace Dovus.Game.Hud
             {
                 int verbId = (int)state.Words[0].Rune;
                 SkillResolution preview = _motor.Resolve(new[] { verbId });
-                SetPreview(preview.VerbName, "İkinci rünü çiz: sıfat davranışı ve silüeti değiştirir.",
+                SetPreview(preview.Identity.VerbName, "İkinci rünü çiz: sıfat davranışı ve silüeti değiştirir.",
                     theme.SkillNeutralColor, "FİİL HAZIR");
                 return;
             }
@@ -164,9 +164,9 @@ namespace Dovus.Game.Hud
             string compatibility = skill.Weapon.Compatible
                 ? "UYUMLU"
                 : SkillTextNumbers.FormatIncompatibleCompatibilityLabel(skill.Weapon.DamageMult);
-            string prose = !string.IsNullOrEmpty(skill.Resolution.SkillJob)
-                ? skill.Resolution.SkillJob
-                : skill.Resolution.ProseFeel;
+            string prose = !string.IsNullOrEmpty(skill.Resolution.Identity.SkillJob)
+                ? skill.Resolution.Identity.SkillJob
+                : skill.Resolution.Prose.Feel;
             string detail = skill.Weapon.Compatible
                 ? prose
                 : SkillTextNumbers.FormatIncompatibleSkillDetail(

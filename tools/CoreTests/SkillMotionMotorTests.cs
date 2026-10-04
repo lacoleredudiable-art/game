@@ -15,7 +15,7 @@ namespace CoreTests;
 public class SkillMotionMotorTests
 {
     static SkillResolution Teleport(string adjectiveId = "sizma", string elementOrigin = "Pus") =>
-        new(
+        SkillResolution.Build(
             "3-2", "Pus", "Pus Adımı", "pus_adimi", "job",
             "kisisel_isinlanma", "Kişisel Işınlanma", "motion", "self_teleport",
             0f, 0f, "self", "free_move", new[] { "stasis" },
@@ -26,7 +26,7 @@ public class SkillMotionMotorTests
             elementOrigin: elementOrigin);
 
     static SkillResolution Dash() =>
-        new(
+        SkillResolution.Build(
             "3", "Hava", "Hareket", "h", "job",
             "hareket", "Hareket", "motion", "dash",
             0f, 0f, "self", "free_move", new[] { "haste" },
@@ -36,7 +36,7 @@ public class SkillMotionMotorTests
             string.Empty);
 
     static SkillResolution Lightning() =>
-        new(
+        SkillResolution.Build(
             "3-5", "Yıldırım", "Şimşek Geçişi", "simsek", "job",
             "zincirleme", "Zincirleme", "strike", "chain",
             45f, 20f, "chain_projectile", "slowed_move", new[] { "stun" },

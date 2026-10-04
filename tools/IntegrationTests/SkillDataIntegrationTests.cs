@@ -48,29 +48,29 @@ public class SkillDataIntegrationTests
             SkillResolution skill = motor.Resolve(new[] { verb, adjective });
             string id = $"{verb}-{adjective}";
             Assert.That(skill.IsComplete, Is.True, id);
-            Assert.That(skill.SkillId, Is.EqualTo(id), id);
-            Assert.That(skillIds.Add(skill.SkillId), Is.True, $"duplicate SkillId {skill.SkillId}");
+            Assert.That(skill.Identity.Id.Value, Is.EqualTo(id), id);
+            Assert.That(skillIds.Add(skill.Identity.Id.Value), Is.True, $"duplicate SkillId {skill.Identity.Id}");
 
-            Assert.That(skill.VerbId, Is.Not.Empty, $"{id} VerbId");
-            Assert.That(skill.VerbName, Is.Not.Empty, $"{id} VerbName");
-            Assert.That(skill.Hitbox, Is.Not.Empty, $"{id} Hitbox");
+            Assert.That(skill.Identity.Verb.IsEmpty, Is.False, $"{id} VerbId");
+            Assert.That(skill.Identity.VerbName, Is.Not.Empty, $"{id} VerbName");
+            Assert.That(string.IsNullOrEmpty(skill.Presentation.Hitbox.ToString()), Is.False, $"{id} Hitbox");
             Assert.That(motion.TryGet(id, out _), Is.True, $"{id} motion");
 
-            if (!string.IsNullOrEmpty(skill.ElementId))
-                lex.AssertInSet(skill.ElementId, JsonLexicon.ElementIds, $"{id} ElementId");
-            lex.AssertInSet(skill.VerbId, JsonLexicon.VerbIds, $"{id} VerbId");
-            lex.AssertInSet(skill.AdjectiveId, JsonLexicon.AdjectiveIds, $"{id} AdjectiveId");
-            lex.AssertInSet(skill.Hitbox, JsonLexicon.Hitboxes, $"{id} Hitbox");
-            lex.AssertInSet(skill.Action, JsonLexicon.Actions, $"{id} Action");
-            lex.AssertInSet(skill.VerbFamily, JsonLexicon.Families, $"{id} VerbFamily");
-            lex.AssertInSet(skill.TargetMode, JsonLexicon.TargetModes, $"{id} TargetMode");
-            if (!string.IsNullOrEmpty(skill.CastMobility))
-                lex.AssertInSet(skill.CastMobility, JsonLexicon.CastMobilities, $"{id} CastMobility");
-            if (!string.IsNullOrEmpty(skill.DamageType))
-                lex.AssertInSet(skill.DamageType, JsonLexicon.DamageTypes, $"{id} DamageType");
-            if (!string.IsNullOrEmpty(skill.SilhouetteAxis))
-                lex.AssertInSet(skill.SilhouetteAxis, JsonLexicon.SilhouetteAxes, $"{id} SilhouetteAxis");
-            foreach (var kv in skill.TargetBehaviors)
+            if (!string.IsNullOrEmpty(skill.Identity.Element))
+                lex.AssertInSet(skill.Identity.Element, JsonLexicon.ElementIds, $"{id} ElementId");
+            lex.AssertInSet(skill.Identity.Verb.Value, JsonLexicon.VerbIds, $"{id} VerbId");
+            lex.AssertInSet(skill.Identity.Adjective.Value, JsonLexicon.AdjectiveIds, $"{id} AdjectiveId");
+            lex.AssertInSet(skill.Presentation.Hitbox.ToString(), JsonLexicon.Hitboxes, $"{id} Hitbox");
+            lex.AssertInSet(skill.Presentation.Action.ToString(), JsonLexicon.Actions, $"{id} Action");
+            lex.AssertInSet(skill.Presentation.VerbFamily.ToString(), JsonLexicon.Families, $"{id} VerbFamily");
+            lex.AssertInSet(skill.Targeting.Mode.ToString(), JsonLexicon.TargetModes, $"{id} TargetMode");
+            if (!string.IsNullOrEmpty(skill.Targeting.CastMobility.ToString()))
+                lex.AssertInSet(skill.Targeting.CastMobility.ToString(), JsonLexicon.CastMobilities, $"{id} CastMobility");
+            if (!string.IsNullOrEmpty(skill.Combat.DamageType))
+                lex.AssertInSet(skill.Combat.DamageType, JsonLexicon.DamageTypes, $"{id} DamageType");
+            if (!string.IsNullOrEmpty(skill.Presentation.SilhouetteAxis))
+                lex.AssertInSet(skill.Presentation.SilhouetteAxis, JsonLexicon.SilhouetteAxes, $"{id} SilhouetteAxis");
+            foreach (var kv in skill.Targeting.Behaviors)
                 lex.AssertInSet(kv.Value, JsonLexicon.TargetBehaviorValues, $"{id} target_behavior {kv.Key}");
         }
 

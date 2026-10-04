@@ -74,7 +74,7 @@ namespace Dovus.Game.Skills.Motion
             _slotCastId = _host.SlotQueryCastId;
             _repeatTarget = _previous;
 
-            _host.Motion.TryPlayTemplate(skill.SkillId, out MotionTemplate template);
+            _host.Motion.TryPlayTemplate(skill.Identity.Id, out MotionTemplate template);
             float tick = _host.Combat != null ? _host.Combat.Manifestation.ExecutorFieldTickSec : 1f;
             _order = TemplateDelivery.Build(
                 _host.LastMechanicPlan,
