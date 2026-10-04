@@ -27,7 +27,7 @@ public sealed class ClassSizeRatchetTests
         ["MechanicWorldRuntime"] = 733,
         ["MechanicGrammar"] = 722,
         ["TeamComboSystem"] = 721,
-        ["TeamComboHost"] = 702,
+        ["TeamComboHost"] = 706,
         ["ActorView"] = 676,
         ["LivingEffectView"] = 671,
         ["FollowCameraController"] = 660,

@@ -59,6 +59,7 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 - [x] 2B.26 sabit kopyaları
 - [x] 2B.27 doküman gerçeği (OYUN.md, ARCHITECTURE.md, DocsTruthTests, durum.md → PLAN)
 - [x] 2B.28 küçükler (ölü MD sarmalayıcıları, Link.Broken, SeededRng, saat yedeği uyarısı, dil kapısı, GameCompile notu)
+- [x] 2B.17 son kontrol kapıları (A6/A10/A11/A20)
 - Kural: davranış değişmez (sweep hash + test sayıları), Composer only, her madde 1–3 PR.
 
 ## Aşama 2C — Oyun hissi — beklemede (yeni skill yapısı)

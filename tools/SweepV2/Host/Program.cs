@@ -1,5 +1,5 @@
 using Dovus.Core.Equipment;
-using Dovus.Game.Editor;
+using Dovus.Game.Editor.Sweep;
 using Dovus.Game.Skills;
 using System;
 using System.Collections.Generic;

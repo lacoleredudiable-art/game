@@ -6,9 +6,9 @@ using Dovus.Core.Shared;
 namespace Dovus.Core.Damage
 {
     /// <summary>
-    /// O7: tek ve kalıcı savaş zarı (kritik + ±%5 sapma). Ardışık tohumla her vuruşa yeni Random
-    /// açmak ilişkili ilk değerler üretiyordu (ilk kritik hep 15. vuruş). Oyunda oturum başına gerçek
-    /// rastgele tohum; test ve taramalarda sabit tohum (<see cref="SweepSeed"/>).
+    /// O7: oturum ve tarama tohumu (<see cref="SessionSeed"/>, <see cref="SweepSeed"/>). Tek ve kalıcı savaş zarı
+    /// (kritik + ±%5 sapma). Ardışık tohumla her vuruşa yeni Random açmak ilişkili ilk değerler üretiyordu.
+    /// IRng sarmalayıcısı (Shared/SeededRng) ile karıştırılmaz.
     /// </summary>
     public sealed class CombatRng
     {

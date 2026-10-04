@@ -33,7 +33,7 @@ using UnityEngine;
 using UnityEngine.LowLevel;
 using UnityEngine.PlayerLoop;
 
-namespace Dovus.Game.Editor
+namespace Dovus.Game.Editor.Sweep
 {
     public static partial class PlaySweep
     {
