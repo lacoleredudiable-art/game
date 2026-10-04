@@ -13,9 +13,17 @@ namespace Dovus.Game.Editor
 {
     /// <summary>
     /// Batchmode: sabit kamera önayarlarından Prototype sahnesi PNG yakalama (PLAN 2B.16).
+    /// Play'e girerken domain reload statik alanları sıfırlar; durum <see cref="SessionState"/>'te tutulur ve
+    /// <see cref="InitializeOnLoadAttribute"/> ile kancalar yeniden kurulur.
     /// </summary>
+    [InitializeOnLoad]
     public static class FixedAngleCapture
     {
+        const string KeyPhase = "Dovus.FixedAngleCapture.Phase";
+        const string KeyOutDir = "Dovus.FixedAngleCapture.OutDir";
+        const string KeyAngles = "Dovus.FixedAngleCapture.Angles";
+        const string KeyPlayEnteredAt = "Dovus.FixedAngleCapture.PlayEnteredAt";
+
         enum Phase
         {
             Idle,
@@ -33,12 +41,37 @@ namespace Dovus.Game.Editor
             public string Sha256;
         }
 
-        static Phase _phase = Phase.Idle;
         static string _outDir;
         static string _anglesPath;
-        static double _playEnteredAt;
         static CaptureAnglePreset[] _presets;
         static bool _hooksInstalled;
+
+        static Phase _phase
+        {
+            get => (Phase)SessionState.GetInt(KeyPhase, (int)Phase.Idle);
+            set => SessionState.SetInt(KeyPhase, (int)value);
+        }
+
+        static double _playEnteredAt
+        {
+            get => SessionState.GetFloat(KeyPlayEnteredAt, 0f);
+            set => SessionState.SetFloat(KeyPlayEnteredAt, (float)value);
+        }
+
+        static FixedAngleCapture()
+        {
+            Phase phase = _phase;
+            if (phase == Phase.Idle)
+                return;
+            _outDir = SessionState.GetString(KeyOutDir, string.Empty);
+            _anglesPath = SessionState.GetString(KeyAngles, string.Empty);
+            if (!File.Exists(_anglesPath)
+                || !CaptureAnglesSchema.TryParse(File.ReadAllText(_anglesPath), out _presets, out _))
+            {
+                _presets = Array.Empty<CaptureAnglePreset>();
+            }
+            InstallHooks();
+        }
 
         /// <summary>Batchmode: -executeMethod Dovus.Game.Editor.FixedAngleCapture.CaptureFromCommandLine [-captureOut dir] [-anglesJson path]</summary>
         public static void CaptureFromCommandLine()
@@ -47,6 +80,8 @@ namespace Dovus.Game.Editor
             {
                 _outDir = ResolveOutDir();
                 _anglesPath = ResolveAnglesPath();
+                SessionState.SetString(KeyOutDir, _outDir);
+                SessionState.SetString(KeyAngles, _anglesPath);
                 if (!File.Exists(_anglesPath))
                 {
                     Fail("angles.json bulunamadı: " + _anglesPath);
@@ -124,7 +159,9 @@ namespace Dovus.Game.Editor
             {
                 EditorApplication.playModeStateChanged -= OnPlayModeChanged;
                 EditorApplication.update -= OnEditorUpdate;
-                EditorApplication.Exit(_phase == Phase.Done ? 0 : 1);
+                int code = _phase == Phase.Done ? 0 : 1;
+                _phase = Phase.Idle;
+                EditorApplication.Exit(code);
             }
         }
 
@@ -286,6 +323,7 @@ namespace Dovus.Game.Editor
             {
                 EditorApplication.playModeStateChanged -= OnPlayModeChanged;
                 EditorApplication.update -= OnEditorUpdate;
+                _phase = Phase.Idle;
                 EditorApplication.Exit(1);
             }
         }
