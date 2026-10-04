@@ -471,7 +471,7 @@
             "id": "1-5",
             "name": "Yayılan Vuruş",
             "adjective": "Yayma",
-            "effect": "Çevreye %50 hasar",
+            "effect": "Çevreye yayılan hasar (%85, en çok 5 hedef)",
             "passive": "5 sn boyunca vuruşlar alana yayılır",
             "engine": {
               "action": "damage",
@@ -485,7 +485,7 @@
               "damage_mult": 0.85,
               "max_targets": 5
             },
-            "prose_mechanic": "Çevreye %50 hasar",
+            "prose_mechanic": "Çevreye yayılan hasar (%85, en çok 5 hedef)",
             "prose_feel": "Geniş, dalga",
             "prose_visual": "Şok dalgası"
           },
@@ -1383,7 +1383,7 @@
             "id": "4-10",
             "name": "Aynalı Kalkan",
             "adjective": "Aynalama",
-            "effect": "%40 yansıma",
+            "effect": "%30 yansıma",
             "passive": "7 sn pasif: Aynalama",
             "engine": {
               "action": "shield",
@@ -1396,7 +1396,7 @@
               "reflect_ratio": 0.3,
               "reflect_duration_sec": 2.0
             },
-            "prose_mechanic": "%40 yansıma",
+            "prose_mechanic": "%30 yansıma",
             "prose_feel": "Yansıtıcı",
             "prose_visual": "Gümüş kubbe"
           },
@@ -1524,7 +1524,7 @@
             "id": "5-4",
             "name": "Sabit Patlama",
             "adjective": "Sabitleme",
-            "effect": "Yerleşik alan (4 sn)",
+            "effect": "Yerleşik alan (+2 sn)",
             "passive": "5 sn pasif: Sabitleme",
             "engine": {
               "action": "damage",
@@ -1540,7 +1540,7 @@
               "cast_mobility": "rooted",
               "team_op": "mine"
             },
-            "prose_mechanic": "Yerleşik alan (4 sn)",
+            "prose_mechanic": "Yerleşik alan (+2 sn)",
             "prose_feel": "Kalıcı",
             "prose_visual": "Turuncu halka"
           },
@@ -1637,7 +1637,7 @@
             "id": "5-9",
             "name": "Odaklı Patlama",
             "adjective": "Odaklama",
-            "effect": "Tek hedef, %50 fazla",
+            "effect": "Tek hedef, %15 fazla",
             "passive": "5 sn pasif: Odaklama",
             "engine": {
               "action": "damage",
@@ -1652,7 +1652,7 @@
               "damage_mult": 1.15,
               "max_targets": 1
             },
-            "prose_mechanic": "Tek hedef, %50 fazla",
+            "prose_mechanic": "Tek hedef, %15 fazla",
             "prose_feel": "Kilitli",
             "prose_visual": "Mavi ateş"
           },
@@ -1803,7 +1803,7 @@
             "id": "6-4",
             "name": "Sabit Bağ",
             "adjective": "Sabitleme",
-            "effect": "3 sn root",
+            "effect": "1.5 sn root",
             "passive": "4 sn pasif: Sabitleme",
             "engine": {
               "action": "cc",
@@ -1818,7 +1818,7 @@
               "lifetime_add": 2.0,
               "cast_mobility": "rooted"
             },
-            "prose_mechanic": "3 sn root",
+            "prose_mechanic": "1.5 sn root",
             "prose_feel": "Uzun, sabırlı",
             "prose_visual": "Kalın zincir"
           },
@@ -2082,7 +2082,7 @@
             "id": "7-4",
             "name": "Sabit Zafiyet",
             "adjective": "Sabitleme",
-            "effect": "7 sn debuff",
+            "effect": "4 sn debuff",
             "passive": "6 sn pasif: Sabitleme",
             "engine": {
               "action": "debuff",
@@ -2097,7 +2097,7 @@
               "lifetime_add": 2.0,
               "cast_mobility": "rooted"
             },
-            "prose_mechanic": "7 sn debuff",
+            "prose_mechanic": "4 sn debuff",
             "prose_feel": "Kalıcı",
             "prose_visual": "Uzun duman"
           },
@@ -2364,7 +2364,7 @@
             "id": "8-4",
             "name": "Sabit Yükseliş",
             "adjective": "Sabitleme",
-            "effect": "7 sn buff",
+            "effect": "3 sn buff",
             "passive": "5 sn pasif: Sabitleme",
             "engine": {
               "action": "buff",
@@ -2379,7 +2379,7 @@
               "lifetime_add": 2.0,
               "cast_mobility": "rooted"
             },
-            "prose_mechanic": "7 sn buff",
+            "prose_mechanic": "3 sn buff",
             "prose_feel": "Kalıcı",
             "prose_visual": "Altın halka"
           },
@@ -2477,7 +2477,7 @@
             "id": "8-9",
             "name": "Odaklı Yükseliş",
             "adjective": "Odaklama",
-            "effect": "En güçlü dosta +%30",
+            "effect": "En güçlü dosta +%20",
             "passive": "5 sn pasif: Odaklama",
             "engine": {
               "action": "buff",
@@ -2492,7 +2492,7 @@
               "damage_mult": 1.15,
               "max_targets": 1
             },
-            "prose_mechanic": "En güçlü dosta +%30",
+            "prose_mechanic": "En güçlü dosta +%20",
             "prose_feel": "Akıllı",
             "prose_visual": "Altın hedef"
           },
@@ -2640,7 +2640,7 @@
             "id": "9-4",
             "name": "Sabit Arınma",
             "adjective": "Sabitleme",
-            "effect": "Yerleşik alan (5 sn)",
+            "effect": "Yerleşik alan (+2 sn)",
             "passive": "0 sn pasif: Sabitleme",
             "engine": {
               "action": "cleanse",
@@ -2654,7 +2654,7 @@
               "lifetime_add": 2.0,
               "cast_mobility": "rooted"
             },
-            "prose_mechanic": "Yerleşik alan (5 sn)",
+            "prose_mechanic": "Yerleşik alan (+2 sn)",
             "prose_feel": "Kalıcı",
             "prose_visual": "Beyaz halka"
           },
@@ -2911,7 +2911,7 @@
             "id": "10-4",
             "name": "Sabit Yansı",
             "adjective": "Sabitleme",
-            "effect": "7 sn yansıma",
+            "effect": "2 sn yansıma",
             "passive": "5 sn pasif: Sabitleme",
             "engine": {
               "action": "reflect",
@@ -2926,7 +2926,7 @@
               "lifetime_add": 2.0,
               "cast_mobility": "rooted"
             },
-            "prose_mechanic": "7 sn yansıma",
+            "prose_mechanic": "2 sn yansıma",
             "prose_feel": "Kalıcı",
             "prose_visual": "Gümüş kubbe"
           },
@@ -3024,7 +3024,7 @@
             "id": "10-9",
             "name": "Odaklı Yansı",
             "adjective": "Odaklama",
-            "effect": "%70 tek hedef",
+            "effect": "%50 tek hedef",
             "passive": "5 sn pasif: Odaklama",
             "engine": {
               "action": "reflect",
@@ -3039,7 +3039,7 @@
               "damage_mult": 1.15,
               "max_targets": 1
             },
-            "prose_mechanic": "%70 tek hedef",
+            "prose_mechanic": "%50 tek hedef",
             "prose_feel": "Odaklı",
             "prose_visual": "Gümüş hedef"
           },
@@ -3047,7 +3047,7 @@
             "id": "10-10",
             "name": "Aynalı Yansı",
             "adjective": "Aynalama",
-            "effect": "%80 çift yansıma",
+            "effect": "%30 çift yansıma",
             "passive": "5 sn pasif: Aynalama",
             "engine": {
               "action": "reflect",
@@ -3061,7 +3061,7 @@
               "portal_op": "mirror",
               "team_op": "marker"
             },
-            "prose_mechanic": "%80 çift yansıma",
+            "prose_mechanic": "%30 çift yansıma",
             "prose_feel": "Ayna",
             "prose_visual": "Çift gümüş"
           },
@@ -3478,7 +3478,7 @@
             "id": "12-4",
             "name": "Sabit Zaman",
             "adjective": "Sabitleme",
-            "effect": "5 sn düşman yavaşlatma alanı",
+            "effect": "1 sn düşman yavaşlatma alanı (%30)",
             "passive": "4 sn: kalıcı tempo alanı",
             "engine": {
               "action": "tempo",
@@ -3495,7 +3495,7 @@
               "lifetime_add": 2.0,
               "cast_mobility": "rooted"
             },
-            "prose_mechanic": "5 sn düşman yavaşlatma alanı",
+            "prose_mechanic": "1 sn düşman yavaşlatma alanı (%30)",
             "prose_feel": "Kalıcı",
             "prose_visual": "Mavi kubbe"
           },
@@ -3582,7 +3582,7 @@
             "engine": {
               "action": "tempo",
               "enemy_slow": 0.7,
-              "self_haste": 0.0,
+              "self_haste": 0.5,
               "tempo_duration_sec": 3.0,
               "base_damage": 0,
               "base_cost": 16,
@@ -3601,7 +3601,7 @@
             "id": "12-9",
             "name": "Odaklı Zaman",
             "adjective": "Odaklama",
-            "effect": "Tek hedefe 3 sn ağır yavaşlatma",
+            "effect": "Tek hedefe 1 sn ağır yavaşlatma",
             "passive": "4 sn: odaklı tempo",
             "engine": {
               "action": "tempo",
@@ -3618,7 +3618,7 @@
               "damage_mult": 1.15,
               "max_targets": 1
             },
-            "prose_mechanic": "Tek hedefe 3 sn ağır yavaşlatma",
+            "prose_mechanic": "Tek hedefe 1 sn ağır yavaşlatma",
             "prose_feel": "Odaklı",
             "prose_visual": "Kırmızı hedef"
           },
@@ -3675,7 +3675,7 @@
             "id": "12-12",
             "name": "Akan Zaman",
             "adjective": "Akış",
-            "effect": "Sürekli düşman yavaşlatma alanı, 4 sn",
+            "effect": "Sürekli düşman yavaşlatma alanı, 3 sn",
             "passive": "4 sn: kesintisiz tempo",
             "engine": {
               "action": "tempo",
@@ -3692,7 +3692,7 @@
               "tick_rate_mult": 1.2,
               "damage_mult": 0.7
             },
-            "prose_mechanic": "Sürekli düşman yavaşlatma alanı, 4 sn",
+            "prose_mechanic": "Sürekli düşman yavaşlatma alanı, 3 sn",
             "prose_feel": "Akıcı",
             "prose_visual": "Mavi akış"
           }
@@ -3719,11 +3719,31 @@
       "effect_travels": true,
       "cooldown_mult": 1,
       "identity_passive": "Sırt vuruşu 1.5x hasar",
-      "compatible_verbs": [1, 3, 5, 6],
+      "compatible_verbs": [
+        1,
+        3,
+        5,
+        6
+      ],
       "animations_key": "yumruk",
-      "basic": {"kind": "combo", "reach_m": 1.2, "shape": "point", "interval_sec": 0.2, "hits": 3, "radius_m": 0.2},
-      "passive": {"id": "sirt_vurusu", "damage_mult": 1.5, "arc_deg": 120},
-      "swap_bonus": {"id": "sirt", "window_sec": 2, "damage_mult": 1.5}
+      "basic": {
+        "kind": "combo",
+        "reach_m": 1.2,
+        "shape": "point",
+        "interval_sec": 0.2,
+        "hits": 3,
+        "radius_m": 0.2
+      },
+      "passive": {
+        "id": "sirt_vurusu",
+        "damage_mult": 1.5,
+        "arc_deg": 120
+      },
+      "swap_bonus": {
+        "id": "sirt",
+        "window_sec": 2,
+        "damage_mult": 1.5
+      }
     },
     {
       "id": 2,
@@ -3743,11 +3763,32 @@
       "effect_travels": true,
       "cooldown_mult": 1,
       "identity_passive": "Koşu atışı kritik %25",
-      "compatible_verbs": [1, 3, 7, 9],
+      "compatible_verbs": [
+        1,
+        3,
+        7,
+        9
+      ],
       "animations_key": "yay",
-      "basic": {"kind": "volley", "reach_m": 20, "shape": "arrow", "interval_sec": 0.5, "hits": 1, "radius_m": 0.12},
-      "passive": {"id": "kosu_atisi", "move_window_sec": 1, "crit_chance": 0.25, "base_crit": 0.05},
-      "swap_bonus": {"id": "zirh_yok", "window_sec": 2, "ignore_armor": true}
+      "basic": {
+        "kind": "volley",
+        "reach_m": 20,
+        "shape": "arrow",
+        "interval_sec": 0.5,
+        "hits": 1,
+        "radius_m": 0.12
+      },
+      "passive": {
+        "id": "kosu_atisi",
+        "move_window_sec": 1,
+        "crit_chance": 0.25,
+        "base_crit": 0.05
+      },
+      "swap_bonus": {
+        "id": "zirh_yok",
+        "window_sec": 2,
+        "ignore_armor": true
+      }
     },
     {
       "id": 3,
@@ -3767,11 +3808,32 @@
       "effect_travels": true,
       "cooldown_mult": 0.75,
       "identity_passive": "Her 3. art arda skill %30",
-      "compatible_verbs": [7, 10, 11, 12],
+      "compatible_verbs": [
+        7,
+        10,
+        11,
+        12
+      ],
       "animations_key": "kitap",
-      "basic": {"kind": "page", "reach_m": 13, "shape": "page", "interval_sec": 0.25, "hits": 1, "radius_m": 0.2},
-      "passive": {"id": "dolu_sayfa", "every_nth": 3, "chain_gap_sec": 2, "damage_mult": 1.3},
-      "swap_bonus": {"id": "bedava", "window_sec": 2, "free_mana": true}
+      "basic": {
+        "kind": "page",
+        "reach_m": 13,
+        "shape": "page",
+        "interval_sec": 0.25,
+        "hits": 1,
+        "radius_m": 0.2
+      },
+      "passive": {
+        "id": "dolu_sayfa",
+        "every_nth": 3,
+        "chain_gap_sec": 2,
+        "damage_mult": 1.3
+      },
+      "swap_bonus": {
+        "id": "bedava",
+        "window_sec": 2,
+        "free_mana": true
+      }
     },
     {
       "id": 4,
@@ -3791,11 +3853,30 @@
       "effect_travels": true,
       "cooldown_mult": 1,
       "identity_passive": "Geniş yay 144 derece",
-      "compatible_verbs": [1, 3, 5, 9],
+      "compatible_verbs": [
+        1,
+        3,
+        5,
+        9
+      ],
       "animations_key": "kilic",
-      "basic": {"kind": "slash", "reach_m": 2.4, "shape": "arc", "interval_sec": 0.28, "hits": 3, "radius_m": 0.5},
-      "passive": {"id": "genis_yay", "arc_deg": 144},
-      "swap_bonus": {"id": "genis", "window_sec": 2, "arc_deg": 180}
+      "basic": {
+        "kind": "slash",
+        "reach_m": 2.4,
+        "shape": "arc",
+        "interval_sec": 0.28,
+        "hits": 3,
+        "radius_m": 0.5
+      },
+      "passive": {
+        "id": "genis_yay",
+        "arc_deg": 144
+      },
+      "swap_bonus": {
+        "id": "genis",
+        "window_sec": 2,
+        "arc_deg": 180
+      }
     },
     {
       "id": 5,
@@ -3815,12 +3896,38 @@
       "effect_travels": true,
       "cooldown_mult": 1,
       "identity_passive": "Çapraz ateş +%20",
-      "compatible_verbs": [3, 4, 10, 11],
+      "compatible_verbs": [
+        3,
+        4,
+        10,
+        11
+      ],
       "animations_key": "kure",
-      "basic": {"kind": "orb_bolt", "reach_m": 10, "shape": "orb", "interval_sec": 0.4, "hits": 1, "radius_m": 0.25},
-      "passive": {"id": "capraz_ates", "angle_deg": 90, "damage_mult": 1.2},
-      "swap_bonus": {"id": "son_vurus", "window_sec": 2},
-      "orb": {"place_m": 8, "move_sec": 0.4, "cooldown_sec": 2, "spell_m": 10, "hold_sec": 0.4, "double_tap_sec": 0.3}
+      "basic": {
+        "kind": "orb_bolt",
+        "reach_m": 10,
+        "shape": "orb",
+        "interval_sec": 0.4,
+        "hits": 1,
+        "radius_m": 0.25
+      },
+      "passive": {
+        "id": "capraz_ates",
+        "angle_deg": 90,
+        "damage_mult": 1.2
+      },
+      "swap_bonus": {
+        "id": "son_vurus",
+        "window_sec": 2
+      },
+      "orb": {
+        "place_m": 8,
+        "move_sec": 0.4,
+        "cooldown_sec": 2,
+        "spell_m": 10,
+        "hold_sec": 0.4,
+        "double_tap_sec": 0.3
+      }
     },
     {
       "id": 6,
@@ -3840,11 +3947,31 @@
       "effect_travels": true,
       "cooldown_mult": 1,
       "identity_passive": "Yere çakma 0.5 sn sersem, 4 sn bekleme",
-      "compatible_verbs": [1, 4, 5, 6],
+      "compatible_verbs": [
+        1,
+        4,
+        5,
+        6
+      ],
       "animations_key": "cekic",
-      "basic": {"kind": "slam", "reach_m": 2.4, "shape": "ground", "interval_sec": 0.9, "hits": 1, "radius_m": 0.6},
-      "passive": {"id": "yere_cakma", "stun_sec": 0.5, "icd_sec": 4},
-      "swap_bonus": {"id": "sarsma", "window_sec": 2, "poise_mult": 2}
+      "basic": {
+        "kind": "slam",
+        "reach_m": 2.4,
+        "shape": "ground",
+        "interval_sec": 0.9,
+        "hits": 1,
+        "radius_m": 0.6
+      },
+      "passive": {
+        "id": "yere_cakma",
+        "stun_sec": 0.5,
+        "icd_sec": 4
+      },
+      "swap_bonus": {
+        "id": "sarsma",
+        "window_sec": 2,
+        "poise_mult": 2
+      }
     },
     {
       "id": 7,
@@ -3864,11 +3991,33 @@
       "effect_travels": true,
       "cooldown_mult": 1,
       "identity_passive": "Sabit nişan +%50",
-      "compatible_verbs": [5, 6, 7, 12],
+      "compatible_verbs": [
+        5,
+        6,
+        7,
+        12
+      ],
       "animations_key": "top",
-      "basic": {"kind": "shell", "reach_m": 25, "shape": "ballistic", "interval_sec": 1.5, "hits": 1, "radius_m": 3, "boss_push_m": 0.5, "recoil_m": 0.5},
-      "passive": {"id": "sabit_nisan", "still_sec": 0.5, "damage_mult": 1.5},
-      "swap_bonus": {"id": "sabit", "window_sec": 2, "damage_mult": 1.5}
+      "basic": {
+        "kind": "shell",
+        "reach_m": 25,
+        "shape": "ballistic",
+        "interval_sec": 1.5,
+        "hits": 1,
+        "radius_m": 3,
+        "boss_push_m": 0.5,
+        "recoil_m": 0.5
+      },
+      "passive": {
+        "id": "sabit_nisan",
+        "still_sec": 0.5,
+        "damage_mult": 1.5
+      },
+      "swap_bonus": {
+        "id": "sabit",
+        "window_sec": 2,
+        "damage_mult": 1.5
+      }
     },
     {
       "id": 8,
@@ -3888,11 +4037,30 @@
       "effect_travels": true,
       "cooldown_mult": 1,
       "identity_passive": "Süreli ve basılı tutulan skill +%30 süre",
-      "compatible_verbs": [2, 5, 8, 12],
+      "compatible_verbs": [
+        2,
+        5,
+        8,
+        12
+      ],
       "animations_key": "asa",
-      "basic": {"kind": "beam", "reach_m": 21, "shape": "beam", "interval_sec": 0.45, "hits": 1, "radius_m": 1},
-      "passive": {"id": "uzun_buyu", "duration_mult": 1.3},
-      "swap_bonus": {"id": "alan", "window_sec": 2, "area_mult": 1.25}
+      "basic": {
+        "kind": "beam",
+        "reach_m": 21,
+        "shape": "beam",
+        "interval_sec": 0.45,
+        "hits": 1,
+        "radius_m": 1
+      },
+      "passive": {
+        "id": "uzun_buyu",
+        "duration_mult": 1.3
+      },
+      "swap_bonus": {
+        "id": "alan",
+        "window_sec": 2,
+        "area_mult": 1.25
+      }
     },
     {
       "id": 9,
@@ -3912,11 +4080,31 @@
       "effect_travels": false,
       "cooldown_mult": 1,
       "identity_passive": "Şifa, kalkan ve güç %120",
-      "compatible_verbs": [2, 8, 9, 11],
+      "compatible_verbs": [
+        2,
+        8,
+        9,
+        11
+      ],
       "animations_key": "tilsim",
-      "basic": {"kind": "seal", "reach_m": 24, "shape": "seal", "interval_sec": 0.4, "hits": 1, "radius_m": 0.4, "ally_heal": 5},
-      "passive": {"id": "kutsal_etki", "power_mult": 1.2},
-      "swap_bonus": {"id": "temizle", "window_sec": 2, "cleanse": true}
+      "basic": {
+        "kind": "seal",
+        "reach_m": 24,
+        "shape": "seal",
+        "interval_sec": 0.4,
+        "hits": 1,
+        "radius_m": 0.4,
+        "ally_heal": 5
+      },
+      "passive": {
+        "id": "kutsal_etki",
+        "power_mult": 1.2
+      },
+      "swap_bonus": {
+        "id": "temizle",
+        "window_sec": 2,
+        "cleanse": true
+      }
     },
     {
       "id": 10,
@@ -3936,11 +4124,32 @@
       "effect_travels": true,
       "cooldown_mult": 1,
       "identity_passive": "Blok sonrası 2 sn içinde ilk skill +%20",
-      "compatible_verbs": [4, 6, 8, 10],
+      "compatible_verbs": [
+        4,
+        6,
+        8,
+        10
+      ],
       "animations_key": "kalkan",
-      "basic": {"kind": "bash_block", "reach_m": 1.2, "shape": "wall", "interval_sec": 0.35, "hits": 1, "radius_m": 0.6},
-      "passive": {"id": "karsi_saldiri", "damage_mult": 1.2, "window_sec": 2},
-      "swap_bonus": {"id": "siperi", "window_sec": 2, "shield": 15, "shield_sec": 3}
+      "basic": {
+        "kind": "bash_block",
+        "reach_m": 1.2,
+        "shape": "wall",
+        "interval_sec": 0.35,
+        "hits": 1,
+        "radius_m": 0.6
+      },
+      "passive": {
+        "id": "karsi_saldiri",
+        "damage_mult": 1.2,
+        "window_sec": 2
+      },
+      "swap_bonus": {
+        "id": "siperi",
+        "window_sec": 2,
+        "shield": 15,
+        "shield_sec": 3
+      }
     }
   ],
   "animations": {
@@ -5771,7 +5980,7 @@
         },
         "1-5": {
           "name": "Yayılan Vuruş",
-          "mechanic": "Çevreye %50 hasar",
+          "mechanic": "Çevreye yayılan hasar (%85, en çok 5 hedef)",
           "feel": "Geniş, dalga",
           "visual": "Şok dalgası"
         },
@@ -6023,7 +6232,7 @@
         },
         "4-10": {
           "name": "Aynalı Kalkan",
-          "mechanic": "%40 yansıma",
+          "mechanic": "%30 yansıma",
           "feel": "Yansıtıcı",
           "visual": "Gümüş kubbe"
         },
@@ -6061,7 +6270,7 @@
         },
         "5-4": {
           "name": "Sabit Patlama",
-          "mechanic": "Yerleşik alan (4 sn)",
+          "mechanic": "Yerleşik alan (+2 sn)",
           "feel": "Kalıcı",
           "visual": "Turuncu halka"
         },
@@ -6091,7 +6300,7 @@
         },
         "5-9": {
           "name": "Odaklı Patlama",
-          "mechanic": "Tek hedef, %50 fazla",
+          "mechanic": "Tek hedef, %15 fazla",
           "feel": "Kilitli",
           "visual": "Mavi ateş"
         },
@@ -6135,7 +6344,7 @@
         },
         "6-4": {
           "name": "Sabit Bağ",
-          "mechanic": "3 sn root",
+          "mechanic": "1.5 sn root",
           "feel": "Uzun, sabırlı",
           "visual": "Kalın zincir"
         },
@@ -6209,7 +6418,7 @@
         },
         "7-4": {
           "name": "Sabit Zafiyet",
-          "mechanic": "7 sn debuff",
+          "mechanic": "4 sn debuff",
           "feel": "Kalıcı",
           "visual": "Uzun duman"
         },
@@ -6283,7 +6492,7 @@
         },
         "8-4": {
           "name": "Sabit Yükseliş",
-          "mechanic": "7 sn buff",
+          "mechanic": "3 sn buff",
           "feel": "Kalıcı",
           "visual": "Altın halka"
         },
@@ -6313,7 +6522,7 @@
         },
         "8-9": {
           "name": "Odaklı Yükseliş",
-          "mechanic": "En güçlü dosta +%30",
+          "mechanic": "En güçlü dosta +%20",
           "feel": "Akıllı",
           "visual": "Altın hedef"
         },
@@ -6357,7 +6566,7 @@
         },
         "9-4": {
           "name": "Sabit Arınma",
-          "mechanic": "Yerleşik alan (5 sn)",
+          "mechanic": "Yerleşik alan (+2 sn)",
           "feel": "Kalıcı",
           "visual": "Beyaz halka"
         },
@@ -6431,7 +6640,7 @@
         },
         "10-4": {
           "name": "Sabit Yansı",
-          "mechanic": "7 sn yansıma",
+          "mechanic": "2 sn yansıma",
           "feel": "Kalıcı",
           "visual": "Gümüş kubbe"
         },
@@ -6461,13 +6670,13 @@
         },
         "10-9": {
           "name": "Odaklı Yansı",
-          "mechanic": "%70 tek hedef",
+          "mechanic": "%50 tek hedef",
           "feel": "Odaklı",
           "visual": "Gümüş hedef"
         },
         "10-10": {
           "name": "Aynalı Yansı",
-          "mechanic": "%80 çift yansıma",
+          "mechanic": "%30 çift yansıma",
           "feel": "Ayna",
           "visual": "Çift gümüş"
         },
@@ -6579,7 +6788,7 @@
         },
         "12-4": {
           "name": "Sabit Zaman",
-          "mechanic": "5 sn düşman yavaşlatma alanı",
+          "mechanic": "1 sn düşman yavaşlatma alanı (%30)",
           "feel": "Kalıcı",
           "visual": "Mavi kubbe"
         },
@@ -6609,7 +6818,7 @@
         },
         "12-9": {
           "name": "Odaklı Zaman",
-          "mechanic": "Tek hedefe 3 sn ağır yavaşlatma",
+          "mechanic": "Tek hedefe 1 sn ağır yavaşlatma",
           "feel": "Odaklı",
           "visual": "Kırmızı hedef"
         },
@@ -6627,7 +6836,7 @@
         },
         "12-12": {
           "name": "Akan Zaman",
-          "mechanic": "Sürekli düşman yavaşlatma alanı, 4 sn",
+          "mechanic": "Sürekli düşman yavaşlatma alanı, 3 sn",
           "feel": "Akıcı",
           "visual": "Mavi akış"
         }
@@ -7209,7 +7418,6 @@
       "5. Etiket: ortaya çıkan özellik desenine isim verilir (yalnız sunum; motor etiketi okumaz)"
     ],
     "no_combo_table": "Hiçbir kural (fiil, sıfat) çiftine yazılmaz. Sıfat kuralları atom TÜRÜNE yazılır; aynı kural 12 fiilin hepsine uygulanır.",
-  
     "atom_types": {
       "deger": "Can, hasar, kalkan, zırh, hasar buff'ı miktarı. İşareti var: zarar (düşmana) / yarar (dosta).",
       "hiz": "Oran atomu: tempo (zaman akışı) ve hareket hızı. 1 = normal, 0 = durmuş.",
@@ -7219,44 +7427,241 @@
       "gorunurluk": "Gizlenme / körlük. Fiillerde yok, sıfatlar ekler.",
       "govde": "Etkinin dünyadaki bedeni: yol, şekil, boyut, menzil, hız, ömür, temas biçimi, geçirgenlik, sayı. Silah ve sıfat bunu da değiştirir."
     },
-  
     "verb_atoms": {
-      "1":  { "trait": "vurucu",      "effects": [ { "atom": "deger", "stat": "can",  "sign": "zarar", "from": "base_damage", "target": "dusman" } ] },
-      "2":  { "trait": "kaynak",      "effects": [ { "atom": "deger", "stat": "can",  "sign": "yarar", "from": "base_heal", "target": "dost" } ] },
-      "3":  { "trait": "tasiyici",    "effects": [ { "atom": "konum", "stat": "kendini_tasi", "from": "dash_distance_m", "target": "kendin" } ] },
-      "4":  { "trait": "kati",        "effects": [ { "atom": "deger", "stat": "kalkan", "sign": "yarar", "from": "shield_absorb", "target": "dost" } ], "body": { "permeability": "kati" } },
-      "5":  { "trait": "itici",       "effects": [ { "atom": "deger", "stat": "can", "sign": "zarar", "from": "base_damage", "target": "dusman" }, { "atom": "konum", "stat": "it", "target": "dusman" } ] },
-      "6":  { "trait": "tutucu",      "effects": [ { "atom": "hiz", "stat": "hareket", "value": 0.0, "duration_from": "cc_duration_sec", "target": "dusman" }, { "atom": "deger", "stat": "can", "sign": "zarar", "from": "base_damage", "target": "dusman" } ] },
-      "7":  { "trait": "asindirici",  "effects": [ { "atom": "deger", "stat": "zirh", "sign": "zarar", "from": "debuff_armor", "duration_from": "debuff_duration_sec", "target": "dusman" }, { "atom": "deger", "stat": "can", "sign": "zarar", "from": "base_damage", "target": "dusman" } ] },
-      "8":  { "trait": "yukseltici",  "effects": [ { "atom": "deger", "stat": "hasar_buff", "sign": "yarar", "from": "buff_damage", "duration_from": "buff_duration_sec", "target": "dost" } ] },
-      "9":  { "trait": "silici",      "effects": [ { "atom": "varlik", "stat": "durum_sil", "from": "cleanse_count", "target": "dost" }, { "atom": "varlik", "stat": "mermi_sil", "target": "dusman_nesnesi" } ] },
-      "10": { "trait": "yonlendirici","effects": [ { "atom": "yon", "stat": "yansit", "from": "reflect_ratio", "duration_from": "reflect_duration_sec", "target": "kendin" } ] },
-      "11": { "trait": "ozerk",       "effects": [ { "atom": "varlik", "stat": "aktor_yarat", "from": "minion_count", "duration_from": "minion_duration_sec", "target": "kendin" } ] },
-      "12": { "trait": "tempo",       "effects": [ { "atom": "hiz", "stat": "tempo", "from": "enemy_slow", "duration_from": "tempo_duration_sec", "target": "dusman" } ] }
+      "1": {
+        "trait": "vurucu",
+        "effects": [
+          {
+            "atom": "deger",
+            "stat": "can",
+            "sign": "zarar",
+            "from": "base_damage",
+            "target": "dusman"
+          }
+        ]
+      },
+      "2": {
+        "trait": "kaynak",
+        "effects": [
+          {
+            "atom": "deger",
+            "stat": "can",
+            "sign": "yarar",
+            "from": "base_heal",
+            "target": "dost"
+          }
+        ]
+      },
+      "3": {
+        "trait": "tasiyici",
+        "effects": [
+          {
+            "atom": "konum",
+            "stat": "kendini_tasi",
+            "from": "dash_distance_m",
+            "target": "kendin"
+          }
+        ]
+      },
+      "4": {
+        "trait": "kati",
+        "effects": [
+          {
+            "atom": "deger",
+            "stat": "kalkan",
+            "sign": "yarar",
+            "from": "shield_absorb",
+            "target": "dost"
+          }
+        ],
+        "body": {
+          "permeability": "kati"
+        }
+      },
+      "5": {
+        "trait": "itici",
+        "effects": [
+          {
+            "atom": "deger",
+            "stat": "can",
+            "sign": "zarar",
+            "from": "base_damage",
+            "target": "dusman"
+          },
+          {
+            "atom": "konum",
+            "stat": "it",
+            "target": "dusman"
+          }
+        ]
+      },
+      "6": {
+        "trait": "tutucu",
+        "effects": [
+          {
+            "atom": "hiz",
+            "stat": "hareket",
+            "value": 0.0,
+            "duration_from": "cc_duration_sec",
+            "target": "dusman"
+          },
+          {
+            "atom": "deger",
+            "stat": "can",
+            "sign": "zarar",
+            "from": "base_damage",
+            "target": "dusman"
+          }
+        ]
+      },
+      "7": {
+        "trait": "asindirici",
+        "effects": [
+          {
+            "atom": "deger",
+            "stat": "zirh",
+            "sign": "zarar",
+            "from": "debuff_armor",
+            "duration_from": "debuff_duration_sec",
+            "target": "dusman"
+          },
+          {
+            "atom": "deger",
+            "stat": "can",
+            "sign": "zarar",
+            "from": "base_damage",
+            "target": "dusman"
+          }
+        ]
+      },
+      "8": {
+        "trait": "yukseltici",
+        "effects": [
+          {
+            "atom": "deger",
+            "stat": "hasar_buff",
+            "sign": "yarar",
+            "from": "buff_damage",
+            "duration_from": "buff_duration_sec",
+            "target": "dost"
+          }
+        ]
+      },
+      "9": {
+        "trait": "silici",
+        "effects": [
+          {
+            "atom": "varlik",
+            "stat": "durum_sil",
+            "from": "cleanse_count",
+            "target": "dost"
+          },
+          {
+            "atom": "varlik",
+            "stat": "mermi_sil",
+            "target": "dusman_nesnesi"
+          }
+        ]
+      },
+      "10": {
+        "trait": "yonlendirici",
+        "effects": [
+          {
+            "atom": "yon",
+            "stat": "yansit",
+            "from": "reflect_ratio",
+            "duration_from": "reflect_duration_sec",
+            "target": "kendin"
+          }
+        ]
+      },
+      "11": {
+        "trait": "ozerk",
+        "effects": [
+          {
+            "atom": "varlik",
+            "stat": "aktor_yarat",
+            "from": "minion_count",
+            "duration_from": "minion_duration_sec",
+            "target": "kendin"
+          }
+        ]
+      },
+      "12": {
+        "trait": "tempo",
+        "effects": [
+          {
+            "atom": "hiz",
+            "stat": "tempo",
+            "from": "enemy_slow",
+            "duration_from": "tempo_duration_sec",
+            "target": "dusman"
+          }
+        ]
+      }
     },
     "verb_body_rule": "Gövde şekli ve boyutu hitbox_vfx.fiil_hitbox'tan (shape, base_size). 'anlık' = tek temas, 'süreli' = etkinin süresi kadar yaşar. Gövdenin nerede doğduğunu fiil değil silah yolu belirler — dost fiil de dahil (Kılıç'la iyileştirme önündeki yaydaki dostlara gider, Top'la iyileştirme fırlatılıp indiği yerde açılır). Yalnız taşıyıcı fiilde (Hareket) gövde sensin.",
-  
     "weapon_delivery": {
       "note": "weapon_skill_interaction.description 'mekanik değişim C'ye (gelecek) saklı' — bu bölüm tier C'dir. Silah hitbox'ın NEREDEN ve NASIL dünyaya çıktığını belirler; fiil ve sıfat kuralları bunun üstüne uygulanır.",
-      "1":  { "path": "temas",     "born": "dokunduğun ilk kişide, tek hedef (menzil = melee_reach × range_mult)", "identity": "sırt vuruşu ×1.5" },
-      "2":  { "path": "ok",        "born": "düz ok, ilk değdiği yere saplanır", "identity": "koşu atışı kritik %25" },
-      "3":  { "path": "sayfa",     "born": "sayfa uçar, yapıştığı yerde açılır", "identity": "her 3. art arda skill %30" },
-      "4":  { "path": "yay",       "born": "önünde 144 derece yay", "identity": "yay 144 derece, dost fiilinde yaydaki herkes" },
-      "5":  { "path": "kure",      "born": "küreden çıkar, küreden 10 m", "identity": "çapraz ateş +%20" },
-      "6":  { "path": "yere_vurus","born": "vurulan noktada yerden doğar (dikey)", "identity": "0.5 sn sersemletme" },
-      "7":  { "path": "balistik",  "born": "yay çizerek uçar, düştüğü yerde açılır (menzil = ranged_range × range_mult)", "identity": "sabitken +%50 hasar" },
-      "8":  { "path": "isin",      "born": "asadan hedefe sürekli hat, kanal süresince", "identity": "kanal süresi +%30" },
-      "9":  { "path": "yerlestirme","born": "yol almadan doğrudan hedef noktada belirir", "identity": "buff/heal +%20" },
-      "10": { "path": "govde",     "born": "önünde durur, seninle birlikte hareket eder", "identity": "blok sonrası karşı saldırı +%20" }
+      "1": {
+        "path": "temas",
+        "born": "dokunduğun ilk kişide, tek hedef (menzil = melee_reach × range_mult)",
+        "identity": "sırt vuruşu ×1.5"
+      },
+      "2": {
+        "path": "ok",
+        "born": "düz ok, ilk değdiği yere saplanır",
+        "identity": "koşu atışı kritik %25"
+      },
+      "3": {
+        "path": "sayfa",
+        "born": "sayfa uçar, yapıştığı yerde açılır",
+        "identity": "her 3. art arda skill %30"
+      },
+      "4": {
+        "path": "yay",
+        "born": "önünde 144 derece yay",
+        "identity": "yay 144 derece, dost fiilinde yaydaki herkes"
+      },
+      "5": {
+        "path": "kure",
+        "born": "küreden çıkar, küreden 10 m",
+        "identity": "çapraz ateş +%20"
+      },
+      "6": {
+        "path": "yere_vurus",
+        "born": "vurulan noktada yerden doğar (dikey)",
+        "identity": "0.5 sn sersemletme"
+      },
+      "7": {
+        "path": "balistik",
+        "born": "yay çizerek uçar, düştüğü yerde açılır (menzil = ranged_range × range_mult)",
+        "identity": "sabitken +%50 hasar"
+      },
+      "8": {
+        "path": "isin",
+        "born": "asadan hedefe sürekli hat, kanal süresince",
+        "identity": "kanal süresi +%30"
+      },
+      "9": {
+        "path": "yerlestirme",
+        "born": "yol almadan doğrudan hedef noktada belirir",
+        "identity": "buff/heal +%20"
+      },
+      "10": {
+        "path": "govde",
+        "born": "önünde durur, seninle birlikte hareket eder",
+        "identity": "blok sonrası karşı saldırı +%20"
+      }
     },
     "self_effect_location": "Kendine yönelik yansıtma gövdenin doğduğu yerde yaşar: gövde sendeyse sana, dokunuşsa dokunduğun dosta, uzaktaysa (yay, hat, hedef noktası) dünyada duran bir yansıtıcıya uygulanır.",
     "incompatible_weapon": "Silah compatible_verbs dışındaysa skill yine çalışır, teslim yolu aynıdır: değer atomları uyumsuz_cizim.effects.uyumsuz.damage_mult ile, cast süresi cast_time_mult ile çarpılır, silah kimliği (tier C pasifi) uygulanmaz.",
     "weapon_on_actors": "Yaratılan aktör (minyon/klon/taret) ve yansıtılan mermi silahın yolunu kullanır: Top'la çağrılan minyon top atar, Kılıç'la çağrılan yay çizer; Top'la yansıtılan mermi yay çizerek, Asa'yla ışın olarak döner.",
     "weapon_on_self_move": "Taşıyıcı fiilde (Hareket) seni taşıyan yol silahın yoludur: mesafe = dash_distance_m × range_mult. Balistik = fırlatılıp inme, ışın = hat boyunca kayma, yerleştirme = işarete ışınlanma, gövde = kalkanla hücum, yere_vurus = sıçrayıp çakılma.",
-  
     "adjective_rules": {
       "1": {
-        "name": "Yoğun", "op": "sikistir",
+        "name": "Yoğun",
+        "op": "sikistir",
         "summary": "Aynı şey daha küçük alanda, daha kısa sürede, daha sert.",
         "govde": "boyut × hitbox_scale_mult; uçuyorsa hız × dense_speed_mult; ömür × dense_life_mult; düşmana değiyorsa geçirgenlik → delici (katı değilse); düşmana değmiyorsa tek hedef",
         "deger": "miktar × damage_mult; süreli etkinin süresi × dense_life_mult; yarar değeri taşar: üst sınırı aşan kısım taşma merdiveninde bir sonraki stat'a geçer (can → kalkan, kalkan → kırılınca şok itmesi, hasar_buff → bir sonraki vuruşa tek seferlik ek)",
@@ -7266,7 +7671,8 @@
         "yon": "yansıtma oranı × damage_mult, süre × dense_life_mult"
       },
       "2": {
-        "name": "Emici", "op": "aktar",
+        "name": "Emici",
+        "op": "aktar",
         "summary": "Değeri hedeften alıp sana verir; hareketi merkeze doğru çevirir.",
         "govde": "içindekileri merkezine çeker (vortex_pull_mps); düşman mermileri içine girince yutulur",
         "deger": "zarar: verilenin lifesteal oranı sana aynı stat olarak döner. yarar: kaynak düşmana döner — düşmandan alınıp sana verilir (can emme, güç çalma); düşmanda o stat yoksa enemy_stat_fallback'teki stat'tan alınır (kalkan → düşmanın canından kalkan)",
@@ -7276,7 +7682,8 @@
         "yon": "yansıtmak yerine emer: gelen hasarın oranı kadar can olursun"
       },
       "3": {
-        "name": "Sıçrayan", "op": "zincirle",
+        "name": "Sıçrayan",
+        "op": "zincirle",
         "summary": "Temastan sonra sıradaki hedefe atlar.",
         "govde": "bounce_targets kez sıradaki hedefe seker; boyut × hitbox_scale_mult",
         "deger": "her sekmede × bounce_damage_mult",
@@ -7286,7 +7693,8 @@
         "yon": "yansıtılan mermi sıradaki hedefe seker"
       },
       "4": {
-        "name": "Sabit", "op": "sifirla",
+        "name": "Sabit",
+        "op": "sifirla",
         "summary": "Her hız sıfıra iner: hareket eden durur, akan donar, konum işaretlenir.",
         "govde": "hız 0: doğduğu/indiği yerde çapalanır; ömür + lifetime_add; takip ve gövdeye bağlılık iptal; cast sırasında sen de köklenirsin (cast_mobility rooted)",
         "deger": "zarar: çapalı gövde tuzak olur (içine girene uygulanır). yarar: totem olur (alandakine tik tik)",
@@ -7297,7 +7705,8 @@
         "kati": "katı + çapalı = geçişi kapatan engel"
       },
       "5": {
-        "name": "Yayılan", "op": "genislet",
+        "name": "Yayılan",
+        "op": "genislet",
         "summary": "Tek hedef alana döner; gövde zamanla dışa büyür.",
         "govde": "boyut × hitbox_scale_mult; sıfırdan tam boyuta genişleyen cephe; en fazla max_targets",
         "deger": "miktar × damage_mult; alan içindeki herkese (cephe geçerken bir kez)",
@@ -7307,7 +7716,8 @@
         "yon": "yansıtma her yöne, genişleyen aura"
       },
       "6": {
-        "name": "Bağlayıcı", "op": "esitle",
+        "name": "Bağlayıcı",
+        "op": "esitle",
         "summary": "Gövde seninle hedef arasında gerilir; iki uç aynı değeri paylaşır.",
         "govde": "sen ↔ ilk hedef arasında bağ (link_len_m); ömür = apply_root_sec; etki bağ boyunca tik tik akar",
         "deger": "zarar bağ boyunca akar; yarar bir dostla can bağı kurar (gelen hasar link_share oranında paylaşılır)",
@@ -7318,7 +7728,8 @@
         "dusman_ucu": "adjective_mods.6: düşman ucu apply_root_sec köklenir + apply_slow"
       },
       "7": {
-        "name": "Bulandırıcı", "op": "belirsizlestir",
+        "name": "Bulandırıcı",
+        "op": "belirsizlestir",
         "summary": "Gövde bir hacme (sis) döner; içindeki görünmez, düşman kör.",
         "govde": "şekil → bulut; ömür + lifetime_add; içindeki dost gizlenir; içindeki düşman accuracy_debuff kör",
         "deger": "etki bulut içinde tik tik uygulanır",
@@ -7328,7 +7739,8 @@
         "yon": "yansıtma sürerken görünmezsin"
       },
       "8": {
-        "name": "Yükselen", "op": "yukselt",
+        "name": "Yükselen",
+        "op": "yukselt",
         "summary": "Yerden yukarı doğar, gücü zamanla artar; yarar üreten değer dosta döner.",
         "govde": "hedef noktada yerden yükselir (rise_delay_sec gecikme); değer ömür boyunca 1 → ramp_max",
         "deger": "zarar: hedef havaya atılır (knockup_sec). yarar: zamanla büyür. + self_damage_buff (buff_duration_sec)",
@@ -7338,7 +7750,8 @@
         "yon": "yansıtma oranı ömür boyunca ramp_max katına çıkar"
       },
       "9": {
-        "name": "Odaklı", "op": "kilitle",
+        "name": "Odaklı",
+        "op": "kilitle",
         "summary": "Tek hedef, tek an; ıskalamaz, zırhı yok sayar.",
         "govde": "seçili hedefe kilitlenir ve takip eder; max_targets 1; ignore_armor; miktar × damage_mult",
         "deger": "zarar: işaretli an — etki mark_delay_sec sonra tek seferde patlar. yarar: koruyucu tetik — guard_window_sec içinde dost canı guard_threshold altına düşerse o anda uygulanır",
@@ -7348,7 +7761,8 @@
         "yon": "kusursuz savuşturma: pencere içindeki ilk vuruş tam oranla (min 1, 2×) geri döner"
       },
       "10": {
-        "name": "Aynalı", "op": "ters_cevir",
+        "name": "Aynalı",
+        "op": "ters_cevir",
         "summary": "Değerin işaretini ya da konumunu aynalar; gövdenin bağlı bir eşi karşı noktada doğar.",
         "govde": "ayna noktasında (hedefin arkası / yolun ucu) bağlı ikinci gövde; + reflect_ratio yansıtma sende (reflect_duration_sec)",
         "deger": "zarar: iki uçtan kıskaç. yarar: işaret ters kopyası düşmana — aynı stat, eksi işaret, miktarın reflect_ratio'su kadar (iyileştirme → hasar, güç → zayıflatma, kalkan → enemy_stat_fallback)",
@@ -7358,7 +7772,8 @@
         "yon": "yansıtılan mermi ikiye ayrılır: biri saldırana, biri ayna noktasından"
       },
       "11": {
-        "name": "Kopya", "op": "cogalt",
+        "name": "Kopya",
+        "op": "cogalt",
         "summary": "Aynı gövde duplicate_delay_sec sonra senin bir kopyandan tekrar doğar.",
         "govde": "sayı +1, ikinci kopya yan açıdan (duplicate_delay_sec, × duplicate_damage_mult)",
         "deger": "etki iki kez",
@@ -7368,7 +7783,8 @@
         "yon": "yansıtma ikinci kez"
       },
       "12": {
-        "name": "Akan", "op": "surekli",
+        "name": "Akan",
+        "op": "surekli",
         "summary": "Tek seferlik etki channel_sec süren bir akışa döner.",
         "govde": "sürekli: ömür = channel_sec; temas tik (tick_rate_mult ile sık); miktar × damage_mult, tik başına flow_tick_fraction",
         "deger": "zarar/yarar zamana yayılır (DoT/HoT akışı)",
@@ -7378,7 +7794,6 @@
         "yon": "yansıtma channel_sec boyunca sürer"
       }
     },
-  
     "conflict_rules": [
       "Sabit (çapalı) > gövdeye bağlı: gövde doğduğu yerde bırakılır",
       "Sabit (çapalı) > takip: güdüm iptal",
@@ -7388,12 +7803,10 @@
       "Sürekli + balistik = indiği yerde akan alan; sürekli + ışın = kanal channel_sec'e uzar",
       "Düşmanca sıfat eklemeleri (kök, yavaşlatma, körlük) yalnız düşman ucuna/düşmana uygulanır; dost fiilde düşman yoksa düşer"
     ],
-  
     "enemy_stat_fallback": {
       "_note": "Boss'ta karşılığı olmayan stat'lar. Emici/Aynalı bir stat'ı düşmana çevirdiğinde buradan okunur.",
       "kalkan": "can"
     },
-  
     "params": {
       "_note": "Yalnız JSON'da karşılığı olmayan sayılar. Hepsi ÖNERİLEN — oynadıkça ayarlanır.",
       "melee_reach_m": 2.4,
@@ -7439,7 +7852,6 @@
       "targeted_erase_per_sec": 2.0,
       "projectile_reflect_mult": 1.0
     },
-  
     "checks": {
       "A_sifat_anlamli": "Her (fiil, sıfat, silah) için nitel imza, sıfatsız (fiil, silah) imzasından farklı olmalı — yalnız sayı değişimi 'anlamsız' sayılır",
       "B_tekrar": "Aynı silahta iki farklı skill aynı nitel imzayı vermemeli",

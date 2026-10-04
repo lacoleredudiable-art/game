@@ -15,6 +15,7 @@ Mobil kooperatif boss dövüşü, alfa prototip. Bu dosya her görevde bağlama 
 5. Hiçbir fiil anlık vurmaz. Kombo tablosu / skill kimliğiyle beyaz liste yazılmaz; davranış gramerden doğar.
 6. `docs/element-sistemi.json` bağlayıcıdır (v6.1.1) ve
    `unity/Assets/Resources/ElementSystem/element-sistemi.json` ile **bayt bayt aynı** kalır (ikisini birlikte değiştir).
+   Metin engine'den türetilir; `SkillTextNumberTests` korur.
    `motion-templates.json` elle düzenlenmez: `python3 tools/build-motion-templates.py` iki kopyayı birden yazar.
 
 ## Okuma
