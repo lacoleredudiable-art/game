@@ -32,7 +32,7 @@ namespace Dovus.Core.Dodge
         public float Multiplier { get; private set; } = 1f;
         public double ExpiresAtMs { get; private set; } = double.PositiveInfinity;
 
-        public bool IsArmed => Multiplier > DodgeDefaults.ArmedMultThresholdf;
+        public bool IsArmed => Multiplier > DodgeDefaults.ArmedMultThreshold;
 
         public bool IsArmedAt(double nowMs) => IsArmed && nowMs < ExpiresAtMs;
 

@@ -12,7 +12,7 @@ namespace Dovus.Core.Motion
         public const float PlantHitRadiusM = 0.25f;
         public const float PlantHitLengthM = 0.2f;
         public const float LateralFrac = 0.35f;
-        public const float OutgoingMultCap999f = 0.999f;
+        public const float OutgoingMultCap = 0.999f;
         public const float SegmentLen2EpsilonSqr = 1e-8f;
         public const float MaxDeltaPerTickMult = 40f;
         public const float JumpHeightFourMult = 4f;

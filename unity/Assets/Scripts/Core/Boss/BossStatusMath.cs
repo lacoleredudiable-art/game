@@ -71,7 +71,7 @@ namespace Dovus.Core.Boss
         {
             outgoingMult = WeakenOutgoingMult(amount);
             durationMs = durationSec * BossStatusMathDefaults.SecToMs;
-            return durationMs > 0d && outgoingMult < BossStatusMathDefaults.OutgoingMultCap999f;
+            return durationMs > 0d && outgoingMult < BossStatusMathDefaults.OutgoingMultCap;
         }
 
         /// <summary>Tam daire / yer saldırısı. Dar koni nişan ister.</summary>

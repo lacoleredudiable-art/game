@@ -4,7 +4,7 @@ namespace Dovus.Core.Boss
     public static class BossStatusMathDefaults
     {
         public const double SecToMs = 1000.0;
-        public const float OutgoingMultCap999f = 0.999f;
+        public const float OutgoingMultCap = 0.999f;
         public const float DefaultWeakenPercent = 15f;
         public const float DefaultBurnDps = 3f;
     }

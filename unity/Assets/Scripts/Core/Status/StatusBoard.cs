@@ -212,7 +212,7 @@ namespace Dovus.Core.Status
             if (burnTickThisFrame > 0f && _active.TryGetValue(StatusKind.Shield, out StatusEntry shieldAfter))
             {
                 shieldAfter.Magnitude = Math.Max(0f, shieldAfter.Magnitude - burnTickThisFrame * tuning.ShieldBurnDrainRatio);
-                if (shieldAfter.Magnitude <= StatusDefaults.MinRadius01f)
+                if (shieldAfter.Magnitude <= StatusDefaults.MinRadiusM)
                     _active.Remove(StatusKind.Shield);
                 else
                     _active[StatusKind.Shield] = shieldAfter;
@@ -292,7 +292,7 @@ namespace Dovus.Core.Status
                 return;
             StatusEntry s = _active[StatusKind.Shield];
             s.Magnitude -= absorbed;
-            if (s.Magnitude <= StatusDefaults.MinRadius01f)
+            if (s.Magnitude <= StatusDefaults.MinRadiusM)
                 _active.Remove(StatusKind.Shield);
             else
                 _active[StatusKind.Shield] = s;

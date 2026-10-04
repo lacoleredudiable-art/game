@@ -179,7 +179,7 @@ namespace Dovus.Core.Data
 
         public static string FormatDurationSeconds(double durationSec)
         {
-            if (Math.Abs(durationSec - Math.Round(durationSec)) < SkillTextNumbersDefaults.DurationRoundEpsilon1e9)
+            if (Math.Abs(durationSec - Math.Round(durationSec)) < SkillTextNumbersDefaults.DurationRoundEpsilon)
                 return ((int)Math.Round(durationSec)).ToString(CultureInfo.InvariantCulture);
             return durationSec.ToString("0.#", CultureInfo.InvariantCulture);
         }

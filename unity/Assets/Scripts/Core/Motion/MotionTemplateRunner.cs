@@ -306,7 +306,7 @@ namespace Dovus.Core.Motion
                 {
                     // Çekme bitince faz eğrisi eski başlangıca zıplamasın.
                     _yieldApproach = false;
-                    _blendU0 = Math.Clamp(_time / durAhead, 0f, MotionTemplateRunnerDefaults.OutgoingMultCap999f);
+                    _blendU0 = Math.Clamp(_time / durAhead, 0f, MotionTemplateRunnerDefaults.OutgoingMultCap);
                     _phaseX = _x;
                     _phaseZ = _z;
                 }

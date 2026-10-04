@@ -6,6 +6,6 @@ namespace Dovus.App.Casting
         public const double SecToMs = 1000.0;
         public const float MinTickSec = 0.01f;
         public const float MinSoftAimRangeM = 0.1f;
-        public const float ReachFraction035f = 0.35f;
+        public const float ReachFraction = 0.35f;
     }
 }

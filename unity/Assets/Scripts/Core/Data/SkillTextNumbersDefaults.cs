@@ -4,6 +4,6 @@ namespace Dovus.Core.Data
     public static class SkillTextNumbersDefaults
     {
         public const double PercentScale = 100.0;
-        public const double DurationRoundEpsilon1e9 = 1e-9;
+        public const double DurationRoundEpsilon = 1e-9;
     }
 }
