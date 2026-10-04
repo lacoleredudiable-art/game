@@ -185,6 +185,7 @@ if ($runSweep) {
         dotnet run -c Release --project (Join-Path $RepoRoot 'tools\SweepV2') -- `
             --all --gate --quiet `
             --compare (Join-Path $RepoRoot 'docs\play-sweep\pr35-final-4x.csv') `
+            --expect-sha256 '@docs/play-sweep/headless-baseline.sha256' `
             --out $sweepOut `
             --label verify
     } -NoteFromLog {

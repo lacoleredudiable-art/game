@@ -16,7 +16,7 @@ namespace SweepV2
         /// </summary>
         public static readonly HashSet<string> Whitelist = new();
 
-        public const int MinPassPerWeapon = 142;
+        public const int MinPassPerWeapon = 144;
         public const int WeaponCases = 144;
         public const int MaxGroundFailsPerWeapon = 3;
 
@@ -175,12 +175,65 @@ namespace SweepV2
                     a.Same++;
                     continue;
                 }
-                a.Mismatches.Add($"{kv.Key.Item1} [{kv.Key.Item2}] Play={(pp ? "geçti" : "KALDI " + Csv.Failed(kv.Value))} "
-                                 + $"başsız={(hp ? "geçti" : "KALDI " + Csv.Failed(hr))}"
-                                 + (pp ? "" : " — Play: " + Csv.Short(kv.Value["notlar"]))
-                                 + (hp ? "" : " — başsız: " + Csv.Short(hr["notlar"])));
+                a.Mismatches.Add(FormatMismatch(kv.Key, pp, hp, kv.Value, hr));
             }
             return a;
+        }
+
+        static string FormatMismatch(
+            (string Combo, string Weapon) key,
+            bool playPass,
+            bool headlessPass,
+            Dictionary<string, string> playRow,
+            Dictionary<string, string> headlessRow) =>
+            $"{key.Combo} [{key.Weapon}] Play={(playPass ? "geçti" : "KALDI " + Csv.Failed(playRow))} "
+            + $"başsız={(headlessPass ? "geçti" : "KALDI " + Csv.Failed(headlessRow))}"
+            + (playPass ? "" : " — Play: " + Csv.Short(playRow.TryGetValue("notlar", out string pn) ? pn : ""))
+            + (headlessPass ? "" : " — başsız: " + Csv.Short(headlessRow.TryGetValue("notlar", out string hn) ? hn : ""));
+
+        public static HashSet<(string Combo, string Weapon)> LoadKnownPlayDiffs(string path)
+        {
+            var set = new HashSet<(string, string)>();
+            if (string.IsNullOrEmpty(path) || !File.Exists(path))
+                return set;
+            foreach (string raw in File.ReadAllLines(path))
+            {
+                string line = raw.Trim();
+                if (line.Length == 0 || line.StartsWith("#", StringComparison.Ordinal))
+                    continue;
+                string[] parts = line.Split(',', 2);
+                if (parts.Length != 2)
+                    continue;
+                set.Add((parts[0].Trim(), parts[1].Trim()));
+            }
+            return set;
+        }
+
+        public static List<string> GateCompareFailures(Agreement agreement, HashSet<(string Combo, string Weapon)> known)
+        {
+            var fails = new List<string>();
+            if (agreement == null)
+                return fails;
+            foreach (string m in agreement.Mismatches)
+            {
+                if (!TryParseMismatchKey(m, out var key) || known.Contains(key))
+                    continue;
+                fails.Add("Play uyumsuzluğu (bilinen listede değil): " + m);
+            }
+            return fails;
+        }
+
+        static bool TryParseMismatchKey(string mismatch, out (string Combo, string Weapon) key)
+        {
+            key = default;
+            int bracket = mismatch.IndexOf(" [", StringComparison.Ordinal);
+            if (bracket <= 0)
+                return false;
+            int end = mismatch.IndexOf(']', bracket + 2);
+            if (end < 0)
+                return false;
+            key = (mismatch.Substring(0, bracket), mismatch.Substring(bracket + 2, end - bracket - 2));
+            return true;
         }
     }
 
