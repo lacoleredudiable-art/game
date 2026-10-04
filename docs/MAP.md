@@ -37,12 +37,13 @@
 | Tuning | `Game/Config/PrototypeTuning.cs`, `PrototypeTuning.Arena.cs`, `PrototypeTuning.Player.cs`, `PrototypeTuning.Input.cs`, `PrototypeTuning.Camera.cs`, `PrototypeTuning.Visuals.cs`, `PrototypeTuning.Boss.cs`, `PrototypeTuning.Hud.cs`, `Game/Config/TuningConfig.cs`, `Core/Tuning/*.cs` | `PrototypeTuning.EnsureRuntimeDefaults`, `TuningSchema` |
 | Sahne kurulumu | `Game/Composition/PrototypeBootstrap.cs`, `Game/Composition/Builders/` (`WorldContext`, `ArenaBuilder`, `ActorsBuilder`, `CameraBuilder`, `HexagonInputBuilder`, `HudBuilder`, `SkillSystemBuilder`, `DebugToolsBuilder`, `VisualAttach`), `Game/Composition/PlaceholderFactory.cs`, `Game/Arena/CircularArena.cs` | `PrototypeBootstrap.Awake` → `BuildWorld` kurucu sırası |
 | Debug / dev | `Game/DevTools/DebugConfig.cs`, `Game/DevTools/DebugPanelsController.cs`, `Game/DevTools/V611DebugPanel.cs`, `Game/DevTools/SentenceDebugHud.cs`, `Game/DevTools/TuningPanel.cs` | `DebugPanelsController`, `V611DebugPanel.Update` |
-| Editor menüleri | `Game/Editor/PlaySweep.cs`, `Game/Editor/*Bind.cs`, `Game/Editor/AndroidBuilder.cs` | `[MenuItem("Dovus/...")]` |
-| Testler — Core | `tools/CoreTests/*Tests.cs` | `dotnet test tools/CoreTests` |
+| Editor menüleri | `Game/Editor/Sweep/PlaySweep*.cs`, `Game/Editor/*Bind.cs`, `Game/Editor/AndroidBuilder.cs` | `[MenuItem("Dovus/...")]` |
+| Play Sweep (saf) | `App/Sweep/SweepComboCatalog.cs`, `App/Sweep/SweepCsvFormat.cs` | `SweepComboCatalog.OrderedCombos` |
+| Testler — Core | `tools/CoreTests/*Tests.cs`, `tools/CoreTests/AppSimulationTests.cs` (App, shim yok) | `dotnet test tools/CoreTests` |
 | Testler — Integration | `tools/IntegrationTests/*Tests.cs` | `dotnet test tools/IntegrationTests` |
 | Git dışı asset yedeği (Synty/Mixamo/VFX) | `docs/asset-yedegi.md`, `tools/IntegrationTests/known-missing-asset-guids.txt` | yedek zip: PC `C:\Users\lacol\_backup\` |
 | Araç — gramer | `tools/AtomSim/Program.cs` | `dotnet run --project tools/AtomSim` |
-| Araç — başsız tarama | `tools/SweepV2/Host/Program.cs`, `tools/SweepV2/Shim/*` | `SweepV2.Program.Main` |
+| Araç — başsız tarama | `tools/SweepV2/Host/Program.cs`, `tools/SweepV2/Shim/*` (Unity shim; davranış doğrulaması) | `SweepV2.Program.Main` |
 | Araç — Game derleme | `tools/GameCompile/check.py`, `tools/GameCompile/GameCompile.csproj` | `python tools/GameCompile/check.py` |
 | CI | `.github/workflows/sweep-v2.yml` | workflow `sweep` job |
 | Zaman / saat | `Core/Time/TimeDirector.cs`, `App/Time/TimeDirectorClock.cs`, `Game/Composition/GameClock.cs` | `TimeDirector.Tick`, `GameClock.Update`, `GameClock.World` |

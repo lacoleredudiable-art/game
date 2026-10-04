@@ -2,6 +2,7 @@
     "name": "Dovus.Game.Editor",
     "rootNamespace": "",
     "references": [
+        "Dovus.App",
         "Dovus.Core",
         "Dovus.Game",
         "Unity.TextMeshPro",

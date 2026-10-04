@@ -33,7 +33,7 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 - [x] 2B.4 BossDirector kalan Unity mantığı → App (A3)
 - [x] 2B.5 PrototypeBootstrap → Composition kökü, küçük kurucular (A4); PrototypeTuning gerçek alt nesneler + sahne değeri göç aracı (A5) — 2B.5a kurucular (#103); 2B.5b tuning bölümleri + sahne göçü (#104)
 - [x] 2B.6 Core içi döngüler + Combat konu bölme (A8, A19) — 2B.6a (#106), 2B.6b (#107), 2B.6c döngü kapısı + kalan SCC allowlist
-- [ ] 2B.7 SweepV2 sahte Unity katmanı bağımlılığını azalt: testler App katmanına (A12)
+- [x] 2B.7 SweepV2 sahte Unity katmanı bağımlılığını azalt: testler App katmanına (A12)
 - [ ] 2B.8 7 singleton + kalan statikler → enjeksiyon (A13); IsPortalSkill/IsTeamSkill JSON'dan
 - [ ] 2B.9 59 FindAnyObjectByType/Camera.main → referans enjeksiyonu; her kare GetComponent önbellek (A15)
 - [ ] 2B.10 Eksik asset referansları raporu + güvenli geri dönüş (A16)
