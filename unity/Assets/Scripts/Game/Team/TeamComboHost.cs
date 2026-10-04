@@ -57,8 +57,6 @@ namespace Dovus.Game.Team
         /// <summary>Takım çarpan zarını değiştir; null varsayılan <see cref="UnityRng.Default"/>.</summary>
         public void ConfigureCombatRollRng(IRng rng) => _combatRollRng = rng;
 
-        IRng CombatRollSource => _combatRollRng ?? UnityRng.Default;
-
         // MonoBehaviour ctor'unda Resources.Load yasak (UnityException) → op tabloları Awake'te JSON'dan bağlanır.
         void Awake()
         {
@@ -76,7 +74,7 @@ namespace Dovus.Game.Team
         void OnEnable()
         {
             Modifiers.Cast += OnCast;
-            Modifiers.Roll = () => (float)CombatRollSource.NextDouble();
+            Modifiers.Roll = () => (float)(_combatRollRng ?? UnityRng.Default).NextDouble();
         }
 
         void OnDisable()
