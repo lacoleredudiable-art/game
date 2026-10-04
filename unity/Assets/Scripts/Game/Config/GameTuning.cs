@@ -13,7 +13,7 @@ namespace Dovus.Game.Config
     /// <summary>
     /// Oyun kabuğu ayarları (renk, arena, girdi, HUD). Spec'te yürüme hızı yok; varsayılanlar durum.md'de kayıtlı.
     /// Sahnedeki tek örnek <see cref="Composition.GameBootstrap"/> üzerinden paylaşılır; kopya tutulmaz (canlı ayar paneli bunu bekler).
-    /// Eski Unity serileştirme tip adı kaldırıldı (2B.12); script GUID aynı, alan adları aynı.
+    /// Tip adı 2B.12'de değişti (eski ad: docs/naming.md). Düz [Serializable] alan: Unity alan adıyla bağlar, MovedFrom gerekmez; alan adları aynı.
     /// </summary>
     [System.Serializable]
     public sealed partial class GameTuning

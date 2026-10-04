@@ -36,10 +36,14 @@ Toplam **79** bileşen. Standart sonekle eşleşen birincil sınıflar: **Direct
 | `PortalBorderTeamAccess` | `TeamComboAccess` |
 | `PortalBorderTeamDefaults` | `TeamComboDefaults` |
 | `PrototypeBootstrap` | `GameBootstrap` |
-| `PrototypeTuning` | `GameTuning` (+ `MovedFrom` serileştirme) |
+| `PrototypeTuning` | `GameTuning` (düz `[Serializable]` alan: Unity alan adıyla bağlar → `MovedFrom` gerekmez; sahne/`tuning.json` alan adları aynı) |
 | `V611DebugPanel` | `GrammarDebugPanel` |
 
 `Weapons10` tip adı Scripts altında yok (2B.2f). `SweepV2` araç adı; kod tipi değil.
+
+Bilinçli olarak DEĞİŞMEYENLER: sahne dosyası `Prototype.unity` (ve içindeki `m_EditorClassIdentifier` satırı — Unity GUID ile bağlar, bir sonraki kayıtta kendisi günceller), serileştirilmiş alanlar `_prototypeMainClassId`/`_prototypePassiveRuneIds`, `Resources/Bosses/*.json` içindeki belge amaçlı `"PrototypeTuning.PlayerMaxHp"` `maps_to` anahtarları (kod okumuyor). Görünür GameObject adları değişti: `TeamComboHost` (eski host adı), `GrammarSimpleControls` (eski `V611SimpleControls`); ada göre arayan kod yok.
+
+**Başka dallar için:** eski tip adlarını (`PrototypeTuning`, `PrototypeBootstrap`, `PortalBorderTeam*`, `V611DebugPanel`) kullanan kod birleştirmede yukarıdaki tabloya göre yeniden adlandırılmalı.
 
 ## Yorum kodu sözlüğü
 
