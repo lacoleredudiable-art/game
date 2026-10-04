@@ -131,9 +131,6 @@ namespace Dovus.App.Casting
                     || skill.Mechanics.Length > 0;
                 port.SetLastSkillEffectApplied(effectApplied);
 
-                if (resolvedId.Value == SkillIds.DenseStrike)
-                    port.LogSmokeOneOne(skill, effectApplied, dealt);
-
                 port.TrySchedulePassiveEcho(ctx, skill, in motionPlan);
 
                 return new CastOutcome(

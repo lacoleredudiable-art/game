@@ -134,6 +134,9 @@ namespace Dovus.Core.Grammar
                 visit(kv.Key, kv.Value);
         }
 
+        public bool TryGetSkill(string id, out SkillCatalogEntry entry) =>
+            _v61Skills.TryGetValue(id, out entry);
+
         SkillResolution ResolveV61(IReadOnlyList<int> runeIds)
         {
             int len = runeIds.Count;

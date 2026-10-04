@@ -1,4 +1,5 @@
 using Dovus.App.Team;
+using Dovus.Core.Grammar;
 using Dovus.Core.Portal;
 using Dovus.Core.Shared;
 using Dovus.Core.Team;
@@ -53,17 +54,15 @@ public class TeamModifierHubTests
     }
 
     [Test]
-    public void IsPortalAndTeamSkill_InstanceMatchesLegacyForAllLegacyIds()
+    public void IsPortalAndTeamSkill_InstanceMatchesJsonOps()
     {
-        PortalSystem portal = new PortalSystem();
-        TeamComboSystem team = new TeamComboSystem();
-        foreach (string id in PortalOpTable.Legacy.Keys)
-        {
-            bool legacyPortal = PortalOpTable.TryLegacy((SkillId)id, out var pop) && pop != PortalOp.None;
-            bool legacyTeam = TeamOpTable.TryLegacy((SkillId)id, out var top) && top != TeamOp.None;
-            Assert.That(portal.IsPortalSkill((SkillId)id), Is.EqualTo(legacyPortal), id);
-            Assert.That(team.IsTeamSkill((SkillId)id), Is.EqualTo(legacyTeam), id);
-        }
+        SkillMotor motor = SkillMechanicTagTests.LoadMotorPublic();
+        PortalSystem portal = new PortalSystem(PortalOpTable.FromMotor(motor));
+        TeamComboSystem team = new TeamComboSystem(TeamOpTable.FromMotor(motor));
+        foreach (string id in SkillMechanicTagTests.ExpectedPortalOps.Keys)
+            Assert.That(portal.IsPortalSkill((SkillId)id), Is.True, id);
+        foreach (string id in SkillMechanicTagTests.ExpectedTeamOps.Keys)
+            Assert.That(team.IsTeamSkill((SkillId)id), Is.True, id);
         Assert.That(portal.IsPortalSkill((SkillId)"1-1"), Is.False);
         Assert.That(team.IsTeamSkill((SkillId)"1-1"), Is.False);
     }

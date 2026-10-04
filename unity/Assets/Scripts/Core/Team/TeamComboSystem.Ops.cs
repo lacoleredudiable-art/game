@@ -105,12 +105,13 @@ namespace Dovus.Core.Team
             return TeamPulse.None;
         }
 
-        TeamPulse LinkPair(IAllyPlayer caster, IAllyPlayer target, IReadOnlyList<IAllyPlayer> allies, in Disc boss)
+        TeamPulse LinkPair(SkillId skillId, IAllyPlayer caster, IAllyPlayer target, IReadOnlyList<IAllyPlayer> allies, in Disc boss)
         {
             IAllyPlayer a = target != null && target.Id != caster.Id ? target : FirstOther(caster, allies);
             IAllyPlayer b = SecondOther(caster, a, allies);
             if (a == null || b == null)
                 return TeamPulse.None;
+            _linkBurnSource = skillId.Value;
             _links.Add(new Link
             {
                 A = a.Id,

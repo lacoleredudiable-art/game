@@ -1,31 +1,14 @@
 using System;
-using Dovus.Core.Shared;
 using System.Collections.Generic;
 using Dovus.Core.Grammar;
+using Dovus.Core.Shared;
 
 namespace Dovus.Core.Team
 {
     public static class TeamOpTable
     {
-        public static IReadOnlyDictionary<string, TeamOp> Legacy { get; } = BuildLegacy();
-
-        static Dictionary<string, TeamOp> BuildLegacy() =>
-            new Dictionary<string, TeamOp>(StringComparer.Ordinal)
-            {
-                [SkillIds.MirrorStep] = TeamOp.Marker,
-                [SkillIds.FixedBlast] = TeamOp.Mine,
-                [SkillIds.RisingHead] = TeamOp.HangBoss,
-                [SkillIds.OpeningVulnerability] = TeamOp.Rope,
-                [SkillIds.FocusedVulnerability] = TeamOp.Mark,
-                [SkillIds.LeapingAscent] = TeamOp.Ball,
-                [SkillIds.OpeningAscent] = TeamOp.Link,
-                [SkillIds.MirrorReflect] = TeamOp.Marker,
-                [SkillIds.FixedSummon] = TeamOp.Turret,
-                [SkillIds.OpeningTime] = TeamOp.HasteRope,
-            };
-
-        public static bool TryLegacy(SkillId skillId, out TeamOp op) =>
-            Legacy.TryGetValue(skillId.Value, out op);
+        public static readonly IReadOnlyDictionary<string, TeamOp> Empty =
+            new Dictionary<string, TeamOp>(StringComparer.Ordinal);
 
         public static TeamOp Resolve(SkillId skillId, IReadOnlyDictionary<string, TeamOp> table)
         {

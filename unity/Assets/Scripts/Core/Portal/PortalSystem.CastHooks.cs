@@ -119,7 +119,7 @@ namespace Dovus.Core.Portal
             }
         }
 
-        public static int MoveHostile(StatusBoard from, StatusBoard to)
+        public static int MoveHostile(StatusBoard from, StatusBoard to, string statusSource)
         {
             if (from == null || to == null)
                 return 0;
@@ -138,7 +138,7 @@ namespace Dovus.Core.Portal
                     continue;
                 if (remain <= 0)
                     continue;
-                to.Apply(kind, remain, mag, SkillIds.MirrorPurify);
+                to.Apply(kind, remain, mag, statusSource ?? string.Empty);
                 n++;
             }
 
@@ -176,7 +176,7 @@ namespace Dovus.Core.Portal
             Strike = new BackStrike(true, x, z, dirX, dirZ);
         }
 
-        void ArmHook(in Body caster, in Body ally, in Disc boss)
+        void ArmHook(string castSkill, in Body caster, in Body ally, in Disc boss)
         {
             if (ally.Id == 0 || ally.Id == caster.Id)
                 return;
@@ -184,27 +184,28 @@ namespace Dovus.Core.Portal
             if (caster.TemplateOwns)
             {
                 _hookActor = caster.Id;
+                _hookSkill = castSkill;
                 _hookFromX = caster.X;
                 _hookFromZ = caster.Z;
                 _hookAllyX = ally.X;
                 _hookAllyZ = ally.Z;
                 _hookAllyR = ally.Radius;
                 _hookCasterR = caster.Radius;
-                _wait.Add(new WaitMove(caster.Id, ally.Id, x, y, z, ally.Radius, SkillIds.OpeningHeal, false));
+                _wait.Add(new WaitMove(caster.Id, ally.Id, x, y, z, ally.Radius, castSkill, false));
                 return;
             }
 
-            _ready.Add(new Placement(ally.Id, x, y, z, (SkillId)SkillIds.OpeningHeal, false));
+            _ready.Add(new Placement(ally.Id, x, y, z, (SkillId)castSkill, false));
             HookLanding(caster.X, caster.Z, caster.Radius, ally.X, ally.Z, ally.Radius, boss, out float px, out float py, out float pz);
             if (Moved(caster.X, caster.Y, caster.Z, px, py, pz))
-                _ready.Add(new Placement(caster.Id, px, py, pz, (SkillId)SkillIds.OpeningHeal, false));
+                _ready.Add(new Placement(caster.Id, px, py, pz, (SkillId)castSkill, false));
         }
 
-        void AnchorOrRecall(in Body caster, IReadOnlyList<Body> allies, in Disc boss)
+        void AnchorOrRecall(string castSkill, in Body caster, IReadOnlyList<Body> allies, in Disc boss)
         {
             if (HasAnchor)
             {
-                Recall(caster, allies, boss);
+                Recall(castSkill, caster, allies, boss);
                 _anchor.Alive = false;
                 return;
             }
@@ -218,12 +219,12 @@ namespace Dovus.Core.Portal
             };
         }
 
-        void Recall(in Body caster, IReadOnlyList<Body> allies, in Disc boss)
+        void Recall(string castSkill, in Body caster, IReadOnlyList<Body> allies, in Disc boss)
         {
             float x = _anchor.X;
             float z = _anchor.Z;
             PushOut(ref x, ref z, caster.Radius, boss);
-            Emit(caster, x, z, caster.Radius, SkillIds.FixedStep, false, boss);
+            Emit(caster, x, z, caster.Radius, castSkill, false, boss);
             if (allies == null)
                 return;
             int n = 1;
@@ -237,15 +238,15 @@ namespace Dovus.Core.Portal
                 float ax = _anchor.X + MathF.Cos(n) * BesideM * 0.5f;
                 float az = _anchor.Z + MathF.Sin(n) * BesideM * 0.5f;
                 PushOut(ref ax, ref az, ally.Radius, boss);
-                Emit(ally, ax, az, ally.Radius, SkillIds.FixedStep, false, boss);
+                Emit(ally, ax, az, ally.Radius, castSkill, false, boss);
                 n++;
             }
         }
 
-        void OpenPair(in Body caster, in Disc boss, float life, bool shotsOnly)
+        void OpenPair(string castSkill, in Body caster, in Disc boss, float life, bool shotsOnly)
         {
-            var a = NewDoor(caster.X, caster.Z, SkillIds.MirrorStep, life, shotsOnly, caster.Id);
-            var b = NewDoor(caster.X, caster.Z, SkillIds.MirrorStep, life, shotsOnly, caster.Id);
+            var a = NewDoor(caster.X, caster.Z, castSkill, life, shotsOnly, caster.Id);
+            var b = NewDoor(caster.X, caster.Z, castSkill, life, shotsOnly, caster.Id);
             a.Link = b.Id;
             b.Link = a.Id;
             b.PendingArrival = caster.TemplateOwns;
@@ -263,7 +264,7 @@ namespace Dovus.Core.Portal
             _doors.Add(b);
         }
 
-        void OpenMirror(in Body caster, in Disc boss)
+        void OpenMirror(string castSkill, in Body caster, in Disc boss)
         {
             float dx = 0f;
             float dz = 1f;
@@ -282,11 +283,11 @@ namespace Dovus.Core.Portal
             float fx = caster.X + dx * (caster.Radius + DoorRadiusM);
             float fz = caster.Z + dz * (caster.Radius + DoorRadiusM);
             PushOut(ref fx, ref fz, PortalSystemDefaults.DoorPaddingM, boss);
-            var front = NewDoor(fx, fz, SkillIds.MirrorReflect, MirrorSec, true, caster.Id);
+            var front = NewDoor(fx, fz, castSkill, MirrorSec, true, caster.Id);
             float bx = boss.Present ? boss.X + dx * (boss.Radius + caster.Radius + boss.Gap + PortalSystemDefaults.BossGapOffsetM) : fx + dx * PortalSystemDefaults.FallbackOffsetM;
             float bz = boss.Present ? boss.Z + dz * (boss.Radius + caster.Radius + boss.Gap + PortalSystemDefaults.BossGapOffsetM) : fz + dz * PortalSystemDefaults.FallbackOffsetM;
             PushOut(ref bx, ref bz, PortalSystemDefaults.DoorPaddingM, boss);
-            var back = NewDoor(bx, bz, SkillIds.MirrorReflect, MirrorSec, true, caster.Id);
+            var back = NewDoor(bx, bz, castSkill, MirrorSec, true, caster.Id);
             front.Link = back.Id;
             back.Link = front.Id;
             // Arkadaki kapıdan çıkan atış boss'un sırtına bakar.

@@ -1,31 +1,14 @@
 using System;
-using Dovus.Core.Shared;
 using System.Collections.Generic;
 using Dovus.Core.Grammar;
+using Dovus.Core.Shared;
 
 namespace Dovus.Core.Portal
 {
     public static class PortalOpTable
     {
-        public static IReadOnlyDictionary<string, PortalOp> Legacy { get; } = BuildLegacy();
-
-        static Dictionary<string, PortalOp> BuildLegacy() =>
-            new Dictionary<string, PortalOp>(StringComparer.Ordinal)
-            {
-                [SkillIds.MirrorStrike] = PortalOp.BackDoor,
-                [SkillIds.OpeningHeal] = PortalOp.Hook,
-                [SkillIds.FixedStep] = PortalOp.AnchorOrRecall,
-                [SkillIds.MirrorStep] = PortalOp.Pair,
-                [SkillIds.DenseAscent] = PortalOp.Gate,
-                [SkillIds.RisingAscent] = PortalOp.MirrorGate,
-                [SkillIds.MirrorPurify] = PortalOp.Swap,
-                [SkillIds.MirrorReflect] = PortalOp.Mirror,
-                [SkillIds.RisingSummon] = PortalOp.Sink,
-                [SkillIds.MirrorSummon] = PortalOp.GatherTeam,
-            };
-
-        public static bool TryLegacy(SkillId skillId, out PortalOp op) =>
-            Legacy.TryGetValue(skillId.Value, out op);
+        public static readonly IReadOnlyDictionary<string, PortalOp> Empty =
+            new Dictionary<string, PortalOp>(StringComparer.Ordinal);
 
         public static PortalOp Resolve(SkillId skillId, IReadOnlyDictionary<string, PortalOp> table)
         {

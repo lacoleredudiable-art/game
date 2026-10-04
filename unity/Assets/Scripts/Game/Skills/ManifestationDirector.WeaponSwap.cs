@@ -86,7 +86,7 @@ namespace Dovus.Game.Skills
             bool inWindow = false;
             if (_motionBody != null && _motionBody.IsDisplacing)
             {
-                tagged = WeaponSwapCancel.IsTagged(_motionBody.SkillId);
+                tagged = WeaponSwapCancel.IsTagged(_skills, _motionBody.SkillId);
                 inWindow = WeaponSwapCancel.InWindow(_motionBody.PlayedSec, _motionBody.PlayLengthSec, tagged);
             }
             bool drawing = _engine != null && _engine.State.Phase == SentencePhase.Building;

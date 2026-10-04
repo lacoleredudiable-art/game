@@ -54,6 +54,7 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 - [x] 2B.22 global state kaldırma: `GameSceneRuntime` + builder enjeksiyonu; kalan bilinçli statikler — `AssetCatalog`/`VfxLibraryStandalone`/`ElementSystemRuntimeCache`, `PresentationParticleMaterials` Kenney null tuning, `UiJuiceRuntime.Pulse01`, DevTools `DebugPanelsChrome` iç statikleri
 - [x] 2B.23 iskelet bağla/sil
 - [x] 2B.24 MD gerçek bölünme: nested host'lar `Game/Skills/Hosts/` (MdCastPort, MdClosingHost, MdCoreServicesHost, MdLaunch/Motion/Skill/Weapon/Projectile hosts), `_deliverySkill` kopyası kaldırıldı, MD partial toplamı ≤3500 (ratchet 3411); kalan: ≤1500 için Execution çıkarma
+- [x] 2B.25 skill ID'leri veriye
 - Kural: davranış değişmez (sweep hash + test sayıları), Composer only, her madde 1–3 PR.
 
 ## Aşama 4 — Oyun sistemleri

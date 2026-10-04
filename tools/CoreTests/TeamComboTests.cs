@@ -25,9 +25,10 @@ public partial class TeamComboTests
     public void Threshold_OnBelow_OffAbove()
     {
         var mode = new BorderMode();
-        Assert.That(mode.OnSkill(1, (SkillId)"1-2", 0.20f), Is.False);
+        var eng12 = BorderEngine("1-2");
+        Assert.That(mode.OnSkill(1, (SkillId)"1-2", eng12, 0.20f), Is.False);
         Assert.That(mode.Active(1), Is.False);
-        Assert.That(mode.OnSkill(1, (SkillId)"1-2", 0.19f), Is.True);
+        Assert.That(mode.OnSkill(1, (SkillId)"1-2", eng12, 0.19f), Is.True);
         Assert.That(mode.AttackSpeedMult(1), Is.EqualTo(1.30f).Within(0.001f));
         Assert.That(mode.LifestealAdd(1), Is.EqualTo(0.25f).Within(0.001f));
         Assert.That(mode.DamageMult(1), Is.EqualTo(1.20f).Within(0.001f));
@@ -47,7 +48,7 @@ public partial class TeamComboTests
     public void Skill_1_2_LifestealStaysForTheCast()
     {
         var mode = new BorderMode();
-        Assert.That(mode.OnSkill(1, (SkillId)"1-2", 0.15f), Is.True);
+        Assert.That(mode.OnSkill(1, (SkillId)"1-2", BorderEngine("1-2"), 0.15f), Is.True);
         Assert.That(mode.Active(1), Is.True);
         Assert.That(mode.LifestealAdd(1), Is.EqualTo(BorderMode.Tier20Life).Within(0.001f));
         Assert.That(mode.Tick(1, 0.31f, 0.05f), Is.False);
@@ -63,7 +64,7 @@ public partial class TeamComboTests
     {
         AssertTier("1-2", 0.19f, 0.20f, 1.30f, 0.25f, 1.20f);
         var mode = new BorderMode();
-        Assert.That(mode.OnSkill(1, (SkillId)"1-2", 0.50f), Is.False);
+        Assert.That(mode.OnSkill(1, (SkillId)"1-2", BorderEngine("1-2"), 0.50f), Is.False);
     }
 
     [Test]
@@ -83,7 +84,7 @@ public partial class TeamComboTests
     {
         AssertTier("12-8", 0.09f, 0.10f, 1.50f, 0.40f, 1.35f);
         var high = new BorderMode();
-        high.OnSkill(1, (SkillId)"12-8", 0.50f);
+        high.OnSkill(1, (SkillId)"12-8", BorderEngine("12-8"), 0.50f);
         Assert.That(high.Active(1), Is.False);
         Assert.That(high.ColumnMoveSpeedMult(1), Is.EqualTo(1.20f).Within(0.001f));
         high.Tick(1, 0.50f, 2.5f);
@@ -94,14 +95,14 @@ public partial class TeamComboTests
         Assert.That(high.ColumnMoveSpeedMult(1), Is.EqualTo(1f).Within(0.001f));
 
         var low = new BorderMode();
-        low.OnSkill(1, (SkillId)"12-8", 0.05f);
+        low.OnSkill(1, (SkillId)"12-8", BorderEngine("12-8"), 0.05f);
         Assert.That(low.AttackSpeedMult(1), Is.EqualTo(1.50f * 1.20f).Within(0.001f));
     }
 
     [Test]
     public void Skill_1_10_BackDoorOutsideBoss()
     {
-        var portal = new PortalSystem();
+        var portal = JsonPortal();
         var boss = Boss(0f, 5f);
         portal.Cast((SkillId)"1-10", Actor(1, 0f, 0f), default, null, boss);
         Assert.That(portal.Strike.Active, Is.True);
@@ -115,7 +116,7 @@ public partial class TeamComboTests
     [Test]
     public void Skill_2_6_HookGroundedBesideAllyNotThroughBoss()
     {
-        var portal = new PortalSystem();
+        var portal = JsonPortal();
         var boss = Boss(0f, 4f);
         Body caster = Actor(1, 0f, 0f, owns: true, y: 2f);
         Body ally = Actor(2, 0f, 8f);
@@ -140,7 +141,7 @@ public partial class TeamComboTests
     [Test]
     public void Skill_3_4_AnchorRecall()
     {
-        var portal = new PortalSystem();
+        var portal = JsonPortal();
         var boss = Boss(10f, 10f);
         Body caster = Actor(1, 0f, 0f, owns: true);
         portal.Cast((SkillId)"3-4", caster, default, null, boss);
@@ -168,8 +169,8 @@ public partial class TeamComboTests
     [Test]
     public void Skill_3_10_TwoDoorsPassAlliesAndShots()
     {
-        Assert.That(new TeamComboSystem().IsTeamSkill((SkillId)"3-10"), Is.True);
-        var portal = new PortalSystem();
+        Assert.That(JsonTeam().IsTeamSkill((SkillId)"3-10"), Is.True);
+        var portal = JsonPortal();
         var boss = Boss(0f, 3f);
         portal.Cast((SkillId)"3-10", Actor(1, 0f, 0f, owns: true), default, null, boss);
         portal.NotifyTemplateEnded(1, 0f, 0f, 6f, 0.5f, boss);
@@ -190,7 +191,7 @@ public partial class TeamComboTests
     [Test]
     public void Skill_3_10_CasterStandingInArrivalDoorDoesNotBounce()
     {
-        var portal = new PortalSystem();
+        var portal = JsonPortal();
         var boss = Boss(0f, 8f);
         Body caster = Actor(1, 0f, 0f, owns: true, y: 1.1f);
         portal.Cast((SkillId)"3-10", caster, default, null, boss);
@@ -212,7 +213,7 @@ public partial class TeamComboTests
     [Test]
     public void Skill_8_1_ShrinkGate()
     {
-        var portal = new PortalSystem();
+        var portal = JsonPortal();
         var boss = Boss(0f, 8f);
         Body ally = Actor(2, 0f, 4f);
         portal.Cast((SkillId)"8-1", Actor(1, 0f, 0f), ally, null, boss);
@@ -235,7 +236,7 @@ public partial class TeamComboTests
     [Test]
     public void Skill_8_1_BossStrikesThirtyPercentSmaller()
     {
-        var portal = new PortalSystem();
+        var portal = JsonPortal();
         var boss = Boss(0f, 8f);
         portal.Cast((SkillId)"8-1", Actor(1, 0f, 0f), Actor(2, 0f, 4f), null, boss);
         DoorView gate = portal.Doors[0];
@@ -271,7 +272,7 @@ public partial class TeamComboTests
     [Test]
     public void Skill_8_8_GrowGate()
     {
-        var portal = new PortalSystem();
+        var portal = JsonPortal();
         var boss = Boss(0f, 8f);
         portal.Cast((SkillId)"8-8", Actor(1, 0f, 0f), Actor(2, 0f, 4f), null, boss);
         DoorView gate = portal.Doors[0];
@@ -285,7 +286,7 @@ public partial class TeamComboTests
     [Test]
     public void Skill_9_10_SwapAndDebuffs()
     {
-        var portal = new PortalSystem();
+        var portal = JsonPortal();
         var boss = Boss(0f, 5f);
         Body caster = Actor(1, 0f, 0f, owns: true);
         Body ally = Actor(2, 0f, 5f);
@@ -307,7 +308,7 @@ public partial class TeamComboTests
         var to = new StatusBoard();
         from.Apply(StatusKind.Poison, 2000, 3f, "test");
         from.Apply(StatusKind.Haste, 2000, 1.2f, "test");
-        int moved = PortalSystem.MoveHostile(from, to);
+        int moved = PortalSystem.MoveHostile(from, to, "9-10");
         Assert.That(moved, Is.EqualTo(1));
         Assert.That(from.Has(StatusKind.Poison), Is.False);
         Assert.That(from.Has(StatusKind.Haste), Is.True);

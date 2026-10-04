@@ -10,7 +10,7 @@ using System.Linq;
 namespace CoreTests;
 
 [TestFixture]
-public class SkillMechanicTagTests
+public partial class SkillMechanicTagTests
 {
     static string JsonPath()
     {
@@ -29,21 +29,23 @@ public class SkillMechanicTagTests
 
     static SkillMotor LoadMotor() => SkillMotor.FromJson(File.ReadAllText(JsonPath()));
 
+    internal static SkillMotor LoadMotorPublic() => LoadMotor();
+
     [Test]
-    public void JsonPortalOps_MatchLegacyBothWays()
+    public void JsonPortalOps_MatchExpectedBothWays()
     {
         Dictionary<string, PortalOp> fromJson = PortalOpTable.FromMotor(LoadMotor());
-        Assert.That(fromJson, Is.EquivalentTo(PortalOpTable.Legacy));
-        foreach (KeyValuePair<string, PortalOp> kv in PortalOpTable.Legacy)
+        Assert.That(fromJson, Is.EquivalentTo(ExpectedPortalOps));
+        foreach (KeyValuePair<string, PortalOp> kv in ExpectedPortalOps)
             Assert.That(fromJson[kv.Key], Is.EqualTo(kv.Value));
     }
 
     [Test]
-    public void JsonTeamOps_MatchLegacyBothWays()
+    public void JsonTeamOps_MatchExpectedBothWays()
     {
         Dictionary<string, TeamOp> fromJson = TeamOpTable.FromMotor(LoadMotor());
-        Assert.That(fromJson, Is.EquivalentTo(TeamOpTable.Legacy));
-        foreach (KeyValuePair<string, TeamOp> kv in TeamOpTable.Legacy)
+        Assert.That(fromJson, Is.EquivalentTo(ExpectedTeamOps));
+        foreach (KeyValuePair<string, TeamOp> kv in ExpectedTeamOps)
             Assert.That(fromJson[kv.Key], Is.EqualTo(kv.Value));
     }
 
@@ -72,42 +74,42 @@ public class SkillMechanicTagTests
     public void PortalCast_JsonTable_MatchesLegacyTable()
     {
         SkillMotor motor = LoadMotor();
-        PortalSystem legacy = new PortalSystem();
+        PortalSystem baseline = new PortalSystem(ExpectedPortalOps);
         PortalSystem tagged = new PortalSystem(PortalOpTable.FromMotor(motor));
         Disc boss = new Disc(true, 0f, 4f, 0.85f, PortalSystem.ClearGapM);
         Body caster = new Body(1, 0f, 0f, 0f, 0.5f, false, false);
         Body ally = new Body(2, 0f, 4f, 0f, 0.5f, false, false);
 
-        foreach (string id in PortalOpTable.Legacy.Keys.OrderBy(x => x))
+        foreach (string id in ExpectedPortalOps.Keys.OrderBy(x => x))
         {
-            legacy.Clear();
+            baseline.Clear();
             tagged.Clear();
-            legacy.Cast((SkillId)id, caster, ally, null, boss);
+            baseline.Cast((SkillId)id, caster, ally, null, boss);
             tagged.Cast((SkillId)id, caster, ally, null, boss);
-            Assert.That(tagged.Doors.Count, Is.EqualTo(legacy.Doors.Count), id);
-            Assert.That(tagged.Drain().Count, Is.EqualTo(legacy.Drain().Count), id);
-            Assert.That(tagged.HasAnchor, Is.EqualTo(legacy.HasAnchor), id);
+            Assert.That(tagged.Doors.Count, Is.EqualTo(baseline.Doors.Count), id);
+            Assert.That(tagged.Drain().Count, Is.EqualTo(baseline.Drain().Count), id);
+            Assert.That(tagged.HasAnchor, Is.EqualTo(baseline.HasAnchor), id);
         }
     }
 
     [Test]
-    public void TeamCast_JsonTable_MatchesLegacyTable()
+    public void TeamCast_JsonTable_MatchesExpectedTable()
     {
         SkillMotor motor = LoadMotor();
-        TeamComboSystem legacy = new TeamComboSystem();
+        TeamComboSystem baseline = new TeamComboSystem(ExpectedTeamOps);
         TeamComboSystem tagged = new TeamComboSystem(TeamOpTable.FromMotor(motor));
         Disc boss = new Disc(true, 0f, 4f, 0.85f, PortalSystem.ClearGapM);
         FakeAlly caster = new FakeAlly { Id = 1, X = 0f, Z = 0f };
         FakeAlly target = new FakeAlly { Id = 2, X = 0f, Z = 4f };
         IAllyPlayer[] allies = { caster, target };
 
-        foreach (KeyValuePair<string, TeamOp> kv in TeamOpTable.Legacy)
+        foreach (KeyValuePair<string, TeamOp> kv in ExpectedTeamOps)
         {
             if (kv.Value == TeamOp.Marker)
                 continue;
-            legacy.Clear();
+            baseline.Clear();
             tagged.Clear();
-            TeamPulse a = legacy.Cast((SkillId)kv.Key, caster, target, allies, boss);
+            TeamPulse a = baseline.Cast((SkillId)kv.Key, caster, target, allies, boss);
             TeamPulse b = tagged.Cast((SkillId)kv.Key, caster, target, allies, boss);
             Assert.That(b.Stunned, Is.EqualTo(a.Stunned), kv.Key);
             Assert.That(b.StunSec, Is.EqualTo(a.StunSec).Within(1e-4f), kv.Key);

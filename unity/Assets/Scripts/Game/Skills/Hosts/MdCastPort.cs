@@ -22,6 +22,8 @@ public sealed class MdCastPort : ICastPort<PendingClosing>, IBasicStrikePort<Pen
         readonly ManifestationDirector _md;
         Transform _basicImpactTarget;
         LivingEffect _closingLogic;
+        SkillResolution _lastCastSkill;
+        float _lastCastDealt;
 
         /// <summary>FireClosing başında yakalanan logic (eski koddaki yerel değişkenle aynı örnek).</summary>
         internal void BeginClosing(LivingEffect logic) => _closingLogic = logic;
@@ -30,7 +32,12 @@ public sealed class MdCastPort : ICastPort<PendingClosing>, IBasicStrikePort<Pen
 
         public void ResetClosingChainBonus() => _md.CastSession.ClosingChainBonus = 1f;
 
-        public SkillResolution ResolveSkill(PendingClosing ctx) => _md.ResolvePendingSkill(ctx);
+        public SkillResolution ResolveSkill(PendingClosing ctx)
+        {
+            _lastCastSkill = _md.ResolvePendingSkill(ctx);
+            _lastCastDealt = 0f;
+            return _lastCastSkill;
+        }
 
         public void NoteWeaponCast(SkillResolution skill) => _md.NoteWeaponCast(skill);
 
@@ -153,6 +160,7 @@ public sealed class MdCastPort : ICastPort<PendingClosing>, IBasicStrikePort<Pen
             if (bossReached)
                 _md.ApplyMechanicHitEffects(_md.LastMechanicPlan, new Vector3(logic.TipX, 0f, logic.TipZ));
             _md.ApplyClosingHeal(ctx.Closing, skill);
+            _lastCastDealt = dealt;
             return dealt;
         }
 
@@ -168,7 +176,12 @@ public sealed class MdCastPort : ICastPort<PendingClosing>, IBasicStrikePort<Pen
 
         public bool IsHealSkill(SkillResolution skill) => _md.CastPortIsHealSkill(skill);
 
-        public void SetLastSkillEffectApplied(bool applied) => _md.LastSkillEffectApplied = applied;
+        public void SetLastSkillEffectApplied(bool applied)
+        {
+            _md.LastSkillEffectApplied = applied;
+            if (_lastCastSkill.Identity.Verb.Value == "1" && _lastCastSkill.Identity.Adjective.Value == "1")
+                LogSmokeOneOne(_lastCastSkill, applied, _lastCastDealt);
+        }
 
         public void LogSmokeOneOne(SkillResolution skill, bool effectApplied, float dealt)
         {

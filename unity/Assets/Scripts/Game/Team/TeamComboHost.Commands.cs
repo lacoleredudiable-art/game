@@ -60,7 +60,7 @@ namespace Dovus.Game.Team
             RefreshActors();
             actor.LastSkillId = skillId.Value;
             Disc boss = BossDisc();
-            _border.OnSkill(actor.Id, skillId, actor.HpRatio);
+            _border.OnSkill(actor.Id, skillId, EngineFor(skillId), actor.HpRatio);
             Body body = ToBody(actor);
             Body target = FirstOther(actor);
             _portal.Cast(skillId, body, target, _bodies, boss);

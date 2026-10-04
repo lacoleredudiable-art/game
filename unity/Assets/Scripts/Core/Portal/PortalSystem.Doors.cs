@@ -8,7 +8,7 @@ namespace Dovus.Core.Portal
 {
     public sealed partial class PortalSystem
     {
-        void OpenGate(in Body caster, in Body target, in Disc boss, bool grow)
+        void OpenGate(string castSkill, in Body caster, in Body target, in Disc boss, bool grow)
         {
             Body who = target.Id != 0 && target.Id != caster.Id ? target : caster;
             float dx = boss.Present ? boss.X - who.X : caster.X - who.X;
@@ -23,7 +23,7 @@ namespace Dovus.Core.Portal
             float x = who.X + dx / len * (who.Radius + PortalSystemDefaults.StandOffM);
             float z = who.Z + dz / len * (who.Radius + PortalSystemDefaults.StandOffM);
             PushOut(ref x, ref z, PortalSystemDefaults.DoorPaddingM, boss);
-            Door door = NewDoor(x, z, grow ? SkillIds.RisingAscent : SkillIds.DenseAscent, GateSec, false, caster.Id);
+            Door door = NewDoor(x, z, castSkill, GateSec, false, caster.Id);
             door.Gate = true;
             door.Grow = grow;
             _doors.Add(door);
@@ -60,7 +60,7 @@ namespace Dovus.Core.Portal
             }
         }
 
-        void Swap(in Body caster, in Body ally, in Disc boss)
+        void Swap(string castSkill, in Body caster, in Body ally, in Disc boss)
         {
             if (ally.Id == 0 || ally.Id == caster.Id || ally.IsBoss)
                 return;
@@ -73,17 +73,17 @@ namespace Dovus.Core.Portal
             bool wait = caster.TemplateOwns;
             if (wait)
             {
-                _wait.Add(new WaitMove(caster.Id, caster.Id, ax, caster.Y, az, caster.Radius, SkillIds.MirrorPurify, false, true));
-                _wait.Add(new WaitMove(caster.Id, ally.Id, cx, ally.Y, cz, ally.Radius, SkillIds.MirrorPurify, true, true));
+                _wait.Add(new WaitMove(caster.Id, caster.Id, ax, caster.Y, az, caster.Radius, castSkill, false, true));
+                _wait.Add(new WaitMove(caster.Id, ally.Id, cx, ally.Y, cz, ally.Radius, castSkill, true, true));
             }
             else
             {
-                _ready.Add(new Placement(caster.Id, ax, caster.Y, az, (SkillId)SkillIds.MirrorPurify, false, true));
-                _ready.Add(new Placement(ally.Id, cx, ally.Y, cz, (SkillId)SkillIds.MirrorPurify, true, true));
+                _ready.Add(new Placement(caster.Id, ax, caster.Y, az, (SkillId)castSkill, false, true));
+                _ready.Add(new Placement(ally.Id, cx, ally.Y, cz, (SkillId)castSkill, true, true));
             }
         }
 
-        void Sink(in Body caster, in Body ally, in Disc boss)
+        void Sink(string castSkill, in Body caster, in Body ally, in Disc boss)
         {
             if (ally.Id == 0 || ally.Id == caster.Id)
                 return;
@@ -92,19 +92,21 @@ namespace Dovus.Core.Portal
                 ActorId = ally.Id,
                 At = _now + RiseDelaySec,
                 Radius = ally.Radius,
-                Y = ally.Y
+                Y = ally.Y,
+                Skill = castSkill
             });
         }
 
-        void GatherTeam(in Body caster, IReadOnlyList<Body> allies)
+        void GatherTeam(string castSkill, in Body caster, IReadOnlyList<Body> allies)
         {
             var g = new Gather
             {
                 At = _now + TeamDelaySec,
-                Skip = new HashSet<int>()
+                Skip = new HashSet<int>(),
+                Skill = castSkill
             };
             _gathers.Add(g);
-            var big = NewDoor(caster.X + BesideM, caster.Z, SkillIds.MirrorSummon, TeamDelaySec + PortalSystemDefaults.DoorPaddingM, false, caster.Id);
+            var big = NewDoor(caster.X + BesideM, caster.Z, castSkill, TeamDelaySec + PortalSystemDefaults.DoorPaddingM, false, caster.Id);
             _doors.Add(big);
             if (allies == null)
                 return;
@@ -113,7 +115,7 @@ namespace Dovus.Core.Portal
                 Body ally = allies[i];
                 if (ally.Id == caster.Id || ally.IsBoss)
                     continue;
-                _doors.Add(NewDoor(ally.X, ally.Z, SkillIds.MirrorSummon, TeamDelaySec, false, caster.Id));
+                _doors.Add(NewDoor(ally.X, ally.Z, castSkill, TeamDelaySec, false, caster.Id));
             }
         }
 

@@ -269,7 +269,8 @@ namespace Dovus.Game.Composition.Builders
             Skill smoke = factory.Create(1, 1, weapon, elementId);
             if (assets.Runes.Count != 12 || assets.Weapons.Count != 10
                 || assets.Elements.Count != 6 || buildSkills.Count != SkillSystemBuilderDefaults.ExpectedBuildSkillCount
-                || smoke.Id != SkillIds.DenseStrike)
+                || smoke.Resolution.Identity.Verb.Value != "1"
+                || smoke.Resolution.Identity.Adjective.Value != "1")
             {
                 throw new System.InvalidOperationException(
                     "v6 binding preflight 12/10/6 SO, 36 build skill ve 1-1 smoke bekler.");

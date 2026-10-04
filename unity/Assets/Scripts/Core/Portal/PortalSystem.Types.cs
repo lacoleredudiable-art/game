@@ -85,6 +85,7 @@ namespace Dovus.Core.Portal
             public float At;
             public float Radius;
             public float Y;
+            public string Skill = string.Empty;
             public bool Done;
         }
 
@@ -92,6 +93,7 @@ namespace Dovus.Core.Portal
         {
             public float At;
             public bool Done;
+            public string Skill = string.Empty;
             public HashSet<int> Skip;
         }
     }

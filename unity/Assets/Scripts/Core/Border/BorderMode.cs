@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Dovus.Core.Grammar;
 using Dovus.Core.Shared;
 
 namespace Dovus.Core.Border
@@ -29,49 +30,24 @@ namespace Dovus.Core.Border
 
         public void Clear() => _slots.Clear();
 
-        public static bool TryTier(SkillId skillId, out float threshold, out float attack, out float life, out float damage)
-        {
-            switch (skillId.Value)
-            {
-                case SkillIds.AbsorbStrike:
-                case SkillIds.AbsorbStep:
-                case SkillIds.AbsorbAscent:
-                    threshold = Tier20;
-                    attack = Tier20Attack;
-                    life = Tier20Life;
-                    damage = Tier20Damage;
-                    return true;
-                case SkillIds.RisingStrike:
-                case SkillIds.RisingTime:
-                    threshold = Tier10;
-                    attack = Tier10Attack;
-                    life = Tier10Life;
-                    damage = Tier10Damage;
-                    return true;
-                default:
-                    threshold = 0f;
-                    attack = 0f;
-                    life = 0f;
-                    damage = 0f;
-                    return false;
-            }
-        }
+        public static bool TryTier(in SkillEngineModifiers engine, out float threshold, out float attack, out float life, out float damage) =>
+            BorderModeTier.TryFromEngine(engine, out threshold, out attack, out life, out damage);
 
         /// <summary>
         /// Eşik altı açar (eşit değil). Üstünde açmaz ve açık modu da kapatmaz.
         /// 12-8 sütunu cana bakmadan başlar.
         /// </summary>
-        public bool OnSkill(int actorId, SkillId skillId, float hpRatio)
+        public bool OnSkill(int actorId, SkillId skillId, in SkillEngineModifiers engine, float hpRatio)
         {
             Slot slot = Get(actorId);
-            if (skillId.Value == SkillIds.RisingTime)
+            if (BorderModeTier.OpensColumn(engine))
             {
                 slot.ColumnOn = true;
                 slot.ColumnLeft = ColumnSec;
                 slot.ColumnAge = 0f;
             }
 
-            if (!TryTier(skillId, out float threshold, out float attack, out float life, out float damage))
+            if (!TryTier(engine, out float threshold, out float attack, out float life, out float damage))
                 return slot.Active;
 
             if (hpRatio >= threshold)
