@@ -390,8 +390,8 @@ namespace Dovus.Game.DevTools
             AddFloatSlider("Sıyırma sarsıntısı", 0f, 30f, () => c.Feel.ShakePerfectPx, v => c.Feel.ShakePerfectPx = v, "px", "0.0");
             AddFloatSlider("Vurulma sarsıntısı", 0f, 40f, () => c.Feel.ShakeHitPx, v => c.Feel.ShakeHitPx = v, "px", "0.0");
             AddFloatSlider("Sarsıntı sönme hızı", 1f, 15f, () => c.Feel.ShakeDecay, v => c.Feel.ShakeDecay = v, "", "0.0");
-            AddIntSlider("Mükemmel hitstop", 0, 300, () => c.Feel.HitstopPerfectMs, v => c.Feel.HitstopPerfectMs = v, "ms");
-            AddIntSlider("Vurulma hitstop", 0, 400, () => c.Feel.HitstopPlayerHitMs, v => c.Feel.HitstopPlayerHitMs = v, "ms");
+            AddIntSlider("Mükemmel hitstop (görsel)", 0, 300, () => c.Feel.HitstopPerfectMs, v => c.Feel.HitstopPerfectMs = v, "ms");
+            AddIntSlider("Vurulma hitstop (görsel)", 0, 400, () => c.Feel.HitstopPlayerHitMs, v => c.Feel.HitstopPlayerHitMs = v, "ms");
             AddIntSlider("Bossa isabet hitstop", 0, 300, () => c.Feel.HitstopBossHitMs, v => c.Feel.HitstopBossHitMs = v, "ms");
             AddIntSlider("Boss hitstop · hafif", 0, 120, () => c.Feel.HitstopBossLightMs, v => c.Feel.HitstopBossLightMs = v, "ms");
             AddIntSlider("Boss hitstop · kılıç", 0, 150, () => c.Feel.HitstopBossSwordMs, v => c.Feel.HitstopBossSwordMs = v, "ms");

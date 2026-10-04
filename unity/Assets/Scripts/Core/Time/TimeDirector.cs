@@ -15,6 +15,7 @@ namespace Dovus.Core.Time
 
         /// <summary>
         /// Kısa süre dünya zamanını durdurur. Üst üste gelirse süreler toplanır.
+        /// Oyun kodu çağırmaz (MP: dünya donması yok).
         /// </summary>
         public void TriggerHitstop(int durationMs)
         {
