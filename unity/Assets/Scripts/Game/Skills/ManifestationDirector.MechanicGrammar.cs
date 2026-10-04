@@ -36,7 +36,6 @@ namespace Dovus.Game.Skills
         static readonly PortalSystem MechanicGrammarLegacyPortal = new();
 
         readonly Dictionary<(int, int, int), MechanicPlan> _mechanicPlans = new();
-        string _cardEffect = string.Empty;
 
         /// <summary>Son cast'in gramer planı (test/HUD).</summary>
         public MechanicPlan LastMechanicPlan { get; set; }
@@ -51,7 +50,7 @@ namespace Dovus.Game.Skills
             return weaponId;
         }
 
-        MechanicPlan MechanicPlanFor(in SkillResolution skill)
+        internal MechanicPlan MechanicPlanFor(in SkillResolution skill)
         {
             MechanicGrammar grammar = MechanicEngine;
             if (grammar == null || skill.IsEmpty
@@ -73,7 +72,7 @@ namespace Dovus.Game.Skills
         {
             MechanicPlan plan = MechanicPlanFor(skill);
             LastMechanicPlan = plan;
-            _cardEffect = skill.Identity.SkillJob ?? string.Empty;
+            SkillWorld.CardEffect = skill.Identity.SkillJob ?? string.Empty;
             if (plan == null)
                 return;
             DebugConfig.DevLog($"[Mechanic] {plan.SkillId}/{plan.WeaponName}: {MechanicDescriber.ShortTitle(plan)} — {plan.Description}");
@@ -196,7 +195,7 @@ namespace Dovus.Game.Skills
                 if (e.Target != "dusman")
                     continue;
                 double ms = e.DurationSec * SkillsTimeDefaults.SecToMs;
-                bool hasteCard = CardEffectRules.WantsSelfHaste(_cardEffect);
+                bool hasteCard = CardEffectRules.WantsSelfHaste(SkillWorld.CardEffect);
                 switch (e.Atom, e.Stat)
                 {
                     case ("hiz", "tempo"):
@@ -210,7 +209,7 @@ namespace Dovus.Game.Skills
                     case ("hiz", "hareket"):
                         if (e.Has("ters_kontrol"))
                             ApplyBossReverse(e, applied);
-                        if (hasteCard && !CardEffectRules.Names(_cardEffect, "root"))
+                        if (hasteCard && !CardEffectRules.Names(SkillWorld.CardEffect, "root"))
                             break;
                         if (e.Amount <= 0)
                         {
@@ -222,7 +221,7 @@ namespace Dovus.Game.Skills
                             bool ready = !hammer || HammerStunReady(now);
                             if (hammer && !ready)
                                 break;
-                            StatusKind lockKind = CardEffectRules.MovementLockKind(_cardEffect, daze);
+                            StatusKind lockKind = CardEffectRules.MovementLockKind(SkillWorld.CardEffect, daze);
                             bool had = boss.Has(lockKind);
                             ApplyOnce(
                                 boss,
@@ -240,7 +239,7 @@ namespace Dovus.Game.Skills
                             ApplyOnce(boss, StatusKind.Weaken, weakenMs, weaken, applied);
                         break;
                     case ("gorunurluk", "kor"):
-                        if (CardEffectRules.AccuracyIsSlow(_cardEffect))
+                        if (CardEffectRules.AccuracyIsSlow(SkillWorld.CardEffect))
                         {
                             float slow = e.Amount > 0 && e.Amount < 1
                                 ? (float)e.Amount
@@ -327,10 +326,10 @@ namespace Dovus.Game.Skills
             _jsonEffects.Tick(worldMs);
         }
 
-        Vector3 ClampToArena(Vector3 pos) =>
+        internal Vector3 ClampToArena(Vector3 pos) =>
             _motor != null ? ArenaClamp.XZ(pos, _motor.Tuning.Arena.ArenaHalfSizeM, _motor.BodyRadiusM) : pos;
 
-        void TeleportPlayer(Vector3 pos)
+        internal void TeleportPlayer(Vector3 pos)
         {
             if (_player == null)
                 return;

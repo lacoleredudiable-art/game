@@ -234,9 +234,9 @@ namespace Dovus.Game.Skills.Mechanics
                     {
                         float buff = WeaponPassiveRules.ScaleFriendlyMagnitude(
                             (float)Math.Abs(guard.Effect.Amount), scale);
-                        _host.SelfDamageBuff = Mathf.Max(_host.SelfDamageBuff, buff);
-                        _host.SelfDamageBuffUntilMs = Math.Max(
-                            _host.SelfDamageBuffUntilMs,
+                        _host.World.SelfDamageBuff = Mathf.Max(_host.World.SelfDamageBuff, buff);
+                        _host.World.SelfDamageBuffUntilMs = Math.Max(
+                            _host.World.SelfDamageBuffUntilMs,
                             _host.Clock.Director.WorldTimeMs + Math.Max(100, guard.Effect.DurationSec * SkillsTimeDefaults.SecToMs));
                     }
                 }

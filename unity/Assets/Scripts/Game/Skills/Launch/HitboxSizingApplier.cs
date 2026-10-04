@@ -13,14 +13,15 @@ using Dovus.Core.Presentation;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using Dovus.Game.Data;
+using Dovus.Game.Skills;
 using UnityEngine;
 namespace Dovus.Game.Skills.Launch
 {
 public sealed class HitboxSizingApplier
     {
-        readonly ISkillExecutorLaunchHost _host;
+        readonly ManifestationDirector.LaunchServicesHost _host;
 
-        public HitboxSizingApplier(ISkillExecutorLaunchHost host) => _host = host;
+        public HitboxSizingApplier(ManifestationDirector.LaunchServicesHost host) => _host = host;
 
         public void ApplyVerbHitboxSizing(
             SkillExecutorKind kind,

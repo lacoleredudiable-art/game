@@ -23,7 +23,7 @@ namespace Dovus.Game.Skills.Mechanics
 {
     public sealed class JsonEffectRuntime
     {
-        readonly IJsonEffectHost _host;
+        readonly Hosts.MdMechanicsHost _host;
         readonly MechanicWorldRuntime _world;
         readonly ParryWindow _parry = new ParryWindow();
         float _reflectRampBase;
@@ -31,7 +31,7 @@ namespace Dovus.Game.Skills.Mechanics
         double _reflectRampUntilMs;
         double _reflectSplitUntilMs;
 
-        public JsonEffectRuntime(IJsonEffectHost host, MechanicWorldRuntime world)
+        public JsonEffectRuntime(Hosts.MdMechanicsHost host, MechanicWorldRuntime world)
         {
             _host = host;
             _world = world;
@@ -46,8 +46,8 @@ namespace Dovus.Game.Skills.Mechanics
 
         public void NoteJsonCast(in SkillResolution skill, ClosingHit closing)
         {
-            _host.JsonCastSkill = skill;
-            _host.JsonCastClosing = closing;
+            _host.Cast.JsonCastSkill = skill;
+            _host.Cast.JsonCastClosing = closing;
         }
 
         public int FriendlyTargetCap(in SkillResolution skill) =>
@@ -76,14 +76,14 @@ namespace Dovus.Game.Skills.Mechanics
         {
             if (skill.IsEmpty || scale <= 0f)
                 return 0f;
-            _host.JsonTickDamage = true;
+            _host.World.JsonTickDamage = true;
             try
             {
                 return _host.ApplyClosingDamage(closing, skill, false, 0f, scale, 1f);
             }
             finally
             {
-                _host.JsonTickDamage = false;
+                _host.World.JsonTickDamage = false;
             }
         }
 
@@ -144,25 +144,25 @@ namespace Dovus.Game.Skills.Mechanics
                 JsonLog($"gizli {hidden:0.##}sn");
             }
             if (JsonEffectRules.Overflows(plan, "kalkan"))
-                _host.TasarShieldUntilMs = now + JsonStatusTuning.ShieldMs;
+                _host.World.TasarShieldUntilMs = now + JsonStatusTuning.ShieldMs;
             ApplyMirroredDebuff(plan);
         }
 
         /// <summary>8-1 taşma: güç buff'ı zaten açıkken yenisi gelirse eskisi bir sonraki vuruşa tek seferlik ek olur.</summary>
         public void CaptureBuffOverflow(MechanicPlan plan, double now)
         {
-            if (!JsonEffectRules.Overflows(plan, "hasar_buff") || now >= _host.SelfDamageBuffUntilMs || _host.SelfDamageBuff <= 0f)
+            if (!JsonEffectRules.Overflows(plan, "hasar_buff") || now >= _host.World.SelfDamageBuffUntilMs || _host.World.SelfDamageBuff <= 0f)
                 return;
-            _host.OverflowNextHitBonus = _host.SelfDamageBuff;
-            JsonLog($"taşma → sonraki vuruş +{_host.OverflowNextHitBonus * 100f:0}%");
+            _host.World.OverflowNextHitBonus = _host.World.SelfDamageBuff;
+            JsonLog($"taşma → sonraki vuruş +{_host.World.OverflowNextHitBonus * 100f:0}%");
         }
 
         public float ConsumeOverflowBonus(bool isBasicStrike)
         {
-            if (isBasicStrike || _host.OverflowNextHitBonus <= 0f)
+            if (isBasicStrike || _host.World.OverflowNextHitBonus <= 0f)
                 return 1f;
-            float mult = 1f + _host.OverflowNextHitBonus;
-            _host.OverflowNextHitBonus = 0f;
+            float mult = 1f + _host.World.OverflowNextHitBonus;
+            _host.World.OverflowNextHitBonus = 0f;
             return mult;
         }
 
@@ -170,11 +170,11 @@ namespace Dovus.Game.Skills.Mechanics
         public void OnJsonShieldBlocked()
         {
             double now = JsonNow;
-            if (_host.TasarShieldUntilMs <= 0 || now >= _host.TasarShieldUntilMs || _host.PlayerStatus == null)
+            if (_host.World.TasarShieldUntilMs <= 0 || now >= _host.World.TasarShieldUntilMs || _host.PlayerStatus == null)
                 return;
             if (_host.PlayerStatus.Board.ShieldRemaining > JsonEffectRuntimeDefaults.ShieldHeldEpsilon)
                 return;
-            _host.TasarShieldUntilMs = 0;
+            _host.World.TasarShieldUntilMs = 0;
             if (_host.Player == null || _host.Boss == null
                 || _host.FlatDistance(_host.Player.position, _host.Boss.transform.position) > JsonParam("shield_shock_radius_m", JsonEffectRuntimeDefaults.ShieldShockRadiusFallbackM))
                 return;
@@ -230,7 +230,7 @@ namespace Dovus.Game.Skills.Mechanics
         {
             if (_host.BossStatus == null)
                 return;
-            if (_host.LastStatusTransferMoved > 0)
+            if (_host.World.LastStatusTransferMoved > 0)
             {
                 applied.Add("durum ekle: aktarım yaptı");
                 return;
@@ -270,8 +270,8 @@ namespace Dovus.Game.Skills.Mechanics
             float bonus = JsonEffectRules.PurgePower(removed, JsonParam("cleanse_power_per_status", JsonEffectRuntimeDefaults.CleansePowerPerStatusFallback));
             double now = JsonNow;
             float sec = !skill.Engine.IsNull ? skill.Engine.BuffDurationSec(JsonEffectRuntimeDefaults.PurgeBuffDurationFallbackSec) : JsonEffectRuntimeDefaults.PurgeBuffDurationFallbackSec;
-            _host.SelfDamageBuff = (now < _host.SelfDamageBuffUntilMs ? _host.SelfDamageBuff : 0f) + bonus;
-            _host.SelfDamageBuffUntilMs = Math.Max(_host.SelfDamageBuffUntilMs, now + Math.Max(0.5f, sec) * SkillsTimeDefaults.SecToMs);
+            _host.World.SelfDamageBuff = (now < _host.World.SelfDamageBuffUntilMs ? _host.World.SelfDamageBuff : 0f) + bonus;
+            _host.World.SelfDamageBuffUntilMs = Math.Max(_host.World.SelfDamageBuffUntilMs, now + Math.Max(0.5f, sec) * SkillsTimeDefaults.SecToMs);
             _host.Readout?.NoteSkill(skill.Identity.DisplayName, $"güç +{bonus * 100f:0}%", new Color(1f, 0.8f, 0.4f));
             JsonLog($"güce çevir {removed} durum → +{bonus * 100f:0}%");
         }
@@ -327,7 +327,7 @@ namespace Dovus.Game.Skills.Mechanics
                 return false;
             if (!JsonEffectRules.IsFriendlyBounce(_host.MechanicPlanFor(skill)))
                 return false;
-            bool toAlly = _host.Ally != null && JsonEffectRules.NextBounceIsAlly(_host.LastFriendlyWasAlly);
+            bool toAlly = _host.Ally != null && JsonEffectRules.NextBounceIsAlly(_host.World.LastFriendlyWasAlly);
             bool cleanse = string.Equals(skill.Presentation.Action, "cleanse", StringComparison.Ordinal);
             if (_host.IsHealSkill(skill) && !cleanse)
             {
@@ -348,7 +348,7 @@ namespace Dovus.Game.Skills.Mechanics
                 if (cleanse)
                     board.CleanseHostile(_host.JsonCleanseCount(skill));
             }
-            _host.LastFriendlyWasAlly = toAlly;
+            _host.World.LastFriendlyWasAlly = toAlly;
             JsonLog("dosttan dosta → " + (toAlly ? "ally" : "self"));
             return true;
         }

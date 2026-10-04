@@ -23,10 +23,10 @@ namespace Dovus.Game.Skills.Launch
 {
     public sealed class SkillExecutorLauncher
     {
-        readonly ISkillExecutorLaunchHost _host;
+        readonly ManifestationDirector.LaunchServicesHost _host;
         readonly HitboxSizingApplier _hitbox;
 
-        public SkillExecutorLauncher(ISkillExecutorLaunchHost host, HitboxSizingApplier hitbox)
+        public SkillExecutorLauncher(ManifestationDirector.LaunchServicesHost host, HitboxSizingApplier hitbox)
         {
             _host = host;
             _hitbox = hitbox;

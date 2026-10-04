@@ -16,6 +16,7 @@ using Dovus.Game.Casting;
 using Dovus.Game.Platform;
 using Dovus.Game.Skills.Execution;
 using Dovus.Game.Skills.Motion;
+using Dovus.Game.Skills.State;
 using Dovus.Game.Skills.Weapons;
 using Dovus.Game.Weapons;
 using UnityEngine;
@@ -132,7 +133,7 @@ namespace Dovus.Game.Skills
             return _weaponPassives.WeaponSupportPower(skill);
         }
 
-        float WeaponFriendlyScale()
+        internal float WeaponFriendlyScale()
         {
             EnsureWeaponServices();
             return _weaponPassives.WeaponFriendlyScale();
@@ -202,13 +203,13 @@ namespace Dovus.Game.Skills
             _weaponPassives.NoteShieldBlockIfGuarding();
         }
 
-        bool HammerStunReady(double worldMs)
+        internal bool HammerStunReady(double worldMs)
         {
             EnsureWeaponServices();
             return _weaponPassives.HammerStunReady(worldMs);
         }
 
-        void CommitHammerStun(double worldMs, bool ready, bool alreadyHad, bool applied)
+        internal void CommitHammerStun(double worldMs, bool ready, bool alreadyHad, bool applied)
         {
             EnsureWeaponServices();
             _weaponPassives.CommitHammerStun(worldMs, ready, alreadyHad, applied);
@@ -262,21 +263,17 @@ namespace Dovus.Game.Skills
             _cannonBlast.PushCannonBodies(impactX, impactZ, splash, arena, bossR);
         }
 
-        bool _casterRecoilSuppressed;
-
-        float _lastHitX;
-        float _lastHitZ;
-
-        sealed class WeaponServicesHost
-            : IWeaponPassiveRuntimeHost,
-                IOrbControllerHost,
+        public sealed class WeaponServicesHost
+            : IOrbControllerHost,
                 ICannonBlastHost
         {
             readonly ManifestationDirector _md;
 
-            internal bool WeaponIgnoresArmor;
-
             internal WeaponServicesHost(ManifestationDirector md) => _md = md;
+
+            public CastSessionState Cast => _md.CastSession;
+
+            public bool WeaponIgnoresArmor { get; set; }
 
             public Transform Player => _md._player;
             public BossReactorController Boss => _md._boss;
@@ -288,11 +285,6 @@ namespace Dovus.Game.Skills
             public ActorView Visual => _md._visual;
             public double LastMovedMs => _md._lastMovedMs;
             public bool PerformingAttack => _md.PerformingAttack;
-            bool IWeaponPassiveRuntimeHost.WeaponIgnoresArmor
-            {
-                get => WeaponIgnoresArmor;
-                set => WeaponIgnoresArmor = value;
-            }
             public OrbAnchor Orb
             {
                 get
@@ -308,28 +300,28 @@ namespace Dovus.Game.Skills
             public MotionTemplateBodyHost MotionBody => _md._motionBody;
             public WeaponSwapState WeaponSwap => _md._weaponSwap;
             public double WorldTimeMs => _md.WorldTimeMs;
-            bool IWeaponPassiveRuntimeHost.CasterRecoilSuppressed
+            public bool CasterRecoilSuppressed
             {
-                get => _md._casterRecoilSuppressed;
-                set => _md._casterRecoilSuppressed = value;
+                get => _md.CastSession.CasterRecoilSuppressed;
+                set => _md.CastSession.CasterRecoilSuppressed = value;
             }
 
             bool ICannonBlastHost.CasterRecoilSuppressed
             {
-                get => _md._casterRecoilSuppressed;
-                set => _md._casterRecoilSuppressed = value;
+                get => _md.CastSession.CasterRecoilSuppressed;
+                set => _md.CastSession.CasterRecoilSuppressed = value;
             }
 
-            float IWeaponPassiveRuntimeHost.LastHitX
+            public float LastHitX
             {
-                get => _md._lastHitX;
-                set => _md._lastHitX = value;
+                get => _md.CastSession.LastHitX;
+                set => _md.CastSession.LastHitX = value;
             }
 
-            float IWeaponPassiveRuntimeHost.LastHitZ
+            public float LastHitZ
             {
-                get => _md._lastHitZ;
-                set => _md._lastHitZ = value;
+                get => _md.CastSession.LastHitZ;
+                set => _md.CastSession.LastHitZ = value;
             }
 
             public bool RecoilInTemplate

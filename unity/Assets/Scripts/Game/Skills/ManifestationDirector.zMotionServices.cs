@@ -121,6 +121,8 @@ namespace Dovus.Game.Skills
         void ArmTemplateDelivery(SkillResolution skill, PendingClosing pending, SkillMotionPlan motion)
         {
             EnsureMotionServices();
+            CastSession.DeliverySkill = skill;
+            CastSession.DeliveryPending = pending;
             _deliverySkill = skill;
             _deliveryPending = pending;
             _templateDelivery.ArmTemplateDelivery(skill, pending, motion);
@@ -152,7 +154,7 @@ namespace Dovus.Game.Skills
 
         static bool IsSustained(in SkillResolution skill) => WeaponPassiveRuntime.IsSustained(skill);
 
-        float BossBodyRadius()
+        internal float BossBodyRadius()
         {
             if (_boss == null)
                 return SkillsTimeDefaults.MotionReturnHeightM;
@@ -190,11 +192,11 @@ namespace Dovus.Game.Skills
             public PlayerTargetingController Targeting => _md._targeting;
             public HexagonInputController Input => _md._input;
             public Transform DirectorTransform => _md.transform;
-            public float ClosingChainBonus => _md._closingChainBonus;
+            public float ClosingChainBonus => _md.CastSession.ClosingChainBonus;
             public int SlotQueryCastId
             {
-                get => _md._slotQueryCastId;
-                set => _md._slotQueryCastId = value;
+                get => _md.CastSession.SlotQueryCastId;
+                set => _md.CastSession.SlotQueryCastId = value;
             }
             public List<PendingClosing> PendingList => _md._pending;
             public LivingEffectView BuildingView
@@ -229,8 +231,8 @@ namespace Dovus.Game.Skills
             }
             public bool CasterRecoilSuppressed
             {
-                get => _md._casterRecoilSuppressed;
-                set => _md._casterRecoilSuppressed = value;
+                get => _md.CastSession.CasterRecoilSuppressed;
+                set => _md.CastSession.CasterRecoilSuppressed = value;
             }
             public bool LastSkillEffectApplied
             {

@@ -109,8 +109,8 @@ namespace Dovus.Game.Skills
             public SentenceEngine Engine => _md._engine;
             public int SlotQueryCastId
             {
-                get => _md._slotQueryCastId;
-                set => _md._slotQueryCastId = value;
+                get => _md.CastSession.SlotQueryCastId;
+                set => _md.CastSession.SlotQueryCastId = value;
             }
 
             public BossVitals BossVitals => _md._bossVitals;

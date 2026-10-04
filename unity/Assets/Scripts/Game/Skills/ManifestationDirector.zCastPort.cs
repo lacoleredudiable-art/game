@@ -35,18 +35,18 @@ namespace Dovus.Game.Skills
 
             internal CastPort(ManifestationDirector md) => _md = md;
 
-            public void ResetClosingChainBonus() => _md._closingChainBonus = 1f;
+            public void ResetClosingChainBonus() => _md.CastSession.ClosingChainBonus = 1f;
 
             public SkillResolution ResolveSkill(PendingClosing ctx) => _md.ResolvePendingSkill(ctx);
 
             public void NoteWeaponCast(SkillResolution skill) => _md.NoteWeaponCast(skill);
 
             public int OpenSlotCast() =>
-                _md._slotQueryCastId = _md._slotPassives != null ? _md._slotPassives.OpenCast() : 0;
+                _md.CastSession.SlotQueryCastId = _md._slotPassives != null ? _md._slotPassives.OpenCast() : 0;
 
             public void CloseSlotCast() => _md._slotPassives?.CloseCast();
 
-            public void ResetSlotQueryCastId() => _md._slotQueryCastId = 0;
+            public void ResetSlotQueryCastId() => _md.CastSession.SlotQueryCastId = 0;
 
             public WeaponSkillCompatibility Compatibility(SkillResolution skill) =>
                 _md.WeaponCompatibilityFor(skill);
@@ -191,7 +191,7 @@ namespace Dovus.Game.Skills
             {
                 if (_md._slotPassives == null
                     || _md._clock == null
-                    || !_md._slotPassives.TryConsumeEcho(_md._slotQueryCastId, out float echoDelay, out float echoPower))
+                    || !_md._slotPassives.TryConsumeEcho(_md.CastSession.SlotQueryCastId, out float echoDelay, out float echoPower))
                     return;
 
                 _md.EnsureCoreServices();
@@ -199,10 +199,10 @@ namespace Dovus.Game.Skills
                     ctx,
                     skill,
                     motion.SlashCommitMult,
-                    _md._closingChainBonus,
+                    _md.CastSession.ClosingChainBonus,
                     echoDelay,
                     echoPower,
-                    _md._slotQueryCastId,
+                    _md.CastSession.SlotQueryCastId,
                     _md._clock.Director.WorldTimeMs);
             }
 
@@ -225,7 +225,7 @@ namespace Dovus.Game.Skills
 
             public bool BasicCadenceReady(double now) => _md.BasicCadenceReady(now);
 
-            public void SetLastBasicStrikeMs(double now) => _md._lastBasicStrikeMs = now;
+            public void SetLastBasicStrikeMs(double now) => _md.SkillWorld.LastBasicStrikeMs = now;
 
             public int BasicHitsNow() => _md.BasicHitsNow();
 

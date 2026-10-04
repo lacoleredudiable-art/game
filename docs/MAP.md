@@ -2,7 +2,7 @@
 
 **Nasıl kullanılır:** Görevde bir konu adı geçiyorsa bu tabloda bul; yalnız listelenen dosyayı aç. Giriş noktası, okumaya başlayacağın tip ve metot. Kök `AGENTS.md` sert kurallar; iş sırası `docs/PLAN.md`; hedef yapı `docs/ARCHITECTURE-PLAN.md`; Core üst klasör sırası / döngü kapısı `docs/core-layers.md`. Doğrulama: `tools/verify.ps1`.
 
-**Büyük dosya uyarısı:** `ManifestationDirector` (partial toplamı ~3.9k satır, servislere taşınıyor), `HexagonInputController`, `BossDirector`, `GameTuning` — tam dosya okuma; önce bu haritadaki giriş noktasına git, `Select-String` ile daralt. `GameBootstrapHost` ince kök; kurulum `Game/Composition/Builders/*`.
+**Büyük dosya uyarısı:** `ManifestationDirector` (partial ~4.5k; durum `Game/Skills/State/*`, mekanik köprü `Game/Skills/Hosts/MdMechanicsHost.cs`), `HexagonInputController`, `BossDirector`, `GameTuning` — tam dosya okuma; önce bu haritadaki giriş noktasına git, `Select-String` ile daralt. `GameBootstrapHost` ince kök; kurulum `Game/Composition/Builders/*`.
 
 | Konu | Dosya(lar) | Giriş noktası |
 |------|------------|---------------|

@@ -64,7 +64,7 @@ namespace Dovus.Game.Skills
                     return _md._slotPassiveRuntime.PassiveFlows;
                 }
             }
-            public int SlotQueryCastId => _md._slotQueryCastId;
+            public int SlotQueryCastId => _md.CastSession.SlotQueryCastId;
             public GameClockHost Clock => _md._clock;
             public TeamComboAccess TeamAccess => _md._team;
             public MechanicGrammar MechanicEngine => _md.MechanicEngine;
@@ -75,15 +75,15 @@ namespace Dovus.Game.Skills
             public BossDirector BossDirector => _md._bossDirector;
             public DamageNumberHud DamageHud => _md._damageHud;
             public ElementPaintNode? SelectedElementPaint => _md.SelectedElementPaint;
-            public bool LastFriendlyWasAlly { set => _md._lastFriendlyWasAlly = value; }
-            public float ClosingChainBonus => _md._closingChainBonus;
+            public bool LastFriendlyWasAlly { set => _md.SkillWorld.LastFriendlyWasAlly = value; }
+            public float ClosingChainBonus => _md.CastSession.ClosingChainBonus;
             public ReactionReadoutHud Readout => _md._readout;
             public ISentenceDebugSink DebugHud => _md._debugHud;
             public KinematicMotorController Motor => _md._motor;
             public GroundScarFieldView Scars => _md._scars;
-            public bool JsonTickDamage => _md._jsonTickDamage;
-            public float LastHitX => _md._lastHitX;
-            public float LastHitZ => _md._lastHitZ;
+            public bool JsonTickDamage => _md.SkillWorld.JsonTickDamage;
+            public float LastHitX => _md.CastSession.LastHitX;
+            public float LastHitZ => _md.CastSession.LastHitZ;
             public float LastClosingDamageDealt
             {
                 get => _md.LastClosingDamageDealt;
@@ -166,7 +166,7 @@ namespace Dovus.Game.Skills
             _closingStatus.Apply(p.Target, skill, bossReached);
         }
 
-        void ApplyClosingHeal(
+        internal void ApplyClosingHeal(
             ClosingHit closing,
             SkillResolution skill,
             float effectScale = 1f,
@@ -178,7 +178,7 @@ namespace Dovus.Game.Skills
             _closingHeal.Apply(closing, skill, effectScale, chainBonusOverride, fieldCenter, fieldRadiusM);
         }
 
-        int CalculateClosingHealAmount(
+        internal int CalculateClosingHealAmount(
             ClosingHit closing,
             SkillResolution skill,
             float effectScale,
@@ -188,7 +188,7 @@ namespace Dovus.Game.Skills
             return _closingHeal.CalculateAmount(closing, skill, effectScale, chainBonusOverride);
         }
 
-        void ApplyClosingHealAmount(
+        internal void ApplyClosingHealAmount(
             SkillResolution skill,
             int amount,
             Vector3? fieldCenter,
@@ -199,7 +199,7 @@ namespace Dovus.Game.Skills
             _closingHeal.ApplyAmount(skill, amount, fieldCenter, fieldRadiusM, preferredTarget);
         }
 
-        float ApplyClosingDamage(
+        internal float ApplyClosingDamage(
             ClosingHit closing,
             SkillResolution skill,
             bool isBasicStrike,
@@ -236,7 +236,7 @@ namespace Dovus.Game.Skills
             return _closingDamage.IsBossInStrikeCapsule(logic, reachM);
         }
 
-        bool BasicTargetStillInReach(Transform target, float reachM)
+        internal bool BasicTargetStillInReach(Transform target, float reachM)
         {
             EnsureClosingServices();
             return _closingDamage.BasicTargetStillInReach(target, reachM);
@@ -254,6 +254,6 @@ namespace Dovus.Game.Skills
             return _closingDamage.IsClosingInRange(logic, closing);
         }
 
-        static bool IsHealSkill(SkillResolution skill) => ClosingHealRules.IsHealSkill(skill);
+        internal static bool IsHealSkill(SkillResolution skill) => ClosingHealRules.IsHealSkill(skill);
     }
 }

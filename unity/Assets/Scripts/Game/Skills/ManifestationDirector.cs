@@ -52,7 +52,7 @@ namespace Dovus.Game.Skills
         Transform _playerVitalsOwner;
 
         /// <summary>O11: her kare / her vuruş GetComponent yerine oyuncu başına bir kez.</summary>
-        PlayerVitalsHost CachedPlayerVitals()
+        internal PlayerVitalsHost CachedPlayerVitals()
         {
             if (_player == null)
                 return null;
@@ -103,15 +103,12 @@ namespace Dovus.Game.Skills
 
         // --- Slot pasifleri ---
         SlotPassiveDirector _slotPassives;
-        int _slotQueryCastId;
         bool _slotPassiveNeedsWeapon;
         PassiveHud _passiveHud;
         MobilityCcData _mobilityCc;
         ISkillRepository _skillNumbers;
         // --- State machine (player_states ↔ SentencePhase / dodge / CC) ---
         PlayerStateMachine _playerStates;
-        // Kapanış çarpanı (ApplyClosing*). v5 zincir katmanı kaldırıldı; hep 1.
-        float _closingChainBonus = 1f;
         HexagonInputController _input;
         // --- Ekipman (Bağlama 9) — sabit silah; seçim UI yok ---
         EquipmentItem _equippedWeapon;
@@ -330,10 +327,10 @@ namespace Dovus.Game.Skills
         }
 #endif
 
-        static float FlatDistance(Vector3 a, Vector3 b) =>
+        internal static float FlatDistance(Vector3 a, Vector3 b) =>
             PlanarMath.FlatDistance(a.x, a.z, b.x, b.z);
 
-        float PlayerBodyRadiusM() => _motor != null ? _motor.BodyRadiusM : 0f;
+        internal float PlayerBodyRadiusM() => _motor != null ? _motor.BodyRadiusM : 0f;
     }
 }
 

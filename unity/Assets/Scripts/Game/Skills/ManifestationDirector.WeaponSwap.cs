@@ -151,7 +151,7 @@ namespace Dovus.Game.Skills
             SyncCycleIndex();
             SyncVisualDelivery();
             if (_weaponSwap.Rules.CancelsCombo)
-                _closingChainBonus = 1f;
+                CastSession.ClosingChainBonus = 1f;
             LogLoadout("swap");
         }
 

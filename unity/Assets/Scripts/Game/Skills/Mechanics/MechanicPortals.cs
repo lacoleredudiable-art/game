@@ -22,11 +22,11 @@ namespace Dovus.Game.Skills.Mechanics
             public bool Inside;
         }
 
-        readonly IMechanicPortalsHost _host;
+        readonly Hosts.MdMechanicsHost _host;
         readonly List<MechanicTimer> _timers = new();
         readonly List<PortalPair> _portals = new();
 
-        public MechanicPortals(IMechanicPortalsHost host) => _host = host;
+        public MechanicPortals(Hosts.MdMechanicsHost host) => _host = host;
 
         public void ScheduleAfter(double now, float delaySec, Action run) =>
             _timers.Add(new MechanicTimer { DueMs = now + delaySec * SkillsTimeDefaults.SecToMs, Run = run });

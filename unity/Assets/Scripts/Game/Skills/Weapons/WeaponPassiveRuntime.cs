@@ -23,11 +23,11 @@ namespace Dovus.Game.Skills.Weapons
 {
     public sealed class WeaponPassiveRuntime
     {
-        readonly IWeaponPassiveRuntimeHost _host;
+        readonly ManifestationDirector.WeaponServicesHost _host;
         readonly WeaponPassiveState _passives = new();
         double _swapInstantDrawUntilMs;
 
-        public WeaponPassiveRuntime(IWeaponPassiveRuntimeHost host) => _host = host;
+        public WeaponPassiveRuntime(ManifestationDirector.WeaponServicesHost host) => _host = host;
 
 
 

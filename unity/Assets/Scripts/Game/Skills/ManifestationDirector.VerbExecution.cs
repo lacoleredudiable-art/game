@@ -1,4 +1,5 @@
 using Dovus.App.Casting;
+using Dovus.Game.Skills.State;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
@@ -43,8 +44,6 @@ namespace Dovus.Game.Skills
 
         readonly List<DelayedLaunch> _delayedLaunches = new();
         VerbExecutionData _verbData;
-        float _selfDamageBuff;
-        double _selfDamageBuffUntilMs;
         float _emHealRatio;
         double _emHealUntilMs;
 
@@ -110,9 +109,12 @@ namespace Dovus.Game.Skills
 
         float SelfDamageBuffMult()
         {
-            if (_clock == null || _clock.Director.WorldTimeMs >= _selfDamageBuffUntilMs)
+            if (_clock == null)
                 return 1f;
-            return 1f + _selfDamageBuff;
+            return SelfDamageBuffRules.DamageMultiplier(
+                _clock.Director.WorldTimeMs,
+                SkillWorld.SelfDamageBuffUntilMs,
+                SkillWorld.SelfDamageBuff);
         }
 
         /// <summary>
@@ -139,8 +141,8 @@ namespace Dovus.Game.Skills
             // 8-9 hasar_buff koruyucu tetiktedir; kalıp/cast anında bir daha yazılmaz.
             if (buff > 0f && buffSec > 0f && GuardTriggerDelivery.AllowImmediate(mechanicPlan, "hasar_buff"))
             {
-                _selfDamageBuff = buff;
-                _selfDamageBuffUntilMs = now + (buffSec + lifetimeAdd) * SkillsTimeDefaults.SecToMs;
+                SkillWorld.SelfDamageBuff = buff;
+                SkillWorld.SelfDamageBuffUntilMs = now + (buffSec + lifetimeAdd) * SkillsTimeDefaults.SecToMs;
             }
 
             float reflect = engine.ReflectRatio(0f);
@@ -204,7 +206,7 @@ namespace Dovus.Game.Skills
                 Motion = motionCopy,
                 EffectMult = mult,
                 Logic = logic,
-                SlotCastId = _slotQueryCastId
+                SlotCastId = CastSession.SlotQueryCastId
             });
         }
 
@@ -216,15 +218,15 @@ namespace Dovus.Game.Skills
                 if (worldMs < d.DueMs)
                     continue;
                 _delayedLaunches.RemoveAt(i);
-                int prevCast = _slotQueryCastId;
-                _slotQueryCastId = d.SlotCastId;
+                int prevCast = CastSession.SlotQueryCastId;
+                CastSession.SlotQueryCastId = d.SlotCastId;
                 try
                 {
                     TryLaunchSkillExecutor(d.Kind, d.Pending, d.Skill, d.Motion, d.EffectMult, d.Logic, d.SlotCastId);
                 }
                 finally
                 {
-                    _slotQueryCastId = prevCast;
+                    CastSession.SlotQueryCastId = prevCast;
                 }
             }
         }
@@ -252,7 +254,7 @@ namespace Dovus.Game.Skills
             float mult = skill.Scaling.DamageMult > 0f ? skill.Scaling.DamageMult : 1f;
             if (_playerStatus != null)
                 mult *= _playerStatus.Board.OutgoingDamageMult;
-            mult *= _slotPassives?.DamageMultFor(_slotQueryCastId) ?? 1f;
+            mult *= _slotPassives?.DamageMultFor(CastSession.SlotQueryCastId) ?? 1f;
             mult *= SelfDamageBuffMult();
 
             EnsureBossArmor();
@@ -268,7 +270,7 @@ namespace Dovus.Game.Skills
             }
             bool ignoreArmor = !skill.IsEmpty && !skill.Engine.IsNull
                 && skill.Engine.IgnoreArmor(false);
-            float slotPen = _slotPassives?.ArmorPenPercentFor(_slotQueryCastId) ?? 0f;
+            float slotPen = _slotPassives?.ArmorPenPercentFor(CastSession.SlotQueryCastId) ?? 0f;
             float penPct = SlotPassiveCombat.CombineArmorPen(0f, ignoreArmor, slotPen);
             var dealt = DamagePipeline.Resolve(new DamageQuery
             {
@@ -293,7 +295,7 @@ namespace Dovus.Game.Skills
             // S8: minyon kritikleri de gösterilir.
             _damageHud?.ShowDamage(damage, dealt.WasCrit, BossHitPoint(), DamageTint(), victimIsBoss: true);
             float lifesteal = ClosingHealRules.AdjectiveLifesteal(skill);
-            lifesteal += _slotPassives?.LifestealAddFor(_slotQueryCastId) ?? 0f;
+            lifesteal += _slotPassives?.LifestealAddFor(CastSession.SlotQueryCastId) ?? 0f;
             if (lifesteal > 0f && _player != null)
             {
                 var vitals = CachedPlayerVitals();

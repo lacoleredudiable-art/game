@@ -24,6 +24,7 @@ using Dovus.Game.Hud;
 using Dovus.Game.Skills.Execution;
 using Dovus.Game.Skills.Launch;
 using Dovus.Game.Skills.Presentation;
+using Dovus.Game.Skills.State;
 using Dovus.App.Casting;
 using Dovus.Game.Config;
 using Dovus.Game.Diagnostics;
@@ -68,7 +69,7 @@ namespace Dovus.Game.Skills
             _skillPresentation.EnsureCatalog();
         }
 
-        sealed class LaunchServicesHost
+        public sealed class LaunchServicesHost
             : ISkillExecutorLaunchHost,
                 ICastSideEffectsHost,
                 ISkillPresentationHost,
@@ -77,6 +78,8 @@ namespace Dovus.Game.Skills
             readonly ManifestationDirector _md;
 
             internal LaunchServicesHost(ManifestationDirector md) => _md = md;
+
+            public CastSessionState Cast => _md.CastSession;
 
             public Transform Player => _md._player;
             public Transform DirectorTransform => _md.transform;
@@ -89,16 +92,16 @@ namespace Dovus.Game.Skills
             public ElementPaintNode? SelectedElementPaint => _md.SelectedElementPaint;
             public Transform BossTransform => _md._boss != null ? _md._boss.transform : null;
             public MechanicGrammar MechanicEngine => _md.MechanicEngine;
-            public float ClosingChainBonus => _md._closingChainBonus;
+            public float ClosingChainBonus => _md.CastSession.ClosingChainBonus;
             public int SlotQueryCastId
             {
-                get => _md._slotQueryCastId;
-                set => _md._slotQueryCastId = value;
+                get => _md.CastSession.SlotQueryCastId;
+                set => _md.CastSession.SlotQueryCastId = value;
             }
             public bool CasterRecoilSuppressed
             {
-                get => _md._casterRecoilSuppressed;
-                set => _md._casterRecoilSuppressed = value;
+                get => _md.CastSession.CasterRecoilSuppressed;
+                set => _md.CastSession.CasterRecoilSuppressed = value;
             }
             public bool LastSkillEffectApplied
             {

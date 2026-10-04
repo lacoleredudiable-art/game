@@ -31,19 +31,19 @@ namespace Dovus.Game.Skills
             _projectileEraser = new ProjectileEraser(_projectileHost);
         }
 
-        EraseSpec ProjectileEraseSpec(MechanicPlan plan)
+        internal EraseSpec ProjectileEraseSpec(MechanicPlan plan)
         {
             EnsureProjectileServices();
             return _projectileEraser.ProjectileEraseSpec(plan);
         }
 
-        void BeginProjectileErase(MechanicPlan plan, Vector3 aimDir, Vector3 center)
+        internal void BeginProjectileErase(MechanicPlan plan, Vector3 aimDir, Vector3 center)
         {
             EnsureProjectileServices();
             _projectileEraser.BeginProjectileErase(plan, aimDir, center);
         }
 
-        void ProjectileEraseOnHit(MechanicPlan plan, Vector3 center)
+        internal void ProjectileEraseOnHit(MechanicPlan plan, Vector3 center)
         {
             EnsureProjectileServices();
             _projectileEraser.ProjectileEraseOnHit(plan, center);
