@@ -130,7 +130,7 @@ namespace Dovus.Game.Skills.Closing
             Vector3 origin = new Vector3(logic.OriginX, ClosingDefaults.ClosingOriginGroundYM, logic.OriginZ);
             string element = _host.SelectedElementPaint?.Name
                 ?? (p.Words != null && p.Words.Count > 0
-                    ? p.Words[0].Rune.ToString()
+                    ? RuneInfo.LegacySerializationName(p.Words[0].Rune)
                     : "Ates");
 
             string impactStyle = "burst_soft";

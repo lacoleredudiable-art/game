@@ -107,7 +107,7 @@ namespace Dovus.Game.Skills.Launch
             float executorChainBonus = _host.ClosingChainBonus;
             string colorKey = _host.SelectedElementPaint?.Name
                 ?? (pending.Words != null && pending.Words.Count > 0
-                    ? pending.Words[0].Rune.ToString()
+                    ? RuneInfo.LegacySerializationName(pending.Words[0].Rune)
                     : string.Empty);
 
             MechanicPlan mechanicPlan = _host.MechanicPlanFor(skill);

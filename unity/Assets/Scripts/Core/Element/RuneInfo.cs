@@ -5,21 +5,41 @@ namespace Dovus.Core.Element
     {
         public static string Syllable(Rune rune) => "r" + ((int)rune).ToString();
 
-        /// <summary>element-sistemi.json v6.1.1 rün adları.</summary>
+        /// <summary>element-sistemi.json v6.1.1 rün adları (Türkçe UI).</summary>
         public static string DisplayName(Rune rune) => rune switch
         {
-            Rune.Saldiri => "Saldırı",
-            Rune.Iyilestirme => "İyileştirme",
-            Rune.Hareket => "Hareket",
-            Rune.Savunma => "Savunma",
-            Rune.Patlama => "Patlama",
-            Rune.Kontrol => "Kontrol",
-            Rune.Zayiflatma => "Zayıflatma",
-            Rune.Guclendirme => "Güçlendirme",
-            Rune.Arindirma => "Arındırma",
-            Rune.Yansima => "Yansıma",
-            Rune.Cagirma => "Çağırma",
-            Rune.Zaman => "Zaman",
+            Rune.Attack => "Saldırı",
+            Rune.Heal => "İyileştirme",
+            Rune.Move => "Hareket",
+            Rune.Defense => "Savunma",
+            Rune.Burst => "Patlama",
+            Rune.Control => "Kontrol",
+            Rune.Weaken => "Zayıflatma",
+            Rune.Empower => "Güçlendirme",
+            Rune.Cleanse => "Arındırma",
+            Rune.Reflect => "Yansıma",
+            Rune.Summon => "Çağırma",
+            Rune.Time => "Zaman",
+            _ => "?"
+        };
+
+        /// <summary>
+        /// Eski <c>Rune</c> için <c>Enum.ToString()</c> çıktısı (id'den cast); sweep/log bayt uyumu.
+        /// </summary>
+        public static string LegacySerializationName(Rune rune) => rune switch
+        {
+            Rune.Attack => "Saldiri",
+            Rune.Heal => "Iyilestirme",
+            Rune.Move => "Hareket",
+            Rune.Defense => "Savunma",
+            Rune.Burst => "Patlama",
+            Rune.Control => "Kontrol",
+            Rune.Weaken => "Zayiflatma",
+            Rune.Empower => "Guclendirme",
+            Rune.Cleanse => "Arindirma",
+            Rune.Reflect => "Yansima",
+            Rune.Summon => "Cagirma",
+            Rune.Time => "Zaman",
             _ => "?"
         };
 

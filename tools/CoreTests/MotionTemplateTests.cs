@@ -162,19 +162,19 @@ public class BasicStrikeSlotTests
         var loadout = new RuneLoadout(new[] { 12, 1, 8, 6, 2, 5 });
         var slotted = new SentenceEngine(loadout: loadout);
         slotted.OnDotTouched(1, 0);
-        Assert.That(slotted.State.Words[0].Rune, Is.EqualTo(Rune.Zaman), "slot 1 artık Zaman");
+        Assert.That(slotted.State.Words[0].Rune, Is.EqualTo(Rune.Time), "slot 1 artık Zaman");
 
         var strike = new SentenceEngine(loadout: loadout);
         Assert.That(strike.BeginBasicStrike(1, 0), Is.True);
-        Assert.That(strike.State.Words[0].Rune, Is.EqualTo(Rune.Saldiri));
+        Assert.That(strike.State.Words[0].Rune, Is.EqualTo(Rune.Attack));
         Assert.That(strike.State.Words[0].Slot, Is.EqualTo(0));
         strike.Commit();
-        Assert.That(strike.History[0].Words[0].Rune, Is.EqualTo(Rune.Saldiri));
+        Assert.That(strike.History[0].Words[0].Rune, Is.EqualTo(Rune.Attack));
         Assert.That(strike.History[0].Words.Count, Is.EqualTo(1));
 
         Assert.That(strike.State.Phase, Is.EqualTo(SentencePhase.Recovering));
         Assert.That(strike.BeginBasicStrike(1, 50), Is.True, "toparlanma kilidini keser");
-        Assert.That(strike.State.Words[0].Rune, Is.EqualTo(Rune.Saldiri));
+        Assert.That(strike.State.Words[0].Rune, Is.EqualTo(Rune.Attack));
     }
 
     [Test]

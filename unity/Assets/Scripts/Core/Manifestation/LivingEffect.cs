@@ -122,9 +122,9 @@ namespace Dovus.Core.Manifestation
                 return _maxRangeM;
             return _verb switch
             {
-                Rune.Aydinlik => _tuning.WaveMaxRadiusM,
-                Rune.Ates => _tuning.NeedleMaxRangeM,
-                Rune.Su => _tuning.SwarmMaxRadiusM,
+                Rune.Burst => _tuning.WaveMaxRadiusM,
+                Rune.Attack => _tuning.NeedleMaxRangeM,
+                Rune.Heal => _tuning.SwarmMaxRadiusM,
                 _ => _tuning.WaveMaxRadiusM
             };
         }
@@ -236,7 +236,7 @@ namespace Dovus.Core.Manifestation
                 return radial <= TipDistance + radiusM;
             }
 
-            if (_verb == Rune.Aydinlik && !_hasPlan)
+            if (_verb == Rune.Burst && !_hasPlan)
             {
                 float bx = bossX - _originX;
                 float bz = bossZ - _originZ;
@@ -273,7 +273,7 @@ namespace Dovus.Core.Manifestation
                 return;
             }
 
-            if (_verb == Rune.Ates)
+            if (_verb == Rune.Attack)
             {
                 if (_ageSec < _tuning.NeedleWindupSec)
                     return;
@@ -287,8 +287,8 @@ namespace Dovus.Core.Manifestation
 
             float speed = _verb switch
             {
-                Rune.Aydinlik => _tuning.WaveSpeedMps,
-                Rune.Su => _tuning.SwarmSpeedMps,
+                Rune.Burst => _tuning.WaveSpeedMps,
+                Rune.Heal => _tuning.SwarmSpeedMps,
                 _ => _tuning.WaveSpeedMps
             };
             speed *= 1f + _tuning.PierceSpeedBonus * _current.Pierce;

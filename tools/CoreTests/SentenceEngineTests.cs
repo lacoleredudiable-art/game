@@ -39,8 +39,8 @@ public class SentenceEngineTests
         CompletedSentence sa = a.History[0];
         CompletedSentence sb = b.History[0];
 
-        Assert.That(sa.Verb, Is.EqualTo(Rune.Aydinlik));
-        Assert.That(sb.Verb, Is.EqualTo(Rune.Ates));
+        Assert.That(sa.Verb, Is.EqualTo(Rune.Burst));
+        Assert.That(sb.Verb, Is.EqualTo(Rune.Attack));
         Assert.That(DotsOf(sa), Is.EqualTo(new[] { 5, 1 }));
         Assert.That(DotsOf(sb), Is.EqualTo(new[] { 1, 5 }));
         Assert.That(sa.Verb, Is.Not.EqualTo(sb.Verb));
@@ -66,7 +66,7 @@ public class SentenceEngineTests
 
         Assert.That(engine.State.Phase, Is.EqualTo(SentencePhase.Building));
         Assert.That(engine.State.Words.Select(w => w.Dot).ToArray(), Is.EqualTo(new[] { 4, 5 }));
-        Assert.That(engine.State.Verb, Is.EqualTo(Rune.Toprak));
+        Assert.That(engine.State.Verb, Is.EqualTo(Rune.Defense));
     }
 
     // Kriter 3
@@ -86,7 +86,7 @@ public class SentenceEngineTests
         Assert.That(engine.History, Has.Count.EqualTo(1));
         Assert.That(engine.History[0].Phase, Is.EqualTo(SentencePhase.Resolved));
         Assert.That(engine.History[0].Closing, Is.Not.Null);
-        Assert.That(engine.History[0].Closing!.Value.Type, Is.EqualTo(Rune.Ates));
+        Assert.That(engine.History[0].Closing!.Value.Type, Is.EqualTo(Rune.Attack));
         Assert.That(engine.History[0].Closing!.Value.TotalEffect, Is.EqualTo(tuning.StepForDots(1).TotalEffect));
     }
 

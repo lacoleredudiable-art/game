@@ -134,12 +134,12 @@ namespace Dovus.Core.Manifestation
         public static EffectSilhouette VerbSeed(Rune verb) => verb switch
         {
             // element-sistemi çekirdek fiilleri
-            Rune.Ates => new EffectSilhouette(focus: SilhouetteBuilderDefaults.FocusWeightStrike, pierce: SilhouetteBuilderDefaults.PierceWeightHigh, spread: 0f, lift: 0f),      // Ateş saldırı
-            Rune.Su => new EffectSilhouette(focus: SilhouetteBuilderDefaults.SpreadWeightQuarter, pierce: 0f, spread: SilhouetteBuilderDefaults.FocusWeightMid, lift: SilhouetteBuilderDefaults.LiftWeightLow),   // Su heal
-            Rune.Hava => new EffectSilhouette(focus: SilhouetteBuilderDefaults.FocusWeightLow, pierce: SilhouetteBuilderDefaults.FocusWeightMidLow, spread: SilhouetteBuilderDefaults.SpreadScaleBase, lift: 0f),  // Hava hareket
-            Rune.Toprak => new EffectSilhouette(focus: SilhouetteBuilderDefaults.FocusWeightMid, pierce: 0f, spread: 0f, lift: SilhouetteBuilderDefaults.SpreadWeightQuarter),    // Toprak savunma
-            Rune.Aydinlik => new EffectSilhouette(focus: SilhouetteBuilderDefaults.FocusWeightLight, pierce: SilhouetteBuilderDefaults.PierceSpreadScale, spread: 0f, lift: 0f), // Aydınlık arındırma
-            Rune.Karanlik => new EffectSilhouette(focus: SilhouetteBuilderDefaults.FocusWeightMidLow, pierce: 0f, spread: 0.5f, lift: 0f),    // Karanlık gizlilik
+            Rune.Attack => new EffectSilhouette(focus: SilhouetteBuilderDefaults.FocusWeightStrike, pierce: SilhouetteBuilderDefaults.PierceWeightHigh, spread: 0f, lift: 0f),      // Ateş saldırı
+            Rune.Heal => new EffectSilhouette(focus: SilhouetteBuilderDefaults.SpreadWeightQuarter, pierce: 0f, spread: SilhouetteBuilderDefaults.FocusWeightMid, lift: SilhouetteBuilderDefaults.LiftWeightLow),   // Su heal
+            Rune.Move => new EffectSilhouette(focus: SilhouetteBuilderDefaults.FocusWeightLow, pierce: SilhouetteBuilderDefaults.FocusWeightMidLow, spread: SilhouetteBuilderDefaults.SpreadScaleBase, lift: 0f),  // Hava hareket
+            Rune.Defense => new EffectSilhouette(focus: SilhouetteBuilderDefaults.FocusWeightMid, pierce: 0f, spread: 0f, lift: SilhouetteBuilderDefaults.SpreadWeightQuarter),    // Toprak savunma
+            Rune.Burst => new EffectSilhouette(focus: SilhouetteBuilderDefaults.FocusWeightLight, pierce: SilhouetteBuilderDefaults.PierceSpreadScale, spread: 0f, lift: 0f), // Aydınlık arındırma
+            Rune.Control => new EffectSilhouette(focus: SilhouetteBuilderDefaults.FocusWeightMidLow, pierce: 0f, spread: 0.5f, lift: 0f),    // Karanlık gizlilik
             _ => default
         };
 
@@ -155,34 +155,34 @@ namespace Dovus.Core.Manifestation
 
             switch (adjective)
             {
-                case Rune.Ates:
+                case Rune.Attack:
                     // Ateş — yoğunlaştırma
                     f += tuning.FocusPerIgne;
                     p += tuning.PiercePerIgne;
                     break;
-                case Rune.Su:
+                case Rune.Heal:
                     // Su — yayma
                     s += tuning.SpreadPerSuru;
                     if (f < tuning.SuruFocusReduceThreshold)
                         f -= tuning.SuruFocusReduceAmount;
                     break;
-                case Rune.Hava:
+                case Rune.Move:
                     // Hava — taşıma
                     p += tuning.PiercePerIgne * SilhouetteBuilderDefaults.PierceSpreadScale;
                     s += tuning.SpreadPerSuru * 0.5f;
                     break;
-                case Rune.Toprak:
+                case Rune.Defense:
                     // Toprak — sabitleme
                     s *= tuning.KabukSpreadMultiplier;
                     f += tuning.KabukFocusAdd;
                     l += tuning.LiftPerSarsinti;
                     break;
-                case Rune.Aydinlik:
+                case Rune.Burst:
                     // Aydınlık — saflaştırma / odak
                     f += tuning.FocusPerIgne;
                     p += tuning.PiercePerIgne * SilhouetteBuilderDefaults.FocusWeightMid;
                     break;
-                case Rune.Karanlik:
+                case Rune.Control:
                     // Karanlık — örtme
                     s += tuning.SpreadPerSuru * SilhouetteBuilderDefaults.SpreadSuruPeakMult;
                     break;

@@ -64,18 +64,18 @@ public class ManifestationWiringTests
     public void SetWords_AcceptedDuringAwaitingClosing()
     {
         var manifest = Tuning();
-        var words = new[] { new SentenceWord(Rune.Aydinlik, JumpKind.None, 0) };
-        var effect = new LivingEffect(Rune.Aydinlik, 0, 0, 0, 1, words, manifest);
+        var words = new[] { new SentenceWord(Rune.Burst, JumpKind.None, 0) };
+        var effect = new LivingEffect(Rune.Burst, 0, 0, 0, 1, words, manifest);
 
-        effect.ArmClosing(new ClosingHit(Rune.Toprak, 7f, 4));
+        effect.ArmClosing(new ClosingHit(Rune.Defense, 7f, 4));
         Assert.That(effect.Phase, Is.EqualTo(LivingEffectPhase.AwaitingClosing));
 
         var fourWords = new[]
         {
-            new SentenceWord(Rune.Aydinlik, JumpKind.None, 0),
-            new SentenceWord(Rune.Ates, JumpKind.Long, 0),
-            new SentenceWord(Rune.Su, JumpKind.Short, 0),
-            new SentenceWord(Rune.Toprak, JumpKind.Short, 0)
+            new SentenceWord(Rune.Burst, JumpKind.None, 0),
+            new SentenceWord(Rune.Attack, JumpKind.Long, 0),
+            new SentenceWord(Rune.Heal, JumpKind.Short, 0),
+            new SentenceWord(Rune.Defense, JumpKind.Short, 0)
         };
         effect.SetWords(fourWords);
 
@@ -88,8 +88,8 @@ public class ManifestationWiringTests
     public void EffectPastRange_StaysAliveUntilSentenceCloses_AndAcceptsArmClosing()
     {
         var manifest = Tuning();
-        var words = new[] { new SentenceWord(Rune.Ates, JumpKind.None, 0) };
-        var effect = new LivingEffect(Rune.Ates, 0, 0, 0, 1, words, manifest);
+        var words = new[] { new SentenceWord(Rune.Attack, JumpKind.None, 0) };
+        var effect = new LivingEffect(Rune.Attack, 0, 0, 0, 1, words, manifest);
 
         // İĞNE: windup + dash sonrası menzil dolar (T14 Zenitsu). 4 noktalı cümle §5'e göre
         // en az 1.20 sn + toparlanma + sessizlik sürer — yani menzil cümleden önce dolar.
@@ -102,7 +102,7 @@ public class ManifestationWiringTests
         Assert.That(effect.Phase, Is.EqualTo(LivingEffectPhase.Traveling),
             "menzilini bitirmiş etki cümle kapanmadan sönmemeli");
 
-        effect.ArmClosing(new ClosingHit(Rune.Ates, 1f, 1));
+        effect.ArmClosing(new ClosingHit(Rune.Attack, 1f, 1));
         Assert.That(effect.Phase, Is.EqualTo(LivingEffectPhase.AwaitingClosing),
             "ArmClosing, menzil dolduğu için Fading'e düşmüş bir etkide yutulmamalı");
 
@@ -116,8 +116,8 @@ public class ManifestationWiringTests
     public void Abort_PastRange_StillProducesNoClosingBang()
     {
         var manifest = Tuning();
-        var words = new[] { new SentenceWord(Rune.Aydinlik, JumpKind.None, 0) };
-        var effect = new LivingEffect(Rune.Aydinlik, 0, 0, 0, 1, words, manifest);
+        var words = new[] { new SentenceWord(Rune.Burst, JumpKind.None, 0) };
+        var effect = new LivingEffect(Rune.Burst, 0, 0, 0, 1, words, manifest);
 
         for (int i = 0; i < 40; i++)
             effect.Tick(0.05f); // menzili geçmiş, bekliyor
@@ -137,8 +137,8 @@ public class ManifestationWiringTests
     {
         var manifest = Tuning();
         manifest.MaxHoldPastRangeSec = 0.2f; // testte hızlandırılmış güvenlik payı
-        var words = new[] { new SentenceWord(Rune.Ates, JumpKind.None, 0) };
-        var effect = new LivingEffect(Rune.Ates, 0, 0, 0, 1, words, manifest);
+        var words = new[] { new SentenceWord(Rune.Attack, JumpKind.None, 0) };
+        var effect = new LivingEffect(Rune.Attack, 0, 0, 0, 1, words, manifest);
 
         // İĞNE menzili windup+dash (~0.17 sn) ile dolar; +0.2 sn güvenlik payı → sönme başlar.
         // FadeDurationSec varsayılan 0.35 — Fading penceresini yakalamak için erken bak.

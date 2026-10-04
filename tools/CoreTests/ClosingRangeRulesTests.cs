@@ -12,7 +12,7 @@ public class ClosingRangeRulesTests
     public void IsClosingInRange_NullLogic_False()
     {
         Assert.That(
-            ClosingRangeRules.IsClosingInRange(null, 0f, 0f, Rune.Ates, 2f, 0f),
+            ClosingRangeRules.IsClosingInRange(null, 0f, 0f, Rune.Attack, 2f, 0f),
             Is.False);
     }
 

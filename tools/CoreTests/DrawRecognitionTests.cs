@@ -308,8 +308,8 @@ public class DrawRecognitionTests
     {
         var words = new List<SentenceWord>
         {
-            new SentenceWord(Dovus.Core.Element.Rune.Saldiri, JumpKind.None, 0),
-            new SentenceWord(Dovus.Core.Element.Rune.Patlama, JumpKind.None, 0),
+            new SentenceWord(Dovus.Core.Element.Rune.Attack, JumpKind.None, 0),
+            new SentenceWord(Dovus.Core.Element.Rune.Burst, JumpKind.None, 0),
         };
         Assert.That(DrawFeedback.RuneChain(words), Is.EqualTo("Saldırı → Patlama"));
         Assert.That(DrawFeedback.RuneChain(new List<SentenceWord>()), Is.EqualTo(string.Empty));

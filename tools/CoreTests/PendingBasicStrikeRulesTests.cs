@@ -24,9 +24,9 @@ public sealed class PendingBasicStrikeRulesTests
     [Test]
     public void IsPendingBasic_SingleWordMatchesDot()
     {
-        var words = new List<SentenceWord> { new(Rune.Saldiri, JumpKind.None, 0) };
+        var words = new List<SentenceWord> { new(Rune.Attack, JumpKind.None, 0) };
         Assert.That(
-            PendingBasicStrikeRules.IsPendingBasic(false, false, words, (int)Rune.Saldiri),
+            PendingBasicStrikeRules.IsPendingBasic(false, false, words, (int)Rune.Attack),
             Is.True);
         Assert.That(
             PendingBasicStrikeRules.IsPendingBasic(false, false, words, 99),
@@ -38,11 +38,11 @@ public sealed class PendingBasicStrikeRulesTests
     {
         var words = new List<SentenceWord>
         {
-            new(Rune.Saldiri, JumpKind.None, 0),
-            new(Rune.Patlama, JumpKind.None, 0),
+            new(Rune.Attack, JumpKind.None, 0),
+            new(Rune.Burst, JumpKind.None, 0),
         };
         Assert.That(
-            PendingBasicStrikeRules.IsPendingBasic(false, false, words, (int)Rune.Saldiri),
+            PendingBasicStrikeRules.IsPendingBasic(false, false, words, (int)Rune.Attack),
             Is.False);
     }
 }

@@ -19,4 +19,5 @@ Kod tanımlayıcıları İngilizce; JSON / fiil kimlikleri / tuning panel alanla
 | `dolu_sayfa` | `WeaponPassiveKind.FullPage` | Pasif: dolu sayfa |
 | `capraz_ates` | `WeaponPassiveKind.CrossFire` | Pasif: çapraz ateş |
 
-Rune enum üyeleri (`Ates`, `Hava`, …) PLAN 2B.14a kapsamında; burada listelenmez.
+| (rün id 1..12) | `Rune` (`Attack`, `Heal`, …) | Mekanik rün; **element değil**. Türkçe UI: `RuneInfo.DisplayName`. Eski log/sweep dizesi: `RuneInfo.LegacySerializationName` (v6 `Saldiri` …). |
+| `elements[]` id | `ElementId` / `ElementPaintNode` | Boya / sınıf elementi; rün enum'undan ayrı kavram. |

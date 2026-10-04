@@ -9,7 +9,7 @@ namespace Dovus.Core.Grammar
 {
     public sealed partial class SkillMotor
     {
-        static string PassiveDescriptionFor(V61SkillNode skill, RuneDefinition adjectiveRune)
+        static string PassiveDescriptionFor(SkillCatalogEntry skill, RuneDefinition adjectiveRune)
         {
             string passive = skill.Passive ?? string.Empty;
             if (!passive.Contains(" sn pasif: ", StringComparison.Ordinal))
@@ -103,7 +103,7 @@ namespace Dovus.Core.Grammar
                     string id = obj["id"].AsString();
                     if (string.IsNullOrEmpty(id))
                         continue;
-                    motor._v61Skills[id] = new V61SkillNode(
+                    motor._v61Skills[id] = new SkillCatalogEntry(
                         id,
                         obj["name"].AsString(),
                         obj["effect"].AsString(),

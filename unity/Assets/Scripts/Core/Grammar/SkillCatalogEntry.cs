@@ -1,15 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using Dovus.Core.Data;
-using Dovus.Core.Element;
 using Dovus.Core.Shared;
 
 namespace Dovus.Core.Grammar
 {
-    public readonly struct V61SkillNode
+    /// <summary>element-sistemi.json <c>skills.by_verb</c> satırı — çözümleme öncesi katalog kaydı.</summary>
+    public readonly struct SkillCatalogEntry
     {
-        public V61SkillNode(
+        public SkillCatalogEntry(
             string id, string name, string effect, string passive, JsonValue engine,
             string proseMechanic, string proseFeel, string proseVisual)
         {

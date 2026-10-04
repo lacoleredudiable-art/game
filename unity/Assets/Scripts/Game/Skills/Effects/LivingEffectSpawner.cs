@@ -112,7 +112,7 @@ namespace Dovus.Game.Skills.Effects
             if (basicStrike)
                 _host.StopBasicCannonAtFirstBody(logic, pos, facing);
 
-            var go = new GameObject(basicStrike ? "LivingEffect_BasicStrike" : "LivingEffect_" + words[0].Rune);
+            var go = new GameObject(basicStrike ? "LivingEffect_BasicStrike" : "LivingEffect_" + RuneInfo.LegacySerializationName(words[0].Rune));
             go.transform.SetParent(_host.DirectorTransform, false);
             var view = go.AddComponent<LivingEffectView>();
             view.Bind(logic, man, _host.Colors, basicStrike);
@@ -180,7 +180,7 @@ namespace Dovus.Game.Skills.Effects
                     }
                 }
 
-                if (!view.Scarred && logic.Verb == Rune.Aydinlik && logic.Current.Focus > LivingEffectSpawnerDefaults.ScarFocusThreshold
+                if (!view.Scarred && logic.Verb == Rune.Burst && logic.Current.Focus > LivingEffectSpawnerDefaults.ScarFocusThreshold
                     && logic.Travel > LivingEffectSpawnerDefaults.ScarTravelMinM)
                 {
                     Vector3 mid = new Vector3(

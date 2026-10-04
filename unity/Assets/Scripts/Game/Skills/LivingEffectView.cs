@@ -272,7 +272,7 @@ namespace Dovus.Game.Skills
 
         float EffectHeight(EffectSilhouette s, float travel01)
         {
-            if (_logic.Verb == Rune.Toprak)
+            if (_logic.Verb == Rune.Defense)
             {
                 // Aşağıdan yukarı: genişlerken yükselir (kütle / yerden çıkış).
                 float peak = _tuning.WaveRiseHeightM * (LivingEffectViewDefaults.WavePeakLiftBaseMult + LivingEffectViewDefaults.WavePeakLiftSpreadMult * s.Lift);
