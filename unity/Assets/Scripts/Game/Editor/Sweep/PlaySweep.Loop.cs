@@ -196,27 +196,27 @@ namespace Dovus.Game.Editor
                 _md = UnityEngine.Object.FindAnyObjectByType<ManifestationDirector>();
                 if (_md == null)
                     return false;
-                _input = F<HexagonInputController>(_md, "_input");
-                _player = F<Transform>(_md, "_player");
-                var bossReactor = F<Component>(_md, "_boss");
+                _input = _md.SweepInput;
+                _player = _md.SweepPlayer;
+                var bossReactor = _md.SweepBoss;
                 if (_input == null || _player == null || bossReactor == null)
                     return false;
                 _boss = bossReactor.transform;
-                _bossReactor = bossReactor as BossReactorController;
-                _bossVitals = F<BossVitals>(_md, "_bossVitals");
-                _bossDirector = F<BossDirector>(_md, "_bossDirector");
-                _playerStatus = F<ActorStatusHost>(_md, "_playerStatus");
-                _bossStatus = F<ActorStatusHost>(_md, "_bossStatus");
-                _ally = F<AllyDummyController>(_md, "_ally");
-                _clock = F<GameClockHost>(_md, "_clock");
-                _skills = F<SkillMotor>(_md, "_skills");
-                _projectiles = F<HostileProjectileHost>(_md, "_projectiles");
+                _bossReactor = bossReactor;
+                _bossVitals = _md.SweepBossVitals;
+                _bossDirector = _md.SweepBossDirector;
+                _playerStatus = _md.SweepPlayerStatus;
+                _bossStatus = _md.SweepBossStatus;
+                _ally = _md.SweepAlly;
+                _clock = _md.SweepClock;
+                _skills = _md.SweepSkills;
+                _projectiles = _md.SweepProjectiles;
                 _playerVitals = _player.GetComponent<PlayerVitalsHost>();
                 if (_playerVitals != null)
                     _playerVitals.SuppressDown = true;
                 _dodge = _player.GetComponent<DodgeMotionController>();
                 var visual = _player.GetComponent<ActorView>();
-                _animator = visual != null ? F<Animator>(visual, "_animator") : null;
+                _animator = visual != null ? visual.Animator : null;
                 RefreshBody();
                 CollectStateNames();
                 return _skills != null && _bossVitals != null;

@@ -26,7 +26,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -69,63 +68,6 @@ namespace Dovus.Game.Editor
                 v.y = 0f;
                 return v;
             }
-
-            static T F<T>(object o, string name)
-            {
-                object v = F(o, name);
-                return v is T t ? t : default;
-            }
-
-            static object F(object o, string name)
-            {
-                for (Type t = o?.GetType(); t != null; t = t.BaseType)
-                {
-                    FieldInfo f = t.GetField(name, BF | BindingFlags.DeclaredOnly);
-                    if (f != null)
-                        return f.GetValue(o);
-                }
-                return null;
-            }
-
-            static T P<T>(object o, string name)
-            {
-                for (Type t = o?.GetType(); t != null; t = t.BaseType)
-                {
-                    PropertyInfo p = t.GetProperty(name, BF | BindingFlags.DeclaredOnly);
-                    if (p != null)
-                        return p.GetValue(o) is T v ? v : default;
-                }
-                return default;
-            }
-
-            static void S(object o, string name, object value)
-            {
-                for (Type t = o?.GetType(); t != null; t = t.BaseType)
-                {
-                    FieldInfo f = t.GetField(name, BF | BindingFlags.DeclaredOnly);
-                    if (f != null)
-                    {
-                        f.SetValue(o, value);
-                        return;
-                    }
-                }
-            }
-
-            static object Call(object o, string name, params object[] args)
-            {
-                for (Type t = o.GetType(); t != null; t = t.BaseType)
-                {
-                    foreach (MethodInfo m in t.GetMethods(BF | BindingFlags.DeclaredOnly))
-                    {
-                        if (m.Name == name && m.GetParameters().Length == args.Length)
-                            return m.Invoke(o, args);
-                    }
-                }
-                throw new MissingMethodException(o.GetType().Name, name);
-            }
-
-            static T Call<T>(object o, string name, params object[] args) =>
-                Call(o, name, args) is T v ? v : default;
     }
 }
 #endif

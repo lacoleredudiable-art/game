@@ -176,9 +176,33 @@ namespace SweepV2
             File.WriteAllText(summaryPath, report.Markdown(wall.Elapsed, o.Speed, agreement));
             Console.WriteLine($"[SweepV2] yazıldı: {csvPath}, {summaryPath}");
 
+            int exitCode = 0;
+            if (!string.IsNullOrEmpty(o.ExpectSha256))
+            {
+                string normalized = CsvNormalize.NormalizeFile(csvPath);
+                string actualHash = CsvNormalize.Sha256Hex(normalized);
+                string expected = ResolveExpectSha256(o.ExpectSha256, root);
+                if (!string.Equals(actualHash, expected, StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.Error.WriteLine($"Normalize sweep hash uyuşmuyor: beklenen {expected}, gerçek {actualHash}");
+                    string baselineCsv = Path.Combine(root, "docs", "play-sweep", "headless-baseline.csv");
+                    string expectedNorm = File.Exists(baselineCsv)
+                        ? CsvNormalize.NormalizeText(File.ReadAllText(baselineCsv))
+                        : string.Empty;
+                    foreach (string d in CsvNormalize.FirstLineDiffs(expectedNorm, normalized))
+                        Console.Error.WriteLine("  " + d);
+                    exitCode = 1;
+                }
+            }
+
             if (o.Gate)
             {
                 List<string> fails = report.GateFailures(o.All && o.Cases.Count == 0);
+                if (!string.IsNullOrEmpty(o.Compare))
+                {
+                    string knownPath = o.KnownPlayDiffs ?? Path.Combine(root, "docs", "play-sweep", "known-play-diffs.txt");
+                    fails.AddRange(Report.GateCompareFailures(agreement, Report.LoadKnownPlayDiffs(knownPath)));
+                }
                 if (fails.Count > 0)
                 {
                     Console.Error.WriteLine("KAPI KALDI:");
@@ -187,7 +211,7 @@ namespace SweepV2
                 }
                 Console.WriteLine("KAPI GEÇTİ");
             }
-            return 0;
+            return exitCode;
         }
 
         static string RepoRoot()
@@ -218,6 +242,16 @@ namespace SweepV2
             return sb.ToString().Replace("i̇", "i");
         }
 
+        static string ResolveExpectSha256(string spec, string root)
+        {
+            if (spec.StartsWith("@", StringComparison.Ordinal))
+            {
+                string path = Path.GetFullPath(Path.Combine(root, spec.Substring(1).Trim()));
+                return File.ReadAllText(path).Trim();
+            }
+            return spec.Trim();
+        }
+
         static string ResolveWeapon(string input, List<string> names)
         {
             string f = Fold(input);
@@ -243,6 +277,8 @@ namespace SweepV2
         public string OutDir;
         public string Label;
         public string Compare;
+        public string ExpectSha256;
+        public string KnownPlayDiffs;
         public string SecondWeapon;
         public Vector2? Stick;
         public float StickAtSec = 0.5f;
@@ -260,7 +296,9 @@ namespace SweepV2
             "  --out DIR             çıktı klasörü (varsayılan tools/SweepV2/out)\n" +
             "  --label NAME          dosya adı (varsayılan headless-tum / headless-<silah>)\n" +
             "  --compare CSV         Play CSV ile kombo kombo karşılaştır (ör. docs/play-sweep/pr35-final-4x.csv)\n" +
-            "  --gate                CI kapısı: silah başına ≥142/144, gövdeye giren yok, yerde hatası ≤3; muaf kombo yok\n" +
+            "  --expect-sha256 HEX|@dosya   normalize CSV SHA256 (notlar sütunu çıkarılmış, LF)\n" +
+            "  --known-play-diffs TXT  --gate ile Play farkları için bilinen liste (varsayılan docs/play-sweep/known-play-diffs.txt)\n" +
+            "  --gate                CI kapısı: silah başına 144/144, gövdeye giren yok, yerde hatası ≤3; bilinmeyen Play farkı yok\n" +
             "  --stick X,Y --stick-at T   kalıp T sn'ye gelince oyuncu çubuğa basar (hareket testi)\n" +
             "  --player-shift M --player-shift-at T   kalıp T sn'de oyuncu boss'a doğru M m taşınır (1-11 yankı testi)\n" +
             "  --trace               her kombo için kare izi detay dosyasına\n" +
@@ -300,6 +338,8 @@ namespace SweepV2
                     case "--out": o.OutDir = Next(); break;
                     case "--label": o.Label = Next(); break;
                     case "--compare": o.Compare = Next(); break;
+                    case "--expect-sha256": o.ExpectSha256 = Next(); break;
+                    case "--known-play-diffs": o.KnownPlayDiffs = Next(); break;
                     case "--second": o.SecondWeapon = Next(); break;
                     case "--stick":
                     {

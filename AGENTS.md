@@ -38,7 +38,9 @@ Mobil kooperatif boss dövüşü, alfa prototip. Bu dosya her görevde bağlama 
 ## CI kapısı
 `.github/workflows/sweep-v2.yml` her PR'da: CoreTests → AtomSim derlemesi →
 `SweepV2 --all --gate --compare docs/play-sweep/pr35-final-4x.csv`.
-Kapı: her silah ≥142/144, oyuncu boss gövdesinde 0, `yerde` hatası silah başına ≤3 (2-9 beyaz listede).
+Kapı: her silah 144/144, oyuncu boss gövdesinde 0, `yerde` hatası silah başına ≤3; normalize sweep hash
+(`docs/play-sweep/headless-baseline.sha256`, `notlar` sütunu çıkarılmış); Play CSV farkları yalnız
+`docs/play-sweep/known-play-diffs.txt` listesinde.
 Kırmızı CI ile merge yok. Kapı eşiğini veya beyaz listeyi görev açıkça istemeden değiştirme.
 
 ## Git ve teslim

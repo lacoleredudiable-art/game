@@ -18,7 +18,7 @@ namespace Dovus.Game.Actors
     /// docs/element-sistemi.json global_rules.resource_system varsayılanları.
     /// Bağlama 2: Consume yetersizse 0'a kilitler. Bağlama 3: CanAfford + EnforceResourceCost.
     /// </summary>
-    public sealed class PlayerResourceHost : MonoBehaviour
+    public sealed partial class PlayerResourceHost : MonoBehaviour
     {
         ResourceTracker _tracker;
         IClock _clock = UnityFrameClock.Default;

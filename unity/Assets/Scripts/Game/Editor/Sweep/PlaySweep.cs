@@ -53,8 +53,6 @@ namespace Dovus.Game.Editor
             const string Speed4Path = "Dovus/Play Sweep/Hız/4x (varsayılan)";
             const string Speed1Path = "Dovus/Play Sweep/Hız/1x (ayıklama)";
             const string ScenePath = "Assets/Scenes/Prototype.unity";
-            const BindingFlags BF = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-    
             // Ölçüm eşikleri — araç ayarı, oyun hissi değil.
             // Cast arası bekleme SweepPace: iki fizik adımı + bir referans kare.
             // Gözlem kuyruğu oyun süresi; hız duvar saatini kısaltır, bu süreyi değil.

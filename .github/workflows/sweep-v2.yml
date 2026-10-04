@@ -34,6 +34,7 @@ jobs:
           dotnet run --project tools/SweepV2 -c Release --
           --all --gate --quiet
           --compare docs/play-sweep/pr35-final-4x.csv
+          --expect-sha256 @docs/play-sweep/headless-baseline.sha256
           --out sweep-out --label headless-tum
 
       - name: Skor tablosu

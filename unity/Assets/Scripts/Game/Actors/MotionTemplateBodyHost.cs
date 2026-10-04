@@ -44,6 +44,7 @@ namespace Dovus.Game.Actors
         const float ExternalMoveEpsM = 0.01f;
 
         public bool IsDisplacing => _playing;
+        public MotionTemplateRunner SweepRunner => _runner;
         public float PlayedSec => _runner.Elapsed;
         public float PlayLengthSec { get; private set; }
         public SkillId SkillId { get; private set; }

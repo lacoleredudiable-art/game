@@ -60,11 +60,11 @@ namespace Dovus.Game.Editor
                     return false;
                 }
                 screen.Open();
-                var selected = F<List<int>>(screen, "_selected");
+                var selected = screen.SweepSelected;
                 selected.Clear();
                 selected.AddRange(ids);
-                F<List<int>>(screen, "_passiveSelected")?.Clear();
-                var weapons = F<List<EquipmentItem>>(screen, "_weapons");
+                screen.SweepPassiveSelected?.Clear();
+                var weapons = screen.SweepWeapons;
                 EquipmentItem primary = FindWeapon(_cases[_index].Weapon);
                 if (weapons != null && primary != null)
                 {
@@ -76,9 +76,9 @@ namespace Dovus.Game.Editor
                     if (second != null)
                         weapons.Add(second);
                 }
-                Call(screen, "ApplyAndStart");
+                screen.SweepApplyAndStart();
                 if (BuildSelectHud.IsOpen)
-                    Call(screen, "Close");
+                    screen.SweepClose();
                 current = _input.Engine?.Loadout;
                 if (current == null || !current.RuneIds.Contains(v) || !current.RuneIds.Contains(a))
                 {
@@ -119,15 +119,15 @@ namespace Dovus.Game.Editor
                 _body?.Stop();
                 _player.GetComponent<ActorView>()?.EndMotionAnim();
                 _input.Engine?.Abort();
-                (F<object>(_md, "_pending") as IList)?.Clear();
+                _md?.SweepClearPending();
                 _logs.Add("önceki cast 6 sn'de bitmedi, zorla temizlendi");
             }
 
             /// <summary>Bağ/hacim/tuzak: status board temizlense de sonraki casta Root/Slow ve boss çekişi taşır.</summary>
             static int MechanicLeftovers() =>
-                _md != null ? Convert.ToInt32(Call(_md, "MechanicWorldLeftoverCount") ?? 0) : 0;
+                _md != null ? _md.SweepMechanicWorldLeftoverCount() : 0;
 
-            static void ClearMechanicWorld() => Call(_md, "ClearMechanicWorldSweep");
+            static void ClearMechanicWorld() => _md?.SweepClearMechanicWorld();
 
             static void ResetActors()
             {
@@ -149,17 +149,15 @@ namespace Dovus.Game.Editor
                     _playerVitals.ResetForSweepCase();
                 }
                 if (_ally != null)
-                    S(_ally, "_hp", Math.Max(1, _ally.MaxHp / 2));
+                    _ally.SweepSetHp(Math.Max(1, _ally.MaxHp / 2));
 
                 var resource = _player.GetComponent<PlayerResourceHost>();
-                object tracker = resource != null ? F<object>(resource, "_tracker") : null;
-                if (tracker != null)
-                    S(tracker, "_mana", F<float>(tracker, "_maxMana"));
+                resource?.SweepRefillMana();
                 var cooldown = _player.GetComponent<PlayerCooldownHost>();
                 if (cooldown != null)
                     cooldown.Bind(cooldown.GlobalCooldownSec > 0f ? cooldown.GlobalCooldownSec : 0.3f, 1);
 
-                S(_md, "_closingChainBonus", 1f);
+                _md.SweepSetClosingChainBonus(1f);
                 _input.Dodge?.Reset();
                 _player.GetComponent<PlayerDodgeController>()?.SkillIframe.Clear();
                 _projectiles?.ClearAll();
@@ -177,16 +175,17 @@ namespace Dovus.Game.Editor
                 if (_ally == null)
                     return;
                 SkillResolution skill = _skills.Resolve(new[] { c.Verb, c.Adj });
-                if (!(Call(_md, "MechanicPlanFor", skill) is Dovus.Core.Mechanic.MechanicPlan plan))
+                Dovus.Core.Mechanic.MechanicPlan plan = _md.SweepMechanicPlanFor(skill);
+                if (plan == null)
                     return;
                 if (!Dovus.Core.Mechanic.GuardTriggerDelivery.Owns(plan, "can")
                     && !Dovus.Core.Mechanic.GuardTriggerDelivery.Owns(plan, "kalkan"))
                     return;
-                var grammar = P<Dovus.Core.Mechanic.MechanicGrammar>(_md, "MechanicEngine");
+                var grammar = _md.SweepMechanicEngine;
                 double threshold = grammar != null ? grammar.Rules.Param("guard_threshold") : 0;
                 if (threshold <= 0.05)
                     return;
-                S(_ally, "_hp", Math.Max(1, (int)Math.Floor((threshold - 0.05) * _ally.MaxHp)));
+                _ally.SweepSetHp(Math.Max(1, (int)Math.Floor((threshold - 0.05) * _ally.MaxHp)));
             }
 
             /// <summary>
@@ -203,7 +202,7 @@ namespace Dovus.Game.Editor
                 _projectiles.Sim.ResetCounters();
                 if (_info == null || !_info.ExpectsErase)
                     return;
-                var combat = F<Dovus.Core.Tuning.CombatTuning>(_md, "_combat");
+                var combat = _md.SweepCombat;
                 float dmg = combat != null ? combat.Boss.VolleyDamage : 6f;
                 float radius = combat != null ? combat.Boss.VolleyRadiusM : 0.35f;
                 const float speed = 0.3f;
@@ -269,15 +268,15 @@ namespace Dovus.Game.Editor
                 _player.GetComponent<ActorGroundingController>()?.SnapPlanted();
                 _player.rotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
                 Physics.SyncTransforms();
-                var targeting = F<PlayerTargetingController>(_md, "_targeting");
+                var targeting = _md.SweepTargeting;
                 var target = _boss.GetComponentInChildren<TargetableHost>();
                 if (targeting != null && target != null && targeting.Selected != target)
-                    Call(targeting, "Select", target);
+                    targeting.SweepSelect(target);
             }
 
             static string RejectReason(PlaySweepCase c)
             {
-                if (P<bool>(_input, "InputLocked"))
+                if (_input.SweepInputLocked)
                     return "girdi kilitli (düşük can ya da BlocksCast)";
                 RuneLoadout loadout = _input.Engine?.Loadout;
                 bool hasVerb = false, hasAdj = false;
@@ -288,7 +287,7 @@ namespace Dovus.Game.Editor
                 }
                 if (!hasVerb || !hasAdj)
                     return "rün build'de yok";
-                var gate = F<Func<SkillResolution, bool>>(_input, "_skillTargetGate");
+                var gate = _input.SweepSkillTargetGate;
                 if (gate != null && !gate(_skills.Resolve(new[] { c.Verb, c.Adj })))
                 {
                     string why = _logs.LastOrDefault(l => !l.StartsWith("SWEEP"));
@@ -304,7 +303,7 @@ namespace Dovus.Game.Editor
                 SkillResolution skill = _skills.Resolve(new[] { c.Verb, c.Adj });
                 info.Name = skill.Identity.DisplayName;
                 info.DamageSkill = skill.Combat.BaseDamage > 0f || skill.Combat.BaseHeal > 0f;
-                if (Call(_md, "MechanicPlanFor", skill) is Dovus.Core.Mechanic.MechanicPlan keys)
+                if (_md.SweepMechanicPlanFor(skill) is Dovus.Core.Mechanic.MechanicPlan keys)
                 {
                     info.ExpectsReverse = keys.Effects.Any(e => e.Target == "dusman" && e.Has("ters_kontrol"));
                     info.ExpectsDecoyAggro = keys.Effects.Any(e => e.Has("dikkat_ceker"));
@@ -314,18 +313,18 @@ namespace Dovus.Game.Editor
                     info.ExpectsReflect = erase != null && erase.Has("geri_gonder");
                     info.ExpectsLinkErase = erase != null && erase.Has("bag_hatti") && keys.Body.Link;
                 }
-                info.BossR = Call<float>(_md, "BossBodyRadius");
-                float pr = Call<float>(_md, "PlayerBodyRadiusM");
+                info.BossR = _md.SweepBossBodyRadius();
+                float pr = _md.SweepPlayerBodyRadiusM();
                 info.PlayerR = pr < 0.05f ? 0.5f : pr;
-                var combat = F<Dovus.Core.Tuning.CombatTuning>(_md, "_combat");
+                var combat = _md.SweepCombat;
                 info.RecoverySec = combat != null ? combat.Sentence.StepForDots(2).RecoverySec : 0.26f;
 
-                var catalog = P<MotionTemplateCatalog>(_md, "MotionCatalog");
+                var catalog = _md.SweepMotionCatalog;
                 if (catalog == null || !catalog.TryPlay((SkillId)skill.Identity.Id, out MotionTemplate template))
                     return info;
                 info.DeliveryDelaySec = DeliveryDelaySec(skill, template);
-                object playback = Call(_md, "PreparePositionPlayback", skill, template);
-                info.Template = (playback as PositionPlayback?)?.Template ?? template;
+                PositionPlayback playback = _md.SweepPreparePositionPlayback(skill, template);
+                info.Template = playback.Template ?? template;
                 foreach (MotionPhase p in info.Template.Phases)
                 {
                     info.ExpectedSec += p.DurationSec;
@@ -345,7 +344,7 @@ namespace Dovus.Game.Editor
             /// <summary>Oyunla aynı teslim kuyruğu: işaretli an / yükseliş gecikmesi kaydı uzatır.</summary>
             static float DeliveryDelaySec(SkillResolution skill, MotionTemplate template)
             {
-                if (!(Call(_md, "MechanicPlanFor", skill) is Dovus.Core.Mechanic.MechanicPlan plan)
+                if (!(_md.SweepMechanicPlanFor(skill) is Dovus.Core.Mechanic.MechanicPlan plan)
                     || !ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design)
                     || design.Mechanics == null)
                     return 0f;
@@ -362,7 +361,7 @@ namespace Dovus.Game.Editor
                 MotionTarget target = default;
                 if (aim != null)
                 {
-                    float r = aim == _boss.transform ? info.BossR : Call<float>(_md, "ColliderRadius", aim);
+                    float r = aim == _boss.transform ? info.BossR : _md.SweepColliderRadius(aim);
                     bool hold = aim == _boss.transform
                         && EmiciApproach.ShouldHoldCaster(
                             info.Adj.ToString(CultureInfo.InvariantCulture), info.Template);

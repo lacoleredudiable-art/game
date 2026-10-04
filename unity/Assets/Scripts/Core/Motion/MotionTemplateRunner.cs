@@ -50,6 +50,8 @@ namespace Dovus.Core.Motion
         public float Z => _z;
         public float FaceX => _faceX;
         public float FaceZ => _faceZ;
+        public int PhaseIndex => _phase;
+        public MotionTemplate ActiveTemplate => _template;
         /// <summary>Dönüş fazı varsa işaret, cast'in başladığı yerdir.</summary>
         public bool ReturnMarkPlaced { get; private set; }
         public float MarkX => _markX;

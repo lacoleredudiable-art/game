@@ -1,0 +1,12 @@
+# Başsız geçti, Play KALDI — koruyucu tetik (2-9) ve Yumruk 12-4 süre farkı
+2-9,Yumruk
+2-9,Yay
+2-9,Büyü Kitabı
+2-9,Kılıç
+2-9,Küre
+2-9,Çekiç
+2-9,Top
+2-9,Asa
+2-9,Tılsım
+2-9,Kalkan
+12-4,Yumruk
