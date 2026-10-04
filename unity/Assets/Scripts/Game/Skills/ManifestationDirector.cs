@@ -1,4 +1,4 @@
-using Dovus.App.Casting;
+﻿using Dovus.App.Casting;
 using Dovus.Core;
 using Dovus.Core.Combat;
 using Dovus.Core.Equipment;
@@ -86,8 +86,6 @@ namespace Dovus.Game.Skills
 
         readonly List<LivingEffectView> _active = new();
         readonly List<PendingClosing> _pending = new();
-        readonly HashSet<LivingEffect> _closingStamped = new();
-
         // Cümlenin şu an sözcük aldığı etki — nokta sayısına göre değil, kimliğe göre izlenir
         // (aynı karede birden fazla nokta kaydı sayı polling'ini atlayabilir, bkz. T7.1).
         LivingEffectView _buildingView;
@@ -111,7 +109,6 @@ namespace Dovus.Game.Skills
         int _slotQueryCastId;
         int _templateSlotCastId;
         bool _slotPassiveNeedsWeapon;
-        int _passiveBonusDepth;
         readonly List<PassiveEchoShot> _passiveEchoes = new();
         readonly PassiveFlowRunner _passiveFlows = new();
         PassiveHud _passiveHud;
@@ -452,6 +449,7 @@ namespace Dovus.Game.Skills
             }
             // Açılış görseli: elde silah + arketip controller ilk kareden doğru olsun.
             SyncVisualDelivery();
+            EnsureClosingServices();
         }
 
         public void BindTargeting(PlayerTargeting targeting)
@@ -863,7 +861,9 @@ namespace Dovus.Game.Skills
                 target = _player;
                 return true;
             }
-            if (_boss != null && FlatDistance(_player.position, _boss.transform.position) <= range)
+            if (_boss != null && PlanarMath.FlatDistance(
+                    _player.position.x, _player.position.z,
+                    _boss.transform.position.x, _boss.transform.position.z) <= range)
             {
                 target = _boss.transform;
                 return true;
@@ -2062,180 +2062,10 @@ namespace Dovus.Game.Skills
 
         void ApplyClosingStatuses(PendingClosing p, SkillResolution skill, bool bossReached = true)
         {
-            if (skill.IsEmpty)
-                return;
-            ActorStatus bossStatus = bossReached ? _bossStatus : null;
-            bool targetsAlly = _ally != null && p.Target == _ally.transform;
-            if (targetsAlly)
-                _ally.EnsureStatusBoard();
-            StatusBoard friendlyBoard = targetsAlly
-                ? _ally.Board
-                : _playerStatus != null ? _playerStatus.Board : null;
-            if (friendlyBoard == null && bossStatus == null)
-                return;
-
-            if (_ally != null)
-                _ally.EnsureStatusBoard();
-            float friendlyScale = WeaponFriendlyScale();
-            var result = StatusApplicator.ApplySkill(
-                skill,
-                friendlyBoard,
-                bossStatus != null ? bossStatus.Board : null,
-                _combat != null ? _combat.Status : new StatusTuning(),
-                _mobilityCc,
-                friendlyScale,
-                cleanseCount: JsonCleanseCount(skill));
-            _lastFriendlyWasAlly = targetsAlly;
-            ShareFriendlyStatuses(skill, friendlyBoard);
-            ApplyPurgePower(skill, result.CleansedCount);
-
-            // v6 Zaman fiili yalnız aktör durumudur; GameClock/Time.timeScale'a dokunmaz.
-            // Süre ve güç kart/JSON'dan gelir. Kart kendine hız diyorsa düşmana yavaş inmez.
-            if (string.Equals(skill.Action, "tempo", StringComparison.Ordinal))
-            {
-                TempoCast.From(skill).Apply(
-                    _playerStatus != null ? _playerStatus.Board : friendlyBoard,
-                    bossStatus != null ? bossStatus.Board : null,
-                    _ally != null ? _ally.Board : null,
-                    friendlyScale);
-            }
-
-            ApplyArmorShred(skill, bossStatus);
-            ApplySlotPassiveOnHit(bossStatus);
-            if (bossStatus != null)
-                ApplyElementStatusToBoss(bossStatus.Board);
-
-            if (result.Knockback && bossStatus != null && _player != null)
-                bossStatus.ApplyKnockbackFrom(_player.position);
-
-            if (result.Pull && bossStatus != null && _player != null)
-                bossStatus.ApplyPullToward(_player.position);
+            EnsureClosingServices();
+            _closingStatus.Apply(p.Target, skill, bossReached);
         }
 
-        void ApplySlotPassiveOnHit(ActorStatus target)
-        {
-            if (target == null || _slotPassives == null || _slotPassives.ActiveCount == 0)
-                return;
-            StatusTuning tuning = _combat != null ? _combat.Status : new StatusTuning();
-            int castId = _slotQueryCastId;
-            float rootSec = _slotPassives.RootSecondsFor(castId);
-            if (rootSec > 0f)
-                target.Board.Apply(StatusKind.Root, rootSec * 1000.0, 1f, "passive:root");
-            float speed = _slotPassives.SlowSpeedFor(castId);
-            if (speed < 0.999f)
-                target.Board.Apply(
-                    StatusKind.Slow,
-                    _mobilityCc?.ResolveCcDurationMs(StatusKind.Slow, 0, tuning.SlowMs) ?? tuning.SlowMs,
-                    speed,
-                    "passive:slow");
-            float accuracy = _slotPassives.AccuracyDebuffFor(castId);
-            if (accuracy > 0f)
-            {
-                double blindMs = BossStatusMath.BlindDurationMs(
-                    _mobilityCc?.ResolveCcDurationMs(StatusKind.Blind, 0, tuning.BlindMs) ?? tuning.BlindMs,
-                    _slotPassives.AccuracyLifetimeAddSecFor(castId));
-                target.Board.Apply(
-                    StatusKind.Blind,
-                    blindMs,
-                    BossStatusMath.BlindChanceFromAccuracy(accuracy),
-                    "passive:blind");
-            }
-        }
-
-        /// <summary>Seçili elementin boss'a giden durumu (Ateş burn, Karanlık weaken). Süre JSON'dan.</summary>
-        void ApplyElementStatusToBoss(StatusBoard boss)
-        {
-            ElementPaintNode? paint = SelectedElementPaint;
-            if (!paint.HasValue || boss == null)
-                return;
-            ElementPaintNode node = paint.Value;
-            if (!ElementBossStatusRules.TryForBoss(node.Status, node.StatusEffect, node.StatusDurationSec, out ElementBossStatus apply))
-                return;
-            boss.Apply(apply.Kind, apply.DurationMs, apply.Magnitude, "element:" + node.Id);
-        }
-
-        void ApplySlotPassiveHitExtras(float dealt)
-        {
-            if (_passiveBonusDepth > 0 || dealt <= 0f || _slotPassives == null)
-                return;
-            _passiveBonusDepth++;
-            try
-            {
-                ApplySlotBounce(dealt);
-                StartSlotFlow(dealt);
-            }
-            finally
-            {
-                _passiveBonusDepth--;
-            }
-        }
-
-        void ApplySlotBounce(float dealt)
-        {
-            int castId = _slotQueryCastId;
-            int count = _slotPassives.BounceCountFor(castId);
-            float mult = _slotPassives.BounceDamageMultFor(castId);
-            if (count <= 0 || mult <= 0f)
-                return;
-            int sourceId = _boss != null ? _boss.GetInstanceID() : 0;
-            var candidates = new List<PassiveBounceCandidate>();
-            Vector3 from = _boss != null ? _boss.transform.position : (_player != null ? _player.position : Vector3.zero);
-            IReadOnlyList<Targetable> bodies = Targetable.Live;
-            for (int i = 0; i < bodies.Count; i++)
-            {
-                Targetable body = bodies[i];
-                if (body == null || !IsEnemyBody(body.transform))
-                    continue;
-                if (_boss != null && (body.transform == _boss.transform || body.transform.IsChildOf(_boss.transform)))
-                    continue;
-                candidates.Add(new PassiveBounceCandidate(
-                    body.GetInstanceID(),
-                    body.DistanceFrom(from)));
-            }
-
-            List<PassiveBounceHit> hits = PassiveBounce.Plan(dealt, count, mult, sourceId, candidates);
-            for (int i = 0; i < hits.Count; i++)
-                ApplyPassiveBonusHit(hits[i]);
-        }
-
-        void ApplyPassiveBonusHit(PassiveBounceHit hit)
-        {
-            if (hit.Damage <= 0f || _bossVitals == null || _bossVitals.IsDown)
-                return;
-            bool bossHit = _boss == null
-                || hit.TargetId == 0
-                || hit.TargetId == _boss.GetInstanceID();
-            if (!bossHit)
-                return;
-            _bossVitals.ApplyDamage(hit.Damage);
-            _damageHud?.ShowDamage(hit.Damage, false, BossHitPoint(), DamageTint(), victimIsBoss: true);
-        }
-
-        void StartSlotFlow(float dealt)
-        {
-            int castId = _slotQueryCastId;
-            float channel = _slotPassives.ChannelSecFor(castId);
-            if (channel <= 0f)
-                return;
-            float rate = _slotPassives.TickRateMultFor(castId);
-            float baseTick = _combat != null ? _combat.Manifestation.ExecutorFieldTickSec : 1f;
-            float fraction = PassiveFlowMath.DefaultTickFraction;
-            if (MechanicEngine != null)
-            {
-                double fromJson = MechanicEngine.Rules.Param("flow_tick_fraction");
-                if (fromJson > 0d)
-                    fraction = (float)fromJson;
-            }
-            if (!PassiveFlowMath.TryPlan(channel, rate, dealt, baseTick, fraction, out PassiveFlowPlan plan))
-                return;
-            double now = _clock != null ? _clock.Director.WorldTimeMs : 0d;
-            _passiveFlows.Start(plan, now);
-        }
-
-        /// <summary>
-        /// Mend / heal / regen — daha boş olana basar (oran). Ally full ise oyuncu.
-        /// Miktar: TotalEffect × ClosingDamagePerEffect (commit ile aynı birim).
-        /// </summary>
         void ApplyClosingHeal(
             ClosingHit closing,
             SkillResolution skill,
@@ -2244,12 +2074,8 @@ namespace Dovus.Game.Skills
             Vector3? fieldCenter = null,
             float fieldRadiusM = 0f)
         {
-            int amount = CalculateClosingHealAmount(
-                closing,
-                skill,
-                effectScale,
-                chainBonusOverride);
-            ApplyClosingHealAmount(skill, amount, fieldCenter, fieldRadiusM);
+            EnsureClosingServices();
+            _closingHeal.Apply(closing, skill, effectScale, chainBonusOverride, fieldCenter, fieldRadiusM);
         }
 
         int CalculateClosingHealAmount(
@@ -2258,18 +2084,8 @@ namespace Dovus.Game.Skills
             float effectScale,
             float? chainBonusOverride)
         {
-            if (skill.IsEmpty || !IsHealSkill(skill) || effectScale <= 0f)
-                return 0;
-            float per = _combat != null ? _combat.ClosingDamagePerEffect : 1f;
-            // 16 Eylül: "Kavurucu Yara" (grievous_wounds+burn) — yanık hedefe gelen heal azalır.
-            // Hedefin StatusBoard'u yoksa (ör. AllyDummy) çarpan 1f, davranış eskisiyle aynı.
-            float chain = chainBonusOverride ?? _closingChainBonus;
-            // Tılsım şifa/kalkan/güç %120. Boru bunu bir daha çarpmaz.
-            float weapon = WeaponSupportPower(skill);
-            float healBase = skill.BaseHeal > 0f
-                ? skill.BaseHeal
-                : closing.TotalEffect * per;
-            return Mathf.Max(0, Mathf.RoundToInt(healBase * chain * weapon * effectScale));
+            EnsureClosingServices();
+            return _closingHeal.CalculateAmount(closing, skill, effectScale, chainBonusOverride);
         }
 
         void ApplyClosingHealAmount(
@@ -2279,108 +2095,10 @@ namespace Dovus.Game.Skills
             float fieldRadiusM,
             Transform preferredTarget = null)
         {
-            if (amount <= 0)
-                return;
-            DamageOutcome healedBy = DamagePipeline.Resolve(new DamageQuery
-            {
-                Heal = true,
-                HealPower = amount,
-                HealMultiplier = HealBuffMultiplier(skill),
-                ScaleMagnitudes = true
-            });
-            amount = Mathf.Max(0, Mathf.RoundToInt(healedBy.Amount));
-            if (_playerStatus != null)
-                _playerStatus.LastThreat = healedBy.Threat;
-            if (amount <= 0)
-                return;
-
-            var playerVitals = CachedPlayerVitals();
-            bool spatial = fieldCenter.HasValue && fieldRadiusM > 0f;
-            bool preferAlly = _ally != null && preferredTarget == _ally.transform;
-            // Seçilen dost, dost menzili kapısından geçti. Silahın dar alanı onu elemez.
-            bool allyInRange = preferAlly || !spatial || (_ally != null
-                && FlatDistance(_ally.transform.position, fieldCenter.Value) <= fieldRadiusM);
-            bool selfInRange = !spatial || (_player != null
-                && FlatDistance(_player.position, fieldCenter.Value) <= fieldRadiusM);
-            bool allyNeeds = _ally != null && allyInRange && _ally.Hp < _ally.MaxHp;
-            bool selfNeeds = playerVitals != null && selfInRange
-                && !playerVitals.IsDown && playerVitals.Hp < playerVitals.MaxHp;
-            bool preferSelf = _player != null && preferredTarget == _player;
-            // O4: düşmüş oyuncuya iyileştirme "zaten full" değil "düştü" yazar.
-            bool selfDown = playerVitals != null && playerVitals.IsDown;
-            if ((preferAlly && !allyNeeds) || (preferSelf && !selfNeeds))
-            {
-                _readout?.NoteSkill(skill.DisplayName, preferSelf && selfDown ? "düştü" : "zaten full", new Color(0.7f, 0.9f, 0.75f));
-                return;
-            }
-            if (!allyNeeds && !selfNeeds)
-            {
-                _readout?.NoteSkill(skill.DisplayName, selfDown ? "düştü" : "zaten full", new Color(0.7f, 0.9f, 0.75f));
-                ApplyHealOverflow(skill, amount, 0, false);
-                return;
-            }
-
-            JsonEffectRules.SelectHealTargets(
-                allyNeeds,
-                selfNeeds,
-                allyNeeds ? _ally.Ratio : 1f,
-                selfNeeds ? (float)playerVitals.Hp / playerVitals.MaxHp : 1f,
-                preferAlly,
-                preferSelf,
-                FriendlyTargetCap(skill),
-                out bool healAlly,
-                out bool healSelf);
-
-            if (healAlly)
-            {
-                int healedAlly = _ally.ApplyHeal(amount);
-                _lastFriendlyWasAlly = true;
-                if (healedAlly > 0)
-                {
-                    _damageHud?.ShowDamage(-healedAlly);
-                    _readout?.NoteSkill(skill.DisplayName, "ally +" + healedAlly, new Color(0.4f, 1f, 0.65f));
-                    _debugHud?.NoteSkillBang(skill.DisplayName, "ally +" + healedAlly);
-                    _ally.EnsureStatusBoard();
-                    ConsumeWeaponBonus(_ally.Board);
-                }
-                ApplyHealOverflow(skill, amount, healedAlly, true);
-            }
-            if (!healSelf)
-                return;
-
-            int healed = playerVitals.ApplyHeal(amount);
-            _lastFriendlyWasAlly = false;
-            if (healed > 0)
-            {
-                ConsumeWeaponBonus(_playerStatus != null ? _playerStatus.Board : null);
-                _damageHud?.ShowDamage(-healed);
-                _readout?.NoteSkill(skill.DisplayName, "self +" + healed, new Color(0.4f, 1f, 0.65f));
-                _debugHud?.NoteSkillBang(skill.DisplayName, "self +" + healed);
-            }
-            ApplyHealOverflow(skill, amount, healed, false);
+            EnsureClosingServices();
+            _closingHeal.ApplyAmount(skill, amount, fieldCenter, fieldRadiusM, preferredTarget);
         }
 
-        static float FlatDistance(Vector3 a, Vector3 b)
-        {
-            float dx = a.x - b.x;
-            float dz = a.z - b.z;
-            return Mathf.Sqrt(dx * dx + dz * dz);
-        }
-
-        static bool IsHealSkill(SkillResolution skill)
-        {
-            if (string.Equals(skill.VerbFamily, "mend", System.StringComparison.Ordinal))
-                return true;
-            string action = skill.Action ?? string.Empty;
-            return action is "heal" or "regen" or "cleanse" or "area_cleanse" or "holy_shield";
-        }
-
-        /// <summary>
-        /// Commit (§5 TotalEffect × ClosingDamagePerEffect) × skill fiil ölçeği.
-        /// Heal/dash BaseDamage=0 → 0 can; status ayrı. Tür hasarı değiştirmez (§12).
-        /// UseFormulaDamage=true → DamageCalculator (resistance/weakness nötr 0/1).
-        /// Dönüş: boss'a uygulanan hasar (0 = yok); Bağlama 8 echo kaynağı.
-        /// </summary>
         float ApplyClosingDamage(
             ClosingHit closing,
             SkillResolution skill,
@@ -2389,369 +2107,59 @@ namespace Dovus.Game.Skills
             float effectScale = 1f,
             float? chainBonusOverride = null)
         {
-            if (_bossVitals == null || _bossVitals.IsDown)
-                return 0f;
-            if (effectScale <= 0f)
-                return 0f;
-
-            DamageOutcome dealt = ComputeOutgoingHit(
+            EnsureClosingServices();
+            return _closingDamage.Apply(
                 closing, skill, isBasicStrike, slashCommitMult, effectScale, chainBonusOverride);
-            if (dealt.Poise > 0f)
-                _bossDirector?.ApplyPoiseDamage(dealt.Poise);
-            float damage = dealt.Amount;
-            bool isCrit = dealt.WasCrit;
-
-            if (damage <= 0f)
-            {
-                LastClosingDamageDealt = 0f;
-                return 0f;
-            }
-
-            if (!isBasicStrike)
-                TryConsumeCounterWindow();
-
-            RememberHitPoint(BossHitPoint());
-            if (!isBasicStrike && !_jsonTickDamage)
-                TryCannonBlast(_lastHitX, _lastHitZ);
-            ConsumeWeaponBonus(_bossStatus != null ? _bossStatus.Board : null);
-            LastClosingDamageDealt = damage;
-            _damageHud?.ShowDamage(damage, isCrit, BossHitPoint(), DamageTint(), victimIsBoss: true);
-
-            float lifesteal = _slotPassives?.LifestealAddFor(_slotQueryCastId) ?? 0f;
-            lifesteal += AdjectiveLifesteal(skill);
-            lifesteal += PortalBorderTeamHooks.LifestealAdd;
-            if (lifesteal > 0f)
-            {
-                var vitals = CachedPlayerVitals();
-                int healAmt = Mathf.RoundToInt(damage * lifesteal);
-                if (vitals != null && healAmt > 0)
-                    vitals.ApplyHeal(healAmt); // Kan Çılgınlığı kendi hasarından beslenir — NotifyHealed BİLEREK çağrılmaz
-            }
-
-            // K1: ölüm akışı BossVitals.Died → OnBossDied (bütün yollar için tek yer).
-            bool killed = _bossVitals.ApplyDamage(damage);
-            var bossVisual = _boss != null ? _boss.GetComponent<BossVisual>() : null;
-            if (killed)
-                return damage;
-
-            NotifyBossStruck(isCrit, allowHitstop: true);
-            bossVisual?.PlayStagger();
-            ApplySlotPassiveHitExtras(damage);
-            return damage;
         }
 
-        static float AdjectiveLifesteal(in SkillResolution skill)
-        {
-            if (skill.IsEmpty || skill.Engine.IsNull)
-                return 0f;
-            // v6 adjective_mods.2 "lifesteal"; eski katalog "apply_lifesteal".
-            var mods = skill.Engine;
-            float v = mods.HasLifesteal ? mods.Lifesteal(0f) : mods.ApplyLifesteal(0f);
-            return Math.Max(0f, v);
-        }
-
-        float ExtraCritChanceAdd(in SkillResolution skill)
-        {
-            float add = 0f;
-            if (!skill.IsEmpty && !skill.Engine.IsNull && skill.Engine.HasCritChanceAdd)
-                add += Math.Max(0f, skill.Engine.CritChanceAdd(0f));
-            return add;
-        }
-
-        // Kapanış izi (bu metot) ve seyahat izi (TickEffects, view.Scarred) iki ayrı bayrak:
-        // biri seyahat çatlağının damgalanıp damgalanmadığını, diğeri kapanışın kendi izini
-        // takip eder. Aynı bayrağı paylaşınca odaklı SARSINTI (`5-1`) seyahatte çatlak
-        // bıraktığı için kapanış izini hiç bırakmıyordu (T7.1).
         void StampScar(LivingEffectView view, ClosingHit closing)
         {
-            LivingEffect logic = view != null ? view.Logic : null;
-            if (logic == null || _closingStamped.Contains(logic))
-                return;
-
-            Vector3 along = new Vector3(logic.DirX, 0f, logic.DirZ);
-            Vector3 tip = new Vector3(logic.TipX, 0f, logic.TipZ);
-            float scale = view.IsBasicStrike
-                ? _combat.Manifestation.BasicStrikeScarScaleM * (0.7f + 0.15f * closing.DotCount)
-                : _combat.Manifestation.ScarScaleM * (0.7f + 0.15f * closing.DotCount);
-
-            ScarKind kind = view.IsBasicStrike
-                ? ScarKind.Strike
-                : closing.Type switch
-                {
-                    Rune.Aydinlik => ScarKind.Crack,
-                    Rune.Ates => ScarKind.Needle,
-                    Rune.Su => ScarKind.Swarm,
-                    Rune.Toprak => ScarKind.Acid,
-                    _ => ScarKind.Crack
-                };
-
-            // Hat boyunca çatlak: kökten uca birkaç damga
-            if (kind == ScarKind.Crack && logic.Current.Focus > 0.5f)
-            {
-                Vector3 origin = new Vector3(logic.OriginX, 0f, logic.OriginZ);
-                for (int i = 1; i <= 3; i++)
-                {
-                    float u = i / 3f;
-                    _scars.Stamp(Vector3.Lerp(origin, tip, u), scale * 0.85f, kind, along);
-                }
-            }
-            else
-            {
-                _scars.Stamp(tip, scale, kind, along);
-            }
-
-            _closingStamped.Add(logic);
+            EnsureClosingServices();
+            _closingDamage.StampScar(view, closing);
         }
 
-        /// <summary>Düz vuruş jab — yalnızca kısa sarsıntı; geri itme yok (skill tepkisi değil).</summary>
         void ApplyBossClosingBasic(LivingEffect logic, ClosingHit closing)
         {
-            if (logic == null)
-                return;
-            NoteImpactOrigin(logic);
-            if (_boss == null || (_bossVitals != null && _bossVitals.IsDown))
-                return;
-            if (!IsClosingInRange(logic, closing))
-                return;
-
-            var man = _combat.Manifestation;
-            _boss.React(
-                new Vector3(logic.OriginX, 0f, logic.OriginZ),
-                knockbackM: 0f,
-                liftM: 0f,
-                shakeSec: man.BossShakeSec * 0.35f,
-                _clock.Director.WorldTimeMs);
+            EnsureClosingServices();
+            _closingDamage.ApplyBossClosingBasic(logic, closing);
         }
 
         void ApplyBossClosing(LivingEffect logic, ClosingHit closing, SkillResolution skill)
         {
-            NoteImpactOrigin(logic);
-            if (_boss == null || (_bossVitals != null && _bossVitals.IsDown))
-                return;
-
-            // Kendine yönelik fiil (mend/guard/purge) boss gövdesini boğmaz — hafif titreşim yeter.
-            if (!skill.IsEmpty && StatusApplicator.IsSelfTargeted(skill))
-            {
-                if (!IsClosingInRange(logic, closing))
-                    return;
-                _boss.React(
-                    new Vector3(logic.OriginX, 0f, logic.OriginZ),
-                    _combat.Manifestation.BossKnockbackM * 0.08f,
-                    0.04f,
-                    _combat.Manifestation.BossShakeSec * 0.35f,
-                    _clock.Director.WorldTimeMs);
-                return;
-            }
-
-            Vector3 from = new Vector3(logic.OriginX, 0f, logic.OriginZ);
-            var man = _combat.Manifestation;
-            float knock = man.BossKnockbackM;
-            float lift = 0f;
-            float shake = man.BossShakeSec;
-            double worldMs = _clock.Director.WorldTimeMs;
-
-            // Önce SkillMotor ailesi (iş), yoksa son rün (eski silüet tepkisi).
-            string family = skill.IsEmpty ? string.Empty : skill.VerbFamily;
-            if (!string.IsNullOrEmpty(family))
-            {
-                switch (family)
-                {
-                    case "strike":
-                        knock = man.BossKnockbackM * (1.85f + 0.4f * logic.Current.Pierce);
-                        lift = 0.05f;
-                        shake = man.BossShakeSec * 0.55f;
-                        break;
-                    case "disrupt":
-                        knock = man.BossKnockbackM * 0.12f;
-                        lift = 0.08f;
-                        shake = man.BossShakeSec * 1.6f;
-                        if (!IsClosingInRange(logic, closing))
-                            return;
-                        _boss.React(from, knock, lift, shake * 0.45f, worldMs);
-                        _boss.React(from + new Vector3(logic.DirZ, 0f, -logic.DirX) * 0.35f,
-                            knock * 0.6f, lift * 0.5f, shake * 0.55f, worldMs);
-                        _boss.React(from + new Vector3(-logic.DirZ, 0f, logic.DirX) * 0.35f,
-                            knock * 0.6f, lift * 0.5f, shake * 0.55f, worldMs);
-                        return;
-                    case "control":
-                        if (!IsClosingInRange(logic, closing))
-                            return;
-                        _boss.Pin(0.7f, worldMs);
-                        return;
-                    case "zone":
-                        knock = man.BossKnockbackM * 0.55f;
-                        lift = man.BossLiftM * (1.15f + 0.35f * logic.Current.Lift);
-                        shake = man.BossShakeSec * 0.9f;
-                        break;
-                    case "motion":
-                        knock = man.BossKnockbackM * 0.9f;
-                        lift = 0.12f;
-                        shake = man.BossShakeSec * 0.7f;
-                        break;
-                    case "special":
-                        knock = man.BossKnockbackM * 0.25f;
-                        lift = 0.2f;
-                        shake = man.BossShakeSec * 1.1f;
-                        break;
-                    default:
-                        break;
-                }
-
-                if (!IsClosingInRange(logic, closing))
-                    return;
-                _boss.React(from, knock, lift, shake, worldMs);
-                return;
-            }
-
-            // Tür = fiziksel tepki ekseni. Hasar miktarı burada yok (§5 + §12).
-            switch (closing.Type)
-            {
-                case Rune.Aydinlik:
-                    // Havalandırma — spec §5 açıkça yazar.
-                    knock = man.BossKnockbackM * 0.55f;
-                    lift = man.BossLiftM * (1.15f + 0.35f * logic.Current.Lift);
-                    shake = man.BossShakeSec * 0.9f;
-                    break;
-                case Rune.Ates:
-                    // Tek yöne derin geri tepme (§4 daralt/odakla).
-                    knock = man.BossKnockbackM * (1.85f + 0.4f * logic.Current.Pierce);
-                    lift = 0.05f;
-                    shake = man.BossShakeSec * 0.55f;
-                    break;
-                case Rune.Su:
-                    // Yerinde çok noktalı sarsılma, yer değiştirme az (§4 çoğalt/yay).
-                    knock = man.BossKnockbackM * 0.12f;
-                    lift = 0.08f;
-                    shake = man.BossShakeSec * 1.6f;
-                    if (!IsClosingInRange(logic, closing))
-                        return;
-                    _boss.React(from, knock, lift, shake * 0.45f, worldMs);
-                    _boss.React(from + new Vector3(logic.DirZ, 0f, -logic.DirX) * 0.35f,
-                        knock * 0.6f, lift * 0.5f, shake * 0.55f, worldMs);
-                    _boss.React(from + new Vector3(-logic.DirZ, 0f, logic.DirX) * 0.35f,
-                        knock * 0.6f, lift * 0.5f, shake * 0.55f, worldMs);
-                    return;
-                case Rune.Hava:
-                    // Sabitleme — §5.
-                    if (!IsClosingInRange(logic, closing))
-                        return;
-                    _boss.Pin(0.55f, worldMs);
-                    return;
-                case Rune.Toprak:
-                    // Birikinti izi StampScar'da; gövde hafif sarsılır.
-                    knock = man.BossKnockbackM * 0.2f;
-                    lift = 0f;
-                    shake = man.BossShakeSec * 0.7f;
-                    break;
-            }
-
-            if (!IsClosingInRange(logic, closing))
-                return;
-
-            _boss.React(from, knock, lift, shake, worldMs);
+            EnsureClosingServices();
+            _closingDamage.ApplyBossClosing(logic, closing, skill);
         }
 
-        static readonly Collider[] StrikeHits = new Collider[24];
-
-        /// <summary>
-        /// Göğüs hizasında, gövde kenarından bakış yönüne uçlar dahil reach boyunda kapsül
-        /// (<see cref="StrikeCapsule"/>). Kapsül oyuncunun arkasına taşmaz; boss'un gerçek
-        /// collider'ı temas etmeli.
-        /// </summary>
         bool IsBossInStrikeCapsule(LivingEffect logic, float reachM)
         {
-            if (_boss == null || _player == null || logic == null)
-                return false;
-            ManifestationTuning man = _combat.Manifestation;
-            float radius = man.BasicStrikeRadiusM;
-            Vector3 dir = new Vector3(logic.DirX, 0f, logic.DirZ);
-            if (dir.sqrMagnitude < 0.0001f)
-                return false;
-            dir.Normalize();
-            StrikeCapsule.Segment(PlayerBodyRadiusM(), reachM, radius, out float nearM, out float farM);
-            Vector3 chest = _player.position + Vector3.up * man.StrikeChestOffsetM;
-            Vector3 low = chest + dir * nearM;
-            Vector3 high = chest + dir * farM;
-            int count = Physics.OverlapCapsuleNonAlloc(
-                low, high, radius, StrikeHits, Physics.AllLayers, QueryTriggerInteraction.Collide);
-            Transform bossT = _boss.transform;
-            for (int i = 0; i < count; i++)
-            {
-                Transform hit = StrikeHits[i].transform;
-                if (hit == bossT || hit.IsChildOf(bossT))
-                    return true;
-            }
-            return false;
+            EnsureClosingServices();
+            return _closingDamage.IsBossInStrikeCapsule(logic, reachM);
         }
 
-        /// <summary>
-        /// Düz vuruş menzilde kilitlediği boss hâlâ menzildeyse kapsül ıskalasa da vurur.
-        /// Hasar yolu hâlâ yalnız boss'a gider; ikinci düşman bu prototipte yok.
-        /// </summary>
         bool BasicTargetStillInReach(Transform target, float reachM)
         {
-            if (target == null || _player == null || _boss == null)
-                return false;
-            if (target != _boss.transform && !target.IsChildOf(_boss.transform))
-                return false;
-            Targetable mark = target.GetComponent<Targetable>();
-            if (mark == null)
-                mark = target.GetComponentInParent<Targetable>();
-            if (mark != null && !mark.IsAvailable)
-                return false;
-            float dist = mark != null
-                ? mark.DistanceFrom(_player.position)
-                : FlatDistance(_player.position, target.position);
-            return StrikeCapsule.EdgeInReach(dist, PlayerBodyRadiusM(), reachM);
+            EnsureClosingServices();
+            return _closingDamage.BasicTargetStillInReach(target, reachM);
         }
 
         float BasicStrikeYawDeg(Transform target)
         {
-            if (_player == null || target == null)
-                return 0f;
-            Vector3 to = target.position - _player.position;
-            to.y = 0f;
-            Vector3 fwd = _player.forward;
-            fwd.y = 0f;
-            if (to.sqrMagnitude < 0.0001f || fwd.sqrMagnitude < 0.0001f)
-                return 0f;
-            return Vector3.Angle(fwd, to);
+            EnsureClosingServices();
+            return _closingDamage.BasicStrikeYawDeg(target);
         }
-
-        float PlayerBodyRadiusM() => _motor != null ? _motor.BodyRadiusM : 0f;
 
         bool IsClosingInRange(LivingEffect logic, ClosingHit closing)
         {
-            if (logic == null || _boss == null)
-                return false;
-            Vector3 bossPos = _boss.transform.position;
-            float dx = bossPos.x - logic.TipX;
-            float dz = bossPos.z - logic.TipZ;
-            float reach = _combat.Manifestation.ClosingBangRadiusM;
-            if (logic != null && logic.BangRadiusM > 0f)
-                reach = logic.BangRadiusM;
-            if (closing.Type == Rune.Aydinlik)
-            {
-                if (!logic.OverlapsBoss(bossPos.x, bossPos.z, reach * 0.5f))
-                {
-                    float radial = Vector2.Distance(
-                        new Vector2(bossPos.x, bossPos.z),
-                        new Vector2(logic.OriginX, logic.OriginZ));
-                    if (radial > logic.TipDistance + reach && radial > reach)
-                        return false;
-                }
-
-                return true;
-            }
-
-            if (dx * dx + dz * dz > reach * reach)
-            {
-                if (!logic.OverlapsBoss(bossPos.x, bossPos.z, reach * 0.35f))
-                    return false;
-            }
-
-            return true;
+            EnsureClosingServices();
+            return _closingDamage.IsClosingInRange(logic, closing);
         }
+
+        static bool IsHealSkill(SkillResolution skill) => ClosingHealRules.IsHealSkill(skill);
+
+        static float FlatDistance(Vector3 a, Vector3 b) =>
+            PlanarMath.FlatDistance(a.x, a.z, b.x, b.z);
+
+        float PlayerBodyRadiusM() => _motor != null ? _motor.BodyRadiusM : 0f;
 
         void TickEffects(float dtSec, double worldMs)
         {
@@ -2801,7 +2209,7 @@ namespace Dovus.Game.Skills
 
                 if (!logic.IsAlive)
                 {
-                    _closingStamped.Remove(logic);
+                    ClosingDamageCore.ClearClosingStamp(logic);
                     Destroy(view.gameObject);
                     _active.RemoveAt(i);
                 }

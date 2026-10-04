@@ -1,3 +1,4 @@
+using Dovus.App.Casting;
 using Dovus.Core.Combat;
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
@@ -171,7 +172,7 @@ namespace Dovus.Game.Skills
             }
 
             bool canCrit = formula || (!isBasicStrike && !skill.IsEmpty && skill.BaseDamage > 0f);
-            float extraCrit = ExtraCritChanceAdd(skill) + WeaponCritAdd(skill, isBasicStrike);
+            float extraCrit = ClosingHealRules.ExtraCritChanceAdd(skill) + WeaponCritAdd(skill, isBasicStrike);
 
             var outcome = DamagePipeline.Resolve(new DamageQuery
             {
