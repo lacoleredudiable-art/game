@@ -75,7 +75,7 @@ namespace Dovus.Game.Actors
             _castMobilityUntilMs = 0;
         }
 
-        PortalBorderTeamAccess _team;
+        TeamComboAccess _team;
         StatusTuning _tuning = new();
         GameClock _clock;
         BossVitals _bossVitals;
@@ -104,7 +104,7 @@ namespace Dovus.Game.Actors
         public float ActiveSkillReflectRatio =>
             _clock != null && _clock.Director.WorldTimeMs < _skillReflectUntilMs ? _skillReflectRatio : 0f;
 
-        public void BindTeam(PortalBorderTeamAccess team) => _team = team;
+        public void BindTeam(TeamComboAccess team) => _team = team;
 
         public void Bind(
             GameClock clock,

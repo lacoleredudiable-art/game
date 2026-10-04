@@ -22,7 +22,7 @@ namespace Dovus.Game.Cameras
     {
         [SerializeField] Transform _target;
         [SerializeField] Transform _bossTarget;
-        [SerializeField] PrototypeTuning _tuning = new();
+        [SerializeField] GameTuning _tuning = new();
 
         KinematicMotor _targetMotor;
         Camera _cam;
@@ -106,11 +106,11 @@ namespace Dovus.Game.Cameras
             }
         }
 
-        public PrototypeTuning Tuning
+        public GameTuning Tuning
         {
             get
             {
-                _tuning ??= new PrototypeTuning();
+                _tuning ??= new GameTuning();
                 return _tuning;
             }
             set => _tuning = value;
@@ -120,7 +120,7 @@ namespace Dovus.Game.Cameras
 
         void Awake()
         {
-            _tuning ??= new PrototypeTuning();
+            _tuning ??= new GameTuning();
             _cam = GetComponent<Camera>();
             if (_cam != null)
             {

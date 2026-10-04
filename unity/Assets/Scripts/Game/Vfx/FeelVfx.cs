@@ -17,7 +17,7 @@ namespace Dovus.Game.Vfx
         static Texture2D _crack;
         static VfxLibrary _vfx;
 
-        public static void Configure(PrototypeTuning tuning, VfxLibrary vfx)
+        public static void Configure(GameTuning tuning, VfxLibrary vfx)
         {
             _vfx = vfx;
             KenneyVfxTextures.Configure(tuning);

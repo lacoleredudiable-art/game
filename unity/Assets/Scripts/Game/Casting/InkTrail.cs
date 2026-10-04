@@ -29,7 +29,7 @@ namespace Dovus.Game.Casting
     /// </summary>
     public sealed class InkTrail : MonoBehaviour
     {
-        PrototypeTuning _tuning;
+        GameTuning _tuning;
         HexagonOverlayCamera _overlay;
         readonly List<Trail> _trails = new List<Trail>(8);
         Material _lineMaterial;
@@ -68,7 +68,7 @@ namespace Dovus.Game.Casting
             public float BaseWidth;
         }
 
-        public void Configure(PrototypeTuning tuning, HexagonOverlayCamera overlay, int layer)
+        public void Configure(GameTuning tuning, HexagonOverlayCamera overlay, int layer)
         {
             _tuning = tuning;
             _overlay = overlay;

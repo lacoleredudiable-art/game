@@ -24,7 +24,7 @@ namespace Dovus.Game.Hud
         PlayerResource _resource;
         BossVitals _bossVitals;
         AllyDummy _ally;
-        PrototypeTuning _tuning;
+        GameTuning _tuning;
         HudTheme _theme;
 
         public void BindTheme(HudTheme theme) => _theme = theme;
@@ -91,7 +91,7 @@ namespace Dovus.Game.Hud
         public void Configure(
             PlayerVitals vitals,
             BossVitals bossVitals,
-            PrototypeTuning tuning,
+            GameTuning tuning,
             Transform canvasRoot,
             AllyDummy ally = null,
             PlayerResource resource = null)

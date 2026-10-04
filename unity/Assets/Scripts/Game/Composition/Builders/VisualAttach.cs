@@ -11,7 +11,7 @@ namespace Dovus.Game.Composition.Builders
         public static GameObject ResolvePlayerVisualPrefab(GameObject sceneDefault) =>
             AssetLoader.Load<GameObject>("PlayerVisualOverride", null) ?? sceneDefault;
 
-        public static GameObject ResolveBossVisualPrefab(PrototypeTuning tuning, GameObject sceneDefault)
+        public static GameObject ResolveBossVisualPrefab(GameTuning tuning, GameObject sceneDefault)
         {
             if (tuning.Boss.ActiveBossId != "aglarin_kralicesi")
                 return sceneDefault;

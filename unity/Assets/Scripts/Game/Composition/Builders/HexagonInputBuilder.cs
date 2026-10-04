@@ -17,7 +17,7 @@ namespace Dovus.Game.Composition.Builders
     {
         public void Build(WorldContext ctx)
         {
-            PrototypeTuning _tuning = ctx.Tuning;
+            GameTuning _tuning = ctx.Tuning;
             var combat = ctx.Combat;
             var player = ctx.Player.transform;
             var boss = ctx.BossReactor;

@@ -22,7 +22,7 @@ namespace Dovus.Game.Casting.Input
     /// <summary>HexagonInput paylaşılan durum ve servis referansları (MonoBehaviour değil).</summary>
     public sealed class HexagonInputSession
     {
-        public PrototypeTuning Tuning = new();
+        public GameTuning Tuning = new();
         public CombatTuning Combat = new();
         public SentenceEngine Engine;
         public DodgeState Dodge;

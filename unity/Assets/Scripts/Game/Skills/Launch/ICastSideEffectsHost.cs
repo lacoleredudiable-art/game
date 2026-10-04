@@ -39,7 +39,7 @@ namespace Dovus.Game.Skills.Launch
         Transform Player { get; }
         Transform BossTransform { get; }
         BossVitals BossVitals { get; }
-        PrototypeTuning Colors { get; }
+        GameTuning Colors { get; }
         VerbExecutionData VerbData { get; }
         ElementPaintNode? SelectedElementPaint { get; }
         Skill LastFactorySkill { get; set; }

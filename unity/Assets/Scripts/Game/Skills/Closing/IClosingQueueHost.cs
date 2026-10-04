@@ -22,7 +22,7 @@ namespace Dovus.Game.Skills.Closing
 {
     public interface IClosingQueueHost
     {
-        PrototypeTuning Colors { get; }
+        GameTuning Colors { get; }
         SkillMotor Skills { get; }
         SkillFactory SkillFactory { get; }
         EquipmentItem EquippedWeapon { get; }

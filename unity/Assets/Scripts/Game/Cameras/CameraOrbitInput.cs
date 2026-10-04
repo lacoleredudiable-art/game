@@ -20,7 +20,7 @@ namespace Dovus.Game.Cameras
         MoveInput _moveInput;
         HexagonInput _hexagonInput;
         HexagonView _hexView;
-        PrototypeTuning _tuning;
+        GameTuning _tuning;
         int? _orbitFingerId;
         Vector2 _lastPos;
         float _yawDeg;
@@ -37,7 +37,7 @@ namespace Dovus.Game.Cameras
             FollowCamera camera,
             MoveInput moveInput,
             HexagonInput hexagonInput,
-            PrototypeTuning tuning = null,
+            GameTuning tuning = null,
             HexagonView hexView = null)
         {
             _camera = camera;

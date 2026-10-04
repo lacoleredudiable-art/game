@@ -29,7 +29,7 @@ namespace Dovus.Game.Boss
 
         const int ConeSegments = 28;
 
-        PrototypeTuning _colors;
+        GameTuning _colors;
         Transform _bossXform;
         Transform _disc;
         Material _discMat;
@@ -46,7 +46,7 @@ namespace Dovus.Game.Boss
         Vector3 _baseScale;
         static Texture2D _glowTex;
 
-        public void Bind(PrototypeTuning colors, BossTuning boss, Transform bossXform)
+        public void Bind(GameTuning colors, BossTuning boss, Transform bossXform)
         {
             _colors = colors;
             _bossXform = bossXform;

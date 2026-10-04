@@ -22,7 +22,7 @@ namespace CoreTests;
 /// %10 kare atlaması, 120 / 60 / 30 fps örnekleme; yarısı merkezden, yarısı ilk noktadan başlar.
 /// Geçme = kayıtlı nokta dizisi hedef diziyle BİREBİR aynı (eksik ya da fazla rün yok).
 /// Eski kural (yalnız örnek noktası) ile yeni kural (<see cref="StrokeDotTracker"/>) aynı yollarda ölçülür.
-/// Ölçü dp: altıgen yarıçapı 104 (telefon tabanı) ve 112, nokta yarıçapı 34 (PrototypeTuning).
+/// Ölçü dp: altıgen yarıçapı 104 (telefon tabanı) ve 112, nokta yarıçapı 34 (GameTuning).
 /// </summary>
 [TestFixture]
 public class DrawRecognitionTests

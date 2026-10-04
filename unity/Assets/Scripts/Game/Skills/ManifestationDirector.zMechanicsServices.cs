@@ -115,7 +115,7 @@ namespace Dovus.Game.Skills
             public BossDirector BossDirector => _md._bossDirector;
             public ActorStatus PlayerStatus => _md._playerStatus;
             public GameClock Clock => _md._clock;
-            public PortalBorderTeamAccess TeamAccess => _md._team;
+            public TeamComboAccess TeamAccess => _md._team;
             public CombatTuning Combat => _md._combat;
             public SkillMotor Skills => _md._skills;
             public SlotPassiveDirector SlotPassives => _md._slotPassives;

@@ -22,9 +22,9 @@ namespace Dovus.Game.Composition
     /// <summary>
     /// Tek sahne kökü: arena, oyuncu, boss, kamera ve ışığı çalışma anında kurar.
     /// </summary>
-    public sealed class PrototypeBootstrap : MonoBehaviour
+    public sealed class GameBootstrap : MonoBehaviour
     {
-        [SerializeField] PrototypeTuning _tuning = new();
+        [SerializeField] GameTuning _tuning = new();
 
         [Header("Görsel prefab (Asset Store — boşsa kapsül)")]
         [SerializeField] GameObject _playerVisualPrefab;
@@ -34,7 +34,7 @@ namespace Dovus.Game.Composition
         [SerializeField, Min(1)] int _prototypeMainClassId = 1;
         [SerializeField] int[] _prototypePassiveRuneIds = new int[0];
 
-        internal PrototypeTuning SceneTuning => _tuning;
+        internal GameTuning SceneTuning => _tuning;
         internal GameObject PlayerVisualPrefab => _playerVisualPrefab;
         internal GameObject BossVisualPrefab => _bossVisualPrefab;
         internal int PrototypeMainClassId => _prototypeMainClassId;
@@ -42,7 +42,7 @@ namespace Dovus.Game.Composition
 
         void Awake()
         {
-            _tuning ??= new PrototypeTuning();
+            _tuning ??= new GameTuning();
             _tuning.EnsureRuntimeDefaults();
             HexagonLayoutScreen.FitShortSideDp = _tuning.Input.HudFitShortSideDp;
 #if !UNITY_EDITOR
@@ -80,7 +80,7 @@ namespace Dovus.Game.Composition
             ctx.Assets = AssetCatalog.Standalone;
             FeelVfx.Configure(_tuning, ctx.Assets.Vfx);
 
-            ctx.TeamAccess = new PortalBorderTeamAccess();
+            ctx.TeamAccess = new TeamComboAccess();
 
             var arenaBuilder = new ArenaBuilder();
             arenaBuilder.BuildArena(ctx);

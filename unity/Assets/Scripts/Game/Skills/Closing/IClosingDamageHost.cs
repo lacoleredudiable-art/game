@@ -29,7 +29,7 @@ namespace Dovus.Game.Skills.Closing
         ActorStatus BossStatus { get; }
         CombatTuning Combat { get; }
         GameClock Clock { get; }
-        PortalBorderTeamAccess TeamAccess { get; }
+        TeamComboAccess TeamAccess { get; }
         KinematicMotor Motor { get; }
         DamageNumberHud DamageHud { get; }
         GroundScarField Scars { get; }

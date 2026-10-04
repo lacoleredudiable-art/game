@@ -30,6 +30,6 @@ Kök `AGENTS.md` + `docs/MAP.md`. Hedef klasör/namespace düzeni: `docs/ARCHITE
 - **Unity katmanı:** `MonoBehaviour`, `Update`, `Resources`, sahne objeleri burada. Core'a bağımlılık var; tersi yok.
 - **Partial'lar:** `ManifestationDirector.*.cs`, `HexagonView.*.cs` — tek sınıf, dosya bölünmesi; taşıırken tüm partial'ları ve `.meta` çiftlerini birlikte taşı.
 - **Tek hareket sistemi:** Skill sırasında oyuncu/boss konumu yalnız `MotionTemplateRunner` (Core) + `MotionTemplateBody` (Game/Actors). `SkillMotionDriver` / executor konum yazımı yasak; `SkillMotionMotor` yalnız saf plan (tür, i-frame, hedef) — konumu yalnız kalıp yazar.
-- **Sahne:** `PrototypeBootstrap.Awake` ile kurulur (Composition); `.unity` / `.prefab` YAML elle düzenlenmez.
+- **Sahne:** `GameBootstrap.Awake` ile kurulur (Composition); `.unity` / `.prefab` YAML elle düzenlenmez.
 - **Derleme kontrolü:** `python tools/GameCompile/check.py` (CoreTests içinde de koşar).
 - **JSON:** `ElementSystemJsonLoader` → `SkillMotorLoader.Load`; spec kopyası kök `AGENTS.md` §6.

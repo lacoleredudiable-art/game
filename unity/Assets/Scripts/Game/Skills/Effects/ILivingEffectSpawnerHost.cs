@@ -26,7 +26,7 @@ namespace Dovus.Game.Skills.Effects
         Transform DirectorTransform { get; }
         SentenceEngine Engine { get; }
         CombatTuning Combat { get; }
-        PrototypeTuning Colors { get; }
+        GameTuning Colors { get; }
         ActorPose Pose { get; }
         ActorVisual Visual { get; }
         BossReactor Boss { get; }

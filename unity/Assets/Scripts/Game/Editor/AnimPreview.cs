@@ -69,7 +69,7 @@ namespace Dovus.Game.Editor
             return null;
         }
 
-        /// <summary>Basit vuruş: V611DebugPanel'in de kullandığı debug cast yolu (verb=1, adj=1).</summary>
+        /// <summary>Basit vuruş: GrammarDebugPanel'in de kullandığı debug cast yolu (verb=1, adj=1).</summary>
         public static bool Strike()
         {
             var input = Object.FindAnyObjectByType<HexagonInput>();

@@ -16,7 +16,7 @@ namespace Dovus.Game.Composition.Builders
             ArenaBuilder.EnsureEventSystem();
             if (DebugConfig.Enabled)
             {
-                var v6Panel = ctx.HexagonRoot.AddComponent<V611DebugPanel>();
+                var v6Panel = ctx.HexagonRoot.AddComponent<GrammarDebugPanel>();
                 v6Panel.Configure(
                     ctx.HexagonInput,
                     ctx.ManifestationDirector,

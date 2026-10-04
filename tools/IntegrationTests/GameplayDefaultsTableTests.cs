@@ -22,13 +22,13 @@ public class GameplayDefaultsTableTests
     }
 
     [Test]
-    public void PortalBorderTeamDefaults_MatchLegacyLiterals()
+    public void TeamComboDefaults_MatchLegacyLiterals()
     {
         Assert.Multiple(() =>
         {
-            Assert.That(PortalBorderTeamDefaults.AllyDummyHpRatio, Is.EqualTo(0.7f));
-            Assert.That(PortalBorderTeamDefaults.TeamActorRadiusM, Is.EqualTo(0.5f));
-            Assert.That(PortalBorderTeamDefaults.BossBodyRadiusFallbackM, Is.EqualTo(0.85f));
+            Assert.That(TeamComboDefaults.AllyDummyHpRatio, Is.EqualTo(0.7f));
+            Assert.That(TeamComboDefaults.TeamActorRadiusM, Is.EqualTo(0.5f));
+            Assert.That(TeamComboDefaults.BossBodyRadiusFallbackM, Is.EqualTo(0.85f));
         });
     }
 

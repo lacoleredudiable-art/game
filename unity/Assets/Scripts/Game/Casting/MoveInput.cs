@@ -14,7 +14,7 @@ namespace Dovus.Game.Casting
     /// </summary>
     public sealed class MoveInput : MonoBehaviour
     {
-        [SerializeField] PrototypeTuning _tuning = new();
+        [SerializeField] GameTuning _tuning = new();
 
         int? _stickFingerId;
         Vector2 _stickOrigin;
@@ -43,11 +43,11 @@ namespace Dovus.Game.Casting
         /// <summary>Merkezden kabarcığa (knob) kırpılmış piksel ofseti — görsel için.</summary>
         public Vector2 KnobOffsetPx => _knobOffsetPx;
 
-        public PrototypeTuning Tuning
+        public GameTuning Tuning
         {
             get
             {
-                _tuning ??= new PrototypeTuning();
+                _tuning ??= new GameTuning();
                 return _tuning;
             }
             set => _tuning = value;
@@ -55,7 +55,7 @@ namespace Dovus.Game.Casting
 
         void Awake()
         {
-            _tuning ??= new PrototypeTuning();
+            _tuning ??= new GameTuning();
         }
 
         void OnEnable()

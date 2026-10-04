@@ -42,7 +42,7 @@ public class SingletonInjectionTests
                 || string.Equals(rel, "Composition/AssetCatalog.cs", StringComparison.Ordinal))
                 continue;
             // İzinli istisna: host yaşam döngüsü AfterSceneLoad Boot + DontDestroyOnLoad (davranış korunur, 2B.8b inceleme).
-            bool teamHost = rel.Replace('\\', '/') == "Team/PortalBorderTeamHost.cs";
+            bool teamHost = rel.Replace('\\', '/') == "Team/TeamComboHost.cs";
 
             string src = File.ReadAllText(path);
             if (!teamHost)
@@ -67,7 +67,7 @@ public class SingletonInjectionTests
     [Test]
     public void Bootstrap_WiresAssetCatalog()
     {
-        string boot = Game("Composition/PrototypeBootstrap.cs");
+        string boot = Game("Composition/GameBootstrap.cs");
         Assert.That(boot, Does.Contain("ctx.Assets = AssetCatalog.Standalone"));
     }
 }

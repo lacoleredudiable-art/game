@@ -20,9 +20,9 @@ namespace Dovus.Game.Team
     /// Kalıp sürerken oyuncunun yerini yazmaz; bitince uygular.
     /// </summary>
     [DefaultExecutionOrder(50)]
-    public sealed class PortalBorderTeamHost : MonoBehaviour
+    public sealed class TeamComboHost : MonoBehaviour
     {
-        public static PortalBorderTeamHost Instance { get; private set; }
+        public static TeamComboHost Instance { get; private set; }
 
         readonly BorderMode _border = new();
         readonly PortalSystem _portal = new();
@@ -67,10 +67,10 @@ namespace Dovus.Game.Team
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Boot()
         {
-            if (FindAnyObjectByType<PortalBorderTeamHost>() != null)
+            if (FindAnyObjectByType<TeamComboHost>() != null)
                 return;
-            var go = new GameObject(nameof(PortalBorderTeamHost));
-            go.AddComponent<PortalBorderTeamHost>();
+            var go = new GameObject(nameof(TeamComboHost));
+            go.AddComponent<TeamComboHost>();
             DontDestroyOnLoad(go);
         }
 
@@ -153,8 +153,8 @@ namespace Dovus.Game.Team
             if (!Bind() || _spawned.Count >= 4 || _player == null)
                 return;
             int n = _spawned.Count + 1;
-            Vector3 pos = _player.position + new Vector3(PortalBorderTeamDefaults.AllySpawnBaseX - n * PortalBorderTeamDefaults.AllySpawnStepX, 0f, PortalBorderTeamDefaults.AllySpawnZ);
-            pos.y = PortalBorderTeamDefaults.ActorGroundY;
+            Vector3 pos = _player.position + new Vector3(TeamComboDefaults.AllySpawnBaseX - n * TeamComboDefaults.AllySpawnStepX, 0f, TeamComboDefaults.AllySpawnZ);
+            pos.y = TeamComboDefaults.ActorGroundY;
             GameObject go = GameObject.CreatePrimitive(PrimitiveType.Capsule);
             go.name = "Dost " + n;
             go.transform.position = pos;
@@ -163,10 +163,10 @@ namespace Dovus.Game.Team
                 SharedTint.Apply(renderer, new Color(0.35f, 0.9f, 0.55f));
             var dummy = go.AddComponent<AllyDummy>();
             int maxHp = _vitals != null ? _vitals.MaxHp : 30;
-            dummy.Bind(maxHp, PortalBorderTeamDefaults.AllyDummyHpRatio);
+            dummy.Bind(maxHp, TeamComboDefaults.AllyDummyHpRatio);
             var actor = go.AddComponent<TeamActor>();
             actor.Id = _nextId++;
-            actor.Radius = PortalBorderTeamDefaults.TeamActorRadiusM;
+            actor.Radius = TeamComboDefaults.TeamActorRadiusM;
             _spawned.Add(go);
             _line = go.name + " geldi";
         }
@@ -180,7 +180,7 @@ namespace Dovus.Game.Team
                 _vitals.ApplyDamage(_vitals.Hp - target);
             else
                 _vitals.ApplyHeal(target - _vitals.Hp);
-            _line = "Can %" + Mathf.RoundToInt(ratio * PortalBorderTeamDefaults.HpPercentScale);
+            _line = "Can %" + Mathf.RoundToInt(ratio * TeamComboDefaults.HpPercentScale);
         }
 
         public void CommandCast(TeamActor actor, string skillId)
@@ -215,7 +215,7 @@ namespace Dovus.Game.Team
                 struck = true;
                 x = _boss.position.x;
                 z = _boss.position.z;
-                if (dx * dx + dz * dz < PortalBorderTeamDefaults.NearBossDistSqr)
+                if (dx * dx + dz * dz < TeamComboDefaults.NearBossDistSqr)
                     struck = true;
             }
             if (_team.TryRopeMid(out float mx, out float mz))
@@ -247,7 +247,7 @@ namespace Dovus.Game.Team
                 if (pulse.MineMult > 0f)
                 {
                     _line = "Mayın x" + pulse.MineMult.ToString("0");
-                    Burst(new Vector3(mx, PortalBorderTeamDefaults.MineBurstHeightY, mz), new Color(1f, 0.45f, 0.1f));
+                    Burst(new Vector3(mx, TeamComboDefaults.MineBurstHeightY, mz), new Color(1f, 0.45f, 0.1f));
                 }
             }
         }
@@ -256,7 +256,7 @@ namespace Dovus.Game.Team
         {
             if (actor == null || !_team.TryMine(out float x, out float z))
                 return;
-            actor.transform.position = new Vector3(x, PortalBorderTeamDefaults.ActorGroundY, z);
+            actor.transform.position = new Vector3(x, TeamComboDefaults.ActorGroundY, z);
             _line = "Dost mayında";
         }
 
@@ -264,7 +264,7 @@ namespace Dovus.Game.Team
         {
             if (actor == null || !_team.TryRopeMid(out float x, out float z))
                 return;
-            actor.transform.position = new Vector3(x, PortalBorderTeamDefaults.ActorGroundY, z);
+            actor.transform.position = new Vector3(x, TeamComboDefaults.ActorGroundY, z);
             _line = "Dost ipin ortasında";
         }
 
@@ -272,7 +272,7 @@ namespace Dovus.Game.Team
         {
             if (actor == null || !_team.TryTurret(out float x, out float z))
                 return;
-            actor.transform.position = new Vector3(x, PortalBorderTeamDefaults.ActorGroundY, z);
+            actor.transform.position = new Vector3(x, TeamComboDefaults.ActorGroundY, z);
             _line = "Dost tarete dokunuyor";
         }
 
@@ -331,7 +331,7 @@ namespace Dovus.Game.Team
             // üçüncü vuruş) kaldırıldı; 1-10'un sırt vuruşu kalıbın sirtta_kapi fazında. Yalnız görsel kalır.
             if (skillId == "1-10" && _portal.Strike.Active)
             {
-                Burst(new Vector3(_portal.Strike.X, PortalBorderTeamDefaults.PortalStrikeMarkerY, _portal.Strike.Z), new Color(0.75f, 0.75f, 1f));
+                Burst(new Vector3(_portal.Strike.X, TeamComboDefaults.PortalStrikeMarkerY, _portal.Strike.Z), new Color(0.75f, 0.75f, 1f));
             }
             if (_border.Active(player.Id))
                 _line = _border.AuraLabel(player.Id);
@@ -388,7 +388,7 @@ namespace Dovus.Game.Team
                 if (actor == null)
                     actor = _player.gameObject.AddComponent<TeamActor>();
                 actor.Id = Modifiers.PlayerActorId;
-                actor.Radius = PortalBorderTeamDefaults.TeamActorRadiusM;
+                actor.Radius = TeamComboDefaults.TeamActorRadiusM;
                 if (_vitals != null && _vitals.MaxHp > 0)
                     actor.HpRatio = (float)_vitals.Hp / _vitals.MaxHp;
                 actor.TemplateOwnsPosition = _motion != null && _motion.IsDisplacing;
@@ -406,7 +406,7 @@ namespace Dovus.Game.Team
                 {
                     actor = dummy.gameObject.AddComponent<TeamActor>();
                     actor.Id = _nextId++;
-                    actor.Radius = PortalBorderTeamDefaults.TeamActorRadiusM;
+                    actor.Radius = TeamComboDefaults.TeamActorRadiusM;
                 }
                 actor.HpRatio = dummy.Ratio;
                 _actors.Add(actor);
@@ -432,7 +432,7 @@ namespace Dovus.Game.Team
             if (_boss != null)
             {
                 BossReactor reactor = CachedBossReactor();
-                float radius = reactor != null ? reactor.BodyRadiusM : PortalBorderTeamDefaults.BossBodyRadiusFallbackM;
+                float radius = reactor != null ? reactor.BodyRadiusM : TeamComboDefaults.BossBodyRadiusFallbackM;
                 var bossBody = new Body(900, _boss.position.x, _boss.position.y, _boss.position.z, radius, false, true);
                 _portal.Sense(bossBody, false, boss, out _);
             }
@@ -468,13 +468,13 @@ namespace Dovus.Game.Team
             if (_bossStatus == null)
                 return;
             if (pulse.Stunned && pulse.StunSec > 0f)
-                _bossStatus.Board.Apply(StatusKind.Stun, pulse.StunSec * 1000.0, PortalBorderTeamDefaults.StunStatusStrength, "takim");
+                _bossStatus.Board.Apply(StatusKind.Stun, pulse.StunSec * 1000.0, TeamComboDefaults.StunStatusStrength, "takim");
             if (pulse.Burned)
             {
                 // S17: yüklenen/panelden değişen tuning (ActorStatus.Bind'deki _combat.Status), varsayılan değil.
                 _bossStatus.Board.Apply(StatusKind.Burn, 1000.0, _bossStatus.Tuning.BurnDamagePerSec, "8-6");
             }
-            if (pulse.MineMult > PortalBorderTeamDefaults.MineMultActiveThreshold)
+            if (pulse.MineMult > TeamComboDefaults.MineMultActiveThreshold)
                 _line = "Mayın x" + pulse.MineMult.ToString("0");
         }
 
@@ -516,8 +516,8 @@ namespace Dovus.Game.Team
                 if (col != null)
                     Destroy(col);
                 _aura.transform.SetParent(_player, false);
-                _aura.transform.localPosition = new Vector3(0f, PortalBorderTeamDefaults.BorderAuraLocalY, 0f);
-                _aura.transform.localScale = new Vector3(PortalBorderTeamDefaults.BorderAuraScaleXZ, PortalBorderTeamDefaults.BorderAuraScaleY, PortalBorderTeamDefaults.BorderAuraScaleXZ);
+                _aura.transform.localPosition = new Vector3(0f, TeamComboDefaults.BorderAuraLocalY, 0f);
+                _aura.transform.localScale = new Vector3(TeamComboDefaults.BorderAuraScaleXZ, TeamComboDefaults.BorderAuraScaleY, TeamComboDefaults.BorderAuraScaleXZ);
                 Renderer renderer = _aura.GetComponent<Renderer>();
                 if (renderer != null)
                     SharedTint.Apply(renderer, new Color(1f, 0.2f, 0.25f, 0.85f));
@@ -543,8 +543,8 @@ namespace Dovus.Game.Team
                 Collider col = gate.GetComponent<Collider>();
                 if (col != null)
                     Destroy(col);
-                gate.transform.position = new Vector3(door.X, PortalBorderTeamDefaults.GateMarkerY, door.Z);
-                gate.transform.localScale = new Vector3(door.Radius * 2f, PortalBorderTeamDefaults.GateThicknessY, door.Radius * 2f);
+                gate.transform.position = new Vector3(door.X, TeamComboDefaults.GateMarkerY, door.Z);
+                gate.transform.localScale = new Vector3(door.Radius * 2f, TeamComboDefaults.GateThicknessY, door.Radius * 2f);
                 Renderer renderer = gate.GetComponent<Renderer>();
                 if (renderer != null)
                     SharedTint.Apply(renderer, new Color(0.45f, 0.35f, 1f, 0.9f));
@@ -565,8 +565,8 @@ namespace Dovus.Game.Team
             Collider col = go.GetComponent<Collider>();
             if (col != null)
                 Destroy(col);
-            go.transform.position = new Vector3(x, PortalBorderTeamDefaults.WorldMarkerY, z);
-            go.transform.localScale = Vector3.one * PortalBorderTeamDefaults.WorldMarkerScale;
+            go.transform.position = new Vector3(x, TeamComboDefaults.WorldMarkerY, z);
+            go.transform.localScale = Vector3.one * TeamComboDefaults.WorldMarkerScale;
             Renderer renderer = go.GetComponent<Renderer>();
             if (renderer != null)
                 SharedTint.Apply(renderer, color);
@@ -581,11 +581,11 @@ namespace Dovus.Game.Team
             if (col != null)
                 Destroy(col);
             go.transform.position = pos;
-            go.transform.localScale = Vector3.one * PortalBorderTeamDefaults.BurstFxScale;
+            go.transform.localScale = Vector3.one * TeamComboDefaults.BurstFxScale;
             Renderer renderer = go.GetComponent<Renderer>();
             if (renderer != null)
                 SharedTint.Apply(renderer, color);
-            Destroy(go, PortalBorderTeamDefaults.BurstFxLifetimeSec);
+            Destroy(go, TeamComboDefaults.BurstFxLifetimeSec);
         }
 
         TeamActor PlayerActor()
@@ -635,7 +635,7 @@ namespace Dovus.Game.Team
             if (_boss == null)
                 return Disc.None;
             BossReactor reactor = CachedBossReactor();
-            float radius = reactor != null && reactor.BodyRadiusM > PortalBorderTeamDefaults.BossBodyRadiusMinM ? reactor.BodyRadiusM : PortalBorderTeamDefaults.BossBodyRadiusFallbackM;
+            float radius = reactor != null && reactor.BodyRadiusM > TeamComboDefaults.BossBodyRadiusMinM ? reactor.BodyRadiusM : TeamComboDefaults.BossBodyRadiusFallbackM;
             return new Disc(true, _boss.position.x, _boss.position.z, radius, PortalSystem.ClearGapM);
         }
     }

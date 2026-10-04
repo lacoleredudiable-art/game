@@ -16,7 +16,7 @@ using System.Collections.Generic;
 namespace CoreTests;
 
 [TestFixture]
-public class PortalBorderTeamTests
+public class TeamComboTests
 {
     const float Gap = 0.02f;
 

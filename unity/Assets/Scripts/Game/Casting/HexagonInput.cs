@@ -62,11 +62,11 @@ namespace Dovus.Game.Casting
         /// <summary>Dodge kabul edildi. Süren skill kesilir, kalıp konumu hemen bırakılır.</summary>
         public event System.Action SkillCancelledByDodge;
 
-        public PrototypeTuning Tuning
+        public GameTuning Tuning
         {
             get
             {
-                _session.Tuning ??= new PrototypeTuning();
+                _session.Tuning ??= new GameTuning();
                 return _session.Tuning;
             }
             set => _session.Tuning = value;
@@ -354,7 +354,7 @@ namespace Dovus.Game.Casting
         void EnsureRuntime()
         {
             EnsureServices();
-            _session.Tuning ??= new PrototypeTuning();
+            _session.Tuning ??= new GameTuning();
             _session.Combat ??= new CombatTuning();
             if (_session.Dodge == null)
                 _session.Dodge = new DodgeState(_session.Combat.Dodge);

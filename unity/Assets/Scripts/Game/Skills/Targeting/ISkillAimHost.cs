@@ -30,7 +30,7 @@ namespace Dovus.Game.Skills.Targeting
         BossReactor Boss { get; }
         KinematicMotor Motor { get; }
         CombatTuning Combat { get; }
-        PrototypeTuning Colors { get; }
+        GameTuning Colors { get; }
         ReactionReadout Readout { get; }
         SkillMotor Skills { get; }
         SkillNumberCatalog SkillNumbers { get; }

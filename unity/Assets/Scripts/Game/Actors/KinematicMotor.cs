@@ -19,7 +19,7 @@ namespace Dovus.Game.Actors
     [RequireComponent(typeof(MoveInput))]
     public sealed class KinematicMotor : MonoBehaviour
     {
-        [SerializeField] PrototypeTuning _tuning = new();
+        [SerializeField] GameTuning _tuning = new();
         [SerializeField] float _bodyRadiusM = 0.5f;
 
         GameClock _clock;
@@ -55,11 +55,11 @@ namespace Dovus.Game.Actors
             _combatFacingLocked = facingLocked;
         }
 
-        public PrototypeTuning Tuning
+        public GameTuning Tuning
         {
             get
             {
-                _tuning ??= new PrototypeTuning();
+                _tuning ??= new GameTuning();
                 return _tuning;
             }
             set => _tuning = value;
@@ -78,7 +78,7 @@ namespace Dovus.Game.Actors
 
         void Awake()
         {
-            _tuning ??= new PrototypeTuning();
+            _tuning ??= new GameTuning();
             _input = GetComponent<MoveInput>();
         }
 

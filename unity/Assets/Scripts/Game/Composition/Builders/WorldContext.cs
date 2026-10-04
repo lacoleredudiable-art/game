@@ -32,14 +32,14 @@ namespace Dovus.Game.Composition.Builders
     /// <summary>Paylaşılan sahne kurulum referansları; kurucular sırayla doldurur.</summary>
     public sealed class WorldContext
     {
-        public readonly PrototypeBootstrap Host;
+        public readonly GameBootstrap Host;
         public readonly Transform SceneRoot;
 
         public CombatTuning Combat;
         public TuningConfig TuningConfig;
         public GameClock Clock;
         public AssetCatalog Assets;
-        public PortalBorderTeamAccess TeamAccess;
+        public TeamComboAccess TeamAccess;
         public SfxDirector Sfx;
         public ElementRadialMenu ElementMenu;
         public GameObject Arena;
@@ -92,13 +92,13 @@ namespace Dovus.Game.Composition.Builders
         public CombatFeel CombatFeel;
         public GroundScarField GroundScars;
 
-        public WorldContext(PrototypeBootstrap host)
+        public WorldContext(GameBootstrap host)
         {
             Host = host;
             SceneRoot = host.transform;
         }
 
-        public PrototypeTuning Tuning => Host.SceneTuning;
+        public GameTuning Tuning => Host.SceneTuning;
         public int PrototypeMainClassId => Host.PrototypeMainClassId;
         public int[] PrototypePassiveRuneIds => Host.PrototypePassiveRuneIds;
         public GameObject PlayerVisualPrefab => Host.PlayerVisualPrefab;

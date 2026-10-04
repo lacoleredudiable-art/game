@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Dovus.Game.Config
 {
-    public sealed partial class PrototypeTuning
+    public sealed partial class GameTuning
     {
         public ArenaSettings Arena = new ArenaSettings();
         public BossSettings Boss = new BossSettings();

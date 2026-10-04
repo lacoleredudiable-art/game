@@ -11,7 +11,7 @@ namespace Dovus.Game.DevTools
     /// </summary>
     public sealed class FrameTimeHud : MonoBehaviour
     {
-        PrototypeTuning _tuning;
+        GameTuning _tuning;
         Text _text;
         readonly StringBuilder _sb = new StringBuilder(64);
 
@@ -23,7 +23,7 @@ namespace Dovus.Game.DevTools
         bool _appliedVisible;
         GameObject _root;
 
-        public void Configure(PrototypeTuning tuning, Transform canvasRoot)
+        public void Configure(GameTuning tuning, Transform canvasRoot)
         {
             _tuning = tuning;
 

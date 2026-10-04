@@ -7,9 +7,9 @@ using NUnit.Framework;
 
 namespace CoreTests;
 
-/// <summary>PLAN 2B.5 — PrototypeTuning bölüm serileştirmesi (kaynak + şema; Game derlemesi gerekmez).</summary>
+/// <summary>PLAN 2B.5 — GameTuning bölüm serileştirmesi (kaynak + şema; Game derlemesi gerekmez).</summary>
 [TestFixture]
-public class PrototypeTuningSectionsTests
+public class GameTuningSectionsTests
 {
     static string Root() =>
         Path.GetFullPath(Path.Combine(TestContext.CurrentContext.TestDirectory, "..", "..", "..", "..", ".."));
@@ -30,7 +30,7 @@ public class PrototypeTuningSectionsTests
             "CameraLockOnMaxExtraDistanceM,CameraWindupDistanceMul,CameraWindupExtraHeightM," +
             "ReadoutAnchorRight,ReadoutPunchInSec,ShowFrameTimeHud,ShowDamageNumbers";
 
-        var body = Read("PrototypeTuning.cs");
+        var body = Read("GameTuning.cs");
         int start = body.IndexOf("public sealed class PanelFields", StringComparison.Ordinal);
         Assert.That(start, Is.GreaterThan(0));
         int end = body.IndexOf("public PanelFields ToPanelFields", start, StringComparison.Ordinal);
@@ -44,8 +44,8 @@ public class PrototypeTuningSectionsTests
     [Test]
     public void LegacyFlatPartial_IsRemoved()
     {
-        Assert.That(File.Exists(Path.Combine(GameConfig(), "PrototypeTuning.Legacy.cs")), Is.False);
-        var sections = Read("PrototypeTuning.Sections.cs");
+        Assert.That(File.Exists(Path.Combine(GameConfig(), "GameTuning.Legacy.cs")), Is.False);
+        var sections = Read("GameTuning.Sections.cs");
         Assert.That(sections, Does.Not.Contain("CopyLegacyFlatFieldsToSections"));
         Assert.That(sections, Does.Not.Contain("ISerializationCallbackReceiver"));
         Assert.That(sections, Does.Not.Contain("OnAfterDeserialize"));
@@ -61,9 +61,9 @@ public class PrototypeTuningSectionsTests
     }
 
     [Test]
-    public void PrototypeTuning_MainFile_AtMost500Lines()
+    public void GameTuning_MainFile_AtMost500Lines()
     {
-        int lines = File.ReadAllLines(Path.Combine(GameConfig(), "PrototypeTuning.cs")).Length;
+        int lines = File.ReadAllLines(Path.Combine(GameConfig(), "GameTuning.cs")).Length;
         Assert.That(lines, Is.LessThanOrEqualTo(500));
     }
 
@@ -82,7 +82,7 @@ public class PrototypeTuningSectionsTests
 
     static HashSet<string> CollectFormerLegacyFieldNames()
     {
-        var names = new HashSet<string>(PrototypeTuningLegacyFieldNames.All, StringComparer.Ordinal);
+        var names = new HashSet<string>(GameTuningLegacyFieldNames.All, StringComparer.Ordinal);
         Assert.That(names.Count, Is.EqualTo(247), "dondurulmuş legacy alan listesi");
         return names;
     }

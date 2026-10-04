@@ -36,7 +36,7 @@ namespace Dovus.Game.Boss
         BossBrain _brain;
         GameClock _clock;
         CombatTuning _combat;
-        PrototypeTuning _colors;
+        GameTuning _colors;
         BossReactor _reactor;
         BossAttack _attack;
         BossPoise _poise;
@@ -56,7 +56,7 @@ namespace Dovus.Game.Boss
         MotionTemplateBody _motionBody;
         HostileTargets _targets;
         HostileProjectileHost _projectiles;
-        PortalBorderTeamAccess _team;
+        TeamComboAccess _team;
         Transform _target;
         int _targetId = -1;
         TargetKind _targetKind = TargetKind.Player;
@@ -97,7 +97,7 @@ namespace Dovus.Game.Boss
         public float AttackRadiusM =>
             (_attack?.RadiusM ?? 0f) * (_team != null ? _team.Hub.BossStrikeScale : 1f);
 
-        public void BindTeam(PortalBorderTeamAccess team) => _team = team;
+        public void BindTeam(TeamComboAccess team) => _team = team;
         public float AttackArcHalfAngleDeg => _attack?.ArcHalfAngleDeg ?? 180f;
         public Vector3 AttackOrigin => _reactor != null ? _reactor.Home : transform.position;
 
@@ -149,7 +149,7 @@ namespace Dovus.Game.Boss
         public void Bind(
             GameClock clock,
             CombatTuning combat,
-            PrototypeTuning colors,
+            GameTuning colors,
             BossReactor reactor,
             HexagonInput input,
             Transform player,
@@ -226,7 +226,7 @@ namespace Dovus.Game.Boss
             _resolver ??= new ExchangeResolver(_combat);
 
             if (_colors == null)
-                _colors = new PrototypeTuning();
+                _colors = new GameTuning();
 
             if (_player == null)
             {

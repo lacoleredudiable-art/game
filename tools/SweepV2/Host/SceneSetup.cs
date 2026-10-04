@@ -14,13 +14,13 @@ namespace SweepV2
 {
     /// <summary>
     /// Prototype.unity'yi koddan kurar: Bootstrap nesnesi + sahnedeki serileştirilmiş
-    /// PrototypeTuning değerleri + görsel prefab yerine insansı iskelet.
+    /// GameTuning değerleri + görsel prefab yerine insansı iskelet.
     /// </summary>
     static class SceneSetup
     {
         const BindingFlags BF = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        public static PrototypeBootstrap Build(string repoRoot)
+        public static GameBootstrap Build(string repoRoot)
         {
             RunInitializers(RuntimeInitializeLoadType.SubsystemRegistration);
             RunInitializers(RuntimeInitializeLoadType.AfterAssembliesLoaded);
@@ -28,12 +28,12 @@ namespace SweepV2
             RunInitializers(RuntimeInitializeLoadType.BeforeSceneLoad);
 
             string scene = Path.Combine(repoRoot, "unity", "Assets", "Scenes", "Prototype.unity");
-            var tuning = new PrototypeTuning();
+            var tuning = new GameTuning();
             int applied = ApplySceneTuning(tuning, File.ReadAllLines(scene));
 
             var go = new GameObject("Bootstrap");
             go.SetActive(false);
-            var boot = go.AddComponent<PrototypeBootstrap>();
+            var boot = go.AddComponent<GameBootstrap>();
             Set(boot, "_tuning", tuning);
             Set(boot, "_playerVisualPrefab", HumanoidVisual("PlayerVisual_Headless", 1.8f, 0.5f));
             Set(boot, "_bossVisualPrefab", HumanoidVisual("BossVisual_Headless", 1.8f, 0.6f));
@@ -54,7 +54,7 @@ namespace SweepV2
 
         static void RunInitializers(RuntimeInitializeLoadType when)
         {
-            var methods = typeof(PrototypeBootstrap).Assembly.GetTypes()
+            var methods = typeof(GameBootstrap).Assembly.GetTypes()
                 .SelectMany(t => t.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
                 .Select(m => (m, attr: m.GetCustomAttribute<RuntimeInitializeOnLoadMethodAttribute>()))
                 .Where(x => x.attr != null && x.attr.loadType == when)
@@ -79,7 +79,7 @@ namespace SweepV2
         /// bölüm bloklarından SONRA gelen kök anahtarlar (TuningVersion, SectionsVersion) da okunur.
         /// Yetim düz anahtarlar artık alan bulamaz → yok sayılır (2B.5c).
         /// </summary>
-        static int ApplySceneTuning(PrototypeTuning tuning, string[] lines)
+        static int ApplySceneTuning(GameTuning tuning, string[] lines)
         {
             int start = Array.FindIndex(lines, l => l.TrimEnd() == "  _tuning:");
             if (start < 0) throw new InvalidDataException("Prototype.unity: _tuning bloğu yok");
@@ -102,7 +102,7 @@ namespace SweepV2
                 string value = m.Groups[2].Success ? m.Groups[2].Value.Trim() : "";
                 if (value.Length == 0)
                 {
-                    FieldInfo sf = typeof(PrototypeTuning).GetField(m.Groups[1].Value, BF);
+                    FieldInfo sf = typeof(GameTuning).GetField(m.Groups[1].Value, BF);
                     section = sf != null && sf.FieldType.Namespace == "Dovus.Game.Config.Sections"
                         ? sf.GetValue(tuning)
                         : null;

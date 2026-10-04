@@ -122,7 +122,7 @@ public class ReleaseBuildPerfTests
         Assert.That(cfg, Does.Contain("version = TuningSchema.Version"));
         Assert.That(cfg, Does.Contain("TuningSchema.Decide(data.version) == TuningSchema.LoadDecision.DiscardStale"));
         Assert.That(cfg, Does.Not.Contain("BossDamageMigration.Apply"));
-        Assert.That(Game("Composition/PrototypeBootstrap.cs"), Does.Match(@"if \(DebugConfig\.Enabled\)\s*tuningConfig\.TryLoad\(\);"));
+        Assert.That(Game("Composition/GameBootstrap.cs"), Does.Match(@"if \(DebugConfig\.Enabled\)\s*tuningConfig\.TryLoad\(\);"));
     }
 
     // --- O11 ---
@@ -130,8 +130,8 @@ public class ReleaseBuildPerfTests
     [Test]
     public void NoPerFrameSearches_InHotPaths()
     {
-        Assert.That(Game("Team/PortalBorderTeamHost.cs"), Does.Not.Contain("FindObjectsOfType<AllyDummy>"));
-        Assert.That(Regex.Matches(Game("Team/PortalBorderTeamHost.cs"), @"_boss\.GetComponent<BossReactor>\(\)").Count, Is.EqualTo(1),
+        Assert.That(Game("Team/TeamComboHost.cs"), Does.Not.Contain("FindObjectsOfType<AllyDummy>"));
+        Assert.That(Regex.Matches(Game("Team/TeamComboHost.cs"), @"_boss\.GetComponent<BossReactor>\(\)").Count, Is.EqualTo(1),
             "yalnız CachedBossReactor içinde");
         Assert.That(Game("Actors/DodgeMotion.cs"), Does.Contain("_reactorCache"));
         foreach (string f in new[] { "Actors/PlayerTargeting.cs", "Skills/ManifestationDirector.cs", "Skills/Weapons/WeaponPassiveRuntime.cs" })
@@ -149,7 +149,7 @@ public class ReleaseBuildPerfTests
         foreach (string f in new[]
                  {
                      "Skills/ManifestationDirector.MechanicWorld.cs", "Skills/Motion/MotionTemplateDriver.cs",
-                     "Skills/Execution/SummonExecutor.cs", "Team/PortalBorderTeamHost.cs", "Boss/HostileProjectileHost.cs",
+                     "Skills/Execution/SummonExecutor.cs", "Team/TeamComboHost.cs", "Boss/HostileProjectileHost.cs",
                      "Boss/AttackTelegraph.cs"
                  })
         {
@@ -204,7 +204,7 @@ public class ReleaseBuildPerfTests
     [Test]
     public void Android_ScreenStaysOn_QualityChosen()
     {
-        string boot = Game("Composition/PrototypeBootstrap.cs");
+        string boot = Game("Composition/GameBootstrap.cs");
         Assert.That(boot, Does.Contain("Screen.sleepTimeout = SleepTimeout.NeverSleep;"));
         Assert.That(boot, Does.Contain("Screen.sleepTimeout = SleepTimeout.SystemSetting;"));
         string q = File.ReadAllText(Path.Combine(Root(), "unity", "ProjectSettings", "QualitySettings.asset"));

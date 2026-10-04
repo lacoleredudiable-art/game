@@ -21,7 +21,7 @@ public class HexagonLayoutButtonPlacementTests
     [Test]
     public void LockOnAndSwap_DoNotOverlapHexPanel_OnTypicalScreens()
     {
-        var tuning = new PrototypeTuning();
+        var tuning = new GameTuning();
         tuning.EnsureRuntimeDefaults();
         HexagonLayoutScreen.DebugDpiOverride = 400f;
         HexagonLayoutScreen.FitShortSideDp = 0f;
@@ -34,7 +34,7 @@ public class HexagonLayoutButtonPlacementTests
         }
     }
 
-    static void AssertNoHudOverlap(PrototypeTuning tuning, int w, int h, bool mirror)
+    static void AssertNoHudOverlap(GameTuning tuning, int w, int h, bool mirror)
     {
         tuning.Input.MirrorForLeftHand = mirror;
         float gap = HexagonLayoutScreen.DpToPixels(12f);

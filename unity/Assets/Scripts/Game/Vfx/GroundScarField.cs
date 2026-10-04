@@ -18,18 +18,18 @@ namespace Dovus.Game.Vfx
     /// <summary>
     /// T4: kalıcı dünya izi. Sayı yazılmaz — yerde çatlak / birikinti kalır.
     /// İz süreye bağlı silinmez (§8/T4); tavan dolunca en eski iz DÖNÜŞTÜRÜLÜR
-    /// (T11 kare bütçesi — bkz. PrototypeTuning.GroundScarCapCount).
+    /// (T11 kare bütçesi — bkz. GameTuning.GroundScarCapCount).
     /// </summary>
     public sealed class GroundScarField : MonoBehaviour
     {
         readonly List<GameObject> _scars = new();
         int _writeIndex;
-        PrototypeTuning _tuning;
+        GameTuning _tuning;
         Material _cyanMat;
         Material _purpleMat;
         Material _acidMat;
 
-        public void Configure(PrototypeTuning tuning)
+        public void Configure(GameTuning tuning)
         {
             _tuning = tuning;
             _cyanMat = MakeMat(tuning.Visuals.InkCyan * 0.55f);

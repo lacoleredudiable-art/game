@@ -196,7 +196,7 @@ namespace Dovus.Game.Skills
             public HexagonView HexagonView => _md._hexagonView;
             public PlayerCooldown PlayerCooldown => _md._playerCooldown;
             public BossVitals BossVitals => _md._bossVitals;
-            public PrototypeTuning Colors => _md._colors;
+            public GameTuning Colors => _md._colors;
             public Skill LastFactorySkill
             {
                 get => _md.LastFactorySkill;

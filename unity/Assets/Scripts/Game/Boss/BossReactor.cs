@@ -11,7 +11,7 @@ namespace Dovus.Game.Boss
     /// </summary>
     public sealed class BossReactor : MonoBehaviour
     {
-        [SerializeField] PrototypeTuning _tuning = new();
+        [SerializeField] GameTuning _tuning = new();
 
         // Bootstrap'ta wiring yok (T7.2 bu dosyaya dokunamıyor) — varsayılan Bootstrap'ın
         // boss yarıçapıyla (0.85 m) eşleşiyor. T10/T8 gerçek örneği bağlarsa burası da güncellenmeli.
@@ -47,11 +47,11 @@ namespace Dovus.Game.Boss
         bool _collapsed;
         float _collapseUntilWorldMs;
 
-        public PrototypeTuning Tuning
+        public GameTuning Tuning
         {
             get
             {
-                _tuning ??= new PrototypeTuning();
+                _tuning ??= new GameTuning();
                 return _tuning;
             }
             set => _tuning = value;

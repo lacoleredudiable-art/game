@@ -23,7 +23,7 @@ namespace Dovus.Game.Config
     /// </summary>
     public static class TuningPresets
     {
-        public static void Apply(TuningPreset preset, CombatTuning combat, PrototypeTuning proto)
+        public static void Apply(TuningPreset preset, CombatTuning combat, GameTuning proto)
         {
             switch (preset)
             {
@@ -40,7 +40,7 @@ namespace Dovus.Game.Config
         }
 
         /// <summary>Ağır: yavaş ve tok — büyük yer değiştirme, uzun toparlanma.</summary>
-        static void ApplyAgir(CombatTuning c, PrototypeTuning p)
+        static void ApplyAgir(CombatTuning c, GameTuning p)
         {
             c.Dodge.DistanceM = 4.6f;
             c.Dodge.DurationMs = 340;
@@ -81,7 +81,7 @@ namespace Dovus.Game.Config
         }
 
         /// <summary>Çevik: hızlı ve dar — kısa pencereler, çabuk sıfırlanan dodge, hafif his.</summary>
-        static void ApplyCevik(CombatTuning c, PrototypeTuning p)
+        static void ApplyCevik(CombatTuning c, GameTuning p)
         {
             c.Dodge.DistanceM = 3.4f;
             c.Dodge.DurationMs = 200;
@@ -120,7 +120,7 @@ namespace Dovus.Game.Config
         }
 
         /// <summary>Anime: dramatik — büyük kamera yumruğu ve parlak yazı.</summary>
-        static void ApplyAnime(CombatTuning c, PrototypeTuning p)
+        static void ApplyAnime(CombatTuning c, GameTuning p)
         {
             c.Dodge.DistanceM = 5.0f;
             c.Dodge.DurationMs = 180;

@@ -53,7 +53,7 @@ namespace Dovus.Game.Composition.Builders
             esGo.AddComponent<InputSystemUIInputModule>();
         }
 
-        static GameObject CreateArena(PrototypeTuning tuning)
+        static GameObject CreateArena(GameTuning tuning)
         {
             Color wall = new Color(0.28f, 0.26f, 0.24f);
             return CircularArena.Build(

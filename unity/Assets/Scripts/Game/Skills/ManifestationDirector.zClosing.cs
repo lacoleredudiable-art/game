@@ -66,7 +66,7 @@ namespace Dovus.Game.Skills
             }
             public int SlotQueryCastId => _md._slotQueryCastId;
             public GameClock Clock => _md._clock;
-            public PortalBorderTeamAccess TeamAccess => _md._team;
+            public TeamComboAccess TeamAccess => _md._team;
             public MechanicGrammar MechanicEngine => _md.MechanicEngine;
             public BossVitals BossVitals => _md._bossVitals;
             Transform IClosingStatusHost.Boss =>

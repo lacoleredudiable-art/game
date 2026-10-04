@@ -14,7 +14,7 @@ namespace Dovus.Game.DevTools
     /// v6 implementation ladder controls: deterministic 1-1 smoke cast and element paint cycle.
     /// Build seçimi <see cref="BuildSelectScreen"/>'dedir (B kısayolu onu açar).
     /// </summary>
-    public sealed class V611DebugPanel : MonoBehaviour
+    public sealed class GrammarDebugPanel : MonoBehaviour
     {
         public static bool IsOpen { get; private set; }
 
@@ -52,7 +52,7 @@ namespace Dovus.Game.DevTools
             toggle.onClick.AddListener(Toggle);
             _toggleGo = toggle.gameObject;
 
-            _panel = new GameObject("V611SimpleControls");
+            _panel = new GameObject("GrammarSimpleControls");
             _panel.transform.SetParent(canvasRoot, false);
             var panelRect = _panel.AddComponent<RectTransform>();
             panelRect.anchorMin = new Vector2(0.01f, 0.12f);

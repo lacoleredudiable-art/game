@@ -13,12 +13,12 @@ namespace Dovus.Game.Casting
     public sealed class JoystickView : MonoBehaviour
     {
         MoveInput _input;
-        PrototypeTuning _tuning;
+        GameTuning _tuning;
         RectTransform _base;
         RectTransform _knob;
         bool _visible;
 
-        public void Build(MoveInput input, PrototypeTuning tuning, Camera overlayCam)
+        public void Build(MoveInput input, GameTuning tuning, Camera overlayCam)
         {
             _input = input;
             _tuning = tuning;

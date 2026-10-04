@@ -39,7 +39,7 @@ namespace Dovus.Game.Casting
         readonly List<Image> _wedges = new();
         readonly List<RectTransform> _wedgeRects = new();
         readonly List<Text> _labels = new();
-        PrototypeTuning _tuning;
+        GameTuning _tuning;
         Rect _appliedSafe;
         float _transitionSec = 0.3f;
         float _openedAt;
@@ -60,7 +60,7 @@ namespace Dovus.Game.Casting
             ManifestationDirector director,
             SkillMotor skills,
             ActorStatus playerStatus,
-            PrototypeTuning tuning,
+            GameTuning tuning,
             Transform canvasRoot,
             int transitionMs)
         {
@@ -68,7 +68,7 @@ namespace Dovus.Game.Casting
             _elements = skills?.ElementPaints ?? Array.Empty<ElementPaintNode>();
             _playerStatus = playerStatus;
             _transitionSec = Mathf.Max(0.01f, transitionMs / 1000f);
-            Build(canvasRoot, tuning ?? new PrototypeTuning());
+            Build(canvasRoot, tuning ?? new GameTuning());
             if (_playerStatus != null)
                 _playerStatus.DamageTaken += OnDamageTaken;
             if (_director != null)
@@ -76,7 +76,7 @@ namespace Dovus.Game.Casting
             RefreshChip();
         }
 
-        void Build(Transform canvasRoot, PrototypeTuning tuning)
+        void Build(Transform canvasRoot, GameTuning tuning)
         {
             _tuning = tuning;
             HudTheme theme = _theme;

@@ -20,7 +20,7 @@ namespace Dovus.Game.Skills
 {
     public sealed partial class ManifestationDirector
     {
-        /// <summary>PrototypeBootstrap'ın atadığı sabit silah (ör. Alev Kılıcı).</summary>
+        /// <summary>GameBootstrap'ın atadığı sabit silah (ör. Alev Kılıcı).</summary>
         public EquipmentItem EquippedWeapon => _equippedWeapon;
 
         public void ConfigureWeaponCycle(IReadOnlyList<EquipmentItem> weapons)
