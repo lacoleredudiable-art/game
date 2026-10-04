@@ -82,12 +82,25 @@ namespace Dovus.Game.Actors
             _input = GetComponent<MoveInput>();
         }
 
-        void Update()
+        // Tembel önbellek: DodgeMotion, MotionTemplateBody, ActorStatus vb. bu bileşenden SONRA eklenir
+        // (Awake'te henüz yok); null iken her karede bir kez daha aranır (eski Update davranışı).
+        void ResolveSiblings()
         {
             if (_dodgeMotion == null)
                 _dodgeMotion = GetComponent<DodgeMotion>();
             if (_visual == null)
                 _visual = GetComponent<ActorVisual>();
+            if (_templateBody == null)
+                _templateBody = GetComponent<MotionTemplateBody>();
+            if (_vitals == null)
+                _vitals = GetComponent<PlayerVitals>();
+            if (_status == null)
+                _status = GetComponent<ActorStatus>();
+        }
+
+        void Update()
+        {
+            ResolveSiblings();
             if (_dodgeMotion != null && _dodgeMotion.IsDisplacing)
             {
                 Velocity = Vector3.zero;
@@ -95,9 +108,6 @@ namespace Dovus.Game.Actors
                 return;
             }
 
-            // Önbellek tembel: MotionTemplateBody bu bileşenden SONRA eklenir (Awake'te henüz yok).
-            if (_templateBody == null)
-                _templateBody = GetComponent<MotionTemplateBody>();
             if (_templateBody != null && _templateBody.IsDisplacing)
             {
                 // Yeri kalıp yazar. Bacak hızını burada sıfırlamak ayakları donduruyordu;
@@ -105,11 +115,6 @@ namespace Dovus.Game.Actors
                 Velocity = Vector3.zero;
                 return;
             }
-
-            if (_vitals == null)
-                _vitals = GetComponent<PlayerVitals>();
-            if (_status == null)
-                _status = GetComponent<ActorStatus>();
 
             if (_vitals != null && _vitals.IsDown)
             {

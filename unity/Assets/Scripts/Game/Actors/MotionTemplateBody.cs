@@ -59,6 +59,13 @@ namespace Dovus.Game.Actors
 
         public void BindFollowCamera(FollowCamera follow) => _camera = follow;
 
+        // Tembel önbellek: ActorVisual bu bileşenden sonra eklenebilir; null iken bir kez daha arar.
+        void ResolveVisual()
+        {
+            if (_visual == null)
+                _visual = GetComponent<ActorVisual>();
+        }
+
         public void SetAnimContext(MotionAnimTable anims, string weaponKey, int verbId)
         {
             _anims = anims ?? MotionAnimTable.BuiltIn;
@@ -134,8 +141,7 @@ namespace Dovus.Game.Actors
             {
                 _stopAfterSample = false;
                 _playing = false;
-                if (_visual == null)
-                    _visual = GetComponent<ActorVisual>();
+                ResolveVisual();
                 _visual?.EndMotionAnim();
             }
             TickMotion();
@@ -261,7 +267,7 @@ namespace Dovus.Game.Actors
             if (_grounding == null)
             {
                 _grounding = gameObject.AddComponent<ActorGrounding>();
-                // Eski ActorGrounding saati tembel FindAnyObjectByType ile bulurdu; burada eklenen örneğe aynı saat verilir.
+                // Eski ActorGrounding saati tembel sahne aramasıyla bulurdu; burada eklenen örneğe aynı saat verilir.
                 _grounding.BindClock(_clock);
             }
         }
