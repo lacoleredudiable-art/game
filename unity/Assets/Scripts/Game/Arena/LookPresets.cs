@@ -10,51 +10,46 @@ namespace Dovus.Game.Arena
     /// <summary>
     /// A/B/C görsel ön ayarları: Volume profili + URP/ışık/sis ayarları. Oynanışa dokunmaz.
     /// </summary>
-    public static class LookPresets
+    public sealed partial class LookPresetController
     {
-        public const string PlayerPrefsKey = "dovus.look.v2";
-
         const string ResourceFolder = "Look/Look_";
 
-        static Volume _volume;
-        static Light _sun;
-        static LookPresetController _owner;
+        Volume _volume;
+        Light _sun;
+        float _savedRenderScale = 1f;
+        int _savedMsaa = 1;
+        int _savedMainShadowRes = 1024;
+        UpscalingFilterSelection _savedUpscalingFilter;
+        bool _savedFsrOverrideSharpness;
+        float _savedFsrSharpness;
+        bool _savedRealtimeReflectionProbes;
+        bool _urpCached;
 
-        static float _savedRenderScale = 1f;
-        static int _savedMsaa = 1;
-        static int _savedMainShadowRes = 1024;
-        static UpscalingFilterSelection _savedUpscalingFilter;
-        static bool _savedFsrOverrideSharpness;
-        static float _savedFsrSharpness;
-        static bool _savedRealtimeReflectionProbes;
-        static bool _urpCached;
+        LightShadows _savedSunShadows;
+        float _savedSunStrength;
+        float _savedSunIntensity;
+        Color _savedSunColor;
+        float _savedShadowDistance;
+        int _savedShadowCascades;
+        float _savedSunBias;
+        float _savedSunNormalBias;
+        bool _sunCached;
 
-        static LightShadows _savedSunShadows;
-        static float _savedSunStrength;
-        static float _savedSunIntensity;
-        static Color _savedSunColor;
-        static float _savedShadowDistance;
-        static int _savedShadowCascades;
-        static float _savedSunBias;
-        static float _savedSunNormalBias;
-        static bool _sunCached;
+        float _savedFogDensity;
+        Color _savedAmbientSky;
+        Color _savedCameraBackground;
+        bool _fogCached;
 
-        static float _savedFogDensity;
-        static Color _savedAmbientSky;
-        static Color _savedCameraBackground;
-        static bool _fogCached;
+        bool _ssaoCached;
+        bool _ssaoWasActive;
 
-        static bool _ssaoCached;
-        static bool _ssaoWasActive;
-
-        public static char Active { get; private set; } = 'B';
+        public char ActivePreset { get; private set; } = 'B';
 
         /// <summary>Aktif ön ayar derinlik dokusu/SSAO gerektiriyor mu (yalnız 'C').</summary>
-        public static bool ActiveRequiresDepthTexture => Active == 'C';
+        public bool ActiveRequiresDepthTexture => ActivePreset == 'C';
 
-        public static void Bind(LookPresetController owner, Volume volume, Light sun)
+        public void BindVolume(Volume volume, Light sun)
         {
-            _owner = owner;
             _volume = volume;
             _sun = sun;
             CacheUrpIfNeeded();
@@ -62,13 +57,13 @@ namespace Dovus.Game.Arena
             CacheFogIfNeeded();
         }
 
-        public static void Apply(char preset)
+        public void ApplyPreset(char preset)
         {
             preset = char.ToUpperInvariant(preset);
             if (preset != 'A' && preset != 'B' && preset != 'C')
                 preset = 'B';
 
-            Active = preset;
+            ActivePreset = preset;
             if (_volume != null)
             {
                 var profile = Resources.Load<VolumeProfile>($"{ResourceFolder}{PresetSuffix(preset)}");
@@ -80,7 +75,7 @@ namespace Dovus.Game.Arena
             ApplySun(preset);
             ApplyFog(preset);
             ApplyCameraBackground(preset);
-            _owner?.ApplyPresetExtras(preset);
+            ApplyPresetExtras(preset);
 
 #if UNITY_EDITOR || DOVUS_DEBUG
             PlayerPrefs.SetString(PlayerPrefsKey, preset.ToString());
@@ -88,18 +83,18 @@ namespace Dovus.Game.Arena
 #endif
         }
 
-        public static void RestoreOnExit()
+        public void RestoreOnExit()
         {
             RestoreSsao();
             RestoreUrp();
             RestoreSun();
             RestoreFog();
             RestoreCameraBackground();
-            _owner?.RestoreExtras();
+            RestoreExtras();
         }
 
         /// <summary>Capture log satırı — renderScale, msaa, shadow, fog, SSAO, sharpen, probe.</summary>
-        public static string DescribeActiveSettings()
+        public string DescribeActiveSettings()
         {
             var urp = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
             float renderScale = urp != null ? urp.renderScale : 1f;
@@ -109,7 +104,7 @@ namespace Dovus.Game.Arena
             bool ssao = IsSsaoActive();
             bool sharpen = urp != null && urp.upscalingFilter == UpscalingFilterSelection.FSR && urp.fsrOverrideSharpness;
             bool probe = QualitySettings.realtimeReflectionProbes;
-            string profile = Active switch
+            string profile = ActivePreset switch
             {
                 'B' => "Look_B_Keskin",
                 'C' => "Look_C_Gelismis",
@@ -121,14 +116,14 @@ namespace Dovus.Game.Arena
                    $"sharpen={(sharpen ? "on" : "off")} realtimeProbes={(probe ? "on" : "off")}";
         }
 
-        static string PresetSuffix(char preset) => preset switch
+        string PresetSuffix(char preset) => preset switch
         {
             'B' => "B_Keskin",
             'C' => "C_Gelismis",
             _ => "A_Esit",
         };
 
-        static void CacheUrpIfNeeded()
+        void CacheUrpIfNeeded()
         {
             if (_urpCached)
                 return;
@@ -149,7 +144,7 @@ namespace Dovus.Game.Arena
             _urpCached = true;
         }
 
-        static void RestoreUrp()
+        void RestoreUrp()
         {
             if (!_urpCached)
                 return;
@@ -165,7 +160,7 @@ namespace Dovus.Game.Arena
             QualitySettings.realtimeReflectionProbes = _savedRealtimeReflectionProbes;
         }
 
-        static void ApplyRenderPipeline(char preset)
+        void ApplyRenderPipeline(char preset)
         {
             var urp = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
             if (urp == null)
@@ -236,7 +231,7 @@ namespace Dovus.Game.Arena
         /// (<see cref="UniversalAdditionalCameraData.requiresDepthOption"/>) — LookCapture'daki tanı
         /// kameraları da bunu çağırır, böylece asset hiç kirlenmez.
         /// </summary>
-        public static void ApplyCameraOverrides(Camera camera, bool requiresDepth)
+        public void ApplyCameraOverrides(Camera camera, bool requiresDepth)
         {
             if (camera == null)
                 return;
@@ -248,7 +243,7 @@ namespace Dovus.Game.Arena
                 : CameraOverrideOption.UsePipelineSettings;
         }
 
-        static bool IsSsaoActive()
+        bool IsSsaoActive()
         {
             var urp = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
             if (urp == null || urp.rendererDataList == null || urp.rendererDataList.Length == 0)
@@ -264,14 +259,14 @@ namespace Dovus.Game.Arena
             return false;
         }
 
-        static void RestoreSsao()
+        void RestoreSsao()
         {
             if (!_ssaoCached)
                 return;
             ApplySsaoActive(_ssaoWasActive);
         }
 
-        static void ApplySsaoActive(bool active)
+        void ApplySsaoActive(bool active)
         {
             var urp = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
             if (urp == null || urp.rendererDataList == null || urp.rendererDataList.Length == 0)
@@ -287,7 +282,7 @@ namespace Dovus.Game.Arena
             }
         }
 
-        static void CacheSunIfNeeded()
+        void CacheSunIfNeeded()
         {
             if (_sun == null || _sunCached)
                 return;
@@ -302,7 +297,7 @@ namespace Dovus.Game.Arena
             _sunCached = true;
         }
 
-        static void RestoreSun()
+        void RestoreSun()
         {
             if (!_sunCached || _sun == null)
                 return;
@@ -316,7 +311,7 @@ namespace Dovus.Game.Arena
             _sun.shadowNormalBias = _savedSunNormalBias;
         }
 
-        static void ApplySun(char preset)
+        void ApplySun(char preset)
         {
             if (_sun == null)
                 return;
@@ -351,7 +346,7 @@ namespace Dovus.Game.Arena
             _sun.shadowNormalBias = preset == 'B' ? 0.28f : (_sunCached ? _savedSunNormalBias : _sun.shadowNormalBias);
         }
 
-        static void CacheFogIfNeeded()
+        void CacheFogIfNeeded()
         {
             if (_fogCached)
                 return;
@@ -362,7 +357,7 @@ namespace Dovus.Game.Arena
             _fogCached = true;
         }
 
-        static void RestoreCameraBackground()
+        void RestoreCameraBackground()
         {
             if (!_fogCached)
                 return;
@@ -371,7 +366,7 @@ namespace Dovus.Game.Arena
                 cam.backgroundColor = _savedCameraBackground;
         }
 
-        static void ApplyCameraBackground(char preset)
+        void ApplyCameraBackground(char preset)
         {
             var cam = Camera.main;
             if (cam == null)
@@ -387,7 +382,7 @@ namespace Dovus.Game.Arena
             };
         }
 
-        static void RestoreFog()
+        void RestoreFog()
         {
             if (!_fogCached)
                 return;
@@ -395,7 +390,7 @@ namespace Dovus.Game.Arena
             RenderSettings.ambientSkyColor = _savedAmbientSky;
         }
 
-        static void ApplyFog(char preset)
+        void ApplyFog(char preset)
         {
             float baseDensity = _fogCached ? _savedFogDensity : RenderSettings.fogDensity;
             if (baseDensity <= 0.0001f)

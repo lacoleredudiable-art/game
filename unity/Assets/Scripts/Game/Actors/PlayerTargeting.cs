@@ -125,6 +125,9 @@ namespace Dovus.Game.Actors
         RectTransform _frame;
         Text _frameText;
         Image _frameBackground;
+        ElementRadialMenu _elementMenu;
+
+        public void BindElementMenu(ElementRadialMenu menu) => _elementMenu = menu;
 
         public Targetable Selected => _selected;
         public Transform SelectedTransform => _selected != null && _selected.IsAvailable
@@ -343,7 +346,7 @@ namespace Dovus.Game.Actors
 
         bool InputBlocked() =>
             TuningPanel.IsOpen || V611DebugPanel.IsOpen || BuildSelectScreen.IsOpen
-            || ElementRadialMenu.AnyOpen;
+            || (_elementMenu != null && _elementMenu.IsMenuOpen);
 
         void BuildMarker()
         {

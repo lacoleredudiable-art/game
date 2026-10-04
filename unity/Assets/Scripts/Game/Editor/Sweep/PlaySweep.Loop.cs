@@ -211,6 +211,7 @@ namespace Dovus.Game.Editor
                 _clock = F<GameClock>(_md, "_clock");
                 _skills = F<SkillMotor>(_md, "_skills");
                 _projectiles = F<HostileProjectileHost>(_md, "_projectiles");
+                _teamHost = UnityEngine.Object.FindAnyObjectByType<PortalBorderTeamHost>();
                 _playerVitals = _player.GetComponent<PlayerVitals>();
                 if (_playerVitals != null)
                     _playerVitals.SuppressDown = true;

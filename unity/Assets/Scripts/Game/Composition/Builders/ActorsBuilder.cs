@@ -30,7 +30,7 @@ namespace Dovus.Game.Composition.Builders
             var combat = ctx.Combat;
             var clock = ctx.Clock;
             float spawnMaxR = ctx.SpawnMaxR;
-            int playerHp = ctx.Host.ScaledPlayerHp();
+            int playerHp = ctx.Host.ScaledPlayerHp(ctx.Assets);
 
             ctx.Player = VisualAttach.CreateCapsule(
                 "Player",
@@ -78,6 +78,7 @@ namespace Dovus.Game.Composition.Builders
             ctx.Ally.AddComponent<ActorGrounding>();
             ctx.AllyDummy = ctx.Ally.AddComponent<AllyDummy>();
             ctx.AllyDummy.Bind(playerHp, startRatio: DebugConfig.StartHpRatio);
+            ctx.AllyDummy.BindTeam(ctx.TeamAccess);
 
             float bossSpawnZ = 5f * Mathf.Max(1f, tuning.Arena.ArenaVisualScale * 0.55f);
             bossSpawnZ = Mathf.Clamp(bossSpawnZ, -spawnMaxR, spawnMaxR);
@@ -159,7 +160,7 @@ namespace Dovus.Game.Composition.Builders
             ctx.BossReactor.BodyRadiusM = CompositionConstants.BossRadiusM;
             ctx.BossReactor.CaptureHome();
 
-            ctx.BossVitals = new BossVitals(ctx.Host.ScaledBossHp(combat.Boss.MaxHp));
+            ctx.BossVitals = new BossVitals(ctx.Host.ScaledBossHp(ctx.Assets, combat.Boss.MaxHp));
             ctx.Ally.AddComponent<Targetable>().Configure(
                 teamId: 0,
                 displayName: "ALLY",

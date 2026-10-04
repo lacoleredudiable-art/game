@@ -55,6 +55,7 @@ namespace Dovus.Game.Boss
         MotionTemplateBody _motionBody;
         HostileTargets _targets;
         HostileProjectileHost _projectiles;
+        PortalBorderTeamAccess _team;
         Transform _target;
         int _targetId = -1;
         TargetKind _targetKind = TargetKind.Player;
@@ -93,7 +94,9 @@ namespace Dovus.Game.Boss
         public event System.Action<BossAttackKind> AttackStruck;
 
         public float AttackRadiusM =>
-            (_attack?.RadiusM ?? 0f) * PortalBorderTeamHost.Hub.BossStrikeScale;
+            (_attack?.RadiusM ?? 0f) * (_team != null ? _team.Hub.BossStrikeScale : 1f);
+
+        public void BindTeam(PortalBorderTeamAccess team) => _team = team;
         public float AttackArcHalfAngleDeg => _attack?.ArcHalfAngleDeg ?? 180f;
         public Vector3 AttackOrigin => _reactor != null ? _reactor.Home : transform.position;
 

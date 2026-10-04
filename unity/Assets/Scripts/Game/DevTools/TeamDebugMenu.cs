@@ -10,7 +10,10 @@ namespace Dovus.Game.DevTools
     /// </summary>
     public sealed class TeamDebugMenu : MonoBehaviour
     {
+        PortalBorderTeamHost _teamHost;
         string _skill = "5-4";
+
+        public void BindTeam(PortalBorderTeamHost host) => _teamHost = host;
         // K2: varsayılan kapalı (HUD'un sol üstünü kaplıyordu); yalnız editör / DOVUS_DEBUG dev build.
         bool _open = false;
 
@@ -50,7 +53,9 @@ namespace Dovus.Game.DevTools
             if (!_chromeVisible)
                 return;
 #endif
-            PortalBorderTeamHost host = PortalBorderTeamHost.Instance;
+            PortalBorderTeamHost host = _teamHost;
+            if (host == null)
+                host = FindAnyObjectByType<PortalBorderTeamHost>();
             if (host == null)
                 return;
 

@@ -15,6 +15,7 @@ using Dovus.Core.Tuning;
 using Dovus.Game.Actors;
 using Dovus.Game.Boss;
 using Dovus.Game.Skills;
+using Dovus.App.Team;
 using Dovus.Game.Team;
 using Dovus.Game.Vfx;
 using UnityEngine;
@@ -69,7 +70,8 @@ namespace Dovus.Game.Skills.Closing
 
             float lifesteal = _host.SlotPassives?.LifestealAddFor(_host.SlotQueryCastId) ?? 0f;
             lifesteal += ClosingHealRules.AdjectiveLifesteal(skill);
-            lifesteal += PortalBorderTeamHost.Hub.LifestealAdd;
+            TeamModifierHub hub = _host.TeamAccess != null ? _host.TeamAccess.Hub : TeamModifierHub.Neutral;
+            lifesteal += hub.LifestealAdd;
             if (lifesteal > 0f)
             {
                 var vitals = _host.CachedPlayerVitals();

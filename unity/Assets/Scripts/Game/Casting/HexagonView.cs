@@ -18,8 +18,11 @@ namespace Dovus.Game.Casting
     /// </summary>
     public sealed partial class HexagonView : MonoBehaviour
     {
+        HudTheme _theme;
         PrototypeTuning _tuning;
         SkillMotor _skills;
+
+        public void BindTheme(HudTheme theme) => _theme = theme;
         RuneLoadout _loadout;
         RectTransform[] _dots;
         Image[] _dotImages;
@@ -230,7 +233,7 @@ namespace Dovus.Game.Casting
         public void NotifyPressed(int dot)
         {
             RectTransform target = dot == 0 ? _center : (_dots != null && dot > 0 && dot < _dots.Length ? _dots[dot] : null);
-            HudTheme th = HudTheme.Current;
+            HudTheme th = _theme;
             UiJuice.PunchScale(target, th.PressScale, th.JuiceSec);
             if (dot > 0 && _dotHighlightUntil != null && dot < _dotHighlightUntil.Length)
             {
@@ -253,7 +256,7 @@ namespace Dovus.Game.Casting
                 TickCooldown(i, dt, worldMs, ref any);
                 if (wasCooling && _cdRemainingSec[i] <= 0f && _dots != null && _dots[i] != null)
                 {
-                    HudTheme th = HudTheme.Current;
+                    HudTheme th = _theme;
                     UiJuice.PunchScale(_dots[i], th.ReadyPopScale, th.JuiceSec * 1.5f);
                 }
             }
@@ -320,7 +323,7 @@ namespace Dovus.Game.Casting
 
                 fill.fillAmount = Mathf.Clamp01(rem / dur);
                 // Koyu radial örtü — ikon üstünde net okunur.
-                fill.color = HudTheme.Current.CooldownOverlayColor;
+                fill.color = _theme.CooldownOverlayColor;
                 fill.SetAllDirty();
                 if (label != null)
                 {
@@ -405,7 +408,7 @@ namespace Dovus.Game.Casting
                     Color col = _dotIcons != null && _dotIcons[dot] != null
                         ? DotColor(dot)
                         : RuneFallbackColor(dot);
-                    _dotImages[dot].color = IsDotUnavailable(dot) ? col * HudTheme.Current.DisabledTint : col;
+                    _dotImages[dot].color = IsDotUnavailable(dot) ? col * _theme.DisabledTint : col;
                 }
                 RefreshDotRim(dot);
 
@@ -437,7 +440,7 @@ namespace Dovus.Game.Casting
 
         Color RimColorForDot(int dot)
         {
-            Color c = HudTheme.Current.RuneAccent(RuneIdAt(dot));
+            Color c = _theme.RuneAccent(RuneIdAt(dot));
             c.a = _tuning.IsDotOpen(dot) ? 0.82f : 0.25f;
             return c;
         }
@@ -464,7 +467,7 @@ namespace Dovus.Game.Casting
             if (_dotIcons != null && _dotIcons[dot] != null)
             {
                 float a = _tuning.IsDotOpen(dot) ? 1f : 0.28f;
-                Color tint = HudTheme.Current.RuneFaceTint;
+                Color tint = _theme.RuneFaceTint;
                 tint.a *= a;
                 return tint;
             }
@@ -518,7 +521,7 @@ namespace Dovus.Game.Casting
 
         void BuildCombatTrayBackdrop(Transform parent)
         {
-            HudTheme th = HudTheme.Current;
+            HudTheme th = _theme;
             var go = new GameObject("CombatRuneTray");
             go.transform.SetParent(parent, false);
             _tray = go.AddComponent<RectTransform>();

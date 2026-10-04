@@ -43,15 +43,21 @@ namespace Dovus.Game.Actors
         bool CastMobilityActive => _clock != null && _clock.Director.WorldTimeMs < _castMobilityUntilMs;
 
         /// <summary>KinematicMotor bunu okur — düşman CC'sinden ayrı cast mobility.</summary>
-        public float EffectiveMoveSpeedMult =>
-            Board.MoveSpeedMult
-            * ActorStatusTeamMoveSpeed.TeamMoveSpeedMult(
-                PortalBorderTeamHost.Hub.Table,
-                _playerVitals != null,
-                PortalBorderTeamHost.Hub.PlayerActorId)
-            * (CastMobilityActive && _castMobility == Dovus.Core.Grammar.SkillMobility.SlowedMove
-                ? _tuning.SlowSpeedMult
-                : 1f);
+        public float EffectiveMoveSpeedMult
+        {
+            get
+            {
+                TeamModifierHub hub = _team != null ? _team.Hub : TeamModifierHub.Neutral;
+                return Board.MoveSpeedMult
+                       * ActorStatusTeamMoveSpeed.TeamMoveSpeedMult(
+                           hub.Table,
+                           _playerVitals != null,
+                           hub.PlayerActorId)
+                       * (CastMobilityActive && _castMobility == Dovus.Core.Grammar.SkillMobility.SlowedMove
+                           ? _tuning.SlowSpeedMult
+                           : 1f);
+            }
+        }
 
         public bool EffectiveBlocksMovement =>
             Board.BlocksMovement
@@ -69,6 +75,7 @@ namespace Dovus.Game.Actors
             _castMobilityUntilMs = 0;
         }
 
+        PortalBorderTeamAccess _team;
         StatusTuning _tuning = new();
         GameClock _clock;
         BossVitals _bossVitals;
@@ -96,6 +103,8 @@ namespace Dovus.Game.Actors
 
         public float ActiveSkillReflectRatio =>
             _clock != null && _clock.Director.WorldTimeMs < _skillReflectUntilMs ? _skillReflectRatio : 0f;
+
+        public void BindTeam(PortalBorderTeamAccess team) => _team = team;
 
         public void Bind(
             GameClock clock,
@@ -194,8 +203,8 @@ namespace Dovus.Game.Actors
                 return;
             double now = _clock != null ? _clock.Director.WorldTimeMs : 0;
             float taken = Board.IncomingDamageMult;
-            if (_playerVitals != null)
-                taken *= PortalBorderTeamHost.Hub.PlayerDamageTakenMult;
+            if (_playerVitals != null && _team != null)
+                taken *= _team.Hub.PlayerDamageTakenMult;
             // Kalkanın kısa kalkanı, tahta kalkanıyla aynı son aşamada (f) erir.
             // Dodge yukarıda yuttuysa bu havuza hiç girilmez.
             float shortShield = 0f;

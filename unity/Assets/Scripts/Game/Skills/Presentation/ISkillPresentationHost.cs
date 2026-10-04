@@ -8,6 +8,7 @@ using Dovus.Game.Cameras;
 using Dovus.Game.Composition;
 using Dovus.Game.Data;
 using Dovus.Game.DevTools;
+using Dovus.Game.Audio;
 using Dovus.Game.Feel;
 using Dovus.Game.Hud;
 using Dovus.Game.Vfx;
@@ -25,6 +26,7 @@ namespace Dovus.Game.Skills.Presentation
         GameClock Clock { get; }
         CombatTuning Combat { get; }
         FollowCamera Camera { get; }
+        SfxDirector Sfx { get; }
         SentenceDebugHud DebugHud { get; }
         ElementPaintNode? SelectedElementPaint { get; }
         Skill LastFactorySkill { get; }

@@ -74,7 +74,7 @@ namespace Dovus.Game.Skills.Presentation
             _host.SyncVisualDelivery();
             ApplySkillAnimation(skill);
             _host.StartCastVfxTimer(skill, words);
-            SfxDirector.Play(SfxLibrary.CastPrefix + skill.VerbFamily);
+            _host.Sfx?.Play(SfxLibrary.CastPrefix + skill.VerbFamily);
         }
 
         public void ApplySkillAnimation(SkillResolution skill)

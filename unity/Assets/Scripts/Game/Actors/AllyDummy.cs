@@ -1,3 +1,4 @@
+using Dovus.App.Team;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
@@ -59,6 +60,9 @@ namespace Dovus.Game.Actors
         StatusTuning _statusTuning = new();
         TargetingConfig _life = new();
         double _downAtMs = -1;
+        PortalBorderTeamAccess _team;
+
+        public void BindTeam(PortalBorderTeamAccess team) => _team = team;
 
         public int Hp => _hp;
         public bool IsDown => _hp <= 0;
@@ -109,10 +113,11 @@ namespace Dovus.Game.Actors
         public bool ApplyDamage(int amount)
         {
             TeamActor actor = GetComponent<TeamActor>();
-            if (actor != null && PortalBorderTeamHost.Hub.TryMiss(actor.Id))
+            TeamModifierHub hub = _team != null ? _team.Hub : TeamModifierHub.Neutral;
+            if (actor != null && hub.TryMiss(actor.Id))
                 return false;
             if (actor != null)
-                amount = Mathf.RoundToInt(amount * PortalBorderTeamHost.Hub.DamageTakenMult(actor.Id));
+                amount = Mathf.RoundToInt(amount * hub.DamageTakenMult(actor.Id));
             if (amount <= 0 || _hp <= 0)
                 return false;
             _hp = Mathf.Max(0, _hp - amount);

@@ -35,7 +35,7 @@ namespace Dovus.Game.Casting
             _passiveBadges[dot].gameObject.SetActive(passive);
             if (!passive)
                 return;
-            HudTheme th = HudTheme.Current;
+            HudTheme th = _theme;
             bool active = remainSec >= 0f;
             _passiveBadgeBg[dot].color = active ? th.PassiveBadgeActiveColor : th.PassiveBadgeColor;
             _passiveBadgeText[dot].text = active
@@ -45,7 +45,7 @@ namespace Dovus.Game.Casting
 
         void CreatePassiveBadge(int dot)
         {
-            HudTheme th = HudTheme.Current;
+            HudTheme th = _theme;
             var go = new GameObject("PassiveBadge");
             go.transform.SetParent(_dots[dot], false);
             go.layer = _dots[dot].gameObject.layer;

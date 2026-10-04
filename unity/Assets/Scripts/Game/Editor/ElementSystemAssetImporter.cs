@@ -1,5 +1,6 @@
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
+using Dovus.Game.Composition;
 using Dovus.Game.Data;
 using Dovus.Game.Weapons;
 using UnityEditor;
@@ -15,7 +16,7 @@ namespace Dovus.Game.Editor
         [MenuItem("Dovus/Import Element System v6.1.1 Assets")]
         public static void Import()
         {
-            ElementSystemJsonLoader.ClearCache();
+            AssetCatalog.ResetStandaloneForEditor();
             ElementSystemDesign design = ElementSystemJsonLoader.LoadRequired();
             EnsureFolder("Assets", "Generated");
             EnsureFolder("Assets/Generated", "ElementSystem");

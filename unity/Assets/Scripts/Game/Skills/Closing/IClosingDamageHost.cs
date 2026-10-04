@@ -14,6 +14,7 @@ using Dovus.Game.Composition;
 using Dovus.Game.Feel;
 using Dovus.Game.Hud;
 using Dovus.Core.Status;
+using Dovus.Game.Team;
 using Dovus.Game.Vfx;
 using UnityEngine;
 
@@ -28,6 +29,7 @@ namespace Dovus.Game.Skills.Closing
         ActorStatus BossStatus { get; }
         CombatTuning Combat { get; }
         GameClock Clock { get; }
+        PortalBorderTeamAccess TeamAccess { get; }
         KinematicMotor Motor { get; }
         DamageNumberHud DamageHud { get; }
         GroundScarField Scars { get; }

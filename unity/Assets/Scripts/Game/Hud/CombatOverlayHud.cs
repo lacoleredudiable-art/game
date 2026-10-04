@@ -26,6 +26,9 @@ namespace Dovus.Game.Hud
         Transform _playerTf;
         Transform _bossTf;
         Camera _cam;
+        HudTheme _theme;
+
+        public void BindTheme(HudTheme theme) => _theme = theme;
 
         Image _lowHp;
         RectTransform _dirRoot;
@@ -63,7 +66,7 @@ namespace Dovus.Game.Hud
 
         void Build(Camera overlayCam)
         {
-            HudTheme th = HudTheme.Current;
+            HudTheme th = _theme;
             var go = new GameObject("CombatOverlayCanvas");
             go.transform.SetParent(transform, false);
             var canvas = go.AddComponent<Canvas>();
@@ -125,7 +128,7 @@ namespace Dovus.Game.Hud
         {
             if (_cam == null)
                 _cam = Camera.main;
-            HudTheme th = HudTheme.Current;
+            HudTheme th = _theme;
             TickLowHp(th);
             TickDamageDirection(th);
             TickOffscreenArrow(th);
@@ -263,7 +266,7 @@ namespace Dovus.Game.Hud
             _outcomeShownAt = Time.unscaledTime;
             _outcomeIsDefeat = defeat;
             _outcomeGroup.alpha = 1f;
-            UiJuice.PunchScale(_outcomeTitle.transform, HudTheme.Current.BannerPunchScale, HudTheme.Current.JuiceSec * 2f);
+            UiJuice.PunchScale(_outcomeTitle.transform, _theme.BannerPunchScale, _theme.JuiceSec * 2f);
         }
 
         static Image CreateImage(Transform parent, string name, Sprite sprite)

@@ -89,8 +89,7 @@ namespace Dovus.Game.Skills
 
             public void NoteSustainedCast(SkillResolution skill) => _md.NoteSustainedCast(skill);
 
-            public void NotifyCast(string skillId) =>
-                PortalBorderTeamHost.Hub.NotifyCast(skillId);
+            public void NotifyCast(string skillId) => _md.TeamHub.NotifyCast(skillId);
 
             public SkillExecutorRoute Route(SkillResolution skill) =>
                 _md._skillExecutorRouter.Route(skill, _md._equippedWeapon);

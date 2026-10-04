@@ -8,10 +8,9 @@ namespace Dovus.Game.Arena
     /// <summary>
     /// PostFX Volume üzerinde A/B/C ön ayarını uygular; C için yansıma probu.
     /// </summary>
-    public sealed class LookPresetController : MonoBehaviour
+    public sealed partial class LookPresetController : MonoBehaviour
     {
-        Volume _volume;
-        Light _sun;
+        public const string PlayerPrefsKey = "dovus.look.v2";
         ReflectionProbe _probe;
         bool _probeRenderPending;
 
@@ -19,15 +18,15 @@ namespace Dovus.Game.Arena
         {
             _volume = volume;
             _sun = sun;
-            LookPresets.Bind(this, volume, sun);
+            BindVolume(volume, sun);
 
             char preset = 'B';
 #if UNITY_EDITOR || DOVUS_DEBUG
-            string saved = PlayerPrefs.GetString(LookPresets.PlayerPrefsKey, "B");
+            string saved = PlayerPrefs.GetString(PlayerPrefsKey, "B");
             if (!string.IsNullOrEmpty(saved))
                 preset = char.ToUpperInvariant(saved[0]);
 #endif
-            LookPresets.Apply(preset);
+            ApplyPreset(preset);
         }
 
         void Update()
@@ -36,13 +35,13 @@ namespace Dovus.Game.Arena
             Keyboard kb = Keyboard.current;
             if (kb != null && kb.f2Key.wasPressedThisFrame)
             {
-                char next = LookPresets.Active switch
+                char next = ActivePreset switch
                 {
                     'A' => 'B',
                     'B' => 'C',
                     _ => 'A',
                 };
-                LookPresets.Apply(next);
+                ApplyPreset(next);
             }
 #endif
             if (_probeRenderPending && _probe != null)
@@ -52,7 +51,7 @@ namespace Dovus.Game.Arena
             }
         }
 
-        void OnDestroy() => LookPresets.RestoreOnExit();
+        void OnDestroy() => RestoreOnExit();
 
         internal void ApplyPresetExtras(char preset)
         {

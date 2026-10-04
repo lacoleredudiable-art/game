@@ -21,7 +21,10 @@ namespace Dovus.Game.Hud
         SkillFactory _factory;
         ManifestationDirector _manifestation;
         PrototypeTuning _tuning;
+        HudTheme _theme;
         RectTransform _rect;
+
+        public void BindTheme(HudTheme theme) => _theme = theme;
         CanvasGroup _group;
         Text _title;
         Text _detail;
@@ -61,7 +64,7 @@ namespace Dovus.Game.Hud
             _group.interactable = false;
 
             var bg = root.AddComponent<Image>();
-            HudTheme theme = HudTheme.Current;
+            HudTheme theme = _theme;
             bg.color = theme.PanelColor;
             bg.raycastTarget = false;
             var shadow = root.AddComponent<Shadow>();
@@ -109,7 +112,7 @@ namespace Dovus.Game.Hud
             float hold = _tuning != null ? _tuning.Hud.SkillPreviewHoldSec : 0.9f;
             if (drawing || newCast)
                 _visibleUntil = Time.unscaledTime + hold;
-            HudTheme theme = HudTheme.Current;
+            HudTheme theme = _theme;
             bool visible = _visibleUntil > Time.unscaledTime;
             if (visible && !_wasVisible)
                 UiJuice.PunchScale(_rect, theme.SkillCardPopScale, theme.JuiceSec * 1.4f);
@@ -200,14 +203,14 @@ namespace Dovus.Game.Hud
             _title.text = title ?? string.Empty;
             _detail.text = detail ?? string.Empty;
             _compatibility.text = compatibility ?? string.Empty;
-            _title.color = HudTheme.Current.PrimaryTextColor;
-            _detail.color = HudTheme.Current.SecondaryTextColor;
+            _title.color = _theme.PrimaryTextColor;
+            _detail.color = _theme.SecondaryTextColor;
             _compatibility.color = color;
             if (_accent != null)
                 _accent.color = color;
         }
 
-        static Text CreateText(
+        Text CreateText(
             Transform parent,
             string objectName,
             Vector2 anchorMin,
@@ -220,7 +223,7 @@ namespace Dovus.Game.Hud
             var rect = go.AddComponent<RectTransform>();
             rect.anchorMin = anchorMin;
             rect.anchorMax = anchorMax;
-            float pad = HexagonLayoutScreen.DpToPixels(HudTheme.Current.SkillCardPaddingDp);
+            float pad = HexagonLayoutScreen.DpToPixels(_theme.SkillCardPaddingDp);
             rect.offsetMin = new Vector2(pad, HexagonLayoutScreen.DpToPixels(2f));
             rect.offsetMax = new Vector2(-pad, -HexagonLayoutScreen.DpToPixels(2f));
             var text = go.AddComponent<Text>();

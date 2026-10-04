@@ -24,6 +24,7 @@ using Dovus.Game.Skills.Effects;
 using Dovus.Game.Skills.Flow;
 using Dovus.Game.Skills.Targeting;
 using Dovus.Game.Skills.Weapons;
+using Dovus.Game.Team;
 using Dovus.Game.Vfx;
 using System.Collections.Generic;
 using UnityEngine;
@@ -171,6 +172,7 @@ namespace Dovus.Game.Skills
                 _md.ClosingDamageCore.ClearClosingStamp(logic);
 
             public GameClock Clock => _md._clock;
+            public PortalBorderTeamAccess TeamAccess => _md._team;
             public LivingEffectSpawner EffectSpawner => _md._effectSpawner;
             public int LastWordCount
             {

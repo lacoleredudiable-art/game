@@ -5,6 +5,7 @@ using Dovus.Game.Config;
 using Dovus.Game.DevTools;
 using Dovus.Game.Hud;
 using Dovus.Game.Skills;
+using Dovus.Game.Team;
 using UnityEngine;
 
 namespace Dovus.Game.Composition.Builders
@@ -25,6 +26,8 @@ namespace Dovus.Game.Composition.Builders
                     ctx.PlayerVitals);
                 CreateTuningPanel(ctx.TuningConfig, ctx.PlayerVitals, ctx.FollowCamera);
                 ctx.HexagonRoot.AddComponent<DebugPanelsController>();
+                var teamMenu = Object.FindObjectOfType<TeamDebugMenu>();
+                teamMenu?.BindTeam(ctx.TeamHost);
             }
         }
 

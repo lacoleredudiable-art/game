@@ -27,7 +27,7 @@ namespace Dovus.Game.Skills
                 HitImpactFx.Play(hit.Value, archetype, tint, isCrit, _boss.transform);
             }
 
-            SfxDirector.Play(isCrit ? SfxLibrary.Crit : SfxLibrary.Hit);
+            _sfx?.Play(isCrit ? SfxLibrary.Crit : SfxLibrary.Hit);
         }
     }
 }

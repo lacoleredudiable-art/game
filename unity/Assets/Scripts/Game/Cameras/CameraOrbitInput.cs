@@ -26,6 +26,9 @@ namespace Dovus.Game.Cameras
         float _yawDeg;
         float _pitchDeg;
         bool _eventsHooked;
+        ElementRadialMenu _elementMenu;
+
+        public void BindElementMenu(ElementRadialMenu menu) => _elementMenu = menu;
 
         public float YawDeg => _yawDeg;
         public float PitchDeg => _pitchDeg;
@@ -127,7 +130,7 @@ namespace Dovus.Game.Cameras
             bool mirror = _tuning != null && _tuning.Input.MirrorForLeftHand;
             if (!HexagonLayoutScreen.IsRightHalf(pos, mirror, Screen.width))
                 return;
-            if (ElementRadialMenu.AnyOpen || ElementRadialMenu.HitHoldChip(pos))
+            if (_elementMenu != null && (_elementMenu.IsMenuOpen || _elementMenu.HitHoldChipAt(pos)))
                 return;
 
             _orbitFingerId = finger.index;

@@ -31,6 +31,6 @@ public sealed class ManifestationDirectorSizeTests
         var files = Directory.GetFiles(SkillsDir, "ManifestationDirector*.cs");
         int total = files.Sum(f => File.ReadAllLines(f).Length);
         TestContext.WriteLine($"ManifestationDirector partial total: {total} lines across {files.Length} files");
-        Assert.That(total, Is.LessThanOrEqualTo(4451), "ratchet: 2B.8a portal skill instance probe (+using/static); yalniz asagi cekilir");
+        Assert.That(total, Is.LessThanOrEqualTo(4468), "ratchet: 2B.8b team/sfx injection (+using/fields); yalniz asagi cekilir");
     }
 }

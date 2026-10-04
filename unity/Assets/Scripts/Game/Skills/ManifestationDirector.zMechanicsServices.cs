@@ -18,6 +18,7 @@ using Dovus.Game.Composition;
 using Dovus.Game.Data;
 using Dovus.Game.DevTools;
 using Dovus.Game.Hud;
+using Dovus.Game.Team;
 using Dovus.Game.Skills.Mechanics;
 using System;
 using System.Linq;
@@ -114,6 +115,7 @@ namespace Dovus.Game.Skills
             public BossDirector BossDirector => _md._bossDirector;
             public ActorStatus PlayerStatus => _md._playerStatus;
             public GameClock Clock => _md._clock;
+            public PortalBorderTeamAccess TeamAccess => _md._team;
             public CombatTuning Combat => _md._combat;
             public SkillMotor Skills => _md._skills;
             public SlotPassiveDirector SlotPassives => _md._slotPassives;

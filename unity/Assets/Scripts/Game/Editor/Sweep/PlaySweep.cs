@@ -131,6 +131,7 @@ namespace Dovus.Game.Editor
             static GameClock _clock;
             static SkillMotor _skills;
             static HostileProjectileHost _projectiles;
+            static PortalBorderTeamHost _teamHost;
     
             enum Stage { WaitScene, Idle, Setup, Settle, Record, Done }
     

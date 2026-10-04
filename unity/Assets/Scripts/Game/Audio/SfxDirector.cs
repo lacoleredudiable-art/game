@@ -15,17 +15,17 @@ namespace Dovus.Game.Audio
         readonly Dictionary<string, float> _lastPlayed = new();
         readonly Dictionary<string, int> _lastClip = new();
         int _next;
-
-        public static SfxDirector Instance { get; private set; }
+        SfxLibrary _sfx;
 
         /// <summary>Test/doğrulama: son çalınan olay ve oturumda çalınmış olay kimlikleri.</summary>
         public string LastPlayed { get; private set; }
         public int PlayCount { get; private set; }
         public HashSet<string> PlayedIds { get; } = new();
 
+        public void Bind(SfxLibrary sfx) => _sfx = sfx;
+
         void Awake()
         {
-            Instance = this;
             for (int i = 0; i < Voices; i++)
             {
                 var src = gameObject.AddComponent<AudioSource>();
@@ -35,17 +35,16 @@ namespace Dovus.Game.Audio
             }
         }
 
-        void OnDestroy()
+        public void Play(string id, float volumeScale = 1f)
         {
-            if (Instance == this)
-                Instance = null;
+            if (_sfx == null)
+                return;
+            PlayInternal(id, volumeScale);
         }
-
-        public static void Play(string id, float volumeScale = 1f) => Instance?.PlayInternal(id, volumeScale);
 
         void PlayInternal(string id, float volumeScale)
         {
-            SfxLibrary lib = SfxLibrary.Current;
+            SfxLibrary lib = _sfx;
             if (!lib.TryGet(id, out SfxLibrary.Entry e))
                 return;
 

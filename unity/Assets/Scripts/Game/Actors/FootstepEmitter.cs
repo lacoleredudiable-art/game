@@ -17,8 +17,11 @@ namespace Dovus.Game.Actors
         public float StrideM = 2.2f;
         public bool IsBoss;
 
+        SfxDirector _sfx;
         DodgeMotion _dodge;
         Vector3 _last;
+
+        public void Bind(SfxDirector sfx) => _sfx = sfx;
         float _travelled;
         bool _hasLast;
 
@@ -51,7 +54,7 @@ namespace Dovus.Game.Actors
 
             StepCount++;
             FeelVfx.FootDust(transform.position, IsBoss);
-            SfxDirector.Play(IsBoss ? SfxLibrary.BossStep : SfxLibrary.Footstep);
+            _sfx?.Play(IsBoss ? SfxLibrary.BossStep : SfxLibrary.Footstep);
         }
     }
 }

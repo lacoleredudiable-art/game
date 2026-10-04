@@ -34,6 +34,7 @@ namespace Dovus.Game.Actors
         float _savedAnimSpeed = 1f;
         bool _animSlowed;
         bool _feelHooked;
+        SfxDirector _sfx;
 
         public NextHitBuff NextHit => _nextHit;
 
@@ -63,12 +64,14 @@ namespace Dovus.Game.Actors
             HexagonInput input,
             FollowCamera camera,
             ReactionReadout readout,
-            CombatFeel feel)
+            CombatFeel feel,
+            SfxDirector sfx = null)
         {
             _clock = clock;
             _input = input;
             _camera = camera;
             _readout = readout;
+            _sfx = sfx;
             if (feel != null && !_feelHooked)
             {
                 feel.Exchanged += OnExchange;
@@ -173,7 +176,7 @@ namespace Dovus.Game.Actors
             _nextHit.Arm(tuning.PerfectNextHitMult, WorldMs(), tuning.PerfectNextHitWindowMs);
             PlayLocalFeel(tuning.PerfectFeelSec);
             // O2: ayrı OnGUI "PERFECT" etiketi kaldırıldı (çift yazı + her kare yeni GUIStyle).
-            SfxDirector.Play(SfxLibrary.PerfectDodge);
+            _sfx?.Play(SfxLibrary.PerfectDodge);
         }
 
         void PlayLocalFeel(float seconds)
