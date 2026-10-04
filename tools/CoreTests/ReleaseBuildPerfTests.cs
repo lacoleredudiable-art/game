@@ -128,7 +128,7 @@ public class ReleaseBuildPerfTests
         Assert.That(Regex.Matches(Game("Team/PortalBorderTeamHost.cs"), @"_boss\.GetComponent<BossReactor>\(\)").Count, Is.EqualTo(1),
             "yalnız CachedBossReactor içinde");
         Assert.That(Game("Actors/DodgeMotion.cs"), Does.Contain("_reactorCache"));
-        foreach (string f in new[] { "Actors/PlayerTargeting.cs", "Skills/ManifestationDirector.cs", "Skills/ManifestationDirector.Weapons10.cs" })
+        foreach (string f in new[] { "Actors/PlayerTargeting.cs", "Skills/ManifestationDirector.cs", "Skills/Weapons/WeaponPassiveRuntime.cs" })
             Assert.That(Game(f), Does.Not.Contain("FindObjectsByType<Targetable>"), f);
         foreach (string f in new[] { "Skills/ManifestationDirector.cs", "Skills/ManifestationDirector.VerbExecution.cs", "Skills/ManifestationDirector.MechanicWorld.cs" })
             Assert.That(Regex.Matches(Game(f), @"(?<!_playerVitalsCache = )_player\.GetComponent<PlayerVitals>\(\)").Count, Is.EqualTo(0), f);
@@ -142,7 +142,7 @@ public class ReleaseBuildPerfTests
     {
         foreach (string f in new[]
                  {
-                     "Skills/ManifestationDirector.MechanicWorld.cs", "Skills/ManifestationDirector.MotionTemplate.cs",
+                     "Skills/ManifestationDirector.MechanicWorld.cs", "Skills/Motion/MotionTemplateDriver.cs",
                      "Skills/Execution/SummonExecutor.cs", "Team/PortalBorderTeamHost.cs", "Boss/HostileProjectileHost.cs",
                      "Boss/AttackTelegraph.cs"
                  })

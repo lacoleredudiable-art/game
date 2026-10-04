@@ -88,7 +88,6 @@ namespace Dovus.Game.Skills
         // --- Slot pasifleri ---
         SlotPassiveDirector _slotPassives;
         int _slotQueryCastId;
-        int _templateSlotCastId;
         bool _slotPassiveNeedsWeapon;
         PassiveHud _passiveHud;
         MobilityCcData _mobilityCc;
