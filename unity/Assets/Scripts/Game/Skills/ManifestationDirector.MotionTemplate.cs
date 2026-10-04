@@ -604,9 +604,9 @@ namespace Dovus.Game.Skills
                 _motionBody.Stop();
             AbortCastView(_buildingView);
             _buildingView = null;
-            for (int i = 0; i < _pending.Count; i++)
-                AbortCastView(_pending[i].View);
-            _pending.Clear();
+            for (int i = 0; i < PendingList.Count; i++)
+                AbortCastView(PendingList[i].View);
+            PendingList.Clear();
             _playerStatus?.ClearCastMobility();
         }
 

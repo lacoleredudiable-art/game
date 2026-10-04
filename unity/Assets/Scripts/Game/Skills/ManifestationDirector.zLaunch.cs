@@ -232,5 +232,90 @@ namespace Dovus.Game.Skills
 
             public float WeaponDurationMult(in SkillResolution skill) => _md.WeaponDurationMult(skill);
         }
+
+        bool TryLaunchSkillExecutor(
+            SkillExecutorKind kind,
+            PendingClosing pending,
+            SkillResolution skill,
+            in SkillMotionPlan motionPlan,
+            float effectMult = 1f,
+            LivingEffect capturedLogic = null,
+            int slotCastId = -1,
+            float? activationDelayOverride = null)
+        {
+            EnsureLaunchServices();
+            return _executorLauncher.TryLaunch(
+                kind, pending, skill, motionPlan, effectMult, capturedLogic, slotCastId, activationDelayOverride);
+        }
+
+        void ApplyVerbHitboxSizing(
+            SkillExecutorKind kind,
+            in SkillResolution skill,
+            ManifestationTuning tuning,
+            float rangeMult,
+            bool burst,
+            ref float radius,
+            ref float range,
+            ref float durationSec,
+            ref int spawnCount)
+        {
+            EnsureLaunchServices();
+            _hitboxSizing.ApplyVerbHitboxSizing(
+                kind, skill, tuning, rangeMult, burst, ref radius, ref range, ref durationSec, ref spawnCount);
+        }
+
+        void ApplyResourceCost(SkillResolution skill)
+        {
+            EnsureLaunchServices();
+            _castSideEffects.ApplyResourceCost(skill);
+        }
+
+        void ApplyCastMobility(SkillResolution skill, float durationSec)
+        {
+            EnsureLaunchServices();
+            _castSideEffects.ApplyCastMobility(skill, durationSec);
+        }
+
+        void RefreshBuildingMobility(IReadOnlyList<SentenceWord> words)
+        {
+            EnsureLaunchServices();
+            _castSideEffects.RefreshBuildingMobility(words);
+        }
+
+        void ApplyCooldown(SkillResolution skill, IReadOnlyList<SentenceWord> words, bool cosmeticIfDisabled)
+        {
+            EnsureLaunchServices();
+            _castSideEffects.ApplyCooldown(skill, words, cosmeticIfDisabled);
+        }
+
+        SkillMotionPlan ResolveSkillMotion(SkillResolution skill)
+        {
+            EnsureLaunchServices();
+            return _castSideEffects.ResolveSkillMotion(skill);
+        }
+
+        void ApplySkillMotionIframe(in SkillResolution skill, in SkillMotionPlan plan)
+        {
+            EnsureLaunchServices();
+            _castSideEffects.ApplySkillMotionIframe(skill, plan);
+        }
+
+        void AnnotateMotion(SkillResolution skill, in SkillMotionPlan plan)
+        {
+            EnsureLaunchServices();
+            _castSideEffects.AnnotateMotion(skill, plan);
+        }
+
+        void ShoutSkill(SkillResolution skill, IReadOnlyList<SentenceWord> words)
+        {
+            EnsureLaunchServices();
+            _skillPresentation.ShoutSkill(skill, words);
+        }
+
+        void ApplySkillAnimation(SkillResolution skill)
+        {
+            EnsureLaunchServices();
+            _skillPresentation.ApplySkillAnimation(skill);
+        }
     }
 }

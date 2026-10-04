@@ -1,3 +1,4 @@
+using Dovus.App.Casting;
 using Dovus.Core.Combat;
 using Dovus.Core.Grammar;
 using Dovus.Core.Manifestation;
@@ -12,6 +13,7 @@ using Dovus.Game.DevTools;
 using Dovus.Game.Hud;
 using Dovus.Game.Skills.Closing;
 using Dovus.Game.Vfx;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Dovus.Game.Skills
@@ -47,7 +49,14 @@ namespace Dovus.Game.Skills
             public CombatTuning Combat => _md._combat;
             public MobilityCcData MobilityCc => _md._mobilityCc;
             public SlotPassiveDirector SlotPassives => _md._slotPassives;
-            public PassiveFlowRunner PassiveFlows => _md._passiveFlows;
+            public PassiveFlowRunner PassiveFlows
+            {
+                get
+                {
+                    _md.EnsureCoreServices();
+                    return _md._slotPassiveRuntime.PassiveFlows;
+                }
+            }
             public int SlotQueryCastId => _md._slotQueryCastId;
             public GameClock Clock => _md._clock;
             public MechanicGrammar MechanicEngine => _md.MechanicEngine;
@@ -118,5 +127,122 @@ namespace Dovus.Game.Skills
                 return _closingDamage;
             }
         }
+
+        void SpawnClosingImpact(PendingClosing p)
+        {
+            EnsureCoreServices();
+            _closingQueue.SpawnClosingImpact(p);
+        }
+
+        SkillResolution ResolveSkillWords(IReadOnlyList<SentenceWord> words)
+        {
+            EnsureCoreServices();
+            return _closingQueue.ResolveSkillWords(words);
+        }
+
+        SkillResolution ResolvePendingSkill(PendingClosing p)
+        {
+            EnsureCoreServices();
+            return _closingQueue.ResolvePendingSkill(p);
+        }
+
+        static bool IsFriendlyFieldVerb(in SkillResolution skill) =>
+            skill.VerbId is "2" or "4" or "8" or "9";
+
+        void ApplyClosingStatuses(PendingClosing p, SkillResolution skill, bool bossReached = true)
+        {
+            EnsureClosingServices();
+            _closingStatus.Apply(p.Target, skill, bossReached);
+        }
+
+        void ApplyClosingHeal(
+            ClosingHit closing,
+            SkillResolution skill,
+            float effectScale = 1f,
+            float? chainBonusOverride = null,
+            Vector3? fieldCenter = null,
+            float fieldRadiusM = 0f)
+        {
+            EnsureClosingServices();
+            _closingHeal.Apply(closing, skill, effectScale, chainBonusOverride, fieldCenter, fieldRadiusM);
+        }
+
+        int CalculateClosingHealAmount(
+            ClosingHit closing,
+            SkillResolution skill,
+            float effectScale,
+            float? chainBonusOverride)
+        {
+            EnsureClosingServices();
+            return _closingHeal.CalculateAmount(closing, skill, effectScale, chainBonusOverride);
+        }
+
+        void ApplyClosingHealAmount(
+            SkillResolution skill,
+            int amount,
+            Vector3? fieldCenter,
+            float fieldRadiusM,
+            Transform preferredTarget = null)
+        {
+            EnsureClosingServices();
+            _closingHeal.ApplyAmount(skill, amount, fieldCenter, fieldRadiusM, preferredTarget);
+        }
+
+        float ApplyClosingDamage(
+            ClosingHit closing,
+            SkillResolution skill,
+            bool isBasicStrike,
+            float slashCommitMult,
+            float effectScale = 1f,
+            float? chainBonusOverride = null)
+        {
+            EnsureClosingServices();
+            return _closingDamage.Apply(
+                closing, skill, isBasicStrike, slashCommitMult, effectScale, chainBonusOverride);
+        }
+
+        void StampScar(LivingEffectView view, ClosingHit closing)
+        {
+            EnsureClosingServices();
+            _closingDamage.StampScar(view, closing);
+        }
+
+        void ApplyBossClosingBasic(LivingEffect logic, ClosingHit closing)
+        {
+            EnsureClosingServices();
+            _closingDamage.ApplyBossClosingBasic(logic, closing);
+        }
+
+        void ApplyBossClosing(LivingEffect logic, ClosingHit closing, SkillResolution skill)
+        {
+            EnsureClosingServices();
+            _closingDamage.ApplyBossClosing(logic, closing, skill);
+        }
+
+        bool IsBossInStrikeCapsule(LivingEffect logic, float reachM)
+        {
+            EnsureClosingServices();
+            return _closingDamage.IsBossInStrikeCapsule(logic, reachM);
+        }
+
+        bool BasicTargetStillInReach(Transform target, float reachM)
+        {
+            EnsureClosingServices();
+            return _closingDamage.BasicTargetStillInReach(target, reachM);
+        }
+
+        float BasicStrikeYawDeg(Transform target)
+        {
+            EnsureClosingServices();
+            return _closingDamage.BasicStrikeYawDeg(target);
+        }
+
+        bool IsClosingInRange(LivingEffect logic, ClosingHit closing)
+        {
+            EnsureClosingServices();
+            return _closingDamage.IsClosingInRange(logic, closing);
+        }
+
+        static bool IsHealSkill(SkillResolution skill) => ClosingHealRules.IsHealSkill(skill);
     }
 }
