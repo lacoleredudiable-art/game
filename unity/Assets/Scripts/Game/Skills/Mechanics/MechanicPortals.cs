@@ -106,5 +106,20 @@ namespace Dovus.Game.Skills.Mechanics
                 }
             }
         }
+
+        public int LeftoverCount() => _portals.Count + _timers.Count;
+
+        public void ClearSweepState()
+        {
+            foreach (PortalPair pair in _portals)
+            {
+                if (pair.A != null)
+                    _host.DestroyUnityObject(pair.A);
+                if (pair.B != null)
+                    _host.DestroyUnityObject(pair.B);
+            }
+            _portals.Clear();
+            _timers.Clear();
+        }
     }
 }

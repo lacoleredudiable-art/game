@@ -1044,33 +1044,11 @@ namespace Dovus.Game.Editor
             _logs.Add("önceki cast 6 sn'de bitmedi, zorla temizlendi");
         }
 
-        static readonly string[] MechanicWorldLists = { "_mechanicLinks", "_mechanicVolumes", "_guardTriggers", "_mechanicBodies" };
-
         /// <summary>Bağ/hacim/tuzak: status board temizlense de sonraki casta Root/Slow ve boss çekişi taşır.</summary>
-        static int MechanicLeftovers()
-        {
-            int n = 0;
-            foreach (string name in MechanicWorldLists)
-                n += (F<object>(_md, name) as IList)?.Count ?? 0;
-            return n;
-        }
+        static int MechanicLeftovers() =>
+            _md != null ? Convert.ToInt32(Call(_md, "MechanicWorldLeftoverCount") ?? 0) : 0;
 
-        static void ClearMechanicWorld()
-        {
-            foreach (string name in MechanicWorldLists)
-            {
-                if (!(F<object>(_md, name) is IList list))
-                    continue;
-                foreach (object item in list)
-                {
-                    if (F<object>(item, "View") is GameObject view && view != null)
-                        UnityEngine.Object.Destroy(view);
-                    if (F<object>(item, "Line") is LineRenderer line && line != null)
-                        UnityEngine.Object.Destroy(line.gameObject);
-                }
-                list.Clear();
-            }
-        }
+        static void ClearMechanicWorld() => Call(_md, "ClearMechanicWorldSweep");
 
         static void ResetActors()
         {

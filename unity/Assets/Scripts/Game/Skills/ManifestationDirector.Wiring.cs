@@ -90,7 +90,6 @@ namespace Dovus.Game.Skills
             _skillFactory = skillFactory ?? new SkillFactory(_skills, _equipmentBonus);
             _animationDatabase = animationDatabase ?? LoadAnimationDatabase();
             EnsureCoreServices();
-            EnsureMechanicsServices();
             EnsureSkillServices();
             _weaponLoadout.ResetElementPaintIndex();
             EnsureLaunchServices();

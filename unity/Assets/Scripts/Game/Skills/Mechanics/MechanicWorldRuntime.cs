@@ -440,6 +440,36 @@ namespace Dovus.Game.Skills.Mechanics
                     "mechanic_grammar yaşayan alan gövdesi");
             return route;
         }
-    
+
+        public int LeftoverCount() =>
+            _bodies.Count + Volumes.Count + Links.Count + _guardTriggers.Count;
+
+        public void ClearSweepState()
+        {
+            foreach (MechanicWorldBody body in _bodies)
+            {
+                if (body.View != null)
+                    _host.DestroyUnityObject(body.View);
+            }
+            _bodies.Clear();
+            foreach (MechanicVolume volume in Volumes)
+            {
+                if (volume.View != null)
+                    _host.DestroyUnityObject(volume.View);
+            }
+            Volumes.Clear();
+            foreach (MechanicLink link in Links)
+            {
+                if (link.Line != null)
+                    _host.DestroyUnityObject(link.Line.gameObject);
+            }
+            Links.Clear();
+            foreach (GuardTrigger guard in _guardTriggers)
+            {
+                if (guard.View != null)
+                    _host.DestroyUnityObject(guard.View);
+            }
+            _guardTriggers.Clear();
+        }
     }
 }

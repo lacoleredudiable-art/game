@@ -65,6 +65,20 @@ namespace Dovus.Game.Skills
             return absorb > 0f ? absorb : tuning.ShieldAbsorb;
         }
 
+        internal int MechanicWorldLeftoverCount()
+        {
+            if (_mechanicWorld == null)
+                return 0;
+            return _mechanicWorld.LeftoverCount() + _mechanicPortals.LeftoverCount();
+        }
+
+        internal void ClearMechanicWorldSweep()
+        {
+            EnsureMechanicsServices();
+            _mechanicWorld.ClearSweepState();
+            _mechanicPortals.ClearSweepState();
+        }
+
         void EnsureMechanicsServices()
         {
             if (_mechanicsHost != null)
