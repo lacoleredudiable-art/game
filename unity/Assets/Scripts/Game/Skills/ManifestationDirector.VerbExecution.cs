@@ -1,3 +1,4 @@
+using Dovus.App.Casting;
 using Dovus.Core.Combat;
 using Dovus.Core.Equipment;
 using Dovus.Core.Execution;
@@ -264,7 +265,7 @@ namespace Dovus.Game.Skills
                 SkillPower = raw,
                 Multiplier = mult,
                 CanCrit = !skill.IsEmpty && skill.BaseDamage > 0f,
-                CritChance = Crits.ChanceWith(ExtraCritChanceAdd(skill)),
+                CritChance = Crits.ChanceWith(ClosingHealRules.ExtraCritChanceAdd(skill)),
                 CritMultiplier = Crits.Multiplier,
                 CritRoll01 = _combatRng.NextRoll01(),
                 Armor = armor,
@@ -281,7 +282,7 @@ namespace Dovus.Game.Skills
             float damage = dealt.Amount;
             // S8: minyon kritikleri de gösterilir.
             _damageHud?.ShowDamage(damage, dealt.WasCrit, BossHitPoint(), DamageTint(), victimIsBoss: true);
-            float lifesteal = AdjectiveLifesteal(skill);
+            float lifesteal = ClosingHealRules.AdjectiveLifesteal(skill);
             lifesteal += _slotPassives?.LifestealAddFor(_slotQueryCastId) ?? 0f;
             if (lifesteal > 0f && _player != null)
             {

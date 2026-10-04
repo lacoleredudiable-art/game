@@ -1,0 +1,122 @@
+using Dovus.Core.Combat;
+using Dovus.Core.Grammar;
+using Dovus.Core.Manifestation;
+using Dovus.Core.Mechanic;
+using Dovus.Core.Status;
+using Dovus.Game.Actors;
+using Dovus.Game.Boss;
+using Dovus.Game.Composition;
+using Dovus.Core.Tuning;
+using Dovus.Game.Data;
+using Dovus.Game.DevTools;
+using Dovus.Game.Hud;
+using Dovus.Game.Skills.Closing;
+using Dovus.Game.Vfx;
+using UnityEngine;
+
+namespace Dovus.Game.Skills
+{
+    public sealed partial class ManifestationDirector
+    {
+        ClosingStatusApplier _closingStatus;
+        ClosingHealResolver _closingHeal;
+        ClosingDamageResolver _closingDamage;
+        ClosingHost _closingHost;
+
+        void EnsureClosingServices()
+        {
+            if (_closingHost != null)
+                return;
+            _closingHost = new ClosingHost(this);
+            _closingStatus = new ClosingStatusApplier(_closingHost);
+            _closingHeal = new ClosingHealResolver(_closingHost);
+            _closingDamage = new ClosingDamageResolver(_closingHost);
+        }
+
+        sealed class ClosingHost
+            : IClosingStatusHost, IClosingHealHost, IClosingDamageHost
+        {
+            readonly ManifestationDirector _md;
+
+            internal ClosingHost(ManifestationDirector md) => _md = md;
+
+            public Transform Player => _md._player;
+            public AllyDummy Ally => _md._ally;
+            public ActorStatus PlayerStatus => _md._playerStatus;
+            public ActorStatus BossStatus => _md._bossStatus;
+            public CombatTuning Combat => _md._combat;
+            public MobilityCcData MobilityCc => _md._mobilityCc;
+            public SlotPassiveDirector SlotPassives => _md._slotPassives;
+            public PassiveFlowRunner PassiveFlows => _md._passiveFlows;
+            public int SlotQueryCastId => _md._slotQueryCastId;
+            public GameClock Clock => _md._clock;
+            public MechanicGrammar MechanicEngine => _md.MechanicEngine;
+            public BossVitals BossVitals => _md._bossVitals;
+            Transform IClosingStatusHost.Boss =>
+                _md._boss != null ? _md._boss.transform : null;
+            BossReactor IClosingDamageHost.Boss => _md._boss;
+            public BossDirector BossDirector => _md._bossDirector;
+            public DamageNumberHud DamageHud => _md._damageHud;
+            public ElementPaintNode? SelectedElementPaint => _md.SelectedElementPaint;
+            public bool LastFriendlyWasAlly { set => _md._lastFriendlyWasAlly = value; }
+            public float ClosingChainBonus => _md._closingChainBonus;
+            public ReactionReadout Readout => _md._readout;
+            public SentenceDebugHud DebugHud => _md._debugHud;
+            public KinematicMotor Motor => _md._motor;
+            public GroundScarField Scars => _md._scars;
+            public bool JsonTickDamage => _md._jsonTickDamage;
+            public float LastHitX => _md._lastHitX;
+            public float LastHitZ => _md._lastHitZ;
+            public float LastClosingDamageDealt
+            {
+                get => _md.LastClosingDamageDealt;
+                set => _md.LastClosingDamageDealt = value;
+            }
+
+            public ClosingStatusApplier StatusApplier => _md._closingStatus;
+
+            public float WeaponFriendlyScale() => _md.WeaponFriendlyScale();
+            public int JsonCleanseCount(SkillResolution skill) => _md.JsonCleanseCount(skill);
+            public void ShareFriendlyStatuses(SkillResolution skill, StatusBoard board) =>
+                _md.ShareFriendlyStatuses(skill, board);
+            public void ApplyPurgePower(SkillResolution skill, int cleansed) =>
+                _md.ApplyPurgePower(skill, cleansed);
+            public void ApplyArmorShred(SkillResolution skill, ActorStatus boss) =>
+                _md.ApplyArmorShred(skill, boss);
+            public bool IsEnemyBody(Transform body) => _md.IsEnemyBody(body);
+            public Vector3? BossHitPoint() => _md.BossHitPoint();
+            public Color? DamageTint() => _md.DamageTint();
+            public PlayerVitals CachedPlayerVitals() => _md.CachedPlayerVitals();
+            public float WeaponSupportPower(SkillResolution skill) => _md.WeaponSupportPower(skill);
+            public float HealBuffMultiplier(SkillResolution skill) => _md.HealBuffMultiplier(skill);
+            public int FriendlyTargetCap(SkillResolution skill) => _md.FriendlyTargetCap(skill);
+            public void ConsumeWeaponBonus(StatusBoard board) => _md.ConsumeWeaponBonus(board);
+            public void ApplyHealOverflow(SkillResolution skill, int amount, int healed, bool ally) =>
+                _md.ApplyHealOverflow(skill, amount, healed, ally);
+            public DamageOutcome ComputeOutgoingHit(
+                ClosingHit closing,
+                SkillResolution skill,
+                bool isBasicStrike,
+                float slashCommitMult,
+                float effectScale,
+                float? chainBonusOverride) =>
+                _md.ComputeOutgoingHit(closing, skill, isBasicStrike, slashCommitMult, effectScale, chainBonusOverride);
+            public void TryConsumeCounterWindow() => _md.TryConsumeCounterWindow();
+            public void RememberHitPoint(Vector3? point) => _md.RememberHitPoint(point);
+            public void TryCannonBlast(float x, float z) => _md.TryCannonBlast(x, z);
+            public void NotifyBossStruck(bool isCrit, bool allowHitstop) =>
+                _md.NotifyBossStruck(isCrit, allowHitstop);
+            public void NoteImpactOrigin(LivingEffect logic) => _md.NoteImpactOrigin(logic);
+            public float PlayerBodyRadiusM() => _md._motor != null ? _md._motor.BodyRadiusM : 0f;
+        }
+
+        internal ClosingDamageResolver ClosingDamageCore
+        {
+            get
+            {
+                EnsureClosingServices();
+                return _closingDamage;
+            }
+        }
+    }
+}
