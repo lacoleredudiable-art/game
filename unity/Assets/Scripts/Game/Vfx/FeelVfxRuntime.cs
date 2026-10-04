@@ -9,23 +9,24 @@ namespace Dovus.Game.Vfx
     /// Önce <see cref="VfxLibrary"/> prefab'ı; yoksa koddan kurulan parçacık/çizgi. Yalnız
     /// görsel — hasar ve etki zamanlaması bunlara bağlı değil.
     /// </summary>
-    public static class FeelVfx
+    public sealed class FeelVfxRuntime
     {
         /// <summary>Düz arena zemini (zemin collider'ı yok); yere oturan efektler bunu kullanır.</summary>
         public const float GroundY = 0.03f;
 
-        static Texture2D _crack;
-        static VfxLibrary _vfx;
+        readonly KenneyVfxTextures _kenney;
+        Texture2D _crack;
+        readonly VfxLibrary _vfx;
 
-        public static void Configure(GameTuning tuning, VfxLibrary vfx)
+        public FeelVfxRuntime(GameTuning tuning, VfxLibrary vfx)
         {
-            _vfx = vfx;
-            KenneyVfxTextures.Configure(tuning);
+            _vfx = vfx ?? throw new System.InvalidOperationException("VfxLibrary gerekli.");
+            _kenney = new KenneyVfxTextures(tuning);
         }
 
-        static VfxLibrary Lib => _vfx ?? throw new System.InvalidOperationException("FeelVfx.Configure ile VfxLibrary bağlanmalı.");
+        VfxLibrary Lib => _vfx ?? throw new System.InvalidOperationException("VfxLibrary gerekli.");
 
-        public static void HitSpark(Vector3 pos, Color tint, bool crit)
+        public void HitSpark(Vector3 pos, Color tint, bool crit)
         {
             VfxLibrary lib = Lib;
             GameObject prefab = lib.TrySpawn(crit ? VfxLibrary.CritSpark : VfxLibrary.HitSpark, pos, Quaternion.identity);
@@ -37,7 +38,7 @@ namespace Dovus.Game.Vfx
             }
 
             float mult = crit ? lib.CritSparkMult : 1f;
-            ParticleSystem ps = NewBurst("HitSpark", pos, Quaternion.identity, additive: true, KenneyVfxTextures.TexHit);
+            ParticleSystem ps = NewBurst("HitSpark", pos, Quaternion.identity, additive: true, _kenney.TexHit);
             var main = ps.main;
             main.startLifetime = new ParticleSystem.MinMaxCurve(lib.HitSparkLifeSec * FeelVfxDefaults.HitSparkLifetimeMinMult, lib.HitSparkLifeSec);
             main.startSpeed = new ParticleSystem.MinMaxCurve(lib.HitSparkSpeed * 0.5f, lib.HitSparkSpeed * mult);
@@ -55,7 +56,7 @@ namespace Dovus.Game.Vfx
             ps.Play();
         }
 
-        public static void DodgeDust(Vector3 pos, Vector3 dir)
+        public void DodgeDust(Vector3 pos, Vector3 dir)
         {
             VfxLibrary lib = Lib;
             Vector3 ground = new(pos.x, GroundY, pos.z);
@@ -65,7 +66,7 @@ namespace Dovus.Game.Vfx
             Dust("DodgeDust", ground, lib.DodgeDustCount, lib.DodgeDustLifeSec, lib.DodgeDustSize, FeelVfxDefaults.DodgeDustIntensityMult, lib.DustColor);
         }
 
-        public static void FootDust(Vector3 pos, bool boss)
+        public void FootDust(Vector3 pos, bool boss)
         {
             VfxLibrary lib = Lib;
             Vector3 ground = new(pos.x, GroundY, pos.z);
@@ -76,7 +77,7 @@ namespace Dovus.Game.Vfx
                 lib.FootDustSize * m, FeelVfxDefaults.FootDustSpeedMult * m, lib.DustColor);
         }
 
-        public static void SlamImpact(Vector3 center, float radiusM)
+        public void SlamImpact(Vector3 center, float radiusM)
         {
             VfxLibrary lib = Lib;
             Vector3 ground = new(center.x, GroundY, center.z);
@@ -113,7 +114,7 @@ namespace Dovus.Game.Vfx
             }
         }
 
-        public static void FireCone(Vector3 origin, Vector3 forward, float halfAngleDeg, float reachM)
+        public void FireCone(Vector3 origin, Vector3 forward, float halfAngleDeg, float reachM)
         {
             VfxLibrary lib = Lib;
             forward.y = 0f;
@@ -121,7 +122,7 @@ namespace Dovus.Game.Vfx
             if (lib.TrySpawn(VfxLibrary.FireCone, origin, rot, null, reachM) != null)
                 return;
 
-            ParticleSystem ps = NewBurst("FireCone", origin, rot, additive: true, KenneyVfxTextures.TexFire);
+            ParticleSystem ps = NewBurst("FireCone", origin, rot, additive: true, _kenney.TexFire);
             var main = ps.main;
             main.duration = lib.FlameSec;
             float life = reachM / Mathf.Max(FeelVfxDefaults.FlameSpeedDenominatorMinMps, lib.FlameSpeed);
@@ -144,10 +145,10 @@ namespace Dovus.Game.Vfx
             ps.Play();
         }
 
-        static void Dust(string name, Vector3 ground, int count, float life, float size, float speed, Color color,
+        void Dust(string name, Vector3 ground, int count, float life, float size, float speed, Color color,
             float ringRadius = FeelVfxDefaults.BurstRingRadiusM)
         {
-            ParticleSystem ps = NewBurst(name, ground, Quaternion.Euler(-90f, 0f, 0f), additive: false, KenneyVfxTextures.TexEarth);
+            ParticleSystem ps = NewBurst(name, ground, Quaternion.Euler(-90f, 0f, 0f), additive: false, _kenney.TexEarth);
             var main = ps.main;
             main.startLifetime = new ParticleSystem.MinMaxCurve(life * FeelVfxDefaults.FlameLifetimeMinMult, life);
             main.startSpeed = new ParticleSystem.MinMaxCurve(speed * FeelVfxDefaults.DustSpeedMinMult, speed);
@@ -172,7 +173,7 @@ namespace Dovus.Game.Vfx
             ps.Play();
         }
 
-        static ParticleSystem NewBurst(string name, Vector3 pos, Quaternion rot, bool additive, string kenneyTex)
+        ParticleSystem NewBurst(string name, Vector3 pos, Quaternion rot, bool additive, string kenneyTex)
         {
             var go = new GameObject(name);
             go.transform.SetPositionAndRotation(pos, rot);
@@ -189,13 +190,13 @@ namespace Dovus.Game.Vfx
             em.rateOverTime = 0f;
             var r = go.GetComponent<ParticleSystemRenderer>();
             r.renderMode = ParticleSystemRenderMode.Billboard;
-            r.sharedMaterial = KenneyVfxTextures.GetParticleMaterial(kenneyTex, additive);
+            r.sharedMaterial = _kenney.GetParticleMaterial(kenneyTex, additive);
             r.shadowCastingMode = ShadowCastingMode.Off;
             r.receiveShadows = false;
             return ps;
         }
 
-        static void Burst(ParticleSystem ps, int count)
+        void Burst(ParticleSystem ps, int count)
         {
             var em = ps.emission;
             em.SetBursts(new[] { new ParticleSystem.Burst(0f, (short)Mathf.Clamp(count, 1, FeelVfxDefaults.ParticleBurstMaxCount)) });
@@ -203,7 +204,7 @@ namespace Dovus.Game.Vfx
             main.maxParticles = Mathf.Max(main.maxParticles, count);
         }
 
-        static void FadeColor(ParticleSystem ps, Color from, Color to)
+        void FadeColor(ParticleSystem ps, Color from, Color to)
         {
             var col = ps.colorOverLifetime;
             col.enabled = true;
@@ -214,13 +215,13 @@ namespace Dovus.Game.Vfx
             col.color = g;
         }
 
-        static Material Mat(bool additive, bool textured, bool crack = false)
+        Material Mat(bool additive, bool textured, bool crack = false)
         {
             if (!textured)
-                return KenneyVfxTextures.GetParticleMaterial(null, additive);
+                return _kenney.GetParticleMaterial(null, additive);
 
-            if (crack && KenneyVfxTextures.Load(KenneyVfxTextures.SlamCrackTexture) != null)
-                return KenneyVfxTextures.GetParticleMaterial(KenneyVfxTextures.SlamCrackTexture, additive);
+            if (crack && _kenney.Load(KenneyVfxTextures.SlamCrackTexture) != null)
+                return _kenney.GetParticleMaterial(KenneyVfxTextures.SlamCrackTexture, additive);
 
             Shader shader = PresentationParticleMaterials.ResolveShaderPublic();
             var m = new Material(shader) { name = "FeelVfx_Crack" };
@@ -243,7 +244,7 @@ namespace Dovus.Game.Vfx
         }
 
         /// <summary>Merkezden dışa kırık çizgiler; beyaz maske, renk FxTweenView'den.</summary>
-        static Texture2D CrackTexture()
+        Texture2D CrackTexture()
         {
             if (_crack != null)
                 return _crack;
@@ -281,7 +282,7 @@ namespace Dovus.Game.Vfx
             return _crack;
         }
 
-        static void Stamp(Color[] px, int size, Vector2 p, float r)
+        void Stamp(Color[] px, int size, Vector2 p, float r)
         {
             int x0 = Mathf.FloorToInt(p.x - r), x1 = Mathf.CeilToInt(p.x + r);
             int y0 = Mathf.FloorToInt(p.y - r), y1 = Mathf.CeilToInt(p.y + r);

@@ -141,7 +141,7 @@ namespace Dovus.Game.Skills.Closing
             int sourceId = _host.Boss != null ? _host.Boss.GetInstanceID() : 0;
             var candidates = new List<PassiveBounceCandidate>();
             Vector3 from = _host.Boss != null ? _host.Boss.transform.position : (_host.Player != null ? _host.Player.position : Vector3.zero);
-            IReadOnlyList<TargetableHost> bodies = TargetableHost.Live;
+            IReadOnlyList<TargetableHost> bodies = _host.LiveTargetables;
             for (int i = 0; i < bodies.Count; i++)
             {
                 TargetableHost body = bodies[i];

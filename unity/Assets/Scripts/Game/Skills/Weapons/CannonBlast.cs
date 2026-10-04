@@ -97,7 +97,7 @@ namespace Dovus.Game.Skills.Weapons
         public void PushCannonBodies(float impactX, float impactZ, float splash, float arena, float bossR)
         {
             _cannonBodies.Clear();
-            System.Collections.Generic.IReadOnlyList<SummonExecutor> summons = SummonExecutor.Live;
+            System.Collections.Generic.IReadOnlyList<SummonExecutor> summons = _host.LiveSummonExecutors;
             for (int i = 0; i < summons.Count; i++)
             {
                 SummonExecutor summon = summons[i];
@@ -105,7 +105,7 @@ namespace Dovus.Game.Skills.Weapons
                     summon.CollectWithin(impactX, impactZ, splash, _cannonBodies);
             }
 
-            IReadOnlyList<TargetableHost> targets = TargetableHost.Live;
+            IReadOnlyList<TargetableHost> targets = _host.LiveTargetables;
             float splashSq = splash * splash;
             for (int i = 0; i < targets.Count; i++)
             {

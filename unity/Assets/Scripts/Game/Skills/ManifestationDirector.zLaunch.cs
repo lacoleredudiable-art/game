@@ -186,7 +186,15 @@ namespace Dovus.Game.Skills
                 _md._hitboxSizing.ResolveFieldTiming(skill, plan, tuning, out durationSec, out tickSec, out perTickShare);
 
             public void DestroyUnityObject(Object obj) => Destroy(obj);
-            public ISkillExecutor AddSummonExecutor(GameObject go) => go.AddComponent<SummonExecutor>();
+            public ISkillSceneRuntime SceneRuntime => _md._sceneRuntime;
+
+            public ISkillExecutor AddSummonExecutor(GameObject go)
+            {
+                var ex = go.AddComponent<SummonExecutor>();
+                if (_md._liveSummons != null)
+                    ex.BindLiveRegistry(_md._liveSummons);
+                return ex;
+            }
 
             public PlayerResourceHost PlayerResourceHost => _md._playerResource;
             public ActorStatusHost PlayerStatus => _md._playerStatus;

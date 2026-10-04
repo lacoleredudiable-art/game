@@ -14,17 +14,20 @@ namespace Dovus.Game.Skills.Execution
     /// yolu giydirmesine düşer (<c>Delivery/{executor}/{şekil}</c> → <c>Delivery/{executor}</c>
     /// → <c>Delivery/{şekil}</c>). Giydirme varsa primitive yalnız hitbox/collider taşıyıcısı kalır.
     /// </summary>
-    public static class HitboxVfxRegistry
+    public sealed class HitboxVfxRegistry
     {
-        static VfxLibrary _vfx;
+        readonly VfxLibrary _vfx;
 
-        public static void Bind(VfxLibrary vfx) => _vfx = vfx;
+        public HitboxVfxRegistry(VfxLibrary vfx)
+        {
+            _vfx = vfx ?? throw new System.InvalidOperationException("VfxLibrary gerekli.");
+        }
 
-        static VfxLibrary Lib => _vfx ?? throw new System.InvalidOperationException("HitboxVfxRegistry.Bind ile VfxLibrary bağlanmalı.");
+        VfxLibrary Lib => _vfx ?? throw new System.InvalidOperationException("HitboxVfxRegistry.Bind ile VfxLibrary bağlanmalı.");
 
-        static readonly Dictionary<string, Material> Materials = new();
+        readonly Dictionary<string, Material> Materials = new();
 
-        public static GameObject Create(
+        public GameObject Create(
             string key,
             string shape,
             string colorHex,
@@ -50,10 +53,10 @@ namespace Dovus.Game.Skills.Execution
             return go;
         }
 
-        static readonly Dictionary<MechanicPlan, VisualRecipe> Recipes = new();
+        readonly Dictionary<MechanicPlan, VisualRecipe> Recipes = new();
 
         /// <summary>Madde (fiil) × yol (silah) × silüet (sıfat): reçete yalnız gramer planından doğar.</summary>
-        static bool TryCompose(SkillExecutorController executor, Transform anchor, Vector3 origin, Vector3 direction,
+        bool TryCompose(SkillExecutorController executor, Transform anchor, Vector3 origin, Vector3 direction,
             string colorHex)
         {
             MechanicPlan plan = executor.Plan;
@@ -70,11 +73,11 @@ namespace Dovus.Game.Skills.Execution
             }
             if (recipe == null || recipe.Pieces.Count == 0)
                 return false;
-            ComposedSkillVfxView.Play(recipe, key, anchor, executor.CastOwner, origin, direction, colorHex);
+            ComposedSkillVfxView.Play(Lib, recipe, key, anchor, executor.CastOwner, origin, direction, colorHex);
             return true;
         }
 
-        static GameObject SpawnDelivery(string role, string shape, string colorHex, Transform anchor,
+        GameObject SpawnDelivery(string role, string shape, string colorHex, Transform anchor,
             Vector3 direction, float radiusM, float reachM, Transform parent)
         {
             VfxLibrary lib = Lib;
@@ -124,7 +127,7 @@ namespace Dovus.Game.Skills.Execution
             }
         }
 
-        static GameObject CreateBase(
+        GameObject CreateBase(
             string key,
             string shape,
             string colorHex,

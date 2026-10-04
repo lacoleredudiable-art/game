@@ -51,6 +51,7 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 - [x] 2B.19 test ağı: normalize sweep hash kapısı, 144/144, Play fark listesi, PlaySweep tipli erişim
 - [x] 2B.20 Game katmanları + DevTools asmdef
 - [x] 2B.21 girdi/kombo davranış testleri
+- [x] 2B.22 global state kaldırma: `GameSceneRuntime` + builder enjeksiyonu; kalan bilinçli statikler — `AssetCatalog`/`VfxLibraryStandalone`/`ElementSystemRuntimeCache`, `PresentationParticleMaterials` Kenney null tuning, `UiJuiceRuntime.Pulse01`, DevTools `DebugPanelsChrome` iç statikleri
 - Kural: davranış değişmez (sweep hash + test sayıları), Composer only, her madde 1–3 PR.
 
 ## Aşama 4 — Oyun sistemleri

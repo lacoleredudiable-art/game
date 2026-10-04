@@ -112,13 +112,13 @@ namespace Dovus.Game.Hud
                 {
                     _castKind = kind;
                     _castLabel.text = _bossData.AttackName(kind);
-                    UiJuice.PunchScale(_castRoot, th.CastPopScale, th.JuiceSec);
+                    _uiJuice?.PunchScale(_castRoot, th.CastPopScale, th.JuiceSec);
                 }
                 _castShown = true;
                 float progress = _bossDirector.WindupProgress01;
                 _castFill.fillAmount = progress;
                 float urgency = Mathf.InverseLerp(th.CastUrgencyStart01, 1f, progress);
-                float pulse = UiJuice.Pulse01(th.CastUrgencyPulseHz) * th.CastUrgencyPulseStrength;
+                float pulse = UiJuiceRuntime.Pulse01(th.CastUrgencyPulseHz) * th.CastUrgencyPulseStrength;
                 _castFill.color = Color.Lerp(
                     th.CastBarColor,
                     th.CastUrgentColor,

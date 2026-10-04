@@ -30,6 +30,8 @@ namespace Dovus.Game.Casting.Input
         public InkTrailView Ink;
         public SyllableFeedbackView Syllable;
         public ISentenceDebugSink DebugHud;
+        public IDebugPanelInputState DebugPanel;
+        public FeelHapticsRuntime Haptics;
 
         public int? FingerId;
         public bool MouseHeld;

@@ -159,13 +159,13 @@ namespace Dovus.Game.Skills.Closing
 
             if (!string.IsNullOrEmpty(trailStyle))
             {
-                GameObject trail = PlaceholderFactory.CreateTrail(
+                GameObject trail = _host.Placeholders?.CreateTrail(
                     trailStyle, element, origin, tip, _host.DirectorTransform);
                 if (trail != null)
                     _host.DestroyUnityObjectAfter(trail, 1.0f);
             }
 
-            GameObject fx = PlaceholderFactory.CreateImpact(impactStyle, element, tip, _host.DirectorTransform);
+            GameObject fx = _host.Placeholders?.CreateImpact(impactStyle, element, tip, _host.DirectorTransform);
             if (fx != null)
                 _host.DestroyUnityObjectAfter(fx, ClosingDefaults.ImpactFxLifetimeSec);
         }

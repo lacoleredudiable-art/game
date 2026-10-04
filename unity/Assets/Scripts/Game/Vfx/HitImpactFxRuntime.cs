@@ -11,15 +11,16 @@ namespace Dovus.Game.Vfx
     /// <summary>
     /// Boss isabet noktasında havuzlanmış parçacıklar: kılıç kıvılcımı, taş/toz, büyü rengi, koyu kırmızı sıçrama.
     /// </summary>
-    public static class HitImpactFx
+    public sealed class HitImpactFxRuntime
     {
-        static FeelTuning _feel;
-        static readonly Queue<ParticleSystem> SparkPool = new();
-        static readonly Queue<ParticleSystem> BluntPool = new();
-        static readonly Queue<ParticleSystem> MagicPool = new();
-        static readonly Queue<ParticleSystem> SplashPool = new();
-        static readonly List<Active> Live = new();
-        static int _liveCount;
+        readonly FeelTuning _feel;
+        readonly KenneyVfxTextures _kenney;
+        readonly Queue<ParticleSystem> SparkPool = new();
+        readonly Queue<ParticleSystem> BluntPool = new();
+        readonly Queue<ParticleSystem> MagicPool = new();
+        readonly Queue<ParticleSystem> SplashPool = new();
+        readonly List<Active> Live = new();
+        int _liveCount;
 
         struct Active
         {
@@ -33,9 +34,13 @@ namespace Dovus.Game.Vfx
         const int PoolMagic = 2;
         const int PoolSplash = 3;
 
-        public static void Configure(FeelTuning feel) => _feel = feel;
+        public HitImpactFxRuntime(FeelTuning feel, KenneyVfxTextures kenney)
+        {
+            _feel = feel;
+            _kenney = kenney ?? new KenneyVfxTextures(null);
+        }
 
-        public static void Play(Vector3 worldPoint, string archetype, Color elementTint, bool isCrit, Transform bossRoot)
+        public void Play(Vector3 worldPoint, string archetype, Color elementTint, bool isCrit, Transform bossRoot)
         {
             if (_feel == null || !_feel.HitImpactEnabled || _feel.HitImpactMaxConcurrent <= 0)
                 return;
@@ -80,60 +85,60 @@ namespace Dovus.Game.Vfx
             _ => "spark"
         };
 
-        static void EmitSpark(Vector3 pos, Color tint, float mult, float life)
+        void EmitSpark(Vector3 pos, Color tint, float mult, float life)
         {
             ParticleSystem ps = Rent(PoolSpark, SparkPool, true);
-            ApplyTexture(ps, KenneyVfxTextures.TexHit, true);
+            ApplyTexture(ps, _kenney.TexHit, true);
             ConfigureBurst(ps, pos, Quaternion.identity, Mathf.RoundToInt(10 * mult), life, HitImpactFxDefaults.PsBurstCount, HitImpactFxDefaults.SharpBurstSpeedMps * mult, HitImpactFxDefaults.SharpBurstSizeM);
             FadeColor(ps, Color.white, tint);
             Track(ps, life, PoolSpark);
         }
 
-        static void EmitBlunt(Vector3 pos, float mult, float life)
+        void EmitBlunt(Vector3 pos, float mult, float life)
         {
             ParticleSystem ps = Rent(PoolBlunt, BluntPool, false);
-            ApplyTexture(ps, KenneyVfxTextures.TexEarth, false);
+            ApplyTexture(ps, _kenney.TexEarth, false);
             ConfigureBurst(ps, pos, Quaternion.identity, Mathf.RoundToInt(14 * mult), life, HitImpactFxDefaults.WideBurstLifetimeSec, HitImpactFxDefaults.WideBurstSpeedMps * mult, HitImpactFxDefaults.WideBurstSizeM);
             Color stone = new(0.62f, 0.58f, 0.54f, 0.9f);
             FadeColor(ps, stone, new Color(0.45f, 0.42f, 0.4f, 0f));
             Track(ps, life, PoolBlunt);
 
             ParticleSystem dust = Rent(PoolBlunt, BluntPool, false);
-            ApplyTexture(dust, KenneyVfxTextures.TexAir, false);
+            ApplyTexture(dust, _kenney.TexAir, false);
             ConfigureBurst(dust, pos, Quaternion.Euler(-90f, 0f, 0f), Mathf.RoundToInt(8 * mult), life * HitImpactFxDefaults.DustBurstLifetimeMult, HitImpactFxDefaults.DustBurstLifetimeSec, HitImpactFxDefaults.DustBurstSpeedMps, HitImpactFxDefaults.DustBurstSizeM);
             Color grey = new(0.55f, 0.52f, 0.5f, 0.55f);
             FadeColor(dust, grey, new Color(grey.r, grey.g, grey.b, 0f));
             Track(dust, life * HitImpactFxDefaults.BluntPoolTrackLifeMult, PoolBlunt);
         }
 
-        static void EmitMagic(Vector3 pos, Color tint, float mult, float life)
+        void EmitMagic(Vector3 pos, Color tint, float mult, float life)
         {
             Color burst = tint.a > HitImpactFxDefaults.BurstColorAlphaThreshold ? tint : new Color(0.55f, 0.75f, 1f, 1f);
             ParticleSystem ps = Rent(PoolMagic, MagicPool, true);
-            ApplyTexture(ps, KenneyVfxTextures.ClosestElementName(burst), true);
+            ApplyTexture(ps, _kenney.ClosestElementName(burst), true);
             ConfigureBurst(ps, pos, Quaternion.identity, Mathf.RoundToInt(16 * mult), life, HitImpactFxDefaults.MagicBurstLifetimeSec, HitImpactFxDefaults.MagicBurstSpeedMps * mult, HitImpactFxDefaults.MagicBurstSizeM);
             FadeColor(ps, burst, Color.Lerp(burst, Color.white, HitImpactFxDefaults.MagicBurstWhiteLerp));
             Track(ps, life, PoolMagic);
         }
 
-        static void EmitSplash(Vector3 pos, float life)
+        void EmitSplash(Vector3 pos, float life)
         {
             ParticleSystem ps = Rent(PoolSplash, SplashPool, false);
-            ApplyTexture(ps, KenneyVfxTextures.TexDark, false);
+            ApplyTexture(ps, _kenney.TexDark, false);
             ConfigureBurst(ps, pos, Quaternion.Euler(-90f, Random.Range(0f, 360f), 0f), 4, life * HitImpactFxDefaults.SplashBurstLifetimeMult, HitImpactFxDefaults.SplashBurstLifetimeSec, HitImpactFxDefaults.SplashBurstSpeedMps, HitImpactFxDefaults.SplashBurstSizeM);
             Color dark = new(0.32f, 0.03f, 0.05f, 0.55f);
             FadeColor(ps, dark, new Color(dark.r, dark.g, dark.b, 0f));
             Track(ps, life * HitImpactFxDefaults.SplashPoolTrackLifeMult, PoolSplash);
         }
 
-        static void Track(ParticleSystem ps, float life, int poolKind)
+        void Track(ParticleSystem ps, float life, int poolKind)
         {
             ps.Play(true);
             Live.Add(new Active { Ps = ps, DieAt = Time.unscaledTime + life, PoolKind = poolKind });
             _liveCount++;
         }
 
-        static void TrimLive()
+        void TrimLive()
         {
             float now = Time.unscaledTime;
             for (int i = Live.Count - 1; i >= 0; i--)
@@ -152,7 +157,7 @@ namespace Dovus.Game.Vfx
             }
         }
 
-        static ParticleSystem Rent(int kind, Queue<ParticleSystem> pool, bool additive)
+        ParticleSystem Rent(int kind, Queue<ParticleSystem> pool, bool additive)
         {
             while (pool.Count > 0)
             {
@@ -164,7 +169,7 @@ namespace Dovus.Game.Vfx
             return CreateBurst(kind, additive);
         }
 
-        static void Return(ParticleSystem ps, int kind)
+        void Return(ParticleSystem ps, int kind)
         {
             Queue<ParticleSystem> pool = kind switch
             {
@@ -179,7 +184,7 @@ namespace Dovus.Game.Vfx
                 Object.Destroy(ps.gameObject);
         }
 
-        static ParticleSystem CreateBurst(int kind, bool additive)
+        ParticleSystem CreateBurst(int kind, bool additive)
         {
             var go = new GameObject("HitImpact_" + kind);
             var ps = go.AddComponent<ParticleSystem>();
@@ -193,13 +198,13 @@ namespace Dovus.Game.Vfx
             em.rateOverTime = 0f;
             var r = go.GetComponent<ParticleSystemRenderer>();
             r.renderMode = ParticleSystemRenderMode.Billboard;
-            r.sharedMaterial = KenneyVfxTextures.GetParticleMaterial(KenneyVfxTextures.TexHit, additive);
+            r.sharedMaterial = _kenney.GetParticleMaterial(_kenney.TexHit, additive);
             r.shadowCastingMode = ShadowCastingMode.Off;
             r.receiveShadows = false;
             return ps;
         }
 
-        static void ConfigureBurst(
+        void ConfigureBurst(
             ParticleSystem ps, Vector3 pos, Quaternion rot, int count, float life, float size, float speed, float radius)
         {
             ps.transform.SetPositionAndRotation(pos, rot);
@@ -216,15 +221,15 @@ namespace Dovus.Game.Vfx
             sh.radius = radius;
         }
 
-        static void ApplyTexture(ParticleSystem ps, string texName, bool additive)
+        void ApplyTexture(ParticleSystem ps, string texName, bool additive)
         {
             if (ps == null)
                 return;
             var r = ps.GetComponent<ParticleSystemRenderer>();
-            r.sharedMaterial = KenneyVfxTextures.GetParticleMaterial(texName, additive);
+            r.sharedMaterial = _kenney.GetParticleMaterial(texName, additive);
         }
 
-        static void FadeColor(ParticleSystem ps, Color from, Color to)
+        void FadeColor(ParticleSystem ps, Color from, Color to)
         {
             var col = ps.colorOverLifetime;
             col.enabled = true;

@@ -19,6 +19,7 @@ using Dovus.Game.Data;
 using Dovus.Game.Diagnostics;
 using Dovus.Game.Hud;
 using Dovus.Game.Team;
+using Dovus.Game.Vfx;
 using Dovus.Game.Skills.Mechanics;
 using System;
 using System.Linq;
@@ -269,6 +270,8 @@ namespace Dovus.Game.Skills
             public void DestroyUnityObject(UnityEngine.Object obj) => Object.Destroy(obj);
             public void DestroyUnityObject(UnityEngine.Object obj, float delaySeconds) =>
                 Object.Destroy(obj, delaySeconds);
+
+            public PlaceholderFactory Placeholders => _md.Placeholders;
         }
     }
 }

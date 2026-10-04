@@ -17,6 +17,7 @@ using Dovus.Game.Platform;
 using Dovus.Game.Data;
 using Dovus.Game.Skills.Execution;
 using Dovus.Game.Weapons;
+using System.Collections.Generic;
 using UnityEngine;
 namespace Dovus.Game.Skills.Weapons
 {
@@ -41,5 +42,7 @@ public interface ICannonBlastHost
         ActorView Visual { get; }
         WeaponSwapState WeaponSwap { get; }
         GameClockHost Clock { get; }
+        IReadOnlyList<TargetableHost> LiveTargetables { get; }
+        IReadOnlyList<SummonExecutor> LiveSummonExecutors { get; }
     }
 }

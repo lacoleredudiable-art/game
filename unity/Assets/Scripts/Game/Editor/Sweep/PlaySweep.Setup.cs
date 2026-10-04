@@ -252,7 +252,7 @@ namespace Dovus.Game.Editor
             /// <summary>Portal, sınır ve takım bir sonraki vakaya taşmasın. Dost başlangıç yerine döner.</summary>
             static void ResetSweepActors()
             {
-                TeamComboHost.Instance?.ResetCase();
+                ResetTeamCase();
                 if (_ally == null || !_allyStartSet)
                     return;
                 if (Flat(_ally.transform.position - _allyStart).magnitude < 0.02f)

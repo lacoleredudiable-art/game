@@ -75,12 +75,13 @@ public class ReleaseBuildPerfTests
     {
         string player = Game("Composition/Builders/ActorsBuilder.cs");
         Assert.That(player, Does.Not.Contain("startRatio: 0.5f"));
-        Assert.That(Regex.Matches(player, @"startRatio: DebugConfig\.StartHpRatio").Count, Is.EqualTo(2));
-        Assert.That(player, Does.Contain("vitals.SetDevHp(DebugConfig.DevHpActive);"));
-        string cfg = Game("Diagnostics/DebugConfig.cs");
-        Assert.That(cfg, Does.Contain("public static bool HalfHpStart = false;"));
-        Assert.That(cfg, Does.Contain("StartHpRatio => Enabled && HalfHpStart ? 0.5f : 1f"));
-        Assert.That(cfg, Does.Contain("DevHpActive => Enabled && DevHp && !HalfHpStart"));
+        Assert.That(Regex.Matches(player, @"startRatio: debugFlags\.StartHpRatio").Count, Is.EqualTo(2));
+        Assert.That(player, Does.Contain("vitals.SetDevHp(debugFlags.DevHpActive);"));
+        Assert.That(player, Does.Contain("ctx.Runtime.DebugFlags"));
+        string flags = Game("Diagnostics/DebugFlags.cs");
+        Assert.That(flags, Does.Contain("public bool HalfHpStart { get; set; } = false;"));
+        Assert.That(flags, Does.Contain("StartHpRatio => DebugConfig.Enabled && HalfHpStart ? 0.5f : 1f"));
+        Assert.That(flags, Does.Contain("DevHpActive => DebugConfig.Enabled && DevHp && !HalfHpStart"));
     }
 
     // --- O5 ---

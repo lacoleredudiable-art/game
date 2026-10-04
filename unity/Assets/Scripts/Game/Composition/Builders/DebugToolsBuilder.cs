@@ -5,6 +5,7 @@ using Dovus.Game.Config;
 using Dovus.Game.Diagnostics;
 using Dovus.Game.Hud;
 using Dovus.Game.Skills;
+using Dovus.Game.Team;
 using UnityEngine;
 
 namespace Dovus.Game.Composition.Builders
@@ -31,9 +32,12 @@ namespace Dovus.Game.Composition.Builders
                 ctx.ManifestationDirector,
                 ctx.HexagonRoot.GetComponent<BuildSelectHud>(),
                 ctx.HexagonView.CanvasRoot,
-                ctx.PlayerVitalsHost);
+                ctx.PlayerVitalsHost,
+                ctx.Runtime.DebugFlags);
             CreateTuningPanel(ctx.TuningConfig, ctx.PlayerVitalsHost, ctx.FollowCameraController);
             ctx.HexagonRoot.AddComponent<Dovus.Game.DevTools.DebugPanelsController>();
+            var teamDebug = ctx.HexagonRoot.AddComponent<Dovus.Game.DevTools.TeamDebugHud>();
+            teamDebug.Configure(ctx.TeamAccess, ctx.Runtime.DebugPanelsChrome);
         }
 
         static void CreateTuningPanel(TuningConfig tuningConfig, PlayerVitalsHost vitals, FollowCameraController follow)

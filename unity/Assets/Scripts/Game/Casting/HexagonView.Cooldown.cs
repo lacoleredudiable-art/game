@@ -75,11 +75,11 @@ namespace Dovus.Game.Casting
         {
             RectTransform target = dot == 0 ? _center : (_dots != null && dot > 0 && dot < _dots.Length ? _dots[dot] : null);
             HudTheme th = _theme;
-            UiJuice.PunchScale(target, th.PressScale, th.JuiceSec);
+            _uiJuice?.PunchScale(target, th.PressScale, th.JuiceSec);
             if (dot > 0 && _dotHighlightUntil != null && dot < _dotHighlightUntil.Length)
             {
                 _dotHighlightUntil[dot] = Time.unscaledTime + th.RuneHighlightSec;
-                UiJuice.PunchScale(target, th.RuneHighlightScale, th.JuiceSec * HexagonViewDefaults.RuneHighlightJuiceMult);
+                _uiJuice?.PunchScale(target, th.RuneHighlightScale, th.JuiceSec * HexagonViewDefaults.RuneHighlightJuiceMult);
             }
         }
 
@@ -98,7 +98,7 @@ namespace Dovus.Game.Casting
                 if (wasCooling && _cdRemainingSec[i] <= 0f && _dots != null && _dots[i] != null)
                 {
                     HudTheme th = _theme;
-                    UiJuice.PunchScale(_dots[i], th.ReadyPopScale, th.JuiceSec * HexagonViewDefaults.ReadyPopJuiceMult);
+                    _uiJuice?.PunchScale(_dots[i], th.ReadyPopScale, th.JuiceSec * HexagonViewDefaults.ReadyPopJuiceMult);
                 }
             }
 

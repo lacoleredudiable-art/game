@@ -19,6 +19,7 @@ using Dovus.Game.Data;
 using Dovus.Game.Diagnostics;
 using Dovus.Game.Hud;
 using Dovus.Game.Team;
+using Dovus.Game.Vfx;
 using System;
 using UnityEngine;
 namespace Dovus.Game.Skills.Mechanics
@@ -107,5 +108,6 @@ public interface IMdMechanicsHost
         void TeleportPlayer(Vector3 pos);
         void DestroyUnityObject(UnityEngine.Object obj);
         void DestroyUnityObject(UnityEngine.Object obj, float delaySeconds);
+        PlaceholderFactory Placeholders { get; }
     }
 }

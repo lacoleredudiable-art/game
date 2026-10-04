@@ -23,6 +23,7 @@ namespace Dovus.Game.Composition.Builders
 
             var vitalsHud = root.AddComponent<VitalsHud>();
             vitalsHud.BindTheme(ctx.Assets.HudTheme);
+            vitalsHud.BindUiJuice(ctx.Runtime.UiJuice);
             vitalsHud.Configure(vitals, ctx.BossVitals, tuning, view.CanvasRoot, ctx.AllyDummyController, ctx.PlayerResourceHost);
             ctx.VitalsHud = vitalsHud;
 
@@ -30,6 +31,7 @@ namespace Dovus.Game.Composition.Builders
             {
                 var playerStrip = root.AddComponent<StatusIconStripHud>();
                 playerStrip.BindTheme(ctx.Assets.HudTheme);
+                playerStrip.BindUiJuice(ctx.Runtime.UiJuice);
                 float stripY = vitalsHud.PlayerStackBottomCanvasY
                     - HexagonLayoutScreen.DpToPixels(tuning.Hud.StatusIconGapDp + HudBuilderDefaults.StatusIconExtraGapDp);
                 float left = HexagonLayoutScreen.SafeLeftInsetPx()
@@ -44,6 +46,7 @@ namespace Dovus.Game.Composition.Builders
             {
                 var bossStrip = root.AddComponent<StatusIconStripHud>();
                 bossStrip.BindTheme(ctx.Assets.HudTheme);
+                bossStrip.BindUiJuice(ctx.Runtime.UiJuice);
                 float stripY = vitalsHud.BossStackBottomCanvasY
                     - HexagonLayoutScreen.DpToPixels(tuning.Hud.StatusIconGapDp + 2f);
                 bossStrip.Configure(
@@ -62,7 +65,7 @@ namespace Dovus.Game.Composition.Builders
             if (DebugConfig.Enabled)
             {
                 var frameHud = root.AddComponent<FrameTimeHud>();
-                frameHud.Configure(tuning, view.CanvasRoot);
+                frameHud.Configure(tuning, view.CanvasRoot, ctx.Runtime.DebugPanelsChrome);
             }
 
             var damageHud = root.AddComponent<DamageNumberHud>();

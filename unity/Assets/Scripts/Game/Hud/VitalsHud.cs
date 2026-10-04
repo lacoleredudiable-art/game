@@ -26,8 +26,10 @@ namespace Dovus.Game.Hud
         AllyDummyController _ally;
         GameTuning _tuning;
         HudTheme _theme;
+        UiJuiceRuntime _uiJuice;
 
         public void BindTheme(HudTheme theme) => _theme = theme;
+        public void BindUiJuice(UiJuiceRuntime uiJuice) => _uiJuice = uiJuice;
 
         RectTransform _playerRoot;
         RectTransform _bossRoot;
@@ -184,8 +186,8 @@ namespace Dovus.Game.Hud
             _bannerShownAt = Time.unscaledTime;
             _bannerGroup.alpha = 1f;
             HudTheme th = _theme;
-            UiJuice.PunchScale(_banner.transform, th.BannerPunchScale, th.JuiceSec * 2f);
-            UiJuice.Shake(_bossRoot, HexagonLayoutScreen.DpToPixels(th.BossBarShakeDp), th.BossBarShakeSec);
+            _uiJuice?.PunchScale(_banner.transform, th.BannerPunchScale, th.JuiceSec * 2f);
+            _uiJuice?.Shake(_bossRoot, HexagonLayoutScreen.DpToPixels(th.BossBarShakeDp), th.BossBarShakeSec);
         }
 
 
@@ -207,7 +209,7 @@ namespace Dovus.Game.Hud
                 _playerJuice?.Tick(ratio, th);
                 bool low = ratio > 0f && ratio <= th.LowHpFrac;
                 _playerFill.color = low
-                    ? Color.Lerp(_appliedPlayerColor, Color.white, UiJuice.Pulse01(th.LowHpPulseHz) * th.LowHpPulseStrength)
+                    ? Color.Lerp(_appliedPlayerColor, Color.white, UiJuiceRuntime.Pulse01(th.LowHpPulseHz) * th.LowHpPulseStrength)
                     : _appliedPlayerColor;
                 if (_playerLabel != null)
                     _playerLabel.text = "HP   " + _vitals.Hp + "  /  " + _vitals.MaxHp;
@@ -242,7 +244,7 @@ namespace Dovus.Game.Hud
                     ? Color.Lerp(
                         _appliedBossColor,
                         th.BossLowHpColor,
-                        UiJuice.Pulse01(th.BossLowHpPulseHz) * th.BossLowHpPulseStrength)
+                        UiJuiceRuntime.Pulse01(th.BossLowHpPulseHz) * th.BossLowHpPulseStrength)
                     : _appliedBossColor;
                 if (_bossLabel != null)
                     _bossLabel.text = "HP   " + Mathf.CeilToInt(_bossVitals.Hp) + "  /  "

@@ -105,5 +105,6 @@ namespace Dovus.Game.Skills.Launch
 
         void DestroyUnityObject(UnityEngine.Object obj);
         ISkillExecutor AddSummonExecutor(GameObject go);
+        ISkillSceneRuntime SceneRuntime { get; }
     }
 }

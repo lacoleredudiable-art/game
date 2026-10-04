@@ -78,13 +78,21 @@ namespace Dovus.Game.Composition
                 TuningConfig = tuningConfig,
                 Clock = gameObject.AddComponent<GameClockHost>(),
             };
-#if UNITY_EDITOR || DOVUS_DEBUG
-            DevTools.DevToolsCompositionWiring.Apply();
-#endif
             ctx.Assets = AssetCatalog.Standalone;
-            FeelVfx.Configure(_tuning, VfxLibraryStandalone.Shared);
-
+            ctx.Runtime = new GameSceneRuntime(
+                new DebugFlags(),
+                VfxLibraryStandalone.Shared,
+                _tuning,
+                combat.Feel);
+#if UNITY_EDITOR || DOVUS_DEBUG
+            DevToolsRuntimeWiring.Apply(ctx.Runtime);
+#endif
             ctx.TeamAccess = new TeamComboAccess();
+            var teamGo = new GameObject(nameof(TeamComboHost));
+            DontDestroyOnLoad(teamGo);
+            ctx.TeamComboHost = teamGo.AddComponent<TeamComboHost>();
+            ctx.TeamComboHost.ConfigureLiveAllies(ctx.Runtime.AllyDummies);
+            ctx.TeamAccess.Configure(ctx.TeamComboHost);
 
             var arenaBuilder = new ArenaBuilder();
             arenaBuilder.BuildArena(ctx);

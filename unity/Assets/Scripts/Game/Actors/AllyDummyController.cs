@@ -27,15 +27,18 @@ namespace Dovus.Game.Actors
     /// </summary>
     public sealed partial class AllyDummyController : MonoBehaviour
     {
-        // O11: TeamComboHost her kare FindObjectsOfType<AllyDummyController> yapıyordu → etkin kayıt.
-        static readonly System.Collections.Generic.List<AllyDummyController> s_live = new System.Collections.Generic.List<AllyDummyController>();
-        public static System.Collections.Generic.IReadOnlyList<AllyDummyController> Live => s_live;
+        SceneLiveRegistry<AllyDummyController> _liveRegistry;
 
-        void OnEnable()
+        public void BindLiveRegistry(SceneLiveRegistry<AllyDummyController> registry)
         {
-            if (!s_live.Contains(this))
-                s_live.Add(this);
+            if (_liveRegistry != null && isActiveAndEnabled)
+                _liveRegistry.Unregister(this);
+            _liveRegistry = registry;
+            if (isActiveAndEnabled)
+                _liveRegistry?.Register(this);
         }
+
+        void OnEnable() => _liveRegistry?.Register(this);
 
         void Start()
         {
@@ -48,7 +51,7 @@ namespace Dovus.Game.Actors
             }
         }
 
-        void OnDisable() => s_live.Remove(this);
+        void OnDisable() => _liveRegistry?.Unregister(this);
 
         int _hp;
         int _maxHp;

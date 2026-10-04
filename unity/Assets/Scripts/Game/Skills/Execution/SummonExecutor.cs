@@ -2,6 +2,7 @@ using Dovus.Core.Casting;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Tuning;
 using Dovus.Game.Data;
+using Dovus.Game.Actors;
 using Dovus.Game.Vfx;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,8 +16,16 @@ namespace Dovus.Game.Skills.Execution
     /// </summary>
     public sealed class SummonExecutor : SkillExecutorController
     {
-        static readonly List<SummonExecutor> s_live = new();
-        public static System.Collections.Generic.IReadOnlyList<SummonExecutor> Live => s_live;
+        SceneLiveRegistry<SummonExecutor> _liveRegistry;
+
+        public void BindLiveRegistry(SceneLiveRegistry<SummonExecutor> registry)
+        {
+            if (_liveRegistry != null && isActiveAndEnabled)
+                _liveRegistry.Unregister(this);
+            _liveRegistry = registry;
+            if (isActiveAndEnabled)
+                _liveRegistry?.Register(this);
+        }
 
         static readonly Collider[] Hits = new Collider[24];
 
@@ -48,13 +57,9 @@ namespace Dovus.Game.Skills.Execution
 
         public override SkillExecutorKind Kind => SkillExecutorKind.Summon;
 
-        void OnEnable()
-        {
-            if (!s_live.Contains(this))
-                s_live.Add(this);
-        }
+        void OnEnable() => _liveRegistry?.Register(this);
 
-        void OnDisable() => s_live.Remove(this);
+        void OnDisable() => _liveRegistry?.Unregister(this);
 
         public override void Execute(in SkillExecutionContext context)
         {
@@ -78,7 +83,7 @@ namespace Dovus.Game.Skills.Execution
                 _rampMax = Mathf.Max(1f, (float)growDesign.Mechanics.Rules.Param("ramp_max"));
 
             Vector3 origin = context.Owner != null ? context.Owner.position : context.Origin;
-            HitboxVfxRegistry.Create(
+            context.HitboxVfx?.Create(
                 context.VfxKey,
                 context.HitboxShape,
                 context.VfxColorHex,
@@ -233,7 +238,7 @@ namespace Dovus.Game.Skills.Execution
                     : 1f;
                 Context.ApplyFlatDamage?.Invoke(t.ExecutorMinionHitDamage * growth);
                 SpawnWeaponAttack(m.Body.position);
-                GameObject fx = PlaceholderFactory.CreateImpact("tick", Context.ColorKey, Context.Target.position, transform.parent);
+                GameObject fx = Context.Placeholders?.CreateImpact("tick", Context.ColorKey, Context.Target.position, transform.parent);
                 if (fx != null)
                     Destroy(fx, SummonExecutorDefaults.SpawnFxLifetimeSec);
                 return;
@@ -286,7 +291,7 @@ namespace Dovus.Game.Skills.Execution
             bool ranged = pathClass is "silahla:ucan" or "silahla:hat" or "silahla:belirme";
             if (!ranged)
                 return;
-            GameObject shot = PlaceholderFactory.CreateTrail(
+            GameObject shot = Context.Placeholders?.CreateTrail(
                 pathClass == "silahla:hat" ? "beam" : "straight",
                 Context.ColorKey,
                 from,

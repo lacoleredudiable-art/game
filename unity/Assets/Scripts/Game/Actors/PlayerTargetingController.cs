@@ -52,8 +52,15 @@ namespace Dovus.Game.Actors
         Text _frameText;
         Image _frameBackground;
         ElementRadialMenuHud _elementMenu;
+        IDebugPanelInputState _debugPanel;
+        SceneLiveRegistry<TargetableHost> _targetables;
 
         public void BindElementMenu(ElementRadialMenuHud menu) => _elementMenu = menu;
+
+        public void ConfigureDebugPanel(IDebugPanelInputState debugPanel) => _debugPanel = debugPanel;
+
+        public void ConfigureTargetRegistry(SceneLiveRegistry<TargetableHost> targetables) =>
+            _targetables = targetables;
 
         public TargetableHost Selected => _selected;
         public ActorId? SelectedActorId =>
@@ -182,7 +189,9 @@ namespace Dovus.Game.Actors
             if (_owner == null)
                 return;
 
-            IReadOnlyList<TargetableHost> targets = TargetableHost.Live;
+            IReadOnlyList<TargetableHost> targets = _targetables != null
+                ? _targetables.Live
+                : System.Array.Empty<TargetableHost>();
             for (int i = 0; i < targets.Count; i++)
             {
                 TargetableHost candidate = targets[i];
@@ -281,8 +290,8 @@ namespace Dovus.Game.Actors
         }
 
         bool InputBlocked() =>
-            (DebugPanelInput.State?.TuningPanelOpen ?? false)
-            || (DebugPanelInput.State?.GrammarDebugOpen ?? false)
+            (_debugPanel?.TuningPanelOpen ?? false)
+            || (_debugPanel?.GrammarDebugOpen ?? false)
             || BuildSelectHud.IsOpen
             || (_elementMenu != null && _elementMenu.IsMenuOpen);
 

@@ -31,6 +31,7 @@ namespace Dovus.Game.Casting
     {
         GameTuning _tuning;
         HexagonOverlayCameraView _overlay;
+        KenneyVfxTextures _kenney;
         readonly List<Trail> _trails = new List<Trail>(8);
         Material _lineMaterial;
         int _layer;
@@ -68,10 +69,11 @@ namespace Dovus.Game.Casting
             public float BaseWidth;
         }
 
-        public void Configure(GameTuning tuning, HexagonOverlayCameraView overlay, int layer)
+        public void Configure(GameTuning tuning, HexagonOverlayCameraView overlay, int layer, KenneyVfxTextures kenney = null)
         {
             _tuning = tuning;
             _overlay = overlay;
+            _kenney = kenney ?? new KenneyVfxTextures(tuning);
             _layer = layer;
             EnsureMaterial();
         }
@@ -450,7 +452,7 @@ namespace Dovus.Game.Casting
             if (_lineMaterial.HasProperty("_Color"))
                 _lineMaterial.SetColor("_Color", Color.white);
 
-            Texture2D inkTex = KenneyVfxTextures.Load(KenneyVfxTextures.TexInk);
+            Texture2D inkTex = _kenney != null ? _kenney.Load(_kenney.TexInk) : null;
             if (inkTex != null)
             {
                 if (_lineMaterial.HasProperty("_BaseMap"))

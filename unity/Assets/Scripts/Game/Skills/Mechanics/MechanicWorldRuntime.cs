@@ -207,7 +207,7 @@ namespace Dovus.Game.Skills.Mechanics
             }
 
             float radius = Mathf.Max(MechanicWorldDefaults.MinThicknessM, (float)plan.Body.SizeM);
-            GameObject disk = PlaceholderFactory.CreateZoneDisk(
+            GameObject disk = _host.Placeholders?.CreateZoneDisk(
                 _host.SelectedElementPaint?.Name ?? string.Empty,
                 center,
                 radius,
@@ -270,7 +270,7 @@ namespace Dovus.Game.Skills.Mechanics
             if (windowSec <= 0)
                 return;
             Vector3 at = _host.Ally != null ? _host.Ally.transform.position : _host.Player.position;
-            GameObject view = PlaceholderFactory.CreateZoneDisk(
+            GameObject view = _host.Placeholders?.CreateZoneDisk(
                 _host.SelectedElementPaint?.Name ?? string.Empty,
                 at,
                 Mathf.Max(MechanicWorldDefaults.MinThicknessM, _host.LastMechanicPlan != null ? (float)_host.LastMechanicPlan.Body.SizeM : 1f),

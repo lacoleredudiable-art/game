@@ -14,6 +14,7 @@ namespace Dovus.Game.Casting
     public sealed class SyllableFeedbackView : MonoBehaviour
     {
         GameTuning _tuning;
+        FeelHapticsRuntime _haptics;
         AudioSource _source;
         readonly AudioClip[] _clips = new AudioClip[7]; // index 1..6
         AudioClip _denyClip;
@@ -30,7 +31,11 @@ namespace Dovus.Game.Casting
             SyllableFeedbackViewDefaults.DotEarthHz  // 6 Toprak
         };
 
-        public void Configure(GameTuning tuning) => _tuning = tuning;
+        public void Configure(GameTuning tuning, FeelHapticsRuntime haptics = null)
+        {
+            _tuning = tuning;
+            _haptics = haptics;
+        }
 
         void Awake()
         {
@@ -70,7 +75,7 @@ namespace Dovus.Game.Casting
             if (!playHaptic)
                 return;
             long ms = _tuning != null ? _tuning.Input.DotVibrationMs : SyllableFeedbackViewDefaults.FallbackDotVibrationMs;
-            FeelHaptics.Pulse((int)ms);
+            _haptics?.Pulse((int)ms);
         }
 
         /// <summary>Bağlama 3: yetersiz mana — düşük kısa buzz (hece frekanslarından ayrı).</summary>
@@ -82,7 +87,7 @@ namespace Dovus.Game.Casting
                 _denyClip = BuildClip("deny", SyllableFeedbackViewDefaults.DenyHz);
             _source.pitch = SyllableFeedbackViewDefaults.DenyPitch;
             _source.PlayOneShot(_denyClip, SyllableFeedbackViewDefaults.DenyOneShotVolume);
-            FeelHaptics.Pulse(SyllableFeedbackViewDefaults.DenyHapticMs);
+            _haptics?.Pulse(SyllableFeedbackViewDefaults.DenyHapticMs);
         }
 
         static AudioClip BuildClip(string syllable, float hz)

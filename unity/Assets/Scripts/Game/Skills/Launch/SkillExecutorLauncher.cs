@@ -264,7 +264,9 @@ namespace Dovus.Game.Skills.Launch
                 mechanicPlan: mechanicPlan,
                 activationDelaySec: activationDelaySec,
                 tickEffectFraction: tickEffectFraction,
-                arcAllies: arcAllies);
+                arcAllies: arcAllies,
+                placeholders: _host.SceneRuntime?.Placeholders,
+                hitboxVfx: _host.SceneRuntime?.HitboxVfx);
 
             var go = new GameObject($"{kind}_{skill.Identity.Id}");
             go.transform.SetParent(_host.DirectorTransform, false);
