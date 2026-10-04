@@ -14,8 +14,8 @@ namespace Dovus.Game.Config
         public VisualSettings Visuals = new VisualSettings();
 
         /// <summary>
-        /// Serileştirilmiş bölüm şeması sürümü. 1 = iç içe Arena/Boss/… blokları (PLAN 2B.5b).
-        /// Gelecek göçler bu sayıyı artırır; tek seferlik yükseltme burada veya editör aracında yapılır.
+        /// Serile??tirilmi?? b??l??m ??emas?? s??r??m??. 1 = i?? i??e Arena/Boss/??? bloklar?? (PLAN 2B.5b).
+        /// Gelecek g????ler bu say??y?? art??r??r; tek seferlik y??kseltme burada veya edit??r arac??nda yap??l??r.
         /// </summary>
         [SerializeField, HideInInspector]
         int SectionsVersion;

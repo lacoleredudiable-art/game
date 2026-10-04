@@ -20,7 +20,7 @@ namespace Dovus.Game.Team
     /// Kalıp sürerken oyuncunun yerini yazmaz; bitince uygular.
     /// </summary>
     [DefaultExecutionOrder(50)]
-    public sealed class TeamComboHost : MonoBehaviour
+    public sealed partial class TeamComboHost : MonoBehaviour
     {
         public static TeamComboHost Instance { get; private set; }
 
@@ -100,6 +100,32 @@ namespace Dovus.Game.Team
             Modifiers.ResetModifiers();
         }
 
+        bool Bind()
+        {
+            if (_player == null)
+            {
+                _vitals = FindAnyObjectByType<PlayerVitalsHost>();
+                if (_vitals != null)
+                    _player = _vitals.transform;
+            }
+            if (_player == null)
+                return false;
+            if (_motion == null)
+                _motion = _player.GetComponent<MotionTemplateBodyHost>();
+            if (_boss == null)
+            {
+                BossReactorController reactor = FindAnyObjectByType<BossReactorController>();
+                if (reactor != null)
+                {
+                    _boss = reactor.transform;
+                    _bossStatus = reactor.GetComponent<ActorStatusHost>();
+                }
+            }
+            if (_clock == null)
+                _clock = FindAnyObjectByType<GameClockHost>();
+            return true;
+        }
+
         void Update()
         {
             if (!Bind())
@@ -148,165 +174,6 @@ namespace Dovus.Game.Team
             RefreshVisuals();
         }
 
-        public void SpawnAlly()
-        {
-            if (!Bind() || _spawned.Count >= 4 || _player == null)
-                return;
-            int n = _spawned.Count + 1;
-            Vector3 pos = _player.position + new Vector3(TeamComboDefaults.AllySpawnBaseX - n * TeamComboDefaults.AllySpawnStepX, 0f, TeamComboDefaults.AllySpawnZ);
-            pos.y = TeamComboDefaults.ActorGroundY;
-            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            go.name = "Dost " + n;
-            go.transform.position = pos;
-            var renderer = go.GetComponent<Renderer>();
-            if (renderer != null)
-                SharedTint.Apply(renderer, new Color(0.35f, 0.9f, 0.55f));
-            var dummy = go.AddComponent<AllyDummyController>();
-            int maxHp = _vitals != null ? _vitals.MaxHp : TeamComboDefaults.VitalsMaxHpFallback;
-            dummy.Bind(maxHp, TeamComboDefaults.AllyDummyHpRatio);
-            var actor = go.AddComponent<TeamActorHost>();
-            actor.Id = _nextId++;
-            actor.Radius = TeamComboDefaults.TeamActorRadiusM;
-            _spawned.Add(go);
-            _line = go.name + " geldi";
-        }
-
-        public void SetPlayerRatio(float ratio)
-        {
-            if (!Bind() || _vitals == null)
-                return;
-            int target = Mathf.Clamp(Mathf.RoundToInt(_vitals.MaxHp * Mathf.Clamp01(ratio)), 1, _vitals.MaxHp);
-            if (_vitals.Hp > target)
-                _vitals.ApplyDamage(_vitals.Hp - target);
-            else
-                _vitals.ApplyHeal(target - _vitals.Hp);
-            _line = "Can %" + Mathf.RoundToInt(ratio * TeamComboDefaults.HpPercentScale);
-        }
-
-        public void CommandCast(TeamActorHost actor, string skillId)
-        {
-            if (!Bind() || actor == null || string.IsNullOrEmpty(skillId))
-                return;
-            RefreshActors();
-            actor.LastSkillId = skillId;
-            Disc boss = BossDisc();
-            _border.OnSkill(actor.Id, skillId, actor.HpRatio);
-            Body body = ToBody(actor);
-            Body target = FirstOther(actor);
-            _portal.Cast(skillId, body, target, _bodies, boss);
-            TeamPulse pulse = _team.Cast(skillId, actor, FindAlly(target.Id), _allies, boss);
-            ApplyPulse(pulse);
-            ApplyMoves();
-            _line = actor.name + " → " + skillId;
-        }
-
-        public void CommandHit(TeamActorHost actor)
-        {
-            if (!Bind() || actor == null)
-                return;
-            RefreshActors();
-            float x = actor.transform.position.x;
-            float z = actor.transform.position.z;
-            bool struck = false;
-            if (_boss != null)
-            {
-                float dx = _boss.position.x - x;
-                float dz = _boss.position.z - z;
-                struck = true;
-                x = _boss.position.x;
-                z = _boss.position.z;
-                if (dx * dx + dz * dz < TeamComboDefaults.NearBossDistSqr)
-                    struck = true;
-            }
-            if (_team.TryRopeMid(out float mx, out float mz))
-            {
-                x = mx;
-                z = mz;
-                struck = false;
-            }
-            TeamPulse pulse = _team.AllyHit(actor, x, z, struck || _team.AttackBroken);
-            ApplyPulse(pulse);
-            float mult = _team.DamageMult(actor.Id) * _portal.BuffFor(actor.Id).DamageMult * _team.BossIncomingMult;
-            _line = actor.name + " vurdu x" + mult.ToString("0.00");
-        }
-
-        public void CommandSkillAt(TeamActorHost actor, string skillId)
-        {
-            if (actor == null)
-                return;
-            CommandCast(actor, skillId);
-            if (_team.TryMine(out float mx, out float mz))
-            {
-                TeamPulse pulse = _team.AllyUsedSkill(actor, skillId, actor.transform.position.x, actor.transform.position.z);
-                if (pulse.MineMult <= 0f)
-                {
-                    actor.transform.position = new Vector3(mx, 0f, mz);
-                    pulse = _team.AllyUsedSkill(actor, skillId, mx, mz);
-                }
-                ApplyPulse(pulse);
-                if (pulse.MineMult > 0f)
-                {
-                    _line = "Mayın x" + pulse.MineMult.ToString("0");
-                    Burst(new Vector3(mx, TeamComboDefaults.MineBurstHeightY, mz), new Color(1f, 0.45f, 0.1f));
-                }
-            }
-        }
-
-        public void SendToMine(TeamActorHost actor)
-        {
-            if (actor == null || !_team.TryMine(out float x, out float z))
-                return;
-            actor.transform.position = new Vector3(x, TeamComboDefaults.ActorGroundY, z);
-            _line = "Dost mayında";
-        }
-
-        public void SendToRope(TeamActorHost actor)
-        {
-            if (actor == null || !_team.TryRopeMid(out float x, out float z))
-                return;
-            actor.transform.position = new Vector3(x, TeamComboDefaults.ActorGroundY, z);
-            _line = "Dost ipin ortasında";
-        }
-
-        public void SendToTurret(TeamActorHost actor)
-        {
-            if (actor == null || !_team.TryTurret(out float x, out float z))
-                return;
-            actor.transform.position = new Vector3(x, TeamComboDefaults.ActorGroundY, z);
-            _line = "Dost tarete dokunuyor";
-        }
-
-        public void TouchTurret(TeamActorHost actor)
-        {
-            if (actor == null)
-                return;
-            SendToTurret(actor);
-            string skill = _team.TouchTurret(actor);
-            _line = string.IsNullOrEmpty(skill) ? "Taret kopyalamadı" : "Taret kopyaladı: " + skill;
-            if (!string.IsNullOrEmpty(skill) && _boss != null)
-                Burst(_boss.position + Vector3.up, new Color(1f, 0.85f, 0.3f));
-        }
-
-        public void PassBall(TeamActorHost from)
-        {
-            if (from == null)
-                return;
-            RefreshActors();
-            TeamActorHost to = null;
-            for (int i = 0; i < _actors.Count; i++)
-            {
-                if (_actors[i] != from && _actors[i].Id != Modifiers.PlayerActorId)
-                {
-                    if (to == null || to.Id == _team.BallHolder)
-                        to = _actors[i];
-                }
-            }
-            if (to == null)
-                return;
-            bool ok = _team.PassBall(from, to);
-            _line = ok ? "Pas " + from.Id + " → " + to.Id : "Pas olmadı";
-        }
-
         void OnCast(string skillId)
         {
             if (!Bind())
@@ -337,31 +204,6 @@ namespace Dovus.Game.Team
                 _line = _border.AuraLabel(player.Id);
         }
 
-        bool Bind()
-        {
-            if (_player == null)
-            {
-                _vitals = FindAnyObjectByType<PlayerVitalsHost>();
-                if (_vitals != null)
-                    _player = _vitals.transform;
-            }
-            if (_player == null)
-                return false;
-            if (_motion == null)
-                _motion = _player.GetComponent<MotionTemplateBodyHost>();
-            if (_boss == null)
-            {
-                BossReactorController reactor = FindAnyObjectByType<BossReactorController>();
-                if (reactor != null)
-                {
-                    _boss = reactor.transform;
-                    _bossStatus = reactor.GetComponent<ActorStatusHost>();
-                }
-            }
-            if (_clock == null)
-                _clock = FindAnyObjectByType<GameClockHost>();
-            return true;
-        }
 
         Transform _reactorOwner;
         BossReactorController _reactorCache;
@@ -379,89 +221,15 @@ namespace Dovus.Game.Team
             return _reactorCache;
         }
 
-        void RefreshActors()
-        {
-            _actors.Clear();
-            if (_player != null)
-            {
-                TeamActorHost actor = _player.GetComponent<TeamActorHost>();
-                if (actor == null)
-                    actor = _player.gameObject.AddComponent<TeamActorHost>();
-                actor.Id = Modifiers.PlayerActorId;
-                actor.Radius = TeamComboDefaults.TeamActorRadiusM;
-                if (_vitals != null && _vitals.MaxHp > 0)
-                    actor.HpRatio = (float)_vitals.Hp / _vitals.MaxHp;
-                actor.TemplateOwnsPosition = _motion != null && _motion.IsDisplacing;
-                _actors.Add(actor);
-            }
-
-            System.Collections.Generic.IReadOnlyList<AllyDummyController> dummies = AllyDummyController.Live;
-            for (int i = 0; i < dummies.Count; i++)
-            {
-                AllyDummyController dummy = dummies[i];
-                if (dummy == null)
-                    continue;
-                TeamActorHost actor = dummy.GetComponent<TeamActorHost>();
-                if (actor == null)
-                {
-                    actor = dummy.gameObject.AddComponent<TeamActorHost>();
-                    actor.Id = _nextId++;
-                    actor.Radius = TeamComboDefaults.TeamActorRadiusM;
-                }
-                actor.HpRatio = dummy.Ratio;
-                _actors.Add(actor);
-            }
-
-            _bodies.Clear();
-            _allies.Clear();
-            for (int i = 0; i < _actors.Count; i++)
-            {
-                _bodies.Add(ToBody(_actors[i]));
-                _allies.Add(_actors[i]);
-            }
-        }
-
-        void SenseBodies(in Disc boss)
-        {
-            for (int i = 0; i < _actors.Count; i++)
-            {
-                TeamActorHost actor = _actors[i];
-                Body body = ToBody(actor);
-                _portal.Sense(body, false, boss, out _);
-            }
-            if (_boss != null)
-            {
-                BossReactorController reactor = CachedBossReactor();
-                float radius = reactor != null ? reactor.BodyRadiusM : TeamComboDefaults.BossBodyRadiusFallbackM;
-                var bossBody = new Body(TeamComboDefaults.BossPortalBodyId, _boss.position.x, _boss.position.y, _boss.position.z, radius, false, true);
-                _portal.Sense(bossBody, false, boss, out _);
-            }
-        }
-
-        void ApplyMoves()
-        {
-            IReadOnlyList<Placement> moves = _portal.Drain();
-            for (int i = 0; i < moves.Count; i++)
-                ApplyOne(moves[i]);
-        }
-
-        void ApplyOne(Placement move)
-        {
-            TeamActorHost actor = FindActor(move.ActorId);
-            if (actor == null)
-                return;
-            if (actor.TemplateOwnsPosition && actor.Id == Modifiers.PlayerActorId)
-                return;
-            if (move.Teleport && actor.Id == Modifiers.PlayerActorId)
-                Modifiers.MarkIntentionalTeleport();
-            actor.transform.position = new Vector3(move.X, move.Y, move.Z);
-            if (!move.TransferDebuffs)
-                return;
-            AllyDummyController dummy = actor.GetComponent<AllyDummyController>();
-            dummy?.EnsureStatusBoard();
-            if (dummy != null && dummy.Board != null && _bossStatus != null)
-                PortalSystem.MoveHostile(dummy.Board, _bossStatus.Board);
-        }
+        static Body ToBody(TeamActorHost actor) =>
+            new Body(
+                actor.Id,
+                actor.transform.position.x,
+                actor.transform.position.y,
+                actor.transform.position.z,
+                actor.Radius,
+                actor.TemplateOwnsPosition,
+                false);
 
         void ApplyPulse(TeamPulse pulse)
         {
@@ -477,158 +245,6 @@ namespace Dovus.Game.Team
             if (pulse.MineMult > TeamComboDefaults.MineMultActiveThreshold)
                 _line = "Mayın x" + pulse.MineMult.ToString("0");
         }
-
-        void PushHooks(TeamActorHost player)
-        {
-            int id = player.Id;
-            PortalBuff buff = _portal.BuffFor(id);
-            var table = Modifiers.Table;
-            table.Set(
-                id,
-                new ActorModifiers(
-                    _border.AttackSpeedMult(id) * _team.AttackSpeedMult(id),
-                    _border.DamageMult(id) * _team.DamageMult(id) * buff.DamageMult,
-                    _border.LifestealAdd(id),
-                    _border.ColumnMoveSpeedMult(id) * _team.MoveSpeedMult(id) * buff.MoveSpeedMult,
-                    buff.DamageTakenMult));
-            table.BossIncomingMult = _team.BossIncomingMult;
-            table.BossStrikeScale = _portal.StrikeScale;
-            Modifiers.SetMiss(id, buff.MissChance);
-            Modifiers.SetTaken(id, buff.DamageTakenMult);
-            for (int i = 0; i < _actors.Count; i++)
-            {
-                if (_actors[i].Id == id)
-                    continue;
-                PortalBuff allyBuff = _portal.BuffFor(_actors[i].Id);
-                Modifiers.SetMiss(_actors[i].Id, allyBuff.MissChance);
-                Modifiers.SetTaken(_actors[i].Id, allyBuff.DamageTakenMult);
-            }
-        }
-
-        void RefreshAura(TeamActorHost player)
-        {
-            bool on = _border.Active(player.Id);
-            if (on && _aura == null && _player != null)
-            {
-                _aura = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                _aura.name = "BorderAura";
-                Collider col = _aura.GetComponent<Collider>();
-                if (col != null)
-                    Destroy(col);
-                _aura.transform.SetParent(_player, false);
-                _aura.transform.localPosition = new Vector3(0f, TeamComboDefaults.BorderAuraLocalY, 0f);
-                _aura.transform.localScale = new Vector3(TeamComboDefaults.BorderAuraScaleXZ, TeamComboDefaults.BorderAuraScaleY, TeamComboDefaults.BorderAuraScaleXZ);
-                Renderer renderer = _aura.GetComponent<Renderer>();
-                if (renderer != null)
-                    SharedTint.Apply(renderer, new Color(1f, 0.2f, 0.25f, 0.85f));
-            }
-            if (_aura != null)
-                _aura.SetActive(on);
-        }
-
-        void RefreshVisuals()
-        {
-            for (int i = 0; i < _visuals.Count; i++)
-            {
-                if (_visuals[i] != null)
-                    Destroy(_visuals[i]);
-            }
-            _visuals.Clear();
-            IReadOnlyList<DoorView> doors = _portal.Doors;
-            for (int i = 0; i < doors.Count; i++)
-            {
-                DoorView door = doors[i];
-                GameObject gate = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                gate.name = "PortalGate";
-                Collider col = gate.GetComponent<Collider>();
-                if (col != null)
-                    Destroy(col);
-                gate.transform.position = new Vector3(door.X, TeamComboDefaults.GateMarkerY, door.Z);
-                gate.transform.localScale = new Vector3(door.Radius * 2f, TeamComboDefaults.GateThicknessY, door.Radius * 2f);
-                Renderer renderer = gate.GetComponent<Renderer>();
-                if (renderer != null)
-                    SharedTint.Apply(renderer, new Color(0.45f, 0.35f, 1f, 0.9f));
-                _visuals.Add(gate);
-            }
-            if (_team.TryMine(out float mx, out float mz))
-                _visuals.Add(Marker("Mine", mx, mz, new Color(1f, 0.4f, 0.15f)));
-            if (_team.TryRopeMid(out float rx, out float rz))
-                _visuals.Add(Marker("Rope", rx, rz, new Color(0.15f, 0.15f, 0.15f)));
-            if (_team.TryTurret(out float tx, out float tz))
-                _visuals.Add(Marker("Turret", tx, tz, new Color(0.9f, 0.8f, 0.3f)));
-        }
-
-        GameObject Marker(string name, float x, float z, Color color)
-        {
-            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            go.name = name;
-            Collider col = go.GetComponent<Collider>();
-            if (col != null)
-                Destroy(col);
-            go.transform.position = new Vector3(x, TeamComboDefaults.WorldMarkerY, z);
-            go.transform.localScale = Vector3.one * TeamComboDefaults.WorldMarkerScale;
-            Renderer renderer = go.GetComponent<Renderer>();
-            if (renderer != null)
-                SharedTint.Apply(renderer, color);
-            return go;
-        }
-
-        void Burst(Vector3 pos, Color color)
-        {
-            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            go.name = "TeamBurst";
-            Collider col = go.GetComponent<Collider>();
-            if (col != null)
-                Destroy(col);
-            go.transform.position = pos;
-            go.transform.localScale = Vector3.one * TeamComboDefaults.BurstFxScale;
-            Renderer renderer = go.GetComponent<Renderer>();
-            if (renderer != null)
-                SharedTint.Apply(renderer, color);
-            Destroy(go, TeamComboDefaults.BurstFxLifetimeSec);
-        }
-
-        TeamActorHost PlayerActor()
-        {
-            for (int i = 0; i < _actors.Count; i++)
-            {
-                if (_actors[i].Id == Modifiers.PlayerActorId)
-                    return _actors[i];
-            }
-            return _actors.Count > 0 ? _actors[0] : null;
-        }
-
-        TeamActorHost FindActor(int id)
-        {
-            for (int i = 0; i < _actors.Count; i++)
-            {
-                if (_actors[i].Id == id)
-                    return _actors[i];
-            }
-            return null;
-        }
-
-        IAllyPlayer FindAlly(int id) => FindActor(id);
-
-        Body FirstOther(TeamActorHost self)
-        {
-            for (int i = 0; i < _actors.Count; i++)
-            {
-                if (_actors[i] != self)
-                    return ToBody(_actors[i]);
-            }
-            return default;
-        }
-
-        static Body ToBody(TeamActorHost actor) =>
-            new Body(
-                actor.Id,
-                actor.transform.position.x,
-                actor.transform.position.y,
-                actor.transform.position.z,
-                actor.Radius,
-                actor.TemplateOwnsPosition,
-                false);
 
         Disc BossDisc()
         {

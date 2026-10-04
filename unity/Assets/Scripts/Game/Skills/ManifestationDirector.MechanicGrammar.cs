@@ -24,11 +24,11 @@ using UnityEngine;
 namespace Dovus.Game.Skills
 {
     /// <summary>
-    /// mechanic_grammar köprüsü: her cast'te (fiil, sıfat, takılı silah) planı kurulur, HUD'a
-    /// kısa adı yazılır ve mevcut motorun karşılamadığı atomlar dünyaya uygulanır.
-    /// Eşleme atom türüne göredir (tempo → Stun/Slow/Haste, kök, çekme, ışınlanma...);
-    /// skill'e özel dal yoktur. Hasar/heal/kopya/çağırma/yansıma ve uyumsuz silah cezası
-    /// mevcut motorda kalır — burada tekrar uygulanmaz.
+    /// mechanic_grammar k??pr??s??: her cast'te (fiil, s??fat, tak??l?? silah) plan?? kurulur, HUD'a
+    /// k??sa ad?? yaz??l??r ve mevcut motorun kar????lamad?????? atomlar d??nyaya uygulan??r.
+    /// E??leme atom t??r??ne g??redir (tempo ??? Stun/Slow/Haste, k??k, ??ekme, ??????nlanma...);
+    /// skill'e ??zel dal yoktur. Hasar/heal/kopya/??a????rma/yans??ma ve uyumsuz silah cezas??
+    /// mevcut motorda kal??r ??? burada tekrar uygulanmaz.
     /// </summary>
     public sealed partial class ManifestationDirector
     {
@@ -37,7 +37,7 @@ namespace Dovus.Game.Skills
         readonly Dictionary<(int, int, int), MechanicPlan> _mechanicPlans = new();
         string _cardEffect = string.Empty;
 
-        /// <summary>Son cast'in gramer planı (test/HUD).</summary>
+        /// <summary>Son cast'in gramer plan?? (test/HUD).</summary>
         public MechanicPlan LastMechanicPlan { get; set; }
 
         int EquippedWeaponNumber()
@@ -67,7 +67,7 @@ namespace Dovus.Game.Skills
             return plan;
         }
 
-        /// <summary>Kapanış patlamasında: plan kurulur, kendine yönelik atomlar uygulanır.</summary>
+        /// <summary>Kapan???? patlamas??nda: plan kurulur, kendine y??nelik atomlar uygulan??r.</summary>
         void BeginMechanicPlan(in SkillResolution skill, Vector3 aimDir, Vector3 landedAt)
         {
             MechanicPlan plan = MechanicPlanFor(skill);
@@ -75,7 +75,7 @@ namespace Dovus.Game.Skills
             _cardEffect = skill.SkillJob ?? string.Empty;
             if (plan == null)
                 return;
-            DebugConfig.DevLog($"[Mechanic] {plan.SkillId}/{plan.WeaponName}: {MechanicDescriber.ShortTitle(plan)} — {plan.Description}");
+            DebugConfig.DevLog($"[Mechanic] {plan.SkillId}/{plan.WeaponName}: {MechanicDescriber.ShortTitle(plan)} ??? {plan.Description}");
             ApplyMechanicSelfEffects(plan, aimDir);
             if (_clock != null)
                 BeginMechanicWorld(plan, aimDir, landedAt, _clock.Director.WorldTimeMs);
@@ -111,23 +111,23 @@ namespace Dovus.Game.Skills
                     case ("konum", "hedefin_arkasina"):
                         if (TemplateOwnsPosition(plan, e.Stat))
                         {
-                            applied.Add("arkaya iniş kalıpta");
+                            applied.Add("arkaya ini?? kal??pta");
                             break;
                         }
-                        // Kalıp oyuncuyu oynatmıyorsa eski ışınlanma durur.
+                        // Kal??p oyuncuyu oynatm??yorsa eski ??????nlanma durur.
                         float dashSec = _combat != null ? _combat.SkillMotion.DashDurationSec : 0f;
                         After(now, dashSec, TeleportBehindBoss);
-                        applied.Add("arkaya ışınlanma");
+                        applied.Add("arkaya ??????nlanma");
                         break;
                     case ("konum", "isaret_geri_don"):
                         Vector3 mark = _player.position;
                         if (TemplateOwnsPosition(plan, e.Stat))
                         {
-                            applied.Add($"işaret ({mark.x:0.#},{mark.z:0.#}) dönüş kalıpta");
+                            applied.Add($"i??aret ({mark.x:0.#},{mark.z:0.#}) d??n???? kal??pta");
                             break;
                         }
                         After(now, (float)Math.Max(e.DurationSec, 0.0), () => TeleportPlayer(mark));
-                        applied.Add($"işaret → {e.DurationSec:0.#}sn sonra dönüş");
+                        applied.Add($"i??aret ??? {e.DurationSec:0.#}sn sonra d??n????");
                         break;
                     case ("konum", "portal"):
                         if (TeamPortal.IsPortalSkill(plan.SkillId))
@@ -158,9 +158,9 @@ namespace Dovus.Game.Skills
         }
 
         /// <summary>
-        /// mechanic_grammar "ters_kontrol" (TersCevir × hareket): boss'un kontrolü süre boyunca ters —
-        /// yaklaşma hedeften uzaklaşır, windup kilidi ters yöne bakar. Kök/yavaşlatma ayrıca uygulanır.
-        /// Süre etkinin kendi süresi; yoksa BossTuning.ReverseFallbackSec.
+        /// mechanic_grammar "ters_kontrol" (TersCevir ?? hareket): boss'un kontrol?? s??re boyunca ters ???
+        /// yakla??ma hedeften uzakla????r, windup kilidi ters y??ne bakar. K??k/yava??latma ayr??ca uygulan??r.
+        /// S??re etkinin kendi s??resi; yoksa BossTuning.ReverseFallbackSec.
         /// </summary>
         void ApplyBossReverse(MechanicEffect e, List<string> applied)
         {
@@ -174,8 +174,8 @@ namespace Dovus.Game.Skills
         }
 
         /// <summary>
-        /// Gövde düşmana değdiğinde (bir kez): düşmana yönelik atomlar.
-        /// casterMoves false: kalıp sonrası teslim kuyruğu oyuncuyu yerinden oynatmaz.
+        /// G??vde d????mana de??di??inde (bir kez): d????mana y??nelik atomlar.
+        /// casterMoves false: kal??p sonras?? teslim kuyru??u oyuncuyu yerinden oynatmaz.
         /// </summary>
         void ApplyMechanicHitEffects(MechanicPlan plan, Vector3 center, bool casterMoves = true)
         {
@@ -250,9 +250,9 @@ namespace Dovus.Game.Skills
                             ApplyOnce(boss, StatusKind.Blind, ms, (float)Math.Max(e.Amount, 0.0), applied);
                         break;
                     case ("konum", "cek"):
-                        // Girdap merkezi değil: her zaman oyuncunun önündeki temas noktası.
+                        // Girdap merkezi de??il: her zaman oyuncunun ??n??ndeki temas noktas??.
                         PullBossToPlayerContact();
-                        applied.Add("çekme");
+                        applied.Add("??ekme");
                         break;
                     case ("konum", "it") when e.Has("yukari_firlat") && grammar != null:
                         ApplyOnce(boss, StatusKind.Stun, grammar.Rules.Param("knockup_sec") * SkillsTimeDefaults.SecToMs, 1f, applied);
@@ -260,19 +260,19 @@ namespace Dovus.Game.Skills
                     case ("konum", "yer_degistir") when _clock != null && _player != null:
                         if (!casterMoves)
                         {
-                            applied.Add("yer değiştirme kuyrukta yok");
+                            applied.Add("yer de??i??tirme kuyrukta yok");
                             break;
                         }
                         if (TemplateOwnsPosition(plan, e.Stat))
                         {
-                            applied.Add("yer değiştirme kalıpta");
+                            applied.Add("yer de??i??tirme kal??pta");
                             break;
                         }
-                        // Temas anındaki tarafın aynası; dash konumu sürdüğü için dash bitince iner.
+                        // Temas an??ndaki taraf??n aynas??; dash konumu s??rd?????? i??in dash bitince iner.
                         Vector3 swapTo = MirroredAcrossBoss(_player.position);
                         float dashSec = _combat != null ? _combat.SkillMotion.DashDurationSec : 0f;
                         After(_clock.Director.WorldTimeMs, dashSec, () => TeleportPlayer(swapTo));
-                        applied.Add("yer değiştirme");
+                        applied.Add("yer de??i??tirme");
                         break;
                     case ("hiz", "geri_sar") when _clock != null:
                         EnsureMechanicsServices();
@@ -302,8 +302,8 @@ namespace Dovus.Game.Skills
             StatusBoard board, StatusKind kind, double ms, float magnitude, List<string> applied,
             string sourceId = null)
         {
-            // Aynı cast'in eski motor durumu zaten verdiyse süre ikinci kez uzamasın.
-            // Kök ayrı: ikinci kaynak süreyi uzatmaz, en uzun olan kalır.
+            // Ayn?? cast'in eski motor durumu zaten verdiyse s??re ikinci kez uzamas??n.
+            // K??k ayr??: ikinci kaynak s??reyi uzatmaz, en uzun olan kal??r.
             if (ms <= 0 || (kind != StatusKind.Root && board.Has(kind)))
                 return;
             board.Apply(kind, ms, magnitude, sourceId);
@@ -351,8 +351,8 @@ namespace Dovus.Game.Skills
         }
 
         /// <summary>
-        /// Boss prototipte _home'a çapalı (BossReactorController her kare geri çeker); yer değiştirme
-        /// oyuncuyu boss'un karşı tarafına, aynı mesafeye taşır.
+        /// Boss prototipte _home'a ??apal?? (BossReactorController her kare geri ??eker); yer de??i??tirme
+        /// oyuncuyu boss'un kar???? taraf??na, ayn?? mesafeye ta????r.
         /// </summary>
         Vector3 MirroredAcrossBoss(Vector3 from)
         {

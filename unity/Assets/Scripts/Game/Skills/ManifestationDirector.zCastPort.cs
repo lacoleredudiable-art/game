@@ -29,7 +29,7 @@ namespace Dovus.Game.Skills
             Transform _basicImpactTarget;
             LivingEffect _closingLogic;
 
-            /// <summary>FireClosing başında yakalanan logic (eski koddaki yerel değişkenle aynı örnek).</summary>
+            /// <summary>FireClosing ba????nda yakalanan logic (eski koddaki yerel de??i??kenle ayn?? ??rnek).</summary>
             internal void BeginClosing(LivingEffect logic) => _closingLogic = logic;
 
             internal CastPort(ManifestationDirector md) => _md = md;
@@ -39,7 +39,7 @@ namespace Dovus.Game.Skills
             public SkillResolution ResolveSkill(PendingClosing ctx) => _md.ResolvePendingSkill(ctx);
 
             public void NoteDeniedNeedsTwoRunes() =>
-                _md._readout?.NoteDenied("2 rün gerekli");
+                _md._readout?.NoteDenied("2 r??n gerekli");
 
             public void NoteWeaponCast(SkillResolution skill) => _md.NoteWeaponCast(skill);
 
@@ -151,7 +151,7 @@ namespace Dovus.Game.Skills
                     return 0f;
 
                 if (route.IsStub)
-                    DebugConfig.DevLog($"[SkillExecutor] stub → LivingEffect: {route.Reason}");
+                    DebugConfig.DevLog($"[SkillExecutor] stub ??? LivingEffect: {route.Reason}");
                 _md.LastExecutorKind = SkillExecutorKind.Fallback;
                 _md.ApplyBossClosing(logic, ctx.Closing, skill);
                 bool bossReached = _md._boss != null && _md.IsClosingInRange(logic, ctx.Closing);
@@ -247,7 +247,7 @@ namespace Dovus.Game.Skills
             public bool BasicCadenceReady(double now) => _md.BasicCadenceReady(now);
 
             public void NoteDeniedCadence() =>
-                _md._readout?.NoteDenied("Düz vuruş", "hazır değil");
+                _md._readout?.NoteDenied("D??z vuru??", "haz??r de??il");
 
             public void SetLastBasicStrikeMs(double now) => _md._lastBasicStrikeMs = now;
 

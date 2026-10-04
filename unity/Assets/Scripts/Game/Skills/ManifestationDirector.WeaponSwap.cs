@@ -18,8 +18,8 @@ using UnityEngine;
 namespace Dovus.Game.Skills
 {
     /// <summary>
-    /// weapon_skill_interaction.swap: build'de 2 silah, savaşta aralarında swap.
-    /// Silah uyumu/çarpan/pasif/executor yolu her cast'te EquippedWeapon'dan okunur.
+    /// weapon_skill_interaction.swap: build'de 2 silah, sava??ta aralar??nda swap.
+    /// Silah uyumu/??arpan/pasif/executor yolu her cast'te EquippedWeapon'dan okunur.
     /// </summary>
     public sealed partial class ManifestationDirector
     {
@@ -27,7 +27,7 @@ namespace Dovus.Game.Skills
 
         public WeaponSwapState WeaponSwap => _weaponSwap;
 
-        /// <summary>Build ekranındaki silah seçimi için canonical 10 silah (id sırası).</summary>
+        /// <summary>Build ekran??ndaki silah se??imi i??in canonical 10 silah (id s??ras??).</summary>
         public IReadOnlyList<EquipmentItem> AvailableWeapons
         {
             get
@@ -43,7 +43,7 @@ namespace Dovus.Game.Skills
                 return;
             _weaponSwap = new WeaponSwapState(rules);
             _weaponSwap.SetLoadout(_equippedWeapon, DefaultReserveWeapon(_equippedWeapon));
-            LogLoadout("başlangıç");
+            LogLoadout("ba??lang????");
         }
 
         public void SetWeaponLoadout(EquipmentItem primary, EquipmentItem secondary)
@@ -62,7 +62,7 @@ namespace Dovus.Game.Skills
 
         bool SustainedSkillActive(double worldMs) => _sustainedCast.Active(worldMs);
 
-        /// <summary>O10: kanallı/basılı skill cast edildi → süresi boyunca swap kilitli.</summary>
+        /// <summary>O10: kanall??/bas??l?? skill cast edildi ??? s??resi boyunca swap kilitli.</summary>
         void NoteSustainedCast(in SkillResolution skill)
         {
             if (!IsSustained(skill) || _clock == null)
@@ -74,7 +74,7 @@ namespace Dovus.Game.Skills
             _sustainedCast.Begin(_clock.Director.WorldTimeMs, sec);
         }
 
-        /// <summary>Swap butonu / Q tuşu. Reddedilirse sebep readout'a düşer.</summary>
+        /// <summary>Swap butonu / Q tu??u. Reddedilirse sebep readout'a d????er.</summary>
         public WeaponSwapResult TryRequestWeaponSwap()
         {
             if (_weaponSwap == null || _clock == null)
@@ -97,7 +97,7 @@ namespace Dovus.Game.Skills
                 stunned = board.Has(StatusKind.Stun) || board.Has(StatusKind.Stasis) || board.Has(StatusKind.Fear);
             }
             bool dodging = _input?.Dodge != null && _input.Dodge.IsActive((int)worldMs);
-            // O10: kanallı/basılı skill (channel_sec ya da IsSustained) sürerken kilit; etiketli pencere istisnası MayBegin'de.
+            // O10: kanall??/bas??l?? skill (channel_sec ya da IsSustained) s??rerken kilit; etiketli pencere istisnas?? MayBegin'de.
             bool holding = SustainedSkillActive(worldMs);
             bool stateAllows = _playerStates == null || _playerStates.AllowsSwap;
             bool allows = WeaponSwapCancel.MayBegin(stateAllows, drawing, holding, dodging, stunned, inWindow, tagged);
@@ -110,18 +110,18 @@ namespace Dovus.Game.Skills
                             && _engine != null
                             && _engine.State.Phase == SentencePhase.Recovering))
                         CutTemplateForSwap(WeaponSwapCancel.UnlocksNextSkill(inWindow, tagged));
-                    // Kesilen ya da boştaki gövde havada kalmasın; pencere dışında oynayan kalıp sürer.
+                    // Kesilen ya da bo??taki g??vde havada kalmas??n; pencere d??????nda oynayan kal??p s??rer.
                     if (_motionBody == null && _player != null)
                         _motionBody = _player.GetComponent<MotionTemplateBodyHost>();
                     if (_motionBody != null && !_motionBody.IsDisplacing)
                         _motionBody.CancelToGround();
-                    DebugConfig.DevLog($"[WeaponSwap] başladı → {_weaponSwap.Reserve?.Name}");
+                    DebugConfig.DevLog($"[WeaponSwap] ba??lad?? ??? {_weaponSwap.Reserve?.Name}");
                     break;
                 case WeaponSwapResult.OnCooldown:
-                    _readout?.NoteDenied("swap soğumada");
+                    _readout?.NoteDenied("swap so??umada");
                     break;
                 case WeaponSwapResult.StateBlocked:
-                    _readout?.NoteDenied("şimdi swap yok");
+                    _readout?.NoteDenied("??imdi swap yok");
                     break;
             }
             return result;
@@ -143,8 +143,8 @@ namespace Dovus.Game.Skills
             if (!_weaponSwap.Tick(worldMs))
                 return;
 
-            // Kalıp Play anında kopyalanmıştır; sonraki cast yeni silahı okur.
-            // Kesilen ya da boştaki gövde CancelToGround ile zemine iner (yukarıda).
+            // Kal??p Play an??nda kopyalanm????t??r; sonraki cast yeni silah?? okur.
+            // Kesilen ya da bo??taki g??vde CancelToGround ile zemine iner (yukar??da).
             _equippedWeapon = _weaponSwap.Active;
             LastFactorySkill = null;
             OnWeaponSwapCompleted(_equippedWeapon);
@@ -156,8 +156,8 @@ namespace Dovus.Game.Skills
         }
 
         /// <summary>
-        /// Build seçimi yapılmadan açılış: birincil yakın ise ilk ranged silah, değilse ilk
-        /// yakın silah yedek olur — swap farkı ilk denemede görünsün diye.
+        /// Build se??imi yap??lmadan a????l????: birincil yak??n ise ilk ranged silah, de??ilse ilk
+        /// yak??n silah yedek olur ??? swap fark?? ilk denemede g??r??ns??n diye.
         /// </summary>
         EquipmentItem DefaultReserveWeapon(EquipmentItem primary)
         {
@@ -186,8 +186,8 @@ namespace Dovus.Game.Skills
             if (_weaponSwap == null)
                 return;
             DebugConfig.DevLog(
-                $"[WeaponSwap] {reason}: aktif={_weaponSwap.Active?.Name ?? "—"} "
-                + $"yedek={_weaponSwap.Reserve?.Name ?? "—"}");
+                $"[WeaponSwap] {reason}: aktif={_weaponSwap.Active?.Name ?? "???"} "
+                + $"yedek={_weaponSwap.Reserve?.Name ?? "???"}");
         }
     }
 }

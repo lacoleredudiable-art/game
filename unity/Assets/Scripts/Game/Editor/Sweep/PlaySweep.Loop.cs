@@ -69,7 +69,7 @@ namespace Dovus.Game.Editor
                 return false;
             }
 
-            /// <summary>Play açılışında paketler PlayerLoop'u sıfırlayabiliyor; tick kaybolursa geri takılır.</summary>
+            /// <summary>Play a????l??????nda paketler PlayerLoop'u s??f??rlayabiliyor; tick kaybolursa geri tak??l??r.</summary>
             static void LoopWatchdog()
             {
                 if (Running && EditorApplication.isPlaying && !LoopInstalled())
@@ -79,8 +79,8 @@ namespace Dovus.Game.Editor
             static double NowMs => _clock != null ? _clock.Director.WorldTimeMs : Time.timeAsDouble * 1000.0;
 
             /// <summary>
-            /// timeScale ve GameClockHost aynı çarpan. fixedDeltaTime 1× adımında kalır;
-            /// maximumDeltaTime dünya saniyesi olduğu için çarpanla büyür.
+            /// timeScale ve GameClockHost ayn?? ??arpan. fixedDeltaTime 1?? ad??m??nda kal??r;
+            /// maximumDeltaTime d??nya saniyesi oldu??u i??in ??arpanla b??y??r.
             /// </summary>
             static void ApplyPace()
             {
@@ -129,7 +129,7 @@ namespace Dovus.Game.Editor
                                 _expandWeapons = false;
                                 if (_cases.Count == 0)
                                 {
-                                    Stop("silah kataloğu boş");
+                                    Stop("silah katalo??u bo??");
                                     return;
                                 }
                             }
@@ -163,7 +163,7 @@ namespace Dovus.Game.Editor
                 {
                     Exception inner = e is TargetInvocationException t && t.InnerException != null ? t.InnerException : e;
                     _logs.Add("SWEEP-EXC " + inner.GetType().Name + ": " + inner.Message);
-                    Debug.LogWarning("[PlaySweep] araç hatası: " + inner);
+                    Debug.LogWarning("[PlaySweep] ara?? hatas??: " + inner);
                     try
                     {
                         if (_stage == Stage.Record)
@@ -173,20 +173,20 @@ namespace Dovus.Game.Editor
                         else if (_stage == Stage.Setup || _stage == Stage.Settle)
                         {
                             PlaySweepResult r = NewResult(_cases[_index]);
-                            r.Notes.Add("araç hatası: " + inner.Message);
+                            r.Notes.Add("ara?? hatas??: " + inner.Message);
                             Results.Add(r);
                             _index++;
                             NextCase();
                         }
                         else
                         {
-                            Stop("araç hatası");
+                            Stop("ara?? hatas??");
                         }
                     }
                     catch (Exception again)
                     {
                         Debug.LogWarning("[PlaySweep] durduruldu: " + again);
-                        Stop("araç hatası");
+                        Stop("ara?? hatas??");
                     }
                 }
             }
@@ -223,8 +223,8 @@ namespace Dovus.Game.Editor
             }
 
             /// <summary>
-            /// Gövde bileşenleri geç eklenebilir (build ekranı açıkken Idle atlanır, gövde bang'de doğabilir).
-            /// Boş ya da yok edilmiş referans her çağrıda yeniden aranır.
+            /// G??vde bile??enleri ge?? eklenebilir (build ekran?? a????kken Idle atlan??r, g??vde bang'de do??abilir).
+            /// Bo?? ya da yok edilmi?? referans her ??a??r??da yeniden aran??r.
             /// </summary>
             static void RefreshBody()
             {
@@ -263,7 +263,7 @@ namespace Dovus.Game.Editor
                 Debug.Log("[PlaySweep] " + LastSummary);
             }
 
-            // ---------------------------------------------------------------- aşamalar
+            // ---------------------------------------------------------------- a??amalar
 
             static void TickIdle()
             {
@@ -271,7 +271,7 @@ namespace Dovus.Game.Editor
                     _bossDirector.enabled = false;
                 if (BuildSelectHud.IsOpen)
                 {
-                    // Açık build ekranı saati durdurur; bekleme dünya saatine bakar, hiç bitmez.
+                    // A????k build ekran?? saati durdurur; bekleme d??nya saatine bakar, hi?? bitmez.
                     _stage = Stage.Setup;
                     _stageMs = NowMs;
                     return;
@@ -316,7 +316,7 @@ namespace Dovus.Game.Editor
             {
                 if (NowMs - _stageMs < SettleSec * 1000.0)
                     return;
-                // Önceki Emici çekmesi sürerken boss oyuncunun eski yerine kayar; yeni cast o kaymayı devralır.
+                // ??nceki Emici ??ekmesi s??rerken boss oyuncunun eski yerine kayar; yeni cast o kaymay?? devral??r.
                 if (BossPulling() && NowMs - _stageMs < 3000.0)
                     return;
                 PlaySweepCase c = _cases[_index];
@@ -366,13 +366,13 @@ namespace Dovus.Game.Editor
                 ApplyStick(c, templateT, f.Playing);
                 if (c.PauseAtSec != null && _pauseIndex < c.PauseAtSec.Length && templateT >= c.PauseAtSec[_pauseIndex])
                 {
-                    PausedAt = $"{c.Id} kalıp t={templateT:F2} (istenen {c.PauseAtSec[_pauseIndex]:F2})";
+                    PausedAt = $"{c.Id} kal??p t={templateT:F2} (istenen {c.PauseAtSec[_pauseIndex]:F2})";
                     _pauseIndex++;
                     EditorApplication.isPaused = true;
                 }
 
                 bool started = _frames.Any(x => x.Playing);
-                // Geri gönderilen mermi boss'a varana dek vaka bitmez (geri_gonder: boss canı düşmeli).
+                // Geri g??nderilen mermi boss'a varana dek vaka bitmez (geri_gonder: boss can?? d????meli).
                 bool idle = !f.Busy && f.ReflectedAlive == 0;
                 float delivered = Mathf.Max(_info.ExpectedSec, _info.DeliveryDelaySec);
                 float minRecord = _info.RecoverySec + delivered + TailSec;
@@ -416,7 +416,7 @@ namespace Dovus.Game.Editor
                 _bossShifted = true;
             }
 
-            /// <summary>Kaymanın yalnız bu karelik payı eklenir; kalıp oyuncuyu yeni yerinden sürdürür.</summary>
+            /// <summary>Kayman??n yaln??z bu karelik pay?? eklenir; kal??p oyuncuyu yeni yerinden s??rd??r??r.</summary>
             static void ApplyPlayerShift(PlaySweepCase c, float templateT)
             {
                 if (Mathf.Abs(c.PlayerShiftM) < 0.001f || templateT < c.PlayerShiftAtSec)

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Dovus.Game.Skills
 {
-    /// <summary>Hasar sayısı beslemesi: isabet noktası (etki kaynağına bakan boss yüzeyi) + element rengi.</summary>
+    /// <summary>Hasar say??s?? beslemesi: isabet noktas?? (etki kayna????na bakan boss y??zeyi) + element rengi.</summary>
     public sealed partial class ManifestationDirector
     {
         Vector3? _lastImpactOrigin;
@@ -25,7 +25,7 @@ namespace Dovus.Game.Skills
             dir.y = 0f;
             if (dir.sqrMagnitude < 1e-4f)
                 dir = Vector3.forward;
-            // Boss gövde yarıçapı ve kafa altı yükseklik: sayı gövdenin vurulan yüzünde doğar.
+            // Boss g??vde yar????ap?? ve kafa alt?? y??kseklik: say?? g??vdenin vurulan y??z??nde do??ar.
             return center + dir.normalized * _boss.BodyRadiusM + Vector3.up * (_boss.BodyRadiusM * 2f);
         }
 

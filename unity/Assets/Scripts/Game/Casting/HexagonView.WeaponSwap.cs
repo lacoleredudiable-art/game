@@ -8,7 +8,7 @@ using UnityEngine.UI;
 namespace Dovus.Game.Casting
 {
     /// <summary>
-    /// ui_rules.swap_indicator: weapon_icons — aktif silah ikonu, yedek rozeti ve radial bekleme.
+    /// ui_rules.swap_indicator: weapon_icons ??? aktif silah ikonu, yedek rozeti ve radial bekleme.
     /// </summary>
     public sealed partial class HexagonView
     {
@@ -64,7 +64,7 @@ namespace Dovus.Game.Casting
             _swapFill.raycastTarget = false;
             _swapFill.fillAmount = 0f;
 
-            _swapActive = CreateLabel(_swap, "—");
+            _swapActive = CreateLabel(_swap, "???");
             _swapActive.fontSize = 12;
             _swapActive.fontStyle = FontStyle.Bold;
             _swapActive.color = Color.white;
@@ -119,7 +119,7 @@ namespace Dovus.Game.Casting
             _swapFace.sprite = activeIcon != null ? activeIcon : CreateCircleSprite();
             _swapFace.color = activeIcon != null ? _theme.RuneFaceTint : _theme.PanelColor;
             _swapActive.text = activeIcon != null ? string.Empty : ShortName(swap.Active?.Name);
-            _swapReserve.text = "SWAP  ·  " + ShortName(swap.Reserve?.Name);
+            _swapReserve.text = "SWAP  ??  " + ShortName(swap.Reserve?.Name);
             _swapReserveIcon.sprite = reserveIcon;
             _swapReserveIcon.enabled = reserveIcon != null;
             _swapFill.fillAmount = swap.Cooldown01(worldMs);
@@ -142,7 +142,7 @@ namespace Dovus.Game.Casting
         static string ShortName(string name)
         {
             if (string.IsNullOrEmpty(name))
-                return "—";
+                return "???";
             return name.Length <= 7 ? name : name.Substring(0, 6) + ".";
         }
     }

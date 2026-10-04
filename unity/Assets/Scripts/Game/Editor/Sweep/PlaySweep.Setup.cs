@@ -82,7 +82,7 @@ namespace Dovus.Game.Editor
                 current = _input.Engine?.Loadout;
                 if (current == null || !current.RuneIds.Contains(v) || !current.RuneIds.Contains(a))
                 {
-                    error = "build uygulanmadı [" + string.Join(",", ids) + "]";
+                    error = "build uygulanmad?? [" + string.Join(",", ids) + "]";
                     return false;
                 }
                 return true;
@@ -120,10 +120,10 @@ namespace Dovus.Game.Editor
                 _player.GetComponent<ActorView>()?.EndMotionAnim();
                 _input.Engine?.Abort();
                 (F<object>(_md, "_pending") as IList)?.Clear();
-                _logs.Add("önceki cast 6 sn'de bitmedi, zorla temizlendi");
+                _logs.Add("??nceki cast 6 sn'de bitmedi, zorla temizlendi");
             }
 
-            /// <summary>Bağ/hacim/tuzak: status board temizlense de sonraki casta Root/Slow ve boss çekişi taşır.</summary>
+            /// <summary>Ba??/hacim/tuzak: status board temizlense de sonraki casta Root/Slow ve boss ??eki??i ta????r.</summary>
             static int MechanicLeftovers() =>
                 _md != null ? Convert.ToInt32(Call(_md, "MechanicWorldLeftoverCount") ?? 0) : 0;
 
@@ -139,7 +139,7 @@ namespace Dovus.Game.Editor
                 _bossStatus?.Board.Clear();
                 _playerStatus?.Board.Clear();
                 _ally?.Board?.Clear();
-                // O7: kritik/sapma zarı her vakada aynı tohumdan — tarama deterministik kalır.
+                // O7: kritik/sapma zar?? her vakada ayn?? tohumdan ??? tarama deterministik kal??r.
                 _md?.ReseedCombatRng(CombatRng.SweepSeed);
                 if (_bossVitals.IsDown || _bossVitals.Hp < _bossVitals.MaxHp * 0.6f)
                     _bossVitals.Revive();
@@ -167,10 +167,10 @@ namespace Dovus.Game.Editor
             }
 
             /// <summary>
-            /// Koruyucu tetik (koruyucu_tetik can / kalkan) yalnız dost ya da oyuncu canı
-            /// guard_threshold altına inince öder. Taramada boss kapalı, kimse vurmaz; bu yüzden
-            /// planı tetik taşıyan kombolarda dost eşiğin 0.05 altında başlar. Skill kimliği yok:
-            /// plan gramerden, eşik mechanic_grammar.params'tan okunur.
+            /// Koruyucu tetik (koruyucu_tetik can / kalkan) yaln??z dost ya da oyuncu can??
+            /// guard_threshold alt??na inince ??der. Taramada boss kapal??, kimse vurmaz; bu y??zden
+            /// plan?? tetik ta????yan kombolarda dost e??i??in 0.05 alt??nda ba??lar. Skill kimli??i yok:
+            /// plan gramerden, e??ik mechanic_grammar.params'tan okunur.
             /// </summary>
             static void PrepareGuardFixture(PlaySweepCase c)
             {
@@ -190,10 +190,10 @@ namespace Dovus.Game.Editor
             }
 
             /// <summary>
-            /// mermi_sil düzeneği: plan mermi siliyorsa (skill kimliği yok, gramer planından) cast anında
-            /// boss tarafından dosta doğru süzülen yavaş, ZARARSIZ düzenek mermileri doğar — dostun,
-            /// oyuncunun, oyuncu↔boss hattının ve oyuncu↔dost bağının üstünde. Zararsız: dostlara
-            /// çarpmaz, yalnız silme/yutma/geri gönderme/perde kurallarını sınar. Sayaçlar burada sıfırlanır.
+            /// mermi_sil d??zene??i: plan mermi siliyorsa (skill kimli??i yok, gramer plan??ndan) cast an??nda
+            /// boss taraf??ndan dosta do??ru s??z??len yava??, ZARARSIZ d??zenek mermileri do??ar ??? dostun,
+            /// oyuncunun, oyuncu???boss hatt??n??n ve oyuncu???dost ba????n??n ??st??nde. Zarars??z: dostlara
+            /// ??arpmaz, yaln??z silme/yutma/geri g??nderme/perde kurallar??n?? s??nar. Saya??lar burada s??f??rlan??r.
             /// </summary>
             static void PrepareProjectileFixture()
             {
@@ -234,8 +234,8 @@ namespace Dovus.Game.Editor
             }
 
             /// <summary>
-            /// Emici çekmeleri boss'u her vakada oyuncuya taşır; toplanan kayma dostu (sabit) uzakta bırakır.
-            /// Her vaka boss'un tarama başındaki yerinden başlar.
+            /// Emici ??ekmeleri boss'u her vakada oyuncuya ta????r; toplanan kayma dostu (sabit) uzakta b??rak??r.
+            /// Her vaka boss'un tarama ba????ndaki yerinden ba??lar.
             /// </summary>
             static void ResetBossPosition()
             {
@@ -250,7 +250,7 @@ namespace Dovus.Game.Editor
                 Physics.SyncTransforms();
             }
 
-            /// <summary>Portal, sınır ve takım bir sonraki vakaya taşmasın. Dost başlangıç yerine döner.</summary>
+            /// <summary>Portal, s??n??r ve tak??m bir sonraki vakaya ta??mas??n. Dost ba??lang???? yerine d??ner.</summary>
             static void ResetSweepActors()
             {
                 TeamComboHost.Instance?.ResetCase();
@@ -278,7 +278,7 @@ namespace Dovus.Game.Editor
             static string RejectReason(PlaySweepCase c)
             {
                 if (P<bool>(_input, "InputLocked"))
-                    return "girdi kilitli (düşük can ya da BlocksCast)";
+                    return "girdi kilitli (d??????k can ya da BlocksCast)";
                 RuneLoadout loadout = _input.Engine?.Loadout;
                 bool hasVerb = false, hasAdj = false;
                 for (int slot = 1; loadout != null && slot <= RuneLoadout.SlotCount; slot++)
@@ -287,12 +287,12 @@ namespace Dovus.Game.Editor
                     hasAdj |= loadout.RuneIdAtSlot(slot) == c.Adj;
                 }
                 if (!hasVerb || !hasAdj)
-                    return "rün build'de yok";
+                    return "r??n build'de yok";
                 var gate = F<Func<SkillResolution, bool>>(_input, "_skillTargetGate");
                 if (gate != null && !gate(_skills.Resolve(new[] { c.Verb, c.Adj })))
                 {
                     string why = _logs.LastOrDefault(l => !l.StartsWith("SWEEP"));
-                    return "hedef/menzil kapısı" + (string.IsNullOrEmpty(why) ? "" : " — " + why);
+                    return "hedef/menzil kap??s??" + (string.IsNullOrEmpty(why) ? "" : " ??? " + why);
                 }
                 return "bilinmiyor";
             }
@@ -342,7 +342,7 @@ namespace Dovus.Game.Editor
                 return info;
             }
 
-            /// <summary>Oyunla aynı teslim kuyruğu: işaretli an / yükseliş gecikmesi kaydı uzatır.</summary>
+            /// <summary>Oyunla ayn?? teslim kuyru??u: i??aretli an / y??kseli?? gecikmesi kayd?? uzat??r.</summary>
             static float DeliveryDelaySec(SkillResolution skill, MotionTemplate template)
             {
                 if (!(Call(_md, "MechanicPlanFor", skill) is Dovus.Core.Mechanic.MechanicPlan plan)
@@ -354,7 +354,7 @@ namespace Dovus.Game.Editor
                 return order.DelayedMark || order.RiseDelay ? Mathf.Max(0.05f, order.ActivationDelaySec) : 0f;
             }
 
-            /// <summary>Kalıbı çevrimdışı koşturur. aim: oyunun kalıba verdiği hedef (boss, dost ya da yok).</summary>
+            /// <summary>Kal??b?? ??evrimd?????? ko??turur. aim: oyunun kal??ba verdi??i hedef (boss, dost ya da yok).</summary>
             static void Simulate(CaseInfo info, Transform aim)
             {
                 Vector3 s = info.SimStart;
@@ -396,7 +396,7 @@ namespace Dovus.Game.Editor
                         back = true;
                 }
                 if (back)
-                    return "başlangıç";
+                    return "ba??lang????";
                 return behind ? "arka" : null;
             }
 
@@ -404,7 +404,7 @@ namespace Dovus.Game.Editor
             {
                 float moved = Flat(final - start).magnitude;
                 if (maxExcursion > 0.6f && moved < 0.5f)
-                    return "başlangıç";
+                    return "ba??lang????";
                 if (moved < InPlaceM)
                     return "yerinde";
                 Vector3 toStart = Flat(start - boss).normalized;
@@ -418,7 +418,7 @@ namespace Dovus.Game.Editor
                     return "geri";
                 if (lateral > 0.6f && lateral > Mathf.Abs(startDist - along))
                     return "yan";
-                return "ön";
+                return "??n";
             }
 
     }

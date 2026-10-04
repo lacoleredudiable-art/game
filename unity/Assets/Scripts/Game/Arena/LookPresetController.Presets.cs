@@ -9,7 +9,7 @@ using UnityEditor;
 namespace Dovus.Game.Arena
 {
     /// <summary>
-    /// A/B/C görsel ön ayarları: Volume profili + URP/ışık/sis ayarları. Oynanışa dokunmaz.
+    /// A/B/C g??rsel ??n ayarlar??: Volume profili + URP/??????k/sis ayarlar??. Oynan????a dokunmaz.
     /// </summary>
     public sealed partial class LookPresetController
     {
@@ -47,7 +47,7 @@ namespace Dovus.Game.Arena
 
         public char ActivePreset { get; private set; } = 'B';
 
-        /// <summary>Aktif ön ayar derinlik dokusu/SSAO gerektiriyor mu (yalnız 'C').</summary>
+        /// <summary>Aktif ??n ayar derinlik dokusu/SSAO gerektiriyor mu (yaln??z 'C').</summary>
         public bool ActiveRequiresDepthTexture => ActivePreset == 'C';
 
         public void BindVolume(Volume volume, Light sun)
@@ -95,7 +95,7 @@ namespace Dovus.Game.Arena
             RestoreExtras();
         }
 
-        /// <summary>Capture log satırı — renderScale, msaa, shadow, fog, SSAO, sharpen, probe.</summary>
+        /// <summary>Capture log sat??r?? ??? renderScale, msaa, shadow, fog, SSAO, sharpen, probe.</summary>
         public string DescribeActiveSettings()
         {
             var urp = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
@@ -174,12 +174,12 @@ namespace Dovus.Game.Arena
             if (preset == 'B')
                 urp.mainLightShadowmapResolution = LookPresetsDefaults.MainLightShadowMapResPx;
             else if (preset == 'C')
-                // "Gelişmiş": masaüstünde (mobil değilken) ucuz, daha net gölge — telefonda 2048'de kalır.
+                // "Geli??mi??": masa??st??nde (mobil de??ilken) ucuz, daha net g??lge ??? telefonda 2048'de kal??r.
                 urp.mainLightShadowmapResolution = Application.isMobilePlatform ? LookPresetsDefaults.ShadowMapResMobilePx : LookPresetsDefaults.ShadowMapResDesktopPx;
             else
                 urp.mainLightShadowmapResolution = _urpCached ? _savedMainShadowRes : urp.mainLightShadowmapResolution;
 
-            // B "Keskin": renderScale=1'de bile çalışan FSR RCAS keskinleştirme (URP 17/Unity 6 destekliyor,
+            // B "Keskin": renderScale=1'de bile ??al????an FSR RCAS keskinle??tirme (URP 17/Unity 6 destekliyor,
             // bkz. UniversalRenderPipeline.cs InitializeAdditionalCameraData "still consider 100% render
             // scale an upscaling operation"). task-look-v2b problem 2.
             if (preset == 'B')
@@ -213,12 +213,12 @@ namespace Dovus.Game.Arena
                 }
             }
 
-            // Derinlik dokusu paylaşılan URP asset'ine değil, kameraya özel yazılır (task-look-v2b problem 3):
-            // asset'e yazmak Play'den çıkışta kalıcı diff bırakıyordu (m_RequireDepthTexture 0→1).
+            // Derinlik dokusu payla????lan URP asset'ine de??il, kameraya ??zel yaz??l??r (task-look-v2b problem 3):
+            // asset'e yazmak Play'den ????k????ta kal??c?? diff b??rak??yordu (m_RequireDepthTexture 0???1).
             ApplyCameraOverrides(_mainCamera, ssao);
 
-            // C'de gerçek zamanlı yansıma probu çalışsın: proje Very Low/Low kalite seviyesinde
-            // realtimeReflectionProbes kapalı geliyor (QualitySettings.asset) — probu etkisiz kılıyordu.
+            // C'de ger??ek zamanl?? yans??ma probu ??al????s??n: proje Very Low/Low kalite seviyesinde
+            // realtimeReflectionProbes kapal?? geliyor (QualitySettings.asset) ??? probu etkisiz k??l??yordu.
             bool targetProbes = preset == 'C'
                 ? true
                 : (_urpCached ? _savedRealtimeReflectionProbes : QualitySettings.realtimeReflectionProbes);
@@ -229,9 +229,9 @@ namespace Dovus.Game.Arena
         }
 
         /// <summary>
-        /// SSAO/derinlik gerektiren kameraları paylaşılan URP asset'i yerine kamera başına ayarlar
-        /// (<see cref="UniversalAdditionalCameraData.requiresDepthOption"/>) — LookCapture'daki tanı
-        /// kameraları da bunu çağırır, böylece asset hiç kirlenmez.
+        /// SSAO/derinlik gerektiren kameralar?? payla????lan URP asset'i yerine kamera ba????na ayarlar
+        /// (<see cref="UniversalAdditionalCameraData.requiresDepthOption"/>) ??? LookCapture'daki tan??
+        /// kameralar?? da bunu ??a????r??r, b??ylece asset hi?? kirlenmez.
         /// </summary>
         public void ApplyCameraOverrides(Camera camera, bool requiresDepth)
         {
@@ -342,8 +342,8 @@ namespace Dovus.Game.Arena
                 : (_sunCached ? _savedSunColor : _sun.color);
             QualitySettings.shadowDistance = preset == 'B' ? LookPresetsDefaults.PresetBShadowDistanceM : LookPresetsDefaults.ShadowDistanceDefaultM;
             QualitySettings.shadowCascades = 2;
-            // B "Keskin": sert, kontak gölgeler için sıkı cascade + düşük bias (acne'siz alt sınır,
-            // Unity varsayılanları 0.05/0.4'ten biraz daha sıkı). task-look-v2b problem 2.
+            // B "Keskin": sert, kontak g??lgeler i??in s??k?? cascade + d??????k bias (acne'siz alt s??n??r,
+            // Unity varsay??lanlar?? 0.05/0.4'ten biraz daha s??k??). task-look-v2b problem 2.
             _sun.shadowBias = preset == 'B' ? LookPresetsDefaults.ShadowBias : (_sunCached ? _savedSunBias : _sun.shadowBias);
             _sun.shadowNormalBias = preset == 'B' ? LookPresetsDefaults.ShadowNormalBias : (_sunCached ? _savedSunNormalBias : _sun.shadowNormalBias);
         }
@@ -371,8 +371,8 @@ namespace Dovus.Game.Arena
             if (_mainCamera == null)
                 return;
             Color baseBg = _fogCached ? _savedCameraBackground : _mainCamera.backgroundColor;
-            // Gri gökyüzü hedefi |R-B| < 20 olmalı (task-look-v2b problem 1 doğrulaması) — B/C'nin
-            // önceki hedef renkleri biraz fazla maviye kaçıyordu (ölçülen |R-B| 24/19).
+            // Gri g??ky??z?? hedefi |R-B| < 20 olmal?? (task-look-v2b problem 1 do??rulamas??) ??? B/C'nin
+            // ??nceki hedef renkleri biraz fazla maviye ka????yordu (??l????len |R-B| 24/19).
             _mainCamera.backgroundColor = preset switch
             {
                 'B' => Color.Lerp(baseBg, new Color(0.68f, 0.705f, 0.73f), LookPresetsDefaults.BaseBgPresetBLerp),
