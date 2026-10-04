@@ -1,0 +1,36 @@
+{
+  "angles": [
+    {
+      "name": "arena-top",
+      "position": [0, 48, 0],
+      "euler": [90, 0, 0],
+      "fov": 55,
+      "width": 1600,
+      "height": 900
+    },
+    {
+      "name": "player-behind",
+      "position": [-9.5, 5.5, -7.5],
+      "euler": [18, 38, 0],
+      "fov": 55,
+      "width": 1600,
+      "height": 900
+    },
+    {
+      "name": "boss-front",
+      "position": [0, 4.5, 16],
+      "euler": [12, 180, 0],
+      "fov": 55,
+      "width": 1600,
+      "height": 900
+    },
+    {
+      "name": "hud",
+      "position": [-6, 3.5, -8],
+      "euler": [14, 42, 0],
+      "fov": 60,
+      "width": 1600,
+      "height": 900
+    }
+  ]
+}

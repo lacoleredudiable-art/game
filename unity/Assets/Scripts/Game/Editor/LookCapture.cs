@@ -4,12 +4,10 @@ using Dovus.Game.Boss;
 using Dovus.Game.Editor;
 using Dovus.Game.Vfx;
 using System.IO;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
 namespace Dovus.Game.Editor
@@ -83,19 +81,9 @@ namespace Dovus.Game.Editor
             foreach (char p in new[] { 'A', 'B', 'C' })
             {
                 string path = Path.Combine(OutDir, $"look-{p}-gameplay.png");
-                sb.Append(p).Append('=').Append(File.Exists(path) ? Sha256(path) : "missing").Append(' ');
+                sb.Append(p).Append('=').Append(File.Exists(path) ? CaptureUtil.Sha256(path) : "missing").Append(' ');
             }
             return sb.ToString().TrimEnd();
-        }
-
-        static string Sha256(string path)
-        {
-            using var sha = SHA256.Create();
-            byte[] hash = sha.ComputeHash(File.ReadAllBytes(path));
-            var hex = new StringBuilder(hash.Length * 2);
-            foreach (byte b in hash)
-                hex.Append(b.ToString("x2"));
-            return hex.ToString();
         }
 
         static void CaptureWide(string outputPath)
@@ -119,42 +107,12 @@ namespace Dovus.Game.Editor
             urpData.renderPostProcessing = true;
             var lookCtrl = Object.FindAnyObjectByType<LookPresetController>();
             lookCtrl?.ApplyCameraOverrides(cam, lookCtrl.ActiveRequiresDepthTexture);
-            CaptureCamera(cam, outputPath);
+            CaptureUtil.CaptureCamera(cam, outputPath, W, H);
             Object.DestroyImmediate(camGo);
         }
 
-        static void CaptureCamera(Camera cam, string outputPath)
-        {
-            if (cam == null)
-                return;
-
-            var urp = cam.GetComponent<UniversalAdditionalCameraData>();
-            if (urp == null)
-                urp = cam.gameObject.AddComponent<UniversalAdditionalCameraData>();
-            urp.renderPostProcessing = true;
-            var lookCtrl = Object.FindAnyObjectByType<LookPresetController>();
-            lookCtrl?.ApplyCameraOverrides(cam, lookCtrl != null && lookCtrl.ActiveRequiresDepthTexture);
-
-            VolumeManager.instance.Update(cam.transform, cam.cullingMask);
-
-            var rt = new RenderTexture(W, H, 24, RenderTextureFormat.ARGB32);
-            var prev = cam.targetTexture;
-            var prevActive = RenderTexture.active;
-            cam.targetTexture = rt;
-            cam.Render();
-            RenderTexture.active = rt;
-            var tex = new Texture2D(W, H, TextureFormat.RGB24, false);
-            tex.ReadPixels(new Rect(0, 0, W, H), 0, 0);
-            tex.Apply();
-            cam.targetTexture = prev;
-            RenderTexture.active = prevActive;
-            rt.Release();
-            Object.DestroyImmediate(rt);
-
-            byte[] png = tex.EncodeToPNG();
-            Object.DestroyImmediate(tex);
-            File.WriteAllBytes(outputPath, png);
-        }
+        static void CaptureCamera(Camera cam, string outputPath) =>
+            CaptureUtil.CaptureCamera(cam, outputPath, W, H);
     }
 }
 #endif
