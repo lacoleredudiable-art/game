@@ -200,8 +200,8 @@ namespace Dovus.Game.Weapons
             glow.name = "StaffHeadGlow";
             Destroy(glow.GetComponent<Collider>());
             glow.transform.SetParent(staffRoot.transform, false);
-            glow.transform.localPosition = new Vector3(0f, b.max.y - b.center.y + 0.02f, 0f);
-            glow.transform.localScale = Vector3.one * 0.06f;
+            glow.transform.localPosition = new Vector3(0f, b.max.y - b.center.y + WeaponHandPropsDefaults.StaffGlowLiftM, 0f);
+            glow.transform.localScale = Vector3.one * WeaponHandPropsDefaults.StaffGlowScale;
             var r = glow.GetComponent<Renderer>();
             r.sharedMaterial = OrbMat();
             r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -269,8 +269,8 @@ namespace Dovus.Game.Weapons
         static float EstimateBladeHalfLength(Transform propRoot)
         {
             if (!TryRendererBounds(propRoot.gameObject, out Bounds b))
-                return 0.35f;
-            return Mathf.Max(b.extents.y, b.extents.z) * 0.85f;
+                return WeaponHandPropsDefaults.BladeHalfLengthFallbackM;
+            return Mathf.Max(b.extents.y, b.extents.z) * WeaponHandPropsDefaults.BladeHalfLengthBoundsMult;
         }
 
         static void FitMixamoPropWorldSize(GameObject go, string weaponKey, bool isRight) =>
@@ -294,23 +294,23 @@ namespace Dovus.Game.Weapons
             {
                 return weaponKey switch
                 {
-                    "kilic" => 0.92f,
-                    "kalkan" => 0.38f,
-                    "cekic" => 1.12f,
-                    "asa" => 1.68f,
-                    "tilsim" => 0.32f,
-                    "top" => 0.92f,
+                    "kilic" => WeaponHandPropsDefaults.RightKilicMaxExtentM,
+                    "kalkan" => WeaponHandPropsDefaults.RightKalkanMaxExtentM,
+                    "cekic" => WeaponHandPropsDefaults.RightCekicMaxExtentM,
+                    "asa" => WeaponHandPropsDefaults.RightAsaMaxExtentM,
+                    "tilsim" => WeaponHandPropsDefaults.RightTilsimMaxExtentM,
+                    "top" => WeaponHandPropsDefaults.RightTopMaxExtentM,
                     _ => 0f,
                 };
             }
 
             return weaponKey switch
             {
-                "kilic" => 0.65f,
-                "kalkan" => 0.92f,
-                "yay" => 1.22f,
-                "kitap" => 0.26f,
-                "kure" => 0.18f,
+                "kilic" => WeaponHandPropsDefaults.LeftKilicMaxExtentM,
+                "kalkan" => WeaponHandPropsDefaults.LeftKalkanMaxExtentM,
+                "yay" => WeaponHandPropsDefaults.LeftYayMaxExtentM,
+                "kitap" => WeaponHandPropsDefaults.LeftKitapMaxExtentM,
+                "kure" => WeaponHandPropsDefaults.LeftKureMaxExtentM,
                 _ => 0f,
             };
         }
@@ -324,7 +324,7 @@ namespace Dovus.Game.Weapons
             bounds = rs[0].bounds;
             for (int i = 1; i < rs.Length; i++)
                 bounds.Encapsulate(rs[i].bounds);
-            return bounds.size.sqrMagnitude > 1e-8f;
+            return bounds.size.sqrMagnitude > WeaponHandPropsDefaults.BoundsMinSqrMag;
         }
 
         public static bool IsWeaponPropRootName(string name) => IsWeaponPropRoot(name);
@@ -358,7 +358,7 @@ namespace Dovus.Game.Weapons
         GameObject BuildPrimitive(string key, bool isRight) => key switch
         {
             "kilic" => isRight ? BuildSwordFallback() : BuildRoundShield(),
-            "kalkan" => isRight ? BuildSwordFallback(0.55f) : BuildBigShield(),
+            "kalkan" => isRight ? BuildSwordFallback(WeaponHandPropsDefaults.KalkanRightSwordFallbackLengthM) : BuildBigShield(),
             "cekic" => isRight ? BuildHammer() : null,
             "yay" => isRight ? null : BuildBowFallback(),
             "asa" => isRight ? BuildStaffFallback() : null,
@@ -388,11 +388,11 @@ namespace Dovus.Game.Weapons
         }
 
         /// <summary>Warrior_Sword referansı yoksa: basit düz bıçak, hilt'siz, ~0,9 m (ölçek ile ayarlanır).</summary>
-        static GameObject BuildSwordFallback(float lengthM = 0.9f)
+        static GameObject BuildSwordFallback(float lengthM = WeaponHandPropsDefaults.SwordFallbackDefaultLengthM)
         {
             GameObject root = Root("Sword_Placeholder");
-            Prim(root.transform, PrimitiveType.Cube, new Vector3(0, 0, lengthM * 0.42f), new Vector3(0.03f, 0.01f, lengthM * 0.78f), MetalMat());
-            Prim(root.transform, PrimitiveType.Cylinder, new Vector3(0, 0, -lengthM * 0.06f), new Vector3(0.015f, lengthM * 0.09f, 0.015f), WoodMat(),
+            Prim(root.transform, PrimitiveType.Cube, new Vector3(0, 0, lengthM * WeaponHandPropsDefaults.SwordBladeCenterAlongMult), new Vector3(WeaponHandPropsDefaults.SwordBladeWidthM, WeaponHandPropsDefaults.SwordBladeThicknessM, lengthM * WeaponHandPropsDefaults.SwordBladeLengthMult), MetalMat());
+            Prim(root.transform, PrimitiveType.Cylinder, new Vector3(0, 0, -lengthM * WeaponHandPropsDefaults.SwordHiltCenterAlongMult), new Vector3(WeaponHandPropsDefaults.SwordHiltRadiusM, lengthM * WeaponHandPropsDefaults.SwordHiltHalfHeightMult, WeaponHandPropsDefaults.SwordHiltRadiusM), WoodMat(),
                 Quaternion.Euler(90f, 0f, 0f));
             return root;
         }
@@ -401,8 +401,8 @@ namespace Dovus.Game.Weapons
         {
             const float len = 1.6f;
             GameObject root = Root("Staff_Placeholder");
-            Prim(root.transform, PrimitiveType.Cylinder, new Vector3(0, len * 0.42f, 0), new Vector3(0.025f, len * 0.46f, 0.025f), WoodMat());
-            Prim(root.transform, PrimitiveType.Sphere, new Vector3(0, len * 0.9f, 0), new Vector3(0.07f, 0.07f, 0.07f), OrbMat());
+            Prim(root.transform, PrimitiveType.Cylinder, new Vector3(0, len * WeaponHandPropsDefaults.StaffShaftCenterAlongMult, 0), new Vector3(WeaponHandPropsDefaults.StaffShaftRadiusM, len * WeaponHandPropsDefaults.StaffShaftHalfHeightMult, WeaponHandPropsDefaults.StaffShaftRadiusM), WoodMat());
+            Prim(root.transform, PrimitiveType.Sphere, new Vector3(0, len * WeaponHandPropsDefaults.StaffOrbCenterAlongMult, 0), new Vector3(WeaponHandPropsDefaults.StaffOrbDiameterM, WeaponHandPropsDefaults.StaffOrbDiameterM, WeaponHandPropsDefaults.StaffOrbDiameterM), OrbMat());
             return root;
         }
 
@@ -410,12 +410,12 @@ namespace Dovus.Game.Weapons
         {
             const float len = 1.0f;
             GameObject root = Root("Bow_Placeholder");
-            Prim(root.transform, PrimitiveType.Cylinder, Vector3.zero, new Vector3(0.025f, len * 0.5f, 0.025f), WoodMat());
+            Prim(root.transform, PrimitiveType.Cylinder, Vector3.zero, new Vector3(WeaponHandPropsDefaults.BowShaftRadiusM, len * WeaponHandPropsDefaults.BowShaftHalfHeightMult, WeaponHandPropsDefaults.BowShaftRadiusM), WoodMat());
             return root;
         }
 
-        static GameObject BuildRoundShield() => BuildShield("RoundShield_Prop", 0.6f, 0.07f);
-        static GameObject BuildBigShield() => BuildShield("BigShield_Prop", 0.9f, 0.09f);
+        static GameObject BuildRoundShield() => BuildShield("RoundShield_Prop", WeaponHandPropsDefaults.RoundShieldDiameterM, WeaponHandPropsDefaults.RoundShieldThicknessM);
+        static GameObject BuildBigShield() => BuildShield("BigShield_Prop", WeaponHandPropsDefaults.BigShieldDiameterM, WeaponHandPropsDefaults.BigShieldThicknessM);
 
         static GameObject BuildShield(string name, float diameterM, float thicknessM)
         {
@@ -423,8 +423,8 @@ namespace Dovus.Game.Weapons
             Prim(root.transform, PrimitiveType.Cylinder, Vector3.zero,
                 new Vector3(diameterM, thicknessM * 0.5f, diameterM), MetalMat(),
                 Quaternion.Euler(0f, 0f, 90f));
-            Prim(root.transform, PrimitiveType.Sphere, new Vector3(thicknessM * 0.6f, 0f, 0f),
-                new Vector3(diameterM * 0.18f, diameterM * 0.18f, diameterM * 0.18f), MetalMat());
+            Prim(root.transform, PrimitiveType.Sphere, new Vector3(thicknessM * WeaponHandPropsDefaults.ShieldBossOffsetAlongThicknessMult, 0f, 0f),
+                new Vector3(diameterM * WeaponHandPropsDefaults.ShieldBossDiameterMult, diameterM * WeaponHandPropsDefaults.ShieldBossDiameterMult, diameterM * WeaponHandPropsDefaults.ShieldBossDiameterMult), MetalMat());
             return root;
         }
 
@@ -432,39 +432,39 @@ namespace Dovus.Game.Weapons
         {
             const float len = 1.1f;
             GameObject root = Root("Hammer_Prop");
-            Prim(root.transform, PrimitiveType.Cylinder, new Vector3(0, len * 0.32f, 0), new Vector3(0.045f, len * 0.32f, 0.045f), WoodMat());
-            Prim(root.transform, PrimitiveType.Cube, new Vector3(0, len * 0.66f, 0), new Vector3(len * 0.26f, len * 0.16f, len * 0.26f), MetalMat());
+            Prim(root.transform, PrimitiveType.Cylinder, new Vector3(0, len * WeaponHandPropsDefaults.HammerShaftCenterAlongMult, 0), new Vector3(WeaponHandPropsDefaults.HammerShaftRadiusM, len * WeaponHandPropsDefaults.HammerShaftCenterAlongMult, WeaponHandPropsDefaults.HammerShaftRadiusM), WoodMat());
+            Prim(root.transform, PrimitiveType.Cube, new Vector3(0, len * WeaponHandPropsDefaults.HammerHeadCenterAlongMult, 0), new Vector3(len * WeaponHandPropsDefaults.HammerHeadWidthMult, len * WeaponHandPropsDefaults.HammerHeadHeightMult, len * WeaponHandPropsDefaults.HammerHeadWidthMult), MetalMat());
             return root;
         }
 
         static GameObject BuildBook()
         {
             GameObject root = Root("Book_Prop");
-            Prim(root.transform, PrimitiveType.Cube, Vector3.zero, new Vector3(0.17f, 0.03f, 0.23f), WoodMat());
-            Prim(root.transform, PrimitiveType.Cube, new Vector3(0, 0.008f, 0), new Vector3(0.15f, 0.02f, 0.20f), ClothMat());
+            Prim(root.transform, PrimitiveType.Cube, Vector3.zero, new Vector3(WeaponHandPropsDefaults.BookCoverWidthM, WeaponHandPropsDefaults.BookCoverHeightM, WeaponHandPropsDefaults.BookCoverDepthM), WoodMat());
+            Prim(root.transform, PrimitiveType.Cube, new Vector3(0, WeaponHandPropsDefaults.BookPageLiftM, 0), new Vector3(WeaponHandPropsDefaults.BookPageWidthM, WeaponHandPropsDefaults.BookPageHeightM, WeaponHandPropsDefaults.BookPageDepthM), ClothMat());
             return root;
         }
 
         static GameObject BuildOrb()
         {
             GameObject root = Root("Orb_Prop");
-            Prim(root.transform, PrimitiveType.Sphere, Vector3.zero, new Vector3(0.14f, 0.14f, 0.14f), OrbMat());
+            Prim(root.transform, PrimitiveType.Sphere, Vector3.zero, new Vector3(WeaponHandPropsDefaults.OrbPropDiameterM, WeaponHandPropsDefaults.OrbPropDiameterM, WeaponHandPropsDefaults.OrbPropDiameterM), OrbMat());
             return root;
         }
 
         static GameObject BuildTalisman()
         {
             GameObject root = Root("Talisman_Prop");
-            Prim(root.transform, PrimitiveType.Cylinder, Vector3.zero, new Vector3(0.09f, 0.01f, 0.09f), MetalMat(),
+            Prim(root.transform, PrimitiveType.Cylinder, Vector3.zero, new Vector3(WeaponHandPropsDefaults.TalismanDiscRadiusM, WeaponHandPropsDefaults.TalismanDiscHeightM, WeaponHandPropsDefaults.TalismanDiscRadiusM), MetalMat(),
                 Quaternion.Euler(90f, 0f, 0f));
-            Prim(root.transform, PrimitiveType.Sphere, new Vector3(0, 0.07f, 0), new Vector3(0.025f, 0.025f, 0.025f), MetalMat());
+            Prim(root.transform, PrimitiveType.Sphere, new Vector3(0, WeaponHandPropsDefaults.TalismanCharmLiftM, 0), new Vector3(WeaponHandPropsDefaults.TalismanCharmDiameterM, WeaponHandPropsDefaults.TalismanCharmDiameterM, WeaponHandPropsDefaults.TalismanCharmDiameterM), MetalMat());
             return root;
         }
 
         static GameObject BuildCannon()
         {
             GameObject root = Root("Cannon_Prop");
-            Prim(root.transform, PrimitiveType.Cylinder, new Vector3(0, 0, 0.2f), new Vector3(0.09f, 0.22f, 0.09f), MetalMat(),
+            Prim(root.transform, PrimitiveType.Cylinder, new Vector3(0, 0, WeaponHandPropsDefaults.CannonBodyOffsetZM), new Vector3(WeaponHandPropsDefaults.CannonBodyRadiusM, WeaponHandPropsDefaults.CannonBodyHalfHeightM, WeaponHandPropsDefaults.CannonBodyRadiusM), MetalMat(),
                 Quaternion.Euler(90f, 0f, 0f));
             return root;
         }
@@ -489,6 +489,6 @@ namespace Dovus.Game.Weapons
         static Material MetalMat() => _metalMat ??= MakeMat(new Color(0.45f, 0.45f, 0.46f));
         static Material WoodMat() => _woodMat ??= MakeMat(new Color(0.22f, 0.18f, 0.15f));
         static Material ClothMat() => _clothMat ??= MakeMat(new Color(0.58f, 0.55f, 0.50f));
-        static Material OrbMat() => _orbMat ??= MakeMat(new Color(0.40f, 0.46f, 0.48f), new Color(0.12f, 0.30f, 0.33f) * 0.35f);
+        static Material OrbMat() => _orbMat ??= MakeMat(new Color(0.40f, 0.46f, 0.48f), new Color(0.12f, 0.30f, 0.33f) * WeaponHandPropsDefaults.OrbMatEmissionScale);
     }
 }

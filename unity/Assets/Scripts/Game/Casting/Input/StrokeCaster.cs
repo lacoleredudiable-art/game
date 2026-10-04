@@ -65,8 +65,8 @@ namespace Dovus.Game.Casting.Input
             _s.Ink?.RawBegin(pos);
             _s.Stroke.Begin(pos.x, pos.y,
                 HexagonLayoutScreen.DotHitRadiusPx(_s.Tuning),
-                HexagonLayoutScreen.DpToPixels(12f),
-                HexagonLayoutScreen.DpToPixels(1.5f),
+                HexagonLayoutScreen.DpToPixels(CastingInputDefaults.StrokeCornerRadiusDp),
+                HexagonLayoutScreen.DpToPixels(CastingInputDefaults.StrokeMinSegmentDp),
                 _s.DotXs, _s.DotYs, _s.StrokeHits);
             _s.StrokeFedFrame = Time.frameCount;
             ApplyStrokeHits(pos);
@@ -122,7 +122,7 @@ namespace Dovus.Game.Casting.Input
                 && _s.StrokeAccepted >= 1
                 && outcome == DrawFeedback.StrokeOutcome.None)
             {
-                long ms = _s.Tuning != null ? _s.Tuning.Input.DotVibrationMs : 30L;
+                long ms = _s.Tuning != null ? _s.Tuning.Input.DotVibrationMs : CastingInputDefaults.FallbackDotVibrationMs;
                 FeelHaptics.Pulse((int)ms);
             }
         }
@@ -138,7 +138,7 @@ namespace Dovus.Game.Casting.Input
             if (!_s.Tuning.IsDotOpen(_s.ActiveDot.Value))
                 return;
 
-            _s.DwellWorldMs += _s.Clock != null ? _s.Clock.WorldDeltaMs : Time.deltaTime * 1000.0;
+            _s.DwellWorldMs += _s.Clock != null ? _s.Clock.WorldDeltaMs : Time.deltaTime * CastingInputDefaults.SecToMs;
             int maxStacks = _s.Combat.Sentence.DwellMaxStacks;
             while (_s.DwellReported < maxStacks &&
                    _s.DwellWorldMs >= _s.Combat.Sentence.DwellMs * (_s.DwellReported + 1))

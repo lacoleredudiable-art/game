@@ -32,14 +32,14 @@ namespace Dovus.Game.Casting
                 _tuning.Input.LockOnButtonColor.r,
                 _tuning.Input.LockOnButtonColor.g,
                 _tuning.Input.LockOnButtonColor.b,
-                0.92f);
+                HexagonViewDefaults.LockOnFaceAlpha);
             _lockOnLabel = CreateLabel(_lockOn, "LOCK");
             _lockOnLabel.fontSize = 13;
             _lockOnLabel.fontStyle = FontStyle.Bold;
             _lockOnLabel.color = Color.white;
             var outline = _lockOnLabel.gameObject.AddComponent<Outline>();
             outline.effectColor = new Color(0.08f, 0.12f, 0.2f, 0.85f);
-            outline.effectDistance = new Vector2(1.1f, -1.1f);
+            outline.effectDistance = new Vector2(HexagonViewDefaults.LockOnOutlineOffsetPx, -HexagonViewDefaults.LockOnOutlineOffsetPx);
 
             _lockOnButton = _lockOn.gameObject.AddComponent<Button>();
             _lockOnButton.targetGraphic = _lockOnFace;
@@ -60,7 +60,7 @@ namespace Dovus.Game.Casting
                 return;
             bool on = _lockOnCamera.LockOnActive;
             Color c = on ? _tuning.Input.LockOnButtonActiveColor : _tuning.Input.LockOnButtonColor;
-            _lockOnFace.color = new Color(c.r, c.g, c.b, on ? 0.98f : 0.92f);
+            _lockOnFace.color = new Color(c.r, c.g, c.b, on ? 0.98f : HexagonViewDefaults.LockOnFaceAlpha);
             if (_lockOnRim != null)
             {
                 Color rim = on ? new Color(1f, 0.92f, 0.55f, 0.95f) : new Color(0.75f, 0.9f, 1f, 0.75f);

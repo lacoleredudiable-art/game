@@ -23,7 +23,7 @@ namespace Dovus.Game.Casting
         static readonly Color CaptionFail = new Color(1f, 0.35f, 0.32f, 1f);
 
         Text _drawCaption;
-        float _drawCaptionShownAt = -10f;
+        float _drawCaptionShownAt = HexagonViewDefaults.DrawCaptionHiddenAtSec;
         Color _drawCaptionColor = Color.white;
 
         void BuildDrawCaption(Transform parent)
@@ -42,7 +42,7 @@ namespace Dovus.Game.Casting
             _drawCaption.raycastTarget = false;
             var outline = go.AddComponent<Outline>();
             outline.effectColor = new Color(0f, 0f, 0f, 0.85f);
-            outline.effectDistance = new Vector2(1.2f, -1.2f);
+            outline.effectDistance = new Vector2(HexagonViewDefaults.DrawCaptionOutlineOffsetPx, -HexagonViewDefaults.DrawCaptionOutlineOffsetPx);
             _drawCaption.enabled = false;
             rt.anchorMin = Vector2.zero;
             rt.anchorMax = Vector2.zero;
@@ -70,7 +70,7 @@ namespace Dovus.Game.Casting
             float dotR = HexagonLayoutScreen.DotHitRadiusPx(_tuning);
             var rt = _drawCaption.rectTransform;
             rt.anchoredPosition = top + new Vector2(0f, dotR + HexagonLayoutScreen.DpToPixels(8f));
-            float size = HexagonLayoutScreen.DpToPixels(18f);
+            float size = HexagonLayoutScreen.DpToPixels(HexagonViewDefaults.DrawCaptionFontDp);
             rt.sizeDelta = new Vector2(HexagonLayoutScreen.DpToPixels(260f), size * 1.4f);
             _drawCaption.fontSize = Mathf.RoundToInt(size);
         }

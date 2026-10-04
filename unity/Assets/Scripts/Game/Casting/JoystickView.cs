@@ -28,7 +28,7 @@ namespace Dovus.Game.Casting
             var canvas = canvasGo.AddComponent<Canvas>();
             canvas.renderMode = overlayCam != null ? RenderMode.ScreenSpaceCamera : RenderMode.ScreenSpaceOverlay;
             canvas.worldCamera = overlayCam;
-            canvas.planeDistance = 1.2f;
+            canvas.planeDistance = HexagonViewDefaults.CanvasPlaneDistanceM;
             // Hexagon canvas'ı (50) altında dursun ama diğer HUD'ların üstünde olsun.
             canvas.sortingOrder = 45;
             canvasGo.AddComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
@@ -91,7 +91,7 @@ namespace Dovus.Game.Casting
 
         static int FirstLayer(int mask)
         {
-            for (int i = 0; i < 32; i++)
+            for (int i = 0; i < HexagonViewDefaults.LayerMaskScanMax; i++)
             {
                 if ((mask & (1 << i)) != 0)
                     return i;
@@ -122,7 +122,7 @@ namespace Dovus.Game.Casting
             }
 
             tex.Apply(false, true);
-            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 64f);
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), HexagonViewDefaults.CircleSpritePixelsPerUnit);
         }
     }
 }
