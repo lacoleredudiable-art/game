@@ -9,7 +9,7 @@ using Dovus.Core.Grammar;
 using System.Collections.Generic;
 
 using Dovus.Core.Shared;
-namespace Dovus.Core.Data
+namespace Dovus.Core.Boss
 {
     public readonly struct BossOnHitStatus
     {

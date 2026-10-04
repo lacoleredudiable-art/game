@@ -90,7 +90,7 @@ public class TouchDodgeSwapTests
     {
         Assert.That(Game("Game/Actors/PlayerDodgeRig.cs"), Does.Not.Contain("void OnGUI"), "büyük ikinci popup kaldırıldı");
         Assert.That(Game("Game/Actors/PlayerDodgeRig.cs"), Does.Contain("\"PERFECT\""));
-        Assert.That(Game("Core/Dodge/GradeTuning.cs"), Does.Not.Contain("MukemmelGapMaxMs"));
+        Assert.That(Game("Core/Tuning/GradeTuning.cs"), Does.Not.Contain("MukemmelGapMaxMs"));
     }
 
     // --- S2: dodge değerleri JSON player_stats ile aynı ---
@@ -105,8 +105,8 @@ public class TouchDodgeSwapTests
         var t = new DodgeTuning();
         Assert.That(t.DistanceM, Is.EqualTo(dist).Within(0.001f));
         Assert.That(t.IframeMs, Is.EqualTo(iframe));
-        Assert.That(Game("Core/Dodge/DodgeTuning.cs"), Does.Not.Contain("public int CooldownMs"));
-        Assert.That(Game("Core/Dodge/DodgeTuning.cs"), Does.Not.Contain("public int TapMaxMs"));
+        Assert.That(Game("Core/Tuning/DodgeTuning.cs"), Does.Not.Contain("public int CooldownMs"));
+        Assert.That(Game("Core/Tuning/DodgeTuning.cs"), Does.Not.Contain("public int TapMaxMs"));
     }
 
     // --- S3: kaçış kapısı ---

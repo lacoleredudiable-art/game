@@ -1,7 +1,3 @@
-using Dovus.Core.Boss;
-using Dovus.Core.Casting;
-using Dovus.Core.Dodge;
-using Dovus.Core.Status;
 
 namespace Dovus.Core.Tuning
 {

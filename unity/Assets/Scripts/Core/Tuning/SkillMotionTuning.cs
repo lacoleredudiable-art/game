@@ -1,4 +1,4 @@
-namespace Dovus.Core.Casting
+namespace Dovus.Core.Tuning
 {
     /// <summary>
     /// Skill hareket / işaret / portal. Spec sayı vermiyor — his varsayılanları;

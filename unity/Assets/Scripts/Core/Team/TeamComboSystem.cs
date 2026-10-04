@@ -1,4 +1,5 @@
 using System;
+using Dovus.Core.Shared;
 using System.Collections.Generic;
 using Dovus.Core;
 using Dovus.Core.Boss;

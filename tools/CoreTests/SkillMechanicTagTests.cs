@@ -1,4 +1,5 @@
 using Dovus.Core.Grammar;
+using Dovus.Core.Shared;
 using Dovus.Core.Portal;
 using Dovus.Core.Team;
 using NUnit.Framework;

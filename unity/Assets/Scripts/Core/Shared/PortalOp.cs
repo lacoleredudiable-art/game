@@ -1,4 +1,4 @@
-namespace Dovus.Core.Portal
+namespace Dovus.Core.Shared
 {
     public enum PortalOp
     {

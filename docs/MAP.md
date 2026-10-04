@@ -1,6 +1,6 @@
 # MAP.md — konu → dosya → giriş noktası
 
-**Nasıl kullanılır:** Görevde bir konu adı geçiyorsa bu tabloda bul; yalnız listelenen dosyayı aç. Giriş noktası, okumaya başlayacağın tip ve metot. Kök `AGENTS.md` sert kurallar; iş sırası `docs/PLAN.md`; hedef yapı `docs/ARCHITECTURE-PLAN.md`. Doğrulama: `tools/verify.ps1`.
+**Nasıl kullanılır:** Görevde bir konu adı geçiyorsa bu tabloda bul; yalnız listelenen dosyayı aç. Giriş noktası, okumaya başlayacağın tip ve metot. Kök `AGENTS.md` sert kurallar; iş sırası `docs/PLAN.md`; hedef yapı `docs/ARCHITECTURE-PLAN.md`; Core üst klasör sırası / döngü kapısı `docs/core-layers.md`. Doğrulama: `tools/verify.ps1`.
 
 **Büyük dosya uyarısı:** `ManifestationDirector` (partial toplamı ~3.9k satır, servislere taşınıyor), `HexagonInput`, `BossDirector`, `PrototypeTuning` — tam dosya okuma; önce bu haritadaki giriş noktasına git, `Select-String` ile daralt. `PrototypeBootstrap` ince kök; kurulum `Game/Composition/Builders/*`.
 
@@ -14,9 +14,9 @@
 | Silah pasifleri / küre / top | `Game/Skills/Weapons/WeaponPassiveRuntime.cs`, `Game/Skills/Weapons/OrbController.cs`, `Game/Skills/Weapons/CannonBlast.cs`, `Game/Skills/ManifestationDirector.zWeaponServices.cs` | `WeaponPassiveRuntime.HitMods`, `OrbController.TryPlace`, `CannonBlast.TryCannonBlast` |
 | Kalıp teslim kuyruğu | `Game/Skills/Motion/TemplateDeliveryRuntime.cs`, `Game/Skills/ManifestationDirector.zMotionServices.cs` | `TemplateDeliveryRuntime.ArmTemplateDelivery` |
 | Mermi silme | `Game/Skills/Projectiles/ProjectileEraser.cs`, `Game/Skills/ManifestationDirector.Projectiles.cs` | `ProjectileEraser.TickProjectileErase`, `ManifestationDirector.BindProjectiles` |
-| Rün / cümle grameri | `Core/Element/Rune.cs`, `Core/Grammar/RuneLoadout.cs`, `Core/Grammar/RuneManager.cs`, `Core/Input/HexagonLayout.cs` | `RuneManager.TrySelect`, `SentenceEngine` |
+| Rün / cümle grameri | `Core/Element/Rune.cs`, `Core/Element/RuneLoadout.cs`, `Core/Grammar/RuneManager.cs`, `Core/Input/HexagonLayout.cs`, `Core/Input/JumpKind.cs` | `RuneManager.TrySelect`, `SentenceEngine` |
 | Skill verisi (JSON) | `docs/element-sistemi.json`, `unity/Assets/Resources/ElementSystem/element-sistemi.json`, `Core/Data/ElementSystemDocument.cs` | `ElementSystemDocument.Parse`, `SkillMotor.FromDocument`, `ElementSystemJsonLoader.TryLoad` |
-| JSON mapper'lar | `Core/Data/BossEncounterMapper.cs`, `Core/Data/VfxBindingMapper.cs`, `Core/Data/ElementSystemHeader.cs`, `Core/Data/ElementSystemDocument.cs` | `BossEncounterMapper.TryParseHud`, `VfxBindingMapper.TryParse`, `ElementSystemHeader.TryParse`, `ElementSystemDocument.Parse` |
+| JSON mapper'lar | `Core/Boss/BossEncounterMapper.cs`, `Core/Data/VfxBindingMapper.cs`, `Core/Data/ElementSystemHeader.cs`, `Core/Data/ElementSystemDocument.cs`, `Core/Grammar/SkillEngineModifiers.cs` | `BossEncounterMapper.TryParseHud`, `VfxBindingMapper.TryParse`, `ElementSystemHeader.TryParse`, `ElementSystemDocument.Parse` |
 | Hareket kalıbı — Core | `Core/Motion/MotionTemplateRunner.cs`, `Core/Motion/MotionTemplateCatalog.cs`, `Core/Motion/PositionOwnership.cs` | `MotionTemplateRunner.Tick`, `PositionOwnership.Prepare` |
 | Hareket kalıbı — Game | `Game/Actors/MotionTemplateBody.cs`, `docs/motion-templates.json` (üretim: `tools/build-motion-templates.py`) | `MotionTemplateBody.TickMotion` |
 | Hasar / kritik | `Core/Damage/DamagePipeline.cs`, `Core/Damage/CritSystem.cs`, `Core/Damage/ClosingDamageMath.cs` | `DamagePipeline.Resolve` |

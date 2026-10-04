@@ -1,4 +1,4 @@
-namespace Dovus.Core.Dodge
+namespace Dovus.Core.Tuning
 {
     /// <summary>
     /// Sıyırma derecelendirme eşikleri — dovus-sistemi.md §6.

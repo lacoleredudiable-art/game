@@ -1,4 +1,5 @@
-namespace Dovus.Core.Boss
+using Dovus.Core.Shared;
+namespace Dovus.Core.Tuning
 {
     /// <summary>Prototip boss (YERE ÇAKMA) — dovus-sistemi.md §11.</summary>
     [System.Serializable]

@@ -1,6 +1,6 @@
 using System;
 
-namespace Dovus.Core.Casting
+namespace Dovus.Core.Shared
 {
     /// <summary>
     /// Mana havuzu — docs/element-sistemi.json global_rules.resource_system.
