@@ -68,12 +68,7 @@ namespace Dovus.Game.Skills
         ReactionReadout _readout;
         FollowCamera _camera;
         PlayerTargeting _targeting;
-        Transform _armedTarget;
-        Transform _castFacingTarget;
-        bool _directionalAttack;
-        string _armedSkillId = string.Empty;
 
-        readonly List<LivingEffectView> _active = new();
         readonly List<PendingClosing> _pending = new();
         // Cümlenin şu an sözcük aldığı etki — nokta sayısına göre değil, kimliğe göre izlenir
         // (aynı karede birden fazla nokta kaydı sayı polling'ini atlayabilir, bkz. T7.1).
@@ -112,13 +107,10 @@ namespace Dovus.Game.Skills
         EquipmentItem _equippedWeapon;
         EquipmentBonusResolver _equipmentBonus;
         readonly SkillExecutorRouter _skillExecutorRouter = new();
-        readonly List<EquipmentItem> _cycleWeapons = new();
-        int _cycleWeaponIndex = -1;
         // --- Animasyon (Bağlama 10) — SkillPresentation → AnimationBridge; PulseRune kalır ---
         AnimationDatabase _animationDatabase;
         readonly HashSet<string> _missingAnimationBindings = new();
         readonly AnimationBridge _animationBridge = new();
-        int _elementPaintIndex;
         HexagonView _hexagonView;
         PlayerResource _playerResource;
         PlayerCooldown _playerCooldown;
@@ -129,51 +121,14 @@ namespace Dovus.Game.Skills
 
         public void ConfigureWeaponCycle(IReadOnlyList<EquipmentItem> weapons)
         {
-            _cycleWeapons.Clear();
-            if (weapons != null)
-            {
-                for (int i = 0; i < weapons.Count; i++)
-                {
-                    EquipmentItem weapon = weapons[i];
-                    if (weapon != null && weapon.Slot == EquipmentSlot.Weapon)
-                        _cycleWeapons.Add(weapon);
-                }
-            }
-
-            _cycleWeaponIndex = -1;
-            for (int i = 0; i < _cycleWeapons.Count; i++)
-            {
-                if (_equippedWeapon != null
-                    && string.Equals(_cycleWeapons[i].Id, _equippedWeapon.Id, StringComparison.Ordinal))
-                {
-                    _cycleWeaponIndex = i;
-                    break;
-                }
-            }
+            EnsureSkillServices();
+            _weaponLoadout.ConfigureWeaponCycle(weapons);
         }
 
         public EquipmentItem CycleEquippedWeapon()
         {
-            if (_cycleWeapons.Count == 0)
-                return _equippedWeapon;
-
-            _cycleWeaponIndex = (_cycleWeaponIndex + 1) % _cycleWeapons.Count;
-            _equippedWeapon = _cycleWeapons[_cycleWeaponIndex];
-            RefreshDefenderArmor();
-            LastFactorySkill = null;
-            _weaponSwap?.ReplaceActive(_equippedWeapon);
-
-            string routeType = SkillExecutorRouter.IsRangedWeapon(_equippedWeapon)
-                ? "ranged"
-                : "melee";
-            string numericId = _equippedWeapon.Id;
-            int colon = numericId.LastIndexOf(':');
-            if (colon >= 0 && colon + 1 < numericId.Length)
-                numericId = numericId.Substring(colon + 1);
-            DebugConfig.DevLog(
-                $"[WeaponCycle] id={numericId} name={_equippedWeapon.Name} "
-                + $"type={routeType} canonicalType={_equippedWeapon.Type}");
-            return _equippedWeapon;
+            EnsureSkillServices();
+            return _weaponLoadout.CycleEquippedWeapon();
         }
 
         /// <summary>v6: son kapanışta silah × uyumsuz çizim hasar çarpanı.</summary>
@@ -202,13 +157,20 @@ namespace Dovus.Game.Skills
 
         /// <summary>Bağlama 10 / MCP: frame-timer köprüsü (Play doğrulama).</summary>
         public AnimationBridge AnimationBridge => _animationBridge;
-        public ElementPaintNode? SelectedElementPaint =>
-            _skills != null
-            && _skills.ElementPaints.Count > 0
-            && _elementPaintIndex >= 0
-            && _elementPaintIndex < _skills.ElementPaints.Count
-                ? _skills.ElementPaints[_elementPaintIndex]
-                : null;
+        public ElementPaintNode? SelectedElementPaint
+        {
+            get
+            {
+                EnsureSkillServices();
+                int index = _weaponLoadout.ElementPaintIndex;
+                return _skills != null
+                    && _skills.ElementPaints.Count > 0
+                    && index >= 0
+                    && index < _skills.ElementPaints.Count
+                        ? _skills.ElementPaints[index]
+                        : null;
+            }
+        }
         public event Action<ElementPaintNode> ElementPaintChanged;
 
 #if UNITY_EDITOR
@@ -222,61 +184,41 @@ namespace Dovus.Game.Skills
 
         public ElementPaintNode? CycleElementPaint()
         {
-            if (_skills == null || _skills.ElementPaints.Count == 0)
-                return null;
-            _elementPaintIndex = (_elementPaintIndex + 1) % _skills.ElementPaints.Count;
-            ElementPaintNode paint = _skills.ElementPaints[_elementPaintIndex];
-            _readout?.NoteSkill("Element: " + paint.Name, "isim/VFX boya katmanı", Color.cyan);
-            DebugConfig.DevLog($"[ElementSystem] element paint={paint.Id}:{paint.Name} ({paint.Vfx})");
-            return paint;
+            EnsureSkillServices();
+            return _weaponLoadout.CycleElementPaint();
         }
 
         public bool TrySetElementPaint(int elementId)
         {
-            if (_skills == null)
-                return false;
-            for (int i = 0; i < _skills.ElementPaints.Count; i++)
-            {
-                if (_skills.ElementPaints[i].Id != elementId)
-                    continue;
-                _elementPaintIndex = i;
-                ElementPaintNode paint = _skills.ElementPaints[i];
-                ElementPaintChanged?.Invoke(paint);
-                _readout?.NoteSkill("Element: " + paint.Name, "isim/VFX boya katmanı", Color.cyan);
-                DebugConfig.DevLog($"[ElementSystem] element paint={paint.Id}:{paint.Name} ({paint.Vfx})");
-                return true;
-            }
-            return false;
+            EnsureSkillServices();
+            return _weaponLoadout.TrySetElementPaint(elementId);
         }
 
         SkillMotor Skills => _skills ??= SkillMotorLoader.Load();
 
         WeaponSkillCompatibility WeaponCompatibilityFor(SkillResolution skill)
         {
-            if (_equipmentBonus == null || _equippedWeapon == null || skill.IsEmpty)
-                return WeaponSkillCompatibility.Neutral;
-            return _skillFactory != null
-                ? _skillFactory.EvaluateWeapon(skill, _equippedWeapon)
-                : WeaponSkillCompatibility.Neutral;
+            EnsureSkillServices();
+            return _weaponLoadout.WeaponCompatibilityFor(skill);
         }
 
         public LivingEffect ActiveLogic => _buildingView?.Logic;
 
-        public int ActiveCount => _active.Count;
+        public int ActiveCount
+        {
+            get
+            {
+                EnsureSkillServices();
+                return _effectSpawner.ActiveCount;
+            }
+        }
 
         public Transform CurrentFacingTarget
         {
             get
             {
-                switch (FacingKind())
-                {
-                    case AttackFaceKind.LockedTarget:
-                        return AttackLockTarget();
-                    case AttackFaceKind.Movement:
-                        return _targeting != null ? _targeting.SelectedTransform : null;
-                    default:
-                        return null;
-                }
+                EnsureSkillServices();
+                return _skillAim.CurrentFacingTarget;
             }
         }
 
@@ -284,8 +226,14 @@ namespace Dovus.Game.Skills
         /// Saldırı boyunca gövde çubuğa dönmez. Hedef varsa ona kilitlenir;
         /// yoksa bakış kalır. Saldırı dışında seçili hedef varsa eski kilit durur.
         /// </summary>
-        public bool CombatFacingLocked =>
-            FacingKind() != AttackFaceKind.Movement || CurrentFacingTarget != null;
+        public bool CombatFacingLocked
+        {
+            get
+            {
+                EnsureSkillServices();
+                return _skillAim.CombatFacingLocked;
+            }
+        }
 
         bool PerformingAttack =>
             (_engine != null && (_engine.State.Phase == SentencePhase.Building
@@ -293,22 +241,6 @@ namespace Dovus.Game.Skills
             || _pending.Count > 0
             || (_motionBody != null && _motionBody.IsDisplacing)
             || (_visual != null && _visual.IsAttackPose);
-
-        AttackFaceKind FacingKind()
-        {
-            bool performing = PerformingAttack;
-            return AttackFacingRules.Resolve(
-                performing,
-                performing && _directionalAttack,
-                AttackLockTarget() != null);
-        }
-
-        Transform AttackLockTarget()
-        {
-            if (_castFacingTarget != null && _castFacingTarget != _player)
-                return _castFacingTarget;
-            return _targeting != null ? _targeting.SelectedTransform : null;
-        }
 
         public SlotPassiveDirector SlotPassives => _slotPassives;
 
@@ -411,7 +343,8 @@ namespace Dovus.Game.Skills
             _skills = skills ?? SkillMotorLoader.Load();
             _skillFactory = skillFactory ?? new SkillFactory(_skills, _equipmentBonus);
             _animationDatabase = animationDatabase ?? LoadAnimationDatabase();
-            _elementPaintIndex = 0;
+            EnsureSkillServices();
+            _weaponLoadout.ResetElementPaintIndex();
             EnsureLaunchServices();
             _skillPresentation.EnsureCatalog();
             _playerStates = new PlayerStateMachine(_skills.PlayerStates);
@@ -528,7 +461,10 @@ namespace Dovus.Game.Skills
             double worldMs = _clock.Director.WorldTimeMs;
             float dtSec = (float)(_clock.WorldDeltaMs / 1000.0);
             if (!PerformingAttack)
-                _directionalAttack = false;
+            {
+                EnsureSkillServices();
+                _skillAim.ResetDirectionalWhenIdle();
+            }
 
             // Kilit kesildi (§5): poz da kesilir. Kapanış patlaması kesilmez, kendi
             // zamanlamasıyla gelir (TickPendingClosings).
@@ -544,8 +480,9 @@ namespace Dovus.Game.Skills
             TickCannonRecoil();
 
             SyncFromSentence(worldMs);
-            ApplyWindowCue();
-            TickEffects(dtSec, worldMs);
+            EnsureSkillServices();
+            _effectSpawner.ApplyWindowCue();
+            _effectSpawner.TickEffects(dtSec, worldMs);
             _pose?.Tick(worldMs);
             _boss?.Tick(dtSec, worldMs);
             TickPendingClosings(worldMs);
@@ -665,499 +602,47 @@ namespace Dovus.Game.Skills
 
         void SyncFromSentence(double worldMs)
         {
-            var state = _engine.State;
-            if (state.Phase != SentencePhase.Building)
-                return;
-
-            int count = state.Words.Count;
-            if (count == 0)
-                return;
-
-            // Kimliğe göre karar: elde yaşayan (Building'e ait) etki yoksa spawn et; varsa
-            // sadece SetWords çağır. Sayı polling'i (count==1) EnhancedTouch'ın bir karede
-            // birden fazla nokta kaydettiği durumda 0→2 sıçrayıp spawn'ı hiç tetiklemeyebilir.
-            if (_buildingView == null || _buildingView.Logic == null
-                || _buildingView.Logic.Phase is LivingEffectPhase.Dead or LivingEffectPhase.Fading)
-            {
-                _buildingView = SpawnEffect(state.Words, worldMs);
-                PulseActor(state.Words[0].Rune, state.Words, worldMs);
-                _lastWordCount = count;
-                return;
-            }
-
-            _buildingView.Logic.SetWords(state.Words);
-            ApplySkillWorldPlan(_buildingView.Logic, state.Words);
-            ApplySkillTint(_buildingView, state.Words);
-            RefreshBuildingMobility(state.Words);
-            if (count > _lastWordCount)
-                PulseActor(state.Words[count - 1].Rune, state.Words, worldMs);
-
-            _lastWordCount = count;
-        }
-
-        void PulseActor(Rune rune, IReadOnlyList<SentenceWord> words, double worldMs)
-        {
-            SkillResolution skill = SkillResolution.Empty;
-            if (_skills != null && words != null && words.Count > 0)
-                skill = ResolveSkillWords(words);
-            FaceAim(skill);
-            _pose?.PulseRune(rune, worldMs);
-            if (_visual == null)
-                return;
-            SyncVisualDelivery();
-
-            EffectSilhouette s;
-            if (!skill.IsEmpty)
-                s = SilhouetteBuilder.FromSkill(skill, _combat?.Manifestation);
-            else if (words != null && words.Count > 0)
-                s = SilhouetteBuilder.FromWords(words, _combat?.Manifestation);
-            else
-                s = default;
-
-            // Skill animation_type varsa ona göre Play (element ailesi değil — her fiil ayrı clip).
-            if (!skill.IsEmpty && !string.IsNullOrEmpty(skill.AnimationType))
-                _visual.PulseAnimationType(skill.AnimationType, s);
-            else
-                _visual.PulseRune(rune, s);
-        }
-
-        /// <summary>
-        /// Karakteri vuruşun gideceği yöne çevirir; boss'a yalnız soft-aim konisindeyse döner.
-        /// Görsel yön ile hitbox yönü ayrışırsa oyuncu boss'a vurduğunu görüp hasar göremez.
-        /// </summary>
-        void FaceAim(in SkillResolution skill)
-        {
-            if (_player == null)
-                return;
-            bool directional = !skill.IsEmpty
-                && TargetingRules.AimMode(skill) == SkillAimMode.Directional;
-            _directionalAttack = directional;
-            if (directional)
-            {
-                Vector3 aim = ResolveAimFacing(_player.position);
-                if (aim.sqrMagnitude < 0.0001f)
-                    return;
-                _player.rotation = Quaternion.LookRotation(aim, Vector3.up);
-                return;
-            }
-
-            FaceTarget(AttackLockTarget());
-        }
-
-        void FaceTarget(Transform target)
-        {
-            if (_player == null || target == null || target == _player)
-                return;
-            Vector3 to = target.position - _player.position;
-            to.y = 0f;
-            if (to.sqrMagnitude > 0.0001f)
-                _player.rotation = Quaternion.LookRotation(to.normalized, Vector3.up);
-        }
-
-        void CaptureBasicFacing()
-        {
-            _castFacingTarget = null;
-            if (_targeting == null)
-                return;
-            Transform selected = _targeting.SelectedTransform;
-            if (selected != null && selected != _player && IsEnemyBody(selected))
-            {
-                _castFacingTarget = selected;
-                return;
-            }
-
-            float range = _combat != null
-                ? _combat.Manifestation.BasicStrikeRangeM
-                : SkillNumberFallbacks.RangeM;
-            if (_targeting.TryResolveBasicEnemy(
-                    StrikeCapsule.CenterRange(PlayerBodyRadiusM(), range), out Transform auto)
-                && auto != null)
-                _castFacingTarget = auto;
-        }
-
-        Vector3 FacingOrBody(Transform target, Vector3 pos)
-        {
-            if (target != null && target != _player)
-            {
-                Vector3 to = target.position - pos;
-                to.y = 0f;
-                if (to.sqrMagnitude > 0.0001f)
-                    return to.normalized;
-            }
-            return FlatBodyForward();
-        }
-
-        Vector3 FlatBodyForward()
-        {
-            Vector3 facing = _player != null ? _player.forward : Vector3.forward;
-            facing.y = 0f;
-            if (facing.sqrMagnitude < 0.0001f)
-                return Vector3.forward;
-            return facing.normalized;
+            EnsureSkillServices();
+            _sentenceBridge.SyncBuilding(worldMs);
         }
 
         bool TryArmSkillTarget(SkillResolution skill)
         {
-            SkillAimMode aimMode = TargetingRules.AimMode(skill);
-            float range = TargetingRangeFor(skill);
-            Transform target;
-            TargetFailure failure;
-            bool allowed = _targeting != null
-                ? _targeting.TryResolve(skill, range, out target, out failure)
-                : TryResolveLegacyTarget(skill, aimMode, range, out target, out failure);
-            if (!allowed)
-            {
-                // Menzil dışı sessizce yutulmaz: hedef kalır, kalıp aradaki yolu kapanış fazıyla alır.
-                if (failure == TargetFailure.OutOfRange && target != null
-                    && aimMode == SkillAimMode.Targeted)
-                {
-                    _armedTarget = target;
-                    _armedSkillId = skill.SkillId;
-                    _directionalAttack = false;
-                    _castFacingTarget = target != _player ? target : null;
-                    FaceTarget(AttackLockTarget());
-                    return true;
-                }
-
-                _armedTarget = null;
-                _armedSkillId = string.Empty;
-                _castFacingTarget = null;
-                _readout?.NoteDenied(
-                    failure == TargetFailure.OutOfRange ? "menzil dışı" : "hedef yok",
-                    "mana ve soğuma harcanmadı");
-                return false;
-            }
-
-            _armedTarget = target;
-            _armedSkillId = skill.SkillId;
-            _directionalAttack = aimMode == SkillAimMode.Directional;
-            _castFacingTarget = aimMode == SkillAimMode.Targeted && target != _player
-                ? target
-                : null;
-            if (_directionalAttack)
-                FaceAim(skill);
-            else
-                FaceTarget(AttackLockTarget());
-            return true;
+            EnsureSkillServices();
+            return _skillAim.TryArmSkillTarget(skill);
         }
 
-        bool TryResolveLegacyTarget(
-            in SkillResolution skill,
-            SkillAimMode aimMode,
-            float range,
-            out Transform target,
-            out TargetFailure failure)
+        internal void FaceTarget(Transform target)
         {
-            failure = TargetFailure.None;
-            if (aimMode != SkillAimMode.Targeted || skill.TargetMode == "self_only"
-                || skill.TargetMode == "self_or_ally")
-            {
-                target = _player;
-                return true;
-            }
-            if (_boss != null && PlanarMath.FlatDistance(
-                    _player.position.x, _player.position.z,
-                    _boss.transform.position.x, _boss.transform.position.z) <= range)
-            {
-                target = _boss.transform;
-                return true;
-            }
-            if (_boss != null)
-            {
-                target = _boss.transform;
-                failure = TargetFailure.OutOfRange;
-                return false;
-            }
-            target = null;
-            failure = TargetFailure.NoTarget;
-            return false;
+            EnsureSkillServices();
+            _skillAim.FaceTarget(target);
         }
 
-        float TargetingRangeFor(in SkillResolution skill)
+        internal void CaptureBasicFacing()
         {
-            if (CardEffectRules.PrefersAlly(skill.TargetMode, skill.Action))
+            EnsureSkillServices();
+            _skillAim.CaptureBasicFacing();
+        }
+
+        internal Vector3 FlatBodyForward()
+        {
+            EnsureSkillServices();
+            return _skillAim.FlatBodyForward();
+        }
+
+        internal Transform CastFacingTarget
+        {
+            get
             {
-                float allyRange = _skillNumbers != null
-                    ? _skillNumbers.AllySkillRangeM
-                    : SkillNumberFallbacks.AllySkillRangeM;
-                return MotionCastReach.GateRangeM(
-                    Mathf.Max(0.05f, CardEffectRules.ResolveRange(true, allyRange, 0f)),
-                    PlayerBodyRadiusM());
+                EnsureSkillServices();
+                return _skillAim.CastFacingTarget;
             }
-
-            EnsurePresentationCatalog();
-            ManifestationTuning tuning = _combat != null
-                ? _combat.Manifestation
-                : new ManifestationTuning();
-            SkillExecutorRoute route = _skillExecutorRouter.Route(skill, _equippedWeapon);
-            route = ApplyMechanicWorldRoute(MechanicPlanFor(skill), route);
-            LivingEffectPlan plan = SkillWorldPlanner.Build(skill, PresentationCatalog, tuning);
-            float rangeMult = _equippedWeapon != null ? _equippedWeapon.RangeMult : 1f;
-            bool burst = string.Equals(skill.VerbId, "5", StringComparison.Ordinal);
-            float radius = plan.BangRadiusM > 0f ? plan.BangRadiusM : tuning.TravelHitRadiusM;
-            if (route.Kind == SkillExecutorKind.MeleeHitbox && !burst)
-                radius = tuning.TravelHitRadiusM;
-            float range = route.Kind == SkillExecutorKind.MeleeHitbox
-                ? tuning.BasicStrikeRangeM * rangeMult
-                : Mathf.Max(radius, plan.MaxRangeM * rangeMult);
-            float duration = tuning.BangDurationSec;
-            int spawnCount = 1;
-            ApplyVerbHitboxSizing(
-                route.Kind, skill, tuning, rangeMult, burst,
-                ref radius, ref range, ref duration, ref spawnCount);
-            float edge = Mathf.Max(0.05f, range);
-            if (!skill.IsEmpty
-                && MotionCatalog.TryGet(skill.SkillId, out MotionBinding motion)
-                && motion.Implemented)
-                edge = MotionCastReach.ComboEdgeReach(edge, motion.Template);
-            return MotionCastReach.GateRangeM(edge, PlayerBodyRadiusM());
-        }
-
-        void ApplyWindowCue()
-        {
-            if (_buildingView == null)
-                return;
-
-            var state = _engine.State;
-            if (state.Phase != SentencePhase.Building || state.ArmedWindowMs <= 0.5)
-            {
-                _buildingView.SetWindowCue(1f);
-                return;
-            }
-
-            _buildingView.SetWindowCue((float)(state.RemainingWindowMs / state.ArmedWindowMs));
-        }
-
-        LivingEffectView SpawnEffect(IReadOnlyList<SentenceWord> words, double worldMs, bool basicStrike = false)
-        {
-            _ = worldMs;
-            Vector3 pos = _player.position;
-            Vector3 facing;
-            if (basicStrike)
-            {
-                // Seçili hedef varsa ona bak, menzil dışı olsa bile. Yoksa menzildeki
-                // düşman. O da yoksa mevcut bakış: çubuk vuruşun ortasında gövdeyi çevirmez.
-                _directionalAttack = false;
-                CaptureBasicFacing();
-                facing = FlatBodyForward();
-                if (_castFacingTarget != null)
-                {
-                    Vector3 toTarget = _castFacingTarget.position - pos;
-                    toTarget.y = 0f;
-                    if (toTarget.sqrMagnitude > 0.0001f)
-                        facing = toTarget.normalized;
-                }
-
-                if (_player != null && facing.sqrMagnitude > 0.0001f)
-                    _player.rotation = Quaternion.LookRotation(facing, Vector3.up);
-            }
-            else if (_directionalAttack)
-                facing = ResolveAimFacing(pos);
-            else
-                facing = FacingOrBody(_castFacingTarget != null ? _castFacingTarget : AttackLockTarget(), pos);
-
-            ManifestationTuning man = _combat.Manifestation;
-            if (basicStrike)
-                man = man.WithBasicStrikeProfile();
-
-            var logic = new LivingEffect(
-                words[0].Rune,
-                pos.x,
-                pos.z,
-                facing.x,
-                facing.z,
-                words,
-                man);
-            if (basicStrike)
-                StopBasicCannonAtFirstBody(logic, pos, facing);
-
-            var go = new GameObject(basicStrike ? "LivingEffect_BasicStrike" : "LivingEffect_" + words[0].Rune);
-            go.transform.SetParent(transform, false);
-            var view = go.AddComponent<LivingEffectView>();
-            view.Bind(logic, man, _colors, basicStrike);
-            if (!basicStrike)
-                ApplySkillWorldPlan(logic, words);
-            ApplySkillTint(view, words);
-            _active.Add(view);
-            return view;
-        }
-
-        /// <summary>
-        /// SkillMotor.Resolve + prezentasyon → LivingEffect seyahat/silüet/bang.
-        /// </summary>
-        void ApplySkillWorldPlan(LivingEffect logic, IReadOnlyList<SentenceWord> words)
-        {
-            if (logic == null || words == null || words.Count == 0 || _skills == null)
-                return;
-
-            SkillResolution skill = ResolveSkillWords(words);
-            if (skill.IsEmpty)
-                return;
-
-            EnsurePresentationCatalog();
-            ManifestationTuning man = _combat != null ? _combat.Manifestation : new ManifestationTuning();
-            LivingEffectPlan plan = SkillWorldPlanner.Build(skill, PresentationCatalog, man);
-            logic.ApplyPlan(plan);
-        }
-
-        /// <summary>
-        /// Hız varsa hız, yoksa karakterin yüzü; boss yalnız SoftAimRangeM + SoftAimConeDeg
-        /// içindeyse soft-lock. Kamera yaw'ı kullanılmaz: kamera oyuncunun arkasını izlemez,
-        /// durunca vuruş karakterin baktığı yerden kopup sabit dünya yönüne giderdi.
-        /// </summary>
-        Vector3 ResolveAimFacing(Vector3 pos)
-        {
-            Vector3 facing = _player != null ? _player.forward : Vector3.forward;
-            facing.y = 0f;
-            if (_motor != null && _motor.Velocity.sqrMagnitude > 0.05f)
-                facing = _motor.Velocity.normalized;
-
-            if (facing.sqrMagnitude < 0.0001f)
-                facing = Vector3.forward;
-            else
-                facing.Normalize();
-
-            float range = _colors != null ? _colors.SoftAimRangeM : 8f;
-            if (_boss != null && range > 0.1f)
-            {
-                Vector3 toBoss = _boss.transform.position - pos;
-                toBoss.y = 0f;
-                float dist = toBoss.magnitude;
-                float cone = _colors != null ? _colors.SoftAimConeDeg : 70f;
-                if (dist > 0.01f && dist <= range
-                    && Vector3.Angle(facing, toBoss) <= cone)
-                    facing = toBoss / dist;
-            }
-
-            return facing;
-        }
-
-        void ApplySkillTint(LivingEffectView view, IReadOnlyList<SentenceWord> words)
-        {
-            if (view == null || words == null || words.Count == 0)
-                return;
-
-            SkillFeel.ElementPalette(words, _colors, out Color line, out Color blob);
-            view.SetSkillTint(line, blob);
         }
 
         void OnSentenceCompleted(CompletedSentence sentence)
         {
-            LivingEffectView view = _buildingView;
-            _buildingView = null;
-            int basicRune = _colors != null ? _colors.BasicStrikeDot : 1;
-            bool sentenceIsBasic = sentence.Words.Count == 1 && (int)sentence.Words[0].Rune == basicRune;
-            if (view != null && BasicStrikeInput.ReplaceStaleView(sentenceIsBasic, view.IsBasicStrike))
-            {
-                if (view.Logic != null)
-                    view.Logic.Abort();
-                view = null;
-            }
-            _lastWordCount = 0;
-
-            if (sentence.Phase == SentencePhase.Aborted || !sentence.Closing.HasValue)
-            {
-                if (view != null && view.Logic != null)
-                    view.Logic.Abort();
-                return;
-            }
-
-            // Düz vuruş (T6.2) OnDotTouched + Commit'i AYNI karede çağırır: Director'ın Update'i
-            // araya girmediği için Building fazı hiç görülmez ve spawn yutulur. Ödenmiş kapanış
-            // dünyada mutlaka yaşamak zorunda (§8/T2), o yüzden burada doğuyor. Elde yaşayan bir
-            // etki ARAMIYORUZ — önceki cümlenin hâlâ patlayan etkisine bu kapanışı bağlamak
-            // yanlış hedefe ödeme yapmak olur.
-            // T14: Building hiç görülmeden spawn + tek kelime = düz vuruş YALNIZCA
-            // merkezin BasicStrikeDot fiiliyse. Tek Su/Hava vb. skill cümlesi jab sayılmaz.
-            bool spawnedForBasicStrike = false;
-            if (view == null || view.Logic == null
-                || view.Logic.Phase is LivingEffectPhase.Dead or LivingEffectPhase.Fading)
-            {
-                int basicDot = _colors != null ? _colors.BasicStrikeDot : 1;
-                spawnedForBasicStrike = sentence.Words.Count == 1
-                    && (int)sentence.Words[0].Rune == basicDot;
-                view = SpawnEffect(sentence.Words, _clock.Director.WorldTimeMs, spawnedForBasicStrike);
-                if (spawnedForBasicStrike)
-                {
-                    SyncVisualDelivery();
-                    _visual?.PulseBasicStrike();
-                    TryBeginBasicStrikeStep();
-                    _pose?.PulseRune(sentence.Words[0].Rune, _clock.Director.WorldTimeMs);
-                }
-                else
-                {
-                    PulseActor(sentence.Words[0].Rune, sentence.Words, _clock.Director.WorldTimeMs);
-                }
-            }
-
-            // Kapanış kurulmadan önce son kelime listesi etkiye iletilir — dördüncü kelime
-            // (cümlenin en pahalı sıfatı) burada gelmezse hedef silüete hiç işlemez, çünkü
-            // SentenceEngine dördüncü noktada cümleyi dokunuş anında çözer ve SyncFromSentence
-            // artık Building fazında değilken çalışmaz. LivingEffect.SetWords AwaitingClosing
-            // fazında da kabul eder, sıra önemli değil.
-            view.Logic.SetWords(sentence.Words);
-            if (!spawnedForBasicStrike)
-                ApplySkillWorldPlan(view.Logic, sentence.Words);
-
-            ClosingHit closing = sentence.Closing.Value;
-            view.Logic.ArmClosing(closing);
-
-            float recoverySec = _combat.Sentence.StepForDots(closing.DotCount).RecoverySec;
-            float castMult = 1f;
-            SkillResolution armedSkill = SkillResolution.Empty;
-            if (!spawnedForBasicStrike && _skills != null)
-            {
-                armedSkill = ResolveSkillWords(sentence.Words);
-                castMult = SkillMobility.CastTimeMult(armedSkill);
-                castMult *= WeaponCompatibilityFor(armedSkill).CastTimeMult;
-            }
-
-            Transform pendingTarget = spawnedForBasicStrike ? _castFacingTarget : null;
-            SkillAimMode pendingAimMode = SkillAimMode.Targeted;
-            if (!spawnedForBasicStrike && !armedSkill.IsEmpty)
-            {
-                pendingAimMode = TargetingRules.AimMode(armedSkill);
-                if (!string.Equals(_armedSkillId, armedSkill.SkillId, StringComparison.Ordinal)
-                    && !TryArmSkillTarget(armedSkill))
-                {
-                    view.Logic.Abort();
-                    return;
-                }
-                pendingTarget = _armedTarget;
-                FaceTarget(_castFacingTarget);
-            }
-            float atkSpd = PortalBorderTeamHooks.AttackSpeedMult;
-            if (atkSpd > 0f)
-                castMult /= atkSpd;
-            recoverySec *= castMult;
-
-            double bangAt = _clock.Director.WorldTimeMs
-                            + recoverySec * 1000.0
-                            + _combat.Feel.PostHitSilenceMs;
-
-            _pose?.BeginRecovery(recoverySec, _clock.Director.WorldTimeMs);
-            _posedForRecovery = true;
-
-            if (!spawnedForBasicStrike && !armedSkill.IsEmpty)
-            {
-                float lockSec = recoverySec + _combat.Feel.PostHitSilenceMs / 1000f;
-                ApplyCastMobility(armedSkill, lockSec);
-            }
-
-            // Merkez düz vuruş: IsBasicStrike yalnızca BasicStrikeDot ile spawn edilen view.
-            bool basic = view != null && view.IsBasicStrike;
-            _pending.Add(new PendingClosing
-            {
-                View = view,
-                Closing = closing,
-                BangAtWorldMs = bangAt,
-                Words = new List<SentenceWord>(sentence.Words),
-                IsBasicStrike = basic,
-                Target = pendingTarget,
-                AimMode = pendingAimMode
-            });
-            _armedTarget = null;
-            _armedSkillId = string.Empty;
+            EnsureSkillServices();
+            _sentenceBridge.OnCompleted(sentence);
         }
 
 #if UNITY_EDITOR
@@ -1577,60 +1062,6 @@ namespace Dovus.Game.Skills
             PlanarMath.FlatDistance(a.x, a.z, b.x, b.z);
 
         float PlayerBodyRadiusM() => _motor != null ? _motor.BodyRadiusM : 0f;
-
-        void TickEffects(float dtSec, double worldMs)
-        {
-            Vector3 bossPos = _boss != null ? _boss.transform.position : Vector3.zero;
-            var man = _combat.Manifestation;
-            bool bossDown = _bossVitals != null && _bossVitals.IsDown;
-
-            for (int i = _active.Count - 1; i >= 0; i--)
-            {
-                LivingEffectView view = _active[i];
-                if (view == null)
-                {
-                    _active.RemoveAt(i);
-                    continue;
-                }
-
-                LivingEffect logic = view.Logic;
-                logic.Tick(dtSec);
-                view.TickVisual(dtSec);
-
-                if (!bossDown && logic.Phase == LivingEffectPhase.Traveling && _boss != null && !view.TravelHitDone)
-                {
-                    if (logic.OverlapsBoss(bossPos.x, bossPos.z, man.TravelHitRadiusM))
-                    {
-                        view.TravelHitDone = true;
-                        _boss.React(
-                            new Vector3(logic.OriginX, 0f, logic.OriginZ),
-                            man.BossKnockbackM * 0.25f,
-                            0.08f * logic.Current.Lift,
-                            man.BossShakeSec * 0.45f,
-                            worldMs);
-                    }
-                }
-
-                // Seyahat izi: odaklı sarsıntı hattı yerde hafif çatlak bırakır (T4 erken kanıt)
-                if (!view.Scarred && logic.Verb == Rune.Aydinlik && logic.Current.Focus > 0.7f
-                    && logic.Travel > 2.5f)
-                {
-                    Vector3 mid = new Vector3(
-                        logic.OriginX + logic.DirX * logic.TipDistance * 0.5f,
-                        0f,
-                        logic.OriginZ + logic.DirZ * logic.TipDistance * 0.5f);
-                    _scars.Stamp(mid, man.ScarScaleM * 0.5f, ScarKind.Crack,
-                        new Vector3(logic.DirX, 0f, logic.DirZ));
-                    view.Scarred = true;
-                }
-
-                if (!logic.IsAlive)
-                {
-                    ClosingDamageCore.ClearClosingStamp(logic);
-                    Destroy(view.gameObject);
-                    _active.RemoveAt(i);
-                }
-            }
-        }
     }
 }
+

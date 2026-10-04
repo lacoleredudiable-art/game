@@ -22,7 +22,14 @@ namespace Dovus.Game.Skills
         public WeaponSwapState WeaponSwap => _weaponSwap;
 
         /// <summary>Build ekranındaki silah seçimi için canonical 10 silah (id sırası).</summary>
-        public IReadOnlyList<EquipmentItem> AvailableWeapons => _cycleWeapons;
+        public IReadOnlyList<EquipmentItem> AvailableWeapons
+        {
+            get
+            {
+                EnsureSkillServices();
+                return _weaponLoadout.CycleWeapons;
+            }
+        }
 
         public void ConfigureWeaponSwap(WeaponSwapRules rules)
         {
@@ -149,9 +156,11 @@ namespace Dovus.Game.Skills
         EquipmentItem DefaultReserveWeapon(EquipmentItem primary)
         {
             bool primaryRanged = SkillExecutorRouter.IsRangedWeapon(primary);
-            for (int i = 0; i < _cycleWeapons.Count; i++)
+            EnsureSkillServices();
+            IReadOnlyList<EquipmentItem> cycle = _weaponLoadout.CycleWeapons;
+            for (int i = 0; i < cycle.Count; i++)
             {
-                EquipmentItem w = _cycleWeapons[i];
+                EquipmentItem w = cycle[i];
                 if (w == null || (primary != null && string.Equals(w.Id, primary.Id, StringComparison.Ordinal)))
                     continue;
                 if (SkillExecutorRouter.IsRangedWeapon(w) != primaryRanged)
@@ -162,17 +171,8 @@ namespace Dovus.Game.Skills
 
         void SyncCycleIndex()
         {
-            _cycleWeaponIndex = -1;
-            if (_equippedWeapon == null)
-                return;
-            for (int i = 0; i < _cycleWeapons.Count; i++)
-            {
-                if (string.Equals(_cycleWeapons[i].Id, _equippedWeapon.Id, StringComparison.Ordinal))
-                {
-                    _cycleWeaponIndex = i;
-                    return;
-                }
-            }
+            EnsureSkillServices();
+            _weaponLoadout.SyncCycleIndex();
         }
 
         void LogLoadout(string reason)
