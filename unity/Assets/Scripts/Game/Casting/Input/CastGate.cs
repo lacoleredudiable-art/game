@@ -149,7 +149,7 @@ namespace Dovus.Game.Casting.Input
         public float LookupBaseResourceCost(int verbDot)
         {
             SkillResolution skill = LookupVerbSkill(verbDot);
-            return skill.IsEmpty ? 0f : skill.BaseResourceCost;
+            return skill.IsEmpty ? 0f : skill.Costs.BaseResourceCost;
         }
 
         public SkillResolution LookupVerbSkill(int verbDot)

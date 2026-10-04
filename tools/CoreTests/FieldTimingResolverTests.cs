@@ -9,7 +9,7 @@ namespace CoreTests;
 [TestFixture]
 public sealed class FieldTimingResolverTests
 {
-    static SkillResolution SkillWithEngine() => new(
+    static SkillResolution SkillWithEngine() => SkillResolution.Build(
         elementId: string.Empty,
         elementName: string.Empty,
         displayName: "t",
@@ -65,7 +65,7 @@ public sealed class FieldTimingResolverTests
     [Test]
     public void VerbFallbackUsesRegenWhenNoCatalog()
     {
-        var skill = new SkillResolution(
+        var skill = SkillResolution.Build(
             elementId: string.Empty,
             elementName: string.Empty,
             displayName: "regen",

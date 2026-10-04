@@ -54,8 +54,8 @@ namespace Dovus.Game.Skills
         {
             MechanicGrammar grammar = MechanicEngine;
             if (grammar == null || skill.IsEmpty
-                || !int.TryParse(skill.VerbId, out int verb)
-                || !int.TryParse(skill.AdjectiveId, out int adjective))
+                || !int.TryParse(skill.Identity.Verb, out int verb)
+                || !int.TryParse(skill.Identity.Adjective, out int adjective))
                 return null;
             int weapon = EquippedWeaponNumber();
             var key = (verb, adjective, weapon);
@@ -72,7 +72,7 @@ namespace Dovus.Game.Skills
         {
             MechanicPlan plan = MechanicPlanFor(skill);
             LastMechanicPlan = plan;
-            _cardEffect = skill.SkillJob ?? string.Empty;
+            _cardEffect = skill.Identity.SkillJob ?? string.Empty;
             if (plan == null)
                 return;
             DebugConfig.DevLog($"[Mechanic] {plan.SkillId}/{plan.WeaponName}: {MechanicDescriber.ShortTitle(plan)} — {plan.Description}");

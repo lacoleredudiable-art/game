@@ -35,18 +35,18 @@ namespace Dovus.Core.Status
 
         public static TempoCast From(in SkillResolution skill)
         {
-            JsonValue engine = skill.EngineModifiers;
-            float durationSec = engine["tempo_duration_sec"].AsFloat(0f);
-            float enemySlow = engine["enemy_slow"].AsFloat(0f);
-            float selfHaste = engine["self_haste"].AsFloat(0f);
-            float damageBuff = engine["self_damage_buff"].AsFloat(0f);
-            string text = skill.SkillJob ?? string.Empty;
+            SkillEngineModifiers engine = skill.Engine;
+            float durationSec = engine.ReadFloat("tempo_duration_sec");
+            float enemySlow = engine.ReadFloat("enemy_slow");
+            float selfHaste = engine.ReadFloat("self_haste");
+            float damageBuff = engine.ReadFloat("self_damage_buff");
+            string text = skill.Identity.SkillJob ?? string.Empty;
             bool haste = CardEffectRules.WantsSelfHaste(text);
             TempoSyncRules.Read(durationSec, enemySlow > 0f ? enemySlow : 0f, out double ms, out float slowStrength);
             float hasteMag = haste
                 ? CardEffectRules.HasteMagnitude(text, selfHaste, enemySlow, damageBuff)
                 : 1f;
-            string skillId = string.IsNullOrEmpty(skill.SkillId) ? "zaman" : skill.SkillId;
+            string skillId = string.IsNullOrEmpty(skill.Identity.Id) ? "zaman" : skill.Identity.Id;
             return new TempoCast(
                 !haste && enemySlow > 0f,
                 haste,

@@ -54,7 +54,7 @@ public class CastPipelineTests
     };
 
     static SkillResolution CompleteStrike(string skillId = "2-3") =>
-        new SkillResolution(
+        SkillResolution.Build(
             "1", "Ateş", "Test", skillId, "job",
             "saldiri", "Saldırı", "strike", "damage",
             10f, 15f, "projectile", "free_move", new[] { "burn" },
@@ -201,7 +201,7 @@ public class CastPipelineTests
     {
         var port = new RecordingPort
         {
-            ResolveResult = new SkillResolution(
+            ResolveResult = SkillResolution.Build(
                 "1", "Ateş", "X", "t", "job",
                 "saldiri", "Saldırı", "strike", "damage",
                 1f, 1f, "projectile", "free_move", Array.Empty<string>(),

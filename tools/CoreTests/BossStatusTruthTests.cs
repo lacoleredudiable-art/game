@@ -93,7 +93,7 @@ public class BossStatusTruthTests
         var director = new SlotPassiveDirector();
         director.OpenCast();
         Assert.That(_motor.TryGetRune(7, out RuneDefinition rune), Is.True);
-        director.Activate(7, rune.AdjectiveFace, rune.PassiveDurationDefault, adjective.EngineModifiers, 0);
+        director.Activate(7, rune.AdjectiveFace, rune.PassiveDurationDefault, adjective.Engine, 0);
         director.CloseCast();
         int later = director.OpenCast();
         Assert.That(director.AccuracyDebuffFor(later), Is.EqualTo(0.3f).Within(0.001f));

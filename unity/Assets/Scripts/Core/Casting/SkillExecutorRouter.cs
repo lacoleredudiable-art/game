@@ -55,7 +55,7 @@ namespace Dovus.Core.Casting
             && string.Equals(weapon.Type, "ranged", StringComparison.OrdinalIgnoreCase);
 
         static bool TryVerbId(in SkillResolution skill, out int verbId) =>
-            int.TryParse(skill.VerbId, out verbId) && verbId > 0;
+            int.TryParse(skill.Identity.Verb, out verbId) && verbId > 0;
 
         static SkillExecutorRoute Stub(string reason) =>
             new(SkillExecutorKind.Fallback, true, reason);

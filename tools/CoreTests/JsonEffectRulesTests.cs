@@ -52,7 +52,7 @@ public class JsonEffectRulesTests
         string id = verb + "-" + adjective;
         Assert.That(_motion.TryPlay(id, out MotionTemplate template), Is.True, id);
         var skill = _motor.Resolve(new[] { verb, adjective });
-        return TemplateDelivery.Build(Plan(verb, adjective, weapon), skill.EngineModifiers, template, _grammar.Rules, 1f);
+        return TemplateDelivery.Build(Plan(verb, adjective, weapon), skill.Engine, template, _grammar.Rules, 1f);
     }
 
     static bool HasBeat(TemplateDeliveryOrder order, DeliveryBeatKind kind) =>
@@ -69,8 +69,8 @@ public class JsonEffectRulesTests
         Assert.That(r.Param("mine_arm_sec"), Is.EqualTo(1.0).Within(1e-9));
         Assert.That(r.Param("payload_min_life_sec"), Is.EqualTo(3.0).Within(1e-9));
         var skill = _motor.Resolve(new[] { 3, 4 });
-        Assert.That(skill.EngineModifiers["armor_add"].AsFloat(0f), Is.EqualTo(25f));
-        Assert.That(skill.EngineModifiers["buff_duration_sec"].AsFloat(0f), Is.EqualTo(3f));
+        Assert.That(skill.Engine.Field("armor_add").AsFloat(0f), Is.EqualTo(25f));
+        Assert.That(skill.Engine.Field("buff_duration_sec").AsFloat(0f), Is.EqualTo(3f));
     }
 
     [Test]
@@ -213,7 +213,7 @@ public class JsonEffectRulesTests
     public void StatusApplicator_Shield_UsesJsonShieldAbsorb()
     {
         var skill = _motor.Resolve(new[] { 4, 1 });
-        Assert.That(skill.EngineModifiers["shield_absorb"].AsFloat(0f), Is.EqualTo(50f));
+        Assert.That(skill.Engine.Field("shield_absorb").AsFloat(0f), Is.EqualTo(50f));
         var caster = new StatusBoard();
         var target = new StatusBoard();
         StatusApplicator.ApplySkill(skill, caster, target, new StatusTuning { ShieldAbsorb = 10f });

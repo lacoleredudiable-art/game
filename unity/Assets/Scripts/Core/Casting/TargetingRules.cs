@@ -16,8 +16,8 @@ namespace Dovus.Core.Casting
 
         public static SkillAimMode AimMode(in SkillResolution skill)
         {
-            string explicitMode = skill.EngineModifiers["aim_mode"].AsString(
-                skill.EngineModifiers["targeting_mode"].AsString());
+            string explicitMode = skill.Engine.Field("aim_mode").AsString(
+                skill.Engine.Field("targeting_mode").AsString());
             if (!string.IsNullOrEmpty(explicitMode))
             {
                 if (explicitMode is "directional" or "skillshot")
@@ -27,7 +27,7 @@ namespace Dovus.Core.Casting
                 return SkillAimMode.Targeted;
             }
 
-            return string.Equals(skill.Action, "dash", StringComparison.OrdinalIgnoreCase)
+            return string.Equals(skill.Presentation.Action, "dash", StringComparison.OrdinalIgnoreCase)
                 ? SkillAimMode.Directional
                 : SkillAimMode.Targeted;
         }

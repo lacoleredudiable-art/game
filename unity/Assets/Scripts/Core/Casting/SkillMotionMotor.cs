@@ -49,7 +49,7 @@ namespace Dovus.Core.Casting
             if (IsDashVerb(skill))
             {
                 // v6 verb_base.3.dash_distance_m otoritedir; eski katalogda tuning yedek.
-                float dashM = skill.EngineModifiers["dash_distance_m"].AsFloat(0f);
+                float dashM = skill.Engine.Field("dash_distance_m").AsFloat(0f);
                 if (dashM <= 0f)
                     dashM = tuning.ForwardDashDistanceM;
                 return BlinkAlong(
@@ -130,9 +130,9 @@ namespace Dovus.Core.Casting
 
         public static bool IsTeleportVerb(SkillResolution skill)
         {
-            if (string.Equals(skill.Action, "self_teleport", StringComparison.Ordinal))
+            if (string.Equals(skill.Presentation.Action, "self_teleport", StringComparison.Ordinal))
                 return true;
-            if (string.Equals(skill.VerbId, "kisisel_isinlanma", StringComparison.Ordinal))
+            if (string.Equals(skill.Identity.Verb, "kisisel_isinlanma", StringComparison.Ordinal))
                 return true;
             return false;
         }
@@ -145,23 +145,23 @@ namespace Dovus.Core.Casting
         /// </summary>
         public static bool IsDashVerb(SkillResolution skill)
         {
-            if (string.Equals(skill.Action, "dash", StringComparison.Ordinal))
+            if (string.Equals(skill.Presentation.Action, "dash", StringComparison.Ordinal))
                 return true;
-            if (string.Equals(skill.Action, "double_move", StringComparison.Ordinal))
+            if (string.Equals(skill.Presentation.Action, "double_move", StringComparison.Ordinal))
                 return true;
-            if (string.Equals(skill.VerbId, "hareket", StringComparison.Ordinal))
+            if (string.Equals(skill.Identity.Verb, "hareket", StringComparison.Ordinal))
                 return true;
-            if (string.Equals(skill.VerbId, "cift_hareket", StringComparison.Ordinal))
+            if (string.Equals(skill.Identity.Verb, "cift_hareket", StringComparison.Ordinal))
                 return true;
             return false;
         }
 
         public static bool IsLightningSlash(SkillResolution skill) =>
-            string.Equals(skill.VerbId, "zincirleme", StringComparison.Ordinal)
-            || string.Equals(skill.AdjectiveId, "isnlama", StringComparison.Ordinal);
+            string.Equals(skill.Identity.Verb, "zincirleme", StringComparison.Ordinal)
+            || string.Equals(skill.Identity.Adjective, "isnlama", StringComparison.Ordinal);
 
         public static bool IsAnchorAdjective(SkillResolution skill) =>
-            string.Equals(skill.AdjectiveId, "sabitleme", StringComparison.Ordinal);
+            string.Equals(skill.Identity.Adjective, "sabitleme", StringComparison.Ordinal);
 
         static void NormalizeFacing(float x, float z, out float ox, out float oz)
         {

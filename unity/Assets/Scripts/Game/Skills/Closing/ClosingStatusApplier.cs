@@ -53,7 +53,7 @@ namespace Dovus.Game.Skills.Closing
             _host.ShareFriendlyStatuses(skill, friendlyBoard);
             _host.ApplyPurgePower(skill, result.CleansedCount);
 
-            if (string.Equals(skill.Action, "tempo", System.StringComparison.Ordinal))
+            if (string.Equals(skill.Presentation.Action, "tempo", System.StringComparison.Ordinal))
             {
                 TempoCast.From(skill).Apply(
                     _host.PlayerStatus != null ? _host.PlayerStatus.Board : friendlyBoard,

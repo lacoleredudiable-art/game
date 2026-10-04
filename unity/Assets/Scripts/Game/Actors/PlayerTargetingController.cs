@@ -116,7 +116,7 @@ namespace Dovus.Game.Actors
             BuildCandidates();
             int? selectedId = _selected != null ? _selected.GetInstanceID() : null;
             TargetResolution result = TargetingRules.Resolve(
-                skill.TargetMode, aimMode, rangeM, selectedId, _candidateData, skill.Action);
+                skill.Targeting.Mode, aimMode, rangeM, selectedId, _candidateData, skill.Presentation.Action);
             failure = result.Failure;
             if (!result.Allowed)
             {

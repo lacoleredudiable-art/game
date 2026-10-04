@@ -69,7 +69,7 @@ namespace Dovus.Game.Skills.Weapons
         {
             if (_host.EquippedWeapon == null)
                 return 1f;
-            int verb = VerbOf(skill.SkillId);
+            int verb = VerbOf(skill.Identity.Id);
             bool enabled = _host.EquippedWeapon.IsCompatibleWithVerb(verb);
             float power = WeaponPassiveRules.SupportPower(
                 _host.EquippedWeapon.Profile,
@@ -325,7 +325,7 @@ namespace Dovus.Game.Skills.Weapons
             WeaponCombatProfile profile = _host.EquippedProfile;
             if (profile == null)
                 return WeaponPassiveMods.Identity;
-            int verb = skill.IsEmpty ? 1 : VerbOf(skill.SkillId);
+            int verb = skill.IsEmpty ? 1 : VerbOf(skill.Identity.Id);
             bool enabled = isBasicStrike || _host.EquippedWeapon.IsCompatibleWithVerb(verb);
             float sinceMoved = _host.Clock == null ? WeaponPassiveRuntimeDefaults.SinceMovedFallbackSec : (float)((_host.Clock.Director.WorldTimeMs - _host.LastMovedMs) / SkillsTimeDefaults.SecToMs);
             int chain = 0;
@@ -352,7 +352,7 @@ namespace Dovus.Game.Skills.Weapons
                 return false;
             if (skill.Engine.ChannelSec(0f) > 0f)
                 return true;
-            string id = skill.SkillId;
+            string id = skill.Identity.Id;
             return id is "1-12" or "12-12" or "2-12" or "5-12" or "8-12";
         }
 

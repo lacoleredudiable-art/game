@@ -121,7 +121,7 @@ namespace Dovus.Game.Skills.Flow
             if (!spawnedForBasicStrike && !armedSkill.IsEmpty)
             {
                 pendingAimMode = TargetingRules.AimMode(armedSkill);
-                if (!string.Equals(_host.Aim.ArmedSkillId, armedSkill.SkillId, StringComparison.Ordinal)
+                if (!string.Equals(_host.Aim.ArmedSkillId, armedSkill.Identity.Id, StringComparison.Ordinal)
                     && !_host.TryArmSkillTarget(armedSkill))
                 {
                     view.Logic.Abort();

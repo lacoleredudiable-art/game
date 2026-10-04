@@ -232,7 +232,7 @@ namespace Dovus.Game.Skills
         /// </summary>
         void ApplySpawnIFrame(in SkillResolution skill)
         {
-            int ms = _verbData?.IFrameMsFor(skill.SkillId) ?? 0;
+            int ms = _verbData?.IFrameMsFor(skill.Identity.Id) ?? 0;
             if (ms <= 0 || _player == null)
                 return;
             _player.GetComponent<PlayerDodgeController>()?.OpenSkillIframe(ms);
@@ -245,7 +245,7 @@ namespace Dovus.Game.Skills
                 return 0f;
             raw = DamagePipeline.TuneOutgoingPower(
                 false, raw, 0f, _combat != null ? _combat.SkillPreArmorScale : 1f);
-            float mult = skill.DamageMult > 0f ? skill.DamageMult : 1f;
+            float mult = skill.Scaling.DamageMult > 0f ? skill.Scaling.DamageMult : 1f;
             if (_playerStatus != null)
                 mult *= _playerStatus.Board.OutgoingDamageMult;
             mult *= _slotPassives?.DamageMultFor(_slotQueryCastId) ?? 1f;
@@ -270,7 +270,7 @@ namespace Dovus.Game.Skills
             {
                 SkillPower = raw,
                 Multiplier = mult,
-                CanCrit = !skill.IsEmpty && skill.BaseDamage > 0f,
+                CanCrit = !skill.IsEmpty && skill.Combat.BaseDamage > 0f,
                 CritChance = Crits.ChanceWith(ClosingHealRules.ExtraCritChanceAdd(skill)),
                 CritMultiplier = Crits.Multiplier,
                 CritRoll01 = _combatRng.NextRoll01(),
@@ -280,7 +280,7 @@ namespace Dovus.Game.Skills
                 Shield = shield,
                 ApplyVariance = true,
                 VarianceRoll01 = _combatRng.NextRoll01(),
-                Poise = skill.IsEmpty ? 0f : skill.BasePoise,
+                Poise = skill.IsEmpty ? 0f : skill.Combat.BasePoise,
                 ScaleMagnitudes = true
             });
             if (dealt.ShieldAbsorbed > 0f && _bossStatus != null)

@@ -7,9 +7,9 @@ namespace Dovus.App.Casting
     {
         public static bool IsHealSkill(SkillResolution skill)
         {
-            if (string.Equals(skill.VerbFamily, "mend", StringComparison.Ordinal))
+            if (string.Equals(skill.Presentation.VerbFamily, "mend", StringComparison.Ordinal))
                 return true;
-            string action = skill.Action ?? string.Empty;
+            string action = skill.Presentation.Action;
             return action is "heal" or "regen" or "cleanse" or "area_cleanse" or "holy_shield";
         }
 
@@ -39,8 +39,8 @@ namespace Dovus.App.Casting
         {
             if (skill.IsEmpty || !IsHealSkill(skill) || effectScale <= 0f)
                 return 0;
-            float healBase = skill.BaseHeal > 0f
-                ? skill.BaseHeal
+            float healBase = skill.Combat.BaseHeal > 0f
+                ? skill.Combat.BaseHeal
                 : totalEffect * closingDamagePerEffect;
             double scaled = healBase * chainBonus * weaponSupportPower * effectScale;
             return Math.Max(0, (int)Math.Round(scaled) /* = Mathf.RoundToInt (yarıda çifte) */);

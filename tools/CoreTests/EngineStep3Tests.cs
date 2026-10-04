@@ -90,8 +90,8 @@ public class EngineStep3Tests
     {
         SkillResolution card = _motor.Resolve(new[] { 12, 1 });
         TempoCast cast = TempoCast.From(card);
-        Assert.That(card.SkillJob, Does.Contain("hızı %30 düşer"));
-        Assert.That(card.SkillJob, Does.Not.Contain("%70"));
+        Assert.That(card.Identity.SkillJob, Does.Contain("hızı %30 düşer"));
+        Assert.That(card.Identity.SkillJob, Does.Not.Contain("%70"));
         Assert.That(cast.EnemySlow, Is.True);
         Assert.That(cast.SlowStrength, Is.EqualTo(0.7f).Within(0.001f), "boss normal hızın %70'i");
         Assert.That(1f - cast.SlowStrength, Is.EqualTo(0.3f).Within(0.001f));
@@ -102,16 +102,16 @@ public class EngineStep3Tests
     {
         SkillResolution card = _motor.Resolve(new[] { 12, 8 });
         TempoCast cast = TempoCast.From(card);
-        Assert.That(card.SkillJob, Does.Contain("3 sn"));
-        Assert.That(card.SkillJob, Does.Contain("+%50"));
+        Assert.That(card.Identity.SkillJob, Does.Contain("3 sn"));
+        Assert.That(card.Identity.SkillJob, Does.Contain("+%50"));
         Assert.That(cast.SelfHaste, Is.True);
         Assert.That(cast.HasteStrength, Is.EqualTo(1.5f).Within(0.001f));
         Assert.That(cast.DurationMs, Is.EqualTo(3000).Within(0.01));
         Assert.That(
-            card.EngineModifiers["buff_duration_sec"].AsFloat(0f),
+            card.Engine.Field("buff_duration_sec").AsFloat(0f),
             Is.EqualTo(3f).Within(0.001f));
         Assert.That(
-            card.EngineModifiers["tempo_duration_sec"].AsFloat(0f),
+            card.Engine.Field("tempo_duration_sec").AsFloat(0f),
             Is.EqualTo(3f).Within(0.001f));
     }
 
@@ -124,25 +124,25 @@ public class EngineStep3Tests
             for (int adj = 1; adj <= 12; adj++)
             {
                 SkillResolution skill = _motor.Resolve(new[] { verb, adj });
-                string text = skill.SkillJob ?? string.Empty;
+                string text = skill.Identity.SkillJob ?? string.Empty;
                 if (TryPercentBefore(text, "düşer", out int drop))
                 {
-                    float mult = skill.EngineModifiers["enemy_slow"].AsFloat(0f);
+                    float mult = skill.Engine.Field("enemy_slow").AsFloat(0f);
                     int expected = (int)System.Math.Round((1f - mult) * 100f);
                     if (mult <= 0f || mult >= 1f || drop != expected)
-                        mismatches.AppendLine($"{skill.SkillId} {skill.DisplayName}: kart %{drop} düşer, hız çarpanı {mult}");
+                        mismatches.AppendLine($"{skill.Identity.Id} {skill.Identity.DisplayName}: kart %{drop} düşer, hız çarpanı {mult}");
                 }
 
                 if (CardEffectRules.WantsSelfHaste(text) && TrySignedPercent(text, out int bonus))
                 {
                     float haste = CardEffectRules.HasteMagnitude(
                         text,
-                        skill.EngineModifiers["self_haste"].AsFloat(0f),
-                        skill.EngineModifiers["enemy_slow"].AsFloat(0f),
-                        skill.EngineModifiers["self_damage_buff"].AsFloat(0f));
+                        skill.Engine.Field("self_haste").AsFloat(0f),
+                        skill.Engine.Field("enemy_slow").AsFloat(0f),
+                        skill.Engine.Field("self_damage_buff").AsFloat(0f));
                     int applied = (int)System.Math.Round((haste - 1f) * 100f);
                     if (bonus != applied)
-                        mismatches.AppendLine($"{skill.SkillId} {skill.DisplayName}: kart +%{bonus}, uygulanan +%{applied}");
+                        mismatches.AppendLine($"{skill.Identity.Id} {skill.Identity.DisplayName}: kart +%{bonus}, uygulanan +%{applied}");
                 }
             }
         }

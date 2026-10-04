@@ -182,7 +182,7 @@ public class WeaponPassiveFixTests
     EquipmentItem W(int id) => _catalog.FindWeapon(id);
 
     static SkillResolution ShieldSkill() =>
-        new(
+        SkillResolution.Build(
             "1", "Ates", "Kalkan", "4-1", "",
             "4", "Kalkan", "guard", "shield",
             0f, 0f, "self", "", new[] { "shield" },

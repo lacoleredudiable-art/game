@@ -36,7 +36,7 @@ public class SkillEngineModifiersTests
             string label = $"{verb}-{adjective}";
             Assert.That(skill.IsEmpty, Is.False, label);
 
-            JsonValue raw = skill.EngineModifiers;
+            JsonValue raw = skill.Engine.Raw;
             SkillEngineModifiers view = skill.Engine;
 
             Assert.That(view.IsNull, Is.EqualTo(raw.IsNull), label);

@@ -167,7 +167,7 @@ public class StatusBoardTests
         // "Savrulma Sersemliği": aynı vuruşta stun+knockback → stun süresi +1 sn. Hiçbir gerçek
         // fiilde ikisi birden yok (bkz. element-sistemi.json) — sentetik SkillResolution ile
         // StatusApplicator'ın özel dalını tek başına test ediyoruz.
-        var skill = new SkillResolution(
+        var skill = SkillResolution.Build(
             elementId: "test", elementName: "Test", displayName: "Test", skillId: "t", skillJob: "job",
             verbId: "test_verb", verbName: "Test", verbFamily: "control", action: "stun_knockback",
             baseDamage: 20f, basePoise: 30f, hitbox: "single_target", castMobility: "free_move",

@@ -54,28 +54,28 @@ namespace Dovus.Game.Skills.Presentation
             string mech = SkillFeel.MechanicShort(skill.Mechanics);
             string adj = SkillFeel.AdjectiveShort(skill);
             string paintedName = _host.LastFactorySkill != null
-                && string.Equals(_host.LastFactorySkill.Id, skill.SkillId, StringComparison.Ordinal)
+                && string.Equals(_host.LastFactorySkill.Id, skill.Identity.Id, StringComparison.Ordinal)
                     ? _host.LastFactorySkill.DisplayName
-                    : skill.DisplayName;
+                    : skill.Identity.DisplayName;
             ElementPaintNode? paint = _host.SelectedElementPaint;
-            if ((_host.LastFactorySkill == null || _host.LastFactorySkill.Id != skill.SkillId)
+            if ((_host.LastFactorySkill == null || _host.LastFactorySkill.Id != skill.Identity.Id)
                 && paint.HasValue && !string.IsNullOrEmpty(paint.Value.NamePrefix))
                 paintedName = paint.Value.NamePrefix + " " + paintedName;
             string bangNote = string.IsNullOrEmpty(adj)
                 ? mech
                 : (string.IsNullOrEmpty(mech) ? adj : mech + " | " + adj);
             MechanicPlan mechanic = _host.LastMechanicPlan;
-            if (mechanic != null && string.Equals(mechanic.SkillId, skill.SkillId, StringComparison.Ordinal))
+            if (mechanic != null && string.Equals(mechanic.SkillId, skill.Identity.Id, StringComparison.Ordinal))
             {
                 string title = MechanicDescriber.ShortTitle(mechanic);
                 bangNote = string.IsNullOrEmpty(bangNote) ? title : title + " | " + bangNote;
             }
             _host.DebugHud?.NoteSkillBang(paintedName, bangNote);
-            SkillFeel.CameraKick(skill.VerbFamily, _host.Camera, _host.Combat?.Feel);
+            SkillFeel.CameraKick(skill.Presentation.VerbFamily, _host.Camera, _host.Combat?.Feel);
             _host.SyncVisualDelivery();
             ApplySkillAnimation(skill);
             _host.StartCastVfxTimer(skill, words);
-            _host.Sfx?.Play(SfxLibrary.CastPrefix + skill.VerbFamily);
+            _host.Sfx?.Play(SfxLibrary.CastPrefix + skill.Presentation.VerbFamily);
         }
 
         public void ApplySkillAnimation(SkillResolution skill)
@@ -91,7 +91,7 @@ namespace Dovus.Game.Skills.Presentation
 
             if (_host.Skills != null && _host.Skills.IsV61)
             {
-                int verbId = int.TryParse(skill.VerbId, out int parsed) ? parsed : 0;
+                int verbId = int.TryParse(skill.Identity.Verb, out int parsed) ? parsed : 0;
                 string weaponKey = _host.EquippedWeapon?.AnimationsKey ?? string.Empty;
                 string bindingKey = weaponKey + ":" + verbId;
                 if (_host.AnimationDatabase != null

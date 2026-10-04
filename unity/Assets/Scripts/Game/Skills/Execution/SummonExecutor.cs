@@ -144,7 +144,7 @@ namespace Dovus.Game.Skills.Execution
             body.transform.localScale = _actorKind is MechanicActorKind.Clone or MechanicActorKind.MirrorClone
                 ? new Vector3(size, size * SummonExecutorDefaults.SpawnMeshHeightMult, size)
                 : Vector3.one * size;
-            body.name = $"{_actorKind}_{Context.Skill.SkillId}_{index}";
+            body.name = $"{_actorKind}_{Context.Skill.Identity.Id}_{index}";
             Renderer renderer = body.GetComponent<Renderer>();
             if (renderer != null)
             {

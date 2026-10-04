@@ -54,7 +54,7 @@ namespace Dovus.Game.Skills.Launch
             LivingEffectPlan plan = SkillWorldPlanner.Build(skill, _host.PresentationCatalog, tuning);
 
             float rangeMult = _host.EquippedWeapon != null ? _host.EquippedWeapon.RangeMult : 1f;
-            bool burst = string.Equals(skill.VerbId, "5", StringComparison.Ordinal);
+            bool burst = string.Equals(skill.Identity.Verb, "5", StringComparison.Ordinal);
             float radius = plan.BangRadiusM > 0f ? plan.BangRadiusM : tuning.TravelHitRadiusM;
             if (kind == SkillExecutorKind.MeleeHitbox && !burst)
                 radius = tuning.TravelHitRadiusM;
@@ -70,8 +70,8 @@ namespace Dovus.Game.Skills.Launch
                 : "sphere";
             float hitboxAngleDeg = hitboxShape == "cone" ? visualSpec.SizeB : 0f;
             int elementId = _host.SelectedElementPaint?.Id ?? 1;
-            int.TryParse(skill.VerbId, out int verbVfxId);
-            int.TryParse(skill.AdjectiveId, out int adjectiveVfxId);
+            int.TryParse(skill.Identity.Verb, out int verbVfxId);
+            int.TryParse(skill.Identity.Adjective, out int adjectiveVfxId);
             string vfxKey = _host.VerbData?.VfxKey(
                 _host.SelectedElementPaint?.Name ?? elementId.ToString(),
                 verbVfxId,
@@ -266,7 +266,7 @@ namespace Dovus.Game.Skills.Launch
                 tickEffectFraction: tickEffectFraction,
                 arcAllies: arcAllies);
 
-            var go = new GameObject($"{kind}_{skill.SkillId}");
+            var go = new GameObject($"{kind}_{skill.Identity.Id}");
             go.transform.SetParent(_host.DirectorTransform, false);
             ISkillExecutor executor = kind switch
             {
@@ -282,7 +282,7 @@ namespace Dovus.Game.Skills.Launch
             if (kind == SkillExecutorKind.Summon)
                 _host.ApplySpawnIFrame(skill);
             executor.Execute(context);
-            DebugConfig.DevLog($"[SkillExecutor] {skill.SkillId} → {kind} r={radius:0.##} menzil={range:0.##} süre={durationSec:0.##} x{effectMult:0.##}");
+            DebugConfig.DevLog($"[SkillExecutor] {skill.Identity.Id} → {kind} r={radius:0.##} menzil={range:0.##} süre={durationSec:0.##} x{effectMult:0.##}");
             return true;
         }
     }

@@ -1,0 +1,5760 @@
+combo	1	1
+element_id	
+element_name	
+display_name	Yoğun Vuruş
+skill_id	1-1
+skill_job	Dar, odaklı, yüksek hasar
+verb_id	1
+verb_name	Saldırı
+verb_family	strike
+action	damage
+hitbox	projectile
+cast_mobility	free_move
+mechanics	
+adjective_id	1
+adjective_name	Yoğunlaştırma
+silhouette_axis	Yoğunlaştırma
+damage_mult	1.35
+hitbox_scale_mult	0.55
+poise_damage_mult	1.2
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	0.8
+base_resource_cost	12
+base_damage	40
+base_poise	15
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn boyunca vuruşlar +%15 hasar
+prose_feel	Sert, kararlı, tek noktaya
+prose_visual	Tek çizgi, beyaz iz
+---
+combo	1	2
+element_id	
+element_name	
+display_name	Emici Vuruş
+skill_id	1-2
+skill_job	Vurur, %30 can çalar
+verb_id	1
+verb_name	Saldırı
+verb_family	strike
+action	damage
+hitbox	projectile
+cast_mobility	free_move
+mechanics	
+adjective_id	2
+adjective_name	Emme
+silhouette_axis	Emme
+damage_mult	0.95
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	0.8
+base_resource_cost	12
+base_damage	40
+base_poise	15
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	7 sn boyunca vuruşlar can çalar
+prose_feel	Aç, emici
+prose_visual	Kırmızı iz, kan akışı
+---
+combo	1	3
+element_id	
+element_name	
+display_name	Sıçrayan Vuruş
+skill_id	1-3
+skill_job	2. hedefe %50 seker
+verb_id	1
+verb_name	Saldırı
+verb_family	strike
+action	damage
+hitbox	projectile
+cast_mobility	free_move
+mechanics	
+adjective_id	3
+adjective_name	Sıçrama
+silhouette_axis	Sıçrama
+damage_mult	1
+hitbox_scale_mult	1.1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	0.8
+base_resource_cost	12
+base_damage	40
+base_poise	15
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn boyunca vuruşlar seker
+prose_feel	Çevik, kaotik
+prose_visual	Sarı kıvılcım sekmesi
+---
+combo	1	4
+element_id	
+element_name	
+display_name	Sabit Vuruş
+skill_id	1-4
+skill_job	Poise ×1.5
+verb_id	1
+verb_name	Saldırı
+verb_family	strike
+action	damage
+hitbox	projectile
+cast_mobility	rooted
+mechanics	
+adjective_id	4
+adjective_name	Sabitleme
+silhouette_axis	Sabitleme
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1.5
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	0.8
+base_resource_cost	12
+base_damage	40
+base_poise	15
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	7 sn boyunca yerinde kalırsın, poise kırma ×1.5
+prose_feel	Ağır, kırıcı
+prose_visual	Yere çakma, toz
+---
+combo	1	5
+element_id	
+element_name	
+display_name	Yayılan Vuruş
+skill_id	1-5
+skill_job	Çevreye yayılan hasar (%85, en çok 5 hedef)
+verb_id	1
+verb_name	Saldırı
+verb_family	strike
+action	damage
+hitbox	projectile
+cast_mobility	free_move
+mechanics	
+adjective_id	5
+adjective_name	Yayma
+silhouette_axis	Yayma
+damage_mult	0.85
+hitbox_scale_mult	1.8
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	0.8
+base_resource_cost	12
+base_damage	40
+base_poise	15
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn boyunca vuruşlar alana yayılır
+prose_feel	Geniş, dalga
+prose_visual	Şok dalgası
+---
+combo	1	6
+element_id	
+element_name	
+display_name	Bağlayıcı Vuruş
+skill_id	1-6
+skill_job	1.5 sn root
+verb_id	1
+verb_name	Saldırı
+verb_family	strike
+action	damage
+hitbox	projectile
+cast_mobility	free_move
+mechanics	
+adjective_id	6
+adjective_name	Bağlama
+silhouette_axis	Bağlama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	0.8
+base_resource_cost	12
+base_damage	40
+base_poise	15
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	4 sn boyunca vuruşlar hedefi yavaşlatır
+prose_feel	Kontrolcü
+prose_visual	Zincir, bağ izi
+---
+combo	1	7
+element_id	
+element_name	
+display_name	Bulandırıcı Vuruş
+skill_id	1-7
+skill_job	İsabet -%30, 3 sn
+verb_id	1
+verb_name	Saldırı
+verb_family	strike
+action	damage
+hitbox	projectile
+cast_mobility	free_move
+mechanics	
+adjective_id	7
+adjective_name	Bulandırma
+silhouette_axis	Bulandırma
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	0.8
+base_resource_cost	12
+base_damage	40
+base_poise	15
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	6 sn boyunca vuruşlar isabet düşürür
+prose_feel	Sinsi, bozucu
+prose_visual	Karanlık duman
+---
+combo	1	8
+element_id	
+element_name	
+display_name	Yükselen Vuruş
+skill_id	1-8
+skill_job	+%10 hasar, 3 sn
+verb_id	1
+verb_name	Saldırı
+verb_family	strike
+action	damage
+hitbox	projectile
+cast_mobility	free_move
+mechanics	
+adjective_id	8
+adjective_name	Yükseltme
+silhouette_axis	Yükseltme
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	0.8
+base_resource_cost	12
+base_damage	40
+base_poise	15
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn boyunca hasarın +%15
+prose_feel	Güçlenen
+prose_visual	Altın parıltı
+---
+combo	1	9
+element_id	
+element_name	
+display_name	Odaklı Vuruş
+skill_id	1-9
+skill_job	Zırh yoksayar
+verb_id	1
+verb_name	Saldırı
+verb_family	strike
+action	damage
+hitbox	projectile
+cast_mobility	free_move
+mechanics	
+adjective_id	9
+adjective_name	Odaklama
+silhouette_axis	Odaklama
+damage_mult	1.15
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	0.8
+base_resource_cost	12
+base_damage	40
+base_poise	15
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn boyunca vuruşlar zırhı yoksayar
+prose_feel	Delici, keskin
+prose_visual	Mavi nokta, delme
+---
+combo	1	10
+element_id	
+element_name	
+display_name	Aynalı Vuruş
+skill_id	1-10
+skill_job	%30 yansıma, 2 sn
+verb_id	1
+verb_name	Saldırı
+verb_family	strike
+action	damage
+hitbox	projectile
+cast_mobility	free_move
+mechanics	
+adjective_id	10
+adjective_name	Aynalama
+silhouette_axis	Aynalama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	0.8
+base_resource_cost	12
+base_damage	40
+base_poise	15
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn boyunca hasar yansıtır
+prose_feel	Ters, ayna
+prose_visual	Gümüş yansıma
+---
+combo	1	11
+element_id	
+element_name	
+display_name	Kopya Vuruş
+skill_id	1-11
+skill_job	0.3 sn sonra 2. vuruş
+verb_id	1
+verb_name	Saldırı
+verb_family	strike
+action	damage
+hitbox	projectile
+cast_mobility	free_move
+mechanics	
+adjective_id	11
+adjective_name	Kopyalama
+silhouette_axis	Kopyalama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	0.8
+base_resource_cost	12
+base_damage	40
+base_poise	15
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn boyunca her vuruş iki kez tetiklenir
+prose_feel	İkiz, tekrarlı
+prose_visual	Çift iz
+---
+combo	1	12
+element_id	
+element_name	
+display_name	Akan Vuruş
+skill_id	1-12
+skill_job	3 sn ardışık seri
+verb_id	1
+verb_name	Saldırı
+verb_family	strike
+action	damage
+hitbox	projectile
+cast_mobility	free_move
+mechanics	
+adjective_id	12
+adjective_name	Akış
+silhouette_axis	Akış
+damage_mult	0.7
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	0.8
+base_resource_cost	12
+base_damage	40
+base_poise	15
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	4 sn boyunca sürekli vuruş akışı
+prose_feel	Sürekli, akıcı
+prose_visual	Su gibi akış
+---
+combo	2	1
+element_id	
+element_name	
+display_name	Yoğun Şifa
+skill_id	2-1
+skill_job	Anlık büyük can
+verb_id	2
+verb_name	İyileştirme
+verb_family	mend
+action	heal
+hitbox	self_aura
+cast_mobility	free_move
+mechanics	
+adjective_id	1
+adjective_name	Yoğunlaştırma
+silhouette_axis	Yoğunlaştırma
+damage_mult	1.35
+hitbox_scale_mult	0.55
+poise_damage_mult	1.2
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1
+base_resource_cost	14
+base_damage	0
+base_poise	0
+base_heal	35
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yoğunlaştırma
+prose_feel	Ani, güçlü
+prose_visual	Yeşil patlama
+---
+combo	2	2
+element_id	
+element_name	
+display_name	Emici Şifa
+skill_id	2-2
+skill_job	Dren ile verir
+verb_id	2
+verb_name	İyileştirme
+verb_family	mend
+action	drain_heal
+hitbox	self_aura
+cast_mobility	free_move
+mechanics	
+adjective_id	2
+adjective_name	Emme
+silhouette_axis	Emme
+damage_mult	0.95
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1
+base_resource_cost	14
+base_damage	0
+base_poise	0
+base_heal	35
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	7 sn pasif: Emme
+prose_feel	Sömüren
+prose_visual	Kırmızı→yeşil akış
+---
+combo	2	3
+element_id	
+element_name	
+display_name	Sıçrayan Şifa
+skill_id	2-3
+skill_job	Dosta seker
+verb_id	2
+verb_name	İyileştirme
+verb_family	mend
+action	heal
+hitbox	self_aura
+cast_mobility	free_move
+mechanics	
+adjective_id	3
+adjective_name	Sıçrama
+silhouette_axis	Sıçrama
+damage_mult	1
+hitbox_scale_mult	1.1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1
+base_resource_cost	14
+base_damage	0
+base_poise	0
+base_heal	35
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Sıçrama
+prose_feel	Bulaşıcı
+prose_visual	Yeşil sekme
+---
+combo	2	4
+element_id	
+element_name	
+display_name	Sabit Şifa
+skill_id	2-4
+skill_job	Yerleşik şifa alanı
+verb_id	2
+verb_name	İyileştirme
+verb_family	mend
+action	heal
+hitbox	self_aura
+cast_mobility	rooted
+mechanics	
+adjective_id	4
+adjective_name	Sabitleme
+silhouette_axis	Sabitleme
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1.5
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1
+base_resource_cost	14
+base_damage	0
+base_poise	0
+base_heal	35
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	7 sn pasif: Sabitleme
+prose_feel	Kalıcı, sabırlı
+prose_visual	Yeşil halka
+---
+combo	2	5
+element_id	
+element_name	
+display_name	Yayılan Şifa
+skill_id	2-5
+skill_job	Geniş alan
+verb_id	2
+verb_name	İyileştirme
+verb_family	mend
+action	heal
+hitbox	self_aura
+cast_mobility	free_move
+mechanics	
+adjective_id	5
+adjective_name	Yayma
+silhouette_axis	Yayma
+damage_mult	0.85
+hitbox_scale_mult	1.8
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1
+base_resource_cost	14
+base_damage	0
+base_poise	0
+base_heal	35
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yayma
+prose_feel	Cömert
+prose_visual	Yeşil dalga
+---
+combo	2	6
+element_id	
+element_name	
+display_name	Bağlayıcı Şifa
+skill_id	2-6
+skill_job	Dosta bağlanır
+verb_id	2
+verb_name	İyileştirme
+verb_family	mend
+action	heal
+hitbox	self_aura
+cast_mobility	free_move
+mechanics	
+adjective_id	6
+adjective_name	Bağlama
+silhouette_axis	Bağlama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1
+base_resource_cost	14
+base_damage	0
+base_poise	0
+base_heal	35
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	4 sn pasif: Bağlama
+prose_feel	Bağlı, sürekli
+prose_visual	Yeşil bağ
+---
+combo	2	7
+element_id	
+element_name	
+display_name	Bulandırıcı Şifa
+skill_id	2-7
+skill_job	Debuff temizler
+verb_id	2
+verb_name	İyileştirme
+verb_family	mend
+action	heal
+hitbox	self_aura
+cast_mobility	free_move
+mechanics	
+adjective_id	7
+adjective_name	Bulandırma
+silhouette_axis	Bulandırma
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1
+base_resource_cost	14
+base_damage	0
+base_poise	0
+base_heal	35
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	6 sn pasif: Bulandırma
+prose_feel	Temizleyici
+prose_visual	Beyaz parıltı
+---
+combo	2	8
+element_id	
+element_name	
+display_name	Yükselen Şifa
+skill_id	2-8
+skill_job	Şifa + buff
+verb_id	2
+verb_name	İyileştirme
+verb_family	mend
+action	heal
+hitbox	self_aura
+cast_mobility	free_move
+mechanics	
+adjective_id	8
+adjective_name	Yükseltme
+silhouette_axis	Yükseltme
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1
+base_resource_cost	14
+base_damage	0
+base_poise	0
+base_heal	35
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yükseltme
+prose_feel	Yükseltici
+prose_visual	Altın-yeşil
+---
+combo	2	9
+element_id	
+element_name	
+display_name	Odaklı Şifa
+skill_id	2-9
+skill_job	En yaralıyı bulur
+verb_id	2
+verb_name	İyileştirme
+verb_family	mend
+action	heal
+hitbox	self_aura
+cast_mobility	free_move
+mechanics	
+adjective_id	9
+adjective_name	Odaklama
+silhouette_axis	Odaklama
+damage_mult	1.15
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1
+base_resource_cost	14
+base_damage	0
+base_poise	0
+base_heal	35
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Odaklama
+prose_feel	Akıllı, odaklı
+prose_visual	Yeşil ok
+---
+combo	2	10
+element_id	
+element_name	
+display_name	Aynalı Şifa
+skill_id	2-10
+skill_job	Hasar→şifa
+verb_id	2
+verb_name	İyileştirme
+verb_family	mend
+action	heal
+hitbox	self_aura
+cast_mobility	free_move
+mechanics	
+adjective_id	10
+adjective_name	Aynalama
+silhouette_axis	Aynalama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1
+base_resource_cost	14
+base_damage	0
+base_poise	0
+base_heal	35
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Aynalama
+prose_feel	Dönüştürücü
+prose_visual	Gümüş-yeşil
+---
+combo	2	11
+element_id	
+element_name	
+display_name	Kopya Şifa
+skill_id	2-11
+skill_job	İki kez tetiklenir
+verb_id	2
+verb_name	İyileştirme
+verb_family	mend
+action	heal
+hitbox	self_aura
+cast_mobility	free_move
+mechanics	
+adjective_id	11
+adjective_name	Kopyalama
+silhouette_axis	Kopyalama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1
+base_resource_cost	14
+base_damage	0
+base_poise	0
+base_heal	35
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Kopyalama
+prose_feel	İkiz
+prose_visual	Çift yeşil
+---
+combo	2	12
+element_id	
+element_name	
+display_name	Akan Şifa
+skill_id	2-12
+skill_job	Sürekli regen
+verb_id	2
+verb_name	İyileştirme
+verb_family	mend
+action	heal
+hitbox	self_aura
+cast_mobility	free_move
+mechanics	
+adjective_id	12
+adjective_name	Akış
+silhouette_axis	Akış
+damage_mult	0.7
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1
+base_resource_cost	14
+base_damage	0
+base_poise	0
+base_heal	35
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	4 sn pasif: Akış
+prose_feel	Akıcı, sabırlı
+prose_visual	Yeşil nehir
+---
+combo	3	1
+element_id	
+element_name	
+display_name	Yoğun Adım
+skill_id	3-1
+skill_job	Kısa, hızlı dash
+verb_id	3
+verb_name	Hareket
+verb_family	motion
+action	dash
+hitbox	dash_line
+cast_mobility	free_move
+mechanics	
+adjective_id	1
+adjective_name	Yoğunlaştırma
+silhouette_axis	Yoğunlaştırma
+damage_mult	1.35
+hitbox_scale_mult	0.55
+poise_damage_mult	1.2
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	0.9
+base_resource_cost	10
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yoğunlaştırma
+prose_feel	Ani, kısa
+prose_visual	Beyaz iz
+---
+combo	3	2
+element_id	
+element_name	
+display_name	Emici Adım
+skill_id	3-2
+skill_job	Dash + can çal
+verb_id	3
+verb_name	Hareket
+verb_family	motion
+action	dash
+hitbox	dash_line
+cast_mobility	free_move
+mechanics	
+adjective_id	2
+adjective_name	Emme
+silhouette_axis	Emme
+damage_mult	0.95
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	0.9
+base_resource_cost	10
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	7 sn pasif: Emme
+prose_feel	Sinsi, emici
+prose_visual	Kırmızı iz
+---
+combo	3	3
+element_id	
+element_name	
+display_name	Sıçrayan Adım
+skill_id	3-3
+skill_job	Çift dash
+verb_id	3
+verb_name	Hareket
+verb_family	motion
+action	dash
+hitbox	dash_line
+cast_mobility	free_move
+mechanics	
+adjective_id	3
+adjective_name	Sıçrama
+silhouette_axis	Sıçrama
+damage_mult	1
+hitbox_scale_mult	1.1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	0.9
+base_resource_cost	10
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Sıçrama
+prose_feel	Çevik, ikiz
+prose_visual	Çift beyaz
+---
+combo	3	4
+element_id	
+element_name	
+display_name	Sabit Adım
+skill_id	3-4
+skill_job	Dash + armor
+verb_id	3
+verb_name	Hareket
+verb_family	motion
+action	dash
+hitbox	dash_line
+cast_mobility	rooted
+mechanics	
+adjective_id	4
+adjective_name	Sabitleme
+silhouette_axis	Sabitleme
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1.5
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	0.9
+base_resource_cost	10
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	7 sn pasif: Sabitleme
+prose_feel	Güvenli
+prose_visual	Mavi kalkan
+---
+combo	3	5
+element_id	
+element_name	
+display_name	Yayılan Adım
+skill_id	3-5
+skill_job	Dash + çevre hasarı
+verb_id	3
+verb_name	Hareket
+verb_family	motion
+action	dash
+hitbox	dash_line
+cast_mobility	free_move
+mechanics	
+adjective_id	5
+adjective_name	Yayma
+silhouette_axis	Yayma
+damage_mult	0.85
+hitbox_scale_mult	1.8
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	0.9
+base_resource_cost	10
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yayma
+prose_feel	Patlayıcı
+prose_visual	Şok dalgası
+---
+combo	3	6
+element_id	
+element_name	
+display_name	Bağlayıcı Adım
+skill_id	3-6
+skill_job	Dash + root
+verb_id	3
+verb_name	Hareket
+verb_family	motion
+action	dash
+hitbox	dash_line
+cast_mobility	free_move
+mechanics	
+adjective_id	6
+adjective_name	Bağlama
+silhouette_axis	Bağlama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	0.9
+base_resource_cost	10
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	4 sn pasif: Bağlama
+prose_feel	Kontrolcü
+prose_visual	Zincir izi
+---
+combo	3	7
+element_id	
+element_name	
+display_name	Bulandırıcı Adım
+skill_id	3-7
+skill_job	Dash + görünmezlik
+verb_id	3
+verb_name	Hareket
+verb_family	motion
+action	dash
+hitbox	dash_line
+cast_mobility	free_move
+mechanics	
+adjective_id	7
+adjective_name	Bulandırma
+silhouette_axis	Bulandırma
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	0.9
+base_resource_cost	10
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	6 sn pasif: Bulandırma
+prose_feel	Hayalet
+prose_visual	Karanlık iz
+---
+combo	3	8
+element_id	
+element_name	
+display_name	Yükselen Adım
+skill_id	3-8
+skill_job	Dash + hız buff
+verb_id	3
+verb_name	Hareket
+verb_family	motion
+action	dash
+hitbox	dash_line
+cast_mobility	free_move
+mechanics	
+adjective_id	8
+adjective_name	Yükseltme
+silhouette_axis	Yükseltme
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	0.9
+base_resource_cost	10
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yükseltme
+prose_feel	Hızlanan
+prose_visual	Altın iz
+---
+combo	3	9
+element_id	
+element_name	
+display_name	Odaklı Adım
+skill_id	3-9
+skill_job	Dash + kilitlenme
+verb_id	3
+verb_name	Hareket
+verb_family	motion
+action	dash
+hitbox	dash_line
+cast_mobility	free_move
+mechanics	
+adjective_id	9
+adjective_name	Odaklama
+silhouette_axis	Odaklama
+damage_mult	1.15
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	0.9
+base_resource_cost	10
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Odaklama
+prose_feel	Kilitli
+prose_visual	Mavi hedef
+---
+combo	3	10
+element_id	
+element_name	
+display_name	Aynalı Adım
+skill_id	3-10
+skill_job	Dash + iz
+verb_id	3
+verb_name	Hareket
+verb_family	motion
+action	dash
+hitbox	dash_line
+cast_mobility	free_move
+mechanics	
+adjective_id	10
+adjective_name	Aynalama
+silhouette_axis	Aynalama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	0.9
+base_resource_cost	10
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Aynalama
+prose_feel	İz bırakan
+prose_visual	Gümüş iz
+---
+combo	3	11
+element_id	
+element_name	
+display_name	Kopya Adım
+skill_id	3-11
+skill_job	Dash + klon
+verb_id	3
+verb_name	Hareket
+verb_family	motion
+action	dash
+hitbox	dash_line
+cast_mobility	free_move
+mechanics	
+adjective_id	11
+adjective_name	Kopyalama
+silhouette_axis	Kopyalama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	0.9
+base_resource_cost	10
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Kopyalama
+prose_feel	İkiz
+prose_visual	Aynı figür
+---
+combo	3	12
+element_id	
+element_name	
+display_name	Akan Adım
+skill_id	3-12
+skill_job	Sürekli hız
+verb_id	3
+verb_name	Hareket
+verb_family	motion
+action	dash
+hitbox	dash_line
+cast_mobility	free_move
+mechanics	
+adjective_id	12
+adjective_name	Akış
+silhouette_axis	Akış
+damage_mult	0.7
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	0.9
+base_resource_cost	10
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	4 sn pasif: Akış
+prose_feel	Akıcı
+prose_visual	Mavi akış
+---
+combo	4	1
+element_id	
+element_name	
+display_name	Yoğun Kalkan
+skill_id	4-1
+skill_job	Dar, güçlü armor
+verb_id	4
+verb_name	Savunma
+verb_family	guard
+action	shield
+hitbox	self
+cast_mobility	free_move
+mechanics	shield
+adjective_id	1
+adjective_name	Yoğunlaştırma
+silhouette_axis	Yoğunlaştırma
+damage_mult	1.35
+hitbox_scale_mult	0.55
+poise_damage_mult	1.2
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yoğunlaştırma
+prose_feel	Sağlam
+prose_visual	Mavi dar halka
+---
+combo	4	2
+element_id	
+element_name	
+display_name	Emici Kalkan
+skill_id	4-2
+skill_job	Hasar→can
+verb_id	4
+verb_name	Savunma
+verb_family	guard
+action	shield
+hitbox	self
+cast_mobility	free_move
+mechanics	shield
+adjective_id	2
+adjective_name	Emme
+silhouette_axis	Emme
+damage_mult	0.95
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	7 sn pasif: Emme
+prose_feel	Emici
+prose_visual	Kırmızı→mavi
+---
+combo	4	3
+element_id	
+element_name	
+display_name	Sıçrayan Kalkan
+skill_id	4-3
+skill_job	Dosta seker
+verb_id	4
+verb_name	Savunma
+verb_family	guard
+action	shield
+hitbox	self
+cast_mobility	free_move
+mechanics	shield
+adjective_id	3
+adjective_name	Sıçrama
+silhouette_axis	Sıçrama
+damage_mult	1
+hitbox_scale_mult	1.1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Sıçrama
+prose_feel	Paylaşımcı
+prose_visual	Mavi sekme
+---
+combo	4	4
+element_id	
+element_name	
+display_name	Sabit Kalkan
+skill_id	4-4
+skill_job	Uzun armor
+verb_id	4
+verb_name	Savunma
+verb_family	guard
+action	shield
+hitbox	self
+cast_mobility	rooted
+mechanics	shield
+adjective_id	4
+adjective_name	Sabitleme
+silhouette_axis	Sabitleme
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1.5
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	7 sn pasif: Sabitleme
+prose_feel	Kalıcı
+prose_visual	Mavi kubbe
+---
+combo	4	5
+element_id	
+element_name	
+display_name	Yayılan Kalkan
+skill_id	4-5
+skill_job	Geniş alan armor
+verb_id	4
+verb_name	Savunma
+verb_family	guard
+action	shield
+hitbox	self
+cast_mobility	free_move
+mechanics	shield
+adjective_id	5
+adjective_name	Yayma
+silhouette_axis	Yayma
+damage_mult	0.85
+hitbox_scale_mult	1.8
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yayma
+prose_feel	Koruyucu
+prose_visual	Mavi dalga
+---
+combo	4	6
+element_id	
+element_name	
+display_name	Bağlayıcı Kalkan
+skill_id	4-6
+skill_job	Dosta bağlanır
+verb_id	4
+verb_name	Savunma
+verb_family	guard
+action	shield
+hitbox	self
+cast_mobility	free_move
+mechanics	shield
+adjective_id	6
+adjective_name	Bağlama
+silhouette_axis	Bağlama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	4 sn pasif: Bağlama
+prose_feel	Bağlı
+prose_visual	Mavi bağ
+---
+combo	4	7
+element_id	
+element_name	
+display_name	Bulandırıcı Kalkan
+skill_id	4-7
+skill_job	Vurana yavaşlatma
+verb_id	4
+verb_name	Savunma
+verb_family	guard
+action	shield
+hitbox	self
+cast_mobility	free_move
+mechanics	shield
+adjective_id	7
+adjective_name	Bulandırma
+silhouette_axis	Bulandırma
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	6 sn pasif: Bulandırma
+prose_feel	Tuzakçı
+prose_visual	Mavi duman
+---
+combo	4	8
+element_id	
+element_name	
+display_name	Yükselen Kalkan
+skill_id	4-8
+skill_job	Kalkan + buff
+verb_id	4
+verb_name	Savunma
+verb_family	guard
+action	shield
+hitbox	self
+cast_mobility	free_move
+mechanics	shield
+adjective_id	8
+adjective_name	Yükseltme
+silhouette_axis	Yükseltme
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yükseltme
+prose_feel	Güçlendirici
+prose_visual	Altın-mavi
+---
+combo	4	9
+element_id	
+element_name	
+display_name	Odaklı Kalkan
+skill_id	4-9
+skill_job	En çok hasarlıyı korur
+verb_id	4
+verb_name	Savunma
+verb_family	guard
+action	shield
+hitbox	self
+cast_mobility	free_move
+mechanics	shield
+adjective_id	9
+adjective_name	Odaklama
+silhouette_axis	Odaklama
+damage_mult	1.15
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Odaklama
+prose_feel	Akıllı
+prose_visual	Mavi hedef
+---
+combo	4	10
+element_id	
+element_name	
+display_name	Aynalı Kalkan
+skill_id	4-10
+skill_job	%30 yansıma
+verb_id	4
+verb_name	Savunma
+verb_family	guard
+action	shield
+hitbox	self
+cast_mobility	free_move
+mechanics	shield
+adjective_id	10
+adjective_name	Aynalama
+silhouette_axis	Aynalama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Aynalama
+prose_feel	Yansıtıcı
+prose_visual	Gümüş kubbe
+---
+combo	4	11
+element_id	
+element_name	
+display_name	Kopya Kalkan
+skill_id	4-11
+skill_job	İki katman
+verb_id	4
+verb_name	Savunma
+verb_family	guard
+action	shield
+hitbox	self
+cast_mobility	free_move
+mechanics	shield
+adjective_id	11
+adjective_name	Kopyalama
+silhouette_axis	Kopyalama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Kopyalama
+prose_feel	İkiz
+prose_visual	Çift kubbe
+---
+combo	4	12
+element_id	
+element_name	
+display_name	Akan Kalkan
+skill_id	4-12
+skill_job	Sürekli yenilenen
+verb_id	4
+verb_name	Savunma
+verb_family	guard
+action	shield
+hitbox	self
+cast_mobility	free_move
+mechanics	shield
+adjective_id	12
+adjective_name	Akış
+silhouette_axis	Akış
+damage_mult	0.7
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	4 sn pasif: Akış
+prose_feel	Yenilenen
+prose_visual	Mavi akış
+---
+combo	5	1
+element_id	
+element_name	
+display_name	Yoğun Patlama
+skill_id	5-1
+skill_job	Dar, güçlü alan
+verb_id	5
+verb_name	Patlama
+verb_family	strike
+action	damage
+hitbox	ground_ring
+cast_mobility	free_move
+mechanics	
+adjective_id	1
+adjective_name	Yoğunlaştırma
+silhouette_axis	Yoğunlaştırma
+damage_mult	1.35
+hitbox_scale_mult	0.55
+poise_damage_mult	1.2
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.4
+base_resource_cost	16
+base_damage	28
+base_poise	20
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yoğunlaştırma
+prose_feel	Odaklı yıkım
+prose_visual	Kırmızı dar patlama
+---
+combo	5	2
+element_id	
+element_name	
+display_name	Emici Patlama
+skill_id	5-2
+skill_job	Alan + can çalma
+verb_id	5
+verb_name	Patlama
+verb_family	strike
+action	damage
+hitbox	ground_ring
+cast_mobility	free_move
+mechanics	
+adjective_id	2
+adjective_name	Emme
+silhouette_axis	Emme
+damage_mult	0.95
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.4
+base_resource_cost	16
+base_damage	28
+base_poise	20
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	7 sn pasif: Emme
+prose_feel	Sömüren
+prose_visual	Kırmızı→mor
+---
+combo	5	3
+element_id	
+element_name	
+display_name	Sıçrayan Patlama
+skill_id	5-3
+skill_job	2. hedefe seker
+verb_id	5
+verb_name	Patlama
+verb_family	strike
+action	damage
+hitbox	ground_ring
+cast_mobility	free_move
+mechanics	
+adjective_id	3
+adjective_name	Sıçrama
+silhouette_axis	Sıçrama
+damage_mult	1
+hitbox_scale_mult	1.1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.4
+base_resource_cost	16
+base_damage	28
+base_poise	20
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Sıçrama
+prose_feel	Kaotik
+prose_visual	Turuncu sekme
+---
+combo	5	4
+element_id	
+element_name	
+display_name	Sabit Patlama
+skill_id	5-4
+skill_job	Yerleşik alan (+2 sn)
+verb_id	5
+verb_name	Patlama
+verb_family	strike
+action	damage
+hitbox	ground_ring
+cast_mobility	rooted
+mechanics	
+adjective_id	4
+adjective_name	Sabitleme
+silhouette_axis	Sabitleme
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1.5
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.4
+base_resource_cost	16
+base_damage	28
+base_poise	20
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	7 sn pasif: Sabitleme
+prose_feel	Kalıcı
+prose_visual	Turuncu halka
+---
+combo	5	5
+element_id	
+element_name	
+display_name	Yayılan Patlama
+skill_id	5-5
+skill_job	Geniş alan
+verb_id	5
+verb_name	Patlama
+verb_family	strike
+action	damage
+hitbox	ground_ring
+cast_mobility	free_move
+mechanics	
+adjective_id	5
+adjective_name	Yayma
+silhouette_axis	Yayma
+damage_mult	0.85
+hitbox_scale_mult	1.8
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.4
+base_resource_cost	16
+base_damage	28
+base_poise	20
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yayma
+prose_feel	Büyük yıkım
+prose_visual	Turuncu dalga
+---
+combo	5	6
+element_id	
+element_name	
+display_name	Bağlayıcı Patlama
+skill_id	5-6
+skill_job	Patlama + root
+verb_id	5
+verb_name	Patlama
+verb_family	strike
+action	damage
+hitbox	ground_ring
+cast_mobility	free_move
+mechanics	
+adjective_id	6
+adjective_name	Bağlama
+silhouette_axis	Bağlama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.4
+base_resource_cost	16
+base_damage	28
+base_poise	20
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	4 sn pasif: Bağlama
+prose_feel	Kontrolcü
+prose_visual	Turuncu zincir
+---
+combo	5	7
+element_id	
+element_name	
+display_name	Bulandırıcı Patlama
+skill_id	5-7
+skill_job	Patlama + kör
+verb_id	5
+verb_name	Patlama
+verb_family	strike
+action	damage
+hitbox	ground_ring
+cast_mobility	free_move
+mechanics	
+adjective_id	7
+adjective_name	Bulandırma
+silhouette_axis	Bulandırma
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.4
+base_resource_cost	16
+base_damage	28
+base_poise	20
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	6 sn pasif: Bulandırma
+prose_feel	Şaşırtıcı
+prose_visual	Beyaz flaş
+---
+combo	5	8
+element_id	
+element_name	
+display_name	Yükselen Patlama
+skill_id	5-8
+skill_job	Patlama + buff
+verb_id	5
+verb_name	Patlama
+verb_family	strike
+action	damage
+hitbox	ground_ring
+cast_mobility	free_move
+mechanics	
+adjective_id	8
+adjective_name	Yükseltme
+silhouette_axis	Yükseltme
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.4
+base_resource_cost	16
+base_damage	28
+base_poise	20
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yükseltme
+prose_feel	Güçlendirici
+prose_visual	Altın patlama
+---
+combo	5	9
+element_id	
+element_name	
+display_name	Odaklı Patlama
+skill_id	5-9
+skill_job	Tek hedef, %15 fazla
+verb_id	5
+verb_name	Patlama
+verb_family	strike
+action	damage
+hitbox	ground_ring
+cast_mobility	free_move
+mechanics	
+adjective_id	9
+adjective_name	Odaklama
+silhouette_axis	Odaklama
+damage_mult	1.15
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.4
+base_resource_cost	16
+base_damage	28
+base_poise	20
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Odaklama
+prose_feel	Kilitli
+prose_visual	Mavi ateş
+---
+combo	5	10
+element_id	
+element_name	
+display_name	Aynalı Patlama
+skill_id	5-10
+skill_job	%30 yansıma
+verb_id	5
+verb_name	Patlama
+verb_family	strike
+action	damage
+hitbox	ground_ring
+cast_mobility	free_move
+mechanics	
+adjective_id	10
+adjective_name	Aynalama
+silhouette_axis	Aynalama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.4
+base_resource_cost	16
+base_damage	28
+base_poise	20
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Aynalama
+prose_feel	Yansıtıcı
+prose_visual	Gümüş patlama
+---
+combo	5	11
+element_id	
+element_name	
+display_name	Kopya Patlama
+skill_id	5-11
+skill_job	0.3 sn sonra 2.
+verb_id	5
+verb_name	Patlama
+verb_family	strike
+action	damage
+hitbox	ground_ring
+cast_mobility	free_move
+mechanics	
+adjective_id	11
+adjective_name	Kopyalama
+silhouette_axis	Kopyalama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.4
+base_resource_cost	16
+base_damage	28
+base_poise	20
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Kopyalama
+prose_feel	İkiz
+prose_visual	Çift patlama
+---
+combo	5	12
+element_id	
+element_name	
+display_name	Akan Patlama
+skill_id	5-12
+skill_job	Sürekli seri
+verb_id	5
+verb_name	Patlama
+verb_family	strike
+action	damage
+hitbox	ground_ring
+cast_mobility	free_move
+mechanics	
+adjective_id	12
+adjective_name	Akış
+silhouette_axis	Akış
+damage_mult	0.7
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.4
+base_resource_cost	16
+base_damage	28
+base_poise	20
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	4 sn pasif: Akış
+prose_feel	Sürekli yıkım
+prose_visual	Zincir patlamalar
+---
+combo	6	1
+element_id	
+element_name	
+display_name	Yoğun Bağ
+skill_id	6-1
+skill_job	1.5 sn stun
+verb_id	6
+verb_name	Kontrol
+verb_family	control
+action	cc
+hitbox	target
+cast_mobility	free_move
+mechanics	stun
+adjective_id	1
+adjective_name	Yoğunlaştırma
+silhouette_axis	Yoğunlaştırma
+damage_mult	1.35
+hitbox_scale_mult	0.55
+poise_damage_mult	1.2
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.5
+base_resource_cost	14
+base_damage	8
+base_poise	0
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yoğunlaştırma
+prose_feel	Sert, kısa
+prose_visual	Beyaz dar halka
+---
+combo	6	2
+element_id	
+element_name	
+display_name	Emici Bağ
+skill_id	6-2
+skill_job	CC + can çal
+verb_id	6
+verb_name	Kontrol
+verb_family	control
+action	cc
+hitbox	target
+cast_mobility	free_move
+mechanics	root
+adjective_id	2
+adjective_name	Emme
+silhouette_axis	Emme
+damage_mult	0.95
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.5
+base_resource_cost	14
+base_damage	8
+base_poise	0
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	7 sn pasif: Emme
+prose_feel	Sinsi
+prose_visual	Mor halka
+---
+combo	6	3
+element_id	
+element_name	
+display_name	Sıçrayan Bağ
+skill_id	6-3
+skill_job	2. hedefe seker
+verb_id	6
+verb_name	Kontrol
+verb_family	control
+action	cc
+hitbox	target
+cast_mobility	free_move
+mechanics	root
+adjective_id	3
+adjective_name	Sıçrama
+silhouette_axis	Sıçrama
+damage_mult	1
+hitbox_scale_mult	1.1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.5
+base_resource_cost	14
+base_damage	8
+base_poise	0
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Sıçrama
+prose_feel	Bulaşıcı
+prose_visual	Mor sekme
+---
+combo	6	4
+element_id	
+element_name	
+display_name	Sabit Bağ
+skill_id	6-4
+skill_job	1.5 sn root
+verb_id	6
+verb_name	Kontrol
+verb_family	control
+action	cc
+hitbox	target
+cast_mobility	rooted
+mechanics	root
+adjective_id	4
+adjective_name	Sabitleme
+silhouette_axis	Sabitleme
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1.5
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.5
+base_resource_cost	14
+base_damage	8
+base_poise	0
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	7 sn pasif: Sabitleme
+prose_feel	Uzun, sabırlı
+prose_visual	Kalın zincir
+---
+combo	6	5
+element_id	
+element_name	
+display_name	Yayılan Bağ
+skill_id	6-5
+skill_job	Alan CC
+verb_id	6
+verb_name	Kontrol
+verb_family	control
+action	cc
+hitbox	target
+cast_mobility	free_move
+mechanics	root
+adjective_id	5
+adjective_name	Yayma
+silhouette_axis	Yayma
+damage_mult	0.85
+hitbox_scale_mult	1.8
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.5
+base_resource_cost	14
+base_damage	8
+base_poise	0
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yayma
+prose_feel	Kuşatıcı
+prose_visual	Geniş halka
+---
+combo	6	6
+element_id	
+element_name	
+display_name	Bağlayıcı Bağ
+skill_id	6-6
+skill_job	Çift CC
+verb_id	6
+verb_name	Kontrol
+verb_family	control
+action	cc
+hitbox	target
+cast_mobility	free_move
+mechanics	root
+adjective_id	6
+adjective_name	Bağlama
+silhouette_axis	Bağlama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.5
+base_resource_cost	14
+base_damage	8
+base_poise	0
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	4 sn pasif: Bağlama
+prose_feel	İkiz
+prose_visual	Çift zincir
+---
+combo	6	7
+element_id	
+element_name	
+display_name	Bulandırıcı Bağ
+skill_id	6-7
+skill_job	CC + kör
+verb_id	6
+verb_name	Kontrol
+verb_family	control
+action	cc
+hitbox	target
+cast_mobility	free_move
+mechanics	root
+adjective_id	7
+adjective_name	Bulandırma
+silhouette_axis	Bulandırma
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.5
+base_resource_cost	14
+base_damage	8
+base_poise	0
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	6 sn pasif: Bulandırma
+prose_feel	Şaşırtıcı
+prose_visual	Siyah duman
+---
+combo	6	8
+element_id	
+element_name	
+display_name	Yükselen Bağ
+skill_id	6-8
+skill_job	CC + buff
+verb_id	6
+verb_name	Kontrol
+verb_family	control
+action	cc
+hitbox	target
+cast_mobility	free_move
+mechanics	root
+adjective_id	8
+adjective_name	Yükseltme
+silhouette_axis	Yükseltme
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.5
+base_resource_cost	14
+base_damage	8
+base_poise	0
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yükseltme
+prose_feel	Güçlendirici
+prose_visual	Altın zincir
+---
+combo	6	9
+element_id	
+element_name	
+display_name	Odaklı Bağ
+skill_id	6-9
+skill_job	Tek hedefe uzun kilit
+verb_id	6
+verb_name	Kontrol
+verb_family	control
+action	cc
+hitbox	target
+cast_mobility	free_move
+mechanics	root
+adjective_id	9
+adjective_name	Odaklama
+silhouette_axis	Odaklama
+damage_mult	1.15
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.5
+base_resource_cost	14
+base_damage	8
+base_poise	0
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Odaklama
+prose_feel	Kilitli
+prose_visual	Kırmızı hedef
+---
+combo	6	10
+element_id	
+element_name	
+display_name	Aynalı Bağ
+skill_id	6-10
+skill_job	CC + yansıma
+verb_id	6
+verb_name	Kontrol
+verb_family	control
+action	cc
+hitbox	target
+cast_mobility	free_move
+mechanics	root
+adjective_id	10
+adjective_name	Aynalama
+silhouette_axis	Aynalama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.5
+base_resource_cost	14
+base_damage	8
+base_poise	0
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Aynalama
+prose_feel	Yansıtıcı
+prose_visual	Gümüş zincir
+---
+combo	6	11
+element_id	
+element_name	
+display_name	Kopya Bağ
+skill_id	6-11
+skill_job	İki CC
+verb_id	6
+verb_name	Kontrol
+verb_family	control
+action	cc
+hitbox	target
+cast_mobility	free_move
+mechanics	root
+adjective_id	11
+adjective_name	Kopyalama
+silhouette_axis	Kopyalama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.5
+base_resource_cost	14
+base_damage	8
+base_poise	0
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Kopyalama
+prose_feel	İkiz
+prose_visual	Çift halka
+---
+combo	6	12
+element_id	
+element_name	
+display_name	Akan Bağ
+skill_id	6-12
+skill_job	Sürekli CC alanı
+verb_id	6
+verb_name	Kontrol
+verb_family	control
+action	cc
+hitbox	target
+cast_mobility	free_move
+mechanics	root
+adjective_id	12
+adjective_name	Akış
+silhouette_axis	Akış
+damage_mult	0.7
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.5
+base_resource_cost	14
+base_damage	8
+base_poise	0
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	4 sn pasif: Akış
+prose_feel	Kuşatıcı
+prose_visual	Mor akış
+---
+combo	7	1
+element_id	
+element_name	
+display_name	Yoğun Zafiyet
+skill_id	7-1
+skill_job	Armor -%20, 4 sn
+verb_id	7
+verb_name	Zayıflatma
+verb_family	disrupt
+action	debuff
+hitbox	target
+cast_mobility	free_move
+mechanics	
+adjective_id	1
+adjective_name	Yoğunlaştırma
+silhouette_axis	Yoğunlaştırma
+damage_mult	1.35
+hitbox_scale_mult	0.55
+poise_damage_mult	1.2
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	5
+base_poise	0
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yoğunlaştırma
+prose_feel	Sert debuff
+prose_visual	Siyah dar halka
+---
+combo	7	2
+element_id	
+element_name	
+display_name	Emici Zafiyet
+skill_id	7-2
+skill_job	Debuff + can çal
+verb_id	7
+verb_name	Zayıflatma
+verb_family	disrupt
+action	debuff
+hitbox	target
+cast_mobility	free_move
+mechanics	
+adjective_id	2
+adjective_name	Emme
+silhouette_axis	Emme
+damage_mult	0.95
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	5
+base_poise	0
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	7 sn pasif: Emme
+prose_feel	Sinsi
+prose_visual	Mor akış
+---
+combo	7	3
+element_id	
+element_name	
+display_name	Sıçrayan Zafiyet
+skill_id	7-3
+skill_job	2. hedefe seker
+verb_id	7
+verb_name	Zayıflatma
+verb_family	disrupt
+action	debuff
+hitbox	target
+cast_mobility	free_move
+mechanics	
+adjective_id	3
+adjective_name	Sıçrama
+silhouette_axis	Sıçrama
+damage_mult	1
+hitbox_scale_mult	1.1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	5
+base_poise	0
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Sıçrama
+prose_feel	Bulaşıcı
+prose_visual	Siyah sekme
+---
+combo	7	4
+element_id	
+element_name	
+display_name	Sabit Zafiyet
+skill_id	7-4
+skill_job	4 sn debuff
+verb_id	7
+verb_name	Zayıflatma
+verb_family	disrupt
+action	debuff
+hitbox	target
+cast_mobility	rooted
+mechanics	
+adjective_id	4
+adjective_name	Sabitleme
+silhouette_axis	Sabitleme
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1.5
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	5
+base_poise	0
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	7 sn pasif: Sabitleme
+prose_feel	Kalıcı
+prose_visual	Uzun duman
+---
+combo	7	5
+element_id	
+element_name	
+display_name	Yayılan Zafiyet
+skill_id	7-5
+skill_job	Alan debuff
+verb_id	7
+verb_name	Zayıflatma
+verb_family	disrupt
+action	debuff
+hitbox	target
+cast_mobility	free_move
+mechanics	
+adjective_id	5
+adjective_name	Yayma
+silhouette_axis	Yayma
+damage_mult	0.85
+hitbox_scale_mult	1.8
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	5
+base_poise	0
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yayma
+prose_feel	Kuşatıcı
+prose_visual	Siyah dalga
+---
+combo	7	6
+element_id	
+element_name	
+display_name	Bağlayıcı Zafiyet
+skill_id	7-6
+skill_job	Debuff + root
+verb_id	7
+verb_name	Zayıflatma
+verb_family	disrupt
+action	debuff
+hitbox	target
+cast_mobility	free_move
+mechanics	
+adjective_id	6
+adjective_name	Bağlama
+silhouette_axis	Bağlama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	5
+base_poise	0
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	4 sn pasif: Bağlama
+prose_feel	Kontrolcü
+prose_visual	Siyah zincir
+---
+combo	7	7
+element_id	
+element_name	
+display_name	Bulandırıcı Zafiyet
+skill_id	7-7
+skill_job	Çift debuff
+verb_id	7
+verb_name	Zayıflatma
+verb_family	disrupt
+action	debuff
+hitbox	target
+cast_mobility	free_move
+mechanics	
+adjective_id	7
+adjective_name	Bulandırma
+silhouette_axis	Bulandırma
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	5
+base_poise	0
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	6 sn pasif: Bulandırma
+prose_feel	Ağır
+prose_visual	Çift duman
+---
+combo	7	8
+element_id	
+element_name	
+display_name	Yükselen Zafiyet
+skill_id	7-8
+skill_job	Debuff + buff
+verb_id	7
+verb_name	Zayıflatma
+verb_family	disrupt
+action	debuff
+hitbox	target
+cast_mobility	free_move
+mechanics	
+adjective_id	8
+adjective_name	Yükseltme
+silhouette_axis	Yükseltme
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	5
+base_poise	0
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yükseltme
+prose_feel	Güçlendirici
+prose_visual	Siyah-altın
+---
+combo	7	9
+element_id	
+element_name	
+display_name	Odaklı Zafiyet
+skill_id	7-9
+skill_job	Armor -%50
+verb_id	7
+verb_name	Zayıflatma
+verb_family	disrupt
+action	debuff
+hitbox	target
+cast_mobility	free_move
+mechanics	
+adjective_id	9
+adjective_name	Odaklama
+silhouette_axis	Odaklama
+damage_mult	1.15
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	5
+base_poise	0
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Odaklama
+prose_feel	Delici
+prose_visual	Kırmızı hedef
+---
+combo	7	10
+element_id	
+element_name	
+display_name	Aynalı Zafiyet
+skill_id	7-10
+skill_job	Debuff + yansıma
+verb_id	7
+verb_name	Zayıflatma
+verb_family	disrupt
+action	debuff
+hitbox	target
+cast_mobility	free_move
+mechanics	
+adjective_id	10
+adjective_name	Aynalama
+silhouette_axis	Aynalama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	5
+base_poise	0
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Aynalama
+prose_feel	Yansıtıcı
+prose_visual	Gümüş duman
+---
+combo	7	11
+element_id	
+element_name	
+display_name	Kopya Zafiyet
+skill_id	7-11
+skill_job	İki debuff
+verb_id	7
+verb_name	Zayıflatma
+verb_family	disrupt
+action	debuff
+hitbox	target
+cast_mobility	free_move
+mechanics	
+adjective_id	11
+adjective_name	Kopyalama
+silhouette_axis	Kopyalama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	5
+base_poise	0
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Kopyalama
+prose_feel	İkiz
+prose_visual	Çift halka
+---
+combo	7	12
+element_id	
+element_name	
+display_name	Akan Zafiyet
+skill_id	7-12
+skill_job	Sürekli debuff alanı
+verb_id	7
+verb_name	Zayıflatma
+verb_family	disrupt
+action	debuff
+hitbox	target
+cast_mobility	free_move
+mechanics	
+adjective_id	12
+adjective_name	Akış
+silhouette_axis	Akış
+damage_mult	0.7
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	5
+base_poise	0
+base_heal	0
+crit_eligible	True
+element_origin	
+damage_type	
+is_complete	True
+passive_description	4 sn pasif: Akış
+prose_feel	Kuşatıcı
+prose_visual	Siyah akış
+---
+combo	8	1
+element_id	
+element_name	
+display_name	Yoğun Yükseliş
+skill_id	8-1
+skill_job	+%20 hasar, 3 sn
+verb_id	8
+verb_name	Güçlendirme
+verb_family	guard
+action	buff
+hitbox	self_or_ally
+cast_mobility	free_move
+mechanics	
+adjective_id	1
+adjective_name	Yoğunlaştırma
+silhouette_axis	Yoğunlaştırma
+damage_mult	1.35
+hitbox_scale_mult	0.55
+poise_damage_mult	1.2
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yoğunlaştırma
+prose_feel	Ani güç
+prose_visual	Altın patlama
+---
+combo	8	2
+element_id	
+element_name	
+display_name	Emici Yükseliş
+skill_id	8-2
+skill_job	Buff + can çal
+verb_id	8
+verb_name	Güçlendirme
+verb_family	guard
+action	buff
+hitbox	self_or_ally
+cast_mobility	free_move
+mechanics	
+adjective_id	2
+adjective_name	Emme
+silhouette_axis	Emme
+damage_mult	0.95
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	7 sn pasif: Emme
+prose_feel	Sömüren
+prose_visual	Altın-mor
+---
+combo	8	3
+element_id	
+element_name	
+display_name	Sıçrayan Yükseliş
+skill_id	8-3
+skill_job	Dosta seker
+verb_id	8
+verb_name	Güçlendirme
+verb_family	guard
+action	buff
+hitbox	self_or_ally
+cast_mobility	free_move
+mechanics	
+adjective_id	3
+adjective_name	Sıçrama
+silhouette_axis	Sıçrama
+damage_mult	1
+hitbox_scale_mult	1.1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Sıçrama
+prose_feel	Paylaşımcı
+prose_visual	Altın sekme
+---
+combo	8	4
+element_id	
+element_name	
+display_name	Sabit Yükseliş
+skill_id	8-4
+skill_job	3 sn buff
+verb_id	8
+verb_name	Güçlendirme
+verb_family	guard
+action	buff
+hitbox	self_or_ally
+cast_mobility	rooted
+mechanics	
+adjective_id	4
+adjective_name	Sabitleme
+silhouette_axis	Sabitleme
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1.5
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	7 sn pasif: Sabitleme
+prose_feel	Kalıcı
+prose_visual	Altın halka
+---
+combo	8	5
+element_id	
+element_name	
+display_name	Yayılan Yükseliş
+skill_id	8-5
+skill_job	Alan buff
+verb_id	8
+verb_name	Güçlendirme
+verb_family	guard
+action	buff
+hitbox	self_or_ally
+cast_mobility	free_move
+mechanics	
+adjective_id	5
+adjective_name	Yayma
+silhouette_axis	Yayma
+damage_mult	0.85
+hitbox_scale_mult	1.8
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yayma
+prose_feel	Cömert
+prose_visual	Altın dalga
+---
+combo	8	6
+element_id	
+element_name	
+display_name	Bağlayıcı Yükseliş
+skill_id	8-6
+skill_job	Dosta bağlanır
+verb_id	8
+verb_name	Güçlendirme
+verb_family	guard
+action	buff
+hitbox	self_or_ally
+cast_mobility	free_move
+mechanics	
+adjective_id	6
+adjective_name	Bağlama
+silhouette_axis	Bağlama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	4 sn pasif: Bağlama
+prose_feel	Bağlı
+prose_visual	Altın bağ
+---
+combo	8	7
+element_id	
+element_name	
+display_name	Bulandırıcı Yükseliş
+skill_id	8-7
+skill_job	Buff + debuff
+verb_id	8
+verb_name	Güçlendirme
+verb_family	guard
+action	buff
+hitbox	self_or_ally
+cast_mobility	free_move
+mechanics	
+adjective_id	7
+adjective_name	Bulandırma
+silhouette_axis	Bulandırma
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	6 sn pasif: Bulandırma
+prose_feel	İki yönlü
+prose_visual	Altın-siyah
+---
+combo	8	8
+element_id	
+element_name	
+display_name	Yükselen Yükseliş
+skill_id	8-8
+skill_job	Çift buff
+verb_id	8
+verb_name	Güçlendirme
+verb_family	guard
+action	buff
+hitbox	self_or_ally
+cast_mobility	free_move
+mechanics	
+adjective_id	8
+adjective_name	Yükseltme
+silhouette_axis	Yükseltme
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yükseltme
+prose_feel	İkiz
+prose_visual	Çift altın
+---
+combo	8	9
+element_id	
+element_name	
+display_name	Odaklı Yükseliş
+skill_id	8-9
+skill_job	En güçlü dosta +%20
+verb_id	8
+verb_name	Güçlendirme
+verb_family	guard
+action	buff
+hitbox	self_or_ally
+cast_mobility	free_move
+mechanics	
+adjective_id	9
+adjective_name	Odaklama
+silhouette_axis	Odaklama
+damage_mult	1.15
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Odaklama
+prose_feel	Akıllı
+prose_visual	Altın hedef
+---
+combo	8	10
+element_id	
+element_name	
+display_name	Aynalı Yükseliş
+skill_id	8-10
+skill_job	Buff + yansıma
+verb_id	8
+verb_name	Güçlendirme
+verb_family	guard
+action	buff
+hitbox	self_or_ally
+cast_mobility	free_move
+mechanics	
+adjective_id	10
+adjective_name	Aynalama
+silhouette_axis	Aynalama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Aynalama
+prose_feel	Yansıtıcı
+prose_visual	Gümüş-altın
+---
+combo	8	11
+element_id	
+element_name	
+display_name	Kopya Yükseliş
+skill_id	8-11
+skill_job	Buff iki kez
+verb_id	8
+verb_name	Güçlendirme
+verb_family	guard
+action	buff
+hitbox	self_or_ally
+cast_mobility	free_move
+mechanics	
+adjective_id	11
+adjective_name	Kopyalama
+silhouette_axis	Kopyalama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Kopyalama
+prose_feel	İkiz
+prose_visual	Çift halka
+---
+combo	8	12
+element_id	
+element_name	
+display_name	Akan Yükseliş
+skill_id	8-12
+skill_job	Sürekli artan buff
+verb_id	8
+verb_name	Güçlendirme
+verb_family	guard
+action	buff
+hitbox	self_or_ally
+cast_mobility	free_move
+mechanics	
+adjective_id	12
+adjective_name	Akış
+silhouette_axis	Akış
+damage_mult	0.7
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1.2
+base_resource_cost	12
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	4 sn pasif: Akış
+prose_feel	Yükselen
+prose_visual	Altın akış
+---
+combo	9	1
+element_id	
+element_name	
+display_name	Yoğun Arınma
+skill_id	9-1
+skill_job	1 debuff sil
+verb_id	9
+verb_name	Arındırma
+verb_family	purge
+action	cleanse
+hitbox	self_or_ally
+cast_mobility	free_move
+mechanics	cleanse
+adjective_id	1
+adjective_name	Yoğunlaştırma
+silhouette_axis	Yoğunlaştırma
+damage_mult	1.35
+hitbox_scale_mult	0.55
+poise_damage_mult	1.2
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1
+base_resource_cost	10
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yoğunlaştırma
+prose_feel	Ani temizlik
+prose_visual	Beyaz flaş
+---
+combo	9	2
+element_id	
+element_name	
+display_name	Emici Arınma
+skill_id	9-2
+skill_job	Debuff→can
+verb_id	9
+verb_name	Arındırma
+verb_family	purge
+action	cleanse
+hitbox	self_or_ally
+cast_mobility	free_move
+mechanics	cleanse
+adjective_id	2
+adjective_name	Emme
+silhouette_axis	Emme
+damage_mult	0.95
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1
+base_resource_cost	10
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	7 sn pasif: Emme
+prose_feel	Dönüştürücü
+prose_visual	Beyaz→yeşil
+---
+combo	9	3
+element_id	
+element_name	
+display_name	Sıçrayan Arınma
+skill_id	9-3
+skill_job	Dosta seker
+verb_id	9
+verb_name	Arındırma
+verb_family	purge
+action	cleanse
+hitbox	self_or_ally
+cast_mobility	free_move
+mechanics	cleanse
+adjective_id	3
+adjective_name	Sıçrama
+silhouette_axis	Sıçrama
+damage_mult	1
+hitbox_scale_mult	1.1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1
+base_resource_cost	10
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Sıçrama
+prose_feel	Bulaşıcı
+prose_visual	Beyaz sekme
+---
+combo	9	4
+element_id	
+element_name	
+display_name	Sabit Arınma
+skill_id	9-4
+skill_job	Yerleşik alan (+2 sn)
+verb_id	9
+verb_name	Arındırma
+verb_family	purge
+action	cleanse
+hitbox	self_or_ally
+cast_mobility	rooted
+mechanics	cleanse
+adjective_id	4
+adjective_name	Sabitleme
+silhouette_axis	Sabitleme
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1.5
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1
+base_resource_cost	10
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	7 sn pasif: Sabitleme
+prose_feel	Kalıcı
+prose_visual	Beyaz halka
+---
+combo	9	5
+element_id	
+element_name	
+display_name	Yayılan Arınma
+skill_id	9-5
+skill_job	Alan arınma
+verb_id	9
+verb_name	Arındırma
+verb_family	purge
+action	cleanse
+hitbox	self_or_ally
+cast_mobility	free_move
+mechanics	cleanse
+adjective_id	5
+adjective_name	Yayma
+silhouette_axis	Yayma
+damage_mult	0.85
+hitbox_scale_mult	1.8
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1
+base_resource_cost	10
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yayma
+prose_feel	Kuşatıcı
+prose_visual	Beyaz dalga
+---
+combo	9	6
+element_id	
+element_name	
+display_name	Bağlayıcı Arınma
+skill_id	9-6
+skill_job	Dosta bağlanır
+verb_id	9
+verb_name	Arındırma
+verb_family	purge
+action	cleanse
+hitbox	self_or_ally
+cast_mobility	free_move
+mechanics	cleanse
+adjective_id	6
+adjective_name	Bağlama
+silhouette_axis	Bağlama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1
+base_resource_cost	10
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	4 sn pasif: Bağlama
+prose_feel	Bağlı
+prose_visual	Beyaz bağ
+---
+combo	9	7
+element_id	
+element_name	
+display_name	Bulandırıcı Arınma
+skill_id	9-7
+skill_job	Arınma + bozma
+verb_id	9
+verb_name	Arındırma
+verb_family	purge
+action	cleanse
+hitbox	self_or_ally
+cast_mobility	free_move
+mechanics	cleanse
+adjective_id	7
+adjective_name	Bulandırma
+silhouette_axis	Bulandırma
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1
+base_resource_cost	10
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	6 sn pasif: Bulandırma
+prose_feel	İki yönlü
+prose_visual	Beyaz-siyah
+---
+combo	9	8
+element_id	
+element_name	
+display_name	Yükselen Arınma
+skill_id	9-8
+skill_job	Arınma + buff
+verb_id	9
+verb_name	Arındırma
+verb_family	purge
+action	cleanse
+hitbox	self_or_ally
+cast_mobility	free_move
+mechanics	cleanse
+adjective_id	8
+adjective_name	Yükseltme
+silhouette_axis	Yükseltme
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1
+base_resource_cost	10
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yükseltme
+prose_feel	Güçlendirici
+prose_visual	Beyaz-altın
+---
+combo	9	9
+element_id	
+element_name	
+display_name	Odaklı Arınma
+skill_id	9-9
+skill_job	En ağırı önce
+verb_id	9
+verb_name	Arındırma
+verb_family	purge
+action	cleanse
+hitbox	self_or_ally
+cast_mobility	free_move
+mechanics	cleanse
+adjective_id	9
+adjective_name	Odaklama
+silhouette_axis	Odaklama
+damage_mult	1.15
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1
+base_resource_cost	10
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Odaklama
+prose_feel	Akıllı
+prose_visual	Beyaz hedef
+---
+combo	9	10
+element_id	
+element_name	
+display_name	Aynalı Arınma
+skill_id	9-10
+skill_job	Arınma + yansıma
+verb_id	9
+verb_name	Arındırma
+verb_family	purge
+action	cleanse
+hitbox	self_or_ally
+cast_mobility	free_move
+mechanics	cleanse
+adjective_id	10
+adjective_name	Aynalama
+silhouette_axis	Aynalama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1
+base_resource_cost	10
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Aynalama
+prose_feel	Yansıtıcı
+prose_visual	Gümüş-beyaz
+---
+combo	9	11
+element_id	
+element_name	
+display_name	Kopya Arınma
+skill_id	9-11
+skill_job	İki kez tetiklenir
+verb_id	9
+verb_name	Arındırma
+verb_family	purge
+action	cleanse
+hitbox	self_or_ally
+cast_mobility	free_move
+mechanics	cleanse
+adjective_id	11
+adjective_name	Kopyalama
+silhouette_axis	Kopyalama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1
+base_resource_cost	10
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Kopyalama
+prose_feel	İkiz
+prose_visual	Çift beyaz
+---
+combo	9	12
+element_id	
+element_name	
+display_name	Akan Arınma
+skill_id	9-12
+skill_job	Sürekli temizlik
+verb_id	9
+verb_name	Arındırma
+verb_family	purge
+action	cleanse
+hitbox	self_or_ally
+cast_mobility	free_move
+mechanics	cleanse
+adjective_id	12
+adjective_name	Akış
+silhouette_axis	Akış
+damage_mult	0.7
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_or_ally
+base_cooldown_sec	1
+base_resource_cost	10
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	4 sn pasif: Akış
+prose_feel	Akıcı
+prose_visual	Beyaz akış
+---
+combo	10	1
+element_id	
+element_name	
+display_name	Yoğun Yansı
+skill_id	10-1
+skill_job	%50 yansıma, 2 sn
+verb_id	10
+verb_name	Yansıma
+verb_family	guard
+action	reflect
+hitbox	self
+cast_mobility	free_move
+mechanics	
+adjective_id	1
+adjective_name	Yoğunlaştırma
+silhouette_axis	Yoğunlaştırma
+damage_mult	1.35
+hitbox_scale_mult	0.55
+poise_damage_mult	1.2
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	1.5
+base_resource_cost	14
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yoğunlaştırma
+prose_feel	Sert
+prose_visual	Gümüş dar halka
+---
+combo	10	2
+element_id	
+element_name	
+display_name	Emici Yansı
+skill_id	10-2
+skill_job	Yansı + can çalma
+verb_id	10
+verb_name	Yansıma
+verb_family	guard
+action	reflect
+hitbox	self
+cast_mobility	free_move
+mechanics	
+adjective_id	2
+adjective_name	Emme
+silhouette_axis	Emme
+damage_mult	0.95
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	1.5
+base_resource_cost	14
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	7 sn pasif: Emme
+prose_feel	Sömüren
+prose_visual	Gümüş-kırmızı
+---
+combo	10	3
+element_id	
+element_name	
+display_name	Sıçrayan Yansı
+skill_id	10-3
+skill_job	Dosta seker
+verb_id	10
+verb_name	Yansıma
+verb_family	guard
+action	reflect
+hitbox	self
+cast_mobility	free_move
+mechanics	
+adjective_id	3
+adjective_name	Sıçrama
+silhouette_axis	Sıçrama
+damage_mult	1
+hitbox_scale_mult	1.1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	1.5
+base_resource_cost	14
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Sıçrama
+prose_feel	Paylaşımcı
+prose_visual	Gümüş sekme
+---
+combo	10	4
+element_id	
+element_name	
+display_name	Sabit Yansı
+skill_id	10-4
+skill_job	2 sn yansıma
+verb_id	10
+verb_name	Yansıma
+verb_family	guard
+action	reflect
+hitbox	self
+cast_mobility	rooted
+mechanics	
+adjective_id	4
+adjective_name	Sabitleme
+silhouette_axis	Sabitleme
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1.5
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	1.5
+base_resource_cost	14
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	7 sn pasif: Sabitleme
+prose_feel	Kalıcı
+prose_visual	Gümüş kubbe
+---
+combo	10	5
+element_id	
+element_name	
+display_name	Yayılan Yansı
+skill_id	10-5
+skill_job	Alan yansıma
+verb_id	10
+verb_name	Yansıma
+verb_family	guard
+action	reflect
+hitbox	self
+cast_mobility	free_move
+mechanics	
+adjective_id	5
+adjective_name	Yayma
+silhouette_axis	Yayma
+damage_mult	0.85
+hitbox_scale_mult	1.8
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	1.5
+base_resource_cost	14
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yayma
+prose_feel	Kuşatıcı
+prose_visual	Gümüş dalga
+---
+combo	10	6
+element_id	
+element_name	
+display_name	Bağlayıcı Yansı
+skill_id	10-6
+skill_job	Dosta bağlanır
+verb_id	10
+verb_name	Yansıma
+verb_family	guard
+action	reflect
+hitbox	self
+cast_mobility	free_move
+mechanics	
+adjective_id	6
+adjective_name	Bağlama
+silhouette_axis	Bağlama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	1.5
+base_resource_cost	14
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	4 sn pasif: Bağlama
+prose_feel	Bağlı
+prose_visual	Gümüş bağ
+---
+combo	10	7
+element_id	
+element_name	
+display_name	Bulandırıcı Yansı
+skill_id	10-7
+skill_job	Yansı + kör etme
+verb_id	10
+verb_name	Yansıma
+verb_family	guard
+action	reflect
+hitbox	self
+cast_mobility	free_move
+mechanics	
+adjective_id	7
+adjective_name	Bulandırma
+silhouette_axis	Bulandırma
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	1.5
+base_resource_cost	14
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	6 sn pasif: Bulandırma
+prose_feel	Şaşırtıcı
+prose_visual	Gümüş-siyah
+---
+combo	10	8
+element_id	
+element_name	
+display_name	Yükselen Yansı
+skill_id	10-8
+skill_job	Yansı + buff
+verb_id	10
+verb_name	Yansıma
+verb_family	guard
+action	reflect
+hitbox	self
+cast_mobility	free_move
+mechanics	
+adjective_id	8
+adjective_name	Yükseltme
+silhouette_axis	Yükseltme
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	1.5
+base_resource_cost	14
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yükseltme
+prose_feel	Güçlendirici
+prose_visual	Gümüş-altın
+---
+combo	10	9
+element_id	
+element_name	
+display_name	Odaklı Yansı
+skill_id	10-9
+skill_job	%50 tek hedef
+verb_id	10
+verb_name	Yansıma
+verb_family	guard
+action	reflect
+hitbox	self
+cast_mobility	free_move
+mechanics	
+adjective_id	9
+adjective_name	Odaklama
+silhouette_axis	Odaklama
+damage_mult	1.15
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	1.5
+base_resource_cost	14
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Odaklama
+prose_feel	Odaklı
+prose_visual	Gümüş hedef
+---
+combo	10	10
+element_id	
+element_name	
+display_name	Aynalı Yansı
+skill_id	10-10
+skill_job	%30 çift yansıma
+verb_id	10
+verb_name	Yansıma
+verb_family	guard
+action	reflect
+hitbox	self
+cast_mobility	free_move
+mechanics	
+adjective_id	10
+adjective_name	Aynalama
+silhouette_axis	Aynalama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	1.5
+base_resource_cost	14
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Aynalama
+prose_feel	Ayna
+prose_visual	Çift gümüş
+---
+combo	10	11
+element_id	
+element_name	
+display_name	Kopya Yansı
+skill_id	10-11
+skill_job	İki kez tetiklenir
+verb_id	10
+verb_name	Yansıma
+verb_family	guard
+action	reflect
+hitbox	self
+cast_mobility	free_move
+mechanics	
+adjective_id	11
+adjective_name	Kopyalama
+silhouette_axis	Kopyalama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	1.5
+base_resource_cost	14
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Kopyalama
+prose_feel	İkiz
+prose_visual	Çift halka
+---
+combo	10	12
+element_id	
+element_name	
+display_name	Akan Yansı
+skill_id	10-12
+skill_job	Sürekli yansıma
+verb_id	10
+verb_name	Yansıma
+verb_family	guard
+action	reflect
+hitbox	self
+cast_mobility	free_move
+mechanics	
+adjective_id	12
+adjective_name	Akış
+silhouette_axis	Akış
+damage_mult	0.7
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	1.5
+base_resource_cost	14
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	4 sn pasif: Akış
+prose_feel	Akıcı
+prose_visual	Gümüş akış
+---
+combo	11	1
+element_id	
+element_name	
+display_name	Yoğun Çağrı
+skill_id	11-1
+skill_job	Güçlü tek minion
+verb_id	11
+verb_name	Çağırma
+verb_family	special
+action	summon
+hitbox	self
+cast_mobility	free_move
+mechanics	
+adjective_id	1
+adjective_name	Yoğunlaştırma
+silhouette_axis	Yoğunlaştırma
+damage_mult	1.35
+hitbox_scale_mult	0.55
+poise_damage_mult	1.2
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	2
+base_resource_cost	18
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yoğunlaştırma
+prose_feel	Sağlam
+prose_visual	Tek büyük figür
+---
+combo	11	2
+element_id	
+element_name	
+display_name	Emici Çağrı
+skill_id	11-2
+skill_job	Minion can çalar
+verb_id	11
+verb_name	Çağırma
+verb_family	special
+action	summon
+hitbox	self
+cast_mobility	free_move
+mechanics	
+adjective_id	2
+adjective_name	Emme
+silhouette_axis	Emme
+damage_mult	0.95
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	2
+base_resource_cost	18
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	7 sn pasif: Emme
+prose_feel	Sömüren
+prose_visual	Kırmızı minion
+---
+combo	11	3
+element_id	
+element_name	
+display_name	Sıçrayan Çağrı
+skill_id	11-3
+skill_job	Minion seker
+verb_id	11
+verb_name	Çağırma
+verb_family	special
+action	summon
+hitbox	self
+cast_mobility	free_move
+mechanics	
+adjective_id	3
+adjective_name	Sıçrama
+silhouette_axis	Sıçrama
+damage_mult	1
+hitbox_scale_mult	1.1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	2
+base_resource_cost	18
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Sıçrama
+prose_feel	Çevik
+prose_visual	Sarı minion
+---
+combo	11	4
+element_id	
+element_name	
+display_name	Sabit Çağrı
+skill_id	11-4
+skill_job	Yerleşik minion (taret)
+verb_id	11
+verb_name	Çağırma
+verb_family	special
+action	summon
+hitbox	self
+cast_mobility	rooted
+mechanics	
+adjective_id	4
+adjective_name	Sabitleme
+silhouette_axis	Sabitleme
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1.5
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	2
+base_resource_cost	18
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	7 sn pasif: Sabitleme
+prose_feel	Kalıcı
+prose_visual	Sabit figür
+---
+combo	11	5
+element_id	
+element_name	
+display_name	Yayılan Çağrı
+skill_id	11-5
+skill_job	3 küçük minion
+verb_id	11
+verb_name	Çağırma
+verb_family	special
+action	summon
+hitbox	self
+cast_mobility	free_move
+mechanics	
+adjective_id	5
+adjective_name	Yayma
+silhouette_axis	Yayma
+damage_mult	0.85
+hitbox_scale_mult	1.8
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	2
+base_resource_cost	18
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yayma
+prose_feel	Kalabalık
+prose_visual	Üç figür
+---
+combo	11	6
+element_id	
+element_name	
+display_name	Bağlayıcı Çağrı
+skill_id	11-6
+skill_job	Minion bağlar
+verb_id	11
+verb_name	Çağırma
+verb_family	special
+action	summon
+hitbox	self
+cast_mobility	free_move
+mechanics	
+adjective_id	6
+adjective_name	Bağlama
+silhouette_axis	Bağlama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	2
+base_resource_cost	18
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	4 sn pasif: Bağlama
+prose_feel	Kontrolcü
+prose_visual	Zincir minion
+---
+combo	11	7
+element_id	
+element_name	
+display_name	Bulandırıcı Çağrı
+skill_id	11-7
+skill_job	Minion kör eder
+verb_id	11
+verb_name	Çağırma
+verb_family	special
+action	summon
+hitbox	self
+cast_mobility	free_move
+mechanics	
+adjective_id	7
+adjective_name	Bulandırma
+silhouette_axis	Bulandırma
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	2
+base_resource_cost	18
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	6 sn pasif: Bulandırma
+prose_feel	Şaşırtıcı
+prose_visual	Karanlık minion
+---
+combo	11	8
+element_id	
+element_name	
+display_name	Yükselen Çağrı
+skill_id	11-8
+skill_job	Büyük minion
+verb_id	11
+verb_name	Çağırma
+verb_family	special
+action	summon
+hitbox	self
+cast_mobility	free_move
+mechanics	
+adjective_id	8
+adjective_name	Yükseltme
+silhouette_axis	Yükseltme
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	2
+base_resource_cost	18
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Yükseltme
+prose_feel	Güçlü
+prose_visual	Altın minion
+---
+combo	11	9
+element_id	
+element_name	
+display_name	Odaklı Çağrı
+skill_id	11-9
+skill_job	Hedefe kilitli minion
+verb_id	11
+verb_name	Çağırma
+verb_family	special
+action	summon
+hitbox	self
+cast_mobility	free_move
+mechanics	
+adjective_id	9
+adjective_name	Odaklama
+silhouette_axis	Odaklama
+damage_mult	1.15
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	2
+base_resource_cost	18
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Odaklama
+prose_feel	Odaklı
+prose_visual	Kırmızı minion
+---
+combo	11	10
+element_id	
+element_name	
+display_name	Aynalı Çağrı
+skill_id	11-10
+skill_job	Yansıtıcı minion
+verb_id	11
+verb_name	Çağırma
+verb_family	special
+action	summon
+hitbox	self
+cast_mobility	free_move
+mechanics	
+adjective_id	10
+adjective_name	Aynalama
+silhouette_axis	Aynalama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	2
+base_resource_cost	18
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Aynalama
+prose_feel	Yansıtıcı
+prose_visual	Gümüş minion
+---
+combo	11	11
+element_id	
+element_name	
+display_name	Kopya Çağrı
+skill_id	11-11
+skill_job	İki minion
+verb_id	11
+verb_name	Çağırma
+verb_family	special
+action	summon
+hitbox	self
+cast_mobility	free_move
+mechanics	
+adjective_id	11
+adjective_name	Kopyalama
+silhouette_axis	Kopyalama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	2
+base_resource_cost	18
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn pasif: Kopyalama
+prose_feel	İkiz
+prose_visual	İki figür
+---
+combo	11	12
+element_id	
+element_name	
+display_name	Akan Çağrı
+skill_id	11-12
+skill_job	Sürekli minion
+verb_id	11
+verb_name	Çağırma
+verb_family	special
+action	summon
+hitbox	self
+cast_mobility	free_move
+mechanics	
+adjective_id	12
+adjective_name	Akış
+silhouette_axis	Akış
+damage_mult	0.7
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	self_only
+base_cooldown_sec	2
+base_resource_cost	18
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	4 sn pasif: Akış
+prose_feel	Akıcı
+prose_visual	Minion nehri
+---
+combo	12	1
+element_id	
+element_name	
+display_name	Yoğun Zaman
+skill_id	12-1
+skill_job	Tek düşman hızı %30 düşer, 1 sn (global timescale yok)
+verb_id	12
+verb_name	Zaman
+verb_family	special
+action	tempo
+hitbox	target
+cast_mobility	free_move
+mechanics	
+adjective_id	1
+adjective_name	Yoğunlaştırma
+silhouette_axis	Yoğunlaştırma
+damage_mult	1.35
+hitbox_scale_mult	0.55
+poise_damage_mult	1.2
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.8
+base_resource_cost	16
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn: tempo debuff güçlenir
+prose_feel	Ani tempo
+prose_visual	Mavi dar halka
+---
+combo	12	2
+element_id	
+element_name	
+display_name	Emici Zaman
+skill_id	12-2
+skill_job	Düşman yavaşlat + can çal
+verb_id	12
+verb_name	Zaman
+verb_family	special
+action	tempo
+hitbox	target
+cast_mobility	free_move
+mechanics	
+adjective_id	2
+adjective_name	Emme
+silhouette_axis	Emme
+damage_mult	0.95
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.8
+base_resource_cost	16
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	7 sn: tempo can çalar
+prose_feel	Sömüren
+prose_visual	Mavi-kırmızı
+---
+combo	12	3
+element_id	
+element_name	
+display_name	Sıçrayan Zaman
+skill_id	12-3
+skill_job	Tempo debuff 2. hedefe seker
+verb_id	12
+verb_name	Zaman
+verb_family	special
+action	tempo
+hitbox	target
+cast_mobility	free_move
+mechanics	
+adjective_id	3
+adjective_name	Sıçrama
+silhouette_axis	Sıçrama
+damage_mult	1
+hitbox_scale_mult	1.1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.8
+base_resource_cost	16
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn: tempo seker
+prose_feel	Bulaşıcı
+prose_visual	Mavi sekme
+---
+combo	12	4
+element_id	
+element_name	
+display_name	Sabit Zaman
+skill_id	12-4
+skill_job	1 sn düşman yavaşlatma alanı (%30)
+verb_id	12
+verb_name	Zaman
+verb_family	special
+action	tempo
+hitbox	target
+cast_mobility	rooted
+mechanics	
+adjective_id	4
+adjective_name	Sabitleme
+silhouette_axis	Sabitleme
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1.5
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.8
+base_resource_cost	16
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	7 sn: kalıcı tempo alanı
+prose_feel	Kalıcı
+prose_visual	Mavi kubbe
+---
+combo	12	5
+element_id	
+element_name	
+display_name	Yayılan Zaman
+skill_id	12-5
+skill_job	Alan düşman yavaşlatma
+verb_id	12
+verb_name	Zaman
+verb_family	special
+action	tempo
+hitbox	target
+cast_mobility	free_move
+mechanics	
+adjective_id	5
+adjective_name	Yayma
+silhouette_axis	Yayma
+damage_mult	0.85
+hitbox_scale_mult	1.8
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.8
+base_resource_cost	16
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn: geniş tempo alanı
+prose_feel	Kuşatıcı
+prose_visual	Mavi dalga
+---
+combo	12	6
+element_id	
+element_name	
+display_name	Bağlayıcı Zaman
+skill_id	12-6
+skill_job	Dosta bağlanır, ikisi self-haste
+verb_id	12
+verb_name	Zaman
+verb_family	special
+action	tempo
+hitbox	target
+cast_mobility	free_move
+mechanics	
+adjective_id	6
+adjective_name	Bağlama
+silhouette_axis	Bağlama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.8
+base_resource_cost	16
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	4 sn: bağlı haste
+prose_feel	Paylaşımcı
+prose_visual	Mavi bağ
+---
+combo	12	7
+element_id	
+element_name	
+display_name	Bulandırıcı Zaman
+skill_id	12-7
+skill_job	Yavaşlatma + isabet düşürme
+verb_id	12
+verb_name	Zaman
+verb_family	special
+action	tempo
+hitbox	target
+cast_mobility	free_move
+mechanics	
+adjective_id	7
+adjective_name	Bulandırma
+silhouette_axis	Bulandırma
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.8
+base_resource_cost	16
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	6 sn: tempo isabet bozar
+prose_feel	Şaşırtıcı
+prose_visual	Mavi duman
+---
+combo	12	8
+element_id	
+element_name	
+display_name	Yükselen Zaman
+skill_id	12-8
+skill_job	Kendine +%50 hareket/cast hızı, 3 sn (dünya saati sabit)
+verb_id	12
+verb_name	Zaman
+verb_family	special
+action	tempo
+hitbox	target
+cast_mobility	free_move
+mechanics	
+adjective_id	8
+adjective_name	Yükseltme
+silhouette_axis	Yükseltme
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.8
+base_resource_cost	16
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn: self haste
+prose_feel	Hızlanan
+prose_visual	Altın-mavi
+---
+combo	12	9
+element_id	
+element_name	
+display_name	Odaklı Zaman
+skill_id	12-9
+skill_job	Tek hedefe 1 sn ağır yavaşlatma
+verb_id	12
+verb_name	Zaman
+verb_family	special
+action	tempo
+hitbox	target
+cast_mobility	free_move
+mechanics	
+adjective_id	9
+adjective_name	Odaklama
+silhouette_axis	Odaklama
+damage_mult	1.15
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.8
+base_resource_cost	16
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn: odaklı tempo
+prose_feel	Odaklı
+prose_visual	Kırmızı hedef
+---
+combo	12	10
+element_id	
+element_name	
+display_name	Aynalı Zaman
+skill_id	12-10
+skill_job	Tempo + yansıma
+verb_id	12
+verb_name	Zaman
+verb_family	special
+action	tempo
+hitbox	target
+cast_mobility	free_move
+mechanics	
+adjective_id	10
+adjective_name	Aynalama
+silhouette_axis	Aynalama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.8
+base_resource_cost	16
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn: tempo yansıtır
+prose_feel	Yansıtıcı
+prose_visual	Gümüş-mavi
+---
+combo	12	11
+element_id	
+element_name	
+display_name	Kopya Zaman
+skill_id	12-11
+skill_job	Tempo etkisi iki kez (gecikmeli)
+verb_id	12
+verb_name	Zaman
+verb_family	special
+action	tempo
+hitbox	target
+cast_mobility	free_move
+mechanics	
+adjective_id	11
+adjective_name	Kopyalama
+silhouette_axis	Kopyalama
+damage_mult	1
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.8
+base_resource_cost	16
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	5 sn: çift tempo
+prose_feel	İkiz
+prose_visual	Çift mavi
+---
+combo	12	12
+element_id	
+element_name	
+display_name	Akan Zaman
+skill_id	12-12
+skill_job	Sürekli düşman yavaşlatma alanı, 3 sn
+verb_id	12
+verb_name	Zaman
+verb_family	special
+action	tempo
+hitbox	target
+cast_mobility	free_move
+mechanics	
+adjective_id	12
+adjective_name	Akış
+silhouette_axis	Akış
+damage_mult	0.7
+hitbox_scale_mult	1
+poise_damage_mult	1
+length	2
+length_role	2-rün skill
+length_cast_mult	1
+length_mobility	free_move
+length_resource_cost_mult	1
+flavor_element	
+animation_type	
+target_mode	enemy_only
+base_cooldown_sec	1.8
+base_resource_cost	16
+base_damage	0
+base_poise	0
+base_heal	0
+crit_eligible	False
+element_origin	
+damage_type	
+is_complete	True
+passive_description	4 sn: kesintisiz tempo
+prose_feel	Akıcı
+prose_visual	Mavi akış
+---

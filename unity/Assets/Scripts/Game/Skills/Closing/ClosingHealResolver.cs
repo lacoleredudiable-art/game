@@ -44,8 +44,8 @@ namespace Dovus.Game.Skills.Closing
             float per = _host.Combat != null ? _host.Combat.ClosingDamagePerEffect : 1f;
             float chain = chainBonusOverride ?? _host.ClosingChainBonus;
             float weapon = _host.WeaponSupportPower(skill);
-            float healBase = skill.BaseHeal > 0f
-                ? skill.BaseHeal
+            float healBase = skill.Combat.BaseHeal > 0f
+                ? skill.Combat.BaseHeal
                 : closing.TotalEffect * per;
             return Mathf.Max(0, Mathf.RoundToInt(healBase * chain * weapon * effectScale));
         }
@@ -94,12 +94,12 @@ namespace Dovus.Game.Skills.Closing
             bool selfDown = playerVitals != null && playerVitals.IsDown;
             if ((preferAlly && !allyNeeds) || (preferSelf && !selfNeeds))
             {
-                _host.Readout?.NoteSkill(skill.DisplayName, preferSelf && selfDown ? "düştü" : "zaten full", new Color(0.7f, 0.9f, 0.75f));
+                _host.Readout?.NoteSkill(skill.Identity.DisplayName, preferSelf && selfDown ? "düştü" : "zaten full", new Color(0.7f, 0.9f, 0.75f));
                 return;
             }
             if (!allyNeeds && !selfNeeds)
             {
-                _host.Readout?.NoteSkill(skill.DisplayName, selfDown ? "düştü" : "zaten full", new Color(0.7f, 0.9f, 0.75f));
+                _host.Readout?.NoteSkill(skill.Identity.DisplayName, selfDown ? "düştü" : "zaten full", new Color(0.7f, 0.9f, 0.75f));
                 _host.ApplyHealOverflow(skill, amount, 0, false);
                 return;
             }
@@ -122,8 +122,8 @@ namespace Dovus.Game.Skills.Closing
                 if (healedAlly > 0)
                 {
                     _host.DamageHud?.ShowDamage(-healedAlly);
-                    _host.Readout?.NoteSkill(skill.DisplayName, "ally +" + healedAlly, new Color(0.4f, 1f, 0.65f));
-                    _host.DebugHud?.NoteSkillBang(skill.DisplayName, "ally +" + healedAlly);
+                    _host.Readout?.NoteSkill(skill.Identity.DisplayName, "ally +" + healedAlly, new Color(0.4f, 1f, 0.65f));
+                    _host.DebugHud?.NoteSkillBang(skill.Identity.DisplayName, "ally +" + healedAlly);
                     _host.Ally.EnsureStatusBoard();
                     _host.ConsumeWeaponBonus(_host.Ally.Board);
                 }
@@ -138,8 +138,8 @@ namespace Dovus.Game.Skills.Closing
             {
                 _host.ConsumeWeaponBonus(_host.PlayerStatus != null ? _host.PlayerStatus.Board : null);
                 _host.DamageHud?.ShowDamage(-healed);
-                _host.Readout?.NoteSkill(skill.DisplayName, "self +" + healed, new Color(0.4f, 1f, 0.65f));
-                _host.DebugHud?.NoteSkillBang(skill.DisplayName, "self +" + healed);
+                _host.Readout?.NoteSkill(skill.Identity.DisplayName, "self +" + healed, new Color(0.4f, 1f, 0.65f));
+                _host.DebugHud?.NoteSkillBang(skill.Identity.DisplayName, "self +" + healed);
             }
             _host.ApplyHealOverflow(skill, amount, healed, false);
         }

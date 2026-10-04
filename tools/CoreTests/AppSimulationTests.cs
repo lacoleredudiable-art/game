@@ -78,7 +78,7 @@ public class AppSimulationTests
     [Test]
     public void ClosingHeal_ComputeThenApply_RoundsLikeVitals()
     {
-        var skill = new SkillResolution(
+        var skill = SkillResolution.Build(
             "1", "Ateş", "Test", "2-3", "job",
             "mend", "Mend", "heal", "heal",
             0f, 0f, "projectile", "free_move", Array.Empty<string>(),
@@ -116,7 +116,7 @@ public class AppSimulationTests
     {
         var port = new SimCastPort
         {
-            ResolveResult = new SkillResolution(
+            ResolveResult = SkillResolution.Build(
                 "1", "Ateş", "X", "t", "job",
                 "saldiri", "Saldırı", "strike", "damage",
                 1f, 1f, "projectile", "free_move", Array.Empty<string>(),

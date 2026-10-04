@@ -272,7 +272,7 @@ namespace Dovus.Game.Skills.Mechanics
             float sec = !skill.Engine.IsNull ? skill.Engine.BuffDurationSec(JsonEffectRuntimeDefaults.PurgeBuffDurationFallbackSec) : JsonEffectRuntimeDefaults.PurgeBuffDurationFallbackSec;
             _host.SelfDamageBuff = (now < _host.SelfDamageBuffUntilMs ? _host.SelfDamageBuff : 0f) + bonus;
             _host.SelfDamageBuffUntilMs = Math.Max(_host.SelfDamageBuffUntilMs, now + Math.Max(0.5f, sec) * SkillsTimeDefaults.SecToMs);
-            _host.Readout?.NoteSkill(skill.DisplayName, $"güç +{bonus * 100f:0}%", new Color(1f, 0.8f, 0.4f));
+            _host.Readout?.NoteSkill(skill.Identity.DisplayName, $"güç +{bonus * 100f:0}%", new Color(1f, 0.8f, 0.4f));
             JsonLog($"güce çevir {removed} durum → +{bonus * 100f:0}%");
         }
 
@@ -292,10 +292,10 @@ namespace Dovus.Game.Skills.Mechanics
                 return;
             if (applied.TryGet(StatusKind.Shield, out double rem, out float mag, out _) && mag > 0f && other.ShieldRemaining < mag)
             {
-                other.Apply(StatusKind.Shield, rem, mag, "yayma:" + skill.SkillId);
+                other.Apply(StatusKind.Shield, rem, mag, "yayma:" + skill.Identity.Id);
                 JsonLog($"kalkan paylaşıldı {mag:0.#}");
             }
-            if (string.Equals(skill.Action, "cleanse", StringComparison.Ordinal))
+            if (string.Equals(skill.Presentation.Action, "cleanse", StringComparison.Ordinal))
                 JsonLog("arınma paylaşıldı " + other.CleanseHostile(_host.JsonCleanseCount(skill)));
         }
 
@@ -314,8 +314,8 @@ namespace Dovus.Game.Skills.Mechanics
             if (board == null)
                 return;
             float shield = over / CombatScale.DamageAndHp;
-            board.Apply(StatusKind.Shield, JsonStatusTuning.ShieldMs, board.ShieldRemaining + shield, "tasar:" + skill.SkillId);
-            _host.Readout?.NoteSkill(skill.DisplayName, "taşma → kalkan " + over, new Color(0.6f, 0.85f, 1f));
+            board.Apply(StatusKind.Shield, JsonStatusTuning.ShieldMs, board.ShieldRemaining + shield, "tasar:" + skill.Identity.Id);
+            _host.Readout?.NoteSkill(skill.Identity.DisplayName, "taşma → kalkan " + over, new Color(0.6f, 0.85f, 1f));
             JsonLog("taşma → kalkan " + over);
         }
 
@@ -328,7 +328,7 @@ namespace Dovus.Game.Skills.Mechanics
             if (!JsonEffectRules.IsFriendlyBounce(_host.MechanicPlanFor(skill)))
                 return false;
             bool toAlly = _host.Ally != null && JsonEffectRules.NextBounceIsAlly(_host.LastFriendlyWasAlly);
-            bool cleanse = string.Equals(skill.Action, "cleanse", StringComparison.Ordinal);
+            bool cleanse = string.Equals(skill.Presentation.Action, "cleanse", StringComparison.Ordinal);
             if (_host.IsHealSkill(skill) && !cleanse)
             {
                 int amount = _host.CalculateClosingHealAmount(_host.DeliveryPending.Closing, skill, power, _host.TemplateChain);
@@ -339,11 +339,11 @@ namespace Dovus.Game.Skills.Mechanics
             StatusBoard board = toAlly ? _host.Ally.Board : (_host.PlayerStatus != null ? _host.PlayerStatus.Board : null);
             if (board != null)
             {
-                if (string.Equals(skill.Action, "shield", StringComparison.Ordinal))
+                if (string.Equals(skill.Presentation.Action, "shield", StringComparison.Ordinal))
                 {
                     float absorb = _host.ShieldAbsorbFor(skill) * power * _host.WeaponFriendlyScale();
                     if (board.ShieldRemaining < absorb)
-                        board.Apply(StatusKind.Shield, JsonStatusTuning.ShieldMs, absorb, "sekme:" + skill.SkillId);
+                        board.Apply(StatusKind.Shield, JsonStatusTuning.ShieldMs, absorb, "sekme:" + skill.Identity.Id);
                 }
                 if (cleanse)
                     board.CleanseHostile(_host.JsonCleanseCount(skill));

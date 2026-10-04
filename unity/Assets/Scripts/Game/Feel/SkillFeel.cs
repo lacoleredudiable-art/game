@@ -52,13 +52,13 @@ namespace Dovus.Game.Feel
             if (skill.IsEmpty)
                 return string.Empty;
             var parts = new List<string>(4);
-            if (!string.IsNullOrEmpty(skill.AdjectiveName))
-                parts.Add(skill.AdjectiveName);
-            if (!string.IsNullOrEmpty(skill.SilhouetteAxis)
-                && !string.Equals(skill.SilhouetteAxis, "none", System.StringComparison.Ordinal))
-                parts.Add(skill.SilhouetteAxis);
-            if (skill.HitboxScaleMult > 0f && System.Math.Abs(skill.HitboxScaleMult - 1f) > SkillFeelDefaults.HitboxScaleEpsilon)
-                parts.Add("alan×" + skill.HitboxScaleMult.ToString("0.#"));
+            if (!string.IsNullOrEmpty(skill.Identity.AdjectiveName))
+                parts.Add(skill.Identity.AdjectiveName);
+            if (!string.IsNullOrEmpty(skill.Presentation.SilhouetteAxis)
+                && !string.Equals(skill.Presentation.SilhouetteAxis, "none", System.StringComparison.Ordinal))
+                parts.Add(skill.Presentation.SilhouetteAxis);
+            if (skill.Scaling.HitboxScaleMult > 0f && System.Math.Abs(skill.Scaling.HitboxScaleMult - 1f) > SkillFeelDefaults.HitboxScaleEpsilon)
+                parts.Add("alan×" + skill.Scaling.HitboxScaleMult.ToString("0.#"));
             if (!skill.Engine.IsNull)
             {
                 string traj = skill.Engine.TrajectoryOverride("");

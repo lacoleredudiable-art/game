@@ -122,33 +122,33 @@ public class EngineStep2Tests
             for (int adj = 1; adj <= 12; adj++)
             {
                 SkillResolution skill = _motor.Resolve(new[] { verb, adj });
-                StatusKind named = CardEffectRules.ExclusiveKind(skill.SkillJob);
+                StatusKind named = CardEffectRules.ExclusiveKind(skill.Identity.SkillJob);
                 if (named == StatusKind.None)
                     continue;
 
                 var caster = new StatusBoard();
                 var enemy = new StatusBoard();
                 StatusBoard hostile = CardEffectRules.HarmfulHitsEnemy(
-                    skill.TargetMode, skill.Action, skill.SkillJob)
+                    skill.Targeting.Mode, skill.Presentation.Action, skill.Identity.SkillJob)
                     ? enemy
                     : null;
                 StatusApplicator.ApplySkill(skill, caster, hostile, tuning);
-                if (string.Equals(skill.Action, "tempo", System.StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(skill.Presentation.Action, "tempo", System.StringComparison.OrdinalIgnoreCase))
                     TempoCast.From(skill).Apply(caster, enemy, null);
 
                 bool Has(StatusKind kind) => caster.Has(kind) || enemy.Has(kind);
                 if (!Has(named))
-                    mismatches.AppendLine($"{skill.SkillId} {skill.DisplayName}: kart {named}, uygulanmadı ({skill.SkillJob})");
+                    mismatches.AppendLine($"{skill.Identity.Id} {skill.Identity.DisplayName}: kart {named}, uygulanmadı ({skill.Identity.SkillJob})");
                 if (named == StatusKind.Stun && Has(StatusKind.Root))
-                    mismatches.AppendLine($"{skill.SkillId} {skill.DisplayName}: stun yerine kök de var");
+                    mismatches.AppendLine($"{skill.Identity.Id} {skill.Identity.DisplayName}: stun yerine kök de var");
                 if (named == StatusKind.Root && Has(StatusKind.Stun))
-                    mismatches.AppendLine($"{skill.SkillId} {skill.DisplayName}: kök yerine sersemlik var");
+                    mismatches.AppendLine($"{skill.Identity.Id} {skill.Identity.DisplayName}: kök yerine sersemlik var");
                 if (named == StatusKind.Slow && Has(StatusKind.Blind))
-                    mismatches.AppendLine($"{skill.SkillId} {skill.DisplayName}: yavaş yerine kör");
+                    mismatches.AppendLine($"{skill.Identity.Id} {skill.Identity.DisplayName}: yavaş yerine kör");
                 if (named == StatusKind.Haste && (enemy.Has(StatusKind.Slow) || enemy.Has(StatusKind.Root)))
-                    mismatches.AppendLine($"{skill.SkillId} {skill.DisplayName}: hız yerine düşmana yavaş/kök");
-                if (named == StatusKind.Blind && Has(StatusKind.Slow) && !CardEffectRules.NamesSlow(skill.SkillJob))
-                    mismatches.AppendLine($"{skill.SkillId} {skill.DisplayName}: kör yerine yavaş");
+                    mismatches.AppendLine($"{skill.Identity.Id} {skill.Identity.DisplayName}: hız yerine düşmana yavaş/kök");
+                if (named == StatusKind.Blind && Has(StatusKind.Slow) && !CardEffectRules.NamesSlow(skill.Identity.SkillJob))
+                    mismatches.AppendLine($"{skill.Identity.Id} {skill.Identity.DisplayName}: kör yerine yavaş");
             }
         }
 
@@ -270,7 +270,7 @@ public class EngineStep2Tests
         SkillResolution risingSkill = _motor.Resolve(new[] { 12, 8 });
         TempoCast rising = TempoCast.From(risingSkill);
         TempoCast bond = TempoCast.From(_motor.Resolve(new[] { 12, 6 }));
-        float buffSec = risingSkill.EngineModifiers["buff_duration_sec"].AsFloat(0f);
+        float buffSec = risingSkill.Engine.Field("buff_duration_sec").AsFloat(0f);
         Assert.That(rising.SelfHaste, Is.True);
         Assert.That(rising.DurationMs, Is.EqualTo(3000).Within(0.01));
         Assert.That(buffSec * 1000.0, Is.EqualTo(rising.DurationMs).Within(0.01));

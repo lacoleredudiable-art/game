@@ -302,8 +302,8 @@ namespace Dovus.Game.Editor
                 var info = new CaseInfo();
                 info.Adj = c.Adj;
                 SkillResolution skill = _skills.Resolve(new[] { c.Verb, c.Adj });
-                info.Name = skill.DisplayName;
-                info.DamageSkill = skill.BaseDamage > 0f || skill.BaseHeal > 0f;
+                info.Name = skill.Identity.DisplayName;
+                info.DamageSkill = skill.Combat.BaseDamage > 0f || skill.Combat.BaseHeal > 0f;
                 if (Call(_md, "MechanicPlanFor", skill) is Dovus.Core.Mechanic.MechanicPlan keys)
                 {
                     info.ExpectsReverse = keys.Effects.Any(e => e.Target == "dusman" && e.Has("ters_kontrol"));
@@ -321,7 +321,7 @@ namespace Dovus.Game.Editor
                 info.RecoverySec = combat != null ? combat.Sentence.StepForDots(2).RecoverySec : 0.26f;
 
                 var catalog = P<MotionTemplateCatalog>(_md, "MotionCatalog");
-                if (catalog == null || !catalog.TryPlay(skill.SkillId, out MotionTemplate template))
+                if (catalog == null || !catalog.TryPlay(skill.Identity.Id, out MotionTemplate template))
                     return info;
                 info.DeliveryDelaySec = DeliveryDelaySec(skill, template);
                 object playback = Call(_md, "PreparePositionPlayback", skill, template);

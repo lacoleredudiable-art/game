@@ -46,8 +46,8 @@ namespace Dovus.Game.Skills.Effects
             else
                 s = default;
 
-            if (!skill.IsEmpty && !string.IsNullOrEmpty(skill.AnimationType))
-                _host.Visual.PulseAnimationType(skill.AnimationType, s);
+            if (!skill.IsEmpty && !string.IsNullOrEmpty(skill.Presentation.AnimationType))
+                _host.Visual.PulseAnimationType(skill.Presentation.AnimationType, s);
             else
                 _host.Visual.PulseRune(rune, s);
         }

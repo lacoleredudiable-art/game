@@ -147,7 +147,7 @@ namespace Dovus.Core.Grammar
 
             if (len == 1)
             {
-                return new SkillResolution(
+                return SkillResolution.Build(
                     elementId: string.Empty,
                     elementName: string.Empty,
                     displayName: verbRune.VerbFace,
@@ -195,7 +195,7 @@ namespace Dovus.Core.Grammar
             _adjectives.TryGetValue(adjectiveId, out AdjectiveNode adjective);
             string[] mechanics = ReadV61Mechanics(engine, skill.Effect);
 
-            return new SkillResolution(
+            return SkillResolution.Build(
                 elementId: string.Empty,
                 elementName: string.Empty,
                 displayName: skill.Name,

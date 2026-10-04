@@ -155,7 +155,7 @@ namespace Dovus.Game.Skills
         }
 
         internal static bool IsFriendlyFieldVerb(in SkillResolution skill) =>
-            skill.VerbId is "2" or "4" or "8" or "9";
+            SkillVerbRouting.IsFieldAuraVerb(skill.Identity.Verb);
 
         void ApplyClosingStatuses(PendingClosing p, SkillResolution skill, bool bossReached = true)
         {

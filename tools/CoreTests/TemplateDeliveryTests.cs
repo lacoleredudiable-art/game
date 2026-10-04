@@ -44,7 +44,7 @@ public class TemplateDeliveryTests
         Assert.That(_motion.TryPlay(id, out MotionTemplate template), Is.True, id);
         MechanicPlan plan = _grammar.Compose(verb, adjective, weapon);
         var skill = _motor.Resolve(new[] { verb, adjective });
-        return TemplateDelivery.Build(plan, skill.EngineModifiers, template, _grammar.Rules, 1f);
+        return TemplateDelivery.Build(plan, skill.Engine, template, _grammar.Rules, 1f);
     }
 
     MechanicPlan Plan(int verb, int adjective, int weapon = 1) =>

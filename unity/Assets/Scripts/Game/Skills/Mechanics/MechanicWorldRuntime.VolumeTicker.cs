@@ -159,7 +159,7 @@ namespace Dovus.Game.Skills.Mechanics
                     if (e.Stat == "tempo" && e.Has("senkron"))
                     {
                         SkillResolution linked = _host.SkillFromPlan(link.Plan);
-                        if (CardEffectRules.WantsSelfHaste(linked.SkillJob))
+                        if (CardEffectRules.WantsSelfHaste(linked.Identity.SkillJob))
                             continue;
                         TempoSyncRules.Read(e.DurationSec, (float)e.Amount, out double syncMs, out float syncStrength);
                         if (_host.PlayerStatus != null && _host.PlayerStatus.EffectiveBlocksMovement)
@@ -173,8 +173,8 @@ namespace Dovus.Game.Skills.Mechanics
                         continue;
                     }
                     SkillResolution linkedLock = _host.SkillFromPlan(link.Plan);
-                    if (CardEffectRules.WantsSelfHaste(linkedLock.SkillJob)
-                        && !CardEffectRules.Names(linkedLock.SkillJob, "root"))
+                    if (CardEffectRules.WantsSelfHaste(linkedLock.Identity.SkillJob)
+                        && !CardEffectRules.Names(linkedLock.Identity.SkillJob, "root"))
                         continue;
                     double refresh = Math.Max(100, e.DurationSec * SkillsTimeDefaults.SecToMs);
                     if (e.Amount <= 0)

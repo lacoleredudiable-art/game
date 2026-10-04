@@ -32,7 +32,7 @@ namespace Dovus.Core.Grammar
 
             WeaponSkillCompatibility compatibility = EvaluateWeapon(resolution, weapon);
             ElementPaintNode? paint = FindElement(elementPaintId);
-            string displayName = resolution.DisplayName;
+            string displayName = resolution.Identity.DisplayName;
             if (paint.HasValue && !string.IsNullOrEmpty(paint.Value.NamePrefix))
                 displayName = paint.Value.NamePrefix + " " + displayName;
 
@@ -73,7 +73,7 @@ namespace Dovus.Core.Grammar
             in SkillResolution resolution,
             EquipmentItem? weapon)
         {
-            return int.TryParse(resolution.VerbId, out int verbId)
+            return int.TryParse(resolution.Identity.Verb, out int verbId)
                 ? _equipment.Resolve(weapon, verbId)
                 : WeaponSkillCompatibility.Neutral;
         }

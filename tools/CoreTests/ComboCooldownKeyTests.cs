@@ -16,7 +16,7 @@ public class ComboCooldownKeyTests
     [Test]
     public void For_UsesSkillId_WhenPresent()
     {
-        var skill = new SkillResolution(
+        var skill = SkillResolution.Build(
             elementId: string.Empty,
             elementName: string.Empty,
             displayName: "test",
@@ -49,7 +49,7 @@ public class ComboCooldownKeyTests
     [Test]
     public void For_FallsBackToVerbId_WhenSkillIdEmpty()
     {
-        var skill = new SkillResolution(
+        var skill = SkillResolution.Build(
             elementId: string.Empty,
             elementName: string.Empty,
             displayName: "verb",

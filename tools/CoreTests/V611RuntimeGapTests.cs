@@ -45,12 +45,12 @@ public class V611RuntimeGapTests
         Assert.That(_motor.TryGetAdjective("1", out AdjectiveNode focused), Is.True);
         Assert.That(_motor.TryGetAdjective("2", out AdjectiveNode drain), Is.True);
 
-        Assert.That(director.Activate(1, focused.Name, 5f, focused.EngineModifiers, 0), Is.True);
-        Assert.That(director.Activate(1, focused.Name, 5f, focused.EngineModifiers, 1000), Is.True);
+        Assert.That(director.Activate(1, focused.Name, 5f, focused.Engine, 0), Is.True);
+        Assert.That(director.Activate(1, focused.Name, 5f, focused.Engine, 1000), Is.True);
         Assert.That(director.ActiveCount, Is.EqualTo(1));
         Assert.That(director.Active[0].RemainingSec(1000), Is.EqualTo(9f).Within(0.001f));
 
-        Assert.That(director.Activate(2, drain.Name, 7f, drain.EngineModifiers, 1000), Is.True);
+        Assert.That(director.Activate(2, drain.Name, 7f, drain.Engine, 1000), Is.True);
         Assert.That(director.ActiveCount, Is.EqualTo(2));
         Assert.That(director.DamageMult, Is.EqualTo(1.35f * 0.95f).Within(0.001f));
         Assert.That(director.LifestealAdd, Is.EqualTo(0.3f).Within(0.001f));

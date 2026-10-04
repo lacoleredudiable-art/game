@@ -14,7 +14,7 @@ namespace CoreTests;
 public class ClosingDamageMathTests
 {
     static SkillResolution Strike(float baseDamage, float damageMult = 1f) =>
-        new SkillResolution(
+        SkillResolution.Build(
             "1", "Ateş", "Test", "t", "job",
             "saldiri", "Saldırı", "strike", "damage",
             baseDamage, 15f, "projectile", "free_move", new[] { "burn" },
@@ -24,7 +24,7 @@ public class ClosingDamageMathTests
             string.Empty);
 
     static SkillResolution Heal() =>
-        new SkillResolution(
+        SkillResolution.Build(
             "2", "Su", "İyileştirme", "t", "job",
             "iyilestirme", "İyileştirme", "mend", "heal",
             0f, 0f, "self_aura", "free_move", new[] { "regen" },
