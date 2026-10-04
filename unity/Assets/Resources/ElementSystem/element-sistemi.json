@@ -4607,7 +4607,8 @@
       12
     ],
     "note": "Yansıma/Çağırma/Zaman motor borcu yüksek; v1'de seçilebilir ama motor stub olabilir. Zaman = tempo (enemy_slow/self_haste), global timescale yok."
-  }, "ana_classes_80": {
+  },
+  "ana_classes_80": {
     "description": "924 build'in 80'i tanıdık isimli ana class. Oyuncuya görünmez, tasarım aracı.",
     "groups": {
       "3_3_0_0": {
@@ -7196,7 +7197,8 @@
     "date": "2026-09-27",
     "description": "Additive: 144 prose, 80 class, hitbox/VFX, mobility/CC, uyumsuzluk, presentation. Zaman tempo fix.",
     "type": "additive_patch"
-  },  "mechanic_grammar": {
+  },
+  "mechanic_grammar": {
     "status": "BAĞLAYICI — sahip 28 Eylül 2026'da onayladı. Motor: Core/Mechanic/MechanicGrammar (oyun) ve tools/AtomSim (1440 rapor) aynı kodu okur. Kurala eklenen her şey atom türüne yazılır; (fiil, sıfat) çiftine özel kural yazılmaz.",
     "formula": "Skill(fiil, sıfat, silah) = Sıfat.kural( Silah.teslim( Fiil.atomlar ) ) → çakışma çözümü → etiket",
     "order": [

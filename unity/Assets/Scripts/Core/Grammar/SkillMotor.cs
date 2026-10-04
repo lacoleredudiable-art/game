@@ -61,17 +61,18 @@ namespace Dovus.Core.Grammar
         /// </summary>
         public static SkillMotor CreateEmpty() => new SkillMotor();
 
-        public static SkillMotor FromJson(string json) =>
-            FromDocument(ElementSystemDocument.Parse(json));
+        public static SkillMotor FromJson(string json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+                throw new ArgumentException("JSON boş.", nameof(json));
+            return FromDocument(ElementSystemDocument.Parse(json));
+        }
 
         public static SkillMotor FromDocument(ElementSystemDocument doc) =>
             FromJsonRoot(doc.Root);
 
         public static SkillMotor FromJsonRoot(JsonValue root)
         {
-            if (root.IsNull)
-                throw new ArgumentException("JSON kökü okunamadı.", nameof(root));
-
             var motor = new SkillMotor();
             motor._version = root["system"]["version"].AsString();
             if (root["runes"].Kind != JsonKind.Array)

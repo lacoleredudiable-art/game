@@ -21,12 +21,9 @@ namespace Dovus.Core.Data
 
         public static ElementSystemDocument Parse(string json)
         {
-            if (string.IsNullOrWhiteSpace(json))
-                throw new ArgumentException("JSON boş.", nameof(json));
-            JsonValue root = MiniJson.Parse(json);
-            if (root.IsNull)
-                throw new ArgumentException("JSON kökü okunamadı.", nameof(json));
-            return new ElementSystemDocument(root, json);
+            // Fırlatmaz: boş/geçersiz metin Null kök verir (MiniJson.Parse gibi); her tüketici eski string
+            // API'sindeki kuralı aynen uygular (fırlat / varsayılan / false) → hata yolu davranışı aynı.
+            return new ElementSystemDocument(MiniJson.Parse(json), json);
         }
     }
 }
