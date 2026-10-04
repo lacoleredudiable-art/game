@@ -407,7 +407,7 @@
             "name": "Emici Vuruş",
             "adjective": "Emme",
             "effect": "Vurur, %30 can çalar",
-            "passive": "5 sn boyunca vuruşlar can çalar",
+            "passive": "7 sn boyunca vuruşlar can çalar",
             "engine": {
               "action": "damage",
               "base_damage": 40,
@@ -450,7 +450,7 @@
             "name": "Sabit Vuruş",
             "adjective": "Sabitleme",
             "effect": "Poise ×1.5",
-            "passive": "5 sn boyunca yerinde kalırsın, poise kırma ×1.5",
+            "passive": "7 sn boyunca yerinde kalırsın, poise kırma ×1.5",
             "engine": {
               "action": "damage",
               "base_damage": 40,
@@ -494,7 +494,7 @@
             "name": "Bağlayıcı Vuruş",
             "adjective": "Bağlama",
             "effect": "1.5 sn root",
-            "passive": "5 sn boyunca vuruşlar hedefi yavaşlatır",
+            "passive": "4 sn boyunca vuruşlar hedefi yavaşlatır",
             "engine": {
               "action": "damage",
               "base_damage": 40,
@@ -515,7 +515,7 @@
             "name": "Bulandırıcı Vuruş",
             "adjective": "Bulandırma",
             "effect": "İsabet -%30, 3 sn",
-            "passive": "5 sn boyunca vuruşlar isabet düşürür",
+            "passive": "6 sn boyunca vuruşlar isabet düşürür",
             "engine": {
               "action": "damage",
               "base_damage": 40,
@@ -623,7 +623,7 @@
             "name": "Akan Vuruş",
             "adjective": "Akış",
             "effect": "3 sn ardışık seri",
-            "passive": "5 sn boyunca sürekli vuruş akışı",
+            "passive": "4 sn boyunca sürekli vuruş akışı",
             "engine": {
               "action": "damage",
               "base_damage": 40,
@@ -652,7 +652,7 @@
             "name": "Yoğun Şifa",
             "adjective": "Yoğunlaştırma",
             "effect": "Anlık büyük can",
-            "passive": "7 sn pasif: Yoğunlaştırma",
+            "passive": "5 sn pasif: Yoğunlaştırma",
             "engine": {
               "action": "heal",
               "base_heal": 35,
@@ -695,7 +695,7 @@
             "name": "Sıçrayan Şifa",
             "adjective": "Sıçrama",
             "effect": "Dosta seker",
-            "passive": "7 sn pasif: Sıçrama",
+            "passive": "5 sn pasif: Sıçrama",
             "engine": {
               "action": "heal",
               "base_heal": 35,
@@ -739,7 +739,7 @@
             "name": "Yayılan Şifa",
             "adjective": "Yayma",
             "effect": "Geniş alan",
-            "passive": "7 sn pasif: Yayma",
+            "passive": "5 sn pasif: Yayma",
             "engine": {
               "action": "heal",
               "base_heal": 35,
@@ -761,7 +761,7 @@
             "name": "Bağlayıcı Şifa",
             "adjective": "Bağlama",
             "effect": "Dosta bağlanır",
-            "passive": "7 sn pasif: Bağlama",
+            "passive": "4 sn pasif: Bağlama",
             "engine": {
               "action": "heal",
               "base_heal": 35,
@@ -783,7 +783,7 @@
             "name": "Bulandırıcı Şifa",
             "adjective": "Bulandırma",
             "effect": "Debuff temizler",
-            "passive": "7 sn pasif: Bulandırma",
+            "passive": "6 sn pasif: Bulandırma",
             "engine": {
               "action": "heal",
               "base_heal": 35,
@@ -804,7 +804,7 @@
             "name": "Yükselen Şifa",
             "adjective": "Yükseltme",
             "effect": "Şifa + buff",
-            "passive": "7 sn pasif: Yükseltme",
+            "passive": "5 sn pasif: Yükseltme",
             "engine": {
               "action": "heal",
               "base_heal": 35,
@@ -825,7 +825,7 @@
             "name": "Odaklı Şifa",
             "adjective": "Odaklama",
             "effect": "En yaralıyı bulur",
-            "passive": "7 sn pasif: Odaklama",
+            "passive": "5 sn pasif: Odaklama",
             "engine": {
               "action": "heal",
               "base_heal": 35,
@@ -847,7 +847,7 @@
             "name": "Aynalı Şifa",
             "adjective": "Aynalama",
             "effect": "Hasar→şifa",
-            "passive": "7 sn pasif: Aynalama",
+            "passive": "5 sn pasif: Aynalama",
             "engine": {
               "action": "heal",
               "base_heal": 35,
@@ -868,7 +868,7 @@
             "name": "Kopya Şifa",
             "adjective": "Kopyalama",
             "effect": "İki kez tetiklenir",
-            "passive": "7 sn pasif: Kopyalama",
+            "passive": "5 sn pasif: Kopyalama",
             "engine": {
               "action": "heal",
               "base_heal": 35,
@@ -890,7 +890,7 @@
             "name": "Akan Şifa",
             "adjective": "Akış",
             "effect": "Sürekli regen",
-            "passive": "7 sn pasif: Akış",
+            "passive": "4 sn pasif: Akış",
             "engine": {
               "action": "heal",
               "base_heal": 35,
@@ -941,7 +941,7 @@
             "name": "Emici Adım",
             "adjective": "Emme",
             "effect": "Dash + can çal",
-            "passive": "5 sn pasif: Emme",
+            "passive": "7 sn pasif: Emme",
             "engine": {
               "action": "dash",
               "dash_distance_m": 3.0,
@@ -984,7 +984,7 @@
             "name": "Sabit Adım",
             "adjective": "Sabitleme",
             "effect": "Dash + armor",
-            "passive": "5 sn pasif: Sabitleme",
+            "passive": "7 sn pasif: Sabitleme",
             "engine": {
               "action": "dash",
               "dash_distance_m": 3.0,
@@ -1031,7 +1031,7 @@
             "name": "Bağlayıcı Adım",
             "adjective": "Bağlama",
             "effect": "Dash + root",
-            "passive": "5 sn pasif: Bağlama",
+            "passive": "4 sn pasif: Bağlama",
             "engine": {
               "action": "dash",
               "dash_distance_m": 3.0,
@@ -1052,7 +1052,7 @@
             "name": "Bulandırıcı Adım",
             "adjective": "Bulandırma",
             "effect": "Dash + görünmezlik",
-            "passive": "5 sn pasif: Bulandırma",
+            "passive": "6 sn pasif: Bulandırma",
             "engine": {
               "action": "dash",
               "dash_distance_m": 3.0,
@@ -1161,7 +1161,7 @@
             "name": "Akan Adım",
             "adjective": "Akış",
             "effect": "Sürekli hız",
-            "passive": "5 sn pasif: Akış",
+            "passive": "4 sn pasif: Akış",
             "engine": {
               "action": "dash",
               "dash_distance_m": 3.0,
@@ -1190,7 +1190,7 @@
             "name": "Yoğun Kalkan",
             "adjective": "Yoğunlaştırma",
             "effect": "Dar, güçlü armor",
-            "passive": "7 sn pasif: Yoğunlaştırma",
+            "passive": "5 sn pasif: Yoğunlaştırma",
             "engine": {
               "action": "shield",
               "shield_absorb": 50,
@@ -1233,7 +1233,7 @@
             "name": "Sıçrayan Kalkan",
             "adjective": "Sıçrama",
             "effect": "Dosta seker",
-            "passive": "7 sn pasif: Sıçrama",
+            "passive": "5 sn pasif: Sıçrama",
             "engine": {
               "action": "shield",
               "shield_absorb": 50,
@@ -1277,7 +1277,7 @@
             "name": "Yayılan Kalkan",
             "adjective": "Yayma",
             "effect": "Geniş alan armor",
-            "passive": "7 sn pasif: Yayma",
+            "passive": "5 sn pasif: Yayma",
             "engine": {
               "action": "shield",
               "shield_absorb": 50,
@@ -1299,7 +1299,7 @@
             "name": "Bağlayıcı Kalkan",
             "adjective": "Bağlama",
             "effect": "Dosta bağlanır",
-            "passive": "7 sn pasif: Bağlama",
+            "passive": "4 sn pasif: Bağlama",
             "engine": {
               "action": "shield",
               "shield_absorb": 50,
@@ -1320,7 +1320,7 @@
             "name": "Bulandırıcı Kalkan",
             "adjective": "Bulandırma",
             "effect": "Vurana yavaşlatma",
-            "passive": "7 sn pasif: Bulandırma",
+            "passive": "6 sn pasif: Bulandırma",
             "engine": {
               "action": "shield",
               "shield_absorb": 50,
@@ -1341,7 +1341,7 @@
             "name": "Yükselen Kalkan",
             "adjective": "Yükseltme",
             "effect": "Kalkan + buff",
-            "passive": "7 sn pasif: Yükseltme",
+            "passive": "5 sn pasif: Yükseltme",
             "engine": {
               "action": "shield",
               "shield_absorb": 50,
@@ -1362,7 +1362,7 @@
             "name": "Odaklı Kalkan",
             "adjective": "Odaklama",
             "effect": "En çok hasarlıyı korur",
-            "passive": "7 sn pasif: Odaklama",
+            "passive": "5 sn pasif: Odaklama",
             "engine": {
               "action": "shield",
               "shield_absorb": 50,
@@ -1384,7 +1384,7 @@
             "name": "Aynalı Kalkan",
             "adjective": "Aynalama",
             "effect": "%30 yansıma",
-            "passive": "7 sn pasif: Aynalama",
+            "passive": "5 sn pasif: Aynalama",
             "engine": {
               "action": "shield",
               "shield_absorb": 50,
@@ -1405,7 +1405,7 @@
             "name": "Kopya Kalkan",
             "adjective": "Kopyalama",
             "effect": "İki katman",
-            "passive": "7 sn pasif: Kopyalama",
+            "passive": "5 sn pasif: Kopyalama",
             "engine": {
               "action": "shield",
               "shield_absorb": 50,
@@ -1428,7 +1428,7 @@
             "name": "Akan Kalkan",
             "adjective": "Akış",
             "effect": "Sürekli yenilenen",
-            "passive": "7 sn pasif: Akış",
+            "passive": "4 sn pasif: Akış",
             "engine": {
               "action": "shield",
               "shield_absorb": 50,
@@ -1480,7 +1480,7 @@
             "name": "Emici Patlama",
             "adjective": "Emme",
             "effect": "Alan + can çalma",
-            "passive": "5 sn pasif: Emme",
+            "passive": "7 sn pasif: Emme",
             "engine": {
               "action": "damage",
               "base_damage": 28,
@@ -1525,7 +1525,7 @@
             "name": "Sabit Patlama",
             "adjective": "Sabitleme",
             "effect": "Yerleşik alan (+2 sn)",
-            "passive": "5 sn pasif: Sabitleme",
+            "passive": "7 sn pasif: Sabitleme",
             "engine": {
               "action": "damage",
               "base_damage": 28,
@@ -1572,7 +1572,7 @@
             "name": "Bağlayıcı Patlama",
             "adjective": "Bağlama",
             "effect": "Patlama + root",
-            "passive": "5 sn pasif: Bağlama",
+            "passive": "4 sn pasif: Bağlama",
             "engine": {
               "action": "damage",
               "base_damage": 28,
@@ -1594,7 +1594,7 @@
             "name": "Bulandırıcı Patlama",
             "adjective": "Bulandırma",
             "effect": "Patlama + kör",
-            "passive": "5 sn pasif: Bulandırma",
+            "passive": "6 sn pasif: Bulandırma",
             "engine": {
               "action": "damage",
               "base_damage": 28,
@@ -1706,7 +1706,7 @@
             "name": "Akan Patlama",
             "adjective": "Akış",
             "effect": "Sürekli seri",
-            "passive": "5 sn pasif: Akış",
+            "passive": "4 sn pasif: Akış",
             "engine": {
               "action": "damage",
               "base_damage": 28,
@@ -1736,7 +1736,7 @@
             "name": "Yoğun Bağ",
             "adjective": "Yoğunlaştırma",
             "effect": "1.5 sn stun",
-            "passive": "4 sn pasif: Yoğunlaştırma",
+            "passive": "5 sn pasif: Yoğunlaştırma",
             "engine": {
               "action": "cc",
               "cc_kind": "root",
@@ -1759,7 +1759,7 @@
             "name": "Emici Bağ",
             "adjective": "Emme",
             "effect": "CC + can çal",
-            "passive": "4 sn pasif: Emme",
+            "passive": "7 sn pasif: Emme",
             "engine": {
               "action": "cc",
               "cc_kind": "root",
@@ -1781,7 +1781,7 @@
             "name": "Sıçrayan Bağ",
             "adjective": "Sıçrama",
             "effect": "2. hedefe seker",
-            "passive": "4 sn pasif: Sıçrama",
+            "passive": "5 sn pasif: Sıçrama",
             "engine": {
               "action": "cc",
               "cc_kind": "root",
@@ -1804,7 +1804,7 @@
             "name": "Sabit Bağ",
             "adjective": "Sabitleme",
             "effect": "1.5 sn root",
-            "passive": "4 sn pasif: Sabitleme",
+            "passive": "7 sn pasif: Sabitleme",
             "engine": {
               "action": "cc",
               "cc_kind": "root",
@@ -1827,7 +1827,7 @@
             "name": "Yayılan Bağ",
             "adjective": "Yayma",
             "effect": "Alan CC",
-            "passive": "4 sn pasif: Yayma",
+            "passive": "5 sn pasif: Yayma",
             "engine": {
               "action": "cc",
               "cc_kind": "root",
@@ -1872,7 +1872,7 @@
             "name": "Bulandırıcı Bağ",
             "adjective": "Bulandırma",
             "effect": "CC + kör",
-            "passive": "4 sn pasif: Bulandırma",
+            "passive": "6 sn pasif: Bulandırma",
             "engine": {
               "action": "cc",
               "cc_kind": "root",
@@ -1894,7 +1894,7 @@
             "name": "Yükselen Bağ",
             "adjective": "Yükseltme",
             "effect": "CC + buff",
-            "passive": "4 sn pasif: Yükseltme",
+            "passive": "5 sn pasif: Yükseltme",
             "engine": {
               "action": "cc",
               "cc_kind": "root",
@@ -1917,7 +1917,7 @@
             "name": "Odaklı Bağ",
             "adjective": "Odaklama",
             "effect": "Tek hedefe uzun kilit",
-            "passive": "4 sn pasif: Odaklama",
+            "passive": "5 sn pasif: Odaklama",
             "engine": {
               "action": "cc",
               "cc_kind": "root",
@@ -1940,7 +1940,7 @@
             "name": "Aynalı Bağ",
             "adjective": "Aynalama",
             "effect": "CC + yansıma",
-            "passive": "4 sn pasif: Aynalama",
+            "passive": "5 sn pasif: Aynalama",
             "engine": {
               "action": "cc",
               "cc_kind": "root",
@@ -1962,7 +1962,7 @@
             "name": "Kopya Bağ",
             "adjective": "Kopyalama",
             "effect": "İki CC",
-            "passive": "4 sn pasif: Kopyalama",
+            "passive": "5 sn pasif: Kopyalama",
             "engine": {
               "action": "cc",
               "cc_kind": "root",
@@ -2015,7 +2015,7 @@
             "name": "Yoğun Zafiyet",
             "adjective": "Yoğunlaştırma",
             "effect": "Armor -%20, 4 sn",
-            "passive": "6 sn pasif: Yoğunlaştırma",
+            "passive": "5 sn pasif: Yoğunlaştırma",
             "engine": {
               "action": "debuff",
               "debuff_armor": -0.2,
@@ -2038,7 +2038,7 @@
             "name": "Emici Zafiyet",
             "adjective": "Emme",
             "effect": "Debuff + can çal",
-            "passive": "6 sn pasif: Emme",
+            "passive": "7 sn pasif: Emme",
             "engine": {
               "action": "debuff",
               "debuff_armor": -0.2,
@@ -2060,7 +2060,7 @@
             "name": "Sıçrayan Zafiyet",
             "adjective": "Sıçrama",
             "effect": "2. hedefe seker",
-            "passive": "6 sn pasif: Sıçrama",
+            "passive": "5 sn pasif: Sıçrama",
             "engine": {
               "action": "debuff",
               "debuff_armor": -0.2,
@@ -2083,7 +2083,7 @@
             "name": "Sabit Zafiyet",
             "adjective": "Sabitleme",
             "effect": "4 sn debuff",
-            "passive": "6 sn pasif: Sabitleme",
+            "passive": "7 sn pasif: Sabitleme",
             "engine": {
               "action": "debuff",
               "debuff_armor": -0.2,
@@ -2106,7 +2106,7 @@
             "name": "Yayılan Zafiyet",
             "adjective": "Yayma",
             "effect": "Alan debuff",
-            "passive": "6 sn pasif: Yayma",
+            "passive": "5 sn pasif: Yayma",
             "engine": {
               "action": "debuff",
               "debuff_armor": -0.2,
@@ -2129,7 +2129,7 @@
             "name": "Bağlayıcı Zafiyet",
             "adjective": "Bağlama",
             "effect": "Debuff + root",
-            "passive": "6 sn pasif: Bağlama",
+            "passive": "4 sn pasif: Bağlama",
             "engine": {
               "action": "debuff",
               "debuff_armor": -0.3,
@@ -2174,7 +2174,7 @@
             "name": "Yükselen Zafiyet",
             "adjective": "Yükseltme",
             "effect": "Debuff + buff",
-            "passive": "6 sn pasif: Yükseltme",
+            "passive": "5 sn pasif: Yükseltme",
             "engine": {
               "action": "debuff",
               "debuff_armor": -0.2,
@@ -2196,7 +2196,7 @@
             "name": "Odaklı Zafiyet",
             "adjective": "Odaklama",
             "effect": "Armor -%50",
-            "passive": "6 sn pasif: Odaklama",
+            "passive": "5 sn pasif: Odaklama",
             "engine": {
               "action": "debuff",
               "debuff_armor": -0.5,
@@ -2220,7 +2220,7 @@
             "name": "Aynalı Zafiyet",
             "adjective": "Aynalama",
             "effect": "Debuff + yansıma",
-            "passive": "6 sn pasif: Aynalama",
+            "passive": "5 sn pasif: Aynalama",
             "engine": {
               "action": "debuff",
               "debuff_armor": -0.2,
@@ -2242,7 +2242,7 @@
             "name": "Kopya Zafiyet",
             "adjective": "Kopyalama",
             "effect": "İki debuff",
-            "passive": "6 sn pasif: Kopyalama",
+            "passive": "5 sn pasif: Kopyalama",
             "engine": {
               "action": "debuff",
               "debuff_armor": -0.2,
@@ -2265,7 +2265,7 @@
             "name": "Akan Zafiyet",
             "adjective": "Akış",
             "effect": "Sürekli debuff alanı",
-            "passive": "6 sn pasif: Akış",
+            "passive": "4 sn pasif: Akış",
             "engine": {
               "action": "debuff",
               "debuff_armor": -0.2,
@@ -2319,7 +2319,7 @@
             "name": "Emici Yükseliş",
             "adjective": "Emme",
             "effect": "Buff + can çal",
-            "passive": "5 sn pasif: Emme",
+            "passive": "7 sn pasif: Emme",
             "engine": {
               "action": "buff",
               "buff_damage": 0.2,
@@ -2365,7 +2365,7 @@
             "name": "Sabit Yükseliş",
             "adjective": "Sabitleme",
             "effect": "3 sn buff",
-            "passive": "5 sn pasif: Sabitleme",
+            "passive": "7 sn pasif: Sabitleme",
             "engine": {
               "action": "buff",
               "buff_damage": 0.2,
@@ -2411,7 +2411,7 @@
             "name": "Bağlayıcı Yükseliş",
             "adjective": "Bağlama",
             "effect": "Dosta bağlanır",
-            "passive": "5 sn pasif: Bağlama",
+            "passive": "4 sn pasif: Bağlama",
             "engine": {
               "action": "buff",
               "buff_damage": 0.2,
@@ -2434,7 +2434,7 @@
             "name": "Bulandırıcı Yükseliş",
             "adjective": "Bulandırma",
             "effect": "Buff + debuff",
-            "passive": "5 sn pasif: Bulandırma",
+            "passive": "6 sn pasif: Bulandırma",
             "engine": {
               "action": "buff",
               "buff_damage": 0.2,
@@ -2546,7 +2546,7 @@
             "name": "Akan Yükseliş",
             "adjective": "Akış",
             "effect": "Sürekli artan buff",
-            "passive": "5 sn pasif: Akış",
+            "passive": "4 sn pasif: Akış",
             "engine": {
               "action": "buff",
               "buff_damage": 0.2,
@@ -2576,7 +2576,7 @@
             "name": "Yoğun Arınma",
             "adjective": "Yoğunlaştırma",
             "effect": "1 debuff sil",
-            "passive": "0 sn pasif: Yoğunlaştırma",
+            "passive": "5 sn pasif: Yoğunlaştırma",
             "engine": {
               "action": "cleanse",
               "cleanse_count": 1,
@@ -2598,7 +2598,7 @@
             "name": "Emici Arınma",
             "adjective": "Emme",
             "effect": "Debuff→can",
-            "passive": "0 sn pasif: Emme",
+            "passive": "7 sn pasif: Emme",
             "engine": {
               "action": "cleanse",
               "cleanse_count": 1,
@@ -2619,7 +2619,7 @@
             "name": "Sıçrayan Arınma",
             "adjective": "Sıçrama",
             "effect": "Dosta seker",
-            "passive": "0 sn pasif: Sıçrama",
+            "passive": "5 sn pasif: Sıçrama",
             "engine": {
               "action": "cleanse",
               "cleanse_count": 1,
@@ -2641,7 +2641,7 @@
             "name": "Sabit Arınma",
             "adjective": "Sabitleme",
             "effect": "Yerleşik alan (+2 sn)",
-            "passive": "0 sn pasif: Sabitleme",
+            "passive": "7 sn pasif: Sabitleme",
             "engine": {
               "action": "cleanse",
               "cleanse_count": 1,
@@ -2663,7 +2663,7 @@
             "name": "Yayılan Arınma",
             "adjective": "Yayma",
             "effect": "Alan arınma",
-            "passive": "0 sn pasif: Yayma",
+            "passive": "5 sn pasif: Yayma",
             "engine": {
               "action": "cleanse",
               "cleanse_count": 1,
@@ -2685,7 +2685,7 @@
             "name": "Bağlayıcı Arınma",
             "adjective": "Bağlama",
             "effect": "Dosta bağlanır",
-            "passive": "0 sn pasif: Bağlama",
+            "passive": "4 sn pasif: Bağlama",
             "engine": {
               "action": "cleanse",
               "cleanse_count": 1,
@@ -2706,7 +2706,7 @@
             "name": "Bulandırıcı Arınma",
             "adjective": "Bulandırma",
             "effect": "Arınma + bozma",
-            "passive": "0 sn pasif: Bulandırma",
+            "passive": "6 sn pasif: Bulandırma",
             "engine": {
               "action": "cleanse",
               "cleanse_count": 1,
@@ -2727,7 +2727,7 @@
             "name": "Yükselen Arınma",
             "adjective": "Yükseltme",
             "effect": "Arınma + buff",
-            "passive": "0 sn pasif: Yükseltme",
+            "passive": "5 sn pasif: Yükseltme",
             "engine": {
               "action": "cleanse",
               "cleanse_count": 1,
@@ -2748,7 +2748,7 @@
             "name": "Odaklı Arınma",
             "adjective": "Odaklama",
             "effect": "En ağırı önce",
-            "passive": "0 sn pasif: Odaklama",
+            "passive": "5 sn pasif: Odaklama",
             "engine": {
               "action": "cleanse",
               "cleanse_count": 1,
@@ -2770,7 +2770,7 @@
             "name": "Aynalı Arınma",
             "adjective": "Aynalama",
             "effect": "Arınma + yansıma",
-            "passive": "0 sn pasif: Aynalama",
+            "passive": "5 sn pasif: Aynalama",
             "engine": {
               "action": "cleanse",
               "cleanse_count": 1,
@@ -2792,7 +2792,7 @@
             "name": "Kopya Arınma",
             "adjective": "Kopyalama",
             "effect": "İki kez tetiklenir",
-            "passive": "0 sn pasif: Kopyalama",
+            "passive": "5 sn pasif: Kopyalama",
             "engine": {
               "action": "cleanse",
               "cleanse_count": 1,
@@ -2815,7 +2815,7 @@
             "name": "Akan Arınma",
             "adjective": "Akış",
             "effect": "Sürekli temizlik",
-            "passive": "0 sn pasif: Akış",
+            "passive": "4 sn pasif: Akış",
             "engine": {
               "action": "cleanse",
               "cleanse_count": 1,
@@ -2867,7 +2867,7 @@
             "name": "Emici Yansı",
             "adjective": "Emme",
             "effect": "Yansı + can çalma",
-            "passive": "5 sn pasif: Emme",
+            "passive": "7 sn pasif: Emme",
             "engine": {
               "action": "reflect",
               "reflect_ratio": 0.5,
@@ -2912,7 +2912,7 @@
             "name": "Sabit Yansı",
             "adjective": "Sabitleme",
             "effect": "2 sn yansıma",
-            "passive": "5 sn pasif: Sabitleme",
+            "passive": "7 sn pasif: Sabitleme",
             "engine": {
               "action": "reflect",
               "reflect_ratio": 0.5,
@@ -2958,7 +2958,7 @@
             "name": "Bağlayıcı Yansı",
             "adjective": "Bağlama",
             "effect": "Dosta bağlanır",
-            "passive": "5 sn pasif: Bağlama",
+            "passive": "4 sn pasif: Bağlama",
             "engine": {
               "action": "reflect",
               "reflect_ratio": 0.5,
@@ -2980,7 +2980,7 @@
             "name": "Bulandırıcı Yansı",
             "adjective": "Bulandırma",
             "effect": "Yansı + kör etme",
-            "passive": "5 sn pasif: Bulandırma",
+            "passive": "6 sn pasif: Bulandırma",
             "engine": {
               "action": "reflect",
               "reflect_ratio": 0.5,
@@ -3094,7 +3094,7 @@
             "name": "Akan Yansı",
             "adjective": "Akış",
             "effect": "Sürekli yansıma",
-            "passive": "5 sn pasif: Akış",
+            "passive": "4 sn pasif: Akış",
             "engine": {
               "action": "reflect",
               "reflect_ratio": 0.5,
@@ -3124,7 +3124,7 @@
             "name": "Yoğun Çağrı",
             "adjective": "Yoğunlaştırma",
             "effect": "Güçlü tek minion",
-            "passive": "0 sn pasif: Yoğunlaştırma",
+            "passive": "5 sn pasif: Yoğunlaştırma",
             "engine": {
               "action": "summon",
               "minion_count": 1,
@@ -3147,7 +3147,7 @@
             "name": "Emici Çağrı",
             "adjective": "Emme",
             "effect": "Minion can çalar",
-            "passive": "0 sn pasif: Emme",
+            "passive": "7 sn pasif: Emme",
             "engine": {
               "action": "summon",
               "minion_count": 1,
@@ -3169,7 +3169,7 @@
             "name": "Sıçrayan Çağrı",
             "adjective": "Sıçrama",
             "effect": "Minion seker",
-            "passive": "0 sn pasif: Sıçrama",
+            "passive": "5 sn pasif: Sıçrama",
             "engine": {
               "action": "summon",
               "minion_count": 1,
@@ -3192,7 +3192,7 @@
             "name": "Sabit Çağrı",
             "adjective": "Sabitleme",
             "effect": "Yerleşik minion (taret)",
-            "passive": "0 sn pasif: Sabitleme",
+            "passive": "7 sn pasif: Sabitleme",
             "engine": {
               "action": "summon",
               "minion_count": 1,
@@ -3216,7 +3216,7 @@
             "name": "Yayılan Çağrı",
             "adjective": "Yayma",
             "effect": "3 küçük minion",
-            "passive": "0 sn pasif: Yayma",
+            "passive": "5 sn pasif: Yayma",
             "engine": {
               "action": "summon",
               "minion_count": 1,
@@ -3239,7 +3239,7 @@
             "name": "Bağlayıcı Çağrı",
             "adjective": "Bağlama",
             "effect": "Minion bağlar",
-            "passive": "0 sn pasif: Bağlama",
+            "passive": "4 sn pasif: Bağlama",
             "engine": {
               "action": "summon",
               "minion_count": 1,
@@ -3261,7 +3261,7 @@
             "name": "Bulandırıcı Çağrı",
             "adjective": "Bulandırma",
             "effect": "Minion kör eder",
-            "passive": "0 sn pasif: Bulandırma",
+            "passive": "6 sn pasif: Bulandırma",
             "engine": {
               "action": "summon",
               "minion_count": 1,
@@ -3283,7 +3283,7 @@
             "name": "Yükselen Çağrı",
             "adjective": "Yükseltme",
             "effect": "Büyük minion",
-            "passive": "0 sn pasif: Yükseltme",
+            "passive": "5 sn pasif: Yükseltme",
             "engine": {
               "action": "summon",
               "minion_count": 1,
@@ -3306,7 +3306,7 @@
             "name": "Odaklı Çağrı",
             "adjective": "Odaklama",
             "effect": "Hedefe kilitli minion",
-            "passive": "0 sn pasif: Odaklama",
+            "passive": "5 sn pasif: Odaklama",
             "engine": {
               "action": "summon",
               "minion_count": 1,
@@ -3329,7 +3329,7 @@
             "name": "Aynalı Çağrı",
             "adjective": "Aynalama",
             "effect": "Yansıtıcı minion",
-            "passive": "0 sn pasif: Aynalama",
+            "passive": "5 sn pasif: Aynalama",
             "engine": {
               "action": "summon",
               "minion_count": 1,
@@ -3352,7 +3352,7 @@
             "name": "Kopya Çağrı",
             "adjective": "Kopyalama",
             "effect": "İki minion",
-            "passive": "0 sn pasif: Kopyalama",
+            "passive": "5 sn pasif: Kopyalama",
             "engine": {
               "action": "summon",
               "minion_count": 1,
@@ -3375,7 +3375,7 @@
             "name": "Akan Çağrı",
             "adjective": "Akış",
             "effect": "Sürekli minion",
-            "passive": "0 sn pasif: Akış",
+            "passive": "4 sn pasif: Akış",
             "engine": {
               "action": "summon",
               "minion_count": 1,
@@ -3405,7 +3405,7 @@
             "name": "Yoğun Zaman",
             "adjective": "Yoğunlaştırma",
             "effect": "Tek düşman hızı %30 düşer, 1 sn (global timescale yok)",
-            "passive": "4 sn: tempo debuff güçlenir",
+            "passive": "5 sn: tempo debuff güçlenir",
             "engine": {
               "action": "tempo",
               "enemy_slow": 0.7,
@@ -3430,7 +3430,7 @@
             "name": "Emici Zaman",
             "adjective": "Emme",
             "effect": "Düşman yavaşlat + can çal",
-            "passive": "4 sn: tempo can çalar",
+            "passive": "7 sn: tempo can çalar",
             "engine": {
               "action": "tempo",
               "enemy_slow": 0.7,
@@ -3454,7 +3454,7 @@
             "name": "Sıçrayan Zaman",
             "adjective": "Sıçrama",
             "effect": "Tempo debuff 2. hedefe seker",
-            "passive": "4 sn: tempo seker",
+            "passive": "5 sn: tempo seker",
             "engine": {
               "action": "tempo",
               "enemy_slow": 0.7,
@@ -3479,7 +3479,7 @@
             "name": "Sabit Zaman",
             "adjective": "Sabitleme",
             "effect": "1 sn düşman yavaşlatma alanı (%30)",
-            "passive": "4 sn: kalıcı tempo alanı",
+            "passive": "7 sn: kalıcı tempo alanı",
             "engine": {
               "action": "tempo",
               "enemy_slow": 0.7,
@@ -3504,7 +3504,7 @@
             "name": "Yayılan Zaman",
             "adjective": "Yayma",
             "effect": "Alan düşman yavaşlatma",
-            "passive": "4 sn: geniş tempo alanı",
+            "passive": "5 sn: geniş tempo alanı",
             "engine": {
               "action": "tempo",
               "enemy_slow": 0.7,
@@ -3554,7 +3554,7 @@
             "name": "Bulandırıcı Zaman",
             "adjective": "Bulandırma",
             "effect": "Yavaşlatma + isabet düşürme",
-            "passive": "4 sn: tempo isabet bozar",
+            "passive": "6 sn: tempo isabet bozar",
             "engine": {
               "action": "tempo",
               "enemy_slow": 0.7,
@@ -3578,7 +3578,7 @@
             "name": "Yükselen Zaman",
             "adjective": "Yükseltme",
             "effect": "Kendine +%50 hareket/cast hızı, 3 sn (dünya saati sabit)",
-            "passive": "4 sn: self haste",
+            "passive": "5 sn: self haste",
             "engine": {
               "action": "tempo",
               "enemy_slow": 0.7,
@@ -3602,7 +3602,7 @@
             "name": "Odaklı Zaman",
             "adjective": "Odaklama",
             "effect": "Tek hedefe 1 sn ağır yavaşlatma",
-            "passive": "4 sn: odaklı tempo",
+            "passive": "5 sn: odaklı tempo",
             "engine": {
               "action": "tempo",
               "enemy_slow": 0.7,
@@ -3627,7 +3627,7 @@
             "name": "Aynalı Zaman",
             "adjective": "Aynalama",
             "effect": "Tempo + yansıma",
-            "passive": "4 sn: tempo yansıtır",
+            "passive": "5 sn: tempo yansıtır",
             "engine": {
               "action": "tempo",
               "enemy_slow": 0.7,
@@ -3651,7 +3651,7 @@
             "name": "Kopya Zaman",
             "adjective": "Kopyalama",
             "effect": "Tempo etkisi iki kez (gecikmeli)",
-            "passive": "4 sn: çift tempo",
+            "passive": "5 sn: çift tempo",
             "engine": {
               "action": "tempo",
               "enemy_slow": 0.7,

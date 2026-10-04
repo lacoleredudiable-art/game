@@ -1,8 +1,9 @@
-using Dovus.Core;
+﻿using Dovus.Core;
 using Dovus.Core.Data;
 using Dovus.Core.Grammar;
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 
@@ -14,6 +15,11 @@ public class SkillTextNumberTests
     static readonly string[] ForbiddenEffectNumberSources =
     {
         "unity/Assets/Scripts/Core/Combat/CardEffectRules.cs",
+    };
+
+    static readonly string[] ForbiddenCompatibilityLiteralSources =
+    {
+        "unity/Assets/Scripts/Game/Hud/SkillPreviewHud.cs",
     };
 
     [Test]
@@ -37,6 +43,73 @@ public class SkillTextNumberTests
         }
 
         Assert.That(mismatches.ToString(), Is.Empty, mismatches.ToString());
+    }
+
+    [Test]
+    public void AllPassiveSlotTexts_MatchRuneDuration()
+    {
+        string json = File.ReadAllText(JsonPath());
+        JsonValue root = MiniJson.Parse(json);
+        var durations = new Dictionary<int, float>();
+        var faces = new Dictionary<int, string>();
+        foreach (JsonValue rune in root["runes"].AsArray())
+        {
+            int id = rune["id"].AsInt();
+            durations[id] = rune["passive_duration_default"].AsFloat(0f);
+            faces[id] = rune["adjective_face"].AsString();
+        }
+
+        var mismatches = new StringBuilder();
+        foreach (JsonValue verbBlock in root["skills"]["by_verb"].AsObject().Values)
+        {
+            foreach (JsonValue skill in verbBlock["skills"].AsArray())
+            {
+                string passive = skill["passive"].AsString();
+                string id = skill["id"].AsString();
+                int adjId = int.Parse(id.Split('-')[1], CultureInfo.InvariantCulture);
+                if (!passive.Contains(" sn pasif: ", StringComparison.Ordinal))
+                {
+                    // "{N} sn boyunca ..." / "{N} sn: ...": baştaki süre de sıfat rününün süresi olmalı.
+                    var lead = System.Text.RegularExpressions.Regex.Match(passive, @"^(\d+(?:\.\d+)?) sn[ :]");
+                    if (lead.Success)
+                    {
+                        string want = SkillTextNumbers.FormatDurationSeconds(durations[adjId]);
+                        if (lead.Groups[1].Value != want)
+                            mismatches.AppendLine($"{id}: expected leading '{want} sn', got '{passive}'");
+                    }
+                    continue;
+                }
+
+                string adjective = skill.Has("adjective")
+                    ? skill["adjective"].AsString()
+                    : faces[adjId];
+                string expected = SkillTextNumbers.PassiveText(adjective, durations[adjId]);
+                if (passive != expected)
+                    mismatches.AppendLine($"{id}: expected '{expected}', got '{passive}'");
+            }
+        }
+
+        Assert.That(mismatches.ToString(), Is.Empty, mismatches.ToString());
+    }
+
+    [Test]
+    public void SkillPreviewHud_HasNoHardcodedCompatibilityMultipliers()
+    {
+        string repoRoot = RepoRoot();
+        var violations = new StringBuilder();
+        foreach (string relative in ForbiddenCompatibilityLiteralSources)
+        {
+            string path = Path.Combine(repoRoot, relative.Replace('/', Path.DirectorySeparatorChar));
+            string text = File.ReadAllText(path);
+            if (text.Contains("×1.2", StringComparison.Ordinal))
+                violations.AppendLine($"{relative}: sabit ×1.2");
+            if (text.Contains("×0.8", StringComparison.Ordinal))
+                violations.AppendLine($"{relative}: sabit ×0.8");
+            if (text.Contains("Cast ×", StringComparison.Ordinal))
+                violations.AppendLine($"{relative}: sabit Cast ×");
+        }
+
+        Assert.That(violations.ToString(), Is.Empty, violations.ToString());
     }
 
     [Test]

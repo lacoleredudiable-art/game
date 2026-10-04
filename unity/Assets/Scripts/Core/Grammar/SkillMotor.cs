@@ -227,7 +227,7 @@ namespace Dovus.Core.Grammar
                 critEligible: engine["base_damage"].AsFloat(0f) > 0f,
                 isComplete: true,
                 baseHeal: engine["base_heal"].AsFloat(0f),
-                passiveDescription: skill.Passive,
+                passiveDescription: PassiveDescriptionFor(skill, adjectiveRune),
                 proseFeel: skill.ProseFeel,
                 proseVisual: skill.ProseVisual);
         }
@@ -251,6 +251,16 @@ namespace Dovus.Core.Grammar
             for (int i = 0; i < words.Count; i++)
                 ids[i] = (int)words[i].Rune;
             return Resolve(ids);
+        }
+
+        static string PassiveDescriptionFor(V61SkillNode skill, RuneDefinition adjectiveRune)
+        {
+            string passive = skill.Passive ?? string.Empty;
+            if (!passive.Contains(" sn pasif: ", StringComparison.Ordinal))
+                return passive;
+            return SkillTextNumbers.PassiveText(
+                adjectiveRune.AdjectiveFace,
+                adjectiveRune.PassiveDurationDefault);
         }
 
         static void ParseV61(JsonValue root, SkillMotor motor)

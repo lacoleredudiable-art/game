@@ -24,7 +24,7 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 - [x] 1.2 Dünya donması kalksın (dodge 90 ms / vurulma 130 ms → sadece görsel)
 - [x] 1.3 Dodge: 6 sn dolum + çift basış birleşik dodge (uzun i-frame)
 - [x] 1.5 Yanlış silah ikonları (Yay/Kitap/Küre) + lock-on düğmesi rün paneliyle çakışma
-- [~] 1.6 Kullanıcı kararı + iş: skill metni ↔ sayı (Denetim D) — doğru kaynak JSON mu metin mi?
+- [x] 1.6 Kullanıcı kararı + iş: skill metni ↔ sayı (Denetim D) — doğru kaynak JSON mu metin mi?
 
 ## Aşama 4 — Oyun sistemleri
 - [ ] 3.1 Diriliş sadece skill ile (2-12 Akan Şifa, koza, takım başına 2) — otomatik 2 sn dirilme kalkar

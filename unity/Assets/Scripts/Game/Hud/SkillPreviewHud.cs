@@ -1,3 +1,4 @@
+using Dovus.Core.Data;
 using Dovus.Core.Grammar;
 using Dovus.Game.Casting;
 using Dovus.Game.Config;
@@ -156,11 +157,16 @@ namespace Dovus.Game.Hud
                 return;
 
             Color color = skill.Weapon.Compatible ? theme.SkillCompatibleColor : theme.SkillMismatchColor;
-            string compatibility = skill.Weapon.Compatible ? "UYUMLU" : "UYUMSUZ  ×0.8";
+            string compatibility = skill.Weapon.Compatible
+                ? "UYUMLU"
+                : SkillTextNumbers.FormatIncompatibleCompatibilityLabel(skill.Weapon.DamageMult);
             string prose = !string.IsNullOrEmpty(skill.Resolution.SkillJob)
                 ? skill.Resolution.SkillJob
                 : skill.Resolution.ProseFeel;
-            string detail = skill.Weapon.Compatible ? prose : "Cast ×1.2  ·  " + prose;
+            string detail = skill.Weapon.Compatible
+                ? prose
+                : SkillTextNumbers.FormatIncompatibleSkillDetail(
+                    prose, skill.Weapon.CastTimeMult, skill.Weapon.DamageMult);
             SetPreview(skill.DisplayName, detail, color, compatibility);
         }
 
