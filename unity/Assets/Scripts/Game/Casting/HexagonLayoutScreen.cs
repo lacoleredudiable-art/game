@@ -1,3 +1,4 @@
+using Dovus.Core.Layout;
 using Dovus.Game.Config;
 using UnityEngine;
 
@@ -127,10 +128,39 @@ namespace Dovus.Game.Casting
             Vector2 p = dodge + new Vector2(
                 DpToPixels(tuning.LockOnButtonOffsetXDp),
                 dodgeR + lockR + gap + DpToPixels(tuning.LockOnButtonOffsetYDp));
+
+            ResolveHudButtonAwayFromHexPanel(
+                ref p,
+                lockR,
+                gap,
+                dodge,
+                dodgeR,
+                tuning,
+                screenWidth,
+                screenHeight);
+
             Rect safe = SafeRectPx();
             float edge = lockR + DpToPixels(tuning.DodgeButtonScreenMarginDp);
-            p.x = Mathf.Clamp(p.x, safe.xMin + edge, safe.xMax - edge);
-            p.y = Mathf.Clamp(p.y, safe.yMin + edge, safe.yMax - edge);
+            ClampHudButtonToSafe(ref p, safe, edge);
+            ResolveHudButtonAwayFromHexPanel(
+                ref p,
+                lockR,
+                gap,
+                dodge,
+                dodgeR,
+                tuning,
+                screenWidth,
+                screenHeight);
+            ClampHudButtonToSafe(ref p, safe, edge);
+            EnforceHudButtonClearance(
+                ref p,
+                lockR,
+                gap,
+                dodge,
+                dodgeR,
+                tuning,
+                screenWidth,
+                screenHeight);
             return p;
         }
 
@@ -169,8 +199,38 @@ namespace Dovus.Game.Casting
                 maxX = safe.xMax - edge;
             }
 
-            p.x = Mathf.Clamp(p.x, minX, maxX);
-            p.y = Mathf.Clamp(p.y, safe.yMin + edge, safe.yMax - edge);
+            Vector2 dodge = DodgeButtonPx(tuning, screenWidth, screenHeight);
+            float dodgeR = DodgeButtonRadiusPx(tuning);
+            float panelGap = DpToPixels(12f);
+            ResolveHudButtonAwayFromHexPanel(
+                ref p,
+                swapR,
+                panelGap,
+                dodge,
+                dodgeR,
+                tuning,
+                screenWidth,
+                screenHeight);
+            ClampHudButtonToSafe(ref p, safe, edge, minX, maxX);
+            ResolveHudButtonAwayFromHexPanel(
+                ref p,
+                swapR,
+                panelGap,
+                dodge,
+                dodgeR,
+                tuning,
+                screenWidth,
+                screenHeight);
+            ClampHudButtonToSafe(ref p, safe, edge, minX, maxX);
+            EnforceHudButtonClearance(
+                ref p,
+                swapR,
+                panelGap,
+                dodge,
+                dodgeR,
+                tuning,
+                screenWidth,
+                screenHeight);
             return p;
         }
 
@@ -228,6 +288,81 @@ namespace Dovus.Game.Casting
         {
             Rect safe = SafeRectPx();
             return Mathf.Max(0f, safe.xMin);
+        }
+
+        static void ClampHudButtonToSafe(ref Vector2 p, Rect safe, float edge, float minX = float.NaN, float maxX = float.NaN)
+        {
+            if (float.IsNaN(minX))
+                minX = safe.xMin + edge;
+            if (float.IsNaN(maxX))
+                maxX = safe.xMax - edge;
+            p.x = Mathf.Clamp(p.x, minX, maxX);
+            p.y = Mathf.Clamp(p.y, safe.yMin + edge, safe.yMax - edge);
+        }
+
+        static Circle2[] BuildHexHudForbidden(
+            PrototypeTuning tuning,
+            int screenWidth,
+            int screenHeight,
+            Vector2 dodgeCenter,
+            float dodgeRadius)
+        {
+            Vector2 panelCenter = CenterPx(tuning, screenWidth, screenHeight);
+            float fitted = FittedRadiusPx(tuning, screenWidth, screenHeight);
+            float dotR = DotHitRadiusPx(tuning);
+            var forbidden = new Circle2[8];
+            forbidden[0] = new Circle2(panelCenter.x, panelCenter.y, fitted + dotR);
+            for (int dot = 1; dot <= 6; dot++)
+            {
+                Vector2 dotPx = DotPx(dot, tuning, screenWidth, screenHeight);
+                forbidden[dot] = new Circle2(dotPx.x, dotPx.y, dotR);
+            }
+
+            forbidden[7] = new Circle2(dodgeCenter.x, dodgeCenter.y, dodgeRadius);
+            return forbidden;
+        }
+
+        static void ResolveHudButtonAwayFromHexPanel(
+            ref Vector2 p,
+            float buttonRadius,
+            float gap,
+            Vector2 dodgeCenter,
+            float dodgeRadius,
+            PrototypeTuning tuning,
+            int screenWidth,
+            int screenHeight)
+        {
+            Circle2[] forbidden = BuildHexHudForbidden(tuning, screenWidth, screenHeight, dodgeCenter, dodgeRadius);
+            var dodgeOrbit = forbidden[7];
+            float x = p.x;
+            float y = p.y;
+            HudButtonPlacement.ResolveAwayFromForbidden(
+                ref x,
+                ref y,
+                buttonRadius,
+                forbidden,
+                gap,
+                dodgeOrbit,
+                forbidden[0].X,
+                forbidden[0].Y);
+            p = new Vector2(x, y);
+        }
+
+        static void EnforceHudButtonClearance(
+            ref Vector2 p,
+            float buttonRadius,
+            float gap,
+            Vector2 dodgeCenter,
+            float dodgeRadius,
+            PrototypeTuning tuning,
+            int screenWidth,
+            int screenHeight)
+        {
+            Circle2[] forbidden = BuildHexHudForbidden(tuning, screenWidth, screenHeight, dodgeCenter, dodgeRadius);
+            float x = p.x;
+            float y = p.y;
+            HudButtonPlacement.EnforceClearance(ref x, ref y, buttonRadius, forbidden, gap);
+            p = new Vector2(x, y);
         }
     }
 }

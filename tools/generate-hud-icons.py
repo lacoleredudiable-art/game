@@ -157,6 +157,30 @@ def dagger(d):
     line(d, [(.75,.61),(.61,.75)], CYAN, .035)
 
 
+def bow(d):
+    arc(d, (.22, .28, .78, .72), 215, 325, WHITE, .052)
+    line(d, [(.26, .50), (.74, .50)], CYAN, .038)
+    polygon(d, [(.70, .46), (.82, .50), (.70, .54)], WHITE)
+    line(d, [(.68, .50), (.78, .50)], GOLD, .028)
+
+
+def book(d):
+    polygon(d, [(.28, .24), (.72, .24), (.68, .76), (.32, .76)], WHITE)
+    line(d, [(.50, .24), (.50, .76)], SOFT, .022)
+    polygon(d, [(.34, .30), (.46, .30), (.44, .68), (.32, .68)], DARK)
+    polygon(d, [(.54, .30), (.66, .30), (.68, .68), (.56, .68)], DARK)
+    line(d, [(.58, .42), (.62, .52)], CYAN, .030)
+    ellipse(d, (.60, .54, .66, .60), fill=GOLD)
+
+
+def orb(d):
+    ellipse(d, (.30, .22, .70, .62), fill=WHITE)
+    ellipse(d, (.38, .30, .62, .54), fill=SOFT)
+    arc(d, (.34, .34, .66, .66), 35, 305, CYAN, .040)
+    polygon(d, [(.42, .72), (.58, .72), (.54, .82), (.46, .82)], WHITE)
+    line(d, [(.38, .76), (.62, .76)], GOLD, .032)
+
+
 def spear(d):
     polygon(d, [(.75,.17),(.69,.39),(.59,.29)], WHITE)
     line(d, [(.25,.78),(.69,.34)], WHITE, .044)
@@ -232,10 +256,10 @@ RUNES = [
 
 WEAPONS = [
     ("weapon-01-yumruk", fist, GOLD),
-    ("weapon-02-hancer", dagger, (208, 132, 255, 255)),
-    ("weapon-03-mizrak", spear, CYAN),
+    ("weapon-02-yay", bow, (208, 132, 255, 255)),
+    ("weapon-03-kitap", book, CYAN),
     ("weapon-04-kilic", sword, (116, 211, 255, 255)),
-    ("weapon-05-balta", axe, (255, 143, 76, 255)),
+    ("weapon-05-kure", orb, (255, 143, 76, 255)),
     ("weapon-06-cekic", hammer, GOLD),
     ("weapon-07-top", cannon, (255, 116, 83, 255)),
     ("weapon-08-asa", staff, (139, 121, 255, 255)),
@@ -244,10 +268,12 @@ WEAPONS = [
 ]
 
 
-def save_set(folder, entries):
+def save_set(folder, entries, only_names=None):
     target = OUT / folder
     target.mkdir(parents=True, exist_ok=True)
     for name, painter, accent in entries:
+        if only_names is not None and name not in only_names:
+            continue
         image, draw = base_icon(accent)
         painter(draw)
         path = target / f"{name}.png"
@@ -379,10 +405,24 @@ def write_texture_meta(path):
 
 
 if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--only",
+        help="Comma-separated icon base names to regenerate (e.g. weapon-02-yay,weapon-03-kitap)",
+    )
+    args = parser.parse_args()
+    only = None
+    if args.only:
+        only = {part.strip() for part in args.only.split(",") if part.strip()}
+
     OUT.mkdir(parents=True, exist_ok=True)
-    write_folder_meta(OUT)
-    write_folder_meta(OUT / "Runes")
-    write_folder_meta(OUT / "Weapons")
-    save_set("Runes", RUNES)
-    save_set("Weapons", WEAPONS)
-    print(f"Wrote {len(RUNES) + len(WEAPONS)} HUD icons to {OUT}")
+    if only is None:
+        write_folder_meta(OUT)
+        write_folder_meta(OUT / "Runes")
+        write_folder_meta(OUT / "Weapons")
+    save_set("Runes", RUNES, only)
+    save_set("Weapons", WEAPONS, only)
+    count = len(only) if only else len(RUNES) + len(WEAPONS)
+    print(f"Wrote {count} HUD icons to {OUT}")
