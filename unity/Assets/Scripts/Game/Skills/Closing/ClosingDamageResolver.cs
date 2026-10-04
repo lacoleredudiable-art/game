@@ -119,7 +119,7 @@ namespace Dovus.Game.Skills.Closing
                 Vector3 origin = new Vector3(logic.OriginX, 0f, logic.OriginZ);
                 for (int i = 1; i <= 3; i++)
                 {
-                    float u = i / 3f;
+                    float u = i / ClosingDefaults.ScarCrackSegmentCountDiv;
                     _host.Scars.Stamp(Vector3.Lerp(origin, tip, u), scale * ClosingDamageDefaults.ScarCrackLerpScale, kind, along);
                 }
             }

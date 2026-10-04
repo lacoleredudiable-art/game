@@ -71,14 +71,14 @@ namespace Dovus.Game.Skills.Execution
             Direction = direction.sqrMagnitude > 0.0001f
                 ? direction.normalized
                 : Vector3.forward;
-            CastWindowSec = Mathf.Max(0.01f, castWindowSec);
+            CastWindowSec = Mathf.Max(ISkillExecutorDefaults.MinPositiveSec, castWindowSec);
             WindowOpen01 = Mathf.Clamp01(windowOpen01);
             WindowClose01 = Mathf.Clamp(windowClose01, WindowOpen01, 1f);
-            RadiusM = Mathf.Max(0.05f, radiusM);
+            RadiusM = Mathf.Max(ISkillExecutorDefaults.MinRadiusM, radiusM);
             RangeM = Mathf.Max(RadiusM, rangeM);
-            SpeedMps = Mathf.Max(0.01f, speedMps);
-            DurationSec = Mathf.Max(0.01f, durationSec);
-            TickIntervalSec = Mathf.Max(0.01f, tickIntervalSec);
+            SpeedMps = Mathf.Max(ISkillExecutorDefaults.MinPositiveSec, speedMps);
+            DurationSec = Mathf.Max(ISkillExecutorDefaults.MinPositiveSec, durationSec);
+            TickIntervalSec = Mathf.Max(ISkillExecutorDefaults.MinPositiveSec, tickIntervalSec);
             IsBurst = isBurst;
             IsFriendly = isFriendly;
             ColorKey = colorKey ?? string.Empty;
@@ -141,7 +141,7 @@ namespace Dovus.Game.Skills.Execution
 
         /// <summary>Dünya saati: build menüsü açıkken 0, TimeDirector ölçeğini izler.</summary>
         protected float WorldDeltaSec => Context.Clock != null
-            ? (float)(Context.Clock.WorldDeltaMs / 1000.0)
+            ? (float)(Context.Clock.WorldDeltaMs / SkillsTimeDefaults.SecToMs)
             : Time.deltaTime;
 
         public virtual void Execute(in SkillExecutionContext context)

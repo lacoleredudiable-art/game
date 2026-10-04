@@ -137,7 +137,7 @@ namespace Dovus.Game.Skills.Flow
             recoverySec *= castMult;
 
             double bangAt = _host.Clock.Director.WorldTimeMs
-                            + recoverySec * 1000.0
+                            + recoverySec * SkillsTimeDefaults.SecToMs
                             + _host.Combat.Feel.PostHitSilenceMs;
 
             _host.Pose?.BeginRecovery(recoverySec, _host.Clock.Director.WorldTimeMs);

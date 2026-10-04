@@ -166,18 +166,18 @@ namespace Dovus.Game.Skills
             var main = _bangPs.main;
             main.loop = false;
             main.playOnAwake = false;
-            main.duration = 0.35f;
-            main.startLifetime = 0.35f;
-            main.startSpeed = 3.5f;
-            main.startSize = 0.22f;
-            main.maxParticles = 36;
+            main.duration = LivingEffectViewDefaults.BangPsMainDurationSec;
+            main.startLifetime = LivingEffectViewDefaults.BangPsStartLifetimeSec;
+            main.startSpeed = LivingEffectViewDefaults.BangPsStartSpeedMps;
+            main.startSize = LivingEffectViewDefaults.BangPsStartSizeM;
+            main.maxParticles = LivingEffectViewDefaults.BangPsMaxParticles;
             main.simulationSpace = ParticleSystemSimulationSpace.World;
             var em = _bangPs.emission;
             em.rateOverTime = 0f;
-            em.SetBursts(new[] { new ParticleSystem.Burst(0f, 18) });
+            em.SetBursts(new[] { new ParticleSystem.Burst(0f, LivingEffectViewDefaults.BangPsBurstCount) });
             var sh = _bangPs.shape;
             sh.shapeType = ParticleSystemShapeType.Sphere;
-            sh.radius = 0.15f;
+            sh.radius = LivingEffectViewDefaults.BangPsShapeRadiusM;
             var col = _bangPs.colorOverLifetime;
             col.enabled = true;
             var grad = new Gradient();
@@ -221,15 +221,15 @@ namespace Dovus.Game.Skills
             var s = _logic.Current;
             float alpha = _logic.Phase == LivingEffectPhase.Fading
                 ? 1f - _logic.FadeT
-                : (_logic.Phase == LivingEffectPhase.Banging ? 1f : 0.95f);
+                : (_logic.Phase == LivingEffectPhase.Banging ? 1f : LivingEffectViewDefaults.PhaseScaleWhenNotBanging);
 
-            float travel01 = _logic.MaxRange > 0.01f
+            float travel01 = _logic.MaxRange > LivingEffectViewDefaults.MaxRangeEpsilonM
                 ? Mathf.Clamp01(_logic.Travel / _logic.MaxRange)
                 : 0f;
             float urgent = 1f - _windowRemaining01;
             if (_windowRemaining01 > _colors.Hud.WindowCueUrgentRatio)
-                urgent *= 0.45f;
-            float place = Mathf.Max(urgent, travel01 * 0.35f);
+                urgent *= LivingEffectViewDefaults.UrgentPlaceMult;
+            float place = Mathf.Max(urgent, travel01 * LivingEffectViewDefaults.TravelPlaceMult);
             float hz = Mathf.Lerp(_colors.Hud.WindowCuePulseHz, _colors.Hud.WindowCueUrgentHz, place);
             // Nabız AŞAĞI modüle eder: yukarı çarpmak taban alfa 0.95 iken Clamp01'e takılıyor
             // ve ipucu hiç görünmüyordu (T8.1). §8/T2 "pencereyi dalgadan oku" buna bağlı.
@@ -240,7 +240,7 @@ namespace Dovus.Game.Skills
             cyan.a = alpha;
             Color purple = _hasSkillTint ? _skillBlob : _colors.Visuals.InkPurple;
             purple.a = alpha;
-            SetMatColor(_lineMat, Color.Lerp(cyan, purple, _hasSkillTint ? 0.2f : 0.35f + 0.4f * s.Spread));
+            SetMatColor(_lineMat, Color.Lerp(cyan, purple, _hasSkillTint ? LivingEffectViewDefaults.LineTintLerpWithSkill : LivingEffectViewDefaults.LineTintLerpNoSkillBase + LivingEffectViewDefaults.LineTintSpreadMult * s.Spread));
             SetMatColor(_blobMat, purple);
 
             Color ghost = cyan;
@@ -275,11 +275,11 @@ namespace Dovus.Game.Skills
             if (_logic.Verb == Rune.Toprak)
             {
                 // Aşağıdan yukarı: genişlerken yükselir (kütle / yerden çıkış).
-                float peak = _tuning.WaveRiseHeightM * (0.55f + 0.9f * s.Lift);
+                float peak = _tuning.WaveRiseHeightM * (LivingEffectViewDefaults.WavePeakLiftBaseMult + LivingEffectViewDefaults.WavePeakLiftSpreadMult * s.Lift);
                 return Mathf.Lerp(_colors.Visuals.EffectSarsintiGroundY, peak, travel01);
             }
 
-            return 0.08f + 0.35f * s.Lift;
+            return LivingEffectViewDefaults.WaveThicknessBaseM + LivingEffectViewDefaults.WaveThicknessLiftMult * s.Lift;
         }
 
         void DrawBasicStrike(EffectSilhouette s, float alpha)
@@ -300,7 +300,7 @@ namespace Dovus.Game.Skills
             float y = _colors.Visuals.EffectBasicStrikeHeightM;
             Vector3 origin = new Vector3(_logic.OriginX, y, _logic.OriginZ);
             // Uç, kısa menzilin ortasına yakın — "tek vuruşluk jab", uçan iğne değil.
-            Vector3 tip = origin + dir * Mathf.Max(0.35f, dist * 0.55f);
+            Vector3 tip = origin + dir * Mathf.Max(LivingEffectViewDefaults.TipMinDistM, dist * LivingEffectViewDefaults.TipDistAlongMult);
 
             _needle.gameObject.SetActive(true);
             _needle.position = tip;
@@ -308,7 +308,7 @@ namespace Dovus.Game.Skills
             float thick = _colors.Visuals.EffectBasicStrikeThickM;
             float len = _colors.Visuals.EffectBasicStrikeLenM;
             if (_logic.Phase == LivingEffectPhase.Banging)
-                len *= 1f + 0.25f * Mathf.Sin(_logic.BangAgeSec * 40f);
+                len *= 1f + LivingEffectViewDefaults.BangLenWobbleMult * Mathf.Sin(_logic.BangAgeSec * LivingEffectViewDefaults.BangLenWobbleFreqHz);
             _needle.localScale = new Vector3(thick, len * 0.5f, thick);
         }
 
@@ -355,9 +355,9 @@ namespace Dovus.Game.Skills
             else if (focus < _colors.Visuals.EffectFocusArcMax)
             {
                 // Yaya daralma — boss yönüne doğru koridor
-                float halfArc = Mathf.Lerp(Mathf.PI, 0.35f, (focus - _colors.Visuals.EffectFocusRingMax) / (_colors.Visuals.EffectFocusArcMax - _colors.Visuals.EffectFocusRingMax));
+                float halfArc = Mathf.Lerp(Mathf.PI, LivingEffectViewDefaults.FocusRingMinArcRad, (focus - _colors.Visuals.EffectFocusRingMax) / (_colors.Visuals.EffectFocusArcMax - _colors.Visuals.EffectFocusRingMax));
                 float facing = Mathf.Atan2(dir.x, dir.z);
-                int segs = 24;
+                int segs = LivingEffectViewDefaults.FocusRingSegmentCount;
                 _line.loop = false;
                 _line.positionCount = segs;
                 for (int i = 0; i < segs; i++)
@@ -435,9 +435,9 @@ namespace Dovus.Game.Skills
             float len,
             float travel01)
         {
-            float windup = Mathf.Max(0.01f, _tuning.NeedleWindupSec);
+            float windup = Mathf.Max(SkillsTimeDefaults.MinPositiveSec, _tuning.NeedleWindupSec);
             float age = _logic.AgeSec;
-            bool arrived = travel01 >= 0.98f || _logic.Travel >= _logic.MaxRange - 0.05f;
+            bool arrived = travel01 >= LivingEffectViewDefaults.NeedleArrivedTravelThreshold || _logic.Travel >= _logic.MaxRange - LivingEffectViewDefaults.NeedleArrivedRangeMarginM;
 
             if (age < windup)
             {
@@ -445,10 +445,10 @@ namespace Dovus.Game.Skills
                 HideNeedleGhosts();
                 float t = age / windup;
                 float stretch = Mathf.Lerp(1f, _colors.Visuals.EffectNeedleWindupLenMul, t);
-                _needle.position = origin + dir * (len * 0.25f * t);
+                _needle.position = origin + dir * (len * LivingEffectViewDefaults.NeedleWindupAlongMult * t);
                 if (dir.sqrMagnitude > 1e-4f)
                     _needle.rotation = Quaternion.LookRotation(dir, Vector3.up) * Quaternion.Euler(90f, 0f, 0f);
-                float thin = thick * Mathf.Lerp(1f, 0.7f, t);
+                float thin = thick * Mathf.Lerp(1f, LivingEffectViewDefaults.NeedleWindupThinMult, t);
                 _needle.localScale = new Vector3(thin, len * 0.5f * stretch, thin);
                 return;
             }
@@ -460,20 +460,20 @@ namespace Dovus.Game.Skills
                 _needle.position = tip;
                 if (dir.sqrMagnitude > 1e-4f)
                     _needle.rotation = Quaternion.LookRotation(dir, Vector3.up) * Quaternion.Euler(90f, 0f, 0f);
-                _needle.localScale = new Vector3(thick * 0.75f, len * 0.45f, thick * 0.75f);
+                _needle.localScale = new Vector3(thick * LivingEffectViewDefaults.NeedleHoldThickMult, len * LivingEffectViewDefaults.NeedleHoldLenMult, thick * LivingEffectViewDefaults.NeedleHoldThickMult);
 
                 for (int i = 0; i < _needleGhosts.Length; i++)
                 {
                     float back = (i + 1) / (_needleGhosts.Length + 1f);
-                    Vector3 gp = Vector3.Lerp(origin, tip, 1f - back * 0.85f);
+                    Vector3 gp = Vector3.Lerp(origin, tip, 1f - back * LivingEffectViewDefaults.NeedleGhostLerpMult);
                     _needleGhosts[i].gameObject.SetActive(true);
                     _needleGhosts[i].position = gp;
                     _needleGhosts[i].rotation = _needle.rotation;
-                    float gScale = 1f - back * 0.45f;
+                    float gScale = 1f - back * LivingEffectViewDefaults.NeedleGhostScaleMult;
                     _needleGhosts[i].localScale = new Vector3(
-                        thick * 0.55f * gScale,
-                        len * 0.35f * gScale,
-                        thick * 0.55f * gScale);
+                        thick * LivingEffectViewDefaults.NeedleGhostThickMult * gScale,
+                        len * LivingEffectViewDefaults.NeedleGhostLenMult * gScale,
+                        thick * LivingEffectViewDefaults.NeedleGhostThickMult * gScale);
                 }
 
                 return;
@@ -486,7 +486,7 @@ namespace Dovus.Game.Skills
             if (dir.sqrMagnitude > 1e-4f)
                 _needle.rotation = Quaternion.LookRotation(dir, Vector3.up) * Quaternion.Euler(90f, 0f, 0f);
             float holdLen = len * _colors.Visuals.EffectNeedleArrivalLenMul;
-            _needle.localScale = new Vector3(thick * 1.05f, holdLen * 0.5f, thick * 1.05f);
+            _needle.localScale = new Vector3(thick * LivingEffectViewDefaults.NeedleHoldThickPulseMult, holdLen * 0.5f, thick * LivingEffectViewDefaults.NeedleHoldThickPulseMult);
         }
 
         void DrawSwarm(Vector3 origin, Vector3 dir, float dist, EffectSilhouette s)
@@ -532,8 +532,8 @@ namespace Dovus.Game.Skills
                 if ((_logic.Verb == Rune.Hava || _logic.Verb == Rune.Karanlik) && stagger > 1e-4f)
                 {
                     // Her gövde kendi gecikmesiyle uca yetişir — cephe değil bulut.
-                    float catchUp = Mathf.Clamp01(localAge / (stagger * count + 0.15f));
-                    reach = dist * Mathf.Lerp(0.15f, 1f, catchUp);
+                    float catchUp = Mathf.Clamp01(localAge / (stagger * count + LivingEffectViewDefaults.BlobStaggerPaddingSec));
+                    reach = dist * Mathf.Lerp(LivingEffectViewDefaults.BlobReachStartMult, 1f, catchUp);
                 }
 
                 float u = (i + 1) / (count + 1f);
@@ -542,30 +542,30 @@ namespace Dovus.Game.Skills
                 // Düzensiz ofset (sabit hash) — düzenli halka değil.
                 float jx = Pseudo(i, 1) * jitter * (0.5f + s.Spread);
                 float jz = Pseudo(i, 2) * jitter * (0.5f + s.Spread);
-                float side = (i % 2 == 0 ? 1f : -1f) * (0.35f + (1f - s.Focus) * 1.4f)
-                             * (0.4f + s.Spread);
+                float side = (i % 2 == 0 ? 1f : -1f) * (LivingEffectViewDefaults.BlobSideBaseMult + (1f - s.Focus) * LivingEffectViewDefaults.BlobSideFocusSpreadMult)
+                             * (LivingEffectViewDefaults.BlobSideSpreadMult + s.Spread);
 
                 Vector3 p;
                 if (s.Focus > _colors.Visuals.EffectFocusSwarmAlongLineMin || _logic.Verb == Rune.Ates)
                 {
-                    p = origin + dir * along + right * (side * (1f - s.Focus * 0.7f) + jx * 0.35f)
-                        + dir * jz * 0.2f;
+                    p = origin + dir * along + right * (side * (1f - s.Focus * LivingEffectViewDefaults.BlobJitterFocusDampMult) + jx * LivingEffectViewDefaults.BlobJitterSideMult)
+                        + dir * jz * LivingEffectViewDefaults.BlobJitterAlongMult;
                 }
                 else
                 {
                     // Dağınık bulut: açı + yarıçap jitter
-                    float a = u * Mathf.PI * 2f + Pseudo(i, 3) * 1.7f + localAge * 1.1f;
-                    float r = reach * (0.25f + 0.7f * u) + jz;
+                    float a = u * Mathf.PI * 2f + Pseudo(i, 3) * LivingEffectViewDefaults.BlobOrbitPseudoMult + localAge * LivingEffectViewDefaults.BlobOrbitAgeMult;
+                    float r = reach * (LivingEffectViewDefaults.BlobOrbitReachInnerMult + LivingEffectViewDefaults.BlobOrbitReachOuterMult * u) + jz;
                     p = origin + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * r
                         + right * jx * 0.5f;
                 }
 
-                p.y = origin.y + 0.18f + 0.35f * s.Lift * Mathf.Abs(Mathf.Sin(localAge * 5.5f + i));
+                p.y = origin.y + LivingEffectViewDefaults.BlobLiftBaseM + LivingEffectViewDefaults.BlobLiftSpreadMult * s.Lift * Mathf.Abs(Mathf.Sin(localAge * LivingEffectViewDefaults.BlobLiftWobbleFreqHz + i));
                 _blobs[i].position = p;
                 float sc = _colors.Visuals.EffectBlobScaleBaseM + _colors.Visuals.EffectBlobScalePerSpreadM * s.Spread;
-                sc *= 0.85f + 0.3f * (0.5f + 0.5f * Pseudo(i, 4));
+                sc *= LivingEffectViewDefaults.BlobScaleBaseMult + LivingEffectViewDefaults.BlobScaleJitterMult * (0.5f + 0.5f * Pseudo(i, 4));
                 // Yatay wisp — eski “top sürü” silüetini kırar.
-                _blobs[i].localScale = new Vector3(sc * 1.35f, sc * 0.35f, sc * 1.35f);
+                _blobs[i].localScale = new Vector3(sc * LivingEffectViewDefaults.BlobMeshXZMult, sc * LivingEffectViewDefaults.BlobMeshYMult, sc * LivingEffectViewDefaults.BlobMeshXZMult);
             }
         }
 
@@ -586,15 +586,15 @@ namespace Dovus.Game.Skills
         void PulseBang(Vector3 origin, Vector3 dir, float dist, EffectSilhouette s)
         {
             _ = s;
-            float pulse = 1f + 0.8f * Mathf.Sin(_logic.BangAgeSec * 28f);
+            float pulse = 1f + LivingEffectViewDefaults.BangPulseAmpMult * Mathf.Sin(_logic.BangAgeSec * LivingEffectViewDefaults.BangPulseFreqHz);
             _line.widthMultiplier = _lineBaseWidth * pulse;
             if (_needle != null && _needle.gameObject.activeSelf)
-                _needle.localScale *= 1f + 0.15f * pulse;
+                _needle.localScale *= 1f + LivingEffectViewDefaults.BangNeedlePulseMult * pulse;
 
-            if (_bangPs != null && _logic.BangAgeSec < 0.05f && !_bangPs.isPlaying)
+            if (_bangPs != null && _logic.BangAgeSec < LivingEffectViewDefaults.BangPsReplayWindowSec && !_bangPs.isPlaying)
             {
                 Vector3 tip = origin + (dir.sqrMagnitude > 1e-4f ? dir.normalized : Vector3.forward) * dist;
-                tip.y = origin.y + 0.3f;
+                tip.y = origin.y + LivingEffectViewDefaults.BangTipLiftM;
                 _bangPs.transform.position = tip;
                 var main = _bangPs.main;
                 main.startColor = _hasSkillTint ? _skillLine : (_colors != null ? _colors.Visuals.InkCyan : Color.cyan);
@@ -605,7 +605,7 @@ namespace Dovus.Game.Skills
         /// <summary>[-1,1] sabit gürültü — Random değil, morph sırasında zıplamaz.</summary>
         static float Pseudo(int i, int salt)
         {
-            float x = Mathf.Sin(i * 12.9898f + salt * 78.233f) * 43758.5453f;
+            float x = Mathf.Sin(i * LivingEffectViewDefaults.PseudoHashMultI + salt * LivingEffectViewDefaults.PseudoHashMultSalt) * LivingEffectViewDefaults.PseudoHashScale;
             return (x - Mathf.Floor(x)) * 2f - 1f;
         }
 

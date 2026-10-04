@@ -87,7 +87,7 @@ namespace Dovus.Game.Skills.Motion
             {
                 _beats.Add(new ArmedBeat
                 {
-                    DueMs = _startMs + beat.AtSec * 1000.0,
+                    DueMs = _startMs + beat.AtSec * SkillsTimeDefaults.SecToMs,
                     Kind = beat.Kind,
                     Power = beat.Power
                 });
@@ -131,7 +131,7 @@ namespace Dovus.Game.Skills.Motion
                 return false;
             if (_detonated)
                 return false;
-            double due = _startMs + System.Math.Max(0.05, _order.ActivationDelaySec) * 1000.0;
+            double due = _startMs + System.Math.Max(TemplateDeliveryRuntimeDefaults.ActivationDelayMinSec, _order.ActivationDelaySec) * SkillsTimeDefaults.SecToMs;
             return now + 1.0 < due;
         }
 
@@ -169,16 +169,16 @@ namespace Dovus.Game.Skills.Motion
             bool landingWave = push > 0f && JsonEffectRules.LandingWavePush(_host.MechanicPlanFor(skill));
             if (!skill.IsEmpty && StatusApplicator.IsSelfTargeted(skill) && !landingWave)
                 return;
-            float knock = _host.Combat != null ? _host.Combat.Manifestation.BossKnockbackM : 1.35f;
+            float knock = _host.Combat != null ? _host.Combat.Manifestation.BossKnockbackM : TemplateDeliveryRuntimeDefaults.BossKnockbackFallbackM;
             // JSON itme mesafesi yalnız zorla yer değiştirmeye izin varken; yoksa eski genel itme.
             if (push > 0f && ForcedDisplacement.Allows(_host.BossStatus != null ? _host.BossStatus.Board : null))
             {
                 knock = push;
                 _host.JsonLog($"itme {knock:0.##}m" + (landingWave ? " (iniş dalgası)" : ""));
             }
-            float shake = _host.Combat != null ? _host.Combat.Manifestation.BossShakeSec * 0.45f : 0.12f;
+            float shake = _host.Combat != null ? _host.Combat.Manifestation.BossShakeSec * TemplateDeliveryRuntimeDefaults.TravelHitShakeMult : TemplateDeliveryRuntimeDefaults.TravelHitShakeMultAlt;
             double now = _host.Clock != null ? _host.Clock.Director.WorldTimeMs : 0;
-            _host.Boss.React(from, knock, 0.05f, shake, now);
+            _host.Boss.React(from, knock, TemplateDeliveryRuntimeDefaults.BossReactLiftM, shake, now);
         }
 
         void TryTemplateCannonSplash(Vector3 origin)
@@ -186,9 +186,9 @@ namespace Dovus.Game.Skills.Motion
             WeaponCombatProfile profile = _host.EquippedWeapon != null ? _host.EquippedWeapon.Profile : null;
             if (profile == null || profile.HitShape != "ballistic")
                 return;
-            float splash = profile.BasicRadiusM > 0f ? profile.BasicRadiusM : 3f;
-            float arena = _host.Motor != null ? _host.Motor.Tuning.Arena.ArenaHalfSizeM : 50f;
-            float bossR = _host.Boss != null && _host.Boss.BodyRadiusM > 0.01f ? _host.Boss.BodyRadiusM : 0.85f;
+            float splash = profile.BasicRadiusM > 0f ? profile.BasicRadiusM : TemplateDeliveryRuntimeDefaults.SplashRadiusFallbackM;
+            float arena = _host.Motor != null ? _host.Motor.Tuning.Arena.ArenaHalfSizeM : TemplateDeliveryRuntimeDefaults.ArenaHalfSizeFallbackM;
+            float bossR = _host.Boss != null && _host.Boss.BodyRadiusM > TemplateDeliveryRuntimeDefaults.BossBodyRadiusFallbackM ? _host.Boss.BodyRadiusM : TemplateDeliveryRuntimeDefaults.BossBodyRadiusFallbackMAlt;
             _host.Cannon.PushCannonBodies(origin.x, origin.z, splash, arena, bossR);
         }
 
@@ -337,9 +337,9 @@ namespace Dovus.Game.Skills.Motion
         {
             if (_host.PlayerStatus == null || _order == null)
                 return;
-            float mag = magnitude > 1f ? magnitude : 1.5f;
-            float sec = _order.GlideDurationSec > 0.05f ? _order.GlideDurationSec : 3f;
-            _host.PlayerStatus.Board.Apply(StatusKind.Haste, sec * 1000.0, mag, "suzulme");
+            float mag = magnitude > 1f ? magnitude : TemplateDeliveryRuntimeDefaults.GlideHasteMagFallback;
+            float sec = _order.GlideDurationSec > TemplateDeliveryRuntimeDefaults.GlideDurationMinSec ? _order.GlideDurationSec : TemplateDeliveryRuntimeDefaults.GlideDurationFallbackSec;
+            _host.PlayerStatus.Board.Apply(StatusKind.Haste, sec * SkillsTimeDefaults.SecToMs, mag, "suzulme");
             _host.LastSkillEffectApplied = true;
         }
     

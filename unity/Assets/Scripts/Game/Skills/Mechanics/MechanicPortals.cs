@@ -29,7 +29,7 @@ namespace Dovus.Game.Skills.Mechanics
         public MechanicPortals(IMechanicPortalsHost host) => _host = host;
 
         public void ScheduleAfter(double now, float delaySec, Action run) =>
-            _timers.Add(new MechanicTimer { DueMs = now + delaySec * 1000.0, Run = run });
+            _timers.Add(new MechanicTimer { DueMs = now + delaySec * SkillsTimeDefaults.SecToMs, Run = run });
 
         public void TickTimers(double worldMs)
         {
@@ -69,8 +69,8 @@ namespace Dovus.Game.Skills.Mechanics
             gate.name = "MechanicPortal";
             _host.DestroyUnityObject(gate.GetComponent<Collider>());
             gate.transform.SetParent(_host.DirectorTransform, true);
-            gate.transform.position = new Vector3(pos.x, 0.03f, pos.z);
-            gate.transform.localScale = new Vector3(r * 2f, 0.02f, r * 2f);
+            gate.transform.position = new Vector3(pos.x, MechanicPortalsDefaults.GateGroundYM, pos.z);
+            gate.transform.localScale = new Vector3(r * 2f, MechanicPortalsDefaults.GateThicknessY, r * 2f);
             return gate;
         }
 

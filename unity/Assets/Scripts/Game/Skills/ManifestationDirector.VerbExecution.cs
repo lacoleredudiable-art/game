@@ -72,7 +72,7 @@ namespace Dovus.Game.Skills
 
             NoteShieldBlockIfGuarding();
             bool crit = _playerStatus != null && _playerStatus.LastHitWasCrit;
-            Vector3 at = _player != null ? _player.position + Vector3.up * 1.6f : Vector3.zero;
+            Vector3 at = _player != null ? _player.position + Vector3.up * ManifestationDirectorDefaults.VerbAimHeightAbovePlayerM : Vector3.zero;
             _damageHud?.ShowDamage(incomingDamage, crit, at, victimIsPlayer: true);
             ReflectFromWorldVolumes(incomingDamage);
             if (_mobilityCc == null || PendingList.Count == 0)
@@ -136,20 +136,20 @@ namespace Dovus.Game.Skills
             if (buff > 0f && buffSec > 0f && GuardTriggerDelivery.AllowImmediate(mechanicPlan, "hasar_buff"))
             {
                 _selfDamageBuff = buff;
-                _selfDamageBuffUntilMs = now + (buffSec + lifetimeAdd) * 1000.0;
+                _selfDamageBuffUntilMs = now + (buffSec + lifetimeAdd) * SkillsTimeDefaults.SecToMs;
             }
 
             float reflect = engine.ReflectRatio(0f);
             reflect = WeaponPassiveRules.ScaleFriendlyMagnitude(reflect, friendly);
             float reflectSec = engine.ReflectDurationSec(0f);
             if (reflect > 0f && reflectSec > 0f && _playerStatus != null && HasSelfReflect(mechanicPlan))
-                _playerStatus.GrantReflect(reflect, now + (reflectSec + lifetimeAdd) * 1000.0);
+                _playerStatus.GrantReflect(reflect, now + (reflectSec + lifetimeAdd) * SkillsTimeDefaults.SecToMs);
 
             MechanicEffect absorb = mechanicPlan?.Effects.Find(e => e.Stat == "em");
             if (absorb != null && absorb.Amount > 0)
             {
                 _emHealRatio = (float)absorb.Amount;
-                _emHealUntilMs = now + Mathf.Max(0.2f, reflectSec + lifetimeAdd) * 1000.0;
+                _emHealUntilMs = now + Mathf.Max(ManifestationDirectorDefaults.EmHealMinWindowSec, reflectSec + lifetimeAdd) * SkillsTimeDefaults.SecToMs;
             }
             ApplyJsonSelfCast(mechanicPlan, reflect, reflectSec + lifetimeAdd, now);
         }
@@ -179,7 +179,7 @@ namespace Dovus.Game.Skills
                 float mult = engine.HasDuplicateDamageMult
                     ? engine.DuplicateDamageMult(1f)
                     : 1f;
-                Enqueue(now + delay * 1000.0, mult);
+                Enqueue(now + delay * SkillsTimeDefaults.SecToMs, mult);
             }
 
             if (kind == SkillExecutorKind.Movement && engine.BounceTargets(0) > 0)
@@ -188,7 +188,7 @@ namespace Dovus.Game.Skills
                 float mult = engine.HasBounceDamageMult
                     ? engine.BounceDamageMult(1f)
                     : 1f;
-                Enqueue(now + dashSec * 1000.0, mult);
+                Enqueue(now + dashSec * SkillsTimeDefaults.SecToMs, mult);
             }
 
             void Enqueue(double dueMs, float mult) => _delayedLaunches.Add(new DelayedLaunch

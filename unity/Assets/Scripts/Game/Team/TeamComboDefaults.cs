@@ -35,6 +35,9 @@ namespace Dovus.Game.Team
 
         public const float BurstFxScale = 0.7f;
         public const float BurstFxLifetimeSec = 0.6f;
+        public const int BossPortalBodyId = 900;
+        public const double SecToMs = 1000.0;
+        public const int VitalsMaxHpFallback = 30;
     }
 
 }

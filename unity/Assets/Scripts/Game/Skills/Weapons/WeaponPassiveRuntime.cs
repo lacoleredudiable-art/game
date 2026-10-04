@@ -111,7 +111,7 @@ namespace Dovus.Game.Skills.Weapons
             WeaponCombatProfile profile = _host.EquippedProfile;
             if (logic == null || profile == null || profile.HitShape != "ballistic" || _host.Boss == null)
                 return;
-            float reach = WeaponBasicReach(profile.BasicReachM > 0f ? profile.BasicReachM : 25f);
+            float reach = WeaponBasicReach(profile.BasicReachM > 0f ? profile.BasicReachM : WeaponPassiveRuntimeDefaults.BasicReachFallbackM);
             Vector3 boss = _host.Boss.transform.position;
             if (!CannonShot.TryImpact(
                     origin.x, origin.z, facing.x, facing.z, reach,
@@ -225,7 +225,7 @@ namespace Dovus.Game.Skills.Weapons
             {
                 Vector3 toBoss = _host.Boss.transform.position - _host.Player.position;
                 toBoss.y = 0f;
-                if (toBoss.sqrMagnitude > 0.01f && Vector3.Dot(_host.Player.forward, toBoss.normalized) < 0.2f)
+                if (toBoss.sqrMagnitude > WeaponPassiveRuntimeDefaults.ToBossDistEpsilonSqr && Vector3.Dot(_host.Player.forward, toBoss.normalized) < WeaponPassiveRuntimeDefaults.BackstabDotThreshold)
                     return;
             }
             _passives.NoteBlock(_host.Clock.Director.WorldTimeMs, profile.Passive.WindowSec);
@@ -259,7 +259,7 @@ namespace Dovus.Game.Skills.Weapons
             bool had = _host.BossStatus.Board.Has(StatusKind.Stun);
             if (!ready || had)
                 return;
-            _host.BossStatus.Board.Apply(StatusKind.Stun, mods.StunSec * 1000.0, 1f);
+            _host.BossStatus.Board.Apply(StatusKind.Stun, mods.StunSec * SkillsTimeDefaults.SecToMs, 1f);
             CommitHammerStun(now, ready, had, _host.BossStatus.Board.Has(StatusKind.Stun));
         }
 
@@ -327,7 +327,7 @@ namespace Dovus.Game.Skills.Weapons
                 return WeaponPassiveMods.Identity;
             int verb = skill.IsEmpty ? 1 : VerbOf(skill.SkillId);
             bool enabled = isBasicStrike || _host.EquippedWeapon.IsCompatibleWithVerb(verb);
-            float sinceMoved = _host.Clock == null ? 99f : (float)((_host.Clock.Director.WorldTimeMs - _host.LastMovedMs) / 1000.0);
+            float sinceMoved = _host.Clock == null ? WeaponPassiveRuntimeDefaults.SinceMovedFallbackSec : (float)((_host.Clock.Director.WorldTimeMs - _host.LastMovedMs) / SkillsTimeDefaults.SecToMs);
             int chain = 0;
             if (profile.Passive.Kind == WeaponPassiveKind.DoluSayfa && _host.Clock != null)
                 chain = _passives.EffectiveChain(

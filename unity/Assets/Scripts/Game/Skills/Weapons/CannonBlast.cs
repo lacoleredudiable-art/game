@@ -53,12 +53,12 @@ namespace Dovus.Game.Skills.Weapons
             WeaponCombatProfile profile = _host.EquippedProfile;
             if (profile == null || _host.Player == null)
                 return;
-            float splash = profile.BasicRadiusM > 0f ? profile.BasicRadiusM : 3f;
+            float splash = profile.BasicRadiusM > 0f ? profile.BasicRadiusM : CannonBlastDefaults.SplashRadiusFallbackM;
             float bossPush = profile.BossPushM > 0f ? profile.BossPushM : 0.5f;
-            float arena = _host.Motor != null ? _host.Motor.Tuning.Arena.ArenaHalfSizeM : 50f;
+            float arena = _host.Motor != null ? _host.Motor.Tuning.Arena.ArenaHalfSizeM : CannonBlastDefaults.ArenaHalfSizeFallbackM;
             float playerR = _host.PlayerBodyRadiusM();
-            float bossR = 0.85f;
-            if (_host.Boss != null && _host.Boss.BodyRadiusM > 0.01f)
+            float bossR = CannonBlastDefaults.BossBodyRadiusFallbackM;
+            if (_host.Boss != null && _host.Boss.BodyRadiusM > CannonBlastDefaults.BossBodyRadiusEpsilonM)
                 bossR = _host.Boss.BodyRadiusM;
 
             if (_host.Boss != null)
@@ -67,7 +67,7 @@ namespace Dovus.Game.Skills.Weapons
                 float dx = boss.x - impactX;
                 float dz = boss.z - impactZ;
                 if (dx * dx + dz * dz <= splash * splash)
-                    _host.Boss.React(new Vector3(impactX, boss.y, impactZ), bossPush, 0f, 0.12f, _host.WorldTimeMs);
+                    _host.Boss.React(new Vector3(impactX, boss.y, impactZ), bossPush, 0f, CannonBlastDefaults.BossReactShakeSec, _host.WorldTimeMs);
             }
 
             PushCannonBodies(impactX, impactZ, splash, arena, bossR);
@@ -89,7 +89,7 @@ namespace Dovus.Game.Skills.Weapons
             float bossZ = _host.Boss != null ? _host.Boss.transform.position.z : player.z;
             _cannonRecoil.Queue(
                 dirX, dirZ, profile.RecoilM, bossX, bossZ,
-                playerR + bossR + 0.15f, arena, playerR);
+                playerR + bossR + CannonBlastDefaults.ImpactPlayerSepPadM, arena, playerR);
             if (_cannonRecoil.TryApply(false, ref x, ref z))
                 _host.Player.position = new Vector3(x, player.y, z);
         }
@@ -123,7 +123,7 @@ namespace Dovus.Game.Skills.Weapons
 
             float bossX = _host.Boss != null ? _host.Boss.transform.position.x : impactX;
             float bossZ = _host.Boss != null ? _host.Boss.transform.position.z : impactZ;
-            float minSep = 0.4f + bossR + 0.15f;
+            float minSep = CannonBlastDefaults.BlastSepBaseM + bossR + CannonBlastDefaults.BlastSepPadM;
             for (int i = 0; i < _cannonBodies.Count; i++)
             {
                 Transform body = _cannonBodies[i];
@@ -131,7 +131,7 @@ namespace Dovus.Game.Skills.Weapons
                     continue;
                 float x = body.position.x;
                 float z = body.position.z;
-                CoreCannonBlast.Move(ref x, ref z, x - impactX, z - impactZ, splash, bossX, bossZ, minSep, arena, 0.4f);
+                CoreCannonBlast.Move(ref x, ref z, x - impactX, z - impactZ, splash, bossX, bossZ, minSep, arena, CannonBlastDefaults.PlayerPushMinSepM);
                 body.position = new Vector3(x, body.position.y, z);
             }
         }
@@ -146,7 +146,7 @@ namespace Dovus.Game.Skills.Weapons
             _host.AbortRecoveringSentence();
             if (instant && _host.Clock != null && _host.WeaponSwap != null)
                 _host.SetSwapInstantDrawUntil(
-                    _host.Clock.Director.WorldTimeMs + _host.WeaponSwap.Rules.AnimationSec * 1000.0);
+                    _host.Clock.Director.WorldTimeMs + _host.WeaponSwap.Rules.AnimationSec * SkillsTimeDefaults.SecToMs);
         }
 
     }

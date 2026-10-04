@@ -19,6 +19,12 @@ namespace Dovus.Game.Skills.Mechanics
 
         public const float PlayerMoveEpsilonSqr = 0.01f;
         public const float PlanarDirEpsilonSqr = 0.0001f;
+        public const int BossMechanicHistoryCapacity = 50;
+        public const int BossMechanicHistoryWindowMs = 5000;
+        public const double PayloadMinLifeFallbackSec = 0.1;
+        public const double PayloadMinLifeJsonFallbackSec = 3.0;
+        public const double ReflectRampMaxFallback = 1.5;
+        public const double TickRateMinHz = 0.01;
     }
 
 }

@@ -126,8 +126,8 @@ namespace Dovus.Game.Skills.Closing
                 return;
 
             LivingEffect logic = p.View.Logic;
-            Vector3 tip = new Vector3(logic.TipX, 0.6f, logic.TipZ);
-            Vector3 origin = new Vector3(logic.OriginX, 0.55f, logic.OriginZ);
+            Vector3 tip = new Vector3(logic.TipX, ClosingDefaults.ClosingTipGroundYM, logic.TipZ);
+            Vector3 origin = new Vector3(logic.OriginX, ClosingDefaults.ClosingOriginGroundYM, logic.OriginZ);
             string element = _host.SelectedElementPaint?.Name
                 ?? (p.Words != null && p.Words.Count > 0
                     ? p.Words[0].Rune.ToString()
@@ -168,7 +168,7 @@ namespace Dovus.Game.Skills.Closing
 
             GameObject fx = PlaceholderFactory.CreateImpact(impactStyle, element, tip, _host.DirectorTransform);
             if (fx != null)
-                _host.DestroyUnityObjectAfter(fx, 1.2f);
+                _host.DestroyUnityObjectAfter(fx, ClosingDefaults.ImpactFxLifetimeSec);
         }
 
         public SkillResolution ResolveSkillWords(IReadOnlyList<SentenceWord> words)

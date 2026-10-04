@@ -92,7 +92,7 @@ namespace Dovus.Game.Skills.Execution
             if (recipe.Tether && owner != null)
                 c._tether = c.MakeLine("Tether", 2, false);
             if (recipe.GroundRingRadiusM > 0)
-                c._ring = c.MakeLine("Anchor", 24, true);
+                c._ring = c.MakeLine("Anchor", ComposedSkillVfxDefaults.RingLineSegmentCount, true);
             return c;
         }
 
@@ -177,7 +177,7 @@ namespace Dovus.Game.Skills.Execution
             go.AddComponent<MeshFilter>().sharedMesh = _chunkMesh;
             go.AddComponent<MeshRenderer>().sharedMaterial = _chunkMaterial;
             Bounds b = _chunkMesh.bounds;
-            float extent = Mathf.Max(0.01f, Mathf.Max(b.size.x, Mathf.Max(b.size.y, b.size.z)));
+            float extent = Mathf.Max(ComposedSkillVfxDefaults.MinPositiveSec, Mathf.Max(b.size.x, Mathf.Max(b.size.y, b.size.z)));
             float k = size / extent;
             go.transform.localScale = Vector3.one * k;
             height = b.size.y * k;
@@ -185,10 +185,10 @@ namespace Dovus.Game.Skills.Execution
             const float golden = 137.508f;
             float tilt = t.ChunkTiltDeg;
             go.transform.localRotation = Quaternion.Euler((index % 3 - 1) * tilt, index * golden % 360f,
-                (index % 2 == 0 ? 1 : -1) * tilt * 0.6f);
+                (index % 2 == 0 ? 1 : -1) * tilt * ComposedSkillVfxDefaults.PieceTiltMult);
             go.transform.localPosition = new Vector3(0f, carried ? restY : restY - height, 0f);
             float s = t.ChunkSpinDegPerSec;
-            spin = carried ? new Vector3(s, s * 0.5f, s * 0.25f) : Vector3.zero;
+            spin = carried ? new Vector3(s, s * 0.5f, s * ComposedSkillVfxDefaults.CarriedSpinZMult) : Vector3.zero;
             Destroy(go, _life);
             return go.transform;
         }
@@ -212,7 +212,7 @@ namespace Dovus.Game.Skills.Execution
             Color c = Color.Lerp(Color.white, tint, tex != null ? lib.SubstanceTintStrength : 0.5f);
             c.a = 1f;
             m.SetColor("_BaseColor", c);
-            m.SetFloat("_Smoothness", tex != null ? 0.2f : 0.85f);
+            m.SetFloat("_Smoothness", tex != null ? ComposedSkillVfxDefaults.ChunkSmoothnessWithTex : ComposedSkillVfxDefaults.ChunkSmoothnessNoTex);
             m.EnableKeyword("_EMISSION");
             m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
             m.SetColor("_EmissionColor", tint * lib.Composition.ChunkEmission);
@@ -222,7 +222,7 @@ namespace Dovus.Game.Skills.Execution
 
         void Animate(float dt)
         {
-            float moveSec = Mathf.Max(0.01f, (float)_recipe.PieceMoveSec);
+            float moveSec = Mathf.Max(ComposedSkillVfxDefaults.MinPositiveSec, (float)_recipe.PieceMoveSec);
             for (int i = _live.Count - 1; i >= 0; i--)
             {
                 Live l = _live[i];
@@ -258,10 +258,10 @@ namespace Dovus.Game.Skills.Execution
                 return;
             }
             SkillVisualTuning t = Lib.Composition;
-            float up = Mathf.Clamp01(l.Age / Mathf.Max(0.01f, t.RiseSec));
+            float up = Mathf.Clamp01(l.Age / Mathf.Max(ComposedSkillVfxDefaults.MinPositiveSec, t.RiseSec));
             up = 1f - (1f - up) * (1f - up);
             float holdEnd = _life * t.ChunkHoldFrac;
-            float down = Mathf.Clamp01((l.Age - holdEnd) / Mathf.Max(0.01f, _life - holdEnd));
+            float down = Mathf.Clamp01((l.Age - holdEnd) / Mathf.Max(ComposedSkillVfxDefaults.MinPositiveSec, _life - holdEnd));
             Vector3 lp = l.Chunk.localPosition;
             lp.y = l.ChunkRestY - l.ChunkHeight * (1f - up) - l.ChunkHeight * down;
             l.Chunk.localPosition = lp;
@@ -270,7 +270,7 @@ namespace Dovus.Game.Skills.Execution
         void ApplyScale(Transform holder, VisualPiece p, float e)
         {
             float s = _recipe.Grow ? Mathf.Lerp(_growStart, 1f, e) : 1f;
-            holder.localScale = new Vector3(s, s, s * Mathf.Max(0.05f, (float)p.StretchZ));
+            holder.localScale = new Vector3(s, s, s * Mathf.Max(ComposedSkillVfxDefaults.MinRadiusM, (float)p.StretchZ));
         }
 
         LineRenderer MakeLine(string name, int points, bool loop)
@@ -281,7 +281,7 @@ namespace Dovus.Game.Skills.Execution
             lr.positionCount = points;
             lr.loop = loop;
             lr.useWorldSpace = true;
-            lr.widthMultiplier = Mathf.Max(0.06f, (float)_recipe.PieceSizeM * 0.15f);
+            lr.widthMultiplier = Mathf.Max(ComposedSkillVfxDefaults.RingLineMinWidthM, (float)_recipe.PieceSizeM * ComposedSkillVfxDefaults.RingLineSizeMult);
             Shader shader = AssetLoader.FindShader("Universal Render Pipeline/Particles/Unlit", null) ?? AssetLoader.FindShader("Sprites/Default", null);
             lr.sharedMaterial = shader != null ? new Material(shader) : null;
             Color c = _hasTint ? _tint : Color.white;
@@ -312,7 +312,7 @@ namespace Dovus.Game.Skills.Execution
                     for (int i = 0; i < _ring.positionCount; i++)
                     {
                         float a = i * Mathf.PI * 2f / _ring.positionCount;
-                        _ring.SetPosition(i, new Vector3(_origin.x + Mathf.Sin(a) * r, _groundY + 0.05f, _origin.z + Mathf.Cos(a) * r));
+                        _ring.SetPosition(i, new Vector3(_origin.x + Mathf.Sin(a) * r, _groundY + ComposedSkillVfxDefaults.RingGroundLiftM, _origin.z + Mathf.Cos(a) * r));
                     }
                 }
             }

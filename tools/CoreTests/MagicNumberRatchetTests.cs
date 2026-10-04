@@ -23,7 +23,7 @@ public sealed class MagicNumberRatchetTests
     {
         ["Core"] = 0,
         ["App"] = 0,
-        ["Game/Skills"] = 261,
+        ["Game/Skills"] = 0,
         ["Game/Vfx"] = 135,
         ["Game/Weapons"] = 127,
         ["Game/Arena"] = 121,
@@ -35,7 +35,7 @@ public sealed class MagicNumberRatchetTests
         ["Game/Cameras"] = 37,
         ["Game/Composition"] = 35,
         ["Game/Feel"] = 12,
-        ["Game/Team"] = 5,
+        ["Game/Team"] = 0,
         ["Game/Platform"] = 4,
         ["Game/Data"] = 0,
     };

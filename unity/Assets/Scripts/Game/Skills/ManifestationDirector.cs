@@ -227,7 +227,7 @@ namespace Dovus.Game.Skills
                 return;
 
             double worldMs = _clock.Director.WorldTimeMs;
-            float dtSec = (float)(_clock.WorldDeltaMs / 1000.0);
+            float dtSec = (float)(_clock.WorldDeltaMs / SkillsTimeDefaults.SecToMs);
             if (!PerformingAttack)
             {
                 EnsureSkillServices();
@@ -242,7 +242,7 @@ namespace Dovus.Game.Skills
                 _posedForRecovery = false;
             }
 
-            if (_motor != null && _motor.Velocity.sqrMagnitude > 0.01f)
+            if (_motor != null && _motor.Velocity.sqrMagnitude > SkillsTimeDefaults.MotorVelocityEpsilonSqr)
                 _lastMovedMs = worldMs;
             TickOrb(worldMs);
             TickCannonRecoil();
@@ -275,7 +275,7 @@ namespace Dovus.Game.Skills
         {
             EnsureCoreServices();
             bool channelHeld = SustainedSkillActive(worldMs);
-            bool guardHeld = _playerStatus != null && _playerStatus.Board.ShieldRemaining > 0.01f;
+            bool guardHeld = _playerStatus != null && _playerStatus.Board.ShieldRemaining > SkillsTimeDefaults.ShieldHeldEpsilon;
             _closingQueue.TickCastHold(worldMs, _visual, channelHeld, guardHeld);
         }
 

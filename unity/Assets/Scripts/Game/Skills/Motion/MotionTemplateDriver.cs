@@ -62,14 +62,14 @@ namespace Dovus.Game.Skills.Motion
         public float BossBodyRadius()
         {
             if (_host.Boss == null)
-                return 0.6f;
+                return MotionTemplateDriverDefaults.MotionReturnHeightM;
             Collider col = _host.Boss.GetComponentInChildren<Collider>();
             if (col == null)
             {
                 DesignWarnings.Once(
                     "motion.boss_radius",
                     "Boss gövdesi okunamadı. Vuruş payı yedek 0.6 m.");
-                return 0.6f;
+                return MotionTemplateDriverDefaults.MotionReturnHeightM;
             }
             return Mathf.Max(col.bounds.extents.x, col.bounds.extents.z);
         }
@@ -143,13 +143,13 @@ namespace Dovus.Game.Skills.Motion
             }
 
             float dashM = skill.Engine.DashDistanceM(0f);
-            if (dashM > 0.05f)
+            if (dashM > MotionTemplateDriverDefaults.DashDistMinM)
             {
                 float range = _host.EquippedWeapon != null && _host.EquippedWeapon.RangeMult > 0f
                     ? _host.EquippedWeapon.RangeMult
                     : 1f;
                 float box = skill.Engine.HitboxScaleMult(0f);
-                if (box <= 0.01f)
+                if (box <= MotionTemplateDriverDefaults.HitboxAreaEpsilon)
                     box = 1f;
                 MotionTemplate dashed = DashDistance.Apply(shaped, dashM * range * box);
                 if (!ReferenceEquals(dashed, shaped))
@@ -189,9 +189,9 @@ namespace Dovus.Game.Skills.Motion
             if (_host.Player == null)
                 return;
             _host.EnsureMotionBody();
-            float arena = _host.Colors != null ? _host.Colors.Arena.ArenaHalfSizeM : 50f;
+            float arena = _host.Colors != null ? _host.Colors.Arena.ArenaHalfSizeM : MotionTemplateDriverDefaults.ArenaHalfSizeFallbackM;
             float body = _host.PlayerBodyRadiusM();
-            _host.MotionBody.Bind(_host.Clock, arena, body > 0.05f ? body : 0.5f);
+            _host.MotionBody.Bind(_host.Clock, arena, body > MotionTemplateDriverDefaults.MotionBodyBindMinM ? body : 0.5f);
             _ = MotionCatalog;
         }
 
@@ -214,7 +214,7 @@ namespace Dovus.Game.Skills.Motion
 
             _host.EnsureMotionBody();
 
-            float arena = _host.Colors != null ? _host.Colors.Arena.ArenaHalfSizeM : 50f;
+            float arena = _host.Colors != null ? _host.Colors.Arena.ArenaHalfSizeM : MotionTemplateDriverDefaults.ArenaHalfSizeFallbackM;
             _templateSkill = skill;
             _templateSlotCastId = _host.SlotQueryCastId;
             _templatePending = pending;
@@ -223,7 +223,7 @@ namespace Dovus.Game.Skills.Motion
             SetTemplateAim(ResolveTemplateAim(skill, template));
             Transform aim = _templateAim;
             float bodyR = _host.PlayerBodyRadiusM();
-            if (bodyR < 0.05f)
+            if (bodyR < MotionTemplateDriverDefaults.BodyRadiusMinM)
                 bodyR = 0.5f;
             _host.MotionBody.Bind(_host.Clock, arena, bodyR);
             float stopGap = MotionCatalog.Fallbacks.StopGapM;
@@ -314,9 +314,9 @@ namespace Dovus.Game.Skills.Motion
                 _templateStartCenter = _host.FlatDistance(_host.Player.position, _host.Boss.transform.position);
 
             float bodyR = _host.PlayerBodyRadiusM();
-            if (bodyR < 0.05f)
+            if (bodyR < MotionTemplateDriverDefaults.BodyRadiusMinM)
                 bodyR = 0.5f;
-            float arena = _host.Colors != null ? _host.Colors.Arena.ArenaHalfSizeM : 50f;
+            float arena = _host.Colors != null ? _host.Colors.Arena.ArenaHalfSizeM : MotionTemplateDriverDefaults.ArenaHalfSizeFallbackM;
             _host.MotionBody.Bind(_host.Clock, arena, bodyR);
             string weapon = _host.EquippedWeapon != null
                 ? (string.IsNullOrEmpty(_host.EquippedWeapon.AnimationsKey) ? _host.EquippedWeapon.Id : _host.EquippedWeapon.AnimationsKey)
@@ -427,8 +427,8 @@ namespace Dovus.Game.Skills.Motion
             _fuse = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             _fuse.name = "Fuse";
             _fuse.transform.SetParent(_host.DirectorTransform, true);
-            _fuse.transform.position = new Vector3(hit.OriginX, 0.18f, hit.OriginZ);
-            _fuse.transform.localScale = Vector3.one * 0.28f;
+            _fuse.transform.position = new Vector3(hit.OriginX, MotionTemplateDriverDefaults.FuseGroundYM, hit.OriginZ);
+            _fuse.transform.localScale = Vector3.one * MotionTemplateDriverDefaults.FuseScaleM;
             Collider col = _fuse.GetComponent<Collider>();
             if (col != null)
                 UnityEngine.Object.Destroy(col);
@@ -475,7 +475,7 @@ namespace Dovus.Game.Skills.Motion
             string shape = hit.Shape == "line" ? "capsule" : hit.Shape;
             if (string.IsNullOrEmpty(shape))
                 shape = "capsule";
-            Vector3 pos = new Vector3(hit.OriginX, _host.Player != null ? _host.Player.position.y + 0.9f : 0.9f, hit.OriginZ);
+            Vector3 pos = new Vector3(hit.OriginX, _host.Player != null ? _host.Player.position.y + MotionTemplateDriverDefaults.HitFxHeightAbovePlayerM : MotionTemplateDriverDefaults.HitFxHeightAbovePlayerM, hit.OriginZ);
             Vector3 dir = new Vector3(hit.DirX, 0f, hit.DirZ);
             GameObject fx = HitboxVfxRegistry.Create(
                 "motion-" + _templateSkill.SkillId,
@@ -483,11 +483,11 @@ namespace Dovus.Game.Skills.Motion
                 _host.SelectedElementPaint?.ColorHex ?? "#f2d48a",
                 pos,
                 dir,
-                Mathf.Max(0.15f, hit.RadiusM),
+                Mathf.Max(MotionTemplateDriverDefaults.HitFxMinRadiusM, hit.RadiusM),
                 Mathf.Max(hit.RadiusM, hit.LengthM),
                 _host.DirectorTransform);
             if (fx != null)
-                _host.DestroyUnityObject(fx, 0.35f);
+                _host.DestroyUnityObject(fx, MotionTemplateDriverDefaults.HitFxLifetimeSec);
         }
     
     }

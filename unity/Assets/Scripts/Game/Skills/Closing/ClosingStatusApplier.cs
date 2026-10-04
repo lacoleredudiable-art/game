@@ -82,9 +82,9 @@ namespace Dovus.Game.Skills.Closing
             int castId = _host.SlotQueryCastId;
             float rootSec = _host.SlotPassives.RootSecondsFor(castId);
             if (rootSec > 0f)
-                target.Board.Apply(StatusKind.Root, rootSec * 1000.0, 1f, "passive:root");
+                target.Board.Apply(StatusKind.Root, rootSec * SkillsTimeDefaults.SecToMs, 1f, "passive:root");
             float speed = _host.SlotPassives.SlowSpeedFor(castId);
-            if (speed < 0.999f)
+            if (speed < ClosingDefaults.SlowSpeedNearFullThreshold)
                 target.Board.Apply(
                     StatusKind.Slow,
                     _host.MobilityCc?.ResolveCcDurationMs(StatusKind.Slow, 0, tuning.SlowMs) ?? tuning.SlowMs,

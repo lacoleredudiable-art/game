@@ -84,7 +84,7 @@ namespace Dovus.Game.Skills.Weapons
             Vector3 face = _host.FlatBodyForward();
             float dist = _host.EquippedProfile != null && _host.EquippedProfile.OrbPlaceM > 0f
                 ? _host.EquippedProfile.OrbPlaceM
-                : 8f;
+                : OrbControllerDefaults.OrbitSpeedFallbackMps;
             Vector3 p = _host.Player.position;
             x = p.x + face.x * dist;
             z = p.z + face.z * dist;

@@ -55,7 +55,7 @@ namespace Dovus.Game.Skills.Launch
                 mob = SkillMobility.Resolve(skill);
             }
             double now = _host.Clock != null ? _host.Clock.Director.WorldTimeMs : 0;
-            _host.PlayerStatus.GrantCastMobility(mob, now + durationSec * 1000.0);
+            _host.PlayerStatus.GrantCastMobility(mob, now + durationSec * SkillsTimeDefaults.SecToMs);
         }
 
         public void RefreshBuildingMobility(IReadOnlyList<SentenceWord> words)
@@ -65,7 +65,7 @@ namespace Dovus.Game.Skills.Launch
             SkillResolution skill = _host.ResolveSkillWords(words);
             if (skill.IsEmpty)
                 return;
-            ApplyCastMobility(skill, 0.45f);
+            ApplyCastMobility(skill, CastSideEffectsDefaults.CastMobilityDurationSec);
         }
 
         public void ApplyCooldown(SkillResolution skill, IReadOnlyList<SentenceWord> words, bool cosmeticIfDisabled)

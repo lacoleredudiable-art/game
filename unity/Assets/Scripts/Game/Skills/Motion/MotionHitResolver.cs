@@ -71,7 +71,7 @@ namespace Dovus.Game.Skills.Motion
 
             // Fiil hasarı kapanışta iner. Emici aktarımın eksi canı base_damage 0 iken
             // ayrıca boss'a yazılır; yoksa 1-2 gibi vuruşlar iki kez vurur.
-            if (geometry && _host.Motion.TemplateSkill.BaseDamage <= 0.01f)
+            if (geometry && _host.Motion.TemplateSkill.BaseDamage <= MotionHitResolverDefaults.GeometryDamageEpsilon)
                 ApplyDrainDamage(hit.Share);
 
             // 2-9 şifası koruyucu tetikte bir kez iner; kalıp vuruşu aynı cast'i ödemez.
@@ -116,7 +116,7 @@ namespace Dovus.Game.Skills.Motion
 
         public void ApplyDrainDamage(float share)
         {
-            if (!DrainNumbers.TryShare(_host.LastMechanicPlan, share, out float damage, out _) || damage <= 0.01f)
+            if (!DrainNumbers.TryShare(_host.LastMechanicPlan, share, out float damage, out _) || damage <= MotionHitResolverDefaults.DrainDamageEpsilon)
                 return;
             if (_host.BossStatus != null)
                 _host.BossStatus.ApplyDamage(damage);
@@ -145,7 +145,7 @@ namespace Dovus.Game.Skills.Motion
                 if (dir.sqrMagnitude < 0.0001f)
                     dir = Vector3.forward;
                 dir.Normalize();
-                Vector3 end = origin + dir * Mathf.Max(hit.LengthM, 0.2f);
+                Vector3 end = origin + dir * Mathf.Max(hit.LengthM, MotionHitResolverDefaults.DebugRayMinLenM);
                 templateHit = DistancePointSegment(boss, origin, end) <= hit.RadiusM + extra;
             }
             if (templateHit)
@@ -190,14 +190,14 @@ namespace Dovus.Game.Skills.Motion
         float BossBodyRadius()
         {
             if (_host.Boss == null)
-                return 0.6f;
+                return MotionHitResolverDefaults.MotionReturnHeightM;
             Collider col = _host.Boss.GetComponentInChildren<Collider>();
             if (col == null)
             {
                 DesignWarnings.Once(
                     "motion.boss_radius",
                     "Boss gövdesi okunamadı. Vuruş payı yedek 0.6 m.");
-                return 0.6f;
+                return MotionHitResolverDefaults.MotionReturnHeightM;
             }
             return Mathf.Max(col.bounds.extents.x, col.bounds.extents.z);
         }

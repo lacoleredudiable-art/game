@@ -45,7 +45,7 @@ namespace Dovus.Game.Skills.Execution
         bool _invisibleActor;
         bool _hopping;
         bool _growing;
-        float _rampMax = 1.5f;
+        float _rampMax = SummonExecutorDefaults.RampMaxFallback;
 
         public override SkillExecutorKind Kind => SkillExecutorKind.Summon;
 
@@ -99,7 +99,7 @@ namespace Dovus.Game.Skills.Execution
 
         void SpawnActor(int index)
         {
-            float lateral = (index - (Context.SpawnCount - 1) * 0.5f) * _spawnSize * 1.5f;
+            float lateral = (index - (Context.SpawnCount - 1) * 0.5f) * _spawnSize * SummonExecutorDefaults.SpawnLateralSpacingMult;
             Vector3 at;
             if (_ringFormation)
             {
@@ -142,7 +142,7 @@ namespace Dovus.Game.Skills.Execution
             body.transform.SetParent(transform, true);
             body.transform.position = at;
             body.transform.localScale = _actorKind is MechanicActorKind.Clone or MechanicActorKind.MirrorClone
-                ? new Vector3(size, size * 1.8f, size)
+                ? new Vector3(size, size * SummonExecutorDefaults.SpawnMeshHeightMult, size)
                 : Vector3.one * size;
             body.name = $"{_actorKind}_{Context.Skill.SkillId}_{index}";
             Renderer renderer = body.GetComponent<Renderer>();
@@ -156,7 +156,7 @@ namespace Dovus.Game.Skills.Execution
                     _ => new Color(0.5f, 0.9f, 0.65f, 0.85f)
                 };
                 if (_invisibleActor)
-                    tint.a = 0.25f;
+                    tint.a = SummonExecutorDefaults.SpawnTintAlpha;
                 SharedTint.Apply(renderer, tint);
             }
             return body;
@@ -203,7 +203,7 @@ namespace Dovus.Game.Skills.Execution
 
             if (_hopping && _actorKind is not (MechanicActorKind.Turret or MechanicActorKind.MirrorClone or MechanicActorKind.Guardian))
             {
-                float wave = Mathf.Sin(_ageSec * 8f) * _spawnSize;
+                float wave = Mathf.Sin(_ageSec * SummonExecutorDefaults.SpawnWaveFreqHz) * _spawnSize;
                 Vector3 hopped = m.Body.position;
                 hopped -= _spawnSide * m.Hop;
                 hopped += _spawnSide * wave;
@@ -215,7 +215,7 @@ namespace Dovus.Game.Skills.Execution
 
             float speed = t.ExecutorMinionMoveSpeedMps;
             if (_actorKind == MechanicActorKind.Assassin)
-                speed *= 1.35f;
+                speed *= SummonExecutorDefaults.ShotSpeedMult;
             float attackReach = _actorKind == MechanicActorKind.Turret
                 ? Context.RangeM
                 : t.ExecutorMinionReachM;
@@ -230,13 +230,13 @@ namespace Dovus.Game.Skills.Execution
                     Apply(1f);
                 }
                 float growth = _growing
-                    ? JsonEffectRules.RampedRatio(1f, 0, Context.DurationSec * 1000.0, _ageSec * 1000.0, _rampMax)
+                    ? JsonEffectRules.RampedRatio(1f, 0, Context.DurationSec * SkillsTimeDefaults.SecToMs, _ageSec * SkillsTimeDefaults.SecToMs, _rampMax)
                     : 1f;
                 Context.ApplyFlatDamage?.Invoke(t.ExecutorMinionHitDamage * growth);
                 SpawnWeaponAttack(m.Body.position);
                 GameObject fx = PlaceholderFactory.CreateImpact("tick", Context.ColorKey, Context.Target.position, transform.parent);
                 if (fx != null)
-                    Destroy(fx, 0.3f);
+                    Destroy(fx, SummonExecutorDefaults.SpawnFxLifetimeSec);
                 return;
             }
 
@@ -258,10 +258,10 @@ namespace Dovus.Game.Skills.Execution
             Vector3 p = m.Body.position;
             float x = p.x;
             float z = p.z;
-            float size = Mathf.Max(0.2f, _spawnSize);
+            float size = Mathf.Max(SummonExecutorDefaults.SpawnSizeMinM, _spawnSize);
             if (Context.Target != null)
             {
-                float bossR = 0.85f;
+                float bossR = SummonExecutorDefaults.BossBodyRadiusFallbackM;
                 // O11: minyon başına her kare GetComponentInChildren yerine hedef başına bir kez.
                 if (_targetColliderOwner != Context.Target)
                 {
@@ -271,11 +271,11 @@ namespace Dovus.Game.Skills.Execution
                 Collider col = _targetCollider;
                 if (col != null)
                     bossR = Mathf.Max(col.bounds.extents.x, col.bounds.extents.z);
-                ActorSpacing.PushOutside(ref x, ref z, Context.Target.position.x, Context.Target.position.z, bossR + size * 0.5f + 0.05f);
+                ActorSpacing.PushOutside(ref x, ref z, Context.Target.position.x, Context.Target.position.z, bossR + size * 0.5f + SummonExecutorDefaults.TargetSpacingPadM);
             }
 
             if (Context.Owner != null)
-                ActorSpacing.PushOutside(ref x, ref z, Context.Owner.position.x, Context.Owner.position.z, 0.55f + size * 0.5f);
+                ActorSpacing.PushOutside(ref x, ref z, Context.Owner.position.x, Context.Owner.position.z, SummonExecutorDefaults.OwnerSpacingPadM + size * 0.5f);
             m.Body.position = new Vector3(x, p.y, z);
         }
 
@@ -294,7 +294,7 @@ namespace Dovus.Game.Skills.Execution
                 Context.Target.position,
                 transform.parent);
             if (shot != null)
-                Destroy(shot, 0.25f);
+                Destroy(shot, SummonExecutorDefaults.ShotFxLifetimeSec);
         }
 
         public void CollectWithin(float x, float z, float radiusM, List<Transform> into)

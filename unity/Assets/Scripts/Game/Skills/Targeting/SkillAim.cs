@@ -228,7 +228,7 @@ namespace Dovus.Game.Skills.Targeting
                     ? _host.SkillNumbers.AllySkillRangeM
                     : SkillNumberFallbacks.AllySkillRangeM;
                 return MotionCastReach.GateRangeM(
-                    Mathf.Max(0.05f, CardEffectRules.ResolveRange(true, allyRange, 0f)),
+                    Mathf.Max(SkillAimDefaults.MinRadiusM, CardEffectRules.ResolveRange(true, allyRange, 0f)),
                     _host.PlayerBodyRadiusM());
             }
 
@@ -252,7 +252,7 @@ namespace Dovus.Game.Skills.Targeting
             _host.ApplyVerbHitboxSizing(
                 route.Kind, skill, tuning, rangeMult, burst,
                 ref radius, ref range, ref duration, ref spawnCount);
-            float edge = Mathf.Max(0.05f, range);
+            float edge = Mathf.Max(SkillAimDefaults.MinRadiusM, range);
             if (!skill.IsEmpty
                 && _host.TryGetMotionBinding(skill.SkillId, out MotionBinding motion)
                 && motion.Implemented)
@@ -272,8 +272,8 @@ namespace Dovus.Game.Skills.Targeting
             }
 
             Vector3 playerForward = _host.Player != null ? _host.Player.forward : Vector3.forward;
-            float softRange = _host.Colors != null ? _host.Colors.Camera.SoftAimRangeM : 8f;
-            float softCone = _host.Colors != null ? _host.Colors.Camera.SoftAimConeDeg : 70f;
+            float softRange = _host.Colors != null ? _host.Colors.Camera.SoftAimRangeM : SkillAimDefaults.SoftAimRangeFallbackM;
+            float softCone = _host.Colors != null ? _host.Colors.Camera.SoftAimConeDeg : SkillAimDefaults.SoftAimConeFallbackDeg;
             bool hasBoss = _host.Boss != null;
             float bossX = hasBoss ? _host.Boss.transform.position.x : 0f;
             float bossZ = hasBoss ? _host.Boss.transform.position.z : 0f;
@@ -283,7 +283,7 @@ namespace Dovus.Game.Skills.Targeting
                 playerForward.z,
                 velX,
                 velZ,
-                0.05f,
+                SkillAimDefaults.MinAimEdgeM,
                 hasBoss,
                 bossX,
                 bossZ,

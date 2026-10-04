@@ -37,7 +37,7 @@ namespace Dovus.Game.Skills.Mechanics
         readonly List<GuardTrigger> _guardTriggers = new();
         readonly GuardTriggerDelivery.Once _guardOnce = new();
         int _nextGuardId;
-        readonly TimedHistory<Vector3> _bossMechanicHistory = new(5000, 50);
+        readonly TimedHistory<Vector3> _bossMechanicHistory = new(MechanicWorldDefaults.BossMechanicHistoryWindowMs, MechanicWorldDefaults.BossMechanicHistoryCapacity);
         HostileTargets _hostileTargets;
 
         static readonly StatusKind[] PositiveStatuses =
@@ -78,7 +78,7 @@ namespace Dovus.Game.Skills.Mechanics
 
             MechanicWorldProfile profile = MechanicWorldProfile.From(plan);
             Vector3 center = ResolveMechanicCenter(plan, aimDir, landedAt);
-            double lifeMs = Math.Max(100, plan.Body.LifeSec * 1000.0);
+            double lifeMs = Math.Max(100, plan.Body.LifeSec * SkillsTimeDefaults.SecToMs);
 
             if (profile.BlocksMovement)
                 SpawnMechanicWall(plan, center, aimDir, worldMs + lifeMs);
@@ -158,7 +158,7 @@ namespace Dovus.Game.Skills.Mechanics
             _bodies.Add(new MechanicWorldBody
             {
                 View = body,
-                UntilMs = worldMs + Math.Max(100, decoy.DurationSec * 1000.0)
+                UntilMs = worldMs + Math.Max(100, decoy.DurationSec * SkillsTimeDefaults.SecToMs)
             });
             // dikkat_ceker: yem yaşadığı sürece (decoy_life_sec) boss'un hedefi; boss vuruşu onu yok eder.
             if (decoy.Has("dikkat_ceker") && _hostileTargets != null)
@@ -193,9 +193,9 @@ namespace Dovus.Game.Skills.Mechanics
                     .DefaultIfEmpty(0)
                     .Max());
             if (durationSec <= 0)
-                durationSec = 0.1;
+                durationSec = MechanicWorldDefaults.PayloadMinLifeFallbackSec;
             if (profile.Payload)
-                durationSec = Math.Max(durationSec, _host.JsonParam("payload_min_life_sec", 3.0));
+                durationSec = Math.Max(durationSec, _host.JsonParam("payload_min_life_sec", MechanicWorldDefaults.PayloadMinLifeJsonFallbackSec));
             durationSec += _host.SlotPassives?.LifetimeAddSecFor(_host.SlotQueryCastId) ?? 0f;
 
             if (profile.Reflector)
@@ -225,13 +225,13 @@ namespace Dovus.Game.Skills.Mechanics
                 Profile = profile,
                 Center = center,
                 RadiusM = radius,
-                UntilMs = worldMs + durationSec * 1000.0,
+                UntilMs = worldMs + durationSec * SkillsTimeDefaults.SecToMs,
                 NextTickMs = worldMs,
-                TickMs = Math.Max(10, baseTick * 1000.0 / Math.Max(0.01, tickRate)),
+                TickMs = Math.Max(10, baseTick * SkillsTimeDefaults.SecToMs / Math.Max(MechanicWorldDefaults.TickRateMinHz, tickRate)),
                 StartMs = worldMs,
                 Skill = _host.JsonCastSkill,
                 Closing = _host.JsonCastClosing,
-                ArmAtMs = worldMs + JsonEffectRules.TrapArmSec(plan.Body, _host.JsonRules) * 1000.0,
+                ArmAtMs = worldMs + JsonEffectRules.TrapArmSec(plan.Body, _host.JsonRules) * SkillsTimeDefaults.SecToMs,
                 Erase = profile.ProjectileBarrier ? _host.ProjectileEraseSpec(plan) : default,
                 NextEraseMs = worldMs
             });
@@ -248,7 +248,7 @@ namespace Dovus.Game.Skills.Mechanics
             line.startColor = new Color(0.3f, 0.9f, 1f, 0.85f);
             line.endColor = new Color(0.9f, 0.35f, 1f, 0.85f);
             double linkTickRate = _host.MechanicEngine?.Rules.AdjNum(plan.Adjective, "tick_rate_mult", 1) ?? 1;
-            double linkTickMs = Math.Max(MechanicWorldDefaults.LinkTickMinMs, (_host.Combat != null ? _host.Combat.Manifestation.ExecutorFieldTickSec : 1f) * 1000.0 / Math.Max(MechanicWorldDefaults.LinkTickRateMin, linkTickRate));
+            double linkTickMs = Math.Max(MechanicWorldDefaults.LinkTickMinMs, (_host.Combat != null ? _host.Combat.Manifestation.ExecutorFieldTickSec : 1f) * SkillsTimeDefaults.SecToMs / Math.Max(MechanicWorldDefaults.LinkTickRateMin, linkTickRate));
             Links.Add(new MechanicLink
             {
                 Line = line,
@@ -256,7 +256,7 @@ namespace Dovus.Game.Skills.Mechanics
                 Target = plan.Effects.Any(e => e.Target == "dusman")
                     ? (_host.Boss != null ? _host.Boss.transform : null)
                     : (_host.Ally != null ? _host.Ally.transform : _host.Player),
-                UntilMs = worldMs + Math.Max(100, plan.Body.LifeSec * 1000.0),
+                UntilMs = worldMs + Math.Max(100, plan.Body.LifeSec * SkillsTimeDefaults.SecToMs),
                 Skill = _host.JsonCastSkill,
                 Closing = _host.JsonCastClosing,
                 FlowTickMs = linkTickMs,
@@ -284,7 +284,7 @@ namespace Dovus.Game.Skills.Mechanics
                 Id = ++_nextGuardId,
                 Effect = effect,
                 View = view,
-                UntilMs = worldMs + windowSec * 1000.0,
+                UntilMs = worldMs + windowSec * SkillsTimeDefaults.SecToMs,
                 NeedsHoly = talisman && !planCompatible
             });
         }
@@ -374,7 +374,7 @@ namespace Dovus.Game.Skills.Mechanics
                 if (reflect == null || reflect.Amount <= 0)
                     continue;
                 float ratio = JsonEffectRules.IsRampReflect(volume.Plan)
-                    ? JsonEffectRules.RampedRatio((float)reflect.Amount, volume.StartMs, volume.UntilMs, now, _host.JsonParam("ramp_max", 1.5))
+                    ? JsonEffectRules.RampedRatio((float)reflect.Amount, volume.StartMs, volume.UntilMs, now, _host.JsonParam("ramp_max", MechanicWorldDefaults.ReflectRampMaxFallback))
                     : (float)reflect.Amount;
                 _json.ApplyReflectedDamage(incoming * ratio);
             }
@@ -383,7 +383,7 @@ namespace Dovus.Game.Skills.Mechanics
         public void RewindBoss(double seconds, double worldMs, List<string> applied)
         {
             if (_host.Boss == null || seconds <= 0
-                || !_bossMechanicHistory.TryGetAtOrBefore(worldMs - seconds * 1000.0, out Vector3 past))
+                || !_bossMechanicHistory.TryGetAtOrBefore(worldMs - seconds * SkillsTimeDefaults.SecToMs, out Vector3 past))
                 return;
             // Geçmiş yer oyuncunun şimdiki gövdesine denk gelebilir; boss temas dışında kalır.
             if (_host.Player != null)

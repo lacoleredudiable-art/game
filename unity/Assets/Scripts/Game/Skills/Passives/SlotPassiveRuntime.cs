@@ -73,7 +73,7 @@ namespace Dovus.Game.Skills.Passives
         {
             _passiveEchoes.Add(new PassiveEchoShot
             {
-                DueMs = worldMs + echoDelay * 1000.0,
+                DueMs = worldMs + echoDelay * SkillsTimeDefaults.SecToMs,
                 Power = echoPower,
                 SlotCastId = slotCastId,
                 Closing = ctx.Closing,

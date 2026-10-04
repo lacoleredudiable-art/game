@@ -75,3 +75,4 @@ yükseltmek ayrı bir tasarım kararıdır (sabit katlama sırası değişebilir
 ### İlerleme
 <!-- 2B.11 ilerleme satırları -->
 2B.11c: Core+App 351 → 0, ~190 yeni const, 37 yeni Defaults dosyası (+2 const `StatusDefaults`).
+2B.11d: Game/Skills+Game/Team 266 → 0, ~266 yeni const, 24 yeni Defaults dosyası (+TeamComboDefaults/MechanicWorldDefaults genişletme).
