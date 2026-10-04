@@ -183,11 +183,9 @@ public class AppSimulationTests
         public SkillResolution ResolveSkill(int ctx) => ResolveResult;
         public bool IsHealSkill(SkillResolution skill) => false;
         public void ApplyClosingStatuses(int ctx, SkillResolution skill) { }
-        public void ShoutSkill(SkillResolution skill, int ctx) { }
         public void ApplyClosingHeal(int ctx, SkillResolution skill) { }
         public double WorldTimeMs() => 0;
         public bool BasicCadenceReady(double now) => true;
-        public void NoteDeniedCadence() { }
         public void SetLastBasicStrikeMs(double now) { }
         public int BasicHitsNow() => 1;
         public float BasicStrikeReachM() => 5f;
@@ -217,7 +215,6 @@ public class AppSimulationTests
             return ResolveResult;
         }
 
-        public void NoteDeniedNeedsTwoRunes() => Record(nameof(NoteDeniedNeedsTwoRunes));
         public void NoteWeaponCast(SkillResolution skill) => Record(nameof(NoteWeaponCast));
         public int OpenSlotCast()
         {
@@ -225,7 +222,6 @@ public class AppSimulationTests
             return 1;
         }
         public WeaponSkillCompatibility Compatibility(SkillResolution skill) => WeaponSkillCompatibility.Neutral;
-        public void PublishCompatibility(WeaponSkillCompatibility compatibility) => Record(nameof(PublishCompatibility));
         public bool ShouldArmPassive(WeaponSkillCompatibility compatibility) => false;
         public void TryTriggerPassive(int ctx) { }
         public void ApplyResourceCost(SkillResolution skill) => Record(nameof(ApplyResourceCost));
@@ -233,7 +229,6 @@ public class AppSimulationTests
         public void ApplyMotionIframe(SkillResolution skill, in SkillMotionPlan motion) { }
         public bool TryBeginMotionTemplate(SkillResolution skill, int ctx) => false;
         public void NoteSustainedCast(SkillResolution skill) { }
-        public void NotifyCast(string skillId) => Record(nameof(NotifyCast));
         public SkillExecutorRoute Route(SkillResolution skill) => new(SkillExecutorKind.MeleeHitbox, false, string.Empty);
         public SkillExecutorRoute ApplyMechanicWorldRoute(SkillResolution skill, SkillExecutorRoute route) => route;
         public void SetLastExecutorKind(SkillExecutorKind kind) { }
@@ -244,9 +239,7 @@ public class AppSimulationTests
         public bool TryLaunchExecutor(SkillExecutorKind kind, int ctx, SkillResolution skill, in SkillMotionPlan motion) => false;
         public void ScheduleFollowUps(SkillExecutorKind kind, int ctx, SkillResolution skill, in SkillMotionPlan motion) { }
         public float ApplyFallbackDelivery(int ctx, SkillResolution skill, in SkillMotionPlan motion, in SkillExecutorRoute route) => 0f;
-        public void ShoutSkill(SkillResolution skill, int ctx) { }
         public void ApplyCooldown(SkillResolution skill, int ctx, bool cosmeticIfDisabled) { }
-        public void AnnotateMotion(SkillResolution skill, in SkillMotionPlan motion) { }
         public void SpawnClosingImpact(int ctx) { }
         public void SetLastResolvedSkillId(string skillId) { }
         public bool IsHealSkill(SkillResolution skill) => false;

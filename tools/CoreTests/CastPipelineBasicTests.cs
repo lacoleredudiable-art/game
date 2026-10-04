@@ -82,7 +82,6 @@ public class CastPipelineBasicTests
         }
 
         public void ApplyClosingStatuses(int ctx, SkillResolution skill) => Record();
-        public void ShoutSkill(SkillResolution skill, int ctx) => Record();
         public void ApplyClosingHeal(int ctx, SkillResolution skill) => Record();
 
         public double WorldTimeMs()
@@ -97,7 +96,6 @@ public class CastPipelineBasicTests
             return CadenceReady;
         }
 
-        public void NoteDeniedCadence() => Record();
         public void SetLastBasicStrikeMs(double now) => Record();
         public int BasicHitsNow()
         {
@@ -178,7 +176,6 @@ public class CastPipelineBasicTests
             nameof(IBasicStrikePort<object>.ResolveSkill),
             nameof(IBasicStrikePort<object>.IsHealSkill),
             nameof(IBasicStrikePort<object>.ApplyClosingStatuses),
-            nameof(IBasicStrikePort<object>.ShoutSkill),
             nameof(IBasicStrikePort<object>.ApplyClosingHeal),
         }));
     }
@@ -197,7 +194,6 @@ public class CastPipelineBasicTests
             nameof(IBasicStrikePort<object>.IsHealSkill),
             nameof(IBasicStrikePort<object>.WorldTimeMs),
             nameof(IBasicStrikePort<object>.BasicCadenceReady),
-            nameof(IBasicStrikePort<object>.NoteDeniedCadence),
         }));
     }
 

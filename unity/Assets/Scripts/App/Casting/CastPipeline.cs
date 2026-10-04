@@ -19,6 +19,12 @@ namespace Dovus.App.Casting
         public event Action<CastOutcome> Completed;
         public event Action<BasicOutcome> BasicCompleted;
 
+        public event Action<CastDenialRequested> DenialRequested;
+        public event Action<CastCompatibilityPublished> CompatibilityPublished;
+        public event Action<string> TeamCastNotified;
+        public event Action<CastSkillShoutRequested> SkillShoutRequested;
+        public event Action<CastMotionAnnotationRequested> MotionAnnotationRequested;
+
         public BasicOutcome RunBasic<TCtx>(TCtx ctx, IBasicStrikePort<TCtx> port)
         {
             port.ResolveImpactTarget(ctx);
@@ -27,7 +33,7 @@ namespace Dovus.App.Casting
             if (port.IsHealSkill(basicSkill))
             {
                 port.ApplyClosingStatuses(ctx, basicSkill);
-                port.ShoutSkill(basicSkill, ctx);
+                SkillShoutRequested?.Invoke(new CastSkillShoutRequested(basicSkill, ctx));
                 port.ApplyClosingHeal(ctx, basicSkill);
                 var healed = new BasicOutcome(true, false, false, 0f, 0);
                 BasicCompleted?.Invoke(healed);
@@ -37,7 +43,7 @@ namespace Dovus.App.Casting
             double basicNow = port.WorldTimeMs();
             if (!port.BasicCadenceReady(basicNow))
             {
-                port.NoteDeniedCadence();
+                DenialRequested?.Invoke(new CastDenialRequested(CastDenialReason.BasicCadenceNotReady));
                 var deniedCadence = new BasicOutcome(false, true, false, 0f, 0);
                 BasicCompleted?.Invoke(deniedCadence);
                 return deniedCadence;
@@ -80,7 +86,7 @@ namespace Dovus.App.Casting
             SkillResolution skill = port.ResolveSkill(ctx);
             if (skill.IsEmpty || !skill.IsComplete)
             {
-                port.NoteDeniedNeedsTwoRunes();
+                DenialRequested?.Invoke(new CastDenialRequested(CastDenialReason.NeedsTwoRunes));
                 var denied = new CastOutcome(skill.Identity.Id, false, false, 0f, false, denied: true);
                 Completed?.Invoke(denied);
                 return denied;
@@ -91,7 +97,7 @@ namespace Dovus.App.Casting
             try
             {
                 WeaponSkillCompatibility compatibility = port.Compatibility(skill);
-                port.PublishCompatibility(compatibility);
+                CompatibilityPublished?.Invoke(new CastCompatibilityPublished(compatibility));
                 if (port.ShouldArmPassive(compatibility))
                     port.TryTriggerPassive(ctx);
 
@@ -100,7 +106,7 @@ namespace Dovus.App.Casting
                 port.ApplyMotionIframe(skill, in motionPlan);
                 bool templateOwnsDelivery = port.TryBeginMotionTemplate(skill, ctx);
                 port.NoteSustainedCast(skill);
-                port.NotifyCast(skill.Identity.Id);
+                TeamCastNotified?.Invoke(skill.Identity.Id);
                 Started?.Invoke(new CastStarted(skill.Identity.Id));
 
                 SkillExecutorRoute executorRoute = port.Route(skill);
@@ -122,10 +128,10 @@ namespace Dovus.App.Casting
                 if (!executorStarted && !templateOwnsDelivery)
                     dealt = port.ApplyFallbackDelivery(ctx, skill, in motionPlan, in executorRoute);
 
-                port.ShoutSkill(skill, ctx);
+                SkillShoutRequested?.Invoke(new CastSkillShoutRequested(skill, ctx));
                 port.ApplyCooldown(skill, ctx, cosmeticIfDisabled: true);
                 if (!motionPlan.IsEmpty)
-                    port.AnnotateMotion(skill, in motionPlan);
+                    MotionAnnotationRequested?.Invoke(new CastMotionAnnotationRequested(skill, in motionPlan));
                 port.SpawnClosingImpact(ctx);
                 port.SetLastResolvedSkillId(skill.Identity.Id);
 

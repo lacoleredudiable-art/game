@@ -16,15 +16,12 @@ namespace Dovus.App.Casting
     {
         void ResetClosingChainBonus();
         SkillResolution ResolveSkill(TCtx ctx);
-        void NoteDeniedNeedsTwoRunes();
-
         void NoteWeaponCast(SkillResolution skill);
         int OpenSlotCast();
         void CloseSlotCast();
         void ResetSlotQueryCastId();
 
         WeaponSkillCompatibility Compatibility(SkillResolution skill);
-        void PublishCompatibility(WeaponSkillCompatibility compatibility);
         bool ShouldArmPassive(WeaponSkillCompatibility compatibility);
         void TryTriggerPassive(TCtx ctx);
 
@@ -33,7 +30,6 @@ namespace Dovus.App.Casting
         void ApplyMotionIframe(SkillResolution skill, in SkillMotionPlan motion);
         bool TryBeginMotionTemplate(SkillResolution skill, TCtx ctx);
         void NoteSustainedCast(SkillResolution skill);
-        void NotifyCast(string skillId);
 
         SkillExecutorRoute Route(SkillResolution skill);
         SkillExecutorRoute ApplyMechanicWorldRoute(SkillResolution skill, SkillExecutorRoute route);
@@ -63,9 +59,7 @@ namespace Dovus.App.Casting
             in SkillMotionPlan motion,
             in SkillExecutorRoute route);
 
-        void ShoutSkill(SkillResolution skill, TCtx ctx);
         void ApplyCooldown(SkillResolution skill, TCtx ctx, bool cosmeticIfDisabled);
-        void AnnotateMotion(SkillResolution skill, in SkillMotionPlan motion);
         void SpawnClosingImpact(TCtx ctx);
 
         void SetLastResolvedSkillId(string skillId);

@@ -11,12 +11,10 @@ namespace Dovus.App.Casting
         bool IsHealSkill(SkillResolution skill);
 
         void ApplyClosingStatuses(TCtx ctx, SkillResolution skill);
-        void ShoutSkill(SkillResolution skill, TCtx ctx);
         void ApplyClosingHeal(TCtx ctx, SkillResolution skill);
 
         double WorldTimeMs();
         bool BasicCadenceReady(double now);
-        void NoteDeniedCadence();
         void SetLastBasicStrikeMs(double now);
         int BasicHitsNow();
         float BasicStrikeReachM();

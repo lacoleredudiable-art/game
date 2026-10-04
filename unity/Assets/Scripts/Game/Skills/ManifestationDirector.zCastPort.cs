@@ -38,9 +38,6 @@ namespace Dovus.Game.Skills
 
             public SkillResolution ResolveSkill(PendingClosing ctx) => _md.ResolvePendingSkill(ctx);
 
-            public void NoteDeniedNeedsTwoRunes() =>
-                _md._readout?.NoteDenied("2 rün gerekli");
-
             public void NoteWeaponCast(SkillResolution skill) => _md.NoteWeaponCast(skill);
 
             public int OpenSlotCast() =>
@@ -52,13 +49,6 @@ namespace Dovus.Game.Skills
 
             public WeaponSkillCompatibility Compatibility(SkillResolution skill) =>
                 _md.WeaponCompatibilityFor(skill);
-
-            public void PublishCompatibility(WeaponSkillCompatibility compatibility)
-            {
-                _md.LastWeaponCompatible = compatibility.Compatible;
-                _md.LastWeaponPassiveEnabled = compatibility.PassiveEnabled;
-                _md.LastWeaponUiLabel = compatibility.UiLabel;
-            }
 
             public bool ShouldArmPassive(WeaponSkillCompatibility compatibility) =>
                 PassiveSlotPolicy.ShouldArm(true, compatibility.PassiveEnabled, _md._slotPassiveNeedsWeapon);
@@ -88,8 +78,6 @@ namespace Dovus.Game.Skills
                 _md.TryBeginMotionTemplate(skill, ctx);
 
             public void NoteSustainedCast(SkillResolution skill) => _md.NoteSustainedCast(skill);
-
-            public void NotifyCast(string skillId) => _md.TeamHub.NotifyCast(skillId);
 
             public SkillExecutorRoute Route(SkillResolution skill) =>
                 _md._skillExecutorRouter.Route(skill, _md._equippedWeapon);
@@ -172,22 +160,10 @@ namespace Dovus.Game.Skills
                 return dealt;
             }
 
-            public void ShoutSkill(SkillResolution skill, PendingClosing ctx)
-            {
-                _md.EnsureLaunchServices();
-                _md._skillPresentation.ShoutSkill(skill, ctx.Words);
-            }
-
             public void ApplyCooldown(SkillResolution skill, PendingClosing ctx, bool cosmeticIfDisabled)
             {
                 _md.EnsureLaunchServices();
                 _md._castSideEffects.ApplyCooldown(skill, ctx.Words, cosmeticIfDisabled);
-            }
-
-            public void AnnotateMotion(SkillResolution skill, in SkillMotionPlan motion)
-            {
-                _md.EnsureLaunchServices();
-                _md._castSideEffects.AnnotateMotion(skill, motion);
             }
 
             public void SpawnClosingImpact(PendingClosing ctx) => _md.SpawnClosingImpact(ctx);
@@ -245,9 +221,6 @@ namespace Dovus.Game.Skills
                 _md._clock != null ? _md._clock.Director.WorldTimeMs : 0;
 
             public bool BasicCadenceReady(double now) => _md.BasicCadenceReady(now);
-
-            public void NoteDeniedCadence() =>
-                _md._readout?.NoteDenied("Düz vuruş", "hazır değil");
 
             public void SetLastBasicStrikeMs(double now) => _md._lastBasicStrikeMs = now;
 
