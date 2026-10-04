@@ -589,7 +589,8 @@
               "hitbox": "projectile",
               "label": "Aynalama",
               "reflect_ratio": 0.3,
-              "reflect_duration_sec": 2.0
+              "reflect_duration_sec": 2.0,
+              "portal_op": "back_door"
             },
             "prose_mechanic": "%30 yansıma, 2 sn",
             "prose_feel": "Ters, ayna",
@@ -770,7 +771,8 @@
               "hitbox": "self_aura",
               "label": "Bağlama",
               "apply_root_sec": 1.5,
-              "apply_slow": 0.3
+              "apply_slow": 0.3,
+              "portal_op": "hook"
             },
             "prose_mechanic": "Dosta bağlanır",
             "prose_feel": "Bağlı, sürekli",
@@ -995,7 +997,8 @@
               "lifetime_add": 2.0,
               "cast_mobility": "rooted",
               "armor_add": 25,
-              "buff_duration_sec": 3.0
+              "buff_duration_sec": 3.0,
+              "portal_op": "anchor_or_recall"
             },
             "prose_mechanic": "Dash + armor",
             "prose_feel": "Güvenli",
@@ -1123,7 +1126,9 @@
               "hitbox": "dash_line",
               "label": "Aynalama",
               "reflect_ratio": 0.3,
-              "reflect_duration_sec": 2.0
+              "reflect_duration_sec": 2.0,
+              "portal_op": "pair",
+              "team_op": "marker"
             },
             "prose_mechanic": "Dash + iz",
             "prose_feel": "İz bırakan",
@@ -1532,7 +1537,8 @@
               "label": "Sabitleme",
               "poise_damage_mult": 1.5,
               "lifetime_add": 2.0,
-              "cast_mobility": "rooted"
+              "cast_mobility": "rooted",
+              "team_op": "mine"
             },
             "prose_mechanic": "Yerleşik alan (4 sn)",
             "prose_feel": "Kalıcı",
@@ -1899,7 +1905,8 @@
               "hitbox": "target",
               "label": "Yükseltme",
               "self_damage_buff": 0.1,
-              "buff_duration_sec": 3.0
+              "buff_duration_sec": 3.0,
+              "team_op": "hang_boss"
             },
             "prose_mechanic": "CC + buff",
             "prose_feel": "Güçlendirici",
@@ -2133,7 +2140,8 @@
               "hitbox": "target",
               "label": "Bağlama",
               "apply_root_sec": 1.5,
-              "apply_slow": 0.3
+              "apply_slow": 0.3,
+              "team_op": "rope"
             },
             "prose_mechanic": "Debuff + root",
             "prose_feel": "Kontrolcü",
@@ -2200,7 +2208,8 @@
               "label": "Odaklama",
               "ignore_armor": true,
               "damage_mult": 1.15,
-              "max_targets": 1
+              "max_targets": 1,
+              "team_op": "mark"
             },
             "prose_mechanic": "Armor -%50",
             "prose_feel": "Delici",
@@ -2298,7 +2307,8 @@
               "label": "Yoğunlaştırma",
               "damage_mult": 1.35,
               "hitbox_scale_mult": 0.55,
-              "poise_damage_mult": 1.2
+              "poise_damage_mult": 1.2,
+              "portal_op": "gate"
             },
             "prose_mechanic": "+%20 hasar, 3 sn",
             "prose_feel": "Ani güç",
@@ -2343,7 +2353,8 @@
               "label": "Sıçrama",
               "bounce_targets": 2,
               "bounce_damage_mult": 0.5,
-              "hitbox_scale_mult": 1.1
+              "hitbox_scale_mult": 1.1,
+              "team_op": "ball"
             },
             "prose_mechanic": "Dosta seker",
             "prose_feel": "Paylaşımcı",
@@ -2411,7 +2422,8 @@
               "hitbox": "self_or_ally",
               "label": "Bağlama",
               "apply_root_sec": 1.5,
-              "apply_slow": 0.3
+              "apply_slow": 0.3,
+              "team_op": "link"
             },
             "prose_mechanic": "Dosta bağlanır",
             "prose_feel": "Bağlı",
@@ -2454,7 +2466,8 @@
               "base_cooldown": 1.2,
               "hitbox": "self_or_ally",
               "label": "Yükseltme",
-              "self_damage_buff": 0.1
+              "self_damage_buff": 0.1,
+              "portal_op": "mirror_gate"
             },
             "prose_mechanic": "Çift buff",
             "prose_feel": "İkiz",
@@ -2767,7 +2780,8 @@
               "hitbox": "self_or_ally",
               "label": "Aynalama",
               "reflect_ratio": 0.3,
-              "reflect_duration_sec": 2.0
+              "reflect_duration_sec": 2.0,
+              "portal_op": "swap"
             },
             "prose_mechanic": "Arınma + yansıma",
             "prose_feel": "Yansıtıcı",
@@ -3043,7 +3057,9 @@
               "base_cost": 14,
               "base_cooldown": 1.5,
               "hitbox": "self",
-              "label": "Aynalama"
+              "label": "Aynalama",
+              "portal_op": "mirror",
+              "team_op": "marker"
             },
             "prose_mechanic": "%80 çift yansıma",
             "prose_feel": "Ayna",
@@ -3188,7 +3204,8 @@
               "label": "Sabitleme",
               "poise_damage_mult": 1.5,
               "lifetime_add": 2.0,
-              "cast_mobility": "rooted"
+              "cast_mobility": "rooted",
+              "team_op": "turret"
             },
             "prose_mechanic": "Yerleşik minion (taret)",
             "prose_feel": "Kalıcı",
@@ -3277,7 +3294,8 @@
               "hitbox": "self",
               "label": "Yükseltme",
               "self_damage_buff": 0.1,
-              "buff_duration_sec": 3.0
+              "buff_duration_sec": 3.0,
+              "portal_op": "sink"
             },
             "prose_mechanic": "Büyük minion",
             "prose_feel": "Güçlü",
@@ -3322,7 +3340,8 @@
               "hitbox": "self",
               "label": "Aynalama",
               "reflect_ratio": 0.3,
-              "reflect_duration_sec": 2.0
+              "reflect_duration_sec": 2.0,
+              "portal_op": "gather_team"
             },
             "prose_mechanic": "Yansıtıcı minion",
             "prose_feel": "Yansıtıcı",
@@ -3523,7 +3542,8 @@
               "no_global_timescale": true,
               "label": "Bağlama",
               "apply_root_sec": 1.5,
-              "apply_slow": 0.3
+              "apply_slow": 0.3,
+              "team_op": "haste_rope"
             },
             "prose_mechanic": "Dosta bağlanır, ikisi self-haste",
             "prose_feel": "Paylaşımcı",

@@ -169,6 +169,7 @@ namespace Dovus.Core.Portal
         readonly List<Gather> _gathers = new();
         readonly HashSet<long> _inside = new();
         readonly List<DoorView> _views = new();
+        IReadOnlyDictionary<string, PortalOp> _ops;
 
         Anchor _anchor;
         int _seq = 1;
@@ -187,25 +188,21 @@ namespace Dovus.Core.Portal
         public float StrikeScale => BossNarrow ? BossStrikeScale : 1f;
         public bool HasAnchor => _anchor.Alive && _now < _anchor.Until;
 
-        public static bool IsPortalSkill(string skillId)
+        public static bool IsPortalSkill(string skillId) =>
+            PortalOpTable.TryLegacy(skillId, out PortalOp op) && op != PortalOp.None;
+
+        public PortalSystem()
+            : this(null)
         {
-            switch (skillId)
-            {
-                case "1-10":
-                case "2-6":
-                case "3-4":
-                case "3-10":
-                case "8-1":
-                case "8-8":
-                case "9-10":
-                case "10-10":
-                case "11-8":
-                case "11-10":
-                    return true;
-                default:
-                    return false;
-            }
         }
+
+        public PortalSystem(IReadOnlyDictionary<string, PortalOp> ops)
+        {
+            _ops = ops ?? PortalOpTable.Legacy;
+        }
+
+        /// <summary>Op tablosunu sonradan bağla (Unity MonoBehaviour ctor'unda Resources yüklenemez; host Awake'te çağırır).</summary>
+        public void UseOps(IReadOnlyDictionary<string, PortalOp> ops) => _ops = ops ?? PortalOpTable.Legacy;
 
         public IReadOnlyList<DoorView> Doors
         {
@@ -223,36 +220,37 @@ namespace Dovus.Core.Portal
 
         public void Cast(string skillId, in Body caster, in Body target, IReadOnlyList<Body> allies, in Disc boss)
         {
-            switch (skillId)
+            PortalOp op = PortalOpTable.Resolve(skillId, _ops);
+            switch (op)
             {
-                case "1-10":
+                case PortalOp.BackDoor:
                     OpenBackDoor(caster, boss);
                     break;
-                case "2-6":
+                case PortalOp.Hook:
                     ArmHook(caster, target, boss);
                     break;
-                case "3-4":
+                case PortalOp.AnchorOrRecall:
                     AnchorOrRecall(caster, allies, boss);
                     break;
-                case "3-10":
+                case PortalOp.Pair:
                     OpenPair(caster, boss, TwoDoorSec, false);
                     break;
-                case "8-1":
+                case PortalOp.Gate:
                     OpenGate(caster, target, boss, false);
                     break;
-                case "8-8":
+                case PortalOp.MirrorGate:
                     OpenGate(caster, target, boss, true);
                     break;
-                case "9-10":
+                case PortalOp.Swap:
                     Swap(caster, target, boss);
                     break;
-                case "10-10":
+                case PortalOp.Mirror:
                     OpenMirror(caster, boss);
                     break;
-                case "11-8":
+                case PortalOp.Sink:
                     Sink(caster, target, boss);
                     break;
-                case "11-10":
+                case PortalOp.GatherTeam:
                     GatherTeam(caster, allies);
                     break;
             }

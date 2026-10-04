@@ -7,6 +7,7 @@ using Dovus.Core.Tuning;
 using Dovus.Game.Actors;
 using Dovus.Game.Boss;
 using Dovus.Game.Composition;
+using Dovus.Game.Data;
 using Dovus.Game.Platform;
 using Dovus.Game.Vfx;
 using System.Collections.Generic;
@@ -49,6 +50,17 @@ namespace Dovus.Game.Team
         public PortalSystem Portal => _portal;
         public TeamComboSystem Team => _team;
         public int Spawned => _spawned.Count;
+
+        // MonoBehaviour ctor'unda Resources.Load yasak (UnityException) → op tabloları Awake'te JSON'dan bağlanır.
+        // JSON yoksa gömülü Legacy tablo kalır (içerik aynı; SkillMechanicTagTests denetler).
+        void Awake()
+        {
+            if (ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
+            {
+                _portal.UseOps(PortalOpTable.FromMotor(design.SkillMotor));
+                _team.UseOps(TeamOpTable.FromMotor(design.SkillMotor));
+            }
+        }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Boot()

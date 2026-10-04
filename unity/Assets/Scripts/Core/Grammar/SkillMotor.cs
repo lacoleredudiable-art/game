@@ -119,6 +119,14 @@ namespace Dovus.Core.Grammar
         public bool TryGetAdjective(string id, out AdjectiveNode node) =>
             _adjectives.TryGetValue(id, out node);
 
+        public void ForEachSkill(Action<string, V61SkillNode> visit)
+        {
+            if (visit == null)
+                throw new ArgumentNullException(nameof(visit));
+            foreach (KeyValuePair<string, V61SkillNode> kv in _v61Skills)
+                visit(kv.Key, kv.Value);
+        }
+
         SkillResolution ResolveV61(IReadOnlyList<int> runeIds)
         {
             int len = runeIds.Count;
