@@ -5,27 +5,6 @@ using System.Text.RegularExpressions;
 using Dovus.Core.Shared;
 namespace Dovus.Core.Data
 {
-    public enum TextNumberKind
-    {
-        Percent,
-        Seconds,
-        Meters,
-        Milliseconds,
-        Multiplier
-    }
-
-    public readonly struct TextNumber
-    {
-        public TextNumber(TextNumberKind kind, double value)
-        {
-            Kind = kind;
-            Value = value;
-        }
-
-        public TextNumberKind Kind { get; }
-        public double Value { get; }
-    }
-
     /// <summary>
     /// Skill kart metnindeki sayıları çıkarır; engine JSON sayılarıyla eşleştirir (metin otorite değildir).
     /// </summary>

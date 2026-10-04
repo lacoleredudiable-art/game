@@ -4,31 +4,6 @@ using Dovus.Core.Grammar;
 
 namespace Dovus.Core.Casting
 {
-    public enum SkillExecutorKind
-    {
-        Fallback,
-        MeleeHitbox,
-        Projectile,
-        FieldAura,
-        Movement,
-        SelfState,
-        Summon
-    }
-
-    public readonly struct SkillExecutorRoute
-    {
-        public SkillExecutorRoute(SkillExecutorKind kind, bool isStub, string reason)
-        {
-            Kind = kind;
-            IsStub = isStub;
-            Reason = reason ?? string.Empty;
-        }
-
-        public SkillExecutorKind Kind { get; }
-        public bool IsStub { get; }
-        public string Reason { get; }
-    }
-
     /// <summary>
     /// İki rünlük skill'i fiil + canonical weapon.type üzerinden fiziksel teslimata yollar.
     /// Unity fiziği içermez; gerçek spawn/overlap Game katmanındaki executor'lardadır.

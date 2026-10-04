@@ -9,45 +9,6 @@ using Dovus.Core.Grammar;
 using Dovus.Core.Shared;
 namespace Dovus.Core.Mechanic
 {
-    public sealed class MechanicWeapon
-    {
-        public MechanicWeapon(int id, string name, string type, double damageMult, double rangeMult, int[] compatibleVerbs, string path)
-        {
-            Id = id;
-            Name = name ?? string.Empty;
-            Type = type ?? string.Empty;
-            DamageMult = damageMult;
-            RangeMult = rangeMult;
-            CompatibleVerbs = compatibleVerbs ?? Array.Empty<int>();
-            Path = path ?? string.Empty;
-        }
-
-        public int Id { get; }
-        public string Name { get; }
-        public string Type { get; }
-        public double DamageMult { get; }
-        public double RangeMult { get; }
-        public int[] CompatibleVerbs { get; }
-        /// <summary>mechanic_grammar.weapon_delivery.path — silahın teslim yolu.</summary>
-        public string Path { get; }
-    }
-
-    public readonly struct MechanicHitbox
-    {
-        public MechanicHitbox(string shape, double sizeA, double sizeB, bool timed)
-        {
-            Shape = shape ?? string.Empty;
-            SizeA = sizeA;
-            SizeB = sizeB;
-            Timed = timed;
-        }
-
-        public string Shape { get; }
-        public double SizeA { get; }
-        public double SizeB { get; }
-        public bool Timed { get; }
-    }
-
     /// <summary>
     /// element-sistemi.json: sayılar (verb_base, adjective_mods, weapons, hitbox_vfx, uyumsuz_cizim)
     /// ve kurallar (mechanic_grammar). Motor yalnız buradan okur; sayı gömülmez.

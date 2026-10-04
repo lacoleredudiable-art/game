@@ -4,42 +4,6 @@ using Dovus.Core;
 
 namespace Dovus.Core.Motion
 {
-    public enum PositionStepKind
-    {
-        None = 0,
-        Displace = 1,
-        Behind = 2,
-        Return = 3
-    }
-
-    /// <summary>Gramerin oyuncuyu oynatan bir konum adımı. Mesafe, kalıpta yoksa yedek veridir.</summary>
-    public readonly struct GrammarPositionStep
-    {
-        public GrammarPositionStep(string stat, double amount)
-        {
-            Stat = stat ?? string.Empty;
-            Amount = amount;
-        }
-
-        public string Stat { get; }
-        public double Amount { get; }
-    }
-
-    /// <summary>Bu cast'te kalıbın oynatacağı gövde. Konum adımı yoksa kalıbın kendisidir.</summary>
-    public readonly struct PositionPlayback
-    {
-        public PositionPlayback(bool ownsPosition, MotionTemplate template, bool placeReturnMark)
-        {
-            OwnsPosition = ownsPosition;
-            Template = template;
-            PlaceReturnMark = placeReturnMark;
-        }
-
-        public bool OwnsPosition { get; }
-        public MotionTemplate Template { get; }
-        public bool PlaceReturnMark { get; }
-    }
-
     /// <summary>
     /// Kalıp oyuncuyu oynatıyorsa o cast'te konumu yalnız kalıp yönetir.
     /// yer_degistir ve hedefin_arkasina ışınlanmaz; kalıpta eğri ya da arkaya iniş yoksa
@@ -238,16 +202,5 @@ namespace Dovus.Core.Motion
                 "geri_don", "return", sec, "travel", "none", string.Empty, 0f,
                 distanceM, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f,
                 0f, 0f, null, null);
-    }
-
-    /// <summary>Silah çarpanı hareket kalıbının yazılmış mesafesini kısaltamaz.</summary>
-    public static class MotionTravel
-    {
-        public static float Protect(float authoredM, float weaponScaledM)
-        {
-            float authored = Math.Max(0f, authoredM);
-            float scaled = Math.Max(0f, weaponScaledM);
-            return Math.Max(authored, scaled);
-        }
     }
 }

@@ -10,18 +10,6 @@ using Dovus.Core.Passives;
 
 namespace Dovus.App.Boss
 {
-    public readonly struct BossAttackChoice
-    {
-        public BossAttackChoice(BossAttackKind kind, SlamVariant? variant)
-        {
-            Kind = kind;
-            Variant = variant;
-        }
-
-        public BossAttackKind Kind { get; }
-        public SlamVariant? Variant { get; }
-    }
-
     public sealed class BossAttackSelector
     {
         BossAttackKind? _lastAttackKind;

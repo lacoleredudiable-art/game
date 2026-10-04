@@ -2,31 +2,6 @@ using Dovus.Core.Status;
 
 namespace Dovus.Core.Boss
 {
-    /// <summary>Boss saldırısının ayakları yerde mi, yoksa yer değiştirerek mi vurduğu.</summary>
-    public enum BossAttackMotion
-    {
-        Standing,
-        Charge,
-        Leap,
-        Dash
-    }
-
-    public readonly struct BossAttackGate
-    {
-        public BossAttackGate(bool canStart, bool cancelWindup, float phaseSpeed)
-        {
-            CanStart = canStart;
-            CancelWindup = cancelWindup;
-            PhaseSpeed = phaseSpeed;
-        }
-
-        public bool CanStart { get; }
-        /// <summary>Sersemlik hazırlıktaki vuruşu keser. Vuruş anı ve toparlanma kesilmez.</summary>
-        public bool CancelWindup { get; }
-        /// <summary>1 = normal. Yavaşlatma hareketle aynı çarpan; hazırlık ve toparlanma bu hızda akar.</summary>
-        public float PhaseSpeed { get; }
-    }
-
     /// <summary>
     /// Boss CC kapısı. Poise/öncelik <see cref="StatusBoard.HasEffective"/> ile okunur.
     /// Kök yalnız hücum/sıçrama/atış başlatmayı keser. Sersemlik her saldırıyı keser.

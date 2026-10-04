@@ -16,40 +16,6 @@ using Dovus.Core.Tuning;
 
 namespace Dovus.Core.Team
 {
-    public readonly struct TeamPulse
-    {
-        public TeamPulse(
-            bool stunned,
-            float stunSec,
-            float bossIncoming,
-            float armorSec,
-            bool burned,
-            bool attackBroken,
-            float mineMult,
-            string copiedSkill)
-        {
-            Stunned = stunned;
-            StunSec = stunSec;
-            BossIncomingMult = bossIncoming;
-            ArmorSec = armorSec;
-            Burned = burned;
-            AttackBroken = attackBroken;
-            MineMult = mineMult;
-            CopiedSkill = copiedSkill ?? string.Empty;
-        }
-
-        public bool Stunned { get; }
-        public float StunSec { get; }
-        public float BossIncomingMult { get; }
-        public float ArmorSec { get; }
-        public bool Burned { get; }
-        public bool AttackBroken { get; }
-        public float MineMult { get; }
-        public string CopiedSkill { get; }
-
-        public static TeamPulse None => new TeamPulse(false, 0f, 1f, 0f, false, false, 0f, string.Empty);
-    }
-
     /// <summary>
     /// Takım kombosu: bir oyuncunun bıraktığı işi başka oyuncu bitirir.
     /// Hasar formülü burada yok; yalnız çarpan ve süre döner.

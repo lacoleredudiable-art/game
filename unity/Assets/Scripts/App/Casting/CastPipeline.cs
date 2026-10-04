@@ -13,57 +13,6 @@ using Dovus.Core.Mechanic;
 
 namespace Dovus.App.Casting
 {
-    public readonly struct CastStarted
-    {
-        public CastStarted(string skillId) => SkillId = skillId ?? string.Empty;
-        public string SkillId { get; }
-    }
-
-    public readonly struct BasicOutcome
-    {
-        public BasicOutcome(bool healed, bool deniedCadence, bool connected, float dealt, int hits)
-        {
-            Healed = healed;
-            DeniedCadence = deniedCadence;
-            Connected = connected;
-            Dealt = dealt;
-            Hits = hits;
-        }
-
-        public bool Healed { get; }
-        public bool DeniedCadence { get; }
-        public bool Connected { get; }
-        public float Dealt { get; }
-        public int Hits { get; }
-    }
-
-    public readonly struct CastOutcome
-    {
-        // Unity'de Dovus.App ayrı assembly: init için IsExternalInit polyfill'i yok (Core'unki internal) → ctor.
-        public CastOutcome(
-            string skillId,
-            bool executorStarted,
-            bool templateOwnsDelivery,
-            float dealt,
-            bool effectApplied,
-            bool denied)
-        {
-            SkillId = skillId;
-            ExecutorStarted = executorStarted;
-            TemplateOwnsDelivery = templateOwnsDelivery;
-            Dealt = dealt;
-            EffectApplied = effectApplied;
-            Denied = denied;
-        }
-
-        public string SkillId { get; }
-        public bool ExecutorStarted { get; }
-        public bool TemplateOwnsDelivery { get; }
-        public float Dealt { get; }
-        public bool EffectApplied { get; }
-        public bool Denied { get; }
-    }
-
     public sealed class CastPipeline
     {
         public event Action<CastStarted> Started;

@@ -5,63 +5,6 @@ using Dovus.Core.Status;
 
 namespace Dovus.Core.Casting
 {
-    public enum SkillAimMode
-    {
-        Targeted,
-        Directional,
-        GroundAimed
-    }
-
-    public enum TargetRelation
-    {
-        Self,
-        Ally,
-        Enemy
-    }
-
-    public enum TargetFailure
-    {
-        None,
-        NoTarget,
-        OutOfRange
-    }
-
-    /// <summary>
-    /// Unity'den bağımsız hedef adayı. DistanceM, Game katmanında hedef collider'ının en yakın
-    /// noktasına ölçülür; böylece büyük boss'lar merkezlerinden dolayı haksızca menzil dışı kalmaz.
-    /// </summary>
-    public readonly struct TargetCandidate
-    {
-        public TargetCandidate(int id, TargetRelation relation, float distanceM, bool available = true)
-        {
-            Id = id;
-            Relation = relation;
-            DistanceM = Math.Max(0f, distanceM);
-            Available = available;
-        }
-
-        public int Id { get; }
-        public TargetRelation Relation { get; }
-        public float DistanceM { get; }
-        public bool Available { get; }
-    }
-
-    public readonly struct TargetResolution
-    {
-        public TargetResolution(bool allowed, bool useSelf, int targetId, TargetFailure failure)
-        {
-            Allowed = allowed;
-            UseSelf = useSelf;
-            TargetId = targetId;
-            Failure = failure;
-        }
-
-        public bool Allowed { get; }
-        public bool UseSelf { get; }
-        public int TargetId { get; }
-        public TargetFailure Failure { get; }
-    }
-
     /// <summary>
     /// v6.1.1 target_mode + opsiyonel engine.aim_mode hedefleme politikası.
     /// aim_mode yoksa güvenli varsayılan targeted; yalnız dash fiili yönlü kalır.
