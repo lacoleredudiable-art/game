@@ -471,7 +471,7 @@
             "id": "1-5",
             "name": "Yayılan Vuruş",
             "adjective": "Yayma",
-            "effect": "Çevreye %50 hasar",
+            "effect": "Çevreye yayılan hasar (%85, en çok 5 hedef)",
             "passive": "5 sn boyunca vuruşlar alana yayılır",
             "engine": {
               "action": "damage",
@@ -485,7 +485,7 @@
               "damage_mult": 0.85,
               "max_targets": 5
             },
-            "prose_mechanic": "Çevreye %50 hasar",
+            "prose_mechanic": "Çevreye yayılan hasar (%85, en çok 5 hedef)",
             "prose_feel": "Geniş, dalga",
             "prose_visual": "Şok dalgası"
           },
@@ -1383,7 +1383,7 @@
             "id": "4-10",
             "name": "Aynalı Kalkan",
             "adjective": "Aynalama",
-            "effect": "%40 yansıma",
+            "effect": "%30 yansıma",
             "passive": "7 sn pasif: Aynalama",
             "engine": {
               "action": "shield",
@@ -1396,7 +1396,7 @@
               "reflect_ratio": 0.3,
               "reflect_duration_sec": 2.0
             },
-            "prose_mechanic": "%40 yansıma",
+            "prose_mechanic": "%30 yansıma",
             "prose_feel": "Yansıtıcı",
             "prose_visual": "Gümüş kubbe"
           },
@@ -1524,7 +1524,7 @@
             "id": "5-4",
             "name": "Sabit Patlama",
             "adjective": "Sabitleme",
-            "effect": "Yerleşik alan (4 sn)",
+            "effect": "Yerleşik alan (+2 sn)",
             "passive": "5 sn pasif: Sabitleme",
             "engine": {
               "action": "damage",
@@ -1540,7 +1540,7 @@
               "cast_mobility": "rooted",
               "team_op": "mine"
             },
-            "prose_mechanic": "Yerleşik alan (4 sn)",
+            "prose_mechanic": "Yerleşik alan (+2 sn)",
             "prose_feel": "Kalıcı",
             "prose_visual": "Turuncu halka"
           },
@@ -1637,7 +1637,7 @@
             "id": "5-9",
             "name": "Odaklı Patlama",
             "adjective": "Odaklama",
-            "effect": "Tek hedef, %50 fazla",
+            "effect": "Tek hedef, %15 fazla",
             "passive": "5 sn pasif: Odaklama",
             "engine": {
               "action": "damage",
@@ -1652,7 +1652,7 @@
               "damage_mult": 1.15,
               "max_targets": 1
             },
-            "prose_mechanic": "Tek hedef, %50 fazla",
+            "prose_mechanic": "Tek hedef, %15 fazla",
             "prose_feel": "Kilitli",
             "prose_visual": "Mavi ateş"
           },
@@ -1803,7 +1803,7 @@
             "id": "6-4",
             "name": "Sabit Bağ",
             "adjective": "Sabitleme",
-            "effect": "3 sn root",
+            "effect": "1.5 sn root",
             "passive": "4 sn pasif: Sabitleme",
             "engine": {
               "action": "cc",
@@ -1818,7 +1818,7 @@
               "lifetime_add": 2.0,
               "cast_mobility": "rooted"
             },
-            "prose_mechanic": "3 sn root",
+            "prose_mechanic": "1.5 sn root",
             "prose_feel": "Uzun, sabırlı",
             "prose_visual": "Kalın zincir"
           },
@@ -2082,7 +2082,7 @@
             "id": "7-4",
             "name": "Sabit Zafiyet",
             "adjective": "Sabitleme",
-            "effect": "7 sn debuff",
+            "effect": "4 sn debuff",
             "passive": "6 sn pasif: Sabitleme",
             "engine": {
               "action": "debuff",
@@ -2097,7 +2097,7 @@
               "lifetime_add": 2.0,
               "cast_mobility": "rooted"
             },
-            "prose_mechanic": "7 sn debuff",
+            "prose_mechanic": "4 sn debuff",
             "prose_feel": "Kalıcı",
             "prose_visual": "Uzun duman"
           },
@@ -2364,7 +2364,7 @@
             "id": "8-4",
             "name": "Sabit Yükseliş",
             "adjective": "Sabitleme",
-            "effect": "7 sn buff",
+            "effect": "3 sn buff",
             "passive": "5 sn pasif: Sabitleme",
             "engine": {
               "action": "buff",
@@ -2379,7 +2379,7 @@
               "lifetime_add": 2.0,
               "cast_mobility": "rooted"
             },
-            "prose_mechanic": "7 sn buff",
+            "prose_mechanic": "3 sn buff",
             "prose_feel": "Kalıcı",
             "prose_visual": "Altın halka"
           },
@@ -2477,7 +2477,7 @@
             "id": "8-9",
             "name": "Odaklı Yükseliş",
             "adjective": "Odaklama",
-            "effect": "En güçlü dosta +%30",
+            "effect": "En güçlü dosta +%20",
             "passive": "5 sn pasif: Odaklama",
             "engine": {
               "action": "buff",
@@ -2492,7 +2492,7 @@
               "damage_mult": 1.15,
               "max_targets": 1
             },
-            "prose_mechanic": "En güçlü dosta +%30",
+            "prose_mechanic": "En güçlü dosta +%20",
             "prose_feel": "Akıllı",
             "prose_visual": "Altın hedef"
           },
@@ -2640,7 +2640,7 @@
             "id": "9-4",
             "name": "Sabit Arınma",
             "adjective": "Sabitleme",
-            "effect": "Yerleşik alan (5 sn)",
+            "effect": "Yerleşik alan (+2 sn)",
             "passive": "0 sn pasif: Sabitleme",
             "engine": {
               "action": "cleanse",
@@ -2654,7 +2654,7 @@
               "lifetime_add": 2.0,
               "cast_mobility": "rooted"
             },
-            "prose_mechanic": "Yerleşik alan (5 sn)",
+            "prose_mechanic": "Yerleşik alan (+2 sn)",
             "prose_feel": "Kalıcı",
             "prose_visual": "Beyaz halka"
           },
@@ -2911,7 +2911,7 @@
             "id": "10-4",
             "name": "Sabit Yansı",
             "adjective": "Sabitleme",
-            "effect": "7 sn yansıma",
+            "effect": "2 sn yansıma",
             "passive": "5 sn pasif: Sabitleme",
             "engine": {
               "action": "reflect",
@@ -2926,7 +2926,7 @@
               "lifetime_add": 2.0,
               "cast_mobility": "rooted"
             },
-            "prose_mechanic": "7 sn yansıma",
+            "prose_mechanic": "2 sn yansıma",
             "prose_feel": "Kalıcı",
             "prose_visual": "Gümüş kubbe"
           },
@@ -3024,7 +3024,7 @@
             "id": "10-9",
             "name": "Odaklı Yansı",
             "adjective": "Odaklama",
-            "effect": "%70 tek hedef",
+            "effect": "%50 tek hedef",
             "passive": "5 sn pasif: Odaklama",
             "engine": {
               "action": "reflect",
@@ -3039,7 +3039,7 @@
               "damage_mult": 1.15,
               "max_targets": 1
             },
-            "prose_mechanic": "%70 tek hedef",
+            "prose_mechanic": "%50 tek hedef",
             "prose_feel": "Odaklı",
             "prose_visual": "Gümüş hedef"
           },
@@ -3047,7 +3047,7 @@
             "id": "10-10",
             "name": "Aynalı Yansı",
             "adjective": "Aynalama",
-            "effect": "%80 çift yansıma",
+            "effect": "%30 çift yansıma",
             "passive": "5 sn pasif: Aynalama",
             "engine": {
               "action": "reflect",
@@ -3061,7 +3061,7 @@
               "portal_op": "mirror",
               "team_op": "marker"
             },
-            "prose_mechanic": "%80 çift yansıma",
+            "prose_mechanic": "%30 çift yansıma",
             "prose_feel": "Ayna",
             "prose_visual": "Çift gümüş"
           },
@@ -3478,7 +3478,7 @@
             "id": "12-4",
             "name": "Sabit Zaman",
             "adjective": "Sabitleme",
-            "effect": "5 sn düşman yavaşlatma alanı",
+            "effect": "1 sn düşman yavaşlatma alanı (%30)",
             "passive": "4 sn: kalıcı tempo alanı",
             "engine": {
               "action": "tempo",
@@ -3495,7 +3495,7 @@
               "lifetime_add": 2.0,
               "cast_mobility": "rooted"
             },
-            "prose_mechanic": "5 sn düşman yavaşlatma alanı",
+            "prose_mechanic": "1 sn düşman yavaşlatma alanı (%30)",
             "prose_feel": "Kalıcı",
             "prose_visual": "Mavi kubbe"
           },
@@ -3582,7 +3582,7 @@
             "engine": {
               "action": "tempo",
               "enemy_slow": 0.7,
-              "self_haste": 0.0,
+              "self_haste": 0.5,
               "tempo_duration_sec": 3.0,
               "base_damage": 0,
               "base_cost": 16,
@@ -3601,7 +3601,7 @@
             "id": "12-9",
             "name": "Odaklı Zaman",
             "adjective": "Odaklama",
-            "effect": "Tek hedefe 3 sn ağır yavaşlatma",
+            "effect": "Tek hedefe 1 sn ağır yavaşlatma",
             "passive": "4 sn: odaklı tempo",
             "engine": {
               "action": "tempo",
@@ -3618,7 +3618,7 @@
               "damage_mult": 1.15,
               "max_targets": 1
             },
-            "prose_mechanic": "Tek hedefe 3 sn ağır yavaşlatma",
+            "prose_mechanic": "Tek hedefe 1 sn ağır yavaşlatma",
             "prose_feel": "Odaklı",
             "prose_visual": "Kırmızı hedef"
           },
@@ -3675,7 +3675,7 @@
             "id": "12-12",
             "name": "Akan Zaman",
             "adjective": "Akış",
-            "effect": "Sürekli düşman yavaşlatma alanı, 4 sn",
+            "effect": "Sürekli düşman yavaşlatma alanı, 3 sn",
             "passive": "4 sn: kesintisiz tempo",
             "engine": {
               "action": "tempo",
@@ -3692,7 +3692,7 @@
               "tick_rate_mult": 1.2,
               "damage_mult": 0.7
             },
-            "prose_mechanic": "Sürekli düşman yavaşlatma alanı, 4 sn",
+            "prose_mechanic": "Sürekli düşman yavaşlatma alanı, 3 sn",
             "prose_feel": "Akıcı",
             "prose_visual": "Mavi akış"
           }
@@ -5771,7 +5771,7 @@
         },
         "1-5": {
           "name": "Yayılan Vuruş",
-          "mechanic": "Çevreye %50 hasar",
+          "mechanic": "Çevreye yayılan hasar (%85, en çok 5 hedef)",
           "feel": "Geniş, dalga",
           "visual": "Şok dalgası"
         },
@@ -6023,7 +6023,7 @@
         },
         "4-10": {
           "name": "Aynalı Kalkan",
-          "mechanic": "%40 yansıma",
+          "mechanic": "%30 yansıma",
           "feel": "Yansıtıcı",
           "visual": "Gümüş kubbe"
         },
@@ -6061,7 +6061,7 @@
         },
         "5-4": {
           "name": "Sabit Patlama",
-          "mechanic": "Yerleşik alan (4 sn)",
+          "mechanic": "Yerleşik alan (+2 sn)",
           "feel": "Kalıcı",
           "visual": "Turuncu halka"
         },
@@ -6091,7 +6091,7 @@
         },
         "5-9": {
           "name": "Odaklı Patlama",
-          "mechanic": "Tek hedef, %50 fazla",
+          "mechanic": "Tek hedef, %15 fazla",
           "feel": "Kilitli",
           "visual": "Mavi ateş"
         },
@@ -6135,7 +6135,7 @@
         },
         "6-4": {
           "name": "Sabit Bağ",
-          "mechanic": "3 sn root",
+          "mechanic": "1.5 sn root",
           "feel": "Uzun, sabırlı",
           "visual": "Kalın zincir"
         },
@@ -6209,7 +6209,7 @@
         },
         "7-4": {
           "name": "Sabit Zafiyet",
-          "mechanic": "7 sn debuff",
+          "mechanic": "4 sn debuff",
           "feel": "Kalıcı",
           "visual": "Uzun duman"
         },
@@ -6283,7 +6283,7 @@
         },
         "8-4": {
           "name": "Sabit Yükseliş",
-          "mechanic": "7 sn buff",
+          "mechanic": "3 sn buff",
           "feel": "Kalıcı",
           "visual": "Altın halka"
         },
@@ -6313,7 +6313,7 @@
         },
         "8-9": {
           "name": "Odaklı Yükseliş",
-          "mechanic": "En güçlü dosta +%30",
+          "mechanic": "En güçlü dosta +%20",
           "feel": "Akıllı",
           "visual": "Altın hedef"
         },
@@ -6357,7 +6357,7 @@
         },
         "9-4": {
           "name": "Sabit Arınma",
-          "mechanic": "Yerleşik alan (5 sn)",
+          "mechanic": "Yerleşik alan (+2 sn)",
           "feel": "Kalıcı",
           "visual": "Beyaz halka"
         },
@@ -6431,7 +6431,7 @@
         },
         "10-4": {
           "name": "Sabit Yansı",
-          "mechanic": "7 sn yansıma",
+          "mechanic": "2 sn yansıma",
           "feel": "Kalıcı",
           "visual": "Gümüş kubbe"
         },
@@ -6461,13 +6461,13 @@
         },
         "10-9": {
           "name": "Odaklı Yansı",
-          "mechanic": "%70 tek hedef",
+          "mechanic": "%50 tek hedef",
           "feel": "Odaklı",
           "visual": "Gümüş hedef"
         },
         "10-10": {
           "name": "Aynalı Yansı",
-          "mechanic": "%80 çift yansıma",
+          "mechanic": "%30 çift yansıma",
           "feel": "Ayna",
           "visual": "Çift gümüş"
         },
@@ -6579,7 +6579,7 @@
         },
         "12-4": {
           "name": "Sabit Zaman",
-          "mechanic": "5 sn düşman yavaşlatma alanı",
+          "mechanic": "1 sn düşman yavaşlatma alanı (%30)",
           "feel": "Kalıcı",
           "visual": "Mavi kubbe"
         },
@@ -6609,7 +6609,7 @@
         },
         "12-9": {
           "name": "Odaklı Zaman",
-          "mechanic": "Tek hedefe 3 sn ağır yavaşlatma",
+          "mechanic": "Tek hedefe 1 sn ağır yavaşlatma",
           "feel": "Odaklı",
           "visual": "Kırmızı hedef"
         },
@@ -6627,7 +6627,7 @@
         },
         "12-12": {
           "name": "Akan Zaman",
-          "mechanic": "Sürekli düşman yavaşlatma alanı, 4 sn",
+          "mechanic": "Sürekli düşman yavaşlatma alanı, 3 sn",
           "feel": "Akıcı",
           "visual": "Mavi akış"
         }
