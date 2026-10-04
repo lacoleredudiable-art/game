@@ -43,6 +43,39 @@ namespace Dovus.Game.Skills
             _sentenceBridge = new SentenceManifestationBridge(_skillServicesHost);
         }
 
+        bool TryArmSkillTarget(SkillResolution skill)
+        {
+            EnsureSkillServices();
+            return _skillAim.TryArmSkillTarget(skill);
+        }
+
+        internal void FaceTarget(Transform target)
+        {
+            EnsureSkillServices();
+            _skillAim.FaceTarget(target);
+        }
+
+        internal void CaptureBasicFacing()
+        {
+            EnsureSkillServices();
+            _skillAim.CaptureBasicFacing();
+        }
+
+        internal Vector3 FlatBodyForward()
+        {
+            EnsureSkillServices();
+            return _skillAim.FlatBodyForward();
+        }
+
+        internal Transform CastFacingTarget
+        {
+            get
+            {
+                EnsureSkillServices();
+                return _skillAim.CastFacingTarget;
+            }
+        }
+
         sealed class SkillServicesHost
             : ISkillAimHost,
                 ILivingEffectSpawnerHost,
@@ -143,7 +176,7 @@ namespace Dovus.Game.Skills
                 get => _md._posedForRecovery;
                 set => _md._posedForRecovery = value;
             }
-            public List<PendingClosing> Pending => _md._pending;
+            public List<PendingClosing> Pending => _md.PendingList;
             public void TryBeginBasicStrikeStep() => _md.TryBeginBasicStrikeStep();
             public WeaponSkillCompatibility WeaponCompatibilityFor(SkillResolution skill) =>
                 _md.WeaponCompatibilityFor(skill);

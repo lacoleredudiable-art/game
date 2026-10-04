@@ -210,16 +210,16 @@ namespace Dovus.Game.Skills
                     || !_md._slotPassives.TryConsumeEcho(_md._slotQueryCastId, out float echoDelay, out float echoPower))
                     return;
 
-                _md._passiveEchoes.Add(new PassiveEchoShot
-                {
-                    DueMs = _md._clock.Director.WorldTimeMs + echoDelay * 1000.0,
-                    Power = echoPower,
-                    SlotCastId = _md._slotQueryCastId,
-                    Closing = ctx.Closing,
-                    Skill = skill,
-                    Slash = motion.SlashCommitMult,
-                    Chain = _md._closingChainBonus
-                });
+                _md.EnsureCoreServices();
+                _md._slotPassiveRuntime.SchedulePassiveEcho(
+                    ctx,
+                    skill,
+                    motion.SlashCommitMult,
+                    _md._closingChainBonus,
+                    echoDelay,
+                    echoPower,
+                    _md._slotQueryCastId,
+                    _md._clock.Director.WorldTimeMs);
             }
 
             public void ResolveImpactTarget(PendingClosing ctx)

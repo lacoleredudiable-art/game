@@ -69,7 +69,7 @@ namespace Dovus.Game.Skills
             Vector3 at = _player != null ? _player.position + Vector3.up * 1.6f : Vector3.zero;
             _damageHud?.ShowDamage(incomingDamage, crit, at, victimIsPlayer: true);
             ReflectFromWorldVolumes(incomingDamage);
-            if (_mobilityCc == null || _pending.Count == 0)
+            if (_mobilityCc == null || PendingList.Count == 0)
                 return;
             // Poise, ölçeklenmiş can hasarıyla değil eski (küçük) vuruş sayısıyla kırılır.
             float poiseDamage = _playerStatus != null && _playerStatus.LastPoise > 0f
@@ -84,11 +84,11 @@ namespace Dovus.Game.Skills
 
         void CancelPendingCast(string reason)
         {
-            for (int i = 0; i < _pending.Count; i++)
-                _pending[i].View?.Logic?.Abort();
-            if (_pending.Count > 0)
-                DebugConfig.DevLog($"[Interrupt] startup cancelled by {reason}; count={_pending.Count}");
-            _pending.Clear();
+            for (int i = 0; i < PendingList.Count; i++)
+                PendingList[i].View?.Logic?.Abort();
+            if (PendingList.Count > 0)
+                DebugConfig.DevLog($"[Interrupt] startup cancelled by {reason}; count={PendingList.Count}");
+            PendingList.Clear();
             _playerStatus?.ClearCastMobility();
         }
 
