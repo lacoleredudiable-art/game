@@ -45,9 +45,9 @@ namespace Dovus.Game.Composition.Builders
             if (animator != null && animator.runtimeAnimatorController != null)
                 animator.Update(0f);
 
-            if (TryGetRendererBounds(visual, out Bounds initial, posed: false) && initial.size.y > 0.01f)
+            if (TryGetRendererBounds(visual, out Bounds initial, posed: false) && initial.size.y > VisualAttachDefaults.MinBoundsHeightM)
             {
-                float fit = Mathf.Max(0.1f, targetHeightM) / initial.size.y;
+                float fit = Mathf.Max(VisualAttachDefaults.MinTargetHeightM, targetHeightM) / initial.size.y;
                 visual.transform.localScale *= fit;
                 if (TryGetRendererBounds(visual, out Bounds fitted, posed: true))
                     visual.transform.position += Vector3.up * (groundY - fitted.min.y);
@@ -57,7 +57,7 @@ namespace Dovus.Game.Composition.Builders
             }
 
             if (animator != null)
-                animator.speed = Mathf.Clamp(animSpeed, 0.25f, 3f);
+                animator.speed = Mathf.Clamp(animSpeed, VisualAttachDefaults.AnimSpeedClampMin, VisualAttachDefaults.AnimSpeedClampMax);
 
             var capsuleRend = root.GetComponent<Renderer>();
             if (capsuleRend != null)
@@ -121,7 +121,7 @@ namespace Dovus.Game.Composition.Builders
 
         public static Vector3 ClampSpawnXZ(Vector3 worldPos, float maxRadiusM)
         {
-            if (maxRadiusM <= 0.01f)
+            if (maxRadiusM <= VisualAttachDefaults.MinMaxRadiusM)
                 return worldPos;
             var xz = new Vector2(worldPos.x, worldPos.z);
             float maxR = maxRadiusM;

@@ -51,9 +51,9 @@ namespace Dovus.Game.Composition.Builders
             ctx.Ally = VisualAttach.CreateCapsule(
                 "AllyDummy",
                 VisualAttach.ClampSpawnXZ(
-                    new Vector3(-3.2f, CompositionConstants.PlayerHeightM * 0.5f, -1.2f),
+                    new Vector3(-ActorsBuilderDefaults.PlayerSpawnX, CompositionConstants.PlayerHeightM * 0.5f, -ActorsBuilderDefaults.PlayerSpawnZ),
                     spawnMaxR),
-                CompositionConstants.PlayerRadiusM * 0.95f,
+                CompositionConstants.PlayerRadiusM * ActorsBuilderDefaults.PlayerColliderRadiusScale,
                 CompositionConstants.PlayerHeightM,
                 new Color(0.35f, 0.85f, 0.55f));
             VisualAttach.Attach(
@@ -80,7 +80,7 @@ namespace Dovus.Game.Composition.Builders
             ctx.AllyDummy.Bind(playerHp, startRatio: DebugConfig.StartHpRatio);
             ctx.AllyDummy.BindTeam(ctx.TeamAccess);
 
-            float bossSpawnZ = 5f * Mathf.Max(1f, tuning.Arena.ArenaVisualScale * 0.55f);
+            float bossSpawnZ = ActorsBuilderDefaults.BossSpawnZBaseM * Mathf.Max(1f, tuning.Arena.ArenaVisualScale * ActorsBuilderDefaults.BossSpawnZArenaScale);
             bossSpawnZ = Mathf.Clamp(bossSpawnZ, -spawnMaxR, spawnMaxR);
             ctx.Boss = VisualAttach.CreateCapsule(
                 "Boss",

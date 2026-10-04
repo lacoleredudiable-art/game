@@ -286,12 +286,12 @@ namespace Dovus.Game.Boss
             {
                 float d = Mathf.Sqrt((x - half) * (x - half) + (y - half) * (y - half)) / half;
                 float a;
-                if (d <= 0.70f)
-                    a = 0.55f;
-                else if (d <= 0.88f)
-                    a = Mathf.Lerp(0.55f, 1f, (d - 0.70f) / 0.18f);
+                if (d <= AttackTelegraphDefaults.GlowAlphaDistanceInner)
+                    a = AttackTelegraphDefaults.GlowAlphaFloor;
+                else if (d <= AttackTelegraphDefaults.GlowAlphaDistanceMid)
+                    a = Mathf.Lerp(AttackTelegraphDefaults.GlowAlphaFloor, 1f, (d - AttackTelegraphDefaults.GlowAlphaDistanceInner) / AttackTelegraphDefaults.GlowAlphaMidSpan);
                 else
-                    a = Mathf.Lerp(1f, 0.1f, Mathf.Clamp01((d - 0.88f) / 0.12f));
+                    a = Mathf.Lerp(1f, AttackTelegraphDefaults.GlowAlphaTail, Mathf.Clamp01((d - AttackTelegraphDefaults.GlowAlphaDistanceMid) / AttackTelegraphDefaults.GlowAlphaTailSpan));
                 if (d > 1f)
                     a = 0f;
                 _glowTex.SetPixel(x, y, new Color(1f, 1f, 1f, a));

@@ -21,7 +21,7 @@ namespace Dovus.Game.Actors
         public float GlobalCooldownSec => _tracker != null ? _tracker.GlobalCooldownSec : 0f;
 
         /// <summary>JSON cooldown_rules: global_cooldown_sec 0.3 / max_concurrent_casts 1.</summary>
-        public void Bind(float globalCooldownSec = 0.3f, int maxConcurrentCasts = 1)
+        public void Bind(float globalCooldownSec = PlayerCooldownDefaults.DefaultGlobalCooldownSec, int maxConcurrentCasts = 1)
         {
             _tracker = new CooldownTracker(globalCooldownSec, maxConcurrentCasts);
         }

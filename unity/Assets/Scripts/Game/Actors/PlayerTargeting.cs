@@ -88,15 +88,15 @@ namespace Dovus.Game.Actors
     [Serializable]
     public sealed class TargetingPresentationTuning
     {
-        public float RingPaddingM = 0.22f;
-        public float RingWidthM = 0.07f;
-        public float RingGroundOffsetM = 0.025f;
-        public int RingSegments = 48;
+        public float RingPaddingM = PlayerTargetingDefaults.RingPaddingM;
+        public float RingWidthM = PlayerTargetingDefaults.RingWidthM;
+        public float RingGroundOffsetM = PlayerTargetingDefaults.RingGroundOffsetM;
+        public int RingSegments = PlayerTargetingDefaults.RingSegments;
         public Color EnemyColor = new(1f, 0.28f, 0.16f, 0.95f);
         public Color AllyColor = new(0.25f, 1f, 0.58f, 0.95f);
-        public Vector2 FrameSizePx = new(240f, 42f);
-        public Vector2 FrameOffsetPx = new(0f, -76f);
-        public int FrameFontPx = 20;
+        public Vector2 FrameSizePx = new(PlayerTargetingDefaults.FrameWidthPx, PlayerTargetingDefaults.FrameHeightPx);
+        public Vector2 FrameOffsetPx = new(0f, -PlayerTargetingDefaults.FrameOffsetYPx);
+        public int FrameFontPx = PlayerTargetingDefaults.FrameFontPx;
     }
 
     /// <summary>
@@ -453,8 +453,8 @@ namespace Dovus.Game.Actors
 
         static float PixelsToDp(float px)
         {
-            float dpi = Screen.dpi > 0f ? Screen.dpi : 160f;
-            return px * (160f / dpi);
+            float dpi = Screen.dpi > 0f ? Screen.dpi : PlayerTargetingDefaults.FallbackDpi;
+            return px * (PlayerTargetingDefaults.FallbackDpi / dpi);
         }
     }
 }

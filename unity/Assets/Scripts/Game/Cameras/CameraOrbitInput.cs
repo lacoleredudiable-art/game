@@ -110,8 +110,8 @@ namespace Dovus.Game.Cameras
         void AddPitch(float fingerUpDeg)
         {
             bool invert = _tuning != null && _tuning.Camera.OrbitInvertPitch;
-            float min = _tuning != null ? _tuning.Camera.CameraPitchMinDeg : -8f;
-            float max = _tuning != null ? _tuning.Camera.CameraPitchMaxDeg : 35f;
+            float min = _tuning != null ? _tuning.Camera.CameraPitchMinDeg : CameraOrbitInputDefaults.FallbackPitchMinDeg;
+            float max = _tuning != null ? _tuning.Camera.CameraPitchMaxDeg : CameraOrbitInputDefaults.FallbackPitchMaxDeg;
             _pitchDeg = Mathf.Clamp(_pitchDeg + (invert ? fingerUpDeg : -fingerUpDeg), min, max);
         }
 
@@ -146,7 +146,7 @@ namespace Dovus.Game.Cameras
             float deltaXDp = PixelsToDp(pos.x - _lastPos.x);
             float deltaYDp = PixelsToDp(pos.y - _lastPos.y);
             _lastPos = pos;
-            float sens = _tuning != null ? _tuning.Camera.OrbitDegreesPerDp : 0.35f;
+            float sens = _tuning != null ? _tuning.Camera.OrbitDegreesPerDp : CameraOrbitInputDefaults.FallbackOrbitDegreesPerDp;
             _yawDeg -= deltaXDp * sens;
             AddPitch(deltaYDp * sens);
         }
@@ -159,8 +159,8 @@ namespace Dovus.Game.Cameras
 
         static float PixelsToDp(float px)
         {
-            float dpi = Screen.dpi > 0f ? Screen.dpi : 160f;
-            return px * (160f / dpi);
+            float dpi = Screen.dpi > 0f ? Screen.dpi : CameraOrbitInputDefaults.FallbackDpi;
+            return px * (CameraOrbitInputDefaults.FallbackDpi / dpi);
         }
     }
 }

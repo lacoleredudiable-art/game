@@ -44,7 +44,7 @@ namespace Dovus.Game.Boss
 
         GameTuning _tuning;
         float _busyUntilUnscaled;
-        float _lastStaggerUnscaled = -999f;
+        float _lastStaggerUnscaled = -BossVisualDefaults.StaggerCooldownSentinelSec;
         float _walkClipMps = -1f;
         bool _dead;
 
@@ -74,24 +74,24 @@ namespace Dovus.Game.Boss
         {
             if (!Ready())
                 return;
-            if (groundMps <= 0.01f)
+            if (groundMps <= BossVisualDefaults.MinLocoSpeedMps)
             {
                 SetSpeed(0f);
                 return;
             }
 
-            _animator.SetFloat(ParamSpeed, 1f, 0.12f, Time.deltaTime);
+            _animator.SetFloat(ParamSpeed, 1f, BossVisualDefaults.LocoSpeedDampSec, Time.deltaTime);
             float clipMps = WalkClipMps();
-            if (clipMps > 0.01f && HasParam(ParamLocoSpeed))
-                _animator.SetFloat(ParamLocoSpeed, Mathf.Clamp(groundMps / clipMps, 0.2f, 2.5f));
+            if (clipMps > BossVisualDefaults.MinLocoSpeedMps && HasParam(ParamLocoSpeed))
+                _animator.SetFloat(ParamLocoSpeed, Mathf.Clamp(groundMps / clipMps, BossVisualDefaults.LocoSpeedClampMin, BossVisualDefaults.LocoSpeedClampMax));
         }
 
         public void SetSpeed(float normalized01)
         {
             if (!Ready())
                 return;
-            _animator.SetFloat(ParamSpeed, Mathf.Clamp01(normalized01), 0.12f, Time.deltaTime);
-            if (normalized01 <= 0.01f && HasParam(ParamLocoSpeed))
+            _animator.SetFloat(ParamSpeed, Mathf.Clamp01(normalized01), BossVisualDefaults.LocoSpeedDampSec, Time.deltaTime);
+            if (normalized01 <= BossVisualDefaults.MinLocoSpeedMps && HasParam(ParamLocoSpeed))
                 _animator.SetFloat(ParamLocoSpeed, 1f);
         }
 
@@ -112,13 +112,13 @@ namespace Dovus.Game.Boss
             // Zehir Tükürüğü ağızdan çıkar: nefes klibini paylaşır.
             bool mouth = kind is BossAttackKind.FireCone or BossAttackKind.Volley;
             string state = mouth ? StateBreath : StateSlam;
-            float impactNorm = _tuning == null ? 0.42f
+            float impactNorm = _tuning == null ? BossVisualDefaults.FallbackImpactNorm
                 : mouth ? _tuning.Boss.BossConeImpactNorm : _tuning.Boss.BossSlamImpactNorm;
             float clipLen = ClipLength(state);
             if (clipLen > 0f && HasParam(ParamActionSpeed))
             {
-                float windupSec = Mathf.Max(0.05f, windupMs / 1000f);
-                float speed = Mathf.Clamp(impactNorm * clipLen / windupSec, 0.25f, 4f);
+                float windupSec = Mathf.Max(BossVisualDefaults.MinWindupSec, windupMs / 1000f);
+                float speed = Mathf.Clamp(impactNorm * clipLen / windupSec, BossVisualDefaults.StrikeSpeedClampMin, BossVisualDefaults.StrikeSpeedClampMax);
                 _animator.SetFloat(ParamActionSpeed, speed);
                 _busyUntilUnscaled = Time.unscaledTime + windupSec + (1f - impactNorm) * clipLen;
             }
@@ -142,11 +142,11 @@ namespace Dovus.Game.Boss
         {
             if (_dead || !Ready() || IsBusy)
                 return;
-            float gap = _tuning != null ? _tuning.Boss.BossStaggerMinGapSec : 0.6f;
+            float gap = _tuning != null ? _tuning.Boss.BossStaggerMinGapSec : BossVisualDefaults.FallbackStaggerMinGapSec;
             if (Time.unscaledTime - _lastStaggerUnscaled < gap)
                 return;
             _lastStaggerUnscaled = Time.unscaledTime;
-            if (!CrossFade(StateStagger, 0.05f))
+            if (!CrossFade(StateStagger, BossVisualDefaults.StaggerCrossFadeSec))
                 FireTrigger(TriggerStagger);
         }
 
@@ -155,7 +155,7 @@ namespace Dovus.Game.Boss
             if (_dead || !Ready())
                 return;
             float len = ClipLength(StateRoar);
-            _busyUntilUnscaled = Time.unscaledTime + Mathf.Max(len, 0.1f);
+            _busyUntilUnscaled = Time.unscaledTime + Mathf.Max(len, BossVisualDefaults.MinBusySec);
             CrossFade(StateRoar, BlendSec());
         }
 
@@ -173,7 +173,7 @@ namespace Dovus.Game.Boss
             PlayIdle();
         }
 
-        float BlendSec() => _tuning != null ? _tuning.Boss.BossAnimCrossFadeSec : 0.15f;
+        float BlendSec() => _tuning != null ? _tuning.Boss.BossAnimCrossFadeSec : BossVisualDefaults.FallbackAnimCrossFadeSec;
 
         bool Ready() =>
             _animator != null && _animator.isActiveAndEnabled && _animator.runtimeAnimatorController != null;
@@ -244,14 +244,14 @@ namespace Dovus.Game.Boss
         {
             if (_walkClipMps >= 0f)
                 return _walkClipMps;
-            float fallback = _tuning != null ? _tuning.Boss.BossWalkClipMps : 1.4f;
+            float fallback = _tuning != null ? _tuning.Boss.BossWalkClipMps : BossVisualDefaults.FallbackWalkClipMps;
             AnimationClip walk = FindClipFor(StateLocomotion);
             float mps = walk != null ? walk.averageSpeed.magnitude : 0f;
-            if (mps > 0.05f && _animator.isHuman)
+            if (mps > BossVisualDefaults.MinMeasuredWalkMps && _animator.isHuman)
                 mps *= _animator.humanScale;
-            if (mps <= 0.05f)
+            if (mps <= BossVisualDefaults.MinMeasuredWalkMps)
                 mps = fallback;
-            _walkClipMps = mps * Mathf.Max(0.01f, _animator.transform.lossyScale.y);
+            _walkClipMps = mps * Mathf.Max(BossVisualDefaults.MinPositiveScale, _animator.transform.lossyScale.y);
             return _walkClipMps;
         }
     }

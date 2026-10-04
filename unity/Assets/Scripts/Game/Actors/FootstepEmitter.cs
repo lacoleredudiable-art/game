@@ -14,7 +14,7 @@ namespace Dovus.Game.Actors
         /// <summary>Tek karede bundan uzun yol Ä±ÅŸÄ±nlanma/respawn sayÄ±lÄ±r.</summary>
         const float TeleportM = 2.5f;
 
-        public float StrideM = 2.2f;
+        public float StrideM = FootstepEmitterDefaults.StrideM;
         public bool IsBoss;
 
         SfxDirector _sfx;

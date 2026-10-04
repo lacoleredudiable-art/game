@@ -34,7 +34,7 @@ namespace Dovus.Game.Feel
             if (words.Count >= 2)
                 blob = t.ColorForRune(words[words.Count - 1].Rune);
             else
-                blob = Color.Lerp(line, Color.white, 0.35f);
+                blob = Color.Lerp(line, Color.white, SkillFeelDefaults.BlobWhiteLerp);
         }
 
         public static string MechanicShort(string[] mechanics)
@@ -57,7 +57,7 @@ namespace Dovus.Game.Feel
             if (!string.IsNullOrEmpty(skill.SilhouetteAxis)
                 && !string.Equals(skill.SilhouetteAxis, "none", System.StringComparison.Ordinal))
                 parts.Add(skill.SilhouetteAxis);
-            if (skill.HitboxScaleMult > 0f && System.Math.Abs(skill.HitboxScaleMult - 1f) > 0.05f)
+            if (skill.HitboxScaleMult > 0f && System.Math.Abs(skill.HitboxScaleMult - 1f) > SkillFeelDefaults.HitboxScaleEpsilon)
                 parts.Add("alan×" + skill.HitboxScaleMult.ToString("0.#"));
             if (!skill.Engine.IsNull)
             {

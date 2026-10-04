@@ -181,17 +181,17 @@ namespace Dovus.Game.Actors
 
         void PlayLocalFeel(float seconds)
         {
-            float dur = Mathf.Max(0.05f, seconds);
+            float dur = Mathf.Max(PlayerDodgeRigDefaults.MinDodgeDurationSec, seconds);
             _feelUntilUnscaled = Time.unscaledTime + dur;
-            _camera?.Punch(6f, 1.5f, 4f, 10f);
+            _camera?.Punch(PlayerDodgeRigDefaults.CameraPunchAmplitude, PlayerDodgeRigDefaults.CameraPunchFrequency, PlayerDodgeRigDefaults.CameraPunchDurationSec, PlayerDodgeRigDefaults.CameraPunchDecay);
             if (_visual == null)
                 _visual = GetComponent<ActorVisual>();
             Animator anim = _visual != null ? _visual.Animator : null;
             if (anim == null)
                 return;
             if (!_animSlowed)
-                _savedAnimSpeed = anim.speed <= 0.01f ? 1f : anim.speed;
-            anim.speed = 0.2f;
+                _savedAnimSpeed = anim.speed <= PlayerDodgeRigDefaults.MinAnimSpeed ? 1f : anim.speed;
+            anim.speed = PlayerDodgeRigDefaults.DodgeAnimSpeed;
             _animSlowed = true;
         }
 

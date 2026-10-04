@@ -51,7 +51,7 @@ namespace Dovus.Game.Feel
         VisualFreeze _visualFreeze;
         AfterimageTrail _afterimage;
         Transform _playerTransform;
-        float _lastBossHitstopUnscaled = -999f;
+        float _lastBossHitstopUnscaled = -CombatFeelDefaults.BossHitstopSentinelSec;
 
         public ExchangeResult? LastExchange { get; private set; }
 
@@ -138,7 +138,7 @@ namespace Dovus.Game.Feel
 
             float p = Mathf.Clamp01(progress01);
             float hz = Mathf.Lerp(_colors.Hud.ThreatPulseHzMin, _colors.Hud.ThreatPulseHzMax, p);
-            float pulse = 0.55f + 0.45f * Mathf.Sin(Time.unscaledTime * hz);
+            float pulse = CombatFeelDefaults.VignettePulseBase + CombatFeelDefaults.VignettePulseAmplitude * Mathf.Sin(Time.unscaledTime * hz);
             Color c = Color.Lerp(_colors.Visuals.TelegraphWarm, _colors.Visuals.TelegraphHot, p);
             c.a = _colors.Hud.ThreatAlphaMax * p * pulse;
             Show(_threatFlash, c);
@@ -251,7 +251,7 @@ namespace Dovus.Game.Feel
                 ? RenderMode.ScreenSpaceCamera
                 : RenderMode.ScreenSpaceOverlay;
             _canvas.worldCamera = overlayCam;
-            _canvas.planeDistance = 0.8f;
+            _canvas.planeDistance = CombatFeelDefaults.CanvasPlaneDistance;
             _canvas.sortingOrder = 200;
             go.AddComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
 
@@ -293,18 +293,18 @@ namespace Dovus.Game.Feel
             {
                 float dx = (x - half) / half;
                 float dy = (y - half) / half;
-                float r = Mathf.Clamp01(Mathf.Sqrt(dx * dx + dy * dy) / 1.4142f);
-                float a = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.40f, 1f, r));
+                float r = Mathf.Clamp01(Mathf.Sqrt(dx * dx + dy * dy) / CombatFeelDefaults.VignetteRadiusNormDivisor);
+                float a = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(CombatFeelDefaults.VignetteSmoothStart, 1f, r));
                 tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
             }
 
             tex.Apply(false, true);
-            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 64f);
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), CombatFeelDefaults.VignetteSpritePpu);
         }
 
         static int FirstLayer(int mask)
         {
-            for (int i = 0; i < 32; i++)
+            for (int i = 0; i < CombatFeelDefaults.VignetteTextureSize; i++)
             {
                 if ((mask & (1 << i)) != 0)
                     return i;

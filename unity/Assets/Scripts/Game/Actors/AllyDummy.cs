@@ -83,7 +83,7 @@ namespace Dovus.Game.Actors
         public float SecondsUntilRevive =>
             _downAtMs < 0 || _clock == null
                 ? 0f
-                : Mathf.Max(0f, (float)((_downAtMs + _life.AllyReviveSec * 1000.0 - _clock.Director.WorldTimeMs) / 1000.0));
+                : Mathf.Max(0f, (float)((_downAtMs + _life.AllyReviveSec * ActorsTimeDefaults.SecToMs - _clock.Director.WorldTimeMs) / ActorsTimeDefaults.SecToMs));
         public int MaxHp => _maxHp;
         public float Ratio => _maxHp > 0 ? (float)_hp / _maxHp : 0f;
         public StatusBoard Board => _statusBoard;
@@ -192,7 +192,7 @@ namespace Dovus.Game.Actors
             var root = new GameObject("AllyHpBillboard");
             root.transform.SetParent(transform, false);
             // Kapsül merkezi + görsel offset — kafanın üstü.
-            root.transform.localPosition = new Vector3(0f, 1.85f, 0f);
+            root.transform.localPosition = new Vector3(0f, AllyDummyDefaults.RootHeightM, 0f);
             _billboard = root.transform;
 
             _billboardCanvas = root.AddComponent<Canvas>();
@@ -200,7 +200,7 @@ namespace Dovus.Game.Actors
             _billboardCanvas.worldCamera = _mainCamera;
             var rt = root.GetComponent<RectTransform>();
             rt.sizeDelta = new Vector2(220f, 56f);
-            root.transform.localScale = Vector3.one * 0.012f;
+            root.transform.localScale = Vector3.one * AllyDummyDefaults.RootScale;
 
             var bgGo = new GameObject("Bg");
             bgGo.transform.SetParent(root.transform, false);

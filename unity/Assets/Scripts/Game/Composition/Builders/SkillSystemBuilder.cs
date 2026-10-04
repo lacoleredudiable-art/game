@@ -111,7 +111,7 @@ namespace Dovus.Game.Composition.Builders
                 hostileTargets.Register(
                     ctx.AllyDummy.transform,
                     TargetKind.Ally,
-                    CompositionConstants.PlayerRadiusM * 0.95f,
+                    CompositionConstants.PlayerRadiusM * SkillSystemBuilderDefaults.PlayerColliderRadiusScale,
                     alive: () => !ctx.AllyDummy.IsDown,
                     stealthed: () => ctx.AllyDummy.Board != null && ctx.AllyDummy.Board.IsStealthed,
                     damage: raw => ctx.AllyDummy.ApplyBossDamage(raw));
@@ -215,7 +215,7 @@ namespace Dovus.Game.Composition.Builders
             var buildSelect = root.AddComponent<BuildSelectScreen>();
             buildSelect.Configure(skills, runeManager, input, view, ctx.Clock, director, !tuning.Hud.SkipBuildSelectOnStart);
 
-            int elementTransitionMs = 300;
+            int elementTransitionMs = SkillSystemBuilderDefaults.ElementTransitionMs;
             if (design != null
                 && ElementSystemHeader.TryParse(design.Document, elementTransitionMs, out ElementSystemHeader elementHdr))
                 elementTransitionMs = elementHdr.SelectionTransitionMs;
@@ -248,7 +248,7 @@ namespace Dovus.Game.Composition.Builders
             var buildSkills = runes.BuildSkills(factory, weapon, elementId);
             Skill smoke = factory.Create(1, 1, weapon, elementId);
             if (assets.Runes.Count != 12 || assets.Weapons.Count != 10
-                || assets.Elements.Count != 6 || buildSkills.Count != 36
+                || assets.Elements.Count != 6 || buildSkills.Count != SkillSystemBuilderDefaults.ExpectedBuildSkillCount
                 || smoke.Id != "1-1")
             {
                 throw new System.InvalidOperationException(

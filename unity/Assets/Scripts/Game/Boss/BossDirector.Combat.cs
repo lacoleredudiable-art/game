@@ -173,7 +173,7 @@ namespace Dovus.Game.Boss
                     home.z,
                     _attack.LandingX,
                     _attack.LandingZ,
-                    0.05f))
+                    BossDirectorDefaults.PouncePlanMarginSec))
                 return;
             float dx = _poiseState.PounceLandX - home.x;
             float dz = _poiseState.PounceLandZ - home.z;

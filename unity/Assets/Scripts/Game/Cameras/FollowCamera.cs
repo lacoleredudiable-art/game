@@ -36,7 +36,7 @@ namespace Dovus.Game.Cameras
         float _fovKick;
         float _rollDeg;
         float _punchT;
-        float _punchDecay = 6f;
+        float _punchDecay = FollowCameraDefaults.PunchDecay;
         float _resolvedYawDeg;
         float _yawVelocity;
         float _resolvedDistanceM;
@@ -211,14 +211,14 @@ namespace Dovus.Game.Cameras
             _punchDecay = Mathf.Max(0.5f, decay);
             float duration = 2f / _punchDecay;
             // §8 sarsıntıyı PİKSEL veriyor, kamera METRE ile sarsılıyor; dönüşüm spec'te yok (T8.1).
-            float pxToM = _tuning != null ? _tuning.Hud.CameraShakePxToM : 0.01f;
+            float pxToM = _tuning != null ? _tuning.Hud.CameraShakePxToM : FollowCameraDefaults.FallbackShakePxToM;
             AddShake(shakePx * pxToM, duration);
         }
 
         /// <summary>Süren daha güçlü bir sarsıntıyı (ör. skill kick) ezmeden piksel sarsıntı ekler.</summary>
         public void AddShakePxAtLeast(float shakePx, float decay)
         {
-            float pxToM = _tuning != null ? _tuning.Hud.CameraShakePxToM : 0.01f;
+            float pxToM = _tuning != null ? _tuning.Hud.CameraShakePxToM : FollowCameraDefaults.FallbackShakePxToM;
             float amp = shakePx * pxToM;
             float remaining01 = _shakeDurationSec > 0f ? 1f - Mathf.Clamp01(_shakeElapsedSec / _shakeDurationSec) : 0f;
             if (_shakeAmplitude * remaining01 >= amp)
@@ -263,11 +263,11 @@ namespace Dovus.Game.Cameras
                 _resolvedDistanceM,
                 desiredDistance,
                 ref _distanceVelocity,
-                Mathf.Max(0.01f, _tuning.Camera.CameraLockOnDistanceSmoothSec),
+                Mathf.Max(FollowCameraDefaults.MinPositiveSmoothSec, _tuning.Camera.CameraLockOnDistanceSmoothSec),
                 Mathf.Infinity,
                 dt);
 
-            Vector3 playerAim = _target.position + lookAhead * 0.35f
+            Vector3 playerAim = _target.position + lookAhead * FollowCameraDefaults.LookAheadBlend
                 + Vector3.up * _tuning.Camera.CameraLookHeightM;
 
             Vector3 shoulder = _tuning.Camera.CameraShoulderOffset;
@@ -315,7 +315,7 @@ namespace Dovus.Game.Cameras
             transform.rotation = _aimRotation * Quaternion.Euler(0f, 0f, _rollDeg * _punchT);
             if (_cam != null)
             {
-                _baseFov = Mathf.Clamp(_tuning.Camera.CameraFovDeg, 35f, 85f);
+                _baseFov = Mathf.Clamp(_tuning.Camera.CameraFovDeg, FollowCameraDefaults.FovClampMinDeg, FollowCameraDefaults.FovClampMaxDeg);
                 _cam.fieldOfView = _baseFov * (1f - _fovKick * _punchT);
             }
         }
@@ -356,7 +356,7 @@ namespace Dovus.Game.Cameras
                 _windupPullback,
                 target,
                 ref _windupVelocity,
-                Mathf.Max(0.01f, _tuning.Camera.CameraWindupSmoothSec),
+                Mathf.Max(FollowCameraDefaults.MinPositiveSmoothSec, _tuning.Camera.CameraWindupSmoothSec),
                 Mathf.Infinity,
                 dt);
         }
@@ -375,7 +375,7 @@ namespace Dovus.Game.Cameras
                 }
                 else
                 {
-                    float range = Mathf.Max(0.01f, _tuning.Camera.CameraSoftLockRangeM);
+                    float range = Mathf.Max(FollowCameraDefaults.MinPositiveSmoothSec, _tuning.Camera.CameraSoftLockRangeM);
                     if (toBoss.sqrMagnitude <= range * range && toBoss.sqrMagnitude > 0.001f)
                     {
                         float bossYaw = Mathf.Atan2(toBoss.x, toBoss.z) * Mathf.Rad2Deg;
@@ -391,7 +391,7 @@ namespace Dovus.Game.Cameras
                 _resolvedYawDeg,
                 desired,
                 ref _yawVelocity,
-                Mathf.Max(0.01f, _tuning.Camera.FollowSmoothTimeSec),
+                Mathf.Max(FollowCameraDefaults.MinPositiveSmoothSec, _tuning.Camera.FollowSmoothTimeSec),
                 Mathf.Infinity,
                 dt);
         }
@@ -402,8 +402,8 @@ namespace Dovus.Game.Cameras
                 return 0f;
             Vector3 toBoss = _bossTarget.position - _target.position;
             toBoss.y = 0f;
-            float range = Mathf.Max(0.01f, _tuning.Camera.CameraSoftLockRangeM);
-            float distanceWeight = 1f - Mathf.SmoothStep(0.72f, 1f, toBoss.magnitude / range);
+            float range = Mathf.Max(FollowCameraDefaults.MinPositiveSmoothSec, _tuning.Camera.CameraSoftLockRangeM);
+            float distanceWeight = 1f - Mathf.SmoothStep(FollowCameraDefaults.SoftLockDistanceWeightStart, 1f, toBoss.magnitude / range);
             return Mathf.Clamp01(distanceWeight);
         }
 
@@ -411,7 +411,7 @@ namespace Dovus.Game.Cameras
         {
             Vector3 delta = desiredWorld - pivot;
             float targetAlong = delta.magnitude;
-            if (targetAlong < 0.02f)
+            if (targetAlong < FollowCameraDefaults.MinTargetAlongM)
             {
                 _collisionPulledInM = 0f;
                 return desiredWorld;
@@ -419,7 +419,7 @@ namespace Dovus.Game.Cameras
 
             Vector3 dir = delta / targetAlong;
             float blockedAlong = targetAlong;
-            float radius = Mathf.Max(0.05f, _tuning.Camera.CameraCollisionSphereRadiusM);
+            float radius = Mathf.Max(FollowCameraDefaults.MinCollisionSphereRadiusM, _tuning.Camera.CameraCollisionSphereRadiusM);
             int hitCount = Physics.SphereCastNonAlloc(
                 pivot,
                 radius,
@@ -444,7 +444,7 @@ namespace Dovus.Game.Cameras
             float smooth = pullingIn
                 ? _tuning.Camera.CameraCollisionPullInSmoothSec
                 : _tuning.Camera.CameraCollisionPullOutSmoothSec;
-            if (_smoothedAlongDistM <= 0.01f)
+            if (_smoothedAlongDistM <= FollowCameraDefaults.MinSmoothedAlongDistM)
                 _smoothedAlongDistM = targetAlong;
             _smoothedAlongDistM = Mathf.SmoothDamp(
                 _smoothedAlongDistM,
@@ -483,7 +483,7 @@ namespace Dovus.Game.Cameras
             float scorePos = ScoreShoulderSide(+1f, playerAim);
             float scoreNeg = ScoreShoulderSide(-1f, playerAim);
             float pick = scorePos >= scoreNeg ? 1f : -1f;
-            if (Mathf.Abs(pick - _lockOnShoulderSign) > 0.01f)
+            if (Mathf.Abs(pick - _lockOnShoulderSign) > FollowCameraDefaults.ShoulderSignEpsilon)
             {
                 float lead = pick > 0f ? scorePos - scoreNeg : scoreNeg - scorePos;
                 if (lead < _tuning.Camera.CameraLockOnShoulderFlipHysteresis)
@@ -503,17 +503,17 @@ namespace Dovus.Game.Cameras
             Vector3 lookTarget = Vector3.Lerp(playerAim, _bossTarget.position + Vector3.up * _tuning.Camera.CameraBossAimHeightM,
                 _tuning.Camera.CameraLockOnLookBlendToBoss);
             Quaternion rot = Quaternion.LookRotation(lookTarget - camPos, Vector3.up);
-            Vector3 playerVp = WorldToViewport(rot, camPos, _target.position + Vector3.up * 0.9f);
+            Vector3 playerVp = WorldToViewport(rot, camPos, _target.position + Vector3.up * FollowCameraDefaults.PlayerViewportHeightM);
             // Oyuncu sol üçte birde (+), boss üst yarıda — skor.
-            float playerSide = playerVp.x < 0.42f ? 1f : playerVp.x > 0.58f ? 0.35f : 0.7f;
-            float playerLow = playerVp.y < 0.55f ? 1f : 0.5f;
+            float playerSide = playerVp.x < FollowCameraDefaults.PlayerSideViewportLeft ? 1f : playerVp.x > FollowCameraDefaults.PlayerSideViewportRight ? FollowCameraDefaults.PlayerSideWeightEdge : FollowCameraDefaults.PlayerSideWeightCenter;
+            float playerLow = playerVp.y < FollowCameraDefaults.PlayerLowViewportThreshold ? 1f : 0.5f;
             return playerSide * playerLow;
         }
 
         static Vector3 WorldToViewport(Quaternion camRot, Vector3 camPos, Vector3 world)
         {
             Vector3 local = Quaternion.Inverse(camRot) * (world - camPos);
-            if (local.z <= 0.05f)
+            if (local.z <= FollowCameraDefaults.MinLocalDepthM)
                 return new Vector3(0.5f, 0.5f, -1f);
             float fov = 60f;
             float tan = Mathf.Tan(fov * 0.5f * Mathf.Deg2Rad);
@@ -526,8 +526,8 @@ namespace Dovus.Game.Cameras
         {
             if (_cam == null || _bossTarget == null)
                 return;
-            Rect player = ProjectActorRect(_target, 0.9f, 0.45f);
-            Rect boss = ProjectActorRect(_bossTarget, _tuning.Camera.CameraBossAimHeightM, 1.2f);
+            Rect player = ProjectActorRect(_target, FollowCameraDefaults.ActorRectHeightM, FollowCameraDefaults.ActorRectHalfWidthM);
+            Rect boss = ProjectActorRect(_bossTarget, _tuning.Camera.CameraBossAimHeightM, FollowCameraDefaults.BossRectHalfWidthM);
             float playerArea = player.width * player.height;
             if (playerArea < 1e-5f)
             {
@@ -544,8 +544,8 @@ namespace Dovus.Game.Cameras
             Vector3 c = actor.position + Vector3.up * centerUpM;
             Vector3 top = c + Vector3.up * halfHeightM;
             Vector3 bottom = c - Vector3.up * halfHeightM;
-            Vector3 left = c - transform.right * 0.35f;
-            Vector3 right = c + transform.right * 0.35f;
+            Vector3 left = c - transform.right * FollowCameraDefaults.DebugOffsetM;
+            Vector3 right = c + transform.right * FollowCameraDefaults.DebugOffsetM;
             Vector3[] pts =
             {
                 _cam.WorldToViewportPoint(top),
@@ -602,10 +602,10 @@ namespace Dovus.Game.Cameras
             _shakeElapsedSec += Time.unscaledDeltaTime;
             float t = Mathf.Clamp01(_shakeElapsedSec / _shakeDurationSec);
             float falloff = 1f - t;
-            float angle = _shakeElapsedSec * 42f;
+            float angle = _shakeElapsedSec * FollowCameraDefaults.ShakeAngleRateHz;
             _shakeOffset = new Vector3(
                 Mathf.Sin(angle) * _shakeAmplitude * falloff,
-                Mathf.Cos(angle * 1.3f) * _shakeAmplitude * 0.35f * falloff,
+                Mathf.Cos(angle * FollowCameraDefaults.ShakeCosHarmonicMult) * _shakeAmplitude * FollowCameraDefaults.ShakeAmplitudeFalloffMult * falloff,
                 0f);
 
             if (_shakeElapsedSec >= _shakeDurationSec)

@@ -30,7 +30,7 @@ namespace Dovus.Game.Boss
         float _air;
         ActorGrounding _grounding;
         bool _captured;
-        int _knockupIntegrateHoldMs = 140;
+        int _knockupIntegrateHoldMs = BossReactorDefaults.KnockupIntegrateHoldMs;
         double _knockupIntegrateHoldUntilMs;
 
         bool _pulling;
@@ -176,7 +176,7 @@ namespace Dovus.Game.Boss
             _pullTo = ClampToArena(desired);
             _pullAge = 0f;
             _pullDur = DisplacementEase.DurationSec;
-            _pulling = Horizontal(_pullFrom, _pullTo) > 0.02f;
+            _pulling = Horizontal(_pullFrom, _pullTo) > BossReactorDefaults.PullMoveEpsilonM;
             if (!_pulling)
                 Home = _pullTo;
         }
@@ -243,7 +243,7 @@ namespace Dovus.Game.Boss
             _shakeAmp = 0f;
             _shakeUntil = 0f;
             _visualOffset = Vector3.zero;
-            _collapseUntilWorldMs = (float)(worldTimeMs + Mathf.Max(0.05f, durationSec) * 1000.0);
+            _collapseUntilWorldMs = (float)(worldTimeMs + Mathf.Max(BossReactorDefaults.MinCollapseDurationSec, durationSec) * BossTimeDefaults.SecToMs);
             ApplyCollapseScale(1f);
         }
 
@@ -270,7 +270,7 @@ namespace Dovus.Game.Boss
             if (_collapsed)
             {
                 float remain = Mathf.Max(0f, _collapseUntilWorldMs - now);
-                float total = Mathf.Max(0.05f, Tuning.Boss.BossDeathCollapseSec) * 1000f;
+                float total = Mathf.Max(BossReactorDefaults.MinCollapseDurationSec, Tuning.Boss.BossDeathCollapseSec) * 1000f;
                 float u = 1f - Mathf.Clamp01(remain / total);
                 ApplyCollapseScale(u);
                 Vector3 flat = _home;
@@ -285,9 +285,9 @@ namespace Dovus.Game.Boss
             {
                 float t = (_shakeUntil - now) / 1000f;
                 shake = new Vector3(
-                    (Mathf.PerlinNoise(now * 0.05f, 0.1f) - 0.5f) * 2f,
+                    (Mathf.PerlinNoise(now * BossReactorDefaults.DeathShakeNoiseTimeScale, BossReactorDefaults.DeathShakeNoiseOffsetY) - 0.5f) * 2f,
                     0f,
-                    (Mathf.PerlinNoise(0.3f, now * 0.05f) - 0.5f) * 2f) * (_shakeAmp * t);
+                    (Mathf.PerlinNoise(BossReactorDefaults.DeathShakeNoiseOffsetX, now * BossReactorDefaults.DeathShakeNoiseTimeScale) - 0.5f) * 2f) * (_shakeAmp * t);
             }
             else
             {
@@ -356,7 +356,7 @@ namespace Dovus.Game.Boss
             }
 
             _pullAge += Mathf.Max(0f, dtSec);
-            float u = _pullDur <= 0.01f ? 1f : Mathf.Clamp01(_pullAge / _pullDur);
+            float u = _pullDur <= BossReactorDefaults.MinPullDurationSec ? 1f : Mathf.Clamp01(_pullAge / _pullDur);
             DisplacementEase.Sample(_pullFrom.x, _pullFrom.z, _pullTo.x, _pullTo.z, u, out float xEase, out float zEase);
             _home = ClampToArena(new Vector3(xEase, _home.y, zEase));
             if (u >= 1f)

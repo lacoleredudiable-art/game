@@ -82,7 +82,7 @@ namespace Dovus.Game.Boss
             _set = new WebFieldSet(
                 b.WebFieldMaxCount,
                 b.WebFieldRadiusM,
-                b.WebFieldLifeSec * 1000.0,
+                b.WebFieldLifeSec * BossTimeDefaults.SecToMs,
                 b.WebFieldMinCenterDistM);
         }
 
@@ -93,7 +93,7 @@ namespace Dovus.Game.Boss
             Vector3 t = _boss.LastWebFieldTarget;
             double now = _clock.Director.WorldTimeMs;
             _set.Add(t.x, t.z, now);
-            SpawnDisc(t.x, t.z, now + _combat.Boss.WebFieldLifeSec * 1000.0);
+            SpawnDisc(t.x, t.z, now + _combat.Boss.WebFieldLifeSec * BossTimeDefaults.SecToMs);
         }
 
         void Update()
@@ -111,7 +111,7 @@ namespace Dovus.Game.Boss
             _set.Prune(now);
             PruneVisuals(now);
 
-            double refreshMs = _combat.Boss.WebFieldRefreshSec * 1000.0;
+            double refreshMs = _combat.Boss.WebFieldRefreshSec * BossTimeDefaults.SecToMs;
             if (refreshMs <= 0f || now < _nextRefreshMs)
                 return;
             _nextRefreshMs = now + refreshMs;
@@ -246,7 +246,7 @@ namespace Dovus.Game.Boss
             for (int x = 0; x < size; x++)
             {
                 float d = Mathf.Sqrt((x - half) * (x - half) + (y - half) * (y - half)) / half;
-                float a = d <= 0.7f ? 0.35f : Mathf.Lerp(0.35f, 0.85f, Mathf.Clamp01((d - 0.7f) / 0.3f));
+                float a = d <= WebFieldViewDefaults.DiscAlphaDistanceInner ? WebFieldViewDefaults.DiscAlphaFloor : Mathf.Lerp(WebFieldViewDefaults.DiscAlphaFloor, WebFieldViewDefaults.DiscAlphaCeiling, Mathf.Clamp01((d - WebFieldViewDefaults.DiscAlphaDistanceInner) / WebFieldViewDefaults.DiscAlphaMidSpan));
                 if (d > 1f)
                     a = 0f;
                 _glowTex.SetPixel(x, y, new Color(1f, 1f, 1f, a));

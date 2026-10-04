@@ -72,9 +72,9 @@ namespace Dovus.Game.Actors
         }
 
         public Vector3 Velocity { get; private set; }
-        public float LocoRefMps => _tuning != null ? _tuning.Player.WalkSpeedMps : 6.4f;
-        public float LocoDampSec => _tuning != null ? _tuning.Player.AnimSpeedDampSec : 0.08f;
-        public float LocoMaxPlayback => _tuning != null ? _tuning.Player.LocoMaxPlaybackMult : 1.5f;
+        public float LocoRefMps => _tuning != null ? _tuning.Player.WalkSpeedMps : KinematicMotorDefaults.FallbackWalkSpeedMps;
+        public float LocoDampSec => _tuning != null ? _tuning.Player.AnimSpeedDampSec : KinematicMotorDefaults.FallbackAnimSpeedDampSec;
+        public float LocoMaxPlayback => _tuning != null ? _tuning.Player.LocoMaxPlaybackMult : KinematicMotorDefaults.FallbackLocoMaxPlaybackMult;
 
         void Awake()
         {
@@ -149,7 +149,7 @@ namespace Dovus.Game.Actors
             float speedMult = _status != null ? _status.EffectiveMoveSpeedMult : 1f;
             if (_playerStates != null && _playerStates.MoveLimited && _status != null)
                 speedMult *= _status.Tuning.SlowSpeedMult;
-            float dtSec = _clock != null ? (float)(_clock.WorldDeltaMs / 1000.0) : Time.deltaTime;
+            float dtSec = _clock != null ? (float)(_clock.WorldDeltaMs / ActorsTimeDefaults.SecToMs) : Time.deltaTime;
 
             float stickT = Mathf.InverseLerp(_tuning.Input.JoystickDeadZone, 1f, stick);
             float speedFrac = stick > 0.0001f ? Mathf.Lerp(_tuning.Player.MinStickSpeedFrac, 1f, stickT) : 0f;
@@ -202,9 +202,9 @@ namespace Dovus.Game.Actors
                 return from;
 
             Vector3 dir = delta / dist;
-            float radius = Mathf.Max(0.05f, _bodyRadiusM * 0.92f);
-            Vector3 p1 = from + Vector3.up * (radius + 0.05f);
-            Vector3 p2 = from + Vector3.up * 1.6f;
+            float radius = Mathf.Max(KinematicMotorDefaults.CapsuleRadiusFloorM, _bodyRadiusM * KinematicMotorDefaults.CapsuleRadiusBodyScale);
+            Vector3 p1 = from + Vector3.up * (radius + KinematicMotorDefaults.CapsuleProbeLiftM);
+            Vector3 p2 = from + Vector3.up * KinematicMotorDefaults.CapsuleTopLiftM;
             int hits = Physics.CapsuleCastNonAlloc(
                 p1, p2, radius, dir, CastHits, dist, ~0, QueryTriggerInteraction.Ignore);
             if (hits <= 0)
@@ -224,7 +224,7 @@ namespace Dovus.Game.Actors
                 }
             }
 
-            Vector3 stop = from + dir * Mathf.Max(0f, best - 0.02f);
+            Vector3 stop = from + dir * Mathf.Max(0f, best - KinematicMotorDefaults.MoveStopInsetM);
             bestNormal.y = 0f;
             if (bestNormal.sqrMagnitude < 0.0001f)
                 return stop;
@@ -240,7 +240,7 @@ namespace Dovus.Game.Actors
 
         Vector3 PushOutOfObstacles(Vector3 pos)
         {
-            Vector3 probe = pos + Vector3.up * 0.9f;
+            Vector3 probe = pos + Vector3.up * KinematicMotorDefaults.GroundProbeLiftM;
             // Tetik (dost vuruş kapsülü, skill alanı) duvar değildir. 11-8 dostu
             // yanına çağırınca bu itiş oyuncuya ikinci bir kayma yazıyordu.
             int count = Physics.OverlapSphereNonAlloc(
@@ -272,9 +272,9 @@ namespace Dovus.Game.Actors
                 }
 
                 if (dist < _bodyRadiusM)
-                    pos += away * (_bodyRadiusM - dist + 0.02f);
+                    pos += away * (_bodyRadiusM - dist + KinematicMotorDefaults.SeparationInsetM);
 
-                probe = pos + Vector3.up * 0.9f;
+                probe = pos + Vector3.up * KinematicMotorDefaults.GroundProbeLiftM;
             }
 
             return pos;
