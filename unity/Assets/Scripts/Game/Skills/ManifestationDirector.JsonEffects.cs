@@ -31,12 +31,6 @@ namespace Dovus.Game.Skills
             _jsonEffects.NoteJsonCast(skill, closing);
         }
 
-        void TickJsonEffects(double worldMs)
-        {
-          EnsureMechanicsServices();
-            _jsonEffects.Tick(worldMs);
-        }
-
         void ApplyJsonSelfCast(MechanicPlan plan, float reflectRatio, float windowSec, double now)
         {
           EnsureMechanicsServices();
@@ -83,12 +77,6 @@ namespace Dovus.Game.Skills
         {
           EnsureMechanicsServices();
             _jsonEffects.LiftBoss(applied);
-        }
-
-        void ApplyMirroredDebuff(MechanicPlan plan)
-        {
-          EnsureMechanicsServices();
-            _jsonEffects.ApplyMirroredDebuff(plan);
         }
 
         internal void ApplyPurgePower(in SkillResolution skill, int removed)

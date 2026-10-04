@@ -257,11 +257,5 @@ namespace Dovus.Game.Skills
           EnsureWeaponServices();
             _cannonBlast.CutTemplateForSwap(instant);
         }
-
-        void PushCannonBodies(float impactX, float impactZ, float splash, float arena, float bossR)
-        {
-          EnsureWeaponServices();
-            _cannonBlast.PushCannonBodies(impactX, impactZ, splash, arena, bossR);
-        }
     }
 }

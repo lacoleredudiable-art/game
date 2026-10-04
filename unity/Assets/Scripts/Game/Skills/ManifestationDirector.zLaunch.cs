@@ -124,24 +124,6 @@ namespace Dovus.Game.Skills
             _castSideEffects.ApplyCooldown(skill, words, cosmeticIfDisabled);
         }
 
-        SkillMotionPlan ResolveSkillMotion(SkillResolution skill)
-        {
-          EnsureLaunchServices();
-            return _castSideEffects.ResolveSkillMotion(skill);
-        }
-
-        void ApplySkillMotionIframe(in SkillResolution skill, in SkillMotionPlan plan)
-        {
-          EnsureLaunchServices();
-            _castSideEffects.ApplySkillMotionIframe(skill, plan);
-        }
-
-        void AnnotateMotion(SkillResolution skill, in SkillMotionPlan plan)
-        {
-          EnsureLaunchServices();
-            _castSideEffects.AnnotateMotion(skill, plan);
-        }
-
         void ShoutSkill(SkillResolution skill, IReadOnlyList<SentenceWord> words)
         {
           EnsureLaunchServices();
