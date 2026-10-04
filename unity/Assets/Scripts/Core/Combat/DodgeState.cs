@@ -42,7 +42,9 @@ namespace Dovus.Core.Combat
             if (_pressTimeMs < 0 || _combined)
                 return;
 
-            _ratioAtPromote = GetDisplacementRatio(worldTimeMs);
+            // Review fix: ratio is relative to the multiplied distance after promotion, so scale it
+            // down by the distance multiplier to keep the displacement continuous (no jump).
+            _ratioAtPromote = GetDisplacementRatio(worldTimeMs) / CombinedDistanceScale;
             _promotedAtMs = worldTimeMs;
             _combined = true;
         }
@@ -56,6 +58,8 @@ namespace Dovus.Core.Combat
         }
 
         public float DistanceMultiplier => _combined ? _tuning.CombinedDistanceMult : 1f;
+
+        float CombinedDistanceScale => Math.Max(0.001f, _tuning.CombinedDistanceMult);
 
         public int MoveDurationMs =>
             _combined
@@ -129,7 +133,7 @@ namespace Dovus.Core.Combat
                     if (preDur <= 0)
                         return 1f;
                     float uPre = moveElapsed / (float)preDur;
-                    return EvaluateCurve(uPre);
+                    return EvaluateCurve(uPre) / CombinedDistanceScale;
                 }
 
                 int remainDur = durationMs - promoteElapsed;

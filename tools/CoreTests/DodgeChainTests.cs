@@ -55,6 +55,22 @@ public class DodgeChainTests
     }
 
     [Test]
+    public void Promote_KeepsDisplacementContinuous()
+    {
+        var tuning = Tuning();
+        tuning.CombinedDistanceMult = 1.6f;
+        tuning.CombinedDurationMult = 1.4f;
+        var dodge = new DodgeState(tuning);
+        dodge.Begin(1000);
+        float before = dodge.GetDisplacementRatio(1100) * dodge.DistanceMultiplier;
+        dodge.PromoteToCombined(1100);
+        float after = dodge.GetDisplacementRatio(1100) * dodge.DistanceMultiplier;
+        Assert.That(after, Is.EqualTo(before).Within(1e-4f));
+        float end = dodge.GetDisplacementRatio(1000 + tuning.StartupMs + dodge.MoveDurationMs) * dodge.DistanceMultiplier;
+        Assert.That(end, Is.EqualTo(1.6f).Within(1e-4f));
+    }
+
+    [Test]
     public void DoubleTapOutsideWindow_TwoSeparateDodges()
     {
         var tuning = Tuning();
