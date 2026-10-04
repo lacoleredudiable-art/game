@@ -13,12 +13,15 @@ namespace Dovus.Core.Grammar
         }
 
         public Kind Value { get; }
-        public string Raw { get; }
+        readonly string _raw;
+
+        /// <summary>Ham JSON değeri; <c>default</c> örnekte boş string (eski <c>?? string.Empty</c> davranışı).</summary>
+        public string Raw => _raw ?? string.Empty;
 
         LengthMobilityWire(Kind value, string raw)
         {
             Value = value;
-            Raw = raw ?? string.Empty;
+            _raw = raw ?? string.Empty;
         }
 
         public static LengthMobilityWire Parse(string? wire) =>
