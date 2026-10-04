@@ -77,7 +77,7 @@ namespace Dovus.Core.Team
         readonly List<Mark> _marks = new();
         readonly List<Link> _links = new();
         readonly List<Turret> _turrets = new();
-        readonly IReadOnlyDictionary<string, TeamOp> _ops;
+        IReadOnlyDictionary<string, TeamOp> _ops;
         Ball _ball;
         Hang _hang;
         float _now;
@@ -180,6 +180,9 @@ namespace Dovus.Core.Team
         {
             _ops = ops ?? TeamOpTable.Legacy;
         }
+
+        /// <summary>Op tablosunu sonradan bağla (Unity MonoBehaviour ctor'unda Resources yüklenemez; host Awake'te çağırır).</summary>
+        public void UseOps(IReadOnlyDictionary<string, TeamOp> ops) => _ops = ops ?? TeamOpTable.Legacy;
 
         public TeamPulse Cast(string skillId, IAllyPlayer caster, IAllyPlayer target, IReadOnlyList<IAllyPlayer> allies, in Disc boss)
         {

@@ -169,7 +169,7 @@ namespace Dovus.Core.Portal
         readonly List<Gather> _gathers = new();
         readonly HashSet<long> _inside = new();
         readonly List<DoorView> _views = new();
-        readonly IReadOnlyDictionary<string, PortalOp> _ops;
+        IReadOnlyDictionary<string, PortalOp> _ops;
 
         Anchor _anchor;
         int _seq = 1;
@@ -200,6 +200,9 @@ namespace Dovus.Core.Portal
         {
             _ops = ops ?? PortalOpTable.Legacy;
         }
+
+        /// <summary>Op tablosunu sonradan bağla (Unity MonoBehaviour ctor'unda Resources yüklenemez; host Awake'te çağırır).</summary>
+        public void UseOps(IReadOnlyDictionary<string, PortalOp> ops) => _ops = ops ?? PortalOpTable.Legacy;
 
         public IReadOnlyList<DoorView> Doors
         {

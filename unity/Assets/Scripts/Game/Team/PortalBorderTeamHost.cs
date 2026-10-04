@@ -25,8 +25,8 @@ namespace Dovus.Game.Team
         public static PortalBorderTeamHost Instance { get; private set; }
 
         readonly BorderMode _border = new();
-        readonly PortalSystem _portal;
-        readonly TeamComboSystem _team;
+        readonly PortalSystem _portal = new();
+        readonly TeamComboSystem _team = new();
         readonly List<TeamActor> _actors = new();
         readonly List<Body> _bodies = new();
         readonly List<IAllyPlayer> _allies = new();
@@ -51,17 +51,14 @@ namespace Dovus.Game.Team
         public TeamComboSystem Team => _team;
         public int Spawned => _spawned.Count;
 
-        public PortalBorderTeamHost()
+        // MonoBehaviour ctor'unda Resources.Load yasak (UnityException) → op tabloları Awake'te JSON'dan bağlanır.
+        // JSON yoksa gömülü Legacy tablo kalır (içerik aynı; SkillMechanicTagTests denetler).
+        void Awake()
         {
             if (ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
             {
-                _portal = new PortalSystem(PortalOpTable.FromMotor(design.SkillMotor));
-                _team = new TeamComboSystem(TeamOpTable.FromMotor(design.SkillMotor));
-            }
-            else
-            {
-                _portal = new PortalSystem();
-                _team = new TeamComboSystem();
+                _portal.UseOps(PortalOpTable.FromMotor(design.SkillMotor));
+                _team.UseOps(TeamOpTable.FromMotor(design.SkillMotor));
             }
         }
 
