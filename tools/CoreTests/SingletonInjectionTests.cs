@@ -38,7 +38,7 @@ public class SingletonInjectionTests
         {
             string rel = Path.GetRelativePath(
                 Path.Combine(Root(), "unity", "Assets", "Scripts", "Game"), path);
-            if (string.Equals(rel, "Composition/AssetCatalog.cs", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(rel.Replace('\\', '/'), "Composition/AssetCatalog.cs", StringComparison.OrdinalIgnoreCase))
                 continue;
             // İzinli istisna: host yaşam döngüsü AfterSceneLoad Boot + DontDestroyOnLoad (davranış korunur, 2B.8b inceleme).
             bool teamHost = rel.Replace('\\', '/') == "Team/TeamComboHost.cs";
