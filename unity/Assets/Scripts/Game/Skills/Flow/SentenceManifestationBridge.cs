@@ -13,6 +13,7 @@ using Dovus.Core.Manifestation;
 using Dovus.Core.Motion;
 using Dovus.Game.Casting;
 using Dovus.Game.Skills;
+using Dovus.App.Team;
 using Dovus.Game.Team;
 using System;
 using System.Collections.Generic;
@@ -129,7 +130,8 @@ namespace Dovus.Game.Skills.Flow
                 pendingTarget = _host.Aim.ArmedTarget;
                 _host.FaceTarget(_host.Aim.CastFacingTarget);
             }
-            float atkSpd = PortalBorderTeamHost.Hub.AttackSpeedMult;
+            TeamModifierHub teamHub = _host.TeamAccess != null ? _host.TeamAccess.Hub : TeamModifierHub.Neutral;
+            float atkSpd = teamHub.AttackSpeedMult;
             if (atkSpd > 0f)
                 castMult /= atkSpd;
             recoverySec *= castMult;

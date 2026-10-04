@@ -130,7 +130,7 @@ namespace Dovus.Game.Skills
                         applied.Add($"işaret → {e.DurationSec:0.#}sn sonra dönüş");
                         break;
                     case ("konum", "portal"):
-                        if ((PortalBorderTeamHost.Instance?.Portal ?? MechanicGrammarLegacyPortal).IsPortalSkill(plan.SkillId))
+                        if (TeamPortal.IsPortalSkill(plan.SkillId))
                         {
                             applied.Add("portal sistemi");
                             break;

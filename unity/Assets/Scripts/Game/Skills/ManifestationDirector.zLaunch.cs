@@ -14,6 +14,7 @@ using Dovus.Core.Presentation;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using Dovus.Game.Actors;
+using Dovus.Game.Audio;
 using Dovus.Game.Boss;
 using Dovus.Game.Cameras;
 using Dovus.Game.Casting;
@@ -212,6 +213,7 @@ namespace Dovus.Game.Skills
             public AnimationBridge AnimationBridge => _md._animationBridge;
             public AnimationDatabase AnimationDatabase => _md._animationDatabase;
             public FollowCamera Camera => _md._camera;
+            public SfxDirector Sfx => _md._sfx;
             public HashSet<string> MissingAnimationBindings => _md._missingAnimationBindings;
             public string LastAnimationTypeId
             {

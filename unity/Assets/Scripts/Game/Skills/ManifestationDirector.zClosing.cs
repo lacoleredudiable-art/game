@@ -18,6 +18,7 @@ using Dovus.Game.Data;
 using Dovus.Game.DevTools;
 using Dovus.Game.Hud;
 using Dovus.Game.Skills.Closing;
+using Dovus.Game.Team;
 using Dovus.Game.Vfx;
 using System.Collections.Generic;
 using UnityEngine;
@@ -65,6 +66,7 @@ namespace Dovus.Game.Skills
             }
             public int SlotQueryCastId => _md._slotQueryCastId;
             public GameClock Clock => _md._clock;
+            public PortalBorderTeamAccess TeamAccess => _md._team;
             public MechanicGrammar MechanicEngine => _md.MechanicEngine;
             public BossVitals BossVitals => _md._bossVitals;
             Transform IClosingStatusHost.Boss =>

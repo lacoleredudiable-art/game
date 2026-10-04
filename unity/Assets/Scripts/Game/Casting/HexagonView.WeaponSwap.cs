@@ -32,7 +32,7 @@ namespace Dovus.Game.Casting
         void BuildWeaponSwapButton(Sprite disc, Transform parent)
         {
             _swap = CreateLayeredDisc(
-                "WeaponSwapButton", disc, disc, HudTheme.Current.PanelColor, parent,
+                "WeaponSwapButton", disc, disc, _theme.PanelColor, parent,
                 out _swapFace, new Color(0.95f, 0.8f, 0.45f, 0.88f));
 
             var reserveGo = new GameObject("ReserveWeaponIcon");
@@ -41,8 +41,8 @@ namespace Dovus.Game.Casting
             reserveRt.anchorMin = reserveRt.anchorMax = new Vector2(0.14f, 0.12f);
             reserveRt.pivot = new Vector2(0.5f, 0.5f);
             reserveRt.sizeDelta = new Vector2(
-                HexagonLayoutScreen.DpToPixels(HudTheme.Current.WeaponReserveIconDp),
-                HexagonLayoutScreen.DpToPixels(HudTheme.Current.WeaponReserveIconDp));
+                HexagonLayoutScreen.DpToPixels(_theme.WeaponReserveIconDp),
+                HexagonLayoutScreen.DpToPixels(_theme.WeaponReserveIconDp));
             _swapReserveIcon = reserveGo.AddComponent<Image>();
             _swapReserveIcon.preserveAspect = true;
             _swapReserveIcon.raycastTarget = false;
@@ -60,7 +60,7 @@ namespace Dovus.Game.Casting
             _swapFill.fillMethod = Image.FillMethod.Radial360;
             _swapFill.fillOrigin = (int)Image.Origin360.Top;
             _swapFill.fillClockwise = false;
-            _swapFill.color = HudTheme.Current.CooldownOverlayColor;
+            _swapFill.color = _theme.CooldownOverlayColor;
             _swapFill.raycastTarget = false;
             _swapFill.fillAmount = 0f;
 
@@ -74,16 +74,16 @@ namespace Dovus.Game.Casting
             outline.effectDistance = new Vector2(1f, -1f);
 
             _swapReserve = CreateLabel(_swap, string.Empty);
-            _swapReserve.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(HudTheme.Current.ControlCaptionDp));
-            _swapReserve.color = HudTheme.Current.ControlCaptionColor;
+            _swapReserve.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(_theme.ControlCaptionDp));
+            _swapReserve.color = _theme.ControlCaptionColor;
             _swapReserve.alignment = TextAnchor.UpperCenter;
             _swapReserve.rectTransform.anchorMin = new Vector2(0f, 0f);
             _swapReserve.rectTransform.anchorMax = new Vector2(1f, 0f);
             _swapReserve.rectTransform.pivot = new Vector2(0.5f, 1f);
             _swapReserve.rectTransform.anchoredPosition = new Vector2(
-                0f, -HexagonLayoutScreen.DpToPixels(HudTheme.Current.WeaponCaptionGapDp));
+                0f, -HexagonLayoutScreen.DpToPixels(_theme.WeaponCaptionGapDp));
             _swapReserve.rectTransform.sizeDelta = new Vector2(
-                0f, HexagonLayoutScreen.DpToPixels(HudTheme.Current.WeaponCaptionHeightDp));
+                0f, HexagonLayoutScreen.DpToPixels(_theme.WeaponCaptionHeightDp));
 
             _swap.SetAsLastSibling();
         }
@@ -117,25 +117,25 @@ namespace Dovus.Game.Casting
             Sprite activeIcon = WeaponIconCatalog.Get(swap.Active);
             Sprite reserveIcon = WeaponIconCatalog.Get(swap.Reserve);
             _swapFace.sprite = activeIcon != null ? activeIcon : CreateCircleSprite();
-            _swapFace.color = activeIcon != null ? HudTheme.Current.RuneFaceTint : HudTheme.Current.PanelColor;
+            _swapFace.color = activeIcon != null ? _theme.RuneFaceTint : _theme.PanelColor;
             _swapActive.text = activeIcon != null ? string.Empty : ShortName(swap.Active?.Name);
             _swapReserve.text = "SWAP  ·  " + ShortName(swap.Reserve?.Name);
             _swapReserveIcon.sprite = reserveIcon;
             _swapReserveIcon.enabled = reserveIcon != null;
             _swapFill.fillAmount = swap.Cooldown01(worldMs);
             if (activeIcon != null && swap.IsSwapping)
-                _swapFace.color = HudTheme.Current.WeaponSwapAccentColor;
+                _swapFace.color = _theme.WeaponSwapAccentColor;
 
             if (_centerFace != null)
             {
                 _centerFace.sprite = activeIcon != null ? activeIcon : CreateCircleSprite();
-                _centerFace.color = activeIcon != null ? HudTheme.Current.RuneFaceTint : _tuning.Visuals.HexagonCenterColor;
+                _centerFace.color = activeIcon != null ? _theme.RuneFaceTint : _tuning.Visuals.HexagonCenterColor;
             }
             if (_centerLabel != null)
                 _centerLabel.enabled = activeIcon == null;
 
             if (swap.IsSwapping && !_wasSwapping)
-                UiJuice.PunchScale(_swap, HudTheme.Current.ReadyPopScale, HudTheme.Current.JuiceSec);
+                UiJuice.PunchScale(_swap, _theme.ReadyPopScale, _theme.JuiceSec);
             _wasSwapping = swap.IsSwapping;
         }
 

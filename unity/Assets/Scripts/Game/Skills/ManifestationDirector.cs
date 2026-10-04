@@ -13,6 +13,7 @@ using Dovus.Core.Grammar;
 using Dovus.Core.Manifestation;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Motion;
+using Dovus.Core.Portal;
 using Dovus.Core.Presentation;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
@@ -74,6 +75,15 @@ namespace Dovus.Game.Skills
         ReactionReadout _readout;
         FollowCamera _camera;
         PlayerTargeting _targeting;
+        PortalBorderTeamAccess _team;
+        SfxDirector _sfx;
+        static readonly PortalSystem TeamPortalFallback = new();
+
+        public void BindTeam(PortalBorderTeamAccess team) => _team = team;
+        public void BindSfx(SfxDirector sfx) => _sfx = sfx;
+
+        internal TeamModifierHub TeamHub => _team != null ? _team.Hub : TeamModifierHub.Neutral;
+        internal PortalSystem TeamPortal => _team != null ? _team.Portal : TeamPortalFallback;
 
         readonly List<PendingClosing> _pending = new();
 

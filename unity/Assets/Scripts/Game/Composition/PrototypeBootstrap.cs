@@ -13,6 +13,7 @@ using Dovus.Game.Config;
 using Dovus.Game.Data;
 using Dovus.Game.DevTools;
 using Dovus.Game.Feel;
+using Dovus.Game.Team;
 using Dovus.Game.Vfx;
 using UnityEngine;
 
@@ -43,7 +44,6 @@ namespace Dovus.Game.Composition
         {
             _tuning ??= new PrototypeTuning();
             _tuning.EnsureRuntimeDefaults();
-            FeelVfx.Configure(_tuning);
             HexagonLayoutScreen.FitShortSideDp = _tuning.Input.HudFitShortSideDp;
 #if !UNITY_EDITOR
             Debug.developerConsoleVisible = false;
@@ -77,6 +77,10 @@ namespace Dovus.Game.Composition
                 TuningConfig = tuningConfig,
                 Clock = gameObject.AddComponent<GameClock>(),
             };
+            ctx.Assets = AssetCatalog.Standalone;
+            FeelVfx.Configure(_tuning, ctx.Assets.Vfx);
+
+            ctx.TeamAccess = new PortalBorderTeamAccess();
 
             var arenaBuilder = new ArenaBuilder();
             arenaBuilder.BuildArena(ctx);
@@ -96,9 +100,9 @@ namespace Dovus.Game.Composition
             new DebugToolsBuilder().Build(ctx);
         }
 
-        internal int ScaledPlayerHp()
+        internal int ScaledPlayerHp(AssetCatalog assets)
         {
-            if (ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
+            if (assets != null && assets.TryGetElementDesign(out ElementSystemDesign design))
             {
                 float hp = BossCombatProfile.FromDocument(design.Document).PlayerMaxHp;
                 return Mathf.Max(1, Mathf.RoundToInt(hp));
@@ -106,9 +110,9 @@ namespace Dovus.Game.Composition
             return Mathf.Max(1, CombatScale.MagnitudeInt(_tuning.Player.PlayerMaxHp));
         }
 
-        internal float ScaledBossHp(float tuningMaxHp)
+        internal float ScaledBossHp(AssetCatalog assets, float tuningMaxHp)
         {
-            if (ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
+            if (assets != null && assets.TryGetElementDesign(out ElementSystemDesign design))
                 return Mathf.Max(1f, BossCombatProfile.FromDocument(design.Document).BossMaxHp);
             return Mathf.Max(1f, CombatScale.Magnitude(tuningMaxHp));
         }

@@ -34,8 +34,11 @@ namespace Dovus.Game.Actors
         float _savedAnimSpeed = 1f;
         bool _animSlowed;
         bool _feelHooked;
+        SfxDirector _sfx;
 
         public NextHitBuff NextHit => _nextHit;
+
+        public void BindSfx(SfxDirector sfx) => _sfx = sfx;
 
         /// <summary>
         /// Skill hareketi / çağırma anı dokunulmazlığı (F1): 3-7 dash 400 ms, ışınlanma 220 ms,
@@ -173,7 +176,7 @@ namespace Dovus.Game.Actors
             _nextHit.Arm(tuning.PerfectNextHitMult, WorldMs(), tuning.PerfectNextHitWindowMs);
             PlayLocalFeel(tuning.PerfectFeelSec);
             // O2: ayrı OnGUI "PERFECT" etiketi kaldırıldı (çift yazı + her kare yeni GUIStyle).
-            SfxDirector.Play(SfxLibrary.PerfectDodge);
+            _sfx?.Play(SfxLibrary.PerfectDodge);
         }
 
         void PlayLocalFeel(float seconds)

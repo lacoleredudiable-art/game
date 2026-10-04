@@ -25,6 +25,7 @@ namespace Dovus.Game.Skills.Flow
     {
         SentenceEngine Engine { get; }
         GameClock Clock { get; }
+        PortalBorderTeamAccess TeamAccess { get; }
         CombatTuning Combat { get; }
         PrototypeTuning Colors { get; }
         SkillMotor Skills { get; }

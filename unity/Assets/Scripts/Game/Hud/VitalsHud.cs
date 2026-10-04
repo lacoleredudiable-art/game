@@ -25,6 +25,9 @@ namespace Dovus.Game.Hud
         BossVitals _bossVitals;
         AllyDummy _ally;
         PrototypeTuning _tuning;
+        HudTheme _theme;
+
+        public void BindTheme(HudTheme theme) => _theme = theme;
 
         RectTransform _playerRoot;
         RectTransform _bossRoot;
@@ -112,8 +115,8 @@ namespace Dovus.Game.Hud
 
             _playerPanel = CreateGlassPanel(_playerRoot, "PlayerGlass");
             _playerIdentity = HudTheme.CreateTmp(
-                _playerPanel, "PlayerIdentity", HudTheme.Current.PlayerIdentityDp,
-                HudTheme.Current.ControlCaptionColor, TextAlignmentOptions.Left);
+                _playerPanel, "PlayerIdentity", _theme.PlayerIdentityDp,
+                _theme.ControlCaptionColor, TextAlignmentOptions.Left);
             _playerIdentity.text = "AVCI  //  OYUNCU";
             _playerFill = CreateBar(_playerPanel, "Player", out _playerBg, out _playerSheen, out _playerJuice);
             _playerLabel = CreateLabel(_playerBg, "PlayerHp");
@@ -123,7 +126,7 @@ namespace Dovus.Game.Hud
             {
                 _allyFill = CreateBar(_playerPanel, "Ally", out _allyBg, out _allySheen);
                 _allyLabel = CreateLabel(_allyBg, "AllyHp");
-                _allyFill.color = HudTheme.Current.AllyHpColor;
+                _allyFill.color = _theme.AllyHpColor;
             }
 
             // —— Boss (üst orta) ——
@@ -180,7 +183,7 @@ namespace Dovus.Game.Hud
                 : "FAZ " + phase + "  <size=70%>" + _bossData.Upper(phaseName) + "</size>";
             _bannerShownAt = Time.unscaledTime;
             _bannerGroup.alpha = 1f;
-            HudTheme th = HudTheme.Current;
+            HudTheme th = _theme;
             UiJuice.PunchScale(_banner.transform, th.BannerPunchScale, th.JuiceSec * 2f);
             UiJuice.Shake(_bossRoot, HexagonLayoutScreen.DpToPixels(th.BossBarShakeDp), th.BossBarShakeSec);
         }
@@ -199,14 +202,14 @@ namespace Dovus.Game.Hud
                 rt.pivot = new Vector2(0.5f, 0.5f);
                 rt.sizeDelta = new Vector2(HexagonLayoutScreen.DpToPixels(2f), 0f);
                 var img = go.AddComponent<Image>();
-                img.color = HudTheme.Current.PhaseNotchColor;
+                img.color = _theme.PhaseNotchColor;
                 img.raycastTarget = false;
             }
         }
 
         void CreateCastBar(RectTransform bossRoot)
         {
-            HudTheme th = HudTheme.Current;
+            HudTheme th = _theme;
             var go = new GameObject("BossCastBar");
             go.transform.SetParent(bossRoot, false);
             _castRoot = go.AddComponent<RectTransform>();
@@ -237,7 +240,7 @@ namespace Dovus.Game.Hud
 
         void CreatePhaseBanner(Transform canvasRoot)
         {
-            HudTheme th = HudTheme.Current;
+            HudTheme th = _theme;
             var go = new GameObject("PhaseBanner");
             go.transform.SetParent(canvasRoot, false);
             if (canvasRoot != null)
@@ -260,7 +263,7 @@ namespace Dovus.Game.Hud
 
         void TickBossExtras()
         {
-            HudTheme th = HudTheme.Current;
+            HudTheme th = _theme;
             if (_bannerGroup != null && _bannerGroup.alpha > 0f)
             {
                 float age = Time.unscaledTime - _bannerShownAt;
@@ -303,7 +306,7 @@ namespace Dovus.Game.Hud
         static Sprite _roundedSprite;
         static Sprite _pillSprite;
 
-        static RectTransform CreateGlassPanel(Transform parent, string name)
+        RectTransform CreateGlassPanel(Transform parent, string name)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
@@ -317,7 +320,7 @@ namespace Dovus.Game.Hud
             var shadowRt = shadowGo.AddComponent<RectTransform>();
             shadowRt.anchorMin = Vector2.zero;
             shadowRt.anchorMax = Vector2.one;
-            float shadowPx = HexagonLayoutScreen.DpToPixels(HudTheme.Current.PanelShadowDp);
+            float shadowPx = HexagonLayoutScreen.DpToPixels(_theme.PanelShadowDp);
             shadowRt.offsetMin = new Vector2(0f, -shadowPx);
             shadowRt.offsetMax = new Vector2(shadowPx, 0f);
             var shadowImg = shadowGo.AddComponent<Image>();
@@ -329,7 +332,7 @@ namespace Dovus.Game.Hud
             var img = go.AddComponent<Image>();
             img.sprite = RoundedRectSprite();
             img.type = Image.Type.Sliced;
-            img.color = HudTheme.Current.PanelSoftColor;
+            img.color = _theme.PanelSoftColor;
             img.raycastTarget = false;
 
             var edgeGo = new GameObject("Edge");
@@ -342,18 +345,18 @@ namespace Dovus.Game.Hud
             var edgeImg = edgeGo.AddComponent<Image>();
             edgeImg.sprite = RoundedRectSprite();
             edgeImg.type = Image.Type.Sliced;
-            edgeImg.color = HudTheme.Current.PanelEdgeColor;
+            edgeImg.color = _theme.PanelEdgeColor;
             edgeImg.raycastTarget = false;
             return rect;
         }
 
-        static Image CreateBar(
+        Image CreateBar(
             Transform parent,
             string name,
             out RectTransform bgRect,
             out Image sheen) => CreateBar(parent, name, out bgRect, out sheen, out _);
 
-        static Image CreateBar(
+        Image CreateBar(
             Transform parent,
             string name,
             out RectTransform bgRect,
@@ -381,7 +384,7 @@ namespace Dovus.Game.Hud
             var fillRect = fillGo.AddComponent<RectTransform>();
             fillRect.anchorMin = Vector2.zero;
             fillRect.anchorMax = Vector2.one;
-            float barInset = HexagonLayoutScreen.DpToPixels(HudTheme.Current.BarInsetDp);
+            float barInset = HexagonLayoutScreen.DpToPixels(_theme.BarInsetDp);
             fillRect.offsetMin = new Vector2(barInset, barInset);
             fillRect.offsetMax = new Vector2(-barInset, -barInset);
             var fillImg = fillGo.AddComponent<Image>();
@@ -410,14 +413,14 @@ namespace Dovus.Game.Hud
             return fillImg;
         }
 
-        static Image CreateBarLayer(Transform bg, string name, Sprite pill, Image.Type type)
+        Image CreateBarLayer(Transform bg, string name, Sprite pill, Image.Type type)
         {
             var go = new GameObject(name);
             go.transform.SetParent(bg, false);
             var rect = go.AddComponent<RectTransform>();
             rect.anchorMin = Vector2.zero;
             rect.anchorMax = Vector2.one;
-            float barInset = HexagonLayoutScreen.DpToPixels(HudTheme.Current.BarInsetDp);
+            float barInset = HexagonLayoutScreen.DpToPixels(_theme.BarInsetDp);
             rect.offsetMin = new Vector2(barInset, barInset);
             rect.offsetMax = new Vector2(-barInset, -barInset);
             var img = go.AddComponent<Image>();
@@ -477,14 +480,14 @@ namespace Dovus.Game.Hud
                 0, SpriteMeshType.FullRect, new Vector4(b, b, b, b));
         }
 
-        static Text CreateLabel(RectTransform parent, string name)
+        Text CreateLabel(RectTransform parent, string name)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
             var rect = go.AddComponent<RectTransform>();
             rect.anchorMin = Vector2.zero;
             rect.anchorMax = Vector2.one;
-            float labelInset = HexagonLayoutScreen.DpToPixels(HudTheme.Current.BarLabelInsetDp);
+            float labelInset = HexagonLayoutScreen.DpToPixels(_theme.BarLabelInsetDp);
             rect.offsetMin = new Vector2(labelInset, 0f);
             rect.offsetMax = new Vector2(-labelInset, 0f);
             var text = go.AddComponent<Text>();
@@ -501,9 +504,9 @@ namespace Dovus.Game.Hud
             return text;
         }
 
-        static TextMeshProUGUI CreateBossName(Transform parent, BossHudData data)
+        TextMeshProUGUI CreateBossName(Transform parent, BossHudData data)
         {
-            HudTheme th = HudTheme.Current;
+            HudTheme th = _theme;
             var text = HudTheme.CreateTmp(parent, "BossName", th.BossNameDp, new Color(0.92f, 0.88f, 0.82f, 0.95f));
             var rect = text.rectTransform;
             rect.anchorMin = new Vector2(0.5f, 1f);
@@ -578,7 +581,7 @@ namespace Dovus.Game.Hud
 
                 PlayerStackBottomCanvasY = -(topInset + margin + panelH);
 
-                HudTheme th = HudTheme.Current;
+                HudTheme th = _theme;
                 float nameH = HexagonLayoutScreen.DpToPixels(th.BossNameDp + 4f);
                 _bossRoot.anchoredPosition = new Vector2(0f, -(topInset + margin * 0.5f));
                 _bossName.rectTransform.anchoredPosition = Vector2.zero;
@@ -611,14 +614,14 @@ namespace Dovus.Game.Hud
             }
 
             // Oyuncu HP: mevcut soft rose tonu
-            Color hpColor = HudTheme.Current.PlayerHpColor;
+            Color hpColor = _theme.PlayerHpColor;
             if (_appliedPlayerColor != hpColor)
             {
                 _appliedPlayerColor = hpColor;
                 _playerFill.color = hpColor;
             }
 
-            Color manaColor = HudTheme.Current.PlayerManaColor;
+            Color manaColor = _theme.PlayerManaColor;
             if (_appliedManaColor != manaColor)
             {
                 _appliedManaColor = manaColor;
@@ -633,7 +636,7 @@ namespace Dovus.Game.Hud
                 return;
 
             ApplyTuningLayout();
-            HudTheme th = HudTheme.Current;
+            HudTheme th = _theme;
 
             if (_vitals != null && _playerFill != null)
             {

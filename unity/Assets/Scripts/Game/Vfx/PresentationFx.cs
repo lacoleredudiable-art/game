@@ -30,14 +30,16 @@ namespace Dovus.Game.Vfx
         FollowCamera _follow;
         CombatTuning _combat;
         Transform _bossTf;
+        SfxDirector _sfx;
 
-        public void Bind(BossDirector boss, DodgeMotion dodge, CombatFeel feel, HexagonInput input, FollowCamera follow = null, CombatTuning combat = null)
+        public void Bind(BossDirector boss, DodgeMotion dodge, CombatFeel feel, HexagonInput input, SfxDirector sfx, FollowCamera follow = null, CombatTuning combat = null)
         {
             Unbind();
             _boss = boss;
             _dodge = dodge;
             _feel = feel;
             _input = input;
+            _sfx = sfx;
             _follow = follow;
             _combat = combat;
             _bossTf = boss != null ? boss.transform : null;
@@ -74,7 +76,7 @@ namespace Dovus.Game.Vfx
                 _input.DotAccepted -= OnDot;
         }
 
-        void OnWindup(BossAttackKind kind) => SfxDirector.Play(SfxLibrary.BossWindup);
+        void OnWindup(BossAttackKind kind) => _sfx?.Play(SfxLibrary.BossWindup);
 
         void OnStruck(BossAttackKind kind)
         {
@@ -86,17 +88,17 @@ namespace Dovus.Game.Vfx
                 fwd.y = 0f;
                 Vector3 mouth = _boss.AttackOrigin + fwd.normalized * 0.6f + Vector3.up * 1.4f;
                 FeelVfx.FireCone(mouth, fwd, _boss.AttackArcHalfAngleDeg, _boss.AttackRadiusM);
-                SfxDirector.Play(SfxLibrary.BossFire);
+                _sfx?.Play(SfxLibrary.BossFire);
             }
             else if (kind == BossAttackKind.Volley)
             {
                 // Mermiler kendi görünür; şok dalgası çizilmez.
-                SfxDirector.Play(SfxLibrary.BossFire);
+                _sfx?.Play(SfxLibrary.BossFire);
             }
             else
             {
                 FeelVfx.SlamImpact(_boss.AttackOrigin, _boss.AttackRadiusM);
-                SfxDirector.Play(SfxLibrary.BossSlam);
+                _sfx?.Play(SfxLibrary.BossSlam);
                 float px = _combat != null ? _combat.Feel.ShakeBossSlamPx : 19f;
                 float decay = _combat != null ? _combat.Feel.ShakeDecay : 6f;
                 _follow?.AddShakePxAtLeast(px, decay);
@@ -107,23 +109,23 @@ namespace Dovus.Game.Vfx
         void OnPhase(int phase)
         {
             if (phase > 1)
-                SfxDirector.Play(SfxLibrary.BossRoar);
+                _sfx?.Play(SfxLibrary.BossRoar);
         }
 
         void OnSlide(Vector3 start, Vector3 dir)
         {
             FeelVfx.DodgeDust(start, dir);
-            SfxDirector.Play(SfxLibrary.Dodge);
+            _sfx?.Play(SfxLibrary.Dodge);
         }
 
         void OnExchange(ExchangeResult result)
         {
             if (result.Outcome == ExchangeOutcome.Dodged && result.Grade == DodgeGrade.Mukemmel)
-                SfxDirector.Play(SfxLibrary.PerfectDodge);
+                _sfx?.Play(SfxLibrary.PerfectDodge);
             else if (result.Outcome == ExchangeOutcome.Hit)
-                SfxDirector.Play(SfxLibrary.PlayerHurt);
+                _sfx?.Play(SfxLibrary.PlayerHurt);
         }
 
-        void OnDot(int dot) => SfxDirector.Play(SfxLibrary.UiTap);
+        void OnDot(int dot) => _sfx?.Play(SfxLibrary.UiTap);
     }
 }

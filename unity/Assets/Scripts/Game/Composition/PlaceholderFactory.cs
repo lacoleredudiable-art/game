@@ -15,6 +15,12 @@ namespace Dovus.Game.Composition
     /// </summary>
     public static class PlaceholderFactory
     {
+        static VfxLibrary _vfx;
+
+        public static void Bind(VfxLibrary vfx) => _vfx = vfx;
+
+        static VfxLibrary Lib => _vfx ?? throw new InvalidOperationException("PlaceholderFactory.Bind ile VfxLibrary bağlanmalı.");
+
         const string CatalogResourcePath = "Presentation/prezentasyon-katmani";
         const string TrailAssetFolder = "Vfx/Trail";
         const string ImpactAssetFolder = "Vfx/Impact";
@@ -81,7 +87,7 @@ namespace Dovus.Game.Composition
                 var instance = UnityEngine.Object.Instantiate(asset, parent);
                 instance.name = $"Impact_{styleId}";
                 instance.transform.position = position;
-                VfxLibrary.Tint(instance, ResolveElementColor(elementName), VfxLibrary.Current.ImpactTintStrength);
+                VfxLibrary.Tint(instance, ResolveElementColor(elementName), Lib.ImpactTintStrength);
                 return instance;
             }
 
@@ -151,7 +157,7 @@ namespace Dovus.Game.Composition
                 return null;
             // VfxLibrary anahtarı "Trail/straight" → tablo, sonra Resources/Vfx/Trail/straight.
             string key = folder.Substring(folder.IndexOf('/') + 1) + "/" + styleId;
-            return VfxLibrary.Current.TryResolve(key, out GameObject prefab, out _) ? prefab : null;
+            return Lib.TryResolve(key, out GameObject prefab, out _) ? prefab : null;
         }
 
         static void WarnMissingOnce(string kind, string styleId)

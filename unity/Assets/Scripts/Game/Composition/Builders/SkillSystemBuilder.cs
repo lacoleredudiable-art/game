@@ -12,6 +12,7 @@ using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
 using Dovus.Core.Status;
 using Dovus.Game.Actors;
+using Dovus.Game.Composition;
 using Dovus.Game.Audio;
 using Dovus.Game.Boss;
 using Dovus.Game.Casting;
@@ -53,6 +54,13 @@ namespace Dovus.Game.Composition.Builders
             var cooldown = ctx.PlayerCooldown;
             var root = ctx.HexagonRoot;
 
+            PlaceholderFactory.Bind(ctx.Assets.Vfx);
+            HitboxVfxRegistry.Bind(ctx.Assets.Vfx);
+            ComposedSkillVfx.Bind(ctx.Assets.Vfx);
+
+            if (ctx.AllyDummy != null)
+                ctx.AllyDummy.BindTeam(ctx.TeamAccess);
+
             var feelGo = new GameObject("CombatFeel");
             feelGo.transform.SetParent(ctx.SceneRoot, false);
             var feel = feelGo.AddComponent<CombatFeel>();
@@ -71,12 +79,14 @@ namespace Dovus.Game.Composition.Builders
             bossFlinch.Bind(combat.Feel, bossAnim);
             ctx.Player.GetComponent<PlayerDodgeRig>()?.Bind(ctx.Clock, input, follow, readout, feel);
             var overlayHud = feelGo.AddComponent<CombatOverlayHud>();
+            overlayHud.BindTheme(ctx.Assets.HudTheme);
             overlayHud.Configure(vitals, ctx.BossVitals, player, ctx.Boss.transform, ctx.OverlayCamera);
             ctx.CombatFeel = feel;
 
             var directorGo = ctx.Boss.gameObject;
             var bossDir = directorGo.AddComponent<BossDirector>();
             bossDir.Bind(ctx.Clock, combat, tuning, boss, input, player, vitals, ctx.BossVitals, telegraph, feel);
+            bossDir.BindTeam(ctx.TeamAccess);
             if (bossStatus != null)
                 bossDir.BindStatus(bossStatus);
             if (playerStatus != null)
@@ -108,15 +118,21 @@ namespace Dovus.Game.Composition.Builders
             bossDir.BindTargets(hostileTargets);
             ctx.VitalsHud.BindBoss(bossDir);
 
-            feelGo.AddComponent<SfxDirector>();
-            feelGo.AddComponent<PresentationFx>().Bind(bossDir, ctx.DodgeMotion, feel, input, follow, combat);
+            // AddComponent sırası master ile aynı: SfxDirector burada eklenir.
+            var sfx = feelGo.AddComponent<SfxDirector>();
+            sfx.Bind(ctx.Assets.Sfx);
+            ctx.Sfx = sfx;
+            ctx.Player.GetComponent<PlayerDodgeRig>()?.BindSfx(sfx);
+            feelGo.AddComponent<PresentationFx>().Bind(bossDir, ctx.DodgeMotion, feel, input, sfx, follow, combat);
             var feelVerify = feelGo.AddComponent<FeelPlayVerify>();
             feelVerify.Bind(follow, player);
             var playerSteps = ctx.Player.gameObject.AddComponent<FootstepEmitter>();
             playerSteps.StrideM = tuning.Player.FootstepStrideM;
+            playerSteps.Bind(sfx);
             var bossSteps = ctx.Boss.gameObject.AddComponent<FootstepEmitter>();
             bossSteps.StrideM = tuning.Player.BossFootstepStrideM;
             bossSteps.IsBoss = true;
+            bossSteps.Bind(sfx);
 
             var scarsGo = new GameObject("GroundScars");
             scarsGo.transform.SetParent(ctx.SceneRoot, false);
@@ -148,6 +164,8 @@ namespace Dovus.Game.Composition.Builders
             var director = manGo.AddComponent<ManifestationDirector>();
             var targeting = ctx.Player.GetComponent<PlayerTargeting>();
             director.Bind(ctx.Clock, input, player, ctx.PlayerPose, boss, ctx.BossVitals, scars, tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, ctx.AllyDummy, view, passiveHud, equippedWeapon, equipmentBonus, skills, skillFactory, design?.Animations);
+            director.BindTeam(ctx.TeamAccess);
+            director.BindSfx(sfx);
             director.BindTargeting(targeting);
             director.BindHostileTargets(hostileTargets);
             ctx.ManifestationDirector = director;
@@ -186,6 +204,7 @@ namespace Dovus.Game.Composition.Builders
             input.SwapHoldCommandSec = () => director.SwapButtonHoldSec;
 
             var preview = root.AddComponent<SkillPreviewHud>();
+            preview.BindTheme(ctx.Assets.HudTheme);
             preview.Configure(input.Engine, skills, skillFactory, director, tuning, view.CanvasRoot);
 
             var buildSelect = root.AddComponent<BuildSelectScreen>();
@@ -196,8 +215,13 @@ namespace Dovus.Game.Composition.Builders
                 && ElementSystemHeader.TryParse(design.Document, elementTransitionMs, out ElementSystemHeader elementHdr))
                 elementTransitionMs = elementHdr.SelectionTransitionMs;
             var elementMenu = root.AddComponent<ElementRadialMenu>();
+            elementMenu.BindTheme(ctx.Assets.HudTheme);
             elementMenu.Configure(
                 director, skills, playerStatus, tuning, view.CanvasRoot, elementTransitionMs);
+            ctx.ElementMenu = elementMenu;
+            ctx.Player.GetComponent<MoveInput>()?.BindElementMenu(elementMenu);
+            ctx.CameraOrbitInput?.BindElementMenu(elementMenu);
+            ctx.PlayerTargeting?.BindElementMenu(elementMenu);
         }
 
         static void LogDesignWarning(string message) => Debug.LogWarning(message);

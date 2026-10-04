@@ -49,14 +49,12 @@ namespace Dovus.Game.Editor
             var log = new StringBuilder();
             foreach (char p in new[] { 'A', 'B', 'C' })
             {
-                LookPresets.Apply(p);
+                var ctrl = Object.FindAnyObjectByType<LookPresetController>();
+                ctrl?.ApplyPreset(p);
                 Thread.Sleep(800);
                 if (p == 'C')
-                {
-                    var ctrl = Object.FindAnyObjectByType<LookPresetController>();
                     ctrl?.ForceProbeRender();
-                }
-                log.AppendLine(LookPresets.DescribeActiveSettings());
+                log.AppendLine(ctrl != null ? ctrl.DescribeActiveSettings() : $"preset {p} (no controller)");
                 CaptureCamera(Camera.main, Path.Combine(OutDir, $"look-{p}-gameplay.png"));
                 CaptureWide(Path.Combine(OutDir, $"look-{p}-wide.png"));
             }
@@ -70,13 +68,11 @@ namespace Dovus.Game.Editor
         {
             Directory.CreateDirectory(outDir);
             preset = char.ToUpperInvariant(preset);
-            LookPresets.Apply(preset);
+            var ctrl = Object.FindAnyObjectByType<LookPresetController>();
+            ctrl?.ApplyPreset(preset);
             if (preset == 'C')
-            {
-                var ctrl = Object.FindAnyObjectByType<LookPresetController>();
                 ctrl?.ForceProbeRender();
-            }
-            Debug.Log("[LookCapture] " + LookPresets.DescribeActiveSettings());
+            Debug.Log("[LookCapture] " + (ctrl != null ? ctrl.DescribeActiveSettings() : $"preset {preset} (no controller)"));
             CaptureCamera(Camera.main, Path.Combine(outDir, $"look-{preset}-gameplay.png"));
             CaptureWide(Path.Combine(outDir, $"look-{preset}-wide.png"));
         }
@@ -121,7 +117,8 @@ namespace Dovus.Game.Editor
             cam.farClipPlane = 600f;
             var urpData = camGo.AddComponent<UniversalAdditionalCameraData>();
             urpData.renderPostProcessing = true;
-            LookPresets.ApplyCameraOverrides(cam, LookPresets.ActiveRequiresDepthTexture);
+            var lookCtrl = Object.FindAnyObjectByType<LookPresetController>();
+            lookCtrl?.ApplyCameraOverrides(cam, lookCtrl.ActiveRequiresDepthTexture);
             CaptureCamera(cam, outputPath);
             Object.DestroyImmediate(camGo);
         }
@@ -135,7 +132,8 @@ namespace Dovus.Game.Editor
             if (urp == null)
                 urp = cam.gameObject.AddComponent<UniversalAdditionalCameraData>();
             urp.renderPostProcessing = true;
-            LookPresets.ApplyCameraOverrides(cam, LookPresets.ActiveRequiresDepthTexture);
+            var lookCtrl = Object.FindAnyObjectByType<LookPresetController>();
+            lookCtrl?.ApplyCameraOverrides(cam, lookCtrl != null && lookCtrl.ActiveRequiresDepthTexture);
 
             VolumeManager.instance.Update(cam.transform, cam.cullingMask);
 

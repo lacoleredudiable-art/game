@@ -22,6 +22,9 @@ namespace Dovus.Game.Casting
         Vector2 _knobOffsetPx;
 
         Vector2? _scriptedDirection;
+        ElementRadialMenu _elementMenu;
+
+        public void BindElementMenu(ElementRadialMenu menu) => _elementMenu = menu;
 
         public Vector2 MoveDirection => _scriptedDirection ?? _moveDirection;
 
@@ -74,7 +77,7 @@ namespace Dovus.Game.Casting
         void Update()
         {
             // T10: panel açıkken hareket girdisi de susar (bkz. HexagonInput.PanelBlocking).
-            if (TuningPanel.IsOpen || BuildSelectScreen.IsOpen || ElementRadialMenu.AnyOpen)
+            if (TuningPanel.IsOpen || BuildSelectScreen.IsOpen || (_elementMenu != null && _elementMenu.IsMenuOpen))
             {
                 if (_stickFingerId.HasValue)
                 {
@@ -111,7 +114,7 @@ namespace Dovus.Game.Casting
         void OnFingerDown(Finger finger)
         {
             if (_stickFingerId.HasValue || TuningPanel.IsOpen || BuildSelectScreen.IsOpen
-                || ElementRadialMenu.HitHoldChip(finger.screenPosition))
+                || (_elementMenu != null && _elementMenu.HitHoldChipAt(finger.screenPosition)))
                 return;
 
             Vector2 pos = finger.screenPosition;

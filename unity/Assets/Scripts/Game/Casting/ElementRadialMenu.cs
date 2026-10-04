@@ -16,7 +16,7 @@ namespace Dovus.Game.Casting
     /// <summary>element_system.selection: hold radial, 6 konum, slow-mo yok, hasarda iptal.</summary>
     public sealed class ElementRadialMenu : MonoBehaviour
     {
-        static ElementRadialMenu _instance;
+        HudTheme _theme;
         sealed class HoldSurface : MonoBehaviour,
             IPointerDownHandler, IPointerUpHandler, IDragHandler, IPointerExitHandler
         {
@@ -50,10 +50,11 @@ namespace Dovus.Game.Casting
         bool _keyboardHold;
 
         public bool IsOpen => _holding || (_root != null && _root.gameObject.activeSelf);
-        public static bool AnyOpen => _instance != null && _instance.IsOpen;
-        public static bool HitHoldChip(Vector2 screenPosition) =>
-            _instance != null && _instance._chip != null
-            && RectTransformUtility.RectangleContainsScreenPoint(_instance._chip, screenPosition);
+        public bool IsMenuOpen => IsOpen;
+        public bool HitHoldChipAt(Vector2 screenPosition) =>
+            _chip != null && RectTransformUtility.RectangleContainsScreenPoint(_chip, screenPosition);
+
+        public void BindTheme(HudTheme theme) => _theme = theme;
 
         public void Configure(
             ManifestationDirector director,
@@ -64,7 +65,6 @@ namespace Dovus.Game.Casting
             int transitionMs)
         {
             _director = director;
-            _instance = this;
             _elements = skills?.ElementPaints ?? Array.Empty<ElementPaintNode>();
             _playerStatus = playerStatus;
             _transitionSec = Mathf.Max(0.01f, transitionMs / 1000f);
@@ -79,7 +79,7 @@ namespace Dovus.Game.Casting
         void Build(Transform canvasRoot, PrototypeTuning tuning)
         {
             _tuning = tuning;
-            HudTheme theme = HudTheme.Current;
+            HudTheme theme = _theme;
             var layer = new GameObject("ElementRadialMenu");
             layer.transform.SetParent(canvasRoot, false);
             _root = layer.AddComponent<RectTransform>();
@@ -263,7 +263,7 @@ namespace Dovus.Game.Casting
             if (image != null && paint.HasValue)
             {
                 Color element = ParseColor(paint.Value.ColorHex, 0.96f);
-                image.color = Color.Lerp(HudTheme.Current.PanelColor, element, 0.38f);
+                image.color = Color.Lerp(_theme.PanelColor, element, 0.38f);
             }
             if (paint.HasValue)
                 _chipLabel.text = "ELEMENT  //  " + paint.Value.Name.ToUpperInvariant() + "  ·  BASILI TUT";
@@ -292,8 +292,6 @@ namespace Dovus.Game.Casting
 
         void OnDestroy()
         {
-            if (_instance == this)
-                _instance = null;
             if (_playerStatus != null)
                 _playerStatus.DamageTaken -= OnDamageTaken;
             if (_director != null)

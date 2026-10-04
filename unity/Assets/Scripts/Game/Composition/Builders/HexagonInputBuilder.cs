@@ -4,6 +4,7 @@ using Dovus.Game.Actors;
 using Dovus.Game.Cameras;
 using Dovus.Game.Casting;
 using Dovus.Game.Config;
+using Dovus.Game.Composition;
 using Dovus.Game.Data;
 using Dovus.Game.DevTools;
 using Dovus.Game.Hud;
@@ -41,7 +42,7 @@ namespace Dovus.Game.Composition.Builders
 
             ElementSystemDesign design = null;
             ElementSystemAssetCatalog assetCatalog = null;
-            if (ElementSystemJsonLoader.TryLoad(out ElementSystemDesign loaded))
+            if (ctx.Assets.TryGetElementDesign(out ElementSystemDesign loaded))
             {
                 design = loaded;
                 assetCatalog = ElementSystemAssetCatalog.CreateRuntime(design);
@@ -66,6 +67,7 @@ namespace Dovus.Game.Composition.Builders
                 + $"passives={loadout.PassiveCount}; SO={assetCatalog?.Runes.Count ?? 0}/"
                 + $"{assetCatalog?.Weapons.Count ?? 0}/{assetCatalog?.Elements.Count ?? 0}");
             var view = root.AddComponent<HexagonView>();
+            view.BindTheme(ctx.Assets.HudTheme);
             view.Build(_tuning, overlay.Cam, skills, loadout);
             ctx.HexagonView = view;
             if (follow != null)
@@ -104,6 +106,7 @@ namespace Dovus.Game.Composition.Builders
             if (follow != null)
             {
                 var orbit = root.AddComponent<CameraOrbitInput>();
+                ctx.CameraOrbitInput = orbit;
                 orbit.Bind(follow, player.GetComponent<MoveInput>(), input, _tuning, view);
                 var motor = player.GetComponent<KinematicMotor>();
                 motor?.BindCamera(follow);
@@ -117,10 +120,14 @@ namespace Dovus.Game.Composition.Builders
             if (playerStatus != null)
             {
                 playerStatus.Bind(ctx.Clock, combat.Status, vitals, null, null);
+                playerStatus.BindTeam(ctx.TeamAccess);
                 input.BindStatus(playerStatus);
             }
             if (bossStatus != null)
+            {
                 bossStatus.Bind(ctx.Clock, combat.Status, null, ctx.BossVitals, boss);
+                bossStatus.BindTeam(ctx.TeamAccess);
+            }
 
             var readout = root.AddComponent<ReactionReadout>();
             readout.Configure(combat.Feel, _tuning, view.CanvasRoot);
@@ -136,6 +143,7 @@ namespace Dovus.Game.Composition.Builders
                 input,
                 combat.Dodge.TapMaxMoveDp,
                 view.CanvasRoot);
+            ctx.PlayerTargeting = targeting;
         }
 
         static void AttachOverlayToMain(Camera main, Camera overlay)

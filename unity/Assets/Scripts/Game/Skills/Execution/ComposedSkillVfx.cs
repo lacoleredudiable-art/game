@@ -14,6 +14,12 @@ namespace Dovus.Game.Skills.Execution
     /// </summary>
     public sealed class ComposedSkillVfx : MonoBehaviour
     {
+        static VfxLibrary _vfx;
+
+        public static void Bind(VfxLibrary vfx) => _vfx = vfx;
+
+        static VfxLibrary Lib => _vfx ?? throw new System.InvalidOperationException("ComposedSkillVfx.Bind ile VfxLibrary bağlanmalı.");
+
         const float MaxLifeSec = 12f;
 
         VisualRecipe _recipe;
@@ -64,7 +70,7 @@ namespace Dovus.Game.Skills.Execution
             c._owner = owner;
             c._origin = origin;
             c._groundY = FeelVfx.GroundY;
-            VfxLibrary lib = VfxLibrary.Current;
+            VfxLibrary lib = Lib;
             Vector3 flat = new(direction.x, 0f, direction.z);
             c._frame = flat.sqrMagnitude > 0.0001f ? Quaternion.LookRotation(flat.normalized) : Quaternion.identity;
             if (recipe.BornAheadM > 0 && owner != null)
@@ -143,7 +149,7 @@ namespace Dovus.Game.Skills.Execution
             holder.SetPositionAndRotation(basePos + Vector3.down * (float)p.RiseM, _frame);
             holder.SetParent(carried ? _anchor : transform, true);
 
-            VfxLibrary lib = VfxLibrary.Current;
+            VfxLibrary lib = Lib;
             float size = (float)(_recipe.PieceSizeM * p.Scale);
             GameObject inst = lib.TrySpawn(_substanceKey, holder.position, _frame, holder, size);
             if (inst == null)
@@ -164,7 +170,7 @@ namespace Dovus.Game.Skills.Execution
         Transform SpawnChunk(Transform holder, float size, bool carried, int index, out float height,
             out float restY, out Vector3 spin)
         {
-            SkillVisualTuning t = VfxLibrary.Current.Composition;
+            SkillVisualTuning t = Lib.Composition;
             var go = new GameObject("Chunk");
             go.transform.SetParent(holder, false);
             go.AddComponent<MeshFilter>().sharedMesh = _chunkMesh;
@@ -250,7 +256,7 @@ namespace Dovus.Game.Skills.Execution
                 l.Chunk.Rotate(l.Spin * dt, Space.Self);
                 return;
             }
-            SkillVisualTuning t = VfxLibrary.Current.Composition;
+            SkillVisualTuning t = Lib.Composition;
             float up = Mathf.Clamp01(l.Age / Mathf.Max(0.01f, t.RiseSec));
             up = 1f - (1f - up) * (1f - up);
             float holdEnd = _life * t.ChunkHoldFrac;

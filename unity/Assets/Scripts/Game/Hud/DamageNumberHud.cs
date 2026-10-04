@@ -23,7 +23,10 @@ namespace Dovus.Game.Hud
         const int PoolSize = 24;
 
         PrototypeTuning _tuning;
+        HudTheme _theme;
         Camera _cam;
+
+        public void BindTheme(HudTheme theme) => _theme = theme;
         Canvas _canvas;
         readonly List<Floater> _pool = new();
         int _next;
@@ -120,7 +123,7 @@ namespace Dovus.Game.Hud
             f.Heal = heal;
             f.Go.SetActive(true);
 
-            HudTheme th = HudTheme.Current;
+            HudTheme th = _theme;
             if (heal)
             {
                 f.Text.text = "+" + DamageNumberFormat.Format(-amount);

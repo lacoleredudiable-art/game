@@ -15,12 +15,19 @@ namespace Dovus.Game.Vfx
         public const float GroundY = 0.03f;
 
         static Texture2D _crack;
+        static VfxLibrary _vfx;
 
-        public static void Configure(PrototypeTuning tuning) => KenneyVfxTextures.Configure(tuning);
+        public static void Configure(PrototypeTuning tuning, VfxLibrary vfx)
+        {
+            _vfx = vfx;
+            KenneyVfxTextures.Configure(tuning);
+        }
+
+        static VfxLibrary Lib => _vfx ?? throw new System.InvalidOperationException("FeelVfx.Configure ile VfxLibrary bağlanmalı.");
 
         public static void HitSpark(Vector3 pos, Color tint, bool crit)
         {
-            VfxLibrary lib = VfxLibrary.Current;
+            VfxLibrary lib = Lib;
             GameObject prefab = lib.TrySpawn(crit ? VfxLibrary.CritSpark : VfxLibrary.HitSpark, pos, Quaternion.identity);
             if (prefab != null)
             {
@@ -50,7 +57,7 @@ namespace Dovus.Game.Vfx
 
         public static void DodgeDust(Vector3 pos, Vector3 dir)
         {
-            VfxLibrary lib = VfxLibrary.Current;
+            VfxLibrary lib = Lib;
             Vector3 ground = new(pos.x, GroundY, pos.z);
             Quaternion rot = dir.sqrMagnitude > 0.0001f ? Quaternion.LookRotation(-dir) : Quaternion.identity;
             if (lib.TrySpawn(VfxLibrary.DodgeDust, ground, rot) != null)
@@ -60,7 +67,7 @@ namespace Dovus.Game.Vfx
 
         public static void FootDust(Vector3 pos, bool boss)
         {
-            VfxLibrary lib = VfxLibrary.Current;
+            VfxLibrary lib = Lib;
             Vector3 ground = new(pos.x, GroundY, pos.z);
             if (lib.TrySpawn(boss ? VfxLibrary.BossStepDust : VfxLibrary.FootDust, ground, Quaternion.identity) != null)
                 return;
@@ -71,7 +78,7 @@ namespace Dovus.Game.Vfx
 
         public static void SlamImpact(Vector3 center, float radiusM)
         {
-            VfxLibrary lib = VfxLibrary.Current;
+            VfxLibrary lib = Lib;
             Vector3 ground = new(center.x, GroundY, center.z);
             float diameter = radiusM * 2f;
             bool wave = lib.TrySpawn(VfxLibrary.SlamShockwave, ground, Quaternion.identity, null, diameter) != null;
@@ -108,7 +115,7 @@ namespace Dovus.Game.Vfx
 
         public static void FireCone(Vector3 origin, Vector3 forward, float halfAngleDeg, float reachM)
         {
-            VfxLibrary lib = VfxLibrary.Current;
+            VfxLibrary lib = Lib;
             forward.y = 0f;
             Quaternion rot = forward.sqrMagnitude > 0.0001f ? Quaternion.LookRotation(forward.normalized) : Quaternion.identity;
             if (lib.TrySpawn(VfxLibrary.FireCone, origin, rot, null, reachM) != null)

@@ -15,6 +15,12 @@ namespace Dovus.Game.Skills.Execution
     /// </summary>
     public static class HitboxVfxRegistry
     {
+        static VfxLibrary _vfx;
+
+        public static void Bind(VfxLibrary vfx) => _vfx = vfx;
+
+        static VfxLibrary Lib => _vfx ?? throw new System.InvalidOperationException("HitboxVfxRegistry.Bind ile VfxLibrary bağlanmalı.");
+
         static readonly Dictionary<string, Material> Materials = new();
 
         public static GameObject Create(
@@ -52,7 +58,7 @@ namespace Dovus.Game.Skills.Execution
             MechanicPlan plan = executor.Plan;
             if (plan == null)
                 return false;
-            VfxLibrary lib = VfxLibrary.Current;
+            VfxLibrary lib = Lib;
             string key = "Substance/" + plan.Verb.ToString(CultureInfo.InvariantCulture);
             if (!lib.TryResolve(key, out _, out _))
                 return false;
@@ -70,7 +76,7 @@ namespace Dovus.Game.Skills.Execution
         static GameObject SpawnDelivery(string role, string shape, string colorHex, Transform anchor,
             Vector3 direction, float radiusM, float reachM, Transform parent)
         {
-            VfxLibrary lib = VfxLibrary.Current;
+            VfxLibrary lib = Lib;
             string key = null;
             foreach (string candidate in new[]
                      {
@@ -130,7 +136,7 @@ namespace Dovus.Game.Skills.Execution
             out bool fromKey)
         {
             fromKey = false;
-            if (VfxLibrary.Current.TryResolve(key, out GameObject prefab, out _))
+            if (Lib.TryResolve(key, out GameObject prefab, out _))
             {
                 fromKey = true;
                 Vector3 look = direction.sqrMagnitude > 0.0001f ? direction : Vector3.forward;

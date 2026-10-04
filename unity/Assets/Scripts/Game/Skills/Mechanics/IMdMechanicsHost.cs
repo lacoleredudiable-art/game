@@ -18,6 +18,7 @@ using Dovus.Game.Composition;
 using Dovus.Game.Data;
 using Dovus.Game.DevTools;
 using Dovus.Game.Hud;
+using Dovus.Game.Team;
 using System;
 using UnityEngine;
 
@@ -33,6 +34,7 @@ namespace Dovus.Game.Skills.Mechanics
         BossDirector BossDirector { get; }
         ActorStatus PlayerStatus { get; }
         GameClock Clock { get; }
+        PortalBorderTeamAccess TeamAccess { get; }
         CombatTuning Combat { get; }
         SkillMotor Skills { get; }
         SlotPassiveDirector SlotPassives { get; }

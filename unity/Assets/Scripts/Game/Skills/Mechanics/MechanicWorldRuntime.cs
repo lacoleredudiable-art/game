@@ -16,6 +16,7 @@ using Dovus.Game.Actors;
 using Dovus.Game.Boss;
 using Dovus.Game.Composition;
 using Dovus.Game.DevTools;
+using Dovus.App.Team;
 using Dovus.Game.Team;
 using Dovus.Game.Vfx;
 using System;
@@ -328,7 +329,8 @@ namespace Dovus.Game.Skills.Mechanics
 
         public float RedirectMechanicDamage(float incoming)
         {
-            if (PortalBorderTeamHost.Hub.TryMiss(PortalBorderTeamHost.Hub.PlayerActorId))
+            TeamModifierHub hub = _host.TeamAccess != null ? _host.TeamAccess.Hub : TeamModifierHub.Neutral;
+            if (hub.TryMiss(hub.PlayerActorId))
                 return 0f;
             if (_host.Clock == null || incoming <= 0)
                 return incoming;
