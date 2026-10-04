@@ -103,7 +103,7 @@ namespace Dovus.Game.Vfx
                 if (s.Renderer == null)
                     continue;
                 s.Renderer.GetPropertyBlock(_block);
-                Color target = s.PropertyId == EmissionId ? _tint * 2f : _tint * 1.6f;
+                Color target = s.PropertyId == EmissionId ? _tint * 2f : _tint * VfxDefaults.HitFlashColorMult;
                 _block.SetColor(s.PropertyId, Color.Lerp(s.Original, target, k));
                 s.Renderer.SetPropertyBlock(_block);
             }

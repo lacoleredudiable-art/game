@@ -83,14 +83,14 @@ namespace Dovus.Game.Arena
 
             var go = new GameObject("LookReflectionProbe");
             go.transform.SetParent(transform, false);
-            go.transform.position = new Vector3(0f, 6f, 0f);
+            go.transform.position = new Vector3(0f, LookPresetControllerDefaults.ProbeHeightM, 0f);
             _probe = go.AddComponent<ReflectionProbe>();
             _probe.mode = ReflectionProbeMode.Realtime;
             _probe.refreshMode = ReflectionProbeRefreshMode.ViaScripting;
             _probe.timeSlicingMode = ReflectionProbeTimeSlicingMode.NoTimeSlicing;
-            _probe.resolution = 128;
-            _probe.size = new Vector3(80f, 30f, 80f);
-            _probe.intensity = 0.85f;
+            _probe.resolution = LookPresetControllerDefaults.ProbeResolutionPx;
+            _probe.size = new Vector3(LookPresetControllerDefaults.ProbeSizeXM, LookPresetControllerDefaults.ProbeSizeYM, LookPresetControllerDefaults.ProbeSizeXM);
+            _probe.intensity = LookPresetControllerDefaults.ProbeIntensity;
             // Skybox null (SceneAtmosphere.Apply) + varsayılan ReflectionProbeClearFlags.Skybox =
             // Unity'nin stok mavi fallback'i; zırh gibi parlak/metalik yüzeylere mavi gökyüzü yansıtıyordu
             // (task-look-v2b problem 1, "source" fix). Gerçek sahne grisiyle eşle.

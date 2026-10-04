@@ -458,7 +458,7 @@ namespace Dovus.Game.Hud
                 content,
                 "12 rünün 6'sını seç. Her rün hem fiil hem sıfat; skill = ilk çizdiğin (fiil) + ikinci (sıfat). "
                 + "Seçim sırası altıgendeki yeri belirler. Karttaki P ile 0-2 pasif seç.",
-                18,
+                HudDefaults.BuildSelectSubtitleFontSize,
                 MutedText,
                 TextAnchor.UpperLeft);
             Place(subtitle.rectTransform, 0.02f, 0.82f, 0.64f, 0.90f);

@@ -28,7 +28,7 @@ namespace Dovus.Game.Vfx
             t._color = color;
             t._radius = radiusM;
             t._width = widthM;
-            t._grow = Mathf.Max(0.01f, growSec);
+            t._grow = Mathf.Max(VfxDefaults.FxTweenGrowMinSec, growSec);
             ring.positionCount = RingSegments;
             ring.loop = true;
             ring.useWorldSpace = false;
@@ -42,7 +42,7 @@ namespace Dovus.Game.Vfx
             t._surface = surface;
             t._color = color;
             t._hold = Mathf.Max(0f, holdSec);
-            t._fade = Mathf.Max(0.01f, fadeSec);
+            t._fade = Mathf.Max(VfxDefaults.FxTweenFadeMinSec, fadeSec);
             t.Apply();
             return t;
         }
@@ -68,7 +68,7 @@ namespace Dovus.Game.Vfx
                 c.a *= 1f - k;
                 _ring.startColor = c;
                 _ring.endColor = c;
-                _ring.widthMultiplier = _width * Mathf.Lerp(1f, 0.3f, k);
+                _ring.widthMultiplier = _width * Mathf.Lerp(1f, VfxDefaults.RingTweenWidthMult, k);
                 if (k >= 1f)
                     Destroy(gameObject);
                 return;

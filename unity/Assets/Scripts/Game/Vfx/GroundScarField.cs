@@ -32,9 +32,9 @@ namespace Dovus.Game.Vfx
         public void Configure(GameTuning tuning)
         {
             _tuning = tuning;
-            _cyanMat = MakeMat(tuning.Visuals.InkCyan * 0.55f);
-            _purpleMat = MakeMat(tuning.Visuals.InkPurple * 0.55f);
-            _acidMat = MakeMat(tuning.Visuals.AcidGreen * 0.7f);
+            _cyanMat = MakeMat(tuning.Visuals.InkCyan * GroundScarFieldDefaults.CyanInkTintMult);
+            _purpleMat = MakeMat(tuning.Visuals.InkPurple * GroundScarFieldDefaults.PurpleInkTintMult);
+            _acidMat = MakeMat(tuning.Visuals.AcidGreen * GroundScarFieldDefaults.AcidInkTintMult);
         }
 
         public void Stamp(Vector3 worldPos, float scaleM, ScarKind kind, Vector3 along)
@@ -56,7 +56,7 @@ namespace Dovus.Game.Vfx
             }
             _writeIndex = (_writeIndex + 1) % cap;
 
-            worldPos.y = 0.02f;
+            worldPos.y = GroundScarFieldDefaults.ScarGroundLiftM;
             go.transform.position = worldPos;
             if (!go.activeSelf)
                 go.SetActive(true);
@@ -71,28 +71,28 @@ namespace Dovus.Game.Vfx
             {
                 case ScarKind.Crack:
                     go.transform.rotation = Quaternion.LookRotation(Vector3.down, along);
-                    go.transform.localScale = new Vector3(scaleM * 0.22f, scaleM * 2.4f, 1f);
+                    go.transform.localScale = new Vector3(scaleM * GroundScarFieldDefaults.SlashDecalScaleMult, scaleM * GroundScarFieldDefaults.SlashScarYMult, 1f);
                     renderer.sharedMaterial = _purpleMat;
                     break;
                 case ScarKind.Needle:
                     go.transform.rotation = Quaternion.LookRotation(Vector3.down, along);
-                    go.transform.localScale = new Vector3(scaleM * 0.12f, scaleM * 1.6f, 1f);
+                    go.transform.localScale = new Vector3(scaleM * GroundScarFieldDefaults.BurnScarXMult, scaleM * GroundScarFieldDefaults.BurnScarYMult, 1f);
                     renderer.sharedMaterial = _cyanMat;
                     break;
                 case ScarKind.Swarm:
                     go.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
-                    go.transform.localScale = new Vector3(scaleM * 1.1f, scaleM * 1.1f, 1f);
+                    go.transform.localScale = new Vector3(scaleM * GroundScarFieldDefaults.BloomScarMult, scaleM * GroundScarFieldDefaults.BloomScarMult, 1f);
                     renderer.sharedMaterial = _purpleMat;
                     break;
                 case ScarKind.Acid:
                     go.transform.rotation = Quaternion.Euler(90f, Random.Range(0f, 360f), 0f);
-                    go.transform.localScale = new Vector3(scaleM * 0.9f, scaleM * 0.7f, 1f);
+                    go.transform.localScale = new Vector3(scaleM * GroundScarFieldDefaults.ShrinkScarXMult, scaleM * GroundScarFieldDefaults.ShrinkScarYMult, 1f);
                     renderer.sharedMaterial = _acidMat;
                     break;
                 case ScarKind.Strike:
                     // Düz vuruş: kısa dar çizik — cümle halka/çatlak izinden ayrılır.
                     go.transform.rotation = Quaternion.LookRotation(Vector3.down, along);
-                    go.transform.localScale = new Vector3(scaleM * 0.1f, scaleM * 0.85f, 1f);
+                    go.transform.localScale = new Vector3(scaleM * GroundScarFieldDefaults.NeedleScarXMult, scaleM * GroundScarFieldDefaults.NeedleScarYMult, 1f);
                     renderer.sharedMaterial = _cyanMat;
                     break;
             }
@@ -123,7 +123,7 @@ namespace Dovus.Game.Vfx
             var shader = FindTransparentUnlitShader();
             var mat = new Material(shader);
             ConfigureTransparentFallback(mat);
-            c.a = 0.85f;
+            c.a = GroundScarFieldDefaults.ScarDecalAlpha;
             SetMatColor(mat, c);
             return mat;
         }

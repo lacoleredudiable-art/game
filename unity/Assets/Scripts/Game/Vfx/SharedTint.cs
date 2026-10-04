@@ -20,7 +20,7 @@ namespace Dovus.Game.Vfx
         static int Pack(Color c)
         {
             Color32 q = c;
-            return (q.r << 24) | (q.g << 16) | (q.b << 8) | q.a;
+            return (q.r << VfxDefaults.ChannelShiftBits) | (q.g << 16) | (q.b << 8) | q.a;
         }
 
         /// <summary>Taban materyalin renklendirilmiş paylaşılan kopyası (renderer.sharedMaterial'a verilir).</summary>

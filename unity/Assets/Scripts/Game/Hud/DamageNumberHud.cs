@@ -81,7 +81,7 @@ namespace Dovus.Game.Hud
             text.fontStyle = FontStyle.Normal;
             var outline = go.AddComponent<Outline>();
             outline.effectColor = new Color(0f, 0f, 0f, 0.75f);
-            outline.effectDistance = new Vector2(1.5f, -1.5f);
+            outline.effectDistance = new Vector2(DamageNumberHudDefaults.OutlineEffectDistancePx, -DamageNumberHudDefaults.OutlineEffectDistancePx);
             text.alignment = TextAnchor.MiddleCenter;
             text.horizontalOverflow = HorizontalWrapMode.Overflow;
             text.verticalOverflow = VerticalWrapMode.Overflow;
@@ -99,7 +99,7 @@ namespace Dovus.Game.Hud
                 return;
 
             Vector3 world = _cam != null
-                ? _cam.transform.position + _cam.transform.forward * 6f
+                ? _cam.transform.position + _cam.transform.forward * DamageNumberHudDefaults.FallbackCamForwardM
                 : Vector3.zero;
             if (worldPos.HasValue)
             {
@@ -108,7 +108,7 @@ namespace Dovus.Game.Hud
             else
             {
                 if (_defaultBoss != null)
-                    world = _defaultBoss.transform.position + Vector3.up * 2.2f;
+                    world = _defaultBoss.transform.position + Vector3.up * DamageNumberHudDefaults.FallbackBossHeightOffsetM;
             }
 
             ShowAt(world, amount, isCrit, tint, victimIsPlayer, victimIsBoss);
@@ -127,7 +127,7 @@ namespace Dovus.Game.Hud
             f.Alive = true;
             f.BornUnscaled = Time.unscaledTime;
             f.World = worldPos;
-            f.JitterX = Random.Range(-36f, 36f);
+            f.JitterX = Random.Range(-DamageNumberHudDefaults.JitterX, DamageNumberHudDefaults.JitterX);
             f.Crit = isCrit && !heal;
             f.Heal = heal;
             f.Go.SetActive(true);
@@ -168,7 +168,7 @@ namespace Dovus.Game.Hud
             {
                 f.Text.text = DamageNumberFormat.Format(amount);
                 // Element rengi beyaza doğru açılır: koyu element tonları da okunur kalsın.
-                f.Text.color = tint.HasValue ? Color.Lerp(tint.Value, th.DamageTextColor, 0.35f) : th.DamageTextColor;
+                f.Text.color = tint.HasValue ? Color.Lerp(tint.Value, th.DamageTextColor, DamageNumberHudDefaults.DamageTextColorLerp) : th.DamageTextColor;
                 f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(_tuning.Hud.DamageFloatFontDp));
             }
 
@@ -204,14 +204,14 @@ namespace Dovus.Game.Hud
 
                 float t = age / life;
                 float riseY = rise * Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(age / life));
-                float scale = age < 0.12f
-                    ? Mathf.Lerp(punch, 1f, age / 0.12f)
+                float scale = age < DamageNumberHudDefaults.PunchScaleAgeSec
+                    ? Mathf.Lerp(punch, 1f, age / DamageNumberHudDefaults.PunchScaleBlendSec)
                     : 1f;
-                float alpha = age < hold ? 1f : 1f - Mathf.Clamp01((age - hold) / Mathf.Max(0.01f, fade));
+                float alpha = age < hold ? 1f : 1f - Mathf.Clamp01((age - hold) / Mathf.Max(DamageNumberHudDefaults.FadeDurationMinSec, fade));
 
                 Vector3 screen = _cam != null
                     ? _cam.WorldToScreenPoint(f.World)
-                    : new Vector3(Screen.width * 0.5f, Screen.height * 0.7f, 1f);
+                    : new Vector3(Screen.width * 0.5f, Screen.height * DamageNumberHudDefaults.FallbackScreenHeightFrac, 1f);
 
                 if (screen.z < 0f)
                 {

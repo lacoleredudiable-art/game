@@ -36,7 +36,7 @@ namespace Dovus.Game.Hud
         FeelTuning _feel;
         GameTuning _tuning;
 
-        float _shownAtUnscaled = -999f;
+        float _shownAtUnscaled = -ReactionReadoutDefaults.InitialHideOffsetUnscaledSec;
         Color _accent = Color.white;
         int _streak;
         float _bestReactionSec = -1f;
@@ -124,7 +124,7 @@ namespace Dovus.Game.Hud
             if (!Mathf.Approximately(_feel.ReadoutGlow, _appliedGlow))
             {
                 _appliedGlow = _feel.ReadoutGlow;
-                _outline.effectDistance = new Vector2(_appliedGlow * 0.05f, -_appliedGlow * 0.05f);
+                _outline.effectDistance = new Vector2(_appliedGlow * ReactionReadoutDefaults.OutlineEffectDistanceMult, -_appliedGlow * ReactionReadoutDefaults.OutlineEffectDistanceMult);
             }
 
             if (_needsFit || !Mathf.Approximately(_root.rect.width, _fittedBandWidth))
@@ -146,8 +146,8 @@ namespace Dovus.Game.Hud
             _needsFit = false;
 
             FitOne(_main, _appliedSizePx, band);
-            FitOne(_sub, _appliedSizePx * 0.32f, band);
-            FitOne(_tally, _appliedSizePx * 0.24f, band);
+            FitOne(_sub, _appliedSizePx * ReactionReadoutDefaults.SubtitleBandWidthMult, band);
+            FitOne(_tally, _appliedSizePx * ReactionReadoutDefaults.TallyFontScaleMult, band);
         }
 
         static void FitOne(Text text, float basePx, float bandWidth)
@@ -264,7 +264,7 @@ namespace Dovus.Game.Hud
                 _sub.color = new Color(1f, 1f, 1f, 0.85f * alpha);
 
                 Color oc = _accent;
-                oc.a = alpha * 0.6f;
+                oc.a = alpha * ReactionReadoutDefaults.OutlineAlphaMult;
                 _outline.effectColor = oc;
 
                 Color glowColor = _accent;
@@ -334,7 +334,7 @@ namespace Dovus.Game.Hud
             }
 
             tex.Apply(false, true);
-            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 64f);
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), ReactionReadoutDefaults.SpritePixelsPerUnit);
         }
     }
 }
