@@ -137,8 +137,11 @@ namespace Dovus.Game.Skills.Weapons
 
         public void CutTemplateForSwap(bool instant)
         {
-            _host.StopMotionBody();
-            _host.EndMotionAnim();
+            if (_host.MotionBody != null && _host.MotionBody.IsDisplacing)
+            {
+                _host.StopMotionBody();
+                _host.EndMotionAnim();
+            }
             _host.AbortRecoveringSentence();
             if (instant && _host.Clock != null && _host.WeaponSwap != null)
                 _host.SetSwapInstantDrawUntil(

@@ -222,7 +222,7 @@ namespace Dovus.Game.Skills.Motion
                             1f,
                             null,
                             _slotCastId,
-                            null);
+                            0f);
                         break;
                     case DeliveryBeatKind.Resolve:
                         PulseDelivery(_skill, _pending, _motion, beat.Power, true, true);
@@ -324,7 +324,7 @@ namespace Dovus.Game.Skills.Motion
                 1f,
                 null,
                 previous.SlotCastId,
-                null);
+                0f);
         }
 
         void ApplyGlideHaste(float magnitude)

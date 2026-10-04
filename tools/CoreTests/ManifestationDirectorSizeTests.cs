@@ -26,11 +26,11 @@ public sealed class ManifestationDirectorSizeTests
     }
 
     [Test]
-    public void ManifestationDirector_partials_total_at_most_3000_lines()
+    public void ManifestationDirector_partials_total_ratchet()
     {
         var files = Directory.GetFiles(SkillsDir, "ManifestationDirector*.cs");
         int total = files.Sum(f => File.ReadAllLines(f).Length);
         TestContext.WriteLine($"ManifestationDirector partial total: {total} lines across {files.Length} files");
-        Assert.That(total, Is.LessThanOrEqualTo(4400), "interim cap until remaining MD slices land (was ~4760 pre-2B.2f)");
+        Assert.That(total, Is.LessThanOrEqualTo(4360), "ratchet: 2B.2f sonrasi 4357 satir (2B.2e sonrasi 5355); yalniz asagi cekilir");
     }
 }

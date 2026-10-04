@@ -19,15 +19,9 @@ namespace Dovus.Game.Skills.Weapons
     {
         readonly IWeaponPassiveRuntimeHost _host;
         readonly WeaponPassiveState _passives = new();
-        bool _casterRecoilSuppressed;
         double _swapInstantDrawUntilMs;
-        float _lastHitX;
-        float _lastHitZ;
 
         public WeaponPassiveRuntime(IWeaponPassiveRuntimeHost host) => _host = host;
-
-        public float LastHitX => _lastHitX;
-        public float LastHitZ => _lastHitZ;
 
 
 
@@ -383,10 +377,6 @@ namespace Dovus.Game.Skills.Weapons
         }
 
         public void SetSwapInstantDrawUntil(double worldMs) => _swapInstantDrawUntilMs = worldMs;
-
-        public bool CasterRecoilSuppressed => _casterRecoilSuppressed;
-
-        public void SetCasterRecoilSuppressed(bool value) => _casterRecoilSuppressed = value;
 
         static int VerbOf(string skillId)
         {

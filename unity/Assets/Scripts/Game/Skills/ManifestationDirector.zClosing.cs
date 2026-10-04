@@ -74,22 +74,8 @@ namespace Dovus.Game.Skills
             public KinematicMotor Motor => _md._motor;
             public GroundScarField Scars => _md._scars;
             public bool JsonTickDamage => _md._jsonTickDamage;
-            public float LastHitX
-            {
-                get
-                {
-                    _md.EnsureWeaponServices();
-                    return _md._weaponPassives.LastHitX;
-                }
-            }
-            public float LastHitZ
-            {
-                get
-                {
-                    _md.EnsureWeaponServices();
-                    return _md._weaponPassives.LastHitZ;
-                }
-            }
+            public float LastHitX => _md._lastHitX;
+            public float LastHitZ => _md._lastHitZ;
             public float LastClosingDamageDealt
             {
                 get => _md.LastClosingDamageDealt;
