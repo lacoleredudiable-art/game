@@ -24,6 +24,10 @@
     <Compile Include="..\..\unity\Assets\Scripts\App\**\*.cs" Link="App\%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="..\..\unity\Assets\Scripts\Game\**\*.cs" Exclude="..\..\unity\Assets\Scripts\Game\Editor\**" Link="Game\%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="..\SweepV2\Shim\**\*.cs" Link="Shim\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\SweepV2\Host\CsvNormalize.cs" Link="SweepV2\CsvNormalize.cs" />
+    <Compile Include="..\SweepV2\Host\Report.cs" Link="SweepV2\Report.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Game\Editor\Sweep\PlaySweepResult.cs" Link="Game\Editor\Sweep\PlaySweepResult.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Game\Editor\Sweep\PlaySweepCase.cs" Link="Game\Editor\Sweep\PlaySweepCase.cs" />
     <Compile Include="*.cs" />
   </ItemGroup>
 

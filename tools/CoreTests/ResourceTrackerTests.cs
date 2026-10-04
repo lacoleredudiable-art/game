@@ -86,6 +86,16 @@ public class ResourceTrackerTests
     }
 
     [Test]
+    public void RefillToMax_restores_mana_and_clears_delay()
+    {
+        var r = new ResourceTracker(100f, 8f, 1.5f);
+        r.Consume(40f);
+        r.RefillToMax();
+        Assert.That(r.Mana, Is.EqualTo(100f));
+        Assert.That(r.RegenDelayLeftSec, Is.EqualTo(0f));
+    }
+
+    [Test]
     public void Consume_RestartsRegenDelay()
     {
         var r = new ResourceTracker();

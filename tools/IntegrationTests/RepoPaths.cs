@@ -28,6 +28,8 @@ static class RepoPaths
 
     public static string UnityAssets => Path.Combine(Root, "unity", "Assets");
 
+    public static string UnityGame => Path.Combine(UnityAssets, "Scripts", "Game");
+
     public static string ResourcesElementSystem =>
         Path.Combine(UnityAssets, "Resources", "ElementSystem");
 }
