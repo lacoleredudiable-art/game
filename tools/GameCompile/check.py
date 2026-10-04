@@ -32,7 +32,7 @@ def copy_tree(rel):
     base = ROOT / rel
     for src in base.rglob("*.cs"):
         posix = src.as_posix()
-        if any(s in posix for s in ("/Editor/",)):
+        if any(s in posix for s in ("/Editor/", "/DevTools/")):
             continue
         dest = GEN / rel / src.relative_to(base)
         rewrite(src, dest)

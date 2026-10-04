@@ -1,5 +1,5 @@
 using Dovus.Game.Config;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
@@ -58,8 +58,9 @@ namespace Dovus.Game.Hud
             ApplyVisibility(_tuning != null && _tuning.Hud.ShowFrameTimeHud);
 
 #if UNITY_EDITOR || DOVUS_DEBUG
-            DebugPanelsChrome.Register(ApplyChrome);
-            ApplyChrome(DebugPanelsChrome.Visible);
+            var chrome = DebugPanelsChromeAccess.Sink;
+            chrome?.Register(ApplyChrome);
+            ApplyChrome(chrome?.Visible ?? false);
 #endif
         }
 
@@ -70,7 +71,7 @@ namespace Dovus.Game.Hud
                 _root.SetActive(visible && (_tuning == null || _tuning.Hud.ShowFrameTimeHud));
         }
 
-        void OnDestroy() => DebugPanelsChrome.Unregister(ApplyChrome);
+        void OnDestroy() => DebugPanelsChromeAccess.Sink?.Unregister(ApplyChrome);
 #endif
 
         void ApplyVisibility(bool visible)

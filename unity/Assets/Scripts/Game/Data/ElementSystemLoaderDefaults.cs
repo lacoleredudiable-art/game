@@ -1,7 +1,7 @@
-namespace Dovus.Game.Platform
+namespace Dovus.Game.Data
 {
-    /// <summary>AssetCatalog doğrulama sayıları (PLAN 2B.11e).</summary>
-    public static class AssetCatalogDefaults
+    /// <summary>element-sistemi yükleme doğrulama sayıları (PLAN 2B.11e).</summary>
+    public static class ElementSystemLoaderDefaults
     {
         public const int ElementHeaderScanMaxChars = 300;
         public const int ExpectedSkillCount = 144;

@@ -9,7 +9,7 @@ namespace CoreTests;
 
 /// <summary>
 /// Game üst klasörleri arası using / tam nitelikli referans grafiği; Tarjan SCC (Editor hariç).
-/// PLAN 2B.18a — Composition kök, DevTools yaprak, Platform/Diagnostics çapraz kesen.
+/// PLAN 2B.20 — Composition/DevTools asmdef; Platform/Diagnostics yaprak; ana SCC 13.
 /// </summary>
 [TestFixture]
 public class GameLayeringTests
@@ -27,26 +27,28 @@ public class GameLayeringTests
         @"\bDovus\.Game\.(\w+)\.",
         RegexOptions.Compiled);
 
-    /// <summary>2B.18a sonrası kalan SCC (Composition ayrıldı). Yeni SCC eklenemez.</summary>
+    /// <summary>2B.20 sonrası ana runtime SCC (Composition/DevTools/Platform ayrı). Yeni SCC eklenemez.</summary>
     static readonly string[][] AllowedStronglyConnectedComponents =
     {
         new[]
         {
-            "Actors", "Arena", "Boss", "Cameras", "Casting", "Config", "Data", "DevTools", "Feel", "Hud",
-            "Platform", "Skills", "Team", "Vfx", "Weapons"
+            "Actors", "Arena", "Boss", "Cameras", "Casting", "Config", "Data", "Feel", "Hud",
+            "Skills", "Team", "Vfx", "Weapons"
         }
     };
 
     const int MaxNonTrivialSccCount = 1;
-    const int MaxAllowedSccSize = 15;
+    const int MaxAllowedSccSize = 13;
 
-    /// <summary>DevTools HUD statikleri — arayüz tersine çevirme 2B.18a kapsamı dışı (PR listesi).</summary>
-    static readonly HashSet<string> DevToolsReferenceAllowlist = new(StringComparer.OrdinalIgnoreCase)
+    static readonly HashSet<string> LeafFolders = new(StringComparer.Ordinal)
     {
-        "Actors/PlayerTargetingController.cs",
-        "Casting/MoveInputController.cs",
-        "Casting/Input/PointerRouter.cs",
-        "Hud/FrameTimeHud.cs",
+        "Platform",
+        "Diagnostics",
+    };
+
+    static readonly HashSet<string> LeafFolderAllowedDependencies = new(StringComparer.Ordinal)
+    {
+        "Assets",
     };
 
     static HashSet<string> TopLevelFolders()
@@ -234,17 +236,13 @@ public class GameLayeringTests
             if (top is "Editor" or "DevTools" or "Composition")
                 continue;
 
-            string rel = RelativeGamePath(file);
-            if (DevToolsReferenceAllowlist.Contains(rel))
-                continue;
-
             string text = File.ReadAllText(file);
             bool usesDevTools = UsingLine.Matches(text).Any(m => m.Groups[1].Value == "DevTools")
                 || QualifiedRef.Matches(text).Any(m => m.Groups[1].Value == "DevTools");
             Assert.That(
                 usesDevTools,
                 Is.False,
-                $"DevTools dışı klasör DevTools kullanıyor (allowlist veya arayüz): {rel}");
+                $"DevTools dışı klasör DevTools kullanıyor: {RelativeGamePath(file)}");
         }
     }
 
@@ -257,5 +255,35 @@ public class GameLayeringTests
         HashSet<string> main = sccs.SingleOrDefault(s => s.Contains("Skills"))
             ?? new HashSet<string>(StringComparer.Ordinal);
         Assert.That(main, Does.Not.Contain("Composition"), "Composition ana SCC'de — kök ayrışmadı.");
+    }
+
+    [Test]
+    public void Platform_and_Diagnostics_have_no_unlisted_intra_game_dependencies()
+    {
+        HashSet<string> folders = TopLevelFolders();
+        var graph = BuildDependencyGraph(folders);
+        foreach (string leaf in LeafFolders)
+        {
+            Assert.That(folders, Does.Contain(leaf));
+            foreach (string dep in graph[leaf])
+            {
+                Assert.That(
+                    LeafFolderAllowedDependencies,
+                    Does.Contain(dep),
+                    $"Yaprak klasör [{leaf}] → [{dep}] (yalnız {string.Join(", ", LeafFolderAllowedDependencies)} serbest)");
+            }
+        }
+    }
+
+    [Test]
+    public void Game_runtime_asmdef_files_exist_with_expected_names()
+    {
+        string gameRoot = GameRoot;
+        Assert.That(File.Exists(Path.Combine(gameRoot, "Dovus.Game.asmdef")), Is.True);
+        Assert.That(File.Exists(Path.Combine(gameRoot, "DevTools", "Dovus.Game.DevTools.asmdef")), Is.True);
+        Assert.That(File.Exists(Path.Combine(gameRoot, "Composition", "Dovus.Game.Composition.asmdef")), Is.True);
+        string devTools = File.ReadAllText(Path.Combine(gameRoot, "DevTools", "Dovus.Game.DevTools.asmdef"));
+        Assert.That(devTools, Does.Contain("\"defineConstraints\""));
+        Assert.That(devTools, Does.Contain("UNITY_EDITOR || DOVUS_DEBUG"));
     }
 }

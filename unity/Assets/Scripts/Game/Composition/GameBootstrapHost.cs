@@ -78,8 +78,11 @@ namespace Dovus.Game.Composition
                 TuningConfig = tuningConfig,
                 Clock = gameObject.AddComponent<GameClockHost>(),
             };
+#if UNITY_EDITOR || DOVUS_DEBUG
+            DevTools.DevToolsCompositionWiring.Apply();
+#endif
             ctx.Assets = AssetCatalog.Standalone;
-            FeelVfx.Configure(_tuning, ctx.Assets.Vfx);
+            FeelVfx.Configure(_tuning, VfxLibraryStandalone.Shared);
 
             ctx.TeamAccess = new TeamComboAccess();
 
@@ -103,7 +106,7 @@ namespace Dovus.Game.Composition
 
         internal int ScaledPlayerHp(AssetCatalog assets)
         {
-            if (assets != null && assets.TryGetElementDesign(out ElementSystemDesign design))
+            if (Data.ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
             {
                 float hp = BossCombatProfile.FromDocument(design.Document).PlayerMaxHp;
                 return Mathf.Max(1, Mathf.RoundToInt(hp));
@@ -113,7 +116,7 @@ namespace Dovus.Game.Composition
 
         internal float ScaledBossHp(AssetCatalog assets, float tuningMaxHp)
         {
-            if (assets != null && assets.TryGetElementDesign(out ElementSystemDesign design))
+            if (Data.ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
                 return Mathf.Max(1f, BossCombatProfile.FromDocument(design.Document).BossMaxHp);
             return Mathf.Max(1f, CombatScale.Magnitude(tuningMaxHp));
         }

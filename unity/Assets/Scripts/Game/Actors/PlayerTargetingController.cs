@@ -10,7 +10,7 @@ using Dovus.Core.Passives;
 using Dovus.Core.Grammar;
 using Dovus.Game.Cameras;
 using Dovus.Game.Casting;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Hud;
 using System;
 using System.Collections.Generic;
@@ -281,7 +281,9 @@ namespace Dovus.Game.Actors
         }
 
         bool InputBlocked() =>
-            TuningPanelHud.IsOpen || GrammarDebugHud.IsOpen || BuildSelectHud.IsOpen
+            (DebugPanelInput.State?.TuningPanelOpen ?? false)
+            || (DebugPanelInput.State?.GrammarDebugOpen ?? false)
+            || BuildSelectHud.IsOpen
             || (_elementMenu != null && _elementMenu.IsMenuOpen);
 
         void BuildMarker()

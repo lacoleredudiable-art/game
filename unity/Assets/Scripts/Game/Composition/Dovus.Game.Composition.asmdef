@@ -1,19 +1,17 @@
 {
-    "name": "Dovus.Game.Editor",
+    "name": "Dovus.Game.Composition",
     "rootNamespace": "",
     "references": [
         "Dovus.App",
         "Dovus.Core",
         "Dovus.Game",
-        "Dovus.Game.Composition",
         "Dovus.Game.DevTools",
+        "Unity.InputSystem",
         "Unity.TextMeshPro",
         "Unity.RenderPipelines.Core.Runtime",
         "Unity.RenderPipelines.Universal.Runtime"
     ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

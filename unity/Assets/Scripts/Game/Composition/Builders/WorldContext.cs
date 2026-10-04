@@ -21,7 +21,7 @@ using Dovus.Game.Platform;
 using Dovus.Game.Config;
 using Dovus.Game.Data;
 using Dovus.Game.Team;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Feel;
 using Dovus.Game.Vfx;
 using Dovus.Game.Hud;
@@ -78,7 +78,7 @@ namespace Dovus.Game.Composition.Builders
         public CameraOrbitController CameraOrbitController;
         public InkTrailView InkTrailView;
         public SyllableFeedbackView SyllableFeedbackView;
-        public SentenceDebugHud SentenceDebugHud;
+        public ISentenceDebugSink SentenceDebugHud;
         public ReactionReadoutHud ReactionReadoutHud;
         public VitalsHud VitalsHud;
         public DamageNumberHud DamageNumberHud;

@@ -2,7 +2,6 @@ using Dovus.Game.Actors;
 using Dovus.Game.Cameras;
 using Dovus.Game.Casting;
 using Dovus.Game.Config;
-using Dovus.Game.DevTools;
 using Dovus.Game.Diagnostics;
 using Dovus.Game.Hud;
 using Dovus.Game.Skills;
@@ -15,25 +14,34 @@ namespace Dovus.Game.Composition.Builders
         public void Build(WorldContext ctx)
         {
             ArenaBuilder.EnsureEventSystem();
+#if UNITY_EDITOR || DOVUS_DEBUG
             if (DebugConfig.Enabled)
             {
-                var v6Panel = ctx.HexagonRoot.AddComponent<GrammarDebugHud>();
-                v6Panel.Configure(
-                    ctx.HexagonInputController,
-                    ctx.ManifestationDirector,
-                    ctx.HexagonRoot.GetComponent<BuildSelectHud>(),
-                    ctx.HexagonView.CanvasRoot,
-                    ctx.PlayerVitalsHost);
-                CreateTuningPanel(ctx.TuningConfig, ctx.PlayerVitalsHost, ctx.FollowCameraController);
-                ctx.HexagonRoot.AddComponent<DebugPanelsController>();
+                BuildDebugTools(ctx);
             }
+#endif
+        }
+
+#if UNITY_EDITOR || DOVUS_DEBUG
+        static void BuildDebugTools(WorldContext ctx)
+        {
+            var v6Panel = ctx.HexagonRoot.AddComponent<Dovus.Game.DevTools.GrammarDebugHud>();
+            v6Panel.Configure(
+                ctx.HexagonInputController,
+                ctx.ManifestationDirector,
+                ctx.HexagonRoot.GetComponent<BuildSelectHud>(),
+                ctx.HexagonView.CanvasRoot,
+                ctx.PlayerVitalsHost);
+            CreateTuningPanel(ctx.TuningConfig, ctx.PlayerVitalsHost, ctx.FollowCameraController);
+            ctx.HexagonRoot.AddComponent<Dovus.Game.DevTools.DebugPanelsController>();
         }
 
         static void CreateTuningPanel(TuningConfig tuningConfig, PlayerVitalsHost vitals, FollowCameraController follow)
         {
             var panelGo = new GameObject("TuningPanel");
-            var panel = panelGo.AddComponent<TuningPanelHud>();
+            var panel = panelGo.AddComponent<Dovus.Game.DevTools.TuningPanelHud>();
             panel.Configure(tuningConfig, vitals, follow);
         }
+#endif
     }
 }

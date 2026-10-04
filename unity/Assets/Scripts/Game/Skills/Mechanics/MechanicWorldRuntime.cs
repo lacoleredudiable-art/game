@@ -14,7 +14,7 @@ using Dovus.Core.Motion;
 using Dovus.Core.Status;
 using Dovus.Game.Actors;
 using Dovus.Game.Boss;
-using Dovus.Game.Platform;
+using Dovus.Game.Vfx;
 using Dovus.Game.Diagnostics;
 using Dovus.App.Team;
 using Dovus.Game.Team;
