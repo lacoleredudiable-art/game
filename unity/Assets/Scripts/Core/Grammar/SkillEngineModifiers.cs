@@ -60,6 +60,10 @@ namespace Dovus.Core.Grammar
 
         public TeamOp TeamOp() => SkillMechanicOpParse.ParseTeamOp(J["team_op"].AsString());
 
+        public bool SwapCancel(bool fallback = false) => J["swap_cancel"].AsBool(fallback);
+
+        public bool Sustained(bool fallback = false) => J["sustained"].AsBool(fallback);
+
         public bool Has(string field) => J.Has(field);
 
         public float ReadFloat(string field, float fallback = 0f) => J[field].AsFloat(fallback);

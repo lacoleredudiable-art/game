@@ -21,7 +21,7 @@ public partial class TeamComboTests
     [Test]
     public void Skill_9_10_KeepsEachGroundHeight()
     {
-        var portal = new PortalSystem();
+        var portal = JsonPortal();
         var boss = Boss(0f, 8f);
         Body caster = Actor(1, 0f, 0f, owns: true, y: 1f);
         Body ally = Actor(2, 0f, 3f, y: 1.2f);
@@ -47,8 +47,8 @@ public partial class TeamComboTests
     [Test]
     public void Skill_10_10_ShotsExitBehindBoss()
     {
-        Assert.That(new TeamComboSystem().IsTeamSkill((SkillId)"10-10"), Is.True);
-        var portal = new PortalSystem();
+        Assert.That(JsonTeam().IsTeamSkill((SkillId)"10-10"), Is.True);
+        var portal = JsonPortal();
         var boss = Boss(0f, 5f);
         portal.Cast((SkillId)"10-10", Actor(1, 0f, 0f), default, null, boss);
         bool sawBack = false;
@@ -70,7 +70,7 @@ public partial class TeamComboTests
     [Test]
     public void Skill_11_8_AllyRisesBeside()
     {
-        var portal = new PortalSystem();
+        var portal = JsonPortal();
         var boss = Boss(0f, 5f);
         Body caster = Actor(1, 0f, 0f);
         portal.Cast((SkillId)"11-8", caster, Actor(2, 4f, 4f), null, boss);
@@ -85,7 +85,7 @@ public partial class TeamComboTests
     [Test]
     public void Skill_11_10_TeamGateGathers()
     {
-        var portal = new PortalSystem();
+        var portal = JsonPortal();
         var boss = Boss(0f, 6f);
         Body caster = Actor(1, 0f, 0f);
         var allies = new List<Body> { Actor(2, -4f, 1f), Actor(3, 4f, 1f) };
@@ -101,7 +101,7 @@ public partial class TeamComboTests
     [Test]
     public void Skill_11_10_AlliesKeepGroundHeight()
     {
-        var portal = new PortalSystem();
+        var portal = JsonPortal();
         var boss = Boss(0f, 6f);
         Body caster = Actor(1, 0f, 0f, y: 1.05f);
         var allies = new List<Body>
@@ -120,7 +120,7 @@ public partial class TeamComboTests
     [Test]
     public void PortalPass_DoesNotLandInsideBoss()
     {
-        var portal = new PortalSystem();
+        var portal = JsonPortal();
         var boss = Boss(0f, 0f);
         portal.Cast((SkillId)"9-10", Actor(1, 0f, 0f), Actor(2, 0.2f, 0.2f), null, boss);
         foreach (Placement move in portal.Drain())
@@ -135,7 +135,7 @@ public partial class TeamComboTests
     [Test]
     public void Skill_5_4_MineByAlly()
     {
-        var team = new TeamComboSystem();
+        var team = JsonTeam();
         var boss = Boss(0f, 6f);
         var caster = Ally(1, 0f, 0f);
         var friend = Ally(2, 1f, 1f);
@@ -149,7 +149,7 @@ public partial class TeamComboTests
     [Test]
     public void Skill_6_8_AirborneAllyDamage()
     {
-        var team = new TeamComboSystem();
+        var team = JsonTeam();
         var caster = Ally(1, 0f, 0f);
         var friend = Ally(2, 1f, 0f);
         TeamPulse pulse = team.Cast((SkillId)"6-8", caster, null, new[] { friend }, Boss(0f, 4f));
@@ -166,7 +166,7 @@ public partial class TeamComboTests
     [Test]
     public void Skill_7_6_RopeBurst()
     {
-        var team = new TeamComboSystem();
+        var team = JsonTeam();
         var boss = Boss(0f, 4f);
         var caster = Ally(1, 0f, 0f);
         var friend = Ally(2, 0f, 1f);
@@ -182,7 +182,7 @@ public partial class TeamComboTests
     [Test]
     public void Skill_7_9_MarkTwoPlayers()
     {
-        var team = new TeamComboSystem();
+        var team = JsonTeam();
         var boss = Boss(0f, 4f);
         var a = Ally(1, 0f, 0f);
         var b = Ally(2, 1f, 0f);
@@ -191,7 +191,7 @@ public partial class TeamComboTests
         team.Tick(2f, new[] { a, b }, boss);
         Assert.That(team.BossIncomingMult, Is.EqualTo(1.30f).Within(0.001f));
 
-        var pair = new TeamComboSystem();
+        var pair = JsonTeam();
         pair.Cast((SkillId)"7-9", a, null, new[] { b }, boss);
         pair.AllyHit(a, boss.X, boss.Z, true);
         pair.AllyHit(b, boss.X, boss.Z, true);
@@ -202,7 +202,7 @@ public partial class TeamComboTests
     [Test]
     public void Skill_8_3_BallThreePasses()
     {
-        var team = new TeamComboSystem();
+        var team = JsonTeam();
         var a = Ally(1, 0f, 0f);
         var b = Ally(2, 1f, 0f);
         var c = Ally(3, 2f, 0f);
@@ -226,7 +226,7 @@ public partial class TeamComboTests
     [Test]
     public void Skill_8_6_RopeBurn()
     {
-        var team = new TeamComboSystem();
+        var team = JsonTeam();
         var boss = Boss(0f, 0f);
         var caster = Ally(1, 0f, -4f);
         var left = Ally(2, -3f, 0f);
@@ -237,7 +237,7 @@ public partial class TeamComboTests
         TeamPulse pulse = team.Tick(1f, new[] { caster, left, right }, boss);
         Assert.That(pulse.Burned, Is.True);
 
-        var miss = new TeamComboSystem();
+        var miss = JsonTeam();
         var sideA = Ally(2, -3f, -3f);
         var sideB = Ally(3, -2f, -3f);
         miss.Cast((SkillId)"8-6", caster, sideA, new[] { sideA, sideB }, boss);
@@ -247,7 +247,7 @@ public partial class TeamComboTests
     [Test]
     public void Skill_11_4_TurretCopiesSkill()
     {
-        var team = new TeamComboSystem();
+        var team = JsonTeam();
         var near = Boss(0f, 4f);
         var caster = Ally(1, 0f, 0f);
         var friend = Ally(2, 0.2f, 0.2f);
@@ -257,7 +257,7 @@ public partial class TeamComboTests
         Assert.That(team.TurretShots, Is.EqualTo(1));
         Assert.That(team.TouchTurret(friend), Is.EqualTo("1-1"));
 
-        var far = new TeamComboSystem();
+        var far = JsonTeam();
         far.Cast((SkillId)"11-4", caster, null, new[] { friend }, Boss(0f, 20f));
         far.Tick(1f, new[] { caster, friend }, Boss(0f, 20f));
         Assert.That(far.TurretShots, Is.EqualTo(0));
@@ -266,7 +266,7 @@ public partial class TeamComboTests
     [Test]
     public void Skill_12_6_HasteBreaksWhenApart()
     {
-        var team = new TeamComboSystem();
+        var team = JsonTeam();
         var caster = Ally(1, 0f, 0f);
         var friend = Ally(2, 2f, 0f);
         var all = new List<IAllyPlayer> { caster, friend };
@@ -284,7 +284,7 @@ public partial class TeamComboTests
     [Test]
     public void Skill_2_6_GroundHeightNearSide_IsNotSnapped()
     {
-        var portal = new PortalSystem();
+        var portal = JsonPortal();
         var boss = Boss(0f, 6f);
         Body caster = Actor(1, 0f, 0f, owns: true, y: 1f);
         Body ally = Actor(2, 0f, 3f, y: 1f);
@@ -297,7 +297,7 @@ public partial class TeamComboTests
     [Test]
     public void Skill_2_6_ValidTemplateEnd_IsNotSnapped()
     {
-        var portal = new PortalSystem();
+        var portal = JsonPortal();
         var boss = Boss(0f, 4f);
         Body caster = Actor(1, 0f, 0f, owns: true);
         Body ally = Actor(2, 0f, 3f);
@@ -312,7 +312,7 @@ public partial class TeamComboTests
     [Test]
     public void TemplateEnd_WithoutPortal_DoesNotShove()
     {
-        var portal = new PortalSystem();
+        var portal = JsonPortal();
         var boss = Boss(0f, 1.2f);
         portal.NotifyTemplateEnded(1, 0f, 0f, 1.2f, 0.5f, boss);
         Assert.That(portal.Drain(), Is.Empty);
@@ -321,14 +321,14 @@ public partial class TeamComboTests
     [Test]
     public void Clear_DropsPortalAndTeamBetweenCases()
     {
-        var portal = new PortalSystem();
-        var team = new TeamComboSystem();
+        var portal = JsonPortal();
+        var team = JsonTeam();
         var border = new BorderMode();
         var boss = Boss(0f, 6f);
         portal.Cast((SkillId)"3-10", Actor(1, 0f, 0f, owns: true), default, null, boss);
         portal.NotifyTemplateEnded(1, 0f, 0f, 2f, 0.5f, boss);
         Assert.That(portal.Doors.Count, Is.GreaterThan(0));
-        border.OnSkill(1, (SkillId)"1-8", 0.05f);
+        border.OnSkill(1, (SkillId)"1-8", BorderEngine("1-8"), 0.05f);
         team.Cast((SkillId)"5-4", Ally(1, 0f, 0f), null, null, boss);
         portal.Clear();
         team.Clear();

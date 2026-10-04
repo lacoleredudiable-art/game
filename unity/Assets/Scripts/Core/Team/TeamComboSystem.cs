@@ -75,6 +75,7 @@ namespace Dovus.Core.Team
             TurretShots = 0;
             LastCopiedSkill = string.Empty;
             LastMineMult = 0f;
+            _linkBurnSource = string.Empty;
         }
 
         public float BossIncomingMult => _now < _armorUntil ? _armorMult : 1f;
@@ -150,13 +151,17 @@ namespace Dovus.Core.Team
         {
         }
 
+        string _linkBurnSource = string.Empty;
+
+        public string LinkBurnSourceSkillId => _linkBurnSource;
+
         public TeamComboSystem(IReadOnlyDictionary<string, TeamOp> ops)
         {
-            _ops = ops ?? TeamOpTable.Legacy;
+            _ops = ops ?? TeamOpTable.Empty;
         }
 
         /// <summary>Op tablosunu sonradan bağla (Unity MonoBehaviour ctor'unda Resources yüklenemez; host Awake'te çağırır).</summary>
-        public void UseOps(IReadOnlyDictionary<string, TeamOp> ops) => _ops = ops ?? TeamOpTable.Legacy;
+        public void UseOps(IReadOnlyDictionary<string, TeamOp> ops) => _ops = ops ?? TeamOpTable.Empty;
 
         public TeamPulse Cast(SkillId skillId, IAllyPlayer caster, IAllyPlayer target, IReadOnlyList<IAllyPlayer> allies, in Disc boss)
         {
@@ -176,7 +181,7 @@ namespace Dovus.Core.Team
                 case TeamOp.Ball:
                     return ThrowBall(caster, target, allies);
                 case TeamOp.Link:
-                    return LinkPair(caster, target, allies, boss);
+                    return LinkPair(skillId, caster, target, allies, boss);
                 case TeamOp.Turret:
                     return PlantTurret(caster);
                 case TeamOp.HasteRope:

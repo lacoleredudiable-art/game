@@ -103,7 +103,7 @@ namespace Dovus.Game.Team
             AllyDummyController dummy = actor.GetComponent<AllyDummyController>();
             dummy?.EnsureStatusBoard();
             if (dummy != null && dummy.Board != null && _bossStatus != null)
-                PortalSystem.MoveHostile(dummy.Board, _bossStatus.Board);
+                PortalSystem.MoveHostile(dummy.Board, _bossStatus.Board, move.SkillId.Value);
         }
 
         void PushHooks(TeamActorHost player)

@@ -39,7 +39,7 @@ public sealed class MdExtractedServicesTests
     {
         string src = Read("unity/Assets/Scripts/Game/Skills/Weapons/WeaponPassiveRuntime.cs");
         Assert.That(src, Does.Contain("public static bool IsSustained"));
-        Assert.That(src, Does.Contain("SkillIds.FlowingHeal"));
+        Assert.That(src, Does.Contain("Engine.Sustained()"));
     }
 
     [Test]

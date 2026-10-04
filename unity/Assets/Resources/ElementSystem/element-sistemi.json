@@ -396,7 +396,8 @@
               "label": "Yoğunlaştırma",
               "damage_mult": 1.35,
               "hitbox_scale_mult": 0.55,
-              "poise_damage_mult": 1.2
+              "poise_damage_mult": 1.2,
+              "swap_cancel": true
             },
             "prose_mechanic": "Dar, odaklı, yüksek hasar",
             "prose_feel": "Sert, kararlı, tek noktaya",
@@ -417,7 +418,8 @@
               "hitbox": "projectile",
               "label": "Emme",
               "lifesteal": 0.3,
-              "damage_mult": 0.95
+              "damage_mult": 0.95,
+              "border_mode": "tier_20"
             },
             "prose_mechanic": "Vurur, %30 can çalar",
             "prose_feel": "Aç, emici",
@@ -461,7 +463,8 @@
               "label": "Sabitleme",
               "poise_damage_mult": 1.5,
               "lifetime_add": 2.0,
-              "cast_mobility": "rooted"
+              "cast_mobility": "rooted",
+              "swap_cancel": true
             },
             "prose_mechanic": "Poise ×1.5",
             "prose_feel": "Ağır, kırıcı",
@@ -483,7 +486,8 @@
               "label": "Yayma",
               "hitbox_scale_mult": 1.8,
               "damage_mult": 0.85,
-              "max_targets": 5
+              "max_targets": 5,
+              "swap_cancel": true
             },
             "prose_mechanic": "Çevreye yayılan hasar (%85, en çok 5 hedef)",
             "prose_feel": "Geniş, dalga",
@@ -546,7 +550,9 @@
               "hitbox": "projectile",
               "label": "Yükseltme",
               "self_damage_buff": 0.1,
-              "buff_duration_sec": 3.0
+              "buff_duration_sec": 3.0,
+              "swap_cancel": true,
+              "border_mode": "tier_10"
             },
             "prose_mechanic": "+%10 hasar, 3 sn",
             "prose_feel": "Güçlenen",
@@ -634,7 +640,9 @@
               "label": "Akış",
               "channel_sec": 3.0,
               "tick_rate_mult": 1.2,
-              "damage_mult": 0.7
+              "damage_mult": 0.7,
+              "swap_cancel": true,
+              "sustained": true
             },
             "prose_mechanic": "3 sn ardışık seri",
             "prose_feel": "Sürekli, akıcı",
@@ -901,7 +909,8 @@
               "label": "Akış",
               "channel_sec": 3.0,
               "tick_rate_mult": 1.2,
-              "damage_mult": 0.7
+              "damage_mult": 0.7,
+              "sustained": true
             },
             "prose_mechanic": "Sürekli regen",
             "prose_feel": "Akıcı, sabırlı",
@@ -951,7 +960,8 @@
               "hitbox": "dash_line",
               "label": "Emme",
               "lifesteal": 0.3,
-              "damage_mult": 0.95
+              "damage_mult": 0.95,
+              "border_mode": "tier_20"
             },
             "prose_mechanic": "Dash + can çal",
             "prose_feel": "Sinsi, emici",
@@ -1020,7 +1030,8 @@
               "label": "Yayma",
               "hitbox_scale_mult": 1.8,
               "damage_mult": 0.85,
-              "max_targets": 5
+              "max_targets": 5,
+              "swap_cancel": true
             },
             "prose_mechanic": "Dash + çevre hasarı",
             "prose_feel": "Patlayıcı",
@@ -1083,7 +1094,8 @@
               "hitbox": "dash_line",
               "label": "Yükseltme",
               "self_damage_buff": 0.1,
-              "buff_duration_sec": 3.0
+              "buff_duration_sec": 3.0,
+              "swap_cancel": true
             },
             "prose_mechanic": "Dash + hız buff",
             "prose_feel": "Hızlanan",
@@ -1561,7 +1573,8 @@
               "label": "Yayma",
               "hitbox_scale_mult": 1.8,
               "damage_mult": 0.85,
-              "max_targets": 5
+              "max_targets": 5,
+              "swap_cancel": true
             },
             "prose_mechanic": "Geniş alan",
             "prose_feel": "Büyük yıkım",
@@ -1718,7 +1731,8 @@
               "label": "Akış",
               "channel_sec": 3.0,
               "tick_rate_mult": 1.2,
-              "damage_mult": 0.7
+              "damage_mult": 0.7,
+              "sustained": true
             },
             "prose_mechanic": "Sürekli seri",
             "prose_feel": "Sürekli yıkım",
@@ -1793,7 +1807,8 @@
               "label": "Sıçrama",
               "bounce_targets": 2,
               "bounce_damage_mult": 0.5,
-              "hitbox_scale_mult": 1.1
+              "hitbox_scale_mult": 1.1,
+              "swap_cancel": true
             },
             "prose_mechanic": "2. hedefe seker",
             "prose_feel": "Bulaşıcı",
@@ -2330,7 +2345,8 @@
               "hitbox": "self_or_ally",
               "label": "Emme",
               "lifesteal": 0.3,
-              "damage_mult": 0.95
+              "damage_mult": 0.95,
+              "border_mode": "tier_20"
             },
             "prose_mechanic": "Buff + can çal",
             "prose_feel": "Sömüren",
@@ -2558,7 +2574,8 @@
               "label": "Akış",
               "channel_sec": 3.0,
               "tick_rate_mult": 1.2,
-              "damage_mult": 0.7
+              "damage_mult": 0.7,
+              "sustained": true
             },
             "prose_mechanic": "Sürekli artan buff",
             "prose_feel": "Yükselen",
@@ -2856,7 +2873,8 @@
               "label": "Yoğunlaştırma",
               "damage_mult": 1.35,
               "hitbox_scale_mult": 0.55,
-              "poise_damage_mult": 1.2
+              "poise_damage_mult": 1.2,
+              "swap_cancel": true
             },
             "prose_mechanic": "%50 yansıma, 2 sn",
             "prose_feel": "Sert",
@@ -3591,7 +3609,9 @@
               "no_global_timescale": true,
               "label": "Yükseltme",
               "self_damage_buff": 0.1,
-              "buff_duration_sec": 3.0
+              "buff_duration_sec": 3.0,
+              "border_mode": "tier_10",
+              "border_column": true
             },
             "prose_mechanic": "Kendine +%50 hareket/cast hızı, 3 sn (dünya saati sabit)",
             "prose_feel": "Hızlanan",
@@ -3690,7 +3710,8 @@
               "label": "Akış",
               "channel_sec": 3.0,
               "tick_rate_mult": 1.2,
-              "damage_mult": 0.7
+              "damage_mult": 0.7,
+              "sustained": true
             },
             "prose_mechanic": "Sürekli düşman yavaşlatma alanı, 3 sn",
             "prose_feel": "Akıcı",

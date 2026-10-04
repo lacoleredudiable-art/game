@@ -49,6 +49,7 @@ namespace Dovus.Core.Portal
         int _seq = 1;
         float _now;
         int _hookActor = -1;
+        string _hookSkill = string.Empty;
         float _hookFromX;
         float _hookFromZ;
         float _hookAllyX;
@@ -72,11 +73,11 @@ namespace Dovus.Core.Portal
 
         public PortalSystem(IReadOnlyDictionary<string, PortalOp> ops)
         {
-            _ops = ops ?? PortalOpTable.Legacy;
+            _ops = ops ?? PortalOpTable.Empty;
         }
 
         /// <summary>Op tablosunu sonradan bağla (Unity MonoBehaviour ctor'unda Resources yüklenemez; host Awake'te çağırır).</summary>
-        public void UseOps(IReadOnlyDictionary<string, PortalOp> ops) => _ops = ops ?? PortalOpTable.Legacy;
+        public void UseOps(IReadOnlyDictionary<string, PortalOp> ops) => _ops = ops ?? PortalOpTable.Empty;
 
         public IReadOnlyList<DoorView> Doors
         {
@@ -94,6 +95,7 @@ namespace Dovus.Core.Portal
 
         public void Cast(SkillId skillId, in Body caster, in Body target, IReadOnlyList<Body> allies, in Disc boss)
         {
+            string castSkill = skillId.Value;
             PortalOp op = PortalOpTable.Resolve(skillId, _ops);
             switch (op)
             {
@@ -101,31 +103,31 @@ namespace Dovus.Core.Portal
                     OpenBackDoor(caster, boss);
                     break;
                 case PortalOp.Hook:
-                    ArmHook(caster, target, boss);
+                    ArmHook(castSkill, caster, target, boss);
                     break;
                 case PortalOp.AnchorOrRecall:
-                    AnchorOrRecall(caster, allies, boss);
+                    AnchorOrRecall(castSkill, caster, allies, boss);
                     break;
                 case PortalOp.Pair:
-                    OpenPair(caster, boss, TwoDoorSec, false);
+                    OpenPair(castSkill, caster, boss, TwoDoorSec, false);
                     break;
                 case PortalOp.Gate:
-                    OpenGate(caster, target, boss, false);
+                    OpenGate(castSkill, caster, target, boss, false);
                     break;
                 case PortalOp.MirrorGate:
-                    OpenGate(caster, target, boss, true);
+                    OpenGate(castSkill, caster, target, boss, true);
                     break;
                 case PortalOp.Swap:
-                    Swap(caster, target, boss);
+                    Swap(castSkill, caster, target, boss);
                     break;
                 case PortalOp.Mirror:
-                    OpenMirror(caster, boss);
+                    OpenMirror(castSkill, caster, boss);
                     break;
                 case PortalOp.Sink:
-                    Sink(caster, target, boss);
+                    Sink(castSkill, caster, target, boss);
                     break;
                 case PortalOp.GatherTeam:
-                    GatherTeam(caster, allies);
+                    GatherTeam(castSkill, caster, allies);
                     break;
             }
         }
@@ -153,7 +155,7 @@ namespace Dovus.Core.Portal
                 {
                     HookLanding(_hookFromX, _hookFromZ, r, _hookAllyX, _hookAllyZ, _hookAllyR, boss, out cx, out cy, out cz);
                     if (Moved(x, y, z, cx, cy, cz))
-                        _ready.Add(new Placement(actorId, cx, cy, cz, (SkillId)SkillIds.OpeningHeal, false));
+                        _ready.Add(new Placement(actorId, cx, cy, cz, (SkillId)_hookSkill, false));
                 }
             }
 
@@ -312,7 +314,7 @@ namespace Dovus.Core.Portal
                 float x = caster.X + BesideM;
                 float z = caster.Z;
                 PushOut(ref x, ref z, r.Radius, boss);
-                _ready.Add(new Placement(r.ActorId, x, r.Y, z, (SkillId)SkillIds.RisingSummon, false, true));
+                _ready.Add(new Placement(r.ActorId, x, r.Y, z, (SkillId)r.Skill, false, true));
                 _buffs.Add(new Buff(r.ActorId, _now + RiseBuffSec, 1f, 1f + RiseDamageAdd, 1f, 0f));
             }
 
@@ -334,7 +336,7 @@ namespace Dovus.Core.Portal
                     float x = caster.X + MathF.Cos(ang) * BesideM;
                     float z = caster.Z + MathF.Sin(ang) * BesideM;
                     PushOut(ref x, ref z, ally.Radius, boss);
-                    _ready.Add(new Placement(ally.Id, x, ally.Y, z, (SkillId)SkillIds.MirrorSummon, false, true));
+                    _ready.Add(new Placement(ally.Id, x, ally.Y, z, (SkillId)g.Skill, false, true));
                     n++;
                 }
             }
@@ -382,6 +384,7 @@ namespace Dovus.Core.Portal
             _views.Clear();
             _anchor = default;
             _hookActor = -1;
+            _hookSkill = string.Empty;
             _now = 0f;
             NarrowLeft = 0f;
             Strike = default;

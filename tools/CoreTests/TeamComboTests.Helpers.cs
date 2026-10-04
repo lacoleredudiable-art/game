@@ -1,4 +1,6 @@
 using Dovus.Core.Border;
+using Dovus.Core.Grammar;
+using System.IO;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
@@ -18,11 +20,27 @@ namespace CoreTests;
 
 public partial class TeamComboTests
 {
+    static SkillMotor _borderMotor;
+
+    static SkillEngineModifiers BorderEngine(string skillId)
+    {
+        _borderMotor ??= SkillMechanicTagTests.LoadMotorPublic();
+        Assert.That(_borderMotor.TryGetSkill(skillId, out SkillCatalogEntry entry), Is.True, skillId);
+        return new SkillEngineModifiers(entry.Engine);
+    }
+
+    static PortalSystem JsonPortal() =>
+        new PortalSystem(PortalOpTable.FromMotor(SkillMechanicTagTests.LoadMotorPublic()));
+
+    static TeamComboSystem JsonTeam() =>
+        new TeamComboSystem(TeamOpTable.FromMotor(SkillMechanicTagTests.LoadMotorPublic()));
+
     static void AssertTier(string skill, float below, float threshold, float attack, float life, float damage)
     {
         var mode = new BorderMode();
-        Assert.That(mode.OnSkill(1, (SkillId)skill, threshold), Is.False, skill + " eşikte açılmaz");
-        Assert.That(mode.OnSkill(1, (SkillId)skill, below), Is.True, skill);
+        var engine = BorderEngine(skill);
+        Assert.That(mode.OnSkill(1, (SkillId)skill, engine, threshold), Is.False, skill + " eşikte açılmaz");
+        Assert.That(mode.OnSkill(1, (SkillId)skill, engine, below), Is.True, skill);
         Assert.That(mode.Threshold(1), Is.EqualTo(threshold).Within(0.001f));
         Assert.That(mode.AttackSpeedMult(1) / mode.ColumnMoveSpeedMult(1), Is.EqualTo(attack).Within(0.001f));
         Assert.That(mode.LifestealAdd(1), Is.EqualTo(life).Within(0.001f));

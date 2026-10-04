@@ -353,8 +353,7 @@ namespace Dovus.Game.Skills.Weapons
                 return false;
             if (skill.Engine.ChannelSec(0f) > 0f)
                 return true;
-            string id = skill.Identity.Id;
-            return id is SkillIds.FlowingStrike or SkillIds.FlowingTime or SkillIds.FlowingHeal or SkillIds.FlowingBlast or SkillIds.FlowingAscent;
+            return skill.Engine.Sustained();
         }
 
         float BehindAngleDeg()

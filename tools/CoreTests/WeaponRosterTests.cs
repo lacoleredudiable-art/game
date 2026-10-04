@@ -1,4 +1,5 @@
 using Dovus.Core.Equipment;
+using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Motion;
 using NUnit.Framework;
@@ -149,9 +150,12 @@ public class WeaponRosterTests
     [Test]
     public void SwapCancel_WindowAndInstantChain_FollowTheTenTags()
     {
-        Assert.That(WeaponSwapCancel.TaggedSkillIds, Has.Length.EqualTo(10));
-        foreach (string id in WeaponSwapCancel.TaggedSkillIds)
+        SkillMotor motor = SkillMechanicTagTests.LoadMotorPublic();
+        Assert.That(SkillMechanicTagTests.ExpectedSwapCancelSkillIds, Has.Length.EqualTo(10));
+        foreach (string id in SkillMechanicTagTests.ExpectedSwapCancelSkillIds)
         {
+            Assert.That(motor.TryGetSkill(id, out SkillCatalogEntry entry), Is.True, id);
+            Assert.That(WeaponSwapCancel.IsTagged(new SkillEngineModifiers(entry.Engine)), Is.True, id);
             Assert.That(_motion.TryGet((SkillId)id, out MotionBinding binding), Is.True, id);
             Assert.That(binding.HasTag(MotionTemplateCatalog.TagSilah), Is.True, id);
             Assert.That(WeaponSwapCancel.InWindow(0.49f, 1f, true), Is.False, id);

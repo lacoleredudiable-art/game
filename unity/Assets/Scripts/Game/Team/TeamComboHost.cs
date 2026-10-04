@@ -1,6 +1,7 @@
 using Dovus.App.Team;
-using Dovus.Core.Shared;
 using Dovus.Core.Border;
+using Dovus.Core.Grammar;
+using Dovus.Core.Shared;
 using Dovus.Core.Portal;
 using Dovus.Core.Status;
 using Dovus.Core.Team;
@@ -26,6 +27,7 @@ namespace Dovus.Game.Team
         readonly BorderMode _border = new();
         readonly PortalSystem _portal = new();
         readonly TeamComboSystem _team = new();
+        SkillMotor _skillMotor;
         readonly List<TeamActorHost> _actors = new();
         readonly List<Body> _bodies = new();
         readonly List<IAllyPlayer> _allies = new();
@@ -52,15 +54,18 @@ namespace Dovus.Game.Team
         public int Spawned => _spawned.Count;
 
         // MonoBehaviour ctor'unda Resources.Load yasak (UnityException) → op tabloları Awake'te JSON'dan bağlanır.
-        // JSON yoksa gömülü Legacy tablo kalır (içerik aynı; SkillMechanicTagTests denetler).
         void Awake()
         {
             if (ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
             {
-                _portal.UseOps(PortalOpTable.FromMotor(design.SkillMotor));
-                _team.UseOps(TeamOpTable.FromMotor(design.SkillMotor));
+                _skillMotor = design.SkillMotor;
+                _portal.UseOps(PortalOpTable.FromMotor(_skillMotor));
+                _team.UseOps(TeamOpTable.FromMotor(_skillMotor));
             }
         }
+
+        SkillEngineModifiers EngineFor(SkillId skillId) =>
+            _skillMotor != null && _skillMotor.TryGetSkill(skillId.Value, out SkillCatalogEntry entry) ? new SkillEngineModifiers(entry.Engine) : default;
 
         void OnEnable()
         {
@@ -171,7 +176,7 @@ namespace Dovus.Game.Team
             player.TemplateOwnsPosition = _motion != null && _motion.IsDisplacing;
             Disc boss = BossDisc();
             var typedId = (SkillId)skillId;
-            _border.OnSkill(player.Id, typedId, player.HpRatio);
+            _border.OnSkill(player.Id, typedId, EngineFor(typedId), player.HpRatio);
             if (_motion == null || !_motion.IsDisplacing)
                 _borderReleasePending = true;
             Body caster = ToBody(player);
@@ -182,7 +187,7 @@ namespace Dovus.Game.Team
             ApplyMoves();
             // O3: eski ApplyBackStrike (önceki vuruşun zırh sonrası hasarını ikinci kez zırhtan geçiren görünmez
             // üçüncü vuruş) kaldırıldı; 1-10'un sırt vuruşu kalıbın sirtta_kapi fazında. Yalnız görsel kalır.
-            if (typedId.Value == SkillIds.MirrorStrike && _portal.Strike.Active)
+            if (EngineFor(typedId).PortalOp() == PortalOp.BackDoor && _portal.Strike.Active)
             {
                 Burst(new Vector3(_portal.Strike.X, TeamComboDefaults.PortalStrikeMarkerY, _portal.Strike.Z), new Color(0.75f, 0.75f, 1f));
             }
@@ -226,7 +231,8 @@ namespace Dovus.Game.Team
             if (pulse.Burned)
             {
                 // S17: yüklenen/panelden değişen tuning (ActorStatusHost.Bind'deki _combat.Status), varsayılan değil.
-                _bossStatus.Board.Apply(StatusKind.Burn, TeamComboDefaults.SecToMs, _bossStatus.Tuning.BurnDamagePerSec, SkillIds.OpeningAscent);
+                // Yanik yalniz baglanti (team_op link) kurulduktan sonra gelir; kaynak o cast'in skill kimligi.
+                _bossStatus.Board.Apply(StatusKind.Burn, TeamComboDefaults.SecToMs, _bossStatus.Tuning.BurnDamagePerSec, _team.LinkBurnSourceSkillId);
             }
             if (pulse.MineMult > TeamComboDefaults.MineMultActiveThreshold)
                 _line = "Mayın x" + pulse.MineMult.ToString("0");

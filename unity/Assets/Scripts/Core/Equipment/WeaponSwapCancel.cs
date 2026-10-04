@@ -1,4 +1,5 @@
 using System;
+using Dovus.Core.Grammar;
 using Dovus.Core.Shared;
 
 namespace Dovus.Core.Equipment
@@ -14,23 +15,17 @@ namespace Dovus.Core.Equipment
         public const float NormalOpenFraction = 0.70f;
         public const float TaggedOpenFraction = 0.50f;
 
-        public static readonly string[] TaggedSkillIds =
+        public static bool IsTagged(SkillMotor motor, SkillId skillId)
         {
-            SkillIds.DenseStrike, SkillIds.FixedStrike, SkillIds.SpreadStrike, SkillIds.RisingStrike, SkillIds.FlowingStrike,
-            SkillIds.SpreadStep, SkillIds.RisingStep, SkillIds.SpreadBlast, SkillIds.LeapingHead, SkillIds.DenseReflect
-        };
-
-        public static bool IsTagged(SkillId skillId)
-        {
-            if (skillId.IsEmpty)
+            if (motor == null || skillId.IsEmpty)
                 return false;
-            for (int i = 0; i < TaggedSkillIds.Length; i++)
-            {
-                if (string.Equals(TaggedSkillIds[i], skillId.Value, StringComparison.Ordinal))
-                    return true;
-            }
-            return false;
+            if (!motor.TryGetSkill(skillId.Value, out SkillCatalogEntry entry))
+                return false;
+            return new SkillEngineModifiers(entry.Engine).SwapCancel();
         }
+
+        public static bool IsTagged(in SkillEngineModifiers engine) =>
+            !engine.IsNull && engine.SwapCancel();
 
         public static float OpenFraction(bool tagged) => tagged ? TaggedOpenFraction : NormalOpenFraction;
 
@@ -66,7 +61,7 @@ namespace Dovus.Core.Equipment
         /// <summary>Penceredeki değiştirme kalan animasyonu keser.</summary>
         public static bool CutsRecovery(bool inWindow) => inWindow;
 
-        /// <summary>Anında sonraki skill yalnız 10 Silah kesme etiketinde.</summary>
+        /// <summary>Anında sonraki skill yalnız swap_cancel etiketinde.</summary>
         public static bool UnlocksNextSkill(bool inWindow, bool tagged) => inWindow && tagged;
     }
 }
