@@ -47,7 +47,7 @@ namespace Dovus.Game.Arena
             volume.priority = 1f;
 
             var look = fx.AddComponent<LookPresetController>();
-            look.Initialize(volume, sun);
+            look.Initialize(volume, sun, camera);
         }
 
         static void CreateRimLight(PrototypeTuning tuning)

@@ -16,6 +16,9 @@ namespace Dovus.Game.Skills.Execution
     /// </summary>
     public sealed class SummonExecutor : SkillExecutor
     {
+        static readonly List<SummonExecutor> s_live = new();
+        public static System.Collections.Generic.IReadOnlyList<SummonExecutor> Live => s_live;
+
         static readonly Collider[] Hits = new Collider[24];
 
         sealed class Minion
@@ -45,6 +48,14 @@ namespace Dovus.Game.Skills.Execution
         float _rampMax = 1.5f;
 
         public override SkillExecutorKind Kind => SkillExecutorKind.Summon;
+
+        void OnEnable()
+        {
+            if (!s_live.Contains(this))
+                s_live.Add(this);
+        }
+
+        void OnDisable() => s_live.Remove(this);
 
         public override void Execute(in SkillExecutionContext context)
         {

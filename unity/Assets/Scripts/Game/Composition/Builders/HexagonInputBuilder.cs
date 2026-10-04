@@ -28,7 +28,7 @@ namespace Dovus.Game.Composition.Builders
             root.transform.SetParent(ctx.SceneRoot, false);
             ctx.HexagonRoot = root;
 
-            var mainCam = Camera.main;
+            var mainCam = ctx.MainCamera;
             if (mainCam != null)
                 mainCam.cullingMask &= ~(1 << CompositionConstants.HexagonInkLayer);
 
@@ -139,10 +139,11 @@ namespace Dovus.Game.Composition.Builders
             targeting.Bind(
                 player,
                 0,
-                Camera.main,
+                ctx.MainCamera,
                 input,
                 combat.Dodge.TapMaxMoveDp,
-                view.CanvasRoot);
+                view.CanvasRoot,
+                follow);
             ctx.PlayerTargeting = targeting;
         }
 

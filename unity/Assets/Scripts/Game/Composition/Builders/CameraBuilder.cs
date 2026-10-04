@@ -33,12 +33,13 @@ namespace Dovus.Game.Composition.Builders
                 + Vector3.back * tuning.Camera.CameraDistanceM;
             camGo.transform.position = ctx.Player.transform.position + startOffset;
             ctx.FollowCamera = follow;
+            ctx.MainCamera = camera;
             return follow;
         }
 
         public void ApplyAtmosphere(WorldContext ctx)
         {
-            SceneAtmosphere.Apply(ctx.Sun, Camera.main, ctx.Tuning);
+            SceneAtmosphere.Apply(ctx.Sun, ctx.MainCamera, ctx.Tuning);
             BillboardVfx.CreateEmberField(ctx.Boss.transform, new Color(1f, 0.45f, 0.12f), rate: 14f);
         }
     }

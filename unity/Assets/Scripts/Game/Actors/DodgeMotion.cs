@@ -49,6 +49,14 @@ namespace Dovus.Game.Actors
         /// <summary>Kayma başladı: başlangıç konumu + yön (toz/ses sunumu).</summary>
         public event System.Action<Vector3, Vector3> SlideStarted;
 
+        void Awake()
+        {
+            _input = GetComponent<MoveInput>();
+            _motor = GetComponent<KinematicMotor>();
+            _vitals = GetComponent<PlayerVitals>();
+            _visual = GetComponent<ActorVisual>();
+        }
+
         public void Bind(
             GameClock clock,
             HexagonInput input,
@@ -69,32 +77,8 @@ namespace Dovus.Game.Actors
             _visual = GetComponent<ActorVisual>();
         }
 
-        void Start()
-        {
-            if (!IsBound)
-                TryAutoBind();
-        }
-
-        void TryAutoBind()
-        {
-            var input = FindAnyObjectByType<HexagonInput>();
-            var clock = FindAnyObjectByType<GameClock>();
-            var boss = GameObject.Find("Boss");
-            if (input == null || clock == null || boss == null)
-                return;
-            Bind(
-                clock,
-                input,
-                boss.transform,
-                GetComponent<AfterimageTrail>(),
-                FindAnyObjectByType<FollowCamera>());
-        }
-
         void Update()
         {
-            if (!IsBound)
-                TryAutoBind();
-
             if (_dodge == null || _clock == null || (_vitals != null && _vitals.IsDown))
             {
                 IsDisplacing = false;
@@ -156,8 +140,6 @@ namespace Dovus.Game.Actors
             _dir = ResolveDirection();
             _afterimage?.Clear();
             IsDisplacing = true;
-            if (_visual == null)
-                _visual = GetComponent<ActorVisual>();
             _visual?.Trigger(ActorVisual.TriggerDodge);
             SlideStarted?.Invoke(_startPos, _dir);
         }

@@ -11,11 +11,10 @@ namespace Dovus.Game.Skills
     {
         CombatFeel _combatFeel;
 
+        public void BindCombatFeel(CombatFeel feel) => _combatFeel = feel;
+
         void NotifyBossStruck(bool isCrit, bool allowHitstop)
         {
-            if (_combatFeel == null)
-                _combatFeel = FindAnyObjectByType<CombatFeel>();
-
             string weaponKey = _equippedWeapon != null ? _equippedWeapon.AnimationsKey : string.Empty;
             string archetype = WeaponArchetypeMap.ArchetypeFor(weaponKey);
             _combatFeel?.OnBossStruck(isCrit, allowHitstop, archetype);

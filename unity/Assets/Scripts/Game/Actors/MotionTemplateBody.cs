@@ -57,6 +57,19 @@ namespace Dovus.Game.Actors
             _body = bodyRadiusM > 0f ? bodyRadiusM : 0.5f;
         }
 
+        public void BindFollowCamera(FollowCamera follow) => _camera = follow;
+
+        void Awake()
+        {
+            _dodge = GetComponent<DodgeMotion>();
+            _vitals = GetComponent<PlayerVitals>();
+            _status = GetComponent<ActorStatus>();
+            _visual = GetComponent<ActorVisual>();
+            _motor = GetComponent<KinematicMotor>();
+            _move = GetComponent<MoveInput>();
+            _grounding = GetComponent<ActorGrounding>();
+        }
+
         public void SetAnimContext(MotionAnimTable anims, string weaponKey, int verbId)
         {
             _anims = anims ?? MotionAnimTable.BuiltIn;
@@ -108,8 +121,6 @@ namespace Dovus.Game.Actors
             _stopAfterSample = false;
             EnsureGrounding();
             _grounding.Release();
-            if (_visual == null)
-                _visual = GetComponent<ActorVisual>();
             _visual?.EndMotionAnim();
         }
 
@@ -132,8 +143,6 @@ namespace Dovus.Game.Actors
             {
                 _stopAfterSample = false;
                 _playing = false;
-                if (_visual == null)
-                    _visual = GetComponent<ActorVisual>();
                 _visual?.EndMotionAnim();
             }
             TickMotion();
@@ -183,12 +192,6 @@ namespace Dovus.Game.Actors
         {
             if (!_playing)
                 return;
-            if (_dodge == null)
-                _dodge = GetComponent<DodgeMotion>();
-            if (_vitals == null)
-                _vitals = GetComponent<PlayerVitals>();
-            if (_status == null)
-                _status = GetComponent<ActorStatus>();
             bool stunned = _status != null
                 && (_status.Board.Has(StatusKind.Stun) || _status.Board.Has(StatusKind.Fear));
             if (_dodge != null && _dodge.IsDisplacing)
@@ -277,11 +280,7 @@ namespace Dovus.Game.Actors
         void DriveLegs(in MotionTick tick)
         {
             if (_visual == null)
-                _visual = GetComponent<ActorVisual>();
-            if (_visual == null)
                 return;
-            if (_motor == null)
-                _motor = GetComponent<KinematicMotor>();
             float refMps = _motor != null ? _motor.LocoRefMps : 6.4f;
             var blend = LocoBlend.FromVelocity(tick.VelX, tick.VelZ, tick.FaceX, tick.FaceZ, refMps);
             // Kalıp hızı kısa fazda sönümün gerisinde kalmasın; ayak gövdeyle aynı karede eşleşsin.
@@ -295,8 +294,6 @@ namespace Dovus.Game.Actors
         Vector3 WorldStick()
         {
             if (_move == null)
-                _move = GetComponent<MoveInput>();
-            if (_move == null)
                 return Vector3.zero;
             Vector2 m = _move.MoveDirection;
             var stick = new Vector3(m.x, 0f, m.y);
@@ -304,8 +301,6 @@ namespace Dovus.Game.Actors
                 return Vector3.zero;
             if (stick.sqrMagnitude > 1f)
                 stick.Normalize();
-            if (_camera == null)
-                _camera = FindAnyObjectByType<FollowCamera>();
             if (_camera != null)
                 stick = Quaternion.Euler(0f, _camera.MovementYawDeg, 0f) * stick;
             return stick;

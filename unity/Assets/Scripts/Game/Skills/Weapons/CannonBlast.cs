@@ -97,11 +97,12 @@ namespace Dovus.Game.Skills.Weapons
         public void PushCannonBodies(float impactX, float impactZ, float splash, float arena, float bossR)
         {
             _cannonBodies.Clear();
-            SummonExecutor[] summons = Object.FindObjectsByType<SummonExecutor>(FindObjectsSortMode.None);
-            for (int i = 0; i < summons.Length; i++)
+            System.Collections.Generic.IReadOnlyList<SummonExecutor> summons = SummonExecutor.Live;
+            for (int i = 0; i < summons.Count; i++)
             {
-                if (summons[i] != null)
-                    summons[i].CollectWithin(impactX, impactZ, splash, _cannonBodies);
+                SummonExecutor summon = summons[i];
+                if (summon != null)
+                    summon.CollectWithin(impactX, impactZ, splash, _cannonBodies);
             }
 
             IReadOnlyList<Targetable> targets = Targetable.Live;

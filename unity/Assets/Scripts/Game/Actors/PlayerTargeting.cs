@@ -6,6 +6,7 @@ using Dovus.Core.Input;
 using Dovus.Core.Hud;
 using Dovus.Core.Passives;
 using Dovus.Core.Grammar;
+using Dovus.Game.Cameras;
 using Dovus.Game.Casting;
 using Dovus.Game.DevTools;
 using Dovus.Game.Hud;
@@ -31,7 +32,7 @@ namespace Dovus.Game.Actors
         public string DisplayName => string.IsNullOrEmpty(_displayName) ? name : _displayName;
         public bool IsAvailable => _available == null || _available();
 
-        // O11: sahne araması (FindObjectsByType) yerine etkin hedef kaydı (hedefleme, sekme, top sıçraması).
+        // O11: sahne taraması yerine etkin hedef kaydı (hedefleme, sekme, top sıçraması).
         static readonly List<Targetable> s_live = new List<Targetable>();
         public static IReadOnlyList<Targetable> Live => s_live;
 
@@ -111,6 +112,7 @@ namespace Dovus.Game.Actors
         Transform _owner;
         int _ownerTeamId;
         Camera _camera;
+        FollowCamera _follow;
         HexagonInput _hexagon;
         float _tapMaxMoveDp;
         int? _fingerId;
@@ -140,11 +142,13 @@ namespace Dovus.Game.Actors
             Camera camera,
             HexagonInput hexagon,
             float tapMaxMoveDp,
-            Transform canvasRoot)
+            Transform canvasRoot,
+            FollowCamera follow = null)
         {
             _owner = owner;
             _ownerTeamId = ownerTeamId;
             _camera = camera;
+            _follow = follow;
             _hexagon = hexagon;
             _tapMaxMoveDp = Mathf.Max(0f, tapMaxMoveDp);
             BuildMarker();
@@ -313,8 +317,8 @@ namespace Dovus.Game.Actors
 
         void SelectAt(Vector2 screenPosition)
         {
-            if (_camera == null)
-                _camera = Camera.main;
+            if (_camera == null && _follow != null)
+                _camera = _follow.ViewCamera;
             if (_camera == null)
                 return;
 

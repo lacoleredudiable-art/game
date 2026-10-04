@@ -16,6 +16,7 @@ namespace Dovus.Game.Arena
 
         Volume _volume;
         Light _sun;
+        Camera _mainCamera;
         float _savedRenderScale = 1f;
         int _savedMsaa = 1;
         int _savedMainShadowRes = 1024;
@@ -213,7 +214,7 @@ namespace Dovus.Game.Arena
 
             // Derinlik dokusu paylaşılan URP asset'ine değil, kameraya özel yazılır (task-look-v2b problem 3):
             // asset'e yazmak Play'den çıkışta kalıcı diff bırakıyordu (m_RequireDepthTexture 0→1).
-            ApplyCameraOverrides(Camera.main, ssao);
+            ApplyCameraOverrides(_mainCamera, ssao);
 
             // C'de gerçek zamanlı yansıma probu çalışsın: proje Very Low/Low kalite seviyesinde
             // realtimeReflectionProbes kapalı geliyor (QualitySettings.asset) — probu etkisiz kılıyordu.
@@ -352,8 +353,7 @@ namespace Dovus.Game.Arena
                 return;
             _savedFogDensity = RenderSettings.fogDensity;
             _savedAmbientSky = RenderSettings.ambientSkyColor;
-            var cam = Camera.main;
-            _savedCameraBackground = cam != null ? cam.backgroundColor : Color.gray;
+            _savedCameraBackground = MainCameraBackgroundOr(Color.gray);
             _fogCached = true;
         }
 
@@ -361,26 +361,27 @@ namespace Dovus.Game.Arena
         {
             if (!_fogCached)
                 return;
-            var cam = Camera.main;
-            if (cam != null)
-                cam.backgroundColor = _savedCameraBackground;
+            if (_mainCamera != null)
+                _mainCamera.backgroundColor = _savedCameraBackground;
         }
 
         void ApplyCameraBackground(char preset)
         {
-            var cam = Camera.main;
-            if (cam == null)
+            if (_mainCamera == null)
                 return;
-            Color baseBg = _fogCached ? _savedCameraBackground : cam.backgroundColor;
+            Color baseBg = _fogCached ? _savedCameraBackground : _mainCamera.backgroundColor;
             // Gri gökyüzü hedefi |R-B| < 20 olmalı (task-look-v2b problem 1 doğrulaması) — B/C'nin
             // önceki hedef renkleri biraz fazla maviye kaçıyordu (ölçülen |R-B| 24/19).
-            cam.backgroundColor = preset switch
+            _mainCamera.backgroundColor = preset switch
             {
                 'B' => Color.Lerp(baseBg, new Color(0.68f, 0.705f, 0.73f), 0.92f),
                 'C' => Color.Lerp(baseBg, new Color(0.56f, 0.59f, 0.63f), 0.55f),
                 _ => Color.Lerp(baseBg, new Color(0.36f, 0.38f, 0.42f), 0.42f),
             };
         }
+
+        Color MainCameraBackgroundOr(Color fallback) =>
+            _mainCamera != null ? _mainCamera.backgroundColor : fallback;
 
         void RestoreFog()
         {

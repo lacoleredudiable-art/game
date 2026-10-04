@@ -76,13 +76,13 @@ namespace Dovus.Game.Actors
                 LockFeet();
         }
 
+        public void BindClock(GameClock clock) => _clock = clock;
+
         void LateUpdate()
         {
             if (!_claimed)
                 _logic.Release();
             _claimed = false;
-            if (_clock == null)
-                _clock = FindAnyObjectByType<GameClock>();
             float dt = _clock != null ? (float)(_clock.WorldDeltaMs / 1000.0) : Time.deltaTime;
             _logic.Tick(dt);
             ApplyRoot();

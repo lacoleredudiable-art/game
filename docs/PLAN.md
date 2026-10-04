@@ -35,7 +35,7 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 - [x] 2B.6 Core içi döngüler + Combat konu bölme (A8, A19) — 2B.6a (#106), 2B.6b (#107), 2B.6c döngü kapısı + kalan SCC allowlist
 - [x] 2B.7 SweepV2 sahte Unity katmanı bağımlılığını azalt: testler App katmanına (A12)
 - [x] 2B.8 7 singleton + kalan statikler → enjeksiyon (A13); 2B.8b: `AssetCatalog`, `PortalBorderTeamAccess`, HUD/SFX/VFX/theme enjeksiyonu — (a) team hooks: `TeamModifierHub` örneği, statik `PortalBorderTeamHooks` kaldırıldı
-- [ ] 2B.9 59 FindAnyObjectByType/Camera.main → referans enjeksiyonu; her kare GetComponent önbellek (A15)
+- [x] 2B.9 59 FindAnyObjectByType/Camera.main → referans enjeksiyonu; her kare GetComponent önbellek (A15)
 - [ ] 2B.10 Eksik asset referansları raporu + güvenli geri dönüş (A16)
 - [ ] 2B.11 ~2.900 sabit sayı → ayar/JSON (öncelik: oynanış sayıları) (A17)
 - [ ] 2B.12 İsimlendirme: sonek standardı, PortalBorderTeam*/Prototype*/V611/Weapons10/SweepV2 adları, yorum kodları (A21–A23)

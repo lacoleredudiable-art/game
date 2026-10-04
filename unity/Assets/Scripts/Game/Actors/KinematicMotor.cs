@@ -29,6 +29,7 @@ namespace Dovus.Game.Actors
         ActorStatus _status;
         ActorVisual _visual;
         FollowCamera _follow;
+        MotionTemplateBody _templateBody;
         PlayerStateMachine _playerStates;
         System.Func<Transform> _combatFacingTarget;
         System.Func<bool> _combatFacingLocked;
@@ -37,6 +38,8 @@ namespace Dovus.Game.Actors
         static readonly RaycastHit[] CastHits = new RaycastHit[8];
 
         public void BindCamera(FollowCamera follow) => _follow = follow;
+
+        public void BindClock(GameClock clock) => _clock = clock;
 
         public void BindPlayerStates(PlayerStateMachine states) => _playerStates = states;
 
@@ -77,15 +80,15 @@ namespace Dovus.Game.Actors
         {
             _tuning ??= new PrototypeTuning();
             _input = GetComponent<MoveInput>();
-            _clock = FindAnyObjectByType<GameClock>();
+            _dodgeMotion = GetComponent<DodgeMotion>();
+            _visual = GetComponent<ActorVisual>();
+            _vitals = GetComponent<PlayerVitals>();
+            _status = GetComponent<ActorStatus>();
+            _templateBody = GetComponent<MotionTemplateBody>();
         }
 
         void Update()
         {
-            if (_dodgeMotion == null)
-                _dodgeMotion = GetComponent<DodgeMotion>();
-            if (_visual == null)
-                _visual = GetComponent<ActorVisual>();
             if (_dodgeMotion != null && _dodgeMotion.IsDisplacing)
             {
                 Velocity = Vector3.zero;
@@ -93,19 +96,13 @@ namespace Dovus.Game.Actors
                 return;
             }
 
-            var templateBody = GetComponent<MotionTemplateBody>();
-            if (templateBody != null && templateBody.IsDisplacing)
+            if (_templateBody != null && _templateBody.IsDisplacing)
             {
                 // Yeri kalıp yazar. Bacak hızını burada sıfırlamak ayakları donduruyordu;
                 // blend'i kalıbın kendi hızı besler.
                 Velocity = Vector3.zero;
                 return;
             }
-
-            if (_vitals == null)
-                _vitals = GetComponent<PlayerVitals>();
-            if (_status == null)
-                _status = GetComponent<ActorStatus>();
 
             if (_vitals != null && _vitals.IsDown)
             {
@@ -134,8 +131,6 @@ namespace Dovus.Game.Actors
             if (stick > 0.0001f)
                 direction /= Mathf.Max(1f, direction.magnitude);
 
-            if (_follow == null)
-                _follow = FindAnyObjectByType<FollowCamera>();
             if (_follow != null && direction.sqrMagnitude > 0.0001f)
                 direction = Quaternion.Euler(0f, _follow.MovementYawDeg, 0f) * direction;
 
