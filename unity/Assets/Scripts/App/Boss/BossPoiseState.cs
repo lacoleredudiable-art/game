@@ -18,10 +18,7 @@ namespace Dovus.App.Boss
             float dz = landZ - homeZ;
             float dist = (float)Math.Sqrt(dx * dx + dz * dz);
             if (dist < minDistM)
-            {
-                PounceLeapActive = false;
-                return false;
-            }
+                return false; // eski davranış: bayrağa dokunmadan çık
 
             PounceLeapActive = true;
             return true;

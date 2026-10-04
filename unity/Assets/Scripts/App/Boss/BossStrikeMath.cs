@@ -19,7 +19,8 @@ namespace Dovus.App.Boss
             float denominator = (float)Math.Sqrt((fromX * fromX + fromZ * fromZ) * (toX * toX + toZ * toZ));
             if (denominator < AngleEpsilon)
                 return 0f;
-            float crossY = fromX * toZ - fromZ * toX;
+            // Unity: Cross(from, to).y = from.z * to.x - from.x * to.z; Mathf.Sign(0) = +1.
+            float crossY = fromZ * toX - fromX * toZ;
             float dot = fromX * toX + fromZ * toZ;
             float num2 = dot / denominator;
             if (num2 < -1f)
@@ -27,7 +28,7 @@ namespace Dovus.App.Boss
             else if (num2 > 1f)
                 num2 = 1f;
             float unsigned = (float)Math.Acos(num2) * Rad2Deg;
-            return unsigned * Math.Sign(crossY);
+            return unsigned * (crossY >= 0f ? 1f : -1f);
         }
     }
 }

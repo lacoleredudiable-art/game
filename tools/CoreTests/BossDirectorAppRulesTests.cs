@@ -56,8 +56,10 @@ public sealed class BossDirectorAppRulesTests
     [Test]
     public void BossStrikeMath_SignedAngleMatchesUnityStyle()
     {
-        float angle = BossStrikeMath.FlatSignedAngleDeg(0f, 1f, 1f, 0f);
-        Assert.That(angle, Is.EqualTo(-90f).Within(0.01f));
+        // Unity: Vector3.SignedAngle(forward, right, up) = +90; tam arka = +180 (Mathf.Sign(0) = +1).
+        Assert.That(BossStrikeMath.FlatSignedAngleDeg(0f, 1f, 1f, 0f), Is.EqualTo(90f).Within(0.01f));
+        Assert.That(BossStrikeMath.FlatSignedAngleDeg(0f, 1f, -1f, 0f), Is.EqualTo(-90f).Within(0.01f));
+        Assert.That(BossStrikeMath.FlatSignedAngleDeg(0f, 1f, 0f, -2f), Is.EqualTo(180f).Within(0.01f));
     }
 
     [Test]
