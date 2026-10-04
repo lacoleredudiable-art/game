@@ -42,7 +42,7 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
   - [x] 2B.11b–g tüm oynanış/ayar sayıları `*Defaults` const'larına (1615 → 0 hedef); `MagicNumberRatchetTests` tavanı her PR'da iner — 2B.11c Core+App; 2B.11d Game/Skills+Team; 2B.11e Game/Boss+Actors+Composition+Cameras+Feel+Platform; [x] 2B.11f Game/Weapons+Audio+Casting; [x] 2B.11g Game/Vfx+Arena+Hud bitti
 - [x] 2B.12 İsimlendirme: sonek standardı, TeamCombo*/GameBootstrap/GameTuning/GrammarDebugPanel adları, yorum kodları (A21–A23); `docs/naming.md`
 - [x] 2B.12b MonoBehaviour sonek standardı: 54 Game bileşeni + 4 iç içe yardımcı yeniden adlandırıldı (GUID aynı), 79/79 standart sonek, `Game_MonoBehaviours_UseStandardSuffix` kapısı (A21)
-- [ ] 2B.13 Tek dil kuralı (kod İngilizce, veri sözcükleri sözlükle) (A24); dosya adı=tip, tek tip/dosya, yanlış yerdeki dosyalar (A25) — (a) Core/App tek tip/dosya bitti; **(b) Game tek tip/dosya + yanlış klasör + A24 kapı testleri**
+- [ ] 2B.13 Tek dil kuralı (kod İngilizce, veri sözcükleri sözlükle) (A24); dosya adı=tip, tek tip/dosya, yanlış yerdeki dosyalar (A25) — (a) Core/App tek tip/dosya bitti; **(b) Game tek tip/dosya + yanlış klasör + A24 kapı testleri**; **(c) Core ≤500**
 - [ ] 2B.14 DDD: Rune/Element dili (A26), tek Skill modeli (A27), ID tiplerinin tam benimsenmesi + SkillResolution sadeleşme (A28, A30)
 - [ ] 2B.15 DDD: Player/Actor varlıkları, hedef=ActorId (A29); skill yan etkileri → olaylar (A31); repository arayüzleri, katalog = parser/factory/depo ayrımı (A32)
 - [ ] 2B.16 Ajan dostu: sabit açılı otomatik ekran görüntüsü aracı (C5); Unity derlemesi CI'da değilse not
