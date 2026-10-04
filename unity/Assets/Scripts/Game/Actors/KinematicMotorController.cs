@@ -11,6 +11,7 @@ using Dovus.Game.Platform;
 using Dovus.Game.Config;
 using UnityEngine;
 
+using Dovus.Core.Shared;
 namespace Dovus.Game.Actors
 {
     /// <summary>
@@ -149,7 +150,7 @@ namespace Dovus.Game.Actors
             float speedMult = _status != null ? _status.EffectiveMoveSpeedMult : 1f;
             if (_playerStates != null && _playerStates.MoveLimited && _status != null)
                 speedMult *= _status.Tuning.SlowSpeedMult;
-            float dtSec = _clock != null ? (float)(_clock.WorldDeltaMs / ActorsTimeDefaults.SecToMs) : Time.deltaTime;
+            float dtSec = _clock != null ? (float)(_clock.WorldDeltaMs / Units.SecToMs) : Time.deltaTime;
 
             float stickT = Mathf.InverseLerp(_tuning.Input.JoystickDeadZone, 1f, stick);
             float speedFrac = stick > 0.0001f ? Mathf.Lerp(_tuning.Player.MinStickSpeedFrac, 1f, stickT) : 0f;

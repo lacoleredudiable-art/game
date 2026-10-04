@@ -9,6 +9,7 @@ using Dovus.Core.Passives;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 
+using Dovus.Core.Shared;
 namespace Dovus.App.Boss
 {
     public static class BossMechanicStatusMap
@@ -43,7 +44,7 @@ namespace Dovus.App.Boss
         {
             if (board == null || t == null)
                 return;
-            double ms = durationSec > 0f ? durationSec * BossDefaults.SecToMs : 0;
+            double ms = durationSec > 0f ? durationSec * Units.SecToMs : 0;
             switch (kind)
             {
                 case StatusKind.Burn:

@@ -103,7 +103,7 @@ namespace Dovus.Core.Casting
                     continue;
                 }
 
-                map[kind] = (int)Math.Round(row["duration_sec"].AsFloat(0f) * CastingDefaults.SecToMs);
+                map[kind] = (int)Math.Round(row["duration_sec"].AsFloat(0f) * Units.SecToMs);
             }
 
             return map;

@@ -11,6 +11,7 @@ using Dovus.Core.Mechanic;
 using Dovus.Core.Tuning;
 using System;
 using UnityEngine;
+using Dovus.Core.Shared;
 namespace Dovus.Game.Skills.Execution
 {
     public abstract class SkillExecutorController : MonoBehaviour, ISkillExecutor
@@ -27,7 +28,7 @@ namespace Dovus.Game.Skills.Execution
     
             /// <summary>Dünya saati: build menüsü açıkken 0, TimeDirector ölçeğini izler.</summary>
             protected float WorldDeltaSec => Context.Clock != null
-                ? (float)(Context.Clock.WorldDeltaMs / SkillsTimeDefaults.SecToMs)
+                ? (float)(Context.Clock.WorldDeltaMs / Units.SecToMs)
                 : Time.deltaTime;
     
             public virtual void Execute(in SkillExecutionContext context)

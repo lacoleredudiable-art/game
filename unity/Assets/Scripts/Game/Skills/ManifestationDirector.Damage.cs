@@ -226,7 +226,7 @@ namespace Dovus.Game.Skills
             if (debuff < 0f && target != null)
             {
                 float sec = engine.DebuffDurationSec(SkillsManifestationDefaults.DefaultDebuffDurationSec);
-                target.Armor.ApplyShred(-debuff, now, now + Math.Max(SkillsManifestationDefaults.ShredMinDurationSec, sec) * SkillsTimeDefaults.SecToMs);
+                target.Armor.ApplyShred(-debuff, now, now + Math.Max(SkillsManifestationDefaults.ShredMinDurationSec, sec) * Dovus.Core.Shared.Units.SecToMs);
             }
 
             float buff = engine.ArmorAdd(0f);
@@ -236,7 +236,7 @@ namespace Dovus.Game.Skills
             {
                 buff = WeaponPassiveRules.ScaleFriendlyMagnitude(buff, WeaponFriendlyScale());
                 float sec = engine.BuffDurationSec(engine.DebuffDurationSec(SkillsManifestationDefaults.DefaultBuffDurationSec));
-                _playerStatus.Armor.GrantBuff(buff, now + Math.Max(SkillsManifestationDefaults.ArmorBuffMinDurationSec, sec) * SkillsTimeDefaults.SecToMs);
+                _playerStatus.Armor.GrantBuff(buff, now + Math.Max(SkillsManifestationDefaults.ArmorBuffMinDurationSec, sec) * Dovus.Core.Shared.Units.SecToMs);
             }
         }
     }

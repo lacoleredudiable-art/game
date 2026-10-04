@@ -11,6 +11,7 @@ using Dovus.Game.Skills.Mechanics;
 using System;
 using UnityEngine;
 
+using Dovus.Core.Shared;
 namespace Dovus.Game.Skills.Projectiles
 {
     public sealed class ProjectileEraser
@@ -155,7 +156,7 @@ namespace Dovus.Game.Skills.Projectiles
             {
                 if (worldMs < v.NextEraseMs)
                     return;
-                v.NextEraseMs = worldMs + SkillsTimeDefaults.SecToMs / Math.Max(ProjectileEraserDefaults.EraseRateMinHz, spec.RatePerSec);
+                v.NextEraseMs = worldMs + Units.SecToMs / Math.Max(ProjectileEraserDefaults.EraseRateMinHz, spec.RatePerSec);
                 EraseMostUrgent(id);
                 return;
             }

@@ -14,6 +14,7 @@ using Dovus.Game.Config;
 using Dovus.Game.Vfx;
 using UnityEngine;
 
+using Dovus.Core.Shared;
 namespace Dovus.Game.Actors
 {
     /// <summary>
@@ -109,7 +110,7 @@ namespace Dovus.Game.Actors
             float glide = _dodge.GetGlideVelocityRatio(worldMs);
             if (glide > 0f)
             {
-                float dtSec = (float)(_clock.WorldDeltaMs / ActorsTimeDefaults.SecToMs);
+                float dtSec = (float)(_clock.WorldDeltaMs / Units.SecToMs);
                 _glideExtra += _dir * GlideSpeedMps() * glide * dtSec;
             }
 
@@ -174,7 +175,7 @@ namespace Dovus.Game.Actors
             if (_boss == null)
                 return pos;
             float body = _motor != null ? _motor.BodyRadiusM : 0.5f;
-            float bossR = DodgeMotionControllerDefaults.FallbackBossRadiusM;
+            float bossR = CombatFallbacks.BossBodyRadiusFallbackM;
             // O11: yer değiştirme karesi başına GetComponent yerine boss başına bir kez.
             if (_reactorOwner != _boss || _reactorCache == null)
             {

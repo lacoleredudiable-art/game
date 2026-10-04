@@ -1,4 +1,4 @@
-﻿using Dovus.App.Casting;
+using Dovus.App.Casting;
 using Dovus.Core;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
@@ -35,6 +35,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+using Dovus.Core.Shared;
 namespace Dovus.Game.Skills
 {
     /// <summary>
@@ -224,7 +225,7 @@ namespace Dovus.Game.Skills
                 return;
 
             double worldMs = _clock.Director.WorldTimeMs;
-            float dtSec = (float)(_clock.WorldDeltaMs / SkillsTimeDefaults.SecToMs);
+            float dtSec = (float)(_clock.WorldDeltaMs / Units.SecToMs);
             if (!PerformingAttack)
             {
               EnsureSkillServices();

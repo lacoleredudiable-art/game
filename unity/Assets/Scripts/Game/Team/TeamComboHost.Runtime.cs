@@ -75,7 +75,7 @@ namespace Dovus.Game.Team
             if (_boss != null)
             {
                 BossReactorController reactor = CachedBossReactor();
-                float radius = reactor != null ? reactor.BodyRadiusM : TeamComboDefaults.BossBodyRadiusFallbackM;
+                float radius = reactor != null ? reactor.BodyRadiusM : Dovus.Core.Shared.CombatFallbacks.BossBodyRadiusFallbackM;
                 var bossBody = new Body(TeamComboDefaults.BossPortalBodyId, _boss.position.x, _boss.position.y, _boss.position.z, radius, false, true);
                 _portal.Sense(bossBody, false, boss, out _);
             }

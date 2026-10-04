@@ -1,5 +1,6 @@
 using System;
 
+using Dovus.Core.Shared;
 namespace Dovus.Core.Boss
 {
     /// <summary>
@@ -83,7 +84,7 @@ namespace Dovus.Core.Boss
         /// <summary>Hareket ve süre dolumu. dtMs dünya saati farkı (duraklamada 0).</summary>
         public void Tick(double nowMs, double dtMs)
         {
-            float dt = (float)(Math.Max(0.0, dtMs) / BossDefaults.SecToMs);
+            float dt = (float)(Math.Max(0.0, dtMs) / Units.SecToMs);
             for (int i = 0; i < _pool.Length; i++)
             {
                 if (!_pool[i].Alive)
@@ -242,7 +243,7 @@ namespace Dovus.Core.Boss
             float closing = (p.VX * dx + p.VZ * dz) / len;
             if (closing <= 0.0001f)
                 return double.PositiveInfinity;
-            return dist / closing * BossDefaults.SecToMs;
+            return dist / closing * Units.SecToMs;
         }
 
         public static float SegmentDistance(float px, float pz, float ax, float az, float bx, float bz)

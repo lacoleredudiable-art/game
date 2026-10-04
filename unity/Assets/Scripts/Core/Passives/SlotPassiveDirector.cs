@@ -39,7 +39,7 @@ namespace Dovus.Core.Passives
             if (runeId <= 0 || durationSec <= 0f)
                 return false;
 
-            double addMs = durationSec * PassivesDefaults.SecToMs;
+            double addMs = durationSec * Units.SecToMs;
             for (int i = 0; i < _active.Count; i++)
             {
                 if (_active[i].RuneId != runeId)

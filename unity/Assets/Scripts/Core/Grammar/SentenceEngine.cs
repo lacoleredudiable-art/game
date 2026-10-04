@@ -5,6 +5,7 @@ using Dovus.Core.Element;
 using Dovus.Core.Input;
 using Dovus.Core.Tuning;
 
+using Dovus.Core.Shared;
 namespace Dovus.Core.Grammar
 {
     /// <summary>
@@ -290,7 +291,7 @@ namespace Dovus.Core.Grammar
             if (completed.Closing.HasValue)
             {
                 _remainingRecoveryMs =
-                    _tuning.StepForDots(completed.Closing.Value.DotCount).RecoverySec * GrammarDefaults.SecToMs;
+                    _tuning.StepForDots(completed.Closing.Value.DotCount).RecoverySec * Units.SecToMs;
                 State.Phase = SentencePhase.Recovering;
             }
             else

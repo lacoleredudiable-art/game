@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+using Dovus.Core.Shared;
 namespace Dovus.Game.Skills.Execution
 {
     /// <summary>
@@ -234,7 +235,7 @@ namespace Dovus.Game.Skills.Execution
                     Apply(1f);
                 }
                 float growth = _growing
-                    ? JsonEffectRules.RampedRatio(1f, 0, Context.DurationSec * SkillsTimeDefaults.SecToMs, _ageSec * SkillsTimeDefaults.SecToMs, _rampMax)
+                    ? JsonEffectRules.RampedRatio(1f, 0, Context.DurationSec * Units.SecToMs, _ageSec * Units.SecToMs, _rampMax)
                     : 1f;
                 Context.ApplyFlatDamage?.Invoke(t.ExecutorMinionHitDamage * growth);
                 SpawnWeaponAttack(m.Body.position);
@@ -265,7 +266,7 @@ namespace Dovus.Game.Skills.Execution
             float size = Mathf.Max(SummonExecutorDefaults.SpawnSizeMinM, _spawnSize);
             if (Context.Target != null)
             {
-                float bossR = SummonExecutorDefaults.BossBodyRadiusFallbackM;
+                float bossR = CombatFallbacks.BossBodyRadiusFallbackM;
                 // O11: minyon başına her kare GetComponentInChildren yerine hedef başına bir kez.
                 if (_targetColliderOwner != Context.Target)
                 {

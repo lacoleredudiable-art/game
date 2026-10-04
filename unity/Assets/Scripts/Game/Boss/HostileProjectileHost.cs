@@ -15,6 +15,7 @@ using Dovus.Game.Assets;
 using UnityEngine;
 using UnityEngine.Rendering;
 
+using Dovus.Core.Shared;
 namespace Dovus.Game.Boss
 {
     /// <summary>
@@ -96,7 +97,7 @@ namespace Dovus.Game.Boss
             int targetId = -1, bool harmless = false)
         {
             return Sim.Spawn(BossOwnerId, 1, from.x, from.z, velocity.x, velocity.z,
-                radiusM, damage, NowMs, Math.Max(HostileProjectileDefaults.MinLifeSec, lifeSec) * BossTimeDefaults.SecToMs, targetId, false, harmless);
+                radiusM, damage, NowMs, Math.Max(HostileProjectileDefaults.MinLifeSec, lifeSec) * Units.SecToMs, targetId, false, harmless);
         }
 
         public void ClearAll()

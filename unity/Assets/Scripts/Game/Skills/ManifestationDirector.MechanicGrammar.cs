@@ -101,12 +101,12 @@ namespace Dovus.Game.Skills
                         ApplyOnce(
                             self,
                             StatusKind.Haste,
-                            e.DurationSec * SkillsTimeDefaults.SecToMs,
+                            e.DurationSec * Units.SecToMs,
                             WeaponPassiveRules.ScaleFriendlyMagnitude((float)e.Amount, WeaponFriendlyScale()),
                             applied);
                         break;
                     case ("gorunurluk", "gizlen") when bodyOnSelf && e.DurationSec > 0 && self != null:
-                        ApplyOnce(self, StatusKind.Stealth, e.DurationSec * SkillsTimeDefaults.SecToMs, 1f, applied);
+                        ApplyOnce(self, StatusKind.Stealth, e.DurationSec * Units.SecToMs, 1f, applied);
                         break;
                     case ("konum", "hedefin_arkasina"):
                         if (TemplateOwnsPosition(plan, e.Stat))
@@ -136,7 +136,7 @@ namespace Dovus.Game.Skills
                             break;
                         }
                       EnsureMechanicsServices();
-                        _mechanicPortals.OpenPortal(plan, aimDir, now + e.DurationSec * SkillsTimeDefaults.SecToMs);
+                        _mechanicPortals.OpenPortal(plan, aimDir, now + e.DurationSec * Units.SecToMs);
                         applied.Add($"portal {e.DurationSec:0.#}sn");
                         break;
                     case ("varlik", "durum_aktar"):
@@ -169,7 +169,7 @@ namespace Dovus.Game.Skills
             double sec = e.DurationSec > 0
                 ? e.DurationSec
                 : (_combat != null ? _combat.Boss.ReverseFallbackSec : SkillsManifestationDefaults.ReverseFallbackSec);
-            _bossDirector.ApplyReverse(_clock.Director.WorldTimeMs + sec * SkillsTimeDefaults.SecToMs);
+            _bossDirector.ApplyReverse(_clock.Director.WorldTimeMs + sec * Units.SecToMs);
             applied.Add("ters kontrol");
         }
 
@@ -194,7 +194,7 @@ namespace Dovus.Game.Skills
                 }
                 if (e.Target != "dusman")
                     continue;
-                double ms = e.DurationSec * SkillsTimeDefaults.SecToMs;
+                double ms = e.DurationSec * Units.SecToMs;
                 bool hasteCard = CardEffectRules.WantsSelfHaste(SkillWorld.CardEffect);
                 switch (e.Atom, e.Stat)
                 {
@@ -255,7 +255,7 @@ namespace Dovus.Game.Skills
                         applied.Add("çekme");
                         break;
                     case ("konum", "it") when e.Has("yukari_firlat") && grammar != null:
-                        ApplyOnce(boss, StatusKind.Stun, grammar.Rules.Param("knockup_sec") * SkillsTimeDefaults.SecToMs, 1f, applied);
+                        ApplyOnce(boss, StatusKind.Stun, grammar.Rules.Param("knockup_sec") * Units.SecToMs, 1f, applied);
                         break;
                     case ("konum", "yer_degistir") when _clock != null && _player != null:
                         if (!casterMoves)

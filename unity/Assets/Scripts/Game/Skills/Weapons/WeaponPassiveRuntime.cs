@@ -260,7 +260,7 @@ namespace Dovus.Game.Skills.Weapons
             bool had = _host.BossStatus.Board.Has(StatusKind.Stun);
             if (!ready || had)
                 return;
-            _host.BossStatus.Board.Apply(StatusKind.Stun, mods.StunSec * SkillsTimeDefaults.SecToMs, 1f);
+            _host.BossStatus.Board.Apply(StatusKind.Stun, mods.StunSec * Units.SecToMs, 1f);
             CommitHammerStun(now, ready, had, _host.BossStatus.Board.Has(StatusKind.Stun));
         }
 
@@ -328,7 +328,7 @@ namespace Dovus.Game.Skills.Weapons
                 return WeaponPassiveMods.Identity;
             int verb = skill.IsEmpty ? 1 : VerbOf(skill.Identity.Id);
             bool enabled = isBasicStrike || _host.EquippedWeapon.IsCompatibleWithVerb(verb);
-            float sinceMoved = _host.Clock == null ? WeaponPassiveRuntimeDefaults.SinceMovedFallbackSec : (float)((_host.Clock.Director.WorldTimeMs - _host.LastMovedMs) / SkillsTimeDefaults.SecToMs);
+            float sinceMoved = _host.Clock == null ? WeaponPassiveRuntimeDefaults.SinceMovedFallbackSec : (float)((_host.Clock.Director.WorldTimeMs - _host.LastMovedMs) / Units.SecToMs);
             int chain = 0;
             if (profile.Passive.Kind == WeaponPassiveKind.FullPage && _host.Clock != null)
                 chain = _passives.EffectiveChain(

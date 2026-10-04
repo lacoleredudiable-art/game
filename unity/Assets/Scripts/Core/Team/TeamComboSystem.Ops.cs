@@ -42,7 +42,7 @@ namespace Dovus.Core.Team
                 X = x,
                 Z = z,
                 Until = _now + MineLifeSec,
-                BossRadius = boss.Present ? boss.Radius : TeamComboSystemDefaults.FallbackBossRadiusM
+                BossRadius = boss.Present ? boss.Radius : CombatFallbacks.BossBodyRadiusFallbackM
             });
             return TeamPulse.None;
         }

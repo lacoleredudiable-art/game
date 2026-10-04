@@ -18,6 +18,7 @@ using Dovus.Game.Team;
 using System;
 using System.Collections.Generic;
 
+using Dovus.Core.Shared;
 namespace Dovus.Game.Skills.Flow
 {
     public sealed class SentenceManifestationBridge
@@ -137,7 +138,7 @@ namespace Dovus.Game.Skills.Flow
             recoverySec *= castMult;
 
             double bangAt = _host.Clock.Director.WorldTimeMs
-                            + recoverySec * SkillsTimeDefaults.SecToMs
+                            + recoverySec * Units.SecToMs
                             + _host.Combat.Feel.PostHitSilenceMs;
 
             _host.Pose?.BeginRecovery(recoverySec, _host.Clock.Director.WorldTimeMs);

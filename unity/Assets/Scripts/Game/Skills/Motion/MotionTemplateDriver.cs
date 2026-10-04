@@ -66,14 +66,14 @@ namespace Dovus.Game.Skills.Motion
         public float BossBodyRadius()
         {
             if (_host.Boss == null)
-                return MotionTemplateDriverDefaults.MotionReturnHeightM;
+                return CombatFallbacks.MotionBossBodyRadiusFallbackM;
             Collider col = _host.Boss.GetComponentInChildren<Collider>();
             if (col == null)
             {
                 DesignWarnings.Once(
                     "motion.boss_radius",
                     "Boss gövdesi okunamadı. Vuruş payı yedek 0.6 m.");
-                return MotionTemplateDriverDefaults.MotionReturnHeightM;
+                return CombatFallbacks.MotionBossBodyRadiusFallbackM;
             }
             return Mathf.Max(col.bounds.extents.x, col.bounds.extents.z);
         }
@@ -171,7 +171,7 @@ namespace Dovus.Game.Skills.Motion
             if (_host.Player == null)
                 return;
             _host.EnsureMotionBody();
-            float arena = _host.Colors != null ? _host.Colors.Arena.ArenaHalfSizeM : MotionTemplateDriverDefaults.ArenaHalfSizeFallbackM;
+            float arena = _host.Colors != null ? _host.Colors.Arena.ArenaHalfSizeM : CombatFallbacks.ArenaHalfSizeFallbackM;
             float body = _host.PlayerBodyRadiusM();
             _host.MotionBody.Bind(_host.Clock, arena, body > MotionTemplateDriverDefaults.MotionBodyBindMinM ? body : 0.5f);
             _ = MotionRepo;
@@ -196,7 +196,7 @@ namespace Dovus.Game.Skills.Motion
 
             _host.EnsureMotionBody();
 
-            float arena = _host.Colors != null ? _host.Colors.Arena.ArenaHalfSizeM : MotionTemplateDriverDefaults.ArenaHalfSizeFallbackM;
+            float arena = _host.Colors != null ? _host.Colors.Arena.ArenaHalfSizeM : CombatFallbacks.ArenaHalfSizeFallbackM;
             _templateSkill = skill;
             _templateSlotCastId = _host.SlotQueryCastId;
             _templatePending = pending;
@@ -298,7 +298,7 @@ namespace Dovus.Game.Skills.Motion
             float bodyR = _host.PlayerBodyRadiusM();
             if (bodyR < MotionTemplateDriverDefaults.BodyRadiusMinM)
                 bodyR = 0.5f;
-            float arena = _host.Colors != null ? _host.Colors.Arena.ArenaHalfSizeM : MotionTemplateDriverDefaults.ArenaHalfSizeFallbackM;
+            float arena = _host.Colors != null ? _host.Colors.Arena.ArenaHalfSizeM : CombatFallbacks.ArenaHalfSizeFallbackM;
             _host.MotionBody.Bind(_host.Clock, arena, bodyR);
             string weapon = _host.EquippedWeapon != null
                 ? (string.IsNullOrEmpty(_host.EquippedWeapon.AnimationsKey) ? _host.EquippedWeapon.Id : _host.EquippedWeapon.AnimationsKey)

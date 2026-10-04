@@ -78,7 +78,7 @@ namespace Dovus.Game.Skills.Mechanics
 
             MechanicWorldProfile profile = MechanicWorldProfile.From(plan);
             Vector3 center = ResolveMechanicCenter(plan, aimDir, landedAt);
-            double lifeMs = Math.Max(100, plan.Body.LifeSec * SkillsTimeDefaults.SecToMs);
+            double lifeMs = Math.Max(100, plan.Body.LifeSec * Dovus.Core.Shared.Units.SecToMs);
 
             if (profile.BlocksMovement)
                 SpawnMechanicWall(plan, center, aimDir, worldMs + lifeMs);
@@ -158,7 +158,7 @@ namespace Dovus.Game.Skills.Mechanics
             _bodies.Add(new MechanicWorldBody
             {
                 View = body,
-                UntilMs = worldMs + Math.Max(100, decoy.DurationSec * SkillsTimeDefaults.SecToMs)
+                UntilMs = worldMs + Math.Max(100, decoy.DurationSec * Dovus.Core.Shared.Units.SecToMs)
             });
             // dikkat_ceker: yem yaşadığı sürece (decoy_life_sec) boss'un hedefi; boss vuruşu onu yok eder.
             if (decoy.Has("dikkat_ceker") && _hostileTargets != null)
@@ -225,13 +225,13 @@ namespace Dovus.Game.Skills.Mechanics
                 Profile = profile,
                 Center = center,
                 RadiusM = radius,
-                UntilMs = worldMs + durationSec * SkillsTimeDefaults.SecToMs,
+                UntilMs = worldMs + durationSec * Dovus.Core.Shared.Units.SecToMs,
                 NextTickMs = worldMs,
-                TickMs = Math.Max(10, baseTick * SkillsTimeDefaults.SecToMs / Math.Max(MechanicWorldDefaults.TickRateMinHz, tickRate)),
+                TickMs = Math.Max(10, baseTick * Dovus.Core.Shared.Units.SecToMs / Math.Max(MechanicWorldDefaults.TickRateMinHz, tickRate)),
                 StartMs = worldMs,
                 Skill = _host.Cast.JsonCastSkill,
                 Closing = _host.Cast.JsonCastClosing,
-                ArmAtMs = worldMs + JsonEffectRules.TrapArmSec(plan.Body, _host.JsonRules) * SkillsTimeDefaults.SecToMs,
+                ArmAtMs = worldMs + JsonEffectRules.TrapArmSec(plan.Body, _host.JsonRules) * Dovus.Core.Shared.Units.SecToMs,
                 Erase = profile.ProjectileBarrier ? _host.ProjectileEraseSpec(plan) : default,
                 NextEraseMs = worldMs
             });
@@ -248,7 +248,7 @@ namespace Dovus.Game.Skills.Mechanics
             line.startColor = new Color(0.3f, 0.9f, 1f, 0.85f);
             line.endColor = new Color(0.9f, 0.35f, 1f, 0.85f);
             double linkTickRate = _host.MechanicEngine?.Rules.AdjNum(plan.Adjective, "tick_rate_mult", 1) ?? 1;
-            double linkTickMs = Math.Max(MechanicWorldDefaults.LinkTickMinMs, (_host.Combat != null ? _host.Combat.Manifestation.ExecutorFieldTickSec : 1f) * SkillsTimeDefaults.SecToMs / Math.Max(MechanicWorldDefaults.LinkTickRateMin, linkTickRate));
+            double linkTickMs = Math.Max(MechanicWorldDefaults.LinkTickMinMs, (_host.Combat != null ? _host.Combat.Manifestation.ExecutorFieldTickSec : 1f) * Dovus.Core.Shared.Units.SecToMs / Math.Max(MechanicWorldDefaults.LinkTickRateMin, linkTickRate));
             Links.Add(new MechanicLink
             {
                 Line = line,
@@ -256,7 +256,7 @@ namespace Dovus.Game.Skills.Mechanics
                 Target = plan.Effects.Any(e => e.Target == "dusman")
                     ? (_host.Boss != null ? _host.Boss.transform : null)
                     : (_host.Ally != null ? _host.Ally.transform : _host.Player),
-                UntilMs = worldMs + Math.Max(100, plan.Body.LifeSec * SkillsTimeDefaults.SecToMs),
+                UntilMs = worldMs + Math.Max(100, plan.Body.LifeSec * Dovus.Core.Shared.Units.SecToMs),
                 Skill = _host.Cast.JsonCastSkill,
                 Closing = _host.Cast.JsonCastClosing,
                 FlowTickMs = linkTickMs,
@@ -284,7 +284,7 @@ namespace Dovus.Game.Skills.Mechanics
                 Id = ++_nextGuardId,
                 Effect = effect,
                 View = view,
-                UntilMs = worldMs + windowSec * SkillsTimeDefaults.SecToMs,
+                UntilMs = worldMs + windowSec * Dovus.Core.Shared.Units.SecToMs,
                 NeedsHoly = talisman && !planCompatible
             });
         }
@@ -383,7 +383,7 @@ namespace Dovus.Game.Skills.Mechanics
         public void RewindBoss(double seconds, double worldMs, List<string> applied)
         {
             if (_host.Boss == null || seconds <= 0
-                || !_bossMechanicHistory.TryGetAtOrBefore(worldMs - seconds * SkillsTimeDefaults.SecToMs, out Vector3 past))
+                || !_bossMechanicHistory.TryGetAtOrBefore(worldMs - seconds * Dovus.Core.Shared.Units.SecToMs, out Vector3 past))
                 return;
             // Geçmiş yer oyuncunun şimdiki gövdesine denk gelebilir; boss temas dışında kalır.
             if (_host.Player != null)

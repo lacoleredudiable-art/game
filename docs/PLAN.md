@@ -55,6 +55,7 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 - [x] 2B.23 iskelet bağla/sil
 - [x] 2B.24 MD gerçek bölünme: nested host'lar `Game/Skills/Hosts/` (MdCastPort, MdClosingHost, MdCoreServicesHost, MdLaunch/Motion/Skill/Weapon/Projectile hosts), `_deliverySkill` kopyası kaldırıldı, MD partial toplamı ≤3500 (ratchet 3411); kalan: ≤1500 için Execution çıkarma
 - [x] 2B.25 skill ID'leri veriye
+- [x] 2B.26 sabit kopyaları
 - Kural: davranış değişmez (sweep hash + test sayıları), Composer only, her madde 1–3 PR.
 
 ## Aşama 4 — Oyun sistemleri

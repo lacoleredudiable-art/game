@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using CoreCannonBlast = Dovus.Core.Equipment.CannonBlast;
 
+using Dovus.Core.Shared;
 namespace Dovus.Game.Skills.Weapons
 {
     public sealed class CannonBlast
@@ -55,9 +56,9 @@ namespace Dovus.Game.Skills.Weapons
                 return;
             float splash = profile.BasicRadiusM > 0f ? profile.BasicRadiusM : CannonBlastDefaults.SplashRadiusFallbackM;
             float bossPush = profile.BossPushM > 0f ? profile.BossPushM : 0.5f;
-            float arena = _host.Motor != null ? _host.Motor.Tuning.Arena.ArenaHalfSizeM : CannonBlastDefaults.ArenaHalfSizeFallbackM;
+            float arena = _host.Motor != null ? _host.Motor.Tuning.Arena.ArenaHalfSizeM : CombatFallbacks.ArenaHalfSizeFallbackM;
             float playerR = _host.PlayerBodyRadiusM();
-            float bossR = CannonBlastDefaults.BossBodyRadiusFallbackM;
+            float bossR = CombatFallbacks.BossBodyRadiusFallbackM;
             if (_host.Boss != null && _host.Boss.BodyRadiusM > CannonBlastDefaults.BossBodyRadiusEpsilonM)
                 bossR = _host.Boss.BodyRadiusM;
 
@@ -146,7 +147,7 @@ namespace Dovus.Game.Skills.Weapons
             _host.AbortRecoveringSentence();
             if (instant && _host.Clock != null && _host.WeaponSwap != null)
                 _host.SetSwapInstantDrawUntil(
-                    _host.Clock.Director.WorldTimeMs + _host.WeaponSwap.Rules.AnimationSec * SkillsTimeDefaults.SecToMs);
+                    _host.Clock.Director.WorldTimeMs + _host.WeaponSwap.Rules.AnimationSec * Units.SecToMs);
         }
 
     }

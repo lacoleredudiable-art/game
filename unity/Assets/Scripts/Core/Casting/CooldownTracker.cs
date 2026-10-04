@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 
+using Dovus.Core.Shared;
 namespace Dovus.Core.Casting
 {
     /// <summary>
@@ -29,13 +30,13 @@ namespace Dovus.Core.Casting
         public int ActiveCasts => _activeCasts;
 
         public float GlobalRemainingSec(double worldMs) =>
-            Math.Max(0f, (float)((_globalReadyAtMs - worldMs) / CooldownTrackerDefaults.SecToMs));
+            Math.Max(0f, (float)((_globalReadyAtMs - worldMs) / Units.SecToMs));
 
         public float ComboRemainingSec(string comboKey, double worldMs)
         {
             if (string.IsNullOrEmpty(comboKey) || !_comboReadyAtMs.TryGetValue(comboKey, out double readyAt))
                 return 0f;
-            return Math.Max(0f, (float)((readyAt - worldMs) / CooldownTrackerDefaults.SecToMs));
+            return Math.Max(0f, (float)((readyAt - worldMs) / Units.SecToMs));
         }
 
         /// <summary>Yalnız GCD + eşzamanlı cast (fiil başlatma; kombo CD yok).</summary>
@@ -70,8 +71,8 @@ namespace Dovus.Core.Casting
 
             _activeCasts++;
             // float*1000 (ör. 0.3f) kayan nokta sapması üretmesin diye ms yuvarlanır
-            _globalReadyAtMs = worldMs + Math.Round(_globalCooldownSec * CooldownTrackerDefaults.SecToMs);
-            _comboReadyAtMs[comboKey] = worldMs + Math.Round(Math.Max(0f, comboCooldownSec) * CooldownTrackerDefaults.SecToMs);
+            _globalReadyAtMs = worldMs + Math.Round(_globalCooldownSec * Units.SecToMs);
+            _comboReadyAtMs[comboKey] = worldMs + Math.Round(Math.Max(0f, comboCooldownSec) * Units.SecToMs);
             return true;
         }
 

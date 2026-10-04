@@ -17,6 +17,7 @@ using Dovus.Game.Team;
 using UnityEngine;
 using UnityEngine.UI;
 
+using Dovus.Core.Shared;
 namespace Dovus.Game.Actors
 {
     /// <summary>
@@ -86,7 +87,7 @@ namespace Dovus.Game.Actors
         public float SecondsUntilRevive =>
             _downAtMs < 0 || _clock == null
                 ? 0f
-                : Mathf.Max(0f, (float)((_downAtMs + _life.AllyReviveSec * ActorsTimeDefaults.SecToMs - _clock.Director.WorldTimeMs) / ActorsTimeDefaults.SecToMs));
+                : Mathf.Max(0f, (float)((_downAtMs + _life.AllyReviveSec * Units.SecToMs - _clock.Director.WorldTimeMs) / Units.SecToMs));
         public int MaxHp => _maxHp;
         public float Ratio => _maxHp > 0 ? (float)_hp / _maxHp : 0f;
         public StatusBoard Board => _statusBoard;

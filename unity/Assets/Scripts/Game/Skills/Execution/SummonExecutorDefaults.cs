@@ -3,7 +3,6 @@ namespace Dovus.Game.Skills.Execution
     /// <summary>PLAN 2B.11d: gömülü oynanış/ayar sayıları.</summary>
     public static class SummonExecutorDefaults
     {
-        public const float BossBodyRadiusFallbackM = 0.85f;
         public const float TargetSpacingPadM = 0.05f;
         public const float OwnerSpacingPadM = 0.55f;
         public const float SpawnFxLifetimeSec = 0.3f;

@@ -9,6 +9,7 @@ using Dovus.Game.Config;
 using UnityEngine;
 using UnityEngine.UI;
 
+using Dovus.Core.Shared;
 namespace Dovus.Game.Hud
 {
     /// <summary>
@@ -180,7 +181,7 @@ namespace Dovus.Game.Hud
         float ArmMs(SentenceState s)
         {
             if (s.LastClosing.HasValue)
-                return (float)(_sentence.StepForDots(s.LastClosing.Value.DotCount).RecoverySec * HudDefaults.SecToMs);
+                return (float)(_sentence.StepForDots(s.LastClosing.Value.DotCount).RecoverySec * Units.SecToMs);
 
             // LastClosing yoksa (olmamalı) kalanı tavan kabul et — sıfır bölme yok.
             return Mathf.Max(1f, (float)s.RemainingRecoveryMs);

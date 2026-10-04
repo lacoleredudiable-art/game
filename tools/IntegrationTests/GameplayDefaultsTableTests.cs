@@ -1,3 +1,4 @@
+using Dovus.Core.Shared;
 using Dovus.Game.Boss;
 using Dovus.Game.Skills.Closing;
 using Dovus.Game.Skills.Mechanics;
@@ -28,7 +29,7 @@ public class GameplayDefaultsTableTests
         {
             Assert.That(TeamComboDefaults.AllyDummyHpRatio, Is.EqualTo(0.7f));
             Assert.That(TeamComboDefaults.TeamActorRadiusM, Is.EqualTo(0.5f));
-            Assert.That(TeamComboDefaults.BossBodyRadiusFallbackM, Is.EqualTo(0.85f));
+            Assert.That(CombatFallbacks.BossBodyRadiusFallbackM, Is.EqualTo(0.85f));
         });
     }
 

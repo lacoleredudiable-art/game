@@ -56,7 +56,7 @@ namespace Dovus.Game.Skills.Launch
                 mob = SkillMobility.Resolve(skill);
             }
             double now = _host.Clock != null ? _host.Clock.Director.WorldTimeMs : 0;
-            _host.PlayerStatus.GrantCastMobility(mob, now + durationSec * SkillsTimeDefaults.SecToMs);
+            _host.PlayerStatus.GrantCastMobility(mob, now + durationSec * Units.SecToMs);
         }
 
         public void RefreshBuildingMobility(IReadOnlyList<SentenceWord> words)

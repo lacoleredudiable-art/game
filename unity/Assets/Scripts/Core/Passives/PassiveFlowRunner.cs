@@ -18,8 +18,8 @@ namespace Dovus.Core.Passives
                 return;
             _items.Add(new LiveFlow
             {
-                NextMs = worldMs + plan.TickSec * SlotPassiveCombatDefaults.SecToMs,
-                IntervalMs = plan.TickSec * SlotPassiveCombatDefaults.SecToMs,
+                NextMs = worldMs + plan.TickSec * Units.SecToMs,
+                IntervalMs = plan.TickSec * Units.SecToMs,
                 Left = plan.TickCount,
                 TickDamage = plan.TickDamage
             });

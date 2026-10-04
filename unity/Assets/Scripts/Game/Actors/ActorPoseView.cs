@@ -1,6 +1,7 @@
 using Dovus.Game.Config;
 using UnityEngine;
 
+using Dovus.Core.Shared;
 namespace Dovus.Game.Actors
 {
     /// <summary>
@@ -56,7 +57,7 @@ namespace Dovus.Game.Actors
         {
             if (!_ready)
                 CaptureBase();
-            _recoveryUntilWorldMs = (float)(worldTimeMs + durationSec * ActorsTimeDefaults.SecToMs);
+            _recoveryUntilWorldMs = (float)(worldTimeMs + durationSec * Units.SecToMs);
             _poseScale = new Vector3(ActorPoseViewDefaults.RecoverySquashHorizontal, ActorPoseViewDefaults.RecoverySquashVertical, ActorPoseViewDefaults.RecoverySquashHorizontal);
             _poseUntilWorldMs = _recoveryUntilWorldMs;
         }

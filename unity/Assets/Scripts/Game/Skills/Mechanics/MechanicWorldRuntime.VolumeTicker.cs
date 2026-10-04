@@ -39,7 +39,7 @@ namespace Dovus.Game.Skills.Mechanics
             {
                 double flickerSec = _host.MechanicEngine?.Rules.Param("flicker_sec") ?? 0;
                 bool on = flickerSec <= 0
-                    || ((long)(volume.NextTickMs / (flickerSec * SkillsTimeDefaults.SecToMs)) & 1) == 0;
+                    || ((long)(volume.NextTickMs / (flickerSec * Dovus.Core.Shared.Units.SecToMs)) & 1) == 0;
                 if (on && flickerTempo.Amount < 1)
                     _host.BossStatus?.Board.Apply(StatusKind.Slow, refreshMs, (float)flickerTempo.Amount, "flicker:" + volumeId);
                 else
@@ -176,7 +176,7 @@ namespace Dovus.Game.Skills.Mechanics
                     if (CardEffectRules.WantsSelfHaste(linkedLock.Identity.SkillJob)
                         && !CardEffectRules.Names(linkedLock.Identity.SkillJob, "root"))
                         continue;
-                    double refresh = Math.Max(100, e.DurationSec * SkillsTimeDefaults.SecToMs);
+                    double refresh = Math.Max(100, e.DurationSec * Dovus.Core.Shared.Units.SecToMs);
                     if (e.Amount <= 0)
                         _host.BossStatus?.Board.Apply(
                             StatusKind.Root, refresh, 1f,
@@ -228,7 +228,7 @@ namespace Dovus.Game.Skills.Mechanics
                     else if (guard.Effect.Stat == "kalkan")
                     {
                         StatusBoard board = allyLow ? _host.Ally?.Board : _host.PlayerStatus?.Board;
-                        board?.Apply(StatusKind.Shield, Math.Max(100, guard.Effect.DurationSec * SkillsTimeDefaults.SecToMs), amount);
+                        board?.Apply(StatusKind.Shield, Math.Max(100, guard.Effect.DurationSec * Dovus.Core.Shared.Units.SecToMs), amount);
                     }
                     else if (guard.Effect.Stat == "hasar_buff" && _host.Clock != null)
                     {
@@ -237,7 +237,7 @@ namespace Dovus.Game.Skills.Mechanics
                         _host.World.SelfDamageBuff = Mathf.Max(_host.World.SelfDamageBuff, buff);
                         _host.World.SelfDamageBuffUntilMs = Math.Max(
                             _host.World.SelfDamageBuffUntilMs,
-                            _host.Clock.Director.WorldTimeMs + Math.Max(100, guard.Effect.DurationSec * SkillsTimeDefaults.SecToMs));
+                            _host.Clock.Director.WorldTimeMs + Math.Max(100, guard.Effect.DurationSec * Dovus.Core.Shared.Units.SecToMs));
                     }
                 }
                 if (guard.View != null)

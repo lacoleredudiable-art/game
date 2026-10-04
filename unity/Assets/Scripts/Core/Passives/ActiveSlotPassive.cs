@@ -31,6 +31,6 @@ namespace Dovus.Core.Passives
         public JsonValue Modifiers { get; }
         public int ExcludedCastId { get; }
         public float RemainingSec(double worldMs) =>
-            (float)(Math.Max(0.0, UntilMs - worldMs) / PassivesDefaults.SecToMs);
+            (float)(Math.Max(0.0, UntilMs - worldMs) / Units.SecToMs);
     }
 }

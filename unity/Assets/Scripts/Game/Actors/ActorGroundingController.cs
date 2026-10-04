@@ -2,6 +2,7 @@ using Dovus.Core.Motion;
 using Dovus.Game.Platform;
 using UnityEngine;
 
+using Dovus.Core.Shared;
 namespace Dovus.Game.Actors
 {
     /// <summary>
@@ -83,7 +84,7 @@ namespace Dovus.Game.Actors
             if (!_claimed)
                 _logic.Release();
             _claimed = false;
-            float dt = _clock != null ? (float)(_clock.WorldDeltaMs / ActorsTimeDefaults.SecToMs) : Time.deltaTime;
+            float dt = _clock != null ? (float)(_clock.WorldDeltaMs / Units.SecToMs) : Time.deltaTime;
             _logic.Tick(dt);
             ApplyRoot();
             ResetVisual();

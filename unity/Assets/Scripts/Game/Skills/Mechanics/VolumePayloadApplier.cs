@@ -15,6 +15,7 @@ using System;
 using System.Linq;
 using UnityEngine;
 
+using Dovus.Core.Shared;
 namespace Dovus.Game.Skills.Mechanics
 {
     public sealed class VolumePayloadApplier
@@ -86,10 +87,10 @@ namespace Dovus.Game.Skills.Mechanics
                     break;
                 case "zirh":
                     _host.BossStatus?.Armor.ApplyShred(
-                        (float)Math.Abs(e.Amount), now, now + (trap ? Math.Max(1.0, e.DurationSec) * SkillsTimeDefaults.SecToMs : refreshMs));
+                        (float)Math.Abs(e.Amount), now, now + (trap ? Math.Max(1.0, e.DurationSec) * Units.SecToMs : refreshMs));
                     break;
                 case "hareket":
-                    double ms = trap ? Math.Max(0.5, e.DurationSec) * SkillsTimeDefaults.SecToMs : refreshMs;
+                    double ms = trap ? Math.Max(0.5, e.DurationSec) * Units.SecToMs : refreshMs;
                     if (e.Amount <= 0)
                         _host.BossStatus?.Board.Apply(StatusKind.Root, ms, 1f, src);
                     else if (e.Amount < 1)
@@ -138,7 +139,7 @@ namespace Dovus.Game.Skills.Mechanics
                 return;
             float next = Mathf.Min(cap, board.ShieldRemaining + step);
             if (next > board.ShieldRemaining)
-                board.Apply(StatusKind.Shield, Math.Max(refreshMs, SkillsTimeDefaults.SecToMs), next, src);
+                board.Apply(StatusKind.Shield, Math.Max(refreshMs, Units.SecToMs), next, src);
         }
 
         public void TickLinkFlow(MechanicLink link, double worldMs)

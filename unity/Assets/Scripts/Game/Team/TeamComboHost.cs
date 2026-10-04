@@ -120,7 +120,7 @@ namespace Dovus.Game.Team
         {
             if (!Bind())
                 return;
-            float dt = _clock != null ? (float)(_clock.WorldDeltaMs / TeamComboDefaults.SecToMs) : Time.deltaTime;
+            float dt = _clock != null ? (float)(_clock.WorldDeltaMs / Units.SecToMs) : Time.deltaTime;
             if (dt < 0f)
                 dt = 0f;
             RefreshActors();
@@ -227,12 +227,12 @@ namespace Dovus.Game.Team
             if (_bossStatus == null)
                 return;
             if (pulse.Stunned && pulse.StunSec > 0f)
-                _bossStatus.Board.Apply(StatusKind.Stun, pulse.StunSec * TeamComboDefaults.SecToMs, TeamComboDefaults.StunStatusStrength, "takim");
+                _bossStatus.Board.Apply(StatusKind.Stun, pulse.StunSec * Units.SecToMs, TeamComboDefaults.StunStatusStrength, "takim");
             if (pulse.Burned)
             {
                 // S17: yüklenen/panelden değişen tuning (ActorStatusHost.Bind'deki _combat.Status), varsayılan değil.
                 // Yanik yalniz baglanti (team_op link) kurulduktan sonra gelir; kaynak o cast'in skill kimligi.
-                _bossStatus.Board.Apply(StatusKind.Burn, TeamComboDefaults.SecToMs, _bossStatus.Tuning.BurnDamagePerSec, _team.LinkBurnSourceSkillId);
+                _bossStatus.Board.Apply(StatusKind.Burn, Units.SecToMs, _bossStatus.Tuning.BurnDamagePerSec, _team.LinkBurnSourceSkillId);
             }
             if (pulse.MineMult > TeamComboDefaults.MineMultActiveThreshold)
                 _line = "Mayın x" + pulse.MineMult.ToString("0");
@@ -243,7 +243,7 @@ namespace Dovus.Game.Team
             if (_boss == null)
                 return Disc.None;
             BossReactorController reactor = CachedBossReactor();
-            float radius = reactor != null && reactor.BodyRadiusM > TeamComboDefaults.BossBodyRadiusMinM ? reactor.BodyRadiusM : TeamComboDefaults.BossBodyRadiusFallbackM;
+            float radius = reactor != null && reactor.BodyRadiusM > TeamComboDefaults.BossBodyRadiusMinM ? reactor.BodyRadiusM : CombatFallbacks.BossBodyRadiusFallbackM;
             return new Disc(true, _boss.position.x, _boss.position.z, radius, PortalSystem.ClearGapM);
         }
     }

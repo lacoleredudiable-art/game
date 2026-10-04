@@ -1,5 +1,6 @@
 using System;
 
+using Dovus.Core.Shared;
 namespace Dovus.Core.Equipment
 {
     /// <summary>
@@ -16,7 +17,7 @@ namespace Dovus.Core.Equipment
         {
             if (durationSec <= 0)
                 return;
-            _untilMs = Math.Max(_untilMs, nowMs + durationSec * EquipmentDefaults.SecToMs);
+            _untilMs = Math.Max(_untilMs, nowMs + durationSec * Units.SecToMs);
         }
 
         public bool Active(double nowMs) => nowMs < _untilMs;

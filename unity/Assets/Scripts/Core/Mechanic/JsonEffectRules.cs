@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Dovus.Core.Shared;
 namespace Dovus.Core.Mechanic
 {
     /// <summary>
@@ -219,7 +220,7 @@ namespace Dovus.Core.Mechanic
 
         public static bool BasicReady(double nowMs, double lastBasicMs, float intervalSec, int hits, bool enforce) =>
             !enforce || lastBasicMs < 0 || intervalSec <= 0f
-            || nowMs - lastBasicMs >= intervalSec * Math.Max(1, hits) * MechanicDefaults.SecToMs - 0.5; // 0.5 ms float payı
+            || nowMs - lastBasicMs >= intervalSec * Math.Max(1, hits) * Units.SecToMs - 0.5; // 0.5 ms float payı
 
         public static string BasicKindLabel(string kind, int hits)
         {

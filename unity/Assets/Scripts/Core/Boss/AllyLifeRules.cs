@@ -18,7 +18,7 @@ namespace Dovus.Core.Boss
             if (downAtMs < 0)
                 return false;
             double sec = Math.Max(0f, (cfg ?? new TargetingConfig()).AllyReviveSec);
-            return nowMs - downAtMs >= sec * BossDefaults.SecToMs;
+            return nowMs - downAtMs >= sec * Units.SecToMs;
         }
 
         /// <summary>Kalkış canı: max × ally_revive_ratio, en az 1.</summary>

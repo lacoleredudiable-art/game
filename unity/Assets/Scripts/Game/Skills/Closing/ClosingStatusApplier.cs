@@ -16,6 +16,7 @@ using Dovus.Game.Data;
 using Dovus.Game.Team;
 using UnityEngine;
 
+using Dovus.Core.Shared;
 namespace Dovus.Game.Skills.Closing
 {
     public sealed class ClosingStatusApplier
@@ -83,7 +84,7 @@ namespace Dovus.Game.Skills.Closing
             int castId = _host.SlotQueryCastId;
             float rootSec = _host.SlotPassives.RootSecondsFor(castId);
             if (rootSec > 0f)
-                target.Board.Apply(StatusKind.Root, rootSec * SkillsTimeDefaults.SecToMs, 1f, "passive:root");
+                target.Board.Apply(StatusKind.Root, rootSec * Units.SecToMs, 1f, "passive:root");
             float speed = _host.SlotPassives.SlowSpeedFor(castId);
             if (speed < ClosingDefaults.SlowSpeedNearFullThreshold)
                 target.Board.Apply(

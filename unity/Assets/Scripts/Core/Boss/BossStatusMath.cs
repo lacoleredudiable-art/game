@@ -2,6 +2,7 @@ using System;
 using Dovus.Core.Status;
 using Dovus.Core.Damage;
 
+using Dovus.Core.Shared;
 namespace Dovus.Core.Boss
 {
     /// <summary>
@@ -61,7 +62,7 @@ namespace Dovus.Core.Boss
             out double durationMs)
         {
             outgoingMult = WeakenOutgoingMult(amount);
-            durationMs = durationSec * BossStatusMathDefaults.SecToMs;
+            durationMs = durationSec * Units.SecToMs;
             return durationMs > 0d && outgoingMult < BossStatusMathDefaults.OutgoingMultCap;
         }
 
@@ -84,7 +85,7 @@ namespace Dovus.Core.Boss
         public static bool DamageInvulnerable(bool stasis) => stasis;
 
         public static double BlindDurationMs(double baseMs, double lifetimeAddSec) =>
-            Math.Max(0d, baseMs) + Math.Max(0d, lifetimeAddSec) * BossStatusMathDefaults.SecToMs;
+            Math.Max(0d, baseMs) + Math.Max(0d, lifetimeAddSec) * Units.SecToMs;
 
         /// <summary>accuracy_debuff büyüklüğünü kör ıskalama şansına kırpar.</summary>
         public static float BlindChanceFromAccuracy(float accuracy) =>
