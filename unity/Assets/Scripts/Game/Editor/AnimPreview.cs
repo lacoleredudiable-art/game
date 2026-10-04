@@ -13,18 +13,18 @@ namespace Dovus.Game.Editor
     /// <summary>
     /// Animasyon (b) elde silah sunumu için Play Mode yardımcıları — Unity_RunCommand
     /// snippet'lerinden çağrılır (bkz. anim-capture-howto.md). Yalnız normal oyun yollarını
-    /// kullanır (ManifestationDirector.SetWeaponLoadout, HexagonInput.TryDebugCastSkill,
-    /// BuildSelectScreen'in kendi Button'ı); System.Reflection yok, hasar/zamanlamaya dokunmaz.
+    /// kullanır (ManifestationDirector.SetWeaponLoadout, HexagonInputController.TryDebugCastSkill,
+    /// BuildSelectHud'in kendi Button'ı); System.Reflection yok, hasar/zamanlamaya dokunmaz.
     /// </summary>
     public static class AnimPreview
     {
         /// <summary>BUILD SEÇ ekranı açıksa "SAVAŞA BAŞLA" düğmesine basar. Zaten kapalıysa no-op.</summary>
         public static bool EnterFight()
         {
-            if (!BuildSelectScreen.IsOpen)
+            if (!BuildSelectHud.IsOpen)
                 return true;
 
-            var screen = Object.FindAnyObjectByType<BuildSelectScreen>(FindObjectsInactive.Include);
+            var screen = Object.FindAnyObjectByType<BuildSelectHud>(FindObjectsInactive.Include);
             if (screen == null)
                 return false;
 
@@ -34,7 +34,7 @@ namespace Dovus.Game.Editor
                 return false;
 
             start.onClick.Invoke();
-            return !BuildSelectScreen.IsOpen;
+            return !BuildSelectHud.IsOpen;
         }
 
         /// <summary>
@@ -69,10 +69,10 @@ namespace Dovus.Game.Editor
             return null;
         }
 
-        /// <summary>Basit vuruş: GrammarDebugPanel'in de kullandığı debug cast yolu (verb=1, adj=1).</summary>
+        /// <summary>Basit vuruş: GrammarDebugHud'in de kullandığı debug cast yolu (verb=1, adj=1).</summary>
         public static bool Strike()
         {
-            var input = Object.FindAnyObjectByType<HexagonInput>();
+            var input = Object.FindAnyObjectByType<HexagonInputController>();
             return input != null && input.TryDebugCastSkill(1, 1);
         }
 

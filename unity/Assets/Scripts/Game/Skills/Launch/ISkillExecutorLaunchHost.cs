@@ -25,7 +25,7 @@ namespace Dovus.Game.Skills.Launch
     {
         Transform Player { get; }
         Transform DirectorTransform { get; }
-        GameClock Clock { get; }
+        GameClockHost Clock { get; }
         CombatTuning Combat { get; }
         PresentationCatalog PresentationCatalog { get; }
         void EnsurePresentationCatalog();
@@ -82,7 +82,7 @@ namespace Dovus.Game.Skills.Launch
             ref float speed);
         void ApplySpawnIFrame(in SkillResolution skill);
         float ApplyMinionHit(SkillResolution skill, float bindingDamage);
-        PlayerVitals CachedPlayerVitals();
+        PlayerVitalsHost CachedPlayerVitals();
 
         void ApplyVerbHitboxSizing(
             SkillExecutorKind kind,

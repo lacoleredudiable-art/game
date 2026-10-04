@@ -13,19 +13,19 @@ namespace Dovus.Game.Composition.Builders
             var combat = ctx.Combat;
             var root = ctx.HexagonRoot;
             var view = ctx.HexagonView;
-            var input = ctx.HexagonInput;
-            var vitals = ctx.PlayerVitals;
+            var input = ctx.HexagonInputController;
+            var vitals = ctx.PlayerVitalsHost;
             var playerStatus = ctx.PlayerStatus;
             var bossStatus = ctx.BossStatus;
 
             var vitalsHud = root.AddComponent<VitalsHud>();
             vitalsHud.BindTheme(ctx.Assets.HudTheme);
-            vitalsHud.Configure(vitals, ctx.BossVitals, tuning, view.CanvasRoot, ctx.AllyDummy, ctx.PlayerResource);
+            vitalsHud.Configure(vitals, ctx.BossVitals, tuning, view.CanvasRoot, ctx.AllyDummyController, ctx.PlayerResourceHost);
             ctx.VitalsHud = vitalsHud;
 
             if (playerStatus != null)
             {
-                var playerStrip = root.AddComponent<StatusIconStrip>();
+                var playerStrip = root.AddComponent<StatusIconStripHud>();
                 playerStrip.BindTheme(ctx.Assets.HudTheme);
                 float stripY = vitalsHud.PlayerStackBottomCanvasY
                     - HexagonLayoutScreen.DpToPixels(tuning.Hud.StatusIconGapDp + HudBuilderDefaults.StatusIconExtraGapDp);
@@ -39,7 +39,7 @@ namespace Dovus.Game.Composition.Builders
 
             if (bossStatus != null)
             {
-                var bossStrip = root.AddComponent<StatusIconStrip>();
+                var bossStrip = root.AddComponent<StatusIconStripHud>();
                 bossStrip.BindTheme(ctx.Assets.HudTheme);
                 float stripY = vitalsHud.BossStackBottomCanvasY
                     - HexagonLayoutScreen.DpToPixels(tuning.Hud.StatusIconGapDp + 2f);
@@ -49,8 +49,8 @@ namespace Dovus.Game.Composition.Builders
                     new Vector2(0f, stripY), "BossStatusStrip");
             }
 
-            if (ctx.AllyDummy != null)
-                ctx.AllyDummy.EnsureStatusBoard();
+            if (ctx.AllyDummyController != null)
+                ctx.AllyDummyController.EnsureStatusBoard();
 
             var lockHud = root.AddComponent<RecoveryLockHud>();
             lockHud.Configure(input.Engine, combat, tuning, view.CanvasRoot, vitalsHud.BarCount);
@@ -64,26 +64,26 @@ namespace Dovus.Game.Composition.Builders
 
             var damageHud = root.AddComponent<DamageNumberHud>();
             damageHud.BindTheme(ctx.Assets.HudTheme);
-            damageHud.BindMainCamera(ctx.MainCamera, ctx.FollowCamera);
-            damageHud.BindDefaultBoss(ctx.BossReactor);
+            damageHud.BindMainCamera(ctx.MainCamera, ctx.FollowCameraController);
+            damageHud.BindDefaultBoss(ctx.BossReactorController);
             damageHud.Configure(tuning, view.CanvasRoot);
             ctx.DamageNumberHud = damageHud;
 
-            if (ctx.AllyDummy != null)
-                ctx.AllyDummy.BindMainCamera(ctx.MainCamera, ctx.FollowCamera);
+            if (ctx.AllyDummyController != null)
+                ctx.AllyDummyController.BindMainCamera(ctx.MainCamera, ctx.FollowCameraController);
 
             var passiveHud = root.AddComponent<PassiveHud>();
             passiveHud.Configure(view);
             passiveHud.BindRunes(ctx.RuneManager);
             ctx.PassiveHud = passiveHud;
 
-            ctx.DodgeMotion.Bind(ctx.Clock, input, ctx.Boss.transform, ctx.Afterimage, ctx.FollowCamera);
+            ctx.DodgeMotionController.Bind(ctx.Clock, input, ctx.Boss.transform, ctx.Afterimage, ctx.FollowCameraController);
 
             var chargeHud = root.AddComponent<DodgeChargeHud>();
             chargeHud.Bind(input, view);
             if (DebugConfig.Enabled)
             {
-                var practice = root.AddComponent<DodgePractice>();
+                var practice = root.AddComponent<DodgePracticeController>();
                 practice.Bind(ctx.Player.transform, ctx.Boss.transform);
             }
         }

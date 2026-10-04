@@ -53,7 +53,7 @@ namespace Dovus.Core.Tuning
 
         /// <summary>
         /// T10: panelin "Sıfırla" ve JSON-yükleme yolu. Alt nesnelerin KİMLİĞİ korunur —
-        /// HexagonInput/DodgeState/SentenceEngine gibi tüketiciler `combat.Dodge` gibi alt
+        /// HexagonInputController/DodgeState/SentenceEngine gibi tüketiciler `combat.Dodge` gibi alt
         /// nesnenin REFERANSINI tutuyor (Bind sırasında), üst nesneyi değil. `Manifestation`
         /// bilerek dışarıda: hiçbir UI onu değiştirmiyor, spec değerleri hep aynı kalıyor.
         /// </summary>

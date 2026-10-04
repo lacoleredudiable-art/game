@@ -42,11 +42,11 @@ namespace Dovus.Tests.PlayMode
 
             Application.logMessageReceived -= OnLog;
 
-            Assert.That(UnityEngine.Object.FindAnyObjectByType<GameBootstrap>(), Is.Not.Null, "GameBootstrap");
+            Assert.That(UnityEngine.Object.FindAnyObjectByType<GameBootstrapHost>(), Is.Not.Null, "GameBootstrapHost");
             Assert.That(UnityEngine.Object.FindAnyObjectByType<ManifestationDirector>(), Is.Not.Null, "ManifestationDirector");
             Assert.That(UnityEngine.Object.FindAnyObjectByType<BossDirector>(), Is.Not.Null, "BossDirector");
-            Assert.That(UnityEngine.Object.FindAnyObjectByType<PlayerVitals>(), Is.Not.Null, "PlayerVitals");
-            Assert.That(UnityEngine.Object.FindAnyObjectByType<HexagonInput>(), Is.Not.Null, "HexagonInput");
+            Assert.That(UnityEngine.Object.FindAnyObjectByType<PlayerVitalsHost>(), Is.Not.Null, "PlayerVitalsHost");
+            Assert.That(UnityEngine.Object.FindAnyObjectByType<HexagonInputController>(), Is.Not.Null, "HexagonInputController");
 
             int exceptionCount = 0;
             foreach (string line in _collected)

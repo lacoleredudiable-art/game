@@ -2,7 +2,7 @@ using Dovus.Core.Grammar;
 
 namespace Dovus.App.Casting
 {
-    /// <summary>HexagonInput cümle başlatma / CD / hedef kapıları — saf karar (Unity yok).</summary>
+    /// <summary>HexagonInputController cümle başlatma / CD / hedef kapıları — saf karar (Unity yok).</summary>
     public static class CastGateRules
     {
         public enum SentenceStartBlock

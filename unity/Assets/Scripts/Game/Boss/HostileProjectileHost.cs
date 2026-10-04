@@ -18,25 +18,25 @@ using UnityEngine.Rendering;
 namespace Dovus.Game.Boss
 {
     /// <summary>
-    /// Düşman mermilerinin dünyadaki tek sahibi: saf <see cref="HostileProjectiles"/>'ı GameClock dünya
+    /// Düşman mermilerinin dünyadaki tek sahibi: saf <see cref="HostileProjectiles"/>'ı GameClockHost dünya
     /// saatiyle ilerletir, havuzlu collider'sız küre çizer, dostlarla düz daire çarpışması yapar.
-    /// Oyuncu: dodge ya da skill i-frame'i açıkken mermi geçer; yoksa ActorStatus.ApplyDamage(dodgeable:false).
-    /// Dost: HostileTargets hasar geri çağrısı (ally_damage_mult orada). Yem: mermiyi emer ve ölür.
+    /// Oyuncu: dodge ya da skill i-frame'i açıkken mermi geçer; yoksa ActorStatusHost.ApplyDamage(dodgeable:false).
+    /// Dost: HostileTargetsHost hasar geri çağrısı (ally_damage_mult orada). Yem: mermiyi emer ve ölür.
     /// Geri gönderilmiş (takım 0) mermi boss'a çarpar, hasar ReflectSink'ten (MD.ApplyReflectedDamage).
     /// </summary>
     public sealed class HostileProjectileHost : MonoBehaviour
     {
         public const int BossOwnerId = 1;
 
-        GameClock _clock;
-        HostileTargets _targets;
+        GameClockHost _clock;
+        HostileTargetsHost _targets;
         Transform _player;
-        ActorStatus _playerStatus;
-        PlayerVitals _playerVitals;
+        ActorStatusHost _playerStatus;
+        PlayerVitalsHost _playerVitals;
         Transform _boss;
         float _bossRadiusM = 1f;
         Camera _mainCamera;
-        FollowCamera _follow;
+        FollowCameraController _follow;
         GameObject[] _views;
         Transform[] _coreViews;
         Transform[] _glowViews;
@@ -65,11 +65,11 @@ namespace Dovus.Game.Boss
         public Action OnPlayerProjectileHit { get; set; }
 
         public void Bind(
-            GameClock clock,
-            HostileTargets targets,
+            GameClockHost clock,
+            HostileTargetsHost targets,
             Transform player,
-            ActorStatus playerStatus,
-            PlayerVitals playerVitals,
+            ActorStatusHost playerStatus,
+            PlayerVitalsHost playerVitals,
             Transform boss,
             float bossRadiusM)
         {
@@ -84,7 +84,7 @@ namespace Dovus.Game.Boss
             Sim.Events += OnEvent;
         }
 
-        public void BindMainCamera(Camera camera, FollowCamera follow = null)
+        public void BindMainCamera(Camera camera, FollowCameraController follow = null)
         {
             _mainCamera = camera;
             _follow = follow;
@@ -141,7 +141,7 @@ namespace Dovus.Game.Boss
                 var entries = _targets.Entries;
                 for (int e = entries.Count - 1; e >= 0; e--)
                 {
-                    HostileTargets.Entry entry = entries[e];
+                    HostileTargetsHost.Entry entry = entries[e];
                     if (!entry.IsAlive)
                         continue;
                     Vector3 at = entry.Transform.position;
@@ -151,7 +151,7 @@ namespace Dovus.Game.Boss
                         continue;
                     if (entry.Kind == TargetKind.Player)
                     {
-                        if (PlayerDodgeRig.IsInvulnerableNow(_player))
+                        if (PlayerDodgeController.IsInvulnerableNow(_player))
                             continue;
                         Sim.Delete(p.Id, ProjectileEventKind.HitFriendly);
                         if (_playerStatus != null)

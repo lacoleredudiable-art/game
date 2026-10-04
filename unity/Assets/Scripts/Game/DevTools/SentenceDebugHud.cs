@@ -25,11 +25,11 @@ namespace Dovus.Game.DevTools
         GameObject _root;
         SentenceEngine _engine;
         SkillMotor _skills;
-        PlayerVitals _vitals;
+        PlayerVitalsHost _vitals;
         string _note;
         float _noteUntil;
 
-        public void BindVitals(PlayerVitals vitals) => _vitals = vitals;
+        public void BindVitals(PlayerVitalsHost vitals) => _vitals = vitals;
 
         public void Configure(SentenceEngine engine, Transform canvasRoot, SkillMotor skills = null, bool show = false)
         {

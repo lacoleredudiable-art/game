@@ -34,14 +34,14 @@ namespace Dovus.Game.Composition.Builders
             var tuning = ctx.Tuning;
             var combat = ctx.Combat;
             var player = ctx.Player.transform;
-            var boss = ctx.BossReactor;
-            var vitals = ctx.PlayerVitals;
-            var telegraph = ctx.BossTelegraph;
-            var follow = ctx.FollowCamera;
-            var input = ctx.HexagonInput;
+            var boss = ctx.BossReactorController;
+            var vitals = ctx.PlayerVitalsHost;
+            var telegraph = ctx.BossTelegraphView;
+            var follow = ctx.FollowCameraController;
+            var input = ctx.HexagonInputController;
             var view = ctx.HexagonView;
             var debug = ctx.SentenceDebugHud;
-            var readout = ctx.ReactionReadout;
+            var readout = ctx.ReactionReadoutHud;
             var damageHud = ctx.DamageNumberHud;
             var passiveHud = ctx.PassiveHud;
             var skills = ctx.Skills;
@@ -50,39 +50,39 @@ namespace Dovus.Game.Composition.Builders
             var assetCatalog = ctx.AssetCatalog;
             var playerStatus = ctx.PlayerStatus;
             var bossStatus = ctx.BossStatus;
-            var resource = ctx.PlayerResource;
-            var cooldown = ctx.PlayerCooldown;
+            var resource = ctx.PlayerResourceHost;
+            var cooldown = ctx.PlayerCooldownHost;
             var root = ctx.HexagonRoot;
 
             PlaceholderFactory.Bind(ctx.Assets.Vfx);
             HitboxVfxRegistry.Bind(ctx.Assets.Vfx);
-            ComposedSkillVfx.Bind(ctx.Assets.Vfx);
+            ComposedSkillVfxView.Bind(ctx.Assets.Vfx);
 
-            if (ctx.AllyDummy != null)
-                ctx.AllyDummy.BindTeam(ctx.TeamAccess);
+            if (ctx.AllyDummyController != null)
+                ctx.AllyDummyController.BindTeam(ctx.TeamAccess);
 
             var feelGo = new GameObject("CombatFeel");
             feelGo.transform.SetParent(ctx.SceneRoot, false);
-            var feel = feelGo.AddComponent<CombatFeel>();
-            var visualFreeze = feelGo.AddComponent<VisualFreeze>();
+            var feel = feelGo.AddComponent<CombatFeelDirector>();
+            var visualFreeze = feelGo.AddComponent<VisualFreezeView>();
             feel.Bind(ctx.Clock, follow, combat, tuning, ctx.OverlayCamera, debug, readout);
-            feel.BindActors(ctx.Player.GetComponent<HitFlash>(), ctx.Boss.GetComponent<HitFlash>());
-            var playerVisual = ctx.Player.GetComponent<ActorVisual>();
-            var bossVisualComp = ctx.Boss.GetComponent<BossVisual>();
+            feel.BindActors(ctx.Player.GetComponent<HitFlashView>(), ctx.Boss.GetComponent<HitFlashView>());
+            var playerVisual = ctx.Player.GetComponent<ActorView>();
+            var bossVisualComp = ctx.Boss.GetComponent<BossView>();
             Animator playerAnim = playerVisual != null ? playerVisual.Animator : null;
             Animator bossAnim = bossVisualComp != null ? bossVisualComp.Animator : null;
             visualFreeze.Bind(follow, playerAnim);
             feel.BindPresentation(visualFreeze, ctx.Afterimage, player);
             HitImpactFx.Configure(combat.Feel);
             FeelHaptics.Configure(combat.Feel);
-            var bossFlinch = ctx.Boss.gameObject.GetComponent<BossHitFlinch>() ?? ctx.Boss.gameObject.AddComponent<BossHitFlinch>();
+            var bossFlinch = ctx.Boss.gameObject.GetComponent<BossHitFlinchView>() ?? ctx.Boss.gameObject.AddComponent<BossHitFlinchView>();
             bossFlinch.Bind(combat.Feel, bossAnim);
-            ctx.Player.GetComponent<PlayerDodgeRig>()?.Bind(ctx.Clock, input, follow, readout, feel);
+            ctx.Player.GetComponent<PlayerDodgeController>()?.Bind(ctx.Clock, input, follow, readout, feel);
             var overlayHud = feelGo.AddComponent<CombatOverlayHud>();
             overlayHud.BindTheme(ctx.Assets.HudTheme);
             overlayHud.Configure(
                 vitals, ctx.BossVitals, player, ctx.Boss.transform, ctx.OverlayCamera, ctx.MainCamera, follow);
-            ctx.CombatFeel = feel;
+            ctx.CombatFeelDirector = feel;
 
             var directorGo = ctx.Boss.gameObject;
             var bossDir = directorGo.AddComponent<BossDirector>();
@@ -92,11 +92,11 @@ namespace Dovus.Game.Composition.Builders
                 bossDir.BindStatus(bossStatus);
             if (playerStatus != null)
                 bossDir.BindPlayerStatus(playerStatus);
-            bossDir.BindVisual(ctx.Boss.GetComponent<BossVisual>());
+            bossDir.BindVisual(ctx.Boss.GetComponent<BossView>());
             follow?.BindBossDirector(bossDir);
             ctx.BossDirector = bossDir;
 
-            var hostileTargets = directorGo.AddComponent<HostileTargets>();
+            var hostileTargets = directorGo.AddComponent<HostileTargetsHost>();
             TargetingConfig targetingConfig = BossEncounterData.LoadTargeting(tuning.Boss.ActiveBossResourcePath);
             hostileTargets.Configure(targetingConfig);
             hostileTargets.Register(
@@ -105,16 +105,16 @@ namespace Dovus.Game.Composition.Builders
                 CompositionConstants.PlayerRadiusM,
                 alive: () => vitals == null || !vitals.IsDown,
                 stealthed: () => playerStatus != null && playerStatus.Board.IsStealthed);
-            if (ctx.AllyDummy != null)
+            if (ctx.AllyDummyController != null)
             {
-                ctx.AllyDummy.ConfigureLife(targetingConfig);
+                ctx.AllyDummyController.ConfigureLife(targetingConfig);
                 hostileTargets.Register(
-                    ctx.AllyDummy.transform,
+                    ctx.AllyDummyController.transform,
                     TargetKind.Ally,
                     CompositionConstants.PlayerRadiusM * SkillSystemBuilderDefaults.PlayerColliderRadiusScale,
-                    alive: () => !ctx.AllyDummy.IsDown,
-                    stealthed: () => ctx.AllyDummy.Board != null && ctx.AllyDummy.Board.IsStealthed,
-                    damage: raw => ctx.AllyDummy.ApplyBossDamage(raw));
+                    alive: () => !ctx.AllyDummyController.IsDown,
+                    stealthed: () => ctx.AllyDummyController.Board != null && ctx.AllyDummyController.Board.IsStealthed,
+                    damage: raw => ctx.AllyDummyController.ApplyBossDamage(raw));
             }
             bossDir.BindTargets(hostileTargets);
             ctx.VitalsHud.BindBoss(bossDir);
@@ -123,21 +123,21 @@ namespace Dovus.Game.Composition.Builders
             var sfx = feelGo.AddComponent<SfxDirector>();
             sfx.Bind(ctx.Assets.Sfx);
             ctx.Sfx = sfx;
-            ctx.Player.GetComponent<PlayerDodgeRig>()?.BindSfx(sfx);
-            feelGo.AddComponent<PresentationFx>().Bind(bossDir, ctx.DodgeMotion, feel, input, sfx, follow, combat);
-            var feelVerify = feelGo.AddComponent<FeelPlayVerify>();
+            ctx.Player.GetComponent<PlayerDodgeController>()?.BindSfx(sfx);
+            feelGo.AddComponent<PresentationFxView>().Bind(bossDir, ctx.DodgeMotionController, feel, input, sfx, follow, combat);
+            var feelVerify = feelGo.AddComponent<FeelPlayVerifyController>();
             feelVerify.Bind(follow, player);
-            var playerSteps = ctx.Player.gameObject.AddComponent<FootstepEmitter>();
+            var playerSteps = ctx.Player.gameObject.AddComponent<FootstepView>();
             playerSteps.StrideM = tuning.Player.FootstepStrideM;
             playerSteps.Bind(sfx);
-            var bossSteps = ctx.Boss.gameObject.AddComponent<FootstepEmitter>();
+            var bossSteps = ctx.Boss.gameObject.AddComponent<FootstepView>();
             bossSteps.StrideM = tuning.Player.BossFootstepStrideM;
             bossSteps.IsBoss = true;
             bossSteps.Bind(sfx);
 
             var scarsGo = new GameObject("GroundScars");
             scarsGo.transform.SetParent(ctx.SceneRoot, false);
-            var scars = scarsGo.AddComponent<GroundScarField>();
+            var scars = scarsGo.AddComponent<GroundScarFieldView>();
             scars.Configure(tuning);
             ctx.GroundScars = scars;
 
@@ -163,8 +163,8 @@ namespace Dovus.Game.Composition.Builders
             var manGo = new GameObject("Manifestation");
             manGo.transform.SetParent(ctx.SceneRoot, false);
             var director = manGo.AddComponent<ManifestationDirector>();
-            var targeting = ctx.Player.GetComponent<PlayerTargeting>();
-            director.Bind(ctx.Clock, input, player, ctx.PlayerPose, boss, ctx.BossVitals, scars, tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, ctx.AllyDummy, view, passiveHud, equippedWeapon, equipmentBonus, skills, skillFactory, design?.Animations);
+            var targeting = ctx.Player.GetComponent<PlayerTargetingController>();
+            director.Bind(ctx.Clock, input, player, ctx.PlayerPose, boss, ctx.BossVitals, scars, tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, ctx.AllyDummyController, view, passiveHud, equippedWeapon, equipmentBonus, skills, skillFactory, design?.Animations);
             director.BindCombatFeel(feel);
             director.BindTeam(ctx.TeamAccess);
             director.BindSfx(sfx);
@@ -179,14 +179,14 @@ namespace Dovus.Game.Composition.Builders
             bossDir.BindProjectiles(projectileHost);
             director.BindProjectiles(projectileHost);
 
-            ctx.Boss.GetComponent<MotionTemplateBody>()?.Bind(
+            ctx.Boss.GetComponent<MotionTemplateBodyHost>()?.Bind(
                 ctx.Clock, combat.SkillMotion.ArenaHalfSizeM, CompositionConstants.BossRadiusM);
-            ctx.Boss.GetComponent<MotionTemplateBody>()?.BindFollowCamera(follow);
-            ctx.Player.GetComponent<MotionTemplateBody>()?.BindFollowCamera(follow);
+            ctx.Boss.GetComponent<MotionTemplateBodyHost>()?.BindFollowCamera(follow);
+            ctx.Player.GetComponent<MotionTemplateBodyHost>()?.BindFollowCamera(follow);
             var webFields = directorGo.AddComponent<WebFieldView>();
             webFields.Bind(ctx.Clock, combat, bossDir, ctx.BossVitals, player, playerStatus);
-            if (ctx.AllyDummy != null)
-                webFields.RegisterAlly(ctx.AllyDummy);
+            if (ctx.AllyDummyController != null)
+                webFields.RegisterAlly(ctx.AllyDummyController);
             director.ConfigureWeaponCycle(design?.Equipment.Items);
             if (design != null)
             {
@@ -212,21 +212,21 @@ namespace Dovus.Game.Composition.Builders
             preview.BindTheme(ctx.Assets.HudTheme);
             preview.Configure(input.Engine, skills, skillFactory, director, tuning, view.CanvasRoot);
 
-            var buildSelect = root.AddComponent<BuildSelectScreen>();
+            var buildSelect = root.AddComponent<BuildSelectHud>();
             buildSelect.Configure(skills, runeManager, input, view, ctx.Clock, director, !tuning.Hud.SkipBuildSelectOnStart);
 
             int elementTransitionMs = SkillSystemBuilderDefaults.ElementTransitionMs;
             if (design != null
                 && ElementSystemHeader.TryParse(design.Document, elementTransitionMs, out ElementSystemHeader elementHdr))
                 elementTransitionMs = elementHdr.SelectionTransitionMs;
-            var elementMenu = root.AddComponent<ElementRadialMenu>();
+            var elementMenu = root.AddComponent<ElementRadialMenuHud>();
             elementMenu.BindTheme(ctx.Assets.HudTheme);
             elementMenu.Configure(
                 director, skills, playerStatus, tuning, view.CanvasRoot, elementTransitionMs);
             ctx.ElementMenu = elementMenu;
-            ctx.Player.GetComponent<MoveInput>()?.BindElementMenu(elementMenu);
-            ctx.CameraOrbitInput?.BindElementMenu(elementMenu);
-            ctx.PlayerTargeting?.BindElementMenu(elementMenu);
+            ctx.Player.GetComponent<MoveInputController>()?.BindElementMenu(elementMenu);
+            ctx.CameraOrbitController?.BindElementMenu(elementMenu);
+            ctx.PlayerTargetingController?.BindElementMenu(elementMenu);
         }
 
         static void LogDesignWarning(string message) => Debug.LogWarning(message);

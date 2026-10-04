@@ -64,7 +64,7 @@ namespace Dovus.Game.Skills
             if (_emHealRatio > 0f && incomingDamage > 0.5f && _clock != null
                 && _clock.Director.WorldTimeMs < _emHealUntilMs && _player != null)
             {
-                PlayerVitals vitals = CachedPlayerVitals();
+                PlayerVitalsHost vitals = CachedPlayerVitals();
                 int heal = Mathf.RoundToInt(incomingDamage * _emHealRatio);
                 if (vitals != null && heal > 0)
                     vitals.ApplyHeal(heal);
@@ -235,7 +235,7 @@ namespace Dovus.Game.Skills
             int ms = _verbData?.IFrameMsFor(skill.SkillId) ?? 0;
             if (ms <= 0 || _player == null)
                 return;
-            _player.GetComponent<PlayerDodgeRig>()?.OpenSkillIframe(ms);
+            _player.GetComponent<PlayerDodgeController>()?.OpenSkillIframe(ms);
         }
 
         /// <summary>Minion vuruşu: ham hasar boru hattından (zırh, kritik, ölçek bir kez).</summary>

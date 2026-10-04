@@ -19,10 +19,10 @@ namespace Dovus.Game.Skills.Projectiles
     public interface IProjectileEraserHost
     {
         Transform Player { get; }
-        AllyDummy Ally { get; }
-        BossReactor Boss { get; }
-        ActorStatus PlayerStatus { get; }
-        GameClock Clock { get; }
+        AllyDummyController Ally { get; }
+        BossReactorController Boss { get; }
+        ActorStatusHost PlayerStatus { get; }
+        GameClockHost Clock { get; }
         CombatTuning Combat { get; }
         HostileProjectileHost Projectiles { get; }
         MechanicWorldRuntime MechanicWorld { get; }

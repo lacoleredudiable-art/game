@@ -26,22 +26,22 @@ namespace Dovus.Game.Skills
     public sealed partial class ManifestationDirector
     {
         public void Bind(
-            GameClock clock,
-            HexagonInput input,
+            GameClockHost clock,
+            HexagonInputController input,
             Transform player,
-            ActorPose pose,
-            BossReactor boss,
+            ActorPoseView pose,
+            BossReactorController boss,
             BossVitals bossVitals,
-            GroundScarField scars,
+            GroundScarFieldView scars,
             GameTuning colors,
             DamageNumberHud damageHud = null,
             BossDirector bossDirector = null,
-            ActorStatus playerStatus = null,
-            ActorStatus bossStatus = null,
+            ActorStatusHost playerStatus = null,
+            ActorStatusHost bossStatus = null,
             SentenceDebugHud debugHud = null,
-            ReactionReadout readout = null,
-            FollowCamera camera = null,
-            AllyDummy ally = null,
+            ReactionReadoutHud readout = null,
+            FollowCameraController camera = null,
+            AllyDummyController ally = null,
             HexagonView hexagonView = null,
             PassiveHud passiveHud = null,
             EquipmentItem equippedWeapon = null,
@@ -64,13 +64,13 @@ namespace Dovus.Game.Skills
             _colors = colors;
             _player = player;
             _pose = pose;
-            _visual = player != null ? player.GetComponent<ActorVisual>() : null;
+            _visual = player != null ? player.GetComponent<ActorView>() : null;
             _boss = boss;
             WireBossVitalsEvents(_bossVitals, bossVitals);
             _scars = scars;
             _damageHud = damageHud;
             _bossDirector = bossDirector;
-            _motor = player.GetComponent<KinematicMotor>();
+            _motor = player.GetComponent<KinematicMotorController>();
             if (_playerStatus != null)
             {
                 _playerStatus.DamageTaken -= OnPlayerDamageTaken;
@@ -90,8 +90,8 @@ namespace Dovus.Game.Skills
             RefreshDefenderArmor();
             EnsureBossArmor();
             _equipmentBonus = equipmentBonus;
-            _playerResource = player != null ? player.GetComponent<PlayerResource>() : null;
-            _playerCooldown = player != null ? player.GetComponent<PlayerCooldown>() : null;
+            _playerResource = player != null ? player.GetComponent<PlayerResourceHost>() : null;
+            _playerCooldown = player != null ? player.GetComponent<PlayerCooldownHost>() : null;
             _skills = skills ?? SkillMotorLoader.Load();
             _skillFactory = skillFactory ?? new SkillFactory(_skills, _equipmentBonus);
             _animationDatabase = animationDatabase ?? LoadAnimationDatabase();
@@ -102,7 +102,7 @@ namespace Dovus.Game.Skills
             _skillPresentation.EnsureCatalog();
             _playerStates = new PlayerStateMachine(_skills.PlayerStates);
             input.BindPlayerStates(_playerStates, () => PendingList.Count > 0);
-            var motorForStates = player != null ? player.GetComponent<KinematicMotor>() : null;
+            var motorForStates = player != null ? player.GetComponent<KinematicMotorController>() : null;
             motorForStates?.BindPlayerStates(_playerStates);
             _slotPassives = new SlotPassiveDirector();
             _slotPassiveNeedsWeapon = false;

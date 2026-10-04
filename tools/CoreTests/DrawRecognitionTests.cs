@@ -343,7 +343,7 @@ public class DrawRecognitionTests
     {
         string session = Game("Game/Casting/Input/HexagonInputSession.cs");
         string stroke = Game("Game/Casting/Input/StrokeCaster.cs");
-        string input = Game("Game/Casting/HexagonInput.cs");
+        string input = Game("Game/Casting/HexagonInputController.cs");
         Assert.That(session, Does.Contain("StrokeDotTracker"));
         Assert.That(stroke, Does.Not.Contain("TryRegisterDotAt"), "nokta kaydı yalnız tarayıcıdan");
         Assert.That(stroke, Does.Contain("DrawFeedback.CaptionFor(outcome)"));
@@ -351,7 +351,7 @@ public class DrawRecognitionTests
         Assert.That(stroke, Does.Contain("_s.Ink?.Break(_s.InkFlashPending)"));
         Assert.That(stroke, Does.Contain("_s.Ink?.RawEnd(false, _s.StrokeAcceptedPx)"));
         Assert.That(input, Does.Contain("TickStrokeSettle()"));
-        string ink = Game("Game/Casting/InkTrail.cs");
+        string ink = Game("Game/Casting/InkTrailView.cs");
         Assert.That(ink, Does.Contain("public void RawBegin("));
         Assert.That(ink, Does.Contain("public void Break(bool flash)"));
         Assert.That(Game("Game/Composition/Builders/HexagonInputBuilder.cs"), Does.Contain("input.DrawCaption += view.ShowDrawCaption;"));

@@ -19,7 +19,7 @@ namespace Dovus.Game.Composition.Builders
 {
     /// <summary>
     /// Oyuncu + dost + boss zinciri. Nesne oluşturma ve AddComponent SIRASI eski
-    /// GameBootstrap.BuildWorld ile birebir aynıdır (oyuncu/boss bileşenleri iç içe;
+    /// GameBootstrapHost.BuildWorld ile birebir aynıdır (oyuncu/boss bileşenleri iç içe;
     /// Awake/OnEnable sırası ve örnek kimlikleri buna bağlı) — sırayı değiştirme.
     /// </summary>
     public sealed class ActorsBuilder
@@ -65,7 +65,7 @@ namespace Dovus.Game.Composition.Builders
                 out var allyAnim);
             if (allyAnim != null)
             {
-                var allyVisual = ctx.Ally.AddComponent<ActorVisual>();
+                var allyVisual = ctx.Ally.AddComponent<ActorView>();
                 allyVisual.Bind(allyAnim, ctx.Ally.GetComponent<Renderer>());
                 allyVisual.CrossFadeSec = tuning.Player.AnimCrossFadeSec;
                 allyVisual.StrikeComboResetSec = tuning.Player.BasicStrikeComboResetSec;
@@ -75,10 +75,10 @@ namespace Dovus.Game.Composition.Builders
             }
             var allyHitCollider = ctx.Ally.AddComponent<CapsuleCollider>();
             allyHitCollider.isTrigger = true;
-            ctx.Ally.AddComponent<ActorGrounding>();
-            ctx.AllyDummy = ctx.Ally.AddComponent<AllyDummy>();
-            ctx.AllyDummy.Bind(playerHp, startRatio: DebugConfig.StartHpRatio);
-            ctx.AllyDummy.BindTeam(ctx.TeamAccess);
+            ctx.Ally.AddComponent<ActorGroundingController>();
+            ctx.AllyDummyController = ctx.Ally.AddComponent<AllyDummyController>();
+            ctx.AllyDummyController.Bind(playerHp, startRatio: DebugConfig.StartHpRatio);
+            ctx.AllyDummyController.BindTeam(ctx.TeamAccess);
 
             float bossSpawnZ = ActorsBuilderDefaults.BossSpawnZBaseM * Mathf.Max(1f, tuning.Arena.ArenaVisualScale * ActorsBuilderDefaults.BossSpawnZArenaScale);
             bossSpawnZ = Mathf.Clamp(bossSpawnZ, -spawnMaxR, spawnMaxR);
@@ -90,7 +90,7 @@ namespace Dovus.Game.Composition.Builders
                 CompositionConstants.BossRadiusM,
                 CompositionConstants.BossHeightM,
                 tuning.Visuals.BossColor);
-            // SkillExecutor overlap/projectile yolu için gerçek fizik hedefi.
+            // SkillExecutorController overlap/projectile yolu için gerçek fizik hedefi.
             var bossHitCollider = ctx.Boss.AddComponent<CapsuleCollider>();
             bossHitCollider.isTrigger = true;
             VisualAttach.Attach(
@@ -101,18 +101,18 @@ namespace Dovus.Game.Composition.Builders
                 tuning.Player.CharacterAnimSpeed,
                 out var bossAnim);
 
-            ctx.Player.AddComponent<MoveInput>().Tuning = tuning;
+            ctx.Player.AddComponent<MoveInputController>().Tuning = tuning;
 
-            var motor = ctx.Player.AddComponent<KinematicMotor>();
+            var motor = ctx.Player.AddComponent<KinematicMotorController>();
             motor.Tuning = tuning;
             motor.BodyRadiusM = CompositionConstants.PlayerRadiusM;
             motor.BindClock(clock);
 
-            ctx.PlayerPose = ctx.Player.AddComponent<ActorPose>();
+            ctx.PlayerPose = ctx.Player.AddComponent<ActorPoseView>();
             ctx.PlayerPose.Tuning = tuning;
             ctx.PlayerPose.CaptureBase();
 
-            var visual = ctx.Player.AddComponent<ActorVisual>();
+            var visual = ctx.Player.AddComponent<ActorView>();
             if (playerAnim != null)
                 visual.Bind(playerAnim, ctx.Player.GetComponent<Renderer>());
             visual.CrossFadeSec = tuning.Player.AnimCrossFadeSec;
@@ -120,65 +120,65 @@ namespace Dovus.Game.Composition.Builders
             visual.BasicStrikeAnimSpeed = combat.Feel.BasicStrikeAnimSpeed;
             visual.UpperBodyMinSpeed = tuning.Player.UpperBodyCastMinSpeed;
 
-            var bossVisual = ctx.Boss.AddComponent<BossVisual>();
+            var bossVisual = ctx.Boss.AddComponent<BossView>();
             if (bossAnim != null)
                 bossVisual.Bind(bossAnim, ctx.Boss.GetComponent<Renderer>());
             bossVisual.Configure(tuning);
 
-            ctx.Player.AddComponent<HitFlash>().Bind(combat.Feel);
-            ctx.Boss.AddComponent<HitFlash>().Bind(combat.Feel);
+            ctx.Player.AddComponent<HitFlashView>().Bind(combat.Feel);
+            ctx.Boss.AddComponent<HitFlashView>().Bind(combat.Feel);
 
-            var vitals = ctx.Player.AddComponent<PlayerVitals>();
-            ctx.PlayerVitals = vitals;
+            var vitals = ctx.Player.AddComponent<PlayerVitalsHost>();
+            ctx.PlayerVitalsHost = vitals;
             vitals.Bind(combat.Boss, playerHp, startRatio: DebugConfig.StartHpRatio);
             vitals.BindClock(clock);
             vitals.SetDevHp(DebugConfig.DevHpActive);
 
-            ctx.PlayerResource = ctx.Player.AddComponent<PlayerResource>();
-            ctx.PlayerResource.Bind();
-            ctx.PlayerResource.BindClock(clock);
+            ctx.PlayerResourceHost = ctx.Player.AddComponent<PlayerResourceHost>();
+            ctx.PlayerResourceHost.Bind();
+            ctx.PlayerResourceHost.BindClock(clock);
 
-            ctx.PlayerCooldown = ctx.Player.AddComponent<PlayerCooldown>();
-            ctx.PlayerCooldown.Bind();
+            ctx.PlayerCooldownHost = ctx.Player.AddComponent<PlayerCooldownHost>();
+            ctx.PlayerCooldownHost.Bind();
 
-            ctx.PlayerStatus = ctx.Player.AddComponent<ActorStatus>();
-            ctx.BossStatus = ctx.Boss.AddComponent<ActorStatus>();
+            ctx.PlayerStatus = ctx.Player.AddComponent<ActorStatusHost>();
+            ctx.BossStatus = ctx.Boss.AddComponent<ActorStatusHost>();
 
-            ctx.Afterimage = ctx.Player.AddComponent<AfterimageTrail>();
+            ctx.Afterimage = ctx.Player.AddComponent<AfterimageTrailView>();
             ctx.Afterimage.Bind(combat.Feel, tuning);
 
-            ctx.DodgeMotion = ctx.Player.AddComponent<DodgeMotion>();
-            ctx.Player.AddComponent<PlayerDodgeRig>();
+            ctx.DodgeMotionController = ctx.Player.AddComponent<DodgeMotionController>();
+            ctx.Player.AddComponent<PlayerDodgeController>();
             ctx.Player.AddComponent<WeaponShortShieldHost>().Bind(clock);
-            ctx.Player.AddComponent<MotionTemplateBody>();
-            ctx.Player.AddComponent<ActorGrounding>();
+            ctx.Player.AddComponent<MotionTemplateBodyHost>();
+            ctx.Player.AddComponent<ActorGroundingController>();
 
-            ctx.Boss.AddComponent<ActorGrounding>();
-            ctx.Boss.AddComponent<MotionTemplateBody>();
-            ctx.BossReactor = ctx.Boss.AddComponent<BossReactor>();
-            ctx.BossReactor.Tuning = tuning;
-            ctx.BossReactor.ConfigureFeel(combat.Feel);
-            ctx.BossReactor.BodyRadiusM = CompositionConstants.BossRadiusM;
-            ctx.BossReactor.CaptureHome();
+            ctx.Boss.AddComponent<ActorGroundingController>();
+            ctx.Boss.AddComponent<MotionTemplateBodyHost>();
+            ctx.BossReactorController = ctx.Boss.AddComponent<BossReactorController>();
+            ctx.BossReactorController.Tuning = tuning;
+            ctx.BossReactorController.ConfigureFeel(combat.Feel);
+            ctx.BossReactorController.BodyRadiusM = CompositionConstants.BossRadiusM;
+            ctx.BossReactorController.CaptureHome();
 
             ctx.BossVitals = new BossVitals(ctx.Host.ScaledBossHp(ctx.Assets, combat.Boss.MaxHp));
-            ctx.Ally.AddComponent<Targetable>().Configure(
+            ctx.Ally.AddComponent<TargetableHost>().Configure(
                 teamId: 0,
                 displayName: "ALLY",
-                available: () => ctx.AllyDummy.Hp > 0);
-            ctx.Boss.AddComponent<Targetable>().Configure(
+                available: () => ctx.AllyDummyController.Hp > 0);
+            ctx.Boss.AddComponent<TargetableHost>().Configure(
                 teamId: 1,
                 displayName: "BOSS",
                 available: () => !ctx.BossVitals.IsDown);
-            ctx.PlayerStatus.Bind(null, combat.Status, ctx.PlayerVitals, null, null);
-            ctx.BossStatus.Bind(null, combat.Status, null, ctx.BossVitals, ctx.BossReactor);
+            ctx.PlayerStatus.Bind(null, combat.Status, ctx.PlayerVitalsHost, null, null);
+            ctx.BossStatus.Bind(null, combat.Status, null, ctx.BossVitals, ctx.BossReactorController);
 
-            ctx.BossTelegraph = ctx.Boss.AddComponent<BossTelegraph>();
-            ctx.BossTelegraph.Bind(tuning, combat.Boss, ctx.Boss.transform);
+            ctx.BossTelegraphView = ctx.Boss.AddComponent<BossTelegraphView>();
+            ctx.BossTelegraphView.Bind(tuning, combat.Boss, ctx.Boss.transform);
 
-            ctx.Player.GetComponent<ActorGrounding>()?.BindClock(clock);
-            ctx.Ally.GetComponent<ActorGrounding>()?.BindClock(clock);
-            ctx.Boss.GetComponent<ActorGrounding>()?.BindClock(clock);
+            ctx.Player.GetComponent<ActorGroundingController>()?.BindClock(clock);
+            ctx.Ally.GetComponent<ActorGroundingController>()?.BindClock(clock);
+            ctx.Boss.GetComponent<ActorGroundingController>()?.BindClock(clock);
         }
     }
 }

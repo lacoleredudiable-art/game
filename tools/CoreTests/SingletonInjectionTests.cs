@@ -67,7 +67,7 @@ public class SingletonInjectionTests
     [Test]
     public void Bootstrap_WiresAssetCatalog()
     {
-        string boot = Game("Composition/GameBootstrap.cs");
+        string boot = Game("Composition/GameBootstrapHost.cs");
         Assert.That(boot, Does.Contain("ctx.Assets = AssetCatalog.Standalone"));
     }
 }

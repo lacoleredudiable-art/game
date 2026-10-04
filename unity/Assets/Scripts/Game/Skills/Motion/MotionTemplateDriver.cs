@@ -383,7 +383,7 @@ namespace Dovus.Game.Skills.Motion
                 _host.PlayerBodyRadiusM());
             if (_host.Targeting != null && _host.Player != null)
             {
-                Targetable selected = _host.Targeting.Selected;
+                TargetableHost selected = _host.Targeting.Selected;
                 if (selected != null && selected.IsAvailable && IsEnemyBody(selected.transform)
                     && selected.DistanceFrom(_host.Player.position) <= gate)
                     return selected.transform;

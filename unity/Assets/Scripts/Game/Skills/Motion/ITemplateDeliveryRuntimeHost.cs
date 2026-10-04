@@ -26,7 +26,7 @@ namespace Dovus.Game.Skills.Motion
 {
 public interface ITemplateDeliveryRuntimeHost
     {
-        GameClock Clock { get; }
+        GameClockHost Clock { get; }
         EquipmentItem EquippedWeapon { get; }
         CombatTuning Combat { get; }
         MechanicGrammar MechanicEngine { get; }
@@ -35,11 +35,11 @@ public interface ITemplateDeliveryRuntimeHost
         Weapons.CannonBlast Cannon { get; }
         WeaponPassiveRuntime WeaponPassives { get; }
         Transform Player { get; }
-        BossReactor Boss { get; }
+        BossReactorController Boss { get; }
         BossVitals BossVitals { get; }
-        ActorStatus PlayerStatus { get; }
-        ActorStatus BossStatus { get; }
-        KinematicMotor Motor { get; }
+        ActorStatusHost PlayerStatus { get; }
+        ActorStatusHost BossStatus { get; }
+        KinematicMotorController Motor { get; }
         int SlotQueryCastId { get; set; }
         bool CasterRecoilSuppressed { get; set; }
         bool LastSkillEffectApplied { get; set; }

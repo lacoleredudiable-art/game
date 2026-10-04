@@ -190,7 +190,7 @@ namespace Dovus.Game.Skills.Mechanics
         void TickGuardTriggers(double worldMs)
         {
             double threshold = _host.MechanicEngine?.Rules.Param("guard_threshold") ?? 0;
-            PlayerVitals playerVitals = _host.CachedPlayerVitals();
+            PlayerVitalsHost playerVitals = _host.CachedPlayerVitals();
             for (int i = _guardTriggers.Count - 1; i >= 0; i--)
             {
                 GuardTrigger guard = _guardTriggers[i];
@@ -207,7 +207,7 @@ namespace Dovus.Game.Skills.Mechanics
                     int amount = Mathf.Max(0, Mathf.RoundToInt((float)Math.Abs(guard.Effect.Amount) * scale));
                     if (guard.Effect.Stat == "can")
                     {
-                        // Miktar gramerden (ham). Diğer şifalar gibi ActorStatus.ApplyHeal ölçekler.
+                        // Miktar gramerden (ham). Diğer şifalar gibi ActorStatusHost.ApplyHeal ölçekler.
                         if (allyLow && _host.Ally != null)
                         {
                             float healMult = _host.Ally.Board != null ? _host.Ally.Board.HealEffectivenessMult : 1f;

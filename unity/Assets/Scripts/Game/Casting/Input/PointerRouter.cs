@@ -35,7 +35,7 @@ namespace Dovus.Game.Casting.Input
         }
 
         public bool PanelBlocking =>
-            TuningPanel.IsOpen || GrammarDebugPanel.IsOpen || BuildSelectScreen.IsOpen;
+            TuningPanelHud.IsOpen || GrammarDebugHud.IsOpen || BuildSelectHud.IsOpen;
 
         public void HandleKeyboardDodge()
         {
@@ -64,7 +64,7 @@ namespace Dovus.Game.Casting.Input
             Vector2 pos = mouse.position.ReadValue();
             if (mouse.leftButton.wasPressedThisFrame)
             {
-                if (!HexagonPointerHits.IsDrawHalf(pos, _s.Tuning) || TuningPanel.HitToggleButton(pos))
+                if (!HexagonPointerHits.IsDrawHalf(pos, _s.Tuning) || TuningPanelHud.HitToggleButton(pos))
                     return;
                 if (!HexagonPointerHits.HitDodgeButton(pos, _s.Tuning)
                     && !HexagonPointerHits.HitSwapButton(pos, _s.Tuning)
@@ -91,7 +91,7 @@ namespace Dovus.Game.Casting.Input
                 return;
 
             Vector2 pos = finger.screenPosition;
-            if (!HexagonPointerHits.IsDrawHalf(pos, _s.Tuning) || TuningPanel.HitToggleButton(pos))
+            if (!HexagonPointerHits.IsDrawHalf(pos, _s.Tuning) || TuningPanelHud.HitToggleButton(pos))
                 return;
 
             if (_s.FingerId.HasValue)

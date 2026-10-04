@@ -30,7 +30,7 @@ namespace Dovus.Game.Editor
             if (_pausedBoss != null)
                 _pausedBoss.enabled = false;
 
-            foreach (AfterimageTrail trail in Object.FindObjectsByType<AfterimageTrail>(FindObjectsSortMode.None))
+            foreach (AfterimageTrailView trail in Object.FindObjectsByType<AfterimageTrailView>(FindObjectsSortMode.None))
                 trail.Clear();
         }
 

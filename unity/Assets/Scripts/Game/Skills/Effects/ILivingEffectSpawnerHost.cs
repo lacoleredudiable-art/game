@@ -27,11 +27,11 @@ namespace Dovus.Game.Skills.Effects
         SentenceEngine Engine { get; }
         CombatTuning Combat { get; }
         GameTuning Colors { get; }
-        ActorPose Pose { get; }
-        ActorVisual Visual { get; }
-        BossReactor Boss { get; }
+        ActorPoseView Pose { get; }
+        ActorView Visual { get; }
+        BossReactorController Boss { get; }
         BossVitals BossVitals { get; }
-        GroundScarField Scars { get; }
+        GroundScarFieldView Scars { get; }
         SkillMotor Skills { get; }
 
         LivingEffectView BuildingView { get; set; }

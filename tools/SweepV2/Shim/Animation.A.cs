@@ -113,7 +113,7 @@ namespace UnityEngine
 
     /// <summary>
     /// Başsız Animator: kontrolcü yoktur (Play'deki Mixamo kontrolcüsü yalnız görsel).
-    /// İnsansı kemikler aynı adlı çocuk transform'lardan bulunur; ActorGrounding ayak ölçümü böyle yapılır.
+    /// İnsansı kemikler aynı adlı çocuk transform'lardan bulunur; ActorGroundingController ayak ölçümü böyle yapılır.
     /// </summary>
     public class Animator : Behaviour
     {

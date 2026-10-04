@@ -16,22 +16,22 @@ namespace Dovus.Game.Composition.Builders
             ArenaBuilder.EnsureEventSystem();
             if (DebugConfig.Enabled)
             {
-                var v6Panel = ctx.HexagonRoot.AddComponent<GrammarDebugPanel>();
+                var v6Panel = ctx.HexagonRoot.AddComponent<GrammarDebugHud>();
                 v6Panel.Configure(
-                    ctx.HexagonInput,
+                    ctx.HexagonInputController,
                     ctx.ManifestationDirector,
-                    ctx.HexagonRoot.GetComponent<BuildSelectScreen>(),
+                    ctx.HexagonRoot.GetComponent<BuildSelectHud>(),
                     ctx.HexagonView.CanvasRoot,
-                    ctx.PlayerVitals);
-                CreateTuningPanel(ctx.TuningConfig, ctx.PlayerVitals, ctx.FollowCamera);
+                    ctx.PlayerVitalsHost);
+                CreateTuningPanel(ctx.TuningConfig, ctx.PlayerVitalsHost, ctx.FollowCameraController);
                 ctx.HexagonRoot.AddComponent<DebugPanelsController>();
             }
         }
 
-        static void CreateTuningPanel(TuningConfig tuningConfig, PlayerVitals vitals, FollowCamera follow)
+        static void CreateTuningPanel(TuningConfig tuningConfig, PlayerVitalsHost vitals, FollowCameraController follow)
         {
             var panelGo = new GameObject("TuningPanel");
-            var panel = panelGo.AddComponent<TuningPanel>();
+            var panel = panelGo.AddComponent<TuningPanelHud>();
             panel.Configure(tuningConfig, vitals, follow);
         }
     }

@@ -38,7 +38,7 @@ namespace Dovus.Game.Skills.Mechanics
         readonly GuardTriggerDelivery.Once _guardOnce = new();
         int _nextGuardId;
         readonly TimedHistory<Vector3> _bossMechanicHistory = new(MechanicWorldDefaults.BossMechanicHistoryWindowMs, MechanicWorldDefaults.BossMechanicHistoryCapacity);
-        HostileTargets _hostileTargets;
+        HostileTargetsHost _hostileTargets;
 
         static readonly StatusKind[] PositiveStatuses =
         {
@@ -59,7 +59,7 @@ namespace Dovus.Game.Skills.Mechanics
             _json = json;
         }
 
-        public void BindHostileTargets(HostileTargets targets) => _hostileTargets = targets;
+        public void BindHostileTargets(HostileTargetsHost targets) => _hostileTargets = targets;
 
         public void PullBossToPlayerContact()
         {

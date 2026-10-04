@@ -58,7 +58,7 @@ namespace Dovus.Game.Actors
         }
 
         /// <summary>
-        /// Atanırsa state'ler Animator.Play yerine buradan oynar (ActorVisual crossfade +
+        /// Atanırsa state'ler Animator.Play yerine buradan oynar (ActorView crossfade +
         /// üst gövde yönlendirmesi). null → doğrudan Animator.Play.
         /// </summary>
         public Func<string, bool> StatePlayer { get; set; }

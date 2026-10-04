@@ -20,7 +20,7 @@ namespace Dovus.Game.Editor
         public const string ControllerPath = ArtRoot + "/SpiderBoss.controller";
         public const string PrefabPath = "Assets/Resources/Bosses/Visuals/AglarinKralicesi.prefab";
 
-        /// <summary>Leap saldırısı; <see cref="BossVisual"/> henüz state sabiti taşımıyor — controller'da hazır.</summary>
+        /// <summary>Leap saldırısı; <see cref="BossView"/> henüz state sabiti taşımıyor — controller'da hazır.</summary>
         public const string StatePounce = "BossPounce";
 
         [MenuItem("Dovus/Bind Spider Boss")]
@@ -77,23 +77,23 @@ namespace Dovus.Game.Editor
             AnimationClip stagger = c.Pick("stagger", "hit", "impact", "reaction") ?? idle;
 
             var ac = LoadOrCreate(ControllerPath);
-            EnsureParam(ac, BossVisual.ParamSpeed, AnimatorControllerParameterType.Float);
-            EnsureParam(ac, BossVisual.ParamLocoSpeed, AnimatorControllerParameterType.Float, 1f);
-            EnsureParam(ac, BossVisual.ParamActionSpeed, AnimatorControllerParameterType.Float, 1f);
+            EnsureParam(ac, BossView.ParamSpeed, AnimatorControllerParameterType.Float);
+            EnsureParam(ac, BossView.ParamLocoSpeed, AnimatorControllerParameterType.Float, 1f);
+            EnsureParam(ac, BossView.ParamActionSpeed, AnimatorControllerParameterType.Float, 1f);
 
             var sm = ResetBaseLayer(ac);
-            var loco = sm.AddState(BossVisual.StateLocomotion, new Vector3(300, 0, 0));
+            var loco = sm.AddState(BossView.StateLocomotion, new Vector3(300, 0, 0));
             loco.motion = MakeLocomotionTree(ac, "SpiderLocomotionBT", idle, walk, 1f);
             loco.speedParameterActive = true;
-            loco.speedParameter = BossVisual.ParamLocoSpeed;
+            loco.speedParameter = BossView.ParamLocoSpeed;
             sm.defaultState = loco;
 
-            AddBossAction(sm, BossVisual.StateSlam, attack, 520, 0, speedParam: true);
-            AddBossAction(sm, BossVisual.StateBreath, attack, 520, 80, speedParam: true);
-            AddBossAction(sm, BossVisual.StateRoar, idle, 520, 160, speedParam: false);
+            AddBossAction(sm, BossView.StateSlam, attack, 520, 0, speedParam: true);
+            AddBossAction(sm, BossView.StateBreath, attack, 520, 80, speedParam: true);
+            AddBossAction(sm, BossView.StateRoar, idle, 520, 160, speedParam: false);
             AddBossAction(sm, StatePounce, jump, 520, -80, speedParam: true);
-            AddBossAction(sm, BossVisual.StateStagger, stagger, 520, 240, speedParam: false);
-            AddBossAction(sm, BossVisual.StateDeath, death, 300, 240, speedParam: false, returns: false);
+            AddBossAction(sm, BossView.StateStagger, stagger, 520, 240, speedParam: false);
+            AddBossAction(sm, BossView.StateDeath, death, 300, 240, speedParam: false, returns: false);
 
             ClearBaseLayerMask(ac);
             EditorUtility.SetDirty(ac);
@@ -182,7 +182,7 @@ namespace Dovus.Game.Editor
             if (speedParam)
             {
                 st.speedParameterActive = true;
-                st.speedParameter = BossVisual.ParamActionSpeed;
+                st.speedParameter = BossView.ParamActionSpeed;
             }
             if (!returns)
                 return;
@@ -227,7 +227,7 @@ namespace Dovus.Game.Editor
             var tree = new BlendTree
             {
                 name = name,
-                blendParameter = BossVisual.ParamSpeed,
+                blendParameter = BossView.ParamSpeed,
                 blendType = BlendTreeType.Simple1D,
                 useAutomaticThresholds = false
             };

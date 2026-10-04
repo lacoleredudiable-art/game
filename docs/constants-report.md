@@ -7,13 +7,13 @@ Kapsam: en yoğun 5 oynanış dosyası + `*Defaults` tek kaynak sınıfları. G�
 | Klasör | Önce | Sonra | Not |
 |--------|------|-------|-----|
 | Skills | 1051 | 1013 | Closing + MechanicWorld |
-| Boss | 392 | 387 | AttackTelegraph + BossTelegraph |
+| Boss | 392 | 387 | AttackTelegraphView + BossTelegraphView |
 | Team | 70 | 63 | TeamComboHost |
 | Actors | 287 | 287 | gelecek iş |
 | Combat | 0 | 0 | — |
 | **Oynanış toplam** | **1800** | **1750** | ratchet: `GameplayLiteralRatchetTests` |
 
-Görsel-öncelikli klasörler (bu PR dokunmadı): Hud, Feel, Audio, Casting, Cameras, Arena, Weapons, Vfx, Config, Composition, Data — yaklaşık **3596** float literal (BuildSelectScreen, HudTheme, WeaponHandProps, …).
+Görsel-öncelikli klasörler (bu PR dokunmadı): Hud, Feel, Audio, Casting, Cameras, Arena, Weapons, Vfx, Config, Composition, Data — yaklaşık **3596** float literal (BuildSelectHud, HudTheme, WeaponHandPropsView, …).
 
 ## Taşınan adlandırılmış sabitler (const, JSON yok)
 
@@ -22,14 +22,14 @@ Görsel-öncelikli klasörler (bu PR dokunmadı): Hud, Feel, Audio, Casting, Cam
 | `ClosingDamageDefaults.*` | eski literal'ler 1:1 | `Game/Skills/Closing/ClosingDamageDefaults.cs` |
 | `TeamComboDefaults.*` | eski literal'ler 1:1 | `Game/Team/TeamComboDefaults.cs` |
 | `MechanicWorldDefaults.*` | eski literal'ler 1:1 | `Game/Skills/Mechanics/MechanicWorldDefaults.cs` |
-| `AttackTelegraphDefaults.*` | eski literal'ler 1:1 | `Game/Boss/AttackTelegraphDefaults.cs` |
-| `BossTelegraphDefaults.*` | eski literal'ler 1:1 | `Game/Boss/BossTelegraphDefaults.cs` |
+| `AttackTelegraphViewDefaults.*` | eski literal'ler 1:1 | `Game/Boss/AttackTelegraphViewDefaults.cs` |
+| `BossTelegraphViewDefaults.*` | eski literal'ler 1:1 | `Game/Boss/BossTelegraphViewDefaults.cs` |
 
 Mevcut `JsonParam` anahtarları değişmedi; yeni JSON anahtarı eklenmedi (değerler zaten gömülü fallback'te).
 
 ## Gelecek iş
 
-- `LivingEffectView`, `ProceduralChunkMesh`, `JsonEffectRuntime`, `ManifestationDirector.*`, `KinematicMotor`, `ActorVisual`, HUD tema dosyaları.
+- `LivingEffectView`, `ProceduralChunkMesh`, `JsonEffectRuntime`, `ManifestationDirector.*`, `KinematicMotorController`, `ActorView`, HUD tema dosyaları.
 - `element-sistemi.json` parametreleri: yalnız zaten `JsonParam` ile okunan kurallar.
 - Actors + kalan Skills/Boss dosyaları.
 
@@ -76,6 +76,6 @@ yükseltmek ayrı bir tasarım kararıdır (sabit katlama sırası değişebilir
 <!-- 2B.11 ilerleme satırları -->
 2B.11c: Core+App 351 → 0, ~190 yeni const, 37 yeni Defaults dosyası (+2 const `StatusDefaults`).
 2B.11d: Game/Skills+Game/Team 266 → 0, ~266 yeni const, 24 yeni Defaults dosyası (+TeamComboDefaults/MechanicWorldDefaults genişletme).
-2B.11e: Game/Boss+Actors+Composition+Cameras+Feel+Platform 241→0, 182 const, 37 yeni Defaults dosyası (+AttackTelegraphDefaults/BossTelegraphDefaults genişletme).
+2B.11e: Game/Boss+Actors+Composition+Cameras+Feel+Platform 241→0, 182 const, 37 yeni Defaults dosyası (+AttackTelegraphViewDefaults/BossTelegraphViewDefaults genişletme).
 2B.11f: Game/Weapons+Game/Audio+Game/Casting 308→0, 257 yeni const, 10 yeni Defaults dosyası.
 2B.11g: Game/Vfx+Game/Arena+Game/Hud 333→0, ~310 yeni const, 22 yeni Defaults dosyası.

@@ -65,7 +65,7 @@ namespace Dovus.Game.Vfx
             EmitSplash(pos, life * HitImpactFxDefaults.SplashEmitterLifeMult);
             if (bossRoot != null)
             {
-                BossHitFlinch flinch = bossRoot.GetComponentInChildren<BossHitFlinch>();
+                BossHitFlinchView flinch = bossRoot.GetComponentInChildren<BossHitFlinchView>();
                 flinch?.KickFromWorldPoint(worldPoint, bossRoot.position);
             }
 

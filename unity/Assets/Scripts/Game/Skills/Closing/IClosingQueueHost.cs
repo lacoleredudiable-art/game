@@ -29,7 +29,7 @@ namespace Dovus.Game.Skills.Closing
         ElementPaintNode? SelectedElementPaint { get; }
         CombatTuning Combat { get; }
         Transform DirectorTransform { get; }
-        GameClock Clock { get; }
+        GameClockHost Clock { get; }
 
         Skill LastFactorySkill { get; set; }
 

@@ -21,13 +21,13 @@ namespace Dovus.Game.Boss
         const float DiscHeightY = 0.025f;
         const float DiscThicknessScale = 0.02f;
 
-        GameClock _clock;
+        GameClockHost _clock;
         CombatTuning _combat;
         BossDirector _boss;
         BossVitals _bossVitals;
         Transform _player;
-        ActorStatus _playerStatus;
-        readonly List<AllyDummy> _allies = new();
+        ActorStatusHost _playerStatus;
+        readonly List<AllyDummyController> _allies = new();
         WebFieldSet _set;
         double _nextRefreshMs;
         readonly List<DiscVisual> _visuals = new();
@@ -40,12 +40,12 @@ namespace Dovus.Game.Boss
         }
 
         public void Bind(
-            GameClock clock,
+            GameClockHost clock,
             CombatTuning combat,
             BossDirector boss,
             BossVitals bossVitals,
             Transform player,
-            ActorStatus playerStatus)
+            ActorStatusHost playerStatus)
         {
             Unbind();
             _clock = clock;
@@ -59,7 +59,7 @@ namespace Dovus.Game.Boss
             RebuildSet();
         }
 
-        public void RegisterAlly(AllyDummy ally)
+        public void RegisterAlly(AllyDummyController ally)
         {
             if (ally != null && !_allies.Contains(ally))
                 _allies.Add(ally);
@@ -128,7 +128,7 @@ namespace Dovus.Game.Boss
             }
             for (int i = 0; i < _allies.Count; i++)
             {
-                AllyDummy a = _allies[i];
+                AllyDummyController a = _allies[i];
                 if (a == null || a.IsDown || a.Board == null)
                     continue;
                 Vector3 p = a.transform.position;

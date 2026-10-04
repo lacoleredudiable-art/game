@@ -618,7 +618,7 @@ namespace Dovus.Game.Skills
             return mat;
         }
 
-        // "Sprites/Default" alfa'yı gerçekten harmanlar (bkz. InkTrail.EnsureMaterial); URP
+        // "Sprites/Default" alfa'yı gerçekten harmanlar (bkz. InkTrailView.EnsureMaterial); URP
         // Unlit varsayılan OPAK'tır ve alfa'ya yazılan hiçbir değeri (sönme, iz saydamlığı)
         // ekrana yansıtmaz. Aynı shader'ı kullanmak repodaki tek doğru desenle tutarlı kalır.
         static Shader FindTransparentUnlitShader()

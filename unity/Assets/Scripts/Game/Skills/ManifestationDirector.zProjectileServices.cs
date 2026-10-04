@@ -27,10 +27,10 @@ namespace Dovus.Game.Skills
             internal ProjectileEraserHost(ManifestationDirector md) => _md = md;
 
             public Transform Player => _md._player;
-            public AllyDummy Ally => _md._ally;
-            public BossReactor Boss => _md._boss;
-            public ActorStatus PlayerStatus => _md._playerStatus;
-            public GameClock Clock => _md._clock;
+            public AllyDummyController Ally => _md._ally;
+            public BossReactorController Boss => _md._boss;
+            public ActorStatusHost PlayerStatus => _md._playerStatus;
+            public GameClockHost Clock => _md._clock;
             public CombatTuning Combat => _md._combat;
             public HostileProjectileHost Projectiles => _md._projectiles;
             public MechanicWorldRuntime MechanicWorld

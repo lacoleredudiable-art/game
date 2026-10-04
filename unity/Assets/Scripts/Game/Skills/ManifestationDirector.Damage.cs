@@ -184,7 +184,7 @@ namespace Dovus.Game.Skills
             {
                 SkillPower = skillPower * Mathf.Max(0f, effectScale),
                 Multiplier = outMult * runeMult,
-                LandMultiplier = () => _player != null ? PlayerDodgeRig.ConsumeNextHit(_player) : 1f,
+                LandMultiplier = () => _player != null ? PlayerDodgeController.ConsumeNextHit(_player) : 1f,
                 CanCrit = canCrit && skillPower > 0f,
                 CritChance = Crits.ChanceWith(extraCrit),
                 CritMultiplier = Crits.Multiplier,
@@ -219,7 +219,7 @@ namespace Dovus.Game.Skills
             return healMult;
         }
 
-        void ApplyArmorShred(in SkillResolution skill, ActorStatus target)
+        void ApplyArmorShred(in SkillResolution skill, ActorStatusHost target)
         {
             if (skill.IsEmpty || skill.Engine.IsNull)
                 return;

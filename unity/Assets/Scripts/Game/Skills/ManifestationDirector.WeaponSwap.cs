@@ -112,7 +112,7 @@ namespace Dovus.Game.Skills
                         CutTemplateForSwap(WeaponSwapCancel.UnlocksNextSkill(inWindow, tagged));
                     // Kesilen ya da boştaki gövde havada kalmasın; pencere dışında oynayan kalıp sürer.
                     if (_motionBody == null && _player != null)
-                        _motionBody = _player.GetComponent<MotionTemplateBody>();
+                        _motionBody = _player.GetComponent<MotionTemplateBodyHost>();
                     if (_motionBody != null && !_motionBody.IsDisplacing)
                         _motionBody.CancelToGround();
                     DebugConfig.DevLog($"[WeaponSwap] başladı → {_weaponSwap.Reserve?.Name}");

@@ -105,11 +105,11 @@ namespace Dovus.Game.Skills.Weapons
                     summon.CollectWithin(impactX, impactZ, splash, _cannonBodies);
             }
 
-            IReadOnlyList<Targetable> targets = Targetable.Live;
+            IReadOnlyList<TargetableHost> targets = TargetableHost.Live;
             float splashSq = splash * splash;
             for (int i = 0; i < targets.Count; i++)
             {
-                Targetable target = targets[i];
+                TargetableHost target = targets[i];
                 if (target == null)
                     continue;
                 Transform body = target.transform;

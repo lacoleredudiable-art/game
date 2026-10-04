@@ -49,7 +49,7 @@ namespace Dovus.Game.Casting
             rt.pivot = new Vector2(0.5f, 0f);
         }
 
-        /// <summary>HexagonInput.DrawCaption: metin + tanındı mı.</summary>
+        /// <summary>HexagonInputController.DrawCaption: metin + tanındı mı.</summary>
         public void ShowDrawCaption(string text, bool recognized)
         {
             if (_drawCaption == null || string.IsNullOrEmpty(text))

@@ -22,7 +22,7 @@ namespace Dovus.Game.Skills.Weapons
         SkillMotor Skills { get; }
         EquipmentBonusResolver EquipmentBonus { get; }
         SkillFactory SkillFactory { get; }
-        ReactionReadout Readout { get; }
+        ReactionReadoutHud Readout { get; }
         WeaponSwapState WeaponSwap { get; }
 
         void RefreshDefenderArmor();

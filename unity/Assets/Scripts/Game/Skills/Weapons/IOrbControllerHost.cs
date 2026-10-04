@@ -23,9 +23,9 @@ namespace Dovus.Game.Skills.Weapons
 public interface IOrbControllerHost
     {
         Transform Player { get; }
-        PlayerTargeting Targeting { get; }
-        BossReactor Boss { get; }
-        GameClock Clock { get; }
+        PlayerTargetingController Targeting { get; }
+        BossReactorController Boss { get; }
+        GameClockHost Clock { get; }
         WeaponCombatProfile EquippedProfile { get; }
         Vector3 FlatBodyForward();
     }

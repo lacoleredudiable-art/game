@@ -9,7 +9,7 @@ namespace Dovus.Game.Skills
 {
     public sealed partial class ManifestationDirector
     {
-        public void BindHostileTargets(HostileTargets targets)
+        public void BindHostileTargets(HostileTargetsHost targets)
         {
             EnsureMechanicsServices();
             _mechanicWorld.BindHostileTargets(targets);

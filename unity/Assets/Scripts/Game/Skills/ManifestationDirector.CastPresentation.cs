@@ -9,7 +9,7 @@ using UnityEngine;
 namespace Dovus.Game.Skills
 {
     /// <summary>
-    /// Oyuncu cast sunumu: silahın teslim yolu (menzilli → atış klibi), state'lerin ActorVisual
+    /// Oyuncu cast sunumu: silahın teslim yolu (menzilli → atış klibi), state'lerin ActorView
     /// üzerinden oynaması (crossfade + üst gövde) ve prezentasyon <c>spawn_vfx_at_frame</c>
     /// anında el efekti. Yalnız görsel — hasar ve etki doğumu zamanlaması buradan değişmez.
     /// </summary>
@@ -17,7 +17,7 @@ namespace Dovus.Game.Skills
     {
         bool _castVfxHooked;
         Color _castVfxColor = Color.white;
-        CastFlash _castFlash;
+        CastFlashView _castFlash;
 
         void SyncVisualDelivery()
         {
@@ -90,9 +90,9 @@ namespace Dovus.Game.Skills
                 return;
             if (_castFlash == null)
             {
-                _castFlash = _visual.GetComponent<CastFlash>();
+                _castFlash = _visual.GetComponent<CastFlashView>();
                 if (_castFlash == null)
-                    _castFlash = _visual.gameObject.AddComponent<CastFlash>();
+                    _castFlash = _visual.gameObject.AddComponent<CastFlashView>();
             }
             _castFlash.Play(_castVfxColor, _visual.Animator);
         }

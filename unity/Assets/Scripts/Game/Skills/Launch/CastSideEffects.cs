@@ -22,12 +22,12 @@ namespace Dovus.Game.Skills.Launch
 
         public void ApplyResourceCost(SkillResolution skill)
         {
-            if (_host.PlayerResource == null || skill.IsEmpty)
+            if (_host.PlayerResourceHost == null || skill.IsEmpty)
                 return;
             float cost = SkillMobility.ResourceCost(skill);
             if (cost <= 0f)
                 return;
-            _host.PlayerResource.Consume(cost, _host.TryTakeFreeMana());
+            _host.PlayerResourceHost.Consume(cost, _host.TryTakeFreeMana());
         }
 
         public void ApplyCastMobility(SkillResolution skill, float durationSec)
@@ -82,12 +82,12 @@ namespace Dovus.Game.Skills.Launch
             }
 
             string comboKey = ComboCooldownKey.For(skill);
-            if (_host.PlayerCooldown == null || string.IsNullOrEmpty(comboKey))
+            if (_host.PlayerCooldownHost == null || string.IsNullOrEmpty(comboKey))
                 return;
 
             float sec = skill.BaseCooldownSec * _host.WeaponCooldownMult();
             double worldMs = _host.Clock != null ? _host.Clock.Director.WorldTimeMs : 0;
-            if (!_host.PlayerCooldown.TryBeginCast(comboKey, sec, worldMs))
+            if (!_host.PlayerCooldownHost.TryBeginCast(comboKey, sec, worldMs))
                 return;
 
             if (_host.HexagonView == null || sec <= 0f)
@@ -97,7 +97,7 @@ namespace Dovus.Game.Skills.Launch
                 words[0].Dot,
                 comboKey,
                 sec,
-                _host.PlayerCooldown,
+                _host.PlayerCooldownHost,
                 _host.Clock);
         }
 
@@ -145,7 +145,7 @@ namespace Dovus.Game.Skills.Launch
         {
             if (plan.IsEmpty || plan.IframeMs <= 0 || _host.Player == null)
                 return;
-            PlayerDodgeRig rig = _host.Player.GetComponent<PlayerDodgeRig>();
+            PlayerDodgeController rig = _host.Player.GetComponent<PlayerDodgeController>();
             if (rig == null)
                 return;
             rig.OpenSkillIframe(plan.IframeMs);

@@ -94,12 +94,12 @@ namespace Dovus.Game.Skills
             internal SkillServicesHost(ManifestationDirector md) => _md = md;
 
             public Transform Player => _md._player;
-            public PlayerTargeting Targeting => _md._targeting;
-            public BossReactor Boss => _md._boss;
-            public KinematicMotor Motor => _md._motor;
+            public PlayerTargetingController Targeting => _md._targeting;
+            public BossReactorController Boss => _md._boss;
+            public KinematicMotorController Motor => _md._motor;
             public CombatTuning Combat => _md._combat;
             public GameTuning Colors => _md._colors;
-            public ReactionReadout Readout => _md._readout;
+            public ReactionReadoutHud Readout => _md._readout;
             public SkillMotor Skills => _md._skills;
             public SkillNumberCatalog SkillNumbers => _md._skillNumbers;
             public EquipmentItem EquippedWeapon
@@ -135,10 +135,10 @@ namespace Dovus.Game.Skills
 
             public Transform DirectorTransform => _md.transform;
             public SentenceEngine Engine => _md._engine;
-            public ActorPose Pose => _md._pose;
-            public ActorVisual Visual => _md._visual;
+            public ActorPoseView Pose => _md._pose;
+            public ActorView Visual => _md._visual;
             public BossVitals BossVitals => _md._bossVitals;
-            public GroundScarField Scars => _md._scars;
+            public GroundScarFieldView Scars => _md._scars;
             public LivingEffectView BuildingView
             {
                 get => _md._buildingView;
@@ -171,7 +171,7 @@ namespace Dovus.Game.Skills
             public void ClearClosingStamp(LivingEffect logic) =>
                 _md.ClosingDamageCore.ClearClosingStamp(logic);
 
-            public GameClock Clock => _md._clock;
+            public GameClockHost Clock => _md._clock;
             public TeamComboAccess TeamAccess => _md._team;
             public LivingEffectSpawner EffectSpawner => _md._effectSpawner;
             public int LastWordCount

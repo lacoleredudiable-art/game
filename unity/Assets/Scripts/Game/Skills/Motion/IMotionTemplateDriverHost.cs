@@ -27,14 +27,14 @@ namespace Dovus.Game.Skills.Motion
 public interface IMotionTemplateDriverHost
     {
         Transform Player { get; }
-        AllyDummy Ally { get; }
-        BossReactor Boss { get; }
-        GameClock Clock { get; }
+        AllyDummyController Ally { get; }
+        BossReactorController Boss { get; }
+        GameClockHost Clock { get; }
         GameTuning Colors { get; }
         EquipmentItem EquippedWeapon { get; }
-        MotionTemplateBody MotionBody { get; }
-        PlayerTargeting Targeting { get; }
-        HexagonInput Input { get; }
+        MotionTemplateBodyHost MotionBody { get; }
+        PlayerTargetingController Targeting { get; }
+        HexagonInputController Input { get; }
         Transform DirectorTransform { get; }
         float ClosingChainBonus { get; }
         int SlotQueryCastId { get; set; }
@@ -48,7 +48,7 @@ public interface IMotionTemplateDriverHost
         List<PendingClosing> PendingList { get; }
         LivingEffectView BuildingView { get; set; }
         SustainedCastLock SustainedCast { get; }
-        ActorStatus PlayerStatus { get; }
+        ActorStatusHost PlayerStatus { get; }
         ElementPaintNode? SelectedElementPaint { get; }
         void DestroyUnityObject(Object obj, float delaySec);
         void EnsureMotionBody();

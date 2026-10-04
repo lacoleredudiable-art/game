@@ -90,7 +90,7 @@ namespace Dovus.App.Actors
         public float RespawnInSec(float nowSec) =>
             IsDown ? Math.Max(0f, _respawnAtSec - nowSec) : 0f;
 
-        /// <summary>Play sweep: ölüm zamanlayıcısı kapalı, can yarıya (eski PlayerVitals alan yansıması).</summary>
+        /// <summary>Play sweep: ölüm zamanlayıcısı kapalı, can yarıya (eski PlayerVitalsHost alan yansıması).</summary>
         public void ResetForSweepCase()
         {
             _respawnAtSec = -1f;

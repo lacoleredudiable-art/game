@@ -28,10 +28,10 @@ public interface IMotionHitResolverHost
     {
         MotionTemplateDriver Motion { get; }
         TemplateDeliveryRuntime TemplateDelivery { get; }
-        GameClock Clock { get; }
+        GameClockHost Clock { get; }
         Transform Player { get; }
-        BossReactor Boss { get; }
-        ActorStatus BossStatus { get; }
+        BossReactorController Boss { get; }
+        ActorStatusHost BossStatus { get; }
         BossVitals BossVitals { get; }
         MechanicPlan LastMechanicPlan { get; }
         EquipmentItem EquippedWeapon { get; }

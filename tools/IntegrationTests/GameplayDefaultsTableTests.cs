@@ -39,8 +39,8 @@ public class GameplayDefaultsTableTests
         {
             Assert.That(MechanicWorldDefaults.MinThicknessM, Is.EqualTo(0.05f));
             Assert.That(MechanicWorldDefaults.ExecutorFieldAlphaFallback, Is.EqualTo(0.6f));
-            Assert.That(AttackTelegraphDefaults.DefaultRadiusM, Is.EqualTo(3.2f));
-            Assert.That(BossTelegraphDefaults.HotDiscAlpha, Is.EqualTo(0.34f));
+            Assert.That(AttackTelegraphViewDefaults.DefaultRadiusM, Is.EqualTo(3.2f));
+            Assert.That(BossTelegraphViewDefaults.HotDiscAlpha, Is.EqualTo(0.34f));
         });
     }
 }

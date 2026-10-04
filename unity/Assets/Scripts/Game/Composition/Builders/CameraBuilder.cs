@@ -8,7 +8,7 @@ namespace Dovus.Game.Composition.Builders
 {
     public sealed class CameraBuilder
     {
-        public FollowCamera Build(WorldContext ctx)
+        public FollowCameraController Build(WorldContext ctx)
         {
             var tuning = ctx.Tuning;
             var camGo = new GameObject("Main Camera");
@@ -24,15 +24,15 @@ namespace Dovus.Game.Composition.Builders
             var camData = camGo.AddComponent<UniversalAdditionalCameraData>();
             camData.renderPostProcessing = true;
 
-            var follow = camGo.AddComponent<FollowCamera>();
+            var follow = camGo.AddComponent<FollowCameraController>();
             follow.Tuning = tuning;
             follow.Target = ctx.Player.transform;
             follow.BossTarget = ctx.Boss.transform;
-            follow.BindCollisionFiltering(ctx.Player.transform, ctx.Boss.transform, ctx.AllyDummy?.transform);
+            follow.BindCollisionFiltering(ctx.Player.transform, ctx.Boss.transform, ctx.AllyDummyController?.transform);
             Vector3 startOffset = tuning.Camera.CameraShoulderOffset
                 + Vector3.back * tuning.Camera.CameraDistanceM;
             camGo.transform.position = ctx.Player.transform.position + startOffset;
-            ctx.FollowCamera = follow;
+            ctx.FollowCameraController = follow;
             ctx.MainCamera = camera;
             return follow;
         }
@@ -40,7 +40,7 @@ namespace Dovus.Game.Composition.Builders
         public void ApplyAtmosphere(WorldContext ctx)
         {
             SceneAtmosphere.Apply(ctx.Sun, ctx.MainCamera, ctx.Tuning);
-            BillboardVfx.CreateEmberField(ctx.Boss.transform, new Color(1f, 0.45f, 0.12f), rate: CameraBuilderDefaults.BossEmberRate);
+            BillboardVfxView.CreateEmberField(ctx.Boss.transform, new Color(1f, 0.45f, 0.12f), rate: CameraBuilderDefaults.BossEmberRate);
         }
     }
 }

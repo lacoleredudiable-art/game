@@ -10,7 +10,7 @@
 
 - **Sahne koddan kurulur.** `.unity` / `.prefab` YAML'ine elle dokunulmaz. Sahneyi yeniden
   üretme menüsü artık yok; sahne `Assets/Scenes/Prototype.unity` olarak repoda durur. Sahnede tek bir
-  boş GameObject + `GameBootstrap` bulunur (2B.12'de `PrototypeBootstrap`'tan yeniden adlandırıldı, GUID aynı).
+  boş GameObject + `GameBootstrapHost` bulunur (2B.12'de `PrototypeBootstrap`'tan yeniden adlandırıldı, GUID aynı).
 - **Yerleşik mesh gerekiyorsa `PrimitiveMesh.Get(...)` çağır**, `GameObject.CreatePrimitive`
   değil. İkincisi bir kare yaşayan collider üretir; projede collider yok, vuruş tespiti
   matematikle yapılıyor (istisna: `WallColliderFit`'in dungeon parçalarına eklediği
@@ -22,10 +22,10 @@
   **diskten yeniden aç** (`EditorSceneManager.OpenScene(path, OpenSceneMode.Single)`), sonra play.
 - **Yükleme sırası:** `EnsureRuntimeDefaults` **önce**, `TuningConfig.TryLoad` (JSON) **sonra**.
   Ters olursa telefonda kaydedilen ayar varsayılanlarla ezilir.
-- **Ayar nesnelerinin kimliği korunmalı.** `DodgeState`/`SentenceEngine`/`HexagonInput`
+- **Ayar nesnelerinin kimliği korunmalı.** `DodgeState`/`SentenceEngine`/`HexagonInputController`
   iç ayar nesnelerinin referansını `Bind` sırasında bir kez alıp saklıyor; `CopyFrom` alan alan
   yazar. Yeni bir ayar nesnesi atarsan panelin slider'ları sessizce hiçbir şeyi değiştirmez.
-- **Kurulumda okunan yerleşim canlı ayarı yutar.** `ReactionReadout`/`VitalsHud`
+- **Kurulumda okunan yerleşim canlı ayarı yutar.** `ReactionReadoutHud`/`VitalsHud`
   `ApplyTuningLayout` deseninde her karede uygulanan değeri karşılaştırıp değiştiyse yeniden
   yazıyor. Yeni bir HUD ögesi eklerken aynı deseni kullan, yoksa slider ekranda çalışmaz.
 - **Canvas `ConstantPixelSize`:** her `...Dp` ölçüsü `HexagonLayoutScreen.DpToPixels`'ten

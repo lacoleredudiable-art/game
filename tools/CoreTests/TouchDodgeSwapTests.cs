@@ -88,8 +88,8 @@ public class TouchDodgeSwapTests
     [Test]
     public void Perfect_FeedbackText_IsPERFECT()
     {
-        Assert.That(Game("Game/Actors/PlayerDodgeRig.cs"), Does.Not.Contain("void OnGUI"), "büyük ikinci popup kaldırıldı");
-        Assert.That(Game("Game/Actors/PlayerDodgeRig.cs"), Does.Contain("\"PERFECT\""));
+        Assert.That(Game("Game/Actors/PlayerDodgeController.cs"), Does.Not.Contain("void OnGUI"), "büyük ikinci popup kaldırıldı");
+        Assert.That(Game("Game/Actors/PlayerDodgeController.cs"), Does.Contain("\"PERFECT\""));
         Assert.That(Game("Core/Tuning/GradeTuning.cs"), Does.Not.Contain("MukemmelGapMaxMs"));
     }
 

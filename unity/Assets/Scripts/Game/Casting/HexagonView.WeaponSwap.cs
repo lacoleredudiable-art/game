@@ -19,10 +19,10 @@ namespace Dovus.Game.Casting
         Text _swapActive;
         Text _swapReserve;
         ManifestationDirector _swapSource;
-        GameClock _swapClock;
+        GameClockHost _swapClock;
         bool _wasSwapping;
 
-        public void BindWeaponSwap(ManifestationDirector source, GameClock clock)
+        public void BindWeaponSwap(ManifestationDirector source, GameClockHost clock)
         {
             _swapSource = source;
             _swapClock = clock;

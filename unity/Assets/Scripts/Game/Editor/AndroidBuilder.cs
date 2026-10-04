@@ -105,10 +105,10 @@ namespace Dovus.Game.Editor
         /// </summary>
         static readonly string[] RuntimeShaders =
         {
-            "Universal Render Pipeline/Lit",     // arena, oyuncu, boss (GameBootstrap)
+            "Universal Render Pipeline/Lit",     // arena, oyuncu, boss (GameBootstrapHost)
             "Universal Render Pipeline/Unlit",   // yedek yol
             "Sprites/Default",                   // mürekkep, telegraf, hayalet, iz, tezahür
-            "Universal Render Pipeline/Particles/Unlit", // FeelVfx, CastFlash, LivingEffectView, LavaDecor, BillboardVfx
+            "Universal Render Pipeline/Particles/Unlit", // FeelVfx, CastFlashView, LivingEffectView, LavaDecor, BillboardVfxView
         };
 
         static BuildReport Build(string outputPath, bool release)
@@ -193,7 +193,7 @@ namespace Dovus.Game.Editor
             PlayerSettings.allowedAutorotateToLandscapeLeft = true;
             PlayerSettings.allowedAutorotateToLandscapeRight = true;
 
-            // Kare süresi tavanı koddan yazılıyor (GameBootstrap.ApplyFrameRateTarget);
+            // Kare süresi tavanı koddan yazılıyor (GameBootstrapHost.ApplyFrameRateTarget);
             // burada yalnızca 32 bit ekran ve tek APK garantisi.
             EditorUserBuildSettings.buildAppBundle = false;
             EditorUserBuildSettings.androidCreateSymbols = AndroidCreateSymbols.Disabled;

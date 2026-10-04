@@ -176,7 +176,7 @@ namespace UnityEngine.InputSystem
         public KeyControl spaceKey, qKey, rKey, escapeKey, eKey, aKey, dKey, wKey, sKey, bKey;
         public KeyControl f1Key, f2Key, f8Key, digit1Key, digit2Key, digit3Key, digit4Key, digit5Key, digit6Key;
         public KeyControl downArrowKey, upArrowKey, leftArrowKey, rightArrowKey;
-        public KeyControl tabKey; // ff-4: CameraOrbitInput Tab ile lock-on aç/kapa
+        public KeyControl tabKey; // ff-4: CameraOrbitController Tab ile lock-on aç/kapa
     }
     public partial class ButtonControl : InputControl
     {

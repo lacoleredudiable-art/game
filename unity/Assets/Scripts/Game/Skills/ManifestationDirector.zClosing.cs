@@ -50,9 +50,9 @@ namespace Dovus.Game.Skills
             internal ClosingHost(ManifestationDirector md) => _md = md;
 
             public Transform Player => _md._player;
-            public AllyDummy Ally => _md._ally;
-            public ActorStatus PlayerStatus => _md._playerStatus;
-            public ActorStatus BossStatus => _md._bossStatus;
+            public AllyDummyController Ally => _md._ally;
+            public ActorStatusHost PlayerStatus => _md._playerStatus;
+            public ActorStatusHost BossStatus => _md._bossStatus;
             public CombatTuning Combat => _md._combat;
             public MobilityCcData MobilityCc => _md._mobilityCc;
             public SlotPassiveDirector SlotPassives => _md._slotPassives;
@@ -65,22 +65,22 @@ namespace Dovus.Game.Skills
                 }
             }
             public int SlotQueryCastId => _md._slotQueryCastId;
-            public GameClock Clock => _md._clock;
+            public GameClockHost Clock => _md._clock;
             public TeamComboAccess TeamAccess => _md._team;
             public MechanicGrammar MechanicEngine => _md.MechanicEngine;
             public BossVitals BossVitals => _md._bossVitals;
             Transform IClosingStatusHost.Boss =>
                 _md._boss != null ? _md._boss.transform : null;
-            BossReactor IClosingDamageHost.Boss => _md._boss;
+            BossReactorController IClosingDamageHost.Boss => _md._boss;
             public BossDirector BossDirector => _md._bossDirector;
             public DamageNumberHud DamageHud => _md._damageHud;
             public ElementPaintNode? SelectedElementPaint => _md.SelectedElementPaint;
             public bool LastFriendlyWasAlly { set => _md._lastFriendlyWasAlly = value; }
             public float ClosingChainBonus => _md._closingChainBonus;
-            public ReactionReadout Readout => _md._readout;
+            public ReactionReadoutHud Readout => _md._readout;
             public SentenceDebugHud DebugHud => _md._debugHud;
-            public KinematicMotor Motor => _md._motor;
-            public GroundScarField Scars => _md._scars;
+            public KinematicMotorController Motor => _md._motor;
+            public GroundScarFieldView Scars => _md._scars;
             public bool JsonTickDamage => _md._jsonTickDamage;
             public float LastHitX => _md._lastHitX;
             public float LastHitZ => _md._lastHitZ;
@@ -98,12 +98,12 @@ namespace Dovus.Game.Skills
                 _md.ShareFriendlyStatuses(skill, board);
             public void ApplyPurgePower(SkillResolution skill, int cleansed) =>
                 _md.ApplyPurgePower(skill, cleansed);
-            public void ApplyArmorShred(SkillResolution skill, ActorStatus boss) =>
+            public void ApplyArmorShred(SkillResolution skill, ActorStatusHost boss) =>
                 _md.ApplyArmorShred(skill, boss);
             public bool IsEnemyBody(Transform body) => _md.IsEnemyBody(body);
             public Vector3? BossHitPoint() => _md.BossHitPoint();
             public Color? DamageTint() => _md.DamageTint();
-            public PlayerVitals CachedPlayerVitals() => _md.CachedPlayerVitals();
+            public PlayerVitalsHost CachedPlayerVitals() => _md.CachedPlayerVitals();
             public float WeaponSupportPower(SkillResolution skill) => _md.WeaponSupportPower(skill);
             public float HealBuffMultiplier(SkillResolution skill) => _md.HealBuffMultiplier(skill);
             public int FriendlyTargetCap(SkillResolution skill) => _md.FriendlyTargetCap(skill);

@@ -17,13 +17,13 @@ namespace Dovus.Game.Skills.Sync
     public interface ISentenceSyncHost
     {
         SentenceEngine Engine { get; }
-        GameClock Clock { get; }
-        HexagonInput Input { get; }
+        GameClockHost Clock { get; }
+        HexagonInputController Input { get; }
         PlayerStateMachine PlayerStates { get; }
-        ActorStatus PlayerStatus { get; }
+        ActorStatusHost PlayerStatus { get; }
         int PendingClosingCount { get; }
 
-        PlayerVitals CachedPlayerVitals();
+        PlayerVitalsHost CachedPlayerVitals();
         bool SwapDrawUnlocked(double worldMs);
 
         void EnsureSkillServices();

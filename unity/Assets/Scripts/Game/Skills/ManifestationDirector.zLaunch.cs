@@ -80,7 +80,7 @@ namespace Dovus.Game.Skills
 
             public Transform Player => _md._player;
             public Transform DirectorTransform => _md.transform;
-            public GameClock Clock => _md._clock;
+            public GameClockHost Clock => _md._clock;
             public CombatTuning Combat => _md._combat;
             public PresentationCatalog PresentationCatalog => _md._skillPresentation.Catalog;
             public void EnsurePresentationCatalog() => _md._skillPresentation.EnsureCatalog();
@@ -161,7 +161,7 @@ namespace Dovus.Game.Skills
             public void ApplySpawnIFrame(in SkillResolution skill) => _md.ApplySpawnIFrame(skill);
             public float ApplyMinionHit(SkillResolution skill, float bindingDamage) =>
                 _md.ApplyMinionHit(skill, bindingDamage);
-            public PlayerVitals CachedPlayerVitals() => _md.CachedPlayerVitals();
+            public PlayerVitalsHost CachedPlayerVitals() => _md.CachedPlayerVitals();
 
             public void ApplyVerbHitboxSizing(
                 SkillExecutorKind kind,
@@ -188,13 +188,13 @@ namespace Dovus.Game.Skills
             public void DestroyUnityObject(Object obj) => Destroy(obj);
             public ISkillExecutor AddSummonExecutor(GameObject go) => go.AddComponent<SummonExecutor>();
 
-            public PlayerResource PlayerResource => _md._playerResource;
-            public ActorStatus PlayerStatus => _md._playerStatus;
+            public PlayerResourceHost PlayerResourceHost => _md._playerResource;
+            public ActorStatusHost PlayerStatus => _md._playerStatus;
             public MobilityCcData MobilityCc => _md._mobilityCc;
             public SkillMotor Skills => _md._skills;
             public SkillFactory SkillFactory => _md._skillFactory;
             public HexagonView HexagonView => _md._hexagonView;
-            public PlayerCooldown PlayerCooldown => _md._playerCooldown;
+            public PlayerCooldownHost PlayerCooldownHost => _md._playerCooldown;
             public BossVitals BossVitals => _md._bossVitals;
             public GameTuning Colors => _md._colors;
             public Skill LastFactorySkill
@@ -209,10 +209,10 @@ namespace Dovus.Game.Skills
             public SkillResolution ResolveSkillWords(IReadOnlyList<SentenceWord> words) =>
                 _md.ResolveSkillWords(words);
 
-            public ActorVisual Visual => _md._visual;
+            public ActorView Visual => _md._visual;
             public AnimationBridge AnimationBridge => _md._animationBridge;
             public AnimationDatabase AnimationDatabase => _md._animationDatabase;
-            public FollowCamera Camera => _md._camera;
+            public FollowCameraController Camera => _md._camera;
             public SfxDirector Sfx => _md._sfx;
             public HashSet<string> MissingAnimationBindings => _md._missingAnimationBindings;
             public string LastAnimationTypeId

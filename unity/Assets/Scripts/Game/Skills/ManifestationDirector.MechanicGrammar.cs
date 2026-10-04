@@ -351,7 +351,7 @@ namespace Dovus.Game.Skills
         }
 
         /// <summary>
-        /// Boss prototipte _home'a çapalı (BossReactor her kare geri çeker); yer değiştirme
+        /// Boss prototipte _home'a çapalı (BossReactorController her kare geri çeker); yer değiştirme
         /// oyuncuyu boss'un karşı tarafına, aynı mesafeye taşır.
         /// </summary>
         Vector3 MirroredAcrossBoss(Vector3 from)

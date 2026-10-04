@@ -10,7 +10,7 @@ namespace Dovus.Game.Skills.Execution
     /// <summary>
     /// hitbox_vfx.vfx_prefab_naming registry. Art prefabı yoksa geometriyi element rengiyle
     /// görünür kılan collider'sız, hafif primitive üretir. Primitive'in üstüne gramer planından
-    /// doğan reçete oynatılır (<see cref="ComposedSkillVfx"/>); fiil maddesi bağlı değilse teslim
+    /// doğan reçete oynatılır (<see cref="ComposedSkillVfxView"/>); fiil maddesi bağlı değilse teslim
     /// yolu giydirmesine düşer (<c>Delivery/{executor}/{şekil}</c> → <c>Delivery/{executor}</c>
     /// → <c>Delivery/{şekil}</c>). Giydirme varsa primitive yalnız hitbox/collider taşıyıcısı kalır.
     /// </summary>
@@ -40,7 +40,7 @@ namespace Dovus.Game.Skills.Execution
             if (fromKey || go == null)
                 return go;
 
-            SkillExecutor executor = parent != null ? parent.GetComponent<SkillExecutor>() : null;
+            SkillExecutorController executor = parent != null ? parent.GetComponent<SkillExecutorController>() : null;
             bool dressed = executor != null && TryCompose(executor, go.transform, position, direction, colorHex);
             if (!dressed)
                 dressed = SpawnDelivery(executor != null ? executor.Kind.ToString() : null, shape, colorHex,
@@ -53,7 +53,7 @@ namespace Dovus.Game.Skills.Execution
         static readonly Dictionary<MechanicPlan, VisualRecipe> Recipes = new();
 
         /// <summary>Madde (fiil) × yol (silah) × silüet (sıfat): reçete yalnız gramer planından doğar.</summary>
-        static bool TryCompose(SkillExecutor executor, Transform anchor, Vector3 origin, Vector3 direction,
+        static bool TryCompose(SkillExecutorController executor, Transform anchor, Vector3 origin, Vector3 direction,
             string colorHex)
         {
             MechanicPlan plan = executor.Plan;
@@ -70,7 +70,7 @@ namespace Dovus.Game.Skills.Execution
             }
             if (recipe == null || recipe.Pieces.Count == 0)
                 return false;
-            ComposedSkillVfx.Play(recipe, key, anchor, executor.CastOwner, origin, direction, colorHex);
+            ComposedSkillVfxView.Play(recipe, key, anchor, executor.CastOwner, origin, direction, colorHex);
             return true;
         }
 
@@ -104,12 +104,12 @@ namespace Dovus.Game.Skills.Execution
             dress.name = key.Replace('/', '_');
             if (!string.IsNullOrEmpty(colorHex) && ColorUtility.TryParseHtmlString(colorHex, out Color tint))
                 VfxLibrary.Tint(dress, tint, lib.ImpactTintStrength);
-            dress.AddComponent<FollowAnchor>().Anchor = anchor;
+            dress.AddComponent<FollowAnchorView>().Anchor = anchor;
             return dress;
         }
 
         /// <summary>Giydirme, hareket eden primitive'i (mermi) izler; primitive yok olunca kendini siler.</summary>
-        sealed class FollowAnchor : MonoBehaviour
+        sealed class FollowAnchorView : MonoBehaviour
         {
             public Transform Anchor;
 

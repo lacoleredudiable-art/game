@@ -41,7 +41,7 @@ namespace Dovus.Game.Skills.Closing
             _host.SentenceBridge.OnCompleted(sentence);
         }
 
-        public void TickCastHold(double worldMs, ActorVisual visual, bool channelHeld, bool guardHeld)
+        public void TickCastHold(double worldMs, ActorView visual, bool channelHeld, bool guardHeld)
         {
             if (visual == null)
                 return;

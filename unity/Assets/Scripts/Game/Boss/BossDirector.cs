@@ -28,33 +28,33 @@ namespace Dovus.Game.Boss
     /// Prototip boss döngüsü: idle yaklaşma + YERE ÇAKMA üç ritmi (§11).
     /// Yaklaşma Home'a yazılır — transform'a değil (T7.2 geri tepme kalıcılığı).
     /// Varyant idle'da seçilir; ExchangeResolver yalnızca aktif windup/radius görür.
-    /// Hedef (oyuncu / dost / dikkat çeken yem) her idle döngüsünün başında <see cref="HostileTargets"/>
+    /// Hedef (oyuncu / dost / dikkat çeken yem) her idle döngüsünün başında <see cref="HostileTargetsHost"/>
     /// ile seçilir; yaklaşma ve windup kilidi hedefe bakar, vuruş hacmi kayıtlı HER dostu sınar.
     /// </summary>
     public sealed partial class BossDirector : MonoBehaviour
     {
         BossBrain _brain;
-        GameClock _clock;
+        GameClockHost _clock;
         CombatTuning _combat;
         GameTuning _colors;
-        BossReactor _reactor;
+        BossReactorController _reactor;
         BossAttack _attack;
         BossPoise _poise;
         ExchangeResolver _resolver;
-        HexagonInput _hexagonInput;
+        HexagonInputController _hexagonInput;
         DodgeState _dodge;
         SentenceEngine _engine;
         Transform _player;
-        PlayerVitals _vitals;
+        PlayerVitalsHost _vitals;
         BossVitals _bossVitals;
-        BossTelegraph _telegraph;
-        CombatFeel _feel;
-        KinematicMotor _playerMotor;
-        ActorStatus _bossStatus;
-        ActorStatus _playerStatus;
-        BossVisual _visual;
-        MotionTemplateBody _motionBody;
-        HostileTargets _targets;
+        BossTelegraphView _telegraph;
+        CombatFeelDirector _feel;
+        KinematicMotorController _playerMotor;
+        ActorStatusHost _bossStatus;
+        ActorStatusHost _playerStatus;
+        BossView _visual;
+        MotionTemplateBodyHost _motionBody;
+        HostileTargetsHost _targets;
         HostileProjectileHost _projectiles;
         TeamComboAccess _team;
         Transform _target;
@@ -140,23 +140,23 @@ namespace Dovus.Game.Boss
         /// <summary>Şu anki hedef (HUD halkası, tarama sondası). Kayıt yoksa oyuncu.</summary>
         public Transform CurrentTarget => _targets != null ? _target : _player;
         public TargetKind CurrentTargetKind => _targets != null ? _targetKind : TargetKind.Player;
-        public HostileTargets Targets => _targets;
+        public HostileTargetsHost Targets => _targets;
 
         /// <summary>mechanic_grammar ters_kontrol: yaklaşma hedeften uzaklaşır, windup kilidi ters yöne bakar.</summary>
         public bool IsReversed =>
             _reverseUntilMs > 0 && _clock != null && _clock.Director.WorldTimeMs < _reverseUntilMs;
 
         public void Bind(
-            GameClock clock,
+            GameClockHost clock,
             CombatTuning combat,
             GameTuning colors,
-            BossReactor reactor,
-            HexagonInput input,
+            BossReactorController reactor,
+            HexagonInputController input,
             Transform player,
-            PlayerVitals vitals,
+            PlayerVitalsHost vitals,
             BossVitals bossVitals,
-            BossTelegraph telegraph,
-            CombatFeel feel)
+            BossTelegraphView telegraph,
+            CombatFeelDirector feel)
         {
             _clock = clock;
             _combat = combat;
@@ -173,26 +173,26 @@ namespace Dovus.Game.Boss
             _bossVitals = bossVitals;
             _telegraph = telegraph;
             _feel = feel;
-            _playerMotor = player.GetComponent<KinematicMotor>();
+            _playerMotor = player.GetComponent<KinematicMotorController>();
             _originHome = reactor.Home;
             TryLoadBossEncounter();
             _brain ??= new BossBrain(_rng, new BossBrainPort(this)); // tekrar Bind: eski alanlar gibi durum korunur
             _brain.EnterIdle(clock.Director.WorldTimeMs);
         }
 
-        public void BindStatus(ActorStatus status)
+        public void BindStatus(ActorStatusHost status)
         {
             _bossStatus = status;
             // Kökteki gibi: kilit bitince kısa bağışıklık, boss sonsuza dek kilitlenmesin.
             status?.Board.EnableAttackLockImmunity();
         }
 
-        public void BindPlayerStatus(ActorStatus status) => _playerStatus = status;
+        public void BindPlayerStatus(ActorStatusHost status) => _playerStatus = status;
 
-        public void BindVisual(BossVisual visual) => _visual = visual;
+        public void BindVisual(BossView visual) => _visual = visual;
 
         /// <summary>Hedef kaydı (oyuncu, dost, yemler). Bağlanmazsa boss eskisi gibi yalnız oyuncuyu kovalar.</summary>
-        public void BindTargets(HostileTargets targets)
+        public void BindTargets(HostileTargetsHost targets)
         {
             _targets = targets;
             PickTarget();
@@ -221,7 +221,7 @@ namespace Dovus.Game.Boss
         /// </summary>
         void EnsureRuntime()
         {
-            _reactor ??= GetComponent<BossReactor>();
+            _reactor ??= GetComponent<BossReactorController>();
             _attack ??= new BossAttack(_combat.Boss);
             _resolver ??= new ExchangeResolver(_combat);
 
@@ -236,7 +236,7 @@ namespace Dovus.Game.Boss
             }
 
             if (_vitals == null && _player != null)
-                _vitals = _player.GetComponent<PlayerVitals>();
+                _vitals = _player.GetComponent<PlayerVitalsHost>();
 
             if (_dodge == null || _engine == null)
             {
@@ -248,15 +248,15 @@ namespace Dovus.Game.Boss
             }
 
             if (_playerMotor == null && _player != null)
-                _playerMotor = _player.GetComponent<KinematicMotor>();
+                _playerMotor = _player.GetComponent<KinematicMotorController>();
 
             if (_telegraph == null)
-                _telegraph = GetComponent<BossTelegraph>();
+                _telegraph = GetComponent<BossTelegraphView>();
 
             if (_visual == null)
-                _visual = GetComponent<BossVisual>();
+                _visual = GetComponent<BossView>();
 
-            _motionBody ??= GetComponent<MotionTemplateBody>();
+            _motionBody ??= GetComponent<MotionTemplateBodyHost>();
 
             TryLoadBossEncounter();
         }

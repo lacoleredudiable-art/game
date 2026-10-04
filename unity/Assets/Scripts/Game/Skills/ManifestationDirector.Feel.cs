@@ -6,12 +6,12 @@ using UnityEngine;
 
 namespace Dovus.Game.Skills
 {
-    /// <summary>İsabet hissi köprüsü: hasar yolları buradan CombatFeel'e (hitstop/parlama) ve havuzlu isabet VFX'e haber verir.</summary>
+    /// <summary>İsabet hissi köprüsü: hasar yolları buradan CombatFeelDirector'e (hitstop/parlama) ve havuzlu isabet VFX'e haber verir.</summary>
     public sealed partial class ManifestationDirector
     {
-        CombatFeel _combatFeel;
+        CombatFeelDirector _combatFeel;
 
-        public void BindCombatFeel(CombatFeel feel) => _combatFeel = feel;
+        public void BindCombatFeel(CombatFeelDirector feel) => _combatFeel = feel;
 
         void NotifyBossStruck(bool isCrit, bool allowHitstop)
         {

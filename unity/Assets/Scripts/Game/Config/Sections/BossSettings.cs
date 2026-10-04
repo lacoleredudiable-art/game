@@ -17,8 +17,8 @@ namespace Dovus.Game.Config.Sections
                 // Bossun oyuncuya yaklaşırken bıraktığı boşluk. Etki yarıçapı (5.4 m) ile birlikte
                 // hangi derecelerin erişilebilir olduğunu BU sayı belirliyor — bkz. durum.md T8.1.
                 public float BossApproachStopPadM = 0.35f;
-                // Değer aynı, yeri BossReactor'dan taşındı.
-                [Header("Boss tepki fiziği (T7.2, BossReactor)")]
+                // Değer aynı, yeri BossReactorController'dan taşındı.
+                [Header("Boss tepki fiziği (T7.2, BossReactorController)")]
                 public float BossGravityMps2 = 22f;
                 public float BossRecoilEaseDecayPerSec = 3.2f;
                 public float BossShakeAmpBaseM = 0.12f;

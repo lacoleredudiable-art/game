@@ -279,13 +279,13 @@ namespace Dovus.Game.Skills
             internal WeaponServicesHost(ManifestationDirector md) => _md = md;
 
             public Transform Player => _md._player;
-            public BossReactor Boss => _md._boss;
-            public ActorStatus BossStatus => _md._bossStatus;
-            public GameClock Clock => _md._clock;
+            public BossReactorController Boss => _md._boss;
+            public ActorStatusHost BossStatus => _md._bossStatus;
+            public GameClockHost Clock => _md._clock;
             public EquipmentItem EquippedWeapon => _md._equippedWeapon;
             public WeaponCombatProfile EquippedProfile => _md.EquippedProfile;
             public SentenceEngine Engine => _md._engine;
-            public ActorVisual Visual => _md._visual;
+            public ActorView Visual => _md._visual;
             public double LastMovedMs => _md._lastMovedMs;
             public bool PerformingAttack => _md.PerformingAttack;
             bool IWeaponPassiveRuntimeHost.WeaponIgnoresArmor
@@ -302,10 +302,10 @@ namespace Dovus.Game.Skills
                 }
             }
 
-            public PlayerTargeting Targeting => _md._targeting;
-            public AllyDummy Ally => _md._ally;
-            public KinematicMotor Motor => _md._motor;
-            public MotionTemplateBody MotionBody => _md._motionBody;
+            public PlayerTargetingController Targeting => _md._targeting;
+            public AllyDummyController Ally => _md._ally;
+            public KinematicMotorController Motor => _md._motor;
+            public MotionTemplateBodyHost MotionBody => _md._motionBody;
             public WeaponSwapState WeaponSwap => _md._weaponSwap;
             public double WorldTimeMs => _md.WorldTimeMs;
             bool IWeaponPassiveRuntimeHost.CasterRecoilSuppressed

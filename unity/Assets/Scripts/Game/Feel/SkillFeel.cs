@@ -71,7 +71,7 @@ namespace Dovus.Game.Feel
         }
 
         /// <summary>Kapanışta kamera vuruşu — aileye göre ağırlık.</summary>
-        public static void CameraKick(string verbFamily, FollowCamera cam, Dovus.Core.Tuning.FeelTuning feel)
+        public static void CameraKick(string verbFamily, FollowCameraController cam, Dovus.Core.Tuning.FeelTuning feel)
         {
             if (cam == null || feel == null)
                 return;

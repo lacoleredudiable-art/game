@@ -16,7 +16,7 @@ public class CompositionOrderTests
     [Test]
     public void Bootstrap_CallsBuilders_InWorldSetupOrder()
     {
-        string boot = Game("Composition/GameBootstrap.cs");
+        string boot = Game("Composition/GameBootstrapHost.cs");
         int arena = boot.IndexOf("arenaBuilder.BuildArena(ctx)", System.StringComparison.Ordinal);
         int actors = boot.IndexOf("new ActorsBuilder().Build(ctx)", System.StringComparison.Ordinal);
         int sun = boot.IndexOf("arenaBuilder.BuildSun(ctx)", System.StringComparison.Ordinal);
@@ -41,9 +41,9 @@ public class CompositionOrderTests
     [Test]
     public void Bootstrap_ClockAndTuningLoad_BeforeArena()
     {
-        string boot = Game("Composition/GameBootstrap.cs");
+        string boot = Game("Composition/GameBootstrapHost.cs");
         int tryLoad = boot.IndexOf("tuningConfig.TryLoad()", System.StringComparison.Ordinal);
-        int clock = boot.IndexOf("AddComponent<GameClock>()", System.StringComparison.Ordinal);
+        int clock = boot.IndexOf("AddComponent<GameClockHost>()", System.StringComparison.Ordinal);
         int arena = boot.IndexOf("arenaBuilder.BuildArena(ctx)", System.StringComparison.Ordinal);
         Assert.That(tryLoad, Is.GreaterThan(0));
         Assert.That(clock, Is.GreaterThan(tryLoad));
@@ -58,25 +58,25 @@ public class CompositionOrderTests
         {
             "\"Player\"",
             "\"AllyDummy\"",
-            "ctx.AllyDummy = ctx.Ally.AddComponent<AllyDummy>()",
+            "ctx.AllyDummyController = ctx.Ally.AddComponent<AllyDummyController>()",
             "\"Boss\"",
             "ctx.Boss.AddComponent<CapsuleCollider>()",
-            "ctx.Player.AddComponent<MoveInput>()",
-            "ctx.Player.AddComponent<ActorVisual>()",
-            "ctx.Boss.AddComponent<BossVisual>()",
-            "ctx.Player.AddComponent<HitFlash>()",
-            "ctx.Boss.AddComponent<HitFlash>()",
-            "ctx.Player.AddComponent<PlayerVitals>()",
-            "ctx.PlayerStatus = ctx.Player.AddComponent<ActorStatus>()",
-            "ctx.BossStatus = ctx.Boss.AddComponent<ActorStatus>()",
-            "ctx.Player.AddComponent<AfterimageTrail>()",
-            "ctx.Player.AddComponent<ActorGrounding>()",
-            "ctx.Boss.AddComponent<ActorGrounding>()",
-            "ctx.Boss.AddComponent<BossReactor>()",
+            "ctx.Player.AddComponent<MoveInputController>()",
+            "ctx.Player.AddComponent<ActorView>()",
+            "ctx.Boss.AddComponent<BossView>()",
+            "ctx.Player.AddComponent<HitFlashView>()",
+            "ctx.Boss.AddComponent<HitFlashView>()",
+            "ctx.Player.AddComponent<PlayerVitalsHost>()",
+            "ctx.PlayerStatus = ctx.Player.AddComponent<ActorStatusHost>()",
+            "ctx.BossStatus = ctx.Boss.AddComponent<ActorStatusHost>()",
+            "ctx.Player.AddComponent<AfterimageTrailView>()",
+            "ctx.Player.AddComponent<ActorGroundingController>()",
+            "ctx.Boss.AddComponent<ActorGroundingController>()",
+            "ctx.Boss.AddComponent<BossReactorController>()",
             "new BossVitals(",
-            "ctx.Ally.AddComponent<Targetable>()",
-            "ctx.Boss.AddComponent<Targetable>()",
-            "ctx.Boss.AddComponent<BossTelegraph>()",
+            "ctx.Ally.AddComponent<TargetableHost>()",
+            "ctx.Boss.AddComponent<TargetableHost>()",
+            "ctx.Boss.AddComponent<BossTelegraphView>()",
         };
         int prev = -1;
         foreach (string token in ordered)

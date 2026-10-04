@@ -27,7 +27,7 @@ namespace Dovus.Game.Team
         readonly BorderMode _border = new();
         readonly PortalSystem _portal = new();
         readonly TeamComboSystem _team = new();
-        readonly List<TeamActor> _actors = new();
+        readonly List<TeamActorHost> _actors = new();
         readonly List<Body> _bodies = new();
         readonly List<IAllyPlayer> _allies = new();
         readonly List<GameObject> _visuals = new();
@@ -35,10 +35,10 @@ namespace Dovus.Game.Team
 
         Transform _player;
         Transform _boss;
-        MotionTemplateBody _motion;
-        PlayerVitals _vitals;
-        ActorStatus _bossStatus;
-        GameClock _clock;
+        MotionTemplateBodyHost _motion;
+        PlayerVitalsHost _vitals;
+        ActorStatusHost _bossStatus;
+        GameClockHost _clock;
         GameObject _aura;
         bool _wasOwning;
         bool _borderReleasePending;
@@ -108,7 +108,7 @@ namespace Dovus.Game.Team
             if (dt < 0f)
                 dt = 0f;
             RefreshActors();
-            TeamActor player = PlayerActor();
+            TeamActorHost player = PlayerActor();
             if (player == null)
                 return;
 
@@ -161,10 +161,10 @@ namespace Dovus.Game.Team
             var renderer = go.GetComponent<Renderer>();
             if (renderer != null)
                 SharedTint.Apply(renderer, new Color(0.35f, 0.9f, 0.55f));
-            var dummy = go.AddComponent<AllyDummy>();
+            var dummy = go.AddComponent<AllyDummyController>();
             int maxHp = _vitals != null ? _vitals.MaxHp : TeamComboDefaults.VitalsMaxHpFallback;
             dummy.Bind(maxHp, TeamComboDefaults.AllyDummyHpRatio);
-            var actor = go.AddComponent<TeamActor>();
+            var actor = go.AddComponent<TeamActorHost>();
             actor.Id = _nextId++;
             actor.Radius = TeamComboDefaults.TeamActorRadiusM;
             _spawned.Add(go);
@@ -183,7 +183,7 @@ namespace Dovus.Game.Team
             _line = "Can %" + Mathf.RoundToInt(ratio * TeamComboDefaults.HpPercentScale);
         }
 
-        public void CommandCast(TeamActor actor, string skillId)
+        public void CommandCast(TeamActorHost actor, string skillId)
         {
             if (!Bind() || actor == null || string.IsNullOrEmpty(skillId))
                 return;
@@ -200,7 +200,7 @@ namespace Dovus.Game.Team
             _line = actor.name + " → " + skillId;
         }
 
-        public void CommandHit(TeamActor actor)
+        public void CommandHit(TeamActorHost actor)
         {
             if (!Bind() || actor == null)
                 return;
@@ -230,7 +230,7 @@ namespace Dovus.Game.Team
             _line = actor.name + " vurdu x" + mult.ToString("0.00");
         }
 
-        public void CommandSkillAt(TeamActor actor, string skillId)
+        public void CommandSkillAt(TeamActorHost actor, string skillId)
         {
             if (actor == null)
                 return;
@@ -252,7 +252,7 @@ namespace Dovus.Game.Team
             }
         }
 
-        public void SendToMine(TeamActor actor)
+        public void SendToMine(TeamActorHost actor)
         {
             if (actor == null || !_team.TryMine(out float x, out float z))
                 return;
@@ -260,7 +260,7 @@ namespace Dovus.Game.Team
             _line = "Dost mayında";
         }
 
-        public void SendToRope(TeamActor actor)
+        public void SendToRope(TeamActorHost actor)
         {
             if (actor == null || !_team.TryRopeMid(out float x, out float z))
                 return;
@@ -268,7 +268,7 @@ namespace Dovus.Game.Team
             _line = "Dost ipin ortasında";
         }
 
-        public void SendToTurret(TeamActor actor)
+        public void SendToTurret(TeamActorHost actor)
         {
             if (actor == null || !_team.TryTurret(out float x, out float z))
                 return;
@@ -276,7 +276,7 @@ namespace Dovus.Game.Team
             _line = "Dost tarete dokunuyor";
         }
 
-        public void TouchTurret(TeamActor actor)
+        public void TouchTurret(TeamActorHost actor)
         {
             if (actor == null)
                 return;
@@ -287,12 +287,12 @@ namespace Dovus.Game.Team
                 Burst(_boss.position + Vector3.up, new Color(1f, 0.85f, 0.3f));
         }
 
-        public void PassBall(TeamActor from)
+        public void PassBall(TeamActorHost from)
         {
             if (from == null)
                 return;
             RefreshActors();
-            TeamActor to = null;
+            TeamActorHost to = null;
             for (int i = 0; i < _actors.Count; i++)
             {
                 if (_actors[i] != from && _actors[i].Id != Modifiers.PlayerActorId)
@@ -312,7 +312,7 @@ namespace Dovus.Game.Team
             if (!Bind())
                 return;
             RefreshActors();
-            TeamActor player = PlayerActor();
+            TeamActorHost player = PlayerActor();
             if (player == null)
                 return;
             player.LastSkillId = skillId;
@@ -341,40 +341,40 @@ namespace Dovus.Game.Team
         {
             if (_player == null)
             {
-                _vitals = FindAnyObjectByType<PlayerVitals>();
+                _vitals = FindAnyObjectByType<PlayerVitalsHost>();
                 if (_vitals != null)
                     _player = _vitals.transform;
             }
             if (_player == null)
                 return false;
             if (_motion == null)
-                _motion = _player.GetComponent<MotionTemplateBody>();
+                _motion = _player.GetComponent<MotionTemplateBodyHost>();
             if (_boss == null)
             {
-                BossReactor reactor = FindAnyObjectByType<BossReactor>();
+                BossReactorController reactor = FindAnyObjectByType<BossReactorController>();
                 if (reactor != null)
                 {
                     _boss = reactor.transform;
-                    _bossStatus = reactor.GetComponent<ActorStatus>();
+                    _bossStatus = reactor.GetComponent<ActorStatusHost>();
                 }
             }
             if (_clock == null)
-                _clock = FindAnyObjectByType<GameClock>();
+                _clock = FindAnyObjectByType<GameClockHost>();
             return true;
         }
 
         Transform _reactorOwner;
-        BossReactor _reactorCache;
+        BossReactorController _reactorCache;
 
         /// <summary>O11: her kare GetComponent yerine boss başına bir kez.</summary>
-        BossReactor CachedBossReactor()
+        BossReactorController CachedBossReactor()
         {
             if (_boss == null)
                 return null;
             if (_reactorOwner != _boss || _reactorCache == null)
             {
                 _reactorOwner = _boss;
-                _reactorCache = _boss.GetComponent<BossReactor>();
+                _reactorCache = _boss.GetComponent<BossReactorController>();
             }
             return _reactorCache;
         }
@@ -384,9 +384,9 @@ namespace Dovus.Game.Team
             _actors.Clear();
             if (_player != null)
             {
-                TeamActor actor = _player.GetComponent<TeamActor>();
+                TeamActorHost actor = _player.GetComponent<TeamActorHost>();
                 if (actor == null)
-                    actor = _player.gameObject.AddComponent<TeamActor>();
+                    actor = _player.gameObject.AddComponent<TeamActorHost>();
                 actor.Id = Modifiers.PlayerActorId;
                 actor.Radius = TeamComboDefaults.TeamActorRadiusM;
                 if (_vitals != null && _vitals.MaxHp > 0)
@@ -395,16 +395,16 @@ namespace Dovus.Game.Team
                 _actors.Add(actor);
             }
 
-            System.Collections.Generic.IReadOnlyList<AllyDummy> dummies = AllyDummy.Live;
+            System.Collections.Generic.IReadOnlyList<AllyDummyController> dummies = AllyDummyController.Live;
             for (int i = 0; i < dummies.Count; i++)
             {
-                AllyDummy dummy = dummies[i];
+                AllyDummyController dummy = dummies[i];
                 if (dummy == null)
                     continue;
-                TeamActor actor = dummy.GetComponent<TeamActor>();
+                TeamActorHost actor = dummy.GetComponent<TeamActorHost>();
                 if (actor == null)
                 {
-                    actor = dummy.gameObject.AddComponent<TeamActor>();
+                    actor = dummy.gameObject.AddComponent<TeamActorHost>();
                     actor.Id = _nextId++;
                     actor.Radius = TeamComboDefaults.TeamActorRadiusM;
                 }
@@ -425,13 +425,13 @@ namespace Dovus.Game.Team
         {
             for (int i = 0; i < _actors.Count; i++)
             {
-                TeamActor actor = _actors[i];
+                TeamActorHost actor = _actors[i];
                 Body body = ToBody(actor);
                 _portal.Sense(body, false, boss, out _);
             }
             if (_boss != null)
             {
-                BossReactor reactor = CachedBossReactor();
+                BossReactorController reactor = CachedBossReactor();
                 float radius = reactor != null ? reactor.BodyRadiusM : TeamComboDefaults.BossBodyRadiusFallbackM;
                 var bossBody = new Body(TeamComboDefaults.BossPortalBodyId, _boss.position.x, _boss.position.y, _boss.position.z, radius, false, true);
                 _portal.Sense(bossBody, false, boss, out _);
@@ -447,7 +447,7 @@ namespace Dovus.Game.Team
 
         void ApplyOne(Placement move)
         {
-            TeamActor actor = FindActor(move.ActorId);
+            TeamActorHost actor = FindActor(move.ActorId);
             if (actor == null)
                 return;
             if (actor.TemplateOwnsPosition && actor.Id == Modifiers.PlayerActorId)
@@ -457,7 +457,7 @@ namespace Dovus.Game.Team
             actor.transform.position = new Vector3(move.X, move.Y, move.Z);
             if (!move.TransferDebuffs)
                 return;
-            AllyDummy dummy = actor.GetComponent<AllyDummy>();
+            AllyDummyController dummy = actor.GetComponent<AllyDummyController>();
             dummy?.EnsureStatusBoard();
             if (dummy != null && dummy.Board != null && _bossStatus != null)
                 PortalSystem.MoveHostile(dummy.Board, _bossStatus.Board);
@@ -471,14 +471,14 @@ namespace Dovus.Game.Team
                 _bossStatus.Board.Apply(StatusKind.Stun, pulse.StunSec * TeamComboDefaults.SecToMs, TeamComboDefaults.StunStatusStrength, "takim");
             if (pulse.Burned)
             {
-                // S17: yüklenen/panelden değişen tuning (ActorStatus.Bind'deki _combat.Status), varsayılan değil.
+                // S17: yüklenen/panelden değişen tuning (ActorStatusHost.Bind'deki _combat.Status), varsayılan değil.
                 _bossStatus.Board.Apply(StatusKind.Burn, TeamComboDefaults.SecToMs, _bossStatus.Tuning.BurnDamagePerSec, "8-6");
             }
             if (pulse.MineMult > TeamComboDefaults.MineMultActiveThreshold)
                 _line = "Mayın x" + pulse.MineMult.ToString("0");
         }
 
-        void PushHooks(TeamActor player)
+        void PushHooks(TeamActorHost player)
         {
             int id = player.Id;
             PortalBuff buff = _portal.BuffFor(id);
@@ -505,7 +505,7 @@ namespace Dovus.Game.Team
             }
         }
 
-        void RefreshAura(TeamActor player)
+        void RefreshAura(TeamActorHost player)
         {
             bool on = _border.Active(player.Id);
             if (on && _aura == null && _player != null)
@@ -588,7 +588,7 @@ namespace Dovus.Game.Team
             Destroy(go, TeamComboDefaults.BurstFxLifetimeSec);
         }
 
-        TeamActor PlayerActor()
+        TeamActorHost PlayerActor()
         {
             for (int i = 0; i < _actors.Count; i++)
             {
@@ -598,7 +598,7 @@ namespace Dovus.Game.Team
             return _actors.Count > 0 ? _actors[0] : null;
         }
 
-        TeamActor FindActor(int id)
+        TeamActorHost FindActor(int id)
         {
             for (int i = 0; i < _actors.Count; i++)
             {
@@ -610,7 +610,7 @@ namespace Dovus.Game.Team
 
         IAllyPlayer FindAlly(int id) => FindActor(id);
 
-        Body FirstOther(TeamActor self)
+        Body FirstOther(TeamActorHost self)
         {
             for (int i = 0; i < _actors.Count; i++)
             {
@@ -620,7 +620,7 @@ namespace Dovus.Game.Team
             return default;
         }
 
-        static Body ToBody(TeamActor actor) =>
+        static Body ToBody(TeamActorHost actor) =>
             new Body(
                 actor.Id,
                 actor.transform.position.x,
@@ -634,7 +634,7 @@ namespace Dovus.Game.Team
         {
             if (_boss == null)
                 return Disc.None;
-            BossReactor reactor = CachedBossReactor();
+            BossReactorController reactor = CachedBossReactor();
             float radius = reactor != null && reactor.BodyRadiusM > TeamComboDefaults.BossBodyRadiusMinM ? reactor.BodyRadiusM : TeamComboDefaults.BossBodyRadiusFallbackM;
             return new Disc(true, _boss.position.x, _boss.position.z, radius, PortalSystem.ClearGapM);
         }

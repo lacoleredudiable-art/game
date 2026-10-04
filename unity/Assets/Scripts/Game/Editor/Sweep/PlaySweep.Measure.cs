@@ -110,11 +110,11 @@ namespace Dovus.Game.Editor
                     AnimatorStateInfo st = _animator.GetCurrentAnimatorStateInfo(0);
                     f.Base = StateName(st.shortNameHash);
                     f.BaseNorm = st.normalizedTime;
-                    int upper = _animator.GetLayerIndex(ActorVisual.UpperLayerName);
+                    int upper = _animator.GetLayerIndex(ActorView.UpperLayerName);
                     if (upper >= 0)
                         f.Upper = StateName(_animator.GetCurrentAnimatorStateInfo(upper).shortNameHash);
-                    f.Speed = SafeFloat(ActorVisual.ParamSpeed);
-                    f.Playback = SafeFloat(ActorVisual.ParamLocoPlayback);
+                    f.Speed = SafeFloat(ActorView.ParamSpeed);
+                    f.Playback = SafeFloat(ActorView.ParamLocoPlayback);
                 }
 
                 if (_bossStatus != null)
@@ -161,7 +161,7 @@ namespace Dovus.Game.Editor
 
             static float FeetOrRoot(Transform actor)
             {
-                float y = ActorGrounding.MeasureFeet(actor);
+                float y = ActorGroundingController.MeasureFeet(actor);
                 if (float.IsPositiveInfinity(y) && actor != null)
                     return actor.position.y;
                 return y;
@@ -169,7 +169,7 @@ namespace Dovus.Game.Editor
 
             static float FootGroundOf(Transform actor)
             {
-                ActorGrounding g = actor != null ? actor.GetComponent<ActorGrounding>() : null;
+                ActorGroundingController g = actor != null ? actor.GetComponent<ActorGroundingController>() : null;
                 if (g != null && g.HasFootGround)
                     return g.FootGroundY;
                 return 0f;

@@ -5,20 +5,20 @@ using UnityEngine.UI;
 namespace Dovus.Game.Casting
 {
     /// <summary>
-    /// Sol yarıdaki dinamik sanal çubuğun görseli. <see cref="MoveInput"/> fonksiyonel olarak
+    /// Sol yarıdaki dinamik sanal çubuğun görseli. <see cref="MoveInputController"/> fonksiyonel olarak
     /// zaten çalışıyordu (dokun-sürükle hareket ediyordu) ama hiçbir görsel yoktu — oyuncu
     /// nereye basacağını göremiyordu (16 Eylül bug raporu). Bu sınıf yalnızca çizer;
     /// hareket mantığına dokunmaz.
     /// </summary>
     public sealed class JoystickView : MonoBehaviour
     {
-        MoveInput _input;
+        MoveInputController _input;
         GameTuning _tuning;
         RectTransform _base;
         RectTransform _knob;
         bool _visible;
 
-        public void Build(MoveInput input, GameTuning tuning, Camera overlayCam)
+        public void Build(MoveInputController input, GameTuning tuning, Camera overlayCam)
         {
             _input = input;
             _tuning = tuning;

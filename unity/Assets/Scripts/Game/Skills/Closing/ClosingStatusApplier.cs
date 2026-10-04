@@ -28,7 +28,7 @@ namespace Dovus.Game.Skills.Closing
         {
             if (skill.IsEmpty)
                 return;
-            ActorStatus bossStatus = bossReached ? _host.BossStatus : null;
+            ActorStatusHost bossStatus = bossReached ? _host.BossStatus : null;
             bool targetsAlly = _host.Ally != null && target == _host.Ally.transform;
             if (targetsAlly)
                 _host.Ally.EnsureStatusBoard();
@@ -74,7 +74,7 @@ namespace Dovus.Game.Skills.Closing
                 bossStatus.ApplyPullToward(_host.Player.position);
         }
 
-        void ApplySlotPassiveOnHit(ActorStatus target)
+        void ApplySlotPassiveOnHit(ActorStatusHost target)
         {
             if (target == null || _host.SlotPassives == null || _host.SlotPassives.ActiveCount == 0)
                 return;
@@ -141,10 +141,10 @@ namespace Dovus.Game.Skills.Closing
             int sourceId = _host.Boss != null ? _host.Boss.GetInstanceID() : 0;
             var candidates = new List<PassiveBounceCandidate>();
             Vector3 from = _host.Boss != null ? _host.Boss.transform.position : (_host.Player != null ? _host.Player.position : Vector3.zero);
-            IReadOnlyList<Targetable> bodies = Targetable.Live;
+            IReadOnlyList<TargetableHost> bodies = TargetableHost.Live;
             for (int i = 0; i < bodies.Count; i++)
             {
-                Targetable body = bodies[i];
+                TargetableHost body = bodies[i];
                 if (body == null || !_host.IsEnemyBody(body.transform))
                     continue;
                 if (_host.Boss != null && (body.transform == _host.Boss.transform || body.transform.IsChildOf(_host.Boss.transform)))

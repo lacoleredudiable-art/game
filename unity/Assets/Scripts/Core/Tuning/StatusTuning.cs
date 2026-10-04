@@ -47,7 +47,7 @@ namespace Dovus.Core.Tuning
         public int RegenMs = 3000;
         public float RegenPerSec = 5f;
 
-        /// <summary>Knockback anlık; süre yerine BossReactor metresi.</summary>
+        /// <summary>Knockback anlık; süre yerine BossReactorController metresi.</summary>
         public float KnockbackMeters = 1.4f;
         public float KnockbackLiftM = 0.35f;
         public float KnockbackShakeSec = 0.18f;

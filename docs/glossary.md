@@ -4,7 +4,7 @@ Kod tanımlayıcıları İngilizce; JSON / fiil kimlikleri / tuning panel alanla
 
 | Veri sözcüğü | Kod adı | Anlam |
 |--------------|---------|--------|
-| `PoseZehir` | `PoseZehir` (serileştirilmiş alan) | Zehir duruşu / görsel pose anahtarı (`ActorPose`, `VisualSettings`) |
+| `PoseZehir` | `PoseZehir` (serileştirilmiş alan) | Zehir duruşu / görsel pose anahtarı (`ActorPoseView`, `VisualSettings`) |
 | `bag_hatti` | — (JSON / log string) | Mekanik: bağ şeridi ile mermi silme |
 | `iki_kez` | — (JSON / log string) | Mekanik: çift vuruş / kopya mermi |
 | `surekli` | `Continuous` (metot) | Mekanik gramer: sürekli etki kipi |
