@@ -14,12 +14,12 @@ namespace Dovus.Core.Manifestation
 
         public static CastBodyFamily FromVerb(Rune verb) => verb switch
         {
-            Rune.Ates => CastBodyFamily.Pierce,      // Ateş — strike
-            Rune.Su => CastBodyFamily.Channel,     // Su — mend
-            Rune.Hava => CastBodyFamily.Sweep,      // Hava — motion
-            Rune.Toprak => CastBodyFamily.Guard,      // Toprak — guard
-            Rune.Aydinlik => CastBodyFamily.Pierce,  // Aydınlık — purge
-            Rune.Karanlik => CastBodyFamily.Channel,   // Karanlık — stealth/special
+            Rune.Attack => CastBodyFamily.Pierce,      // Ateş — strike
+            Rune.Heal => CastBodyFamily.Channel,     // Su — mend
+            Rune.Move => CastBodyFamily.Sweep,      // Hava — motion
+            Rune.Defense => CastBodyFamily.Guard,      // Toprak — guard
+            Rune.Burst => CastBodyFamily.Pierce,  // Aydınlık — purge
+            Rune.Control => CastBodyFamily.Channel,   // Karanlık — stealth/special
             _ => CastBodyFamily.None
         };
 

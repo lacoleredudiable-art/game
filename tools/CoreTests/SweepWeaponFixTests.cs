@@ -62,8 +62,8 @@ public class SweepWeaponFixTests
         Assert.That(z, Is.EqualTo(dist).Within(0.02f));
         Assert.That(dist, Is.LessThan(12f));
 
-        var words = new[] { new SentenceWord(Rune.Ates, JumpKind.None, 0) };
-        var effect = new LivingEffect(Rune.Ates, 0f, 0f, 0f, 1f, words, new ManifestationTuning());
+        var words = new[] { new SentenceWord(Rune.Attack, JumpKind.None, 0) };
+        var effect = new LivingEffect(Rune.Attack, 0f, 0f, 0f, 1f, words, new ManifestationTuning());
         effect.StopAt(dist);
         effect.Tick(1f);
         Assert.That(effect.TipDistance, Is.EqualTo(dist).Within(0.02f));

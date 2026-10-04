@@ -22,7 +22,7 @@ namespace Dovus.App.Casting
             float reach = defaultBangRadiusM;
             if (logicBangRadiusM > 0f)
                 reach = logicBangRadiusM;
-            if (closingType == Rune.Aydinlik)
+            if (closingType == Rune.Burst)
             {
                 if (!logic.OverlapsBoss(bossX, bossZ, reach * 0.5f))
                 {

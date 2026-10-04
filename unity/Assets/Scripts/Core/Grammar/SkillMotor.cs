@@ -24,7 +24,7 @@ namespace Dovus.Core.Grammar
         readonly Dictionary<string, AdjectiveNode> _adjectives = new(StringComparer.Ordinal);
         readonly Dictionary<int, RuneDefinition> _runes = new();
         readonly List<RuneDefinition> _runeDefinitions = new();
-        readonly Dictionary<string, V61SkillNode> _v61Skills = new(StringComparer.Ordinal);
+        readonly Dictionary<string, SkillCatalogEntry> _v61Skills = new(StringComparer.Ordinal);
         readonly List<ElementPaintNode> _elementPaints = new();
         readonly List<MainClassNode> _mainClasses = new();
         readonly List<PlayerStateNode> _playerStates = new();
@@ -126,11 +126,11 @@ namespace Dovus.Core.Grammar
         public bool TryGetAdjective(string id, out AdjectiveNode node) =>
             _adjectives.TryGetValue(id, out node);
 
-        public void ForEachSkill(Action<string, V61SkillNode> visit)
+        public void ForEachSkill(Action<string, SkillCatalogEntry> visit)
         {
             if (visit == null)
                 throw new ArgumentNullException(nameof(visit));
-            foreach (KeyValuePair<string, V61SkillNode> kv in _v61Skills)
+            foreach (KeyValuePair<string, SkillCatalogEntry> kv in _v61Skills)
                 visit(kv.Key, kv.Value);
         }
 
@@ -187,7 +187,7 @@ namespace Dovus.Core.Grammar
                 return SkillResolution.Empty;
 
             string skillId = verbId + "-" + adjectiveRuneId.ToString(CultureInfo.InvariantCulture);
-            if (!_v61Skills.TryGetValue(skillId, out V61SkillNode skill))
+            if (!_v61Skills.TryGetValue(skillId, out SkillCatalogEntry skill))
                 return SkillResolution.Empty;
 
             JsonValue engine = skill.Engine;

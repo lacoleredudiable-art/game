@@ -107,10 +107,10 @@ namespace Dovus.Game.Skills.Closing
                 ? ScarKind.Strike
                 : closing.Type switch
                 {
-                    Rune.Aydinlik => ScarKind.Crack,
-                    Rune.Ates => ScarKind.Needle,
-                    Rune.Su => ScarKind.Swarm,
-                    Rune.Toprak => ScarKind.Acid,
+                    Rune.Burst => ScarKind.Crack,
+                    Rune.Attack => ScarKind.Needle,
+                    Rune.Heal => ScarKind.Swarm,
+                    Rune.Defense => ScarKind.Acid,
                     _ => ScarKind.Crack
                 };
 
@@ -230,17 +230,17 @@ namespace Dovus.Game.Skills.Closing
 
             switch (closing.Type)
             {
-                case Rune.Aydinlik:
+                case Rune.Burst:
                     knock = man.BossKnockbackM * ClosingDamageDefaults.ZoneKnockMult;
                     lift = man.BossLiftM * (ClosingDamageDefaults.ZoneLiftBase + ClosingDamageDefaults.ZoneLiftPerLift * logic.Current.Lift);
                     shake = man.BossShakeSec * ClosingDamageDefaults.ZoneShakeMult;
                     break;
-                case Rune.Ates:
+                case Rune.Attack:
                     knock = man.BossKnockbackM * (ClosingDamageDefaults.StrikeKnockBase + ClosingDamageDefaults.StrikeKnockPerPierce * logic.Current.Pierce);
                     lift = ClosingDamageDefaults.StrikeLiftM;
                     shake = man.BossShakeSec * ClosingDamageDefaults.StrikeShakeMult;
                     break;
-                case Rune.Su:
+                case Rune.Heal:
                     knock = man.BossKnockbackM * ClosingDamageDefaults.DisruptKnockMult;
                     lift = ClosingDamageDefaults.DisruptLiftM;
                     shake = man.BossShakeSec * ClosingDamageDefaults.DisruptShakeMult;
@@ -252,12 +252,12 @@ namespace Dovus.Game.Skills.Closing
                     _host.Boss.React(from + new Vector3(-logic.DirZ, 0f, logic.DirX) * ClosingDamageDefaults.DisruptSideOffsetM,
                         knock * ClosingDamageDefaults.DisruptSideKnockMult, lift * ClosingDamageDefaults.DisruptSideLiftMult, shake * ClosingDamageDefaults.DisruptSideShakeMult, worldMs);
                     return;
-                case Rune.Hava:
+                case Rune.Move:
                     if (!IsClosingInRange(logic, closing))
                         return;
                     _host.Boss.Pin(ClosingDamageDefaults.AirPinSec, worldMs);
                     return;
-                case Rune.Toprak:
+                case Rune.Defense:
                     knock = man.BossKnockbackM * ClosingDamageDefaults.EarthKnockMult;
                     lift = 0f;
                     shake = man.BossShakeSec * ClosingDamageDefaults.EarthShakeMult;

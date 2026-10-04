@@ -17,7 +17,7 @@ public class SilhouetteBuilderTests
     public void KaranlikAlone_IsSwarmNotNeedle()
     {
         // Dot 6 = Karanlık (enum Toprak)
-        var words = new[] { new SentenceWord(Rune.Karanlik, JumpKind.None, 0) };
+        var words = new[] { new SentenceWord(Rune.Control, JumpKind.None, 0) };
         EffectSilhouette s = SilhouetteBuilder.FromWords(words, Tuning());
         Assert.That(s.Pierce, Is.LessThan(0.2f));
         Assert.That(s.Spread, Is.GreaterThan(0.3f));
@@ -27,12 +27,12 @@ public class SilhouetteBuilderTests
     public void KaranlikThenAtes_GathersTowardLine()
     {
         var swarm = SilhouetteBuilder.FromWords(
-            new[] { new SentenceWord(Rune.Karanlik, JumpKind.None, 0) }, Tuning());
+            new[] { new SentenceWord(Rune.Control, JumpKind.None, 0) }, Tuning());
         var line = SilhouetteBuilder.FromWords(
             new[]
             {
-                new SentenceWord(Rune.Karanlik, JumpKind.None, 0),
-                new SentenceWord(Rune.Ates, JumpKind.Long, 0)
+                new SentenceWord(Rune.Control, JumpKind.None, 0),
+                new SentenceWord(Rune.Attack, JumpKind.Long, 0)
             }, Tuning());
 
         Assert.That(line.Focus, Is.GreaterThan(swarm.Focus + 0.3f));
@@ -45,9 +45,9 @@ public class SilhouetteBuilderTests
         var s = SilhouetteBuilder.FromWords(
             new[]
             {
-                new SentenceWord(Rune.Karanlik, JumpKind.None, 0),
-                new SentenceWord(Rune.Ates, JumpKind.Long, 0),
-                new SentenceWord(Rune.Hava, JumpKind.Short, 0)
+                new SentenceWord(Rune.Control, JumpKind.None, 0),
+                new SentenceWord(Rune.Attack, JumpKind.Long, 0),
+                new SentenceWord(Rune.Move, JumpKind.Short, 0)
             }, Tuning());
 
         Assert.That(s.Focus, Is.GreaterThan(0.5f));
@@ -59,12 +59,12 @@ public class SilhouetteBuilderTests
     {
         var words = new List<SentenceWord>
         {
-            new(Rune.Karanlik, JumpKind.None, 0)
+            new(Rune.Control, JumpKind.None, 0)
         };
-        var effect = new LivingEffect(Rune.Karanlik, 0, 0, 0, 1, words, Tuning());
+        var effect = new LivingEffect(Rune.Control, 0, 0, 0, 1, words, Tuning());
         float focus0 = effect.Current.Focus;
 
-        words.Add(new SentenceWord(Rune.Ates, JumpKind.Long, 0));
+        words.Add(new SentenceWord(Rune.Attack, JumpKind.Long, 0));
         effect.SetWords(words);
 
         for (int i = 0; i < 8; i++)
@@ -78,8 +78,8 @@ public class SilhouetteBuilderTests
     [Test]
     public void Abort_PreventsClosingBang()
     {
-        var words = new[] { new SentenceWord(Rune.Ates, JumpKind.None, 0) };
-        var effect = new LivingEffect(Rune.Ates, 0, 0, 0, 1, words, Tuning());
+        var words = new[] { new SentenceWord(Rune.Attack, JumpKind.None, 0) };
+        var effect = new LivingEffect(Rune.Attack, 0, 0, 0, 1, words, Tuning());
         effect.Abort();
         effect.FireClosingBang();
         Assert.That(effect.PaidClosing, Is.False);
@@ -89,9 +89,9 @@ public class SilhouetteBuilderTests
     [Test]
     public void ArmClosing_ThenBang_PaysReward()
     {
-        var words = new[] { new SentenceWord(Rune.Toprak, JumpKind.None, 0) };
-        var effect = new LivingEffect(Rune.Toprak, 0, 0, 0, 1, words, Tuning());
-        effect.ArmClosing(new ClosingHit(Rune.Toprak, 1f, 1));
+        var words = new[] { new SentenceWord(Rune.Defense, JumpKind.None, 0) };
+        var effect = new LivingEffect(Rune.Defense, 0, 0, 0, 1, words, Tuning());
+        effect.ArmClosing(new ClosingHit(Rune.Defense, 1f, 1));
         Assert.That(effect.Phase, Is.EqualTo(LivingEffectPhase.AwaitingClosing));
         effect.FireClosingBang();
         Assert.That(effect.PaidClosing, Is.True);
@@ -103,7 +103,7 @@ public class SilhouetteBuilderTests
     {
         // Dot 4 = Toprak (enum Zehir)
         var s = SilhouetteBuilder.FromWords(
-            new[] { new SentenceWord(Rune.Toprak, JumpKind.None, 0) }, Tuning());
+            new[] { new SentenceWord(Rune.Defense, JumpKind.None, 0) }, Tuning());
         Assert.That(s.Lift, Is.GreaterThan(0.1f));
         Assert.That(s.Pierce, Is.LessThan(0.2f));
     }

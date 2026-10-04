@@ -2,31 +2,22 @@ using Dovus.Core.Element;
 namespace Dovus.Core.Element
 {
     /// <summary>
-    /// element-sistemi v6.1.1 çift-yüzlü rün kimlikleri. Ekrandaki altı nokta rün kimliği
-    /// değildir; <see cref="RuneLoadout"/> seçili 6 rünü slotlara eşler.
+    /// element-sistemi v6.1.1 rün kimlikleri (1..12). Ekrandaki altı nokta rün id'si değildir;
+    /// <see cref="RuneLoadout"/> seçili 6 rünü slotlara eşler. Element ayrı kavramdır (<see cref="ElementId"/>).
     /// </summary>
     public enum Rune
     {
-        Saldiri = 1,
-        Iyilestirme = 2,
-        Hareket = 3,
-        Savunma = 4,
-        Patlama = 5,
-        Kontrol = 6,
-        Zayiflatma = 7,
-        Guclendirme = 8,
-        Arindirma = 9,
-        Yansima = 10,
-        Cagirma = 11,
-        Zaman = 12,
-
-        // Kaynak uyumluluğu: eski görsel/motor sınıfları ilk altı id'yi bu adlarla kullanıyor.
-        // Yeni çözümleme ve UI bu alias'ları değil v6 adlarını gösterir.
-        Ates = Saldiri,
-        Su = Iyilestirme,
-        Hava = Hareket,
-        Toprak = Savunma,
-        Aydinlik = Patlama,
-        Karanlik = Kontrol
+        Attack = 1,
+        Heal = 2,
+        Move = 3,
+        Defense = 4,
+        Burst = 5,
+        Control = 6,
+        Weaken = 7,
+        Empower = 8,
+        Cleanse = 9,
+        Reflect = 10,
+        Summon = 11,
+        Time = 12
     }
 }

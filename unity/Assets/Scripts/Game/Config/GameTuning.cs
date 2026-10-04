@@ -129,12 +129,12 @@ namespace Dovus.Game.Config
         /// <summary>Çekirdek rün → tezahür çizgi rengi.</summary>
         public Color ColorForRune(Dovus.Core.Element.Rune rune) => rune switch
         {
-            Dovus.Core.Element.Rune.Ates => Visuals.ElementFire,
-            Dovus.Core.Element.Rune.Su => Visuals.ElementWater,
-            Dovus.Core.Element.Rune.Hava => Visuals.ElementAir,
-            Dovus.Core.Element.Rune.Toprak => Visuals.ElementEarth,
-            Dovus.Core.Element.Rune.Aydinlik => Visuals.ElementLight,
-            Dovus.Core.Element.Rune.Karanlik => Visuals.ElementDark,
+            Dovus.Core.Element.Rune.Attack => Visuals.ElementFire,
+            Dovus.Core.Element.Rune.Heal => Visuals.ElementWater,
+            Dovus.Core.Element.Rune.Move => Visuals.ElementAir,
+            Dovus.Core.Element.Rune.Defense => Visuals.ElementEarth,
+            Dovus.Core.Element.Rune.Burst => Visuals.ElementLight,
+            Dovus.Core.Element.Rune.Control => Visuals.ElementDark,
             _ => Visuals.InkCyan
         };
 

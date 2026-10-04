@@ -44,7 +44,7 @@ namespace Dovus.Game.Skills
 
         void DrawWave(Vector3 origin, Vector3 dir, float radius, EffectSilhouette s, float y)
         {
-            if (_logic.Verb != Rune.Toprak && s.Focus < _colors.Visuals.EffectShowMinFocus && _logic.Verb != Rune.Hava && _logic.Verb != Rune.Karanlik)
+            if (_logic.Verb != Rune.Defense && s.Focus < _colors.Visuals.EffectShowMinFocus && _logic.Verb != Rune.Move && _logic.Verb != Rune.Control)
             {
                 _line.positionCount = 0;
                 _lineBaseWidth = _colors.Visuals.EffectLineWidthDefaultM;
@@ -52,7 +52,7 @@ namespace Dovus.Game.Skills
             }
 
             // İĞNE fiilinde ana gövde iğne; dalga çizgisi yok
-            if (_logic.Verb == Rune.Ates && s.Spread < _colors.Visuals.EffectIgneShowMinSpread)
+            if (_logic.Verb == Rune.Attack && s.Spread < _colors.Visuals.EffectIgneShowMinSpread)
             {
                 _line.positionCount = 0;
                 _lineBaseWidth = _colors.Visuals.EffectLineWidthDefaultM;
@@ -60,7 +60,7 @@ namespace Dovus.Game.Skills
             }
 
             // SÜRÜ: cephe çizgisi yok — dağınık bulut blobs ile okunur.
-            if ((_logic.Verb == Rune.Hava || _logic.Verb == Rune.Karanlik) && s.Focus < _colors.Visuals.EffectFocusSwarmAlongLineMin)
+            if ((_logic.Verb == Rune.Move || _logic.Verb == Rune.Control) && s.Focus < _colors.Visuals.EffectFocusSwarmAlongLineMin)
             {
                 _line.positionCount = 0;
                 _lineBaseWidth = _colors.Visuals.EffectLineWidthDefaultM;
@@ -111,7 +111,7 @@ namespace Dovus.Game.Skills
                 baseWidth = Mathf.Lerp(_colors.Visuals.EffectLineWidthWideM, _colors.Visuals.EffectLineWidthNarrowM, s.Pierce);
             }
 
-            if (_logic.Verb == Rune.Toprak)
+            if (_logic.Verb == Rune.Defense)
             {
                 baseWidth = Mathf.Lerp(_colors.Visuals.EffectSarsintiWidthWideM, _colors.Visuals.EffectSarsintiWidthNarrowM, focus);
                 // Kütle: geniş halka daha kalın okunur.
@@ -126,7 +126,7 @@ namespace Dovus.Game.Skills
 
         void DrawNeedle(Vector3 origin, Vector3 dir, float dist, EffectSilhouette s, float travel01)
         {
-            bool show = _logic.Verb == Rune.Ates || _logic.Verb == Rune.Aydinlik
+            bool show = _logic.Verb == Rune.Attack || _logic.Verb == Rune.Burst
                 || s.Pierce > _colors.Visuals.EffectPierceNeedleShowMin;
             if (!show || _needle == null)
             {
@@ -139,7 +139,7 @@ namespace Dovus.Game.Skills
             float thick = Mathf.Lerp(_colors.Visuals.EffectNeedleThickWideM, _colors.Visuals.EffectNeedleThickNarrowM, s.Pierce);
             float len = _colors.Visuals.EffectNeedleLenBaseM + _colors.Visuals.EffectNeedleLenPerPierceM * s.Pierce;
 
-            if (_logic.Verb == Rune.Ates || _logic.Verb == Rune.Aydinlik)
+            if (_logic.Verb == Rune.Attack || _logic.Verb == Rune.Burst)
             {
                 DrawIgneZenitsu(origin, dir, dist, thick, len, travel01);
                 return;
@@ -222,7 +222,7 @@ namespace Dovus.Game.Skills
         void DrawSwarm(Vector3 origin, Vector3 dir, float dist, EffectSilhouette s)
         {
             int count;
-            if (_logic.Verb == Rune.Hava || _logic.Verb == Rune.Karanlik)
+            if (_logic.Verb == Rune.Move || _logic.Verb == Rune.Control)
             {
                 // Fiil SÜRÜ: her zaman dağınık bulut — sıfır yayılmada bile birkaç gövde.
                 float minB = _colors.Visuals.EffectSwarmMinBlobs;
@@ -250,7 +250,7 @@ namespace Dovus.Game.Skills
 
                 // Kademeli varış: gövdeler aynı anda değil sırayla görünür.
                 float appearAt = i * stagger;
-                if ((_logic.Verb == Rune.Hava || _logic.Verb == Rune.Karanlik) && _logic.AgeSec < appearAt)
+                if ((_logic.Verb == Rune.Move || _logic.Verb == Rune.Control) && _logic.AgeSec < appearAt)
                 {
                     _blobs[i].gameObject.SetActive(false);
                     continue;
@@ -259,7 +259,7 @@ namespace Dovus.Game.Skills
                 _blobs[i].gameObject.SetActive(true);
                 float localAge = Mathf.Max(0f, _logic.AgeSec - appearAt);
                 float reach = dist;
-                if ((_logic.Verb == Rune.Hava || _logic.Verb == Rune.Karanlik) && stagger > 1e-4f)
+                if ((_logic.Verb == Rune.Move || _logic.Verb == Rune.Control) && stagger > 1e-4f)
                 {
                     // Her gövde kendi gecikmesiyle uca yetişir — cephe değil bulut.
                     float catchUp = Mathf.Clamp01(localAge / (stagger * count + LivingEffectViewDefaults.BlobStaggerPaddingSec));
@@ -276,7 +276,7 @@ namespace Dovus.Game.Skills
                              * (LivingEffectViewDefaults.BlobSideSpreadMult + s.Spread);
 
                 Vector3 p;
-                if (s.Focus > _colors.Visuals.EffectFocusSwarmAlongLineMin || _logic.Verb == Rune.Ates)
+                if (s.Focus > _colors.Visuals.EffectFocusSwarmAlongLineMin || _logic.Verb == Rune.Attack)
                 {
                     p = origin + dir * along + right * (side * (1f - s.Focus * LivingEffectViewDefaults.BlobJitterFocusDampMult) + jx * LivingEffectViewDefaults.BlobJitterSideMult)
                         + dir * jz * LivingEffectViewDefaults.BlobJitterAlongMult;

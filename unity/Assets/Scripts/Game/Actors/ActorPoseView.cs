@@ -41,12 +41,12 @@ namespace Dovus.Game.Actors
 
             _poseScale = rune switch
             {
-                Dovus.Core.Element.Rune.Ates => Tuning.Visuals.PoseIgne,
-                Dovus.Core.Element.Rune.Su => Tuning.Visuals.PoseSuru,
-                Dovus.Core.Element.Rune.Aydinlik => Tuning.Visuals.PoseSarsinti,
-                Dovus.Core.Element.Rune.Hava => Tuning.Visuals.PoseKabuk,
-                Dovus.Core.Element.Rune.Toprak => Tuning.Visuals.PoseZehir,
-                Dovus.Core.Element.Rune.Karanlik => Tuning.Visuals.PoseKabuk,
+                Dovus.Core.Element.Rune.Attack => Tuning.Visuals.PoseIgne,
+                Dovus.Core.Element.Rune.Heal => Tuning.Visuals.PoseSuru,
+                Dovus.Core.Element.Rune.Burst => Tuning.Visuals.PoseSarsinti,
+                Dovus.Core.Element.Rune.Move => Tuning.Visuals.PoseKabuk,
+                Dovus.Core.Element.Rune.Defense => Tuning.Visuals.PoseZehir,
+                Dovus.Core.Element.Rune.Control => Tuning.Visuals.PoseKabuk,
                 _ => Vector3.one
             };
             _poseUntilWorldMs = (float)worldTimeMs + Tuning.Visuals.ActorPoseDurationMs;

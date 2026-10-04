@@ -74,8 +74,8 @@ public class SkillWorldPlannerTests
     [Test]
     public void LivingEffect_ApplyPlan_OverridesBangAndTravel()
     {
-        var words = new[] { new SentenceWord(Rune.Ates, JumpKind.None, 0) };
-        var effect = new LivingEffect(Rune.Ates, 0, 0, 0, 1, words, new ManifestationTuning());
+        var words = new[] { new SentenceWord(Rune.Attack, JumpKind.None, 0) };
+        var effect = new LivingEffect(Rune.Attack, 0, 0, 0, 1, words, new ManifestationTuning());
         // v6 1-2: Saldırı (projectile) → düz ilerleyen canlı efekt.
         LivingEffectPlan plan = SkillWorldPlanner.Build(
             Motor().Resolve(new[] { 1, 2 }), Catalog(), new ManifestationTuning());

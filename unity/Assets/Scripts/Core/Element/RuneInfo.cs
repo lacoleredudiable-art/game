@@ -5,21 +5,43 @@ namespace Dovus.Core.Element
     {
         public static string Syllable(Rune rune) => "r" + ((int)rune).ToString();
 
-        /// <summary>element-sistemi.json v6.1.1 rün adları.</summary>
+        /// <summary>element-sistemi.json v6.1.1 rün adları (Türkçe UI).</summary>
         public static string DisplayName(Rune rune) => rune switch
         {
-            Rune.Saldiri => "Saldırı",
-            Rune.Iyilestirme => "İyileştirme",
-            Rune.Hareket => "Hareket",
-            Rune.Savunma => "Savunma",
-            Rune.Patlama => "Patlama",
-            Rune.Kontrol => "Kontrol",
-            Rune.Zayiflatma => "Zayıflatma",
-            Rune.Guclendirme => "Güçlendirme",
-            Rune.Arindirma => "Arındırma",
-            Rune.Yansima => "Yansıma",
-            Rune.Cagirma => "Çağırma",
-            Rune.Zaman => "Zaman",
+            Rune.Attack => "Saldırı",
+            Rune.Heal => "İyileştirme",
+            Rune.Move => "Hareket",
+            Rune.Defense => "Savunma",
+            Rune.Burst => "Patlama",
+            Rune.Control => "Kontrol",
+            Rune.Weaken => "Zayıflatma",
+            Rune.Empower => "Güçlendirme",
+            Rune.Cleanse => "Arındırma",
+            Rune.Reflect => "Yansıma",
+            Rune.Summon => "Çağırma",
+            Rune.Time => "Zaman",
+            _ => "?"
+        };
+
+        /// <summary>
+        /// Eski çift adlı <c>Rune</c> enum'unun Unity (Mono) <c>Enum.ToString()</c> çıktısı — renk anahtarı / GameObject adı
+        /// uyumu için. Unity 6000.4 MonoBleedingEdge ile ölçüldü (1..6: Ates, Su, Hava, Savunma, Patlama, Karanlik);
+        /// .NET (SweepV2/CoreTests) aynı enum'da v6 adlarını veriyordu — eski davranış platforma bağlıydı, artık sabit.
+        /// </summary>
+        public static string LegacySerializationName(Rune rune) => rune switch
+        {
+            Rune.Attack => "Ates",
+            Rune.Heal => "Su",
+            Rune.Move => "Hava",
+            Rune.Defense => "Savunma",
+            Rune.Burst => "Patlama",
+            Rune.Control => "Karanlik",
+            Rune.Weaken => "Zayiflatma",
+            Rune.Empower => "Guclendirme",
+            Rune.Cleanse => "Arindirma",
+            Rune.Reflect => "Yansima",
+            Rune.Summon => "Cagirma",
+            Rune.Time => "Zaman",
             _ => "?"
         };
 
