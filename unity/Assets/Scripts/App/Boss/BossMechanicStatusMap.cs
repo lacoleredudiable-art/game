@@ -8,8 +8,8 @@ using Dovus.Core.Hud;
 using Dovus.Core.Passives;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.App.Boss
 {
     public static class BossMechanicStatusMap

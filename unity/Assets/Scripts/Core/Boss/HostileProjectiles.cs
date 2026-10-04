@@ -1,6 +1,6 @@
 using System;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Core.Boss
 {
     /// <summary>

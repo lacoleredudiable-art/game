@@ -5,8 +5,8 @@ using Dovus.Game.Skills.Execution;
 using System.Collections.Generic;
 using UnityEngine;
 using CoreCannonBlast = Dovus.Core.Equipment.CannonBlast;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Game.Skills.Weapons
 {
     public sealed class CannonBlast

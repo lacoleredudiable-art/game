@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Dovus.Core.Grammar;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Core.Boss
 {
     /// <summary>Dost kuklanın boss hasarı ve yeniden kalkışı (saf; zaman parametre, dünya saati).</summary>

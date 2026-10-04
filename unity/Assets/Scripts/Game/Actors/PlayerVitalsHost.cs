@@ -11,8 +11,8 @@ using Dovus.Game.Platform;
 using Dovus.Game.Platform;
 using Dovus.Game.Weapons;
 using UnityEngine;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Game.Actors
 {
     /// <summary>

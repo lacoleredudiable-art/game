@@ -1,4 +1,4 @@
-using Dovus.App.Casting;
+﻿using Dovus.App.Casting;
 using Dovus.Core;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
@@ -34,8 +34,8 @@ using Dovus.Game.Vfx;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Game.Skills
 {
     /// <summary>

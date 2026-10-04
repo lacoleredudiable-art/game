@@ -1,8 +1,8 @@
 using System;
 using Dovus.Core.Status;
 using Dovus.Core.Damage;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Core.Boss
 {
     public static class ElementBossStatusRules

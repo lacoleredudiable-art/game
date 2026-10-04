@@ -12,8 +12,8 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.EnhancedTouch;
 using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 using TouchPhase = UnityEngine.InputSystem.TouchPhase;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Game.Casting.Input
 {
     public sealed class PointerRouter

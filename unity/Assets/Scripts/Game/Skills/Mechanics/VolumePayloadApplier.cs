@@ -14,8 +14,8 @@ using Dovus.Game.Diagnostics;
 using System;
 using System.Linq;
 using UnityEngine;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Game.Skills.Mechanics
 {
     public sealed class VolumePayloadApplier

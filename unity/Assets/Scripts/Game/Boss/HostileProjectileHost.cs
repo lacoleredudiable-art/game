@@ -14,8 +14,8 @@ using System;
 using Dovus.Game.Assets;
 using UnityEngine;
 using UnityEngine.Rendering;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Game.Boss
 {
     /// <summary>

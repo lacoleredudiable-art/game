@@ -15,8 +15,8 @@ using Dovus.Game.Actors;
 using Dovus.Game.Data;
 using Dovus.Game.Team;
 using UnityEngine;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Game.Skills.Closing
 {
     public sealed class ClosingStatusApplier

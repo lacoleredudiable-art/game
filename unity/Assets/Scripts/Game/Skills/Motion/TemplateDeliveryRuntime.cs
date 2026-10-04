@@ -13,8 +13,8 @@ using Dovus.Core.Motion;
 using Dovus.Core.Status;
 using System.Collections.Generic;
 using UnityEngine;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Game.Skills.Motion
 {
     public sealed class TemplateDeliveryRuntime

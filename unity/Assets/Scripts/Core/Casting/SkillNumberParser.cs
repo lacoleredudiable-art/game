@@ -5,8 +5,8 @@ using Dovus.Core.Data;
 using Dovus.Core.Grammar;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Core.Casting
 {
     public static class SkillNumberParser

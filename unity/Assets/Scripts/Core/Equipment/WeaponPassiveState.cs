@@ -1,6 +1,6 @@
 using System;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Core.Equipment
 {
     /// <summary>Pasifin zamanı olan parçaları: çekiç beklemesi, kalkan penceresi, kitap sayacı, swap bonusu.</summary>

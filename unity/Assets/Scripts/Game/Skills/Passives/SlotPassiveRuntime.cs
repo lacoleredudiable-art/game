@@ -10,8 +10,8 @@ using Dovus.Core.Element;
 using Dovus.Core.Grammar;
 using System.Collections.Generic;
 using UnityEngine;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Game.Skills.Passives
 {
     public sealed class SlotPassiveRuntime

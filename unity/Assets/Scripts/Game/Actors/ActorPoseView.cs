@@ -1,7 +1,7 @@
 using Dovus.Game.Config;
 using UnityEngine;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Game.Actors
 {
     /// <summary>

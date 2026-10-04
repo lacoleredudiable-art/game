@@ -1,8 +1,8 @@
 using Dovus.Core.Motion;
 using Dovus.Game.Platform;
 using UnityEngine;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Game.Actors
 {
     /// <summary>

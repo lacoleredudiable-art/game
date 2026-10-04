@@ -16,8 +16,8 @@ using Dovus.Game.Hud;
 using Dovus.Game.Team;
 using UnityEngine;
 using UnityEngine.UI;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Game.Actors
 {
     /// <summary>

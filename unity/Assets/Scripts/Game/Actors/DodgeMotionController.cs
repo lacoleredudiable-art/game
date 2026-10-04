@@ -13,8 +13,8 @@ using Dovus.Game.Platform;
 using Dovus.Game.Config;
 using Dovus.Game.Vfx;
 using UnityEngine;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Game.Actors
 {
     /// <summary>

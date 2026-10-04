@@ -17,8 +17,8 @@ using Dovus.App.Team;
 using Dovus.Game.Team;
 using System;
 using System.Collections.Generic;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Game.Skills.Flow
 {
     public sealed class SentenceManifestationBridge

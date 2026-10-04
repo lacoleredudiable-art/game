@@ -15,8 +15,8 @@ using Dovus.Game.Boss;
 using Dovus.Game.Diagnostics;
 using Dovus.Game.Vfx;
 using UnityEngine;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Game.Skills.Motion
 {
     public sealed class MotionHitResolver

@@ -3,8 +3,8 @@ using Dovus.Core.Tuning;
 using Dovus.Game.Actors;
 using Dovus.Game.Config;
 using UnityEngine;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Game.Boss
 {
     /// <summary>

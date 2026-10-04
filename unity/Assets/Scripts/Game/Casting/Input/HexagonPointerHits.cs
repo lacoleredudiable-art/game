@@ -3,8 +3,8 @@ using Dovus.Core.Grammar;
 using Dovus.Game.Config;
 using Dovus.Game.Diagnostics;
 using UnityEngine;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Game.Casting.Input
 {
     public static class HexagonPointerHits

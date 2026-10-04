@@ -7,8 +7,8 @@ using Dovus.Game.Vfx;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Game.Skills.Execution
 {
     /// <summary>

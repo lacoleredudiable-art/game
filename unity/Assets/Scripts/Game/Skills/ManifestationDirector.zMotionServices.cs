@@ -27,8 +27,8 @@ using Dovus.Core.Equipment;
 using System.Collections.Generic;
 using UnityEngine;
 using Object = UnityEngine.Object;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Game.Skills
 {
     public sealed partial class ManifestationDirector

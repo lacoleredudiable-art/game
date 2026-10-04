@@ -10,8 +10,8 @@ using Dovus.Game.Boss;
 using Dovus.Game.Skills.Mechanics;
 using System;
 using UnityEngine;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Game.Skills.Projectiles
 {
     public sealed class ProjectileEraser

@@ -4,8 +4,8 @@ using Dovus.Core.Casting;
 using Dovus.Core.Element;
 using Dovus.Core.Input;
 using Dovus.Core.Tuning;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Core.Grammar
 {
     /// <summary>

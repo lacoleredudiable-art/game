@@ -12,8 +12,8 @@ using Dovus.Game.Platform;
 using System.Collections.Generic;
 using Dovus.Game.Assets;
 using UnityEngine;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Game.Boss
 {
     /// <summary>Ağ Örme alanları: Core set + collider'sız disk görselleri, yavaşlatma tikleri.</summary>

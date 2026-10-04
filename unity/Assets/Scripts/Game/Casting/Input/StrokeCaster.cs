@@ -9,8 +9,8 @@ using Dovus.Core.Grammar;
 using Dovus.Core.Motion;
 using Dovus.Game.Feel;
 using UnityEngine;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Game.Casting.Input
 {
     public sealed class StrokeCaster

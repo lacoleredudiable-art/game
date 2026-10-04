@@ -8,8 +8,8 @@ using Dovus.Game.Casting;
 using Dovus.Game.Config;
 using UnityEngine;
 using UnityEngine.UI;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Game.Hud
 {
     /// <summary>
