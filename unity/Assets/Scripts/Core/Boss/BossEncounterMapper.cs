@@ -10,7 +10,7 @@ using Dovus.Core.Tuning;
 using System.Collections.Generic;
 
 using Dovus.Core.Shared;
-namespace Dovus.Core.Data
+namespace Dovus.Core.Boss
 {
     public static class BossEncounterMapper
     {

@@ -1,4 +1,5 @@
 using System;
+using Dovus.Core.Shared;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Casting;

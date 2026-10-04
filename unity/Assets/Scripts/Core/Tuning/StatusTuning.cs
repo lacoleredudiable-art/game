@@ -1,4 +1,4 @@
-namespace Dovus.Core.Status
+namespace Dovus.Core.Tuning
 {
     /// <summary>
     /// Status süreleri / büyüklükleri. element-sistemi.json süre vermiyor —

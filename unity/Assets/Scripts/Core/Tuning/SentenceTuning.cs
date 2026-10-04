@@ -1,4 +1,4 @@
-namespace Dovus.Core.Casting
+namespace Dovus.Core.Tuning
 {
     /// <summary>
     /// Cümle uzunluğuna göre bedel ve ödül — dovus-sistemi.md §5 tablosu.

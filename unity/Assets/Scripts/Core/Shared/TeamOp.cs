@@ -1,4 +1,4 @@
-namespace Dovus.Core.Team
+namespace Dovus.Core.Shared
 {
     public enum TeamOp
     {

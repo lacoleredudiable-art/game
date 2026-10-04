@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Dovus.Core.Element;
-
-namespace Dovus.Core.Grammar
+namespace Dovus.Core.Element
 {
     /// <summary>
     /// v6.1.1 build yüzeyi: 12 ründen tekrarsız 6 seçim, bunların 0-2'si pasif yuva.

@@ -156,11 +156,11 @@ namespace Dovus.Core.Mechanic
             MotionTemplate template,
             MechanicRules rules,
             float fieldTickBaseSec) =>
-            Build(plan, new Dovus.Core.Data.SkillEngineModifiers(engine), template, rules, fieldTickBaseSec);
+            Build(plan, new SkillEngineModifiers(engine), template, rules, fieldTickBaseSec);
 
         public static TemplateDeliveryOrder Build(
             MechanicPlan plan,
-            Dovus.Core.Data.SkillEngineModifiers engine,
+            SkillEngineModifiers engine,
             MotionTemplate template,
             MechanicRules rules,
             float fieldTickBaseSec)

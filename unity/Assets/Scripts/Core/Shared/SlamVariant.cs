@@ -1,4 +1,4 @@
-namespace Dovus.Core.Boss
+namespace Dovus.Core.Shared
 {
     /// <summary>
     /// Aynı YERE ÇAKMA'nın üç ritmi — dovus-sistemi.md §11. Yeni saldırı değil;

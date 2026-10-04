@@ -3,7 +3,7 @@ using System.Text;
 using Dovus.Core.Element;
 using Dovus.Core.Grammar;
 
-namespace Dovus.Core.Input
+namespace Dovus.Core.Grammar
 {
     /// <summary>
     /// Çizim geri bildirimi (denetim B ek): tanınan çizimde rün adları, tanınmayanda "şekil tanınmadı".

@@ -1,4 +1,4 @@
-namespace Dovus.Core.Dodge
+namespace Dovus.Core.Tuning
 {
     /// <summary>Ayrı dodge kontrolünün hareket ve tap ayarları.</summary>
     [System.Serializable]

@@ -1,7 +1,6 @@
-using Dovus.Core.Portal;
-using Dovus.Core.Team;
+using Dovus.Core.Shared;
 
-namespace Dovus.Core.Data
+namespace Dovus.Core.Grammar
 {
     public static class SkillMechanicOpParse
     {
