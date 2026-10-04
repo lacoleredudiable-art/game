@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Dovus.Core.Data;
-using Dovus.Core.Data;
 using Dovus.Core.Shared;
 
 namespace Dovus.Core.Grammar
