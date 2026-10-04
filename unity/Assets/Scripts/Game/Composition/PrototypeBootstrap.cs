@@ -266,7 +266,7 @@ namespace Dovus.Game.Composition
         {
             if (ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
             {
-                float hp = BossCombatProfile.FromJson(design.Json).PlayerMaxHp;
+                float hp = BossCombatProfile.FromDocument(design.Document).PlayerMaxHp;
                 return Mathf.Max(1, Mathf.RoundToInt(hp));
             }
             return Mathf.Max(1, CombatScale.MagnitudeInt(_tuning.PlayerMaxHp));
@@ -275,7 +275,7 @@ namespace Dovus.Game.Composition
         float ScaledBossHp(float tuningMaxHp)
         {
             if (ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
-                return Mathf.Max(1f, BossCombatProfile.FromJson(design.Json).BossMaxHp);
+                return Mathf.Max(1f, BossCombatProfile.FromDocument(design.Document).BossMaxHp);
             return Mathf.Max(1f, CombatScale.Magnitude(tuningMaxHp));
         }
 
@@ -569,15 +569,15 @@ namespace Dovus.Game.Composition
             {
                 DesignWarnings.Warned -= LogDesignWarning;
                 DesignWarnings.Warned += LogDesignWarning;
-                SkillNumberCatalog numbers = SkillNumberCatalog.FromJson(design.Json);
+                SkillNumberCatalog numbers = SkillNumberCatalog.FromDocument(design.Document);
                 numbers.ApplyCcDurations(combat.Status);
                 numbers.ApplyBasicStrikeRange(combat.Manifestation);
                 director.ConfigureSkillNumbers(numbers);
                 resource.Bind(numbers.MaxMana, numbers.ManaRegenPerSec, numbers.ManaRegenDelaySec);
                 cooldown.Bind(numbers.GlobalCooldownSec, numbers.MaxConcurrentCasts);
-                director.ConfigureWeaponSwap(WeaponSwapRules.FromJson(design.Json));
-                director.ConfigureVerbExecution(VerbExecutionData.FromJson(design.Json));
-                MobilityCcData mobilityCc = MobilityCcData.FromJson(design.Json);
+                director.ConfigureWeaponSwap(WeaponSwapRules.FromDocument(design.Document));
+                director.ConfigureVerbExecution(VerbExecutionData.FromDocument(design.Document));
+                MobilityCcData mobilityCc = MobilityCcData.FromDocument(design.Document);
                 director.ConfigureMobilityCc(mobilityCc);
             }
             view.BindWeaponSwap(director, clock);
@@ -594,7 +594,7 @@ namespace Dovus.Game.Composition
 
             int elementTransitionMs = 300;
             if (design != null
-                && ElementSystemHeader.TryParse(design.Json, elementTransitionMs, out ElementSystemHeader elementHdr))
+                && ElementSystemHeader.TryParse(design.Document, elementTransitionMs, out ElementSystemHeader elementHdr))
                 elementTransitionMs = elementHdr.SelectionTransitionMs;
             var elementMenu = root.AddComponent<ElementRadialMenu>();
             elementMenu.Configure(

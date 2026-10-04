@@ -17,7 +17,7 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 - [x] 2.5 Oyuncu can/diriliş → Application (Player aggregate)
 - [x] 2.6 Boss AI → Application (BossBrain) — 2.6a BossAttackSelector; 2.6b BossBrain
 - [x] 2.7 Statik çarpanlar oyuncu başına; PortalSystem/TeamComboSystem switch'leri → JSON etiketleri; pasifler enum
-- [~] 2.8 PrototypeTuning bölme; element-sistemi.json'dan lore/changelog ayırma, tek parse
+- [x] 2.8 PrototypeTuning bölme; element-sistemi.json'dan lore/changelog ayırma, tek parse
 
 ## Aşama 3 — Oynanış doğruluğu (küçük, somut hatalar) [mimariden sonra]
 - [ ] 1.1 Cooldown + mana açık (EnforceCooldown/EnforceResourceCost) — kombo bazlı CD kararı

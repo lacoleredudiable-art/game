@@ -432,7 +432,7 @@ namespace Dovus.Game.Skills
             _slotPassives = new SlotPassiveDirector();
             _slotPassiveNeedsWeapon = false;
             if (ElementSystemJsonLoader.TryLoad(out ElementSystemDesign slotDesign))
-                _slotPassiveNeedsWeapon = PassiveSlotPolicy.RequiresWeaponCompatibility(slotDesign.Json);
+                _slotPassiveNeedsWeapon = PassiveSlotPolicy.RequiresWeaponCompatibility(slotDesign.Document);
             _closingChainBonus = 1f;
             if (_playerStatus != null)
             {
