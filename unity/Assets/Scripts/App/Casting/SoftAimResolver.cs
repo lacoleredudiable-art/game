@@ -1,5 +1,9 @@
-namespace Dovus.App.Casting
+﻿namespace Dovus.App.Casting
 {
+    /// <summary>
+    /// Yumuşak nişan: bakış (ya da hareket yönü) koni içindeyse boss'a döner. Eski
+    /// ManifestationDirector.ResolveAimFacing ile birebir (hız yönü önce normalize edilir, sonra bakış bir kez daha normalize edilir).
+    /// </summary>
     public static class SoftAimResolver
     {
         public static void Resolve(
@@ -22,27 +26,35 @@ namespace Dovus.App.Casting
             facingZ = playerForwardZ;
             if (velocityX * velocityX + velocityZ * velocityZ > velocitySqrThreshold)
             {
-                facingX = velocityX;
-                facingZ = velocityZ;
+                float vx = velocityX;
+                float vz = velocityZ;
+                FlatFacingMath.Normalize(ref vx, ref vz);
+                facingX = vx;
+                facingZ = vz;
             }
 
-            FlatFacingMath.FlatBodyForward(facingX, facingZ, out facingX, out facingZ);
+            if (facingX * facingX + facingZ * facingZ < 0.0001f)
+            {
+                facingX = 0f;
+                facingZ = 1f;
+            }
+            else
+            {
+                FlatFacingMath.Normalize(ref facingX, ref facingZ);
+            }
 
-            if (!hasBoss || softAimRangeM <= 0.1f)
+            if (!hasBoss || !(softAimRangeM > 0.1f))
                 return;
 
             float toBossX = bossX - posX;
             float toBossZ = bossZ - posZ;
-            float dist = PlanarMath.FlatDistance(posX, posZ, bossX, bossZ);
-            if (dist <= 0.01f || dist > softAimRangeM)
-                return;
-
-            float angle = FlatFacingMath.FlatAngleDeg(facingX, facingZ, toBossX, toBossZ);
-            if (angle > softAimConeDeg)
-                return;
-
-            facingX = toBossX / dist;
-            facingZ = toBossZ / dist;
+            float dist = (float)System.Math.Sqrt(toBossX * toBossX + toBossZ * toBossZ);
+            if (dist > 0.01f && dist <= softAimRangeM
+                && FlatFacingMath.FlatAngleDeg(facingX, facingZ, toBossX, toBossZ) <= softAimConeDeg)
+            {
+                facingX = toBossX / dist;
+                facingZ = toBossZ / dist;
+            }
         }
     }
 }
