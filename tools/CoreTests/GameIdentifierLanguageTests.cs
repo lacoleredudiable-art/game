@@ -38,6 +38,8 @@ public sealed class GameIdentifierLanguageTests
     {
         "Weapons/WeaponGripView.cs",
         "Weapons/WeaponGripViewDefaults.cs",
+        "Weapons/WeaponHandPropsView.cs",
+        "Weapons/WeaponHandPropsViewDefaults.cs",
     };
 
     static string GameRoot() =>

@@ -296,9 +296,9 @@ namespace Dovus.Game.Weapons
                 {
                     "kilic" => WeaponHandPropsViewDefaults.RightSwordMaxExtentM,
                     "kalkan" => WeaponHandPropsViewDefaults.RightShieldMaxExtentM,
-                    "cekic" => WeaponHandPropsViewDefaults.RightHammerMaxExtentM,
+                    "cekic" => WeaponHandPropsViewDefaults.RightCekicMaxExtentM,
                     "asa" => WeaponHandPropsViewDefaults.RightStaffMaxExtentM,
-                    "tilsim" => WeaponHandPropsViewDefaults.RightTalismanMaxExtentM,
+                    "tilsim" => WeaponHandPropsViewDefaults.RightTilsimMaxExtentM,
                     "top" => WeaponHandPropsViewDefaults.RightTopMaxExtentM,
                     _ => 0f,
                 };
@@ -309,8 +309,8 @@ namespace Dovus.Game.Weapons
                 "kilic" => WeaponHandPropsViewDefaults.LeftSwordMaxExtentM,
                 "kalkan" => WeaponHandPropsViewDefaults.LeftShieldMaxExtentM,
                 "yay" => WeaponHandPropsViewDefaults.LeftBowMaxExtentM,
-                "kitap" => WeaponHandPropsViewDefaults.LeftBookMaxExtentM,
-                "kure" => WeaponHandPropsViewDefaults.LeftOrbMaxExtentM,
+                "kitap" => WeaponHandPropsViewDefaults.LeftKitapMaxExtentM,
+                "kure" => WeaponHandPropsViewDefaults.LeftKureMaxExtentM,
                 _ => 0f,
             };
         }
