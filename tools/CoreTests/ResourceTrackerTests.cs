@@ -113,17 +113,31 @@ public class ResourceTrackerTests
     }
 
     [Test]
-    public void EnforceResourceCost_DefaultsFalse_AndCopyFrom()
+    public void EnforceResourceCost_DefaultsTrue_AndCopyFrom()
     {
         var a = new Dovus.Core.Tuning.CombatTuning();
-        Assert.That(a.EnforceResourceCost, Is.False);
+        Assert.That(a.EnforceResourceCost, Is.True);
 
-        a.EnforceResourceCost = true;
+        a.EnforceResourceCost = false;
         var b = new Dovus.Core.Tuning.CombatTuning();
         b.CopyFrom(a);
-        Assert.That(b.EnforceResourceCost, Is.True);
+        Assert.That(b.EnforceResourceCost, Is.False);
 
         b.ResetToDefaults();
-        Assert.That(b.EnforceResourceCost, Is.False);
+        Assert.That(b.EnforceResourceCost, Is.True);
+    }
+
+    [Test]
+    public void EnforceManaCooldown_DefaultsTrue_AndResetToDefaults()
+    {
+        var c = new Dovus.Core.Tuning.CombatTuning();
+        Assert.That(c.EnforceResourceCost, Is.True);
+        Assert.That(c.EnforceCooldown, Is.True);
+
+        c.EnforceResourceCost = false;
+        c.EnforceCooldown = false;
+        c.ResetToDefaults();
+        Assert.That(c.EnforceResourceCost, Is.True);
+        Assert.That(c.EnforceCooldown, Is.True);
     }
 }

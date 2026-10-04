@@ -40,15 +40,15 @@ namespace Dovus.Core.Tuning
 
         /// <summary>
         /// true: mana base_resource_cost'tan azsa cümle başlamaz (Bağlama 3).
-        /// Varsayılan false — Bağlama 2 Consume yolu birebir (cast engellenmez).
+        /// Varsayılan açık; panelden kapatılabilir.
         /// </summary>
-        public bool EnforceResourceCost = false;
+        public bool EnforceResourceCost = true;
 
         /// <summary>
         /// true: fiil base_cooldown_sec + global_cooldown_sec dolmadan yeniden cast yok
-        /// (Bağlama 4). Varsayılan false — Görev 12 kozmetik radial birebir.
+        /// (Bağlama 4). Varsayılan açık; panelden kapatılabilir.
         /// </summary>
-        public bool EnforceCooldown = false;
+        public bool EnforceCooldown = true;
 
         /// <summary>
         /// T10: panelin "Sıfırla" ve JSON-yükleme yolu. Alt nesnelerin KİMLİĞİ korunur —

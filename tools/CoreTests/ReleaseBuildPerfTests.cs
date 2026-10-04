@@ -86,7 +86,8 @@ public class ReleaseBuildPerfTests
     [TestCase(5, TuningSchema.LoadDecision.DiscardStale)]
     [TestCase(6, TuningSchema.LoadDecision.DiscardStale)]
     [TestCase(7, TuningSchema.LoadDecision.DiscardStale)]
-    [TestCase(8, TuningSchema.LoadDecision.Apply)]
+    [TestCase(8, TuningSchema.LoadDecision.DiscardStale)]
+    [TestCase(9, TuningSchema.LoadDecision.Apply)]
     public void StaleSave_NeverWins(int stored, TuningSchema.LoadDecision expected)
     {
         Assert.That(TuningSchema.Decide(stored), Is.EqualTo(expected));
@@ -102,8 +103,8 @@ public class ReleaseBuildPerfTests
         var options = new JsonSerializerOptions { IncludeFields = true };
         string json = JsonSerializer.Serialize(new CombatTuning(), options);
         string hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json))).Substring(0, 16);
-        Assert.That(TuningSchema.Version, Is.EqualTo(8));
-        Assert.That(hash, Is.EqualTo("8AACEDC268A0EF45"),
+        Assert.That(TuningSchema.Version, Is.EqualTo(9));
+        Assert.That(hash, Is.EqualTo("4208FCE0A7117923"),
             "CombatTuning varsayılanı değişti: TuningSchema.Version'ı artır, bu parmak izini ve sürüm satırını güncelle.");
     }
 

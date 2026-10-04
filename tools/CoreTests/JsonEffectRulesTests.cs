@@ -336,10 +336,10 @@ public class JsonEffectRulesTests
 
     // ---- K1: toggle default ----
     [Test]
-    public void ManaCooldownToggle_DefaultsOff()
+    public void ManaCooldownToggle_DefaultsOn()
     {
         var c = new CombatTuning();
-        Assert.That(c.EnforceResourceCost, Is.False);
-        Assert.That(c.EnforceCooldown, Is.False);
+        Assert.That(c.EnforceResourceCost, Is.True);
+        Assert.That(c.EnforceCooldown, Is.True);
     }
 }
