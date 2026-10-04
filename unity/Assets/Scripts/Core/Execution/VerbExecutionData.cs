@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Dovus.Core.Data;
 using Dovus.Core.Grammar;
 
 namespace Dovus.Core.Execution
@@ -125,7 +126,11 @@ namespace Dovus.Core.Execution
             return 0;
         }
 
-        public static VerbExecutionData FromJson(string json) => FromJsonRoot(MiniJson.Parse(json));
+        public static VerbExecutionData FromJson(string json) =>
+            FromDocument(ElementSystemDocument.Parse(json));
+
+        public static VerbExecutionData FromDocument(ElementSystemDocument doc) =>
+            FromJsonRoot(doc.Root);
 
         public static VerbExecutionData FromJsonRoot(JsonValue root)
         {

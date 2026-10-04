@@ -65,8 +65,14 @@ namespace Dovus.Core.Grammar
         {
             if (string.IsNullOrWhiteSpace(json))
                 throw new ArgumentException("JSON boş.", nameof(json));
+            return FromDocument(ElementSystemDocument.Parse(json));
+        }
 
-            JsonValue root = MiniJson.Parse(json);
+        public static SkillMotor FromDocument(ElementSystemDocument doc) =>
+            FromJsonRoot(doc.Root);
+
+        public static SkillMotor FromJsonRoot(JsonValue root)
+        {
             var motor = new SkillMotor();
             motor._version = root["system"]["version"].AsString();
             if (root["runes"].Kind != JsonKind.Array)

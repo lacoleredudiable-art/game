@@ -1,5 +1,7 @@
+using Dovus.Core.Combat;
 using Dovus.Core.Data;
 using Dovus.Core.Equipment;
+using Dovus.Core.Execution;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Presentation;
@@ -36,7 +38,8 @@ namespace Dovus.Game.Data
 
             try
             {
-                if (!ElementSystemHeader.TryParse(asset.text, 300, out ElementSystemHeader header))
+                ElementSystemDocument doc = ElementSystemDocument.Parse(asset.text);
+                if (!ElementSystemHeader.TryParse(doc, 300, out ElementSystemHeader header))
                     throw new InvalidOperationException("element-sistemi kökü okunamadı.");
                 string version = header.Version;
                 if (!string.Equals(version, RequiredVersion, StringComparison.Ordinal))
@@ -45,9 +48,9 @@ namespace Dovus.Game.Data
                 if (!header.Binding)
                     throw new InvalidOperationException("element-sistemi binding=true değil.");
 
-                SkillMotor motor = SkillMotor.FromJson(asset.text);
-                EquipmentCatalog equipment = EquipmentCatalog.FromJson(asset.text);
-                AnimationDatabase animations = AnimationDatabase.FromJson(asset.text);
+                SkillMotor motor = SkillMotor.FromDocument(doc);
+                EquipmentCatalog equipment = EquipmentCatalog.FromDocument(doc);
+                AnimationDatabase animations = AnimationDatabase.FromDocument(doc);
                 if (motor.RuneCount != 12 || motor.SkillCount != 144
                     || equipment.Items.Count != 10 || motor.ElementPaints.Count != 6
                     || animations.Count != 120)
@@ -57,7 +60,7 @@ namespace Dovus.Game.Data
                 }
 
                 _cached = new ElementSystemDesign(
-                    asset.text, version, motor, equipment, animations);
+                    asset.text, doc, version, motor, equipment, animations);
                 design = _cached;
                 return true;
             }
@@ -84,12 +87,14 @@ namespace Dovus.Game.Data
     {
         public ElementSystemDesign(
             string json,
+            ElementSystemDocument document,
             string version,
             SkillMotor skillMotor,
             EquipmentCatalog equipment,
             AnimationDatabase animations)
         {
             Json = json ?? string.Empty;
+            Document = document ?? throw new ArgumentNullException(nameof(document));
             Version = version ?? string.Empty;
             SkillMotor = skillMotor ?? throw new ArgumentNullException(nameof(skillMotor));
             Equipment = equipment ?? throw new ArgumentNullException(nameof(equipment));
@@ -97,6 +102,7 @@ namespace Dovus.Game.Data
         }
 
         public string Json { get; }
+        public ElementSystemDocument Document { get; }
         public string Version { get; }
         public SkillMotor SkillMotor { get; }
         public EquipmentCatalog Equipment { get; }
@@ -115,7 +121,7 @@ namespace Dovus.Game.Data
                 _mechanicsTried = true;
                 try
                 {
-                    MechanicRules rules = MechanicRules.FromJson(Json);
+                    MechanicRules rules = MechanicRules.FromDocument(Document);
                     _mechanics = rules.IsValid ? new MechanicGrammar(rules) : null;
                 }
                 catch (Exception e)

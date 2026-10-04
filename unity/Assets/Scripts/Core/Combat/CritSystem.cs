@@ -1,4 +1,5 @@
 using System;
+using Dovus.Core.Data;
 using Dovus.Core.Grammar;
 
 namespace Dovus.Core.Combat
@@ -37,8 +38,11 @@ namespace Dovus.Core.Combat
         {
             if (string.IsNullOrWhiteSpace(json))
                 return Default;
-            return FromJson(MiniJson.Parse(json));
+            return FromDocument(ElementSystemDocument.Parse(json));
         }
+
+        public static CritSystem FromDocument(ElementSystemDocument doc) =>
+            FromJson(doc.Root);
 
         public static CritSystem FromJson(JsonValue root)
         {

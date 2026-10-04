@@ -1,4 +1,5 @@
 using System;
+using Dovus.Core.Data;
 using Dovus.Core.Grammar;
 
 namespace Dovus.Core.Equipment
@@ -45,7 +46,11 @@ namespace Dovus.Core.Equipment
                 recoveryCancel: s["recovery_cancel"].AsBool(false));
         }
 
-        public static WeaponSwapRules FromJson(string json) => FromJsonRoot(MiniJson.Parse(json));
+        public static WeaponSwapRules FromJson(string json) =>
+            FromDocument(ElementSystemDocument.Parse(json));
+
+        public static WeaponSwapRules FromDocument(ElementSystemDocument doc) =>
+            FromJsonRoot(doc.Root);
     }
 
     public enum WeaponSwapResult

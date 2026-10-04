@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Dovus.Core.Data;
 using Dovus.Core.Grammar;
 
 namespace Dovus.Core.Equipment
@@ -12,12 +13,17 @@ namespace Dovus.Core.Equipment
     {
         readonly Dictionary<string, float> _byId = new(StringComparer.Ordinal);
 
-        public static WeaponArmorCatalog FromJson(string json)
+        public static WeaponArmorCatalog FromJson(string json) =>
+            FromDocument(ElementSystemDocument.Parse(json));
+
+        public static WeaponArmorCatalog FromDocument(ElementSystemDocument doc) =>
+            FromJsonRoot(doc.Root);
+
+        public static WeaponArmorCatalog FromJsonRoot(JsonValue root)
         {
             var catalog = new WeaponArmorCatalog();
-            if (string.IsNullOrWhiteSpace(json))
+            if (root.IsNull)
                 return catalog;
-            JsonValue root = MiniJson.Parse(json);
             if (root["weapons"].Kind != JsonKind.Array)
                 return catalog;
             foreach (JsonValue row in root["weapons"].AsArray())

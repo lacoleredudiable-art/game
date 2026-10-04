@@ -29,7 +29,7 @@ namespace Dovus.Game.Skills
             {
                 if (_critSystem == null)
                     _critSystem = ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design)
-                        ? CritSystem.FromJson(design.Json)
+                        ? CritSystem.FromDocument(design.Document)
                         : CritSystem.Default;
                 return _critSystem.Value;
             }
@@ -38,7 +38,7 @@ namespace Dovus.Game.Skills
         void RefreshDefenderArmor()
         {
             if (_weaponArmor == null && ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
-                _weaponArmor = WeaponArmorCatalog.FromJson(design.Json);
+                _weaponArmor = WeaponArmorCatalog.FromDocument(design.Document);
             if (_playerStatus == null)
                 return;
             float weapon = _weaponArmor != null && _equippedWeapon != null
@@ -53,8 +53,8 @@ namespace Dovus.Game.Skills
                 return;
             if (!ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
                 return;
-            _bossStatus.Armor.Base = BossCombatProfile.FromJson(design.Json).Armor;
-            _weaponArmor ??= WeaponArmorCatalog.FromJson(design.Json);
+            _bossStatus.Armor.Base = BossCombatProfile.FromDocument(design.Document).Armor;
+            _weaponArmor ??= WeaponArmorCatalog.FromDocument(design.Document);
         }
 
         DamageOutcome ComputeOutgoingHit(

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Dovus.Core.Data;
 using Dovus.Core.Grammar;
 
 namespace Dovus.Core.Mechanic
@@ -90,7 +91,12 @@ namespace Dovus.Core.Mechanic
             }
         }
 
-        public static MechanicRules FromJson(string json) => new MechanicRules(MiniJson.Parse(json));
+        public static MechanicRules FromJson(string json) =>
+            FromDocument(ElementSystemDocument.Parse(json));
+
+        public static MechanicRules FromDocument(ElementSystemDocument doc) =>
+            FromJsonRoot(doc.Root);
+
         public static MechanicRules FromJsonRoot(JsonValue root) => new MechanicRules(root);
 
         public bool IsValid => !_grammar.IsNull && _adjectiveOps.Count == 12 && _weapons.Count > 0

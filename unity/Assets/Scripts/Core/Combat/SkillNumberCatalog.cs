@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Dovus.Core.Data;
 using Dovus.Core.Execution;
 using Dovus.Core.Grammar;
 using Dovus.Core.Status;
@@ -30,7 +31,10 @@ namespace Dovus.Core.Combat
         public float AllySkillRangeM { get; private set; } = SkillNumberFallbacks.AllySkillRangeM;
 
         public static SkillNumberCatalog FromJson(string json) =>
-            FromJsonRoot(MiniJson.Parse(json));
+            FromDocument(ElementSystemDocument.Parse(json));
+
+        public static SkillNumberCatalog FromDocument(ElementSystemDocument doc) =>
+            FromJsonRoot(doc.Root);
 
         public static SkillNumberCatalog FromJsonRoot(JsonValue root)
         {

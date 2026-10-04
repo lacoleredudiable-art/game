@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using Dovus.Core;
+using Dovus.Core.Data;
 using Dovus.Core.Grammar;
 using Dovus.Core.Status;
 
@@ -29,7 +30,10 @@ namespace Dovus.Core.Combat
         public int PoiseStunMs { get; private set; } = 1000;
 
         public static MobilityCcData FromJson(string json) =>
-            FromJsonRoot(MiniJson.Parse(json));
+            FromDocument(ElementSystemDocument.Parse(json));
+
+        public static MobilityCcData FromDocument(ElementSystemDocument doc) =>
+            FromJsonRoot(doc.Root);
 
         public static MobilityCcData FromJsonRoot(JsonValue root)
         {
