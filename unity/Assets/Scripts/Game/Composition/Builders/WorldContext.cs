@@ -1,3 +1,4 @@
+using Dovus.App.Actors;
 using Dovus.Core.Boss;
 using Dovus.Core.Element;
 using Dovus.Core.Dodge;
@@ -52,6 +53,8 @@ namespace Dovus.Game.Composition.Builders
         public AllyDummyController AllyDummyController;
         public ActorPoseView PlayerPose;
         public PlayerVitalsHost PlayerVitalsHost;
+        public ActorRegistry ActorRegistry;
+        public ActorViewRegistry ActorViewRegistry;
         public PlayerResourceHost PlayerResourceHost;
         public PlayerCooldownHost PlayerCooldownHost;
         public ActorStatusHost PlayerStatus;

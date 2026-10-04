@@ -1,4 +1,6 @@
+using Dovus.Core.Actors;
 using Dovus.Core.Boss;
+using Dovus.Core.Shared;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
 using Dovus.Core.Casting;
@@ -23,11 +25,14 @@ namespace Dovus.Game.Actors
     public sealed class TargetableHost : MonoBehaviour
         {
             int _teamId;
+            ActorId _actorId;
             string _displayName = string.Empty;
             Func<bool> _available;
             Collider _collider;
     
             public int TeamId => _teamId;
+            public ActorId ActorId => _actorId;
+            public int TargetKey => ActorTargetKey.FromActorId(_actorId);
             public string DisplayName => string.IsNullOrEmpty(_displayName) ? name : _displayName;
             public bool IsAvailable => _available == null || _available();
     
@@ -43,9 +48,10 @@ namespace Dovus.Game.Actors
     
             void OnDisable() => s_live.Remove(this);
     
-            public void Configure(int teamId, string displayName, Func<bool> available = null)
+            public void Configure(int teamId, string displayName, ActorId actorId, Func<bool> available = null)
             {
                 _teamId = teamId;
+                _actorId = actorId;
                 _displayName = displayName ?? string.Empty;
                 _available = available;
                 _collider = GetComponent<Collider>();
