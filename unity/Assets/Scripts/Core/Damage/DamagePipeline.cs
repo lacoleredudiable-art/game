@@ -23,7 +23,14 @@ namespace Dovus.Core.Damage
         public const float VarianceHalf = 0.05f;
         public const float MinDamageTakenFactor = 0.10f;
 
-        static IRng s_rng = global::Dovus.Core.Shared.SeededRng.Unseeded();
+        static IRng s_rng = CreateDefaultFallbackRng();
+
+        static IRng CreateDefaultFallbackRng() =>
+            global::Dovus.Core.Shared.SeededRng.Seeded(CombatRng.SessionSeed());
+
+        /// <summary>VarianceSeed &lt; 0 yolunda kullanılan oturum zarı; null varsayılanı geri yükler.</summary>
+        public static void SetFallbackRng(IRng rng) =>
+            s_rng = rng ?? CreateDefaultFallbackRng();
 
         /// <summary>
         /// Düz vuruş kendi tabanını kullanır. Skill gücü zırhtan önce ölçeklenir.

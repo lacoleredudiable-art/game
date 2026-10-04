@@ -45,6 +45,7 @@ namespace Dovus.Game.Team
         bool _borderReleasePending;
         string _line = "Takım menüsü hazır";
         int _nextId = 2;
+        IRng _combatRollRng;
 
         public string Line => _line;
         public BorderMode Border => _border;
@@ -52,6 +53,11 @@ namespace Dovus.Game.Team
         public TeamComboSystem Team => _team;
         public TeamModifierHub Modifiers { get; } = new TeamModifierHub();
         public int Spawned => _spawned.Count;
+
+        /// <summary>Takım çarpan zarını değiştir; null varsayılan <see cref="UnityRng.Default"/>.</summary>
+        public void ConfigureCombatRollRng(IRng rng) => _combatRollRng = rng;
+
+        IRng CombatRollSource => _combatRollRng ?? UnityRng.Default;
 
         // MonoBehaviour ctor'unda Resources.Load yasak (UnityException) → op tabloları Awake'te JSON'dan bağlanır.
         void Awake()
@@ -70,7 +76,7 @@ namespace Dovus.Game.Team
         void OnEnable()
         {
             Modifiers.Cast += OnCast;
-            Modifiers.Roll = () => (float)UnityRng.Default.NextDouble();
+            Modifiers.Roll = () => (float)CombatRollSource.NextDouble();
         }
 
         void OnDisable()
