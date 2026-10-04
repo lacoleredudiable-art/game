@@ -67,7 +67,7 @@ namespace Dovus.Game.Skills.Mechanics
                 return;
             if (!ForcedDisplacement.Allows(_host.BossStatus != null ? _host.BossStatus.Board : null))
                 return;
-            float playerR = Mathf.Max(0.5f, _host.PlayerBodyRadiusM());
+            float playerR = Mathf.Max(MechanicWorldDefaults.MinBodyRadiusM, _host.PlayerBodyRadiusM());
             _host.Boss.PullToContact(_host.Player.position, playerR, _host.Boss.BodyRadiusM);
         }
 
@@ -107,29 +107,29 @@ namespace Dovus.Game.Skills.Mechanics
             if (plan.Body.BornAt == "dokunus" && _host.Ally != null)
                 return _host.Ally.transform.position;
             landedAt.y = _host.Player.position.y;
-            if ((landedAt - _host.Player.position).sqrMagnitude > 0.01f)
+            if ((landedAt - _host.Player.position).sqrMagnitude > MechanicWorldDefaults.PlayerMoveEpsilonSqr)
                 return _host.ClampToArena(landedAt);
             aimDir.y = 0f;
-            if (aimDir.sqrMagnitude < 0.0001f)
+            if (aimDir.sqrMagnitude < MechanicWorldDefaults.PlanarDirEpsilonSqr)
                 aimDir = _host.Player.forward;
             return _host.ClampToArena(_host.Player.position + aimDir.normalized * (float)plan.Body.ReachM);
         }
 
         void SpawnMechanicWall(MechanicPlan plan, Vector3 center, Vector3 aimDir, double untilMs)
         {
-            float thickness = Mathf.Max(0.05f, (float)plan.Body.SizeM);
+            float thickness = Mathf.Max(MechanicWorldDefaults.MinThicknessM, (float)plan.Body.SizeM);
             float length = plan.Body.Path == "isin"
                 ? Mathf.Max(thickness, (float)plan.Body.ReachM)
-                : Mathf.Max(thickness, (float)plan.Body.SizeM * 2f);
-            float height = Mathf.Max(thickness, (float)plan.Body.SizeM * 2f);
+                : Mathf.Max(thickness, (float)plan.Body.SizeM * MechanicWorldDefaults.BodySizeLengthMult);
+            float height = Mathf.Max(thickness, (float)plan.Body.SizeM * MechanicWorldDefaults.BodySizeLengthMult);
 
             GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
             wall.name = plan.Body.Path == "isin" ? "MechanicFence" : "MechanicWall";
             wall.transform.SetParent(_host.DirectorTransform, true);
-            center.y = height * 0.5f;
+            center.y = height * MechanicWorldDefaults.BodyHeightHalfMult;
             wall.transform.position = center;
             aimDir.y = 0f;
-            if (aimDir.sqrMagnitude > 0.0001f)
+            if (aimDir.sqrMagnitude > MechanicWorldDefaults.PlanarDirEpsilonSqr)
                 wall.transform.rotation = Quaternion.LookRotation(aimDir.normalized, Vector3.up);
             wall.transform.localScale = new Vector3(length, height, thickness);
             Renderer renderer = wall.GetComponent<Renderer>();
@@ -150,8 +150,8 @@ namespace Dovus.Game.Skills.Mechanics
             body.transform.SetParent(_host.DirectorTransform, true);
             body.transform.position = _host.Player.position;
             body.transform.rotation = _host.Player.rotation;
-            float size = Mathf.Max(0.05f, (float)plan.Body.SizeM);
-            body.transform.localScale = new Vector3(size, size * 1.8f, size);
+            float size = Mathf.Max(MechanicWorldDefaults.MinThicknessM, (float)plan.Body.SizeM);
+            body.transform.localScale = new Vector3(size, size * MechanicWorldDefaults.DecoyHeightScale, size);
             Renderer renderer = body.GetComponent<Renderer>();
             if (renderer != null)
                 SharedTint.Apply(renderer, new Color(0.2f, 0.9f, 1f, 0.45f));
@@ -166,7 +166,7 @@ namespace Dovus.Game.Skills.Mechanics
                 _hostileTargets.Register(
                     body.transform,
                     TargetKind.Decoy,
-                    Mathf.Max(0.05f, size * 0.5f),
+                    Mathf.Max(MechanicWorldDefaults.MinThicknessM, size * MechanicWorldDefaults.DecoyRadiusHalfMult),
                     alive: () => body != null,
                     taunting: () => true,
                     kill: () =>
@@ -206,13 +206,13 @@ namespace Dovus.Game.Skills.Mechanics
                     center = _host.Ally.transform.position;
             }
 
-            float radius = Mathf.Max(0.05f, (float)plan.Body.SizeM);
+            float radius = Mathf.Max(MechanicWorldDefaults.MinThicknessM, (float)plan.Body.SizeM);
             GameObject disk = PlaceholderFactory.CreateZoneDisk(
                 _host.SelectedElementPaint?.Name ?? string.Empty,
                 center,
                 radius,
                 _host.DirectorTransform,
-                alpha: _host.Combat != null ? _host.Combat.Manifestation.ExecutorFieldDiskAlpha : 0.6f);
+                alpha: _host.Combat != null ? _host.Combat.Manifestation.ExecutorFieldDiskAlpha : MechanicWorldDefaults.ExecutorFieldAlphaFallback);
             if (disk != null)
                 disk.name = profile.Reflector ? "MechanicReflector" : profile.Cloud ? "MechanicCloud" : "MechanicField";
 
@@ -243,12 +243,12 @@ namespace Dovus.Game.Skills.Mechanics
             go.transform.SetParent(_host.DirectorTransform, false);
             LineRenderer line = go.AddComponent<LineRenderer>();
             line.positionCount = 2;
-            line.startWidth = line.endWidth = Mathf.Max(0.02f, (float)plan.Body.SizeM * 0.1f);
+            line.startWidth = line.endWidth = Mathf.Max(MechanicWorldDefaults.LinkLineMinWidthM, (float)plan.Body.SizeM * MechanicWorldDefaults.LinkLineWidthFactor);
             line.sharedMaterial = SharedTint.ForShader("Sprites/Default");
             line.startColor = new Color(0.3f, 0.9f, 1f, 0.85f);
             line.endColor = new Color(0.9f, 0.35f, 1f, 0.85f);
             double linkTickRate = _host.MechanicEngine?.Rules.AdjNum(plan.Adjective, "tick_rate_mult", 1) ?? 1;
-            double linkTickMs = Math.Max(50, (_host.Combat != null ? _host.Combat.Manifestation.ExecutorFieldTickSec : 1f) * 1000.0 / Math.Max(0.01, linkTickRate));
+            double linkTickMs = Math.Max(MechanicWorldDefaults.LinkTickMinMs, (_host.Combat != null ? _host.Combat.Manifestation.ExecutorFieldTickSec : 1f) * 1000.0 / Math.Max(MechanicWorldDefaults.LinkTickRateMin, linkTickRate));
             Links.Add(new MechanicLink
             {
                 Line = line,
@@ -273,9 +273,9 @@ namespace Dovus.Game.Skills.Mechanics
             GameObject view = PlaceholderFactory.CreateZoneDisk(
                 _host.SelectedElementPaint?.Name ?? string.Empty,
                 at,
-                Mathf.Max(0.05f, _host.LastMechanicPlan != null ? (float)_host.LastMechanicPlan.Body.SizeM : 1f),
+                Mathf.Max(MechanicWorldDefaults.MinThicknessM, _host.LastMechanicPlan != null ? (float)_host.LastMechanicPlan.Body.SizeM : 1f),
                 _host.DirectorTransform,
-                alpha: _host.Combat != null ? _host.Combat.Manifestation.ExecutorFieldDiskAlpha : 0.6f);
+                alpha: _host.Combat != null ? _host.Combat.Manifestation.ExecutorFieldDiskAlpha : MechanicWorldDefaults.ExecutorFieldAlphaFallback);
             if (view != null)
                 view.name = "MechanicGuardTrigger";
             bool talisman = _host.EquippedProfile != null && _host.EquippedProfile.Passive.Kind == WeaponPassiveKind.KutsalEtki;
@@ -292,7 +292,7 @@ namespace Dovus.Game.Skills.Mechanics
         public void Tick(double worldMs)
         {
             if (_host.Boss != null && _host.Boss.PullActive && _host.Player != null)
-                _host.Boss.UpdatePullContact(_host.Player.position, Mathf.Max(0.5f, _host.PlayerBodyRadiusM()), _host.Boss.BodyRadiusM);
+                _host.Boss.UpdatePullContact(_host.Player.position, Mathf.Max(MechanicWorldDefaults.MinBodyRadiusM, _host.PlayerBodyRadiusM()), _host.Boss.BodyRadiusM);
 
             if (_host.Boss != null)
                 _bossMechanicHistory.Record(worldMs, _host.Boss.Home);
@@ -392,7 +392,7 @@ namespace Dovus.Game.Skills.Mechanics
                 float z = past.z;
                 ActorSpacing.PushOutside(
                     ref x, ref z, _host.Player.position.x, _host.Player.position.z,
-                    Mathf.Max(0.5f, _host.PlayerBodyRadiusM()) + _host.Boss.BodyRadiusM);
+                    Mathf.Max(MechanicWorldDefaults.MinBodyRadiusM, _host.PlayerBodyRadiusM()) + _host.Boss.BodyRadiusM);
                 past = _host.ClampToArena(new Vector3(x, past.y, z));
             }
             _host.Boss.SnapHome(past);
