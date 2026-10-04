@@ -37,7 +37,8 @@ namespace Dovus.Game.Audio
 
         public void Play(string id, float volumeScale = 1f)
         {
-            if (_sfx == null)
+            // Eski statik Play: Instance OnDestroy'da null olurdu → yok edilmiş yönetmende sessiz.
+            if (_sfx == null || this == null)
                 return;
             PlayInternal(id, volumeScale);
         }

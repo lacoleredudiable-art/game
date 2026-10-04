@@ -77,14 +77,10 @@ namespace Dovus.Game.Composition
                 TuningConfig = tuningConfig,
                 Clock = gameObject.AddComponent<GameClock>(),
             };
-            ctx.Assets = AssetCatalog.Load();
+            ctx.Assets = AssetCatalog.Standalone;
             FeelVfx.Configure(_tuning, ctx.Assets.Vfx);
 
-            var teamGo = new GameObject(nameof(PortalBorderTeamHost));
-            teamGo.transform.SetParent(ctx.SceneRoot, false);
-            ctx.TeamHost = teamGo.AddComponent<PortalBorderTeamHost>();
             ctx.TeamAccess = new PortalBorderTeamAccess();
-            ctx.TeamAccess.Bind(ctx.TeamHost);
 
             var arenaBuilder = new ArenaBuilder();
             arenaBuilder.BuildArena(ctx);

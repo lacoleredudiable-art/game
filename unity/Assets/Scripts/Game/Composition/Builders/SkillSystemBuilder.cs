@@ -77,11 +77,7 @@ namespace Dovus.Game.Composition.Builders
             FeelHaptics.Configure(combat.Feel);
             var bossFlinch = ctx.Boss.gameObject.GetComponent<BossHitFlinch>() ?? ctx.Boss.gameObject.AddComponent<BossHitFlinch>();
             bossFlinch.Bind(combat.Feel, bossAnim);
-            var sfx = feelGo.AddComponent<SfxDirector>();
-            sfx.Bind(ctx.Assets.Sfx);
-            ctx.Sfx = sfx;
-
-            ctx.Player.GetComponent<PlayerDodgeRig>()?.Bind(ctx.Clock, input, follow, readout, feel, sfx);
+            ctx.Player.GetComponent<PlayerDodgeRig>()?.Bind(ctx.Clock, input, follow, readout, feel);
             var overlayHud = feelGo.AddComponent<CombatOverlayHud>();
             overlayHud.BindTheme(ctx.Assets.HudTheme);
             overlayHud.Configure(vitals, ctx.BossVitals, player, ctx.Boss.transform, ctx.OverlayCamera);
@@ -122,6 +118,11 @@ namespace Dovus.Game.Composition.Builders
             bossDir.BindTargets(hostileTargets);
             ctx.VitalsHud.BindBoss(bossDir);
 
+            // AddComponent sırası master ile aynı: SfxDirector burada eklenir.
+            var sfx = feelGo.AddComponent<SfxDirector>();
+            sfx.Bind(ctx.Assets.Sfx);
+            ctx.Sfx = sfx;
+            ctx.Player.GetComponent<PlayerDodgeRig>()?.BindSfx(sfx);
             feelGo.AddComponent<PresentationFx>().Bind(bossDir, ctx.DodgeMotion, feel, input, sfx, follow, combat);
             var feelVerify = feelGo.AddComponent<FeelPlayVerify>();
             feelVerify.Bind(follow, player);

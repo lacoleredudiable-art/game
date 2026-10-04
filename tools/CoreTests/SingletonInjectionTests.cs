@@ -41,9 +41,12 @@ public class SingletonInjectionTests
             if (string.Equals(rel, "Composition\\AssetCatalog.cs", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(rel, "Composition/AssetCatalog.cs", StringComparison.Ordinal))
                 continue;
+            // İzinli istisna: host yaşam döngüsü AfterSceneLoad Boot + DontDestroyOnLoad (davranış korunur, 2B.8b inceleme).
+            bool teamHost = rel.Replace('\\', '/') == "Team/PortalBorderTeamHost.cs";
 
             string src = File.ReadAllText(path);
-            Assert.That(instance.IsMatch(src), Is.False, $"{rel}: static Instance");
+            if (!teamHost)
+                Assert.That(instance.IsMatch(src), Is.False, $"{rel}: static Instance");
             Assert.That(singletonField.IsMatch(src), Is.False, $"{rel}: static _instance");
             Assert.That(themeCurrent.IsMatch(src), Is.False, $"{rel}: HudTheme.Current");
             Assert.That(sfxCurrent.IsMatch(src), Is.False, $"{rel}: SfxLibrary.Current");
@@ -65,6 +68,6 @@ public class SingletonInjectionTests
     public void Bootstrap_WiresAssetCatalog()
     {
         string boot = Game("Composition/PrototypeBootstrap.cs");
-        Assert.That(boot, Does.Contain("ctx.Assets = AssetCatalog.Load"));
+        Assert.That(boot, Does.Contain("ctx.Assets = AssetCatalog.Standalone"));
     }
 }

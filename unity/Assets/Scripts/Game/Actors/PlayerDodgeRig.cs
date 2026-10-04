@@ -38,6 +38,8 @@ namespace Dovus.Game.Actors
 
         public NextHitBuff NextHit => _nextHit;
 
+        public void BindSfx(SfxDirector sfx) => _sfx = sfx;
+
         /// <summary>
         /// Skill hareketi / çağırma anı dokunulmazlığı (F1): 3-7 dash 400 ms, ışınlanma 220 ms,
         /// 11-10 çağırma anı... Stasis değil — oyuncu donmaz, yalnız pencere içindeki vuruş yutulur.
@@ -64,14 +66,12 @@ namespace Dovus.Game.Actors
             HexagonInput input,
             FollowCamera camera,
             ReactionReadout readout,
-            CombatFeel feel,
-            SfxDirector sfx = null)
+            CombatFeel feel)
         {
             _clock = clock;
             _input = input;
             _camera = camera;
             _readout = readout;
-            _sfx = sfx;
             if (feel != null && !_feelHooked)
             {
                 feel.Exchanged += OnExchange;

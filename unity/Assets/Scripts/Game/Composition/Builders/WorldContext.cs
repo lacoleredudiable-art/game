@@ -39,7 +39,6 @@ namespace Dovus.Game.Composition.Builders
         public TuningConfig TuningConfig;
         public GameClock Clock;
         public AssetCatalog Assets;
-        public PortalBorderTeamHost TeamHost;
         public PortalBorderTeamAccess TeamAccess;
         public SfxDirector Sfx;
         public ElementRadialMenu ElementMenu;

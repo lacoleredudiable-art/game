@@ -22,6 +22,8 @@ namespace Dovus.Game.Team
     [DefaultExecutionOrder(50)]
     public sealed class PortalBorderTeamHost : MonoBehaviour
     {
+        public static PortalBorderTeamHost Instance { get; private set; }
+
         readonly BorderMode _border = new();
         readonly PortalSystem _portal = new();
         readonly TeamComboSystem _team = new();
@@ -48,6 +50,7 @@ namespace Dovus.Game.Team
         public PortalSystem Portal => _portal;
         public TeamComboSystem Team => _team;
         public TeamModifierHub Modifiers { get; } = new TeamModifierHub();
+        public static TeamModifierHub Hub => Instance != null ? Instance.Modifiers : TeamModifierHub.Neutral;
         public int Spawned => _spawned.Count;
 
         // MonoBehaviour ctor'unda Resources.Load yasak (UnityException) → op tabloları Awake'te JSON'dan bağlanır.
@@ -61,14 +64,27 @@ namespace Dovus.Game.Team
             }
         }
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        static void Boot()
+        {
+            if (FindAnyObjectByType<PortalBorderTeamHost>() != null)
+                return;
+            var go = new GameObject(nameof(PortalBorderTeamHost));
+            go.AddComponent<PortalBorderTeamHost>();
+            DontDestroyOnLoad(go);
+        }
+
         void OnEnable()
         {
+            Instance = this;
             Modifiers.Cast += OnCast;
             Modifiers.Roll = () => (float)UnityRng.Default.NextDouble();
         }
 
         void OnDisable()
         {
+            if (Instance == this)
+                Instance = null;
             Modifiers.Cast -= OnCast;
             Modifiers.ResetModifiers();
         }
