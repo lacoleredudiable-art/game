@@ -30,7 +30,7 @@
 | HUD | `Game/Hud/VitalsHud.cs`, `Game/Hud/CombatOverlayHud.cs`, `Game/Hud/SkillPreviewHud.cs`, `Game/Hud/PassiveHud.cs`, `Game/Hud/DamageNumberHud.cs` | ilgili `Update` / `Tick*` |
 | Kamera | `Game/Cameras/FollowCamera.cs`, `Game/Cameras/CameraOrbitInput.cs`, `Game/Cameras/CameraAmbienceColliders.cs` | `FollowCamera.Update`, `FollowCamera.ResolveYaw` |
 | VFX / SFX | `Game/Vfx/VfxLibrary.cs`, `Game/Audio/SfxDirector.cs`, `Game/Audio/SfxLibrary.cs`, `Game/Vfx/HitImpactFx.cs`, `Game/ComposedSkillVfx.cs` | `SfxDirector.Awake`, `VfxLibrary` |
-| Tuning | `Game/Config/PrototypeTuning.cs`, `Game/Config/TuningConfig.cs`, `Core/Tuning/*.cs` | `PrototypeTuning.EnsureRuntimeDefaults`, `TuningSchema` |
+| Tuning | `Game/Config/PrototypeTuning.cs`, `PrototypeTuning.Arena.cs`, `PrototypeTuning.Player.cs`, `PrototypeTuning.Input.cs`, `PrototypeTuning.Camera.cs`, `PrototypeTuning.Visuals.cs`, `PrototypeTuning.Boss.cs`, `PrototypeTuning.Hud.cs`, `Game/Config/TuningConfig.cs`, `Core/Tuning/*.cs` | `PrototypeTuning.EnsureRuntimeDefaults`, `TuningSchema` |
 | Sahne kurulumu | `Game/Composition/PrototypeBootstrap.cs`, `Game/Composition/PlaceholderFactory.cs`, `Game/Arena/CircularArena.cs` | `PrototypeBootstrap.Awake` |
 | Debug / dev | `Game/DevTools/DebugConfig.cs`, `Game/DevTools/DebugPanelsController.cs`, `Game/DevTools/V611DebugPanel.cs`, `Game/DevTools/SentenceDebugHud.cs`, `Game/DevTools/TuningPanel.cs` | `DebugPanelsController`, `V611DebugPanel.Update` |
 | Editor menüleri | `Game/Editor/PlaySweep.cs`, `Game/Editor/*Bind.cs`, `Game/Editor/AndroidBuilder.cs` | `[MenuItem("Dovus/...")]` |
