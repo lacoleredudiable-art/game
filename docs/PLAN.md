@@ -16,7 +16,7 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 - [x] 2.4 CastPipeline *(yüzeysel: yürütme Game'de — A9)*
 - [x] 2.5 Oyuncu can/diriliş → Application *(kapandı: A10)*
 - [x] 2.6 Boss AI → Application *(yüzeysel: BossDirector hâlâ büyük — A3)*
-- [x] 2.7 Statik çarpanlar; portal/takım JSON etiketleri *(yüzeysel: kalan statikler — A13, A14)*
+- [x] 2.7 Statik çarpanlar; portal/takım JSON etiketleri *(yüzeysel → A13 kısmi (#139, kalan önbellek statikleri), A14 kapandı (#142, ID listeleri JSON etiketlerine))*
 - [x] 2.8 GameTuning bölme; element JSON tek parse *(kapandı: A6)*
 
 ## Aşama 3 — Oynanış doğruluğu (küçük, somut hatalar) [mimariden sonra]
