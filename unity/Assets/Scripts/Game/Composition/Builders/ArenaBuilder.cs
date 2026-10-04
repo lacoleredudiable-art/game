@@ -13,7 +13,7 @@ namespace Dovus.Game.Composition.Builders
         {
             var tuning = ctx.Tuning;
             ctx.Arena = CreateArena(tuning);
-            float walkHalf = tuning.ArenaHalfSizeM;
+            float walkHalf = tuning.Arena.ArenaHalfSizeM;
             ctx.WalkHalf = walkHalf;
             ctx.Combat.SkillMotion.ArenaHalfSizeM = walkHalf;
             if (Resources.Load<Material>("Presentation/ParticlesUnlitAnchor") == null)
@@ -21,7 +21,7 @@ namespace Dovus.Game.Composition.Builders
             if (Resources.Load<CombatAmbienceAssets>(CombatAmbienceAssets.ResourcePath) == null)
                 LavaDecor.Build(ctx.Arena.transform, walkHalf);
             CombatAmbienceEnvironment.Build(ctx.Arena, walkHalf, tuning);
-            DebugConfig.DevLog($"[Arena] circle r={walkHalf:0.##}m wallH={tuning.ArenaWallHeightM:0.#}m");
+            DebugConfig.DevLog($"[Arena] circle r={walkHalf:0.##}m wallH={tuning.Arena.ArenaWallHeightM:0.#}m");
             ctx.SpawnMaxR = walkHalf * 0.4f;
         }
 
@@ -56,10 +56,10 @@ namespace Dovus.Game.Composition.Builders
         {
             Color wall = new Color(0.28f, 0.26f, 0.24f);
             return CircularArena.Build(
-                tuning.ArenaHalfSizeM,
-                tuning.ArenaWallHeightM,
-                tuning.ArenaWallThicknessM,
-                tuning.GroundColor,
+                tuning.Arena.ArenaHalfSizeM,
+                tuning.Arena.ArenaWallHeightM,
+                tuning.Arena.ArenaWallThicknessM,
+                tuning.Visuals.GroundColor,
                 wall);
         }
     }

@@ -90,7 +90,7 @@ namespace Dovus.Game.Arena
                     cracks.transform.localPosition = new Vector3(0f, 0.015f, 0f);
             }
 
-            BuildRockRing(assets, root.transform, walkHalfM, Mathf.Max(1f, tuning?.ArenaWallThicknessM ?? 1.4f));
+            BuildRockRing(assets, root.transform, walkHalfM, Mathf.Max(1f, tuning?.Arena.ArenaWallThicknessM ?? 1.4f));
             BuildEdgeProps(assets, root.transform, walkHalfM);
             CameraAmbienceColliders.EnsureOnCombatAmbience(root.transform);
         }
@@ -101,9 +101,9 @@ namespace Dovus.Game.Arena
             if (tuning == null)
                 return;
 
-            float walkHalf = Mathf.Max(0.1f, tuning.ArenaHalfSizeM);
+            float walkHalf = Mathf.Max(0.1f, tuning.Arena.ArenaHalfSizeM);
             RenderSettings.fog = true;
-            RenderSettings.fogColor = tuning.FogColor;
+            RenderSettings.fogColor = tuning.Arena.FogColor;
             // spec'te yok — varsayılan: doğrusal sis, yürüme yarıçapına oranlı.
             RenderSettings.fogMode = FogMode.Linear;
             RenderSettings.fogStartDistance = walkHalf * 0.9f;

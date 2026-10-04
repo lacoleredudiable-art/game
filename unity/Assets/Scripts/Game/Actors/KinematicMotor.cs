@@ -63,9 +63,9 @@ namespace Dovus.Game.Actors
         }
 
         public Vector3 Velocity { get; private set; }
-        public float LocoRefMps => _tuning != null ? _tuning.WalkSpeedMps : 6.4f;
-        public float LocoDampSec => _tuning != null ? _tuning.AnimSpeedDampSec : 0.08f;
-        public float LocoMaxPlayback => _tuning != null ? _tuning.LocoMaxPlaybackMult : 1.5f;
+        public float LocoRefMps => _tuning != null ? _tuning.Player.WalkSpeedMps : 6.4f;
+        public float LocoDampSec => _tuning != null ? _tuning.Player.AnimSpeedDampSec : 0.08f;
+        public float LocoMaxPlayback => _tuning != null ? _tuning.Player.LocoMaxPlaybackMult : 1.5f;
 
         void Awake()
         {
@@ -138,22 +138,22 @@ namespace Dovus.Game.Actors
                 speedMult *= _status.Tuning.SlowSpeedMult;
             float dtSec = _clock != null ? (float)(_clock.WorldDeltaMs / 1000.0) : Time.deltaTime;
 
-            float stickT = Mathf.InverseLerp(_tuning.JoystickDeadZone, 1f, stick);
-            float speedFrac = stick > 0.0001f ? Mathf.Lerp(_tuning.MinStickSpeedFrac, 1f, stickT) : 0f;
+            float stickT = Mathf.InverseLerp(_tuning.Input.JoystickDeadZone, 1f, stick);
+            float speedFrac = stick > 0.0001f ? Mathf.Lerp(_tuning.Player.MinStickSpeedFrac, 1f, stickT) : 0f;
             Vector3 dirFlat = direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector3.zero;
-            Vector3 target = dirFlat * (_tuning.WalkSpeedMps * speedMult * speedFrac);
+            Vector3 target = dirFlat * (_tuning.Player.WalkSpeedMps * speedMult * speedFrac);
 
             Vector3 current = Velocity;
-            float rate = target.sqrMagnitude >= current.sqrMagnitude ? _tuning.MoveAccelMps2 : _tuning.MoveDecelMps2;
+            float rate = target.sqrMagnitude >= current.sqrMagnitude ? _tuning.Player.MoveAccelMps2 : _tuning.Player.MoveDecelMps2;
             Velocity = Vector3.MoveTowards(current, target, rate * dtSec);
 
-            _visual?.SetLocomotion(Velocity.magnitude, _tuning.WalkSpeedMps, _tuning.AnimSpeedDampSec,
-                _tuning.LocoMaxPlaybackMult);
+            _visual?.SetLocomotion(Velocity.magnitude, _tuning.Player.WalkSpeedMps, _tuning.Player.AnimSpeedDampSec,
+                _tuning.Player.LocoMaxPlaybackMult);
 
             Vector3 from = transform.position;
             Vector3 next = SweepAndSlide(from, from + Velocity * dtSec);
             next = PushOutOfObstacles(next);
-            next = ArenaClamp.XZ(next, _tuning.ArenaHalfSizeM, _bodyRadiusM);
+            next = ArenaClamp.XZ(next, _tuning.Arena.ArenaHalfSizeM, _bodyRadiusM);
             transform.position = next;
 
             Transform combatTarget = _combatFacingTarget?.Invoke();
@@ -176,7 +176,7 @@ namespace Dovus.Game.Actors
             {
                 Quaternion want = Quaternion.LookRotation(faceDirection, Vector3.up);
                 transform.rotation = Quaternion.RotateTowards(
-                    transform.rotation, want, _tuning.TurnRateDegPerSec * dtSec);
+                    transform.rotation, want, _tuning.Player.TurnRateDegPerSec * dtSec);
             }
         }
 

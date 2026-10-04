@@ -116,7 +116,7 @@ namespace Dovus.Game.Casting.Input
                 && _s.StrokeAccepted >= 1
                 && outcome == DrawFeedback.StrokeOutcome.None)
             {
-                long ms = _s.Tuning != null ? _s.Tuning.DotVibrationMs : 30L;
+                long ms = _s.Tuning != null ? _s.Tuning.Input.DotVibrationMs : 30L;
                 FeelHaptics.Pulse((int)ms);
             }
         }
@@ -174,7 +174,7 @@ namespace Dovus.Game.Casting.Input
                 return;
             _s.CenterStrikeArmed = false;
 
-            int runeId = _s.Tuning.BasicStrikeDot;
+            int runeId = _s.Tuning.Input.BasicStrikeDot;
             if (!_s.Engine.BeginBasicStrike(runeId, worldMs))
                 return;
             _s.Engine.Commit();

@@ -94,8 +94,8 @@ namespace Dovus.Game.Casting
             _chip.anchorMin = _chip.anchorMax = Vector2.zero;
             _chip.pivot = new Vector2(0.5f, 0.5f);
             _chip.sizeDelta = new Vector2(
-                HexagonLayoutScreen.DpToPixels(tuning.ElementMenuChipWidthDp),
-                HexagonLayoutScreen.DpToPixels(tuning.ElementMenuChipHeightDp));
+                HexagonLayoutScreen.DpToPixels(tuning.Input.ElementMenuChipWidthDp),
+                HexagonLayoutScreen.DpToPixels(tuning.Input.ElementMenuChipHeightDp));
             var chipImage = chipGo.AddComponent<Image>();
             chipImage.color = theme.PanelColor;
             var shadow = chipGo.AddComponent<Shadow>();
@@ -112,9 +112,9 @@ namespace Dovus.Game.Casting
             hold.Up = EndHold;
             _chipLabel = CreateText(chipGo.transform, 15);
 
-            float radius = HexagonLayoutScreen.DpToPixels(tuning.ElementMenuRadiusDp);
-            float itemWidth = HexagonLayoutScreen.DpToPixels(tuning.ElementMenuItemWidthDp);
-            float itemHeight = HexagonLayoutScreen.DpToPixels(tuning.ElementMenuItemHeightDp);
+            float radius = HexagonLayoutScreen.DpToPixels(tuning.Input.ElementMenuRadiusDp);
+            float itemWidth = HexagonLayoutScreen.DpToPixels(tuning.Input.ElementMenuItemWidthDp);
+            float itemHeight = HexagonLayoutScreen.DpToPixels(tuning.Input.ElementMenuItemHeightDp);
             for (int i = 0; i < _elements.Count; i++)
             {
                 float rad = (90f - i * 60f) * Mathf.Deg2Rad;
@@ -326,11 +326,11 @@ namespace Dovus.Game.Casting
                 return;
             _appliedSafe = safe;
             Vector2 desired = new(
-                safe.xMin + safe.width * _tuning.ElementMenuAnchorXNorm,
-                safe.yMin + safe.height * _tuning.ElementMenuAnchorYNorm);
-            float radius = HexagonLayoutScreen.DpToPixels(_tuning.ElementMenuRadiusDp);
-            float xExtent = radius + HexagonLayoutScreen.DpToPixels(_tuning.ElementMenuItemWidthDp) * 0.5f;
-            float yExtent = radius + HexagonLayoutScreen.DpToPixels(_tuning.ElementMenuItemHeightDp) * 0.5f;
+                safe.xMin + safe.width * _tuning.Input.ElementMenuAnchorXNorm,
+                safe.yMin + safe.height * _tuning.Input.ElementMenuAnchorYNorm);
+            float radius = HexagonLayoutScreen.DpToPixels(_tuning.Input.ElementMenuRadiusDp);
+            float xExtent = radius + HexagonLayoutScreen.DpToPixels(_tuning.Input.ElementMenuItemWidthDp) * 0.5f;
+            float yExtent = radius + HexagonLayoutScreen.DpToPixels(_tuning.Input.ElementMenuItemHeightDp) * 0.5f;
             float x = safe.width >= xExtent * 2f
                 ? Mathf.Clamp(desired.x, safe.xMin + xExtent, safe.xMax - xExtent)
                 : safe.center.x;

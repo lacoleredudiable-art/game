@@ -42,8 +42,8 @@ public class SettingsRoundTripTests
         combat.BasicStrikePower = 11f;
 
         var prototype = new PrototypeTuning();
-        prototype.DodgeGlideSpeedMps = 9.5f;
-        prototype.PlayerMaxHp = 420;
+        prototype.Player.DodgeGlideSpeedMps = 9.5f;
+        prototype.Player.PlayerMaxHp = 420;
 
         var original = TuningConfig.Create(combat, prototype);
         original.Save();
@@ -52,8 +52,36 @@ public class SettingsRoundTripTests
         Assert.That(loaded.TryLoad(), Is.True);
         Assert.That(loaded.Combat.ClosingDamagePerEffect, Is.EqualTo(4.25f).Within(0.001f));
         Assert.That(loaded.Combat.BasicStrikePower, Is.EqualTo(11f).Within(0.001f));
-        Assert.That(loaded.Prototype.DodgeGlideSpeedMps, Is.EqualTo(9.5f).Within(0.001f));
-        Assert.That(loaded.Prototype.PlayerMaxHp, Is.EqualTo(420));
+        Assert.That(loaded.Prototype.Player.DodgeGlideSpeedMps, Is.EqualTo(9.5f).Within(0.001f));
+        Assert.That(loaded.Prototype.Player.PlayerMaxHp, Is.EqualTo(420));
+    }
+
+    [Test]
+    public void ApplyPanelFields_OldJsonShape_MapsToSections()
+    {
+        const string json =
+            "{\"PlayerMaxHp\":17,\"DodgeGlideSpeedMps\":4.1,\"BossApproachStopPadM\":0.5," +
+            "\"FollowSmoothTimeSec\":0.2,\"LookAheadM\":1.1,\"CameraShakePxToM\":0.02," +
+            "\"CameraDistanceM\":6.5,\"CameraLookHeightM\":0.5,\"CameraDefaultPitchDeg\":18," +
+            "\"CameraBossAimHeightM\":2.1,\"CameraLockOnMinDistanceM\":5.5," +
+            "\"CameraLockOnMaxDistanceM\":9.0,\"CameraLockOnDistancePerSepM\":0.2," +
+            "\"CameraLockOnMaxExtraDistanceM\":2.5,\"CameraWindupDistanceMul\":1.5," +
+            "\"CameraWindupExtraHeightM\":0.7,\"ReadoutAnchorRight\":false," +
+            "\"ReadoutPunchInSec\":0.15,\"ShowFrameTimeHud\":true,\"ShowDamageNumbers\":false}";
+
+        var fields = JsonUtility.FromJson<PrototypeTuning.PanelFields>(json);
+        var tuning = new PrototypeTuning();
+        tuning.ApplyPanelFields(fields);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(tuning.Player.PlayerMaxHp, Is.EqualTo(17));
+            Assert.That(tuning.Player.DodgeGlideSpeedMps, Is.EqualTo(4.1f).Within(0.001f));
+            Assert.That(tuning.Boss.BossApproachStopPadM, Is.EqualTo(0.5f).Within(0.001f));
+            Assert.That(tuning.Camera.CameraDistanceM, Is.EqualTo(6.5f).Within(0.001f));
+            Assert.That(tuning.Hud.ShowDamageNumbers, Is.False);
+            Assert.That(tuning.Hud.ShowFrameTimeHud, Is.True);
+        });
     }
 
     [Test]

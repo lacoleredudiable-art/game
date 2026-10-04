@@ -43,7 +43,7 @@ namespace Dovus.Game.Skills.Closing
 
         public void TickPendingClosings(double worldMs)
         {
-            int basicDot = _host.Colors != null ? _host.Colors.BasicStrikeDot : 1;
+            int basicDot = _host.Colors != null ? _host.Colors.Input.BasicStrikeDot : 1;
             for (int i = _pending.Count - 1; i >= 0; i--)
             {
                 PendingClosing p = _pending[i];
@@ -78,7 +78,7 @@ namespace Dovus.Game.Skills.Closing
 
         public bool IsPendingBasic(PendingClosing p)
         {
-            int basicDot = _host.Colors != null ? _host.Colors.BasicStrikeDot : 1;
+            int basicDot = _host.Colors != null ? _host.Colors.Input.BasicStrikeDot : 1;
             return IsPendingBasic(p, basicDot);
         }
 

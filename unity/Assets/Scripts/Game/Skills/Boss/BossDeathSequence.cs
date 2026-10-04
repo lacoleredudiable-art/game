@@ -48,7 +48,7 @@ namespace Dovus.Game.Skills.Boss
 
         public void Begin(double worldMs)
         {
-            float collapseSec = _host.Colors != null ? _host.Colors.BossDeathCollapseSec : 0.85f;
+            float collapseSec = _host.Colors != null ? _host.Colors.Boss.BossDeathCollapseSec : 0.85f;
             if (!_schedule.Begin(worldMs, collapseSec))
                 return;
             _host.BossDirector?.NotifyBossDown(worldMs);

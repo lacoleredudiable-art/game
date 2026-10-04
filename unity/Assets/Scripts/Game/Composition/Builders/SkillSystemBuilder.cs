@@ -79,7 +79,7 @@ namespace Dovus.Game.Composition.Builders
             ctx.BossDirector = bossDir;
 
             var hostileTargets = directorGo.AddComponent<HostileTargets>();
-            TargetingConfig targetingConfig = BossEncounterData.LoadTargeting(tuning.ActiveBossResourcePath);
+            TargetingConfig targetingConfig = BossEncounterData.LoadTargeting(tuning.Boss.ActiveBossResourcePath);
             hostileTargets.Configure(targetingConfig);
             hostileTargets.Register(
                 player,
@@ -106,9 +106,9 @@ namespace Dovus.Game.Composition.Builders
             var feelVerify = feelGo.AddComponent<FeelPlayVerify>();
             feelVerify.Bind(follow, player);
             var playerSteps = ctx.Player.gameObject.AddComponent<FootstepEmitter>();
-            playerSteps.StrideM = tuning.FootstepStrideM;
+            playerSteps.StrideM = tuning.Player.FootstepStrideM;
             var bossSteps = ctx.Boss.gameObject.AddComponent<FootstepEmitter>();
-            bossSteps.StrideM = tuning.BossFootstepStrideM;
+            bossSteps.StrideM = tuning.Player.BossFootstepStrideM;
             bossSteps.IsBoss = true;
 
             var scarsGo = new GameObject("GroundScars");
@@ -145,7 +145,7 @@ namespace Dovus.Game.Composition.Builders
             director.BindHostileTargets(hostileTargets);
             ctx.ManifestationDirector = director;
 
-            BossEncounterData.ApplyVolley(combat.Boss, tuning.ActiveBossResourcePath);
+            BossEncounterData.ApplyVolley(combat.Boss, tuning.Boss.ActiveBossResourcePath);
             var projectileHost = directorGo.AddComponent<HostileProjectileHost>();
             projectileHost.Bind(ctx.Clock, hostileTargets, player, playerStatus, vitals, ctx.Boss.transform, boss.BodyRadiusM);
             bossDir.BindProjectiles(projectileHost);
@@ -182,7 +182,7 @@ namespace Dovus.Game.Composition.Builders
             preview.Configure(input.Engine, skills, skillFactory, director, tuning, view.CanvasRoot);
 
             var buildSelect = root.AddComponent<BuildSelectScreen>();
-            buildSelect.Configure(skills, runeManager, input, view, ctx.Clock, director, !tuning.SkipBuildSelectOnStart);
+            buildSelect.Configure(skills, runeManager, input, view, ctx.Clock, director, !tuning.Hud.SkipBuildSelectOnStart);
 
             int elementTransitionMs = 300;
             if (design != null

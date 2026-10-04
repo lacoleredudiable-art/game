@@ -265,8 +265,8 @@ namespace Dovus.Game.Skills.Targeting
             }
 
             Vector3 playerForward = _host.Player != null ? _host.Player.forward : Vector3.forward;
-            float softRange = _host.Colors != null ? _host.Colors.SoftAimRangeM : 8f;
-            float softCone = _host.Colors != null ? _host.Colors.SoftAimConeDeg : 70f;
+            float softRange = _host.Colors != null ? _host.Colors.Camera.SoftAimRangeM : 8f;
+            float softCone = _host.Colors != null ? _host.Colors.Camera.SoftAimConeDeg : 70f;
             bool hasBoss = _host.Boss != null;
             float bossX = hasBoss ? _host.Boss.transform.position.x : 0f;
             float bossZ = hasBoss ? _host.Boss.transform.position.z : 0f;

@@ -91,6 +91,7 @@ namespace SweepV2
                 f.SetValue(tuning, v);
                 applied++;
             }
+            tuning.SyncSectionsFromLegacyFlatFields();
             return applied;
         }
 

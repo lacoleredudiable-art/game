@@ -43,7 +43,7 @@ namespace Dovus.Game.Cameras
             _hexView = hexView;
             _tuning = tuning;
             if (_tuning != null)
-                _pitchDeg = _tuning.CameraDefaultPitchDeg;
+                _pitchDeg = _tuning.Camera.CameraDefaultPitchDeg;
         }
 
         void OnEnable()
@@ -106,9 +106,9 @@ namespace Dovus.Game.Cameras
 
         void AddPitch(float fingerUpDeg)
         {
-            bool invert = _tuning != null && _tuning.OrbitInvertPitch;
-            float min = _tuning != null ? _tuning.CameraPitchMinDeg : -8f;
-            float max = _tuning != null ? _tuning.CameraPitchMaxDeg : 35f;
+            bool invert = _tuning != null && _tuning.Camera.OrbitInvertPitch;
+            float min = _tuning != null ? _tuning.Camera.CameraPitchMinDeg : -8f;
+            float max = _tuning != null ? _tuning.Camera.CameraPitchMaxDeg : 35f;
             _pitchDeg = Mathf.Clamp(_pitchDeg + (invert ? fingerUpDeg : -fingerUpDeg), min, max);
         }
 
@@ -124,7 +124,7 @@ namespace Dovus.Game.Cameras
 
             // Sol yarı stick'e ait — orbit alma.
             Vector2 pos = finger.screenPosition;
-            bool mirror = _tuning != null && _tuning.MirrorForLeftHand;
+            bool mirror = _tuning != null && _tuning.Input.MirrorForLeftHand;
             if (!HexagonLayoutScreen.IsRightHalf(pos, mirror, Screen.width))
                 return;
             if (ElementRadialMenu.AnyOpen || ElementRadialMenu.HitHoldChip(pos))
@@ -143,7 +143,7 @@ namespace Dovus.Game.Cameras
             float deltaXDp = PixelsToDp(pos.x - _lastPos.x);
             float deltaYDp = PixelsToDp(pos.y - _lastPos.y);
             _lastPos = pos;
-            float sens = _tuning != null ? _tuning.OrbitDegreesPerDp : 0.35f;
+            float sens = _tuning != null ? _tuning.Camera.OrbitDegreesPerDp : 0.35f;
             _yawDeg -= deltaXDp * sens;
             AddPitch(deltaYDp * sens);
         }

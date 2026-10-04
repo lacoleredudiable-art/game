@@ -110,14 +110,14 @@ namespace Dovus.Game.Boss
             // indirildi; okunabilirlik artık kenardaki parlak ince rim'den gelir (bkz. GlowTexture).
             DrawDisc(
                 drawnRadius,
-                Color.Lerp(_colors.TelegraphWarm, _colors.TelegraphHot, p),
+                Color.Lerp(_colors.Visuals.TelegraphWarm, _colors.Visuals.TelegraphHot, p),
                 0.16f + 0.17f * p);
 
             // GEÇ: hazırlık pozu daha erken dolup uzun tutulur (windup zaten 900 ms).
             float poseT = variant == SlamVariant.Gec
                 ? Mathf.Clamp01(p * 1.35f)
                 : p;
-            ApplyPose(1f - _colors.TelegraphSquash * poseT, 1f + _colors.TelegraphStretch * poseT);
+            ApplyPose(1f - _colors.Boss.TelegraphSquash * poseT, 1f + _colors.Boss.TelegraphStretch * poseT);
 
             if (_tone != null)
             {
@@ -126,8 +126,8 @@ namespace Dovus.Game.Boss
 
                 // GEÇ: ton progress'e göre daha yavaş yükselir (concave eğri + uzun windup).
                 float toneT = variant == SlamVariant.Gec ? p * p : p;
-                _tone.pitch = Mathf.Lerp(_colors.TelegraphTonePitchMin, _colors.TelegraphTonePitchMax, toneT);
-                _tone.volume = Mathf.Lerp(_colors.TelegraphToneVolumeMin, _colors.TelegraphToneVolumeMax, toneT);
+                _tone.pitch = Mathf.Lerp(_colors.Boss.TelegraphTonePitchMin, _colors.Boss.TelegraphTonePitchMax, toneT);
+                _tone.volume = Mathf.Lerp(_colors.Boss.TelegraphToneVolumeMin, _colors.Boss.TelegraphToneVolumeMax, toneT);
             }
         }
 
@@ -137,7 +137,7 @@ namespace Dovus.Game.Boss
         /// </summary>
         public void Slam(float radiusM)
         {
-            DrawDisc(radiusM, _colors.TelegraphHot, 0.34f);
+            DrawDisc(radiusM, _colors.Visuals.TelegraphHot, 0.34f);
             ApplySlamPose(1f);
             if (_tone != null && _tone.isPlaying)
                 _tone.Stop();
@@ -153,7 +153,7 @@ namespace Dovus.Game.Boss
                 return;
             }
 
-            DrawDisc(radiusM, _colors.TelegraphHot, 0.34f * t);
+            DrawDisc(radiusM, _colors.Visuals.TelegraphHot, 0.34f * t);
             ApplySlamPose(t);
         }
 
@@ -302,7 +302,7 @@ namespace Dovus.Game.Boss
 
         void ApplySlamPose(float t)
         {
-            float squash = _colors.TelegraphSlamSquash * t;
+            float squash = _colors.Boss.TelegraphSlamSquash * t;
             ApplyPose(1f + squash * 0.5f, 1f - squash);
         }
 
@@ -377,7 +377,7 @@ namespace Dovus.Game.Boss
             mat.mainTexture = GlowTexture();
             if (mat.HasProperty("_BaseMap"))
                 mat.SetTexture("_BaseMap", GlowTexture());
-            SetMatColor(mat, _colors.TelegraphWarm);
+            SetMatColor(mat, _colors.Visuals.TelegraphWarm);
             return mat;
         }
 

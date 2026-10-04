@@ -255,7 +255,7 @@ namespace Dovus.Game.Boss
         }
 
         bool IsAglarinQueen() =>
-            _colors != null && _colors.ActiveBossId == "aglarin_kralicesi";
+            _colors != null && _colors.Boss.ActiveBossId == "aglarin_kralicesi";
 
         void TryLoadBossEncounter()
         {
@@ -263,7 +263,7 @@ namespace Dovus.Game.Boss
                 return;
             _bossEncounterLoaded = true;
 
-            string bossId = _colors.ActiveBossId;
+            string bossId = _colors.Boss.ActiveBossId;
             if (string.IsNullOrWhiteSpace(bossId))
                 return;
 

@@ -51,7 +51,7 @@ namespace Dovus.Game.Skills.Flow
         {
             LivingEffectView view = _host.BuildingView;
             _host.BuildingView = null;
-            int basicRune = _host.Colors != null ? _host.Colors.BasicStrikeDot : 1;
+            int basicRune = _host.Colors != null ? _host.Colors.Input.BasicStrikeDot : 1;
             bool sentenceIsBasic = sentence.Words.Count == 1 && (int)sentence.Words[0].Rune == basicRune;
             if (view != null && BasicStrikeInput.ReplaceStaleView(sentenceIsBasic, view.IsBasicStrike))
             {
@@ -72,7 +72,7 @@ namespace Dovus.Game.Skills.Flow
             if (view == null || view.Logic == null
                 || view.Logic.Phase is LivingEffectPhase.Dead or LivingEffectPhase.Fading)
             {
-                int basicDot = _host.Colors != null ? _host.Colors.BasicStrikeDot : 1;
+                int basicDot = _host.Colors != null ? _host.Colors.Input.BasicStrikeDot : 1;
                 spawnedForBasicStrike = sentence.Words.Count == 1
                     && (int)sentence.Words[0].Rune == basicDot;
                 view = _host.EffectSpawner.SpawnEffect(

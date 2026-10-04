@@ -93,7 +93,7 @@ namespace Dovus.Game.DevTools
             Camera cam = _follow.GetComponent<Camera>();
             if (cam == null)
                 return -1f;
-            Vector3 head = _follow.BossTarget.position + Vector3.up * _follow.Tuning.CameraBossAimHeightM;
+            Vector3 head = _follow.BossTarget.position + Vector3.up * _follow.Tuning.Camera.CameraBossAimHeightM;
             Vector3 vp = cam.WorldToViewportPoint(head);
             return vp.z > 0f ? vp.y : -1f;
         }

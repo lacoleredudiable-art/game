@@ -131,10 +131,10 @@ namespace Dovus.Game.Feel
                 return;
 
             float p = Mathf.Clamp01(progress01);
-            float hz = Mathf.Lerp(_colors.ThreatPulseHzMin, _colors.ThreatPulseHzMax, p);
+            float hz = Mathf.Lerp(_colors.Hud.ThreatPulseHzMin, _colors.Hud.ThreatPulseHzMax, p);
             float pulse = 0.55f + 0.45f * Mathf.Sin(Time.unscaledTime * hz);
-            Color c = Color.Lerp(_colors.TelegraphWarm, _colors.TelegraphHot, p);
-            c.a = _colors.ThreatAlphaMax * p * pulse;
+            Color c = Color.Lerp(_colors.Visuals.TelegraphWarm, _colors.Visuals.TelegraphHot, p);
+            c.a = _colors.Hud.ThreatAlphaMax * p * pulse;
             Show(_threatFlash, c);
             _threatUntil = Time.unscaledTime + ThreatHoldSec;
         }
@@ -179,8 +179,8 @@ namespace Dovus.Game.Feel
                 if (_visualFreeze != null)
                     _visualFreeze.Trigger(feel.HitstopPlayerHitMs / 1000f);
                 _follow?.Punch(feel.CameraDodgeZoomKick, feel.CameraRollDeg, feel.ShakeHitPx, feel.ShakeDecay);
-                _playerFlash?.Flash(_colors.TelegraphHot);
-                float hold = feel.PlayerHitVignetteSec > 0f ? feel.PlayerHitVignetteSec : _colors.VignetteHoldSec;
+                _playerFlash?.Flash(_colors.Visuals.TelegraphHot);
+                float hold = feel.PlayerHitVignetteSec > 0f ? feel.PlayerHitVignetteSec : _colors.Hud.VignetteHoldSec;
                 _vignetteUntil = Time.unscaledTime + hold;
                 FeelHaptics.Pulse(feel.PlayerHitHapticMs);
                 DebugConfig.DevLog(
@@ -200,15 +200,15 @@ namespace Dovus.Game.Feel
 
             float impactLeft = _impactUntil - now;
             if (impactLeft > 0f)
-                Show(_impact, new Color(1f, 1f, 1f, Mathf.Clamp01(impactLeft / _colors.ImpactFadeSec)));
+                Show(_impact, new Color(1f, 1f, 1f, Mathf.Clamp01(impactLeft / _colors.Hud.ImpactFadeSec)));
             else
                 Hide(_impact);
 
             float vignetteLeft = _vignetteUntil - now;
             if (vignetteLeft > 0f)
             {
-                Color c = _colors.TelegraphHot;
-                c.a = _colors.VignetteAlpha * Mathf.Clamp01(vignetteLeft / _colors.VignetteFadeSec);
+                Color c = _colors.Visuals.TelegraphHot;
+                c.a = _colors.Hud.VignetteAlpha * Mathf.Clamp01(vignetteLeft / _colors.Hud.VignetteFadeSec);
                 Show(_vignette, c);
             }
             else

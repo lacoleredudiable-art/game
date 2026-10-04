@@ -207,8 +207,8 @@ namespace Dovus.Game.Boss
             // sıfıra sönsün (§8: "düşman tepki vermeli" — itildiği yerde kalmalı, geri kaymamalı).
             _visualOffset += oldHome - newHome;
 
-            _liftVel = Mathf.Max(_liftVel, liftM * Tuning.BossLiftVelocityPerM);
-            _shakeAmp = Mathf.Max(_shakeAmp, Tuning.BossShakeAmpBaseM + knockbackM * Tuning.BossShakeAmpPerKnockbackM);
+            _liftVel = Mathf.Max(_liftVel, liftM * Tuning.Boss.BossLiftVelocityPerM);
+            _shakeAmp = Mathf.Max(_shakeAmp, Tuning.Boss.BossShakeAmpBaseM + knockbackM * Tuning.Boss.BossShakeAmpPerKnockbackM);
             _shakeUntil = (float)worldTimeMs + shakeSec * 1000f;
             if (_knockupIntegrateHoldMs > 0)
                 _knockupIntegrateHoldUntilMs = System.Math.Max(
@@ -225,7 +225,7 @@ namespace Dovus.Game.Boss
             _visualOffset = Vector3.zero;
             _liftVel = 0f;
             _air = 0f;
-            _shakeAmp = Tuning.BossPinShakeAmpM;
+            _shakeAmp = Tuning.Boss.BossPinShakeAmpM;
             _shakeUntil = (float)worldTimeMs + durationSec * 1000f;
         }
 
@@ -270,7 +270,7 @@ namespace Dovus.Game.Boss
             if (_collapsed)
             {
                 float remain = Mathf.Max(0f, _collapseUntilWorldMs - now);
-                float total = Mathf.Max(0.05f, Tuning.BossDeathCollapseSec) * 1000f;
+                float total = Mathf.Max(0.05f, Tuning.Boss.BossDeathCollapseSec) * 1000f;
                 float u = 1f - Mathf.Clamp01(remain / total);
                 ApplyCollapseScale(u);
                 Vector3 flat = _home;
@@ -301,7 +301,7 @@ namespace Dovus.Game.Boss
             if (worldTimeMs >= _knockupIntegrateHoldUntilMs)
             {
                 _air += _liftVel * dtSec;
-                _liftVel -= Tuning.BossGravityMps2 * dtSec;
+                _liftVel -= Tuning.Boss.BossGravityMps2 * dtSec;
                 if (_air <= 0f)
                 {
                     _air = 0f;
@@ -314,7 +314,7 @@ namespace Dovus.Game.Boss
             _visualOffset = Vector3.Lerp(
                 _visualOffset,
                 Vector3.zero,
-                1f - Mathf.Exp(-Tuning.BossRecoilEaseDecayPerSec * dtSec));
+                1f - Mathf.Exp(-Tuning.Boss.BossRecoilEaseDecayPerSec * dtSec));
             Vector3 p = _home + _visualOffset + shake;
             p.y = y;
             transform.position = p;
@@ -372,8 +372,8 @@ namespace Dovus.Game.Boss
 
         void ApplyCollapseScale(float progress01)
         {
-            float squash = Mathf.Lerp(1f, Tuning.BossDeathSquashY, Mathf.Clamp01(progress01));
-            float spread = Mathf.Lerp(1f, Tuning.BossDeathSpreadXz, Mathf.Clamp01(progress01));
+            float squash = Mathf.Lerp(1f, Tuning.Boss.BossDeathSquashY, Mathf.Clamp01(progress01));
+            float spread = Mathf.Lerp(1f, Tuning.Boss.BossDeathSpreadXz, Mathf.Clamp01(progress01));
             transform.localScale = new Vector3(
                 _baseScale.x * spread,
                 _baseScale.y * squash,
@@ -382,6 +382,6 @@ namespace Dovus.Game.Boss
 
         // T5 dersi: arena dışına sonsuza kayan gövde. Daire salon — kare clamp değil.
         Vector3 ClampToArena(Vector3 pos) =>
-            ArenaClamp.XZ(pos, Tuning.ArenaHalfSizeM, _bodyRadiusM);
+            ArenaClamp.XZ(pos, Tuning.Arena.ArenaHalfSizeM, _bodyRadiusM);
     }
 }

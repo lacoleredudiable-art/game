@@ -61,8 +61,8 @@ namespace Dovus.Game.Hud
             _root.pivot = pivot;
             _root.anchoredPosition = anchoredPos;
             _root.sizeDelta = new Vector2(
-                HexagonLayoutScreen.DpToPixels(tuning.StatusIconSizeDp * MaxSlots + tuning.StatusIconGapDp * (MaxSlots - 1)),
-                HexagonLayoutScreen.DpToPixels(tuning.StatusIconSizeDp));
+                HexagonLayoutScreen.DpToPixels(tuning.Hud.StatusIconSizeDp * MaxSlots + tuning.Hud.StatusIconGapDp * (MaxSlots - 1)),
+                HexagonLayoutScreen.DpToPixels(tuning.Hud.StatusIconSizeDp));
 
             for (int i = 0; i < MaxSlots; i++)
                 _pool.Add(CreateSlot(go.transform, i));
@@ -72,8 +72,8 @@ namespace Dovus.Game.Hud
 
         Slot CreateSlot(Transform parent, int index)
         {
-            float size = HexagonLayoutScreen.DpToPixels(_tuning.StatusIconSizeDp);
-            float gap = HexagonLayoutScreen.DpToPixels(_tuning.StatusIconGapDp);
+            float size = HexagonLayoutScreen.DpToPixels(_tuning.Hud.StatusIconSizeDp);
+            float gap = HexagonLayoutScreen.DpToPixels(_tuning.Hud.StatusIconGapDp);
 
             var go = new GameObject("Status_" + index);
             go.transform.SetParent(parent, false);
@@ -177,8 +177,8 @@ namespace Dovus.Game.Hud
             _scratch.Sort(ComparePriority);
             int show = Math.Min(_scratch.Count, MaxSlots);
 
-            float size = HexagonLayoutScreen.DpToPixels(_tuning.StatusIconSizeDp);
-            float gap = HexagonLayoutScreen.DpToPixels(_tuning.StatusIconGapDp);
+            float size = HexagonLayoutScreen.DpToPixels(_tuning.Hud.StatusIconSizeDp);
+            float gap = HexagonLayoutScreen.DpToPixels(_tuning.Hud.StatusIconGapDp);
 
             for (int i = 0; i < MaxSlots; i++)
             {

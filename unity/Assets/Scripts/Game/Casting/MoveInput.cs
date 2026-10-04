@@ -116,7 +116,7 @@ namespace Dovus.Game.Casting
 
             Vector2 pos = finger.screenPosition;
             // Çubuk yarısı = çizim yarısının tersi (aynı IsRightHalf yardımcısı; MirrorForLeftHand).
-            if (HexagonLayoutScreen.IsRightHalf(pos, _tuning.MirrorForLeftHand, Screen.width))
+            if (HexagonLayoutScreen.IsRightHalf(pos, _tuning.Input.MirrorForLeftHand, Screen.width))
                 return;
 
             _stickFingerId = finger.index;
@@ -143,7 +143,7 @@ namespace Dovus.Game.Casting
 
         void UpdateStick(Vector2 current)
         {
-            float maxRadiusPx = HexagonLayoutScreen.PhysicalDpToPixels(_tuning.JoystickMaxRadiusDp);
+            float maxRadiusPx = HexagonLayoutScreen.PhysicalDpToPixels(_tuning.Input.JoystickMaxRadiusDp);
             Vector2 delta = current - _stickOrigin;
             Vector2 clamped = delta.magnitude > maxRadiusPx
                 ? delta.normalized * maxRadiusPx
@@ -151,7 +151,7 @@ namespace Dovus.Game.Casting
             // Görsel kabarcık deadzone'da da parmağı takip eder (his) — hareket eşiği ayrı.
             _knobOffsetPx = clamped;
 
-            if (delta.magnitude < maxRadiusPx * _tuning.JoystickDeadZone)
+            if (delta.magnitude < maxRadiusPx * _tuning.Input.JoystickDeadZone)
             {
                 _moveDirection = Vector2.zero;
                 return;

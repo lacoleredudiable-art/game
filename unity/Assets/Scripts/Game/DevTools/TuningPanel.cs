@@ -337,7 +337,7 @@ namespace Dovus.Game.DevTools
             AddIntSlider("Süre", 50, 600, () => c.Dodge.DurationMs, v => c.Dodge.DurationMs = v, "ms");
             AddFloatSlider("Eğri üssü", 1f, 6f, () => c.Dodge.CurveExp, v => c.Dodge.CurveExp = v, "", "0.00");
             AddIntSlider("Kayma kuyruğu", 0, 500, () => c.Dodge.GlideTailMs, v => c.Dodge.GlideTailMs = v, "ms");
-            AddFloatSlider("Kayma hızı", 0f, 10f, () => p.DodgeGlideSpeedMps, v => p.DodgeGlideSpeedMps = v, "m/s", "0.00");
+            AddFloatSlider("Kayma hızı", 0f, 10f, () => p.Player.DodgeGlideSpeedMps, v => p.Player.DodgeGlideSpeedMps = v, "m/s", "0.00");
             AddIntSlider("Tap hareket eşiği", 4, 40, () => c.Dodge.TapMaxMoveDp, v => c.Dodge.TapMaxMoveDp = v, "dp");
             AddIntSlider("Hak dolumu", 1000, 12000, () => c.Dodge.ChargeRechargeMs, v => c.Dodge.ChargeRechargeMs = v, "ms");
             AddIntSlider("Çift basış penceresi", 50, 500, () => c.Dodge.DoubleTapWindowMs, v => c.Dodge.DoubleTapWindowMs = v, "ms");
@@ -368,27 +368,27 @@ namespace Dovus.Game.DevTools
                 () => _followCamera != null && _followCamera.LockOnActive,
                 v => { if (_followCamera != null) _followCamera.LockOnActive = v; },
                 "AÇIK", "KAPALI");
-            AddFloatSlider("Takip yumuşatma", 0.02f, 0.5f, () => p.FollowSmoothTimeSec, v => p.FollowSmoothTimeSec = v, "sn", "0.00");
-            AddFloatSlider("Önden bakış", 0f, 4f, () => p.LookAheadM, v => p.LookAheadM = v, "m", "0.00");
-            AddFloatSlider("Mesafe (varsayılan)", 3f, 10f, () => p.CameraDistanceM, v => p.CameraDistanceM = v, "m", "0.00");
-            AddFloatSlider("Bakış yüksekliği", 0f, 1.5f, () => p.CameraLookHeightM, v => p.CameraLookHeightM = v, "m", "0.00");
-            AddFloatSlider("Pitch (varsayılan)", 0f, 35f, () => p.CameraDefaultPitchDeg, v => p.CameraDefaultPitchDeg = v, "°", "0.0");
-            AddFloatSlider("Boss bakış yüksekliği", 0.5f, 3f, () => p.CameraBossAimHeightM, v => p.CameraBossAimHeightM = v, "m", "0.00");
-            AddFloatSlider("Lock-on min mesafe", 3f, 9f, () => p.CameraLockOnMinDistanceM, v => p.CameraLockOnMinDistanceM = v, "m", "0.00");
-            AddFloatSlider("Lock-on max mesafe", 4f, 12f, () => p.CameraLockOnMaxDistanceM, v => p.CameraLockOnMaxDistanceM = v, "m", "0.00");
-            AddFloatSlider("Lock-on mesafe / ayrım", 0f, 0.3f, () => p.CameraLockOnDistancePerSepM, v => p.CameraLockOnDistancePerSepM = v, "", "0.00");
-            AddFloatSlider("Lock-on ekstra tavan", 0f, 5f, () => p.CameraLockOnMaxExtraDistanceM, v => p.CameraLockOnMaxExtraDistanceM = v, "m", "0.00");
-            AddFloatSlider("Lock-on omuz yatay", 0.5f, 1.6f, () => p.CameraLockOnShoulderSideM, v => p.CameraLockOnShoulderSideM = v, "m", "0.00");
-            AddFloatSlider("Çarpışma yarıçapı", 0.08f, 0.5f, () => p.CameraCollisionSphereRadiusM, v => p.CameraCollisionSphereRadiusM = v, "m", "0.00");
-            AddFloatSlider("Çarpışma payı", 0f, 0.35f, () => p.CameraCollisionMarginM, v => p.CameraCollisionMarginM = v, "m", "0.00");
-            AddFloatSlider("Çarpışma min mesafe", 0.6f, 2.5f, () => p.CameraCollisionMinDistanceM, v => p.CameraCollisionMinDistanceM = v, "m", "0.00");
-            AddFloatSlider("Çarpışma içeri (sn)", 0.01f, 0.15f, () => p.CameraCollisionPullInSmoothSec, v => p.CameraCollisionPullInSmoothSec = v, "sn", "0.00");
-            AddFloatSlider("Çarpışma dışarı (sn)", 0.1f, 0.8f, () => p.CameraCollisionPullOutSmoothSec, v => p.CameraCollisionPullOutSmoothSec = v, "sn", "0.00");
+            AddFloatSlider("Takip yumuşatma", 0.02f, 0.5f, () => p.Camera.FollowSmoothTimeSec, v => p.Camera.FollowSmoothTimeSec = v, "sn", "0.00");
+            AddFloatSlider("Önden bakış", 0f, 4f, () => p.Camera.LookAheadM, v => p.Camera.LookAheadM = v, "m", "0.00");
+            AddFloatSlider("Mesafe (varsayılan)", 3f, 10f, () => p.Camera.CameraDistanceM, v => p.Camera.CameraDistanceM = v, "m", "0.00");
+            AddFloatSlider("Bakış yüksekliği", 0f, 1.5f, () => p.Camera.CameraLookHeightM, v => p.Camera.CameraLookHeightM = v, "m", "0.00");
+            AddFloatSlider("Pitch (varsayılan)", 0f, 35f, () => p.Camera.CameraDefaultPitchDeg, v => p.Camera.CameraDefaultPitchDeg = v, "°", "0.0");
+            AddFloatSlider("Boss bakış yüksekliği", 0.5f, 3f, () => p.Camera.CameraBossAimHeightM, v => p.Camera.CameraBossAimHeightM = v, "m", "0.00");
+            AddFloatSlider("Lock-on min mesafe", 3f, 9f, () => p.Camera.CameraLockOnMinDistanceM, v => p.Camera.CameraLockOnMinDistanceM = v, "m", "0.00");
+            AddFloatSlider("Lock-on max mesafe", 4f, 12f, () => p.Camera.CameraLockOnMaxDistanceM, v => p.Camera.CameraLockOnMaxDistanceM = v, "m", "0.00");
+            AddFloatSlider("Lock-on mesafe / ayrım", 0f, 0.3f, () => p.Camera.CameraLockOnDistancePerSepM, v => p.Camera.CameraLockOnDistancePerSepM = v, "", "0.00");
+            AddFloatSlider("Lock-on ekstra tavan", 0f, 5f, () => p.Camera.CameraLockOnMaxExtraDistanceM, v => p.Camera.CameraLockOnMaxExtraDistanceM = v, "m", "0.00");
+            AddFloatSlider("Lock-on omuz yatay", 0.5f, 1.6f, () => p.Camera.CameraLockOnShoulderSideM, v => p.Camera.CameraLockOnShoulderSideM = v, "m", "0.00");
+            AddFloatSlider("Çarpışma yarıçapı", 0.08f, 0.5f, () => p.Camera.CameraCollisionSphereRadiusM, v => p.Camera.CameraCollisionSphereRadiusM = v, "m", "0.00");
+            AddFloatSlider("Çarpışma payı", 0f, 0.35f, () => p.Camera.CameraCollisionMarginM, v => p.Camera.CameraCollisionMarginM = v, "m", "0.00");
+            AddFloatSlider("Çarpışma min mesafe", 0.6f, 2.5f, () => p.Camera.CameraCollisionMinDistanceM, v => p.Camera.CameraCollisionMinDistanceM = v, "m", "0.00");
+            AddFloatSlider("Çarpışma içeri (sn)", 0.01f, 0.15f, () => p.Camera.CameraCollisionPullInSmoothSec, v => p.Camera.CameraCollisionPullInSmoothSec = v, "sn", "0.00");
+            AddFloatSlider("Çarpışma dışarı (sn)", 0.1f, 0.8f, () => p.Camera.CameraCollisionPullOutSmoothSec, v => p.Camera.CameraCollisionPullOutSmoothSec = v, "sn", "0.00");
             if (_followCamera != null)
                 AddReadout("CollisionPulledInM", () => $"{_followCamera.CollisionPulledInM:F2} m");
-            AddFloatSlider("Windup mesafe çarpanı", 1f, 1.8f, () => p.CameraWindupDistanceMul, v => p.CameraWindupDistanceMul = v, "×", "0.00");
-            AddFloatSlider("Windup ekstra yükseklik", 0f, 1.5f, () => p.CameraWindupExtraHeightM, v => p.CameraWindupExtraHeightM = v, "m", "0.00");
-            AddFloatSlider("Piksel→metre (sarsıntı)", 0.001f, 0.05f, () => p.CameraShakePxToM, v => p.CameraShakePxToM = v, "", "0.000");
+            AddFloatSlider("Windup mesafe çarpanı", 1f, 1.8f, () => p.Camera.CameraWindupDistanceMul, v => p.Camera.CameraWindupDistanceMul = v, "×", "0.00");
+            AddFloatSlider("Windup ekstra yükseklik", 0f, 1.5f, () => p.Camera.CameraWindupExtraHeightM, v => p.Camera.CameraWindupExtraHeightM = v, "m", "0.00");
+            AddFloatSlider("Piksel→metre (sarsıntı)", 0.001f, 0.05f, () => p.Hud.CameraShakePxToM, v => p.Hud.CameraShakePxToM = v, "", "0.000");
             AddFloatSlider("Mükemmel FOV sıçraması", 0f, 0.4f, () => c.Feel.CameraPerfectZoomKick, v => c.Feel.CameraPerfectZoomKick = v, "", "0.00");
             AddFloatSlider("Dodge FOV sıçraması", 0f, 0.4f, () => c.Feel.CameraDodgeZoomKick, v => c.Feel.CameraDodgeZoomKick = v, "", "0.00");
             AddFloatSlider("Kamera roll", 0f, 8f, () => c.Feel.CameraRollDeg, v => c.Feel.CameraRollDeg = v, "°", "0.00");
@@ -426,8 +426,8 @@ namespace Dovus.Game.DevTools
             AddIntSlider("Tutma süresi", 100, 3000, () => c.Feel.ReadoutHoldMs, v => c.Feel.ReadoutHoldMs = v, "ms");
             AddIntSlider("Sönme süresi", 50, 1500, () => c.Feel.ReadoutFadeMs, v => c.Feel.ReadoutFadeMs = v, "ms");
             AddFloatSlider("Giriş vuruşu ölçeği", 1f, 2.5f, () => c.Feel.ReadoutPunchScale, v => c.Feel.ReadoutPunchScale = v, "", "0.00");
-            AddFloatSlider("Giriş vuruşu süresi", 0.02f, 0.5f, () => p.ReadoutPunchInSec, v => p.ReadoutPunchInSec = v, "sn", "0.00");
-            AddBoolButton("Yazının kenarı", () => p.ReadoutAnchorRight, v => p.ReadoutAnchorRight = v, "SAĞ", "SOL");
+            AddFloatSlider("Giriş vuruşu süresi", 0.02f, 0.5f, () => p.Hud.ReadoutPunchInSec, v => p.Hud.ReadoutPunchInSec = v, "sn", "0.00");
+            AddBoolButton("Yazının kenarı", () => p.Hud.ReadoutAnchorRight, v => p.Hud.ReadoutAnchorRight = v, "SAĞ", "SOL");
 
             AddHeader("BOSS (§11)");
             AddIntSlider("YAKIN windup", 100, 2000, () => c.Boss.WindupMs, v => c.Boss.WindupMs = v, "ms");
@@ -444,16 +444,16 @@ namespace Dovus.Game.DevTools
             AddIntSlider("Bekleme max", 100, 4000, () => c.Boss.IdleMaxMs, v => c.Boss.IdleMaxMs = v, "ms");
             AddFloatSlider("Yaklaşma hızı", 0f, 6f, () => c.Boss.ApproachSpeedMps, v => c.Boss.ApproachSpeedMps = v, "m/s", "0.00");
             AddFloatSlider("Ölüm cezası", 0.2f, 6f, () => c.Boss.RespawnMaxSec, v => c.Boss.RespawnMaxSec = v, "sn", "0.00");
-            AddFloatSlider("Yaklaşma durma payı", 0f, 2f, () => p.BossApproachStopPadM, v => p.BossApproachStopPadM = v, "m", "0.00");
-            AddIntSlider("Oyuncu can tavanı", 1, 100, () => p.PlayerMaxHp, v =>
+            AddFloatSlider("Yaklaşma durma payı", 0f, 2f, () => p.Boss.BossApproachStopPadM, v => p.Boss.BossApproachStopPadM = v, "m", "0.00");
+            AddIntSlider("Oyuncu can tavanı", 1, 100, () => p.Player.PlayerMaxHp, v =>
             {
-                p.PlayerMaxHp = v;
+                p.Player.PlayerMaxHp = v;
                 _vitals?.SetMaxHp(v);
             }, "");
 
             AddHeader("ÖLÇÜM (T11/T12)");
-            AddBoolButton("Kare süresi göstergesi", () => p.ShowFrameTimeHud, v => p.ShowFrameTimeHud = v, "AÇIK", "KAPALI");
-            AddBoolButton("Hasar sayısı", () => p.ShowDamageNumbers, v => p.ShowDamageNumbers = v, "AÇIK", "KAPALI");
+            AddBoolButton("Kare süresi göstergesi", () => p.Hud.ShowFrameTimeHud, v => p.Hud.ShowFrameTimeHud = v, "AÇIK", "KAPALI");
+            AddBoolButton("Hasar sayısı", () => p.Hud.ShowDamageNumbers, v => p.Hud.ShowDamageNumbers = v, "AÇIK", "KAPALI");
             AddBoolButton("Mana/Soğuma (JSON)",
                 () => c.EnforceResourceCost && c.EnforceCooldown,
                 v => { c.EnforceResourceCost = v; c.EnforceCooldown = v; },
@@ -615,7 +615,7 @@ namespace Dovus.Game.DevTools
         void ResetToDefaults()
         {
             _config.ResetToDefaults();
-            _vitals?.SetMaxHp(_config.Prototype.PlayerMaxHp);
+            _vitals?.SetMaxHp(_config.Prototype.Player.PlayerMaxHp);
             RefreshAll();
             MarkDirty();
             ShowStatus("Spec varsayılanlarına sıfırlandı");

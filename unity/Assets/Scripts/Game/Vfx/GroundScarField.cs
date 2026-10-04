@@ -31,14 +31,14 @@ namespace Dovus.Game.Vfx
         public void Configure(PrototypeTuning tuning)
         {
             _tuning = tuning;
-            _cyanMat = MakeMat(tuning.InkCyan * 0.55f);
-            _purpleMat = MakeMat(tuning.InkPurple * 0.55f);
-            _acidMat = MakeMat(tuning.AcidGreen * 0.7f);
+            _cyanMat = MakeMat(tuning.Visuals.InkCyan * 0.55f);
+            _purpleMat = MakeMat(tuning.Visuals.InkPurple * 0.55f);
+            _acidMat = MakeMat(tuning.Visuals.AcidGreen * 0.7f);
         }
 
         public void Stamp(Vector3 worldPos, float scaleM, ScarKind kind, Vector3 along)
         {
-            int cap = Mathf.Max(1, _tuning != null ? _tuning.GroundScarCapCount : 60);
+            int cap = Mathf.Max(1, _tuning != null ? _tuning.Visuals.GroundScarCapCount : 60);
 
             GameObject go;
             if (_scars.Count < cap)

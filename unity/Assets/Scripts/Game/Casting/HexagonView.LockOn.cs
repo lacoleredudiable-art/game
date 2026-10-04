@@ -25,13 +25,13 @@ namespace Dovus.Game.Casting
         void BuildLockOnButton(Sprite disc, Transform parent)
         {
             _lockOn = CreateLayeredDisc(
-                "LockOnButton", disc, disc, _tuning.LockOnButtonColor, parent, out _lockOnFace,
+                "LockOnButton", disc, disc, _tuning.Input.LockOnButtonColor, parent, out _lockOnFace,
                 new Color(0.75f, 0.9f, 1f, 0.75f));
             _lockOnRim = _lockOn.Find("Rim")?.GetComponent<Image>();
             _lockOnFace.color = new Color(
-                _tuning.LockOnButtonColor.r,
-                _tuning.LockOnButtonColor.g,
-                _tuning.LockOnButtonColor.b,
+                _tuning.Input.LockOnButtonColor.r,
+                _tuning.Input.LockOnButtonColor.g,
+                _tuning.Input.LockOnButtonColor.b,
                 0.92f);
             _lockOnLabel = CreateLabel(_lockOn, "LOCK");
             _lockOnLabel.fontSize = 13;
@@ -59,7 +59,7 @@ namespace Dovus.Game.Casting
             if (_lockOnFace == null || _lockOnCamera == null)
                 return;
             bool on = _lockOnCamera.LockOnActive;
-            Color c = on ? _tuning.LockOnButtonActiveColor : _tuning.LockOnButtonColor;
+            Color c = on ? _tuning.Input.LockOnButtonActiveColor : _tuning.Input.LockOnButtonColor;
             _lockOnFace.color = new Color(c.r, c.g, c.b, on ? 0.98f : 0.92f);
             if (_lockOnRim != null)
             {

@@ -22,12 +22,12 @@ namespace Dovus.Game.Casting
         public static Vector2 CenterPx(PrototypeTuning tuning, int screenWidth, int screenHeight)
         {
             Rect safe = SafeRectPx();
-            float xNorm = tuning.MirrorForLeftHand
-                ? 1f - tuning.HexagonCenterXNorm
-                : tuning.HexagonCenterXNorm;
+            float xNorm = tuning.Input.MirrorForLeftHand
+                ? 1f - tuning.Input.HexagonCenterXNorm
+                : tuning.Input.HexagonCenterXNorm;
             // Norm, safe rect içinde yorumlanır (taşma / home bar).
             float x = safe.xMin + xNorm * safe.width;
-            float y = safe.yMin + tuning.HexagonCenterYNorm * safe.height;
+            float y = safe.yMin + tuning.Input.HexagonCenterYNorm * safe.height;
             return new Vector2(x, y);
         }
 
@@ -37,24 +37,24 @@ namespace Dovus.Game.Casting
         /// </summary>
         public static float FittedRadiusPx(PrototypeTuning tuning, int screenWidth, int screenHeight)
         {
-            float desired = DpToPixels(tuning.HexagonRadiusDp);
+            float desired = DpToPixels(tuning.Input.HexagonRadiusDp);
             Rect safe = SafeRectPx();
             Vector2 c = CenterPx(tuning, screenWidth, screenHeight);
             float dotR = DotHitRadiusPx(tuning);
             float dodgeR = DodgeButtonRadiusPx(tuning);
             float margin = DpToPixels(10f);
-            float dodgePad = dodgeR + DpToPixels(Mathf.Max(16f, tuning.DodgeClearanceDp));
+            float dodgePad = dodgeR + DpToPixels(Mathf.Max(16f, tuning.Input.DodgeClearanceDp));
 
             float bottomRoom = c.y - safe.yMin - margin - dotR;
             float topRoom = safe.yMax - c.y - margin - dotR;
-            float sideRoom = tuning.MirrorForLeftHand
+            float sideRoom = tuning.Input.MirrorForLeftHand
                 ? c.x - safe.xMin - margin - dotR
                 : safe.xMax - c.x - margin - dotR;
 
             // Dodge sağ-alt dışarıda; yarıçap + dodgePad kenara sığmalı.
             float maxR = Mathf.Min(bottomRoom - dodgePad * 0.45f, topRoom, sideRoom - dodgePad);
             // Çizim koridoru için taban: komşu kenar boşluğu ≥ ~36dp (radius − 2·dotR).
-            float floor = DpToPixels(Mathf.Max(72f, tuning.DotHitRadiusDp * 2f + 36f));
+            float floor = DpToPixels(Mathf.Max(72f, tuning.Input.DotHitRadiusDp * 2f + 36f));
             if (maxR < floor)
                 maxR = floor;
             return Mathf.Clamp(desired, floor, maxR);
@@ -69,7 +69,7 @@ namespace Dovus.Game.Casting
             Vector2 c = CenterPx(tuning, screenWidth, screenHeight);
             float r = FittedRadiusPx(tuning, screenWidth, screenHeight);
             float startDeg = 90f;
-            float step = tuning.MirrorForLeftHand ? 60f : -60f;
+            float step = tuning.Input.MirrorForLeftHand ? 60f : -60f;
             float deg = startDeg + (dot - 1) * step;
             float rad = deg * Mathf.Deg2Rad;
             return c + new Vector2(Mathf.Cos(rad), Mathf.Sin(rad)) * r;
@@ -85,25 +85,25 @@ namespace Dovus.Game.Casting
             Vector2 c = CenterPx(tuning, screenWidth, screenHeight);
             float r = FittedRadiusPx(tuning, screenWidth, screenHeight);
             float dodgeR = DodgeButtonRadiusPx(tuning);
-            float gap = DpToPixels(Mathf.Max(24f, tuning.DodgeClearanceDp));
-            float side = tuning.MirrorForLeftHand ? -1f : 1f;
+            float gap = DpToPixels(Mathf.Max(24f, tuning.Input.DodgeClearanceDp));
+            float side = tuning.Input.MirrorForLeftHand ? -1f : 1f;
 
             // Sağa + aşağı: halkaya yapışmaz, skill çizimini kesmez.
             Vector2 p = new Vector2(
                 c.x + side * (r + dodgeR + gap),
                 c.y - (r * 0.55f));
 
-            float dx = DpToPixels(tuning.DodgeButtonOffsetXDp);
-            float dy = DpToPixels(tuning.DodgeButtonOffsetYDp);
-            if (tuning.MirrorForLeftHand)
+            float dx = DpToPixels(tuning.Input.DodgeButtonOffsetXDp);
+            float dy = DpToPixels(tuning.Input.DodgeButtonOffsetYDp);
+            if (tuning.Input.MirrorForLeftHand)
                 dx = -dx;
             p += new Vector2(dx, dy);
 
-            float edge = dodgeR + DpToPixels(tuning.DodgeButtonScreenMarginDp);
+            float edge = dodgeR + DpToPixels(tuning.Input.DodgeButtonScreenMarginDp);
             float mid = screenWidth * 0.5f;
 
-            float minX = Mathf.Max(safe.xMin + edge, tuning.MirrorForLeftHand ? edge : mid + edge);
-            float maxX = Mathf.Min(safe.xMax - edge, tuning.MirrorForLeftHand ? mid - edge : screenWidth - edge);
+            float minX = Mathf.Max(safe.xMin + edge, tuning.Input.MirrorForLeftHand ? edge : mid + edge);
+            float maxX = Mathf.Min(safe.xMax - edge, tuning.Input.MirrorForLeftHand ? mid - edge : screenWidth - edge);
             if (minX > maxX)
             {
                 minX = safe.xMin + edge;
@@ -116,7 +116,7 @@ namespace Dovus.Game.Casting
         }
 
         public static float DodgeButtonRadiusPx(PrototypeTuning tuning) =>
-            DpToPixels(tuning.DodgeButtonRadiusDp);
+            DpToPixels(tuning.Input.DodgeButtonRadiusDp);
 
         /// <summary>Lock-on: dodge'un üstünde, aynı sağ-alt küme içinde.</summary>
         public static Vector2 LockOnButtonPx(PrototypeTuning tuning, int screenWidth, int screenHeight)
@@ -126,8 +126,8 @@ namespace Dovus.Game.Casting
             float dodgeR = DodgeButtonRadiusPx(tuning);
             float gap = DpToPixels(12f);
             Vector2 p = dodge + new Vector2(
-                DpToPixels(tuning.LockOnButtonOffsetXDp),
-                dodgeR + lockR + gap + DpToPixels(tuning.LockOnButtonOffsetYDp));
+                DpToPixels(tuning.Input.LockOnButtonOffsetXDp),
+                dodgeR + lockR + gap + DpToPixels(tuning.Input.LockOnButtonOffsetYDp));
 
             ResolveHudButtonAwayFromHexPanel(
                 ref p,
@@ -140,7 +140,7 @@ namespace Dovus.Game.Casting
                 screenHeight);
 
             Rect safe = SafeRectPx();
-            float edge = lockR + DpToPixels(tuning.DodgeButtonScreenMarginDp);
+            float edge = lockR + DpToPixels(tuning.Input.DodgeButtonScreenMarginDp);
             ClampHudButtonToSafe(ref p, safe, edge);
             ResolveHudButtonAwayFromHexPanel(
                 ref p,
@@ -165,7 +165,7 @@ namespace Dovus.Game.Casting
         }
 
         public static float LockOnButtonRadiusPx(PrototypeTuning tuning) =>
-            DpToPixels(tuning.LockOnButtonRadiusDp);
+            DpToPixels(tuning.Input.LockOnButtonRadiusDp);
 
         /// <summary>
         /// Silah swap: dodge'un altıgene göre simetriği (sol-alt), çizim yarısında kalır.
@@ -176,23 +176,23 @@ namespace Dovus.Game.Casting
             Vector2 c = CenterPx(tuning, screenWidth, screenHeight);
             float r = FittedRadiusPx(tuning, screenWidth, screenHeight);
             float swapR = WeaponSwapButtonRadiusPx(tuning);
-            float gap = DpToPixels(Mathf.Max(24f, tuning.DodgeClearanceDp));
-            float side = tuning.MirrorForLeftHand ? 1f : -1f;
+            float gap = DpToPixels(Mathf.Max(24f, tuning.Input.DodgeClearanceDp));
+            float side = tuning.Input.MirrorForLeftHand ? 1f : -1f;
 
             Vector2 p = new Vector2(
                 c.x + side * (r + swapR + gap),
                 c.y - (r * 0.55f));
 
-            float dx = DpToPixels(tuning.WeaponSwapButtonOffsetXDp);
-            float dy = DpToPixels(tuning.WeaponSwapButtonOffsetYDp);
-            if (tuning.MirrorForLeftHand)
+            float dx = DpToPixels(tuning.Input.WeaponSwapButtonOffsetXDp);
+            float dy = DpToPixels(tuning.Input.WeaponSwapButtonOffsetYDp);
+            if (tuning.Input.MirrorForLeftHand)
                 dx = -dx;
             p += new Vector2(dx, dy);
 
-            float edge = swapR + DpToPixels(tuning.DodgeButtonScreenMarginDp);
+            float edge = swapR + DpToPixels(tuning.Input.DodgeButtonScreenMarginDp);
             float mid = screenWidth * 0.5f;
-            float minX = tuning.MirrorForLeftHand ? safe.xMin + edge : mid + edge;
-            float maxX = tuning.MirrorForLeftHand ? mid - edge : safe.xMax - edge;
+            float minX = tuning.Input.MirrorForLeftHand ? safe.xMin + edge : mid + edge;
+            float maxX = tuning.Input.MirrorForLeftHand ? mid - edge : safe.xMax - edge;
             if (minX > maxX)
             {
                 minX = safe.xMin + edge;
@@ -235,11 +235,11 @@ namespace Dovus.Game.Casting
         }
 
         public static float WeaponSwapButtonRadiusPx(PrototypeTuning tuning) =>
-            DpToPixels(tuning.WeaponSwapButtonRadiusDp);
+            DpToPixels(tuning.Input.WeaponSwapButtonRadiusDp);
 
-        public static float DotHitRadiusPx(PrototypeTuning tuning) => DpToPixels(tuning.DotHitRadiusDp);
+        public static float DotHitRadiusPx(PrototypeTuning tuning) => DpToPixels(tuning.Input.DotHitRadiusDp);
 
-        public static float CenterHitRadiusPx(PrototypeTuning tuning) => DpToPixels(tuning.CenterHitRadiusDp);
+        public static float CenterHitRadiusPx(PrototypeTuning tuning) => DpToPixels(tuning.Input.CenterHitRadiusDp);
 
         /// <summary>
         /// Kısa kenar bu dp'den azsa HUD orantılı küçülür (0 = kapalı). <see cref="PrototypeTuning.HudFitShortSideDp"/>

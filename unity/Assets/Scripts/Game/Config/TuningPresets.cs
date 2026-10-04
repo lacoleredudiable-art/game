@@ -41,7 +41,7 @@ namespace Dovus.Game.Config
             c.Dodge.DistanceM = 4.6f;
             c.Dodge.DurationMs = 340;
             c.Dodge.GlideTailMs = 260;
-            p.DodgeGlideSpeedMps = 2.4f;
+            p.Player.DodgeGlideSpeedMps = 2.4f;
 
             c.Dodge.PerfectWindowMs = 170; // O2: tek pencere, < HARİKA
             c.Grade.HarikaGapMaxMs = 190;
@@ -59,10 +59,10 @@ namespace Dovus.Game.Config
             c.Boss.RadiusM = 6.0f;
             c.Boss.Damage = 28;
             c.Boss.ApproachSpeedMps = 1.8f;
-            p.BossApproachStopPadM = 0.6f;
-            p.PlayerMaxHp = 30;
+            p.Boss.BossApproachStopPadM = 0.6f;
+            p.Player.PlayerMaxHp = 30;
 
-            p.FollowSmoothTimeSec = 0.26f;
+            p.Camera.FollowSmoothTimeSec = 0.26f;
             c.Feel.CameraPerfectZoomKick = 0.18f;
             c.Feel.CameraDodgeZoomKick = 0.11f;
             c.Feel.CameraRollDeg = 2.2f;
@@ -82,7 +82,7 @@ namespace Dovus.Game.Config
             c.Dodge.DistanceM = 3.4f;
             c.Dodge.DurationMs = 200;
             c.Dodge.GlideTailMs = 150;
-            p.DodgeGlideSpeedMps = 4.2f;
+            p.Player.DodgeGlideSpeedMps = 4.2f;
 
             c.Dodge.PerfectWindowMs = 120; // O2: tek pencere, < HARİKA
             c.Grade.HarikaGapMaxMs = 130;
@@ -99,10 +99,10 @@ namespace Dovus.Game.Config
             c.Boss.RecoveryMs = 550;
             c.Boss.ApproachSpeedMps = 3.0f;
             c.Boss.RespawnMaxSec = 1.0f;
-            p.BossApproachStopPadM = 0.25f;
+            p.Boss.BossApproachStopPadM = 0.25f;
 
-            p.FollowSmoothTimeSec = 0.10f;
-            p.LookAheadM = 1.8f;
+            p.Camera.FollowSmoothTimeSec = 0.10f;
+            p.Camera.LookAheadM = 1.8f;
             c.Feel.CameraPerfectZoomKick = 0.10f;
             c.Feel.CameraDodgeZoomKick = 0.06f;
             c.Feel.ShakePerfectPx = 4f;
@@ -112,7 +112,7 @@ namespace Dovus.Game.Config
             c.Feel.ReadoutSizePx = 84f;
             c.Feel.ReadoutHoldMs = 650;
             c.Feel.ReadoutFadeMs = 350;
-            p.ReadoutPunchInSec = 0.08f;
+            p.Hud.ReadoutPunchInSec = 0.08f;
         }
 
         /// <summary>Anime: dramatik — büyük kamera yumruğu ve parlak yazı.</summary>
@@ -121,7 +121,7 @@ namespace Dovus.Game.Config
             c.Dodge.DistanceM = 5.0f;
             c.Dodge.DurationMs = 180;
             c.Dodge.GlideTailMs = 350;
-            p.DodgeGlideSpeedMps = 5.5f;
+            p.Player.DodgeGlideSpeedMps = 5.5f;
 
             c.Boss.WindupMs = 900;
             c.Boss.RadiusM = 6.5f;
@@ -138,7 +138,7 @@ namespace Dovus.Game.Config
             c.Feel.ReadoutHoldMs = 1300;
             c.Feel.ReadoutFadeMs = 700;
             c.Feel.ReadoutPunchScale = 2.0f;
-            p.ReadoutPunchInSec = 0.2f;
+            p.Hud.ReadoutPunchInSec = 0.2f;
         }
     }
 }

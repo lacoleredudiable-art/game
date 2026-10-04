@@ -181,7 +181,7 @@ namespace Dovus.Game.Skills.Motion
             if (_host.Player == null)
                 return;
             _host.EnsureMotionBody();
-            float arena = _host.Colors != null ? _host.Colors.ArenaHalfSizeM : 50f;
+            float arena = _host.Colors != null ? _host.Colors.Arena.ArenaHalfSizeM : 50f;
             float body = _host.PlayerBodyRadiusM();
             _host.MotionBody.Bind(_host.Clock, arena, body > 0.05f ? body : 0.5f);
             _ = MotionCatalog;
@@ -206,7 +206,7 @@ namespace Dovus.Game.Skills.Motion
 
             _host.EnsureMotionBody();
 
-            float arena = _host.Colors != null ? _host.Colors.ArenaHalfSizeM : 50f;
+            float arena = _host.Colors != null ? _host.Colors.Arena.ArenaHalfSizeM : 50f;
             _templateSkill = skill;
             _templateSlotCastId = _host.SlotQueryCastId;
             _templatePending = pending;
@@ -308,7 +308,7 @@ namespace Dovus.Game.Skills.Motion
             float bodyR = _host.PlayerBodyRadiusM();
             if (bodyR < 0.05f)
                 bodyR = 0.5f;
-            float arena = _host.Colors != null ? _host.Colors.ArenaHalfSizeM : 50f;
+            float arena = _host.Colors != null ? _host.Colors.Arena.ArenaHalfSizeM : 50f;
             _host.MotionBody.Bind(_host.Clock, arena, bodyR);
             string weapon = _host.EquippedWeapon != null
                 ? (string.IsNullOrEmpty(_host.EquippedWeapon.AnimationsKey) ? _host.EquippedWeapon.Id : _host.EquippedWeapon.AnimationsKey)

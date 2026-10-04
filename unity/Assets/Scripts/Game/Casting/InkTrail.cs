@@ -80,7 +80,7 @@ namespace Dovus.Game.Casting
             if (_active == null)
                 return;
 
-            float life = _tuning != null ? _tuning.InkLingerSec : 0.4f;
+            float life = _tuning != null ? _tuning.Input.InkLingerSec : 0.4f;
 
             // Ömür Break'ten başlar (§5: sınırda söner). Born çizim başı olsaydı yavaş
             // çekimde uzun şerit anında yok olurdu.
@@ -192,8 +192,8 @@ namespace Dovus.Game.Casting
 
         void ApplyRawWidthScale()
         {
-            float w = HexagonLayoutScreen.DpToPixels(_tuning.InkWidthDp);
-            float scale = _tuning.InkRawWidthScale > 0f ? _tuning.InkRawWidthScale : 0.9f;
+            float w = HexagonLayoutScreen.DpToPixels(_tuning.Input.InkWidthDp);
+            float scale = _tuning.Input.InkRawWidthScale > 0f ? _tuning.Input.InkRawWidthScale : 0.9f;
             _rawBaseStartWidth = w * scale;
             _rawBaseEndWidth = w * scale;
             _raw.startWidth = _rawBaseStartWidth;
@@ -211,10 +211,10 @@ namespace Dovus.Game.Casting
                 return;
             }
 
-            float glow = _tuning.InkRawGlow > 0f ? _tuning.InkRawGlow : 1f;
-            Color head = Color.Lerp(_tuning.InkCyan, RawHeadWhite, 0.45f * glow);
+            float glow = _tuning.Input.InkRawGlow > 0f ? _tuning.Input.InkRawGlow : 1f;
+            Color head = Color.Lerp(_tuning.Visuals.InkCyan, RawHeadWhite, 0.45f * glow);
             head.a = 0.95f * alpha;
-            Color tail = _tuning.InkPurple;
+            Color tail = _tuning.Visuals.InkPurple;
             tail.a = 0.55f * alpha;
             _raw.startColor = tail;
             _raw.endColor = head;
@@ -377,8 +377,8 @@ namespace Dovus.Game.Casting
                 }
 
                 float alpha = 1f - u;
-                Color a = _tuning.InkPurple;
-                Color b = _tuning.InkCyan;
+                Color a = _tuning.Visuals.InkPurple;
+                Color b = _tuning.Visuals.InkCyan;
                 if (t.Flash)
                 {
                     float mix = DrawFeedback.FlashMix(u);
@@ -402,8 +402,8 @@ namespace Dovus.Game.Casting
             if (_active == null || _tuning == null)
                 return;
 
-            Color a = _tuning.InkPurple;
-            Color b = _tuning.InkCyan;
+            Color a = _tuning.Visuals.InkPurple;
+            Color b = _tuning.Visuals.InkCyan;
             a.a *= alpha;
             b.a *= alpha;
             _active.startColor = a;
@@ -421,7 +421,7 @@ namespace Dovus.Game.Casting
             line.useWorldSpace = true;
             line.numCapVertices = 4;
             line.numCornerVertices = 2;
-            float width = HexagonLayoutScreen.DpToPixels(_tuning.InkWidthDp);
+            float width = HexagonLayoutScreen.DpToPixels(_tuning.Input.InkWidthDp);
             line.startWidth = width;
             line.endWidth = width * 0.85f;
             line.sortingOrder = 10;
