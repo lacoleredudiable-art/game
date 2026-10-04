@@ -15,7 +15,7 @@ using UnityEngine;
 
 namespace Dovus.Game.Cameras
 {
-    public sealed partial class FollowCameraController : MonoBehaviour
+    public sealed partial class FollowCameraController
     {
         void UpdateWindupPullback(float dt)
         {

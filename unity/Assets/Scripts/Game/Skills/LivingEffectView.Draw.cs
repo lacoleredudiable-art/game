@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace Dovus.Game.Skills
 {
-    public sealed partial class LivingEffectView : MonoBehaviour
+    public sealed partial class LivingEffectView
     {
         void DrawBasicStrike(EffectSilhouette s, float alpha)
         {
@@ -154,6 +154,9 @@ namespace Dovus.Game.Skills
             _needle.localScale = new Vector3(thick, len * 0.5f, thick);
         }
 
+        /// <summary>
+        /// Özet §6 Zenitsu küçük hâli: gerilme → 2–3 kare gidiş → donmuş varış.
+        /// </summary>
         void DrawIgneZenitsu(
             Vector3 origin,
             Vector3 dir,
@@ -329,6 +332,7 @@ namespace Dovus.Game.Skills
             }
         }
 
+        /// <summary>[-1,1] sabit gürültü — Random değil, morph sırasında zıplamaz.</summary>
         static float Pseudo(int i, int salt)
         {
             float x = Mathf.Sin(i * LivingEffectViewDefaults.PseudoHashMultI + salt * LivingEffectViewDefaults.PseudoHashMultSalt) * LivingEffectViewDefaults.PseudoHashScale;

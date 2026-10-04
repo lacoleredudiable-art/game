@@ -20,8 +20,8 @@ using UnityEngine;
 namespace Dovus.Game.Skills
 {
     /// <summary>
-    /// v6 fiil executor'lar??n??n JSON verisi (hitbox_vfx.fiil_hitbox, mobility_cc.i_frame),
-    /// cast an??ndaki kendine etkiler (reflect / damage buff) ve Kopyalama/S????rama tekrarlar??.
+    /// v6 fiil executor'larının JSON verisi (hitbox_vfx.fiil_hitbox, mobility_cc.i_frame),
+    /// cast anındaki kendine etkiler (reflect / damage buff) ve Kopyalama/Sıçrama tekrarları.
     /// </summary>
     public sealed partial class ManifestationDirector
     {
@@ -77,7 +77,7 @@ namespace Dovus.Game.Skills
             ReflectFromWorldVolumes(incomingDamage);
             if (_mobilityCc == null || PendingList.Count == 0)
                 return;
-            // Poise, ??l??eklenmi?? can hasar??yla de??il eski (k??????k) vuru?? say??s??yla k??r??l??r.
+            // Poise, ölçeklenmiş can hasarıyla değil eski (küçük) vuruş sayısıyla kırılır.
             float poiseDamage = _playerStatus != null && _playerStatus.LastPoise > 0f
                 ? _playerStatus.LastPoise
                 : incomingDamage / CombatScale.DamageAndHp;
@@ -112,8 +112,8 @@ namespace Dovus.Game.Skills
         }
 
         /// <summary>
-        /// G????lendirme buff_damage + Y??kseltme self_damage_buff (buff_duration_sec) ve
-        /// Yans??ma/Aynalama reflect_ratio (reflect_duration_sec). lifetime_add s??reye eklenir.
+        /// Güçlendirme buff_damage + Yükseltme self_damage_buff (buff_duration_sec) ve
+        /// Yansıma/Aynalama reflect_ratio (reflect_duration_sec). lifetime_add süreye eklenir.
         /// </summary>
         void ApplySelfCastEffects(in SkillResolution skill)
         {
@@ -132,7 +132,7 @@ namespace Dovus.Game.Skills
             float buffSec = engine.BuffDurationSec(0f);
             MechanicPlan mechanicPlan = MechanicPlanFor(skill);
             CaptureBuffOverflow(mechanicPlan, now);
-            // 8-9 hasar_buff koruyucu tetiktedir; kal??p/cast an??nda bir daha yaz??lmaz.
+            // 8-9 hasar_buff koruyucu tetiktedir; kalıp/cast anında bir daha yazılmaz.
             if (buff > 0f && buffSec > 0f && GuardTriggerDelivery.AllowImmediate(mechanicPlan, "hasar_buff"))
             {
                 _selfDamageBuff = buff;
@@ -155,9 +155,9 @@ namespace Dovus.Game.Skills
         }
 
         /// <summary>
-        /// Kopyalama duplicate_cast ??? duplicate_delay_sec sonra ayn?? executor (duplicate_damage_mult).
-        /// Hareket + S????rama bounce_targets ??? dash bitince ikinci ad??m (bounce_damage_mult;
-        /// hitbox_vfx.sifat_override.3 chain_count=2, skill 3-3 "??ift dash").
+        /// Kopyalama duplicate_cast → duplicate_delay_sec sonra aynı executor (duplicate_damage_mult).
+        /// Hareket + Sıçrama bounce_targets → dash bitince ikinci adım (bounce_damage_mult;
+        /// hitbox_vfx.sifat_override.3 chain_count=2, skill 3-3 "Çift dash").
         /// </summary>
         void ScheduleFollowUpLaunches(
             SkillExecutorKind kind,
@@ -226,9 +226,9 @@ namespace Dovus.Game.Skills
         }
 
         /// <summary>
-        /// mobility_cc.i_frame "minion_spawn_aninda" (11-10) ??? spawn an??nda k??sa koruma.
+        /// mobility_cc.i_frame "minion_spawn_aninda" (11-10) — spawn anında kısa koruma.
         /// F1: eskiden Stasis'ti ve oyuncuyu ~0,3 sn donduruyordu (BlocksMovement + BlocksCast);
-        /// art??k skill hareketleriyle ayn?? donmayan dokunulmazl??k penceresi. D????mana etkisi yok.
+        /// artık skill hareketleriyle aynı donmayan dokunulmazlık penceresi. Düşmana etkisi yok.
         /// </summary>
         void ApplySpawnIFrame(in SkillResolution skill)
         {
@@ -238,7 +238,7 @@ namespace Dovus.Game.Skills
             _player.GetComponent<PlayerDodgeController>()?.OpenSkillIframe(ms);
         }
 
-        /// <summary>Minion vuru??u: ham hasar boru hatt??ndan (z??rh, kritik, ??l??ek bir kez).</summary>
+        /// <summary>Minion vuruşu: ham hasar boru hattından (zırh, kritik, ölçek bir kez).</summary>
         float ApplyMinionHit(in SkillResolution skill, float raw)
         {
             if (_bossVitals == null || _bossVitals.IsDown || raw <= 0f)
@@ -286,7 +286,7 @@ namespace Dovus.Game.Skills
             if (dealt.ShieldAbsorbed > 0f && _bossStatus != null)
                 _bossStatus.Board.ConsumeShield(dealt.ShieldAbsorbed);
             float damage = dealt.Amount;
-            // S8: minyon kritikleri de g??sterilir.
+            // S8: minyon kritikleri de gösterilir.
             _damageHud?.ShowDamage(damage, dealt.WasCrit, BossHitPoint(), DamageTint(), victimIsBoss: true);
             float lifesteal = ClosingHealRules.AdjectiveLifesteal(skill);
             lifesteal += _slotPassives?.LifestealAddFor(_slotQueryCastId) ?? 0f;
@@ -302,7 +302,7 @@ namespace Dovus.Game.Skills
             return damage;
         }
 
-        /// <summary>Kendine/dost alan boss'a da de??iyor mu (d????manca s??fat durumlar?? i??in).</summary>
+        /// <summary>Kendine/dost alan boss'a da değiyor mu (düşmanca sıfat durumları için).</summary>
         bool BossWithin(Vector3 center, float radiusM)
         {
             if (_boss == null)

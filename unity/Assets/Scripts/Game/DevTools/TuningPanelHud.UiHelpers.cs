@@ -11,7 +11,7 @@ using UnityEngine.UI;
 
 namespace Dovus.Game.DevTools
 {
-    public sealed partial class TuningPanelHud : MonoBehaviour
+    public sealed partial class TuningPanelHud
     {
         static Text CreateLabel(Transform parent, string text, int fontSize)
         {
@@ -54,6 +54,7 @@ namespace Dovus.Game.DevTools
             return (button, label);
         }
 
+        /// <summary>Unity'nin varsayılan Slider hiyerarşisi: Background + Fill Area/Fill + Handle Slide Area/Handle.</summary>
         static Slider BuildSliderWidget(Transform parent)
         {
             var sliderGo = parent.gameObject;

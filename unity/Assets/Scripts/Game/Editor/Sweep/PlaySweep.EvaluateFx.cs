@@ -53,9 +53,9 @@ namespace Dovus.Game.Editor
             }
 
             /// <summary>
-            /// mermi_sil etkisi: d??zenek mermisinden en az biri silinmeli / yutulmal?? / geri d??nmeli / perdeye
-            /// girmeli. yut: yutma + oyuncu can?? artt??. geri_gonder: geri d??n???? + boss can?? d????t??.
-            /// bag_hatti: ba?? ??eridi sildi. Canl?? mermi hi??bir karede tavan?? (40) a??mamal??.
+            /// mermi_sil etkisi: düzenek mermisinden en az biri silinmeli / yutulmalı / geri dönmeli / perdeye
+            /// girmeli. yut: yutma + oyuncu canı arttı. geri_gonder: geri dönüş + boss canı düştü.
+            /// bag_hatti: bağ şeridi sildi. Canlı mermi hiçbir karede tavanı (40) aşmamalı.
             /// </summary>
             static void EvaluateProjectiles(PlaySweepResult r, List<string> effects, int heal)
             {
@@ -69,32 +69,32 @@ namespace Dovus.Game.Editor
                 int erased = sim.ErasedTotal, absorbed = sim.AbsorbedTotal, reflected = sim.ReflectedTotal;
                 int shrouded = sim.ShroudedTotal, linked = sim.LinkErasedTotal;
                 int any = erased + absorbed + reflected + shrouded + linked;
-                effects.Add($"mermi sil {erased} yut {absorbed} d??n {reflected} perde {shrouded} ba?? {linked}");
+                effects.Add($"mermi sil {erased} yut {absorbed} dön {reflected} perde {shrouded} bağ {linked}");
                 if (any < 1)
                 {
                     r.Effect = false;
-                    r.Notes.Add("mermi_sil: d??zenek mermisi silinmedi");
+                    r.Notes.Add("mermi_sil: düzenek mermisi silinmedi");
                 }
                 if (_info.ExpectsAbsorb && (absorbed < 1 || heal <= 0))
                 {
                     r.Effect = false;
-                    r.Notes.Add($"yut: yutulan {absorbed}, oyuncu can?? +{heal}");
+                    r.Notes.Add($"yut: yutulan {absorbed}, oyuncu canı +{heal}");
                 }
                 if (_info.ExpectsReflect && (reflected < 1 || r.Damage <= 0.01f))
                 {
                     r.Effect = false;
-                    r.Notes.Add($"geri_gonder: d??nen {reflected}, boss hasar?? {r.Damage:F1}");
+                    r.Notes.Add($"geri_gonder: dönen {reflected}, boss hasarı {r.Damage:F1}");
                 }
                 if (_info.ExpectsLinkErase && linked < 1)
                 {
                     r.Effect = false;
-                    r.Notes.Add("bag_hatti: ba?? ??eridi mermi silmedi");
+                    r.Notes.Add("bag_hatti: bağ şeridi mermi silmedi");
                 }
                 int peak = Math.Max(sim.PeakAlive, _frames.Count > 0 ? _frames.Max(x => x.ProjectilesAlive) : 0);
                 if (peak > HostileProjectiles.DefaultMaxAlive)
                 {
                     r.Effect = false;
-                    r.Notes.Add($"mermi tavan?? a????ld??: {peak}");
+                    r.Notes.Add($"mermi tavanı aşıldı: {peak}");
                 }
             }
 
@@ -112,7 +112,7 @@ namespace Dovus.Game.Editor
                 for (int i = 0; i < _frames.Count; i++)
                 {
                     Frame f = _frames[i];
-                    // Biten kal??b??n ertelenmi?? son karesi (tarama s????rama ??l????s?? i??in) ini?? say??l??r.
+                    // Biten kalıbın ertelenmiş son karesi (tarama sıçrama ölçüsü için) iniş sayılır.
                     if (!f.Playing || f.RunnerDone)
                         continue;
                     lastPlay = i;
@@ -153,23 +153,23 @@ namespace Dovus.Game.Editor
 
                 float settleErr = Mathf.Abs(settle.Feet - settle.FootGround);
                 r.FootSettleM = settleErr;
-                // Biti?? ??l????s?? nokta ??rne??i; h??zla gev??emez. Canl?? e??ik kare s??resiyle ??l??eklenir.
+                // Bitiş ölçüsü nokta örneği; hızla gevşemez. Canlı eşik kare süresiyle ölçeklenir.
                 bool settleOk = haveSettle && settleErr <= Grounding.SettleSlackM + 0.0001f;
                 r.Grounded = liveOk && settleOk;
                 if (!liveOk)
-                    r.Notes.Add($"ayak yerden {breach:F2} m (havada de??il, s??n??r {breachLimit:F2} m @ {breachDt * 1000f:F0} ms, t={breachAt:F2}" +
+                    r.Notes.Add($"ayak yerden {breach:F2} m (havada değil, sınır {breachLimit:F2} m @ {breachDt * 1000f:F0} ms, t={breachAt:F2}" +
                                 (string.IsNullOrEmpty(breachPhase) ? "" : ", faz " + breachPhase) + ")");
                 if (!haveSettle)
-                    r.Notes.Add("ayak ini??i: skill bitiminden 0,30 sn ??l????lemedi");
+                    r.Notes.Add("ayak inişi: skill bitiminden 0,30 sn ölçülemedi");
                 else if (!settleOk)
-                    r.Notes.Add($"skill bitiminden {Grounding.SettleAfterSec:F2} sn sonra ayak {settleErr:F2} m (s??n??r {Grounding.SettleSlackM:F2} m)");
+                    r.Notes.Add($"skill bitiminden {Grounding.SettleAfterSec:F2} sn sonra ayak {settleErr:F2} m (sınır {Grounding.SettleSlackM:F2} m)");
 
                 float bossErr = Mathf.Abs(settle.BossFeet - settle.BossFootGround);
                 float allyErr = Mathf.Abs(settle.AllyFeet - settle.AllyFootGround);
                 if (bossErr > Grounding.LiveSlackM || allyErr > Grounding.LiveSlackM)
                 {
                     r.Grounded = false;
-                    r.Notes.Add($"zemin d??????: boss {bossErr:F2} m, dost {allyErr:F2} m");
+                    r.Notes.Add($"zemin dışı: boss {bossErr:F2} m, dost {allyErr:F2} m");
                 }
             }
 
@@ -199,7 +199,7 @@ namespace Dovus.Game.Editor
                 return best;
             }
 
-            /// <summary>Oyuncu ???1,5 m/s giderken bacak klibinin oynad?????? kare oran??.</summary>
+            /// <summary>Oyuncu ≥1,5 m/s giderken bacak klibinin oynadığı kare oranı.</summary>
             static string LegSummary()
             {
                 int moving = 0;
@@ -227,8 +227,8 @@ namespace Dovus.Game.Editor
                 if (moving == 0)
                     return "";
                 return legs > 0
-                    ? $"{legs}/{moving} kare ko??u, ayak/g??vde h??z oran?? {ratio / legs:F2}"
-                    : $"0/{moving} kare ko??u";
+                    ? $"{legs}/{moving} kare koşu, ayak/gövde hız oranı {ratio / legs:F2}"
+                    : $"0/{moving} kare koşu";
             }
 
     }

@@ -9,9 +9,9 @@ using UnityEngine;
 namespace Dovus.Game.Skills
 {
     /// <summary>
-    /// Oyuncu cast sunumu: silah??n teslim yolu (menzilli ??? at???? klibi), state'lerin ActorView
-    /// ??zerinden oynamas?? (crossfade + ??st g??vde) ve prezentasyon <c>spawn_vfx_at_frame</c>
-    /// an??nda el efekti. Yaln??z g??rsel ??? hasar ve etki do??umu zamanlamas?? buradan de??i??mez.
+    /// Oyuncu cast sunumu: silahın teslim yolu (menzilli → atış klibi), state'lerin ActorView
+    /// üzerinden oynaması (crossfade + üst gövde) ve prezentasyon <c>spawn_vfx_at_frame</c>
+    /// anında el efekti. Yalnız görsel — hasar ve etki doğumu zamanlaması buradan değişmez.
     /// </summary>
     public sealed partial class ManifestationDirector
     {
@@ -51,8 +51,8 @@ namespace Dovus.Game.Skills
             string typeId = _skillPresentation.Validator.Validate(skill).AnimationTypeId;
             if (string.IsNullOrEmpty(typeId) || !_skillPresentation.Catalog.TryGetAnimation(typeId, out AnimationFrameNode node))
             {
-                // v6.1 skill'in animation_type'?? yok: oynayan controller state'inin
-                // prezentasyon kar????l?????? (animator_state e??lemesi) kare verisini verir.
+                // v6.1 skill'in animation_type'ı yok: oynayan controller state'inin
+                // prezentasyon karşılığı (animator_state eşlemesi) kare verisini verir.
                 if (!TryFindFrameNodeForState(LastAnimationState, out node))
                     return;
             }

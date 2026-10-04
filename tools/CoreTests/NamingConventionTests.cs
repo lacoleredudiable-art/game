@@ -65,7 +65,7 @@ public sealed class NamingConventionTests
     {
         var mismatches = new List<string>();
         var topLevel = new Regex(
-            @"^\s{4}(?:public|internal)\s+(?:sealed\s+|abstract\s+)?class\s+(\w+)\s*:\s*MonoBehaviour",
+            @"^\s{4}(?:public|internal)\s+(?:(?:sealed|abstract|partial)\s+)*class\s+(\w+)\s*:\s*MonoBehaviour",
             RegexOptions.Multiline | RegexOptions.Compiled);
 
         foreach (string file in GameCsFiles())

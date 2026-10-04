@@ -13,9 +13,9 @@ using UnityEngine.UI;
 namespace Dovus.Game.Casting
 {
     /// <summary>
-    /// Denetim B ek ??? ??izim geri bildirimi yaz??s??: tan??nan c??mlede r??n adlar?? (alt??n), tan??nmayan
-    /// ??izgide "tan??nmad??" (k??rm??z??). ??st noktan??n hemen ??st??nde, k??sa s??re g??r??n??r. Yaz?? yokken
-    /// Text kapal??d??r (bo??ta harman/overdraw yok).
+    /// Denetim B ek — çizim geri bildirimi yazısı: tanınan cümlede rün adları (altın), tanınmayan
+    /// çizgide "tanınmadı" (kırmızı). Üst noktanın hemen üstünde, kısa süre görünür. Yazı yokken
+    /// Text kapalıdır (boşta harman/overdraw yok).
     /// </summary>
     public sealed partial class HexagonView
     {
@@ -49,7 +49,7 @@ namespace Dovus.Game.Casting
             rt.pivot = new Vector2(0.5f, 0f);
         }
 
-        /// <summary>HexagonInputController.DrawCaption: metin + tan??nd?? m??.</summary>
+        /// <summary>HexagonInputController.DrawCaption: metin + tanındı mı.</summary>
         public void ShowDrawCaption(string text, bool recognized)
         {
             if (_drawCaption == null || string.IsNullOrEmpty(text))

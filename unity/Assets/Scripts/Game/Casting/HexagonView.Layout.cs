@@ -11,7 +11,7 @@ using UnityEngine.UI;
 
 namespace Dovus.Game.Casting
 {
-    public sealed partial class HexagonView : MonoBehaviour
+    public sealed partial class HexagonView
     {
         void Layout()
         {

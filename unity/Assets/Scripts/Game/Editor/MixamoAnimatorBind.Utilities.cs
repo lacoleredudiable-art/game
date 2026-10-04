@@ -69,6 +69,11 @@ namespace Dovus.Game.Editor
             return tree;
         }
 
+        /// <summary>
+        /// Klibin zemin hızı (model birimi/sn): ayağın yere bastığı karelerde gövdeye göre yatay kayma
+        /// hızının medyanı. In-place Mixamo kliplerinde kök hızı olmadığından tek güvenilir kaynak bu.
+        /// Yön bağımsız: SampleAnimation kök dönüş ofsetini uygulamaz.
+        /// </summary>
         static float MeasureGroundSpeed(AnimationClip clip)
         {
             const int samples = 120;
@@ -126,6 +131,11 @@ namespace Dovus.Game.Editor
             }
         }
 
+        /// <summary>
+        /// Yürüme/koşu/duruş kliplerinde ayak uçlarının ortalama yönünü hareket yönüne (kök ileri)
+        /// hizalar: gerçek Animator'la ölçülen sapma klibin rotationOffset'ine eklenir. Burulmuş
+        /// gövdeli balta klibinde koşarken sol ayak 60-70° yana dönüyordu (29 Eyl sahip bildirimi).
+        /// </summary>
         static void AlignPlayerLocoFeet()
         {
             const float toleranceDeg = 1f;
@@ -158,6 +168,7 @@ namespace Dovus.Game.Editor
             Debug.Log("[MixamoBind] ayak hizası:" + log);
         }
 
+        /// <summary>İki ayağın (parmak − bilek) yatay yönünün kök ileriye göre ortalama açısı; NaN = ölçülemedi.</summary>
         static float MeasureMeanFootYaw(AnimatorController ac, float speedParam, float clipLength)
         {
             const float stepSec = 1f / 60f;
@@ -265,6 +276,10 @@ namespace Dovus.Game.Editor
                 toLoco.AddCondition(AnimatorConditionMode.IfNot, 0, holdParam);
         }
 
+        /// <summary>
+        /// O-anim(c): sağ yön klibi yok — humanoid mirror ile aynı sol klip ters oynar
+        /// (<see cref="ActorView.DriveMotion"/> blend.Strafe &gt; 0'da bu state'i seçer).
+        /// </summary>
         static void AddMirroredState(AnimatorStateMachine sm, string name, AnimationClip clip, float x, float y,
             float exitTime, float blendSec)
         {
@@ -298,6 +313,7 @@ namespace Dovus.Game.Editor
             ac.AddParameter(new AnimatorControllerParameter { name = name, type = type, defaultFloat = defaultFloat });
         }
 
+        /// <summary>O-anim(c): CastChannel/CastGuard hold klipleri — döngü isteyen tek seferlik olmayan klipler.</summary>
         static bool IsHoldClipName(string fileName) =>
             fileName is "Player_Block_Hold" or "SS_Block" or "Fist_Block"
                 or "Player_Spell_Cast" or "Caster_2H_Cast" or "Bow_Draw";

@@ -11,8 +11,10 @@ using UnityEngine.UI;
 
 namespace Dovus.Game.Hud
 {
-    public sealed partial class BuildSelectHud : MonoBehaviour
+    public sealed partial class BuildSelectHud
     {
+        // --- Kurulum -----------------------------------------------------------------------
+
         void BuildCanvas()
         {
             var canvasGo = new GameObject("BuildSelectCanvas");

@@ -20,7 +20,7 @@ namespace Dovus.Game.Skills
 {
     public sealed partial class ManifestationDirector
     {
-        /// <summary>GameBootstrapHost'??n atad?????? sabit silah (??r. Alev K??l??c??).</summary>
+        /// <summary>GameBootstrapHost'ın atadığı sabit silah (ör. Alev Kılıcı).</summary>
         public EquipmentItem EquippedWeapon => _equippedWeapon;
 
         public void ConfigureWeaponCycle(IReadOnlyList<EquipmentItem> weapons)
@@ -35,7 +35,7 @@ namespace Dovus.Game.Skills
             return _weaponLoadout.CycleEquippedWeapon();
         }
 
-        /// <summary>v6: son kapan????ta silah ?? uyumsuz ??izim hasar ??arpan??.</summary>
+        /// <summary>v6: son kapanışta silah × uyumsuz çizim hasar çarpanı.</summary>
         public float LastEquipmentMatchMult { get; private set; } = 1f;
         public bool LastWeaponCompatible { get; private set; } = true;
         public bool LastWeaponPassiveEnabled { get; private set; } = true;
@@ -45,21 +45,21 @@ namespace Dovus.Game.Skills
         public Skill LastFactorySkill { get; private set; }
         public SkillExecutorKind LastExecutorKind { get; private set; } = SkillExecutorKind.Fallback;
 
-        /// <summary>Ba??lama 9 / MCP: son ApplyClosingDamage ????kt??s?? (boss'a giden, armor ??ncesi).</summary>
+        /// <summary>Bağlama 9 / MCP: son ApplyClosingDamage çıktısı (boss'a giden, armor öncesi).</summary>
         public float LastClosingDamageDealt { get; private set; }
 
-        /// <summary>Ba??lama 10 / MCP: son ShoutSkill AnimationType id (katalog anahtar??).</summary>
+        /// <summary>Bağlama 10 / MCP: son ShoutSkill AnimationType id (katalog anahtarı).</summary>
         public string LastAnimationTypeId { get; private set; } = string.Empty;
 
-        /// <summary>Ba??lama 10 / MCP: son denenen animator_state.</summary>
+        /// <summary>Bağlama 10 / MCP: son denenen animator_state.</summary>
         public string LastAnimationState { get; private set; } = string.Empty;
         public string LastAnimationClip { get; private set; } = string.Empty;
         public bool LastAnimationUsedFallback { get; private set; }
 
-        /// <summary>Ba??lama 10 / MCP: Controller'da state vard?? ve Play uyguland??.</summary>
+        /// <summary>Bağlama 10 / MCP: Controller'da state vardı ve Play uygulandı.</summary>
         public bool LastAnimationPlayApplied { get; private set; }
 
-        /// <summary>Ba??lama 10 / MCP: frame-timer k??pr??s?? (Play do??rulama).</summary>
+        /// <summary>Bağlama 10 / MCP: frame-timer köprüsü (Play doğrulama).</summary>
         public AnimationBridge AnimationBridge => _animationBridge;
         public ElementPaintNode? SelectedElementPaint
         {
@@ -78,7 +78,7 @@ namespace Dovus.Game.Skills
         public event Action<ElementPaintNode> ElementPaintChanged;
 
 #if UNITY_EDITOR
-        /// <summary>Ba??lama 10 / MCP: ShoutSkill i??indeki ApplySkillAnimation yolunu do??rudan dener.</summary>
+        /// <summary>Bağlama 10 / MCP: ShoutSkill içindeki ApplySkillAnimation yolunu doğrudan dener.</summary>
         public void DebugApplySkillAnimation(SkillResolution skill)
         {
             EnsureLaunchServices();
@@ -127,8 +127,8 @@ namespace Dovus.Game.Skills
         }
 
         /// <summary>
-        /// Sald??r?? boyunca g??vde ??ubu??a d??nmez. Hedef varsa ona kilitlenir;
-        /// yoksa bak???? kal??r. Sald??r?? d??????nda se??ili hedef varsa eski kilit durur.
+        /// Saldırı boyunca gövde çubuğa dönmez. Hedef varsa ona kilitlenir;
+        /// yoksa bakış kalır. Saldırı dışında seçili hedef varsa eski kilit durur.
         /// </summary>
         public bool CombatFacingLocked
         {
@@ -148,11 +148,11 @@ namespace Dovus.Game.Skills
 
         public SlotPassiveDirector SlotPassives => _slotPassives;
 
-        /// <summary>state_machine.player_states ??? SentencePhase/dodge/CC ile senkron.</summary>
+        /// <summary>state_machine.player_states — SentencePhase/dodge/CC ile senkron.</summary>
         public PlayerStateMachine PlayerStates => _playerStates;
 
 #if UNITY_EDITOR
-        /// <summary>Edit??r/prob: Update beklemeden c??mle senkronu.</summary>
+        /// <summary>Editör/prob: Update beklemeden cümle senkronu.</summary>
         public void ForceSync()
         {
             if (_clock == null)

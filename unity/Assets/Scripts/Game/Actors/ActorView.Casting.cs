@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace Dovus.Game.Actors
 {
-    public sealed partial class ActorView : MonoBehaviour
+    public sealed partial class ActorView
     {
         bool IsMoving()
         {

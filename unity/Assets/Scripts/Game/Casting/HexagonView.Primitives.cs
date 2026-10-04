@@ -11,7 +11,7 @@ using UnityEngine.UI;
 
 namespace Dovus.Game.Casting
 {
-    public sealed partial class HexagonView : MonoBehaviour
+    public sealed partial class HexagonView
     {
         static Sprite _roundedRectSprite;
 
@@ -60,6 +60,9 @@ namespace Dovus.Game.Casting
             rt.anchoredPosition = screenPx;
         }
 
+        /// <summary>
+        /// Gölge + rim (daire) + yüz — dodge/rünlerde düz diskten ayrışır.
+        /// </summary>
         static RectTransform CreateLayeredDisc(
             string name,
             Sprite faceSprite,

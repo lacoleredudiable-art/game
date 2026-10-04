@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Dovus.Game.Skills
 {
-    /// <summary>??sabet hissi k??pr??s??: hasar yollar?? buradan CombatFeelDirector'e (hitstop/parlama) ve havuzlu isabet VFX'e haber verir.</summary>
+    /// <summary>İsabet hissi köprüsü: hasar yolları buradan CombatFeelDirector'e (hitstop/parlama) ve havuzlu isabet VFX'e haber verir.</summary>
     public sealed partial class ManifestationDirector
     {
         CombatFeelDirector _combatFeel;

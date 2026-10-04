@@ -112,6 +112,10 @@ namespace Dovus.Game.Editor
             EditorUtility.SetDirty(ac);
         }
 
+        /// <summary>
+        /// Üst gövde katmanı: hareket ederken cast edilen skill'de bacaklar koşmaya devam eder.
+        /// ActorView yürürken aksiyonu bu katmana yönlendirir (state adı "Upper" + ad).
+        /// </summary>
         static void BuildUpperBodyLayer(AnimatorController ac, params AnimationClip[] clips)
         {
             var mask = AssetDatabase.LoadAssetAtPath<AvatarMask>(UpperBodyMask);

@@ -15,7 +15,7 @@ using UnityEngine;
 
 namespace Dovus.Game.Team
 {
-    public sealed partial class TeamComboHost : MonoBehaviour
+    public sealed partial class TeamComboHost
     {
         public void SpawnAlly()
         {

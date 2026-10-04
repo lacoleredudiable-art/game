@@ -11,8 +11,12 @@ using UnityEngine.UI;
 
 namespace Dovus.Game.Casting
 {
-    public sealed partial class HexagonView : MonoBehaviour
+    public sealed partial class HexagonView
     {
+        /// <summary>
+        /// Kozmetik soğuma — cast'i engellemez. ui_rules.cooldown_display (radial_overlay + sayı).
+        /// EnforceCooldown=false yolunda ManifestationDirector bunu çağırır.
+        /// </summary>
         public void BeginCosmeticCooldown(int dot, float durationSec)
         {
             if (_cdRemainingSec == null || dot < 1 || dot >= _cdRemainingSec.Length)
@@ -28,6 +32,9 @@ namespace Dovus.Game.Casting
             RefreshCooldownVisuals();
         }
 
+        /// <summary>
+        /// Bağlama 4: gerçek CooldownTracker kalanı — radial fillAmount = rem/duration.
+        /// </summary>
         public void BeginTrackedCooldown(int dot, string comboKey, float durationSec, PlayerCooldownHost source, GameClockHost clock)
         {
             if (_cdRemainingSec == null || dot < 1 || dot >= _cdRemainingSec.Length)
@@ -58,10 +65,12 @@ namespace Dovus.Game.Casting
             TickDrawCaption();
         }
 
+        /// <summary>Kapalı rün ya da soğumada: gri ton.</summary>
         bool IsDotUnavailable(int dot) =>
             !_tuning.IsDotOpen(dot)
             || (_cdRemainingSec != null && dot < _cdRemainingSec.Length && _cdRemainingSec[dot] > 0f);
 
+        /// <summary>Dokunuş kabul edildi: basınca küçülme (0 = merkez).</summary>
         public void NotifyPressed(int dot)
         {
             RectTransform target = dot == 0 ? _center : (_dots != null && dot > 0 && dot < _dots.Length ? _dots[dot] : null);

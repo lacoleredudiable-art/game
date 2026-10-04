@@ -15,7 +15,7 @@ using UnityEngine.UI;
 
 namespace Dovus.Game.Hud
 {
-    public sealed partial class VitalsHud : MonoBehaviour
+    public sealed partial class VitalsHud
     {
         void CreatePhaseNotches(RectTransform bossBg, BossHudData data)
         {

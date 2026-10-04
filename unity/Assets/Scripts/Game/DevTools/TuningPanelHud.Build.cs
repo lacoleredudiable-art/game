@@ -11,7 +11,7 @@ using UnityEngine.UI;
 
 namespace Dovus.Game.DevTools
 {
-    public sealed partial class TuningPanelHud : MonoBehaviour
+    public sealed partial class TuningPanelHud
     {
         void BuildToggleButton(Transform parent)
         {

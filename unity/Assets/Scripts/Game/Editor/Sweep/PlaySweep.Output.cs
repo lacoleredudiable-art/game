@@ -40,9 +40,9 @@ namespace Dovus.Game.Editor
 {
     public static partial class PlaySweep
     {
-            // ---------------------------------------------------------------- ????kt??
+            // ---------------------------------------------------------------- çıktı
 
-            /// <summary>Bo??sa docs/play-sweep. Ba??s??z ko??ucu (tools/SweepV2) kendi klas??r??n?? verir.</summary>
+            /// <summary>Boşsa docs/play-sweep. Başsız koşucu (tools/SweepV2) kendi klasörünü verir.</summary>
             public static string OutputDir { get; set; } = "";
 
             static string OutDir()
@@ -59,7 +59,7 @@ namespace Dovus.Game.Editor
                 int pass = Results.Count(r => r.Pass);
                 var byWeapon = Results.GroupBy(r => r.Case.Weapon)
                     .Select(g => $"{g.Key}: {g.Count(r => r.Pass)}/{g.Count()}");
-                LastSummary = $"{pass}/{Results.Count} ge??ti @ {_speed:0.#}x ({string.Join(", ", byWeapon)})";
+                LastSummary = $"{pass}/{Results.Count} geçti @ {_speed:0.#}x ({string.Join(", ", byWeapon)})";
 
                 var csv = new StringBuilder();
                 csv.AppendLine("kombo,isim,silah,kalip,cast,isabet,konum,govdeye_girmedi,tek_sistem,hata_yok,sure,sicrama_yok,yerde,etki_kontrol,gecti,"
@@ -81,23 +81,23 @@ namespace Dovus.Game.Editor
                 File.WriteAllText(Path.Combine(dir, safe + ".csv"), csv.ToString(), new UTF8Encoding(false));
 
                 var detail = new StringBuilder();
-                detail.AppendLine("# Play taramas?? " + _label + " @ " + _speed.ToString("0.#", CultureInfo.InvariantCulture)
-                                   + "x ??? " + LastSummary);
+                detail.AppendLine("# Play taraması " + _label + " @ " + _speed.ToString("0.#", CultureInfo.InvariantCulture)
+                                   + "x — " + LastSummary);
                 detail.AppendLine(WorstFeet());
                 foreach (PlaySweepResult r in Results.Where(x => !x.Pass))
                 {
                     var failed = new List<string>();
                     if (!r.Cast) failed.Add("cast");
                     if (r.Cast && !r.Hit) failed.Add("isabet");
-                    if (r.Cast && !r.Position) failed.Add($"konum({r.ExpectedPos}???{r.ActualPos})");
-                    if (r.Cast && !r.NotInside) failed.Add("g??vde");
+                    if (r.Cast && !r.Position) failed.Add($"konum({r.ExpectedPos}→{r.ActualPos})");
+                    if (r.Cast && !r.NotInside) failed.Add("gövde");
                     if (r.Cast && !r.OneSystem) failed.Add("tek-sistem");
                     if (r.Cast && !r.NoErrors) failed.Add("hata");
-                    if (r.Cast && !r.OnTime) failed.Add("s??re");
-                    if (r.Cast && !r.NoTeleport) failed.Add("s????rama");
+                    if (r.Cast && !r.OnTime) failed.Add("süre");
+                    if (r.Cast && !r.NoTeleport) failed.Add("sıçrama");
                     if (r.Cast && !r.Grounded) failed.Add("yerde");
                     if (r.Cast && !r.Effect) failed.Add("etki");
-                    detail.AppendLine($"{r.Case.Id} {r.Name} [{r.Weapon}] KALDI: {string.Join(", ", failed)} ??? {string.Join("; ", r.Notes)}");
+                    detail.AppendLine($"{r.Case.Id} {r.Name} [{r.Weapon}] KALDI: {string.Join(", ", failed)} — {string.Join("; ", r.Notes)}");
                 }
                 detail.AppendLine();
                 detail.Append(_detail);
@@ -106,12 +106,12 @@ namespace Dovus.Game.Editor
 
             static void WriteTrace(PlaySweepCase c, PlaySweepResult r)
             {
-                _detail.AppendLine($"=== {c.Label} {c.Id} {r.Name} [{r.Weapon}] ba??lang???? {c.StartDistM:F1} m, kal??p {r.Template}, " +
+                _detail.AppendLine($"=== {c.Label} {c.Id} {r.Name} [{r.Weapon}] başlangıç {c.StartDistM:F1} m, kalıp {r.Template}, " +
                                    $"boss r={_info.BossR:F2}, oyuncu r={_info.PlayerR:F2}, temas {r.Contact:F2}" +
-                                   (Mathf.Abs(c.BossShiftX) > 0.001f ? $", boss kaymas?? {c.BossShiftX:F1} m" : "") +
-                                   (Mathf.Abs(c.PlayerShiftM) > 0.001f ? $", oyuncu kaymas?? {c.PlayerShiftM:F1} m @{c.PlayerShiftAtSec:F2} sn" : ""));
-                _detail.AppendLine($"  sonu??: {(r.Pass ? "GE??T??" : "KALDI")} isabet={r.Hit} konum={r.ExpectedPos}???{r.ActualPos} g??vde={r.NotInside} " +
-                                   $"tek={r.OneSystem} hata={r.NoErrors} s??re={r.OnTime} s????rama_yok={r.NoTeleport} yerde={r.Grounded} " +
+                                   (Mathf.Abs(c.BossShiftX) > 0.001f ? $", boss kayması {c.BossShiftX:F1} m" : "") +
+                                   (Mathf.Abs(c.PlayerShiftM) > 0.001f ? $", oyuncu kayması {c.PlayerShiftM:F1} m @{c.PlayerShiftAtSec:F2} sn" : ""));
+                _detail.AppendLine($"  sonuç: {(r.Pass ? "GEÇTİ" : "KALDI")} isabet={r.Hit} konum={r.ExpectedPos}→{r.ActualPos} gövde={r.NotInside} " +
+                                   $"tek={r.OneSystem} hata={r.NoErrors} süre={r.OnTime} sıçrama_yok={r.NoTeleport} yerde={r.Grounded} " +
                                    $"ayak={r.FootLiveM:F2}/{r.FootSettleM:F2} hasar={r.Damage:F1} etki=[{r.Effects}] bacak=[{r.Legs}]");
                 foreach (string n in r.Notes)
                     _detail.AppendLine("  not: " + n);
@@ -119,7 +119,7 @@ namespace Dovus.Game.Editor
                     _detail.AppendLine("  log: " + l);
                 Vector3 start = _pre.P;
                 Vector3 back = Flat(start - _pre.B).normalized;
-                _detail.AppendLine("  t | faz | merkez_m | taraf(+??n/-arka) | yan_m | h??z_mps | yaw | taban_state(norm) | ??st_state | Speed | Playback | bossHP | oyuncuHP");
+                _detail.AppendLine("  t | faz | merkez_m | taraf(+ön/-arka) | yan_m | hız_mps | yaw | taban_state(norm) | üst_state | Speed | Playback | bossHP | oyuncuHP");
                 for (int i = 0; i < _frames.Count; i++)
                 {
                     Frame f = _frames[i];
@@ -144,7 +144,7 @@ namespace Dovus.Game.Editor
                 for (int k = 0; k < _hitTimes.Count; k++)
                 {
                     if (_hitTimes[k] > tPrev && _hitTimes[k] <= t0)
-                        marks.Add($"VURU??@boss{Flat(_hitOrigins[k] - _frames[i].B).magnitude:F2}m");
+                        marks.Add($"VURUŞ@boss{Flat(_hitOrigins[k] - _frames[i].B).magnitude:F2}m");
                 }
                 return marks.Count > 0 ? " | " + string.Join(" ", marks) : "";
             }
@@ -152,19 +152,19 @@ namespace Dovus.Game.Editor
             static string WorstFeet()
             {
                 if (Results.Count == 0)
-                    return "Yere basma: ??l????m yok";
+                    return "Yere basma: ölçüm yok";
                 var ranked = Results
                     .Select(r => (r, err: Mathf.Max(r.FootLiveM, r.FootSettleM)))
                     .OrderByDescending(x => x.err)
                     .Take(8)
                     .ToList();
                 string list = string.Join(", ", ranked.Select(x =>
-                    $"{x.r.Case.Id} canl?? {x.r.FootLiveM:F2} m / ini?? {x.r.FootSettleM:F2} m"));
-                return "Yere basma en k??t?? (havada de??il ??? "
+                    $"{x.r.Case.Id} canlı {x.r.FootLiveM:F2} m / iniş {x.r.FootSettleM:F2} m"));
+                return "Yere basma en kötü (havada değil ≤ "
                        + Grounding.LiveSlackM.ToString("F2", CultureInfo.InvariantCulture)
-                       + " m ?? kare/(1/60), biti??+0,30 sn ??? "
+                       + " m × kare/(1/60), bitiş+0,30 sn ≤ "
                        + Grounding.SettleSlackM.ToString("F2", CultureInfo.InvariantCulture)
-                       + " m, h??zdan ba????ms??z): " + list;
+                       + " m, hızdan bağımsız): " + list;
             }
 
     }
