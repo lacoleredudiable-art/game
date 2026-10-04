@@ -18,7 +18,7 @@ namespace Dovus.Game.Cameras
     /// <summary>
     /// Yumuşak takip + hafif önden bakış. T8 sarsıntı/yumruk için AddShake API'si.
     /// </summary>
-    public sealed class FollowCameraController : MonoBehaviour
+    public sealed partial class FollowCameraController : MonoBehaviour
     {
         [SerializeField] Transform _target;
         [SerializeField] Transform _bossTarget;
@@ -342,120 +342,6 @@ namespace Dovus.Game.Cameras
             return distance * windupMul;
         }
 
-        void UpdateWindupPullback(float dt)
-        {
-            float target = 0f;
-            if (_bossDirector != null && _bossDirector.WindupProgress01 > 0f
-                && _bossDirector.CurrentAttackKind.HasValue
-                && IsBigWindupTelegraph(_bossDirector.CurrentAttackKind.Value))
-            {
-                target = 1f;
-            }
-
-            _windupPullback = Mathf.SmoothDamp(
-                _windupPullback,
-                target,
-                ref _windupVelocity,
-                Mathf.Max(FollowCameraControllerDefaults.MinPositiveSmoothSec, _tuning.Camera.CameraWindupSmoothSec),
-                Mathf.Infinity,
-                dt);
-        }
-
-        void ResolveYaw(float dt)
-        {
-            float desired = OrbitYawDeg;
-            if (_bossTarget != null)
-            {
-                Vector3 toBoss = _bossTarget.position - _target.position;
-                toBoss.y = 0f;
-                if (LockOnActive && toBoss.sqrMagnitude > 0.001f)
-                {
-                    // Lock-on: menzilden bağımsız tam yaw kenetleme (konum da boss'a döner).
-                    desired = Mathf.Atan2(toBoss.x, toBoss.z) * Mathf.Rad2Deg;
-                }
-                else
-                {
-                    float range = Mathf.Max(FollowCameraControllerDefaults.MinPositiveSmoothSec, _tuning.Camera.CameraSoftLockRangeM);
-                    if (toBoss.sqrMagnitude <= range * range && toBoss.sqrMagnitude > 0.001f)
-                    {
-                        float bossYaw = Mathf.Atan2(toBoss.x, toBoss.z) * Mathf.Rad2Deg;
-                        desired = Mathf.LerpAngle(
-                            OrbitYawDeg,
-                            bossYaw,
-                            Mathf.Clamp01(_tuning.Camera.CameraSoftLockStrength));
-                    }
-                }
-            }
-
-            _resolvedYawDeg = Mathf.SmoothDampAngle(
-                _resolvedYawDeg,
-                desired,
-                ref _yawVelocity,
-                Mathf.Max(FollowCameraControllerDefaults.MinPositiveSmoothSec, _tuning.Camera.FollowSmoothTimeSec),
-                Mathf.Infinity,
-                dt);
-        }
-
-        float BossFramingWeight()
-        {
-            if (_bossTarget == null)
-                return 0f;
-            Vector3 toBoss = _bossTarget.position - _target.position;
-            toBoss.y = 0f;
-            float range = Mathf.Max(FollowCameraControllerDefaults.MinPositiveSmoothSec, _tuning.Camera.CameraSoftLockRangeM);
-            float distanceWeight = 1f - Mathf.SmoothStep(FollowCameraControllerDefaults.SoftLockDistanceWeightStart, 1f, toBoss.magnitude / range);
-            return Mathf.Clamp01(distanceWeight);
-        }
-
-        Vector3 ApplyCameraCollision(Vector3 pivot, Vector3 desiredWorld, float dt)
-        {
-            Vector3 delta = desiredWorld - pivot;
-            float targetAlong = delta.magnitude;
-            if (targetAlong < FollowCameraControllerDefaults.MinTargetAlongM)
-            {
-                _collisionPulledInM = 0f;
-                return desiredWorld;
-            }
-
-            Vector3 dir = delta / targetAlong;
-            float blockedAlong = targetAlong;
-            float radius = Mathf.Max(FollowCameraControllerDefaults.MinCollisionSphereRadiusM, _tuning.Camera.CameraCollisionSphereRadiusM);
-            int hitCount = Physics.SphereCastNonAlloc(
-                pivot,
-                radius,
-                dir,
-                CollisionHits,
-                targetAlong,
-                _collisionLayerMask,
-                QueryTriggerInteraction.Ignore);
-            float best = targetAlong;
-            for (int i = 0; i < hitCount; i++)
-            {
-                RaycastHit h = CollisionHits[i];
-                if (!IsBlockingCollider(h.collider))
-                    continue;
-                float along = h.distance - _tuning.Camera.CameraCollisionMarginM;
-                if (along < best)
-                    best = along;
-            }
-
-            blockedAlong = Mathf.Max(_tuning.Camera.CameraCollisionMinDistanceM, best);
-            bool pullingIn = blockedAlong < _smoothedAlongDistM - 0.001f;
-            float smooth = pullingIn
-                ? _tuning.Camera.CameraCollisionPullInSmoothSec
-                : _tuning.Camera.CameraCollisionPullOutSmoothSec;
-            if (_smoothedAlongDistM <= FollowCameraControllerDefaults.MinSmoothedAlongDistM)
-                _smoothedAlongDistM = targetAlong;
-            _smoothedAlongDistM = Mathf.SmoothDamp(
-                _smoothedAlongDistM,
-                Mathf.Min(targetAlong, blockedAlong),
-                ref _alongDistVelocity,
-                Mathf.Max(0.001f, smooth),
-                Mathf.Infinity,
-                dt);
-            _collisionPulledInM = Mathf.Max(0f, targetAlong - _smoothedAlongDistM);
-            return pivot + dir * _smoothedAlongDistM;
-        }
 
         bool IsBlockingCollider(Collider col)
         {
@@ -522,74 +408,6 @@ namespace Dovus.Game.Cameras
             return new Vector3(vx, vy, local.z);
         }
 
-        void UpdateLockOnScreenOverlap()
-        {
-            if (_cam == null || _bossTarget == null)
-                return;
-            Rect player = ProjectActorRect(_target, FollowCameraControllerDefaults.ActorRectHeightM, FollowCameraControllerDefaults.ActorRectHalfWidthM);
-            Rect boss = ProjectActorRect(_bossTarget, _tuning.Camera.CameraBossAimHeightM, FollowCameraControllerDefaults.BossRectHalfWidthM);
-            float playerArea = player.width * player.height;
-            if (playerArea < 1e-5f)
-            {
-                _lastLockOnOverlapPct = 1f;
-                return;
-            }
-
-            float overlap = RectIntersectionArea(player, boss);
-            _lastLockOnOverlapPct = Mathf.Clamp01(1f - overlap / playerArea);
-        }
-
-        Rect ProjectActorRect(Transform actor, float centerUpM, float halfHeightM)
-        {
-            Vector3 c = actor.position + Vector3.up * centerUpM;
-            Vector3 top = c + Vector3.up * halfHeightM;
-            Vector3 bottom = c - Vector3.up * halfHeightM;
-            Vector3 left = c - transform.right * FollowCameraControllerDefaults.DebugOffsetM;
-            Vector3 right = c + transform.right * FollowCameraControllerDefaults.DebugOffsetM;
-            Vector3[] pts =
-            {
-                _cam.WorldToViewportPoint(top),
-                _cam.WorldToViewportPoint(bottom),
-                _cam.WorldToViewportPoint(left),
-                _cam.WorldToViewportPoint(right)
-            };
-            float minX = 1f, maxX = 0f, minY = 1f, maxY = 0f;
-            for (int i = 0; i < pts.Length; i++)
-            {
-                if (pts[i].z <= 0f)
-                    continue;
-                minX = Mathf.Min(minX, pts[i].x);
-                maxX = Mathf.Max(maxX, pts[i].x);
-                minY = Mathf.Min(minY, pts[i].y);
-                maxY = Mathf.Max(maxY, pts[i].y);
-            }
-
-            if (maxX < minX)
-                return Rect.zero;
-            return Rect.MinMaxRect(minX, minY, maxX, maxY);
-        }
-
-        static float RectIntersectionArea(Rect a, Rect b)
-        {
-            float xMin = Mathf.Max(a.xMin, b.xMin);
-            float xMax = Mathf.Min(a.xMax, b.xMax);
-            float yMin = Mathf.Max(a.yMin, b.yMin);
-            float yMax = Mathf.Min(a.yMax, b.yMax);
-            if (xMax <= xMin || yMax <= yMin)
-                return 0f;
-            return (xMax - xMin) * (yMax - yMin);
-        }
-
-        void AdvancePunch()
-        {
-            if (_punchT <= 0f)
-            {
-                _punchT = 0f;
-                return;
-            }
-
-            _punchT = Mathf.Max(0f, _punchT - Time.unscaledDeltaTime * _punchDecay);
-        }
 
         void AdvanceShake()
         {
