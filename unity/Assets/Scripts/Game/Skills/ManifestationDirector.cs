@@ -107,7 +107,7 @@ namespace Dovus.Game.Skills
         bool _slotPassiveNeedsWeapon;
         PassiveHud _passiveHud;
         MobilityCcData _mobilityCc;
-        SkillNumberCatalog _skillNumbers;
+        ISkillRepository _skillNumbers;
         // --- State machine (player_states ↔ SentencePhase / dodge / CC) ---
         PlayerStateMachine _playerStates;
         // Kapanış çarpanı (ApplyClosing*). v5 zincir katmanı kaldırıldı; hep 1.
