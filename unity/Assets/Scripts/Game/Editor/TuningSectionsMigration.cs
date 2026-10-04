@@ -7,13 +7,13 @@ using UnityEngine;
 namespace Dovus.Game.Editor
 {
     /// <summary>
-    /// PLAN 2B.5b: düz sahne YAML anahtarlarını bölüm serileştirmesine taşır (legacy → sections OnAfterDeserialize).
+    /// PLAN 2B.5c: sahneyi yeniden kaydederek yetim düz tuning anahtarlarını YAML'dan düşürür (legacy alanlar kaldırıldı).
     /// </summary>
     public static class TuningSectionsMigration
     {
         const string ScenePath = "Assets/Scenes/Prototype.unity";
 
-        [MenuItem("Dovus/Tuning/Migrate scene tuning to sections")]
+        [MenuItem("Dovus/Tuning/Re-save scene tuning (drop orphan flat keys)")]
         public static void MigrateFromMenu()
         {
             if (!MigrateScene(out string error))
@@ -54,8 +54,7 @@ namespace Dovus.Game.Editor
                 error = "PrototypeBootstrap bileşeni yok.";
                 return false;
             }
-            // Values were already copied legacy -> sections in OnAfterDeserialize (only while SectionsVersion < 1);
-            // no explicit re-sync here, so re-running the tool never overwrites edited sections with stale legacy values.
+            // Unity re-serializes nested sections only; orphan flat keys from pre-2B.5c scenes are omitted.
             EditorUtility.SetDirty(boot);
             EditorSceneManager.MarkSceneDirty(scene);
             if (!EditorSceneManager.SaveScene(scene))

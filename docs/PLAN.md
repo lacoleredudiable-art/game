@@ -31,7 +31,7 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 - [x] 2B.2 ManifestationDirector'ı tamamen böl (A1, A9): kalan skill akışı, VFX, HUD, takım → App/Game servisleri; dosya ≤500 satır
 - [x] 2B.3 HexagonInput böl (A2): girdi / skill tetik / UI ayrı
 - [x] 2B.4 BossDirector kalan Unity mantığı → App (A3)
-- [~] 2B.5 PrototypeBootstrap → Composition kökü, küçük kurucular (A4); PrototypeTuning gerçek alt nesneler + sahne değeri göç aracı (A5) — 2B.5a kurucular; tuning alt nesneleri 2B.5b/c
+- [x] 2B.5 PrototypeBootstrap → Composition kökü, küçük kurucular (A4); PrototypeTuning gerçek alt nesneler + sahne değeri göç aracı (A5) — 2B.5a kurucular; tuning alt nesneleri 2B.5b/c
 - [ ] 2B.6 Core içi döngüler: Combat↔Status, Equipment↔Grammar (A8); Core/Combat çöplüğü konu klasörlerine (A19)
 - [ ] 2B.7 SweepV2 sahte Unity katmanı bağımlılığını azalt: testler App katmanına (A12)
 - [ ] 2B.8 7 singleton + kalan statikler → enjeksiyon (A13); IsPortalSkill/IsTeamSkill JSON'dan
