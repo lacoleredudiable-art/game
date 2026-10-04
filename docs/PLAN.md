@@ -26,6 +26,25 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 - [x] 1.5 Yanlış silah ikonları (Yay/Kitap/Küre) + lock-on düğmesi rün paneliyle çakışma
 - [x] 1.6 Kullanıcı kararı + iş: skill metni ↔ sayı (Denetim D) — doğru kaynak JSON mu metin mi?
 
+## Aşama 2B — Kalan mimari (kuzenin 32 maddesinin tamamı) [Aşama 3'ten sonra]
+- [ ] 2B.1 Ölü kod taraması + silme (A17, C8); ActorModifiers.MissChance, kullanılmayan dodge kancası
+- [ ] 2B.2 ManifestationDirector'ı tamamen böl (A1, A9): kalan skill akışı, VFX, HUD, takım → App/Game servisleri; dosya ≤500 satır
+- [ ] 2B.3 HexagonInput böl (A2): girdi / skill tetik / UI ayrı
+- [ ] 2B.4 BossDirector kalan Unity mantığı → App (A3)
+- [ ] 2B.5 PrototypeBootstrap → Composition kökü, küçük kurucular (A4); PrototypeTuning gerçek alt nesneler + sahne değeri göç aracı (A5)
+- [ ] 2B.6 Core içi döngüler: Combat↔Status, Equipment↔Grammar (A8); Core/Combat çöplüğü konu klasörlerine (A19)
+- [ ] 2B.7 SweepV2 sahte Unity katmanı bağımlılığını azalt: testler App katmanına (A12)
+- [ ] 2B.8 7 singleton + kalan statikler → enjeksiyon (A13); IsPortalSkill/IsTeamSkill JSON'dan
+- [ ] 2B.9 59 FindAnyObjectByType/Camera.main → referans enjeksiyonu; her kare GetComponent önbellek (A15)
+- [ ] 2B.10 Eksik asset referansları raporu + güvenli geri dönüş (A16)
+- [ ] 2B.11 ~2.900 sabit sayı → ayar/JSON (öncelik: oynanış sayıları) (A17)
+- [ ] 2B.12 İsimlendirme: sonek standardı, PortalBorderTeam*/Prototype*/V611/Weapons10/SweepV2 adları, yorum kodları (A21–A23)
+- [ ] 2B.13 Tek dil kuralı (kod İngilizce, veri sözcükleri sözlükle) (A24); dosya adı=tip, tek tip/dosya, yanlış yerdeki dosyalar (A25)
+- [ ] 2B.14 DDD: Rune/Element dili (A26), tek Skill modeli (A27), ID tiplerinin tam benimsenmesi + SkillResolution sadeleşme (A28, A30)
+- [ ] 2B.15 DDD: Player/Actor varlıkları, hedef=ActorId (A29); skill yan etkileri → olaylar (A31); repository arayüzleri, katalog = parser/factory/depo ayrımı (A32)
+- [ ] 2B.16 Ajan dostu: sabit açılı otomatik ekran görüntüsü aracı (C5); Unity derlemesi CI'da değilse not
+- Kural: davranış değişmez (sweep hash + test sayıları), Composer only, her madde 1–3 PR.
+
 ## Aşama 4 — Oyun sistemleri
 - [ ] 3.1 Diriliş sadece skill ile (2-12 Akan Şifa, koza, takım başına 2) — otomatik 2 sn dirilme kalkar
 - [ ] 3.2 4 element etkisi: Su (yenileme), Hava (hız), Toprak (kalkan), Aydınlık (arınma); haste skill/cast hızına da etki
