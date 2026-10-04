@@ -71,7 +71,7 @@ namespace Dovus.Game.Boss
                 Id = ++_nextId,
                 Kind = kind,
                 Transform = transform,
-                RadiusM = Mathf.Max(0.05f, radiusM),
+                RadiusM = Mathf.Max(HostileTargetsDefaults.MinRadiusM, radiusM),
                 Alive = alive,
                 Stealthed = stealthed,
                 Taunting = taunting,

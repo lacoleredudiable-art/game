@@ -31,7 +31,7 @@ namespace Dovus.Game.Actors
         KinematicMotor _motor;
         string _weaponKey = string.Empty;
         int _verbId;
-        float _arena = 50f;
+        float _arena = MotionTemplateBodyDefaults.FallbackArenaHalfM;
         float _body = 0.5f;
         bool _playing;
         bool _tickedThisFrame;
@@ -50,7 +50,7 @@ namespace Dovus.Game.Actors
         public void Bind(GameClock clock, float arenaHalfM, float bodyRadiusM)
         {
             _clock = clock;
-            _arena = arenaHalfM > 1f ? arenaHalfM : 50f;
+            _arena = arenaHalfM > 1f ? arenaHalfM : MotionTemplateBodyDefaults.FallbackArenaHalfM;
             // Oynayan kalıbın gövde yarıçapı silah değişiminde yeniden yazılmaz.
             if (_playing)
                 return;
@@ -79,7 +79,7 @@ namespace Dovus.Game.Actors
             Func<bool> held,
             Action<MotionHit> onHit,
             float bodyRadiusM = 0.5f,
-            float stopGapM = 0.15f)
+            float stopGapM = MotionTemplateBodyDefaults.DefaultStopGapM)
         {
             if (template == null)
                 return;
@@ -218,18 +218,18 @@ namespace Dovus.Game.Actors
                 return;
             }
 
-            if (_runner.Elapsed > PlayLengthSec + 0.05f)
+            if (_runner.Elapsed > PlayLengthSec + MotionTemplateBodyDefaults.PlayLengthGraceSec)
             {
                 _stopAfterSample = true;
                 return;
             }
 
-            float dt = _clock != null ? (float)(_clock.WorldDeltaMs / 1000.0) : Time.deltaTime;
+            float dt = _clock != null ? (float)(_clock.WorldDeltaMs / ActorsTimeDefaults.SecToMs) : Time.deltaTime;
             if (_hasPlayClock && _clock != null)
             {
                 // Tarama saati ile koşucu ayrışırsa kalıp yazar süresinden uzun görünür
                 // (Yumruk 2-9: 0,20 sn'lik hamle 0,51 sn oynadı).
-                float world = (float)((_clock.Director.WorldTimeMs - _playStartWorldMs) / 1000.0);
+                float world = (float)((_clock.Director.WorldTimeMs - _playStartWorldMs) / ActorsTimeDefaults.SecToMs);
                 float behind = world - _runner.Elapsed;
                 if (behind > dt)
                     dt = behind;
@@ -294,7 +294,7 @@ namespace Dovus.Game.Actors
                 return;
             if (_motor == null)
                 _motor = GetComponent<KinematicMotor>();
-            float refMps = _motor != null ? _motor.LocoRefMps : 6.4f;
+            float refMps = _motor != null ? _motor.LocoRefMps : MotionTemplateBodyDefaults.FallbackLocoRefMps;
             var blend = LocoBlend.FromVelocity(tick.VelX, tick.VelZ, tick.FaceX, tick.FaceZ, refMps);
             // Kalıp hızı kısa fazda sönümün gerisinde kalmasın; ayak gövdeyle aynı karede eşleşsin.
             float damp = 0f;

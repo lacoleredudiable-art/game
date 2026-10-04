@@ -158,7 +158,7 @@ namespace Dovus.Game.Actors
             if (_renderers == null || _renderers.Length == 0)
                 _renderers = GetComponentsInChildren<Renderer>(true);
 
-            float a = stealth ? 0.35f : 1f;
+            float a = stealth ? ActorStatusDefaults.StealthAlpha : 1f;
             for (int i = 0; i < _renderers.Length; i++)
             {
                 Renderer r = _renderers[i];

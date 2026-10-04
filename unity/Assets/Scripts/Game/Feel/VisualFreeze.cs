@@ -84,7 +84,7 @@ namespace Dovus.Game.Feel
                 AnimSlot s = _animators[i];
                 if (s.Anim == null)
                     continue;
-                s.SavedSpeed = s.Anim.speed <= 0.01f ? 1f : s.Anim.speed;
+                s.SavedSpeed = s.Anim.speed <= VisualFreezeDefaults.MinAnimSpeed ? 1f : s.Anim.speed;
                 s.Anim.speed = 0f;
                 _animators[i] = s;
             }

@@ -28,7 +28,7 @@ namespace Dovus.Game.Composition.Builders
                 var playerStrip = root.AddComponent<StatusIconStrip>();
                 playerStrip.BindTheme(ctx.Assets.HudTheme);
                 float stripY = vitalsHud.PlayerStackBottomCanvasY
-                    - HexagonLayoutScreen.DpToPixels(tuning.Hud.StatusIconGapDp + 4f);
+                    - HexagonLayoutScreen.DpToPixels(tuning.Hud.StatusIconGapDp + HudBuilderDefaults.StatusIconExtraGapDp);
                 float left = HexagonLayoutScreen.SafeLeftInsetPx()
                     + HexagonLayoutScreen.DpToPixels(tuning.Hud.VitalsMarginDp);
                 playerStrip.Configure(

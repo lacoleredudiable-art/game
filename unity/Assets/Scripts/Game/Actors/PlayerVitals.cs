@@ -49,8 +49,8 @@ namespace Dovus.Game.Actors
         public void BindClock(GameClock clock) => _clock = clock;
 
         float NowSec() => _clock != null
-            ? (float)(_clock.World.NowMs / 1000.0)
-            : (float)(UnityUnscaledClock.Default.NowMs / 1000.0);
+            ? (float)(_clock.World.NowMs / ActorsTimeDefaults.SecToMs)
+            : (float)(UnityUnscaledClock.Default.NowMs / ActorsTimeDefaults.SecToMs);
 
         void ClearStatusBoard() => GetComponent<ActorStatus>()?.Board.Clear();
 

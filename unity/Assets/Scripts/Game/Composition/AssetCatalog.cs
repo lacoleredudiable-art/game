@@ -96,7 +96,7 @@ namespace Dovus.Game.Composition
             try
             {
                 ElementSystemDocument doc = ElementSystemDocument.Parse(asset.text);
-                if (!ElementSystemHeader.TryParse(doc, 300, out ElementSystemHeader header))
+                if (!ElementSystemHeader.TryParse(doc, AssetCatalogDefaults.ElementHeaderScanMaxChars, out ElementSystemHeader header))
                     throw new InvalidOperationException("element-sistemi kökü okunamadı.");
                 string version = header.Version;
                 if (!string.Equals(version, ElementRequiredVersion, StringComparison.Ordinal))
@@ -108,9 +108,9 @@ namespace Dovus.Game.Composition
                 SkillMotor motor = SkillMotor.FromDocument(doc);
                 EquipmentCatalog equipment = EquipmentCatalog.FromDocument(doc);
                 AnimationDatabase animations = AnimationDatabase.FromDocument(doc);
-                if (motor.RuneCount != 12 || motor.SkillCount != 144
+                if (motor.RuneCount != 12 || motor.SkillCount != AssetCatalogDefaults.ExpectedSkillCount
                     || equipment.Items.Count != 10 || motor.ElementPaints.Count != 6
-                    || animations.Count != 120)
+                    || animations.Count != AssetCatalogDefaults.ExpectedAnimationCount)
                 {
                     throw new InvalidOperationException(
                         "v6.1.1 cardinality: 12 rune / 144 skill / 10 weapon / 6 element / 120 animation beklenir.");

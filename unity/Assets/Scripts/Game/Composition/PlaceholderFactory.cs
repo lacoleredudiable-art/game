@@ -106,19 +106,19 @@ namespace Dovus.Game.Composition
             Vector3 position,
             float radiusM,
             Transform parent = null,
-            float alpha = 0.6f)
+            float alpha = PlaceholderFactoryDefaults.DefaultDiscAlpha)
         {
             EnsureCatalog();
             Color color = ResolveElementColor(elementName);
             color.a = Mathf.Clamp01(alpha);
 
-            float r = Mathf.Max(0.1f, radiusM);
+            float r = Mathf.Max(PlaceholderFactoryDefaults.MinDiscRadiusM, radiusM);
             var go = new GameObject($"PlaceholderZone_{elementName}");
             if (parent != null)
                 go.transform.SetParent(parent, false);
             // Yerde ince silindir hacim — StateBridgeView Mark deseni, GroundScarField yüksekliği.
-            go.transform.position = new Vector3(position.x, 0.04f, position.z);
-            go.transform.localScale = new Vector3(r * 2f, 0.06f, r * 2f);
+            go.transform.position = new Vector3(position.x, PlaceholderFactoryDefaults.DiscGroundOffsetM, position.z);
+            go.transform.localScale = new Vector3(r * 2f, PlaceholderFactoryDefaults.DiscThicknessM, r * 2f);
 
             go.AddComponent<MeshFilter>().sharedMesh = PrimitiveMesh.Get(PrimitiveType.Cylinder);
             var rend = go.AddComponent<MeshRenderer>();
@@ -195,7 +195,7 @@ namespace Dovus.Game.Composition
             if (parent != null)
                 go.transform.SetParent(parent, false);
             go.transform.position = position;
-            go.transform.localScale = Vector3.one * 0.45f;
+            go.transform.localScale = Vector3.one * PlaceholderFactoryDefaults.MarkerScale;
 
             go.AddComponent<MeshFilter>().sharedMesh = PrimitiveMesh.Get(PrimitiveType.Sphere);
             var rend = go.AddComponent<MeshRenderer>();
@@ -219,7 +219,7 @@ namespace Dovus.Game.Composition
 
             var line = go.AddComponent<LineRenderer>();
             line.sharedMaterial = MakeGlowMat(color);
-            line.widthMultiplier = 0.12f;
+            line.widthMultiplier = PlaceholderFactoryDefaults.LineWidthM;
             line.positionCount = 2;
             line.useWorldSpace = true;
             line.loop = false;
@@ -227,7 +227,7 @@ namespace Dovus.Game.Composition
             line.receiveShadows = false;
             line.numCapVertices = 2;
             line.SetPosition(0, from);
-            line.SetPosition(1, to.sqrMagnitude > 1e-6f ? to : from + Vector3.forward * 1.5f);
+            line.SetPosition(1, to.sqrMagnitude > 1e-6f ? to : from + Vector3.forward * PlaceholderFactoryDefaults.LineFallbackLengthM);
             line.startColor = color;
             line.endColor = color;
             return go;
@@ -241,9 +241,9 @@ namespace Dovus.Game.Composition
         // LivingEffectView / GroundScarField ile aynı saydam Unlit deseni.
         static Material MakeGlowMat(Color c)
         {
-            c.a = Mathf.Clamp01(c.a > 0.01f ? c.a : 0.95f);
+            c.a = Mathf.Clamp01(c.a > PlaceholderFactoryDefaults.MinColorAlpha ? c.a : PlaceholderFactoryDefaults.FallbackColorAlpha);
             Color32 q = c;
-            int key = (q.r << 24) | (q.g << 16) | (q.b << 8) | q.a;
+            int key = (q.r << PlaceholderFactoryDefaults.ColorCacheShiftBits) | (q.g << 16) | (q.b << 8) | q.a;
             if (GlowCache.TryGetValue(key, out Material cached) && cached != null)
                 return cached;
             if (_glowShader == null)

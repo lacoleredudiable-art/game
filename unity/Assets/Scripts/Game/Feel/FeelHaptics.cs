@@ -36,7 +36,7 @@ namespace Dovus.Game.Feel
 
                 using var version = new AndroidJavaClass("android.os.Build$VERSION");
                 int sdk = version.GetStatic<int>("SDK_INT");
-                if (sdk >= 26)
+                if (sdk >= FeelHapticsDefaults.VibrationEffectMinSdk)
                 {
                     using var effectClass = new AndroidJavaClass("android.os.VibrationEffect");
                     using var effect = effectClass.CallStatic<AndroidJavaObject>(

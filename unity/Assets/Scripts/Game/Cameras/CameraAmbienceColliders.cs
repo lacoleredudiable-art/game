@@ -56,7 +56,7 @@ namespace Dovus.Game.Cameras
             Bounds b = renderers[0].bounds;
             for (int i = 1; i < renderers.Length; i++)
                 b.Encapsulate(renderers[i].bounds);
-            if (b.size.sqrMagnitude < 0.01f)
+            if (b.size.sqrMagnitude < CameraAmbienceDefaults.MinBoundsSqrMag)
                 return false;
 
             var blockerGo = new GameObject(BlockerChildName);

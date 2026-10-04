@@ -259,13 +259,13 @@ namespace Dovus.Game.Actors
         public bool RangedDelivery { get; set; }
 
         /// <summary>Düz vuruş döngüsü sıfırlanma süresi (sn).</summary>
-        public float StrikeComboResetSec { get; set; } = 1.2f;
+        public float StrikeComboResetSec { get; set; } = ActorVisualDefaults.StrikeComboResetSec;
 
         /// <summary>Düz vuruş klip hızı (Animator StrikeSpeed); HeavyAnimSpeed ile çarpılmaz.</summary>
         public float BasicStrikeAnimSpeed { get; set; } = 1f;
 
         /// <summary>Speed parametresi bu eşiğin üstündeyse aksiyon üst gövde katmanına gider.</summary>
-        public float UpperBodyMinSpeed { get; set; } = 0.15f;
+        public float UpperBodyMinSpeed { get; set; } = ActorVisualDefaults.UpperBodyMinSpeed;
 
         int _strikeIndex;
         /// <summary>-1 = bilinmiyor, 0 = parametre yok, 1 = var.</summary>
@@ -288,7 +288,7 @@ namespace Dovus.Game.Actors
             if (_animator == null || !_animator.isActiveAndEnabled || _animator.runtimeAnimatorController == null)
                 return;
             float s = Mathf.Clamp01(normalized01);
-            if (s < 0.08f)
+            if (s < ActorVisualDefaults.IdleSpeedCutoff)
                 s = 0f;
             if (dampSec > 0f && Time.deltaTime > 0f)
                 _animator.SetFloat(ParamSpeed, s, dampSec, Time.deltaTime);
@@ -309,13 +309,13 @@ namespace Dovus.Game.Actors
                 return;
             if (!HasFloat(ParamLocoRunSpeed) || !HasFloat(ParamLocoPlayback))
             {
-                SetSpeed(worldSpeedMps / Mathf.Max(0.01f, normalizeRefMps), dampSec);
+                SetSpeed(worldSpeedMps / Mathf.Max(ActorVisualDefaults.MinPositive, normalizeRefMps), dampSec);
                 return;
             }
 
-            float run = Mathf.Max(0.01f, _animator.GetFloat(ParamLocoRunSpeed));
-            float model = worldSpeedMps / Mathf.Max(0.01f, _animator.transform.lossyScale.y);
-            if (model < run * 0.08f)
+            float run = Mathf.Max(ActorVisualDefaults.MinPositive, _animator.GetFloat(ParamLocoRunSpeed));
+            float model = worldSpeedMps / Mathf.Max(ActorVisualDefaults.MinPositive, _animator.transform.lossyScale.y);
+            if (model < run * ActorVisualDefaults.LocoRunSpeedRatioFloor)
                 model = 0f;
             float playback = Mathf.Clamp(model / run, 1f, Mathf.Max(1f, maxPlaybackMult));
             if (dampSec > 0f && Time.deltaTime > 0f)
@@ -500,7 +500,7 @@ namespace Dovus.Game.Actors
             bool tooFast = LocoBlend.NeedsDashPose(blend.SpeedMps, clipRun);
             string playKey = LocoBlend.PresentationKey(key, blend.SpeedMps, clipRun);
             LocoBlend legs = tooFast ? default : blend;
-            float cap = Mathf.Min(maxPlayback > 0.05f ? maxPlayback : LocoBlend.TemplatePlaybackCap, LocoBlend.TemplatePlaybackCap);
+            float cap = Mathf.Min(maxPlayback > ActorVisualDefaults.MinPlaybackRate ? maxPlayback : LocoBlend.TemplatePlaybackCap, LocoBlend.TemplatePlaybackCap);
             ApplyTemplateLocomotion(legs, refMps, dampSec, cap);
             if (string.Equals(_motionKey, playKey, System.StringComparison.Ordinal))
                 return;
@@ -517,7 +517,7 @@ namespace Dovus.Game.Actors
         /// </summary>
         MotionAnimClip ApplySidestepMirror(MotionAnimClip clip, float strafe)
         {
-            if (strafe <= 0.15f || !string.Equals(clip.State, "Sidestep", System.StringComparison.Ordinal))
+            if (strafe <= ActorVisualDefaults.SidestepMirrorStrafeMin || !string.Equals(clip.State, "Sidestep", System.StringComparison.Ordinal))
                 return clip;
             if (_animator == null || !_animator.HasState(0, Animator.StringToHash("SidestepRight")))
                 return clip;
@@ -528,7 +528,7 @@ namespace Dovus.Game.Actors
         {
             _motionKey = string.Empty;
             if (_animator != null)
-                _animator.speed = _savedAnimatorSpeed > 0.01f ? _savedAnimatorSpeed : 1f;
+                _animator.speed = _savedAnimatorSpeed > ActorVisualDefaults.MinPositive ? _savedAnimatorSpeed : 1f;
         }
 
         void PlayMotionClip(MotionAnimClip clip, float animSpeed, bool spin)
@@ -547,16 +547,16 @@ namespace Dovus.Game.Actors
                     PlayAction(MotionAnimTable.FallbackState);
             }
 
-            float rate = animSpeed > 0.05f ? animSpeed : 1f;
+            float rate = animSpeed > ActorVisualDefaults.MinPlaybackRate ? animSpeed : 1f;
             if (spin || !MotionAnimTable.IsLocomotionKey(clip.Key))
             {
-                if (_savedAnimatorSpeed <= 0.01f)
-                    _savedAnimatorSpeed = _animator.speed > 0.01f ? _animator.speed : 1f;
+                if (_savedAnimatorSpeed <= ActorVisualDefaults.MinPositive)
+                    _savedAnimatorSpeed = _animator.speed > ActorVisualDefaults.MinPositive ? _animator.speed : 1f;
                 _animator.speed = rate;
             }
             else
             {
-                _animator.speed = _savedAnimatorSpeed > 0.01f ? _savedAnimatorSpeed : 1f;
+                _animator.speed = _savedAnimatorSpeed > ActorVisualDefaults.MinPositive ? _savedAnimatorSpeed : 1f;
             }
         }
 
@@ -567,19 +567,19 @@ namespace Dovus.Game.Actors
                 && HasFloat(ParamLocoRunSpeed))
             {
                 float run = _animator.GetFloat(ParamLocoRunSpeed);
-                if (run > 0.05f)
+                if (run > ActorVisualDefaults.MinPlaybackRate)
                     return run;
             }
-            return fallback > 0.05f ? fallback : 2.24f;
+            return fallback > ActorVisualDefaults.MinPlaybackRate ? fallback : ActorVisualDefaults.FallbackLocoRunMps;
         }
 
         void ApplyTemplateLocomotion(in LocoBlend blend, float refMps, float dampSec, float maxPlayback)
         {
             SetLocomotion(blend.SpeedMps, refMps, dampSec, maxPlayback);
-            if (blend.Forward < -0.35f && blend.SpeedMps > 0.2f && HasFloat(ParamLocoPlayback))
+            if (blend.Forward < ActorVisualDefaults.BackwardForwardThreshold && blend.SpeedMps > ActorVisualDefaults.BackwardSpeedMinMps && HasFloat(ParamLocoPlayback))
             {
                 float playback = _animator.GetFloat(ParamLocoPlayback);
-                _animator.SetFloat(ParamLocoPlayback, -Mathf.Abs(playback < 0.01f ? 1f : playback));
+                _animator.SetFloat(ParamLocoPlayback, -Mathf.Abs(playback < ActorVisualDefaults.MinPositive ? 1f : playback));
             }
             SafeSetFloat(ParamForward, blend.Forward);
             SafeSetFloat(ParamStrafe, blend.Strafe);

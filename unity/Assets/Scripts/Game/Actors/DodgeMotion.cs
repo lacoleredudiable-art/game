@@ -109,7 +109,7 @@ namespace Dovus.Game.Actors
             float glide = _dodge.GetGlideVelocityRatio(worldMs);
             if (glide > 0f)
             {
-                float dtSec = (float)(_clock.WorldDeltaMs / 1000.0);
+                float dtSec = (float)(_clock.WorldDeltaMs / ActorsTimeDefaults.SecToMs);
                 _glideExtra += _dir * GlideSpeedMps() * glide * dtSec;
             }
 
@@ -144,7 +144,7 @@ namespace Dovus.Game.Actors
             if (_input != null)
             {
                 Vector2 move = _input.MoveDirection;
-                if (move.sqrMagnitude > 0.01f)
+                if (move.sqrMagnitude > DodgeMotionDefaults.PlanarMoveEpsilonSqr)
                 {
                     stick = new Vector3(move.x, 0f, move.y);
                     if (_follow != null)
@@ -174,7 +174,7 @@ namespace Dovus.Game.Actors
             if (_boss == null)
                 return pos;
             float body = _motor != null ? _motor.BodyRadiusM : 0.5f;
-            float bossR = 0.85f;
+            float bossR = DodgeMotionDefaults.FallbackBossRadiusM;
             // O11: yer değiştirme karesi başına GetComponent yerine boss başına bir kez.
             if (_reactorOwner != _boss || _reactorCache == null)
             {
@@ -182,9 +182,9 @@ namespace Dovus.Game.Actors
                 _reactorCache = _boss.GetComponent<BossReactor>();
             }
             BossReactor reactor = _reactorCache;
-            if (reactor != null && reactor.BodyRadiusM > 0.01f)
+            if (reactor != null && reactor.BodyRadiusM > DodgeMotionDefaults.MinBodyRadiusM)
                 bossR = reactor.BodyRadiusM;
-            float gap = _tuning != null ? _tuning.EdgeGapM : 0.15f;
+            float gap = _tuning != null ? _tuning.EdgeGapM : DodgeMotionDefaults.FallbackEdgeGapM;
             float x = pos.x;
             float z = pos.z;
             DodgeEdge.StopBeforeCrossing(
@@ -216,7 +216,7 @@ namespace Dovus.Game.Actors
         /// konulamaz: eğri u=1'de hızı sıfıra indirdiği için o değer ikinci bir atılım gibi
         /// okunuyordu. Büyüklük artık veri (T8.1).
         /// </summary>
-        float GlideSpeedMps() => _colors != null ? _colors.Player.DodgeGlideSpeedMps : 3.5f;
+        float GlideSpeedMps() => _colors != null ? _colors.Player.DodgeGlideSpeedMps : DodgeMotionDefaults.FallbackGlideSpeedMps;
 
         Vector3 ClampArena(Vector3 pos)
         {

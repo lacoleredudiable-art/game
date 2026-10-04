@@ -56,8 +56,8 @@ namespace Dovus.Game.Actors
         {
             if (!_ready)
                 CaptureBase();
-            _recoveryUntilWorldMs = (float)(worldTimeMs + durationSec * 1000.0);
-            _poseScale = new Vector3(1.08f, 0.82f, 1.08f);
+            _recoveryUntilWorldMs = (float)(worldTimeMs + durationSec * ActorsTimeDefaults.SecToMs);
+            _poseScale = new Vector3(ActorPoseDefaults.RecoverySquashHorizontal, ActorPoseDefaults.RecoverySquashVertical, ActorPoseDefaults.RecoverySquashHorizontal);
             _poseUntilWorldMs = _recoveryUntilWorldMs;
         }
 
@@ -79,10 +79,10 @@ namespace Dovus.Game.Actors
             float now = (float)worldTimeMs;
             if (now < _recoveryUntilWorldMs)
             {
-                float breath = 0.04f * Mathf.Sin(now * 0.02f);
+                float breath = ActorPoseDefaults.RecoveryBreathAmplitude * Mathf.Sin(now * ActorPoseDefaults.RecoveryBreathFrequency);
                 transform.localScale = Vector3.Scale(
                     _baseScale,
-                    new Vector3(1.05f + breath, 0.88f - breath, 1.05f + breath));
+                    new Vector3(ActorPoseDefaults.RecoveryBreathScaleHorizontal + breath, ActorPoseDefaults.RecoveryBreathScaleVertical - breath, ActorPoseDefaults.RecoveryBreathScaleHorizontal + breath));
                 return;
             }
 
@@ -94,7 +94,7 @@ namespace Dovus.Game.Actors
                 return;
             }
 
-            transform.localScale = Vector3.Lerp(transform.localScale, _baseScale, 0.25f);
+            transform.localScale = Vector3.Lerp(transform.localScale, _baseScale, ActorPoseDefaults.BaseScaleRelaxLerp);
         }
     }
 }

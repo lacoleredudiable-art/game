@@ -23,7 +23,7 @@ namespace Dovus.Game.Composition.Builders
                 LavaDecor.Build(ctx.Arena.transform, walkHalf);
             CombatAmbienceEnvironment.Build(ctx.Arena, walkHalf, tuning);
             DebugConfig.DevLog($"[Arena] circle r={walkHalf:0.##}m wallH={tuning.Arena.ArenaWallHeightM:0.#}m");
-            ctx.SpawnMaxR = walkHalf * 0.4f;
+            ctx.SpawnMaxR = walkHalf * ArenaBuilderDefaults.SpawnMaxRadiusFraction;
         }
 
         public Light BuildSun(WorldContext ctx)
@@ -31,10 +31,10 @@ namespace Dovus.Game.Composition.Builders
             var sunGo = new GameObject("Sun");
             var light = sunGo.AddComponent<Light>();
             light.type = LightType.Directional;
-            light.intensity = 1.55f;
+            light.intensity = ArenaBuilderDefaults.SunIntensity;
             light.color = new Color(1f, 0.96f, 0.9f);
             light.shadows = LightShadows.Soft;
-            sunGo.transform.rotation = Quaternion.Euler(48f, -32f, 0f);
+            sunGo.transform.rotation = Quaternion.Euler(ArenaBuilderDefaults.SunPitchDeg, -ArenaBuilderDefaults.SunYawDeg, 0f);
             RenderSettings.sun = light;
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
             RenderSettings.ambientSkyColor = new Color(0.45f, 0.48f, 0.55f);

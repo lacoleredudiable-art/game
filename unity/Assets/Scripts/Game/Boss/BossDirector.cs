@@ -127,7 +127,7 @@ namespace Dovus.Game.Boss
                     return _brain.StrikeWorldMs;
                 if (_brain != null && _brain.Phase == BossBrainPhase.Windup && _attack.WindupMs > 0)
                 {
-                    float speed = Mathf.Max(0.05f, CurrentPhaseSpeed());
+                    float speed = Mathf.Max(BossDirectorDefaults.MinPhaseSpeed, CurrentPhaseSpeed());
                     double remain = System.Math.Max(0, _attack.WindupMs - _brain.PhaseElapsedMs);
                     double now = _clock != null ? _clock.Director.WorldTimeMs : _brain.PhaseStartedWorldMs;
                     return (int)(now + remain / speed);
@@ -352,7 +352,7 @@ namespace Dovus.Game.Boss
                 return;
 
             double worldMs = _clock.Director.WorldTimeMs;
-            float dtSec = (float)(_clock.WorldDeltaMs / 1000.0);
+            float dtSec = (float)(_clock.WorldDeltaMs / BossTimeDefaults.SecToMs);
             _poise?.Tick(dtSec);
             HandlePlayerDown(worldMs);
 

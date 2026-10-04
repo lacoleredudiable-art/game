@@ -18,6 +18,13 @@ namespace Dovus.Game.Boss
         public const float FillProgressMin = 0.05f;
 
         public const float FadeDestroyDelaySec = 0.18f;
+
+        public const float GlowAlphaDistanceInner = 0.70f;
+        public const float GlowAlphaFloor = 0.55f;
+        public const float GlowAlphaDistanceMid = 0.88f;
+        public const float GlowAlphaMidSpan = 0.18f;
+        public const float GlowAlphaTail = 0.1f;
+        public const float GlowAlphaTailSpan = 0.12f;
     }
 
 }

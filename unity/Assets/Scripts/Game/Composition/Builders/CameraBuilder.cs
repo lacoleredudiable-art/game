@@ -16,8 +16,8 @@ namespace Dovus.Game.Composition.Builders
             var camera = camGo.AddComponent<Camera>();
             camera.clearFlags = CameraClearFlags.SolidColor;
             camera.backgroundColor = tuning.Visuals.BackgroundColor;
-            camera.nearClipPlane = 0.2f;
-            camera.farClipPlane = 250f;
+            camera.nearClipPlane = CameraBuilderDefaults.NearClipM;
+            camera.farClipPlane = CameraBuilderDefaults.FarClipM;
             camera.fieldOfView = tuning.Camera.CameraFovDeg;
 
             camGo.AddComponent<AudioListener>();
@@ -40,7 +40,7 @@ namespace Dovus.Game.Composition.Builders
         public void ApplyAtmosphere(WorldContext ctx)
         {
             SceneAtmosphere.Apply(ctx.Sun, ctx.MainCamera, ctx.Tuning);
-            BillboardVfx.CreateEmberField(ctx.Boss.transform, new Color(1f, 0.45f, 0.12f), rate: 14f);
+            BillboardVfx.CreateEmberField(ctx.Boss.transform, new Color(1f, 0.45f, 0.12f), rate: CameraBuilderDefaults.BossEmberRate);
         }
     }
 }

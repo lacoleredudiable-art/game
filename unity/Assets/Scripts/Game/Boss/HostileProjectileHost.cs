@@ -79,7 +79,7 @@ namespace Dovus.Game.Boss
             _playerStatus = playerStatus;
             _playerVitals = playerVitals;
             _boss = boss;
-            _bossRadiusM = Mathf.Max(0.1f, bossRadiusM);
+            _bossRadiusM = Mathf.Max(HostileProjectileDefaults.MinBossRadiusM, bossRadiusM);
             Sim.Events -= OnEvent;
             Sim.Events += OnEvent;
         }
@@ -96,7 +96,7 @@ namespace Dovus.Game.Boss
             int targetId = -1, bool harmless = false)
         {
             return Sim.Spawn(BossOwnerId, 1, from.x, from.z, velocity.x, velocity.z,
-                radiusM, damage, NowMs, Math.Max(0.05, lifeSec) * 1000.0, targetId, false, harmless);
+                radiusM, damage, NowMs, Math.Max(HostileProjectileDefaults.MinLifeSec, lifeSec) * BossTimeDefaults.SecToMs, targetId, false, harmless);
         }
 
         public void ClearAll()

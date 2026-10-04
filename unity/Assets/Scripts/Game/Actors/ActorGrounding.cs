@@ -83,7 +83,7 @@ namespace Dovus.Game.Actors
             if (!_claimed)
                 _logic.Release();
             _claimed = false;
-            float dt = _clock != null ? (float)(_clock.WorldDeltaMs / 1000.0) : Time.deltaTime;
+            float dt = _clock != null ? (float)(_clock.WorldDeltaMs / ActorsTimeDefaults.SecToMs) : Time.deltaTime;
             _logic.Tick(dt);
             ApplyRoot();
             ResetVisual();

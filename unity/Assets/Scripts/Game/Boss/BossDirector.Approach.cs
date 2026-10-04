@@ -34,7 +34,7 @@ namespace Dovus.Game.Boss
             }
 
             Vector3 home = _reactor.Home;
-            float pad = _colors != null ? _colors.Boss.BossApproachStopPadM : 0.35f;
+            float pad = _colors != null ? _colors.Boss.BossApproachStopPadM : BossDirectorDefaults.FallbackApproachStopPadM;
             ApproachStep step = BossApproachRules.ComputeStep(
                 home.x,
                 home.z,
@@ -65,7 +65,7 @@ namespace Dovus.Game.Boss
             dir.y = 0f;
             if (dir.sqrMagnitude <= 0.0001f)
                 return;
-            float rate = _colors != null ? _colors.Boss.BossTurnRateDegPerSec : 240f;
+            float rate = _colors != null ? _colors.Boss.BossTurnRateDegPerSec : BossDirectorDefaults.FallbackTurnRateDegPerSec;
             transform.rotation = Quaternion.RotateTowards(
                 transform.rotation, Quaternion.LookRotation(dir.normalized, Vector3.up), rate * dtSec);
         }
@@ -79,7 +79,7 @@ namespace Dovus.Game.Boss
             to.y = 0f;
             if (IsReversed)
                 to = -to;
-            if (to.sqrMagnitude > 0.01f)
+            if (to.sqrMagnitude > BossDirectorDefaults.PlanarDirEpsilonSqr)
                 transform.rotation = Quaternion.LookRotation(to.normalized, Vector3.up);
         }
     }

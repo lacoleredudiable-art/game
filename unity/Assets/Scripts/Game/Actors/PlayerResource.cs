@@ -30,8 +30,8 @@ namespace Dovus.Game.Actors
         /// <summary>JSON: max_mana 100 / regen_per_sec 8 / regen_delay_after_cast_sec 1.5.</summary>
         public void Bind(
             float maxMana = 100f,
-            float regenPerSec = 8f,
-            float regenDelayAfterCastSec = 1.5f)
+            float regenPerSec = PlayerResourceDefaults.DefaultRegenPerSec,
+            float regenDelayAfterCastSec = PlayerResourceDefaults.DefaultRegenDelayAfterCastSec)
         {
             _tracker = new ResourceTracker(maxMana, regenPerSec, regenDelayAfterCastSec);
         }
