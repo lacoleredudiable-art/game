@@ -224,14 +224,6 @@ namespace UnityEngine
         public void StopPlayback() { }
     }
 
-    public class Animation : Behaviour
-    {
-        public bool Play() => false;
-        public bool Play(string name) => false;
-        public void Stop() { }
-        public bool isPlaying => false;
-        public AnimationClip clip { get; set; }
-    }
 
     // ---------------------------------------------------------------- parçacık
 

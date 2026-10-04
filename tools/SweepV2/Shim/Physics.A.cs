@@ -270,7 +270,6 @@ namespace UnityEngine
         }
     }
 
-    public class CharacterController : CapsuleCollider { }
 
     internal static class Geo
     {

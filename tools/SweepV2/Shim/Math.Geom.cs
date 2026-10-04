@@ -123,22 +123,4 @@ namespace UnityEngine
         public Vector3 GetPoint(float distance) => _origin + _direction * distance;
     }
 
-    public struct Plane
-    {
-        public Vector3 normal;
-        public float distance;
-        public Plane(Vector3 inNormal, Vector3 inPoint)
-        {
-            normal = inNormal.normalized;
-            distance = -Vector3.Dot(normal, inPoint);
-        }
-        public bool Raycast(Ray ray, out float enter)
-        {
-            float vdot = Vector3.Dot(ray.direction, normal);
-            float ndot = -Vector3.Dot(ray.origin, normal) - distance;
-            if (Mathf.Approximately(vdot, 0f)) { enter = 0f; return false; }
-            enter = ndot / vdot;
-            return enter > 0f;
-        }
-    }
 }

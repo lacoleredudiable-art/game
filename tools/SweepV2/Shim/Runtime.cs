@@ -338,21 +338,6 @@ namespace UnityEngine
         public const int SystemSetting = -2;
     }
 
-    public static class SystemInfo
-    {
-        public static string deviceModel => "Headless";
-        public static string deviceName => "Headless";
-        public static string operatingSystem => Environment.OSVersion.ToString();
-        public static int systemMemorySize => 16384;
-        public static int processorCount => Environment.ProcessorCount;
-        public static bool supportsVibration => false;
-        public static string graphicsDeviceName => "Null";
-    }
-
-    public static class Handheld
-    {
-        public static void Vibrate() { }
-    }
 
     public static class PlayerPrefs
     {

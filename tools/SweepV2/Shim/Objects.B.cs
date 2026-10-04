@@ -338,24 +338,12 @@ namespace UnityEngine
     [AttributeUsage(AttributeTargets.Class)]
     public sealed class DisallowMultipleComponent : Attribute { }
 
-    [AttributeUsage(AttributeTargets.Class)]
-    public sealed class ExecuteAlways : Attribute { }
 
-    [AttributeUsage(AttributeTargets.Class)]
-    public sealed class ExecuteInEditMode : Attribute { }
 
-    [AttributeUsage(AttributeTargets.Class)]
-    public sealed class AddComponentMenu : Attribute
-    {
-        public AddComponentMenu(string menuName) { }
-        public AddComponentMenu(string menuName, int order) { }
-    }
 
     [AttributeUsage(AttributeTargets.Field)]
     public sealed class SerializeField : Attribute { }
 
-    [AttributeUsage(AttributeTargets.Field)]
-    public sealed class SerializeReference : Attribute { }
 
     [AttributeUsage(AttributeTargets.Field)]
     public sealed class HideInInspector : Attribute { }
@@ -367,12 +355,6 @@ namespace UnityEngine
         public HeaderAttribute(string header) { this.header = header; }
     }
 
-    [AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
-    public sealed class SpaceAttribute : Attribute
-    {
-        public SpaceAttribute() { }
-        public SpaceAttribute(float height) { }
-    }
 
     [AttributeUsage(AttributeTargets.Field)]
     public sealed class TooltipAttribute : Attribute
@@ -401,24 +383,7 @@ namespace UnityEngine
         public TextAreaAttribute(int minLines, int maxLines) { }
     }
 
-    [AttributeUsage(AttributeTargets.Field)]
-    public sealed class MultilineAttribute : Attribute
-    {
-        public MultilineAttribute() { }
-        public MultilineAttribute(int lines) { }
-    }
 
-    [AttributeUsage(AttributeTargets.Field)]
-    public sealed class ContextMenuItemAttribute : Attribute
-    {
-        public ContextMenuItemAttribute(string name, string function) { }
-    }
-
-    [AttributeUsage(AttributeTargets.Method)]
-    public sealed class ContextMenu : Attribute
-    {
-        public ContextMenu(string itemName) { }
-    }
 
     [AttributeUsage(AttributeTargets.Class)]
     public sealed class CreateAssetMenuAttribute : Attribute

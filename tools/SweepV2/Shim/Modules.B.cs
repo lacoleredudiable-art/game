@@ -291,7 +291,7 @@ namespace UnityEngine.Rendering.Universal
 {
     public enum CameraRenderType { Base, Overlay }
     public enum AntialiasingMode { None, FastApproximateAntialiasing, SubpixelMorphologicalAntiAliasing, TemporalAntiAliasing }
-    public enum TonemappingMode { None, Neutral, ACES }
+
     public enum CameraOverrideOption { UsePipelineSettings, On, Off }
 
     public class UniversalAdditionalCameraData : MonoBehaviour
@@ -306,14 +306,6 @@ namespace UnityEngine.Rendering.Universal
         public CameraOverrideOption requiresDepthOption { get; set; }
     }
 
-
-
-    public class Vignette : VolumeComponent
-    {
-        public ColorParameter color = new(Color.black);
-        public ClampedFloatParameter intensity = new(0f, 0f, 1f);
-        public ClampedFloatParameter smoothness = new(0.2f, 0.01f, 1f);
-    }
 
 
 

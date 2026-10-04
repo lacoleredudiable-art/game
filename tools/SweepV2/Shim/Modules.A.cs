@@ -151,32 +151,6 @@ namespace UnityEngine.UI
         public ButtonClickedEvent onClick { get; set; } = new();
     }
 
-    public class Toggle : Selectable
-    {
-        public class ToggleEvent : UnityEvent<bool> { }
-        bool _isOn;
-        public ToggleEvent onValueChanged { get; set; } = new();
-        public Graphic graphic { get; set; }
-        public ToggleGroup group { get; set; }
-
-        public bool isOn
-        {
-            get => _isOn;
-            set
-            {
-                if (_isOn == value) return;
-                _isOn = value;
-                onValueChanged.Invoke(value);
-            }
-        }
-
-        public void SetIsOnWithoutNotify(bool value) => _isOn = value;
-    }
-
-    public class ToggleGroup : UIBehaviour
-    {
-        public bool allowSwitchOff { get; set; }
-    }
 
     public class Slider : Selectable
     {
@@ -312,17 +286,7 @@ namespace UnityEngine.UI
         public float size { get; set; }
     }
 
-    public static class LayoutRebuilder
-    {
-        public static void ForceRebuildLayoutImmediate(RectTransform layoutRoot) { }
-        public static void MarkLayoutForRebuild(RectTransform rect) { }
-    }
 
-    public static class LayoutUtility
-    {
-        public static float GetPreferredWidth(RectTransform rect) => rect != null ? rect.sizeDelta.x : 0f;
-        public static float GetPreferredHeight(RectTransform rect) => rect != null ? rect.sizeDelta.y : 0f;
-    }
 }
 
 namespace TMPro
