@@ -109,10 +109,10 @@ namespace Dovus.Game.Actors
         public bool ApplyDamage(int amount)
         {
             TeamActor actor = GetComponent<TeamActor>();
-            if (actor != null && PortalBorderTeamHooks.TryMiss(actor.Id))
+            if (actor != null && PortalBorderTeamHost.Hub.TryMiss(actor.Id))
                 return false;
             if (actor != null)
-                amount = Mathf.RoundToInt(amount * PortalBorderTeamHooks.DamageTakenMult(actor.Id));
+                amount = Mathf.RoundToInt(amount * PortalBorderTeamHost.Hub.DamageTakenMult(actor.Id));
             if (amount <= 0 || _hp <= 0)
                 return false;
             _hp = Mathf.Max(0, _hp - amount);

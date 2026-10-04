@@ -49,6 +49,8 @@ namespace Dovus.Game.Team
         public BorderMode Border => _border;
         public PortalSystem Portal => _portal;
         public TeamComboSystem Team => _team;
+        public TeamModifierHub Modifiers { get; } = new TeamModifierHub();
+        public static TeamModifierHub Hub => Instance != null ? Instance.Modifiers : TeamModifierHub.Neutral;
         public int Spawned => _spawned.Count;
 
         // MonoBehaviour ctor'unda Resources.Load yasak (UnityException) → op tabloları Awake'te JSON'dan bağlanır.
@@ -75,16 +77,16 @@ namespace Dovus.Game.Team
         void OnEnable()
         {
             Instance = this;
-            PortalBorderTeamHooks.Cast += OnCast;
-            PortalBorderTeamHooks.Roll = () => (float)UnityRng.Default.NextDouble();
+            Modifiers.Cast += OnCast;
+            Modifiers.Roll = () => (float)UnityRng.Default.NextDouble();
         }
 
         void OnDisable()
         {
             if (Instance == this)
                 Instance = null;
-            PortalBorderTeamHooks.Cast -= OnCast;
-            PortalBorderTeamHooks.ResetModifiers();
+            Modifiers.Cast -= OnCast;
+            Modifiers.ResetModifiers();
         }
 
         /// <summary>Tarama vakaları arasında kapı, ışın ve dost buff'ı kalmasın.</summary>
@@ -95,7 +97,7 @@ namespace Dovus.Game.Team
             _border.Clear();
             _wasOwning = false;
             _borderReleasePending = false;
-            PortalBorderTeamHooks.ResetModifiers();
+            Modifiers.ResetModifiers();
         }
 
         void Update()
@@ -293,7 +295,7 @@ namespace Dovus.Game.Team
             TeamActor to = null;
             for (int i = 0; i < _actors.Count; i++)
             {
-                if (_actors[i] != from && _actors[i].Id != PortalBorderTeamHooks.PlayerActorId)
+                if (_actors[i] != from && _actors[i].Id != Modifiers.PlayerActorId)
                 {
                     if (to == null || to.Id == _team.BallHolder)
                         to = _actors[i];
@@ -385,7 +387,7 @@ namespace Dovus.Game.Team
                 TeamActor actor = _player.GetComponent<TeamActor>();
                 if (actor == null)
                     actor = _player.gameObject.AddComponent<TeamActor>();
-                actor.Id = PortalBorderTeamHooks.PlayerActorId;
+                actor.Id = Modifiers.PlayerActorId;
                 actor.Radius = 0.5f;
                 if (_vitals != null && _vitals.MaxHp > 0)
                     actor.HpRatio = (float)_vitals.Hp / _vitals.MaxHp;
@@ -448,10 +450,10 @@ namespace Dovus.Game.Team
             TeamActor actor = FindActor(move.ActorId);
             if (actor == null)
                 return;
-            if (actor.TemplateOwnsPosition && actor.Id == PortalBorderTeamHooks.PlayerActorId)
+            if (actor.TemplateOwnsPosition && actor.Id == Modifiers.PlayerActorId)
                 return;
-            if (move.Teleport && actor.Id == PortalBorderTeamHooks.PlayerActorId)
-                PortalBorderTeamHooks.MarkIntentionalTeleport();
+            if (move.Teleport && actor.Id == Modifiers.PlayerActorId)
+                Modifiers.MarkIntentionalTeleport();
             actor.transform.position = new Vector3(move.X, move.Y, move.Z);
             if (!move.TransferDebuffs)
                 return;
@@ -480,7 +482,7 @@ namespace Dovus.Game.Team
         {
             int id = player.Id;
             PortalBuff buff = _portal.BuffFor(id);
-            var table = PortalBorderTeamHooks.Table;
+            var table = Modifiers.Table;
             table.Set(
                 id,
                 new ActorModifiers(
@@ -491,15 +493,15 @@ namespace Dovus.Game.Team
                     buff.DamageTakenMult));
             table.BossIncomingMult = _team.BossIncomingMult;
             table.BossStrikeScale = _portal.StrikeScale;
-            PortalBorderTeamHooks.SetMiss(id, buff.MissChance);
-            PortalBorderTeamHooks.SetTaken(id, buff.DamageTakenMult);
+            Modifiers.SetMiss(id, buff.MissChance);
+            Modifiers.SetTaken(id, buff.DamageTakenMult);
             for (int i = 0; i < _actors.Count; i++)
             {
                 if (_actors[i].Id == id)
                     continue;
                 PortalBuff allyBuff = _portal.BuffFor(_actors[i].Id);
-                PortalBorderTeamHooks.SetMiss(_actors[i].Id, allyBuff.MissChance);
-                PortalBorderTeamHooks.SetTaken(_actors[i].Id, allyBuff.DamageTakenMult);
+                Modifiers.SetMiss(_actors[i].Id, allyBuff.MissChance);
+                Modifiers.SetTaken(_actors[i].Id, allyBuff.DamageTakenMult);
             }
         }
 
@@ -590,7 +592,7 @@ namespace Dovus.Game.Team
         {
             for (int i = 0; i < _actors.Count; i++)
             {
-                if (_actors[i].Id == PortalBorderTeamHooks.PlayerActorId)
+                if (_actors[i].Id == Modifiers.PlayerActorId)
                     return _actors[i];
             }
             return _actors.Count > 0 ? _actors[0] : null;

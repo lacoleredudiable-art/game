@@ -69,7 +69,7 @@ namespace Dovus.Game.Skills.Closing
 
             float lifesteal = _host.SlotPassives?.LifestealAddFor(_host.SlotQueryCastId) ?? 0f;
             lifesteal += ClosingHealRules.AdjectiveLifesteal(skill);
-            lifesteal += PortalBorderTeamHooks.LifestealAdd;
+            lifesteal += PortalBorderTeamHost.Hub.LifestealAdd;
             if (lifesteal > 0f)
             {
                 var vitals = _host.CachedPlayerVitals();

@@ -129,7 +129,7 @@ namespace Dovus.Game.Skills.Flow
                 pendingTarget = _host.Aim.ArmedTarget;
                 _host.FaceTarget(_host.Aim.CastFacingTarget);
             }
-            float atkSpd = PortalBorderTeamHooks.AttackSpeedMult;
+            float atkSpd = PortalBorderTeamHost.Hub.AttackSpeedMult;
             if (atkSpd > 0f)
                 castMult /= atkSpd;
             recoverySec *= castMult;
