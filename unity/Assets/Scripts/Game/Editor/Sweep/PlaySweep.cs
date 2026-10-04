@@ -36,7 +36,7 @@ using UnityEngine;
 using UnityEngine.LowLevel;
 using UnityEngine.PlayerLoop;
 
-namespace Dovus.Game.Editor
+namespace Dovus.Game.Editor.Sweep
 {
         /// <summary>
         /// Play Mode kombo taraması. Boss'u durdurur, oyuncuyu boss'a verilen mesafeye koyar,

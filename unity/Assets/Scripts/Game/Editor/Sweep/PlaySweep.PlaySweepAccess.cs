@@ -1,7 +1,7 @@
 #if UNITY_EDITOR
 using Dovus.Game.Team;
 
-namespace Dovus.Game.Editor
+namespace Dovus.Game.Editor.Sweep
 {
     public static partial class PlaySweep
     {
