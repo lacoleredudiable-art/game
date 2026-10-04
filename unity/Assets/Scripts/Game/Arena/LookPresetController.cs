@@ -14,10 +14,11 @@ namespace Dovus.Game.Arena
         ReflectionProbe _probe;
         bool _probeRenderPending;
 
-        public void Initialize(Volume volume, Light sun)
+        public void Initialize(Volume volume, Light sun, Camera mainCamera)
         {
             _volume = volume;
             _sun = sun;
+            _mainCamera = mainCamera;
             BindVolume(volume, sun);
 
             char preset = 'B';
@@ -76,7 +77,7 @@ namespace Dovus.Game.Arena
             if (_probe != null)
             {
                 _probe.enabled = true;
-                _probe.backgroundColor = Camera.main != null ? Camera.main.backgroundColor : _probe.backgroundColor;
+                _probe.backgroundColor = MainCameraBackgroundOr(_probe.backgroundColor);
                 return;
             }
 
@@ -94,7 +95,7 @@ namespace Dovus.Game.Arena
             // Unity'nin stok mavi fallback'i; zırh gibi parlak/metalik yüzeylere mavi gökyüzü yansıtıyordu
             // (task-look-v2b problem 1, "source" fix). Gerçek sahne grisiyle eşle.
             _probe.clearFlags = ReflectionProbeClearFlags.SolidColor;
-            _probe.backgroundColor = Camera.main != null ? Camera.main.backgroundColor : new Color(0.56f, 0.6f, 0.66f);
+            _probe.backgroundColor = MainCameraBackgroundOr(new Color(0.56f, 0.6f, 0.66f));
             _probeRenderPending = true;
         }
 

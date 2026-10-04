@@ -6,6 +6,7 @@ using Dovus.Core.Input;
 using Dovus.Core.Hud;
 using Dovus.Core.Passives;
 using Dovus.Game.Boss;
+using Dovus.Game.Cameras;
 using Dovus.Game.Casting;
 using Dovus.Game.Config;
 using Dovus.Game.DevTools;
@@ -25,6 +26,8 @@ namespace Dovus.Game.Hud
         PrototypeTuning _tuning;
         HudTheme _theme;
         Camera _cam;
+        FollowCamera _follow;
+        BossReactor _defaultBoss;
 
         public void BindTheme(HudTheme theme) => _theme = theme;
         Canvas _canvas;
@@ -44,10 +47,17 @@ namespace Dovus.Game.Hud
             public bool Heal;
         }
 
+        public void BindMainCamera(Camera camera, FollowCamera follow = null)
+        {
+            _cam = camera;
+            _follow = follow;
+        }
+
+        public void BindDefaultBoss(BossReactor boss) => _defaultBoss = boss;
+
         public void Configure(PrototypeTuning tuning, Transform canvasRoot)
         {
             _tuning = tuning;
-            _cam = Camera.main;
 
             var host = new GameObject("DamageNumberHud");
             host.transform.SetParent(canvasRoot, false);
@@ -97,9 +107,8 @@ namespace Dovus.Game.Hud
             }
             else
             {
-                var boss = Object.FindAnyObjectByType<BossReactor>();
-                if (boss != null)
-                    world = boss.transform.position + Vector3.up * 2.2f;
+                if (_defaultBoss != null)
+                    world = _defaultBoss.transform.position + Vector3.up * 2.2f;
             }
 
             ShowAt(world, amount, isCrit, tint, victimIsPlayer, victimIsBoss);
@@ -170,8 +179,7 @@ namespace Dovus.Game.Hud
         {
             if (_tuning == null)
                 return;
-            if (_cam == null)
-                _cam = Camera.main;
+            ResolveMainCamera();
 
             float hold = _tuning.Hud.DamageFloatHoldSec;
             float fade = _tuning.Hud.DamageFloatFadeSec;
@@ -219,6 +227,14 @@ namespace Dovus.Game.Hud
                 f.Go.SetActive(true);
                 _pool[i] = f;
             }
+        }
+
+        void ResolveMainCamera()
+        {
+            if (_cam != null)
+                return;
+            if (_follow != null)
+                _cam = _follow.ViewCamera;
         }
     }
 }

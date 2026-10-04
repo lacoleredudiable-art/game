@@ -64,8 +64,13 @@ namespace Dovus.Game.Composition.Builders
 
             var damageHud = root.AddComponent<DamageNumberHud>();
             damageHud.BindTheme(ctx.Assets.HudTheme);
+            damageHud.BindMainCamera(ctx.MainCamera, ctx.FollowCamera);
+            damageHud.BindDefaultBoss(ctx.BossReactor);
             damageHud.Configure(tuning, view.CanvasRoot);
             ctx.DamageNumberHud = damageHud;
+
+            if (ctx.AllyDummy != null)
+                ctx.AllyDummy.BindMainCamera(ctx.MainCamera, ctx.FollowCamera);
 
             var passiveHud = root.AddComponent<PassiveHud>();
             passiveHud.Configure(view);

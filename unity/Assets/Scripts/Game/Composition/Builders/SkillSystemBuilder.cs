@@ -80,7 +80,8 @@ namespace Dovus.Game.Composition.Builders
             ctx.Player.GetComponent<PlayerDodgeRig>()?.Bind(ctx.Clock, input, follow, readout, feel);
             var overlayHud = feelGo.AddComponent<CombatOverlayHud>();
             overlayHud.BindTheme(ctx.Assets.HudTheme);
-            overlayHud.Configure(vitals, ctx.BossVitals, player, ctx.Boss.transform, ctx.OverlayCamera);
+            overlayHud.Configure(
+                vitals, ctx.BossVitals, player, ctx.Boss.transform, ctx.OverlayCamera, ctx.MainCamera, follow);
             ctx.CombatFeel = feel;
 
             var directorGo = ctx.Boss.gameObject;
@@ -164,6 +165,7 @@ namespace Dovus.Game.Composition.Builders
             var director = manGo.AddComponent<ManifestationDirector>();
             var targeting = ctx.Player.GetComponent<PlayerTargeting>();
             director.Bind(ctx.Clock, input, player, ctx.PlayerPose, boss, ctx.BossVitals, scars, tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, ctx.AllyDummy, view, passiveHud, equippedWeapon, equipmentBonus, skills, skillFactory, design?.Animations);
+            director.BindCombatFeel(feel);
             director.BindTeam(ctx.TeamAccess);
             director.BindSfx(sfx);
             director.BindTargeting(targeting);
@@ -173,11 +175,14 @@ namespace Dovus.Game.Composition.Builders
             BossEncounterData.ApplyVolley(combat.Boss, tuning.Boss.ActiveBossResourcePath);
             var projectileHost = directorGo.AddComponent<HostileProjectileHost>();
             projectileHost.Bind(ctx.Clock, hostileTargets, player, playerStatus, vitals, ctx.Boss.transform, boss.BodyRadiusM);
+            projectileHost.BindMainCamera(ctx.MainCamera, follow);
             bossDir.BindProjectiles(projectileHost);
             director.BindProjectiles(projectileHost);
 
             ctx.Boss.GetComponent<MotionTemplateBody>()?.Bind(
                 ctx.Clock, combat.SkillMotion.ArenaHalfSizeM, CompositionConstants.BossRadiusM);
+            ctx.Boss.GetComponent<MotionTemplateBody>()?.BindFollowCamera(follow);
+            ctx.Player.GetComponent<MotionTemplateBody>()?.BindFollowCamera(follow);
             var webFields = directorGo.AddComponent<WebFieldView>();
             webFields.Bind(ctx.Clock, combat, bossDir, ctx.BossVitals, player, playerStatus);
             if (ctx.AllyDummy != null)

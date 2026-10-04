@@ -116,6 +116,8 @@ namespace Dovus.Game.Cameras
             set => _tuning = value;
         }
 
+        public Camera ViewCamera => _cam;
+
         void Awake()
         {
             _tuning ??= new PrototypeTuning();
@@ -475,8 +477,6 @@ namespace Dovus.Game.Cameras
 
         float ResolveLockOnShoulderSign(Vector3 playerAim, float dt)
         {
-            if (_cam == null)
-                _cam = GetComponent<Camera>();
             if (_cam == null || _bossTarget == null)
                 return _lockOnShoulderSign;
 

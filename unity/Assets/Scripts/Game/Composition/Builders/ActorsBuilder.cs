@@ -106,6 +106,7 @@ namespace Dovus.Game.Composition.Builders
             var motor = ctx.Player.AddComponent<KinematicMotor>();
             motor.Tuning = tuning;
             motor.BodyRadiusM = CompositionConstants.PlayerRadiusM;
+            motor.BindClock(clock);
 
             ctx.PlayerPose = ctx.Player.AddComponent<ActorPose>();
             ctx.PlayerPose.Tuning = tuning;
@@ -174,6 +175,10 @@ namespace Dovus.Game.Composition.Builders
 
             ctx.BossTelegraph = ctx.Boss.AddComponent<BossTelegraph>();
             ctx.BossTelegraph.Bind(tuning, combat.Boss, ctx.Boss.transform);
+
+            ctx.Player.GetComponent<ActorGrounding>()?.BindClock(clock);
+            ctx.Ally.GetComponent<ActorGrounding>()?.BindClock(clock);
+            ctx.Boss.GetComponent<ActorGrounding>()?.BindClock(clock);
         }
     }
 }

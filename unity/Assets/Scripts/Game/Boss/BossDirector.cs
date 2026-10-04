@@ -41,6 +41,7 @@ namespace Dovus.Game.Boss
         BossAttack _attack;
         BossPoise _poise;
         ExchangeResolver _resolver;
+        HexagonInput _hexagonInput;
         DodgeState _dodge;
         SentenceEngine _engine;
         Transform _player;
@@ -161,6 +162,7 @@ namespace Dovus.Game.Boss
             _combat = combat;
             _colors = colors;
             _reactor = reactor;
+            _hexagonInput = input;
             _attack = new BossAttack(combat.Boss);
             _poise = new BossPoise(combat.Boss.PoiseMax);
             _resolver = new ExchangeResolver(combat);
@@ -219,7 +221,6 @@ namespace Dovus.Game.Boss
         /// </summary>
         void EnsureRuntime()
         {
-            _clock ??= FindAnyObjectByType<GameClock>();
             _reactor ??= GetComponent<BossReactor>();
             _attack ??= new BossAttack(_combat.Boss);
             _resolver ??= new ExchangeResolver(_combat);
@@ -239,19 +240,15 @@ namespace Dovus.Game.Boss
 
             if (_dodge == null || _engine == null)
             {
-                var input = FindAnyObjectByType<HexagonInput>();
-                if (input != null)
+                if (_hexagonInput != null)
                 {
-                    _dodge ??= input.Dodge;
-                    _engine ??= input.Engine;
+                    _dodge ??= _hexagonInput.Dodge;
+                    _engine ??= _hexagonInput.Engine;
                 }
             }
 
             if (_playerMotor == null && _player != null)
                 _playerMotor = _player.GetComponent<KinematicMotor>();
-
-            if (_feel == null)
-                _feel = FindAnyObjectByType<CombatFeel>();
 
             if (_telegraph == null)
                 _telegraph = GetComponent<BossTelegraph>();

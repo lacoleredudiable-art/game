@@ -62,6 +62,7 @@ namespace Dovus.Game.Composition.Builders
         public BossVitals BossVitals;
         public BossTelegraph BossTelegraph;
         public FollowCamera FollowCamera;
+        public Camera MainCamera;
         public Light Sun;
 
         public GameObject HexagonRoot;

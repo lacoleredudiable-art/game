@@ -69,32 +69,8 @@ namespace Dovus.Game.Actors
             _visual = GetComponent<ActorVisual>();
         }
 
-        void Start()
-        {
-            if (!IsBound)
-                TryAutoBind();
-        }
-
-        void TryAutoBind()
-        {
-            var input = FindAnyObjectByType<HexagonInput>();
-            var clock = FindAnyObjectByType<GameClock>();
-            var boss = GameObject.Find("Boss");
-            if (input == null || clock == null || boss == null)
-                return;
-            Bind(
-                clock,
-                input,
-                boss.transform,
-                GetComponent<AfterimageTrail>(),
-                FindAnyObjectByType<FollowCamera>());
-        }
-
         void Update()
         {
-            if (!IsBound)
-                TryAutoBind();
-
             if (_dodge == null || _clock == null || (_vitals != null && _vitals.IsDown))
             {
                 IsDisplacing = false;

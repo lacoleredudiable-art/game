@@ -9,6 +9,7 @@ using Dovus.Core.Passives;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using Dovus.Game.Boss;
+using Dovus.Game.Cameras;
 using Dovus.Game.Composition;
 using Dovus.Game.DevTools;
 using Dovus.Game.Hud;
@@ -54,7 +55,10 @@ namespace Dovus.Game.Actors
         Text _label;
         Image _fill;
         Transform _billboard;
+        Canvas _billboardCanvas;
         Transform _cam;
+        Camera _mainCamera;
+        FollowCamera _follow;
         StatusBoard _statusBoard;
         GameClock _clock;
         StatusTuning _statusTuning = new();
@@ -63,6 +67,14 @@ namespace Dovus.Game.Actors
         PortalBorderTeamAccess _team;
 
         public void BindTeam(PortalBorderTeamAccess team) => _team = team;
+
+        public void BindMainCamera(Camera camera, FollowCamera follow = null)
+        {
+            _mainCamera = camera;
+            _follow = follow;
+            if (camera != null)
+                _cam = camera.transform;
+        }
 
         public int Hp => _hp;
         public bool IsDown => _hp <= 0;
@@ -183,9 +195,9 @@ namespace Dovus.Game.Actors
             root.transform.localPosition = new Vector3(0f, 1.85f, 0f);
             _billboard = root.transform;
 
-            var canvas = root.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.WorldSpace;
-            canvas.worldCamera = Camera.main;
+            _billboardCanvas = root.AddComponent<Canvas>();
+            _billboardCanvas.renderMode = RenderMode.WorldSpace;
+            _billboardCanvas.worldCamera = _mainCamera;
             var rt = root.GetComponent<RectTransform>();
             rt.sizeDelta = new Vector2(220f, 56f);
             root.transform.localScale = Vector3.one * 0.012f;
@@ -245,13 +257,10 @@ namespace Dovus.Game.Actors
         {
             if (_billboard == null)
                 return;
-            if (_cam == null && Camera.main != null)
-            {
-                _cam = Camera.main.transform;
-                var canvas = _billboard.GetComponent<Canvas>();
-                if (canvas != null)
-                    canvas.worldCamera = Camera.main;
-            }
+            if (_cam == null && _follow != null)
+                _cam = _follow.transform;
+            if (_billboardCanvas != null && _billboardCanvas.worldCamera == null && _mainCamera != null)
+                _billboardCanvas.worldCamera = _mainCamera;
             if (_cam != null)
                 _billboard.rotation = Quaternion.LookRotation(
                     _billboard.position - _cam.position, Vector3.up);

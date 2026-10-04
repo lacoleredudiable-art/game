@@ -356,8 +356,6 @@ namespace Dovus.Game.Casting
             EnsureServices();
             _session.Tuning ??= new PrototypeTuning();
             _session.Combat ??= new CombatTuning();
-            _session.Clock ??= FindAnyObjectByType<GameClock>();
-
             if (_session.Dodge == null)
                 _session.Dodge = new DodgeState(_session.Combat.Dodge);
             if (_session.Charges == null)
@@ -375,14 +373,6 @@ namespace Dovus.Game.Casting
                 _session.SentenceHooked = true;
             }
 
-            if (_session.Ink == null)
-                _session.Ink = FindAnyObjectByType<InkTrail>();
-            if (_session.Syllable == null)
-                _session.Syllable = FindAnyObjectByType<SyllableFeedback>();
-            if (_session.DebugHud == null)
-                _session.DebugHud = FindAnyObjectByType<SentenceDebugHud>();
-            if (_session.Vitals == null)
-                _session.Vitals = FindAnyObjectByType<PlayerVitals>();
             if (_session.Status == null)
             {
                 var player = GameObject.Find("Player");
@@ -401,8 +391,6 @@ namespace Dovus.Game.Casting
                 if (player != null)
                     _session.Cooldown = player.GetComponent<PlayerCooldown>();
             }
-            if (_session.Readout == null)
-                _session.Readout = FindAnyObjectByType<ReactionReadout>();
         }
     }
 }

@@ -6,6 +6,7 @@ using Dovus.Core.Input;
 using Dovus.Core.Hud;
 using Dovus.Core.Passives;
 using Dovus.Game.Actors;
+using Dovus.Game.Cameras;
 using Dovus.Game.Casting;
 using Dovus.Game.Feel;
 using TMPro;
@@ -26,6 +27,7 @@ namespace Dovus.Game.Hud
         Transform _playerTf;
         Transform _bossTf;
         Camera _cam;
+        FollowCamera _follow;
         HudTheme _theme;
 
         public void BindTheme(HudTheme theme) => _theme = theme;
@@ -53,13 +55,20 @@ namespace Dovus.Game.Hud
         public string OutcomeText => _outcomeTitle != null && _outcomeGroup.alpha > 0f ? _outcomeTitle.text : string.Empty;
 
         public void Configure(
-            PlayerVitals player, BossVitals bossVitals, Transform playerTf, Transform bossTf, Camera overlayCam)
+            PlayerVitals player,
+            BossVitals bossVitals,
+            Transform playerTf,
+            Transform bossTf,
+            Camera overlayCam,
+            Camera mainCam,
+            FollowCamera follow = null)
         {
             _player = player;
             _bossVitals = bossVitals;
             _playerTf = playerTf;
             _bossTf = bossTf;
-            _cam = Camera.main;
+            _cam = mainCam;
+            _follow = follow;
             _fightStartUnscaled = Time.unscaledTime;
             Build(overlayCam);
         }
@@ -126,8 +135,8 @@ namespace Dovus.Game.Hud
 
         void LateUpdate()
         {
-            if (_cam == null)
-                _cam = Camera.main;
+            if (_cam == null && _follow != null)
+                _cam = _follow.ViewCamera;
             HudTheme th = _theme;
             TickLowHp(th);
             TickDamageDirection(th);

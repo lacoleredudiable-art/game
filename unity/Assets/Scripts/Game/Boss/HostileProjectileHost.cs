@@ -6,6 +6,7 @@ using Dovus.Core.Input;
 using Dovus.Core.Hud;
 using Dovus.Core.Passives;
 using Dovus.Game.Actors;
+using Dovus.Game.Cameras;
 using Dovus.Game.Composition;
 using Dovus.Game.DevTools;
 using Dovus.Game.Vfx;
@@ -33,6 +34,8 @@ namespace Dovus.Game.Boss
         PlayerVitals _playerVitals;
         Transform _boss;
         float _bossRadiusM = 1f;
+        Camera _mainCamera;
+        FollowCamera _follow;
         GameObject[] _views;
         Transform[] _coreViews;
         Transform[] _glowViews;
@@ -78,6 +81,12 @@ namespace Dovus.Game.Boss
             _bossRadiusM = Mathf.Max(0.1f, bossRadiusM);
             Sim.Events -= OnEvent;
             Sim.Events += OnEvent;
+        }
+
+        public void BindMainCamera(Camera camera, FollowCamera follow = null)
+        {
+            _mainCamera = camera;
+            _follow = follow;
         }
 
         public double NowMs => _clock != null ? _clock.Director.WorldTimeMs : 0;
@@ -178,7 +187,10 @@ namespace Dovus.Game.Boss
                 _shadowViews = new Transform[Sim.MaxAlive];
             }
 
-            Transform cam = Camera.main != null ? Camera.main.transform : null;
+            Camera live = _mainCamera;
+            if (live == null && _follow != null)
+                live = _follow.ViewCamera;
+            Transform cam = live != null ? live.transform : null;
             for (int i = 0; i < Sim.MaxAlive; i++)
             {
                 Projectile p = Sim.Slot(i);
