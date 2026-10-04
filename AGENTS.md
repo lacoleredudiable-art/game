@@ -1,53 +1,55 @@
 # Ajanlar için kurallar
 
-Mobil kooperatif boss dövüşü, alfa prototip. Bu dosya her görevde bağlama girer: yalnız sert kurallar.
+Mobil kooperatif boss dövüşü, alfa prototip. Yalnız sert kurallar.
 
 ## Değişmez kurallar
-0. **Tek dil:** kod tanımlayıcıları İngilizce; yorumlar Türkçe olabilir; JSON/fiil kimlikleri gibi veri sözcükleri yalnız sabit/sözlükten (`docs/naming.md`, `docs/glossary.md`).
+0. **Tek dil:** kod tanımlayıcıları İngilizce; yorumlar Türkçe olabilir; JSON/fiil kimlikleri gibi veri sözcükleri sabit/sözlükten (`docs/ARCHITECTURE.md` isimlendirme + veri sözlüğü).
 1. `unity/Assets/Scripts/Core` saf C#: `using UnityEngine` yasak, zaman parametre olarak geçer.
 2. Sahne koddan kurulur (`GameBootstrapHost`). `.unity` / `.prefab` YAML dosyaları **asla** elle düzenlenmez.
 3. **Tek hareket sistemi:** skill sırasında oyuncuyu/boss'u yalnız hareket kalıbı taşır
-   (`Core/Motion/MotionTemplateRunner` + `Game/MotionTemplateBodyHost`). İkinci bir hareket yolu ekleme;
-   `SkillMotionDriver` / executor hareketi ölü, canlandırma; `SkillMotionMotor` yalnız saf plan üretir
-   (tür, i-frame, hedef) — konumu yalnız `MotionTemplateRunner` yazar. Kalıp dışı konum
-   yazan her şey `Core/Motion/PositionOwnership`'e kayıtlı olmalı.
-4. Ayarlanabilir her şey veri. Skill sayısı `docs/element-sistemi.json` `engine` / `adjective_mods`'tan,
-   his sayısı ilgili `Core/Tuning/*.cs` varsayılanından gelir. Sayı uydurma; yoksa varsayılan koy,
-   yoruma "spec'te yok" yaz, PR açıklamasına geç.
-5. Hiçbir fiil anlık vurmaz. Kombo tablosu / skill kimliğiyle beyaz liste yazılmaz; davranış gramerden doğar.
+   (`Core/Motion/MotionTemplateRunner` + `Game/Actors/MotionTemplateBodyHost`). İkinci hareket yolu ekleme;
+   `SkillMotionDriver` / executor hareketi ölü; `SkillMotionMotor` yalnız saf plan — konumu yalnız `MotionTemplateRunner` yazar.
+   Kalıp dışı konum `Core/Motion/PositionOwnership`'e kayıtlı olmalı.
+4. **Veri ve const (kural 5):** Skill sayısı `element-sistemi.json` `engine` / `adjective_mods`'tan; his sayıları `Core/Tuning/*.cs` varsayılanından.
+   Oynanış sayıları `*Defaults` const'larına taşınır (`MagicNumberRatchetTests`); const geçici taşımadır, nihai ayar JSON/tuning.
+   Sayı uydurma; yoksa varsayılan + yorum "spec'te yok" + PR notu.
+5. Hiçbir fiil anlık vurmaz. Kombo tablosu / skill kimliğiyle beyaz liste yazılmaz; davranış gramerden doğar
+   (bilinen istisnalar kodda; hedef: JSON `engine` etiketleri).
 6. `docs/element-sistemi.json` bağlayıcıdır (v6.1.1) ve
-   `unity/Assets/Resources/ElementSystem/element-sistemi.json` ile **bayt bayt aynı** kalır (ikisini birlikte değiştir).
+   `unity/Assets/Resources/ElementSystem/element-sistemi.json` ile **bayt bayt aynı** kalır.
    Metin engine'den türetilir; `SkillTextNumberTests` korur.
-   `motion-templates.json` elle düzenlenmez: `python3 tools/build-motion-templates.py` iki kopyayı birden yazar.
+   `motion-templates.json` elle düzenlenmez: `python3 tools/build-motion-templates.py`.
 
 ## Okuma
-- Önce `docs/MAP.md`; iş listesi `docs/PLAN.md`; hedef mimari `docs/ARCHITECTURE-PLAN.md`; görev şablonu `docs/agent-task-template.md`; doğrulama `tools/verify.ps1`.
-- Repoyu tarama. Yalnız görev prompt'unun adını verdiği dosya ve satırları oku.
-- **`docs/` altını görev bir dosyayı açıkça adlandırmadıkça okuma** (`durum.md` dahil).
-  `element-sistemi.json`'dan yalnız istenen bölümü oku.
+- `docs/MAP.md` → `docs/PLAN.md` → `docs/ARCHITECTURE.md` → `docs/OYUN.md` (oyun); görev şablonu `docs/agent-task-template.md`.
+- Repoyu tarama; yalnız görevin adlandırdığı dosya/satırlar.
+- **`docs/` taraması** yalnız görev açıkça isterse.
 - Asla okuma: `unity/Library/`, `unity/Temp/`, `unity/obj/`, `unity/Logs/`, `docs/play-sweep/*.csv`.
-- Başka görevin dosyasına dokunma. Kapsam dışı bir hata görürsen düzeltme, PR açıklamasına yaz.
 
-## Komutlar (hepsi repo kökünden)
-- Test: `dotnet test tools/CoreTests` (yeni Core dosyası otomatik link'lenir; test = `tools/CoreTests/<Sistem>Tests.cs`, `namespace CoreTests;`, `[TestFixture]`).
-- Gramer kontrolü: `dotnet run --project tools/AtomSim` → "0 hata" olmalı; gramer/`mechanic_grammar` değiştiyse `tools/AtomSim/out/` commit edilir.
-- Başsız tarama: `dotnet run --project tools/SweepV2 -c Release -- --all --gate` (~15 sn).
-  Alt küme: `--weapon kilic --case 1-11`. Play ile kıyas: `--compare docs/play-sweep/pr35-final-4x.csv`.
-- Game katmanı derleme: `python3 tools/GameCompile/check.py` (CoreTests içinden de koşar).
+## Komutlar (repo kökünden)
+- `dotnet test tools/CoreTests` · `dotnet test tools/IntegrationTests`
+- `dotnet run --project tools/AtomSim` → "0 hata"
+- `dotnet run --project tools/SweepV2 -c Release -- --all --gate`
+- `python tools/GameCompile/check.py`
+- `python tools/gen-game-overview.py --check` ( `docs/OYUN.md` üretilen bölüm)
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools/verify.ps1`
 
 ## CI kapısı
-`.github/workflows/sweep-v2.yml` her PR'da: CoreTests → AtomSim derlemesi →
-`SweepV2 --all --gate --compare docs/play-sweep/pr35-final-4x.csv`.
-Kapı: her silah 144/144, oyuncu boss gövdesinde 0, `yerde` hatası silah başına ≤3; normalize sweep hash
-(`docs/play-sweep/headless-baseline.sha256`, `notlar` sütunu çıkarılmış); Play CSV farkları yalnız
-`docs/play-sweep/known-play-diffs.txt` listesinde.
-Kırmızı CI ile merge yok. Kapı eşiğini veya beyaz listeyi görev açıkça istemeden değiştirme.
+`.github/workflows/sweep-v2.yml`: CoreTests → IntegrationTests → AtomSim build → SweepV2.
+Kapı: **144/144** silah başına; oyuncu boss gövdesinde 0; `yerde` hatası silah başına ≤3;
+normalize sweep hash `docs/play-sweep/headless-baseline.sha256` (`notlar` sütunu çıkarılmış);
+Play CSV farkları yalnız `docs/play-sweep/known-play-diffs.txt`.
+Yerel verify aynı kapıyı koşar; ham `tools/verify-out/sweep/verify.csv` SHA256 =
+`726197242A3896C178A3E27650AB9B6F1A089E193C3FE6B90E53BD7477182BB4` (CRLF satır sonu).
+
+## Sweep hash doğrulama
+1. `tools/verify.ps1` (SweepV2 `--expect-sha256 @docs/play-sweep/headless-baseline.sha256`).
+2. Windows ham CSV: `(Get-FileHash tools/verify-out/sweep/verify.csv).Hash` yukarıdaki değerle eşleşmeli.
+3. Linux CI normalize hash dosyasını kullanır; satır sonu farkı bilinçli — iki kontrol birlikte.
+
+## Reflection
+Play Sweep / SweepV2 oyun içine **string alan adıyla** erişim kullanmaz (`SweepReflectionTests`); erişim `*.PlaySweepAccess.cs` partial'larından.
 
 ## Git ve teslim
-- Başlarken `git fetch && git log --oneline origin/master -5`. Yerel `master` geride/ayrışıksa önce onu çöz.
-- Her görev kendi dalında, küçük commit'lerle.
-- **Sonuçları PR açıklamasına yaz:** ne değişti, test sayısı, başsız tarama skor tablosu
-  (`<label>-ozet.md`), doğrulayamadığın kabul kriterleri, spec'te olmayan varsayılanlar.
-- **`docs/durum.md`'ye ekleme yapma.** Yalnız görevin o dosyadaki bir açığı kapattıysa o satırı aynı PR'da sil.
-- `dotnet test` + CI yeşilse `master`'a merge et. PR'ı yalnız karar gerektiren bir soru ya da
-  doğrulanamayan kabul kriteri varsa açık bırak.
+- Dal başına küçük commit'ler; PR'da test sayıları, sweep hash, doğrulanamayanlar.
+- `docs/PLAN.md`'de maddeyi `[x]` işaretle; `dotnet test` + CI yeşilse merge (karar sorusu yoksa).

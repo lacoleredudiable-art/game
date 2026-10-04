@@ -17,7 +17,7 @@ public sealed class GameIdentifierLanguageTests
 
     static readonly HashSet<string> AllowedTurkishWordIdentifiers = new(StringComparer.Ordinal)
     {
-        // Serileştirilmiş / tuning alanları (bilinçli veri sözcüğü — docs/glossary.md).
+        // Serileştirilmiş / tuning alanları (bilinçli veri sözcüğü — docs/ARCHITECTURE.md sözlük).
         "PoseZehir",
         // TuningPreset üyeleri: spec dışı hazır set adları; JSON anahtarı değil.
         "Agir",

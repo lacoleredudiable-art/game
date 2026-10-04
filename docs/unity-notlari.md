@@ -2,9 +2,7 @@
 
 > Prototip turunda pahalıya öğrenilmiş operasyonel tuzaklar. Tasarım kararı yok, hepsi
 > "şunu yapma, çalışmıyor" cinsinden. Unity'ye ya da cihaza dokunacak görevde okunur.
-> 16 Eylül: master ayrışmasında kurtarılan tek gerçekten kullanışlı parça buydu (bkz.
-> `docs/durum.md` üstündeki "master ayrışması" notu) — geri kalan paralel hat (v4.2
-> element spec, `Core/Elements/*`) atıldı.
+> 16 Eylül: operasyon notları arşivlendi; güncel iş listesi `docs/PLAN.md`.
 
 ## Sahne ve derleme
 
@@ -12,9 +10,8 @@
   üretme menüsü artık yok; sahne `Assets/Scenes/Prototype.unity` olarak repoda durur. Sahnede tek bir
   boş GameObject + `GameBootstrapHost` bulunur (2B.12'de `PrototypeBootstrap`'tan yeniden adlandırıldı, GUID aynı).
 - **Yerleşik mesh gerekiyorsa `PrimitiveMesh.Get(...)` çağır**, `GameObject.CreatePrimitive`
-  değil. İkincisi bir kare yaşayan collider üretir; projede collider yok, vuruş tespiti
-  matematikle yapılıyor (istisna: `WallColliderFit`'in dungeon parçalarına eklediği
-  `BoxCollider`'lar — o ayrı, kasıtlı bir "duvara girme" önlemi).
+  değil. İkincisi bir kare yaşayan collider üretir; vuruş tespiti matematikle yapılıyor.
+  `ActorsBuilder` capsule collider'ları (ally/boss) ve `CameraAmbienceColliders` box collider'ları kasıtlı istisna.
 - **Serileşmiş alanlar bayat gelir.** Açık sahnenin bellekteki hâli assembly reload'dan sonra
   eski alan değerlerini korur; **yeni eklenen int/float alanlar 0 gelir** (C# initializer
   deserialize'da uygulanmaz). `GameTuning.EnsureRuntimeDefaults` bunu `TuningVersion`
@@ -42,8 +39,7 @@
 cd tools/CoreTests && dotnet test
 ```
 
-Core kaynaklarını joker ile link'ler, Unity gerektirmez. Bir görev Core'a dokunuyorsa bu
-komut yeşil olmadan dal kapatılmaz (güncel sayı için `docs/durum.md`'ye bak).
+Core kaynaklarını joker ile link'ler, Unity gerektirmez. Güncel sayı: `dotnet test tools/CoreTests` (verify özeti).
 
 ## Build (Android)
 
@@ -59,8 +55,7 @@ komut yeşil olmadan dal kapatılmaz (güncel sayı için `docs/durum.md`'ye bak
 - **MCP ile build tetiklerken** komut uzun build'de zaman aşımına uğrar ama build editörde
   devam eder. Çaresi: build'i `EditorApplication.delayCall` içine koy, MCP komutu hemen dönsün,
   sonucu `Unity_GetConsoleLogs` ile oku.
-- **MCP `System.Reflection` kullanımını reddediyor**; `Dovus.Game.EditorTools` doğrudan `using`
-  ile çağrılabiliyor.
+- **MCP `System.Reflection` kullanımını reddediyor**; Editor kodu `Dovus.Game.Editor` namespace'inde doğrudan çağrılır.
 - **Xiaomi/HyperOS: `adb shell input tap` `INJECT_EVENTS` ile reddediliyor.** Uzaktan dokunuş
   için ayrı bir geliştirici seçeneği ("USB debugging (Security settings)") gerekiyor.
   `adb install -r` çalışıyor.
