@@ -18,7 +18,7 @@ using Dovus.Game.Skills;
 using UnityEngine;
 namespace Dovus.Game.Casting.Input
 {
-/// <summary>HexagonInput paylaşılan durum ve servis referansları (MonoBehaviour değil).</summary>
+/// <summary>HexagonInputController paylaşılan durum ve servis referansları (MonoBehaviour değil).</summary>
     public sealed class HexagonInputSession
     {
         public GameTuning Tuning = new();
@@ -26,9 +26,9 @@ namespace Dovus.Game.Casting.Input
         public SentenceEngine Engine;
         public DodgeState Dodge;
         public DodgeChargeBank Charges;
-        public GameClock Clock;
-        public InkTrail Ink;
-        public SyllableFeedback Syllable;
+        public GameClockHost Clock;
+        public InkTrailView Ink;
+        public SyllableFeedbackView Syllable;
         public SentenceDebugHud DebugHud;
 
         public int? FingerId;
@@ -62,11 +62,11 @@ namespace Dovus.Game.Casting.Input
         public int? DodgeFingerId;
         public bool SwapHoldFired;
 
-        public PlayerVitals Vitals;
-        public ActorStatus Status;
-        public PlayerResource Resource;
-        public PlayerCooldown Cooldown;
-        public ReactionReadout Readout;
+        public PlayerVitalsHost Vitals;
+        public ActorStatusHost Status;
+        public PlayerResourceHost Resource;
+        public PlayerCooldownHost Cooldown;
+        public ReactionReadoutHud Readout;
         public SkillMotor Skills;
         public PlayerStateMachine PlayerStates;
         public System.Func<bool> IsCasting;

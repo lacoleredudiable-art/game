@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 namespace Dovus.Game.Editor
 {
     /// <summary>
-    /// POLYGON Dungeon Pack → GameBootstrap görselleri.
+    /// POLYGON Dungeon Pack → GameBootstrapHost görselleri.
     /// Menu: Dovus/Synty/Bind Player Boss
     /// </summary>
     public static class SyntyVisualBind
@@ -126,10 +126,10 @@ namespace Dovus.Game.Editor
         static void AssignBootstrap(GameObject player, GameObject boss)
         {
             var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
-            GameBootstrap bootstrap = Object.FindAnyObjectByType<GameBootstrap>();
+            GameBootstrapHost bootstrap = Object.FindAnyObjectByType<GameBootstrapHost>();
             if (bootstrap == null)
             {
-                Debug.LogError("[SyntyBind] GameBootstrap yok: " + ScenePath);
+                Debug.LogError("[SyntyBind] GameBootstrapHost yok: " + ScenePath);
                 return;
             }
 

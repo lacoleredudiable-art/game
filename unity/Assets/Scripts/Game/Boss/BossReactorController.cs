@@ -1,0 +1,387 @@
+using Dovus.Core.Motion;
+using Dovus.Core.Tuning;
+using Dovus.Game.Actors;
+using Dovus.Game.Config;
+using UnityEngine;
+
+namespace Dovus.Game.Boss
+{
+    /// <summary>
+    /// Boss fiziksel tepkisi — geri tepme, sarsılma, kaldırma. Can/hasar T8.
+    /// </summary>
+    public sealed class BossReactorController : MonoBehaviour
+    {
+        [SerializeField] GameTuning _tuning = new();
+
+        // Bootstrap'ta wiring yok (T7.2 bu dosyaya dokunamıyor) — varsayılan Bootstrap'ın
+        // boss yarıçapıyla (0.85 m) eşleşiyor. T10/T8 gerçek örneği bağlarsa burası da güncellenmeli.
+        [SerializeField] float _bodyRadiusM = 0.85f;
+
+        Vector3 _home;
+
+        // Geri tepme _home'a KALICI işlenir (aşağıda React). Bu alan sadece görsel yumuşatma:
+        // home aniden kaydığında gövde ışınlanmasın diye kalan farkı taşır ve zamanla
+        // (BossRecoilEaseDecayPerSec) sıfıra söner — asla eski _home'a geri dönmez.
+        Vector3 _visualOffset;
+
+        float _shakeUntil;
+        float _shakeAmp;
+        float _liftVel;
+        float _air;
+        ActorGroundingController _grounding;
+        bool _captured;
+        int _knockupIntegrateHoldMs = BossReactorControllerDefaults.KnockupIntegrateHoldMs;
+        double _knockupIntegrateHoldUntilMs;
+
+        bool _pulling;
+        bool _contactPull;
+        float _pullSpeed;
+        float _pullAge;
+        float _pullDur = DisplacementEase.DurationSec;
+        Vector3 _pullFrom;
+        Vector3 _pullTo;
+        Vector3 _stablePullDir;
+
+        // Boss ölümü: kısa çökme pozu (squash).
+        Vector3 _baseScale = Vector3.one;
+        bool _collapsed;
+        float _collapseUntilWorldMs;
+
+        public GameTuning Tuning
+        {
+            get
+            {
+                _tuning ??= new GameTuning();
+                return _tuning;
+            }
+            set => _tuning = value;
+        }
+
+        public float BodyRadiusM
+        {
+            get => _bodyRadiusM;
+            set => _bodyRadiusM = value;
+        }
+
+        public bool IsCollapsed => _collapsed;
+
+        /// <summary>
+        /// Kalıcı konum. Dışarıdan yazılabilir ki T8'in yaklaşma hareketi bunun üstüne binsin
+        /// (pozisyon sahipliği çakışmasın) — arena sınırına kırpılır.
+        /// </summary>
+        public Vector3 Home
+        {
+            get => _home;
+            set
+            {
+                _home = ClampToArena(value);
+                _captured = true;
+            }
+        }
+
+        /// <summary>
+        /// Geri sarma gibi kesin yer ataması: Home yazılır, eski itmenin görsel ofseti ve
+        /// süren çekiş bırakılır; yoksa görsel gövde yeni Home'dan eski yöne kayar.
+        /// </summary>
+        public void SnapHome(Vector3 world)
+        {
+            Home = world;
+            _visualOffset = Vector3.zero;
+            _pulling = false;
+            _contactPull = false;
+            // Aynı karede hedef okuyan hareket kalıbı eski görsel yeri görmesin.
+            Vector3 p = _home;
+            p.y = transform.position.y;
+            transform.position = p;
+        }
+
+        public void CaptureHome()
+        {
+            _home = ClampToArena(transform.position);
+            _captured = true;
+            _baseScale = transform.localScale;
+            if (_baseScale.sqrMagnitude < 1e-6f)
+                _baseScale = Vector3.one;
+        }
+
+        public void ConfigureFeel(FeelTuning feel)
+        {
+            if (feel != null && feel.BossKnockupIntegrateHoldMs > 0)
+                _knockupIntegrateHoldMs = feel.BossKnockupIntegrateHoldMs;
+        }
+
+        /// <summary>
+        /// Gramer alanlarının sürekli çekişi: kalıcı Home'u hedefe en fazla distanceM taşır.
+        /// Hız/zaman hesabı çağırandadır; burada ek his sayısı yoktur.
+        /// </summary>
+        public bool PullActive => _pulling;
+
+        public void MoveHomeToward(Vector3 targetWorld, float distanceM)
+        {
+            if (_collapsed || distanceM <= 0f)
+                return;
+            // Temas çekişi sürerken tasma ikinci bir yer değiştirme yazmaz.
+            if (_pulling && _contactPull)
+                return;
+            if (!_captured)
+                CaptureHome();
+            targetWorld.y = _home.y;
+            _contactPull = false;
+            BeginEasedMove(Vector3.MoveTowards(_home, targetWorld, distanceM));
+        }
+
+        /// <summary>
+        /// Boss'u oyuncunun o anki önündeki temas noktasına çeker.
+        /// Varış her çağrıda yeniden hesaplanır; süre başa sarmaz. Oyuncu itilmez.
+        /// </summary>
+        public void PullToContact(Vector3 playerWorld, float playerRadius, float bossRadius)
+        {
+            if (_collapsed)
+                return;
+            if (!_captured)
+                CaptureHome();
+            if (_stablePullDir.sqrMagnitude < 0.0001f)
+                _stablePullDir = transform.forward.sqrMagnitude > 0.0001f ? transform.forward : Vector3.forward;
+
+            float stableX = _stablePullDir.x;
+            float stableZ = _stablePullDir.z;
+            EmiciPull.Retarget(
+                _pulling && _contactPull,
+                _home.x, _home.z,
+                playerWorld.x, playerWorld.z,
+                playerRadius, bossRadius,
+                ref stableX, ref stableZ,
+                ref _pullSpeed,
+                out float toX, out float toZ,
+                out bool pulling);
+            _stablePullDir = new Vector3(stableX, 0f, stableZ);
+            _pullTo = ClampToArena(new Vector3(toX, _home.y, toZ));
+            _contactPull = true;
+            _pulling = pulling;
+            if (!_pulling)
+                Home = _pullTo;
+        }
+
+        /// <summary>Çekme sürerken varışı oyuncunun güncel yerine taşır. Saati sıfırlamaz.</summary>
+        public void UpdatePullContact(Vector3 playerWorld, float playerRadius, float bossRadius)
+        {
+            if (!_pulling || !_contactPull)
+                return;
+            PullToContact(playerWorld, playerRadius, bossRadius);
+        }
+
+        void BeginEasedMove(Vector3 desired)
+        {
+            _pullFrom = _home;
+            _pullTo = ClampToArena(desired);
+            _pullAge = 0f;
+            _pullDur = DisplacementEase.DurationSec;
+            _pulling = Horizontal(_pullFrom, _pullTo) > BossReactorControllerDefaults.PullMoveEpsilonM;
+            if (!_pulling)
+                Home = _pullTo;
+        }
+
+        public void React(
+            Vector3 fromWorld,
+            float knockbackM,
+            float liftM,
+            float shakeSec,
+            double worldTimeMs)
+        {
+            if (_collapsed)
+                return;
+
+            if (!_captured)
+                CaptureHome();
+
+            Vector3 flat = _home - fromWorld;
+            flat.y = 0f;
+            if (flat.sqrMagnitude < 1e-4f)
+                flat = -transform.forward;
+            flat.Normalize();
+
+            Vector3 oldHome = _home;
+            Vector3 newHome = ClampToArena(_home + flat * knockbackM);
+            _home = newHome;
+            // Home kalıcı kaydı; anında ışınlanmasın diye farkı görsel ofsete taşı, o zamanla
+            // sıfıra sönsün (§8: "düşman tepki vermeli" — itildiği yerde kalmalı, geri kaymamalı).
+            _visualOffset += oldHome - newHome;
+
+            _liftVel = Mathf.Max(_liftVel, liftM * Tuning.Boss.BossLiftVelocityPerM);
+            _shakeAmp = Mathf.Max(_shakeAmp, Tuning.Boss.BossShakeAmpBaseM + knockbackM * Tuning.Boss.BossShakeAmpPerKnockbackM);
+            _shakeUntil = (float)worldTimeMs + shakeSec * 1000f;
+            if (_knockupIntegrateHoldMs > 0)
+                _knockupIntegrateHoldUntilMs = System.Math.Max(
+                    _knockupIntegrateHoldUntilMs,
+                    worldTimeMs + _knockupIntegrateHoldMs);
+        }
+
+        /// <summary>Kabuk kapanışı: yerinde sabitle (kısa kilit).</summary>
+        public void Pin(float durationSec, double worldTimeMs)
+        {
+            if (_collapsed)
+                return;
+
+            _visualOffset = Vector3.zero;
+            _liftVel = 0f;
+            _air = 0f;
+            _shakeAmp = Tuning.Boss.BossPinShakeAmpM;
+            _shakeUntil = (float)worldTimeMs + durationSec * 1000f;
+        }
+
+        /// <summary>
+        /// Boss ölüm pozu: yerinde çöker (squash). Süre dünya saatiyle ilerler.
+        /// </summary>
+        public void BeginCollapse(float durationSec, double worldTimeMs)
+        {
+            if (!_captured)
+                CaptureHome();
+
+            _collapsed = true;
+            _liftVel = 0f;
+            _air = 0f;
+            _shakeAmp = 0f;
+            _shakeUntil = 0f;
+            _visualOffset = Vector3.zero;
+            _collapseUntilWorldMs = (float)(worldTimeMs + Mathf.Max(BossReactorControllerDefaults.MinCollapseDurationSec, durationSec) * BossTimeDefaults.SecToMs);
+            ApplyCollapseScale(1f);
+        }
+
+        public void EndCollapse()
+        {
+            _collapsed = false;
+            _collapseUntilWorldMs = 0f;
+            transform.localScale = _baseScale;
+            Vector3 p = _home;
+            p.y = _home.y;
+            transform.position = p;
+        }
+
+        public void Tick(float dtSec, double worldTimeMs)
+        {
+            if (!_captured)
+                CaptureHome();
+
+            if (_pulling)
+                AdvancePull(dtSec);
+
+            float now = (float)worldTimeMs;
+
+            if (_collapsed)
+            {
+                float remain = Mathf.Max(0f, _collapseUntilWorldMs - now);
+                float total = Mathf.Max(BossReactorControllerDefaults.MinCollapseDurationSec, Tuning.Boss.BossDeathCollapseSec) * 1000f;
+                float u = 1f - Mathf.Clamp01(remain / total);
+                ApplyCollapseScale(u);
+                Vector3 flat = _home;
+                flat.y = _home.y;
+                transform.position = flat;
+                NotifyGround(flat.y, collapsed: true);
+                return;
+            }
+
+            Vector3 shake = Vector3.zero;
+            if (now < _shakeUntil)
+            {
+                float t = (_shakeUntil - now) / 1000f;
+                shake = new Vector3(
+                    (Mathf.PerlinNoise(now * BossReactorControllerDefaults.DeathShakeNoiseTimeScale, BossReactorControllerDefaults.DeathShakeNoiseOffsetY) - 0.5f) * 2f,
+                    0f,
+                    (Mathf.PerlinNoise(BossReactorControllerDefaults.DeathShakeNoiseOffsetX, now * BossReactorControllerDefaults.DeathShakeNoiseTimeScale) - 0.5f) * 2f) * (_shakeAmp * t);
+            }
+            else
+            {
+                _shakeAmp = 0f;
+            }
+
+            // Kaldırma kapsül zeminine göredir. Home Y havadaki bir örnekten gelirse
+            // boss o yükseklikte kilitleniyordu (7-3 / 7-6 / 7-11, ~5 cm).
+            float ground = PlantedGroundY();
+            _home.y = ground;
+            if (worldTimeMs >= _knockupIntegrateHoldUntilMs)
+            {
+                _air += _liftVel * dtSec;
+                _liftVel -= Tuning.Boss.BossGravityMps2 * dtSec;
+                if (_air <= 0f)
+                {
+                    _air = 0f;
+                    _liftVel = 0f;
+                }
+            }
+
+            float y = ground + _air;
+
+            _visualOffset = Vector3.Lerp(
+                _visualOffset,
+                Vector3.zero,
+                1f - Mathf.Exp(-Tuning.Boss.BossRecoilEaseDecayPerSec * dtSec));
+            Vector3 p = _home + _visualOffset + shake;
+            p.y = y;
+            transform.position = p;
+            NotifyGround(y, collapsed: false);
+        }
+
+        /// <summary>Kaldırma havadadır. İnince kök zemin yüksekliğine yapışır; görsel ofset birikmez.</summary>
+        void NotifyGround(float y, bool collapsed)
+        {
+            if (_grounding == null)
+                _grounding = GetComponent<ActorGroundingController>();
+            if (_grounding == null)
+                return;
+            _grounding.SkipFootLock = collapsed;
+            if (collapsed || _air <= 0.0001f)
+                _grounding.LandNow();
+            else
+                _grounding.Follow(y);
+        }
+
+        float PlantedGroundY()
+        {
+            if (_grounding == null)
+                _grounding = GetComponent<ActorGroundingController>();
+            return _grounding != null ? _grounding.PlantedRootY : _home.y;
+        }
+
+        void AdvancePull(float dtSec)
+        {
+            if (_contactPull)
+            {
+                float x = _home.x;
+                float z = _home.z;
+                EmiciPull.StepToward(ref x, ref z, _pullTo.x, _pullTo.z, _pullSpeed, dtSec, out bool arrived);
+                _home = ClampToArena(new Vector3(x, _home.y, z));
+                if (arrived)
+                    _pulling = false;
+                return;
+            }
+
+            _pullAge += Mathf.Max(0f, dtSec);
+            float u = _pullDur <= BossReactorControllerDefaults.MinPullDurationSec ? 1f : Mathf.Clamp01(_pullAge / _pullDur);
+            DisplacementEase.Sample(_pullFrom.x, _pullFrom.z, _pullTo.x, _pullTo.z, u, out float xEase, out float zEase);
+            _home = ClampToArena(new Vector3(xEase, _home.y, zEase));
+            if (u >= 1f)
+                _pulling = false;
+        }
+
+        static float Horizontal(Vector3 a, Vector3 b)
+        {
+            float dx = a.x - b.x;
+            float dz = a.z - b.z;
+            return Mathf.Sqrt(dx * dx + dz * dz);
+        }
+
+        void ApplyCollapseScale(float progress01)
+        {
+            float squash = Mathf.Lerp(1f, Tuning.Boss.BossDeathSquashY, Mathf.Clamp01(progress01));
+            float spread = Mathf.Lerp(1f, Tuning.Boss.BossDeathSpreadXz, Mathf.Clamp01(progress01));
+            transform.localScale = new Vector3(
+                _baseScale.x * spread,
+                _baseScale.y * squash,
+                _baseScale.z * spread);
+        }
+
+        // T5 dersi: arena dışına sonsuza kayan gövde. Daire salon — kare clamp değil.
+        Vector3 ClampToArena(Vector3 pos) =>
+            ArenaClamp.XZ(pos, Tuning.Arena.ArenaHalfSizeM, _bodyRadiusM);
+    }
+}

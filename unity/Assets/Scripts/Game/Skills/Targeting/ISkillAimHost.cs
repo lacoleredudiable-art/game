@@ -26,12 +26,12 @@ namespace Dovus.Game.Skills.Targeting
     public interface ISkillAimHost
     {
         Transform Player { get; }
-        PlayerTargeting Targeting { get; }
-        BossReactor Boss { get; }
-        KinematicMotor Motor { get; }
+        PlayerTargetingController Targeting { get; }
+        BossReactorController Boss { get; }
+        KinematicMotorController Motor { get; }
         CombatTuning Combat { get; }
         GameTuning Colors { get; }
-        ReactionReadout Readout { get; }
+        ReactionReadoutHud Readout { get; }
         SkillMotor Skills { get; }
         SkillNumberCatalog SkillNumbers { get; }
         EquipmentItem EquippedWeapon { get; }

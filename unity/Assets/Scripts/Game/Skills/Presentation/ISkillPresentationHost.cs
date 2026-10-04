@@ -18,14 +18,14 @@ namespace Dovus.Game.Skills.Presentation
 {
     public interface ISkillPresentationHost
     {
-        ActorVisual Visual { get; }
+        ActorView Visual { get; }
         AnimationBridge AnimationBridge { get; }
         SkillMotor Skills { get; }
         EquipmentItem EquippedWeapon { get; }
         AnimationDatabase AnimationDatabase { get; }
-        GameClock Clock { get; }
+        GameClockHost Clock { get; }
         CombatTuning Combat { get; }
-        FollowCamera Camera { get; }
+        FollowCameraController Camera { get; }
         SfxDirector Sfx { get; }
         SentenceDebugHud DebugHud { get; }
         ElementPaintNode? SelectedElementPaint { get; }

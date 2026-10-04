@@ -7,10 +7,10 @@ namespace Dovus.Game.Weapons
 {
     /// <summary>
     /// Elde silah + arketip override controller kaydı. <c>Resources/Animation/</c> altında
-    /// tek asset; MixamoArchetypeBind yazar, <see cref="ActorVisual"/> okur. Mixamo override
+    /// tek asset; MixamoArchetypeBind yazar, <see cref="ActorView"/> okur. Mixamo override
     /// alanları bu PC dışında boş (gitignored) — eksikse temel controller/pozsuz silah kullanılır,
     /// hata fırlatmaz. <see cref="Props"/>: silah başına el prop'u (Quaternius FBX referansı ya da
-    /// boş — <see cref="WeaponHandProps"/> boşsa primitive placeholder kurar). WeaponKey =
+    /// boş — <see cref="WeaponHandPropsView"/> boşsa primitive placeholder kurar). WeaponKey =
     /// weapons[].animations_key (<see cref="WeaponArchetypeMap"/> girdileriyle birebir).
     /// </summary>
     public sealed class WeaponVisualRegistry : ScriptableObject

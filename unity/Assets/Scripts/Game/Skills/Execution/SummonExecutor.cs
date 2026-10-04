@@ -14,7 +14,7 @@ namespace Dovus.Game.Skills.Execution
     /// Çağırma fiili: oyuncunun yanında minion_count kadar minion doğar, minion_duration_sec
     /// boyunca boss'a yürür ve menzildeyken aralıklı vurur. İlk vuruş skill durumlarını taşır.
     /// </summary>
-    public sealed class SummonExecutor : SkillExecutor
+    public sealed class SummonExecutor : SkillExecutorController
     {
         static readonly List<SummonExecutor> s_live = new();
         public static System.Collections.Generic.IReadOnlyList<SummonExecutor> Live => s_live;

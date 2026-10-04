@@ -249,7 +249,7 @@ namespace Dovus.Game.Skills.Launch
                                 e => e.Has("can_emen"));
                             if (drains && dealt > 0.5f && _host.Player != null)
                             {
-                                PlayerVitals vitals = _host.CachedPlayerVitals();
+                                PlayerVitalsHost vitals = _host.CachedPlayerVitals();
                                 if (vitals != null)
                                     vitals.ApplyHeal(Mathf.RoundToInt(dealt));
                             }

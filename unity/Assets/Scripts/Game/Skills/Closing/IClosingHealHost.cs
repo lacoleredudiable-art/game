@@ -12,13 +12,13 @@ namespace Dovus.Game.Skills.Closing
     public interface IClosingHealHost
     {
         Transform Player { get; }
-        AllyDummy Ally { get; }
-        PlayerVitals CachedPlayerVitals();
-        ActorStatus PlayerStatus { get; }
+        AllyDummyController Ally { get; }
+        PlayerVitalsHost CachedPlayerVitals();
+        ActorStatusHost PlayerStatus { get; }
         CombatTuning Combat { get; }
         float ClosingChainBonus { get; }
         DamageNumberHud DamageHud { get; }
-        ReactionReadout Readout { get; }
+        ReactionReadoutHud Readout { get; }
         SentenceDebugHud DebugHud { get; }
         bool LastFriendlyWasAlly { set; }
         float WeaponSupportPower(SkillResolution skill);

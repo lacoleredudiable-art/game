@@ -43,7 +43,7 @@ namespace Dovus.Core.Tuning
         public int TapMaxMoveDp = 12;
 
         /// <summary>T10: canlı panelin "Sıfırla" ve JSON yükleme yolu — alanları TEK TEK
-        /// kopyalar, bu nesnenin kimliğini korur (DodgeState/DodgeMotion aynı referansı tutar).</summary>
+        /// kopyalar, bu nesnenin kimliğini korur (DodgeState/DodgeMotionController aynı referansı tutar).</summary>
         public void CopyFrom(DodgeTuning other)
         {
             StartupMs = other.StartupMs;

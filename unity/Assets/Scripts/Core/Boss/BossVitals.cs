@@ -3,7 +3,7 @@ using System;
 namespace Dovus.Core.Boss
 {
     /// <summary>
-    /// Boss canı — saf C# (PlayerVitals'in Unity'li deseninin Core karşılığı).
+    /// Boss canı — saf C# (PlayerVitalsHost'in Unity'li deseninin Core karşılığı).
     /// Can 0 → IsDown; yeniden doğuş <see cref="Revive"/> ile dışarıdan tetiklenir.
     /// Zaman parametre olarak geçer; bu sınıf zamanı tutmaz. Spec §11.
     /// K1: her hasar yolu (kapanış, DoT, yansıma, minyon, emme, yönlendirme, takım) buradan geçer;

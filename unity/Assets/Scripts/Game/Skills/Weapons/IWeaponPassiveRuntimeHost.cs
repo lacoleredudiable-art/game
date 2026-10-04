@@ -23,18 +23,18 @@ namespace Dovus.Game.Skills.Weapons
 public interface IWeaponPassiveRuntimeHost
     {
         Transform Player { get; }
-        AllyDummy Ally { get; }
-        BossReactor Boss { get; }
-        ActorStatus BossStatus { get; }
-        KinematicMotor Motor { get; }
-        MotionTemplateBody MotionBody { get; }
-        PlayerTargeting Targeting { get; }
-        GameClock Clock { get; }
+        AllyDummyController Ally { get; }
+        BossReactorController Boss { get; }
+        ActorStatusHost BossStatus { get; }
+        KinematicMotorController Motor { get; }
+        MotionTemplateBodyHost MotionBody { get; }
+        PlayerTargetingController Targeting { get; }
+        GameClockHost Clock { get; }
         EquipmentItem EquippedWeapon { get; }
         WeaponCombatProfile EquippedProfile { get; }
         WeaponSwapState WeaponSwap { get; }
         SentenceEngine Engine { get; }
-        ActorVisual Visual { get; }
+        ActorView Visual { get; }
         double WorldTimeMs { get; }
         double LastMovedMs { get; }
         bool PerformingAttack { get; }

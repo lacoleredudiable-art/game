@@ -23,10 +23,10 @@ namespace Dovus.Game.Skills.Weapons
 public interface ICannonBlastHost
     {
         Transform Player { get; }
-        BossReactor Boss { get; }
-        AllyDummy Ally { get; }
-        KinematicMotor Motor { get; }
-        MotionTemplateBody MotionBody { get; }
+        BossReactorController Boss { get; }
+        AllyDummyController Ally { get; }
+        KinematicMotorController Motor { get; }
+        MotionTemplateBodyHost MotionBody { get; }
         bool RecoilInTemplate { get; }
         void SetRecoilInTemplate(bool value);
         bool CasterRecoilSuppressed { get; set; }
@@ -38,8 +38,8 @@ public interface ICannonBlastHost
         void AbortRecoveringSentence();
         void SetSwapInstantDrawUntil(double worldMs);
         SentenceEngine Engine { get; }
-        ActorVisual Visual { get; }
+        ActorView Visual { get; }
         WeaponSwapState WeaponSwap { get; }
-        GameClock Clock { get; }
+        GameClockHost Clock { get; }
     }
 }

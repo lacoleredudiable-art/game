@@ -15,10 +15,10 @@ namespace Dovus.Game.Skills.Boss
 {
     public interface IBossDeathSequenceHost
     {
-        GameClock Clock { get; }
+        GameClockHost Clock { get; }
         GameTuning Colors { get; }
         BossDirector BossDirector { get; }
-        BossReactor Boss { get; }
+        BossReactorController Boss { get; }
         BossVitals BossVitals { get; }
         DamageNumberHud DamageHud { get; }
 

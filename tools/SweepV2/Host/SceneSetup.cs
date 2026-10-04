@@ -20,7 +20,7 @@ namespace SweepV2
     {
         const BindingFlags BF = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        public static GameBootstrap Build(string repoRoot)
+        public static GameBootstrapHost Build(string repoRoot)
         {
             RunInitializers(RuntimeInitializeLoadType.SubsystemRegistration);
             RunInitializers(RuntimeInitializeLoadType.AfterAssembliesLoaded);
@@ -33,7 +33,7 @@ namespace SweepV2
 
             var go = new GameObject("Bootstrap");
             go.SetActive(false);
-            var boot = go.AddComponent<GameBootstrap>();
+            var boot = go.AddComponent<GameBootstrapHost>();
             Set(boot, "_tuning", tuning);
             Set(boot, "_playerVisualPrefab", HumanoidVisual("PlayerVisual_Headless", 1.8f, 0.5f));
             Set(boot, "_bossVisualPrefab", HumanoidVisual("BossVisual_Headless", 1.8f, 0.6f));
@@ -54,7 +54,7 @@ namespace SweepV2
 
         static void RunInitializers(RuntimeInitializeLoadType when)
         {
-            var methods = typeof(GameBootstrap).Assembly.GetTypes()
+            var methods = typeof(GameBootstrapHost).Assembly.GetTypes()
                 .SelectMany(t => t.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
                 .Select(m => (m, attr: m.GetCustomAttribute<RuntimeInitializeOnLoadMethodAttribute>()))
                 .Where(x => x.attr != null && x.attr.loadType == when)
@@ -150,7 +150,7 @@ namespace SweepV2
 
         /// <summary>
         /// Synty prefab'ının başsız karşılığı: insansı Animator + gövde kutusu + ayak kemikleri.
-        /// Kontrolcü yok (Play'de klipler yalnız görsel); ActorGrounding ayağı kemikten ölçer.
+        /// Kontrolcü yok (Play'de klipler yalnız görsel); ActorGroundingController ayağı kemikten ölçer.
         /// </summary>
         static GameObject HumanoidVisual(string name, float heightM, float widthM)
         {

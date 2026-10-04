@@ -116,7 +116,7 @@ namespace Dovus.Game.Composition
             var go = new GameObject($"PlaceholderZone_{elementName}");
             if (parent != null)
                 go.transform.SetParent(parent, false);
-            // Yerde ince silindir hacim — StateBridgeView Mark deseni, GroundScarField yüksekliği.
+            // Yerde ince silindir hacim — StateBridgeView Mark deseni, GroundScarFieldView yüksekliği.
             go.transform.position = new Vector3(position.x, PlaceholderFactoryDefaults.DiscGroundOffsetM, position.z);
             go.transform.localScale = new Vector3(r * 2f, PlaceholderFactoryDefaults.DiscThicknessM, r * 2f);
 
@@ -238,7 +238,7 @@ namespace Dovus.Game.Composition
         static readonly Dictionary<int, Material> GlowCache = new Dictionary<int, Material>();
         static Shader _glowShader;
 
-        // LivingEffectView / GroundScarField ile aynı saydam Unlit deseni.
+        // LivingEffectView / GroundScarFieldView ile aynı saydam Unlit deseni.
         static Material MakeGlowMat(Color c)
         {
             c.a = Mathf.Clamp01(c.a > PlaceholderFactoryDefaults.MinColorAlpha ? c.a : PlaceholderFactoryDefaults.FallbackColorAlpha);

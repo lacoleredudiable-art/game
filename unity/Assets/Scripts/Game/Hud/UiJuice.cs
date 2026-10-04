@@ -26,7 +26,7 @@ namespace Dovus.Game.Hud
         }
 
         static readonly List<Tween> _tweens = new();
-        static Runner _runner;
+        static UiJuiceRunnerHost _runner;
 
         /// <summary>Ölçeği <paramref name="peak"/>'e zıplatıp geri yayar (0.88 = bas, 1.18 = pop).</summary>
         public static void PunchScale(Transform target, float peak, float durationSec)
@@ -83,7 +83,7 @@ namespace Dovus.Game.Hud
             {
                 var go = new GameObject("UiJuice") { hideFlags = HideFlags.HideAndDontSave };
                 Object.DontDestroyOnLoad(go);
-                _runner = go.AddComponent<Runner>();
+                _runner = go.AddComponent<UiJuiceRunnerHost>();
             }
             _tweens.Add(t);
         }
@@ -130,7 +130,7 @@ namespace Dovus.Game.Hud
             }
         }
 
-        sealed class Runner : MonoBehaviour
+        sealed class UiJuiceRunnerHost : MonoBehaviour
         {
             void Update() => Step(Time.unscaledDeltaTime);
         }

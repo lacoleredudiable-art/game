@@ -11,7 +11,7 @@ namespace Dovus.Game.Config.Sections
                 public float WindowCuePulseHz = 2f;
                 public float WindowCueUrgentHz = 8f;
                 public float WindowCuePulseAmp = 0.45f;
-                [Header("His katmanı (T8.1, CombatFeel)")]
+                [Header("His katmanı (T8.1, CombatFeelDirector)")]
                 public float AfterimageAlpha = 0.55f;
                 public float ImpactFadeSec = 0.04f;
                 public float VignetteHoldSec = 0.85f;
@@ -26,7 +26,7 @@ namespace Dovus.Game.Config.Sections
                 // Punto/glow/bekleme/sönme FeelTuning.Readout* alanlarında (T1'de spec'ten kondu, T9
                 // burada gerçekten kullanılıyor). Giriş vuruşunun (scale punch) sönme süresi spec'te
                 // yok — uydurma, durum.md'ye T9 sapması olarak geçildi.
-                [Header("Tepki yazısı (T9, ReactionReadout)")]
+                [Header("Tepki yazısı (T9, ReactionReadoutHud)")]
                 public bool ReadoutAnchorRight = true;
                 public float ReadoutPunchInSec = 0.12f;
 
@@ -81,7 +81,7 @@ namespace Dovus.Game.Config.Sections
                 public float SkillPreviewGapDp = 10f;
                 public float SkillPreviewHoldSec = 0.9f;
 
-                [Header("Build seçimi (v6 7b, BuildSelectScreen)")]
+                [Header("Build seçimi (v6 7b, BuildSelectHud)")]
                 public bool SkipBuildSelectOnStart = false;
 
                 [Header("Debug HUD")]

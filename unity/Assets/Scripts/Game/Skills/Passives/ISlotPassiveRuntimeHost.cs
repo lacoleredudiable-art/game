@@ -27,10 +27,10 @@ namespace Dovus.Game.Skills.Passives
         SlotPassiveDirector SlotPassives { get; }
         SentenceEngine Engine { get; }
         SkillMotor Skills { get; }
-        GameClock Clock { get; }
+        GameClockHost Clock { get; }
         BossVitals BossVitals { get; }
         DamageNumberHud DamageHud { get; }
-        ReactionReadout Readout { get; }
+        ReactionReadoutHud Readout { get; }
         PassiveHud PassiveHud { get; }
 
         int SlotQueryCastId { get; set; }

@@ -14,7 +14,7 @@ namespace Dovus.Game.Hud
     /// <summary>Dodge düğmesinin üstünde iki hak pip'i; dolmakta olan pip fill ile akar.</summary>
     public sealed class DodgeChargeHud : MonoBehaviour
     {
-        HexagonInput _input;
+        HexagonInputController _input;
         HexagonView _view;
         Image[] _pips;
         RectTransform _anchor;
@@ -22,7 +22,7 @@ namespace Dovus.Game.Hud
         int _builtFor = -1;
         float _builtWidth = -1f;
 
-        public void Bind(HexagonInput input, HexagonView view)
+        public void Bind(HexagonInputController input, HexagonView view)
         {
             _input = input;
             _view = view;

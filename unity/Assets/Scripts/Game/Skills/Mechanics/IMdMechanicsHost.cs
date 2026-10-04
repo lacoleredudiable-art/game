@@ -26,22 +26,22 @@ namespace Dovus.Game.Skills.Mechanics
 public interface IMdMechanicsHost
     {
         Transform Player { get; }
-        AllyDummy Ally { get; }
-        BossReactor Boss { get; }
-        ActorStatus BossStatus { get; }
+        AllyDummyController Ally { get; }
+        BossReactorController Boss { get; }
+        ActorStatusHost BossStatus { get; }
         BossVitals BossVitals { get; }
         BossDirector BossDirector { get; }
-        ActorStatus PlayerStatus { get; }
-        GameClock Clock { get; }
+        ActorStatusHost PlayerStatus { get; }
+        GameClockHost Clock { get; }
         TeamComboAccess TeamAccess { get; }
         CombatTuning Combat { get; }
         SkillMotor Skills { get; }
         SlotPassiveDirector SlotPassives { get; }
         int SlotQueryCastId { get; }
-        ReactionReadout Readout { get; }
+        ReactionReadoutHud Readout { get; }
         DamageNumberHud DamageHud { get; }
         SentenceDebugHud DebugHud { get; }
-        KinematicMotor Motor { get; }
+        KinematicMotorController Motor { get; }
         Transform DirectorTransform { get; }
         ElementPaintNode? SelectedElementPaint { get; }
         WeaponCombatProfile EquippedProfile { get; }
@@ -77,7 +77,7 @@ public interface IMdMechanicsHost
         float PlayerBodyRadiusM();
         float BossBodyRadius();
         float WeaponFriendlyScale();
-        PlayerVitals CachedPlayerVitals();
+        PlayerVitalsHost CachedPlayerVitals();
         Vector3 ClampToArena(Vector3 pos);
         float FlatDistance(Vector3 a, Vector3 b);
         float ApplyClosingDamage(ClosingHit closing, in SkillResolution skill, bool isBasicStrike, float slash, float power, float chain);

@@ -81,7 +81,7 @@ namespace Dovus.Game.Skills.Closing
             }
 
             bool killed = _host.BossVitals.ApplyDamage(damage);
-            var bossVisual = _host.Boss != null ? _host.Boss.GetComponent<BossVisual>() : null;
+            var bossVisual = _host.Boss != null ? _host.Boss.GetComponent<BossView>() : null;
             if (killed)
                 return damage;
 
@@ -302,9 +302,9 @@ namespace Dovus.Game.Skills.Closing
                 return false;
             if (target != _host.Boss.transform && !target.IsChildOf(_host.Boss.transform))
                 return false;
-            Targetable mark = target.GetComponent<Targetable>();
+            TargetableHost mark = target.GetComponent<TargetableHost>();
             if (mark == null)
-                mark = target.GetComponentInParent<Targetable>();
+                mark = target.GetComponentInParent<TargetableHost>();
             if (mark != null && !mark.IsAvailable)
                 return false;
             float dist = mark != null

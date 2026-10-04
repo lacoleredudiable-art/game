@@ -20,15 +20,15 @@ namespace Dovus.Game.Skills.Closing
     public interface IClosingStatusHost
     {
         Transform Player { get; }
-        AllyDummy Ally { get; }
-        ActorStatus PlayerStatus { get; }
-        ActorStatus BossStatus { get; }
+        AllyDummyController Ally { get; }
+        ActorStatusHost PlayerStatus { get; }
+        ActorStatusHost BossStatus { get; }
         CombatTuning Combat { get; }
         MobilityCcData MobilityCc { get; }
         SlotPassiveDirector SlotPassives { get; }
         PassiveFlowRunner PassiveFlows { get; }
         int SlotQueryCastId { get; }
-        GameClock Clock { get; }
+        GameClockHost Clock { get; }
         MechanicGrammar MechanicEngine { get; }
         BossVitals BossVitals { get; }
         Transform Boss { get; }
@@ -39,7 +39,7 @@ namespace Dovus.Game.Skills.Closing
         int JsonCleanseCount(SkillResolution skill);
         void ShareFriendlyStatuses(SkillResolution skill, StatusBoard friendlyBoard);
         void ApplyPurgePower(SkillResolution skill, int cleansedCount);
-        void ApplyArmorShred(SkillResolution skill, ActorStatus bossStatus);
+        void ApplyArmorShred(SkillResolution skill, ActorStatusHost bossStatus);
         bool IsEnemyBody(Transform body);
         Vector3? BossHitPoint();
         Color? DamageTint();

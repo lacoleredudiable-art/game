@@ -20,9 +20,9 @@ namespace Dovus.Game.Composition.Builders
             GameTuning _tuning = ctx.Tuning;
             var combat = ctx.Combat;
             var player = ctx.Player.transform;
-            var boss = ctx.BossReactor;
-            var vitals = ctx.PlayerVitals;
-            var follow = ctx.FollowCamera;
+            var boss = ctx.BossReactorController;
+            var vitals = ctx.PlayerVitalsHost;
+            var follow = ctx.FollowCameraController;
 
             var root = new GameObject("Hexagon");
             root.transform.SetParent(ctx.SceneRoot, false);
@@ -34,7 +34,7 @@ namespace Dovus.Game.Composition.Builders
 
             var overlayGo = new GameObject("InkOverlayCam");
             overlayGo.transform.SetParent(root.transform, false);
-            var overlay = overlayGo.AddComponent<HexagonOverlayCamera>();
+            var overlay = overlayGo.AddComponent<HexagonOverlayCameraView>();
             overlay.Build(CompositionConstants.HexagonInkLayer);
             ctx.Overlay = overlay;
             ctx.OverlayCamera = overlay.Cam;
@@ -73,7 +73,7 @@ namespace Dovus.Game.Composition.Builders
             if (follow != null)
                 view.BindLockOn(follow);
 
-            var moveInput = player.GetComponent<MoveInput>();
+            var moveInput = player.GetComponent<MoveInputController>();
             if (moveInput != null)
             {
                 var joystickGo = new GameObject("JoystickView");
@@ -85,30 +85,30 @@ namespace Dovus.Game.Composition.Builders
             var inkGo = new GameObject("InkTrail");
             inkGo.transform.SetParent(root.transform, false);
             inkGo.layer = CompositionConstants.HexagonInkLayer;
-            var ink = inkGo.AddComponent<InkTrail>();
+            var ink = inkGo.AddComponent<InkTrailView>();
             ink.Configure(_tuning, overlay, CompositionConstants.HexagonInkLayer);
-            ctx.InkTrail = ink;
+            ctx.InkTrailView = ink;
 
-            var syllable = root.AddComponent<SyllableFeedback>();
+            var syllable = root.AddComponent<SyllableFeedbackView>();
             syllable.Configure(_tuning);
-            ctx.SyllableFeedback = syllable;
+            ctx.SyllableFeedbackView = syllable;
             var debug = root.AddComponent<SentenceDebugHud>();
             ctx.SentenceDebugHud = debug;
 
-            var input = root.AddComponent<HexagonInput>();
+            var input = root.AddComponent<HexagonInputController>();
             input.Tuning = _tuning;
             input.Combat = combat;
             input.Bind(ctx.Clock, ink, syllable, debug, skills, loadout);
             input.DotAccepted += view.NotifyPressed;
             input.DrawCaption += view.ShowDrawCaption;
-            ctx.HexagonInput = input;
+            ctx.HexagonInputController = input;
 
             if (follow != null)
             {
-                var orbit = root.AddComponent<CameraOrbitInput>();
-                ctx.CameraOrbitInput = orbit;
-                orbit.Bind(follow, player.GetComponent<MoveInput>(), input, _tuning, view);
-                var motor = player.GetComponent<KinematicMotor>();
+                var orbit = root.AddComponent<CameraOrbitController>();
+                ctx.CameraOrbitController = orbit;
+                orbit.Bind(follow, player.GetComponent<MoveInputController>(), input, _tuning, view);
+                var motor = player.GetComponent<KinematicMotorController>();
                 motor?.BindCamera(follow);
             }
             debug.Configure(input.Engine, view.CanvasRoot, skills, DebugConfig.Enabled && _tuning.Hud.ShowSentenceDebugHud);
@@ -129,13 +129,13 @@ namespace Dovus.Game.Composition.Builders
                 bossStatus.BindTeam(ctx.TeamAccess);
             }
 
-            var readout = root.AddComponent<ReactionReadout>();
+            var readout = root.AddComponent<ReactionReadoutHud>();
             readout.Configure(combat.Feel, _tuning, view.CanvasRoot);
-            ctx.ReactionReadout = readout;
-            input.BindResource(ctx.PlayerResource, readout, skills);
-            input.BindCooldown(ctx.PlayerCooldown, readout, skills);
+            ctx.ReactionReadoutHud = readout;
+            input.BindResource(ctx.PlayerResourceHost, readout, skills);
+            input.BindCooldown(ctx.PlayerCooldownHost, readout, skills);
 
-            var targeting = ctx.Player.gameObject.AddComponent<PlayerTargeting>();
+            var targeting = ctx.Player.gameObject.AddComponent<PlayerTargetingController>();
             targeting.Bind(
                 player,
                 0,
@@ -144,7 +144,7 @@ namespace Dovus.Game.Composition.Builders
                 combat.Dodge.TapMaxMoveDp,
                 view.CanvasRoot,
                 follow);
-            ctx.PlayerTargeting = targeting;
+            ctx.PlayerTargetingController = targeting;
         }
 
         static void AttachOverlayToMain(Camera main, Camera overlay)

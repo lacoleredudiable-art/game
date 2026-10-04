@@ -93,7 +93,7 @@ namespace Dovus.Game.Vfx
                 line.sharedMaterial = Mat(additive: true, textured: false);
                 line.shadowCastingMode = ShadowCastingMode.Off;
                 line.receiveShadows = false;
-                FxTween.Ring(line, lib.ShockwaveColor, radiusM, lib.ShockwaveWidthM, lib.ShockwaveSec);
+                FxTweenView.Ring(line, lib.ShockwaveColor, radiusM, lib.ShockwaveWidthM, lib.ShockwaveSec);
                 Dust("SlamDust", ground, lib.DodgeDustCount * 2, lib.DodgeDustLifeSec * FeelVfxDefaults.SlamDustLifeSecMult,
                     lib.DodgeDustSize * FeelVfxDefaults.SlamDustSizeMult, radiusM * FeelVfxDefaults.SlamDustSizeMult, lib.DustColor, ringRadius: radiusM * FeelVfxDefaults.DodgeRingRadiusMult);
             }
@@ -109,7 +109,7 @@ namespace Dovus.Game.Vfx
                 mr.sharedMaterial = Mat(additive: false, textured: true, crack: true);
                 mr.shadowCastingMode = ShadowCastingMode.Off;
                 mr.receiveShadows = false;
-                FxTween.Surface(mr, lib.CrackColor, lib.CrackHoldSec, lib.CrackFadeSec);
+                FxTweenView.Surface(mr, lib.CrackColor, lib.CrackHoldSec, lib.CrackFadeSec);
             }
         }
 
@@ -242,7 +242,7 @@ namespace Dovus.Game.Vfx
             return m;
         }
 
-        /// <summary>Merkezden dışa kırık çizgiler; beyaz maske, renk FxTween'den.</summary>
+        /// <summary>Merkezden dışa kırık çizgiler; beyaz maske, renk FxTweenView'den.</summary>
         static Texture2D CrackTexture()
         {
             if (_crack != null)

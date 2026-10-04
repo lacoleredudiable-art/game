@@ -24,13 +24,13 @@ namespace Dovus.Game.Skills.Flow
     public interface ISentenceManifestationHost
     {
         SentenceEngine Engine { get; }
-        GameClock Clock { get; }
+        GameClockHost Clock { get; }
         TeamComboAccess TeamAccess { get; }
         CombatTuning Combat { get; }
         GameTuning Colors { get; }
         SkillMotor Skills { get; }
-        ActorPose Pose { get; }
-        ActorVisual Visual { get; }
+        ActorPoseView Pose { get; }
+        ActorView Visual { get; }
         LivingEffectSpawner EffectSpawner { get; }
         SkillAim Aim { get; }
 

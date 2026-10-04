@@ -61,7 +61,7 @@ public class ReleaseBuildPerfTests
         Assert.That(Regex.Matches(hud, @"if \(DebugConfig\.Enabled\)\s*\{\s*var practice").Count, Is.EqualTo(1));
         Assert.That(Regex.Matches(debug, @"if \(DebugConfig\.Enabled\)\s*\{\s*var v6Panel").Count, Is.EqualTo(1));
         Assert.That(hex, Does.Contain("DebugConfig.Enabled && _tuning.Hud.ShowSentenceDebugHud"));
-        string team = Game("DevTools/TeamDebugMenu.cs");
+        string team = Game("DevTools/TeamDebugHud.cs");
         Assert.That(team, Does.Contain("bool _open = false;"));
         Assert.That(team, Does.Contain("#if UNITY_EDITOR || DOVUS_DEBUG"));
         Assert.That(team, Does.Not.Contain("DEVELOPMENT_BUILD"));
@@ -122,7 +122,7 @@ public class ReleaseBuildPerfTests
         Assert.That(cfg, Does.Contain("version = TuningSchema.Version"));
         Assert.That(cfg, Does.Contain("TuningSchema.Decide(data.version) == TuningSchema.LoadDecision.DiscardStale"));
         Assert.That(cfg, Does.Not.Contain("BossDamageMigration.Apply"));
-        Assert.That(Game("Composition/GameBootstrap.cs"), Does.Match(@"if \(DebugConfig\.Enabled\)\s*tuningConfig\.TryLoad\(\);"));
+        Assert.That(Game("Composition/GameBootstrapHost.cs"), Does.Match(@"if \(DebugConfig\.Enabled\)\s*tuningConfig\.TryLoad\(\);"));
     }
 
     // --- O11 ---
@@ -130,14 +130,14 @@ public class ReleaseBuildPerfTests
     [Test]
     public void NoPerFrameSearches_InHotPaths()
     {
-        Assert.That(Game("Team/TeamComboHost.cs"), Does.Not.Contain("FindObjectsOfType<AllyDummy>"));
-        Assert.That(Regex.Matches(Game("Team/TeamComboHost.cs"), @"_boss\.GetComponent<BossReactor>\(\)").Count, Is.EqualTo(1),
+        Assert.That(Game("Team/TeamComboHost.cs"), Does.Not.Contain("FindObjectsOfType<AllyDummyController>"));
+        Assert.That(Regex.Matches(Game("Team/TeamComboHost.cs"), @"_boss\.GetComponent<BossReactorController>\(\)").Count, Is.EqualTo(1),
             "yalnız CachedBossReactor içinde");
-        Assert.That(Game("Actors/DodgeMotion.cs"), Does.Contain("_reactorCache"));
-        foreach (string f in new[] { "Actors/PlayerTargeting.cs", "Skills/ManifestationDirector.cs", "Skills/Weapons/WeaponPassiveRuntime.cs" })
-            Assert.That(Game(f), Does.Not.Contain("FindObjectsByType<Targetable>"), f);
+        Assert.That(Game("Actors/DodgeMotionController.cs"), Does.Contain("_reactorCache"));
+        foreach (string f in new[] { "Actors/PlayerTargetingController.cs", "Skills/ManifestationDirector.cs", "Skills/Weapons/WeaponPassiveRuntime.cs" })
+            Assert.That(Game(f), Does.Not.Contain("FindObjectsByType<TargetableHost>"), f);
         foreach (string f in new[] { "Skills/ManifestationDirector.cs", "Skills/ManifestationDirector.VerbExecution.cs", "Skills/ManifestationDirector.MechanicWorld.cs" })
-            Assert.That(Regex.Matches(Game(f), @"(?<!_playerVitalsCache = )_player\.GetComponent<PlayerVitals>\(\)").Count, Is.EqualTo(0), f);
+            Assert.That(Regex.Matches(Game(f), @"(?<!_playerVitalsCache = )_player\.GetComponent<PlayerVitalsHost>\(\)").Count, Is.EqualTo(0), f);
         string summon = Game("Skills/Execution/SummonExecutor.cs");
         Assert.That(summon, Does.Contain("_weaponPathClass"));
         Assert.That(summon, Does.Contain("_targetCollider"));
@@ -150,7 +150,7 @@ public class ReleaseBuildPerfTests
                  {
                      "Skills/ManifestationDirector.MechanicWorld.cs", "Skills/Motion/MotionTemplateDriver.cs",
                      "Skills/Execution/SummonExecutor.cs", "Team/TeamComboHost.cs", "Boss/HostileProjectileHost.cs",
-                     "Boss/AttackTelegraph.cs"
+                     "Boss/AttackTelegraphView.cs"
                  })
         {
             string src = Game(f);
@@ -204,7 +204,7 @@ public class ReleaseBuildPerfTests
     [Test]
     public void Android_ScreenStaysOn_QualityChosen()
     {
-        string boot = Game("Composition/GameBootstrap.cs");
+        string boot = Game("Composition/GameBootstrapHost.cs");
         Assert.That(boot, Does.Contain("Screen.sleepTimeout = SleepTimeout.NeverSleep;"));
         Assert.That(boot, Does.Contain("Screen.sleepTimeout = SleepTimeout.SystemSetting;"));
         string q = File.ReadAllText(Path.Combine(Root(), "unity", "ProjectSettings", "QualitySettings.asset"));
@@ -221,7 +221,7 @@ public class ReleaseBuildPerfTests
         string debug = Game("Composition/Builders/DebugToolsBuilder.cs");
         string arena = Game("Composition/Builders/ArenaBuilder.cs");
         int ensure = debug.IndexOf("EnsureEventSystem();", System.StringComparison.Ordinal);
-        int gate = debug.IndexOf("CreateTuningPanel(ctx.TuningConfig, ctx.PlayerVitals, ctx.FollowCamera);", System.StringComparison.Ordinal);
+        int gate = debug.IndexOf("CreateTuningPanel(ctx.TuningConfig, ctx.PlayerVitalsHost, ctx.FollowCameraController);", System.StringComparison.Ordinal);
         Assert.That(ensure, Is.GreaterThan(0));
         Assert.That(gate, Is.GreaterThan(ensure));
         string between = debug.Substring(ensure, gate - ensure);

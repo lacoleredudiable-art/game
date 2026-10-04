@@ -76,7 +76,7 @@ namespace Dovus.Game.Editor
         /// Elde silah prop referansları (Animasyon b). WeaponKey = weapons[].animations_key
         /// (<see cref="WeaponArchetypeMap"/> girdileriyle birebir). Quaternius "Only Weapons" FBX
         /// kılıç/hançer/yay/asa için; kalkan/çekiç/kitap/küre/tılsım/top'ta referans boş bırakılır —
-        /// <see cref="WeaponHandProps"/> boş referansta primitive placeholder kurar. Ölçekler mesh
+        /// <see cref="WeaponHandPropsView"/> boş referansta primitive placeholder kurar. Ölçekler mesh
         /// local bounds'una göre hesaplandı (görev hedefi: kılıç ~0,9 m, asa ~1,6 m).
         /// "yumruk" bilinçli olarak kayıtsız: spec'te prop yok (çıplak el).
         /// </summary>

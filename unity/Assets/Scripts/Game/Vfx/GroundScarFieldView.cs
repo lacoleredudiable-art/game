@@ -1,0 +1,147 @@
+using Dovus.Game.Casting;
+using Dovus.Game.Config;
+using System.Collections.Generic;
+using Dovus.Game.Assets;
+using UnityEngine;
+namespace Dovus.Game.Vfx
+{
+public sealed class GroundScarFieldView : MonoBehaviour
+    {
+        readonly List<GameObject> _scars = new();
+        int _writeIndex;
+        GameTuning _tuning;
+        Material _cyanMat;
+        Material _purpleMat;
+        Material _acidMat;
+
+        public void Configure(GameTuning tuning)
+        {
+            _tuning = tuning;
+            _cyanMat = MakeMat(tuning.Visuals.InkCyan * GroundScarFieldViewDefaults.CyanInkTintMult);
+            _purpleMat = MakeMat(tuning.Visuals.InkPurple * GroundScarFieldViewDefaults.PurpleInkTintMult);
+            _acidMat = MakeMat(tuning.Visuals.AcidGreen * GroundScarFieldViewDefaults.AcidInkTintMult);
+        }
+
+        public void Stamp(Vector3 worldPos, float scaleM, ScarKind kind, Vector3 along)
+        {
+            int cap = Mathf.Max(1, _tuning != null ? _tuning.Visuals.GroundScarCapCount : 60);
+
+            GameObject go;
+            if (_scars.Count < cap)
+            {
+                go = CreateScarObject("Scar_" + kind);
+                _scars.Add(go);
+            }
+            else
+            {
+                // Tavan dolu: en eski izi (round-robin sırayla) yeniden kullan — yok edip
+                // yeniden yaratma. Uzun dövüşte sahnedeki nesne sayısı burada sabitlenir.
+                go = _scars[_writeIndex];
+                go.name = "Scar_" + kind;
+            }
+            _writeIndex = (_writeIndex + 1) % cap;
+
+            worldPos.y = GroundScarFieldViewDefaults.ScarGroundLiftM;
+            go.transform.position = worldPos;
+            if (!go.activeSelf)
+                go.SetActive(true);
+
+            along.y = 0f;
+            if (along.sqrMagnitude < 1e-4f)
+                along = Vector3.forward;
+            along.Normalize();
+
+            var renderer = go.GetComponent<Renderer>();
+            switch (kind)
+            {
+                case ScarKind.Crack:
+                    go.transform.rotation = Quaternion.LookRotation(Vector3.down, along);
+                    go.transform.localScale = new Vector3(scaleM * GroundScarFieldViewDefaults.SlashDecalScaleMult, scaleM * GroundScarFieldViewDefaults.SlashScarYMult, 1f);
+                    renderer.sharedMaterial = _purpleMat;
+                    break;
+                case ScarKind.Needle:
+                    go.transform.rotation = Quaternion.LookRotation(Vector3.down, along);
+                    go.transform.localScale = new Vector3(scaleM * GroundScarFieldViewDefaults.BurnScarXMult, scaleM * GroundScarFieldViewDefaults.BurnScarYMult, 1f);
+                    renderer.sharedMaterial = _cyanMat;
+                    break;
+                case ScarKind.Swarm:
+                    go.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+                    go.transform.localScale = new Vector3(scaleM * GroundScarFieldViewDefaults.BloomScarMult, scaleM * GroundScarFieldViewDefaults.BloomScarMult, 1f);
+                    renderer.sharedMaterial = _purpleMat;
+                    break;
+                case ScarKind.Acid:
+                    go.transform.rotation = Quaternion.Euler(90f, Random.Range(0f, 360f), 0f);
+                    go.transform.localScale = new Vector3(scaleM * GroundScarFieldViewDefaults.ShrinkScarXMult, scaleM * GroundScarFieldViewDefaults.ShrinkScarYMult, 1f);
+                    renderer.sharedMaterial = _acidMat;
+                    break;
+                case ScarKind.Strike:
+                    // Düz vuruş: kısa dar çizik — cümle halka/çatlak izinden ayrılır.
+                    go.transform.rotation = Quaternion.LookRotation(Vector3.down, along);
+                    go.transform.localScale = new Vector3(scaleM * GroundScarFieldViewDefaults.NeedleScarXMult, scaleM * GroundScarFieldViewDefaults.NeedleScarYMult, 1f);
+                    renderer.sharedMaterial = _cyanMat;
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Mesh'i doğrudan ata — GameObject.CreatePrimitive'in otomatik eklediği Collider
+        /// hiç oluşmaz (teknoloji-kararlari §4: fizik dışarıda, bir karelik collider bile yok).
+        /// </summary>
+        GameObject CreateScarObject(string name)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(transform, false);
+            go.AddComponent<MeshFilter>().sharedMesh = PrimitiveMesh.Get(PrimitiveType.Quad);
+            go.AddComponent<MeshRenderer>();
+            return go;
+        }
+
+        void OnDestroy()
+        {
+            if (_cyanMat != null) Destroy(_cyanMat);
+            if (_purpleMat != null) Destroy(_purpleMat);
+            if (_acidMat != null) Destroy(_acidMat);
+        }
+
+        static Material MakeMat(Color c)
+        {
+            var shader = FindTransparentUnlitShader();
+            var mat = new Material(shader);
+            ConfigureTransparentFallback(mat);
+            c.a = GroundScarFieldViewDefaults.ScarDecalAlpha;
+            SetMatColor(mat, c);
+            return mat;
+        }
+
+        // "Sprites/Default" gerçekten alfa harmanlar (InkTrailView.EnsureMaterial ile aynı desen);
+        // URP Unlit varsayılan OPAK olduğu için izin 0.85 alfası hiçbir şey yapmıyordu.
+        static Shader FindTransparentUnlitShader()
+        {
+            var shader = AssetLoader.FindShader("Sprites/Default", null);
+            if (shader == null) shader = AssetLoader.FindShader("Universal Render Pipeline/Unlit", null);
+            if (shader == null) shader = AssetLoader.FindShader("Unlit/Color", null);
+            return shader != null ? shader : AssetLoader.FindShader("Hidden/Internal-Colored", null);
+        }
+
+        static void ConfigureTransparentFallback(Material mat)
+        {
+            if (!mat.HasProperty("_Surface"))
+                return;
+
+            mat.SetFloat("_Surface", 1f);
+            mat.SetFloat("_Blend", 0f);
+            mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            mat.SetInt("_ZWrite", 0);
+            mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+        }
+
+        static void SetMatColor(Material mat, Color c)
+        {
+            if (mat.HasProperty("_BaseColor"))
+                mat.SetColor("_BaseColor", c);
+            else
+                mat.color = c;
+        }
+    }
+}

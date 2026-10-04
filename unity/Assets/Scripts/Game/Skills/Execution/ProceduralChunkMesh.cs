@@ -7,7 +7,7 @@ namespace Dovus.Game.Skills.Execution
     /// <summary>
     /// Paket mesh'i olmayan fiil maddeleri için koddan üretilen düşük poligonlu katı parça.
     /// Şekil adı veridir (<see cref="VfxLibrary.Entry.ChunkShape"/>); oranlar sanat verisidir,
-    /// ölçü <see cref="ComposedSkillVfx"/> tarafından gramer boyutuna oturtulur.
+    /// ölçü <see cref="ComposedSkillVfxView"/> tarafından gramer boyutuna oturtulur.
     /// </summary>
     public static class ProceduralChunkMesh
     {

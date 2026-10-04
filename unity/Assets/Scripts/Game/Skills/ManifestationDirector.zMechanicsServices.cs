@@ -108,22 +108,22 @@ namespace Dovus.Game.Skills
             internal MdMechanicsHost(ManifestationDirector md) => _md = md;
 
             public Transform Player => _md._player;
-            public AllyDummy Ally => _md._ally;
-            public BossReactor Boss => _md._boss;
-            public ActorStatus BossStatus => _md._bossStatus;
+            public AllyDummyController Ally => _md._ally;
+            public BossReactorController Boss => _md._boss;
+            public ActorStatusHost BossStatus => _md._bossStatus;
             public BossVitals BossVitals => _md._bossVitals;
             public BossDirector BossDirector => _md._bossDirector;
-            public ActorStatus PlayerStatus => _md._playerStatus;
-            public GameClock Clock => _md._clock;
+            public ActorStatusHost PlayerStatus => _md._playerStatus;
+            public GameClockHost Clock => _md._clock;
             public TeamComboAccess TeamAccess => _md._team;
             public CombatTuning Combat => _md._combat;
             public SkillMotor Skills => _md._skills;
             public SlotPassiveDirector SlotPassives => _md._slotPassives;
             public int SlotQueryCastId => _md._slotQueryCastId;
-            public ReactionReadout Readout => _md._readout;
+            public ReactionReadoutHud Readout => _md._readout;
             public DamageNumberHud DamageHud => _md._damageHud;
             public SentenceDebugHud DebugHud => _md._debugHud;
-            public KinematicMotor Motor => _md._motor;
+            public KinematicMotorController Motor => _md._motor;
             public Transform DirectorTransform => _md.transform;
             public ElementPaintNode? SelectedElementPaint => _md.SelectedElementPaint;
             public WeaponCombatProfile EquippedProfile => _md.EquippedProfile;
@@ -218,7 +218,7 @@ namespace Dovus.Game.Skills
             public float PlayerBodyRadiusM() => _md.PlayerBodyRadiusM();
             public float BossBodyRadius() => _md.BossBodyRadius();
             public float WeaponFriendlyScale() => _md.WeaponFriendlyScale();
-            public PlayerVitals CachedPlayerVitals() => _md.CachedPlayerVitals();
+            public PlayerVitalsHost CachedPlayerVitals() => _md.CachedPlayerVitals();
             public Vector3 ClampToArena(Vector3 pos) => _md.ClampToArena(pos);
             public float FlatDistance(Vector3 a, Vector3 b) => ManifestationDirector.FlatDistance(a, b);
             public float ApplyClosingDamage(

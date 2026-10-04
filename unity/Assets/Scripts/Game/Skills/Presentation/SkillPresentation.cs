@@ -128,7 +128,7 @@ namespace Dovus.Game.Skills.Presentation
             {
                 EffectSilhouette axes = default;
                 _host.Visual.PulseAnimationType(check.AnimationTypeId, axes);
-                _host.LastAnimationState = ActorVisual.AnimationTypeToState(check.AnimationTypeId);
+                _host.LastAnimationState = ActorView.AnimationTypeToState(check.AnimationTypeId);
                 _host.LastAnimationPlayApplied = true;
                 return;
             }

@@ -11,12 +11,12 @@ namespace Dovus.Game.Casting
         Image _lockOnRim;
         Text _lockOnLabel;
         Button _lockOnButton;
-        FollowCamera _lockOnCamera;
+        FollowCameraController _lockOnCamera;
 
         public RectTransform LockOnButtonRect => _lockOn;
         public Button LockOnButton => _lockOnButton;
 
-        public void BindLockOn(FollowCamera camera)
+        public void BindLockOn(FollowCameraController camera)
         {
             _lockOnCamera = camera;
             RefreshLockOnVisual();

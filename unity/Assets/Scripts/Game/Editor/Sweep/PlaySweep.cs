@@ -115,20 +115,20 @@ namespace Dovus.Game.Editor
     
             // Sahne referansları
             static ManifestationDirector _md;
-            static HexagonInput _input;
+            static HexagonInputController _input;
             static Transform _player;
             static Transform _boss;
-            static BossReactor _bossReactor;
+            static BossReactorController _bossReactor;
             static BossVitals _bossVitals;
             static BossDirector _bossDirector;
-            static ActorStatus _playerStatus;
-            static ActorStatus _bossStatus;
-            static PlayerVitals _playerVitals;
-            static AllyDummy _ally;
-            static MotionTemplateBody _body;
-            static DodgeMotion _dodge;
+            static ActorStatusHost _playerStatus;
+            static ActorStatusHost _bossStatus;
+            static PlayerVitalsHost _playerVitals;
+            static AllyDummyController _ally;
+            static MotionTemplateBodyHost _body;
+            static DodgeMotionController _dodge;
             static Animator _animator;
-            static GameClock _clock;
+            static GameClockHost _clock;
             static SkillMotor _skills;
             static HostileProjectileHost _projectiles;
     

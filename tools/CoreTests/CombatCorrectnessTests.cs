@@ -142,9 +142,9 @@ public class CombatCorrectnessTests
     [Test]
     public void O4_PlayerRespawn_UsesWorldClock_AndClearsStatus()
     {
-        string vitals = Game("Actors/PlayerVitals.cs");
+        string vitals = Game("Actors/PlayerVitalsHost.cs");
         Assert.That(vitals, Does.Not.Contain("_respawnAtUnscaled"));
-        Assert.That(vitals, Does.Contain("public void BindClock(GameClock clock)"));
+        Assert.That(vitals, Does.Contain("public void BindClock(GameClockHost clock)"));
         Assert.That(Regex.Matches(vitals, @"ClearStatusBoard\(\);").Count, Is.GreaterThanOrEqualTo(2));
         Assert.That(Game("Composition/Builders/ActorsBuilder.cs"), Does.Contain("vitals.BindClock(clock)"));
     }
@@ -278,7 +278,7 @@ public class CombatCorrectnessTests
     [Test]
     public void S4_DotTick_PiercesArmor_IsUndodgeable_AndShowsNumber()
     {
-        string status = Game("Actors/ActorStatus.cs");
+        string status = Game("Actors/ActorStatusHost.cs");
         Assert.That(status, Does.Contain("ApplyDamage(payload, dodgeable: false, pierceArmor: true)"));
         Assert.That(status, Does.Contain("DamageOverTimeDealt?.Invoke(LastAppliedDamage)"));
         Assert.That(Game("Skills/ManifestationDirector.cs"), Does.Contain("DamageOverTimeDealt += OnBossDamageOverTime"));

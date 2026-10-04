@@ -60,7 +60,7 @@ Karadul'un konisi; etki listesi veriden gelir: `["poison"]`. Bugün `BossDirecto
 - Windup 1000 ms: boss çömelir, **iniş noktasında** kırmızı daire (r 3.0 m) belirir. İniş noktası windup başında kilitlenir (oyuncuyu takip etmez; dodge ile kaçılır).
 - Aktif: 0.45 sn havada (spec'te yok), iner, iniş dairesinde 14 hasar.
 - `BossAttackMotion.Leap`: enum'da zaten var; `Root` olan boss bu saldırıyı başlatamaz (mevcut `BossAttackControl.Evaluate` kuralı, ekstra kod yok).
-- **Hareket yolu (AGENTS kural 3):** boss'u yalnız hareket kalıbı taşıyabilir. Bugün boss'ta `MotionTemplateBody` yok (yalnız oyuncuda, `PrototypeBootstrap` L205). Bkz. **Karar 1**.
+- **Hareket yolu (AGENTS kural 3):** boss'u yalnız hareket kalıbı taşıyabilir. Bugün boss'ta `MotionTemplateBodyHost` yok (yalnız oyuncuda, `PrototypeBootstrap` L205). Bkz. **Karar 1**.
 
 ## 4. Arena (25 m yarıçap)
 
@@ -114,7 +114,7 @@ Karadul şemasının aynısı + saldırı başına isteğe bağlı yeni alanlar:
 ## 7. Onay için kararlar
 
 **Karar 1 — Sıçrayışın hareket yolu**
-- A (önerilen): Boss'a `MotionTemplateBody` eklenir; sıçrayış tek fazlı bir hareket kalıbıyla (`leap`) oynar. AGENTS kural 3'e tam uyar, ama boss için ilk kalıp kullanımı (3.4 işi büyür).
+- A (önerilen): Boss'a `MotionTemplateBodyHost` eklenir; sıçrayış tek fazlı bir hareket kalıbıyla (`leap`) oynar. AGENTS kural 3'e tam uyar, ama boss için ilk kalıp kullanımı (3.4 işi büyür).
 - B: İlk sürümde sıçrayış yok; faz 2 = karadul gibi yerinde saldırılar + ağ. Sıçrayış ayrı PR.
 
 **Karar 2 — Görsel model**
@@ -131,9 +131,9 @@ Karadul şemasının aynısı + saldırı başına isteğe bağlı yeni alanlar:
 | 3.1 | JSON + `ActiveBossId` + yükleyici parametresi | 3 |
 | 3.2 | Core: `WebField`, `Pounce` türleri, faz listesiyle seçici, veriden etki listesi | 1 (B ise `Pounce` yok) |
 | 3.3 | `BossDirector`: yeni türlerin çözümü, `on_hit_status`, FireCone etkilerinin veriden okunması | — |
-| 3.4 | Telegraph + ağ alanı + (Karar 1A ise) boss `MotionTemplateBody` ile sıçrayış | 1, 2 |
+| 3.4 | Telegraph + ağ alanı + (Karar 1A ise) boss `MotionTemplateBodyHost` ile sıçrayış | 1, 2 |
 | 3.5 | Bootstrap'ta boss seçimi + HUD | 2, 3 |
 | 3.6 | Doğrulama: CoreTests, AtomSim, SweepV2 kapısı | — |
-| 3.7 | CC0 örümcek modeli: bul, içe aktar, Editor bind ile animator, `BossVisual` eşlemesi | 2 |
+| 3.7 | CC0 örümcek modeli: bul, içe aktar, Editor bind ile animator, `BossView` eşlemesi | 2 |
 
 Model gereksinimi (Karar 2B): CC0 lisanslı, kendi animasyonları olan örümcek (en az idle, yürüme, saldırı, ölüm; varsa sıçrama ve vurulma). Mixamo insansı klipleri kullanılmaz. Eksik klip, mevcut en yakın klibe düşer.

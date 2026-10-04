@@ -46,17 +46,17 @@ namespace Dovus.Game.Editor
             {
                 error = "";
                 RuneLoadout current = _input.Engine?.Loadout;
-                if (!BuildSelectScreen.IsOpen && current != null && current.RuneIds.Contains(v) && current.RuneIds.Contains(a))
+                if (!BuildSelectHud.IsOpen && current != null && current.RuneIds.Contains(v) && current.RuneIds.Contains(a))
                     return true;
 
                 int key = SweepComboCatalog.BuildKey(v, a);
                 var ids = new List<int>(SweepComboCatalog.RuneGroups[key / 4]);
                 ids.AddRange(SweepComboCatalog.RuneGroups[key % 4]);
 
-                var screen = UnityEngine.Object.FindAnyObjectByType<BuildSelectScreen>(FindObjectsInactive.Include);
+                var screen = UnityEngine.Object.FindAnyObjectByType<BuildSelectHud>(FindObjectsInactive.Include);
                 if (screen == null)
                 {
-                    error = "BuildSelectScreen yok";
+                    error = "BuildSelectHud yok";
                     return false;
                 }
                 screen.Open();
@@ -77,7 +77,7 @@ namespace Dovus.Game.Editor
                         weapons.Add(second);
                 }
                 Call(screen, "ApplyAndStart");
-                if (BuildSelectScreen.IsOpen)
+                if (BuildSelectHud.IsOpen)
                     Call(screen, "Close");
                 current = _input.Engine?.Loadout;
                 if (current == null || !current.RuneIds.Contains(v) || !current.RuneIds.Contains(a))
@@ -117,7 +117,7 @@ namespace Dovus.Game.Editor
             static void ForceClean()
             {
                 _body?.Stop();
-                _player.GetComponent<ActorVisual>()?.EndMotionAnim();
+                _player.GetComponent<ActorView>()?.EndMotionAnim();
                 _input.Engine?.Abort();
                 (F<object>(_md, "_pending") as IList)?.Clear();
                 _logs.Add("önceki cast 6 sn'de bitmedi, zorla temizlendi");
@@ -151,19 +151,19 @@ namespace Dovus.Game.Editor
                 if (_ally != null)
                     S(_ally, "_hp", Math.Max(1, _ally.MaxHp / 2));
 
-                var resource = _player.GetComponent<PlayerResource>();
+                var resource = _player.GetComponent<PlayerResourceHost>();
                 object tracker = resource != null ? F<object>(resource, "_tracker") : null;
                 if (tracker != null)
                     S(tracker, "_mana", F<float>(tracker, "_maxMana"));
-                var cooldown = _player.GetComponent<PlayerCooldown>();
+                var cooldown = _player.GetComponent<PlayerCooldownHost>();
                 if (cooldown != null)
                     cooldown.Bind(cooldown.GlobalCooldownSec > 0f ? cooldown.GlobalCooldownSec : 0.3f, 1);
 
                 S(_md, "_closingChainBonus", 1f);
                 _input.Dodge?.Reset();
-                _player.GetComponent<PlayerDodgeRig>()?.SkillIframe.Clear();
+                _player.GetComponent<PlayerDodgeController>()?.SkillIframe.Clear();
                 _projectiles?.ClearAll();
-                _ally?.GetComponent<ActorGrounding>()?.SnapPlanted();
+                _ally?.GetComponent<ActorGroundingController>()?.SnapPlanted();
             }
 
             /// <summary>
@@ -246,7 +246,7 @@ namespace Dovus.Game.Editor
                     _bossReactor.Home = _bossStart;
                     _boss.position = new Vector3(_bossStart.x, _boss.position.y, _bossStart.z);
                 }
-                _boss.GetComponent<ActorGrounding>()?.SnapPlanted();
+                _boss.GetComponent<ActorGroundingController>()?.SnapPlanted();
                 Physics.SyncTransforms();
             }
 
@@ -266,11 +266,11 @@ namespace Dovus.Game.Editor
             {
                 Vector3 b = _boss.position;
                 _player.position = new Vector3(b.x, _player.position.y, b.z - dist);
-                _player.GetComponent<ActorGrounding>()?.SnapPlanted();
+                _player.GetComponent<ActorGroundingController>()?.SnapPlanted();
                 _player.rotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
                 Physics.SyncTransforms();
-                var targeting = F<PlayerTargeting>(_md, "_targeting");
-                var target = _boss.GetComponentInChildren<Targetable>();
+                var targeting = F<PlayerTargetingController>(_md, "_targeting");
+                var target = _boss.GetComponentInChildren<TargetableHost>();
                 if (targeting != null && target != null && targeting.Selected != target)
                     Call(targeting, "Select", target);
             }

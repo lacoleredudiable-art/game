@@ -20,10 +20,10 @@ namespace Dovus.Game.Hud
     /// </summary>
     public sealed class VitalsHud : MonoBehaviour
     {
-        PlayerVitals _vitals;
-        PlayerResource _resource;
+        PlayerVitalsHost _vitals;
+        PlayerResourceHost _resource;
         BossVitals _bossVitals;
-        AllyDummy _ally;
+        AllyDummyController _ally;
         GameTuning _tuning;
         HudTheme _theme;
 
@@ -89,12 +89,12 @@ namespace Dovus.Game.Hud
         public Transform CanvasParent => _playerRoot != null ? _playerRoot.parent : null;
 
         public void Configure(
-            PlayerVitals vitals,
+            PlayerVitalsHost vitals,
             BossVitals bossVitals,
             GameTuning tuning,
             Transform canvasRoot,
-            AllyDummy ally = null,
-            PlayerResource resource = null)
+            AllyDummyController ally = null,
+            PlayerResourceHost resource = null)
         {
             _vitals = vitals;
             _resource = resource;

@@ -48,10 +48,10 @@ namespace Dovus.Game.Editor
             }
 
             var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
-            var boot = Object.FindFirstObjectByType<GameBootstrap>();
+            var boot = Object.FindFirstObjectByType<GameBootstrapHost>();
             if (boot == null)
             {
-                error = "GameBootstrap bileşeni yok.";
+                error = "GameBootstrapHost bileşeni yok.";
                 return false;
             }
             // Unity re-serializes nested sections only; orphan flat keys from pre-2B.5c scenes are omitted.

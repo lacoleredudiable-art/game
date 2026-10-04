@@ -18,16 +18,16 @@ namespace Dovus.Game.Hud
     /// <summary>
     /// Savaş üstü okunurluk katmanı: düşük can vinyeti, hasar yönü göstergesi, ekran dışı boss
     /// oku ve zafer/yenilgi banner'ı. Oyun durumunu yalnız okur (can düşüşü = isabet; tek hasar
-    /// kaynağı boss). Kullanılmayan görseller kapalı tutulur (overdraw, bkz. CombatFeel T8.1).
+    /// kaynağı boss). Kullanılmayan görseller kapalı tutulur (overdraw, bkz. CombatFeelDirector T8.1).
     /// </summary>
     public sealed class CombatOverlayHud : MonoBehaviour
     {
-        PlayerVitals _player;
+        PlayerVitalsHost _player;
         BossVitals _bossVitals;
         Transform _playerTf;
         Transform _bossTf;
         Camera _cam;
-        FollowCamera _follow;
+        FollowCameraController _follow;
         HudTheme _theme;
 
         public void BindTheme(HudTheme theme) => _theme = theme;
@@ -55,13 +55,13 @@ namespace Dovus.Game.Hud
         public string OutcomeText => _outcomeTitle != null && _outcomeGroup.alpha > 0f ? _outcomeTitle.text : string.Empty;
 
         public void Configure(
-            PlayerVitals player,
+            PlayerVitalsHost player,
             BossVitals bossVitals,
             Transform playerTf,
             Transform bossTf,
             Camera overlayCam,
             Camera mainCam,
-            FollowCamera follow = null)
+            FollowCameraController follow = null)
         {
             _player = player;
             _bossVitals = bossVitals;

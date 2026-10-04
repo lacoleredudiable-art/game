@@ -17,8 +17,8 @@ namespace Dovus.Game.Editor
     ///
     /// Klip klasörleri: <c>Mixamo/Player/</c> ve <c>Mixamo/Boss/</c> önce aranır, bulunamayan rol
     /// ortak <c>Mixamo/*.fbx</c> kliplerine düşer. İndirme listeleri: <c>tools/mixamo-jobs/*.json</c>.
-    /// Oyuncu state isimleri <see cref="ActorVisual"/> ve AnimationBridge ile, boss state
-    /// isimleri <see cref="BossVisual"/> ile birebir.
+    /// Oyuncu state isimleri <see cref="ActorView"/> ve AnimationBridge ile, boss state
+    /// isimleri <see cref="BossView"/> ile birebir.
     /// </summary>
     public static class MixamoAnimatorBind
     {
@@ -131,15 +131,15 @@ namespace Dovus.Game.Editor
             EnsureParam(ac, "Speed", AnimatorControllerParameterType.Float);
             // O-anim(c): CastChannel/CastGuard döngü (hold) sinyali — ManifestationDirector.TickCastHold
             // her kare bu bool'ları yazar, binder'daki dönüş geçişi bunlar false olmadan tetiklenmez.
-            EnsureParam(ac, ActorVisual.ParamChannelHold, AnimatorControllerParameterType.Bool);
-            EnsureParam(ac, ActorVisual.ParamGuardHold, AnimatorControllerParameterType.Bool);
-            EnsureParam(ac, ActorVisual.ParamStrikeSpeed, AnimatorControllerParameterType.Float, 1f);
+            EnsureParam(ac, ActorView.ParamChannelHold, AnimatorControllerParameterType.Bool);
+            EnsureParam(ac, ActorView.ParamGuardHold, AnimatorControllerParameterType.Bool);
+            EnsureParam(ac, ActorView.ParamStrikeSpeed, AnimatorControllerParameterType.Float, 1f);
 
             var sm = ResetBaseLayer(ac);
             var loco = sm.AddState("Locomotion", new Vector3(300, 0, 0));
             // 17 Eyl sahip kararı: ortak Fighting Idle fazla oynak → donuk. Oyuncuya özel idle normal hızda.
             float idleScale = c.PickPrimary("idle") != null ? 1f : 0.02f;
-            // Eşikler kliplerin ölçülmüş zemin hızı: ActorVisual.SetLocomotion gerçek hızı model birimiyle
+            // Eşikler kliplerin ölçülmüş zemin hızı: ActorView.SetLocomotion gerçek hızı model birimiyle
             // verir, ayak yere bastığı yerde kalır. Ölçüm olmazsa eski normalize eşiklere düşer.
             float walkSpeed = MeasureGroundSpeed(walk);
             float runSpeed = run != walk ? MeasureGroundSpeed(run) : 0f;
@@ -149,15 +149,15 @@ namespace Dovus.Game.Editor
                 : MakeLocomotionTree(ac, "LocomotionBT", idle, walk, run, idleScale);
             if (measured)
             {
-                EnsureParam(ac, ActorVisual.ParamLocoRunSpeed, AnimatorControllerParameterType.Float, runSpeed);
-                EnsureParam(ac, ActorVisual.ParamLocoPlayback, AnimatorControllerParameterType.Float, 1f);
+                EnsureParam(ac, ActorView.ParamLocoRunSpeed, AnimatorControllerParameterType.Float, runSpeed);
+                EnsureParam(ac, ActorView.ParamLocoPlayback, AnimatorControllerParameterType.Float, 1f);
                 loco.speedParameterActive = true;
-                loco.speedParameter = ActorVisual.ParamLocoPlayback;
+                loco.speedParameter = ActorView.ParamLocoPlayback;
             }
             else
             {
-                RemoveParam(ac, ActorVisual.ParamLocoRunSpeed);
-                RemoveParam(ac, ActorVisual.ParamLocoPlayback);
+                RemoveParam(ac, ActorView.ParamLocoRunSpeed);
+                RemoveParam(ac, ActorView.ParamLocoPlayback);
             }
             loco.iKOnFeet = true;
             Debug.Log($"[MixamoBind] locomotion zemin hızı (model/sn): yürüme={walkSpeed:F2} koşu={runSpeed:F2} ölçüldü={measured}");
@@ -169,16 +169,16 @@ namespace Dovus.Game.Editor
             AddActionState(sm, "CastSweep", sweep, 520, 80, 0.8f, ActionReturnSec);
             AddActionState(sm, "CastSlam", slam, 520, 160, 0.8f, ActionReturnSec);
             // Hold: ChannelHold/GuardHold true iken dönüş geçişi kilitli (bkz. AddActionState holdParam).
-            AddActionState(sm, "CastChannel", channel, 520, 240, 0.8f, HoldReturnSec, ActorVisual.ParamChannelHold);
-            AddActionState(sm, "CastGuard", guard, 520, 320, 0.8f, HoldReturnSec, ActorVisual.ParamGuardHold);
+            AddActionState(sm, "CastChannel", channel, 520, 240, 0.8f, HoldReturnSec, ActorView.ParamChannelHold);
+            AddActionState(sm, "CastGuard", guard, 520, 320, 0.8f, HoldReturnSec, ActorView.ParamGuardHold);
             AddActionState(sm, "CastShoot", shoot, 520, 400, 0.8f, ActionReturnSec);
             AddActionState(sm, "Death", death, 300, 240, -1f, 0f);
             AddActionState(sm, "BasicStrike", strikeA, 740, 0, 0.78f, ActionReturnSec,
-                speedParam: ActorVisual.ParamStrikeSpeed);
+                speedParam: ActorView.ParamStrikeSpeed);
             AddActionState(sm, "BasicStrikeB", strikeB, 740, 80, 0.78f, ActionReturnSec,
-                speedParam: ActorVisual.ParamStrikeSpeed);
+                speedParam: ActorView.ParamStrikeSpeed);
             AddActionState(sm, "BasicStrikeC", strikeC, 740, 160, 0.78f, ActionReturnSec,
-                speedParam: ActorVisual.ParamStrikeSpeed);
+                speedParam: ActorView.ParamStrikeSpeed);
 
             // O-anim(c): hareket anahtarı state'leri — Dodge gibi tek gövde, Upper kopyası yok
             // (motion template zaten gövdeyi taşır, bkz. AGENTS "tek hareket sistemi").
@@ -195,7 +195,7 @@ namespace Dovus.Game.Editor
 
         /// <summary>
         /// Üst gövde katmanı: hareket ederken cast edilen skill'de bacaklar koşmaya devam eder.
-        /// ActorVisual yürürken aksiyonu bu katmana yönlendirir (state adı "Upper" + ad).
+        /// ActorView yürürken aksiyonu bu katmana yönlendirir (state adı "Upper" + ad).
         /// </summary>
         static void BuildUpperBodyLayer(AnimatorController ac, params AnimationClip[] clips)
         {
@@ -236,14 +236,14 @@ namespace Dovus.Game.Editor
                 if (names[i] is "UpperBasicStrike" or "UpperBasicStrikeB" or "UpperBasicStrikeC")
                 {
                     st.speedParameterActive = true;
-                    st.speedParameter = ActorVisual.ParamStrikeSpeed;
+                    st.speedParameter = ActorView.ParamStrikeSpeed;
                 }
                 var back = st.AddTransition(empty);
                 back.hasExitTime = true;
                 back.exitTime = 0.85f;
                 // Hold karşılığı üst gövde: CastChannel/CastGuard taşırken de aynı kilit uygulanır.
-                string holdParam = names[i] == "UpperCastChannel" ? ActorVisual.ParamChannelHold
-                    : names[i] == "UpperCastGuard" ? ActorVisual.ParamGuardHold
+                string holdParam = names[i] == "UpperCastChannel" ? ActorView.ParamChannelHold
+                    : names[i] == "UpperCastGuard" ? ActorView.ParamGuardHold
                     : null;
                 back.duration = holdParam != null ? HoldReturnSec : ActionReturnSec;
                 back.hasFixedDuration = true;
@@ -276,23 +276,23 @@ namespace Dovus.Game.Editor
 
             var ac = LoadOrCreate(BossCtrl);
             EnsureParam(ac, "Speed", AnimatorControllerParameterType.Float);
-            EnsureParam(ac, BossVisual.ParamLocoSpeed, AnimatorControllerParameterType.Float, 1f);
-            EnsureParam(ac, BossVisual.ParamActionSpeed, AnimatorControllerParameterType.Float, 1f);
+            EnsureParam(ac, BossView.ParamLocoSpeed, AnimatorControllerParameterType.Float, 1f);
+            EnsureParam(ac, BossView.ParamActionSpeed, AnimatorControllerParameterType.Float, 1f);
 
             var sm = ResetBaseLayer(ac);
-            var loco = sm.AddState(BossVisual.StateLocomotion, new Vector3(300, 0, 0));
+            var loco = sm.AddState(BossView.StateLocomotion, new Vector3(300, 0, 0));
             // Boss koşmaz: Speed 0 idle, 1 walk. Adım hızı LocoSpeed ile yaklaşma hızına eşlenir.
             float idleScale = c.PickPrimary("idle") != null ? 1f : 0.02f;
             loco.motion = MakeLocomotionTree(ac, "BossLocomotionBT", idle, walk, null, idleScale);
             loco.speedParameterActive = true;
-            loco.speedParameter = BossVisual.ParamLocoSpeed;
+            loco.speedParameter = BossView.ParamLocoSpeed;
             sm.defaultState = loco;
 
-            AddBossAction(sm, BossVisual.StateSlam, slam, 520, 0, speedParam: true);
-            AddBossAction(sm, BossVisual.StateBreath, breath, 520, 80, speedParam: true);
-            AddBossAction(sm, BossVisual.StateRoar, roar, 520, 160, speedParam: false);
-            AddBossAction(sm, BossVisual.StateStagger, stagger, 520, 240, speedParam: false);
-            AddBossAction(sm, BossVisual.StateDeath, death, 300, 240, speedParam: false, returns: false);
+            AddBossAction(sm, BossView.StateSlam, slam, 520, 0, speedParam: true);
+            AddBossAction(sm, BossView.StateBreath, breath, 520, 80, speedParam: true);
+            AddBossAction(sm, BossView.StateRoar, roar, 520, 160, speedParam: false);
+            AddBossAction(sm, BossView.StateStagger, stagger, 520, 240, speedParam: false);
+            AddBossAction(sm, BossView.StateDeath, death, 300, 240, speedParam: false, returns: false);
 
             ClearBaseLayerMask(ac);
             EditorUtility.SetDirty(ac);
@@ -306,7 +306,7 @@ namespace Dovus.Game.Editor
             if (speedParam)
             {
                 st.speedParameterActive = true;
-                st.speedParameter = BossVisual.ParamActionSpeed;
+                st.speedParameter = BossView.ParamActionSpeed;
             }
             if (!returns)
                 return;
@@ -584,7 +584,7 @@ namespace Dovus.Game.Editor
 
         /// <summary>
         /// O-anim(c): sağ yön klibi yok — humanoid mirror ile aynı sol klip ters oynar
-        /// (<see cref="ActorVisual.DriveMotion"/> blend.Strafe &gt; 0'da bu state'i seçer).
+        /// (<see cref="ActorView.DriveMotion"/> blend.Strafe &gt; 0'da bu state'i seçer).
         /// </summary>
         static void AddMirroredState(AnimatorStateMachine sm, string name, AnimationClip clip, float x, float y,
             float exitTime, float blendSec)
@@ -651,17 +651,17 @@ namespace Dovus.Game.Editor
                     dirty = true;
                 }
                 // Döngü klipleri (idle/walk/run) loop. Tek klipli Mixamo FBX'te klip adı "mixamo.com"
-                // gelir; runtime (BossVisual/ActorVisual) klibi adıyla bulabilsin diye dosya adı verilir.
+                // gelir; runtime (BossView/ActorView) klibi adıyla bulabilsin diye dosya adı verilir.
                 string fileName = Path.GetFileNameWithoutExtension(path);
                 string lower = fileName.ToLowerInvariant();
                 // O-anim(c): basılı/kanal tutuş klipleri de döngü — sürdürülen cast/kalkan sinyali
-                // kesilene kadar Animator'da döner (bkz. ActorVisual.SetHoldFlags).
+                // kesilene kadar Animator'da döner (bkz. ActorView.SetHoldFlags).
                 bool loop = lower.Contains("idle") || lower.Contains("walk") || lower.Contains("run")
                     || IsHoldClipName(fileName);
                 // Oyuncu locomotion'ı yerinde oynar: kök dönüşü (gövde yönüne göre), yüksekliği ve XZ'si
                 // poza gömülür; yön farkını AlignPlayerLocoFeet ölçüp rotationOffset'e yazar. Bu Mixamo
                 // dosyalarında "Original" kök gövdeye göre ~42° dönük (duruşta bile ayaklar yana bakıyor).
-                // Boss hariç: BossVisual walk.averageSpeed okur.
+                // Boss hariç: BossView walk.averageSpeed okur.
                 bool playerLoco = loop && path.StartsWith(PlayerDir + "/", System.StringComparison.Ordinal);
                 var clips = imp.clipAnimations;
                 if (clips == null || clips.Length == 0)

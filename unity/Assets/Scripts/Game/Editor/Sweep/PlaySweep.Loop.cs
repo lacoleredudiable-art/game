@@ -79,7 +79,7 @@ namespace Dovus.Game.Editor
             static double NowMs => _clock != null ? _clock.Director.WorldTimeMs : Time.timeAsDouble * 1000.0;
 
             /// <summary>
-            /// timeScale ve GameClock aynı çarpan. fixedDeltaTime 1× adımında kalır;
+            /// timeScale ve GameClockHost aynı çarpan. fixedDeltaTime 1× adımında kalır;
             /// maximumDeltaTime dünya saniyesi olduğu için çarpanla büyür.
             /// </summary>
             static void ApplyPace()
@@ -196,26 +196,26 @@ namespace Dovus.Game.Editor
                 _md = UnityEngine.Object.FindAnyObjectByType<ManifestationDirector>();
                 if (_md == null)
                     return false;
-                _input = F<HexagonInput>(_md, "_input");
+                _input = F<HexagonInputController>(_md, "_input");
                 _player = F<Transform>(_md, "_player");
                 var bossReactor = F<Component>(_md, "_boss");
                 if (_input == null || _player == null || bossReactor == null)
                     return false;
                 _boss = bossReactor.transform;
-                _bossReactor = bossReactor as BossReactor;
+                _bossReactor = bossReactor as BossReactorController;
                 _bossVitals = F<BossVitals>(_md, "_bossVitals");
                 _bossDirector = F<BossDirector>(_md, "_bossDirector");
-                _playerStatus = F<ActorStatus>(_md, "_playerStatus");
-                _bossStatus = F<ActorStatus>(_md, "_bossStatus");
-                _ally = F<AllyDummy>(_md, "_ally");
-                _clock = F<GameClock>(_md, "_clock");
+                _playerStatus = F<ActorStatusHost>(_md, "_playerStatus");
+                _bossStatus = F<ActorStatusHost>(_md, "_bossStatus");
+                _ally = F<AllyDummyController>(_md, "_ally");
+                _clock = F<GameClockHost>(_md, "_clock");
                 _skills = F<SkillMotor>(_md, "_skills");
                 _projectiles = F<HostileProjectileHost>(_md, "_projectiles");
-                _playerVitals = _player.GetComponent<PlayerVitals>();
+                _playerVitals = _player.GetComponent<PlayerVitalsHost>();
                 if (_playerVitals != null)
                     _playerVitals.SuppressDown = true;
-                _dodge = _player.GetComponent<DodgeMotion>();
-                var visual = _player.GetComponent<ActorVisual>();
+                _dodge = _player.GetComponent<DodgeMotionController>();
+                var visual = _player.GetComponent<ActorView>();
                 _animator = visual != null ? F<Animator>(visual, "_animator") : null;
                 RefreshBody();
                 CollectStateNames();
@@ -231,7 +231,7 @@ namespace Dovus.Game.Editor
                 if (_player == null)
                     return;
                 if (_body == null)
-                    _body = _player.GetComponent<MotionTemplateBody>();
+                    _body = _player.GetComponent<MotionTemplateBodyHost>();
             }
 
             static void NextCase()
@@ -269,7 +269,7 @@ namespace Dovus.Game.Editor
             {
                 if (_bossDirector != null)
                     _bossDirector.enabled = false;
-                if (BuildSelectScreen.IsOpen)
+                if (BuildSelectHud.IsOpen)
                 {
                     // Açık build ekranı saati durdurur; bekleme dünya saatine bakar, hiç bitmez.
                     _stage = Stage.Setup;
@@ -440,7 +440,7 @@ namespace Dovus.Game.Editor
             {
                 if (c.Stick.sqrMagnitude < 0.0001f)
                     return;
-                var move = _player.GetComponent<MoveInput>();
+                var move = _player.GetComponent<MoveInputController>();
                 if (move == null)
                     return;
                 move.SetScriptedDirection(playing && templateT >= c.StickAtSec ? c.Stick : (Vector2?)null);
@@ -449,7 +449,7 @@ namespace Dovus.Game.Editor
             static void FinishCase(bool timedOut)
             {
                 PlaySweepCase c = _cases[_index];
-                _player.GetComponent<MoveInput>()?.SetScriptedDirection(null);
+                _player.GetComponent<MoveInputController>()?.SetScriptedDirection(null);
                 PlaySweepResult r = Evaluate(c, timedOut);
                 Results.Add(r);
                 if (c.Trace)

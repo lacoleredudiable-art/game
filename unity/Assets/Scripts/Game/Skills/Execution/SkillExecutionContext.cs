@@ -39,7 +39,7 @@ public readonly struct SkillExecutionContext
             string vfxKey,
             string vfxColorHex,
             Action<float> applyEffect,
-            GameClock clock,
+            GameClockHost clock,
             ManifestationTuning tuning,
             Vector3 fieldCenter,
             Action<float> applyFlatDamage = null,
@@ -106,7 +106,7 @@ public readonly struct SkillExecutionContext
         public string VfxKey { get; }
         public string VfxColorHex { get; }
         public Action<float> ApplyEffect { get; }
-        public GameClock Clock { get; }
+        public GameClockHost Clock { get; }
         public ManifestationTuning Tuning { get; }
         public Vector3 FieldCenter { get; }
         /// <summary>Summon: minion vuruşu — skill base_damage'ından bağımsız ham hasar.</summary>

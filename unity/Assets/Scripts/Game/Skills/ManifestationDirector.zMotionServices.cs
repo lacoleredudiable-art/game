@@ -176,15 +176,15 @@ namespace Dovus.Game.Skills
             public TemplateDeliveryRuntime TemplateDelivery => _md._templateDelivery;
             public MotionHitResolver MotionHitResolver => _md._motionHitResolver;
             public Transform Player => _md._player;
-            public AllyDummy Ally => _md._ally;
-            public BossReactor Boss => _md._boss;
-            public GameClock Clock => _md._clock;
+            public AllyDummyController Ally => _md._ally;
+            public BossReactorController Boss => _md._boss;
+            public GameClockHost Clock => _md._clock;
             public GameTuning Colors => _md._colors;
             public EquipmentItem EquippedWeapon => _md._equippedWeapon;
             public WeaponCombatProfile EquippedProfile => _md.EquippedProfile;
-            public MotionTemplateBody MotionBody => _md._motionBody;
-            public PlayerTargeting Targeting => _md._targeting;
-            public HexagonInput Input => _md._input;
+            public MotionTemplateBodyHost MotionBody => _md._motionBody;
+            public PlayerTargetingController Targeting => _md._targeting;
+            public HexagonInputController Input => _md._input;
             public Transform DirectorTransform => _md.transform;
             public float ClosingChainBonus => _md._closingChainBonus;
             public int SlotQueryCastId
@@ -199,14 +199,14 @@ namespace Dovus.Game.Skills
                 set => _md._buildingView = value;
             }
             public SustainedCastLock SustainedCast => _md._sustainedCast;
-            public ActorStatus PlayerStatus => _md._playerStatus;
-            public ActorStatus BossStatus => _md._bossStatus;
+            public ActorStatusHost PlayerStatus => _md._playerStatus;
+            public ActorStatusHost BossStatus => _md._bossStatus;
             public BossVitals BossVitals => _md._bossVitals;
             public ElementPaintNode? SelectedElementPaint => _md.SelectedElementPaint;
             public CombatTuning Combat => _md._combat;
             public MechanicGrammar MechanicEngine => _md.MechanicEngine;
             public MechanicPlan LastMechanicPlan => _md.LastMechanicPlan;
-            public KinematicMotor Motor => _md._motor;
+            public KinematicMotorController Motor => _md._motor;
             public Weapons.CannonBlast Cannon
             {
                 get
@@ -292,9 +292,9 @@ namespace Dovus.Game.Skills
                 if (_md._player == null)
                     return;
                 if (_md._motionBody == null)
-                    _md._motionBody = _md._player.GetComponent<MotionTemplateBody>();
+                    _md._motionBody = _md._player.GetComponent<MotionTemplateBodyHost>();
                 if (_md._motionBody == null)
-                    _md._motionBody = _md._player.gameObject.AddComponent<MotionTemplateBody>();
+                    _md._motionBody = _md._player.gameObject.AddComponent<MotionTemplateBodyHost>();
             }
 
             public float BossBodyRadius() => _md.BossBodyRadius();

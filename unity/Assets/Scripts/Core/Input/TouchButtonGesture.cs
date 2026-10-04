@@ -1,7 +1,7 @@
 namespace Dovus.Core.Input
 {
     /// <summary>
-    /// Denetim B (O1/K3): dokunmatik düğme kuralları. Saf; HexagonInput uygular.
+    /// Denetim B (O1/K3): dokunmatik düğme kuralları. Saf; HexagonInputController uygular.
     /// - Kaçış basınca tetiklenir (süre sınırı yok, bırakmayı beklemez).
     /// - Silah düğmesi: uzun basma komutu yoksa basınca değiştirir. Küre gibi uzun basma komutu
     ///   olan silahta (JSON weapons[].orb.hold_sec) bırakınca değiştirir; eşiğe ulaşan basış

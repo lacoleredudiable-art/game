@@ -7,17 +7,17 @@ namespace Dovus.Game.Weapons
 {
     /// <summary>
     /// Oyuncudaki kısa kalkan. Gelen hasar kapısı bunu
-    /// <see cref="PlayerDodgeRig.BlocksIncoming"/> sonrasında okur.
+    /// <see cref="PlayerDodgeController.BlocksIncoming"/> sonrasında okur.
     /// Hasar formülüne girmez; puan burada tükenir.
     /// </summary>
     public sealed class WeaponShortShieldHost : MonoBehaviour
     {
         readonly WeaponShortShield _shield = new();
-        GameClock _clock;
+        GameClockHost _clock;
 
         public WeaponShortShield Shield => _shield;
 
-        public void Bind(GameClock clock) => _clock = clock;
+        public void Bind(GameClockHost clock) => _clock = clock;
 
         public double NowMs => _clock != null ? _clock.Director.WorldTimeMs : 0;
 

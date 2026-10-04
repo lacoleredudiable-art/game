@@ -66,7 +66,7 @@ namespace Dovus.Game.Skills
             public ElementPaintNode? SelectedElementPaint => _md.SelectedElementPaint;
             public CombatTuning Combat => _md._combat;
             public Transform DirectorTransform => _md.transform;
-            public GameClock Clock => _md._clock;
+            public GameClockHost Clock => _md._clock;
 
             public Skill LastFactorySkill
             {
@@ -117,7 +117,7 @@ namespace Dovus.Game.Skills
 
             public BossVitals BossVitals => _md._bossVitals;
             public DamageNumberHud DamageHud => _md._damageHud;
-            public ReactionReadout Readout => _md._readout;
+            public ReactionReadoutHud Readout => _md._readout;
             public PassiveHud PassiveHud => _md._passiveHud;
 
             public bool IsHealSkill(SkillResolution skill) => ManifestationDirector.IsHealSkill(skill);
@@ -138,17 +138,17 @@ namespace Dovus.Game.Skills
             public Color? DamageTint() => _md.DamageTint();
 
             public BossDirector BossDirector => _md._bossDirector;
-            public BossReactor Boss => _md._boss;
+            public BossReactorController Boss => _md._boss;
 
             public void NoteShieldBlockIfGuarding() => _md.NoteShieldBlockIfGuarding();
             public void OnJsonShieldBlocked() => _md.OnJsonShieldBlocked();
 
-            public HexagonInput Input => _md._input;
+            public HexagonInputController Input => _md._input;
             public PlayerStateMachine PlayerStates => _md._playerStates;
-            public ActorStatus PlayerStatus => _md._playerStatus;
+            public ActorStatusHost PlayerStatus => _md._playerStatus;
             public int PendingClosingCount => _md._pending.Count;
 
-            public PlayerVitals CachedPlayerVitals() => _md.CachedPlayerVitals();
+            public PlayerVitalsHost CachedPlayerVitals() => _md.CachedPlayerVitals();
             public bool SwapDrawUnlocked(double worldMs) => _md.SwapDrawUnlocked(worldMs);
         }
     }

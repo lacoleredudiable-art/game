@@ -80,7 +80,7 @@ namespace Dovus.Game.Boss
                     Blind());
                 if (inVolume
                     && _d._player != null
-                    && _d._player.GetComponent<PlayerDodgeRig>() is PlayerDodgeRig rig
+                    && _d._player.GetComponent<PlayerDodgeController>() is PlayerDodgeController rig
                     && rig.IsSkillInvulnerable)
                     inVolume = false;
 
@@ -106,7 +106,7 @@ namespace Dovus.Game.Boss
                         _d._attack.Damage,
                         _d._bossStatus != null ? _d._bossStatus.Board : null);
                     bool landed;
-                    ActorStatus _playerStatus = _d._playerStatus;
+                    ActorStatusHost _playerStatus = _d._playerStatus;
                     if (_playerStatus != null)
                     {
                         _playerStatus.ApplyDamage(raw);
@@ -200,7 +200,7 @@ namespace Dovus.Game.Boss
                 var entries = _d._targets.Entries;
                 for (int i = entries.Count - 1; i >= 0; i--)
                 {
-                    HostileTargets.Entry e = entries[i];
+                    HostileTargetsHost.Entry e = entries[i];
                     if (e.Kind == TargetKind.Player || !e.IsAlive)
                         continue;
                     BossStrikeResolver.ComputeStrikeMetrics(
@@ -231,8 +231,8 @@ namespace Dovus.Game.Boss
                         _d._attack.Damage,
                         _d._bossStatus != null ? _d._bossStatus.Board : null);
                     e.Damage?.Invoke(raw);
-                    AllyDummy ally = _d._attack.Kind == BossAttackKind.FireCone
-                        ? e.Transform.GetComponent<AllyDummy>()
+                    AllyDummyController ally = _d._attack.Kind == BossAttackKind.FireCone
+                        ? e.Transform.GetComponent<AllyDummyController>()
                         : null;
                     if (ally != null && _d._combat != null && ally.Board != null && !ally.IsDown)
                         ApplyFireConeMechanics(ally.Board);

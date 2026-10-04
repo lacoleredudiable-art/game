@@ -22,4 +22,4 @@ Controller: `Animators/Player_Quaternius` · `Animators/Boss_Quaternius`
 | Boss Windup / Slam | Jump / Bite_Front |
 | Boss Stagger / Death | HitRecieve / Death |
 
-Kancalar: `ActorVisual`, `BossVisual` (Speed, trigger’lar).
+Kancalar: `ActorView`, `BossView` (Speed, trigger’lar).

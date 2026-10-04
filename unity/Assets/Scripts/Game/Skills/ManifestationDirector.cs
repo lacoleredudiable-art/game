@@ -43,38 +43,38 @@ namespace Dovus.Game.Skills
     /// </summary>
     public sealed partial class ManifestationDirector : MonoBehaviour
     {
-        GameClock _clock;
+        GameClockHost _clock;
         SentenceEngine _engine;
         CombatTuning _combat;
         GameTuning _colors;
         Transform _player;
-        PlayerVitals _playerVitalsCache;
+        PlayerVitalsHost _playerVitalsCache;
         Transform _playerVitalsOwner;
 
         /// <summary>O11: her kare / her vuruş GetComponent yerine oyuncu başına bir kez.</summary>
-        PlayerVitals CachedPlayerVitals()
+        PlayerVitalsHost CachedPlayerVitals()
         {
             if (_player == null)
                 return null;
             if (_playerVitalsOwner != _player || _playerVitalsCache == null)
             {
                 _playerVitalsOwner = _player;
-                _playerVitalsCache = _player.GetComponent<PlayerVitals>();
+                _playerVitalsCache = _player.GetComponent<PlayerVitalsHost>();
             }
             return _playerVitalsCache;
         }
-        ActorPose _pose;
-        ActorVisual _visual;
-        BossReactor _boss;
+        ActorPoseView _pose;
+        ActorView _visual;
+        BossReactorController _boss;
         BossVitals _bossVitals;
-        GroundScarField _scars;
-        KinematicMotor _motor;
+        GroundScarFieldView _scars;
+        KinematicMotorController _motor;
         DamageNumberHud _damageHud;
         BossDirector _bossDirector;
         SentenceDebugHud _debugHud;
-        ReactionReadout _readout;
-        FollowCamera _camera;
-        PlayerTargeting _targeting;
+        ReactionReadoutHud _readout;
+        FollowCameraController _camera;
+        PlayerTargetingController _targeting;
         TeamComboAccess _team;
         SfxDirector _sfx;
         static readonly PortalSystem TeamPortalFallback = new();
@@ -96,10 +96,10 @@ namespace Dovus.Game.Skills
 
         SkillMotor _skills;
         SkillFactory _skillFactory;
-        ActorStatus _playerStatus;
-        ActorStatus _bossStatus;
-        MotionTemplateBody _motionBody;
-        AllyDummy _ally;
+        ActorStatusHost _playerStatus;
+        ActorStatusHost _bossStatus;
+        MotionTemplateBodyHost _motionBody;
+        AllyDummyController _ally;
 
         // --- Slot pasifleri ---
         SlotPassiveDirector _slotPassives;
@@ -112,7 +112,7 @@ namespace Dovus.Game.Skills
         PlayerStateMachine _playerStates;
         // Kapanış çarpanı (ApplyClosing*). v5 zincir katmanı kaldırıldı; hep 1.
         float _closingChainBonus = 1f;
-        HexagonInput _input;
+        HexagonInputController _input;
         // --- Ekipman (Bağlama 9) — sabit silah; seçim UI yok ---
         EquipmentItem _equippedWeapon;
         EquipmentBonusResolver _equipmentBonus;
@@ -122,11 +122,11 @@ namespace Dovus.Game.Skills
         readonly HashSet<string> _missingAnimationBindings = new();
         readonly AnimationBridge _animationBridge = new();
         HexagonView _hexagonView;
-        PlayerResource _playerResource;
-        PlayerCooldown _playerCooldown;
+        PlayerResourceHost _playerResource;
+        PlayerCooldownHost _playerCooldown;
         double _lastMovedMs = double.NegativeInfinity;
 
-        public void BindTargeting(PlayerTargeting targeting)
+        public void BindTargeting(PlayerTargetingController targeting)
         {
             _targeting = targeting;
             _input?.BindSkillTargetGate(TryArmSkillTarget);
@@ -150,7 +150,7 @@ namespace Dovus.Game.Skills
             }
         }
 
-        internal void WireBossStatusDot(ActorStatus previous, ActorStatus bossStatus)
+        internal void WireBossStatusDot(ActorStatusHost previous, ActorStatusHost bossStatus)
         {
             if (previous != null)
                 previous.DamageOverTimeDealt -= OnBossDamageOverTime;

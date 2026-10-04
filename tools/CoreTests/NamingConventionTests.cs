@@ -88,4 +88,27 @@ public sealed class NamingConventionTests
 
         Assert.That(mismatches, Is.Empty, () => string.Join("; ", mismatches));
     }
+
+    [Test]
+    public void Game_MonoBehaviours_UseStandardSuffix()
+    {
+        var anyMb = new Regex(@"\bclass\s+(\w+)\s*:\s*MonoBehaviour\b", RegexOptions.Compiled);
+        string[] suffixes = { "Director", "View", "Hud", "Host", "Controller" };
+        var bad = new List<string>();
+        int count = 0;
+        foreach (string file in GameCsFiles())
+        {
+            string rel = Path.GetRelativePath(GameRoot(), file).Replace('\\', '/');
+            foreach (Match m in anyMb.Matches(File.ReadAllText(file)))
+            {
+                count++;
+                string name = m.Groups[1].Value;
+                if (!suffixes.Any(s => name.EndsWith(s, StringComparison.Ordinal)))
+                    bad.Add($"{rel}: {name}");
+            }
+        }
+
+        Assert.That(count, Is.GreaterThanOrEqualTo(79), "Game MonoBehaviour taraması boş/eksik");
+        Assert.That(bad, Is.Empty, () => "Sonek standardı dışı (docs/naming.md): " + string.Join("; ", bad));
+    }
 }

@@ -26,16 +26,16 @@ namespace Dovus.Game.Skills.Launch
 {
     public interface ICastSideEffectsHost
     {
-        PlayerResource PlayerResource { get; }
-        ActorStatus PlayerStatus { get; }
+        PlayerResourceHost PlayerResourceHost { get; }
+        ActorStatusHost PlayerStatus { get; }
         MobilityCcData MobilityCc { get; }
         EquipmentItem EquippedWeapon { get; }
-        GameClock Clock { get; }
+        GameClockHost Clock { get; }
         CombatTuning Combat { get; }
         SkillMotor Skills { get; }
         SkillFactory SkillFactory { get; }
         HexagonView HexagonView { get; }
-        PlayerCooldown PlayerCooldown { get; }
+        PlayerCooldownHost PlayerCooldownHost { get; }
         Transform Player { get; }
         Transform BossTransform { get; }
         BossVitals BossVitals { get; }

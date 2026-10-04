@@ -22,15 +22,15 @@ namespace Dovus.Game.Actors
 {
     public sealed class TargetingPresentationTuning
         {
-            public float RingPaddingM = PlayerTargetingDefaults.RingPaddingM;
-            public float RingWidthM = PlayerTargetingDefaults.RingWidthM;
-            public float RingGroundOffsetM = PlayerTargetingDefaults.RingGroundOffsetM;
-            public int RingSegments = PlayerTargetingDefaults.RingSegments;
+            public float RingPaddingM = PlayerTargetingControllerDefaults.RingPaddingM;
+            public float RingWidthM = PlayerTargetingControllerDefaults.RingWidthM;
+            public float RingGroundOffsetM = PlayerTargetingControllerDefaults.RingGroundOffsetM;
+            public int RingSegments = PlayerTargetingControllerDefaults.RingSegments;
             public Color EnemyColor = new(1f, 0.28f, 0.16f, 0.95f);
             public Color AllyColor = new(0.25f, 1f, 0.58f, 0.95f);
-            public Vector2 FrameSizePx = new(PlayerTargetingDefaults.FrameWidthPx, PlayerTargetingDefaults.FrameHeightPx);
-            public Vector2 FrameOffsetPx = new(0f, -PlayerTargetingDefaults.FrameOffsetYPx);
-            public int FrameFontPx = PlayerTargetingDefaults.FrameFontPx;
+            public Vector2 FrameSizePx = new(PlayerTargetingControllerDefaults.FrameWidthPx, PlayerTargetingControllerDefaults.FrameHeightPx);
+            public Vector2 FrameOffsetPx = new(0f, -PlayerTargetingControllerDefaults.FrameOffsetYPx);
+            public int FrameFontPx = PlayerTargetingControllerDefaults.FrameFontPx;
         }
     
         /// <summary>

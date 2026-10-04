@@ -116,7 +116,7 @@ namespace Dovus.Game.Boss
             }
 
             _targetId = _targets.Pick(_rng.NextDouble());
-            HostileTargets.Entry e = _targetId >= 0 ? _targets.Find(_targetId) : null;
+            HostileTargetsHost.Entry e = _targetId >= 0 ? _targets.Find(_targetId) : null;
             _target = e?.Transform;
             _targetKind = e?.Kind ?? TargetKind.Player;
             if (e == null)
@@ -134,7 +134,7 @@ namespace Dovus.Game.Boss
         {
             if (_targets != null)
             {
-                HostileTargets.Entry e = _targetId >= 0 ? _targets.Find(_targetId) : null;
+                HostileTargetsHost.Entry e = _targetId >= 0 ? _targets.Find(_targetId) : null;
                 if (e != null && e.Kind != TargetKind.Player)
                     return e.RadiusM;
             }

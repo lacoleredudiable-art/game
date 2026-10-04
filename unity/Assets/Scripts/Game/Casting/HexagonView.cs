@@ -14,7 +14,7 @@ namespace Dovus.Game.Casting
     /// <summary>
     /// Ekrana sabit altıgen noktaları + merkez (Canvas Overlay).
     /// ui_rules.cooldown_display: her rün etrafında radial dolum + kalan sn.
-    /// EnforceCooldown=false → kozmetik (yerel sayaç). true → PlayerCooldown / CooldownTracker.
+    /// EnforceCooldown=false → kozmetik (yerel sayaç). true → PlayerCooldownHost / CooldownTracker.
     /// </summary>
     public sealed partial class HexagonView : MonoBehaviour
     {
@@ -37,8 +37,8 @@ namespace Dovus.Game.Casting
         float[] _cdDurationSec;
         string[] _cdComboKeys;
         bool[] _cdTracked;
-        PlayerCooldown _cdSource;
-        GameClock _cdClock;
+        PlayerCooldownHost _cdSource;
+        GameClockHost _cdClock;
         RectTransform _center;
         RectTransform _dodge;
         Image _centerFace;
@@ -194,7 +194,7 @@ namespace Dovus.Game.Casting
         /// <summary>
         /// Bağlama 4: gerçek CooldownTracker kalanı — radial fillAmount = rem/duration.
         /// </summary>
-        public void BeginTrackedCooldown(int dot, string comboKey, float durationSec, PlayerCooldown source, GameClock clock)
+        public void BeginTrackedCooldown(int dot, string comboKey, float durationSec, PlayerCooldownHost source, GameClockHost clock)
         {
             if (_cdRemainingSec == null || dot < 1 || dot >= _cdRemainingSec.Length)
                 return;

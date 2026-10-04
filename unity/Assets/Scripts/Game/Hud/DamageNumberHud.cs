@@ -26,8 +26,8 @@ namespace Dovus.Game.Hud
         GameTuning _tuning;
         HudTheme _theme;
         Camera _cam;
-        FollowCamera _follow;
-        BossReactor _defaultBoss;
+        FollowCameraController _follow;
+        BossReactorController _defaultBoss;
 
         public void BindTheme(HudTheme theme) => _theme = theme;
         Canvas _canvas;
@@ -47,13 +47,13 @@ namespace Dovus.Game.Hud
             public bool Heal;
         }
 
-        public void BindMainCamera(Camera camera, FollowCamera follow = null)
+        public void BindMainCamera(Camera camera, FollowCameraController follow = null)
         {
             _cam = camera;
             _follow = follow;
         }
 
-        public void BindDefaultBoss(BossReactor boss) => _defaultBoss = boss;
+        public void BindDefaultBoss(BossReactorController boss) => _defaultBoss = boss;
 
         public void Configure(GameTuning tuning, Transform canvasRoot)
         {

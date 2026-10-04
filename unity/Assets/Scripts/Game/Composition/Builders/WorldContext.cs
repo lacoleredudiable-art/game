@@ -32,16 +32,16 @@ namespace Dovus.Game.Composition.Builders
     /// <summary>Paylaşılan sahne kurulum referansları; kurucular sırayla doldurur.</summary>
     public sealed class WorldContext
     {
-        public readonly GameBootstrap Host;
+        public readonly GameBootstrapHost Host;
         public readonly Transform SceneRoot;
 
         public CombatTuning Combat;
         public TuningConfig TuningConfig;
-        public GameClock Clock;
+        public GameClockHost Clock;
         public AssetCatalog Assets;
         public TeamComboAccess TeamAccess;
         public SfxDirector Sfx;
-        public ElementRadialMenu ElementMenu;
+        public ElementRadialMenuHud ElementMenu;
         public GameObject Arena;
         public float WalkHalf;
         public float SpawnMaxR;
@@ -49,33 +49,33 @@ namespace Dovus.Game.Composition.Builders
         public GameObject Player;
         public GameObject Ally;
         public GameObject Boss;
-        public AllyDummy AllyDummy;
-        public ActorPose PlayerPose;
-        public PlayerVitals PlayerVitals;
-        public PlayerResource PlayerResource;
-        public PlayerCooldown PlayerCooldown;
-        public ActorStatus PlayerStatus;
-        public ActorStatus BossStatus;
-        public DodgeMotion DodgeMotion;
-        public AfterimageTrail Afterimage;
-        public BossReactor BossReactor;
+        public AllyDummyController AllyDummyController;
+        public ActorPoseView PlayerPose;
+        public PlayerVitalsHost PlayerVitalsHost;
+        public PlayerResourceHost PlayerResourceHost;
+        public PlayerCooldownHost PlayerCooldownHost;
+        public ActorStatusHost PlayerStatus;
+        public ActorStatusHost BossStatus;
+        public DodgeMotionController DodgeMotionController;
+        public AfterimageTrailView Afterimage;
+        public BossReactorController BossReactorController;
         public BossVitals BossVitals;
-        public BossTelegraph BossTelegraph;
-        public FollowCamera FollowCamera;
+        public BossTelegraphView BossTelegraphView;
+        public FollowCameraController FollowCameraController;
         public Camera MainCamera;
         public Light Sun;
 
         public GameObject HexagonRoot;
         public HexagonView HexagonView;
-        public HexagonOverlayCamera Overlay;
+        public HexagonOverlayCameraView Overlay;
         public Camera OverlayCamera;
-        public HexagonInput HexagonInput;
-        public PlayerTargeting PlayerTargeting;
-        public CameraOrbitInput CameraOrbitInput;
-        public InkTrail InkTrail;
-        public SyllableFeedback SyllableFeedback;
+        public HexagonInputController HexagonInputController;
+        public PlayerTargetingController PlayerTargetingController;
+        public CameraOrbitController CameraOrbitController;
+        public InkTrailView InkTrailView;
+        public SyllableFeedbackView SyllableFeedbackView;
         public SentenceDebugHud SentenceDebugHud;
-        public ReactionReadout ReactionReadout;
+        public ReactionReadoutHud ReactionReadoutHud;
         public VitalsHud VitalsHud;
         public DamageNumberHud DamageNumberHud;
         public PassiveHud PassiveHud;
@@ -89,10 +89,10 @@ namespace Dovus.Game.Composition.Builders
         public EquipmentBonusResolver EquipmentBonus;
         public ManifestationDirector ManifestationDirector;
         public BossDirector BossDirector;
-        public CombatFeel CombatFeel;
-        public GroundScarField GroundScars;
+        public CombatFeelDirector CombatFeelDirector;
+        public GroundScarFieldView GroundScars;
 
-        public WorldContext(GameBootstrap host)
+        public WorldContext(GameBootstrapHost host)
         {
             Host = host;
             SceneRoot = host.transform;

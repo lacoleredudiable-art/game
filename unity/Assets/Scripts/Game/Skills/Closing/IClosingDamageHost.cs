@@ -23,16 +23,16 @@ namespace Dovus.Game.Skills.Closing
     public interface IClosingDamageHost
     {
         Transform Player { get; }
-        BossReactor Boss { get; }
+        BossReactorController Boss { get; }
         BossVitals BossVitals { get; }
         BossDirector BossDirector { get; }
-        ActorStatus BossStatus { get; }
+        ActorStatusHost BossStatus { get; }
         CombatTuning Combat { get; }
-        GameClock Clock { get; }
+        GameClockHost Clock { get; }
         TeamComboAccess TeamAccess { get; }
-        KinematicMotor Motor { get; }
+        KinematicMotorController Motor { get; }
         DamageNumberHud DamageHud { get; }
-        GroundScarField Scars { get; }
+        GroundScarFieldView Scars { get; }
         SlotPassiveDirector SlotPassives { get; }
         int SlotQueryCastId { get; }
         float ClosingChainBonus { get; }
@@ -48,7 +48,7 @@ namespace Dovus.Game.Skills.Closing
             float slashCommitMult,
             float effectScale,
             float? chainBonusOverride);
-        PlayerVitals CachedPlayerVitals();
+        PlayerVitalsHost CachedPlayerVitals();
         Vector3? BossHitPoint();
         Color? DamageTint();
         void TryConsumeCounterWindow();

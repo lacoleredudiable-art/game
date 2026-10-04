@@ -6,7 +6,7 @@ namespace Dovus.Game.Arena
 {
     /// <summary>
     /// Tavansız daire zindan: disk zemin + yüksek çevre duvarı (avize/sütun/iç duvar yok).
-    /// Duvar parçalarına BoxCollider eklenir — KinematicMotor push-out bunlara dayanır.
+    /// Duvar parçalarına BoxCollider eklenir — KinematicMotorController push-out bunlara dayanır.
     /// </summary>
     public static class CircularArena
     {
@@ -34,7 +34,7 @@ namespace Dovus.Game.Arena
         }
 
         /// <summary>
-        /// Ambiyans portu: duvar görselini saklar, BoxCollider'lara (KinematicMotor push-out)
+        /// Ambiyans portu: duvar görselini saklar, BoxCollider'lara (KinematicMotorController push-out)
         /// dokunmaz. Açık ova görünümü için "Walls" render'ları kapatılır, fiziksel sınır aynı kalır.
         /// </summary>
         public static void SetWallRenderersVisible(GameObject arenaRoot, bool visible)

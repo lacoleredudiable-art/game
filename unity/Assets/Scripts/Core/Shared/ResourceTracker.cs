@@ -5,7 +5,7 @@ namespace Dovus.Core.Shared
     /// <summary>
     /// Mana havuzu — docs/element-sistemi.json global_rules.resource_system.
     /// Consume sonrası regen_delay_after_cast_sec kadar yenilenme durur, sonra regen_per_sec.
-    /// Oyuna bağlı değil (PlayerVitals / ManifestationDirector ayrı karar).
+    /// Oyuna bağlı değil (PlayerVitalsHost / ManifestationDirector ayrı karar).
     /// </summary>
     public sealed class ResourceTracker
     {

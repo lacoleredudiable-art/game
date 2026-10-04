@@ -82,8 +82,8 @@ namespace Dovus.Game.Config.Sections
                 public float EffectBasicStrikeThickM = 0.16f;
                 public float EffectBasicStrikeHeightM = 0.55f;
 
-                // Rün başına squash/stretch + poz süresi (T1/T5) — değer aynı, yeri ActorPose'dan taşındı.
-                [Header("Aktör poz (T7.2, ActorPose)")]
+                // Rün başına squash/stretch + poz süresi (T1/T5) — değer aynı, yeri ActorPoseView'dan taşındı.
+                [Header("Aktör poz (T7.2, ActorPoseView)")]
                 public float ActorPoseDurationMs = 180f;
                 public Vector3 PoseIgne = new Vector3(0.78f, 0.88f, 1.35f);
                 public Vector3 PoseSuru = new Vector3(1.35f, 0.9f, 1.1f);
@@ -93,7 +93,7 @@ namespace Dovus.Game.Config.Sections
                 // Spec'te tavan sayısı yok (uydurma) — T11 kare bütçesi için icat edildi; gerekçe
                 // docs/durum.md T7.2 sapmalarına yazıldı. İz kalıcıdır (§8/T4), süreye bağlı silinmez;
                 // tavan dolunca en eski iz DÖNÜŞTÜRÜLÜR (yok edilip yeniden yaratılmaz).
-                [Header("Kalıcı iz tavanı (T7.2, GroundScarField)")]
+                [Header("Kalıcı iz tavanı (T7.2, GroundScarFieldView)")]
                 public int GroundScarCapCount = 60;
     }
 }

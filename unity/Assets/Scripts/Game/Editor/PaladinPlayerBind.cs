@@ -58,7 +58,7 @@ namespace Dovus.Game.Editor
             else
                 Debug.LogWarning("[PaladinBind] " + PlayerCtrl + " yok — önce Dovus/Synty/Bind Mixamo Animator.");
 
-            var grip = root.AddComponent<WeaponGripProfile>();
+            var grip = root.AddComponent<WeaponGripView>();
             grip.SetMixamoDefaults();
 
             AssignUrpmaterialsToRenderers(mesh);
