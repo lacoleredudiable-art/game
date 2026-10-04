@@ -43,11 +43,11 @@ namespace Dovus.Game.Skills
     /// </summary>
     public sealed partial class ManifestationDirector : MonoBehaviour
     {
-        GameClockHost _clock;
-        SentenceEngine _engine;
-        CombatTuning _combat;
-        GameTuning _colors;
-        Transform _player;
+        internal GameClockHost _clock;
+        internal SentenceEngine _engine;
+        internal CombatTuning _combat;
+        internal GameTuning _colors;
+        internal Transform _player;
         PlayerVitalsHost _playerVitalsCache;
         Transform _playerVitalsOwner;
 
@@ -63,20 +63,20 @@ namespace Dovus.Game.Skills
             }
             return _playerVitalsCache;
         }
-        ActorPoseView _pose;
-        ActorView _visual;
-        BossReactorController _boss;
-        BossVitals _bossVitals;
-        GroundScarFieldView _scars;
-        KinematicMotorController _motor;
-        DamageNumberHud _damageHud;
-        BossDirector _bossDirector;
-        ISentenceDebugSink _debugHud;
-        ReactionReadoutHud _readout;
-        FollowCameraController _camera;
-        PlayerTargetingController _targeting;
-        TeamComboAccess _team;
-        SfxDirector _sfx;
+        internal ActorPoseView _pose;
+        internal ActorView _visual;
+        internal BossReactorController _boss;
+        internal BossVitals _bossVitals;
+        internal GroundScarFieldView _scars;
+        internal KinematicMotorController _motor;
+        internal DamageNumberHud _damageHud;
+        internal BossDirector _bossDirector;
+        internal ISentenceDebugSink _debugHud;
+        internal ReactionReadoutHud _readout;
+        internal FollowCameraController _camera;
+        internal PlayerTargetingController _targeting;
+        internal TeamComboAccess _team;
+        internal SfxDirector _sfx;
         static readonly PortalSystem TeamPortalFallback = new();
 
         public void BindTeam(TeamComboAccess team) => _team = team;
@@ -85,43 +85,43 @@ namespace Dovus.Game.Skills
         internal TeamModifierHub TeamHub => _team != null ? _team.Hub : TeamModifierHub.Neutral;
         internal PortalSystem TeamPortal => _team != null ? _team.Portal : TeamPortalFallback;
 
-        readonly List<PendingClosing> _pending = new();
+        internal readonly List<PendingClosing> _pending= new();
 
         // Cümlenin şu an sözcük aldığı etki — nokta sayısına göre değil, kimliğe göre izlenir
         // (aynı karede birden fazla nokta kaydı sayı polling'ini atlayabilir, bkz. T7.1).
-        LivingEffectView _buildingView;
-        int _lastWordCount;
+        internal LivingEffectView _buildingView;
+        internal int _lastWordCount;
         bool _hooked;
-        bool _posedForRecovery;
+        internal bool _posedForRecovery;
 
-        SkillMotor _skills;
-        SkillFactory _skillFactory;
-        ActorStatusHost _playerStatus;
-        ActorStatusHost _bossStatus;
-        MotionTemplateBodyHost _motionBody;
-        AllyDummyController _ally;
+        internal SkillMotor _skills;
+        internal SkillFactory _skillFactory;
+        internal ActorStatusHost _playerStatus;
+        internal ActorStatusHost _bossStatus;
+        internal MotionTemplateBodyHost _motionBody;
+        internal AllyDummyController _ally;
 
         // --- Slot pasifleri ---
-        SlotPassiveDirector _slotPassives;
-        bool _slotPassiveNeedsWeapon;
-        PassiveHud _passiveHud;
-        MobilityCcData _mobilityCc;
-        ISkillRepository _skillNumbers;
+        internal SlotPassiveDirector _slotPassives;
+        internal bool _slotPassiveNeedsWeapon;
+        internal PassiveHud _passiveHud;
+        internal MobilityCcData _mobilityCc;
+        internal ISkillRepository _skillNumbers;
         // --- State machine (player_states ↔ SentencePhase / dodge / CC) ---
-        PlayerStateMachine _playerStates;
-        HexagonInputController _input;
+        internal PlayerStateMachine _playerStates;
+        internal HexagonInputController _input;
         // --- Ekipman (Bağlama 9) — sabit silah; seçim UI yok ---
-        EquipmentItem _equippedWeapon;
-        EquipmentBonusResolver _equipmentBonus;
-        readonly SkillExecutorRouter _skillExecutorRouter = new();
+        internal EquipmentItem _equippedWeapon;
+        internal EquipmentBonusResolver _equipmentBonus;
+        internal readonly SkillExecutorRouter _skillExecutorRouter= new();
         // --- Animasyon (Bağlama 10) — SkillPresentation → AnimationBridge; PulseRune kalır ---
-        AnimationDatabase _animationDatabase;
-        readonly HashSet<string> _missingAnimationBindings = new();
-        readonly AnimationBridge _animationBridge = new();
-        HexagonView _hexagonView;
-        PlayerResourceHost _playerResource;
-        PlayerCooldownHost _playerCooldown;
-        double _lastMovedMs = double.NegativeInfinity;
+        internal AnimationDatabase _animationDatabase;
+        internal readonly HashSet<string> _missingAnimationBindings= new();
+        internal readonly AnimationBridge _animationBridge= new();
+        internal HexagonView _hexagonView;
+        internal PlayerResourceHost _playerResource;
+        internal PlayerCooldownHost _playerCooldown;
+        internal double _lastMovedMs= double.NegativeInfinity;
 
         public void BindTargeting(PlayerTargetingController targeting)
         {
@@ -166,7 +166,7 @@ namespace Dovus.Game.Skills
         /// <summary>S16: lambda değil metot — OnDestroy'da bırakılabilsin.</summary>
         void OnPlayerDamageBlocked(float absorbed)
         {
-            EnsureCoreServices();
+          EnsureCoreServices();
             _bossDeathSequence.OnPlayerDamageBlocked(absorbed);
         }
 
@@ -185,14 +185,14 @@ namespace Dovus.Game.Skills
         /// </summary>
         void OnBossRevivedExternally()
         {
-            EnsureCoreServices();
+          EnsureCoreServices();
             _bossDeathSequence.OnBossRevivedExternally();
         }
 
         /// <summary>S4: boss'taki yanma/zehir tikinin hasar sayısı.</summary>
         void OnBossDamageOverTime(float amount)
         {
-            EnsureCoreServices();
+          EnsureCoreServices();
             _bossDeathSequence.OnBossDamageOverTime(amount);
         }
 
@@ -227,7 +227,7 @@ namespace Dovus.Game.Skills
             float dtSec = (float)(_clock.WorldDeltaMs / SkillsTimeDefaults.SecToMs);
             if (!PerformingAttack)
             {
-                EnsureSkillServices();
+              EnsureSkillServices();
                 _skillAim.ResetDirectionalWhenIdle();
             }
 
@@ -244,9 +244,9 @@ namespace Dovus.Game.Skills
             TickOrb(worldMs);
             TickCannonRecoil();
 
-            EnsureCoreServices();
+          EnsureCoreServices();
             _sentenceSync.SyncFromSentence(worldMs);
-            EnsureSkillServices();
+          EnsureSkillServices();
             _effectSpawner.ApplyWindowCue();
             _effectSpawner.TickEffects(dtSec, worldMs);
             _pose?.Tick(worldMs);
@@ -270,40 +270,40 @@ namespace Dovus.Game.Skills
         /// </summary>
         void TickCastHold(double worldMs)
         {
-            EnsureCoreServices();
+          EnsureCoreServices();
             bool channelHeld = SustainedSkillActive(worldMs);
             bool guardHeld = _playerStatus != null && _playerStatus.Board.ShieldRemaining > SkillsTimeDefaults.ShieldHeldEpsilon;
             _closingQueue.TickCastHold(worldMs, _visual, channelHeld, guardHeld);
         }
 
-        void TryTriggerPassive(IReadOnlyList<SentenceWord> words, double worldMs)
+        internal void TryTriggerPassive(IReadOnlyList<SentenceWord> words, double worldMs)
         {
-            EnsureCoreServices();
+          EnsureCoreServices();
             _slotPassiveRuntime.TryTriggerPassive(words, worldMs);
         }
 
         /// <summary>Yalnız <see cref="OnBossDied"/>'dan (K1 tek kanca).</summary>
         void BeginBossDeathSequence(double worldMs)
         {
-            EnsureCoreServices();
+          EnsureCoreServices();
             _bossDeathSequence.Begin(worldMs);
         }
 
         void SyncFromSentence(double worldMs)
         {
-            EnsureCoreServices();
+          EnsureCoreServices();
             _sentenceSync.SyncFromSentence(worldMs);
         }
 
         void SyncPlayerStateMachine(double worldMs)
         {
-            EnsureCoreServices();
+          EnsureCoreServices();
             _sentenceSync.SyncPlayerStateMachine(worldMs);
         }
 
         void OnSentenceCompleted(CompletedSentence sentence)
         {
-            EnsureCoreServices();
+          EnsureCoreServices();
             _closingQueue.OnSentenceCompleted(sentence);
         }
 
@@ -313,7 +313,7 @@ namespace Dovus.Game.Skills
         {
             if (_clock == null)
                 return;
-            EnsureCoreServices();
+          EnsureCoreServices();
             _closingQueue.ForceTickClosings(_clock.Director.WorldTimeMs);
         }
 
@@ -322,7 +322,7 @@ namespace Dovus.Game.Skills
         {
             if (_clock == null)
                 return;
-            EnsureCoreServices();
+          EnsureCoreServices();
             _closingQueue.ForceFirePendingClosings(_clock.Director.WorldTimeMs);
         }
 #endif

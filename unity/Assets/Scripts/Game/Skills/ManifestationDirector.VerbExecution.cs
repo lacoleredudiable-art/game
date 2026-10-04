@@ -43,7 +43,7 @@ namespace Dovus.Game.Skills
         }
 
         readonly List<DelayedLaunch> _delayedLaunches = new();
-        VerbExecutionData _verbData;
+        internal VerbExecutionData _verbData;
         float _emHealRatio;
         double _emHealUntilMs;
 
@@ -73,7 +73,7 @@ namespace Dovus.Game.Skills
                     vitals.ApplyHeal(heal);
             }
 
-            NoteShieldBlockIfGuarding();
+          NoteShieldBlockIfGuarding();
             bool crit = _playerStatus != null && _playerStatus.LastHitWasCrit;
             Vector3 at = _player != null ? _player.position + Vector3.up * SkillsManifestationDefaults.VerbAimHeightAbovePlayerM : Vector3.zero;
             _damageHud?.ShowDamage(incomingDamage, crit, at, victimIsPlayer: true);
@@ -101,7 +101,7 @@ namespace Dovus.Game.Skills
             _playerStatus?.ClearCastMobility();
         }
 
-        bool TryVerbHitbox(in SkillResolution skill, out VerbHitboxSpec spec)
+        internal bool TryVerbHitbox(in SkillResolution skill, out VerbHitboxSpec spec)
         {
             spec = default;
             return _verbData != null && _verbData.TryGetHitbox(skill, out spec) && !spec.IsEmpty;
@@ -121,7 +121,7 @@ namespace Dovus.Game.Skills
         /// Güçlendirme buff_damage + Yükseltme self_damage_buff (buff_duration_sec) ve
         /// Yansıma/Aynalama reflect_ratio (reflect_duration_sec). lifetime_add süreye eklenir.
         /// </summary>
-        void ApplySelfCastEffects(in SkillResolution skill)
+        internal void ApplySelfCastEffects(in SkillResolution skill)
         {
             if (skill.IsEmpty || _clock == null)
                 return;
@@ -165,7 +165,7 @@ namespace Dovus.Game.Skills
         /// Hareket + Sıçrama bounce_targets → dash bitince ikinci adım (bounce_damage_mult;
         /// hitbox_vfx.sifat_override.3 chain_count=2, skill 3-3 "Çift dash").
         /// </summary>
-        void ScheduleFollowUpLaunches(
+        internal void ScheduleFollowUpLaunches(
             SkillExecutorKind kind,
             PendingClosing pending,
             in SkillResolution skill,
@@ -222,7 +222,7 @@ namespace Dovus.Game.Skills
                 CastSession.SlotQueryCastId = d.SlotCastId;
                 try
                 {
-                    TryLaunchSkillExecutor(d.Kind, d.Pending, d.Skill, d.Motion, d.EffectMult, d.Logic, d.SlotCastId);
+                  TryLaunchSkillExecutor(d.Kind, d.Pending, d.Skill, d.Motion, d.EffectMult, d.Logic, d.SlotCastId);
                 }
                 finally
                 {
@@ -236,7 +236,7 @@ namespace Dovus.Game.Skills
         /// F1: eskiden Stasis'ti ve oyuncuyu ~0,3 sn donduruyordu (BlocksMovement + BlocksCast);
         /// artık skill hareketleriyle aynı donmayan dokunulmazlık penceresi. Düşmana etkisi yok.
         /// </summary>
-        void ApplySpawnIFrame(in SkillResolution skill)
+        internal void ApplySpawnIFrame(in SkillResolution skill)
         {
             int ms = _verbData?.IFrameMsFor((SkillId)skill.Identity.Id) ?? 0;
             if (ms <= 0 || _player == null)
@@ -245,7 +245,7 @@ namespace Dovus.Game.Skills
         }
 
         /// <summary>Minion vuruşu: ham hasar boru hattından (zırh, kritik, ölçek bir kez).</summary>
-        float ApplyMinionHit(in SkillResolution skill, float raw)
+        internal float ApplyMinionHit(in SkillResolution skill, float raw)
         {
             if (_bossVitals == null || _bossVitals.IsDown || raw <= 0f)
                 return 0f;
@@ -304,12 +304,12 @@ namespace Dovus.Game.Skills
                     vitals.ApplyHeal(heal);
             }
             _bossVitals.ApplyDamage(damage);
-            NotifyBossStruck(false, allowHitstop: false);
+          NotifyBossStruck(false, allowHitstop: false);
             return damage;
         }
 
         /// <summary>Kendine/dost alan boss'a da değiyor mu (düşmanca sıfat durumları için).</summary>
-        bool BossWithin(Vector3 center, float radiusM)
+        internal bool BossWithin(Vector3 center, float radiusM)
         {
             if (_boss == null)
                 return false;

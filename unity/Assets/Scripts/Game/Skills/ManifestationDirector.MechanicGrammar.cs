@@ -40,7 +40,7 @@ namespace Dovus.Game.Skills
         /// <summary>Son cast'in gramer planı (test/HUD).</summary>
         public MechanicPlan LastMechanicPlan { get; set; }
 
-        int EquippedWeaponNumber()
+        internal int EquippedWeaponNumber()
         {
             if (_equippedWeapon == null)
                 return 0;
@@ -68,7 +68,7 @@ namespace Dovus.Game.Skills
         }
 
         /// <summary>Kapanış patlamasında: plan kurulur, kendine yönelik atomlar uygulanır.</summary>
-        void BeginMechanicPlan(in SkillResolution skill, Vector3 aimDir, Vector3 landedAt)
+        internal void BeginMechanicPlan(in SkillResolution skill, Vector3 aimDir, Vector3 landedAt)
         {
             MechanicPlan plan = MechanicPlanFor(skill);
             LastMechanicPlan = plan;
@@ -116,7 +116,7 @@ namespace Dovus.Game.Skills
                         }
                         // Kalıp oyuncuyu oynatmıyorsa eski ışınlanma durur.
                         float dashSec = _combat != null ? _combat.SkillMotion.DashDurationSec : 0f;
-                        After(now, dashSec, TeleportBehindBoss);
+                      After(now, dashSec, TeleportBehindBoss);
                         applied.Add("arkaya ışınlanma");
                         break;
                     case ("konum", "isaret_geri_don"):
@@ -126,7 +126,7 @@ namespace Dovus.Game.Skills
                             applied.Add($"işaret ({mark.x:0.#},{mark.z:0.#}) dönüş kalıpta");
                             break;
                         }
-                        After(now, (float)Math.Max(e.DurationSec, 0.0), () => TeleportPlayer(mark));
+                      After(now, (float)Math.Max(e.DurationSec, 0.0), () => TeleportPlayer(mark));
                         applied.Add($"işaret → {e.DurationSec:0.#}sn sonra dönüş");
                         break;
                     case ("konum", "portal"):
@@ -135,12 +135,12 @@ namespace Dovus.Game.Skills
                             applied.Add("portal sistemi");
                             break;
                         }
-                        EnsureMechanicsServices();
+                      EnsureMechanicsServices();
                         _mechanicPortals.OpenPortal(plan, aimDir, now + e.DurationSec * SkillsTimeDefaults.SecToMs);
                         applied.Add($"portal {e.DurationSec:0.#}sn");
                         break;
                     case ("varlik", "durum_aktar"):
-                        EnsureMechanicsServices();
+                      EnsureMechanicsServices();
                         _mechanicWorld.ApplyStatusTransfer(applied);
                         break;
                 }
@@ -177,7 +177,7 @@ namespace Dovus.Game.Skills
         /// Gövde düşmana değdiğinde (bir kez): düşmana yönelik atomlar.
         /// casterMoves false: kalıp sonrası teslim kuyruğu oyuncuyu yerinden oynatmaz.
         /// </summary>
-        void ApplyMechanicHitEffects(MechanicPlan plan, Vector3 center, bool casterMoves = true)
+        internal void ApplyMechanicHitEffects(MechanicPlan plan, Vector3 center, bool casterMoves = true)
         {
             if (plan == null || _bossStatus == null || _boss == null)
                 return;
@@ -229,7 +229,7 @@ namespace Dovus.Game.Skills
                                 ms, 1f, applied,
                                 lockKind == StatusKind.Root ? "hit:" + plan.SkillId : null);
                             if (hammer)
-                                CommitHammerStun(now, ready, had, !had && boss.Has(lockKind));
+                              CommitHammerStun(now, ready, had, !had && boss.Has(lockKind));
                         }
                         else if (e.Amount < 1)
                             ApplyOnce(boss, StatusKind.Slow, ms, (float)e.Amount, applied);
@@ -251,7 +251,7 @@ namespace Dovus.Game.Skills
                         break;
                     case ("konum", "cek"):
                         // Girdap merkezi değil: her zaman oyuncunun önündeki temas noktası.
-                        PullBossToPlayerContact();
+                      PullBossToPlayerContact();
                         applied.Add("çekme");
                         break;
                     case ("konum", "it") when e.Has("yukari_firlat") && grammar != null:
@@ -271,29 +271,29 @@ namespace Dovus.Game.Skills
                         // Temas anındaki tarafın aynası; dash konumu sürdüğü için dash bitince iner.
                         Vector3 swapTo = MirroredAcrossBoss(_player.position);
                         float dashSec = _combat != null ? _combat.SkillMotion.DashDurationSec : 0f;
-                        After(_clock.Director.WorldTimeMs, dashSec, () => TeleportPlayer(swapTo));
+                      After(_clock.Director.WorldTimeMs, dashSec, () => TeleportPlayer(swapTo));
                         applied.Add("yer değiştirme");
                         break;
                     case ("hiz", "geri_sar") when _clock != null:
-                        EnsureMechanicsServices();
+                      EnsureMechanicsServices();
                         _mechanicWorld.RewindBoss(e.Amount, _clock.Director.WorldTimeMs, applied);
                         break;
                     case ("varlik", "durum_aktar"):
-                        EnsureMechanicsServices();
+                      EnsureMechanicsServices();
                         _mechanicWorld.ApplyStatusTransfer(applied);
                         break;
                     case ("varlik", "durum_ekle"):
                         ApplyStatusAdd(e, applied);
                         break;
                     case ("varlik", "iyi_durum_sil"):
-                        EnsureMechanicsServices();
+                      EnsureMechanicsServices();
                         _mechanicWorld.PurgeBossBuffs(applied);
                         break;
                 }
             }
             if (JsonEffectRules.LiftsBoss(plan))
                 LiftBoss(applied);
-            ProjectileEraseOnHit(plan, center);
+          ProjectileEraseOnHit(plan, center);
             if (applied.Count > 0)
                 DebugConfig.DevLog($"[Mechanic] isabet {plan.SkillId}/{plan.WeaponName}: {string.Join(", ", applied)}");
         }
@@ -310,15 +310,15 @@ namespace Dovus.Game.Skills
             applied.Add($"{kind} {ms / 1000.0:0.##}sn");
         }
 
-        void After(double now, float delaySec, Action run)
+        internal void After(double now, float delaySec, Action run)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             _mechanicPortals.ScheduleAfter(now, delaySec, run);
         }
 
         void TickMechanics(double worldMs)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             _mechanicPortals.TickTimers(worldMs);
             _mechanicPortals.TickPortals(worldMs);
             _mechanicWorld.Tick(worldMs);
@@ -347,7 +347,7 @@ namespace Dovus.Game.Skills
             if (away.sqrMagnitude < 0.0001f)
                 away = _boss.transform.forward;
             float offset = _combat != null ? _combat.Manifestation.BasicStrikeRangeM * 0.5f : 1f;
-            TeleportPlayer(bossPos + away.normalized * offset);
+          TeleportPlayer(bossPos + away.normalized * offset);
         }
 
         /// <summary>

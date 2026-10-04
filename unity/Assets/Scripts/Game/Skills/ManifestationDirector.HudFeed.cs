@@ -9,13 +9,13 @@ namespace Dovus.Game.Skills
     {
         Vector3? _lastImpactOrigin;
 
-        void NoteImpactOrigin(LivingEffect logic)
+        internal void NoteImpactOrigin(LivingEffect logic)
         {
             if (logic != null)
                 _lastImpactOrigin = new Vector3(logic.OriginX, 0f, logic.OriginZ);
         }
 
-        Vector3? BossHitPoint()
+        internal Vector3? BossHitPoint()
         {
             if (_boss == null)
                 return null;
@@ -29,7 +29,7 @@ namespace Dovus.Game.Skills
             return center + dir.normalized * _boss.BodyRadiusM + Vector3.up * (_boss.BodyRadiusM * 2f);
         }
 
-        Color? DamageTint()
+        internal Color? DamageTint()
         {
             ElementPaintNode? paint = SelectedElementPaint;
             if (!paint.HasValue || string.IsNullOrEmpty(paint.Value.ColorHex))

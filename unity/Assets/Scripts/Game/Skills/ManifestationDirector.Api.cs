@@ -25,13 +25,13 @@ namespace Dovus.Game.Skills
 
         public void ConfigureWeaponCycle(IReadOnlyList<EquipmentItem> weapons)
         {
-            EnsureSkillServices();
+          EnsureSkillServices();
             _weaponLoadout.ConfigureWeaponCycle(weapons);
         }
 
         public EquipmentItem CycleEquippedWeapon()
         {
-            EnsureSkillServices();
+          EnsureSkillServices();
             return _weaponLoadout.CycleEquippedWeapon();
         }
 
@@ -40,24 +40,24 @@ namespace Dovus.Game.Skills
         public bool LastWeaponCompatible { get; private set; } = true;
         public bool LastWeaponPassiveEnabled { get; private set; } = true;
         public string LastWeaponUiLabel { get; private set; } = string.Empty;
-        public string LastResolvedSkillId { get; private set; } = string.Empty;
-        public bool LastSkillEffectApplied { get; private set; }
-        public Skill LastFactorySkill { get; private set; }
-        public SkillExecutorKind LastExecutorKind { get; private set; } = SkillExecutorKind.Fallback;
+        public string LastResolvedSkillId { get; internal set; } = string.Empty;
+        public bool LastSkillEffectApplied { get; internal set; }
+        public Skill LastFactorySkill { get; internal set; }
+        public SkillExecutorKind LastExecutorKind { get; internal set; } = SkillExecutorKind.Fallback;
 
         /// <summary>Bağlama 9 / MCP: son ApplyClosingDamage çıktısı (boss'a giden, armor öncesi).</summary>
-        public float LastClosingDamageDealt { get; private set; }
+        public float LastClosingDamageDealt { get; internal set; }
 
         /// <summary>Bağlama 10 / MCP: son ShoutSkill AnimationType id (katalog anahtarı).</summary>
-        public string LastAnimationTypeId { get; private set; } = string.Empty;
+        public string LastAnimationTypeId { get; internal set; } = string.Empty;
 
         /// <summary>Bağlama 10 / MCP: son denenen animator_state.</summary>
-        public string LastAnimationState { get; private set; } = string.Empty;
-        public string LastAnimationClip { get; private set; } = string.Empty;
-        public bool LastAnimationUsedFallback { get; private set; }
+        public string LastAnimationState { get; internal set; } = string.Empty;
+        public string LastAnimationClip { get; internal set; } = string.Empty;
+        public bool LastAnimationUsedFallback { get; internal set; }
 
         /// <summary>Bağlama 10 / MCP: Controller'da state vardı ve Play uygulandı.</summary>
-        public bool LastAnimationPlayApplied { get; private set; }
+        public bool LastAnimationPlayApplied { get; internal set; }
 
         /// <summary>Bağlama 10 / MCP: frame-timer köprüsü (Play doğrulama).</summary>
         public AnimationBridge AnimationBridge => _animationBridge;
@@ -65,7 +65,7 @@ namespace Dovus.Game.Skills
         {
             get
             {
-                EnsureSkillServices();
+              EnsureSkillServices();
                 int index = _weaponLoadout.ElementPaintIndex;
                 return _skills != null
                     && _skills.ElementPaints.Count > 0
@@ -77,32 +77,34 @@ namespace Dovus.Game.Skills
         }
         public event Action<ElementPaintNode> ElementPaintChanged;
 
+        internal void RaiseElementPaintChanged(ElementPaintNode paint) => ElementPaintChanged?.Invoke(paint);
+
 #if UNITY_EDITOR
         /// <summary>Bağlama 10 / MCP: ShoutSkill içindeki ApplySkillAnimation yolunu doğrudan dener.</summary>
         public void DebugApplySkillAnimation(SkillResolution skill)
         {
-            EnsureLaunchServices();
+          EnsureLaunchServices();
             _skillPresentation.ApplySkillAnimation(skill);
         }
 #endif
 
         public ElementPaintNode? CycleElementPaint()
         {
-            EnsureSkillServices();
+          EnsureSkillServices();
             return _weaponLoadout.CycleElementPaint();
         }
 
         public bool TrySetElementPaint(int elementId)
         {
-            EnsureSkillServices();
+          EnsureSkillServices();
             return _weaponLoadout.TrySetElementPaint(elementId);
         }
 
         SkillMotor Skills => _skills ??= SkillMotorLoader.Load();
 
-        WeaponSkillCompatibility WeaponCompatibilityFor(SkillResolution skill)
+        internal WeaponSkillCompatibility WeaponCompatibilityFor(SkillResolution skill)
         {
-            EnsureSkillServices();
+          EnsureSkillServices();
             return _weaponLoadout.WeaponCompatibilityFor(skill);
         }
 
@@ -112,7 +114,7 @@ namespace Dovus.Game.Skills
         {
             get
             {
-                EnsureSkillServices();
+              EnsureSkillServices();
                 return _effectSpawner.ActiveCount;
             }
         }
@@ -121,7 +123,7 @@ namespace Dovus.Game.Skills
         {
             get
             {
-                EnsureSkillServices();
+              EnsureSkillServices();
                 return _skillAim.CurrentFacingTarget;
             }
         }
@@ -134,12 +136,12 @@ namespace Dovus.Game.Skills
         {
             get
             {
-                EnsureSkillServices();
+              EnsureSkillServices();
                 return _skillAim.CombatFacingLocked;
             }
         }
 
-        bool PerformingAttack =>
+        internal bool PerformingAttack =>
             (_engine != null && (_engine.State.Phase == SentencePhase.Building
                 || _engine.State.Phase == SentencePhase.Recovering))
             || PendingList.Count > 0

@@ -1,5 +1,6 @@
 using Dovus.Core.Mechanic;
 using Dovus.Game.Boss;
+using Dovus.Game.Skills.Hosts;
 using Dovus.Game.Skills.Projectiles;
 using UnityEngine;
 
@@ -7,8 +8,8 @@ namespace Dovus.Game.Skills
 {
     public sealed partial class ManifestationDirector
     {
-        HostileProjectileHost _projectiles;
-        ProjectileEraserHost _projectileHost;
+        internal HostileProjectileHost _projectiles;
+        MdProjectileEraserHost _projectileHost;
         ProjectileEraser _projectileEraser;
 
         public void BindProjectiles(HostileProjectileHost host)
@@ -27,7 +28,7 @@ namespace Dovus.Game.Skills
         {
             if (_projectileEraser != null)
                 return;
-            _projectileHost = new ProjectileEraserHost(this);
+            _projectileHost = new MdProjectileEraserHost(this);
             _projectileEraser = new ProjectileEraser(_projectileHost);
         }
 

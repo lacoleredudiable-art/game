@@ -15,6 +15,7 @@ using Dovus.Game.Boss;
 using Dovus.Game.Casting;
 using Dovus.Game.Platform;
 using Dovus.Game.Skills.Execution;
+using Dovus.Game.Skills.Hosts;
 using Dovus.Game.Skills.Motion;
 using Dovus.Game.Skills.State;
 using Dovus.Game.Skills.Weapons;
@@ -25,16 +26,16 @@ namespace Dovus.Game.Skills
 {
     public sealed partial class ManifestationDirector
     {
-        WeaponServicesHost _weaponHost;
-        WeaponPassiveRuntime _weaponPassives;
-        OrbController _orbController;
-        Weapons.CannonBlast _cannonBlast;
+        internal MdWeaponServicesHost _weaponHost;
+        internal WeaponPassiveRuntime _weaponPassives;
+        internal OrbController _orbController;
+        internal Weapons.CannonBlast _cannonBlast;
 
-        void EnsureWeaponServices()
+        internal void EnsureWeaponServices()
         {
             if (_weaponHost != null)
                 return;
-            _weaponHost = new WeaponServicesHost(this);
+            _weaponHost = new MdWeaponServicesHost(this);
             _weaponPassives = new WeaponPassiveRuntime(_weaponHost);
             _orbController = new OrbController(_weaponHost);
             _cannonBlast = new Weapons.CannonBlast(_weaponHost);
@@ -46,12 +47,12 @@ namespace Dovus.Game.Skills
         {
             get
             {
-                EnsureWeaponServices();
+              EnsureWeaponServices();
                 return _weaponHost.WeaponIgnoresArmor;
             }
             private set
             {
-                EnsureWeaponServices();
+              EnsureWeaponServices();
                 _weaponHost.WeaponIgnoresArmor = value;
             }
         }
@@ -65,7 +66,7 @@ namespace Dovus.Game.Skills
         {
             get
             {
-                EnsureWeaponServices();
+              EnsureWeaponServices();
                 return _orbController.Orb;
             }
         }
@@ -74,102 +75,102 @@ namespace Dovus.Game.Skills
         {
             get
             {
-                EnsureWeaponServices();
+              EnsureWeaponServices();
                 return _orbController.SwapButtonHoldSec;
             }
         }
 
         public bool TryPlaceOrb(float targetX, float targetZ)
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             return _orbController.TryPlace(targetX, targetZ);
         }
 
         public bool TryRecallOrb()
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             return _orbController.TryRecall();
         }
 
         public bool ToggleOrb()
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             return _orbController.Toggle();
         }
 
         void TickOrb(double worldMs)
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             _orbController.Tick(worldMs);
         }
 
         void TickCannonRecoil()
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             _cannonBlast.TickCannonRecoil();
         }
 
         float WeaponOutgoingDamageMult(in SkillResolution skill, bool isBasicStrike)
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             return _weaponPassives.WeaponOutgoingDamageMult(skill, isBasicStrike);
         }
 
-        bool TryTakeFreeMana()
+        internal bool TryTakeFreeMana()
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             return _weaponPassives.TryTakeFreeMana();
         }
 
-        void ConsumeWeaponBonus(StatusBoard cleanseTarget = null)
+        internal void ConsumeWeaponBonus(StatusBoard cleanseTarget = null)
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             _weaponPassives.ConsumeWeaponBonus(cleanseTarget);
         }
 
-        float WeaponSupportPower(in SkillResolution skill)
+        internal float WeaponSupportPower(in SkillResolution skill)
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             return _weaponPassives.WeaponSupportPower(skill);
         }
 
         internal float WeaponFriendlyScale()
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             return _weaponPassives.WeaponFriendlyScale();
         }
 
         float WeaponCritAdd(in SkillResolution skill, bool isBasicStrike)
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             return _weaponPassives.WeaponCritAdd(skill, isBasicStrike);
         }
 
-        float WeaponDurationMult(in SkillResolution skill)
+        internal float WeaponDurationMult(in SkillResolution skill)
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             return _weaponPassives.WeaponDurationMult(skill);
         }
 
-        float WeaponCooldownMult()
+        internal float WeaponCooldownMult()
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             return _weaponPassives.WeaponCooldownMult();
         }
 
-        void StopBasicCannonAtFirstBody(LivingEffect logic, Vector3 origin, Vector3 facing)
+        internal void StopBasicCannonAtFirstBody(LivingEffect logic, Vector3 origin, Vector3 facing)
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             _weaponPassives.StopBasicCannonAtFirstBody(logic, origin, facing);
         }
 
-        float WeaponBasicReach(float fallback)
+        internal float WeaponBasicReach(float fallback)
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             return _weaponPassives.WeaponBasicReach(fallback);
         }
 
-        void ApplyWeaponDelivery(
+        internal void ApplyWeaponDelivery(
             in SkillResolution skill,
             SkillExecutorKind kind,
             Transform target,
@@ -180,204 +181,87 @@ namespace Dovus.Game.Skills
             ref float angleDeg,
             ref float speed)
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             _weaponPassives.ApplyWeaponDelivery(
                 skill, kind, target, ref origin, ref range, ref radius, ref shape, ref angleDeg, ref speed);
         }
 
-        void NoteWeaponCast(in SkillResolution skill)
+        internal void NoteWeaponCast(in SkillResolution skill)
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             _weaponPassives.NoteWeaponCast(skill);
         }
 
         void OnWeaponSwapCompleted(EquipmentItem weapon)
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             _weaponPassives.OnWeaponSwapCompleted(weapon);
         }
 
-        void NoteShieldBlockIfGuarding()
+        internal void NoteShieldBlockIfGuarding()
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             _weaponPassives.NoteShieldBlockIfGuarding();
         }
 
         internal bool HammerStunReady(double worldMs)
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             return _weaponPassives.HammerStunReady(worldMs);
         }
 
         internal void CommitHammerStun(double worldMs, bool ready, bool alreadyHad, bool applied)
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             _weaponPassives.CommitHammerStun(worldMs, ready, alreadyHad, applied);
         }
 
-        void TryLandWeaponStun(in SkillResolution skill, bool isBasicStrike)
+        internal void TryLandWeaponStun(in SkillResolution skill, bool isBasicStrike)
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             _weaponPassives.TryLandWeaponStun(skill, isBasicStrike);
         }
 
-        void TryConsumeCounterWindow()
+        internal void TryConsumeCounterWindow()
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             _weaponPassives.TryConsumeCounterWindow();
         }
 
-        void RememberHitPoint(Vector3? point)
+        internal void RememberHitPoint(Vector3? point)
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             _weaponPassives.RememberHitPoint(point);
         }
 
         internal WeaponPassiveMods HitMods(in SkillResolution skill, bool isBasicStrike, bool consumeBonus)
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             return _weaponPassives.HitMods(skill, isBasicStrike, consumeBonus);
         }
 
-        bool SwapDrawUnlocked(double worldMs)
+        internal bool SwapDrawUnlocked(double worldMs)
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             return _weaponPassives.SwapDrawUnlocked(worldMs);
         }
 
-        void TryCannonBlast(float impactX, float impactZ)
+        internal void TryCannonBlast(float impactX, float impactZ)
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             _cannonBlast.TryCannonBlast(impactX, impactZ);
         }
 
         void CutTemplateForSwap(bool instant)
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             _cannonBlast.CutTemplateForSwap(instant);
         }
 
         void PushCannonBodies(float impactX, float impactZ, float splash, float arena, float bossR)
         {
-            EnsureWeaponServices();
+          EnsureWeaponServices();
             _cannonBlast.PushCannonBodies(impactX, impactZ, splash, arena, bossR);
-        }
-
-        public sealed class WeaponServicesHost
-            : IOrbControllerHost,
-                ICannonBlastHost
-        {
-            readonly ManifestationDirector _md;
-
-            internal WeaponServicesHost(ManifestationDirector md) => _md = md;
-
-            public CastSessionState Cast => _md.CastSession;
-
-            public bool WeaponIgnoresArmor { get; set; }
-
-            public Transform Player => _md._player;
-            public BossReactorController Boss => _md._boss;
-            public ActorStatusHost BossStatus => _md._bossStatus;
-            public GameClockHost Clock => _md._clock;
-            public EquipmentItem EquippedWeapon => _md._equippedWeapon;
-            public WeaponCombatProfile EquippedProfile => _md.EquippedProfile;
-            public SentenceEngine Engine => _md._engine;
-            public ActorView Visual => _md._visual;
-            public double LastMovedMs => _md._lastMovedMs;
-            public bool PerformingAttack => _md.PerformingAttack;
-            public OrbAnchor Orb
-            {
-                get
-                {
-                    _md.EnsureWeaponServices();
-                    return _md._orbController.Orb;
-                }
-            }
-
-            public PlayerTargetingController Targeting => _md._targeting;
-            public AllyDummyController Ally => _md._ally;
-            public KinematicMotorController Motor => _md._motor;
-            public MotionTemplateBodyHost MotionBody => _md._motionBody;
-            public WeaponSwapState WeaponSwap => _md._weaponSwap;
-            public double WorldTimeMs => _md.WorldTimeMs;
-            public bool CasterRecoilSuppressed
-            {
-                get => _md.CastSession.CasterRecoilSuppressed;
-                set => _md.CastSession.CasterRecoilSuppressed = value;
-            }
-
-            bool ICannonBlastHost.CasterRecoilSuppressed
-            {
-                get => _md.CastSession.CasterRecoilSuppressed;
-                set => _md.CastSession.CasterRecoilSuppressed = value;
-            }
-
-            public float LastHitX
-            {
-                get => _md.CastSession.LastHitX;
-                set => _md.CastSession.LastHitX = value;
-            }
-
-            public float LastHitZ
-            {
-                get => _md.CastSession.LastHitZ;
-                set => _md.CastSession.LastHitZ = value;
-            }
-
-            public bool RecoilInTemplate
-            {
-                get
-                {
-                    _md.EnsureMotionServices();
-                    return _md._motionDriver.RecoilInTemplate;
-                }
-            }
-
-            public void SetRecoilInTemplate(bool value)
-            {
-                _md.EnsureMotionServices();
-                _md._motionDriver.SetRecoilInTemplate(value);
-            }
-
-            public Vector3 FlatBodyForward()
-            {
-                _md.EnsureSkillServices();
-                return _md._skillAim.FlatBodyForward();
-            }
-
-            public WeaponSkillCompatibility WeaponCompatibilityFor(SkillResolution skill) =>
-                _md.WeaponCompatibilityFor(skill);
-
-            public float PlayerBodyRadiusM() => _md.PlayerBodyRadiusM();
-            public float BossBodyRadius() => _md.BossBodyRadius();
-
-            public void GrantShortShield(float points, float durationSec)
-            {
-                if (_md._player == null || points <= 0f)
-                    return;
-                WeaponShortShieldHost host = _md._player.GetComponent<WeaponShortShieldHost>();
-                if (host == null)
-                    host = _md._player.gameObject.AddComponent<WeaponShortShieldHost>();
-                if (_md._clock != null)
-                    host.Bind(_md._clock);
-                host.Grant(points, WorldTimeMs, durationSec);
-            }
-
-            public void ResetBasicChain() => _md._visual?.ResetBasicChain();
-            public void SetSwapInstantDrawUntil(double worldMs) => _md._weaponPassives.SetSwapInstantDrawUntil(worldMs);
-            public void StopMotionBody() => _md._motionBody?.Stop();
-            public void EndMotionAnim() => _md._visual?.EndMotionAnim();
-            public void AbortRecoveringSentence()
-            {
-                if (_md._engine != null && _md._engine.State.Phase == SentencePhase.Recovering)
-                    _md._engine.Abort();
-            }
-
-            public System.Collections.Generic.IReadOnlyList<TargetableHost> LiveTargetables =>
-                _md._liveTargetables != null ? _md._liveTargetables.Live : System.Array.Empty<TargetableHost>();
-
-            public System.Collections.Generic.IReadOnlyList<SummonExecutor> LiveSummonExecutors =>
-                _md._liveSummons != null ? _md._liveSummons.Live : System.Array.Empty<SummonExecutor>();
         }
     }
 }

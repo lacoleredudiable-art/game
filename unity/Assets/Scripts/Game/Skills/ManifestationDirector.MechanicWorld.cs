@@ -11,37 +11,37 @@ namespace Dovus.Game.Skills
     {
         public void BindHostileTargets(HostileTargetsHost targets)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             _mechanicWorld.BindHostileTargets(targets);
         }
 
         void BeginMechanicWorld(MechanicPlan plan, Vector3 aimDir, Vector3 landedAt, double worldMs)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             _mechanicWorld.BeginMechanicWorld(plan, aimDir, landedAt, worldMs);
         }
 
         float RedirectMechanicDamage(float incoming)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             return _mechanicWorld.RedirectMechanicDamage(incoming);
         }
 
         void ReflectFromWorldVolumes(float incoming)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             _mechanicWorld.ReflectFromWorldVolumes(incoming);
         }
 
-        SkillExecutorRoute ApplyMechanicWorldRoute(MechanicPlan plan, SkillExecutorRoute route)
+        internal SkillExecutorRoute ApplyMechanicWorldRoute(MechanicPlan plan, SkillExecutorRoute route)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             return _mechanicWorld.ApplyMechanicWorldRoute(plan, route);
         }
 
-        void PullBossToPlayerContact()
+        internal void PullBossToPlayerContact()
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             _mechanicWorld.PullBossToPlayerContact();
         }
     }

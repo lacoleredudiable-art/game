@@ -13,7 +13,7 @@ namespace Dovus.Game.Skills
 
         public void BindCombatFeel(CombatFeelDirector feel) => _combatFeel = feel;
 
-        void NotifyBossStruck(bool isCrit, bool allowHitstop)
+        internal void NotifyBossStruck(bool isCrit, bool allowHitstop)
         {
             string weaponKey = _equippedWeapon != null ? _equippedWeapon.AnimationsKey : string.Empty;
             string archetype = WeaponArchetypeMap.ArchetypeFor(weaponKey);

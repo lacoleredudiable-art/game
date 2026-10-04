@@ -87,7 +87,7 @@ namespace Dovus.Game.Skills
             _passiveHud = passiveHud;
             _hexagonView = hexagonView;
             _equippedWeapon = equippedWeapon;
-            RefreshDefenderArmor();
+          RefreshDefenderArmor();
             EnsureBossArmor();
             _equipmentBonus = equipmentBonus;
             _playerResource = player != null ? player.GetComponent<PlayerResourceHost>() : null;
@@ -95,10 +95,10 @@ namespace Dovus.Game.Skills
             _skills = skills ?? SkillMotorLoader.Load();
             _skillFactory = skillFactory ?? new SkillFactory(_skills, _equipmentBonus);
             _animationDatabase = animationDatabase ?? LoadAnimationDatabase();
-            EnsureCoreServices();
-            EnsureSkillServices();
+          EnsureCoreServices();
+          EnsureSkillServices();
             _weaponLoadout.ResetElementPaintIndex();
-            EnsureLaunchServices();
+          EnsureLaunchServices();
             _skillPresentation.EnsureCatalog();
             _playerStates = new PlayerStateMachine(_skills.PlayerStates);
             input.BindPlayerStates(_playerStates, () => PendingList.Count > 0);
@@ -124,9 +124,9 @@ namespace Dovus.Game.Skills
                 _engine.SentenceCompleted += OnSentenceCompleted;
                 _hooked = true;
             }
-            SyncVisualDelivery();
+          SyncVisualDelivery();
             EnsureClosingServices();
-            EnsureLaunchServices();
+          EnsureLaunchServices();
             _skillPresentation.EnsureCatalog();
         }
     }

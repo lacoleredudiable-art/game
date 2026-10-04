@@ -19,7 +19,7 @@ namespace Dovus.Game.Skills
         Color _castVfxColor = Color.white;
         CastFlashView _castFlash;
 
-        void SyncVisualDelivery()
+        internal void SyncVisualDelivery()
         {
             if (_visual == null)
                 return;
@@ -30,7 +30,7 @@ namespace Dovus.Game.Skills
                 _animationBridge.StatePlayer = _visual.PlayAction;
         }
 
-        void StartCastVfxTimer(SkillResolution skill, IReadOnlyList<SentenceWord> words)
+        internal void StartCastVfxTimer(SkillResolution skill, IReadOnlyList<SentenceWord> words)
         {
             if (!_castVfxHooked)
             {
@@ -44,7 +44,7 @@ namespace Dovus.Game.Skills
                 _castVfxColor = line;
             }
 
-            EnsureLaunchServices();
+          EnsureLaunchServices();
             _skillPresentation.EnsureCatalog();
             if (_skillPresentation.Validator == null || _skillPresentation.Catalog == null)
                 return;

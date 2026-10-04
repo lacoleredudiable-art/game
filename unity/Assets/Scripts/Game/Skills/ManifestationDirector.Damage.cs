@@ -42,7 +42,7 @@ namespace Dovus.Game.Skills
             }
         }
 
-        void RefreshDefenderArmor()
+        internal void RefreshDefenderArmor()
         {
             if (_weaponArmor == null && ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
                 _weaponArmor = WeaponArmorCatalog.FromDocument(design.Document);
@@ -64,7 +64,7 @@ namespace Dovus.Game.Skills
             _weaponArmor ??= WeaponArmorCatalog.FromDocument(design.Document);
         }
 
-        DamageOutcome ComputeOutgoingHit(
+        internal DamageOutcome ComputeOutgoingHit(
             ClosingHit closing,
             SkillResolution skill,
             bool isBasicStrike,
@@ -73,7 +73,7 @@ namespace Dovus.Game.Skills
             float? chainBonusOverride)
         {
             EnsureBossArmor();
-            RefreshDefenderArmor();
+          RefreshDefenderArmor();
 
             float outMult = 1f;
             if (_playerStatus != null)
@@ -209,14 +209,14 @@ namespace Dovus.Game.Skills
             return outcome;
         }
 
-        float HealBuffMultiplier(in SkillResolution skill)
+        internal float HealBuffMultiplier(in SkillResolution skill)
         {
             float healMult = _playerStatus != null ? _playerStatus.Board.HealEffectivenessMult : 1f;
             healMult *= CastSession.ClosingChainBonus;
             return healMult;
         }
 
-        void ApplyArmorShred(in SkillResolution skill, ActorStatusHost target)
+        internal void ApplyArmorShred(in SkillResolution skill, ActorStatusHost target)
         {
             if (skill.IsEmpty || skill.Engine.IsNull)
                 return;

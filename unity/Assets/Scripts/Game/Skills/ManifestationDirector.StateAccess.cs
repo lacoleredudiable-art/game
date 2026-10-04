@@ -52,8 +52,6 @@ namespace Dovus.Game.Skills
         {
             CastSession.DeliverySkill = skill;
             CastSession.DeliveryPending = pending;
-            _deliverySkill = skill;
-            _deliveryPending = pending;
         }
     }
 }

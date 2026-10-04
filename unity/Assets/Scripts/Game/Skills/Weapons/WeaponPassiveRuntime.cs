@@ -15,6 +15,7 @@ using Dovus.Game.Actors;
 using Dovus.Game.Boss;
 using Dovus.Game.Casting;
 using Dovus.Game.Skills.Execution;
+using Dovus.Game.Skills.Hosts;
 using Dovus.Game.Weapons;
 using System;
 using UnityEngine;
@@ -23,11 +24,11 @@ namespace Dovus.Game.Skills.Weapons
 {
     public sealed class WeaponPassiveRuntime
     {
-        readonly ManifestationDirector.WeaponServicesHost _host;
+        readonly MdWeaponServicesHost _host;
         readonly WeaponPassiveState _passives = new();
         double _swapInstantDrawUntilMs;
 
-        public WeaponPassiveRuntime(ManifestationDirector.WeaponServicesHost host) => _host = host;
+        public WeaponPassiveRuntime(MdWeaponServicesHost host) => _host = host;
 
 
 

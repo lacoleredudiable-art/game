@@ -12,8 +12,8 @@ namespace Dovus.Game.Skills
 {
     public sealed partial class ManifestationDirector
     {
-        MdMechanicsHost _mechanicsHost;
-        MechanicWorldRuntime _mechanicWorld;
+        internal MdMechanicsHost _mechanicsHost;
+        internal MechanicWorldRuntime _mechanicWorld;
         JsonEffectRuntime _jsonEffects;
         VolumePayloadApplier _volumePayload;
         MechanicPortals _mechanicPortals;
@@ -35,7 +35,7 @@ namespace Dovus.Game.Skills
         internal int JsonCleanseCount(in SkillResolution skill) =>
             JsonEffectRules.CleanseCount(
                 !skill.IsEmpty && !skill.Engine.IsNull ? skill.Engine.CleanseCount(0) : 0,
-                MechanicPlanFor(skill));
+              MechanicPlanFor(skill));
 
         internal float ShieldAbsorbFor(in SkillResolution skill)
         {
@@ -55,12 +55,12 @@ namespace Dovus.Game.Skills
 
         internal void ClearMechanicWorldSweep()
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             _mechanicWorld.ClearSweepState();
             _mechanicPortals.ClearSweepState();
         }
 
-        void EnsureMechanicsServices()
+        internal void EnsureMechanicsServices()
         {
             if (_mechanicsHost != null)
                 return;
