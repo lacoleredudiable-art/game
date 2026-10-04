@@ -24,16 +24,18 @@ namespace Dovus.Core.Element
         };
 
         /// <summary>
-        /// Eski <c>Rune</c> için <c>Enum.ToString()</c> çıktısı (id'den cast); sweep/log bayt uyumu.
+        /// Eski çift adlı <c>Rune</c> enum'unun Unity (Mono) <c>Enum.ToString()</c> çıktısı — renk anahtarı / GameObject adı
+        /// uyumu için. Unity 6000.4 MonoBleedingEdge ile ölçüldü (1..6: Ates, Su, Hava, Savunma, Patlama, Karanlik);
+        /// .NET (SweepV2/CoreTests) aynı enum'da v6 adlarını veriyordu — eski davranış platforma bağlıydı, artık sabit.
         /// </summary>
         public static string LegacySerializationName(Rune rune) => rune switch
         {
-            Rune.Attack => "Saldiri",
-            Rune.Heal => "Iyilestirme",
-            Rune.Move => "Hareket",
+            Rune.Attack => "Ates",
+            Rune.Heal => "Su",
+            Rune.Move => "Hava",
             Rune.Defense => "Savunma",
             Rune.Burst => "Patlama",
-            Rune.Control => "Kontrol",
+            Rune.Control => "Karanlik",
             Rune.Weaken => "Zayiflatma",
             Rune.Empower => "Guclendirme",
             Rune.Cleanse => "Arindirma",

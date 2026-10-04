@@ -24,12 +24,12 @@ public sealed class RuneLanguageSkillModelTests
 
     static readonly (Rune Rune, string Turkish, string Legacy)[] DisplayTable =
     {
-        (Rune.Attack, "Saldırı", "Saldiri"),
-        (Rune.Heal, "İyileştirme", "Iyilestirme"),
-        (Rune.Move, "Hareket", "Hareket"),
+        (Rune.Attack, "Saldırı", "Ates"),
+        (Rune.Heal, "İyileştirme", "Su"),
+        (Rune.Move, "Hareket", "Hava"),
         (Rune.Defense, "Savunma", "Savunma"),
         (Rune.Burst, "Patlama", "Patlama"),
-        (Rune.Control, "Kontrol", "Kontrol"),
+        (Rune.Control, "Kontrol", "Karanlik"),
         (Rune.Weaken, "Zayıflatma", "Zayiflatma"),
         (Rune.Empower, "Güçlendirme", "Guclendirme"),
         (Rune.Cleanse, "Arındırma", "Arindirma"),
