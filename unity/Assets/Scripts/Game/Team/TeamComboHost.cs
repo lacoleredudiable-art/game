@@ -64,12 +64,8 @@ namespace Dovus.Game.Team
             }
         }
 
-        SkillEngineModifiers EngineFor(SkillId skillId)
-        {
-            if (_skillMotor != null && _skillMotor.TryGetSkill(skillId.Value, out SkillCatalogEntry entry))
-                return new SkillEngineModifiers(entry.Engine);
-            return default;
-        }
+        SkillEngineModifiers EngineFor(SkillId skillId) =>
+            _skillMotor != null && _skillMotor.TryGetSkill(skillId.Value, out SkillCatalogEntry entry) ? new SkillEngineModifiers(entry.Engine) : default;
 
         void OnEnable()
         {
@@ -191,7 +187,7 @@ namespace Dovus.Game.Team
             ApplyMoves();
             // O3: eski ApplyBackStrike (önceki vuruşun zırh sonrası hasarını ikinci kez zırhtan geçiren görünmez
             // üçüncü vuruş) kaldırıldı; 1-10'un sırt vuruşu kalıbın sirtta_kapi fazında. Yalnız görsel kalır.
-            if (_portal.Strike.Active)
+            if (EngineFor(typedId).PortalOp() == PortalOp.BackDoor && _portal.Strike.Active)
             {
                 Burst(new Vector3(_portal.Strike.X, TeamComboDefaults.PortalStrikeMarkerY, _portal.Strike.Z), new Color(0.75f, 0.75f, 1f));
             }
@@ -235,10 +231,8 @@ namespace Dovus.Game.Team
             if (pulse.Burned)
             {
                 // S17: yüklenen/panelden değişen tuning (ActorStatusHost.Bind'deki _combat.Status), varsayılan değil.
-                string burnSource = _team.LinkBurnSourceSkillId;
-                if (string.IsNullOrEmpty(burnSource))
-                    burnSource = "takim";
-                _bossStatus.Board.Apply(StatusKind.Burn, TeamComboDefaults.SecToMs, _bossStatus.Tuning.BurnDamagePerSec, burnSource);
+                // Yanik yalniz baglanti (team_op link) kurulduktan sonra gelir; kaynak o cast'in skill kimligi.
+                _bossStatus.Board.Apply(StatusKind.Burn, TeamComboDefaults.SecToMs, _bossStatus.Tuning.BurnDamagePerSec, _team.LinkBurnSourceSkillId);
             }
             if (pulse.MineMult > TeamComboDefaults.MineMultActiveThreshold)
                 _line = "Mayın x" + pulse.MineMult.ToString("0");
