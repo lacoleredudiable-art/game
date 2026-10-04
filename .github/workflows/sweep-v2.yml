@@ -20,6 +20,13 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: OYUN.md üretim kontrolü
+        run: python tools/gen-game-overview.py --check
+
       - name: Core testleri
         run: dotnet test tools/CoreTests
 

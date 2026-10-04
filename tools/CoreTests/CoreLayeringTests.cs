@@ -9,7 +9,7 @@ namespace CoreTests;
 
 /// <summary>
 /// Core üst klasörleri arası using / tam nitelikli referans grafiği; Tarjan SCC.
-/// Hedef sıra: <c>docs/core-layers.md</c>.
+/// Hedef sıra: <c>docs/ARCHITECTURE.md</c> (Core katman sırası).
 /// </summary>
 [TestFixture]
 public class CoreLayeringTests

@@ -48,7 +48,7 @@ namespace Dovus.Core.Tuning
         /// <summary>Telegraf yayının boyu (yalnız çizim; vuruş hacmi yok). Spec'te yok, his değeri.</summary>
         public float VolleyTelegraphRangeM = 8f;
 
-        // Ağ Örme / Sıçrayış — spec'te yok — docs/bosses/aglarin-kralicesi.md
+        // Ağ Örme / Sıçrayış — spec'te yok — docs/design/aglarin-kralicesi.md
         public int WebFieldWindupMs = 900;
         public float WebFieldRadiusM = 3.0f;
         public float WebFieldLifeSec = 8f;

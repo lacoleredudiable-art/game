@@ -109,6 +109,6 @@ public sealed class NamingConventionTests
         }
 
         Assert.That(count, Is.GreaterThanOrEqualTo(79), "Game MonoBehaviour taraması boş/eksik");
-        Assert.That(bad, Is.Empty, () => "Sonek standardı dışı (docs/naming.md): " + string.Join("; ", bad));
+        Assert.That(bad, Is.Empty, () => "Sonek standardı dışı (docs/ARCHITECTURE.md): " + string.Join("; ", bad));
     }
 }

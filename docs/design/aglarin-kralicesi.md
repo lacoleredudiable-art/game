@@ -1,8 +1,8 @@
-# Ağların Kraliçesi — taslak tasarım (Faz 3.0)
+# Ağların Kraliçesi — tasarım (onaylı) + uygulama durumu
 
-Durum: **ONAYLANDI (2026-10-02).** Karar 1 = A (sıçrayış hareket kalıbıyla), Karar 2 = B (CC0 örümcek modeli), Karar 3 = karadul varsayılan.
-Kaynak: `unity/Assets/Resources/Bosses/karadul.json` şeması, `BossAttackKind` / `BossAttack` / `BossAttackControl` / `BossAttackKindPicker`, `BossDirector.SelectNextAttack`.
-Sayı kuralı: karadul'dan alınan sayılar **(karadul)**, uydurulmuş varsayılanlar **(spec'te yok)** diye işaretli.
+**Tasarım:** ONAYLANDI (2026-10-02). **Uygulama:** aktif boss sahnede `aglarin_kralicesi` (`Prototype.unity` `ActiveBossId`); saldırı seçimi `App/Boss/BossAttackSelector`, yürütme `BossDirector` + `App/Boss/BossMechanicStatusMap` (FireCone etkileri JSON/`MechanicStatusMap` — sabit `BossDirector` L820 değil).
+Kaynak şema: `unity/Assets/Resources/Bosses/aglarin-kralicesi.json`, `BossAttackKind`, `BossAttack`, `BossAttackControl`.
+Sayı kuralı: JSON `vitals.total_hp` / `player_hp` (120/22) **okunmuyor**; oyun canı `element-sistemi.json` `global_rules` × `CombatScale` (400.000 / 88.000.000). Faz `%` aralıkları boss JSON `phases` ile uygulanır.
 
 ## 1. Kimlik
 
@@ -45,7 +45,7 @@ Karadul'un çakmasıyla birebir: üç ritim (YAKIN / GEÇ / GENİŞ), aynı tele
 Karadul'un mermisi + isabette `Slow` (süre 1.5 sn, spec'te yok). Dodge i-frame ve `mermi_sil` kuralları aynı. Veri: `on_hit_status`.
 
 ### 3.3 Zehir Nefesi (`FireCone`)
-Karadul'un konisi; etki listesi veriden gelir: `["poison"]`. Bugün `BossDirector` FireCone'a `grievous_wounds` + `burn` etkisini **sabit kodla** uyguluyor (L820 çevresi). Bu, veriden okunacak şekilde değişmeli (karadul davranışı aynı kalır).
+Karadul'un konisi; etki listesi `App/Boss/BossMechanicStatusMap` üzerinden (ör. `poison`). Eski not: sabit `BossDirector` satırı kaldırıldı.
 
 ### 3.4 Ağ Örme (`WebField`, yeni)
 - Windup 900 ms: hedefin o anki konumunda beyaz halka büyür (telegraph).

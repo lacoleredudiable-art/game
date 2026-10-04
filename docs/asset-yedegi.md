@@ -11,7 +11,7 @@ Bu dosya onların nerede yedeklendiğini ve nasıl geri yükleneceğini anlatır
 | `unity/Assets/JMO Assets/` (+ `.meta`) | Cartoon FX Remaster Free | Ücretsiz Asset Store (yeniden dağıtım yok) | 1.009 dosya, 38 MB |
 | `unity/Assets/UnityTechnologies/` (+ `.meta`) | Unity Particle Pack | Ücretsiz Asset Store (yeniden dağıtım yok) | 886 dosya, 189 MB |
 | `tools/vendor/` | Ham indirmeler (Blend/OBJ/zip) | Kaynak dosyalar | 258 dosya, 104 MB |
-| `tools/mixamo-jobs/`, `tools/mixamo-download.mjs` | Mixamo indirme işleri | yerel | küçük |
+| `tools/mixamo-jobs/`, `tools/mixamo-download.mjs` | Mixamo indirme işleri | repoda izlenir; büyük animasyonlar `Art/Mixamo/` git dışı |
 
 Oyun bu klasörler olmadan da derlenir ve CI'da çalışır: VfxLibrary boşken prosedürel efektlere düşer.
 Eksik referansların taban listesi: `tools/IntegrationTests/known-missing-asset-guids.txt`.

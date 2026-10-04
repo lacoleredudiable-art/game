@@ -29,4 +29,4 @@ Her önayar için `<ad>.png` ve özet `captures.json` (ad, dosya, boyut, sha256)
 
 ## Önemli: `-nographics` kullanmayın
 
-Batchmode’da `-nographics`, RenderTexture / kamera render yolunu devre dışı bırakabilir; bu araç PNG üretmek için grafik bağlamı gerektirir. CI’da Unity derlemesi koşulmaz; yerel doğrulama için `tools/verify.ps1` ve isteğe bağlı batchmode çalıştırması yeterlidir (bkz. `docs/ci.md`).
+Batchmode’da `-nographics`, RenderTexture / kamera render yolunu devre dışı bırakabilir; bu araç PNG üretmek için grafik bağlamı gerektirir. CI’da Unity derlemesi koşulmaz; yerel doğrulama için `tools/verify.ps1` ve isteğe bağlı batchmode çalıştırması yeterlidir (bkz. `tools/verify.ps1`).

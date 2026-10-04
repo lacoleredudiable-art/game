@@ -4,20 +4,20 @@ Sıra: 0 → 2 → 3 → 4 → 5 → 6 (Aşama 1 yok; numaralar korunmadı). Kul
 Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 
 ## Aşama 0 — Düzen (ajanlar için temel)
-- [x] 0.1 docs/PLAN.md (bu dosya) + docs/ARCHITECTURE-PLAN.md + docs/MAP.md (konu → dosya → giriş noktası) + klasör başına kısa AGENTS.md + Composer görev şablonu + verify.ps1 (derle + Core test + 1440 kapı + gramer → tek özet)
+- [x] 0.1 docs/PLAN.md + docs/ARCHITECTURE.md + docs/MAP.md + docs/OYUN.md + klasör AGENTS.md + verify.ps1
 - [x] 0.2 Integration testler: JSON→skill eşleme (144), asset referans testi (VfxLibrary/WeaponVisualRegistry/proplar), kayıt/ayar round-trip; CI'ya bağla
 - [x] 0.3 Git dışı asset yedeği (Synty/Mixamo/VFX → yedek klasör veya Git LFS kararı)
 - [x] 0.4 Ölü kod temizliği: tek seferlik capture script'leri, 85 eski branch, eski taslak PR'lar (#6 #8 #9 #10 #43 — kullanıcı onayıyla)
 
 ## Aşama 2 — Mimari (kuzen önerisi) (davranış değişmeden, adım adım)
-- [x] 2.1 Game'i konu klasörlerine ayır + namespace = klasör (Dovus.<Katman>.<Konu>)
-- [x] 2.2 Güçlü ID tipleri (SkillId, WeaponId, RuneId, ElementId, ActorId) + JSON mapper (ham JsonValue Game'e sızmaz)
-- [x] 2.3 Application assembly + IClock / IRng; mana/diriliş oyun saatine, tohumsuz Random'lar CombatRng'ye
-- [x] 2.4 CastPipeline (ManifestationDirector.cs:1316–1332 taşınır; komut al → olay yay)
-- [x] 2.5 Oyuncu can/diriliş → Application (Player aggregate)
-- [x] 2.6 Boss AI → Application (BossBrain) — 2.6a BossAttackSelector; 2.6b BossBrain
-- [x] 2.7 Statik çarpanlar oyuncu başına; PortalSystem/TeamComboSystem switch'leri → JSON etiketleri; pasifler enum
-- [x] 2.8 GameTuning bölme; element-sistemi.json'dan lore/changelog ayırma, tek parse
+- [x] 2.1 Game'i konu klasörlerine ayır + namespace = klasör *(yüzeysel: Game tek SCC — A7 açık)*
+- [x] 2.2 Güçlü ID tipleri + JSON mapper *(yüzeysel: kalan string skillId — A28)*
+- [x] 2.3 Application assembly + IClock / IRng *(kapandı: A10, A11)*
+- [x] 2.4 CastPipeline *(yüzeysel: yürütme Game'de — A9)*
+- [x] 2.5 Oyuncu can/diriliş → Application *(kapandı: A10)*
+- [x] 2.6 Boss AI → Application *(yüzeysel: BossDirector hâlâ büyük — A3)*
+- [x] 2.7 Statik çarpanlar; portal/takım JSON etiketleri *(yüzeysel: kalan statikler — A13, A14)*
+- [x] 2.8 GameTuning bölme; element JSON tek parse *(kapandı: A6)*
 
 ## Aşama 3 — Oynanış doğruluğu (küçük, somut hatalar) [mimariden sonra]
 - [x] 1.1 Cooldown + mana açık (EnforceCooldown/EnforceResourceCost) — kombo bazlı CD kararı
@@ -38,13 +38,13 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 - [x] 2B.8 7 singleton + kalan statikler → enjeksiyon (A13); 2B.8b: `AssetCatalog`, `TeamComboAccess`, HUD/SFX/VFX/theme enjeksiyonu — (a) team hooks: `TeamModifierHub` örneği, statik `PortalBorderTeamHooks` kaldırıldı
 - [x] 2B.9 59 FindAnyObjectByType/Camera.main → referans enjeksiyonu; her kare GetComponent önbellek (A15)
 - [x] 2B.10 Eksik asset referansları raporu + güvenli geri dönüş (A16)
-- [x] 2B.11 ~2.900 sabit sayı → ayar/JSON (öncelik: oynanış sayıları) (A17) — 5 dosya + `*Defaults`; görsel ~3596 literal `docs/constants-report.md`
+- [x] 2B.11 ~2.900 sabit sayı → ayar/JSON (A17) — `*Defaults`; literal ratchet `docs/ARCHITECTURE.md`
   - [x] 2B.11b–g tüm oynanış/ayar sayıları `*Defaults` const'larına (1615 → 0 hedef); `MagicNumberRatchetTests` tavanı her PR'da iner — 2B.11c Core+App; 2B.11d Game/Skills+Team; 2B.11e Game/Boss+Actors+Composition+Cameras+Feel+Platform; [x] 2B.11f Game/Weapons+Audio+Casting; [x] 2B.11g Game/Vfx+Arena+Hud bitti
-- [x] 2B.12 İsimlendirme: sonek standardı, TeamCombo*/GameBootstrap/GameTuning/GrammarDebugPanel adları, yorum kodları (A21–A23); `docs/naming.md`
+- [x] 2B.12 İsimlendirme (A21–A23); kurallar `docs/ARCHITECTURE.md`
 - [x] 2B.12b MonoBehaviour sonek standardı: 54 Game bileşeni + 4 iç içe yardımcı yeniden adlandırıldı (GUID aynı), 79/79 standart sonek, `Game_MonoBehaviours_UseStandardSuffix` kapısı (A21)
-- [ ] 2B.13 Tek dil kuralı (kod İngilizce, veri sözcükleri sözlükle) (A24); dosya adı=tip, tek tip/dosya, yanlış yerdeki dosyalar (A25) — (a) Core/App tek tip/dosya bitti; **(b) Game tek tip/dosya + yanlış klasör + A24 kapı testleri**; **(c) Core ≤500**; **[x] (d) Game/tools ≤500 + FileSizeTests**
-- [ ] 2B.14 DDD: Rune/Element dili (A26), tek Skill modeli (A27), ID tiplerinin tam benimsenmesi + SkillResolution sadeleşme (A28, A30) — **[x] (a) A26 rün dili + A27 skill-model.md + SkillCatalogEntry**; **[x] (b) A28/A30 SkillResolution grupları + wire enum'lar + Game JsonValue kapısı**
-- [ ] 2B.15 DDD: Player/Actor varlıkları, hedef=ActorId (A29); skill yan etkileri → olaylar (A31); repository arayüzleri, katalog = parser/factory/depo ayrımı (A32) — **[x] (a) Actor varlıkları, ActorRegistry/ActorViewRegistry, PlayerTargeting ActorId**; **[x] (b) CastPipeline sunum olayları + ISkill/IMotionTemplate repository/parser ayrımı (Presentation/Equipment katalogları PR dışı)**
+- [x] 2B.13 Tek dil + dosya düzeni (A24, A25, C2) — Core/App/Game tek tip/dosya, FileLayoutTests, ≤500 satır kapıları
+- [x] 2B.14 DDD: Rune/Element, SkillResolution grupları, wire enum'lar (A26–A30) — tek Skill birleşmesi açık (A27)
+- [x] 2B.15 Actor/ActorId, CastPipeline olayları, repository ayrımı (A29, A31, A32) — kısmi iskelet bağlama 2B.23
 - [x] 2B.16 Ajan dostu: sabit açılı otomatik ekran görüntüsü aracı (C5); Unity derlemesi CI'da değilse not
 - [x] 2B.18a Game katman döngüleri (A7): Platform/Diagnostics yaprakları, `ISentenceDebugSink`, `GameLayeringTests`
 - [x] 2B.18b skill ID sabitleri + tipli SkillId (A14/A28)
@@ -56,7 +56,18 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 - [x] 2B.24 MD gerçek bölünme: nested host'lar `Game/Skills/Hosts/` (MdCastPort, MdClosingHost, MdCoreServicesHost, MdLaunch/Motion/Skill/Weapon/Projectile hosts), `_deliverySkill` kopyası kaldırıldı, MD partial toplamı ≤3500 (ratchet 3411); kalan: ≤1500 için Execution çıkarma
 - [x] 2B.25 skill ID'leri veriye
 - [x] 2B.26 sabit kopyaları
+- [x] 2B.27 doküman gerçeği (OYUN.md, ARCHITECTURE.md, DocsTruthTests, durum.md → PLAN)
 - Kural: davranış değişmez (sweep hash + test sayıları), Composer only, her madde 1–3 PR.
+
+## Aşama 2C — Oyun hissi — beklemede (yeni skill yapısı)
+*Kullanıcı kararı 10-04: yeni skill sistemi tasarımı geliyor; 2C maddeleri o gelince yeniden yazılır.*
+
+## Açık hatalar / Karar bekleyen
+- Sweep: Animator yok; Play odak dışıyken `sure` anlamsız (PR #37).
+- Gramer boşlukları: bazı `engine` etkileri hâlâ no-op; `target_ally` prezentasyon validator'da yok.
+- Karar: sınır modu 1-2; yoğunlaştırma `hitbox_scale_mult` menzil daraltması; 1-11 yankı + kalıp içi yürüme; element renk otoritesi (`GameTuning` vs prezentasyon JSON); görsel boy ölçümü.
+- Oyun: co-op ikinci oyuncu yok; aktif boss Kraliçe — `karadul` `shadow_cut` hâlâ yok; girdi/boss/dodge otomatik testleri sınırlı (Sweep boss hasarı 0).
+- Test: otomatik davranış güvencesi sweep hash + yapı testleri; CI dışı Play kıyası bilinen 11 fark listesinde.
 
 ## Aşama 4 — Oyun sistemleri
 - [ ] 3.1 Diriliş sadece skill ile (2-12 Akan Şifa, koza, takım başına 2) — otomatik 2 sn dirilme kalkar
@@ -66,7 +77,7 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 
 ## Aşama 5 — Görsel / his
 - [ ] 4.1 Silah tutuşları (Ayar sahnesi kalibrasyon sonuçları → kalıcı): Top, Kitap, Tılsım, Küre, Kalkan+Hançer yuvarlak kalkan
-- [ ] 4.2 Ortam süsleme: heykeller, uçurumlar, harabeler, savaş kalıntıları, kuru ağaçlar (arena 25 m üstüne)
+- [ ] 4.2 Ortam süsleme: heykeller, uçurumlar, harabeler, savaş kalıntıları, kuru ağaçlar (arena ~50 m yarıçap — sahne `ArenaHalfSizeM`)
 - [ ] 4.3 Skill animasyonları: silah başı 6–8 temel hareket, vuruş karesi efektle senkron
 - [ ] 4.4 Skill efektleri: ~50 şablon (8 şekil × 6 element) JSON eşleme
 - [ ] 4.5 10–15 imza efekt (ör. Zenitsu tarzı Kılıç+Elektrik, Riven Q tarzı 3 aşamalı kombo)

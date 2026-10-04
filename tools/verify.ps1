@@ -207,6 +207,22 @@ if ($runSweep) {
     }
 }
 
+# (f) OYUN.md üretici
+if (-not (Test-StepSkipped 'oyungen')) {
+    $py = Get-PythonCommand
+    if (-not $py) {
+        $results += [pscustomobject]@{ Status = 'SKIP'; Step = 'OyunGen'; Sec = 0; Note = 'python yok' }
+    } else {
+        $results += Invoke-VerifyStep -Key 'oyungen' -Title 'OyunGen' -Run {
+            & $py (Join-Path $RepoRoot 'tools\gen-game-overview.py') --check
+        } -NoteFromLog {
+            param($t, $code)
+            if ($code -ne 0) { return "exit $code" }
+            return 'gen OK'
+        }
+    }
+}
+
 Pop-Location
 
 Write-Host ''

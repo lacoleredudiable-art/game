@@ -7,7 +7,7 @@ namespace CoreTests;
 
 /// <summary>
 /// PLAN 2B.11: oynanış klasörlerindeki float literal sayısı rapor tavanını aşamaz.
-/// Tavan = <see cref="docs/constants-report.md"/> "sonra" sütunu (origin/master + 2B.11).
+/// Tavan = MagicNumberRatchetTests / docs/ARCHITECTURE.md (origin/master + 2B.11).
 /// </summary>
 [TestFixture]
 public class GameplayLiteralRatchetTests
@@ -43,7 +43,7 @@ public class GameplayLiteralRatchetTests
                 count += FloatLiteral.Matches(File.ReadAllText(file)).Count;
 
             Assert.That(count, Is.LessThanOrEqualTo(max),
-                () => $"{folder}: {count} float literals (max {max} per constants-report.md ratchet)");
+                () => $"{folder}: {count} float literals (max {max} per MagicNumberRatchetTests)");
         }
     }
 }

@@ -1,10 +1,5 @@
 # App katmanı (Dovus.App)
 
-Kök `AGENTS.md` bağlayıcıdır. Klasör: `unity/Assets/Scripts/App/` — **`Application` adı kullanılmaz** (`Dovus.Application` ile çakışır).
+Kök `AGENTS.md`. Saf C#; `Dovus.App.<Konu>`; yalnız `Dovus.Core` referansı.
 
-- Saf C#: `using UnityEngine` yasak.
-- Namespace: `Dovus.App.<Konu>` (ör. `Dovus.App.Time`).
-- Assembly: `Dovus.App.asmdef`, yalnız `Dovus.Core` referansı, `noEngineReferences: true`.
-- `Actors/` — `PlayerHealth` (saf can, ölüm/diriliş zamanlayıcısı); `PlayerVitalsHost` Game adaptörü.
-- İleride CastPipeline, BossBrain ve simülasyon komutları buraya taşınacak.
-- Unity saat/zar adaptörleri `Game/Platform/` (`Dovus.Game.Platform`).
+CastPipeline, BossBrain, PlayerHealth burada. Unity saat/RNG adaptörleri `Game/Platform/`.

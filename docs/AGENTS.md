@@ -1,14 +1,14 @@
 # docs (ajan notu)
 
-Kök `AGENTS.md`. Görev dosyayı adlandırmadıkça `docs/` taraması yapma (`durum.md` dahil).
+Kök `AGENTS.md`. Görev dosyayı adlandırmadıkça `docs/` taraması yapma.
 
 | Dosya | Rol |
 |-------|-----|
-| `element-sistemi.json` | Bağlayıcı spec (v6.1.1); `unity/Assets/Resources/ElementSystem/element-sistemi.json` ile **bayt bayt aynı**. Metin engine'den türetilir; `SkillTextNumberTests` korur. |
-| `motion-templates.json` | Elle düzenleme yok — `tools/build-motion-templates.py` |
-| `PLAN.md` | Tek iş listesi; durum: `[ ]` bekliyor · `[~]` sürüyor · `[x] bitti |
-| `MAP.md` | Konu → dosya → giriş noktası |
-| `ARCHITECTURE-PLAN.md` | Hedef mimari (Aşama 2+) |
-| `agent-task-template.md` | Composer görev şablonu |
+| `OYUN.md` | Oyun özeti; sayılar `tools/gen-game-overview.py` |
+| `ARCHITECTURE.md` | Mimari hedef + bugün + isimlendirme/sözlük/skill modeli |
+| `PLAN.md` | Tek iş listesi; açık hatalar bu dosyada |
+| `MAP.md` | Konu → dosya → giriş |
+| `element-sistemi.json` | Spec v6.1.1; Resources kopyası bayt bayt aynı |
+| `design/` | Onaylı boss/tasarım + uygulama notları |
 
-**Yazma:** `docs/durum.md`'ye ekleme yapma. PLAN'da iş bitince ilgili satırı aynı PR'da `[x]` işaretle.
+PLAN'da iş bitince ilgili satırı aynı PR'da `[x]` işaretle.

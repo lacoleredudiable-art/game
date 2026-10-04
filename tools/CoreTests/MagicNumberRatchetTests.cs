@@ -13,7 +13,7 @@ namespace CoreTests;
 /// Sayaç: Core/App/Game altında yorum ve string dışındaki önemsiz OLMAYAN sayı literal'leri. Muaf: önemsiz değerler (0–16 tamsayı, 0f/1f/2f/0.5f,
 /// 10/60/90/100/180/255/360/1000, 1e-3…1e-6 epsilon'lar), const/enum/attribute/case satırları, dizi indeksleri, renkler, UI yerleşim satırları
 /// ve ayar kaynağı dosyaları (<c>*Defaults.cs</c>, Core/Tuning, Game/Config, HudTheme, ProceduralChunkMesh, Editor/DevTools/Tests).
-/// Ayrıntı ve ölçüm: docs/constants-report.md. Tavanlar yalnız AŞAĞI iner; yeni gömülü sayı eklemek yerine ilgili *Defaults sınıfına const ekle.
+/// Tavan = docs/ARCHITECTURE.md oynanış sabitleri / MagicNumberRatchetTests.
 /// </summary>
 [TestFixture]
 public sealed class MagicNumberRatchetTests
