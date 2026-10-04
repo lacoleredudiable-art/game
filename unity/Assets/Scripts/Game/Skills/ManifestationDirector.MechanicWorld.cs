@@ -314,7 +314,7 @@ namespace Dovus.Game.Skills
                 alpha: _combat != null ? _combat.Manifestation.ExecutorFieldDiskAlpha : 0.6f);
             if (view != null)
                 view.name = "MechanicGuardTrigger";
-            bool talisman = EquippedProfile != null && EquippedProfile.Passive.Id == "kutsal_etki";
+            bool talisman = EquippedProfile != null && EquippedProfile.Passive.Kind == WeaponPassiveKind.KutsalEtki;
             _guardTriggers.Add(new GuardTrigger
             {
                 Id = ++_nextGuardId,

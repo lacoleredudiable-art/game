@@ -23,7 +23,7 @@
 | Boss — Core | `Core/Combat/BossVitals.cs`, `Core/Combat/BossAttack.cs`, `Core/Combat/BossPoise.cs`, `Core/Combat/ExchangeResolver.cs`, `Core/Combat/BossAttackKindPicker.cs` | `ExchangeResolver.Resolve`, `BossVitals` |
 | Boss — App | `App/Boss/BossAttackSelector.cs`, `App/Boss/BossBrain.cs` | `BossAttackSelector.TrySelect`, `BossBrain.Tick` |
 | Boss — Game | `Game/Boss/BossDirector.cs`, `Game/Boss/BossReactor.cs`, `Game/Boss/BossVisual.cs`, `Game/Boss/BossTelegraph.cs`, `Game/Boss/HostileTargets.cs` | `BossDirector.Update` |
-| Silah / ekipman / pasif | `Core/Equipment/EquipmentCatalog.cs`, `Core/Equipment/WeaponSwap.cs`, `Core/Combat/SlotPassiveDirector.cs`, `Game/Weapons/WeaponSO.cs` | `WeaponSwap`, `SlotPassiveDirector` |
+| Silah / ekipman / pasif | `Core/Equipment/EquipmentCatalog.cs`, `Core/Equipment/WeaponPassiveKind.cs`, `Core/Equipment/WeaponSwap.cs`, `Core/Combat/SlotPassiveDirector.cs`, `Game/Weapons/WeaponSO.cs` | `WeaponSwap`, `SlotPassiveDirector`, `WeaponPassiveKind` |
 | Silah görselleri / el prop | `Game/Weapons/WeaponVisualRegistry.cs`, `Game/Weapons/WeaponHandProps.cs`, `Game/Weapons/WeaponArchetypeMap.cs`, `Game/Actors/ActorVisual.cs` | `WeaponVisualRegistry` (SO), `WeaponHandProps.Awake` |
 | Portal / sınır / takım | `Core/Portal/PortalSystem.cs`, `Core/Border/BorderMode.cs`, `Core/Team/TeamComboSystem.cs`, `App/Team/TeamModifierTable.cs`, `Game/Team/PortalBorderTeamHost.cs` | `PortalSystem.Cast`, `PortalSystem.Tick`, `PortalBorderTeamHost.Update`; portal/takım skill kimliği → `engine.portal_op` / `engine.team_op` |
 | Oyuncu can / mana / diriliş | `App/Actors/PlayerHealth.cs`, `Game/Actors/PlayerVitals.cs`, `Game/Actors/PlayerResource.cs`, `Core/Combat/ResourceTracker.cs` | `PlayerVitals.Tick`, `PlayerResource.Update` |

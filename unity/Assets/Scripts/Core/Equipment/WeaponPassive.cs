@@ -114,49 +114,49 @@ namespace Dovus.Core.Equipment
             // Kutsal etki kuşanılıyken fiil uyumuna bakmaz: şifa, kalkan ve buff büyüklüğü.
             if (!query.PassiveEnabled)
             {
-                if (spec.Id == "kutsal_etki")
+                if (spec.Kind == WeaponPassiveKind.KutsalEtki)
                     return HolyMods(spec.PowerMult);
                 return WeaponPassiveMods.Identity;
             }
-            switch (spec.Id)
+            switch (spec.Kind)
             {
-                case "sirt_vurusu":
+                case WeaponPassiveKind.SirtVurusu:
                     if (!query.Harmful || query.BehindAngleDeg > spec.ArcDeg * 0.5f)
                         return WeaponPassiveMods.Identity;
                     return new WeaponPassiveMods(spec.DamageMult, 1f, 1f, 0f, false, 0f, false, 0f, false, false, 0f, 0f, false, 1f, 1f);
-                case "genis_yay":
+                case WeaponPassiveKind.GenisYay:
                     return new WeaponPassiveMods(
                         1f, 1f, 1f, 0f, false, 0f,
                         MeleeArc.FriendlyVerb(query.VerbId), spec.ArcDeg,
                         false, false, 0f, 0f, false, 1f, 1f);
-                case "yere_cakma":
+                case WeaponPassiveKind.YereCakma:
                     if (!query.Harmful)
                         return WeaponPassiveMods.Identity;
                     return new WeaponPassiveMods(1f, 1f, 1f, 0f, true, spec.StunSec, false, 0f, false, false, 0f, 0f, false, 1f, 1f);
-                case "karsi_saldiri":
+                case WeaponPassiveKind.KarsiSaldiri:
                     if (!query.BlockedRecently)
                         return WeaponPassiveMods.Identity;
                     return new WeaponPassiveMods(spec.DamageMult, 1f, 1f, 0f, false, 0f, false, 0f, false, false, 0f, 0f, false, 1f, 1f);
-                case "kosu_atisi":
+                case WeaponPassiveKind.KosuAtisi:
                     if (query.SinceMovedSec > spec.MoveWindowSec)
                         return WeaponPassiveMods.Identity;
                     float add = Math.Max(0f, spec.CritChance - spec.BaseCrit);
                     return new WeaponPassiveMods(1f, 1f, 1f, add, false, 0f, false, 0f, false, false, 0f, 0f, false, 1f, 1f);
-                case "sabit_nisan":
+                case WeaponPassiveKind.SabitNisan:
                     if (query.SinceMovedSec < spec.StillSec)
                         return WeaponPassiveMods.Identity;
                     return new WeaponPassiveMods(spec.DamageMult, 1f, 1f, 0f, false, 0f, false, 0f, false, false, 0f, 0f, false, 1f, 1f);
-                case "uzun_buyu":
+                case WeaponPassiveKind.UzunBuyu:
                     if (!query.Sustained)
                         return WeaponPassiveMods.Identity;
                     return new WeaponPassiveMods(1f, 1f, spec.DurationMult, 0f, false, 0f, false, 0f, false, false, 0f, 0f, false, 1f, 1f);
-                case "kutsal_etki":
+                case WeaponPassiveKind.KutsalEtki:
                     return HolyMods(spec.PowerMult);
-                case "dolu_sayfa":
+                case WeaponPassiveKind.DoluSayfa:
                     if (spec.EveryNth <= 0 || query.ChainIndex <= 0 || query.ChainIndex % spec.EveryNth != 0)
                         return WeaponPassiveMods.Identity;
                     return new WeaponPassiveMods(spec.DamageMult, 1f, 1f, 0f, false, 0f, false, 0f, false, false, 0f, 0f, false, 1f, 1f);
-                case "capraz_ates":
+                case WeaponPassiveKind.CaprazAtes:
                     if (query.OrbAngleDeg < spec.AngleDeg)
                         return WeaponPassiveMods.Identity;
                     return new WeaponPassiveMods(spec.DamageMult, 1f, 1f, 0f, false, 0f, false, 0f, false, false, 0f, 0f, false, 1f, 1f);
@@ -174,7 +174,7 @@ namespace Dovus.Core.Equipment
         /// </summary>
         public static float HolyMagnitude(WeaponCombatProfile profile)
         {
-            if (profile != null && profile.Passive.Id == "kutsal_etki" && profile.Passive.PowerMult > 0f)
+            if (profile != null && profile.Passive.Kind == WeaponPassiveKind.KutsalEtki && profile.Passive.PowerMult > 0f)
                 return profile.Passive.PowerMult;
             return 1f;
         }
