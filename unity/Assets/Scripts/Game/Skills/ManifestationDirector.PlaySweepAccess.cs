@@ -41,9 +41,9 @@ namespace Dovus.Game.Skills
 
         public void SweepClearPending() => _pending.Clear();
 
-        public float SweepClosingChainBonus => _closingChainBonus;
+        public float SweepClosingChainBonus => CastSession.ClosingChainBonus;
 
-        public void SweepSetClosingChainBonus(float value) => _closingChainBonus = value;
+        public void SweepSetClosingChainBonus(float value) => CastSession.ClosingChainBonus = value;
 
         public MechanicGrammar SweepMechanicEngine => MechanicEngine;
 

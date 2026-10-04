@@ -23,7 +23,7 @@ namespace Dovus.Game.Skills
     /// </summary>
     public sealed partial class ManifestationDirector
     {
-        WeaponSwapState _weaponSwap;
+        internal WeaponSwapState _weaponSwap;
 
         public WeaponSwapState WeaponSwap => _weaponSwap;
 
@@ -32,7 +32,7 @@ namespace Dovus.Game.Skills
         {
             get
             {
-                EnsureSkillServices();
+              EnsureSkillServices();
                 return _weaponLoadout.CycleWeapons;
             }
         }
@@ -54,16 +54,16 @@ namespace Dovus.Game.Skills
             LastFactorySkill = null;
             _weaponSwap?.SetLoadout(primary, secondary);
             SyncCycleIndex();
-            SyncVisualDelivery();
+          SyncVisualDelivery();
             LogLoadout("build");
         }
 
-        readonly SustainedCastLock _sustainedCast = new SustainedCastLock();
+        internal readonly SustainedCastLock _sustainedCast= new SustainedCastLock();
 
         bool SustainedSkillActive(double worldMs) => _sustainedCast.Active(worldMs);
 
         /// <summary>O10: kanallı/basılı skill cast edildi → süresi boyunca swap kilitli.</summary>
-        void NoteSustainedCast(in SkillResolution skill)
+        internal void NoteSustainedCast(in SkillResolution skill)
         {
             if (!IsSustained(skill) || _clock == null)
                 return;
@@ -149,9 +149,9 @@ namespace Dovus.Game.Skills
             LastFactorySkill = null;
             OnWeaponSwapCompleted(_equippedWeapon);
             SyncCycleIndex();
-            SyncVisualDelivery();
+          SyncVisualDelivery();
             if (_weaponSwap.Rules.CancelsCombo)
-                _closingChainBonus = 1f;
+                CastSession.ClosingChainBonus = 1f;
             LogLoadout("swap");
         }
 
@@ -162,7 +162,7 @@ namespace Dovus.Game.Skills
         EquipmentItem DefaultReserveWeapon(EquipmentItem primary)
         {
             bool primaryRanged = SkillExecutorRouter.IsRangedWeapon(primary);
-            EnsureSkillServices();
+          EnsureSkillServices();
             IReadOnlyList<EquipmentItem> cycle = _weaponLoadout.CycleWeapons;
             for (int i = 0; i < cycle.Count; i++)
             {
@@ -177,7 +177,7 @@ namespace Dovus.Game.Skills
 
         void SyncCycleIndex()
         {
-            EnsureSkillServices();
+          EnsureSkillServices();
             _weaponLoadout.SyncCycleIndex();
         }
 

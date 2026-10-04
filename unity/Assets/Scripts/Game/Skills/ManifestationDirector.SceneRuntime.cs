@@ -6,9 +6,9 @@ namespace Dovus.Game.Skills
 {
     public sealed partial class ManifestationDirector
     {
-        ISkillSceneRuntime _sceneRuntime;
-        SceneLiveRegistry<TargetableHost> _liveTargetables;
-        SceneLiveRegistry<SummonExecutor> _liveSummons;
+        internal ISkillSceneRuntime _sceneRuntime;
+        internal SceneLiveRegistry<TargetableHost> _liveTargetables;
+        internal SceneLiveRegistry<SummonExecutor> _liveSummons;
 
         public void BindSceneRuntime(ISkillSceneRuntime runtime) => _sceneRuntime = runtime;
 

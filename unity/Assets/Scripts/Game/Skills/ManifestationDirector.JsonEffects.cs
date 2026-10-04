@@ -19,135 +19,135 @@ namespace Dovus.Game.Skills
     {
         static void JsonLog(string message) => Mechanics.JsonEffectRuntime.JsonLog(message);
 
-        int FriendlyTargetCap(in SkillResolution skill)
+        internal int FriendlyTargetCap(in SkillResolution skill)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             return _jsonEffects.FriendlyTargetCap(skill);
         }
 
-        void NoteJsonCast(in SkillResolution skill, ClosingHit closing)
+        internal void NoteJsonCast(in SkillResolution skill, ClosingHit closing)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             _jsonEffects.NoteJsonCast(skill, closing);
         }
 
         void TickJsonEffects(double worldMs)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             _jsonEffects.Tick(worldMs);
         }
 
         void ApplyJsonSelfCast(MechanicPlan plan, float reflectRatio, float windowSec, double now)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             _jsonEffects.ApplyJsonSelfCast(plan, reflectRatio, windowSec, now);
         }
 
         void CaptureBuffOverflow(MechanicPlan plan, double now)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             _jsonEffects.CaptureBuffOverflow(plan, now);
         }
 
         float ConsumeOverflowBonus(bool isBasicStrike)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             return _jsonEffects.ConsumeOverflowBonus(isBasicStrike);
         }
 
-        void OnJsonShieldBlocked()
+        internal void OnJsonShieldBlocked()
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             _jsonEffects.OnJsonShieldBlocked();
         }
 
-        void ApplyReflectedDamage(float amount)
+        internal void ApplyReflectedDamage(float amount)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             _jsonEffects.ApplyReflectedDamage(amount);
         }
 
         void ApplyStolenArmor(MechanicEffect e, List<string> applied)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             _jsonEffects.ApplyStolenArmor(e, applied);
         }
 
         void ApplyStatusAdd(MechanicEffect e, List<string> applied)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             _jsonEffects.ApplyStatusAdd(e, applied);
         }
 
         void LiftBoss(List<string> applied)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             _jsonEffects.LiftBoss(applied);
         }
 
         void ApplyMirroredDebuff(MechanicPlan plan)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             _jsonEffects.ApplyMirroredDebuff(plan);
         }
 
-        void ApplyPurgePower(in SkillResolution skill, int removed)
+        internal void ApplyPurgePower(in SkillResolution skill, int removed)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             _jsonEffects.ApplyPurgePower(skill, removed);
         }
 
-        void ShareFriendlyStatuses(in SkillResolution skill, StatusBoard applied)
+        internal void ShareFriendlyStatuses(in SkillResolution skill, StatusBoard applied)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             _jsonEffects.ShareFriendlyStatuses(skill, applied);
         }
 
-        void ApplyHealOverflow(in SkillResolution skill, int amount, int healed, bool toAlly)
+        internal void ApplyHealOverflow(in SkillResolution skill, int amount, int healed, bool toAlly)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             _jsonEffects.ApplyHealOverflow(skill, amount, healed, toAlly);
         }
 
-        bool TryBounceFriendly(float power)
+        internal bool TryBounceFriendly(float power)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             return _jsonEffects.TryBounceFriendly(power);
         }
 
-        bool LandingFieldAllows(in SkillResolution skill)
+        internal bool LandingFieldAllows(in SkillResolution skill)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             return _jsonEffects.LandingFieldAllows(skill);
         }
 
-        bool AoeReachedMotionHit(in MotionHit hit)
+        internal bool AoeReachedMotionHit(in MotionHit hit)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             return _jsonEffects.AoeReachedMotionHit(hit);
         }
 
-        bool BasicCadenceReady(double now)
+        internal bool BasicCadenceReady(double now)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             return _jsonEffects.BasicCadenceReady(now);
         }
 
-        int BasicHitsNow()
+        internal int BasicHitsNow()
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             return _jsonEffects.BasicHitsNow();
         }
 
-        void ScheduleBasicSubHits(ClosingHit closing, int hits, float reach)
+        internal void ScheduleBasicSubHits(ClosingHit closing, int hits, float reach)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             _jsonEffects.ScheduleBasicSubHits(closing, hits, reach);
         }
 
-        void ApplyBasicExtras(float dealt, int hits)
+        internal void ApplyBasicExtras(float dealt, int hits)
         {
-            EnsureMechanicsServices();
+          EnsureMechanicsServices();
             _jsonEffects.ApplyBasicExtras(dealt, hits);
         }
     }

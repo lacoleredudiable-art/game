@@ -1,4 +1,5 @@
 using Dovus.App.Casting;
+using Dovus.Game.Skills.State;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
@@ -42,9 +43,7 @@ namespace Dovus.Game.Skills
         }
 
         readonly List<DelayedLaunch> _delayedLaunches = new();
-        VerbExecutionData _verbData;
-        float _selfDamageBuff;
-        double _selfDamageBuffUntilMs;
+        internal VerbExecutionData _verbData;
         float _emHealRatio;
         double _emHealUntilMs;
 
@@ -74,7 +73,7 @@ namespace Dovus.Game.Skills
                     vitals.ApplyHeal(heal);
             }
 
-            NoteShieldBlockIfGuarding();
+          NoteShieldBlockIfGuarding();
             bool crit = _playerStatus != null && _playerStatus.LastHitWasCrit;
             Vector3 at = _player != null ? _player.position + Vector3.up * SkillsManifestationDefaults.VerbAimHeightAbovePlayerM : Vector3.zero;
             _damageHud?.ShowDamage(incomingDamage, crit, at, victimIsPlayer: true);
@@ -102,7 +101,7 @@ namespace Dovus.Game.Skills
             _playerStatus?.ClearCastMobility();
         }
 
-        bool TryVerbHitbox(in SkillResolution skill, out VerbHitboxSpec spec)
+        internal bool TryVerbHitbox(in SkillResolution skill, out VerbHitboxSpec spec)
         {
             spec = default;
             return _verbData != null && _verbData.TryGetHitbox(skill, out spec) && !spec.IsEmpty;
@@ -110,16 +109,19 @@ namespace Dovus.Game.Skills
 
         float SelfDamageBuffMult()
         {
-            if (_clock == null || _clock.Director.WorldTimeMs >= _selfDamageBuffUntilMs)
+            if (_clock == null)
                 return 1f;
-            return 1f + _selfDamageBuff;
+            return SelfDamageBuffRules.DamageMultiplier(
+                _clock.Director.WorldTimeMs,
+                SkillWorld.SelfDamageBuffUntilMs,
+                SkillWorld.SelfDamageBuff);
         }
 
         /// <summary>
         /// Güçlendirme buff_damage + Yükseltme self_damage_buff (buff_duration_sec) ve
         /// Yansıma/Aynalama reflect_ratio (reflect_duration_sec). lifetime_add süreye eklenir.
         /// </summary>
-        void ApplySelfCastEffects(in SkillResolution skill)
+        internal void ApplySelfCastEffects(in SkillResolution skill)
         {
             if (skill.IsEmpty || _clock == null)
                 return;
@@ -139,8 +141,8 @@ namespace Dovus.Game.Skills
             // 8-9 hasar_buff koruyucu tetiktedir; kalıp/cast anında bir daha yazılmaz.
             if (buff > 0f && buffSec > 0f && GuardTriggerDelivery.AllowImmediate(mechanicPlan, "hasar_buff"))
             {
-                _selfDamageBuff = buff;
-                _selfDamageBuffUntilMs = now + (buffSec + lifetimeAdd) * SkillsTimeDefaults.SecToMs;
+                SkillWorld.SelfDamageBuff = buff;
+                SkillWorld.SelfDamageBuffUntilMs = now + (buffSec + lifetimeAdd) * SkillsTimeDefaults.SecToMs;
             }
 
             float reflect = engine.ReflectRatio(0f);
@@ -163,7 +165,7 @@ namespace Dovus.Game.Skills
         /// Hareket + Sıçrama bounce_targets → dash bitince ikinci adım (bounce_damage_mult;
         /// hitbox_vfx.sifat_override.3 chain_count=2, skill 3-3 "Çift dash").
         /// </summary>
-        void ScheduleFollowUpLaunches(
+        internal void ScheduleFollowUpLaunches(
             SkillExecutorKind kind,
             PendingClosing pending,
             in SkillResolution skill,
@@ -204,7 +206,7 @@ namespace Dovus.Game.Skills
                 Motion = motionCopy,
                 EffectMult = mult,
                 Logic = logic,
-                SlotCastId = _slotQueryCastId
+                SlotCastId = CastSession.SlotQueryCastId
             });
         }
 
@@ -216,15 +218,15 @@ namespace Dovus.Game.Skills
                 if (worldMs < d.DueMs)
                     continue;
                 _delayedLaunches.RemoveAt(i);
-                int prevCast = _slotQueryCastId;
-                _slotQueryCastId = d.SlotCastId;
+                int prevCast = CastSession.SlotQueryCastId;
+                CastSession.SlotQueryCastId = d.SlotCastId;
                 try
                 {
-                    TryLaunchSkillExecutor(d.Kind, d.Pending, d.Skill, d.Motion, d.EffectMult, d.Logic, d.SlotCastId);
+                  TryLaunchSkillExecutor(d.Kind, d.Pending, d.Skill, d.Motion, d.EffectMult, d.Logic, d.SlotCastId);
                 }
                 finally
                 {
-                    _slotQueryCastId = prevCast;
+                    CastSession.SlotQueryCastId = prevCast;
                 }
             }
         }
@@ -234,7 +236,7 @@ namespace Dovus.Game.Skills
         /// F1: eskiden Stasis'ti ve oyuncuyu ~0,3 sn donduruyordu (BlocksMovement + BlocksCast);
         /// artık skill hareketleriyle aynı donmayan dokunulmazlık penceresi. Düşmana etkisi yok.
         /// </summary>
-        void ApplySpawnIFrame(in SkillResolution skill)
+        internal void ApplySpawnIFrame(in SkillResolution skill)
         {
             int ms = _verbData?.IFrameMsFor((SkillId)skill.Identity.Id) ?? 0;
             if (ms <= 0 || _player == null)
@@ -243,7 +245,7 @@ namespace Dovus.Game.Skills
         }
 
         /// <summary>Minion vuruşu: ham hasar boru hattından (zırh, kritik, ölçek bir kez).</summary>
-        float ApplyMinionHit(in SkillResolution skill, float raw)
+        internal float ApplyMinionHit(in SkillResolution skill, float raw)
         {
             if (_bossVitals == null || _bossVitals.IsDown || raw <= 0f)
                 return 0f;
@@ -252,7 +254,7 @@ namespace Dovus.Game.Skills
             float mult = skill.Scaling.DamageMult > 0f ? skill.Scaling.DamageMult : 1f;
             if (_playerStatus != null)
                 mult *= _playerStatus.Board.OutgoingDamageMult;
-            mult *= _slotPassives?.DamageMultFor(_slotQueryCastId) ?? 1f;
+            mult *= _slotPassives?.DamageMultFor(CastSession.SlotQueryCastId) ?? 1f;
             mult *= SelfDamageBuffMult();
 
             EnsureBossArmor();
@@ -268,7 +270,7 @@ namespace Dovus.Game.Skills
             }
             bool ignoreArmor = !skill.IsEmpty && !skill.Engine.IsNull
                 && skill.Engine.IgnoreArmor(false);
-            float slotPen = _slotPassives?.ArmorPenPercentFor(_slotQueryCastId) ?? 0f;
+            float slotPen = _slotPassives?.ArmorPenPercentFor(CastSession.SlotQueryCastId) ?? 0f;
             float penPct = SlotPassiveCombat.CombineArmorPen(0f, ignoreArmor, slotPen);
             var dealt = DamagePipeline.Resolve(new DamageQuery
             {
@@ -293,7 +295,7 @@ namespace Dovus.Game.Skills
             // S8: minyon kritikleri de gösterilir.
             _damageHud?.ShowDamage(damage, dealt.WasCrit, BossHitPoint(), DamageTint(), victimIsBoss: true);
             float lifesteal = ClosingHealRules.AdjectiveLifesteal(skill);
-            lifesteal += _slotPassives?.LifestealAddFor(_slotQueryCastId) ?? 0f;
+            lifesteal += _slotPassives?.LifestealAddFor(CastSession.SlotQueryCastId) ?? 0f;
             if (lifesteal > 0f && _player != null)
             {
                 var vitals = CachedPlayerVitals();
@@ -302,12 +304,12 @@ namespace Dovus.Game.Skills
                     vitals.ApplyHeal(heal);
             }
             _bossVitals.ApplyDamage(damage);
-            NotifyBossStruck(false, allowHitstop: false);
+          NotifyBossStruck(false, allowHitstop: false);
             return damage;
         }
 
         /// <summary>Kendine/dost alan boss'a da değiyor mu (düşmanca sıfat durumları için).</summary>
-        bool BossWithin(Vector3 center, float radiusM)
+        internal bool BossWithin(Vector3 center, float radiusM)
         {
             if (_boss == null)
                 return false;

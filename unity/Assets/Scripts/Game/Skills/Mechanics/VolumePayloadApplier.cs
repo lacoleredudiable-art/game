@@ -19,10 +19,10 @@ namespace Dovus.Game.Skills.Mechanics
 {
     public sealed class VolumePayloadApplier
     {
-        readonly IJsonEffectHost _host;
+        readonly Hosts.MdMechanicsHost _host;
         readonly JsonEffectRuntime _json;
 
-        public VolumePayloadApplier(IJsonEffectHost host, JsonEffectRuntime json)
+        public VolumePayloadApplier(Hosts.MdMechanicsHost host, JsonEffectRuntime json)
         {
             _host = host;
             _json = json;
@@ -125,9 +125,9 @@ namespace Dovus.Game.Skills.Mechanics
                         break;
                     float buff = (float)Math.Abs(e.Amount) * level * _host.WeaponFriendlyScale();
                     double now = JsonNow;
-                    if (now >= _host.SelfDamageBuffUntilMs || _host.SelfDamageBuff < buff)
-                        _host.SelfDamageBuff = buff;
-                    _host.SelfDamageBuffUntilMs = Math.Max(_host.SelfDamageBuffUntilMs, now + refreshMs);
+                    if (now >= _host.World.SelfDamageBuffUntilMs || _host.World.SelfDamageBuff < buff)
+                        _host.World.SelfDamageBuff = buff;
+                    _host.World.SelfDamageBuffUntilMs = Math.Max(_host.World.SelfDamageBuffUntilMs, now + refreshMs);
                     break;
             }
         }

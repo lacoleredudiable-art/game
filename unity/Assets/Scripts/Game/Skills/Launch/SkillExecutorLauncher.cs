@@ -16,6 +16,7 @@ using Dovus.Game.Data;
 using Dovus.Game.Diagnostics;
 using Dovus.Game.Skills.Execution;
 using Dovus.Game.Skills;
+using Dovus.Game.Skills.Hosts;
 using System;
 using UnityEngine;
 
@@ -23,10 +24,10 @@ namespace Dovus.Game.Skills.Launch
 {
     public sealed class SkillExecutorLauncher
     {
-        readonly ISkillExecutorLaunchHost _host;
+        readonly MdLaunchServicesHost _host;
         readonly HitboxSizingApplier _hitbox;
 
-        public SkillExecutorLauncher(ISkillExecutorLaunchHost host, HitboxSizingApplier hitbox)
+        public SkillExecutorLauncher(MdLaunchServicesHost host, HitboxSizingApplier hitbox)
         {
             _host = host;
             _hitbox = hitbox;

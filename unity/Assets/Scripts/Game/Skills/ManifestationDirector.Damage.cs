@@ -42,7 +42,7 @@ namespace Dovus.Game.Skills
             }
         }
 
-        void RefreshDefenderArmor()
+        internal void RefreshDefenderArmor()
         {
             if (_weaponArmor == null && ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
                 _weaponArmor = WeaponArmorCatalog.FromDocument(design.Document);
@@ -64,7 +64,7 @@ namespace Dovus.Game.Skills
             _weaponArmor ??= WeaponArmorCatalog.FromDocument(design.Document);
         }
 
-        DamageOutcome ComputeOutgoingHit(
+        internal DamageOutcome ComputeOutgoingHit(
             ClosingHit closing,
             SkillResolution skill,
             bool isBasicStrike,
@@ -73,16 +73,16 @@ namespace Dovus.Game.Skills
             float? chainBonusOverride)
         {
             EnsureBossArmor();
-            RefreshDefenderArmor();
+          RefreshDefenderArmor();
 
             float outMult = 1f;
             if (_playerStatus != null)
                 outMult *= _playerStatus.Board.OutgoingDamageMult;
-            outMult *= _slotPassives?.DamageMultFor(_slotQueryCastId) ?? 1f;
+            outMult *= _slotPassives?.DamageMultFor(CastSession.SlotQueryCastId) ?? 1f;
             outMult *= TeamHub.DamageMult;
             outMult *= SelfDamageBuffMult();
             outMult *= ConsumeOverflowBonus(isBasicStrike);
-            outMult *= chainBonusOverride ?? _closingChainBonus;
+            outMult *= chainBonusOverride ?? CastSession.ClosingChainBonus;
             float eqMult = 1f;
             if (_equipmentBonus != null && !isBasicStrike && !skill.IsEmpty)
             {
@@ -137,7 +137,7 @@ namespace Dovus.Game.Skills
             // O8: Yay'ın "sonraki vuruş zırh yok" bonusu yalnız gerçekten işe yaradığında (skill zaten delmiyorsa) tüketilir.
             bool weaponArmorBonus = WeaponIgnoresArmor && !skillIgnoresArmor;
             bool ignoreArmor = WeaponIgnoresArmor || skillIgnoresArmor;
-            float slotPen = _slotPassives?.ArmorPenPercentFor(_slotQueryCastId) ?? 0f;
+            float slotPen = _slotPassives?.ArmorPenPercentFor(CastSession.SlotQueryCastId) ?? 0f;
             float penPct = SlotPassiveCombat.CombineArmorPen(0f, ignoreArmor, slotPen);
 
             double now = _clock != null ? _clock.Director.WorldTimeMs : 0;
@@ -164,7 +164,7 @@ namespace Dovus.Game.Skills
                     ? _equippedWeapon.PoiseMult
                     : 1f;
                 float bonusPoise = HitMods(skill, isBasicStrike, false).PoiseMult;
-                float slotPoise = _slotPassives?.PoiseDamageMultFor(_slotQueryCastId) ?? 1f;
+                float slotPoise = _slotPassives?.PoiseDamageMultFor(CastSession.SlotQueryCastId) ?? 1f;
                 if (slotPoise <= 0f)
                     slotPoise = 1f;
                 poise = WeaponPassiveRules.OutgoingPoise(
@@ -209,14 +209,14 @@ namespace Dovus.Game.Skills
             return outcome;
         }
 
-        float HealBuffMultiplier(in SkillResolution skill)
+        internal float HealBuffMultiplier(in SkillResolution skill)
         {
             float healMult = _playerStatus != null ? _playerStatus.Board.HealEffectivenessMult : 1f;
-            healMult *= _closingChainBonus;
+            healMult *= CastSession.ClosingChainBonus;
             return healMult;
         }
 
-        void ApplyArmorShred(in SkillResolution skill, ActorStatusHost target)
+        internal void ApplyArmorShred(in SkillResolution skill, ActorStatusHost target)
         {
             if (skill.IsEmpty || skill.Engine.IsNull)
                 return;

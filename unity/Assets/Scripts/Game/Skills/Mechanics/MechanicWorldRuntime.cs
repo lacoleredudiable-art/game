@@ -28,7 +28,7 @@ namespace Dovus.Game.Skills.Mechanics
 {
     public sealed partial class MechanicWorldRuntime
     {
-        readonly IMechanicWorldHost _host;
+        readonly Hosts.MdMechanicsHost _host;
         VolumePayloadApplier _payload;
         JsonEffectRuntime _json;
         readonly List<MechanicWorldBody> _bodies = new();
@@ -51,7 +51,7 @@ namespace Dovus.Game.Skills.Mechanics
         };
         static readonly StatusKind[] SlowOnly = { StatusKind.Slow };
 
-        public MechanicWorldRuntime(IMechanicWorldHost host) => _host = host;
+        public MechanicWorldRuntime(Hosts.MdMechanicsHost host) => _host = host;
 
         internal void Wire(VolumePayloadApplier payload, JsonEffectRuntime json)
         {
@@ -229,8 +229,8 @@ namespace Dovus.Game.Skills.Mechanics
                 NextTickMs = worldMs,
                 TickMs = Math.Max(10, baseTick * SkillsTimeDefaults.SecToMs / Math.Max(MechanicWorldDefaults.TickRateMinHz, tickRate)),
                 StartMs = worldMs,
-                Skill = _host.JsonCastSkill,
-                Closing = _host.JsonCastClosing,
+                Skill = _host.Cast.JsonCastSkill,
+                Closing = _host.Cast.JsonCastClosing,
                 ArmAtMs = worldMs + JsonEffectRules.TrapArmSec(plan.Body, _host.JsonRules) * SkillsTimeDefaults.SecToMs,
                 Erase = profile.ProjectileBarrier ? _host.ProjectileEraseSpec(plan) : default,
                 NextEraseMs = worldMs
@@ -257,8 +257,8 @@ namespace Dovus.Game.Skills.Mechanics
                     ? (_host.Boss != null ? _host.Boss.transform : null)
                     : (_host.Ally != null ? _host.Ally.transform : _host.Player),
                 UntilMs = worldMs + Math.Max(100, plan.Body.LifeSec * SkillsTimeDefaults.SecToMs),
-                Skill = _host.JsonCastSkill,
-                Closing = _host.JsonCastClosing,
+                Skill = _host.Cast.JsonCastSkill,
+                Closing = _host.Cast.JsonCastClosing,
                 FlowTickMs = linkTickMs,
                 NextFlowMs = worldMs + linkTickMs
             });
@@ -402,7 +402,7 @@ namespace Dovus.Game.Skills.Mechanics
 
         public void ApplyStatusTransfer(List<string> applied)
         {
-            _host.LastStatusTransferMoved = 0;
+            _host.World.LastStatusTransferMoved = 0;
             if (_host.BossStatus == null)
                 return;
             StatusBoard source = _host.Ally?.Board ?? _host.PlayerStatus?.Board;
@@ -421,7 +421,7 @@ namespace Dovus.Game.Skills.Mechanics
                 moved.Add(kind);
             }
             source.RemoveKinds(moved);
-            _host.LastStatusTransferMoved = moved.Count;
+            _host.World.LastStatusTransferMoved = moved.Count;
             if (moved.Count > 0)
                 applied.Add("durum aktarma " + string.Join(",", moved));
         }

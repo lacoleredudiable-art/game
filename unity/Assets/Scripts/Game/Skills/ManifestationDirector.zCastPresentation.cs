@@ -32,13 +32,13 @@ namespace Dovus.Game.Skills
 
         public void OnSkillShout(SkillResolution skill, IReadOnlyList<SentenceWord> words)
         {
-            EnsureLaunchServices();
+          EnsureLaunchServices();
             _skillPresentation.ShoutSkill(skill, words);
         }
 
         public void OnMotionAnnotation(SkillResolution skill, in SkillMotionPlan plan)
         {
-            EnsureLaunchServices();
+          EnsureLaunchServices();
             _castSideEffects.AnnotateMotion(skill, plan);
         }
 
