@@ -103,6 +103,16 @@ public class ResourceTrackerTests
     }
 
     [Test]
+    public void Tick_ZeroDelta_NoRegen()
+    {
+        var r = new ResourceTracker(maxMana: 100f, regenPerSec: 8f, regenDelayAfterCastSec: 0f);
+        r.Consume(50f);
+        float before = r.Mana;
+        r.Tick(0f);
+        Assert.That(r.Mana, Is.EqualTo(before));
+    }
+
+    [Test]
     public void EnforceResourceCost_DefaultsFalse_AndCopyFrom()
     {
         var a = new Dovus.Core.Tuning.CombatTuning();

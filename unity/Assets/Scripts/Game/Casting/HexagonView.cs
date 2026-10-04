@@ -30,7 +30,7 @@ namespace Dovus.Game.Casting
         Text[] _cdLabels;
         float[] _cdRemainingSec;
         float[] _cdDurationSec;
-        string[] _cdVerbIds;
+        string[] _cdComboKeys;
         bool[] _cdTracked;
         PlayerCooldown _cdSource;
         GameClock _cdClock;
@@ -89,7 +89,7 @@ namespace Dovus.Game.Casting
             _cdLabels = new Text[n + 1];
             _cdRemainingSec = new float[n + 1];
             _cdDurationSec = new float[n + 1];
-            _cdVerbIds = new string[n + 1];
+            _cdComboKeys = new string[n + 1];
             _cdTracked = new bool[n + 1];
             for (int dot = 1; dot <= n; dot++)
             {
@@ -179,7 +179,7 @@ namespace Dovus.Game.Casting
                 return;
 
             _cdTracked[dot] = false;
-            _cdVerbIds[dot] = null;
+            _cdComboKeys[dot] = null;
             _cdDurationSec[dot] = durationSec;
             _cdRemainingSec[dot] = durationSec;
             Layout();
@@ -189,20 +189,20 @@ namespace Dovus.Game.Casting
         /// <summary>
         /// Bağlama 4: gerçek CooldownTracker kalanı — radial fillAmount = rem/duration.
         /// </summary>
-        public void BeginTrackedCooldown(int dot, string verbId, float durationSec, PlayerCooldown source, GameClock clock)
+        public void BeginTrackedCooldown(int dot, string comboKey, float durationSec, PlayerCooldown source, GameClock clock)
         {
             if (_cdRemainingSec == null || dot < 1 || dot >= _cdRemainingSec.Length)
                 return;
-            if (string.IsNullOrEmpty(verbId) || durationSec <= 0f || source == null)
+            if (string.IsNullOrEmpty(comboKey) || durationSec <= 0f || source == null)
                 return;
 
             _cdSource = source;
             _cdClock = clock;
             _cdTracked[dot] = true;
-            _cdVerbIds[dot] = verbId;
+            _cdComboKeys[dot] = comboKey;
             _cdDurationSec[dot] = durationSec;
             double worldMs = clock != null ? clock.Director.WorldTimeMs : 0;
-            _cdRemainingSec[dot] = source.VerbRemainingSec(verbId, worldMs);
+            _cdRemainingSec[dot] = source.ComboRemainingSec(comboKey, worldMs);
             Layout();
             RefreshCooldownVisuals();
         }
@@ -262,16 +262,16 @@ namespace Dovus.Game.Casting
 
         void TickCooldown(int i, float dt, double worldMs, ref bool any)
         {
-            if (_cdTracked != null && _cdTracked[i] && _cdSource != null && !string.IsNullOrEmpty(_cdVerbIds[i]))
+            if (_cdTracked != null && _cdTracked[i] && _cdSource != null && !string.IsNullOrEmpty(_cdComboKeys[i]))
             {
-                float rem = _cdSource.VerbRemainingSec(_cdVerbIds[i], worldMs);
+                float rem = _cdSource.ComboRemainingSec(_cdComboKeys[i], worldMs);
                 if (!Mathf.Approximately(rem, _cdRemainingSec[i]))
                     any = true;
                 _cdRemainingSec[i] = rem;
                 if (rem <= 0f)
                 {
                     _cdTracked[i] = false;
-                    _cdVerbIds[i] = null;
+                    _cdComboKeys[i] = null;
                 }
                 return;
             }

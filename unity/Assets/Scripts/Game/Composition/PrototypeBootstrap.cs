@@ -210,6 +210,7 @@ namespace Dovus.Game.Composition
             var resource = player.AddComponent<PlayerResource>();
             // docs/element-sistemi.json resource_system: 100 / 8 / 1.5
             resource.Bind();
+            resource.BindClock(clock);
 
             var cooldown = player.AddComponent<PlayerCooldown>();
             // docs/element-sistemi.json cooldown_rules: 0.3 / 1

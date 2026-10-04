@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Dovus.Game.Actors
 {
     /// <summary>
-    /// Fiil + global soğuma — PlayerResource'a paralel.
+    /// Kombo + global soğuma — PlayerResource'a paralel.
     /// docs/element-sistemi.json global_rules.cooldown_rules varsayılanları.
     /// Bağlama 4: EnforceCooldown kapısı; false iken hiç kullanılmaz (kozmetik radial kalır).
     /// </summary>
@@ -21,25 +21,29 @@ namespace Dovus.Game.Actors
         }
 
         /// <summary>CombatTuning.EnforceCooldown kapısı — tracker yoksa true (fail-open).</summary>
-        public bool CanStart(string verbId, double worldMs) =>
-            _tracker == null || _tracker.CanStart(verbId, worldMs);
+        public bool CanStart(string comboKey, double worldMs) =>
+            _tracker == null || _tracker.CanStart(comboKey, worldMs);
+
+        /// <summary>Fiil başlatma: yalnız GCD + eşzamanlı cast.</summary>
+        public bool CanStartGlobalGate(double worldMs) =>
+            _tracker == null || _tracker.CanStartGlobalGate(worldMs);
 
         /// <summary>
-        /// Cast bang: GCD + fiil soğuması yazar. Eşzamanlı yuvayı hemen boşaltır
-        /// (max_concurrent uçuş süresi Faz 6; bu turda verb/GCD yeterli).
+        /// Cast bang: GCD + kombo soğuması yazar. Eşzamanlı yuvayı hemen boşaltır
+        /// (max_concurrent uçuş süresi Faz 6; bu turda kombo/GCD yeterli).
         /// </summary>
-        public bool TryBeginCast(string verbId, float verbCooldownSec, double worldMs)
+        public bool TryBeginCast(string comboKey, float comboCooldownSec, double worldMs)
         {
             if (_tracker == null)
                 return false;
-            if (!_tracker.TryStart(verbId, verbCooldownSec, worldMs))
+            if (!_tracker.TryStart(comboKey, comboCooldownSec, worldMs))
                 return false;
             _tracker.CompleteCast();
             return true;
         }
 
-        public float VerbRemainingSec(string verbId, double worldMs) =>
-            _tracker == null ? 0f : _tracker.VerbRemainingSec(verbId, worldMs);
+        public float ComboRemainingSec(string comboKey, double worldMs) =>
+            _tracker == null ? 0f : _tracker.ComboRemainingSec(comboKey, worldMs);
 
         public float GlobalRemainingSec(double worldMs) =>
             _tracker == null ? 0f : _tracker.GlobalRemainingSec(worldMs);
