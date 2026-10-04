@@ -4,6 +4,7 @@ namespace Dovus.Game.Config
 {
     public sealed partial class PrototypeTuning
     {
+        // Mevcut prototip paleti: nötr boss gövdesi, sıcak telegraf ve element renkleri.
         [Header("Renk dili (§10)")]
         public Color PlayerColor = new Color(0.373f, 0.941f, 1f);
         public Color BossColor = new Color(0.18f, 0.19f, 0.22f);
@@ -41,6 +42,9 @@ namespace Dovus.Game.Config
         public Color TelegraphHot = new Color(1f, 0.302f, 0.141f);   // #FF4D24
         public Color TelegraphWarm = new Color(1f, 0.604f, 0.235f);  // #FF9A3C
 
+        // T7.2: LivingEffectView'a gömülü his sayıları (AGENTS kural 3). Değerler T7'den
+        // AYNI taşındı, yalnızca yeri değişti — dovus-sistemi.md'de sayı yok, sapma T7
+        // durum.md'sinde kayıtlı.
         [Header("Tezahür çizgisi (T7.2, LivingEffectView)")]
         public float EffectLineWidthDefaultM = 0.28f;
         public float EffectLineWidthWideM = 0.55f;
@@ -85,6 +89,9 @@ namespace Dovus.Game.Config
         public Vector3 PoseSarsinti = new Vector3(1.2f, 0.55f, 1.2f);
         public Vector3 PoseKabuk = new Vector3(1.15f, 1.05f, 1.15f);
         public Vector3 PoseZehir = new Vector3(1.05f, 0.95f, 1.25f);
+        // Spec'te tavan sayısı yok (uydurma) — T11 kare bütçesi için icat edildi; gerekçe
+        // docs/durum.md T7.2 sapmalarına yazıldı. İz kalıcıdır (§8/T4), süreye bağlı silinmez;
+        // tavan dolunca en eski iz DÖNÜŞTÜRÜLÜR (yok edilip yeniden yaratılmaz).
         [Header("Kalıcı iz tavanı (T7.2, GroundScarField)")]
         public int GroundScarCapCount = 60;
     }

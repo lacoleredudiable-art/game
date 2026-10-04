@@ -13,6 +13,10 @@ namespace Dovus.Game.Config
         public float ArenaWallThicknessM = 1.4f;
         /// <summary>Quaternius arena prefab ölçeği — daire salonda 1.</summary>
         public float ArenaVisualScale = 1.0f;
+        // Ambiyans portu (PR #43 "deneme sahnesi"): gri bulutlu ışık, ~%35 doygunluk düşüşü,
+        // açık gri sis — sert/sakin ama her şey görünür (karanlık değil, renkli değil). Sıcak
+        // vurgu yalnız lav (LavaDecor/LavaCracks) ve VFX'te kalır. docs'ta sayı yok — PR #43'ün
+        // kendi commit'lerinde kullandığı değerler (DenemeSahnesi_PostFX.asset) buraya taşındı.
         [Header("Arena atmosferi — mobil URP (ambiyans: PR #43 açık gri lav ovası)")]
         public Color AmbientSky = new Color(0.66f, 0.70f, 0.73f);
         public Color AmbientEquator = new Color(0.52f, 0.55f, 0.58f);
