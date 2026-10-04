@@ -171,6 +171,7 @@ namespace Dovus.Game.Composition.Builders
             director.BindTargeting(targeting);
             director.BindHostileTargets(hostileTargets);
             ctx.ManifestationDirector = director;
+            director.WireCastPresentationFeedback();
 
             BossEncounterData.ApplyVolley(combat.Boss, tuning.Boss.ActiveBossResourcePath);
             var projectileHost = directorGo.AddComponent<HostileProjectileHost>();
@@ -192,7 +193,7 @@ namespace Dovus.Game.Composition.Builders
             {
                 DesignWarnings.Warned -= LogDesignWarning;
                 DesignWarnings.Warned += LogDesignWarning;
-                SkillNumberCatalog numbers = SkillNumberCatalog.FromDocument(design.Document);
+                ISkillRepository numbers = SkillNumberCatalog.FromDocument(design.Document);
                 numbers.ApplyCcDurations(combat.Status);
                 numbers.ApplyBasicStrikeRange(combat.Manifestation);
                 director.ConfigureSkillNumbers(numbers);

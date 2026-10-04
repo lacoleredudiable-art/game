@@ -26,7 +26,6 @@ public class CastPipelineTests
         nameof(ICastPort<object>.NoteWeaponCast),
         nameof(ICastPort<object>.OpenSlotCast),
         nameof(ICastPort<object>.Compatibility),
-        nameof(ICastPort<object>.PublishCompatibility),
         nameof(ICastPort<object>.ShouldArmPassive),
         nameof(ICastPort<object>.ApplyResourceCost),
         nameof(ICastPort<object>.ResolveMotion),
@@ -42,7 +41,6 @@ public class CastPipelineTests
         nameof(ICastPort<object>.BeginMechanicPlan),
         nameof(ICastPort<object>.TryLaunchExecutor),
         nameof(ICastPort<object>.ApplyFallbackDelivery),
-        nameof(ICastPort<object>.ShoutSkill),
         nameof(ICastPort<object>.ApplyCooldown),
         nameof(ICastPort<object>.SpawnClosingImpact),
         nameof(ICastPort<object>.SetLastResolvedSkillId),
@@ -82,8 +80,6 @@ public class CastPipelineTests
             Record();
             return ResolveResult;
         }
-        public void NoteDeniedNeedsTwoRunes() => Record();
-
         public void NoteWeaponCast(SkillResolution skill) => Record();
         public int OpenSlotCast()
         {
@@ -102,7 +98,6 @@ public class CastPipelineTests
             return WeaponSkillCompatibility.Neutral;
         }
 
-        public void PublishCompatibility(WeaponSkillCompatibility compatibility) => Record();
         public bool ShouldArmPassive(WeaponSkillCompatibility compatibility)
         {
             Record();
@@ -171,9 +166,7 @@ public class CastPipelineTests
             return FallbackDealt;
         }
 
-        public void ShoutSkill(SkillResolution skill, int ctx) => Record();
         public void ApplyCooldown(SkillResolution skill, int ctx, bool cosmeticIfDisabled) => Record();
-        public void AnnotateMotion(SkillResolution skill, in SkillMotionPlan motion) => Record();
         public void SpawnClosingImpact(int ctx) => Record();
         public void SetLastResolvedSkillId(string skillId) => Record();
         public bool IsHealSkill(SkillResolution skill)
@@ -217,7 +210,6 @@ public class CastPipelineTests
         {
             nameof(ICastPort<object>.ResetClosingChainBonus),
             nameof(ICastPort<object>.ResolveSkill),
-            nameof(ICastPort<object>.NoteDeniedNeedsTwoRunes),
         }));
         Assert.That(port.Calls, Does.Not.Contain(nameof(ICastPort<object>.OpenSlotCast)));
     }

@@ -63,7 +63,7 @@ public class JsonEffectCoverageTests
         ("mode", "dosttan_dosta", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"dosttan_dosta\""),
         ("mode", "dunyada", "unity/Assets/Scripts/Core/Mechanic/MechanicWorldProfile.cs", "Reflector"),
         ("mode", "emme", "unity/Assets/Scripts/Core/Mechanic/DrainNumbers.cs", "TryShare"),
-        ("mode", "faz", "unity/Assets/Scripts/Core/Motion/MotionTemplateCatalog.cs", "\"faz\""),
+        ("mode", "faz", "unity/Assets/Scripts/Core/Motion/MotionTemplateParser.cs", "\"faz\""),
         ("mode", "geri_donus", "unity/Assets/Scripts/Core/Motion/PositionOwnership.cs", "\"isaret_geri_don\""),
         ("mode", "geri_sarma", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicWorldRuntime.cs", "RewindBoss"),
         ("mode", "gizli", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"gizli\""),

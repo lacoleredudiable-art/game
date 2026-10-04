@@ -101,7 +101,7 @@ namespace Dovus.Game.Skills
             public GameTuning Colors => _md._colors;
             public ReactionReadoutHud Readout => _md._readout;
             public SkillMotor Skills => _md._skills;
-            public SkillNumberCatalog SkillNumbers => _md._skillNumbers;
+            public ISkillRepository SkillNumbers => _md._skillNumbers;
             public EquipmentItem EquippedWeapon
             {
                 get => _md._equippedWeapon;

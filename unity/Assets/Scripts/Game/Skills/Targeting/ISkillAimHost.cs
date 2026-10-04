@@ -33,7 +33,7 @@ namespace Dovus.Game.Skills.Targeting
         GameTuning Colors { get; }
         ReactionReadoutHud Readout { get; }
         SkillMotor Skills { get; }
-        SkillNumberCatalog SkillNumbers { get; }
+        ISkillRepository SkillNumbers { get; }
         EquipmentItem EquippedWeapon { get; }
         SkillExecutorRouter SkillExecutorRouter { get; }
 
