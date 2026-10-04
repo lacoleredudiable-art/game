@@ -3,17 +3,6 @@ using System.Linq;
 
 namespace Dovus.Core.Mechanic
 {
-    public enum MechanicActorKind
-    {
-        None,
-        Minion,
-        Turret,
-        Clone,
-        MirrorClone,
-        Guardian,
-        Assassin
-    }
-
     /// <summary>
     /// Gramer planındaki atomları Unity'den bağımsız dünya yeteneklerine indirger.
     /// Etiketler sunumdur; bu profil yalnız gövde/atom/mod verisini okur.

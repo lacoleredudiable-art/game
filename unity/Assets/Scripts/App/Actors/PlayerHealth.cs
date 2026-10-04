@@ -9,19 +9,6 @@ using Dovus.Core.Passives;
 
 namespace Dovus.App.Actors
 {
-    public enum HpLossKind
-    {
-        None,
-        Hit,
-        Down
-    }
-
-    public readonly struct HpLossResult
-    {
-        public HpLossResult(HpLossKind kind) => Kind = kind;
-        public HpLossKind Kind { get; }
-    }
-
     public sealed class PlayerHealth
     {
         int _hp;

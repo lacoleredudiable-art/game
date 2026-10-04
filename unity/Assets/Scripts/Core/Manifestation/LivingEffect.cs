@@ -6,15 +6,6 @@ using Dovus.Core.Tuning;
 
 namespace Dovus.Core.Manifestation
 {
-    public enum LivingEffectPhase
-    {
-        Traveling,
-        Fading,
-        AwaitingClosing,
-        Banging,
-        Dead
-    }
-
     /// <summary>
     /// Tek bir yaşayan etki — Unity bilmez. Sıfat hedef silüeti anında günceller;
     /// görünen silüet MorphLerp ile ona yaklaşır.

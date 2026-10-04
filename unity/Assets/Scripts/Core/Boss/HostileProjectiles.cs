@@ -2,55 +2,6 @@ using System;
 
 namespace Dovus.Core.Boss
 {
-    /// <summary>Mermi yok olma / değişme sebebi (log, tarama sayaçları, ileride RPC).</summary>
-    public enum ProjectileEventKind : byte
-    {
-        Spawned,
-        Expired,
-        HitFriendly,
-        HitHostile,
-        Erased,
-        Absorbed,
-        LinkErased,
-        Reflected,
-        Shrouded,
-        Cleared
-    }
-
-    public readonly struct ProjectileEvent
-    {
-        public ProjectileEvent(ProjectileEventKind kind, int id, float x, float z, float damage)
-        {
-            Kind = kind;
-            Id = id;
-            X = x;
-            Z = z;
-            Damage = damage;
-        }
-
-        public ProjectileEventKind Kind { get; }
-        public int Id { get; }
-        public float X { get; }
-        public float Z { get; }
-        public float Damage { get; }
-    }
-
-    /// <summary>Tek mermi. Team 1 = düşman (boss), 0 = dost (geri gönderilmiş).</summary>
-    public struct Projectile
-    {
-        public int Id;
-        public int OwnerId;
-        public byte Team;
-        public float X, Z, VX, VZ, RadiusM, Damage;
-        public double SpawnMs, DieMs;
-        public bool Reflected;
-        public int TargetId;
-        public bool Homing;
-        /// <summary>Tarama düzeneği: dostlara çarpmaz, yalnız silme/yansıtma kurallarını sınar.</summary>
-        public bool Harmless;
-        public bool Alive;
-    }
-
     /// <summary>
     /// Düşman mermileri: havuzlu, deterministik, Unity'siz (Photon için yeniden oynatılabilir).
     /// Fizik yok; çarpışma düz daire/şerit sorgusuyla. Tavan <see cref="MaxAlive"/> (mobil).
