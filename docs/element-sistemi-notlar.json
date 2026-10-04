@@ -1,0 +1,51 @@
+{
+  "changelog": {
+    "version": "6.1",
+    "date": "2026-09-27",
+    "covers": [
+      "v6.0 kullanıcı kilidi + engine sayıları",
+      "Zaman MP-safe tempo",
+      "parse_lock fiil→sıfat",
+      "element_mult=1.0",
+      "named_recipes",
+      "implementation_priority"
+    ],
+    "from_user_v6_0": true
+  },
+  "lore": {
+    "arketipler": {
+      "Saldırı": "Saldırı",
+      "İyileştirme": "İyileştirme",
+      "Hareket": "Hareket",
+      "Savunma": "Savunma",
+      "Patlama": "Patlama",
+      "Kontrol": "Kontrol",
+      "Zayıflatma": "Zayıflatma",
+      "Güçlendirme": "Güçlendirme",
+      "Arındırma": "Arındırma",
+      "Yansıma": "Yansıma",
+      "Çağırma": "Çağırma",
+      "Zaman": "Zaman"
+    }
+  },
+  "changelog_v6_1": {
+    "version": "6.1.1",
+    "date": "2026-09-27",
+    "type": "additive_patch_on_v6.0",
+    "adds": [
+      "ana_classes_80",
+      "skills_prose_144",
+      "hitbox_vfx",
+      "mobility_cc",
+      "uyumsuz_cizim",
+      "presentation"
+    ],
+    "modifies": [
+      "Zaman prose: slow-mo → tempo",
+      "duplicate class names 38/41/50 disambiguated"
+    ],
+    "kilitli": true,
+    "kilit_tarihi": "2026-09-27",
+    "sonraki_adim": "Unity SO + JSON loader"
+  }
+}
