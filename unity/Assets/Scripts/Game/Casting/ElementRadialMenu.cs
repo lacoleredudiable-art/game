@@ -41,7 +41,7 @@ namespace Dovus.Game.Casting
         readonly List<Text> _labels = new();
         GameTuning _tuning;
         Rect _appliedSafe;
-        float _transitionSec = 0.3f;
+        float _transitionSec = ElementRadialMenuDefaults.TransitionSec;
         float _openedAt;
         float _closedAt;
         int _hoverIndex = -1;
@@ -67,7 +67,7 @@ namespace Dovus.Game.Casting
             _director = director;
             _elements = skills?.ElementPaints ?? Array.Empty<ElementPaintNode>();
             _playerStatus = playerStatus;
-            _transitionSec = Mathf.Max(0.01f, transitionMs / 1000f);
+            _transitionSec = Mathf.Max(ElementRadialMenuDefaults.MinTransitionSec, transitionMs / 1000f);
             Build(canvasRoot, tuning ?? new GameTuning());
             if (_playerStatus != null)
                 _playerStatus.DamageTaken += OnDamageTaken;
@@ -127,7 +127,7 @@ namespace Dovus.Game.Casting
                 rect.anchoredPosition = _chip.anchoredPosition
                     + new Vector2(Mathf.Cos(rad), Mathf.Sin(rad)) * radius;
                 var image = go.AddComponent<Image>();
-                image.color = ParseColor(_elements[i].ColorHex, 0.82f);
+                image.color = ParseColor(_elements[i].ColorHex, ElementRadialMenuDefaults.WedgeFillAlpha);
                 image.raycastTarget = false;
                 var wedgeOutline = go.AddComponent<Outline>();
                 wedgeOutline.effectColor = new Color(1f, 1f, 1f, 0.26f);
@@ -182,7 +182,7 @@ namespace Dovus.Game.Casting
                 ? 1f - Mathf.Clamp01((Time.unscaledTime - _closedAt) / _transitionSec)
                 : Mathf.Clamp01((Time.unscaledTime - _openedAt) / _transitionSec);
             _group.alpha = t;
-            _root.localScale = Vector3.one * Mathf.Lerp(0.72f, 1f, t);
+            _root.localScale = Vector3.one * Mathf.Lerp(ElementRadialMenuDefaults.OpenScaleMin, 1f, t);
             RefreshHighlight();
             if (_closing && t <= 0f)
                 _root.gameObject.SetActive(false);
@@ -207,7 +207,7 @@ namespace Dovus.Game.Casting
                 return;
             Vector2 center = RectTransformUtility.WorldToScreenPoint(null, _chip.position);
             Vector2 delta = screenPosition - center;
-            if (delta.sqrMagnitude < 24f * 24f)
+            if (delta.sqrMagnitude < ElementRadialMenuDefaults.HoverDeadzonePx * ElementRadialMenuDefaults.HoverDeadzonePx)
                 return;
             float angle = Mathf.Atan2(delta.y, delta.x) * Mathf.Rad2Deg;
             _hoverIndex = Mathf.RoundToInt((90f - angle) / 60f);
@@ -262,8 +262,8 @@ namespace Dovus.Game.Casting
             Image image = _chip.GetComponent<Image>();
             if (image != null && paint.HasValue)
             {
-                Color element = ParseColor(paint.Value.ColorHex, 0.96f);
-                image.color = Color.Lerp(_theme.PanelColor, element, 0.38f);
+                Color element = ParseColor(paint.Value.ColorHex, ElementRadialMenuDefaults.ChipElementAlpha);
+                image.color = Color.Lerp(_theme.PanelColor, element, ElementRadialMenuDefaults.ChipElementLerp);
             }
             if (paint.HasValue)
                 _chipLabel.text = "ELEMENT  //  " + paint.Value.Name.ToUpperInvariant() + "  ·  BASILI TUT";
@@ -284,7 +284,7 @@ namespace Dovus.Game.Casting
         {
             for (int i = 0; i < _wedges.Count; i++)
             {
-                Color c = ParseColor(_elements[i].ColorHex, i == _hoverIndex ? 1f : 0.55f);
+                Color c = ParseColor(_elements[i].ColorHex, i == _hoverIndex ? 1f : ElementRadialMenuDefaults.WedgeIdleAlpha);
                 _wedges[i].color = c;
                 _labels[i].color = i == _hoverIndex ? Color.white : new Color(1f, 1f, 1f, 0.72f);
             }

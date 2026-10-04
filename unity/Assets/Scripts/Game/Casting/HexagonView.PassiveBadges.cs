@@ -51,7 +51,7 @@ namespace Dovus.Game.Casting
             go.layer = _dots[dot].gameObject.layer;
             var rt = go.AddComponent<RectTransform>();
             float w = Mathf.Clamp01(th.PassiveBadgeWidthFrac);
-            float h = Mathf.Max(0.05f, th.PassiveBadgeHeightFrac);
+            float h = Mathf.Max(HexagonViewDefaults.PassiveBadgeMinHeightFrac, th.PassiveBadgeHeightFrac);
             // Diskin üst kenarına oturur, yarısı dışarı taşar; disk büyüyüp küçüldükçe onunla ölçeklenir.
             rt.anchorMin = new Vector2(0.5f - w * 0.5f, 1f - h * 0.55f);
             rt.anchorMax = new Vector2(0.5f + w * 0.5f, 1f + h * 0.45f);
@@ -70,7 +70,7 @@ namespace Dovus.Game.Casting
             label.color = th.PrimaryTextColor;
             label.resizeTextForBestFit = true;
             label.resizeTextMinSize = 6;
-            label.resizeTextMaxSize = 64;
+            label.resizeTextMaxSize = HexagonViewDefaults.PassiveBadgeMaxFontSize;
 
             _passiveBadges[dot] = rt;
             _passiveBadgeBg[dot] = bg;

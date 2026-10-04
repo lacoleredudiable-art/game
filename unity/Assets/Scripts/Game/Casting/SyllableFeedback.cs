@@ -22,12 +22,12 @@ namespace Dovus.Game.Casting
         static readonly float[] BaseHz =
         {
             0f,
-            440f, // 1 Ateş
-            494f, // 2 Aydınlık
-            370f, // 3 Yıldırım
-            330f, // 4 Su
-            294f, // 5 Karanlık
-            262f  // 6 Toprak
+            SyllableFeedbackDefaults.DotFireHz, // 1 Ateş
+            SyllableFeedbackDefaults.DotLightHz, // 2 Aydınlık
+            SyllableFeedbackDefaults.DotLightningHz, // 3 Yıldırım
+            SyllableFeedbackDefaults.DotWaterHz, // 4 Su
+            SyllableFeedbackDefaults.DotDarkHz, // 5 Karanlık
+            SyllableFeedbackDefaults.DotEarthHz  // 6 Toprak
         };
 
         public void Configure(GameTuning tuning) => _tuning = tuning;
@@ -63,13 +63,13 @@ namespace Dovus.Game.Casting
             if (dot < 1 || dot > HexagonLayout.DotCount || _clips[dot] == null)
                 return;
 
-            float pitch = 1f + 0.09f * Mathf.Max(0, sentenceDotsAfter - 1);
-            _source.pitch = Mathf.Clamp(pitch, 0.85f, 1.55f);
-            _source.PlayOneShot(_clips[dot], 0.7f);
+            float pitch = 1f + SyllableFeedbackDefaults.SentencePitchStep * Mathf.Max(0, sentenceDotsAfter - 1);
+            _source.pitch = Mathf.Clamp(pitch, SyllableFeedbackDefaults.PitchClampMin, SyllableFeedbackDefaults.PitchClampMax);
+            _source.PlayOneShot(_clips[dot], SyllableFeedbackDefaults.DotOneShotVolume);
 
             if (!playHaptic)
                 return;
-            long ms = _tuning != null ? _tuning.Input.DotVibrationMs : 30L;
+            long ms = _tuning != null ? _tuning.Input.DotVibrationMs : SyllableFeedbackDefaults.FallbackDotVibrationMs;
             FeelHaptics.Pulse((int)ms);
         }
 
@@ -79,10 +79,10 @@ namespace Dovus.Game.Casting
             if (_source == null)
                 return;
             if (_denyClip == null)
-                _denyClip = BuildClip("deny", 120f);
-            _source.pitch = 0.85f;
-            _source.PlayOneShot(_denyClip, 0.45f);
-            FeelHaptics.Pulse(20);
+                _denyClip = BuildClip("deny", SyllableFeedbackDefaults.DenyHz);
+            _source.pitch = SyllableFeedbackDefaults.DenyPitch;
+            _source.PlayOneShot(_denyClip, SyllableFeedbackDefaults.DenyOneShotVolume);
+            FeelHaptics.Pulse(SyllableFeedbackDefaults.DenyHapticMs);
         }
 
         static AudioClip BuildClip(string syllable, float hz)
@@ -98,7 +98,7 @@ namespace Dovus.Game.Casting
                 float t = i / (float)sampleRate;
                 float env = 1f - t / durationSec;
                 env *= env; // hızlı sönüm — hece tıkırtısı
-                data[i] = Mathf.Sin(2f * Mathf.PI * hz * t) * env * 0.55f;
+                data[i] = Mathf.Sin(2f * Mathf.PI * hz * t) * env * SyllableFeedbackDefaults.ClipSampleAmp;
             }
 
             clip.SetData(data, 0);

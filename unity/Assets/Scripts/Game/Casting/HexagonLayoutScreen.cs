@@ -42,8 +42,8 @@ namespace Dovus.Game.Casting
             Vector2 c = CenterPx(tuning, screenWidth, screenHeight);
             float dotR = DotHitRadiusPx(tuning);
             float dodgeR = DodgeButtonRadiusPx(tuning);
-            float margin = DpToPixels(10f);
-            float dodgePad = dodgeR + DpToPixels(Mathf.Max(16f, tuning.Input.DodgeClearanceDp));
+            float margin = DpToPixels(HexagonLayoutScreenDefaults.FitMarginDp);
+            float dodgePad = dodgeR + DpToPixels(Mathf.Max(HexagonLayoutScreenDefaults.MinDodgeClearanceDp, tuning.Input.DodgeClearanceDp));
 
             float bottomRoom = c.y - safe.yMin - margin - dotR;
             float topRoom = safe.yMax - c.y - margin - dotR;
@@ -52,9 +52,9 @@ namespace Dovus.Game.Casting
                 : safe.xMax - c.x - margin - dotR;
 
             // Dodge sağ-alt dışarıda; yarıçap + dodgePad kenara sığmalı.
-            float maxR = Mathf.Min(bottomRoom - dodgePad * 0.45f, topRoom, sideRoom - dodgePad);
+            float maxR = Mathf.Min(bottomRoom - dodgePad * HexagonLayoutScreenDefaults.DodgePadRadiusMult, topRoom, sideRoom - dodgePad);
             // Çizim koridoru için taban: komşu kenar boşluğu ≥ ~36dp (radius − 2·dotR).
-            float floor = DpToPixels(Mathf.Max(72f, tuning.Input.DotHitRadiusDp * 2f + 36f));
+            float floor = DpToPixels(Mathf.Max(HexagonLayoutScreenDefaults.MinHexRadiusFloorDp, tuning.Input.DotHitRadiusDp * 2f + HexagonLayoutScreenDefaults.DotHitRadiusFloorPaddingDp));
             if (maxR < floor)
                 maxR = floor;
             return Mathf.Clamp(desired, floor, maxR);
@@ -85,13 +85,13 @@ namespace Dovus.Game.Casting
             Vector2 c = CenterPx(tuning, screenWidth, screenHeight);
             float r = FittedRadiusPx(tuning, screenWidth, screenHeight);
             float dodgeR = DodgeButtonRadiusPx(tuning);
-            float gap = DpToPixels(Mathf.Max(24f, tuning.Input.DodgeClearanceDp));
+            float gap = DpToPixels(Mathf.Max(HexagonLayoutScreenDefaults.MinHudGapDp, tuning.Input.DodgeClearanceDp));
             float side = tuning.Input.MirrorForLeftHand ? -1f : 1f;
 
             // Sağa + aşağı: halkaya yapışmaz, skill çizimini kesmez.
             Vector2 p = new Vector2(
                 c.x + side * (r + dodgeR + gap),
-                c.y - (r * 0.55f));
+                c.y - (r * HexagonLayoutScreenDefaults.HudVerticalOffsetMult));
 
             float dx = DpToPixels(tuning.Input.DodgeButtonOffsetXDp);
             float dy = DpToPixels(tuning.Input.DodgeButtonOffsetYDp);
@@ -124,7 +124,7 @@ namespace Dovus.Game.Casting
             Vector2 dodge = DodgeButtonPx(tuning, screenWidth, screenHeight);
             float lockR = LockOnButtonRadiusPx(tuning);
             float dodgeR = DodgeButtonRadiusPx(tuning);
-            float gap = DpToPixels(12f);
+            float gap = DpToPixels(HexagonLayoutScreenDefaults.LockOnGapDp);
             Vector2 p = dodge + new Vector2(
                 DpToPixels(tuning.Input.LockOnButtonOffsetXDp),
                 dodgeR + lockR + gap + DpToPixels(tuning.Input.LockOnButtonOffsetYDp));
@@ -176,12 +176,12 @@ namespace Dovus.Game.Casting
             Vector2 c = CenterPx(tuning, screenWidth, screenHeight);
             float r = FittedRadiusPx(tuning, screenWidth, screenHeight);
             float swapR = WeaponSwapButtonRadiusPx(tuning);
-            float gap = DpToPixels(Mathf.Max(24f, tuning.Input.DodgeClearanceDp));
+            float gap = DpToPixels(Mathf.Max(HexagonLayoutScreenDefaults.MinHudGapDp, tuning.Input.DodgeClearanceDp));
             float side = tuning.Input.MirrorForLeftHand ? 1f : -1f;
 
             Vector2 p = new Vector2(
                 c.x + side * (r + swapR + gap),
-                c.y - (r * 0.55f));
+                c.y - (r * HexagonLayoutScreenDefaults.HudVerticalOffsetMult));
 
             float dx = DpToPixels(tuning.Input.WeaponSwapButtonOffsetXDp);
             float dy = DpToPixels(tuning.Input.WeaponSwapButtonOffsetYDp);
@@ -201,7 +201,7 @@ namespace Dovus.Game.Casting
 
             Vector2 dodge = DodgeButtonPx(tuning, screenWidth, screenHeight);
             float dodgeR = DodgeButtonRadiusPx(tuning);
-            float panelGap = DpToPixels(12f);
+            float panelGap = DpToPixels(HexagonLayoutScreenDefaults.LockOnGapDp);
             ResolveHudButtonAwayFromHexPanel(
                 ref p,
                 swapR,
@@ -254,8 +254,8 @@ namespace Dovus.Game.Casting
         {
             get
             {
-                float dpi = DebugDpiOverride > 0f ? DebugDpiOverride : Screen.dpi > 0f ? Screen.dpi : 160f;
-                float perDp = dpi / 160f;
+                float dpi = DebugDpiOverride > 0f ? DebugDpiOverride : Screen.dpi > 0f ? Screen.dpi : HexagonLayoutScreenDefaults.BaselineDpi;
+                float perDp = dpi / HexagonLayoutScreenDefaults.BaselineDpi;
                 if (FitShortSideDp > 1f)
                     perDp = Mathf.Min(perDp, Mathf.Min(Screen.width, Screen.height) / FitShortSideDp);
                 return perDp;
@@ -267,8 +267,8 @@ namespace Dovus.Game.Casting
         /// <summary>HUD sığdırmasından bağımsız fiziksel dp (sanal çubuk: parmak mesafesi sabit kalmalı).</summary>
         public static float PhysicalDpToPixels(float dp)
         {
-            float dpi = DebugDpiOverride > 0f ? DebugDpiOverride : Screen.dpi > 0f ? Screen.dpi : 160f;
-            return dp * (dpi / 160f);
+            float dpi = DebugDpiOverride > 0f ? DebugDpiOverride : Screen.dpi > 0f ? Screen.dpi : HexagonLayoutScreenDefaults.BaselineDpi;
+            return dp * (dpi / HexagonLayoutScreenDefaults.BaselineDpi);
         }
 
         public static bool IsRightHalf(Vector2 screenPos, bool mirrorForLeftHand, int screenWidth)

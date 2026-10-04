@@ -88,7 +88,7 @@ namespace Dovus.Game.Casting
             if (_active == null)
                 return;
 
-            float life = _tuning != null ? _tuning.Input.InkLingerSec : 0.4f;
+            float life = _tuning != null ? _tuning.Input.InkLingerSec : InkTrailDefaults.DefaultLingerSec;
 
             // Ömür Break'ten başlar (§5: sınırda söner). Born çizim başı olsaydı yavaş
             // çekimde uzun şerit anında yok olurdu.
@@ -131,7 +131,7 @@ namespace Dovus.Game.Casting
         {
             if (!_rawLive || _raw == null)
                 return;
-            if (Vector2.Distance(screenPx, _rawLastPx) < HexagonLayoutScreen.DpToPixels(4f))
+            if (Vector2.Distance(screenPx, _rawLastPx) < HexagonLayoutScreen.DpToPixels(InkTrailDefaults.RawMinStepDp))
                 return;
             if (_rawCount >= RawMax)
             {
@@ -161,8 +161,8 @@ namespace Dovus.Game.Casting
                     PushRaw(_rawLastPx + new Vector2(0.5f, 0.5f));
                 else if (_rawCount >= 2)
                     ApplyFailDispersion();
-                _raw.startWidth = _rawBaseStartWidth * 1.6f;
-                _raw.endWidth = _rawBaseEndWidth * 1.6f;
+                _raw.startWidth = _rawBaseStartWidth * InkTrailDefaults.FailWidthMult;
+                _raw.endWidth = _rawBaseEndWidth * InkTrailDefaults.FailWidthMult;
                 _rawFadeBorn = Time.unscaledTime;
                 _rawFadeLife = DrawFeedback.FailFadeSec;
                 ApplyRaw(1f);
@@ -201,7 +201,7 @@ namespace Dovus.Game.Casting
         void ApplyRawWidthScale()
         {
             float w = HexagonLayoutScreen.DpToPixels(_tuning.Input.InkWidthDp);
-            float scale = _tuning.Input.InkRawWidthScale > 0f ? _tuning.Input.InkRawWidthScale : 0.9f;
+            float scale = _tuning.Input.InkRawWidthScale > 0f ? _tuning.Input.InkRawWidthScale : InkTrailDefaults.DefaultRawWidthScale;
             _rawBaseStartWidth = w * scale;
             _rawBaseEndWidth = w * scale;
             _raw.startWidth = _rawBaseStartWidth;
@@ -220,10 +220,10 @@ namespace Dovus.Game.Casting
             }
 
             float glow = _tuning.Input.InkRawGlow > 0f ? _tuning.Input.InkRawGlow : 1f;
-            Color head = Color.Lerp(_tuning.Visuals.InkCyan, RawHeadWhite, 0.45f * glow);
-            head.a = 0.95f * alpha;
+            Color head = Color.Lerp(_tuning.Visuals.InkCyan, RawHeadWhite, InkTrailDefaults.RawHeadLerp * glow);
+            head.a = InkTrailDefaults.RawHeadAlpha * alpha;
             Color tail = _tuning.Visuals.InkPurple;
-            tail.a = 0.55f * alpha;
+            tail.a = InkTrailDefaults.RawTailAlpha * alpha;
             _raw.startColor = tail;
             _raw.endColor = head;
         }
@@ -240,7 +240,7 @@ namespace Dovus.Game.Casting
                     tangent = _rawScreenPx[i] - _rawScreenPx[i - 1];
                 else
                     tangent = _rawScreenPx[i + 1] - _rawScreenPx[i - 1];
-                if (tangent.sqrMagnitude < 0.01f)
+                if (tangent.sqrMagnitude < InkTrailDefaults.TangentEpsilonSqr)
                     tangent = Vector2.right;
                 tangent.Normalize();
                 Vector2 normal = new Vector2(-tangent.y, tangent.x);
@@ -255,15 +255,15 @@ namespace Dovus.Game.Casting
 
         static float FailDispersionAmpDp(int index)
         {
-            float t = (HashU32(index) & 0xffff) / 65535f;
-            return 8f + t * 6f;
+            float t = (HashU32(index) & 0xffff) / InkTrailDefaults.HashNormalizeDiv;
+            return InkTrailDefaults.FailDispersionBaseDp + t * InkTrailDefaults.FailDispersionRangeDp;
         }
 
         static uint HashU32(int index)
         {
             unchecked
             {
-                return (uint)(index * 1103515245 + 12345);
+                return (uint)(index * InkTrailDefaults.HashMultiplier + InkTrailDefaults.HashAdd);
             }
         }
 
@@ -320,7 +320,7 @@ namespace Dovus.Game.Casting
             }
             if (_rawFadeBorn < 0f)
                 return;
-            float u = (now - _rawFadeBorn) / Mathf.Max(0.01f, _rawFadeLife);
+            float u = (now - _rawFadeBorn) / Mathf.Max(InkTrailDefaults.FadeMinLifeSec, _rawFadeLife);
             if (u >= 1f)
             {
                 _raw.enabled = false;
@@ -328,7 +328,7 @@ namespace Dovus.Game.Casting
                 _raw.positionCount = 0;
                 return;
             }
-            ApplyRaw(_rawFailed ? 1.6f * (1f - u) : 1f - u);
+            ApplyRaw(_rawFailed ? InkTrailDefaults.FailWidthMult * (1f - u) : 1f - u);
         }
 
         public void AddSegment(Vector2 screenFrom, Vector2 screenTo)
@@ -376,7 +376,7 @@ namespace Dovus.Game.Casting
                     continue;
                 }
 
-                float u = (now - t.BornUnscaled) / Mathf.Max(0.01f, t.LifeSec);
+                float u = (now - t.BornUnscaled) / Mathf.Max(InkTrailDefaults.FadeMinLifeSec, t.LifeSec);
                 if (u >= 1f)
                 {
                     Destroy(t.Line.gameObject);
@@ -392,9 +392,9 @@ namespace Dovus.Game.Casting
                     float mix = DrawFeedback.FlashMix(u);
                     a = Color.Lerp(a, FlashColor, mix);
                     b = Color.Lerp(b, FlashColor, mix);
-                    float wv = t.BaseWidth * (1f + 0.6f * mix);
+                    float wv = t.BaseWidth * (1f + InkTrailDefaults.FlashWidthMix * mix);
                     t.Line.startWidth = wv;
-                    t.Line.endWidth = wv * 0.85f;
+                    t.Line.endWidth = wv * InkTrailDefaults.LineEndWidthMult;
                     // Parlarken tam görünür; sönme parlama bitince başlar.
                     alpha = u <= DrawFeedback.FlashFraction ? 1f : 1f - (u - DrawFeedback.FlashFraction) / (1f - DrawFeedback.FlashFraction);
                 }
@@ -431,7 +431,7 @@ namespace Dovus.Game.Casting
             line.numCornerVertices = 2;
             float width = HexagonLayoutScreen.DpToPixels(_tuning.Input.InkWidthDp);
             line.startWidth = width;
-            line.endWidth = width * 0.85f;
+            line.endWidth = width * InkTrailDefaults.LineEndWidthMult;
             line.sortingOrder = 10;
             return line;
         }

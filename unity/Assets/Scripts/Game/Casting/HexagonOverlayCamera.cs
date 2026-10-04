@@ -17,10 +17,10 @@ namespace Dovus.Game.Casting
             _cam = gameObject.AddComponent<Camera>();
             _cam.orthographic = true;
             _cam.clearFlags = CameraClearFlags.Nothing;
-            _cam.depth = 80;
+            _cam.depth = HexagonOverlayCameraDefaults.RenderDepth;
             _cam.cullingMask = 1 << layer;
-            _cam.nearClipPlane = 0.1f;
-            _cam.farClipPlane = 50f;
+            _cam.nearClipPlane = HexagonOverlayCameraDefaults.NearClipM;
+            _cam.farClipPlane = HexagonOverlayCameraDefaults.FarClipM;
             _cam.allowHDR = false;
             _cam.allowMSAA = false;
             SyncToScreen();
@@ -35,7 +35,7 @@ namespace Dovus.Game.Casting
 
             // 1 world unit = 1 pixel; merkez ekranın ortası.
             _cam.orthographicSize = Screen.height * 0.5f;
-            transform.position = new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, -10f);
+            transform.position = new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, HexagonOverlayCameraDefaults.CameraBackOffsetZ);
             transform.rotation = Quaternion.identity;
         }
 

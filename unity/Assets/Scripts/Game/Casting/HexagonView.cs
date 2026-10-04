@@ -73,7 +73,7 @@ namespace Dovus.Game.Casting
                 ? RenderMode.ScreenSpaceCamera
                 : RenderMode.ScreenSpaceOverlay;
             _canvas.worldCamera = overlayCam;
-            _canvas.planeDistance = 1.2f;
+            _canvas.planeDistance = HexagonViewDefaults.CanvasPlaneDistanceM;
             _canvas.sortingOrder = 50;
             canvasGo.AddComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
             canvasGo.AddComponent<GraphicRaycaster>();
@@ -134,14 +134,14 @@ namespace Dovus.Game.Casting
                 _tuning.Visuals.DodgeButtonColor.r,
                 _tuning.Visuals.DodgeButtonColor.g,
                 _tuning.Visuals.DodgeButtonColor.b,
-                0.92f);
+                HexagonViewDefaults.DodgeFaceAlpha);
             _dodgeLabel = CreateLabel(_dodge, "DODGE");
             _dodgeLabel.fontSize = 15;
             _dodgeLabel.fontStyle = FontStyle.Bold;
             _dodgeLabel.color = Color.white;
             var dodgeOutline = _dodgeLabel.gameObject.AddComponent<Outline>();
             dodgeOutline.effectColor = new Color(0.15f, 0.05f, 0.35f, 0.85f);
-            dodgeOutline.effectDistance = new Vector2(1.2f, -1.2f);
+            dodgeOutline.effectDistance = new Vector2(HexagonViewDefaults.DodgeOutlineOffsetPx, -HexagonViewDefaults.DodgeOutlineOffsetPx);
 
             // Dodge her zaman rünlerin üstünde (görsel katman + dokunma okunurluğu).
             _dodge.SetAsLastSibling();
@@ -238,7 +238,7 @@ namespace Dovus.Game.Casting
             if (dot > 0 && _dotHighlightUntil != null && dot < _dotHighlightUntil.Length)
             {
                 _dotHighlightUntil[dot] = Time.unscaledTime + th.RuneHighlightSec;
-                UiJuice.PunchScale(target, th.RuneHighlightScale, th.JuiceSec * 1.35f);
+                UiJuice.PunchScale(target, th.RuneHighlightScale, th.JuiceSec * HexagonViewDefaults.RuneHighlightJuiceMult);
             }
         }
 
@@ -257,7 +257,7 @@ namespace Dovus.Game.Casting
                 if (wasCooling && _cdRemainingSec[i] <= 0f && _dots != null && _dots[i] != null)
                 {
                     HudTheme th = _theme;
-                    UiJuice.PunchScale(_dots[i], th.ReadyPopScale, th.JuiceSec * 1.5f);
+                    UiJuice.PunchScale(_dots[i], th.ReadyPopScale, th.JuiceSec * HexagonViewDefaults.ReadyPopJuiceMult);
                 }
             }
 
@@ -339,7 +339,7 @@ namespace Dovus.Game.Casting
         float DotFontPx(int dot)
         {
             if (_dots == null || _dots[dot] == null)
-                return 22f;
+                return HexagonViewDefaults.CooldownLabelMinFontPx;
             return _dots[dot].sizeDelta.x * 0.42f;
         }
 
@@ -381,7 +381,7 @@ namespace Dovus.Game.Casting
             label.enabled = false;
             var outline = labelGo.AddComponent<Outline>();
             outline.effectColor = new Color(0f, 0f, 0f, 0.85f);
-            outline.effectDistance = new Vector2(1.5f, -1.5f);
+            outline.effectDistance = new Vector2(HexagonViewDefaults.LabelOutlineOffsetPx, -HexagonViewDefaults.LabelOutlineOffsetPx);
             _cdLabels[dot] = label;
         }
 
@@ -441,14 +441,14 @@ namespace Dovus.Game.Casting
         Color RimColorForDot(int dot)
         {
             Color c = _theme.RuneAccent(RuneIdAt(dot));
-            c.a = _tuning.IsDotOpen(dot) ? 0.82f : 0.25f;
+            c.a = _tuning.IsDotOpen(dot) ? HexagonViewDefaults.RimOpenAlpha : HexagonViewDefaults.RimClosedAlpha;
             return c;
         }
 
         Color RuneFallbackColor(int dot)
         {
             Color c = (dot & 1) == 0 ? _tuning.Visuals.InkPurple : _tuning.Visuals.InkCyan;
-            c.a = _tuning.IsDotOpen(dot) ? 0.92f : 0.28f;
+            c.a = _tuning.IsDotOpen(dot) ? HexagonViewDefaults.FallbackOpenAlpha : HexagonViewDefaults.FallbackClosedAlpha;
             return c;
         }
 
@@ -466,7 +466,7 @@ namespace Dovus.Game.Casting
         {
             if (_dotIcons != null && _dotIcons[dot] != null)
             {
-                float a = _tuning.IsDotOpen(dot) ? 1f : 0.28f;
+                float a = _tuning.IsDotOpen(dot) ? 1f : HexagonViewDefaults.DotClosedAlpha;
                 Color tint = _theme.RuneFaceTint;
                 tint.a *= a;
                 return tint;
@@ -508,9 +508,9 @@ namespace Dovus.Game.Casting
             bool hot = _dotHighlightUntil != null && Time.unscaledTime < _dotHighlightUntil[dot];
             if (hot)
             {
-                float pulse = UiJuice.Pulse01(8f);
-                Color bright = Color.Lerp(baseColor, Color.white, 0.55f + pulse * 0.25f);
-                bright.a = 0.92f;
+                float pulse = UiJuice.Pulse01(HexagonViewDefaults.RimPulseHz);
+                Color bright = Color.Lerp(baseColor, Color.white, HexagonViewDefaults.RimPulseLerpBase + pulse * HexagonViewDefaults.RimPulseLerpAmp);
+                bright.a = HexagonViewDefaults.RimHotAlpha;
                 _dotRims[dot].color = bright;
             }
             else
@@ -565,7 +565,7 @@ namespace Dovus.Game.Casting
                 _trayLinks[i] = linkGo.AddComponent<RectTransform>();
                 var link = linkGo.AddComponent<Image>();
                 Color c = th.PanelEdgeColor;
-                c.a *= 0.72f;
+                c.a *= HexagonViewDefaults.TrayLinkAlphaMult;
                 link.color = c;
                 link.raycastTarget = false;
             }
@@ -607,7 +607,7 @@ namespace Dovus.Game.Casting
             if (_roundedRectSprite != null)
                 return _roundedRectSprite;
             const int size = 64;
-            float radius = Mathf.Clamp(cornerRadiusDp, 4f, size * 0.45f);
+            float radius = Mathf.Clamp(cornerRadiusDp, HexagonViewDefaults.RoundedRectMinCornerDp, size * HexagonViewDefaults.RoundedRectMaxCornerMult);
             var texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
             texture.wrapMode = TextureWrapMode.Clamp;
             for (int y = 0; y < size; y++)
@@ -685,7 +685,7 @@ namespace Dovus.Game.Casting
             rimRt.offsetMax = new Vector2(3f, 3f);
             var rimImg = rimGo.AddComponent<Image>();
             rimImg.sprite = discSprite;
-            rimImg.color = rimColor.a > 0.01f
+            rimImg.color = rimColor.a > HexagonViewDefaults.RimVisibleAlphaEpsilon
                 ? rimColor
                 : new Color(1f, 1f, 1f, 0.28f);
             rimImg.raycastTarget = false;
@@ -728,7 +728,7 @@ namespace Dovus.Game.Casting
 
         static int FirstLayer(int mask)
         {
-            for (int i = 0; i < 32; i++)
+            for (int i = 0; i < HexagonViewDefaults.LayerMaskScanMax; i++)
             {
                 if ((mask & (1 << i)) != 0)
                     return i;
@@ -760,7 +760,7 @@ namespace Dovus.Game.Casting
             }
 
             tex.Apply(false, true);
-            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 64f);
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), HexagonViewDefaults.CircleSpritePixelsPerUnit);
         }
     }
 }

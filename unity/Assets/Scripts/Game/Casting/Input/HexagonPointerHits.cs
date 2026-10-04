@@ -54,10 +54,10 @@ namespace Dovus.Game.Casting.Input
 
         public static float PixelsToDp(float px)
         {
-            float dpi = Screen.dpi > 0f ? Screen.dpi : 160f;
-            return px * (160f / dpi);
+            float dpi = Screen.dpi > 0f ? Screen.dpi : HexagonLayoutScreenDefaults.BaselineDpi;
+            return px * (HexagonLayoutScreenDefaults.BaselineDpi / dpi);
         }
 
-        public static double NowRealMs() => Time.realtimeSinceStartupAsDouble * 1000.0;
+        public static double NowRealMs() => Time.realtimeSinceStartupAsDouble * CastingInputDefaults.SecToMs;
     }
 }

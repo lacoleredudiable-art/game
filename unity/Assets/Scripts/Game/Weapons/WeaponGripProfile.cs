@@ -51,8 +51,8 @@ namespace Dovus.Game.Weapons
                 case "kalkan" when isRight:
                     offset = new GripOffset
                     {
-                        LocalPosition = new Vector3(0.02f, 0.01f, 0.03f),
-                        LocalEulerAngles = new Vector3(8f, 195f, 92f),
+                        LocalPosition = new Vector3(WeaponGripProfileDefaults.KalkanRightLocalPosX, WeaponGripProfileDefaults.KalkanRightLocalPosY, WeaponGripProfileDefaults.KalkanRightLocalPosZ),
+                        LocalEulerAngles = new Vector3(WeaponGripProfileDefaults.KalkanRightEulerX, WeaponGripProfileDefaults.KalkanRightEulerY, WeaponGripProfileDefaults.KalkanRightEulerZ),
                         LocalScale = Vector3.one,
                     };
                     return true;
@@ -62,16 +62,16 @@ namespace Dovus.Game.Weapons
                 case "yay" when !isRight:
                     offset = new GripOffset
                     {
-                        LocalPosition = new Vector3(0.02f, 0.03f, 0.01f),
-                        LocalEulerAngles = new Vector3(-6f, 92f, 78f),
+                        LocalPosition = new Vector3(WeaponGripProfileDefaults.YayLeftLocalPosX, WeaponGripProfileDefaults.YayLeftLocalPosY, WeaponGripProfileDefaults.YayLeftLocalPosZ),
+                        LocalEulerAngles = new Vector3(WeaponGripProfileDefaults.YayLeftEulerX, WeaponGripProfileDefaults.YayLeftEulerY, WeaponGripProfileDefaults.YayLeftEulerZ),
                         LocalScale = Vector3.one,
                     };
                     return true;
                 case "kitap" when !isRight:
                     offset = new GripOffset
                     {
-                        LocalPosition = new Vector3(0.01f, 0.02f, 0.02f),
-                        LocalEulerAngles = new Vector3(-12f, 8f, 92f),
+                        LocalPosition = new Vector3(WeaponGripProfileDefaults.KitapLeftLocalPosX, WeaponGripProfileDefaults.KitapLeftLocalPosY, WeaponGripProfileDefaults.KitapLeftLocalPosZ),
+                        LocalEulerAngles = new Vector3(WeaponGripProfileDefaults.KitapLeftEulerX, WeaponGripProfileDefaults.KitapLeftEulerY, WeaponGripProfileDefaults.KitapLeftEulerZ),
                         LocalScale = Vector3.one,
                     };
                     return true;
@@ -85,15 +85,15 @@ namespace Dovus.Game.Weapons
                     // euler, çapraz çarpımla sabit bir taban kuran kararlı bir yöntemden geldi.
                     offset = new GripOffset
                     {
-                        LocalPosition = new Vector3(0.02f, 0f, 0.04f),
-                        LocalEulerAngles = new Vector3(5.53f, 358.23f, 162.18f),
+                        LocalPosition = new Vector3(WeaponGripProfileDefaults.AsaRightLocalPosX, 0f, WeaponGripProfileDefaults.AsaRightLocalPosZ),
+                        LocalEulerAngles = new Vector3(WeaponGripProfileDefaults.AsaRightEulerX, WeaponGripProfileDefaults.AsaRightEulerY, WeaponGripProfileDefaults.AsaRightEulerZ),
                         LocalScale = Vector3.one,
                     };
                     return true;
                 case "kure" when !isRight:
                     offset = new GripOffset
                     {
-                        LocalPosition = new Vector3(0f, 0.10f, 0.02f),
+                        LocalPosition = new Vector3(0f, WeaponGripProfileDefaults.KureLeftLocalPosY, WeaponGripProfileDefaults.KureLeftLocalPosZ),
                         LocalEulerAngles = Vector3.zero,
                         LocalScale = Vector3.one,
                     };
@@ -107,8 +107,8 @@ namespace Dovus.Game.Weapons
                     // yumruğun altında sarkar (ölçülen: dikeyden 0°, gap 0,035 m).
                     offset = new GripOffset
                     {
-                        LocalPosition = new Vector3(0.02f, 0.01f, 0.03f),
-                        LocalEulerAngles = new Vector3(9.09f, 359.72f, 178.24f),
+                        LocalPosition = new Vector3(WeaponGripProfileDefaults.TilsimRightLocalPosX, WeaponGripProfileDefaults.TilsimRightLocalPosY, WeaponGripProfileDefaults.TilsimRightLocalPosZ),
+                        LocalEulerAngles = new Vector3(WeaponGripProfileDefaults.TilsimRightEulerX, WeaponGripProfileDefaults.TilsimRightEulerY, WeaponGripProfileDefaults.TilsimRightEulerZ),
                         LocalScale = Vector3.one,
                     };
                     return true;
@@ -120,16 +120,16 @@ namespace Dovus.Game.Weapons
                     // gap 0,028 m.
                     offset = new GripOffset
                     {
-                        LocalPosition = new Vector3(0.01f, 0.02f, 0.02f),
-                        LocalEulerAngles = new Vector3(0.00f, 43.50f, 22.83f),
+                        LocalPosition = new Vector3(WeaponGripProfileDefaults.TopRightLocalPosX, WeaponGripProfileDefaults.TopRightLocalPosY, WeaponGripProfileDefaults.TopRightLocalPosZ),
+                        LocalEulerAngles = new Vector3(WeaponGripProfileDefaults.TopRightEulerX, WeaponGripProfileDefaults.TopRightEulerY, WeaponGripProfileDefaults.TopRightEulerZ),
                         LocalScale = Vector3.one,
                     };
                     return true;
                 case "cekic" when isRight:
                     offset = new GripOffset
                     {
-                        LocalPosition = new Vector3(0f, 0f, 0.02f),
-                        LocalEulerAngles = new Vector3(6f, 188f, 94f),
+                        LocalPosition = new Vector3(0f, 0f, WeaponGripProfileDefaults.CekicRightLocalPosZ),
+                        LocalEulerAngles = new Vector3(WeaponGripProfileDefaults.CekicRightEulerX, WeaponGripProfileDefaults.CekicRightEulerY, WeaponGripProfileDefaults.CekicRightEulerZ),
                         LocalScale = Vector3.one,
                     };
                     return true;
@@ -167,8 +167,8 @@ namespace Dovus.Game.Weapons
         /// </summary>
         public static GripOffset DefaultMixamoRightSword() => new GripOffset
         {
-            LocalPosition = new Vector3(0.03f, 0.02f, 0.05f),
-            LocalEulerAngles = new Vector3(9.32f, 239.23f, 343.32f),
+            LocalPosition = new Vector3(WeaponGripProfileDefaults.MixamoSwordLocalPosX, WeaponGripProfileDefaults.MixamoSwordLocalPosY, WeaponGripProfileDefaults.MixamoSwordLocalPosZ),
+            LocalEulerAngles = new Vector3(WeaponGripProfileDefaults.MixamoSwordEulerX, WeaponGripProfileDefaults.MixamoSwordEulerY, WeaponGripProfileDefaults.MixamoSwordEulerZ),
             LocalScale = Vector3.one,
         };
 
@@ -176,9 +176,9 @@ namespace Dovus.Game.Weapons
         {
             // cw-2s: 0.064m ofset → forearm bone'a 0,060m boşluk ölçtü (<0,05m hedefi kaçırıyordu).
             // Aynı yöne, kısaltılmış vektör: 0,045m (ölçülen boşluk 0,045m), yüz/açı değişmedi.
-            LocalPosition = new Vector3(0.015f, 0.045f, 0.008f),
+            LocalPosition = new Vector3(WeaponGripProfileDefaults.MixamoShieldLocalPosX, WeaponGripProfileDefaults.MixamoShieldLocalPosY, WeaponGripProfileDefaults.MixamoShieldLocalPosZ),
             // Quaternius Shield_Heater dekor yüzü +Z; ön cepheye (~sol-ön) bakacak şekilde forearm eksenine paralel.
-            LocalEulerAngles = new Vector3(-8f, 210f, 88f),
+            LocalEulerAngles = new Vector3(WeaponGripProfileDefaults.MixamoShieldEulerX, WeaponGripProfileDefaults.MixamoShieldEulerY, WeaponGripProfileDefaults.MixamoShieldEulerZ),
             LocalScale = Vector3.one,
         };
 

@@ -161,7 +161,7 @@ namespace Dovus.Game.Casting.Input
         {
             if (_s.Mode != FingerMode.SwapPending || _s.SwapHoldFired)
                 return;
-            double heldSec = (HexagonPointerHits.NowRealMs() - _s.PressRealMs) / 1000.0;
+            double heldSec = (HexagonPointerHits.NowRealMs() - _s.PressRealMs) / CastingInputDefaults.SecToMs;
             if (!TouchButtonGesture.HoldCommandDue(heldSec, SwapHoldSec()))
                 return;
             _s.SwapHoldFired = true;
@@ -245,7 +245,7 @@ namespace Dovus.Game.Casting.Input
 
         void EndPointer(bool cancelled)
         {
-            double heldSec = (HexagonPointerHits.NowRealMs() - _s.PressRealMs) / 1000.0;
+            double heldSec = (HexagonPointerHits.NowRealMs() - _s.PressRealMs) / CastingInputDefaults.SecToMs;
             if (_s.Mode == FingerMode.Drawing)
                 _stroke.FinishDrawingStroke(cancelled);
 
