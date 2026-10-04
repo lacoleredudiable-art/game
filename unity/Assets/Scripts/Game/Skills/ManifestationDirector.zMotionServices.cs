@@ -151,14 +151,14 @@ namespace Dovus.Game.Skills
         float BossBodyRadius()
         {
             if (_boss == null)
-                return 0.6f;
+                return SkillsTimeDefaults.MotionReturnHeightM;
             Collider col = _boss.GetComponentInChildren<Collider>();
             if (col == null)
             {
                 DesignWarnings.Once(
                     "motion.boss_radius",
                     "Boss gövdesi okunamadı. Vuruş payı yedek 0.6 m.");
-                return 0.6f;
+                return SkillsTimeDefaults.MotionReturnHeightM;
             }
             return Mathf.Max(col.bounds.extents.x, col.bounds.extents.z);
         }

@@ -1,0 +1,69 @@
+namespace Dovus.Game.Skills
+{
+    /// <summary>LivingEffectView tek kaynak (PLAN 2B.11d).</summary>
+    public static class LivingEffectViewDefaults
+    {
+        public const float BangLenWobbleFreqHz = 40f;
+        public const float BangLenWobbleMult = 0.25f;
+        public const float BangNeedlePulseMult = 0.15f;
+        public const int BangPsBurstCount = 18;
+        public const float BangPsMainDurationSec = 0.35f;
+        public const int BangPsMaxParticles = 36;
+        public const float BangPsReplayWindowSec = 0.05f;
+        public const float BangPsShapeRadiusM = 0.15f;
+        public const float BangPsStartLifetimeSec = 0.35f;
+        public const float BangPsStartSizeM = 0.22f;
+        public const float BangPsStartSpeedMps = 3.5f;
+        public const float BangPulseAmpMult = 0.8f;
+        public const float BangPulseFreqHz = 28f;
+        public const float BangTipLiftM = 0.3f;
+        public const float BlobJitterAlongMult = 0.2f;
+        public const float BlobJitterFocusDampMult = 0.7f;
+        public const float BlobJitterSideMult = 0.35f;
+        public const float BlobLiftBaseM = 0.18f;
+        public const float BlobLiftSpreadMult = 0.35f;
+        public const float BlobLiftWobbleFreqHz = 5.5f;
+        public const float BlobMeshXZMult = 1.35f;
+        public const float BlobMeshYMult = 0.35f;
+        public const float BlobOrbitAgeMult = 1.1f;
+        public const float BlobOrbitPseudoMult = 1.7f;
+        public const float BlobOrbitReachInnerMult = 0.25f;
+        public const float BlobOrbitReachOuterMult = 0.7f;
+        public const float BlobReachStartMult = 0.15f;
+        public const float BlobScaleBaseMult = 0.85f;
+        public const float BlobScaleJitterMult = 0.3f;
+        public const float BlobSideBaseMult = 0.35f;
+        public const float BlobSideFocusSpreadMult = 1.4f;
+        public const float BlobSideSpreadMult = 0.4f;
+        public const float BlobStaggerPaddingSec = 0.15f;
+        public const float FocusRingMinArcRad = 0.35f;
+        public const int FocusRingSegmentCount = 24;
+        public const float LineTintLerpNoSkillBase = 0.35f;
+        public const float LineTintLerpWithSkill = 0.2f;
+        public const float LineTintSpreadMult = 0.4f;
+        public const float MaxRangeEpsilonM = 0.01f;
+        public const float NeedleArrivedRangeMarginM = 0.05f;
+        public const float NeedleArrivedTravelThreshold = 0.98f;
+        public const float NeedleGhostLenMult = 0.35f;
+        public const float NeedleGhostLerpMult = 0.85f;
+        public const float NeedleGhostScaleMult = 0.45f;
+        public const float NeedleGhostThickMult = 0.55f;
+        public const float NeedleHoldLenMult = 0.45f;
+        public const float NeedleHoldThickMult = 0.75f;
+        public const float NeedleHoldThickPulseMult = 1.05f;
+        public const float NeedleWindupAlongMult = 0.25f;
+        public const float NeedleWindupThinMult = 0.7f;
+        public const float PhaseScaleWhenNotBanging = 0.95f;
+        public const float PseudoHashMultI = 12.9898f;
+        public const float PseudoHashMultSalt = 78.233f;
+        public const float PseudoHashScale = 43758.5453f;
+        public const float TipDistAlongMult = 0.55f;
+        public const float TipMinDistM = 0.35f;
+        public const float TravelPlaceMult = 0.35f;
+        public const float UrgentPlaceMult = 0.45f;
+        public const float WavePeakLiftBaseMult = 0.55f;
+        public const float WavePeakLiftSpreadMult = 0.9f;
+        public const float WaveThicknessBaseM = 0.08f;
+        public const float WaveThicknessLiftMult = 0.35f;
+    }
+}

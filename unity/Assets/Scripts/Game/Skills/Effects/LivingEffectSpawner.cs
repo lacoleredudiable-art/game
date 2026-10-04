@@ -173,15 +173,15 @@ namespace Dovus.Game.Skills.Effects
                         view.TravelHitDone = true;
                         _host.Boss.React(
                             new Vector3(logic.OriginX, 0f, logic.OriginZ),
-                            man.BossKnockbackM * 0.25f,
-                            0.08f * logic.Current.Lift,
-                            man.BossShakeSec * 0.45f,
+                            man.BossKnockbackM * LivingEffectSpawnerDefaults.TravelHitKnockMult,
+                            LivingEffectSpawnerDefaults.TravelHitLiftMult * logic.Current.Lift,
+                            man.BossShakeSec * LivingEffectSpawnerDefaults.TravelHitShakeMult,
                             worldMs);
                     }
                 }
 
-                if (!view.Scarred && logic.Verb == Rune.Aydinlik && logic.Current.Focus > 0.7f
-                    && logic.Travel > 2.5f)
+                if (!view.Scarred && logic.Verb == Rune.Aydinlik && logic.Current.Focus > LivingEffectSpawnerDefaults.ScarFocusThreshold
+                    && logic.Travel > LivingEffectSpawnerDefaults.ScarTravelMinM)
                 {
                     Vector3 mid = new Vector3(
                         logic.OriginX + logic.DirX * logic.TipDistance * 0.5f,

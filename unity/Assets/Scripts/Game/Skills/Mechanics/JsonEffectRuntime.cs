@@ -91,8 +91,8 @@ namespace Dovus.Game.Skills.Mechanics
         {
             if (meters <= 0f || _host.Player == null || !BossDisplaceable)
                 return;
-            float shake = _host.Combat != null ? _host.Combat.Manifestation.BossShakeSec * 0.45f : 0.12f;
-            _host.Boss.React(_host.Player.position, meters, 0.05f, shake, now);
+            float shake = _host.Combat != null ? _host.Combat.Manifestation.BossShakeSec * JsonEffectRuntimeDefaults.TravelHitShakeMult : JsonEffectRuntimeDefaults.TravelHitShakeMultAlt;
+            _host.Boss.React(_host.Player.position, meters, JsonEffectRuntimeDefaults.BossReactLiftM, shake, now);
             JsonLog($"itme {meters:0.##}m");
         }
 
@@ -102,7 +102,7 @@ namespace Dovus.Game.Skills.Mechanics
             if (_host.PlayerStatus != null && worldMs < _reflectRampUntilMs)
             {
                 float ratio = JsonEffectRules.RampedRatio(
-                    _reflectRampBase, _reflectRampStartMs, _reflectRampUntilMs, worldMs, JsonParam("ramp_max", 1.5));
+                    _reflectRampBase, _reflectRampStartMs, _reflectRampUntilMs, worldMs, JsonParam("ramp_max", JsonEffectRuntimeDefaults.ReflectRampMaxFallback));
                 _host.PlayerStatus.GrantReflect(ratio, _reflectRampUntilMs);
             }
             if (_host.Ally == null)
@@ -123,7 +123,7 @@ namespace Dovus.Game.Skills.Mechanics
         {
             if (plan == null)
                 return;
-            double untilMs = now + Math.Max(0.2f, windowSec) * 1000.0;
+            double untilMs = now + Math.Max(JsonEffectRuntimeDefaults.ReflectWindowMinSec, windowSec) * SkillsTimeDefaults.SecToMs;
             if (JsonEffectRules.IsParry(plan))
             {
                 _parry.Arm(untilMs, JsonEffectRules.ParryRatio(plan));
@@ -140,7 +140,7 @@ namespace Dovus.Game.Skills.Mechanics
             double hidden = JsonEffectRules.HiddenSec(plan, windowSec);
             if (hidden > 0 && _host.PlayerStatus != null)
             {
-                _host.PlayerStatus.Board.Apply(StatusKind.Stealth, hidden * 1000.0, 1f, "gizli:" + plan.SkillId);
+                _host.PlayerStatus.Board.Apply(StatusKind.Stealth, hidden * SkillsTimeDefaults.SecToMs, 1f, "gizli:" + plan.SkillId);
                 JsonLog($"gizli {hidden:0.##}sn");
             }
             if (JsonEffectRules.Overflows(plan, "kalkan"))
@@ -172,11 +172,11 @@ namespace Dovus.Game.Skills.Mechanics
             double now = JsonNow;
             if (_host.TasarShieldUntilMs <= 0 || now >= _host.TasarShieldUntilMs || _host.PlayerStatus == null)
                 return;
-            if (_host.PlayerStatus.Board.ShieldRemaining > 0.01f)
+            if (_host.PlayerStatus.Board.ShieldRemaining > JsonEffectRuntimeDefaults.ShieldHeldEpsilon)
                 return;
             _host.TasarShieldUntilMs = 0;
             if (_host.Player == null || _host.Boss == null
-                || _host.FlatDistance(_host.Player.position, _host.Boss.transform.position) > JsonParam("shield_shock_radius_m", 3.0))
+                || _host.FlatDistance(_host.Player.position, _host.Boss.transform.position) > JsonParam("shield_shock_radius_m", JsonEffectRuntimeDefaults.ShieldShockRadiusFallbackM))
                 return;
             PushBossFromPlayer((float)JsonParam("it_push_m", 2.0), now);
             _host.Readout?.NoteSkill("Taşma", "kalkan kırıldı → şok", new Color(0.6f, 0.85f, 1f));
@@ -204,7 +204,7 @@ namespace Dovus.Game.Skills.Mechanics
                 JsonEffectRules.SplitReflect(amount, out float first, out float second);
                 _host.BossVitals.ApplyDamage(first);
                 JsonLog($"bölünen yansıma {first:0.#}+{second:0.#}");
-                _host.ScheduleAfter(now, (float)JsonParam("split_reflect_delay_sec", 0.25), () =>
+                _host.ScheduleAfter(now, (float)JsonParam("split_reflect_delay_sec", JsonEffectRuntimeDefaults.SplitReflectDelaySecFallback), () =>
                 {
                     if (_host.BossVitals != null && !_host.BossVitals.IsDown)
                         _host.BossVitals.ApplyDamage(second);
@@ -222,7 +222,7 @@ namespace Dovus.Game.Skills.Mechanics
             float flat = JsonEffectRules.StolenArmorFlat(e.Amount, _host.BossStatus.Armor.Base);
             if (flat <= 0f)
                 return;
-            _host.PlayerStatus.Armor.GrantBuff(flat, JsonNow + Math.Max(0.5, e.DurationSec) * 1000.0);
+            _host.PlayerStatus.Armor.GrantBuff(flat, JsonNow + Math.Max(0.5, e.DurationSec) * SkillsTimeDefaults.SecToMs);
             applied.Add($"zırh çalma +{flat:0.#}");
         }
 
@@ -247,8 +247,8 @@ namespace Dovus.Game.Skills.Mechanics
         {
             if (_host.Player == null || !BossDisplaceable)
                 return;
-            float lift = (float)JsonParam("knockup_lift_m", 0.8);
-            float shake = _host.Combat != null ? _host.Combat.Manifestation.BossShakeSec * 0.45f : 0.12f;
+            float lift = (float)JsonParam("knockup_lift_m", JsonEffectRuntimeDefaults.KnockupLiftFallbackM);
+            float shake = _host.Combat != null ? _host.Combat.Manifestation.BossShakeSec * JsonEffectRuntimeDefaults.TravelHitShakeMult : JsonEffectRuntimeDefaults.TravelHitShakeMultAlt;
             _host.Boss.React(_host.Player.position, 0f, lift, shake, JsonNow);
             applied.Add($"havaya atma {lift:0.#}m");
         }
@@ -267,11 +267,11 @@ namespace Dovus.Game.Skills.Mechanics
         {
             if (removed <= 0 || !JsonEffectRules.PurgeGrantsPower(_host.MechanicPlanFor(skill)))
                 return;
-            float bonus = JsonEffectRules.PurgePower(removed, JsonParam("cleanse_power_per_status", 0.1));
+            float bonus = JsonEffectRules.PurgePower(removed, JsonParam("cleanse_power_per_status", JsonEffectRuntimeDefaults.CleansePowerPerStatusFallback));
             double now = JsonNow;
-            float sec = !skill.Engine.IsNull ? skill.Engine.BuffDurationSec(3f) : 3f;
+            float sec = !skill.Engine.IsNull ? skill.Engine.BuffDurationSec(JsonEffectRuntimeDefaults.PurgeBuffDurationFallbackSec) : JsonEffectRuntimeDefaults.PurgeBuffDurationFallbackSec;
             _host.SelfDamageBuff = (now < _host.SelfDamageBuffUntilMs ? _host.SelfDamageBuff : 0f) + bonus;
-            _host.SelfDamageBuffUntilMs = Math.Max(_host.SelfDamageBuffUntilMs, now + Math.Max(0.5f, sec) * 1000.0);
+            _host.SelfDamageBuffUntilMs = Math.Max(_host.SelfDamageBuffUntilMs, now + Math.Max(0.5f, sec) * SkillsTimeDefaults.SecToMs);
             _host.Readout?.NoteSkill(skill.DisplayName, $"güç +{bonus * 100f:0}%", new Color(1f, 0.8f, 0.4f));
             JsonLog($"güce çevir {removed} durum → +{bonus * 100f:0}%");
         }
@@ -281,7 +281,7 @@ namespace Dovus.Game.Skills.Mechanics
             if (applied == null || _host.Ally == null || _host.Player == null || skill.IsEmpty || FriendlyTargetCap(skill) < 2)
                 return;
             MechanicPlan plan = _host.MechanicPlanFor(skill);
-            float range = Mathf.Max(3f, plan != null ? (float)plan.Body.SizeM : 0f);
+            float range = Mathf.Max(JsonEffectRuntimeDefaults.MechanicRangeMinM, plan != null ? (float)plan.Body.SizeM : 0f);
             if (_host.FlatDistance(_host.Player.position, _host.Ally.transform.position) > range)
                 return;
             _host.Ally.EnsureStatusBoard();

@@ -28,7 +28,7 @@ namespace Dovus.Game.Skills.Mechanics
             bool bossInside = _host.Boss != null && _host.FlatDistance(_host.Boss.transform.position, volume.Center) <= volume.RadiusM;
             bool playerInside = _host.Player != null && _host.FlatDistance(_host.Player.position, volume.Center) <= volume.RadiusM;
             bool allyInside = _host.Ally != null && _host.FlatDistance(_host.Ally.transform.position, volume.Center) <= volume.RadiusM;
-            double refreshMs = volume.TickMs * 2.1;
+            double refreshMs = volume.TickMs * MechanicVolumeTickerDefaults.RefreshTickMult;
             string volumeId = volume.Plan != null && !string.IsNullOrEmpty(volume.Plan.SkillId)
                 ? volume.Plan.SkillId
                 : "volume";
@@ -39,7 +39,7 @@ namespace Dovus.Game.Skills.Mechanics
             {
                 double flickerSec = _host.MechanicEngine?.Rules.Param("flicker_sec") ?? 0;
                 bool on = flickerSec <= 0
-                    || ((long)(volume.NextTickMs / (flickerSec * 1000.0)) & 1) == 0;
+                    || ((long)(volume.NextTickMs / (flickerSec * SkillsTimeDefaults.SecToMs)) & 1) == 0;
                 if (on && flickerTempo.Amount < 1)
                     _host.BossStatus?.Board.Apply(StatusKind.Slow, refreshMs, (float)flickerTempo.Amount, "flicker:" + volumeId);
                 else
@@ -176,7 +176,7 @@ namespace Dovus.Game.Skills.Mechanics
                     if (CardEffectRules.WantsSelfHaste(linkedLock.SkillJob)
                         && !CardEffectRules.Names(linkedLock.SkillJob, "root"))
                         continue;
-                    double refresh = Math.Max(100, e.DurationSec * 1000.0);
+                    double refresh = Math.Max(100, e.DurationSec * SkillsTimeDefaults.SecToMs);
                     if (e.Amount <= 0)
                         _host.BossStatus?.Board.Apply(
                             StatusKind.Root, refresh, 1f,
@@ -228,7 +228,7 @@ namespace Dovus.Game.Skills.Mechanics
                     else if (guard.Effect.Stat == "kalkan")
                     {
                         StatusBoard board = allyLow ? _host.Ally?.Board : _host.PlayerStatus?.Board;
-                        board?.Apply(StatusKind.Shield, Math.Max(100, guard.Effect.DurationSec * 1000.0), amount);
+                        board?.Apply(StatusKind.Shield, Math.Max(100, guard.Effect.DurationSec * SkillsTimeDefaults.SecToMs), amount);
                     }
                     else if (guard.Effect.Stat == "hasar_buff" && _host.Clock != null)
                     {
@@ -237,7 +237,7 @@ namespace Dovus.Game.Skills.Mechanics
                         _host.SelfDamageBuff = Mathf.Max(_host.SelfDamageBuff, buff);
                         _host.SelfDamageBuffUntilMs = Math.Max(
                             _host.SelfDamageBuffUntilMs,
-                            _host.Clock.Director.WorldTimeMs + Math.Max(100, guard.Effect.DurationSec * 1000.0));
+                            _host.Clock.Director.WorldTimeMs + Math.Max(100, guard.Effect.DurationSec * SkillsTimeDefaults.SecToMs));
                     }
                 }
                 if (guard.View != null)

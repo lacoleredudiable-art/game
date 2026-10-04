@@ -104,7 +104,7 @@ namespace Dovus.Game.Team
         {
             if (!Bind())
                 return;
-            float dt = _clock != null ? (float)(_clock.WorldDeltaMs / 1000.0) : Time.deltaTime;
+            float dt = _clock != null ? (float)(_clock.WorldDeltaMs / TeamComboDefaults.SecToMs) : Time.deltaTime;
             if (dt < 0f)
                 dt = 0f;
             RefreshActors();
@@ -162,7 +162,7 @@ namespace Dovus.Game.Team
             if (renderer != null)
                 SharedTint.Apply(renderer, new Color(0.35f, 0.9f, 0.55f));
             var dummy = go.AddComponent<AllyDummy>();
-            int maxHp = _vitals != null ? _vitals.MaxHp : 30;
+            int maxHp = _vitals != null ? _vitals.MaxHp : TeamComboDefaults.VitalsMaxHpFallback;
             dummy.Bind(maxHp, TeamComboDefaults.AllyDummyHpRatio);
             var actor = go.AddComponent<TeamActor>();
             actor.Id = _nextId++;
@@ -433,7 +433,7 @@ namespace Dovus.Game.Team
             {
                 BossReactor reactor = CachedBossReactor();
                 float radius = reactor != null ? reactor.BodyRadiusM : TeamComboDefaults.BossBodyRadiusFallbackM;
-                var bossBody = new Body(900, _boss.position.x, _boss.position.y, _boss.position.z, radius, false, true);
+                var bossBody = new Body(TeamComboDefaults.BossPortalBodyId, _boss.position.x, _boss.position.y, _boss.position.z, radius, false, true);
                 _portal.Sense(bossBody, false, boss, out _);
             }
         }
@@ -468,11 +468,11 @@ namespace Dovus.Game.Team
             if (_bossStatus == null)
                 return;
             if (pulse.Stunned && pulse.StunSec > 0f)
-                _bossStatus.Board.Apply(StatusKind.Stun, pulse.StunSec * 1000.0, TeamComboDefaults.StunStatusStrength, "takim");
+                _bossStatus.Board.Apply(StatusKind.Stun, pulse.StunSec * TeamComboDefaults.SecToMs, TeamComboDefaults.StunStatusStrength, "takim");
             if (pulse.Burned)
             {
                 // S17: yüklenen/panelden değişen tuning (ActorStatus.Bind'deki _combat.Status), varsayılan değil.
-                _bossStatus.Board.Apply(StatusKind.Burn, 1000.0, _bossStatus.Tuning.BurnDamagePerSec, "8-6");
+                _bossStatus.Board.Apply(StatusKind.Burn, TeamComboDefaults.SecToMs, _bossStatus.Tuning.BurnDamagePerSec, "8-6");
             }
             if (pulse.MineMult > TeamComboDefaults.MineMultActiveThreshold)
                 _line = "Mayın x" + pulse.MineMult.ToString("0");

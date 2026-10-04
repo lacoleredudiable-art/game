@@ -70,9 +70,9 @@ namespace Dovus.Game.Skills.Projectiles
             if (_host.Player == null)
                 return;
             Vector3 from = _host.Player.position;
-            if (_host.FlatDistance(from, center) < 0.05f)
+            if (_host.FlatDistance(from, center) < ProjectileEraserDefaults.EraseCenterEpsilonM)
                 return;
-            float halfWidth = Mathf.Max(0.05f, (float)plan.Body.SizeM * 0.5f);
+            float halfWidth = Mathf.Max(ProjectileEraserDefaults.MinRadiusM, (float)plan.Body.SizeM * 0.5f);
             int n = _host.Projectiles.Sim.QuerySegment(from.x, from.z, center.x, center.z, halfWidth, _eraseIds, team: 1);
             if (n == 0)
                 return;
@@ -155,7 +155,7 @@ namespace Dovus.Game.Skills.Projectiles
             {
                 if (worldMs < v.NextEraseMs)
                     return;
-                v.NextEraseMs = worldMs + 1000.0 / Math.Max(0.01, spec.RatePerSec);
+                v.NextEraseMs = worldMs + SkillsTimeDefaults.SecToMs / Math.Max(ProjectileEraserDefaults.EraseRateMinHz, spec.RatePerSec);
                 EraseMostUrgent(id);
                 return;
             }
@@ -201,7 +201,7 @@ namespace Dovus.Game.Skills.Projectiles
                 ? _host.Boss.transform.position - new Vector3(p.X, 0f, p.Z)
                 : new Vector3(-p.VX, 0f, -p.VZ);
             float speed = Mathf.Sqrt(p.VX * p.VX + p.VZ * p.VZ);
-            float minSpeed = _host.Combat != null ? _host.Combat.Boss.VolleySpeedMps : 7f;
+            float minSpeed = _host.Combat != null ? _host.Combat.Boss.VolleySpeedMps : ProjectileEraserDefaults.VolleySpeedFallbackMps;
             float mult = speed > 0.0001f ? Mathf.Max(1f, minSpeed / speed) : 1f;
             if (speed <= 0.0001f)
                 _host.Projectiles.Sim.SetSpeedMult(id, 0f);

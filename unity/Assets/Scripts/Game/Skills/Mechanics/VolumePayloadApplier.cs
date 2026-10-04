@@ -36,9 +36,9 @@ namespace Dovus.Game.Skills.Mechanics
             if (v.Plan == null || _host.Clock == null)
                 return;
             double now = _host.Clock.Director.WorldTimeMs;
-            double flow = JsonParam("flow_tick_fraction", 0.33);
+            double flow = JsonParam("flow_tick_fraction", VolumePayloadApplierDefaults.FlowTickFractionFallback);
             double trapMult = JsonParam("trap_trigger_mult", 0.5);
-            float growth = JsonEffectRules.RampedRatio(1f, v.StartMs, v.UntilMs, now, JsonParam("ramp_max", 1.5));
+            float growth = JsonEffectRules.RampedRatio(1f, v.StartMs, v.UntilMs, now, JsonParam("ramp_max", VolumePayloadApplierDefaults.RampMaxFallback));
             string src = "payload:" + v.Plan.SkillId;
             bool trapFires = v.Profile.Trap && bossInside && now >= v.ArmAtMs
                 && (!v.Triggered || JsonEffectRules.TrapRepeats(v.Plan.Body));
@@ -66,7 +66,7 @@ namespace Dovus.Game.Skills.Mechanics
                 _host.Readout?.NoteSkill(v.Skill.DisplayName, "tuzak tetiklendi", new Color(1f, 0.6f, 0.3f));
                 JsonEffectRuntime.JsonLog("tuzak tetiklendi " + v.Plan.SkillId);
                 if (!JsonEffectRules.TrapRepeats(v.Plan.Body))
-                    v.UntilMs = Math.Min(v.UntilMs, now + 250.0);
+                    v.UntilMs = Math.Min(v.UntilMs, now + VolumePayloadApplierDefaults.TrapUntilCapMs);
             }
         }
 
@@ -86,10 +86,10 @@ namespace Dovus.Game.Skills.Mechanics
                     break;
                 case "zirh":
                     _host.BossStatus?.Armor.ApplyShred(
-                        (float)Math.Abs(e.Amount), now, now + (trap ? Math.Max(1.0, e.DurationSec) * 1000.0 : refreshMs));
+                        (float)Math.Abs(e.Amount), now, now + (trap ? Math.Max(1.0, e.DurationSec) * SkillsTimeDefaults.SecToMs : refreshMs));
                     break;
                 case "hareket":
-                    double ms = trap ? Math.Max(0.5, e.DurationSec) * 1000.0 : refreshMs;
+                    double ms = trap ? Math.Max(0.5, e.DurationSec) * SkillsTimeDefaults.SecToMs : refreshMs;
                     if (e.Amount <= 0)
                         _host.BossStatus?.Board.Apply(StatusKind.Root, ms, 1f, src);
                     else if (e.Amount < 1)
@@ -111,7 +111,7 @@ namespace Dovus.Game.Skills.Mechanics
                     break;
                 case "kalkan":
                     float cap = _host.ShieldAbsorbFor(v.Skill) * level * _host.WeaponFriendlyScale();
-                    float step = cap * (float)JsonParam("flow_tick_fraction", 0.33);
+                    float step = cap * (float)JsonParam("flow_tick_fraction", VolumePayloadApplierDefaults.FlowStepFractionFallback);
                     if (playerInside && _host.PlayerStatus != null)
                         TopUpShield(_host.PlayerStatus.Board, step, cap, refreshMs, src);
                     if (allyInside && _host.Ally != null)
@@ -138,7 +138,7 @@ namespace Dovus.Game.Skills.Mechanics
                 return;
             float next = Mathf.Min(cap, board.ShieldRemaining + step);
             if (next > board.ShieldRemaining)
-                board.Apply(StatusKind.Shield, Math.Max(refreshMs, 1000.0), next, src);
+                board.Apply(StatusKind.Shield, Math.Max(refreshMs, SkillsTimeDefaults.SecToMs), next, src);
         }
 
         public void TickLinkFlow(MechanicLink link, double worldMs)
@@ -147,8 +147,8 @@ namespace Dovus.Game.Skills.Mechanics
                 return;
             if (_host.Boss == null || link.Target != _host.Boss.transform || worldMs < link.NextFlowMs)
                 return;
-            link.NextFlowMs = worldMs + Math.Max(50.0, link.FlowTickMs);
-            float dealt = _json.ApplyJsonTickDamage(link.Closing, link.Skill, (float)JsonParam("flow_tick_fraction", 0.33));
+            link.NextFlowMs = worldMs + Math.Max(VolumePayloadApplierDefaults.LinkFlowTickMinMs, link.FlowTickMs);
+            float dealt = _json.ApplyJsonTickDamage(link.Closing, link.Skill, (float)JsonParam("flow_tick_fraction", VolumePayloadApplierDefaults.LinkFlowTickFractionFallback));
             if (dealt > 0f)
                 JsonEffectRuntime.JsonLog($"bağ akışı {dealt:0.#}");
         }

@@ -165,7 +165,7 @@ namespace Dovus.Game.Skills.Execution
             {
                 go.transform.position += forward * reachM * 0.5f;
                 go.transform.localScale = shape == "line"
-                    ? new Vector3(radiusM * 2f, radiusM * 0.25f, reachM)
+                    ? new Vector3(radiusM * 2f, radiusM * HitboxVfxRegistryDefaults.CapsuleHeightMult, reachM)
                     : new Vector3(radiusM * 2f, reachM * 0.5f, radiusM * 2f);
                 if (shape == "capsule")
                     go.transform.rotation *= Quaternion.Euler(90f, 0f, 0f);
@@ -176,14 +176,14 @@ namespace Dovus.Game.Skills.Execution
             }
             else
             {
-                float height = shape == "cylinder" ? Mathf.Max(0.05f, radiusM * 0.15f) : radiusM * 2f;
+                float height = shape == "cylinder" ? Mathf.Max(HitboxVfxRegistryDefaults.MinRadiusM, radiusM * HitboxVfxRegistryDefaults.CylinderHeightMult) : radiusM * 2f;
                 go.transform.localScale = new Vector3(radiusM * 2f, height, radiusM * 2f);
             }
 
             Color color = Color.white;
             if (!string.IsNullOrEmpty(colorHex))
                 ColorUtility.TryParseHtmlString(colorHex, out color);
-            color.a = 0.38f;
+            color.a = HitboxVfxRegistryDefaults.PreviewFillAlpha;
             string materialKey = colorHex ?? string.Empty;
             if (!Materials.TryGetValue(materialKey, out Material material) || material == null)
             {
@@ -204,7 +204,7 @@ namespace Dovus.Game.Skills.Execution
 
         static Mesh CreateConeMesh(float angleDeg)
         {
-            float half = Mathf.Clamp(angleDeg > 0f ? angleDeg : 60f, 1f, 359f) * 0.5f;
+            float half = Mathf.Clamp(angleDeg > 0f ? angleDeg : 60f, 1f, HitboxVfxRegistryDefaults.WedgeMaxHalfAngleDeg) * 0.5f;
             const int segments = 12;
             var vertices = new Vector3[segments + 2];
             var triangles = new int[segments * 3];
@@ -212,7 +212,7 @@ namespace Dovus.Game.Skills.Execution
             for (int i = 0; i <= segments; i++)
             {
                 float angle = Mathf.Lerp(-half, half, i / (float)segments) * Mathf.Deg2Rad;
-                vertices[i + 1] = new Vector3(Mathf.Sin(angle), 0.02f, Mathf.Cos(angle));
+                vertices[i + 1] = new Vector3(Mathf.Sin(angle), HitboxVfxRegistryDefaults.WedgeGroundYM, Mathf.Cos(angle));
                 if (i == segments)
                     continue;
                 int t = i * 3;
