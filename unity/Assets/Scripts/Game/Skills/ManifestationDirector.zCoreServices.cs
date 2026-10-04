@@ -87,6 +87,7 @@ namespace Dovus.Game.Skills
             public void EnsureCastPort()
             {
                 _md._castPort ??= new CastPort(_md);
+                _md.WireCastPresentationFeedback();
             }
 
             public void RunBasicClosing(PendingClosing p)

@@ -229,6 +229,7 @@ public class AppSimulationTests
         public void ApplyMotionIframe(SkillResolution skill, in SkillMotionPlan motion) { }
         public bool TryBeginMotionTemplate(SkillResolution skill, int ctx) => false;
         public void NoteSustainedCast(SkillResolution skill) { }
+        public void NotifyCast(string skillId) => Record(nameof(NotifyCast));
         public SkillExecutorRoute Route(SkillResolution skill) => new(SkillExecutorKind.MeleeHitbox, false, string.Empty);
         public SkillExecutorRoute ApplyMechanicWorldRoute(SkillResolution skill, SkillExecutorRoute route) => route;
         public void SetLastExecutorKind(SkillExecutorKind kind) { }

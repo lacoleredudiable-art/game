@@ -37,6 +37,7 @@ public class CastPipelinePresentationTests
         public void ApplyMotionIframe(SkillResolution skill, in SkillMotionPlan motion) { }
         public bool TryBeginMotionTemplate(SkillResolution skill, int ctx) => false;
         public void NoteSustainedCast(SkillResolution skill) { }
+        public void NotifyCast(string skillId) { }
         public SkillExecutorRoute Route(SkillResolution skill) =>
             new(SkillExecutorKind.MeleeHitbox, false, string.Empty);
         public SkillExecutorRoute ApplyMechanicWorldRoute(SkillResolution skill, SkillExecutorRoute route) => route;
@@ -75,7 +76,6 @@ public class CastPipelinePresentationTests
         var order = new List<string>();
         var pipeline = new CastPipeline();
         pipeline.CompatibilityPublished += _ => order.Add(nameof(pipeline.CompatibilityPublished));
-        pipeline.TeamCastNotified += _ => order.Add(nameof(pipeline.TeamCastNotified));
         pipeline.Started += _ => order.Add(nameof(pipeline.Started));
         pipeline.SkillShoutRequested += _ => order.Add(nameof(pipeline.SkillShoutRequested));
         pipeline.Completed += _ => order.Add(nameof(pipeline.Completed));
@@ -85,7 +85,6 @@ public class CastPipelinePresentationTests
         Assert.That(order, Is.EqualTo(new[]
         {
             nameof(pipeline.CompatibilityPublished),
-            nameof(pipeline.TeamCastNotified),
             nameof(pipeline.Started),
             nameof(pipeline.SkillShoutRequested),
             nameof(pipeline.Completed),

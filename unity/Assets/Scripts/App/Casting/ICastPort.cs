@@ -30,6 +30,7 @@ namespace Dovus.App.Casting
         void ApplyMotionIframe(SkillResolution skill, in SkillMotionPlan motion);
         bool TryBeginMotionTemplate(SkillResolution skill, TCtx ctx);
         void NoteSustainedCast(SkillResolution skill);
+        void NotifyCast(string skillId);
 
         SkillExecutorRoute Route(SkillResolution skill);
         SkillExecutorRoute ApplyMechanicWorldRoute(SkillResolution skill, SkillExecutorRoute route);

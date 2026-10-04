@@ -21,7 +21,6 @@ namespace Dovus.App.Casting
 
         public event Action<CastDenialRequested> DenialRequested;
         public event Action<CastCompatibilityPublished> CompatibilityPublished;
-        public event Action<string> TeamCastNotified;
         public event Action<CastSkillShoutRequested> SkillShoutRequested;
         public event Action<CastMotionAnnotationRequested> MotionAnnotationRequested;
 
@@ -106,7 +105,7 @@ namespace Dovus.App.Casting
                 port.ApplyMotionIframe(skill, in motionPlan);
                 bool templateOwnsDelivery = port.TryBeginMotionTemplate(skill, ctx);
                 port.NoteSustainedCast(skill);
-                TeamCastNotified?.Invoke(skill.Identity.Id);
+                port.NotifyCast(skill.Identity.Id);
                 Started?.Invoke(new CastStarted(skill.Identity.Id));
 
                 SkillExecutorRoute executorRoute = port.Route(skill);

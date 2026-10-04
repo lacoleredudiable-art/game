@@ -16,7 +16,6 @@ namespace Dovus.Game.Skills
 
             _castPipeline.DenialRequested += OnCastDenialRequested;
             _castPipeline.CompatibilityPublished += OnCastCompatibilityPublished;
-            _castPipeline.TeamCastNotified += OnTeamCastNotified;
             _castPipeline.SkillShoutRequested += OnSkillShoutRequested;
             _castPipeline.MotionAnnotationRequested += OnMotionAnnotationRequested;
         }
@@ -40,8 +39,6 @@ namespace Dovus.Game.Skills
             LastWeaponPassiveEnabled = e.Compatibility.PassiveEnabled;
             LastWeaponUiLabel = e.Compatibility.UiLabel;
         }
-
-        void OnTeamCastNotified(string skillId) => TeamHub.NotifyCast(skillId);
 
         void OnSkillShoutRequested(CastSkillShoutRequested e)
         {

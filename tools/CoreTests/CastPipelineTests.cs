@@ -32,6 +32,7 @@ public class CastPipelineTests
         nameof(ICastPort<object>.ApplyMotionIframe),
         nameof(ICastPort<object>.TryBeginMotionTemplate),
         nameof(ICastPort<object>.NoteSustainedCast),
+        nameof(ICastPort<object>.NotifyCast),
         nameof(ICastPort<object>.Route),
         nameof(ICastPort<object>.ApplyMechanicWorldRoute),
         nameof(ICastPort<object>.SetLastExecutorKind),
@@ -119,6 +120,8 @@ public class CastPipelineTests
         }
 
         public void NoteSustainedCast(SkillResolution skill) => Record();
+        public void NotifyCast(string skillId) => Record();
+
         public SkillExecutorRoute Route(SkillResolution skill)
         {
             Record();
