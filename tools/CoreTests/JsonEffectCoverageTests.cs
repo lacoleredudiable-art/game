@@ -22,7 +22,8 @@ public class JsonEffectCoverageTests
     // Bu dosyalar anahtarı ÜRETİR ya da yalnız etiketler; kanıt sayılmaz.
     static readonly string[] ProducerFiles =
     {
-        "MechanicGrammar.cs", "MechanicLabels.cs", "MechanicVisual.cs", "MechanicDescriber.cs"
+        "MechanicGrammar.cs", "MechanicLabeler.cs", "MechanicDescriber.cs",
+        "MechanicVisualComposer.cs", "VisualPiece.cs", "VisualRecipe.cs"
     };
 
     static readonly string[] CheckedTraits = { "mayin", "cit", "inen_akis_alani" };
@@ -41,7 +42,7 @@ public class JsonEffectCoverageTests
         ("mode", "ayna_klon", "unity/Assets/Scripts/Core/Mechanic/MechanicWorldProfile.cs", "\"ayna_klon\""),
         ("mode", "ayna_sifati", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.VerbExecution.cs", "GrantReflect"),
         ("mode", "ayna_yuzey", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"ayna_yuzey\""),
-        ("mode", "bag", "unity/Assets/Scripts/Core/Mechanic/MechanicModel.cs", "\"bag\""),
+        ("mode", "bag", "unity/Assets/Scripts/Core/Mechanic/MechanicBody.cs", "\"bag\""),
         ("mode", "bag_akisi", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"bag_akisi\""),
         ("mode", "bag_bagisiklik", "unity/Assets/Scripts/Game/Skills/Mechanics/MechanicVolumeTicker.cs", "\"bag_bagisiklik\""),
         ("mode", "bag_boyunca", "unity/Assets/Scripts/Game/Skills/ManifestationDirector.MechanicGrammar.cs", "PullBossToPlayerContact"),
@@ -94,7 +95,7 @@ public class JsonEffectCoverageTests
         ("mode", "sicrayip_cakil", "docs/motion-templates.json", "\"3-8\""),
         ("mode", "sis_patlamasi", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"sis_patlamasi\""),
         ("mode", "suikastci", "unity/Assets/Scripts/Core/Mechanic/MechanicWorldProfile.cs", "\"suikastci\""),
-        ("mode", "surekli", "unity/Assets/Scripts/Core/Mechanic/MechanicModel.cs", "\"surekli\""),
+        ("mode", "surekli", "unity/Assets/Scripts/Core/Mechanic/MechanicBody.cs", "\"surekli\""),
         ("mode", "suzulme", "unity/Assets/Scripts/Game/Skills/Motion/TemplateDeliveryRuntime.cs", "\"suzulme\""),
         ("mode", "taret", "unity/Assets/Scripts/Core/Mechanic/MechanicWorldProfile.cs", "\"taret\""),
         ("mode", "tasar", "unity/Assets/Scripts/Core/Mechanic/JsonEffectRules.cs", "\"tasar\""),
