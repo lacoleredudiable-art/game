@@ -6,10 +6,11 @@ namespace Dovus.Core.Tuning
     /// Eski sürümlü kayıt yüklenmez: kod varsayılanları kazanır, eski dosya yedeğe alınır.
     /// Sürüm 1 = BossDamageMigration dönemi. Sürüm 2 = denetim A/B/C varsayılanları
     /// (i-frame 260, kaçış 3,8 m, tek PERFECT 150 ms / HARİKA 190, kör %30, PERFECT bonusu 2 sn).
+    /// Sürüm 9 = EnforceCooldown ve EnforceResourceCost varsayılan true (1.1b).
     /// </summary>
     public static class TuningSchema
     {
-        public const int Version = 8;
+        public const int Version = 9;
 
         public enum LoadDecision
         {
