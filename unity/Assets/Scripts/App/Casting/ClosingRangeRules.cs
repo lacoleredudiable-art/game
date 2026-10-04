@@ -36,7 +36,7 @@ namespace Dovus.App.Casting
 
             if (dx * dx + dz * dz > reach * reach)
             {
-                if (!logic.OverlapsBoss(bossX, bossZ, reach * 0.35f))
+                if (!logic.OverlapsBoss(bossX, bossZ, reach * CastingDefaults.ReachFraction035f))
                     return false;
             }
 

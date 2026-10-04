@@ -25,7 +25,7 @@ namespace Dovus.Core.Boss
         /// <summary><see cref="Revive"/> sonrası (ölüm zamanlayıcısı dışarıdan dirilişi de görsün).</summary>
         public event Action Revived;
 
-        public BossVitals(float maxHp = 120f)
+        public BossVitals(float maxHp = BossDefaults.Lit120f)
         {
             SetMaxHp(maxHp);
             _hp = _maxHp;

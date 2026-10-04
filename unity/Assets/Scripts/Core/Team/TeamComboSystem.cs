@@ -289,7 +289,7 @@ namespace Dovus.Core.Team
                 Turret turret = _turrets[i];
                 if (_now >= turret.Until)
                     continue;
-                if (Dist(ally.X, ally.Z, turret.X, turret.Z) > TriggerRadiusM + ally.Radius + 0.4f)
+                if (Dist(ally.X, ally.Z, turret.X, turret.Z) > TriggerRadiusM + ally.Radius + TeamComboSystemDefaults.LitN04f)
                     continue;
                 LastCopiedSkill = ally.LastSkillId;
                 return LastCopiedSkill;
@@ -406,11 +406,11 @@ namespace Dovus.Core.Team
                 float dx = boss.X - caster.X;
                 float dz = boss.Z - caster.Z;
                 float len = MathF.Sqrt(dx * dx + dz * dz);
-                if (len > 0.2f)
+                if (len > TeamComboSystemDefaults.LitN02f)
                 {
-                    float u = MathF.Min(0.72f, (len - boss.Radius - TriggerRadiusM) / len);
-                    if (u < 0.2f)
-                        u = 0.2f;
+                    float u = MathF.Min(TeamComboSystemDefaults.LitN072f, (len - boss.Radius - TriggerRadiusM) / len);
+                    if (u < TeamComboSystemDefaults.LitN02f)
+                        u = TeamComboSystemDefaults.LitN02f;
                     x = caster.X + dx / len * len * u;
                     z = caster.Z + dz / len * len * u;
                 }
@@ -421,7 +421,7 @@ namespace Dovus.Core.Team
                 X = x,
                 Z = z,
                 Until = _now + MineLifeSec,
-                BossRadius = boss.Present ? boss.Radius : 0.85f
+                BossRadius = boss.Present ? boss.Radius : TeamComboSystemDefaults.LitN085f
             });
             return TeamPulse.None;
         }
@@ -435,7 +435,7 @@ namespace Dovus.Core.Team
         TeamPulse PlantRope(IAllyPlayer caster, in Disc boss)
         {
             float bx = boss.Present ? boss.X : caster.X;
-            float bz = boss.Present ? boss.Z + 3f : caster.Z + 3f;
+            float bz = boss.Present ? boss.Z + TeamComboSystemDefaults.Lit3f : caster.Z + TeamComboSystemDefaults.Lit3f;
             _ropes.Add(new Rope
             {
                 Owner = caster.Id,

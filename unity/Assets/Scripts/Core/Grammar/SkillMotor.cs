@@ -410,7 +410,7 @@ namespace Dovus.Core.Grammar
 
             if (motor._runes.Count != 12)
                 throw new InvalidOperationException("element-sistemi v6: 12 rün beklenir.");
-            if (motor._v61Skills.Count != 144)
+            if (motor._v61Skills.Count != GrammarDefaults.Lit144)
                 throw new InvalidOperationException("element-sistemi v6: 144 skill beklenir.");
             if (motor._maxComboLength != 2)
                 throw new InvalidOperationException("element-sistemi v6: mevcut kombo uzunluğu 2 olmalıdır.");

@@ -18,7 +18,7 @@ namespace Dovus.Core.Hud
 
         static string Trim(float scaled)
         {
-            float tenths = (float)Math.Round(scaled * 10f) / 10f;
+            float tenths = (float)Math.Round(scaled * HudDefaults.Lit10f) / HudDefaults.Lit10f;
             if (Math.Abs(tenths - (float)Math.Round(tenths)) < 0.001f)
                 return ((int)Math.Round(tenths)).ToString(CultureInfo.InvariantCulture);
             return tenths.ToString("0.0", CultureInfo.InvariantCulture);

@@ -140,7 +140,7 @@ namespace Dovus.Core.Input
             float cos = (v1x * v2x + v1y * v2y) / n;
             if (cos > 1f) cos = 1f;
             if (cos < -1f) cos = -1f;
-            return (float)(System.Math.Acos(cos) * 180.0 / System.Math.PI);
+            return (float)(System.Math.Acos(cos) * InputDefaults.RadToDeg / System.Math.PI);
         }
     }
 }

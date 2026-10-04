@@ -64,7 +64,7 @@ namespace Dovus.Core.Dodge
             float fz = fromZ - bossZ;
             float c = fx * fx + fz * fz - minSeparation * minSeparation;
 
-            if (a < 1e-8f)
+            if (a < DodgeDefaults.Len2Epsilon1e8f)
             {
                 if (c < 0f)
                     KeepOutside(ref x, ref z, bossX, bossZ, minSeparation, 0f, 0f);
@@ -87,7 +87,7 @@ namespace Dovus.Core.Dodge
             }
 
             float b = 2f * (fx * abx + fz * abz);
-            float disc = b * b - 4f * a * c;
+            float disc = b * b - DodgeDefaults.Lit4f * a * c;
             if (disc < 0f)
                 return;
 

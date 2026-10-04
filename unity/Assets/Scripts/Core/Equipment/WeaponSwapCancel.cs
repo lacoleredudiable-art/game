@@ -83,7 +83,7 @@ namespace Dovus.Core.Equipment
         {
             if (durationSec <= 0)
                 return;
-            _untilMs = Math.Max(_untilMs, nowMs + durationSec * 1000.0);
+            _untilMs = Math.Max(_untilMs, nowMs + durationSec * EquipmentDefaults.SecToMs);
         }
 
         public bool Active(double nowMs) => nowMs < _untilMs;

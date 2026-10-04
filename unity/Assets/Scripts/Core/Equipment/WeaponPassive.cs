@@ -244,7 +244,7 @@ namespace Dovus.Core.Equipment
         /// </summary>
         public int EffectiveChain(double nowMs, float gapSec)
         {
-            if (nowMs - _chainStartMs > Math.Max(0f, gapSec) * 1000.0)
+            if (nowMs - _chainStartMs > Math.Max(0f, gapSec) * WeaponPassiveDefaults.SecToMs)
             {
                 _chainCount = 0;
                 return 0;
@@ -256,7 +256,7 @@ namespace Dovus.Core.Equipment
 
         public void NoteBlock(double nowMs, float windowSec)
         {
-            _counterUntilMs = nowMs + Math.Max(0f, windowSec) * 1000.0;
+            _counterUntilMs = nowMs + Math.Max(0f, windowSec) * WeaponPassiveDefaults.SecToMs;
         }
 
         /// <summary>Penceredeki ilk skill vuruşu bonusu yer. Sonrakiler yemez.</summary>
@@ -272,13 +272,13 @@ namespace Dovus.Core.Equipment
 
         public void CommitHammer(double nowMs, float icdSec)
         {
-            _hammerReadyMs = nowMs + Math.Max(0f, icdSec) * 1000.0;
+            _hammerReadyMs = nowMs + Math.Max(0f, icdSec) * WeaponPassiveDefaults.SecToMs;
         }
 
         /// <summary>Art arda skill. Aralık aşılırsa sayaç 1'den başlar. Dönüş bu vuruşun sırası.</summary>
         public int NoteSkill(double nowMs, float gapSec)
         {
-            if (nowMs - _chainStartMs > Math.Max(0f, gapSec) * 1000.0)
+            if (nowMs - _chainStartMs > Math.Max(0f, gapSec) * WeaponPassiveDefaults.SecToMs)
                 _chainCount = 0;
             _chainCount++;
             _chainStartMs = nowMs;
@@ -289,7 +289,7 @@ namespace Dovus.Core.Equipment
         {
             _bonusWeaponId = weaponId;
             _bonusId = bonusId ?? string.Empty;
-            _bonusUntilMs = nowMs + Math.Max(0f, windowSec) * 1000.0;
+            _bonusUntilMs = nowMs + Math.Max(0f, windowSec) * WeaponPassiveDefaults.SecToMs;
             _bonusArmed = true;
         }
 
@@ -367,7 +367,7 @@ namespace Dovus.Core.Equipment
         {
             if (durationSec <= 0f)
                 return 1;
-            float tick = tickSec > 0.01f ? tickSec : 0.01f;
+            float tick = tickSec > WeaponPassiveDefaults.MinTick01f ? tickSec : WeaponPassiveDefaults.MinTick01f;
             return Math.Max(1, (int)Math.Ceiling(durationSec / tick - 1e-4f));
         }
 

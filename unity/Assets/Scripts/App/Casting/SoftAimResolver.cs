@@ -43,13 +43,13 @@
                 FlatFacingMath.Normalize(ref facingX, ref facingZ);
             }
 
-            if (!hasBoss || !(softAimRangeM > 0.1f))
+            if (!hasBoss || !(softAimRangeM > CastingDefaults.Min10f))
                 return;
 
             float toBossX = bossX - posX;
             float toBossZ = bossZ - posZ;
             float dist = (float)System.Math.Sqrt(toBossX * toBossX + toBossZ * toBossZ);
-            if (dist > 0.01f && dist <= softAimRangeM
+            if (dist > CastingDefaults.MinTick01f && dist <= softAimRangeM
                 && FlatFacingMath.FlatAngleDeg(facingX, facingZ, toBossX, toBossZ) <= softAimConeDeg)
             {
                 facingX = toBossX / dist;

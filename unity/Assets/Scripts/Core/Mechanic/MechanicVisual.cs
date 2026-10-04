@@ -61,7 +61,7 @@ namespace Dovus.Core.Mechanic
             MechanicBody b = plan.Body;
             double size = Math.Min(t.PieceMaxSizeM, Math.Max(t.PieceMinSizeM, b.SizeM * t.PieceSizeFrac));
             double reach = Math.Max(b.ReachM, b.SizeM);
-            double step = Math.Max(0.05, size * t.SpacingPieces);
+            double step = Math.Max(MechanicVisualDefaults.Min05f, size * t.SpacingPieces);
             var r = new VisualRecipe
             {
                 Substance = plan.Verb,
@@ -99,19 +99,19 @@ namespace Dovus.Core.Mechanic
                     break;
                 case "yay":
                     r.Layout = "yay";
-                    Arc(r, reach * 0.75, t.SweepArcDeg, t.SweepSec, step, 1, t);
-                    endZ = reach * 0.75;
+                    Arc(r, reach * MechanicVisualDefaults.LitN075, t.SweepArcDeg, t.SweepSec, step, 1, t);
+                    endZ = reach * MechanicVisualDefaults.LitN075;
                     break;
                 case "agir_yay":
                     r.Layout = "agir_yay";
-                    Arc(r, reach * 0.75, t.SweepArcDeg, t.HeavySweepSec, step, t.HeavyScale, t);
-                    Add(r, 0, reach * 0.75, t.HeavySweepSec, t.HeavyScale);
-                    endZ = reach * 0.75;
+                    Arc(r, reach * MechanicVisualDefaults.LitN075, t.SweepArcDeg, t.HeavySweepSec, step, t.HeavyScale, t);
+                    Add(r, 0, reach * MechanicVisualDefaults.LitN075, t.HeavySweepSec, t.HeavyScale);
+                    endZ = reach * MechanicVisualDefaults.LitN075;
                     break;
                 case "yere_vurus":
                     r.Layout = "carpma";
                     Add(r, 0, 0, 0, t.HeavyScale);
-                    Ring(r, 0, 0, b.SizeM * 0.5, t.SlamRingPieces, t.SlamRingDelaySec, 0.7);
+                    Ring(r, 0, 0, b.SizeM * 0.5, t.SlamRingPieces, t.SlamRingDelaySec, MechanicVisualDefaults.LitN07);
                     break;
                 case "yerlestirme":
                     r.Layout = "yerlesim";
@@ -126,7 +126,7 @@ namespace Dovus.Core.Mechanic
                 case "govde":
                     r.Layout = "govde";
                     r.FollowOwner = true;
-                    Ring(r, 0, 0, size, t.OrbitPieces, 0, 0.8);
+                    Ring(r, 0, 0, size, t.OrbitPieces, 0, MechanicVisualDefaults.LitN08);
                     break;
                 case "ok":
                     r.Layout = "ok";
@@ -135,13 +135,13 @@ namespace Dovus.Core.Mechanic
                     break;
                 case "sayfa":
                     r.Layout = "sayfa";
-                    Row(r, reach * 0.6, step, t.ThrustSpeedMps, t);
-                    endZ = reach * 0.6;
+                    Row(r, reach * MechanicVisualDefaults.LitN06, step, t.ThrustSpeedMps, t);
+                    endZ = reach * MechanicVisualDefaults.LitN06;
                     break;
                 case "kure":
                     r.Layout = "kure";
-                    Add(r, reach * 0.4, 0, 0, 1);
-                    endZ = reach * 0.4;
+                    Add(r, reach * MechanicVisualDefaults.LitN04, 0, 0, 1);
+                    endZ = reach * MechanicVisualDefaults.LitN04;
                     break;
                 default:
                     r.Layout = "temas";
@@ -168,7 +168,7 @@ namespace Dovus.Core.Mechanic
             if (b.Cloud)
             {
                 int first = r.Pieces.Count;
-                Scatter(r, endX, endZ, b.SizeM * 0.5, t.CloudPieces, 0.05, t.CloudScale);
+                Scatter(r, endX, endZ, b.SizeM * 0.5, t.CloudPieces, MechanicVisualDefaults.Min05f, t.CloudScale);
                 for (int i = first; i < r.Pieces.Count; i++)
                 {
                     VisualPiece p = r.Pieces[i];
@@ -188,7 +188,7 @@ namespace Dovus.Core.Mechanic
                     double x = endX + (i - (n - 1) * 0.5) * step;
                     r.Pieces.Add(new VisualPiece
                     {
-                        X = x, Z = endZ, DelaySec = maxDelay + i * 0.02, Scale = 1, StretchZ = 1, RiseM = size
+                        X = x, Z = endZ, DelaySec = maxDelay + i * MechanicVisualDefaults.LitN002, Scale = 1, StretchZ = 1, RiseM = size
                     });
                 }
                 r.Traits.Add("duvar");
@@ -223,8 +223,8 @@ namespace Dovus.Core.Mechanic
                 for (int i = 0; i < 3; i++)
                     r.Pieces.Add(new VisualPiece
                     {
-                        X = endX, Y = i * size, Z = endZ, DelaySec = d + i * t.RiseSec * 0.3,
-                        Scale = 1, StretchZ = 1, RiseM = size * 1.5
+                        X = endX, Y = i * size, Z = endZ, DelaySec = d + i * t.RiseSec * MechanicVisualDefaults.LitN03,
+                        Scale = 1, StretchZ = 1, RiseM = size * MechanicVisualDefaults.Lit15
                     });
                 r.Traits.Add("dikey");
             }
@@ -254,8 +254,8 @@ namespace Dovus.Core.Mechanic
                 {
                     double sx = endX + (p.X - endX) * t.PullStartFrac;
                     double sz = endZ + (p.Z - endZ) * t.PullStartFrac;
-                    p.MoveX += (endX - sx) * 0.9;
-                    p.MoveZ += (endZ - sz) * 0.9;
+                    p.MoveX += (endX - sx) * MechanicVisualDefaults.LitN09;
+                    p.MoveZ += (endZ - sz) * MechanicVisualDefaults.LitN09;
                     p.X = sx;
                     p.Z = sz;
                     return p;
@@ -276,10 +276,10 @@ namespace Dovus.Core.Mechanic
                 for (int c = 1; c <= b.Chain; c++)
                     r.Pieces.Add(new VisualPiece
                     {
-                        X = endX + (c % 2 == 1 ? 1 : -1) * t.ChainHopM * 0.6,
+                        X = endX + (c % 2 == 1 ? 1 : -1) * t.ChainHopM * MechanicVisualDefaults.LitN06,
                         Z = endZ + c * t.ChainHopM,
                         DelaySec = d + c * t.ChainHopSec,
-                        Scale = 0.8, StretchZ = 1
+                        Scale = MechanicVisualDefaults.LitN08, StretchZ = 1
                     });
                 r.Traits.Add("seker" + b.Chain.ToString(CultureInfo.InvariantCulture));
             }
@@ -349,14 +349,14 @@ namespace Dovus.Core.Mechanic
             for (int i = 0; i < n; i++)
             {
                 double z = n == 1 ? reach : start + (reach - start) * i / (n - 1);
-                Add(r, 0, z, z / Math.Max(0.01, speedMps), 1);
+                Add(r, 0, z, z / Math.Max(MechanicVisualDefaults.LitN001, speedMps), 1);
             }
         }
 
         static void Arc(VisualRecipe r, double radius, double arcDeg, double sweepSec, double step, double scale,
             SkillVisualTuning t)
         {
-            double half = arcDeg * 0.5 * Math.PI / 180.0;
+            double half = arcDeg * 0.5 * Math.PI / MechanicVisualDefaults.RadToDeg;
             int n = Clamp((int)Math.Ceiling(radius * half * 2 / step) + 1, 3, t.MaxPiecesPerRow);
             for (int i = 0; i < n; i++)
             {

@@ -18,7 +18,7 @@ namespace Dovus.Core.Casting
         int _activeCasts;
 
         /// <summary>Varsayılanlar JSON cooldown_rules: 0.3s GCD, max 1 eşzamanlı cast.</summary>
-        public CooldownTracker(float globalCooldownSec = 0.3f, int maxConcurrentCasts = 1)
+        public CooldownTracker(float globalCooldownSec = CooldownTrackerDefaults.LitN03f, int maxConcurrentCasts = 1)
         {
             _globalCooldownSec = Math.Max(0f, globalCooldownSec);
             _maxConcurrentCasts = Math.Max(1, maxConcurrentCasts);
@@ -29,13 +29,13 @@ namespace Dovus.Core.Casting
         public int ActiveCasts => _activeCasts;
 
         public float GlobalRemainingSec(double worldMs) =>
-            Math.Max(0f, (float)((_globalReadyAtMs - worldMs) / 1000.0));
+            Math.Max(0f, (float)((_globalReadyAtMs - worldMs) / CooldownTrackerDefaults.SecToMs));
 
         public float ComboRemainingSec(string comboKey, double worldMs)
         {
             if (string.IsNullOrEmpty(comboKey) || !_comboReadyAtMs.TryGetValue(comboKey, out double readyAt))
                 return 0f;
-            return Math.Max(0f, (float)((readyAt - worldMs) / 1000.0));
+            return Math.Max(0f, (float)((readyAt - worldMs) / CooldownTrackerDefaults.SecToMs));
         }
 
         /// <summary>Yalnız GCD + eşzamanlı cast (fiil başlatma; kombo CD yok).</summary>
@@ -70,8 +70,8 @@ namespace Dovus.Core.Casting
 
             _activeCasts++;
             // float*1000 (ör. 0.3f) kayan nokta sapması üretmesin diye ms yuvarlanır
-            _globalReadyAtMs = worldMs + Math.Round(_globalCooldownSec * 1000.0);
-            _comboReadyAtMs[comboKey] = worldMs + Math.Round(Math.Max(0f, comboCooldownSec) * 1000.0);
+            _globalReadyAtMs = worldMs + Math.Round(_globalCooldownSec * CooldownTrackerDefaults.SecToMs);
+            _comboReadyAtMs[comboKey] = worldMs + Math.Round(Math.Max(0f, comboCooldownSec) * CooldownTrackerDefaults.SecToMs);
             return true;
         }
 

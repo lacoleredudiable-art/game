@@ -28,7 +28,7 @@ namespace Dovus.App.Boss
             bossStatusPresent && effectiveBlocksMovement;
 
         public static bool BlocksFromSpeedMult(bool bossStatusPresent, float effectiveMoveSpeedMult) =>
-            bossStatusPresent && effectiveMoveSpeedMult <= 0.01f;
+            bossStatusPresent && effectiveMoveSpeedMult <= BossDefaults.Epsilon01f;
 
         public static float StopDistanceM(float bodyRadiusM, float aimRadiusM, float stopPadM) =>
             bodyRadiusM + aimRadiusM + stopPadM;

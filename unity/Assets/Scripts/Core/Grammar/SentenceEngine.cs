@@ -290,7 +290,7 @@ namespace Dovus.Core.Grammar
             if (completed.Closing.HasValue)
             {
                 _remainingRecoveryMs =
-                    _tuning.StepForDots(completed.Closing.Value.DotCount).RecoverySec * 1000.0;
+                    _tuning.StepForDots(completed.Closing.Value.DotCount).RecoverySec * GrammarDefaults.SecToMs;
                 State.Phase = SentencePhase.Recovering;
             }
             else

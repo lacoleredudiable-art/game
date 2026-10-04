@@ -70,8 +70,8 @@ namespace Dovus.Core.Boss
             out double durationMs)
         {
             outgoingMult = WeakenOutgoingMult(amount);
-            durationMs = durationSec * 1000.0;
-            return durationMs > 0d && outgoingMult < 0.999f;
+            durationMs = durationSec * BossStatusMathDefaults.SecToMs;
+            return durationMs > 0d && outgoingMult < BossStatusMathDefaults.OutgoingMultCap999f;
         }
 
         /// <summary>Tam daire / yer saldırısı. Dar koni nişan ister.</summary>
@@ -93,7 +93,7 @@ namespace Dovus.Core.Boss
         public static bool DamageInvulnerable(bool stasis) => stasis;
 
         public static double BlindDurationMs(double baseMs, double lifetimeAddSec) =>
-            Math.Max(0d, baseMs) + Math.Max(0d, lifetimeAddSec) * 1000.0;
+            Math.Max(0d, baseMs) + Math.Max(0d, lifetimeAddSec) * BossStatusMathDefaults.SecToMs;
 
         /// <summary>accuracy_debuff büyüklüğünü kör ıskalama şansına kırpar.</summary>
         public static float BlindChanceFromAccuracy(float accuracy) =>
@@ -162,21 +162,21 @@ namespace Dovus.Core.Boss
             {
                 apply = new ElementBossStatus(
                     StatusKind.Burn,
-                    durationSec * 1000.0,
-                    FirstNumber(statusEffect, 3f));
+                    durationSec * BossStatusMathDefaults.SecToMs,
+                    FirstNumber(statusEffect, BossStatusMathDefaults.Lit3f));
                 return true;
             }
 
             if (string.Equals(status, "weaken", StringComparison.OrdinalIgnoreCase))
             {
-                float percent = FirstNumber(statusEffect, 15f);
+                float percent = FirstNumber(statusEffect, BossStatusMathDefaults.Lit15f);
                 if (percent < 0f)
                     percent = -percent;
                 if (percent > 100f)
                     percent = 100f;
                 apply = new ElementBossStatus(
                     StatusKind.Weaken,
-                    durationSec * 1000.0,
+                    durationSec * BossStatusMathDefaults.SecToMs,
                     1f - percent / 100f);
                 return true;
             }

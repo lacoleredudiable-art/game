@@ -11,12 +11,12 @@ namespace Dovus.Core.Equipment
 
         public float Points => _points;
 
-        public bool Active(double nowMs) => _points > 0.01f && nowMs < _expiresMs;
+        public bool Active(double nowMs) => _points > EquipmentDefaults.Epsilon01f && nowMs < _expiresMs;
 
         public void Grant(float points, double nowMs, float durationSec)
         {
             _points = points > 0f ? points : 0f;
-            _expiresMs = nowMs + (durationSec > 0f ? durationSec : 0f) * 1000.0;
+            _expiresMs = nowMs + (durationSec > 0f ? durationSec : 0f) * EquipmentDefaults.SecToMs;
             if (_points <= 0f)
                 _expiresMs = nowMs;
         }
@@ -39,7 +39,7 @@ namespace Dovus.Core.Equipment
                 return 0f;
             float taken = points < _points ? points : _points;
             _points -= taken;
-            if (_points <= 0.01f)
+            if (_points <= EquipmentDefaults.Epsilon01f)
                 _points = 0f;
             return taken;
         }

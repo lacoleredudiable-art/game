@@ -21,7 +21,7 @@ namespace Dovus.App.Boss
     public static class VolleyPattern
     {
         public static float EffectiveSpreadDeg(float baseSpreadDeg, bool blind) =>
-            blind ? baseSpreadDeg * 1.5f : baseSpreadDeg;
+            blind ? baseSpreadDeg * BossDefaults.Lit15f : baseSpreadDeg;
 
         public static VolleyLayout ComputeLayout(int volleyCount, float spreadDeg)
         {

@@ -33,7 +33,7 @@ namespace Dovus.Core.Motion
 
         public static MotionTemplate Prepend(MotionTemplate template, float meters)
         {
-            if (template == null || meters <= 0.05f)
+            if (template == null || meters <= MotionDefaults.Min05f)
                 return template;
             float sec = Math.Max(MinSec, meters / SpeedMps);
             var phase = new MotionPhase(

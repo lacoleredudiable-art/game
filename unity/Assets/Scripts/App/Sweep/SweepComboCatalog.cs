@@ -38,7 +38,7 @@ namespace Dovus.App.Sweep
             return lo * 4 + hi;
         }
 
-        public static List<SweepComboEntry> OrderedCombos(string weapon, string secondWeapon = "", float startDistM = 3f)
+        public static List<SweepComboEntry> OrderedCombos(string weapon, string secondWeapon = "", float startDistM = SweepDefaults.Lit3f)
         {
             var list = new List<SweepComboEntry>();
             foreach (string w in new[] { weapon, secondWeapon })

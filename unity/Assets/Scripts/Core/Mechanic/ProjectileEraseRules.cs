@@ -95,7 +95,7 @@ namespace Dovus.Core.Mechanic
             if (e == null)
                 return default;
             MechanicBody b = plan.Body;
-            float radius = (float)Math.Max(0.05, b.SizeM);
+            float radius = (float)Math.Max(ProjectileEraseRulesDefaults.Min05f, b.SizeM);
             EraseShape shape = EraseShape.Disk;
             EraseMode mode = EraseMode.Delete;
             float grow = 1f, rate = 0f, lifesteal = 0f, reflectMult = 0f, width = 0f, length = 0f;
@@ -117,7 +117,7 @@ namespace Dovus.Core.Mechanic
             {
                 shape = EraseShape.Line;
                 width = (float)Param(rules, "erase_line_width_m", 1.0);
-                length = (float)Math.Max(0.1, b.ReachM);
+                length = (float)Math.Max(ProjectileEraseRulesDefaults.Min10f, b.ReachM);
             }
             else if (e.Has("sis_perdesi"))
                 mode = EraseMode.Shroud;
@@ -127,13 +127,13 @@ namespace Dovus.Core.Mechanic
                 rate = (float)Param(rules, "targeted_erase_per_sec", 2.0);
             }
             else if (e.Has("yukselen_perde"))
-                grow = (float)Math.Max(1.0, Param(rules, "ramp_max", 1.5));
+                grow = (float)Math.Max(1.0, Param(rules, "ramp_max", ProjectileEraseRulesDefaults.Lit15));
             else if (e.Has("surekli_perde"))
                 shape = EraseShape.Follow;
             else if (e.Has("bag_hatti"))
             {
                 shape = EraseShape.Segment;
-                width = (float)Math.Max(0.02, b.SizeM * 0.1);
+                width = (float)Math.Max(ProjectileEraseRulesDefaults.LitN002, b.SizeM * ProjectileEraseRulesDefaults.Min10f);
             }
 
             bool twice = e.Has("iki_kez");

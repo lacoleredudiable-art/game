@@ -338,7 +338,7 @@ namespace Dovus.Core.Portal
                     continue;
                 float dist = Dist(body.X, body.Z, door.X, door.Z);
                 long key = Key(body.Id, door.Id);
-                if (dist > DoorRadiusM + (projectile ? 0.2f : 0f))
+                if (dist > DoorRadiusM + (projectile ? PortalSystemDefaults.LitN02f : 0f))
                 {
                     _inside.Remove(key);
                     continue;
@@ -364,8 +364,8 @@ namespace Dovus.Core.Portal
                     continue;
 
                 _inside.Add(Key(body.Id, exit.Id));
-                float ox = exit.X + exit.Fx * (DoorRadiusM + body.Radius + 0.05f);
-                float oz = exit.Z + exit.Fz * (DoorRadiusM + body.Radius + 0.05f);
+                float ox = exit.X + exit.Fx * (DoorRadiusM + body.Radius + PortalSystemDefaults.Min05f);
+                float oz = exit.Z + exit.Fz * (DoorRadiusM + body.Radius + PortalSystemDefaults.Min05f);
                 PushOut(ref ox, ref oz, body.Radius, boss);
                 if (body.IsBoss)
                     continue;
@@ -457,7 +457,7 @@ namespace Dovus.Core.Portal
                     Body ally = allies[a];
                     if (ally.Id == caster.Id || ally.IsBoss || g.Skip.Contains(ally.Id))
                         continue;
-                    float ang = n * 1.2f;
+                    float ang = n * PortalSystemDefaults.Lit12f;
                     float x = caster.X + MathF.Cos(ang) * BesideM;
                     float z = caster.Z + MathF.Sin(ang) * BesideM;
                     PushOut(ref x, ref z, ally.Radius, boss);
@@ -528,7 +528,7 @@ namespace Dovus.Core.Portal
             float dz = _hookAllyZ - _hookFromZ;
             float alongAlly = dx * dx + dz * dz;
             float along = (x - _hookFromX) * dx + (z - _hookFromZ) * dz;
-            return along <= alongAlly + 0.01f;
+            return along <= alongAlly + PortalSystemDefaults.Epsilon01f;
         }
 
         /// <summary>
@@ -590,7 +590,7 @@ namespace Dovus.Core.Portal
                 float bx = boss.X - casterX;
                 float bz = boss.Z - casterZ;
                 float bl = MathF.Sqrt(bx * bx + bz * bz);
-                if (bl > 0.05f)
+                if (bl > PortalSystemDefaults.Min05f)
                 {
                     float bux = bx / bl;
                     float buz = bz / bl;
@@ -668,9 +668,9 @@ namespace Dovus.Core.Portal
                 uz = dz / len;
             }
 
-            float x = boss.X + ux * (boss.Radius + caster.Radius + boss.Gap + 0.35f);
-            float z = boss.Z + uz * (boss.Radius + caster.Radius + boss.Gap + 0.35f);
-            PushOut(ref x, ref z, 0.2f, boss);
+            float x = boss.X + ux * (boss.Radius + caster.Radius + boss.Gap + PortalSystemDefaults.Frac035f);
+            float z = boss.Z + uz * (boss.Radius + caster.Radius + boss.Gap + PortalSystemDefaults.Frac035f);
+            PushOut(ref x, ref z, PortalSystemDefaults.LitN02f, boss);
             float dirX = boss.X - x;
             float dirZ = boss.Z - z;
             float dlen = MathF.Sqrt(dirX * dirX + dirZ * dirZ);
@@ -787,11 +787,11 @@ namespace Dovus.Core.Portal
 
             float fx = caster.X + dx * (caster.Radius + DoorRadiusM);
             float fz = caster.Z + dz * (caster.Radius + DoorRadiusM);
-            PushOut(ref fx, ref fz, 0.2f, boss);
+            PushOut(ref fx, ref fz, PortalSystemDefaults.LitN02f, boss);
             var front = NewDoor(fx, fz, "10-10", MirrorSec, true, caster.Id);
-            float bx = boss.Present ? boss.X + dx * (boss.Radius + caster.Radius + boss.Gap + 0.35f) : fx + dx * 3f;
-            float bz = boss.Present ? boss.Z + dz * (boss.Radius + caster.Radius + boss.Gap + 0.35f) : fz + dz * 3f;
-            PushOut(ref bx, ref bz, 0.2f, boss);
+            float bx = boss.Present ? boss.X + dx * (boss.Radius + caster.Radius + boss.Gap + PortalSystemDefaults.Frac035f) : fx + dx * PortalSystemDefaults.Lit3f;
+            float bz = boss.Present ? boss.Z + dz * (boss.Radius + caster.Radius + boss.Gap + PortalSystemDefaults.Frac035f) : fz + dz * PortalSystemDefaults.Lit3f;
+            PushOut(ref bx, ref bz, PortalSystemDefaults.LitN02f, boss);
             var back = NewDoor(bx, bz, "10-10", MirrorSec, true, caster.Id);
             front.Link = back.Id;
             back.Link = front.Id;
@@ -814,9 +814,9 @@ namespace Dovus.Core.Portal
                 dz = 1f;
                 len = 1f;
             }
-            float x = who.X + dx / len * (who.Radius + 0.4f);
-            float z = who.Z + dz / len * (who.Radius + 0.4f);
-            PushOut(ref x, ref z, 0.2f, boss);
+            float x = who.X + dx / len * (who.Radius + PortalSystemDefaults.LitN04f);
+            float z = who.Z + dz / len * (who.Radius + PortalSystemDefaults.LitN04f);
+            PushOut(ref x, ref z, PortalSystemDefaults.LitN02f, boss);
             Door door = NewDoor(x, z, grow ? "8-8" : "8-1", GateSec, false, caster.Id);
             door.Gate = true;
             door.Grow = grow;
@@ -898,7 +898,7 @@ namespace Dovus.Core.Portal
                 Skip = new HashSet<int>()
             };
             _gathers.Add(g);
-            var big = NewDoor(caster.X + BesideM, caster.Z, "11-10", TeamDelaySec + 0.2f, false, caster.Id);
+            var big = NewDoor(caster.X + BesideM, caster.Z, "11-10", TeamDelaySec + PortalSystemDefaults.LitN02f, false, caster.Id);
             _doors.Add(big);
             if (allies == null)
                 return;
@@ -963,7 +963,7 @@ namespace Dovus.Core.Portal
         }
 
         static bool Moved(float x, float y, float z, float x2, float y2, float z2) =>
-            MathF.Abs(x - x2) > 0.02f || MathF.Abs(y - y2) > 0.02f || MathF.Abs(z - z2) > 0.02f;
+            MathF.Abs(x - x2) > PortalSystemDefaults.LitN002f || MathF.Abs(y - y2) > PortalSystemDefaults.LitN002f || MathF.Abs(z - z2) > PortalSystemDefaults.LitN002f;
 
         static float Dist(float ax, float az, float bx, float bz)
         {
@@ -972,7 +972,7 @@ namespace Dovus.Core.Portal
             return MathF.Sqrt(dx * dx + dz * dz);
         }
 
-        static long Key(int actor, int door) => ((long)actor << 32) ^ (uint)door;
+        static long Key(int actor, int door) => ((long)actor << PortalSystemDefaults.Lit32) ^ (uint)door;
 
         sealed class Door
         {

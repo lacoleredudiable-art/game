@@ -45,6 +45,6 @@ namespace Dovus.App.Boss
         }
 
         public static float PounceAirSec(float configuredAirSec) =>
-            configuredAirSec < 0.05f ? 0.05f : configuredAirSec;
+            configuredAirSec < BossDefaults.Min05f ? BossDefaults.Min05f : configuredAirSec;
     }
 }

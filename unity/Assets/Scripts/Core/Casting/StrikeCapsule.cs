@@ -12,7 +12,7 @@ namespace Dovus.Core.Casting
         /// <summary>Uç küre merkezlerinin gövde merkezinden uzaklığı (OverlapCapsule point0/point1).</summary>
         public static void Segment(float bodyRadiusM, float reachM, float radiusM, out float nearM, out float farM)
         {
-            float r = Math.Max(0.01f, radiusM);
+            float r = Math.Max(CastingDefaults.MinTick01f, radiusM);
             float length = Math.Max(2f * r, reachM);
             float edge = Math.Max(0f, bodyRadiusM);
             nearM = edge + r;

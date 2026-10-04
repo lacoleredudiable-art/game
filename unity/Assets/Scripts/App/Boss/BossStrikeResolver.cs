@@ -25,7 +25,7 @@ namespace Dovus.App.Boss
             float dz = targetZ - originZ;
             horizontalDist = BossStrikeMath.HorizontalDistance(dx, dz);
             signedAngleDeg = 0f;
-            if (horizontalDist > 0.01f)
+            if (horizontalDist > BossDefaults.Epsilon01f)
                 signedAngleDeg = BossStrikeMath.FlatSignedAngleDeg(forwardX, forwardZ, dx, dz);
         }
 

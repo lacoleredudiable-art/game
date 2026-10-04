@@ -22,7 +22,7 @@ namespace Dovus.Core.Boss
         public WebFieldSet(int maxCount, float radiusM, double lifeMs, float minCenterDistM)
         {
             _maxCount = Math.Max(1, maxCount);
-            _radiusM = Math.Max(0.01f, radiusM);
+            _radiusM = Math.Max(BossDefaults.Epsilon01f, radiusM);
             _lifeMs = Math.Max(1.0, lifeMs);
             _minCenterDistM = Math.Max(0f, minCenterDistM);
         }

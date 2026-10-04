@@ -112,7 +112,7 @@ namespace Dovus.Core.Boss
                 Z = z,
                 VX = vx,
                 VZ = vz,
-                RadiusM = Math.Max(0.01f, radiusM),
+                RadiusM = Math.Max(BossDefaults.Epsilon01f, radiusM),
                 Damage = Math.Max(0f, damage),
                 SpawnMs = nowMs,
                 DieMs = nowMs + Math.Max(1.0, lifeMs),
@@ -132,7 +132,7 @@ namespace Dovus.Core.Boss
         /// <summary>Hareket ve süre dolumu. dtMs dünya saati farkı (duraklamada 0).</summary>
         public void Tick(double nowMs, double dtMs)
         {
-            float dt = (float)(Math.Max(0.0, dtMs) / 1000.0);
+            float dt = (float)(Math.Max(0.0, dtMs) / BossDefaults.SecToMs);
             for (int i = 0; i < _pool.Length; i++)
             {
                 if (!_pool[i].Alive)
@@ -291,7 +291,7 @@ namespace Dovus.Core.Boss
             float closing = (p.VX * dx + p.VZ * dz) / len;
             if (closing <= 0.0001f)
                 return double.PositiveInfinity;
-            return dist / closing * 1000.0;
+            return dist / closing * BossDefaults.SecToMs;
         }
 
         public static float SegmentDistance(float px, float pz, float ax, float az, float bx, float bz)
@@ -299,7 +299,7 @@ namespace Dovus.Core.Boss
             float abx = bx - ax;
             float abz = bz - az;
             float len2 = abx * abx + abz * abz;
-            float t = len2 > 1e-8f ? ((px - ax) * abx + (pz - az) * abz) / len2 : 0f;
+            float t = len2 > BossDefaults.Len2Epsilon1e8f ? ((px - ax) * abx + (pz - az) * abz) / len2 : 0f;
             t = Math.Clamp(t, 0f, 1f);
             float cx = ax + abx * t - px;
             float cz = az + abz * t - pz;

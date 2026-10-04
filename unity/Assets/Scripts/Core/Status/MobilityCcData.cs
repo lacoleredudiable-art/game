@@ -52,7 +52,7 @@ namespace Dovus.Core.Status
                     continue;
                 data._ccRank[kind] = row["rank"].AsInt(int.MaxValue);
                 if (row["duration_sec"].Kind == JsonKind.Number)
-                    data._ccDurationMs[kind] = row["duration_sec"].AsFloat(0f) * 1000.0;
+                    data._ccDurationMs[kind] = row["duration_sec"].AsFloat(0f) * StatusDefaults.SecToMs;
             }
 
             data.SameCcStacking = node["cc_stacking"]["same_cc"].AsString();
@@ -191,7 +191,7 @@ namespace Dovus.Core.Status
                 || TrySeconds(node, "bind_immunity_sec", out sec)
                 || TrySeconds(node["cc_stacking"], "root_immunity_sec", out sec)
                 || TrySeconds(node["cc_stacking"], "bind_immunity_sec", out sec))
-                return sec * 1000.0;
+                return sec * StatusDefaults.SecToMs;
 
             DesignWarnings.Once(
                 "mobility_cc.root_immunity_sec",
