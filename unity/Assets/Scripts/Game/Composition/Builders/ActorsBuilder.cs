@@ -1,6 +1,7 @@
 using Dovus.Core.Combat;
 using Dovus.Core.Data;
 using Dovus.Game.Actors;
+using Dovus.Game.Boss;
 using Dovus.Game.Casting;
 using Dovus.Game.DevTools;
 using Dovus.Game.Feel;
@@ -10,7 +11,12 @@ using UnityEngine;
 
 namespace Dovus.Game.Composition.Builders
 {
-    public sealed class PlayerBuilder
+    /// <summary>
+    /// Oyuncu + dost + boss zinciri. Nesne oluşturma ve AddComponent SIRASI eski
+    /// PrototypeBootstrap.BuildWorld ile birebir aynıdır (oyuncu/boss bileşenleri iç içe;
+    /// Awake/OnEnable sırası ve örnek kimlikleri buna bağlı) — sırayı değiştirme.
+    /// </summary>
+    public sealed class ActorsBuilder
     {
         public void Build(WorldContext ctx)
         {
@@ -67,6 +73,27 @@ namespace Dovus.Game.Composition.Builders
             ctx.AllyDummy = ctx.Ally.AddComponent<AllyDummy>();
             ctx.AllyDummy.Bind(playerHp, startRatio: DebugConfig.StartHpRatio);
 
+            float bossSpawnZ = 5f * Mathf.Max(1f, tuning.ArenaVisualScale * 0.55f);
+            bossSpawnZ = Mathf.Clamp(bossSpawnZ, -spawnMaxR, spawnMaxR);
+            ctx.Boss = VisualAttach.CreateCapsule(
+                "Boss",
+                VisualAttach.ClampSpawnXZ(
+                    new Vector3(0f, CompositionConstants.BossHeightM * 0.5f, bossSpawnZ),
+                    spawnMaxR),
+                CompositionConstants.BossRadiusM,
+                CompositionConstants.BossHeightM,
+                tuning.BossColor);
+            // SkillExecutor overlap/projectile yolu için gerçek fizik hedefi.
+            var bossHitCollider = ctx.Boss.AddComponent<CapsuleCollider>();
+            bossHitCollider.isTrigger = true;
+            VisualAttach.Attach(
+                ctx.Boss,
+                VisualAttach.ResolveBossVisualPrefab(tuning, ctx.BossVisualPrefab),
+                tuning.BossVisualHeightM,
+                ctx.Boss.transform.position.y - CompositionConstants.BossHeightM * 0.5f,
+                tuning.CharacterAnimSpeed,
+                out var bossAnim);
+
             ctx.Player.AddComponent<MoveInput>().Tuning = tuning;
 
             var motor = ctx.Player.AddComponent<KinematicMotor>();
@@ -85,7 +112,13 @@ namespace Dovus.Game.Composition.Builders
             visual.BasicStrikeAnimSpeed = combat.Feel.BasicStrikeAnimSpeed;
             visual.UpperBodyMinSpeed = tuning.UpperBodyCastMinSpeed;
 
+            var bossVisual = ctx.Boss.AddComponent<BossVisual>();
+            if (bossAnim != null)
+                bossVisual.Bind(bossAnim, ctx.Boss.GetComponent<Renderer>());
+            bossVisual.Configure(tuning);
+
             ctx.Player.AddComponent<HitFlash>().Bind(combat.Feel);
+            ctx.Boss.AddComponent<HitFlash>().Bind(combat.Feel);
 
             var vitals = ctx.Player.AddComponent<PlayerVitals>();
             ctx.PlayerVitals = vitals;
@@ -101,6 +134,7 @@ namespace Dovus.Game.Composition.Builders
             ctx.PlayerCooldown.Bind();
 
             ctx.PlayerStatus = ctx.Player.AddComponent<ActorStatus>();
+            ctx.BossStatus = ctx.Boss.AddComponent<ActorStatus>();
 
             ctx.Afterimage = ctx.Player.AddComponent<AfterimageTrail>();
             ctx.Afterimage.Bind(combat.Feel, tuning);
@@ -110,6 +144,29 @@ namespace Dovus.Game.Composition.Builders
             ctx.Player.AddComponent<WeaponShortShieldHost>().Bind(clock);
             ctx.Player.AddComponent<MotionTemplateBody>();
             ctx.Player.AddComponent<ActorGrounding>();
+
+            ctx.Boss.AddComponent<ActorGrounding>();
+            ctx.Boss.AddComponent<MotionTemplateBody>();
+            ctx.BossReactor = ctx.Boss.AddComponent<BossReactor>();
+            ctx.BossReactor.Tuning = tuning;
+            ctx.BossReactor.ConfigureFeel(combat.Feel);
+            ctx.BossReactor.BodyRadiusM = CompositionConstants.BossRadiusM;
+            ctx.BossReactor.CaptureHome();
+
+            ctx.BossVitals = new BossVitals(ctx.Host.ScaledBossHp(combat.Boss.MaxHp));
+            ctx.Ally.AddComponent<Targetable>().Configure(
+                teamId: 0,
+                displayName: "ALLY",
+                available: () => ctx.AllyDummy.Hp > 0);
+            ctx.Boss.AddComponent<Targetable>().Configure(
+                teamId: 1,
+                displayName: "BOSS",
+                available: () => !ctx.BossVitals.IsDown);
+            ctx.PlayerStatus.Bind(null, combat.Status, ctx.PlayerVitals, null, null);
+            ctx.BossStatus.Bind(null, combat.Status, null, ctx.BossVitals, ctx.BossReactor);
+
+            ctx.BossTelegraph = ctx.Boss.AddComponent<BossTelegraph>();
+            ctx.BossTelegraph.Bind(tuning, combat.Boss, ctx.Boss.transform);
         }
     }
 }

@@ -68,7 +68,7 @@ public class ReleaseBuildPerfTests
     [Test]
     public void StartHp_IsFullByDefault_DevHpSeparateSwitch()
     {
-        string player = Game("Composition/Builders/PlayerBuilder.cs");
+        string player = Game("Composition/Builders/ActorsBuilder.cs");
         Assert.That(player, Does.Not.Contain("startRatio: 0.5f"));
         Assert.That(Regex.Matches(player, @"startRatio: DebugConfig\.StartHpRatio").Count, Is.EqualTo(2));
         Assert.That(player, Does.Contain("vitals.SetDevHp(DebugConfig.DevHpActive);"));

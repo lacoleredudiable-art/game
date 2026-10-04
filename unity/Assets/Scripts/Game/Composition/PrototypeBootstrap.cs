@@ -75,8 +75,8 @@ namespace Dovus.Game.Composition
             var arenaBuilder = new ArenaBuilder();
             arenaBuilder.BuildArena(ctx);
 
-            new PlayerBuilder().Build(ctx);
-            new BossBuilder().Build(ctx);
+            // Player/ally/boss components are added interleaved, in the original BuildWorld order.
+            new ActorsBuilder().Build(ctx);
 
             arenaBuilder.BuildSun(ctx);
 
