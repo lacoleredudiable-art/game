@@ -4,16 +4,16 @@ namespace Dovus.Game.Vfx
     public static class VfxDefaults
     {
         public const int ChannelShiftBits = 24;
-        public const long cacheKey = 1L;
+        public const long OpaqueCacheKeyBit = 1L;
         public const long CacheKeyAdditiveBit = 0L;
-        public const float decay = 6f;
-        public const float fade = 0.01f;
-        public const float grow = 0.01f;
-        public const float mouth = 0.6f;
+        public const float DefaultCameraShakeDecay = 6f;
+        public const float FxTweenFadeMinSec = 0.01f;
+        public const float FxTweenGrowMinSec = 0.01f;
+        public const float BossMouthForwardOffsetM = 0.6f;
         public const float BossMouthLiftM = 1.4f;
-        public const float px = 19f;
-        public const float target = 1.6f;
-        public const float tuning = 0.01f;
-        public const float widthMultiplier = 0.3f;
+        public const float DefaultBossSlamShakePx = 19f;
+        public const float HitFlashColorMult = 1.6f;
+        public const float MinTintVisibleAlpha = 0.01f;
+        public const float RingTweenWidthMult = 0.3f;
     }
 }

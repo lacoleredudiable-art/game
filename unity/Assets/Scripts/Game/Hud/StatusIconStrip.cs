@@ -128,7 +128,7 @@ namespace Dovus.Game.Hud
             var iconRect = iconGo.AddComponent<RectTransform>();
             iconRect.anchorMin = Vector2.zero;
             iconRect.anchorMax = Vector2.one;
-            float inset = size * HudDefaults.inset;
+            float inset = size * HudDefaults.StatusIconInsetMult;
             iconRect.offsetMin = new Vector2(inset, inset);
             iconRect.offsetMax = new Vector2(-inset, -inset);
             var icon = iconGo.AddComponent<Image>();
@@ -224,7 +224,7 @@ namespace Dovus.Game.Hud
                 slot.Fill.fillAmount = ratio;
                 HudTheme th = _theme;
                 bool blink = rem > 0 && rem < th.StatusBlinkUnderSec;
-                float alpha = blink ? Mathf.Lerp(HudDefaults.alpha, 1f, UiJuice.Pulse01(th.StatusBlinkHz)) : 1f;
+                float alpha = blink ? Mathf.Lerp(HudDefaults.StatusBlinkMinAlpha, 1f, UiJuice.Pulse01(th.StatusBlinkHz)) : 1f;
                 Color ic = slot.Icon.color;
                 ic.a = alpha;
                 slot.Icon.color = ic;

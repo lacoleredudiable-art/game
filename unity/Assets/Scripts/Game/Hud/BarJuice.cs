@@ -14,7 +14,7 @@ namespace Dovus.Game.Hud
         float _last = -1f;
         float _ghostRatio;
         float _holdUntil;
-        float _flashAt = -HudDefaults.flashAt;
+        float _flashAt = -HudDefaults.BarFlashHideDelaySec;
         bool _healFlash;
 
         public BarJuice(Image ghost, Image flash)
@@ -60,7 +60,7 @@ namespace Dovus.Game.Hud
 
             if (_flash != null)
             {
-                float k = 1f - Mathf.Clamp01((now - _flashAt) / Mathf.Max(HudDefaults.k, theme.FlashSec));
+                float k = 1f - Mathf.Clamp01((now - _flashAt) / Mathf.Max(HudDefaults.FlashFadeMinSec, theme.FlashSec));
                 Color c = _healFlash ? theme.HealColor : theme.FlashColor;
                 c.a = k * (_healFlash ? theme.HealFlashAlpha : theme.FlashAlpha);
                 _flash.color = c;

@@ -4,13 +4,13 @@ namespace Dovus.Game.Hud
     public static class VitalsHudDefaults
     {
         public const float FillFullThreshold = 0.999f;
-        public const float MinClampZeroPt = 0.01f;
-        public const float alpha = 0.01f;
-        public const float castLabelH = 4f;
-        public const float nameH = 4f;
-        public const float poiseGap = 3f;
-        public const float poiseH = 6f;
+        public const float BannerFadeMinSec = 0.01f;
+        public const float CastBannerFadeMinSec = 0.01f;
+        public const float CastLabelDpPadding = 4f;
+        public const float BossNameDpPadding = 4f;
+        public const float PoiseBarGapDp = 3f;
+        public const float PoiseBarMinHeightDp = 6f;
         public const float BossPoiseHeightMult = 0.42f;
-        public const float subPct = 70f;
+        public const float BossSubtitlePctFallback = 70f;
     }
 }

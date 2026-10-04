@@ -301,7 +301,7 @@ namespace Dovus.Game.Arena
 
             Vector2 detailSt = source.GetTextureScale("_DetailAlbedoMap");
             if (detailSt.sqrMagnitude < 0.0001f)
-                detailSt = new Vector2(CombatAmbienceEnvironmentDefaults.DetailSt, CombatAmbienceEnvironmentDefaults.DetailSt);
+                detailSt = new Vector2(CombatAmbienceEnvironmentDefaults.DetailAlbedoTiling, CombatAmbienceEnvironmentDefaults.DetailAlbedoTiling);
             const float detailMul = 3f;
             Vector2 detailWorld = detailSt * meshScaleXZ * (detailMul / CombatAmbienceEnvironmentDefaults.DetailWorldDivisor);
             mat.SetTextureScale("_DetailAlbedoMap", detailWorld * 2f);
@@ -309,7 +309,7 @@ namespace Dovus.Game.Arena
             {
                 Vector2 detailNormSt = source.GetTextureScale("_DetailNormalMap");
                 if (detailNormSt.sqrMagnitude < 0.0001f)
-                    detailNormSt = new Vector2(CombatAmbienceEnvironmentDefaults.DetailNormalSt, CombatAmbienceEnvironmentDefaults.DetailNormalSt);
+                    detailNormSt = new Vector2(CombatAmbienceEnvironmentDefaults.DetailNormalTiling, CombatAmbienceEnvironmentDefaults.DetailNormalTiling);
                 mat.SetTextureScale("_DetailNormalMap", detailNormSt * meshScaleXZ * (detailMul / CombatAmbienceEnvironmentDefaults.DetailWorldDivisor) * CombatAmbienceEnvironmentDefaults.TextureDetailScaleMult);
             }
 

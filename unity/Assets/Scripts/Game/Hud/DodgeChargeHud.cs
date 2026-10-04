@@ -46,7 +46,7 @@ namespace Dovus.Game.Hud
                 float fill = i < bank.Ready ? 1f : (i == bank.Ready ? bank.Fill01 : 0f);
                 Image pip = _pips[i];
                 pip.fillAmount = fill;
-                Color c = fill >= DodgeChargeHudDefaults.c
+                Color c = fill >= DodgeChargeHudDefaults.ChargeFillReadyThreshold
                     ? new Color(0.55f, 0.95f, 1f, 0.95f)
                     : new Color(0.25f, 0.35f, 0.45f, 0.9f);
                 pip.color = c;
@@ -64,9 +64,9 @@ namespace Dovus.Game.Hud
             _builtWidth = width;
             _sprite ??= WhiteSprite();
             _pips = new Image[count];
-            float span = width > 1f ? width : DodgeChargeHudDefaults.span;
-            float pip = Mathf.Clamp(span * DodgeChargeHudDefaults.pip, DodgeChargeHudDefaults.PipMinPx, DodgeChargeHudDefaults.PipMaxPx);
-            float gap = pip * DodgeChargeHudDefaults.gap;
+            float span = width > 1f ? width : DodgeChargeHudDefaults.DefaultBarWidthPx;
+            float pip = Mathf.Clamp(span * DodgeChargeHudDefaults.PipWidthSpanMult, DodgeChargeHudDefaults.PipMinPx, DodgeChargeHudDefaults.PipMaxPx);
+            float gap = pip * DodgeChargeHudDefaults.PipGapMult;
             float total = count * pip + (count - 1) * gap;
             float start = -total * 0.5f + pip * 0.5f;
             for (int i = 0; i < count; i++)
@@ -109,7 +109,7 @@ namespace Dovus.Game.Hud
                 pixels[i] = Color.white;
             tex.SetPixels(pixels);
             tex.Apply();
-            return Sprite.Create(tex, new Rect(0, 0, 4, 4), new Vector2(0.5f, 0.5f), DodgeChargeHudDefaults.RectConst);
+            return Sprite.Create(tex, new Rect(0, 0, 4, 4), new Vector2(0.5f, 0.5f), DodgeChargeHudDefaults.SquareSpritePpu);
         }
 
         void OnDestroy() => Clear();

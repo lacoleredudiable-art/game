@@ -32,9 +32,9 @@ namespace Dovus.Game.Vfx
         public void Configure(GameTuning tuning)
         {
             _tuning = tuning;
-            _cyanMat = MakeMat(tuning.Visuals.InkCyan * GroundScarFieldDefaults.cyanMat);
-            _purpleMat = MakeMat(tuning.Visuals.InkPurple * GroundScarFieldDefaults.purpleMat);
-            _acidMat = MakeMat(tuning.Visuals.AcidGreen * GroundScarFieldDefaults.acidMat);
+            _cyanMat = MakeMat(tuning.Visuals.InkCyan * GroundScarFieldDefaults.CyanInkTintMult);
+            _purpleMat = MakeMat(tuning.Visuals.InkPurple * GroundScarFieldDefaults.PurpleInkTintMult);
+            _acidMat = MakeMat(tuning.Visuals.AcidGreen * GroundScarFieldDefaults.AcidInkTintMult);
         }
 
         public void Stamp(Vector3 worldPos, float scaleM, ScarKind kind, Vector3 along)
@@ -56,7 +56,7 @@ namespace Dovus.Game.Vfx
             }
             _writeIndex = (_writeIndex + 1) % cap;
 
-            worldPos.y = GroundScarFieldDefaults.y;
+            worldPos.y = GroundScarFieldDefaults.ScarGroundLiftM;
             go.transform.position = worldPos;
             if (!go.activeSelf)
                 go.SetActive(true);
@@ -71,7 +71,7 @@ namespace Dovus.Game.Vfx
             {
                 case ScarKind.Crack:
                     go.transform.rotation = Quaternion.LookRotation(Vector3.down, along);
-                    go.transform.localScale = new Vector3(scaleM * GroundScarFieldDefaults.localScale, scaleM * GroundScarFieldDefaults.SlashScarYMult, 1f);
+                    go.transform.localScale = new Vector3(scaleM * GroundScarFieldDefaults.SlashDecalScaleMult, scaleM * GroundScarFieldDefaults.SlashScarYMult, 1f);
                     renderer.sharedMaterial = _purpleMat;
                     break;
                 case ScarKind.Needle:
@@ -123,7 +123,7 @@ namespace Dovus.Game.Vfx
             var shader = FindTransparentUnlitShader();
             var mat = new Material(shader);
             ConfigureTransparentFallback(mat);
-            c.a = GroundScarFieldDefaults.a;
+            c.a = GroundScarFieldDefaults.ScarDecalAlpha;
             SetMatColor(mat, c);
             return mat;
         }

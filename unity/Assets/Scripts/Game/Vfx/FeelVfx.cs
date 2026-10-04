@@ -39,19 +39,19 @@ namespace Dovus.Game.Vfx
             float mult = crit ? lib.CritSparkMult : 1f;
             ParticleSystem ps = NewBurst("HitSpark", pos, Quaternion.identity, additive: true, KenneyVfxTextures.TexHit);
             var main = ps.main;
-            main.startLifetime = new ParticleSystem.MinMaxCurve(lib.HitSparkLifeSec * FeelVfxDefaults.startLifetime, lib.HitSparkLifeSec);
+            main.startLifetime = new ParticleSystem.MinMaxCurve(lib.HitSparkLifeSec * FeelVfxDefaults.HitSparkLifetimeMinMult, lib.HitSparkLifeSec);
             main.startSpeed = new ParticleSystem.MinMaxCurve(lib.HitSparkSpeed * 0.5f, lib.HitSparkSpeed * mult);
             main.startSize = lib.HitSparkSize * mult;
-            main.gravityModifier = FeelVfxDefaults.gravityModifier;
+            main.gravityModifier = FeelVfxDefaults.MainGravityModifier;
             Burst(ps, Mathf.RoundToInt(lib.HitSparkCount * mult));
             var sh = ps.shape;
             sh.shapeType = ParticleSystemShapeType.Sphere;
-            sh.radius = FeelVfxDefaults.radius;
+            sh.radius = FeelVfxDefaults.EmitterShapeRadiusM;
             FadeColor(ps, Color.white, tint);
             var r = ps.GetComponent<ParticleSystemRenderer>();
             r.renderMode = ParticleSystemRenderMode.Stretch;
-            r.velocityScale = FeelVfxDefaults.velocityScale;
-            r.lengthScale = FeelVfxDefaults.lengthScale;
+            r.velocityScale = FeelVfxDefaults.RendererVelocityScale;
+            r.lengthScale = FeelVfxDefaults.RendererLengthScale;
             ps.Play();
         }
 
@@ -62,7 +62,7 @@ namespace Dovus.Game.Vfx
             Quaternion rot = dir.sqrMagnitude > 0.0001f ? Quaternion.LookRotation(-dir) : Quaternion.identity;
             if (lib.TrySpawn(VfxLibrary.DodgeDust, ground, rot) != null)
                 return;
-            Dust("DodgeDust", ground, lib.DodgeDustCount, lib.DodgeDustLifeSec, lib.DodgeDustSize, FeelVfxDefaults.DustColorConst, lib.DustColor);
+            Dust("DodgeDust", ground, lib.DodgeDustCount, lib.DodgeDustLifeSec, lib.DodgeDustSize, FeelVfxDefaults.DodgeDustIntensityMult, lib.DustColor);
         }
 
         public static void FootDust(Vector3 pos, bool boss)
@@ -72,7 +72,7 @@ namespace Dovus.Game.Vfx
             if (lib.TrySpawn(boss ? VfxLibrary.BossStepDust : VfxLibrary.FootDust, ground, Quaternion.identity) != null)
                 return;
             float m = boss ? lib.BossStepDustMult : 1f;
-            Dust("FootDust", ground, Mathf.RoundToInt(lib.FootDustCount * m), lib.FootDustLifeSec * (boss ? FeelVfxDefaults.BossConst : 1f),
+            Dust("FootDust", ground, Mathf.RoundToInt(lib.FootDustCount * m), lib.FootDustLifeSec * (boss ? FeelVfxDefaults.FootDustBossLifeMult : 1f),
                 lib.FootDustSize * m, FeelVfxDefaults.FootDustSpeedMult * m, lib.DustColor);
         }
 
@@ -88,14 +88,14 @@ namespace Dovus.Game.Vfx
             if (!wave)
             {
                 var go = new GameObject("SlamShockwave");
-                go.transform.position = ground + Vector3.up * FeelVfxDefaults.position;
+                go.transform.position = ground + Vector3.up * FeelVfxDefaults.DustEmitterGroundLiftM;
                 var line = go.AddComponent<LineRenderer>();
                 line.sharedMaterial = Mat(additive: true, textured: false);
                 line.shadowCastingMode = ShadowCastingMode.Off;
                 line.receiveShadows = false;
                 FxTween.Ring(line, lib.ShockwaveColor, radiusM, lib.ShockwaveWidthM, lib.ShockwaveSec);
-                Dust("SlamDust", ground, lib.DodgeDustCount * 2, lib.DodgeDustLifeSec * FeelVfxDefaults.DodgeDustLifeSecConst,
-                    lib.DodgeDustSize * FeelVfxDefaults.RadiusMConst, radiusM * FeelVfxDefaults.RadiusMConst, lib.DustColor, ringRadius: radiusM * FeelVfxDefaults.DodgeRingRadiusMult);
+                Dust("SlamDust", ground, lib.DodgeDustCount * 2, lib.DodgeDustLifeSec * FeelVfxDefaults.SlamDustLifeSecMult,
+                    lib.DodgeDustSize * FeelVfxDefaults.SlamDustSizeMult, radiusM * FeelVfxDefaults.SlamDustSizeMult, lib.DustColor, ringRadius: radiusM * FeelVfxDefaults.DodgeRingRadiusMult);
             }
 
             if (!crack)
@@ -103,7 +103,7 @@ namespace Dovus.Game.Vfx
                 var go = new GameObject("GroundCrack");
                 go.transform.position = ground;
                 go.transform.rotation = Quaternion.Euler(90f, Random.Range(0f, 360f), 0f);
-                go.transform.localScale = Vector3.one * radiusM * FeelVfxDefaults.localScale;
+                go.transform.localScale = Vector3.one * radiusM * FeelVfxDefaults.RingBurstLocalScaleMult;
                 go.AddComponent<MeshFilter>().sharedMesh = PrimitiveMesh.Get(PrimitiveType.Quad);
                 var mr = go.AddComponent<MeshRenderer>();
                 mr.sharedMaterial = Mat(additive: false, textured: true, crack: true);
@@ -124,9 +124,9 @@ namespace Dovus.Game.Vfx
             ParticleSystem ps = NewBurst("FireCone", origin, rot, additive: true, KenneyVfxTextures.TexFire);
             var main = ps.main;
             main.duration = lib.FlameSec;
-            float life = reachM / Mathf.Max(FeelVfxDefaults.life, lib.FlameSpeed);
+            float life = reachM / Mathf.Max(FeelVfxDefaults.FlameSpeedDenominatorMinMps, lib.FlameSpeed);
             main.startLifetime = new ParticleSystem.MinMaxCurve(life * FeelVfxDefaults.DustLifetimeMinMult, life);
-            main.startSpeed = new ParticleSystem.MinMaxCurve(lib.FlameSpeed * FeelVfxDefaults.startSpeed, lib.FlameSpeed);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(lib.FlameSpeed * FeelVfxDefaults.FlameSpeedMinMult, lib.FlameSpeed);
             main.startSize = new ParticleSystem.MinMaxCurve(lib.FlameSize * 0.5f, lib.FlameSize);
             main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
             main.maxParticles = Mathf.CeilToInt(lib.FlameRate * life) + 8;
@@ -135,23 +135,23 @@ namespace Dovus.Game.Vfx
             var sh = ps.shape;
             sh.enabled = true;
             sh.shapeType = ParticleSystemShapeType.Cone;
-            sh.angle = Mathf.Clamp(halfAngleDeg, 1f, FeelVfxDefaults.angle);
+            sh.angle = Mathf.Clamp(halfAngleDeg, 1f, FeelVfxDefaults.ConeShapeMaxAngleDeg);
             sh.radius = FeelVfxDefaults.DustRingRadiusM;
             var size = ps.sizeOverLifetime;
             size.enabled = true;
-            size.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, FeelVfxDefaults.size, 1f, FeelVfxDefaults.FlameSizeOverLifeMaxMult));
+            size.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, FeelVfxDefaults.FlameSizeOverLifeStart, 1f, FeelVfxDefaults.FlameSizeOverLifeMaxMult));
             FadeColor(ps, lib.FlameColorA, lib.FlameColorB);
             ps.Play();
         }
 
         static void Dust(string name, Vector3 ground, int count, float life, float size, float speed, Color color,
-            float ringRadius = FeelVfxDefaults.ringRadius)
+            float ringRadius = FeelVfxDefaults.BurstRingRadiusM)
         {
             ParticleSystem ps = NewBurst(name, ground, Quaternion.Euler(-90f, 0f, 0f), additive: false, KenneyVfxTextures.TexEarth);
             var main = ps.main;
             main.startLifetime = new ParticleSystem.MinMaxCurve(life * FeelVfxDefaults.FlameLifetimeMinMult, life);
             main.startSpeed = new ParticleSystem.MinMaxCurve(speed * FeelVfxDefaults.DustSpeedMinMult, speed);
-            main.startSize = new ParticleSystem.MinMaxCurve(size * FeelVfxDefaults.startSize, size);
+            main.startSize = new ParticleSystem.MinMaxCurve(size * FeelVfxDefaults.BurstSizeMinMult, size);
             main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
             main.gravityModifier = -FeelVfxDefaults.DustRiseGravityMult;
             Burst(ps, count);
@@ -164,8 +164,8 @@ namespace Dovus.Game.Vfx
             sizeLt.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 0.5f, 1f, FeelVfxDefaults.BurstSizeOverLifeMaxMult));
             var limit = ps.limitVelocityOverLifetime;
             limit.enabled = true;
-            limit.limit = speed * FeelVfxDefaults.limit;
-            limit.dampen = FeelVfxDefaults.dampen;
+            limit.limit = speed * FeelVfxDefaults.VelocityLimitFraction;
+            limit.dampen = FeelVfxDefaults.VelocityLimitDampen;
             Color end = color;
             end.a = 0f;
             FadeColor(ps, color, end);
@@ -181,10 +181,10 @@ namespace Dovus.Game.Vfx
             var main = ps.main;
             main.loop = false;
             main.playOnAwake = false;
-            main.duration = FeelVfxDefaults.duration;
+            main.duration = FeelVfxDefaults.ShortBurstDurationSec;
             main.simulationSpace = ParticleSystemSimulationSpace.World;
             main.stopAction = ParticleSystemStopAction.Destroy;
-            main.maxParticles = FeelVfxDefaults.maxParticles;
+            main.maxParticles = FeelVfxDefaults.ShortBurstMaxParticles;
             var em = ps.emission;
             em.rateOverTime = 0f;
             var r = go.GetComponent<ParticleSystemRenderer>();
@@ -198,7 +198,7 @@ namespace Dovus.Game.Vfx
         static void Burst(ParticleSystem ps, int count)
         {
             var em = ps.emission;
-            em.SetBursts(new[] { new ParticleSystem.Burst(0f, (short)Mathf.Clamp(count, 1, FeelVfxDefaults.Ps)) });
+            em.SetBursts(new[] { new ParticleSystem.Burst(0f, (short)Mathf.Clamp(count, 1, FeelVfxDefaults.ParticleBurstMaxCount)) });
             var main = ps.main;
             main.maxParticles = Mathf.Max(main.maxParticles, count);
         }
@@ -210,7 +210,7 @@ namespace Dovus.Game.Vfx
             var g = new Gradient();
             g.SetKeys(
                 new[] { new GradientColorKey(from, 0f), new GradientColorKey(to, 1f) },
-                new[] { new GradientAlphaKey(from.a, 0f), new GradientAlphaKey(from.a * FeelVfxDefaults.GradientZeroPtEightF, FeelVfxDefaults.GradientZeroPtFourF), new GradientAlphaKey(0f, 1f) });
+                new[] { new GradientAlphaKey(from.a, 0f), new GradientAlphaKey(from.a * FeelVfxDefaults.DustGradientMidAlphaMult, FeelVfxDefaults.DustGradientMidTime), new GradientAlphaKey(0f, 1f) });
             col.color = g;
         }
 
@@ -254,24 +254,24 @@ namespace Dovus.Game.Vfx
             const int arms = 9;
             for (int a = 0; a < arms; a++)
             {
-                float ang = (a + (float)rng.NextDouble() * FeelVfxDefaults.ang) / arms * Mathf.PI * 2f;
+                float ang = (a + (float)rng.NextDouble() * FeelVfxDefaults.SparkArmAngleSpan) / arms * Mathf.PI * 2f;
                 Vector2 p = new(size * 0.5f, size * 0.5f);
-                float len = size * (FeelVfxDefaults.len + (float)rng.NextDouble() * FeelVfxDefaults.SparkLenJitterMult);
-                float width = FeelVfxDefaults.width;
+                float len = size * (FeelVfxDefaults.SparkLengthBaseMult + (float)rng.NextDouble() * FeelVfxDefaults.SparkLenJitterMult);
+                float width = FeelVfxDefaults.SparkStrokeBaseWidthPx;
                 for (float t = 0f; t < len; t += 1f)
                 {
-                    ang += ((float)rng.NextDouble() - 0.5f) * FeelVfxDefaults.NextDoubleConst;
+                    ang += ((float)rng.NextDouble() - 0.5f) * FeelVfxDefaults.SparkAngleRandomHalfSpan;
                     p += new Vector2(Mathf.Cos(ang), Mathf.Sin(ang));
-                    float w = width * (1f - t / len) + FeelVfxDefaults.w;
+                    float w = width * (1f - t / len) + FeelVfxDefaults.SparkStrokeMinWidthPx;
                     Stamp(px, size, p, w);
                     if (rng.NextDouble() < FeelVfxDefaults.SparkBranchChance)
                     {
-                        float bAng = ang + (rng.NextDouble() < 0.5 ? FeelVfxDefaults.bAng : -FeelVfxDefaults.bAng);
+                        float bAng = ang + (rng.NextDouble() < 0.5 ? FeelVfxDefaults.SparkBranchAngleRad : -FeelVfxDefaults.SparkBranchAngleRad);
                         Vector2 q = p;
-                        for (int k = 0; k < len * FeelVfxDefaults.k; k++)
+                        for (int k = 0; k < len * FeelVfxDefaults.SparkStampIterationsMult; k++)
                         {
                             q += new Vector2(Mathf.Cos(bAng), Mathf.Sin(bAng));
-                            Stamp(px, size, q, w * FeelVfxDefaults.WConst);
+                            Stamp(px, size, q, w * FeelVfxDefaults.SparkBranchWidthMult);
                         }
                     }
                 }

@@ -20,7 +20,7 @@ namespace Dovus.Game.Arena
         Camera _mainCamera;
         float _savedRenderScale = 1f;
         int _savedMsaa = 1;
-        int _savedMainShadowRes = LookPresetsDefaults.savedMainShadowRes;
+        int _savedMainShadowRes = LookPresetsDefaults.SavedMainShadowResPx;
         UpscalingFilterSelection _savedUpscalingFilter;
         bool _savedFsrOverrideSharpness;
         float _savedFsrSharpness;
@@ -172,7 +172,7 @@ namespace Dovus.Game.Arena
             urp.msaaSampleCount = 4;
 
             if (preset == 'B')
-                urp.mainLightShadowmapResolution = LookPresetsDefaults.mainLightShadowmapResolution;
+                urp.mainLightShadowmapResolution = LookPresetsDefaults.MainLightShadowMapResPx;
             else if (preset == 'C')
                 // "Gelişmiş": masaüstünde (mobil değilken) ucuz, daha net gölge — telefonda 2048'de kalır.
                 urp.mainLightShadowmapResolution = Application.isMobilePlatform ? LookPresetsDefaults.ShadowMapResMobilePx : LookPresetsDefaults.ShadowMapResDesktopPx;
@@ -186,7 +186,7 @@ namespace Dovus.Game.Arena
             {
                 urp.upscalingFilter = UpscalingFilterSelection.FSR;
                 urp.fsrOverrideSharpness = true;
-                urp.fsrSharpness = LookPresetsDefaults.fsrSharpness;
+                urp.fsrSharpness = LookPresetsDefaults.FsrSharpness;
             }
             else
             {
@@ -322,7 +322,7 @@ namespace Dovus.Game.Arena
             {
                 _sun.shadows = LightShadows.Soft;
                 _sun.shadowStrength = _sunCached ? _savedSunStrength : _sun.shadowStrength;
-                _sun.intensity = (_sunCached ? _savedSunIntensity : _sun.intensity) * LookPresetsDefaults.intensity;
+                _sun.intensity = (_sunCached ? _savedSunIntensity : _sun.intensity) * LookPresetsDefaults.SunIntensityMult;
                 _sun.color = _sunCached ? _savedSunColor : _sun.color;
                 if (_sunCached)
                 {
@@ -335,17 +335,17 @@ namespace Dovus.Game.Arena
             }
 
             _sun.shadows = preset == 'B' ? LightShadows.Hard : LightShadows.Soft;
-            _sun.shadowStrength = preset == 'B' ? LookPresetsDefaults.shadowStrength : (_sunCached ? _savedSunStrength : _sun.shadowStrength);
+            _sun.shadowStrength = preset == 'B' ? LookPresetsDefaults.ShadowStrength : (_sunCached ? _savedSunStrength : _sun.shadowStrength);
             _sun.intensity = (_sunCached ? _savedSunIntensity : _sun.intensity) * (preset == 'B' ? LookPresetsDefaults.SunIntensityPresetBMult : LookPresetsDefaults.SunIntensityPresetDefaultMult);
             _sun.color = preset == 'B'
                 ? new Color(0.92f, 0.95f, 1f)
                 : (_sunCached ? _savedSunColor : _sun.color);
-            QualitySettings.shadowDistance = preset == 'B' ? LookPresetsDefaults.shadowDistance : LookPresetsDefaults.ShadowDistanceDefaultM;
+            QualitySettings.shadowDistance = preset == 'B' ? LookPresetsDefaults.PresetBShadowDistanceM : LookPresetsDefaults.ShadowDistanceDefaultM;
             QualitySettings.shadowCascades = 2;
             // B "Keskin": sert, kontak gölgeler için sıkı cascade + düşük bias (acne'siz alt sınır,
             // Unity varsayılanları 0.05/0.4'ten biraz daha sıkı). task-look-v2b problem 2.
-            _sun.shadowBias = preset == 'B' ? LookPresetsDefaults.shadowBias : (_sunCached ? _savedSunBias : _sun.shadowBias);
-            _sun.shadowNormalBias = preset == 'B' ? LookPresetsDefaults.shadowNormalBias : (_sunCached ? _savedSunNormalBias : _sun.shadowNormalBias);
+            _sun.shadowBias = preset == 'B' ? LookPresetsDefaults.ShadowBias : (_sunCached ? _savedSunBias : _sun.shadowBias);
+            _sun.shadowNormalBias = preset == 'B' ? LookPresetsDefaults.ShadowNormalBias : (_sunCached ? _savedSunNormalBias : _sun.shadowNormalBias);
         }
 
         void CacheFogIfNeeded()
@@ -396,7 +396,7 @@ namespace Dovus.Game.Arena
         {
             float baseDensity = _fogCached ? _savedFogDensity : RenderSettings.fogDensity;
             if (baseDensity <= 0.0001f)
-                baseDensity = LookPresetsDefaults.baseDensity;
+                baseDensity = LookPresetsDefaults.FogBaseDensity;
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.Exponential;
             Color sky = _fogCached ? _savedAmbientSky : RenderSettings.ambientSkyColor;

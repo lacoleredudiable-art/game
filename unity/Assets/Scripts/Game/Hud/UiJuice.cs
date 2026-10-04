@@ -104,7 +104,7 @@ namespace Dovus.Game.Hud
                 {
                     case Kind.Punch:
                         // Hızlı çıkış, yumuşak dönüş.
-                        float k = u < UiJuiceDefaults.k ? u / UiJuiceDefaults.k : 1f - (u - UiJuiceDefaults.k) / UiJuiceDefaults.PulseFalloffSpan;
+                        float k = u < UiJuiceDefaults.PunchEaseSplitU ? u / UiJuiceDefaults.PunchEaseSplitU : 1f - (u - UiJuiceDefaults.PunchEaseSplitU) / UiJuiceDefaults.PulseFalloffSpan;
                         k = Mathf.SmoothStep(0f, 1f, k);
                         t.Target.localScale = t.BaseScale * Mathf.LerpUnclamped(1f, t.Amount, k);
                         if (u >= 1f)
@@ -113,7 +113,7 @@ namespace Dovus.Game.Hud
                     case Kind.Shake:
                         float a = t.Amount * (1f - u);
                         t.Target.localPosition = t.BasePos + new Vector3(
-                            (Mathf.PerlinNoise(t.Age * UiJuiceDefaults.AConst, 0f) - 0.5f) * 2f * a,
+                            (Mathf.PerlinNoise(t.Age * UiJuiceDefaults.ShakePerlinFreqXHz, 0f) - 0.5f) * 2f * a,
                             (Mathf.PerlinNoise(0f, t.Age * UiJuiceDefaults.ShakeNoiseFreqHz) - 0.5f) * 2f * a, 0f);
                         if (u >= 1f)
                             t.Target.localPosition = t.BasePos;

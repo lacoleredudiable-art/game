@@ -3,10 +3,10 @@ namespace Dovus.Game.Vfx
     /// <summary>PLAN 2B.11g: gömülü oynanış/ayar sayıları.</summary>
     public static class HitImpactFxDefaults
     {
-        public const float LifeConst = 0.85f;
-        public const float PoolBluntConst = 1.1f;
-        public const float PoolSplashConst = 0.9f;
-        public const int Ps = 32;
+        public const float SplashEmitterLifeMult = 0.85f;
+        public const float BluntPoolTrackLifeMult = 1.1f;
+        public const float SplashPoolTrackLifeMult = 0.9f;
+        public const int BurstParticleMaxCount = 32;
         public const float PsBurstCount = 0.08f;
         public const float DustBurstSizeM = 0.18f;
         public const float MagicBurstLifetimeSec = 0.1f;
@@ -25,9 +25,9 @@ namespace Dovus.Game.Vfx
         public const float DustBurstLifetimeMult = 1.1f;
         public const float DustBurstLifetimeSec = 0.15f;
         public const float DustBurstSpeedMps = 1.2f;
-        public const float burst = 0.01f;
-        public const int maxParticles = 32;
-        public const float mult = 1.35f;
-        public const float pos = 0.05f;
+        public const float BurstColorAlphaThreshold = 0.01f;
+        public const int EmitterMaxParticles = 32;
+        public const float CritFxMult = 1.35f;
+        public const float WorldImpactLiftM = 0.05f;
     }
 }

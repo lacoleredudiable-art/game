@@ -44,9 +44,9 @@ namespace Dovus.Game.Vfx
             if (_liveCount >= _feel.HitImpactMaxConcurrent)
                 return;
 
-            Vector3 pos = worldPoint + Vector3.up * HitImpactFxDefaults.pos;
+            Vector3 pos = worldPoint + Vector3.up * HitImpactFxDefaults.WorldImpactLiftM;
             float life = _feel.HitImpactLifeSec;
-            float mult = isCrit ? HitImpactFxDefaults.mult : 1f;
+            float mult = isCrit ? HitImpactFxDefaults.CritFxMult : 1f;
 
             switch (archetype)
             {
@@ -62,7 +62,7 @@ namespace Dovus.Game.Vfx
                     break;
             }
 
-            EmitSplash(pos, life * HitImpactFxDefaults.LifeConst);
+            EmitSplash(pos, life * HitImpactFxDefaults.SplashEmitterLifeMult);
             if (bossRoot != null)
             {
                 BossHitFlinch flinch = bossRoot.GetComponentInChildren<BossHitFlinch>();
@@ -103,12 +103,12 @@ namespace Dovus.Game.Vfx
             ConfigureBurst(dust, pos, Quaternion.Euler(-90f, 0f, 0f), Mathf.RoundToInt(8 * mult), life * HitImpactFxDefaults.DustBurstLifetimeMult, HitImpactFxDefaults.DustBurstLifetimeSec, HitImpactFxDefaults.DustBurstSpeedMps, HitImpactFxDefaults.DustBurstSizeM);
             Color grey = new(0.55f, 0.52f, 0.5f, 0.55f);
             FadeColor(dust, grey, new Color(grey.r, grey.g, grey.b, 0f));
-            Track(dust, life * HitImpactFxDefaults.PoolBluntConst, PoolBlunt);
+            Track(dust, life * HitImpactFxDefaults.BluntPoolTrackLifeMult, PoolBlunt);
         }
 
         static void EmitMagic(Vector3 pos, Color tint, float mult, float life)
         {
-            Color burst = tint.a > HitImpactFxDefaults.burst ? tint : new Color(0.55f, 0.75f, 1f, 1f);
+            Color burst = tint.a > HitImpactFxDefaults.BurstColorAlphaThreshold ? tint : new Color(0.55f, 0.75f, 1f, 1f);
             ParticleSystem ps = Rent(PoolMagic, MagicPool, true);
             ApplyTexture(ps, KenneyVfxTextures.ClosestElementName(burst), true);
             ConfigureBurst(ps, pos, Quaternion.identity, Mathf.RoundToInt(16 * mult), life, HitImpactFxDefaults.MagicBurstLifetimeSec, HitImpactFxDefaults.MagicBurstSpeedMps * mult, HitImpactFxDefaults.MagicBurstSizeM);
@@ -123,7 +123,7 @@ namespace Dovus.Game.Vfx
             ConfigureBurst(ps, pos, Quaternion.Euler(-90f, Random.Range(0f, 360f), 0f), 4, life * HitImpactFxDefaults.SplashBurstLifetimeMult, HitImpactFxDefaults.SplashBurstLifetimeSec, HitImpactFxDefaults.SplashBurstSpeedMps, HitImpactFxDefaults.SplashBurstSizeM);
             Color dark = new(0.32f, 0.03f, 0.05f, 0.55f);
             FadeColor(ps, dark, new Color(dark.r, dark.g, dark.b, 0f));
-            Track(ps, life * HitImpactFxDefaults.PoolSplashConst, PoolSplash);
+            Track(ps, life * HitImpactFxDefaults.SplashPoolTrackLifeMult, PoolSplash);
         }
 
         static void Track(ParticleSystem ps, float life, int poolKind)
@@ -188,7 +188,7 @@ namespace Dovus.Game.Vfx
             main.loop = false;
             main.playOnAwake = false;
             main.simulationSpace = ParticleSystemSimulationSpace.World;
-            main.maxParticles = HitImpactFxDefaults.maxParticles;
+            main.maxParticles = HitImpactFxDefaults.EmitterMaxParticles;
             var em = ps.emission;
             em.rateOverTime = 0f;
             var r = go.GetComponent<ParticleSystemRenderer>();
@@ -209,7 +209,7 @@ namespace Dovus.Game.Vfx
             main.startSize = size;
             main.gravityModifier = 0.5f;
             var em = ps.emission;
-            em.SetBursts(new[] { new ParticleSystem.Burst(0f, (short)Mathf.Clamp(count, 1, HitImpactFxDefaults.Ps)) });
+            em.SetBursts(new[] { new ParticleSystem.Burst(0f, (short)Mathf.Clamp(count, 1, HitImpactFxDefaults.BurstParticleMaxCount)) });
             var sh = ps.shape;
             sh.enabled = true;
             sh.shapeType = ParticleSystemShapeType.Sphere;

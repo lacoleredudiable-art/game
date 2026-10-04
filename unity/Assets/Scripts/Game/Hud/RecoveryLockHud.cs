@@ -139,7 +139,7 @@ namespace Dovus.Game.Hud
             // §10: camgöbeği dolgu, mor zemin — boss tehdit paleti yok.
             _fill.color = _tuning.Visuals.InkCyan;
             Color bg = _tuning.Visuals.InkPurple;
-            bg.a = HudDefaults.a;
+            bg.a = HudDefaults.RecoveryLockBgAlpha;
             _bgImg.color = bg;
 
             SentenceState s = _engine.State;
@@ -157,7 +157,7 @@ namespace Dovus.Game.Hud
             {
                 // Kesildi (§5): kalan anında 0 — bar bir an boş görünür, sonra kapanır.
                 // Doğal erime zaten fillAmount≈0 ile geldiyse flaş gerekmez.
-                if (_visible && _fill.fillAmount > HudDefaults.CutHoldUntilUnscaledConst && _cutHoldUntilUnscaled < 0f)
+                if (_visible && _fill.fillAmount > HudDefaults.RecoveryCutHoldFillThreshold && _cutHoldUntilUnscaled < 0f)
                 {
                     _fill.fillAmount = 0f;
                     _cutHoldUntilUnscaled = Time.unscaledTime + CutHoldSec;

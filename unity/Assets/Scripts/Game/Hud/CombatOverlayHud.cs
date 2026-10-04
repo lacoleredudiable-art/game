@@ -42,11 +42,11 @@ namespace Dovus.Game.Hud
         TextMeshProUGUI _outcomeSub;
 
         int _lastHp = -1;
-        float _dirShownAt = -CombatOverlayHudDefaults.dirShownAt;
+        float _dirShownAt = -CombatOverlayHudDefaults.DirectionHideDelaySec;
         bool _playerWasDown;
         bool _bossWasDown;
         float _fightStartUnscaled;
-        float _outcomeShownAt = -CombatOverlayHudDefaults.outcomeShownAt;
+        float _outcomeShownAt = -CombatOverlayHudDefaults.OutcomeHideDelaySec;
         bool _outcomeIsDefeat;
 
         public bool OffscreenArrowVisible => _arrow != null && _arrow.enabled;
@@ -82,7 +82,7 @@ namespace Dovus.Game.Hud
             canvas.renderMode = overlayCam != null ? RenderMode.ScreenSpaceCamera : RenderMode.ScreenSpaceOverlay;
             canvas.worldCamera = overlayCam;
             // FeelCanvas (200, 0.8) üstünde: sonuç banner'ı isabet partiküllerinin altında kalmasın.
-            canvas.planeDistance = CombatOverlayHudDefaults.planeDistance;
+            canvas.planeDistance = CombatOverlayHudDefaults.CanvasPlaneDistance;
             canvas.sortingOrder = 210;
             go.AddComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
 
@@ -116,7 +116,7 @@ namespace Dovus.Game.Hud
             _outcomeGroup.alpha = 0f;
             _outcomeGroup.blocksRaycasts = false;
             _outcomeGroup.interactable = false;
-            _outcomeTitle = HudTheme.CreateTmp(outcome.transform, "Title", th.BannerDp * CombatOverlayHudDefaults.outcomeTitle, th.VictoryColor);
+            _outcomeTitle = HudTheme.CreateTmp(outcome.transform, "Title", th.BannerDp * CombatOverlayHudDefaults.OutcomeTitleDpMult, th.VictoryColor);
             var trt = _outcomeTitle.rectTransform;
             trt.anchorMin = new Vector2(0f, 0.45f);
             trt.anchorMax = new Vector2(1f, 1f);
@@ -157,10 +157,10 @@ namespace Dovus.Game.Hud
                 _lowHp.enabled = false;
                 return;
             }
-            float severity = 1f - Mathf.Clamp01(ratio / Mathf.Max(CombatOverlayHudDefaults.severity, th.LowHpFrac));
+            float severity = 1f - Mathf.Clamp01(ratio / Mathf.Max(CombatOverlayHudDefaults.LowHpRatioEpsilon, th.LowHpFrac));
             Color c = th.LowHpVignetteColor;
-            c.a = th.LowHpVignetteMaxAlpha * Mathf.Lerp(CombatOverlayHudDefaults.a, 1f, severity)
-                * Mathf.Lerp(CombatOverlayHudDefaults.LowHpPulseHzConst, 1f, UiJuice.Pulse01(th.LowHpPulseHz));
+            c.a = th.LowHpVignetteMaxAlpha * Mathf.Lerp(CombatOverlayHudDefaults.LowHpVignetteAlphaFloor, 1f, severity)
+                * Mathf.Lerp(CombatOverlayHudDefaults.LowHpPulseMinHz, 1f, UiJuice.Pulse01(th.LowHpPulseHz));
             _lowHp.color = c;
             _lowHp.enabled = true;
         }
@@ -190,7 +190,7 @@ namespace Dovus.Game.Hud
                 dir = Vector2.up;
             dir.Normalize();
             float ang = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90f;
-            float radius = Mathf.Min(Screen.width, Screen.height) * CombatOverlayHudDefaults.radius;
+            float radius = Mathf.Min(Screen.width, Screen.height) * CombatOverlayHudDefaults.BossIndicatorRadiusScreenFrac;
             _dirRoot.anchoredPosition = Vector2.zero;
             _dirRoot.localRotation = Quaternion.Euler(0f, 0f, ang);
             _dir.rectTransform.anchoredPosition = new Vector2(0f, radius);
@@ -207,7 +207,7 @@ namespace Dovus.Game.Hud
                 _arrow.enabled = false;
                 return;
             }
-            Vector3 vp = _cam.WorldToViewportPoint(_bossTf.position + Vector3.up * CombatOverlayHudDefaults.vp);
+            Vector3 vp = _cam.WorldToViewportPoint(_bossTf.position + Vector3.up * CombatOverlayHudDefaults.BossViewportLiftM);
             bool behind = vp.z < 0f;
             bool onScreen = !behind && vp.x > 0f && vp.x < 1f && vp.y > 0f && vp.y < 1f;
             if (onScreen)
@@ -264,7 +264,7 @@ namespace Dovus.Game.Hud
             float age = Time.unscaledTime - _outcomeShownAt;
             _outcomeGroup.alpha = age <= th.BannerHoldSec
                 ? 1f
-                : 1f - Mathf.Clamp01((age - th.BannerHoldSec) / Mathf.Max(CombatOverlayHudDefaults.MinClampZeroPt, th.BannerFadeSec));
+                : 1f - Mathf.Clamp01((age - th.BannerHoldSec) / Mathf.Max(CombatOverlayHudDefaults.BannerFadeMinSec, th.BannerFadeSec));
         }
 
         void ShowOutcome(string title, Color color, string sub, bool defeat)
@@ -306,10 +306,10 @@ namespace Dovus.Game.Hud
         {
             if (_edge != null)
                 return _edge;
-            _edge = BuildSprite(CombatOverlayHudDefaults.edge, (x, y) =>
+            _edge = BuildSprite(CombatOverlayHudDefaults.EdgeSpriteSizePx, (x, y) =>
             {
-                float r = Mathf.Clamp01(new Vector2(x - 0.5f, y - 0.5f).magnitude * 2f / CombatOverlayHudDefaults.r);
-                return Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(CombatOverlayHudDefaults.RConst, 1f, r));
+                float r = Mathf.Clamp01(new Vector2(x - 0.5f, y - 0.5f).magnitude * 2f / CombatOverlayHudDefaults.CornerReachMult);
+                return Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(CombatOverlayHudDefaults.EdgeSpriteInnerRadiusNorm, 1f, r));
             });
             return _edge;
         }
@@ -319,13 +319,13 @@ namespace Dovus.Game.Hud
         {
             if (_wedge != null)
                 return _wedge;
-            _wedge = BuildSprite(CombatOverlayHudDefaults.wedge, (x, y) =>
+            _wedge = BuildSprite(CombatOverlayHudDefaults.WedgeSpriteSizePx, (x, y) =>
             {
                 float dx = (x - 0.5f) * 2f;
                 float arc = 1f - dx * dx;
-                float band = Mathf.InverseLerp(arc - CombatOverlayHudDefaults.band, arc - CombatOverlayHudDefaults.WedgeInnerBandOffset, y * CombatOverlayHudDefaults.WedgeBandStretchMult)
-                             * (1f - Mathf.InverseLerp(arc - CombatOverlayHudDefaults.YConst, arc + CombatOverlayHudDefaults.YConst, y * CombatOverlayHudDefaults.WedgeVerticalStretchMult));
-                return Mathf.Clamp01(band) * (1f - Mathf.Abs(dx) * CombatOverlayHudDefaults.DxConst);
+                float band = Mathf.InverseLerp(arc - CombatOverlayHudDefaults.WedgeBandHalfSpanNorm, arc - CombatOverlayHudDefaults.WedgeInnerBandOffset, y * CombatOverlayHudDefaults.WedgeBandStretchMult)
+                             * (1f - Mathf.InverseLerp(arc - CombatOverlayHudDefaults.WedgeArcHalfSpanNorm, arc + CombatOverlayHudDefaults.WedgeArcHalfSpanNorm, y * CombatOverlayHudDefaults.WedgeVerticalStretchMult));
+                return Mathf.Clamp01(band) * (1f - Mathf.Abs(dx) * CombatOverlayHudDefaults.WedgeDxAttenuationMult);
             });
             return _wedge;
         }
@@ -334,11 +334,11 @@ namespace Dovus.Game.Hud
         {
             if (_arrowSprite != null)
                 return _arrowSprite;
-            _arrowSprite = BuildSprite(CombatOverlayHudDefaults.arrowSprite, (x, y) =>
+            _arrowSprite = BuildSprite(CombatOverlayHudDefaults.ArrowSpriteSizePx, (x, y) =>
             {
                 float half = (1f - y) * 0.5f;
                 float edge = Mathf.Abs(x - 0.5f);
-                return edge < half && y > CombatOverlayHudDefaults.EdgeConst ? Mathf.Clamp01((half - edge) * CombatOverlayHudDefaults.EdgeSpriteSharpnessMult) : 0f;
+                return edge < half && y > CombatOverlayHudDefaults.EdgeSpriteMinYNorm ? Mathf.Clamp01((half - edge) * CombatOverlayHudDefaults.EdgeSpriteSharpnessMult) : 0f;
             });
             return _arrowSprite;
         }
@@ -350,12 +350,12 @@ namespace Dovus.Game.Hud
             for (int x = 0; x < size; x++)
                 tex.SetPixel(x, y, new Color(1f, 1f, 1f, alpha((x + 0.5f) / size, (y + 0.5f) / size)));
             tex.Apply(false, true);
-            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), CombatOverlayHudDefaults.SizeConst);
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), CombatOverlayHudDefaults.SpritePixelsPerUnit);
         }
 
         static int FirstLayer(int mask)
         {
-            for (int i = 0; i < CombatOverlayHudDefaults.i; i++)
+            for (int i = 0; i < CombatOverlayHudDefaults.SpriteGradientIterationCount; i++)
                 if ((mask & (1 << i)) != 0)
                     return i;
             return 0;

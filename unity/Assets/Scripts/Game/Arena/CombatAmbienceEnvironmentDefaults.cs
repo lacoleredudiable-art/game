@@ -11,8 +11,8 @@ namespace Dovus.Game.Arena
         public const float BumpScaleFallback = 0.9f;
         public const float CracksLiftM = 0.015f;
         public const float DetailNormalMapScale = 0.85f;
-        public const float DetailNormalSt = 5.2f;
-        public const float DetailSt = 3.888889f;
+        public const float DetailNormalTiling = 5.2f;
+        public const float DetailAlbedoTiling = 3.888889f;
         public const float DetailWorldDivisor = 3.888889f;
         public const float EdgeJitterHalfSpanM = 4f;
         public const float EdgeJitterSpanM = 8f;
