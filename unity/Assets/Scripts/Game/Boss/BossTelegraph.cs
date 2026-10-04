@@ -87,12 +87,12 @@ namespace Dovus.Game.Boss
 
             if (_worldAnchor && _anchorKind == BossAttackKind.WebField)
             {
-                float webRadius = radiusM * Mathf.Max(0.12f, p);
+                float webRadius = radiusM * Mathf.Max(BossTelegraphDefaults.MinRadiusProgress, p);
                 DrawDiscAt(
                     _anchorWorld,
                     webRadius,
                     Color.Lerp(Color.white, new Color(0.92f, 0.95f, 1f), p),
-                    0.14f + 0.2f * p);
+                    BossTelegraphDefaults.WebLineWidthBase + BossTelegraphDefaults.WebLineWidthPerProgress * p);
                 if (_tone != null && _tone.isPlaying)
                     _tone.Stop();
                 return;
@@ -104,7 +104,7 @@ namespace Dovus.Game.Boss
                     _anchorWorld,
                     radiusM,
                     Color.Lerp(new Color(1f, 0.25f, 0.2f), new Color(1f, 0.1f, 0.08f), p),
-                    0.22f + 0.18f * p);
+                    BossTelegraphDefaults.SlamLineWidthBase + BossTelegraphDefaults.SlamLineWidthPerProgress * p);
                 if (_tone != null && _tone.isPlaying)
                     _tone.Stop();
                 return;
@@ -112,18 +112,18 @@ namespace Dovus.Game.Boss
 
             float drawnRadius = variant == SlamVariant.Genis
                 ? radiusM
-                : radiusM * Mathf.Max(0.12f, p);
+                : radiusM * Mathf.Max(BossTelegraphDefaults.MinRadiusProgress, p);
 
             // ff-4: "büyük solid turuncu disk çok yüksek sesliydi" — 0.35..0.85 tavanı 0.16..0.33'e
             // indirildi; okunabilirlik artık kenardaki parlak ince rim'den gelir (bkz. GlowTexture).
             DrawDisc(
                 drawnRadius,
                 Color.Lerp(_colors.Visuals.TelegraphWarm, _colors.Visuals.TelegraphHot, p),
-                0.16f + 0.17f * p);
+                BossTelegraphDefaults.ChargeDiscWidthBase + BossTelegraphDefaults.ChargeDiscWidthPerProgress * p);
 
             // GEÇ: hazırlık pozu daha erken dolup uzun tutulur (windup zaten 900 ms).
             float poseT = variant == SlamVariant.Gec
-                ? Mathf.Clamp01(p * 1.35f)
+                ? Mathf.Clamp01(p * BossTelegraphDefaults.ChargePoseProgressMult)
                 : p;
             ApplyPose(1f - _colors.Boss.TelegraphSquash * poseT, 1f + _colors.Boss.TelegraphStretch * poseT);
 
@@ -145,7 +145,7 @@ namespace Dovus.Game.Boss
         /// </summary>
         public void Slam(float radiusM)
         {
-            DrawDisc(radiusM, _colors.Visuals.TelegraphHot, 0.34f);
+            DrawDisc(radiusM, _colors.Visuals.TelegraphHot, BossTelegraphDefaults.HotDiscAlpha);
             ApplySlamPose(1f);
             if (_tone != null && _tone.isPlaying)
                 _tone.Stop();
@@ -155,13 +155,13 @@ namespace Dovus.Game.Boss
         public void Recover(float t01, float radiusM)
         {
             float t = Mathf.Clamp01(t01);
-            if (t <= 0.02f)
+            if (t <= BossTelegraphDefaults.SlamPoseWarmupSec)
             {
                 Hide();
                 return;
             }
 
-            DrawDisc(radiusM, _colors.Visuals.TelegraphHot, 0.34f * t);
+            DrawDisc(radiusM, _colors.Visuals.TelegraphHot, BossTelegraphDefaults.HotDiscAlpha * t);
             ApplySlamPose(t);
         }
 
@@ -244,7 +244,7 @@ namespace Dovus.Game.Boss
 
             Vector3 fwd = _bossXform.forward;
             fwd.y = 0f;
-            if (fwd.sqrMagnitude < 0.0001f)
+            if (fwd.sqrMagnitude < BossTelegraphDefaults.PlanarDirEpsilonSqr)
                 fwd = Vector3.forward;
             _cone.SetPositionAndRotation(
                 new Vector3(_bossXform.position.x, DiscHeightY, _bossXform.position.z),
@@ -311,7 +311,7 @@ namespace Dovus.Game.Boss
         void ApplySlamPose(float t)
         {
             float squash = _colors.Boss.TelegraphSlamSquash * t;
-            ApplyPose(1f + squash * 0.5f, 1f - squash);
+            ApplyPose(1f + squash * BossTelegraphDefaults.SlamSquashPoseMult, 1f - squash);
         }
 
         void BuildDisc()
@@ -363,7 +363,7 @@ namespace Dovus.Game.Boss
             _tone = gameObject.AddComponent<AudioSource>();
             _tone.playOnAwake = false;
             _tone.loop = true;
-            _tone.spatialBlend = 0.35f;
+            _tone.spatialBlend = BossTelegraphDefaults.SfxSpatialBlend;
             _clip = MakeTone(220);
             _tone.clip = _clip;
         }

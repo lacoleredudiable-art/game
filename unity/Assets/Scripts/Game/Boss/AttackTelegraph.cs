@@ -21,11 +21,11 @@ namespace Dovus.Game.Boss
         const float HeightY = 0.04f;
 
         TelegraphShape _shape = TelegraphShape.Circle;
-        float _duration = 0.7f;
-        float _radius = 3.2f;
-        float _length = 7f;
-        float _width = 1.4f;
-        float _arcHalf = 40f;
+        float _duration = AttackTelegraphDefaults.DefaultDurationSec;
+        float _radius = AttackTelegraphDefaults.DefaultRadiusM;
+        float _length = AttackTelegraphDefaults.DefaultLengthM;
+        float _width = AttackTelegraphDefaults.DefaultWidthM;
+        float _arcHalf = AttackTelegraphDefaults.DefaultArcHalfDeg;
         float _age;
         bool _playing;
         bool _completed;
@@ -58,18 +58,18 @@ namespace Dovus.Game.Boss
             forward.y = 0f;
             _forward = forward.sqrMagnitude > 0.0001f ? forward.normalized : Vector3.forward;
             _shape = shape;
-            _duration = Mathf.Max(0.05f, durationSec);
+            _duration = Mathf.Max(AttackTelegraphDefaults.MinDurationSec, durationSec);
             Dodgeable = dodgeable;
-            _radius = Mathf.Max(0.2f, radiusM);
-            _length = Mathf.Max(0.2f, lengthM);
-            _width = Mathf.Max(0.2f, widthM);
-            _arcHalf = Mathf.Clamp(arcHalfDeg, 5f, 170f);
+            _radius = Mathf.Max(AttackTelegraphDefaults.MinShapeDimensionM, radiusM);
+            _length = Mathf.Max(AttackTelegraphDefaults.MinShapeDimensionM, lengthM);
+            _width = Mathf.Max(AttackTelegraphDefaults.MinShapeDimensionM, widthM);
+            _arcHalf = Mathf.Clamp(arcHalfDeg, AttackTelegraphDefaults.ArcHalfMinDeg, AttackTelegraphDefaults.ArcHalfMaxDeg);
             _age = 0f;
             Fill01 = 0f;
             _playing = true;
             _completed = false;
             EnsureVisuals();
-            ApplyFill(0.02f);
+            ApplyFill(AttackTelegraphDefaults.InitialFillScale);
         }
 
         void Update()
@@ -122,9 +122,9 @@ namespace Dovus.Game.Boss
             _outline.localScale = full;
             Vector3 fill = full;
             if (_shape == TelegraphShape.Line)
-                fill.z = Mathf.Max(0.05f, full.z * u);
+                fill.z = Mathf.Max(AttackTelegraphDefaults.FillProgressMin, full.z * u);
             else
-                fill = full * Mathf.Max(0.05f, u);
+                fill = full * Mathf.Max(AttackTelegraphDefaults.FillProgressMin, u);
             _fill.localScale = fill;
             // ff-4: "büyük solid turuncu disk çok yüksek sesliydi" — dolum alfası 0.85'e kadar
             // çıkıyordu. Dolum/çevre artık ~0.25-0.35 tavanlı, yarıçap kenarında yumuşak/parlak
@@ -305,7 +305,7 @@ namespace Dovus.Game.Boss
         {
             if (_fill != null)
                 _fill.gameObject.SetActive(false);
-            Destroy(gameObject, 0.18f);
+            Destroy(gameObject, AttackTelegraphDefaults.FadeDestroyDelaySec);
         }
 
         void OnDestroy()

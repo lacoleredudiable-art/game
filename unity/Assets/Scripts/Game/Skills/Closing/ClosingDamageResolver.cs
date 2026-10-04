@@ -100,8 +100,8 @@ namespace Dovus.Game.Skills.Closing
             Vector3 along = new Vector3(logic.DirX, 0f, logic.DirZ);
             Vector3 tip = new Vector3(logic.TipX, 0f, logic.TipZ);
             float scale = view.IsBasicStrike
-                ? _host.Combat.Manifestation.BasicStrikeScarScaleM * (0.7f + 0.15f * closing.DotCount)
-                : _host.Combat.Manifestation.ScarScaleM * (0.7f + 0.15f * closing.DotCount);
+                ? _host.Combat.Manifestation.BasicStrikeScarScaleM * (ClosingDamageDefaults.ScarScaleBase + ClosingDamageDefaults.ScarScalePerDot * closing.DotCount)
+                : _host.Combat.Manifestation.ScarScaleM * (ClosingDamageDefaults.ScarScaleBase + ClosingDamageDefaults.ScarScalePerDot * closing.DotCount);
 
             ScarKind kind = view.IsBasicStrike
                 ? ScarKind.Strike
@@ -120,7 +120,7 @@ namespace Dovus.Game.Skills.Closing
                 for (int i = 1; i <= 3; i++)
                 {
                     float u = i / 3f;
-                    _host.Scars.Stamp(Vector3.Lerp(origin, tip, u), scale * 0.85f, kind, along);
+                    _host.Scars.Stamp(Vector3.Lerp(origin, tip, u), scale * ClosingDamageDefaults.ScarCrackLerpScale, kind, along);
                 }
             }
             else
@@ -146,7 +146,7 @@ namespace Dovus.Game.Skills.Closing
                 new Vector3(logic.OriginX, 0f, logic.OriginZ),
                 knockbackM: 0f,
                 liftM: 0f,
-                shakeSec: man.BossShakeSec * 0.35f,
+                shakeSec: man.BossShakeSec * ClosingDamageDefaults.BasicShakeMult,
                 _host.Clock.Director.WorldTimeMs);
         }
 
@@ -162,9 +162,9 @@ namespace Dovus.Game.Skills.Closing
                     return;
                 _host.Boss.React(
                     new Vector3(logic.OriginX, 0f, logic.OriginZ),
-                    _host.Combat.Manifestation.BossKnockbackM * 0.08f,
-                    0.04f,
-                    _host.Combat.Manifestation.BossShakeSec * 0.35f,
+                    _host.Combat.Manifestation.BossKnockbackM * ClosingDamageDefaults.SelfTargetKnockMult,
+                    ClosingDamageDefaults.SelfTargetLiftM,
+                    _host.Combat.Manifestation.BossShakeSec * ClosingDamageDefaults.BasicShakeMult,
                     _host.Clock.Director.WorldTimeMs);
                 return;
             }
@@ -182,41 +182,41 @@ namespace Dovus.Game.Skills.Closing
                 switch (family)
                 {
                     case "strike":
-                        knock = man.BossKnockbackM * (1.85f + 0.4f * logic.Current.Pierce);
-                        lift = 0.05f;
-                        shake = man.BossShakeSec * 0.55f;
+                        knock = man.BossKnockbackM * (ClosingDamageDefaults.StrikeKnockBase + ClosingDamageDefaults.StrikeKnockPerPierce * logic.Current.Pierce);
+                        lift = ClosingDamageDefaults.StrikeLiftM;
+                        shake = man.BossShakeSec * ClosingDamageDefaults.StrikeShakeMult;
                         break;
                     case "disrupt":
-                        knock = man.BossKnockbackM * 0.12f;
-                        lift = 0.08f;
-                        shake = man.BossShakeSec * 1.6f;
+                        knock = man.BossKnockbackM * ClosingDamageDefaults.DisruptKnockMult;
+                        lift = ClosingDamageDefaults.DisruptLiftM;
+                        shake = man.BossShakeSec * ClosingDamageDefaults.DisruptShakeMult;
                         if (!IsClosingInRange(logic, closing))
                             return;
-                        _host.Boss.React(from, knock, lift, shake * 0.45f, worldMs);
-                        _host.Boss.React(from + new Vector3(logic.DirZ, 0f, -logic.DirX) * 0.35f,
-                            knock * 0.6f, lift * 0.5f, shake * 0.55f, worldMs);
-                        _host.Boss.React(from + new Vector3(-logic.DirZ, 0f, logic.DirX) * 0.35f,
-                            knock * 0.6f, lift * 0.5f, shake * 0.55f, worldMs);
+                        _host.Boss.React(from, knock, lift, shake * ClosingDamageDefaults.DisruptShakeFollowMult, worldMs);
+                        _host.Boss.React(from + new Vector3(logic.DirZ, 0f, -logic.DirX) * ClosingDamageDefaults.DisruptSideOffsetM,
+                            knock * ClosingDamageDefaults.DisruptSideKnockMult, lift * ClosingDamageDefaults.DisruptSideLiftMult, shake * ClosingDamageDefaults.DisruptSideShakeMult, worldMs);
+                        _host.Boss.React(from + new Vector3(-logic.DirZ, 0f, logic.DirX) * ClosingDamageDefaults.DisruptSideOffsetM,
+                            knock * ClosingDamageDefaults.DisruptSideKnockMult, lift * ClosingDamageDefaults.DisruptSideLiftMult, shake * ClosingDamageDefaults.DisruptSideShakeMult, worldMs);
                         return;
                     case "control":
                         if (!IsClosingInRange(logic, closing))
                             return;
-                        _host.Boss.Pin(0.7f, worldMs);
+                        _host.Boss.Pin(ClosingDamageDefaults.ControlPinSec, worldMs);
                         return;
                     case "zone":
-                        knock = man.BossKnockbackM * 0.55f;
-                        lift = man.BossLiftM * (1.15f + 0.35f * logic.Current.Lift);
-                        shake = man.BossShakeSec * 0.9f;
+                        knock = man.BossKnockbackM * ClosingDamageDefaults.ZoneKnockMult;
+                        lift = man.BossLiftM * (ClosingDamageDefaults.ZoneLiftBase + ClosingDamageDefaults.ZoneLiftPerLift * logic.Current.Lift);
+                        shake = man.BossShakeSec * ClosingDamageDefaults.ZoneShakeMult;
                         break;
                     case "motion":
-                        knock = man.BossKnockbackM * 0.9f;
-                        lift = 0.12f;
-                        shake = man.BossShakeSec * 0.7f;
+                        knock = man.BossKnockbackM * ClosingDamageDefaults.MotionKnockMult;
+                        lift = ClosingDamageDefaults.MotionLiftM;
+                        shake = man.BossShakeSec * ClosingDamageDefaults.MotionShakeMult;
                         break;
                     case "special":
-                        knock = man.BossKnockbackM * 0.25f;
-                        lift = 0.2f;
-                        shake = man.BossShakeSec * 1.1f;
+                        knock = man.BossKnockbackM * ClosingDamageDefaults.SpecialKnockMult;
+                        lift = ClosingDamageDefaults.SpecialLiftM;
+                        shake = man.BossShakeSec * ClosingDamageDefaults.SpecialShakeMult;
                         break;
                     default:
                         break;
@@ -231,36 +231,36 @@ namespace Dovus.Game.Skills.Closing
             switch (closing.Type)
             {
                 case Rune.Aydinlik:
-                    knock = man.BossKnockbackM * 0.55f;
-                    lift = man.BossLiftM * (1.15f + 0.35f * logic.Current.Lift);
-                    shake = man.BossShakeSec * 0.9f;
+                    knock = man.BossKnockbackM * ClosingDamageDefaults.ZoneKnockMult;
+                    lift = man.BossLiftM * (ClosingDamageDefaults.ZoneLiftBase + ClosingDamageDefaults.ZoneLiftPerLift * logic.Current.Lift);
+                    shake = man.BossShakeSec * ClosingDamageDefaults.ZoneShakeMult;
                     break;
                 case Rune.Ates:
-                    knock = man.BossKnockbackM * (1.85f + 0.4f * logic.Current.Pierce);
-                    lift = 0.05f;
-                    shake = man.BossShakeSec * 0.55f;
+                    knock = man.BossKnockbackM * (ClosingDamageDefaults.StrikeKnockBase + ClosingDamageDefaults.StrikeKnockPerPierce * logic.Current.Pierce);
+                    lift = ClosingDamageDefaults.StrikeLiftM;
+                    shake = man.BossShakeSec * ClosingDamageDefaults.StrikeShakeMult;
                     break;
                 case Rune.Su:
-                    knock = man.BossKnockbackM * 0.12f;
-                    lift = 0.08f;
-                    shake = man.BossShakeSec * 1.6f;
+                    knock = man.BossKnockbackM * ClosingDamageDefaults.DisruptKnockMult;
+                    lift = ClosingDamageDefaults.DisruptLiftM;
+                    shake = man.BossShakeSec * ClosingDamageDefaults.DisruptShakeMult;
                     if (!IsClosingInRange(logic, closing))
                         return;
-                    _host.Boss.React(from, knock, lift, shake * 0.45f, worldMs);
-                    _host.Boss.React(from + new Vector3(logic.DirZ, 0f, -logic.DirX) * 0.35f,
-                        knock * 0.6f, lift * 0.5f, shake * 0.55f, worldMs);
-                    _host.Boss.React(from + new Vector3(-logic.DirZ, 0f, logic.DirX) * 0.35f,
-                        knock * 0.6f, lift * 0.5f, shake * 0.55f, worldMs);
+                    _host.Boss.React(from, knock, lift, shake * ClosingDamageDefaults.DisruptShakeFollowMult, worldMs);
+                    _host.Boss.React(from + new Vector3(logic.DirZ, 0f, -logic.DirX) * ClosingDamageDefaults.DisruptSideOffsetM,
+                        knock * ClosingDamageDefaults.DisruptSideKnockMult, lift * ClosingDamageDefaults.DisruptSideLiftMult, shake * ClosingDamageDefaults.DisruptSideShakeMult, worldMs);
+                    _host.Boss.React(from + new Vector3(-logic.DirZ, 0f, logic.DirX) * ClosingDamageDefaults.DisruptSideOffsetM,
+                        knock * ClosingDamageDefaults.DisruptSideKnockMult, lift * ClosingDamageDefaults.DisruptSideLiftMult, shake * ClosingDamageDefaults.DisruptSideShakeMult, worldMs);
                     return;
                 case Rune.Hava:
                     if (!IsClosingInRange(logic, closing))
                         return;
-                    _host.Boss.Pin(0.55f, worldMs);
+                    _host.Boss.Pin(ClosingDamageDefaults.HavaPinSec, worldMs);
                     return;
                 case Rune.Toprak:
-                    knock = man.BossKnockbackM * 0.2f;
+                    knock = man.BossKnockbackM * ClosingDamageDefaults.ToprakKnockMult;
                     lift = 0f;
-                    shake = man.BossShakeSec * 0.7f;
+                    shake = man.BossShakeSec * ClosingDamageDefaults.ToprakShakeMult;
                     break;
             }
 
@@ -277,7 +277,7 @@ namespace Dovus.Game.Skills.Closing
             ManifestationTuning man = _host.Combat.Manifestation;
             float radius = man.BasicStrikeRadiusM;
             Vector3 dir = new Vector3(logic.DirX, 0f, logic.DirZ);
-            if (dir.sqrMagnitude < 0.0001f)
+            if (dir.sqrMagnitude < ClosingDamageDefaults.PlanarEpsilonSqr)
                 return false;
             dir.Normalize();
             StrikeCapsule.Segment(_host.PlayerBodyRadiusM(), reachM, radius, out float nearM, out float farM);
@@ -325,7 +325,7 @@ namespace Dovus.Game.Skills.Closing
             to.y = 0f;
             Vector3 fwd = _host.Player.forward;
             fwd.y = 0f;
-            if (to.sqrMagnitude < 0.0001f || fwd.sqrMagnitude < 0.0001f)
+            if (to.sqrMagnitude < ClosingDamageDefaults.PlanarEpsilonSqr || fwd.sqrMagnitude < ClosingDamageDefaults.PlanarEpsilonSqr)
                 return 0f;
             return Vector3.Angle(fwd, to);
         }
