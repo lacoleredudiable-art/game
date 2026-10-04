@@ -82,34 +82,8 @@ public class PrototypeTuningSectionsTests
 
     static HashSet<string> CollectFormerLegacyFieldNames()
     {
-        string legacyPath = Path.Combine(GameConfig(), "PrototypeTuning.Legacy.cs");
-        if (File.Exists(legacyPath))
-            return CollectPrivateFieldNames(File.ReadAllText(legacyPath));
-
-        string src = RunGitShow("origin/master:unity/Assets/Scripts/Game/Config/PrototypeTuning.Legacy.cs");
-        return CollectPrivateFieldNames(src);
-    }
-
-    static HashSet<string> CollectPrivateFieldNames(string source)
-    {
-        var names = new HashSet<string>(StringComparer.Ordinal);
-        foreach (Match m in Regex.Matches(source, @"private\s+(?:[\w<>,\.\s\[\]]+?)\s+(\w+)\s*="))
-            names.Add(m.Groups[1].Value);
+        var names = new HashSet<string>(PrototypeTuningLegacyFieldNames.All, StringComparer.Ordinal);
+        Assert.That(names.Count, Is.EqualTo(247), "dondurulmuş legacy alan listesi");
         return names;
-    }
-
-    static string RunGitShow(string revPath)
-    {
-        var psi = new System.Diagnostics.ProcessStartInfo("git", $"show {revPath}")
-        {
-            RedirectStandardOutput = true,
-            UseShellExecute = false,
-            WorkingDirectory = Root(),
-        };
-        using var p = System.Diagnostics.Process.Start(psi);
-        string stdout = p!.StandardOutput.ReadToEnd();
-        p.WaitForExit();
-        Assert.That(p.ExitCode, Is.EqualTo(0));
-        return stdout;
     }
 }
