@@ -1,6 +1,7 @@
 using Dovus.Core.Combat;
 using Dovus.Core.Equipment;
 using Dovus.Core.Shared;
+using Dovus.Game.Composition;
 using Dovus.Game.Platform;
 using UnityEngine;
 
@@ -27,6 +28,13 @@ namespace Dovus.Game.Actors
             float regenDelayAfterCastSec = 1.5f)
         {
             _tracker = new ResourceTracker(maxMana, regenPerSec, regenDelayAfterCastSec);
+        }
+
+        /// <summary>Dünya saati — duraklatma/hit-stop'ta mana yenilenmez (fail-safe: bağlanmazsa kare saati).</summary>
+        public void BindClock(GameClock clock)
+        {
+            if (clock != null)
+                _clock = clock.World;
         }
 
         /// <summary>CombatTuning.EnforceResourceCost kapısı — tracker yoksa true (fail-open).</summary>

@@ -19,18 +19,18 @@ public class CooldownTrackerTests
     }
 
     [Test]
-    public void TryStart_SetsVerbAndGlobalCooldown()
+    public void TryStart_SetsComboAndGlobalCooldown()
     {
         var cd = new CooldownTracker();
-        Assert.That(cd.TryStart("kor", verbCooldownSec: 3f, worldMs: 0), Is.True);
+        Assert.That(cd.TryStart("8-9", comboCooldownSec: 3f, worldMs: 0), Is.True);
         Assert.That(cd.ActiveCasts, Is.EqualTo(1));
-        Assert.That(cd.VerbRemainingSec("kor", 0), Is.EqualTo(3f).Within(0.0001f));
+        Assert.That(cd.ComboRemainingSec("8-9", 0), Is.EqualTo(3f).Within(0.0001f));
         Assert.That(cd.GlobalRemainingSec(0), Is.EqualTo(0.3f).Within(0.0001f));
-        Assert.That(cd.VerbRemainingSec("kor", 3000), Is.EqualTo(0f));
+        Assert.That(cd.ComboRemainingSec("8-9", 3000), Is.EqualTo(0f));
     }
 
     [Test]
-    public void GlobalCooldown_BlocksAnyVerb()
+    public void GlobalCooldown_BlocksAnyCombo()
     {
         var cd = new CooldownTracker();
         Assert.That(cd.TryStart("a", 1f, 0), Is.True);
@@ -38,20 +38,33 @@ public class CooldownTrackerTests
 
         Assert.That(cd.CanStart("b", 200), Is.False, "GCD 0.3s henüz bitmedi");
         Assert.That(cd.TryStart("b", 1f, 200), Is.False);
+        Assert.That(cd.CanStartGlobalGate(200), Is.False);
 
         Assert.That(cd.CanStart("b", 300), Is.True);
         Assert.That(cd.TryStart("b", 1f, 300), Is.True);
     }
 
     [Test]
-    public void VerbCooldown_BlocksSameVerb_AllowsOtherAfterGcd()
+    public void CanStartGlobalGate_IgnoresComboCooldown()
     {
         var cd = new CooldownTracker();
-        Assert.That(cd.TryStart("kor", 4f, 0), Is.True);
+        Assert.That(cd.TryStart("8-9", 4f, 0), Is.True);
         cd.CompleteCast();
 
-        Assert.That(cd.TryStart("kor", 4f, 300), Is.False, "aynı fiil soğumada");
-        Assert.That(cd.TryStart("dalga", 2f, 300), Is.True, "başka fiil GCD sonrası serbest");
+        Assert.That(cd.CanStart("8-9", 300), Is.False, "aynı kombo soğumada");
+        Assert.That(cd.CanStartGlobalGate(300), Is.True, "fiil başlatma yalnız GCD");
+        Assert.That(cd.CanStart("8-10", 300), Is.True, "farklı kombo GCD sonrası serbest");
+    }
+
+    [Test]
+    public void ComboCooldown_BlocksSameCombo_AllowsOtherAfterGcd()
+    {
+        var cd = new CooldownTracker();
+        Assert.That(cd.TryStart("8-9", 4f, 0), Is.True);
+        cd.CompleteCast();
+
+        Assert.That(cd.TryStart("8-9", 4f, 300), Is.False, "aynı kombo soğumada");
+        Assert.That(cd.TryStart("8-10", 2f, 300), Is.True, "başka kombo GCD sonrası serbest");
     }
 
     [Test]

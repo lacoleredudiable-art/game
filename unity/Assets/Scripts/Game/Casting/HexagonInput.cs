@@ -808,10 +808,20 @@ namespace Dovus.Game.Casting
                 _activeDot = hit.Value;
                 _dwellWorldMs = 0;
                 _dwellReported = 0;
-                if (WouldStartSentence() && !CanCooldownVerbDot(hit.Value))
+                if (WouldStartSentence() && !CanGlobalCooldownGate())
                     _strokeDenial = DrawFeedback.DenialKind.Cooldown;
                 else
                     _strokeDenial = DrawFeedback.DenialKind.Other;
+                return;
+            }
+
+            if (!TryAllowComboCooldownForNextDot(hit.Value))
+            {
+                _activeDot = hit.Value;
+                _dwellWorldMs = 0;
+                _dwellReported = 0;
+                NotifyOnCooldown();
+                _strokeDenial = DrawFeedback.DenialKind.Cooldown;
                 return;
             }
 
@@ -937,7 +947,7 @@ namespace Dovus.Game.Casting
                 NotifyInsufficientMana();
                 return false;
             }
-            if (!CanCooldownVerbDot(verbDot))
+            if (!CanGlobalCooldownGate())
             {
                 NotifyOnCooldown();
                 return false;
@@ -979,19 +989,43 @@ namespace Dovus.Game.Casting
             return _resource.CanAfford(cost);
         }
 
-        bool CanCooldownVerbDot(int verbDot)
+        bool CanGlobalCooldownGate()
         {
             if (_combat == null || !_combat.EnforceCooldown)
                 return true;
             if (_cooldown == null)
                 return true;
 
-            SkillResolution skill = LookupVerbSkill(verbDot);
-            if (skill.IsEmpty || string.IsNullOrEmpty(skill.VerbId))
+            double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
+            return _cooldown.CanStartGlobalGate(worldMs);
+        }
+
+        /// <summary>Building + 1 kelime: sıfat noktasında çözülecek kombo CD kapısı.</summary>
+        bool TryAllowComboCooldownForNextDot(int nextDot)
+        {
+            if (_combat == null || !_combat.EnforceCooldown)
+                return true;
+            if (_cooldown == null || _engine == null)
+                return true;
+            if (_engine.State.Phase != SentencePhase.Building || _engine.State.Words.Count != 1)
+                return true;
+
+            EnsureSkills();
+            if (_skills == null)
+                return true;
+
+            int verbRuneId = (int)_engine.State.Words[0].Rune;
+            int adjectiveRuneId = _engine.Loadout.RuneIdAtSlot(nextDot);
+            SkillResolution skill = _skills.Resolve(new[] { verbRuneId, adjectiveRuneId });
+            if (skill.IsEmpty)
+                return true;
+
+            string comboKey = ComboCooldownKey.For(skill);
+            if (string.IsNullOrEmpty(comboKey))
                 return true;
 
             double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
-            return _cooldown.CanStart(skill.VerbId, worldMs);
+            return _cooldown.CanStart(comboKey, worldMs);
         }
 
         float LookupBaseResourceCost(int verbDot)

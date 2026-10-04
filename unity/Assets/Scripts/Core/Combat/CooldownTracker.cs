@@ -4,15 +4,15 @@ using System.Collections.Generic;
 namespace Dovus.Core.Combat
 {
     /// <summary>
-    /// Fiil soğuması + global soğuma + eşzamanlı cast limiti —
+    /// Kombo soğuması + global soğuma + eşzamanlı cast limiti —
     /// docs/element-sistemi.json global_rules.cooldown_rules.
-    /// verb id → soğuma bitiş zamanı (worldMs). Oyuna bağlı değil.
+    /// kombo anahtarı → soğuma bitiş zamanı (worldMs). Oyuna bağlı değil.
     /// </summary>
     public sealed class CooldownTracker
     {
         readonly float _globalCooldownSec;
         readonly int _maxConcurrentCasts;
-        readonly Dictionary<string, double> _verbReadyAtMs = new(StringComparer.Ordinal);
+        readonly Dictionary<string, double> _comboReadyAtMs = new(StringComparer.Ordinal);
 
         double _globalReadyAtMs;
         int _activeCasts;
@@ -31,39 +31,47 @@ namespace Dovus.Core.Combat
         public float GlobalRemainingSec(double worldMs) =>
             Math.Max(0f, (float)((_globalReadyAtMs - worldMs) / 1000.0));
 
-        public float VerbRemainingSec(string verbId, double worldMs)
+        public float ComboRemainingSec(string comboKey, double worldMs)
         {
-            if (string.IsNullOrEmpty(verbId) || !_verbReadyAtMs.TryGetValue(verbId, out double readyAt))
+            if (string.IsNullOrEmpty(comboKey) || !_comboReadyAtMs.TryGetValue(comboKey, out double readyAt))
                 return 0f;
             return Math.Max(0f, (float)((readyAt - worldMs) / 1000.0));
         }
 
-        public bool CanStart(string verbId, double worldMs)
+        /// <summary>Yalnız GCD + eşzamanlı cast (fiil başlatma; kombo CD yok).</summary>
+        public bool CanStartGlobalGate(double worldMs)
         {
-            if (string.IsNullOrEmpty(verbId))
-                return false;
             if (_activeCasts >= _maxConcurrentCasts)
                 return false;
             if (worldMs < _globalReadyAtMs)
                 return false;
-            if (_verbReadyAtMs.TryGetValue(verbId, out double readyAt) && worldMs < readyAt)
+            return true;
+        }
+
+        public bool CanStart(string comboKey, double worldMs)
+        {
+            if (string.IsNullOrEmpty(comboKey))
+                return false;
+            if (!CanStartGlobalGate(worldMs))
+                return false;
+            if (_comboReadyAtMs.TryGetValue(comboKey, out double readyAt) && worldMs < readyAt)
                 return false;
             return true;
         }
 
         /// <summary>
-        /// Cast başlatır: GCD + fiil soğuması yazar, eşzamanlı sayacı artırır.
+        /// Cast başlatır: GCD + kombo soğuması yazar, eşzamanlı sayacı artırır.
         /// Reddedilirse false (durum değişmez).
         /// </summary>
-        public bool TryStart(string verbId, float verbCooldownSec, double worldMs)
+        public bool TryStart(string comboKey, float comboCooldownSec, double worldMs)
         {
-            if (!CanStart(verbId, worldMs))
+            if (!CanStart(comboKey, worldMs))
                 return false;
 
             _activeCasts++;
             // float*1000 (ör. 0.3f) kayan nokta sapması üretmesin diye ms yuvarlanır
             _globalReadyAtMs = worldMs + Math.Round(_globalCooldownSec * 1000.0);
-            _verbReadyAtMs[verbId] = worldMs + Math.Round(Math.Max(0f, verbCooldownSec) * 1000.0);
+            _comboReadyAtMs[comboKey] = worldMs + Math.Round(Math.Max(0f, comboCooldownSec) * 1000.0);
             return true;
         }
 

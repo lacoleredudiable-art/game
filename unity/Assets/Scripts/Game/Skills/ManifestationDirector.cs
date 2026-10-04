@@ -1820,12 +1820,13 @@ namespace Dovus.Game.Skills
                 return;
             }
 
-            if (_playerCooldown == null || string.IsNullOrEmpty(skill.VerbId))
+            string comboKey = ComboCooldownKey.For(skill);
+            if (_playerCooldown == null || string.IsNullOrEmpty(comboKey))
                 return;
 
             float sec = skill.BaseCooldownSec * WeaponCooldownMult();
             double worldMs = _clock != null ? _clock.Director.WorldTimeMs : 0;
-            if (!_playerCooldown.TryBeginCast(skill.VerbId, sec, worldMs))
+            if (!_playerCooldown.TryBeginCast(comboKey, sec, worldMs))
                 return;
 
             if (_hexagonView == null || sec <= 0f)
@@ -1833,7 +1834,7 @@ namespace Dovus.Game.Skills
 
             _hexagonView.BeginTrackedCooldown(
                 words[0].Dot,
-                skill.VerbId,
+                comboKey,
                 sec,
                 _playerCooldown,
                 _clock);
