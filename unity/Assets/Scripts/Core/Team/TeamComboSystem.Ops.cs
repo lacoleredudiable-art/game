@@ -179,7 +179,7 @@ namespace Dovus.Core.Team
             for (int i = 0; i < _links.Count; i++)
             {
                 Link link = _links[i];
-                if (link.Broken || _now >= link.Until)
+                if (_now >= link.Until)
                     continue;
                 IAllyPlayer a = Find(allies, link.A);
                 IAllyPlayer b = Find(allies, link.B);

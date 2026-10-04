@@ -50,7 +50,6 @@ namespace Dovus.Core.Team
             public float Ax, Az, Bx, Bz;
             public float Until;
             public float BurnAcc;
-            public bool Broken;
         }
 
         sealed class Turret
