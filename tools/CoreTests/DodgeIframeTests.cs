@@ -25,20 +25,20 @@ public class DodgeIframeTests
     [Test]
     public void Charges_SpendAndRechargeOneAtATime()
     {
-        var bank = new DodgeChargeBank(new DodgeTuning { MaxCharges = 2, ChargeRechargeMs = 4000 });
+        var bank = new DodgeChargeBank(new DodgeTuning { MaxCharges = 2, ChargeRechargeMs = 6000 });
         Assert.That(bank.Ready, Is.EqualTo(2));
         Assert.That(bank.TrySpend(0), Is.True);
         Assert.That(bank.TrySpend(0), Is.True);
         Assert.That(bank.Ready, Is.EqualTo(0));
         Assert.That(bank.TrySpend(0), Is.False);
 
-        bank.Tick(3999);
+        bank.Tick(5999);
         Assert.That(bank.Ready, Is.EqualTo(0));
         Assert.That(bank.Fill01, Is.GreaterThan(0.9f));
 
-        bank.Tick(4000);
+        bank.Tick(6000);
         Assert.That(bank.Ready, Is.EqualTo(1));
-        bank.Tick(8000);
+        bank.Tick(12000);
         Assert.That(bank.Ready, Is.EqualTo(2));
         Assert.That(bank.Fill01, Is.EqualTo(1f));
     }
@@ -87,7 +87,7 @@ public class DodgeIframeTests
     [Test]
     public void PerfectRefund_ReturnsOneCharge_WithoutPassingMax()
     {
-        var bank = new DodgeChargeBank(new DodgeTuning { MaxCharges = 2, ChargeRechargeMs = 4000 });
+        var bank = new DodgeChargeBank(new DodgeTuning { MaxCharges = 2, ChargeRechargeMs = 6000 });
         bank.TrySpend(0);
         bank.TrySpend(0);
         Assert.That(bank.Ready, Is.EqualTo(0));
@@ -102,7 +102,7 @@ public class DodgeIframeTests
     [Test]
     public void RefundFraction_FillsHalfACharge()
     {
-        var bank = new DodgeChargeBank(new DodgeTuning { MaxCharges = 2, ChargeRechargeMs = 4000 });
+        var bank = new DodgeChargeBank(new DodgeTuning { MaxCharges = 2, ChargeRechargeMs = 6000 });
         bank.TrySpend(0);
         bank.TrySpend(0);
         bank.Refund(0.5f);

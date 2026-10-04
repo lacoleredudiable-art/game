@@ -14,12 +14,20 @@ namespace Dovus.Core.Tuning
         public float CurveExp = 3.6f;
         public int GlideTailMs = 120;
         // S2: CooldownMs (360) kaldırıldı — haklar her zaman var olduğu için hiç okunmuyordu.
-        // JSON dodge_cooldown_sec 0.42 Adım 5'teki 2×6 sn hak çalışmasında ele alınacak.
+        // JSON dodge_cooldown_sec 0.42 — 2 hak × 6 sn dolum (PLAN 1.3).
 
         // Dragon Nest tarzı hak + mükemmel sıyırma. Sayılar his varsayılanı;
         // element-sistemi.json'da dodge hak alanı yok (durum.md).
         public int MaxCharges = 2;
-        public int ChargeRechargeMs = 4000;
+        public int ChargeRechargeMs = 6000;
+        /// <summary>İlk basıştan sonra bu süre içinde ikinci basış birleşik dodge (his varsayılanı; spec'te yok).</summary>
+        public int DoubleTapWindowMs = 200;
+        /// <summary>Birleşik dodge i-frame süresi, ilk dodge başlangıcından (his varsayılanı; spec'te yok → 2×IframeMs).</summary>
+        public int CombinedIframeMs = 520;
+        /// <summary>Birleşik kaçış mesafe çarpanı (his varsayılanı; spec'te yok).</summary>
+        public float CombinedDistanceMult = 1.6f;
+        /// <summary>Birleşik kaçış süre çarpanı (his varsayılanı; spec'te yok).</summary>
+        public float CombinedDurationMult = 1.4f;
         /// <summary>O2: TEK mükemmel pencere — PERFECT derecesi, yük iadesi ve sonraki vuruş bonusu (spec'te yok → 150).</summary>
         public int PerfectWindowMs = 150;
         public float PerfectNextHitMult = 1.3f;
@@ -48,6 +56,10 @@ namespace Dovus.Core.Tuning
             TapMaxMoveDp = other.TapMaxMoveDp;
             MaxCharges = other.MaxCharges;
             ChargeRechargeMs = other.ChargeRechargeMs;
+            DoubleTapWindowMs = other.DoubleTapWindowMs;
+            CombinedIframeMs = other.CombinedIframeMs;
+            CombinedDistanceMult = other.CombinedDistanceMult;
+            CombinedDurationMult = other.CombinedDurationMult;
             PerfectWindowMs = other.PerfectWindowMs;
             PerfectNextHitMult = other.PerfectNextHitMult;
             PerfectNextHitWindowMs = other.PerfectNextHitWindowMs;
