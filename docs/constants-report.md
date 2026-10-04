@@ -78,3 +78,4 @@ yükseltmek ayrı bir tasarım kararıdır (sabit katlama sırası değişebilir
 2B.11d: Game/Skills+Game/Team 266 → 0, ~266 yeni const, 24 yeni Defaults dosyası (+TeamComboDefaults/MechanicWorldDefaults genişletme).
 2B.11e: Game/Boss+Actors+Composition+Cameras+Feel+Platform 241→0, 182 const, 37 yeni Defaults dosyası (+AttackTelegraphDefaults/BossTelegraphDefaults genişletme).
 2B.11f: Game/Weapons+Game/Audio+Game/Casting 308→0, 257 yeni const, 10 yeni Defaults dosyası.
+2B.11g: Game/Vfx+Game/Arena+Game/Hud 333→0, ~310 yeni const, 22 yeni Defaults dosyası.
