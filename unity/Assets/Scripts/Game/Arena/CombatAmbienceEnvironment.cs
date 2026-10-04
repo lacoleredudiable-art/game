@@ -1,5 +1,6 @@
 using Dovus.Game.Cameras;
 using Dovus.Game.Config;
+using Dovus.Game.Assets;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -46,7 +47,7 @@ namespace Dovus.Game.Arena
             if (arenaRoot == null)
                 return;
 
-            var assets = Resources.Load<CombatAmbienceAssets>(CombatAmbienceAssets.ResourcePath);
+            var assets = AssetLoader.Load<CombatAmbienceAssets>(CombatAmbienceAssets.ResourcePath, null);
             if (assets == null)
             {
                 // Asset henüz üretilmedi (ör. temiz checkout) ya da headless koşucu — eski ova.

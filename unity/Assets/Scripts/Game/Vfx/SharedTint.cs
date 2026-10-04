@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Dovus.Game.Assets;
 using UnityEngine;
 
 namespace Dovus.Game.Vfx
@@ -55,7 +56,7 @@ namespace Dovus.Game.Vfx
         {
             if (ByShader.TryGetValue(shaderName, out Material cached) && cached != null)
                 return cached;
-            Shader shader = Shader.Find(shaderName);
+            Shader shader = AssetLoader.FindShader(shaderName, null);
             if (shader == null)
                 return null;
             var mat = new Material(shader) { name = "Shared_" + shaderName };

@@ -11,6 +11,7 @@ using Dovus.Game.Composition;
 using Dovus.Game.DevTools;
 using Dovus.Game.Vfx;
 using System;
+using Dovus.Game.Assets;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -271,9 +272,9 @@ namespace Dovus.Game.Boss
         {
             if (_coreMat != null)
                 return _coreMat;
-            Shader shader = Shader.Find("Universal Render Pipeline/Simple Lit")
-                ?? Shader.Find("Universal Render Pipeline/Lit")
-                ?? Shader.Find("Standard");
+            Shader shader = AssetLoader.FindShader("Universal Render Pipeline/Simple Lit", null)
+                ?? AssetLoader.FindShader("Universal Render Pipeline/Lit", null)
+                ?? AssetLoader.FindShader("Standard", null);
             _coreMat = new Material(shader) { name = "HostileProjectileCore" };
             return _coreMat;
         }

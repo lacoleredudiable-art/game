@@ -1,5 +1,6 @@
 using Dovus.Game.Casting;
 using TMPro;
+using Dovus.Game.Assets;
 using UnityEngine;
 
 namespace Dovus.Game.Hud
@@ -155,7 +156,7 @@ namespace Dovus.Game.Hud
             get
             {
                 if (_font == null)
-                    _font = Resources.Load<Font>(FontResource);
+                    _font = AssetLoader.Load<Font>(FontResource, null);
                 if (_font == null)
                     _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
                 return _font;
@@ -168,7 +169,7 @@ namespace Dovus.Game.Hud
             get
             {
                 if (_tmpFont == null)
-                    _tmpFont = Resources.Load<TMP_FontAsset>(TmpFontResource);
+                    _tmpFont = AssetLoader.Load<TMP_FontAsset>(TmpFontResource, null);
                 if (_tmpFont == null)
                     _tmpFont = TMP_Settings.defaultFontAsset;
                 return _tmpFont;

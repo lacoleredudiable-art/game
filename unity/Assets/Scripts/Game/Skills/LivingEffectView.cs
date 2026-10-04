@@ -5,6 +5,7 @@ using Dovus.Core.Tuning;
 using Dovus.Game.Casting;
 using Dovus.Game.Config;
 using Dovus.Game.Vfx;
+using Dovus.Game.Assets;
 using UnityEngine;
 
 namespace Dovus.Game.Skills
@@ -194,8 +195,8 @@ namespace Dovus.Game.Skills
             col.color = grad;
             var pr = go.GetComponent<ParticleSystemRenderer>();
             pr.renderMode = ParticleSystemRenderMode.Billboard;
-            var shader = Shader.Find("Universal Render Pipeline/Particles/Unlit")
-                         ?? Shader.Find("Sprites/Default");
+            var shader = AssetLoader.FindShader("Universal Render Pipeline/Particles/Unlit", null)
+                         ?? AssetLoader.FindShader("Sprites/Default", null);
             if (shader != null)
                 pr.sharedMaterial = new Material(shader);
         }
@@ -622,10 +623,10 @@ namespace Dovus.Game.Skills
         // ekrana yansıtmaz. Aynı shader'ı kullanmak repodaki tek doğru desenle tutarlı kalır.
         static Shader FindTransparentUnlitShader()
         {
-            var shader = Shader.Find("Sprites/Default");
-            if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
-            if (shader == null) shader = Shader.Find("Unlit/Color");
-            return shader != null ? shader : Shader.Find("Hidden/Internal-Colored");
+            var shader = AssetLoader.FindShader("Sprites/Default", null);
+            if (shader == null) shader = AssetLoader.FindShader("Universal Render Pipeline/Unlit", null);
+            if (shader == null) shader = AssetLoader.FindShader("Unlit/Color", null);
+            return shader != null ? shader : AssetLoader.FindShader("Hidden/Internal-Colored", null);
         }
 
         // Yalnızca yukarıdaki tercih zinciri URP Unlit'e düşerse devreye girer: yüzeyi

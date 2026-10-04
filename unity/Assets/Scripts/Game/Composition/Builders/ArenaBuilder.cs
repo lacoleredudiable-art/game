@@ -1,6 +1,7 @@
 using Dovus.Game.Arena;
 using Dovus.Game.Config;
 using Dovus.Game.DevTools;
+using Dovus.Game.Assets;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
@@ -16,9 +17,9 @@ namespace Dovus.Game.Composition.Builders
             float walkHalf = tuning.Arena.ArenaHalfSizeM;
             ctx.WalkHalf = walkHalf;
             ctx.Combat.SkillMotion.ArenaHalfSizeM = walkHalf;
-            if (Resources.Load<Material>("Presentation/ParticlesUnlitAnchor") == null)
+            if (AssetLoader.Load<Material>("Presentation/ParticlesUnlitAnchor", null) == null)
                 Debug.LogWarning("[Feel] Presentation/ParticlesUnlitAnchor yok — parçacık shader strip riski.");
-            if (Resources.Load<CombatAmbienceAssets>(CombatAmbienceAssets.ResourcePath) == null)
+            if (AssetLoader.Load<CombatAmbienceAssets>(CombatAmbienceAssets.ResourcePath, null) == null)
                 LavaDecor.Build(ctx.Arena.transform, walkHalf);
             CombatAmbienceEnvironment.Build(ctx.Arena, walkHalf, tuning);
             DebugConfig.DevLog($"[Arena] circle r={walkHalf:0.##}m wallH={tuning.Arena.ArenaWallHeightM:0.#}m");

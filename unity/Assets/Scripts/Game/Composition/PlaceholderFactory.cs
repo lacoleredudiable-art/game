@@ -4,6 +4,7 @@ using Dovus.Game.Vfx;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Dovus.Game.Assets;
 using UnityEngine;
 
 namespace Dovus.Game.Composition
@@ -256,10 +257,10 @@ namespace Dovus.Game.Composition
 
         static Shader FindTransparentUnlitShader()
         {
-            var shader = Shader.Find("Sprites/Default");
-            if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
-            if (shader == null) shader = Shader.Find("Unlit/Color");
-            return shader != null ? shader : Shader.Find("Hidden/Internal-Colored");
+            var shader = AssetLoader.FindShader("Sprites/Default", null);
+            if (shader == null) shader = AssetLoader.FindShader("Universal Render Pipeline/Unlit", null);
+            if (shader == null) shader = AssetLoader.FindShader("Unlit/Color", null);
+            return shader != null ? shader : AssetLoader.FindShader("Hidden/Internal-Colored", null);
         }
 
         static void ConfigureTransparentFallback(Material mat)
@@ -289,7 +290,7 @@ namespace Dovus.Game.Composition
                 return;
             _catalogReady = true;
 
-            var asset = Resources.Load<TextAsset>(CatalogResourcePath);
+            var asset = AssetLoader.Load<TextAsset>(CatalogResourcePath, null);
             if (asset != null && !string.IsNullOrWhiteSpace(asset.text))
             {
                 try

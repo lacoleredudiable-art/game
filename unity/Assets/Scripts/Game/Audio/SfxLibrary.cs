@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Dovus.Game.Assets;
 using UnityEngine;
 
 namespace Dovus.Game.Audio
@@ -85,7 +86,7 @@ namespace Dovus.Game.Audio
                 _map = new Dictionary<string, Entry>(StringComparer.Ordinal);
                 foreach (var d in Defaults)
                 {
-                    AudioClip[] clips = Resources.LoadAll<AudioClip>("Sfx/" + d.id);
+                    AudioClip[] clips = AssetLoader.LoadAll<AudioClip>("Sfx/" + d.id);
                     _map[d.id] = new Entry
                     {
                         Id = d.id, Clips = clips, Volume = d.vol, PitchMin = d.pMin, PitchMax = d.pMax, MinGapSec = d.gap

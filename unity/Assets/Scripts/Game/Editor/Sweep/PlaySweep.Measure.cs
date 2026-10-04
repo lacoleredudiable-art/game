@@ -220,6 +220,9 @@ namespace Dovus.Game.Editor
                 string first = msg.Split('\n')[0];
                 if (first.StartsWith("[PlaySweep]", StringComparison.Ordinal))
                     return;
+                // 2B.10: AssetLoader eksik-asset uyarıları tarama notlarına girmez (tarama çıktısı 2B.10 öncesiyle aynı kalsın).
+                if (first.StartsWith("[asset]", StringComparison.Ordinal))
+                    return;
                 switch (type)
                 {
                     case LogType.Error:

@@ -8,6 +8,7 @@ using Dovus.Game.Data;
 using Dovus.Game.Feel;
 using System;
 using System.Collections.Generic;
+using Dovus.Game.Assets;
 using UnityEngine;
 
 namespace Dovus.Game.Skills.Presentation
@@ -29,7 +30,7 @@ namespace Dovus.Game.Skills.Presentation
                 return;
 
             const string resourcePath = "Presentation/prezentasyon-katmani";
-            var asset = Resources.Load<TextAsset>(resourcePath);
+            var asset = AssetLoader.Load<TextAsset>(resourcePath, null);
             if (asset == null || string.IsNullOrWhiteSpace(asset.text))
                 return;
 

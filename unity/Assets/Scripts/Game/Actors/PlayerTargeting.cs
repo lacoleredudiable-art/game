@@ -12,6 +12,7 @@ using Dovus.Game.DevTools;
 using Dovus.Game.Hud;
 using System;
 using System.Collections.Generic;
+using Dovus.Game.Assets;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.EnhancedTouch;
@@ -364,7 +365,7 @@ namespace Dovus.Game.Actors
             _ring.textureMode = LineTextureMode.Stretch;
             _ring.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             _ring.receiveShadows = false;
-            Shader shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color");
+            Shader shader = AssetLoader.FindShader("Universal Render Pipeline/Unlit", null) ?? AssetLoader.FindShader("Unlit/Color", null);
             if (shader != null)
                 _ring.material = new Material(shader);
         }

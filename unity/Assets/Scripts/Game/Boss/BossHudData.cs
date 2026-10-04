@@ -9,6 +9,7 @@ using Dovus.Core.Data;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using Dovus.Game.Assets;
 using UnityEngine;
 
 namespace Dovus.Game.Boss
@@ -33,7 +34,7 @@ namespace Dovus.Game.Boss
         public static BossHudData Load(string resourcePath = "Bosses/karadul")
         {
             var data = new BossHudData();
-            var asset = Resources.Load<TextAsset>(resourcePath);
+            var asset = AssetLoader.Load<TextAsset>(resourcePath, null);
             if (asset == null || string.IsNullOrWhiteSpace(asset.text))
                 return data;
             try

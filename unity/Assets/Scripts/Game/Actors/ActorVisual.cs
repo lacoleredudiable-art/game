@@ -5,6 +5,7 @@ using Dovus.Core.Manifestation;
 using Dovus.Core.Motion;
 using Dovus.Game.Skills;
 using Dovus.Game.Weapons;
+using Dovus.Game.Assets;
 using UnityEngine;
 
 namespace Dovus.Game.Actors
@@ -163,7 +164,7 @@ namespace Dovus.Game.Actors
 
             if (!_weaponRegistryLoaded)
             {
-                _weaponRegistry = Resources.Load<WeaponVisualRegistry>("Animation/WeaponVisualRegistry");
+                _weaponRegistry = AssetLoader.Load<WeaponVisualRegistry>("Animation/WeaponVisualRegistry", null);
                 _weaponRegistryLoaded = true;
             }
 

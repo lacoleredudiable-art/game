@@ -3,6 +3,7 @@ using Dovus.Core.Tuning;
 using Dovus.Game.Vfx;
 using System.Collections.Generic;
 using System.Linq;
+using Dovus.Game.Assets;
 using UnityEngine;
 
 namespace Dovus.Game.Skills.Execution
@@ -201,7 +202,7 @@ namespace Dovus.Game.Skills.Execution
             var key = (source, tint);
             if (ChunkMaterials.TryGetValue(key, out Material m) && m != null)
                 return m;
-            Shader shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
+            Shader shader = AssetLoader.FindShader("Universal Render Pipeline/Lit", null) ?? AssetLoader.FindShader("Standard", null);
             if (shader == null)
                 return source;
             m = new Material(shader) { name = "Chunk_" + (source != null ? source.name : "Generated") };
@@ -281,7 +282,7 @@ namespace Dovus.Game.Skills.Execution
             lr.loop = loop;
             lr.useWorldSpace = true;
             lr.widthMultiplier = Mathf.Max(0.06f, (float)_recipe.PieceSizeM * 0.15f);
-            Shader shader = Shader.Find("Universal Render Pipeline/Particles/Unlit") ?? Shader.Find("Sprites/Default");
+            Shader shader = AssetLoader.FindShader("Universal Render Pipeline/Particles/Unlit", null) ?? AssetLoader.FindShader("Sprites/Default", null);
             lr.sharedMaterial = shader != null ? new Material(shader) : null;
             Color c = _hasTint ? _tint : Color.white;
             lr.startColor = lr.endColor = new Color(c.r, c.g, c.b, 0.85f);

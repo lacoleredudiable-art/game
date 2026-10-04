@@ -2,6 +2,7 @@ using Dovus.Core.Mechanic;
 using Dovus.Game.Vfx;
 using System.Collections.Generic;
 using System.Globalization;
+using Dovus.Game.Assets;
 using UnityEngine;
 
 namespace Dovus.Game.Skills.Execution
@@ -186,7 +187,7 @@ namespace Dovus.Game.Skills.Execution
             string materialKey = colorHex ?? string.Empty;
             if (!Materials.TryGetValue(materialKey, out Material material) || material == null)
             {
-                Shader shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color");
+                Shader shader = AssetLoader.FindShader("Universal Render Pipeline/Unlit", null) ?? AssetLoader.FindShader("Unlit/Color", null);
                 if (shader != null)
                 {
                     material = new Material(shader);

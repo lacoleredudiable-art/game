@@ -1,6 +1,7 @@
 using Dovus.Game.Casting;
 using Dovus.Game.Config;
 using System.Collections.Generic;
+using Dovus.Game.Assets;
 using UnityEngine;
 
 namespace Dovus.Game.Vfx
@@ -131,10 +132,10 @@ namespace Dovus.Game.Vfx
         // URP Unlit varsayılan OPAK olduğu için izin 0.85 alfası hiçbir şey yapmıyordu.
         static Shader FindTransparentUnlitShader()
         {
-            var shader = Shader.Find("Sprites/Default");
-            if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
-            if (shader == null) shader = Shader.Find("Unlit/Color");
-            return shader != null ? shader : Shader.Find("Hidden/Internal-Colored");
+            var shader = AssetLoader.FindShader("Sprites/Default", null);
+            if (shader == null) shader = AssetLoader.FindShader("Universal Render Pipeline/Unlit", null);
+            if (shader == null) shader = AssetLoader.FindShader("Unlit/Color", null);
+            return shader != null ? shader : AssetLoader.FindShader("Hidden/Internal-Colored", null);
         }
 
         static void ConfigureTransparentFallback(Material mat)

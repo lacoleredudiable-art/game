@@ -1,5 +1,6 @@
 using Dovus.Game.Vfx;
 using System;
+using Dovus.Game.Assets;
 using UnityEngine;
 
 namespace Dovus.Game.Boss
@@ -246,9 +247,9 @@ namespace Dovus.Game.Boss
 
         static Material MakeMat()
         {
-            Shader shader = Shader.Find("Sprites/Default");
+            Shader shader = AssetLoader.FindShader("Sprites/Default", null);
             if (shader == null)
-                shader = Shader.Find("Universal Render Pipeline/Unlit");
+                shader = AssetLoader.FindShader("Universal Render Pipeline/Unlit", null);
             var mat = new Material(shader);
             if (mat.HasProperty("_Surface"))
             {

@@ -1,4 +1,5 @@
 using Dovus.Game.Skills;
+using Dovus.Game.Assets;
 using UnityEngine;
 
 namespace Dovus.Game.Vfx
@@ -60,8 +61,8 @@ namespace Dovus.Game.Vfx
             col.enabled = true;
             var pr = go.GetComponent<ParticleSystemRenderer>();
             pr.renderMode = ParticleSystemRenderMode.Billboard;
-            var shader = Shader.Find("Universal Render Pipeline/Particles/Unlit")
-                         ?? Shader.Find("Sprites/Default");
+            var shader = AssetLoader.FindShader("Universal Render Pipeline/Particles/Unlit", null)
+                         ?? AssetLoader.FindShader("Sprites/Default", null);
             if (shader != null)
                 pr.sharedMaterial = new Material(shader);
         }

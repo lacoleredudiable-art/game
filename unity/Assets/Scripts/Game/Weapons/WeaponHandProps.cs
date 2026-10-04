@@ -1,5 +1,6 @@
 using Dovus.Game.Actors;
 using Dovus.Game.DevTools;
+using Dovus.Game.Assets;
 using UnityEngine;
 
 namespace Dovus.Game.Weapons
@@ -52,7 +53,7 @@ namespace Dovus.Game.Weapons
 
             if (!_registryLoaded)
             {
-                _registry = Resources.Load<WeaponVisualRegistry>("Animation/WeaponVisualRegistry");
+                _registry = AssetLoader.Load<WeaponVisualRegistry>("Animation/WeaponVisualRegistry", null);
                 _registryLoaded = true;
             }
 
@@ -472,9 +473,9 @@ namespace Dovus.Game.Weapons
 
         static Material MakeMat(Color color, Color? emission = null)
         {
-            Shader shader = Shader.Find("Universal Render Pipeline/Simple Lit")
-                ?? Shader.Find("Universal Render Pipeline/Lit")
-                ?? Shader.Find("Standard");
+            Shader shader = AssetLoader.FindShader("Universal Render Pipeline/Simple Lit", null)
+                ?? AssetLoader.FindShader("Universal Render Pipeline/Lit", null)
+                ?? AssetLoader.FindShader("Standard", null);
             var mat = new Material(shader) { color = color };
             if (emission.HasValue && mat.HasProperty("_EmissionColor"))
             {
