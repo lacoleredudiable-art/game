@@ -51,7 +51,7 @@ namespace Dovus.Game.Composition.Builders
             ctx.Ally = VisualAttach.CreateCapsule(
                 "AllyDummy",
                 VisualAttach.ClampSpawnXZ(
-                    new Vector3(-ActorsBuilderDefaults.PlayerSpawnX, CompositionConstants.PlayerHeightM * 0.5f, -ActorsBuilderDefaults.PlayerSpawnZ),
+                    new Vector3(ActorsBuilderDefaults.PlayerSpawnX, CompositionConstants.PlayerHeightM * 0.5f, ActorsBuilderDefaults.PlayerSpawnZ),
                     spawnMaxR),
                 CompositionConstants.PlayerRadiusM * ActorsBuilderDefaults.PlayerColliderRadiusScale,
                 CompositionConstants.PlayerHeightM,
