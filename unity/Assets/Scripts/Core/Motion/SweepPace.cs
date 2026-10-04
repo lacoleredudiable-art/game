@@ -20,13 +20,13 @@ namespace Dovus.Core.Motion
         /// <summary>Boşta saymadan önce bir referans kare.</summary>
         public const float IdleHoldSec = ReferenceFrameSec;
 
-        public static float ClampSpeed(float speed) => speed < 1.5f ? DebugSpeed : DefaultSpeed;
+        public static float ClampSpeed(float speed) => speed < MotionDefaults.DebugSpeedThresholdMps ? DebugSpeed : DefaultSpeed;
 
         /// <summary>Cast öncesi bekleme: iki fizik adımı. Daha uzun tutmak taramayı uzatır.</summary>
         public static float SettleWaitSec(float fixedStepSec)
         {
-            float step = fixedStepSec > 0f ? fixedStepSec : 0.02f;
-            return MathF.Max(step * 2f, 0.02f);
+            float step = fixedStepSec > 0f ? fixedStepSec : MotionDefaults.FixedStepFallbackSec;
+            return MathF.Max(step * 2f, MotionDefaults.FixedStepFallbackSec);
         }
 
         /// <summary>Duvar süresinden dünya karesi. Saat çarpanı Time.timeScale ile aynı olmalı.</summary>

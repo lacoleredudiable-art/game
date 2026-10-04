@@ -21,8 +21,8 @@ public sealed class MagicNumberRatchetTests
     // Alan → tavan. 2B.11 öncesi toplam 1615; #114 sonrası 1499.
     static readonly Dictionary<string, int> Ceilings = new()
     {
-        ["Core"] = 336,
-        ["App"] = 15,
+        ["Core"] = 0,
+        ["App"] = 0,
         ["Game/Skills"] = 261,
         ["Game/Vfx"] = 135,
         ["Game/Weapons"] = 127,

@@ -52,7 +52,7 @@ namespace Dovus.Core.Damage
         {
             if (fractionRemoved <= 0f)
                 return;
-            float f = Math.Min(0.95f, fractionRemoved);
+            float f = Math.Min(DamageDefaults.ArmorRemoveCapFraction, fractionRemoved);
             if (nowMs > ShredUntilMs)
                 ShredFraction = 0f;
             if (f >= ShredFraction || untilMs >= ShredUntilMs)

@@ -103,7 +103,7 @@ namespace Dovus.Core.Motion
             Land = land ?? string.Empty;
             Plant = plant;
             Anim = string.IsNullOrEmpty(anim) ? MotionAnimTable.FallbackKey(Motion) : anim;
-            AnimSpeed = animSpeed > 0.05f ? animSpeed : 1f;
+            AnimSpeed = animSpeed > MotionTemplateCatalogDefaults.MinAnimSpeed ? animSpeed : 1f;
             DurationSec = durationSec;
             Facing = string.IsNullOrEmpty(facing) ? "target" : facing;
             Homing = string.IsNullOrEmpty(homing) ? "none" : homing;
@@ -474,7 +474,7 @@ namespace Dovus.Core.Motion
                 row.Has("shot_m") ? row["shot_m"].AsFloat(0f) : 0f,
                 row.Has("drift_m") ? row["drift_m"].AsFloat(0f) : 0f,
                 row.Has("walk_mps") ? row["walk_mps"].AsFloat(fb.WalkMps) : 0f,
-                row.Has("behind_m") ? row["behind_m"].AsFloat(1.15f) : 1.15f,
+                row.Has("behind_m") ? row["behind_m"].AsFloat(MotionTemplateCatalogDefaults.FallbackBehindM) : MotionTemplateCatalogDefaults.FallbackBehindM,
                 row.Has("snap_at") ? row["snap_at"].AsFloat(0f) : 0f,
                 curve,
                 hit,
@@ -515,7 +515,7 @@ namespace Dovus.Core.Motion
 
     public sealed class MotionFallbacks
     {
-        public static readonly MotionFallbacks Coded = new(0.28f, 1.2f, 1.5f, 0.4f, 0.9f, 1.6f, 0.9f, 0.9f, 0.15f);
+        public static readonly MotionFallbacks Coded = new(MotionTemplateCatalogDefaults.FallbackPhaseSec, MotionTemplateCatalogDefaults.FallbackStepM, MotionTemplateCatalogDefaults.FallbackHitLengthM, MotionTemplateCatalogDefaults.FallbackHitRadiusM, MotionTemplateCatalogDefaults.FallbackMaxHoldSec, MotionTemplateCatalogDefaults.FallbackWalkMps, MotionTemplateCatalogDefaults.FallbackHeightM, MotionTemplateCatalogDefaults.FallbackGapM, MotionTemplateCatalogDefaults.FallbackStopGapM);
 
         public MotionFallbacks(
             float phaseSec,
@@ -708,11 +708,11 @@ namespace Dovus.Core.Motion
             float meters = CastApproach.Meters(
                 centerDistM, playerRadiusM, targetRadiusM, edge, closing);
             float sphere = SelfSphereRadiusM(template);
-            if (sphere <= 0.01f || jsonEdgeM <= 0.01f || jsonEdgeM + 0.001f >= edge)
+            if (sphere <= MotionTemplateCatalogDefaults.MinDistM || jsonEdgeM <= MotionTemplateCatalogDefaults.MinDistM || jsonEdgeM + 0.001f >= edge)
                 return meters;
             float stop = centerDistM - meters - closing;
             bool jsonHits = CenterInReach(stop, playerRadiusM, targetRadiusM, jsonEdgeM);
-            bool sphereHits = stop <= sphere + Math.Max(0f, targetRadiusM) + 0.02f;
+            bool sphereHits = stop <= sphere + Math.Max(0f, targetRadiusM) + MotionTemplateCatalogDefaults.HitStopEpsilonM;
             if (jsonHits || sphereHits)
                 return meters;
             return CastApproach.Meters(
@@ -726,16 +726,16 @@ namespace Dovus.Core.Motion
             float targetRadiusM,
             float edgeReachM) =>
             centerDistM - Math.Max(0f, attackerRadiusM) - Math.Max(0f, targetRadiusM)
-            <= Math.Max(0f, edgeReachM) + 0.02f;
+            <= Math.Max(0f, edgeReachM) + MotionTemplateCatalogDefaults.HitStopEpsilonM;
 
         /// <summary>
         /// Geri adım cast başındaki menzili silmesin. İkisi de doluysa daha yakın olan sayılır.
         /// </summary>
         public static float CloserCenter(float currentCenterM, float castStartCenterM)
         {
-            if (castStartCenterM <= 0.01f)
+            if (castStartCenterM <= MotionTemplateCatalogDefaults.MinDistM)
                 return currentCenterM;
-            if (currentCenterM <= 0.01f)
+            if (currentCenterM <= MotionTemplateCatalogDefaults.MinDistM)
                 return castStartCenterM;
             return Math.Min(currentCenterM, castStartCenterM);
         }

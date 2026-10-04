@@ -254,7 +254,7 @@ namespace Dovus.Core.Motion
             float velX, float velZ, float faceX, float faceZ, float refMps)
         {
             float speed = MathF.Sqrt(velX * velX + velZ * velZ);
-            float reference = refMps > 0.05f ? refMps : 6.4f;
+            float reference = refMps > MotionAnimDefaults.MinSpeedMps ? refMps : MotionAnimDefaults.DefaultRefMoveMps;
             float flen = MathF.Sqrt(faceX * faceX + faceZ * faceZ);
             if (flen < 0.0001f)
             {
@@ -267,7 +267,7 @@ namespace Dovus.Core.Motion
                 faceZ /= flen;
             }
 
-            if (speed < 0.05f)
+            if (speed < MotionAnimDefaults.MinSpeedMps)
                 return new LocoBlend(0f, 0f, 0f, 0f);
 
             float forward = (velX * faceX + velZ * faceZ) / speed;
@@ -290,7 +290,7 @@ namespace Dovus.Core.Motion
 
         public static float MatchPlayback(float worldMps, float clipRunMps)
         {
-            if (clipRunMps <= 0.05f || worldMps <= clipRunMps)
+            if (clipRunMps <= MotionAnimDefaults.MinSpeedMps || worldMps <= clipRunMps)
                 return 1f;
             float need = worldMps / clipRunMps;
             return MathF.Min(need, TemplatePlaybackCap);
@@ -298,8 +298,8 @@ namespace Dovus.Core.Motion
 
         public static bool NeedsDashPose(float worldMps, float clipRunMps)
         {
-            float clip = clipRunMps > 0.05f ? clipRunMps : 2.24f;
-            return worldMps > clip * TemplatePlaybackCap + 0.01f;
+            float clip = clipRunMps > MotionAnimDefaults.MinSpeedMps ? clipRunMps : MotionAnimDefaults.DefaultClipRunMps;
+            return worldMps > clip * TemplatePlaybackCap + MotionAnimDefaults.PlaybackSpeedEpsilon;
         }
 
         /// <summary>Koşu anahtarı 2×'i aşan gövde hızında dash pozuna döner. Saldırı anahtarı kalır.</summary>

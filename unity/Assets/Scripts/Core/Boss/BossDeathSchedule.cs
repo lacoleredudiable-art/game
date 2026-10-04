@@ -20,7 +20,7 @@ namespace Dovus.Core.Boss
             if (Pending)
                 return false;
             Pending = true;
-            _reviveAtMs = nowMs + Math.Max(0.0, collapseSec) * 1000.0;
+            _reviveAtMs = nowMs + Math.Max(0.0, collapseSec) * BossDefaults.SecToMs;
             return true;
         }
 

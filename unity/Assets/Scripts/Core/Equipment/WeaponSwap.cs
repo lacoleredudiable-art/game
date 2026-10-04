@@ -113,8 +113,8 @@ namespace Dovus.Core.Equipment
                 return WeaponSwapResult.StateBlocked;
 
             IsSwapping = true;
-            _swapEndsMs = nowMs + Rules.AnimationSec * 1000.0;
-            _cooldownEndsMs = nowMs + Rules.CooldownSec * 1000.0;
+            _swapEndsMs = nowMs + Rules.AnimationSec * EquipmentDefaults.SecToMs;
+            _cooldownEndsMs = nowMs + Rules.CooldownSec * EquipmentDefaults.SecToMs;
             return WeaponSwapResult.Started;
         }
 
@@ -143,7 +143,7 @@ namespace Dovus.Core.Equipment
         {
             if (Rules.CooldownSec <= 0f)
                 return 0f;
-            return (float)Math.Min(1.0, CooldownRemainingMs(nowMs) / (Rules.CooldownSec * 1000.0));
+            return (float)Math.Min(1.0, CooldownRemainingMs(nowMs) / (Rules.CooldownSec * EquipmentDefaults.SecToMs));
         }
     }
 }

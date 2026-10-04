@@ -153,7 +153,7 @@ namespace Dovus.Core.Manifestation
             _bangRadiusM = plan.BangRadiusM;
             _lifetimeAddSec = plan.LifetimeAddSec;
             _target = plan.Silhouette.Clamped();
-            if (_ageSec < 0.05f)
+            if (_ageSec < LivingEffectDefaults.MinAgeSec)
                 _current = _target;
         }
 
@@ -254,7 +254,7 @@ namespace Dovus.Core.Manifestation
                 if (ringGap > radiusM)
                     return false;
 
-                if (_current.Focus > 0.35f)
+                if (_current.Focus > LivingEffectDefaults.BangRadiusFocusRatio)
                 {
                     float along = bx * _dirX + bz * _dirZ;
                     if (along < 0f || along > TipDistance + radiusM)
@@ -287,7 +287,7 @@ namespace Dovus.Core.Manifestation
                 if (_ageSec < _tuning.NeedleWindupSec)
                     return;
 
-                float dashSec = _tuning.NeedleDashSec > 0.016f ? _tuning.NeedleDashSec : 0.016f;
+                float dashSec = _tuning.NeedleDashSec > LivingEffectDefaults.MinNeedleDashSec ? _tuning.NeedleDashSec : LivingEffectDefaults.MinNeedleDashSec;
                 float dashSpeed = _tuning.NeedleMaxRangeM / dashSec;
                 dashSpeed *= 1f + _tuning.PierceSpeedBonus * _current.Pierce;
                 _travel += dashSpeed * dtSec;
@@ -313,7 +313,7 @@ namespace Dovus.Core.Manifestation
                     return;
                 case LivingTravelKind.Static:
                     {
-                        float target = _bangRadiusM > 0f ? _bangRadiusM : MaxRange * 0.35f;
+                        float target = _bangRadiusM > 0f ? _bangRadiusM : MaxRange * LivingEffectDefaults.BangRadiusFocusRatio;
                         float spd = _speedMps > 0f ? _speedMps : _tuning.WaveSpeedMps;
                         if (_travel < target)
                             _travel += spd * dtSec;

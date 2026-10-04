@@ -10,7 +10,7 @@ namespace Dovus.Core.Motion
     {
         public static bool LeavesGround(string motion, float heightM)
         {
-            if (heightM <= 0.01f)
+            if (heightM <= MotionDefaults.MinDistM)
                 return false;
             return motion is "hop" or "leap" or "slam" or "hover" or "channel";
         }
@@ -24,7 +24,7 @@ namespace Dovus.Core.Motion
             {
                 case "hop":
                 case "leap":
-                    return 4f * heightM * u * (1f - u);
+                    return MotionDefaults.VerticalCurveFourMult * heightM * u * (1f - u);
                 case "slam":
                     return heightM * (1f - u);
                 default:

@@ -15,7 +15,7 @@ namespace Dovus.App.Time
 
         public double DeltaMs => _lastDeltaMs;
 
-        public float DeltaSec => _lastDeltaMs > 0.0 ? (float)(_lastDeltaMs / 1000.0) : 0f;
+        public float DeltaSec => _lastDeltaMs > 0.0 ? (float)(_lastDeltaMs / TimeDefaults.SecToMs) : 0f;
 
         /// <summary><see cref="TimeDirector.Tick"/> sonrası dünya deltasını kaydeder.</summary>
         public void Advance(double worldDeltaMs)

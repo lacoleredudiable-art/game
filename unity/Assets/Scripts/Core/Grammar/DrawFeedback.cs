@@ -86,7 +86,7 @@ namespace Dovus.Core.Grammar
         {
             if (words == null || words.Count == 0)
                 return string.Empty;
-            var sb = new StringBuilder(32);
+            var sb = new StringBuilder(GrammarDefaults.DrawCaptionBufferCapacity);
             for (int i = 0; i < words.Count; i++)
             {
                 if (i > 0)
@@ -111,7 +111,7 @@ namespace Dovus.Core.Grammar
         {
             if (elapsedSec < 0f || elapsedSec >= CaptionSec)
                 return 0f;
-            float fadeStart = CaptionSec * 0.75f;
+            float fadeStart = CaptionSec * GrammarDefaults.CaptionFadeStartRatio;
             return elapsedSec <= fadeStart ? 1f : 1f - (elapsedSec - fadeStart) / (CaptionSec - fadeStart);
         }
     }

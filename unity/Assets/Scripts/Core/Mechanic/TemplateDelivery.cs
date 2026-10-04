@@ -94,7 +94,7 @@ namespace Dovus.Core.Mechanic
             else if (DelayedMark || RiseDelay)
             {
                 beats.Add(new DeliveryBeat(
-                    Math.Max(0.05, ActivationDelaySec),
+                    Math.Max(TemplateDeliveryDefaults.MinBeatDelaySec, ActivationDelaySec),
                     DeliveryBeatKind.Detonate,
                     1f,
                     1));
@@ -108,7 +108,7 @@ namespace Dovus.Core.Mechanic
             if (Duplicate)
             {
                 beats.Add(new DeliveryBeat(
-                    Math.Max(0.05, DuplicateAtSec > 0f ? DuplicateAtSec : DuplicateDelaySec),
+                    Math.Max(TemplateDeliveryDefaults.MinBeatDelaySec, DuplicateAtSec > 0f ? DuplicateAtSec : DuplicateDelaySec),
                     DeliveryBeatKind.Duplicate,
                     DuplicateDamageMult <= 0f ? 1f : DuplicateDamageMult,
                     1));
@@ -117,7 +117,7 @@ namespace Dovus.Core.Mechanic
             if (RepeatPrevious)
             {
                 beats.Add(new DeliveryBeat(
-                    Math.Max(0.05, DuplicateDelaySec),
+                    Math.Max(TemplateDeliveryDefaults.MinBeatDelaySec, DuplicateDelaySec),
                     DeliveryBeatKind.RepeatPrevious,
                     1f,
                     1));
@@ -126,18 +126,18 @@ namespace Dovus.Core.Mechanic
             for (int i = 0; i < BounceExtra; i++)
             {
                 beats.Add(new DeliveryBeat(
-                    0.2 * (i + 1),
+                    TemplateDeliveryDefaults.BounceBeatDelaySec * (i + 1),
                     DeliveryBeatKind.Bounce,
                     BounceDamageMult <= 0f ? 1f : BounceDamageMult,
                     1));
             }
 
             if (Pincer)
-                beats.Add(new DeliveryBeat(Math.Max(0.05, PincerAtSec), DeliveryBeatKind.Pincer, PincerShare > 0f ? PincerShare : 0.5f, 1));
+                beats.Add(new DeliveryBeat(Math.Max(TemplateDeliveryDefaults.MinBeatDelaySec, PincerAtSec), DeliveryBeatKind.Pincer, PincerShare > 0f ? PincerShare : 0.5f, 1));
 
-            if (FieldTicks && FieldTickSec > 0.02f && FieldDurationSec > 0.05f)
+            if (FieldTicks && FieldTickSec > TemplateDeliveryDefaults.MinFieldTickSec && FieldDurationSec > TemplateDeliveryDefaults.MinFieldDurationSec)
             {
-                float fraction = FieldTickFraction > 0f ? FieldTickFraction : 0.33f;
+                float fraction = FieldTickFraction > 0f ? FieldTickFraction : TemplateDeliveryDefaults.DefaultFlowTickFraction;
                 for (float t = FieldTickSec; t <= FieldDurationSec + 0.001f; t += FieldTickSec)
                     beats.Add(new DeliveryBeat(t, DeliveryBeatKind.FieldTick, fraction, 1));
             }
@@ -180,11 +180,11 @@ namespace Dovus.Core.Mechanic
                 if (life <= 0f && plan.Body.LifeSec > 0)
                     life = (float)plan.Body.LifeSec;
                 if (life <= 0f)
-                    life = 5f;
+                    life = TemplateDeliveryDefaults.DefaultActorDurationSec;
                 life += Math.Max(0f, engine.LifetimeAdd(0f));
                 order.ActorDurationSec = life;
                 double hit = rules != null ? rules.Param("minion_hit_damage") : 6;
-                order.ActorHitDamage = hit > 0 ? (float)hit : 6f;
+                order.ActorHitDamage = hit > 0 ? (float)hit : TemplateDeliveryDefaults.DefaultActorHitDamage;
             }
 
             bool rise = plan != null && plan.Body.Ramp;
@@ -206,7 +206,7 @@ namespace Dovus.Core.Mechanic
             float dupDelay = engine.DuplicateDelaySec(0f);
             if (dupDelay <= 0f && plan != null && plan.Body.CopyDelaySec > 0)
                 dupDelay = (float)plan.Body.CopyDelaySec;
-            order.DuplicateDelaySec = dupDelay > 0f ? dupDelay : 0.3f;
+            order.DuplicateDelaySec = dupDelay > 0f ? dupDelay : TemplateDeliveryDefaults.DefaultDuplicateDelaySec;
             // Kopya ilk vuruştan sayılır. Kalıp o anda zaten vuruyorsa yankı kalıptadır.
             float firstHit = FirstEffectHitSec(template);
             order.DuplicateAtSec = Math.Max(0f, firstHit) + order.DuplicateDelaySec;
@@ -233,19 +233,19 @@ namespace Dovus.Core.Mechanic
             if (channel <= 0f && plan != null)
                 channel = (float)plan.Body.LifeSec;
             order.FieldDurationSec = channel;
-            float rate = Math.Max(0.01f, engine.TickRateMult(1f));
-            float tickBase = fieldTickBaseSec > 0.05f ? fieldTickBaseSec : 1f;
+            float rate = Math.Max(TemplateDeliveryDefaults.MinTickSec, engine.TickRateMult(1f));
+            float tickBase = fieldTickBaseSec > TemplateDeliveryDefaults.MinFieldDurationSec ? fieldTickBaseSec : 1f;
             order.FieldTickSec = tickBase / rate;
-            float fraction = rules != null ? (float)rules.Param("flow_tick_fraction") : 0.33f;
-            order.FieldTickFraction = fraction > 0f ? fraction : 0.33f;
+            float fraction = rules != null ? (float)rules.Param("flow_tick_fraction") : TemplateDeliveryDefaults.DefaultFlowTickFraction;
+            order.FieldTickFraction = fraction > 0f ? fraction : TemplateDeliveryDefaults.DefaultFlowTickFraction;
 
             order.GlideHaste = plan != null && plan.Effects.Exists(e => e.Has("suzulme"));
             if (order.GlideHaste && rules != null)
             {
                 order.GlideMagnitude = (float)rules.Param("glide_speed_mult");
                 if (order.GlideMagnitude <= 1f)
-                    order.GlideMagnitude = 1.5f;
-                order.GlideDurationSec = channel > 0f ? channel : 3f;
+                    order.GlideMagnitude = TemplateDeliveryDefaults.DefaultGlideMagnitude;
+                order.GlideDurationSec = channel > 0f ? channel : TemplateDeliveryDefaults.DefaultGlideDurationSec;
             }
 
             order.CanDrain = plan != null && plan.Effects.Exists(e => e.Has("can_emen") || e.Stat == "em");
@@ -264,7 +264,7 @@ namespace Dovus.Core.Mechanic
             order.Pincer = JsonEffectRules.WantsPincer(plan) && EffectHitCount(template) < 2;
             if (order.Pincer)
             {
-                float pincerDelay = rules != null && rules.Param("pincer_delay_sec") > 0 ? (float)rules.Param("pincer_delay_sec") : 0.2f;
+                float pincerDelay = rules != null && rules.Param("pincer_delay_sec") > 0 ? (float)rules.Param("pincer_delay_sec") : TemplateDeliveryDefaults.DefaultPincerDelaySec;
                 order.PincerAtSec = Math.Max(0f, firstHit) + pincerDelay;
                 order.PincerShare = rules != null && rules.Param("pincer_second_share") > 0 ? (float)rules.Param("pincer_second_share") : 0.5f;
             }
@@ -340,7 +340,7 @@ namespace Dovus.Core.Mechanic
             for (int i = 0; i < template.Phases.Count; i++)
             {
                 MotionHitSpec hit = template.Phases[i].Hit;
-                if (hit != null && hit.EverySec > 0.01f)
+                if (hit != null && hit.EverySec > TemplateDeliveryDefaults.MinTickSec)
                     return true;
             }
             return false;

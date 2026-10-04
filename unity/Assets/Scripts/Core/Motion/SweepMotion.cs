@@ -28,10 +28,10 @@ namespace Dovus.Core.Motion
         public static int ComboCount(string preset)
         {
             if (IsAllWeapons(preset))
-                return WeaponMenuNames.Length * 144;
+                return WeaponMenuNames.Length * MotionDefaults.CombosPerWeapon;
             if (preset == "kilic+asa")
-                return 288;
-            return 144;
+                return MotionDefaults.TotalSweepComboCount;
+            return MotionDefaults.CombosPerWeapon;
         }
     }
 }

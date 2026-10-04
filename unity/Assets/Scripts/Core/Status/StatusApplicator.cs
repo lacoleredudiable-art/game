@@ -147,7 +147,7 @@ namespace Dovus.Core.Status
                     mods["self_haste"].AsFloat(0f),
                     mods["enemy_slow"].AsFloat(0f),
                     mods["self_damage_buff"].AsFloat(0f));
-                double hasteMs = mods["buff_duration_sec"].AsFloat(0f) * 1000.0;
+                double hasteMs = mods["buff_duration_sec"].AsFloat(0f) * StatusDefaults.SecToMs;
                 if (hasteMs <= 0)
                     hasteMs = tuning.HasteMs;
                 if (haste > 1f)
@@ -238,7 +238,7 @@ namespace Dovus.Core.Status
             if (keepEnemyLock && rootSec > 0f && !HasMech("root"))
                 board.Apply(
                     StatusKind.Root,
-                    rootSec * 1000.0,
+                    rootSec * StatusDefaults.SecToMs,
                     1f,
                     RootSource(skill, "adj"));
 
@@ -267,7 +267,7 @@ namespace Dovus.Core.Status
             if (accuracy > 0f && CardEffectRules.AccuracyIsSlow(skill.SkillJob) && !HasMech("slow"))
             {
                 float mult = accuracy <= 1f ? accuracy : tuning.SlowSpeedMult;
-                double slowMs = mods["lifetime_add"].AsFloat(0f) * 1000.0;
+                double slowMs = mods["lifetime_add"].AsFloat(0f) * StatusDefaults.SecToMs;
                 if (slowMs <= 0)
                     slowMs = mobilityCc?.ResolveCcDurationMs(StatusKind.Slow, adjectiveId, tuning.SlowMs)
                         ?? tuning.SlowMs;
@@ -410,7 +410,7 @@ namespace Dovus.Core.Status
                     || (StatusKindUtil.TryParse(cc, out StatusKind ccKind) && ccKind == kind);
                 float seconds = engine[secondsField].AsFloat(0f);
                 if (matches && seconds > 0f)
-                    return seconds * 1000.0;
+                    return seconds * StatusDefaults.SecToMs;
             }
 
             return mobilityCc?.ResolveCcDurationMs(kind, adjectiveId, fallbackMs) ?? fallbackMs;

@@ -74,3 +74,4 @@ yükseltmek ayrı bir tasarım kararıdır (sabit katlama sırası değişebilir
 
 ### İlerleme
 <!-- 2B.11 ilerleme satırları -->
+2B.11c: Core+App 351 → 0, ~190 yeni const, 37 yeni Defaults dosyası (+2 const `StatusDefaults`).

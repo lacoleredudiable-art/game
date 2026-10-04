@@ -104,13 +104,13 @@ namespace Dovus.Core.Data
                 double x = engineValues[i];
                 if (Nearly(number.Value, x))
                     return true;
-                if (Nearly(number.Value, x * 100.0))
+                if (Nearly(number.Value, x * SkillTextNumbersDefaults.PercentScale))
                     return true;
-                if (Nearly(number.Value, (1.0 - x) * 100.0))
+                if (Nearly(number.Value, (1.0 - x) * SkillTextNumbersDefaults.PercentScale))
                     return true;
-                if (Nearly(number.Value, (x - 1.0) * 100.0))
+                if (Nearly(number.Value, (x - 1.0) * SkillTextNumbersDefaults.PercentScale))
                     return true;
-                if (Nearly(number.Value, Math.Abs(x) * 100.0))
+                if (Nearly(number.Value, Math.Abs(x) * SkillTextNumbersDefaults.PercentScale))
                     return true;
             }
 
@@ -179,7 +179,7 @@ namespace Dovus.Core.Data
 
         public static string FormatDurationSeconds(double durationSec)
         {
-            if (Math.Abs(durationSec - Math.Round(durationSec)) < 1e-9)
+            if (Math.Abs(durationSec - Math.Round(durationSec)) < SkillTextNumbersDefaults.DurationRoundEpsilon)
                 return ((int)Math.Round(durationSec)).ToString(CultureInfo.InvariantCulture);
             return durationSec.ToString("0.#", CultureInfo.InvariantCulture);
         }
@@ -195,7 +195,7 @@ namespace Dovus.Core.Data
         {
             if (damageMult <= 0f)
                 damageMult = 1f;
-            int pct = (int)Math.Round(damageMult * 100.0, MidpointRounding.AwayFromZero);
+            int pct = (int)Math.Round(damageMult * SkillTextNumbersDefaults.PercentScale, MidpointRounding.AwayFromZero);
             return pct.ToString(CultureInfo.InvariantCulture);
         }
     }

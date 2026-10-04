@@ -31,7 +31,7 @@ namespace Dovus.Core.Mechanic
             float part = Math.Clamp(share, 0f, 1f);
             damage = fullDamage * part;
             heal = fullHeal * part;
-            return fullDamage > 0.01f;
+            return fullDamage > MechanicDefaults.MinDamageEpsilon;
         }
     }
 }

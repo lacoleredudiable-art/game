@@ -43,7 +43,7 @@ namespace Dovus.App.Boss
         {
             if (board == null || t == null)
                 return;
-            double ms = durationSec > 0f ? durationSec * 1000.0 : 0;
+            double ms = durationSec > 0f ? durationSec * BossDefaults.SecToMs : 0;
             switch (kind)
             {
                 case StatusKind.Burn:

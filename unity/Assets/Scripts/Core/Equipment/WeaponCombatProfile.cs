@@ -137,15 +137,15 @@ namespace Dovus.Core.Equipment
                 orb["spell_m"].AsFloat(0f),
                 basic["boss_push_m"].AsFloat(shape == "ballistic" ? 0.5f : 0f),
                 basic["recoil_m"].AsFloat(shape == "ballistic" ? 0.5f : 0f),
-                orb["hold_sec"].AsFloat(orb["place_m"].AsFloat(0f) > 0f ? 0.4f : 0f),
-                orb["double_tap_sec"].AsFloat(orb["place_m"].AsFloat(0f) > 0f ? 0.3f : 0f));
+                orb["hold_sec"].AsFloat(orb["place_m"].AsFloat(0f) > 0f ? WeaponCombatProfileDefaults.DefaultHoldSec : 0f),
+                orb["double_tap_sec"].AsFloat(orb["place_m"].AsFloat(0f) > 0f ? WeaponCombatProfileDefaults.DefaultDoubleTapSec : 0f));
         }
     }
 
     /// <summary>Silah pasifinin JSON sayıları. Davranış <see cref="WeaponPassiveRules"/> içindedir.</summary>
     public sealed class WeaponPassiveSpec
     {
-        public static readonly WeaponPassiveSpec None = new(string.Empty, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 1f, 1f, 0, 0f, 0f, 0f, 0.05f);
+        public static readonly WeaponPassiveSpec None = new(string.Empty, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 1f, 1f, 0, 0f, 0f, 0f, WeaponCombatProfileDefaults.DefaultBaseCrit);
 
         public WeaponPassiveSpec(
             string id,
@@ -179,7 +179,7 @@ namespace Dovus.Core.Equipment
             ChainGapSec = chainGapSec;
             AngleDeg = angleDeg;
             CritChance = critChance;
-            BaseCrit = baseCrit > 0f ? baseCrit : 0.05f;
+            BaseCrit = baseCrit > 0f ? baseCrit : WeaponCombatProfileDefaults.DefaultBaseCrit;
         }
 
         public string Id { get; }
@@ -218,7 +218,7 @@ namespace Dovus.Core.Equipment
                 row["chain_gap_sec"].AsFloat(0f),
                 row["angle_deg"].AsFloat(0f),
                 row["crit_chance"].AsFloat(0f),
-                row["base_crit"].AsFloat(0.05f));
+                row["base_crit"].AsFloat(WeaponCombatProfileDefaults.DefaultBaseCrit));
         }
     }
 

@@ -39,7 +39,7 @@ namespace Dovus.Core.Passives
             if (runeId <= 0 || durationSec <= 0f)
                 return false;
 
-            double addMs = durationSec * 1000.0;
+            double addMs = durationSec * PassivesDefaults.SecToMs;
             for (int i = 0; i < _active.Count; i++)
             {
                 if (_active[i].RuneId != runeId)
@@ -334,6 +334,6 @@ namespace Dovus.Core.Passives
         public JsonValue Modifiers { get; }
         public int ExcludedCastId { get; }
         public float RemainingSec(double worldMs) =>
-            (float)(Math.Max(0.0, UntilMs - worldMs) / 1000.0);
+            (float)(Math.Max(0.0, UntilMs - worldMs) / PassivesDefaults.SecToMs);
     }
 }

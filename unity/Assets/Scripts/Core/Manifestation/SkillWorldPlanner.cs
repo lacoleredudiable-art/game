@@ -56,7 +56,7 @@ namespace Dovus.Core.Manifestation
                     bangRadius = r;
                 float width = hb.GetFloat("width_m_default", 0f);
                 if (r <= 0f && width > 0f)
-                    bangRadius = MathF.Max(width * 4f, tuning.TravelHitRadiusM);
+                    bangRadius = MathF.Max(width * ManifestationDefaults.BangWidthRadiusMult, tuning.TravelHitRadiusM);
             }
 
             float scale = skill.HitboxScaleMult > 0f ? skill.HitboxScaleMult : 1f;
@@ -64,7 +64,7 @@ namespace Dovus.Core.Manifestation
 
             // Yayılma sıfatı: menzili de biraz aç (expanding_wave max_radius ile uyumlu).
             if (kind == LivingTravelKind.ExpandingRadial && scale > 1f)
-                maxRange = MathF.Max(maxRange, bangRadius * 1.25f);
+                maxRange = MathF.Max(maxRange, bangRadius * ManifestationDefaults.BangRangePaddingMult);
 
             if (!skill.EngineModifiers.IsNull && skill.EngineModifiers.Has("lifetime_add"))
                 lifetimeAdd = skill.EngineModifiers["lifetime_add"].AsFloat(0f);
@@ -163,11 +163,11 @@ namespace Dovus.Core.Manifestation
             {
                 case LivingTravelKind.Instant:
                 case LivingTravelKind.Static:
-                    speed = tuning.WaveSpeedMps * 4f;
+                    speed = tuning.WaveSpeedMps * ManifestationDefaults.WaveSpeedScaleMult;
                     maxRange = MathF.Max(tuning.ClosingBangRadiusM, 1f);
                     break;
                 case LivingTravelKind.ExpandingRadial:
-                    speed = tuning.WaveSpeedMps * 1.5f;
+                    speed = tuning.WaveSpeedMps * ManifestationDefaults.WaveSpeedBoostMult;
                     maxRange = tuning.WaveMaxRadiusM;
                     break;
                 default:

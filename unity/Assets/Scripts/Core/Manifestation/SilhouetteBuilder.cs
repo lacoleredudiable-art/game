@@ -71,34 +71,34 @@ namespace Dovus.Core.Manifestation
                     break;
                 case "pierce":
                     p += tuning.PiercePerIgne;
-                    f += tuning.FocusPerIgne * 0.35f;
-                    s *= 0.7f;
+                    f += tuning.FocusPerIgne * SilhouetteBuilderDefaults.FocusWeightMid;
+                    s *= SilhouetteBuilderDefaults.PierceWeightHigh;
                     break;
                 case "wave":
                 case "cloud":
                     s += tuning.SpreadPerSuru;
                     if (f < tuning.SuruFocusReduceThreshold)
                         f -= tuning.SuruFocusReduceAmount;
-                    f *= 0.65f;
+                    f *= SilhouetteBuilderDefaults.FocusScaleMult;
                     break;
                 case "trail":
-                    p += tuning.PiercePerIgne * 0.4f;
-                    s += tuning.SpreadPerSuru * 0.45f;
+                    p += tuning.PiercePerIgne * SilhouetteBuilderDefaults.PierceSpreadScale;
+                    s += tuning.SpreadPerSuru * SilhouetteBuilderDefaults.SpreadScaleBase;
                     break;
                 case "lift":
                     l += tuning.LiftPerSarsinti;
                     break;
                 case "ring":
-                    f = MathF.Min(f, 0.25f);
-                    s += tuning.SpreadPerSuru * 0.6f;
+                    f = MathF.Min(f, SilhouetteBuilderDefaults.SpreadWeightQuarter);
+                    s += tuning.SpreadPerSuru * SilhouetteBuilderDefaults.SpreadSuruMidMult;
                     break;
                 case "hollow":
                     f *= 0.5f;
-                    s += tuning.SpreadPerSuru * 0.4f;
+                    s += tuning.SpreadPerSuru * SilhouetteBuilderDefaults.PierceSpreadScale;
                     break;
                 case "cone":
-                    f = 0.45f + f * 0.3f;
-                    s += tuning.SpreadPerSuru * 0.55f;
+                    f = SilhouetteBuilderDefaults.SpreadScaleBase + f * SilhouetteBuilderDefaults.FocusLerpWeight;
+                    s += tuning.SpreadPerSuru * SilhouetteBuilderDefaults.SpreadSuruHighMult;
                     break;
                 default:
                     break;
@@ -110,36 +110,36 @@ namespace Dovus.Core.Manifestation
         static EffectSilhouette VerbFamilySeed(string family, string hitbox)
         {
             if (hitbox is "projectile" or "beam" or "chain_projectile" or "raycast")
-                return new EffectSilhouette(focus: 0.82f, pierce: 0.7f, spread: 0f, lift: 0f);
+                return new EffectSilhouette(focus: SilhouetteBuilderDefaults.FocusWeightStrike, pierce: SilhouetteBuilderDefaults.PierceWeightHigh, spread: 0f, lift: 0f);
             if (hitbox is "static_cloud" or "ground_circle" or "ground_ring" or "ground_surface")
-                return new EffectSilhouette(focus: 0.2f, pierce: 0f, spread: 0.5f, lift: 0f);
+                return new EffectSilhouette(focus: SilhouetteBuilderDefaults.FocusWeightMidLow, pierce: 0f, spread: 0.5f, lift: 0f);
             if (hitbox is "cone" or "radial_burst")
-                return new EffectSilhouette(focus: 0.35f, pierce: 0.15f, spread: 0.55f, lift: 0f);
+                return new EffectSilhouette(focus: SilhouetteBuilderDefaults.FocusWeightMid, pierce: SilhouetteBuilderDefaults.FocusWeightLow, spread: SilhouetteBuilderDefaults.SpreadSuruHighMult, lift: 0f);
             if (hitbox is "wall" or "ground_line")
-                return new EffectSilhouette(focus: 0.4f, pierce: 0f, spread: 0.1f, lift: 0.2f);
+                return new EffectSilhouette(focus: SilhouetteBuilderDefaults.PierceSpreadScale, pierce: 0f, spread: SilhouetteBuilderDefaults.SpreadWeightDefault, lift: SilhouetteBuilderDefaults.FocusWeightMidLow);
             if (hitbox is "self" or "self_aura" or "target_ally")
-                return new EffectSilhouette(focus: 0.5f, pierce: 0f, spread: 0.25f, lift: 0.05f);
+                return new EffectSilhouette(focus: 0.5f, pierce: 0f, spread: SilhouetteBuilderDefaults.SpreadWeightQuarter, lift: SilhouetteBuilderDefaults.LiftWeightLow);
 
             return family switch
             {
-                "strike" => new EffectSilhouette(0.82f, 0.7f, 0f, 0f),
-                "mend" or "purge" or "guard" => new EffectSilhouette(0.25f, 0f, 0.35f, 0.05f),
-                "motion" => new EffectSilhouette(0.15f, 0.2f, 0.45f, 0f),
-                "zone" or "control" => new EffectSilhouette(0.35f, 0f, 0f, 0.25f),
-                "disrupt" => new EffectSilhouette(0.2f, 0f, 0.5f, 0f),
-                _ => new EffectSilhouette(0.5f, 0.25f, 0.2f, 0f)
+                "strike" => new EffectSilhouette(SilhouetteBuilderDefaults.FocusWeightStrike, SilhouetteBuilderDefaults.PierceWeightHigh, 0f, 0f),
+                "mend" or "purge" or "guard" => new EffectSilhouette(SilhouetteBuilderDefaults.SpreadWeightQuarter, 0f, SilhouetteBuilderDefaults.FocusWeightMid, SilhouetteBuilderDefaults.LiftWeightLow),
+                "motion" => new EffectSilhouette(SilhouetteBuilderDefaults.FocusWeightLow, SilhouetteBuilderDefaults.FocusWeightMidLow, SilhouetteBuilderDefaults.SpreadScaleBase, 0f),
+                "zone" or "control" => new EffectSilhouette(SilhouetteBuilderDefaults.FocusWeightMid, 0f, 0f, SilhouetteBuilderDefaults.SpreadWeightQuarter),
+                "disrupt" => new EffectSilhouette(SilhouetteBuilderDefaults.FocusWeightMidLow, 0f, 0.5f, 0f),
+                _ => new EffectSilhouette(0.5f, SilhouetteBuilderDefaults.SpreadWeightQuarter, SilhouetteBuilderDefaults.FocusWeightMidLow, 0f)
             };
         }
 
         public static EffectSilhouette VerbSeed(Rune verb) => verb switch
         {
             // element-sistemi çekirdek fiilleri
-            Rune.Ates => new EffectSilhouette(focus: 0.82f, pierce: 0.7f, spread: 0f, lift: 0f),      // Ateş saldırı
-            Rune.Su => new EffectSilhouette(focus: 0.25f, pierce: 0f, spread: 0.35f, lift: 0.05f),   // Su heal
-            Rune.Hava => new EffectSilhouette(focus: 0.15f, pierce: 0.2f, spread: 0.45f, lift: 0f),  // Hava hareket
-            Rune.Toprak => new EffectSilhouette(focus: 0.35f, pierce: 0f, spread: 0f, lift: 0.25f),    // Toprak savunma
-            Rune.Aydinlik => new EffectSilhouette(focus: 0.88f, pierce: 0.4f, spread: 0f, lift: 0f), // Aydınlık arındırma
-            Rune.Karanlik => new EffectSilhouette(focus: 0.2f, pierce: 0f, spread: 0.5f, lift: 0f),    // Karanlık gizlilik
+            Rune.Ates => new EffectSilhouette(focus: SilhouetteBuilderDefaults.FocusWeightStrike, pierce: SilhouetteBuilderDefaults.PierceWeightHigh, spread: 0f, lift: 0f),      // Ateş saldırı
+            Rune.Su => new EffectSilhouette(focus: SilhouetteBuilderDefaults.SpreadWeightQuarter, pierce: 0f, spread: SilhouetteBuilderDefaults.FocusWeightMid, lift: SilhouetteBuilderDefaults.LiftWeightLow),   // Su heal
+            Rune.Hava => new EffectSilhouette(focus: SilhouetteBuilderDefaults.FocusWeightLow, pierce: SilhouetteBuilderDefaults.FocusWeightMidLow, spread: SilhouetteBuilderDefaults.SpreadScaleBase, lift: 0f),  // Hava hareket
+            Rune.Toprak => new EffectSilhouette(focus: SilhouetteBuilderDefaults.FocusWeightMid, pierce: 0f, spread: 0f, lift: SilhouetteBuilderDefaults.SpreadWeightQuarter),    // Toprak savunma
+            Rune.Aydinlik => new EffectSilhouette(focus: SilhouetteBuilderDefaults.FocusWeightLight, pierce: SilhouetteBuilderDefaults.PierceSpreadScale, spread: 0f, lift: 0f), // Aydınlık arındırma
+            Rune.Karanlik => new EffectSilhouette(focus: SilhouetteBuilderDefaults.FocusWeightMidLow, pierce: 0f, spread: 0.5f, lift: 0f),    // Karanlık gizlilik
             _ => default
         };
 
@@ -168,7 +168,7 @@ namespace Dovus.Core.Manifestation
                     break;
                 case Rune.Hava:
                     // Hava — taşıma
-                    p += tuning.PiercePerIgne * 0.4f;
+                    p += tuning.PiercePerIgne * SilhouetteBuilderDefaults.PierceSpreadScale;
                     s += tuning.SpreadPerSuru * 0.5f;
                     break;
                 case Rune.Toprak:
@@ -180,11 +180,11 @@ namespace Dovus.Core.Manifestation
                 case Rune.Aydinlik:
                     // Aydınlık — saflaştırma / odak
                     f += tuning.FocusPerIgne;
-                    p += tuning.PiercePerIgne * 0.35f;
+                    p += tuning.PiercePerIgne * SilhouetteBuilderDefaults.FocusWeightMid;
                     break;
                 case Rune.Karanlik:
                     // Karanlık — örtme
-                    s += tuning.SpreadPerSuru * 0.75f;
+                    s += tuning.SpreadPerSuru * SilhouetteBuilderDefaults.SpreadSuruPeakMult;
                     break;
             }
 

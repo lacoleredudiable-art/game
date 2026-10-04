@@ -128,7 +128,7 @@ namespace Dovus.Core.Motion
             Finished = finished;
             Hits = hits ?? Array.Empty<MotionHit>();
             AnimKey = anim ?? string.Empty;
-            AnimSpeed = animSpeed > 0.05f ? animSpeed : 1f;
+            AnimSpeed = animSpeed > MotionTemplateRunnerDefaults.MinRadiusM ? animSpeed : 1f;
             VelX = velX;
             VelZ = velZ;
             Spin = spin;
@@ -173,7 +173,7 @@ namespace Dovus.Core.Motion
         float _shot;
         float _walkX, _walkZ;
         float _bodyRadius = 0.5f;
-        float _stopGap = 0.15f;
+        float _stopGap = MotionTemplateRunnerDefaults.StopGapM;
         float _plantX, _plantZ;
         float _markX, _markZ;
         bool _plantSent;
@@ -208,7 +208,7 @@ namespace Dovus.Core.Motion
             float x, float y, float z,
             float faceX, float faceZ,
             float bodyRadiusM = 0.5f,
-            float stopGapM = 0.15f)
+            float stopGapM = MotionTemplateRunnerDefaults.StopGapM)
         {
             _template = template;
             _phase = 0;
@@ -267,7 +267,7 @@ namespace Dovus.Core.Motion
                 return;
             float dx = x - _x;
             float dz = z - _z;
-            if (dx * dx + dz * dz < 1e-8f)
+            if (dx * dx + dz * dz < MotionTemplateRunnerDefaults.SegmentLen2EpsilonSqr)
                 return;
             _x = x;
             _z = z;
@@ -301,17 +301,17 @@ namespace Dovus.Core.Motion
             while (left > 0.00001f && !_finished && guard++ < 12)
             {
                 MotionPhase phase = _template.Phases[_phase];
-                float durAhead = Math.Max(0.01f, phase.DurationSec);
+                float durAhead = Math.Max(MotionTemplateRunnerDefaults.MinDistM, phase.DurationSec);
                 if (_yieldApproach && !aim.HoldApproach)
                 {
                     // Çekme bitince faz eğrisi eski başlangıca zıplamasın.
                     _yieldApproach = false;
-                    _blendU0 = Math.Clamp(_time / durAhead, 0f, 0.999f);
+                    _blendU0 = Math.Clamp(_time / durAhead, 0f, MotionTemplateRunnerDefaults.OutgoingMultCap);
                     _phaseX = _x;
                     _phaseZ = _z;
                 }
                 AimDest(phase, aim);
-                float dur = Math.Max(0.01f, phase.DurationSec);
+                float dur = Math.Max(MotionTemplateRunnerDefaults.MinDistM, phase.DurationSec);
                 if (phase.Gate == "release")
                 {
                     if (_time < dur)
@@ -373,7 +373,7 @@ namespace Dovus.Core.Motion
             float dx = target.X - _tracked.X;
             float dz = target.Z - _tracked.Z;
             float dist = MathF.Sqrt(dx * dx + dz * dz);
-            float cap = 40f * MathF.Max(dt, 0.001f);
+            float cap = MotionTemplateRunnerDefaults.MaxDeltaPerTickMult * MathF.Max(dt, 0.001f);
             if (dist <= cap)
             {
                 _tracked = target;
@@ -424,7 +424,7 @@ namespace Dovus.Core.Motion
             if (_blendU0 >= 0f)
             {
                 float span = 1f - _blendU0;
-                u = span < 0.05f ? 0f : Math.Clamp((uLinear - _blendU0) / span, 0f, 1f);
+                u = span < MotionTemplateRunnerDefaults.MinRadiusM ? 0f : Math.Clamp((uLinear - _blendU0) / span, 0f, 1f);
             }
 
             float rx = fz;
@@ -465,7 +465,7 @@ namespace Dovus.Core.Motion
                         _x = _phaseX + rx * side * u * phase.DistanceM + fx * u * phase.ForwardM;
                         _z = _phaseZ + rz * side * u * phase.DistanceM + fz * u * phase.ForwardM;
                     }
-                    _y = _groundY + 4f * phase.HeightM * uLinear * (1f - uLinear);
+                    _y = _groundY + MotionTemplateRunnerDefaults.JumpHeightFourMult * phase.HeightM * uLinear * (1f - uLinear);
                     break;
                 case "leap":
                     if (phase.Land == "behind")
@@ -475,7 +475,7 @@ namespace Dovus.Core.Motion
                         _x = _phaseX + (_destX - _phaseX) * u;
                         _z = _phaseZ + (_destZ - _phaseZ) * u;
                     }
-                    _y = _groundY + 4f * phase.HeightM * uLinear * (1f - uLinear);
+                    _y = _groundY + MotionTemplateRunnerDefaults.JumpHeightFourMult * phase.HeightM * uLinear * (1f - uLinear);
                     break;
                 case "slam":
                     _x = _phaseX + (_destX - _phaseX) * u;
@@ -520,7 +520,7 @@ namespace Dovus.Core.Motion
                     _walkZ += stick.MoveZ * phase.WalkMps * dt;
                     _x = _phaseX + fx * u * phase.DriftM + _walkX;
                     _z = _phaseZ + fz * u * phase.DriftM + _walkZ;
-                    _y = _groundY + (phase.HeightM > 0.01f ? phase.HeightM : 0f);
+                    _y = _groundY + (phase.HeightM > MotionTemplateRunnerDefaults.MinDistM ? phase.HeightM : 0f);
                     break;
                 default:
                     if (phase.Motion != "hold")
@@ -541,7 +541,7 @@ namespace Dovus.Core.Motion
             // Arkaya iniş ve içinden geçiş kasıtlı olarak gövdeyi keser; bitiş yine dışarıdadır.
             // Atış / tutma ayakları yerinden kaldırmaz. Kenar itmesi boss merkeze gelince
             // oyuncuyu karşı yüze ışınlıyordu (5-2, 10-2, 11-2, 12-2).
-            bool crossesBody = phase.Land == "behind" || phase.OvershootM > 0.01f;
+            bool crossesBody = phase.Land == "behind" || phase.OvershootM > MotionTemplateRunnerDefaults.MinDistM;
             if (!crossesBody && !FeetPlanted(phase))
                 KeepOutside(target, ref _x, ref _z);
 
@@ -565,7 +565,7 @@ namespace Dovus.Core.Motion
             {
                 float dx = target.X - _x;
                 float dz = target.Z - _z;
-                if (dx * dx + dz * dz > 0.04f)
+                if (dx * dx + dz * dz > MotionTemplateRunnerDefaults.StepDistSqrMin)
                 {
                     Normalize(dx, dz, out _faceX, out _faceZ);
                     return;
@@ -576,7 +576,7 @@ namespace Dovus.Core.Motion
             {
                 float dx = _x - _phaseX;
                 float dz = _z - _phaseZ;
-                if (dx * dx + dz * dz > 0.0004f)
+                if (dx * dx + dz * dz > MotionTemplateRunnerDefaults.FacingDistSqrMin)
                 {
                     Normalize(dx, dz, out _faceX, out _faceZ);
                     return;
@@ -600,7 +600,7 @@ namespace Dovus.Core.Motion
             if (hit == null)
                 return;
 
-            if (hit.EverySec > 0.01f)
+            if (hit.EverySec > MotionTemplateRunnerDefaults.MinDistM)
             {
                 float first = Math.Clamp(hit.At, 0f, 1f) * dur;
                 for (int n = _everySent; n < 16; n++)
@@ -664,7 +664,7 @@ namespace Dovus.Core.Motion
                     break;
                 case "target_side":
                     // Sekme vuruşu hedefin yanında durur; kaymış gövdenin bir yan mesafe daha dışına kaçmaz.
-                    float lateral = 0.35f;
+                    float lateral = MotionTemplateRunnerDefaults.LateralFrac;
                     if (target.Has)
                     {
                         ox = target.X + rx * side * lateral;
@@ -681,7 +681,7 @@ namespace Dovus.Core.Motion
                     oz = _plantZ;
                     break;
                 case "shot":
-                    float shot = Math.Max(_shot, 0.01f);
+                    float shot = Math.Max(_shot, MotionTemplateRunnerDefaults.MinDistM);
                     ox = _x + dx * shot;
                     oz = _z + dz * shot;
                     if (target.Has)
@@ -698,8 +698,8 @@ namespace Dovus.Core.Motion
                 case "ring":
                     break;
                 default:
-                    ox = _x + dx * hit.LengthM * 0.35f;
-                    oz = _z + dz * hit.LengthM * 0.35f;
+                    ox = _x + dx * hit.LengthM * MotionTemplateRunnerDefaults.LateralFrac;
+                    oz = _z + dz * hit.LengthM * MotionTemplateRunnerDefaults.LateralFrac;
                     break;
             }
 
@@ -761,7 +761,7 @@ namespace Dovus.Core.Motion
                 float dx = target.X - _x;
                 float dz = target.Z - _z;
                 float len = MathF.Sqrt(dx * dx + dz * dz);
-                if (len > 0.05f)
+                if (len > MotionTemplateRunnerDefaults.MinRadiusM)
                 {
                     fx = dx / len;
                     fz = dz / len;
@@ -781,8 +781,8 @@ namespace Dovus.Core.Motion
                 "sphere",
                 "plant",
                 "marker",
-                0.25f,
-                0.2f,
+                MotionTemplateRunnerDefaults.PlantHitRadiusM,
+                MotionTemplateRunnerDefaults.PlantHitLengthM,
                 0f,
                 _plantX,
                 _groundY,
@@ -826,7 +826,7 @@ namespace Dovus.Core.Motion
                 float blen = MathF.Sqrt(bx * bx + bz * bz);
                 float bux = ux;
                 float buz = uz;
-                if (blen > 0.05f)
+                if (blen > MotionTemplateRunnerDefaults.MinRadiusM)
                 {
                     bux = bx / blen;
                     buz = bz / blen;
@@ -848,14 +848,14 @@ namespace Dovus.Core.Motion
             {
                 // overshoot_m yoksa düz hamle gövdeyi kesmez. Kenar itmesi merkezi geçince
                 // oyuncuyu tek karede karşı yüze atıyordu (3-7, uzatılmış dash).
-                if (phase.Motion is "dash" or "lunge" && phase.OvershootM <= 0.01f)
+                if (phase.Motion is "dash" or "lunge" && phase.OvershootM <= MotionTemplateRunnerDefaults.MinDistM)
                     StopAtBodyEdge(target);
                 return;
             }
             switch (phase.Motion)
             {
                 case "dash":
-                    if (phase.OvershootM > 0.01f)
+                    if (phase.OvershootM > MotionTemplateRunnerDefaults.MinDistM)
                     {
                         float through = len + target.RadiusM + _bodyRadius + _stopGap + phase.OvershootM;
                         _destX = _phaseX + ux * through;
@@ -873,7 +873,7 @@ namespace Dovus.Core.Motion
                 case "blink":
                     // Menzil gövdeye yetiyorsa yakın kenarda durmak yerine öte kenardan çık.
                     // Ara kare yok: ışınlanma tek anda iner, merkezde kare bırakmaz.
-                    if (phase.DistanceM + 0.05f >= len)
+                    if (phase.DistanceM + MotionTemplateRunnerDefaults.MinRadiusM >= len)
                     {
                         float exit = Separation(target);
                         _destX = target.X + ux * exit;
@@ -887,7 +887,7 @@ namespace Dovus.Core.Motion
                     break;
             }
 
-            if (phase.OvershootM <= 0.01f)
+            if (phase.OvershootM <= MotionTemplateRunnerDefaults.MinDistM)
                 KeepOutside(target, ref _destX, ref _destZ);
         }
 
@@ -895,7 +895,7 @@ namespace Dovus.Core.Motion
         void Approach(float ux, float uz, float len, in MotionTarget target, float cap)
         {
             float travel = Math.Max(0f, len - Separation(target));
-            if (cap > 0.01f)
+            if (cap > MotionTemplateRunnerDefaults.MinDistM)
                 travel = Math.Min(cap, travel);
             _destX = _phaseX + ux * travel;
             _destZ = _phaseZ + uz * travel;
@@ -921,9 +921,9 @@ namespace Dovus.Core.Motion
             float r0 = MathF.Sqrt(sx * sx + sz * sz);
             float r1 = MathF.Sqrt(ex * ex + ez * ez);
             float minR = Separation(target);
-            if (r0 < 0.05f)
+            if (r0 < MotionTemplateRunnerDefaults.MinRadiusM)
                 r0 = minR;
-            if (r1 < 0.05f)
+            if (r1 < MotionTemplateRunnerDefaults.MinRadiusM)
                 r1 = minR;
             float a0 = MathF.Atan2(sz, sx);
             float a1 = MathF.Atan2(ez, ex);
@@ -932,7 +932,7 @@ namespace Dovus.Core.Motion
                 delta -= 2f * MathF.PI;
             while (delta < -MathF.PI)
                 delta += 2f * MathF.PI;
-            if (MathF.Abs(MathF.Abs(delta) - MathF.PI) < 0.35f)
+            if (MathF.Abs(MathF.Abs(delta) - MathF.PI) < MotionTemplateRunnerDefaults.LateralFrac)
                 delta = (side < 0f ? -1f : 1f) * MathF.PI;
             float angle = a0 + delta * u;
             float radius = MathF.Max(minR, r0 + (r1 - r0) * u);
@@ -979,7 +979,7 @@ namespace Dovus.Core.Motion
             float clear = _bodyRadius + target.ObstacleRadiusM + _stopGap;
             return PointSegment(
                 target.ObstacleX, target.ObstacleZ,
-                _phaseX, _phaseZ, _destX, _destZ) < clear - 0.02f;
+                _phaseX, _phaseZ, _destX, _destZ) < clear - MotionTemplateRunnerDefaults.ClearDistEpsilonM;
         }
 
         void ArcObstacle(float u, in MotionTarget target)
@@ -991,9 +991,9 @@ namespace Dovus.Core.Motion
             float ez = _destZ - target.ObstacleZ;
             float r0 = MathF.Sqrt(sx * sx + sz * sz);
             float r1 = MathF.Sqrt(ex * ex + ez * ez);
-            if (r0 < 0.05f)
+            if (r0 < MotionTemplateRunnerDefaults.MinRadiusM)
                 r0 = clear;
-            if (r1 < 0.05f)
+            if (r1 < MotionTemplateRunnerDefaults.MinRadiusM)
                 r1 = clear;
             float a0 = MathF.Atan2(sz, sx);
             float a1 = MathF.Atan2(ez, ex);
@@ -1002,7 +1002,7 @@ namespace Dovus.Core.Motion
                 delta -= 2f * MathF.PI;
             while (delta < -MathF.PI)
                 delta += 2f * MathF.PI;
-            if (MathF.Abs(MathF.Abs(delta) - MathF.PI) < 0.35f)
+            if (MathF.Abs(MathF.Abs(delta) - MathF.PI) < MotionTemplateRunnerDefaults.LateralFrac)
                 delta = MathF.PI;
             float angle = a0 + delta * u;
             float radius = MathF.Max(clear, r0 + (r1 - r0) * u);
@@ -1085,7 +1085,7 @@ namespace Dovus.Core.Motion
             {
                 float dx = target.X - _phaseX;
                 float dz = target.Z - _phaseZ;
-                if (dx * dx + dz * dz > 0.04f)
+                if (dx * dx + dz * dz > MotionTemplateRunnerDefaults.StepDistSqrMin)
                 {
                     Normalize(dx, dz, out fx, out fz);
                     return;

@@ -226,13 +226,13 @@ namespace Dovus.Core.Passives
             plan = default;
             if (channelSec <= 0f || dealtDamage <= 0f)
                 return false;
-            float rate = tickRateMult > 0.01f ? tickRateMult : 1f;
-            float tickSec = (baseTickSec > 0.01f ? baseTickSec : 1f) / rate;
-            if (tickSec < 0.01f)
-                tickSec = 0.01f;
+            float rate = tickRateMult > SlotPassiveCombatDefaults.MinTickSec ? tickRateMult : 1f;
+            float tickSec = (baseTickSec > SlotPassiveCombatDefaults.MinTickSec ? baseTickSec : 1f) / rate;
+            if (tickSec < SlotPassiveCombatDefaults.MinTickSec)
+                tickSec = SlotPassiveCombatDefaults.MinTickSec;
             int count = 0;
             double t = tickSec;
-            while (t < channelSec - 0.0001d && count < 64)
+            while (t < channelSec - 0.0001d && count < SlotPassiveCombatDefaults.ChannelTickGuardMax)
             {
                 count++;
                 t += tickSec;
@@ -260,8 +260,8 @@ namespace Dovus.Core.Passives
                 return;
             _items.Add(new LiveFlow
             {
-                NextMs = worldMs + plan.TickSec * 1000.0,
-                IntervalMs = plan.TickSec * 1000.0,
+                NextMs = worldMs + plan.TickSec * SlotPassiveCombatDefaults.SecToMs,
+                IntervalMs = plan.TickSec * SlotPassiveCombatDefaults.SecToMs,
                 Left = plan.TickCount,
                 TickDamage = plan.TickDamage
             });
@@ -274,7 +274,7 @@ namespace Dovus.Core.Passives
             {
                 LiveFlow item = _items[i];
                 int guard = 0;
-                while (item.Left > 0 && worldMs + 0.001d >= item.NextMs && guard < 64)
+                while (item.Left > 0 && worldMs + 0.001d >= item.NextMs && guard < SlotPassiveCombatDefaults.ChannelTickGuardMax)
                 {
                     sum += item.TickDamage;
                     item.Left--;

@@ -7,7 +7,7 @@ namespace Dovus.Core.Casting
         public HitboxSize(string shape, float radiusM, float reachM, float durationSec)
         {
             Shape = shape ?? string.Empty;
-            RadiusM = Math.Max(0.01f, radiusM);
+            RadiusM = Math.Max(CastingDefaults.MinTickSec, radiusM);
             ReachM = Math.Max(RadiusM, reachM);
             DurationSec = Math.Max(0f, durationSec);
         }
