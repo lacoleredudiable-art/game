@@ -1,4 +1,11 @@
-using Dovus.Core.Combat;
+using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
+using Dovus.Core.Element;
 using Dovus.Core.Grammar;
 using Dovus.Core.Tuning;
 using Dovus.Game.Actors;
@@ -183,11 +190,11 @@ namespace Dovus.Game.DevTools
                 else
                     sb.Append('[').Append(Name(w.Rune)).Append(']');
                 if (w.IntensityStacks > 0)
-                    sb.Append('×').Append(w.IntensityStacks + 1);
+                    sb.Append('\u00d7').Append(w.IntensityStacks + 1);
             }
         }
 
-        static string Name(Dovus.Core.Grammar.Rune r) => RuneInfo.DisplayName(r);
+        static string Name(Dovus.Core.Element.Rune r) => RuneInfo.DisplayName(r);
 
         string SkillLine(SentenceState s)
         {

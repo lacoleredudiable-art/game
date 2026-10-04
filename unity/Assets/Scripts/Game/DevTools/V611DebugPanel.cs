@@ -204,7 +204,7 @@ namespace Dovus.Game.DevTools
                 _weapon.text = "Silah: —";
                 return;
             }
-            string route = Dovus.Core.Execution.SkillExecutorRouter.IsRangedWeapon(weapon)
+            string route = Dovus.Core.Casting.SkillExecutorRouter.IsRangedWeapon(weapon)
                 ? "projectile"
                 : "melee";
             _weapon.text = $"Silah: {weapon.Name} ({route})";

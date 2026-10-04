@@ -1,3 +1,5 @@
+using Dovus.Core.Input;
+using Dovus.Core.Element;
 using Dovus.Core.Grammar;
 using Dovus.Game.Actors;
 using Dovus.Game.Composition;
@@ -77,7 +79,7 @@ namespace Dovus.Game.Casting
             // Solid disc — radial fillAmount ile klasik cooldown pie (halka sprite fill'de silik kalıyordu).
             var ringSprite = fallback;
             BuildCombatTrayBackdrop(canvasGo.transform);
-            int n = Dovus.Core.Grammar.HexagonLayout.DotCount;
+            int n = Dovus.Core.Input.HexagonLayout.DotCount;
             _dots = new RectTransform[n + 1];
             _dotImages = new Image[n + 1];
             _dotRims = new Image[n + 1];
@@ -386,7 +388,7 @@ namespace Dovus.Game.Casting
             int h = Screen.height;
             float dotR = HexagonLayoutScreen.DotHitRadiusPx(_tuning);
             float centerR = HexagonLayoutScreen.CenterHitRadiusPx(_tuning);
-            int n = Dovus.Core.Grammar.HexagonLayout.DotCount;
+            int n = Dovus.Core.Input.HexagonLayout.DotCount;
 
             for (int dot = 1; dot <= n; dot++)
             {
@@ -552,7 +554,7 @@ namespace Dovus.Game.Casting
             _trayTitle.rectTransform.offsetMin = new Vector2(HexagonLayoutScreen.DpToPixels(th.TrayTitleInsetDp), 0f);
             _trayTitle.rectTransform.offsetMax = new Vector2(0f, -HexagonLayoutScreen.DpToPixels(th.TrayTitleTopDp));
 
-            _trayLinks = new RectTransform[Dovus.Core.Grammar.HexagonLayout.DotCount];
+            _trayLinks = new RectTransform[Dovus.Core.Input.HexagonLayout.DotCount];
             for (int i = 0; i < _trayLinks.Length; i++)
             {
                 var linkGo = new GameObject("HexLink" + (i + 1));

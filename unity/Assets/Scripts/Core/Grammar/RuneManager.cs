@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Dovus.Core.Element;
 using Dovus.Core.Equipment;
 
 namespace Dovus.Core.Grammar

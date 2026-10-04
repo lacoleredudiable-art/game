@@ -126,14 +126,14 @@ namespace Dovus.Game.Config
             if (Arena.BloomThreshold <= 0f) Arena.BloomThreshold = 1.05f;
         }
         /// <summary>Çekirdek rün → tezahür çizgi rengi.</summary>
-        public Color ColorForRune(Dovus.Core.Grammar.Rune rune) => rune switch
+        public Color ColorForRune(Dovus.Core.Element.Rune rune) => rune switch
         {
-            Dovus.Core.Grammar.Rune.Ates => Visuals.ElementFire,
-            Dovus.Core.Grammar.Rune.Su => Visuals.ElementWater,
-            Dovus.Core.Grammar.Rune.Hava => Visuals.ElementAir,
-            Dovus.Core.Grammar.Rune.Toprak => Visuals.ElementEarth,
-            Dovus.Core.Grammar.Rune.Aydinlik => Visuals.ElementLight,
-            Dovus.Core.Grammar.Rune.Karanlik => Visuals.ElementDark,
+            Dovus.Core.Element.Rune.Ates => Visuals.ElementFire,
+            Dovus.Core.Element.Rune.Su => Visuals.ElementWater,
+            Dovus.Core.Element.Rune.Hava => Visuals.ElementAir,
+            Dovus.Core.Element.Rune.Toprak => Visuals.ElementEarth,
+            Dovus.Core.Element.Rune.Aydinlik => Visuals.ElementLight,
+            Dovus.Core.Element.Rune.Karanlik => Visuals.ElementDark,
             _ => Visuals.InkCyan
         };
 

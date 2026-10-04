@@ -1,4 +1,4 @@
-using Dovus.Core.Layout;
+using Dovus.Core.Input;
 using Dovus.Game.Config;
 using UnityEngine;
 

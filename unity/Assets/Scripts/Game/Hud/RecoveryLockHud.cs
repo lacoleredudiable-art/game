@@ -1,4 +1,8 @@
 using Dovus.Core.Grammar;
+using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Casting;
+using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using Dovus.Game.Casting;
 using Dovus.Game.Config;

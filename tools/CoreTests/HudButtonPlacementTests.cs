@@ -1,4 +1,4 @@
-using Dovus.Core.Layout;
+using Dovus.Core.Input;
 using NUnit.Framework;
 
 namespace CoreTests;
