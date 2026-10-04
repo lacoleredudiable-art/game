@@ -40,7 +40,7 @@ namespace Dovus.Game.Editor
     {
             // ---------------------------------------------------------------- ölçüm
 
-            static bool Performing() => P<bool>(_md, "PerformingAttack");
+            static bool Performing() => _md.SweepPerformingAttack;
 
             static bool BossPulling() => _bossReactor != null && _bossReactor.PullActive;
 
@@ -79,28 +79,28 @@ namespace Dovus.Game.Editor
                 };
                 SentencePhase sentence = _input.Engine != null ? _input.Engine.State.Phase : SentencePhase.Idle;
                 bool drawing = sentence == SentencePhase.Building || sentence == SentencePhase.Recovering;
-                var pendingList = F<object>(_md, "_pending") as IList;
+                IReadOnlyList<PendingClosing> pendingList = _md.SweepPending;
                 int pending = pendingList?.Count ?? 0;
                 if (_scheduledBang < 0f && pending > 0)
-                    _scheduledBang = (float)((F<double>(pendingList[0], "BangAtWorldMs") - _castMs) / 1000.0);
+                    _scheduledBang = (float)((pendingList[0].BangAtWorldMs - _castMs) / 1000.0);
                 f.Bang = !drawing;
                 f.Busy = f.Playing || drawing || pending > 0;
 
                 if (f.Playing && _info != null && _info.Template != null && !_info.AimCaptured)
                 {
                     _info.AimCaptured = true;
-                    var aim = F<Transform>(_md, "_templateAim");
+                    var aim = _md.SweepTemplateAim;
                     if (aim != _boss.transform)
                         Simulate(_info, aim);
                 }
 
-                object runner = _body != null ? F<object>(_body, "_runner") : null;
-                if (runner is MotionTemplateRunner mr)
+                MotionTemplateRunner mr = _body != null ? _body.SweepRunner : null;
+                if (mr != null)
                 {
                     f.Runner = new Vector3(mr.X, mr.Y, mr.Z);
                     f.RunnerDone = mr.Finished;
-                    int phase = F<int>(mr, "_phase");
-                    var tpl = F<MotionTemplate>(mr, "_template");
+                    int phase = mr.PhaseIndex;
+                    var tpl = mr.ActiveTemplate;
                     f.Phase = tpl != null && phase >= 0 && phase < tpl.Phases.Count ? tpl.Phases[phase].Name : "";
                 }
 

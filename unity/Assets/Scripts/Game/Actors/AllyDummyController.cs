@@ -25,7 +25,7 @@ namespace Dovus.Game.Actors
     /// Boss onu da hedef alır (<see cref="HostileTargetsHost"/>): vuruşun ally_damage_mult kadarını alır,
     /// can 0'da düşer ve ally_revive_sec (dünya saati) sonra ally_revive_ratio canla kalkar.
     /// </summary>
-    public sealed class AllyDummyController : MonoBehaviour
+    public sealed partial class AllyDummyController : MonoBehaviour
     {
         // O11: TeamComboHost her kare FindObjectsOfType<AllyDummyController> yapıyordu → etkin kayıt.
         static readonly System.Collections.Generic.List<AllyDummyController> s_live = new System.Collections.Generic.List<AllyDummyController>();

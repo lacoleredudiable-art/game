@@ -50,6 +50,13 @@ namespace Dovus.Core.Shared
         }
 
         /// <summary>Gecikme bitene kadar yenilemez; kalan dt ile mana tavanına kadar dolar.</summary>
+        /// <summary>Play Sweep vaka sıfırlaması: tam mana, regen gecikmesi yok.</summary>
+        public void RefillToMax()
+        {
+            _mana = _maxMana;
+            _regenDelayLeftSec = 0f;
+        }
+
         public void Tick(float dtSec)
         {
             if (dtSec <= 0f || _mana >= _maxMana)

@@ -24,7 +24,7 @@ namespace Dovus.Game.Actors
 {
 /// <summary>Bir dünya aktörünü oyuncu başına seçilebilir hedef yapar.</summary>
     [Serializable]
-    public sealed class PlayerTargetingController : MonoBehaviour
+    public sealed partial class PlayerTargetingController : MonoBehaviour
     {
         [SerializeField] TargetingPresentationTuning _presentation = new();
 

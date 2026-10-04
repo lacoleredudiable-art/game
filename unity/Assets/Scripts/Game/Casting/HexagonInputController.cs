@@ -30,7 +30,7 @@ namespace Dovus.Game.Casting
     /// Sağ yarı altıgen çizim girdisi + merkez tap (düz vuruş / erken kapanış) + altıgenin
     /// dışındaki dodge düğmesi (§2). Yalnızca Core motoruna bildirir.
     /// </summary>
-    public sealed class HexagonInputController : MonoBehaviour
+    public sealed partial class HexagonInputController : MonoBehaviour
     {
         readonly HexagonInputSession _session = new HexagonInputSession();
         CastFeedback _feedback;
