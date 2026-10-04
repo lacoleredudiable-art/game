@@ -1,5 +1,5 @@
 using Dovus.Core.Mechanic;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using System;
 using System.Collections.Generic;
 using UnityEngine;

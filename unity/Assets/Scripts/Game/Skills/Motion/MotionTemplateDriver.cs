@@ -13,7 +13,7 @@ using Dovus.Core.Mechanic;
 using Dovus.Core.Motion;
 using Dovus.Core.Status;
 using Dovus.Game.Actors;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Skills.Execution;
 using Dovus.Game.Vfx;
 using System;

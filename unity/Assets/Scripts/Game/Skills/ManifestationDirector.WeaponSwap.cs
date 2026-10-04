@@ -10,7 +10,7 @@ using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
 using Dovus.Core.Status;
 using Dovus.Game.Actors;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using System;
 using System.Collections.Generic;
 using UnityEngine;

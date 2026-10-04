@@ -8,6 +8,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
+using Dovus.Game.Diagnostics;
+
 namespace Dovus.Game.DevTools
 {
     /// <summary>

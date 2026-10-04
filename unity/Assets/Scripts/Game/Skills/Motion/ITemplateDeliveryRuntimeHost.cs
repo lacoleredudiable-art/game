@@ -13,7 +13,7 @@ using Dovus.Core.Mechanic;
 using Dovus.Core.Motion;
 using Dovus.Game.Actors;
 using Dovus.Game.Boss;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Game.Config;
 using Dovus.Game.Data;
 using Dovus.Game.Casting;

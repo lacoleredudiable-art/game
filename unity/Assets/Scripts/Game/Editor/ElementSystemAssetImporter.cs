@@ -1,6 +1,6 @@
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Game.Data;
 using Dovus.Game.Weapons;
 using UnityEditor;

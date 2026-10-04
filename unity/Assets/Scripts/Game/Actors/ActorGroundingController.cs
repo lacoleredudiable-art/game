@@ -1,5 +1,5 @@
 using Dovus.Core.Motion;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using UnityEngine;
 
 namespace Dovus.Game.Actors

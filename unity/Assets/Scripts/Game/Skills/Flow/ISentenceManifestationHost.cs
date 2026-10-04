@@ -9,7 +9,7 @@ using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using Dovus.Core.Tuning;
 using Dovus.Game.Actors;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Game.Config;
 using Dovus.Game.Skills.Effects;
 using Dovus.Game.Skills.Targeting;

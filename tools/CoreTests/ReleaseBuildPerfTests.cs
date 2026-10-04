@@ -31,7 +31,7 @@ public class ReleaseBuildPerfTests
     [Test]
     public void DebugGate_IsDefineBased_NotDevelopmentBuild()
     {
-        string src = Game("DevTools/DebugConfig.cs");
+        string src = Game("Diagnostics/DebugConfig.cs");
         Assert.That(src, Does.Not.Contain("isDebugBuild"));
         Assert.That(src, Does.Contain("#if UNITY_EDITOR || DOVUS_DEBUG"));
         Assert.That(src, Does.Contain("[Conditional(\"UNITY_EDITOR\"), Conditional(\"DOVUS_DEBUG\")]"));
@@ -76,7 +76,7 @@ public class ReleaseBuildPerfTests
         Assert.That(player, Does.Not.Contain("startRatio: 0.5f"));
         Assert.That(Regex.Matches(player, @"startRatio: DebugConfig\.StartHpRatio").Count, Is.EqualTo(2));
         Assert.That(player, Does.Contain("vitals.SetDevHp(DebugConfig.DevHpActive);"));
-        string cfg = Game("DevTools/DebugConfig.cs");
+        string cfg = Game("Diagnostics/DebugConfig.cs");
         Assert.That(cfg, Does.Contain("public static bool HalfHpStart = false;"));
         Assert.That(cfg, Does.Contain("StartHpRatio => Enabled && HalfHpStart ? 0.5f : 1f"));
         Assert.That(cfg, Does.Contain("DevHpActive => Enabled && DevHp && !HalfHpStart"));
@@ -158,7 +158,7 @@ public class ReleaseBuildPerfTests
             Assert.That(src, Does.Not.Contain("rend.material;"), f);
             Assert.That(src, Does.Not.Contain("new Material(Shader.Find(\"Sprites/Default\"))"), f);
         }
-        Assert.That(Game("Composition/PlaceholderFactory.cs"), Does.Contain("GlowCache"));
+        Assert.That(Game("Platform/PlaceholderFactory.cs"), Does.Contain("GlowCache"));
     }
 
     [Test]

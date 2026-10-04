@@ -7,9 +7,9 @@ using Dovus.Core.Hud;
 using Dovus.Core.Passives;
 using Dovus.Core.Tuning;
 using Dovus.Game.Cameras;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Game.Config;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Hud;
 using Dovus.Game.Vfx;
 using Dovus.Game.Weapons;
@@ -35,7 +35,7 @@ namespace Dovus.Game.Feel
         GameTuning _colors;
         GameClockHost _clock;
         FollowCameraController _follow;
-        SentenceDebugHud _hud;
+        ISentenceDebugSink _hud;
         ReactionReadoutHud _readout;
 
         Canvas _canvas;
@@ -117,7 +117,7 @@ namespace Dovus.Game.Feel
             CombatTuning combat,
             GameTuning colors,
             Camera overlayCam,
-            SentenceDebugHud hud,
+            ISentenceDebugSink hud,
             ReactionReadoutHud readout = null)
         {
             _clock = clock;

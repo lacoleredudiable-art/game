@@ -1,7 +1,7 @@
 using Dovus.Core.Casting;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Tuning;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Game.Data;
 using Dovus.Game.Vfx;
 using System.Collections.Generic;

@@ -1,7 +1,6 @@
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using Dovus.Game.Actors;
-using Dovus.Game.Composition;
 using UnityEngine;
 
 namespace Dovus.Game.Skills.Weapons

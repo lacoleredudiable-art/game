@@ -19,7 +19,7 @@ using System;
 using Dovus.Game.Assets;
 using UnityEngine;
 
-namespace Dovus.Game.Composition
+namespace Dovus.Game.Platform
 {
     /// <summary>
     /// Salt-okunur runtime asset'leri composition kökünde bir kez yükler.

@@ -2,6 +2,8 @@ using Dovus.Game.Actors;
 using Dovus.Game.Cameras;
 using UnityEngine;
 
+using Dovus.Game.Diagnostics;
+
 namespace Dovus.Game.DevTools
 {
     /// <summary>Play doğrulama: hata shader sayımı, yeşil placeholder, kamera kadraj logları.</summary>

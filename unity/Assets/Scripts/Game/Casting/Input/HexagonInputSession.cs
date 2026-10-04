@@ -9,9 +9,9 @@ using Dovus.Core.Grammar;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using Dovus.Game.Actors;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Game.Config;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Feel;
 using Dovus.Game.Hud;
 using Dovus.Game.Skills;
@@ -29,7 +29,7 @@ namespace Dovus.Game.Casting.Input
         public GameClockHost Clock;
         public InkTrailView Ink;
         public SyllableFeedbackView Syllable;
-        public SentenceDebugHud DebugHud;
+        public ISentenceDebugSink DebugHud;
 
         public int? FingerId;
         public bool MouseHeld;

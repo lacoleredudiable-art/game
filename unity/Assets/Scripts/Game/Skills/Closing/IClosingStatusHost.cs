@@ -10,7 +10,7 @@ using Dovus.Core.Mechanic;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using Dovus.Game.Actors;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Game.Data;
 using Dovus.Game.Hud;
 using UnityEngine;

@@ -10,6 +10,7 @@ using Dovus.Core.Grammar;
 using Dovus.Core.Tuning;
 using Dovus.Game.Actors;
 using Dovus.Game.Data;
+using Dovus.Game.Diagnostics;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
@@ -17,7 +18,7 @@ using UnityEngine.UI;
 namespace Dovus.Game.DevTools
 {
     /// <summary>Fiil + sıfat debug metni — kabul kriteri doğrulama.</summary>
-    public sealed class SentenceDebugHud : MonoBehaviour
+    public sealed class SentenceDebugHud : MonoBehaviour, ISentenceDebugSink
     {
         const float NoteHoldSec = 1.2f;
 

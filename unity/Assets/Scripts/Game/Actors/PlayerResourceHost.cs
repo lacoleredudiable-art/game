@@ -7,7 +7,7 @@ using Dovus.Core.Hud;
 using Dovus.Core.Passives;
 using Dovus.Core.Equipment;
 using Dovus.Core.Shared;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Game.Platform;
 using UnityEngine;
 

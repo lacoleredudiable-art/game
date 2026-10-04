@@ -12,10 +12,10 @@ using Dovus.Game.Boss;
 using Dovus.Game.Cameras;
 using Dovus.Game.Casting;
 using Dovus.Core.Presentation;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Game.Config;
 using Dovus.Game.Data;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Hud;
 using Dovus.Game.Team;
 using Dovus.Game.Vfx;
@@ -38,7 +38,7 @@ namespace Dovus.Game.Skills
             BossDirector bossDirector = null,
             ActorStatusHost playerStatus = null,
             ActorStatusHost bossStatus = null,
-            SentenceDebugHud debugHud = null,
+            ISentenceDebugSink debugHud = null,
             ReactionReadoutHud readout = null,
             FollowCameraController camera = null,
             AllyDummyController ally = null,

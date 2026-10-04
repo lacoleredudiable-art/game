@@ -11,7 +11,7 @@ using Dovus.Game.Audio;
 using Dovus.Game.Boss;
 using Dovus.Game.Cameras;
 using Dovus.Game.Casting;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Feel;
 using UnityEngine;
 

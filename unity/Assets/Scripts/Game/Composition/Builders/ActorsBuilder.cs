@@ -11,7 +11,7 @@ using Dovus.Core.Data;
 using Dovus.Game.Actors;
 using Dovus.Game.Boss;
 using Dovus.Game.Casting;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Feel;
 using Dovus.Game.Vfx;
 using Dovus.Game.Weapons;

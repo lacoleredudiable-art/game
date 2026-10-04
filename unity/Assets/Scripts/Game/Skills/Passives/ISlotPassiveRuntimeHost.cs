@@ -14,7 +14,7 @@ using Dovus.Core.Casting;
 using Dovus.Core.Input;
 using Dovus.Core.Hud;
 using Dovus.Core.Passives;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Game.Hud;
 using Dovus.Game.Team;
 using System.Collections.Generic;

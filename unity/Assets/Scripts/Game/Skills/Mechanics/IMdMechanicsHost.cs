@@ -14,9 +14,9 @@ using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using Dovus.Game.Actors;
 using Dovus.Game.Boss;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Game.Data;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Hud;
 using Dovus.Game.Team;
 using System;
@@ -40,7 +40,7 @@ public interface IMdMechanicsHost
         int SlotQueryCastId { get; }
         ReactionReadoutHud Readout { get; }
         DamageNumberHud DamageHud { get; }
-        SentenceDebugHud DebugHud { get; }
+        ISentenceDebugSink DebugHud { get; }
         KinematicMotorController Motor { get; }
         Transform DirectorTransform { get; }
         ElementPaintNode? SelectedElementPaint { get; }

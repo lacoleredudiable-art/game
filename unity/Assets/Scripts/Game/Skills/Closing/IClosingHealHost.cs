@@ -3,7 +3,7 @@ using Dovus.Core.Tuning;
 using Dovus.Core.Manifestation;
 using Dovus.Core.Status;
 using Dovus.Game.Actors;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Hud;
 using UnityEngine;
 
@@ -19,7 +19,7 @@ namespace Dovus.Game.Skills.Closing
         float ClosingChainBonus { get; }
         DamageNumberHud DamageHud { get; }
         ReactionReadoutHud Readout { get; }
-        SentenceDebugHud DebugHud { get; }
+        ISentenceDebugSink DebugHud { get; }
         bool LastFriendlyWasAlly { set; }
         float WeaponSupportPower(SkillResolution skill);
         float HealBuffMultiplier(SkillResolution skill);

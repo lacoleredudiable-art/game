@@ -1,4 +1,4 @@
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using UnityEngine;
 
 namespace Dovus.Game.Cameras

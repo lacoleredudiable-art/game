@@ -10,7 +10,7 @@ using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using System;
 using System.Linq;
 using UnityEngine;

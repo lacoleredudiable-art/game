@@ -1,6 +1,6 @@
 using Dovus.Game.Arena;
 using Dovus.Game.Config;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Assets;
 using UnityEngine;
 using UnityEngine.EventSystems;

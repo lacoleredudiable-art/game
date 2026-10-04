@@ -5,9 +5,9 @@ using Dovus.Core.Mechanic;
 using Dovus.Core.Presentation;
 using Dovus.Game.Actors;
 using Dovus.Game.Cameras;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Game.Data;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Audio;
 using Dovus.Game.Feel;
 using Dovus.Game.Hud;
@@ -27,7 +27,7 @@ namespace Dovus.Game.Skills.Presentation
         CombatTuning Combat { get; }
         FollowCameraController Camera { get; }
         SfxDirector Sfx { get; }
-        SentenceDebugHud DebugHud { get; }
+        ISentenceDebugSink DebugHud { get; }
         ElementPaintNode? SelectedElementPaint { get; }
         Skill LastFactorySkill { get; }
         MechanicPlan LastMechanicPlan { get; }

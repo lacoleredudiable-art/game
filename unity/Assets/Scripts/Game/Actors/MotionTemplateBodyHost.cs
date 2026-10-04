@@ -2,7 +2,7 @@ using Dovus.Core.Motion;
 using Dovus.Core.Status;
 using Dovus.Game.Cameras;
 using Dovus.Game.Casting;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using System;
 using UnityEngine;
 

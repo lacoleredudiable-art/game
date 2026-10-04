@@ -1,6 +1,6 @@
 using Dovus.Core.Tuning;
 using Dovus.Game.Boss;
-using Dovus.Game.DevTools;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Weapons;
 using System.Collections.Generic;
 using UnityEngine;

@@ -18,3 +18,13 @@
 
 - **Kırılan döngüler:** Data↔Grammar/Team/Portal; Element↔Grammar; Input↔Grammar; Tuning↔dövüş; Equipment↔Grammar (#106); Combat↔Status (2B.6a).
 - **Kalan SCC (1):** Boss, Casting, Damage, Dodge, Equipment, Grammar, Passives, Status — kapı testinde açık izinli; sayı ratchet ile yeni SCC yasak.
+
+## Game katmanı (2B.18a)
+
+Üst klasör grafiği: `tools/CoreTests/GameLayeringTests.cs` (Editor hariç).
+
+- **Composition** — yalnız bootstrap/kurucular (`GameBootstrapHost`, `Composition/Builders/*`); runtime klasörler `Dovus.Game.Composition` kullanmaz.
+- **Platform** — Unity saat/RNG + `GameClockHost`, `AssetCatalog`, `PlaceholderFactory` (çapraz kesen, yaprak).
+- **Diagnostics** — `DebugConfig`, debug HUD arayüzleri (`ISentenceDebugSink`); runtime → DevTools doğrudan bağımlılık yok (kurulum Composition/Builders).
+- **DevTools** — debug HUD/paneller; yaprak hedefi (Grammar/Tuning panel statikleri için küçük allowlist).
+- **Kalan SCC (1, boyut ≤15):** Actors, Arena, Boss, Cameras, Casting, Config, Data, DevTools, Feel, Hud, Platform, Skills, Team, Vfx, Weapons — Composition bu bileşenin dışında.

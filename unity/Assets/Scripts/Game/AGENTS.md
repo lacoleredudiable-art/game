@@ -21,7 +21,9 @@ Kök `AGENTS.md` + `docs/MAP.md`. Hedef klasör/namespace düzeni: `docs/ARCHITE
 | `Audio/` | `Dovus.Game.Audio` | SFX director/library |
 | `Data/` | `Dovus.Game.Data` | Element/rune loaders, SOs |
 | `Config/` | `Dovus.Game.Config` | Tuning presets |
-| `Composition/` | `Dovus.Game.Composition` | Bootstrap, clock, factory |
+| `Composition/` | `Dovus.Game.Composition` | Bootstrap, builders |
+| `Platform/` | `Dovus.Game.Platform` | Clock, asset catalog, placeholder VFX, Unity adapters |
+| `Diagnostics/` | `Dovus.Game.Diagnostics` | DebugConfig, debug HUD interfaces |
 | `DevTools/` | `Dovus.Game.DevTools` | Debug panels and practice modes |
 | `Editor/` | `Dovus.Game.Editor` | `Dovus.Game.Editor` — binders, importers (files stay here) |
 

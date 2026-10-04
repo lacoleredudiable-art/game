@@ -15,7 +15,7 @@ using Dovus.Core.Status;
 using Dovus.Game.Actors;
 using Dovus.Game.Boss;
 using Dovus.Game.Casting;
-using Dovus.Game.Composition;
+using Dovus.Game.Platform;
 using Dovus.Game.Data;
 using Dovus.Game.Hud;
 using Dovus.Game.Skills;
