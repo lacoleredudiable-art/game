@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using Dovus.Core;
 using Dovus.Core.Grammar;
 using Dovus.Core.Status;
@@ -122,9 +121,6 @@ namespace Dovus.Core.Combat
 
         public static float HasteMagnitude(string effect, float selfHaste, float enemySlow, float damageBuff)
         {
-            float bonus = PercentBonus(effect);
-            if (bonus > 0f)
-                return 1f + bonus;
             if (selfHaste > 1f)
                 return selfHaste;
             if (selfHaste > 0f)
@@ -142,30 +138,6 @@ namespace Dovus.Core.Combat
         public static bool SharesHasteWithAlly(string effect) =>
             !string.IsNullOrEmpty(effect)
             && effect.IndexOf("ikisi", StringComparison.OrdinalIgnoreCase) >= 0;
-
-        static float PercentBonus(string effect)
-        {
-            if (string.IsNullOrEmpty(effect))
-                return 0f;
-            int mark = effect.IndexOf('%');
-            if (mark < 0)
-                return 0f;
-            int start = mark + 1;
-            while (start < effect.Length && effect[start] == ' ')
-                start++;
-            int end = start;
-            while (end < effect.Length && char.IsDigit(effect[end]))
-                end++;
-            if (end == start)
-                return 0f;
-            return float.TryParse(
-                effect.Substring(start, end - start),
-                NumberStyles.Float,
-                CultureInfo.InvariantCulture,
-                out float n) && n > 0f
-                    ? n / 100f
-                    : 0f;
-        }
 
         static bool ContainsToken(string text, string token)
         {
