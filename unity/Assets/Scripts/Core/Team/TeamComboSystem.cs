@@ -290,7 +290,7 @@ namespace Dovus.Core.Team
             for (int i = 0; i < _links.Count; i++)
             {
                 Link link = _links[i];
-                if (link.Broken || _now >= link.Until)
+                if (_now >= link.Until)
                     continue;
                 if (!boss.Present)
                     continue;
@@ -342,7 +342,7 @@ namespace Dovus.Core.Team
             for (int i = 0; i < _links.Count; i++)
             {
                 Link link = _links[i];
-                if (link.Broken || _now >= link.Until)
+                if (_now >= link.Until)
                     continue;
                 if (actorId == link.A || actorId == link.B)
                     m *= 1f + LinkBuff;

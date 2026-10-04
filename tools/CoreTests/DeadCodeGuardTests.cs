@@ -94,4 +94,29 @@ public sealed class DeadCodeGuardTests
             Assert.That(all, Does.Not.Contain("DamageFrameReached"));
         });
     }
+
+    [Test]
+    public void ManifestationDirector_HasNo_RemovedDelegatingWrappers()
+    {
+        string skillsDir = Path.Combine(ScriptsRoot(), "Game", "Skills");
+        var patterns = new[]
+        {
+            @"\bvoid TickJsonEffects\s*\(",
+            @"\bvoid ApplyMirroredDebuff\s*\(",
+            @"\bvoid PushCannonBodies\s*\(",
+            @"\bSkillMotionPlan ResolveSkillMotion\s*\(",
+            @"\bvoid ApplySkillMotionIframe\s*\(",
+            @"\bvoid AnnotateMotion\s*\(",
+        };
+        foreach (string file in Directory.EnumerateFiles(skillsDir, "ManifestationDirector*.cs"))
+        {
+            string text = File.ReadAllText(file);
+            string rel = Path.GetRelativePath(ScriptsRoot(), file).Replace('\\', '/');
+            Assert.Multiple(() =>
+            {
+                foreach (string pattern in patterns)
+                    Assert.That(text, Does.Not.Match(pattern), $"{rel} still defines removed MD wrapper");
+            });
+        }
+    }
 }

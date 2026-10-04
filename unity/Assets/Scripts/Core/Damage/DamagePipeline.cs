@@ -23,7 +23,7 @@ namespace Dovus.Core.Damage
         public const float VarianceHalf = 0.05f;
         public const float MinDamageTakenFactor = 0.10f;
 
-        static IRng s_rng = global::Dovus.Core.Shared.CombatRng.Unseeded();
+        static IRng s_rng = global::Dovus.Core.Shared.SeededRng.Unseeded();
 
         /// <summary>
         /// Düz vuruş kendi tabanını kullanır. Skill gücü zırhtan önce ölçeklenir.
@@ -57,7 +57,7 @@ namespace Dovus.Core.Damage
 
             bool crit = false;
             IRng rng = query.VarianceSeed >= 0
-                ? global::Dovus.Core.Shared.CombatRng.Seeded(query.VarianceSeed)
+                ? global::Dovus.Core.Shared.SeededRng.Seeded(query.VarianceSeed)
                 : s_rng;
             if (query.CanCrit && amount > 0f)
             {

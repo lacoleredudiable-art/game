@@ -21,7 +21,7 @@ public class ClockRngTests
     {
         const int seed = 4242;
         var a = new Random(seed);
-        var b = global::Dovus.Core.Shared.CombatRng.Seeded(seed);
+        var b = global::Dovus.Core.Shared.SeededRng.Seeded(seed);
         for (int i = 0; i < 20; i++)
             Assert.That(b.NextDouble(), Is.EqualTo(a.NextDouble()));
     }
