@@ -18,6 +18,8 @@ namespace Dovus.App.Team
         public ActorModifiers For(int actorId) =>
             _modifiers.TryGetValue(actorId, out ActorModifiers mods) ? mods : DefaultModifiers;
 
+        public float MoveSpeedFor(int actorId) => For(actorId).MoveSpeedMult;
+
         public void Set(int actorId, ActorModifiers modifiers) => _modifiers[actorId] = modifiers;
 
         public void Reset()

@@ -1,3 +1,4 @@
+using Dovus.App.Team;
 using Dovus.Core.Combat;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
@@ -38,7 +39,10 @@ namespace Dovus.Game.Actors
         /// <summary>KinematicMotor bunu okur — düşman CC'sinden ayrı cast mobility.</summary>
         public float EffectiveMoveSpeedMult =>
             Board.MoveSpeedMult
-            * PortalBorderTeamHooks.MoveSpeedMult
+            * ActorStatusTeamMoveSpeed.TeamMoveSpeedMult(
+                PortalBorderTeamHooks.Table,
+                _playerVitals != null,
+                PortalBorderTeamHooks.PlayerActorId)
             * (CastMobilityActive && _castMobility == Dovus.Core.Grammar.SkillMobility.SlowedMove
                 ? _tuning.SlowSpeedMult
                 : 1f);
