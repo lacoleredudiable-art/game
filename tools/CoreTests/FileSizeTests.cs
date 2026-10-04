@@ -14,8 +14,6 @@ public sealed class FileSizeTests
     /// <summary>Generated shim / intentionally monolithic — not split targets.</summary>
     static readonly HashSet<string> AllowOverCap = new(StringComparer.OrdinalIgnoreCase)
     {
-        // SweepV2 Unity API shim (generated-style module A)
-        "Modules.A.cs",
     };
 
     static string RepoRoot() =>

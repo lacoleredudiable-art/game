@@ -48,6 +48,7 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 - [x] 2B.16 Ajan dostu: sabit açılı otomatik ekran görüntüsü aracı (C5); Unity derlemesi CI'da değilse not
 - [x] 2B.18a Game katman döngüleri (A7): Platform/Diagnostics yaprakları, `ISentenceDebugSink`, `GameLayeringTests`
 - [x] 2B.18b skill ID sabitleri + tipli SkillId (A14/A28)
+- [x] 2B.18c SweepV2 shim budaması (A12)
 - [x] 2B.19 test ağı: normalize sweep hash kapısı, 144/144, Play fark listesi, PlaySweep tipli erişim
 - [x] 2B.20 Game katmanları + DevTools asmdef
 - [x] 2B.21 girdi/kombo davranış testleri
