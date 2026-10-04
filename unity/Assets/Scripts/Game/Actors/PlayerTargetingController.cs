@@ -1,4 +1,6 @@
+using Dovus.Core.Actors;
 using Dovus.Core.Boss;
+using Dovus.Core.Shared;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
 using Dovus.Core.Casting;
@@ -30,7 +32,9 @@ namespace Dovus.Game.Actors
         readonly Dictionary<int, TargetableHost> _candidateMap = new();
 
         Transform _owner;
+        ActorId _ownerActorId;
         int _ownerTeamId;
+        ActorViewRegistry _views;
         Camera _camera;
         FollowCameraController _follow;
         HexagonInputController _hexagon;
@@ -52,6 +56,8 @@ namespace Dovus.Game.Actors
         public void BindElementMenu(ElementRadialMenuHud menu) => _elementMenu = menu;
 
         public TargetableHost Selected => _selected;
+        public ActorId? SelectedActorId =>
+            _selected != null && !_selected.ActorId.IsEmpty ? _selected.ActorId : null;
         public Transform SelectedTransform => _selected != null && _selected.IsAvailable
             ? _selected.transform
             : null;
@@ -63,10 +69,14 @@ namespace Dovus.Game.Actors
             HexagonInputController hexagon,
             float tapMaxMoveDp,
             Transform canvasRoot,
-            FollowCameraController follow = null)
+            FollowCameraController follow = null,
+            ActorViewRegistry views = null,
+            ActorId ownerActorId = default)
         {
             _owner = owner;
+            _ownerActorId = ownerActorId.IsEmpty ? ActorDefaults.PlayerId : ownerActorId;
             _ownerTeamId = ownerTeamId;
+            _views = views;
             _camera = camera;
             _follow = follow;
             _hexagon = hexagon;
@@ -114,7 +124,7 @@ namespace Dovus.Game.Actors
         {
             SkillAimMode aimMode = TargetingRules.AimMode(skill);
             BuildCandidates();
-            int? selectedId = _selected != null ? _selected.GetInstanceID() : null;
+            int? selectedId = _selected != null ? _selected.TargetKey : null;
             TargetResolution result = TargetingRules.Resolve(
                 skill.Targeting.Mode, aimMode, rangeM, selectedId, _candidateData, skill.Presentation.Action);
             failure = result.Failure;
@@ -129,7 +139,9 @@ namespace Dovus.Game.Actors
 
             if (result.UseSelf)
             {
-                target = _owner;
+                target = _views != null && _views.TryGetTransform(_ownerActorId, out Transform ownerView)
+                    ? ownerView
+                    : _owner;
                 return true;
             }
 
@@ -152,7 +164,7 @@ namespace Dovus.Game.Actors
             int? selectedId = null;
             if (_owner != null && _selected != null && _selected.TeamId != _ownerTeamId
                 && _selected.IsAvailable && _selected.DistanceFrom(_owner.position) <= rangeM)
-                selectedId = _selected.GetInstanceID();
+                selectedId = _selected.TargetKey;
 
             TargetResolution result = TargetingRules.Resolve(
                 "enemy_only", SkillAimMode.Targeted, rangeM, selectedId, _candidateData);
@@ -176,7 +188,7 @@ namespace Dovus.Game.Actors
                 TargetableHost candidate = targets[i];
                 if (candidate == null || candidate.transform == _owner)
                     continue;
-                int id = candidate.GetInstanceID();
+                int id = candidate.TargetKey;
                 TargetRelation relation = candidate.TeamId == _ownerTeamId
                     ? TargetRelation.Ally
                     : TargetRelation.Enemy;

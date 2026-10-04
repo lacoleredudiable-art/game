@@ -1,3 +1,4 @@
+using Dovus.Core.Actors;
 using Dovus.Core.Grammar;
 using Dovus.Core.Element;
 using Dovus.Game.Actors;
@@ -143,7 +144,9 @@ namespace Dovus.Game.Composition.Builders
                 input,
                 combat.Dodge.TapMaxMoveDp,
                 view.CanvasRoot,
-                follow);
+                follow,
+                ctx.ActorViewRegistry,
+                ActorDefaults.PlayerId);
             ctx.PlayerTargetingController = targeting;
         }
 

@@ -1,3 +1,5 @@
+using Dovus.App.Actors;
+using Dovus.Core.Actors;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
@@ -165,10 +167,12 @@ namespace Dovus.Game.Composition.Builders
             ctx.Ally.AddComponent<TargetableHost>().Configure(
                 teamId: 0,
                 displayName: "ALLY",
+                ActorDefaults.AllyDummyId,
                 available: () => ctx.AllyDummyController.Hp > 0);
             ctx.Boss.AddComponent<TargetableHost>().Configure(
                 teamId: 1,
                 displayName: "BOSS",
+                ActorDefaults.BossId,
                 available: () => !ctx.BossVitals.IsDown);
             ctx.PlayerStatus.Bind(null, combat.Status, ctx.PlayerVitalsHost, null, null);
             ctx.BossStatus.Bind(null, combat.Status, null, ctx.BossVitals, ctx.BossReactorController);
@@ -179,6 +183,15 @@ namespace Dovus.Game.Composition.Builders
             ctx.Player.GetComponent<ActorGroundingController>()?.BindClock(clock);
             ctx.Ally.GetComponent<ActorGroundingController>()?.BindClock(clock);
             ctx.Boss.GetComponent<ActorGroundingController>()?.BindClock(clock);
+
+            ctx.ActorRegistry = new ActorRegistry();
+            ctx.ActorViewRegistry = new ActorViewRegistry();
+            ctx.ActorRegistry.Register(new PlayerActor(ActorDefaults.PlayerId, ActorTeam.Friendly, vitals.Health));
+            ctx.ActorRegistry.Register(new AllyActor(ActorDefaults.AllyDummyId, ActorTeam.Friendly));
+            ctx.ActorRegistry.Register(new BossActor(ActorDefaults.BossId, ActorTeam.Hostile, ctx.BossVitals));
+            ctx.ActorViewRegistry.Register(ActorDefaults.PlayerId, ctx.Player.transform);
+            ctx.ActorViewRegistry.Register(ActorDefaults.AllyDummyId, ctx.Ally.transform);
+            ctx.ActorViewRegistry.Register(ActorDefaults.BossId, ctx.Boss.transform);
         }
     }
 }
