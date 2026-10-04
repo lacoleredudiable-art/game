@@ -1,5 +1,6 @@
 using Dovus.Game.Config;
 using System.Collections.Generic;
+using Dovus.Game.Assets;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -66,7 +67,7 @@ namespace Dovus.Game.Vfx
             if (Textures.TryGetValue(key, out Texture2D cached))
                 return cached;
 
-            Texture2D tex = Resources.Load<Texture2D>("Vfx/Kenney/" + key);
+            Texture2D tex = AssetLoader.Load<Texture2D>("Vfx/Kenney/" + key, null);
             Textures[key] = tex;
             return tex;
         }

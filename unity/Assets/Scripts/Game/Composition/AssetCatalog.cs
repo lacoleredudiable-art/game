@@ -16,6 +16,7 @@ using Dovus.Game.Data;
 using Dovus.Game.Hud;
 using Dovus.Game.Vfx;
 using System;
+using Dovus.Game.Assets;
 using UnityEngine;
 
 namespace Dovus.Game.Composition
@@ -85,7 +86,7 @@ namespace Dovus.Game.Composition
 
         internal static bool TryParseElementJson(out ElementSystemDesign design)
         {
-            TextAsset asset = Resources.Load<TextAsset>(ElementResourcePath);
+            TextAsset asset = AssetLoader.Load<TextAsset>(ElementResourcePath, null);
             if (asset == null || string.IsNullOrWhiteSpace(asset.text))
             {
                 design = null;
@@ -129,7 +130,7 @@ namespace Dovus.Game.Composition
 
         static HudTheme ResolveHudTheme()
         {
-            HudTheme loaded = Resources.Load<HudTheme>("HudTheme");
+            HudTheme loaded = AssetLoader.Load<HudTheme>("HudTheme", null);
             if (loaded != null)
                 return loaded;
             HudTheme fallback = ScriptableObject.CreateInstance<HudTheme>();
@@ -139,7 +140,7 @@ namespace Dovus.Game.Composition
 
         static SfxLibrary ResolveSfxLibrary()
         {
-            SfxLibrary loaded = Resources.Load<SfxLibrary>("SfxLibrary");
+            SfxLibrary loaded = AssetLoader.Load<SfxLibrary>("SfxLibrary", null);
             if (loaded != null)
                 return loaded;
             SfxLibrary fallback = ScriptableObject.CreateInstance<SfxLibrary>();
@@ -149,7 +150,7 @@ namespace Dovus.Game.Composition
 
         static VfxLibrary ResolveVfxLibrary()
         {
-            VfxLibrary loaded = Resources.Load<VfxLibrary>("VfxLibrary");
+            VfxLibrary loaded = AssetLoader.Load<VfxLibrary>("VfxLibrary", null);
             if (loaded != null)
                 return loaded;
             VfxLibrary fallback = ScriptableObject.CreateInstance<VfxLibrary>();

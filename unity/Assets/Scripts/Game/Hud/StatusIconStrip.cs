@@ -3,6 +3,7 @@ using Dovus.Game.Casting;
 using Dovus.Game.Config;
 using System;
 using System.Collections.Generic;
+using Dovus.Game.Assets;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -253,7 +254,7 @@ namespace Dovus.Game.Hud
         {
             if (_icons.TryGetValue(kind, out Sprite cached))
                 return cached;
-            var tex = Resources.Load<Texture2D>("Icons/Status/" + kind);
+            var tex = AssetLoader.Load<Texture2D>("Icons/Status/" + kind, null);
             Sprite s = tex != null
                 ? Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100f)
                 : null;

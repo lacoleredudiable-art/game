@@ -1,3 +1,4 @@
+using Dovus.Game.Assets;
 using UnityEngine;
 
 namespace Dovus.Game.Arena
@@ -125,9 +126,9 @@ namespace Dovus.Game.Arena
 
             var pr = go.GetComponent<ParticleSystemRenderer>();
             pr.renderMode = ParticleSystemRenderMode.Billboard;
-            var shader = Shader.Find("Universal Render Pipeline/Particles/Unlit")
-                         ?? Shader.Find("Particles/Standard Unlit")
-                         ?? Shader.Find("Sprites/Default");
+            var shader = AssetLoader.FindShader("Universal Render Pipeline/Particles/Unlit", null)
+                         ?? AssetLoader.FindShader("Particles/Standard Unlit", null)
+                         ?? AssetLoader.FindShader("Sprites/Default", null);
             if (shader != null)
             {
                 var mat = new Material(shader);
@@ -139,9 +140,9 @@ namespace Dovus.Game.Arena
 
         static Material MakeLavaMat(Color c)
         {
-            var shader = Shader.Find("Universal Render Pipeline/Lit")
-                         ?? Shader.Find("Universal Render Pipeline/Unlit")
-                         ?? Shader.Find("Standard");
+            var shader = AssetLoader.FindShader("Universal Render Pipeline/Lit", null)
+                         ?? AssetLoader.FindShader("Universal Render Pipeline/Unlit", null)
+                         ?? AssetLoader.FindShader("Standard", null);
             var mat = new Material(shader);
             if (mat.HasProperty("_BaseColor"))
                 mat.SetColor("_BaseColor", c);

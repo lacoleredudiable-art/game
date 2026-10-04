@@ -1,3 +1,4 @@
+using Dovus.Game.Assets;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -67,7 +68,7 @@ namespace Dovus.Game.Arena
             ActivePreset = preset;
             if (_volume != null)
             {
-                var profile = Resources.Load<VolumeProfile>($"{ResourceFolder}{PresetSuffix(preset)}");
+                var profile = AssetLoader.Load<VolumeProfile>($"{ResourceFolder}{PresetSuffix(preset)}", null);
                 if (profile != null)
                     _volume.profile = profile;
             }

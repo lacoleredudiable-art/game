@@ -8,6 +8,7 @@ using Dovus.Core.Passives;
 using Dovus.Core.Data;
 using Dovus.Core.Tuning;
 using System.Collections.Generic;
+using Dovus.Game.Assets;
 using UnityEngine;
 
 namespace Dovus.Game.Boss
@@ -76,7 +77,7 @@ namespace Dovus.Game.Boss
         static bool TryLoadText(string resourcePath, out string json)
         {
             json = null;
-            var asset = Resources.Load<TextAsset>(resourcePath);
+            var asset = AssetLoader.Load<TextAsset>(resourcePath, null);
             if (asset == null || string.IsNullOrWhiteSpace(asset.text))
                 return false;
             json = asset.text;

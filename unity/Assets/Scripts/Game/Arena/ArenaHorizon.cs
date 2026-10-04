@@ -1,3 +1,4 @@
+using Dovus.Game.Assets;
 using UnityEngine;
 
 namespace Dovus.Game.Arena
@@ -46,9 +47,9 @@ namespace Dovus.Game.Arena
 
         static Material MakeMat(Color color)
         {
-            var shader = Shader.Find("Universal Render Pipeline/Lit");
+            var shader = AssetLoader.FindShader("Universal Render Pipeline/Lit", null);
             if (shader == null)
-                shader = Shader.Find("Standard");
+                shader = AssetLoader.FindShader("Standard", null);
             var mat = new Material(shader);
             if (mat.HasProperty("_BaseColor"))
                 mat.SetColor("_BaseColor", color);

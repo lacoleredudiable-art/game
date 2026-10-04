@@ -18,6 +18,7 @@ using Dovus.Game.Skills.Execution;
 using Dovus.Game.Vfx;
 using System;
 using System.Collections.Generic;
+using Dovus.Game.Assets;
 using UnityEngine;
 
 namespace Dovus.Game.Skills.Motion
@@ -79,7 +80,7 @@ namespace Dovus.Game.Skills.Motion
             {
                 if (_catalog != null && _catalog.Templates.Count > 0)
                     return _catalog;
-                TextAsset asset = Resources.Load<TextAsset>("ElementSystem/motion-templates");
+                TextAsset asset = AssetLoader.Load<TextAsset>("ElementSystem/motion-templates", null);
                 if (asset == null || string.IsNullOrWhiteSpace(asset.text))
                     throw new InvalidOperationException("motion-templates.json missing/invalid");
 

@@ -3,6 +3,7 @@ using Dovus.Core.Tuning;
 using Dovus.Game.Skills.Execution;
 using System;
 using System.Collections.Generic;
+using Dovus.Game.Assets;
 using UnityEngine;
 
 namespace Dovus.Game.Vfx
@@ -120,9 +121,9 @@ namespace Dovus.Game.Vfx
                 }
                 if (Missing.Contains(candidate))
                     continue;
-                prefab = Resources.Load<GameObject>("Vfx/Hitbox/" + candidate);
+                prefab = AssetLoader.Load<GameObject>("Vfx/Hitbox/" + candidate, null);
                 if (prefab == null)
-                    prefab = Resources.Load<GameObject>("Vfx/" + candidate);
+                    prefab = AssetLoader.Load<GameObject>("Vfx/" + candidate, null);
                 if (prefab != null)
                     return true;
                 Missing.Add(candidate);

@@ -10,6 +10,7 @@ using Dovus.Core.Tuning;
 using Dovus.Game.Actors;
 using Dovus.Game.Composition;
 using System.Collections.Generic;
+using Dovus.Game.Assets;
 using UnityEngine;
 
 namespace Dovus.Game.Boss
@@ -206,9 +207,9 @@ namespace Dovus.Game.Boss
 
         static Material MakeWebMat()
         {
-            var shader = Shader.Find("Sprites/Default");
+            var shader = AssetLoader.FindShader("Sprites/Default", null);
             if (shader == null)
-                shader = Shader.Find("Universal Render Pipeline/Unlit");
+                shader = AssetLoader.FindShader("Universal Render Pipeline/Unlit", null);
             var mat = new Material(shader);
             if (mat.HasProperty("_Surface"))
             {

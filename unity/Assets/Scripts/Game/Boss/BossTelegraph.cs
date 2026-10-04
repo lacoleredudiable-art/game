@@ -8,6 +8,7 @@ using Dovus.Core.Hud;
 using Dovus.Core.Passives;
 using Dovus.Core.Tuning;
 using Dovus.Game.Config;
+using Dovus.Game.Assets;
 using UnityEngine;
 
 namespace Dovus.Game.Boss
@@ -369,8 +370,8 @@ namespace Dovus.Game.Boss
 
         Material MakeDiscMat()
         {
-            var shader = Shader.Find("Sprites/Default");
-            if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
+            var shader = AssetLoader.FindShader("Sprites/Default", null);
+            if (shader == null) shader = AssetLoader.FindShader("Universal Render Pipeline/Unlit", null);
             var mat = new Material(shader);
             if (mat.HasProperty("_Surface"))
             {

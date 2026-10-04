@@ -9,6 +9,7 @@ using Dovus.Core.Passives;
 using Dovus.Game.Config;
 using Dovus.Game.Vfx;
 using System.Collections.Generic;
+using Dovus.Game.Assets;
 using UnityEngine;
 
 namespace Dovus.Game.Casting
@@ -440,12 +441,12 @@ namespace Dovus.Game.Casting
             if (_lineMaterial != null)
                 return;
 
-            var shader = Shader.Find("Sprites/Default");
+            var shader = AssetLoader.FindShader("Sprites/Default", null);
             if (shader == null)
-                shader = Shader.Find("Universal Render Pipeline/Unlit");
+                shader = AssetLoader.FindShader("Universal Render Pipeline/Unlit", null);
             if (shader == null)
-                shader = Shader.Find("Unlit/Color");
-            _lineMaterial = new Material(shader != null ? shader : Shader.Find("Hidden/Internal-Colored"));
+                shader = AssetLoader.FindShader("Unlit/Color", null);
+            _lineMaterial = new Material(shader != null ? shader : AssetLoader.FindShader("Hidden/Internal-Colored", null));
             if (_lineMaterial.HasProperty("_Color"))
                 _lineMaterial.SetColor("_Color", Color.white);
 

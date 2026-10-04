@@ -1,6 +1,7 @@
 using Dovus.Core.Equipment;
 using System;
 using System.Collections.Generic;
+using Dovus.Game.Assets;
 using UnityEngine;
 
 namespace Dovus.Game.Hud
@@ -133,7 +134,7 @@ namespace Dovus.Game.Hud
         {
             if (string.IsNullOrEmpty(resourcePath))
                 return null;
-            Texture2D texture = Resources.Load<Texture2D>(resourcePath);
+            Texture2D texture = AssetLoader.Load<Texture2D>(resourcePath, null);
             if (texture == null)
                 return null;
             texture.wrapMode = TextureWrapMode.Clamp;

@@ -1,6 +1,7 @@
 using Dovus.Game.Config;
 using Dovus.Game.DevTools;
 using Dovus.Game.Vfx;
+using Dovus.Game.Assets;
 using UnityEngine;
 
 namespace Dovus.Game.Composition.Builders
@@ -8,13 +9,13 @@ namespace Dovus.Game.Composition.Builders
     static class VisualAttach
     {
         public static GameObject ResolvePlayerVisualPrefab(GameObject sceneDefault) =>
-            Resources.Load<GameObject>("PlayerVisualOverride") ?? sceneDefault;
+            AssetLoader.Load<GameObject>("PlayerVisualOverride", null) ?? sceneDefault;
 
         public static GameObject ResolveBossVisualPrefab(PrototypeTuning tuning, GameObject sceneDefault)
         {
             if (tuning.Boss.ActiveBossId != "aglarin_kralicesi")
                 return sceneDefault;
-            return Resources.Load<GameObject>("Bosses/Visuals/AglarinKralicesi") ?? sceneDefault;
+            return AssetLoader.Load<GameObject>("Bosses/Visuals/AglarinKralicesi", null) ?? sceneDefault;
         }
 
         public static void Attach(
@@ -139,9 +140,9 @@ namespace Dovus.Game.Composition.Builders
             if (renderer == null)
                 return;
 
-            var shader = Shader.Find("Universal Render Pipeline/Lit");
+            var shader = AssetLoader.FindShader("Universal Render Pipeline/Lit", null);
             if (shader == null)
-                shader = Shader.Find("Standard");
+                shader = AssetLoader.FindShader("Standard", null);
             if (shader == null)
                 return;
 

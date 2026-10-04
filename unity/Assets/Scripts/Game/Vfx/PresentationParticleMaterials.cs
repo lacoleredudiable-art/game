@@ -1,3 +1,4 @@
+using Dovus.Game.Assets;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -21,13 +22,13 @@ namespace Dovus.Game.Vfx
 
         static Shader ResolveShader()
         {
-            var anchor = Resources.Load<Material>(AnchorResourcePath);
+            var anchor = AssetLoader.Load<Material>(AnchorResourcePath, null);
             if (anchor != null && anchor.shader != null && anchor.shader.name != "Hidden/InternalErrorShader")
                 return anchor.shader;
 
-            Shader shader = Shader.Find("Universal Render Pipeline/Particles/Unlit")
-                ?? Shader.Find("Sprites/Default");
-            return shader != null ? shader : Shader.Find("Hidden/Internal-Colored");
+            Shader shader = AssetLoader.FindShader("Universal Render Pipeline/Particles/Unlit", null)
+                ?? AssetLoader.FindShader("Sprites/Default", null);
+            return shader != null ? shader : AssetLoader.FindShader("Hidden/Internal-Colored", null);
         }
 
     }
