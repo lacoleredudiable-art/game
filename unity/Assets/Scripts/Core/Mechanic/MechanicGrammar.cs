@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Dovus.Core.Grammar;
 
+using Dovus.Core.Shared;
 namespace Dovus.Core.Mechanic
 {
     /// <summary>

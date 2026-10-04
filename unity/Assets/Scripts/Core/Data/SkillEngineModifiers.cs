@@ -2,6 +2,7 @@ using Dovus.Core.Grammar;
 using Dovus.Core.Portal;
 using Dovus.Core.Team;
 
+using Dovus.Core.Shared;
 namespace Dovus.Core.Data
 {
     public readonly struct SkillEngineModifiers

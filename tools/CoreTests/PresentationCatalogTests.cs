@@ -3,6 +3,7 @@ using Dovus.Core.Presentation;
 using NUnit.Framework;
 using System.IO;
 
+using Dovus.Core.Shared;
 namespace CoreTests;
 
 /// <summary>

@@ -4,6 +4,7 @@ using Dovus.Core.Data;
 using Dovus.Core.Equipment;
 using Dovus.Core.Execution;
 using Dovus.Core.Grammar;
+using Dovus.Core.Status;
 using Dovus.Game.Actors;
 using Dovus.Game.Audio;
 using Dovus.Game.Boss;

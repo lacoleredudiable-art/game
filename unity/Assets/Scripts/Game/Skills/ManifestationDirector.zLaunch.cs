@@ -5,6 +5,7 @@ using Dovus.Core.Grammar;
 using Dovus.Core.Manifestation;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Presentation;
+using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using Dovus.Game.Actors;
 using Dovus.Game.Boss;

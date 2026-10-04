@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Dovus.Core.Grammar;
 
+using Dovus.Core.Shared;
 namespace Dovus.Core.Motion
 {
     /// <summary>Kalıp anahtarının Animator state/trigger karşılığı. Silah klibi yalnız tablodan gelir.</summary>

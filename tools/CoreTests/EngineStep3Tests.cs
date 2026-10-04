@@ -1,6 +1,7 @@
 using Dovus.Core;
 using Dovus.Core.Combat;
 using Dovus.Core.Grammar;
+using Dovus.Core.Status;
 using NUnit.Framework;
 using System.Globalization;
 using System.IO;

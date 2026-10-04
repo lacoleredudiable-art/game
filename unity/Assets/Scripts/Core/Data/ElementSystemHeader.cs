@@ -1,5 +1,6 @@
 using Dovus.Core.Grammar;
 
+using Dovus.Core.Shared;
 namespace Dovus.Core.Data
 {
     public readonly struct ElementSystemHeader

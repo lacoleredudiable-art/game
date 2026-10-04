@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
+using Dovus.Core.Shared;
 namespace CoreTests;
 
 /// <summary>Boss hedef seçimi (oyuncu / dost / dikkat çeken yem) ve dost kalkış kuralları.</summary>

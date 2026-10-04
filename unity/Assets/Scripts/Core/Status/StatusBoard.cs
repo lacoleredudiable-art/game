@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Dovus.Core.Combat;
 using Dovus.Core.Tuning;
 
 namespace Dovus.Core.Status
@@ -15,7 +14,7 @@ namespace Dovus.Core.Status
         readonly Dictionary<string, TempoSource> _slowSources = new(StringComparer.Ordinal);
         readonly Dictionary<string, TempoSource> _hasteSources = new(StringComparer.Ordinal);
         MobilityCcData? _mobilityCc;
-        double _rootImmunityMs = SkillNumberFallbacks.RootImmunityMs;
+        double _rootImmunityMs = StatusDefaults.RootImmunityMs;
         double _rootImmunityRemainingMs;
         double _attackLockImmunityRemainingMs;
         bool _attackLockImmunity;

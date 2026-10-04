@@ -1,5 +1,6 @@
 using Dovus.Core.Combat;
 using Dovus.Core.Grammar;
+using Dovus.Core.Status;
 
 namespace Dovus.Core.Motion
 {

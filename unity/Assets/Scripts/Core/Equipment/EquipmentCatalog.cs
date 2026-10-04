@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Dovus.Core.Data;
-using Dovus.Core.Grammar;
+using Dovus.Core.Shared;
 
 namespace Dovus.Core.Equipment
 {
