@@ -380,6 +380,12 @@ namespace Dovus.Game.Skills
                 if (_md._engine != null && _md._engine.State.Phase == SentencePhase.Recovering)
                     _md._engine.Abort();
             }
+
+            public System.Collections.Generic.IReadOnlyList<TargetableHost> LiveTargetables =>
+                _md._liveTargetables != null ? _md._liveTargetables.Live : System.Array.Empty<TargetableHost>();
+
+            public System.Collections.Generic.IReadOnlyList<SummonExecutor> LiveSummonExecutors =>
+                _md._liveSummons != null ? _md._liveSummons.Live : System.Array.Empty<SummonExecutor>();
         }
     }
 }

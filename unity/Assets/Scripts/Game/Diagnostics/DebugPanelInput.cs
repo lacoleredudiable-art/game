@@ -1,8 +1,7 @@
 namespace Dovus.Game.Diagnostics
 {
-    /// <summary>Composition/DevTools debug panel girdi durumu (release'de null).</summary>
+    /// <summary>Eski statik köprü kaldırıldı — <see cref="GameSceneRuntime.DebugPanelInput"/> kullan.</summary>
     public static class DebugPanelInput
     {
-        public static IDebugPanelInputState State { get; set; }
     }
 }

@@ -135,7 +135,7 @@ namespace Dovus.Game.Casting
                 _centerLabel.enabled = activeIcon == null;
 
             if (swap.IsSwapping && !_wasSwapping)
-                UiJuice.PunchScale(_swap, _theme.ReadyPopScale, _theme.JuiceSec);
+                _uiJuice?.PunchScale(_swap, _theme.ReadyPopScale, _theme.JuiceSec);
             _wasSwapping = swap.IsSwapping;
         }
 

@@ -125,6 +125,9 @@ namespace Dovus.Game.Skills
                 _md.NotifyBossStruck(isCrit, allowHitstop);
             public void NoteImpactOrigin(LivingEffect logic) => _md.NoteImpactOrigin(logic);
             public float PlayerBodyRadiusM() => _md._motor != null ? _md._motor.BodyRadiusM : 0f;
+
+            public IReadOnlyList<TargetableHost> LiveTargetables =>
+                _md._liveTargetables != null ? _md._liveTargetables.Live : System.Array.Empty<TargetableHost>();
         }
 
         internal ClosingDamageResolver ClosingDamageCore

@@ -15,12 +15,6 @@ namespace Dovus.Game.Skills.Execution
     /// </summary>
     public sealed class ComposedSkillVfxView : MonoBehaviour
     {
-        static VfxLibrary _vfx;
-
-        public static void Bind(VfxLibrary vfx) => _vfx = vfx;
-
-        static VfxLibrary Lib => _vfx ?? throw new System.InvalidOperationException("ComposedSkillVfxView.Bind ile VfxLibrary bağlanmalı.");
-
         const float MaxLifeSec = 12f;
 
         VisualRecipe _recipe;
@@ -43,6 +37,7 @@ namespace Dovus.Game.Skills.Execution
         Mesh _chunkMesh;
         Material _chunkMaterial;
         float _life;
+        VfxLibrary _vfxLibrary;
         static readonly Dictionary<(Material, Color), Material> ChunkMaterials = new();
 
         struct Live
@@ -58,9 +53,18 @@ namespace Dovus.Game.Skills.Execution
             public float Age;
         }
 
-        public static ComposedSkillVfxView Play(VisualRecipe recipe, string substanceKey, Transform anchor,
-            Transform owner, Vector3 origin, Vector3 direction, string colorHex)
+        public static ComposedSkillVfxView Play(
+            VfxLibrary vfxLibrary,
+            VisualRecipe recipe,
+            string substanceKey,
+            Transform anchor,
+            Transform owner,
+            Vector3 origin,
+            Vector3 direction,
+            string colorHex)
         {
+            if (vfxLibrary == null)
+                throw new System.InvalidOperationException("ComposedSkillVfxView.Play için VfxLibrary gerekli.");
             var go = new GameObject($"SkillVfx_{recipe.Substance}_{recipe.Layout}");
             var c = go.AddComponent<ComposedSkillVfxView>();
             c._recipe = recipe;
@@ -70,8 +74,8 @@ namespace Dovus.Game.Skills.Execution
             c._anchor = anchor;
             c._owner = owner;
             c._origin = origin;
-            c._groundY = FeelVfx.GroundY;
-            VfxLibrary lib = Lib;
+            c._groundY = FeelVfxRuntime.GroundY;
+            VfxLibrary lib = vfxLibrary;
             Vector3 flat = new(direction.x, 0f, direction.z);
             c._frame = flat.sqrMagnitude > 0.0001f ? Quaternion.LookRotation(flat.normalized) : Quaternion.identity;
             if (recipe.BornAheadM > 0 && owner != null)
@@ -83,6 +87,7 @@ namespace Dovus.Game.Skills.Execution
                     c._origin += c._frame * Vector3.forward * (float)recipe.BornAheadM;
             }
             c._hasTint = !string.IsNullOrEmpty(colorHex) && ColorUtility.TryParseHtmlString(colorHex, out c._tint);
+            c._vfxLibrary = vfxLibrary;
             c._growStart = lib.Composition.GrowStartScale;
             lib.TryResolve(substanceKey, out _, out c._life);
             if (c._life <= 0f)
@@ -150,7 +155,7 @@ namespace Dovus.Game.Skills.Execution
             holder.SetPositionAndRotation(basePos + Vector3.down * (float)p.RiseM, _frame);
             holder.SetParent(carried ? _anchor : transform, true);
 
-            VfxLibrary lib = Lib;
+            VfxLibrary lib = _vfxLibrary;
             float size = (float)(_recipe.PieceSizeM * p.Scale);
             GameObject inst = lib.TrySpawn(_substanceKey, holder.position, _frame, holder, size);
             if (inst == null)
@@ -171,7 +176,7 @@ namespace Dovus.Game.Skills.Execution
         Transform SpawnChunk(Transform holder, float size, bool carried, int index, out float height,
             out float restY, out Vector3 spin)
         {
-            SkillVisualTuning t = Lib.Composition;
+            SkillVisualTuning t = _vfxLibrary.Composition;
             var go = new GameObject("Chunk");
             go.transform.SetParent(holder, false);
             go.AddComponent<MeshFilter>().sharedMesh = _chunkMesh;
@@ -257,7 +262,7 @@ namespace Dovus.Game.Skills.Execution
                 l.Chunk.Rotate(l.Spin * dt, Space.Self);
                 return;
             }
-            SkillVisualTuning t = Lib.Composition;
+            SkillVisualTuning t = _vfxLibrary.Composition;
             float up = Mathf.Clamp01(l.Age / Mathf.Max(ComposedSkillVfxViewDefaults.MinPositiveSec, t.RiseSec));
             up = 1f - (1f - up) * (1f - up);
             float holdEnd = _life * t.ChunkHoldFrac;

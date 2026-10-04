@@ -29,8 +29,10 @@ namespace Dovus.Game.Hud
         Camera _cam;
         FollowCameraController _follow;
         HudTheme _theme;
+        UiJuiceRuntime _uiJuice;
 
         public void BindTheme(HudTheme theme) => _theme = theme;
+        public void BindUiJuice(UiJuiceRuntime uiJuice) => _uiJuice = uiJuice;
 
         Image _lowHp;
         RectTransform _dirRoot;
@@ -160,7 +162,7 @@ namespace Dovus.Game.Hud
             float severity = 1f - Mathf.Clamp01(ratio / Mathf.Max(CombatOverlayHudDefaults.LowHpRatioEpsilon, th.LowHpFrac));
             Color c = th.LowHpVignetteColor;
             c.a = th.LowHpVignetteMaxAlpha * Mathf.Lerp(CombatOverlayHudDefaults.LowHpVignetteAlphaFloor, 1f, severity)
-                * Mathf.Lerp(CombatOverlayHudDefaults.LowHpPulseMinHz, 1f, UiJuice.Pulse01(th.LowHpPulseHz));
+                * Mathf.Lerp(CombatOverlayHudDefaults.LowHpPulseMinHz, 1f, UiJuiceRuntime.Pulse01(th.LowHpPulseHz));
             _lowHp.color = c;
             _lowHp.enabled = true;
         }
@@ -275,7 +277,7 @@ namespace Dovus.Game.Hud
             _outcomeShownAt = Time.unscaledTime;
             _outcomeIsDefeat = defeat;
             _outcomeGroup.alpha = 1f;
-            UiJuice.PunchScale(_outcomeTitle.transform, _theme.BannerPunchScale, _theme.JuiceSec * 2f);
+            _uiJuice?.PunchScale(_outcomeTitle.transform, _theme.BannerPunchScale, _theme.JuiceSec * 2f);
         }
 
         static Image CreateImage(Transform parent, string name, Sprite sprite)

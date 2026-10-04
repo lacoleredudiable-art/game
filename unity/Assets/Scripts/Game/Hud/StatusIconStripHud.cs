@@ -20,9 +20,11 @@ namespace Dovus.Game.Hud
         StatusBoard _board;
         GameTuning _tuning;
         HudTheme _theme;
+        UiJuiceRuntime _uiJuice;
         RectTransform _root;
 
         public void BindTheme(HudTheme theme) => _theme = theme;
+        public void BindUiJuice(UiJuiceRuntime uiJuice) => _uiJuice = uiJuice;
         readonly List<Slot> _pool = new();
         readonly List<StatusKind> _scratch = new();
 
@@ -217,14 +219,14 @@ namespace Dovus.Game.Hud
                     slot.Icon.enabled = iconSprite != null;
                     slot.Glyph.color = accent;
                     slot.Glyph.text = iconSprite != null ? string.Empty : glyph;
-                    UiJuice.PunchScale(slot.Rect, _theme.ReadyPopScale, _theme.JuiceSec);
+                    _uiJuice?.PunchScale(slot.Rect, _theme.ReadyPopScale, _theme.JuiceSec);
                 }
 
                 float ratio = total > 1e-3 ? Mathf.Clamp01((float)(rem / total)) : 0f;
                 slot.Fill.fillAmount = ratio;
                 HudTheme th = _theme;
                 bool blink = rem > 0 && rem < th.StatusBlinkUnderSec;
-                float alpha = blink ? Mathf.Lerp(HudDefaults.StatusBlinkMinAlpha, 1f, UiJuice.Pulse01(th.StatusBlinkHz)) : 1f;
+                float alpha = blink ? Mathf.Lerp(HudDefaults.StatusBlinkMinAlpha, 1f, UiJuiceRuntime.Pulse01(th.StatusBlinkHz)) : 1f;
                 Color ic = slot.Icon.color;
                 ic.a = alpha;
                 slot.Icon.color = ic;

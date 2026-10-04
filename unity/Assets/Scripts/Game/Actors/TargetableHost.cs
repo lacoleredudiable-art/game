@@ -36,18 +36,21 @@ namespace Dovus.Game.Actors
             public string DisplayName => string.IsNullOrEmpty(_displayName) ? name : _displayName;
             public bool IsAvailable => _available == null || _available();
     
-            // O11: sahne taraması yerine etkin hedef kaydı (hedefleme, sekme, top sıçraması).
-            static readonly List<TargetableHost> s_live = new List<TargetableHost>();
-            public static IReadOnlyList<TargetableHost> Live => s_live;
-    
-            void OnEnable()
+            SceneLiveRegistry<TargetableHost> _liveRegistry;
+
+            public void BindLiveRegistry(SceneLiveRegistry<TargetableHost> registry)
             {
-                if (!s_live.Contains(this))
-                    s_live.Add(this);
+                if (_liveRegistry != null && isActiveAndEnabled)
+                    _liveRegistry.Unregister(this);
+                _liveRegistry = registry;
+                if (isActiveAndEnabled)
+                    _liveRegistry?.Register(this);
             }
-    
-            void OnDisable() => s_live.Remove(this);
-    
+
+            void OnEnable() => _liveRegistry?.Register(this);
+
+            void OnDisable() => _liveRegistry?.Unregister(this);
+
             public void Configure(int teamId, string displayName, ActorId actorId, Func<bool> available = null)
             {
                 _teamId = teamId;

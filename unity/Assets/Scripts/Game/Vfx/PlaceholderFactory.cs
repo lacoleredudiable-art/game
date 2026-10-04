@@ -12,33 +12,36 @@ namespace Dovus.Game.Vfx
     /// Stiller + renkler: docs/prezentasyon-katmani.json → vfx_binding
     /// (Resources/Presentation/prezentasyon-katmani). LivingEffectView'e dokunmaz.
     /// </summary>
-    public static class PlaceholderFactory
+    public sealed class PlaceholderFactory
     {
-        static VfxLibrary _vfx;
+        readonly VfxLibrary _vfx;
 
-        public static void Bind(VfxLibrary vfx) => _vfx = vfx;
+        public PlaceholderFactory(VfxLibrary vfx)
+        {
+            _vfx = vfx ?? throw new System.InvalidOperationException("VfxLibrary gerekli.");
+        }
 
-        static VfxLibrary Lib => _vfx ?? throw new InvalidOperationException("PlaceholderFactory.Bind ile VfxLibrary bağlanmalı.");
+        VfxLibrary Lib => _vfx ?? throw new InvalidOperationException("PlaceholderFactory.Bind ile VfxLibrary bağlanmalı.");
 
         const string CatalogResourcePath = "Presentation/prezentasyon-katmani";
         const string TrailAssetFolder = "Vfx/Trail";
         const string ImpactAssetFolder = "Vfx/Impact";
 
         // asset_missing_handling.log_warning — stil başına bir kez.
-        static readonly HashSet<string> WarnedMissing = new(StringComparer.Ordinal);
+        readonly HashSet<string> WarnedMissing = new(StringComparer.Ordinal);
 
-        static bool _catalogReady;
-        static readonly Dictionary<string, Color> ElementPrimary =
+        bool _catalogReady;
+        readonly Dictionary<string, Color> ElementPrimary =
             new(StringComparer.OrdinalIgnoreCase);
-        static readonly Dictionary<string, bool> TrailUsesLine =
+        readonly Dictionary<string, bool> TrailUsesLine =
             new(StringComparer.Ordinal);
-        static readonly HashSet<string> TrailStyles = new(StringComparer.Ordinal);
-        static readonly HashSet<string> ImpactStyles = new(StringComparer.Ordinal);
+        readonly HashSet<string> TrailStyles = new(StringComparer.Ordinal);
+        readonly HashSet<string> ImpactStyles = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Trail stili için asset yoksa element rengiyle çizgi veya küre üretir.
         /// </summary>
-        public static GameObject CreateTrail(
+        public GameObject CreateTrail(
             string styleId,
             string elementName,
             Vector3 from,
@@ -69,7 +72,7 @@ namespace Dovus.Game.Vfx
         /// Impact stili için asset yoksa element rengiyle küre üretir.
         /// <c>none</c> stilinde nesne oluşturmaz.
         /// </summary>
-        public static GameObject CreateImpact(
+        public GameObject CreateImpact(
             string styleId,
             string elementName,
             Vector3 position,
@@ -99,7 +102,7 @@ namespace Dovus.Game.Vfx
         /// Zone alanı — asset yok; element rengiyle yerde düz disk/hacim.
         /// Alfa: ui_rules.zone_display.transparency (0.6). Collider yok (PrimitiveMesh).
         /// </summary>
-        public static GameObject CreateZoneDisk(
+        public GameObject CreateZoneDisk(
             string elementName,
             Vector3 position,
             float radiusM,
@@ -126,13 +129,13 @@ namespace Dovus.Game.Vfx
             return go;
         }
 
-        public static bool TryGetElementColor(string elementName, out Color color)
+        public bool TryGetElementColor(string elementName, out Color color)
         {
             EnsureCatalog();
             return ElementPrimary.TryGetValue(elementName ?? string.Empty, out color);
         }
 
-        public static IReadOnlyCollection<string> KnownTrailStyles
+        public IReadOnlyCollection<string> KnownTrailStyles
         {
             get
             {
@@ -141,7 +144,7 @@ namespace Dovus.Game.Vfx
             }
         }
 
-        public static IReadOnlyCollection<string> KnownImpactStyles
+        public IReadOnlyCollection<string> KnownImpactStyles
         {
             get
             {
@@ -150,7 +153,7 @@ namespace Dovus.Game.Vfx
             }
         }
 
-        static GameObject TryLoadPrefab(string folder, string styleId)
+        GameObject TryLoadPrefab(string folder, string styleId)
         {
             if (string.IsNullOrEmpty(styleId))
                 return null;
@@ -159,7 +162,7 @@ namespace Dovus.Game.Vfx
             return Lib.TryResolve(key, out GameObject prefab, out _) ? prefab : null;
         }
 
-        static void WarnMissingOnce(string kind, string styleId)
+        void WarnMissingOnce(string kind, string styleId)
         {
             string key = kind + ":" + styleId;
             if (!WarnedMissing.Add(key))
@@ -171,7 +174,7 @@ namespace Dovus.Game.Vfx
                 "using element_color primitive placeholder.");
         }
 
-        static Color ResolveElementColor(string elementName)
+        Color ResolveElementColor(string elementName)
         {
             if (!string.IsNullOrEmpty(elementName) &&
                 ElementPrimary.TryGetValue(elementName, out Color c))
@@ -183,7 +186,7 @@ namespace Dovus.Game.Vfx
 
         static Vector3 Mid(Vector3 a, Vector3 b) => (a + b) * 0.5f;
 
-        static GameObject CreateSpherePlaceholder(
+        GameObject CreateSpherePlaceholder(
             string name,
             Color color,
             Vector3 position,
@@ -203,7 +206,7 @@ namespace Dovus.Game.Vfx
             return go;
         }
 
-        static GameObject CreateLinePlaceholder(
+        GameObject CreateLinePlaceholder(
             string name,
             Color color,
             Vector3 from,
@@ -233,11 +236,11 @@ namespace Dovus.Game.Vfx
 
         // O11: renk başına TEK paylaşılan materyal. Eskiden her etki/iz new Material + Shader.Find
         // yapıyordu ve Destroy(go) materyali silmiyordu (cast başına ~2 materyal sızıntısı, D3).
-        static readonly Dictionary<int, Material> GlowCache = new Dictionary<int, Material>();
+        readonly Dictionary<int, Material> GlowCache = new Dictionary<int, Material>();
         static Shader _glowShader;
 
         // LivingEffectView / GroundScarFieldView ile aynı saydam Unlit deseni.
-        static Material MakeGlowMat(Color c)
+        Material MakeGlowMat(Color c)
         {
             c.a = Mathf.Clamp01(c.a > PlaceholderFactoryDefaults.MinColorAlpha ? c.a : PlaceholderFactoryDefaults.FallbackColorAlpha);
             Color32 q = c;
@@ -261,7 +264,7 @@ namespace Dovus.Game.Vfx
             return shader != null ? shader : AssetLoader.FindShader("Hidden/Internal-Colored", null);
         }
 
-        static void ConfigureTransparentFallback(Material mat)
+        void ConfigureTransparentFallback(Material mat)
         {
             if (!mat.HasProperty("_Surface"))
                 return;
@@ -274,7 +277,7 @@ namespace Dovus.Game.Vfx
             mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
         }
 
-        static void SetMatColor(Material mat, Color c)
+        void SetMatColor(Material mat, Color c)
         {
             if (mat.HasProperty("_BaseColor"))
                 mat.SetColor("_BaseColor", c);
@@ -282,7 +285,7 @@ namespace Dovus.Game.Vfx
                 mat.color = c;
         }
 
-        static void EnsureCatalog()
+        void EnsureCatalog()
         {
             if (_catalogReady)
                 return;
@@ -309,7 +312,7 @@ namespace Dovus.Game.Vfx
             LoadEmbeddedFallback();
         }
 
-        static void ApplyCatalog(VfxBindingData data)
+        void ApplyCatalog(VfxBindingData data)
         {
             foreach (KeyValuePair<string, string> kv in data.ElementPrimaryHex)
             {
@@ -331,7 +334,7 @@ namespace Dovus.Game.Vfx
         /// Resources yoksa docs/prezentasyon-katmani.json vfx_binding.element_colors
         /// primary değerleri (16 Eylül spec).
         /// </summary>
-        static void LoadEmbeddedFallback()
+        void LoadEmbeddedFallback()
         {
             SeedColor("Ateş", "#c45c26");
             SeedColor("Su", "#39646a");
@@ -371,13 +374,13 @@ namespace Dovus.Game.Vfx
                 ImpactStyles.Add(id);
         }
 
-        static void SeedColor(string name, string hex)
+        void SeedColor(string name, string hex)
         {
             if (TryParseHexColor(hex, out Color c))
                 ElementPrimary[name] = c;
         }
 
-        static bool IsLineVfxStyle(string vfxStyle)
+        bool IsLineVfxStyle(string vfxStyle)
         {
             if (string.IsNullOrEmpty(vfxStyle))
                 return false;
@@ -389,7 +392,7 @@ namespace Dovus.Game.Vfx
                    || vfxStyle.IndexOf("tether", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
-        static bool TryParseHexColor(string hex, out Color color)
+        bool TryParseHexColor(string hex, out Color color)
         {
             color = default;
             if (string.IsNullOrWhiteSpace(hex))

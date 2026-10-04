@@ -56,13 +56,14 @@ namespace Dovus.Game.Composition.Builders
             var cooldown = ctx.PlayerCooldownHost;
             var root = ctx.HexagonRoot;
 
-            var vfxLib = VfxLibraryStandalone.Shared;
-            PlaceholderFactory.Bind(vfxLib);
-            HitboxVfxRegistry.Bind(vfxLib);
-            ComposedSkillVfxView.Bind(vfxLib);
+            var runtime = ctx.Runtime;
+            var debugFlags = runtime.DebugFlags;
 
             if (ctx.AllyDummyController != null)
+            {
                 ctx.AllyDummyController.BindTeam(ctx.TeamAccess);
+                ctx.AllyDummyController.BindLiveRegistry(runtime.AllyDummies);
+            }
 
             var feelGo = new GameObject("CombatFeel");
             feelGo.transform.SetParent(ctx.SceneRoot, false);
@@ -76,13 +77,13 @@ namespace Dovus.Game.Composition.Builders
             Animator bossAnim = bossVisualComp != null ? bossVisualComp.Animator : null;
             visualFreeze.Bind(follow, playerAnim);
             feel.BindPresentation(visualFreeze, ctx.Afterimage, player);
-            HitImpactFx.Configure(combat.Feel);
-            FeelHaptics.Configure(combat.Feel);
+            feel.BindHaptics(runtime.Haptics);
             var bossFlinch = ctx.Boss.gameObject.GetComponent<BossHitFlinchView>() ?? ctx.Boss.gameObject.AddComponent<BossHitFlinchView>();
             bossFlinch.Bind(combat.Feel, bossAnim);
             ctx.Player.GetComponent<PlayerDodgeController>()?.Bind(ctx.Clock, input, follow, readout, feel);
             var overlayHud = feelGo.AddComponent<CombatOverlayHud>();
             overlayHud.BindTheme(ctx.Assets.HudTheme);
+            overlayHud.BindUiJuice(runtime.UiJuice);
             overlayHud.Configure(
                 vitals, ctx.BossVitals, player, ctx.Boss.transform, ctx.OverlayCamera, ctx.MainCamera, follow);
             ctx.CombatFeelDirector = feel;
@@ -127,7 +128,9 @@ namespace Dovus.Game.Composition.Builders
             sfx.Bind(ctx.Assets.Sfx);
             ctx.Sfx = sfx;
             ctx.Player.GetComponent<PlayerDodgeController>()?.BindSfx(sfx);
-            feelGo.AddComponent<PresentationFxView>().Bind(bossDir, ctx.DodgeMotionController, feel, input, sfx, follow, combat);
+            var presentationFx = feelGo.AddComponent<PresentationFxView>();
+            presentationFx.Bind(bossDir, ctx.DodgeMotionController, feel, input, sfx, follow, combat);
+            presentationFx.BindFeelVfx(runtime.FeelVfx);
 #if UNITY_EDITOR || DOVUS_DEBUG
             var feelVerify = feelGo.AddComponent<Dovus.Game.DevTools.FeelPlayVerifyController>();
             feelVerify.Bind(follow, player);
@@ -135,10 +138,12 @@ namespace Dovus.Game.Composition.Builders
             var playerSteps = ctx.Player.gameObject.AddComponent<FootstepView>();
             playerSteps.StrideM = tuning.Player.FootstepStrideM;
             playerSteps.Bind(sfx);
+            playerSteps.BindFeelVfx(runtime.FeelVfx);
             var bossSteps = ctx.Boss.gameObject.AddComponent<FootstepView>();
             bossSteps.StrideM = tuning.Player.BossFootstepStrideM;
             bossSteps.IsBoss = true;
             bossSteps.Bind(sfx);
+            bossSteps.BindFeelVfx(runtime.FeelVfx);
 
             var scarsGo = new GameObject("GroundScars");
             scarsGo.transform.SetParent(ctx.SceneRoot, false);
@@ -175,6 +180,8 @@ namespace Dovus.Game.Composition.Builders
             director.BindSfx(sfx);
             director.BindTargeting(targeting);
             director.BindHostileTargets(hostileTargets);
+            director.BindSceneRuntime(runtime);
+            director.BindLiveRegistries(runtime.Targetables, runtime.SummonExecutors);
             ctx.ManifestationDirector = director;
             director.WireCastPresentationFeedback();
 
@@ -216,6 +223,7 @@ namespace Dovus.Game.Composition.Builders
 
             var preview = root.AddComponent<SkillPreviewHud>();
             preview.BindTheme(ctx.Assets.HudTheme);
+            preview.BindUiJuice(runtime.UiJuice);
             preview.Configure(input.Engine, skills, skillFactory, director, tuning, view.CanvasRoot);
 
             var buildSelect = root.AddComponent<BuildSelectHud>();

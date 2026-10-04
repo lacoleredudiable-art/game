@@ -22,9 +22,11 @@ namespace Dovus.Game.Hud
         ManifestationDirector _manifestation;
         GameTuning _tuning;
         HudTheme _theme;
+        UiJuiceRuntime _uiJuice;
         RectTransform _rect;
 
         public void BindTheme(HudTheme theme) => _theme = theme;
+        public void BindUiJuice(UiJuiceRuntime uiJuice) => _uiJuice = uiJuice;
         CanvasGroup _group;
         Text _title;
         Text _detail;
@@ -115,7 +117,7 @@ namespace Dovus.Game.Hud
             HudTheme theme = _theme;
             bool visible = _visibleUntil > Time.unscaledTime;
             if (visible && !_wasVisible)
-                UiJuice.PunchScale(_rect, theme.SkillCardPopScale, theme.JuiceSec * HudDefaults.SkillCardJuiceDurationMult);
+                _uiJuice?.PunchScale(_rect, theme.SkillCardPopScale, theme.JuiceSec * HudDefaults.SkillCardJuiceDurationMult);
             _wasVisible = visible;
             _group.alpha = Mathf.Clamp01(
                 (_visibleUntil - Time.unscaledTime) / Mathf.Max(HudDefaults.BannerFadeMinSec, theme.SkillCardFadeSec));

@@ -73,6 +73,7 @@ namespace Dovus.Game.Composition.Builders
                 + $"{assetCatalog?.Weapons.Count ?? 0}/{assetCatalog?.Elements.Count ?? 0}");
             var view = root.AddComponent<HexagonView>();
             view.BindTheme(ctx.Assets.HudTheme);
+            view.BindUiJuice(ctx.Runtime.UiJuice);
             view.Build(_tuning, overlay.Cam, skills, loadout);
             ctx.HexagonView = view;
             if (follow != null)
@@ -91,11 +92,11 @@ namespace Dovus.Game.Composition.Builders
             inkGo.transform.SetParent(root.transform, false);
             inkGo.layer = CompositionConstants.HexagonInkLayer;
             var ink = inkGo.AddComponent<InkTrailView>();
-            ink.Configure(_tuning, overlay, CompositionConstants.HexagonInkLayer);
+            ink.Configure(_tuning, overlay, CompositionConstants.HexagonInkLayer, ctx.Runtime.Kenney);
             ctx.InkTrailView = ink;
 
             var syllable = root.AddComponent<SyllableFeedbackView>();
-            syllable.Configure(_tuning);
+            syllable.Configure(_tuning, ctx.Runtime.Haptics);
             ctx.SyllableFeedbackView = syllable;
 #if UNITY_EDITOR || DOVUS_DEBUG
             var debug = root.AddComponent<SentenceDebugHud>();
@@ -111,6 +112,8 @@ namespace Dovus.Game.Composition.Builders
             input.DotAccepted += view.NotifyPressed;
             input.DrawCaption += view.ShowDrawCaption;
             ctx.HexagonInputController = input;
+            input.ConfigureDebugAndFeel(ctx.Runtime.DebugPanelInput, ctx.Runtime.Haptics);
+            moveInput?.ConfigureDebugPanel(ctx.Runtime.DebugPanelInput);
 
             if (follow != null)
             {
@@ -157,6 +160,8 @@ namespace Dovus.Game.Composition.Builders
                 follow,
                 ctx.ActorViewRegistry,
                 ActorDefaults.PlayerId);
+            targeting.ConfigureDebugPanel(ctx.Runtime.DebugPanelInput);
+            targeting.ConfigureTargetRegistry(ctx.Runtime.Targetables);
             ctx.PlayerTargetingController = targeting;
         }
 

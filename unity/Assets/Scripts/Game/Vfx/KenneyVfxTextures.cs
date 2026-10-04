@@ -10,28 +10,28 @@ namespace Dovus.Game.Vfx
     /// Kenney Particle Pack (CC0) dokuları — <c>Resources/Vfx/Kenney</c>. Materyal/doku önbelleği;
     /// dosya yoksa prosedürel yumuşak nokta (CI / başsız araçlar etkilenmez).
     /// </summary>
-    public static class KenneyVfxTextures
+    public sealed class KenneyVfxTextures
     {
         public const string SlamCrackTexture = "scorch_03";
 
-        static GameTuning _tuning;
-        static readonly Dictionary<string, Texture2D> Textures = new();
-        static readonly Dictionary<long, Material> Materials = new();
-        static Texture2D _proceduralDot;
+        readonly GameTuning _tuning;
+        readonly Dictionary<string, Texture2D> Textures = new();
+        readonly Dictionary<long, Material> Materials = new();
+        Texture2D _proceduralDot;
 
-        public static void Configure(GameTuning tuning) => _tuning = tuning;
+        public KenneyVfxTextures(GameTuning tuning) => _tuning = tuning;
 
-        public static string TexFire => NameOrDefault(_tuning?.Visuals.VfxTexFire, "flame_02");
-        public static string TexWater => NameOrDefault(_tuning?.Visuals.VfxTexWater, "circle_03");
-        public static string TexAir => NameOrDefault(_tuning?.Visuals.VfxTexAir, "twirl_01");
-        public static string TexEarth => NameOrDefault(_tuning?.Visuals.VfxTexEarth, "dirt_01");
-        public static string TexLight => NameOrDefault(_tuning?.Visuals.VfxTexLight, "star_04");
-        public static string TexDark => NameOrDefault(_tuning?.Visuals.VfxTexDark, "magic_04");
-        public static string TexHit => NameOrDefault(_tuning?.Visuals.VfxTexHit, "spark_05");
-        public static string TexInk => NameOrDefault(_tuning?.Visuals.VfxTexInk, "light_01");
+        public string TexFire => NameOrDefault(_tuning?.Visuals.VfxTexFire, "flame_02");
+        public string TexWater => NameOrDefault(_tuning?.Visuals.VfxTexWater, "circle_03");
+        public string TexAir => NameOrDefault(_tuning?.Visuals.VfxTexAir, "twirl_01");
+        public string TexEarth => NameOrDefault(_tuning?.Visuals.VfxTexEarth, "dirt_01");
+        public string TexLight => NameOrDefault(_tuning?.Visuals.VfxTexLight, "star_04");
+        public string TexDark => NameOrDefault(_tuning?.Visuals.VfxTexDark, "magic_04");
+        public string TexHit => NameOrDefault(_tuning?.Visuals.VfxTexHit, "spark_05");
+        public string TexInk => NameOrDefault(_tuning?.Visuals.VfxTexInk, "light_01");
 
         /// <summary>Element tint rengine en yakın çekirdek rün dokusu.</summary>
-        public static string ClosestElementName(Color tint)
+        public string ClosestElementName(Color tint)
         {
             if (_tuning == null || tint.a <= VfxDefaults.MinTintVisibleAlpha)
                 return TexDark;
@@ -47,7 +47,7 @@ namespace Dovus.Game.Vfx
             return pick;
         }
 
-        static void Compare(Color sample, Color reference, string tex, ref float best, ref string pick)
+        void Compare(Color sample, Color reference, string tex, ref float best, ref string pick)
         {
             float d = (sample.r - reference.r) * (sample.r - reference.r)
                 + (sample.g - reference.g) * (sample.g - reference.g)
@@ -59,7 +59,7 @@ namespace Dovus.Game.Vfx
             }
         }
 
-        public static Texture2D Load(string fileName)
+        public Texture2D Load(string fileName)
         {
             if (string.IsNullOrWhiteSpace(fileName))
                 return null;
@@ -72,7 +72,7 @@ namespace Dovus.Game.Vfx
             return tex;
         }
 
-        public static Material GetParticleMaterial(string fileName, bool additive)
+        public Material GetParticleMaterial(string fileName, bool additive)
         {
             string name = string.IsNullOrWhiteSpace(fileName) ? null : fileName.Trim();
             long cacheKey = ((long)(name ?? string.Empty).GetHashCode() << 1) | (additive ? VfxDefaults.OpaqueCacheKeyBit : VfxDefaults.CacheKeyAdditiveBit);
@@ -84,7 +84,7 @@ namespace Dovus.Game.Vfx
             return mat;
         }
 
-        static Material BuildParticleMaterial(string fileName, bool additive)
+        Material BuildParticleMaterial(string fileName, bool additive)
         {
             Shader shader = PresentationParticleMaterials.ResolveShaderPublic();
             var m = new Material(shader) { name = "KenneyFx_" + (fileName ?? "dot") + (additive ? "_Add" : "_Alpha") };
@@ -109,7 +109,7 @@ namespace Dovus.Game.Vfx
             return m;
         }
 
-        static Texture2D ProceduralDot()
+        Texture2D ProceduralDot()
         {
             if (_proceduralDot != null)
                 return _proceduralDot;
@@ -132,7 +132,7 @@ namespace Dovus.Game.Vfx
             return _proceduralDot;
         }
 
-        static string NameOrDefault(string value, string fallback) =>
+        string NameOrDefault(string value, string fallback) =>
             string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
     }
 }

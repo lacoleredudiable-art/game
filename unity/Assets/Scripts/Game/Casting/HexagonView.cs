@@ -21,8 +21,10 @@ namespace Dovus.Game.Casting
         HudTheme _theme;
         GameTuning _tuning;
         SkillMotor _skills;
+        UiJuiceRuntime _uiJuice;
 
         public void BindTheme(HudTheme theme) => _theme = theme;
+        public void BindUiJuice(UiJuiceRuntime uiJuice) => _uiJuice = uiJuice;
         RuneLoadout _loadout;
         RectTransform[] _dots;
         Image[] _dotImages;

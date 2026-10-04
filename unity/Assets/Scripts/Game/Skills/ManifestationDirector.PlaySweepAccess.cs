@@ -8,6 +8,7 @@ using Dovus.Game.Actors;
 using Dovus.Game.Boss;
 using Dovus.Game.Casting;
 using Dovus.Game.Platform;
+using Dovus.Game.Team;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,6 +17,8 @@ namespace Dovus.Game.Skills
     /// <summary>Play Sweep / SweepV2: reflection yerine tipli erişim.</summary>
     public sealed partial class ManifestationDirector
     {
+        public TeamComboAccess SweepTeamAccess => _team;
+
         public HexagonInputController SweepInput => _input;
         public Transform SweepPlayer => _player;
         public BossReactorController SweepBoss => _boss;

@@ -10,6 +10,7 @@ using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Tuning;
 using Dovus.Game.Platform;
+using Dovus.Game.Vfx;
 using System;
 using UnityEngine;
 namespace Dovus.Game.Skills.Execution
@@ -47,8 +48,12 @@ public readonly struct SkillExecutionContext
             MechanicPlan mechanicPlan = null,
             float activationDelaySec = 0f,
             float tickEffectFraction = 0f,
-            bool arcAllies = false)
+            bool arcAllies = false,
+            PlaceholderFactory placeholders = null,
+            HitboxVfxRegistry hitboxVfx = null)
         {
+            Placeholders = placeholders;
+            HitboxVfx = hitboxVfx;
             FieldCenter = fieldCenter;
             ApplyFlatDamage = applyFlatDamage;
             SpawnCount = Mathf.Max(1, spawnCount);
@@ -117,6 +122,8 @@ public readonly struct SkillExecutionContext
         public float TickEffectFraction { get; }
         /// <summary>Dost fiilde yaydaki herkes. Düşman vuruşunda yalnız kilit hedef.</summary>
         public bool ArcAllies { get; }
+        public PlaceholderFactory Placeholders { get; }
+        public HitboxVfxRegistry HitboxVfx { get; }
     }
 
     /// <summary>Unity yaşam döngüsü taşıyan fiziksel executor'lar için ortak taban.</summary>

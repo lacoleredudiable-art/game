@@ -79,7 +79,8 @@ namespace Dovus.Game.Composition.Builders
             allyHitCollider.isTrigger = true;
             ctx.Ally.AddComponent<ActorGroundingController>();
             ctx.AllyDummyController = ctx.Ally.AddComponent<AllyDummyController>();
-            ctx.AllyDummyController.Bind(playerHp, startRatio: DebugConfig.StartHpRatio);
+            var debugFlags = ctx.Runtime.DebugFlags;
+            ctx.AllyDummyController.Bind(playerHp, startRatio: debugFlags.StartHpRatio);
             ctx.AllyDummyController.BindTeam(ctx.TeamAccess);
 
             float bossSpawnZ = ActorsBuilderDefaults.BossSpawnZBaseM * Mathf.Max(1f, tuning.Arena.ArenaVisualScale * ActorsBuilderDefaults.BossSpawnZArenaScale);
@@ -132,9 +133,9 @@ namespace Dovus.Game.Composition.Builders
 
             var vitals = ctx.Player.AddComponent<PlayerVitalsHost>();
             ctx.PlayerVitalsHost = vitals;
-            vitals.Bind(combat.Boss, playerHp, startRatio: DebugConfig.StartHpRatio);
+            vitals.Bind(combat.Boss, playerHp, startRatio: debugFlags.StartHpRatio);
             vitals.BindClock(clock);
-            vitals.SetDevHp(DebugConfig.DevHpActive);
+            vitals.SetDevHp(debugFlags.DevHpActive);
 
             ctx.PlayerResourceHost = ctx.Player.AddComponent<PlayerResourceHost>();
             ctx.PlayerResourceHost.Bind();
@@ -164,12 +165,16 @@ namespace Dovus.Game.Composition.Builders
             ctx.BossReactorController.CaptureHome();
 
             ctx.BossVitals = new BossVitals(ctx.Host.ScaledBossHp(ctx.Assets, combat.Boss.MaxHp));
-            ctx.Ally.AddComponent<TargetableHost>().Configure(
+            var allyTarget = ctx.Ally.AddComponent<TargetableHost>();
+            allyTarget.BindLiveRegistry(ctx.Runtime.Targetables);
+            allyTarget.Configure(
                 teamId: 0,
                 displayName: "ALLY",
                 ActorDefaults.AllyDummyId,
                 available: () => ctx.AllyDummyController.Hp > 0);
-            ctx.Boss.AddComponent<TargetableHost>().Configure(
+            var bossTarget = ctx.Boss.AddComponent<TargetableHost>();
+            bossTarget.BindLiveRegistry(ctx.Runtime.Targetables);
+            bossTarget.Configure(
                 teamId: 1,
                 displayName: "BOSS",
                 ActorDefaults.BossId,

@@ -135,7 +135,7 @@ namespace Dovus.Game.Casting
             bool hot = _dotHighlightUntil != null && Time.unscaledTime < _dotHighlightUntil[dot];
             if (hot)
             {
-                float pulse = UiJuice.Pulse01(HexagonViewDefaults.RimPulseHz);
+                float pulse = UiJuiceRuntime.Pulse01(HexagonViewDefaults.RimPulseHz);
                 Color bright = Color.Lerp(baseColor, Color.white, HexagonViewDefaults.RimPulseLerpBase + pulse * HexagonViewDefaults.RimPulseLerpAmp);
                 bright.a = HexagonViewDefaults.RimHotAlpha;
                 _dotRims[dot].color = bright;

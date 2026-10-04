@@ -22,6 +22,7 @@ using Dovus.Core;
 using Dovus.Game.Skills.Execution;
 using Dovus.Game.Skills.Mechanics;
 using Dovus.Game.Skills.Motion;
+using Dovus.Game.Skills.Execution;
 using Dovus.Game.Skills.Weapons;
 using Dovus.Core.Equipment;
 using System.Collections.Generic;
@@ -300,6 +301,8 @@ namespace Dovus.Game.Skills
             public float BossBodyRadius() => _md.BossBodyRadius();
 
             public void SetTemplateAimForSweep(Transform aim) => _md._templateAim = aim;
+
+            public HitboxVfxRegistry HitboxVfx => _md.HitboxVfx;
         }
     }
 }

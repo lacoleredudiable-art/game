@@ -20,6 +20,7 @@ using Dovus.Game.Platform;
 using Dovus.Game.Platform;
 using Dovus.Game.Config;
 using Dovus.Game.Data;
+using Dovus.Game.Composition;
 using Dovus.Game.Team;
 using Dovus.Game.Diagnostics;
 using Dovus.Game.Feel;
@@ -41,7 +42,9 @@ namespace Dovus.Game.Composition.Builders
         public TuningConfig TuningConfig;
         public GameClockHost Clock;
         public AssetCatalog Assets;
+        public GameSceneRuntime Runtime;
         public TeamComboAccess TeamAccess;
+        public TeamComboHost TeamComboHost;
         public SfxDirector Sfx;
         public ElementRadialMenuHud ElementMenu;
         public GameObject Arena;

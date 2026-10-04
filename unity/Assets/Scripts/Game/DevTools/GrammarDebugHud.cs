@@ -24,6 +24,7 @@ namespace Dovus.Game.DevTools
         ManifestationDirector _manifestation;
         BuildSelectHud _buildSelect;
         PlayerVitalsHost _vitals;
+        IDebugFlags _debugFlags;
         GameObject _panel;
         GameObject _toggleGo;
         Text _status;
@@ -36,12 +37,14 @@ namespace Dovus.Game.DevTools
             ManifestationDirector manifestation,
             BuildSelectHud buildSelect,
             Transform canvasRoot,
-            PlayerVitalsHost vitals)
+            PlayerVitalsHost vitals,
+            IDebugFlags debugFlags = null)
         {
             _input = input;
             _manifestation = manifestation;
             _buildSelect = buildSelect;
             _vitals = vitals;
+            _debugFlags = debugFlags;
 
             Build(canvasRoot);
             Refresh();
@@ -160,7 +163,8 @@ namespace Dovus.Game.DevTools
             if (_vitals == null)
                 return;
             _vitals.SetDevHp(!_vitals.DevHpEnabled);
-            DebugConfig.DevHp = _vitals.DevHpEnabled;
+            if (_debugFlags != null)
+                _debugFlags.DevHp = _vitals.DevHpEnabled;
             RefreshDevHp();
         }
 

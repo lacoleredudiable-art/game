@@ -23,7 +23,7 @@ namespace Dovus.Game.Skills
             if (hit.HasValue && _boss != null)
             {
                 Color tint = DamageTint() ?? Color.white;
-                HitImpactFx.Play(hit.Value, archetype, tint, isCrit, _boss.transform);
+                _sceneRuntime?.HitImpact?.Play(hit.Value, archetype, tint, isCrit, _boss.transform);
             }
 
             _sfx?.Play(isCrit ? SfxLibrary.Crit : SfxLibrary.Hit);

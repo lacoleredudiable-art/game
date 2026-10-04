@@ -16,6 +16,11 @@ namespace Dovus.Game.Team
 {
     public sealed partial class TeamComboHost
     {
+        SceneLiveRegistry<AllyDummyController> _allyDummies;
+
+        public void ConfigureLiveAllies(SceneLiveRegistry<AllyDummyController> allyDummies) =>
+            _allyDummies = allyDummies;
+
         void RefreshActors()
         {
             _actors.Clear();
@@ -32,7 +37,8 @@ namespace Dovus.Game.Team
                 _actors.Add(actor);
             }
 
-            System.Collections.Generic.IReadOnlyList<AllyDummyController> dummies = AllyDummyController.Live;
+            System.Collections.Generic.IReadOnlyList<AllyDummyController> dummies =
+                _allyDummies != null ? _allyDummies.Live : System.Array.Empty<AllyDummyController>();
             for (int i = 0; i < dummies.Count; i++)
             {
                 AllyDummyController dummy = dummies[i];

@@ -7,7 +7,7 @@ namespace Dovus.Game.Hud
     /// DOTween'siz UI juice: punch-scale, nabız, sarsıntı, fade. <c>unscaledDeltaTime</c> ile
     /// akar — hitstop/pause UI'yi dondurmaz. Aynı hedefe yeni tween eskisini değiştirir.
     /// </summary>
-    public static class UiJuice
+    public sealed class UiJuiceRuntime
     {
         enum Kind { Punch, Shake, Fade }
 
@@ -25,11 +25,11 @@ namespace Dovus.Game.Hud
             public float To;
         }
 
-        static readonly List<Tween> _tweens = new();
-        static UiJuiceRunnerHost _runner;
+        readonly List<Tween> _tweens = new();
+        UiJuiceRunnerHost _runner;
 
         /// <summary>Ölçeği <paramref name="peak"/>'e zıplatıp geri yayar (0.88 = bas, 1.18 = pop).</summary>
-        public static void PunchScale(Transform target, float peak, float durationSec)
+        public void PunchScale(Transform target, float peak, float durationSec)
         {
             if (target == null || durationSec <= 0f)
                 return;
@@ -38,7 +38,7 @@ namespace Dovus.Game.Hud
         }
 
         /// <summary>Konumu <paramref name="amplitudePx"/> kadar sönen gürültüyle sarsar.</summary>
-        public static void Shake(Transform target, float amplitudePx, float durationSec)
+        public void Shake(Transform target, float amplitudePx, float durationSec)
         {
             if (target == null || durationSec <= 0f)
                 return;
@@ -46,7 +46,7 @@ namespace Dovus.Game.Hud
             Add(new Tween { Kind = Kind.Shake, Target = target, Amount = amplitudePx, Duration = durationSec, BasePos = basePos });
         }
 
-        public static void Fade(CanvasGroup group, float to, float durationSec)
+        public void Fade(CanvasGroup group, float to, float durationSec)
         {
             if (group == null)
                 return;
@@ -60,9 +60,10 @@ namespace Dovus.Game.Hud
         }
 
         /// <summary>0..1 sinüs nabzı (unscaled zaman).</summary>
-        public static float Pulse01(float hz) => 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * hz * Mathf.PI * 2f);
+        public static float Pulse01(float hz) =>
+            0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * hz * Mathf.PI * 2f);
 
-        static bool RemoveExisting(Transform target, Kind kind, out Tween old)
+        bool RemoveExisting(Transform target, Kind kind, out Tween old)
         {
             for (int i = 0; i < _tweens.Count; i++)
             {
@@ -77,18 +78,19 @@ namespace Dovus.Game.Hud
             return false;
         }
 
-        static void Add(Tween t)
+        void Add(Tween t)
         {
             if (_runner == null)
             {
                 var go = new GameObject("UiJuice") { hideFlags = HideFlags.HideAndDontSave };
                 Object.DontDestroyOnLoad(go);
                 _runner = go.AddComponent<UiJuiceRunnerHost>();
+                _runner.Bind(this);
             }
             _tweens.Add(t);
         }
 
-        static void Step(float dt)
+        internal void Step(float dt)
         {
             for (int i = _tweens.Count - 1; i >= 0; i--)
             {
@@ -132,7 +134,11 @@ namespace Dovus.Game.Hud
 
         sealed class UiJuiceRunnerHost : MonoBehaviour
         {
-            void Update() => Step(Time.unscaledDeltaTime);
+            UiJuiceRuntime _owner;
+
+            public void Bind(UiJuiceRuntime owner) => _owner = owner;
+
+            void Update() => _owner?.Step(Time.unscaledDeltaTime);
         }
     }
 }

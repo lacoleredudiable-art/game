@@ -211,6 +211,7 @@ namespace Dovus.Game.Editor
                 _clock = _md.SweepClock;
                 _skills = _md.SweepSkills;
                 _projectiles = _md.SweepProjectiles;
+                BindSweepAccess(_md.SweepTeamAccess);
                 _playerVitals = _player.GetComponent<PlayerVitalsHost>();
                 if (_playerVitals != null)
                     _playerVitals.SuppressDown = true;

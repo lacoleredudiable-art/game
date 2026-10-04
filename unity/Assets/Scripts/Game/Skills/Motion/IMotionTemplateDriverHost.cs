@@ -18,6 +18,7 @@ using Dovus.Game.Config;
 using Dovus.Game.Data;
 using Dovus.Game.Casting;
 using Dovus.Game.Skills.Weapons;
+using Dovus.Game.Skills.Execution;
 using Dovus.Core.Equipment;
 using System.Collections.Generic;
 using UnityEngine;
@@ -54,5 +55,6 @@ public interface IMotionTemplateDriverHost
         void EnsureMotionBody();
         float BossBodyRadius();
         void SetTemplateAimForSweep(Transform aim);
+        HitboxVfxRegistry HitboxVfx { get; }
     }
 }

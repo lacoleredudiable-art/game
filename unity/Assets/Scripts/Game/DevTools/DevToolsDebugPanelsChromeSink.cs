@@ -3,7 +3,7 @@ using Dovus.Game.Diagnostics;
 
 namespace Dovus.Game.DevTools
 {
-    sealed class DevToolsDebugPanelsChromeSink : IDebugPanelsChromeSink
+    public sealed class DevToolsDebugPanelsChromeSink : IDebugPanelsChromeSink
     {
         public bool Visible => DebugPanelsChrome.Visible;
 

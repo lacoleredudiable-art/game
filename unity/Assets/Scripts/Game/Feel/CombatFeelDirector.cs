@@ -51,6 +51,7 @@ namespace Dovus.Game.Feel
         VisualFreezeView _visualFreeze;
         AfterimageTrailView _afterimage;
         Transform _playerTransform;
+        FeelHapticsRuntime _haptics;
         float _lastBossHitstopUnscaled = -CombatFeelDirectorDefaults.BossHitstopSentinelSec;
 
         public ExchangeResult? LastExchange { get; private set; }
@@ -70,6 +71,8 @@ namespace Dovus.Game.Feel
             _afterimage = afterimage;
             _playerTransform = playerTransform;
         }
+
+        public void BindHaptics(FeelHapticsRuntime haptics) => _haptics = haptics;
 
         /// <summary>
         /// Oyuncu vuruşu bossa değdi: görsel hitstop + sarsıntı + kırmızı gövde parlaması.
@@ -165,7 +168,7 @@ namespace Dovus.Game.Feel
 
                 if (result.Grade == DodgeGrade.Mukemmel)
                 {
-                    FeelHaptics.Pulse(feel.PerfectDodgeHapticMs);
+                    _haptics?.Pulse(feel.PerfectDodgeHapticMs);
                     if (_afterimage != null && _playerTransform != null)
                     {
                         _afterimage.EmitBurst(
@@ -188,7 +191,7 @@ namespace Dovus.Game.Feel
                 _playerFlash?.Flash(_colors.Visuals.TelegraphHot);
                 float hold = feel.PlayerHitVignetteSec > 0f ? feel.PlayerHitVignetteSec : _colors.Hud.VignetteHoldSec;
                 _vignetteUntil = Time.unscaledTime + hold;
-                FeelHaptics.Pulse(feel.PlayerHitHapticMs);
+                _haptics?.Pulse(feel.PlayerHitHapticMs);
                 DebugConfig.DevLog(
                     $"[Feel2Verify] player-hit vignette={hold:0.00}s haptic={feel.PlayerHitHapticMs}ms shake={feel.ShakeHitPx}px");
             }

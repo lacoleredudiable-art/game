@@ -123,7 +123,7 @@ namespace Dovus.Game.Casting.Input
                 && outcome == DrawFeedback.StrokeOutcome.None)
             {
                 long ms = _s.Tuning != null ? _s.Tuning.Input.DotVibrationMs : CastingInputDefaults.FallbackDotVibrationMs;
-                FeelHaptics.Pulse((int)ms);
+                _s.Haptics?.Pulse((int)ms);
             }
         }
 

@@ -478,7 +478,7 @@ namespace Dovus.Game.Skills.Motion
                 shape = "capsule";
             Vector3 pos = new Vector3(hit.OriginX, _host.Player != null ? _host.Player.position.y + MotionTemplateDriverDefaults.HitFxHeightAbovePlayerM : MotionTemplateDriverDefaults.HitFxHeightAbovePlayerM, hit.OriginZ);
             Vector3 dir = new Vector3(hit.DirX, 0f, hit.DirZ);
-            GameObject fx = HitboxVfxRegistry.Create(
+            GameObject fx = _host.HitboxVfx?.Create(
                 "motion-" + _templateSkill.Identity.Id,
                 shape,
                 _host.SelectedElementPaint?.ColorHex ?? "#f2d48a",

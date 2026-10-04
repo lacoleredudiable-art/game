@@ -31,6 +31,7 @@ namespace Dovus.Game.Team
             if (renderer != null)
                 SharedTint.Apply(renderer, new Color(0.35f, 0.9f, 0.55f));
             var dummy = go.AddComponent<AllyDummyController>();
+            dummy.BindLiveRegistry(_allyDummies);
             int maxHp = _vitals != null ? _vitals.MaxHp : TeamComboDefaults.VitalsMaxHpFallback;
             dummy.Bind(maxHp, TeamComboDefaults.AllyDummyHpRatio);
             var actor = go.AddComponent<TeamActorHost>();

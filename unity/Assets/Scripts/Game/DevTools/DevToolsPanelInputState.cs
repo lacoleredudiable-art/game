@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Dovus.Game.DevTools
 {
-    sealed class DevToolsPanelInputState : IDebugPanelInputState
+    public sealed class DevToolsPanelInputState : IDebugPanelInputState
     {
         public bool TuningPanelOpen => TuningPanelHud.IsOpen;
         public bool GrammarDebugOpen => GrammarDebugHud.IsOpen;

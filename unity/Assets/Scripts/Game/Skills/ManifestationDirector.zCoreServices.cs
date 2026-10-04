@@ -23,6 +23,7 @@ using Dovus.Game.Skills.Closing;
 using Dovus.Game.Skills.Flow;
 using Dovus.Game.Skills.Passives;
 using Dovus.Game.Skills.Sync;
+using Dovus.Game.Vfx;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -151,6 +152,8 @@ namespace Dovus.Game.Skills
 
             public PlayerVitalsHost CachedPlayerVitals() => _md.CachedPlayerVitals();
             public bool SwapDrawUnlocked(double worldMs) => _md.SwapDrawUnlocked(worldMs);
+
+            public PlaceholderFactory Placeholders => _md.Placeholders;
         }
     }
 }

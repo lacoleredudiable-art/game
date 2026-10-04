@@ -13,6 +13,7 @@ using Dovus.Game.Actors;
 using Dovus.Game.Platform;
 using Dovus.Game.Data;
 using Dovus.Game.Hud;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Dovus.Game.Skills.Closing
@@ -43,5 +44,6 @@ namespace Dovus.Game.Skills.Closing
         bool IsEnemyBody(Transform body);
         Vector3? BossHitPoint();
         Color? DamageTint();
+        IReadOnlyList<TargetableHost> LiveTargetables { get; }
     }
 }

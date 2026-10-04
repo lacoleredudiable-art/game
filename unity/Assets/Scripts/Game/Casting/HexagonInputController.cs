@@ -189,6 +189,12 @@ namespace Dovus.Game.Casting
             return 0;
         }
 
+        public void ConfigureDebugAndFeel(IDebugPanelInputState debugPanel, FeelHapticsRuntime haptics)
+        {
+            _session.DebugPanel = debugPanel;
+            _session.Haptics = haptics;
+        }
+
         public void Bind(
             GameClockHost clock,
             InkTrailView ink,

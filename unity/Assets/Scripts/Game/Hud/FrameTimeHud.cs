@@ -23,10 +23,12 @@ namespace Dovus.Game.Hud
 
         bool _appliedVisible;
         GameObject _root;
+        IDebugPanelsChromeSink _chrome;
 
-        public void Configure(GameTuning tuning, Transform canvasRoot)
+        public void Configure(GameTuning tuning, Transform canvasRoot, IDebugPanelsChromeSink chrome = null)
         {
             _tuning = tuning;
+            _chrome = chrome;
 
             var go = new GameObject("FrameTimeHud");
             _root = go;
@@ -58,9 +60,8 @@ namespace Dovus.Game.Hud
             ApplyVisibility(_tuning != null && _tuning.Hud.ShowFrameTimeHud);
 
 #if UNITY_EDITOR || DOVUS_DEBUG
-            var chrome = DebugPanelsChromeAccess.Sink;
-            chrome?.Register(ApplyChrome);
-            ApplyChrome(chrome?.Visible ?? false);
+            _chrome?.Register(ApplyChrome);
+            ApplyChrome(_chrome?.Visible ?? false);
 #endif
         }
 
@@ -71,7 +72,7 @@ namespace Dovus.Game.Hud
                 _root.SetActive(visible && (_tuning == null || _tuning.Hud.ShowFrameTimeHud));
         }
 
-        void OnDestroy() => DebugPanelsChromeAccess.Sink?.Unregister(ApplyChrome);
+        void OnDestroy() => _chrome?.Unregister(ApplyChrome);
 #endif
 
         void ApplyVisibility(bool visible)

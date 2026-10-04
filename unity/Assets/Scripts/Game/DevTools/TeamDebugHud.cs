@@ -1,5 +1,6 @@
 using Dovus.Core.Shared;
 using Dovus.Game.Actors;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Team;
 using UnityEngine;
 
@@ -11,39 +12,30 @@ namespace Dovus.Game.DevTools
     /// </summary>
     public sealed class TeamDebugHud : MonoBehaviour
     {
-        string _skill = SkillIds.FixedBlast;
-        // K2: varsayılan kapalı (HUD'un sol üstünü kaplıyordu); yalnız editör / DOVUS_DEBUG dev build.
+        string _skill = SkillIds.DenseStrike;
         bool _open = false;
-
-#if UNITY_EDITOR || DOVUS_DEBUG
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        static void Boot()
-        {
-            if (FindAnyObjectByType<TeamDebugHud>() != null)
-                return;
-            var go = new GameObject("TeamDebugMenu");
-            go.AddComponent<TeamDebugHud>();
-            DontDestroyOnLoad(go);
-        }
-#endif
-
-#if UNITY_EDITOR || DOVUS_DEBUG
+        TeamComboAccess _teamAccess;
+        IDebugPanelsChromeSink _chrome;
         bool _chromeVisible = true;
         System.Action<bool> _chromeApply;
 
-        void Awake()
+        public void Configure(TeamComboAccess teamAccess, IDebugPanelsChromeSink chrome)
         {
-            _chromeApply = v => _chromeVisible = v;
-            DebugPanelsChrome.Register(_chromeApply);
-            _chromeVisible = DebugPanelsChrome.Visible;
+            _teamAccess = teamAccess;
+            _chrome = chrome;
+            if (_chromeApply == null)
+            {
+                _chromeApply = v => _chromeVisible = v;
+                _chrome?.Register(_chromeApply);
+                _chromeVisible = _chrome?.Visible ?? true;
+            }
         }
 
         void OnDestroy()
         {
             if (_chromeApply != null)
-                DebugPanelsChrome.Unregister(_chromeApply);
+                _chrome?.Unregister(_chromeApply);
         }
-#endif
 
         void OnGUI()
         {
@@ -51,7 +43,7 @@ namespace Dovus.Game.DevTools
             if (!_chromeVisible)
                 return;
 #endif
-            TeamComboHost host = TeamComboHost.Instance;
+            TeamComboHost host = _teamAccess?.Host;
             if (host == null)
                 return;
 

@@ -13,10 +13,11 @@ namespace Dovus.Game.Vfx
 
         static Material _alphaTextured;
         static Material _additiveTextured;
+        static readonly KenneyVfxTextures DefaultKenney = new(null);
 
         // Mermi gölgesi/parıltısı gibi elle çizilen quad'lar da paylaşır: yumuşak nokta kalmalı.
-        public static Material AlphaTextured => _alphaTextured ??= KenneyVfxTextures.GetParticleMaterial(null, false);
-        public static Material AdditiveTextured => _additiveTextured ??= KenneyVfxTextures.GetParticleMaterial(null, true);
+        public static Material AlphaTextured => _alphaTextured ??= DefaultKenney.GetParticleMaterial(null, false);
+        public static Material AdditiveTextured => _additiveTextured ??= DefaultKenney.GetParticleMaterial(null, true);
 
         public static Shader ResolveShaderPublic() => ResolveShader();
 
