@@ -7,6 +7,7 @@ using NUnit.Framework;
 using System;
 using System.IO;
 
+using Dovus.Core.Shared;
 namespace CoreTests;
 
 [TestFixture]

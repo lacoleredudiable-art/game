@@ -3,6 +3,7 @@ using Dovus.Core.Data;
 using Dovus.Core.Grammar;
 using NUnit.Framework;
 
+using Dovus.Core.Shared;
 namespace CoreTests;
 
 [TestFixture]

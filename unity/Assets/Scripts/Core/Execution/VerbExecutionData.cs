@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using Dovus.Core.Data;
 using Dovus.Core.Grammar;
 
+using Dovus.Core.Shared;
 namespace Dovus.Core.Execution
 {
     /// <summary>docs/element-sistemi.json hitbox_vfx.fiil_hitbox satırı (metin boyutlar sayıya çevrilir).</summary>

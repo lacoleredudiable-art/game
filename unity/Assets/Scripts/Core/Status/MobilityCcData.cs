@@ -5,9 +5,8 @@ using System.Text;
 using Dovus.Core;
 using Dovus.Core.Data;
 using Dovus.Core.Grammar;
-using Dovus.Core.Status;
-
-namespace Dovus.Core.Combat
+using Dovus.Core.Shared;
+namespace Dovus.Core.Status
 {
     /// <summary>v6.1.1 mobility_cc verisini parse eder ve saf C# çözümlerini sunar.</summary>
     public sealed class MobilityCcData
@@ -23,7 +22,7 @@ namespace Dovus.Core.Combat
         public string SameCcStacking { get; private set; } = string.Empty;
         public string DifferentCcStacking { get; private set; } = string.Empty;
         /// <summary>Kök bitince kısa bağışıklık. JSON'da yoksa 0.5 sn.</summary>
-        public double RootImmunityMs { get; private set; } = SkillNumberFallbacks.RootImmunityMs;
+        public double RootImmunityMs { get; private set; } = StatusDefaults.RootImmunityMs;
         public float LightPoise { get; private set; }
         public float MediumPoise { get; private set; }
         public float HeavyPoise { get; private set; }
@@ -197,7 +196,7 @@ namespace Dovus.Core.Combat
             DesignWarnings.Once(
                 "mobility_cc.root_immunity_sec",
                 "element-sistemi.json kök bağışıklığı yok; yedek 0.5 sn kullanıldı.");
-            return SkillNumberFallbacks.RootImmunityMs;
+            return StatusDefaults.RootImmunityMs;
         }
 
         static bool TrySeconds(JsonValue obj, string field, out double seconds)

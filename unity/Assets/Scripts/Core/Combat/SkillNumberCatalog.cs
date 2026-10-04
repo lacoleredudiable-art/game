@@ -7,6 +7,7 @@ using Dovus.Core.Grammar;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 
+using Dovus.Core.Shared;
 namespace Dovus.Core.Combat
 {
     /// <summary>

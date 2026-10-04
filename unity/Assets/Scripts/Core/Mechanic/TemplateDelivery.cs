@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Dovus.Core.Grammar;
 using Dovus.Core.Motion;
 
+using Dovus.Core.Shared;
 namespace Dovus.Core.Mechanic
 {
     public enum DeliveryBeatKind

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 
+using Dovus.Core.Shared;
 namespace IntegrationTests;
 
 [TestFixture]

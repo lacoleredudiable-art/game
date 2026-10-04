@@ -7,6 +7,7 @@ using NUnit.Framework;
 using System;
 using System.IO;
 
+using Dovus.Core.Shared;
 namespace CoreTests;
 
 /// <summary>hitbox_vfx.fiil_hitbox + mobility_cc.i_frame + Hareket/kendine fiil kuralları.</summary>

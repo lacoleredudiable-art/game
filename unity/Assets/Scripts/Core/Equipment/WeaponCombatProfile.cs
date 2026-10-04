@@ -1,6 +1,6 @@
 using System;
-using Dovus.Core.Grammar;
 
+using Dovus.Core.Shared;
 namespace Dovus.Core.Equipment
 {
     /// <summary>

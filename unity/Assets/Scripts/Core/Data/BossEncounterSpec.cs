@@ -2,6 +2,7 @@ using Dovus.Core.Combat;
 using Dovus.Core.Grammar;
 using System.Collections.Generic;
 
+using Dovus.Core.Shared;
 namespace Dovus.Core.Data
 {
     public readonly struct BossOnHitStatus
