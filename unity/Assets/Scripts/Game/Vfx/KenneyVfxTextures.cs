@@ -1,4 +1,3 @@
-using Dovus.Core.Grammar;
 using Dovus.Game.Config;
 using System.Collections.Generic;
 using UnityEngine;
@@ -29,17 +28,6 @@ namespace Dovus.Game.Vfx
         public static string TexDark => NameOrDefault(_tuning?.VfxTexDark, "magic_04");
         public static string TexHit => NameOrDefault(_tuning?.VfxTexHit, "spark_05");
         public static string TexInk => NameOrDefault(_tuning?.VfxTexInk, "light_01");
-
-        public static string ForRune(Rune rune) => rune switch
-        {
-            Rune.Ates => TexFire,
-            Rune.Su => TexWater,
-            Rune.Hava => TexAir,
-            Rune.Toprak => TexEarth,
-            Rune.Aydinlik => TexLight,
-            Rune.Karanlik => TexDark,
-            _ => TexHit
-        };
 
         /// <summary>Element tint rengine en yakın çekirdek rün dokusu.</summary>
         public static string ClosestElementName(Color tint)

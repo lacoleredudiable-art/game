@@ -16,15 +16,9 @@ namespace Dovus.Game.Actors
         AnimationFrameNode _node;
         double _startWorldMs;
         bool _playing;
-        bool _damageFired;
         bool _vfxFired;
-        int _nextEveryTickFrame;
-        int _everyTickEndFrame;
-        int? _damageFrame;
-        bool _damageEveryTick;
         int? _spawnVfxFrame;
 
-        public event Action<double> DamageFrameReached;
         public event Action<double> SpawnVfxFrameReached;
 
         public bool IsPlaying => _playing;
@@ -59,9 +53,7 @@ namespace Dovus.Game.Actors
             _node = node;
             _startWorldMs = worldMs;
             _playing = true;
-            _damageFired = false;
             _vfxFired = false;
-            ParseDamageSchedule(node);
             _spawnVfxFrame = node.SpawnVfxAtFrame;
         }
 
@@ -107,12 +99,7 @@ namespace Dovus.Game.Actors
         public void Stop()
         {
             _playing = false;
-            _damageFired = false;
             _vfxFired = false;
-            _nextEveryTickFrame = 0;
-            _everyTickEndFrame = 0;
-            _damageFrame = null;
-            _damageEveryTick = false;
             _spawnVfxFrame = null;
             LastPlayApplied = false;
             LastClipName = string.Empty;
@@ -164,27 +151,6 @@ namespace Dovus.Game.Actors
                 {
                     _vfxFired = true;
                     SpawnVfxFrameReached?.Invoke(_startWorldMs + at);
-                }
-            }
-
-            if (_damageEveryTick)
-            {
-                while (_nextEveryTickFrame <= _everyTickEndFrame)
-                {
-                    double at = FrameToElapsedMs(_nextEveryTickFrame, totalFrames, totalDurationMs);
-                    if (elapsedMs + 1e-6 < at)
-                        break;
-                    _nextEveryTickFrame++;
-                    DamageFrameReached?.Invoke(_startWorldMs + at);
-                }
-            }
-            else if (_damageFrame.HasValue && !_damageFired)
-            {
-                double at = FrameToElapsedMs(_damageFrame.Value, totalFrames, totalDurationMs);
-                if (elapsedMs + 1e-6 >= at)
-                {
-                    _damageFired = true;
-                    DamageFrameReached?.Invoke(_startWorldMs + at);
                 }
             }
 
@@ -265,25 +231,6 @@ namespace Dovus.Game.Actors
                     return true;
             }
             return false;
-        }
-
-        void ParseDamageSchedule(AnimationFrameNode node)
-        {
-            _damageFrame = null;
-            _damageEveryTick = false;
-            _nextEveryTickFrame = 0;
-            _everyTickEndFrame = 0;
-
-            if (AnimationDamageSchedule.TryReadEveryTick(node, out int tickStart, out int tickEnd))
-            {
-                _damageEveryTick = true;
-                _nextEveryTickFrame = tickStart;
-                _everyTickEndFrame = tickEnd;
-                return;
-            }
-
-            if (AnimationDamageSchedule.TryReadSingleFrame(node, out int frame))
-                _damageFrame = frame;
         }
     }
 }

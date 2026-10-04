@@ -7,25 +7,22 @@ namespace Dovus.App.Team
         public float LifestealAdd { get; }
         public float MoveSpeedMult { get; }
         public float DamageTakenMult { get; }
-        public float MissChance { get; }
 
         public ActorModifiers(
             float attackSpeedMult,
             float damageMult,
             float lifestealAdd,
             float moveSpeedMult,
-            float damageTakenMult,
-            float missChance = 0f)
+            float damageTakenMult)
         {
             AttackSpeedMult = attackSpeedMult;
             DamageMult = damageMult;
             LifestealAdd = lifestealAdd;
             MoveSpeedMult = moveSpeedMult;
             DamageTakenMult = damageTakenMult;
-            MissChance = missChance;
         }
 
         public static ActorModifiers Default =>
-            new(1f, 1f, 0f, 1f, 1f, 0f);
+            new(1f, 1f, 0f, 1f, 1f);
     }
 }

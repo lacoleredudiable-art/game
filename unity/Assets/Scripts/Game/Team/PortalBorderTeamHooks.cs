@@ -108,8 +108,7 @@ namespace Dovus.Game.Team
                     damageMult ?? current.DamageMult,
                     lifestealAdd ?? current.LifestealAdd,
                     moveSpeedMult ?? current.MoveSpeedMult,
-                    damageTakenMult ?? current.DamageTakenMult,
-                    current.MissChance));
+                    damageTakenMult ?? current.DamageTakenMult));
         }
     }
 }

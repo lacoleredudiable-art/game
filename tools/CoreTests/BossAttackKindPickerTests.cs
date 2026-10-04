@@ -1,4 +1,5 @@
 using Dovus.Core.Combat;
+using Dovus.Core.Data;
 using Dovus.Core.Grammar;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
@@ -106,7 +107,7 @@ public sealed class BossAttackKindPickerTests
         string root = Path.GetFullPath(Path.Combine(TestContext.CurrentContext.TestDirectory, "..", "..", "..", "..", ".."));
         string json = File.ReadAllText(Path.Combine(root, "unity", "Assets", "Resources", "Bosses", "karadul.json"));
         var fromJson = new BossTuning { VolleyCount = 0, VolleyDamage = 0, VolleyWindupMs = 0 };
-        Assert.That(BossVolleyData.Apply(MiniJson.Parse(json), fromJson), Is.True);
+        Assert.That(BossEncounterMapper.ApplyVolley(fromJson, json), Is.True);
         var d = new BossTuning();
         Assert.Multiple(() =>
         {

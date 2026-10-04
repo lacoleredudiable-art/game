@@ -47,17 +47,6 @@ namespace Dovus.Game.Arena
                 r.enabled = visible;
         }
 
-        /// <summary>Yalnız zemin görselini değiştirir (collider yoktu, Build'de de yok — dokunulmaz).</summary>
-        public static void SetFloorMaterial(GameObject arenaRoot, Material material)
-        {
-            if (arenaRoot == null || material == null)
-                return;
-            Transform floor = arenaRoot.transform.Find("Floor");
-            MeshRenderer rend = floor != null ? floor.GetComponent<MeshRenderer>() : null;
-            if (rend != null)
-                rend.sharedMaterial = material;
-        }
-
         static void BuildFloor(Transform parent, float radiusM, Color color)
         {
             // Unity Cylinder: çap 1, yükseklik 2 — düz disk için Y küçültülür.

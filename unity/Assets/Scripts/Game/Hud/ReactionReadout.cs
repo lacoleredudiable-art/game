@@ -287,38 +287,6 @@ namespace Dovus.Game.Hud
             _tally.color = new Color(1f, 1f, 1f, 0.55f);
         }
 
-        static string GradeLabel(DodgeGrade? g) => g switch
-        {
-            // O2: tek mükemmel tanımı, tek yazı.
-            DodgeGrade.Mukemmel => "PERFECT",
-            DodgeGrade.Harika => "HARİKA",
-            DodgeGrade.Temiz => "TEMİZ",
-            DodgeGrade.Siyirdi => "SIYIRDI",
-            _ => "SIYIRMA"
-        };
-
-        static string GradeMessage(DodgeGrade? g) => g switch
-        {
-            DodgeGrade.Mukemmel => "sonraki vuruş güçlü",
-            DodgeGrade.Harika => "neredeyse kusursuz",
-            DodgeGrade.Temiz => "iyi okudun",
-            DodgeGrade.Siyirdi => "biraz erken bastın",
-            _ => string.Empty
-        };
-
-        /// <summary>§10: oyuncu efekti camgöbeği/mor. Derece iyileştikçe camgöbeğine yaklaşır.</summary>
-        Color GradeColor(DodgeGrade? g)
-        {
-            float t = g switch
-            {
-                DodgeGrade.Mukemmel => 1f,
-                DodgeGrade.Harika => 0.66f,
-                DodgeGrade.Temiz => 0.33f,
-                _ => 0f
-            };
-            return Color.Lerp(_tuning.InkPurple, _tuning.InkCyan, t);
-        }
-
         static Text CreateText(Transform parent, string name, Vector2 anchorMin, Vector2 anchorMax)
         {
             var go = new GameObject(name);
