@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Dovus.Core.Data;
 using Dovus.Core.Grammar;
 
 namespace Dovus.Core.Presentation
@@ -16,12 +17,16 @@ namespace Dovus.Core.Presentation
 
         public int Count => _bindings.Count;
 
-        public static AnimationDatabase FromJson(string json)
-        {
-            if (string.IsNullOrWhiteSpace(json))
-                throw new ArgumentException("JSON boş.", nameof(json));
+        public static AnimationDatabase FromJson(string json) =>
+            FromDocument(ElementSystemDocument.Parse(json));
 
-            JsonValue root = MiniJson.Parse(json);
+        public static AnimationDatabase FromDocument(ElementSystemDocument doc) =>
+            FromJsonRoot(doc.Root);
+
+        public static AnimationDatabase FromJsonRoot(JsonValue root)
+        {
+            if (root.IsNull)
+                throw new ArgumentException("JSON kökü okunamadı.", nameof(root));
             var database = new AnimationDatabase();
             JsonValue animations = root["animations"];
             JsonValue verbBase = root["verb_base"];

@@ -20,7 +20,15 @@ namespace Dovus.Core.Data
             header = default;
             if (string.IsNullOrWhiteSpace(json))
                 return false;
-            JsonValue root = MiniJson.Parse(json);
+            return TryParse(ElementSystemDocument.Parse(json), selectionTransitionMsFallback, out header);
+        }
+
+        public static bool TryParse(ElementSystemDocument doc, int selectionTransitionMsFallback, out ElementSystemHeader header)
+        {
+            header = default;
+            if (doc == null)
+                return false;
+            JsonValue root = doc.Root;
             if (root.IsNull)
                 return false;
             string version = root["system"]["version"].AsString();

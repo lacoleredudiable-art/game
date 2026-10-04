@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Dovus.Core.Data;
 using Dovus.Core.Grammar;
 
 namespace Dovus.Core.Combat
@@ -45,7 +46,14 @@ namespace Dovus.Core.Combat
         {
             if (string.IsNullOrWhiteSpace(json))
                 return false;
-            return RequiresWeaponCompatibility(MiniJson.Parse(json));
+            return RequiresWeaponCompatibility(ElementSystemDocument.Parse(json).Root);
+        }
+
+        public static bool RequiresWeaponCompatibility(ElementSystemDocument doc)
+        {
+            if (doc == null)
+                return false;
+            return RequiresWeaponCompatibility(doc.Root);
         }
 
         public static bool RequiresWeaponCompatibility(JsonValue root)

@@ -1,4 +1,5 @@
 using System;
+using Dovus.Core.Data;
 using Dovus.Core.Grammar;
 
 namespace Dovus.Core.Combat
@@ -29,11 +30,16 @@ namespace Dovus.Core.Combat
         public float Armor { get; }
         public float ArmorHard { get; }
 
-        public static BossCombatProfile FromJson(string json)
+        public static BossCombatProfile FromJson(string json) =>
+            FromDocument(ElementSystemDocument.Parse(json));
+
+        public static BossCombatProfile FromDocument(ElementSystemDocument doc) =>
+            FromJsonRoot(doc.Root);
+
+        public static BossCombatProfile FromJsonRoot(JsonValue root)
         {
-            if (string.IsNullOrWhiteSpace(json))
-                throw new ArgumentException("JSON boş.", nameof(json));
-            JsonValue root = MiniJson.Parse(json);
+            if (root.IsNull)
+                throw new ArgumentException("JSON kökü okunamadı.", nameof(root));
             JsonValue player = root["global_rules"]["player_stats"];
             JsonValue boss = root["global_rules"]["boss_stats_default"];
             float playerHp = player["max_hp"].AsFloat(100f);

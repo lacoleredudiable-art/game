@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Dovus.Core.Data;
 using Dovus.Core.Grammar;
 
 namespace Dovus.Core.Equipment
@@ -26,12 +27,16 @@ namespace Dovus.Core.Equipment
         public string CompatibleUiLabel { get; private set; } = string.Empty;
         public string IncompatibleUiLabel { get; private set; } = string.Empty;
 
-        public static EquipmentCatalog FromJson(string json)
-        {
-            if (string.IsNullOrWhiteSpace(json))
-                throw new ArgumentException("JSON boş.", nameof(json));
+        public static EquipmentCatalog FromJson(string json) =>
+            FromDocument(ElementSystemDocument.Parse(json));
 
-            JsonValue root = MiniJson.Parse(json);
+        public static EquipmentCatalog FromDocument(ElementSystemDocument doc) =>
+            FromJsonRoot(doc.Root);
+
+        public static EquipmentCatalog FromJsonRoot(JsonValue root)
+        {
+            if (root.IsNull)
+                throw new ArgumentException("JSON kökü okunamadı.", nameof(root));
             if (root["weapons"].Kind != JsonKind.Array)
                 throw new InvalidOperationException(
                     "element-sistemi: v6 şeması (weapons[]) bekleniyor; v5 equipment_system artık okunmuyor.");
