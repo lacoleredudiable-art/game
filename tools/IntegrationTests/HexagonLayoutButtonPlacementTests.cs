@@ -67,6 +67,13 @@ public class HexagonLayoutButtonPlacementTests
             forbidden,
             gap,
             $"swap {w}x{h} mirror={mirror}");
+
+        Vector2 lockC = HexagonLayoutScreen.LockOnButtonPx(tuning, w, h);
+        Vector2 swapC = HexagonLayoutScreen.WeaponSwapButtonPx(tuning, w, h);
+        float lockSwapEdge = HudButtonPlacement.EdgeGap(
+            new Circle2(lockC.x, lockC.y, HexagonLayoutScreen.LockOnButtonRadiusPx(tuning)),
+            new Circle2(swapC.x, swapC.y, HexagonLayoutScreen.WeaponSwapButtonRadiusPx(tuning)));
+        Assert.That(lockSwapEdge, Is.GreaterThanOrEqualTo(0f), $"lock-on/swap overlap {w}x{h} mirror={mirror} edge={lockSwapEdge:0.##}");
     }
 
     static void AssertButtonClear(Vector2 center, float radius, Circle2[] forbidden, float gap, string label)
