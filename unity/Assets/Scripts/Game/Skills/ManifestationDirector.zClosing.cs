@@ -146,7 +146,7 @@ namespace Dovus.Game.Skills
             return _closingQueue.ResolvePendingSkill(p);
         }
 
-        static bool IsFriendlyFieldVerb(in SkillResolution skill) =>
+        internal static bool IsFriendlyFieldVerb(in SkillResolution skill) =>
             skill.VerbId is "2" or "4" or "8" or "9";
 
         void ApplyClosingStatuses(PendingClosing p, SkillResolution skill, bool bossReached = true)

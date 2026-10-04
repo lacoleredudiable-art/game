@@ -23,30 +23,11 @@ namespace Dovus.Game.Skills
     /// </summary>
     public sealed partial class ManifestationDirector
     {
-        struct MechanicTimer
-        {
-            public double DueMs;
-            public Action Run;
-        }
-
-        sealed class PortalPair
-        {
-            public GameObject A;
-            public GameObject B;
-            public double UntilMs;
-            public bool Inside;
-        }
-
         readonly Dictionary<(int, int, int), MechanicPlan> _mechanicPlans = new();
         string _cardEffect = string.Empty;
-        readonly List<MechanicTimer> _mechanicTimers = new();
-        readonly List<PortalPair> _portals = new();
 
         /// <summary>Son cast'in gramer planı (test/HUD).</summary>
-        public MechanicPlan LastMechanicPlan { get; private set; }
-
-        MechanicGrammar MechanicEngine =>
-            ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design) ? design.Mechanics : null;
+        public MechanicPlan LastMechanicPlan { get; set; }
 
         int EquippedWeaponNumber()
         {
@@ -143,11 +124,13 @@ namespace Dovus.Game.Skills
                             applied.Add("portal sistemi");
                             break;
                         }
-                        OpenPortal(plan, aimDir, now + e.DurationSec * 1000.0);
+                        EnsureMechanicsServices();
+                        _mechanicPortals.OpenPortal(plan, aimDir, now + e.DurationSec * 1000.0);
                         applied.Add($"portal {e.DurationSec:0.#}sn");
                         break;
                     case ("varlik", "durum_aktar"):
-                        ApplyStatusTransfer(applied);
+                        EnsureMechanicsServices();
+                        _mechanicWorld.ApplyStatusTransfer(applied);
                         break;
                 }
             }
@@ -281,16 +264,19 @@ namespace Dovus.Game.Skills
                         applied.Add("yer değiştirme");
                         break;
                     case ("hiz", "geri_sar") when _clock != null:
-                        RewindBoss(e.Amount, _clock.Director.WorldTimeMs, applied);
+                        EnsureMechanicsServices();
+                        _mechanicWorld.RewindBoss(e.Amount, _clock.Director.WorldTimeMs, applied);
                         break;
                     case ("varlik", "durum_aktar"):
-                        ApplyStatusTransfer(applied);
+                        EnsureMechanicsServices();
+                        _mechanicWorld.ApplyStatusTransfer(applied);
                         break;
                     case ("varlik", "durum_ekle"):
                         ApplyStatusAdd(e, applied);
                         break;
                     case ("varlik", "iyi_durum_sil"):
-                        PurgeBossBuffs(applied);
+                        EnsureMechanicsServices();
+                        _mechanicWorld.PurgeBossBuffs(applied);
                         break;
                 }
             }
@@ -313,23 +299,20 @@ namespace Dovus.Game.Skills
             applied.Add($"{kind} {ms / 1000.0:0.##}sn");
         }
 
-        void After(double now, float delaySec, Action run) =>
-            _mechanicTimers.Add(new MechanicTimer { DueMs = now + delaySec * 1000.0, Run = run });
+        void After(double now, float delaySec, Action run)
+        {
+            EnsureMechanicsServices();
+            _mechanicPortals.ScheduleAfter(now, delaySec, run);
+        }
 
         void TickMechanics(double worldMs)
         {
-            for (int i = _mechanicTimers.Count - 1; i >= 0; i--)
-            {
-                if (worldMs < _mechanicTimers[i].DueMs)
-                    continue;
-                Action run = _mechanicTimers[i].Run;
-                _mechanicTimers.RemoveAt(i);
-                run();
-            }
-            TickPortals(worldMs);
-            TickMechanicWorld(worldMs);
+            EnsureMechanicsServices();
+            _mechanicPortals.TickTimers(worldMs);
+            _mechanicPortals.TickPortals(worldMs);
+            _mechanicWorld.Tick(worldMs);
             TickProjectileErase(worldMs);
-            TickJsonEffects(worldMs);
+            _jsonEffects.Tick(worldMs);
         }
 
         Vector3 ClampToArena(Vector3 pos) =>
@@ -368,69 +351,5 @@ namespace Dovus.Game.Skills
             return bossPos + (bossPos - from);
         }
 
-        // ---------------------------------------------------------------- portal
-
-        void OpenPortal(MechanicPlan plan, Vector3 aimDir, double untilMs)
-        {
-            if (_player == null)
-                return;
-            aimDir.y = 0f;
-            if (aimDir.sqrMagnitude < 0.0001f)
-                aimDir = _player.forward;
-            Vector3 a = _player.position;
-            Vector3 b = ClampToArena(a + aimDir.normalized * (float)plan.Body.ReachM);
-            _portals.Add(new PortalPair
-            {
-                A = CreatePortalGate(a),
-                B = CreatePortalGate(b),
-                UntilMs = untilMs,
-                Inside = true
-            });
-        }
-
-        GameObject CreatePortalGate(Vector3 pos)
-        {
-            MechanicGrammar grammar = MechanicEngine;
-            float r = grammar != null ? (float)grammar.Rules.Param("portal_trigger_radius_m") : 1f;
-            GameObject gate = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            gate.name = "MechanicPortal";
-            Destroy(gate.GetComponent<Collider>());
-            gate.transform.SetParent(transform, true);
-            gate.transform.position = new Vector3(pos.x, 0.03f, pos.z);
-            gate.transform.localScale = new Vector3(r * 2f, 0.02f, r * 2f);
-            return gate;
-        }
-
-        void TickPortals(double worldMs)
-        {
-            if (_portals.Count == 0 || _player == null)
-                return;
-            MechanicGrammar grammar = MechanicEngine;
-            float r = grammar != null ? (float)grammar.Rules.Param("portal_trigger_radius_m") : 1f;
-            Vector3 p = _player.position;
-            for (int i = _portals.Count - 1; i >= 0; i--)
-            {
-                PortalPair pair = _portals[i];
-                if (worldMs >= pair.UntilMs || pair.A == null || pair.B == null)
-                {
-                    if (pair.A != null) Destroy(pair.A);
-                    if (pair.B != null) Destroy(pair.B);
-                    _portals.RemoveAt(i);
-                    continue;
-                }
-                Vector3 a = pair.A.transform.position;
-                Vector3 b = pair.B.transform.position;
-                bool inA = FlatDistance(p, a) <= r;
-                bool inB = FlatDistance(p, b) <= r;
-                // Çıkış kapısında belirince oyuncu kapıdan çıkana kadar tekrar geçiş yok.
-                if (!inA && !inB)
-                    pair.Inside = false;
-                else if (!pair.Inside)
-                {
-                    TeleportPlayer(inA ? b : a);
-                    pair.Inside = true;
-                }
-            }
-        }
     }
 }

@@ -1,6 +1,7 @@
 using Dovus.Core.Combat;
 using Dovus.Core.Mechanic;
 using Dovus.Game.Boss;
+using Dovus.Game.Skills.Mechanics;
 using System;
 using UnityEngine;
 
@@ -30,9 +31,9 @@ namespace Dovus.Game.Skills
 
         void ApplyProjectileReflect(float projectileDamage)
         {
-            float mult = (float)JsonParam("projectile_reflect_mult", 1.0);
+            float mult = (float)_mechanicsHost.JsonParam("projectile_reflect_mult", 1.0);
             float amount = projectileDamage * mult;
-            JsonLog($"mermi geri döndü → boss {amount:0.#}");
+            JsonEffectRuntime.JsonLog($"mermi geri döndü → boss {amount:0.#}");
             ApplyReflectedDamage(amount);
         }
 
@@ -42,7 +43,7 @@ namespace Dovus.Game.Skills
             if (_clock == null)
                 return false;
             double now = _clock.Director.WorldTimeMs;
-            foreach (MechanicVolume v in _mechanicVolumes)
+            foreach (MechanicVolume v in _mechanicWorld.Volumes)
             {
                 if (v.Erase.Mode != EraseMode.Shroud || now >= v.UntilMs)
                     continue;
@@ -53,7 +54,7 @@ namespace Dovus.Game.Skills
         }
 
         EraseSpec ProjectileEraseSpec(MechanicPlan plan) =>
-            ProjectileEraseRules.Erases(plan) ? ProjectileEraseRules.For(plan, JsonRules) : default;
+            ProjectileEraseRules.Erases(plan) ? ProjectileEraseRules.For(plan, _mechanicsHost.JsonRules) : default;
 
         /// <summary>Cast anında: delici hat (9-1) oyuncudan nişan boyunca her mermiyi siler.</summary>
         void BeginProjectileErase(MechanicPlan plan, Vector3 aimDir, Vector3 center)
@@ -91,7 +92,7 @@ namespace Dovus.Game.Skills
             if (healed > 0f && _playerStatus != null)
                 _playerStatus.ApplyHeal(healed);
             if (done > 0)
-                JsonLog($"mermi gövde yolu {spec.Mode} {plan.SkillId}: {done} ({spec})" + (healed > 0f ? $" +{healed:0.#} can" : ""));
+                JsonEffectRuntime.JsonLog($"mermi gövde yolu {spec.Mode} {plan.SkillId}: {done} ({spec})" + (healed > 0f ? $" +{healed:0.#} can" : ""));
         }
 
         bool ApplyEraseMode(int pid, in EraseSpec spec, ref float healed)
@@ -140,7 +141,7 @@ namespace Dovus.Game.Skills
             for (int i = 0; i < n; i++)
                 _projectiles.Sim.Delete(_eraseIds[i], ProjectileEventKind.Erased);
             if (n > 0)
-                JsonLog($"mermi delici hat {plan.SkillId}: {n} silindi ({length:0.#} m)");
+                JsonEffectRuntime.JsonLog($"mermi delici hat {plan.SkillId}: {n} silindi ({length:0.#} m)");
         }
 
         /// <summary>TickMechanics'ten, TickMechanicWorld'den sonra: hacimler ve bağlar mermiye uygulanır.</summary>
@@ -148,13 +149,13 @@ namespace Dovus.Game.Skills
         {
             if (_projectiles == null || _projectiles.Sim.AliveCount == 0 && !AnyFollowErase())
                 return;
-            foreach (MechanicVolume v in _mechanicVolumes)
+            foreach (MechanicVolume v in _mechanicWorld.Volumes)
             {
                 if (v.Erase.IsEmpty || worldMs >= v.UntilMs)
                     continue;
                 TickEraseVolume(v, worldMs);
             }
-            foreach (MechanicLink link in _mechanicLinks)
+            foreach (MechanicLink link in _mechanicWorld.Links)
             {
                 if (worldMs >= link.UntilMs || link.Target == null || _player == null)
                     continue;
@@ -166,7 +167,7 @@ namespace Dovus.Game.Skills
 
         bool AnyFollowErase()
         {
-            foreach (MechanicVolume v in _mechanicVolumes)
+            foreach (MechanicVolume v in _mechanicWorld.Volumes)
                 if (v.Erase.Shape == EraseShape.Follow)
                     return true;
             return false;
@@ -213,7 +214,7 @@ namespace Dovus.Game.Skills
                 _playerStatus.ApplyHeal(healed);
             if (done > 0)
             {
-                JsonLog($"mermi {spec.Mode} {id}: {done} ({spec})" + (healed > 0f ? $" +{healed:0.#} can" : ""));
+                JsonEffectRuntime.JsonLog($"mermi {spec.Mode} {id}: {done} ({spec})" + (healed > 0f ? $" +{healed:0.#} can" : ""));
                 if (spec.Twice && !v.TwiceDone && _clock != null)
                 {
                     // iki_kez: kopya vuruşunda aynı diskte bir kez daha siler.
@@ -232,7 +233,7 @@ namespace Dovus.Game.Skills
             int n = _projectiles.Sim.QueryCircle(center.x, center.z, radius, _eraseIds, team: 1);
             for (int i = 0; i < n; i++)
                 _projectiles.Sim.Delete(_eraseIds[i], ProjectileEventKind.Erased);
-            JsonLog($"mermi iki_kez {id}: kopya vuruşu {n} silindi");
+            JsonEffectRuntime.JsonLog($"mermi iki_kez {id}: kopya vuruşu {n} silindi");
         }
 
         /// <summary>geri_gonder: mermi boss'a döner (takım 0), en az salvo hızında.</summary>
@@ -275,7 +276,7 @@ namespace Dovus.Game.Skills
                 }
             }
             if (best > 0 && _projectiles.Sim.Delete(best, ProjectileEventKind.Erased))
-                JsonLog($"mermi hedefli {id}: #{best} silindi (çarpmaya {(double.IsPositiveInfinity(bestMs) ? "∞" : (bestMs / 1000.0).ToString("0.##"))} sn)");
+                JsonEffectRuntime.JsonLog($"mermi hedefli {id}: #{best} silindi (çarpmaya {(double.IsPositiveInfinity(bestMs) ? "∞" : (bestMs / 1000.0).ToString("0.##"))} sn)");
         }
 
         /// <summary>bag_hatti: oyuncu↔dost bağ şeridini kesen mermiler silinir.</summary>
@@ -287,7 +288,7 @@ namespace Dovus.Game.Skills
             for (int i = 0; i < n; i++)
                 _projectiles.Sim.Delete(_eraseIds[i], ProjectileEventKind.LinkErased);
             if (n > 0)
-                JsonLog($"mermi bag_hatti {link.Plan?.SkillId}: {n} silindi");
+                JsonEffectRuntime.JsonLog($"mermi bag_hatti {link.Plan?.SkillId}: {n} silindi");
         }
     }
 }
