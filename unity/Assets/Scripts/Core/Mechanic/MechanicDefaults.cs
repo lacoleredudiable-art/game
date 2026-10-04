@@ -7,7 +7,6 @@ namespace Dovus.Core.Mechanic
         public const double MinTimedBodyLifeSec = 0.2;
         public const double DefaultFlowFraction = 0.33;
         public const double BeamChannelLifeMult = 1.3;
-        public const double SecToMs = 1000.0;
         public const float MinDamageEpsilon = 0.01f;
     }
 }

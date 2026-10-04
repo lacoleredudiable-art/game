@@ -3,8 +3,6 @@ namespace Dovus.Game.Skills.Weapons
     /// <summary>PLAN 2B.11d: gömülü oynanış/ayar sayıları.</summary>
     public static class CannonBlastDefaults
     {
-        public const float ArenaHalfSizeFallbackM = 50f;
-        public const float BossBodyRadiusFallbackM = 0.85f;
         public const float SplashRadiusFallbackM = 3f;
         public const float PlayerPushMinSepM = 0.4f;
         public const float BlastSepPadM = 0.15f;

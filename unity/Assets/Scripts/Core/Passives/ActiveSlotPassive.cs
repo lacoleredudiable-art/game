@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using Dovus.Core.Data;
 using Dovus.Core.Grammar;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Core.Passives
 {
     public readonly struct ActiveSlotPassive
@@ -31,6 +31,6 @@ namespace Dovus.Core.Passives
         public JsonValue Modifiers { get; }
         public int ExcludedCastId { get; }
         public float RemainingSec(double worldMs) =>
-            (float)(Math.Max(0.0, UntilMs - worldMs) / PassivesDefaults.SecToMs);
+            (float)(Math.Max(0.0, UntilMs - worldMs) / Units.SecToMs);
     }
 }

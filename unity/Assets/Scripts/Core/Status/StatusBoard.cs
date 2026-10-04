@@ -170,7 +170,7 @@ namespace Dovus.Core.Status
                 return 0f;
 
             float tickPayload = 0f;
-            float dtSec = (float)(worldDtMs / StatusDefaults.SecToMs);
+            float dtSec = (float)(worldDtMs / Dovus.Core.Shared.Units.SecToMs);
             float burnTickThisFrame = 0f;
 
             var expired = new List<StatusKind>();

@@ -1,4 +1,5 @@
 using System;
+using Dovus.Core.Shared;
 
 namespace Dovus.Core.Boss
 {
@@ -20,7 +21,7 @@ namespace Dovus.Core.Boss
             if (Pending)
                 return false;
             Pending = true;
-            _reviveAtMs = nowMs + Math.Max(0.0, collapseSec) * BossDefaults.SecToMs;
+            _reviveAtMs = nowMs + Math.Max(0.0, collapseSec) * Units.SecToMs;
             return true;
         }
 

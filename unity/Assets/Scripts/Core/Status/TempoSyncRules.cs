@@ -12,7 +12,7 @@ namespace Dovus.Core.Status
         {
             bool missing = false;
             if (durationSec > 0)
-                durationMs = durationSec * StatusDefaults.SecToMs;
+                durationMs = durationSec * Units.SecToMs;
             else
             {
                 durationMs = StatusDefaults.TempoSyncFallbackMs;

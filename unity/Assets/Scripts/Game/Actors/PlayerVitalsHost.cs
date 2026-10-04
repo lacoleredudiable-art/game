@@ -11,6 +11,7 @@ using Dovus.Game.Platform;
 using Dovus.Game.Platform;
 using Dovus.Game.Weapons;
 using UnityEngine;
+using Dovus.Core.Shared;
 
 namespace Dovus.Game.Actors
 {
@@ -49,8 +50,8 @@ namespace Dovus.Game.Actors
         public void BindClock(GameClockHost clock) => _clock = clock;
 
         float NowSec() => _clock != null
-            ? (float)(_clock.World.NowMs / ActorsTimeDefaults.SecToMs)
-            : (float)(UnityUnscaledClock.Default.NowMs / ActorsTimeDefaults.SecToMs);
+            ? (float)(_clock.World.NowMs / Units.SecToMs)
+            : (float)(UnityUnscaledClock.Default.NowMs / Units.SecToMs);
 
         void ClearStatusBoard() => GetComponent<ActorStatusHost>()?.Board.Clear();
 

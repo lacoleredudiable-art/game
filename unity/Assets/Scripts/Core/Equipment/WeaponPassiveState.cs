@@ -1,4 +1,5 @@
 using System;
+using Dovus.Core.Shared;
 
 namespace Dovus.Core.Equipment
 {
@@ -24,7 +25,7 @@ namespace Dovus.Core.Equipment
         /// </summary>
         public int EffectiveChain(double nowMs, float gapSec)
         {
-            if (nowMs - _chainStartMs > Math.Max(0f, gapSec) * WeaponPassiveDefaults.SecToMs)
+            if (nowMs - _chainStartMs > Math.Max(0f, gapSec) * Units.SecToMs)
             {
                 _chainCount = 0;
                 return 0;
@@ -36,7 +37,7 @@ namespace Dovus.Core.Equipment
 
         public void NoteBlock(double nowMs, float windowSec)
         {
-            _counterUntilMs = nowMs + Math.Max(0f, windowSec) * WeaponPassiveDefaults.SecToMs;
+            _counterUntilMs = nowMs + Math.Max(0f, windowSec) * Units.SecToMs;
         }
 
         /// <summary>Penceredeki ilk skill vuruşu bonusu yer. Sonrakiler yemez.</summary>
@@ -52,13 +53,13 @@ namespace Dovus.Core.Equipment
 
         public void CommitHammer(double nowMs, float icdSec)
         {
-            _hammerReadyMs = nowMs + Math.Max(0f, icdSec) * WeaponPassiveDefaults.SecToMs;
+            _hammerReadyMs = nowMs + Math.Max(0f, icdSec) * Units.SecToMs;
         }
 
         /// <summary>Art arda skill. Aralık aşılırsa sayaç 1'den başlar. Dönüş bu vuruşun sırası.</summary>
         public int NoteSkill(double nowMs, float gapSec)
         {
-            if (nowMs - _chainStartMs > Math.Max(0f, gapSec) * WeaponPassiveDefaults.SecToMs)
+            if (nowMs - _chainStartMs > Math.Max(0f, gapSec) * Units.SecToMs)
                 _chainCount = 0;
             _chainCount++;
             _chainStartMs = nowMs;
@@ -69,7 +70,7 @@ namespace Dovus.Core.Equipment
         {
             _bonusWeaponId = weaponId;
             _bonusId = bonusId ?? string.Empty;
-            _bonusUntilMs = nowMs + Math.Max(0f, windowSec) * WeaponPassiveDefaults.SecToMs;
+            _bonusUntilMs = nowMs + Math.Max(0f, windowSec) * Units.SecToMs;
             _bonusArmed = true;
         }
 

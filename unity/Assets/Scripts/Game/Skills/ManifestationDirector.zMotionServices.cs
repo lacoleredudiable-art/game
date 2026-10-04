@@ -6,7 +6,6 @@ using Dovus.Core.Input;
 using Dovus.Core.Hud;
 using Dovus.Core.Passives;
 using Dovus.Core.Manifestation;
-using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Motion;
@@ -23,12 +22,12 @@ using Dovus.Game.Skills.Execution;
 using Dovus.Game.Skills.Mechanics;
 using Dovus.Game.Skills.Hosts;
 using Dovus.Game.Skills.Motion;
-using Dovus.Game.Skills.Execution;
 using Dovus.Game.Skills.Weapons;
 using Dovus.Core.Equipment;
 using System.Collections.Generic;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using Dovus.Core.Shared;
 
 namespace Dovus.Game.Skills
 {
@@ -153,14 +152,14 @@ namespace Dovus.Game.Skills
         internal float BossBodyRadius()
         {
             if (_boss == null)
-                return SkillsTimeDefaults.MotionReturnHeightM;
+                return CombatFallbacks.MotionBossBodyRadiusFallbackM;
             Collider col = _boss.GetComponentInChildren<Collider>();
             if (col == null)
             {
                 DesignWarnings.Once(
                     "motion.boss_radius",
                     "Boss gövdesi okunamadı. Vuruş payı yedek 0.6 m.");
-                return SkillsTimeDefaults.MotionReturnHeightM;
+                return CombatFallbacks.MotionBossBodyRadiusFallbackM;
             }
             return Mathf.Max(col.bounds.extents.x, col.bounds.extents.z);
         }

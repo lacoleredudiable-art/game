@@ -4,7 +4,6 @@ namespace Dovus.App.Boss
     public static class BossDefaults
     {
         public const double RollClampMax = 0.999999999;
-        public const double SecToMs = 1000.0;
         public const float MinDistM = 0.01f;
         public const float MinAirborneSec = 0.05f;
         public const float AllyTargetWeight = 0.3f;

@@ -12,6 +12,7 @@ using Dovus.Game.Platform;
 using System.Collections.Generic;
 using Dovus.Game.Assets;
 using UnityEngine;
+using Dovus.Core.Shared;
 
 namespace Dovus.Game.Boss
 {
@@ -82,7 +83,7 @@ namespace Dovus.Game.Boss
             _set = new WebFieldSet(
                 b.WebFieldMaxCount,
                 b.WebFieldRadiusM,
-                b.WebFieldLifeSec * BossTimeDefaults.SecToMs,
+                b.WebFieldLifeSec * Units.SecToMs,
                 b.WebFieldMinCenterDistM);
         }
 
@@ -93,7 +94,7 @@ namespace Dovus.Game.Boss
             Vector3 t = _boss.LastWebFieldTarget;
             double now = _clock.Director.WorldTimeMs;
             _set.Add(t.x, t.z, now);
-            SpawnDisc(t.x, t.z, now + _combat.Boss.WebFieldLifeSec * BossTimeDefaults.SecToMs);
+            SpawnDisc(t.x, t.z, now + _combat.Boss.WebFieldLifeSec * Units.SecToMs);
         }
 
         void Update()
@@ -111,7 +112,7 @@ namespace Dovus.Game.Boss
             _set.Prune(now);
             PruneVisuals(now);
 
-            double refreshMs = _combat.Boss.WebFieldRefreshSec * BossTimeDefaults.SecToMs;
+            double refreshMs = _combat.Boss.WebFieldRefreshSec * Units.SecToMs;
             if (refreshMs <= 0f || now < _nextRefreshMs)
                 return;
             _nextRefreshMs = now + refreshMs;

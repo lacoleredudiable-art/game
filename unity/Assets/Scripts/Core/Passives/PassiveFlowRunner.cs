@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using Dovus.Core.Data;
 using Dovus.Core.Grammar;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Core.Passives
 {
     public sealed class PassiveFlowRunner
@@ -18,8 +18,8 @@ namespace Dovus.Core.Passives
                 return;
             _items.Add(new LiveFlow
             {
-                NextMs = worldMs + plan.TickSec * SlotPassiveCombatDefaults.SecToMs,
-                IntervalMs = plan.TickSec * SlotPassiveCombatDefaults.SecToMs,
+                NextMs = worldMs + plan.TickSec * Units.SecToMs,
+                IntervalMs = plan.TickSec * Units.SecToMs,
                 Left = plan.TickCount,
                 TickDamage = plan.TickDamage
             });

@@ -1,7 +1,7 @@
 using System;
 using Dovus.Core.Data;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Core.Equipment
 {
     /// <summary>
@@ -54,8 +54,8 @@ namespace Dovus.Core.Equipment
                 return WeaponSwapResult.StateBlocked;
 
             IsSwapping = true;
-            _swapEndsMs = nowMs + Rules.AnimationSec * EquipmentDefaults.SecToMs;
-            _cooldownEndsMs = nowMs + Rules.CooldownSec * EquipmentDefaults.SecToMs;
+            _swapEndsMs = nowMs + Rules.AnimationSec * Units.SecToMs;
+            _cooldownEndsMs = nowMs + Rules.CooldownSec * Units.SecToMs;
             return WeaponSwapResult.Started;
         }
 
@@ -84,7 +84,7 @@ namespace Dovus.Core.Equipment
         {
             if (Rules.CooldownSec <= 0f)
                 return 0f;
-            return (float)Math.Min(1.0, CooldownRemainingMs(nowMs) / (Rules.CooldownSec * EquipmentDefaults.SecToMs));
+            return (float)Math.Min(1.0, CooldownRemainingMs(nowMs) / (Rules.CooldownSec * Units.SecToMs));
         }
     }
 }

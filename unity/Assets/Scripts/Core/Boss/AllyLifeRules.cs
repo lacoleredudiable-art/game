@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Dovus.Core.Grammar;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Core.Boss
 {
     /// <summary>Dost kuklanın boss hasarı ve yeniden kalkışı (saf; zaman parametre, dünya saati).</summary>
@@ -18,7 +18,7 @@ namespace Dovus.Core.Boss
             if (downAtMs < 0)
                 return false;
             double sec = Math.Max(0f, (cfg ?? new TargetingConfig()).AllyReviveSec);
-            return nowMs - downAtMs >= sec * BossDefaults.SecToMs;
+            return nowMs - downAtMs >= sec * Units.SecToMs;
         }
 
         /// <summary>Kalkış canı: max × ally_revive_ratio, en az 1.</summary>

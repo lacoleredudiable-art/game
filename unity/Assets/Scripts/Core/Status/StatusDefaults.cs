@@ -11,6 +11,5 @@ namespace Dovus.Core.Status
         public const float TempoSyncFallbackStrength = 0.7f;
 
         public const float MinRadiusM = 0.01f;
-        public const double SecToMs = 1000.0;
     }
 }

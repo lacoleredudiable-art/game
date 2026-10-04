@@ -13,6 +13,7 @@ using Dovus.Core.Motion;
 using Dovus.Core.Status;
 using System.Collections.Generic;
 using UnityEngine;
+using Dovus.Core.Shared;
 
 namespace Dovus.Game.Skills.Motion
 {
@@ -87,7 +88,7 @@ namespace Dovus.Game.Skills.Motion
             {
                 _beats.Add(new ArmedBeat
                 {
-                    DueMs = _startMs + beat.AtSec * SkillsTimeDefaults.SecToMs,
+                    DueMs = _startMs + beat.AtSec * Units.SecToMs,
                     Kind = beat.Kind,
                     Power = beat.Power
                 });
@@ -131,7 +132,7 @@ namespace Dovus.Game.Skills.Motion
                 return false;
             if (_detonated)
                 return false;
-            double due = _startMs + System.Math.Max(TemplateDeliveryRuntimeDefaults.ActivationDelayMinSec, _order.ActivationDelaySec) * SkillsTimeDefaults.SecToMs;
+            double due = _startMs + System.Math.Max(TemplateDeliveryRuntimeDefaults.ActivationDelayMinSec, _order.ActivationDelaySec) * Units.SecToMs;
             return now + 1.0 < due;
         }
 
@@ -187,8 +188,8 @@ namespace Dovus.Game.Skills.Motion
             if (profile == null || profile.HitShape != "ballistic")
                 return;
             float splash = profile.BasicRadiusM > 0f ? profile.BasicRadiusM : TemplateDeliveryRuntimeDefaults.SplashRadiusFallbackM;
-            float arena = _host.Motor != null ? _host.Motor.Tuning.Arena.ArenaHalfSizeM : TemplateDeliveryRuntimeDefaults.ArenaHalfSizeFallbackM;
-            float bossR = _host.Boss != null && _host.Boss.BodyRadiusM > TemplateDeliveryRuntimeDefaults.BossBodyRadiusFallbackM ? _host.Boss.BodyRadiusM : TemplateDeliveryRuntimeDefaults.BossBodyRadiusFallbackMAlt;
+            float arena = _host.Motor != null ? _host.Motor.Tuning.Arena.ArenaHalfSizeM : CombatFallbacks.ArenaHalfSizeFallbackM;
+            float bossR = _host.Boss != null && _host.Boss.BodyRadiusM > TemplateDeliveryRuntimeDefaults.BossBodyRadiusEpsilonM ? _host.Boss.BodyRadiusM : CombatFallbacks.BossBodyRadiusFallbackM;
             _host.Cannon.PushCannonBodies(origin.x, origin.z, splash, arena, bossR);
         }
 
@@ -339,7 +340,7 @@ namespace Dovus.Game.Skills.Motion
                 return;
             float mag = magnitude > 1f ? magnitude : TemplateDeliveryRuntimeDefaults.GlideHasteMagFallback;
             float sec = _order.GlideDurationSec > TemplateDeliveryRuntimeDefaults.GlideDurationMinSec ? _order.GlideDurationSec : TemplateDeliveryRuntimeDefaults.GlideDurationFallbackSec;
-            _host.PlayerStatus.Board.Apply(StatusKind.Haste, sec * SkillsTimeDefaults.SecToMs, mag, "suzulme");
+            _host.PlayerStatus.Board.Apply(StatusKind.Haste, sec * Units.SecToMs, mag, "suzulme");
             _host.LastSkillEffectApplied = true;
         }
     

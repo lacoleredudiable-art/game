@@ -9,6 +9,7 @@ using Dovus.Core.Grammar;
 using Dovus.Core.Motion;
 using Dovus.Game.Feel;
 using UnityEngine;
+using Dovus.Core.Shared;
 
 namespace Dovus.Game.Casting.Input
 {
@@ -138,7 +139,7 @@ namespace Dovus.Game.Casting.Input
             if (!_s.Tuning.IsDotOpen(_s.ActiveDot.Value))
                 return;
 
-            _s.DwellWorldMs += _s.Clock != null ? _s.Clock.WorldDeltaMs : Time.deltaTime * CastingInputDefaults.SecToMs;
+            _s.DwellWorldMs += _s.Clock != null ? _s.Clock.WorldDeltaMs : Time.deltaTime * Units.SecToMs;
             int maxStacks = _s.Combat.Sentence.DwellMaxStacks;
             while (_s.DwellReported < maxStacks &&
                    _s.DwellWorldMs >= _s.Combat.Sentence.DwellMs * (_s.DwellReported + 1))

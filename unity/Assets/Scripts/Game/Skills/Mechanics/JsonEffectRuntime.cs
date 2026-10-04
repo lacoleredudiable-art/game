@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Dovus.Core.Shared;
 
 namespace Dovus.Game.Skills.Mechanics
 {
@@ -123,7 +124,7 @@ namespace Dovus.Game.Skills.Mechanics
         {
             if (plan == null)
                 return;
-            double untilMs = now + Math.Max(JsonEffectRuntimeDefaults.ReflectWindowMinSec, windowSec) * SkillsTimeDefaults.SecToMs;
+            double untilMs = now + Math.Max(JsonEffectRuntimeDefaults.ReflectWindowMinSec, windowSec) * Units.SecToMs;
             if (JsonEffectRules.IsParry(plan))
             {
                 _parry.Arm(untilMs, JsonEffectRules.ParryRatio(plan));
@@ -140,7 +141,7 @@ namespace Dovus.Game.Skills.Mechanics
             double hidden = JsonEffectRules.HiddenSec(plan, windowSec);
             if (hidden > 0 && _host.PlayerStatus != null)
             {
-                _host.PlayerStatus.Board.Apply(StatusKind.Stealth, hidden * SkillsTimeDefaults.SecToMs, 1f, "gizli:" + plan.SkillId);
+                _host.PlayerStatus.Board.Apply(StatusKind.Stealth, hidden * Units.SecToMs, 1f, "gizli:" + plan.SkillId);
                 JsonLog($"gizli {hidden:0.##}sn");
             }
             if (JsonEffectRules.Overflows(plan, "kalkan"))
@@ -222,7 +223,7 @@ namespace Dovus.Game.Skills.Mechanics
             float flat = JsonEffectRules.StolenArmorFlat(e.Amount, _host.BossStatus.Armor.Base);
             if (flat <= 0f)
                 return;
-            _host.PlayerStatus.Armor.GrantBuff(flat, JsonNow + Math.Max(0.5, e.DurationSec) * SkillsTimeDefaults.SecToMs);
+            _host.PlayerStatus.Armor.GrantBuff(flat, JsonNow + Math.Max(0.5, e.DurationSec) * Units.SecToMs);
             applied.Add($"zırh çalma +{flat:0.#}");
         }
 
@@ -271,7 +272,7 @@ namespace Dovus.Game.Skills.Mechanics
             double now = JsonNow;
             float sec = !skill.Engine.IsNull ? skill.Engine.BuffDurationSec(JsonEffectRuntimeDefaults.PurgeBuffDurationFallbackSec) : JsonEffectRuntimeDefaults.PurgeBuffDurationFallbackSec;
             _host.World.SelfDamageBuff = (now < _host.World.SelfDamageBuffUntilMs ? _host.World.SelfDamageBuff : 0f) + bonus;
-            _host.World.SelfDamageBuffUntilMs = Math.Max(_host.World.SelfDamageBuffUntilMs, now + Math.Max(0.5f, sec) * SkillsTimeDefaults.SecToMs);
+            _host.World.SelfDamageBuffUntilMs = Math.Max(_host.World.SelfDamageBuffUntilMs, now + Math.Max(0.5f, sec) * Units.SecToMs);
             _host.Readout?.NoteSkill(skill.Identity.DisplayName, $"güç +{bonus * 100f:0}%", new Color(1f, 0.8f, 0.4f));
             JsonLog($"güce çevir {removed} durum → +{bonus * 100f:0}%");
         }

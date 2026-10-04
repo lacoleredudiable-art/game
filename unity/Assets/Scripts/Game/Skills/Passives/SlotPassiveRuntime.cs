@@ -10,6 +10,7 @@ using Dovus.Core.Element;
 using Dovus.Core.Grammar;
 using System.Collections.Generic;
 using UnityEngine;
+using Dovus.Core.Shared;
 
 namespace Dovus.Game.Skills.Passives
 {
@@ -73,7 +74,7 @@ namespace Dovus.Game.Skills.Passives
         {
             _passiveEchoes.Add(new PassiveEchoShot
             {
-                DueMs = worldMs + echoDelay * SkillsTimeDefaults.SecToMs,
+                DueMs = worldMs + echoDelay * Units.SecToMs,
                 Power = echoPower,
                 SlotCastId = slotCastId,
                 Closing = ctx.Closing,

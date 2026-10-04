@@ -1,4 +1,5 @@
 using System;
+using Dovus.Core.Shared;
 
 namespace Dovus.Core.Equipment
 {
@@ -53,8 +54,8 @@ namespace Dovus.Core.Equipment
             _toZ = targetZ;
             _moveStartMs = nowMs;
             float sec = profile.OrbMoveSec > 0f ? profile.OrbMoveSec : OrbAnchorDefaults.DefaultOrbMoveSec;
-            _moveEndMs = nowMs + sec * OrbAnchorDefaults.SecToMs;
-            _nextMoveMs = nowMs + (profile.OrbCooldownSec > 0f ? profile.OrbCooldownSec : 2f) * OrbAnchorDefaults.SecToMs;
+            _moveEndMs = nowMs + sec * Units.SecToMs;
+            _nextMoveMs = nowMs + (profile.OrbCooldownSec > 0f ? profile.OrbCooldownSec : 2f) * Units.SecToMs;
             _moving = true;
             _atHand = false;
             return true;
@@ -70,8 +71,8 @@ namespace Dovus.Core.Equipment
             _toZ = handZ;
             _moveStartMs = nowMs;
             float sec = profile.OrbMoveSec > 0f ? profile.OrbMoveSec : OrbAnchorDefaults.DefaultOrbMoveSec;
-            _moveEndMs = nowMs + sec * OrbAnchorDefaults.SecToMs;
-            _nextMoveMs = nowMs + (profile.OrbCooldownSec > 0f ? profile.OrbCooldownSec : 2f) * OrbAnchorDefaults.SecToMs;
+            _moveEndMs = nowMs + sec * Units.SecToMs;
+            _nextMoveMs = nowMs + (profile.OrbCooldownSec > 0f ? profile.OrbCooldownSec : 2f) * Units.SecToMs;
             _moving = true;
             return true;
         }

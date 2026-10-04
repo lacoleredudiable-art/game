@@ -15,6 +15,7 @@ using Dovus.Game.Boss;
 using Dovus.Game.Diagnostics;
 using Dovus.Game.Vfx;
 using UnityEngine;
+using Dovus.Core.Shared;
 
 namespace Dovus.Game.Skills.Motion
 {
@@ -190,14 +191,14 @@ namespace Dovus.Game.Skills.Motion
         float BossBodyRadius()
         {
             if (_host.Boss == null)
-                return MotionHitResolverDefaults.MotionReturnHeightM;
+                return CombatFallbacks.MotionBossBodyRadiusFallbackM;
             Collider col = _host.Boss.GetComponentInChildren<Collider>();
             if (col == null)
             {
                 DesignWarnings.Once(
                     "motion.boss_radius",
                     "Boss gövdesi okunamadı. Vuruş payı yedek 0.6 m.");
-                return MotionHitResolverDefaults.MotionReturnHeightM;
+                return CombatFallbacks.MotionBossBodyRadiusFallbackM;
             }
             return Mathf.Max(col.bounds.extents.x, col.bounds.extents.z);
         }

@@ -16,8 +16,6 @@ namespace Dovus.Game.Team
 
         public const float MineBurstHeightY = 0.4f;
         public const float PortalStrikeMarkerY = 1.1f;
-
-        public const float BossBodyRadiusFallbackM = 0.85f;
         public const float BossBodyRadiusMinM = 0.1f;
 
         public const float StunStatusStrength = 1f;
@@ -36,7 +34,6 @@ namespace Dovus.Game.Team
         public const float BurstFxScale = 0.7f;
         public const float BurstFxLifetimeSec = 0.6f;
         public const int BossPortalBodyId = 900;
-        public const double SecToMs = 1000.0;
         public const int VitalsMaxHpFallback = 30;
     }
 

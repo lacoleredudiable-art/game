@@ -3,6 +3,7 @@ using Dovus.Core.Tuning;
 using Dovus.Game.Actors;
 using Dovus.Game.Config;
 using UnityEngine;
+using Dovus.Core.Shared;
 
 namespace Dovus.Game.Boss
 {
@@ -243,7 +244,7 @@ namespace Dovus.Game.Boss
             _shakeAmp = 0f;
             _shakeUntil = 0f;
             _visualOffset = Vector3.zero;
-            _collapseUntilWorldMs = (float)(worldTimeMs + Mathf.Max(BossReactorControllerDefaults.MinCollapseDurationSec, durationSec) * BossTimeDefaults.SecToMs);
+            _collapseUntilWorldMs = (float)(worldTimeMs + Mathf.Max(BossReactorControllerDefaults.MinCollapseDurationSec, durationSec) * Units.SecToMs);
             ApplyCollapseScale(1f);
         }
 

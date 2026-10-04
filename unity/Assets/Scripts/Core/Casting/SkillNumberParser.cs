@@ -5,8 +5,8 @@ using Dovus.Core.Data;
 using Dovus.Core.Grammar;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
-
 using Dovus.Core.Shared;
+
 namespace Dovus.Core.Casting
 {
     public static class SkillNumberParser
@@ -103,7 +103,7 @@ namespace Dovus.Core.Casting
                     continue;
                 }
 
-                map[kind] = (int)Math.Round(row["duration_sec"].AsFloat(0f) * CastingDefaults.SecToMs);
+                map[kind] = (int)Math.Round(row["duration_sec"].AsFloat(0f) * Units.SecToMs);
             }
 
             return map;

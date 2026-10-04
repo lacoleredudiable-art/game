@@ -3,6 +3,7 @@ using Dovus.Core.Grammar;
 using Dovus.Game.Config;
 using Dovus.Game.Diagnostics;
 using UnityEngine;
+using Dovus.Core.Shared;
 
 namespace Dovus.Game.Casting.Input
 {
@@ -58,6 +59,6 @@ namespace Dovus.Game.Casting.Input
             return px * (HexagonLayoutScreenDefaults.BaselineDpi / dpi);
         }
 
-        public static double NowRealMs() => Time.realtimeSinceStartupAsDouble * CastingInputDefaults.SecToMs;
+        public static double NowRealMs() => Time.realtimeSinceStartupAsDouble * Units.SecToMs;
     }
 }

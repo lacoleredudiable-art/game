@@ -12,6 +12,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.EnhancedTouch;
 using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 using TouchPhase = UnityEngine.InputSystem.TouchPhase;
+using Dovus.Core.Shared;
 
 namespace Dovus.Game.Casting.Input
 {
@@ -165,7 +166,7 @@ namespace Dovus.Game.Casting.Input
         {
             if (_s.Mode != FingerMode.SwapPending || _s.SwapHoldFired)
                 return;
-            double heldSec = (HexagonPointerHits.NowRealMs() - _s.PressRealMs) / CastingInputDefaults.SecToMs;
+            double heldSec = (HexagonPointerHits.NowRealMs() - _s.PressRealMs) / Units.SecToMs;
             if (!TouchButtonGesture.HoldCommandDue(heldSec, SwapHoldSec()))
                 return;
             _s.SwapHoldFired = true;
@@ -249,7 +250,7 @@ namespace Dovus.Game.Casting.Input
 
         void EndPointer(bool cancelled)
         {
-            double heldSec = (HexagonPointerHits.NowRealMs() - _s.PressRealMs) / CastingInputDefaults.SecToMs;
+            double heldSec = (HexagonPointerHits.NowRealMs() - _s.PressRealMs) / Units.SecToMs;
             if (_s.Mode == FingerMode.Drawing)
                 _stroke.FinishDrawingStroke(cancelled);
 

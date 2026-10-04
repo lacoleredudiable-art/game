@@ -1,3 +1,5 @@
+using Dovus.Core.Shared;
+
 namespace Dovus.Core.Equipment
 {
     /// <summary>
@@ -16,7 +18,7 @@ namespace Dovus.Core.Equipment
         public void Grant(float points, double nowMs, float durationSec)
         {
             _points = points > 0f ? points : 0f;
-            _expiresMs = nowMs + (durationSec > 0f ? durationSec : 0f) * EquipmentDefaults.SecToMs;
+            _expiresMs = nowMs + (durationSec > 0f ? durationSec : 0f) * Units.SecToMs;
             if (_points <= 0f)
                 _expiresMs = nowMs;
         }

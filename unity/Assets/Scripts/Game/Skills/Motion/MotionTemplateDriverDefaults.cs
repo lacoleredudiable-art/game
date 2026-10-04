@@ -3,8 +3,6 @@ namespace Dovus.Game.Skills.Motion
     /// <summary>PLAN 2B.11d: gömülü oynanış/ayar sayıları.</summary>
     public static class MotionTemplateDriverDefaults
     {
-        public const float ArenaHalfSizeFallbackM = 50f;
-        public const float MotionReturnHeightM = 0.6f;
         public const float FuseScaleM = 0.28f;
         public const float FuseGroundYM = 0.18f;
         public const float HitFxLifetimeSec = 0.35f;

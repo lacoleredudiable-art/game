@@ -6,7 +6,6 @@ namespace Dovus.Game.Hud
         public const float RecoveryCutHoldFillThreshold = 0.05f;
         public const float SkillCardJuiceDurationMult = 1.4f;
         public const float BannerFadeMinSec = 0.01f;
-        public const double SecToMs = 1000.0;
         public const int BuildSelectSubtitleFontSize = 18;
         public const float RecoveryLockBgAlpha = 0.35f;
         public const float StatusBlinkMinAlpha = 0.25f;

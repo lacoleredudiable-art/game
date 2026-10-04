@@ -3,6 +3,7 @@ using Dovus.Game.Diagnostics;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Dovus.Core.Shared;
 
 namespace Dovus.Game.Skills.Mechanics
 {
@@ -29,7 +30,7 @@ namespace Dovus.Game.Skills.Mechanics
         public MechanicPortals(Hosts.MdMechanicsHost host) => _host = host;
 
         public void ScheduleAfter(double now, float delaySec, Action run) =>
-            _timers.Add(new MechanicTimer { DueMs = now + delaySec * SkillsTimeDefaults.SecToMs, Run = run });
+            _timers.Add(new MechanicTimer { DueMs = now + delaySec * Units.SecToMs, Run = run });
 
         public void TickTimers(double worldMs)
         {

@@ -1,6 +1,7 @@
 using System;
 using Dovus.Core.Status;
 using Dovus.Core.Damage;
+using Dovus.Core.Shared;
 
 namespace Dovus.Core.Boss
 {
@@ -24,7 +25,7 @@ namespace Dovus.Core.Boss
             {
                 apply = new ElementBossStatus(
                     StatusKind.Burn,
-                    durationSec * BossStatusMathDefaults.SecToMs,
+                    durationSec * Units.SecToMs,
                     FirstNumber(statusEffect, BossStatusMathDefaults.DefaultBurnDps));
                 return true;
             }
@@ -38,7 +39,7 @@ namespace Dovus.Core.Boss
                     percent = 100f;
                 apply = new ElementBossStatus(
                     StatusKind.Weaken,
-                    durationSec * BossStatusMathDefaults.SecToMs,
+                    durationSec * Units.SecToMs,
                     1f - percent / 100f);
                 return true;
             }

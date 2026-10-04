@@ -32,7 +32,7 @@ namespace Dovus.Game.Actors
         KinematicMotorController _motor;
         string _weaponKey = string.Empty;
         int _verbId;
-        float _arena = MotionTemplateBodyHostDefaults.FallbackArenaHalfM;
+        float _arena = CombatFallbacks.ArenaHalfSizeFallbackM;
         float _body = 0.5f;
         bool _playing;
         bool _tickedThisFrame;
@@ -52,7 +52,7 @@ namespace Dovus.Game.Actors
         public void Bind(GameClockHost clock, float arenaHalfM, float bodyRadiusM)
         {
             _clock = clock;
-            _arena = arenaHalfM > 1f ? arenaHalfM : MotionTemplateBodyHostDefaults.FallbackArenaHalfM;
+            _arena = arenaHalfM > 1f ? arenaHalfM : CombatFallbacks.ArenaHalfSizeFallbackM;
             // Oynayan kalıbın gövde yarıçapı silah değişiminde yeniden yazılmaz.
             if (_playing)
                 return;
@@ -226,12 +226,12 @@ namespace Dovus.Game.Actors
                 return;
             }
 
-            float dt = _clock != null ? (float)(_clock.WorldDeltaMs / ActorsTimeDefaults.SecToMs) : Time.deltaTime;
+            float dt = _clock != null ? (float)(_clock.WorldDeltaMs / Units.SecToMs) : Time.deltaTime;
             if (_hasPlayClock && _clock != null)
             {
                 // Tarama saati ile koşucu ayrışırsa kalıp yazar süresinden uzun görünür
                 // (Yumruk 2-9: 0,20 sn'lik hamle 0,51 sn oynadı).
-                float world = (float)((_clock.Director.WorldTimeMs - _playStartWorldMs) / ActorsTimeDefaults.SecToMs);
+                float world = (float)((_clock.Director.WorldTimeMs - _playStartWorldMs) / Units.SecToMs);
                 float behind = world - _runner.Elapsed;
                 if (behind > dt)
                     dt = behind;

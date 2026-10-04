@@ -352,7 +352,7 @@ namespace Dovus.Game.Boss
                 return;
 
             double worldMs = _clock.Director.WorldTimeMs;
-            float dtSec = (float)(_clock.WorldDeltaMs / BossTimeDefaults.SecToMs);
+            float dtSec = (float)(_clock.WorldDeltaMs / Units.SecToMs);
             _poise?.Tick(dtSec);
             HandlePlayerDown(worldMs);
 
