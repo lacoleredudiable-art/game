@@ -14,12 +14,12 @@ namespace Dovus.Game.Vfx
     {
         public const string SlamCrackTexture = "scorch_03";
 
-        static PrototypeTuning _tuning;
+        static GameTuning _tuning;
         static readonly Dictionary<string, Texture2D> Textures = new();
         static readonly Dictionary<long, Material> Materials = new();
         static Texture2D _proceduralDot;
 
-        public static void Configure(PrototypeTuning tuning) => _tuning = tuning;
+        public static void Configure(GameTuning tuning) => _tuning = tuning;
 
         public static string TexFire => NameOrDefault(_tuning?.Visuals.VfxTexFire, "flame_02");
         public static string TexWater => NameOrDefault(_tuning?.Visuals.VfxTexWater, "circle_03");

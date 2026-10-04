@@ -22,7 +22,7 @@ namespace Dovus.Game.Skills
 
         LivingEffect _logic;
         ManifestationTuning _tuning;
-        PrototypeTuning _colors;
+        GameTuning _colors;
         LineRenderer _line;
         float _lineBaseWidth;
         Transform[] _blobs;
@@ -51,7 +51,7 @@ namespace Dovus.Game.Skills
         public void Bind(
             LivingEffect logic,
             ManifestationTuning tuning,
-            PrototypeTuning colors,
+            GameTuning colors,
             bool basicStrike = false)
         {
             _logic = logic;

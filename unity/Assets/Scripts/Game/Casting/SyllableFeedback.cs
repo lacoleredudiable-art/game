@@ -13,7 +13,7 @@ namespace Dovus.Game.Casting
     /// </summary>
     public sealed class SyllableFeedback : MonoBehaviour
     {
-        PrototypeTuning _tuning;
+        GameTuning _tuning;
         AudioSource _source;
         readonly AudioClip[] _clips = new AudioClip[7]; // index 1..6
         AudioClip _denyClip;
@@ -30,7 +30,7 @@ namespace Dovus.Game.Casting
             262f  // 6 Toprak
         };
 
-        public void Configure(PrototypeTuning tuning) => _tuning = tuning;
+        public void Configure(GameTuning tuning) => _tuning = tuning;
 
         void Awake()
         {

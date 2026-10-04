@@ -26,7 +26,7 @@ namespace Dovus.Game.Actors
         GameClock _clock;
         DodgeState _dodge;
         DodgeTuning _tuning;
-        PrototypeTuning _colors;
+        GameTuning _colors;
         MoveInput _input;
         Transform _boss;
         AfterimageTrail _afterimage;

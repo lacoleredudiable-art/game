@@ -42,7 +42,7 @@ namespace Dovus.Game.Arena
         const float EdgePropMinScale = 0.75f;
         const float EdgePropMaxScale = 1.35f;
 
-        public static void Build(GameObject arenaRoot, float walkHalfM, PrototypeTuning tuning)
+        public static void Build(GameObject arenaRoot, float walkHalfM, GameTuning tuning)
         {
             if (arenaRoot == null)
                 return;
@@ -97,7 +97,7 @@ namespace Dovus.Game.Arena
         }
 
         /// <summary>RenderSettings sis mesafeleri arena yarıçapına göre (SceneAtmosphere çağırır).</summary>
-        public static void ConfigureArenaFog(PrototypeTuning tuning)
+        public static void ConfigureArenaFog(GameTuning tuning)
         {
             if (tuning == null)
                 return;

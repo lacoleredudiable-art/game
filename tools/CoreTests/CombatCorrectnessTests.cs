@@ -131,7 +131,7 @@ public class CombatCorrectnessTests
     [Test]
     public void O3_PortalBackStrike_NoSecondDamage()
     {
-        string host = Game("Team/PortalBorderTeamHost.cs");
+        string host = Game("Team/TeamComboHost.cs");
         Assert.That(host, Does.Not.Contain("void ApplyBackStrike"));
         Assert.That(host, Does.Not.Contain("ApplyBackStrike("));
         Assert.That(host, Does.Not.Contain("_strikePending"));
@@ -339,7 +339,7 @@ public class CombatCorrectnessTests
     [Test]
     public void S17_PortalPulseBurn_UsesTuning()
     {
-        string host = Game("Team/PortalBorderTeamHost.cs");
+        string host = Game("Team/TeamComboHost.cs");
         Assert.That(host, Does.Contain("Tuning.BurnDamagePerSec"));
     }
 

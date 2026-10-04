@@ -11,7 +11,7 @@ namespace CoreTests;
 public class CombatTuningDefaultsTests
 {
     [Test]
-    public void DefaultValues_MatchCurrentPrototypeTuning()
+    public void DefaultValues_MatchCurrentGameTuning()
     {
         var t = new CombatTuning();
 

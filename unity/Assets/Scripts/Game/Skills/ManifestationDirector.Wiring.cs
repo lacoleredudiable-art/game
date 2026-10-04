@@ -33,7 +33,7 @@ namespace Dovus.Game.Skills
             BossReactor boss,
             BossVitals bossVitals,
             GroundScarField scars,
-            PrototypeTuning colors,
+            GameTuning colors,
             DamageNumberHud damageHud = null,
             BossDirector bossDirector = null,
             ActorStatus playerStatus = null,

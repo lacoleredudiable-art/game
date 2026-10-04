@@ -23,11 +23,11 @@ namespace Dovus.Game.Config
         {
             public int version;
             public CombatTuning combat = new CombatTuning();
-            public PrototypeTuning.PanelFields prototype = new PrototypeTuning.PanelFields();
+            public GameTuning.PanelFields prototype = new GameTuning.PanelFields();
         }
 
         public CombatTuning Combat { get; private set; }
-        public PrototypeTuning Prototype { get; private set; }
+        public GameTuning Prototype { get; private set; }
 
         const string FileName = "tuning.json";
 
@@ -40,7 +40,7 @@ namespace Dovus.Game.Config
         /// <summary>Son TryLoad eski kaydı attıysa true (panel/test okur).</summary>
         public bool LastLoadDiscardedStale { get; private set; }
 
-        public static TuningConfig Create(CombatTuning combat, PrototypeTuning prototype)
+        public static TuningConfig Create(CombatTuning combat, GameTuning prototype)
         {
             var config = CreateInstance<TuningConfig>();
             config.Combat = combat;

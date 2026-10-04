@@ -8,7 +8,7 @@ namespace Dovus.Game.Actors
     /// </summary>
     public sealed class ActorPose : MonoBehaviour
     {
-        [SerializeField] PrototypeTuning _tuning = new();
+        [SerializeField] GameTuning _tuning = new();
 
         Vector3 _baseScale;
         float _poseUntilWorldMs;
@@ -16,11 +16,11 @@ namespace Dovus.Game.Actors
         float _recoveryUntilWorldMs;
         bool _ready;
 
-        public PrototypeTuning Tuning
+        public GameTuning Tuning
         {
             get
             {
-                _tuning ??= new PrototypeTuning();
+                _tuning ??= new GameTuning();
                 return _tuning;
             }
             set => _tuning = value;

@@ -17,7 +17,7 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 - [x] 2.5 Oyuncu can/diriliş → Application (Player aggregate)
 - [x] 2.6 Boss AI → Application (BossBrain) — 2.6a BossAttackSelector; 2.6b BossBrain
 - [x] 2.7 Statik çarpanlar oyuncu başına; PortalSystem/TeamComboSystem switch'leri → JSON etiketleri; pasifler enum
-- [x] 2.8 PrototypeTuning bölme; element-sistemi.json'dan lore/changelog ayırma, tek parse
+- [x] 2.8 GameTuning bölme; element-sistemi.json'dan lore/changelog ayırma, tek parse
 
 ## Aşama 3 — Oynanış doğruluğu (küçük, somut hatalar) [mimariden sonra]
 - [x] 1.1 Cooldown + mana açık (EnforceCooldown/EnforceResourceCost) — kombo bazlı CD kararı
@@ -31,14 +31,14 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 - [x] 2B.2 ManifestationDirector'ı tamamen böl (A1, A9): kalan skill akışı, VFX, HUD, takım → App/Game servisleri; dosya ≤500 satır
 - [x] 2B.3 HexagonInput böl (A2): girdi / skill tetik / UI ayrı
 - [x] 2B.4 BossDirector kalan Unity mantığı → App (A3)
-- [x] 2B.5 PrototypeBootstrap → Composition kökü, küçük kurucular (A4); PrototypeTuning gerçek alt nesneler + sahne değeri göç aracı (A5) — 2B.5a kurucular (#103); 2B.5b tuning bölümleri + sahne göçü (#104)
+- [x] 2B.5 GameBootstrap → Composition kökü, küçük kurucular (A4); GameTuning gerçek alt nesneler + sahne değeri göç aracı (A5) — 2B.5a kurucular (#103); 2B.5b tuning bölümleri + sahne göçü (#104)
 - [x] 2B.6 Core içi döngüler + Combat konu bölme (A8, A19) — 2B.6a (#106), 2B.6b (#107), 2B.6c döngü kapısı + kalan SCC allowlist
 - [x] 2B.7 SweepV2 sahte Unity katmanı bağımlılığını azalt: testler App katmanına (A12)
-- [x] 2B.8 7 singleton + kalan statikler → enjeksiyon (A13); 2B.8b: `AssetCatalog`, `PortalBorderTeamAccess`, HUD/SFX/VFX/theme enjeksiyonu — (a) team hooks: `TeamModifierHub` örneği, statik `PortalBorderTeamHooks` kaldırıldı
+- [x] 2B.8 7 singleton + kalan statikler → enjeksiyon (A13); 2B.8b: `AssetCatalog`, `TeamComboAccess`, HUD/SFX/VFX/theme enjeksiyonu — (a) team hooks: `TeamModifierHub` örneği, statik `PortalBorderTeamHooks` kaldırıldı
 - [x] 2B.9 59 FindAnyObjectByType/Camera.main → referans enjeksiyonu; her kare GetComponent önbellek (A15)
 - [x] 2B.10 Eksik asset referansları raporu + güvenli geri dönüş (A16)
 - [x] 2B.11 ~2.900 sabit sayı → ayar/JSON (öncelik: oynanış sayıları) (A17) — 5 dosya + `*Defaults`; görsel ~3596 literal `docs/constants-report.md`
-- [ ] 2B.12 İsimlendirme: sonek standardı, PortalBorderTeam*/Prototype*/V611/Weapons10/SweepV2 adları, yorum kodları (A21–A23)
+- [x] 2B.12 İsimlendirme: sonek standardı, TeamCombo*/GameBootstrap/GameTuning/GrammarDebugPanel adları, yorum kodları (A21–A23); `docs/naming.md`
 - [ ] 2B.13 Tek dil kuralı (kod İngilizce, veri sözcükleri sözlükle) (A24); dosya adı=tip, tek tip/dosya, yanlış yerdeki dosyalar (A25)
 - [ ] 2B.14 DDD: Rune/Element dili (A26), tek Skill modeli (A27), ID tiplerinin tam benimsenmesi + SkillResolution sadeleşme (A28, A30)
 - [ ] 2B.15 DDD: Player/Actor varlıkları, hedef=ActorId (A29); skill yan etkileri → olaylar (A31); repository arayüzleri, katalog = parser/factory/depo ayrımı (A32)

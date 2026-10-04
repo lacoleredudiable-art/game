@@ -67,7 +67,7 @@ namespace Dovus.Game.Editor
                     Playing = _body != null && _body.IsDisplacing,
                     Performing = Performing(),
                     Dodge = _dodge != null && _dodge.IsDisplacing,
-                    Teleport = PortalBorderTeamHost.Hub.ConsumeIntentionalTeleport(),
+                    Teleport = TeamComboHost.Hub.ConsumeIntentionalTeleport(),
                     Yaw = _player.eulerAngles.y,
                     BossHp = _bossVitals.Hp,
                     PlayerHp = _playerVitals != null ? _playerVitals.Hp : 0,

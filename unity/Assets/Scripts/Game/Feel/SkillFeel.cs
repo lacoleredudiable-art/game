@@ -16,7 +16,7 @@ namespace Dovus.Game.Feel
         /// <summary>Fiil rünü çizgi, sıfat/son rün blob — basit çizgiler element renginde.</summary>
         public static void ElementPalette(
             IReadOnlyList<SentenceWord> words,
-            PrototypeTuning t,
+            GameTuning t,
             out Color line,
             out Color blob)
         {

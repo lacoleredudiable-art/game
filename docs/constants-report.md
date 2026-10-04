@@ -8,7 +8,7 @@ Kapsam: en yoğun 5 oynanış dosyası + `*Defaults` tek kaynak sınıfları. G�
 |--------|------|-------|-----|
 | Skills | 1051 | 1013 | Closing + MechanicWorld |
 | Boss | 392 | 387 | AttackTelegraph + BossTelegraph |
-| Team | 70 | 63 | PortalBorderTeamHost |
+| Team | 70 | 63 | TeamComboHost |
 | Actors | 287 | 287 | gelecek iş |
 | Combat | 0 | 0 | — |
 | **Oynanış toplam** | **1800** | **1750** | ratchet: `GameplayLiteralRatchetTests` |
@@ -20,7 +20,7 @@ Görsel-öncelikli klasörler (bu PR dokunmadı): Hud, Feel, Audio, Casting, Cam
 | Anahtar / alan | Değer | Dosya |
 |----------------|-------|-------|
 | `ClosingDamageDefaults.*` | eski literal'ler 1:1 | `Game/Skills/Closing/ClosingDamageDefaults.cs` |
-| `PortalBorderTeamDefaults.*` | eski literal'ler 1:1 | `Game/Team/PortalBorderTeamDefaults.cs` |
+| `TeamComboDefaults.*` | eski literal'ler 1:1 | `Game/Team/TeamComboDefaults.cs` |
 | `MechanicWorldDefaults.*` | eski literal'ler 1:1 | `Game/Skills/Mechanics/MechanicWorldDefaults.cs` |
 | `AttackTelegraphDefaults.*` | eski literal'ler 1:1 | `Game/Boss/AttackTelegraphDefaults.cs` |
 | `BossTelegraphDefaults.*` | eski literal'ler 1:1 | `Game/Boss/BossTelegraphDefaults.cs` |

@@ -59,7 +59,7 @@ namespace Dovus.Game.Skills
 
             internal MdCoreServicesHost(ManifestationDirector md) => _md = md;
 
-            public PrototypeTuning Colors => _md._colors;
+            public GameTuning Colors => _md._colors;
             public SkillMotor Skills => _md._skills;
             public SkillFactory SkillFactory => _md._skillFactory;
             public EquipmentItem EquippedWeapon => _md._equippedWeapon;

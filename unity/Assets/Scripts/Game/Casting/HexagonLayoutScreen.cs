@@ -19,7 +19,7 @@ namespace Dovus.Game.Casting
             return sa;
         }
 
-        public static Vector2 CenterPx(PrototypeTuning tuning, int screenWidth, int screenHeight)
+        public static Vector2 CenterPx(GameTuning tuning, int screenWidth, int screenHeight)
         {
             Rect safe = SafeRectPx();
             float xNorm = tuning.Input.MirrorForLeftHand
@@ -35,7 +35,7 @@ namespace Dovus.Game.Casting
         /// İstenen yarıçapı safe-area + dodge boşluğuna sığacak şekilde kısar.
         /// Büyük dp / yüksek DPI telefonda alt rünlerin kesilmesini engeller.
         /// </summary>
-        public static float FittedRadiusPx(PrototypeTuning tuning, int screenWidth, int screenHeight)
+        public static float FittedRadiusPx(GameTuning tuning, int screenWidth, int screenHeight)
         {
             float desired = DpToPixels(tuning.Input.HexagonRadiusDp);
             Rect safe = SafeRectPx();
@@ -60,11 +60,11 @@ namespace Dovus.Game.Casting
             return Mathf.Clamp(desired, floor, maxR);
         }
 
-        public static float RadiusPx(PrototypeTuning tuning) =>
+        public static float RadiusPx(GameTuning tuning) =>
             FittedRadiusPx(tuning, Screen.width, Screen.height);
 
         /// <summary>dot 1..6 — üstten başlayıp saat yönünde.</summary>
-        public static Vector2 DotPx(int dot, PrototypeTuning tuning, int screenWidth, int screenHeight)
+        public static Vector2 DotPx(int dot, GameTuning tuning, int screenWidth, int screenHeight)
         {
             Vector2 c = CenterPx(tuning, screenWidth, screenHeight);
             float r = FittedRadiusPx(tuning, screenWidth, screenHeight);
@@ -79,7 +79,7 @@ namespace Dovus.Game.Casting
         /// Dodge: hex'in sağ-alt köşesinde, rün halkasının dışında.
         /// Hava/Toprak ile arasında DodgeClearanceDp çizim/parmak boşluğu.
         /// </summary>
-        public static Vector2 DodgeButtonPx(PrototypeTuning tuning, int screenWidth, int screenHeight)
+        public static Vector2 DodgeButtonPx(GameTuning tuning, int screenWidth, int screenHeight)
         {
             Rect safe = SafeRectPx();
             Vector2 c = CenterPx(tuning, screenWidth, screenHeight);
@@ -115,11 +115,11 @@ namespace Dovus.Game.Casting
             return p;
         }
 
-        public static float DodgeButtonRadiusPx(PrototypeTuning tuning) =>
+        public static float DodgeButtonRadiusPx(GameTuning tuning) =>
             DpToPixels(tuning.Input.DodgeButtonRadiusDp);
 
         /// <summary>Lock-on: dodge'un üstünde, aynı sağ-alt küme içinde.</summary>
-        public static Vector2 LockOnButtonPx(PrototypeTuning tuning, int screenWidth, int screenHeight)
+        public static Vector2 LockOnButtonPx(GameTuning tuning, int screenWidth, int screenHeight)
         {
             Vector2 dodge = DodgeButtonPx(tuning, screenWidth, screenHeight);
             float lockR = LockOnButtonRadiusPx(tuning);
@@ -164,13 +164,13 @@ namespace Dovus.Game.Casting
             return p;
         }
 
-        public static float LockOnButtonRadiusPx(PrototypeTuning tuning) =>
+        public static float LockOnButtonRadiusPx(GameTuning tuning) =>
             DpToPixels(tuning.Input.LockOnButtonRadiusDp);
 
         /// <summary>
         /// Silah swap: dodge'un altıgene göre simetriği (sol-alt), çizim yarısında kalır.
         /// </summary>
-        public static Vector2 WeaponSwapButtonPx(PrototypeTuning tuning, int screenWidth, int screenHeight)
+        public static Vector2 WeaponSwapButtonPx(GameTuning tuning, int screenWidth, int screenHeight)
         {
             Rect safe = SafeRectPx();
             Vector2 c = CenterPx(tuning, screenWidth, screenHeight);
@@ -234,15 +234,15 @@ namespace Dovus.Game.Casting
             return p;
         }
 
-        public static float WeaponSwapButtonRadiusPx(PrototypeTuning tuning) =>
+        public static float WeaponSwapButtonRadiusPx(GameTuning tuning) =>
             DpToPixels(tuning.Input.WeaponSwapButtonRadiusDp);
 
-        public static float DotHitRadiusPx(PrototypeTuning tuning) => DpToPixels(tuning.Input.DotHitRadiusDp);
+        public static float DotHitRadiusPx(GameTuning tuning) => DpToPixels(tuning.Input.DotHitRadiusDp);
 
-        public static float CenterHitRadiusPx(PrototypeTuning tuning) => DpToPixels(tuning.Input.CenterHitRadiusDp);
+        public static float CenterHitRadiusPx(GameTuning tuning) => DpToPixels(tuning.Input.CenterHitRadiusDp);
 
         /// <summary>
-        /// Kısa kenar bu dp'den azsa HUD orantılı küçülür (0 = kapalı). <see cref="PrototypeTuning.HudFitShortSideDp"/>
+        /// Kısa kenar bu dp'den azsa HUD orantılı küçülür (0 = kapalı). <see cref="GameTuning.HudFitShortSideDp"/>
         /// ile beslenir; yatay telefonda kısa kenar ~430 dp, altıgen tepsisi ise ~360 dp.
         /// </summary>
         public static float FitShortSideDp { get; set; }
@@ -301,7 +301,7 @@ namespace Dovus.Game.Casting
         }
 
         static Circle2[] BuildHexHudForbidden(
-            PrototypeTuning tuning,
+            GameTuning tuning,
             int screenWidth,
             int screenHeight,
             Vector2 dodgeCenter,
@@ -328,7 +328,7 @@ namespace Dovus.Game.Casting
             float gap,
             Vector2 dodgeCenter,
             float dodgeRadius,
-            PrototypeTuning tuning,
+            GameTuning tuning,
             int screenWidth,
             int screenHeight)
         {
@@ -354,7 +354,7 @@ namespace Dovus.Game.Casting
             float gap,
             Vector2 dodgeCenter,
             float dodgeRadius,
-            PrototypeTuning tuning,
+            GameTuning tuning,
             int screenWidth,
             int screenHeight)
         {

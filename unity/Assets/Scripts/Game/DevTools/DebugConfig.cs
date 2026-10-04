@@ -16,7 +16,7 @@ namespace Dovus.Game.DevTools
         public static readonly bool Enabled = false;
 #endif
 
-        /// <summary>Dev HP (oyuncu havuzu 1e9). Yalnız debug'da etkili; V611 panelinden açılıp kapanır.</summary>
+        /// <summary>Dev HP (oyuncu havuzu 1e9). Yalnız debug'da etkili; gramer debug panelinden açılıp kapanır.</summary>
         public static bool DevHp = true;
 
         /// <summary>

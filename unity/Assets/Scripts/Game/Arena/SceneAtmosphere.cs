@@ -10,9 +10,9 @@ namespace Dovus.Game.Arena
     /// </summary>
     public static class SceneAtmosphere
     {
-        public static void Apply(Light sun, Camera camera, PrototypeTuning tuning)
+        public static void Apply(Light sun, Camera camera, GameTuning tuning)
         {
-            tuning ??= new PrototypeTuning();
+            tuning ??= new GameTuning();
             RenderSettings.ambientMode = AmbientMode.Trilight;
             RenderSettings.ambientSkyColor = tuning.Arena.AmbientSky;
             RenderSettings.ambientEquatorColor = tuning.Arena.AmbientEquator;
@@ -50,7 +50,7 @@ namespace Dovus.Game.Arena
             look.Initialize(volume, sun, camera);
         }
 
-        static void CreateRimLight(PrototypeTuning tuning)
+        static void CreateRimLight(GameTuning tuning)
         {
             if (tuning.Arena.RimLightIntensity <= 0f)
                 return;

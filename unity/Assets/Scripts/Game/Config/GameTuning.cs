@@ -11,11 +11,12 @@ using UnityEngine;
 namespace Dovus.Game.Config
 {
     /// <summary>
-    /// T5 prototip kabuğu ayarları. Spec'te yürüme hızı yok; varsayılanlar durum.md'de kayıtlı.
-    /// Sahnedeki tek örnek Bootstrap'ten paylaşılır; kopya tutulmaz (T10 canlı ayarı bunu bekliyor).
+    /// Oyun kabuğu ayarları (renk, arena, girdi, HUD). Spec'te yürüme hızı yok; varsayılanlar durum.md'de kayıtlı.
+    /// Sahnedeki tek örnek <see cref="Composition.GameBootstrap"/> üzerinden paylaşılır; kopya tutulmaz (canlı ayar paneli bunu bekler).
+    /// Tip adı 2B.12'de değişti (eski ad: docs/naming.md). Düz [Serializable] alan: Unity alan adıyla bağlar, MovedFrom gerekmez; alan adları aynı.
     /// </summary>
     [System.Serializable]
-    public sealed partial class PrototypeTuning
+    public sealed partial class GameTuning
     {
         // Sahneye serileşmiş eski kopyada yeni alanlar 0/siyah gelir (C# initializer
         // deserialize'da uygulanmaz). Sürüm numarası da 0 geldiği için tek seferlik yama
@@ -140,7 +141,7 @@ namespace Dovus.Game.Config
         public bool IsDotOpen(int dot) => true;
 
         /// <summary>
-        /// T10: `PrototypeTuning`'in tamamı (renkler, altıgen konumu, arena...) ayar paneline
+        /// T10: `GameTuning`'in tamamı (renkler, altıgen konumu, arena...) ayar paneline
         /// AÇILMIYOR — yalnızca bu alt küme (dodge kayma hızı, boss yaklaşımı, kamera takibi,
         /// tepki yazısı zamanlaması). Tam nesneyi JSON'a yazsaydık panelin hiç dokunmadığı
         /// renk/yerleşim alanları da diske kilitlenir, ileride Inspector'dan elle ayarlanan bir
@@ -225,6 +226,6 @@ namespace Dovus.Game.Config
         }
 
         /// <summary>"Sıfırla": yalnızca panelin yönettiği alt küme spec varsayılanına döner.</summary>
-        public void ResetPanelFields() => ApplyPanelFields(new PrototypeTuning().ToPanelFields());
+        public void ResetPanelFields() => ApplyPanelFields(new GameTuning().ToPanelFields());
     }
 }

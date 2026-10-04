@@ -35,7 +35,7 @@ namespace Dovus.Game.Casting.Input
         }
 
         public bool PanelBlocking =>
-            TuningPanel.IsOpen || V611DebugPanel.IsOpen || BuildSelectScreen.IsOpen;
+            TuningPanel.IsOpen || GrammarDebugPanel.IsOpen || BuildSelectScreen.IsOpen;
 
         public void HandleKeyboardDodge()
         {

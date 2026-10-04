@@ -15,7 +15,7 @@ namespace Dovus.Game.Boss
     /// trigger yok); state yoksa eski trigger adına düşer, o da yoksa no-op.
     ///
     /// Tell'i veri belirler, klip değil: windup'ta saldırı klibinin hızı, darbe karesi
-    /// (<see cref="PrototypeTuning.BossSlamImpactNorm"/>) tam <c>WindupMs</c> sonunda gelecek
+    /// (<see cref="GameTuning.BossSlamImpactNorm"/>) tam <c>WindupMs</c> sonunda gelecek
     /// şekilde <see cref="ParamActionSpeed"/> ile ölçeklenir. Yürüme adımı yaklaşma hızına
     /// <see cref="ParamLocoSpeed"/> ile eşlenir (ayak kayması olmasın).
     /// </summary>
@@ -42,7 +42,7 @@ namespace Dovus.Game.Boss
         [SerializeField] Animator _animator;
         [SerializeField] Renderer[] _hideWhenVisualPresent;
 
-        PrototypeTuning _tuning;
+        GameTuning _tuning;
         float _busyUntilUnscaled;
         float _lastStaggerUnscaled = -999f;
         float _walkClipMps = -1f;
@@ -67,7 +67,7 @@ namespace Dovus.Game.Boss
             }
         }
 
-        public void Configure(PrototypeTuning tuning) => _tuning = tuning;
+        public void Configure(GameTuning tuning) => _tuning = tuning;
 
         /// <summary>0 = dur; &gt;0 = yürü, adım hızı <paramref name="groundMps"/>'ye eşlenir.</summary>
         public void SetWalk(float groundMps)

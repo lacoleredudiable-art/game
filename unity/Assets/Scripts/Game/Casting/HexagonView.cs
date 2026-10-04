@@ -19,7 +19,7 @@ namespace Dovus.Game.Casting
     public sealed partial class HexagonView : MonoBehaviour
     {
         HudTheme _theme;
-        PrototypeTuning _tuning;
+        GameTuning _tuning;
         SkillMotor _skills;
 
         public void BindTheme(HudTheme theme) => _theme = theme;
@@ -55,7 +55,7 @@ namespace Dovus.Game.Casting
         public RectTransform DodgeButtonRect => _dodge;
 
         public void Build(
-            PrototypeTuning tuning,
+            GameTuning tuning,
             Camera overlayCam,
             SkillMotor skills = null,
             RuneLoadout loadout = null)

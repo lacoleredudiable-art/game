@@ -179,7 +179,7 @@ namespace Dovus.Game.Skills
             public AllyDummy Ally => _md._ally;
             public BossReactor Boss => _md._boss;
             public GameClock Clock => _md._clock;
-            public PrototypeTuning Colors => _md._colors;
+            public GameTuning Colors => _md._colors;
             public EquipmentItem EquippedWeapon => _md._equippedWeapon;
             public WeaponCombatProfile EquippedProfile => _md.EquippedProfile;
             public MotionTemplateBody MotionBody => _md._motionBody;

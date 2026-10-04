@@ -46,7 +46,7 @@ namespace Dovus.Game.Skills
         GameClock _clock;
         SentenceEngine _engine;
         CombatTuning _combat;
-        PrototypeTuning _colors;
+        GameTuning _colors;
         Transform _player;
         PlayerVitals _playerVitalsCache;
         Transform _playerVitalsOwner;
@@ -75,11 +75,11 @@ namespace Dovus.Game.Skills
         ReactionReadout _readout;
         FollowCamera _camera;
         PlayerTargeting _targeting;
-        PortalBorderTeamAccess _team;
+        TeamComboAccess _team;
         SfxDirector _sfx;
         static readonly PortalSystem TeamPortalFallback = new();
 
-        public void BindTeam(PortalBorderTeamAccess team) => _team = team;
+        public void BindTeam(TeamComboAccess team) => _team = team;
         public void BindSfx(SfxDirector sfx) => _sfx = sfx;
 
         internal TeamModifierHub TeamHub => _team != null ? _team.Hub : TeamModifierHub.Neutral;

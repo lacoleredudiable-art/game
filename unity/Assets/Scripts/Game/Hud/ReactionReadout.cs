@@ -21,7 +21,7 @@ namespace Dovus.Game.Hud
     ///
     /// Animasyon ÖLÇEKLENMEMİŞ saatle (Time.unscaledTime) çalışır: dünya yavaşken bile
     /// keskin görünmeli (§6). Punto/glow/bekleme/sönme `FeelTuning.Readout*`'tan (T1'de spec'e
-    /// göre kondu); giriş vuruşunun sönme süresi spec'te yok — `PrototypeTuning.ReadoutPunchInSec`
+    /// göre kondu); giriş vuruşunun sönme süresi spec'te yok — `GameTuning.ReadoutPunchInSec`
     /// uydurma alan, gerekçesi durum.md T9 sapmalarında.
     /// </summary>
     public sealed class ReactionReadout : MonoBehaviour
@@ -34,7 +34,7 @@ namespace Dovus.Game.Hud
         Outline _outline;
 
         FeelTuning _feel;
-        PrototypeTuning _tuning;
+        GameTuning _tuning;
 
         float _shownAtUnscaled = -999f;
         Color _accent = Color.white;
@@ -52,7 +52,7 @@ namespace Dovus.Game.Hud
         bool _needsFit = true;
         bool _graphicsVisible = true;
 
-        public void Configure(FeelTuning feel, PrototypeTuning tuning, Transform canvasRoot)
+        public void Configure(FeelTuning feel, GameTuning tuning, Transform canvasRoot)
         {
             _feel = feel;
             _tuning = tuning;

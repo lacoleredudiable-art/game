@@ -20,7 +20,7 @@ namespace Dovus.Game.Hud
     {
         SentenceEngine _engine;
         SentenceTuning _sentence;
-        PrototypeTuning _tuning;
+        GameTuning _tuning;
         RectTransform _root;
         RectTransform _bg;
         Image _fill;
@@ -43,7 +43,7 @@ namespace Dovus.Game.Hud
         public void Configure(
             SentenceEngine engine,
             CombatTuning combat,
-            PrototypeTuning tuning,
+            GameTuning tuning,
             Transform canvasRoot,
             int vitalsBarCount = 3)
         {

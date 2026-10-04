@@ -1,10 +1,10 @@
 namespace CoreTests;
 
 /// <summary>
-/// PLAN 2B.5c: 2B.5b'deki PrototypeTuning.Legacy.cs düz alan adlarının dondurulmuş listesi (247).
+/// PLAN 2B.5c: 2B.5b'deki GameTuning.Legacy.cs düz alan adlarının dondurulmuş listesi (247).
 /// CI sığ klon olduğundan git geçmişine bakılmaz; bölüm tiplerinin bu kümeyi kapsadığı test edilir.
 /// </summary>
-internal static class PrototypeTuningLegacyFieldNames
+internal static class GameTuningLegacyFieldNames
 {
     internal static readonly string[] All =
     {

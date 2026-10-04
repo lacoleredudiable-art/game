@@ -25,7 +25,7 @@ namespace Dovus.Game.Vfx
         static MaterialPropertyBlock _block;
 
         FeelTuning _feel;
-        PrototypeTuning _colors;
+        GameTuning _colors;
         Material _mat;
         float _alpha = 0.55f;
         int _countOverride = -1;
@@ -47,7 +47,7 @@ namespace Dovus.Game.Vfx
             }
         }
 
-        public void Bind(FeelTuning feel, PrototypeTuning colors)
+        public void Bind(FeelTuning feel, GameTuning colors)
         {
             _feel = feel;
             _colors = colors;

@@ -545,7 +545,7 @@ namespace Dovus.Game.Editor
             tree.AddChild(idle, 0f);
             if (run != null)
             {
-                // Tam çubuk = koşu; ölü bölge üstü ~0.4 = yürüme (PrototypeTuning.MinStickSpeedFrac).
+                // Tam çubuk = koşu; ölü bölge üstü ~0.4 = yürüme (GameTuning.MinStickSpeedFrac).
                 tree.AddChild(walk, 0.4f);
                 tree.AddChild(run, 1f);
             }

@@ -31,7 +31,7 @@ namespace Dovus.Game.Skills.Motion
         AllyDummy Ally { get; }
         BossReactor Boss { get; }
         GameClock Clock { get; }
-        PrototypeTuning Colors { get; }
+        GameTuning Colors { get; }
         EquipmentItem EquippedWeapon { get; }
         MotionTemplateBody MotionBody { get; }
         PlayerTargeting Targeting { get; }

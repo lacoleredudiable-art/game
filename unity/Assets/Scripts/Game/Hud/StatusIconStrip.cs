@@ -18,7 +18,7 @@ namespace Dovus.Game.Hud
         const int MaxSlots = 10;
 
         StatusBoard _board;
-        PrototypeTuning _tuning;
+        GameTuning _tuning;
         HudTheme _theme;
         RectTransform _root;
 
@@ -43,7 +43,7 @@ namespace Dovus.Game.Hud
 
         public void Configure(
             StatusBoard board,
-            PrototypeTuning tuning,
+            GameTuning tuning,
             Transform canvasRoot,
             Vector2 anchorMin,
             Vector2 anchorMax,

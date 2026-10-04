@@ -98,7 +98,7 @@ namespace Dovus.Game.Skills
             public BossReactor Boss => _md._boss;
             public KinematicMotor Motor => _md._motor;
             public CombatTuning Combat => _md._combat;
-            public PrototypeTuning Colors => _md._colors;
+            public GameTuning Colors => _md._colors;
             public ReactionReadout Readout => _md._readout;
             public SkillMotor Skills => _md._skills;
             public SkillNumberCatalog SkillNumbers => _md._skillNumbers;
@@ -172,7 +172,7 @@ namespace Dovus.Game.Skills
                 _md.ClosingDamageCore.ClearClosingStamp(logic);
 
             public GameClock Clock => _md._clock;
-            public PortalBorderTeamAccess TeamAccess => _md._team;
+            public TeamComboAccess TeamAccess => _md._team;
             public LivingEffectSpawner EffectSpawner => _md._effectSpawner;
             public int LastWordCount
             {

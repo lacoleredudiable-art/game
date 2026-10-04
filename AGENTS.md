@@ -4,7 +4,7 @@ Mobil kooperatif boss dövüşü, alfa prototip. Bu dosya her görevde bağlama 
 
 ## Değişmez kurallar
 1. `unity/Assets/Scripts/Core` saf C#: `using UnityEngine` yasak, zaman parametre olarak geçer.
-2. Sahne koddan kurulur (`PrototypeBootstrap`). `.unity` / `.prefab` YAML dosyaları **asla** elle düzenlenmez.
+2. Sahne koddan kurulur (`GameBootstrap`). `.unity` / `.prefab` YAML dosyaları **asla** elle düzenlenmez.
 3. **Tek hareket sistemi:** skill sırasında oyuncuyu/boss'u yalnız hareket kalıbı taşır
    (`Core/Motion/MotionTemplateRunner` + `Game/MotionTemplateBody`). İkinci bir hareket yolu ekleme;
    `SkillMotionDriver` / executor hareketi ölü, canlandırma; `SkillMotionMotor` yalnız saf plan üretir

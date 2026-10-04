@@ -350,7 +350,7 @@ namespace Dovus.Game.Actors
         }
 
         bool InputBlocked() =>
-            TuningPanel.IsOpen || V611DebugPanel.IsOpen || BuildSelectScreen.IsOpen
+            TuningPanel.IsOpen || GrammarDebugPanel.IsOpen || BuildSelectScreen.IsOpen
             || (_elementMenu != null && _elementMenu.IsMenuOpen);
 
         void BuildMarker()

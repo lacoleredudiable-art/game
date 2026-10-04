@@ -25,14 +25,14 @@ namespace Dovus.Game.Feel
     /// T8.1: kullanılmayan tam ekran katman KAPALI tutulur (alfa 0 bir Image yine de geometri
     /// üretip harmanlanır — mobilde üç kat overdraw). Vinyet artık düz dolgu değil kenardan
     /// içeri sönen bir maske: §10'un "telegraf en okunabilir katman" kuralı için ekranın
-    /// ortası açık kalmak zorunda. Renkler `PrototypeTuning`'den — ikinci kopya yok.
+    /// ortası açık kalmak zorunda. Renkler `GameTuning`'den — ikinci kopya yok.
     /// </summary>
     public sealed class CombatFeel : MonoBehaviour
     {
         const float ThreatHoldSec = 0.05f;
 
         CombatTuning _combat;
-        PrototypeTuning _colors;
+        GameTuning _colors;
         GameClock _clock;
         FollowCamera _follow;
         SentenceDebugHud _hud;
@@ -115,7 +115,7 @@ namespace Dovus.Game.Feel
             GameClock clock,
             FollowCamera follow,
             CombatTuning combat,
-            PrototypeTuning colors,
+            GameTuning colors,
             Camera overlayCam,
             SentenceDebugHud hud,
             ReactionReadout readout = null)

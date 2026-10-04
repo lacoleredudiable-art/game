@@ -16,7 +16,7 @@ public class CompositionOrderTests
     [Test]
     public void Bootstrap_CallsBuilders_InWorldSetupOrder()
     {
-        string boot = Game("Composition/PrototypeBootstrap.cs");
+        string boot = Game("Composition/GameBootstrap.cs");
         int arena = boot.IndexOf("arenaBuilder.BuildArena(ctx)", System.StringComparison.Ordinal);
         int actors = boot.IndexOf("new ActorsBuilder().Build(ctx)", System.StringComparison.Ordinal);
         int sun = boot.IndexOf("arenaBuilder.BuildSun(ctx)", System.StringComparison.Ordinal);
@@ -41,7 +41,7 @@ public class CompositionOrderTests
     [Test]
     public void Bootstrap_ClockAndTuningLoad_BeforeArena()
     {
-        string boot = Game("Composition/PrototypeBootstrap.cs");
+        string boot = Game("Composition/GameBootstrap.cs");
         int tryLoad = boot.IndexOf("tuningConfig.TryLoad()", System.StringComparison.Ordinal);
         int clock = boot.IndexOf("AddComponent<GameClock>()", System.StringComparison.Ordinal);
         int arena = boot.IndexOf("arenaBuilder.BuildArena(ctx)", System.StringComparison.Ordinal);

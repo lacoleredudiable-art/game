@@ -19,7 +19,7 @@ namespace Dovus.Game.Composition.Builders
 {
     /// <summary>
     /// Oyuncu + dost + boss zinciri. Nesne oluşturma ve AddComponent SIRASI eski
-    /// PrototypeBootstrap.BuildWorld ile birebir aynıdır (oyuncu/boss bileşenleri iç içe;
+    /// GameBootstrap.BuildWorld ile birebir aynıdır (oyuncu/boss bileşenleri iç içe;
     /// Awake/OnEnable sırası ve örnek kimlikleri buna bağlı) — sırayı değiştirme.
     /// </summary>
     public sealed class ActorsBuilder

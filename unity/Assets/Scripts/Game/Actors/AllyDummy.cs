@@ -27,7 +27,7 @@ namespace Dovus.Game.Actors
     /// </summary>
     public sealed class AllyDummy : MonoBehaviour
     {
-        // O11: PortalBorderTeamHost her kare FindObjectsOfType<AllyDummy> yapıyordu → etkin kayıt.
+        // O11: TeamComboHost her kare FindObjectsOfType<AllyDummy> yapıyordu → etkin kayıt.
         static readonly System.Collections.Generic.List<AllyDummy> s_live = new System.Collections.Generic.List<AllyDummy>();
         public static System.Collections.Generic.IReadOnlyList<AllyDummy> Live => s_live;
 
@@ -64,9 +64,9 @@ namespace Dovus.Game.Actors
         StatusTuning _statusTuning = new();
         TargetingConfig _life = new();
         double _downAtMs = -1;
-        PortalBorderTeamAccess _team;
+        TeamComboAccess _team;
 
-        public void BindTeam(PortalBorderTeamAccess team) => _team = team;
+        public void BindTeam(TeamComboAccess team) => _team = team;
 
         public void BindMainCamera(Camera camera, FollowCamera follow = null)
         {

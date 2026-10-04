@@ -12,7 +12,7 @@ namespace Dovus.Game.Hud
     /// <summary>
     /// Binding sıra 7a: salt-okunur preview. Seçim/cast üretmez; canlı SentenceEngine ve
     /// SkillFactory sonucunu altıgenin hemen üstünde gösterir. Çizim yokken gizlenir;
-    /// cast sonrası <see cref="PrototypeTuning.SkillPreviewHoldSec"/> kadar kalır.
+    /// cast sonrası <see cref="GameTuning.SkillPreviewHoldSec"/> kadar kalır.
     /// </summary>
     public sealed class SkillPreviewHud : MonoBehaviour
     {
@@ -20,7 +20,7 @@ namespace Dovus.Game.Hud
         SkillMotor _motor;
         SkillFactory _factory;
         ManifestationDirector _manifestation;
-        PrototypeTuning _tuning;
+        GameTuning _tuning;
         HudTheme _theme;
         RectTransform _rect;
 
@@ -40,7 +40,7 @@ namespace Dovus.Game.Hud
             SkillMotor motor,
             SkillFactory factory,
             ManifestationDirector manifestation,
-            PrototypeTuning tuning,
+            GameTuning tuning,
             Transform canvasRoot)
         {
             _engine = engine;

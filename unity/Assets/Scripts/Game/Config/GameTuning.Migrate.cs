@@ -2,11 +2,11 @@ using UnityEngine;
 
 namespace Dovus.Game.Config
 {
-    public sealed partial class PrototypeTuning
+    public sealed partial class GameTuning
     {
         void MigrateToCurrent()
         {
-            var fresh = new PrototypeTuning();
+            var fresh = new GameTuning();
             Player.PlayerMaxHp = fresh.Player.PlayerMaxHp;
             Hud.WindowCueUrgentRatio = fresh.Hud.WindowCueUrgentRatio;
             Hud.WindowCuePulseHz = fresh.Hud.WindowCuePulseHz;

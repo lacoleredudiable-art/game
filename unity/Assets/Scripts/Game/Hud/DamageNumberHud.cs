@@ -23,7 +23,7 @@ namespace Dovus.Game.Hud
     {
         const int PoolSize = 24;
 
-        PrototypeTuning _tuning;
+        GameTuning _tuning;
         HudTheme _theme;
         Camera _cam;
         FollowCamera _follow;
@@ -55,7 +55,7 @@ namespace Dovus.Game.Hud
 
         public void BindDefaultBoss(BossReactor boss) => _defaultBoss = boss;
 
-        public void Configure(PrototypeTuning tuning, Transform canvasRoot)
+        public void Configure(GameTuning tuning, Transform canvasRoot)
         {
             _tuning = tuning;
 

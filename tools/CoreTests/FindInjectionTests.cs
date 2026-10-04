@@ -22,7 +22,7 @@ public class FindInjectionTests
             if (path.Contains("\\DevTools\\") || path.Contains("/DevTools/"))
                 continue;
             string rel = Path.GetRelativePath(GameRoot(), path).Replace('\\', '/');
-            if (rel == "Team/PortalBorderTeamHost.cs")
+            if (rel == "Team/TeamComboHost.cs")
                 continue;
             yield return path;
         }

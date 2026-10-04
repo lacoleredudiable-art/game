@@ -1,7 +1,7 @@
 namespace Dovus.Game.Team
 {
-    /// <summary>Takım sahne host oynanış ölçüleri — PortalBorderTeamHost tek kaynak (PLAN 2B.11).</summary>
-    public static class PortalBorderTeamDefaults
+    /// <summary>Takım sahne host oynanış ölçüleri — TeamComboHost tek kaynak (PLAN 2B.11).</summary>
+    public static class TeamComboDefaults
     {
         public const float AllySpawnBaseX = -1.6f;
         public const float AllySpawnStepX = 0.8f;

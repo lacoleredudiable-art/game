@@ -50,7 +50,7 @@ namespace Dovus.Game.DevTools
             if (!_chromeVisible)
                 return;
 #endif
-            PortalBorderTeamHost host = PortalBorderTeamHost.Instance;
+            TeamComboHost host = TeamComboHost.Instance;
             if (host == null)
                 return;
 
