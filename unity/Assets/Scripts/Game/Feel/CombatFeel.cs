@@ -148,7 +148,8 @@ namespace Dovus.Game.Feel
 
             if (result.Outcome == ExchangeOutcome.Dodged)
             {
-                _clock.Director.TriggerHitstop(feel.HitstopPerfectMs);
+                if (_visualFreeze != null)
+                    _visualFreeze.Trigger(feel.HitstopPerfectMs / 1000f);
 
                 float kick = result.Grade == DodgeGrade.Mukemmel
                     ? feel.CameraPerfectZoomKick
@@ -175,7 +176,8 @@ namespace Dovus.Game.Feel
             }
             else if (result.Outcome == ExchangeOutcome.Hit)
             {
-                _clock.Director.TriggerHitstop(feel.HitstopPlayerHitMs);
+                if (_visualFreeze != null)
+                    _visualFreeze.Trigger(feel.HitstopPlayerHitMs / 1000f);
                 _follow?.Punch(feel.CameraDodgeZoomKick, feel.CameraRollDeg, feel.ShakeHitPx, feel.ShakeDecay);
                 _playerFlash?.Flash(_colors.TelegraphHot);
                 float hold = feel.PlayerHitVignetteSec > 0f ? feel.PlayerHitVignetteSec : _colors.VignetteHoldSec;

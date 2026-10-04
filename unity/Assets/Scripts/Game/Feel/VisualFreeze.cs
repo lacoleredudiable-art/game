@@ -66,11 +66,17 @@ namespace Dovus.Game.Feel
                 return;
 
             float end = Time.unscaledTime + durationSec;
-            if (_active && end <= _untilUnscaled)
-                return;
-            _untilUnscaled = end;
             if (_active)
+            {
+                if (end <= _untilUnscaled)
+                    return;
+                _untilUnscaled = end;
+                if (_camera != null)
+                    _camera.VisualHoldUntilUnscaled = _untilUnscaled;
                 return;
+            }
+
+            _untilUnscaled = end;
 
             _active = true;
             for (int i = 0; i < _animators.Count; i++)
