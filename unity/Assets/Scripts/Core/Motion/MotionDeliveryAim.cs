@@ -1,18 +1,24 @@
-using Dovus.Core.Combat;
+using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Core.Grammar;
 using Dovus.Core.Status;
 
 namespace Dovus.Core.Motion
 {
     /// <summary>
-    /// Kalıbın duruş/kaçınma hedefi. Atıcı kendisi olamaz: kendine kilitlenince
-    /// her kare kenar payı kadar ileri-geri itilir.
+    /// Kal─▒b─▒n duru┼ş/ka├ğ─▒nma hedefi. At─▒c─▒ kendisi olamaz: kendine kilitlenince
+    /// her kare kenar pay─▒ kadar ileri-geri itilir.
     /// </summary>
     public static class MotionDeliveryAim
     {
         public enum Kind
         {
-            /// <summary>Dünya hedefi yok; bakış, parmak veya çubuk.</summary>
+            /// <summary>D├╝nya hedefi yok; bak─▒┼ş, parmak veya ├ğubuk.</summary>
             None = 0,
             Enemy = 1,
             Ally = 2
@@ -32,11 +38,11 @@ namespace Dovus.Core.Motion
             if (allySkill && movesTowardMarked && hasDistinctAlly)
                 return Kind.Ally;
 
-            // Etki hedefi atıcının kendisi. Duruş hedefi o olmaz.
+            // Etki hedefi at─▒c─▒n─▒n kendisi. Duru┼ş hedefi o olmaz.
             return Kind.None;
         }
 
-        /// <summary>Homing "track" ve hedefe giden bir faz varsa kalıp işaretli noktaya yürür.</summary>
+        /// <summary>Homing "track" ve hedefe giden bir faz varsa kal─▒p i┼şaretli noktaya y├╝r├╝r.</summary>
         public static bool MovesTowardMarked(MotionTemplate template)
         {
             if (template == null)
@@ -66,8 +72,8 @@ namespace Dovus.Core.Motion
         }
 
         /// <summary>
-        /// Arkaya iniş yazılmamış ışınlanma gövdenin içine kapanır. Hedef düşmandır;
-        /// menzil yetiyorsa çıkış öte kenardır. Dostun konumu bu kalıbın durağı değildir.
+        /// Arkaya ini┼ş yaz─▒lmam─▒┼ş ─▒┼ş─▒nlanma g├Âvdenin i├ğine kapan─▒r. Hedef d├╝┼şmand─▒r;
+        /// menzil yetiyorsa ├ğ─▒k─▒┼ş ├Âte kenard─▒r. Dostun konumu bu kal─▒b─▒n dura─ş─▒ de─şildir.
         /// </summary>
         public static bool SwapsPastBody(MotionTemplate template)
         {

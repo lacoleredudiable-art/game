@@ -1,4 +1,10 @@
-using Dovus.Core.Combat;
+﻿using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Core.Data;
 using Dovus.Core.Tuning;
 using System.Collections.Generic;
@@ -7,8 +13,8 @@ using UnityEngine;
 namespace Dovus.Game.Boss
 {
     /// <summary>
-    /// Karşılaşma tasarım sayıları <c>Resources/Bosses/*.json</c> (BossHudData ile aynı dosya).
-    /// JSON ayrıştırma <see cref="BossEncounterMapper"/> (Core).
+    /// KarÅŸÄ±laÅŸma tasarÄ±m sayÄ±larÄ± <c>Resources/Bosses/*.json</c> (BossHudData ile aynÄ± dosya).
+    /// JSON ayrÄ±ÅŸtÄ±rma <see cref="BossEncounterMapper"/> (Core).
     /// </summary>
     public static class BossEncounterData
     {
@@ -22,7 +28,7 @@ namespace Dovus.Game.Boss
             }
             catch (System.Exception e)
             {
-                Debug.LogWarning($"[BossEncounterData] {resourcePath} okunamadı: {e.Message}");
+                Debug.LogWarning($"[BossEncounterData] {resourcePath} okunamadÄ±: {e.Message}");
                 return new TargetingConfig();
             }
         }
@@ -37,7 +43,7 @@ namespace Dovus.Game.Boss
             }
             catch (System.Exception e)
             {
-                Debug.LogWarning($"[BossEncounterData] {resourcePath} volley okunamadı: {e.Message}");
+                Debug.LogWarning($"[BossEncounterData] {resourcePath} volley okunamadÄ±: {e.Message}");
                 return false;
             }
         }

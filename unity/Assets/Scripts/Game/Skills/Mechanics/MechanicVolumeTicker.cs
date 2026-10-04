@@ -1,8 +1,14 @@
-using System;
+﻿using System;
 using Dovus.Core;
-using Dovus.Core.Combat;
+using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Core.Equipment;
-using Dovus.Core.Execution;
+using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Motion;
@@ -201,7 +207,7 @@ namespace Dovus.Game.Skills.Mechanics
                     int amount = Mathf.Max(0, Mathf.RoundToInt((float)Math.Abs(guard.Effect.Amount) * scale));
                     if (guard.Effect.Stat == "can")
                     {
-                        // Miktar gramerden (ham). Diğer şifalar gibi ActorStatus.ApplyHeal ölçekler.
+                        // Miktar gramerden (ham). DiÄŸer ÅŸifalar gibi ActorStatus.ApplyHeal Ã¶lÃ§ekler.
                         if (allyLow && _host.Ally != null)
                         {
                             float healMult = _host.Ally.Board != null ? _host.Ally.Board.HealEffectivenessMult : 1f;

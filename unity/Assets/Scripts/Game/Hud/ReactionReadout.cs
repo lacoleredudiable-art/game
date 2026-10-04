@@ -1,4 +1,10 @@
-using Dovus.Core.Combat;
+﻿using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Core.Tuning;
 using Dovus.Game.Config;
 using Dovus.Game.Feel;
@@ -8,15 +14,15 @@ using UnityEngine.UI;
 namespace Dovus.Game.Hud
 {
     /// <summary>
-    /// §6 gösterim: kenarda büyük, parlak (katmanlı glow) tepki yazısı — "0.45 sn" + derece +
-    /// mesaj. Seri sayacı ve en iyi tepki kaydı da burada. Vurulunca sebep yazısı ("erken
-    /// bastın"/"geç kaldın") aynı yolla gösterilir ama oyuncu rengiyle DEĞİL — §10 kırmızı-
-    /// vurulma nedeni için nötr `HexagonDotColor` kullanılır.
+    /// Â§6 gÃ¶sterim: kenarda bÃ¼yÃ¼k, parlak (katmanlÄ± glow) tepki yazÄ±sÄ± â€” "0.45 sn" + derece +
+    /// mesaj. Seri sayacÄ± ve en iyi tepki kaydÄ± da burada. Vurulunca sebep yazÄ±sÄ± ("erken
+    /// bastÄ±n"/"geÃ§ kaldÄ±n") aynÄ± yolla gÃ¶sterilir ama oyuncu rengiyle DEÄÄ°L â€” Â§10 kÄ±rmÄ±zÄ±-
+    /// vurulma nedeni iÃ§in nÃ¶tr `HexagonDotColor` kullanÄ±lÄ±r.
     ///
-    /// Animasyon ÖLÇEKLENMEMİŞ saatle (Time.unscaledTime) çalışır: dünya yavaşken bile
-    /// keskin görünmeli (§6). Punto/glow/bekleme/sönme `FeelTuning.Readout*`'tan (T1'de spec'e
-    /// göre kondu); giriş vuruşunun sönme süresi spec'te yok — `PrototypeTuning.ReadoutPunchInSec`
-    /// uydurma alan, gerekçesi durum.md T9 sapmalarında.
+    /// Animasyon Ã–LÃ‡EKLENMEMÄ°Å saatle (Time.unscaledTime) Ã§alÄ±ÅŸÄ±r: dÃ¼nya yavaÅŸken bile
+    /// keskin gÃ¶rÃ¼nmeli (Â§6). Punto/glow/bekleme/sÃ¶nme `FeelTuning.Readout*`'tan (T1'de spec'e
+    /// gÃ¶re kondu); giriÅŸ vuruÅŸunun sÃ¶nme sÃ¼resi spec'te yok â€” `PrototypeTuning.ReadoutPunchInSec`
+    /// uydurma alan, gerekÃ§esi durum.md T9 sapmalarÄ±nda.
     /// </summary>
     public sealed class ReactionReadout : MonoBehaviour
     {
@@ -35,10 +41,10 @@ namespace Dovus.Game.Hud
         int _streak;
         float _bestReactionSec = -1f;
 
-        // Punto/glow/kenar kurulumda bir kez okunursa T10'un canlı slider'ı ekranda hiçbir şeyi
-        // değiştirmez (kabul kriteri 6 "ayarlanabilir" + T10 "yeniden başlatma gerektirmez").
-        // Uygulanan değer saklanıp her karede karşılaştırılıyor: değişmediyse tek bir float
-        // karşılaştırması, değiştiyse layout yeniden yazılıyor.
+        // Punto/glow/kenar kurulumda bir kez okunursa T10'un canlÄ± slider'Ä± ekranda hiÃ§bir ÅŸeyi
+        // deÄŸiÅŸtirmez (kabul kriteri 6 "ayarlanabilir" + T10 "yeniden baÅŸlatma gerektirmez").
+        // Uygulanan deÄŸer saklanÄ±p her karede karÅŸÄ±laÅŸtÄ±rÄ±lÄ±yor: deÄŸiÅŸmediyse tek bir float
+        // karÅŸÄ±laÅŸtÄ±rmasÄ±, deÄŸiÅŸtiyse layout yeniden yazÄ±lÄ±yor.
         bool _appliedAnchorRight;
         float _appliedSizePx = -1f;
         float _appliedGlow = -1f;
@@ -85,8 +91,8 @@ namespace Dovus.Game.Hud
         }
 
         /// <summary>
-        /// Kenar/punto/glow ayarlarını uygular. Değişmeyen kare için maliyeti üç karşılaştırma;
-        /// T10 paneli değeri oynattığında yerleşim aynı karede yeniden yazılır.
+        /// Kenar/punto/glow ayarlarÄ±nÄ± uygular. DeÄŸiÅŸmeyen kare iÃ§in maliyeti Ã¼Ã§ karÅŸÄ±laÅŸtÄ±rma;
+        /// T10 paneli deÄŸeri oynattÄ±ÄŸÄ±nda yerleÅŸim aynÄ± karede yeniden yazÄ±lÄ±r.
         /// </summary>
         void ApplyTuningLayout()
         {
@@ -94,8 +100,8 @@ namespace Dovus.Game.Hud
             if (right != _appliedAnchorRight)
             {
                 _appliedAnchorRight = right;
-                // Sağ (ya da sol) kenarda, üst debug HUD'ın (0.82-0.98) ve altıgenin (merkez
-                // y≈0.40) arasında dikey bant — telegrafı kapatmayacak kadar dar (§10).
+                // SaÄŸ (ya da sol) kenarda, Ã¼st debug HUD'Ä±n (0.82-0.98) ve altÄ±genin (merkez
+                // yâ‰ˆ0.40) arasÄ±nda dikey bant â€” telegrafÄ± kapatmayacak kadar dar (Â§10).
                 _root.anchorMin = right ? new Vector2(0.58f, 0.56f) : new Vector2(0.02f, 0.56f);
                 _root.anchorMax = right ? new Vector2(0.98f, 0.80f) : new Vector2(0.42f, 0.80f);
                 _root.offsetMin = Vector2.zero;
@@ -126,12 +132,12 @@ namespace Dovus.Game.Hud
         }
 
         /// <summary>
-        /// Punto bir TAVAN: yazı bandına sığıyorsa tam bu boyda çizilir, sığmıyorsa oranla
-        /// küçülür. Sabit puntoyla "0,45 sn MÜKEMMEL" dar bir ekranda bandını taşıp dünyayı
-        /// (ve bossu) örtüyordu — kabul kriteri "yazı bossun telegrafını kapatmıyor" (§10).
-        /// Spec'in `FeelTuning.ReadoutSizePx` sayısı değişmedi, yalnızca üst sınır olarak
-        /// okunuyor. Unity'nin kendi `resizeTextForBestFit`'i kullanılmadı: kurulum karesinde
-        /// bandın genişliği daha 0 olduğu için puntoyu 96'dan 14'e düşürüp orada bırakıyordu.
+        /// Punto bir TAVAN: yazÄ± bandÄ±na sÄ±ÄŸÄ±yorsa tam bu boyda Ã§izilir, sÄ±ÄŸmÄ±yorsa oranla
+        /// kÃ¼Ã§Ã¼lÃ¼r. Sabit puntoyla "0,45 sn MÃœKEMMEL" dar bir ekranda bandÄ±nÄ± taÅŸÄ±p dÃ¼nyayÄ±
+        /// (ve bossu) Ã¶rtÃ¼yordu â€” kabul kriteri "yazÄ± bossun telegrafÄ±nÄ± kapatmÄ±yor" (Â§10).
+        /// Spec'in `FeelTuning.ReadoutSizePx` sayÄ±sÄ± deÄŸiÅŸmedi, yalnÄ±zca Ã¼st sÄ±nÄ±r olarak
+        /// okunuyor. Unity'nin kendi `resizeTextForBestFit`'i kullanÄ±lmadÄ±: kurulum karesinde
+        /// bandÄ±n geniÅŸliÄŸi daha 0 olduÄŸu iÃ§in puntoyu 96'dan 14'e dÃ¼ÅŸÃ¼rÃ¼p orada bÄ±rakÄ±yordu.
         /// </summary>
         void FitTexts()
         {
@@ -156,18 +162,18 @@ namespace Dovus.Game.Hud
                 text.fontSize = Mathf.Max(1, Mathf.FloorToInt(max * bandWidth / preferred));
         }
 
-        /// <summary>CombatFeel artık dodge/vurulma büyük yazısını tetiklemez (feel-2).</summary>
+        /// <summary>CombatFeel artÄ±k dodge/vurulma bÃ¼yÃ¼k yazÄ±sÄ±nÄ± tetiklemez (feel-2).</summary>
         public void NoteExchange(ExchangeResult result)
         {
             if (_feel == null)
                 return;
 
-            // Yalnız skill/kapanış/deny yazıları kalır — dodge derecesi ve vurulma sebebi gösterilmez.
+            // YalnÄ±z skill/kapanÄ±ÅŸ/deny yazÄ±larÄ± kalÄ±r â€” dodge derecesi ve vurulma sebebi gÃ¶sterilmez.
             if (result.Outcome == ExchangeOutcome.Dodged || result.Outcome == ExchangeOutcome.Hit)
                 return;
         }
 
-        /// <summary>Kapanış bang'inde skill adı — "farklı iş" havasının yazı katmanı.</summary>
+        /// <summary>KapanÄ±ÅŸ bang'inde skill adÄ± â€” "farklÄ± iÅŸ" havasÄ±nÄ±n yazÄ± katmanÄ±.</summary>
         public void NoteSkill(string title, string detail, Color accent)
         {
             if (_feel == null || string.IsNullOrEmpty(title))
@@ -181,7 +187,7 @@ namespace Dovus.Game.Hud
         }
 
         /// <summary>
-        /// Bağlama 3: yetersiz mana için nötr HexagonDotColor.
+        /// BaÄŸlama 3: yetersiz mana iÃ§in nÃ¶tr HexagonDotColor.
         /// </summary>
         public void NoteDenied(string title, string detail = null)
         {
@@ -200,9 +206,9 @@ namespace Dovus.Game.Hud
         void Show() => _shownAtUnscaled = Time.unscaledTime;
 
         /// <summary>
-        /// Alfası 0 olan bir Graphic yine de geometri üretip harmanlanır (T8.1 denetimi 12:
-        /// "Color.clear ile kapatmak overdraw'ı kapatmaz"). Yazı ekranda yokken bant, glow ve
-        /// kontur tamamen kapanır — mobilde boşta duran tam ekran harman yok.
+        /// AlfasÄ± 0 olan bir Graphic yine de geometri Ã¼retip harmanlanÄ±r (T8.1 denetimi 12:
+        /// "Color.clear ile kapatmak overdraw'Ä± kapatmaz"). YazÄ± ekranda yokken bant, glow ve
+        /// kontur tamamen kapanÄ±r â€” mobilde boÅŸta duran tam ekran harman yok.
         /// </summary>
         void HideAll()
         {
@@ -272,9 +278,9 @@ namespace Dovus.Game.Hud
         void UpdateTally()
         {
             if (_streak > 1 && _bestReactionSec >= 0f)
-                _tally.text = $"seri ×{_streak} · en iyi {_bestReactionSec:0.00} sn";
+                _tally.text = $"seri Ã—{_streak} Â· en iyi {_bestReactionSec:0.00} sn";
             else if (_streak > 1)
-                _tally.text = $"seri ×{_streak}";
+                _tally.text = $"seri Ã—{_streak}";
             else if (_bestReactionSec >= 0f)
                 _tally.text = $"en iyi tepki: {_bestReactionSec:0.00} sn";
             else
@@ -302,7 +308,7 @@ namespace Dovus.Game.Hud
             if (text.font == null)
                 text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
             text.fontStyle = FontStyle.Bold;
-            // Tek satır: sarma yerine punto küçülür (FitTexts).
+            // Tek satÄ±r: sarma yerine punto kÃ¼Ã§Ã¼lÃ¼r (FitTexts).
             text.horizontalOverflow = HorizontalWrapMode.Overflow;
             text.verticalOverflow = VerticalWrapMode.Overflow;
             text.raycastTarget = false;
@@ -310,7 +316,7 @@ namespace Dovus.Game.Hud
             return text;
         }
 
-        /// <summary>Merkezden kenara sönen yumuşak ışık — "katmanlı glow"un arka planı.</summary>
+        /// <summary>Merkezden kenara sÃ¶nen yumuÅŸak Ä±ÅŸÄ±k â€” "katmanlÄ± glow"un arka planÄ±.</summary>
         static Sprite CreateGlowSprite()
         {
             const int size = 64;

@@ -1,3 +1,4 @@
+﻿using Dovus.Core.Element;
 using Dovus.Core.Grammar;
 using Dovus.Core.Manifestation;
 using Dovus.Core.Tuning;
@@ -9,9 +10,9 @@ using UnityEngine;
 namespace Dovus.Game.Skills
 {
     /// <summary>
-    /// Tek yaşayan etkinin prosedürel çizimi — LineRenderer + az sayıda küre/kapsül.
-    /// T14: ayrım hareket karakterinden (İĞNE fırlar, SÜRÜ üşüşür, SARSINTI yükselir);
-    /// düz vuruşun ayrı jab silüeti var. Overdraw yok (özet §6).
+    /// Tek yaÅŸayan etkinin prosedÃ¼rel Ã§izimi â€” LineRenderer + az sayÄ±da kÃ¼re/kapsÃ¼l.
+    /// T14: ayrÄ±m hareket karakterinden (Ä°ÄNE fÄ±rlar, SÃœRÃœ Ã¼ÅŸÃ¼ÅŸÃ¼r, SARSINTI yÃ¼kselir);
+    /// dÃ¼z vuruÅŸun ayrÄ± jab silÃ¼eti var. Overdraw yok (Ã¶zet Â§6).
     /// </summary>
     public sealed class LivingEffectView : MonoBehaviour
     {
@@ -61,7 +62,7 @@ namespace Dovus.Game.Skills
             SyncVisual(1f);
         }
 
-        /// <summary>SkillMotor aile rengi — şekil aynı kalsa bile iş ayrımı okunur.</summary>
+        /// <summary>SkillMotor aile rengi â€” ÅŸekil aynÄ± kalsa bile iÅŸ ayrÄ±mÄ± okunur.</summary>
         public void SetSkillTint(Color line, Color blob)
         {
             _hasSkillTint = true;
@@ -76,8 +77,8 @@ namespace Dovus.Game.Skills
         }
 
         /// <summary>
-        /// İptal penceresinin kalan oranı (1 = taze, 0 = kapanıyor). §8/T2: dalganın
-        /// Travel/MaxRange'si ile birleşip nabız/solma ipucu olur.
+        /// Ä°ptal penceresinin kalan oranÄ± (1 = taze, 0 = kapanÄ±yor). Â§8/T2: dalganÄ±n
+        /// Travel/MaxRange'si ile birleÅŸip nabÄ±z/solma ipucu olur.
         /// </summary>
         public void SetWindowCue(float remaining01)
         {
@@ -126,7 +127,7 @@ namespace Dovus.Game.Skills
             _blobs = new Transform[n];
             for (int i = 0; i < n; i++)
             {
-                // Ezilmiş küre = enerji damlası (eski sert top sürü değil).
+                // EzilmiÅŸ kÃ¼re = enerji damlasÄ± (eski sert top sÃ¼rÃ¼ deÄŸil).
                 var s = CreateMeshObject("Wisp" + i, PrimitiveType.Sphere);
                 s.GetComponent<Renderer>().sharedMaterial = _blobMat;
                 s.SetActive(false);
@@ -159,7 +160,7 @@ namespace Dovus.Game.Skills
             var go = new GameObject("BangBurst");
             go.transform.SetParent(transform, false);
             _bangPs = go.AddComponent<ParticleSystem>();
-            // AddComponent sistemi hemen oynatır; süre oynarken yazılamaz.
+            // AddComponent sistemi hemen oynatÄ±r; sÃ¼re oynarken yazÄ±lamaz.
             _bangPs.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             var main = _bangPs.main;
             main.loop = false;
@@ -200,9 +201,9 @@ namespace Dovus.Game.Skills
         }
 
         /// <summary>
-        /// Mesh'i doğrudan ata (MeshFilter+MeshRenderer) — GameObject.CreatePrimitive'in
-        /// otomatik eklediği Collider hiç oluşmaz. Teknoloji kararları §4: fizik dışarıda,
-        /// bir karelik Destroy edilmiş collider bile yanlış kullanıma davet çıkarır.
+        /// Mesh'i doÄŸrudan ata (MeshFilter+MeshRenderer) â€” GameObject.CreatePrimitive'in
+        /// otomatik eklediÄŸi Collider hiÃ§ oluÅŸmaz. Teknoloji kararlarÄ± Â§4: fizik dÄ±ÅŸarÄ±da,
+        /// bir karelik Destroy edilmiÅŸ collider bile yanlÄ±ÅŸ kullanÄ±ma davet Ã§Ä±karÄ±r.
         /// </summary>
         GameObject CreateMeshObject(string name, PrimitiveType type)
         {
@@ -229,8 +230,8 @@ namespace Dovus.Game.Skills
                 urgent *= 0.45f;
             float place = Mathf.Max(urgent, travel01 * 0.35f);
             float hz = Mathf.Lerp(_colors.Hud.WindowCuePulseHz, _colors.Hud.WindowCueUrgentHz, place);
-            // Nabız AŞAĞI modüle eder: yukarı çarpmak taban alfa 0.95 iken Clamp01'e takılıyor
-            // ve ipucu hiç görünmüyordu (T8.1). §8/T2 "pencereyi dalgadan oku" buna bağlı.
+            // NabÄ±z AÅAÄI modÃ¼le eder: yukarÄ± Ã§arpmak taban alfa 0.95 iken Clamp01'e takÄ±lÄ±yor
+            // ve ipucu hiÃ§ gÃ¶rÃ¼nmÃ¼yordu (T8.1). Â§8/T2 "pencereyi dalgadan oku" buna baÄŸlÄ±.
             float wave = 0.5f + 0.5f * Mathf.Sin(_logic.AgeSec * hz * Mathf.PI * 2f);
             alpha = Mathf.Clamp01(alpha * (1f - _colors.Hud.WindowCuePulseAmp * place * wave));
 
@@ -245,7 +246,7 @@ namespace Dovus.Game.Skills
             ghost.a = alpha * _colors.Visuals.EffectNeedleAfterimageAlpha;
             SetMatColor(_ghostMat, ghost);
 
-            // Düz vuruş: kısa jab — halka/sürü/iğne cümle silüetlerinden ayrı.
+            // DÃ¼z vuruÅŸ: kÄ±sa jab â€” halka/sÃ¼rÃ¼/iÄŸne cÃ¼mle silÃ¼etlerinden ayrÄ±.
             if (_basicStrike)
             {
                 HideSwarm();
@@ -254,7 +255,7 @@ namespace Dovus.Game.Skills
                 return;
             }
 
-            // SARSINTI yerden yükselir; diğer fiillerde Lift hâlâ hafif yükseltir.
+            // SARSINTI yerden yÃ¼kselir; diÄŸer fiillerde Lift hÃ¢lÃ¢ hafif yÃ¼kseltir.
             float y = EffectHeight(s, travel01);
             Vector3 origin = new Vector3(_logic.OriginX, y, _logic.OriginZ);
             Vector3 dir = new Vector3(_logic.DirX, 0f, _logic.DirZ);
@@ -272,7 +273,7 @@ namespace Dovus.Game.Skills
         {
             if (_logic.Verb == Rune.Toprak)
             {
-                // Aşağıdan yukarı: genişlerken yükselir (kütle / yerden çıkış).
+                // AÅŸaÄŸÄ±dan yukarÄ±: geniÅŸlerken yÃ¼kselir (kÃ¼tle / yerden Ã§Ä±kÄ±ÅŸ).
                 float peak = _tuning.WaveRiseHeightM * (0.55f + 0.9f * s.Lift);
                 return Mathf.Lerp(_colors.Visuals.EffectSarsintiGroundY, peak, travel01);
             }
@@ -297,7 +298,7 @@ namespace Dovus.Game.Skills
             float dist = Mathf.Min(_logic.TipDistance, _tuning.BasicStrikeRangeM);
             float y = _colors.Visuals.EffectBasicStrikeHeightM;
             Vector3 origin = new Vector3(_logic.OriginX, y, _logic.OriginZ);
-            // Uç, kısa menzilin ortasına yakın — "tek vuruşluk jab", uçan iğne değil.
+            // UÃ§, kÄ±sa menzilin ortasÄ±na yakÄ±n â€” "tek vuruÅŸluk jab", uÃ§an iÄŸne deÄŸil.
             Vector3 tip = origin + dir * Mathf.Max(0.35f, dist * 0.55f);
 
             _needle.gameObject.SetActive(true);
@@ -319,7 +320,7 @@ namespace Dovus.Game.Skills
                 return;
             }
 
-            // İĞNE fiilinde ana gövde iğne; dalga çizgisi yok
+            // Ä°ÄNE fiilinde ana gÃ¶vde iÄŸne; dalga Ã§izgisi yok
             if (_logic.Verb == Rune.Ates && s.Spread < _colors.Visuals.EffectIgneShowMinSpread)
             {
                 _line.positionCount = 0;
@@ -327,7 +328,7 @@ namespace Dovus.Game.Skills
                 return;
             }
 
-            // SÜRÜ: cephe çizgisi yok — dağınık bulut blobs ile okunur.
+            // SÃœRÃœ: cephe Ã§izgisi yok â€” daÄŸÄ±nÄ±k bulut blobs ile okunur.
             if ((_logic.Verb == Rune.Hava || _logic.Verb == Rune.Karanlik) && s.Focus < _colors.Visuals.EffectFocusSwarmAlongLineMin)
             {
                 _line.positionCount = 0;
@@ -352,7 +353,7 @@ namespace Dovus.Game.Skills
             }
             else if (focus < _colors.Visuals.EffectFocusArcMax)
             {
-                // Yaya daralma — boss yönüne doğru koridor
+                // Yaya daralma â€” boss yÃ¶nÃ¼ne doÄŸru koridor
                 float halfArc = Mathf.Lerp(Mathf.PI, 0.35f, (focus - _colors.Visuals.EffectFocusRingMax) / (_colors.Visuals.EffectFocusArcMax - _colors.Visuals.EffectFocusRingMax));
                 float facing = Mathf.Atan2(dir.x, dir.z);
                 int segs = 24;
@@ -369,7 +370,7 @@ namespace Dovus.Game.Skills
             }
             else
             {
-                // Tek hat (fay hattı)
+                // Tek hat (fay hattÄ±)
                 _line.loop = false;
                 _line.positionCount = 2;
                 Vector3 tip = origin + dir * radius;
@@ -382,12 +383,12 @@ namespace Dovus.Game.Skills
             if (_logic.Verb == Rune.Toprak)
             {
                 baseWidth = Mathf.Lerp(_colors.Visuals.EffectSarsintiWidthWideM, _colors.Visuals.EffectSarsintiWidthNarrowM, focus);
-                // Kütle: geniş halka daha kalın okunur.
+                // KÃ¼tle: geniÅŸ halka daha kalÄ±n okunur.
                 baseWidth *= Mathf.Lerp(1f, _colors.Visuals.EffectSarsintiMassWidthMul, 1f - focus);
             }
 
-            // Taban her karede burada baştan hesaplanır (birikmez) — PulseBang bunun üstüne
-            // çarpar, DrawWave'in kendisi asla çarpımı miras almaz.
+            // Taban her karede burada baÅŸtan hesaplanÄ±r (birikmez) â€” PulseBang bunun Ã¼stÃ¼ne
+            // Ã§arpar, DrawWave'in kendisi asla Ã§arpÄ±mÄ± miras almaz.
             _lineBaseWidth = baseWidth;
             _line.widthMultiplier = baseWidth;
         }
@@ -413,7 +414,7 @@ namespace Dovus.Game.Skills
                 return;
             }
 
-            // Sıfat olarak iğne: uca oturur (5-1 hattı vb.)
+            // SÄ±fat olarak iÄŸne: uca oturur (5-1 hattÄ± vb.)
             HideNeedleGhosts();
             Vector3 tip = origin + dir * dist;
             _needle.position = tip;
@@ -423,7 +424,7 @@ namespace Dovus.Game.Skills
         }
 
         /// <summary>
-        /// Özet §6 Zenitsu küçük hâli: gerilme → 2–3 kare gidiş → donmuş varış.
+        /// Ã–zet Â§6 Zenitsu kÃ¼Ã§Ã¼k hÃ¢li: gerilme â†’ 2â€“3 kare gidiÅŸ â†’ donmuÅŸ varÄ±ÅŸ.
         /// </summary>
         void DrawIgneZenitsu(
             Vector3 origin,
@@ -439,7 +440,7 @@ namespace Dovus.Game.Skills
 
             if (age < windup)
             {
-                // Gerilme: kökte uzar, yerinde — henüz fırlamadı.
+                // Gerilme: kÃ¶kte uzar, yerinde â€” henÃ¼z fÄ±rlamadÄ±.
                 HideNeedleGhosts();
                 float t = age / windup;
                 float stretch = Mathf.Lerp(1f, _colors.Visuals.EffectNeedleWindupLenMul, t);
@@ -453,7 +454,7 @@ namespace Dovus.Game.Skills
 
             if (!arrived)
             {
-                // Gidiş: uç TipDistance'ta; 2 hayalet smear (afterimage — az mesh).
+                // GidiÅŸ: uÃ§ TipDistance'ta; 2 hayalet smear (afterimage â€” az mesh).
                 Vector3 tip = origin + dir * dist;
                 _needle.position = tip;
                 if (dir.sqrMagnitude > 1e-4f)
@@ -477,7 +478,7 @@ namespace Dovus.Game.Skills
                 return;
             }
 
-            // Varış: donmuş poz — kısa, sert.
+            // VarÄ±ÅŸ: donmuÅŸ poz â€” kÄ±sa, sert.
             HideNeedleGhosts();
             Vector3 end = origin + dir * dist;
             _needle.position = end;
@@ -492,7 +493,7 @@ namespace Dovus.Game.Skills
             int count;
             if (_logic.Verb == Rune.Hava || _logic.Verb == Rune.Karanlik)
             {
-                // Fiil SÜRÜ: her zaman dağınık bulut — sıfır yayılmada bile birkaç gövde.
+                // Fiil SÃœRÃœ: her zaman daÄŸÄ±nÄ±k bulut â€” sÄ±fÄ±r yayÄ±lmada bile birkaÃ§ gÃ¶vde.
                 float minB = _colors.Visuals.EffectSwarmMinBlobs;
                 count = Mathf.RoundToInt(Mathf.Lerp(minB, _blobs.Length, Mathf.Clamp01(s.Spread)));
             }
@@ -516,7 +517,7 @@ namespace Dovus.Game.Skills
                     continue;
                 }
 
-                // Kademeli varış: gövdeler aynı anda değil sırayla görünür.
+                // Kademeli varÄ±ÅŸ: gÃ¶vdeler aynÄ± anda deÄŸil sÄ±rayla gÃ¶rÃ¼nÃ¼r.
                 float appearAt = i * stagger;
                 if ((_logic.Verb == Rune.Hava || _logic.Verb == Rune.Karanlik) && _logic.AgeSec < appearAt)
                 {
@@ -529,7 +530,7 @@ namespace Dovus.Game.Skills
                 float reach = dist;
                 if ((_logic.Verb == Rune.Hava || _logic.Verb == Rune.Karanlik) && stagger > 1e-4f)
                 {
-                    // Her gövde kendi gecikmesiyle uca yetişir — cephe değil bulut.
+                    // Her gÃ¶vde kendi gecikmesiyle uca yetiÅŸir â€” cephe deÄŸil bulut.
                     float catchUp = Mathf.Clamp01(localAge / (stagger * count + 0.15f));
                     reach = dist * Mathf.Lerp(0.15f, 1f, catchUp);
                 }
@@ -537,7 +538,7 @@ namespace Dovus.Game.Skills
                 float u = (i + 1) / (count + 1f);
                 float along = reach * u;
                 float jitter = _colors.Visuals.EffectSwarmJitterM;
-                // Düzensiz ofset (sabit hash) — düzenli halka değil.
+                // DÃ¼zensiz ofset (sabit hash) â€” dÃ¼zenli halka deÄŸil.
                 float jx = Pseudo(i, 1) * jitter * (0.5f + s.Spread);
                 float jz = Pseudo(i, 2) * jitter * (0.5f + s.Spread);
                 float side = (i % 2 == 0 ? 1f : -1f) * (0.35f + (1f - s.Focus) * 1.4f)
@@ -551,7 +552,7 @@ namespace Dovus.Game.Skills
                 }
                 else
                 {
-                    // Dağınık bulut: açı + yarıçap jitter
+                    // DaÄŸÄ±nÄ±k bulut: aÃ§Ä± + yarÄ±Ã§ap jitter
                     float a = u * Mathf.PI * 2f + Pseudo(i, 3) * 1.7f + localAge * 1.1f;
                     float r = reach * (0.25f + 0.7f * u) + jz;
                     p = origin + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * r
@@ -562,7 +563,7 @@ namespace Dovus.Game.Skills
                 _blobs[i].position = p;
                 float sc = _colors.Visuals.EffectBlobScaleBaseM + _colors.Visuals.EffectBlobScalePerSpreadM * s.Spread;
                 sc *= 0.85f + 0.3f * (0.5f + 0.5f * Pseudo(i, 4));
-                // Yatay wisp — eski “top sürü” silüetini kırar.
+                // Yatay wisp â€” eski â€œtop sÃ¼rÃ¼â€ silÃ¼etini kÄ±rar.
                 _blobs[i].localScale = new Vector3(sc * 1.35f, sc * 0.35f, sc * 1.35f);
             }
         }
@@ -600,7 +601,7 @@ namespace Dovus.Game.Skills
             }
         }
 
-        /// <summary>[-1,1] sabit gürültü — Random değil, morph sırasında zıplamaz.</summary>
+        /// <summary>[-1,1] sabit gÃ¼rÃ¼ltÃ¼ â€” Random deÄŸil, morph sÄ±rasÄ±nda zÄ±plamaz.</summary>
         static float Pseudo(int i, int salt)
         {
             float x = Mathf.Sin(i * 12.9898f + salt * 78.233f) * 43758.5453f;
@@ -616,9 +617,9 @@ namespace Dovus.Game.Skills
             return mat;
         }
 
-        // "Sprites/Default" alfa'yı gerçekten harmanlar (bkz. InkTrail.EnsureMaterial); URP
-        // Unlit varsayılan OPAK'tır ve alfa'ya yazılan hiçbir değeri (sönme, iz saydamlığı)
-        // ekrana yansıtmaz. Aynı shader'ı kullanmak repodaki tek doğru desenle tutarlı kalır.
+        // "Sprites/Default" alfa'yÄ± gerÃ§ekten harmanlar (bkz. InkTrail.EnsureMaterial); URP
+        // Unlit varsayÄ±lan OPAK'tÄ±r ve alfa'ya yazÄ±lan hiÃ§bir deÄŸeri (sÃ¶nme, iz saydamlÄ±ÄŸÄ±)
+        // ekrana yansÄ±tmaz. AynÄ± shader'Ä± kullanmak repodaki tek doÄŸru desenle tutarlÄ± kalÄ±r.
         static Shader FindTransparentUnlitShader()
         {
             var shader = Shader.Find("Sprites/Default");
@@ -627,8 +628,8 @@ namespace Dovus.Game.Skills
             return shader != null ? shader : Shader.Find("Hidden/Internal-Colored");
         }
 
-        // Yalnızca yukarıdaki tercih zinciri URP Unlit'e düşerse devreye girer: yüzeyi
-        // gerçekten saydama çevirir (_Surface/_Blend + blend modu + render queue).
+        // YalnÄ±zca yukarÄ±daki tercih zinciri URP Unlit'e dÃ¼ÅŸerse devreye girer: yÃ¼zeyi
+        // gerÃ§ekten saydama Ã§evirir (_Surface/_Blend + blend modu + render queue).
         static void ConfigureTransparentFallback(Material mat)
         {
             if (!mat.HasProperty("_Surface"))

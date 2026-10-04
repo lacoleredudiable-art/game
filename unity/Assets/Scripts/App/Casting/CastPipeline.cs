@@ -1,7 +1,13 @@
-using System;
-using Dovus.Core.Combat;
+﻿using System;
+using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Core.Equipment;
-using Dovus.Core.Execution;
+using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
 
@@ -33,7 +39,7 @@ namespace Dovus.App.Casting
 
     public readonly struct CastOutcome
     {
-        // Unity'de Dovus.App ayrı assembly: init için IsExternalInit polyfill'i yok (Core'unki internal) → ctor.
+        // Unity'de Dovus.App ayrÄ± assembly: init iÃ§in IsExternalInit polyfill'i yok (Core'unki internal) â†’ ctor.
         public CastOutcome(
             string skillId,
             bool executorStarted,

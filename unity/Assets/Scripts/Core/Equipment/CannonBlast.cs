@@ -1,13 +1,19 @@
 using System;
-using Dovus.Core.Combat;
+using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 
 namespace Dovus.Core.Equipment
 {
     /// <summary>
-    /// Top güllesinin itmesi ve geri tepmesi. Kenar kuralı dodge ile aynı:
-    /// <see cref="DodgeEdge.KeepOutside"/> boss gövdesinin içine bırakmaz,
-    /// daire arena gövdeyi dışarıda tutar. Hareket kalıbı konumun sahibi
-    /// iken bu adım çağrılmaz; kuyruk kalıp bitince uygulanır.
+    /// Top g├╝llesinin itmesi ve geri tepmesi. Kenar kural─▒ dodge ile ayn─▒:
+    /// <see cref="DodgeEdge.KeepOutside"/> boss g├Âvdesinin i├ğine b─▒rakmaz,
+    /// daire arena g├Âvdeyi d─▒┼şar─▒da tutar. Hareket kal─▒b─▒ konumun sahibi
+    /// iken bu ad─▒m ├ğa─şr─▒lmaz; kuyruk kal─▒p bitince uygulan─▒r.
     /// </summary>
     public static class CannonBlast
     {
@@ -51,7 +57,7 @@ namespace Dovus.Core.Equipment
         }
     }
 
-    /// <summary>Kalıp bitene kadar bekleyen geri tepme. Kalıp sürerken konum yazılmaz.</summary>
+    /// <summary>Kal─▒p bitene kadar bekleyen geri tepme. Kal─▒p s├╝rerken konum yaz─▒lmaz.</summary>
     public sealed class CannonRecoil
     {
         float _dirX;

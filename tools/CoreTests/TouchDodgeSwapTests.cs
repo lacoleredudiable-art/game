@@ -1,4 +1,10 @@
-using Dovus.Core.Combat;
+using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using Dovus.Core.Tuning;
@@ -84,7 +90,7 @@ public class TouchDodgeSwapTests
     {
         Assert.That(Game("Game/Actors/PlayerDodgeRig.cs"), Does.Not.Contain("void OnGUI"), "büyük ikinci popup kaldırıldı");
         Assert.That(Game("Game/Actors/PlayerDodgeRig.cs"), Does.Contain("\"PERFECT\""));
-        Assert.That(Game("Core/Tuning/GradeTuning.cs"), Does.Not.Contain("MukemmelGapMaxMs"));
+        Assert.That(Game("Core/Dodge/GradeTuning.cs"), Does.Not.Contain("MukemmelGapMaxMs"));
     }
 
     // --- S2: dodge değerleri JSON player_stats ile aynı ---
@@ -99,8 +105,8 @@ public class TouchDodgeSwapTests
         var t = new DodgeTuning();
         Assert.That(t.DistanceM, Is.EqualTo(dist).Within(0.001f));
         Assert.That(t.IframeMs, Is.EqualTo(iframe));
-        Assert.That(Game("Core/Tuning/DodgeTuning.cs"), Does.Not.Contain("public int CooldownMs"));
-        Assert.That(Game("Core/Tuning/DodgeTuning.cs"), Does.Not.Contain("public int TapMaxMs"));
+        Assert.That(Game("Core/Dodge/DodgeTuning.cs"), Does.Not.Contain("public int CooldownMs"));
+        Assert.That(Game("Core/Dodge/DodgeTuning.cs"), Does.Not.Contain("public int TapMaxMs"));
     }
 
     // --- S3: kaçış kapısı ---

@@ -1,4 +1,10 @@
-using Dovus.Core.Combat;
+﻿using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Game.Hud;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,9 +12,9 @@ using UnityEngine.UI;
 namespace Dovus.Game.Casting
 {
     /// <summary>
-    /// Denetim B ek — çizim geri bildirimi yazısı: tanınan cümlede rün adları (altın), tanınmayan
-    /// çizgide "tanınmadı" (kırmızı). Üst noktanın hemen üstünde, kısa süre görünür. Yazı yokken
-    /// Text kapalıdır (boşta harman/overdraw yok).
+    /// Denetim B ek â€” Ã§izim geri bildirimi yazÄ±sÄ±: tanÄ±nan cÃ¼mlede rÃ¼n adlarÄ± (altÄ±n), tanÄ±nmayan
+    /// Ã§izgide "tanÄ±nmadÄ±" (kÄ±rmÄ±zÄ±). Ãœst noktanÄ±n hemen Ã¼stÃ¼nde, kÄ±sa sÃ¼re gÃ¶rÃ¼nÃ¼r. YazÄ± yokken
+    /// Text kapalÄ±dÄ±r (boÅŸta harman/overdraw yok).
     /// </summary>
     public sealed partial class HexagonView
     {
@@ -42,7 +48,7 @@ namespace Dovus.Game.Casting
             rt.pivot = new Vector2(0.5f, 0f);
         }
 
-        /// <summary>HexagonInput.DrawCaption: metin + tanındı mı.</summary>
+        /// <summary>HexagonInput.DrawCaption: metin + tanÄ±ndÄ± mÄ±.</summary>
         public void ShowDrawCaption(string text, bool recognized)
         {
             if (_drawCaption == null || string.IsNullOrEmpty(text))

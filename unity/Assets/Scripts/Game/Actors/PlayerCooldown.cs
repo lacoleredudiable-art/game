@@ -1,12 +1,18 @@
-using Dovus.Core.Combat;
+﻿using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using UnityEngine;
 
 namespace Dovus.Game.Actors
 {
     /// <summary>
-    /// Kombo + global soğuma — PlayerResource'a paralel.
-    /// docs/element-sistemi.json global_rules.cooldown_rules varsayılanları.
-    /// Bağlama 4: EnforceCooldown kapısı; false iken hiç kullanılmaz (kozmetik radial kalır).
+    /// Kombo + global soÄŸuma â€” PlayerResource'a paralel.
+    /// docs/element-sistemi.json global_rules.cooldown_rules varsayÄ±lanlarÄ±.
+    /// BaÄŸlama 4: EnforceCooldown kapÄ±sÄ±; false iken hiÃ§ kullanÄ±lmaz (kozmetik radial kalÄ±r).
     /// </summary>
     public sealed class PlayerCooldown : MonoBehaviour
     {
@@ -20,17 +26,17 @@ namespace Dovus.Game.Actors
             _tracker = new CooldownTracker(globalCooldownSec, maxConcurrentCasts);
         }
 
-        /// <summary>CombatTuning.EnforceCooldown kapısı — tracker yoksa true (fail-open).</summary>
+        /// <summary>CombatTuning.EnforceCooldown kapÄ±sÄ± â€” tracker yoksa true (fail-open).</summary>
         public bool CanStart(string comboKey, double worldMs) =>
             _tracker == null || _tracker.CanStart(comboKey, worldMs);
 
-        /// <summary>Fiil başlatma: yalnız GCD + eşzamanlı cast.</summary>
+        /// <summary>Fiil baÅŸlatma: yalnÄ±z GCD + eÅŸzamanlÄ± cast.</summary>
         public bool CanStartGlobalGate(double worldMs) =>
             _tracker == null || _tracker.CanStartGlobalGate(worldMs);
 
         /// <summary>
-        /// Cast bang: GCD + kombo soğuması yazar. Eşzamanlı yuvayı hemen boşaltır
-        /// (max_concurrent uçuş süresi Faz 6; bu turda kombo/GCD yeterli).
+        /// Cast bang: GCD + kombo soÄŸumasÄ± yazar. EÅŸzamanlÄ± yuvayÄ± hemen boÅŸaltÄ±r
+        /// (max_concurrent uÃ§uÅŸ sÃ¼resi Faz 6; bu turda kombo/GCD yeterli).
         /// </summary>
         public bool TryBeginCast(string comboKey, float comboCooldownSec, double worldMs)
         {

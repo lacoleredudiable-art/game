@@ -1,6 +1,12 @@
-using Dovus.App.Casting;
-using Dovus.Core.Combat;
-using Dovus.Core.Execution;
+﻿using Dovus.App.Casting;
+using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
+using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
 using Dovus.Core.Manifestation;
 using Dovus.Core.Motion;
@@ -158,8 +164,8 @@ namespace Dovus.Game.Skills.Targeting
                 ArmedSkillId = string.Empty;
                 CastFacingTarget = null;
                 _host.Readout?.NoteDenied(
-                    failure == TargetFailure.OutOfRange ? "menzil dışı" : "hedef yok",
-                    "mana ve soğuma harcanmadı");
+                    failure == TargetFailure.OutOfRange ? "menzil dÄ±ÅŸÄ±" : "hedef yok",
+                    "mana ve soÄŸuma harcanmadÄ±");
                 return false;
             }
 

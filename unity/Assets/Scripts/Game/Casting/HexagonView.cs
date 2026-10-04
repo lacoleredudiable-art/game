@@ -1,3 +1,5 @@
+﻿using Dovus.Core.Input;
+using Dovus.Core.Element;
 using Dovus.Core.Grammar;
 using Dovus.Game.Actors;
 using Dovus.Game.Composition;
@@ -10,9 +12,9 @@ using UnityEngine.UI;
 namespace Dovus.Game.Casting
 {
     /// <summary>
-    /// Ekrana sabit altıgen noktaları + merkez (Canvas Overlay).
-    /// ui_rules.cooldown_display: her rün etrafında radial dolum + kalan sn.
-    /// EnforceCooldown=false → kozmetik (yerel sayaç). true → PlayerCooldown / CooldownTracker.
+    /// Ekrana sabit altÄ±gen noktalarÄ± + merkez (Canvas Overlay).
+    /// ui_rules.cooldown_display: her rÃ¼n etrafÄ±nda radial dolum + kalan sn.
+    /// EnforceCooldown=false â†’ kozmetik (yerel sayaÃ§). true â†’ PlayerCooldown / CooldownTracker.
     /// </summary>
     public sealed partial class HexagonView : MonoBehaviour
     {
@@ -62,7 +64,7 @@ namespace Dovus.Game.Casting
             var canvasGo = new GameObject("HexagonCanvas");
             canvasGo.transform.SetParent(transform, false);
             _canvas = canvasGo.AddComponent<Canvas>();
-            // Overlay canvas her kameranın üstüne biner ve telegrafı ezer (§10).
+            // Overlay canvas her kameranÄ±n Ã¼stÃ¼ne biner ve telegrafÄ± ezer (Â§10).
             // Tek mekanizma: Overlay kamera + Screen Space Camera.
             _canvas.renderMode = overlayCam != null
                 ? RenderMode.ScreenSpaceCamera
@@ -74,10 +76,10 @@ namespace Dovus.Game.Casting
             canvasGo.AddComponent<GraphicRaycaster>();
 
             var fallback = CreateCircleSprite();
-            // Solid disc — radial fillAmount ile klasik cooldown pie (halka sprite fill'de silik kalıyordu).
+            // Solid disc â€” radial fillAmount ile klasik cooldown pie (halka sprite fill'de silik kalÄ±yordu).
             var ringSprite = fallback;
             BuildCombatTrayBackdrop(canvasGo.transform);
-            int n = Dovus.Core.Grammar.HexagonLayout.DotCount;
+            int n = Dovus.Core.Input.HexagonLayout.DotCount;
             _dots = new RectTransform[n + 1];
             _dotImages = new Image[n + 1];
             _dotRims = new Image[n + 1];
@@ -111,14 +113,14 @@ namespace Dovus.Game.Casting
                 outline.effectDistance = new Vector2(1f, -1f);
             }
 
-            // Radial örtü ikon ÜSTÜNDE (klasik pie); sn sayısı en üstte.
+            // Radial Ã¶rtÃ¼ ikon ÃœSTÃœNDE (klasik pie); sn sayÄ±sÄ± en Ã¼stte.
             for (int dot = 1; dot <= n; dot++)
                 CreateCooldownOverlay(dot, ringSprite, canvasGo.transform, underDots: false);
 
             _center = CreateLayeredDisc(
                 "Center", fallback, fallback, _tuning.Visuals.HexagonCenterColor, canvasGo.transform, out _centerFace,
                 new Color(0.85f, 0.98f, 1f, 0.55f));
-            _centerLabel = CreateLabel(_center, "⚔");
+            _centerLabel = CreateLabel(_center, "âš”");
             _centerLabel.fontSize = 28;
             _centerLabel.color = new Color(0.05f, 0.1f, 0.14f, 0.95f);
 
@@ -138,7 +140,7 @@ namespace Dovus.Game.Casting
             dodgeOutline.effectColor = new Color(0.15f, 0.05f, 0.35f, 0.85f);
             dodgeOutline.effectDistance = new Vector2(1.2f, -1.2f);
 
-            // Dodge her zaman rünlerin üstünde (görsel katman + dokunma okunurluğu).
+            // Dodge her zaman rÃ¼nlerin Ã¼stÃ¼nde (gÃ¶rsel katman + dokunma okunurluÄŸu).
             _dodge.SetAsLastSibling();
 
             BuildWeaponSwapButton(fallback, canvasGo.transform);
@@ -168,8 +170,8 @@ namespace Dovus.Game.Casting
         }
 
         /// <summary>
-        /// Kozmetik soğuma — cast'i engellemez. ui_rules.cooldown_display (radial_overlay + sayı).
-        /// EnforceCooldown=false yolunda ManifestationDirector bunu çağırır.
+        /// Kozmetik soÄŸuma â€” cast'i engellemez. ui_rules.cooldown_display (radial_overlay + sayÄ±).
+        /// EnforceCooldown=false yolunda ManifestationDirector bunu Ã§aÄŸÄ±rÄ±r.
         /// </summary>
         public void BeginCosmeticCooldown(int dot, float durationSec)
         {
@@ -187,7 +189,7 @@ namespace Dovus.Game.Casting
         }
 
         /// <summary>
-        /// Bağlama 4: gerçek CooldownTracker kalanı — radial fillAmount = rem/duration.
+        /// BaÄŸlama 4: gerÃ§ek CooldownTracker kalanÄ± â€” radial fillAmount = rem/duration.
         /// </summary>
         public void BeginTrackedCooldown(int dot, string comboKey, float durationSec, PlayerCooldown source, GameClock clock)
         {
@@ -219,12 +221,12 @@ namespace Dovus.Game.Casting
             TickDrawCaption();
         }
 
-        /// <summary>Kapalı rün ya da soğumada: gri ton.</summary>
+        /// <summary>KapalÄ± rÃ¼n ya da soÄŸumada: gri ton.</summary>
         bool IsDotUnavailable(int dot) =>
             !_tuning.IsDotOpen(dot)
             || (_cdRemainingSec != null && dot < _cdRemainingSec.Length && _cdRemainingSec[dot] > 0f);
 
-        /// <summary>Dokunuş kabul edildi: basınca küçülme (0 = merkez).</summary>
+        /// <summary>DokunuÅŸ kabul edildi: basÄ±nca kÃ¼Ã§Ã¼lme (0 = merkez).</summary>
         public void NotifyPressed(int dot)
         {
             RectTransform target = dot == 0 ? _center : (_dots != null && dot > 0 && dot < _dots.Length ? _dots[dot] : null);
@@ -317,7 +319,7 @@ namespace Dovus.Game.Casting
                     continue;
 
                 fill.fillAmount = Mathf.Clamp01(rem / dur);
-                // Koyu radial örtü — ikon üstünde net okunur.
+                // Koyu radial Ã¶rtÃ¼ â€” ikon Ã¼stÃ¼nde net okunur.
                 fill.color = HudTheme.Current.CooldownOverlayColor;
                 fill.SetAllDirty();
                 if (label != null)
@@ -386,7 +388,7 @@ namespace Dovus.Game.Casting
             int h = Screen.height;
             float dotR = HexagonLayoutScreen.DotHitRadiusPx(_tuning);
             float centerR = HexagonLayoutScreen.CenterHitRadiusPx(_tuning);
-            int n = Dovus.Core.Grammar.HexagonLayout.DotCount;
+            int n = Dovus.Core.Input.HexagonLayout.DotCount;
 
             for (int dot = 1; dot <= n; dot++)
             {
@@ -453,7 +455,7 @@ namespace Dovus.Game.Casting
             string name = _skills != null ? _skills.RuneName(runeId) : RuneInfo.DisplayName((Rune)runeId);
             if (string.IsNullOrEmpty(name))
                 return runeId.ToString();
-            string compact = name.Replace("İ", "I").Replace("ı", "i");
+            string compact = name.Replace("Ä°", "I").Replace("Ä±", "i");
             return compact.Length <= 2 ? compact.ToUpperInvariant() : compact.Substring(0, 2).ToUpperInvariant();
         }
 
@@ -544,7 +546,7 @@ namespace Dovus.Game.Casting
             edge.color = th.SkillNeutralColor;
             edge.raycastTarget = false;
 
-            _trayTitle = CreateLabel(_tray, "RÜN ZİNCİRİ  ·  ÇİZ / BIRAK");
+            _trayTitle = CreateLabel(_tray, "RÃœN ZÄ°NCÄ°RÄ°  Â·  Ã‡Ä°Z / BIRAK");
             _trayTitle.fontStyle = FontStyle.Bold;
             _trayTitle.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(th.RuneTrayTitleDp));
             _trayTitle.alignment = TextAnchor.UpperLeft;
@@ -552,7 +554,7 @@ namespace Dovus.Game.Casting
             _trayTitle.rectTransform.offsetMin = new Vector2(HexagonLayoutScreen.DpToPixels(th.TrayTitleInsetDp), 0f);
             _trayTitle.rectTransform.offsetMax = new Vector2(0f, -HexagonLayoutScreen.DpToPixels(th.TrayTitleTopDp));
 
-            _trayLinks = new RectTransform[Dovus.Core.Grammar.HexagonLayout.DotCount];
+            _trayLinks = new RectTransform[Dovus.Core.Input.HexagonLayout.DotCount];
             for (int i = 0; i < _trayLinks.Length; i++)
             {
                 var linkGo = new GameObject("HexLink" + (i + 1));
@@ -643,7 +645,7 @@ namespace Dovus.Game.Casting
         }
 
         /// <summary>
-        /// Gölge + rim (daire) + yüz — dodge/rünlerde düz diskten ayrışır.
+        /// GÃ¶lge + rim (daire) + yÃ¼z â€” dodge/rÃ¼nlerde dÃ¼z diskten ayrÄ±ÅŸÄ±r.
         /// </summary>
         static RectTransform CreateLayeredDisc(
             string name,

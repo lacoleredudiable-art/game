@@ -1,4 +1,10 @@
-using Dovus.Core.Combat;
+﻿using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Game.Actors;
 using Dovus.Game.Casting;
 using Dovus.Game.Feel;
@@ -9,9 +15,9 @@ using UnityEngine.UI;
 namespace Dovus.Game.Hud
 {
     /// <summary>
-    /// Savaş üstü okunurluk katmanı: düşük can vinyeti, hasar yönü göstergesi, ekran dışı boss
-    /// oku ve zafer/yenilgi banner'ı. Oyun durumunu yalnız okur (can düşüşü = isabet; tek hasar
-    /// kaynağı boss). Kullanılmayan görseller kapalı tutulur (overdraw, bkz. CombatFeel T8.1).
+    /// SavaÅŸ Ã¼stÃ¼ okunurluk katmanÄ±: dÃ¼ÅŸÃ¼k can vinyeti, hasar yÃ¶nÃ¼ gÃ¶stergesi, ekran dÄ±ÅŸÄ± boss
+    /// oku ve zafer/yenilgi banner'Ä±. Oyun durumunu yalnÄ±z okur (can dÃ¼ÅŸÃ¼ÅŸÃ¼ = isabet; tek hasar
+    /// kaynaÄŸÄ± boss). KullanÄ±lmayan gÃ¶rseller kapalÄ± tutulur (overdraw, bkz. CombatFeel T8.1).
     /// </summary>
     public sealed class CombatOverlayHud : MonoBehaviour
     {
@@ -63,7 +69,7 @@ namespace Dovus.Game.Hud
             var canvas = go.AddComponent<Canvas>();
             canvas.renderMode = overlayCam != null ? RenderMode.ScreenSpaceCamera : RenderMode.ScreenSpaceOverlay;
             canvas.worldCamera = overlayCam;
-            // FeelCanvas (200, 0.8) üstünde: sonuç banner'ı isabet partiküllerinin altında kalmasın.
+            // FeelCanvas (200, 0.8) Ã¼stÃ¼nde: sonuÃ§ banner'Ä± isabet partikÃ¼llerinin altÄ±nda kalmasÄ±n.
             canvas.planeDistance = 0.7f;
             canvas.sortingOrder = 210;
             go.AddComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
@@ -163,7 +169,7 @@ namespace Dovus.Game.Hud
                 return;
             }
 
-            // Kameraya göre ekran-uzayı yön: yukarı = kameranın baktığı yer.
+            // Kameraya gÃ¶re ekran-uzayÄ± yÃ¶n: yukarÄ± = kameranÄ±n baktÄ±ÄŸÄ± yer.
             Vector3 to = _bossTf.position - _playerTf.position;
             Vector3 fwd = Vector3.ProjectOnPlane(_cam.transform.forward, Vector3.up).normalized;
             Vector3 right = Vector3.ProjectOnPlane(_cam.transform.right, Vector3.up).normalized;
@@ -224,13 +230,13 @@ namespace Dovus.Game.Hud
             {
                 float t = Time.unscaledTime - _fightStartUnscaled;
                 ShowOutcome("ZAFER", th.VictoryColor,
-                    "Süre " + Mathf.FloorToInt(t / 60f).ToString("00") + ":" + Mathf.FloorToInt(t % 60f).ToString("00"),
+                    "SÃ¼re " + Mathf.FloorToInt(t / 60f).ToString("00") + ":" + Mathf.FloorToInt(t % 60f).ToString("00"),
                     defeat: false);
             }
             if (!bossDown && _bossWasDown)
                 _fightStartUnscaled = Time.unscaledTime;
             if (playerDown && !_playerWasDown)
-                ShowOutcome("YENİLDİN", th.DefeatColor, string.Empty, defeat: true);
+                ShowOutcome("YENÄ°LDÄ°N", th.DefeatColor, string.Empty, defeat: true);
 
             _bossWasDown = bossDown;
             _playerWasDown = playerDown;
@@ -239,7 +245,7 @@ namespace Dovus.Game.Hud
                 return;
             if (_outcomeIsDefeat && playerDown)
             {
-                _outcomeSub.text = "Dönüş " + _player.RespawnInSec.ToString("0.0") + " sn";
+                _outcomeSub.text = "DÃ¶nÃ¼ÅŸ " + _player.RespawnInSec.ToString("0.0") + " sn";
                 _outcomeGroup.alpha = 1f;
                 return;
             }
@@ -296,7 +302,7 @@ namespace Dovus.Game.Hud
             return _edge;
         }
 
-        /// <summary>Hasar yönü: altı düz, üstü yuvarlak yay — merkezden dışarı bakan hilal.</summary>
+        /// <summary>Hasar yÃ¶nÃ¼: altÄ± dÃ¼z, Ã¼stÃ¼ yuvarlak yay â€” merkezden dÄ±ÅŸarÄ± bakan hilal.</summary>
         static Sprite WedgeSprite()
         {
             if (_wedge != null)

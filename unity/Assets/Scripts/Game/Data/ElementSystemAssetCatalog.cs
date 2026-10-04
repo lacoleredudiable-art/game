@@ -1,4 +1,5 @@
-using Dovus.Core.Equipment;
+﻿using Dovus.Core.Equipment;
+using Dovus.Core.Element;
 using Dovus.Core.Grammar;
 using Dovus.Game.Weapons;
 using System;
@@ -8,8 +9,8 @@ using UnityEngine;
 namespace Dovus.Game.Data
 {
     /// <summary>
-    /// Binding sıra adım 2 runtime fallback: canonical JSON parse'ından 12/10/6 SO üretir.
-    /// Editor importer aynı Import metotlarıyla kalıcı .asset dosyaları oluşturabilir.
+    /// Binding sÄ±ra adÄ±m 2 runtime fallback: canonical JSON parse'Ä±ndan 12/10/6 SO Ã¼retir.
+    /// Editor importer aynÄ± Import metotlarÄ±yla kalÄ±cÄ± .asset dosyalarÄ± oluÅŸturabilir.
     /// </summary>
     public sealed class ElementSystemAssetCatalog
     {
@@ -68,7 +69,7 @@ namespace Dovus.Game.Data
             if (catalog._runes.Count != 12 || catalog._weapons.Count != 10
                 || catalog._elements.Count != 6)
             {
-                throw new InvalidOperationException("Runtime SO catalog 12 rune / 10 weapon / 6 element üretmelidir.");
+                throw new InvalidOperationException("Runtime SO catalog 12 rune / 10 weapon / 6 element Ã¼retmelidir.");
             }
             return catalog;
         }

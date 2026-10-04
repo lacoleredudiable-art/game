@@ -1,4 +1,10 @@
-using Dovus.Core.Combat;
+﻿using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Game.Boss;
 using Dovus.Game.Casting;
 using Dovus.Game.Config;
@@ -10,7 +16,7 @@ using UnityEngine.UI;
 namespace Dovus.Game.Hud
 {
     /// <summary>
-    /// Floating hasar: dünya→ekran pop, punch + rise + fade. Pool.
+    /// Floating hasar: dÃ¼nyaâ†’ekran pop, punch + rise + fade. Pool.
     /// </summary>
     public sealed class DamageNumberHud : MonoBehaviour
     {
@@ -71,8 +77,8 @@ namespace Dovus.Game.Hud
         }
 
         /// <summary>
-        /// Negatif amount = heal. <paramref name="worldPos"/> isabet noktası (yoksa boss üstü);
-        /// <paramref name="tint"/> element rengi (kritik altın, heal yeşil kalır).
+        /// Negatif amount = heal. <paramref name="worldPos"/> isabet noktasÄ± (yoksa boss Ã¼stÃ¼);
+        /// <paramref name="tint"/> element rengi (kritik altÄ±n, heal yeÅŸil kalÄ±r).
         /// </summary>
         public void ShowDamage(float amount, bool isCrit = false, Vector3? worldPos = null, Color? tint = null, bool victimIsPlayer = false, bool victimIsBoss = false)
         {
@@ -149,7 +155,7 @@ namespace Dovus.Game.Hud
             else
             {
                 f.Text.text = DamageNumberFormat.Format(amount);
-                // Element rengi beyaza doğru açılır: koyu element tonları da okunur kalsın.
+                // Element rengi beyaza doÄŸru aÃ§Ä±lÄ±r: koyu element tonlarÄ± da okunur kalsÄ±n.
                 f.Text.color = tint.HasValue ? Color.Lerp(tint.Value, th.DamageTextColor, 0.35f) : th.DamageTextColor;
                 f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(_tuning.Hud.DamageFloatFontDp));
             }

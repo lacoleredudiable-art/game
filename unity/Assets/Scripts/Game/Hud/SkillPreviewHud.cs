@@ -1,4 +1,5 @@
-using Dovus.Core.Data;
+﻿using Dovus.Core.Data;
+using Dovus.Core.Element;
 using Dovus.Core.Grammar;
 using Dovus.Game.Casting;
 using Dovus.Game.Config;
@@ -9,9 +10,9 @@ using UnityEngine.UI;
 namespace Dovus.Game.Hud
 {
     /// <summary>
-    /// Binding sıra 7a: salt-okunur preview. Seçim/cast üretmez; canlı SentenceEngine ve
-    /// SkillFactory sonucunu altıgenin hemen üstünde gösterir. Çizim yokken gizlenir;
-    /// cast sonrası <see cref="PrototypeTuning.SkillPreviewHoldSec"/> kadar kalır.
+    /// Binding sÄ±ra 7a: salt-okunur preview. SeÃ§im/cast Ã¼retmez; canlÄ± SentenceEngine ve
+    /// SkillFactory sonucunu altÄ±genin hemen Ã¼stÃ¼nde gÃ¶sterir. Ã‡izim yokken gizlenir;
+    /// cast sonrasÄ± <see cref="PrototypeTuning.SkillPreviewHoldSec"/> kadar kalÄ±r.
     /// </summary>
     public sealed class SkillPreviewHud : MonoBehaviour
     {
@@ -132,8 +133,8 @@ namespace Dovus.Game.Hud
             {
                 int verbId = (int)state.Words[0].Rune;
                 SkillResolution preview = _motor.Resolve(new[] { verbId });
-                SetPreview(preview.VerbName, "İkinci rünü çiz: sıfat davranışı ve silüeti değiştirir.",
-                    theme.SkillNeutralColor, "FİİL HAZIR");
+                SetPreview(preview.VerbName, "Ä°kinci rÃ¼nÃ¼ Ã§iz: sÄ±fat davranÄ±ÅŸÄ± ve silÃ¼eti deÄŸiÅŸtirir.",
+                    theme.SkillNeutralColor, "FÄ°Ä°L HAZIR");
                 return;
             }
 

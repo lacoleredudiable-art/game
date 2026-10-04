@@ -1,6 +1,12 @@
-using Dovus.Core.Combat;
+﻿using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Core.Equipment;
-using Dovus.Core.Execution;
+using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
 using Dovus.Game.DevTools;
 using System;
@@ -79,7 +85,7 @@ namespace Dovus.Game.Skills.Weapons
                 return null;
             _elementPaintIndex = (_elementPaintIndex + 1) % _host.Skills.ElementPaints.Count;
             ElementPaintNode paint = _host.Skills.ElementPaints[_elementPaintIndex];
-            _host.Readout?.NoteSkill("Element: " + paint.Name, "isim/VFX boya katmanı", Color.cyan);
+            _host.Readout?.NoteSkill("Element: " + paint.Name, "isim/VFX boya katmanÄ±", Color.cyan);
             DebugConfig.DevLog($"[ElementSystem] element paint={paint.Id}:{paint.Name} ({paint.Vfx})");
             return paint;
         }
@@ -95,7 +101,7 @@ namespace Dovus.Game.Skills.Weapons
                 _elementPaintIndex = i;
                 ElementPaintNode paint = _host.Skills.ElementPaints[i];
                 _host.RaiseElementPaintChanged(paint);
-                _host.Readout?.NoteSkill("Element: " + paint.Name, "isim/VFX boya katmanı", Color.cyan);
+                _host.Readout?.NoteSkill("Element: " + paint.Name, "isim/VFX boya katmanÄ±", Color.cyan);
                 DebugConfig.DevLog($"[ElementSystem] element paint={paint.Id}:{paint.Name} ({paint.Vfx})");
                 return true;
             }

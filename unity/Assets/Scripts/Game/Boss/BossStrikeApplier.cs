@@ -1,5 +1,11 @@
-using Dovus.App.Boss;
-using Dovus.Core.Combat;
+﻿using Dovus.App.Boss;
+using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Core.Portal;
 using Dovus.Core.Status;
 using Dovus.Game.Actors;
@@ -179,8 +185,8 @@ namespace Dovus.Game.Boss
                 }
 
                 DebugConfig.DevLog(
-                    $"[Boss] Zehir Tükürüğü {layout.Count} mermi yelpaze {spread:0}°"
-                    + (blind ? " (kör)" : "")
+                    $"[Boss] Zehir TÃ¼kÃ¼rÃ¼ÄŸÃ¼ {layout.Count} mermi yelpaze {spread:0}Â°"
+                    + (blind ? " (kÃ¶r)" : "")
                     + $" hedef={_d.CurrentTargetKind}");
             }
 

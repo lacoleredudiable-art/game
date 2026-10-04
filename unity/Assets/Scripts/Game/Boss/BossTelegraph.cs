@@ -1,4 +1,10 @@
-using Dovus.Core.Combat;
+﻿using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Core.Tuning;
 using Dovus.Game.Config;
 using UnityEngine;
@@ -6,13 +12,13 @@ using UnityEngine;
 namespace Dovus.Game.Boss
 {
     /// <summary>
-    /// YERE ÇAKMA telegrafı: hazırlık pozu + yer diski + yükselen ses (§11).
-    /// Sıcak telegraf rengi kullanılır. Varyant tell'leri windup'ta okunur:
-    /// GEÇ = daha yavaş ton + uzun tutulan poz; GENİŞ = disk baştan büyük.
+    /// YERE Ã‡AKMA telegrafÄ±: hazÄ±rlÄ±k pozu + yer diski + yÃ¼kselen ses (Â§11).
+    /// SÄ±cak telegraf rengi kullanÄ±lÄ±r. Varyant tell'leri windup'ta okunur:
+    /// GEÃ‡ = daha yavaÅŸ ton + uzun tutulan poz; GENÄ°Å = disk baÅŸtan bÃ¼yÃ¼k.
     ///
-    /// Disk boss transform'unun ÇOCUĞU DEĞİL (T8.1): bossun (1.7, 1.3, 1.7) ölçeği ve
-    /// hazırlık squash'ı diski çarpıyor, etki yarıçapı ekranda yalan söylüyordu.
-    /// Mesh Cylinder: yerde yatan gerçek daire, yarıçapı doğrudan okunuyor.
+    /// Disk boss transform'unun Ã‡OCUÄU DEÄÄ°L (T8.1): bossun (1.7, 1.3, 1.7) Ã¶lÃ§eÄŸi ve
+    /// hazÄ±rlÄ±k squash'Ä± diski Ã§arpÄ±yor, etki yarÄ±Ã§apÄ± ekranda yalan sÃ¶ylÃ¼yordu.
+    /// Mesh Cylinder: yerde yatan gerÃ§ek daire, yarÄ±Ã§apÄ± doÄŸrudan okunuyor.
     /// </summary>
     public sealed class BossTelegraph : MonoBehaviour
     {
@@ -49,12 +55,12 @@ namespace Dovus.Game.Boss
         }
 
         /// <summary>
-        /// Windup başında etki hacminin şekli: 180 = tam daire (Slam), daha küçük = koni (FireCone).
-        /// Koni yönü windup başında kilitlenen boss bakışıdır (ResolveStrike ile aynı eksen).
+        /// Windup baÅŸÄ±nda etki hacminin ÅŸekli: 180 = tam daire (Slam), daha kÃ¼Ã§Ã¼k = koni (FireCone).
+        /// Koni yÃ¶nÃ¼ windup baÅŸÄ±nda kilitlenen boss bakÄ±ÅŸÄ±dÄ±r (ResolveStrike ile aynÄ± eksen).
         /// </summary>
         public void SetShape(float arcHalfAngleDeg) => _arcHalfDeg = arcHalfAngleDeg;
 
-        /// <summary>Ağ Örme / Sıçrayış: telegraf boss yerine dünya noktasında çizilir.</summary>
+        /// <summary>AÄŸ Ã–rme / SÄ±Ã§rayÄ±ÅŸ: telegraf boss yerine dÃ¼nya noktasÄ±nda Ã§izilir.</summary>
         public void SetWorldAnchor(BossAttackKind kind, Vector3 world)
         {
             _worldAnchor = true;
@@ -70,8 +76,8 @@ namespace Dovus.Game.Boss
         }
 
         /// <summary>
-        /// Windup: p 0→1. radiusM aktif varyantın etki yarıçapı.
-        /// GENİŞ disk baştan tam boyutta; GEÇ tonu yavaş yükselir, poz erken gerilip tutulur.
+        /// Windup: p 0â†’1. radiusM aktif varyantÄ±n etki yarÄ±Ã§apÄ±.
+        /// GENÄ°Å disk baÅŸtan tam boyutta; GEÃ‡ tonu yavaÅŸ yÃ¼kselir, poz erken gerilip tutulur.
         /// </summary>
         public void SetProgress(float progress01, float radiusM, SlamVariant variant)
         {
@@ -106,14 +112,14 @@ namespace Dovus.Game.Boss
                 ? radiusM
                 : radiusM * Mathf.Max(0.12f, p);
 
-            // ff-4: "büyük solid turuncu disk çok yüksek sesliydi" — 0.35..0.85 tavanı 0.16..0.33'e
-            // indirildi; okunabilirlik artık kenardaki parlak ince rim'den gelir (bkz. GlowTexture).
+            // ff-4: "bÃ¼yÃ¼k solid turuncu disk Ã§ok yÃ¼ksek sesliydi" â€” 0.35..0.85 tavanÄ± 0.16..0.33'e
+            // indirildi; okunabilirlik artÄ±k kenardaki parlak ince rim'den gelir (bkz. GlowTexture).
             DrawDisc(
                 drawnRadius,
                 Color.Lerp(_colors.Visuals.TelegraphWarm, _colors.Visuals.TelegraphHot, p),
                 0.16f + 0.17f * p);
 
-            // GEÇ: hazırlık pozu daha erken dolup uzun tutulur (windup zaten 900 ms).
+            // GEÃ‡: hazÄ±rlÄ±k pozu daha erken dolup uzun tutulur (windup zaten 900 ms).
             float poseT = variant == SlamVariant.Gec
                 ? Mathf.Clamp01(p * 1.35f)
                 : p;
@@ -124,7 +130,7 @@ namespace Dovus.Game.Boss
                 if (!_tone.isPlaying)
                     _tone.Play();
 
-                // GEÇ: ton progress'e göre daha yavaş yükselir (concave eğri + uzun windup).
+                // GEÃ‡: ton progress'e gÃ¶re daha yavaÅŸ yÃ¼kselir (concave eÄŸri + uzun windup).
                 float toneT = variant == SlamVariant.Gec ? p * p : p;
                 _tone.pitch = Mathf.Lerp(_colors.Boss.TelegraphTonePitchMin, _colors.Boss.TelegraphTonePitchMax, toneT);
                 _tone.volume = Mathf.Lerp(_colors.Boss.TelegraphToneVolumeMin, _colors.Boss.TelegraphToneVolumeMax, toneT);
@@ -132,8 +138,8 @@ namespace Dovus.Game.Boss
         }
 
         /// <summary>
-        /// Çakma anı. Gerilmiş poz vururken kalmamalı — aşağı squash (T8.1); eskiden aktif
-        /// pencere boyunca boss hâlâ "hazırlanıyor" pozundaydı.
+        /// Ã‡akma anÄ±. GerilmiÅŸ poz vururken kalmamalÄ± â€” aÅŸaÄŸÄ± squash (T8.1); eskiden aktif
+        /// pencere boyunca boss hÃ¢lÃ¢ "hazÄ±rlanÄ±yor" pozundaydÄ±.
         /// </summary>
         public void Slam(float radiusM)
         {
@@ -143,7 +149,7 @@ namespace Dovus.Game.Boss
                 _tone.Stop();
         }
 
-        /// <summary>Toparlanma: t 1→0. Poz tabana döner, disk söner.</summary>
+        /// <summary>Toparlanma: t 1â†’0. Poz tabana dÃ¶ner, disk sÃ¶ner.</summary>
         public void Recover(float t01, float radiusM)
         {
             float t = Mathf.Clamp01(t01);
@@ -259,7 +265,7 @@ namespace Dovus.Game.Boss
             _cone = go.transform;
         }
 
-        /// <summary>Birim yarıçaplı yelpaze: +Z ekseni etrafında ±arcHalfDeg.</summary>
+        /// <summary>Birim yarÄ±Ã§aplÄ± yelpaze: +Z ekseni etrafÄ±nda Â±arcHalfDeg.</summary>
         void RebuildConeMesh(float arcHalfDeg)
         {
             _coneMeshArc = arcHalfDeg;
@@ -275,7 +281,7 @@ namespace Dovus.Game.Boss
                 float x = Mathf.Sin(a);
                 float z = Mathf.Cos(a);
                 verts[i + 1] = new Vector3(x, 0f, z);
-                // Birim yarıçap kenarı: GlowTexture d=1 (parlak ince rim).
+                // Birim yarÄ±Ã§ap kenarÄ±: GlowTexture d=1 (parlak ince rim).
                 uvs[i + 1] = new Vector2(x * 0.5f + 0.5f, z * 0.5f + 0.5f);
             }
             for (int i = 0; i < ConeSegments; i++)
@@ -309,8 +315,8 @@ namespace Dovus.Game.Boss
         void BuildDisc()
         {
             var go = new GameObject("SlamDisc");
-            // ff-4: Cylinder'ın kendi UV'si radyal glow'u okuyamıyordu — düz, merkezden-UV'li
-            // özel disk mesh'ine geçildi (AttackTelegraph.DiscMesh ile aynı desen).
+            // ff-4: Cylinder'Ä±n kendi UV'si radyal glow'u okuyamÄ±yordu â€” dÃ¼z, merkezden-UV'li
+            // Ã¶zel disk mesh'ine geÃ§ildi (AttackTelegraph.DiscMesh ile aynÄ± desen).
             _discMesh = BuildDiscMesh();
             go.AddComponent<MeshFilter>().sharedMesh = _discMesh;
             var rend = go.AddComponent<MeshRenderer>();
@@ -321,7 +327,7 @@ namespace Dovus.Game.Boss
             _disc = go.transform;
         }
 
-        /// <summary>Birim çaplı düz disk (XZ), UV merkezi (0.5,0.5) — GlowTexture radyal okuması için.</summary>
+        /// <summary>Birim Ã§aplÄ± dÃ¼z disk (XZ), UV merkezi (0.5,0.5) â€” GlowTexture radyal okumasÄ± iÃ§in.</summary>
         static Mesh BuildDiscMesh()
         {
             const int seg = 32;
@@ -382,8 +388,8 @@ namespace Dovus.Game.Boss
         }
 
         /// <summary>
-        /// ff-4: aynı radyal rim/yumuşak-sönme deseni (bkz. AttackTelegraph.GlowTexture) — büyük
-        /// solid disk yerine kenarda parlak ince rim, merkezde ve dış kenarda yumuşak sönme.
+        /// ff-4: aynÄ± radyal rim/yumuÅŸak-sÃ¶nme deseni (bkz. AttackTelegraph.GlowTexture) â€” bÃ¼yÃ¼k
+        /// solid disk yerine kenarda parlak ince rim, merkezde ve dÄ±ÅŸ kenarda yumuÅŸak sÃ¶nme.
         /// </summary>
         static Texture2D GlowTexture()
         {

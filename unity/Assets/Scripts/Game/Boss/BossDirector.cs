@@ -1,5 +1,11 @@
-using Dovus.App.Boss;
-using Dovus.Core.Combat;
+﻿using Dovus.App.Boss;
+using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Core.Data;
 using Dovus.Core.Grammar;
 using Dovus.Core.Motion;
@@ -18,11 +24,11 @@ using UnityEngine;
 namespace Dovus.Game.Boss
 {
     /// <summary>
-    /// Prototip boss döngüsü: idle yaklaşma + YERE ÇAKMA üç ritmi (§11).
-    /// Yaklaşma Home'a yazılır — transform'a değil (T7.2 geri tepme kalıcılığı).
-    /// Varyant idle'da seçilir; ExchangeResolver yalnızca aktif windup/radius görür.
-    /// Hedef (oyuncu / dost / dikkat çeken yem) her idle döngüsünün başında <see cref="HostileTargets"/>
-    /// ile seçilir; yaklaşma ve windup kilidi hedefe bakar, vuruş hacmi kayıtlı HER dostu sınar.
+    /// Prototip boss dÃ¶ngÃ¼sÃ¼: idle yaklaÅŸma + YERE Ã‡AKMA Ã¼Ã§ ritmi (Â§11).
+    /// YaklaÅŸma Home'a yazÄ±lÄ±r â€” transform'a deÄŸil (T7.2 geri tepme kalÄ±cÄ±lÄ±ÄŸÄ±).
+    /// Varyant idle'da seÃ§ilir; ExchangeResolver yalnÄ±zca aktif windup/radius gÃ¶rÃ¼r.
+    /// Hedef (oyuncu / dost / dikkat Ã§eken yem) her idle dÃ¶ngÃ¼sÃ¼nÃ¼n baÅŸÄ±nda <see cref="HostileTargets"/>
+    /// ile seÃ§ilir; yaklaÅŸma ve windup kilidi hedefe bakar, vuruÅŸ hacmi kayÄ±tlÄ± HER dostu sÄ±nar.
     /// </summary>
     public sealed partial class BossDirector : MonoBehaviour
     {
@@ -66,23 +72,23 @@ namespace Dovus.Game.Boss
         BossAttackEntry _activeAttackEntry;
         BossOnHitStatus _volleyOnHit;
 
-        /// <summary>Ağ Örme windup başında kilitlenen hedef (3.4 alan sunumu).</summary>
+        /// <summary>AÄŸ Ã–rme windup baÅŸÄ±nda kilitlenen hedef (3.4 alan sunumu).</summary>
         public Vector3 LastWebFieldTarget { get; private set; }
 
-        /// <summary>karadul.json faz sırası: 1 = Uyanış, 2 = Öfke (can ≤ %50).</summary>
+        /// <summary>karadul.json faz sÄ±rasÄ±: 1 = UyanÄ±ÅŸ, 2 = Ã–fke (can â‰¤ %50).</summary>
         public int BossPhase => _phase2Announced ? 2 : 1;
 
-        /// <summary>Faz geçişi (HUD banner'ı için). Argüman yeni faz numarası.</summary>
+        /// <summary>Faz geÃ§iÅŸi (HUD banner'Ä± iÃ§in). ArgÃ¼man yeni faz numarasÄ±.</summary>
         public event System.Action<int> BossPhaseChanged;
 
         public BossVitals Vitals => _bossVitals;
         public float PoiseRatio => _poise != null ? _poise.Ratio : 1f;
         public bool IsPoiseStaggered => _poise != null && _poise.IsStaggered;
 
-        /// <summary>Windup başladı (ses/sunum).</summary>
+        /// <summary>Windup baÅŸladÄ± (ses/sunum).</summary>
         public event System.Action<BossAttackKind> AttackWindupStarted;
 
-        /// <summary>Vuruş anı: etki çözüldü (şok dalgası / alev sunumu). Hasar bundan bağımsız.</summary>
+        /// <summary>VuruÅŸ anÄ±: etki Ã§Ã¶zÃ¼ldÃ¼ (ÅŸok dalgasÄ± / alev sunumu). Hasar bundan baÄŸÄ±msÄ±z.</summary>
         public event System.Action<BossAttackKind> AttackStruck;
 
         public float AttackRadiusM =>
@@ -96,7 +102,7 @@ namespace Dovus.Game.Boss
                 ? _attack?.Kind
                 : null;
 
-        /// <summary>Windup ilerlemesi 0→1 (windup dışında 0) — boss cast barı okur.</summary>
+        /// <summary>Windup ilerlemesi 0â†’1 (windup dÄ±ÅŸÄ±nda 0) â€” boss cast barÄ± okur.</summary>
         public float WindupProgress01 =>
             _brain != null
             && _brain.Phase == BossBrainPhase.Windup
@@ -126,12 +132,12 @@ namespace Dovus.Game.Boss
         }
         public SlamVariant? ActiveVariant => _attack?.Variant;
 
-        /// <summary>Şu anki hedef (HUD halkası, tarama sondası). Kayıt yoksa oyuncu.</summary>
+        /// <summary>Åu anki hedef (HUD halkasÄ±, tarama sondasÄ±). KayÄ±t yoksa oyuncu.</summary>
         public Transform CurrentTarget => _targets != null ? _target : _player;
         public TargetKind CurrentTargetKind => _targets != null ? _targetKind : TargetKind.Player;
         public HostileTargets Targets => _targets;
 
-        /// <summary>mechanic_grammar ters_kontrol: yaklaşma hedeften uzaklaşır, windup kilidi ters yöne bakar.</summary>
+        /// <summary>mechanic_grammar ters_kontrol: yaklaÅŸma hedeften uzaklaÅŸÄ±r, windup kilidi ters yÃ¶ne bakar.</summary>
         public bool IsReversed =>
             _reverseUntilMs > 0 && _clock != null && _clock.Director.WorldTimeMs < _reverseUntilMs;
 
@@ -171,7 +177,7 @@ namespace Dovus.Game.Boss
         public void BindStatus(ActorStatus status)
         {
             _bossStatus = status;
-            // Kökteki gibi: kilit bitince kısa bağışıklık, boss sonsuza dek kilitlenmesin.
+            // KÃ¶kteki gibi: kilit bitince kÄ±sa baÄŸÄ±ÅŸÄ±klÄ±k, boss sonsuza dek kilitlenmesin.
             status?.Board.EnableAttackLockImmunity();
         }
 
@@ -179,14 +185,14 @@ namespace Dovus.Game.Boss
 
         public void BindVisual(BossVisual visual) => _visual = visual;
 
-        /// <summary>Hedef kaydı (oyuncu, dost, yemler). Bağlanmazsa boss eskisi gibi yalnız oyuncuyu kovalar.</summary>
+        /// <summary>Hedef kaydÄ± (oyuncu, dost, yemler). BaÄŸlanmazsa boss eskisi gibi yalnÄ±z oyuncuyu kovalar.</summary>
         public void BindTargets(HostileTargets targets)
         {
             _targets = targets;
             PickTarget();
         }
 
-        /// <summary>ters_kontrol: verilen dünya saatine kadar kontrol ters (uzar, kısalmaz).</summary>
+        /// <summary>ters_kontrol: verilen dÃ¼nya saatine kadar kontrol ters (uzar, kÄ±salmaz).</summary>
         public void ApplyReverse(double untilWorldMs)
         {
             if (untilWorldMs > _reverseUntilMs)
@@ -195,7 +201,7 @@ namespace Dovus.Game.Boss
 
         public void ClearReverse() => _reverseUntilMs = -1;
 
-        /// <summary>Zehir Tükürüğü mermilerinin sahibi. Bağlanmazsa Volley seçilmez (eski Slam/FireCone).</summary>
+        /// <summary>Zehir TÃ¼kÃ¼rÃ¼ÄŸÃ¼ mermilerinin sahibi. BaÄŸlanmazsa Volley seÃ§ilmez (eski Slam/FireCone).</summary>
         public void BindProjectiles(HostileProjectileHost host)
         {
             _projectiles = host;
@@ -204,8 +210,8 @@ namespace Dovus.Game.Boss
         }
 
         /// <summary>
-        /// Script recompile Bind alanlarını siler; Awake yeniden çağrılmaz.
-        /// Eksik saf C# nesnelerini burada toparlarız.
+        /// Script recompile Bind alanlarÄ±nÄ± siler; Awake yeniden Ã§aÄŸrÄ±lmaz.
+        /// Eksik saf C# nesnelerini burada toparlarÄ±z.
         /// </summary>
         void EnsureRuntime()
         {
@@ -279,7 +285,7 @@ namespace Dovus.Game.Boss
                 _attackEntriesByKind[attacks[i].Kind] = attacks[i];
         }
 
-        /// <summary>§11: can 0 — saldırı döngüsü durur, telegraf kapanır.</summary>
+        /// <summary>Â§11: can 0 â€” saldÄ±rÄ± dÃ¶ngÃ¼sÃ¼ durur, telegraf kapanÄ±r.</summary>
         public void NotifyBossDown(double worldMs)
         {
             _telegraph?.Hide();
@@ -289,7 +295,7 @@ namespace Dovus.Game.Boss
             _brain?.EnterIdle(worldMs);
         }
 
-        /// <summary>§11: tam canla yeniden doğuş — idle beklemeden devam.</summary>
+        /// <summary>Â§11: tam canla yeniden doÄŸuÅŸ â€” idle beklemeden devam.</summary>
         public void NotifyBossRevived(double worldMs)
         {
             bool wasPhase2 = _phase2Announced;
@@ -303,8 +309,8 @@ namespace Dovus.Game.Boss
         }
 
         /// <summary>
-        /// mechanic_grammar Aynalı tempo: hazırlanmakta olan saldırıyı iptal edip yeni idle
-        /// döngüsüne döner. Boss AI seçimini değiştirmez; yalnız mevcut cast state'i sarar.
+        /// mechanic_grammar AynalÄ± tempo: hazÄ±rlanmakta olan saldÄ±rÄ±yÄ± iptal edip yeni idle
+        /// dÃ¶ngÃ¼sÃ¼ne dÃ¶ner. Boss AI seÃ§imini deÄŸiÅŸtirmez; yalnÄ±z mevcut cast state'i sarar.
         /// </summary>
         public bool CancelPreparedAttack(double worldMs)
         {
@@ -316,7 +322,7 @@ namespace Dovus.Game.Boss
             return true;
         }
 
-        /// <summary>Oyuncu vuruşunun poise hasarı. 0'da sersemlik; süre BossTuning.StaggerDurationSec.</summary>
+        /// <summary>Oyuncu vuruÅŸunun poise hasarÄ±. 0'da sersemlik; sÃ¼re BossTuning.StaggerDurationSec.</summary>
         public bool ApplyPoiseDamage(float amount)
         {
             if (_poise == null || _combat == null || amount <= 0f)
@@ -349,7 +355,7 @@ namespace Dovus.Game.Boss
             _poise?.Tick(dtSec);
             HandlePlayerDown(worldMs);
 
-            // Boss ölümünde çökme pozu sürerken saldırı yok (§11 noktalama).
+            // Boss Ã¶lÃ¼mÃ¼nde Ã§Ã¶kme pozu sÃ¼rerken saldÄ±rÄ± yok (Â§11 noktalama).
             if (_bossVitals != null && _bossVitals.IsDown)
             {
                 _telegraph?.Hide();

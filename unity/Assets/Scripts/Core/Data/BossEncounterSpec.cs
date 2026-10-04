@@ -1,4 +1,10 @@
-using Dovus.Core.Combat;
+﻿using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Core.Grammar;
 using System.Collections.Generic;
 
@@ -86,7 +92,7 @@ namespace Dovus.Core.Data
         public Dictionary<BossAttackKind, string> AttackNamesByKind { get; } = new();
     }
 
-    /// <summary>Parse edilmiş boss encounter JSON kökü; yalnız mapper üretir.</summary>
+    /// <summary>Parse edilmiÅŸ boss encounter JSON kÃ¶kÃ¼; yalnÄ±z mapper Ã¼retir.</summary>
     public sealed class BossEncounterDocument
     {
         internal BossEncounterDocument(JsonValue root) => Root = root;

@@ -1,4 +1,10 @@
-using Dovus.Core.Combat;
+﻿using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Game.DevTools;
 using Dovus.Game.Hud;
 using UnityEngine;
@@ -135,7 +141,7 @@ namespace Dovus.Game.Casting.Input
             EndPointer(cancelled);
         }
 
-        /// <summary>OnDisable: eski davranış — fare basılı bayrağı korunur, yalnız parmaklar ve çizim kesilir.</summary>
+        /// <summary>OnDisable: eski davranÄ±ÅŸ â€” fare basÄ±lÄ± bayraÄŸÄ± korunur, yalnÄ±z parmaklar ve Ã§izim kesilir.</summary>
         public void CancelOnDisable()
         {
             _s.FingerId = null;

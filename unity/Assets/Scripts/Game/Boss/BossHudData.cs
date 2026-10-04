@@ -1,4 +1,10 @@
-using Dovus.Core.Combat;
+﻿using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Core.Data;
 using System.Collections.Generic;
 using System.Globalization;
@@ -8,8 +14,8 @@ using UnityEngine;
 namespace Dovus.Game.Boss
 {
     /// <summary>
-    /// Boss HUD metinleri <c>Resources/Bosses/*.json</c>: ad, alt başlık, faz adları ve
-    /// eşikleri, saldırı adları.
+    /// Boss HUD metinleri <c>Resources/Bosses/*.json</c>: ad, alt baÅŸlÄ±k, faz adlarÄ± ve
+    /// eÅŸikleri, saldÄ±rÄ± adlarÄ±.
     /// </summary>
     public sealed class BossHudData
     {
@@ -44,7 +50,7 @@ namespace Dovus.Game.Boss
             }
             catch (System.Exception e)
             {
-                Debug.LogWarning($"[BossHudData] {resourcePath} okunamadı: {e.Message}");
+                Debug.LogWarning($"[BossHudData] {resourcePath} okunamadÄ±: {e.Message}");
             }
             return data;
         }

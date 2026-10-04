@@ -1,11 +1,17 @@
-using Dovus.Core.Combat;
+﻿using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Core.Equipment;
-using Dovus.Core.Execution;
+using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
 
 namespace Dovus.App.Casting
 {
-    /// <summary>Unity / Game yan etkileri; skill cast akışı <see cref="CastPipeline"/> sırasını korur.</summary>
+    /// <summary>Unity / Game yan etkileri; skill cast akÄ±ÅŸÄ± <see cref="CastPipeline"/> sÄ±rasÄ±nÄ± korur.</summary>
     public interface ICastPort<TCtx>
     {
         void ResetClosingChainBonus();
@@ -50,7 +56,7 @@ namespace Dovus.App.Casting
             SkillResolution skill,
             in SkillMotionPlan motion);
 
-        /// <summary>Fallback teslimat; boss menzil dallanması port içinde kalır.</summary>
+        /// <summary>Fallback teslimat; boss menzil dallanmasÄ± port iÃ§inde kalÄ±r.</summary>
         float ApplyFallbackDelivery(
             TCtx ctx,
             SkillResolution skill,

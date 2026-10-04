@@ -1,7 +1,13 @@
-using Dovus.Core;
-using Dovus.Core.Combat;
+﻿using Dovus.Core;
+using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Core.Equipment;
-using Dovus.Core.Execution;
+using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Motion;
@@ -129,7 +135,7 @@ namespace Dovus.Game.Skills.Mechanics
             if (renderer != null)
                 SharedTint.Apply(renderer, new Color(0.35f, 0.7f, 0.95f, 0.8f));
             _bodies.Add(new MechanicWorldBody { View = wall, UntilMs = untilMs });
-            DebugConfig.DevLog($"[MechanicWorld] collider {wall.name} size={length:0.#}×{height:0.#} life={(untilMs - (_host.Clock?.Director.WorldTimeMs ?? 0)) / 1000.0:0.#}sn");
+            DebugConfig.DevLog($"[MechanicWorld] collider {wall.name} size={length:0.#}Ã—{height:0.#} life={(untilMs - (_host.Clock?.Director.WorldTimeMs ?? 0)) / 1000.0:0.#}sn");
         }
 
         void SpawnMechanicDecoy(MechanicPlan plan, double worldMs)
@@ -153,7 +159,7 @@ namespace Dovus.Game.Skills.Mechanics
                 View = body,
                 UntilMs = worldMs + Math.Max(100, decoy.DurationSec * 1000.0)
             });
-            // dikkat_ceker: yem yaşadığı sürece (decoy_life_sec) boss'un hedefi; boss vuruşu onu yok eder.
+            // dikkat_ceker: yem yaÅŸadÄ±ÄŸÄ± sÃ¼rece (decoy_life_sec) boss'un hedefi; boss vuruÅŸu onu yok eder.
             if (decoy.Has("dikkat_ceker") && _hostileTargets != null)
             {
                 _hostileTargets.Register(
@@ -167,7 +173,7 @@ namespace Dovus.Game.Skills.Mechanics
                         if (body != null)
                             _host.DestroyUnityObject(body);
                     });
-                DebugConfig.DevLog($"[Mechanic] yem dikkat çekiyor: {plan.SkillId}/{plan.WeaponName} {decoy.DurationSec:0.#}sn");
+                DebugConfig.DevLog($"[Mechanic] yem dikkat Ã§ekiyor: {plan.SkillId}/{plan.WeaponName} {decoy.DurationSec:0.#}sn");
             }
         }
 
@@ -377,7 +383,7 @@ namespace Dovus.Game.Skills.Mechanics
             if (_host.Boss == null || seconds <= 0
                 || !_bossMechanicHistory.TryGetAtOrBefore(worldMs - seconds * 1000.0, out Vector3 past))
                 return;
-            // Geçmiş yer oyuncunun şimdiki gövdesine denk gelebilir; boss temas dışında kalır.
+            // GeÃ§miÅŸ yer oyuncunun ÅŸimdiki gÃ¶vdesine denk gelebilir; boss temas dÄ±ÅŸÄ±nda kalÄ±r.
             if (_host.Player != null)
             {
                 float x = past.x;
@@ -437,7 +443,7 @@ namespace Dovus.Game.Skills.Mechanics
                 return new SkillExecutorRoute(
                     SkillExecutorKind.FieldAura,
                     false,
-                    "mechanic_grammar yaşayan alan gövdesi");
+                    "mechanic_grammar yaÅŸayan alan gÃ¶vdesi");
             return route;
         }
 

@@ -1,4 +1,10 @@
-using Dovus.Core.Combat;
+﻿using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Game.Actors;
 using Dovus.Game.Boss;
 using Dovus.Game.Casting;
@@ -10,7 +16,7 @@ using UnityEngine.UI;
 namespace Dovus.Game.Hud
 {
     /// <summary>
-    /// Premium HUD: boss üst orta; oyuncu HP/mana sol üst glass panel.
+    /// Premium HUD: boss Ã¼st orta; oyuncu HP/mana sol Ã¼st glass panel.
     /// </summary>
     public sealed class VitalsHud : MonoBehaviour
     {
@@ -68,13 +74,13 @@ namespace Dovus.Game.Hud
         Color _appliedManaColor;
         bool _hasAlly;
 
-        /// <summary>Oyuncu sütunu satır sayısı (HP+mana[+ally]) — RecoveryLock için.</summary>
+        /// <summary>Oyuncu sÃ¼tunu satÄ±r sayÄ±sÄ± (HP+mana[+ally]) â€” RecoveryLock iÃ§in.</summary>
         public int BarCount => _hasAlly ? 3 : 2;
 
-        /// <summary>Sol üst oyuncu panelinin alt kenarı (canvas px, üstten negatif Y).</summary>
+        /// <summary>Sol Ã¼st oyuncu panelinin alt kenarÄ± (canvas px, Ã¼stten negatif Y).</summary>
         public float PlayerStackBottomCanvasY { get; private set; }
 
-        /// <summary>Boss bar alt kenarı (canvas px).</summary>
+        /// <summary>Boss bar alt kenarÄ± (canvas px).</summary>
         public float BossStackBottomCanvasY { get; private set; }
 
         public Transform CanvasParent => _playerRoot != null ? _playerRoot.parent : null;
@@ -94,7 +100,7 @@ namespace Dovus.Game.Hud
             _hasAlly = ally != null;
             _tuning = tuning;
 
-            // —— Oyuncu (sol üst) ——
+            // â€”â€” Oyuncu (sol Ã¼st) â€”â€”
             var playerGo = new GameObject("VitalsPlayer");
             playerGo.transform.SetParent(canvasRoot, false);
             if (canvasRoot != null)
@@ -120,7 +126,7 @@ namespace Dovus.Game.Hud
                 _allyFill.color = HudTheme.Current.AllyHpColor;
             }
 
-            // —— Boss (üst orta) ——
+            // â€”â€” Boss (Ã¼st orta) â€”â€”
             var bossGo = new GameObject("VitalsBoss");
             bossGo.transform.SetParent(canvasRoot, false);
             if (canvasRoot != null)
@@ -147,7 +153,7 @@ namespace Dovus.Game.Hud
             ApplyTuningLayout();
         }
 
-        /// <summary>Faz banner'ı ve cast barı için boss beyni.</summary>
+        /// <summary>Faz banner'Ä± ve cast barÄ± iÃ§in boss beyni.</summary>
         public void BindBoss(BossDirector boss)
         {
             if (_bossDirector != null)
@@ -165,7 +171,7 @@ namespace Dovus.Game.Hud
 
         void OnBossPhaseChanged(int phase)
         {
-            // Faz 1 = revive sonrası sıfırlama; banner yalnız yükselişte.
+            // Faz 1 = revive sonrasÄ± sÄ±fÄ±rlama; banner yalnÄ±z yÃ¼kseliÅŸte.
             if (phase <= 1 || _banner == null)
                 return;
             string phaseName = _bossData.PhaseName(phase);
@@ -442,7 +448,7 @@ namespace Dovus.Game.Hud
             if (_pillSprite != null)
                 return _pillSprite;
 
-            // Tam yükseklik yarıçapı → stadium / modern bar.
+            // Tam yÃ¼kseklik yarÄ±Ã§apÄ± â†’ stadium / modern bar.
             const int size = 64;
             _pillSprite = BuildRounded(size, size * 0.5f - 0.5f);
             return _pillSprite;
@@ -586,7 +592,7 @@ namespace Dovus.Game.Hud
                     _poiseBg.anchoredPosition = new Vector2(-bossW * 0.5f, -(nameH + bossH + poiseGap));
                     _poiseBg.sizeDelta = new Vector2(bossW, poiseH);
                 }
-                // Cast barı poise barının altında; etiketi barın üstünde durur.
+                // Cast barÄ± poise barÄ±nÄ±n altÄ±nda; etiketi barÄ±n Ã¼stÃ¼nde durur.
                 float castLabelH = HexagonLayoutScreen.DpToPixels(th.CastLabelDp + 4f);
                 float castH = HexagonLayoutScreen.DpToPixels(th.CastBarHeightDp);
                 float castTop = nameH + bossH + poiseGap + poiseH + castLabelH;
@@ -657,7 +663,7 @@ namespace Dovus.Game.Hud
                 {
                     _manaFill.fillAmount = 0f;
                     if (_manaLabel != null)
-                        _manaLabel.text = "—";
+                        _manaLabel.text = "â€”";
                 }
             }
 

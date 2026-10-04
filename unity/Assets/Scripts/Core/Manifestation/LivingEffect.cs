@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Dovus.Core.Element;
 using Dovus.Core.Grammar;
 using Dovus.Core.Tuning;
 
@@ -15,9 +16,9 @@ namespace Dovus.Core.Manifestation
     }
 
     /// <summary>
-    /// Tek bir yaşayan etki — Unity bilmez. Sıfat hedef silüeti anında günceller;
-    /// görünen silüet MorphLerp ile ona yaklaşır.
-    /// SkillWorldPlanner planı varsa seyahat/menzil/bang rün yerine JSON’dan gelir.
+    /// Tek bir ya┼şayan etki ÔÇö Unity bilmez. S─▒fat hedef sil├╝eti an─▒nda g├╝nceller;
+    /// g├Âr├╝nen sil├╝et MorphLerp ile ona yakla┼ş─▒r.
+    /// SkillWorldPlanner plan─▒ varsa seyahat/menzil/bang r├╝n yerine JSONÔÇÖdan gelir.
     /// </summary>
     public sealed class LivingEffect
     {
@@ -94,7 +95,7 @@ namespace Dovus.Core.Manifestation
         public bool IsAlive => Phase is not LivingEffectPhase.Dead;
         public bool HasSkillPlan => _hasPlan;
         public LivingTravelKind TravelKind => _travelKind;
-        /// <summary>Plan bang yarıçapı; 0 ise caller tuning.ClosingBangRadiusM kullanır.</summary>
+        /// <summary>Plan bang yar─▒├ğap─▒; 0 ise caller tuning.ClosingBangRadiusM kullan─▒r.</summary>
         public float BangRadiusM => _bangRadiusM;
         public float LifetimeAddSec => _lifetimeAddSec;
 
@@ -113,8 +114,8 @@ namespace Dovus.Core.Manifestation
         }
 
         /// <summary>
-        /// Ucu bu mesafede keser. Planlı seyahate geçmez; Ates ışını aynı hızla ilerler
-        /// ama uç tavanı aşmaz. Düz top atışı ilk gövdede durur.
+        /// Ucu bu mesafede keser. Planl─▒ seyahate ge├ğmez; Ates ─▒┼ş─▒n─▒ ayn─▒ h─▒zla ilerler
+        /// ama u├ğ tavan─▒ a┼şmaz. D├╝z top at─▒┼ş─▒ ilk g├Âvdede durur.
         /// </summary>
         public void StopAt(float distance)
         {
@@ -137,7 +138,7 @@ namespace Dovus.Core.Manifestation
             };
         }
 
-        /// <summary>SkillMotor + prezentasyon planı — silüet/seyahat/bang.</summary>
+        /// <summary>SkillMotor + prezentasyon plan─▒ ÔÇö sil├╝et/seyahat/bang.</summary>
         public void ApplyPlan(in LivingEffectPlan plan)
         {
             if (Phase is LivingEffectPhase.Dead or LivingEffectPhase.Fading)
@@ -160,7 +161,7 @@ namespace Dovus.Core.Manifestation
         {
             if (Phase is LivingEffectPhase.Dead or LivingEffectPhase.Fading)
                 return;
-            // Plan varken FromWords ara rünleri yanlış sıfat sayar — silüeti plan korur.
+            // Plan varken FromWords ara r├╝nleri yanl─▒┼ş s─▒fat sayar ÔÇö sil├╝eti plan korur.
             if (_hasPlan)
                 return;
             _target = SilhouetteBuilder.FromWords(words, _tuning);

@@ -1,4 +1,10 @@
-using Dovus.Core.Combat;
+﻿using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Game.Config;
 using Dovus.Game.Vfx;
 using System.Collections.Generic;
@@ -7,16 +13,16 @@ using UnityEngine;
 namespace Dovus.Game.Casting
 {
     /// <summary>
-    /// Noktalar arası mürekkep izi — mor→camgöbeği (§10). LineRenderer, kısa ömür.
-    /// Ekrana sabit overlay kamera uzayı (1 unit = 1 px).
+    /// Noktalar arasÄ± mÃ¼rekkep izi â€” morâ†’camgÃ¶beÄŸi (Â§10). LineRenderer, kÄ±sa Ã¶mÃ¼r.
+    /// Ekrana sabit overlay kamera uzayÄ± (1 unit = 1 px).
     ///
-    /// Bir cümle = bir şerit. <see cref="Break"/> cümle sınırında aktif şeridi bırakır
-    /// (kendi ömrüyle söner); sonraki <see cref="AddSegment"/> yeni şerit açar — gradient
-    /// yeniden mor'dan başlar. Böylece §5 "cümlenin nerede bittiği görülür" tutulur.
+    /// Bir cÃ¼mle = bir ÅŸerit. <see cref="Break"/> cÃ¼mle sÄ±nÄ±rÄ±nda aktif ÅŸeridi bÄ±rakÄ±r
+    /// (kendi Ã¶mrÃ¼yle sÃ¶ner); sonraki <see cref="AddSegment"/> yeni ÅŸerit aÃ§ar â€” gradient
+    /// yeniden mor'dan baÅŸlar. BÃ¶ylece Â§5 "cÃ¼mlenin nerede bittiÄŸi gÃ¶rÃ¼lÃ¼r" tutulur.
     ///
-    /// Denetim B ek (çizim geri bildirimi): parmağın HAM izi çizim boyunca ince bir çizgiyle görünür
-    /// (<see cref="RawBegin"/>/<see cref="RawAppend"/>); tanınan cümle şeridi noktalara oturmuş hâliyle
-    /// beyaz-altın parlar (<see cref="Break(bool)"/>), tanınmayan çizgi kırmızı söner
+    /// Denetim B ek (Ã§izim geri bildirimi): parmaÄŸÄ±n HAM izi Ã§izim boyunca ince bir Ã§izgiyle gÃ¶rÃ¼nÃ¼r
+    /// (<see cref="RawBegin"/>/<see cref="RawAppend"/>); tanÄ±nan cÃ¼mle ÅŸeridi noktalara oturmuÅŸ hÃ¢liyle
+    /// beyaz-altÄ±n parlar (<see cref="Break(bool)"/>), tanÄ±nmayan Ã§izgi kÄ±rmÄ±zÄ± sÃ¶ner
     /// (<see cref="RawEnd(bool)"/>).
     /// </summary>
     public sealed class InkTrail : MonoBehaviour
@@ -48,7 +54,7 @@ namespace Dovus.Game.Casting
         float _rawBaseStartWidth;
         float _rawBaseEndWidth;
         static readonly Color RawHeadWhite = Color.white;
-        /// <summary>spec'te yok — varsayılan</summary>
+        /// <summary>spec'te yok â€” varsayÄ±lan</summary>
         const float RawSnapSec = 0.12f;
 
         struct Trail
@@ -69,12 +75,12 @@ namespace Dovus.Game.Casting
         }
 
         /// <summary>
-        /// Aktif şeridi kapatır. Eski noktalar listede kalır ve Update'te söner; yeni cümle
-        /// sıfırdan şerit açar. Cümle bitmeden çağrılırsa (Abort) de aynı — iz kopar.
+        /// Aktif ÅŸeridi kapatÄ±r. Eski noktalar listede kalÄ±r ve Update'te sÃ¶ner; yeni cÃ¼mle
+        /// sÄ±fÄ±rdan ÅŸerit aÃ§ar. CÃ¼mle bitmeden Ã§aÄŸrÄ±lÄ±rsa (Abort) de aynÄ± â€” iz kopar.
         /// </summary>
         public void Break() => Break(false);
 
-        /// <param name="flash">Tanınan cümle: şerit beyaz-altın parlayıp (kalın) normal renge iner, uzun söner.</param>
+        /// <param name="flash">TanÄ±nan cÃ¼mle: ÅŸerit beyaz-altÄ±n parlayÄ±p (kalÄ±n) normal renge iner, uzun sÃ¶ner.</param>
         public void Break(bool flash)
         {
             if (_active == null)
@@ -82,8 +88,8 @@ namespace Dovus.Game.Casting
 
             float life = _tuning != null ? _tuning.Input.InkLingerSec : 0.4f;
 
-            // Ömür Break'ten başlar (§5: sınırda söner). Born çizim başı olsaydı yavaş
-            // çekimde uzun şerit anında yok olurdu.
+            // Ã–mÃ¼r Break'ten baÅŸlar (Â§5: sÄ±nÄ±rda sÃ¶ner). Born Ã§izim baÅŸÄ± olsaydÄ± yavaÅŸ
+            // Ã§ekimde uzun ÅŸerit anÄ±nda yok olurdu.
             _trails.Add(new Trail
             {
                 Line = _active,
@@ -95,7 +101,7 @@ namespace Dovus.Game.Casting
             _active = null;
         }
 
-        /// <summary>Çizim başladı: ham iz parmağı izler (cümle şeridinden bağımsız).</summary>
+        /// <summary>Ã‡izim baÅŸladÄ±: ham iz parmaÄŸÄ± izler (cÃ¼mle ÅŸeridinden baÄŸÄ±msÄ±z).</summary>
         public void RawBegin(Vector2 screenPx)
         {
             if (_tuning == null || _overlay == null)
@@ -118,7 +124,7 @@ namespace Dovus.Game.Casting
             ApplyRaw(1f);
         }
 
-        /// <summary>Parmak örneği; ~4 dp altı adımlar atlanır, 128 noktayı aşınca seyreltilir.</summary>
+        /// <summary>Parmak Ã¶rneÄŸi; ~4 dp altÄ± adÄ±mlar atlanÄ±r, 128 noktayÄ± aÅŸÄ±nca seyreltilir.</summary>
         public void RawAppend(Vector2 screenPx)
         {
             if (!_rawLive || _raw == null)
@@ -127,7 +133,7 @@ namespace Dovus.Game.Casting
                 return;
             if (_rawCount >= RawMax)
             {
-                // Seyrelt: her ikinci noktayı at (ilk ve son korunur).
+                // Seyrelt: her ikinci noktayÄ± at (ilk ve son korunur).
                 int w = 1;
                 for (int r = 2; r < _rawCount; r += 2)
                     _rawPts[w++] = _rawPts[r];
@@ -136,10 +142,10 @@ namespace Dovus.Game.Casting
             PushRaw(screenPx);
         }
 
-        /// <summary>Çizim bitti: tanınmadıysa kırmızı söner, değilse kısa sürede söner.</summary>
+        /// <summary>Ã‡izim bitti: tanÄ±nmadÄ±ysa kÄ±rmÄ±zÄ± sÃ¶ner, deÄŸilse kÄ±sa sÃ¼rede sÃ¶ner.</summary>
         public void RawEnd(bool failed) => RawEnd(failed, null);
 
-        /// <summary>Çizim bitti; başarılıda isteğe bağlı tanınan yola oturma.</summary>
+        /// <summary>Ã‡izim bitti; baÅŸarÄ±lÄ±da isteÄŸe baÄŸlÄ± tanÄ±nan yola oturma.</summary>
         public void RawEnd(bool failed, IReadOnlyList<Vector2> snapPathScreenPx)
         {
             if (_raw == null || !_rawLive)
@@ -353,8 +359,8 @@ namespace Dovus.Game.Casting
 
             float now = Time.unscaledTime;
 
-            // Aktif şerit henüz Break edilmedi — cümle sürerken tam görünür (alfa 1).
-            // Ömür Break'ten sonra başlar; burada yalnızca renk taze tutulur.
+            // Aktif ÅŸerit henÃ¼z Break edilmedi â€” cÃ¼mle sÃ¼rerken tam gÃ¶rÃ¼nÃ¼r (alfa 1).
+            // Ã–mÃ¼r Break'ten sonra baÅŸlar; burada yalnÄ±zca renk taze tutulur.
             if (_active != null)
                 ApplyActiveColors(1f);
             TickRaw(now);
@@ -387,7 +393,7 @@ namespace Dovus.Game.Casting
                     float wv = t.BaseWidth * (1f + 0.6f * mix);
                     t.Line.startWidth = wv;
                     t.Line.endWidth = wv * 0.85f;
-                    // Parlarken tam görünür; sönme parlama bitince başlar.
+                    // Parlarken tam gÃ¶rÃ¼nÃ¼r; sÃ¶nme parlama bitince baÅŸlar.
                     alpha = u <= DrawFeedback.FlashFraction ? 1f : 1f - (u - DrawFeedback.FlashFraction) / (1f - DrawFeedback.FlashFraction);
                 }
                 a.a *= alpha;

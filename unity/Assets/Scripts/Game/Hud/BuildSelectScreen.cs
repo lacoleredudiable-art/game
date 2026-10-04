@@ -1,4 +1,5 @@
-using Dovus.Core.Equipment;
+﻿using Dovus.Core.Equipment;
+using Dovus.Core.Element;
 using Dovus.Core.Grammar;
 using Dovus.Game.Casting;
 using Dovus.Game.Composition;
@@ -11,11 +12,11 @@ using UnityEngine.UI;
 namespace Dovus.Game.Hud
 {
     /// <summary>
-    /// v6 7b: savaş öncesi build ekranı. 12 çift yüzlü ründen tekrarsız 6'sı seçilir; seçim
-    /// sırası altıgen slotudur (1 üst, saat yönü — <see cref="HexagonLayoutScreen.DotPx"/>).
-    /// Açıkken dünya saati durur, altıgen/çubuk/orbit girdisi susar. Seçili altılı içinden
-    /// 0-2 rün pasif yuva olarak işaretlenebilir.
-    /// ui_rules.build_display "2_weapons": 10 silahtan 2'si (1 = başlangıç, 2 = swap yedeği).
+    /// v6 7b: savaÅŸ Ã¶ncesi build ekranÄ±. 12 Ã§ift yÃ¼zlÃ¼ rÃ¼nden tekrarsÄ±z 6'sÄ± seÃ§ilir; seÃ§im
+    /// sÄ±rasÄ± altÄ±gen slotudur (1 Ã¼st, saat yÃ¶nÃ¼ â€” <see cref="HexagonLayoutScreen.DotPx"/>).
+    /// AÃ§Ä±kken dÃ¼nya saati durur, altÄ±gen/Ã§ubuk/orbit girdisi susar. SeÃ§ili altÄ±lÄ± iÃ§inden
+    /// 0-2 rÃ¼n pasif yuva olarak iÅŸaretlenebilir.
+    /// ui_rules.build_display "2_weapons": 10 silahtan 2'si (1 = baÅŸlangÄ±Ã§, 2 = swap yedeÄŸi).
     /// </summary>
     public sealed class BuildSelectScreen : MonoBehaviour
     {
@@ -151,7 +152,7 @@ namespace Dovus.Game.Hud
                 _clock.Paused = false;
         }
 
-        // --- Seçim -------------------------------------------------------------------------
+        // --- SeÃ§im -------------------------------------------------------------------------
 
         void ToggleRune(int runeId)
         {
@@ -165,7 +166,7 @@ namespace Dovus.Game.Hud
                 _selected.Add(runeId);
             else
             {
-                SetStatus("Build dolu — önce bir rünü çıkar.");
+                SetStatus("Build dolu â€” Ã¶nce bir rÃ¼nÃ¼ Ã§Ä±kar.");
                 return;
             }
             _presetIndex = FindMatchingClassIndex();
@@ -177,7 +178,7 @@ namespace Dovus.Game.Hud
         {
             if (!_selected.Contains(runeId))
             {
-                SetStatus("Önce rünü build'e seç.");
+                SetStatus("Ã–nce rÃ¼nÃ¼ build'e seÃ§.");
                 return;
             }
             int index = _passiveSelected.IndexOf(runeId);
@@ -203,7 +204,7 @@ namespace Dovus.Game.Hud
                 _weapons.Add(weapon);
             else
             {
-                SetStatus("2 silah dolu — önce birini çıkar.");
+                SetStatus("2 silah dolu â€” Ã¶nce birini Ã§Ä±kar.");
                 return;
             }
             SetStatus(string.Empty);
@@ -239,7 +240,7 @@ namespace Dovus.Game.Hud
             IReadOnlyList<MainClassNode> classes = _skills?.MainClasses;
             if (classes == null || classes.Count == 0)
             {
-                SetStatus("Hazır class verisi yok.");
+                SetStatus("HazÄ±r class verisi yok.");
                 return;
             }
 
@@ -257,17 +258,17 @@ namespace Dovus.Game.Hud
         {
             if (_selected.Count != RuneLoadout.SlotCount)
             {
-                SetStatus($"6 rün gerekli — seçili {_selected.Count}.");
+                SetStatus($"6 rÃ¼n gerekli â€” seÃ§ili {_selected.Count}.");
                 return;
             }
             if (!WeaponsReady)
             {
-                SetStatus($"{WeaponsCarried} silah gerekli — seçili {_weapons.Count}.");
+                SetStatus($"{WeaponsCarried} silah gerekli â€” seÃ§ili {_weapons.Count}.");
                 return;
             }
             if (_runes == null || _input == null)
             {
-                SetStatus("Rün yöneticisi bağlı değil.");
+                SetStatus("RÃ¼n yÃ¶neticisi baÄŸlÄ± deÄŸil.");
                 return;
             }
 
@@ -283,7 +284,7 @@ namespace Dovus.Game.Hud
             {
                 if (previous != null)
                     _runes.TrySelect(previous.RuneIds, new List<int>(previous.PassiveRuneIds), out _);
-                SetStatus("Çizim sürerken build değişmez.");
+                SetStatus("Ã‡izim sÃ¼rerken build deÄŸiÅŸmez.");
                 return;
             }
 
@@ -291,10 +292,10 @@ namespace Dovus.Game.Hud
             if (_manifestation != null && _weapons.Count > 0)
                 _manifestation.SetWeaponLoadout(_weapons[0], _weapons.Count > 1 ? _weapons[1] : null);
             _hasApplied = true;
-            string className = _presetIndex >= 0 ? _skills.MainClasses[_presetIndex].Name : "özel";
+            string className = _presetIndex >= 0 ? _skills.MainClasses[_presetIndex].Name : "Ã¶zel";
             string weaponNames = _weapons.Count > 0
                 ? string.Join("+", _weapons.ConvertAll(w => w.Name))
-                : "—";
+                : "â€”";
             DebugConfig.DevLog(
                 $"[BuildSelect] build=[{string.Join(",", loadout.RuneIds)}] class={className} silah={weaponNames}");
             Close();
@@ -320,7 +321,7 @@ namespace Dovus.Game.Hud
             return -1;
         }
 
-        // --- Görünüm -----------------------------------------------------------------------
+        // --- GÃ¶rÃ¼nÃ¼m -----------------------------------------------------------------------
 
         void Refresh()
         {
@@ -350,19 +351,19 @@ namespace Dovus.Game.Hud
 
             _counter.text = $"{_selected.Count}/6";
             _counter.color = _selected.Count == RuneLoadout.SlotCount ? AccentColor : MutedText;
-            _passiveCounter.text = $"PASİF {_passiveSelected.Count}/2";
+            _passiveCounter.text = $"PASÄ°F {_passiveSelected.Count}/2";
             _passiveCounter.color = _passiveSelected.Count > 0 ? AccentColor : MutedText;
 
             if (_presetIndex >= 0)
             {
                 MainClassNode node = _skills.MainClasses[_presetIndex];
-                _classLabel.text = $"{node.Name}\n<size=16>{node.Category} · {node.Feel}</size>";
+                _classLabel.text = $"{node.Name}\n<size=16>{node.Category} Â· {node.Feel}</size>";
             }
             else
             {
                 _classLabel.text = _selected.Count == RuneLoadout.SlotCount
-                    ? "Özel build\n<size=16>hazır class'larla eşleşmiyor</size>"
-                    : "—\n<size=16>ya da ◀ ▶ ile hazır class seç</size>";
+                    ? "Ã–zel build\n<size=16>hazÄ±r class'larla eÅŸleÅŸmiyor</size>"
+                    : "â€”\n<size=16>ya da â—€ â–¶ ile hazÄ±r class seÃ§</size>";
             }
 
             foreach (var pair in _weaponChipImages)
@@ -371,8 +372,8 @@ namespace Dovus.Game.Hud
                 pair.Value.color = slot >= 0 ? CardSelectedColor : CardColor;
                 _weaponChipBadges[pair.Key].text = slot switch
                 {
-                    0 => "1 · başlangıç",
-                    1 => "2 · yedek",
+                    0 => "1 Â· baÅŸlangÄ±Ã§",
+                    1 => "2 Â· yedek",
                     _ => string.Empty
                 };
             }
@@ -381,7 +382,7 @@ namespace Dovus.Game.Hud
             _startButton.interactable = ready;
             _startImage.color = ready ? AccentColor : ButtonColor;
             _startLabel.color = ready ? new Color(0.02f, 0.08f, 0.12f, 1f) : MutedText;
-            _startLabel.text = _hasApplied ? "UYGULA" : "SAVAŞA BAŞLA";
+            _startLabel.text = _hasApplied ? "UYGULA" : "SAVAÅA BAÅLA";
             _closeButton.SetActive(_hasApplied);
         }
 
@@ -416,7 +417,7 @@ namespace Dovus.Game.Hud
             canvasGo.transform.SetParent(transform, false);
             var canvas = canvasGo.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            // Oyun HUD'unun (altıgen 50, his 200) üstünde, ayar panelinin (1000) altında.
+            // Oyun HUD'unun (altÄ±gen 50, his 200) Ã¼stÃ¼nde, ayar panelinin (1000) altÄ±nda.
             canvas.sortingOrder = 900;
             var scaler = canvasGo.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
@@ -444,19 +445,19 @@ namespace Dovus.Game.Hud
             RectTransform content = CreateRect("Content", _screen.transform, Vector2.zero, Vector2.one);
             _safeRects.Add(content);
 
-            Text title = CreateText(content, "BUILD SEÇ", 40, Color.white, TextAnchor.MiddleLeft);
+            Text title = CreateText(content, "BUILD SEÃ‡", 40, Color.white, TextAnchor.MiddleLeft);
             title.fontStyle = FontStyle.Bold;
             Place(title.rectTransform, 0.02f, 0.90f, 0.50f, 0.98f);
             _counter = CreateText(content, "0/6", 40, MutedText, TextAnchor.MiddleRight);
             _counter.fontStyle = FontStyle.Bold;
             Place(_counter.rectTransform, 0.50f, 0.90f, 0.64f, 0.98f);
-            _passiveCounter = CreateText(content, "PASİF 0/2", 18, MutedText, TextAnchor.MiddleRight);
+            _passiveCounter = CreateText(content, "PASÄ°F 0/2", 18, MutedText, TextAnchor.MiddleRight);
             _passiveCounter.fontStyle = FontStyle.Bold;
             Place(_passiveCounter.rectTransform, 0.50f, 0.82f, 0.64f, 0.90f);
             Text subtitle = CreateText(
                 content,
-                "12 rünün 6'sını seç. Her rün hem fiil hem sıfat; skill = ilk çizdiğin (fiil) + ikinci (sıfat). "
-                + "Seçim sırası altıgendeki yeri belirler. Karttaki P ile 0-2 pasif seç.",
+                "12 rÃ¼nÃ¼n 6'sÄ±nÄ± seÃ§. Her rÃ¼n hem fiil hem sÄ±fat; skill = ilk Ã§izdiÄŸin (fiil) + ikinci (sÄ±fat). "
+                + "SeÃ§im sÄ±rasÄ± altÄ±gendeki yeri belirler. Karttaki P ile 0-2 pasif seÃ§.",
                 18,
                 MutedText,
                 TextAnchor.UpperLeft);
@@ -511,7 +512,7 @@ namespace Dovus.Game.Hud
             Text verbText = CreateText(rect, verb, 28, Color.white, TextAnchor.MiddleLeft);
             verbText.fontStyle = FontStyle.Bold;
             Place(verbText.rectTransform, 0.27f, 0.62f, 0.78f, 0.96f);
-            Text adjectiveText = CreateText(rect, "sıfat: " + adjective, 18, MutedText, TextAnchor.MiddleLeft);
+            Text adjectiveText = CreateText(rect, "sÄ±fat: " + adjective, 18, MutedText, TextAnchor.MiddleLeft);
             Place(adjectiveText.rectTransform, 0.27f, 0.42f, 0.96f, 0.63f);
             Text categoryText = CreateText(
                 rect, category.ToUpperInvariant(), 15, CategoryColor(category), TextAnchor.MiddleLeft);
@@ -552,7 +553,7 @@ namespace Dovus.Game.Hud
         void BuildWeaponRow(RectTransform content)
         {
             Text header = CreateText(
-                content, $"SİLAHLAR — {WeaponsCarried} seç (savaşta swap)", 16, MutedText, TextAnchor.MiddleLeft);
+                content, $"SÄ°LAHLAR â€” {WeaponsCarried} seÃ§ (savaÅŸta swap)", 16, MutedText, TextAnchor.MiddleLeft);
             header.fontStyle = FontStyle.Bold;
             Place(header.rectTransform, 0.02f, 0.155f, 0.645f, 0.19f);
 
@@ -593,7 +594,7 @@ namespace Dovus.Game.Hud
 
         static string WeaponTypeLabel(string type) => type switch
         {
-            "melee" => "yakın",
+            "melee" => "yakÄ±n",
             "medium" => "orta",
             "ranged" => "menzilli",
             _ => type ?? string.Empty
@@ -643,30 +644,30 @@ namespace Dovus.Game.Hud
             _classLabel.supportRichText = true;
             Place(_classLabel.rectTransform, 0.04f, 0.43f, 0.96f, 0.54f);
 
-            Button prev = CreateButton(side, "◀", 26, ButtonColor);
+            Button prev = CreateButton(side, "â—€", 26, ButtonColor);
             Place((RectTransform)prev.transform, 0.04f, 0.34f, 0.22f, 0.42f);
             prev.onClick.AddListener(() => CyclePreset(-1));
-            Text presetHint = CreateText(side, "hazır class", 18, MutedText, TextAnchor.MiddleCenter);
+            Text presetHint = CreateText(side, "hazÄ±r class", 18, MutedText, TextAnchor.MiddleCenter);
             Place(presetHint.rectTransform, 0.22f, 0.34f, 0.78f, 0.42f);
-            Button next = CreateButton(side, "▶", 26, ButtonColor);
+            Button next = CreateButton(side, "â–¶", 26, ButtonColor);
             Place((RectTransform)next.transform, 0.78f, 0.34f, 0.96f, 0.42f);
             next.onClick.AddListener(() => CyclePreset(1));
 
             _status = CreateText(side, string.Empty, 16, new Color(1f, 0.85f, 0.4f, 1f), TextAnchor.MiddleCenter);
             Place(_status.rectTransform, 0.04f, 0.26f, 0.96f, 0.33f);
 
-            Button clear = CreateButton(side, "TEMİZLE", 18, ButtonColor);
+            Button clear = CreateButton(side, "TEMÄ°ZLE", 18, ButtonColor);
             Place((RectTransform)clear.transform, 0.04f, 0.12f, 0.34f, 0.25f);
             clear.onClick.AddListener(ClearSelection);
 
-            _startButton = CreateButton(side, "SAVAŞA BAŞLA", 22, AccentColor);
+            _startButton = CreateButton(side, "SAVAÅA BAÅLA", 22, AccentColor);
             Place((RectTransform)_startButton.transform, 0.38f, 0.12f, 0.96f, 0.25f);
             _startButton.onClick.AddListener(ApplyAndStart);
             _startImage = (Image)_startButton.targetGraphic;
             _startLabel = _startButton.GetComponentInChildren<Text>();
             _startLabel.fontStyle = FontStyle.Bold;
 
-            Button close = CreateButton(side, "✕", 22, ButtonColor);
+            Button close = CreateButton(side, "âœ•", 22, ButtonColor);
             var closeRect = (RectTransform)close.transform;
             closeRect.anchorMin = closeRect.anchorMax = new Vector2(1f, 1f);
             closeRect.pivot = new Vector2(1f, 1f);

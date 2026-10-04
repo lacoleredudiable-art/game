@@ -34,19 +34,19 @@ namespace Dovus.Game.Actors
             _ready = true;
         }
 
-        public void PulseRune(Dovus.Core.Grammar.Rune rune, double worldTimeMs)
+        public void PulseRune(Dovus.Core.Element.Rune rune, double worldTimeMs)
         {
             if (!_ready)
                 CaptureBase();
 
             _poseScale = rune switch
             {
-                Dovus.Core.Grammar.Rune.Ates => Tuning.Visuals.PoseIgne,
-                Dovus.Core.Grammar.Rune.Su => Tuning.Visuals.PoseSuru,
-                Dovus.Core.Grammar.Rune.Aydinlik => Tuning.Visuals.PoseSarsinti,
-                Dovus.Core.Grammar.Rune.Hava => Tuning.Visuals.PoseKabuk,
-                Dovus.Core.Grammar.Rune.Toprak => Tuning.Visuals.PoseZehir,
-                Dovus.Core.Grammar.Rune.Karanlik => Tuning.Visuals.PoseKabuk,
+                Dovus.Core.Element.Rune.Ates => Tuning.Visuals.PoseIgne,
+                Dovus.Core.Element.Rune.Su => Tuning.Visuals.PoseSuru,
+                Dovus.Core.Element.Rune.Aydinlik => Tuning.Visuals.PoseSarsinti,
+                Dovus.Core.Element.Rune.Hava => Tuning.Visuals.PoseKabuk,
+                Dovus.Core.Element.Rune.Toprak => Tuning.Visuals.PoseZehir,
+                Dovus.Core.Element.Rune.Karanlik => Tuning.Visuals.PoseKabuk,
                 _ => Vector3.one
             };
             _poseUntilWorldMs = (float)worldTimeMs + Tuning.Visuals.ActorPoseDurationMs;

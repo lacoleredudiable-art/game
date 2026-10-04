@@ -1,19 +1,20 @@
 using System;
 using System.Collections.Generic;
+using Dovus.Core.Element;
 using Dovus.Core.Grammar;
 using Dovus.Core.Tuning;
 
 namespace Dovus.Core.Manifestation
 {
     /// <summary>
-    /// Cümle kelimelerinden silüet üretir. Kombo tablosu yok — her sıfat bir ekseni iter.
+    /// C├╝mle kelimelerinden sil├╝et ├╝retir. Kombo tablosu yok ÔÇö her s─▒fat bir ekseni iter.
     /// Katlama yolu: <see cref="FromSkill"/> (JSON silhouette_axis).
     /// </summary>
     public static class SilhouetteBuilder
     {
         /// <summary>
-        /// SkillMotor katlama sonucu — fiil ailesi seed + çözülmüş sıfat ekseni.
-        /// Ara rünleri sıfat saymaz (fold: 1-2 bileşik, 3. kök sıfat).
+        /// SkillMotor katlama sonucu ÔÇö fiil ailesi seed + ├ğ├Âz├╝lm├╝┼ş s─▒fat ekseni.
+        /// Ara r├╝nleri s─▒fat saymaz (fold: 1-2 bile┼şik, 3. k├Âk s─▒fat).
         /// </summary>
         public static EffectSilhouette FromSkill(
             in SkillResolution skill,
@@ -48,7 +49,7 @@ namespace Dovus.Core.Manifestation
             return s.Clamped();
         }
 
-        /// <summary>JSON adjectives.silhouette_axis → float eksenleri.</summary>
+        /// <summary>JSON adjectives.silhouette_axis ÔåÆ float eksenleri.</summary>
         public static EffectSilhouette ApplySilhouetteAxis(
             EffectSilhouette current,
             string axis,
@@ -132,13 +133,13 @@ namespace Dovus.Core.Manifestation
 
         public static EffectSilhouette VerbSeed(Rune verb) => verb switch
         {
-            // element-sistemi çekirdek fiilleri
-            Rune.Ates => new EffectSilhouette(focus: 0.82f, pierce: 0.7f, spread: 0f, lift: 0f),      // Ateş saldırı
+            // element-sistemi ├ğekirdek fiilleri
+            Rune.Ates => new EffectSilhouette(focus: 0.82f, pierce: 0.7f, spread: 0f, lift: 0f),      // Ate┼ş sald─▒r─▒
             Rune.Su => new EffectSilhouette(focus: 0.25f, pierce: 0f, spread: 0.35f, lift: 0.05f),   // Su heal
             Rune.Hava => new EffectSilhouette(focus: 0.15f, pierce: 0.2f, spread: 0.45f, lift: 0f),  // Hava hareket
             Rune.Toprak => new EffectSilhouette(focus: 0.35f, pierce: 0f, spread: 0f, lift: 0.25f),    // Toprak savunma
-            Rune.Aydinlik => new EffectSilhouette(focus: 0.88f, pierce: 0.4f, spread: 0f, lift: 0f), // Aydınlık arındırma
-            Rune.Karanlik => new EffectSilhouette(focus: 0.2f, pierce: 0f, spread: 0.5f, lift: 0f),    // Karanlık gizlilik
+            Rune.Aydinlik => new EffectSilhouette(focus: 0.88f, pierce: 0.4f, spread: 0f, lift: 0f), // Ayd─▒nl─▒k ar─▒nd─▒rma
+            Rune.Karanlik => new EffectSilhouette(focus: 0.2f, pierce: 0f, spread: 0.5f, lift: 0f),    // Karanl─▒k gizlilik
             _ => default
         };
 
@@ -155,34 +156,34 @@ namespace Dovus.Core.Manifestation
             switch (adjective)
             {
                 case Rune.Ates:
-                    // Ateş — yoğunlaştırma
+                    // Ate┼ş ÔÇö yo─şunla┼şt─▒rma
                     f += tuning.FocusPerIgne;
                     p += tuning.PiercePerIgne;
                     break;
                 case Rune.Su:
-                    // Su — yayma
+                    // Su ÔÇö yayma
                     s += tuning.SpreadPerSuru;
                     if (f < tuning.SuruFocusReduceThreshold)
                         f -= tuning.SuruFocusReduceAmount;
                     break;
                 case Rune.Hava:
-                    // Hava — taşıma
+                    // Hava ÔÇö ta┼ş─▒ma
                     p += tuning.PiercePerIgne * 0.4f;
                     s += tuning.SpreadPerSuru * 0.5f;
                     break;
                 case Rune.Toprak:
-                    // Toprak — sabitleme
+                    // Toprak ÔÇö sabitleme
                     s *= tuning.KabukSpreadMultiplier;
                     f += tuning.KabukFocusAdd;
                     l += tuning.LiftPerSarsinti;
                     break;
                 case Rune.Aydinlik:
-                    // Aydınlık — saflaştırma / odak
+                    // Ayd─▒nl─▒k ÔÇö safla┼şt─▒rma / odak
                     f += tuning.FocusPerIgne;
                     p += tuning.PiercePerIgne * 0.35f;
                     break;
                 case Rune.Karanlik:
-                    // Karanlık — örtme
+                    // Karanl─▒k ÔÇö ├Ârtme
                     s += tuning.SpreadPerSuru * 0.75f;
                     break;
             }

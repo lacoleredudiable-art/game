@@ -1,5 +1,11 @@
-using Dovus.Core.Combat;
-using Dovus.Core.Execution;
+﻿using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
+using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Tuning;
@@ -110,17 +116,17 @@ namespace Dovus.Game.Skills.Execution
         public GameClock Clock { get; }
         public ManifestationTuning Tuning { get; }
         public Vector3 FieldCenter { get; }
-        /// <summary>Summon: minion vuruşu — skill base_damage'ından bağımsız ham hasar.</summary>
+        /// <summary>Summon: minion vuruÅŸu â€” skill base_damage'Ä±ndan baÄŸÄ±msÄ±z ham hasar.</summary>
         public Action<float> ApplyFlatDamage { get; }
         public int SpawnCount { get; }
         public MechanicPlan MechanicPlan { get; }
         public float ActivationDelaySec { get; }
         public float TickEffectFraction { get; }
-        /// <summary>Dost fiilde yaydaki herkes. Düşman vuruşunda yalnız kilit hedef.</summary>
+        /// <summary>Dost fiilde yaydaki herkes. DÃ¼ÅŸman vuruÅŸunda yalnÄ±z kilit hedef.</summary>
         public bool ArcAllies { get; }
     }
 
-    /// <summary>Unity yaşam döngüsü taşıyan fiziksel executor'lar için ortak taban.</summary>
+    /// <summary>Unity yaÅŸam dÃ¶ngÃ¼sÃ¼ taÅŸÄ±yan fiziksel executor'lar iÃ§in ortak taban.</summary>
     public abstract class SkillExecutor : MonoBehaviour, ISkillExecutor
     {
         protected SkillExecutionContext Context { get; private set; }
@@ -129,11 +135,11 @@ namespace Dovus.Game.Skills.Execution
 
         public abstract SkillExecutorKind Kind { get; }
 
-        /// <summary>Sunum katmanı (HitboxVfxRegistry) bu cast'in gramer planını ve sahibini okur.</summary>
+        /// <summary>Sunum katmanÄ± (HitboxVfxRegistry) bu cast'in gramer planÄ±nÄ± ve sahibini okur.</summary>
         public MechanicPlan Plan => HasContext ? Context.MechanicPlan : null;
         public Transform CastOwner => HasContext ? Context.Owner : null;
 
-        /// <summary>Dünya saati: build menüsü açıkken 0, TimeDirector ölçeğini izler.</summary>
+        /// <summary>DÃ¼nya saati: build menÃ¼sÃ¼ aÃ§Ä±kken 0, TimeDirector Ã¶lÃ§eÄŸini izler.</summary>
         protected float WorldDeltaSec => Context.Clock != null
             ? (float)(Context.Clock.WorldDeltaMs / 1000.0)
             : Time.deltaTime;
@@ -145,7 +151,7 @@ namespace Dovus.Game.Skills.Execution
             _activationDelayRemainingSec = context.ActivationDelaySec;
         }
 
-        /// <summary>Yükselen/gecikmeli-an: görsel dünyada durur, gameplay bu kapıdan sonra başlar.</summary>
+        /// <summary>YÃ¼kselen/gecikmeli-an: gÃ¶rsel dÃ¼nyada durur, gameplay bu kapÄ±dan sonra baÅŸlar.</summary>
         protected bool WaitingForActivation()
         {
             if (_activationDelayRemainingSec <= 0f)

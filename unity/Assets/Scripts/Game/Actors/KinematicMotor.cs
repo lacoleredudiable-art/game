@@ -1,4 +1,10 @@
-using Dovus.Core.Combat;
+﻿using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Game.Cameras;
 using Dovus.Game.Casting;
 using Dovus.Game.Composition;
@@ -8,7 +14,7 @@ using UnityEngine;
 namespace Dovus.Game.Actors
 {
     /// <summary>
-    /// Rigidbody/CharacterController yok — transform, ölçeklenmiş dünya dt ile güncellenir.
+    /// Rigidbody/CharacterController yok â€” transform, Ã¶lÃ§eklenmiÅŸ dÃ¼nya dt ile gÃ¼ncellenir.
     /// </summary>
     [RequireComponent(typeof(MoveInput))]
     public sealed class KinematicMotor : MonoBehaviour
@@ -35,8 +41,8 @@ namespace Dovus.Game.Actors
         public void BindPlayerStates(PlayerStateMachine states) => _playerStates = states;
 
         /// <summary>
-        /// Hedef tutulurken veya saldırı sürerken hareket yönü gövdeyi döndürmez; karakter hedefe
-        /// bakıp strafe/backpedal eder. Delegeler oyuncu örneğine özeldir (co-op static state yok).
+        /// Hedef tutulurken veya saldÄ±rÄ± sÃ¼rerken hareket yÃ¶nÃ¼ gÃ¶vdeyi dÃ¶ndÃ¼rmez; karakter hedefe
+        /// bakÄ±p strafe/backpedal eder. Delegeler oyuncu Ã¶rneÄŸine Ã¶zeldir (co-op static state yok).
         /// </summary>
         public void BindCombatFacing(
             System.Func<Transform> target,
@@ -90,8 +96,8 @@ namespace Dovus.Game.Actors
             var templateBody = GetComponent<MotionTemplateBody>();
             if (templateBody != null && templateBody.IsDisplacing)
             {
-                // Yeri kalıp yazar. Bacak hızını burada sıfırlamak ayakları donduruyordu;
-                // blend'i kalıbın kendi hızı besler.
+                // Yeri kalÄ±p yazar. Bacak hÄ±zÄ±nÄ± burada sÄ±fÄ±rlamak ayaklarÄ± donduruyordu;
+                // blend'i kalÄ±bÄ±n kendi hÄ±zÄ± besler.
                 Velocity = Vector3.zero;
                 return;
             }
@@ -170,7 +176,7 @@ namespace Dovus.Game.Actors
             if (!lockFacing && dirFlat.sqrMagnitude > 0.0001f)
                 faceDirection = dirFlat;
             else if (lockFacing && combatTarget == null)
-                faceDirection = Vector3.zero; // vuruşta hedef yoksa çubuk gövdeyi çevirmez
+                faceDirection = Vector3.zero; // vuruÅŸta hedef yoksa Ã§ubuk gÃ¶vdeyi Ã§evirmez
 
             if (faceDirection.sqrMagnitude > 0.0001f && dtSec > 0f)
             {
@@ -228,8 +234,8 @@ namespace Dovus.Game.Actors
         Vector3 PushOutOfObstacles(Vector3 pos)
         {
             Vector3 probe = pos + Vector3.up * 0.9f;
-            // Tetik (dost vuruş kapsülü, skill alanı) duvar değildir. 11-8 dostu
-            // yanına çağırınca bu itiş oyuncuya ikinci bir kayma yazıyordu.
+            // Tetik (dost vuruÅŸ kapsÃ¼lÃ¼, skill alanÄ±) duvar deÄŸildir. 11-8 dostu
+            // yanÄ±na Ã§aÄŸÄ±rÄ±nca bu itiÅŸ oyuncuya ikinci bir kayma yazÄ±yordu.
             int count = Physics.OverlapSphereNonAlloc(
                 probe, _bodyRadiusM, ObstacleBuffer, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < count; i++)

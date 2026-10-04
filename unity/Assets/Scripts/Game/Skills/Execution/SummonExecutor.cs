@@ -1,4 +1,4 @@
-using Dovus.Core.Execution;
+﻿using Dovus.Core.Casting;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Tuning;
 using Dovus.Game.Composition;
@@ -11,8 +11,8 @@ using UnityEngine;
 namespace Dovus.Game.Skills.Execution
 {
     /// <summary>
-    /// Çağırma fiili: oyuncunun yanında minion_count kadar minion doğar, minion_duration_sec
-    /// boyunca boss'a yürür ve menzildeyken aralıklı vurur. İlk vuruş skill durumlarını taşır.
+    /// Ã‡aÄŸÄ±rma fiili: oyuncunun yanÄ±nda minion_count kadar minion doÄŸar, minion_duration_sec
+    /// boyunca boss'a yÃ¼rÃ¼r ve menzildeyken aralÄ±klÄ± vurur. Ä°lk vuruÅŸ skill durumlarÄ±nÄ± taÅŸÄ±r.
     /// </summary>
     public sealed class SummonExecutor : SkillExecutor
     {
@@ -58,7 +58,7 @@ namespace Dovus.Game.Skills.Execution
                 && MechanicWorldProfile.From(context.MechanicPlan).Continuous;
             MechanicEffect actorEffect = context.MechanicPlan?.Effects
                 .FirstOrDefault(e => e.Stat is "aktor_yarat" or "klon");
-            // O11: saldırı başına LINQ yerine cast başına bir kez.
+            // O11: saldÄ±rÄ± baÅŸÄ±na LINQ yerine cast baÅŸÄ±na bir kez.
             _weaponPathClass = actorEffect?.Modes.FirstOrDefault(m => m.StartsWith("silahla:"));
             _ringFormation = actorEffect?.Has("halka") ?? false;
             _invisibleActor = actorEffect?.Has("gorunmez") ?? false;
@@ -251,7 +251,7 @@ namespace Dovus.Game.Skills.Execution
             if (Context.Target != null)
             {
                 float bossR = 0.85f;
-                // O11: minyon başına her kare GetComponentInChildren yerine hedef başına bir kez.
+                // O11: minyon baÅŸÄ±na her kare GetComponentInChildren yerine hedef baÅŸÄ±na bir kez.
                 if (_targetColliderOwner != Context.Target)
                 {
                     _targetColliderOwner = Context.Target;

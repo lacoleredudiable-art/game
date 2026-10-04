@@ -1,8 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using Dovus.Core.Element;
 using Dovus.Core.Grammar;
 using Dovus.Core.Motion;
 using NUnit.Framework;
@@ -34,8 +35,8 @@ public class SkillDataIntegrationTests
     [Test]
     public void All144Skills_ResolveWithJsonDefinedStringFields()
     {
-        // CoreTests zaten çözüm / benzersiz id / motion 144 kontrolünü yapıyor; burada motor çıktısındaki
-        // string alanların JSON'da tanımlı kümelere düştüğünü doğruluyoruz (spec drift yakalama).
+        // CoreTests zaten Ã§Ã¶zÃ¼m / benzersiz id / motion 144 kontrolÃ¼nÃ¼ yapÄ±yor; burada motor Ã§Ä±ktÄ±sÄ±ndaki
+        // string alanlarÄ±n JSON'da tanÄ±mlÄ± kÃ¼melere dÃ¼ÅŸtÃ¼ÄŸÃ¼nÃ¼ doÄŸruluyoruz (spec drift yakalama).
         SkillMotor motor = SkillMotor.FromJson(LoadDocsJson());
         MotionTemplateCatalog motion = MotionTemplateCatalog.FromJson(LoadMotionJson());
         JsonLexicon lex = JsonLexicon.FromFile(RepoPaths.Docs("element-sistemi.json"));
@@ -76,7 +77,7 @@ public class SkillDataIntegrationTests
         Assert.That(skillIds.Count, Is.EqualTo(144));
     }
 
-    /// <summary>JSON'dan tanımlı string kümeleleri — yalnızca integration drift testi için.</summary>
+    /// <summary>JSON'dan tanÄ±mlÄ± string kÃ¼meleleri â€” yalnÄ±zca integration drift testi iÃ§in.</summary>
     sealed class JsonLexicon
     {
         public static readonly HashSet<string> ElementIds = new(StringComparer.Ordinal);
@@ -112,7 +113,7 @@ public class SkillDataIntegrationTests
                     ElementIds.Add(idNum.GetInt32().ToString());
             }
 
-            // Motor varsayılanları JSON'da her skill satırında tekrarlanmıyor (SkillMotor verb fallback).
+            // Motor varsayÄ±lanlarÄ± JSON'da her skill satÄ±rÄ±nda tekrarlanmÄ±yor (SkillMotor verb fallback).
             CastMobilities.Add("free_move");
             foreach (var kv in doc.RootElement.GetProperty("adjective_mods").EnumerateObject())
             {
@@ -126,7 +127,7 @@ public class SkillDataIntegrationTests
                     SilhouetteAxes.Add(cat.GetString());
             }
 
-            // state_machine capability değerleri (target behavior ile aynı sözlük ailesi).
+            // state_machine capability deÄŸerleri (target behavior ile aynÄ± sÃ¶zlÃ¼k ailesi).
             Walk(doc.RootElement.GetProperty("state_machine"));
 
             return new JsonLexicon();
@@ -171,7 +172,7 @@ public class SkillDataIntegrationTests
 
         public void AssertInSet(string value, HashSet<string> set, string context)
         {
-            Assert.That(set.Contains(value), Is.True, $"{context}: '{value}' JSON kümesinde yok");
+            Assert.That(set.Contains(value), Is.True, $"{context}: '{value}' JSON kÃ¼mesinde yok");
         }
     }
 }

@@ -1,5 +1,11 @@
-using Dovus.Core.Combat;
-using Dovus.Core.Execution;
+﻿using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
+using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Status;
@@ -144,7 +150,7 @@ namespace Dovus.Game.Skills.Mechanics
             link.NextFlowMs = worldMs + Math.Max(50.0, link.FlowTickMs);
             float dealt = _json.ApplyJsonTickDamage(link.Closing, link.Skill, (float)JsonParam("flow_tick_fraction", 0.33));
             if (dealt > 0f)
-                JsonEffectRuntime.JsonLog($"bağ akışı {dealt:0.#}");
+                JsonEffectRuntime.JsonLog($"baÄŸ akÄ±ÅŸÄ± {dealt:0.#}");
         }
 
     }

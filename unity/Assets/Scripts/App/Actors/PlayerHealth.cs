@@ -1,5 +1,11 @@
-using System;
-using Dovus.Core.Combat;
+﻿using System;
+using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 
 namespace Dovus.App.Actors
 {
@@ -97,7 +103,7 @@ namespace Dovus.App.Actors
         public float RespawnInSec(float nowSec) =>
             IsDown ? Math.Max(0f, _respawnAtSec - nowSec) : 0f;
 
-        /// <summary>Play sweep: ölüm zamanlayıcısı kapalı, can yarıya (eski PlayerVitals alan yansıması).</summary>
+        /// <summary>Play sweep: Ã¶lÃ¼m zamanlayÄ±cÄ±sÄ± kapalÄ±, can yarÄ±ya (eski PlayerVitals alan yansÄ±masÄ±).</summary>
         public void ResetForSweepCase()
         {
             _respawnAtSec = -1f;

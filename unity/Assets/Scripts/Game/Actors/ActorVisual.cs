@@ -1,4 +1,5 @@
-using Dovus.Core;
+﻿using Dovus.Core;
+using Dovus.Core.Element;
 using Dovus.Core.Grammar;
 using Dovus.Core.Manifestation;
 using Dovus.Core.Motion;
@@ -9,21 +10,21 @@ using UnityEngine;
 namespace Dovus.Game.Actors
 {
     /// <summary>
-    /// Humanoid Animator kancası. Mixamo/Synty controller state'lerine
-    /// <see cref="Animator.Play"/> ile gider (SetTrigger yok — controller'da trigger şart değil).
+    /// Humanoid Animator kancasÄ±. Mixamo/Synty controller state'lerine
+    /// <see cref="Animator.Play"/> ile gider (SetTrigger yok â€” controller'da trigger ÅŸart deÄŸil).
     /// </summary>
     public sealed class ActorVisual : MonoBehaviour
     {
         public const string ParamSpeed = "Speed";
-        /// <summary>Locomotion state hız çarpanı: koşu klibinin doğal hızı aşılınca adım da hızlanır.</summary>
+        /// <summary>Locomotion state hÄ±z Ã§arpanÄ±: koÅŸu klibinin doÄŸal hÄ±zÄ± aÅŸÄ±lÄ±nca adÄ±m da hÄ±zlanÄ±r.</summary>
         public const string ParamLocoPlayback = "LocoPlayback";
-        /// <summary>Koşu klibinin ölçülmüş zemin hızı (model birimi/sn); binder klipten yazar.</summary>
+        /// <summary>KoÅŸu klibinin Ã¶lÃ§Ã¼lmÃ¼ÅŸ zemin hÄ±zÄ± (model birimi/sn); binder klipten yazar.</summary>
         public const string ParamLocoRunSpeed = "LocoRunSpeed";
-        /// <summary>O-anim(c): CastChannel döngüsü sürerken true — binder'daki dönüş geçişini kilitler.</summary>
+        /// <summary>O-anim(c): CastChannel dÃ¶ngÃ¼sÃ¼ sÃ¼rerken true â€” binder'daki dÃ¶nÃ¼ÅŸ geÃ§iÅŸini kilitler.</summary>
         public const string ParamChannelHold = "ChannelHold";
-        /// <summary>O-anim(c): CastGuard (blok) döngüsü sürerken true — binder'daki dönüş geçişini kilitler.</summary>
+        /// <summary>O-anim(c): CastGuard (blok) dÃ¶ngÃ¼sÃ¼ sÃ¼rerken true â€” binder'daki dÃ¶nÃ¼ÅŸ geÃ§iÅŸini kilitler.</summary>
         public const string ParamGuardHold = "GuardHold";
-        /// <summary>Düz vuruş klip hız çarpanı (state speedParameter); hasar zamanlamasından bağımsız.</summary>
+        /// <summary>DÃ¼z vuruÅŸ klip hÄ±z Ã§arpanÄ± (state speedParameter); hasar zamanlamasÄ±ndan baÄŸÄ±msÄ±z.</summary>
         public const string ParamStrikeSpeed = "StrikeSpeed";
         public const string ParamForward = "Forward";
         public const string ParamStrafe = "Strafe";
@@ -43,7 +44,7 @@ namespace Dovus.Game.Actors
 
         static readonly string[] StrikeCycle = { StateBasicStrike, "BasicStrikeB", "BasicStrikeC" };
 
-        // Eski sabit isimleri — Trigger*() çağrıları artık Play(state).
+        // Eski sabit isimleri â€” Trigger*() Ã§aÄŸrÄ±larÄ± artÄ±k Play(state).
         public const string TriggerDodge = StateDodge;
         public const string TriggerHit = StateHit;
         public const string TriggerDeath = StateDeath;
@@ -82,7 +83,7 @@ namespace Dovus.Game.Actors
         static readonly int HashUpperGuard = Animator.StringToHash("UpperCastGuard");
         static readonly int HashUpperShoot = Animator.StringToHash("UpperCastShoot");
 
-        /// <summary>Vuruş veya skill klibi hâlâ oynuyorsa true. Yürüme ve dodge sayılmaz.</summary>
+        /// <summary>VuruÅŸ veya skill klibi hÃ¢lÃ¢ oynuyorsa true. YÃ¼rÃ¼me ve dodge sayÄ±lmaz.</summary>
         public bool IsAttackPose
         {
             get
@@ -143,13 +144,13 @@ namespace Dovus.Game.Actors
         string _currentWeaponKey;
         WeaponHandProps _handProps;
 
-        /// <summary>Ağır silah arketiplerinde (Çekiç/Top) donuk his: temel hız çarpanı.</summary>
+        /// <summary>AÄŸÄ±r silah arketiplerinde (Ã‡ekiÃ§/Top) donuk his: temel hÄ±z Ã§arpanÄ±.</summary>
         const float HeavyAnimSpeed = 0.9f;
 
         /// <summary>
-        /// docs/element-sistemi.json weapons[].animations_key — arketip override controller'ını
-        /// uygular (yoksa temel controller'da kalır, hata yok — Mixamo override'lar bu PC dışında
-        /// gitignored olduğundan boş olabilir). İdempotent: aynı anahtar tekrar gelirse no-op.
+        /// docs/element-sistemi.json weapons[].animations_key â€” arketip override controller'Ä±nÄ±
+        /// uygular (yoksa temel controller'da kalÄ±r, hata yok â€” Mixamo override'lar bu PC dÄ±ÅŸÄ±nda
+        /// gitignored olduÄŸundan boÅŸ olabilir). Ä°dempotent: aynÄ± anahtar tekrar gelirse no-op.
         /// </summary>
         public void SetWeapon(string animationsKey) => SetWeapon(animationsKey, force: false);
 
@@ -177,7 +178,7 @@ namespace Dovus.Game.Actors
             ApplyHandProps(animationsKey, force);
         }
 
-        /// <summary>Elde silah prop'u: sağ/sol el kemiğine takılı mesh, SetWeapon ile birlikte değişir.</summary>
+        /// <summary>Elde silah prop'u: saÄŸ/sol el kemiÄŸine takÄ±lÄ± mesh, SetWeapon ile birlikte deÄŸiÅŸir.</summary>
         void ApplyHandProps(string animationsKey, bool force = false)
         {
             if (_animator == null)
@@ -219,7 +220,7 @@ namespace Dovus.Game.Actors
         }
 
         /// <summary>
-        /// element-sistemi <c>animation_type</c> → controller state (skill başına farklı clip).
+        /// element-sistemi <c>animation_type</c> â†’ controller state (skill baÅŸÄ±na farklÄ± clip).
         /// </summary>
         public void PulseAnimationType(string animationTypeId, EffectSilhouette silhouette)
         {
@@ -232,8 +233,8 @@ namespace Dovus.Game.Actors
         }
 
         /// <summary>
-        /// Merkez düz vuruş. Yalnız görsel: yakın silahta A→B→C klip döngüsü, menzilli silahta
-        /// atış klibi. Hasar/zamanlama buradan etkilenmez.
+        /// Merkez dÃ¼z vuruÅŸ. YalnÄ±z gÃ¶rsel: yakÄ±n silahta Aâ†’Bâ†’C klip dÃ¶ngÃ¼sÃ¼, menzilli silahta
+        /// atÄ±ÅŸ klibi. Hasar/zamanlama buradan etkilenmez.
         /// </summary>
         public void PulseBasicStrike()
         {
@@ -253,16 +254,16 @@ namespace Dovus.Game.Actors
 
         public void ResetBasicChain() => _strikeIndex = 0;
 
-        /// <summary>Kuşanılmış silah menzilli teslim yolu mu (mermi cast'i atış klibine düşer).</summary>
+        /// <summary>KuÅŸanÄ±lmÄ±ÅŸ silah menzilli teslim yolu mu (mermi cast'i atÄ±ÅŸ klibine dÃ¼ÅŸer).</summary>
         public bool RangedDelivery { get; set; }
 
-        /// <summary>Düz vuruş döngüsü sıfırlanma süresi (sn).</summary>
+        /// <summary>DÃ¼z vuruÅŸ dÃ¶ngÃ¼sÃ¼ sÄ±fÄ±rlanma sÃ¼resi (sn).</summary>
         public float StrikeComboResetSec { get; set; } = 1.2f;
 
-        /// <summary>Düz vuruş klip hızı (Animator StrikeSpeed); HeavyAnimSpeed ile çarpılmaz.</summary>
+        /// <summary>DÃ¼z vuruÅŸ klip hÄ±zÄ± (Animator StrikeSpeed); HeavyAnimSpeed ile Ã§arpÄ±lmaz.</summary>
         public float BasicStrikeAnimSpeed { get; set; } = 1f;
 
-        /// <summary>Speed parametresi bu eşiğin üstündeyse aksiyon üst gövde katmanına gider.</summary>
+        /// <summary>Speed parametresi bu eÅŸiÄŸin Ã¼stÃ¼ndeyse aksiyon Ã¼st gÃ¶vde katmanÄ±na gider.</summary>
         public float UpperBodyMinSpeed { get; set; } = 0.15f;
 
         int _strikeIndex;
@@ -277,10 +278,10 @@ namespace Dovus.Game.Actors
             PlayState(triggerOrStateName);
         }
 
-        /// <summary>0 = idle (sabit), 1 ≈ koşu. Küçük stick gürültüsü idle fidget’e sızmasın.</summary>
+        /// <summary>0 = idle (sabit), 1 â‰ˆ koÅŸu. KÃ¼Ã§Ã¼k stick gÃ¼rÃ¼ltÃ¼sÃ¼ idle fidgetâ€™e sÄ±zmasÄ±n.</summary>
         public void SetSpeed(float normalized01) => SetSpeed(normalized01, 0f);
 
-        /// <summary>Sönümlü Speed; <paramref name="dampSec"/> 0 ise anında.</summary>
+        /// <summary>SÃ¶nÃ¼mlÃ¼ Speed; <paramref name="dampSec"/> 0 ise anÄ±nda.</summary>
         public void SetSpeed(float normalized01, float dampSec)
         {
             if (_animator == null || !_animator.isActiveAndEnabled || _animator.runtimeAnimatorController == null)
@@ -297,9 +298,9 @@ namespace Dovus.Game.Actors
         }
 
         /// <summary>
-        /// Gerçek hızla locomotion: blend eşikleri kliplerin ölçülmüş zemin hızı (model birimi) olduğundan
-        /// ayak yere bastığı yerde kalır. Koşu hızı aşılınca klip en çok <paramref name="maxPlaybackMult"/>
-        /// kat hızlanır. Controller eski (ölçümsüz) ise normalize <see cref="SetSpeed(float,float)"/>'e düşer.
+        /// GerÃ§ek hÄ±zla locomotion: blend eÅŸikleri kliplerin Ã¶lÃ§Ã¼lmÃ¼ÅŸ zemin hÄ±zÄ± (model birimi) olduÄŸundan
+        /// ayak yere bastÄ±ÄŸÄ± yerde kalÄ±r. KoÅŸu hÄ±zÄ± aÅŸÄ±lÄ±nca klip en Ã§ok <paramref name="maxPlaybackMult"/>
+        /// kat hÄ±zlanÄ±r. Controller eski (Ã¶lÃ§Ã¼msÃ¼z) ise normalize <see cref="SetSpeed(float,float)"/>'e dÃ¼ÅŸer.
         /// </summary>
         public void SetLocomotion(float worldSpeedMps, float normalizeRefMps, float dampSec, float maxPlaybackMult)
         {
@@ -348,7 +349,7 @@ namespace Dovus.Game.Actors
                 _animator.SetFloat(ParamStrikeSpeed, BasicStrikeAnimSpeed);
         }
 
-        /// <summary>Aksiyon state'ine crossfade süresi (0 = sert kesim).</summary>
+        /// <summary>Aksiyon state'ine crossfade sÃ¼resi (0 = sert kesim).</summary>
         public float CrossFadeSec { get; set; }
 
         public void ResetToLocomotion()
@@ -396,9 +397,9 @@ namespace Dovus.Game.Actors
         void PlayState(string stateName) => PlayAction(stateName);
 
         /// <summary>
-        /// Aksiyon state'i oynatır. Menzilli teslimde mermi cast'i atış klibine düşer; karakter
-        /// hareket ederken Cast/vuruş state'i varsa üst gövde katmanında oynar (bacaklar
-        /// Locomotion'da kalır). State yoksa false.
+        /// Aksiyon state'i oynatÄ±r. Menzilli teslimde mermi cast'i atÄ±ÅŸ klibine dÃ¼ÅŸer; karakter
+        /// hareket ederken Cast/vuruÅŸ state'i varsa Ã¼st gÃ¶vde katmanÄ±nda oynar (bacaklar
+        /// Locomotion'da kalÄ±r). State yoksa false.
         /// </summary>
         public bool PlayAction(string stateName)
         {
@@ -479,8 +480,8 @@ namespace Dovus.Game.Actors
         float _savedAnimatorSpeed = 1f;
 
         /// <summary>
-        /// Kalıp fazı: state/trigger tablodan, bacak blend'i kalıbın hızından.
-        /// Dönüş klibi ayrıca gövde yaw'ı ile birlikte gider.
+        /// KalÄ±p fazÄ±: state/trigger tablodan, bacak blend'i kalÄ±bÄ±n hÄ±zÄ±ndan.
+        /// DÃ¶nÃ¼ÅŸ klibi ayrÄ±ca gÃ¶vde yaw'Ä± ile birlikte gider.
         /// </summary>
         public void DriveMotion(
             in LocoBlend blend,
@@ -509,9 +510,9 @@ namespace Dovus.Game.Actors
         }
 
         /// <summary>
-        /// O-anim(c): yön zaten blend.Strafe'de ucuzca bilindiğinden "Sidestep" tek klibi sağa
-        /// giderken Animator'ın humanoid mirror'ıyla "SidestepRight"e döner; state yoksa (ör.
-        /// eski override controller) solda kalır — <see cref="PlayAction"/> HasState ile korur.
+        /// O-anim(c): yÃ¶n zaten blend.Strafe'de ucuzca bilindiÄŸinden "Sidestep" tek klibi saÄŸa
+        /// giderken Animator'Ä±n humanoid mirror'Ä±yla "SidestepRight"e dÃ¶ner; state yoksa (Ã¶r.
+        /// eski override controller) solda kalÄ±r â€” <see cref="PlayAction"/> HasState ile korur.
         /// </summary>
         MotionAnimClip ApplySidestepMirror(MotionAnimClip clip, float strafe)
         {
@@ -539,7 +540,7 @@ namespace Dovus.Game.Actors
             {
                 DesignWarnings.Once(
                     "motion.anim.state." + clip.State,
-                    "Animator state yok: " + clip.State + ". Yedek locomotion/saldırı klibi.");
+                    "Animator state yok: " + clip.State + ". Yedek locomotion/saldÄ±rÄ± klibi.");
                 played = PlayAction(clip.Fallback ? MotionAnimTable.AttackFallbackState : MotionAnimTable.FallbackState);
                 if (!played)
                     PlayAction(MotionAnimTable.FallbackState);
@@ -597,7 +598,7 @@ namespace Dovus.Game.Actors
             }
             DesignWarnings.Once(
                 "motion.anim.trigger." + trigger,
-                "Animator tetikleyicisi yok: " + trigger + ". State oynatılıyor.");
+                "Animator tetikleyicisi yok: " + trigger + ". State oynatÄ±lÄ±yor.");
         }
 
         void SafeSetFloat(string name, float value)
@@ -613,9 +614,9 @@ namespace Dovus.Game.Actors
         }
 
         /// <summary>
-        /// O-anim(c): ManifestationDirector'daki var olan sürdürülen cast / kalkan sinyallerini
-        /// Animator'a iletir — binder bu bool'lara göre CastChannel/CastGuard'ın otomatik dönüş
-        /// geçişini kilitler (bkz. MixamoAnimatorBind). Parametre yoksa no-op.
+        /// O-anim(c): ManifestationDirector'daki var olan sÃ¼rdÃ¼rÃ¼len cast / kalkan sinyallerini
+        /// Animator'a iletir â€” binder bu bool'lara gÃ¶re CastChannel/CastGuard'Ä±n otomatik dÃ¶nÃ¼ÅŸ
+        /// geÃ§iÅŸini kilitler (bkz. MixamoAnimatorBind). Parametre yoksa no-op.
         /// </summary>
         public void SetHoldFlags(bool channelHeld, bool guardHeld)
         {

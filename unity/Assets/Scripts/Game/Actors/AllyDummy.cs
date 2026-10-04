@@ -1,4 +1,10 @@
-using Dovus.Core.Combat;
+﻿using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using Dovus.Game.Boss;
@@ -12,14 +18,14 @@ using UnityEngine.UI;
 namespace Dovus.Game.Actors
 {
     /// <summary>
-    /// Takım arkadaşı dummy — heal denemesi için. Başlangıç can oranı varsayılan %50.
-    /// Dünya üstü bar + HUD (VitalsHud) birlikte okunur.
-    /// Boss onu da hedef alır (<see cref="HostileTargets"/>): vuruşun ally_damage_mult kadarını alır,
-    /// can 0'da düşer ve ally_revive_sec (dünya saati) sonra ally_revive_ratio canla kalkar.
+    /// TakÄ±m arkadaÅŸÄ± dummy â€” heal denemesi iÃ§in. BaÅŸlangÄ±Ã§ can oranÄ± varsayÄ±lan %50.
+    /// DÃ¼nya Ã¼stÃ¼ bar + HUD (VitalsHud) birlikte okunur.
+    /// Boss onu da hedef alÄ±r (<see cref="HostileTargets"/>): vuruÅŸun ally_damage_mult kadarÄ±nÄ± alÄ±r,
+    /// can 0'da dÃ¼ÅŸer ve ally_revive_sec (dÃ¼nya saati) sonra ally_revive_ratio canla kalkar.
     /// </summary>
     public sealed class AllyDummy : MonoBehaviour
     {
-        // O11: PortalBorderTeamHost her kare FindObjectsOfType<AllyDummy> yapıyordu → etkin kayıt.
+        // O11: PortalBorderTeamHost her kare FindObjectsOfType<AllyDummy> yapÄ±yordu â†’ etkin kayÄ±t.
         static readonly System.Collections.Generic.List<AllyDummy> s_live = new System.Collections.Generic.List<AllyDummy>();
         public static System.Collections.Generic.IReadOnlyList<AllyDummy> Live => s_live;
 
@@ -31,7 +37,7 @@ namespace Dovus.Game.Actors
 
         void Start()
         {
-            // Görsel child varsa yeşil kapsül placeholder'ı asla gösterme (feel-pack doğrulama).
+            // GÃ¶rsel child varsa yeÅŸil kapsÃ¼l placeholder'Ä± asla gÃ¶sterme (feel-pack doÄŸrulama).
             if (transform.Find("Visual") != null)
             {
                 var rend = GetComponent<Renderer>();
@@ -57,7 +63,7 @@ namespace Dovus.Game.Actors
         public int Hp => _hp;
         public bool IsDown => _hp <= 0;
 
-        /// <summary>Kalkışa kalan süre (sn); düşmemişse 0.</summary>
+        /// <summary>KalkÄ±ÅŸa kalan sÃ¼re (sn); dÃ¼ÅŸmemiÅŸse 0.</summary>
         public float SecondsUntilRevive =>
             _downAtMs < 0 || _clock == null
                 ? 0f
@@ -78,7 +84,7 @@ namespace Dovus.Game.Actors
             EnsureStatusBoard();
         }
 
-        /// <summary>karadul.json targeting: hasar çarpanı ve kalkış süresi/oranı.</summary>
+        /// <summary>karadul.json targeting: hasar Ã§arpanÄ± ve kalkÄ±ÅŸ sÃ¼resi/oranÄ±.</summary>
         public void ConfigureLife(TargetingConfig life) => _life = life ?? new TargetingConfig();
 
         public void Bind(int maxHp, float startRatio = 0.5f)
@@ -117,8 +123,8 @@ namespace Dovus.Game.Actors
         }
 
         /// <summary>
-        /// Boss vuruşu: ham hasar × ally_damage_mult, oyuncu yoluyla aynı boru (ölçek, alınan hasar
-        /// çarpanı, kalkan emer, stasis yutar). Dost dodge atamaz. Döner: düştü mü.
+        /// Boss vuruÅŸu: ham hasar Ã— ally_damage_mult, oyuncu yoluyla aynÄ± boru (Ã¶lÃ§ek, alÄ±nan hasar
+        /// Ã§arpanÄ±, kalkan emer, stasis yutar). Dost dodge atamaz. DÃ¶ner: dÃ¼ÅŸtÃ¼ mÃ¼.
         /// </summary>
         public bool ApplyBossDamage(float raw)
         {
@@ -158,7 +164,7 @@ namespace Dovus.Game.Actors
             _statusBoard?.Clear();
             _hp = AllyLifeRules.ReviveHp(_maxHp, _life);
             RefreshLabel();
-            DebugConfig.DevLog($"[Ally] kalktı: {_hp}/{_maxHp}");
+            DebugConfig.DevLog($"[Ally] kalktÄ±: {_hp}/{_maxHp}");
         }
 
         void EnsureBillboard()
@@ -168,7 +174,7 @@ namespace Dovus.Game.Actors
 
             var root = new GameObject("AllyHpBillboard");
             root.transform.SetParent(transform, false);
-            // Kapsül merkezi + görsel offset — kafanın üstü.
+            // KapsÃ¼l merkezi + gÃ¶rsel offset â€” kafanÄ±n Ã¼stÃ¼.
             root.transform.localPosition = new Vector3(0f, 1.85f, 0f);
             _billboard = root.transform;
 
@@ -225,7 +231,7 @@ namespace Dovus.Game.Actors
         void RefreshLabel()
         {
             if (_label != null)
-                _label.text = IsDown ? "ALLY DÜŞTÜ" : "ALLY " + _hp + "/" + _maxHp;
+                _label.text = IsDown ? "ALLY DÃœÅTÃœ" : "ALLY " + _hp + "/" + _maxHp;
             if (_fill != null)
                 _fill.fillAmount = Ratio;
         }

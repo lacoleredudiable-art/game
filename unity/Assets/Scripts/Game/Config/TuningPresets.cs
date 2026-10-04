@@ -1,8 +1,12 @@
+﻿using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Casting;
+using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 
 namespace Dovus.Game.Config
 {
-    /// <summary>T10: hazır setler — teknoloji-kararlari §6 "Hazır setler" maddesi.</summary>
+    /// <summary>T10: hazÄ±r setler â€” teknoloji-kararlari Â§6 "HazÄ±r setler" maddesi.</summary>
     public enum TuningPreset
     {
         Agir,
@@ -11,11 +15,11 @@ namespace Dovus.Game.Config
     }
 
     /// <summary>
-    /// Üç hazır his profili. Sayılar SPEC DEĞİL — durum.md'de T10 sapması olarak kayıtlı,
-    /// telefonda hızlı deneme için icat edilmiş başlangıç noktaları. Her preset kendi içinde
-    /// GradeTuning.TemizGapMaxMs &lt; DodgeTuning.IframeMs kısıtını (§6) korur.
-    /// Alanlar TEK TEK yazılır — nesne referansları (Combat.Dodge vb.) DEĞİŞTİRİLMEZ, yoksa
-    /// DodgeState/SentenceEngine gibi tüketiciler eski nesneye bakmayı sürdürür (bkz. CombatTuning).
+    /// ÃœÃ§ hazÄ±r his profili. SayÄ±lar SPEC DEÄÄ°L â€” durum.md'de T10 sapmasÄ± olarak kayÄ±tlÄ±,
+    /// telefonda hÄ±zlÄ± deneme iÃ§in icat edilmiÅŸ baÅŸlangÄ±Ã§ noktalarÄ±. Her preset kendi iÃ§inde
+    /// GradeTuning.TemizGapMaxMs &lt; DodgeTuning.IframeMs kÄ±sÄ±tÄ±nÄ± (Â§6) korur.
+    /// Alanlar TEK TEK yazÄ±lÄ±r â€” nesne referanslarÄ± (Combat.Dodge vb.) DEÄÄ°ÅTÄ°RÄ°LMEZ, yoksa
+    /// DodgeState/SentenceEngine gibi tÃ¼keticiler eski nesneye bakmayÄ± sÃ¼rdÃ¼rÃ¼r (bkz. CombatTuning).
     /// </summary>
     public static class TuningPresets
     {
@@ -35,7 +39,7 @@ namespace Dovus.Game.Config
             }
         }
 
-        /// <summary>Ağır: yavaş ve tok — büyük yer değiştirme, uzun toparlanma.</summary>
+        /// <summary>AÄŸÄ±r: yavaÅŸ ve tok â€” bÃ¼yÃ¼k yer deÄŸiÅŸtirme, uzun toparlanma.</summary>
         static void ApplyAgir(CombatTuning c, PrototypeTuning p)
         {
             c.Dodge.DistanceM = 4.6f;
@@ -43,7 +47,7 @@ namespace Dovus.Game.Config
             c.Dodge.GlideTailMs = 260;
             p.Player.DodgeGlideSpeedMps = 2.4f;
 
-            c.Dodge.PerfectWindowMs = 170; // O2: tek pencere, < HARİKA
+            c.Dodge.PerfectWindowMs = 170; // O2: tek pencere, < HARÄ°KA
             c.Grade.HarikaGapMaxMs = 190;
             c.Grade.TemizGapMaxMs = 240; // < IframeMs (260)
 
@@ -76,7 +80,7 @@ namespace Dovus.Game.Config
             c.Feel.ReadoutPunchScale = 1.6f;
         }
 
-        /// <summary>Çevik: hızlı ve dar — kısa pencereler, çabuk sıfırlanan dodge, hafif his.</summary>
+        /// <summary>Ã‡evik: hÄ±zlÄ± ve dar â€” kÄ±sa pencereler, Ã§abuk sÄ±fÄ±rlanan dodge, hafif his.</summary>
         static void ApplyCevik(CombatTuning c, PrototypeTuning p)
         {
             c.Dodge.DistanceM = 3.4f;
@@ -84,7 +88,7 @@ namespace Dovus.Game.Config
             c.Dodge.GlideTailMs = 150;
             p.Player.DodgeGlideSpeedMps = 4.2f;
 
-            c.Dodge.PerfectWindowMs = 120; // O2: tek pencere, < HARİKA
+            c.Dodge.PerfectWindowMs = 120; // O2: tek pencere, < HARÄ°KA
             c.Grade.HarikaGapMaxMs = 130;
             c.Grade.TemizGapMaxMs = 190; // < IframeMs (260)
 
@@ -115,7 +119,7 @@ namespace Dovus.Game.Config
             p.Hud.ReadoutPunchInSec = 0.08f;
         }
 
-        /// <summary>Anime: dramatik — büyük kamera yumruğu ve parlak yazı.</summary>
+        /// <summary>Anime: dramatik â€” bÃ¼yÃ¼k kamera yumruÄŸu ve parlak yazÄ±.</summary>
         static void ApplyAnime(CombatTuning c, PrototypeTuning p)
         {
             c.Dodge.DistanceM = 5.0f;

@@ -1,4 +1,10 @@
-using Dovus.Core.Combat;
+﻿using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Core.Data;
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
@@ -19,7 +25,7 @@ using UnityEngine;
 
 namespace Dovus.Game.Composition.Builders
 {
-    /// <summary>Paylaşılan sahne kurulum referansları; kurucular sırayla doldurur.</summary>
+    /// <summary>PaylaÅŸÄ±lan sahne kurulum referanslarÄ±; kurucular sÄ±rayla doldurur.</summary>
     public sealed class WorldContext
     {
         public readonly PrototypeBootstrap Host;

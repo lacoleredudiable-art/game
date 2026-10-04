@@ -1,5 +1,5 @@
-using System;
-using Dovus.Core.Layout;
+﻿using System;
+using Dovus.Core.Input;
 using Dovus.Game.Casting;
 using Dovus.Game.Config;
 using NUnit.Framework;

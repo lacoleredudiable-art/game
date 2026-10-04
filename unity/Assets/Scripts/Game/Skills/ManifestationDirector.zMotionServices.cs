@@ -1,6 +1,12 @@
-using Dovus.Core.Combat;
+﻿using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Core.Manifestation;
-using Dovus.Core.Execution;
+using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Motion;
@@ -151,7 +157,7 @@ namespace Dovus.Game.Skills
             {
                 DesignWarnings.Once(
                     "motion.boss_radius",
-                    "Boss gövdesi okunamadı. Vuruş payı yedek 0.6 m.");
+                    "Boss gÃ¶vdesi okunamadÄ±. VuruÅŸ payÄ± yedek 0.6 m.");
                 return 0.6f;
             }
             return Mathf.Max(col.bounds.extents.x, col.bounds.extents.z);

@@ -1,9 +1,10 @@
+﻿using Dovus.Core.Element;
 using Dovus.Core.Grammar;
 using System.Collections.Generic;
 
 namespace Dovus.App.Casting
 {
-    /// <summary>Düz vuruş pending kapanışı — ManifestationDirector.IsPendingBasic ile birebir.</summary>
+    /// <summary>DÃ¼z vuruÅŸ pending kapanÄ±ÅŸÄ± â€” ManifestationDirector.IsPendingBasic ile birebir.</summary>
     public static class PendingBasicStrikeRules
     {
         public static bool IsPendingBasic(

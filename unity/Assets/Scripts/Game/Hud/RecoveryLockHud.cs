@@ -1,4 +1,8 @@
-using Dovus.Core.Grammar;
+﻿using Dovus.Core.Grammar;
+using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Casting;
+using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using Dovus.Game.Casting;
 using Dovus.Game.Config;
@@ -8,9 +12,9 @@ using UnityEngine.UI;
 namespace Dovus.Game.Hud
 {
     /// <summary>
-    /// §5 toparlanma kilidi — kalan süre eriyen gösterge. Kesme becerisinin (düz vuruş /
-    /// yeni fiil / dodge) ödülü buradan okunur; debug metnindeki "kilit: X ms" kalıcı HUD'a
-    /// taşındı (T11.1). Renk mevcut oyuncu paletinden (camgöbeği/mor).
+    /// Â§5 toparlanma kilidi â€” kalan sÃ¼re eriyen gÃ¶sterge. Kesme becerisinin (dÃ¼z vuruÅŸ /
+    /// yeni fiil / dodge) Ã¶dÃ¼lÃ¼ buradan okunur; debug metnindeki "kilit: X ms" kalÄ±cÄ± HUD'a
+    /// taÅŸÄ±ndÄ± (T11.1). Renk mevcut oyuncu paletinden (camgÃ¶beÄŸi/mor).
     /// </summary>
     public sealed class RecoveryLockHud : MonoBehaviour
     {
@@ -24,12 +28,12 @@ namespace Dovus.Game.Hud
 
         float _armedRecoveryMs;
         bool _visible;
-        // Kesme anında bar aynı karede kapanmasın diye kısa tutuş (ölçeklenmemiş).
-        // Spec'te yok — uydurma; docs/durum.md T11.1 sapması.
+        // Kesme anÄ±nda bar aynÄ± karede kapanmasÄ±n diye kÄ±sa tutuÅŸ (Ã¶lÃ§eklenmemiÅŸ).
+        // Spec'te yok â€” uydurma; docs/durum.md T11.1 sapmasÄ±.
         float _cutHoldUntilUnscaled = -1f;
         const float CutHoldSec = 0.14f;
 
-        // T10 canlı paneli vitals ölçülerini oynatabilir; aynı dp alanlarını paylaşıyoruz.
+        // T10 canlÄ± paneli vitals Ã¶lÃ§Ã¼lerini oynatabilir; aynÄ± dp alanlarÄ±nÄ± paylaÅŸÄ±yoruz.
         float _appliedWidthDp = -1f;
         float _appliedHeightDp = -1f;
         float _appliedMarginDp = -1f;
@@ -132,7 +136,7 @@ namespace Dovus.Game.Hud
 
             ApplyTuningLayout();
 
-            // §10: camgöbeği dolgu, mor zemin — boss tehdit paleti yok.
+            // Â§10: camgÃ¶beÄŸi dolgu, mor zemin â€” boss tehdit paleti yok.
             _fill.color = _tuning.Visuals.InkCyan;
             Color bg = _tuning.Visuals.InkPurple;
             bg.a = 0.35f;
@@ -151,8 +155,8 @@ namespace Dovus.Game.Hud
             }
             else
             {
-                // Kesildi (§5): kalan anında 0 — bar bir an boş görünür, sonra kapanır.
-                // Doğal erime zaten fillAmount≈0 ile geldiyse flaş gerekmez.
+                // Kesildi (Â§5): kalan anÄ±nda 0 â€” bar bir an boÅŸ gÃ¶rÃ¼nÃ¼r, sonra kapanÄ±r.
+                // DoÄŸal erime zaten fillAmountâ‰ˆ0 ile geldiyse flaÅŸ gerekmez.
                 if (_visible && _fill.fillAmount > 0.05f && _cutHoldUntilUnscaled < 0f)
                 {
                     _fill.fillAmount = 0f;
@@ -178,7 +182,7 @@ namespace Dovus.Game.Hud
             if (s.LastClosing.HasValue)
                 return (float)(_sentence.StepForDots(s.LastClosing.Value.DotCount).RecoverySec * 1000.0);
 
-            // LastClosing yoksa (olmamalı) kalanı tavan kabul et — sıfır bölme yok.
+            // LastClosing yoksa (olmamalÄ±) kalanÄ± tavan kabul et â€” sÄ±fÄ±r bÃ¶lme yok.
             return Mathf.Max(1f, (float)s.RemainingRecoveryMs);
         }
 
@@ -188,7 +192,7 @@ namespace Dovus.Game.Hud
                 return;
 
             _visible = on;
-            // Alfası 0 Graphic yine overdraw üretir (T8.1) — kapalıyken Image'lar kapanır.
+            // AlfasÄ± 0 Graphic yine overdraw Ã¼retir (T8.1) â€” kapalÄ±yken Image'lar kapanÄ±r.
             _fill.enabled = on;
             _bgImg.enabled = on;
         }

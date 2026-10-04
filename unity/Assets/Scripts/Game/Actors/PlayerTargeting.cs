@@ -1,4 +1,10 @@
-using Dovus.Core.Combat;
+﻿using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Core.Grammar;
 using Dovus.Game.Casting;
 using Dovus.Game.DevTools;
@@ -13,7 +19,7 @@ using UnityEngine.UI;
 
 namespace Dovus.Game.Actors
 {
-    /// <summary>Bir dünya aktörünü oyuncu başına seçilebilir hedef yapar.</summary>
+    /// <summary>Bir dÃ¼nya aktÃ¶rÃ¼nÃ¼ oyuncu baÅŸÄ±na seÃ§ilebilir hedef yapar.</summary>
     public sealed class Targetable : MonoBehaviour
     {
         int _teamId;
@@ -25,7 +31,7 @@ namespace Dovus.Game.Actors
         public string DisplayName => string.IsNullOrEmpty(_displayName) ? name : _displayName;
         public bool IsAvailable => _available == null || _available();
 
-        // O11: sahne araması (FindObjectsByType) yerine etkin hedef kaydı (hedefleme, sekme, top sıçraması).
+        // O11: sahne aramasÄ± (FindObjectsByType) yerine etkin hedef kaydÄ± (hedefleme, sekme, top sÄ±Ã§ramasÄ±).
         static readonly List<Targetable> s_live = new List<Targetable>();
         public static IReadOnlyList<Targetable> Live => s_live;
 
@@ -48,8 +54,8 @@ namespace Dovus.Game.Actors
         public float DistanceFrom(Vector3 origin)
         {
             _collider ??= GetComponent<Collider>();
-            // ClosestPoint tetikleyici collider'da güvenilir değil (Unity noktayı geri verir,
-            // mesafe 0 olur ve her düşman menzilde sanılır). Bounds tetikten etkilenmez.
+            // ClosestPoint tetikleyici collider'da gÃ¼venilir deÄŸil (Unity noktayÄ± geri verir,
+            // mesafe 0 olur ve her dÃ¼ÅŸman menzilde sanÄ±lÄ±r). Bounds tetikten etkilenmez.
             Vector3 point = _collider != null
                 ? _collider.bounds.ClosestPoint(origin)
                 : transform.position;
@@ -76,7 +82,7 @@ namespace Dovus.Game.Actors
         }
     }
 
-    /// <summary>Hedef işaretinin ayarlanabilir sunum verisi; sahne runtime kurulduğu için bileşende yaşar.</summary>
+    /// <summary>Hedef iÅŸaretinin ayarlanabilir sunum verisi; sahne runtime kurulduÄŸu iÃ§in bileÅŸende yaÅŸar.</summary>
     [Serializable]
     public sealed class TargetingPresentationTuning
     {
@@ -92,8 +98,8 @@ namespace Dovus.Game.Actors
     }
 
     /// <summary>
-    /// Oyuncuya özel seçim + otomatik hedef çözümü. Static hedef durumu tutmaz; gelecekte her
-    /// co-op oyuncusu kendi örneğini ve takım kimliğini taşıyabilir.
+    /// Oyuncuya Ã¶zel seÃ§im + otomatik hedef Ã§Ã¶zÃ¼mÃ¼. Static hedef durumu tutmaz; gelecekte her
+    /// co-op oyuncusu kendi Ã¶rneÄŸini ve takÄ±m kimliÄŸini taÅŸÄ±yabilir.
     /// </summary>
     public sealed class PlayerTargeting : MonoBehaviour
     {
@@ -210,8 +216,8 @@ namespace Dovus.Game.Actors
         }
 
         /// <summary>
-        /// Düz vuruş seçili düşman menzildeyse onu, değilse en yakın menzil içi düşmanı alır.
-        /// Hiç düşman yoksa false: saldırı yine ileri oynar fakat kimseye kilitlenmez.
+        /// DÃ¼z vuruÅŸ seÃ§ili dÃ¼ÅŸman menzildeyse onu, deÄŸilse en yakÄ±n menzil iÃ§i dÃ¼ÅŸmanÄ± alÄ±r.
+        /// HiÃ§ dÃ¼ÅŸman yoksa false: saldÄ±rÄ± yine ileri oynar fakat kimseye kilitlenmez.
         /// </summary>
         public bool TryResolveBasicEnemy(float rangeM, out Transform target)
         {
@@ -416,7 +422,7 @@ namespace Dovus.Game.Actors
             if (_frameText != null)
             {
                 _frameText.color = color;
-                _frameText.text = (ally ? "DOST • " : "HEDEF • ") + _selected.DisplayName;
+                _frameText.text = (ally ? "DOST â€¢ " : "HEDEF â€¢ ") + _selected.DisplayName;
             }
         }
 

@@ -1,11 +1,15 @@
 using Dovus.Core.Grammar;
 using Dovus.Core.Shared;
+using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Casting;
+using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 
 namespace Dovus.Core.Status
 {
     /// <summary>
-    /// SkillResolution.mechanics → StatusBoard. Knockback ayrı bayrak (anlık).
+    /// SkillResolution.mechanics ÔåÆ StatusBoard. Knockback ayr─▒ bayrak (anl─▒k).
     /// </summary>
     public static class StatusApplicator
     {
@@ -22,13 +26,13 @@ namespace Dovus.Core.Status
             public bool Knockback { get; }
             public bool Pull { get; }
             public bool Cleansed { get; }
-            /// <summary>cleanse_count: bu cast'te silinen kötü durum sayısı.</summary>
+            /// <summary>cleanse_count: bu cast'te silinen k├Ât├╝ durum say─▒s─▒.</summary>
             public int CleansedCount { get; }
         }
 
         /// <summary>
-        /// self hitbox → caster board; aksi halde target board.
-        /// cleanse: hedefteki düşman durumları temizlenir (self cleanse = caster).
+        /// self hitbox ÔåÆ caster board; aksi halde target board.
+        /// cleanse: hedefteki d├╝┼şman durumlar─▒ temizlenir (self cleanse = caster).
         /// </summary>
         public static Result ApplySkill(
             SkillResolution skill,
@@ -53,9 +57,9 @@ namespace Dovus.Core.Status
             int cleansedCount = 0;
             string[] mechanics = skill.Mechanics ?? System.Array.Empty<string>();
 
-            // "Savrulma Sersemliği": aynı vuruşta stun + knockback birlikteyse stun süresi uzar
-            // (StatusTuning.StunKnockbackDurationAddMs). Knockback kalıcı bir status değil
-            // (anlık bayrak); "aynı cast" bilgisiyle burada özel işleniyor.
+            // "Savrulma Sersemli─şi": ayn─▒ vuru┼şta stun + knockback birlikteyse stun s├╝resi uzar
+            // (StatusTuning.StunKnockbackDurationAddMs). Knockback kal─▒c─▒ bir status de─şil
+            // (anl─▒k bayrak); "ayn─▒ cast" bilgisiyle burada ├Âzel i┼şleniyor.
             bool hasKnockbackThisCast = System.Array.IndexOf(mechanics, "knockback") >= 0;
 
             for (int i = 0; i < mechanics.Length; i++)
@@ -93,7 +97,7 @@ namespace Dovus.Core.Status
                     friendlyMagnitude);
             }
 
-            // Sıfat engine_modifiers — fiil mechanics dışında ek durum (3’lü/4’lü farkı).
+            // S─▒fat engine_modifiers ÔÇö fiil mechanics d─▒┼ş─▒nda ek durum (3ÔÇÖl├╝/4ÔÇÖl├╝ fark─▒).
             ApplyAdjectiveModifiers(
                 skill, board, caster, target, self, ref knockback, ref pull, tuning, mechanics,
                 mobilityCc, ParseAdjectiveId(skill.AdjectiveId), friendlyMagnitude);
@@ -103,10 +107,10 @@ namespace Dovus.Core.Status
 
         /// <summary>
         /// apply_slow / apply_root / apply_burn / apply_poison_on_hit / apply_silence /
-        /// apply_knockback / apply_pull / apply_stealth / apply_confuse — JSON adjectives.
-        /// Fiil mechanics’te zaten varsa tekrar uygulanmaz. Düşmanca sıfat durumları kendine
-        /// yönelik fiilde de (Hareket/Çağırma/Yansıma) caster'a değil vurulan hedefe gider;
-        /// hedef yoksa (hiçbir şeye değmedi) uygulanmaz.
+        /// apply_knockback / apply_pull / apply_stealth / apply_confuse ÔÇö JSON adjectives.
+        /// Fiil mechanicsÔÇÖte zaten varsa tekrar uygulanmaz. D├╝┼şmanca s─▒fat durumlar─▒ kendine
+        /// y├Ânelik fiilde de (Hareket/├ça─ş─▒rma/Yans─▒ma) caster'a de─şil vurulan hedefe gider;
+        /// hedef yoksa (hi├ğbir ┼şeye de─şmedi) uygulanmaz.
         /// </summary>
         static void ApplyAdjectiveModifiers(
             SkillResolution skill,
@@ -166,16 +170,16 @@ namespace Dovus.Core.Status
                     board.Apply(StatusKind.DamageReduction, tuning.DamageReductionMs, mult);
             }
 
-            // gizleme: her zaman caster'a stealth (hedef board self olsa da caster aynı).
+            // gizleme: her zaman caster'a stealth (hedef board self olsa da caster ayn─▒).
             if (ModifierTruthy(mods, "apply_stealth") && !HasMech("stealth") && caster != null)
                 caster.Apply(StatusKind.Stealth, tuning.StealthMs, 1f);
 
-            // sasirtma: Confuse kind yok → Blind + Slow (durum.md öncelik 2).
+            // sasirtma: Confuse kind yok ÔåÆ Blind + Slow (durum.md ├Âncelik 2).
             if (ModifierTruthy(mods, "apply_confuse") && !self)
             {
                 if (!HasMech("blind"))
                 {
-                    // S7: büyüklük 1 = her vuruş ıska idi; accuracy_debuff varsa o, yoksa tuning varsayılanı.
+                    // S7: b├╝y├╝kl├╝k 1 = her vuru┼ş ─▒ska idi; accuracy_debuff varsa o, yoksa tuning varsay─▒lan─▒.
                     float confuseAccuracy = mods.Has("accuracy_debuff")
                         ? mods["accuracy_debuff"].AsFloat(0f)
                         : 0f;
@@ -257,8 +261,8 @@ namespace Dovus.Core.Status
                         ?? tuning.SilenceMs,
                     1f);
 
-            // Kart "yavaşlatma" diyorsa isabet cezası kör değil yavaşlatmadır.
-            // Kart "kör" veya "isabet" diyorsa eski kör eşlemesi kalır.
+            // Kart "yava┼şlatma" diyorsa isabet cezas─▒ k├Âr de─şil yava┼şlatmad─▒r.
+            // Kart "k├Âr" veya "isabet" diyorsa eski k├Âr e┼şlemesi kal─▒r.
             float accuracy = mods["accuracy_debuff"].AsFloat(0f);
             if (accuracy > 0f && CardEffectRules.AccuracyIsSlow(skill.SkillJob) && !HasMech("slow"))
             {
@@ -331,7 +335,7 @@ namespace Dovus.Core.Status
                     board.Apply(kind, Duration(t.SlowMs), t.SlowSpeedMult, EffectSource(skill, "slow"));
                     break;
                 case StatusKind.Blind:
-                    // S7: %100 ıska tuzağı yerine tuning ıska şansı.
+                    // S7: %100 ─▒ska tuza─ş─▒ yerine tuning ─▒ska ┼şans─▒.
                     board.Apply(kind, Duration(t.BlindMs),
                         StatusMath.BlindChanceFromAccuracy(t.BlindMissChance));
                     break;
@@ -339,7 +343,7 @@ namespace Dovus.Core.Status
                     board.Apply(kind, Duration(t.DisarmMs), 1f);
                     break;
                 case StatusKind.Taunt:
-                    // S7 notu: Taunt uygulanıyor ama boss hedeflemesi henüz okumuyor (dikkat_ceker boss tasarım PR'ına).
+                    // S7 notu: Taunt uygulan─▒yor ama boss hedeflemesi hen├╝z okumuyor (dikkat_ceker boss tasar─▒m PR'─▒na).
                     board.Apply(kind, Duration(t.TauntMs), 1f);
                     break;
                 case StatusKind.Fear:
@@ -387,8 +391,8 @@ namespace Dovus.Core.Status
         }
 
         /// <summary>
-        /// Skill engine'i kendi süresini yazdıysa o kullanılır.
-        /// Yazmadıysa mobility_cc tablosu, o da yoksa tuning yedeği.
+        /// Skill engine'i kendi s├╝resini yazd─▒ysa o kullan─▒l─▒r.
+        /// Yazmad─▒ysa mobility_cc tablosu, o da yoksa tuning yede─şi.
         /// </summary>
         static double ExplicitOrFallback(
             JsonValue engine,

@@ -1,4 +1,10 @@
-using Dovus.Core.Combat;
+﻿using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Core.Tuning;
 using Dovus.Game.Audio;
 using Dovus.Game.Cameras;
@@ -11,9 +17,9 @@ using UnityEngine;
 namespace Dovus.Game.Actors
 {
     /// <summary>
-    /// Oyuncu dodge hakları, i-frame sorgusu ve mükemmel sıyırma.
-    /// Yavaşlama yalnız bu oyuncunun animatörü ve yerel kameradadır;
-    /// Time.timeScale değişmez (çok oyunculu).
+    /// Oyuncu dodge haklarÄ±, i-frame sorgusu ve mÃ¼kemmel sÄ±yÄ±rma.
+    /// YavaÅŸlama yalnÄ±z bu oyuncunun animatÃ¶rÃ¼ ve yerel kameradadÄ±r;
+    /// Time.timeScale deÄŸiÅŸmez (Ã§ok oyunculu).
     /// </summary>
     public sealed class PlayerDodgeRig : MonoBehaviour
     {
@@ -32,8 +38,8 @@ namespace Dovus.Game.Actors
         public NextHitBuff NextHit => _nextHit;
 
         /// <summary>
-        /// Skill hareketi / çağırma anı dokunulmazlığı (F1): 3-7 dash 400 ms, ışınlanma 220 ms,
-        /// 11-10 çağırma anı... Stasis değil — oyuncu donmaz, yalnız pencere içindeki vuruş yutulur.
+        /// Skill hareketi / Ã§aÄŸÄ±rma anÄ± dokunulmazlÄ±ÄŸÄ± (F1): 3-7 dash 400 ms, Ä±ÅŸÄ±nlanma 220 ms,
+        /// 11-10 Ã§aÄŸÄ±rma anÄ±... Stasis deÄŸil â€” oyuncu donmaz, yalnÄ±z pencere iÃ§indeki vuruÅŸ yutulur.
         /// </summary>
         public SkillIframeWindow SkillIframe { get; } = new SkillIframeWindow();
 
@@ -45,7 +51,7 @@ namespace Dovus.Game.Actors
 
         public bool IsSkillInvulnerable => SkillIframe.IsActive(WorldMs());
 
-        /// <summary>Dodge ya da skill i-frame'i açık mı (mermi bunu okur; mükemmel sıyırma ödülü vermez).</summary>
+        /// <summary>Dodge ya da skill i-frame'i aÃ§Ä±k mÄ± (mermi bunu okur; mÃ¼kemmel sÄ±yÄ±rma Ã¶dÃ¼lÃ¼ vermez).</summary>
         public static bool IsInvulnerableNow(Component host)
         {
             PlayerDodgeRig rig = host != null ? host.GetComponent<PlayerDodgeRig>() : null;
@@ -70,7 +76,7 @@ namespace Dovus.Game.Actors
             }
         }
 
-        /// <summary>Hasar borusu bunu okur. true ise bu karede vuruş yutulur.</summary>
+        /// <summary>Hasar borusu bunu okur. true ise bu karede vuruÅŸ yutulur.</summary>
         public bool IsInvulnerable
         {
             get
@@ -81,8 +87,8 @@ namespace Dovus.Game.Actors
         }
 
         /// <summary>
-        /// Gelen vuruşun tek sorusu. dodgeable false ise i-frame yutmaz.
-        /// true dönerse hasar yazılmamalı; mükemmel pencereyse ödül burada bir kez verilir.
+        /// Gelen vuruÅŸun tek sorusu. dodgeable false ise i-frame yutmaz.
+        /// true dÃ¶nerse hasar yazÄ±lmamalÄ±; mÃ¼kemmel pencereyse Ã¶dÃ¼l burada bir kez verilir.
         /// </summary>
         public static bool BlocksIncoming(Component host, bool dodgeable = true)
         {
@@ -91,11 +97,11 @@ namespace Dovus.Game.Actors
             PlayerDodgeRig rig = host.GetComponent<PlayerDodgeRig>();
             if (rig == null)
                 return false;
-            // Skill i-frame'i ödülsüz yutar; dodge penceresi mükemmel sıyırmayı burada değerlendirir.
+            // Skill i-frame'i Ã¶dÃ¼lsÃ¼z yutar; dodge penceresi mÃ¼kemmel sÄ±yÄ±rmayÄ± burada deÄŸerlendirir.
             return rig.TryAbsorbHit() || rig.IsSkillInvulnerable;
         }
 
-        /// <summary>Hasar borusu oyuncunun sıradaki vuruşunda bir kez çarpar. İkinci çağrı 1.</summary>
+        /// <summary>Hasar borusu oyuncunun sÄ±radaki vuruÅŸunda bir kez Ã§arpar. Ä°kinci Ã§aÄŸrÄ± 1.</summary>
         public static float ConsumeNextHit(Component player)
         {
             if (player == null)
@@ -123,7 +129,7 @@ namespace Dovus.Game.Actors
             int strike = press + result.GapMs;
             if (!InPerfect(press, strike))
                 return;
-            // O2: okumadaki derece zaten "PERFECT" yazıyor (aynı pencere) — ikinci yazı yok.
+            // O2: okumadaki derece zaten "PERFECT" yazÄ±yor (aynÄ± pencere) â€” ikinci yazÄ± yok.
             TriggerPerfect(press, announce: false);
         }
 
@@ -135,7 +141,7 @@ namespace Dovus.Game.Actors
             int press = dodge.PressTimeMs.Value;
             if (!InPerfect(press, strikeMs))
                 return;
-            // Mermi/skill emişi derece üretmez: tek yazı burada.
+            // Mermi/skill emiÅŸi derece Ã¼retmez: tek yazÄ± burada.
             TriggerPerfect(press, announce: true);
         }
 
@@ -166,7 +172,7 @@ namespace Dovus.Game.Actors
 
             _nextHit.Arm(tuning.PerfectNextHitMult, WorldMs(), tuning.PerfectNextHitWindowMs);
             PlayLocalFeel(tuning.PerfectFeelSec);
-            // O2: ayrı OnGUI "PERFECT" etiketi kaldırıldı (çift yazı + her kare yeni GUIStyle).
+            // O2: ayrÄ± OnGUI "PERFECT" etiketi kaldÄ±rÄ±ldÄ± (Ã§ift yazÄ± + her kare yeni GUIStyle).
             SfxDirector.Play(SfxLibrary.PerfectDodge);
         }
 

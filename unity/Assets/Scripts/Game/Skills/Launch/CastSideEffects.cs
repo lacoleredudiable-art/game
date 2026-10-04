@@ -1,5 +1,11 @@
-using Dovus.App.Casting;
-using Dovus.Core.Combat;
+﻿using Dovus.App.Casting;
+using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Core.Grammar;
 using Dovus.Core.Motion;
 using Dovus.Game.Actors;
@@ -150,10 +156,10 @@ namespace Dovus.Game.Skills.Launch
         {
             string tag = plan.Kind switch
             {
-                SkillMotionKind.ZenitsuPass => "Zenitsu geçiş",
-                SkillMotionKind.ShortBlink => "ışınlanma",
+                SkillMotionKind.ZenitsuPass => "Zenitsu geÃ§iÅŸ",
+                SkillMotionKind.ShortBlink => "Ä±ÅŸÄ±nlanma",
                 SkillMotionKind.ForwardDash => "dash",
-                SkillMotionKind.PlaceMark => "işaret",
+                SkillMotionKind.PlaceMark => "iÅŸaret",
                 _ => null
             };
             if (tag == null) return;

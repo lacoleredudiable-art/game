@@ -1,4 +1,10 @@
-using Dovus.Core.Combat;
+﻿using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using Dovus.Game.Actors;
@@ -8,7 +14,7 @@ using UnityEngine;
 
 namespace Dovus.Game.Boss
 {
-    /// <summary>Ağ Örme alanları: Core set + collider'sız disk görselleri, yavaşlatma tikleri.</summary>
+    /// <summary>AÄŸ Ã–rme alanlarÄ±: Core set + collider'sÄ±z disk gÃ¶rselleri, yavaÅŸlatma tikleri.</summary>
     public sealed class WebFieldView : MonoBehaviour
     {
         const float DiscHeightY = 0.025f;

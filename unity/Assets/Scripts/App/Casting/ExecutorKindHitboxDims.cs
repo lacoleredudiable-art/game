@@ -1,11 +1,17 @@
-using Dovus.Core.Combat;
-using Dovus.Core.Execution;
+﻿using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
+using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
 using System;
 
 namespace Dovus.App.Casting
 {
-    /// <summary>Executor türüne göre hitbox boyutlarının alan/range/süre/spawn sayısına uygulanması.</summary>
+    /// <summary>Executor tÃ¼rÃ¼ne gÃ¶re hitbox boyutlarÄ±nÄ±n alan/range/sÃ¼re/spawn sayÄ±sÄ±na uygulanmasÄ±.</summary>
     public static class ExecutorKindHitboxDims
     {
         public static void Apply(

@@ -1,4 +1,11 @@
-using Dovus.Core.Combat;
+using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
+using Dovus.Core.Element;
 using Dovus.Core.Grammar;
 using NUnit.Framework;
 using System;
@@ -301,8 +308,8 @@ public class DrawRecognitionTests
     {
         var words = new List<SentenceWord>
         {
-            new SentenceWord(Dovus.Core.Grammar.Rune.Saldiri, JumpKind.None, 0),
-            new SentenceWord(Dovus.Core.Grammar.Rune.Patlama, JumpKind.None, 0),
+            new SentenceWord(Dovus.Core.Element.Rune.Saldiri, JumpKind.None, 0),
+            new SentenceWord(Dovus.Core.Element.Rune.Patlama, JumpKind.None, 0),
         };
         Assert.That(DrawFeedback.RuneChain(words), Is.EqualTo("Saldırı → Patlama"));
         Assert.That(DrawFeedback.RuneChain(new List<SentenceWord>()), Is.EqualTo(string.Empty));
