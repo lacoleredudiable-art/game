@@ -12,6 +12,7 @@ using Dovus.Core.Grammar;
 using Dovus.Core.Shared;
 using Dovus.Core.Manifestation;
 using Dovus.Core.Mechanic;
+using Dovus.Core.Motion;
 using Dovus.Core.Status;
 using Dovus.Game.Actors;
 using Dovus.Game.Diagnostics;
@@ -59,6 +60,8 @@ namespace Dovus.Game.Skills
         }
 
         public void ConfigureSkillNumbers(ISkillRepository numbers) => _skillNumbers = numbers;
+
+        public void ConfigureMotionTemplates(IMotionTemplateRepository templates) => _motionTemplateRepository = templates;
 
         void OnPlayerDamageTaken(float incomingDamage)
         {

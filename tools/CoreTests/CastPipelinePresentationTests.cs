@@ -77,28 +77,23 @@ public class CastPipelinePresentationTests
         var order = new List<string>();
         var pipeline = new CastPipeline();
         pipeline.CompatibilityPublished += _ => order.Add(nameof(pipeline.CompatibilityPublished));
-        pipeline.Started += _ => order.Add(nameof(pipeline.Started));
         pipeline.SkillShoutRequested += _ => order.Add(nameof(pipeline.SkillShoutRequested));
-        pipeline.Completed += _ => order.Add(nameof(pipeline.Completed));
 
         pipeline.RunSkill(0, new GameplayPort());
 
         Assert.That(order, Is.EqualTo(new[]
         {
             nameof(pipeline.CompatibilityPublished),
-            nameof(pipeline.Started),
             nameof(pipeline.SkillShoutRequested),
-            nameof(pipeline.Completed),
         }));
     }
 
     [Test]
-    public void RunSkill_Denied_EmitsDenialBeforeCompleted()
+    public void RunSkill_Denied_EmitsDenialBeforeExecutor()
     {
         var reasons = new List<CastDenialReason>();
         var pipeline = new CastPipeline();
         pipeline.DenialRequested += e => reasons.Add(e.Reason);
-        pipeline.Completed += _ => { };
 
         var port = new GameplayPort
         {
@@ -112,23 +107,34 @@ public class CastPipelinePresentationTests
                 string.Empty,
                 isComplete: false)
         };
-        pipeline.RunSkill(0, port);
+        var outcome = pipeline.RunSkill(0, port);
 
+        Assert.That(outcome.Denied, Is.True);
         Assert.That(reasons, Is.EqualTo(new[] { CastDenialReason.NeedsTwoRunes }));
     }
 
     [Test]
-    public void RunBasic_Heal_EmitsSkillShoutBeforeBasicCompleted()
+    public void RunSkill_CompatibilityPublished_FiresOncePerCast()
     {
-        var order = new List<string>();
+        int count = 0;
         var pipeline = new CastPipeline();
-        pipeline.SkillShoutRequested += _ => order.Add("shout");
-        pipeline.BasicCompleted += _ => order.Add("basicCompleted");
+        pipeline.CompatibilityPublished += _ => count++;
+        pipeline.RunSkill(0, new GameplayPort());
+        Assert.That(count, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void RunBasic_Heal_EmitsSkillShout()
+    {
+        var shouted = false;
+        var pipeline = new CastPipeline();
+        pipeline.SkillShoutRequested += _ => shouted = true;
 
         var port = new HealBasicPort();
-        pipeline.RunBasic(0, port);
+        var outcome = pipeline.RunBasic(0, port);
 
-        Assert.That(order, Is.EqualTo(new[] { "shout", "basicCompleted" }));
+        Assert.That(shouted, Is.True);
+        Assert.That(outcome.Connected, Is.False);
     }
 
     sealed class HealBasicPort : IBasicStrikePort<int>

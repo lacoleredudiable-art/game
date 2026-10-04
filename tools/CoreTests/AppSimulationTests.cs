@@ -101,14 +101,9 @@ public class AppSimulationTests
     public void CastPipeline_BasicHit_EmitsBasicOutcomeWithDamage()
     {
         var port = new SimBasicPort { StrikeConnects = true, Dealt = 7.5f };
-        var pipeline = new CastPipeline();
-        BasicOutcome? captured = null;
-        pipeline.BasicCompleted += o => captured = o;
-        var outcome = pipeline.RunBasic(0, port);
+        var outcome = new CastPipeline().RunBasic(0, port);
         Assert.That(outcome.Connected, Is.True);
         Assert.That(outcome.Dealt, Is.EqualTo(7.5f).Within(0.001f));
-        Assert.That(captured, Is.Not.Null);
-        Assert.That(captured.Value.Dealt, Is.EqualTo(7.5f).Within(0.001f));
     }
 
     [Test]

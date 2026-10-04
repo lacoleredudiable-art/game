@@ -85,11 +85,7 @@ namespace Dovus.Game.Skills
 
             public void StampScar(LivingEffectView view, ClosingHit closing) => _md.StampScar(view, closing);
 
-            public void EnsureCastPort()
-            {
-                _md._castPort ??= new CastPort(_md);
-                _md.WireCastPresentationFeedback();
-            }
+            public void EnsureCastPort() => _md._castPort ??= new CastPort(_md);
 
             public void RunBasicClosing(PendingClosing p)
             {

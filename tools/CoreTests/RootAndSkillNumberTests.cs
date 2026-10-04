@@ -95,7 +95,7 @@ public class RootAndSkillNumberTests
 
         var tuning = new StatusTuning();
         int oldRoot = tuning.RootMs;
-        catalog.ApplyCcDurations(tuning);
+        SkillNumberTuningApplier.ApplyCcDurations(catalog, tuning);
         int jsonRootMs = (int)System.Math.Round(root["mobility_cc"]["cc_priority"].AsArray()[1]["duration_sec"].AsFloat(0f) * 1000.0);
         Assert.That(tuning.RootMs, Is.EqualTo(jsonRootMs));
         Assert.That(tuning.RootMs, Is.Not.EqualTo(oldRoot));

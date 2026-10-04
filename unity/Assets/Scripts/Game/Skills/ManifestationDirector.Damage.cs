@@ -88,9 +88,6 @@ namespace Dovus.Game.Skills
             {
                 WeaponSkillCompatibility compatibility = WeaponCompatibilityFor(skill);
                 eqMult = compatibility.DamageMult;
-                LastWeaponCompatible = compatibility.Compatible;
-                LastWeaponPassiveEnabled = compatibility.PassiveEnabled;
-                LastWeaponUiLabel = compatibility.UiLabel;
             }
             outMult *= eqMult;
             outMult *= WeaponOutgoingDamageMult(skill, isBasicStrike);

@@ -10,8 +10,11 @@ using Dovus.Core.Data;
 using Dovus.Core.Equipment;
 using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
+using Dovus.Core.Motion;
 using Dovus.Core.Shared;
 using Dovus.Core.Status;
+using Dovus.Game.Assets;
+using Dovus.Game.Skills.Presentation;
 using Dovus.Game.Actors;
 using Dovus.Game.Platform;
 using Dovus.Game.Platform;
@@ -183,7 +186,10 @@ namespace Dovus.Game.Composition.Builders
             director.BindSceneRuntime(runtime);
             director.BindLiveRegistries(runtime.Targetables, runtime.SummonExecutors);
             ctx.ManifestationDirector = director;
-            director.WireCastPresentationFeedback();
+            TextAsset motionTemplates = AssetLoader.Load<TextAsset>("ElementSystem/motion-templates", null);
+            if (motionTemplates != null && !string.IsNullOrWhiteSpace(motionTemplates.text))
+                director.ConfigureMotionTemplates(MotionTemplateCatalog.FromJson(motionTemplates.text));
+            director.BindCastPresentation(new CastPresentationListener());
 
             BossEncounterData.ApplyVolley(combat.Boss, tuning.Boss.ActiveBossResourcePath);
             var projectileHost = directorGo.AddComponent<HostileProjectileHost>();
@@ -205,9 +211,9 @@ namespace Dovus.Game.Composition.Builders
             {
                 DesignWarnings.Warned -= LogDesignWarning;
                 DesignWarnings.Warned += LogDesignWarning;
-                ISkillRepository numbers = SkillNumberCatalog.FromDocument(design.Document);
-                numbers.ApplyCcDurations(combat.Status);
-                numbers.ApplyBasicStrikeRange(combat.Manifestation);
+                SkillNumberCatalog numbers = SkillNumberCatalog.FromDocument(design.Document);
+                SkillNumberTuningApplier.ApplyCcDurations(numbers, combat.Status);
+                SkillNumberTuningApplier.ApplyBasicStrikeRange(numbers, combat.Manifestation);
                 director.ConfigureSkillNumbers(numbers);
                 resource.Bind(numbers.MaxMana, numbers.ManaRegenPerSec, numbers.ManaRegenDelaySec);
                 cooldown.Bind(numbers.GlobalCooldownSec, numbers.MaxConcurrentCasts);

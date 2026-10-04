@@ -24,10 +24,11 @@ using UnityEngine;
 
 namespace Dovus.Game.Skills.Motion
 {
-    public sealed class MotionTemplateDriver
+    public sealed partial class MotionTemplateDriver
     {
         readonly IMotionTemplateDriverHost _host;
-        MotionTemplateCatalog _catalog;
+        IMotionTemplateRepository _repository;
+        MotionTemplateCatalog _lazyCatalog;
         bool _emiciContactPull;
         bool _templateOwnsPosition;
         readonly SkillCastLease _castLease = new();
@@ -42,6 +43,8 @@ namespace Dovus.Game.Skills.Motion
         GameObject _fuse;
 
         public MotionTemplateDriver(IMotionTemplateDriverHost host) => _host = host;
+
+        public void BindRepository(IMotionTemplateRepository repository) => _repository = repository;
 
         public bool TemplateOwnsPosition => _templateOwnsPosition;
         public SkillResolution TemplateSkill => _templateSkill;
@@ -75,28 +78,6 @@ namespace Dovus.Game.Skills.Motion
             return Mathf.Max(col.bounds.extents.x, col.bounds.extents.z);
         }
 
-        MotionTemplateCatalog MotionCatalog
-        {
-            get
-            {
-                if (_catalog != null && _catalog.Templates.Count > 0)
-                    return _catalog;
-                TextAsset asset = AssetLoader.Load<TextAsset>("ElementSystem/motion-templates", null);
-                if (asset == null || string.IsNullOrWhiteSpace(asset.text))
-                    throw new InvalidOperationException("motion-templates.json missing/invalid");
-
-                try
-                {
-                    _catalog = MotionTemplateCatalog.FromJson(asset.text);
-                }
-                catch (Exception e)
-                {
-                    throw new InvalidOperationException("motion-templates.json missing/invalid", e);
-                }
-                return _catalog;
-            }
-        }
-
         public PositionPlayback PreparePositionPlayback(SkillResolution skill, MotionTemplate template)
         {
             var steps = new List<GrammarPositionStep>();
@@ -111,7 +92,7 @@ namespace Dovus.Game.Skills.Motion
                 }
             }
 
-            MotionFallbacks fallbacks = MotionCatalog.Fallbacks;
+            MotionFallbacks fallbacks = MotionRepo.Fallbacks;
             PositionPlayback playback = PositionOwnership.Prepare(
                 template, steps, fallbacks.PhaseSec, fallbacks.StepM);
             MotionTemplate shaped = playback.Template ?? template;
@@ -193,7 +174,7 @@ namespace Dovus.Game.Skills.Motion
             float arena = _host.Colors != null ? _host.Colors.Arena.ArenaHalfSizeM : MotionTemplateDriverDefaults.ArenaHalfSizeFallbackM;
             float body = _host.PlayerBodyRadiusM();
             _host.MotionBody.Bind(_host.Clock, arena, body > MotionTemplateDriverDefaults.MotionBodyBindMinM ? body : 0.5f);
-            _ = MotionCatalog;
+            _ = MotionRepo;
         }
 
         public bool TryBeginMotionTemplate(SkillResolution skill, PendingClosing pending)
@@ -205,7 +186,7 @@ namespace Dovus.Game.Skills.Motion
             _castLease.ReleasePosition();
             if (skill.IsEmpty || string.IsNullOrEmpty(skill.Identity.Id) || _host.Player == null)
                 return false;
-            if (!MotionCatalog.TryPlay((SkillId)skill.Identity.Id, out MotionTemplate template))
+            if (!MotionRepo.TryPlay((SkillId)skill.Identity.Id, out MotionTemplate template))
                 return false;
 
             PositionPlayback playback = PreparePositionPlayback(skill, template);
@@ -227,11 +208,11 @@ namespace Dovus.Game.Skills.Motion
             if (bodyR < MotionTemplateDriverDefaults.BodyRadiusMinM)
                 bodyR = 0.5f;
             _host.MotionBody.Bind(_host.Clock, arena, bodyR);
-            float stopGap = MotionCatalog.Fallbacks.StopGapM;
+            float stopGap = MotionRepo.Fallbacks.StopGapM;
             string weapon = _host.EquippedWeapon != null
                 ? (string.IsNullOrEmpty(_host.EquippedWeapon.AnimationsKey) ? _host.EquippedWeapon.Id : _host.EquippedWeapon.AnimationsKey)
                 : string.Empty;
-            _host.MotionBody.SetAnimContext(MotionCatalog.Anims, weapon, VerbOf(skill.Identity.Id));
+            _host.MotionBody.SetAnimContext(MotionRepo.Anims, weapon, VerbOf(skill.Identity.Id));
             _host.MotionBody.NoteSkill((SkillId)skill.Identity.Id);
             if (_host.Boss != null)
                 _templateStartCenter = _host.FlatDistance(_host.Player.position, _host.Boss.transform.position);
@@ -286,7 +267,7 @@ namespace Dovus.Game.Skills.Motion
             if (_host.MotionBody == null || _host.MotionBody.IsDisplacing)
                 return false;
 
-            MotionTemplate template = MotionCatalog.BasicStrike;
+            MotionTemplate template = MotionRepo.BasicStrike;
             if (template == null || template.Phases.Count == 0)
                 return false;
 
@@ -295,7 +276,7 @@ namespace Dovus.Game.Skills.Motion
                 return false;
 
             var steps = new List<GrammarPositionStep>();
-            MotionFallbacks fallbacks = MotionCatalog.Fallbacks;
+            MotionFallbacks fallbacks = MotionRepo.Fallbacks;
             PositionPlayback playback = PositionOwnership.Prepare(
                 template, steps, fallbacks.PhaseSec, fallbacks.StepM);
             template = playback.Template ?? template;
@@ -322,7 +303,7 @@ namespace Dovus.Game.Skills.Motion
             string weapon = _host.EquippedWeapon != null
                 ? (string.IsNullOrEmpty(_host.EquippedWeapon.AnimationsKey) ? _host.EquippedWeapon.Id : _host.EquippedWeapon.AnimationsKey)
                 : string.Empty;
-            _host.MotionBody.SetAnimContext(MotionCatalog.Anims, weapon, 0);
+            _host.MotionBody.SetAnimContext(MotionRepo.Anims, weapon, 0);
             _host.MotionBody.NoteSkill(default);
             float stopGap = fallbacks.StopGapM;
             _host.MotionBody.Play(

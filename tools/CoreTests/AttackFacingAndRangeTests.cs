@@ -34,7 +34,7 @@ public class AttackFacingAndRangeTests
 
         var tuning = new ManifestationTuning();
         Assert.That(tuning.BasicStrikeRangeM, Is.EqualTo(SkillNumberFallbacks.RangeM).Within(0.001f));
-        catalog.ApplyBasicStrikeRange(tuning);
+        SkillNumberTuningApplier.ApplyBasicStrikeRange(catalog, tuning);
         Assert.That(tuning.BasicStrikeRangeM, Is.EqualTo(1.5f).Within(0.001f));
         Assert.That(tuning.BasicStrikeRangeM, Is.Not.EqualTo(SkillNumberFallbacks.RangeM));
         Assert.That(tuning.BasicStrikeRadiusM, Is.EqualTo(0.5f).Within(0.001f), "1.5m × 0.5m: 0.5 yarıçap");

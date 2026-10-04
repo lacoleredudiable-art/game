@@ -33,6 +33,7 @@ namespace Dovus.Game.Skills
 {
     public sealed partial class ManifestationDirector
     {
+        IMotionTemplateRepository _motionTemplateRepository;
         MotionServicesHost _motionHost;
         MotionTemplateDriver _motionDriver;
         MotionHitResolver _motionHitResolver;
@@ -75,6 +76,8 @@ namespace Dovus.Game.Skills
                 return;
             _motionHost = new MotionServicesHost(this);
             _motionDriver = new MotionTemplateDriver(_motionHost);
+            if (_motionTemplateRepository != null)
+                _motionDriver.BindRepository(_motionTemplateRepository);
             _motionHitResolver = new MotionHitResolver(_motionHost);
             _templateDelivery = new TemplateDeliveryRuntime(_motionHost);
         }
