@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Dovus.Core.Grammar;
 
 namespace Dovus.App.Casting
@@ -43,7 +43,7 @@ namespace Dovus.App.Casting
                 ? skill.BaseHeal
                 : totalEffect * closingDamagePerEffect;
             double scaled = healBase * chainBonus * weaponSupportPower * effectScale;
-            return Math.Max(0, (int)Math.Round(scaled, MidpointRounding.AwayFromZero));
+            return Math.Max(0, (int)Math.Round(scaled) /* = Mathf.RoundToInt (yarıda çifte) */);
         }
     }
 }
