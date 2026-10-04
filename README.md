@@ -15,7 +15,6 @@ uzatan bir yavaş çekim penceresi yoktur.
 
 - [Durum](docs/durum.md) — şu an açık bilinen sorunlar
 - [Element verisi](docs/element-sistemi.json) — bağlayıcı v6.1.1: motorun okuduğu sayılar ve mekanikler
-- [Element Sistemi (arşiv)](docs/archive/element-sistemi.md) — 16 Eylül tarihli insan-okur özet; JSON bağlayıcıdır
 - [Unity notları](docs/unity-notlari.md) — sahne, build ve cihaz operasyonları
 - [AGENTS.md](AGENTS.md) — katkı kuralları
 

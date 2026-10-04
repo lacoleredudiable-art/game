@@ -9,15 +9,15 @@
 ## Sahne ve derleme
 
 - **Sahne koddan kurulur.** `.unity` / `.prefab` YAML'ine elle dokunulmaz. Sahneyi yeniden
-  üretmek için: **Dovus → Create Prototype Scene** (`PrototypeSceneCreator`). Sahnede tek bir
-  boş GameObject + `PrototypeBootstrap` bulunur.
+  üretme menüsü artık yok; sahne `Assets/Scenes/Prototype.unity` olarak repoda durur. Sahnede tek bir
+  boş GameObject + `GameBootstrap` bulunur (2B.12'de `PrototypeBootstrap`'tan yeniden adlandırıldı, GUID aynı).
 - **Yerleşik mesh gerekiyorsa `PrimitiveMesh.Get(...)` çağır**, `GameObject.CreatePrimitive`
   değil. İkincisi bir kare yaşayan collider üretir; projede collider yok, vuruş tespiti
   matematikle yapılıyor (istisna: `WallColliderFit`'in dungeon parçalarına eklediği
   `BoxCollider`'lar — o ayrı, kasıtlı bir "duvara girme" önlemi).
 - **Serileşmiş alanlar bayat gelir.** Açık sahnenin bellekteki hâli assembly reload'dan sonra
   eski alan değerlerini korur; **yeni eklenen int/float alanlar 0 gelir** (C# initializer
-  deserialize'da uygulanmaz). `PrototypeTuning.EnsureRuntimeDefaults` bunu `TuningVersion`
+  deserialize'da uygulanmaz). `GameTuning.EnsureRuntimeDefaults` bunu `TuningVersion`
   damgasıyla bir kez yamalar — yeni alan eklerken versiyonu artır. Ölçüm almadan önce sahneyi
   **diskten yeniden aç** (`EditorSceneManager.OpenScene(path, OpenSceneMode.Single)`), sonra play.
 - **Yükleme sırası:** `EnsureRuntimeDefaults` **önce**, `TuningConfig.TryLoad` (JSON) **sonra**.

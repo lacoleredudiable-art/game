@@ -25,7 +25,7 @@ Mobil kooperatif boss dövüşü, alfa prototip. Bu dosya her görevde bağlama 
 - Repoyu tarama. Yalnız görev prompt'unun adını verdiği dosya ve satırları oku.
 - **`docs/` altını görev bir dosyayı açıkça adlandırmadıkça okuma** (`durum.md` dahil).
   `element-sistemi.json`'dan yalnız istenen bölümü oku.
-- Asla okuma: `unity/Library/`, `unity/Temp/`, `unity/obj/`, `unity/Logs/`, `docs/archive/`, `docs/play-sweep/*.csv`.
+- Asla okuma: `unity/Library/`, `unity/Temp/`, `unity/obj/`, `unity/Logs/`, `docs/play-sweep/*.csv`.
 - Başka görevin dosyasına dokunma. Kapsam dışı bir hata görürsen düzeltme, PR açıklamasına yaz.
 
 ## Komutlar (hepsi repo kökünden)
