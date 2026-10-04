@@ -328,7 +328,7 @@ namespace Dovus.Game.Skills.Mechanics
 
         public float RedirectMechanicDamage(float incoming)
         {
-            if (PortalBorderTeamHooks.TryMiss(PortalBorderTeamHooks.PlayerActorId))
+            if (PortalBorderTeamHost.Hub.TryMiss(PortalBorderTeamHost.Hub.PlayerActorId))
                 return 0f;
             if (_host.Clock == null || incoming <= 0)
                 return incoming;

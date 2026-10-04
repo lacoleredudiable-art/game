@@ -10,8 +10,10 @@ using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Motion;
+using Dovus.Core.Portal;
 using Dovus.Core.Status;
 using Dovus.Game.Actors;
+using Dovus.Game.Team;
 using Dovus.Game.Boss;
 using Dovus.Game.Data;
 using Dovus.Game.DevTools;
@@ -30,6 +32,8 @@ namespace Dovus.Game.Skills
     /// </summary>
     public sealed partial class ManifestationDirector
     {
+        static readonly PortalSystem MechanicGrammarLegacyPortal = new();
+
         readonly Dictionary<(int, int, int), MechanicPlan> _mechanicPlans = new();
         string _cardEffect = string.Empty;
 
@@ -126,7 +130,7 @@ namespace Dovus.Game.Skills
                         applied.Add($"işaret → {e.DurationSec:0.#}sn sonra dönüş");
                         break;
                     case ("konum", "portal"):
-                        if (Dovus.Core.Portal.PortalSystem.IsPortalSkill(plan.SkillId))
+                        if ((PortalBorderTeamHost.Instance?.Portal ?? MechanicGrammarLegacyPortal).IsPortalSkill(plan.SkillId))
                         {
                             applied.Add("portal sistemi");
                             break;

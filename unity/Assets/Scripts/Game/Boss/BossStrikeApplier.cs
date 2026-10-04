@@ -76,7 +76,7 @@ namespace Dovus.Game.Boss
                     stealthed,
                     dist,
                     angleDeg,
-                    PortalBorderTeamHooks.BossStrikeScale,
+                    PortalBorderTeamHost.Hub.BossStrikeScale,
                     Blind());
                 if (inVolume
                     && _d._player != null
@@ -217,7 +217,7 @@ namespace Dovus.Game.Boss
                             e.IsStealthed,
                             dist,
                             angleDeg,
-                            PortalBorderTeamHooks.BossStrikeScale,
+                            PortalBorderTeamHost.Hub.BossStrikeScale,
                             blind()))
                         continue;
 

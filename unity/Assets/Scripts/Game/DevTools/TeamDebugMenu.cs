@@ -65,8 +65,8 @@ namespace Dovus.Game.DevTools
             }
 
             GUILayout.Label(host.Line);
-            if (host.Border.Active(PortalBorderTeamHooks.PlayerActorId))
-                GUILayout.Label(host.Border.AuraLabel(PortalBorderTeamHooks.PlayerActorId));
+            if (host.Border.Active(host.Modifiers.PlayerActorId))
+                GUILayout.Label(host.Border.AuraLabel(host.Modifiers.PlayerActorId));
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Can %15"))
                 host.SetPlayerRatio(0.15f);
@@ -83,7 +83,7 @@ namespace Dovus.Game.DevTools
             for (int i = 0; i < actors.Length; i++)
             {
                 TeamActor actor = actors[i];
-                if (actor == null || actor.Id == PortalBorderTeamHooks.PlayerActorId)
+                if (actor == null || actor.Id == host.Modifiers.PlayerActorId)
                     continue;
                 GUILayout.Label(actor.name + "  son:" + actor.LastSkillId);
                 GUILayout.BeginHorizontal();

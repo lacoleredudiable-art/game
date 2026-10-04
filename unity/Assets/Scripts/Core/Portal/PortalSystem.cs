@@ -189,8 +189,8 @@ namespace Dovus.Core.Portal
         public float StrikeScale => BossNarrow ? BossStrikeScale : 1f;
         public bool HasAnchor => _anchor.Alive && _now < _anchor.Until;
 
-        public static bool IsPortalSkill(string skillId) =>
-            PortalOpTable.TryLegacy(skillId, out PortalOp op) && op != PortalOp.None;
+        public bool IsPortalSkill(string skillId) =>
+            PortalOpTable.Resolve(skillId, _ops) != PortalOp.None;
 
         public PortalSystem()
             : this(null)

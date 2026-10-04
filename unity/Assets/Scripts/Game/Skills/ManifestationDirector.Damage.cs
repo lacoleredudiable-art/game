@@ -79,7 +79,7 @@ namespace Dovus.Game.Skills
             if (_playerStatus != null)
                 outMult *= _playerStatus.Board.OutgoingDamageMult;
             outMult *= _slotPassives?.DamageMultFor(_slotQueryCastId) ?? 1f;
-            outMult *= PortalBorderTeamHooks.DamageMult;
+            outMult *= PortalBorderTeamHost.Hub.DamageMult;
             outMult *= SelfDamageBuffMult();
             outMult *= ConsumeOverflowBonus(isBasicStrike);
             outMult *= chainBonusOverride ?? _closingChainBonus;
@@ -151,7 +151,7 @@ namespace Dovus.Game.Skills
             {
                 _bossStatus.Armor.Passive = 0f;
                 armor = _bossStatus.Armor.Effective(now);
-                taken = _bossStatus.Board.IncomingDamageMult * PortalBorderTeamHooks.BossIncomingMult;
+                taken = _bossStatus.Board.IncomingDamageMult * PortalBorderTeamHost.Hub.BossIncomingMult;
                 shield = _bossStatus.Board.ShieldRemaining;
             }
             if (!skill.IsEmpty && JsonEffectRules.PiercesDefenses(MechanicPlanFor(skill)?.Body))

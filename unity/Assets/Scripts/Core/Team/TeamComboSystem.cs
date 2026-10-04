@@ -176,8 +176,8 @@ namespace Dovus.Core.Team
             return false;
         }
 
-        public static bool IsTeamSkill(string skillId) =>
-            TeamOpTable.TryLegacy(skillId, out TeamOp op) && op != TeamOp.None;
+        public bool IsTeamSkill(string skillId) =>
+            TeamOpTable.Resolve(skillId, _ops) != TeamOp.None;
 
         public TeamComboSystem()
             : this(null)

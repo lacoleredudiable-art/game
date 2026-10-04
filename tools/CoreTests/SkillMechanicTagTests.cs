@@ -50,12 +50,12 @@ public class SkillMechanicTagTests
     [Test]
     public void UnknownSkillId_ResolvesToNone()
     {
-        var portal = new Dictionary<string, PortalOp> { ["9-9"] = PortalOp.Swap };
-        var team = new Dictionary<string, TeamOp> { ["9-9"] = TeamOp.Mine };
-        Assert.That(PortalOpTable.Resolve("1-1", portal), Is.EqualTo(PortalOp.None));
-        Assert.That(TeamOpTable.Resolve("1-1", team), Is.EqualTo(TeamOp.None));
-        Assert.That(PortalSystem.IsPortalSkill("1-1"), Is.False);
-        Assert.That(TeamComboSystem.IsTeamSkill("1-1"), Is.False);
+        var portalOps = new Dictionary<string, PortalOp> { ["9-9"] = PortalOp.Swap };
+        var teamOps = new Dictionary<string, TeamOp> { ["9-9"] = TeamOp.Mine };
+        Assert.That(PortalOpTable.Resolve("1-1", portalOps), Is.EqualTo(PortalOp.None));
+        Assert.That(TeamOpTable.Resolve("1-1", teamOps), Is.EqualTo(TeamOp.None));
+        Assert.That(new PortalSystem().IsPortalSkill("1-1"), Is.False);
+        Assert.That(new TeamComboSystem().IsTeamSkill("1-1"), Is.False);
     }
 
     [Test]

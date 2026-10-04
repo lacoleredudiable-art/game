@@ -93,7 +93,7 @@ namespace Dovus.Game.Boss
         public event System.Action<BossAttackKind> AttackStruck;
 
         public float AttackRadiusM =>
-            (_attack?.RadiusM ?? 0f) * PortalBorderTeamHooks.BossStrikeScale;
+            (_attack?.RadiusM ?? 0f) * PortalBorderTeamHost.Hub.BossStrikeScale;
         public float AttackArcHalfAngleDeg => _attack?.ArcHalfAngleDeg ?? 180f;
         public Vector3 AttackOrigin => _reactor != null ? _reactor.Home : transform.position;
 
