@@ -5,13 +5,13 @@ using Dovus.Game.Vfx;
 namespace Dovus.Game.Actors
 {
     /// <summary>
-    /// YÃ¼rÃ¼me/koÅŸu adÄ±mÄ±: yatay yol <see cref="StrideM"/>'yi her geÃ§tiÄŸinde ayak tozu + ses.
-    /// Mixamo kliplerinde animasyon olayÄ± yok; mesafe tabanlÄ± adÄ±m kaymaz ve hÄ±za orantÄ±lÄ±dÄ±r.
-    /// Dodge kaymasÄ± ve Ä±ÅŸÄ±nlanma sayÄ±lmaz.
+    /// Yürüme/koşu adımı: yatay yol <see cref="StrideM"/>'yi her geçtiğinde ayak tozu + ses.
+    /// Mixamo kliplerinde animasyon olayı yok; mesafe tabanlı adım kaymaz ve hıza orantılıdır.
+    /// Dodge kayması ve ışınlanma sayılmaz.
     /// </summary>
     public sealed class FootstepEmitter : MonoBehaviour
     {
-        /// <summary>Tek karede bundan uzun yol Ä±ÅŸÄ±nlanma/respawn sayÄ±lÄ±r.</summary>
+        /// <summary>Tek karede bundan uzun yol ışınlanma/respawn sayılır.</summary>
         const float TeleportM = 2.5f;
 
         public float StrideM = FootstepEmitterDefaults.StrideM;
