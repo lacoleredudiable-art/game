@@ -28,6 +28,7 @@ Durum etiketleri: [ ] bekliyor · [~] sürüyor · [x] bitti
 
 ## Aşama 2B — Kalan mimari (kuzenin 32 maddesinin tamamı) [Aşama 3'ten sonra]
 - [x] 2B.1 Ölü kod taraması + silme (A17, C8); ActorModifiers.MissChance, kullanılmayan dodge kancası
+  - [x] 2B.1b docs temizliği: ilk prototip artıkları silindi (`docs/concept/`, `docs/archive/`, eski play-sweep sonuçları); `durum.md`/`unity-notlari.md` bağlantı ve adları güncellendi
 - [x] 2B.2 ManifestationDirector'ı tamamen böl (A1, A9): kalan skill akışı, VFX, HUD, takım → App/Game servisleri; dosya ≤500 satır
 - [x] 2B.3 HexagonInput böl (A2): girdi / skill tetik / UI ayrı
 - [x] 2B.4 BossDirector kalan Unity mantığı → App (A3)

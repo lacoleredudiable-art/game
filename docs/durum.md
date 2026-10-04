@@ -1,6 +1,6 @@
 # Durum — açık bilinen sorunlar
 
-> Yalnız **şu an açık** sorunlar. Ekleme yapma; kapattığın satırı PR'ında sil. Geçmiş: `docs/archive/durum-2026-09-30.md` + PR açıklamaları.
+> Yalnız **şu an açık** sorunlar. Ekleme yapma; kapattığın satırı PR'ında sil. Geçmiş: git geçmişi (eski arşiv 2B.1b'de silindi) + PR açıklamaları.
 > Etiket: **[d]** eefa1b1'de koddan doğrulandı · **[t]** eski durum.md'den taşındı, yeniden doğrulanmadı.
 
 ## Altyapı
@@ -19,7 +19,7 @@
 - [t] Sınır modu 1-2: can %15'te açılıp aynı skill'in can çalmasıyla aynı karede kapanıyor.
 - [t] Yoğunlaştırma pasifi (`hitbox_scale_mult` 0,55) hedef menzilini de daraltıyor: tasarım mı hata mı?
 - [t] 1-11 yankı: kalıp sırasında çubuk oyuncuyu yürütmez; kalıp içinde yürüme istenirse ayrı karar.
-- [t] Element renkleri: `PrototypeTuning` ile `prezentasyon-katmani.json` `element_colors` uyuşmuyor, otorite açık.
+- [t] Element renkleri: `GameTuning` ile `prezentasyon-katmani.json` `element_colors` uyuşmuyor, otorite açık.
 - [t] `read_as_display.duration_ms` 1500 ≠ `FeelTuning.ReadoutHoldMs` 900.
 - [t] Görsel boy dolgulu bounds'tan ölçülüyor (şövalye 1,60 m / hedef 1,78).
 
