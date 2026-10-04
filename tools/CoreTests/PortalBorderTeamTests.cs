@@ -167,7 +167,7 @@ public class PortalBorderTeamTests
     [Test]
     public void Skill_3_10_TwoDoorsPassAlliesAndShots()
     {
-        Assert.That(TeamComboSystem.IsTeamSkill("3-10"), Is.True);
+        Assert.That(new TeamComboSystem().IsTeamSkill("3-10"), Is.True);
         var portal = new PortalSystem();
         var boss = Boss(0f, 3f);
         portal.Cast("3-10", Actor(1, 0f, 0f, owns: true), default, null, boss);
@@ -342,7 +342,7 @@ public class PortalBorderTeamTests
     [Test]
     public void Skill_10_10_ShotsExitBehindBoss()
     {
-        Assert.That(TeamComboSystem.IsTeamSkill("10-10"), Is.True);
+        Assert.That(new TeamComboSystem().IsTeamSkill("10-10"), Is.True);
         var portal = new PortalSystem();
         var boss = Boss(0f, 5f);
         portal.Cast("10-10", Actor(1, 0f, 0f), default, null, boss);
