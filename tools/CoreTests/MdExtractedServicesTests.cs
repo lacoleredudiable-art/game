@@ -22,7 +22,8 @@ public sealed class MdExtractedServicesTests
     public void MotionTemplateDriver_owns_catalog_load()
     {
         string src = Read("unity/Assets/Scripts/Game/Skills/Motion/MotionTemplateDriver.cs");
-        Assert.That(src, Does.Contain("motion-templates"));
+        string repo = Read("unity/Assets/Scripts/Game/Skills/Motion/MotionTemplateDriver.Repository.cs");
+        Assert.That(src + repo, Does.Contain("motion-templates"));
     }
 
     [Test]

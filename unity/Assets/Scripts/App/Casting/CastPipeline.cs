@@ -16,10 +16,6 @@ namespace Dovus.App.Casting
 {
     public sealed class CastPipeline
     {
-        public event Action<CastStarted> Started;
-        public event Action<CastOutcome> Completed;
-        public event Action<BasicOutcome> BasicCompleted;
-
         public event Action<CastDenialRequested> DenialRequested;
         public event Action<CastCompatibilityPublished> CompatibilityPublished;
         public event Action<CastSkillShoutRequested> SkillShoutRequested;
@@ -35,18 +31,14 @@ namespace Dovus.App.Casting
                 port.ApplyClosingStatuses(ctx, basicSkill);
                 SkillShoutRequested?.Invoke(new CastSkillShoutRequested(basicSkill, ctx));
                 port.ApplyClosingHeal(ctx, basicSkill);
-                var healed = new BasicOutcome(true, false, false, 0f, 0);
-                BasicCompleted?.Invoke(healed);
-                return healed;
+                return new BasicOutcome(true, false, false, 0f, 0);
             }
 
             double basicNow = port.WorldTimeMs();
             if (!port.BasicCadenceReady(basicNow))
             {
                 DenialRequested?.Invoke(new CastDenialRequested(CastDenialReason.BasicCadenceNotReady));
-                var deniedCadence = new BasicOutcome(false, true, false, 0f, 0);
-                BasicCompleted?.Invoke(deniedCadence);
-                return deniedCadence;
+                return new BasicOutcome(false, true, false, 0f, 0);
             }
 
             port.SetLastBasicStrikeMs(basicNow);
@@ -75,9 +67,7 @@ namespace Dovus.App.Casting
             if (port.HasLivingLogic(ctx))
                 port.TryCannonBlast(ctx);
 
-            var outcome = new BasicOutcome(false, false, connected, basicDealt, basicHits);
-            BasicCompleted?.Invoke(outcome);
-            return outcome;
+            return new BasicOutcome(false, false, connected, basicDealt, basicHits);
         }
 
         public CastOutcome RunSkill<TCtx>(TCtx ctx, ICastPort<TCtx> port)
@@ -87,9 +77,7 @@ namespace Dovus.App.Casting
             if (skill.IsEmpty || !skill.IsComplete)
             {
                 DenialRequested?.Invoke(new CastDenialRequested(CastDenialReason.NeedsTwoRunes));
-                var denied = new CastOutcome((SkillId)skill.Identity.Id, false, false, 0f, false, denied: true);
-                Completed?.Invoke(denied);
-                return denied;
+                return new CastOutcome((SkillId)skill.Identity.Id, false, false, 0f, false, denied: true);
             }
 
             port.NoteWeaponCast(skill);
@@ -108,7 +96,6 @@ namespace Dovus.App.Casting
                 port.NoteSustainedCast(skill);
                 var resolvedId = (SkillId)skill.Identity.Id;
                 port.NotifyCast(resolvedId);
-                Started?.Invoke(new CastStarted(resolvedId));
 
                 SkillExecutorRoute executorRoute = port.Route(skill);
                 executorRoute = port.ApplyMechanicWorldRoute(skill, executorRoute);
@@ -149,10 +136,8 @@ namespace Dovus.App.Casting
 
                 port.TrySchedulePassiveEcho(ctx, skill, in motionPlan);
 
-                var outcome = new CastOutcome(
+                return new CastOutcome(
                     resolvedId, executorStarted, templateOwnsDelivery, dealt, effectApplied, denied: false);
-                Completed?.Invoke(outcome);
-                return outcome;
             }
             finally
             {

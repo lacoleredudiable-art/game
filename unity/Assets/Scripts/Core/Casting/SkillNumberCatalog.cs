@@ -86,40 +86,7 @@ namespace Dovus.Core.Casting
         public float RangeM(int verbId) =>
             _verbs.TryGetValue(verbId, out VerbNumbers n) ? n.RangeM : SkillNumberFallbacks.RangeM;
 
-        /// <summary>
-        /// Düz vuruş menzili ve kapsül yarıçapı = fiil 1 hitbox'ı (hitbox_vfx). Alan yoksa tuning yedeği kalır
-        /// ve katalog zaten bir kez uyarmıştır.
-        /// </summary>
-        public void ApplyBasicStrikeRange(ManifestationTuning tuning)
-        {
-            if (tuning == null)
-                return;
-            tuning.BasicStrikeRangeM = RangeM(1);
-            tuning.BasicStrikeRadiusM = RadiusM(1);
-        }
-
-        /// <summary>
-        /// CC sürelerini JSON cc_priority'den canlı ayara yazar.
-        /// Alan yoksa StatusTuning'deki adlı yedek kalır.
-        /// </summary>
-        public void ApplyCcDurations(StatusTuning tuning)
-        {
-            if (tuning == null)
-                return;
-            void Set(StatusKind kind, Action<int> write)
-            {
-                if (_ccMs.TryGetValue(kind, out int ms) && ms > 0)
-                    write(ms);
-            }
-
-            Set(StatusKind.Stun, v => tuning.StunMs = v);
-            Set(StatusKind.Root, v => tuning.RootMs = v);
-            Set(StatusKind.Silence, v => tuning.SilenceMs = v);
-            Set(StatusKind.Slow, v => tuning.SlowMs = v);
-            Set(StatusKind.Blind, v => tuning.BlindMs = v);
-            Set(StatusKind.Disarm, v => tuning.DisarmMs = v);
-            Set(StatusKind.Taunt, v => tuning.TauntMs = v);
-        }
+        internal bool TryGetCcDurationMs(StatusKind kind, out int ms) => _ccMs.TryGetValue(kind, out ms);
 
         readonly struct VerbNumbers
         {

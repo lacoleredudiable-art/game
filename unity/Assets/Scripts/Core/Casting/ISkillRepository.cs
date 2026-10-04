@@ -1,6 +1,3 @@
-using Dovus.Core.Status;
-using Dovus.Core.Tuning;
-
 namespace Dovus.Core.Casting
 {
     /// <summary>element-sistemi.json skill sayıları deposu (fiil tabanı, global kurallar).</summary>
@@ -26,7 +23,5 @@ namespace Dovus.Core.Casting
 
         float RadiusM(int verbId);
         float RangeM(int verbId);
-        void ApplyBasicStrikeRange(ManifestationTuning tuning);
-        void ApplyCcDurations(StatusTuning tuning);
     }
 }

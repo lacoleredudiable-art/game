@@ -1,26 +1,20 @@
 using Dovus.App.Casting;
 using Dovus.Core.Casting;
+using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
+using Dovus.Game.Skills.Presentation;
+using System.Collections.Generic;
 
 namespace Dovus.Game.Skills
 {
-    public sealed partial class ManifestationDirector
+    public sealed partial class ManifestationDirector : ICastPresentationFeedback
     {
-        bool _castPresentationWired;
-
-        public void WireCastPresentationFeedback()
+        public void BindCastPresentation(CastPresentationListener listener)
         {
-            if (_castPresentationWired)
-                return;
-            _castPresentationWired = true;
-
-            _castPipeline.DenialRequested += OnCastDenialRequested;
-            _castPipeline.CompatibilityPublished += OnCastCompatibilityPublished;
-            _castPipeline.SkillShoutRequested += OnSkillShoutRequested;
-            _castPipeline.MotionAnnotationRequested += OnMotionAnnotationRequested;
+            listener.Bind(_castPipeline, this);
         }
 
-        void OnCastDenialRequested(CastDenialRequested e)
+        public void OnCastDenial(CastDenialRequested e)
         {
             switch (e.Reason)
             {
@@ -33,25 +27,26 @@ namespace Dovus.Game.Skills
             }
         }
 
-        void OnCastCompatibilityPublished(CastCompatibilityPublished e)
-        {
-            LastWeaponCompatible = e.Compatibility.Compatible;
-            LastWeaponPassiveEnabled = e.Compatibility.PassiveEnabled;
-            LastWeaponUiLabel = e.Compatibility.UiLabel;
-        }
+        public void OnCastCompatibility(WeaponSkillCompatibility compatibility) =>
+            PublishWeaponCompatibility(compatibility);
 
-        void OnSkillShoutRequested(CastSkillShoutRequested e)
-        {
-            if (e.Context is not PendingClosing pending)
-                return;
-            EnsureLaunchServices();
-            _skillPresentation.ShoutSkill(e.Skill, pending.Words);
-        }
-
-        void OnMotionAnnotationRequested(CastMotionAnnotationRequested e)
+        public void OnSkillShout(SkillResolution skill, IReadOnlyList<SentenceWord> words)
         {
             EnsureLaunchServices();
-            _castSideEffects.AnnotateMotion(e.Skill, e.Plan);
+            _skillPresentation.ShoutSkill(skill, words);
+        }
+
+        public void OnMotionAnnotation(SkillResolution skill, in SkillMotionPlan plan)
+        {
+            EnsureLaunchServices();
+            _castSideEffects.AnnotateMotion(skill, plan);
+        }
+
+        void PublishWeaponCompatibility(WeaponSkillCompatibility compatibility)
+        {
+            LastWeaponCompatible = compatibility.Compatible;
+            LastWeaponPassiveEnabled = compatibility.PassiveEnabled;
+            LastWeaponUiLabel = compatibility.UiLabel;
         }
     }
 }

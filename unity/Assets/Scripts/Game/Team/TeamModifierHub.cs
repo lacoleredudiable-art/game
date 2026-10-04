@@ -1,5 +1,7 @@
 using System;
+using Dovus.App.Actors;
 using Dovus.App.Team;
+using Dovus.Core.Actors;
 using Dovus.Core.Shared;
 
 namespace Dovus.Game.Team
@@ -15,6 +17,15 @@ namespace Dovus.Game.Team
         public TeamModifierTable Table { get; } = new();
 
         public int PlayerActorId { get; set; } = 1;
+
+        /// <summary>Oyuncu kimliğini kayıt defterinden çöz (sayısal değer ActorDefaults ile aynı kalır).</summary>
+        public void BindActorRegistry(ActorRegistry registry)
+        {
+            if (registry == null)
+                return;
+            if (registry.Get(ActorDefaults.PlayerId) is PlayerActor)
+                PlayerActorId = ActorTargetKey.FromActorId(ActorDefaults.PlayerId);
+        }
 
         public float AttackSpeedMult
         {

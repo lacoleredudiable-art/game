@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Dovus.Core.Actors;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
@@ -138,7 +139,7 @@ namespace Dovus.Game.Skills.Closing
             float mult = _host.SlotPassives.BounceDamageMultFor(castId);
             if (count <= 0 || mult <= 0f)
                 return;
-            int sourceId = _host.Boss != null ? _host.Boss.GetInstanceID() : 0;
+            int sourceId = ResolveBossTargetKey();
             var candidates = new List<PassiveBounceCandidate>();
             Vector3 from = _host.Boss != null ? _host.Boss.transform.position : (_host.Player != null ? _host.Player.position : Vector3.zero);
             IReadOnlyList<TargetableHost> bodies = _host.LiveTargetables;
@@ -150,7 +151,7 @@ namespace Dovus.Game.Skills.Closing
                 if (_host.Boss != null && (body.transform == _host.Boss.transform || body.transform.IsChildOf(_host.Boss.transform)))
                     continue;
                 candidates.Add(new PassiveBounceCandidate(
-                    body.GetInstanceID(),
+                    body.TargetKey,
                     body.DistanceFrom(from)));
             }
 
@@ -163,13 +164,22 @@ namespace Dovus.Game.Skills.Closing
         {
             if (hit.Damage <= 0f || _host.BossVitals == null || _host.BossVitals.IsDown)
                 return;
-            bool bossHit = _host.Boss == null
-                || hit.TargetId == 0
-                || hit.TargetId == _host.Boss.GetInstanceID();
+            int bossKey = ResolveBossTargetKey();
+            bool bossHit = _host.Boss == null || hit.TargetId == 0 || hit.TargetId == bossKey;
             if (!bossHit)
                 return;
             _host.BossVitals.ApplyDamage(hit.Damage);
             _host.DamageHud?.ShowDamage(hit.Damage, false, _host.BossHitPoint(), _host.DamageTint(), victimIsBoss: true);
+        }
+
+        int ResolveBossTargetKey()
+        {
+            if (_host.Boss == null)
+                return 0;
+            TargetableHost targetable = _host.Boss.GetComponent<TargetableHost>();
+            return targetable != null
+                ? targetable.TargetKey
+                : ActorTargetKey.FromActorId(ActorDefaults.BossId);
         }
 
         void StartSlotFlow(float dealt)
