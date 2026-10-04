@@ -120,7 +120,7 @@ namespace Dovus.Game.Team
         {
             if (!Bind())
                 return;
-            float dt = _clock != null ? (float)(_clock.WorldDeltaMs / Units.SecToMs) : Time.deltaTime;
+            float dt = GameClockFallback.DeltaSec(_clock, "clock.TeamComboHost");
             if (dt < 0f)
                 dt = 0f;
             RefreshActors();
