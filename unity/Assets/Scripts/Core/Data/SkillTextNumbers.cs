@@ -155,5 +155,49 @@ namespace Dovus.Core.Data
             string normalized = raw.Replace(',', '.');
             return double.TryParse(normalized, NumberStyles.Float, CultureInfo.InvariantCulture, out value);
         }
+
+        /// <summary>Pasif slot metni: süre sıfat rününün passive_duration_default değerinden gelir.</summary>
+        public static string PassiveText(string adjectiveName, double durationSec)
+        {
+            if (string.IsNullOrEmpty(adjectiveName))
+                adjectiveName = string.Empty;
+            return FormatDurationSeconds(durationSec) + " sn pasif: " + adjectiveName;
+        }
+
+        public static string FormatIncompatibleSkillDetail(string prose, float castTimeMult, float damageMult)
+        {
+            string line = "Uyumsuz: cast ×" + FormatMultiplier(castTimeMult)
+                + ", hasar %" + FormatDamagePercent(damageMult);
+            if (string.IsNullOrEmpty(prose))
+                return line;
+            return line + "  ·  " + prose;
+        }
+
+        public static string FormatIncompatibleCompatibilityLabel(float damageMult)
+        {
+            return "UYUMSUZ  ×" + FormatMultiplier(damageMult);
+        }
+
+        public static string FormatDurationSeconds(double durationSec)
+        {
+            if (Math.Abs(durationSec - Math.Round(durationSec)) < 1e-9)
+                return ((int)Math.Round(durationSec)).ToString(CultureInfo.InvariantCulture);
+            return durationSec.ToString("0.#", CultureInfo.InvariantCulture);
+        }
+
+        static string FormatMultiplier(float mult)
+        {
+            if (mult <= 0f)
+                mult = 1f;
+            return mult.ToString("0.#", CultureInfo.InvariantCulture);
+        }
+
+        static string FormatDamagePercent(float damageMult)
+        {
+            if (damageMult <= 0f)
+                damageMult = 1f;
+            int pct = (int)Math.Round(damageMult * 100.0, MidpointRounding.AwayFromZero);
+            return pct.ToString(CultureInfo.InvariantCulture);
+        }
     }
 }
