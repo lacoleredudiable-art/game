@@ -18,7 +18,7 @@ namespace Dovus.Game.Casting.Input
 
         public bool TryAllowSentenceStart(int verbDot)
         {
-            if (_s.Engine == null)
+            if (_s.Engine == null || _s.Combat == null)
                 return true;
 
             var state = _s.Engine.State;
@@ -55,8 +55,8 @@ namespace Dovus.Game.Casting.Input
 
         public bool WouldStartSentence()
         {
-            if (_s.Engine == null)
-                return false;
+            if (_s.Engine == null || _s.Combat == null)
+                return _s.Engine != null && CastGateRules.WouldStartSentence(_s.Engine.State.Phase, 0, int.MaxValue);
             var state = _s.Engine.State;
             return CastGateRules.WouldStartSentence(
                 state.Phase, state.Words.Count, _s.Combat.Sentence.MaxSentenceDots);
@@ -75,7 +75,7 @@ namespace Dovus.Game.Casting.Input
 
         public bool TryAllowComboCooldownForNextDot(int nextDot)
         {
-            if (_s.Engine == null)
+            if (_s.Engine == null || _s.Combat == null || !_s.Combat.EnforceCooldown || _s.Cooldown == null)
                 return true;
 
             EnsureSkills();

@@ -234,7 +234,7 @@ namespace Dovus.Game.Casting
             }
 
             EnhancedTouchSupport.Disable();
-            _pointer?.CancelAllPointers();
+            _pointer?.CancelOnDisable();
         }
 
         void OnDestroy()

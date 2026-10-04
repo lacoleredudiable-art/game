@@ -135,6 +135,14 @@ namespace Dovus.Game.Casting.Input
             EndPointer(cancelled);
         }
 
+        /// <summary>OnDisable: eski davranış — fare basılı bayrağı korunur, yalnız parmaklar ve çizim kesilir.</summary>
+        public void CancelOnDisable()
+        {
+            _s.FingerId = null;
+            _s.DodgeFingerId = null;
+            EndPointer(cancelled: true);
+        }
+
         public void CancelAllPointers()
         {
             _s.FingerId = null;
