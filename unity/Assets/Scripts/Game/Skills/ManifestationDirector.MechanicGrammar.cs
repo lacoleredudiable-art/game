@@ -168,7 +168,7 @@ namespace Dovus.Game.Skills
                 return;
             double sec = e.DurationSec > 0
                 ? e.DurationSec
-                : (_combat != null ? _combat.Boss.ReverseFallbackSec : ManifestationDirectorDefaults.ReverseFallbackSec);
+                : (_combat != null ? _combat.Boss.ReverseFallbackSec : SkillsManifestationDefaults.ReverseFallbackSec);
             _bossDirector.ApplyReverse(_clock.Director.WorldTimeMs + sec * SkillsTimeDefaults.SecToMs);
             applied.Add("ters kontrol");
         }
@@ -216,7 +216,7 @@ namespace Dovus.Game.Skills
                             bool daze = e.Has("havada") || e.Has("sersem");
                             bool hammer = e.Has("sersem")
                                 && EquippedProfile != null
-                                && EquippedProfile.Passive.Kind == WeaponPassiveKind.YereCakma;
+                                && EquippedProfile.Passive.Kind == WeaponPassiveKind.GroundSlam;
                             double now = _clock != null ? _clock.Director.WorldTimeMs : 0;
                             bool ready = !hammer || HammerStunReady(now);
                             if (hammer && !ready)

@@ -10,16 +10,16 @@ public class WeaponPassiveKindTests
     [Test]
     public void Parse_KnownIds()
     {
-        Assert.That(WeaponPassiveKinds.Parse("sirt_vurusu"), Is.EqualTo(WeaponPassiveKind.SirtVurusu));
-        Assert.That(WeaponPassiveKinds.Parse("genis_yay"), Is.EqualTo(WeaponPassiveKind.GenisYay));
-        Assert.That(WeaponPassiveKinds.Parse("yere_cakma"), Is.EqualTo(WeaponPassiveKind.YereCakma));
-        Assert.That(WeaponPassiveKinds.Parse("karsi_saldiri"), Is.EqualTo(WeaponPassiveKind.KarsiSaldiri));
-        Assert.That(WeaponPassiveKinds.Parse("kosu_atisi"), Is.EqualTo(WeaponPassiveKind.KosuAtisi));
-        Assert.That(WeaponPassiveKinds.Parse("sabit_nisan"), Is.EqualTo(WeaponPassiveKind.SabitNisan));
-        Assert.That(WeaponPassiveKinds.Parse("uzun_buyu"), Is.EqualTo(WeaponPassiveKind.UzunBuyu));
-        Assert.That(WeaponPassiveKinds.Parse("kutsal_etki"), Is.EqualTo(WeaponPassiveKind.KutsalEtki));
-        Assert.That(WeaponPassiveKinds.Parse("dolu_sayfa"), Is.EqualTo(WeaponPassiveKind.DoluSayfa));
-        Assert.That(WeaponPassiveKinds.Parse("capraz_ates"), Is.EqualTo(WeaponPassiveKind.CaprazAtes));
+        Assert.That(WeaponPassiveKinds.Parse("sirt_vurusu"), Is.EqualTo(WeaponPassiveKind.Backstab));
+        Assert.That(WeaponPassiveKinds.Parse("genis_yay"), Is.EqualTo(WeaponPassiveKind.WideArc));
+        Assert.That(WeaponPassiveKinds.Parse("yere_cakma"), Is.EqualTo(WeaponPassiveKind.GroundSlam));
+        Assert.That(WeaponPassiveKinds.Parse("karsi_saldiri"), Is.EqualTo(WeaponPassiveKind.CounterStrike));
+        Assert.That(WeaponPassiveKinds.Parse("kosu_atisi"), Is.EqualTo(WeaponPassiveKind.RunShot));
+        Assert.That(WeaponPassiveKinds.Parse("sabit_nisan"), Is.EqualTo(WeaponPassiveKind.SteadyAim));
+        Assert.That(WeaponPassiveKinds.Parse("uzun_buyu"), Is.EqualTo(WeaponPassiveKind.LongEnchant));
+        Assert.That(WeaponPassiveKinds.Parse("kutsal_etki"), Is.EqualTo(WeaponPassiveKind.HolyEffect));
+        Assert.That(WeaponPassiveKinds.Parse("dolu_sayfa"), Is.EqualTo(WeaponPassiveKind.FullPage));
+        Assert.That(WeaponPassiveKinds.Parse("capraz_ates"), Is.EqualTo(WeaponPassiveKind.CrossFire));
     }
 
     [Test]

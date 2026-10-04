@@ -6,7 +6,7 @@ namespace Dovus.Core.Shared
     /// </summary>
     public enum SlamVariant
     {
-        Yakin = 0,
+        Near = 0,
         Gec = 1,
         Genis = 2
     }

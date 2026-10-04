@@ -108,7 +108,7 @@ public class BossBrainTests
             RecoveryMs = recoveryMs
         };
         var a = new BossAttack(tuning);
-        a.ApplyVariant(SlamVariant.Yakin);
+        a.ApplyVariant(SlamVariant.Near);
         return a;
     }
 

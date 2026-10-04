@@ -289,7 +289,7 @@ public class CombatCorrectnessTests
     [Test]
     public void S6_ShieldAbsorbedHit_DoesNotAbortSentence()
     {
-        string boss = Game("Boss/BossStrikeApplier.cs");
+        string boss = Game("Boss/BossDirector.StrikeApplier.cs");
         int apply = boss.IndexOf("_playerStatus.ApplyDamage(raw);");
         int abort = boss.IndexOf("_engine?.Abort();", apply);
         Assert.That(apply, Is.GreaterThan(0));

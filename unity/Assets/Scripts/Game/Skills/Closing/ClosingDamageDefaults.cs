@@ -41,10 +41,10 @@ namespace Dovus.Game.Skills.Closing
         public const float SpecialLiftM = 0.2f;
         public const float SpecialShakeMult = 1.1f;
 
-        public const float HavaPinSec = 0.55f;
+        public const float AirPinSec = 0.55f;
 
-        public const float ToprakKnockMult = 0.2f;
-        public const float ToprakShakeMult = 0.7f;
+        public const float EarthKnockMult = 0.2f;
+        public const float EarthShakeMult = 0.7f;
 
         public const float PlanarEpsilonSqr = 0.0001f;
     }

@@ -38,7 +38,7 @@ public class SlamVariantTests
         var tuning = new BossTuning();
         var attack = new BossAttack(tuning);
 
-        attack.ApplyVariant(SlamVariant.Yakin);
+        attack.ApplyVariant(SlamVariant.Near);
         Assert.That(attack.WindupMs, Is.EqualTo(640));
         Assert.That(attack.RadiusM, Is.EqualTo(5.4f));
         Assert.That(attack.ActiveMs, Is.EqualTo(90));
@@ -66,7 +66,7 @@ public class SlamVariantTests
         const float temizDistM = 5.47f;
         const float siyirdiDistM = 5.9f;
 
-        attack.ApplyVariant(SlamVariant.Yakin);
+        attack.ApplyVariant(SlamVariant.Near);
         Assert.That(attack.IsInEffectVolume(temizDistM, 0f), Is.False, "YAKIN: TEMİZ mesafesi menzil dışı");
         Assert.That(attack.IsInEffectVolume(siyirdiDistM, 0f), Is.False, "YAKIN: SIYIRDI mesafesi menzil dışı");
 
@@ -140,7 +140,7 @@ public class SlamVariantTests
         int streak = 0;
         var counts = new Dictionary<SlamVariant, int>
         {
-            [SlamVariant.Yakin] = 0,
+            [SlamVariant.Near] = 0,
             [SlamVariant.Gec] = 0,
             [SlamVariant.Genis] = 0
         };
@@ -161,7 +161,7 @@ public class SlamVariantTests
         }
 
         Assert.That(tripleRepeats, Is.EqualTo(0));
-        Assert.That(counts[SlamVariant.Yakin], Is.GreaterThan(0));
+        Assert.That(counts[SlamVariant.Near], Is.GreaterThan(0));
         Assert.That(counts[SlamVariant.Gec], Is.GreaterThan(0));
         Assert.That(counts[SlamVariant.Genis], Is.GreaterThan(0));
     }
@@ -171,8 +171,8 @@ public class SlamVariantTests
     {
         // Deterministik: tek adaylı aralıkta hep aynı seçim.
         var forced = new ForcedRandom(0);
-        SlamVariant picked = SlamVariantPicker.Pick(SlamVariant.Yakin, currentStreak: 2, maxSameStreak: 2, forced);
-        Assert.That(picked, Is.Not.EqualTo(SlamVariant.Yakin));
+        SlamVariant picked = SlamVariantPicker.Pick(SlamVariant.Near, currentStreak: 2, maxSameStreak: 2, forced);
+        Assert.That(picked, Is.Not.EqualTo(SlamVariant.Near));
     }
 
     /// <summary>Next(n) her zaman 0 döner — aday listesinin ilk elemanını zorlar.</summary>

@@ -1,9 +1,10 @@
 using Dovus.Game.Config;
+using Dovus.Game.DevTools;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Dovus.Game.DevTools
+namespace Dovus.Game.Hud
 {
     /// <summary>
     /// T11: kare süresi göstergesi. Ölçüm turunun tek sayısal aracı — his değil bütçe okunur.
@@ -13,7 +14,7 @@ namespace Dovus.Game.DevTools
     {
         GameTuning _tuning;
         Text _text;
-        readonly StringBuilder _sb = new StringBuilder(64);
+        readonly StringBuilder _sb = new StringBuilder(HudDefaults.FrameTimeHudStringCapacity);
 
         float _windowSec;
         int _windowFrames;
@@ -112,7 +113,7 @@ namespace Dovus.Game.DevTools
             if (ms > _windowWorstMs)
                 _windowWorstMs = ms;
 
-            float sample = Mathf.Max(0.05f, _tuning.Hud.FrameTimeSampleSec);
+            float sample = Mathf.Max(HudDefaults.RecoveryCutHoldFillThreshold, _tuning.Hud.FrameTimeSampleSec);
             if (_windowSec < sample || _windowFrames == 0)
                 return;
 

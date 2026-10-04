@@ -72,7 +72,7 @@ namespace Dovus.Game.Skills
 
             NoteShieldBlockIfGuarding();
             bool crit = _playerStatus != null && _playerStatus.LastHitWasCrit;
-            Vector3 at = _player != null ? _player.position + Vector3.up * ManifestationDirectorDefaults.VerbAimHeightAbovePlayerM : Vector3.zero;
+            Vector3 at = _player != null ? _player.position + Vector3.up * SkillsManifestationDefaults.VerbAimHeightAbovePlayerM : Vector3.zero;
             _damageHud?.ShowDamage(incomingDamage, crit, at, victimIsPlayer: true);
             ReflectFromWorldVolumes(incomingDamage);
             if (_mobilityCc == null || PendingList.Count == 0)
@@ -149,7 +149,7 @@ namespace Dovus.Game.Skills
             if (absorb != null && absorb.Amount > 0)
             {
                 _emHealRatio = (float)absorb.Amount;
-                _emHealUntilMs = now + Mathf.Max(ManifestationDirectorDefaults.EmHealMinWindowSec, reflectSec + lifetimeAdd) * SkillsTimeDefaults.SecToMs;
+                _emHealUntilMs = now + Mathf.Max(SkillsManifestationDefaults.EmHealMinWindowSec, reflectSec + lifetimeAdd) * SkillsTimeDefaults.SecToMs;
             }
             ApplyJsonSelfCast(mechanicPlan, reflect, reflectSec + lifetimeAdd, now);
         }

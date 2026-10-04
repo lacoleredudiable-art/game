@@ -278,7 +278,7 @@ namespace Dovus.Game.Skills.Mechanics
                 alpha: _host.Combat != null ? _host.Combat.Manifestation.ExecutorFieldDiskAlpha : MechanicWorldDefaults.ExecutorFieldAlphaFallback);
             if (view != null)
                 view.name = "MechanicGuardTrigger";
-            bool talisman = _host.EquippedProfile != null && _host.EquippedProfile.Passive.Kind == WeaponPassiveKind.KutsalEtki;
+            bool talisman = _host.EquippedProfile != null && _host.EquippedProfile.Passive.Kind == WeaponPassiveKind.HolyEffect;
             _guardTriggers.Add(new GuardTrigger
             {
                 Id = ++_nextGuardId,

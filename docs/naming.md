@@ -1,3 +1,11 @@
+# İsimlendirme (PLAN 2B.12–2B.13)
+
+## Tek dil (A24, PLAN 2B.13)
+
+- **Kod tanımlayıcıları** (tip, metot, alan, yerel değişken, const): **İngilizce**.
+- **Yorumlar** Türkçe olabilir.
+- **Veri sözcükleri** (JSON anahtarları, fiil/sıfat kimlikleri, `bag_hatti`, `iki_kez` gibi): yalnızca string sabitlerinde; mümkünse konu başına `static class <Konu>Keys` ile toplanır (değerler değişmez). Bilinçli Türkçe serileştirilmiş alanlar `docs/glossary.md` ve `[FormerlySerializedAs]` ile korunur.
+
 # İsimlendirme (PLAN 2B.12)
 
 ## MonoBehaviour sonekleri (Game sahne bileşeni)

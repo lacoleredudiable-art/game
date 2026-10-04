@@ -8,16 +8,16 @@ namespace Dovus.Core.Equipment
                 return WeaponPassiveKind.None;
             return id switch
             {
-                "sirt_vurusu" => WeaponPassiveKind.SirtVurusu,
-                "genis_yay" => WeaponPassiveKind.GenisYay,
-                "yere_cakma" => WeaponPassiveKind.YereCakma,
-                "karsi_saldiri" => WeaponPassiveKind.KarsiSaldiri,
-                "kosu_atisi" => WeaponPassiveKind.KosuAtisi,
-                "sabit_nisan" => WeaponPassiveKind.SabitNisan,
-                "uzun_buyu" => WeaponPassiveKind.UzunBuyu,
-                "kutsal_etki" => WeaponPassiveKind.KutsalEtki,
-                "dolu_sayfa" => WeaponPassiveKind.DoluSayfa,
-                "capraz_ates" => WeaponPassiveKind.CaprazAtes,
+                "sirt_vurusu" => WeaponPassiveKind.Backstab,
+                "genis_yay" => WeaponPassiveKind.WideArc,
+                "yere_cakma" => WeaponPassiveKind.GroundSlam,
+                "karsi_saldiri" => WeaponPassiveKind.CounterStrike,
+                "kosu_atisi" => WeaponPassiveKind.RunShot,
+                "sabit_nisan" => WeaponPassiveKind.SteadyAim,
+                "uzun_buyu" => WeaponPassiveKind.LongEnchant,
+                "kutsal_etki" => WeaponPassiveKind.HolyEffect,
+                "dolu_sayfa" => WeaponPassiveKind.FullPage,
+                "capraz_ates" => WeaponPassiveKind.CrossFire,
                 _ => WeaponPassiveKind.None
             };
         }

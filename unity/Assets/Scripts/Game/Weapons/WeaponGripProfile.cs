@@ -51,8 +51,8 @@ namespace Dovus.Game.Weapons
                 case "kalkan" when isRight:
                     offset = new GripOffset
                     {
-                        LocalPosition = new Vector3(WeaponGripProfileDefaults.KalkanRightLocalPosX, WeaponGripProfileDefaults.KalkanRightLocalPosY, WeaponGripProfileDefaults.KalkanRightLocalPosZ),
-                        LocalEulerAngles = new Vector3(WeaponGripProfileDefaults.KalkanRightEulerX, WeaponGripProfileDefaults.KalkanRightEulerY, WeaponGripProfileDefaults.KalkanRightEulerZ),
+                        LocalPosition = new Vector3(WeaponGripProfileDefaults.ShieldRightLocalPosX, WeaponGripProfileDefaults.ShieldRightLocalPosY, WeaponGripProfileDefaults.ShieldRightLocalPosZ),
+                        LocalEulerAngles = new Vector3(WeaponGripProfileDefaults.ShieldRightEulerX, WeaponGripProfileDefaults.ShieldRightEulerY, WeaponGripProfileDefaults.ShieldRightEulerZ),
                         LocalScale = Vector3.one,
                     };
                     return true;
@@ -62,8 +62,8 @@ namespace Dovus.Game.Weapons
                 case "yay" when !isRight:
                     offset = new GripOffset
                     {
-                        LocalPosition = new Vector3(WeaponGripProfileDefaults.YayLeftLocalPosX, WeaponGripProfileDefaults.YayLeftLocalPosY, WeaponGripProfileDefaults.YayLeftLocalPosZ),
-                        LocalEulerAngles = new Vector3(WeaponGripProfileDefaults.YayLeftEulerX, WeaponGripProfileDefaults.YayLeftEulerY, WeaponGripProfileDefaults.YayLeftEulerZ),
+                        LocalPosition = new Vector3(WeaponGripProfileDefaults.BowLeftLocalPosX, WeaponGripProfileDefaults.BowLeftLocalPosY, WeaponGripProfileDefaults.BowLeftLocalPosZ),
+                        LocalEulerAngles = new Vector3(WeaponGripProfileDefaults.BowLeftEulerX, WeaponGripProfileDefaults.BowLeftEulerY, WeaponGripProfileDefaults.BowLeftEulerZ),
                         LocalScale = Vector3.one,
                     };
                     return true;
@@ -85,8 +85,8 @@ namespace Dovus.Game.Weapons
                     // euler, çapraz çarpımla sabit bir taban kuran kararlı bir yöntemden geldi.
                     offset = new GripOffset
                     {
-                        LocalPosition = new Vector3(WeaponGripProfileDefaults.AsaRightLocalPosX, 0f, WeaponGripProfileDefaults.AsaRightLocalPosZ),
-                        LocalEulerAngles = new Vector3(WeaponGripProfileDefaults.AsaRightEulerX, WeaponGripProfileDefaults.AsaRightEulerY, WeaponGripProfileDefaults.AsaRightEulerZ),
+                        LocalPosition = new Vector3(WeaponGripProfileDefaults.StaffRightLocalPosX, 0f, WeaponGripProfileDefaults.StaffRightLocalPosZ),
+                        LocalEulerAngles = new Vector3(WeaponGripProfileDefaults.StaffRightEulerX, WeaponGripProfileDefaults.StaffRightEulerY, WeaponGripProfileDefaults.StaffRightEulerZ),
                         LocalScale = Vector3.one,
                     };
                     return true;

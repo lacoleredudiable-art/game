@@ -3,19 +3,19 @@ namespace Dovus.Game.Weapons
     /// <summary>Mixamo weapon grip offsets (PLAN 2B.11f).</summary>
     public static class WeaponGripProfileDefaults
     {
-        public const float KalkanRightLocalPosX = 0.02f;
-        public const float KalkanRightLocalPosY = 0.01f;
-        public const float KalkanRightLocalPosZ = 0.03f;
-        public const float KalkanRightEulerX = 8f;
-        public const float KalkanRightEulerY = 195f;
-        public const float KalkanRightEulerZ = 92f;
+        public const float ShieldRightLocalPosX = 0.02f;
+        public const float ShieldRightLocalPosY = 0.01f;
+        public const float ShieldRightLocalPosZ = 0.03f;
+        public const float ShieldRightEulerX = 8f;
+        public const float ShieldRightEulerY = 195f;
+        public const float ShieldRightEulerZ = 92f;
 
-        public const float YayLeftLocalPosX = 0.02f;
-        public const float YayLeftLocalPosY = 0.03f;
-        public const float YayLeftLocalPosZ = 0.01f;
-        public const float YayLeftEulerX = -6f;
-        public const float YayLeftEulerY = 92f;
-        public const float YayLeftEulerZ = 78f;
+        public const float BowLeftLocalPosX = 0.02f;
+        public const float BowLeftLocalPosY = 0.03f;
+        public const float BowLeftLocalPosZ = 0.01f;
+        public const float BowLeftEulerX = -6f;
+        public const float BowLeftEulerY = 92f;
+        public const float BowLeftEulerZ = 78f;
 
         public const float KitapLeftLocalPosX = 0.01f;
         public const float KitapLeftLocalPosY = 0.02f;
@@ -24,11 +24,11 @@ namespace Dovus.Game.Weapons
         public const float KitapLeftEulerY = 8f;
         public const float KitapLeftEulerZ = 92f;
 
-        public const float AsaRightLocalPosX = 0.02f;
-        public const float AsaRightLocalPosZ = 0.04f;
-        public const float AsaRightEulerX = 5.53f;
-        public const float AsaRightEulerY = 358.23f;
-        public const float AsaRightEulerZ = 162.18f;
+        public const float StaffRightLocalPosX = 0.02f;
+        public const float StaffRightLocalPosZ = 0.04f;
+        public const float StaffRightEulerX = 5.53f;
+        public const float StaffRightEulerY = 358.23f;
+        public const float StaffRightEulerZ = 162.18f;
 
         public const float KureLeftLocalPosY = 0.10f;
         public const float KureLeftLocalPosZ = 0.02f;

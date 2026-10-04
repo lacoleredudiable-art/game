@@ -28,7 +28,7 @@ namespace Dovus.Core.Boss
         public BossAttack(BossTuning? tuning = null)
         {
             _tuning = tuning ?? new BossTuning();
-            ApplyVariant(SlamVariant.Yakin);
+            ApplyVariant(SlamVariant.Near);
         }
 
         public SlamVariant Variant => _variant;
@@ -80,7 +80,7 @@ namespace Dovus.Core.Boss
         {
             _kind = BossAttackKind.FireCone;
             _volleyCount = 0;
-            _variant = SlamVariant.Yakin;
+            _variant = SlamVariant.Near;
             _windupMs = _tuning.FireConeWindupMs;
             _radiusM = _tuning.FireConeRadiusM;
             _arcHalfAngleDeg = _tuning.FireConeArcHalfAngleDeg;
@@ -93,7 +93,7 @@ namespace Dovus.Core.Boss
         public void ApplyVolley(bool enraged)
         {
             _kind = BossAttackKind.Volley;
-            _variant = SlamVariant.Yakin;
+            _variant = SlamVariant.Near;
             _windupMs = _tuning.VolleyWindupMs;
             _radiusM = _tuning.VolleyTelegraphRangeM;
             _arcHalfAngleDeg = Math.Max(1f, _tuning.VolleySpreadDeg * 0.5f);
@@ -105,7 +105,7 @@ namespace Dovus.Core.Boss
         {
             _kind = BossAttackKind.WebField;
             _volleyCount = 0;
-            _variant = SlamVariant.Yakin;
+            _variant = SlamVariant.Near;
             _windupMs = _tuning.WebFieldWindupMs;
             _radiusM = _tuning.WebFieldRadiusM;
             _arcHalfAngleDeg = 180f;
@@ -116,7 +116,7 @@ namespace Dovus.Core.Boss
         {
             _kind = BossAttackKind.Pounce;
             _volleyCount = 0;
-            _variant = SlamVariant.Yakin;
+            _variant = SlamVariant.Near;
             _windupMs = _tuning.PounceWindupMs;
             _radiusM = _tuning.PounceLandRadiusM;
             _arcHalfAngleDeg = 180f;
