@@ -232,6 +232,7 @@ public class CombatCorrectnessTests
         Assert.That(dmg, Does.Contain("CombatRng.SessionSeed()"));
         Assert.That(Regex.Matches(dmg + verb, @"CritRoll01 = _combatRng\.NextRoll01\(\)").Count, Is.EqualTo(2));
         Assert.That(Game(Path.Combine("Editor", "Sweep", "PlaySweep.Setup.cs")), Does.Contain("ReseedCombatRng(CombatRng.SweepSeed)"));
+        Assert.That(Game(Path.Combine("Editor", "Sweep", "PlaySweep.cs")), Does.Contain("[InitializeOnLoad]"), "PlaySweep static ctor must hook playModeStateChanged on editor load");
     }
 
     // ── O8: ignore_armor %100, Yay bonusu yalnız kullanılınca tükenir ───────

@@ -38,6 +38,13 @@ using UnityEngine.PlayerLoop;
 
 namespace Dovus.Game.Editor
 {
+        /// <summary>
+        /// Play Mode kombo taraması. Boss'u durdurur, oyuncuyu boss'a verilen mesafeye koyar,
+        /// her komboyu TryDebugCastSkill ile atar ve kare sonunda (PostLateUpdate) ölçer.
+        /// Skill koduna dokunmaz; yalnız ölçer ve raporlar.
+        /// Çıktı: docs/play-sweep/&lt;etiket&gt;.csv ve &lt;etiket&gt;-detay.txt.
+        /// </summary>
+        [InitializeOnLoad]
         public static partial class PlaySweep
         {
             const string PendingKey = "Dovus.PlaySweep.Pending";
