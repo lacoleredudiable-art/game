@@ -359,17 +359,23 @@ namespace Dovus.Game.Editor
             foreach (var w in Weapons)
             {
                 Transform socket = FindDeep(root.transform, w.Socket);
-                int sibling = socket.childCount;
-                Transform old = socket.Cast<Transform>().FirstOrDefault(c => c.name == w.Name);
-                if (old != null)
-                {
-                    sibling = old.GetSiblingIndex();
-                    UnityEngine.Object.DestroyImmediate(old.gameObject);
-                }
                 var model = AssetDatabase.LoadAssetAtPath<GameObject>($"{WeaponsDir}/{w.Fbx}.fbx");
-                var weapon = (GameObject)PrefabUtility.InstantiatePrefab(model, socket);
-                weapon.name = w.Name;
-                weapon.transform.SetSiblingIndex(sibling);
+                Transform old = socket.Cast<Transform>().FirstOrDefault(c => c.name == w.Name);
+                GameObject weapon = old != null && PrefabUtility.GetCorrespondingObjectFromSource(old.gameObject) == model
+                    ? old.gameObject
+                    : null;
+                if (weapon == null)
+                {
+                    int sibling = socket.childCount;
+                    if (old != null)
+                    {
+                        sibling = old.GetSiblingIndex();
+                        UnityEngine.Object.DestroyImmediate(old.gameObject);
+                    }
+                    weapon = (GameObject)PrefabUtility.InstantiatePrefab(model, socket);
+                    weapon.name = w.Name;
+                    weapon.transform.SetSiblingIndex(sibling);
+                }
                 weapon.transform.localPosition = BlenderToUnityLocal(w.BlenderPos);
                 weapon.transform.localRotation = BlenderToUnityLocal(w.BlenderRotWxyz);
                 weapon.transform.localScale = Vector3.one;
