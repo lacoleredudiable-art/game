@@ -3,12 +3,12 @@ using UnityEngine;
 
 namespace Dovus.Game.Skills.RuleEngineV4
 {
-    public static class RuleEngineV4CatalogLoader
+    public sealed class RuleEngineV4CatalogAccess
     {
-        static RuleEngineV4Planner _planner;
-        static RuleEngineV4Catalog _catalog;
+        RuleEngineV4Planner _planner;
+        RuleEngineV4Catalog _catalog;
 
-        public static RuleEngineV4Catalog Catalog
+        public RuleEngineV4Catalog Catalog
         {
             get
             {
@@ -17,7 +17,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             }
         }
 
-        public static RuleEngineV4Planner Planner
+        public RuleEngineV4Planner Planner
         {
             get
             {
@@ -26,7 +26,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             }
         }
 
-        static void EnsureLoaded()
+        void EnsureLoaded()
         {
             if (_planner != null)
                 return;

@@ -1,4 +1,5 @@
 using Dovus.Core.Actors;
+using Dovus.Core.RuleEngineV4;
 using Dovus.Core.Shared;
 using UnityEngine;
 
@@ -32,7 +33,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
         public float BodyRadiusM()
         {
             var col = GetComponent<CapsuleCollider>();
-            return col != null ? col.radius : RuleEngineV4PhysicsDefaults.SliceMinionFallbackRadiusM;
+            return col != null ? col.radius : RuleEngineV4UnitySceneDefaults.SliceMinionFallbackRadiusM;
         }
     }
 }

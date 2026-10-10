@@ -43,6 +43,8 @@ namespace Dovus.Tests.PlayMode
         string _label = "kurulum";
         ManifestationDirector _md;
         RuleEngineV4CastHost _cast;
+        RuleEngineV4PhysicsServices _physics;
+        RuleEngineV4CatalogAccess _catalog;
         Transform _player;
         Transform _boss;
         SliceLightMinionHost[] _minions;
@@ -79,6 +81,8 @@ namespace Dovus.Tests.PlayMode
             _boss = Object.FindAnyObjectByType<BossReactorController>().transform;
             _md._castPort ??= new MdCastPort(_md);
             _cast = _md._castPort.RuleEngineV4Bridge.CastHost;
+            _physics = new RuleEngineV4PhysicsServices();
+            _catalog = _cast.CatalogAccess;
             _minions = new[] { Minion("SliceMinion1"), Minion("SliceMinion2"), Minion("SliceMinion3") };
             _allies = new[] { GameObject.Find("AllyDummy").transform, GameObject.Find("AllyDummy2").transform };
             _label = TestContext.CurrentContext.Test.Name;
@@ -133,7 +137,7 @@ namespace Dovus.Tests.PlayMode
             float startX = _player.position.x;
             yield return Cast(3, 1);
 
-            float radius = RuleEngineV4WorldPhysicsUtil.BodyRadius(_player);
+            float radius = _physics.BodyRadius(_player);
             float wallNear = Origin.x + wallX - wallHalfDepth;
             Assert.That(_player.position.x - startX, Is.GreaterThan(1f), "dash başlamadı");
             Assert.That(_player.position.x + radius, Is.LessThanOrEqualTo(wallNear + PosTolM),
@@ -148,7 +152,7 @@ namespace Dovus.Tests.PlayMode
             Assert.That(bossDir, Is.Not.Null, "BossDirector");
             Vector3 bossPos = _boss.position;
             Vector3 toPlayer = Flat(Origin - bossPos).normalized;
-            float bossR = RuleEngineV4WorldPhysicsUtil.BodyRadius(_boss);
+            float bossR = _physics.BodyRadius(_boss);
             ParkAll();
             Place(_player, bossPos + toPlayer * (bossR + 1f));
             _player.rotation = Quaternion.LookRotation(-toPlayer);
@@ -260,7 +264,7 @@ namespace Dovus.Tests.PlayMode
             }
             Assert.That(limits.TryPlace(global / perPlayer), Is.False, "küresel sabit yapı sınırı");
 
-            float life = RuleEngineV4CatalogLoader.Catalog.Globals.SabitStructureLifeSec;
+            float life = _catalog.Catalog.Globals.SabitStructureLifeSec;
             yield return WaitWorld(life + 0.5f);
             Assert.That(CountStructures(), Is.EqualTo(0), "yapılar ömrü dolunca kalkmadı");
             Assert.That(limits.TryPlace(0), Is.True, "süresi dolan yapılar sınırdan düşmedi");
@@ -481,9 +485,9 @@ namespace Dovus.Tests.PlayMode
 
         static Vector3 Flat(Vector3 v) => new(v.x, 0f, v.z);
 
-        static CommandPlan PlannedFor(int verb, int adj, int weapon)
+        CommandPlan PlannedFor(int verb, int adj, int weapon)
         {
-            CommandPlan plan = RuleEngineV4CatalogLoader.Planner.Plan(
+            CommandPlan plan = _catalog.Planner.Plan(
                 verb, adj, weapon, new RuleEngineV4CastContext(hasValidTarget: true, targetInWeaponRange: true));
             Assert.That(plan.IsValid, $"{verb}-{adj} w{weapon} boş plan");
             return plan;

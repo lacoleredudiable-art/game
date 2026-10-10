@@ -15,12 +15,20 @@ namespace Dovus.Game.Skills.RuleEngineV4
     {
         readonly ManifestationDirector _director;
         readonly RuleEngineV4WorldSession _session;
+        readonly RuleEngineV4PhysicsServices _physics;
+        readonly RuleEngineV4DeliveryEvaluator _delivery;
         Coroutine _active;
 
-        public RuleEngineV4WorldCommandRunHost(ManifestationDirector director, RuleEngineV4WorldSession session)
+        public RuleEngineV4WorldCommandRunHost(
+            ManifestationDirector director,
+            RuleEngineV4WorldSession session,
+            RuleEngineV4PhysicsServices physics,
+            RuleEngineV4DeliveryEvaluator delivery)
         {
             _director = director;
             _session = session;
+            _physics = physics;
+            _delivery = delivery;
         }
 
         public bool IsRunning => _active != null;
@@ -49,21 +57,21 @@ namespace Dovus.Game.Skills.RuleEngineV4
                         yield return CoWaitWorld(onSure.ChargeSec);
                     if (onSure.PrefireSec > 0)
                         yield return CoWaitWorld(onSure.PrefireSec);
-                    delivery.Refresh(_director, plan, focus);
+                    delivery.Refresh(_director, plan, focus, _delivery);
                     continue;
                 }
 
                 if (RuleEngineV4CommandAccess.TryMenzile(cmd, out float menzil))
                 {
                     yield return CoMenzile(caster, focus, menzil);
-                    delivery.Refresh(_director, plan, focus);
+                    delivery.Refresh(_director, plan, focus, _delivery);
                     continue;
                 }
 
                 if (RuleEngineV4CommandAccess.TryDash(cmd, out KendiniTasiCommand dash))
                 {
                     yield return CoDash(caster, focus, dash);
-                    delivery.Refresh(_director, plan, focus);
+                    delivery.Refresh(_director, plan, focus, _delivery);
                     continue;
                 }
 
@@ -79,7 +87,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
 
                 if (cmd is AlanAcCommand area)
                 {
-                    delivery.SetAreaHits(RuleEngineV4PhysicsQueries.CollectAreaHits(
+                    delivery.SetAreaHits(_physics.CollectAreaHits(
                         caster, area.RadiusM, area.MaxTargets));
                     continue;
                 }
@@ -163,8 +171,8 @@ namespace Dovus.Game.Skills.RuleEngineV4
         {
             if (caster == null || focus == null)
                 yield break;
-            float casterR = RuleEngineV4WorldPhysicsUtil.BodyRadius(caster);
-            float targetR = RuleEngineV4WorldPhysicsUtil.BodyRadius(focus);
+            float casterR = _physics.BodyRadius(caster);
+            float targetR = _physics.BodyRadius(focus);
             Vector3 flat = focus.position - caster.position;
             flat.y = 0;
             float centerDist = flat.magnitude;
@@ -191,7 +199,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             float meters = maxM;
             if (focus != null)
             {
-                float dist = RuleEngineV4WorldPhysicsUtil.EdgeDistance(caster.position, focus);
+                float dist = _physics.EdgeDistance(caster.position, focus);
                 meters = Mathf.Min(maxM, Mathf.Max(0, dist));
             }
             float speed = RuleEngineV4WorldPhysicsDefaults.DashSpeedMps;
@@ -208,14 +216,14 @@ namespace Dovus.Game.Skills.RuleEngineV4
         {
             MotionTemplateBodyHost body = caster.GetComponent<MotionTemplateBodyHost>();
             KinematicMotorController motor = caster.GetComponent<KinematicMotorController>();
-            float radius = RuleEngineV4WorldPhysicsUtil.BodyRadius(caster);
+            float radius = _physics.BodyRadius(caster);
             Vector3 start = caster.position;
             Vector3 dir = fixedDir ?? (trackTarget != null ? trackTarget.position - start : caster.forward);
             dir.y = 0;
             if (dir.sqrMagnitude < PositionOwnershipDefaults.MinDistM * PositionOwnershipDefaults.MinDistM)
                 dir = Vector3.forward;
             dir.Normalize();
-            meters = RuleEngineV4WorldPhysicsUtil.ClearDistance(start, dir, meters, radius, caster);
+            meters = _physics.ClearDistance(start, dir, meters, radius, caster);
             if (meters <= 0)
                 yield break;
             Vector3 end = start + dir * meters;
@@ -225,7 +233,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 if (trackTarget != null)
                 {
                     Vector3 p = trackTarget.position;
-                    float r = RuleEngineV4WorldPhysicsUtil.BodyRadius(trackTarget);
+                    float r = _physics.BodyRadius(trackTarget);
                     return new MotionTarget(true, p.x, p.z, r);
                 }
                 return new MotionTarget(true, end.x, end.z);
@@ -245,7 +253,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 t += Time.deltaTime;
                 float u = Mathf.Clamp01(t / duration);
                 Vector3 next = start + delta * u;
-                next = RuleEngineV4WorldPhysicsUtil.MoveWithWalls(start, next, radius, caster);
+                next = _physics.MoveWithWalls(start, next, radius, caster);
                 caster.position = next;
                 yield return null;
             }
@@ -262,7 +270,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 onHit(null);
                 yield break;
             }
-            Vector3 origin = caster.position + Vector3.up * RuleEngineV4PhysicsDefaults.ProjectileOriginHeightM;
+            Vector3 origin = caster.position + Vector3.up * RuleEngineV4UnitySceneDefaults.ProjectileOriginHeightM;
             Vector3 dir = intended != null ? intended.position - origin : caster.forward;
             dir.y = 0;
             if (dir.sqrMagnitude < 0.0001f)
@@ -274,8 +282,8 @@ namespace Dovus.Game.Skills.RuleEngineV4
             while (traveled < missile.RangeM && hit == null)
             {
                 float seg = Mathf.Min(step, missile.RangeM - traveled);
-                if (RuleEngineV4PhysicsQueries.SphereCastFirstTarget(
-                        origin, dir, seg, RuleEngineV4PhysicsDefaults.ProjectileRadiusM, out Transform first))
+                if (_physics.SphereCastFirstTarget(
+                        origin, dir, seg, RuleEngineV4WorldPhysicsDefaults.ProjectileRadiusM, out Transform first))
                     hit = first;
                 else
                 {
@@ -291,8 +299,8 @@ namespace Dovus.Game.Skills.RuleEngineV4
         {
             if (caster == null || pushed == null || distanceM <= 0)
                 return;
-            RuleEngineV4WeightTier src = RuleEngineV4WorldPhysicsUtil.Weight(caster);
-            RuleEngineV4WeightTier dst = RuleEngineV4WorldPhysicsUtil.Weight(pushed);
+            RuleEngineV4WeightTier src = _physics.Weight(caster);
+            RuleEngineV4WeightTier dst = _physics.Weight(pushed);
             if (!RuleEngineV4WeightRules.CanDisplace(src, dst))
             {
                 if (RuleEngineV4WeightRules.IsImmovable(dst))
@@ -304,9 +312,9 @@ namespace Dovus.Game.Skills.RuleEngineV4
             if (dir.sqrMagnitude < PositionOwnershipDefaults.MinDistM * PositionOwnershipDefaults.MinDistM)
                 dir = caster.forward;
             dir.Normalize();
-            float r = RuleEngineV4WorldPhysicsUtil.BodyRadius(pushed);
+            float r = _physics.BodyRadius(pushed);
             Vector3 to = pushed.position + dir * distanceM;
-            to = RuleEngineV4WorldPhysicsUtil.MoveWithWalls(pushed.position, to, r, pushed);
+            to = _physics.MoveWithWalls(pushed.position, to, r, pushed);
             RuleEngineV4PositionWriter.Commit(pushed, to);
         }
 
@@ -331,7 +339,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
                         continue;
                     dealt += RuleEngineV4WorldHost.ApplyDamage(_director, current, dmg * mult * bounce.BounceMult);
                 }
-                current = RuleEngineV4PhysicsQueries.FindBounceTarget(
+                current = _physics.FindBounceTarget(
                     current.position, caster.forward, bounce.SearchRadiusM, visited);
             }
             return dealt;

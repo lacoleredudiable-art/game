@@ -15,6 +15,9 @@ namespace Dovus.Game.Skills.RuleEngineV4
         readonly RuleEngineV4TeamMarkRegistry _marks = new();
         readonly List<RuleEngineV4TargetCandidate> _candidates = new();
         readonly RuleEngineV4WorldSession _session = new();
+        readonly RuleEngineV4PhysicsServices _physics = new();
+        readonly RuleEngineV4CatalogAccess _catalogAccess = new();
+        readonly RuleEngineV4DeliveryEvaluator _deliveryEvaluator;
         readonly RuleEngineV4WorldCommandRunHost _runner;
         float _lastDealt;
 
@@ -22,8 +25,11 @@ namespace Dovus.Game.Skills.RuleEngineV4
         {
             _director = director;
             _director.RuleEngineV4Session = _session;
-            _runner = new RuleEngineV4WorldCommandRunHost(director, _session);
+            _deliveryEvaluator = new RuleEngineV4DeliveryEvaluator(_physics);
+            _runner = new RuleEngineV4WorldCommandRunHost(director, _session, _physics, _deliveryEvaluator);
         }
+
+        public RuleEngineV4CatalogAccess CatalogAccess => _catalogAccess;
 
         public RuleEngineV4WorldSession Session => _session;
 
@@ -60,8 +66,8 @@ namespace Dovus.Game.Skills.RuleEngineV4
             if (!RuleEngineV4Slice.IsSliceWeapon(weaponId))
                 return false;
 
-            RuleEngineV4Planner planner = RuleEngineV4CatalogLoader.Planner;
-            RuleEngineV4Catalog data = RuleEngineV4CatalogLoader.Catalog;
+            RuleEngineV4Planner planner = _catalogAccess.Planner;
+            RuleEngineV4Catalog data = _catalogAccess.Catalog;
             RuleEngineV4TargetResolution resolution = RuleEngineV4TargetResolver.Resolve(
                 GetVerb(data, verb),
                 GetAdj(data, adj));
