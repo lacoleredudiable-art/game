@@ -25,7 +25,7 @@ namespace Dovus.Tests.PlayMode
     /// Fiil 5 (itme) ve alan teslimatı dilim silahlarında yok; o iki kural planlayıcının ürettiği
     /// komutlarla yürütücüye doğrudan verilir.
     /// </summary>
-    public sealed class RuleEngineV4WorldPhysicsPlayModeTests
+    public sealed partial class RuleEngineV4WorldPhysicsPlayModeTests
     {
         const float BootSettleSec = 0.5f;
         const float CastTimeoutSec = 8f;
@@ -66,6 +66,7 @@ namespace Dovus.Tests.PlayMode
             var host = boot.AddComponent<GameBootstrapHost>();
             host.SceneTuning.RuleEngineV4.Enabled = true;
             host.SceneTuning.RuleEngineV4.SliceScene = true;
+            host.SlicePlayerVisualPrefab = LoadSlicePlayerVisual();
             boot.SetActive(true);
             yield return new WaitForSecondsRealtime(BootSettleSec);
 
@@ -104,6 +105,11 @@ namespace Dovus.Tests.PlayMode
 
         void OnLog(string msg, string stack, LogType type)
         {
+            if (msg != null && msg.Contains(MissingEventReceiver))
+            {
+                _errors.Add($"{_label} [{type}] {msg}");
+                return;
+            }
             if (type != LogType.Error && type != LogType.Exception && type != LogType.Assert)
                 return;
             if (stack != null && stack.Contains(KnownDevToolsNoise))
