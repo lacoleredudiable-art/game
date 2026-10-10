@@ -16,16 +16,22 @@ namespace Dovus.Core.RuleEngineV4
         RuleEngineV4Catalog(
             RuleEngineV4Scale scale,
             RuleEngineV4Globals globals,
-            RuleEngineV4WorldPhysics worldPhysics)
+            RuleEngineV4WorldPhysics worldPhysics,
+            RuleEngineV4SkillAnimCatalog skillAnim,
+            RuleEngineV4SliceArena sliceArena)
         {
             Scale = scale;
             Globals = globals;
             WorldPhysics = worldPhysics;
+            SkillAnim = skillAnim;
+            SliceArena = sliceArena;
         }
 
         public RuleEngineV4Scale Scale { get; }
         public RuleEngineV4Globals Globals { get; }
         public RuleEngineV4WorldPhysics WorldPhysics { get; }
+        public RuleEngineV4SkillAnimCatalog SkillAnim { get; }
+        public RuleEngineV4SliceArena SliceArena { get; }
 
         public bool TryGetVerb(int id, out RuleEngineV4Verb verb) => _verbs.TryGetValue(id, out verb!);
         public bool TryGetAdjective(int id, out RuleEngineV4Adjective adjective) => _adjectives.TryGetValue(id, out adjective!);
@@ -37,6 +43,8 @@ namespace Dovus.Core.RuleEngineV4
             var scaleNode = root["scale"];
             var globalsNode = root["globals"];
             RuleEngineV4WorldPhysics worldPhysics = ParseWorldPhysics(root["world_physics"]);
+            RuleEngineV4SkillAnimCatalog skillAnim = RuleEngineV4SkillAnimCatalog.FromJson(root);
+            RuleEngineV4SliceArena sliceArena = RuleEngineV4SliceArena.FromJson(root);
             var catalog = new RuleEngineV4Catalog(
                 new RuleEngineV4Scale
                 {
@@ -79,7 +87,9 @@ namespace Dovus.Core.RuleEngineV4
                     ConjureLifeSec = F(globalsNode["conjure_life_sec"], RuleEngineV4CatalogDefaults.ConjureLifeSec),
                     ConjureYogunLifeSec = F(globalsNode["conjure_yogun_life_sec"], RuleEngineV4CatalogDefaults.ConjureYogunLifeSec),
                 },
-                worldPhysics);
+                worldPhysics,
+                skillAnim,
+                sliceArena);
 
             foreach (KeyValuePair<string, JsonValue> kv in root["verbs"].AsObject())
                 if (int.TryParse(kv.Key, NumberStyles.Integer, CultureInfo.InvariantCulture, out int id))

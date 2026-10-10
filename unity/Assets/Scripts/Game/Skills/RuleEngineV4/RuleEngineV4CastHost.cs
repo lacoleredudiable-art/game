@@ -100,6 +100,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             }
 
             Transform focus = ResolveTargetTransform(pick);
+            RuleEngineV4SkillAnimBridge.PlayForPlan(_director, plan, data.SkillAnim);
             _runner.Start(plan, focus, d =>
             {
                 _lastDealt = d;

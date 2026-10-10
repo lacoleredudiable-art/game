@@ -6,6 +6,7 @@ using Dovus.Core.RuleEngineV4;
 using Dovus.Core.Shared;
 using Dovus.Game.Actors;
 using Dovus.Game.Skills;
+using Dovus.Game.Vfx;
 using UnityEngine;
 
 namespace Dovus.Game.Skills.RuleEngineV4
@@ -223,9 +224,14 @@ namespace Dovus.Game.Skills.RuleEngineV4
             if (dir.sqrMagnitude < PositionOwnershipDefaults.MinDistM * PositionOwnershipDefaults.MinDistM)
                 dir = Vector3.forward;
             dir.Normalize();
+            float requestedM = meters;
             meters = _physics.ClearDistance(start, dir, meters, radius, caster);
             if (meters <= 0)
+            {
+                if (motionKind == "dash")
+                    RuleDrivenVfxSink.NotifyMotionEnded(caster, true);
                 yield break;
+            }
             Vector3 end = start + dir * meters;
             MotionTemplate template = RuleEngineV4MotionBridge.BuildLinearMove(motionKind, motionKind, meters, speedMps);
             Func<MotionTarget> targetFn = () =>
@@ -241,6 +247,12 @@ namespace Dovus.Game.Skills.RuleEngineV4
             if (body != null)
             {
                 yield return RuleEngineV4MotionBridge.CoRun(body, motor, template, targetFn, radius);
+                if (motionKind == "dash")
+                {
+                    bool atEdge = requestedM - meters > MotionDefaults.MinDashM
+                        || (body.SweepRunner != null && body.SweepRunner.StoppedAtBodyEdge);
+                    RuleDrivenVfxSink.NotifyMotionEnded(caster, atEdge);
+                }
                 yield break;
             }
             float incoming = motor != null ? motor.Velocity.magnitude : 0;
@@ -248,14 +260,21 @@ namespace Dovus.Game.Skills.RuleEngineV4
             float t = 0;
             float duration = Mathf.Max(CastApproach.MinSec, meters / Mathf.Max(PositionOwnershipDefaults.MinDistM, eff));
             Vector3 delta = dir * meters;
+            Vector3 last = start;
             while (t < duration)
             {
                 t += Time.deltaTime;
                 float u = Mathf.Clamp01(t / duration);
                 Vector3 next = start + delta * u;
-                next = _physics.MoveWithWalls(start, next, radius, caster);
-                caster.position = next;
+                next = _physics.MoveWithWalls(last, next, radius, caster);
+                last = caster.position = next;
                 yield return null;
+            }
+            if (motionKind == "dash")
+            {
+                bool atEdge = requestedM - meters > MotionDefaults.MinDashM
+                    || (last - end).sqrMagnitude > PositionOwnershipDefaults.MinDistM * PositionOwnershipDefaults.MinDistM;
+                RuleDrivenVfxSink.NotifyMotionEnded(caster, atEdge);
             }
         }
 
@@ -285,6 +304,9 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 if (_physics.SphereCastFirstTarget(
                         origin, dir, seg, RuleEngineV4WorldPhysicsDefaults.ProjectileRadiusM, out Transform first))
                     hit = first;
+                else if (_physics.TryProjectileBlocked(
+                             origin, dir, seg, RuleEngineV4WorldPhysicsDefaults.ProjectileRadiusM, caster, out _))
+                    break;
                 else
                 {
                     traveled += seg;
