@@ -37,6 +37,7 @@ namespace Dovus.Core.Presentation
         public const float EjderDissolveOutFrac = 0.4f;
         public const int EjderSiluetEkranMax = 2;
         public const float EjderSiluetUzakM = 12f;
+        public const int EjderAtlasCellD = 3; // çift kanat (0-index A=0 … D=3)
         public const int EjderAtlasCellF = 5; // kuyruk yayı (0-index A=0 … F=5)
 
         // §4 skill uyanışı
