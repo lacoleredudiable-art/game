@@ -25,6 +25,6 @@ namespace Dovus.Game.Skills.RuleEngineV4
             out float dealt) =>
             _castHost.TryLaunch(ctx, skill, in motion, out dealt);
 
-        public void PlaceMark(Transform target, float lifeSec) => _castHost.PlaceMark(target, lifeSec);
+        public void PlaceMark(Transform marked, float lifeSec) => _castHost.PlaceMark(marked, lifeSec);
     }
 }

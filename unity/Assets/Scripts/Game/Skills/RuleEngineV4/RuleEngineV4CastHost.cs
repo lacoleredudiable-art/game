@@ -39,7 +39,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             in SkillMotionPlan motion,
             out float dealt)
         {
-            dealt = 0f;
+            dealt = 0;
             if (skill.IsEmpty
                 || !int.TryParse(skill.Identity.Verb.Value, out int verb)
                 || !int.TryParse(skill.Identity.Adjective.Value, out int adj))
@@ -49,8 +49,8 @@ namespace Dovus.Game.Skills.RuleEngineV4
 
         internal bool TryLaunchCombo(int verb, int adj, out float dealt)
         {
-            dealt = 0f;
-            _lastDealt = 0f;
+            dealt = 0;
+            _lastDealt = 0;
             if (!RuleEngineV4Feature.Enabled)
                 return false;
             if (!RuleEngineV4Slice.IsSliceCombo(verb, adj))
@@ -93,8 +93,8 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 return true;
             }
 
-            Transform target = ResolveTargetTransform(pick);
-            _runner.Start(plan, target, d =>
+            Transform focus = ResolveTargetTransform(pick);
+            _runner.Start(plan, focus, d =>
             {
                 _lastDealt = d;
                 _director._castPort?.NotifyRuleEngineV4Dealt(d);
@@ -140,17 +140,17 @@ namespace Dovus.Game.Skills.RuleEngineV4
         {
             if (!data.TryGetVerb(verbId, out RuleEngineV4Verb verb)
                 || !data.TryGetWeapon(weaponId, out RuleEngineV4Weapon weapon))
-                return 0f;
+                return 0;
             float range = weapon.RangeM(data.Scale.RangeReferenceM);
             if (!verb.Hostile && verb.Id != 3)
                 range = Mathf.Min(range, data.Globals.FriendlyRangeCapM);
             return range;
         }
 
-        public void PlaceMark(Transform target, float lifeSec)
+        public void PlaceMark(Transform marked, float lifeSec)
         {
             double ms = _director.MechanicsClock != null ? _director.MechanicsClock.Director.WorldTimeMs : 0;
-            _marks.Place(target, lifeSec, ms);
+            _marks.Place(marked, lifeSec, ms);
         }
     }
 }

@@ -24,7 +24,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
 
         public void ApplyDamage(float amount)
         {
-            if (IsDown || amount <= 0f)
+            if (IsDown || amount <= 0)
                 return;
             _hp = Mathf.Max(0, _hp - Mathf.RoundToInt(amount));
         }

@@ -25,7 +25,8 @@
     "structure_max_global": 25,
     "bounce_angle_cone_deg": 35,
     "diminish_mult_second": 0.5,
-    "diminish_mult_third": 0.25
+    "diminish_mult_third": 0.25,
+    "projectile_column_half_height_m": 50
   },
   "globals": {
     "prefire_cap_sec": 1.0,

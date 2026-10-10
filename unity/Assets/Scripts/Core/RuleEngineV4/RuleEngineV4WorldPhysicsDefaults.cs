@@ -12,5 +12,7 @@ namespace Dovus.Core.RuleEngineV4
         public static float BounceAngleConeDeg => RuleEngineV4WorldPhysicsRuntime.Active.BounceAngleConeDeg;
         public static float ProtectionInterceptWidthM => RuleEngineV4WorldPhysicsRuntime.Active.ProtectionInterceptWidthM;
         public static float ProjectileRadiusM => RuleEngineV4WorldPhysicsRuntime.Active.ProjectileRadiusM;
+        public static float ProjectileColumnHalfHeightM =>
+            RuleEngineV4WorldPhysicsRuntime.Active.ProjectileColumnHalfHeightM;
     }
 }

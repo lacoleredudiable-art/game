@@ -23,5 +23,25 @@ namespace Dovus.Core.RuleEngineV4
         public const float ConjureLifeSec = 5f;
         public const float ConjureYogunLifeSec = 2.5f;
         public const float WeaponTotalSecFallback = 0.55f;
+
+        // world_physics JSON yedekleri (dunya-fizigi D-1)
+        public const float BodyRadiusPlayerM = 0.35f;
+        public const float BodyRadiusBossM = 2.5f;
+        public const float BodyRadiusCreatureM = 0.5f;
+        public const float BodyRadiusStructureM = 1f;
+        public const float DashSpeedMps = 14f;
+        public const float ApproachSpeedMps = 8f;
+        public const float MotionCarryRatio = 0.5f;
+        public const float MotionSpeedMaxMult = 1.5f;
+        public const float ProjectileRadiusM = 0.25f;
+        public const float DefaultMissileSpeedMps = 30f;
+        public const float ProtectionInterceptWidthM = 1.2f;
+        public const int StructureMaxPerPlayer = 5;
+        public const int StructureMaxGlobal = 25;
+        public const float BounceAngleConeDeg = 35f;
+        public const float DiminishMultSecond = 0.5f;
+        public const float DiminishMultThird = 0.25f;
+        /// <summary>Spec'te yok: mermi sorgusunun dikey yarı boyu.</summary>
+        public const float ProjectileColumnHalfHeightM = 50f;
     }
 }

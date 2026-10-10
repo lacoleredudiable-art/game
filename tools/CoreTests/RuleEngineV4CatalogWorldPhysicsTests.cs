@@ -25,5 +25,6 @@ public sealed class RuleEngineV4CatalogWorldPhysicsTests
         Assert.That(catalog.WorldPhysics.BodyRadiusCreatureM, Is.EqualTo(0.5f));
         Assert.That(catalog.WorldPhysics.ProjectileRadiusM, Is.EqualTo(0.25f));
         Assert.That(RuleEngineV4WorldPhysicsRuntime.Active.DashSpeedMps, Is.EqualTo(14f));
+        Assert.That(catalog.WorldPhysics.ProjectileColumnHalfHeightM, Is.EqualTo(50f));
     }
 }

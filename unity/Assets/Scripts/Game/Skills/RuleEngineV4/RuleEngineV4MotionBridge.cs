@@ -12,7 +12,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
     {
         public static MotionTemplate BuildLinearMove(string id, string motionKind, float distanceM, float speedMps)
         {
-            float sec = Mathf.Max(CastApproach.MinSec, distanceM / Mathf.Max(0.01f, speedMps));
+            float sec = Mathf.Max(CastApproach.MinSec, distanceM / Mathf.Max(PositionOwnershipDefaults.MinDistM, speedMps));
             var phase = new MotionPhase(
                 id,
                 motionKind,
@@ -20,20 +20,20 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 "target",
                 "track",
                 string.Empty,
-                0f,
+                0,
                 distanceM,
-                0f,
-                1f,
-                0f,
-                0f,
-                0f,
-                0f,
-                0f,
-                0f,
-                0f,
-                0f,
-                0f,
-                0f,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
                 null,
                 null);
             return new MotionTemplate("v4_" + id, id, 0, "v4", true, new[] { phase });
@@ -48,8 +48,8 @@ namespace Dovus.Game.Skills.RuleEngineV4
         {
             if (body == null || template == null)
                 yield break;
-            float incoming = motor != null ? motor.Velocity.magnitude : 0f;
-            float dist = template.Phases.Count > 0 ? template.Phases[0].DistanceM : 0f;
+            float incoming = motor != null ? motor.Velocity.magnitude : 0;
+            float dist = template.Phases.Count > 0 ? template.Phases[0].DistanceM : 0;
             float baseSpeed = dist / Mathf.Max(CastApproach.MinSec, template.Phases[0].DurationSec);
             float speed = RuleEngineV4MotionHandoff.EffectiveSpeedMps(baseSpeed, incoming);
             float meters = template.Phases[0].DistanceM;

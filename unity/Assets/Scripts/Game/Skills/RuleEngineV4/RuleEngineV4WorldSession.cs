@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Dovus.Core.RuleEngineV4;
+using Dovus.Core.Shared;
 using UnityEngine;
 
 namespace Dovus.Game.Skills.RuleEngineV4
@@ -8,10 +9,10 @@ namespace Dovus.Game.Skills.RuleEngineV4
     public sealed class RuleEngineV4WorldSession
     {
         public readonly RuleEngineV4StructureLimits Structures = new();
-        readonly Dictionary<int, int> _diminishByTarget = new();
+        readonly Dictionary<int, (int stack, double lastHitMs)> _diminishByTarget = new();
         double _guardUntilMs;
         Transform _guardCaster;
-        float _guardBlockRatio = 1f;
+        float _guardBlockRatio = 1;
 
         public float GuardBlockRatio => _guardBlockRatio;
 
@@ -22,15 +23,20 @@ namespace Dovus.Game.Skills.RuleEngineV4
         {
             _guardCaster = caster;
             _guardBlockRatio = Mathf.Clamp01(blockRatio);
-            _guardUntilMs = worldMs + durationSec * 1000.0;
+            _guardUntilMs = worldMs + durationSec * Units.SecToMs;
         }
 
-        public float ApplyDiminishNonDamage(Transform target, float value)
+        public float ApplyDiminishNonDamage(Transform victim, float value, double worldMs)
         {
-            int key = target != null ? target.GetInstanceID() : 0;
-            _diminishByTarget.TryGetValue(key, out int stack);
-            float scaled = RuleEngineV4DiminishStack.ScaleNonDamage(stack, value);
-            _diminishByTarget[key] = stack + 1;
+            int key = victim != null ? victim.GetInstanceID() : 0;
+            _diminishByTarget.TryGetValue(key, out var entry);
+            double gapMs = RuleEngineV4CatalogDefaults.ZamanLookbackSec * Units.SecToMs;
+            if (worldMs - entry.lastHitMs > gapMs)
+                entry.stack = 0;
+            float scaled = RuleEngineV4DiminishStack.ScaleNonDamage(entry.stack, value);
+            entry.stack += 1;
+            entry.lastHitMs = worldMs;
+            _diminishByTarget[key] = entry;
             return scaled;
         }
     }

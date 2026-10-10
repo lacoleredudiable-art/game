@@ -1,4 +1,5 @@
 using Dovus.Core.Actors;
+using Dovus.Core.RuleEngineV4;
 using Dovus.Core.Status;
 using Dovus.Game.Actors;
 using UnityEngine;
@@ -9,8 +10,8 @@ namespace Dovus.Game.Skills.RuleEngineV4
     {
         public static void Read(TargetableHost host, out float hpRatio, out float purifyNeed)
         {
-            hpRatio = 1f;
-            purifyNeed = 0f;
+            hpRatio = 1;
+            purifyNeed = 0;
             if (host == null)
                 return;
 
@@ -32,22 +33,24 @@ namespace Dovus.Game.Skills.RuleEngineV4
             if (root.TryGetComponent(out ActorStatusHost status))
             {
                 purifyNeed = ScoreBoard(status.Board);
+                if (host.ActorId == ActorDefaults.BossId && status.TryGetHpRatio(out float bossRatio))
+                    hpRatio = bossRatio;
             }
         }
 
         static float ScoreBoard(StatusBoard board)
         {
             if (board == null || board.ActiveCount == 0)
-                return 0f;
-            float score = 0f;
+                return 0;
+            float score = 0;
             foreach (StatusKind k in board.ActiveKinds)
             {
                 if (StatusKindUtil.IsHardCc(k))
-                    score += 3f;
+                    score += RuleEngineV4UnitySceneDefaults.StatusHardCcWeight;
                 else if (StatusKindUtil.IsSoftCc(k))
-                    score += 2f;
+                    score += RuleEngineV4UnitySceneDefaults.StatusSoftCcWeight;
                 else if (StatusKindUtil.IsDebuff(k))
-                    score += 1f;
+                    score += RuleEngineV4UnitySceneDefaults.StatusDebuffWeight;
             }
             return score;
         }

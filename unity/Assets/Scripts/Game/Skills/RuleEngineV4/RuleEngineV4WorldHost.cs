@@ -7,13 +7,13 @@ namespace Dovus.Game.Skills.RuleEngineV4
 {
     public static class RuleEngineV4WorldHost
     {
-        public static float ApplyDamage(ManifestationDirector director, Transform target, float amount)
+        public static float ApplyDamage(ManifestationDirector director, Transform victim, float amount)
         {
-            if (amount <= 0f || target == null || director == null)
-                return 0f;
-            TargetableHost mark = target.GetComponentInParent<TargetableHost>();
+            if (amount <= 0 || victim == null || director == null)
+                return 0;
+            TargetableHost mark = victim.GetComponentInParent<TargetableHost>();
             if (mark == null)
-                return 0f;
+                return 0;
             if (mark.ActorId == ActorDefaults.BossId
                 && director.MechanicsBossVitals != null
                 && !director.MechanicsBossVitals.IsDown)
@@ -38,39 +38,39 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 return amount;
             }
 
-            var minion = target.GetComponentInParent<SliceLightMinionHost>();
+            var minion = victim.GetComponentInParent<SliceLightMinionHost>();
             if (minion != null && !minion.IsDown)
             {
                 minion.ApplyDamage(amount);
                 director.MechanicsDamageHud?.ShowDamage(
-                    amount, false, target.position, null, victimIsBoss: false);
+                    amount, false, victim.position, null, victimIsBoss: false);
                 return amount;
             }
 
-            return 0f;
+            return 0;
         }
 
-        public static void ApplyPoise(ManifestationDirector director, Transform target, float amount)
+        public static void ApplyPoise(ManifestationDirector director, Transform victim, float amount)
         {
-            if (amount <= 0f || target == null || director == null)
+            if (amount <= 0 || victim == null || director == null)
                 return;
-            TargetableHost mark = target.GetComponentInParent<TargetableHost>();
+            TargetableHost mark = victim.GetComponentInParent<TargetableHost>();
             if (mark != null && mark.ActorId == ActorDefaults.BossId)
                 director.MechanicsBossDirector?.ApplyPoiseDamage(amount);
         }
 
-        public static void ApplyHeal(ManifestationDirector director, Transform target, float amount)
+        public static void ApplyHeal(ManifestationDirector director, Transform victim, float amount)
         {
-            if (amount <= 0f || director == null)
+            if (amount <= 0 || director == null)
                 return;
             int heal = Mathf.RoundToInt(amount);
-            if (target == director.MechanicsPlayer)
+            if (victim == director.MechanicsPlayer)
             {
                 director.CachedPlayerVitals()?.ApplyHeal(heal);
                 return;
             }
 
-            TargetableHost mark = target != null ? target.GetComponentInParent<TargetableHost>() : null;
+            TargetableHost mark = victim != null ? victim.GetComponentInParent<TargetableHost>() : null;
             if (mark == null)
                 return;
             if (mark.ActorId == ActorDefaults.AllyDummyId && director.MechanicsAlly != null)

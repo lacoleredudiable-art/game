@@ -120,6 +120,7 @@ namespace Dovus.Core.RuleEngineV4
                 BounceAngleConeDeg = F(node["bounce_angle_cone_deg"], d.BounceAngleConeDeg),
                 DiminishMultSecond = F(node["diminish_mult_second"], d.DiminishMultSecond),
                 DiminishMultThird = F(node["diminish_mult_third"], d.DiminishMultThird),
+                ProjectileColumnHalfHeightM = F(node["projectile_column_half_height_m"], d.ProjectileColumnHalfHeightM),
             };
         }
 

@@ -10,43 +10,43 @@ namespace Dovus.Game.Skills.RuleEngineV4
 
         struct Entry
         {
-            public Transform Target;
+            public Transform MarkedRoot;
             public float ExpireWorldMs;
         }
 
-        public void Place(Transform target, float lifeSec, double worldMs)
+        public void Place(Transform marked, float lifeSec, double worldMs)
         {
-            if (target == null || lifeSec <= 0f)
+            if (marked == null || lifeSec <= 0)
                 return;
             float expire = (float)worldMs + lifeSec * 1000f;
             for (int i = 0; i < _marks.Count; i++)
             {
-                if (_marks[i].Target == target)
+                if (_marks[i].MarkedRoot == marked)
                 {
-                    _marks[i] = new Entry { Target = target, ExpireWorldMs = expire };
+                    _marks[i] = new Entry { MarkedRoot = marked, ExpireWorldMs = expire };
                     return;
                 }
             }
-            _marks.Add(new Entry { Target = target, ExpireWorldMs = expire });
+            _marks.Add(new Entry { MarkedRoot = marked, ExpireWorldMs = expire });
         }
 
         public void Prune(double worldMs)
         {
             for (int i = _marks.Count - 1; i >= 0; i--)
             {
-                if (_marks[i].Target == null || worldMs >= _marks[i].ExpireWorldMs)
+                if (_marks[i].MarkedRoot == null || worldMs >= _marks[i].ExpireWorldMs)
                     _marks.RemoveAt(i);
             }
         }
 
-        public bool HasMarkOn(Transform target, double worldMs)
+        public bool HasMarkOn(Transform marked, double worldMs)
         {
             Prune(worldMs);
-            if (target == null)
+            if (marked == null)
                 return false;
             for (int i = 0; i < _marks.Count; i++)
             {
-                if (_marks[i].Target == target || target.IsChildOf(_marks[i].Target))
+                if (_marks[i].MarkedRoot == marked || marked.IsChildOf(_marks[i].MarkedRoot))
                     return true;
             }
             return false;

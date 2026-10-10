@@ -8,39 +8,45 @@ namespace Dovus.Game.Skills.RuleEngineV4
     public sealed class RuleEngineV4DeliveryState
     {
         bool _ok;
+        bool _missileResolved;
         Transform _missileHit;
         List<Transform> _areaHits;
 
         public Transform MissileHit
         {
             get => _missileHit;
-            set => _missileHit = value;
+            set
+            {
+                _missileResolved = true;
+                _missileHit = value;
+            }
         }
 
         public void SetAreaHits(List<Transform> hits) => _areaHits = hits;
 
-        public void Refresh(ManifestationDirector director, CommandPlan plan, Transform target) =>
-            _ok = RuleEngineV4CommandRunner.EvaluateDelivery(director, plan, target);
+        public void Refresh(ManifestationDirector director, CommandPlan plan, Transform focus) =>
+            _ok = RuleEngineV4CommandRunner.EvaluateDelivery(director, plan, focus);
 
-        public bool HitAllowed(Transform victim, Transform primaryTarget)
+        public bool HitAllowed(Transform victim, Transform primaryFocus)
         {
             if (victim == null)
                 return false;
             if (_areaHits != null && _areaHits.Count > 0)
                 return _areaHits.Contains(victim);
-            if (_missileHit != null)
-                return victim == _missileHit || victim.IsChildOf(_missileHit);
+            if (_missileResolved)
+                return _missileHit != null
+                    && (victim == _missileHit || victim.IsChildOf(_missileHit));
             return _ok;
         }
 
-        public IEnumerable<Transform> ResolveDamageTargets(Transform primary)
+        public IEnumerable<Transform> ResolveDamageTargets(Transform primaryFocus)
         {
             if (_areaHits != null && _areaHits.Count > 0)
                 return _areaHits;
-            if (_missileHit != null)
-                return new[] { _missileHit };
-            if (primary != null)
-                return new[] { primary };
+            if (_missileResolved)
+                return _missileHit != null ? new[] { _missileHit } : System.Array.Empty<Transform>();
+            if (primaryFocus != null)
+                return new[] { primaryFocus };
             return System.Array.Empty<Transform>();
         }
     }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Dovus.Core.Casting;
+using Dovus.Core.Motion;
 using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Actors;
 using UnityEngine;
@@ -14,21 +15,21 @@ namespace Dovus.Game.Skills.RuleEngineV4
 
         public static bool MeleeHitsTarget(
             Transform caster,
-            Transform target,
+            Transform focus,
             float reachM,
             float casterRadiusM)
         {
-            if (caster == null || target == null)
+            if (caster == null || focus == null)
                 return false;
-            TargetableHost mark = target.GetComponentInParent<TargetableHost>();
+            TargetableHost mark = focus.GetComponentInParent<TargetableHost>();
             if (mark != null)
             {
                 float dist = mark.DistanceFrom(caster.position);
                 return StrikeCapsule.EdgeInReach(dist, casterRadiusM, reachM);
             }
 
-            Vector3 dir = target.position - caster.position;
-            dir.y = 0f;
+            Vector3 dir = focus.position - caster.position;
+            dir.y = 0;
             if (dir.sqrMagnitude < 0.0001f)
                 return true;
             dir.Normalize();
@@ -44,7 +45,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             for (int i = 0; i < count; i++)
             {
                 Transform hit = HitBuffer[i].transform;
-                if (hit == target || hit.IsChildOf(target))
+                if (hit == focus || hit.IsChildOf(focus))
                     return true;
             }
             return false;
@@ -55,11 +56,11 @@ namespace Dovus.Game.Skills.RuleEngineV4
             Vector3 direction,
             float rangeM,
             float projectileRadiusM,
-            Transform target)
+            Transform focus)
         {
             return SphereCastFirstTarget(origin, direction, rangeM, projectileRadiusM, out Transform hit)
-                   && target != null
-                   && (hit == target || hit.IsChildOf(target));
+                   && focus != null
+                   && (hit == focus || hit.IsChildOf(focus));
         }
 
         /// <summary>
@@ -71,10 +72,10 @@ namespace Dovus.Game.Skills.RuleEngineV4
             Vector3 direction,
             float rangeM,
             float projectileRadiusM,
-            out Transform target)
+            out Transform hitRoot)
         {
-            target = null;
-            direction.y = 0f;
+            hitRoot = null;
+            direction.y = 0;
             if (direction.sqrMagnitude < 0.0001f)
                 return false;
             direction.Normalize();
@@ -95,30 +96,30 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 if (CastHits[i].collider == null)
                     continue;
                 // Başlangıçta zaten örtüşen (zemin, atıcının dibindeki gövde) çarpma sayılmaz.
-                if (CastHits[i].distance <= 0f && CastHits[i].point == Vector3.zero)
+                if (CastHits[i].distance <= 0 && CastHits[i].point == Vector3.zero)
                     continue;
                 if (!TryResolveTargetRoot(CastHits[i].collider.transform, out Transform root))
                     continue;
                 if (CastHits[i].distance < best)
                 {
                     best = CastHits[i].distance;
-                    target = root;
+                    hitRoot = root;
                 }
             }
-            return target != null;
+            return hitRoot != null;
         }
 
         /// <summary>Alan: ön yarım küre (caster.forward), kenar mesafesi ≤ radius.</summary>
         public static List<Transform> CollectAreaHits(Transform caster, float radiusM, int maxTargets)
         {
             var results = new List<Transform>();
-            if (caster == null || radiusM <= 0f || maxTargets <= 0)
+            if (caster == null || radiusM <= 0 || maxTargets <= 0)
                 return results;
             Vector3 center = caster.position;
             int count = Physics.OverlapSphereNonAlloc(
                 center, radiusM, HitBuffer, Physics.AllLayers, QueryTriggerInteraction.Collide);
             Vector3 forward = caster.forward;
-            forward.y = 0f;
+            forward.y = 0;
             if (forward.sqrMagnitude < 0.0001f)
                 forward = Vector3.forward;
             forward.Normalize();
@@ -130,10 +131,10 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 if (root == caster)
                     continue;
                 Vector3 to = root.position - center;
-                to.y = 0f;
+                to.y = 0;
                 if (to.sqrMagnitude < 0.0001f)
                     continue;
-                if (Vector3.Dot(forward, to.normalized) <= 0f)
+                if (Vector3.Dot(forward, to.normalized) <= 0)
                     continue;
                 float edge = RuleEngineV4WorldPhysicsUtil.EdgeDistance(center, root) - casterR;
                 if (edge > radiusM)
@@ -152,7 +153,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             float searchRadiusM,
             HashSet<Transform> exclude)
         {
-            forward.y = 0f;
+            forward.y = 0;
             if (forward.sqrMagnitude < 0.0001f)
                 forward = Vector3.forward;
             forward.Normalize();
@@ -170,14 +171,14 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 if (mark == null || !mark.IsAvailable)
                     continue;
                 Vector3 to = root.position - from;
-                to.y = 0f;
+                to.y = 0;
                 float dist = to.magnitude;
-                if (dist < 0.01f)
+                if (dist < PositionOwnershipDefaults.MinDistM)
                     continue;
                 float dot = Vector3.Dot(forward, to / dist);
                 if (dot < Mathf.Cos(RuleEngineV4WorldPhysicsDefaults.BounceAngleConeDeg * Mathf.Deg2Rad))
                     continue;
-                float score = dist - dot * 2f;
+                float score = dist - dot * 2;
                 if (score < bestScore)
                 {
                     bestScore = score;

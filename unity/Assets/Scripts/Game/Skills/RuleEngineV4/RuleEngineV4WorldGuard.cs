@@ -1,3 +1,4 @@
+using Dovus.Core.Motion;
 using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Actors;
 using Dovus.Game.Skills;
@@ -14,7 +15,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             float raw,
             System.Func<float, bool> applyToAlly)
         {
-            if (!RuleEngineV4Feature.Enabled || director == null || ally == null || raw <= 0f)
+            if (!RuleEngineV4Feature.Enabled || director == null || ally == null || raw <= 0)
                 return applyToAlly(raw);
 
             RuleEngineV4WorldSession session = director.RuleEngineV4Session;
@@ -28,11 +29,11 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 return applyToAlly(raw);
 
             float block = session.GuardBlockRatio;
-            float toAlly = raw * (1f - block);
+            float toAlly = raw * (1 - block);
             float toPlayer = raw * block;
-            if (toAlly > 0f)
+            if (toAlly > 0)
                 applyToAlly(toAlly);
-            if (toPlayer > 0f)
+            if (toPlayer > 0)
                 director.CachedPlayerVitals()?.ApplyDamage(Mathf.RoundToInt(toPlayer));
             return true;
         }
@@ -40,16 +41,16 @@ namespace Dovus.Game.Skills.RuleEngineV4
         static bool IsIntercepting(Transform guard, Vector3 from, Vector3 to)
         {
             Vector3 g = guard.position;
-            g.y = 0f;
-            from.y = 0f;
-            to.y = 0f;
+            g.y = 0;
+            from.y = 0;
+            to.y = 0;
             Vector3 seg = to - from;
             float len = seg.magnitude;
-            if (len < 0.01f)
+            if (len < PositionOwnershipDefaults.MinDistM)
                 return false;
             Vector3 dir = seg / len;
             float t = Vector3.Dot(g - from, dir);
-            if (t < 0f || t > len)
+            if (t < 0 || t > len)
                 return false;
             Vector3 closest = from + dir * t;
             float lateral = Vector3.Distance(closest, g);

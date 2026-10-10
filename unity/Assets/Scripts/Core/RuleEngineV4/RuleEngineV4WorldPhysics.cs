@@ -5,22 +5,23 @@ namespace Dovus.Core.RuleEngineV4
     {
         public static RuleEngineV4WorldPhysics Default => new()
         {
-            BodyRadiusPlayerM = 0.35f,
-            BodyRadiusBossM = 2.5f,
-            BodyRadiusCreatureM = 0.5f,
-            BodyRadiusStructureM = 1f,
-            DashSpeedMps = 14f,
-            ApproachSpeedMps = 8f,
-            MotionCarryRatio = 0.5f,
-            MotionSpeedMaxMult = 1.5f,
-            ProjectileRadiusM = 0.25f,
-            DefaultMissileSpeedMps = 30f,
-            ProtectionInterceptWidthM = 1.2f,
-            StructureMaxPerPlayer = 5,
-            StructureMaxGlobal = 25,
-            BounceAngleConeDeg = 35f,
-            DiminishMultSecond = 0.5f,
-            DiminishMultThird = 0.25f,
+            BodyRadiusPlayerM = RuleEngineV4CatalogDefaults.BodyRadiusPlayerM,
+            BodyRadiusBossM = RuleEngineV4CatalogDefaults.BodyRadiusBossM,
+            BodyRadiusCreatureM = RuleEngineV4CatalogDefaults.BodyRadiusCreatureM,
+            BodyRadiusStructureM = RuleEngineV4CatalogDefaults.BodyRadiusStructureM,
+            DashSpeedMps = RuleEngineV4CatalogDefaults.DashSpeedMps,
+            ApproachSpeedMps = RuleEngineV4CatalogDefaults.ApproachSpeedMps,
+            MotionCarryRatio = RuleEngineV4CatalogDefaults.MotionCarryRatio,
+            MotionSpeedMaxMult = RuleEngineV4CatalogDefaults.MotionSpeedMaxMult,
+            ProjectileRadiusM = RuleEngineV4CatalogDefaults.ProjectileRadiusM,
+            DefaultMissileSpeedMps = RuleEngineV4CatalogDefaults.DefaultMissileSpeedMps,
+            ProtectionInterceptWidthM = RuleEngineV4CatalogDefaults.ProtectionInterceptWidthM,
+            StructureMaxPerPlayer = RuleEngineV4CatalogDefaults.StructureMaxPerPlayer,
+            StructureMaxGlobal = RuleEngineV4CatalogDefaults.StructureMaxGlobal,
+            BounceAngleConeDeg = RuleEngineV4CatalogDefaults.BounceAngleConeDeg,
+            DiminishMultSecond = RuleEngineV4CatalogDefaults.DiminishMultSecond,
+            DiminishMultThird = RuleEngineV4CatalogDefaults.DiminishMultThird,
+            ProjectileColumnHalfHeightM = RuleEngineV4CatalogDefaults.ProjectileColumnHalfHeightM,
         };
 
         public float BodyRadiusPlayerM { get; init; }
@@ -39,5 +40,6 @@ namespace Dovus.Core.RuleEngineV4
         public float BounceAngleConeDeg { get; init; }
         public float DiminishMultSecond { get; init; }
         public float DiminishMultThird { get; init; }
+        public float ProjectileColumnHalfHeightM { get; init; }
     }
 }

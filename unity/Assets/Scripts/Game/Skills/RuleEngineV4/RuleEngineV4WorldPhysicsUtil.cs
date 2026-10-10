@@ -16,7 +16,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             if (t.TryGetComponent(out RuleEngineV4PhysicsBodyHost body))
                 return body.BodyRadiusM;
             if (t.TryGetComponent(out TargetableHost mark))
-                return mark.MarkerRadius(0f);
+                return mark.MarkerRadius(0);
             if (t.TryGetComponent(out KinematicMotorController motor))
                 return motor.BodyRadiusM;
             return RuleEngineV4PhysicsDefaults.SliceMinionFallbackRadiusM;
@@ -29,23 +29,23 @@ namespace Dovus.Game.Skills.RuleEngineV4
             return RuleEngineV4WeightTier.Medium;
         }
 
-        public static float EdgeDistance(Vector3 from, Transform target)
+        public static float EdgeDistance(Vector3 from, Transform body)
         {
-            if (target == null)
+            if (body == null)
                 return float.MaxValue;
-            TargetableHost mark = target.GetComponentInParent<TargetableHost>();
+            TargetableHost mark = body.GetComponentInParent<TargetableHost>();
             if (mark != null)
                 return mark.DistanceFrom(from);
-            float r = BodyRadius(target);
-            Vector3 flat = target.position - from;
-            flat.y = 0f;
-            return Mathf.Max(0f, flat.magnitude - r);
+            float r = BodyRadius(body);
+            Vector3 flat = body.position - from;
+            flat.y = 0;
+            return Mathf.Max(0, flat.magnitude - r);
         }
 
-        public static bool InMeleeReach(Vector3 from, Transform target, float casterR, float reachM)
+        public static bool InMeleeReach(Vector3 from, Transform body, float casterR, float reachM)
         {
-            TargetableHost mark = target != null ? target.GetComponentInParent<TargetableHost>() : null;
-            float dist = mark != null ? mark.DistanceFrom(from) : EdgeDistance(from, target) + casterR;
+            TargetableHost mark = body != null ? body.GetComponentInParent<TargetableHost>() : null;
+            float dist = mark != null ? mark.DistanceFrom(from) : EdgeDistance(from, body) + casterR;
             return StrikeCapsule.EdgeInReach(dist, casterR, reachM);
         }
 
@@ -79,20 +79,20 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 if (self != null && col.transform.IsChildOf(self))
                     continue;
                 // Başlangıçta zaten temas eden collider (mesafe 0, nokta sıfır) yönü kesmez.
-                if (Hits[i].distance <= 0f && Hits[i].point == Vector3.zero)
+                if (Hits[i].distance <= 0 && Hits[i].point == Vector3.zero)
                     continue;
                 best = Hits[i].distance;
                 blocked = true;
             }
             if (blocked)
                 best -= KinematicMotorControllerDefaults.MoveStopInsetM;
-            return Mathf.Max(0f, best);
+            return Mathf.Max(0, best);
         }
 
         static Vector3 SweepAndSlide(Vector3 from, Vector3 to, float radiusM)
         {
             Vector3 delta = to - from;
-            delta.y = 0f;
+            delta.y = 0;
             float dist = delta.magnitude;
             if (dist < 0.0001f)
                 return from;
@@ -116,8 +116,8 @@ namespace Dovus.Game.Skills.RuleEngineV4
                     bestNormal = Hits[i].normal;
                 }
             }
-            Vector3 stop = from + dir * Mathf.Max(0f, best - KinematicMotorControllerDefaults.MoveStopInsetM);
-            bestNormal.y = 0f;
+            Vector3 stop = from + dir * Mathf.Max(0, best - KinematicMotorControllerDefaults.MoveStopInsetM);
+            bestNormal.y = 0;
             if (bestNormal.sqrMagnitude < 0.0001f)
                 return stop;
             bestNormal.Normalize();
