@@ -337,6 +337,7 @@ namespace Dovus.Core.Motion
             t = Math.Max(0f, t);
             _destX = _phaseX + vx * t;
             _destZ = _phaseZ + vz * t;
+            StoppedAtBodyEdge = true;
         }
 
         /// <summary>Atış, tutma ve dönüş oyuncunun ayaklarını yerinden kaldırmaz.</summary>
