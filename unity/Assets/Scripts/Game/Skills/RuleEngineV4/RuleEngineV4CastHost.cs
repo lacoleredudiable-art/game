@@ -58,6 +58,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             RuleEngineV4TargetPick pick = RuleEngineV4AutoTargetPicker.Pick(
                 resolution,
                 adj,
+                verb,
                 weaponRange,
                 data.Globals.FriendlyRangeCapM,
                 data.Globals.IsaretUseRangeM,

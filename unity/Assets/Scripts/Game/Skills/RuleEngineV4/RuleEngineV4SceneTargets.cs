@@ -31,7 +31,9 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 int id = host.TargetKey;
                 if (id <= 0)
                     continue;
-                into.Add(new RuleEngineV4TargetCandidate(id, hostile, dist, true, hasMark));
+                RuleEngineV4SceneTargetMetrics.Read(host, out float hpRatio, out float purifyNeed);
+                into.Add(new RuleEngineV4TargetCandidate(
+                    id, hostile, dist, true, hasMark, hpRatio, purifyNeed));
             }
         }
 

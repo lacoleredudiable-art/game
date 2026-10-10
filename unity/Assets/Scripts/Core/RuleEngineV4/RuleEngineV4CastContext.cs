@@ -21,7 +21,7 @@ namespace Dovus.Core.RuleEngineV4
         /// <summary>Hedef silah menzili içinde (dost etkisinde min(silah, 6 m) katman 1'de hesaplanır).</summary>
         public bool TargetInWeaponRange { get; }
 
-        /// <summary>Basılı tutup seçim yapıldı; Odaklı otomatik ölçüsü kapanır.</summary>
+        /// <summary>Basılı tutup seçim yapıldı (Odaklı ihtiyaç seçimini geçersiz kılmaz).</summary>
         public bool ManualTargetSelected { get; }
 
         /// <summary>25 m içinde kullanılabilir takım işareti (İşaretli, fiil ≠ Arındırma).</summary>

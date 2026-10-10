@@ -71,5 +71,94 @@ namespace Dovus.Core.RuleEngineV4
             lifeSec = 0f;
             return false;
         }
+
+        public static bool TryOnSure(PhysicsCommand cmd, out OnSureCommand onSure)
+        {
+            if (cmd is OnSureCommand o)
+            {
+                onSure = o;
+                return true;
+            }
+            onSure = null!;
+            return false;
+        }
+
+        public static bool TryMenzile(PhysicsCommand cmd, out float rangeM)
+        {
+            if (cmd is MenzileYuruCommand walk)
+            {
+                rangeM = walk.RangeM;
+                return true;
+            }
+            rangeM = 0f;
+            return false;
+        }
+
+        public static bool TryDash(PhysicsCommand cmd, out KendiniTasiCommand dash)
+        {
+            if (cmd is KendiniTasiCommand d)
+            {
+                dash = d;
+                return true;
+            }
+            dash = null!;
+            return false;
+        }
+
+        public static bool TryPush(PhysicsCommand cmd, out float distanceM)
+        {
+            if (cmd is ItCommand push)
+            {
+                distanceM = push.DistanceM;
+                return true;
+            }
+            distanceM = 0f;
+            return false;
+        }
+
+        public static bool TryPoise(PhysicsCommand cmd, out float amount)
+        {
+            if (cmd is DengeVerCommand poise)
+            {
+                amount = poise.Amount;
+                return true;
+            }
+            amount = 0f;
+            return false;
+        }
+
+        public static bool TryGuard(PhysicsCommand cmd, out float durationSec, out float blockRatio)
+        {
+            if (cmd is DurusAcCommand guard)
+            {
+                durationSec = guard.DurationSec;
+                blockRatio = guard.BlockRatio;
+                return true;
+            }
+            durationSec = blockRatio = 0f;
+            return false;
+        }
+
+        public static bool TryBounce(PhysicsCommand cmd, out SekCommand bounce)
+        {
+            if (cmd is SekCommand b)
+            {
+                bounce = b;
+                return true;
+            }
+            bounce = null!;
+            return false;
+        }
+
+        public static bool TryStructure(PhysicsCommand cmd, out float lifeSec)
+        {
+            if (cmd is YapiKurCommand structure)
+            {
+                lifeSec = structure.LifeSec;
+                return true;
+            }
+            lifeSec = 0f;
+            return false;
+        }
     }
 }

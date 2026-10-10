@@ -3,12 +3,13 @@ using System.Collections.Generic;
 
 namespace Dovus.Core.RuleEngineV4
 {
-    /// <summary>AutoProfileKey + Odaklı kuralları; en yakın düşman/dost seçimi (Core, sahne yok).</summary>
+    /// <summary>AutoProfileKey + Odaklı ihtiyaç seçimi (Core, sahne yok).</summary>
     public static class RuleEngineV4AutoTargetPicker
     {
         public static RuleEngineV4TargetPick Pick(
             in RuleEngineV4TargetResolution resolution,
             int adjectiveId,
+            int verbId,
             float weaponRangeM,
             float friendlyRangeCapM,
             float markUseRangeM,
@@ -20,8 +21,8 @@ namespace Dovus.Core.RuleEngineV4
             if (resolution.Side == RuleEngineV4TargetSide.Friendly && adjectiveId != 9)
                 range = Math.Min(range, Math.Max(0f, friendlyRangeCapM));
 
-            if (adjectiveId == 2)
-                return PickOdakli(resolution, range, manualTargetSelected, manualTargetId, candidates);
+            if (adjectiveId == 2 || resolution.AutoProfileKey == "odakli_need")
+                return PickOdakliNeed(verbId, resolution, range, candidates);
 
             if (resolution.AutoProfileKey == "isaretli_nearest_mark")
                 return PickNearestMark(resolution, markUseRangeM, candidates);
@@ -42,17 +43,12 @@ namespace Dovus.Core.RuleEngineV4
             return PickNearestHostile(range, candidates);
         }
 
-        public static RuleEngineV4CastContext ToCastContext(in RuleEngineV4TargetPick pick, int adjectiveId, bool hasUsableMark)
-        {
-            bool hasValid = pick.HasTarget;
-            if (adjectiveId == 2 && !pick.ManualTargetUsed)
-                hasValid = false;
-            return new RuleEngineV4CastContext(
-                hasValidTarget: hasValid,
+        public static RuleEngineV4CastContext ToCastContext(in RuleEngineV4TargetPick pick, int adjectiveId, bool hasUsableMark) =>
+            new(
+                hasValidTarget: pick.HasTarget,
                 targetInWeaponRange: pick.TargetInWeaponRange,
                 manualTargetSelected: pick.ManualTargetUsed,
                 hasUsableMark: hasUsableMark);
-        }
 
         public static bool AnyUsableMark(IReadOnlyList<RuleEngineV4TargetCandidate> candidates, float markUseRangeM)
         {
@@ -66,23 +62,35 @@ namespace Dovus.Core.RuleEngineV4
             return false;
         }
 
-        static RuleEngineV4TargetPick PickOdakli(
+        static RuleEngineV4TargetPick PickOdakliNeed(
+            int verbId,
             in RuleEngineV4TargetResolution resolution,
             float rangeM,
-            bool manualTargetSelected,
-            int? manualTargetId,
             IReadOnlyList<RuleEngineV4TargetCandidate> candidates)
         {
-            if (!manualTargetSelected || !manualTargetId.HasValue)
+            RuleEngineV4TargetSide side = RuleEngineV4OdakliRules.PickSide(verbId, resolution.Side);
+            if (side == RuleEngineV4TargetSide.Self)
+                return new RuleEngineV4TargetPick(true, true, 0, true, false);
+
+            bool found = false;
+            RuleEngineV4TargetCandidate best = default;
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                RuleEngineV4TargetCandidate c = candidates[i];
+                if (!c.Available || !MatchesSide(c, side))
+                    continue;
+                if (!found || RuleEngineV4OdakliRules.Beats(verbId, c, best))
+                {
+                    best = c;
+                    found = true;
+                }
+            }
+
+            if (!found)
                 return new RuleEngineV4TargetPick(false, false, 0, false, false);
 
-            if (!TryGet(candidates, manualTargetId.Value, out RuleEngineV4TargetCandidate manual)
-                || !manual.Available
-                || !MatchesSide(manual, resolution.Side))
-                return new RuleEngineV4TargetPick(false, false, manualTargetId.Value, false, true);
-
-            bool inRange = manual.DistanceM <= rangeM;
-            return new RuleEngineV4TargetPick(true, false, manual.Id, inRange, true);
+            bool inRange = best.DistanceM <= rangeM;
+            return new RuleEngineV4TargetPick(true, false, best.Id, inRange, false);
         }
 
         static RuleEngineV4TargetPick PickNearestMark(
@@ -176,21 +184,5 @@ namespace Dovus.Core.RuleEngineV4
                 RuleEngineV4TargetSide.Friendly => !c.IsHostileToCaster,
                 _ => true,
             };
-
-        static bool TryGet(
-            IReadOnlyList<RuleEngineV4TargetCandidate> candidates,
-            int id,
-            out RuleEngineV4TargetCandidate result)
-        {
-            for (int i = 0; i < candidates.Count; i++)
-            {
-                if (candidates[i].Id != id)
-                    continue;
-                result = candidates[i];
-                return true;
-            }
-            result = default;
-            return false;
-        }
     }
 }
