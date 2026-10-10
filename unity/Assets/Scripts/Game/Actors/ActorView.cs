@@ -199,10 +199,10 @@ namespace Dovus.Game.Actors
         {
             if (_animator == null)
                 return;
-            RuntimeAnimatorController ctrl = _weaponRegistry != null
-                ? _weaponRegistry.FindOverride(archetypeKey)
-                : null;
-            RuntimeAnimatorController target = ctrl != null ? ctrl : _baseController;
+            RuntimeAnimatorController ctrl = _weaponRegistry != null ? _weaponRegistry.FindOverride(archetypeKey) : null;
+            // Override yalnız kendi temel controller'ında anlamlı; başka iskeletin controller'ını ezmez.
+            bool foreign = ctrl is AnimatorOverrideController ovr && ovr.runtimeAnimatorController != _baseController;
+            RuntimeAnimatorController target = ctrl != null && !foreign ? ctrl : _baseController;
             if (_animator.runtimeAnimatorController == target)
                 return;
             _animator.runtimeAnimatorController = target;

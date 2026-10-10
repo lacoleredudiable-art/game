@@ -114,6 +114,7 @@ namespace Dovus.Game.Composition.Builders
         public int PrototypeMainClassId => Host.PrototypeMainClassId;
         public int[] PrototypePassiveRuneIds => Host.PrototypePassiveRuneIds;
         public GameObject PlayerVisualPrefab => Host.PlayerVisualPrefab;
+        public GameObject SlicePlayerVisualPrefab => Host.SlicePlayerVisualPrefab;
         public GameObject BossVisualPrefab => Host.BossVisualPrefab;
     }
 }
