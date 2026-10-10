@@ -16,6 +16,8 @@ namespace Dovus.Game.Skills.RuleEngineV4
             _castHost = new RuleEngineV4CastHost(director);
         }
 
+        internal RuleEngineV4CastHost CastHost => _castHost;
+
         public bool TryLaunch(
             PendingClosing ctx,
             SkillResolution skill,

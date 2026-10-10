@@ -29,6 +29,10 @@ namespace Dovus.Game.Skills.RuleEngineV4
 
         public float LastDealt => _lastDealt;
 
+        public bool IsRunning => _runner.IsRunning;
+
+        internal RuleEngineV4WorldCommandRunHost Runner => _runner;
+
         public bool TryLaunch(
             PendingClosing ctx,
             SkillResolution skill,
@@ -36,12 +40,18 @@ namespace Dovus.Game.Skills.RuleEngineV4
             out float dealt)
         {
             dealt = 0f;
-            _lastDealt = 0f;
-            if (!RuleEngineV4Feature.Enabled)
-                return false;
             if (skill.IsEmpty
                 || !int.TryParse(skill.Identity.Verb.Value, out int verb)
                 || !int.TryParse(skill.Identity.Adjective.Value, out int adj))
+                return false;
+            return TryLaunchCombo(verb, adj, out dealt);
+        }
+
+        internal bool TryLaunchCombo(int verb, int adj, out float dealt)
+        {
+            dealt = 0f;
+            _lastDealt = 0f;
+            if (!RuleEngineV4Feature.Enabled)
                 return false;
             if (!RuleEngineV4Slice.IsSliceCombo(verb, adj))
                 return false;
