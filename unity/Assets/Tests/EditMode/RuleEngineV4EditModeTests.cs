@@ -8,10 +8,24 @@ namespace Dovus.Tests.EditMode
 {
     public sealed class RuleEngineV4EditModeTests
     {
-        static RuleEngineV4Planner Planner()
+        static RuleEngineV4Catalog Catalog()
         {
             string path = Path.Combine(Application.dataPath, "Resources", "RuleEngineV4", "kural-motoru-v4.json");
-            return new RuleEngineV4Planner(RuleEngineV4Catalog.FromJson(File.ReadAllText(path)));
+            return RuleEngineV4Catalog.FromJson(File.ReadAllText(path));
+        }
+
+        static RuleEngineV4Planner Planner() => new(Catalog());
+
+        [Test]
+        public void SliceWeapons_CekicOut_RulesStayInJson()
+        {
+            Assert.That(RuleEngineV4Slice.IsSliceWeapon(6), Is.False, "Çekiç dilimde");
+            Assert.That(RuleEngineV4Slice.IsSliceWeapon(2), Is.True, "Yay dilimde değil");
+            Assert.That(RuleEngineV4Slice.IsSliceWeapon(4), Is.True, "Kılıç dilimde değil");
+            RuleEngineV4Catalog catalog = Catalog();
+            Assert.That(catalog.TryGetWeapon(6, out _), Is.True, "Çekiç silah kuralı JSON'dan silinmiş");
+            Assert.That(new RuleEngineV4Planner(catalog).Plan(1, 2, 6).IsValid, Is.True, "Çekiç planı");
+            Assert.That(catalog.SkillAnim.Resolve(1, 2, 6).Clip, Is.EqualTo("Cekic_VUR"), "Çekiç skill_anim");
         }
 
         [Test]

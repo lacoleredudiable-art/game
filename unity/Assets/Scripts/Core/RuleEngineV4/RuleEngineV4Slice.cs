@@ -29,6 +29,7 @@ namespace Dovus.Core.RuleEngineV4
         }
 
         public static readonly int[] Runes = { 1, 2, 3, 4, 6, 9 };
-        public static readonly int[] Weapons = { 2, 4, 6 };
+        // Çekiç (6) ilk aşamadan çıktı; geri açmak: { 2, 4, 6 }
+        public static readonly int[] Weapons = { 2, 4 };
     }
 }

@@ -37,6 +37,18 @@ public sealed class RuleEngineV4PlannerTests
     }
 
     [Test]
+    public void SliceWeapons_CekicOut_RulesStayInJson()
+    {
+        Assert.That(RuleEngineV4Slice.IsSliceWeapon(6), Is.False, "Çekiç dilimde");
+        Assert.That(RuleEngineV4Slice.IsSliceWeapon(2), Is.True, "Yay dilimde değil");
+        Assert.That(RuleEngineV4Slice.IsSliceWeapon(4), Is.True, "Kılıç dilimde değil");
+        var catalog = RuleEngineV4Catalog.FromJson(File.ReadAllText(JsonPath()));
+        Assert.That(catalog.TryGetWeapon(6, out _), Is.True, "Çekiç silah kuralı JSON'dan silinmiş");
+        Assert.That(new RuleEngineV4Planner(catalog).Plan(1, 2, 6).IsValid, Is.True, "Çekiç planı");
+        Assert.That(catalog.SkillAnim.Resolve(1, 2, 6).Clip, Is.EqualTo("Cekic_VUR"), "Çekiç skill_anim");
+    }
+
+    [Test]
     public void Scale_FromData_PlayerHp1000_BaseDamage100()
     {
         var catalog = RuleEngineV4Catalog.FromJson(File.ReadAllText(JsonPath()));
