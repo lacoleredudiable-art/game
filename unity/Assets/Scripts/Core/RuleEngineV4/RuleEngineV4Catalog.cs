@@ -15,14 +15,17 @@ namespace Dovus.Core.RuleEngineV4
 
         RuleEngineV4Catalog(
             RuleEngineV4Scale scale,
-            RuleEngineV4Globals globals)
+            RuleEngineV4Globals globals,
+            RuleEngineV4WorldPhysics worldPhysics)
         {
             Scale = scale;
             Globals = globals;
+            WorldPhysics = worldPhysics;
         }
 
         public RuleEngineV4Scale Scale { get; }
         public RuleEngineV4Globals Globals { get; }
+        public RuleEngineV4WorldPhysics WorldPhysics { get; }
 
         public bool TryGetVerb(int id, out RuleEngineV4Verb verb) => _verbs.TryGetValue(id, out verb!);
         public bool TryGetAdjective(int id, out RuleEngineV4Adjective adjective) => _adjectives.TryGetValue(id, out adjective!);
@@ -33,6 +36,7 @@ namespace Dovus.Core.RuleEngineV4
             JsonValue root = MiniJson.Parse(json);
             var scaleNode = root["scale"];
             var globalsNode = root["globals"];
+            RuleEngineV4WorldPhysics worldPhysics = ParseWorldPhysics(root["world_physics"]);
             var catalog = new RuleEngineV4Catalog(
                 new RuleEngineV4Scale
                 {
@@ -74,7 +78,8 @@ namespace Dovus.Core.RuleEngineV4
                     YansitmaYogunDurationSec = F(globalsNode["yansitma_yogun_duration_sec"], RuleEngineV4CatalogDefaults.YansitmaYogunDurationSec),
                     ConjureLifeSec = F(globalsNode["conjure_life_sec"], RuleEngineV4CatalogDefaults.ConjureLifeSec),
                     ConjureYogunLifeSec = F(globalsNode["conjure_yogun_life_sec"], RuleEngineV4CatalogDefaults.ConjureYogunLifeSec),
-                });
+                },
+                worldPhysics);
 
             foreach (KeyValuePair<string, JsonValue> kv in root["verbs"].AsObject())
                 if (int.TryParse(kv.Key, NumberStyles.Integer, CultureInfo.InvariantCulture, out int id))
@@ -88,7 +93,34 @@ namespace Dovus.Core.RuleEngineV4
                 if (int.TryParse(kv.Key, NumberStyles.Integer, CultureInfo.InvariantCulture, out int id))
                     catalog._weapons[id] = ParseWeapon(kv.Value, id);
 
+            RuleEngineV4WorldPhysicsRuntime.Bind(catalog.WorldPhysics);
             return catalog;
+        }
+
+        static RuleEngineV4WorldPhysics ParseWorldPhysics(JsonValue node)
+        {
+            RuleEngineV4WorldPhysics d = RuleEngineV4WorldPhysics.Default;
+            if (node.IsNull)
+                return d;
+            return new RuleEngineV4WorldPhysics
+            {
+                BodyRadiusPlayerM = F(node["body_radius_player_m"], d.BodyRadiusPlayerM),
+                BodyRadiusBossM = F(node["body_radius_boss_m"], d.BodyRadiusBossM),
+                BodyRadiusCreatureM = F(node["body_radius_creature_m"], d.BodyRadiusCreatureM),
+                BodyRadiusStructureM = F(node["body_radius_structure_m"], d.BodyRadiusStructureM),
+                DashSpeedMps = F(node["dash_speed_mps"], d.DashSpeedMps),
+                ApproachSpeedMps = F(node["approach_speed_mps"], d.ApproachSpeedMps),
+                MotionCarryRatio = F(node["motion_carry_ratio"], d.MotionCarryRatio),
+                MotionSpeedMaxMult = F(node["motion_speed_max_mult"], d.MotionSpeedMaxMult),
+                ProjectileRadiusM = F(node["projectile_radius_m"], d.ProjectileRadiusM),
+                DefaultMissileSpeedMps = F(node["default_missile_speed_mps"], d.DefaultMissileSpeedMps),
+                ProtectionInterceptWidthM = F(node["protection_intercept_width_m"], d.ProtectionInterceptWidthM),
+                StructureMaxPerPlayer = node["structure_max_per_player"].AsInt(d.StructureMaxPerPlayer),
+                StructureMaxGlobal = node["structure_max_global"].AsInt(d.StructureMaxGlobal),
+                BounceAngleConeDeg = F(node["bounce_angle_cone_deg"], d.BounceAngleConeDeg),
+                DiminishMultSecond = F(node["diminish_mult_second"], d.DiminishMultSecond),
+                DiminishMultThird = F(node["diminish_mult_third"], d.DiminishMultThird),
+            };
         }
 
         static RuleEngineV4Verb ParseVerb(JsonValue node, int id) =>

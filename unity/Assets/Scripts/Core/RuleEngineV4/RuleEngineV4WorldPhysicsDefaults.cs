@@ -1,15 +1,16 @@
 namespace Dovus.Core.RuleEngineV4
 {
-    /// <summary>dunya-fizigi.md dilim sabitleri (JSON yoksa).</summary>
+    /// <summary>dunya-fizigi.md — değerler JSON world_physics (RuleEngineV4WorldPhysicsRuntime).</summary>
     public static class RuleEngineV4WorldPhysicsDefaults
     {
-        public const float DashSpeedMps = 14f;
-        public const float ApproachSpeedMps = 8f;
-        public const float MotionCarryRatio = 0.5f;
-        public const float MotionSpeedMaxMult = 1.5f;
-        public const int StructureMaxPerPlayer = 5;
-        public const int StructureMaxGlobal = 25;
-        public const float BounceAngleConeDeg = 35f;
-        public const float ProtectionInterceptWidthM = 1.2f;
+        public static float DashSpeedMps => RuleEngineV4WorldPhysicsRuntime.Active.DashSpeedMps;
+        public static float ApproachSpeedMps => RuleEngineV4WorldPhysicsRuntime.Active.ApproachSpeedMps;
+        public static float MotionCarryRatio => RuleEngineV4WorldPhysicsRuntime.Active.MotionCarryRatio;
+        public static float MotionSpeedMaxMult => RuleEngineV4WorldPhysicsRuntime.Active.MotionSpeedMaxMult;
+        public static int StructureMaxPerPlayer => RuleEngineV4WorldPhysicsRuntime.Active.StructureMaxPerPlayer;
+        public static int StructureMaxGlobal => RuleEngineV4WorldPhysicsRuntime.Active.StructureMaxGlobal;
+        public static float BounceAngleConeDeg => RuleEngineV4WorldPhysicsRuntime.Active.BounceAngleConeDeg;
+        public static float ProtectionInterceptWidthM => RuleEngineV4WorldPhysicsRuntime.Active.ProtectionInterceptWidthM;
+        public static float ProjectileRadiusM => RuleEngineV4WorldPhysicsRuntime.Active.ProjectileRadiusM;
     }
 }

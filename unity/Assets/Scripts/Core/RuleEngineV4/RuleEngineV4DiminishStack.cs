@@ -10,8 +10,8 @@ namespace Dovus.Core.RuleEngineV4
             float mult = stackIndex switch
             {
                 0 => 1f,
-                1 => 0.5f,
-                _ => 0.25f,
+                1 => RuleEngineV4WorldPhysicsRuntime.Active.DiminishMultSecond,
+                _ => RuleEngineV4WorldPhysicsRuntime.Active.DiminishMultThird,
             };
             return value * mult;
         }

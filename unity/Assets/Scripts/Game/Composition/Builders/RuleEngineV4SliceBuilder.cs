@@ -101,7 +101,7 @@ namespace Dovus.Game.Composition.Builders
             minion.Configure(id, hp);
             var body = go.AddComponent<RuleEngineV4PhysicsBodyHost>();
             body.WeightTier = RuleEngineV4WeightTier.Light;
-            body.BodyRadiusM = radiusM;
+            body.BodyRadiusM = RuleEngineV4WorldPhysicsRuntime.Active.BodyRadiusCreatureM;
             go.AddComponent<ActorGroundingController>();
 
             var target = go.AddComponent<TargetableHost>();

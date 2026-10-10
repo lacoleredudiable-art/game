@@ -6,11 +6,15 @@ namespace CoreTests;
 [TestFixture]
 public sealed class RuleEngineV4WorldPhysicsTests
 {
+    [SetUp]
+    public void SetUp() => RuleEngineV4WorldPhysicsRuntime.Bind(RuleEngineV4WorldPhysics.Default);
+
     [Test]
     public void Weight_LightCannotPushHeavy()
     {
         Assert.That(RuleEngineV4WeightRules.CanDisplace(RuleEngineV4WeightTier.Light, RuleEngineV4WeightTier.Heavy), Is.False);
         Assert.That(RuleEngineV4WeightRules.IsImmovable(RuleEngineV4WeightTier.Boss), Is.True);
+        Assert.That(RuleEngineV4WeightRules.IsImmovable(RuleEngineV4WeightTier.Anchored), Is.True);
     }
 
     [Test]

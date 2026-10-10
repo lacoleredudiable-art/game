@@ -344,10 +344,14 @@ namespace Dovus.Game.Skills.RuleEngineV4
             var wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
             wall.name = "RuleEngineV4Structure";
             wall.transform.position = pos;
-            wall.transform.localScale = new Vector3(1.5f, 0.5f, 0.35f);
+            float r = RuleEngineV4WorldPhysicsRuntime.Active.BodyRadiusStructureM;
+            wall.transform.localScale = new Vector3(r * 3f, r, r * 0.5f);
             var col = wall.GetComponent<Collider>();
             if (col != null)
                 col.isTrigger = false;
+            var body = wall.AddComponent<RuleEngineV4PhysicsBodyHost>();
+            body.WeightTier = RuleEngineV4WeightTier.Anchored;
+            body.BodyRadiusM = r;
             UnityEngine.Object.Destroy(wall, lifeSec);
         }
 

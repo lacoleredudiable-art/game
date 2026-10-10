@@ -7,10 +7,12 @@ namespace Dovus.Core.RuleEngineV4
 
         public bool TryPlace(int playerSlot)
         {
-            if (_global >= RuleEngineV4WorldPhysicsDefaults.StructureMaxGlobal)
+            int maxGlobal = RuleEngineV4WorldPhysicsDefaults.StructureMaxGlobal;
+            int maxPlayer = RuleEngineV4WorldPhysicsDefaults.StructureMaxPerPlayer;
+            if (_global >= maxGlobal)
                 return false;
             int slot = playerSlot < 0 || playerSlot >= _perPlayer.Length ? 0 : playerSlot;
-            if (_perPlayer[slot] >= RuleEngineV4WorldPhysicsDefaults.StructureMaxPerPlayer)
+            if (_perPlayer[slot] >= maxPlayer)
                 return false;
             _perPlayer[slot]++;
             _global++;
