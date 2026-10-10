@@ -7,7 +7,8 @@ namespace Dovus.Game.Vfx
 {
     /// <summary>
     /// efekt-motoru dikey dilim yönetmeni: VfxPlan dinler, Kılıç ATIL katmanlarını oynatır.
-    /// Mekanik / hitbox / zamanlama değiştirmez.
+    /// Zamanlama Animation Event (Trail_On/Off, Impact, Ejder) veya spec yedeği (uç hızı);
+    /// sabit klip karesi yok. Mekanik / hitbox değişmez.
     /// </summary>
     public sealed class RuleDrivenVfxDirector : MonoBehaviour
     {
@@ -18,26 +19,38 @@ namespace Dovus.Game.Vfx
         LightningDashTrailView _lightning;
         DragonSilhouetteCardView _silhouette;
         DragonRuneFlashView _runes;
+        SkillAnimVfxEventRelay _animRelay;
         Transform _fxRoot;
 
         VfxPlan _plan;
-        bool _active;
+        bool _armed;
+        bool _trailOn;
+        bool _silhouetteSpawned;
         bool _hitDone;
         bool _endDone;
+        bool _wasDisplacing;
         Vector3 _dashStart;
         Vector3 _lastPos;
+        Vector3 _lastTip;
         Vector3 _dashDir = Vector3.forward;
+        float _footSparkCooldown;
+        float _tipSpeedMps;
 
         public VfxPlan ActivePlan => _plan;
-        public bool IsSliceActive => _active && _plan.IsSwordDashSlice;
+        public bool IsSliceActive => _armed && _plan.IsSwordDashSlice;
 
         public void Bind(FeelVfxRuntime feel)
         {
             _feel = feel;
             _body = GetComponent<MotionTemplateBodyHost>();
             EnsureChildren();
+            EnsureAnimRelay();
         }
 
+        /// <summary>
+        /// Yol bağımsız skill başlangıcı (CastPipeline shout). Yalnız uyanış + rün;
+        /// iz / silüet / isabet anim event veya teslim olayını bekler.
+        /// </summary>
         public void BeginSkill(in SkillResolution skill, string weaponKey)
         {
             _plan = VfxPlanResolver.Resolve(skill, weaponKey);
@@ -45,14 +58,21 @@ namespace Dovus.Game.Vfx
                 return;
 
             EnsureChildren();
-            _active = true;
+            EnsureAnimRelay();
+            _armed = true;
+            _trailOn = false;
+            _silhouetteSpawned = false;
             _hitDone = false;
             _endDone = false;
+            _wasDisplacing = _body != null && _body.IsDisplacing;
             _dashStart = transform.position;
             _lastPos = _dashStart;
+            _lastTip = BladeTip();
+            _tipSpeedMps = 0f;
+            _footSparkCooldown = 0f;
             _dashDir = transform.forward;
             _dashDir.y = 0f;
-            if (_dashDir.sqrMagnitude < 0.0001f)
+            if (_dashDir.sqrMagnitude < RuleVfxDefaults.PathSampleEpsSq)
                 _dashDir = Vector3.forward;
             _dashDir.Normalize();
 
@@ -68,56 +88,61 @@ namespace Dovus.Game.Vfx
                     1f);
                 _runes.Play(_plan.VerbRuneId, _plan.AdjectiveRuneId, c);
             }
+        }
 
-            if (_plan.LightningDashTrail)
-            {
-                _meshTrail.Begin(_plan.CoreColor, _plan.TrailLifeSec, _dashDir);
-                Vector3 tip = BladeTip();
-                Vector3 guard = BladeGuard();
-                _meshTrail.SampleBlade(guard, tip);
-                _lightning.Play(
-                    _dashStart + Vector3.up * RuleVfxArtDefaults.DashStartLift,
-                    tip,
-                    _plan.CoreColor,
-                    _plan.TrailLifeSec);
-            }
+        /// <summary>Animation Event: Trail_On — akan iz / şimşek açılır.</summary>
+        public void OnTrailOn()
+        {
+            if (!_armed || _plan.IsEmpty || _trailOn)
+                return;
+            if (!_plan.LightningDashTrail && _plan.Carrier != VfxCarrierKind.FlowingEmberTrail)
+                return;
+            StartTrail();
+        }
 
-            if (_plan.DragonTailArcSilhouette)
-            {
-                // ATIL state girişi (kod) — yol boyunca kuyruk yayı kartı.
-                Vector3 foreshadow = _dashStart + _dashDir * RuleVfxDefaults.DashForeshadowM;
-                _silhouette.PlayAlongLine(
-                    _dashStart + Vector3.up * RuleVfxArtDefaults.SilhouettePathLift,
-                    foreshadow + Vector3.up * RuleVfxArtDefaults.SilhouettePathLift,
-                    _plan.CoreColor,
-                    _plan.SilhouetteLifeSec,
-                    _plan.DragonAtlasCell);
-            }
+        /// <summary>Animation Event: Trail_Off.</summary>
+        public void OnTrailOff()
+        {
+            if (!_trailOn)
+                return;
+            _trailOn = false;
+            _meshTrail?.StopEmit();
+        }
 
-            if (_plan.WingFootSparks)
-                EmitFootWingSparks();
+        /// <summary>Animation Event: Impact — isabet görseli (gameplay NotifyHit ile aynı kapı).</summary>
+        public void OnImpactAnimEvent()
+        {
+            if (!_armed)
+                return;
+            Vector3 origin = transform.position + _dashDir * RuleVfxArtDefaults.HitForwardPad;
+            NotifyHit(origin, _dashDir);
+        }
+
+        /// <summary>Animation Event: Ejder — silüet kartı (Çekiç vb.; Kılıç ATIL state girişi kodda).</summary>
+        public void OnEjderAnimEvent()
+        {
+            if (!_armed || _plan.IsEmpty || _silhouetteSpawned)
+                return;
+            if (!_plan.DragonTailArcSilhouette && _plan.DragonAtlasCell < 0)
+                return;
+            SpawnSilhouetteAlongDash();
         }
 
         public void NotifyHit(Vector3 hitOrigin, Vector3 hitDir)
         {
-            if (!_active || _hitDone || _plan.IsEmpty)
+            if (!_armed || _hitDone || _plan.IsEmpty)
                 return;
             _hitDone = true;
-            if (hitDir.sqrMagnitude > 0.0001f)
+            if (hitDir.sqrMagnitude > RuleVfxDefaults.PathSampleEpsSq)
             {
                 _dashDir = hitDir;
                 _dashDir.y = 0f;
                 _dashDir.Normalize();
             }
 
-            Vector3 target = hitOrigin;
-            if (_body != null)
-            {
-                // İsabet görseli hedef tarafında (boss gövdesi yönünde).
-                target = hitOrigin + _dashDir * Mathf.Max(
-                    RuleVfxArtDefaults.HitForwardMin,
-                    hitOrigin == default ? 0.5f : RuleVfxArtDefaults.HitForwardPad);
-            }
+            Vector3 target = hitOrigin + _dashDir * Mathf.Max(
+                RuleVfxArtDefaults.HitForwardMin,
+                hitOrigin == default ? 0.5f : RuleVfxArtDefaults.HitForwardPad);
 
             if (_plan.SlashArcOnHit || _plan.ZararClawMarksOnHit)
                 SwordAtilHitVfx.Spawn(_fxRoot, target, _dashDir, _plan, _feel);
@@ -127,48 +152,114 @@ namespace Dovus.Game.Vfx
 
         public void NotifyMotionEnded(bool stoppedAtBodyEdge)
         {
-            if (!_active || _endDone)
+            if (!_armed || _endDone)
                 return;
             _endDone = true;
-            _meshTrail?.StopEmit();
+            if (_trailOn)
+                OnTrailOff();
             _kor?.SignalDelivery();
 
             if (stoppedAtBodyEdge && _plan.EdgeStopEmberSpark)
                 EdgeStopEmberSparks.Spawn(transform.position, _plan.CoreColor, _feel);
 
-            _active = false;
+            _armed = false;
         }
 
         void LateUpdate()
         {
-            if (!_active || !_plan.LightningDashTrail)
+            if (!_armed || _plan.IsEmpty)
                 return;
 
+            float dt = Time.deltaTime;
             Vector3 pos = transform.position;
+            Vector3 tip = BladeTip();
             Vector3 delta = pos - _lastPos;
+            if (dt > 0f)
+                _tipSpeedMps = (tip - _lastTip).magnitude / dt;
+
             if (delta.sqrMagnitude > RuleVfxDefaults.PathSampleEpsSq)
             {
                 _dashDir = delta;
                 _dashDir.y = 0f;
-                if (_dashDir.sqrMagnitude > 0.0001f)
+                if (_dashDir.sqrMagnitude > RuleVfxDefaults.PathSampleEpsSq)
                     _dashDir.Normalize();
             }
 
+            bool displacing = _body != null && _body.IsDisplacing;
+            bool justStartedDisplace = displacing && !_wasDisplacing;
+            bool justEndedDisplace = !displacing && _wasDisplacing;
+
+            // §3.4 Kılıç ATIL: silüet state girişi (kod) — klip karesi değil.
+            if (justStartedDisplace && _plan.DragonTailArcSilhouette && !_silhouetteSpawned)
+                SpawnSilhouetteAlongDash();
+
+            // Trail_On yoksa yedek: uç hızı > TrailAutoOpenTipSpeedMps (§3.1); kare numarası yok.
+            if (!_trailOn
+                && _plan.LightningDashTrail
+                && _tipSpeedMps > RuleVfxDefaults.TrailAutoOpenTipSpeedMps)
+                StartTrail();
+
+            if (_trailOn)
+            {
+                Vector3 guard = BladeGuard();
+                _meshTrail.SampleBlade(guard, tip);
+                _lightning.ExtendTip(tip);
+
+                if (_plan.WingFootSparks)
+                {
+                    _footSparkCooldown -= dt;
+                    if (_footSparkCooldown <= 0f && delta.sqrMagnitude > RuleVfxDefaults.FootSparkMoveEpsSq)
+                    {
+                        EmitFootWingSparks();
+                        _footSparkCooldown = RuleVfxDefaults.FootSparkIntervalSec;
+                    }
+                }
+            }
+
+            _lastPos = pos;
+            _lastTip = tip;
+
+            // Shout BeginSkill dash'ten önce gelir; bitiş yalnız displace→idle geçişinde.
+            if (justEndedDisplace && !_endDone && _armed)
+            {
+                if (_plan.IsSwordDashSlice || _plan.LightningDashTrail || _trailOn)
+                    NotifyMotionEnded(_body.SweepRunner != null && _body.SweepRunner.StoppedAtBodyEdge);
+            }
+
+            _wasDisplacing = displacing;
+        }
+
+        void StartTrail()
+        {
+            _trailOn = true;
+            _dashStart = transform.position;
+            _meshTrail.Begin(_plan.CoreColor, _plan.TrailLifeSec > 0f
+                ? _plan.TrailLifeSec
+                : VfxPlanDefaults.KilicIzAtilOmurSec, _dashDir);
             Vector3 tip = BladeTip();
             Vector3 guard = BladeGuard();
             _meshTrail.SampleBlade(guard, tip);
-            _lightning.ExtendTip(tip);
+            _lightning.Play(
+                _dashStart + Vector3.up * RuleVfxArtDefaults.DashStartLift,
+                tip,
+                _plan.CoreColor,
+                _plan.TrailLifeSec > 0f ? _plan.TrailLifeSec : VfxPlanDefaults.KilicIzAtilOmurSec);
+        }
 
-            // Hareket kanat kıvılcımı ayak altında (seyrek).
-            if (_plan.WingFootSparks
-                && delta.sqrMagnitude > RuleVfxDefaults.FootSparkMoveEpsSq
-                && Time.frameCount % RuleVfxArtDefaults.FootSparkFrameMod == 0)
-                EmitFootWingSparks();
-
-            _lastPos = pos;
-
-            if (_body != null && !_body.IsDisplacing)
-                NotifyMotionEnded(_body.SweepRunner != null && _body.SweepRunner.StoppedAtBodyEdge);
+        void SpawnSilhouetteAlongDash()
+        {
+            if (_silhouetteSpawned)
+                return;
+            _silhouetteSpawned = true;
+            Vector3 from = transform.position + Vector3.up * RuleVfxArtDefaults.SilhouettePathLift;
+            Vector3 to = from + _dashDir * RuleVfxDefaults.DashForeshadowM;
+            float life = _plan.SilhouetteLifeSec > 0f
+                ? _plan.SilhouetteLifeSec
+                : VfxPlanDefaults.EjderKilicAtilOmurSec;
+            int cell = _plan.DragonAtlasCell >= 0
+                ? _plan.DragonAtlasCell
+                : VfxPlanDefaults.EjderAtlasCellF;
+            _silhouette.PlayAlongLine(from, to, _plan.CoreColor, life, cell);
         }
 
         void EmitFootWingSparks()
@@ -177,7 +268,6 @@ namespace Dovus.Game.Vfx
             foot.y = FeelVfxRuntime.GroundY + RuleVfxDefaults.FootSparkLiftM;
             Color tint = new Color(_plan.CoreColor.R, _plan.CoreColor.G, _plan.CoreColor.B, 1f);
             _feel?.HitSpark(foot, tint, crit: false);
-            // İki yana kısa kanat kıvılcımı.
             Vector3 side = Vector3.Cross(Vector3.up, _dashDir).normalized * RuleVfxDefaults.FootWingSideM;
             _feel?.HitSpark(foot + side, tint, crit: false);
             _feel?.HitSpark(foot - side, tint, crit: false);
@@ -195,6 +285,22 @@ namespace Dovus.Game.Vfx
             return transform.position
                 + Vector3.up * RuleVfxDefaults.WeaponGuardLocalY
                 + _dashDir * RuleVfxDefaults.BladeGuardForwardM;
+        }
+
+        void EnsureAnimRelay()
+        {
+            if (_animRelay != null)
+            {
+                _animRelay.Bind(this);
+                return;
+            }
+
+            ActorView view = GetComponent<ActorView>();
+            Animator anim = view != null ? view.Animator : GetComponentInChildren<Animator>();
+            GameObject host = anim != null ? anim.gameObject : gameObject;
+            _animRelay = host.GetComponent<SkillAnimVfxEventRelay>()
+                ?? host.AddComponent<SkillAnimVfxEventRelay>();
+            _animRelay.Bind(this);
         }
 
         void EnsureChildren()

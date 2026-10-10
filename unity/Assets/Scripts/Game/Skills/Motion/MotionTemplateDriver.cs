@@ -253,11 +253,7 @@ namespace Dovus.Game.Skills.Motion
                 hit => _host.MotionHitResolver.OnMotionTemplateHit(hit),
                 bodyR,
                 stopGap);
-            // efekt-motoru dilim: VfxPlan dinler; mekanik/hitbox değişmez.
-            var ruleVfx = _host.Player != null
-                ? _host.Player.GetComponent<RuleDrivenVfxDirector>()
-                : null;
-            ruleVfx?.BeginSkill(skill, weapon);
+            // VFX BeginSkill: CastPipeline shout (RuleDrivenVfxSink) — path bağımsız.
             DebugConfig.DevLog($"[Motion] {skill.Identity.Id} → {template.Name}");
             return true;
         }
@@ -476,15 +472,16 @@ namespace Dovus.Game.Skills.Motion
             if (fx != null)
                 _host.DestroyUnityObject(fx, MotionTemplateDriverDefaults.HitFxLifetimeSec);
 
-            var ruleVfx = _host.Player != null
-                ? _host.Player.GetComponent<RuleDrivenVfxDirector>()
-                : null;
-            if (ruleVfx != null)
+            // Motion hit görseli; NotifyBossStruck / Impact anim event ile _hitDone korumalı.
+            if (_host.Player != null)
             {
                 Vector3 hitPos = pos;
                 if (_host.Boss != null)
                     hitPos = _host.Boss.transform.position;
-                ruleVfx.NotifyHit(hitPos, dir.sqrMagnitude > 0.0001f ? dir : (_host.Player != null ? _host.Player.forward : Vector3.forward));
+                Vector3 hitDir = dir.sqrMagnitude > 0.0001f
+                    ? dir
+                    : (_host.Player != null ? _host.Player.forward : Vector3.forward);
+                RuleDrivenVfxSink.NotifyHit(_host.Player, hitPos, hitDir);
             }
         }
     

@@ -26,6 +26,19 @@ namespace Dovus.Game.Skills
                 _sceneRuntime?.HitImpact?.Play(hit.Value, archetype, tint, isCrit, _boss.transform);
             }
 
+            // Yol bağımsız: motion hit + kural_motoru_v4 ApplyDamage → aynı isabet VFX.
+            if (_player != null)
+            {
+                Vector3 origin = hit ?? (_boss != null ? _boss.transform.position : _player.position);
+                Vector3 dir = _boss != null
+                    ? _boss.transform.position - _player.position
+                    : _player.forward;
+                dir.y = 0f;
+                if (dir.sqrMagnitude < 0.0001f)
+                    dir = _player.forward;
+                RuleDrivenVfxSink.NotifyHit(_player, origin, dir.normalized);
+            }
+
             _sfx?.Play(isCrit ? SfxLibrary.Crit : SfxLibrary.Hit);
         }
     }

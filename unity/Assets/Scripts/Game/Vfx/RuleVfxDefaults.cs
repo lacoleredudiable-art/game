@@ -47,5 +47,13 @@ namespace Dovus.Game.Vfx
         public const float DashForeshadowM = 2.5f;
         public const float PathSampleEpsSq = 0.0001f;
         public const float FootSparkMoveEpsSq = 0.0025f;
+
+        /// <summary>
+        /// Trail_On yoksa yedek: bıçak ucu hızı eşiği (m/s). Spec §3.1; klip karesi değil.
+        /// </summary>
+        public const float TrailAutoOpenTipSpeedMps = 6f;
+
+        /// <summary>Kanat ayak kıvılcım aralığı (sn); kare numarası değil.</summary>
+        public const float FootSparkIntervalSec = 0.05f;
     }
 }
