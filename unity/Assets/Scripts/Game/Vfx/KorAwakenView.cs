@@ -7,7 +7,7 @@ namespace Dovus.Game.Vfx
     /// efekt-motoru §4 skill uyanışı: silah çatlak/rün yuvaları _Intensity 1 → 1,6 (0,1 s),
     /// teslime kadar tutulur, toparlanmada 0,25 s'de 1'e. Yalnız görünüm.
     /// </summary>
-    public sealed class KorAwakenDriver : MonoBehaviour
+    public sealed class KorAwakenView : MonoBehaviour
     {
         enum Phase : byte { Idle, Rise, Hold, Fade }
 
@@ -17,9 +17,9 @@ namespace Dovus.Game.Vfx
         float _age;
         float _intensity = VfxPlanDefaults.KorIdleIntensity;
         Color _core = new Color(
-            VfxPlanDefaults.HareketR * 2f,
-            VfxPlanDefaults.HareketG * 2f,
-            VfxPlanDefaults.HareketB * 2f,
+            VfxPlanDefaults.HareketR * RuleVfxArtDefaults.CoreHdrMult,
+            VfxPlanDefaults.HareketG * RuleVfxArtDefaults.CoreHdrMult,
+            VfxPlanDefaults.HareketB * RuleVfxArtDefaults.CoreHdrMult,
             1f);
 
         public float Intensity => _intensity;
@@ -27,7 +27,11 @@ namespace Dovus.Game.Vfx
         public void Begin(in VfxColorRgb color)
         {
             EnsureGlow();
-            _core = new Color(color.R * 2f, color.G * 2f, color.B * 2f, 1f);
+            _core = new Color(
+                color.R * RuleVfxArtDefaults.CoreHdrMult,
+                color.G * RuleVfxArtDefaults.CoreHdrMult,
+                color.B * RuleVfxArtDefaults.CoreHdrMult,
+                1f);
             _phase = Phase.Rise;
             _age = 0f;
             _intensity = VfxPlanDefaults.KorIdleIntensity;
@@ -105,8 +109,14 @@ namespace Dovus.Game.Vfx
 
             var go = new GameObject("KorAwakenGlow");
             go.transform.SetParent(transform, false);
-            go.transform.localPosition = new Vector3(0.15f, RuleVfxDefaults.WeaponTipLocalY * 0.5f, 0.35f);
-            go.transform.localScale = new Vector3(0.12f, 0.9f, 0.12f);
+            go.transform.localPosition = new Vector3(
+                RuleVfxDefaults.AwakenGlowLocalX,
+                RuleVfxDefaults.WeaponTipLocalY * 0.5f,
+                RuleVfxDefaults.AwakenGlowLocalZ);
+            go.transform.localScale = new Vector3(
+                RuleVfxDefaults.AwakenGlowScaleX,
+                RuleVfxDefaults.AwakenGlowScaleY,
+                RuleVfxDefaults.AwakenGlowScaleZ);
             go.AddComponent<MeshFilter>().sharedMesh = PrimitiveMesh.Get(PrimitiveType.Cylinder);
             _glow = go.AddComponent<MeshRenderer>();
             _glow.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -130,12 +140,13 @@ namespace Dovus.Game.Vfx
             if (_mat.HasProperty("_Color"))
             {
                 Color c = _core * _intensity;
-                c.a = Mathf.Clamp01(_intensity - 0.5f);
+                c.a = Mathf.Clamp01(_intensity - RuleVfxArtDefaults.AwakenAlphaBias);
                 _mat.SetColor("_Color", c);
             }
 
             if (_glow != null)
-                _glow.enabled = _phase != Phase.Idle || _intensity > VfxPlanDefaults.KorIdleIntensity + 0.01f;
+                _glow.enabled = _phase != Phase.Idle
+                    || _intensity > VfxPlanDefaults.KorIdleIntensity + RuleVfxDefaults.AwakenIdleEpsilon;
         }
 
         void OnDestroy()

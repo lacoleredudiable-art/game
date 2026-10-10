@@ -52,7 +52,7 @@ public class VfxPlanResolverTests
         VfxPlan plan = VfxPlanResolver.Resolve(skill, "kilic");
 
         Assert.That(plan.IsEmpty, Is.False);
-        Assert.That(plan.IsKilicAtilSlice, Is.True);
+        Assert.That(plan.IsSwordDashSlice, Is.True);
         Assert.That(plan.Motif, Is.EqualTo(VfxMotifKind.Wing));
         Assert.That(plan.Carrier, Is.EqualTo(VfxCarrierKind.FlowingEmberTrail));
         Assert.That(plan.Delivery, Is.EqualTo(VfxDeliveryClass.Melee));
@@ -78,7 +78,7 @@ public class VfxPlanResolverTests
         SkillResolution skill = Make("3-1", "3", "Hareket", "1", "Yoğun", "dash");
         VfxPlan plan = VfxPlanResolver.Resolve(skill, "Kılıç");
         Assert.That(plan.WeaponKey, Is.EqualTo("kilic"));
-        Assert.That(plan.IsKilicAtilSlice, Is.True);
+        Assert.That(plan.IsSwordDashSlice, Is.True);
     }
 
     [Test]
@@ -103,7 +103,7 @@ public class VfxPlanResolverTests
         Assert.That(plan.Carrier, Is.EqualTo(VfxCarrierKind.EmberArrow));
         Assert.That(plan.Delivery, Is.EqualTo(VfxDeliveryClass.Projectile));
         Assert.That(plan.Shape, Is.EqualTo(VfxShapePrimitive.ExpandingRing));
-        Assert.That(plan.IsKilicAtilSlice, Is.False);
+        Assert.That(plan.IsSwordDashSlice, Is.False);
     }
 
     [Test]

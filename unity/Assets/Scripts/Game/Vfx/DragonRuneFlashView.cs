@@ -6,16 +6,15 @@ namespace Dovus.Game.Vfx
 {
     /// <summary>
     /// efekt-motoru §1.1: çizilen rün 0,2 s'de Ejderha Dili harfine oturur (fiil→sıfat),
-    /// 0,3 s parlar. Yer tutucu glif atlası (harf hücreleri).
+    /// 0,3 s parlar. Yer tutucu glif atlası.
     /// </summary>
     public sealed class DragonRuneFlashView : MonoBehaviour
     {
         Canvas _canvas;
-        RawImage _verb;
-        RawImage _adj;
+        Image _verb;
+        Image _adj;
         Texture2D _atlas;
-        Material _verbMat;
-        Material _adjMat;
+        Sprite _atlasSprite;
         float _age;
         float _snap;
         float _glow;
@@ -35,13 +34,13 @@ namespace Dovus.Game.Vfx
 
             float size = RuleVfxDefaults.RuneLetterSizePx;
             float gap = RuleVfxDefaults.RuneLetterGapPx;
-            _verbTo = new Vector2(-size * 0.5f - gap * 0.5f, 120f);
-            _adjTo = new Vector2(size * 0.5f + gap * 0.5f, 120f);
-            _verbFrom = _verbTo + new Vector2(-80f, 40f);
-            _adjFrom = _adjTo + new Vector2(80f, -30f);
+            _verbTo = new Vector2(-size * 0.5f - gap * 0.5f, RuleVfxArtDefaults.RuneAnchorY);
+            _adjTo = new Vector2(size * 0.5f + gap * 0.5f, RuleVfxArtDefaults.RuneAnchorY);
+            _verbFrom = _verbTo + new Vector2(-RuleVfxArtDefaults.RuneFromOffsetX, RuleVfxArtDefaults.RuneFromOffsetY);
+            _adjFrom = _adjTo + new Vector2(RuleVfxArtDefaults.RuneFromOffsetX, -RuleVfxArtDefaults.RuneAdjFromY);
 
-            ApplyCell(_verb, _verbMat, GlyphIndex(verbRuneId), coreColor);
-            ApplyCell(_adj, _adjMat, GlyphIndex(adjectiveRuneId) + 12, coreColor);
+            ApplyCell(_verb, GlyphIndex(verbRuneId), coreColor);
+            ApplyCell(_adj, GlyphIndex(adjectiveRuneId) + RuleVfxArtDefaults.GlyphHueMod, coreColor);
             _verb.enabled = true;
             _adj.enabled = true;
             Layout(0f);
@@ -57,8 +56,8 @@ namespace Dovus.Game.Vfx
 
             float glowAge = _age - _snap;
             float glowU = glowAge <= 0f ? 1f : 1f - Mathf.Clamp01(glowAge / _glow);
-            SetAlpha(_verbMat, glowU);
-            SetAlpha(_adjMat, glowU);
+            SetAlpha(_verb, glowU);
+            SetAlpha(_adj, glowU);
 
             if (_age >= _snap + _glow)
             {
@@ -70,12 +69,12 @@ namespace Dovus.Game.Vfx
 
         void Layout(float snapU)
         {
-            float u = snapU * snapU * (3f - 2f * snapU);
+            float u = snapU * snapU * (RuleVfxArtDefaults.SmoothstepThree - RuleVfxArtDefaults.SmoothstepTwo * snapU);
             _verb.rectTransform.anchoredPosition = Vector2.Lerp(_verbFrom, _verbTo, u);
             _adj.rectTransform.anchoredPosition = Vector2.Lerp(
                 _adjFrom,
                 _adjTo,
-                Mathf.Clamp01((snapU - 0.15f) / 0.85f));
+                Mathf.Clamp01((snapU - RuleVfxArtDefaults.RuneAdjDelay) / RuleVfxArtDefaults.RuneAdjDelayInv));
         }
 
         void EnsureUi()
@@ -90,24 +89,20 @@ namespace Dovus.Game.Vfx
             canvasGo.AddComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             canvasGo.AddComponent<GraphicRaycaster>();
 
-            _atlas = BuildGlyphAtlas();
-            Shader sh = Shader.Find(RuleVfxDefaults.KorShaderName)
-                ?? Shader.Find("UI/Default");
-            _verbMat = new Material(sh);
-            _adjMat = new Material(sh);
-            if (_verbMat.HasProperty("_MainTex"))
-            {
-                _verbMat.SetTexture("_MainTex", _atlas);
-                _adjMat.SetTexture("_MainTex", _atlas);
-            }
+            _atlas = RuleVfxArtDefaults.BuildGlyphAtlas();
+            _atlasSprite = Sprite.Create(
+                _atlas,
+                new Rect(0f, 0f, _atlas.width, _atlas.height),
+                new Vector2(0.5f, 0.5f),
+                RuleVfxArtDefaults.GlyphPpu);
 
-            _verb = MakeLetter("VerbLetter", _verbMat);
-            _adj = MakeLetter("AdjLetter", _adjMat);
+            _verb = MakeLetter("VerbLetter");
+            _adj = MakeLetter("AdjLetter");
             _verb.enabled = false;
             _adj.enabled = false;
         }
 
-        RawImage MakeLetter(string name, Material mat)
+        Image MakeLetter(string name)
         {
             var go = new GameObject(name);
             go.transform.SetParent(_canvas.transform, false);
@@ -116,90 +111,37 @@ namespace Dovus.Game.Vfx
             rt.anchorMin = new Vector2(0.5f, 0.5f);
             rt.anchorMax = new Vector2(0.5f, 0.5f);
             rt.pivot = new Vector2(0.5f, 0.5f);
-            var img = go.AddComponent<RawImage>();
-            img.texture = _atlas;
-            img.material = mat;
+            var img = go.AddComponent<Image>();
+            img.sprite = _atlasSprite;
             img.raycastTarget = false;
             return img;
         }
 
-        static void ApplyCell(RawImage img, Material mat, int cell, Color core)
+        static void ApplyCell(Image img, int cell, Color core)
         {
-            int idx = Mathf.Clamp(cell, 0, 23);
-            int col = idx % 8;
-            int row = idx / 8;
-            float u0 = col / 8f;
-            float v0 = 1f - (row + 1) / 3f;
-            float u1 = (col + 1) / 8f;
-            float v1 = 1f - row / 3f;
-            img.uvRect = new Rect(u0, v0, u1 - u0, v1 - v0);
-            if (mat.HasProperty("_CoreColor"))
-                mat.SetColor("_CoreColor", core);
-            if (mat.HasProperty("_Intensity"))
-                mat.SetFloat("_Intensity", 2.2f);
-            img.color = Color.white;
+            int idx = Mathf.Clamp(cell, 0, RuleVfxArtDefaults.GlyphCellMaxIndex);
+            float hue = (idx % RuleVfxArtDefaults.GlyphHueMod) / (float)RuleVfxArtDefaults.GlyphHueMod;
+            Color tint = Color.HSVToRGB(hue, RuleVfxArtDefaults.RuneHueSat, 1f) * core;
+            tint.a = 1f;
+            img.color = tint;
         }
 
-        static void SetAlpha(Material mat, float a)
+        static void SetAlpha(Image img, float a)
         {
-            if (mat == null)
+            if (img == null)
                 return;
-            if (mat.HasProperty("_Intensity"))
-                mat.SetFloat("_Intensity", 0.6f + 1.6f * a);
-            if (mat.HasProperty("_Color"))
-            {
-                Color c = mat.GetColor("_Color");
-                c.a = a;
-                mat.SetColor("_Color", c);
-            }
+            Color c = img.color;
+            c.a = a;
+            img.color = c;
         }
 
-        static int GlyphIndex(int runeId) => Mathf.Clamp(runeId <= 0 ? 0 : runeId - 1, 0, 11);
-
-        static Texture2D BuildGlyphAtlas()
-        {
-            // 24 harf yer tutucu: 8×3 ızgara.
-            const int cell = 64;
-            const int cols = 8;
-            const int rows = 3;
-            var tex = new Texture2D(cell * cols, cell * rows, TextureFormat.RGBA32, false)
-            {
-                name = "DragonScriptGlyphs_Placeholder",
-                filterMode = FilterMode.Bilinear
-            };
-            var pixels = new Color32[tex.width * tex.height];
-            for (int i = 0; i < cols * rows; i++)
-            {
-                int c = i % cols;
-                int r = i / cols;
-                int x0 = c * cell;
-                int y0 = (rows - 1 - r) * cell;
-                for (int y = 0; y < cell; y++)
-                for (int x = 0; x < cell; x++)
-                {
-                    float nx = x / (float)cell * 2f - 1f;
-                    float ny = y / (float)cell * 2f - 1f;
-                    // Basit ejderha-harf hissi: kırık açısal stroke.
-                    float stroke = 0f;
-                    stroke = Mathf.Max(stroke, Mathf.Exp(-Mathf.Pow(ny - 0.6f * nx, 2f) * 40f));
-                    stroke = Mathf.Max(stroke, Mathf.Exp(-Mathf.Pow(nx + 0.35f, 2f) * 55f) * Mathf.Exp(-ny * ny * 8f));
-                    stroke = Mathf.Max(stroke, Mathf.Exp(-Mathf.Pow(ny + 0.45f, 2f) * 50f) * Mathf.Exp(-(nx - 0.2f) * (nx - 0.2f) * 10f));
-                    byte a = (byte)Mathf.Clamp(Mathf.RoundToInt(stroke * 255f), 0, 255);
-                    pixels[(y0 + y) * tex.width + (x0 + x)] = new Color32(255, 220, 140, a);
-                }
-            }
-
-            tex.SetPixels32(pixels);
-            tex.Apply(false, true);
-            return tex;
-        }
+        static int GlyphIndex(int runeId) =>
+            Mathf.Clamp(runeId <= 0 ? 0 : runeId - 1, 0, RuleVfxArtDefaults.GlyphHueMod - 1);
 
         void OnDestroy()
         {
-            if (_verbMat != null)
-                Destroy(_verbMat);
-            if (_adjMat != null)
-                Destroy(_adjMat);
+            if (_atlasSprite != null)
+                Destroy(_atlasSprite);
             if (_atlas != null)
                 Destroy(_atlas);
         }

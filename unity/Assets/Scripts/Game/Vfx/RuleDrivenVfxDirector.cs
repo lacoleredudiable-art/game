@@ -13,7 +13,7 @@ namespace Dovus.Game.Vfx
     {
         MotionTemplateBodyHost _body;
         FeelVfxRuntime _feel;
-        KorAwakenDriver _kor;
+        KorAwakenView _kor;
         EmberMeshTrailView _meshTrail;
         LightningDashTrailView _lightning;
         DragonSilhouetteCardView _silhouette;
@@ -29,7 +29,7 @@ namespace Dovus.Game.Vfx
         Vector3 _dashDir = Vector3.forward;
 
         public VfxPlan ActivePlan => _plan;
-        public bool IsSliceActive => _active && _plan.IsKilicAtilSlice;
+        public bool IsSliceActive => _active && _plan.IsSwordDashSlice;
 
         public void Bind(FeelVfxRuntime feel)
         {
@@ -62,9 +62,9 @@ namespace Dovus.Game.Vfx
             if (_plan.RuneLetterFlash)
             {
                 Color c = new Color(
-                    _plan.CoreColor.R * 2f,
-                    _plan.CoreColor.G * 2f,
-                    _plan.CoreColor.B * 2f,
+                    _plan.CoreColor.R * RuleVfxArtDefaults.CoreHdrMult,
+                    _plan.CoreColor.G * RuleVfxArtDefaults.CoreHdrMult,
+                    _plan.CoreColor.B * RuleVfxArtDefaults.CoreHdrMult,
                     1f);
                 _runes.Play(_plan.VerbRuneId, _plan.AdjectiveRuneId, c);
             }
@@ -75,16 +75,20 @@ namespace Dovus.Game.Vfx
                 Vector3 tip = BladeTip();
                 Vector3 guard = BladeGuard();
                 _meshTrail.SampleBlade(guard, tip);
-                _lightning.Play(_dashStart + Vector3.up * 0.3f, tip, _plan.CoreColor, _plan.TrailLifeSec);
+                _lightning.Play(
+                    _dashStart + Vector3.up * RuleVfxArtDefaults.DashStartLift,
+                    tip,
+                    _plan.CoreColor,
+                    _plan.TrailLifeSec);
             }
 
             if (_plan.DragonTailArcSilhouette)
             {
                 // ATIL state girişi (kod) — yol boyunca kuyruk yayı kartı.
-                Vector3 foreshadow = _dashStart + _dashDir * 2.5f;
+                Vector3 foreshadow = _dashStart + _dashDir * RuleVfxDefaults.DashForeshadowM;
                 _silhouette.PlayAlongLine(
-                    _dashStart + Vector3.up * 0.4f,
-                    foreshadow + Vector3.up * 0.4f,
+                    _dashStart + Vector3.up * RuleVfxArtDefaults.SilhouettePathLift,
+                    foreshadow + Vector3.up * RuleVfxArtDefaults.SilhouettePathLift,
                     _plan.CoreColor,
                     _plan.SilhouetteLifeSec,
                     _plan.DragonAtlasCell);
@@ -110,7 +114,9 @@ namespace Dovus.Game.Vfx
             if (_body != null)
             {
                 // İsabet görseli hedef tarafında (boss gövdesi yönünde).
-                target = hitOrigin + _dashDir * Mathf.Max(0.2f, hitOrigin == default ? 0.5f : 0.35f);
+                target = hitOrigin + _dashDir * Mathf.Max(
+                    RuleVfxArtDefaults.HitForwardMin,
+                    hitOrigin == default ? 0.5f : RuleVfxArtDefaults.HitForwardPad);
             }
 
             if (_plan.SlashArcOnHit || _plan.ZararClawMarksOnHit)
@@ -140,7 +146,7 @@ namespace Dovus.Game.Vfx
 
             Vector3 pos = transform.position;
             Vector3 delta = pos - _lastPos;
-            if (delta.sqrMagnitude > 0.0001f)
+            if (delta.sqrMagnitude > RuleVfxDefaults.PathSampleEpsSq)
             {
                 _dashDir = delta;
                 _dashDir.y = 0f;
@@ -154,7 +160,9 @@ namespace Dovus.Game.Vfx
             _lightning.ExtendTip(tip);
 
             // Hareket kanat kıvılcımı ayak altında (seyrek).
-            if (_plan.WingFootSparks && delta.sqrMagnitude > 0.0025f && Time.frameCount % 3 == 0)
+            if (_plan.WingFootSparks
+                && delta.sqrMagnitude > RuleVfxDefaults.FootSparkMoveEpsSq
+                && Time.frameCount % RuleVfxArtDefaults.FootSparkFrameMod == 0)
                 EmitFootWingSparks();
 
             _lastPos = pos;
@@ -170,7 +178,7 @@ namespace Dovus.Game.Vfx
             Color tint = new Color(_plan.CoreColor.R, _plan.CoreColor.G, _plan.CoreColor.B, 1f);
             _feel?.HitSpark(foot, tint, crit: false);
             // İki yana kısa kanat kıvılcımı.
-            Vector3 side = Vector3.Cross(Vector3.up, _dashDir).normalized * 0.35f;
+            Vector3 side = Vector3.Cross(Vector3.up, _dashDir).normalized * RuleVfxDefaults.FootWingSideM;
             _feel?.HitSpark(foot + side, tint, crit: false);
             _feel?.HitSpark(foot - side, tint, crit: false);
         }
@@ -179,14 +187,14 @@ namespace Dovus.Game.Vfx
         {
             return transform.position
                 + Vector3.up * RuleVfxDefaults.WeaponTipLocalY
-                + _dashDir * 0.55f;
+                + _dashDir * RuleVfxDefaults.BladeTipForwardM;
         }
 
         Vector3 BladeGuard()
         {
             return transform.position
                 + Vector3.up * RuleVfxDefaults.WeaponGuardLocalY
-                + _dashDir * 0.15f;
+                + _dashDir * RuleVfxDefaults.BladeGuardForwardM;
         }
 
         void EnsureChildren()
@@ -199,7 +207,7 @@ namespace Dovus.Game.Vfx
             }
 
             if (_kor == null)
-                _kor = _fxRoot.gameObject.AddComponent<KorAwakenDriver>();
+                _kor = _fxRoot.gameObject.AddComponent<KorAwakenView>();
             if (_meshTrail == null)
                 _meshTrail = _fxRoot.gameObject.AddComponent<EmberMeshTrailView>();
             if (_lightning == null)

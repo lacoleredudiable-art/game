@@ -6,7 +6,6 @@ namespace Dovus.Game.Vfx
 {
     /// <summary>
     /// efekt-motoru §3.1 ATIL: yol boyunca ince kırık şimşek şerit (0,25 s).
-    /// Mesh trail ile birlikte; ayrı iz açılmaz — bu şimşek biçim katmanıdır.
     /// </summary>
     public sealed class LightningDashTrailView : MonoBehaviour
     {
@@ -23,8 +22,12 @@ namespace Dovus.Game.Vfx
             Ensure();
             _from = from;
             _to = to;
-            _core = new Color(color.R * 2.5f, color.G * 2.5f, color.B * 2.5f, 1f);
-            _life = Mathf.Max(0.05f, lifeSec);
+            _core = new Color(
+                color.R * RuleVfxArtDefaults.CoreHdrHot,
+                color.G * RuleVfxArtDefaults.CoreHdrHot,
+                color.B * RuleVfxArtDefaults.CoreHdrHot,
+                1f);
+            _life = Mathf.Max(RuleVfxArtDefaults.MeshLifeMin, lifeSec);
             _age = 0f;
             RebuildJag();
             _line.enabled = true;
@@ -75,7 +78,7 @@ namespace Dovus.Game.Vfx
         {
             Vector3 delta = _to - _from;
             Vector3 side = Vector3.Cross(Vector3.up, delta.normalized);
-            if (side.sqrMagnitude < 0.0001f)
+            if (side.sqrMagnitude < RuleVfxDefaults.PathSampleEpsSq)
                 side = Vector3.right;
             side.Normalize();
             int n = RuleVfxDefaults.LightningSegments;
@@ -85,12 +88,14 @@ namespace Dovus.Game.Vfx
                 Vector3 p = Vector3.Lerp(_from, _to, t);
                 if (i > 0 && i < n - 1)
                 {
-                    float jag = (((i * 37) % 7) / 6f - 0.5f) * 2f * RuleVfxDefaults.LightningJagM;
+                    float jag = (((i * RuleVfxArtDefaults.LightningJagHashMul) % RuleVfxArtDefaults.LightningJagMod)
+                        / RuleVfxArtDefaults.LightningJagDiv - 0.5f) * 2f * RuleVfxDefaults.LightningJagM;
                     p += side * jag;
-                    p.y += RuleVfxDefaults.TrailHeightM * 0.35f + Mathf.Abs(jag) * 0.4f;
+                    p.y += RuleVfxDefaults.TrailHeightM * RuleVfxArtDefaults.LightningTipLift
+                        + Mathf.Abs(jag) * RuleVfxArtDefaults.LightningJagLift;
                 }
                 else
-                    p.y += RuleVfxDefaults.TrailHeightM * 0.25f;
+                    p.y += RuleVfxDefaults.TrailHeightM * RuleVfxArtDefaults.LightningEndLift;
                 _line.SetPosition(i, p);
             }
         }
@@ -100,14 +105,15 @@ namespace Dovus.Game.Vfx
             Color c = _core;
             c.a = alpha;
             _line.startColor = c;
-            _line.endColor = new Color(c.r, c.g, c.b, alpha * 0.2f);
-            _line.widthMultiplier = RuleVfxDefaults.TrailWidthM * Mathf.Lerp(0.35f, 1f, alpha);
+            _line.endColor = new Color(c.r, c.g, c.b, alpha * RuleVfxArtDefaults.LightningEndAlpha);
+            _line.widthMultiplier = RuleVfxDefaults.TrailWidthM
+                * Mathf.Lerp(RuleVfxArtDefaults.LightningWidthMin, 1f, alpha);
             if (_mat != null)
             {
                 if (_mat.HasProperty("_CoreColor"))
                     _mat.SetColor("_CoreColor", c);
                 if (_mat.HasProperty("_Intensity"))
-                    _mat.SetFloat("_Intensity", 1.2f + alpha);
+                    _mat.SetFloat("_Intensity", RuleVfxArtDefaults.LightningIntensityBase + alpha);
                 if (_mat.HasProperty("_Color"))
                     _mat.SetColor("_Color", c);
             }

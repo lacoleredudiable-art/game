@@ -27,6 +27,25 @@ namespace Dovus.Game.Vfx
         public const float WeaponGuardLocalY = 0.15f;
 
         public const int MeshTrailSamples = 20;
+        public const float TrailFlowTurnsPerSec = 2f;
         public const float FootSparkLiftM = 0.05f;
+
+        public const float AwakenGlowLocalX = 0.15f;
+        public const float AwakenGlowLocalZ = 0.35f;
+        public const float AwakenGlowScaleX = 0.12f;
+        public const float AwakenGlowScaleY = 0.9f;
+        public const float AwakenGlowScaleZ = 0.12f;
+        public const float AwakenIdleEpsilon = 0.01f;
+
+        public const float SilhouetteMinLenM = 1.2f;
+        public const float SlashArcLifePadSec = 0.05f;
+        public const float ClawDestroyPadSec = 0.05f;
+        public const float ClawMatDestroyPadSec = 0.1f;
+        public const float FootWingSideM = 0.35f;
+        public const float BladeTipForwardM = 0.55f;
+        public const float BladeGuardForwardM = 0.15f;
+        public const float DashForeshadowM = 2.5f;
+        public const float PathSampleEpsSq = 0.0001f;
+        public const float FootSparkMoveEpsSq = 0.0025f;
     }
 }

@@ -24,10 +24,10 @@ namespace Dovus.Game.Vfx
             if (plan.ZararClawMarksOnHit)
             {
                 SpawnClawMarks(parent, targetPos, dashDir, tint);
-                feel?.HitSpark(targetPos + Vector3.up * 1.1f, tint, crit: true);
+                feel?.HitSpark(targetPos + Vector3.up * RuleVfxArtDefaults.HitHeightSparkM, tint, crit: true);
             }
             else
-                feel?.HitSpark(targetPos + Vector3.up * 1.0f, tint, crit: false);
+                feel?.HitSpark(targetPos + Vector3.up * RuleVfxArtDefaults.HitHeightClawM, tint, crit: false);
         }
 
         static void SpawnSlashArc(Transform parent, Vector3 pos, Vector3 dir, Color tint)
@@ -35,10 +35,10 @@ namespace Dovus.Game.Vfx
             var go = new GameObject("SwordSlashArc");
             if (parent != null)
                 go.transform.SetParent(parent, false);
-            go.transform.position = pos + Vector3.up * 1.05f;
+            go.transform.position = pos + Vector3.up * RuleVfxArtDefaults.HitHeightM;
             Vector3 flat = dir;
             flat.y = 0f;
-            if (flat.sqrMagnitude < 0.0001f)
+            if (flat.sqrMagnitude < RuleVfxDefaults.PathSampleEpsSq)
                 flat = Vector3.forward;
             go.transform.rotation = Quaternion.LookRotation(flat.normalized, Vector3.up);
 
@@ -48,39 +48,48 @@ namespace Dovus.Game.Vfx
             line.useWorldSpace = false;
             line.loop = false;
             line.widthMultiplier = RuleVfxDefaults.SlashWidthM;
-            line.positionCount = 10;
+            line.positionCount = RuleVfxArtDefaults.SlashArcSegments;
             Shader sh = Shader.Find(RuleVfxDefaults.KorShaderName)
                 ?? Shader.Find(RuleVfxDefaults.ParticlesUnlit);
             var mat = new Material(sh);
-            Color hdr = tint * 2.5f;
+            Color hdr = tint * RuleVfxArtDefaults.CoreHdrHot;
             hdr.a = 1f;
             if (mat.HasProperty("_CoreColor"))
                 mat.SetColor("_CoreColor", hdr);
             if (mat.HasProperty("_Intensity"))
-                mat.SetFloat("_Intensity", 2.5f);
+                mat.SetFloat("_Intensity", RuleVfxArtDefaults.IntensityHit);
             line.sharedMaterial = mat;
             float r = RuleVfxDefaults.SlashRadiusM;
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < RuleVfxArtDefaults.SlashArcSegments; i++)
             {
-                float a = Mathf.Lerp(-50f, 50f, i / 9f) * Mathf.Deg2Rad;
-                line.SetPosition(i, new Vector3(Mathf.Sin(a) * r, Mathf.Cos(a) * r * 0.35f, 0.05f));
+                float a = Mathf.Lerp(
+                        -RuleVfxArtDefaults.SlashArcDeg,
+                        RuleVfxArtDefaults.SlashArcDeg,
+                        i / RuleVfxArtDefaults.SlashArcLastIndex)
+                    * Mathf.Deg2Rad;
+                line.SetPosition(
+                    i,
+                    new Vector3(
+                        Mathf.Sin(a) * r,
+                        Mathf.Cos(a) * r * RuleVfxArtDefaults.SlashArcYScale,
+                        RuleVfxArtDefaults.SlashArcZ));
             }
 
             line.startColor = hdr;
             line.endColor = hdr;
-            Object.Destroy(go, VfxPlanDefaults.SlashArcSec + 0.05f);
-            Object.Destroy(mat, VfxPlanDefaults.SlashArcSec + 0.1f);
+            Object.Destroy(go, VfxPlanDefaults.SlashArcSec + RuleVfxDefaults.SlashArcLifePadSec);
+            Object.Destroy(mat, VfxPlanDefaults.SlashArcSec + RuleVfxDefaults.ClawMatDestroyPadSec);
         }
 
         static void SpawnClawMarks(Transform parent, Vector3 pos, Vector3 dir, Color tint)
         {
             Vector3 flat = dir;
             flat.y = 0f;
-            if (flat.sqrMagnitude < 0.0001f)
+            if (flat.sqrMagnitude < RuleVfxDefaults.PathSampleEpsSq)
                 flat = Vector3.forward;
             flat.Normalize();
             Vector3 side = Vector3.Cross(Vector3.up, flat).normalized;
-            Color hdr = tint * 2.8f;
+            Color hdr = tint * RuleVfxArtDefaults.CoreHdrHit;
 
             for (int i = 0; i < VfxPlanDefaults.ZararClawCount; i++)
             {
@@ -88,7 +97,9 @@ namespace Dovus.Game.Vfx
                 var go = new GameObject("ZararClawMark_" + i);
                 if (parent != null)
                     go.transform.SetParent(parent, false);
-                Vector3 p = pos + Vector3.up * (1.0f + i * 0.05f) + side * offset;
+                Vector3 p = pos
+                    + Vector3.up * (RuleVfxArtDefaults.HitHeightClawM + i * RuleVfxArtDefaults.ClawRowLift)
+                    + side * offset;
                 go.transform.position = p;
                 go.transform.rotation = Quaternion.LookRotation(flat, Vector3.up);
 
@@ -96,7 +107,7 @@ namespace Dovus.Game.Vfx
                 line.shadowCastingMode = ShadowCastingMode.Off;
                 line.receiveShadows = false;
                 line.useWorldSpace = true;
-                line.widthMultiplier = 0.05f;
+                line.widthMultiplier = RuleVfxArtDefaults.ClawWidthM;
                 line.positionCount = 2;
                 Shader sh = Shader.Find(RuleVfxDefaults.KorShaderName)
                     ?? Shader.Find(RuleVfxDefaults.ParticlesUnlit);
@@ -104,19 +115,22 @@ namespace Dovus.Game.Vfx
                 if (mat.HasProperty("_CoreColor"))
                     mat.SetColor("_CoreColor", hdr);
                 if (mat.HasProperty("_Intensity"))
-                    mat.SetFloat("_Intensity", 3f);
+                    mat.SetFloat("_Intensity", RuleVfxArtDefaults.IntensityClaw);
                 line.sharedMaterial = mat;
-                Vector3 a = p - flat * RuleVfxDefaults.ClawLengthM * 0.35f + Vector3.up * 0.25f;
-                Vector3 b = p + flat * RuleVfxDefaults.ClawLengthM * 0.65f - Vector3.up * 0.15f;
-                // Pençe eğimi.
-                a += side * (-0.05f * (i - 1));
-                b += side * (0.08f * (i - 1));
+                Vector3 a = p
+                    - flat * RuleVfxDefaults.ClawLengthM * RuleVfxArtDefaults.ClawStartFrac
+                    + Vector3.up * RuleVfxArtDefaults.ClawUpStartM;
+                Vector3 b = p
+                    + flat * RuleVfxDefaults.ClawLengthM * RuleVfxArtDefaults.ClawEndFrac
+                    - Vector3.up * RuleVfxArtDefaults.ClawUpEndM;
+                a += side * (-RuleVfxArtDefaults.ClawSideStart * (i - 1));
+                b += side * (RuleVfxArtDefaults.ClawSideEnd * (i - 1));
                 line.SetPosition(0, a);
                 line.SetPosition(1, b);
                 line.startColor = hdr;
-                line.endColor = new Color(hdr.r, hdr.g, hdr.b, 0.2f);
-                Object.Destroy(go, VfxPlanDefaults.ZararClawSec + 0.05f);
-                Object.Destroy(mat, VfxPlanDefaults.ZararClawSec + 0.1f);
+                line.endColor = new Color(hdr.r, hdr.g, hdr.b, RuleVfxArtDefaults.LightningEndAlpha);
+                Object.Destroy(go, VfxPlanDefaults.ZararClawSec + RuleVfxDefaults.ClawDestroyPadSec);
+                Object.Destroy(mat, VfxPlanDefaults.ZararClawSec + RuleVfxDefaults.ClawMatDestroyPadSec);
             }
         }
     }

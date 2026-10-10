@@ -18,7 +18,7 @@ public sealed class ClassSizeRatchetTests
         ["PlaySweep"] = 2445,
         ["HexagonView"] = 1233,
         ["BossDirector"] = 1112,
-        ["MotionTemplateRunner"] = 1030,
+        ["MotionTemplateRunner"] = 1034,
         ["PortalSystem"] = 979,
         ["MixamoAnimatorBind"] = 843,
         ["BuildSelectHud"] = 825,

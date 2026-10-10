@@ -6,7 +6,7 @@ using UnityEngine.Rendering;
 namespace Dovus.Game.Vfx
 {
     /// <summary>
-    /// efekt-motoru §3.1 A: mesh trail — Kabza/Tip örnekleri, Catmull-Rom ara nokta, şerit mesh.
+    /// efekt-motoru §3.1 A: mesh trail — Kabza/Tip örnekleri, şerit mesh.
     /// ATIL ömrü 0,25 s; _FlowOffset UV kayması.
     /// </summary>
     public sealed class EmberMeshTrailView : MonoBehaviour
@@ -17,7 +17,7 @@ namespace Dovus.Game.Vfx
             public Vector3 Tip;
         }
 
-        readonly List<Sample> _ring = new(VfxPlanDefaults.KilicIzOrnek);
+        readonly List<Sample> _ring = new(RuleVfxDefaults.MeshTrailSamples);
         Mesh _mesh;
         MeshFilter _filter;
         MeshRenderer _renderer;
@@ -32,13 +32,17 @@ namespace Dovus.Game.Vfx
         public void Begin(in VfxColorRgb color, float lifeSec, Vector3 forward)
         {
             EnsureMesh();
-            _core = new Color(color.R * 2f, color.G * 2f, color.B * 2f, 1f);
-            _life = Mathf.Max(0.05f, lifeSec);
+            _core = new Color(
+                color.R * RuleVfxArtDefaults.CoreHdrMult,
+                color.G * RuleVfxArtDefaults.CoreHdrMult,
+                color.B * RuleVfxArtDefaults.CoreHdrMult,
+                1f);
+            _life = Mathf.Max(RuleVfxArtDefaults.MeshLifeMin, lifeSec);
             _age = 0f;
             _flow = 0f;
             _emitting = true;
             _ring.Clear();
-            if (forward.sqrMagnitude > 0.0001f)
+            if (forward.sqrMagnitude > RuleVfxDefaults.PathSampleEpsSq)
                 _fallbackForward = forward.normalized;
             if (_renderer != null)
                 _renderer.enabled = true;
@@ -62,7 +66,7 @@ namespace Dovus.Game.Vfx
             if (_mesh == null || _life <= 0f)
                 return;
             _age += Time.deltaTime;
-            _flow += Time.deltaTime * VfxPlanDefaults.KilicIzAkisTurPerSec;
+            _flow += Time.deltaTime * RuleVfxDefaults.TrailFlowTurnsPerSec;
             float remain = 1f - Mathf.Clamp01(_age / _life);
             ApplyMat(remain);
             if (_mat != null && _mat.HasProperty("_FlowOffset"))
@@ -114,8 +118,8 @@ namespace Dovus.Game.Vfx
                 float u = i / (float)(n - 1);
                 uvs[i * 2] = new Vector2(u, 0f);
                 uvs[i * 2 + 1] = new Vector2(u, 1f);
-                float a = Mathf.Lerp(0.15f, 1f, u);
-                colors[i * 2] = new Color(1f, 1f, 1f, a * 0.55f);
+                float a = Mathf.Lerp(RuleVfxArtDefaults.TrailAlphaTail, 1f, u);
+                colors[i * 2] = new Color(1f, 1f, 1f, a * RuleVfxArtDefaults.TrailAlphaGuard);
                 colors[i * 2 + 1] = new Color(1f, 1f, 1f, a);
             }
 
@@ -148,7 +152,9 @@ namespace Dovus.Game.Vfx
             if (_mat.HasProperty("_CoreColor"))
                 _mat.SetColor("_CoreColor", c);
             if (_mat.HasProperty("_Intensity"))
-                _mat.SetFloat("_Intensity", Mathf.Lerp(0.4f, 2.2f, alphaScale));
+                _mat.SetFloat(
+                    "_Intensity",
+                    Mathf.Lerp(RuleVfxArtDefaults.TrailIntensityMin, RuleVfxArtDefaults.TrailIntensityMax, alphaScale));
             if (_mat.HasProperty("_Color"))
                 _mat.SetColor("_Color", c);
         }

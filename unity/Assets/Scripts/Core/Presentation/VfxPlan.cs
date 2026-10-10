@@ -78,7 +78,7 @@ namespace Dovus.Core.Presentation
         public bool IsEmpty => Motif == VfxMotifKind.None && Carrier == VfxCarrierKind.None;
 
         /// <summary>Kılıç Zenitsu ATIL dilimi (Hareket + kilic + dash).</summary>
-        public bool IsKilicAtilSlice =>
+        public bool IsSwordDashSlice =>
             LightningDashTrail
             && string.Equals(WeaponKey, VfxPlanDefaults.WeaponKeyKilic, System.StringComparison.Ordinal);
     }
