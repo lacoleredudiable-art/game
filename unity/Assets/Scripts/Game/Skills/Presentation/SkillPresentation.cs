@@ -1,4 +1,5 @@
 using Dovus.Core.Grammar;
+using Dovus.Core.RuleEngineV4;
 using Dovus.Core.Manifestation;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Presentation;
@@ -91,6 +92,15 @@ namespace Dovus.Game.Skills.Presentation
             _host.LastAnimationUsedFallback = false;
 
             if (skill.IsEmpty || _host.Visual == null || _host.Visual.Animator == null)
+                return;
+
+            if (RuleEngineV4Feature.Enabled
+                && int.TryParse(skill.Identity.Verb, out int v4Verb)
+                && int.TryParse(skill.Identity.Adjective, out int v4Adj)
+                && RuleEngineV4Slice.IsSliceCombo(v4Verb, v4Adj)
+                && _host.EquippedWeapon != null
+                && int.TryParse(_host.EquippedWeapon.Id, out int weaponNum)
+                && RuleEngineV4Slice.IsSliceWeapon(weaponNum))
                 return;
 
             if (_host.Skills != null && _host.Skills.IsV61)

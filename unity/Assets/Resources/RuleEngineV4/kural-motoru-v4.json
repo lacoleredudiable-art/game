@@ -1,5 +1,5 @@
 {
-  "version": "4.5-pr1b",
+  "version": "4.5-pr3",
   "feature_flag": "kural_motoru_v4",
   "slice_runes": [1, 2, 3, 4, 6, 9],
   "scale": {
@@ -118,5 +118,45 @@
       "travel_skill_allowed": false,
       "hit_parts": 1
     }
+  },
+  "skill_anim": {
+    "fallback_animator_state": "CastSweep",
+    "rules": [
+      { "weapon_id": 4, "verb_rune": 1, "adjective_rune": 0, "clip": "Kilic_VUR", "events": ["Impact"] },
+      { "weapon_id": 4, "verb_rune": 2, "adjective_rune": 0, "clip": "Kilic_VUR", "events": ["Impact"] },
+      { "weapon_id": 4, "verb_rune": 3, "adjective_rune": 1, "clip": "Kilic_ATIL", "events": ["Trail_On", "Trail_Off", "Impact", "Ejder"] },
+      { "weapon_id": 4, "verb_rune": 3, "adjective_rune": 0, "clip": "Kilic_ATIL", "events": ["Trail_On", "Trail_Off", "Impact"] },
+      { "weapon_id": 4, "verb_rune": 4, "adjective_rune": 0, "clip": "Kilic_DURUS", "events": [] },
+      { "weapon_id": 4, "verb_rune": 6, "adjective_rune": 0, "clip": "Kilic_VUR", "events": ["Impact"] },
+      { "weapon_id": 4, "verb_rune": 9, "adjective_rune": 0, "clip": "Kilic_VUR", "events": ["Impact"] },
+      { "weapon_id": 6, "verb_rune": 1, "adjective_rune": 0, "clip": "Cekic_VUR", "events": ["Impact", "Ejder"] },
+      { "weapon_id": 6, "verb_rune": 2, "adjective_rune": 0, "clip": "Cekic_VUR", "events": ["Impact"] },
+      { "weapon_id": 6, "verb_rune": 3, "adjective_rune": 0, "clip": "Cekic_ATIL", "events": ["Trail_On", "Trail_Off", "Impact", "Ejder"] },
+      { "weapon_id": 6, "verb_rune": 4, "adjective_rune": 0, "clip": "Cekic_DURUS", "events": [] },
+      { "weapon_id": 6, "verb_rune": 6, "adjective_rune": 0, "clip": "Cekic_VUR", "events": ["Impact"] },
+      { "weapon_id": 6, "verb_rune": 9, "adjective_rune": 0, "clip": "Cekic_VUR", "events": ["Impact"] },
+      { "weapon_id": 2, "verb_rune": 1, "adjective_rune": 0, "clip": "Yay_VUR", "events": ["Impact"] },
+      { "weapon_id": 2, "verb_rune": 2, "adjective_rune": 0, "clip": "Yay_VUR", "events": ["Impact"] },
+      { "weapon_id": 2, "verb_rune": 3, "adjective_rune": 0, "clip": "Yay_ATIL", "events": ["Trail_On", "Trail_Off"] },
+      { "weapon_id": 2, "verb_rune": 4, "adjective_rune": 0, "clip": "Yay_DURUS", "events": [] },
+      { "weapon_id": 2, "verb_rune": 6, "adjective_rune": 0, "clip": "Yay_VUR", "events": ["Impact"] },
+      { "weapon_id": 2, "verb_rune": 9, "adjective_rune": 0, "clip": "Yay_VUR", "events": ["Impact"] }
+    ]
+  },
+  "slice_arena": {
+    "columns": [
+      { "x_m": -9, "z_m": 4, "radius_m": 1, "height_m": 3 },
+      { "x_m": 9, "z_m": 4, "radius_m": 1, "height_m": 3 },
+      { "x_m": 0, "z_m": -10, "radius_m": 1, "height_m": 3 }
+    ],
+    "cocoons": [
+      { "x_m": -12, "z_m": -6, "radius_m": 0.6, "max_hp": 400 },
+      { "x_m": 12, "z_m": -6, "radius_m": 0.6, "max_hp": 400 }
+    ],
+    "outer_wall_collision_radius_m": 18,
+    "outer_wall_visual_inner_radius_m": 18,
+    "outer_wall_visual_outer_radius_m": 22,
+    "outer_wall_segments": 48,
+    "outer_wall_height_m": 4
   }
 }

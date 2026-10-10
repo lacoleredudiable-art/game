@@ -122,6 +122,7 @@ public sealed class RuleDrivenVfxPathTests
     public void AnimEventHost_ExposesTrailImpactEjder_NoHardcodedFrames()
     {
         string host = Game("Vfx/SkillAnimVfxEventHost.cs");
+        Assert.That(host, Does.Contain("SetEventMask"));
         Assert.That(host, Does.Contain("Trail_On"));
         Assert.That(host, Does.Contain("Trail_Off"));
         Assert.That(host, Does.Contain("Impact"));
@@ -143,5 +144,20 @@ public sealed class RuleDrivenVfxPathTests
         Assert.That(motion, Does.Not.Contain("RuleDrivenVfxSink.BeginSkill"));
         Assert.That(motion, Does.Not.Contain(".BeginSkill("));
         Assert.That(motion, Does.Contain("RuleDrivenVfxSink.NotifyHit"));
+    }
+
+    [Test]
+    public void RuleEngineV4Motion_EndDash_NotifiesMotionEnded()
+    {
+        string run = Game("Skills/RuleEngineV4/RuleEngineV4WorldCommandRunHost.cs");
+        Assert.That(run, Does.Contain("RuleDrivenVfxSink.NotifyMotionEnded"));
+    }
+
+    [Test]
+    public void RuleEngineV4Cast_PlaysSkillAnimBridge_FromCatalog()
+    {
+        string cast = Game("Skills/RuleEngineV4/RuleEngineV4CastHost.cs");
+        Assert.That(cast, Does.Contain("RuleEngineV4SkillAnimBridge.PlayForPlan"));
+        Assert.That(cast, Does.Contain("SkillAnim"));
     }
 }

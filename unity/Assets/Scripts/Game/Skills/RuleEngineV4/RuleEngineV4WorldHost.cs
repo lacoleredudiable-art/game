@@ -51,6 +51,15 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 return amount;
             }
 
+            var cocoon = victim.GetComponentInParent<SliceArenaCocoonHost>();
+            if (cocoon != null && !cocoon.IsBroken)
+            {
+                cocoon.ApplyDamage(amount);
+                director.MechanicsDamageHud?.ShowDamage(
+                    amount, false, victim.position, null, victimIsBoss: false);
+                return amount;
+            }
+
             return 0;
         }
 
