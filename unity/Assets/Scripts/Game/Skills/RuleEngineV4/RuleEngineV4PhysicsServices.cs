@@ -128,6 +128,49 @@ namespace Dovus.Game.Skills.RuleEngineV4
             return false;
         }
 
+        public bool TryProjectileBlocked(
+            Vector3 origin,
+            Vector3 direction,
+            float rangeM,
+            float projectileRadiusM,
+            Transform ignore,
+            out float hitDistance)
+        {
+            hitDistance = 0f;
+            direction.y = 0;
+            if (direction.sqrMagnitude < 0.0001f || rangeM <= 0)
+                return false;
+            direction.Normalize();
+            var halfExtents = new Vector3(
+                projectileRadiusM,
+                RuleEngineV4WorldPhysicsDefaults.ProjectileColumnHalfHeightM,
+                projectileRadiusM);
+            int count = Physics.BoxCastNonAlloc(
+                origin,
+                halfExtents,
+                direction,
+                _castHits,
+                Quaternion.LookRotation(direction),
+                rangeM,
+                Physics.AllLayers,
+                QueryTriggerInteraction.Ignore);
+            float best = float.MaxValue;
+            for (int i = 0; i < count; i++)
+            {
+                Collider col = _castHits[i].collider;
+                if (col == null || col.isTrigger)
+                    continue;
+                if (ignore != null && col.transform.IsChildOf(ignore))
+                    continue;
+                if (_castHits[i].distance < best)
+                    best = _castHits[i].distance;
+            }
+            if (best >= float.MaxValue)
+                return false;
+            hitDistance = best;
+            return true;
+        }
+
         public bool SphereCastFirstTarget(
             Vector3 origin,
             Vector3 direction,

@@ -78,6 +78,24 @@ namespace Dovus.Game.Actors
         /// JSON animasyon adını controller clip listesinde arar; exact clip/state yoksa
         /// AnimationDatabase'in mevcut generic Cast* state'ine düşer.
         /// </summary>
+        public bool PlaySkillClip(string clipName, string fallbackState, Animator animator)
+        {
+            Stop();
+            AnimationClip clip = FindClip(animator, clipName);
+            LastExactClipFound = clip != null;
+            LastClipName = clip != null ? clip.name : string.Empty;
+            if (clip != null && TryPlayState(animator, clip.name))
+            {
+                LastUsedFallbackState = false;
+                LastPlayApplied = true;
+                return true;
+            }
+
+            LastUsedFallbackState = true;
+            LastPlayApplied = TryPlayState(animator, fallbackState);
+            return LastPlayApplied;
+        }
+
         public bool PlayBinding(AnimationBinding binding, Animator animator)
         {
             Stop();

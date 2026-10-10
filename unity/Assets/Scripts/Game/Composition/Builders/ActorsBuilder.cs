@@ -8,6 +8,8 @@ using Dovus.Core.Input;
 using Dovus.Core.Hud;
 using Dovus.Core.Passives;
 using Dovus.Core.Data;
+using Dovus.Core.RuleEngineV4;
+using Dovus.Game.Skills.RuleEngineV4;
 using Dovus.Game.Actors;
 using Dovus.Game.Boss;
 using Dovus.Game.Casting;
@@ -200,6 +202,11 @@ namespace Dovus.Game.Composition.Builders
             ctx.TeamComboHost.Modifiers.BindActorRegistry(ctx.ActorRegistry);
 
             RuleEngineV4SliceBuilder.BuildIfEnabled(ctx);
+            if (ctx.Tuning.RuleEngineV4.SliceScene)
+            {
+                var catalogAccess = new RuleEngineV4CatalogAccess();
+                RuleEngineV4SliceArenaBuilder.BuildIfEnabled(ctx, catalogAccess.Catalog.SliceArena);
+            }
             RuleEngineV4PhysicsBodies.AttachIfEnabled(ctx);
         }
     }
