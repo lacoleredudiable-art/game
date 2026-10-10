@@ -58,6 +58,37 @@ namespace Dovus.Game.Skills.RuleEngineV4
             return SweepAndSlide(from, to, radiusM);
         }
 
+        /// <summary>
+        /// Düz çizgide ilk katı collider'a kadar gidilebilecek mesafe (tetikler sayılmaz).
+        /// <paramref name="dir"/> yatay ve birim olmalı.
+        /// </summary>
+        public static float ClearDistance(Vector3 from, Vector3 dir, float meters, float radiusM, Transform self)
+        {
+            float radius = Mathf.Max(KinematicMotorControllerDefaults.CapsuleRadiusFloorM, radiusM);
+            Vector3 p1 = from + Vector3.up * (radius + KinematicMotorControllerDefaults.CapsuleProbeLiftM);
+            Vector3 p2 = from + Vector3.up * KinematicMotorControllerDefaults.CapsuleTopLiftM;
+            int hits = Physics.CapsuleCastNonAlloc(
+                p1, p2, radius, dir, Hits, meters, ~0, QueryTriggerInteraction.Ignore);
+            float best = meters;
+            bool blocked = false;
+            for (int i = 0; i < hits; i++)
+            {
+                Collider col = Hits[i].collider;
+                if (col == null || Hits[i].distance >= best)
+                    continue;
+                if (self != null && col.transform.IsChildOf(self))
+                    continue;
+                // Başlangıçta zaten temas eden collider (mesafe 0, nokta sıfır) yönü kesmez.
+                if (Hits[i].distance <= 0f && Hits[i].point == Vector3.zero)
+                    continue;
+                best = Hits[i].distance;
+                blocked = true;
+            }
+            if (blocked)
+                best -= KinematicMotorControllerDefaults.MoveStopInsetM;
+            return Mathf.Max(0f, best);
+        }
+
         static Vector3 SweepAndSlide(Vector3 from, Vector3 to, float radiusM)
         {
             Vector3 delta = to - from;

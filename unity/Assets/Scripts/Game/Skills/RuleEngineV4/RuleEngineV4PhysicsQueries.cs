@@ -10,7 +10,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
     public static class RuleEngineV4PhysicsQueries
     {
         static readonly Collider[] HitBuffer = new Collider[24];
-        static readonly RaycastHit[] CastHits = new RaycastHit[16];
+        static readonly RaycastHit[] CastHits = new RaycastHit[64];
 
         public static bool MeleeHitsTarget(
             Transform caster,
@@ -62,7 +62,10 @@ namespace Dovus.Game.Skills.RuleEngineV4
                    && (hit == target || hit.IsChildOf(target));
         }
 
-        /// <summary>Mermi: yol üzerindeki ilk Targetable (trigger dahil).</summary>
+        /// <summary>
+        /// Mermi: üstten bakışta yol üzerindeki ilk Targetable (trigger dahil). Yakın vuruş ve alan gibi
+        /// yükseklikten bağımsızdır; kısa gövdeli yaratık göğüs hizasındaki merminin altında kalmaz.
+        /// </summary>
         public static bool SphereCastFirstTarget(
             Vector3 origin,
             Vector3 direction,
@@ -75,11 +78,14 @@ namespace Dovus.Game.Skills.RuleEngineV4
             if (direction.sqrMagnitude < 0.0001f)
                 return false;
             direction.Normalize();
-            int count = Physics.SphereCastNonAlloc(
+            var halfExtents = new Vector3(
+                projectileRadiusM, RuleEngineV4PhysicsDefaults.ProjectileColumnHalfHeightM, projectileRadiusM);
+            int count = Physics.BoxCastNonAlloc(
                 origin,
-                projectileRadiusM,
+                halfExtents,
                 direction,
                 CastHits,
+                Quaternion.LookRotation(direction),
                 rangeM,
                 Physics.AllLayers,
                 QueryTriggerInteraction.Collide);
@@ -87,6 +93,9 @@ namespace Dovus.Game.Skills.RuleEngineV4
             for (int i = 0; i < count; i++)
             {
                 if (CastHits[i].collider == null)
+                    continue;
+                // Başlangıçta zaten örtüşen (zemin, atıcının dibindeki gövde) çarpma sayılmaz.
+                if (CastHits[i].distance <= 0f && CastHits[i].point == Vector3.zero)
                     continue;
                 if (!TryResolveTargetRoot(CastHits[i].collider.transform, out Transform root))
                     continue;

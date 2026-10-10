@@ -24,7 +24,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
 
             if (root.TryGetComponent(out SliceLightMinionHost minion))
             {
-                int max = Mathf.Max(1, minion.Hp);
+                int max = Mathf.Max(1, minion.MaxHp);
                 hpRatio = (float)minion.Hp / max;
                 return;
             }

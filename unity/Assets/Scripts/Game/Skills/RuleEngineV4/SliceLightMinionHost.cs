@@ -12,6 +12,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
 
         public ActorId ActorId { get; private set; }
         public int Hp => _hp;
+        public int MaxHp => _maxHp;
         public bool IsDown => _hp <= 0;
 
         public void Configure(ActorId actorId, int maxHp)

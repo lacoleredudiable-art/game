@@ -208,6 +208,16 @@ namespace Dovus.Game.Skills.RuleEngineV4
             MotionTemplateBodyHost body = caster.GetComponent<MotionTemplateBodyHost>();
             KinematicMotorController motor = caster.GetComponent<KinematicMotorController>();
             float radius = RuleEngineV4WorldPhysicsUtil.BodyRadius(caster);
+            Vector3 start = caster.position;
+            Vector3 dir = fixedDir ?? (trackTarget != null ? trackTarget.position - start : caster.forward);
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 0.0001f)
+                dir = Vector3.forward;
+            dir.Normalize();
+            meters = RuleEngineV4WorldPhysicsUtil.ClearDistance(start, dir, meters, radius, caster);
+            if (meters <= 0f)
+                yield break;
+            Vector3 end = start + dir * meters;
             MotionTemplate template = RuleEngineV4MotionBridge.BuildLinearMove(motionKind, motionKind, meters, speedMps);
             Func<MotionTarget> targetFn = () =>
             {
@@ -217,11 +227,6 @@ namespace Dovus.Game.Skills.RuleEngineV4
                     float r = RuleEngineV4WorldPhysicsUtil.BodyRadius(trackTarget);
                     return new MotionTarget(true, p.x, p.z, r);
                 }
-                Vector3 fwd = fixedDir ?? caster.forward;
-                fwd.y = 0f;
-                if (fwd.sqrMagnitude < 0.0001f)
-                    fwd = Vector3.forward;
-                Vector3 end = caster.position + fwd.normalized * meters;
                 return new MotionTarget(true, end.x, end.z);
             };
             if (body != null)
@@ -233,11 +238,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             float eff = RuleEngineV4MotionHandoff.EffectiveSpeedMps(speedMps, incoming);
             float t = 0f;
             float duration = Mathf.Max(CastApproach.MinSec, meters / Mathf.Max(0.01f, eff));
-            Vector3 start = caster.position;
-            Vector3 delta = (fixedDir ?? (trackTarget != null
-                ? (trackTarget.position - start)
-                : caster.forward)).normalized * meters;
-            delta.y = 0f;
+            Vector3 delta = dir * meters;
             while (t < duration)
             {
                 t += Time.deltaTime;
@@ -352,7 +353,15 @@ namespace Dovus.Game.Skills.RuleEngineV4
             var body = wall.AddComponent<RuleEngineV4PhysicsBodyHost>();
             body.WeightTier = RuleEngineV4WeightTier.Anchored;
             body.BodyRadiusM = r;
-            UnityEngine.Object.Destroy(wall, lifeSec);
+            _director.StartCoroutine(CoExpireStructure(wall, lifeSec));
+        }
+
+        IEnumerator CoExpireStructure(GameObject wall, float lifeSec)
+        {
+            yield return CoWaitWorld(lifeSec);
+            if (wall != null)
+                UnityEngine.Object.Destroy(wall);
+            _session.Structures.Release(0);
         }
 
         double WorldMs() =>
