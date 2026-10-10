@@ -13,14 +13,11 @@ namespace Dovus.Game.Editor
     /// <summary>
     /// k3 prefabını kaydedilmeyen geçici sahnede klip karesine örnekleyip ortografik PNG çeker
     /// (Blender "34" açısı: kamera yönü Blender (0.7,-0.7,0) → Unity (-0.7,0,0.7)).
-    /// Batch: -executeMethod Dovus.Game.Editor.K3PoseCapture.CaptureBatch -k3PoseOut &lt;klasör&gt; [-k3PoseYaw &lt;derece,derece&gt;]
-    /// -k3PoseYaw: çekim başına kamera Y dönüşü. Bake Into Pose (Body Orientation) klibin başlangıç gövde yönünü
-    /// sıfırlar; Blender karesiyle aynı gövde-kamera açısı için o fark verilir.
+    /// Batch: -executeMethod Dovus.Game.Editor.K3PoseCapture.CaptureBatch -k3PoseOut &lt;klasör&gt;
     /// </summary>
     public static class K3PoseCapture
     {
         const string OutArg = "-k3PoseOut";
-        const string YawArg = "-k3PoseYaw";
         const string DefaultOut = "../tools/verify-out/k3";
         const int Size = 900;
         const float CameraDistance = 4f;
@@ -37,24 +34,16 @@ namespace Dovus.Game.Editor
         };
 
         [MenuItem("Dovus/k3/Poz görüntüsü (Kilic_VUR 7, Yay_VUR 11)")]
-        public static void Capture() => Capture(DefaultOut, new float[Shots.Length]);
+        public static void Capture() => Capture(DefaultOut);
 
         public static void CaptureBatch()
         {
             string[] args = Environment.GetCommandLineArgs();
-            string Arg(string name)
-            {
-                int i = Array.IndexOf(args, name);
-                return i >= 0 && i + 1 < args.Length ? args[i + 1] : null;
-            }
-            float[] yaws = new float[Shots.Length];
-            string[] yawText = Arg(YawArg)?.Split(',') ?? Array.Empty<string>();
-            for (int i = 0; i < yawText.Length && i < yaws.Length; i++)
-                yaws[i] = float.Parse(yawText[i], System.Globalization.CultureInfo.InvariantCulture);
-            Capture(Arg(OutArg) ?? DefaultOut, yaws);
+            int i = Array.IndexOf(args, OutArg);
+            Capture(i >= 0 && i + 1 < args.Length ? args[i + 1] : DefaultOut);
         }
 
-        static void Capture(string outDir, float[] yaws)
+        static void Capture(string outDir)
         {
             Directory.CreateDirectory(outDir);
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -78,11 +67,9 @@ namespace Dovus.Game.Editor
             var rt = new RenderTexture(Size, Size, 24);
             cam.targetTexture = rt;
 
-            for (int shot = 0; shot < Shots.Length; shot++)
+            light.transform.rotation = Quaternion.LookRotation(-ViewDir + Vector3.down * 0.8f);
+            foreach ((string clipName, int frame, string weaponName) in Shots)
             {
-                (string clipName, int frame, string weaponName) = Shots[shot];
-                Vector3 view = Quaternion.AngleAxis(yaws[shot], Vector3.up) * ViewDir;
-                light.transform.rotation = Quaternion.LookRotation(-view + Vector3.down * 0.8f);
                 foreach (Transform w in weapons)
                     w.gameObject.SetActive(w.name == weaponName);
                 PlayableGraph graph = PlayableGraph.Create("k3Pose");
@@ -96,8 +83,8 @@ namespace Dovus.Game.Editor
                 Vector3 full = new(hips.position.x, FullCenterHeight, hips.position.z);
                 Vector3 hands = (anim.GetBoneTransform(HumanBodyBones.LeftHand).position
                                  + anim.GetBoneTransform(HumanBodyBones.RightHand).position) / 2f;
-                Shoot(cam, rt, view, full, FullOrthoWidth, $"{outDir}/{clipName}_k{frame:00}_tam_34.png");
-                Shoot(cam, rt, view, hands, HandOrthoWidth, $"{outDir}/{clipName}_k{frame:00}_el_34.png");
+                Shoot(cam, rt, full, FullOrthoWidth, $"{outDir}/{clipName}_k{frame:00}_tam_34.png");
+                Shoot(cam, rt, hands, HandOrthoWidth, $"{outDir}/{clipName}_k{frame:00}_el_34.png");
                 foreach (GameObject b in baked)
                     UnityEngine.Object.DestroyImmediate(b);
 
@@ -132,11 +119,11 @@ namespace Dovus.Game.Editor
             return baked;
         }
 
-        static void Shoot(Camera cam, RenderTexture rt, Vector3 view, Vector3 center, float orthoWidth, string path)
+        static void Shoot(Camera cam, RenderTexture rt, Vector3 center, float orthoWidth, string path)
         {
             cam.orthographicSize = orthoWidth / 2f;
-            cam.transform.position = center + view * CameraDistance;
-            cam.transform.rotation = Quaternion.LookRotation(-view, Vector3.up);
+            cam.transform.position = center + ViewDir * CameraDistance;
+            cam.transform.rotation = Quaternion.LookRotation(-ViewDir, Vector3.up);
             cam.Render();
             RenderTexture prev = RenderTexture.active;
             RenderTexture.active = rt;

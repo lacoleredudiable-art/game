@@ -180,6 +180,7 @@ namespace Dovus.Game.Editor
             clip.lockRootRotation = true;
             clip.lockRootHeightY = true;
             clip.lockRootPositionXZ = true;
+            clip.keepOriginalOrientation = true;
             clip.keepOriginalPositionY = true;
             clip.events = BuildEvents(row, clip.lastFrame - clip.firstFrame);
             importer.clipAnimations = new[] { clip };
