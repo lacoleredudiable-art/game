@@ -49,6 +49,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
                         yield return CoWaitWorld(onSure.ChargeSec);
                     if (onSure.PrefireSec > 0f)
                         yield return CoWaitWorld(onSure.PrefireSec);
+                    delivery.Refresh(_director, plan, target);
                     continue;
                 }
 
