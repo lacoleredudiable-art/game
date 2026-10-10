@@ -8,16 +8,15 @@ namespace Dovus.Game.Vfx
     /// </summary>
     public static class RuleVfxArtDefaults
     {
-        public const int SilhouetteAtlasW = 512;
-        public const int SilhouetteAtlasH = 64;
-        public const int SilhouetteCells = 8;
+        /// <summary>Yer tutucu: gerçek atlasla aynı 4×2 düzen, 64² hücre.</summary>
+        public const int SilhouetteAtlasW = 256;
+        public const int SilhouetteAtlasH = 128;
         public const int SilhouetteTailCell = 5;
         public const float SilhouetteArcAmp = 0.15f;
         public const float SilhouetteArcFreq = 3.2f;
         public const float SilhouetteArcSharp = 18f;
         public const float SilhouetteLenFalloff = 1.2f;
         public const float SilhouetteBlobFalloff = 3.5f;
-        public const float SilhouetteUvScale = 8f;
 
         public const int GlyphCellPx = 64;
         public const int GlyphCols = 8;
@@ -106,15 +105,19 @@ namespace Dovus.Game.Vfx
                 wrapMode = TextureWrapMode.Clamp
             };
             var pixels = new Color32[w * h];
-            for (int cell = 0; cell < SilhouetteCells; cell++)
+            int cols = RuleVfxDefaults.SilhouetteAtlasCols;
+            int rows = RuleVfxDefaults.SilhouetteAtlasRows;
+            int cw = w / cols;
+            int ch = h / rows;
+            for (int cell = 0; cell < cols * rows; cell++)
             {
-                int x0 = cell * (w / SilhouetteCells);
-                int x1 = x0 + w / SilhouetteCells;
-                for (int y = 0; y < h; y++)
-                for (int x = x0; x < x1; x++)
+                int x0 = cell % cols * cw;
+                int y0 = (rows - 1 - cell / cols) * ch;
+                for (int y = y0; y < y0 + ch; y++)
+                for (int x = x0; x < x0 + cw; x++)
                 {
-                    float nx = (x - x0) / (float)(w / SilhouetteCells) * 2f - 1f;
-                    float ny = y / (float)h * 2f - 1f;
+                    float nx = (x - x0) / (float)cw * 2f - 1f;
+                    float ny = (y - y0) / (float)ch * 2f - 1f;
                     float arc = cell == SilhouetteTailCell
                         ? Mathf.Exp(-Mathf.Pow(ny - SilhouetteArcAmp * Mathf.Sin(nx * SilhouetteArcFreq), 2f) * SilhouetteArcSharp)
                           * Mathf.Exp(-nx * nx * SilhouetteLenFalloff)

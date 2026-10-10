@@ -1,3 +1,4 @@
+using Dovus.Core.Presentation;
 using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Actors;
 using Dovus.Game.Skills;
@@ -28,16 +29,20 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 binding.FallbackAnimatorState,
                 view.Animator);
 
-            SkillAnimVfxEventHost relay = EnsureRelay(view.Animator.gameObject);
+            SkillAnimVfxEventHost relay = EnsureRelay(view.Animator.gameObject, out RuleDrivenVfxDirector vfx);
             relay.SetEventMask(binding.Events);
+            vfx?.ArmEntrySilhouette(
+                binding.EntrySilhouetteCell,
+                binding.EntrySilhouetteLifeSec,
+                VfxPlanResolver.VerbColor(plan.VerbRune));
         }
 
-        static SkillAnimVfxEventHost EnsureRelay(GameObject animatorGo)
+        static SkillAnimVfxEventHost EnsureRelay(GameObject animatorGo, out RuleDrivenVfxDirector director)
         {
             SkillAnimVfxEventHost relay = animatorGo.GetComponent<SkillAnimVfxEventHost>();
             if (relay == null)
                 relay = animatorGo.AddComponent<SkillAnimVfxEventHost>();
-            RuleDrivenVfxDirector director = animatorGo.GetComponentInParent<RuleDrivenVfxDirector>();
+            director = animatorGo.GetComponentInParent<RuleDrivenVfxDirector>();
             if (director == null)
                 director = animatorGo.GetComponentInParent<ActorView>()?.GetComponent<RuleDrivenVfxDirector>();
             relay.Bind(director);

@@ -68,6 +68,13 @@ namespace Dovus.Core.Presentation
         /// <summary>Zarar isabet katmanı (fiil Saldırı/Zarar veya açık bayrak).</summary>
         public static bool WantsZararHitMotif(in VfxPlan plan) => plan.ZararClawMarksOnHit;
 
+        /// <summary>§1 fiil rengi; plan dışı tetikler (skill_anim entry_silhouette) için.</summary>
+        public static VfxColorRgb VerbColor(int verbId)
+        {
+            ResolveVerb(verbId, string.Empty, out VfxColorRgb color, out _);
+            return color;
+        }
+
         static void ResolveVerb(int verbId, string verbName, out VfxColorRgb color, out VfxMotifKind motif)
         {
             // Spec fiil adları (Zarar…) + JSON verb_face (Saldırı…) birlikte.

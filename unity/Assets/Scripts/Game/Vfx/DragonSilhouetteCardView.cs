@@ -6,20 +6,28 @@ namespace Dovus.Game.Vfx
 {
     /// <summary>
     /// efekt-motoru §3.4: tek mesh kartı + dissolve. Kılıç ATIL → atlas hücre F (kuyruk yayı),
-    /// 0,25 s, atılış yolu boyunca. Yer tutucu atlas (prosedürel alpha).
+    /// 0,25 s, atılış yolu boyunca. Atlas Resources'tan (4×2); yoksa prosedürel yer tutucu.
     /// </summary>
     public sealed class DragonSilhouetteCardView : MonoBehaviour
     {
         static int _liveCount;
+        static bool _warnedMissingAtlas;
 
         MeshRenderer _mr;
         Material _mat;
         Texture2D _atlas;
+        bool _ownsAtlas;
         float _life;
         float _age;
         bool _active;
 
         public static int LiveCount => _liveCount;
+
+        public int PlayCount { get; private set; }
+        public int LastAtlasCell { get; private set; } = -1;
+        public float LastLifeSec { get; private set; }
+        public bool IsVisible => _active;
+        public Material CardMaterial => _mat;
 
         public void PlayAlongLine(Vector3 from, Vector3 to, in VfxColorRgb color, float lifeSec, int atlasCell)
         {
@@ -52,6 +60,9 @@ namespace Dovus.Game.Vfx
             }
 
             ApplyAtlasCell(atlasCell);
+            PlayCount++;
+            LastAtlasCell = atlasCell;
+            LastLifeSec = _life;
             Color c = new Color(
                 color.R * RuleVfxArtDefaults.CoreHdrMult,
                 color.G * RuleVfxArtDefaults.CoreHdrMult,
@@ -114,7 +125,18 @@ namespace Dovus.Game.Vfx
             Shader sh = Shader.Find(RuleVfxDefaults.KorShaderName)
                 ?? Shader.Find(RuleVfxDefaults.ParticlesUnlit);
             _mat = new Material(sh);
-            _atlas = RuleVfxArtDefaults.BuildSilhouetteAtlas();
+            _atlas = Resources.Load<Texture2D>(RuleVfxDefaults.SilhouetteAtlasResource);
+            _ownsAtlas = _atlas == null;
+            if (_ownsAtlas)
+            {
+                if (!_warnedMissingAtlas)
+                {
+                    _warnedMissingAtlas = true;
+                    Debug.LogWarning("[DragonSilhouette] Resources/" + RuleVfxDefaults.SilhouetteAtlasResource
+                        + " yok; yer tutucu atlas kullanılıyor.");
+                }
+                _atlas = RuleVfxArtDefaults.BuildSilhouetteAtlas();
+            }
             if (_mat.HasProperty("_MainTex"))
                 _mat.SetTexture("_MainTex", _atlas);
             if (_mat.HasProperty("_DissolveTex"))
@@ -123,13 +145,32 @@ namespace Dovus.Game.Vfx
             _mr.enabled = false;
         }
 
+        /// <summary>Hücre 0 = sol üst; Unity UV'si alttan başladığı için satır ters çevrilir.</summary>
         void ApplyAtlasCell(int cell)
         {
-            int idx = Mathf.Clamp(cell, 0, RuleVfxArtDefaults.SilhouetteCells - 1);
-            float u0 = idx / RuleVfxArtDefaults.SilhouetteUvScale;
-            float u1 = (idx + 1) / RuleVfxArtDefaults.SilhouetteUvScale;
-            if (_mat != null && _mat.HasProperty("_MainTex_ST"))
-                _mat.SetVector("_MainTex_ST", new Vector4(u1 - u0, 1f, u0, 0f));
+            int cols = RuleVfxDefaults.SilhouetteAtlasCols;
+            int rows = RuleVfxDefaults.SilhouetteAtlasRows;
+            int idx = Mathf.Clamp(cell, 0, cols * rows - 1);
+            int col = idx % cols;
+            int row = idx / cols;
+            if (_mat == null || !_mat.HasProperty("_MainTex"))
+                return;
+            // Doku ölçeği/ofseti = shader'daki _MainTex_ST (TRANSFORM_TEX).
+            _mat.SetTextureScale("_MainTex", new Vector2(1f / cols, 1f / rows));
+            _mat.SetTextureOffset("_MainTex", new Vector2(col / (float)cols, (rows - 1 - row) / (float)rows));
+        }
+
+        /// <summary>_MainTex_ST = (ölçek x, ölçek y, ofset x, ofset y).</summary>
+        public Vector4 MainTexST
+        {
+            get
+            {
+                if (_mat == null || !_mat.HasProperty("_MainTex"))
+                    return Vector4.zero;
+                Vector2 s = _mat.GetTextureScale("_MainTex");
+                Vector2 o = _mat.GetTextureOffset("_MainTex");
+                return new Vector4(s.x, s.y, o.x, o.y);
+            }
         }
 
         void OnDestroy()
@@ -137,7 +178,7 @@ namespace Dovus.Game.Vfx
             Release();
             if (_mat != null)
                 Destroy(_mat);
-            if (_atlas != null)
+            if (_ownsAtlas && _atlas != null)
                 Destroy(_atlas);
         }
     }

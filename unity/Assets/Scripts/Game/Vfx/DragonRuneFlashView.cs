@@ -6,15 +6,18 @@ namespace Dovus.Game.Vfx
 {
     /// <summary>
     /// efekt-motoru §1.1: çizilen rün 0,2 s'de Ejderha Dili harfine oturur (fiil→sıfat),
-    /// 0,3 s parlar. Yer tutucu glif atlası.
+    /// 0,3 s parlar. Glif atlası Resources'tan (8×3, 0 = sol üst); yoksa yer tutucu.
     /// </summary>
     public sealed class DragonRuneFlashView : MonoBehaviour
     {
+        static bool _warnedMissingAtlas;
+
         Canvas _canvas;
         Image _verb;
         Image _adj;
         Texture2D _atlas;
-        Sprite _atlasSprite;
+        bool _ownsAtlas;
+        Sprite[] _cells;
         float _age;
         float _snap;
         float _glow;
@@ -23,6 +26,10 @@ namespace Dovus.Game.Vfx
         Vector2 _adjFrom;
         Vector2 _verbTo;
         Vector2 _adjTo;
+
+        public Texture2D GlyphAtlas => _atlas;
+        public Sprite VerbSprite => _verb != null ? _verb.sprite : null;
+        public Sprite AdjectiveSprite => _adj != null ? _adj.sprite : null;
 
         public void Play(int verbRuneId, int adjectiveRuneId, Color coreColor)
         {
@@ -89,12 +96,19 @@ namespace Dovus.Game.Vfx
             canvasGo.AddComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             canvasGo.AddComponent<GraphicRaycaster>();
 
-            _atlas = RuleVfxArtDefaults.BuildGlyphAtlas();
-            _atlasSprite = Sprite.Create(
-                _atlas,
-                new Rect(0f, 0f, _atlas.width, _atlas.height),
-                new Vector2(0.5f, 0.5f),
-                RuleVfxArtDefaults.GlyphPpu);
+            _atlas = Resources.Load<Texture2D>(RuleVfxDefaults.GlyphAtlasResource);
+            _ownsAtlas = _atlas == null;
+            if (_ownsAtlas)
+            {
+                if (!_warnedMissingAtlas)
+                {
+                    _warnedMissingAtlas = true;
+                    Debug.LogWarning("[DragonRuneFlash] Resources/" + RuleVfxDefaults.GlyphAtlasResource
+                        + " yok; yer tutucu glif atlası kullanılıyor.");
+                }
+                _atlas = RuleVfxArtDefaults.BuildGlyphAtlas();
+            }
+            _cells = new Sprite[RuleVfxArtDefaults.GlyphCols * RuleVfxArtDefaults.GlyphRows];
 
             _verb = MakeLetter("VerbLetter");
             _adj = MakeLetter("AdjLetter");
@@ -112,14 +126,35 @@ namespace Dovus.Game.Vfx
             rt.anchorMax = new Vector2(0.5f, 0.5f);
             rt.pivot = new Vector2(0.5f, 0.5f);
             var img = go.AddComponent<Image>();
-            img.sprite = _atlasSprite;
+            img.sprite = Cell(0);
             img.raycastTarget = false;
             return img;
         }
 
-        static void ApplyCell(Image img, int cell, Color core)
+        /// <summary>Hücre boyutu atlas boyutundan; satır 0 üstte (texture y alttan).</summary>
+        Sprite Cell(int index)
+        {
+            int idx = Mathf.Clamp(index, 0, _cells.Length - 1);
+            if (_cells[idx] != null)
+                return _cells[idx];
+            int cols = RuleVfxArtDefaults.GlyphCols;
+            int rows = RuleVfxArtDefaults.GlyphRows;
+            int cw = _atlas.width / cols;
+            int ch = _atlas.height / rows;
+            int col = idx % cols;
+            int row = idx / cols;
+            _cells[idx] = Sprite.Create(
+                _atlas,
+                new Rect(col * cw, (rows - 1 - row) * ch, cw, ch),
+                new Vector2(0.5f, 0.5f),
+                RuleVfxArtDefaults.GlyphPpu);
+            return _cells[idx];
+        }
+
+        void ApplyCell(Image img, int cell, Color core)
         {
             int idx = Mathf.Clamp(cell, 0, RuleVfxArtDefaults.GlyphCellMaxIndex);
+            img.sprite = Cell(idx);
             float hue = (idx % RuleVfxArtDefaults.GlyphHueMod) / (float)RuleVfxArtDefaults.GlyphHueMod;
             Color tint = Color.HSVToRGB(hue, RuleVfxArtDefaults.RuneHueSat, 1f) * core;
             tint.a = 1f;
@@ -140,9 +175,15 @@ namespace Dovus.Game.Vfx
 
         void OnDestroy()
         {
-            if (_atlasSprite != null)
-                Destroy(_atlasSprite);
-            if (_atlas != null)
+            if (_cells != null)
+            {
+                for (int i = 0; i < _cells.Length; i++)
+                {
+                    if (_cells[i] != null)
+                        Destroy(_cells[i]);
+                }
+            }
+            if (_ownsAtlas && _atlas != null)
                 Destroy(_atlas);
         }
     }

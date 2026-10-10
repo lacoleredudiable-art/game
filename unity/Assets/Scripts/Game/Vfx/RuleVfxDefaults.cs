@@ -6,6 +6,14 @@ namespace Dovus.Game.Vfx
         public const string KorShaderName = "Dovus/Vfx/VFX_Kor";
         public const string ParticlesUnlit = "Universal Render Pipeline/Particles/Unlit";
 
+        /// <summary>Resources yolları (efekt-motoru §3.4 silüet, §1.1 glif).</summary>
+        public const string SilhouetteAtlasResource = "Vfx/Ejder/Ejder_Siluet_Atlas";
+        public const string GlyphAtlasResource = "Vfx/Ejder/Ejder_Glif_Atlas";
+
+        /// <summary>Silüet atlası 4×2 hücre: üst satır A B C D, alt satır E F G H.</summary>
+        public const int SilhouetteAtlasCols = 4;
+        public const int SilhouetteAtlasRows = 2;
+
         public const float TrailWidthM = 0.12f;
         public const float TrailHeightM = 1.1f;
         public const float LightningJagM = 0.18f;
