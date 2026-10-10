@@ -1,0 +1,89 @@
+{
+  "version": "4.5-pr1",
+  "feature_flag": "kural_motoru_v4",
+  "scale": {
+    "player_max_hp": 1000,
+    "base_damage": 100,
+    "base_heal": 100,
+    "base_poise": 50,
+    "range_reference_m": 6
+  },
+  "globals": {
+    "prefire_cap_sec": 1.0,
+    "friendly_range_cap_m": 6,
+    "clip_inner_measures_to_range": true,
+    "yogun_charge_sec": 0.35,
+    "yogun_power_mult": 1.35,
+    "yogun_duration_mult": 0.5,
+    "yayilan_radius_m": 4,
+    "yayilan_target_cap": 5,
+    "yayilan_power_mult": 0.85,
+    "sicrayan_bounce_count": 2,
+    "sicrayan_bounce_mult": 0.5,
+    "sicrayan_search_m": 6,
+    "gudumlu_lock_cap_sec": 8,
+    "gudumlu_lock_block_sec": 3,
+    "sabit_structure_life_sec": 6,
+    "ritm_reference_total_sec": 0.55,
+    "kontrol_duration_sec": 1.5,
+    "koruma_yogun_block_sec": 0.45,
+    "koruma_default_block_sec": 2.0
+  },
+  "verbs": {
+    "1": { "id": 1, "key": "zarar", "side": "hostile", "hostile": true },
+    "2": { "id": 2, "key": "sifa", "side": "friendly", "hostile": false },
+    "3": { "id": 3, "key": "hareket", "side": "self", "hostile": false },
+    "4": { "id": 4, "key": "koruma", "side": "self", "hostile": false },
+    "6": { "id": 6, "key": "kontrol", "side": "hostile", "hostile": true },
+    "9": { "id": 9, "key": "arindirma", "side": "friendly", "hostile": false }
+  },
+  "adjectives": {
+    "1": { "id": 1, "key": "yogun", "body": "weapon_delivery", "charge_on_hostile_only": true },
+    "2": { "id": 2, "key": "odakli", "body": "weapon_delivery" },
+    "3": { "id": 3, "key": "sicrayan", "body": "weapon_delivery_then_bounce" },
+    "4": { "id": 4, "key": "sabit", "body": "structure" },
+    "5": { "id": 5, "key": "yayilan", "body": "area_ring" },
+    "6": { "id": 6, "key": "gudumlu", "body": "guided_lock" }
+  },
+  "weapons": {
+    "2": {
+      "id": 2,
+      "key": "yay",
+      "range_mult": 2.35,
+      "delivery": "missile",
+      "prefire_sec": 0.35,
+      "recovery_sec": 0.2,
+      "total_sec": 0.55,
+      "prefire_moves": false,
+      "travel_speed_mps": 14,
+      "travel_skill_allowed": true,
+      "hit_parts": 1
+    },
+    "4": {
+      "id": 4,
+      "key": "kilic",
+      "range_mult": 1.0,
+      "delivery": "melee",
+      "prefire_sec": 0.2,
+      "recovery_sec": 0.2,
+      "total_sec": 0.4,
+      "prefire_moves": false,
+      "travel_speed_mps": 25,
+      "travel_skill_allowed": false,
+      "hit_parts": 1
+    },
+    "6": {
+      "id": 6,
+      "key": "cekiç",
+      "range_mult": 1.0,
+      "delivery": "melee",
+      "prefire_sec": 0.55,
+      "recovery_sec": 0.5,
+      "total_sec": 1.05,
+      "prefire_moves": false,
+      "travel_speed_mps": 22,
+      "travel_skill_allowed": false,
+      "hit_parts": 1
+    }
+  }
+}
