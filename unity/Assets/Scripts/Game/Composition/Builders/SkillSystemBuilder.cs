@@ -67,6 +67,11 @@ namespace Dovus.Game.Composition.Builders
                 ctx.AllyDummyController.BindTeam(ctx.TeamAccess);
                 ctx.AllyDummyController.BindLiveRegistry(runtime.AllyDummies);
             }
+            if (ctx.AllyDummy2Controller != null)
+            {
+                ctx.AllyDummy2Controller.BindTeam(ctx.TeamAccess);
+                ctx.AllyDummy2Controller.BindLiveRegistry(runtime.AllyDummies);
+            }
 
             var feelGo = new GameObject("CombatFeel");
             feelGo.transform.SetParent(ctx.SceneRoot, false);
@@ -122,6 +127,17 @@ namespace Dovus.Game.Composition.Builders
                     alive: () => !ctx.AllyDummyController.IsDown,
                     stealthed: () => ctx.AllyDummyController.Board != null && ctx.AllyDummyController.Board.IsStealthed,
                     damage: raw => ctx.AllyDummyController.ApplyBossDamage(raw));
+            }
+            if (ctx.AllyDummy2Controller != null)
+            {
+                ctx.AllyDummy2Controller.ConfigureLife(targetingConfig);
+                hostileTargets.Register(
+                    ctx.AllyDummy2Controller.transform,
+                    TargetKind.Ally,
+                    CompositionConstants.PlayerRadiusM * SkillSystemBuilderDefaults.PlayerColliderRadiusScale,
+                    alive: () => !ctx.AllyDummy2Controller.IsDown,
+                    stealthed: () => ctx.AllyDummy2Controller.Board != null && ctx.AllyDummy2Controller.Board.IsStealthed,
+                    damage: raw => ctx.AllyDummy2Controller.ApplyBossDamage(raw));
             }
             bossDir.BindTargets(hostileTargets);
             ctx.VitalsHud.BindBoss(bossDir);

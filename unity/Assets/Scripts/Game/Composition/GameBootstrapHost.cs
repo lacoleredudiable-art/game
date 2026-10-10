@@ -15,6 +15,7 @@ using Dovus.Game.Diagnostics;
 using Dovus.Game.Platform;
 using Dovus.Game.Feel;
 using Dovus.Game.Team;
+using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Vfx;
 using UnityEngine;
 
@@ -45,6 +46,7 @@ namespace Dovus.Game.Composition
         {
             _tuning ??= new GameTuning();
             _tuning.EnsureRuntimeDefaults();
+            RuleEngineV4Feature.Enabled = _tuning.RuleEngineV4.Enabled;
             HexagonLayoutScreen.FitShortSideDp = _tuning.Input.HudFitShortSideDp;
 #if !UNITY_EDITOR
             Debug.developerConsoleVisible = false;
