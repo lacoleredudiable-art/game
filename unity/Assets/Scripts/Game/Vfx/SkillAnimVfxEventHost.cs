@@ -7,7 +7,7 @@ namespace Dovus.Game.Vfx
     /// (ve camelCase eşleri) → <see cref="RuleDrivenVfxDirector"/>.
     /// Animator GO'suna eklenir; sabit kare numarası yok.
     /// </summary>
-    public sealed class SkillAnimVfxEventRelay : MonoBehaviour
+    public sealed class SkillAnimVfxEventHost : MonoBehaviour
     {
         RuleDrivenVfxDirector _director;
 

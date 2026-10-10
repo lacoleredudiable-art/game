@@ -19,7 +19,7 @@ namespace Dovus.Game.Vfx
         LightningDashTrailView _lightning;
         DragonSilhouetteCardView _silhouette;
         DragonRuneFlashView _runes;
-        SkillAnimVfxEventRelay _animRelay;
+        SkillAnimVfxEventHost _animRelay;
         Transform _fxRoot;
 
         VfxPlan _plan;
@@ -233,9 +233,10 @@ namespace Dovus.Game.Vfx
         {
             _trailOn = true;
             _dashStart = transform.position;
-            _meshTrail.Begin(_plan.CoreColor, _plan.TrailLifeSec > 0f
+            float trailLife = _plan.TrailLifeSec > 0f
                 ? _plan.TrailLifeSec
-                : VfxPlanDefaults.KilicIzAtilOmurSec, _dashDir);
+                : RuleVfxDefaults.SwordDashTrailLifeSec;
+            _meshTrail.Begin(_plan.CoreColor, trailLife, _dashDir);
             Vector3 tip = BladeTip();
             Vector3 guard = BladeGuard();
             _meshTrail.SampleBlade(guard, tip);
@@ -243,7 +244,7 @@ namespace Dovus.Game.Vfx
                 _dashStart + Vector3.up * RuleVfxArtDefaults.DashStartLift,
                 tip,
                 _plan.CoreColor,
-                _plan.TrailLifeSec > 0f ? _plan.TrailLifeSec : VfxPlanDefaults.KilicIzAtilOmurSec);
+                trailLife);
         }
 
         void SpawnSilhouetteAlongDash()
@@ -255,10 +256,10 @@ namespace Dovus.Game.Vfx
             Vector3 to = from + _dashDir * RuleVfxDefaults.DashForeshadowM;
             float life = _plan.SilhouetteLifeSec > 0f
                 ? _plan.SilhouetteLifeSec
-                : VfxPlanDefaults.EjderKilicAtilOmurSec;
+                : RuleVfxDefaults.SwordDashSilhouetteLifeSec;
             int cell = _plan.DragonAtlasCell >= 0
                 ? _plan.DragonAtlasCell
-                : VfxPlanDefaults.EjderAtlasCellF;
+                : RuleVfxDefaults.SwordDashSilhouetteAtlasCell;
             _silhouette.PlayAlongLine(from, to, _plan.CoreColor, life, cell);
         }
 
@@ -298,8 +299,8 @@ namespace Dovus.Game.Vfx
             ActorView view = GetComponent<ActorView>();
             Animator anim = view != null ? view.Animator : GetComponentInChildren<Animator>();
             GameObject host = anim != null ? anim.gameObject : gameObject;
-            _animRelay = host.GetComponent<SkillAnimVfxEventRelay>()
-                ?? host.AddComponent<SkillAnimVfxEventRelay>();
+            _animRelay = host.GetComponent<SkillAnimVfxEventHost>()
+                ?? host.AddComponent<SkillAnimVfxEventHost>();
             _animRelay.Bind(this);
         }
 

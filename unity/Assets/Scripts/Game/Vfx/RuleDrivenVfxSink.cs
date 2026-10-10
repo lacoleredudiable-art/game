@@ -1,3 +1,4 @@
+using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using UnityEngine;
 
@@ -23,10 +24,31 @@ namespace Dovus.Game.Vfx
             Resolve(actor)?.BeginSkill(skill, weaponKey);
         }
 
+        public static void BeginSkill(Transform actor, in SkillResolution skill, EquipmentItem weapon)
+        {
+            string key = weapon != null
+                ? (string.IsNullOrEmpty(weapon.AnimationsKey) ? weapon.Id : weapon.AnimationsKey)
+                : string.Empty;
+            BeginSkill(actor, skill, key);
+        }
+
         /// <summary>Teslim isabeti (motion hit, HasarVer, impact anim event).</summary>
         public static void NotifyHit(Transform actor, Vector3 hitOrigin, Vector3 hitDir)
         {
             Resolve(actor)?.NotifyHit(hitOrigin, hitDir);
+        }
+
+        /// <summary>NotifyBossStruck köprüsü — path bağımsız isabet VFX.</summary>
+        public static void NotifyBossStrike(Transform player, Transform boss, Vector3? hitPoint)
+        {
+            if (player == null)
+                return;
+            Vector3 origin = hitPoint ?? (boss != null ? boss.position : player.position);
+            Vector3 dir = boss != null ? boss.position - player.position : player.forward;
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 0.0001f)
+                dir = player.forward;
+            NotifyHit(player, origin, dir.normalized);
         }
 
         /// <summary>Dash/teslim bitişi (kenar freni).</summary>

@@ -55,5 +55,10 @@ namespace Dovus.Game.Vfx
 
         /// <summary>Kanat ayak kıvılcım aralığı (sn); kare numarası değil.</summary>
         public const float FootSparkIntervalSec = 0.05f;
+
+        /// <summary>Kılıç ATIL iz / silüet ömrü yedeği (sn); VfxPlanDefaults ile hizalı.</summary>
+        public const float SwordDashTrailLifeSec = 0.25f;
+        public const float SwordDashSilhouetteLifeSec = 0.25f;
+        public const int SwordDashSilhouetteAtlasCell = 5;
     }
 }

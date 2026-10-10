@@ -3,7 +3,6 @@ using Dovus.Core.Casting;
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using Dovus.Game.Skills.Presentation;
-using Dovus.Game.Vfx;
 using System.Collections.Generic;
 
 namespace Dovus.Game.Skills
@@ -35,13 +34,6 @@ namespace Dovus.Game.Skills
         {
           EnsureLaunchServices();
             _skillPresentation.ShoutSkill(skill, words);
-            // Yol bağımsız VFX: eski motion + kural_motoru_v4 aynı shout'tan uyanış/rün alır.
-            string weaponKey = _equippedWeapon != null
-                ? (string.IsNullOrEmpty(_equippedWeapon.AnimationsKey)
-                    ? _equippedWeapon.Id
-                    : _equippedWeapon.AnimationsKey)
-                : string.Empty;
-            RuleDrivenVfxSink.BeginSkill(_player, skill, weaponKey);
         }
 
         public void OnMotionAnnotation(SkillResolution skill, in SkillMotionPlan plan)
