@@ -44,7 +44,10 @@ namespace Dovus.Core.RuleEngineV4
                     continue;
                 string state = entry["fallback_animator_state"].AsString(fallback);
                 RuleEngineV4SkillAnimEvent ev = ParseEvents(entry["events"]);
-                catalog._rules.Add(new RuleEntry(weapon, verb, adj, clip, state, ev));
+                JsonValue silhouette = entry["entry_silhouette"];
+                int entryCell = ParseAtlasCell(silhouette["atlas_cell"]);
+                float entryLife = silhouette["life_sec"].AsFloat();
+                catalog._rules.Add(new RuleEntry(weapon, verb, adj, clip, state, ev, entryCell, entryLife));
             }
 
             return catalog;
@@ -73,7 +76,21 @@ namespace Dovus.Core.RuleEngineV4
             return new RuleEngineV4SkillAnimBinding(
                 chosen.Clip,
                 chosen.FallbackState,
-                chosen.Events);
+                chosen.Events,
+                chosen.EntrySilhouetteCell,
+                chosen.EntrySilhouetteLifeSec);
+        }
+
+        /// <summary>"A".."H" → 0..7; başka her şey → yok.</summary>
+        static int ParseAtlasCell(JsonValue node)
+        {
+            string key = node.AsString();
+            if (string.IsNullOrEmpty(key) || key.Length != 1)
+                return RuleEngineV4SkillAnimDefaults.NoEntrySilhouetteCell;
+            int cell = char.ToUpperInvariant(key[0]) - RuleEngineV4SkillAnimDefaults.FirstAtlasCellLetter;
+            return cell >= 0 && cell < RuleEngineV4SkillAnimDefaults.SilhouetteAtlasCellCount
+                ? cell
+                : RuleEngineV4SkillAnimDefaults.NoEntrySilhouetteCell;
         }
 
         static RuleEngineV4SkillAnimEvent ParseEvents(JsonValue node)
@@ -116,7 +133,9 @@ namespace Dovus.Core.RuleEngineV4
                 int adjectiveRune,
                 string clip,
                 string fallbackState,
-                RuleEngineV4SkillAnimEvent events)
+                RuleEngineV4SkillAnimEvent events,
+                int entrySilhouetteCell,
+                float entrySilhouetteLifeSec)
             {
                 WeaponId = weaponId;
                 VerbRune = verbRune;
@@ -124,6 +143,8 @@ namespace Dovus.Core.RuleEngineV4
                 Clip = clip;
                 FallbackState = fallbackState;
                 Events = events;
+                EntrySilhouetteCell = entrySilhouetteCell;
+                EntrySilhouetteLifeSec = entrySilhouetteLifeSec;
             }
 
             public int WeaponId { get; }
@@ -132,6 +153,8 @@ namespace Dovus.Core.RuleEngineV4
             public string Clip { get; }
             public string FallbackState { get; }
             public RuleEngineV4SkillAnimEvent Events { get; }
+            public int EntrySilhouetteCell { get; }
+            public float EntrySilhouetteLifeSec { get; }
         }
     }
 }

@@ -137,7 +137,7 @@
       { "weapon_id": 6, "verb_rune": 9, "adjective_rune": 0, "clip": "Cekic_VUR", "events": ["Impact"] },
       { "weapon_id": 2, "verb_rune": 1, "adjective_rune": 0, "clip": "Yay_VUR", "events": ["Impact"] },
       { "weapon_id": 2, "verb_rune": 2, "adjective_rune": 0, "clip": "Yay_VUR", "events": ["Impact"] },
-      { "weapon_id": 2, "verb_rune": 3, "adjective_rune": 0, "clip": "Yay_ATIL", "events": ["Trail_On", "Trail_Off"] },
+      { "weapon_id": 2, "verb_rune": 3, "adjective_rune": 0, "clip": "Ortak_Takla", "fallback_animator_state": "Dodge", "events": ["Trail_On", "Trail_Off"], "entry_silhouette": { "atlas_cell": "D", "life_sec": 0.3 } },
       { "weapon_id": 2, "verb_rune": 4, "adjective_rune": 0, "clip": "Yay_DURUS", "events": [] },
       { "weapon_id": 2, "verb_rune": 6, "adjective_rune": 0, "clip": "Yay_VUR", "events": ["Impact"] },
       { "weapon_id": 2, "verb_rune": 9, "adjective_rune": 0, "clip": "Yay_VUR", "events": ["Impact"] }

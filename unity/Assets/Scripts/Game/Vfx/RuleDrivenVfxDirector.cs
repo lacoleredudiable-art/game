@@ -1,5 +1,6 @@
 using Dovus.Core.Grammar;
 using Dovus.Core.Presentation;
+using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Actors;
 using UnityEngine;
 
@@ -35,6 +36,11 @@ namespace Dovus.Game.Vfx
         Vector3 _dashDir = Vector3.forward;
         float _footSparkCooldown;
         float _tipSpeedMps;
+        int _entryCell = RuleEngineV4SkillAnimDefaults.NoEntrySilhouetteCell;
+        float _entryLifeSec;
+        VfxColorRgb _entryColor;
+        Vector3 _entryStart;
+        bool _entryWasDisplacing;
 
         public VfxPlan ActivePlan => _plan;
         public bool IsSliceActive => _armed && _plan.IsSwordDashSlice;
@@ -88,6 +94,23 @@ namespace Dovus.Game.Vfx
                     1f);
                 _runes.Play(_plan.VerbRuneId, _plan.AdjectiveRuneId, c);
             }
+        }
+
+        /// <summary>
+        /// skill_anim entry_silhouette: hücre ≥ 0 ise gövde yer değiştirmeye başladığı karede
+        /// (hareket sisteminin Takla/Dodge state'ine girdiği an) bir kez silüet doğar; -1 bekleyeni siler.
+        /// </summary>
+        public void ArmEntrySilhouette(int atlasCell, float lifeSec, in VfxColorRgb color)
+        {
+            _entryCell = atlasCell;
+            if (atlasCell < 0)
+                return;
+            EnsureChildren();
+            _entryLifeSec = lifeSec;
+            _entryColor = color;
+            _entryStart = transform.position;
+            _entryWasDisplacing = _body != null && _body.IsDisplacing;
+            _silhouetteSpawned = false;
         }
 
         /// <summary>Animation Event: Trail_On — akan iz / şimşek açılır.</summary>
@@ -152,6 +175,8 @@ namespace Dovus.Game.Vfx
 
         public void NotifyMotionEnded(bool stoppedAtBodyEdge)
         {
+            // Engellenen atılış yer değiştirmeden biter; bekleyen giriş silüeti sonraki harekete kalmasın.
+            _entryCell = RuleEngineV4SkillAnimDefaults.NoEntrySilhouetteCell;
             if (!_armed || _endDone)
                 return;
             _endDone = true;
@@ -167,6 +192,7 @@ namespace Dovus.Game.Vfx
 
         void LateUpdate()
         {
+            TickEntrySilhouette();
             if (!_armed || _plan.IsEmpty)
                 return;
 
@@ -247,20 +273,49 @@ namespace Dovus.Game.Vfx
                 trailLife);
         }
 
+        void TickEntrySilhouette()
+        {
+            if (_entryCell < 0)
+                return;
+            bool displacing = _body != null && _body.IsDisplacing;
+            bool started = displacing && !_entryWasDisplacing;
+            _entryWasDisplacing = displacing;
+            if (!started)
+                return;
+            int cell = _entryCell;
+            _entryCell = RuleEngineV4SkillAnimDefaults.NoEntrySilhouetteCell;
+            Vector3 dir = transform.position - _entryStart;
+            dir.y = 0f;
+            if (dir.sqrMagnitude < RuleVfxDefaults.PathSampleEpsSq)
+            {
+                dir = transform.forward;
+                dir.y = 0f;
+            }
+            if (dir.sqrMagnitude < RuleVfxDefaults.PathSampleEpsSq)
+                dir = Vector3.forward;
+            float life = _entryLifeSec > 0f ? _entryLifeSec : RuleVfxDefaults.SwordDashSilhouetteLifeSec;
+            SpawnSilhouette(dir.normalized, _entryColor, life, cell);
+        }
+
         void SpawnSilhouetteAlongDash()
         {
-            if (_silhouetteSpawned)
-                return;
-            _silhouetteSpawned = true;
-            Vector3 from = transform.position + Vector3.up * RuleVfxArtDefaults.SilhouettePathLift;
-            Vector3 to = from + _dashDir * RuleVfxDefaults.DashForeshadowM;
             float life = _plan.SilhouetteLifeSec > 0f
                 ? _plan.SilhouetteLifeSec
                 : RuleVfxDefaults.SwordDashSilhouetteLifeSec;
             int cell = _plan.DragonAtlasCell >= 0
                 ? _plan.DragonAtlasCell
                 : RuleVfxDefaults.SwordDashSilhouetteAtlasCell;
-            _silhouette.PlayAlongLine(from, to, _plan.CoreColor, life, cell);
+            SpawnSilhouette(_dashDir, _plan.CoreColor, life, cell);
+        }
+
+        void SpawnSilhouette(Vector3 dir, in VfxColorRgb color, float lifeSec, int cell)
+        {
+            if (_silhouetteSpawned)
+                return;
+            _silhouetteSpawned = true;
+            Vector3 from = transform.position + Vector3.up * RuleVfxArtDefaults.SilhouettePathLift;
+            Vector3 to = from + dir * RuleVfxDefaults.DashForeshadowM;
+            _silhouette.PlayAlongLine(from, to, color, lifeSec, cell);
         }
 
         void EmitFootWingSparks()
