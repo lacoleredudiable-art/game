@@ -29,9 +29,38 @@ namespace Dovus.Game.Editor
         const string ScenePath = "Assets/Scenes/Prototype.unity";
         const string SliceVisualField = "_slicePlayerVisualPrefab";
         internal const float Fps = 30f;
+        const string WeaponsDir = Root + "/Silahlar";
+        const string WeaponTexturesDir = WeaponsDir + "/doku";
+        const string LoopPrefix = "Loko_";
 
-        static readonly string[] EventClips = { "Kilic_VUR", "Yay_VUR", "Cekic_VUR" };
+        /// <summary>Blender'dan aktarılan klipler. Cekic_* / Loko_Agir_* bu listede yok: çekiç ayarlarına dokunulmaz.</summary>
+        internal static readonly string[] ExportClips =
+        {
+            "Buyu_Arindirma", "Buyu_Kontrol", "Buyu_Sifa",
+            "Kilic_ATIL", "Kilic_DURUS", "Kilic_VUR",
+            "Loko_Kilic_Idle", "Loko_Kilic_Run", "Loko_Yay_Idle", "Loko_Yay_Run",
+            "Ortak_HitAgir", "Ortak_HitHafif", "Ortak_Inis", "Ortak_Isaret", "Ortak_Olum", "Ortak_Takla", "Ortak_Zipla",
+            "Yay_DURUS", "Yay_VUR",
+        };
+
         static readonly Color EmissionColor = new(1f, 0.28f, 0.06f);
+
+        /// <summary>
+        /// Blender soket-lokal ofsetleri (dönüş wxyz). Unity'de kemik yerel ekseni X'te aynalı:
+        /// konum (x,y,z) → (-x,y,z), dönüş (w,x,y,z) → Unity (x,-y,-z,w).
+        /// </summary>
+        static readonly (string Name, string Fbx, string Socket, Vector3 BlenderPos, Vector4 BlenderRotWxyz)[] Weapons =
+        {
+            ("Silah_Kilic", "Kilic", "Socket_R", new Vector3(-0.0324f, 0.0250f, 0.0281f), new Vector4(0.5141f, 0.3602f, 0.2514f, 0.7367f)),
+            ("Silah_Yay", "Yay", "Socket_L", new Vector3(0.0306f, 0.1050f, 0.0319f), new Vector4(0.6578f, 0.2980f, -0.3196f, -0.6135f)),
+        };
+
+        /// <summary>Blender Socket_R el kemiğinin ucunda (kemik +Y 0.08 m); Socket_L kemik başında.</summary>
+        static readonly (string Socket, Vector3 BlenderPos)[] SocketOffsets =
+        {
+            ("Socket_R", new Vector3(0f, 0.08f, 0f)),
+            ("Socket_L", Vector3.zero),
+        };
 
         /// <summary>ActorView'un genel state adları → k3 klibi.</summary>
         static readonly (string State, string Clip)[] StateAliases =
@@ -60,15 +89,22 @@ namespace Dovus.Game.Editor
         public static void Reimport()
         {
             Dictionary<string, ClipRow> rows = ReadClipCsv();
-            ConfigureModel();
-            foreach (string clip in EventClips)
-                ConfigureEventClip(clip, rows[clip]);
+            Avatar avatar = ConfigureModel();
+            foreach (string clip in ExportClips)
+                ConfigureClip(clip, rows[clip], avatar);
+            ConfigureWeaponImports();
             ApplyEmission();
             AnimatorController ctrl = EnsureController();
+            EnableWriteDefaults(ctrl);
             ConfigurePrefab(ctrl);
             AssetDatabase.SaveAssets();
             Debug.Log("[k3] yeniden alma tamam");
         }
+
+        /// <summary>Blender (w,x,y,z) soket-lokal dönüşü → Unity kemik-lokal dönüşü.</summary>
+        internal static Quaternion BlenderToUnityLocal(Vector4 wxyz) => new(wxyz.y, -wxyz.z, -wxyz.w, wxyz.x);
+
+        internal static Vector3 BlenderToUnityLocal(Vector3 p) => new(-p.x, p.y, p.z);
 
         [MenuItem("Dovus/k3/Dilim oyuncusu olarak bağla (Prototype)")]
         public static void BindSlicePlayer()
@@ -103,23 +139,31 @@ namespace Dovus.Game.Editor
             }
         }
 
-        static void ConfigureModel()
+        static Avatar ConfigureModel()
         {
             var importer = (ModelImporter)AssetImporter.GetAtPath(ModelFbx);
             importer.importBlendShapes = true;
             importer.SaveAndReimport();
+            Avatar avatar = AssetDatabase.LoadAllAssetsAtPath(ModelFbx).OfType<Avatar>().FirstOrDefault();
+            if (avatar == null || !avatar.isValid || !avatar.isHuman)
+                throw new InvalidOperationException("k3 avatarı geçersiz: " + ModelFbx);
+            return avatar;
         }
 
         /// <summary>
-        /// Klip FBX'leri mesh de taşıyor: malzeme/blend shape/kamera/ışık alınmaz, yalnız animasyon kullanılır.
+        /// Klip FBX'leri k3_Govde mesh'ini de taşıyor: malzeme/kamera/ışık alınmaz, yalnız animasyon kullanılır.
+        /// Blend shape açık kalır: kapalıyken El_Kavra_L/R eğrileri klipten düşer.
         /// Unity'de mesh içe aktarmayı tamamen kapatan ayar yok; mesh alt varlığı hiçbir yerde kullanılmaz.
         /// </summary>
-        static void ConfigureEventClip(string clipName, ClipRow row)
+        static void ConfigureClip(string clipName, ClipRow row, Avatar avatar)
         {
             string path = $"{ClipsDir}/{clipName}.fbx";
             var importer = (ModelImporter)AssetImporter.GetAtPath(path);
+            importer.animationType = ModelImporterAnimationType.Human;
+            importer.avatarSetup = ModelImporterAvatarSetup.CopyFromOther;
+            importer.sourceAvatar = avatar;
             importer.materialImportMode = ModelImporterMaterialImportMode.None;
-            importer.importBlendShapes = false;
+            importer.importBlendShapes = true;
             importer.importCameras = false;
             importer.importLights = false;
             importer.importVisibility = false;
@@ -132,9 +176,49 @@ namespace Dovus.Game.Editor
             clip.name = clipName;
             clip.firstFrame = row.FirstFrame - 1;
             clip.lastFrame = row.LastFrame - 1;
+            clip.loopTime = clipName.StartsWith(LoopPrefix, StringComparison.Ordinal);
+            clip.lockRootRotation = true;
+            clip.lockRootHeightY = true;
+            clip.lockRootPositionXZ = true;
+            clip.keepOriginalOrientation = true;
+            clip.keepOriginalPositionY = true;
             clip.events = BuildEvents(row, clip.lastFrame - clip.firstFrame);
             importer.clipAnimations = new[] { clip };
             importer.SaveAndReimport();
+        }
+
+        static void ConfigureWeaponImports()
+        {
+            foreach (var w in Weapons)
+            {
+                string path = $"{WeaponsDir}/{w.Fbx}.fbx";
+                var importer = (ModelImporter)AssetImporter.GetAtPath(path)
+                    ?? throw new InvalidOperationException(path + " yok");
+                importer.animationType = ModelImporterAnimationType.None;
+                importer.importAnimation = false;
+                importer.importCameras = false;
+                importer.importLights = false;
+                importer.importBlendShapes = false;
+                importer.materialImportMode = ModelImporterMaterialImportMode.ImportViaMaterialDescription;
+                importer.SaveAndReimport();
+                if (!AssetDatabase.LoadAllAssetsAtPath(path).OfType<Material>().Any(m => m.mainTexture != null))
+                {
+                    Directory.CreateDirectory(WeaponTexturesDir);
+                    importer.ExtractTextures(WeaponTexturesDir);
+                    AssetDatabase.Refresh();
+                    importer.SaveAndReimport();
+                }
+            }
+        }
+
+        static void EnableWriteDefaults(AnimatorController ctrl)
+        {
+            foreach (AnimatorControllerLayer layer in ctrl.layers)
+            {
+                foreach (ChildAnimatorState s in layer.stateMachine.states)
+                    s.state.writeDefaultValues = true;
+            }
+            EditorUtility.SetDirty(ctrl);
         }
 
         /// <summary>Olay zamanı saniye = (kare-1)/30; Unity klip olayını klip boyuna oranla saklar.</summary>
@@ -252,11 +336,54 @@ namespace Dovus.Game.Editor
                 if (anim.GetComponent<SkillAnimVfxEventHost>() == null)
                     anim.gameObject.AddComponent<SkillAnimVfxEventHost>();
                 DropBoneTransformOverrides(root);
+                MountWeapons(root);
                 PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
             }
             finally
             {
                 PrefabUtility.UnloadPrefabContents(root);
+            }
+        }
+
+        /// <summary>Soketteki boş Silah_* yer tutucusunun yerine silah FBX'i; Vfx_Tip/Vfx_Kabza FBX'ten gelir.</summary>
+        static void MountWeapons(GameObject root)
+        {
+            foreach ((string socketName, Vector3 offset) in SocketOffsets)
+            {
+                Transform socket = FindDeep(root.transform, socketName)
+                    ?? throw new InvalidOperationException(socketName + " yok");
+                socket.localPosition = BlenderToUnityLocal(offset);
+                socket.localRotation = Quaternion.identity;
+            }
+
+            foreach (var w in Weapons)
+            {
+                Transform socket = FindDeep(root.transform, w.Socket);
+                var model = AssetDatabase.LoadAssetAtPath<GameObject>($"{WeaponsDir}/{w.Fbx}.fbx");
+                Transform old = socket.Cast<Transform>().FirstOrDefault(c => c.name == w.Name);
+                GameObject weapon = old != null && PrefabUtility.GetCorrespondingObjectFromSource(old.gameObject) == model
+                    ? old.gameObject
+                    : null;
+                if (weapon == null)
+                {
+                    int sibling = socket.childCount;
+                    if (old != null)
+                    {
+                        sibling = old.GetSiblingIndex();
+                        UnityEngine.Object.DestroyImmediate(old.gameObject);
+                    }
+                    weapon = (GameObject)PrefabUtility.InstantiatePrefab(model, socket);
+                    weapon.name = w.Name;
+                    weapon.transform.SetSiblingIndex(sibling);
+                }
+                weapon.transform.localPosition = BlenderToUnityLocal(w.BlenderPos);
+                weapon.transform.localRotation = BlenderToUnityLocal(w.BlenderRotWxyz);
+                weapon.transform.localScale = Vector3.one;
+                foreach (string vfx in new[] { "Vfx_Tip", "Vfx_Kabza" })
+                {
+                    if (FindDeep(weapon.transform, vfx) == null)
+                        throw new InvalidOperationException($"{w.Fbx}.fbx içinde {vfx} yok");
+                }
             }
         }
 
