@@ -27,7 +27,9 @@ using Dovus.Game.Feel;
 using Dovus.Game.Vfx;
 using Dovus.Game.Hud;
 using Dovus.Game.Skills;
+using Dovus.Game.Skills.RuleEngineV4;
 using Dovus.Game.Skills.Execution;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Dovus.Game.Composition.Builders
@@ -53,8 +55,11 @@ namespace Dovus.Game.Composition.Builders
 
         public GameObject Player;
         public GameObject Ally;
+        public GameObject Ally2;
         public GameObject Boss;
         public AllyDummyController AllyDummyController;
+        public AllyDummyController AllyDummy2Controller;
+        public readonly List<SliceLightMinionHost> SliceMinions = new();
         public ActorPoseView PlayerPose;
         public PlayerVitalsHost PlayerVitalsHost;
         public ActorRegistry ActorRegistry;

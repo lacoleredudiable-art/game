@@ -10,7 +10,9 @@ using Dovus.Core.Input;
 using Dovus.Core.Manifestation;
 using Dovus.Core.Passives;
 using Dovus.Core.Shared;
+using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Diagnostics;
+using Dovus.Game.Skills.RuleEngineV4;
 using Dovus.Game.Skills;
 using Dovus.Game.Team;
 using UnityEngine;
@@ -24,11 +26,16 @@ public sealed class MdCastPort : ICastPort<PendingClosing>, IBasicStrikePort<Pen
         LivingEffect _closingLogic;
         SkillResolution _lastCastSkill;
         float _lastCastDealt;
+        RuleEngineV4DirectorBridge _ruleEngineV4;
+        internal RuleEngineV4DirectorBridge RuleEngineV4Bridge =>
+            _ruleEngineV4 ??= new RuleEngineV4DirectorBridge(_md);
 
         /// <summary>FireClosing başında yakalanan logic (eski koddaki yerel değişkenle aynı örnek).</summary>
         internal void BeginClosing(LivingEffect logic) => _closingLogic = logic;
 
         internal MdCastPort(ManifestationDirector md) => _md = md;
+
+        internal void NotifyRuleEngineV4Dealt(float dealt) => _lastCastDealt = dealt;
 
         public void ResetClosingChainBonus() => _md.CastSession.ClosingChainBonus = 1f;
 
@@ -121,6 +128,12 @@ public sealed class MdCastPort : ICastPort<PendingClosing>, IBasicStrikePort<Pen
             in SkillMotionPlan motion)
         {
             _md.EnsureLaunchServices();
+            if (RuleEngineV4Feature.Enabled
+                && RuleEngineV4Bridge.TryLaunch(ctx, skill, in motion, out float v4Dealt))
+            {
+                _lastCastDealt = v4Dealt;
+                return true;
+            }
             return _md._executorLauncher.TryLaunch(kind, ctx, skill, motion);
         }
 
@@ -140,6 +153,9 @@ public sealed class MdCastPort : ICastPort<PendingClosing>, IBasicStrikePort<Pen
             LivingEffect logic = _closingLogic;
             if (logic == null)
                 return 0f;
+
+            if (RuleEngineV4Feature.Enabled)
+                return _lastCastDealt;
 
             if (route.IsStub)
                 DebugConfig.DevLog($"[SkillExecutor] stub → LivingEffect: {route.Reason}");

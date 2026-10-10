@@ -31,6 +31,6 @@ public sealed class ManifestationDirectorSizeTests
         var files = Directory.GetFiles(SkillsDir, "ManifestationDirector*.cs");
         int total = files.Sum(f => File.ReadAllLines(f).Length);
         TestContext.WriteLine($"ManifestationDirector partial total: {total} lines across {files.Length} files");
-        Assert.That(total, Is.LessThanOrEqualTo(3372), "ratchet: 2B.24 host extract; yalniz asagi cekilir");
+        Assert.That(total, Is.LessThanOrEqualTo(3371), "ratchet: 2B.24 host extract; yalniz asagi cekilir");
     }
 }

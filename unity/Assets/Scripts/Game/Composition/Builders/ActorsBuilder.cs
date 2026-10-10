@@ -198,6 +198,9 @@ namespace Dovus.Game.Composition.Builders
             ctx.ActorViewRegistry.Register(ActorDefaults.AllyDummyId, ctx.Ally.transform);
             ctx.ActorViewRegistry.Register(ActorDefaults.BossId, ctx.Boss.transform);
             ctx.TeamComboHost.Modifiers.BindActorRegistry(ctx.ActorRegistry);
+
+            RuleEngineV4SliceBuilder.BuildIfEnabled(ctx);
+            RuleEngineV4PhysicsBodies.AttachIfEnabled(ctx);
         }
     }
 }
