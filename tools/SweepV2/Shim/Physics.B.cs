@@ -183,6 +183,22 @@ namespace UnityEngine
             QueryTriggerInteraction queryTriggerInteraction = QueryTriggerInteraction.UseGlobal) =>
             CastAll(origin, origin, radius, direction, maxDistance, results, layerMask, queryTriggerInteraction, true);
 
+        /// <summary>Headless: kutu yerine yarıçap ≈ max(halfExtents) küre cast.</summary>
+        public static int BoxCastNonAlloc(
+            Vector3 center,
+            Vector3 halfExtents,
+            Vector3 direction,
+            RaycastHit[] results,
+            Quaternion orientation,
+            float maxDistance = Mathf.Infinity,
+            int layerMask = DefaultRaycastLayers,
+            QueryTriggerInteraction queryTriggerInteraction = QueryTriggerInteraction.UseGlobal)
+        {
+            float radius = Mathf.Max(halfExtents.x, Mathf.Max(halfExtents.y, halfExtents.z));
+            return SphereCastNonAlloc(
+                center, radius, direction, results, maxDistance, layerMask, queryTriggerInteraction);
+        }
+
         public static int SphereCastNonAlloc(Ray ray, float radius, RaycastHit[] results, float maxDistance = Mathf.Infinity,
             int layerMask = DefaultRaycastLayers, QueryTriggerInteraction q = QueryTriggerInteraction.UseGlobal) =>
             SphereCastNonAlloc(ray.origin, radius, ray.direction, results, maxDistance, layerMask, q);

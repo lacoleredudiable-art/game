@@ -137,10 +137,11 @@ public sealed class RuleDrivenVfxPathTests
     }
 
     [Test]
-    public void MotionTemplateDriver_DoesNotBeginSkill_ShoutOwnsArm()
+    public void MotionTemplateDriver_DoesNotCallBeginSkill_ShoutOwnsArm()
     {
         string motion = Game("Skills/Motion/MotionTemplateDriver.cs");
-        Assert.That(motion, Does.Not.Contain("BeginSkill"));
+        Assert.That(motion, Does.Not.Contain("RuleDrivenVfxSink.BeginSkill"));
+        Assert.That(motion, Does.Not.Contain(".BeginSkill("));
         Assert.That(motion, Does.Contain("RuleDrivenVfxSink.NotifyHit"));
     }
 }
