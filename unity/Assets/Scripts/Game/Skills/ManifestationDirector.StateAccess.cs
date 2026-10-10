@@ -13,6 +13,7 @@ using Dovus.Game.Platform;
 using Dovus.Game.Skills.State;
 using Dovus.Game.Team;
 using Dovus.Game.Data;
+using Dovus.Game.Skills.RuleEngineV4;
 using Dovus.Game.Vfx;
 using UnityEngine;
 
@@ -39,12 +40,10 @@ namespace Dovus.Game.Skills
         internal DamageNumberHud MechanicsDamageHud => _damageHud;
         internal ISentenceDebugSink MechanicsDebugHud => _debugHud;
         internal KinematicMotorController MechanicsMotor => _motor;
-        internal EquipmentItem MechanicsEquippedWeapon => _equippedWeapon;
-
+        internal EquipmentItem MechanicsEquippedWeapon => _equippedWeapon; internal RuleEngineV4WorldSession RuleEngineV4Session { get; set; }
         internal bool TemplateOwnsPositionFlag => _templateOwnsPosition;
         internal SkillResolution TemplateSkillRef => _templateSkill;
         internal float TemplateChainRef => _templateChain;
-
         internal void ScheduleMechanicPortalAfter(double now, float delaySec, System.Action run) =>
             _mechanicPortals.ScheduleAfter(now, delaySec, run);
 

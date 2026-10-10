@@ -127,6 +127,22 @@ namespace Dovus.Game.Actors
             set => _tuning = value ?? new StatusTuning();
         }
 
+        public bool TryGetHpRatio(out float ratio)
+        {
+            if (_bossVitals != null && !_bossVitals.IsDown)
+            {
+                ratio = _bossVitals.Hp / _bossVitals.MaxHp;
+                return true;
+            }
+            if (_playerVitals != null)
+            {
+                ratio = (float)_playerVitals.Hp / Mathf.Max(1, _playerVitals.MaxHp);
+                return true;
+            }
+            ratio = 1f;
+            return false;
+        }
+
         void Update()
         {
             if (_clock == null)

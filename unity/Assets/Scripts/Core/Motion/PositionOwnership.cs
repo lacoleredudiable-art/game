@@ -18,6 +18,8 @@ namespace Dovus.Core.Motion
         public const string ReturnMark = "isaret_geri_don";
         /// <summary>Boss Sıçrayış: kalıp bittiğinde BossReactorController.Home inişe yazılır (gramer konumu değil).</summary>
         public const string BossLeapHome = "boss_leap_home";
+        /// <summary>Kural motoru v4 kuvvet/itme — kalıp dışı konum yazımı.</summary>
+        public const string RuleEngineV4ForcePush = "rule_engine_v4_force_push";
 
         public static PositionStepKind Kind(string atom, string stat)
         {

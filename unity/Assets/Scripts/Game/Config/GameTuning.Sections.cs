@@ -12,6 +12,7 @@ namespace Dovus.Game.Config
         public InputSettings Input = new InputSettings();
         public PlayerSettings Player = new PlayerSettings();
         public VisualSettings Visuals = new VisualSettings();
+        public RuleEngineV4Settings RuleEngineV4 = new RuleEngineV4Settings();
 
         /// <summary>
         /// Serileştirilmiş bölüm şeması sürümü. 1 = iç içe Arena/Boss/… blokları (PLAN 2B.5b).

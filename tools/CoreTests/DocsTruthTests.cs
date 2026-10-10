@@ -183,7 +183,7 @@ public class DocsTruthTests
         Assert.That(File.Exists(py), Is.True);
         var psi = new System.Diagnostics.ProcessStartInfo
         {
-            FileName = "python",
+            FileName = "python3",
             Arguments = $"\"{py}\" --check",
             WorkingDirectory = root,
             RedirectStandardOutput = true,
