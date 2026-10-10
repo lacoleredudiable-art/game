@@ -10,12 +10,23 @@ namespace Dovus.Core.RuleEngineV4
 
         public RuleEngineV4Planner(RuleEngineV4Catalog catalog) => _catalog = catalog;
 
-        public CommandPlan Plan(int verbRune, int adjectiveRune, int weaponId, bool targetOutOfRange = false)
+        public CommandPlan Plan(int verbRune, int adjectiveRune, int weaponId) =>
+            Plan(verbRune, adjectiveRune, weaponId, RuleEngineV4CastContext.SliceDefault(adjectiveRune));
+
+        public CommandPlan Plan(int verbRune, int adjectiveRune, int weaponId, RuleEngineV4CastContext ctx)
         {
             if (!_catalog.TryGetVerb(verbRune, out RuleEngineV4Verb verb)
                 || !_catalog.TryGetAdjective(adjectiveRune, out RuleEngineV4Adjective adjective)
                 || !_catalog.TryGetWeapon(weaponId, out RuleEngineV4Weapon weapon))
-                return new CommandPlan(verbRune, adjectiveRune, weaponId, Array.Empty<PhysicsCommand>());
+                return Empty(verbRune, adjectiveRune, weaponId);
+
+            RuleEngineV4TargetResolution target = RuleEngineV4TargetResolver.Resolve(verb, adjective);
+
+            if (adjective.Id == 9 && verb.Id != 9 && !ctx.HasUsableMark)
+                return Empty(verbRune, adjectiveRune, weaponId, target);
+
+            if (target.RequiresLivingTarget && !ctx.HasValidTarget)
+                return Empty(verbRune, adjectiveRune, weaponId, target);
 
             var commands = new List<PhysicsCommand>();
             RuleEngineV4Globals g = _catalog.Globals;
@@ -24,7 +35,7 @@ namespace Dovus.Core.RuleEngineV4
             float powerMult = AdjectivePowerMult(adjective, g);
             float damageScale = weapon.DamageScale(g.RitmReferenceTotalSec);
 
-            if (targetOutOfRange)
+            if (ctx.HasValidTarget && !ctx.TargetInWeaponRange)
                 commands.Add(new MenzileYuruCommand { RangeM = rangeM });
 
             float charge = 0;
@@ -42,12 +53,33 @@ namespace Dovus.Core.RuleEngineV4
                 PrefireMoves = weapon.PrefireMoves,
             });
 
-            AppendBodyCommands(commands, adjective, verb, weapon, rangeM, g);
+            if (adjective.Id == 9 && verb.Id == 9)
+            {
+                commands.Add(new IsaretKoyCommand
+                {
+                    PlaceRangeM = Math.Min(rangeM, g.FriendlyRangeCapM),
+                    LifeSec = g.IsaretLifeSec,
+                });
+                return new CommandPlan(verbRune, adjectiveRune, weaponId, commands, target);
+            }
 
-            AppendVerbEffect(commands, verb, weapon, scale, damageScale, powerMult, rangeM, g);
+            if (adjective.Body == "triggered_trap")
+            {
+                commands.Add(new KapanKurCommand { WaitSec = g.TetikliWaitSec });
+                AppendBodyCommands(commands, adjective, verb, weapon, rangeM, g, fromMark: false);
+                AppendVerbEffect(commands, verb, weapon, scale, damageScale, powerMult, rangeM, g, adjective);
+                return new CommandPlan(verbRune, adjectiveRune, weaponId, commands, target);
+            }
 
-            return new CommandPlan(verbRune, adjectiveRune, weaponId, commands);
+            bool fromMark = adjective.Id == 9;
+            AppendBodyCommands(commands, adjective, verb, weapon, rangeM, g, fromMark);
+            AppendVerbEffect(commands, verb, weapon, scale, damageScale, powerMult, rangeM, g, adjective);
+
+            return new CommandPlan(verbRune, adjectiveRune, weaponId, commands, target);
         }
+
+        static CommandPlan Empty(int verb, int adj, int weapon, RuleEngineV4TargetResolution? target = null) =>
+            new(verb, adj, weapon, Array.Empty<PhysicsCommand>(), target);
 
         float EffectiveRangeM(RuleEngineV4Verb verb, RuleEngineV4Weapon weapon)
         {
@@ -57,14 +89,8 @@ namespace Dovus.Core.RuleEngineV4
             return range;
         }
 
-        static float AdjectivePowerMult(RuleEngineV4Adjective adjective, RuleEngineV4Globals g)
-        {
-            if (adjective.Id == 1)
-                return g.YogunPowerMult;
-            if (adjective.Id == 5)
-                return g.YayilanPowerMult;
-            return 1f;
-        }
+        static float AdjectivePowerMult(RuleEngineV4Adjective adjective, RuleEngineV4Globals g) =>
+            adjective.Id == 1 ? g.YogunPowerMult : 1f;
 
         void AppendBodyCommands(
             List<PhysicsCommand> commands,
@@ -72,27 +98,20 @@ namespace Dovus.Core.RuleEngineV4
             RuleEngineV4Verb verb,
             RuleEngineV4Weapon weapon,
             float rangeM,
-            RuleEngineV4Globals g)
+            RuleEngineV4Globals g,
+            bool fromMark)
         {
+            if (fromMark)
+            {
+                // İşaretli: skill işaretten silah menziliyle çıkar (katman 1; seçim 25 m içinde).
+                _ = g.IsaretUseRangeM;
+            }
+
             switch (adjective.Body)
             {
                 case "structure":
                     commands.Add(new YapiKurCommand { LifeSec = g.SabitStructureLifeSec });
                     return;
-                case "area_ring":
-                {
-                    float radius = g.YayilanRadiusM;
-                    if (g.ClipInnerMeasuresToRange)
-                        radius = Math.Min(radius, rangeM);
-                    commands.Add(new AlanAcCommand
-                    {
-                        Shape = "daire",
-                        RadiusM = radius,
-                        MaxTargets = g.YayilanTargetCap,
-                        PowerMult = g.YayilanPowerMult,
-                    });
-                    return;
-                }
                 case "guided_lock":
                     commands.Add(new KilitlenCommand
                     {
@@ -124,6 +143,8 @@ namespace Dovus.Core.RuleEngineV4
                             SearchRadiusM = search,
                         });
                     }
+                    return;
+                case "triggered_trap":
                     return;
                 default:
                     AppendWeaponDelivery(commands, weapon, rangeM);
@@ -161,7 +182,8 @@ namespace Dovus.Core.RuleEngineV4
             float damageScale,
             float powerMult,
             float rangeM,
-            RuleEngineV4Globals g)
+            RuleEngineV4Globals g,
+            RuleEngineV4Adjective adjective)
         {
             switch (verb.Id)
             {
@@ -199,6 +221,13 @@ namespace Dovus.Core.RuleEngineV4
                     commands.Add(new DurusAcCommand { DurationSec = dur, BlockRatio = 1f });
                     break;
                 }
+                case 5:
+                {
+                    float push = g.KuvvetPushM * (powerMult > 1f ? powerMult : 1f);
+                    commands.Add(new ItCommand { DistanceM = push, ClipToWeaponRange = false });
+                    commands.Add(new DengeVerCommand { Amount = scale.BasePoise * powerMult });
+                    break;
+                }
                 case 6:
                 {
                     float cc = g.KontrolDurationSec * (powerMult > 1f ? g.YogunDurationMult : 1f);
@@ -208,10 +237,29 @@ namespace Dovus.Core.RuleEngineV4
                     break;
                 }
                 case 9:
-                    commands.Add(new EtkiSokCommand { Count = powerMult > 1 ? 2 : 1 });
+                    commands.Add(new EtkiSokCommand { Count = powerMult > 1f ? 2 : 1 });
+                    break;
+                case 10:
+                {
+                    float dur = adjective.Id == 1 ? g.YansitmaYogunDurationSec : g.YansitmaDurationSec;
+                    float ratio = adjective.Id == 1
+                        ? Math.Min(1f, g.YansitmaRatio * g.YogunPowerMult)
+                        : g.YansitmaRatio;
+                    commands.Add(new YansitCommand { Ratio = ratio, DurationSec = dur });
+                    break;
+                }
+                case 11:
+                    commands.Add(new YardimciCagirCommand
+                    {
+                        Count = 1,
+                        LifeSec = adjective.Id == 1 ? g.ConjureYogunLifeSec : g.ConjureLifeSec,
+                    });
+                    break;
+                case 12:
+                    commands.Add(new KayitAlCommand { LookbackSec = g.ZamanLookbackSec });
+                    commands.Add(new KaydaDonCommand { PowerMult = powerMult, Revive = adjective.Id == 4 });
                     break;
             }
         }
-
     }
 }

@@ -43,6 +43,17 @@ namespace Dovus.Core.RuleEngineV4
         public float KontrolDurationSec { get; init; }
         public float KorumaYogunBlockSec { get; init; }
         public float KorumaDefaultBlockSec { get; init; }
+        public float TetikliWaitSec { get; init; }
+        public float IsaretUseRangeM { get; init; }
+        public float IsaretLifeSec { get; init; }
+        public int IsaretMaxPerPlayer { get; init; }
+        public float ZamanLookbackSec { get; init; }
+        public float KuvvetPushM { get; init; }
+        public float YansitmaRatio { get; init; }
+        public float YansitmaDurationSec { get; init; }
+        public float YansitmaYogunDurationSec { get; init; }
+        public float ConjureLifeSec { get; init; }
+        public float ConjureYogunLifeSec { get; init; }
     }
 
     public sealed class RuleEngineV4Verb
@@ -137,6 +148,17 @@ namespace Dovus.Core.RuleEngineV4
                     KontrolDurationSec = F(globalsNode["kontrol_duration_sec"], 1.5f),
                     KorumaYogunBlockSec = F(globalsNode["koruma_yogun_block_sec"], 0.45f),
                     KorumaDefaultBlockSec = F(globalsNode["koruma_default_block_sec"], 2f),
+                    TetikliWaitSec = F(globalsNode["tetikli_wait_sec"], 5f),
+                    IsaretUseRangeM = F(globalsNode["isaret_use_range_m"], 25f),
+                    IsaretLifeSec = F(globalsNode["isaret_life_sec"], 20f),
+                    IsaretMaxPerPlayer = globalsNode["isaret_max_per_player"].AsInt(4),
+                    ZamanLookbackSec = F(globalsNode["zaman_lookback_sec"], 3f),
+                    KuvvetPushM = F(globalsNode["kuvvet_push_m"], 3f),
+                    YansitmaRatio = F(globalsNode["yansitma_ratio"], 0.85f),
+                    YansitmaDurationSec = F(globalsNode["yansitma_duration_sec"], 2f),
+                    YansitmaYogunDurationSec = F(globalsNode["yansitma_yogun_duration_sec"], 0.45f),
+                    ConjureLifeSec = F(globalsNode["conjure_life_sec"], 5f),
+                    ConjureYogunLifeSec = F(globalsNode["conjure_yogun_life_sec"], 2.5f),
                 });
 
             foreach (KeyValuePair<string, JsonValue> kv in root["verbs"].AsObject())

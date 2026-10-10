@@ -1,6 +1,7 @@
 {
-  "version": "4.5-pr1",
+  "version": "4.5-pr1b",
   "feature_flag": "kural_motoru_v4",
+  "slice_runes": [1, 2, 3, 4, 6, 9],
   "scale": {
     "player_max_hp": 1000,
     "base_damage": 100,
@@ -15,9 +16,6 @@
     "yogun_charge_sec": 0.35,
     "yogun_power_mult": 1.35,
     "yogun_duration_mult": 0.5,
-    "yayilan_radius_m": 4,
-    "yayilan_target_cap": 5,
-    "yayilan_power_mult": 0.85,
     "sicrayan_bounce_count": 2,
     "sicrayan_bounce_mult": 0.5,
     "sicrayan_search_m": 6,
@@ -27,23 +25,39 @@
     "ritm_reference_total_sec": 0.55,
     "kontrol_duration_sec": 1.5,
     "koruma_yogun_block_sec": 0.45,
-    "koruma_default_block_sec": 2.0
+    "koruma_default_block_sec": 2.0,
+    "tetikli_wait_sec": 5.0,
+    "isaret_use_range_m": 25,
+    "isaret_life_sec": 20,
+    "isaret_max_per_player": 4,
+    "zaman_lookback_sec": 3.0,
+    "kuvvet_push_m": 3.0,
+    "yansitma_ratio": 0.85,
+    "yansitma_duration_sec": 2.0,
+    "yansitma_yogun_duration_sec": 0.45,
+    "conjure_life_sec": 5.0,
+    "conjure_yogun_life_sec": 2.5
   },
   "verbs": {
     "1": { "id": 1, "key": "zarar", "side": "hostile", "hostile": true },
     "2": { "id": 2, "key": "sifa", "side": "friendly", "hostile": false },
     "3": { "id": 3, "key": "hareket", "side": "self", "hostile": false },
     "4": { "id": 4, "key": "koruma", "side": "self", "hostile": false },
+    "5": { "id": 5, "key": "kuvvet", "side": "hostile", "hostile": true },
     "6": { "id": 6, "key": "kontrol", "side": "hostile", "hostile": true },
-    "9": { "id": 9, "key": "arindirma", "side": "friendly", "hostile": false }
+    "9": { "id": 9, "key": "arindirma", "side": "friendly", "hostile": false },
+    "10": { "id": 10, "key": "yansima", "side": "self", "hostile": false },
+    "11": { "id": 11, "key": "cagirma", "side": "hostile", "hostile": true },
+    "12": { "id": 12, "key": "zaman", "side": "friendly", "hostile": false }
   },
   "adjectives": {
     "1": { "id": 1, "key": "yogun", "body": "weapon_delivery", "charge_on_hostile_only": true },
     "2": { "id": 2, "key": "odakli", "body": "weapon_delivery" },
     "3": { "id": 3, "key": "sicrayan", "body": "weapon_delivery_then_bounce" },
     "4": { "id": 4, "key": "sabit", "body": "structure" },
-    "5": { "id": 5, "key": "yayilan", "body": "area_ring" },
-    "6": { "id": 6, "key": "gudumlu", "body": "guided_lock" }
+    "6": { "id": 6, "key": "gudumlu", "body": "guided_lock" },
+    "7": { "id": 7, "key": "tetikli", "body": "triggered_trap" },
+    "9": { "id": 9, "key": "isaretli", "body": "marked_origin" }
   },
   "weapons": {
     "2": {
