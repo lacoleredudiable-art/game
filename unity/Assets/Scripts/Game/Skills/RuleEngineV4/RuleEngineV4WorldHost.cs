@@ -50,6 +50,15 @@ namespace Dovus.Game.Skills.RuleEngineV4
             return 0f;
         }
 
+        public static void ApplyPoise(ManifestationDirector director, Transform target, float amount)
+        {
+            if (amount <= 0f || target == null || director == null)
+                return;
+            TargetableHost mark = target.GetComponentInParent<TargetableHost>();
+            if (mark != null && mark.ActorId == ActorDefaults.BossId)
+                director.MechanicsBossDirector?.ApplyPoiseDamage(amount);
+        }
+
         public static void ApplyHeal(ManifestationDirector director, Transform target, float amount)
         {
             if (amount <= 0f || director == null)

@@ -200,6 +200,7 @@ namespace Dovus.Game.Composition.Builders
             ctx.TeamComboHost.Modifiers.BindActorRegistry(ctx.ActorRegistry);
 
             RuleEngineV4SliceBuilder.BuildIfEnabled(ctx);
+            RuleEngineV4PhysicsBodies.AttachIfEnabled(ctx);
         }
     }
 }

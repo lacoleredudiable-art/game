@@ -99,6 +99,9 @@ namespace Dovus.Game.Composition.Builders
             col.height = heightM;
             var minion = go.AddComponent<SliceLightMinionHost>();
             minion.Configure(id, hp);
+            var body = go.AddComponent<RuleEngineV4PhysicsBodyHost>();
+            body.WeightTier = RuleEngineV4WeightTier.Light;
+            body.BodyRadiusM = radiusM;
             go.AddComponent<ActorGroundingController>();
 
             var target = go.AddComponent<TargetableHost>();

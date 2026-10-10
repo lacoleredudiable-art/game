@@ -35,6 +35,8 @@ public sealed class MdCastPort : ICastPort<PendingClosing>, IBasicStrikePort<Pen
 
         internal MdCastPort(ManifestationDirector md) => _md = md;
 
+        internal void NotifyRuleEngineV4Dealt(float dealt) => _lastCastDealt = dealt;
+
         public void ResetClosingChainBonus() => _md.CastSession.ClosingChainBonus = 1f;
 
         public SkillResolution ResolveSkill(PendingClosing ctx)

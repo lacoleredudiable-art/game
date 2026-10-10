@@ -15,6 +15,7 @@ using Dovus.Core.Shared;
 using Dovus.Core.Status;
 using Dovus.Game.Assets;
 using Dovus.Game.Skills.Presentation;
+using Dovus.Game.Skills.RuleEngineV4;
 using Dovus.Game.Actors;
 using Dovus.Game.Platform;
 using Dovus.Game.Platform;
@@ -126,7 +127,11 @@ namespace Dovus.Game.Composition.Builders
                     CompositionConstants.PlayerRadiusM * SkillSystemBuilderDefaults.PlayerColliderRadiusScale,
                     alive: () => !ctx.AllyDummyController.IsDown,
                     stealthed: () => ctx.AllyDummyController.Board != null && ctx.AllyDummyController.Board.IsStealthed,
-                    damage: raw => ctx.AllyDummyController.ApplyBossDamage(raw));
+                    damage: raw => RuleEngineV4WorldGuard.ApplyBossDamageToAlly(
+                        ctx.ManifestationDirector,
+                        ctx.AllyDummyController.transform,
+                        raw,
+                        ctx.AllyDummyController.ApplyBossDamage));
             }
             if (ctx.AllyDummy2Controller != null)
             {
@@ -137,7 +142,11 @@ namespace Dovus.Game.Composition.Builders
                     CompositionConstants.PlayerRadiusM * SkillSystemBuilderDefaults.PlayerColliderRadiusScale,
                     alive: () => !ctx.AllyDummy2Controller.IsDown,
                     stealthed: () => ctx.AllyDummy2Controller.Board != null && ctx.AllyDummy2Controller.Board.IsStealthed,
-                    damage: raw => ctx.AllyDummy2Controller.ApplyBossDamage(raw));
+                    damage: raw => RuleEngineV4WorldGuard.ApplyBossDamageToAlly(
+                        ctx.ManifestationDirector,
+                        ctx.AllyDummy2Controller.transform,
+                        raw,
+                        ctx.AllyDummy2Controller.ApplyBossDamage));
             }
             bossDir.BindTargets(hostileTargets);
             ctx.VitalsHud.BindBoss(bossDir);

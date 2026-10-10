@@ -14,9 +14,18 @@ namespace Dovus.Game.Skills.RuleEngineV4
         readonly ManifestationDirector _director;
         readonly RuleEngineV4TeamMarkRegistry _marks = new();
         readonly List<RuleEngineV4TargetCandidate> _candidates = new();
+        readonly RuleEngineV4WorldSession _session = new();
+        readonly RuleEngineV4WorldCommandRunHost _runner;
         float _lastDealt;
 
-        public RuleEngineV4CastHost(ManifestationDirector director) => _director = director;
+        public RuleEngineV4CastHost(ManifestationDirector director)
+        {
+            _director = director;
+            _director.RuleEngineV4Session = _session;
+            _runner = new RuleEngineV4WorldCommandRunHost(director, _session);
+        }
+
+        public RuleEngineV4WorldSession Session => _session;
 
         public float LastDealt => _lastDealt;
 
@@ -75,8 +84,11 @@ namespace Dovus.Game.Skills.RuleEngineV4
             }
 
             Transform target = ResolveTargetTransform(pick);
-            _lastDealt = RuleEngineV4CommandRunner.RunSync(_director, plan, target);
-            dealt = _lastDealt;
+            _runner.Start(plan, target, d =>
+            {
+                _lastDealt = d;
+                _director._castPort?.NotifyRuleEngineV4Dealt(d);
+            });
             return true;
         }
 

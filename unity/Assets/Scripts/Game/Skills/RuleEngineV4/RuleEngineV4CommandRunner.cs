@@ -7,6 +7,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
 {
     public static class RuleEngineV4CommandRunner
     {
+        /// <summary>PR2 yedek: zamanlama yok; v4 yolu WorldCommandRunHost kullanır.</summary>
         public static float RunSync(ManifestationDirector director, CommandPlan plan, Transform target)
         {
             float dealt = 0f;
@@ -33,7 +34,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
                             director._castPort?.RuleEngineV4Bridge.PlaceMark(target, life);
                         break;
                     default:
-                        DebugConfig.DevLog($"[RuleEngineV4] PR2 stub: {cmd.Kind}");
+                        DebugConfig.DevLog($"[RuleEngineV4] sync stub: {cmd.Kind}");
                         break;
                 }
             }
@@ -41,12 +42,12 @@ namespace Dovus.Game.Skills.RuleEngineV4
             return dealt;
         }
 
-        static bool EvaluateDelivery(ManifestationDirector director, CommandPlan plan, Transform target)
+        public static bool EvaluateDelivery(ManifestationDirector director, CommandPlan plan, Transform target)
         {
             Transform caster = director.MechanicsPlayer;
             if (caster == null)
                 return false;
-            float casterR = RuleEngineV4PhysicsQueries.DefaultCasterRadius(caster);
+            float casterR = RuleEngineV4WorldPhysicsUtil.BodyRadius(caster);
             bool needsTarget = plan.Target?.RequiresLivingTarget ?? true;
             if (!needsTarget)
                 return true;
@@ -60,25 +61,30 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 if (RuleEngineV4CommandAccess.TryMeleeRange(cmd, out float meleeRange)
                     && RuleEngineV4PhysicsQueries.MeleeHitsTarget(caster, target, meleeRange, casterR))
                     return true;
-                if (RuleEngineV4CommandAccess.TryMissile(cmd, out float missileRange, out _)
-                    && RuleEngineV4PhysicsQueries.SphereCastHitsTarget(
-                        caster.position + Vector3.up * RuleEngineV4PhysicsDefaults.ProjectileOriginHeightM,
-                        target.position - caster.position,
-                        missileRange,
-                        RuleEngineV4PhysicsDefaults.ProjectileRadiusM,
-                        target))
-                    return true;
+                if (RuleEngineV4CommandAccess.TryMissile(cmd, out float missileRange, out _))
+                {
+                    Vector3 origin = caster.position + Vector3.up * RuleEngineV4PhysicsDefaults.ProjectileOriginHeightM;
+                    if (RuleEngineV4PhysicsQueries.SphereCastFirstTarget(
+                            origin,
+                            target.position - origin,
+                            missileRange,
+                            RuleEngineV4PhysicsDefaults.ProjectileRadiusM,
+                            out Transform hit)
+                        && (hit == target || hit.IsChildOf(target)))
+                        return true;
+                }
                 if (RuleEngineV4CommandAccess.TryArea(cmd, out float areaR))
                 {
-                    float dist = Vector3.Distance(
-                        new Vector3(caster.position.x, 0f, caster.position.z),
-                        new Vector3(target.position.x, 0f, target.position.z));
-                    if (dist <= areaR + casterR)
-                        return true;
+                    var hits = RuleEngineV4PhysicsQueries.CollectAreaHits(caster, areaR, 99);
+                    for (int i = 0; i < hits.Count; i++)
+                    {
+                        if (hits[i] == target || hits[i].IsChildOf(target))
+                            return true;
+                    }
                 }
             }
 
-            return true;
+            return false;
         }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Dovus.Core.Motion;
@@ -35,9 +36,9 @@ namespace Dovus.Game.Skills.RuleEngineV4
         {
             float dealt = 0f;
             Transform caster = _director.MechanicsPlayer;
-            OnSureCommand? timing = null;
+            OnSureCommand timing = null;
             Transform missileHit = null;
-            var delivery = new RuleEngineV4CommandRunner.DeliveryState();
+            var delivery = new RuleEngineV4DeliveryState();
 
             foreach (PhysicsCommand cmd in plan.Commands)
             {
@@ -67,21 +68,24 @@ namespace Dovus.Game.Skills.RuleEngineV4
 
                 if (cmd is MermiFirlatCommand missile)
                 {
-                    yield return CoMissile(caster, target, missile, hit => missileHit = hit);
-                    delivery.MissileHit = missileHit;
+                    yield return CoMissile(caster, target, missile, hit =>
+                    {
+                        missileHit = hit;
+                        delivery.MissileHit = hit;
+                    });
                     continue;
                 }
 
                 if (cmd is AlanAcCommand area)
                 {
-                    delivery.AreaHits = RuleEngineV4PhysicsQueries.CollectAreaHits(
-                        caster, area.RadiusM, area.MaxTargets);
+                    delivery.SetAreaHits(RuleEngineV4PhysicsQueries.CollectAreaHits(
+                        caster, area.RadiusM, area.MaxTargets));
                     continue;
                 }
 
                 if (RuleEngineV4CommandAccess.TryPush(cmd, out float pushM))
                 {
-                    float scaled = _session.ScaleNonDamage(target, pushM);
+                    float scaled = _session.ApplyDiminishNonDamage(target, pushM);
                     ApplyPush(caster, target, scaled);
                     continue;
                 }
@@ -89,12 +93,12 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 if (RuleEngineV4CommandAccess.TryPoise(cmd, out float poise))
                     RuleEngineV4WorldHost.ApplyPoise(_director, target, poise);
 
-                if (RuleEngineV4CommandAccess.TryGuard(cmd, out float guardSec, out _))
+                if (RuleEngineV4CommandAccess.TryGuard(cmd, out float guardSec, out float blockRatio))
                 {
                     if (caster != null)
                     {
                         double ms = WorldMs();
-                        _session.ArmGuard(caster, guardSec, ms);
+                        _session.ArmGuard(caster, guardSec, blockRatio, ms);
                     }
                     continue;
                 }
@@ -118,7 +122,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
                     {
                         if (!delivery.HitAllowed(victim, target))
                             continue;
-                        float scale = timing?.DamageScale ?? 1f;
+                        float scale = timing != null ? timing.DamageScale : 1f;
                         dealt += RuleEngineV4WorldHost.ApplyDamage(
                             _director, victim, dmg * dmgMult * scale);
                     }
@@ -207,12 +211,17 @@ namespace Dovus.Game.Skills.RuleEngineV4
             Func<MotionTarget> targetFn = () =>
             {
                 if (trackTarget != null)
-                    return MotionTarget.Track(trackTarget.position);
+                {
+                    Vector3 p = trackTarget.position;
+                    float r = RuleEngineV4WorldPhysicsUtil.BodyRadius(trackTarget);
+                    return new MotionTarget(true, p.x, p.z, r);
+                }
                 Vector3 fwd = fixedDir ?? caster.forward;
                 fwd.y = 0f;
                 if (fwd.sqrMagnitude < 0.0001f)
                     fwd = Vector3.forward;
-                return MotionTarget.Fixed(caster.position + fwd.normalized * meters);
+                Vector3 end = caster.position + fwd.normalized * meters;
+                return new MotionTarget(true, end.x, end.z);
             };
             if (body != null)
             {
@@ -303,7 +312,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             Transform first,
             SekCommand bounce,
             CommandPlan plan,
-            RuleEngineV4CommandRunner.DeliveryState delivery)
+            RuleEngineV4DeliveryState delivery)
         {
             float dealt = 0f;
             Transform current = delivery.MissileHit != null ? delivery.MissileHit : first;
@@ -338,7 +347,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             var col = wall.GetComponent<Collider>();
             if (col != null)
                 col.isTrigger = false;
-            Object.Destroy(wall, lifeSec);
+            UnityEngine.Object.Destroy(wall, lifeSec);
         }
 
         double WorldMs() =>
