@@ -44,6 +44,8 @@ namespace Dovus.Core.Motion
         int _everySent;
 
         public bool Finished => _finished;
+        /// <summary>Dash varışı gövde kenarında kesildi (yalnız VFX; mekanik değişmez).</summary>
+        public bool StoppedAtBodyEdge { get; private set; }
         public float Elapsed => _elapsed;
         public float X => _x;
         public float Y => _y;
@@ -104,6 +106,7 @@ namespace Dovus.Core.Motion
             _yieldZ = z;
             _blendU0 = -1f;
             _finished = template == null || template.Phases.Count == 0;
+            StoppedAtBodyEdge = false;
             _active = !_finished;
             Normalize(faceX, faceZ, out _faceX, out _faceZ);
             if (_active)

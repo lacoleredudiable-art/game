@@ -72,8 +72,10 @@ public sealed class GlobalStateTests
     [Test]
     public void Mutable_static_field_ceiling_in_game_runtime()
     {
+        // Yalnız mutable static alan/özellik: static class ve metot imzaları sayılmaz
+        // (eski regex public static metot + class'ı da "alan" sanıyordu; #148 sonrası şişme).
         var fieldRx = new Regex(
-            @"^\s*(?:public|internal|private|protected)\s+static\s+(?!readonly|const)\w",
+            @"^\s*(?:public|internal|private|protected)\s+static\s+(?!readonly|const)(?!class\b).+$",
             RegexOptions.Multiline);
         string gameRoot = Path.Combine(Root(), "unity", "Assets", "Scripts", "Game");
         int total = 0;
@@ -83,7 +85,13 @@ public sealed class GlobalStateTests
             if (AllowMutableStaticFields.Contains(rel))
                 continue;
             string src = File.ReadAllText(path);
-            total += fieldRx.Matches(src).Count;
+            foreach (Match m in fieldRx.Matches(src))
+            {
+                string line = m.Value.Split(new[] { "//" }, 2, System.StringSplitOptions.None)[0];
+                if (line.IndexOf('(') >= 0)
+                    continue; // metot
+                total++;
+            }
         }
 
         TestContext.WriteLine($"Mutable static fields (excl. allowlist): {total}");

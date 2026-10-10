@@ -15,17 +15,14 @@ namespace Dovus.Game.Skills
 
         internal void NotifyBossStruck(bool isCrit, bool allowHitstop)
         {
-            string weaponKey = _equippedWeapon != null ? _equippedWeapon.AnimationsKey : string.Empty;
-            string archetype = WeaponArchetypeMap.ArchetypeFor(weaponKey);
+            string archetype = WeaponArchetypeMap.ArchetypeFor(
+                _equippedWeapon != null ? _equippedWeapon.AnimationsKey : string.Empty);
             _combatFeel?.OnBossStruck(isCrit, allowHitstop, archetype);
-
             Vector3? hit = BossHitPoint();
             if (hit.HasValue && _boss != null)
-            {
-                Color tint = DamageTint() ?? Color.white;
-                _sceneRuntime?.HitImpact?.Play(hit.Value, archetype, tint, isCrit, _boss.transform);
-            }
-
+                _sceneRuntime?.HitImpact?.Play(
+                    hit.Value, archetype, DamageTint() ?? Color.white, isCrit, _boss.transform);
+            RuleDrivenVfxSink.NotifyBossStrike(_player, _boss != null ? _boss.transform : null, hit);
             _sfx?.Play(isCrit ? SfxLibrary.Crit : SfxLibrary.Hit);
         }
     }

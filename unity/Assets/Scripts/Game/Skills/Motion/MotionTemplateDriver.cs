@@ -253,6 +253,7 @@ namespace Dovus.Game.Skills.Motion
                 hit => _host.MotionHitResolver.OnMotionTemplateHit(hit),
                 bodyR,
                 stopGap);
+            // VFX BeginSkill: CastPipeline shout (RuleDrivenVfxSink) — path bağımsız.
             DebugConfig.DevLog($"[Motion] {skill.Identity.Id} → {template.Name}");
             return true;
         }
@@ -470,6 +471,18 @@ namespace Dovus.Game.Skills.Motion
                 _host.DirectorTransform);
             if (fx != null)
                 _host.DestroyUnityObject(fx, MotionTemplateDriverDefaults.HitFxLifetimeSec);
+
+            // Motion hit görseli; NotifyBossStruck / Impact anim event ile _hitDone korumalı.
+            if (_host.Player != null)
+            {
+                Vector3 hitPos = pos;
+                if (_host.Boss != null)
+                    hitPos = _host.Boss.transform.position;
+                Vector3 hitDir = dir.sqrMagnitude > 0.0001f
+                    ? dir
+                    : (_host.Player != null ? _host.Player.forward : Vector3.forward);
+                RuleDrivenVfxSink.NotifyHit(_host.Player, hitPos, hitDir);
+            }
         }
     
     }

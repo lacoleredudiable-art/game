@@ -1,6 +1,7 @@
 using Dovus.Core.Actors;
 using Dovus.Game.Actors;
 using Dovus.Game.Skills;
+using Dovus.Game.Vfx;
 using UnityEngine;
 
 namespace Dovus.Game.Skills.RuleEngineV4
@@ -21,6 +22,9 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 director.MechanicsBossVitals.ApplyDamage(amount);
                 director.MechanicsDamageHud?.ShowDamage(
                     amount, false, director.BossHitPoint(), null, victimIsBoss: true);
+                // Teslim → VFX (path bağımsız); NotifyBossStruck da aynı Sink'i çağırır (_hitDone).
+                RuleDrivenVfxSink.NotifyBossStrike(
+                    director.MechanicsPlayer, victim, victim.position);
                 director.NotifyBossStruck(false, allowHitstop: true);
                 return amount;
             }

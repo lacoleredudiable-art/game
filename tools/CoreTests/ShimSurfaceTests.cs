@@ -8,7 +8,7 @@ namespace CoreTests;
 public sealed class ShimSurfaceTests
 {
     const int MaxShimFileCount = 18;
-    const int MaxShimTotalLines = 6292;
+    const int MaxShimTotalLines = 6333;
 
     static string ShimDir =>
         Path.GetFullPath(Path.Combine(TestContext.CurrentContext.TestDirectory, "..", "..", "..", "..", "SweepV2", "Shim"));

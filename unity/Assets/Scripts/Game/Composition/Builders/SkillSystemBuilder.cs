@@ -87,6 +87,9 @@ namespace Dovus.Game.Composition.Builders
             visualFreeze.Bind(follow, playerAnim);
             feel.BindPresentation(visualFreeze, ctx.Afterimage, player);
             feel.BindHaptics(runtime.Haptics);
+            var ruleVfx = ctx.Player.GetComponent<RuleDrivenVfxDirector>()
+                ?? ctx.Player.AddComponent<RuleDrivenVfxDirector>();
+            ruleVfx.Bind(runtime.FeelVfx);
             var bossFlinch = ctx.Boss.gameObject.GetComponent<BossHitFlinchView>() ?? ctx.Boss.gameObject.AddComponent<BossHitFlinchView>();
             bossFlinch.Bind(combat.Feel, bossAnim);
             ctx.Player.GetComponent<PlayerDodgeController>()?.Bind(ctx.Clock, input, follow, readout, feel);

@@ -6,6 +6,7 @@ using Dovus.Game.Actors;
 using Dovus.Game.Audio;
 using Dovus.Game.Data;
 using Dovus.Game.Feel;
+using Dovus.Game.Vfx;
 using System;
 using System.Collections.Generic;
 using Dovus.Game.Assets;
@@ -74,6 +75,9 @@ namespace Dovus.Game.Skills.Presentation
             SkillFeel.CameraKick(skill.Presentation.VerbFamily, _host.Camera, _host.Combat?.Feel);
             _host.SyncVisualDelivery();
             ApplySkillAnimation(skill);
+            // Yol bağımsız VFX: eski motion + kural_motoru_v4 aynı shout'tan uyanış/rün alır.
+            Transform actor = _host.Visual != null ? _host.Visual.transform : null;
+            RuleDrivenVfxSink.BeginSkill(actor, skill, _host.EquippedWeapon);
             _host.StartCastVfxTimer(skill, words);
             _host.Sfx?.Play(SfxLibrary.CastPrefix + skill.Presentation.VerbFamily);
         }

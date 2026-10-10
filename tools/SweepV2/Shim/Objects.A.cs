@@ -153,6 +153,12 @@ namespace UnityEngine
         public bool isActiveAndEnabled => _enabled && _go != null && _go.activeInHierarchy && !Destroyed;
     }
 
+    /// <summary>Headless stub — Unity Coroutine tutamacı.</summary>
+    public sealed class Coroutine
+    {
+        internal IEnumerator Routine;
+    }
+
     public class MonoBehaviour : Behaviour
     {
         internal bool Awoken;
@@ -160,6 +166,7 @@ namespace UnityEngine
         internal bool EnabledCalled;
         internal int Order;
         internal long Seq;
+        readonly List<Coroutine> _coroutines = new();
 
         public bool useGUILayout { get; set; } = true;
 
@@ -167,6 +174,24 @@ namespace UnityEngine
 
         public void CancelInvoke() { }
         public bool IsInvoking() => false;
+
+        public Coroutine StartCoroutine(IEnumerator routine)
+        {
+            var c = new Coroutine { Routine = routine };
+            _coroutines.Add(c);
+            // Headless: ilk MoveNext (setup); WaitForSeconds vb. sonraki tick yok.
+            try { routine?.MoveNext(); }
+            catch { /* stub */ }
+            return c;
+        }
+
+        public void StopCoroutine(Coroutine routine)
+        {
+            if (routine != null)
+                _coroutines.Remove(routine);
+        }
+
+        public void StopAllCoroutines() => _coroutines.Clear();
     }
 
     public class ScriptableObject : Object
