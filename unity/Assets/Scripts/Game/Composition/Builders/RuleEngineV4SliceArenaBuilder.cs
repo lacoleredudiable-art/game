@@ -63,19 +63,21 @@ namespace Dovus.Game.Composition.Builders
             float thickness = Mathf.Max(
                 RuleEngineV4SliceArenaBuilderDefaults.WallThicknessMinM,
                 arc * RuleEngineV4SliceArenaBuilderDefaults.WallThicknessArcScale);
+            float depth = thickness * RuleEngineV4SliceArenaBuilderDefaults.WallSegmentDepthScale;
+            // Dış köşeler tam çarpışma yarıçapında: segmentler boşluksuz birleşir, 18 m dışına taşmaz.
+            float halfStep = Mathf.PI / segments;
+            float chord = 2f * radius * Mathf.Sin(halfStep);
+            float centerRadius = radius * Mathf.Cos(halfStep) - depth * 0.5f;
             for (int i = 0; i < segments; i++)
             {
                 float angle = i * (2f * Mathf.PI / segments);
-                Vector3 pos = new Vector3(Mathf.Sin(angle) * radius, height * 0.5f, Mathf.Cos(angle) * radius);
+                Vector3 pos = new Vector3(Mathf.Sin(angle) * centerRadius, height * 0.5f, Mathf.Cos(angle) * centerRadius);
                 var seg = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 seg.name = $"WallSeg{i}";
                 seg.transform.SetParent(wallRoot.transform, false);
                 seg.transform.position = pos;
                 seg.transform.rotation = Quaternion.Euler(0f, angle * Mathf.Rad2Deg, 0f);
-                seg.transform.localScale = new Vector3(
-                    thickness,
-                    height,
-                    thickness * RuleEngineV4SliceArenaBuilderDefaults.WallSegmentDepthScale);
+                seg.transform.localScale = new Vector3(chord, height, depth);
                 var col = seg.GetComponent<Collider>();
                 if (col != null)
                     col.isTrigger = false;

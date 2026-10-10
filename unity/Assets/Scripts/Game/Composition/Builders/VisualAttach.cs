@@ -8,8 +8,12 @@ namespace Dovus.Game.Composition.Builders
 {
     static class VisualAttach
     {
-        public static GameObject ResolvePlayerVisualPrefab(GameObject sceneDefault) =>
-            AssetLoader.Load<GameObject>("PlayerVisualOverride", null) ?? sceneDefault;
+        public static GameObject ResolvePlayerVisualPrefab(GameTuning tuning, GameObject sceneDefault, GameObject sliceVisual)
+        {
+            if (tuning.RuleEngineV4.SliceScene && sliceVisual != null)
+                return sliceVisual;
+            return AssetLoader.Load<GameObject>("PlayerVisualOverride", null) ?? sceneDefault;
+        }
 
         public static GameObject ResolveBossVisualPrefab(GameTuning tuning, GameObject sceneDefault)
         {

@@ -46,7 +46,7 @@ namespace Dovus.Game.Composition.Builders
                 tuning.Visuals.PlayerColor);
             VisualAttach.Attach(
                 ctx.Player,
-                VisualAttach.ResolvePlayerVisualPrefab(ctx.PlayerVisualPrefab),
+                VisualAttach.ResolvePlayerVisualPrefab(tuning, ctx.PlayerVisualPrefab, ctx.SlicePlayerVisualPrefab),
                 tuning.Player.PlayerVisualHeightM,
                 ctx.Player.transform.position.y - CompositionConstants.PlayerHeightM * 0.5f,
                 tuning.Player.CharacterAnimSpeed,

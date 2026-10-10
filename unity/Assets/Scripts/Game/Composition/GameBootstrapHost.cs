@@ -31,6 +31,8 @@ namespace Dovus.Game.Composition
         [Header("Görsel prefab (Asset Store — boşsa kapsül)")]
         [SerializeField] GameObject _playerVisualPrefab;
         [SerializeField] GameObject _bossVisualPrefab;
+        [Tooltip("RuleEngineV4.SliceScene açıkken oyuncu görseli; yerel PlayerVisualOverride'ın önüne geçer.")]
+        [SerializeField] GameObject _slicePlayerVisualPrefab;
 
         [Header("v6 build (ana_classes_80 id + 0-2 pasif rün id)")]
         [SerializeField, Min(1)] int _prototypeMainClassId = 1;
@@ -39,6 +41,11 @@ namespace Dovus.Game.Composition
         internal GameTuning SceneTuning => _tuning;
         internal GameObject PlayerVisualPrefab => _playerVisualPrefab;
         internal GameObject BossVisualPrefab => _bossVisualPrefab;
+        internal GameObject SlicePlayerVisualPrefab
+        {
+            get => _slicePlayerVisualPrefab;
+            set => _slicePlayerVisualPrefab = value;
+        }
         internal int PrototypeMainClassId => _prototypeMainClassId;
         internal int[] PrototypePassiveRuneIds => _prototypePassiveRuneIds;
 
