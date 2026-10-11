@@ -6,7 +6,7 @@ namespace Dovus.Core.RuleEngineV4
 {
     /// <summary>
     /// v4 mana havuzu + kombo başı bekleme (scale bloğu). Bekleme skill kullanılınca başlar;
-    /// boşa giden skill manayı harcar, beklemenin fizzle_cooldown_frac kadarı uygulanır.
+    /// boşa giden skill (<see cref="IsFizzle"/>) manayı harcar, beklemenin fizzle_cooldown_frac kadarı uygulanır.
     /// Dolum dünya zamanından tembel hesaplanır.
     /// </summary>
     public sealed class RuleEngineV4CastEconomy
@@ -56,9 +56,18 @@ namespace Dovus.Core.RuleEngineV4
             return true;
         }
 
-        /// <summary>Skill boşa gitti: harcanan mana geri gelmez, bekleme kullanım anından kısaltılır.</summary>
-        public void Fizzle(string comboKey, double castWorldMs) =>
-            _readyAtMs[comboKey] = castWorldMs + _scale.CooldownSec * _scale.FizzleCooldownFrac * Units.SecToMs;
+        public static bool IsFizzle(RuleEngineV4CastOutcome outcome) =>
+            outcome is RuleEngineV4CastOutcome.NoValidTarget or RuleEngineV4CastOutcome.PendingExpired;
+
+        /// <summary>
+        /// Skill sonucu: boşa gittiyse harcanan mana geri gelmez, bekleme kullanım anından kısaltılır;
+        /// ıska ve isabet tam beklemede kalır.
+        /// </summary>
+        public void Settle(string comboKey, double castWorldMs, RuleEngineV4CastOutcome outcome)
+        {
+            if (IsFizzle(outcome))
+                _readyAtMs[comboKey] = castWorldMs + _scale.CooldownSec * _scale.FizzleCooldownFrac * Units.SecToMs;
+        }
 
         void Regen(double worldMs)
         {

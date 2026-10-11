@@ -84,13 +84,38 @@ public sealed class RuleEngineV4CastEconomyTests
     }
 
     [Test]
-    public void Fizzle_SpendsManaAndAppliesHalfCooldownFromUse()
+    public void IsFizzle_OnlyNoValidTargetAndPendingExpiry()
+    {
+        Assert.That(RuleEngineV4CastEconomy.IsFizzle(RuleEngineV4CastOutcome.NoValidTarget), Is.True);
+        Assert.That(RuleEngineV4CastEconomy.IsFizzle(RuleEngineV4CastOutcome.PendingExpired), Is.True);
+        Assert.That(RuleEngineV4CastEconomy.IsFizzle(RuleEngineV4CastOutcome.Missed), Is.False, "ıska boşa gitme değil");
+        Assert.That(RuleEngineV4CastEconomy.IsFizzle(RuleEngineV4CastOutcome.Delivered), Is.False);
+    }
+
+    [TestCase(RuleEngineV4CastOutcome.Missed)]
+    [TestCase(RuleEngineV4CastOutcome.Delivered)]
+    public void MissOrHit_SpendsManaKeepsFullCooldown(RuleEngineV4CastOutcome outcome)
+    {
+        RuleEngineV4Scale s = Scale();
+        var e = new RuleEngineV4CastEconomy(s);
+        Assert.That(e.TryBegin(Combo, T0, out _), Is.True);
+        e.Settle(Combo, T0, outcome);
+
+        Assert.That(e.Mana(T0), Is.EqualTo(s.ManaPool - s.ManaCostPerSkill));
+        Assert.That(e.CooldownRemainingSec(Combo, T0), Is.EqualTo(s.CooldownSec).Within(1e-6), "tam bekleme");
+        Assert.That(e.TryBegin(Combo, T0 + Ms(s.CooldownSec * s.FizzleCooldownFrac), out RuleEngineV4CastDenial d), Is.False);
+        Assert.That(d, Is.EqualTo(RuleEngineV4CastDenial.Cooldown));
+    }
+
+    [TestCase(RuleEngineV4CastOutcome.NoValidTarget)]
+    [TestCase(RuleEngineV4CastOutcome.PendingExpired)]
+    public void Fizzle_SpendsManaAndAppliesHalfCooldownFromUse(RuleEngineV4CastOutcome outcome)
     {
         RuleEngineV4Scale s = Scale();
         var e = new RuleEngineV4CastEconomy(s);
         Assert.That(e.TryBegin(Combo, T0, out _), Is.True);
         double later = T0 + Ms(s.CooldownSec) * s.FizzleCooldownFrac / 2;
-        e.Fizzle(Combo, T0);
+        e.Settle(Combo, T0, outcome);
 
         Assert.That(e.Mana(T0), Is.EqualTo(s.ManaPool - s.ManaCostPerSkill), "boşa giden skill manayı harcar");
         Assert.That(e.CooldownRemainingSec(Combo, T0),

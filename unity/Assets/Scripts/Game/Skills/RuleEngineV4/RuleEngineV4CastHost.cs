@@ -21,7 +21,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
         readonly RuleEngineV4WorldCommandRunHost _runner;
         float _lastDealt;
         RuleEngineV4CastEconomy _economy;
-        System.Action _fizzle;
+        System.Action<RuleEngineV4CastOutcome> _settle;
         int _comboLength = RuleEngineV4CastContext.VerbAdjectiveComboLen;
 
         public RuleEngineV4CastHost(ManifestationDirector director)
@@ -71,14 +71,14 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 return true;
             }
             LastDenial = RuleEngineV4CastDenial.None;
-            _fizzle = () => Economy.Fizzle(key, castMs);
+            _settle = outcome => Economy.Settle(key, castMs, outcome);
             try
             {
                 return TryLaunchCombo(verb, adj, comboLength, out dealt);
             }
             finally
             {
-                _fizzle = null;
+                _settle = null;
             }
         }
 
@@ -163,7 +163,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             if (!plan.IsValid)
             {
                 DebugConfig.DevLog($"[RuleEngineV4] boş plan {verb}-{adj} w{weaponId}");
-                _fizzle?.Invoke();
+                _settle?.Invoke(RuleEngineV4CastOutcome.NoValidTarget);
                 return true;
             }
 
@@ -172,7 +172,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             {
                 _lastDealt = d;
                 _director._castPort?.NotifyRuleEngineV4Dealt(d);
-            }, surfaceAim, _fizzle);
+            }, surfaceAim, _settle);
             return true;
         }
 

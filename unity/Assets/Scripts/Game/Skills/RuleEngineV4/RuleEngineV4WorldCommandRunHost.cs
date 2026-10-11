@@ -39,20 +39,20 @@ namespace Dovus.Game.Skills.RuleEngineV4
             Transform focus,
             System.Action<float> onComplete,
             RuleEngineV4SurfaceAim surfaceAim = default,
-            System.Action onFizzle = null)
+            System.Action<RuleEngineV4CastOutcome> onOutcome = null)
         {
             if (_active != null)
                 _director.StopCoroutine(_active);
-            _active = _director.StartCoroutine(CoRun(plan, focus, onComplete, surfaceAim, onFizzle));
+            _active = _director.StartCoroutine(CoRun(plan, focus, onComplete, surfaceAim, onOutcome));
         }
 
-        /// <summary>onFizzle: mermi menzili bitene kadar kimseye değmedi (süre doldu).</summary>
+        /// <summary>onOutcome: menzil sonuna kadar kimseye değmeyen mermi ıskadır (boşa gitme değil).</summary>
         IEnumerator CoRun(
             CommandPlan plan,
             Transform focus,
             System.Action<float> onComplete,
             RuleEngineV4SurfaceAim surfaceAim,
-            System.Action onFizzle)
+            System.Action<RuleEngineV4CastOutcome> onOutcome)
         {
             float dealt = 0;
             Transform caster = _director.MechanicsPlayer;
@@ -170,8 +170,9 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 }
             }
 
-            if (missileFired && missileHit == null)
-                onFizzle?.Invoke();
+            onOutcome?.Invoke(missileFired && missileHit == null
+                ? RuleEngineV4CastOutcome.Missed
+                : RuleEngineV4CastOutcome.Delivered);
 
             if (timing != null && timing.RecoverySec > 0)
                 yield return CoWaitWorld(timing.RecoverySec);
