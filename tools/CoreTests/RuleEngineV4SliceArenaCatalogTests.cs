@@ -29,4 +29,23 @@ public sealed class RuleEngineV4SliceArenaCatalogTests
         Assert.That(arena.Cocoons[0].ZM, Is.EqualTo(-6f));
         Assert.That(arena.Cocoons[0].RadiusM, Is.EqualTo(0.6f).Within(0.001f));
     }
+
+    [Test]
+    public void Json_Cocoons_CapsuleRadius06_Height18()
+    {
+        RuleEngineV4Catalog catalog = RuleEngineV4Catalog.FromJson(File.ReadAllText(Path.GetFullPath(JsonPath)));
+        foreach (RuleEngineV4SliceArenaCocoon c in catalog.SliceArena.Cocoons)
+        {
+            Assert.That(c.RadiusM, Is.EqualTo(0.6f).Within(0.001f), "radius_m");
+            Assert.That(c.HeightM, Is.EqualTo(1.8f).Within(0.001f), "height_m");
+        }
+    }
+
+    [Test]
+    public void Json_CocoonHeight_ReadFromData()
+    {
+        const string json = "{\"slice_arena\":{\"cocoons\":[{\"x_m\":1,\"z_m\":2,\"radius_m\":0.5,\"height_m\":2.5,\"max_hp\":10}]}}";
+        RuleEngineV4SliceArena arena = RuleEngineV4Catalog.FromJson(json).SliceArena;
+        Assert.That(arena.Cocoons[0].HeightM, Is.EqualTo(2.5f).Within(0.001f));
+    }
 }

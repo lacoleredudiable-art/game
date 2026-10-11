@@ -69,7 +69,8 @@ namespace Dovus.Core.RuleEngineV4
                         xM: F(c["x_m"], c["x"], 0f),
                         zM: F(c["z_m"], c["z"], 0f),
                         radiusM: F(c["radius_m"], null, RuleEngineV4SliceArenaDefaults.CocoonRadiusM),
-                        maxHp: c["max_hp"].AsInt(RuleEngineV4SliceArenaDefaults.CocoonMaxHp)));
+                        maxHp: c["max_hp"].AsInt(RuleEngineV4SliceArenaDefaults.CocoonMaxHp),
+                        heightM: F(c["height_m"], null, RuleEngineV4SliceArenaDefaults.CocoonHeightM)));
                 }
             }
 

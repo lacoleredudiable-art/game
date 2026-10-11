@@ -155,8 +155,8 @@
       { "x_m": 0, "z_m": -10, "radius_m": 1, "height_m": 3 }
     ],
     "cocoons": [
-      { "x_m": -12, "z_m": -6, "radius_m": 0.6, "max_hp": 400 },
-      { "x_m": 12, "z_m": -6, "radius_m": 0.6, "max_hp": 400 }
+      { "x_m": -12, "z_m": -6, "radius_m": 0.6, "height_m": 1.8, "max_hp": 400 },
+      { "x_m": 12, "z_m": -6, "radius_m": 0.6, "height_m": 1.8, "max_hp": 400 }
     ],
     "outer_wall_collision_radius_m": 18,
     "outer_wall_visual_inner_radius_m": 18,

@@ -177,6 +177,30 @@ namespace Dovus.Tests.PlayMode
             Assert.That(wall.Contains(_surfaceMark.Surface.transform), "işaret duvar segmentinde değil: " + _surfaceMark.Surface.name);
         }
 
+        [UnityTest]
+        public IEnumerator Cocoon_CapsuleCollider_FromJson()
+        {
+            yield return null;
+            SliceArenaCocoonHost[] cocoons = Cocoons();
+            Assert.That(cocoons.Length, Is.EqualTo(ArenaSpec.Cocoons.Count), "koza sayısı");
+            for (int i = 0; i < cocoons.Length; i++)
+            {
+                RuleEngineV4SliceArenaCocoon spec = ArenaSpec.Cocoons[i];
+                Assert.That(spec.RadiusM, Is.EqualTo(0.6f).Within(PosTolM), $"koza {i + 1} JSON radius_m");
+                Assert.That(spec.HeightM, Is.EqualTo(1.8f).Within(PosTolM), $"koza {i + 1} JSON height_m");
+                var capsule = cocoons[i].GetComponent<CapsuleCollider>();
+                Assert.That(capsule, Is.Not.Null, $"koza {i + 1} kapsül değil");
+                Assert.That(cocoons[i].GetComponent<SphereCollider>(), Is.Null, $"koza {i + 1} hâlâ küre");
+                Assert.That(capsule.isTrigger, $"koza {i + 1} tetik değil");
+                Bounds b = capsule.bounds;
+                Assert.That(b.extents.x, Is.EqualTo(spec.RadiusM).Within(PosTolM), $"koza {i + 1} yarıçap");
+                Assert.That(b.extents.z, Is.EqualTo(spec.RadiusM).Within(PosTolM), $"koza {i + 1} yarıçap (z)");
+                Assert.That(b.size.y, Is.EqualTo(spec.HeightM).Within(PosTolM), $"koza {i + 1} yükseklik");
+                Assert.That(b.min.y, Is.EqualTo(0f).Within(PosTolM), $"koza {i + 1} zemine oturmuyor");
+                Assert.That(cocoons[i].BodyRadiusM() * cocoons[i].transform.lossyScale.x,
+                    Is.EqualTo(spec.RadiusM).Within(PosTolM), $"koza {i + 1} gövde yarıçapı");
+            }
+        }
 
         void AssertDecal(RuleEngineV4SurfaceMark mark, Vector3 surfaceNormal)
         {
