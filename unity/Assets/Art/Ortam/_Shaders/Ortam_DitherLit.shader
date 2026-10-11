@@ -1,7 +1,13 @@
 // Kaburga kemer gövdesi: Simple Lit ile aynı aydınlatma (UniversalFragmentBlinnPhong, specular kapalı)
 // + kemer solması: opak pass'te clip(dither - fade), saydamlık yok (KorDither.hlsl).
-// Kor katmanı (VFX_Kor, _ARCH_DITHER) aynı parametrelerle aynı pikselleri kırpar.
-// Gölge pass'i solmaz: kemer gölgesi sahnede kalır.
+// _KOR_EMISSION: kaburga koru ayrı pass değil, emisyon terimi (_KorMask G kanalı, KorTriplanar.hlsl);
+//   aynı pikselde hesaplandığı için dither ile birlikte söner.
+// _HALF_CLIP: yarım kaburga — nesne uzayında x < _DovusHalfClipX kırpılır; sol yarım aynı mesh'in X aynasıdır.
+//   _DovusHalfClipX global (Properties'te yok): kurucu JSON'daki taç bindirmesinden yazar; eşik 0'ın biraz
+//   altında olduğundan iki yarım tepede üst üste biner, eğik yarımların arasında yarık kalmaz.
+// Malzeme özellikleri bilerek UnityPerMaterial CBUFFER'ında DEĞİL: shader SRP Batcher dışı kalır, böylece
+//   aynı mesh+malzemedeki yarım kaburgalar GPU instancing ile birleşir (SRP Batcher açıkken uyumlu shader'da
+//   instancing yok sayılır).
 Shader "Dovus/Ortam/Ortam_DitherLit"
 {
     Properties
@@ -13,6 +19,21 @@ Shader "Dovus/Ortam/Ortam_DitherLit"
         _FadeSoftness ("Fade softness", Range(0.01, 1)) = 0.35
         _FadeNearM ("Fade full until (m)", Float) = 6
         _FadeFarM ("Fade none beyond (m)", Float) = 14
+
+        [Toggle(_HALF_CLIP)] _HalfClip ("Half rib: keep object x >= 0", Float) = 0
+
+        [Toggle(_KOR_EMISSION)] _KorEmission ("Kor emission (triplanar)", Float) = 0
+        [HDR] _CoreColor ("Kor color (HDR)", Color) = (4.2, 1.05, 0.18, 1)
+        _Intensity ("Kor intensity", Float) = 1
+        [NoScaleOffset] _KorMask ("Kor mask RGBA (triplanar)", 2D) = "black" {}
+        _MaskChannel ("Mask channel", Vector) = (0, 1, 0, 0)
+        _MaskTiling ("Mask tiling (1/m)", Float) = 0.5
+        _MaskBlend ("Mask blend sharpness", Range(1, 16)) = 6
+        _MaxGlow ("Max glow", Range(0, 1)) = 0.5
+        _PulsePeriod ("Pulse period sec (0 = off)", Float) = 60
+        _PulseMin ("Pulse min", Range(0, 1)) = 0.6
+        _NoiseScale ("Anti-tiling noise (1/m)", Float) = 0.07
+        _NoiseFloor ("Anti-tiling noise floor (1 = off)", Range(0, 1)) = 1
     }
     SubShader
     {
@@ -27,19 +48,36 @@ Shader "Dovus/Ortam/Ortam_DitherLit"
         HLSLINCLUDE
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
-        CBUFFER_START(UnityPerMaterial)
-            float4 _BaseMap_ST;
-            half4 _BaseColor;
-            half _FadeStrength;
-            float4 _FadeScreenCenter;
-            half _FadeSoftness;
-            float _FadeNearM;
-            float _FadeFarM;
-        CBUFFER_END
+        float4 _BaseMap_ST;
+        half4 _BaseColor;
+        half _FadeStrength;
+        float4 _FadeScreenCenter;
+        half _FadeSoftness;
+        float _FadeNearM;
+        float _FadeFarM;
+        half4 _CoreColor;
+        half _Intensity;
+        half4 _MaskChannel;
+        float _MaskTiling;
+        half _MaskBlend;
+        half _MaxGlow;
+        float _PulsePeriod;
+        half _PulseMin;
+        float _NoiseScale;
+        half _NoiseFloor;
+        float _DovusHalfClipX;
 
         TEXTURE2D(_BaseMap);    SAMPLER(sampler_BaseMap);
+        TEXTURE2D(_KorMask);    SAMPLER(sampler_KorMask);
 
         #include "Assets/Art/Vfx/Shaders/KorDither.hlsl"
+
+        void DovusHalfClip(float objectX)
+        {
+        #if defined(_HALF_CLIP)
+            clip(objectX - _DovusHalfClipX);
+        #endif
+        }
         ENDHLSL
 
         Pass
@@ -57,8 +95,12 @@ Shader "Dovus/Ortam/Ortam_DitherLit"
             #pragma multi_compile_fragment _ _SHADOWS_SOFT
             #pragma multi_compile_fog
             #pragma multi_compile_instancing
+            #pragma shader_feature_local _ _HALF_CLIP
+            #pragma shader_feature_local_fragment _ _KOR_EMISSION
+            #pragma multi_compile_fragment _ DOVUS_KOR_LOW
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            #include "Assets/Art/Vfx/Shaders/KorTriplanar.hlsl"
 
             struct Attributes
             {
@@ -75,6 +117,7 @@ Shader "Dovus/Ortam/Ortam_DitherLit"
                 float3 positionWS : TEXCOORD1;
                 half3 normalWS : TEXCOORD2;
                 half4 fogAndVertexLight : TEXCOORD3;
+                float objectX : TEXCOORD4;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
@@ -90,12 +133,14 @@ Shader "Dovus/Ortam/Ortam_DitherLit"
                 o.normalWS = nrm.normalWS;
                 o.uv = TRANSFORM_TEX(input.uv, _BaseMap);
                 o.fogAndVertexLight = half4(ComputeFogFactor(pos.positionCS.z), VertexLighting(pos.positionWS, nrm.normalWS));
+                o.objectX = input.positionOS.x;
                 return o;
             }
 
             half4 frag(Varyings input) : SV_Target
             {
                 UNITY_SETUP_INSTANCE_ID(input);
+                DovusHalfClip(input.objectX);
                 DovusArchDitherClip(input.positionWS, input.positionCS);
 
                 InputData d = (InputData)0;
@@ -114,6 +159,9 @@ Shader "Dovus/Ortam/Ortam_DitherLit"
                 s.albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv).rgb * _BaseColor.rgb;
                 s.alpha = 1;
                 s.occlusion = 1;
+            #if defined(_KOR_EMISSION)
+                s.emission = _CoreColor.rgb * (KorTriplanarMask(input.positionWS, d.normalWS) * _Intensity * KorPulse());
+            #endif
 
                 half4 c = UniversalFragmentBlinnPhong(d, s);
                 c.rgb = MixFog(c.rgb, d.fogCoord);
@@ -137,6 +185,7 @@ Shader "Dovus/Ortam/Ortam_DitherLit"
             #pragma fragment frag
             #pragma multi_compile_instancing
             #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
+            #pragma shader_feature_local _ _HALF_CLIP
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
 
@@ -150,8 +199,15 @@ Shader "Dovus/Ortam/Ortam_DitherLit"
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
-            float4 vert(Attributes input) : SV_POSITION
+            struct Varyings
             {
+                float4 positionCS : SV_POSITION;
+                float objectX : TEXCOORD0;
+            };
+
+            Varyings vert(Attributes input)
+            {
+                Varyings o = (Varyings)0;
                 UNITY_SETUP_INSTANCE_ID(input);
                 float3 positionWS = TransformObjectToWorld(input.positionOS.xyz);
                 float3 normalWS = TransformObjectToWorldNormal(input.normalOS);
@@ -166,11 +222,14 @@ Shader "Dovus/Ortam/Ortam_DitherLit"
             #else
                 positionCS.z = max(positionCS.z, UNITY_NEAR_CLIP_VALUE);
             #endif
-                return positionCS;
+                o.positionCS = positionCS;
+                o.objectX = input.positionOS.x;
+                return o;
             }
 
-            half4 frag() : SV_Target
+            half4 frag(Varyings input) : SV_Target
             {
+                DovusHalfClip(input.objectX);
                 return 0;
             }
             ENDHLSL
@@ -188,6 +247,7 @@ Shader "Dovus/Ortam/Ortam_DitherLit"
             #pragma vertex vert
             #pragma fragment frag
             #pragma multi_compile_instancing
+            #pragma shader_feature_local _ _HALF_CLIP
 
             struct Attributes
             {
@@ -199,6 +259,7 @@ Shader "Dovus/Ortam/Ortam_DitherLit"
             {
                 float4 positionCS : SV_POSITION;
                 float3 positionWS : TEXCOORD0;
+                float objectX : TEXCOORD1;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
@@ -209,12 +270,14 @@ Shader "Dovus/Ortam/Ortam_DitherLit"
                 UNITY_TRANSFER_INSTANCE_ID(input, o);
                 o.positionWS = TransformObjectToWorld(input.positionOS.xyz);
                 o.positionCS = TransformWorldToHClip(o.positionWS);
+                o.objectX = input.positionOS.x;
                 return o;
             }
 
             half4 frag(Varyings input) : SV_Target
             {
                 UNITY_SETUP_INSTANCE_ID(input);
+                DovusHalfClip(input.objectX);
                 DovusArchDitherClip(input.positionWS, input.positionCS);
                 return input.positionCS.z;
             }

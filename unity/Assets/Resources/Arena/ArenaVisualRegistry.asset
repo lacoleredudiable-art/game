@@ -21,10 +21,10 @@ MonoBehaviour:
     KorOverlay: {fileID: 2100000, guid: f5f2ed51b5c2d664cbffe2012cf11aec, type: 2}
   - Key: kaburga
     Model: {fileID: 919132149155446097, guid: 4cb77aad924b336459a055dfde21358c, type: 3}
-    KorOverlay: {fileID: 2100000, guid: 1629d9c57269042499123e818223aec0, type: 2}
+    KorOverlay: {fileID: 0}
   - Key: kaburga_LOD1
     Model: {fileID: 919132149155446097, guid: f3b2132429887c8428c06e649a9f5c6e, type: 3}
-    KorOverlay: {fileID: 2100000, guid: 1629d9c57269042499123e818223aec0, type: 2}
+    KorOverlay: {fileID: 0}
   - Key: runtasi
     Model: {fileID: 919132149155446097, guid: 60b548a801851fa449469e99836bb4ec, type: 3}
     KorOverlay: {fileID: 0}

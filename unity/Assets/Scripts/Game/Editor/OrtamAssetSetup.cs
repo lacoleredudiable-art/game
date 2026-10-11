@@ -42,7 +42,6 @@ namespace Dovus.Game.Editor
         internal static string FbxPath(string key, string folder) => $"{Root}/{folder}/{key}.fbx";
         internal static string BodyMaterialPath(string folder) => $"{Root}/{folder}/{folder}_Mat.mat";
         internal const string KozaKorMaterial = Root + "/koza/Kor_Koza.mat";
-        internal const string RibKorMaterial = KorDir + "/Kor_Kaburga.mat";
         internal const string FloorKorMaterial = KorDir + "/Kor_Zemin.mat";
         internal const string HearthKorMaterial = KorDir + "/Kor_Ocak.mat";
         const string KozaMask = Root + "/koza/koza_kor_uv.png";
@@ -55,6 +54,16 @@ namespace Dovus.Game.Editor
         const float FadeSoftness = 0.35f;
         const float FadeNearM = 6f;
         const float FadeFarM = 14f;
+
+        // Kor maskesi (triplanar): kanal, döşeme 1/m, üst parlaklık, nabız sn.
+        static readonly Vector4 RibKorChannel = new(0f, 1f, 0f, 0f);
+        const float RibKorTiling = 0.5f;
+        const float RibKorMaxGlow = 0.5f;
+        const float RibKorPulseSec = 60f;
+        const float KorMaskBlend = 6f;
+        const float KorPulseMin = 0.6f;
+        const float KorNoiseScale = 0.07f;
+        const float KorNoiseFloor = 0.35f;
 
         [MenuItem("Dovus/Ortam/Yeniden al (FBX + doku + materyal + kayıt)")]
         public static void Reimport()
@@ -76,10 +85,9 @@ namespace Dovus.Game.Editor
                 ConfigureModel(FbxPath(key, folder), AssetDatabase.LoadAssetAtPath<Material>(BodyMaterialPath(folder)));
 
             Material kozaKor = EnsureKozaKor();
-            Material ribKor = EnsureTriplanarKor(RibKorMaterial, new Vector4(0f, 1f, 0f, 0f), 0.5f, 0.5f, 60f, true);
-            Material floorKor = EnsureTriplanarKor(FloorKorMaterial, new Vector4(1f, 0f, 0f, 0f), 0.25f, 1f, 0f, false);
-            Material hearthKor = EnsureTriplanarKor(HearthKorMaterial, new Vector4(0f, 0f, 1f, 0f), 0.5f, 1f, 0f, false);
-            WriteRegistry(kozaKor, ribKor, floorKor, hearthKor);
+            Material floorKor = EnsureTriplanarKor(FloorKorMaterial, new Vector4(1f, 0f, 0f, 0f), 0.25f, 1f, 0f);
+            Material hearthKor = EnsureTriplanarKor(HearthKorMaterial, new Vector4(0f, 0f, 1f, 0f), 0.5f, 1f, 0f);
+            WriteRegistry(kozaKor, floorKor, hearthKor);
             AssetDatabase.SaveAssets();
             Debug.Log("[ortam] yeniden alma tamam" + (korPack ? string.Empty : " (kor paketi eksik)"));
         }
@@ -192,7 +200,8 @@ namespace Dovus.Game.Editor
 
         /// <summary>
         /// Gövde: Simple Lit (Blinn-Phong, specular kapalı — mobil bütçe; taş/kemik için PBR farkı görünmez).
-        /// Kaburga: Ortam_DitherLit (aynı aydınlatma + kemer solması). Rün taşı: oyma normal map'i, emisyon yok.
+        /// Kaburga: Ortam_DitherLit (aynı aydınlatma + kemer solması + kor emisyonu + yarım kesim), GPU instancing
+        /// açık (shader SRP Batcher dışı → 14 yarım tek mesh+malzeme ile birleşir). Rün taşı: oyma normal map'i, emisyon yok.
         /// </summary>
         static void EnsureBodyMaterial(string folder, string albedo)
         {
@@ -203,6 +212,12 @@ namespace Dovus.Game.Editor
             if (rib)
             {
                 ApplyFade(m);
+                SetKorMask(m, RibKorChannel, RibKorTiling, RibKorMaxGlow, RibKorPulseSec);
+                m.SetFloat("_KorEmission", 1f);
+                m.EnableKeyword("_KOR_EMISSION");
+                m.SetFloat("_HalfClip", 1f);
+                m.EnableKeyword("_HALF_CLIP");
+                m.enableInstancing = true;
             }
             else
             {
@@ -235,34 +250,31 @@ namespace Dovus.Game.Editor
             return m;
         }
 
-        static Material EnsureTriplanarKor(string path, Vector4 channel, float tiling, float maxGlow, float pulseSec, bool archDither)
+        static Material EnsureTriplanarKor(string path, Vector4 channel, float tiling, float maxGlow, float pulseSec)
         {
             Material m = LoadOrCreate(path, VfxKor);
             m.SetFloat("_MaskMode", 1f);
             m.EnableKeyword("_MASKMODE_TRIPLANAR");
             m.DisableKeyword("_MASKMODE_UV");
+            SetKorMask(m, channel, tiling, maxGlow, pulseSec);
+            m.SetFloat("_EdgeBoost", 0f);
+            m.SetFloat("_ArchDither", 0f);
+            m.DisableKeyword("_ARCH_DITHER");
+            EditorUtility.SetDirty(m);
+            return m;
+        }
+
+        static void SetKorMask(Material m, Vector4 channel, float tiling, float maxGlow, float pulseSec)
+        {
             m.SetTexture("_KorMask", AssetDatabase.LoadAssetAtPath<Texture2D>(KorPack));
             m.SetVector("_MaskChannel", channel);
             m.SetFloat("_MaskTiling", tiling);
-            m.SetFloat("_MaskBlend", 6f);
+            m.SetFloat("_MaskBlend", KorMaskBlend);
             m.SetFloat("_MaxGlow", maxGlow);
             m.SetFloat("_PulsePeriod", pulseSec);
-            m.SetFloat("_PulseMin", 0.6f);
-            m.SetFloat("_NoiseScale", 0.07f);
-            m.SetFloat("_NoiseFloor", 0.35f);
-            m.SetFloat("_EdgeBoost", 0f);
-            m.SetFloat("_ArchDither", archDither ? 1f : 0f);
-            if (archDither)
-            {
-                m.EnableKeyword("_ARCH_DITHER");
-                ApplyFade(m);
-            }
-            else
-            {
-                m.DisableKeyword("_ARCH_DITHER");
-            }
-            EditorUtility.SetDirty(m);
-            return m;
+            m.SetFloat("_PulseMin", KorPulseMin);
+            m.SetFloat("_NoiseScale", KorNoiseScale);
+            m.SetFloat("_NoiseFloor", KorNoiseFloor);
         }
 
         static void ApplyFade(Material m)
@@ -290,7 +302,7 @@ namespace Dovus.Game.Editor
             return m;
         }
 
-        static void WriteRegistry(Material kozaKor, Material ribKor, Material floorKor, Material hearthKor)
+        static void WriteRegistry(Material kozaKor, Material floorKor, Material hearthKor)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(RegistryPath));
             var reg = AssetDatabase.LoadAssetAtPath<ArenaVisualRegistry>(RegistryPath);
@@ -302,12 +314,7 @@ namespace Dovus.Game.Editor
             reg.Models.Clear();
             foreach ((string key, string folder) in Models)
             {
-                Material overlay = key switch
-                {
-                    "koza" => kozaKor,
-                    "kaburga" or "kaburga_LOD1" => ribKor,
-                    _ => null,
-                };
+                Material overlay = key == "koza" ? kozaKor : null;
                 reg.Models.Add(new ArenaVisualRegistry.ModelEntry
                 {
                     Key = key,

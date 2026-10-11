@@ -3,9 +3,9 @@
 
 // Kemer solması (dunya-ortam, 11 Ekim): kameraya yakın + kadrajın üst-ortasındaki kemer parçası
 // yarı saydam DEĞİL, opak pass'te 4x4 Bayer dither ile kırpılır: clip(dither - fade).
-// Gövde (Ortam_DitherLit) ve toplamalı kor katmanı (VFX_Kor, _ARCH_DITHER) bu dosyayı aynı
-// malzeme parametreleriyle çağırır → aynı pikseller söner, havada kor çizgisi kalmaz.
-// Çağıran UnityPerMaterial'da tanımlamalı: _FadeStrength, _FadeScreenCenter (xy merkez, zw yarıçap),
+// Gövde (Ortam_DitherLit; kor emisyonu aynı pikselde) ve toplamalı kor katmanı (VFX_Kor, _ARCH_DITHER)
+// bu dosyayı aynı malzeme parametreleriyle çağırır → aynı pikseller söner, havada kor çizgisi kalmaz.
+// Çağıran tanımlamalı: _FadeStrength, _FadeScreenCenter (xy merkez, zw yarıçap),
 // _FadeSoftness, _FadeNearM, _FadeFarM.
 
 float DovusBayer2(float2 a)
