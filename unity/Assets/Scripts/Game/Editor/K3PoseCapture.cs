@@ -12,7 +12,7 @@ namespace Dovus.Game.Editor
 {
     /// <summary>
     /// k3 prefabını kaydedilmeyen geçici sahnede klip karesine örnekleyip ortografik PNG çeker
-    /// (Blender "34" açısı: kamera yönü Blender (0.7,-0.7,0) → Unity (-0.7,0,0.7)).
+    /// (Blender "34" açısı: kamera yönü Blender (0.7,-0.7,0) → Unity (-0.7,0,0.7); ayrıca önden ve yandan).
     /// Batch: -executeMethod Dovus.Game.Editor.K3PoseCapture.CaptureBatch -k3PoseOut &lt;klasör&gt;
     /// </summary>
     public static class K3PoseCapture
@@ -24,16 +24,23 @@ namespace Dovus.Game.Editor
         const float FullOrthoWidth = 2.4f;
         const float HandOrthoWidth = 1.0f;
         const float FullCenterHeight = 1.0f;
-        static readonly Vector3 ViewDir = new Vector3(-0.7f, 0f, 0.7f).normalized;
         static readonly Color Background = new(0.25f, 0.25f, 0.25f);
 
-        static readonly (string Clip, int Frame, string Weapon)[] Shots =
+        // Karakter +Z'ye bakar; "yan" sol taraftan (yay sol elde).
+        static readonly Dictionary<string, Vector3> Views = new()
         {
-            ("Kilic_VUR", 7, "Silah_Kilic"),
-            ("Yay_VUR", 11, "Silah_Yay"),
+            ["34"] = new Vector3(-0.7f, 0f, 0.7f).normalized,
+            ["on"] = Vector3.forward,
+            ["yan"] = Vector3.left,
         };
 
-        [MenuItem("Dovus/k3/Poz görüntüsü (Kilic_VUR 7, Yay_VUR 11)")]
+        static readonly (string Clip, int Frame, string Weapon, string[] Views)[] Shots =
+        {
+            ("Kilic_VUR", 7, "Silah_Kilic", new[] { "34", "on" }),
+            ("Yay_VUR", 11, "Silah_Yay", new[] { "34", "on", "yan" }),
+        };
+
+        [MenuItem("Dovus/k3/Poz görüntüsü (Kilic_VUR 7 önden, Yay_VUR 11 önden/yandan)")]
         public static void Capture() => Capture(DefaultOut);
 
         public static void CaptureBatch()
@@ -67,8 +74,7 @@ namespace Dovus.Game.Editor
             var rt = new RenderTexture(Size, Size, 24);
             cam.targetTexture = rt;
 
-            light.transform.rotation = Quaternion.LookRotation(-ViewDir + Vector3.down * 0.8f);
-            foreach ((string clipName, int frame, string weaponName) in Shots)
+            foreach ((string clipName, int frame, string weaponName, string[] views) in Shots)
             {
                 foreach (Transform w in weapons)
                     w.gameObject.SetActive(w.name == weaponName);
@@ -83,8 +89,13 @@ namespace Dovus.Game.Editor
                 Vector3 full = new(hips.position.x, FullCenterHeight, hips.position.z);
                 Vector3 hands = (anim.GetBoneTransform(HumanBodyBones.LeftHand).position
                                  + anim.GetBoneTransform(HumanBodyBones.RightHand).position) / 2f;
-                Shoot(cam, rt, full, FullOrthoWidth, $"{outDir}/{clipName}_k{frame:00}_tam_34.png");
-                Shoot(cam, rt, hands, HandOrthoWidth, $"{outDir}/{clipName}_k{frame:00}_el_34.png");
+                foreach (string view in views)
+                {
+                    Vector3 dir = Views[view];
+                    light.transform.rotation = Quaternion.LookRotation(-dir + Vector3.down * 0.8f);
+                    Shoot(cam, rt, dir, full, FullOrthoWidth, $"{outDir}/{clipName}_k{frame:00}_tam_{view}.png");
+                    Shoot(cam, rt, dir, hands, HandOrthoWidth, $"{outDir}/{clipName}_k{frame:00}_el_{view}.png");
+                }
                 foreach (GameObject b in baked)
                     UnityEngine.Object.DestroyImmediate(b);
 
@@ -119,11 +130,13 @@ namespace Dovus.Game.Editor
             return baked;
         }
 
-        static void Shoot(Camera cam, RenderTexture rt, Vector3 center, float orthoWidth, string path)
+        static void Shoot(Camera cam, RenderTexture rt, Vector3 viewDir, Vector3 center, float orthoWidth, string path)
         {
             cam.orthographicSize = orthoWidth / 2f;
-            cam.transform.position = center + ViewDir * CameraDistance;
-            cam.transform.rotation = Quaternion.LookRotation(-ViewDir, Vector3.up);
+            cam.transform.position = center + viewDir * CameraDistance;
+            cam.transform.rotation = Quaternion.LookRotation(-viewDir, Vector3.up);
+            // İlk Render shader/mesh yüklemesinde boş kare verebiliyor; ısınma çizimi.
+            cam.Render();
             cam.Render();
             RenderTexture prev = RenderTexture.active;
             RenderTexture.active = rt;
