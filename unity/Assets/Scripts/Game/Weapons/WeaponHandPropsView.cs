@@ -275,8 +275,8 @@ namespace Dovus.Game.Weapons
 
         /// <summary>
         /// Kılıç (sağ el) / Yay (sol el) tutuş ölçümü. Bilek: önkol (dirsek→bilek) ile el (bilek→orta
-        /// parmak kökü ya da el kemiği ekseni) arası. Silah ekseni: Kılıç Vfx_Kabza→Vfx_Tip; Yay ok ekseni (yay yerel +X,
-        /// kiriş tarafından kabzaya). Hedef yön: karakterin yatay ileri yönü.
+        /// parmak kökü ya da el kemiği ekseni) arası. Silah ekseni: <see cref="WeaponAxis"/> (Vfx_Kabza→Vfx_Tip dünya
+        /// vektörü). Hedef yön: karakterin yatay ileri yönü.
         /// </summary>
         public static bool TryMeasureGripAngles(Animator animator, string weaponKey, out GripAngles angles)
         {
@@ -352,16 +352,17 @@ namespace Dovus.Game.Weapons
         public const string HiltPointName = "Vfx_Kabza";
         public const string TipPointName = "Vfx_Tip";
 
-        static Vector3 WeaponAxis(Transform weapon, bool bow)
+        /// <summary>
+        /// Silah ekseni = Vfx_Kabza→Vfx_Tip dünya vektörü. Noktası olmayan kayıt prop'unda (Mixamo) yerel eksen.
+        /// </summary>
+        public static Vector3 WeaponAxis(Transform weapon, bool bow)
         {
-            if (bow)
-                return weapon.right;
             Transform hilt = FindChildDeep(weapon, HiltPointName);
             Transform tip = FindChildDeep(weapon, TipPointName);
             if (hilt != null && tip != null)
                 return tip.position - hilt.position;
-            // ff-4: Warrior_Sword mesh'inin uzunluk ekseni local Z.
-            return weapon.forward;
+            // ff-4: Warrior_Sword mesh'inin uzunluk ekseni local Z; yay prop'u yerel +X.
+            return bow ? weapon.right : weapon.forward;
         }
 
         static Transform FindChildDeep(Transform t, string name)

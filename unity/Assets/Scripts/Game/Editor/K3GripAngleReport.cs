@@ -65,6 +65,7 @@ namespace Dovus.Game.Editor
                     }
                     graph.Destroy();
                 }
+                AppendGripTrials(sb, go, anim, rows, clips);
             }
             finally
             {
@@ -76,6 +77,85 @@ namespace Dovus.Game.Editor
             File.WriteAllText(OutPath, text);
             Debug.Log("[k3tutus]\n" + text);
             return text;
+        }
+
+        static readonly (string Grip, string WeaponKey, string Idle, string Vur)[] GripTrials =
+        {
+            (K3AssetSetup.GripRight, "kilic", "Loko_Kilic_Idle", "Kilic_VUR"),
+            (K3AssetSetup.GripLeft, "yay", "Loko_Yay_Idle", "Yay_VUR"),
+        };
+
+        static readonly float[] TrialXDeg = { 0f, -90f, 90f };
+        const int IdleSamples = 4;
+
+        /// <summary>
+        /// Grip'e ek X dönüşü denemesi (uygulanmaz): idle'da silah ekseninin 0° pozuna göre sapması
+        /// (0° = Blender pozu), dikten açısı ve VUR impact karesinde hedef yönden sapma.
+        /// </summary>
+        static void AppendGripTrials(
+            StringBuilder sb,
+            GameObject go,
+            Animator anim,
+            Dictionary<string, K3AssetSetup.ClipRow> rows,
+            Dictionary<string, AnimationClip> clips)
+        {
+            sb.AppendLine();
+            sb.AppendLine("### Grip ek X dönüşü denemesi (Vfx_Kabza→Vfx_Tip, uygulanmaz)");
+            sb.AppendLine("| tutuş | X ° | idle sapma (0° = Blender) ° | idle dikten ° | VUR impact hedef sapma ° |");
+            sb.AppendLine("|---|---|---|---|---|");
+            foreach ((string gripName, string key, string idle, string vur) in GripTrials)
+            {
+                Transform grip = K3AssetSetup.FindDeep(go.transform, gripName);
+                Transform weapon = K3AssetSetup.FindDeep(go.transform, WeaponHandPropsView.OwnWeaponName(key));
+                if (grip == null || weapon == null)
+                {
+                    sb.AppendLine($"| {gripName} | — | — | — | silah yok |");
+                    continue;
+                }
+                weapon.gameObject.SetActive(true);
+                bool bow = key == "yay";
+                Quaternion baseRot = grip.localRotation;
+                K3AssetSetup.ClipRow idleRow = rows[idle];
+                var reference = new Vector3[IdleSamples];
+                foreach (float x in TrialXDeg)
+                {
+                    grip.localRotation = baseRot * Quaternion.Euler(x, 0f, 0f);
+                    float devSum = 0f, vertSum = 0f;
+                    for (int i = 0; i < IdleSamples; i++)
+                    {
+                        int frame = idleRow.FirstFrame + i * (idleRow.LastFrame - idleRow.FirstFrame) / IdleSamples;
+                        Vector3 axis = SampleAxis(anim, clips[idle], (frame - idleRow.FirstFrame) / K3AssetSetup.Fps, weapon, bow);
+                        if (x == 0f)
+                            reference[i] = axis;
+                        devSum += Vector3.Angle(axis, reference[i]);
+                        float vert = Vector3.Angle(axis, Vector3.up);
+                        vertSum += Mathf.Min(vert, 180f - vert);
+                    }
+                    K3AssetSetup.ClipRow vurRow = rows[vur];
+                    Vector3 hit = SampleAxis(anim, clips[vur], (vurRow.ImpactFrame - vurRow.FirstFrame) / K3AssetSetup.Fps, weapon, bow);
+                    Vector3 target = Vector3.ProjectOnPlane(anim.transform.forward, Vector3.up);
+                    sb.AppendLine($"| {gripName} | {x:+0;-0;0} | {devSum / IdleSamples:0.0} | {vertSum / IdleSamples:0.0} | {Vector3.Angle(hit, target):0.0} |");
+                }
+                grip.localRotation = baseRot;
+            }
+        }
+
+        static Vector3 SampleAxis(Animator anim, AnimationClip clip, float timeSec, Transform weapon, bool bow)
+        {
+            PlayableGraph graph = PlayableGraph.Create("k3GripTrial");
+            try
+            {
+                var output = AnimationPlayableOutput.Create(graph, "k3", anim);
+                var playable = AnimationClipPlayable.Create(graph, clip);
+                output.SetSourcePlayable(playable);
+                playable.SetTime(timeSec);
+                graph.Evaluate();
+                return WeaponHandPropsView.WeaponAxis(weapon, bow).normalized;
+            }
+            finally
+            {
+                graph.Destroy();
+            }
         }
     }
 }
