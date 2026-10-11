@@ -9,14 +9,19 @@ namespace Dovus.Game.Skills.RuleEngineV4
     {
         readonly ManifestationDirector _director;
         readonly RuleEngineV4CastHost _castHost;
+        readonly RuleEngineV4HeldCast _heldCast;
 
         public RuleEngineV4DirectorBridge(ManifestationDirector director)
         {
             _director = director;
             _castHost = new RuleEngineV4CastHost(director);
+            _heldCast = new RuleEngineV4HeldCast(director, _castHost);
         }
 
         internal RuleEngineV4CastHost CastHost => _castHost;
+
+        /// <summary>Basılı tutarak hedef seçme: 2. rünle çözülen kombo parmak kalkınca çıkar.</summary>
+        internal RuleEngineV4HeldCast HeldCast => _heldCast;
 
         public bool TryLaunch(
             PendingClosing ctx,

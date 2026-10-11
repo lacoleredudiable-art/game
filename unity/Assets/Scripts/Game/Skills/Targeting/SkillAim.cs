@@ -90,10 +90,31 @@ namespace Dovus.Game.Skills.Targeting
         {
             if (_host.Player == null || target == null || target == _host.Player)
                 return;
-            Vector3 to = target.position - _host.Player.position;
+            FacePoint(target.position);
+        }
+
+        public void FacePoint(Vector3 point)
+        {
+            if (_host.Player == null)
+                return;
+            Vector3 to = point - _host.Player.position;
             to.y = 0f;
             if (to.sqrMagnitude > 0.0001f)
                 _host.Player.rotation = Quaternion.LookRotation(to.normalized, Vector3.up);
+        }
+
+        /// <summary>v4 basılı tutma: tek seferlik seçilen hedefe dön; cast boyunca yüz ona kilitli.</summary>
+        public void FaceCastTarget(Transform target)
+        {
+            CastFacingTarget = target != _host.Player ? target : null;
+            FaceTarget(target);
+        }
+
+        /// <summary>v4 basılı tutma: seçilen yüzey noktasına dön.</summary>
+        public void FaceCastPoint(Vector3 point)
+        {
+            CastFacingTarget = null;
+            FacePoint(point);
         }
 
         public void CaptureBasicFacing()

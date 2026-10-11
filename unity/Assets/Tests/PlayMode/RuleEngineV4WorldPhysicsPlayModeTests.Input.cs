@@ -105,7 +105,7 @@ namespace Dovus.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator Input_SecondDot_LaunchesAndFlashesAtOnce_ThirdDotIgnored()
+        public IEnumerator Input_SecondDot_FlashesAtOnce_LaunchesOnRelease_ThirdDotIgnored()
         {
             ArrangeComboTarget();
             HexagonInputController input = InputController();
@@ -131,12 +131,14 @@ namespace Dovus.Tests.PlayMode
             {
                 SliceComboDots(input, out int verb, out int adj);
                 yield return DrawThroughDots(input, verb, adj, OtherDot(input, verb, adj));
-                input.Pointer.EndPointer(cancelled: false);
                 Assert.That(done, Has.Count.EqualTo(1), "2. noktada kombo çözülmedi");
                 Assert.That(done[0].Phase, Is.EqualTo(SentencePhase.Resolved));
                 Assert.That(Dots(done[0]), Is.EqualTo($"{verb}-{adj}"), "kombo 2 kalmalı");
-                Assert.That(runningAtResolve, Is.True, "skill çözüm anında çıkmadı");
+                Assert.That(runningAtResolve, Is.False, "skill parmak kalkmadan çıktı");
                 Assert.That(flashesAtResolve, Is.EqualTo(1), "harf flaşı çözüm anında yanmadı");
+                input.Pointer.EndPointer(cancelled: false);
+                Assert.That(_cast.IsRunning, Is.True, "skill parmak kalkınca çıkmadı");
+                Assert.That(runes.PlayCount - flashesBefore, Is.EqualTo(1), "harf flaşı iki kez yandı");
 
                 float end = Time.realtimeSinceStartup + InputSettleSec;
                 while (Time.realtimeSinceStartup < end)

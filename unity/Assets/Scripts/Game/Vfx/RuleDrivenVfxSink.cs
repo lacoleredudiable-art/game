@@ -26,11 +26,24 @@ namespace Dovus.Game.Vfx
 
         public static void BeginSkill(Transform actor, in SkillResolution skill, EquipmentItem weapon)
         {
-            string key = weapon != null
+            BeginSkill(actor, skill, WeaponKey(weapon));
+        }
+
+        /// <summary>v4 basılı tutma: yalnız harf flaşı, 2. rün konduğu an.</summary>
+        public static void FlashRunes(Transform actor, in SkillResolution skill, EquipmentItem weapon)
+        {
+            Resolve(actor)?.FlashRunes(skill, WeaponKey(weapon));
+        }
+
+        public static void ClearRunePreflash(Transform actor)
+        {
+            Resolve(actor)?.ClearRunePreflash();
+        }
+
+        static string WeaponKey(EquipmentItem weapon) =>
+            weapon != null
                 ? (string.IsNullOrEmpty(weapon.AnimationsKey) ? weapon.Id : weapon.AnimationsKey)
                 : string.Empty;
-            BeginSkill(actor, skill, key);
-        }
 
         /// <summary>Teslim isabeti (motion hit, HasarVer, impact anim event).</summary>
         public static void NotifyHit(Transform actor, Vector3 hitOrigin, Vector3 hitDir)

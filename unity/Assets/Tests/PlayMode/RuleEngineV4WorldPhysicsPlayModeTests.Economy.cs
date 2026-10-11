@@ -30,19 +30,11 @@ namespace Dovus.Tests.PlayMode
             string key = RuleEngineV4CastEconomy.ComboKey(verb, adj);
 
             float before = _cast.Economy.Mana(NowMs);
-            double castMs = 0;
-            void OnResolved(Dovus.Core.Grammar.CompletedSentence s) => castMs = NowMs;
-            input.Engine.SentenceCompleted += OnResolved;
-            try
-            {
-                yield return DrawThroughDots(input, verbDot, adjDot);
-            }
-            finally
-            {
-                input.Engine.SentenceCompleted -= OnResolved;
-            }
+            yield return DrawThroughDots(input, verbDot, adjDot);
+            Assert.That(_cast.Economy.Mana(NowMs), Is.GreaterThanOrEqualTo(before - ManaTol), "parmak kalkmadan mana harcandı");
+            // Skill parmak kalkınca çıkar: bekleme o an başlar.
+            double castMs = NowMs;
             input.Pointer.EndPointer(cancelled: false);
-            Assert.That(castMs, Is.GreaterThan(0), "kombo çözülmedi");
             Assert.That(_cast.IsRunning, Is.True, "skill çıkmadı");
             Assert.That(_cast.Economy.Mana(castMs), Is.EqualTo(before - EconomyScale.ManaCostPerSkill).Within(ManaTol), "mana harcanmadı");
             Assert.That(_cast.Economy.CooldownRemainingSec(key, castMs), Is.EqualTo(EconomyScale.CooldownSec).Within(ManaTol),

@@ -44,6 +44,15 @@ namespace Dovus.Game.Casting
         /// <summary>İkinci rün hâlâ basılıyken yükleme fazı bekler.</summary>
         public bool SkillFingerHeld => _session.Mode == FingerMode.Drawing;
 
+        /// <summary>v4: kombo 2. rünle çözüldü, parmak hâlâ basılı — skill parmak kalkınca çıkar.</summary>
+        public bool SkillHeldForRelease => _session.Mode == FingerMode.Drawing && _session.StrokeClosedAtCap;
+
+        /// <summary>Çizim parmağının son ekran konumu.</summary>
+        public Vector2 PointerScreenPos => _session.LastPos;
+
+        /// <summary>Çizim parmağı kalktı (iptal dahil). Yalnız çizim modundaki dokunuşlar.</summary>
+        public event System.Action<SkillFingerRelease> SkillFingerReleased;
+
         /// <summary>Q tuşu ve dokunmatik silah düğmesi: silah değiştir (K3: Küre'de de).</summary>
         public event System.Action WeaponSwapRequested;
 
@@ -305,7 +314,8 @@ namespace Dovus.Game.Casting
 
             bool isDodging = _session.Dodge != null && _session.Dodge.IsActive(worldMs);
             bool isCasting = _session.IsCasting != null && _session.IsCasting();
-            bool isDrawing = _session.Engine != null && _session.Engine.State.Phase == SentencePhase.Building;
+            bool isDrawing = (_session.Engine != null && _session.Engine.State.Phase == SentencePhase.Building)
+                || SkillHeldForRelease;
             bool isRecovering = _session.Engine != null && _session.Engine.State.Phase == SentencePhase.Recovering;
 
             _session.PlayerStates.SyncWorld(
@@ -350,6 +360,7 @@ namespace Dovus.Game.Casting
             _session.RaiseWeaponSwapRequested = () => WeaponSwapRequested?.Invoke();
             _session.RaiseOrbCommandRequested = () => OrbCommandRequested?.Invoke();
             _session.RaiseSkillCancelledByDodge = () => SkillCancelledByDodge?.Invoke();
+            _session.RaiseSkillFingerReleased = release => SkillFingerReleased?.Invoke(release);
 
             _feedback = new CastFeedback(_session);
             _gate = new CastGate(_session, _feedback);

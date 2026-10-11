@@ -27,6 +27,8 @@ namespace Dovus.Core.RuleEngineV4
         public const float KontrolDurationSec = 1.5f;
         public const float KorumaYogunBlockSec = 0.45f;
         public const float TetikliWaitSec = 5f;
+        /// <summary>hold_to_target_sec yedeği (JSON 0,2).</summary>
+        public const float HoldToTargetSec = 0.2f;
         public const float IsaretUseRangeM = 25f;
         public const float YansitmaRatio = 0.85f;
         public const float IsaretLifeSec = 20f;
