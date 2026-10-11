@@ -6,16 +6,16 @@ namespace Dovus.Game.Skills.RuleEngineV4
     /// MarkOnly yüzeydeki sabit işaret: çarpma noktasında, çapalı (itilmez, hedeflenmez).
     /// Görünüm: yüzey normaline hizalı halka decal, sahibin renginde.
     /// </summary>
-    public sealed class RuleEngineV4SurfaceMark : MonoBehaviour
+    public sealed class RuleEngineV4SurfaceMarkHost : MonoBehaviour
     {
         Material _material;
 
-        public RuleEngineV4MarkOnlySurface Surface { get; private set; }
+        public RuleEngineV4MarkOnlySurfaceHost Surface { get; private set; }
         public Vector3 Normal { get; private set; }
         public Color OwnerColor { get; private set; }
         public LineRenderer Decal { get; private set; }
 
-        public void Configure(RuleEngineV4MarkOnlySurface surface, Vector3 normal, Color ownerColor)
+        public void Configure(RuleEngineV4MarkOnlySurfaceHost surface, Vector3 normal, Color ownerColor)
         {
             Surface = surface;
             Normal = normal.normalized;

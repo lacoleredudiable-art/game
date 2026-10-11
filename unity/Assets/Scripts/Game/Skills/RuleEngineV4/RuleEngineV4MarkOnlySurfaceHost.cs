@@ -6,7 +6,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
     /// Sütun / dış duvar (fizik) yüzeyi: yalnız işaret konur (RuleEngineV4MarkOnlyRules).
     /// TargetableHost değildir; hasar, şifa ve otomatik hedef seçimi onu görmez.
     /// </summary>
-    public sealed class RuleEngineV4MarkOnlySurface : MonoBehaviour
+    public sealed class RuleEngineV4MarkOnlySurfaceHost : MonoBehaviour
     {
     }
 }

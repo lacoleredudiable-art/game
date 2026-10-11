@@ -197,7 +197,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             if (best < 0)
                 return false;
             RaycastHit hit = _castHits[best];
-            var surface = hit.collider.GetComponentInParent<RuleEngineV4MarkOnlySurface>();
+            var surface = hit.collider.GetComponentInParent<RuleEngineV4MarkOnlySurfaceHost>();
             if (surface == null)
                 return false;
             aim = new RuleEngineV4SurfaceAim(surface, hit.point, hit.normal, hit.distance);

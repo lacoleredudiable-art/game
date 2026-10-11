@@ -27,7 +27,7 @@ namespace Dovus.Tests.PlayMode
         static readonly Vector3 AimDir = Vector3.forward;
         static readonly Vector3 AimSide = Vector3.right;
 
-        RuleEngineV4SurfaceMark _surfaceMark;
+        RuleEngineV4SurfaceMarkHost _surfaceMark;
 
         static readonly int[] GlyphSliceRunes = { 1, 2, 3, 4, 6, 9 };
         static readonly int[] GlyphSliceVerbCells = { 0, 10, 8, 11, 6, 9 };
@@ -106,7 +106,7 @@ namespace Dovus.Tests.PlayMode
         public IEnumerator MarkOnly_Column_NineNineThenThreeNine_PullsToPoint()
         {
             yield return CastMarkOnColumn();
-            RuleEngineV4SurfaceMark mark = _surfaceMark;
+            RuleEngineV4SurfaceMarkHost mark = _surfaceMark;
             RuleEngineV4SliceArenaColumn col = ArenaSpec.Columns[0];
             Vector3 center = ColumnCenter();
             Vector3 point = mark.transform.position;
@@ -120,7 +120,7 @@ namespace Dovus.Tests.PlayMode
         public IEnumerator MarkOnly_Wall_NineNineThenThreeNine_PullsToPoint()
         {
             yield return CastMarkOnWall();
-            RuleEngineV4SurfaceMark mark = _surfaceMark;
+            RuleEngineV4SurfaceMarkHost mark = _surfaceMark;
             float r = ArenaSpec.OuterWallCollisionRadiusM;
             Assert.That(Mathf.Abs(Vector3.Dot(mark.transform.position, AimSide)), Is.LessThan(PosTolM), "işaret nişan çizgisinde değil");
             Assert.That(Vector3.Dot(mark.transform.position, AimDir), Is.LessThan(r), "işaret 18 m duvarın dışında");
@@ -202,7 +202,7 @@ namespace Dovus.Tests.PlayMode
             }
         }
 
-        void AssertDecal(RuleEngineV4SurfaceMark mark, Vector3 surfaceNormal)
+        void AssertDecal(RuleEngineV4SurfaceMarkHost mark, Vector3 surfaceNormal)
         {
             LineRenderer decal = mark.Decal;
             Assert.That(decal, Is.Not.Null, "işaret decal'ı yok");
@@ -234,7 +234,7 @@ namespace Dovus.Tests.PlayMode
 
             Assert.That(_cast.LastSurfaceAim.IsValid, Is.False, "18–22 m halkasına nişan alındı");
             Assert.That(_cast.Marks.SurfaceMarkCount, Is.EqualTo(0), "halkaya işaret kondu");
-            Assert.That(Object.FindObjectsByType<RuleEngineV4SurfaceMark>(), Is.Empty, "halkada işaret nesnesi var");
+            Assert.That(Object.FindObjectsByType<RuleEngineV4SurfaceMarkHost>(), Is.Empty, "halkada işaret nesnesi var");
             Assert.That(_cast.LastFocus, Is.SameAs(_allies[0]), "işaret menzildeki dosta gitmedi");
         }
 
@@ -273,7 +273,7 @@ namespace Dovus.Tests.PlayMode
             Assert.That(picked, Is.Empty, "hasar/şifa statik yüzeyi seçti: " + string.Join(", ", picked));
         }
 
-        IEnumerator PullToSurfaceMark(RuleEngineV4SurfaceMark mark, Vector3 from, Vector3 facing)
+        IEnumerator PullToSurfaceMark(RuleEngineV4SurfaceMarkHost mark, Vector3 from, Vector3 facing)
         {
             Vector3 point = mark.transform.position;
             Place(_player, from);
@@ -295,12 +295,12 @@ namespace Dovus.Tests.PlayMode
                 $"oyuncu işaret noktasına gelmedi (mesafe {after:0.00} m, dash teması {contact:0.00} m)");
         }
 
-        RuleEngineV4SurfaceMark SingleSurfaceMark(Transform expectedSurface)
+        RuleEngineV4SurfaceMarkHost SingleSurfaceMark(Transform expectedSurface)
         {
-            RuleEngineV4SurfaceMark[] marks = Object.FindObjectsByType<RuleEngineV4SurfaceMark>();
+            RuleEngineV4SurfaceMarkHost[] marks = Object.FindObjectsByType<RuleEngineV4SurfaceMarkHost>();
             Assert.That(marks, Has.Length.EqualTo(1), "yüzey işareti sayısı");
             Assert.That(_cast.Marks.SurfaceMarkCount, Is.EqualTo(1), "kayıtlı yüzey işareti");
-            RuleEngineV4SurfaceMark mark = marks[0];
+            RuleEngineV4SurfaceMarkHost mark = marks[0];
             Assert.That(mark.Surface, Is.Not.Null, "işaretin yüzeyi yok");
             if (expectedSurface != null)
                 Assert.That(mark.Surface.transform, Is.SameAs(expectedSurface), "işaret yanlış yüzeyde");
@@ -312,8 +312,8 @@ namespace Dovus.Tests.PlayMode
 
         static bool IsMarkOnly(Transform t) =>
             t != null
-            && (t.GetComponentInParent<RuleEngineV4MarkOnlySurface>() != null
-                || t.GetComponent<RuleEngineV4SurfaceMark>() != null);
+            && (t.GetComponentInParent<RuleEngineV4MarkOnlySurfaceHost>() != null
+                || t.GetComponent<RuleEngineV4SurfaceMarkHost>() != null);
 
         DragonRuneFlashView RuneFlash()
         {

@@ -46,7 +46,7 @@ namespace Dovus.Game.Composition.Builders
                 var body = go.AddComponent<RuleEngineV4PhysicsBodyHost>();
                 body.WeightTier = RuleEngineV4WeightTier.Anchored;
                 body.BodyRadiusM = r;
-                go.AddComponent<RuleEngineV4MarkOnlySurface>();
+                go.AddComponent<RuleEngineV4MarkOnlySurfaceHost>();
                 var renderer = go.GetComponent<Renderer>();
                 if (renderer != null)
                     renderer.material.color = new Color(0.45f, 0.42f, 0.38f);
@@ -85,7 +85,7 @@ namespace Dovus.Game.Composition.Builders
                 var body = seg.AddComponent<RuleEngineV4PhysicsBodyHost>();
                 body.WeightTier = RuleEngineV4WeightTier.Anchored;
                 body.BodyRadiusM = thickness * 0.5f;
-                seg.AddComponent<RuleEngineV4MarkOnlySurface>();
+                seg.AddComponent<RuleEngineV4MarkOnlySurfaceHost>();
                 var renderer = seg.GetComponent<Renderer>();
                 if (renderer != null)
                     renderer.enabled = false;
