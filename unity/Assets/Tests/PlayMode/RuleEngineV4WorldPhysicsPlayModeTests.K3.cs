@@ -66,8 +66,49 @@ namespace Dovus.Tests.PlayMode
             AnimationBridge bridge = _md.AnimationBridge;
             foreach (int adj in RuleEngineV4Slice.Runes)
                 yield return CastAndPlayOut(3, adj, SwordDashClip, anim, bridge);
-            // Kilic_ATIL olay taşımıyor; olaylı Kilic_VUR da alıcıyı sınar.
             yield return CastAndPlayOut(1, 2, SwordStrikeClip, anim, bridge);
+            Assert.That(_errors, Is.Empty, string.Join("\n", _errors));
+        }
+
+        /// <summary>Kılıç ATIL: kök XZ pose'a gömülmez; kalça oyuncu nesnesinden ayrılmaz.</summary>
+        const float DashHipMaxOffsetM = 0.1f;
+        const float ClipActiveWeight = 0.5f;
+
+        [UnityTest]
+        public IEnumerator K3_SwordDash_HipsStayOnPlayer()
+        {
+            FreezeBoss();
+            Equip(Kilic);
+            Animator anim = PlayerAnimator();
+            Assert.That(anim.applyRootMotion, Is.False, "oyuncu Animator'ında applyRootMotion açık");
+            Transform hips = anim.GetBoneTransform(HumanBodyBones.Hips);
+            _label = "3-1 kılıç ATIL";
+            Arrange(Vector3.right);
+            Place(_minions[0].transform, Origin + Vector3.right * 4f);
+            Physics.SyncTransforms();
+            Assert.That(_cast.TryLaunchCombo(3, 1, out _), Is.True, $"{_label} cast edilmedi");
+            AnimationClip clip = anim.runtimeAnimatorController.animationClips.First(c => c.name == SwordDashClip);
+            float maxM = 0f;
+            int frames = 0;
+            float end = Time.realtimeSinceStartup + CastTimeoutSec;
+            while (Time.realtimeSinceStartup < end)
+            {
+                yield return new WaitForEndOfFrame();
+                if (!anim.GetCurrentAnimatorClipInfo(0).Any(c => c.clip == clip && c.weight > ClipActiveWeight))
+                {
+                    if (frames > 0)
+                        break;
+                    continue;
+                }
+                frames++;
+                Vector3 d = hips.position - _player.position;
+                d.y = 0f;
+                maxM = Mathf.Max(maxM, d.magnitude);
+            }
+            Debug.Log($"[k3kanit] ATIL kalça-oyuncu en büyük yatay uzaklık={maxM:0.000} m kare={frames}");
+            Assert.That(frames, Is.GreaterThan(0), $"{SwordDashClip} oynamadı");
+            Assert.That(maxM, Is.LessThanOrEqualTo(DashHipMaxOffsetM), $"ATIL kalçası oyuncudan {maxM:0.000} m kaydı");
+            yield return WaitUntilIdle();
             Assert.That(_errors, Is.Empty, string.Join("\n", _errors));
         }
 

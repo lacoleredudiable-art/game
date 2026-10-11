@@ -219,7 +219,11 @@ namespace Dovus.Game.Editor
             clip.loopTime = clipName.StartsWith(LoopPrefix, StringComparison.Ordinal);
             clip.lockRootRotation = true;
             clip.lockRootHeightY = true;
-            clip.lockRootPositionXZ = true;
+            // Bake Into Pose kapalı + Based Upon Center of Mass: klibin ileri koşusu kökte kalır; oyuncuda
+            // applyRootMotion kapalı olduğundan atılışı yalnız hareket kalıbı taşır.
+            clip.lockRootPositionXZ = !row.RootXzFromCenterOfMass;
+            if (row.RootXzFromCenterOfMass)
+                clip.keepOriginalPositionXZ = false;
             clip.keepOriginalOrientation = true;
             clip.keepOriginalPositionY = true;
             clip.events = BuildEvents(row, clip.lastFrame - clip.firstFrame);
@@ -468,8 +472,10 @@ namespace Dovus.Game.Editor
             public readonly float? TrailOnSec;
             public readonly float? TrailOffSec;
             public readonly float? EjderSec;
+            /// <summary>kok_xz = kutle_merkezi: kök XZ pose'a gömülmez, dayanak kütle merkezi.</summary>
+            public readonly bool RootXzFromCenterOfMass;
 
-            public ClipRow(int first, int last, int impact, float? trailOn, float? trailOff, float? ejder)
+            public ClipRow(int first, int last, int impact, float? trailOn, float? trailOff, float? ejder, bool rootXzFromCenterOfMass)
             {
                 FirstFrame = first;
                 LastFrame = last;
@@ -477,8 +483,11 @@ namespace Dovus.Game.Editor
                 TrailOnSec = trailOn;
                 TrailOffSec = trailOff;
                 EjderSec = ejder;
+                RootXzFromCenterOfMass = rootXzFromCenterOfMass;
             }
         }
+
+        const string RootXzCenterOfMass = "kutle_merkezi";
 
         internal static Dictionary<string, ClipRow> ReadClipCsv()
         {
@@ -486,7 +495,7 @@ namespace Dovus.Game.Editor
             string[] head = lines[0].Split(';');
             int Col(string n) => Array.IndexOf(head, n);
             int cFirst = Col("bas_kare"), cLast = Col("son_kare"), cImpact = Col("impact_kare");
-            int cOn = Col("trail_on_sn"), cOff = Col("trail_off_sn"), cEjder = Col("ejder_sn");
+            int cOn = Col("trail_on_sn"), cOff = Col("trail_off_sn"), cEjder = Col("ejder_sn"), cRoot = Col("kok_xz");
             var rows = new Dictionary<string, ClipRow>(StringComparer.Ordinal);
             foreach (string line in lines.Skip(1))
             {
@@ -497,7 +506,8 @@ namespace Dovus.Game.Editor
                     int.Parse(f[cFirst], CultureInfo.InvariantCulture),
                     int.Parse(f[cLast], CultureInfo.InvariantCulture),
                     string.IsNullOrEmpty(f[cImpact]) ? 0 : int.Parse(f[cImpact], CultureInfo.InvariantCulture),
-                    Sec(f[cOn]), Sec(f[cOff]), Sec(f[cEjder]));
+                    Sec(f[cOn]), Sec(f[cOff]), Sec(f[cEjder]),
+                    cRoot >= 0 && f[cRoot] == RootXzCenterOfMass);
             }
             return rows;
         }
