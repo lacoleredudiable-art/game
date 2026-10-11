@@ -46,6 +46,7 @@ namespace Dovus.Game.Composition.Builders
                 var body = go.AddComponent<RuleEngineV4PhysicsBodyHost>();
                 body.WeightTier = RuleEngineV4WeightTier.Anchored;
                 body.BodyRadiusM = r;
+                go.AddComponent<RuleEngineV4MarkOnlySurfaceHost>();
                 var renderer = go.GetComponent<Renderer>();
                 if (renderer != null)
                     renderer.material.color = new Color(0.45f, 0.42f, 0.38f);
@@ -84,6 +85,7 @@ namespace Dovus.Game.Composition.Builders
                 var body = seg.AddComponent<RuleEngineV4PhysicsBodyHost>();
                 body.WeightTier = RuleEngineV4WeightTier.Anchored;
                 body.BodyRadiusM = thickness * 0.5f;
+                seg.AddComponent<RuleEngineV4MarkOnlySurfaceHost>();
                 var renderer = seg.GetComponent<Renderer>();
                 if (renderer != null)
                     renderer.enabled = false;
@@ -128,12 +130,15 @@ namespace Dovus.Game.Composition.Builders
             {
                 RuleEngineV4SliceArenaCocoon spec = arena.Cocoons[i];
                 float r = Mathf.Max(RuleEngineV4SliceArenaBuilderDefaults.MinCocoonRadiusFloorM, spec.RadiusM);
-                var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                // Kapsül çapından kısa olamaz.
+                float h = Mathf.Max(r * 2f, spec.HeightM);
+                var go = GameObject.CreatePrimitive(PrimitiveType.Capsule);
                 go.name = $"ArenaCocoon{i + 1}";
                 go.transform.SetParent(cocoRoot.transform, false);
-                go.transform.position = new Vector3(spec.XM, r, spec.ZM);
-                go.transform.localScale = Vector3.one * (r * 2f);
-                var col = go.GetComponent<SphereCollider>();
+                go.transform.position = new Vector3(spec.XM, h * 0.5f, spec.ZM);
+                // Birincil kapsül: yarıçap 0,5, yükseklik 2 (yerel).
+                go.transform.localScale = new Vector3(r * 2f, h * 0.5f, r * 2f);
+                var col = go.GetComponent<CapsuleCollider>();
                 col.isTrigger = true;
                 var body = go.AddComponent<RuleEngineV4PhysicsBodyHost>();
                 body.WeightTier = RuleEngineV4WeightTier.Anchored;

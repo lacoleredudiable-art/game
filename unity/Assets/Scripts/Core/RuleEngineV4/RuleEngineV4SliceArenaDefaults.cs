@@ -15,6 +15,7 @@ namespace Dovus.Core.RuleEngineV4
         public const float Cocoon2XM = 12f;
         public const float Cocoon2ZM = -6f;
         public const float CocoonRadiusM = 0.6f;
+        public const float CocoonHeightM = 1.8f;
         public const int CocoonMaxHp = 400;
         public const float OuterWallCollisionRadiusM = 18f;
         public const float OuterWallVisualOuterRadiusM = 22f;

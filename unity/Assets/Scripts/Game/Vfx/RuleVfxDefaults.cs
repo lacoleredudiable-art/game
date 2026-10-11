@@ -9,6 +9,8 @@ namespace Dovus.Game.Vfx
         /// <summary>Resources yolları (efekt-motoru §3.4 silüet, §1.1 glif).</summary>
         public const string SilhouetteAtlasResource = "Vfx/Ejder/Ejder_Siluet_Atlas";
         public const string GlyphAtlasResource = "Vfx/Ejder/Ejder_Glif_Atlas";
+        /// <summary>Atlas hücre sırası (kod adına göre alfabetik); rün → ad eşlemesi kural-motoru-v4.json rune_glyphs.</summary>
+        public const string GlyphOrderResource = "Vfx/Ejder/Ejder_Glif_Sirasi";
 
         /// <summary>Silüet atlası 4×2 hücre: üst satır A B C D, alt satır E F G H.</summary>
         public const int SilhouetteAtlasCols = 4;

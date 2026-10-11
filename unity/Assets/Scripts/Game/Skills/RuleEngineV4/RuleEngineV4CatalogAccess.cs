@@ -5,6 +5,8 @@ namespace Dovus.Game.Skills.RuleEngineV4
 {
     public sealed class RuleEngineV4CatalogAccess
     {
+        public const string JsonResource = "RuleEngineV4/kural-motoru-v4";
+
         RuleEngineV4Planner _planner;
         RuleEngineV4Catalog _catalog;
 
@@ -30,7 +32,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
         {
             if (_planner != null)
                 return;
-            TextAsset json = Resources.Load<TextAsset>("RuleEngineV4/kural-motoru-v4");
+            TextAsset json = Resources.Load<TextAsset>(JsonResource);
             if (json == null || string.IsNullOrWhiteSpace(json.text))
                 throw new System.InvalidOperationException("RuleEngineV4/kural-motoru-v4.json yok.");
             _catalog = RuleEngineV4Catalog.FromJson(json.text);

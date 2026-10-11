@@ -150,9 +150,9 @@ namespace Dovus.Tests.PlayMode
             Assert.That(tex.width, Is.EqualTo(2048), "glif atlası genişlik");
             Assert.That(tex.height, Is.EqualTo(768), "glif atlası yükseklik");
             Assert.That(runes.AdjectiveSprite.texture, Is.SameAs(tex));
-            // 0 = sol üst; fiil rün 3 → glif 2 (sütun 2, satır 0), sıfat rün 1 → glif 12 (sütun 4, satır 1).
-            Assert.That(runes.VerbSprite.rect, Is.EqualTo(new Rect(512f, 512f, 256f, 256f)), "fiil glif hücresi");
-            Assert.That(runes.AdjectiveSprite.rect, Is.EqualTo(new Rect(1024f, 256f, 256f, 256f)), "sıfat glif hücresi");
+            // 0 = sol üst; fiil rün 3 = SHEV → glif 8 (sütun 0, satır 1), sıfat rün 1 = VORN → glif 22 (sütun 6, satır 2).
+            Assert.That(runes.VerbSprite.rect, Is.EqualTo(new Rect(0f, 256f, 256f, 256f)), "fiil glif hücresi");
+            Assert.That(runes.AdjectiveSprite.rect, Is.EqualTo(new Rect(1536f, 0f, 256f, 256f)), "sıfat glif hücresi");
             Assert.That(_errors, Is.Empty, string.Join("\n", _errors));
         }
 

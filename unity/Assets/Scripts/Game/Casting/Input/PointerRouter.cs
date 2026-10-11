@@ -182,7 +182,7 @@ namespace Dovus.Game.Casting.Input
 
         public bool IsStickHalf(Vector2 pos) => !HexagonPointerHits.IsDrawHalf(pos, _s.Tuning);
 
-        void BeginPointer(Vector2 pos)
+        internal void BeginPointer(Vector2 pos)
         {
             _s.PressOrigin = pos;
             _s.LastPos = pos;
@@ -222,7 +222,7 @@ namespace Dovus.Game.Casting.Input
             _stroke.BeginStroke(pos);
         }
 
-        void MovePointer(Vector2 pos)
+        internal void MovePointer(Vector2 pos)
         {
             if (_s.Mode == FingerMode.None)
                 return;
@@ -248,11 +248,17 @@ namespace Dovus.Game.Casting.Input
             _stroke.FeedStroke(pos);
         }
 
-        void EndPointer(bool cancelled)
+        internal void EndPointer(bool cancelled)
         {
             double heldSec = (HexagonPointerHits.NowRealMs() - _s.PressRealMs) / Units.SecToMs;
             if (_s.Mode == FingerMode.Drawing)
+            {
                 _stroke.FinishDrawingStroke(cancelled);
+                if (!cancelled && _s.Engine != null
+                    && Dovus.Core.RuleEngineV4.RuleEngineV4Feature.CenterReleaseAbortsSentence(
+                        HexagonPointerHits.HitCenter(_s.LastPos, _s.Tuning), _s.Engine.State))
+                    _s.Engine.Abort();
+            }
 
             if (_s.Mode == FingerMode.CenterPending)
             {

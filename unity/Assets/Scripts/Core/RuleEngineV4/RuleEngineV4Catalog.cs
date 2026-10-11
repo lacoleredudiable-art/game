@@ -32,6 +32,7 @@ namespace Dovus.Core.RuleEngineV4
         public RuleEngineV4WorldPhysics WorldPhysics { get; }
         public RuleEngineV4SkillAnimCatalog SkillAnim { get; }
         public RuleEngineV4SliceArena SliceArena { get; }
+        public IReadOnlyList<int> SliceRunes { get; private set; } = Array.Empty<int>();
 
         public bool TryGetVerb(int id, out RuleEngineV4Verb verb) => _verbs.TryGetValue(id, out verb!);
         public bool TryGetAdjective(int id, out RuleEngineV4Adjective adjective) => _adjectives.TryGetValue(id, out adjective!);
@@ -48,10 +49,19 @@ namespace Dovus.Core.RuleEngineV4
             var catalog = new RuleEngineV4Catalog(
                 new RuleEngineV4Scale
                 {
-                    PlayerMaxHp = F(scaleNode["player_max_hp"], 1000),
-                    BaseDamage = F(scaleNode["base_damage"], 100),
-                    BaseHeal = F(scaleNode["base_heal"], 100),
+                    PlayerMaxHp = F(scaleNode["player_max_hp"], RuleEngineV4CatalogDefaults.PlayerMaxHp),
+                    AllyDummyMaxHp = F(scaleNode["ally_dummy_max_hp"], RuleEngineV4CatalogDefaults.AllyDummyMaxHp),
+                    LightCreatureMaxHp = F(scaleNode["light_creature_max_hp"], RuleEngineV4CatalogDefaults.LightCreatureMaxHp),
+                    BossMaxHp = F(scaleNode["boss_max_hp"], RuleEngineV4CatalogDefaults.BossMaxHp),
+                    BaseDamage = F(scaleNode["base_damage"], RuleEngineV4CatalogDefaults.BaseDamage),
+                    BaseHeal = F(scaleNode["base_heal"], RuleEngineV4CatalogDefaults.BaseHeal),
                     BasePoise = F(scaleNode["base_poise"], RuleEngineV4CatalogDefaults.BasePoise),
+                    BossPoiseBar = F(scaleNode["boss_poise_bar"], RuleEngineV4CatalogDefaults.BossPoiseBar),
+                    ManaPool = F(scaleNode["mana_pool"], RuleEngineV4CatalogDefaults.ManaPool),
+                    ManaRegenPerSec = F(scaleNode["mana_regen_per_sec"], RuleEngineV4CatalogDefaults.ManaRegenPerSec),
+                    ManaCostPerSkill = F(scaleNode["mana_cost_per_skill"], RuleEngineV4CatalogDefaults.ManaCostPerSkill),
+                    CooldownSec = F(scaleNode["cooldown_sec"], RuleEngineV4CatalogDefaults.CooldownSec),
+                    FizzleCooldownFrac = F(scaleNode["fizzle_cooldown_frac"], RuleEngineV4CatalogDefaults.FizzleCooldownFrac),
                     RangeReferenceM = F(scaleNode["range_reference_m"], RuleEngineV4CatalogDefaults.RangeReferenceM),
                 },
                 new RuleEngineV4Globals
@@ -103,8 +113,22 @@ namespace Dovus.Core.RuleEngineV4
                 if (int.TryParse(kv.Key, NumberStyles.Integer, CultureInfo.InvariantCulture, out int id))
                     catalog._weapons[id] = ParseWeapon(kv.Value, id);
 
+            int[] sliceRunes = ParseRunes(root["slice_runes"]);
+            catalog.SliceRunes = sliceRunes;
+
             RuleEngineV4WorldPhysicsRuntime.Bind(catalog.WorldPhysics);
+            RuleEngineV4Slice.BindRunes(sliceRunes);
             return catalog;
+        }
+
+        static int[] ParseRunes(JsonValue node)
+        {
+            if (node.IsNull)
+                return Array.Empty<int>();
+            var runes = new List<int>();
+            foreach (JsonValue item in node.AsArray())
+                runes.Add(item.AsInt(0));
+            return runes.ToArray();
         }
 
         static RuleEngineV4WorldPhysics ParseWorldPhysics(JsonValue node)
@@ -140,6 +164,7 @@ namespace Dovus.Core.RuleEngineV4
                 Id = id,
                 Key = node["key"].AsString(),
                 Hostile = node["hostile"].AsBool(node["side"].AsString() == "hostile"),
+                MinComboLen = node["min_combo_len"].AsInt(RuleEngineV4CatalogDefaults.MinComboLen),
             };
 
         static RuleEngineV4Adjective ParseAdjective(JsonValue node, int id) =>

@@ -82,7 +82,7 @@ namespace Dovus.Game.Composition.Builders
             ctx.Ally.AddComponent<ActorGroundingController>();
             ctx.AllyDummyController = ctx.Ally.AddComponent<AllyDummyController>();
             var debugFlags = ctx.Runtime.DebugFlags;
-            ctx.AllyDummyController.Bind(playerHp, startRatio: debugFlags.StartHpRatio);
+            ctx.AllyDummyController.Bind(ctx.Host.AllyDummyHp(ctx.Assets), startRatio: debugFlags.StartHpRatio);
             ctx.AllyDummyController.BindTeam(ctx.TeamAccess);
 
             float bossSpawnZ = ActorsBuilderDefaults.BossSpawnZBaseM * Mathf.Max(1f, tuning.Arena.ArenaVisualScale * ActorsBuilderDefaults.BossSpawnZArenaScale);

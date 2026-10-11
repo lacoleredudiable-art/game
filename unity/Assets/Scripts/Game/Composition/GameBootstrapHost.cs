@@ -121,8 +121,21 @@ namespace Dovus.Game.Composition
             new DebugToolsBuilder().Build(ctx);
         }
 
+        RuleEngineV4Scale _ruleEngineV4Scale;
+
+        /// <summary>kural-motoru-v4.json scale bloğu; yalnız RuleEngineV4Feature.Enabled iken okunur.</summary>
+        internal RuleEngineV4Scale RuleEngineV4Scale =>
+            _ruleEngineV4Scale ??= new Skills.RuleEngineV4.RuleEngineV4CatalogAccess().Catalog.Scale;
+
+        internal int AllyDummyHp(AssetCatalog assets) =>
+            RuleEngineV4Feature.Enabled
+                ? Mathf.Max(1, Mathf.RoundToInt(RuleEngineV4Scale.AllyDummyMaxHp))
+                : ScaledPlayerHp(assets);
+
         internal int ScaledPlayerHp(AssetCatalog assets)
         {
+            if (RuleEngineV4Feature.Enabled)
+                return Mathf.Max(1, Mathf.RoundToInt(RuleEngineV4Scale.PlayerMaxHp));
             if (Data.ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
             {
                 float hp = BossCombatProfile.FromDocument(design.Document).PlayerMaxHp;
@@ -133,6 +146,8 @@ namespace Dovus.Game.Composition
 
         internal float ScaledBossHp(AssetCatalog assets, float tuningMaxHp)
         {
+            if (RuleEngineV4Feature.Enabled)
+                return Mathf.Max(1f, RuleEngineV4Scale.BossMaxHp);
             if (Data.ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
                 return Mathf.Max(1f, BossCombatProfile.FromDocument(design.Document).BossMaxHp);
             return Mathf.Max(1f, CombatScale.Magnitude(tuningMaxHp));

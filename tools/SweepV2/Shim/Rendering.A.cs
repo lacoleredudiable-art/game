@@ -186,7 +186,6 @@ namespace UnityEngine
 
         public Vector2 mainTextureScale { get; set; } = Vector2.one;
         public Vector2 mainTextureOffset { get; set; }
-
         public bool HasProperty(string name) => true;
         public bool HasProperty(int id) => true;
         public void SetColor(string name, Color c) => _props[name] = c;
@@ -209,8 +208,9 @@ namespace UnityEngine
         public Texture GetTexture(string name) => _props.TryGetValue(name, out object v) ? v as Texture : null;
         public Texture GetTexture(int id) => _props.TryGetValue("#" + id, out object v) ? v as Texture : null;
         public void SetTextureScale(string name, Vector2 scale) => _props[name + "_scale"] = scale;
-        public Vector2 GetTextureScale(string name) =>
-            _props.TryGetValue(name + "_scale", out object v) && v is Vector2 s ? s : Vector2.one;
+        public Vector2 GetTextureScale(string name) => _props.TryGetValue(name + "_scale", out object v) && v is Vector2 s ? s : Vector2.one;
+        public void SetTextureOffset(string name, Vector2 offset) => _props[name + "_offset"] = offset;
+        public Vector2 GetTextureOffset(string name) => _props.TryGetValue(name + "_offset", out object v) && v is Vector2 o ? o : Vector2.zero;
         public void EnableKeyword(string k) { }
         public void DisableKeyword(string k) { }
         public bool IsKeywordEnabled(string k) => false;

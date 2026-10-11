@@ -83,7 +83,8 @@ public sealed class MdCastPort : ICastPort<PendingClosing>, IBasicStrikePort<Pen
         }
 
         public bool TryBeginMotionTemplate(SkillResolution skill, PendingClosing ctx) =>
-            _md.TryBeginMotionTemplate(skill, ctx);
+            !(RuleEngineV4Feature.Enabled && RuleEngineV4Bridge.OwnsSkill(skill))
+            && _md.TryBeginMotionTemplate(skill, ctx);
 
         public void NoteSustainedCast(SkillResolution skill) => _md.NoteSustainedCast(skill);
 

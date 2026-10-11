@@ -137,9 +137,11 @@ namespace Dovus.Game.Skills.Flow
                 castMult /= atkSpd;
             recoverySec *= castMult;
 
-            double bangAt = _host.Clock.Director.WorldTimeMs
-                            + recoverySec * Units.SecToMs
-                            + _host.Combat.Feel.PostHitSilenceMs;
+            double bangAt = Dovus.Core.RuleEngineV4.RuleEngineV4Feature.LaunchOnResolve
+                ? _host.Clock.Director.WorldTimeMs
+                : _host.Clock.Director.WorldTimeMs
+                  + recoverySec * Units.SecToMs
+                  + _host.Combat.Feel.PostHitSilenceMs;
 
             _host.Pose?.BeginRecovery(recoverySec, _host.Clock.Director.WorldTimeMs);
             _host.PosedForRecovery = true;

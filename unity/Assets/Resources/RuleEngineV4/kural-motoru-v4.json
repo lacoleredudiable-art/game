@@ -2,11 +2,25 @@
   "version": "4.5-pr3",
   "feature_flag": "kural_motoru_v4",
   "slice_runes": [1, 2, 3, 4, 6, 9],
+  "rune_glyphs": {
+    "verbs": { "1": "AK", "2": "SOL", "3": "SHEV", "4": "THAL", "5": "KRAG", "6": "NETH", "7": "GHUL", "8": "DRAK", "9": "SIL", "10": "MIR", "11": "ORN", "12": "KHOR" },
+    "adjectives": { "1": "VORN", "2": "VIS", "3": "SKAR", "4": "KETH", "5": "BRAN", "6": "HRAK", "7": "TZEK", "8": "ULTH", "9": "ZUL", "10": "SHIR", "11": "JEV", "12": "ROTH" },
+    "_not": "sıfat 7,8,10,12 A-20 onayı bekliyor"
+  },
   "scale": {
     "player_max_hp": 1000,
+    "ally_dummy_max_hp": 1000,
+    "light_creature_max_hp": 400,
+    "boss_max_hp": 15000,
     "base_damage": 100,
-    "base_heal": 100,
-    "base_poise": 50,
+    "base_heal": 120,
+    "base_poise": 20,
+    "boss_poise_bar": 300,
+    "mana_pool": 100,
+    "mana_regen_per_sec": 10,
+    "mana_cost_per_skill": 25,
+    "cooldown_sec": 4,
+    "fizzle_cooldown_frac": 0.5,
     "range_reference_m": 6
   },
   "world_physics": {
@@ -67,7 +81,7 @@
     "9": { "id": 9, "key": "arindirma", "side": "friendly", "hostile": false },
     "10": { "id": 10, "key": "yansima", "side": "self", "hostile": false },
     "11": { "id": 11, "key": "cagirma", "side": "hostile", "hostile": true },
-    "12": { "id": 12, "key": "zaman", "side": "friendly", "hostile": false }
+    "12": { "id": 12, "key": "zaman", "side": "friendly", "hostile": false, "min_combo_len": 3 }
   },
   "adjectives": {
     "1": { "id": 1, "key": "yogun", "body": "weapon_delivery", "charge_on_hostile_only": true },
@@ -150,8 +164,8 @@
       { "x_m": 0, "z_m": -10, "radius_m": 1, "height_m": 3 }
     ],
     "cocoons": [
-      { "x_m": -12, "z_m": -6, "radius_m": 0.6, "max_hp": 400 },
-      { "x_m": 12, "z_m": -6, "radius_m": 0.6, "max_hp": 400 }
+      { "x_m": -12, "z_m": -6, "radius_m": 0.6, "height_m": 1.8, "max_hp": 400 },
+      { "x_m": 12, "z_m": -6, "radius_m": 0.6, "height_m": 1.8, "max_hp": 400 }
     ],
     "outer_wall_collision_radius_m": 18,
     "outer_wall_visual_inner_radius_m": 18,

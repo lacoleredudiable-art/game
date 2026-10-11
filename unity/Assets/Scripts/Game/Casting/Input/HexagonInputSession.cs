@@ -52,6 +52,7 @@ namespace Dovus.Game.Casting.Input
         public readonly float[] DotYs = new float[HexagonLayout.DotCount];
         public int StrokeFedFrame = -1;
         public int StrokeAccepted;
+        public bool StrokeClosedAtCap;
         public DrawFeedback.DenialKind StrokeDenial;
         public float StrokeLengthPx;
         public Vector2 StrokePrevPx;

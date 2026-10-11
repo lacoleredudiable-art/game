@@ -35,20 +35,51 @@ namespace Dovus.Core.RuleEngineV4
 
             if (resolution.Side == RuleEngineV4TargetSide.Hostile
                 || resolution.AutoProfileKey is "hostile_nearest" or "hostile_nearest_for_move" or "tetikli_nearest")
-                return PickNearestHostile(range, candidates);
+                return PickHostile(range, manualTargetSelected, manualTargetId, candidates);
 
             if (resolution.Side == RuleEngineV4TargetSide.Friendly)
                 return PickNearestFriendly(range, candidates, allowSelf: true);
 
-            return PickNearestHostile(range, candidates);
+            return PickHostile(range, manualTargetSelected, manualTargetId, candidates);
         }
 
-        public static RuleEngineV4CastContext ToCastContext(in RuleEngineV4TargetPick pick, int adjectiveId, bool hasUsableMark) =>
+        /// <summary>
+        /// Elle kilitli düşman müsait ve menzildeyse kazanır; değilse en yakın düşman (oto).
+        /// Odaklı ve işaret profilleri bu yoldan geçmez, kendi kurallarını uygular.
+        /// </summary>
+        static RuleEngineV4TargetPick PickHostile(
+            float rangeM,
+            bool manualTargetSelected,
+            int? manualTargetId,
+            IReadOnlyList<RuleEngineV4TargetCandidate> candidates)
+        {
+            if (manualTargetSelected && manualTargetId.HasValue)
+            {
+                for (int i = 0; i < candidates.Count; i++)
+                {
+                    RuleEngineV4TargetCandidate c = candidates[i];
+                    if (c.Id != manualTargetId.Value)
+                        continue;
+                    if (c.Available && c.IsHostileToCaster && c.DistanceM <= rangeM)
+                        return new RuleEngineV4TargetPick(true, false, c.Id, true, true);
+                    break;
+                }
+            }
+
+            return PickNearestHostile(rangeM, candidates);
+        }
+
+        public static RuleEngineV4CastContext ToCastContext(
+            in RuleEngineV4TargetPick pick,
+            int adjectiveId,
+            bool hasUsableMark,
+            int comboLength = RuleEngineV4CastContext.VerbAdjectiveComboLen) =>
             new(
                 hasValidTarget: pick.HasTarget,
                 targetInWeaponRange: pick.TargetInWeaponRange,
                 manualTargetSelected: pick.ManualTargetUsed,
-                hasUsableMark: hasUsableMark);
+                hasUsableMark: hasUsableMark,
+                comboLength: comboLength);
 
         public static bool AnyUsableMark(IReadOnlyList<RuleEngineV4TargetCandidate> candidates, float markUseRangeM)
         {

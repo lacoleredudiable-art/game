@@ -34,6 +34,8 @@ namespace Dovus.Game.Skills.RuleEngineV4
 
         public float BodyRadiusM()
         {
+            if (TryGetComponent(out CapsuleCollider capsule))
+                return capsule.radius;
             var col = GetComponent<SphereCollider>();
             return col != null ? col.radius : RuleEngineV4SliceArenaDefaults.CocoonRadiusM;
         }

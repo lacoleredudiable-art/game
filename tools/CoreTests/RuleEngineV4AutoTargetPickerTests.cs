@@ -89,6 +89,70 @@ public sealed class RuleEngineV4AutoTargetPickerTests
         Assert.That(pick.ManualTargetUsed, Is.False);
     }
 
+    static List<RuleEngineV4TargetCandidate> LockScene(float lockedDistanceM, bool lockedAvailable = true) =>
+        new()
+        {
+            new(3, true, 2f, true, false),
+            new(4, true, lockedDistanceM, lockedAvailable, false),
+        };
+
+    [Test]
+    public void ManualLock_InRange_WinsOverNearest()
+    {
+        RuleEngineV4TargetPick pick = RuleEngineV4AutoTargetPicker.Pick(
+            HostileNeed(), 1, 1, 6f, 6f, 25f, true, 4, LockScene(5f));
+        Assert.That(pick.TargetId, Is.EqualTo(4));
+        Assert.That(pick.TargetInWeaponRange, Is.True);
+        Assert.That(pick.ManualTargetUsed, Is.True);
+        Assert.That(RuleEngineV4AutoTargetPicker.ToCastContext(pick, 1, false).ManualTargetSelected, Is.True);
+    }
+
+    [Test]
+    public void ManualLock_OutOfRange_FallsBackToAuto()
+    {
+        RuleEngineV4TargetPick pick = RuleEngineV4AutoTargetPicker.Pick(
+            HostileNeed(), 1, 1, 6f, 6f, 25f, true, 4, LockScene(9f));
+        Assert.That(pick.TargetId, Is.EqualTo(3));
+        Assert.That(pick.ManualTargetUsed, Is.False);
+    }
+
+    [Test]
+    public void ManualLock_Unavailable_FallsBackToAuto()
+    {
+        RuleEngineV4TargetPick pick = RuleEngineV4AutoTargetPicker.Pick(
+            HostileNeed(), 1, 1, 6f, 6f, 25f, true, 4, LockScene(5f, lockedAvailable: false));
+        Assert.That(pick.TargetId, Is.EqualTo(3));
+        Assert.That(pick.ManualTargetUsed, Is.False);
+    }
+
+    [Test]
+    public void ManualLock_FriendlyId_NotUsedForHostilePick()
+    {
+        var list = new List<RuleEngineV4TargetCandidate>
+        {
+            new(3, true, 2f, true, false),
+            new(10, false, 1f, true, false),
+        };
+        RuleEngineV4TargetPick pick = RuleEngineV4AutoTargetPicker.Pick(
+            HostileNeed(), 1, 1, 6f, 6f, 25f, true, 10, list);
+        Assert.That(pick.TargetId, Is.EqualTo(3));
+        Assert.That(pick.ManualTargetUsed, Is.False);
+    }
+
+    [Test]
+    public void Odakli_LockedInRange_StillFollowsOwnRule()
+    {
+        var list = new List<RuleEngineV4TargetCandidate>
+        {
+            new(3, true, 5f, true, false, hpRatio: 0.2f),
+            new(4, true, 1f, true, false, hpRatio: 0.9f),
+        };
+        RuleEngineV4TargetPick pick = RuleEngineV4AutoTargetPicker.Pick(
+            OdakliHostile(), 2, 1, 6f, 6f, 25f, true, 4, list);
+        Assert.That(pick.TargetId, Is.EqualTo(3), "Odaklı en düşük can");
+        Assert.That(pick.ManualTargetUsed, Is.False);
+    }
+
     [Test]
     public void Odakli_Cagirma_PicksLowestHpHostile()
     {

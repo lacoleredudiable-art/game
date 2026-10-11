@@ -34,19 +34,31 @@ namespace Dovus.Game.Skills.RuleEngineV4
 
         public bool IsRunning => _active != null;
 
-        public void Start(CommandPlan plan, Transform focus, System.Action<float> onComplete)
+        public void Start(
+            CommandPlan plan,
+            Transform focus,
+            System.Action<float> onComplete,
+            RuleEngineV4SurfaceAim surfaceAim = default,
+            System.Action onFizzle = null)
         {
             if (_active != null)
                 _director.StopCoroutine(_active);
-            _active = _director.StartCoroutine(CoRun(plan, focus, onComplete));
+            _active = _director.StartCoroutine(CoRun(plan, focus, onComplete, surfaceAim, onFizzle));
         }
 
-        IEnumerator CoRun(CommandPlan plan, Transform focus, System.Action<float> onComplete)
+        /// <summary>onFizzle: mermi menzili bitene kadar kimseye değmedi (süre doldu).</summary>
+        IEnumerator CoRun(
+            CommandPlan plan,
+            Transform focus,
+            System.Action<float> onComplete,
+            RuleEngineV4SurfaceAim surfaceAim,
+            System.Action onFizzle)
         {
             float dealt = 0;
             Transform caster = _director.MechanicsPlayer;
             OnSureCommand timing = null;
             Transform missileHit = null;
+            bool missileFired = false;
             var delivery = new RuleEngineV4DeliveryState();
 
             foreach (PhysicsCommand cmd in plan.Commands)
@@ -78,6 +90,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
 
                 if (cmd is MermiFirlatCommand missile)
                 {
+                    missileFired = true;
                     yield return CoMissile(caster, focus, missile, hit =>
                     {
                         missileHit = hit;
@@ -149,8 +162,16 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 }
 
                 if (RuleEngineV4CommandAccess.TryMark(cmd, out float markLife))
-                    _director._castPort?.RuleEngineV4Bridge.PlaceMark(focus, markLife);
+                {
+                    if (surfaceAim.IsValid)
+                        _director._castPort?.RuleEngineV4Bridge.PlaceSurfaceMark(surfaceAim, markLife);
+                    else
+                        _director._castPort?.RuleEngineV4Bridge.PlaceMark(focus, markLife);
+                }
             }
+
+            if (missileFired && missileHit == null)
+                onFizzle?.Invoke();
 
             if (timing != null && timing.RecoverySec > 0)
                 yield return CoWaitWorld(timing.RecoverySec);

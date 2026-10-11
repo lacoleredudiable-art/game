@@ -3,16 +3,21 @@ namespace Dovus.Core.RuleEngineV4
     /// <summary>Katman 1 girdisi: hedef seçimi ve menzil (fizik-komutlari.md §1.2).</summary>
     public readonly struct RuleEngineV4CastContext
     {
+        /// <summary>Fiil + sıfat: iki rünlük kombo.</summary>
+        public const int VerbAdjectiveComboLen = 2;
+
         public RuleEngineV4CastContext(
             bool hasValidTarget,
             bool targetInWeaponRange,
             bool manualTargetSelected = false,
-            bool hasUsableMark = false)
+            bool hasUsableMark = false,
+            int comboLength = VerbAdjectiveComboLen)
         {
             HasValidTarget = hasValidTarget;
             TargetInWeaponRange = targetInWeaponRange;
             ManualTargetSelected = manualTargetSelected;
             HasUsableMark = hasUsableMark;
+            ComboLength = comboLength;
         }
 
         /// <summary>Otomatik veya manuel geçerli hedef var.</summary>
@@ -26,6 +31,9 @@ namespace Dovus.Core.RuleEngineV4
 
         /// <summary>25 m içinde kullanılabilir takım işareti (İşaretli, fiil ≠ Arındırma).</summary>
         public bool HasUsableMark { get; }
+
+        /// <summary>Çizilen kombonun rün (nokta) sayısı; fiilin min_combo_len'iyle kıyaslanır.</summary>
+        public int ComboLength { get; }
 
         /// <summary>Dilim testleri: geçerli hedef, menzilde, işaretli kombolar için işaret var.</summary>
         public static RuleEngineV4CastContext SliceDefault(int adjectiveRune) =>

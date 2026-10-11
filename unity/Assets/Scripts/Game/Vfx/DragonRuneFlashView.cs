@@ -1,4 +1,7 @@
+using System.Collections.Generic;
 using Dovus.Core.Presentation;
+using Dovus.Core.RuleEngineV4;
+using Dovus.Game.Skills.RuleEngineV4;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,11 +10,14 @@ namespace Dovus.Game.Vfx
     /// <summary>
     /// efekt-motoru §1.1: çizilen rün 0,2 s'de Ejderha Dili harfine oturur (fiil→sıfat),
     /// 0,3 s parlar. Glif atlası Resources'tan (8×3, 0 = sol üst); yoksa yer tutucu.
+    /// Hücre rün → kod adı → atlas sırası eşlemesinden gelir; adı olmayan harf gizlenir.
     /// </summary>
     public sealed class DragonRuneFlashView : MonoBehaviour
     {
         static bool _warnedMissingAtlas;
 
+        readonly HashSet<string> _warnedMissingGlyph = new();
+        RuleEngineV4GlyphMap _glyphMap;
         Canvas _canvas;
         Image _verb;
         Image _adj;
@@ -30,10 +36,21 @@ namespace Dovus.Game.Vfx
         public Texture2D GlyphAtlas => _atlas;
         public Sprite VerbSprite => _verb != null ? _verb.sprite : null;
         public Sprite AdjectiveSprite => _adj != null ? _adj.sprite : null;
+        public bool VerbVisible => _verb != null && _verb.enabled;
+        public bool AdjectiveVisible => _adj != null && _adj.enabled;
+        public int PlayCount { get; private set; }
+
+        /// <summary>Test / araç: kural-motoru-v4 + Ejder_Glif_Sirasi yerine verilen eşleme.</summary>
+        public RuleEngineV4GlyphMap GlyphMap
+        {
+            get => _glyphMap ??= LoadGlyphMap();
+            set => _glyphMap = value;
+        }
 
         public void Play(int verbRuneId, int adjectiveRuneId, Color coreColor)
         {
             EnsureUi();
+            PlayCount++;
             _snap = VfxPlanDefaults.RuneSnapSec;
             _glow = VfxPlanDefaults.RuneGlowSec;
             _age = 0f;
@@ -46,11 +63,34 @@ namespace Dovus.Game.Vfx
             _verbFrom = _verbTo + new Vector2(-RuleVfxArtDefaults.RuneFromOffsetX, RuleVfxArtDefaults.RuneFromOffsetY);
             _adjFrom = _adjTo + new Vector2(RuleVfxArtDefaults.RuneFromOffsetX, -RuleVfxArtDefaults.RuneAdjFromY);
 
-            ApplyCell(_verb, GlyphIndex(verbRuneId), coreColor);
-            ApplyCell(_adj, GlyphIndex(adjectiveRuneId) + RuleVfxArtDefaults.GlyphHueMod, coreColor);
-            _verb.enabled = true;
-            _adj.enabled = true;
+            RuleEngineV4GlyphMap map = GlyphMap;
+            bool verbOk = map.TryVerbCell(verbRuneId, out int verbCell);
+            bool adjOk = map.TryAdjectiveCell(adjectiveRuneId, out int adjCell);
+            if (verbOk)
+                ApplyCell(_verb, verbCell, RuneHue(verbRuneId), coreColor);
+            else
+                WarnMissingGlyph(RuleEngineV4GlyphDefaults.VerbPrefix, verbRuneId);
+            if (adjOk)
+                ApplyCell(_adj, adjCell, RuneHue(adjectiveRuneId), coreColor);
+            else
+                WarnMissingGlyph(RuleEngineV4GlyphDefaults.AdjectivePrefix, adjectiveRuneId);
+            _verb.enabled = verbOk;
+            _adj.enabled = adjOk;
             Layout(0f);
+        }
+
+        void WarnMissingGlyph(string prefix, int runeId)
+        {
+            if (!_warnedMissingGlyph.Add(prefix + runeId))
+                return;
+            Debug.LogWarning($"[DragonRuneFlash] {prefix}{runeId}: rune_glyphs / {RuleVfxDefaults.GlyphOrderResource} içinde glif yok; harf gizli.");
+        }
+
+        static RuleEngineV4GlyphMap LoadGlyphMap()
+        {
+            TextAsset json = Resources.Load<TextAsset>(RuleEngineV4CatalogAccess.JsonResource);
+            TextAsset order = Resources.Load<TextAsset>(RuleVfxDefaults.GlyphOrderResource);
+            return RuleEngineV4GlyphMap.FromJson(json != null ? json.text : null, order != null ? order.text : null);
         }
 
         void Update()
@@ -151,11 +191,10 @@ namespace Dovus.Game.Vfx
             return _cells[idx];
         }
 
-        void ApplyCell(Image img, int cell, Color core)
+        void ApplyCell(Image img, int cell, float hue, Color core)
         {
             int idx = Mathf.Clamp(cell, 0, RuleVfxArtDefaults.GlyphCellMaxIndex);
             img.sprite = Cell(idx);
-            float hue = (idx % RuleVfxArtDefaults.GlyphHueMod) / (float)RuleVfxArtDefaults.GlyphHueMod;
             Color tint = Color.HSVToRGB(hue, RuleVfxArtDefaults.RuneHueSat, 1f) * core;
             tint.a = 1f;
             img.color = tint;
@@ -170,8 +209,9 @@ namespace Dovus.Game.Vfx
             img.color = c;
         }
 
-        static int GlyphIndex(int runeId) =>
-            Mathf.Clamp(runeId <= 0 ? 0 : runeId - 1, 0, RuleVfxArtDefaults.GlyphHueMod - 1);
+        /// <summary>Ton rün kimliğinden (hücreden değil): atlas sırası değişse de görünen renk aynı kalır.</summary>
+        static float RuneHue(int runeId) =>
+            Mathf.Clamp(runeId - 1, 0, RuleVfxArtDefaults.GlyphHueMod - 1) / (float)RuleVfxArtDefaults.GlyphHueMod;
 
         void OnDestroy()
         {

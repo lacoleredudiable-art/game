@@ -3,7 +3,21 @@ namespace Dovus.Core.RuleEngineV4
     /// <summary>JSON yedek sayıları (kural-motoru-v4.json ile uyumlu; spec'te yok notu PR1).</summary>
     public static class RuleEngineV4CatalogDefaults
     {
-        public const float BasePoise = 50f;
+        public const float PlayerMaxHp = 1000f;
+        public const float AllyDummyMaxHp = 1000f;
+        public const float LightCreatureMaxHp = 400f;
+        public const float BossMaxHp = 15000f;
+        public const float BaseDamage = 100f;
+        public const float BaseHeal = 120f;
+        public const float BasePoise = 20f;
+        public const float BossPoiseBar = 300f;
+        public const float ManaPool = 100f;
+        public const float ManaRegenPerSec = 10f;
+        public const float ManaCostPerSkill = 25f;
+        public const float CooldownSec = 4f;
+        public const float FizzleCooldownFrac = 0.5f;
+        /// <summary>min_combo_len yoksa alt sınır yok.</summary>
+        public const int MinComboLen = 0;
         public const float RangeReferenceM = 6f;
         public const float YogunChargeSec = 0.35f;
         public const float YogunPowerMult = 1.35f;

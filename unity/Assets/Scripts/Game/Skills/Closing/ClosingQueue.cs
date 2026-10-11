@@ -38,6 +38,8 @@ namespace Dovus.Game.Skills.Closing
         {
             _host.EnsureSkillServices();
             _host.SentenceBridge.OnCompleted(sentence);
+            if (Dovus.Core.RuleEngineV4.RuleEngineV4Feature.LaunchOnResolve && _host.Clock != null)
+                TickPendingClosings(_host.Clock.Director.WorldTimeMs);
         }
 
         public void TickCastHold(double worldMs, ActorView visual, bool channelHeld, bool guardHeld)
