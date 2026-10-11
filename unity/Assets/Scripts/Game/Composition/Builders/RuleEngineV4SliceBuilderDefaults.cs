@@ -10,5 +10,7 @@ namespace Dovus.Game.Composition.Builders
         public const float Minion2Z = 7f;
         public const float Minion3Z = 8.5f;
         public const float Ally2SpawnX = 2.5f;
+        /// <summary>Bayrak kapalı + SliceScene: eski sabit can (bayrak açıkken scale.light_creature_max_hp).</summary>
+        public const int LegacyMinionMaxHp = 200;
     }
 }

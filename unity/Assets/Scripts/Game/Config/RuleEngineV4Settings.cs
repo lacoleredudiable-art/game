@@ -15,6 +15,5 @@ namespace Dovus.Game.Config
 
         public float SliceMinionRadiusM = 0.5f;
         public float SliceMinionHeightM = 1f;
-        public int SliceMinionMaxHp = 200;
     }
 }

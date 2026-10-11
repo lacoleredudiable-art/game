@@ -48,10 +48,18 @@ namespace Dovus.Core.RuleEngineV4
             var catalog = new RuleEngineV4Catalog(
                 new RuleEngineV4Scale
                 {
-                    PlayerMaxHp = F(scaleNode["player_max_hp"], 1000),
-                    BaseDamage = F(scaleNode["base_damage"], 100),
-                    BaseHeal = F(scaleNode["base_heal"], 100),
+                    PlayerMaxHp = F(scaleNode["player_max_hp"], RuleEngineV4CatalogDefaults.PlayerMaxHp),
+                    AllyDummyMaxHp = F(scaleNode["ally_dummy_max_hp"], RuleEngineV4CatalogDefaults.AllyDummyMaxHp),
+                    LightCreatureMaxHp = F(scaleNode["light_creature_max_hp"], RuleEngineV4CatalogDefaults.LightCreatureMaxHp),
+                    BossMaxHp = F(scaleNode["boss_max_hp"], RuleEngineV4CatalogDefaults.BossMaxHp),
+                    BaseDamage = F(scaleNode["base_damage"], RuleEngineV4CatalogDefaults.BaseDamage),
+                    BaseHeal = F(scaleNode["base_heal"], RuleEngineV4CatalogDefaults.BaseHeal),
                     BasePoise = F(scaleNode["base_poise"], RuleEngineV4CatalogDefaults.BasePoise),
+                    BossPoiseBar = F(scaleNode["boss_poise_bar"], RuleEngineV4CatalogDefaults.BossPoiseBar),
+                    ManaPool = F(scaleNode["mana_pool"], RuleEngineV4CatalogDefaults.ManaPool),
+                    ManaRegenPerSec = F(scaleNode["mana_regen_per_sec"], RuleEngineV4CatalogDefaults.ManaRegenPerSec),
+                    ManaCostPerSkill = F(scaleNode["mana_cost_per_skill"], RuleEngineV4CatalogDefaults.ManaCostPerSkill),
+                    CooldownSec = F(scaleNode["cooldown_sec"], RuleEngineV4CatalogDefaults.CooldownSec),
                     RangeReferenceM = F(scaleNode["range_reference_m"], RuleEngineV4CatalogDefaults.RangeReferenceM),
                 },
                 new RuleEngineV4Globals

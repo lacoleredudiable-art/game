@@ -6,6 +6,7 @@ using Dovus.Core.Casting;
 using Dovus.Core.Input;
 using Dovus.Core.Hud;
 using Dovus.Core.Passives;
+using Dovus.Core.RuleEngineV4;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using Dovus.Game.Boss;
@@ -242,7 +243,7 @@ namespace Dovus.Game.Actors
                 Shield = Board.ShieldRemaining + shortShield,
                 Invulnerable = BossStatusMath.DamageInvulnerable(Board.IsInvulnerable),
                 Poise = raw,
-                ScaleMagnitudes = true
+                ScaleMagnitudes = RuleEngineV4Feature.ScaleCombatMagnitudes
             });
             LastHitWasCrit = outcome.WasCrit;
             LastThreat = outcome.Threat;
@@ -259,7 +260,7 @@ namespace Dovus.Game.Actors
             float afterShield = outcome.Amount;
             if (outcome.ShieldAbsorbed > 0f)
                 DamageBlocked?.Invoke(outcome.ShieldAbsorbed);
-            float reflectBase = BossStatusMath.ReflectBase(afterShield, outcome.ShieldAbsorbed, scaled: true);
+            float reflectBase = BossStatusMath.ReflectBase(afterShield, outcome.ShieldAbsorbed, scaled: RuleEngineV4Feature.ScaleCombatMagnitudes);
             TryReflect(reflectBase);
             if (afterShield <= 0f) return;
             if (IncomingDamageRedirect != null)
@@ -305,7 +306,7 @@ namespace Dovus.Game.Actors
                 Heal = true,
                 HealPower = amount,
                 HealMultiplier = healMult,
-                ScaleMagnitudes = true
+                ScaleMagnitudes = RuleEngineV4Feature.ScaleCombatMagnitudes
             });
             LastThreat = healedOutcome.Threat;
             if (_playerVitals != null)

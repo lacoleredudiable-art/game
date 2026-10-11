@@ -10,5 +10,8 @@ namespace Dovus.Core.RuleEngineV4
 
         /// <summary>PR1: yalnız iskelet + test; canlı oyunda kapalı.</summary>
         public static bool Enabled { get; set; }
+
+        /// <summary>Bayrak açıkken can/hasar kural-motoru-v4.json scale'inde; CombatScale çarpanı uygulanmaz.</summary>
+        public static bool ScaleCombatMagnitudes => !Enabled;
     }
 }

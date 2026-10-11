@@ -52,9 +52,43 @@ public sealed class RuleEngineV4PlannerTests
     public void Scale_FromData_PlayerHp1000_BaseDamage100()
     {
         var catalog = RuleEngineV4Catalog.FromJson(File.ReadAllText(JsonPath()));
-        Assert.That(catalog.Scale.PlayerMaxHp, Is.EqualTo(1000));
-        Assert.That(catalog.Scale.BaseDamage, Is.EqualTo(100));
-        Assert.That(catalog.Scale.BaseHeal, Is.EqualTo(100));
+        RuleEngineV4Scale s = catalog.Scale;
+        Assert.That(s.PlayerMaxHp, Is.EqualTo(1000));
+        Assert.That(s.AllyDummyMaxHp, Is.EqualTo(1000));
+        Assert.That(s.LightCreatureMaxHp, Is.EqualTo(400));
+        Assert.That(s.BossMaxHp, Is.EqualTo(15000));
+        Assert.That(s.BaseDamage, Is.EqualTo(100));
+        Assert.That(s.BaseHeal, Is.EqualTo(120));
+        Assert.That(s.BasePoise, Is.EqualTo(20));
+        Assert.That(s.BossPoiseBar, Is.EqualTo(300));
+        Assert.That(s.ManaPool, Is.EqualTo(100));
+        Assert.That(s.ManaRegenPerSec, Is.EqualTo(10));
+        Assert.That(s.ManaCostPerSkill, Is.EqualTo(25));
+        Assert.That(s.CooldownSec, Is.EqualTo(4));
+    }
+
+    [Test]
+    public void Scale_HundredDamage_IsTenPercentOfPlayerHp()
+    {
+        RuleEngineV4Scale s = RuleEngineV4Catalog.FromJson(File.ReadAllText(JsonPath())).Scale;
+        Assert.That(s.BaseDamage / s.PlayerMaxHp, Is.EqualTo(0.1f).Within(1e-6f));
+    }
+
+    [Test]
+    public void Feature_ScaleCombatMagnitudes_OnlyWhenFlagOff()
+    {
+        bool was = RuleEngineV4Feature.Enabled;
+        try
+        {
+            RuleEngineV4Feature.Enabled = false;
+            Assert.That(RuleEngineV4Feature.ScaleCombatMagnitudes, Is.True, "bayrak kapalı: eski ölçek");
+            RuleEngineV4Feature.Enabled = true;
+            Assert.That(RuleEngineV4Feature.ScaleCombatMagnitudes, Is.False, "bayrak açık: ham sayı");
+        }
+        finally
+        {
+            RuleEngineV4Feature.Enabled = was;
+        }
     }
 
     [Test]

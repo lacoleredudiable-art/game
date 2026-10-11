@@ -9,9 +9,17 @@
   },
   "scale": {
     "player_max_hp": 1000,
+    "ally_dummy_max_hp": 1000,
+    "light_creature_max_hp": 400,
+    "boss_max_hp": 15000,
     "base_damage": 100,
-    "base_heal": 100,
-    "base_poise": 50,
+    "base_heal": 120,
+    "base_poise": 20,
+    "boss_poise_bar": 300,
+    "mana_pool": 100,
+    "mana_regen_per_sec": 10,
+    "mana_cost_per_skill": 25,
+    "cooldown_sec": 4,
     "range_reference_m": 6
   },
   "world_physics": {

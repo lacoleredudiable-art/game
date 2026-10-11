@@ -19,9 +19,11 @@ namespace Dovus.Game.Composition.Builders
 
             float r = Mathf.Max(RuleEngineV4SliceBuilderDefaults.MinRadiusFloorM, ctx.Tuning.RuleEngineV4.SliceMinionRadiusM);
             float h = Mathf.Max(RuleEngineV4SliceBuilderDefaults.MinHeightFloorM, ctx.Tuning.RuleEngineV4.SliceMinionHeightM);
-            int hp = Mathf.Max(1, ctx.Tuning.RuleEngineV4.SliceMinionMaxHp);
+            int hp = Mathf.Max(1, RuleEngineV4Feature.Enabled
+                ? Mathf.RoundToInt(ctx.Host.RuleEngineV4Scale.LightCreatureMaxHp)
+                : RuleEngineV4SliceBuilderDefaults.LegacyMinionMaxHp);
             float spawnMaxR = ctx.SpawnMaxR;
-            int playerHp = ctx.Host.ScaledPlayerHp(ctx.Assets);
+            int allyHp = ctx.Host.AllyDummyHp(ctx.Assets);
 
             SpawnMinion(
                 ctx,
@@ -66,7 +68,7 @@ namespace Dovus.Game.Composition.Builders
             ally2Hit.isTrigger = true;
             ctx.Ally2.AddComponent<ActorGroundingController>();
             ctx.AllyDummy2Controller = ctx.Ally2.AddComponent<AllyDummyController>();
-            ctx.AllyDummy2Controller.Bind(playerHp, startRatio: ctx.Runtime.DebugFlags.StartHpRatio);
+            ctx.AllyDummy2Controller.Bind(allyHp, startRatio: ctx.Runtime.DebugFlags.StartHpRatio);
             ctx.AllyDummy2Controller.BindTeam(ctx.TeamAccess);
 
             var ally2Target = ctx.Ally2.AddComponent<TargetableHost>();
