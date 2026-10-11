@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6c2265209240aa418657e8cc605b896, type: 3}
+  m_Name: ArenaVisualRegistry
+  m_EditorClassIdentifier: Dovus.Game::Dovus.Game.Arena.ArenaVisualRegistry
+  _models:
+  - Key: sutun
+    Model: {fileID: 919132149155446097, guid: a415fbe214f6c904b876e70e39860e84, type: 3}
+    KorOverlay: {fileID: 0}
+  - Key: koza
+    Model: {fileID: 919132149155446097, guid: ecbdddb8fe1b1d64597cf1c496d25bab, type: 3}
+    KorOverlay: {fileID: 2100000, guid: f5f2ed51b5c2d664cbffe2012cf11aec, type: 2}
+  - Key: kaburga
+    Model: {fileID: 919132149155446097, guid: 4cb77aad924b336459a055dfde21358c, type: 3}
+    KorOverlay: {fileID: 2100000, guid: 1629d9c57269042499123e818223aec0, type: 2}
+  - Key: kaburga_LOD1
+    Model: {fileID: 919132149155446097, guid: f3b2132429887c8428c06e649a9f5c6e, type: 3}
+    KorOverlay: {fileID: 2100000, guid: 1629d9c57269042499123e818223aec0, type: 2}
+  - Key: runtasi
+    Model: {fileID: 919132149155446097, guid: 60b548a801851fa449469e99836bb4ec, type: 3}
+    KorOverlay: {fileID: 0}
+  - Key: duvar
+    Model: {fileID: 919132149155446097, guid: a24cdf3da72a0974ab02206abe2d5136, type: 3}
+    KorOverlay: {fileID: 0}
+  _floorGlow: {fileID: 2100000, guid: 7ba7fd23a69771842bc29fae83772f41, type: 2}
+  _hearthEmbers: {fileID: 2100000, guid: c60dfb142e07efa45b37ecf283143cc6, type: 2}
