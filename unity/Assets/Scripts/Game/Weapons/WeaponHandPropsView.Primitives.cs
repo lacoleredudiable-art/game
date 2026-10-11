@@ -14,7 +14,7 @@ namespace Dovus.Game.Weapons
 
         GameObject BuildPrimitive(string key, bool isRight) => key switch
         {
-            "kilic" => isRight ? BuildSwordFallback() : BuildRoundShield(),
+            "kilic" => isRight ? BuildSwordFallback() : null,
             "kalkan" => isRight ? BuildSwordFallback(WeaponHandPropsViewDefaults.ShieldRightSwordFallbackLengthM) : BuildBigShield(),
             "cekic" => isRight ? BuildHammer() : null,
             "yay" => isRight ? null : BuildBowFallback(),
@@ -71,7 +71,6 @@ namespace Dovus.Game.Weapons
             return root;
         }
 
-        static GameObject BuildRoundShield() => BuildShield("RoundShield_Prop", WeaponHandPropsViewDefaults.RoundShieldDiameterM, WeaponHandPropsViewDefaults.RoundShieldThicknessM);
         static GameObject BuildBigShield() => BuildShield("BigShield_Prop", WeaponHandPropsViewDefaults.BigShieldDiameterM, WeaponHandPropsViewDefaults.BigShieldThicknessM);
 
         static GameObject BuildShield(string name, float diameterM, float thicknessM)

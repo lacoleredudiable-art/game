@@ -64,11 +64,14 @@ namespace Dovus.Game.Weapons
             Transform own = ShowOwnWeapon(weaponKey);
 
             _rightInstance = IsUnder(own, right) ? null : Spawn(weaponKey, entry, right, isRight: true);
-            _leftInstance = IsUnder(own, _animator.GetBoneTransform(HumanBodyBones.LeftHand))
+            _leftInstance = IsUnder(own, _animator.GetBoneTransform(HumanBodyBones.LeftHand)) || !HasLeftHandProp(weaponKey)
                 ? null
                 : Spawn(weaponKey, entry, left, isRight: false);
             SyncSyntyAtlasHandItems(weaponKey);
         }
+
+        /// <summary>Kılıç tek elli: sol elde kalkan yok (kalkan yalnız "kalkan" silahında).</summary>
+        static bool HasLeftHandProp(string weaponKey) => weaponKey != "kilic";
 
         /// <summary>
         /// Görselin kendi silahları (k3: Grip_R / Socket_L altında Silah_*): anahtarın silahı görünür,
@@ -165,8 +168,7 @@ namespace Dovus.Game.Weapons
         Transform ResolveLeftAttachBone(string weaponKey)
         {
             Transform hand = _animator.GetBoneTransform(HumanBodyBones.LeftHand);
-            if (WeaponGripView.IsMixamoRig(_animator)
-                && (weaponKey == "kilic" || weaponKey == "kalkan"))
+            if (WeaponGripView.IsMixamoRig(_animator) && weaponKey == "kalkan")
             {
                 Transform forearm = _animator.GetBoneTransform(HumanBodyBones.LeftLowerArm);
                 if (forearm != null)
@@ -334,7 +336,6 @@ namespace Dovus.Game.Weapons
 
             return weaponKey switch
             {
-                "kilic" => WeaponHandPropsViewDefaults.LeftSwordMaxExtentM,
                 "kalkan" => WeaponHandPropsViewDefaults.LeftShieldMaxExtentM,
                 "yay" => WeaponHandPropsViewDefaults.LeftBowMaxExtentM,
                 "kitap" => WeaponHandPropsViewDefaults.LeftKitapMaxExtentM,

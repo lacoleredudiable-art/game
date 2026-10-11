@@ -16,7 +16,6 @@ namespace Dovus.Game.Weapons
         public const float RightTilsimMaxExtentM = 0.32f;
         public const float RightTopMaxExtentM = 0.92f;
 
-        public const float LeftSwordMaxExtentM = 0.65f;
         public const float LeftShieldMaxExtentM = 0.92f;
         public const float LeftBowMaxExtentM = 1.22f;
         public const float LeftKitapMaxExtentM = 0.26f;
@@ -44,8 +43,6 @@ namespace Dovus.Game.Weapons
         public const float BowShaftRadiusM = 0.025f;
         public const float BowShaftHalfHeightMult = 0.5f;
 
-        public const float RoundShieldDiameterM = 0.6f;
-        public const float RoundShieldThicknessM = 0.07f;
         public const float BigShieldDiameterM = 0.9f;
         public const float BigShieldThicknessM = 0.09f;
         public const float ShieldBossOffsetAlongThicknessMult = 0.6f;

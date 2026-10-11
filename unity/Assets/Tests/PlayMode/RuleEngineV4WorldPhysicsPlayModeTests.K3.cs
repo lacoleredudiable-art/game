@@ -95,6 +95,17 @@ namespace Dovus.Tests.PlayMode
             Assert.That(sword.gameObject.activeSelf, Is.False, "Yay seçiliyken Silah_Kilic görünüyor");
         }
 
+        [UnityTest]
+        public IEnumerator K3_Sword_NoShieldOnLeftArm()
+        {
+            Equip(Kilic);
+            yield return null;
+            Transform leftArm = PlayerAnimator().GetBoneTransform(HumanBodyBones.LeftLowerArm);
+            string[] visible = leftArm.GetComponentsInChildren<Renderer>()
+                .Where(r => r.enabled).Select(r => r.transform.parent.name + "/" + r.name).ToArray();
+            Assert.That(visible, Is.Empty, "Kılıç seçiliyken sol kolda görünen prop (kalkan)");
+        }
+
         static Transform ChildPath(Transform t, params string[] names)
         {
             foreach (string n in names)
