@@ -37,8 +37,12 @@ namespace Dovus.Game.Vfx
         public void TrailOn() => Trail_On();
         public void TrailOff() => Trail_Off();
 
+        /// <summary>Klipten gelen Impact olayı sayısı (maske dışı olanlar dahil).</summary>
+        public int ImpactEvents { get; private set; }
+
         public void Impact()
         {
+            ImpactEvents++;
             if ((_mask & RuleEngineV4SkillAnimEvent.Impact) != 0)
                 _director?.OnImpactAnimEvent();
         }

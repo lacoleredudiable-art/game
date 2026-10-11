@@ -89,6 +89,7 @@ namespace Dovus.Tests.PlayMode
             Assert.That(_cast.TryLaunchCombo(3, 1, out _), Is.True, $"{_label} cast edilmedi");
             AnimationClip clip = anim.runtimeAnimatorController.animationClips.First(c => c.name == SwordDashClip);
             float maxM = 0f;
+            float maxAtN = 0f;
             int frames = 0;
             float end = Time.realtimeSinceStartup + CastTimeoutSec;
             while (Time.realtimeSinceStartup < end)
@@ -103,9 +104,13 @@ namespace Dovus.Tests.PlayMode
                 frames++;
                 Vector3 d = hips.position - _player.position;
                 d.y = 0f;
-                maxM = Mathf.Max(maxM, d.magnitude);
+                if (d.magnitude > maxM)
+                {
+                    maxM = d.magnitude;
+                    maxAtN = anim.GetCurrentAnimatorStateInfo(0).normalizedTime;
+                }
             }
-            Debug.Log($"[k3kanit] ATIL kalça-oyuncu en büyük yatay uzaklık={maxM:0.000} m kare={frames}");
+            Debug.Log($"[k3kanit] ATIL kalça-oyuncu en büyük yatay uzaklık={maxM:0.000} m (klip n={maxAtN:0.00}) kare={frames}");
             Assert.That(frames, Is.GreaterThan(0), $"{SwordDashClip} oynamadı");
             Assert.That(maxM, Is.LessThanOrEqualTo(DashHipMaxOffsetM), $"ATIL kalçası oyuncudan {maxM:0.000} m kaydı");
             yield return WaitUntilIdle();
