@@ -19,6 +19,8 @@ namespace Dovus.Game.Vfx
         Color _color;
         float _dissolve;
         float _life;
+        float _fadeIn;
+        float _fadeOut;
         float _age;
         bool _active;
         EjderVfxBatchHost _batch;
@@ -34,7 +36,32 @@ namespace Dovus.Game.Vfx
         /// <summary>Son oynatılan hücrenin ortak atlastaki UV'si.</summary>
         public RuleEngineV4UvRect CellUv { get; private set; }
 
-        public void PlayAlongLine(Vector3 from, Vector3 to, in VfxColorRgb color, float lifeSec, int atlasCell)
+        /// <summary>Son oynatmanın belirme / sönme süresi (sn).</summary>
+        public float LastFadeInSec { get; private set; }
+        public float LastFadeOutSec { get; private set; }
+        /// <summary>0 = tam görünür, 1 = tamamen erimiş.</summary>
+        public float Dissolve => _dissolve;
+        /// <summary>Kart dörtgeninin dünya köşeleri (ekran kaplama ölçümü).</summary>
+        public void GetCorners(Vector3[] corners4)
+        {
+            corners4[0] = _center - _halfRight - _halfUp;
+            corners4[1] = _center + _halfRight - _halfUp;
+            corners4[2] = _center + _halfRight + _halfUp;
+            corners4[3] = _center - _halfRight + _halfUp;
+        }
+
+        /// <summary>
+        /// fadeInSec / fadeOutSec ≤ 0 ise varsayılan (EjderDissolveInSec, ömrün EjderDissolveOutFrac'ı).
+        /// Ekranda en çok <see cref="VfxPlanDefaults.EjderSiluetEkranMax"/> kart; dolu ise yenisi doğmaz.
+        /// </summary>
+        public void PlayAlongLine(
+            Vector3 from,
+            Vector3 to,
+            in VfxColorRgb color,
+            float lifeSec,
+            int atlasCell,
+            float fadeInSec = 0f,
+            float fadeOutSec = 0f)
         {
             if (_liveCount >= VfxPlanDefaults.EjderSiluetEkranMax && !_active)
                 return;
@@ -57,6 +84,16 @@ namespace Dovus.Game.Vfx
             _halfUp = rot * Vector3.up * (RuleVfxDefaults.SilhouetteHeightM * 0.5f);
 
             _life = Mathf.Max(RuleVfxArtDefaults.MeshLifeMin, lifeSec);
+            _fadeIn = fadeInSec > 0f ? fadeInSec : VfxPlanDefaults.EjderDissolveInSec;
+            _fadeOut = fadeOutSec > 0f ? fadeOutSec : _life * VfxPlanDefaults.EjderDissolveOutFrac;
+            float fadeSum = _fadeIn + _fadeOut;
+            if (fadeSum > _life)
+            {
+                _fadeIn *= _life / fadeSum;
+                _fadeOut *= _life / fadeSum;
+            }
+            LastFadeInSec = _fadeIn;
+            LastFadeOutSec = _fadeOut;
             _age = 0f;
             if (!_active)
             {
@@ -78,11 +115,11 @@ namespace Dovus.Game.Vfx
             if (!_active)
                 return;
             _age += Time.deltaTime;
-            float u = Mathf.Clamp01(_age / _life);
-            if (_age < VfxPlanDefaults.EjderDissolveInSec)
-                _dissolve = 1f - Mathf.Clamp01(_age / VfxPlanDefaults.EjderDissolveInSec);
-            else if (u > 1f - VfxPlanDefaults.EjderDissolveOutFrac)
-                _dissolve = (u - (1f - VfxPlanDefaults.EjderDissolveOutFrac)) / VfxPlanDefaults.EjderDissolveOutFrac;
+            float fadeOutStart = _life - _fadeOut;
+            if (_age < _fadeIn)
+                _dissolve = 1f - Mathf.Clamp01(_age / _fadeIn);
+            else if (_age > fadeOutStart)
+                _dissolve = Mathf.Clamp01((_age - fadeOutStart) / Mathf.Max(_fadeOut, RuleVfxArtDefaults.MeshLifeMin));
             else
                 _dissolve = 0f;
 

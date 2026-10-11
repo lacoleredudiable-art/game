@@ -89,7 +89,7 @@ namespace Dovus.Game.Skills.Flow
                 if (spawnedForBasicStrike)
                 {
                     _host.SyncVisualDelivery();
-                    _host.Visual?.PulseBasicStrike();
+                    _host.PlayBasicStrikeVisual(basicDot);
                     _host.TryBeginBasicStrikeStep();
                     _host.Pose?.PulseRune(sentence.Words[0].Rune, _host.Clock.Director.WorldTimeMs);
                 }

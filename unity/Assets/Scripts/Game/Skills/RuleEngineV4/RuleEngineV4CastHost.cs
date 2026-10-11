@@ -167,6 +167,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             }
 
             FaceHeldPick(held, focus, surfaceAim);
+            LastPlan = plan;
             RuleEngineV4SkillAnimBridge.PlayForPlan(_director, plan, data.SkillAnim);
             _runner.Start(plan, focus, d =>
             {
@@ -210,6 +211,8 @@ namespace Dovus.Game.Skills.RuleEngineV4
         }
 
         internal Transform LastFocus { get; private set; }
+
+        internal CommandPlan LastPlan { get; private set; }
 
         internal RuleEngineV4SurfaceAim LastSurfaceAim { get; private set; }
 

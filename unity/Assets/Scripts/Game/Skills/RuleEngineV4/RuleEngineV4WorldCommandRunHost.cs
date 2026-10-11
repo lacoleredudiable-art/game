@@ -209,6 +209,11 @@ namespace Dovus.Game.Skills.RuleEngineV4
         {
             if (caster == null)
                 yield break;
+            if (dash.Backstep)
+            {
+                yield return CoBackstep(caster, focus, dash);
+                yield break;
+            }
             float maxM = dash.MaxDistanceM;
             Vector3 dir = caster.forward;
             if (focus != null)
@@ -228,6 +233,24 @@ namespace Dovus.Game.Skills.RuleEngineV4
             float speed = RuleEngineV4WorldPhysicsDefaults.DashSpeedMps;
             yield return CoLinearMove(caster, meters, speed, "dash", null, dir);
         }
+
+        /// <summary>Kısa geri sıçrama: odağın (yoksa bakışın) tersine, sabit mesafe, ip/mermi yok.</summary>
+        IEnumerator CoBackstep(Transform caster, Transform focus, KendiniTasiCommand hop)
+        {
+            Vector3 away = -caster.forward;
+            if (focus != null && focus != caster)
+            {
+                away = caster.position - focus.position;
+                away.y = 0;
+            }
+            if (away.sqrMagnitude < PositionOwnershipDefaults.MinDistM * PositionOwnershipDefaults.MinDistM)
+                away = -caster.forward;
+            LastBackstepDir = away.normalized;
+            yield return CoLinearMove(caster, hop.MaxDistanceM, hop.SpeedMps, "dash", null, LastBackstepDir);
+        }
+
+        /// <summary>Son geri sıçramanın yönü (test).</summary>
+        internal Vector3 LastBackstepDir { get; private set; }
 
         IEnumerator CoLinearMove(
             Transform caster,

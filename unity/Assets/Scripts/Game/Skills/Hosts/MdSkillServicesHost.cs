@@ -96,6 +96,11 @@ public sealed class MdSkillServicesHost
         public SkillAim Aim => _md._skillAim;
 
         public void SyncVisualDelivery() => _md.SyncVisualDelivery();
+        public void PlayBasicStrikeVisual(int slotRune)
+        {
+            if (!RuleEngineV4.RuleEngineV4SkillAnimBridge.PlayBasicStrike(_md, slotRune))
+                _md._visual?.PulseBasicStrike();
+        }
         public void StopBasicCannonAtFirstBody(LivingEffect logic, Vector3 origin, Vector3 facing) =>
             _md.StopBasicCannonAtFirstBody(logic, origin, facing);
         public void RefreshBuildingMobility(IReadOnlyList<SentenceWord> words) =>
