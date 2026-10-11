@@ -97,17 +97,14 @@ namespace Dovus.Game.Editor
                 ? BuildOptions.CleanBuildCache
                 : BuildOptions.Development | BuildOptions.CleanBuildCache;
 
-        public static string[] DefinesFor(bool release) => DefinesFor(release, v4Slice: false);
+        public static string[] DefinesFor(bool release) =>
+            release ? Array.Empty<string>() : new[] { DebugDefine };
 
-        public static string[] DefinesFor(bool release, bool v4Slice)
-        {
-            var defines = new List<string>();
-            if (!release)
-                defines.Add(DebugDefine);
-            if (v4Slice)
-                defines.Add(RuleEngineV4Settings.SliceBuildDefine);
-            return defines.ToArray();
-        }
+        public static string[] DefinesFor(bool release, bool v4Slice) =>
+            DefinesFor(release).Concat(SliceDefines(v4Slice)).ToArray();
+
+        static string[] SliceDefines(bool v4Slice) =>
+            v4Slice ? new[] { RuleEngineV4Settings.SliceBuildDefine } : Array.Empty<string>();
 
         /// <summary>Komut satırı argümanlarından v4 dilim define'ı istenip istenmediği (saf; test edilebilir).</summary>
         public static bool WantsV4Slice(string[] args) =>
@@ -167,7 +164,7 @@ namespace Dovus.Game.Editor
                 // Release (K2): Development yok, DOVUS_DEBUG yok → DebugConfig kapalı.
                 // CleanBuildCache: incremental Bee bazen eski Data files bırakıyor (telefon APK).
                 options = OptionsFor(release),
-                extraScriptingDefines = DefinesFor(release, v4Slice)
+                extraScriptingDefines = DefinesFor(release).Concat(SliceDefines(v4Slice)).ToArray()
             };
 
             BuildReport report = BuildPipeline.BuildPlayer(options);
