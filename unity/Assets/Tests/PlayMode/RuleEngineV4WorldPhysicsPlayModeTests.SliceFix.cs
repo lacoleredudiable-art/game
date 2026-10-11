@@ -21,6 +21,13 @@ namespace Dovus.Tests.PlayMode
         const string CaptureDirSessionKey = "Dovus.RuleEngineV4.CaptureDir";
         /// <summary>Duvar nişanında oyuncu 18 m çarpışma yarıçapının bu kadar içinde durur.</summary>
         const float WallAimStandoffM = 5f;
+        const float DecalNormalTolDeg = 5f;
+
+        /// <summary>Takip kamerası +z'ye bakar; nişan bu yönde alınınca işaret kadrajda kalır.</summary>
+        static readonly Vector3 AimDir = Vector3.forward;
+        static readonly Vector3 AimSide = Vector3.right;
+
+        RuleEngineV4SurfaceMark _surfaceMark;
 
         static readonly int[] GlyphSliceRunes = { 1, 2, 3, 4, 6, 9 };
         static readonly int[] GlyphSliceVerbCells = { 0, 10, 8, 11, 6, 9 };
@@ -98,46 +105,92 @@ namespace Dovus.Tests.PlayMode
         [UnityTest]
         public IEnumerator MarkOnly_Column_NineNineThenThreeNine_PullsToPoint()
         {
-            FreezeBoss();
-            Equip(Kilic);
-            ParkAll();
+            yield return CastMarkOnColumn();
+            RuleEngineV4SurfaceMark mark = _surfaceMark;
             RuleEngineV4SliceArenaColumn col = ArenaSpec.Columns[0];
-            Vector3 center = new(col.XM, 0f, col.ZM);
-            Transform column = ArenaChildren("Columns")[0];
-
-            Place(_player, center - Vector3.right * (col.RadiusM + 3f));
-            _player.rotation = Quaternion.LookRotation(Vector3.right);
-            Physics.SyncTransforms();
-            yield return Cast(9, 9);
-
-            RuleEngineV4SurfaceMark mark = SingleSurfaceMark(column);
+            Vector3 center = ColumnCenter();
             Vector3 point = mark.transform.position;
             Assert.That(Flat(point - center).magnitude, Is.EqualTo(col.RadiusM).Within(PosTolM), "işaret sütun yüzeyinde değil");
-            Assert.That(Flat(point - center).normalized.x, Is.LessThan(-0.99f), "işaret çarpma noktasında değil");
+            Assert.That(Vector3.Dot(Flat(point - center).normalized, -AimDir), Is.GreaterThan(0.99f), "işaret çarpma noktasında değil");
 
-            yield return PullToSurfaceMark(mark, center - Vector3.right * (col.RadiusM + 5f), Vector3.forward);
+            yield return PullToSurfaceMark(mark, center - AimDir * (col.RadiusM + 5f), AimSide);
         }
 
         [UnityTest]
         public IEnumerator MarkOnly_Wall_NineNineThenThreeNine_PullsToPoint()
         {
+            yield return CastMarkOnWall();
+            RuleEngineV4SurfaceMark mark = _surfaceMark;
+            float r = ArenaSpec.OuterWallCollisionRadiusM;
+            Assert.That(Mathf.Abs(Vector3.Dot(mark.transform.position, AimSide)), Is.LessThan(PosTolM), "işaret nişan çizgisinde değil");
+            Assert.That(Vector3.Dot(mark.transform.position, AimDir), Is.LessThan(r), "işaret 18 m duvarın dışında");
+
+            yield return PullToSurfaceMark(mark, AimDir * (r - WallAimStandoffM - 1f), AimSide);
+        }
+
+        [UnityTest]
+        public IEnumerator MarkDecal_Column_AlignedToSurfaceNormal_OwnerColor()
+        {
+            yield return CastMarkOnColumn();
+            AssertDecal(_surfaceMark, Flat(_surfaceMark.transform.position - ColumnCenter()).normalized);
+            yield return CaptureScreen("isaret_decal_sutun.png");
+        }
+
+        [UnityTest]
+        public IEnumerator MarkDecal_Wall_AlignedToSurfaceNormal_OwnerColor()
+        {
+            yield return CastMarkOnWall();
+            // Segment ileri ekseni dışa bakar; iç yüz normali tersidir.
+            AssertDecal(_surfaceMark, -Flat(_surfaceMark.Surface.transform.forward).normalized);
+            yield return CaptureScreen("isaret_decal_duvar.png");
+        }
+
+        Vector3 ColumnCenter()
+        {
+            RuleEngineV4SliceArenaColumn col = ArenaSpec.Columns[0];
+            return new Vector3(col.XM, 0f, col.ZM);
+        }
+
+        IEnumerator CastMarkOnColumn()
+        {
             FreezeBoss();
             Equip(Kilic);
             ParkAll();
-            Transform[] wall = ArenaChildren("OuterWallCollision");
-            float r = ArenaSpec.OuterWallCollisionRadiusM;
-
-            Place(_player, Vector3.right * (r - WallAimStandoffM));
-            _player.rotation = Quaternion.LookRotation(Vector3.right);
+            Place(_player, ColumnCenter() - AimDir * (ArenaSpec.Columns[0].RadiusM + 3f));
+            _player.rotation = Quaternion.LookRotation(AimDir);
             Physics.SyncTransforms();
             yield return Cast(9, 9);
+            _surfaceMark = SingleSurfaceMark(ArenaChildren("Columns")[0]);
+        }
 
-            RuleEngineV4SurfaceMark mark = SingleSurfaceMark(null);
-            Assert.That(wall.Contains(mark.Surface.transform), "işaret duvar segmentinde değil: " + mark.Surface.name);
-            Assert.That(Mathf.Abs(mark.transform.position.z), Is.LessThan(PosTolM), "işaret nişan çizgisinde değil");
-            Assert.That(mark.transform.position.x, Is.LessThan(r), "işaret 18 m duvarın dışında");
+        IEnumerator CastMarkOnWall()
+        {
+            FreezeBoss();
+            Equip(Kilic);
+            ParkAll();
+            Place(_player, AimDir * (ArenaSpec.OuterWallCollisionRadiusM - WallAimStandoffM));
+            _player.rotation = Quaternion.LookRotation(AimDir);
+            Physics.SyncTransforms();
+            yield return Cast(9, 9);
+            _surfaceMark = SingleSurfaceMark(null);
+            Transform[] wall = ArenaChildren("OuterWallCollision");
+            Assert.That(wall.Contains(_surfaceMark.Surface.transform), "işaret duvar segmentinde değil: " + _surfaceMark.Surface.name);
+        }
 
-            yield return PullToSurfaceMark(mark, Vector3.right * (r - WallAimStandoffM - 1f), Vector3.forward);
+
+        void AssertDecal(RuleEngineV4SurfaceMark mark, Vector3 surfaceNormal)
+        {
+            LineRenderer decal = mark.Decal;
+            Assert.That(decal, Is.Not.Null, "işaret decal'ı yok");
+            Assert.That(decal.enabled && decal.gameObject.activeInHierarchy, "decal görünmüyor");
+            Assert.That(decal.alignment, Is.EqualTo(LineAlignment.TransformZ), "decal yüzeye yatık değil (kameraya bakıyor)");
+            float angle = Vector3.Angle(decal.transform.forward, surfaceNormal);
+            Assert.That(angle, Is.LessThanOrEqualTo(DecalNormalTolDeg), $"decal normali yüzey normalinden {angle:0.0}° sapıyor");
+            Color owner = _md._colors.Visuals.PlayerColor;
+            Assert.That(mark.OwnerColor, Is.EqualTo(owner), "işaret sahibin rengini taşımıyor");
+            // LineRenderer rengi gradyanda 8 bit saklar.
+            Assert.That((Color32)decal.startColor, Is.EqualTo((Color32)owner), "decal başlangıç rengi sahibin rengi değil");
+            Assert.That((Color32)decal.endColor, Is.EqualTo((Color32)owner), "decal bitiş rengi sahibin rengi değil");
         }
 
         [UnityTest]

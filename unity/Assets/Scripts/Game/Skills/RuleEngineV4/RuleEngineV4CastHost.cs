@@ -243,6 +243,9 @@ namespace Dovus.Game.Skills.RuleEngineV4
         }
 
         public void PlaceSurfaceMark(in RuleEngineV4SurfaceAim aim, float lifeSec) =>
-            _marks.PlaceOnSurface(aim, lifeSec, WorldMs());
+            _marks.PlaceOnSurface(aim, OwnerColor, lifeSec, WorldMs());
+
+        /// <summary>İşareti koyan oyuncunun takım rengi.</summary>
+        internal Color OwnerColor => _director._colors != null ? _director._colors.Visuals.PlayerColor : Color.white;
     }
 }

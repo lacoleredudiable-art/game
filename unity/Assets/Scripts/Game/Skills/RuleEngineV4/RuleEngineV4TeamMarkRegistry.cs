@@ -41,7 +41,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             _marks.Add(new Entry { MarkedRoot = marked, ExpireWorldMs = expire });
         }
 
-        public RuleEngineV4SurfaceMark PlaceOnSurface(in RuleEngineV4SurfaceAim aim, float lifeSec, double worldMs)
+        public RuleEngineV4SurfaceMark PlaceOnSurface(in RuleEngineV4SurfaceAim aim, Color ownerColor, float lifeSec, double worldMs)
         {
             if (!aim.IsValid || lifeSec <= 0)
                 return null;
@@ -51,7 +51,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             body.WeightTier = RuleEngineV4WeightTier.Anchored;
             body.BodyRadiusM = 0f;
             var mark = go.AddComponent<RuleEngineV4SurfaceMark>();
-            mark.Configure(aim.Surface, aim.Normal);
+            mark.Configure(aim.Surface, aim.Normal, ownerColor);
             _surfaceMarks.Add(new SurfaceEntry { Mark = mark, ExpireWorldMs = (float)(worldMs + lifeSec * Units.SecToMs) });
             return mark;
         }
