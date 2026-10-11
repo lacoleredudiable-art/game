@@ -109,6 +109,14 @@ namespace Dovus.Game.Vfx
         /// <summary>Basılı tutulan skill iptal edildi: sonraki BeginSkill flaşı yeniden çalar.</summary>
         public void ClearRunePreflash() => _runesPreflashed = false;
 
+        /// <summary>Kombo tanındı ama atılmadı (mana / bekleme): sönük kül harfleri.</summary>
+        public void NotCast(int verbRuneId, int adjectiveRuneId, RuleEngineV4CastDenial denial)
+        {
+            EnsureChildren();
+            _runes.PlayNotCast(verbRuneId, adjectiveRuneId, denial);
+            _runesPreflashed = false;
+        }
+
         void PlayRunes(in VfxPlan plan)
         {
             Color c = new Color(

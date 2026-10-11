@@ -240,6 +240,19 @@
       "ring": { "x_px": 1024, "y_px": 768, "size_px": 512, "radius_frac": 0.84, "line_frac": 0.144 },
       "dust": { "x_px": 1536, "y_px": 768, "size_px": 128 }
     },
-    "target_ring": { "pulse_hz": 2, "pulse_scale": 0.06, "pulse_min_brightness": 0.7, "release_fade_sec": 0.1 }
+    "target_ring": { "pulse_hz": 2, "pulse_scale": 0.06, "pulse_min_brightness": 0.7, "release_fade_sec": 0.1 },
+    "not_cast": {
+      "duration_sec": 0.35,
+      "shakes": 2,
+      "shake_until_frac": 0.6,
+      "shake_px": 6,
+      "ash_rgb": [0.72, 0.69, 0.65],
+      "alpha": 0.6,
+      "dust_count": 5,
+      "dust_fall_px": 48,
+      "dust_size_px": 10,
+      "dust_spread_px": 40,
+      "crack_gap_px": 10
+    }
   }
 }

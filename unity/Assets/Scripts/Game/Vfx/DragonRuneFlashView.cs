@@ -34,10 +34,22 @@ namespace Dovus.Game.Vfx
         Vector2 _adjTo;
         Vector2 _verbPos;
         Vector2 _adjPos;
+        bool _notCast;
+        float _notCastAge;
 
         public bool VerbVisible => _playing && _verbOn;
         public bool AdjectiveVisible => _playing && _adjOn;
         public int PlayCount { get; private set; }
+
+        /// <summary>"Atılmadı" geri bildirimi oynuyor (kül grisi, sönük harf).</summary>
+        public bool NotCastActive => _notCast;
+        public int NotCastCount { get; private set; }
+        public RuleEngineV4CastDenial NotCastKind { get; private set; }
+        /// <summary>Son çizilen "atılmadı" karesi: harf rengi (alfa dahil), dağılma, toz / yarım harf dörtgeni sayısı.</summary>
+        public Color NotCastColor { get; private set; }
+        public float NotCastScatter { get; private set; }
+        public int NotCastDustQuads { get; private set; }
+        public int NotCastHalfQuads { get; private set; }
         public int VerbCell => _verbCell;
         public int AdjectiveCell => _adjCell;
         public RuleEngineV4UvRect VerbUv => RuleVfxSettings.Slice.Atlas.GlyphUv(_verbCell);
@@ -55,6 +67,7 @@ namespace Dovus.Game.Vfx
         public void Play(int verbRuneId, int adjectiveRuneId, Color coreColor)
         {
             EnsureRegistered();
+            _notCast = false;
             PlayCount++;
             _snap = VfxPlanDefaults.RuneSnapSec;
             _glow = VfxPlanDefaults.RuneGlowSec;
@@ -89,6 +102,38 @@ namespace Dovus.Game.Vfx
             Layout(0f);
         }
 
+        /// <summary>
+        /// Kombo tanındı ama atılmadı (yalnız mana / bekleme): harfler yerinde kül grisi ve sönük belirir,
+        /// titreyip dağılır. Diğer red türleri (ıska, boşa gitme) buraya gelmez; gelirse yok sayılır.
+        /// </summary>
+        public void PlayNotCast(int verbRuneId, int adjectiveRuneId, RuleEngineV4CastDenial denial)
+        {
+            if (!RuleEngineV4NotCastFx.Applies(denial))
+                return;
+            EnsureRegistered();
+            _playing = false;
+            _notCast = true;
+            _notCastAge = 0f;
+            NotCastKind = denial;
+            NotCastCount++;
+
+            float size = RuleVfxDefaults.RuneLetterSizePx;
+            float gap = RuleVfxDefaults.RuneLetterGapPx;
+            _verbPos = new Vector2(-size * 0.5f - gap * 0.5f, RuleVfxArtDefaults.RuneAnchorY);
+            _adjPos = new Vector2(size * 0.5f + gap * 0.5f, RuleVfxArtDefaults.RuneAnchorY);
+            RuleEngineV4GlyphMap map = GlyphMap;
+            _verbOn = map.TryVerbCell(verbRuneId, out int verbCell);
+            _adjOn = map.TryAdjectiveCell(adjectiveRuneId, out int adjCell);
+            if (_verbOn)
+                _verbCell = Mathf.Clamp(verbCell, 0, RuleVfxArtDefaults.GlyphCellMaxIndex);
+            else
+                WarnMissingGlyph(RuleEngineV4GlyphDefaults.VerbPrefix, verbRuneId);
+            if (_adjOn)
+                _adjCell = Mathf.Clamp(adjCell, 0, RuleVfxArtDefaults.GlyphCellMaxIndex);
+            else
+                WarnMissingGlyph(RuleEngineV4GlyphDefaults.AdjectivePrefix, adjectiveRuneId);
+        }
+
         void WarnMissingGlyph(string prefix, int runeId)
         {
             if (!_warnedMissingGlyph.Add(prefix + runeId))
@@ -105,6 +150,13 @@ namespace Dovus.Game.Vfx
 
         void Update()
         {
+            if (_notCast)
+            {
+                _notCastAge += Time.unscaledDeltaTime;
+                if (RuleVfxSettings.Slice.NotCast.Done(_notCastAge))
+                    _notCast = false;
+                return;
+            }
             if (!_playing)
                 return;
             _age += Time.unscaledDeltaTime;
@@ -130,39 +182,114 @@ namespace Dovus.Game.Vfx
 
         public void EmitQuads(EjderVfxBatch batch)
         {
-            if (!_playing)
+            if (!_playing && !_notCast)
                 return;
             Camera cam = Camera.main;
             if (cam == null)
                 return;
             RuleEngineV4VfxAtlas atlas = batch.Layout;
             float depth = Mathf.Max(RuleVfxDefaults.RuneQuadDepthM, cam.nearClipPlane * 2f);
-            float worldPerRefPx = WorldPerScreenPx(cam, depth) * cam.pixelWidth / RuleVfxDefaults.RuneCanvasReferenceWidthPx;
-            Transform t = cam.transform;
-            Vector3 origin = t.position + t.forward * depth;
-            float half = RuleVfxDefaults.RuneLetterSizePx * 0.5f * worldPerRefPx;
-            Vector3 halfRight = t.right * half;
-            Vector3 halfUp = t.up * half;
+            var frame = new LetterFrame(cam.transform, depth,
+                WorldPerScreenPx(cam, depth) * cam.pixelWidth / RuleVfxDefaults.RuneCanvasReferenceWidthPx);
+            if (_notCast)
+            {
+                EmitNotCast(batch, atlas, frame);
+                return;
+            }
+            float half = RuleVfxDefaults.RuneLetterSizePx * 0.5f;
             if (_verbOn)
-                EmitLetter(batch, origin, t, _verbPos, worldPerRefPx, halfRight, halfUp, atlas.GlyphUv(_verbCell), _verbTint);
+                EmitLetter(batch, frame, _verbPos, half, half, atlas.GlyphUv(_verbCell), WithAlpha(_verbTint, _alpha), 0f);
             if (_adjOn)
-                EmitLetter(batch, origin, t, _adjPos, worldPerRefPx, halfRight, halfUp, atlas.GlyphUv(_adjCell), _adjTint);
+                EmitLetter(batch, frame, _adjPos, half, half, atlas.GlyphUv(_adjCell), WithAlpha(_adjTint, _alpha), 0f);
         }
 
-        void EmitLetter(
-            EjderVfxBatch batch,
-            Vector3 origin,
-            Transform cam,
-            Vector2 refPx,
-            float worldPerRefPx,
-            Vector3 halfRight,
-            Vector3 halfUp,
-            in RuleEngineV4UvRect uv,
-            Color tint)
+        void EmitNotCast(EjderVfxBatch batch, RuleEngineV4VfxAtlas atlas, in LetterFrame frame)
         {
-            Vector3 center = origin + cam.right * (refPx.x * worldPerRefPx) + cam.up * (refPx.y * worldPerRefPx);
-            tint.a = _alpha;
-            batch.AddQuad(center, halfRight, halfUp, uv, tint, 0f);
+            RuleEngineV4NotCastFx fx = RuleVfxSettings.Slice.NotCast;
+            fx.Sample(_notCastAge, out float shakePx, out float alpha, out float scatter);
+            var ash = new Color(fx.AshR, fx.AshG, fx.AshB, alpha);
+            NotCastColor = ash;
+            NotCastScatter = scatter;
+            NotCastDustQuads = 0;
+            NotCastHalfQuads = 0;
+            var shake = new Vector2(shakePx, 0f);
+            if (_verbOn)
+                EmitNotCastLetter(batch, atlas, frame, fx, _verbPos + shake, atlas.GlyphUv(_verbCell), ash, scatter);
+            if (_adjOn)
+                EmitNotCastLetter(batch, atlas, frame, fx, _adjPos + shake, atlas.GlyphUv(_adjCell), ash, scatter);
+        }
+
+        void EmitNotCastLetter(
+            EjderVfxBatch batch,
+            RuleEngineV4VfxAtlas atlas,
+            in LetterFrame frame,
+            RuleEngineV4NotCastFx fx,
+            Vector2 pos,
+            in RuleEngineV4UvRect uv,
+            Color ash,
+            float scatter)
+        {
+            float half = RuleVfxDefaults.RuneLetterSizePx * 0.5f;
+            if (NotCastKind == RuleEngineV4CastDenial.Cooldown)
+            {
+                // Çatlak: harf dikey ortadan ikiye bölünür, yarılar aralık kadar ayrılır.
+                float quarter = half * 0.5f;
+                float split = fx.CrackGap(_notCastAge) * 0.5f;
+                EmitLetter(batch, frame, pos + new Vector2(-quarter - split, 0f), quarter, half, uv.LeftHalf, ash, scatter);
+                EmitLetter(batch, frame, pos + new Vector2(quarter + split, 0f), quarter, half, uv.RightHalf, ash, scatter);
+                NotCastHalfQuads += 2;
+                return;
+            }
+
+            EmitLetter(batch, frame, pos, half, half, uv, ash, scatter);
+            // Mana yok: harfin altından kül tozu düşer.
+            float dustHalf = fx.DustSizePx * 0.5f;
+            float fall = fx.DustFall(_notCastAge);
+            RuleEngineV4UvRect dustUv = atlas.DustUv;
+            for (int i = 0; i < fx.DustCount; i++)
+            {
+                var p = new Vector2(pos.x + fx.DustX(i), pos.y - half - fall * (1f + (float)i / fx.DustCount));
+                EmitLetter(batch, frame, p, dustHalf, dustHalf, dustUv, ash, 0f);
+                NotCastDustQuads++;
+            }
+        }
+
+        /// <summary>Kameraya bağlı harf düzlemi: referans piksel → dünya.</summary>
+        readonly struct LetterFrame
+        {
+            public readonly Vector3 Origin;
+            public readonly Vector3 Right;
+            public readonly Vector3 Up;
+            public readonly float WorldPerRefPx;
+
+            public LetterFrame(Transform cam, float depth, float worldPerRefPx)
+            {
+                Origin = cam.position + cam.forward * depth;
+                Right = cam.right;
+                Up = cam.up;
+                WorldPerRefPx = worldPerRefPx;
+            }
+        }
+
+        static void EmitLetter(
+            EjderVfxBatch batch,
+            in LetterFrame f,
+            Vector2 refPx,
+            float halfWidthPx,
+            float halfHeightPx,
+            in RuleEngineV4UvRect uv,
+            Color color,
+            float dissolve)
+        {
+            float k = f.WorldPerRefPx;
+            Vector3 center = f.Origin + f.Right * (refPx.x * k) + f.Up * (refPx.y * k);
+            batch.AddQuad(center, f.Right * (halfWidthPx * k), f.Up * (halfHeightPx * k), uv, color, dissolve);
+        }
+
+        static Color WithAlpha(Color c, float a)
+        {
+            c.a = a;
+            return c;
         }
 
         /// <summary>Kameradan <paramref name="depth"/> uzaklıkta bir ekran pikselinin dünya boyu.</summary>

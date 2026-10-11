@@ -20,6 +20,27 @@ namespace Dovus.Core.RuleEngineV4
         public const float TargetRingPulseScale = 0.06f;
         public const float TargetRingPulseMinBrightness = 0.7f;
 
+        /// <summary>efekt-motoru "Atılmadı geri bildirimi": 0,35 s içinde iki kez titreyip dağılır.</summary>
+        public const float NotCastDurationSec = 0.35f;
+        public const int NotCastShakes = 2;
+        /// <summary>spec'te yok: sürenin ilk %60'ı titreme, kalanı dağılma.</summary>
+        public const float NotCastShakeUntilFrac = 0.6f;
+        /// <summary>spec'te yok: titreme genliği (harf pikseli, harf 72 px).</summary>
+        public const float NotCastShakePx = 6f;
+        /// <summary>spec'te yok: "kül grisi" (toplamalı materyalde zeminde okunacak kadar açık).</summary>
+        public const float NotCastAshR = 0.72f;
+        public const float NotCastAshG = 0.69f;
+        public const float NotCastAshB = 0.65f;
+        /// <summary>spec'te yok: "sönük" (normal flaş HDR ~2×, alfa 1).</summary>
+        public const float NotCastAlpha = 0.6f;
+        /// <summary>spec'te yok: kül tozu taneleri (harf başına), düşüş, boy, yayılım (px).</summary>
+        public const int NotCastDustCount = 5;
+        public const float NotCastDustFallPx = 48f;
+        public const float NotCastDustSizePx = 10f;
+        public const float NotCastDustSpreadPx = 40f;
+        /// <summary>spec'te yok: çatlak aralığı (px).</summary>
+        public const float NotCastCrackGapPx = 10f;
+
         public const string AtlasResource = "Vfx/Ejder/Ejder_Vfx_Atlas";
         public const string AtlasMaterial = "Vfx/Ejder/VFX_Kor_Ejder";
         public const int AtlasSizePx = 2048;

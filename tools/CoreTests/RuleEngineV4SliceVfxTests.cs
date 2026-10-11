@@ -70,6 +70,57 @@ public sealed class RuleEngineV4SliceVfxTests
         Assert.That(r.ReleaseAlpha(1f), Is.EqualTo(0f));
     }
 
+    [Test]
+    public void NotCast_OnlyManaAndCooldown_NeverMissOrFizzle()
+    {
+        Assert.That(RuleEngineV4NotCastFx.Applies(RuleEngineV4CastDenial.Mana), Is.True);
+        Assert.That(RuleEngineV4NotCastFx.Applies(RuleEngineV4CastDenial.Cooldown), Is.True);
+        Assert.That(RuleEngineV4NotCastFx.Applies(RuleEngineV4CastDenial.None), Is.False, "atılan skill (ıska/boşa gitme dahil)");
+    }
+
+    [Test]
+    public void Json_NotCast_ShakesTwiceThenScattersWithin035()
+    {
+        RuleEngineV4NotCastFx f = Slice().NotCast;
+        Assert.That(f.DurationSec, Is.EqualTo(0.35f).Within(1e-5f));
+        Assert.That(f.Shakes, Is.EqualTo(2));
+        Assert.That(f.Alpha, Is.GreaterThan(0f).And.LessThan(1f), "sönük");
+        Assert.That(f.AshR, Is.EqualTo(f.AshG).Within(0.05f), "kül grisi");
+        Assert.That(f.AshG, Is.EqualTo(f.AshB).Within(0.05f), "kül grisi");
+
+        // Titreme penceresinde işaret değişimleri = 2 × salınım sayısı (kendi sıfırları hariç).
+        float window = f.DurationSec * f.ShakeUntilFrac;
+        const int steps = 700;
+        int crossings = 0;
+        float prev = 0f;
+        for (int i = 1; i < steps; i++)
+        {
+            f.Sample(window * i / steps, out float shake, out float a, out float scatter);
+            Assert.That(scatter, Is.EqualTo(0f), "titrerken dağılmaz");
+            Assert.That(a, Is.EqualTo(f.Alpha).Within(1e-5f), "titrerken sönük ama tam");
+            Assert.That(System.Math.Abs(shake), Is.LessThanOrEqualTo(f.ShakePx + 1e-4f));
+            if (prev != 0f && System.Math.Sign(shake) != System.Math.Sign(prev) && shake != 0f)
+                crossings++;
+            if (shake != 0f)
+                prev = shake;
+        }
+        Assert.That(crossings, Is.EqualTo(2 * f.Shakes - 1), "iki tam titreme");
+
+        f.Sample(f.DurationSec, out float endShake, out float endAlpha, out float endScatter);
+        Assert.That(endShake, Is.EqualTo(0f));
+        Assert.That(endScatter, Is.EqualTo(1f).Within(1e-5f), "süre sonunda tam dağılmış");
+        Assert.That(endAlpha, Is.EqualTo(0f).Within(1e-5f));
+        Assert.That(f.Done(f.DurationSec), Is.True);
+        Assert.That(f.Done(f.DurationSec * 0.99f), Is.False);
+
+        Assert.That(f.DustFall(0f), Is.EqualTo(0f));
+        Assert.That(f.DustFall(f.DurationSec), Is.EqualTo(f.DustFallPx).Within(1e-4f), "toz aşağı düşer");
+        Assert.That(f.DustX(0), Is.EqualTo(-f.DustX(f.DustCount - 1)).Within(1e-4f), "toz harfin altına ortalı");
+        Assert.That(f.CrackGap(0f), Is.EqualTo(0f));
+        Assert.That(f.CrackGap(window), Is.EqualTo(f.CrackGapPx).Within(1e-4f), "çatlak titreme sonunda tam açık");
+        Assert.That(f.CrackGap(f.DurationSec), Is.EqualTo(f.CrackGapPx).Within(1e-4f));
+    }
+
     static readonly string ResourcesDir = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(JsonPath)!, ".."));
 
     [Test]

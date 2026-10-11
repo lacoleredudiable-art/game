@@ -50,7 +50,8 @@ namespace Dovus.Tests.PlayMode
                 float maxDt = 0f;
                 while (Time.unscaledTime - shownAt < RingPulseWatchSec)
                 {
-                    yield return new WaitForEndOfFrame();
+                    yield return null;
+                    EjderVfxBatch.Current.Rebuild();
                     ring.ShowOnSurface(_player.position, Vector3.up);
                     maxDt = Mathf.Max(maxDt, Time.unscaledDeltaTime);
                     t.Add(Time.unscaledTime - shownAt);
@@ -75,7 +76,8 @@ namespace Dovus.Tests.PlayMode
                 int fadeFrames = 0;
                 while (true)
                 {
-                    yield return new WaitForEndOfFrame();
+                    yield return null;
+                    EjderVfxBatch.Current.Rebuild();
                     float since = Time.unscaledTime - hiddenAt;
                     if (since < fx.ReleaseFadeSec)
                     {

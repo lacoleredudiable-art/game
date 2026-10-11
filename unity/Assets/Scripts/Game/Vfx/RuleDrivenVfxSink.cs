@@ -1,5 +1,6 @@
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
+using Dovus.Core.RuleEngineV4;
 using UnityEngine;
 
 namespace Dovus.Game.Vfx
@@ -38,6 +39,14 @@ namespace Dovus.Game.Vfx
         public static void ClearRunePreflash(Transform actor)
         {
             Resolve(actor)?.ClearRunePreflash();
+        }
+
+        /// <summary>"Atılmadı" geri bildirimi: yalnız mana yetmedi / bekleme sürüyor (ıska ve boşa gitmede çağrılmaz).</summary>
+        public static void NotCast(Transform actor, int verbRuneId, int adjectiveRuneId, RuleEngineV4CastDenial denial)
+        {
+            if (!RuleEngineV4NotCastFx.Applies(denial))
+                return;
+            Resolve(actor)?.NotCast(verbRuneId, adjectiveRuneId, denial);
         }
 
         static string WeaponKey(EquipmentItem weapon) =>
