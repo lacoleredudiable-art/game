@@ -118,14 +118,18 @@ namespace Dovus.Game.Editor
         /// materyaller çalışma anında `Shader.Find` ile yaratılıyor. Player build'i yalnızca
         /// asset'lerden REFERANS EDİLEN shader'ları paketler — `Shader.Find` telefonda null döner
         /// ve dünya macenta çıkar (T11 1. oturumda tam bu oldu). Bu yüzden çalışma anında aranan
-        /// her shader "Always Included" listesine yazılır.
+        /// her shader "Always Included" listesine yazılır. Ortam_DitherLit Shader.Find ile aranmıyor ama
+        /// KorDither/KorTriplanar include'unu VFX_Kor'la paylaşıyor; ikisi birlikte tüm varyantlarıyla paketlenir.
         /// </summary>
-        static readonly string[] RuntimeShaders =
+        public static readonly string[] RuntimeShaders =
         {
             "Universal Render Pipeline/Lit",     // arena, oyuncu, boss (GameBootstrapHost)
             "Universal Render Pipeline/Unlit",   // yedek yol
-            "Sprites/Default",                   // mürekkep, telegraf, hayalet, iz, tezahür
+            "Universal Render Pipeline/Simple Lit", // WeaponHandPropsView, HostileProjectileHost (ilk tercih)
+            "Sprites/Default",                   // mürekkep, telegraf, hayalet, iz, tezahür, v4 yüzey izi
             "Universal Render Pipeline/Particles/Unlit", // FeelVfx, CastFlashView, LivingEffectView, LavaDecor, BillboardVfxView
+            RuleVfxDefaults.KorShaderName,       // v4 dilim: kor izi, ATIL vuruşu, kor uyanışı, kıvılcım (VFX_Kor_Ejder materyali de bu shader)
+            OrtamAssetSetup.DitherLit,           // v4 dilim arena: kaburga (KorDither + KorTriplanar)
         };
 
         static BuildReport Build(string outputPath, bool release) => Build(outputPath, release, v4Slice: false);

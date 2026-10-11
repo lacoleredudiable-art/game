@@ -1,8 +1,10 @@
 using Dovus.Game.Config;
 using Dovus.Game.Editor;
+using Dovus.Game.Vfx;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEditor.Build;
+using UnityEngine;
 
 namespace Dovus.Tests.EditMode
 {
@@ -32,6 +34,14 @@ namespace Dovus.Tests.EditMode
                 string defines = PlayerSettings.GetScriptingDefineSymbols(target);
                 Assert.That(defines.Split(';'), Has.No.Member(RuleEngineV4Settings.SliceBuildDefine), target.TargetName);
             }
+        }
+
+        [Test]
+        public void AlwaysIncludedList_HasSliceShaders_AllResolve()
+        {
+            Assert.That(AndroidBuilder.RuntimeShaders, Has.Member(RuleVfxDefaults.KorShaderName));
+            foreach (string name in AndroidBuilder.RuntimeShaders)
+                Assert.That(Shader.Find(name), Is.Not.Null, $"Always Included listesinde bulunamayan shader: {name}");
         }
 
         [Test]
