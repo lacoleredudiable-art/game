@@ -22,6 +22,9 @@ namespace Dovus.Core.RuleEngineV4
 
             RuleEngineV4TargetResolution target = RuleEngineV4TargetResolver.Resolve(verb, adjective);
 
+            if (ctx.ComboLength < verb.MinComboLen)
+                return Empty(verbRune, adjectiveRune, weaponId, target);
+
             if (adjective.Id == 9 && verb.Id != 9 && !ctx.HasUsableMark)
                 return Empty(verbRune, adjectiveRune, weaponId, target);
 

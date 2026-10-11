@@ -392,7 +392,7 @@ namespace Dovus.Tests.PlayMode
             }
 
             Assert.That(count, Is.EqualTo(
-                RuleEngineV4Slice.Runes.Length * RuleEngineV4Slice.Runes.Length * RuleEngineV4Slice.Weapons.Length),
+                RuleEngineV4Slice.Runes.Count * RuleEngineV4Slice.Runes.Count * RuleEngineV4Slice.Weapons.Length),
                 "kombo sayısı");
             foreach (string e in _errors)
                 failures.AppendLine(e);

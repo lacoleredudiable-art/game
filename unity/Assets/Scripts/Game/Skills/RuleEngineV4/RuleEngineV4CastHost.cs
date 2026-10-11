@@ -20,6 +20,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
         readonly RuleEngineV4DeliveryEvaluator _deliveryEvaluator;
         readonly RuleEngineV4WorldCommandRunHost _runner;
         float _lastDealt;
+        int _comboLength = RuleEngineV4CastContext.VerbAdjectiveComboLen;
 
         public RuleEngineV4CastHost(ManifestationDirector director)
         {
@@ -50,15 +51,21 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 || !int.TryParse(skill.Identity.Verb.Value, out int verb)
                 || !int.TryParse(skill.Identity.Adjective.Value, out int adj))
                 return false;
-            return TryLaunchCombo(verb, adj, out dealt);
+            return TryLaunchCombo(verb, adj, ctx.Closing.DotCount, out dealt);
         }
 
-        internal bool TryLaunchCombo(int verb, int adj, out float dealt)
+        internal bool TryLaunchCombo(int verb, int adj, out float dealt) =>
+            TryLaunchCombo(verb, adj, RuleEngineV4CastContext.VerbAdjectiveComboLen, out dealt);
+
+        internal bool TryLaunchCombo(int verb, int adj, int comboLength, out float dealt)
         {
             dealt = 0;
             _lastDealt = 0;
             if (!RuleEngineV4Feature.Enabled)
                 return false;
+            // Katalog okunmadan dilim rünleri (slice_runes) bağlı değildir.
+            RuleEngineV4Planner planner = _catalogAccess.Planner;
+            RuleEngineV4Catalog data = _catalogAccess.Catalog;
             if (!RuleEngineV4Slice.IsSliceCombo(verb, adj))
                 return false;
 
@@ -66,8 +73,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             if (!RuleEngineV4Slice.IsSliceWeapon(weaponId))
                 return false;
 
-            RuleEngineV4Planner planner = _catalogAccess.Planner;
-            RuleEngineV4Catalog data = _catalogAccess.Catalog;
+            _comboLength = comboLength;
             RuleEngineV4TargetResolution resolution = RuleEngineV4TargetResolver.Resolve(
                 GetVerb(data, verb),
                 GetAdj(data, adj));
@@ -91,7 +97,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 manualId,
                 _candidates);
             bool hasMark = RuleEngineV4AutoTargetPicker.AnyUsableMark(_candidates, data.Globals.IsaretUseRangeM);
-            RuleEngineV4CastContext castCtx = RuleEngineV4AutoTargetPicker.ToCastContext(pick, adj, hasMark);
+            RuleEngineV4CastContext castCtx = RuleEngineV4AutoTargetPicker.ToCastContext(pick, adj, hasMark, _comboLength);
             CommandPlan plan = planner.Plan(verb, adj, weaponId, castCtx);
             Transform focus = ResolveTargetTransform(pick);
             RuleEngineV4SurfaceAim surfaceAim = default;
@@ -128,8 +134,8 @@ namespace Dovus.Game.Skills.RuleEngineV4
 
         internal RuleEngineV4TeamMarkRegistry Marks => _marks;
 
-        static RuleEngineV4CastContext InReachContext(bool hasMark) =>
-            new(hasValidTarget: true, targetInWeaponRange: true, manualTargetSelected: false, hasUsableMark: hasMark);
+        RuleEngineV4CastContext InReachContext(bool hasMark) =>
+            new(hasValidTarget: true, targetInWeaponRange: true, manualTargetSelected: false, hasUsableMark: hasMark, comboLength: _comboLength);
 
         /// <summary>İşaret koyan plan: nişan ışını MarkOnly yüzeye çarpıyor ve canlı hedeften önce geliyorsa.</summary>
         bool TryAimSurfaceMark(CommandPlan plan, in RuleEngineV4TargetPick pick, out RuleEngineV4SurfaceAim aim)

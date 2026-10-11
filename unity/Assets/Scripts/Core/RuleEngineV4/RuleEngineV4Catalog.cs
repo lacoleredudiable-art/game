@@ -32,6 +32,7 @@ namespace Dovus.Core.RuleEngineV4
         public RuleEngineV4WorldPhysics WorldPhysics { get; }
         public RuleEngineV4SkillAnimCatalog SkillAnim { get; }
         public RuleEngineV4SliceArena SliceArena { get; }
+        public IReadOnlyList<int> SliceRunes { get; private set; } = Array.Empty<int>();
 
         public bool TryGetVerb(int id, out RuleEngineV4Verb verb) => _verbs.TryGetValue(id, out verb!);
         public bool TryGetAdjective(int id, out RuleEngineV4Adjective adjective) => _adjectives.TryGetValue(id, out adjective!);
@@ -111,8 +112,22 @@ namespace Dovus.Core.RuleEngineV4
                 if (int.TryParse(kv.Key, NumberStyles.Integer, CultureInfo.InvariantCulture, out int id))
                     catalog._weapons[id] = ParseWeapon(kv.Value, id);
 
+            int[] sliceRunes = ParseRunes(root["slice_runes"]);
+            catalog.SliceRunes = sliceRunes;
+
             RuleEngineV4WorldPhysicsRuntime.Bind(catalog.WorldPhysics);
+            RuleEngineV4Slice.BindRunes(sliceRunes);
             return catalog;
+        }
+
+        static int[] ParseRunes(JsonValue node)
+        {
+            if (node.IsNull)
+                return Array.Empty<int>();
+            var runes = new List<int>();
+            foreach (JsonValue item in node.AsArray())
+                runes.Add(item.AsInt(0));
+            return runes.ToArray();
         }
 
         static RuleEngineV4WorldPhysics ParseWorldPhysics(JsonValue node)
@@ -148,6 +163,7 @@ namespace Dovus.Core.RuleEngineV4
                 Id = id,
                 Key = node["key"].AsString(),
                 Hostile = node["hostile"].AsBool(node["side"].AsString() == "hostile"),
+                MinComboLen = node["min_combo_len"].AsInt(RuleEngineV4CatalogDefaults.MinComboLen),
             };
 
         static RuleEngineV4Adjective ParseAdjective(JsonValue node, int id) =>

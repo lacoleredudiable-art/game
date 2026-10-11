@@ -33,7 +33,66 @@ public sealed class RuleEngineV4PlannerTests
     [Test]
     public void SliceRunes_AreSharedBetweenVerbAndAdjective()
     {
-        Assert.That(RuleEngineV4Slice.Runes, Is.EquivalentTo(new[] { 1, 2, 3, 4, 6, 9 }));
+        var catalog = RuleEngineV4Catalog.FromJson(File.ReadAllText(JsonPath()));
+        Assert.That(catalog.SliceRunes, Is.EquivalentTo(new[] { 1, 2, 3, 4, 6, 9 }));
+        Assert.That(RuleEngineV4Slice.Runes, Is.EquivalentTo(catalog.SliceRunes));
+    }
+
+    [Test]
+    public void SliceRunes_ReadFromJson_ChangingDataChangesRunes()
+    {
+        string json = File.ReadAllText(JsonPath());
+        const string original = "\"slice_runes\": [1, 2, 3, 4, 6, 9]";
+        Assert.That(json, Does.Contain(original), "slice_runes JSON'da yok");
+        try
+        {
+            RuleEngineV4Catalog.FromJson(json.Replace(original, "\"slice_runes\": [1, 3]"));
+            Assert.That(RuleEngineV4Slice.Runes, Is.EqualTo(new[] { 1, 3 }));
+            Assert.That(RuleEngineV4Slice.IsSliceCombo(1, 3), Is.True);
+            Assert.That(RuleEngineV4Slice.IsSliceCombo(2, 1), Is.False, "2 artık dilimde değil");
+        }
+        finally
+        {
+            RuleEngineV4Catalog.FromJson(json);
+        }
+        Assert.That(RuleEngineV4Slice.Runes, Is.EqualTo(new[] { 1, 2, 3, 4, 6, 9 }));
+    }
+
+    [TestCase(1)]
+    [TestCase(2)]
+    [TestCase(3)]
+    [TestCase(9)]
+    public void Zaman_BelowMinComboLen_PlansNothing(int adj)
+    {
+        var catalog = RuleEngineV4Catalog.FromJson(File.ReadAllText(JsonPath()));
+        Assert.That(catalog.TryGetVerb(12, out RuleEngineV4Verb zaman), Is.True);
+        Assert.That(zaman.MinComboLen, Is.EqualTo(3), "zaman min_combo_len");
+        var planner = new RuleEngineV4Planner(catalog);
+        var twoDots = new RuleEngineV4CastContext(
+            hasValidTarget: true, targetInWeaponRange: true, hasUsableMark: true, comboLength: 2);
+        foreach (int weapon in RuleEngineV4Slice.Weapons)
+        {
+            CommandPlan plan = planner.Plan(12, adj, weapon, twoDots);
+            Assert.That(plan.IsValid, Is.False, $"12-{adj} w{weapon} iki noktada plan üretti");
+            Assert.That(plan.Commands, Is.Empty, $"12-{adj} w{weapon}");
+        }
+    }
+
+    [Test]
+    public void MinComboLen_OnlyGatesVerbsThatDeclareIt()
+    {
+        var catalog = RuleEngineV4Catalog.FromJson(File.ReadAllText(JsonPath()));
+        var planner = new RuleEngineV4Planner(catalog);
+        var twoDots = new RuleEngineV4CastContext(hasValidTarget: true, targetInWeaponRange: true, comboLength: 2);
+        foreach (int verb in catalog.SliceRunes)
+        {
+            Assert.That(catalog.TryGetVerb(verb, out RuleEngineV4Verb v), Is.True);
+            Assert.That(v.MinComboLen, Is.LessThanOrEqualTo(2), $"dilim fiili {verb} iki noktada çalışmalı");
+        }
+        Assert.That(planner.Plan(1, 2, 4, twoDots).IsValid, Is.True, "1-2 iki noktada plan üretmeli");
+        var threeDots = new RuleEngineV4CastContext(
+            hasValidTarget: true, targetInWeaponRange: true, hasUsableMark: true, comboLength: 3);
+        Assert.That(planner.Plan(12, 2, 4, threeDots).IsValid, Is.True, "12-2 üç noktada kapıdan geçmeli");
     }
 
     [Test]
@@ -182,8 +241,10 @@ public sealed class RuleEngineV4PlannerTests
         Assert.That(planner.Plan(5, 1, 4).Commands.Any(c => c is ItCommand), Is.True);
         Assert.That(planner.Plan(10, 2, 4).Commands.Any(c => c is YansitCommand), Is.True);
         Assert.That(planner.Plan(11, 1, 4).Commands.Any(c => c is YardimciCagirCommand), Is.True);
-        Assert.That(planner.Plan(12, 2, 4).Commands.Any(c => c is KaydaDonCommand), Is.True);
-        Assert.That(planner.Plan(12, 2, 4).Commands.Any(c => c is KayitAlCommand), Is.True);
+        // Zaman min_combo_len 3: etkisi üç noktalı komboda.
+        var threeDots = new RuleEngineV4CastContext(hasValidTarget: true, targetInWeaponRange: true, comboLength: 3);
+        Assert.That(planner.Plan(12, 2, 4, threeDots).Commands.Any(c => c is KaydaDonCommand), Is.True);
+        Assert.That(planner.Plan(12, 2, 4, threeDots).Commands.Any(c => c is KayitAlCommand), Is.True);
     }
 
     [Test]

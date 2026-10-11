@@ -43,12 +43,17 @@ namespace Dovus.Core.RuleEngineV4
             return PickNearestHostile(range, candidates);
         }
 
-        public static RuleEngineV4CastContext ToCastContext(in RuleEngineV4TargetPick pick, int adjectiveId, bool hasUsableMark) =>
+        public static RuleEngineV4CastContext ToCastContext(
+            in RuleEngineV4TargetPick pick,
+            int adjectiveId,
+            bool hasUsableMark,
+            int comboLength = RuleEngineV4CastContext.VerbAdjectiveComboLen) =>
             new(
                 hasValidTarget: pick.HasTarget,
                 targetInWeaponRange: pick.TargetInWeaponRange,
                 manualTargetSelected: pick.ManualTargetUsed,
-                hasUsableMark: hasUsableMark);
+                hasUsableMark: hasUsableMark,
+                comboLength: comboLength);
 
         public static bool AnyUsableMark(IReadOnlyList<RuleEngineV4TargetCandidate> candidates, float markUseRangeM)
         {
