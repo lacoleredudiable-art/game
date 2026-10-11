@@ -75,6 +75,25 @@ public sealed class RuleEngineV4SliceArenaVisualsCatalogTests
     }
 
     [Test]
+    public void Json_Ribs_HalvesAndKeepClear_FromJson()
+    {
+        RuleEngineV4SliceArenaRibs ribs = Visuals().Ribs;
+        Assert.That(ribs.KeepClearXM, Is.EqualTo(22f), "keep_clear.x_m");
+        Assert.That(ribs.KeepClearBelowM, Is.EqualTo(2.5f), "keep_clear.below_m");
+
+        RuleEngineV4SliceArenaRibHalves h = ribs.Halves;
+        Assert.That(h.Enabled, Is.True, "kemer iki yarım kurulmalı");
+        Assert.That(h.LeanDeg, Is.EqualTo(RuleEngineV4SliceArenaVisualsDefaults.RibHalfLeanDeg));
+        Assert.That(h.ScaleMult, Is.EqualTo(RuleEngineV4SliceArenaVisualsDefaults.RibHalfScaleMult));
+        Assert.That(h.PivotYM, Is.EqualTo(RuleEngineV4SliceArenaVisualsDefaults.RibHalfPivotYM));
+        Assert.That(h.CrownYM, Is.EqualTo(RuleEngineV4SliceArenaVisualsDefaults.RibHalfCrownYM));
+        Assert.That(h.CrownOverlapM, Is.EqualTo(RuleEngineV4SliceArenaVisualsDefaults.RibHalfCrownOverlapM));
+
+        var whole = RuleEngineV4Catalog.FromJson("{\"slice_arena_visuals\":{\"ribs\":{\"count\":1}}}").SliceArenaVisuals.Ribs;
+        Assert.That(whole.Halves.Enabled, Is.False, "halves bloğu yoksa tek parça kemer");
+    }
+
+    [Test]
     public void Json_NoVisualsBlock_Disabled()
     {
         RuleEngineV4SliceArenaVisuals v = RuleEngineV4Catalog.FromJson("{}").SliceArenaVisuals;

@@ -24,18 +24,22 @@ namespace Dovus.Tests.PlayMode
         const string VisualsRoot = "ArenaVisuals";
         const string VisualPrefix = "Visual_";
         const int DrawCallBudget = 60;
+        const string BudgetReportFile = "arena-butce.txt";
         const int StatFrames = 10;
         const float CameraSettleSec = 1.5f;
         const float AngleTolDeg = 0.01f;
-        const float RibFootInnerFrac = 0.46f;
-        const float PlanShotHeightM = 75f;
-        const float HeartAimHeightM = 12f;
-        const float HeartShotBackM = 24f;
-        const float FadeShotStandXM = 7f;
-        const float NearKorFlatM = 1.5f;
-        const float NearKorUpM = 1.3f;
-        const float HearthShotBackM = 3f;
-        const float HearthShotUpM = 6f;
+        const int RibHalves = 2;
+        const string RibKorEmissionKeyword = "_KOR_EMISSION";
+        /// <summary>Genel çekim kaburga taçlarının (≈27–34 m) üstünden ve güneyden.</summary>
+        static readonly Vector3 OverviewFrom = new(0f, 52f, -68f);
+        static readonly Vector3 OverviewAt = new(0f, 6f, 2f);
+        const float PlanShotHeightM = 95f;
+        const float HeartAimHeightM = 16f;
+        const float HeartShotBackM = 30f;
+        /// <summary>Kaburga altı: oyuncu kemer koridorunda, kamera en alçak eğimde (yukarı bakar) kuzeye.</summary>
+        static readonly Vector3 UnderRibStand = new(-4f, 0f, -8f);
+        const float UnderRibYawDeg = 0f;
+        const float UnderRibPitchDeg = -8f;
 
         RuleEngineV4SliceArenaVisuals VisualsSpec => _catalog.Catalog.SliceArenaVisuals;
 
@@ -67,7 +71,7 @@ namespace Dovus.Tests.PlayMode
             foreach (TargetableHost t in _md._liveTargetables.Live)
                 Assert.That(IsVisual(t.transform), Is.False, $"otomatik hedef adayı görsel: {t.name}");
 
-            // Kaburga ayağının içinden 18 m duvara nişan: işaret görsele değil duvara düşmeli.
+            // Kaburga kemerinin altından 18 m duvara nişan (ayaklar duvarın dışında): işaret görsele değil duvara düşmeli.
             Transform rib = Ribs()[VisualsSpec.Ribs.Count / 2];
             float r = ArenaSpec.OuterWallCollisionRadiusM;
             Place(_player, new Vector3(-(r - WallAimStandoffM), 0f, rib.position.z));
@@ -131,6 +135,16 @@ namespace Dovus.Tests.PlayMode
                 Assert.That(lods.Length, Is.EqualTo(2), $"kaburga {i} LOD sayısı");
                 Assert.That(lods.All(l => l.renderers.Length > 0 && l.renderers.All(x => x != null)), $"kaburga {i} boş LOD");
                 Assert.That(lods[0].renderers.Intersect(lods[1].renderers), Is.Empty, $"kaburga {i} LOD0 ile LOD1 aynı model");
+                Assert.That(lods.All(l => l.renderers.Length == RibHalves), $"kaburga {i}: her LOD'da sol+sağ yarım olmalı");
+
+                // Bütçe: kor ayrı pass değil (tek malzeme, emisyon), gölge yok, GPU instancing açık.
+                foreach (Renderer r in rib.GetComponentsInChildren<Renderer>())
+                {
+                    Assert.That(r.shadowCastingMode, Is.EqualTo(UnityEngine.Rendering.ShadowCastingMode.Off), $"kaburga {i} {r.name} gölge döküyor");
+                    Assert.That(r.sharedMaterials.Length, Is.EqualTo(1), $"kaburga {i} {r.name} ek malzeme (kor pass'i) taşıyor");
+                    Assert.That(r.sharedMaterial.enableInstancing, $"kaburga {i} {r.name} malzemesinde GPU instancing kapalı");
+                    Assert.That(r.sharedMaterial.IsKeywordEnabled(RibKorEmissionKeyword), $"kaburga {i} {r.name} kor emisyonu kapalı");
+                }
             }
             Assert.That(layout[spec.HeartIndex].Scale, Is.EqualTo(layout.Max(p => p.Scale)), "kalp kaburgası en kalın değil");
         }
@@ -177,6 +191,12 @@ namespace Dovus.Tests.PlayMode
             if (all.DrawCalls > DrawCallBudget)
                 report.AppendLine($"[arena-butce] UYARI: {all.DrawCalls} draw call > bütçe {DrawCallBudget}");
             Debug.Log(report.ToString());
+            string dir = SessionCaptureDir();
+            if (dir != null)
+            {
+                System.IO.Directory.CreateDirectory(dir);
+                System.IO.File.WriteAllText(System.IO.Path.Combine(dir, BudgetReportFile), report.ToString());
+            }
         }
 
         [UnityTest]
@@ -191,31 +211,14 @@ namespace Dovus.Tests.PlayMode
                 orbit.enabled = false;
 
             follow.enabled = false;
-            yield return Shot(cam, new Vector3(0f, 34f, -40f), new Vector3(0f, 4f, 2f), "ortam_arena_genel.png");
+            yield return Shot(cam, OverviewFrom, OverviewAt, "ortam_arena_genel.png");
             yield return Shot(cam, Vector3.up * PlanShotHeightM, Vector3.zero, "ortam_plan_ustten.png", Vector3.forward);
 
             RuleEngineV4SliceArenaPlacement heart = VisualsSpec.Ribs.Layout()[VisualsSpec.Ribs.HeartIndex];
             var heartAt = new Vector3(0f, HeartAimHeightM, heart.ZM);
             yield return Shot(cam, heartAt + new Vector3(0f, 0f, HeartShotBackM), heartAt, "ortam_kalp_kaburga_kuzey.png");
 
-            // Oyuncu batı ayak bandının önünde: karakterin üstünde/arkasında kalan ayak ve kemer dither ile solar.
-            yield return FollowShot(follow, new Vector3(-FadeShotStandXM, 0f, 0f), 270f, 21f, "ortam_kemer_soluk_karakter_ustu.png");
-
-            follow.enabled = false;
-            RuleEngineV4SliceArenaHearth h = VisualsSpec.Hearth;
-            Vector3 hearth = new(h.XM, 0f, h.ZM);
-            Vector3 toCenter = -Flat(hearth).normalized;
-            yield return Shot(cam, hearth + toCenter * HearthShotBackM + Vector3.up * HearthShotUpM, hearth, "ortam_koy_duvar_ocak.png");
-
-            Vector3 stone = new(VisualsSpec.RuneStone.XM, 0f, VisualsSpec.RuneStone.ZM);
-            yield return Shot(cam, stone + Vector3.up * 3f, stone, "ortam_runtasi_ustten.png", Vector3.forward);
-
-            Transform rib = Ribs()[VisualsSpec.Ribs.Count / 2];
-            Vector3 foot = rib.position + Vector3.left * FootInnerM(rib) + Vector3.up * 1.5f;
-            // 2 m: zemin koru ayak tabanında; kameraya bu kadar yakın ayak kemer solmasıyla zaten dither'lı.
-            Vector3 footBase = Flat(foot);
-            yield return Shot(cam, footBase + Vector3.right * NearKorFlatM + Vector3.up * NearKorUpM, footBase, "ortam_kor_yakin_2m.png");
-            yield return Shot(cam, foot + Vector3.right * 11f + Vector3.up * 2f, foot, "ortam_kor_uzak_11m.png");
+            yield return FollowShot(follow, UnderRibStand, UnderRibYawDeg, UnderRibPitchDeg, "ortam_karakter_kaburga_alti.png");
             follow.enabled = true;
         }
 
@@ -236,13 +239,6 @@ namespace Dovus.Tests.PlayMode
             follow.OrbitPitchDeg = pitchDeg;
             yield return new WaitForSecondsRealtime(CameraSettleSec);
             yield return CaptureScreen(file);
-        }
-
-        /// <summary>Kaburga ayağının iç yüzü modelde yarı genişliğin ~%44'ünde; kor karesi o yüze bakar.</summary>
-        static float FootInnerM(Transform rib)
-        {
-            Renderer r = rib.GetComponentInChildren<Renderer>();
-            return r.bounds.extents.x * RibFootInnerFrac;
         }
 
         struct FrameStats
