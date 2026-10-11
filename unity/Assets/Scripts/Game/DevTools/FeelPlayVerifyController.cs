@@ -157,7 +157,7 @@ namespace Dovus.Game.DevTools
                 return Color.black;
             if (r.sharedMaterial.HasProperty("_BaseColor"))
                 return r.sharedMaterial.GetColor("_BaseColor");
-            return r.sharedMaterial.color;
+            return r.sharedMaterial.HasProperty("_Color") ? r.sharedMaterial.color : Color.black;
         }
 
         static string GetPath(Transform t)
