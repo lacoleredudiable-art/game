@@ -12,7 +12,7 @@ namespace Dovus.Game.Composition.Builders
     {
         static int _nextCocoonActor = RuleEngineV4SliceArenaBuilderDefaults.CocoonActorIdStart;
 
-        public static void BuildIfEnabled(WorldContext ctx, RuleEngineV4SliceArena arena)
+        public static void BuildIfEnabled(WorldContext ctx, RuleEngineV4SliceArena arena, RuleEngineV4SliceArenaVisuals visuals)
         {
             if (ctx.Tuning == null || !ctx.Tuning.RuleEngineV4.SliceScene || arena == null)
                 return;
@@ -20,13 +20,14 @@ namespace Dovus.Game.Composition.Builders
             var root = new GameObject("RuleEngineV4SliceArena");
             root.transform.SetParent(ctx.Host.transform, false);
 
-            BuildColumns(root.transform, arena);
+            Transform columns = BuildColumns(root.transform, arena);
             BuildOuterWall(root.transform, arena);
             BuildVisualRing(root.transform, arena);
-            BuildCocoons(ctx, root.transform, arena);
+            Transform cocoons = BuildCocoons(ctx, root.transform, arena);
+            RuleEngineV4SliceArenaVisualsBuilder.Build(ctx.Host.transform, columns, cocoons, visuals);
         }
 
-        static void BuildColumns(Transform parent, RuleEngineV4SliceArena arena)
+        static Transform BuildColumns(Transform parent, RuleEngineV4SliceArena arena)
         {
             var columnsRoot = new GameObject("Columns");
             columnsRoot.transform.SetParent(parent, false);
@@ -51,6 +52,7 @@ namespace Dovus.Game.Composition.Builders
                 if (renderer != null)
                     renderer.material.color = new Color(0.45f, 0.42f, 0.38f);
             }
+            return columnsRoot.transform;
         }
 
         static void BuildOuterWall(Transform parent, RuleEngineV4SliceArena arena)
@@ -122,7 +124,7 @@ namespace Dovus.Game.Composition.Builders
             lr.SetPositions(pts);
         }
 
-        static void BuildCocoons(WorldContext ctx, Transform parent, RuleEngineV4SliceArena arena)
+        static Transform BuildCocoons(WorldContext ctx, Transform parent, RuleEngineV4SliceArena arena)
         {
             var cocoRoot = new GameObject("Cocoons");
             cocoRoot.transform.SetParent(parent, false);
@@ -153,6 +155,7 @@ namespace Dovus.Game.Composition.Builders
                 if (renderer != null)
                     renderer.material.color = new Color(0.65f, 0.5f, 0.85f, 0.9f);
             }
+            return cocoRoot.transform;
         }
     }
 }

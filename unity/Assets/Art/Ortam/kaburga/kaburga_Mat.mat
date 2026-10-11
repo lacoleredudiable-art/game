@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: kaburga_Mat
+  m_Shader: {fileID: 4800000, guid: 89092d642e0308f44991507f5389c1a6, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - _HALF_CLIP
+  - _KOR_EMISSION
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 2800000, guid: 24c636eed1e5b9c4599c06782c5c9386, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _KorMask:
+        m_Texture: {fileID: 2800000, guid: b9cc800f57e5a7d4fa3c2c61bff43cce, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _FadeFarM: 14
+    - _FadeNearM: 6
+    - _FadeSoftness: 0.35
+    - _FadeStrength: 0.6
+    - _HalfClip: 1
+    - _Intensity: 1
+    - _KorEmission: 1
+    - _MaskBlend: 6
+    - _MaskTiling: 0.5
+    - _MaxGlow: 0.5
+    - _NoiseFloor: 0.35
+    - _NoiseScale: 0.07
+    - _PulseMin: 0.6
+    - _PulsePeriod: 60
+    m_Colors:
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CoreColor: {r: 4.2, g: 1.05, b: 0.18, a: 1}
+    - _FadeScreenCenter: {r: 0.5, g: 0.6, b: 0.35, a: 0.45}
+    - _MaskChannel: {r: 0, g: 1, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

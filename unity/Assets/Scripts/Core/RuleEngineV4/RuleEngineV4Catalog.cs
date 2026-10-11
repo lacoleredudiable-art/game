@@ -18,13 +18,15 @@ namespace Dovus.Core.RuleEngineV4
             RuleEngineV4Globals globals,
             RuleEngineV4WorldPhysics worldPhysics,
             RuleEngineV4SkillAnimCatalog skillAnim,
-            RuleEngineV4SliceArena sliceArena)
+            RuleEngineV4SliceArena sliceArena,
+            RuleEngineV4SliceArenaVisuals sliceArenaVisuals)
         {
             Scale = scale;
             Globals = globals;
             WorldPhysics = worldPhysics;
             SkillAnim = skillAnim;
             SliceArena = sliceArena;
+            SliceArenaVisuals = sliceArenaVisuals;
         }
 
         public RuleEngineV4Scale Scale { get; }
@@ -32,6 +34,7 @@ namespace Dovus.Core.RuleEngineV4
         public RuleEngineV4WorldPhysics WorldPhysics { get; }
         public RuleEngineV4SkillAnimCatalog SkillAnim { get; }
         public RuleEngineV4SliceArena SliceArena { get; }
+        public RuleEngineV4SliceArenaVisuals SliceArenaVisuals { get; }
         public IReadOnlyList<int> SliceRunes { get; private set; } = Array.Empty<int>();
 
         public bool TryGetVerb(int id, out RuleEngineV4Verb verb) => _verbs.TryGetValue(id, out verb!);
@@ -100,7 +103,8 @@ namespace Dovus.Core.RuleEngineV4
                 },
                 worldPhysics,
                 skillAnim,
-                sliceArena);
+                sliceArena,
+                RuleEngineV4SliceArenaVisuals.FromJson(root));
 
             foreach (KeyValuePair<string, JsonValue> kv in root["verbs"].AsObject())
                 if (int.TryParse(kv.Key, NumberStyles.Integer, CultureInfo.InvariantCulture, out int id))

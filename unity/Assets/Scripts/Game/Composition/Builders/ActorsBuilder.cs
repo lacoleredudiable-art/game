@@ -205,7 +205,8 @@ namespace Dovus.Game.Composition.Builders
             if (ctx.Tuning.RuleEngineV4.SliceScene)
             {
                 var catalogAccess = new RuleEngineV4CatalogAccess();
-                RuleEngineV4SliceArenaBuilder.BuildIfEnabled(ctx, catalogAccess.Catalog.SliceArena);
+                RuleEngineV4SliceArenaBuilder.BuildIfEnabled(
+                    ctx, catalogAccess.Catalog.SliceArena, catalogAccess.Catalog.SliceArenaVisuals);
             }
             RuleEngineV4PhysicsBodies.AttachIfEnabled(ctx);
         }
