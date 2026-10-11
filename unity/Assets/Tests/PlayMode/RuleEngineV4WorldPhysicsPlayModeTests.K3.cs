@@ -21,7 +21,7 @@ namespace Dovus.Tests.PlayMode
         const string SwordDashClip = "Kilic_ATIL";
         const string SwordStrikeClip = "Kilic_VUR";
         const string GripRight = "Grip_R";
-        const string BowSocket = "Socket_L";
+        const string GripLeft = "Grip_L";
         const string SwordObject = "Silah_Kilic";
         const string BowObject = "Silah_Yay";
         /// <summary>Komut satırı: -k3Capture &lt;klasör&gt; verilirse dilim sahnesinin görüntüsü kaydedilir.</summary>
@@ -72,7 +72,7 @@ namespace Dovus.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator K3_OwnWeapons_SwordAtZeroOnGripR_BowOnSocketL()
+        public IEnumerator K3_OwnWeapons_AtZeroOnHoldingHandGrip()
         {
             Equip(Kilic);
             yield return null;
@@ -80,7 +80,9 @@ namespace Dovus.Tests.PlayMode
             Transform rightHand = anim.GetBoneTransform(HumanBodyBones.RightHand);
             Transform leftHand = anim.GetBoneTransform(HumanBodyBones.LeftHand);
             Transform sword = ChildPath(rightHand, GripRight, SwordObject);
-            Transform bow = ChildPath(leftHand, BowSocket, BowObject);
+            Transform bow = ChildPath(leftHand, GripLeft, BowObject);
+            Assert.That(bow.localPosition.magnitude, Is.LessThan(1e-4f), "Yay Grip_L'de sıfır konumda değil");
+            Assert.That(Quaternion.Angle(bow.localRotation, Quaternion.identity), Is.LessThan(0.01f), "Yay Grip_L'de sıfır açıda değil");
             Assert.That(sword.gameObject.activeInHierarchy, Is.True, "Kılıç seçiliyken Silah_Kilic görünmüyor");
             Assert.That(bow.gameObject.activeSelf, Is.False, "Kılıç seçiliyken Silah_Yay görünüyor");
             Assert.That(sword.localPosition.magnitude, Is.LessThan(1e-4f), "Kılıç Grip_R'de sıfır konumda değil");

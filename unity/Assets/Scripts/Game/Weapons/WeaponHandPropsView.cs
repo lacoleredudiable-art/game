@@ -74,7 +74,7 @@ namespace Dovus.Game.Weapons
         static bool HasLeftHandProp(string weaponKey) => weaponKey != "kilic";
 
         /// <summary>
-        /// Görselin kendi silahları (k3: Grip_R / Socket_L altında Silah_*): anahtarın silahı görünür,
+        /// Görselin kendi silahları (k3: Grip_R / Grip_L altında Silah_*): anahtarın silahı görünür,
         /// diğerleri gizlenir. Mesh'i olmayan yer tutucu sahiplik saymaz; o silahta kayıt prop'u takılır.
         /// </summary>
         Transform ShowOwnWeapon(string weaponKey)
@@ -421,7 +421,7 @@ namespace Dovus.Game.Weapons
                 return false;
             if (name.IndexOf("mixamorig", System.StringComparison.OrdinalIgnoreCase) >= 0)
                 return false;
-            // Görselin kendi tutuş soketleri (k3 Grip_R / Socket_L) prop değil; silinirse silahı da gider.
+            // Görselin kendi tutuş soketleri (k3 Grip_R / Grip_L) prop değil; silinirse silahı da gider.
             if (name.StartsWith("Grip_", System.StringComparison.Ordinal)
                 || name.StartsWith("Socket_", System.StringComparison.Ordinal))
                 return false;

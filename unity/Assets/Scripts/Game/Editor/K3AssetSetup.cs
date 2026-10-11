@@ -45,30 +45,31 @@ namespace Dovus.Game.Editor
 
         static readonly Color EmissionColor = new(1f, 0.28f, 0.06f);
 
-        static readonly Vector4 BlenderIdentityWxyz = new(1f, 0f, 0f, 0f);
-
         /// <summary>
-        /// Blender soket-lokal ofsetleri (dönüş wxyz). Unity'de kemik yerel ekseni X'te aynalı:
-        /// konum (x,y,z) → (-x,y,z), dönüş (w,x,y,z) → Unity (x,-y,-z,w).
-        /// Grip_R'deki silah sıfır konum/sıfır açıyla takılır; Yay Blender'da sol elde (Socket_L) tutulur.
+        /// Kural: silah onu tutan elin Grip noktasına sıfır konum/sıfır açıyla takılır, model uzun ekseni +Z
+        /// (Vfx_Kabza orijinde, Vfx_Tip +Z ucunda). Silah başına açı yok; tutuş pozu Grip noktasındadır.
         /// </summary>
-        static readonly (string Name, string Fbx, string Socket, Vector3 BlenderPos, Vector4 BlenderRotWxyz)[] Weapons =
+        static readonly (string Name, string Fbx, string Socket)[] Weapons =
         {
-            ("Silah_Kilic", "Kilic", GripRight, Vector3.zero, BlenderIdentityWxyz),
-            ("Silah_Yay", "Yay", "Socket_L", new Vector3(0.0306f, 0.1050f, 0.0319f), new Vector4(0.6578f, 0.2980f, -0.3196f, -0.6135f)),
+            ("Silah_Kilic", "Kilic", GripRight),
+            ("Silah_Yay", "Yay", GripLeft),
         };
 
         internal const string GripRight = "Grip_R";
-        const string LegacySocketRight = "Socket_R";
+        internal const string GripLeft = "Grip_L";
+        static readonly (string Legacy, string Grip)[] LegacySockets = { ("Socket_R", GripRight), ("Socket_L", GripLeft) };
 
         /// <summary>
-        /// Grip_R avuç içi tutuş noktası: eski Socket_R (el kemiği ucu, +Y 0.08 m) + Kılıç'ın Blender
-        /// ofseti; Kılıç'ın dünya pozu değişmez. Socket_L kemik başında.
+        /// Grip noktaları = Blender Tutus_* boşlukları (soket-lokal; dönüş wxyz). Unity'de kemik yerel ekseni
+        /// X'te aynalı: konum (x,y,z) → (-x,y,z), dönüş (w,x,y,z) → Unity (x,-y,-z,w).
+        /// Grip_R: eski Socket_R (el kemiği ucu, +Y 0.08 m) + Tutus_Kilic. Grip_L: Socket_L (kemik başı) + Tutus_Yay.
+        /// Ek ±90° X verilmez: Blender v024'te silah uzun ekseni (+Z) Tutus altında birim dönüşle duruyor;
+        /// ±90° X her karede Blender pozundan 90° sapar.
         /// </summary>
         static readonly (string Socket, Vector3 BlenderPos, Vector4 BlenderRotWxyz)[] SocketOffsets =
         {
             (GripRight, new Vector3(-0.0324f, 0.1050f, 0.0281f), new Vector4(0.5141f, 0.3602f, 0.2514f, 0.7367f)),
-            ("Socket_L", Vector3.zero, BlenderIdentityWxyz),
+            (GripLeft, new Vector3(0.0306f, 0.1050f, 0.0319f), new Vector4(0.6578f, 0.2980f, -0.3196f, -0.6135f)),
         };
 
         /// <summary>ActorView'un genel state adları → k3 klibi.</summary>
@@ -115,7 +116,7 @@ namespace Dovus.Game.Editor
 
         internal static Vector3 BlenderToUnityLocal(Vector3 p) => new(-p.x, p.y, p.z);
 
-        [MenuItem("Dovus/k3/Silahları soketlere tak (Grip_R / Socket_L)")]
+        [MenuItem("Dovus/k3/Silahları soketlere tak (Grip_R / Grip_L)")]
         public static void RemountWeapons()
         {
             GameObject root = PrefabUtility.LoadPrefabContents(PrefabPath);
@@ -373,9 +374,12 @@ namespace Dovus.Game.Editor
         /// <summary>Soketteki boş Silah_* yer tutucusunun yerine silah FBX'i; Vfx_Tip/Vfx_Kabza FBX'ten gelir.</summary>
         static void MountWeapons(GameObject root)
         {
-            Transform legacy = FindDeep(root.transform, LegacySocketRight);
-            if (legacy != null && FindDeep(root.transform, GripRight) == null)
-                legacy.name = GripRight;
+            foreach ((string legacyName, string grip) in LegacySockets)
+            {
+                Transform legacy = FindDeep(root.transform, legacyName);
+                if (legacy != null && FindDeep(root.transform, grip) == null)
+                    legacy.name = grip;
+            }
 
             foreach ((string socketName, Vector3 offset, Vector4 rotWxyz) in SocketOffsets)
             {
@@ -405,8 +409,8 @@ namespace Dovus.Game.Editor
                     weapon.name = w.Name;
                     weapon.transform.SetSiblingIndex(sibling);
                 }
-                weapon.transform.localPosition = BlenderToUnityLocal(w.BlenderPos);
-                weapon.transform.localRotation = BlenderToUnityLocal(w.BlenderRotWxyz);
+                weapon.transform.localPosition = Vector3.zero;
+                weapon.transform.localRotation = Quaternion.identity;
                 weapon.transform.localScale = Vector3.one;
                 foreach (string vfx in new[] { "Vfx_Tip", "Vfx_Kabza" })
                 {

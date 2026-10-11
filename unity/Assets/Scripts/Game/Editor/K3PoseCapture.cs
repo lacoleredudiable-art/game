@@ -38,9 +38,11 @@ namespace Dovus.Game.Editor
         {
             ("Kilic_VUR", 7, "Silah_Kilic", new[] { "34", "on" }),
             ("Yay_VUR", 11, "Silah_Yay", new[] { "34", "on", "yan" }),
+            ("Loko_Kilic_Idle", 54, "Silah_Kilic", new[] { "34", "on" }),
+            ("Loko_Yay_Idle", 77, "Silah_Yay", new[] { "34", "on" }),
         };
 
-        [MenuItem("Dovus/k3/Poz görüntüsü (Kilic_VUR 7 önden, Yay_VUR 11 önden/yandan)")]
+        [MenuItem("Dovus/k3/Poz görüntüsü (VUR vuruş kareleri + idle)")]
         public static void Capture() => Capture(DefaultOut);
 
         public static void CaptureBatch()

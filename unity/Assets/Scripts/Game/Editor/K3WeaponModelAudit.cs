@@ -6,14 +6,14 @@ using UnityEngine;
 namespace Dovus.Game.Editor
 {
     /// <summary>
-    /// k3 silah modeli kuralı: orijin tutuş noktasında, uzun eksen Unity +Y (saptan başa), ölçek 1;
-    /// Vfx_Kabza orijinde, Vfx_Tip +Y ucunda. Yalnız ölçer ve yazdırır; FBX'i düzeltmez.
+    /// k3 silah modeli kuralı: silah onu tutan elin Grip noktasına takılır; orijin tutuş noktasında,
+    /// uzun eksen +Z (saptan başa), ölçek 1; Vfx_Kabza orijinde, Vfx_Tip +Z ucunda.
+    /// Yalnız ölçer ve yazdırır; FBX'i düzeltmez.
     /// </summary>
     public static class K3WeaponModelAudit
     {
         static readonly string[] Models = { "Kilic", "Yay" };
         const float PosTolM = 0.005f;
-        const float AxisTolDeg = 5f;
 
         [MenuItem("Dovus/k3/Silah model kuralı (ölç, yazdır)")]
         public static string Run()
@@ -40,16 +40,16 @@ namespace Dovus.Game.Editor
                 Vector3 hiltPos = hilt != null ? root.InverseTransformPoint(hilt.position) : Vector3.positiveInfinity;
                 Vector3 tipPos = tip != null ? root.InverseTransformPoint(tip.position) : Vector3.positiveInfinity;
                 Vector3 size = b.size;
-                string longAxis = size.y >= size.x && size.y >= size.z ? "+Y" : size.z >= size.x ? "Z" : "X";
+                string longAxis = size.z >= size.x && size.z >= size.y ? "+Z" : size.y >= size.x ? "Y" : "X";
                 Vector3 shaft = tipPos - hiltPos;
-                float tipFromUp = Vector3.Angle(Vector3.up, shaft);
+                float tipFromLong = Vector3.Angle(Vector3.forward, shaft);
                 bool scaleOk = root.localScale == Vector3.one && Mathf.Approximately(importer.globalScale, 1f);
                 bool hiltOk = hiltPos.magnitude <= PosTolM;
-                bool axisOk = longAxis == "+Y";
-                bool tipOk = tipFromUp <= AxisTolDeg && Mathf.Abs(tipPos.y - b.max.y) <= PosTolM;
+                bool axisOk = longAxis == "+Z";
+                bool tipOk = Mathf.Abs(tipPos.z - b.max.z) <= PosTolM;
                 return $"{name}: ölçek={root.localScale.x:0.###} globalScale={importer.globalScale:0.###} [{Ok(scaleOk)}] | " +
                        $"mesh min={b.min:F3} max={b.max:F3} boyut={size:F3} uzun eksen={longAxis} [{Ok(axisOk)}] | " +
-                       $"Vfx_Kabza={hiltPos:F4} [{Ok(hiltOk)}] | Vfx_Tip={tipPos:F4} +Y'den {tipFromUp:0.0}° [{Ok(tipOk)}]";
+                       $"Vfx_Kabza={hiltPos:F4} [{Ok(hiltOk)}] | Vfx_Tip={tipPos:F4} +Z ucunda, +Z'den {tipFromLong:0.0}° [{Ok(tipOk)}]";
             }
             finally
             {
