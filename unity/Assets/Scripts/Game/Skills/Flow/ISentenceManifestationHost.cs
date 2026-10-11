@@ -41,6 +41,8 @@ namespace Dovus.Game.Skills.Flow
 
         void RefreshBuildingMobility(IReadOnlyList<SentenceWord> words);
         void SyncVisualDelivery();
+        /// <summary>Düz vuruş görseli: yeni yolda silah setinin düz vuruş klibi, yoksa eski döngü.</summary>
+        void PlayBasicStrikeVisual(int slotRune);
         void TryBeginBasicStrikeStep();
         SkillResolution ResolveSkillWords(IReadOnlyList<SentenceWord> words);
         WeaponSkillCompatibility WeaponCompatibilityFor(SkillResolution skill);

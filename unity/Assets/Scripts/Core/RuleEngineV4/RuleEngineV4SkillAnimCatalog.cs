@@ -46,8 +46,12 @@ namespace Dovus.Core.RuleEngineV4
                 RuleEngineV4SkillAnimEvent ev = ParseEvents(entry["events"]);
                 JsonValue silhouette = entry["entry_silhouette"];
                 int entryCell = ParseAtlasCell(silhouette["atlas_cell"]);
-                float entryLife = silhouette["life_sec"].AsFloat();
-                catalog._rules.Add(new RuleEntry(weapon, verb, adj, clip, state, ev, entryCell, entryLife));
+                var entrySilhouette = new EntrySilhouette(
+                    entryCell,
+                    silhouette["life_sec"].AsFloat(),
+                    silhouette["fade_in_sec"].AsFloat(),
+                    silhouette["fade_out_sec"].AsFloat());
+                catalog._rules.Add(new RuleEntry(weapon, verb, adj, clip, state, ev, entrySilhouette));
             }
 
             return catalog;
@@ -77,8 +81,10 @@ namespace Dovus.Core.RuleEngineV4
                 chosen.Clip,
                 chosen.FallbackState,
                 chosen.Events,
-                chosen.EntrySilhouetteCell,
-                chosen.EntrySilhouetteLifeSec);
+                chosen.Entry.Cell,
+                chosen.Entry.LifeSec,
+                chosen.Entry.FadeInSec,
+                chosen.Entry.FadeOutSec);
         }
 
         /// <summary>"A".."H" → 0..7; başka her şey → yok.</summary>
@@ -125,6 +131,22 @@ namespace Dovus.Core.RuleEngineV4
             return RuleEngineV4SkillAnimEvent.None;
         }
 
+        readonly struct EntrySilhouette
+        {
+            public EntrySilhouette(int cell, float lifeSec, float fadeInSec, float fadeOutSec)
+            {
+                Cell = cell;
+                LifeSec = lifeSec;
+                FadeInSec = fadeInSec;
+                FadeOutSec = fadeOutSec;
+            }
+
+            public int Cell { get; }
+            public float LifeSec { get; }
+            public float FadeInSec { get; }
+            public float FadeOutSec { get; }
+        }
+
         readonly struct RuleEntry
         {
             public RuleEntry(
@@ -134,8 +156,7 @@ namespace Dovus.Core.RuleEngineV4
                 string clip,
                 string fallbackState,
                 RuleEngineV4SkillAnimEvent events,
-                int entrySilhouetteCell,
-                float entrySilhouetteLifeSec)
+                EntrySilhouette entry)
             {
                 WeaponId = weaponId;
                 VerbRune = verbRune;
@@ -143,8 +164,7 @@ namespace Dovus.Core.RuleEngineV4
                 Clip = clip;
                 FallbackState = fallbackState;
                 Events = events;
-                EntrySilhouetteCell = entrySilhouetteCell;
-                EntrySilhouetteLifeSec = entrySilhouetteLifeSec;
+                Entry = entry;
             }
 
             public int WeaponId { get; }
@@ -153,8 +173,7 @@ namespace Dovus.Core.RuleEngineV4
             public string Clip { get; }
             public string FallbackState { get; }
             public RuleEngineV4SkillAnimEvent Events { get; }
-            public int EntrySilhouetteCell { get; }
-            public float EntrySilhouetteLifeSec { get; }
+            public EntrySilhouette Entry { get; }
         }
     }
 }

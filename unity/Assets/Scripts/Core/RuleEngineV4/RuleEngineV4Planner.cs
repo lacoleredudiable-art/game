@@ -37,8 +37,9 @@ namespace Dovus.Core.RuleEngineV4
             float rangeM = EffectiveRangeM(verb, weapon);
             float powerMult = AdjectivePowerMult(adjective, g);
             float damageScale = weapon.DamageScale(g.RitmReferenceTotalSec);
+            bool backstep = verb.Id == 3 && weapon.MotionIsBackstep(adjective.Id);
 
-            if (ctx.HasValidTarget && !ctx.TargetInWeaponRange)
+            if (ctx.HasValidTarget && !ctx.TargetInWeaponRange && !backstep)
                 commands.Add(new MenzileYuruCommand { RangeM = rangeM });
 
             float charge = 0;
@@ -55,6 +56,18 @@ namespace Dovus.Core.RuleEngineV4
                 DamageScale = damageScale,
                 PrefireMoves = weapon.PrefireMoves,
             });
+
+            if (backstep)
+            {
+                // İp/uçuş yalnız motion_rope_adjective_rune ile; diğer Hareket kombolarında mermi yok.
+                commands.Add(new KendiniTasiCommand
+                {
+                    MaxDistanceM = weapon.BackstepM,
+                    SpeedMps = weapon.BackstepSpeedMps,
+                    Backstep = true,
+                });
+                return new CommandPlan(verbRune, adjectiveRune, weaponId, commands, target);
+            }
 
             if (adjective.Id == 9 && verb.Id == 9)
             {

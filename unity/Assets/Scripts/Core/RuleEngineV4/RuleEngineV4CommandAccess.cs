@@ -105,6 +105,23 @@ namespace Dovus.Core.RuleEngineV4
             return false;
         }
 
+        /// <summary>Geri sıçrama planı: sıçrama süresi = mesafe / hız.</summary>
+        public static bool TryBackstep(CommandPlan plan, out float hopSec)
+        {
+            hopSec = 0f;
+            if (plan == null)
+                return false;
+            foreach (PhysicsCommand cmd in plan.Commands)
+            {
+                if (cmd is KendiniTasiCommand { Backstep: true } hop && hop.SpeedMps > 0f)
+                {
+                    hopSec = hop.MaxDistanceM / hop.SpeedMps;
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public static bool TryPush(PhysicsCommand cmd, out float distanceM)
         {
             if (cmd is ItCommand push)

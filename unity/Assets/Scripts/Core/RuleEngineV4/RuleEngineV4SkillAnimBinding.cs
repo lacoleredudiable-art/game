@@ -7,13 +7,17 @@ namespace Dovus.Core.RuleEngineV4
             string fallbackAnimatorState,
             RuleEngineV4SkillAnimEvent events,
             int entrySilhouetteCell = RuleEngineV4SkillAnimDefaults.NoEntrySilhouetteCell,
-            float entrySilhouetteLifeSec = 0f)
+            float entrySilhouetteLifeSec = 0f,
+            float entrySilhouetteFadeInSec = 0f,
+            float entrySilhouetteFadeOutSec = 0f)
         {
             Clip = clip ?? string.Empty;
             FallbackAnimatorState = fallbackAnimatorState ?? string.Empty;
             Events = events;
             EntrySilhouetteCell = entrySilhouetteCell;
             EntrySilhouetteLifeSec = entrySilhouetteLifeSec;
+            EntrySilhouetteFadeInSec = entrySilhouetteFadeInSec;
+            EntrySilhouetteFadeOutSec = entrySilhouetteFadeOutSec;
         }
 
         public string Clip { get; }
@@ -23,6 +27,10 @@ namespace Dovus.Core.RuleEngineV4
         /// <summary>State girişinde bir kez doğan silüet atlas hücresi (A..H → 0..7); -1 = yok.</summary>
         public int EntrySilhouetteCell { get; }
         public float EntrySilhouetteLifeSec { get; }
+        /// <summary>entry_silhouette fade_in_sec; 0 = kartın varsayılan belirmesi.</summary>
+        public float EntrySilhouetteFadeInSec { get; }
+        /// <summary>entry_silhouette fade_out_sec; 0 = kartın varsayılan sönmesi.</summary>
+        public float EntrySilhouetteFadeOutSec { get; }
 
         public bool HasEntrySilhouette => EntrySilhouetteCell >= 0;
 

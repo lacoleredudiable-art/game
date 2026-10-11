@@ -35,13 +35,6 @@ namespace Dovus.Game.Vfx
         public const float TrailFlowTurnsPerSec = 2f;
         public const float FootSparkLiftM = 0.05f;
 
-        public const float AwakenGlowLocalX = 0.15f;
-        public const float AwakenGlowLocalZ = 0.35f;
-        public const float AwakenGlowScaleX = 0.12f;
-        public const float AwakenGlowScaleY = 0.9f;
-        public const float AwakenGlowScaleZ = 0.12f;
-        public const float AwakenIdleEpsilon = 0.01f;
-
         public const float SilhouetteMinLenM = 1.2f;
         public const float SlashArcLifePadSec = 0.05f;
         public const float ClawDestroyPadSec = 0.05f;

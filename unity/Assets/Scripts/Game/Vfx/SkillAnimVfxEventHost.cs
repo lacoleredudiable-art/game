@@ -1,4 +1,5 @@
 using Dovus.Core.RuleEngineV4;
+using Dovus.Game.Actors;
 using UnityEngine;
 
 namespace Dovus.Game.Vfx
@@ -10,27 +11,62 @@ namespace Dovus.Game.Vfx
     /// </summary>
     public sealed class SkillAnimVfxEventHost : MonoBehaviour
     {
+        /// <summary>Kor izi skill'e aittir: düz vuruş klibi aynı olsa da bu olaylar dinlenmez.</summary>
+        public const RuleEngineV4SkillAnimEvent SkillOnlyEvents =
+            RuleEngineV4SkillAnimEvent.TrailOn | RuleEngineV4SkillAnimEvent.TrailOff;
+
         RuleDrivenVfxDirector _director;
         RuleEngineV4SkillAnimEvent _mask = RuleEngineV4SkillAnimEvent.TrailOn
             | RuleEngineV4SkillAnimEvent.TrailOff
             | RuleEngineV4SkillAnimEvent.Impact
             | RuleEngineV4SkillAnimEvent.Ejder;
+        readonly SkillClipHold _basicStrike = new();
+        RuleEngineV4SkillAnimEvent _basicStrikeMask;
+        Animator _animator;
 
         public void Bind(RuleDrivenVfxDirector director) => _director = director;
 
-        public void SetEventMask(RuleEngineV4SkillAnimEvent mask) =>
+        /// <summary>Skill çağrısı: olay maskesi klip kuralından; düz vuruş penceresi kapanır.</summary>
+        public void SetEventMask(RuleEngineV4SkillAnimEvent mask)
+        {
             _mask = mask;
+            _basicStrike.Release();
+        }
+
+        /// <summary>
+        /// Düz vuruş klibi state'i oynarken yalnız bu maske geçer, Trail_On / Trail_Off asla.
+        /// State'ten çıkılınca skill maskesi geri gelir.
+        /// </summary>
+        public void BeginBasicStrike(string stateName, RuleEngineV4SkillAnimEvent events)
+        {
+            _basicStrike.Hold(stateName);
+            _basicStrikeMask = events & ~SkillOnlyEvents;
+        }
+
+        /// <summary>Düz vuruş penceresinde gelip yutulan Trail_On sayısı (test kanıtı).</summary>
+        public int SuppressedTrailEvents { get; private set; }
+
+        bool Allows(RuleEngineV4SkillAnimEvent ev)
+        {
+            if (_animator == null)
+                _animator = GetComponent<Animator>();
+            if (_basicStrike.IsHeld(_animator))
+                return (_basicStrikeMask & ev) != 0;
+            return (_mask & ev) != 0;
+        }
 
         // Unity Animation Event fonksiyon adları (klip marker'ları).
         public void Trail_On()
         {
-            if ((_mask & RuleEngineV4SkillAnimEvent.TrailOn) != 0)
+            if (Allows(RuleEngineV4SkillAnimEvent.TrailOn))
                 _director?.OnTrailOn();
+            else if (_basicStrike.IsHeld(_animator))
+                SuppressedTrailEvents++;
         }
 
         public void Trail_Off()
         {
-            if ((_mask & RuleEngineV4SkillAnimEvent.TrailOff) != 0)
+            if (Allows(RuleEngineV4SkillAnimEvent.TrailOff))
                 _director?.OnTrailOff();
         }
 
@@ -43,7 +79,7 @@ namespace Dovus.Game.Vfx
         public void Impact()
         {
             ImpactEvents++;
-            if ((_mask & RuleEngineV4SkillAnimEvent.Impact) != 0)
+            if (Allows(RuleEngineV4SkillAnimEvent.Impact))
                 _director?.OnImpactAnimEvent();
         }
 
@@ -51,7 +87,7 @@ namespace Dovus.Game.Vfx
 
         public void Ejder()
         {
-            if ((_mask & RuleEngineV4SkillAnimEvent.Ejder) != 0)
+            if (Allows(RuleEngineV4SkillAnimEvent.Ejder))
                 _director?.OnEjderAnimEvent();
         }
 

@@ -51,7 +51,6 @@ namespace Dovus.Game.Vfx
         public const float HitForwardMin = 0.2f;
         public const float DashStartLift = 0.3f;
         public const float SilhouettePathLift = 0.4f;
-        public const float AwakenAlphaBias = 0.5f;
         public const float TrailRebuildAlpha = 0.15f;
         public const int LightningJagHashMul = 37;
         public const int LightningJagMod = 7;

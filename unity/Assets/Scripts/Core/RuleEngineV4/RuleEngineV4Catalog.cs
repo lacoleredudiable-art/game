@@ -203,6 +203,9 @@ namespace Dovus.Core.RuleEngineV4
                 TravelSpeedMps = F(node["travel_speed_mps"], 10),
                 TravelSkillAllowed = node["travel_skill_allowed"].AsBool(false),
                 HitParts = node["hit_parts"].AsInt(1),
+                MotionRopeAdjectiveRune = node["motion_rope_adjective_rune"].AsInt(0),
+                BackstepM = F(node["backstep_m"], 0),
+                BackstepSpeedMps = F(node["backstep_speed_mps"], 0),
             };
         }
 
