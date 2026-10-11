@@ -51,7 +51,7 @@ namespace Dovus.Game.Editor
         }
 
         /// <summary>
-        /// Batchmode girişi: `-executeMethod Dovus.Game.EditorTools.AndroidBuilder.BuildFromCommandLine`.
+        /// Batchmode girişi: `-executeMethod Dovus.Game.Editor.AndroidBuilder.BuildFromCommandLine`.
         /// `-dovusRelease` release APK alır; `-dovusOutput <yol>` çıktı yolu.
         /// </summary>
         public static void BuildFromCommandLine()
