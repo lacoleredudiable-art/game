@@ -20,7 +20,7 @@ namespace Dovus.Tests.PlayMode
     public sealed partial class RuleEngineV4WorldPhysicsPlayModeTests
     {
         const string TaklaClip = "Ortak_Takla";
-        const float WingLifeSec = 0.3f;
+        const float WingLifeSec = 0.7f;
         const string SharedAtlasName = "Ejder_Vfx_Atlas";
         const int SharedAtlasPx = 2048;
         const string VertexDissolveKeyword = "_VERTEX_DISSOLVE";
@@ -43,7 +43,7 @@ namespace Dovus.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator Yay_Hareket_TaklaEntry_SpawnsOneWingSilhouette()
+        public IEnumerator Yay_Hareket_BackstepEntry_SpawnsOneWingSilhouette()
         {
             FreezeBoss();
             Equip(Yay);
@@ -57,8 +57,8 @@ namespace Dovus.Tests.PlayMode
             var w = new SilhouetteWatch();
             int livePlaysBefore = card.PlayCount;
             Assert.That(_cast.TryLaunchCombo(3, 1, out _), Is.True, $"{_label} cast edilmedi");
-            Assert.That(bridge.LastClipName, Is.EqualTo(TaklaClip), $"{_label} klibi");
-            Assert.That(bridge.LastExactClipFound && bridge.LastPlayApplied, Is.True, $"{_label} Takla oynamadı");
+            Assert.That(bridge.LastClipName, Is.EqualTo(BackstepClip), $"{_label} klibi");
+            Assert.That(bridge.LastExactClipFound && bridge.LastPlayApplied, Is.True, $"{_label} geri sıçrama oynamadı");
             yield return WatchSilhouette(card, w, captureName: "yay3_cift_kanat.png");
 
             Assert.That(card.PlayCount - livePlaysBefore, Is.EqualTo(1), "Yay+3 tam bir silüet kartı");
