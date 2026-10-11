@@ -97,6 +97,7 @@ namespace UnityEngine
         public void SetTriangles(int[] tris, int submesh) => triangles = tris;
         public void SetTriangles(List<int> tris, int submesh) => triangles = tris.ToArray();
         public void SetTriangles(int[] tris, int submesh, bool calculateBounds) => triangles = tris;
+        public void SetTriangles(List<int> tris, int submesh, bool calculateBounds) => triangles = tris.ToArray();
         public void SetIndices(int[] indices, MeshTopology topology, int submesh) => triangles = indices;
         public void SetNormals(List<Vector3> n) => normals = n.ToArray();
         public void SetUVs(int channel, List<Vector2> uvs) => uv = uvs.ToArray();

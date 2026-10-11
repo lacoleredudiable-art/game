@@ -180,7 +180,22 @@ namespace UnityEngine
         {
             if (type == typeof(TextAsset) || type == typeof(Object))
                 return LoadText(path);
+            if (type == typeof(Material))
+                return LoadMaterial(path);
             return null;
+        }
+
+        static readonly Dictionary<string, Material> s_materials = new();
+
+        /// <summary>.mat diskte varsa gölgelendiricisiz yer tutucu (başsız koşucu çizmez; varlık yeter).</summary>
+        static Material LoadMaterial(string path)
+        {
+            if (s_materials.TryGetValue(path, out Material cached)) return cached;
+            Material found = !string.IsNullOrEmpty(Root) && FindIgnoreCase(Root, path + ".mat") != null
+                ? new Material((Shader)null) { name = Path.GetFileName(path) }
+                : null;
+            s_materials[path] = found;
+            return found;
         }
 
         static TextAsset LoadText(string path)

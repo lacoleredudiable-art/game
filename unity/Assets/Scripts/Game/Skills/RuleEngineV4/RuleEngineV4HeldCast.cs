@@ -189,7 +189,8 @@ namespace Dovus.Game.Skills.RuleEngineV4
         {
             if (_ring != null)
                 return;
-            _ring = RuleEngineV4TargetPickRingView.Create(_cast.OwnerColor, Tick);
+            EjderVfxBatchHost batch = RuleDrivenVfxSink.Resolve(Actor())?.Batch;
+            _ring = RuleEngineV4TargetPickRingView.Create(batch, _cast.OwnerColor, Tick);
             _ring.transform.SetParent(_director.transform, true);
         }
 

@@ -165,7 +165,8 @@ namespace Dovus.Tests.PlayMode
             DragonSilhouetteCardView card = SilhouetteCard();
             var runes = _player.GetComponentInChildren<DragonRuneFlashView>(true);
             Assert.That(runes, Is.Not.Null, "DragonRuneFlashView");
-            var ring = Dovus.Game.Skills.RuleEngineV4.RuleEngineV4TargetPickRingView.Create(Color.red, null);
+            EjderVfxBatchHost batch = VfxBatch();
+            var ring = Dovus.Game.Skills.RuleEngineV4.RuleEngineV4TargetPickRingView.Create(batch, Color.red, null);
             try
             {
                 Vector3 from = _player.position + Vector3.up;
@@ -175,8 +176,6 @@ namespace Dovus.Tests.PlayMode
                 ring.ShowOnSurface(_player.position, Vector3.up);
                 yield return null;
 
-                EjderVfxBatch batch = EjderVfxBatch.Current;
-                Assert.That(batch, Is.Not.Null, "ortak efekt batch'i yok");
                 AssertSharedAtlas(batch.SharedMaterial, "batch");
                 Assert.That(card.CardMaterial, Is.SameAs(batch.SharedMaterial), "silüet ayrı materyal");
                 Assert.That(runes.LetterMaterial, Is.SameAs(batch.SharedMaterial), "harf ayrı materyal");
@@ -206,6 +205,15 @@ namespace Dovus.Tests.PlayMode
             var card = _player.GetComponentInChildren<DragonSilhouetteCardView>(true);
             Assert.That(card, Is.Not.Null, "DragonSilhouetteCardView yok");
             return card;
+        }
+
+        /// <summary>Sahne kurulumunun oyuncu efekt yönetmenine bağladığı ortak atlas batch'i.</summary>
+        EjderVfxBatchHost VfxBatch()
+        {
+            var vfx = _player.GetComponentInChildren<RuleDrivenVfxDirector>();
+            Assert.That(vfx, Is.Not.Null, "RuleDrivenVfxDirector");
+            Assert.That(vfx.Batch, Is.Not.Null, "ortak efekt batch'i bağlı değil");
+            return vfx.Batch;
         }
 
         IEnumerator WatchSilhouette(DragonSilhouetteCardView card, SilhouetteWatch w, string captureName = null)

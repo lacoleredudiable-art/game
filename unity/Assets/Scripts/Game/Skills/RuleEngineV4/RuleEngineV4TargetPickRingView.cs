@@ -8,13 +8,14 @@ namespace Dovus.Game.Skills.RuleEngineV4
     /// <summary>
     /// Hedef seçme açıkken parmağın altındaki seçilebilir hedefte ince kor halkası:
     /// sahibin renginde, ortak efekt atlasının halka hücresi, ortak VFX_Kor batch'i
-    /// (<see cref="EjderVfxBatch"/>; siluet ve harf flaşıyla aynı materyal).
+    /// (<see cref="EjderVfxBatchHost"/>; siluet ve harf flaşıyla aynı materyal).
     /// Gösterilirken hafif nabız atar, gizlenince (parmak bırakılınca) kısa sürede söner
     /// (kural-motoru-v4.json slice_vfx.target_ring).
     /// </summary>
     public sealed class RuleEngineV4TargetPickRingView : MonoBehaviour, IEjderVfxQuadSource
     {
         System.Action _tick;
+        EjderVfxBatchHost _batch;
         bool _visible;
         bool _fading;
         float _shownAt;
@@ -29,7 +30,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
         public bool Fading => _fading;
         public TargetableHost ShownTarget { get; private set; }
         /// <summary>Ortak batch materyali (siluet, harf, halka aynı).</summary>
-        public Material RingMaterial => EjderVfxBatch.Instance.SharedMaterial;
+        public Material RingMaterial => _batch != null ? _batch.SharedMaterial : null;
         /// <summary>Halka kor rengi (sahip rengi × HDR); köşe rengi = bu × yoğunluk × nabız parlaklığı.</summary>
         public Color CoreColor { get; private set; }
         public RuleEngineV4UvRect RingUv => RuleVfxSettings.Slice.Atlas.RingUv;
@@ -39,23 +40,27 @@ namespace Dovus.Game.Skills.RuleEngineV4
         public float DrawAlpha { get; private set; }
 
         /// <summary><paramref name="tick"/> her kare çağrılır (basılı tutma durumunu halka sürer).</summary>
-        public static RuleEngineV4TargetPickRingView Create(Color ownerColor, System.Action tick)
+        public static RuleEngineV4TargetPickRingView Create(EjderVfxBatchHost batch, Color ownerColor, System.Action tick)
         {
             var go = new GameObject("TargetPickRing");
             var view = go.AddComponent<RuleEngineV4TargetPickRingView>();
             view._tick = tick;
-            view.Build(ownerColor);
+            view.Build(batch, ownerColor);
             return view;
         }
 
         void Update() => _tick?.Invoke();
 
-        void Build(Color ownerColor)
+        void Build(EjderVfxBatchHost batch, Color ownerColor)
         {
             Color core = ownerColor * RuleVfxArtDefaults.CoreHdrMult;
             core.a = 1;
             CoreColor = core;
-            EjderVfxBatch.Register(this);
+            _batch = batch;
+            if (_batch != null)
+                _batch.Register(this);
+            else
+                Debug.LogError("[TargetPickRing] efekt batch'i bağlı değil; halka çizilmez.");
         }
 
         public void ShowOnTarget(TargetableHost target)
@@ -109,7 +114,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             _fading = false;
         }
 
-        public void EmitQuads(EjderVfxBatch batch)
+        public void EmitQuads(EjderVfxBatchHost batch)
         {
             RuleEngineV4TargetRingFx fx = RuleVfxSettings.Slice.TargetRing;
             float now = Time.unscaledTime;
@@ -120,18 +125,15 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 alpha = 1f;
                 pulseAt = now - _shownAt;
             }
-            else if (_fading)
-            {
-                alpha = fx.ReleaseAlpha(now - _releasedAt);
-                pulseAt = _releasedAt - _shownAt;
-                if (alpha <= 0f)
-                    _fading = false;
-            }
             else
-                alpha = pulseAt = 0f;
+            {
+                alpha = _fading ? fx.ReleaseAlpha(now - _releasedAt) : 0f;
+                pulseAt = _releasedAt - _shownAt;
+                _fading = alpha > 0f;
+            }
 
             DrawAlpha = alpha;
-            if (alpha <= 0f)
+            if (!_visible && !_fading)
                 return;
             fx.Pulse(pulseAt, out float scale, out float brightness);
             DrawScale = scale;
@@ -142,6 +144,10 @@ namespace Dovus.Game.Skills.RuleEngineV4
             batch.AddQuad(_center, _axisRight * half, _axisUp * half, batch.Layout.RingUv, c, 0f);
         }
 
-        void OnDestroy() => EjderVfxBatch.Unregister(this);
+        void OnDestroy()
+        {
+            if (_batch != null)
+                _batch.Unregister(this);
+        }
     }
 }

@@ -52,7 +52,7 @@ namespace Dovus.Tests.PlayMode
             float startAt = Time.unscaledTime;
 
             yield return null;
-            EjderVfxBatch.Current.Rebuild();
+            VfxBatch().Rebuild();
             AssertAshDim(runes);
             Assert.That(runes.NotCastDustQuads, Is.EqualTo(2 * NotCastFx.DustCount), "kül tozu her harfin altından düşmeli");
             Assert.That(runes.NotCastHalfQuads, Is.Zero, "mana yokken çatlak olmaz");
@@ -82,7 +82,7 @@ namespace Dovus.Tests.PlayMode
             float startAt = Time.unscaledTime;
 
             yield return null;
-            EjderVfxBatch.Current.Rebuild();
+            VfxBatch().Rebuild();
             AssertAshDim(runes);
             Assert.That(runes.NotCastHalfQuads, Is.EqualTo(4), "iki harf çatlakla ikiye bölünmeli");
             Assert.That(runes.NotCastDustQuads, Is.Zero, "beklemede kül tozu olmaz");
@@ -146,7 +146,7 @@ namespace Dovus.Tests.PlayMode
             Assert.That(c.a, Is.EqualTo(fx.Alpha).Within(ColorTol), "sönük alfa");
             Assert.That(c.a, Is.LessThan(1f), "harf sönük değil");
             Assert.That(runes.VerbVisible || runes.AdjectiveVisible, Is.False, "normal harf flaşı da yanıyor");
-            Assert.That(EjderVfxBatch.Current.QuadCount, Is.GreaterThan(0), "atılmadı harfi çizilmiyor");
+            Assert.That(VfxBatch().QuadCount, Is.GreaterThan(0), "atılmadı harfi çizilmiyor");
         }
 
         IEnumerator WatchNotCastEnd(DragonRuneFlashView runes, float startAt)
@@ -156,7 +156,7 @@ namespace Dovus.Tests.PlayMode
             while (runes.NotCastActive && Time.unscaledTime - startAt < NotCastFx.DurationSec * 2f)
             {
                 yield return null;
-                EjderVfxBatch.Current.Rebuild();
+                VfxBatch().Rebuild();
                 maxDt = Mathf.Max(maxDt, Time.unscaledDeltaTime);
                 if (runes.NotCastActive)
                     maxScatter = Mathf.Max(maxScatter, runes.NotCastScatter);

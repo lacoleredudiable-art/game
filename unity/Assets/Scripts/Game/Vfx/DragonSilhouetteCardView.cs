@@ -7,7 +7,7 @@ namespace Dovus.Game.Vfx
     /// <summary>
     /// efekt-motoru §3.4: tek kart + dissolve. Kılıç ATIL → atlas hücre F (kuyruk yayı),
     /// 0,25 s, atılış yolu boyunca. Kart ortak efekt atlasından (siluet bölgesi 4×2) ve ortak
-    /// VFX_Kor batch'inden çizilir (<see cref="EjderVfxBatch"/>); kendi materyali yok.
+    /// VFX_Kor batch'inden çizilir (<see cref="EjderVfxBatchHost"/>); kendi materyali yok.
     /// </summary>
     public sealed class DragonSilhouetteCardView : MonoBehaviour, IEjderVfxQuadSource
     {
@@ -21,7 +21,7 @@ namespace Dovus.Game.Vfx
         float _life;
         float _age;
         bool _active;
-        bool _registered;
+        EjderVfxBatchHost _batch;
 
         public static int LiveCount => _liveCount;
 
@@ -30,7 +30,7 @@ namespace Dovus.Game.Vfx
         public float LastLifeSec { get; private set; }
         public bool IsVisible => _active;
         /// <summary>Ortak batch materyali (siluet, harf, halka aynı).</summary>
-        public Material CardMaterial => EjderVfxBatch.Instance.SharedMaterial;
+        public Material CardMaterial => _batch != null ? _batch.SharedMaterial : null;
         /// <summary>Son oynatılan hücrenin ortak atlastaki UV'si.</summary>
         public RuleEngineV4UvRect CellUv { get; private set; }
 
@@ -39,7 +39,6 @@ namespace Dovus.Game.Vfx
             if (_liveCount >= VfxPlanDefaults.EjderSiluetEkranMax && !_active)
                 return;
 
-            EnsureRegistered();
             Vector3 mid = (from + to) * 0.5f;
             mid.y += RuleVfxDefaults.SilhouetteLiftM;
             Vector3 dir = to - from;
@@ -91,19 +90,20 @@ namespace Dovus.Game.Vfx
                 Release();
         }
 
-        public void EmitQuads(EjderVfxBatch batch)
+        public void EmitQuads(EjderVfxBatchHost batch)
         {
             if (!_active)
                 return;
             batch.AddQuad(_center, _halfRight, _halfUp, CellUv, _color, _dissolve);
         }
 
-        void EnsureRegistered()
+        public void Bind(EjderVfxBatchHost batch)
         {
-            if (_registered)
-                return;
-            _registered = true;
-            EjderVfxBatch.Register(this);
+            if (_batch != null)
+                _batch.Unregister(this);
+            _batch = batch;
+            if (_batch != null)
+                _batch.Register(this);
         }
 
         void Release()
@@ -119,8 +119,8 @@ namespace Dovus.Game.Vfx
         void OnDestroy()
         {
             Release();
-            if (_registered)
-                EjderVfxBatch.Unregister(this);
+            if (_batch != null)
+                _batch.Unregister(this);
         }
     }
 }

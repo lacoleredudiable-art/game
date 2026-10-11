@@ -9,7 +9,7 @@ namespace Dovus.Game.Vfx
     /// <summary>
     /// efekt-motoru §1.1: çizilen rün 0,2 s'de Ejderha Dili harfine oturur (fiil→sıfat),
     /// 0,3 s parlar. Harfler ortak efekt atlasının harf bölgesinden (8×3, 0 = sol üst), kameraya
-    /// bağlı dünya dörtgeni olarak ortak VFX_Kor batch'inde çizilir (<see cref="EjderVfxBatch"/>).
+    /// bağlı dünya dörtgeni olarak ortak VFX_Kor batch'inde çizilir (<see cref="EjderVfxBatchHost"/>).
     /// Hücre rün → kod adı → atlas sırası eşlemesinden gelir; adı olmayan harf gizlenir.
     /// </summary>
     public sealed class DragonRuneFlashView : MonoBehaviour, IEjderVfxQuadSource
@@ -20,7 +20,7 @@ namespace Dovus.Game.Vfx
         float _snap;
         float _glow;
         bool _playing;
-        bool _registered;
+        EjderVfxBatchHost _batch;
         bool _verbOn;
         bool _adjOn;
         int _verbCell;
@@ -55,7 +55,7 @@ namespace Dovus.Game.Vfx
         public RuleEngineV4UvRect VerbUv => RuleVfxSettings.Slice.Atlas.GlyphUv(_verbCell);
         public RuleEngineV4UvRect AdjectiveUv => RuleVfxSettings.Slice.Atlas.GlyphUv(_adjCell);
         /// <summary>Ortak batch materyali (siluet, harf, halka aynı).</summary>
-        public Material LetterMaterial => EjderVfxBatch.Instance.SharedMaterial;
+        public Material LetterMaterial => _batch != null ? _batch.SharedMaterial : null;
 
         /// <summary>Test / araç: kural-motoru-v4 + Ejder_Glif_Sirasi yerine verilen eşleme.</summary>
         public RuleEngineV4GlyphMap GlyphMap
@@ -66,7 +66,6 @@ namespace Dovus.Game.Vfx
 
         public void Play(int verbRuneId, int adjectiveRuneId, Color coreColor)
         {
-            EnsureRegistered();
             _notCast = false;
             PlayCount++;
             _snap = VfxPlanDefaults.RuneSnapSec;
@@ -110,7 +109,6 @@ namespace Dovus.Game.Vfx
         {
             if (!RuleEngineV4NotCastFx.Applies(denial))
                 return;
-            EnsureRegistered();
             _playing = false;
             _notCast = true;
             _notCastAge = 0f;
@@ -180,11 +178,11 @@ namespace Dovus.Game.Vfx
                 Mathf.Clamp01((snapU - RuleVfxArtDefaults.RuneAdjDelay) / RuleVfxArtDefaults.RuneAdjDelayInv));
         }
 
-        public void EmitQuads(EjderVfxBatch batch)
+        public void EmitQuads(EjderVfxBatchHost batch)
         {
             if (!_playing && !_notCast)
                 return;
-            Camera cam = Camera.main;
+            Camera cam = batch.ViewCamera;
             if (cam == null)
                 return;
             RuleEngineV4VfxAtlas atlas = batch.Layout;
@@ -203,7 +201,7 @@ namespace Dovus.Game.Vfx
                 EmitLetter(batch, frame, _adjPos, half, half, atlas.GlyphUv(_adjCell), WithAlpha(_adjTint, _alpha), 0f);
         }
 
-        void EmitNotCast(EjderVfxBatch batch, RuleEngineV4VfxAtlas atlas, in LetterFrame frame)
+        void EmitNotCast(EjderVfxBatchHost batch, RuleEngineV4VfxAtlas atlas, in LetterFrame frame)
         {
             RuleEngineV4NotCastFx fx = RuleVfxSettings.Slice.NotCast;
             fx.Sample(_notCastAge, out float shakePx, out float alpha, out float scatter);
@@ -220,7 +218,7 @@ namespace Dovus.Game.Vfx
         }
 
         void EmitNotCastLetter(
-            EjderVfxBatch batch,
+            EjderVfxBatchHost batch,
             RuleEngineV4VfxAtlas atlas,
             in LetterFrame frame,
             RuleEngineV4NotCastFx fx,
@@ -272,7 +270,7 @@ namespace Dovus.Game.Vfx
         }
 
         static void EmitLetter(
-            EjderVfxBatch batch,
+            EjderVfxBatchHost batch,
             in LetterFrame f,
             Vector2 refPx,
             float halfWidthPx,
@@ -308,12 +306,13 @@ namespace Dovus.Game.Vfx
             return tint;
         }
 
-        void EnsureRegistered()
+        public void Bind(EjderVfxBatchHost batch)
         {
-            if (_registered)
-                return;
-            _registered = true;
-            EjderVfxBatch.Register(this);
+            if (_batch != null)
+                _batch.Unregister(this);
+            _batch = batch;
+            if (_batch != null)
+                _batch.Register(this);
         }
 
         /// <summary>Ton rün kimliğinden (hücreden değil): atlas sırası değişse de görünen renk aynı kalır.</summary>
@@ -322,8 +321,8 @@ namespace Dovus.Game.Vfx
 
         void OnDestroy()
         {
-            if (_registered)
-                EjderVfxBatch.Unregister(this);
+            if (_batch != null)
+                _batch.Unregister(this);
         }
     }
 }

@@ -15,7 +15,7 @@ namespace Dovus.Game.Weapons
     [DisallowMultipleComponent]
     public sealed partial class WeaponHandPropsView : MonoBehaviour
     {
-        const string OwnWeaponPrefix = "Silah_";
+        const string OwnWeaponPrefix = WeaponBladePoints.OwnWeaponPrefix;
 
         [SerializeField] Animator _animator;
 
@@ -275,7 +275,7 @@ namespace Dovus.Game.Weapons
 
         /// <summary>
         /// Kılıç (sağ el) / Yay (sol el) tutuş ölçümü. Bilek: önkol (dirsek→bilek) ile el (bilek→orta
-        /// parmak kökü ya da el kemiği ekseni) arası. Silah ekseni: <see cref="WeaponAxis"/> (Vfx_Kabza→Vfx_Tip dünya
+        /// parmak kökü ya da el kemiği ekseni) arası. Silah ekseni: <see cref="WeaponBladePoints.WeaponAxis"/> (Vfx_Kabza→Vfx_Tip dünya
         /// vektörü). Hedef yön: karakterin yatay ileri yönü.
         /// </summary>
         public static bool TryMeasureGripAngles(Animator animator, string weaponKey, out GripAngles angles)
@@ -297,7 +297,7 @@ namespace Dovus.Game.Weapons
             Vector3 handDir = finger != null ? finger.position - hand.position : hand.up;
             float wrist = Vector3.Angle(hand.position - forearm.position, handDir);
             Vector3 target = Vector3.ProjectOnPlane(animator.transform.forward, Vector3.up);
-            angles = new GripAngles(wrist, Vector3.Angle(WeaponAxis(weapon, bow), target));
+            angles = new GripAngles(wrist, Vector3.Angle(WeaponBladePoints.WeaponAxis(weapon, bow), target));
             return true;
         }
 
@@ -322,55 +322,6 @@ namespace Dovus.Game.Weapons
             {
                 if (t.name == wanted)
                     return t;
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Elde görünen kendi silahının (Silah_*) kabza ve uç noktaları; ikisi de yoksa false.
-        /// </summary>
-        public static bool TryActiveBladePoints(Transform root, out Transform hilt, out Transform tip)
-        {
-            hilt = null;
-            tip = null;
-            if (root == null)
-                return false;
-            foreach (Transform t in root.GetComponentsInChildren<Transform>(false))
-            {
-                if (!t.name.StartsWith(OwnWeaponPrefix, System.StringComparison.Ordinal))
-                    continue;
-                hilt = FindChildDeep(t, HiltPointName);
-                tip = FindChildDeep(t, TipPointName);
-                if (hilt != null && tip != null)
-                    return true;
-            }
-            hilt = null;
-            tip = null;
-            return false;
-        }
-
-        public const string HiltPointName = "Vfx_Kabza";
-        public const string TipPointName = "Vfx_Tip";
-
-        /// <summary>
-        /// Silah ekseni = Vfx_Kabza→Vfx_Tip dünya vektörü. Noktası olmayan kayıt prop'unda (Mixamo) yerel eksen.
-        /// </summary>
-        public static Vector3 WeaponAxis(Transform weapon, bool bow)
-        {
-            Transform hilt = FindChildDeep(weapon, HiltPointName);
-            Transform tip = FindChildDeep(weapon, TipPointName);
-            if (hilt != null && tip != null)
-                return tip.position - hilt.position;
-            // ff-4: Warrior_Sword mesh'inin uzunluk ekseni local Z; yay prop'u yerel +X.
-            return bow ? weapon.right : weapon.forward;
-        }
-
-        static Transform FindChildDeep(Transform t, string name)
-        {
-            foreach (Transform c in t.GetComponentsInChildren<Transform>(true))
-            {
-                if (c.name == name)
-                    return c;
             }
             return null;
         }

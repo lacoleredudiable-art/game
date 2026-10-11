@@ -40,7 +40,7 @@ namespace Dovus.Tests.PlayMode
         {
             yield return null;
             RuleEngineV4TargetRingFx fx = RuleVfxSettings.Slice.TargetRing;
-            var ring = RuleEngineV4TargetPickRingView.Create(_cast.OwnerColor, null);
+            var ring = RuleEngineV4TargetPickRingView.Create(VfxBatch(), _cast.OwnerColor, null);
             try
             {
                 ring.ShowOnSurface(_player.position, Vector3.up);
@@ -51,7 +51,7 @@ namespace Dovus.Tests.PlayMode
                 while (Time.unscaledTime - shownAt < RingPulseWatchSec)
                 {
                     yield return null;
-                    EjderVfxBatch.Current.Rebuild();
+                    VfxBatch().Rebuild();
                     ring.ShowOnSurface(_player.position, Vector3.up);
                     maxDt = Mathf.Max(maxDt, Time.unscaledDeltaTime);
                     t.Add(Time.unscaledTime - shownAt);
@@ -77,7 +77,7 @@ namespace Dovus.Tests.PlayMode
                 while (true)
                 {
                     yield return null;
-                    EjderVfxBatch.Current.Rebuild();
+                    VfxBatch().Rebuild();
                     float since = Time.unscaledTime - hiddenAt;
                     if (since < fx.ReleaseFadeSec)
                     {
@@ -178,7 +178,7 @@ namespace Dovus.Tests.PlayMode
             Assert.That(ring.Visible, Is.True, "hedef halkası görünmüyor");
             Assert.That(ring.ShownTarget, Is.EqualTo(picked), "halka parmağın altındaki hedefte değil");
             Assert.That(ring.RingMaterial.shader.name, Is.EqualTo(RuleVfxDefaults.KorShaderName), "halka VFX_Kor değil");
-            Assert.That(ring.RingMaterial, Is.SameAs(EjderVfxBatch.Current.SharedMaterial), "halka ortak efekt materyalinde değil");
+            Assert.That(ring.RingMaterial, Is.SameAs(VfxBatch().SharedMaterial), "halka ortak efekt materyalinde değil");
             Color core = ring.CoreColor;
             Color owner = _cast.OwnerColor * RuleVfxArtDefaults.CoreHdrMult;
             Assert.That(core.r, Is.EqualTo(owner.r).Within(ColorTol), "halka sahip renginde değil (r)");

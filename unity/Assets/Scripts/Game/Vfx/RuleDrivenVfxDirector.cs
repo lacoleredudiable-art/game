@@ -26,6 +26,7 @@ namespace Dovus.Game.Vfx
         DragonSilhouetteCardView _silhouette;
         DragonRuneFlashView _runes;
         SkillAnimVfxEventHost _animRelay;
+        EjderVfxBatchHost _batch;
         Transform _fxRoot;
 
         VfxPlan _plan;
@@ -50,12 +51,17 @@ namespace Dovus.Game.Vfx
 
         public VfxPlan ActivePlan => _plan;
         public bool IsSliceActive => _armed && _plan.IsSwordDashSlice;
+        /// <summary>Siluet, harf flaşı ve hedef halkasının ortak atlas batch'i.</summary>
+        public EjderVfxBatchHost Batch => _batch;
 
-        public void Bind(FeelVfxRuntime feel)
+        public void Bind(FeelVfxRuntime feel, EjderVfxBatchHost batch)
         {
             _feel = feel;
+            _batch = batch;
             _body = GetComponent<MotionTemplateBodyHost>();
             EnsureChildren();
+            _silhouette.Bind(batch);
+            _runes.Bind(batch);
             EnsureAnimRelay();
         }
 
@@ -296,7 +302,7 @@ namespace Dovus.Game.Vfx
             if (!ResolveBlade())
             {
                 Debug.LogError("[RuleDrivenVfx] Kor izi çizilmedi: elde görünen Silah_* altında "
-                    + WeaponHandPropsView.HiltPointName + " ve " + WeaponHandPropsView.TipPointName + " yok.");
+                    + WeaponBladePoints.HiltPointName + " ve " + WeaponBladePoints.TipPointName + " yok.");
                 return;
             }
             _trailOn = true;
@@ -319,7 +325,7 @@ namespace Dovus.Game.Vfx
         {
             ActorView view = GetComponent<ActorView>();
             Transform root = view != null && view.Animator != null ? view.Animator.transform : transform;
-            return WeaponHandPropsView.TryActiveBladePoints(root, out _bladeHilt, out _bladeTip);
+            return WeaponBladePoints.TryActiveBladePoints(root, out _bladeHilt, out _bladeTip);
         }
 
         bool BladeAlive() =>

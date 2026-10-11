@@ -141,9 +141,9 @@ public sealed class RuleDrivenVfxPathTests
         Assert.That(director, Does.Not.Contain("BladeTip()"));
         Assert.That(director, Does.Not.Contain("BladeGuard()"));
         Assert.That(director, Does.Not.Contain("WeaponTipLocalY"));
-        string props = Game("Weapons/WeaponHandPropsView.cs");
-        Assert.That(props, Does.Contain("\"Vfx_Kabza\""));
-        Assert.That(props, Does.Contain("\"Vfx_Tip\""));
+        string points = Game("Weapons/WeaponBladePoints.cs");
+        Assert.That(points, Does.Contain("\"Vfx_Kabza\""));
+        Assert.That(points, Does.Contain("\"Vfx_Tip\""));
     }
 
     [Test]

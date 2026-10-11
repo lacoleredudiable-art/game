@@ -150,7 +150,7 @@ namespace Dovus.Game.Editor
                 output.SetSourcePlayable(playable);
                 playable.SetTime(timeSec);
                 graph.Evaluate();
-                return WeaponHandPropsView.WeaponAxis(weapon, bow).normalized;
+                return WeaponBladePoints.WeaponAxis(weapon, bow).normalized;
             }
             finally
             {

@@ -30,9 +30,9 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 binding.FallbackAnimatorState,
                 view.Animator);
             if (anim.LastExactClipFound && anim.LastPlayApplied)
-                view.HoldSkillClip(anim.LastClipName);
+                view.SkillClip.Hold(anim.LastClipName);
             else
-                view.ReleaseSkillClip();
+                view.SkillClip.Release();
 
             SkillAnimVfxEventHost relay = EnsureRelay(view.Animator.gameObject, out RuleDrivenVfxDirector vfx);
             relay.SetEventMask(binding.Events);

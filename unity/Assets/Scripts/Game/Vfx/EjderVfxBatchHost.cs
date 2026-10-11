@@ -5,22 +5,16 @@ using UnityEngine.Rendering;
 
 namespace Dovus.Game.Vfx
 {
-    /// <summary>Ortak atlas batch'ine her kare dörtgen yazan efekt (siluet, harf flaşı, hedef halkası).</summary>
-    public interface IEjderVfxQuadSource
-    {
-        void EmitQuads(EjderVfxBatch batch);
-    }
-
     /// <summary>
     /// Kuyruk silueti + harf flaşı + hedef halkası: tek dünya-uzayı mesh, tek VFX_Kor materyali
     /// (Resources <see cref="RuleEngineV4VfxAtlas.Material"/>), tek atlas → tek draw call.
     /// Renk/yoğunluk köşe renginde, dissolve UV1.x'te (shader _VERTEX_DISSOLVE).
     /// Kamera ve gövdeler yerleştikten sonra (LateUpdate sonu) kurulur.
+    /// Sahne kurulumu oluşturur ve oyun kamerasını bağlar; kaynaklar <see cref="Register"/> ile katılır.
     /// </summary>
     [DefaultExecutionOrder(1000)]
-    public sealed class EjderVfxBatch : MonoBehaviour
+    public sealed class EjderVfxBatchHost : MonoBehaviour
     {
-        static EjderVfxBatch _instance;
         static bool _warnedMissingMaterial;
 
         readonly List<IEjderVfxQuadSource> _sources = new();
@@ -34,20 +28,9 @@ namespace Dovus.Game.Vfx
         Material _mat;
         RuleEngineV4VfxAtlas _layout;
 
-        public static EjderVfxBatch Instance
-        {
-            get
-            {
-                if (_instance == null)
-                    _instance = Create();
-                return _instance;
-            }
-        }
-
-        /// <summary>Var olan batch (yoksa null; oluşturmaz).</summary>
-        public static EjderVfxBatch Current => _instance;
-
         public Material SharedMaterial => _mat;
+        /// <summary>Kameraya bağlı dörtgenlerin (harf flaşı) çizildiği oyun kamerası.</summary>
+        public Camera ViewCamera { get; private set; }
         public Texture Atlas => _mat != null ? _mat.mainTexture : null;
         public RuleEngineV4VfxAtlas Layout => _layout;
         public MeshRenderer Renderer => _mr;
@@ -55,24 +38,21 @@ namespace Dovus.Game.Vfx
         /// <summary>Son kurulan dörtgen sayısı.</summary>
         public int QuadCount { get; private set; }
 
-        public static void Register(IEjderVfxQuadSource source)
+        public void Register(IEjderVfxQuadSource source)
         {
-            EjderVfxBatch b = Instance;
-            if (!b._sources.Contains(source))
-                b._sources.Add(source);
+            if (!_sources.Contains(source))
+                _sources.Add(source);
         }
 
-        public static void Unregister(IEjderVfxQuadSource source)
-        {
-            if (_instance != null)
-                _instance._sources.Remove(source);
-        }
+        public void Unregister(IEjderVfxQuadSource source) => _sources.Remove(source);
 
-        static EjderVfxBatch Create()
+        public static EjderVfxBatchHost Create(Transform parent, Camera viewCamera)
         {
             var go = new GameObject("EjderVfxBatch");
-            var b = go.AddComponent<EjderVfxBatch>();
+            go.transform.SetParent(parent, false);
+            var b = go.AddComponent<EjderVfxBatchHost>();
             b.Build();
+            b.ViewCamera = viewCamera;
             return b;
         }
 
@@ -173,8 +153,6 @@ namespace Dovus.Game.Vfx
 
         void OnDestroy()
         {
-            if (_instance == this)
-                _instance = null;
             if (_mesh != null)
                 Destroy(_mesh);
         }
