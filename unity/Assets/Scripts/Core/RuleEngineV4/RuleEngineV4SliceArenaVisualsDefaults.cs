@@ -28,6 +28,21 @@ namespace Dovus.Core.RuleEngineV4
         /// <summary>spec'te yok: 0 = LOD1 hiç kırpılmaz (kemerler ufukta da görünür).</summary>
         public const float RibCullScreenHeight = 0f;
 
+        /// <summary>Kemik |x| &lt; 22 m bandında yerden 2,5 m altına inmez (ayaklar arena dışında).</summary>
+        public const float RibKeepClearXM = 22f;
+        public const float RibKeepClearBelowM = 2.5f;
+        /// <summary>
+        /// spec'te yok: yarım kaburga eğimi/büyütmesi kaburga modeli üzerinde ölçüldü — en ince kemerde (ölçek
+        /// 2,217) 2,5 m altı |x| ≥ 22,96 m, tepe 27,5–33,5 m. Pivot taç gövdesinin üst kenarı (model 11 m);
+        /// taç yüksekliği ayak tabanını ~0,1 kemer-metre gömer; bindirme 2,7 m eğik yarımlar arası yarığı kapatır
+        /// (sol bacağın iç kenarı modelde 3,1 m'de, kesim ona değmez).
+        /// </summary>
+        public const float RibHalfLeanDeg = 29f;
+        public const float RibHalfScaleMult = 1.3f;
+        public const float RibHalfPivotYM = 11f;
+        public const float RibHalfCrownYM = 9.67f;
+        public const float RibHalfCrownOverlapM = 2.7f;
+
         /// <summary>spec'te yok: ocak kor diski yarıçapı.</summary>
         public const float HearthEmberRadiusM = 0.9f;
         /// <summary>spec'te yok: ocak taş halkası.</summary>

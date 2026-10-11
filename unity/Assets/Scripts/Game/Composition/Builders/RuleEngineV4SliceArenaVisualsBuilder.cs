@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Arena;
 using Dovus.Game.Assets;
@@ -66,16 +67,58 @@ namespace Dovus.Game.Composition.Builders
             if (ribs.Colliders)
                 Debug.LogWarning("[arena] slice_arena_visuals.ribs.colliders=true desteklenmez; kemerler çarpışmasız kurulur");
             ArenaVisualRegistry.ModelEntry lod1 = registry.Find(ribs.Lod1Model);
+            RuleEngineV4SliceArenaRibHalves halves = ribs.Halves;
+            Shader.SetGlobalFloat(RuleEngineV4SliceArenaVisualsBuilderDefaults.HalfClipShaderProperty,
+                halves.Enabled ? -halves.CrownOverlapM / lod0.Model.transform.localScale.x : RuleEngineV4SliceArenaVisualsBuilderDefaults.HalfClipOff);
             var ribsRoot = new GameObject("Ribs");
             ribsRoot.transform.SetParent(root, false);
             IReadOnlyList<RuleEngineV4SliceArenaPlacement> poses = ribs.Layout();
             for (int i = 0; i < poses.Count; i++)
             {
                 Transform rib = Place(ribsRoot.transform, null, $"Rib{i}", poses[i]);
-                Renderer[] near = Spawn(lod0, rib).GetComponentsInChildren<Renderer>();
-                Renderer[] far = lod1 != null ? Spawn(lod1, rib).GetComponentsInChildren<Renderer>() : near;
-                AddLodGroup(rib, near, far, ribs);
+                var near = new List<Renderer>();
+                var far = new List<Renderer>();
+                if (halves.Enabled)
+                {
+                    SpawnHalf(rib, RuleEngineV4SliceArenaVisualsBuilderDefaults.HalfRightName, 1f, halves, lod0, lod1, near, far);
+                    SpawnHalf(rib, RuleEngineV4SliceArenaVisualsBuilderDefaults.HalfLeftName, -1f, halves, lod0, lod1, near, far);
+                }
+                else
+                {
+                    SpawnRibModels(rib, Vector3.zero, lod0, lod1, near, far);
+                }
+                foreach (Renderer r in near.Concat(far))
+                    r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                AddLodGroup(rib, near.ToArray(), (far.Count > 0 ? far : near).ToArray(), ribs);
             }
+        }
+
+        /// <summary>
+        /// Yarım: taç pivotu (model pivot_y_m) yarım kökünün başlangıcında; kök crown_y_m'de, dışa lean_deg eğik,
+        /// scale_mult büyük. Sol yarım X aynası (side = -1) — shader kesimi nesne uzayında olduğu için aynı tarafı tutar.
+        /// </summary>
+        static void SpawnHalf(Transform rib, string name, float side, RuleEngineV4SliceArenaRibHalves h,
+            ArenaVisualRegistry.ModelEntry lod0, ArenaVisualRegistry.ModelEntry lod1, List<Renderer> near, List<Renderer> far)
+        {
+            var half = new GameObject(name).transform;
+            half.SetParent(rib, false);
+            half.localPosition = new Vector3(0f, h.CrownYM, 0f);
+            half.localRotation = Quaternion.Euler(0f, 0f, side * h.LeanDeg);
+            half.localScale = new Vector3(side * h.ScaleMult, h.ScaleMult, h.ScaleMult);
+            SpawnRibModels(half, Vector3.down * h.PivotYM, lod0, lod1, near, far);
+        }
+
+        static void SpawnRibModels(Transform parent, Vector3 localPos, ArenaVisualRegistry.ModelEntry lod0,
+            ArenaVisualRegistry.ModelEntry lod1, List<Renderer> near, List<Renderer> far)
+        {
+            GameObject m0 = Spawn(lod0, parent);
+            m0.transform.localPosition = localPos;
+            near.AddRange(m0.GetComponentsInChildren<Renderer>());
+            if (lod1 == null)
+                return;
+            GameObject m1 = Spawn(lod1, parent);
+            m1.transform.localPosition = localPos;
+            far.AddRange(m1.GetComponentsInChildren<Renderer>());
         }
 
         static void AddLodGroup(Transform rib, Renderer[] near, Renderer[] far, RuleEngineV4SliceArenaRibs ribs)

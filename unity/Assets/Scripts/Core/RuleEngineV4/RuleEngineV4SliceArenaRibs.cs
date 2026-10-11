@@ -25,6 +25,10 @@ namespace Dovus.Core.RuleEngineV4
         public bool Colliders { get; private set; }
         public float Lod1ScreenHeight { get; private set; } = RuleEngineV4SliceArenaVisualsDefaults.RibLod1ScreenHeight;
         public float CullScreenHeight { get; private set; } = RuleEngineV4SliceArenaVisualsDefaults.RibCullScreenHeight;
+        public RuleEngineV4SliceArenaRibHalves Halves { get; private set; } = new();
+        /// <summary>Kemik |x| &lt; keep_clear.x_m bandında yerden keep_clear.below_m altına inmez.</summary>
+        public float KeepClearXM { get; private set; } = RuleEngineV4SliceArenaVisualsDefaults.RibKeepClearXM;
+        public float KeepClearBelowM { get; private set; } = RuleEngineV4SliceArenaVisualsDefaults.RibKeepClearBelowM;
 
         public static RuleEngineV4SliceArenaRibs Default => new();
 
@@ -48,6 +52,9 @@ namespace Dovus.Core.RuleEngineV4
             r.Colliders = node["colliders"].AsBool(false);
             r.Lod1ScreenHeight = node["lod1_screen_height"].AsFloat(r.Lod1ScreenHeight);
             r.CullScreenHeight = node["cull_screen_height"].AsFloat(r.CullScreenHeight);
+            r.Halves = RuleEngineV4SliceArenaRibHalves.FromJson(node["halves"]);
+            r.KeepClearXM = node["keep_clear"]["x_m"].AsFloat(r.KeepClearXM);
+            r.KeepClearBelowM = node["keep_clear"]["below_m"].AsFloat(r.KeepClearBelowM);
             return r;
         }
 
