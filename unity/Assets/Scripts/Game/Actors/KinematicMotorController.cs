@@ -9,6 +9,8 @@ using Dovus.Game.Cameras;
 using Dovus.Game.Casting;
 using Dovus.Game.Platform;
 using Dovus.Game.Config;
+using Dovus.Game.Skills.RuleEngineV4;
+using Dovus.Core.RuleEngineV4;
 using UnityEngine;
 using Dovus.Core.Shared;
 
@@ -194,6 +196,74 @@ namespace Dovus.Game.Actors
             }
         }
 
+        /// <summary>
+        /// Dodge yolu (kayma + toparlanma): yürüyüşle aynı kapsül süpürmesi, ama ilk engelde durur, kaymaz.
+        /// Engel = katı collider ya da sabit (Anchored) gövdeli tetik (koza). Y korunur.
+        /// </summary>
+        public Vector3 SweepStop(Vector3 from, Vector3 to)
+        {
+            Vector3 delta = to - from;
+            delta.y = 0f;
+            float dist = delta.magnitude;
+            Vector3 next = from;
+            if (dist >= 0.0001f)
+            {
+                Vector3 dir = delta / dist;
+                next = from + dir * FirstBlockDistance(from, dir, dist);
+            }
+
+            next = PushOutOfObstacles(next, anchoredTriggersBlock: true);
+            next = ArenaClamp.XZ(next, Tuning.Arena.ArenaHalfSizeM, _bodyRadiusM);
+            next.y = from.y;
+            return next;
+        }
+
+        float CapsuleRadius() =>
+            Mathf.Max(KinematicMotorControllerDefaults.CapsuleRadiusFloorM, _bodyRadiusM * KinematicMotorControllerDefaults.CapsuleRadiusBodyScale);
+
+        float FirstBlockDistance(Vector3 from, Vector3 dir, float dist)
+        {
+            float radius = CapsuleRadius();
+            Vector3 p1 = from + Vector3.up * (radius + KinematicMotorControllerDefaults.CapsuleProbeLiftM);
+            Vector3 p2 = from + Vector3.up * KinematicMotorControllerDefaults.CapsuleTopLiftM;
+            int hits = Physics.CapsuleCastNonAlloc(
+                p1, p2, radius, dir, CastHits, dist, ~0, QueryTriggerInteraction.Collide);
+            float best = dist;
+            bool blocked = false;
+            for (int i = 0; i < hits; i++)
+            {
+                RaycastHit h = CastHits[i];
+                if (!BlocksDodge(h.collider))
+                    continue;
+                if (h.distance <= 0f)
+                {
+                    // Başlangıçta temas: engelden uzaklaşan dodge serbest; içine doğru olan durur.
+                    Vector3 probe = from + Vector3.up * KinematicMotorControllerDefaults.GroundProbeLiftM;
+                    Vector3 toward = h.collider.ClosestPoint(probe) - probe;
+                    toward.y = 0f;
+                    if (Vector3.Dot(toward, dir) <= 0f)
+                        continue;
+                }
+                if (h.distance < best)
+                {
+                    best = h.distance;
+                    blocked = true;
+                }
+            }
+
+            return blocked ? Mathf.Max(0f, best - KinematicMotorControllerDefaults.MoveStopInsetM) : dist;
+        }
+
+        bool BlocksDodge(Collider col)
+        {
+            if (col == null || col.transform.IsChildOf(transform))
+                return false;
+            if (!col.isTrigger)
+                return true;
+            var body = col.GetComponentInParent<RuleEngineV4PhysicsBodyHost>();
+            return body != null && body.WeightTier == RuleEngineV4WeightTier.Anchored;
+        }
+
         Vector3 SweepAndSlide(Vector3 from, Vector3 to)
         {
             Vector3 delta = to - from;
@@ -203,7 +273,7 @@ namespace Dovus.Game.Actors
                 return from;
 
             Vector3 dir = delta / dist;
-            float radius = Mathf.Max(KinematicMotorControllerDefaults.CapsuleRadiusFloorM, _bodyRadiusM * KinematicMotorControllerDefaults.CapsuleRadiusBodyScale);
+            float radius = CapsuleRadius();
             Vector3 p1 = from + Vector3.up * (radius + KinematicMotorControllerDefaults.CapsuleProbeLiftM);
             Vector3 p2 = from + Vector3.up * KinematicMotorControllerDefaults.CapsuleTopLiftM;
             int hits = Physics.CapsuleCastNonAlloc(
@@ -239,17 +309,19 @@ namespace Dovus.Game.Actors
             return stop + slide;
         }
 
-        Vector3 PushOutOfObstacles(Vector3 pos)
+        Vector3 PushOutOfObstacles(Vector3 pos, bool anchoredTriggersBlock = false)
         {
             Vector3 probe = pos + Vector3.up * KinematicMotorControllerDefaults.GroundProbeLiftM;
             // Tetik (dost vuruş kapsülü, skill alanı) duvar değildir. 11-8 dostu
             // yanına çağırınca bu itiş oyuncuya ikinci bir kayma yazıyordu.
+            // Dodge'da yalnız sabit gövdeli tetik (koza) duvar sayılır.
             int count = Physics.OverlapSphereNonAlloc(
-                probe, _bodyRadiusM, ObstacleBuffer, ~0, QueryTriggerInteraction.Ignore);
+                probe, _bodyRadiusM, ObstacleBuffer, ~0,
+                anchoredTriggersBlock ? QueryTriggerInteraction.Collide : QueryTriggerInteraction.Ignore);
             for (int i = 0; i < count; i++)
             {
                 Collider col = ObstacleBuffer[i];
-                if (col == null)
+                if (col == null || (anchoredTriggersBlock && !BlocksDodge(col)))
                     continue;
 
                 Vector3 closest = col.ClosestPoint(probe);

@@ -70,6 +70,12 @@ namespace Dovus.Core.Dodge
                 ? Math.Max(1, (int)Math.Round(_tuning.DurationMs * _tuning.CombinedDurationMult))
                 : _tuning.DurationMs;
 
+        /// <summary>Basmadan kaymanın bitişine kadar (startup + hareket) ms.</summary>
+        public int SlideEndOffsetMs => _tuning.StartupMs + MoveDurationMs;
+
+        /// <summary>Toparlanma (glide kuyruğu) süresi ms.</summary>
+        public int RecoveryMs => _tuning.GlideTailMs;
+
         public bool IsActive(int worldTimeMs)
         {
             if (_pressTimeMs < 0)

@@ -88,8 +88,17 @@ namespace Dovus.Game.Actors
             _logic.Tick(dt);
             ApplyRoot();
             ResetVisual();
-            if (_logic.OnGround && FootLock && !SkipFootLock)
+            if (_logic.OnGround && FootLock && !SkipFootLock && !DodgeClipPlayback.ClipOwnsFeet(VisualAnimator()))
                 LockFeet();
+        }
+
+        Animator _animator;
+
+        Animator VisualAnimator()
+        {
+            if (_animator == null)
+                _animator = GetComponentInChildren<Animator>();
+            return _animator;
         }
 
         void ApplyRoot()

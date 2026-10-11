@@ -100,11 +100,12 @@ namespace Dovus.Game.Editor
         {
             Dictionary<string, ClipRow> rows = ReadClipCsv();
             Avatar avatar = ConfigureModel();
-            foreach (string clip in ExportClips)
-                ConfigureClip(clip, rows[clip], avatar);
+            foreach (string fbx in ExportClips)
+                ConfigureClips(fbx, RowsFromSource(rows, fbx), avatar);
             ConfigureWeaponImports();
             ApplyEmission();
             AnimatorController ctrl = EnsureController();
+            EnsureClipStates(ctrl);
             EnableWriteDefaults(ctrl);
             ConfigurePrefab(ctrl);
             AssetDatabase.SaveAssets();
@@ -119,8 +120,14 @@ namespace Dovus.Game.Editor
             Avatar avatar = AssetDatabase.LoadAllAssetsAtPath(ModelFbx).OfType<Avatar>().FirstOrDefault();
             if (avatar == null || !avatar.isValid || !avatar.isHuman)
                 throw new InvalidOperationException("k3 avatarı geçersiz: " + ModelFbx);
-            foreach (string clip in ExportClips)
-                ConfigureClip(clip, rows[clip], avatar);
+            foreach (string fbx in ExportClips)
+                ConfigureClips(fbx, RowsFromSource(rows, fbx), avatar);
+            AnimatorController ctrl = AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath);
+            if (ctrl != null)
+            {
+                EnsureClipStates(ctrl);
+                EnableWriteDefaults(ctrl);
+            }
             AssetDatabase.SaveAssets();
             Debug.Log("[k3] klip ayarları yeniden uygulandı");
         }
@@ -195,9 +202,9 @@ namespace Dovus.Game.Editor
         /// Blend shape açık kalır: kapalıyken El_Kavra_L/R eğrileri klipten düşer.
         /// Unity'de mesh içe aktarmayı tamamen kapatan ayar yok; mesh alt varlığı hiçbir yerde kullanılmaz.
         /// </summary>
-        static void ConfigureClip(string clipName, ClipRow row, Avatar avatar)
+        static void ConfigureClips(string fbxName, List<(string Name, ClipRow Row)> rows, Avatar avatar)
         {
-            string path = $"{ClipsDir}/{clipName}.fbx";
+            string path = $"{ClipsDir}/{fbxName}.fbx";
             var importer = (ModelImporter)AssetImporter.GetAtPath(path);
             importer.animationType = ModelImporterAnimationType.Human;
             importer.avatarSetup = ModelImporterAvatarSetup.CopyFromOther;
@@ -209,27 +216,38 @@ namespace Dovus.Game.Editor
             importer.importVisibility = false;
             importer.preserveHierarchy = true;
 
-            ModelImporterClipAnimation[] clips = importer.clipAnimations.Length > 0
+            ModelImporterClipAnimation[] existing = importer.clipAnimations.Length > 0
                 ? importer.clipAnimations
                 : importer.defaultClipAnimations;
-            ModelImporterClipAnimation clip = clips.FirstOrDefault(c => c.name == clipName) ?? clips[0];
-            clip.name = clipName;
-            clip.firstFrame = row.FirstFrame - 1;
-            clip.lastFrame = row.LastFrame - 1;
-            clip.loopTime = clipName.StartsWith(LoopPrefix, StringComparison.Ordinal);
-            clip.lockRootRotation = true;
-            clip.lockRootHeightY = true;
-            // Bake Into Pose kapalı + Based Upon Center of Mass: klibin ileri koşusu kökte kalır; oyuncuda
-            // applyRootMotion kapalı olduğundan atılışı yalnız hareket kalıbı taşır.
-            clip.lockRootPositionXZ = !row.RootXzFromCenterOfMass;
-            if (row.RootXzFromCenterOfMass)
-                clip.keepOriginalPositionXZ = false;
-            clip.keepOriginalOrientation = true;
-            clip.keepOriginalPositionY = true;
-            clip.events = BuildEvents(row, clip.lastFrame - clip.firstFrame);
-            importer.clipAnimations = new[] { clip };
+            string take = existing[0].takeName;
+            var clips = new List<ModelImporterClipAnimation>();
+            foreach ((string clipName, ClipRow row) in rows)
+            {
+                // Aynı FBX'ten birden çok kesit (ör. Ortak_Takla takla / kalkış / geri sıçrama).
+                ModelImporterClipAnimation clip = existing.FirstOrDefault(c => c.name == clipName)
+                    ?? (clips.Count == 0 && rows.Count == 1 ? existing[0] : new ModelImporterClipAnimation { takeName = take });
+                clip.name = clipName;
+                clip.firstFrame = row.FirstFrame - 1;
+                clip.lastFrame = row.LastFrame - 1;
+                clip.loopTime = clipName.StartsWith(LoopPrefix, StringComparison.Ordinal);
+                clip.lockRootRotation = true;
+                clip.lockRootHeightY = true;
+                // Bake Into Pose kapalı + Based Upon Center of Mass: klibin ileri koşusu kökte kalır; oyuncuda
+                // applyRootMotion kapalı olduğundan atılışı yalnız hareket kalıbı taşır.
+                clip.lockRootPositionXZ = !row.RootXzFromCenterOfMass;
+                if (row.RootXzFromCenterOfMass)
+                    clip.keepOriginalPositionXZ = false;
+                clip.keepOriginalOrientation = true;
+                clip.keepOriginalPositionY = true;
+                clip.events = BuildEvents(row, clip.lastFrame - clip.firstFrame);
+                clips.Add(clip);
+            }
+            importer.clipAnimations = clips.ToArray();
             importer.SaveAndReimport();
         }
+
+        static void EnsureClipStates(AnimatorController ctrl) =>
+            K3TimedClipStates.Ensure(ctrl, LoadClips(), LoopPrefix);
 
         static void ConfigureWeaponImports()
         {
@@ -338,7 +356,7 @@ namespace Dovus.Game.Editor
             return ctrl;
         }
 
-        static AnimatorState AddAction(AnimatorStateMachine sm, string name, AnimationClip clip, AnimatorState loco)
+        internal static AnimatorState AddAction(AnimatorStateMachine sm, string name, AnimationClip clip, AnimatorState loco)
         {
             AnimatorState s = sm.AddState(name);
             s.motion = clip;

@@ -136,6 +136,9 @@ namespace Dovus.Game.Actors
             if (_visual == null)
                 _visual = GetComponent<ActorView>();
             _visual?.Trigger(ActorView.TriggerDodge);
+            int nowMs = (int)_clock.Director.WorldTimeMs;
+            float rollSec = Mathf.Max(0, _pressMs + _dodge.SlideEndOffsetMs - nowMs) / (float)Units.SecToMs;
+            DodgeClipPlayback.ApplyDodge(_visual?.Animator, rollSec, _dodge.RecoveryMs / (float)Units.SecToMs);
             SlideStarted?.Invoke(_startPos, _dir);
         }
 
@@ -164,6 +167,10 @@ namespace Dovus.Game.Actors
             float y = transform.position.y;
             pos = KeepBossEdge(ClampArena(pos));
             pos.y = y;
+            // Kayma ve toparlanma konumu doğrudan yazılmaz: motorun süpürmesi engelde (sütun, duvar,
+            // koza, boss gövdesi) durdurur.
+            if (_motor != null)
+                pos = _motor.SweepStop(transform.position, pos);
             return pos;
         }
 
