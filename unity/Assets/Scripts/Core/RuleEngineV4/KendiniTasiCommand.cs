@@ -6,5 +6,7 @@ namespace Dovus.Core.RuleEngineV4
         public float MaxDistanceM { get; init; }
         public float SpeedMps { get; init; }
         public bool SkillWhileMoving { get; init; }
+        /// <summary>Geri sıçrama: odaktan (yoksa bakıştan) geriye, sabit mesafe; hedefe yürümez.</summary>
+        public bool Backstep { get; init; }
     }
 }

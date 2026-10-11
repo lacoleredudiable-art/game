@@ -227,6 +227,39 @@ public sealed class RuleEngineV4PlannerTests
     }
 
     [Test]
+    public void YayHareket_RopeOnlyWhenMarked_ElseShortBackstep()
+    {
+        var catalog = RuleEngineV4Catalog.FromJson(File.ReadAllText(JsonPath()));
+        Assert.That(catalog.TryGetWeapon(2, out RuleEngineV4Weapon yay), Is.True);
+        Assert.That(yay.MotionRopeAdjectiveRune, Is.EqualTo(9), "ip yalnız İşaretli-Hareket");
+        var planner = new RuleEngineV4Planner(catalog);
+        var marked = new RuleEngineV4CastContext(true, true, hasUsableMark: true);
+
+        CommandPlan rope = planner.Plan(3, 9, 2, marked);
+        Assert.That(rope.Commands.Any(c => c is MermiFirlatCommand), Is.True, "3-9 ip atmadı");
+        Assert.That(rope.Commands.OfType<KendiniTasiCommand>().Single().Backstep, Is.False, "3-9 uçmadı");
+
+        for (int adj = 1; adj <= 12; adj++)
+        {
+            if (adj == 9 || !catalog.TryGetAdjective(adj, out _))
+                continue;
+            CommandPlan plan = planner.Plan(3, adj, 2, new RuleEngineV4CastContext(true, false, hasUsableMark: true));
+            Assert.That(plan.IsValid, Is.True, $"3-{adj}");
+            Assert.That(plan.Commands.Any(c => c is MermiFirlatCommand or MenzileYuruCommand or KilitlenCommand or YapiKurCommand),
+                Is.False, $"3-{adj} yay: ip/yürüyüş/kilit/yapı");
+            KendiniTasiCommand hop = plan.Commands.OfType<KendiniTasiCommand>().Single();
+            Assert.That(hop.Backstep, Is.True, $"3-{adj} geri sıçrama değil");
+            Assert.That(hop.MaxDistanceM, Is.EqualTo(yay.BackstepM));
+            Assert.That(hop.SpeedMps, Is.EqualTo(yay.BackstepSpeedMps));
+            Assert.That(RuleEngineV4CommandAccess.TryBackstep(plan, out float hopSec), Is.True);
+            Assert.That(hopSec, Is.EqualTo(yay.BackstepM / yay.BackstepSpeedMps).Within(1e-6f));
+        }
+
+        // Kılıç'ta kural yok: Hareket her sıfatta eskisi gibi.
+        Assert.That(planner.Plan(3, 3, 4).Commands.OfType<KendiniTasiCommand>().All(k => !k.Backstep), Is.True);
+    }
+
+    [Test]
     public void IsaretliArindirma_OnlyPlacesMark()
     {
         CommandPlan plan = Planner().Plan(9, 9, 4);

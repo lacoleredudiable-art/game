@@ -36,14 +36,22 @@ public sealed class RuleEngineV4SkillAnimResolverTests
     }
 
     [Test]
-    public void Yay_Hareket_UsesTaklaWithWingEntrySilhouette_OnlyOnThatRow()
+    public void Yay_Hareket_MarkedTaklaElseBackstep_WingEntrySilhouette_OnlyOnThoseRows()
     {
         RuleEngineV4Catalog catalog = RuleEngineV4Catalog.FromJson(File.ReadAllText(Path.GetFullPath(JsonPath)));
+        RuleEngineV4SkillAnimBinding marked = catalog.SkillAnim.Resolve(3, 9, 2);
+        Assert.That(marked.Clip, Is.EqualTo("Ortak_Takla"));
+        Assert.That(marked.FallbackAnimatorState, Is.EqualTo("Dodge"));
         RuleEngineV4SkillAnimBinding yay = catalog.SkillAnim.Resolve(3, 1, 2);
-        Assert.That(yay.Clip, Is.EqualTo("Ortak_Takla"));
-        Assert.That(yay.FallbackAnimatorState, Is.EqualTo("Dodge"));
-        Assert.That(yay.EntrySilhouetteCell, Is.EqualTo(VfxPlanDefaults.EjderAtlasCellD));
-        Assert.That(yay.EntrySilhouetteLifeSec, Is.EqualTo(0.3f).Within(1e-6f));
+        Assert.That(yay.Clip, Is.EqualTo("Ortak_GeriSicrama"));
+        Assert.That(yay.Events.HasFlag(RuleEngineV4SkillAnimEvent.TrailOn), Is.False, "geri sıçramada kor izi");
+        foreach (RuleEngineV4SkillAnimBinding b in new[] { marked, yay })
+        {
+            Assert.That(b.EntrySilhouetteCell, Is.EqualTo(VfxPlanDefaults.EjderAtlasCellD));
+            Assert.That(b.EntrySilhouetteLifeSec, Is.EqualTo(0.7f).Within(1e-6f));
+            Assert.That(b.EntrySilhouetteFadeInSec, Is.EqualTo(0.1f).Within(1e-6f));
+            Assert.That(b.EntrySilhouetteFadeOutSec, Is.EqualTo(0.5f).Within(1e-6f));
+        }
         foreach (int weapon in new[] { 2, 4, 6 })
         foreach (int verb in RuleEngineV4Slice.Runes)
         foreach (int adj in RuleEngineV4Slice.Runes)

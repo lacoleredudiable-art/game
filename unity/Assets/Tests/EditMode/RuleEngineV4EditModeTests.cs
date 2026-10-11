@@ -30,14 +30,17 @@ namespace Dovus.Tests.EditMode
         }
 
         [Test]
-        public void YayHareket_TaklaWithWingEntrySilhouette_OnlyOnThatRow()
+        public void YayHareket_MarkedTaklaElseBackstep_WingEntrySilhouette_OnlyOnThoseRows()
         {
             RuleEngineV4SkillAnimCatalog anim = Catalog().SkillAnim;
-            RuleEngineV4SkillAnimBinding yay = anim.Resolve(3, 1, 2);
-            Assert.That(yay.Clip, Is.EqualTo("Ortak_Takla"));
+            Assert.That(anim.Resolve(3, 9, 2).Clip, Is.EqualTo("Ortak_Takla"), "İşaretli-Hareket");
+            RuleEngineV4SkillAnimBinding yay = anim.Resolve(3, 3, 2);
+            Assert.That(yay.Clip, Is.EqualTo("Ortak_GeriSicrama"), "diğer Hareket kombosu");
             Assert.That(yay.FallbackAnimatorState, Is.EqualTo("Dodge"));
             Assert.That(yay.EntrySilhouetteCell, Is.EqualTo(VfxPlanDefaults.EjderAtlasCellD));
-            Assert.That(yay.EntrySilhouetteLifeSec, Is.EqualTo(0.3f).Within(1e-6f));
+            Assert.That(yay.EntrySilhouetteLifeSec, Is.EqualTo(0.7f).Within(1e-6f));
+            Assert.That(yay.EntrySilhouetteFadeInSec, Is.EqualTo(0.1f).Within(1e-6f));
+            Assert.That(yay.EntrySilhouetteFadeOutSec, Is.EqualTo(0.5f).Within(1e-6f));
             foreach (int weapon in new[] { 2, 4, 6 })
             foreach (int verb in RuleEngineV4Slice.Runes)
             foreach (int adj in RuleEngineV4Slice.Runes)
