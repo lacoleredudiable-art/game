@@ -82,6 +82,7 @@ namespace Dovus.Game.Casting.Input
         public System.Action RaiseWeaponSwapRequested;
         public System.Action RaiseOrbCommandRequested;
         public System.Action RaiseSkillCancelledByDodge;
+        public System.Action<SkillFingerRelease> RaiseSkillFingerReleased;
 
         public bool InputLocked =>
             (Vitals != null && Vitals.IsDown)

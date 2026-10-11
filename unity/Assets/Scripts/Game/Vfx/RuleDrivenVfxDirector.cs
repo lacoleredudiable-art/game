@@ -41,6 +41,7 @@ namespace Dovus.Game.Vfx
         VfxColorRgb _entryColor;
         Vector3 _entryStart;
         bool _entryWasDisplacing;
+        bool _runesPreflashed;
 
         public VfxPlan ActivePlan => _plan;
         public bool IsSliceActive => _armed && _plan.IsSwordDashSlice;
@@ -59,6 +60,8 @@ namespace Dovus.Game.Vfx
         /// </summary>
         public void BeginSkill(in SkillResolution skill, string weaponKey)
         {
+            bool runesPreflashed = _runesPreflashed;
+            _runesPreflashed = false;
             _plan = VfxPlanResolver.Resolve(skill, weaponKey);
             if (_plan.IsEmpty)
                 return;
@@ -85,15 +88,35 @@ namespace Dovus.Game.Vfx
             if (_plan.SkillAwaken)
                 _kor.Begin(_plan.CoreColor);
 
-            if (_plan.RuneLetterFlash)
-            {
-                Color c = new Color(
-                    _plan.CoreColor.R * RuleVfxArtDefaults.CoreHdrMult,
-                    _plan.CoreColor.G * RuleVfxArtDefaults.CoreHdrMult,
-                    _plan.CoreColor.B * RuleVfxArtDefaults.CoreHdrMult,
-                    1f);
-                _runes.Play(_plan.VerbRuneId, _plan.AdjectiveRuneId, c);
-            }
+            if (_plan.RuneLetterFlash && !runesPreflashed)
+                PlayRunes(_plan);
+        }
+
+        /// <summary>
+        /// v4 basılı tutma: harf flaşı 2. rün konduğu an yanar; skill parmak kalkınca
+        /// <see cref="BeginSkill"/> ile çıkar ve flaşı tekrar çalmaz.
+        /// </summary>
+        public void FlashRunes(in SkillResolution skill, string weaponKey)
+        {
+            VfxPlan plan = VfxPlanResolver.Resolve(skill, weaponKey);
+            if (plan.IsEmpty || !plan.RuneLetterFlash)
+                return;
+            EnsureChildren();
+            PlayRunes(plan);
+            _runesPreflashed = true;
+        }
+
+        /// <summary>Basılı tutulan skill iptal edildi: sonraki BeginSkill flaşı yeniden çalar.</summary>
+        public void ClearRunePreflash() => _runesPreflashed = false;
+
+        void PlayRunes(in VfxPlan plan)
+        {
+            Color c = new Color(
+                plan.CoreColor.R * RuleVfxArtDefaults.CoreHdrMult,
+                plan.CoreColor.G * RuleVfxArtDefaults.CoreHdrMult,
+                plan.CoreColor.B * RuleVfxArtDefaults.CoreHdrMult,
+                1f);
+            _runes.Play(plan.VerbRuneId, plan.AdjectiveRuneId, c);
         }
 
         /// <summary>

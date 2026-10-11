@@ -41,6 +41,8 @@ namespace Dovus.Game.Skills.Closing
 
         void StampScar(LivingEffectView view, ClosingHit closing);
         void EnsureCastPort();
+        /// <summary>v4: parmak hâlâ basılıysa kombo kalkışa dek tutulur (true = kapanış ertelendi).</summary>
+        bool TryHoldForRelease(CompletedSentence sentence);
         void RunBasicClosing(PendingClosing p);
         void RunSkillClosing(PendingClosing p, LivingEffect logic);
         void DestroyUnityObjectAfter(Object obj, float delaySeconds);

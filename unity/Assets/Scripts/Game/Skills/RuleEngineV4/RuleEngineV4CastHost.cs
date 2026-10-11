@@ -21,7 +21,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
         readonly RuleEngineV4WorldCommandRunHost _runner;
         float _lastDealt;
         RuleEngineV4CastEconomy _economy;
-        System.Action _fizzle;
+        System.Action<RuleEngineV4CastOutcome> _settle;
         int _comboLength = RuleEngineV4CastContext.VerbAdjectiveComboLen;
 
         public RuleEngineV4CastHost(ManifestationDirector director)
@@ -71,14 +71,14 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 return true;
             }
             LastDenial = RuleEngineV4CastDenial.None;
-            _fizzle = () => Economy.Fizzle(key, castMs);
+            _settle = outcome => Economy.Settle(key, castMs, outcome);
             try
             {
                 return TryLaunchCombo(verb, adj, comboLength, out dealt);
             }
             finally
             {
-                _fizzle = null;
+                _settle = null;
             }
         }
 
@@ -126,12 +126,9 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 GetAdj(data, adj));
 
             CollectSceneCandidates();
-            bool manual = _director._targeting != null
-                && _director._targeting.Selected != null
-                && _director._targeting.Selected.IsAvailable;
-            int? manualId = _director._targeting?.Selected != null
-                ? _director._targeting.Selected.TargetKey
-                : null;
+            RuleEngineV4HeldTarget held = NextTarget;
+            NextTarget = default;
+            ManualTarget(held, out bool manual, out int? manualId);
             float weaponRange = EffectiveWeaponRange(data, verb, weaponId);
             RuleEngineV4TargetPick pick = RuleEngineV4AutoTargetPicker.Pick(
                 resolution,
@@ -148,7 +145,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             CommandPlan plan = planner.Plan(verb, adj, weaponId, castCtx);
             Transform focus = ResolveTargetTransform(pick);
             RuleEngineV4SurfaceAim surfaceAim = default;
-            if (TryAimSurfaceMark(plan, pick, out surfaceAim))
+            if (TryAimSurfaceMark(plan, pick, held, out surfaceAim))
             {
                 plan = planner.Plan(verb, adj, weaponId, InReachContext(hasMark));
                 focus = null;
@@ -163,17 +160,51 @@ namespace Dovus.Game.Skills.RuleEngineV4
             if (!plan.IsValid)
             {
                 DebugConfig.DevLog($"[RuleEngineV4] boş plan {verb}-{adj} w{weaponId}");
-                _fizzle?.Invoke();
+                _settle?.Invoke(RuleEngineV4CastOutcome.NoValidTarget);
                 return true;
             }
 
+            FaceHeldPick(held, focus, surfaceAim);
             RuleEngineV4SkillAnimBridge.PlayForPlan(_director, plan, data.SkillAnim);
             _runner.Start(plan, focus, d =>
             {
                 _lastDealt = d;
                 _director._castPort?.NotifyRuleEngineV4Dealt(d);
-            }, surfaceAim, _fizzle);
+            }, surfaceAim, _settle);
             return true;
+        }
+
+        /// <summary>Sonraki dökümün tek seferlik hedefi (basılı tutarak seçme); döküm başında tüketilir.</summary>
+        internal RuleEngineV4HeldTarget NextTarget { get; set; }
+
+        void ManualTarget(in RuleEngineV4HeldTarget held, out bool manual, out int? manualId)
+        {
+            switch (held.Mode)
+            {
+                case RuleEngineV4HeldTarget.Kind.Target when held.Target != null && held.Target.IsAvailable:
+                    manual = true;
+                    manualId = held.Target.TargetKey;
+                    return;
+                case RuleEngineV4HeldTarget.Kind.Default:
+                    TargetableHost locked = _director._targeting != null ? _director._targeting.Selected : null;
+                    manual = locked != null && locked.IsAvailable;
+                    manualId = locked != null ? locked.TargetKey : null;
+                    return;
+                default:
+                    manual = false;
+                    manualId = null;
+                    return;
+            }
+        }
+
+        void FaceHeldPick(in RuleEngineV4HeldTarget held, Transform focus, in RuleEngineV4SurfaceAim aim)
+        {
+            bool overridesLock = held.Mode == RuleEngineV4HeldTarget.Kind.Target
+                || held.Mode == RuleEngineV4HeldTarget.Kind.Auto;
+            if (overridesLock && focus != null)
+                _director._skillAim?.FaceCastTarget(focus);
+            else if (held.Mode == RuleEngineV4HeldTarget.Kind.Surface && aim.IsValid)
+                _director._skillAim?.FaceCastPoint(aim.Point);
         }
 
         internal Transform LastFocus { get; private set; }
@@ -186,11 +217,18 @@ namespace Dovus.Game.Skills.RuleEngineV4
             new(hasValidTarget: true, targetInWeaponRange: true, manualTargetSelected: false, hasUsableMark: hasMark, comboLength: _comboLength);
 
         /// <summary>İşaret koyan plan: nişan ışını MarkOnly yüzeye çarpıyor ve canlı hedeften önce geliyorsa.</summary>
-        bool TryAimSurfaceMark(CommandPlan plan, in RuleEngineV4TargetPick pick, out RuleEngineV4SurfaceAim aim)
+        bool TryAimSurfaceMark(CommandPlan plan, in RuleEngineV4TargetPick pick, in RuleEngineV4HeldTarget held, out RuleEngineV4SurfaceAim aim)
         {
             aim = default;
             float placeM = RuleEngineV4MarkOnlyRules.MarkPlaceRangeM(plan);
-            if (placeM <= 0 || !_physics.TryAimMarkOnlySurface(_director.MechanicsPlayer, placeM, out aim))
+            if (placeM <= 0)
+                return false;
+            if (held.Mode == RuleEngineV4HeldTarget.Kind.Surface)
+            {
+                aim = held.SurfaceAim;
+                return aim.IsValid && aim.DistanceM <= placeM;
+            }
+            if (!_physics.TryAimMarkOnlySurface(_director.MechanicsPlayer, placeM, out aim))
                 return false;
             bool living = TryLivingDistance(pick, out float livingM);
             if (RuleEngineV4MarkOnlyRules.SurfaceBeatsLiving(aim.DistanceM, living && livingM <= placeM, livingM))

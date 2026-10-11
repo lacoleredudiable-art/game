@@ -5,40 +5,22 @@ namespace Dovus.Game.Weapons
     /// <summary>
     /// El prop ofseti: <see cref="WeaponVisualRegistry"/> değerlerine eklenir (Mixamo vs Synty el ekseni).
     /// Görsel prefab kökünde; <see cref="WeaponHandPropsView"/> animator üzerinden okur.
+    /// Kılıç ve Yay tabloda yok: tutuş soketine sıfır konum/sıfır açıyla takılırlar.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class WeaponGripView : MonoBehaviour
     {
-        [SerializeField] GripOffset _right = GripOffset.Identity;
-        [SerializeField] GripOffset _left = GripOffset.Identity;
-
         [System.Serializable]
         public struct GripOffset
         {
             public Vector3 LocalPosition;
             public Vector3 LocalEulerAngles;
             public Vector3 LocalScale;
-
-            public static GripOffset Identity => new GripOffset
-            {
-                LocalPosition = Vector3.zero,
-                LocalEulerAngles = Vector3.zero,
-                LocalScale = Vector3.one,
-            };
         }
 
         /// <summary>Mixamo Paladin: silah anahtarına göre ek tutuş (Synty'ye uygulanmaz).</summary>
         public void ApplyMixamoWeapon(string weaponKey, bool isRight, ref Vector3 localPos, ref Quaternion localRot, ref Vector3 localScale)
         {
-            if (weaponKey == "kilic")
-            {
-                if (isRight)
-                    Apply(_right, ref localPos, ref localRot, ref localScale);
-                else
-                    Apply(_left, ref localPos, ref localRot, ref localScale);
-                return;
-            }
-
             if (TryGetMixamoWeaponOffset(weaponKey, isRight, out GripOffset o))
                 Apply(o, ref localPos, ref localRot, ref localScale);
         }
@@ -58,14 +40,6 @@ namespace Dovus.Game.Weapons
                     return true;
                 case "kalkan" when !isRight:
                     offset = DefaultMixamoLeftShield();
-                    return true;
-                case "yay" when !isRight:
-                    offset = new GripOffset
-                    {
-                        LocalPosition = new Vector3(WeaponGripViewDefaults.BowLeftLocalPosX, WeaponGripViewDefaults.BowLeftLocalPosY, WeaponGripViewDefaults.BowLeftLocalPosZ),
-                        LocalEulerAngles = new Vector3(WeaponGripViewDefaults.BowLeftEulerX, WeaponGripViewDefaults.BowLeftEulerY, WeaponGripViewDefaults.BowLeftEulerZ),
-                        LocalScale = Vector3.one,
-                    };
                     return true;
                 case "kitap" when !isRight:
                     offset = new GripOffset
@@ -159,19 +133,6 @@ namespace Dovus.Game.Weapons
             return animator.transform.name.IndexOf("mixamorig", System.StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
-        /// <summary>
-        /// Paladin / Mixamo oyuncu görseli için önerilen kılıç tutuşu (editor binder yazır).
-        /// ff-4: idle'da ~127° (aşağı/öne) ölçülüyordu — dikeyden 30–45° öne-yukarı hedefine
-        /// (mixamorig:RightHand uzayında analitik çözüm: blade.forward ≈ dikeyden 37.5°, yan
-        /// kayma yok) güncellendi. <see cref="WeaponHandPropsView.LogMixamoSwordAngle"/> doğrular.
-        /// </summary>
-        public static GripOffset DefaultMixamoRightSword() => new GripOffset
-        {
-            LocalPosition = new Vector3(WeaponGripViewDefaults.MixamoSwordLocalPosX, WeaponGripViewDefaults.MixamoSwordLocalPosY, WeaponGripViewDefaults.MixamoSwordLocalPosZ),
-            LocalEulerAngles = new Vector3(WeaponGripViewDefaults.MixamoSwordEulerX, WeaponGripViewDefaults.MixamoSwordEulerY, WeaponGripViewDefaults.MixamoSwordEulerZ),
-            LocalScale = Vector3.one,
-        };
-
         public static GripOffset DefaultMixamoLeftShield() => new GripOffset
         {
             // cw-2s: 0.064m ofset → forearm bone'a 0,060m boşluk ölçtü (<0,05m hedefi kaçırıyordu).
@@ -181,13 +142,5 @@ namespace Dovus.Game.Weapons
             LocalEulerAngles = new Vector3(WeaponGripViewDefaults.MixamoShieldEulerX, WeaponGripViewDefaults.MixamoShieldEulerY, WeaponGripViewDefaults.MixamoShieldEulerZ),
             LocalScale = Vector3.one,
         };
-
-#if UNITY_EDITOR
-        public void SetMixamoDefaults()
-        {
-            _right = DefaultMixamoRightSword();
-            _left = DefaultMixamoLeftShield();
-        }
-#endif
     }
 }

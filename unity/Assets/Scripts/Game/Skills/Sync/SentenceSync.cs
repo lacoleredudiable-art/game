@@ -34,7 +34,8 @@ namespace Dovus.Game.Skills.Sync
             int worldMsInt = (int)worldMs;
             bool isDodging = _host.Input?.Dodge != null && _host.Input.Dodge.IsActive(worldMsInt);
             bool isCasting = _host.PendingClosingCount > 0 && !_host.SwapDrawUnlocked(worldMs);
-            bool isDrawing = _host.Engine != null && _host.Engine.State.Phase == SentencePhase.Building;
+            bool isDrawing = (_host.Engine != null && _host.Engine.State.Phase == SentencePhase.Building)
+                || (_host.Input != null && _host.Input.SkillHeldForRelease);
             bool isRecovering = _host.Engine != null && _host.Engine.State.Phase == SentencePhase.Recovering;
 
             _host.PlayerStates.SyncWorld(

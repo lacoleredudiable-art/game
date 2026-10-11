@@ -8,7 +8,7 @@ using UnityEngine.TestTools;
 
 namespace Dovus.Tests.PlayMode
 {
-    /// <summary>v4 mana + bekleme: değerler scale bloğundan; boşa giden skill manayı harcar, yarım bekleme.</summary>
+    /// <summary>v4 mana + bekleme: değerler scale bloğundan; boşa giden skill (hedef yok) manayı harcar, yarım bekleme; ıska tam bekleme.</summary>
     public sealed partial class RuleEngineV4WorldPhysicsPlayModeTests
     {
         const int MarkAdj = 9;
@@ -30,19 +30,11 @@ namespace Dovus.Tests.PlayMode
             string key = RuleEngineV4CastEconomy.ComboKey(verb, adj);
 
             float before = _cast.Economy.Mana(NowMs);
-            double castMs = 0;
-            void OnResolved(Dovus.Core.Grammar.CompletedSentence s) => castMs = NowMs;
-            input.Engine.SentenceCompleted += OnResolved;
-            try
-            {
-                yield return DrawThroughDots(input, verbDot, adjDot);
-            }
-            finally
-            {
-                input.Engine.SentenceCompleted -= OnResolved;
-            }
+            yield return DrawThroughDots(input, verbDot, adjDot);
+            Assert.That(_cast.Economy.Mana(NowMs), Is.GreaterThanOrEqualTo(before - ManaTol), "parmak kalkmadan mana harcandı");
+            // Skill parmak kalkınca çıkar: bekleme o an başlar.
+            double castMs = NowMs;
             input.Pointer.EndPointer(cancelled: false);
-            Assert.That(castMs, Is.GreaterThan(0), "kombo çözülmedi");
             Assert.That(_cast.IsRunning, Is.True, "skill çıkmadı");
             Assert.That(_cast.Economy.Mana(castMs), Is.EqualTo(before - EconomyScale.ManaCostPerSkill).Within(ManaTol), "mana harcanmadı");
             Assert.That(_cast.Economy.CooldownRemainingSec(key, castMs), Is.EqualTo(EconomyScale.CooldownSec).Within(ManaTol),
@@ -104,8 +96,9 @@ namespace Dovus.Tests.PlayMode
                 Is.EqualTo(EconomyScale.CooldownSec * EconomyScale.FizzleCooldownFrac).Within(ManaTol), "yarım bekleme");
         }
 
+        /// <summary>Menzil sonuna kadar kimseye değmeyen mermi ıskadır: boşa gitme değil, tam bekleme.</summary>
         [UnityTest]
-        public IEnumerator Economy_MissileExpiresWithoutHit_ReportsFizzle()
+        public IEnumerator Economy_MissileExpiresWithoutHit_IsMissFullCooldown()
         {
             FreezeBoss();
             Equip(Yay);
@@ -126,12 +119,21 @@ namespace Dovus.Tests.PlayMode
             }
             Assert.That(plan, Is.Not.Null, "yayda mermi planı yok");
 
+            string key = RuleEngineV4CastEconomy.ComboKey(plan.VerbRune, plan.AdjectiveRune);
+            double castMs = NowMs;
+            Assert.That(_cast.Economy.TryBegin(key, castMs, out _), Is.True);
             bool done = false;
-            bool fizzled = false;
-            _cast.Runner.Start(plan, null, _ => done = true, default, () => fizzled = true);
+            RuleEngineV4CastOutcome? outcome = null;
+            _cast.Runner.Start(plan, null, _ => done = true, default, o =>
+            {
+                outcome = o;
+                _cast.Economy.Settle(key, castMs, o);
+            });
             yield return WaitUntilIdle();
             Assert.That(done, Is.True, $"plan bitmedi; {Diag()}");
-            Assert.That(fizzled, Is.True, "kimseye değmeyen mermi boşa gitmeli");
+            Assert.That(outcome, Is.EqualTo(RuleEngineV4CastOutcome.Missed), "kimseye değmeyen mermi ıska");
+            Assert.That(_cast.Economy.CooldownRemainingSec(key, castMs), Is.EqualTo(EconomyScale.CooldownSec).Within(ManaTol),
+                "ıska tam bekleme");
         }
     }
 }

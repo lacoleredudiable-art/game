@@ -251,7 +251,8 @@ namespace Dovus.Game.Casting.Input
         internal void EndPointer(bool cancelled)
         {
             double heldSec = (HexagonPointerHits.NowRealMs() - _s.PressRealMs) / Units.SecToMs;
-            if (_s.Mode == FingerMode.Drawing)
+            bool wasDrawing = _s.Mode == FingerMode.Drawing;
+            if (wasDrawing)
             {
                 _stroke.FinishDrawingStroke(cancelled);
                 if (!cancelled && _s.Engine != null
@@ -279,6 +280,14 @@ namespace Dovus.Game.Casting.Input
             _s.LastInkPx = null;
             _s.MouseHeld = false;
             _s.SwapHoldFired = false;
+            _s.StrokeClosedAtCap = false;
+
+            if (wasDrawing)
+            {
+                bool onCenter = HexagonPointerHits.HitCenter(_s.LastPos, _s.Tuning);
+                bool onHexagon = onCenter || HexagonPointerHits.HitDot(_s.LastPos, _s.Tuning).HasValue;
+                _s.RaiseSkillFingerReleased?.Invoke(new SkillFingerRelease(_s.LastPos, cancelled, onCenter, onHexagon));
+            }
         }
 
         float SwapHoldSec() => _s.SwapHoldCommandSec != null ? _s.SwapHoldCommandSec() : 0f;

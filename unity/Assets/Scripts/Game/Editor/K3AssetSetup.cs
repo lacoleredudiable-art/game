@@ -45,21 +45,30 @@ namespace Dovus.Game.Editor
 
         static readonly Color EmissionColor = new(1f, 0.28f, 0.06f);
 
+        static readonly Vector4 BlenderIdentityWxyz = new(1f, 0f, 0f, 0f);
+
         /// <summary>
         /// Blender soket-lokal ofsetleri (dönüş wxyz). Unity'de kemik yerel ekseni X'te aynalı:
         /// konum (x,y,z) → (-x,y,z), dönüş (w,x,y,z) → Unity (x,-y,-z,w).
+        /// Grip_R'deki silah sıfır konum/sıfır açıyla takılır; Yay Blender'da sol elde (Socket_L) tutulur.
         /// </summary>
         static readonly (string Name, string Fbx, string Socket, Vector3 BlenderPos, Vector4 BlenderRotWxyz)[] Weapons =
         {
-            ("Silah_Kilic", "Kilic", "Socket_R", new Vector3(-0.0324f, 0.0250f, 0.0281f), new Vector4(0.5141f, 0.3602f, 0.2514f, 0.7367f)),
+            ("Silah_Kilic", "Kilic", GripRight, Vector3.zero, BlenderIdentityWxyz),
             ("Silah_Yay", "Yay", "Socket_L", new Vector3(0.0306f, 0.1050f, 0.0319f), new Vector4(0.6578f, 0.2980f, -0.3196f, -0.6135f)),
         };
 
-        /// <summary>Blender Socket_R el kemiğinin ucunda (kemik +Y 0.08 m); Socket_L kemik başında.</summary>
-        static readonly (string Socket, Vector3 BlenderPos)[] SocketOffsets =
+        internal const string GripRight = "Grip_R";
+        const string LegacySocketRight = "Socket_R";
+
+        /// <summary>
+        /// Grip_R avuç içi tutuş noktası: eski Socket_R (el kemiği ucu, +Y 0.08 m) + Kılıç'ın Blender
+        /// ofseti; Kılıç'ın dünya pozu değişmez. Socket_L kemik başında.
+        /// </summary>
+        static readonly (string Socket, Vector3 BlenderPos, Vector4 BlenderRotWxyz)[] SocketOffsets =
         {
-            ("Socket_R", new Vector3(0f, 0.08f, 0f)),
-            ("Socket_L", Vector3.zero),
+            (GripRight, new Vector3(-0.0324f, 0.1050f, 0.0281f), new Vector4(0.5141f, 0.3602f, 0.2514f, 0.7367f)),
+            ("Socket_L", Vector3.zero, BlenderIdentityWxyz),
         };
 
         /// <summary>ActorView'un genel state adları → k3 klibi.</summary>
@@ -105,6 +114,22 @@ namespace Dovus.Game.Editor
         internal static Quaternion BlenderToUnityLocal(Vector4 wxyz) => new(wxyz.y, -wxyz.z, -wxyz.w, wxyz.x);
 
         internal static Vector3 BlenderToUnityLocal(Vector3 p) => new(-p.x, p.y, p.z);
+
+        [MenuItem("Dovus/k3/Silahları soketlere tak (Grip_R / Socket_L)")]
+        public static void RemountWeapons()
+        {
+            GameObject root = PrefabUtility.LoadPrefabContents(PrefabPath);
+            try
+            {
+                MountWeapons(root);
+                PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+            Debug.Log("[k3] silahlar takıldı → " + PrefabPath);
+        }
 
         [MenuItem("Dovus/k3/Dilim oyuncusu olarak bağla (Prototype)")]
         public static void BindSlicePlayer()
@@ -348,12 +373,16 @@ namespace Dovus.Game.Editor
         /// <summary>Soketteki boş Silah_* yer tutucusunun yerine silah FBX'i; Vfx_Tip/Vfx_Kabza FBX'ten gelir.</summary>
         static void MountWeapons(GameObject root)
         {
-            foreach ((string socketName, Vector3 offset) in SocketOffsets)
+            Transform legacy = FindDeep(root.transform, LegacySocketRight);
+            if (legacy != null && FindDeep(root.transform, GripRight) == null)
+                legacy.name = GripRight;
+
+            foreach ((string socketName, Vector3 offset, Vector4 rotWxyz) in SocketOffsets)
             {
                 Transform socket = FindDeep(root.transform, socketName)
                     ?? throw new InvalidOperationException(socketName + " yok");
                 socket.localPosition = BlenderToUnityLocal(offset);
-                socket.localRotation = Quaternion.identity;
+                socket.localRotation = BlenderToUnityLocal(rotWxyz);
             }
 
             foreach (var w in Weapons)

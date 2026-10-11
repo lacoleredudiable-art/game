@@ -12,7 +12,7 @@ namespace UnityEngine
         LeftShoulder = 11, RightShoulder = 12, LeftUpperArm = 13, RightUpperArm = 14,
         LeftLowerArm = 15, RightLowerArm = 16, LeftHand = 17, RightHand = 18,
         LeftToes = 19, RightToes = 20, LeftEye = 21, RightEye = 22, Jaw = 23,
-        UpperChest = 54, LastBone = 55,
+        LeftMiddleProximal = 30, RightMiddleProximal = 45, UpperChest = 54, LastBone = 55,
     }
 
     public enum AnimatorCullingMode { AlwaysAnimate, CullUpdateTransforms, CullCompletely }

@@ -4,6 +4,8 @@ namespace Dovus.Core.RuleEngineV4
 {
     public sealed class RuleEngineV4Globals
     {
+        /// <summary>2. rün bu süre basılı kalırsa hedef seçme açılır (sn).</summary>
+        public float HoldToTargetSec { get; init; }
         public float PrefireCapSec { get; init; }
         public float FriendlyRangeCapM { get; init; }
         public bool ClipInnerMeasuresToRange { get; init; }

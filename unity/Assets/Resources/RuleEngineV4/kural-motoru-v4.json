@@ -43,6 +43,7 @@
     "projectile_column_half_height_m": 50
   },
   "globals": {
+    "hold_to_target_sec": 0.2,
     "prefire_cap_sec": 1.0,
     "friendly_range_cap_m": 6,
     "clip_inner_measures_to_range": true,

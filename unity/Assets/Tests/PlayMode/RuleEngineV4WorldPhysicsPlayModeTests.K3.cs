@@ -20,6 +20,10 @@ namespace Dovus.Tests.PlayMode
         const string MissingEventReceiver = "has no receiver";
         const string SwordDashClip = "Kilic_ATIL";
         const string SwordStrikeClip = "Kilic_VUR";
+        const string GripRight = "Grip_R";
+        const string BowSocket = "Socket_L";
+        const string SwordObject = "Silah_Kilic";
+        const string BowObject = "Silah_Yay";
         /// <summary>Komut satırı: -k3Capture &lt;klasör&gt; verilirse dilim sahnesinin görüntüsü kaydedilir.</summary>
         const string CaptureArg = "-k3Capture";
         const int CaptureW = 1280;
@@ -65,6 +69,52 @@ namespace Dovus.Tests.PlayMode
             // Kilic_ATIL olay taşımıyor; olaylı Kilic_VUR da alıcıyı sınar.
             yield return CastAndPlayOut(1, 2, SwordStrikeClip, anim, bridge);
             Assert.That(_errors, Is.Empty, string.Join("\n", _errors));
+        }
+
+        [UnityTest]
+        public IEnumerator K3_OwnWeapons_SwordAtZeroOnGripR_BowOnSocketL()
+        {
+            Equip(Kilic);
+            yield return null;
+            Animator anim = PlayerAnimator();
+            Transform rightHand = anim.GetBoneTransform(HumanBodyBones.RightHand);
+            Transform leftHand = anim.GetBoneTransform(HumanBodyBones.LeftHand);
+            Transform sword = ChildPath(rightHand, GripRight, SwordObject);
+            Transform bow = ChildPath(leftHand, BowSocket, BowObject);
+            Assert.That(sword.gameObject.activeInHierarchy, Is.True, "Kılıç seçiliyken Silah_Kilic görünmüyor");
+            Assert.That(bow.gameObject.activeSelf, Is.False, "Kılıç seçiliyken Silah_Yay görünüyor");
+            Assert.That(sword.localPosition.magnitude, Is.LessThan(1e-4f), "Kılıç Grip_R'de sıfır konumda değil");
+            Assert.That(Quaternion.Angle(sword.localRotation, Quaternion.identity), Is.LessThan(0.01f), "Kılıç Grip_R'de sıfır açıda değil");
+            string[] rightProps = rightHand.Cast<Transform>().Select(c => c.name)
+                .Where(n => !n.StartsWith("mixamorig", StringComparison.Ordinal)).ToArray();
+            Assert.That(rightProps, Is.EqualTo(new[] { GripRight }), "sağ elde Grip_R dışında prop");
+
+            Equip(Yay);
+            yield return null;
+            Assert.That(bow.gameObject.activeInHierarchy, Is.True, "Yay seçiliyken Silah_Yay görünmüyor");
+            Assert.That(sword.gameObject.activeSelf, Is.False, "Yay seçiliyken Silah_Kilic görünüyor");
+        }
+
+        [UnityTest]
+        public IEnumerator K3_Sword_NoShieldOnLeftArm()
+        {
+            Equip(Kilic);
+            yield return null;
+            Transform leftArm = PlayerAnimator().GetBoneTransform(HumanBodyBones.LeftLowerArm);
+            string[] visible = leftArm.GetComponentsInChildren<Renderer>()
+                .Where(r => r.enabled).Select(r => r.transform.parent.name + "/" + r.name).ToArray();
+            Assert.That(visible, Is.Empty, "Kılıç seçiliyken sol kolda görünen prop (kalkan)");
+        }
+
+        static Transform ChildPath(Transform t, params string[] names)
+        {
+            foreach (string n in names)
+            {
+                Transform next = t.Find(n);
+                Assert.That(next, Is.Not.Null, $"{t.name}/{n} yok");
+                t = next;
+            }
+            return t;
         }
 
         IEnumerator CastAndPlayOut(int verb, int adj, string clipName, Animator anim, AnimationBridge bridge)

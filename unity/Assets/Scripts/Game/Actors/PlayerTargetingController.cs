@@ -258,27 +258,50 @@ namespace Dovus.Game.Actors
 
         void SelectAt(Vector2 screenPosition)
         {
+            TryPickWorld(screenPosition, out TargetableHost best, out _, out bool hasCamera);
+            if (hasCamera)
+                Select(best);
+        }
+
+        /// <summary>
+        /// Dünya seçimi (tap ile aynı ışın): en yakın seçilebilir hedef ve en yakın katı çarpma.
+        /// Seçimi değiştirmez; basılı tutarak hedef seçme de bunu kullanır.
+        /// </summary>
+        public bool TryPickWorld(Vector2 screenPosition, out TargetableHost target, out RaycastHit nearestSolid) =>
+            TryPickWorld(screenPosition, out target, out nearestSolid, out _);
+
+        bool TryPickWorld(Vector2 screenPosition, out TargetableHost target, out RaycastHit nearestSolid, out bool hasCamera)
+        {
+            target = null;
+            nearestSolid = default;
             if (_camera == null && _follow != null)
                 _camera = _follow.ViewCamera;
-            if (_camera == null)
-                return;
+            hasCamera = _camera != null;
+            if (!hasCamera)
+                return false;
 
             Ray ray = _camera.ScreenPointToRay(screenPosition);
             RaycastHit[] hits = Physics.RaycastAll(
                 ray, _camera.farClipPlane, Physics.AllLayers, QueryTriggerInteraction.Collide);
-            TargetableHost best = null;
             float bestDistance = float.MaxValue;
+            float solidDistance = float.MaxValue;
             for (int i = 0; i < hits.Length; i++)
             {
-                TargetableHost candidate = hits[i].collider != null
-                    ? hits[i].collider.GetComponentInParent<TargetableHost>()
-                    : null;
+                Collider hitCollider = hits[i].collider;
+                if (hitCollider == null)
+                    continue;
+                if (!hitCollider.isTrigger && hits[i].distance < solidDistance)
+                {
+                    nearestSolid = hits[i];
+                    solidDistance = hits[i].distance;
+                }
+                TargetableHost candidate = hitCollider.GetComponentInParent<TargetableHost>();
                 if (candidate == null || !candidate.IsAvailable || hits[i].distance >= bestDistance)
                     continue;
-                best = candidate;
+                target = candidate;
                 bestDistance = hits[i].distance;
             }
-            Select(best);
+            return target != null || solidDistance < float.MaxValue;
         }
 
         void Select(TargetableHost target)

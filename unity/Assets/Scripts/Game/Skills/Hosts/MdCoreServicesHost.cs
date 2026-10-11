@@ -66,6 +66,14 @@ public sealed class MdCoreServicesHost
 
         public void EnsureCastPort() => _md._castPort ??= new MdCastPort(_md);
 
+        public bool TryHoldForRelease(CompletedSentence sentence)
+        {
+            if (!Dovus.Core.RuleEngineV4.RuleEngineV4Feature.Enabled)
+                return false;
+            EnsureCastPort();
+            return _md._castPort.RuleEngineV4Bridge.HeldCast.TryHold(sentence);
+        }
+
         public void RunBasicClosing(PendingClosing p)
         {
             LivingEffect logic = p.View != null ? p.View.Logic : null;

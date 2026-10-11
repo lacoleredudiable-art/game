@@ -86,6 +86,7 @@ namespace Dovus.Core.RuleEngineV4
                     KorumaYogunBlockSec = F(globalsNode["koruma_yogun_block_sec"], RuleEngineV4CatalogDefaults.KorumaYogunBlockSec),
                     KorumaDefaultBlockSec = F(globalsNode["koruma_default_block_sec"], 2f),
                     TetikliWaitSec = F(globalsNode["tetikli_wait_sec"], RuleEngineV4CatalogDefaults.TetikliWaitSec),
+                    HoldToTargetSec = F(globalsNode["hold_to_target_sec"], RuleEngineV4CatalogDefaults.HoldToTargetSec),
                     IsaretUseRangeM = F(globalsNode["isaret_use_range_m"], RuleEngineV4CatalogDefaults.IsaretUseRangeM),
                     IsaretLifeSec = F(globalsNode["isaret_life_sec"], RuleEngineV4CatalogDefaults.IsaretLifeSec),
                     IsaretMaxPerPlayer = globalsNode["isaret_max_per_player"].AsInt(4),

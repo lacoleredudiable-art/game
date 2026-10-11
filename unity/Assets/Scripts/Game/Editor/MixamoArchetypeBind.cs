@@ -82,9 +82,10 @@ namespace Dovus.Game.Editor
         /// </summary>
         static void BindProps(WeaponVisualRegistry registry)
         {
+            // Kılıç tek elli: sol elde kalkan yok (kalkan yalnız "kalkan" silahında).
             SetProp(registry, "kilic",
                 LoadWeaponMesh("Warrior_Sword"), Vector3.zero, Vector3.zero, Vector3.one * 28.3f,
-                LoadShieldPrefab(), Vector3.zero, Vector3.zero, Vector3.one);
+                null, Vector3.zero, Vector3.zero, Vector3.one);
 
             SetProp(registry, "kalkan",
                 LoadWeaponMesh("Rogue_Dagger"), Vector3.zero, Vector3.zero, Vector3.one * 34.7f,

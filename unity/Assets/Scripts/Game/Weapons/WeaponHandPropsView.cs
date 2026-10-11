@@ -13,8 +13,10 @@ namespace Dovus.Game.Weapons
     /// placeholder kurulur — hata fırlatmaz. Sunum amaçlı: hasar/zamanlama buna dokunmaz.
     /// </summary>
     [DisallowMultipleComponent]
-    public sealed class WeaponHandPropsView : MonoBehaviour
+    public sealed partial class WeaponHandPropsView : MonoBehaviour
     {
+        const string OwnWeaponPrefix = "Silah_";
+
         [SerializeField] Animator _animator;
 
         WeaponVisualRegistry _registry;
@@ -22,11 +24,6 @@ namespace Dovus.Game.Weapons
         string _currentKey = "\u0000"; // ilk Apply her zaman çalışsın
         GameObject _rightInstance;
         GameObject _leftInstance;
-
-        static Material _metalMat;
-        static Material _woodMat;
-        static Material _clothMat;
-        static Material _orbMat;
 
         void Awake()
         {
@@ -64,11 +61,45 @@ namespace Dovus.Game.Weapons
             WeaponVisualRegistry.PropEntry entry = _registry != null ? _registry.FindProps(weaponKey) : null;
             Transform right = _animator.GetBoneTransform(HumanBodyBones.RightHand);
             Transform left = ResolveLeftAttachBone(weaponKey);
+            Transform own = ShowOwnWeapon(weaponKey);
 
-            _rightInstance = Spawn(weaponKey, entry, right, isRight: true);
-            _leftInstance = Spawn(weaponKey, entry, left, isRight: false);
+            _rightInstance = IsUnder(own, right) ? null : Spawn(weaponKey, entry, right, isRight: true);
+            _leftInstance = IsUnder(own, _animator.GetBoneTransform(HumanBodyBones.LeftHand)) || !HasLeftHandProp(weaponKey)
+                ? null
+                : Spawn(weaponKey, entry, left, isRight: false);
             SyncSyntyAtlasHandItems(weaponKey);
         }
+
+        /// <summary>Kılıç tek elli: sol elde kalkan yok (kalkan yalnız "kalkan" silahında).</summary>
+        static bool HasLeftHandProp(string weaponKey) => weaponKey != "kilic";
+
+        /// <summary>
+        /// Görselin kendi silahları (k3: Grip_R / Socket_L altında Silah_*): anahtarın silahı görünür,
+        /// diğerleri gizlenir. Mesh'i olmayan yer tutucu sahiplik saymaz; o silahta kayıt prop'u takılır.
+        /// </summary>
+        Transform ShowOwnWeapon(string weaponKey)
+        {
+            string wanted = OwnWeaponName(weaponKey);
+            Transform shown = null;
+            foreach (Transform t in _animator.GetComponentsInChildren<Transform>(true))
+            {
+                if (!t.name.StartsWith(OwnWeaponPrefix, System.StringComparison.Ordinal))
+                    continue;
+                bool match = t.name == wanted && t.GetComponentInChildren<Renderer>(true) != null;
+                t.gameObject.SetActive(match);
+                if (match)
+                    shown = t;
+            }
+            return shown;
+        }
+
+        /// <summary>weapons[].animations_key → görselin silah objesi adı ("kilic" → "Silah_Kilic").</summary>
+        public static string OwnWeaponName(string weaponKey) =>
+            string.IsNullOrEmpty(weaponKey)
+                ? string.Empty
+                : OwnWeaponPrefix + char.ToUpperInvariant(weaponKey[0]) + weaponKey.Substring(1);
+
+        static bool IsUnder(Transform t, Transform bone) => t != null && bone != null && t.IsChildOf(bone);
 
         /// <summary>
         /// Takip edilen alanlar + el bone'larına doğrudan takılı her eski prop kökü (binder/force-
@@ -137,8 +168,7 @@ namespace Dovus.Game.Weapons
         Transform ResolveLeftAttachBone(string weaponKey)
         {
             Transform hand = _animator.GetBoneTransform(HumanBodyBones.LeftHand);
-            if (WeaponGripView.IsMixamoRig(_animator)
-                && (weaponKey == "kilic" || weaponKey == "kalkan"))
+            if (WeaponGripView.IsMixamoRig(_animator) && weaponKey == "kalkan")
             {
                 Transform forearm = _animator.GetBoneTransform(HumanBodyBones.LeftLowerArm);
                 if (forearm != null)
@@ -226,32 +256,96 @@ namespace Dovus.Game.Weapons
             }
         }
 
-        /// <summary>Mixamo kılıç: el + uç konumu ve dikeyden açı (derece) — feel doğrulama.</summary>
-        public static void LogMixamoSwordAngle(Animator animator, string tag)
+        /// <summary>Bilek-önkol açısı ve silah ekseninin hedef yönden sapması (derece).</summary>
+        public readonly struct GripAngles
+        {
+            public readonly float WristDeg;
+            public readonly float AxisDeviationDeg;
+
+            public GripAngles(float wristDeg, float axisDeviationDeg)
+            {
+                WristDeg = wristDeg;
+                AxisDeviationDeg = axisDeviationDeg;
+            }
+
+            public bool WithinLimits =>
+                WristDeg < WeaponHandPropsViewDefaults.GripWristMaxDeg
+                && AxisDeviationDeg < WeaponHandPropsViewDefaults.GripAxisMaxDeviationDeg;
+        }
+
+        /// <summary>
+        /// Kılıç (sağ el) / Yay (sol el) tutuş ölçümü. Bilek: önkol (dirsek→bilek) ile el (bilek→orta
+        /// parmak kökü ya da el kemiği ekseni) arası. Silah ekseni: Kılıç Vfx_Kabza→Vfx_Tip; Yay ok ekseni (yay yerel +X,
+        /// kiriş tarafından kabzaya). Hedef yön: karakterin yatay ileri yönü.
+        /// </summary>
+        public static bool TryMeasureGripAngles(Animator animator, string weaponKey, out GripAngles angles)
+        {
+            angles = default;
+            if (animator == null)
+                return false;
+            bool bow = weaponKey == "yay";
+            Transform forearm = animator.GetBoneTransform(bow ? HumanBodyBones.LeftLowerArm : HumanBodyBones.RightLowerArm);
+            Transform hand = animator.GetBoneTransform(bow ? HumanBodyBones.LeftHand : HumanBodyBones.RightHand);
+            if (forearm == null || hand == null)
+                return false;
+            Transform weapon = FindOwnWeapon(animator, weaponKey) ?? (bow ? null : FindRightSwordProp(hand));
+            if (weapon == null)
+                return false;
+
+            // Parmak kemiği eşlenmemişse (k3: yumruk blend shape) el yönü kemiğin +Y'si (Mixamo: parmaklara).
+            Transform finger = animator.GetBoneTransform(bow ? HumanBodyBones.LeftMiddleProximal : HumanBodyBones.RightMiddleProximal);
+            Vector3 handDir = finger != null ? finger.position - hand.position : hand.up;
+            float wrist = Vector3.Angle(hand.position - forearm.position, handDir);
+            Vector3 target = Vector3.ProjectOnPlane(animator.transform.forward, Vector3.up);
+            angles = new GripAngles(wrist, Vector3.Angle(WeaponAxis(weapon, bow), target));
+            return true;
+        }
+
+        /// <summary>Mixamo kılıç/yay: bilek-önkol açısı ve eksen sapması — feel doğrulama.</summary>
+        public static void LogMixamoWeaponAngle(Animator animator, string weaponKey, string tag)
         {
             if (animator == null || !WeaponGripView.IsMixamoRig(animator))
                 return;
-            Transform hand = animator.GetBoneTransform(HumanBodyBones.RightHand);
-            if (hand == null)
-                return;
-            Transform blade = FindRightSwordProp(hand);
-            if (blade == null)
+            if (!TryMeasureGripAngles(animator, weaponKey, out GripAngles a))
             {
-                DebugConfig.DevLog($"[SwordAngle] {tag} no prop");
+                DebugConfig.DevLog($"[GripAngle] {tag} {weaponKey} no prop");
                 return;
             }
-
-            Vector3 handPos = hand.position;
-            // ff-4: Warrior_Sword mesh'inin uzunluk ekseni local Z (blade.forward) — bounds
-            // ölçümü (mesh.vertices) grip ucu +Z'de, kabza 0'a yakın gösterdi. Önceki blade.up
-            // (Y) varsayımı yanlış eksendi → ölçülen açı gerçek bıçak yönünü yansıtmıyordu.
-            Vector3 tip = blade.position + blade.forward * EstimateBladeHalfLength(blade);
-            Vector3 shaft = tip - handPos;
-            float angleFromUp = shaft.sqrMagnitude > 1e-6f
-                ? Vector3.Angle(Vector3.up, shaft)
-                : 0f;
             DebugConfig.DevLog(
-                $"[SwordAngle] {tag} hand={handPos} tip={tip} angleFromVertical={angleFromUp:0.0}°");
+                $"[GripAngle] {tag} {weaponKey} wrist={a.WristDeg:0.0}° axisDev={a.AxisDeviationDeg:0.0}° ok={a.WithinLimits}");
+        }
+
+        static Transform FindOwnWeapon(Animator animator, string weaponKey)
+        {
+            string wanted = OwnWeaponName(weaponKey);
+            foreach (Transform t in animator.GetComponentsInChildren<Transform>(true))
+            {
+                if (t.name == wanted)
+                    return t;
+            }
+            return null;
+        }
+
+        static Vector3 WeaponAxis(Transform weapon, bool bow)
+        {
+            if (bow)
+                return weapon.right;
+            Transform hilt = FindChildDeep(weapon, "Vfx_Kabza");
+            Transform tip = FindChildDeep(weapon, "Vfx_Tip");
+            if (hilt != null && tip != null)
+                return tip.position - hilt.position;
+            // ff-4: Warrior_Sword mesh'inin uzunluk ekseni local Z.
+            return weapon.forward;
+        }
+
+        static Transform FindChildDeep(Transform t, string name)
+        {
+            foreach (Transform c in t.GetComponentsInChildren<Transform>(true))
+            {
+                if (c.name == name)
+                    return c;
+            }
+            return null;
         }
 
         static Transform FindRightSwordProp(Transform hand)
@@ -264,13 +358,6 @@ namespace Dovus.Game.Weapons
             }
 
             return null;
-        }
-
-        static float EstimateBladeHalfLength(Transform propRoot)
-        {
-            if (!TryRendererBounds(propRoot.gameObject, out Bounds b))
-                return WeaponHandPropsViewDefaults.BladeHalfLengthFallbackM;
-            return Mathf.Max(b.extents.y, b.extents.z) * WeaponHandPropsViewDefaults.BladeHalfLengthBoundsMult;
         }
 
         static void FitMixamoPropWorldSize(GameObject go, string weaponKey, bool isRight) =>
@@ -306,7 +393,6 @@ namespace Dovus.Game.Weapons
 
             return weaponKey switch
             {
-                "kilic" => WeaponHandPropsViewDefaults.LeftSwordMaxExtentM,
                 "kalkan" => WeaponHandPropsViewDefaults.LeftShieldMaxExtentM,
                 "yay" => WeaponHandPropsViewDefaults.LeftBowMaxExtentM,
                 "kitap" => WeaponHandPropsViewDefaults.LeftKitapMaxExtentM,
@@ -335,6 +421,10 @@ namespace Dovus.Game.Weapons
                 return false;
             if (name.IndexOf("mixamorig", System.StringComparison.OrdinalIgnoreCase) >= 0)
                 return false;
+            // Görselin kendi tutuş soketleri (k3 Grip_R / Socket_L) prop değil; silinirse silahı da gider.
+            if (name.StartsWith("Grip_", System.StringComparison.Ordinal)
+                || name.StartsWith("Socket_", System.StringComparison.Ordinal))
+                return false;
             if (name.StartsWith("Finger", System.StringComparison.OrdinalIgnoreCase)
                 || name.StartsWith("IndexFinger", System.StringComparison.OrdinalIgnoreCase)
                 || name.StartsWith("Thumb", System.StringComparison.OrdinalIgnoreCase))
@@ -352,143 +442,5 @@ namespace Dovus.Game.Weapons
                 r.receiveShadows = false;
             }
         }
-
-        // --- Prosedürel placeholder'lar (binder referansı yoksa) ------------------------------
-
-        GameObject BuildPrimitive(string key, bool isRight) => key switch
-        {
-            "kilic" => isRight ? BuildSwordFallback() : BuildRoundShield(),
-            "kalkan" => isRight ? BuildSwordFallback(WeaponHandPropsViewDefaults.ShieldRightSwordFallbackLengthM) : BuildBigShield(),
-            "cekic" => isRight ? BuildHammer() : null,
-            "yay" => isRight ? null : BuildBowFallback(),
-            "asa" => isRight ? BuildStaffFallback() : null,
-            "kitap" => isRight ? null : BuildBook(),
-            "kure" => isRight ? null : BuildOrb(),
-            "tilsim" => isRight ? BuildTalisman() : null,
-            "top" => isRight ? BuildCannon() : null,
-            _ => null, // "yumruk" ve bilinmeyen anahtarlar: çıplak el.
-        };
-
-        static GameObject Root(string name)
-        {
-            var go = new GameObject(name);
-            return go;
-        }
-
-        static GameObject Prim(Transform parent, PrimitiveType type, Vector3 localPos, Vector3 localScale, Material mat, Quaternion? localRot = null)
-        {
-            GameObject go = GameObject.CreatePrimitive(type);
-            Destroy(go.GetComponent<Collider>());
-            go.transform.SetParent(parent, false);
-            go.transform.localPosition = localPos;
-            go.transform.localRotation = localRot ?? Quaternion.identity;
-            go.transform.localScale = localScale;
-            go.GetComponent<Renderer>().sharedMaterial = mat;
-            return go;
-        }
-
-        /// <summary>Warrior_Sword referansı yoksa: basit düz bıçak, hilt'siz, ~0,9 m (ölçek ile ayarlanır).</summary>
-        static GameObject BuildSwordFallback(float lengthM = WeaponHandPropsViewDefaults.SwordFallbackDefaultLengthM)
-        {
-            GameObject root = Root("Sword_Placeholder");
-            Prim(root.transform, PrimitiveType.Cube, new Vector3(0, 0, lengthM * WeaponHandPropsViewDefaults.SwordBladeCenterAlongMult), new Vector3(WeaponHandPropsViewDefaults.SwordBladeWidthM, WeaponHandPropsViewDefaults.SwordBladeThicknessM, lengthM * WeaponHandPropsViewDefaults.SwordBladeLengthMult), MetalMat());
-            Prim(root.transform, PrimitiveType.Cylinder, new Vector3(0, 0, -lengthM * WeaponHandPropsViewDefaults.SwordHiltCenterAlongMult), new Vector3(WeaponHandPropsViewDefaults.SwordHiltRadiusM, lengthM * WeaponHandPropsViewDefaults.SwordHiltHalfHeightMult, WeaponHandPropsViewDefaults.SwordHiltRadiusM), WoodMat(),
-                Quaternion.Euler(90f, 0f, 0f));
-            return root;
-        }
-
-        static GameObject BuildStaffFallback()
-        {
-            const float len = 1.6f;
-            GameObject root = Root("Staff_Placeholder");
-            Prim(root.transform, PrimitiveType.Cylinder, new Vector3(0, len * WeaponHandPropsViewDefaults.StaffShaftCenterAlongMult, 0), new Vector3(WeaponHandPropsViewDefaults.StaffShaftRadiusM, len * WeaponHandPropsViewDefaults.StaffShaftHalfHeightMult, WeaponHandPropsViewDefaults.StaffShaftRadiusM), WoodMat());
-            Prim(root.transform, PrimitiveType.Sphere, new Vector3(0, len * WeaponHandPropsViewDefaults.StaffOrbCenterAlongMult, 0), new Vector3(WeaponHandPropsViewDefaults.StaffOrbDiameterM, WeaponHandPropsViewDefaults.StaffOrbDiameterM, WeaponHandPropsViewDefaults.StaffOrbDiameterM), OrbMat());
-            return root;
-        }
-
-        static GameObject BuildBowFallback()
-        {
-            const float len = 1.0f;
-            GameObject root = Root("Bow_Placeholder");
-            Prim(root.transform, PrimitiveType.Cylinder, Vector3.zero, new Vector3(WeaponHandPropsViewDefaults.BowShaftRadiusM, len * WeaponHandPropsViewDefaults.BowShaftHalfHeightMult, WeaponHandPropsViewDefaults.BowShaftRadiusM), WoodMat());
-            return root;
-        }
-
-        static GameObject BuildRoundShield() => BuildShield("RoundShield_Prop", WeaponHandPropsViewDefaults.RoundShieldDiameterM, WeaponHandPropsViewDefaults.RoundShieldThicknessM);
-        static GameObject BuildBigShield() => BuildShield("BigShield_Prop", WeaponHandPropsViewDefaults.BigShieldDiameterM, WeaponHandPropsViewDefaults.BigShieldThicknessM);
-
-        static GameObject BuildShield(string name, float diameterM, float thicknessM)
-        {
-            GameObject root = Root(name);
-            Prim(root.transform, PrimitiveType.Cylinder, Vector3.zero,
-                new Vector3(diameterM, thicknessM * 0.5f, diameterM), MetalMat(),
-                Quaternion.Euler(0f, 0f, 90f));
-            Prim(root.transform, PrimitiveType.Sphere, new Vector3(thicknessM * WeaponHandPropsViewDefaults.ShieldBossOffsetAlongThicknessMult, 0f, 0f),
-                new Vector3(diameterM * WeaponHandPropsViewDefaults.ShieldBossDiameterMult, diameterM * WeaponHandPropsViewDefaults.ShieldBossDiameterMult, diameterM * WeaponHandPropsViewDefaults.ShieldBossDiameterMult), MetalMat());
-            return root;
-        }
-
-        static GameObject BuildHammer()
-        {
-            const float len = 1.1f;
-            GameObject root = Root("Hammer_Prop");
-            Prim(root.transform, PrimitiveType.Cylinder, new Vector3(0, len * WeaponHandPropsViewDefaults.HammerShaftCenterAlongMult, 0), new Vector3(WeaponHandPropsViewDefaults.HammerShaftRadiusM, len * WeaponHandPropsViewDefaults.HammerShaftCenterAlongMult, WeaponHandPropsViewDefaults.HammerShaftRadiusM), WoodMat());
-            Prim(root.transform, PrimitiveType.Cube, new Vector3(0, len * WeaponHandPropsViewDefaults.HammerHeadCenterAlongMult, 0), new Vector3(len * WeaponHandPropsViewDefaults.HammerHeadWidthMult, len * WeaponHandPropsViewDefaults.HammerHeadHeightMult, len * WeaponHandPropsViewDefaults.HammerHeadWidthMult), MetalMat());
-            return root;
-        }
-
-        static GameObject BuildBook()
-        {
-            GameObject root = Root("Book_Prop");
-            Prim(root.transform, PrimitiveType.Cube, Vector3.zero, new Vector3(WeaponHandPropsViewDefaults.BookCoverWidthM, WeaponHandPropsViewDefaults.BookCoverHeightM, WeaponHandPropsViewDefaults.BookCoverDepthM), WoodMat());
-            Prim(root.transform, PrimitiveType.Cube, new Vector3(0, WeaponHandPropsViewDefaults.BookPageLiftM, 0), new Vector3(WeaponHandPropsViewDefaults.BookPageWidthM, WeaponHandPropsViewDefaults.BookPageHeightM, WeaponHandPropsViewDefaults.BookPageDepthM), ClothMat());
-            return root;
-        }
-
-        static GameObject BuildOrb()
-        {
-            GameObject root = Root("Orb_Prop");
-            Prim(root.transform, PrimitiveType.Sphere, Vector3.zero, new Vector3(WeaponHandPropsViewDefaults.OrbPropDiameterM, WeaponHandPropsViewDefaults.OrbPropDiameterM, WeaponHandPropsViewDefaults.OrbPropDiameterM), OrbMat());
-            return root;
-        }
-
-        static GameObject BuildTalisman()
-        {
-            GameObject root = Root("Talisman_Prop");
-            Prim(root.transform, PrimitiveType.Cylinder, Vector3.zero, new Vector3(WeaponHandPropsViewDefaults.TalismanDiscRadiusM, WeaponHandPropsViewDefaults.TalismanDiscHeightM, WeaponHandPropsViewDefaults.TalismanDiscRadiusM), MetalMat(),
-                Quaternion.Euler(90f, 0f, 0f));
-            Prim(root.transform, PrimitiveType.Sphere, new Vector3(0, WeaponHandPropsViewDefaults.TalismanCharmLiftM, 0), new Vector3(WeaponHandPropsViewDefaults.TalismanCharmDiameterM, WeaponHandPropsViewDefaults.TalismanCharmDiameterM, WeaponHandPropsViewDefaults.TalismanCharmDiameterM), MetalMat());
-            return root;
-        }
-
-        static GameObject BuildCannon()
-        {
-            GameObject root = Root("Cannon_Prop");
-            Prim(root.transform, PrimitiveType.Cylinder, new Vector3(0, 0, WeaponHandPropsViewDefaults.CannonBodyOffsetZM), new Vector3(WeaponHandPropsViewDefaults.CannonBodyRadiusM, WeaponHandPropsViewDefaults.CannonBodyHalfHeightM, WeaponHandPropsViewDefaults.CannonBodyRadiusM), MetalMat(),
-                Quaternion.Euler(90f, 0f, 0f));
-            return root;
-        }
-
-        // --- Malzemeler: gri/desatüre palet, URP Simple Lit (yoksa Standard'a düşer) -----------
-
-        static Material MakeMat(Color color, Color? emission = null)
-        {
-            Shader shader = AssetLoader.FindShader("Universal Render Pipeline/Simple Lit", null)
-                ?? AssetLoader.FindShader("Universal Render Pipeline/Lit", null)
-                ?? AssetLoader.FindShader("Standard", null);
-            var mat = new Material(shader) { color = color };
-            if (emission.HasValue && mat.HasProperty("_EmissionColor"))
-            {
-                mat.EnableKeyword("_EMISSION");
-                mat.SetColor("_EmissionColor", emission.Value);
-                mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
-            }
-            return mat;
-        }
-
-        static Material MetalMat() => _metalMat ??= MakeMat(new Color(0.45f, 0.45f, 0.46f));
-        static Material WoodMat() => _woodMat ??= MakeMat(new Color(0.22f, 0.18f, 0.15f));
-        static Material ClothMat() => _clothMat ??= MakeMat(new Color(0.58f, 0.55f, 0.50f));
-        static Material OrbMat() => _orbMat ??= MakeMat(new Color(0.40f, 0.46f, 0.48f), new Color(0.12f, 0.30f, 0.33f) * WeaponHandPropsViewDefaults.OrbMatEmissionScale);
     }
 }

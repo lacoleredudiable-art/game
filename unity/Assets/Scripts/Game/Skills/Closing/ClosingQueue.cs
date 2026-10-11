@@ -37,6 +37,8 @@ namespace Dovus.Game.Skills.Closing
         public void OnSentenceCompleted(CompletedSentence sentence)
         {
             _host.EnsureSkillServices();
+            if (_host.TryHoldForRelease(sentence))
+                return;
             _host.SentenceBridge.OnCompleted(sentence);
             if (Dovus.Core.RuleEngineV4.RuleEngineV4Feature.LaunchOnResolve && _host.Clock != null)
                 TickPendingClosings(_host.Clock.Director.WorldTimeMs);
