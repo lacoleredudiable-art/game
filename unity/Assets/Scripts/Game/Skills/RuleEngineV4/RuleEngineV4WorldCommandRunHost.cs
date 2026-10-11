@@ -34,14 +34,22 @@ namespace Dovus.Game.Skills.RuleEngineV4
 
         public bool IsRunning => _active != null;
 
-        public void Start(CommandPlan plan, Transform focus, System.Action<float> onComplete)
+        public void Start(
+            CommandPlan plan,
+            Transform focus,
+            System.Action<float> onComplete,
+            RuleEngineV4SurfaceAim surfaceAim = default)
         {
             if (_active != null)
                 _director.StopCoroutine(_active);
-            _active = _director.StartCoroutine(CoRun(plan, focus, onComplete));
+            _active = _director.StartCoroutine(CoRun(plan, focus, onComplete, surfaceAim));
         }
 
-        IEnumerator CoRun(CommandPlan plan, Transform focus, System.Action<float> onComplete)
+        IEnumerator CoRun(
+            CommandPlan plan,
+            Transform focus,
+            System.Action<float> onComplete,
+            RuleEngineV4SurfaceAim surfaceAim)
         {
             float dealt = 0;
             Transform caster = _director.MechanicsPlayer;
@@ -149,7 +157,12 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 }
 
                 if (RuleEngineV4CommandAccess.TryMark(cmd, out float markLife))
-                    _director._castPort?.RuleEngineV4Bridge.PlaceMark(focus, markLife);
+                {
+                    if (surfaceAim.IsValid)
+                        _director._castPort?.RuleEngineV4Bridge.PlaceSurfaceMark(surfaceAim, markLife);
+                    else
+                        _director._castPort?.RuleEngineV4Bridge.PlaceMark(focus, markLife);
+                }
             }
 
             if (timing != null && timing.RecoverySec > 0)

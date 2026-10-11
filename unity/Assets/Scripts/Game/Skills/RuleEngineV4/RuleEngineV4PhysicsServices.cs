@@ -171,6 +171,39 @@ namespace Dovus.Game.Skills.RuleEngineV4
             return true;
         }
 
+        /// <summary>Göğüsten bakış yönünde ilk katı çarpma; MarkOnly yüzeyse nişan döner (tetikler ve kendi gövdesi sayılmaz).</summary>
+        public bool TryAimMarkOnlySurface(Transform caster, float rangeM, out RuleEngineV4SurfaceAim aim)
+        {
+            aim = default;
+            if (caster == null || rangeM <= 0)
+                return false;
+            Vector3 dir = caster.forward;
+            dir.y = 0;
+            if (dir.sqrMagnitude < PositionOwnershipDefaults.MinDistM * PositionOwnershipDefaults.MinDistM)
+                return false;
+            dir.Normalize();
+            Vector3 origin = caster.position + Vector3.up * RuleEngineV4UnitySceneDefaults.StrikeChestOffsetM;
+            int count = Physics.RaycastNonAlloc(
+                new Ray(origin, dir), _castHits, rangeM, Physics.AllLayers, QueryTriggerInteraction.Ignore);
+            int best = -1;
+            for (int i = 0; i < count; i++)
+            {
+                Collider col = _castHits[i].collider;
+                if (col == null || col.transform.IsChildOf(caster))
+                    continue;
+                if (best < 0 || _castHits[i].distance < _castHits[best].distance)
+                    best = i;
+            }
+            if (best < 0)
+                return false;
+            RaycastHit hit = _castHits[best];
+            var surface = hit.collider.GetComponentInParent<RuleEngineV4MarkOnlySurface>();
+            if (surface == null)
+                return false;
+            aim = new RuleEngineV4SurfaceAim(surface, hit.point, hit.normal, hit.distance);
+            return true;
+        }
+
         public bool SphereCastFirstTarget(
             Vector3 origin,
             Vector3 direction,
