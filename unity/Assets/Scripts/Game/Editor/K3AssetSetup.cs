@@ -111,6 +111,20 @@ namespace Dovus.Game.Editor
             Debug.Log("[k3] yeniden alma tamam");
         }
 
+        /// <summary>Yalnız klip içe aktarma ayarları + olaylar (klipler.csv); model ve prefab'a dokunmaz.</summary>
+        [MenuItem("Dovus/k3/Klip ayarlarını yeniden uygula (klipler.csv)")]
+        public static void ReapplyClips()
+        {
+            Dictionary<string, ClipRow> rows = ReadClipCsv();
+            Avatar avatar = AssetDatabase.LoadAllAssetsAtPath(ModelFbx).OfType<Avatar>().FirstOrDefault();
+            if (avatar == null || !avatar.isValid || !avatar.isHuman)
+                throw new InvalidOperationException("k3 avatarı geçersiz: " + ModelFbx);
+            foreach (string clip in ExportClips)
+                ConfigureClip(clip, rows[clip], avatar);
+            AssetDatabase.SaveAssets();
+            Debug.Log("[k3] klip ayarları yeniden uygulandı");
+        }
+
         /// <summary>Blender (w,x,y,z) soket-lokal dönüşü → Unity kemik-lokal dönüşü.</summary>
         internal static Quaternion BlenderToUnityLocal(Vector4 wxyz) => new(wxyz.y, -wxyz.z, -wxyz.w, wxyz.x);
 
