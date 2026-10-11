@@ -15,6 +15,7 @@ namespace Dovus.Core.RuleEngineV4
         public const float ManaRegenPerSec = 10f;
         public const float ManaCostPerSkill = 25f;
         public const float CooldownSec = 4f;
+        public const float FizzleCooldownFrac = 0.5f;
         /// <summary>min_combo_len yoksa alt sınır yok.</summary>
         public const int MinComboLen = 0;
         public const float RangeReferenceM = 6f;

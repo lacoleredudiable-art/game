@@ -20,6 +20,8 @@ namespace Dovus.Game.Skills.RuleEngineV4
         readonly RuleEngineV4DeliveryEvaluator _deliveryEvaluator;
         readonly RuleEngineV4WorldCommandRunHost _runner;
         float _lastDealt;
+        RuleEngineV4CastEconomy _economy;
+        System.Action _fizzle;
         int _comboLength = RuleEngineV4CastContext.VerbAdjectiveComboLen;
 
         public RuleEngineV4CastHost(ManifestationDirector director)
@@ -47,9 +49,37 @@ namespace Dovus.Game.Skills.RuleEngineV4
             out float dealt)
         {
             dealt = 0;
-            if (!TryCombo(skill, out int verb, out int adj))
+            if (!OwnsSkill(skill) || !TryCombo(skill, out int verb, out int adj))
                 return false;
-            return TryLaunchCombo(verb, adj, ctx.Closing.DotCount, out dealt);
+            return TryLaunchPaid(verb, adj, ctx.Closing.DotCount, out dealt);
+        }
+
+        internal RuleEngineV4CastEconomy Economy => _economy ??= new RuleEngineV4CastEconomy(_catalogAccess.Catalog.Scale);
+
+        internal RuleEngineV4CastDenial LastDenial { get; private set; }
+
+        /// <summary>Oyun döküm yolu: mana + bekleme. Yetmezse skill çıkmaz; true döner ki eski yola düşmesin.</summary>
+        internal bool TryLaunchPaid(int verb, int adj, int comboLength, out float dealt)
+        {
+            dealt = 0;
+            string key = RuleEngineV4CastEconomy.ComboKey(verb, adj);
+            double castMs = WorldMs();
+            if (!Economy.TryBegin(key, castMs, out RuleEngineV4CastDenial denial))
+            {
+                LastDenial = denial;
+                DebugConfig.DevLog($"[RuleEngineV4] skill çıkmadı {key}: {denial}");
+                return true;
+            }
+            LastDenial = RuleEngineV4CastDenial.None;
+            _fizzle = () => Economy.Fizzle(key, castMs);
+            try
+            {
+                return TryLaunchCombo(verb, adj, comboLength, out dealt);
+            }
+            finally
+            {
+                _fizzle = null;
+            }
         }
 
         /// <summary>Dilim kombosu + dilim silahı: teslimi v4 koşucusu üstlenir, eski hareket kalıbı değil.</summary>
@@ -133,6 +163,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             if (!plan.IsValid)
             {
                 DebugConfig.DevLog($"[RuleEngineV4] boş plan {verb}-{adj} w{weaponId}");
+                _fizzle?.Invoke();
                 return true;
             }
 
@@ -141,7 +172,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             {
                 _lastDealt = d;
                 _director._castPort?.NotifyRuleEngineV4Dealt(d);
-            }, surfaceAim);
+            }, surfaceAim, _fizzle);
             return true;
         }
 

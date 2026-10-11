@@ -61,6 +61,7 @@ namespace Dovus.Core.RuleEngineV4
                     ManaRegenPerSec = F(scaleNode["mana_regen_per_sec"], RuleEngineV4CatalogDefaults.ManaRegenPerSec),
                     ManaCostPerSkill = F(scaleNode["mana_cost_per_skill"], RuleEngineV4CatalogDefaults.ManaCostPerSkill),
                     CooldownSec = F(scaleNode["cooldown_sec"], RuleEngineV4CatalogDefaults.CooldownSec),
+                    FizzleCooldownFrac = F(scaleNode["fizzle_cooldown_frac"], RuleEngineV4CatalogDefaults.FizzleCooldownFrac),
                     RangeReferenceM = F(scaleNode["range_reference_m"], RuleEngineV4CatalogDefaults.RangeReferenceM),
                 },
                 new RuleEngineV4Globals

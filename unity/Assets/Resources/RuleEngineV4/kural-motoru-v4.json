@@ -20,6 +20,7 @@
     "mana_regen_per_sec": 10,
     "mana_cost_per_skill": 25,
     "cooldown_sec": 4,
+    "fizzle_cooldown_frac": 0.5,
     "range_reference_m": 6
   },
   "world_physics": {

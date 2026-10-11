@@ -38,23 +38,27 @@ namespace Dovus.Game.Skills.RuleEngineV4
             CommandPlan plan,
             Transform focus,
             System.Action<float> onComplete,
-            RuleEngineV4SurfaceAim surfaceAim = default)
+            RuleEngineV4SurfaceAim surfaceAim = default,
+            System.Action onFizzle = null)
         {
             if (_active != null)
                 _director.StopCoroutine(_active);
-            _active = _director.StartCoroutine(CoRun(plan, focus, onComplete, surfaceAim));
+            _active = _director.StartCoroutine(CoRun(plan, focus, onComplete, surfaceAim, onFizzle));
         }
 
+        /// <summary>onFizzle: mermi menzili bitene kadar kimseye değmedi (süre doldu).</summary>
         IEnumerator CoRun(
             CommandPlan plan,
             Transform focus,
             System.Action<float> onComplete,
-            RuleEngineV4SurfaceAim surfaceAim)
+            RuleEngineV4SurfaceAim surfaceAim,
+            System.Action onFizzle)
         {
             float dealt = 0;
             Transform caster = _director.MechanicsPlayer;
             OnSureCommand timing = null;
             Transform missileHit = null;
+            bool missileFired = false;
             var delivery = new RuleEngineV4DeliveryState();
 
             foreach (PhysicsCommand cmd in plan.Commands)
@@ -86,6 +90,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
 
                 if (cmd is MermiFirlatCommand missile)
                 {
+                    missileFired = true;
                     yield return CoMissile(caster, focus, missile, hit =>
                     {
                         missileHit = hit;
@@ -164,6 +169,9 @@ namespace Dovus.Game.Skills.RuleEngineV4
                         _director._castPort?.RuleEngineV4Bridge.PlaceMark(focus, markLife);
                 }
             }
+
+            if (missileFired && missileHit == null)
+                onFizzle?.Invoke();
 
             if (timing != null && timing.RecoverySec > 0)
                 yield return CoWaitWorld(timing.RecoverySec);
