@@ -146,7 +146,7 @@ namespace Dovus.Game.Vfx
                 _mesh.SetUVs(0, _uv0);
                 _mesh.SetUVs(1, _uv1);
                 _mesh.SetColors(_colors);
-                _mesh.SetTriangles(_tris, 0, true);
+                _mesh.SetTriangles(_tris, 0);
             }
             _mr.enabled = QuadCount > 0 && _mat != null;
         }
