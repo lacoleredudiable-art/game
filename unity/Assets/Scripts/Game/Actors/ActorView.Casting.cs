@@ -81,6 +81,8 @@ namespace Dovus.Game.Actors
             if (string.Equals(_motionKey, playKey, System.StringComparison.Ordinal))
                 return;
             _motionKey = playKey ?? string.Empty;
+            if (SkillClipHeld())
+                return;
             MotionAnimClip clip = (table ?? MotionAnimTable.BuiltIn).Resolve(_motionKey, weaponKey, verbId);
             clip = ApplySidestepMirror(clip, blend.Strafe);
             PlayMotionClip(clip, animSpeed, spin);
@@ -98,6 +100,42 @@ namespace Dovus.Game.Actors
             if (_animator == null || !_animator.HasState(0, Animator.StringToHash("SidestepRight")))
                 return clip;
             return new MotionAnimClip(clip.Key, "SidestepRight", clip.Trigger, clip.Fallback);
+        }
+
+        int _heldSkillStateHash;
+
+        /// <summary>
+        /// skill_anim kesin klibi (ör. Kilic_ATIL) oynarken kalıp faz klibi ve sunum darbeleri
+        /// (PulseRune / PulseAnimationType) onu ezmesin: klibin
+        /// Trail_On / Trail_Off / Impact olayları yalnız klip oynarken gelir. Kilit yalnız klip
+        /// state'inden çıkılınca kalkar: cast koşucusu hareketi başlatırken EndMotionAnim çağırır.
+        /// </summary>
+        public void HoldSkillClip(string stateName)
+        {
+            _heldSkillStateHash = string.IsNullOrEmpty(stateName) ? 0 : Animator.StringToHash(stateName);
+            _heldSkillFrame = Time.frameCount;
+        }
+
+        public void ReleaseSkillClip() => _heldSkillStateHash = 0;
+
+        int _heldSkillFrame;
+
+        bool SkillClipHeld()
+        {
+            if (_heldSkillStateHash == 0 || _animator == null)
+                return false;
+            // Geçiş Animator güncellemesinde başlar; tutulduğu karede state bilgisi henüz eskidir.
+            if (Time.frameCount == _heldSkillFrame)
+                return true;
+            for (int layer = 0; layer < _animator.layerCount; layer++)
+            {
+                if (_animator.GetCurrentAnimatorStateInfo(layer).shortNameHash == _heldSkillStateHash
+                    || (_animator.IsInTransition(layer)
+                        && _animator.GetNextAnimatorStateInfo(layer).shortNameHash == _heldSkillStateHash))
+                    return true;
+            }
+            _heldSkillStateHash = 0;
+            return false;
         }
 
         public void EndMotionAnim()

@@ -13,6 +13,9 @@ namespace Dovus.Game.Vfx
     /// Kor izi elde görünen silahın Vfx_Kabza / Vfx_Tip noktalarından örneklenir; nokta yoksa iz yok.
     /// Mekanik / hitbox değişmez.
     /// </summary>
+    // Kılıç, kalıp (MotionTemplateBodyHost 12) ve zemin (ActorGroundingController 100) LateUpdate'te
+    // kökü yazdıktan sonra örneklenmeli; önce örneklenirse iz bir kare geride kalır.
+    [DefaultExecutionOrder(150)]
     public sealed class RuleDrivenVfxDirector : MonoBehaviour
     {
         MotionTemplateBodyHost _body;
