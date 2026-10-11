@@ -47,11 +47,28 @@ namespace Dovus.Game.Skills.RuleEngineV4
             out float dealt)
         {
             dealt = 0;
-            if (skill.IsEmpty
-                || !int.TryParse(skill.Identity.Verb.Value, out int verb)
-                || !int.TryParse(skill.Identity.Adjective.Value, out int adj))
+            if (!TryCombo(skill, out int verb, out int adj))
                 return false;
             return TryLaunchCombo(verb, adj, ctx.Closing.DotCount, out dealt);
+        }
+
+        /// <summary>Dilim kombosu + dilim silahı: teslimi v4 koşucusu üstlenir, eski hareket kalıbı değil.</summary>
+        internal bool OwnsSkill(SkillResolution skill)
+        {
+            if (!RuleEngineV4Feature.Enabled || !TryCombo(skill, out int verb, out int adj))
+                return false;
+            _ = _catalogAccess.Catalog;
+            return RuleEngineV4Slice.IsSliceCombo(verb, adj)
+                && RuleEngineV4Slice.IsSliceWeapon(_director.EquippedWeaponNumber());
+        }
+
+        static bool TryCombo(SkillResolution skill, out int verb, out int adj)
+        {
+            adj = 0;
+            verb = 0;
+            return !skill.IsEmpty
+                && int.TryParse(skill.Identity.Verb.Value, out verb)
+                && int.TryParse(skill.Identity.Adjective.Value, out adj);
         }
 
         internal bool TryLaunchCombo(int verb, int adj, out float dealt) =>

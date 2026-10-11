@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Dovus.Core.Casting;
 using Dovus.Core.Element;
 using Dovus.Core.Input;
-using Dovus.Core.RuleEngineV4;
 using Dovus.Core.Tuning;
 using Dovus.Core.Shared;
 
@@ -93,9 +92,6 @@ namespace Dovus.Core.Grammar
             // Building: kapasite doluysa önce kapat, sonra yeni fiil
             if (_words.Count >= _tuning.MaxSentenceDots)
             {
-                if (RuleEngineV4Feature.HoldSentenceAtCapacity)
-                    return;
-
                 ResolveWithClosing();
                 BeginFresh();
                 StartVerb(dot, rune);
@@ -178,8 +174,8 @@ namespace Dovus.Core.Grammar
             if (State.Phase != SentencePhase.Building || _words.Count == 0)
                 return;
 
-            // Max cümle: uzatma penceresi yok; zaten çözülmüş olmalı (v4: pencere onay süresidir)
-            if (_words.Count >= _tuning.MaxSentenceDots && !RuleEngineV4Feature.HoldSentenceAtCapacity)
+            // Max cümle: uzatma penceresi yok; zaten çözülmüş olmalı
+            if (_words.Count >= _tuning.MaxSentenceDots)
                 return;
 
             _remainingWindowMs -= dtMs;
@@ -240,7 +236,7 @@ namespace Dovus.Core.Grammar
             _lastWordDwellStacks = 0;
             _words.Add(new SentenceWord(slot, rune, jump, 0));
 
-            if (_words.Count >= _tuning.MaxSentenceDots && !RuleEngineV4Feature.HoldSentenceAtCapacity)
+            if (_words.Count >= _tuning.MaxSentenceDots)
             {
                 ResolveWithClosing();
                 return;

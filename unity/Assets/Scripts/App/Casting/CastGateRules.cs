@@ -21,7 +21,7 @@ namespace Dovus.App.Casting
                 return true;
 
             if (phase == SentencePhase.Building && wordCount >= maxSentenceDots)
-                return !Dovus.Core.RuleEngineV4.RuleEngineV4Feature.HoldSentenceAtCapacity;
+                return true;
 
             return false;
         }

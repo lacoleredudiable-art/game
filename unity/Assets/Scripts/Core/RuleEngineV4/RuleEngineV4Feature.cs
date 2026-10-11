@@ -19,19 +19,25 @@ namespace Dovus.Core.RuleEngineV4
             Enabled ? RuleEngineV4CastContext.VerbAdjectiveComboLen : legacyMax;
 
         /// <summary>
-        /// Bayrak açıkken tavana ulaşan cümle kendiliğinden çözülmez: fazla noktalar yok sayılır,
-        /// merkez dokunuşu ya da pencere sonu onaylar, merkezde kalkan parmak iptal eder.
+        /// Bayrak açıkken tavanda (2. nokta) kombo o an çözülür; aynı çizgide sonraki noktalar
+        /// yeni cümle başlatmaz, yok sayılır. Yeni çizgi yeni kombo başlatır.
         /// </summary>
-        public static bool HoldSentenceAtCapacity => Enabled;
+        public static bool IgnoreDotsAfterCapInStroke => Enabled;
 
         /// <summary>
-        /// Bayrak açıkken çizim sürerken (en az bir nokta) parmak merkezde kalkarsa cümle iptal edilir.
-        /// Merkeze ayrı dokunuş (çizim yok) bu yoldan geçmez; onaylamayı sürdürür.
+        /// Bayrak açıkken çözülen kombo bekleme (toparlanma + vuruş sessizliği) olmadan o an fırlatılır;
+        /// hazırlık süresi v4 planının kendi prefire'ıdır.
+        /// </summary>
+        public static bool LaunchOnResolve => Enabled;
+
+        /// <summary>
+        /// Bayrak açıkken yalnız tek noktalı (fiil) cümle, parmak merkezde kalkınca iptal edilir.
+        /// 2. noktada kombo zaten çözülmüştür; sonrasında iptal yok. Merkeze ayrı dokunuş onaylar.
         /// </summary>
         public static bool CenterReleaseAbortsSentence(bool releasedOnCenter, Grammar.SentenceState sentence) =>
             Enabled && releasedOnCenter && sentence != null
             && sentence.Phase == Grammar.SentencePhase.Building
-            && sentence.Words != null && sentence.Words.Count >= 1;
+            && sentence.Words != null && sentence.Words.Count == 1;
 
         /// <summary>Bayrak açıkken çizim (drawing) hareketi kökleyip yavaşlatmaz.</summary>
         public static bool DrawingKeepsMovement => Enabled;

@@ -38,6 +38,7 @@ namespace Dovus.Game.Vfx
         public Sprite AdjectiveSprite => _adj != null ? _adj.sprite : null;
         public bool VerbVisible => _verb != null && _verb.enabled;
         public bool AdjectiveVisible => _adj != null && _adj.enabled;
+        public int PlayCount { get; private set; }
 
         /// <summary>Test / araç: kural-motoru-v4 + Ejder_Glif_Sirasi yerine verilen eşleme.</summary>
         public RuleEngineV4GlyphMap GlyphMap
@@ -49,6 +50,7 @@ namespace Dovus.Game.Vfx
         public void Play(int verbRuneId, int adjectiveRuneId, Color coreColor)
         {
             EnsureUi();
+            PlayCount++;
             _snap = VfxPlanDefaults.RuneSnapSec;
             _glow = VfxPlanDefaults.RuneGlowSec;
             _age = 0f;

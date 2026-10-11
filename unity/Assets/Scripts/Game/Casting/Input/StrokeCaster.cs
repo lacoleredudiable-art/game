@@ -53,6 +53,7 @@ namespace Dovus.Game.Casting.Input
         public void BeginStroke(Vector2 pos)
         {
             _s.StrokeAccepted = 0;
+            _s.StrokeClosedAtCap = false;
             _s.StrokeDenial = DrawFeedback.DenialKind.None;
             _s.StrokeLengthPx = 0f;
             _s.StrokePrevPx = pos;
@@ -216,6 +217,12 @@ namespace Dovus.Game.Casting.Input
             if (_s.Engine == null)
                 return;
 
+            if (_s.StrokeClosedAtCap)
+            {
+                _s.ActiveDot = hit.Value;
+                return;
+            }
+
             if (!_s.AllowsDrawNow)
             {
                 _s.Readout?.NoteDenied("çizilemez");
@@ -278,6 +285,8 @@ namespace Dovus.Game.Casting.Input
             _s.StrokeAccepted++;
             _s.StrokeAcceptedPx.Add(dotPx);
             _s.Engine.OnDotTouched(hit.Value, worldMs);
+            _s.StrokeClosedAtCap = Dovus.Core.RuleEngineV4.RuleEngineV4Feature.IgnoreDotsAfterCapInStroke
+                && _s.Engine.State.Phase != SentencePhase.Building;
             _s.RaiseDotAccepted?.Invoke(hit.Value);
 
             if (inkFrom.HasValue)

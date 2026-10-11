@@ -4,6 +4,7 @@ using Dovus.Core.Grammar;
 using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Actors;
 using Dovus.Game.Casting;
+using Dovus.Game.Vfx;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -41,7 +42,57 @@ namespace Dovus.Tests.PlayMode
             Assert.That(input.Engine.State.Phase, Is.EqualTo(SentencePhase.Idle), "cümle boşa dönmedi");
         }
 
-        /// <summary>Komşu üç noktadan geçen tek çizgi; parmak son noktada kalır.</summary>
+        const int AttackVerb = 1;
+
+        static int DotForRune(HexagonInputController input, int runeId)
+        {
+            for (int dot = 1; dot <= Dovus.Core.Input.HexagonLayout.DotCount; dot++)
+            {
+                if (input.Engine.Loadout.RuneIdAtSlot(dot) == runeId)
+                    return dot;
+            }
+            Assert.Fail($"rün {runeId} için nokta yok");
+            return 0;
+        }
+
+        /// <summary>Yüklemede AK fiili + dilimdeki ilk başka rün sıfat: v4 yolundan çıkan kombo.</summary>
+        static void SliceComboDots(HexagonInputController input, out int verbDot, out int adjDot)
+        {
+            verbDot = DotForRune(input, AttackVerb);
+            adjDot = 0;
+            for (int dot = 1; dot <= Dovus.Core.Input.HexagonLayout.DotCount && adjDot == 0; dot++)
+            {
+                int rune = input.Engine.Loadout.RuneIdAtSlot(dot);
+                if (dot != verbDot && RuleEngineV4Slice.IsSliceCombo(AttackVerb, rune))
+                    adjDot = dot;
+            }
+            Assert.That(adjDot, Is.Not.Zero, "yüklemede dilim sıfatı yok");
+        }
+
+        static int OtherDot(HexagonInputController input, int a, int b)
+        {
+            for (int dot = 1; dot <= Dovus.Core.Input.HexagonLayout.DotCount; dot++)
+            {
+                if (dot != a && dot != b)
+                    return dot;
+            }
+            return 0;
+        }
+
+        /// <summary>Kılıç kombosu için menzilde önde hedef; tek nokta testleri hedefsiz kalır.</summary>
+        void ArrangeComboTarget()
+        {
+            FreezeBoss();
+            Equip(Kilic);
+            Arrange(Vector3.right);
+            Place(_minions[0].transform, Origin + Vector3.right * (WeaponRange(Kilic) * InRangeFrac));
+            Physics.SyncTransforms();
+        }
+
+        static string Dots(CompletedSentence s) =>
+            string.Join("-", System.Linq.Enumerable.Select(s.Words, w => w.Dot));
+
+        /// <summary>Verilen noktalardan geçen tek çizgi; parmak son noktada kalır.</summary>
         IEnumerator DrawThroughDots(HexagonInputController input, params int[] dots)
         {
             input.Pointer.BeginPointer(DotPos(input, dots[0]));
@@ -54,40 +105,52 @@ namespace Dovus.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator Input_SliceCap_ThirdDotIgnored_ComboStaysTwo()
+        public IEnumerator Input_SecondDot_LaunchesAndFlashesAtOnce_ThirdDotIgnored()
         {
-            FreezeBoss();
-            Arrange(Vector3.right);
+            ArrangeComboTarget();
             HexagonInputController input = InputController();
             Assert.That(input.Combat.Sentence.MaxSentenceDots, Is.EqualTo(RuleEngineV4CastContext.VerbAdjectiveComboLen),
                 "dilimde cümle tavanı");
             yield return WaitSentenceIdle(input);
 
+            DragonRuneFlashView runes = RuneFlash();
+            int flashesBefore = runes.PlayCount;
+            bool runningAtResolve = false;
+            int flashesAtResolve = 0;
             var done = new List<CompletedSentence>();
-            input.Engine.SentenceCompleted += done.Add;
+            void OnDone(CompletedSentence s)
+            {
+                done.Add(s);
+                if (done.Count != 1)
+                    return;
+                runningAtResolve = _cast.IsRunning;
+                flashesAtResolve = runes.PlayCount - flashesBefore;
+            }
+            input.Engine.SentenceCompleted += OnDone;
             try
             {
-                yield return DrawThroughDots(input, 1, 2, 3);
+                SliceComboDots(input, out int verb, out int adj);
+                yield return DrawThroughDots(input, verb, adj, OtherDot(input, verb, adj));
                 input.Pointer.EndPointer(cancelled: false);
-                Assert.That(done, Is.Empty, "tavan cümleyi kendiliğinden kapattı");
-                Assert.That(input.Engine.State.Phase, Is.EqualTo(SentencePhase.Building));
-                Assert.That(input.Engine.State.Words.Count, Is.EqualTo(2), "3. nokta yok sayılmalı");
+                Assert.That(done, Has.Count.EqualTo(1), "2. noktada kombo çözülmedi");
+                Assert.That(done[0].Phase, Is.EqualTo(SentencePhase.Resolved));
+                Assert.That(Dots(done[0]), Is.EqualTo($"{verb}-{adj}"), "kombo 2 kalmalı");
+                Assert.That(runningAtResolve, Is.True, "skill çözüm anında çıkmadı");
+                Assert.That(flashesAtResolve, Is.EqualTo(1), "harf flaşı çözüm anında yanmadı");
 
                 float end = Time.realtimeSinceStartup + InputSettleSec;
-                while (done.Count == 0 && Time.realtimeSinceStartup < end)
+                while (Time.realtimeSinceStartup < end)
                     yield return null;
-                Assert.That(done, Has.Count.EqualTo(1), "pencere sonunda tek cümle");
-                Assert.That(done[0].Phase, Is.EqualTo(SentencePhase.Resolved));
-                Assert.That(done[0].Words.Count, Is.EqualTo(2), "kombo 2 kalmalı");
+                Assert.That(done, Has.Count.EqualTo(1), "3. nokta yeni cümle başlattı");
             }
             finally
             {
-                input.Engine.SentenceCompleted -= done.Add;
+                input.Engine.SentenceCompleted -= OnDone;
             }
         }
 
         [UnityTest]
-        public IEnumerator Input_DrawingReleaseOnCenter_AbortsWithoutSkill()
+        public IEnumerator Input_OneDotReleaseOnCenter_AbortsWithoutSkill()
         {
             FreezeBoss();
             Arrange(Vector3.right);
@@ -98,8 +161,8 @@ namespace Dovus.Tests.PlayMode
             input.Engine.SentenceCompleted += done.Add;
             try
             {
-                yield return DrawThroughDots(input, 1, 2);
-                Assert.That(input.Engine.State.Words.Count, Is.GreaterThanOrEqualTo(1), "çizim başlamadı");
+                yield return DrawThroughDots(input, 1);
+                Assert.That(input.Engine.State.Words.Count, Is.EqualTo(1), "çizim başlamadı");
                 input.Pointer.MovePointer(CenterPos(input));
                 yield return null;
                 input.Pointer.EndPointer(cancelled: false);
@@ -123,7 +186,35 @@ namespace Dovus.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator Input_CenterTap_ConfirmsCombo()
+        public IEnumerator Input_AfterSecondDot_CenterReleaseDoesNotCancel()
+        {
+            ArrangeComboTarget();
+            HexagonInputController input = InputController();
+            yield return WaitSentenceIdle(input);
+
+            var done = new List<CompletedSentence>();
+            input.Engine.SentenceCompleted += done.Add;
+            try
+            {
+                SliceComboDots(input, out int verb, out int adj);
+                yield return DrawThroughDots(input, verb, adj);
+                input.Pointer.MovePointer(CenterPos(input));
+                yield return null;
+                input.Pointer.EndPointer(cancelled: false);
+
+                Assert.That(done, Has.Count.EqualTo(1));
+                Assert.That(done[0].Phase, Is.EqualTo(SentencePhase.Resolved), $"2. noktadan sonra iptal edildi ({Dots(done[0])})");
+                Assert.That(done[0].Words.Count, Is.EqualTo(2));
+                Assert.That(_cast.IsRunning, Is.True, "skill çıkmadı");
+            }
+            finally
+            {
+                input.Engine.SentenceCompleted -= done.Add;
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator Input_CenterTapWithOneDot_Confirms()
         {
             FreezeBoss();
             Arrange(Vector3.right);
@@ -134,10 +225,9 @@ namespace Dovus.Tests.PlayMode
             input.Engine.SentenceCompleted += done.Add;
             try
             {
-                yield return DrawThroughDots(input, 1, 2, 3);
+                yield return DrawThroughDots(input, 1);
                 input.Pointer.EndPointer(cancelled: false);
-                Assert.That(input.Engine.State.Phase, Is.EqualTo(SentencePhase.Building), "kombo beklemede değil");
-                Assert.That(input.Engine.State.Words.Count, Is.EqualTo(2), "tavanda bekleyen kombo");
+                Assert.That(input.Engine.State.Phase, Is.EqualTo(SentencePhase.Building), "tek nokta beklemede değil");
                 Assert.That(done, Is.Empty);
 
                 input.Pointer.BeginPointer(CenterPos(input));
@@ -145,7 +235,7 @@ namespace Dovus.Tests.PlayMode
 
                 Assert.That(done, Has.Count.EqualTo(1), "merkez dokunuşu onaylamadı");
                 Assert.That(done[0].Phase, Is.EqualTo(SentencePhase.Resolved));
-                Assert.That(done[0].Words.Count, Is.EqualTo(2));
+                Assert.That(done[0].Words.Count, Is.EqualTo(1));
             }
             finally
             {
