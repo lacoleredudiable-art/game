@@ -40,10 +40,6 @@ namespace Dovus.Game.Vfx
         public const float RuneAdjDelayInv = 0.85f;
         public const float RuneHueSat = 0.35f;
 
-        public const float TrailAlphaGuard = 0.55f;
-        public const float TrailAlphaTail = 0.15f;
-        public const float TrailIntensityMin = 0.4f;
-        public const float TrailIntensityMax = 2.2f;
         public const float LightningTipLift = 0.35f;
         public const float LightningEndLift = 0.25f;
         public const float LightningJagLift = 0.4f;

@@ -34,9 +34,7 @@ namespace Dovus.Game.Vfx
         public const float RuneLetterGapPx = 16f;
 
         public const float WeaponTipLocalY = 0.9f;
-        public const float WeaponGuardLocalY = 0.15f;
 
-        public const int MeshTrailSamples = 20;
         public const float TrailFlowTurnsPerSec = 2f;
         public const float FootSparkLiftM = 0.05f;
 
@@ -52,22 +50,14 @@ namespace Dovus.Game.Vfx
         public const float ClawDestroyPadSec = 0.05f;
         public const float ClawMatDestroyPadSec = 0.1f;
         public const float FootWingSideM = 0.35f;
-        public const float BladeTipForwardM = 0.55f;
-        public const float BladeGuardForwardM = 0.15f;
         public const float DashForeshadowM = 2.5f;
         public const float PathSampleEpsSq = 0.0001f;
         public const float FootSparkMoveEpsSq = 0.0025f;
 
-        /// <summary>
-        /// Trail_On yoksa yedek: bıçak ucu hızı eşiği (m/s). Spec §3.1; klip karesi değil.
-        /// </summary>
-        public const float TrailAutoOpenTipSpeedMps = 6f;
-
         /// <summary>Kanat ayak kıvılcım aralığı (sn); kare numarası değil.</summary>
         public const float FootSparkIntervalSec = 0.05f;
 
-        /// <summary>Kılıç ATIL iz / silüet ömrü yedeği (sn); VfxPlanDefaults ile hizalı.</summary>
-        public const float SwordDashTrailLifeSec = 0.25f;
+        /// <summary>Kılıç ATIL silüet ömrü yedeği (sn); VfxPlanDefaults ile hizalı.</summary>
         public const float SwordDashSilhouetteLifeSec = 0.25f;
         public const int SwordDashSilhouetteAtlasCell = 5;
     }

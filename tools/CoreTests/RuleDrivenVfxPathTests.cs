@@ -134,7 +134,16 @@ public sealed class RuleDrivenVfxPathTests
         Assert.That(director, Does.Contain("OnTrailOn"));
         Assert.That(director, Does.Contain("OnImpactAnimEvent"));
         Assert.That(director, Does.Contain("OnEjderAnimEvent"));
-        Assert.That(director, Does.Contain("TrailAutoOpenTipSpeedMps"));
+        // Kor izi yalnız Trail_On/Trail_Off arasında, silahın kendi noktalarından; yedek yol yok.
+        Assert.That(director, Does.Contain("TryActiveBladePoints"));
+        Assert.That(director, Does.Contain("Debug.LogError"));
+        Assert.That(director, Does.Not.Contain("TrailAutoOpenTipSpeedMps"));
+        Assert.That(director, Does.Not.Contain("BladeTip()"));
+        Assert.That(director, Does.Not.Contain("BladeGuard()"));
+        Assert.That(director, Does.Not.Contain("WeaponTipLocalY"));
+        string props = Game("Weapons/WeaponHandPropsView.cs");
+        Assert.That(props, Does.Contain("\"Vfx_Kabza\""));
+        Assert.That(props, Does.Contain("\"Vfx_Tip\""));
     }
 
     [Test]
