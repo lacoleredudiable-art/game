@@ -109,7 +109,8 @@ namespace Dovus.Tests.PlayMode
             Assert.That(ring.Visible, Is.True, "hedef halkası görünmüyor");
             Assert.That(ring.ShownTarget, Is.EqualTo(picked), "halka parmağın altındaki hedefte değil");
             Assert.That(ring.RingMaterial.shader.name, Is.EqualTo(RuleVfxDefaults.KorShaderName), "halka VFX_Kor değil");
-            Color core = ring.RingMaterial.GetColor("_CoreColor");
+            Assert.That(ring.RingMaterial, Is.SameAs(EjderVfxBatch.Current.SharedMaterial), "halka ortak efekt materyalinde değil");
+            Color core = ring.CoreColor;
             Color owner = _cast.OwnerColor * RuleVfxArtDefaults.CoreHdrMult;
             Assert.That(core.r, Is.EqualTo(owner.r).Within(ColorTol), "halka sahip renginde değil (r)");
             Assert.That(core.g, Is.EqualTo(owner.g).Within(ColorTol), "halka sahip renginde değil (g)");

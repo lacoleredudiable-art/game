@@ -9,6 +9,8 @@
 //   R zemin pul-çatlak, G kaburga çatlak nabzı, B ocak korları), kanal _MaskChannel ile seçilir
 //   (KorTriplanar.hlsl; kaburga koru ayrı katman değil, Ortam_DitherLit emisyonu).
 // _ARCH_DITHER: kemer solması, gövdeyle aynı dither maskesi (KorDither.hlsl).
+// _VERTEX_DISSOLVE: ortak efekt atlası batch'i (Ejder_Vfx_Atlas) — dissolve köşe başına UV1.x
+//   (max(_Dissolve, uv1.x)), kenar rengi köşe renginden; renk/yoğunluk köşe renginde taşınır.
 Shader "Dovus/Vfx/VFX_Kor"
 {
     Properties
@@ -34,6 +36,7 @@ Shader "Dovus/Vfx/VFX_Kor"
         _NoiseScale ("Anti-tiling noise (1/m)", Float) = 0.07
         _NoiseFloor ("Anti-tiling noise floor (1 = off)", Range(0, 1)) = 1
 
+        [Toggle(_VERTEX_DISSOLVE)] _VertexDissolve ("Per-vertex dissolve (UV1.x)", Float) = 0
         [Toggle(_ARCH_DITHER)] _ArchDither ("Arch dither fade", Float) = 0
         _FadeStrength ("Fade strength", Range(0, 1)) = 0.6
         _FadeScreenCenter ("Fade screen center xy, radius zw", Vector) = (0.5, 0.6, 0.35, 0.45)
@@ -64,6 +67,7 @@ Shader "Dovus/Vfx/VFX_Kor"
             #pragma shader_feature_local _MASKMODE_UV _MASKMODE_TRIPLANAR
             #pragma shader_feature_local_fragment _ _UV_MASK_CHANNEL
             #pragma shader_feature_local _ _ARCH_DITHER
+            #pragma shader_feature_local _ _VERTEX_DISSOLVE
             #pragma multi_compile_fragment _ DOVUS_KOR_LOW
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
@@ -109,6 +113,9 @@ Shader "Dovus/Vfx/VFX_Kor"
             #if defined(_MASKMODE_TRIPLANAR)
                 float3 normalOS : NORMAL;
             #endif
+            #if defined(_VERTEX_DISSOLVE)
+                float2 uv1 : TEXCOORD1;
+            #endif
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
@@ -122,6 +129,9 @@ Shader "Dovus/Vfx/VFX_Kor"
             #endif
             #if defined(_MASKMODE_TRIPLANAR)
                 half3 normalWS : TEXCOORD2;
+            #endif
+            #if defined(_VERTEX_DISSOLVE)
+                half dissolve : TEXCOORD3;
             #endif
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
@@ -140,6 +150,9 @@ Shader "Dovus/Vfx/VFX_Kor"
             #endif
             #if defined(_MASKMODE_TRIPLANAR)
                 o.normalWS = TransformObjectToWorldNormal(input.normalOS);
+            #endif
+            #if defined(_VERTEX_DISSOLVE)
+                o.dissolve = input.uv1.x;
             #endif
                 return o;
             }
@@ -166,9 +179,15 @@ Shader "Dovus/Vfx/VFX_Kor"
                 half alpha = tex.a * input.color.a;
                 half noise = SAMPLE_TEXTURE2D(_DissolveTex, sampler_DissolveTex, input.uv).r;
                 // Belirme/sönme: _Dissolve yükselince kenardan yanarak yok olur.
-                half keep = step(_Dissolve, noise + 0.02h);
-                alpha *= keep;
+            #if defined(_VERTEX_DISSOLVE)
+                half dissolve = max(_Dissolve, input.dissolve);
+                half3 edge = input.color.rgb * _EdgeBoost;
+            #else
+                half dissolve = _Dissolve;
                 half3 edge = _CoreColor.rgb * _EdgeBoost;
+            #endif
+                half keep = step(dissolve, noise + 0.02h);
+                alpha *= keep;
                 half3 col = (_CoreColor.rgb * tex.rgb * input.color.rgb + edge) * _Intensity * alpha;
                 return half4(col, alpha);
             #endif

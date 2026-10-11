@@ -11,5 +11,30 @@ namespace Dovus.Core.RuleEngineV4
         public const float BladeTrailHiltAlpha = 0.55f;
         /// <summary>spec'te yok.</summary>
         public const float BladeTrailIntensity = 2.2f;
+
+        /// <summary>Ortak efekt atlası 2048² (harf 2048×768 üstte, siluet 1024×512 altında).</summary>
+        public const string AtlasResource = "Vfx/Ejder/Ejder_Vfx_Atlas";
+        public const string AtlasMaterial = "Vfx/Ejder/VFX_Kor_Ejder";
+        public const int AtlasSizePx = 2048;
+        public const int AtlasCellPx = 256;
+        public const int AtlasGlyphXPx = 0;
+        public const int AtlasGlyphYPx = 0;
+        public const int AtlasGlyphCols = 8;
+        public const int AtlasGlyphRows = 3;
+        public const int AtlasSilhouetteXPx = 0;
+        public const int AtlasSilhouetteYPx = 768;
+        public const int AtlasSilhouetteCols = 4;
+        public const int AtlasSilhouetteRows = 2;
+        /// <summary>spec'te yok: siluetlerin sağındaki boşluk.</summary>
+        public const int AtlasRingXPx = 1024;
+        public const int AtlasRingYPx = 768;
+        public const int AtlasRingSizePx = 512;
+        /// <summary>spec'te yok: eski işaret decal'ı oranı (0,06 m çizgi / 0,35 m yarıçap).</summary>
+        public const float AtlasRingRadiusFrac = 0.84f;
+        public const float AtlasRingLineFrac = 0.144f;
+        /// <summary>spec'te yok: kül tozu noktası, halkanın sağında.</summary>
+        public const int AtlasDustXPx = 1536;
+        public const int AtlasDustYPx = 768;
+        public const int AtlasDustSizePx = 128;
     }
 }

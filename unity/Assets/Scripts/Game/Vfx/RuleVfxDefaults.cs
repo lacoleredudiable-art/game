@@ -6,15 +6,8 @@ namespace Dovus.Game.Vfx
         public const string KorShaderName = "Dovus/Vfx/VFX_Kor";
         public const string ParticlesUnlit = "Universal Render Pipeline/Particles/Unlit";
 
-        /// <summary>Resources yolları (efekt-motoru §3.4 silüet, §1.1 glif).</summary>
-        public const string SilhouetteAtlasResource = "Vfx/Ejder/Ejder_Siluet_Atlas";
-        public const string GlyphAtlasResource = "Vfx/Ejder/Ejder_Glif_Atlas";
         /// <summary>Atlas hücre sırası (kod adına göre alfabetik); rün → ad eşlemesi kural-motoru-v4.json rune_glyphs.</summary>
         public const string GlyphOrderResource = "Vfx/Ejder/Ejder_Glif_Sirasi";
-
-        /// <summary>Silüet atlası 4×2 hücre: üst satır A B C D, alt satır E F G H.</summary>
-        public const int SilhouetteAtlasCols = 4;
-        public const int SilhouetteAtlasRows = 2;
 
         public const float TrailWidthM = 0.12f;
         public const float TrailHeightM = 1.1f;
@@ -32,6 +25,10 @@ namespace Dovus.Game.Vfx
 
         public const float RuneLetterSizePx = 72f;
         public const float RuneLetterGapPx = 16f;
+        /// <summary>Harf yerleşimi referans genişliği (eski CanvasScaler varsayılanı 800×600, genişliğe göre).</summary>
+        public const float RuneCanvasReferenceWidthPx = 800f;
+        /// <summary>spec'te yok: harf dörtgenlerinin kameradan uzaklığı (ekran boyu buna göre ölçeklenir).</summary>
+        public const float RuneQuadDepthM = 1f;
 
         public const float WeaponTipLocalY = 0.9f;
 

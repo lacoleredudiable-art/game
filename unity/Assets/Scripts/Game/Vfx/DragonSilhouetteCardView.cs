@@ -1,25 +1,27 @@
 using Dovus.Core.Presentation;
+using Dovus.Core.RuleEngineV4;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace Dovus.Game.Vfx
 {
     /// <summary>
-    /// efekt-motoru §3.4: tek mesh kartı + dissolve. Kılıç ATIL → atlas hücre F (kuyruk yayı),
-    /// 0,25 s, atılış yolu boyunca. Atlas Resources'tan (4×2); yoksa prosedürel yer tutucu.
+    /// efekt-motoru §3.4: tek kart + dissolve. Kılıç ATIL → atlas hücre F (kuyruk yayı),
+    /// 0,25 s, atılış yolu boyunca. Kart ortak efekt atlasından (siluet bölgesi 4×2) ve ortak
+    /// VFX_Kor batch'inden çizilir (<see cref="EjderVfxBatch"/>); kendi materyali yok.
     /// </summary>
-    public sealed class DragonSilhouetteCardView : MonoBehaviour
+    public sealed class DragonSilhouetteCardView : MonoBehaviour, IEjderVfxQuadSource
     {
         static int _liveCount;
-        static bool _warnedMissingAtlas;
 
-        MeshRenderer _mr;
-        Material _mat;
-        Texture2D _atlas;
-        bool _ownsAtlas;
+        Vector3 _center;
+        Vector3 _halfRight;
+        Vector3 _halfUp;
+        Color _color;
+        float _dissolve;
         float _life;
         float _age;
         bool _active;
+        bool _registered;
 
         public static int LiveCount => _liveCount;
 
@@ -27,14 +29,17 @@ namespace Dovus.Game.Vfx
         public int LastAtlasCell { get; private set; } = -1;
         public float LastLifeSec { get; private set; }
         public bool IsVisible => _active;
-        public Material CardMaterial => _mat;
+        /// <summary>Ortak batch materyali (siluet, harf, halka aynı).</summary>
+        public Material CardMaterial => EjderVfxBatch.Instance.SharedMaterial;
+        /// <summary>Son oynatılan hücrenin ortak atlastaki UV'si.</summary>
+        public RuleEngineV4UvRect CellUv { get; private set; }
 
         public void PlayAlongLine(Vector3 from, Vector3 to, in VfxColorRgb color, float lifeSec, int atlasCell)
         {
             if (_liveCount >= VfxPlanDefaults.EjderSiluetEkranMax && !_active)
                 return;
 
-            Ensure();
+            EnsureRegistered();
             Vector3 mid = (from + to) * 0.5f;
             mid.y += RuleVfxDefaults.SilhouetteLiftM;
             Vector3 dir = to - from;
@@ -42,14 +47,15 @@ namespace Dovus.Game.Vfx
             if (dir.sqrMagnitude < RuleVfxDefaults.PathSampleEpsSq)
                 dir = transform.forward;
             dir.Normalize();
-            transform.position = mid;
-            transform.rotation = Quaternion.LookRotation(dir, Vector3.up)
-                * Quaternion.Euler(90f, 0f, 0f);
+            // Yatay kart: yerel X yola dik, yerel Y yol boyunca (eski Quad + Euler(90,0,0) ile aynı).
+            Quaternion rot = Quaternion.LookRotation(dir, Vector3.up) * Quaternion.Euler(90f, 0f, 0f);
             float len = Mathf.Clamp(
                 Vector3.Distance(from, to),
                 RuleVfxDefaults.SilhouetteMinLenM,
                 RuleVfxDefaults.SilhouetteWidthM);
-            transform.localScale = new Vector3(len, RuleVfxDefaults.SilhouetteHeightM, 1f);
+            _center = mid;
+            _halfRight = rot * Vector3.right * (len * 0.5f);
+            _halfUp = rot * Vector3.up * (RuleVfxDefaults.SilhouetteHeightM * 0.5f);
 
             _life = Mathf.Max(RuleVfxArtDefaults.MeshLifeMin, lifeSec);
             _age = 0f;
@@ -59,22 +65,13 @@ namespace Dovus.Game.Vfx
                 _liveCount++;
             }
 
-            ApplyAtlasCell(atlasCell);
+            CellUv = RuleVfxSettings.Slice.Atlas.SilhouetteUv(atlasCell);
             PlayCount++;
             LastAtlasCell = atlasCell;
             LastLifeSec = _life;
-            Color c = new Color(
-                color.R * RuleVfxArtDefaults.CoreHdrMult,
-                color.G * RuleVfxArtDefaults.CoreHdrMult,
-                color.B * RuleVfxArtDefaults.CoreHdrMult,
-                1f);
-            if (_mat.HasProperty("_CoreColor"))
-                _mat.SetColor("_CoreColor", c);
-            if (_mat.HasProperty("_Intensity"))
-                _mat.SetFloat("_Intensity", color.Intensity);
-            if (_mat.HasProperty("_Dissolve"))
-                _mat.SetFloat("_Dissolve", 1f);
-            _mr.enabled = true;
+            float k = RuleVfxArtDefaults.CoreHdrMult * color.Intensity;
+            _color = new Color(color.R * k, color.G * k, color.B * k, 1f);
+            _dissolve = 1f;
         }
 
         void Update()
@@ -83,23 +80,30 @@ namespace Dovus.Game.Vfx
                 return;
             _age += Time.deltaTime;
             float u = Mathf.Clamp01(_age / _life);
-            float dissolve;
             if (_age < VfxPlanDefaults.EjderDissolveInSec)
-                dissolve = 1f - Mathf.Clamp01(_age / VfxPlanDefaults.EjderDissolveInSec);
+                _dissolve = 1f - Mathf.Clamp01(_age / VfxPlanDefaults.EjderDissolveInSec);
             else if (u > 1f - VfxPlanDefaults.EjderDissolveOutFrac)
-            {
-                float outU = (u - (1f - VfxPlanDefaults.EjderDissolveOutFrac))
-                    / VfxPlanDefaults.EjderDissolveOutFrac;
-                dissolve = outU;
-            }
+                _dissolve = (u - (1f - VfxPlanDefaults.EjderDissolveOutFrac)) / VfxPlanDefaults.EjderDissolveOutFrac;
             else
-                dissolve = 0f;
-
-            if (_mat != null && _mat.HasProperty("_Dissolve"))
-                _mat.SetFloat("_Dissolve", dissolve);
+                _dissolve = 0f;
 
             if (_age >= _life)
                 Release();
+        }
+
+        public void EmitQuads(EjderVfxBatch batch)
+        {
+            if (!_active)
+                return;
+            batch.AddQuad(_center, _halfRight, _halfUp, CellUv, _color, _dissolve);
+        }
+
+        void EnsureRegistered()
+        {
+            if (_registered)
+                return;
+            _registered = true;
+            EjderVfxBatch.Register(this);
         }
 
         void Release()
@@ -108,78 +112,15 @@ namespace Dovus.Game.Vfx
                 return;
             _active = false;
             _liveCount = Mathf.Max(0, _liveCount - 1);
-            if (_mr != null)
-                _mr.enabled = false;
         }
 
         void OnDisable() => Release();
 
-        void Ensure()
-        {
-            if (_mr != null)
-                return;
-            gameObject.AddComponent<MeshFilter>().sharedMesh = PrimitiveMesh.Get(PrimitiveType.Quad);
-            _mr = gameObject.AddComponent<MeshRenderer>();
-            _mr.shadowCastingMode = ShadowCastingMode.Off;
-            _mr.receiveShadows = false;
-            Shader sh = Shader.Find(RuleVfxDefaults.KorShaderName)
-                ?? Shader.Find(RuleVfxDefaults.ParticlesUnlit);
-            _mat = new Material(sh);
-            _atlas = Resources.Load<Texture2D>(RuleVfxDefaults.SilhouetteAtlasResource);
-            _ownsAtlas = _atlas == null;
-            if (_ownsAtlas)
-            {
-                if (!_warnedMissingAtlas)
-                {
-                    _warnedMissingAtlas = true;
-                    Debug.LogWarning("[DragonSilhouette] Resources/" + RuleVfxDefaults.SilhouetteAtlasResource
-                        + " yok; yer tutucu atlas kullanılıyor.");
-                }
-                _atlas = RuleVfxArtDefaults.BuildSilhouetteAtlas();
-            }
-            if (_mat.HasProperty("_MainTex"))
-                _mat.SetTexture("_MainTex", _atlas);
-            if (_mat.HasProperty("_DissolveTex"))
-                _mat.SetTexture("_DissolveTex", _atlas);
-            _mr.sharedMaterial = _mat;
-            _mr.enabled = false;
-        }
-
-        /// <summary>Hücre 0 = sol üst; Unity UV'si alttan başladığı için satır ters çevrilir.</summary>
-        void ApplyAtlasCell(int cell)
-        {
-            int cols = RuleVfxDefaults.SilhouetteAtlasCols;
-            int rows = RuleVfxDefaults.SilhouetteAtlasRows;
-            int idx = Mathf.Clamp(cell, 0, cols * rows - 1);
-            int col = idx % cols;
-            int row = idx / cols;
-            if (_mat == null || !_mat.HasProperty("_MainTex"))
-                return;
-            // Doku ölçeği/ofseti = shader'daki _MainTex_ST (TRANSFORM_TEX).
-            _mat.SetTextureScale("_MainTex", new Vector2(1f / cols, 1f / rows));
-            _mat.SetTextureOffset("_MainTex", new Vector2(col / (float)cols, (rows - 1 - row) / (float)rows));
-        }
-
-        /// <summary>_MainTex_ST = (ölçek x, ölçek y, ofset x, ofset y).</summary>
-        public Vector4 MainTexST
-        {
-            get
-            {
-                if (_mat == null || !_mat.HasProperty("_MainTex"))
-                    return Vector4.zero;
-                Vector2 s = _mat.GetTextureScale("_MainTex");
-                Vector2 o = _mat.GetTextureOffset("_MainTex");
-                return new Vector4(s.x, s.y, o.x, o.y);
-            }
-        }
-
         void OnDestroy()
         {
             Release();
-            if (_mat != null)
-                Destroy(_mat);
-            if (_ownsAtlas && _atlas != null)
-                Destroy(_atlas);
+            if (_registered)
+                EjderVfxBatch.Unregister(this);
         }
     }
 }

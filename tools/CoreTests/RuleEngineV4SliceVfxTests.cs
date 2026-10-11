@@ -43,6 +43,85 @@ public sealed class RuleEngineV4SliceVfxTests
         Assert.That(v.BladeTrail.TailWidthFrac, Is.EqualTo(RuleEngineV4SliceVfxDefaults.BladeTrailTailWidthFrac));
     }
 
+    static readonly string ResourcesDir = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(JsonPath)!, ".."));
+
+    [Test]
+    public void Json_Atlas_GlyphsTop_SilhouettesBelow_RingInFreeSpace()
+    {
+        RuleEngineV4VfxAtlas a = Slice().Atlas;
+        Assert.That(a.SizePx, Is.EqualTo(2048));
+        Assert.That(a.Glyphs.WidthPx, Is.EqualTo(2048));
+        Assert.That(a.Glyphs.HeightPx, Is.EqualTo(768));
+        Assert.That(a.Silhouettes.WidthPx, Is.EqualTo(1024));
+        Assert.That(a.Silhouettes.HeightPx, Is.EqualTo(512));
+        Assert.That(a.Glyphs.YPx, Is.EqualTo(0), "harfler üstte");
+        Assert.That(a.Silhouettes.YPx, Is.EqualTo(a.Glyphs.YPx + a.Glyphs.HeightPx), "siluetler harflerin altında");
+
+        var regions = new[]
+        {
+            (a.Glyphs.XPx, a.Glyphs.YPx, a.Glyphs.WidthPx, a.Glyphs.HeightPx),
+            (a.Silhouettes.XPx, a.Silhouettes.YPx, a.Silhouettes.WidthPx, a.Silhouettes.HeightPx),
+            (a.Ring.XPx, a.Ring.YPx, a.Ring.SizePx, a.Ring.SizePx),
+            (a.Dust.XPx, a.Dust.YPx, a.Dust.SizePx, a.Dust.SizePx),
+        };
+        for (int i = 0; i < regions.Length; i++)
+        {
+            var r = regions[i];
+            Assert.That(r.Item1 >= 0 && r.Item2 >= 0 && r.Item1 + r.Item3 <= a.SizePx && r.Item2 + r.Item4 <= a.SizePx,
+                Is.True, $"bölge {i} atlas dışında");
+            for (int j = i + 1; j < regions.Length; j++)
+            {
+                var s = regions[j];
+                bool overlap = r.Item1 < s.Item1 + s.Item3 && s.Item1 < r.Item1 + r.Item3
+                    && r.Item2 < s.Item2 + s.Item4 && s.Item2 < r.Item2 + r.Item4;
+                Assert.That(overlap, Is.False, $"bölge {i} ile {j} çakışıyor");
+            }
+        }
+    }
+
+    [Test]
+    public void Atlas_CellUv_TopLeftOrigin_FlippedToUnityUv()
+    {
+        RuleEngineV4VfxAtlas a = Slice().Atlas;
+        // Harf 8 = sütun 0, satır 1 → piksel (0, 256..512) üstten.
+        AssertUv(a.GlyphUv(8), 0f, 0.75f, 0.125f, 0.125f, "harf 8");
+        // Harf 22 = sütun 6, satır 2 → piksel (1536, 512..768).
+        AssertUv(a.GlyphUv(22), 0.75f, 0.625f, 0.125f, 0.125f, "harf 22");
+        // Siluet D (3) = sütun 3, satır 0 → piksel (768, 768..1024).
+        AssertUv(a.SilhouetteUv(3), 0.375f, 0.5f, 0.125f, 0.125f, "siluet D");
+        // Siluet F (5) = sütun 1, satır 1 → piksel (256, 1024..1280).
+        AssertUv(a.SilhouetteUv(5), 0.125f, 0.375f, 0.125f, 0.125f, "siluet F");
+        AssertUv(a.RingUv, 0.5f, 0.375f, 0.25f, 0.25f, "halka");
+        AssertUv(a.SilhouetteUv(99), 0.375f, 0.375f, 0.125f, 0.125f, "sınır dışı → son hücre");
+        Assert.That(a.RingQuadHalfM(a.RingRadiusFrac), Is.EqualTo(1f).Within(1e-5f));
+    }
+
+    [Test]
+    public void Atlas_PackedPng_Exists_SourcesKept()
+    {
+        RuleEngineV4VfxAtlas a = Slice().Atlas;
+        string packed = Path.Combine(ResourcesDir, a.Resource.Replace('/', Path.DirectorySeparatorChar) + ".png");
+        Assert.That(File.Exists(packed), Is.True, packed);
+        using (var fs = File.OpenRead(packed))
+        {
+            var header = new byte[24];
+            Assert.That(fs.Read(header, 0, header.Length), Is.EqualTo(header.Length));
+            int w = (header[16] << 24) | (header[17] << 16) | (header[18] << 8) | header[19];
+            int h = (header[20] << 24) | (header[21] << 16) | (header[22] << 8) | header[23];
+            Assert.That((w, h), Is.EqualTo((a.SizePx, a.SizePx)), "paketlenmiş atlas boyutu");
+        }
+        foreach (string src in new[] { "Ejder_Glif_Atlas.png", "Ejder_Siluet_Atlas.png" })
+            Assert.That(File.Exists(Path.Combine(Path.GetDirectoryName(packed)!, src)), Is.True, $"kaynak {src} silinmiş");
+    }
+
+    static void AssertUv(RuleEngineV4UvRect r, float x, float y, float w, float h, string what)
+    {
+        Assert.That(r.X, Is.EqualTo(x).Within(1e-6f), what + " x");
+        Assert.That(r.Y, Is.EqualTo(y).Within(1e-6f), what + " y");
+        Assert.That(r.W, Is.EqualTo(w).Within(1e-6f), what + " w");
+        Assert.That(r.H, Is.EqualTo(h).Within(1e-6f), what + " h");
+    }
+
     [Test]
     public void Json_KilicVur_OpensTrailEvents()
     {

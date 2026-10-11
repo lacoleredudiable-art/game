@@ -3,42 +3,47 @@ using Dovus.Core.Presentation;
 using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Skills.RuleEngineV4;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Dovus.Game.Vfx
 {
     /// <summary>
     /// efekt-motoru §1.1: çizilen rün 0,2 s'de Ejderha Dili harfine oturur (fiil→sıfat),
-    /// 0,3 s parlar. Glif atlası Resources'tan (8×3, 0 = sol üst); yoksa yer tutucu.
+    /// 0,3 s parlar. Harfler ortak efekt atlasının harf bölgesinden (8×3, 0 = sol üst), kameraya
+    /// bağlı dünya dörtgeni olarak ortak VFX_Kor batch'inde çizilir (<see cref="EjderVfxBatch"/>).
     /// Hücre rün → kod adı → atlas sırası eşlemesinden gelir; adı olmayan harf gizlenir.
     /// </summary>
-    public sealed class DragonRuneFlashView : MonoBehaviour
+    public sealed class DragonRuneFlashView : MonoBehaviour, IEjderVfxQuadSource
     {
-        static bool _warnedMissingAtlas;
-
         readonly HashSet<string> _warnedMissingGlyph = new();
         RuleEngineV4GlyphMap _glyphMap;
-        Canvas _canvas;
-        Image _verb;
-        Image _adj;
-        Texture2D _atlas;
-        bool _ownsAtlas;
-        Sprite[] _cells;
         float _age;
         float _snap;
         float _glow;
         bool _playing;
+        bool _registered;
+        bool _verbOn;
+        bool _adjOn;
+        int _verbCell;
+        int _adjCell;
+        Color _verbTint;
+        Color _adjTint;
+        float _alpha;
         Vector2 _verbFrom;
         Vector2 _adjFrom;
         Vector2 _verbTo;
         Vector2 _adjTo;
+        Vector2 _verbPos;
+        Vector2 _adjPos;
 
-        public Texture2D GlyphAtlas => _atlas;
-        public Sprite VerbSprite => _verb != null ? _verb.sprite : null;
-        public Sprite AdjectiveSprite => _adj != null ? _adj.sprite : null;
-        public bool VerbVisible => _verb != null && _verb.enabled;
-        public bool AdjectiveVisible => _adj != null && _adj.enabled;
+        public bool VerbVisible => _playing && _verbOn;
+        public bool AdjectiveVisible => _playing && _adjOn;
         public int PlayCount { get; private set; }
+        public int VerbCell => _verbCell;
+        public int AdjectiveCell => _adjCell;
+        public RuleEngineV4UvRect VerbUv => RuleVfxSettings.Slice.Atlas.GlyphUv(_verbCell);
+        public RuleEngineV4UvRect AdjectiveUv => RuleVfxSettings.Slice.Atlas.GlyphUv(_adjCell);
+        /// <summary>Ortak batch materyali (siluet, harf, halka aynı).</summary>
+        public Material LetterMaterial => EjderVfxBatch.Instance.SharedMaterial;
 
         /// <summary>Test / araç: kural-motoru-v4 + Ejder_Glif_Sirasi yerine verilen eşleme.</summary>
         public RuleEngineV4GlyphMap GlyphMap
@@ -49,11 +54,12 @@ namespace Dovus.Game.Vfx
 
         public void Play(int verbRuneId, int adjectiveRuneId, Color coreColor)
         {
-            EnsureUi();
+            EnsureRegistered();
             PlayCount++;
             _snap = VfxPlanDefaults.RuneSnapSec;
             _glow = VfxPlanDefaults.RuneGlowSec;
             _age = 0f;
+            _alpha = 1f;
             _playing = true;
 
             float size = RuleVfxDefaults.RuneLetterSizePx;
@@ -64,18 +70,22 @@ namespace Dovus.Game.Vfx
             _adjFrom = _adjTo + new Vector2(RuleVfxArtDefaults.RuneFromOffsetX, -RuleVfxArtDefaults.RuneAdjFromY);
 
             RuleEngineV4GlyphMap map = GlyphMap;
-            bool verbOk = map.TryVerbCell(verbRuneId, out int verbCell);
-            bool adjOk = map.TryAdjectiveCell(adjectiveRuneId, out int adjCell);
-            if (verbOk)
-                ApplyCell(_verb, verbCell, RuneHue(verbRuneId), coreColor);
+            _verbOn = map.TryVerbCell(verbRuneId, out int verbCell);
+            _adjOn = map.TryAdjectiveCell(adjectiveRuneId, out int adjCell);
+            if (_verbOn)
+            {
+                _verbCell = Mathf.Clamp(verbCell, 0, RuleVfxArtDefaults.GlyphCellMaxIndex);
+                _verbTint = Tint(RuneHue(verbRuneId), coreColor);
+            }
             else
                 WarnMissingGlyph(RuleEngineV4GlyphDefaults.VerbPrefix, verbRuneId);
-            if (adjOk)
-                ApplyCell(_adj, adjCell, RuneHue(adjectiveRuneId), coreColor);
+            if (_adjOn)
+            {
+                _adjCell = Mathf.Clamp(adjCell, 0, RuleVfxArtDefaults.GlyphCellMaxIndex);
+                _adjTint = Tint(RuneHue(adjectiveRuneId), coreColor);
+            }
             else
                 WarnMissingGlyph(RuleEngineV4GlyphDefaults.AdjectivePrefix, adjectiveRuneId);
-            _verb.enabled = verbOk;
-            _adj.enabled = adjOk;
             Layout(0f);
         }
 
@@ -102,111 +112,81 @@ namespace Dovus.Game.Vfx
             Layout(snapU);
 
             float glowAge = _age - _snap;
-            float glowU = glowAge <= 0f ? 1f : 1f - Mathf.Clamp01(glowAge / _glow);
-            SetAlpha(_verb, glowU);
-            SetAlpha(_adj, glowU);
+            _alpha = glowAge <= 0f ? 1f : 1f - Mathf.Clamp01(glowAge / _glow);
 
             if (_age >= _snap + _glow)
-            {
                 _playing = false;
-                _verb.enabled = false;
-                _adj.enabled = false;
-            }
         }
 
         void Layout(float snapU)
         {
             float u = snapU * snapU * (RuleVfxArtDefaults.SmoothstepThree - RuleVfxArtDefaults.SmoothstepTwo * snapU);
-            _verb.rectTransform.anchoredPosition = Vector2.Lerp(_verbFrom, _verbTo, u);
-            _adj.rectTransform.anchoredPosition = Vector2.Lerp(
+            _verbPos = Vector2.Lerp(_verbFrom, _verbTo, u);
+            _adjPos = Vector2.Lerp(
                 _adjFrom,
                 _adjTo,
                 Mathf.Clamp01((snapU - RuleVfxArtDefaults.RuneAdjDelay) / RuleVfxArtDefaults.RuneAdjDelayInv));
         }
 
-        void EnsureUi()
+        public void EmitQuads(EjderVfxBatch batch)
         {
-            if (_canvas != null)
+            if (!_playing)
                 return;
-            var canvasGo = new GameObject("DragonRuneFlashCanvas");
-            canvasGo.transform.SetParent(transform, false);
-            _canvas = canvasGo.AddComponent<Canvas>();
-            _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            _canvas.sortingOrder = 80;
-            canvasGo.AddComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            canvasGo.AddComponent<GraphicRaycaster>();
-
-            _atlas = Resources.Load<Texture2D>(RuleVfxDefaults.GlyphAtlasResource);
-            _ownsAtlas = _atlas == null;
-            if (_ownsAtlas)
-            {
-                if (!_warnedMissingAtlas)
-                {
-                    _warnedMissingAtlas = true;
-                    Debug.LogWarning("[DragonRuneFlash] Resources/" + RuleVfxDefaults.GlyphAtlasResource
-                        + " yok; yer tutucu glif atlası kullanılıyor.");
-                }
-                _atlas = RuleVfxArtDefaults.BuildGlyphAtlas();
-            }
-            _cells = new Sprite[RuleVfxArtDefaults.GlyphCols * RuleVfxArtDefaults.GlyphRows];
-
-            _verb = MakeLetter("VerbLetter");
-            _adj = MakeLetter("AdjLetter");
-            _verb.enabled = false;
-            _adj.enabled = false;
+            Camera cam = Camera.main;
+            if (cam == null)
+                return;
+            RuleEngineV4VfxAtlas atlas = batch.Layout;
+            float depth = Mathf.Max(RuleVfxDefaults.RuneQuadDepthM, cam.nearClipPlane * 2f);
+            float worldPerRefPx = WorldPerScreenPx(cam, depth) * cam.pixelWidth / RuleVfxDefaults.RuneCanvasReferenceWidthPx;
+            Transform t = cam.transform;
+            Vector3 origin = t.position + t.forward * depth;
+            float half = RuleVfxDefaults.RuneLetterSizePx * 0.5f * worldPerRefPx;
+            Vector3 halfRight = t.right * half;
+            Vector3 halfUp = t.up * half;
+            if (_verbOn)
+                EmitLetter(batch, origin, t, _verbPos, worldPerRefPx, halfRight, halfUp, atlas.GlyphUv(_verbCell), _verbTint);
+            if (_adjOn)
+                EmitLetter(batch, origin, t, _adjPos, worldPerRefPx, halfRight, halfUp, atlas.GlyphUv(_adjCell), _adjTint);
         }
 
-        Image MakeLetter(string name)
+        void EmitLetter(
+            EjderVfxBatch batch,
+            Vector3 origin,
+            Transform cam,
+            Vector2 refPx,
+            float worldPerRefPx,
+            Vector3 halfRight,
+            Vector3 halfUp,
+            in RuleEngineV4UvRect uv,
+            Color tint)
         {
-            var go = new GameObject(name);
-            go.transform.SetParent(_canvas.transform, false);
-            var rt = go.AddComponent<RectTransform>();
-            rt.sizeDelta = new Vector2(RuleVfxDefaults.RuneLetterSizePx, RuleVfxDefaults.RuneLetterSizePx);
-            rt.anchorMin = new Vector2(0.5f, 0.5f);
-            rt.anchorMax = new Vector2(0.5f, 0.5f);
-            rt.pivot = new Vector2(0.5f, 0.5f);
-            var img = go.AddComponent<Image>();
-            img.sprite = Cell(0);
-            img.raycastTarget = false;
-            return img;
+            Vector3 center = origin + cam.right * (refPx.x * worldPerRefPx) + cam.up * (refPx.y * worldPerRefPx);
+            tint.a = _alpha;
+            batch.AddQuad(center, halfRight, halfUp, uv, tint, 0f);
         }
 
-        /// <summary>Hücre boyutu atlas boyutundan; satır 0 üstte (texture y alttan).</summary>
-        Sprite Cell(int index)
+        /// <summary>Kameradan <paramref name="depth"/> uzaklıkta bir ekran pikselinin dünya boyu.</summary>
+        static float WorldPerScreenPx(Camera cam, float depth)
         {
-            int idx = Mathf.Clamp(index, 0, _cells.Length - 1);
-            if (_cells[idx] != null)
-                return _cells[idx];
-            int cols = RuleVfxArtDefaults.GlyphCols;
-            int rows = RuleVfxArtDefaults.GlyphRows;
-            int cw = _atlas.width / cols;
-            int ch = _atlas.height / rows;
-            int col = idx % cols;
-            int row = idx / cols;
-            _cells[idx] = Sprite.Create(
-                _atlas,
-                new Rect(col * cw, (rows - 1 - row) * ch, cw, ch),
-                new Vector2(0.5f, 0.5f),
-                RuleVfxArtDefaults.GlyphPpu);
-            return _cells[idx];
+            float h = cam.orthographic
+                ? cam.orthographicSize * 2f
+                : depth * Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad) * 2f;
+            return h / Mathf.Max(1, cam.pixelHeight);
         }
 
-        void ApplyCell(Image img, int cell, float hue, Color core)
+        static Color Tint(float hue, Color core)
         {
-            int idx = Mathf.Clamp(cell, 0, RuleVfxArtDefaults.GlyphCellMaxIndex);
-            img.sprite = Cell(idx);
             Color tint = Color.HSVToRGB(hue, RuleVfxArtDefaults.RuneHueSat, 1f) * core;
             tint.a = 1f;
-            img.color = tint;
+            return tint;
         }
 
-        static void SetAlpha(Image img, float a)
+        void EnsureRegistered()
         {
-            if (img == null)
+            if (_registered)
                 return;
-            Color c = img.color;
-            c.a = a;
-            img.color = c;
+            _registered = true;
+            EjderVfxBatch.Register(this);
         }
 
         /// <summary>Ton rün kimliğinden (hücreden değil): atlas sırası değişse de görünen renk aynı kalır.</summary>
@@ -215,16 +195,8 @@ namespace Dovus.Game.Vfx
 
         void OnDestroy()
         {
-            if (_cells != null)
-            {
-                for (int i = 0; i < _cells.Length; i++)
-                {
-                    if (_cells[i] != null)
-                        Destroy(_cells[i]);
-                }
-            }
-            if (_ownsAtlas && _atlas != null)
-                Destroy(_atlas);
+            if (_registered)
+                EjderVfxBatch.Unregister(this);
         }
     }
 }

@@ -21,15 +21,20 @@ namespace Dovus.Tests.PlayMode
     {
         const string TaklaClip = "Ortak_Takla";
         const float WingLifeSec = 0.3f;
-        const string SilhouetteAtlasName = "Ejder_Siluet_Atlas";
-        const string GlyphAtlasName = "Ejder_Glif_Atlas";
+        const string SharedAtlasName = "Ejder_Vfx_Atlas";
+        const int SharedAtlasPx = 2048;
+        const string VertexDissolveKeyword = "_VERTEX_DISSOLVE";
         const float StTol = 1e-5f;
         const float SilhouetteSettleSec = 0.6f;
+
+        // Ortak atlas 2048²: siluet bölgesi (0, 768) üstten, 4×2 × 256 px → UV (x, y alt, w, h).
+        static readonly Rect SilhouetteCellDUv = new(0.375f, 0.5f, 0.125f, 0.125f);
+        static readonly Rect SilhouetteCellFUv = new(0.125f, 0.375f, 0.125f, 0.125f);
 
         sealed class SilhouetteWatch
         {
             public readonly List<int> Cells = new();
-            public Vector4 FirstSt;
+            public RuleEngineV4UvRect FirstUv;
             public float FirstLife;
             public float OnAt = -1f;
             public float OffAt = -1f;
@@ -63,8 +68,8 @@ namespace Dovus.Tests.PlayMode
             Assert.That(w.OnAt, Is.GreaterThanOrEqualTo(0f), "silüet görünmedi");
             Assert.That(w.OffAt, Is.GreaterThan(w.OnAt), "silüet sönmedi");
             Assert.That(w.OffAt - w.OnAt, Is.EqualTo(WingLifeSec).Within(w.MaxDt + StTol), "silüet ömrü ±1 kare");
-            AssertSt(w.FirstSt, new Vector4(0.25f, 0.5f, 0.75f, 0.5f), "hücre D");
-            AssertRealSilhouetteAtlas(card);
+            AssertUv(w.FirstUv, SilhouetteCellDUv, "hücre D");
+            AssertSharedAtlas(card.CardMaterial, "silüet");
             Assert.That(_errors, Is.Empty, string.Join("\n", _errors));
         }
 
@@ -122,8 +127,8 @@ namespace Dovus.Tests.PlayMode
             Assert.That(_cast.TryLaunchCombo(3, 1, out _), Is.True, $"{_label} cast edilmedi");
             yield return WatchSilhouette(card, atil, captureName: "kilic_atil_kuyruk.png");
             Assert.That(atil.Cells, Is.EqualTo(new[] { VfxPlanDefaults.EjderAtlasCellF }), "Kılıç ATIL kuyruk yayı F");
-            AssertSt(atil.FirstSt, new Vector4(0.25f, 0.5f, 0.25f, 0f), "hücre F");
-            AssertRealSilhouetteAtlas(card);
+            AssertUv(atil.FirstUv, SilhouetteCellFUv, "hücre F");
+            AssertSharedAtlas(card.CardMaterial, "silüet");
             Assert.That(_errors, Is.Empty, string.Join("\n", _errors));
         }
 
@@ -137,22 +142,62 @@ namespace Dovus.Tests.PlayMode
             var color = new VfxColorRgb(1f, 1f, 1f, 1f);
 
             card.PlayAlongLine(from, to, color, WingLifeSec, VfxPlanDefaults.EjderAtlasCellD);
-            AssertRealSilhouetteAtlas(card);
-            AssertSt(card.MainTexST, new Vector4(0.25f, 0.5f, 0.75f, 0.5f), "hücre D");
+            AssertSharedAtlas(card.CardMaterial, "silüet");
+            AssertUv(card.CellUv, SilhouetteCellDUv, "hücre D");
             card.PlayAlongLine(from, to, color, WingLifeSec, VfxPlanDefaults.EjderAtlasCellF);
-            AssertSt(card.MainTexST, new Vector4(0.25f, 0.5f, 0.25f, 0f), "hücre F");
+            AssertUv(card.CellUv, SilhouetteCellFUv, "hücre F");
 
             var runes = _player.GetComponentInChildren<DragonRuneFlashView>(true);
             Assert.That(runes, Is.Not.Null, "DragonRuneFlashView");
             runes.Play(3, 1, Color.white);
-            Texture tex = runes.VerbSprite.texture;
-            Assert.That(tex.name, Is.EqualTo(GlyphAtlasName), "rün glif atlası");
-            Assert.That(tex.width, Is.EqualTo(2048), "glif atlası genişlik");
-            Assert.That(tex.height, Is.EqualTo(768), "glif atlası yükseklik");
-            Assert.That(runes.AdjectiveSprite.texture, Is.SameAs(tex));
+            AssertSharedAtlas(runes.LetterMaterial, "rün harfi");
             // 0 = sol üst; fiil rün 3 = SHEV → glif 8 (sütun 0, satır 1), sıfat rün 1 = VORN → glif 22 (sütun 6, satır 2).
-            Assert.That(runes.VerbSprite.rect, Is.EqualTo(new Rect(0f, 256f, 256f, 256f)), "fiil glif hücresi");
-            Assert.That(runes.AdjectiveSprite.rect, Is.EqualTo(new Rect(1536f, 0f, 256f, 256f)), "sıfat glif hücresi");
+            // Harf bölgesi ortak atlasın üstünde: piksel (0, 256..512) ve (1536, 512..768) üstten.
+            AssertUv(runes.VerbUv, new Rect(0f, 0.75f, 0.125f, 0.125f), "fiil glif hücresi");
+            AssertUv(runes.AdjectiveUv, new Rect(0.75f, 0.625f, 0.125f, 0.125f), "sıfat glif hücresi");
+            Assert.That(_errors, Is.Empty, string.Join("\n", _errors));
+        }
+
+        [UnityTest]
+        public IEnumerator SharedVfxBatch_SilhouetteRunesRing_OneRendererOneMaterial()
+        {
+            yield return null;
+            DragonSilhouetteCardView card = SilhouetteCard();
+            var runes = _player.GetComponentInChildren<DragonRuneFlashView>(true);
+            Assert.That(runes, Is.Not.Null, "DragonRuneFlashView");
+            var ring = Dovus.Game.Skills.RuleEngineV4.RuleEngineV4TargetPickRingView.Create(Color.red, null);
+            try
+            {
+                Vector3 from = _player.position + Vector3.up;
+                card.PlayAlongLine(from, from + Vector3.right * 2f, new VfxColorRgb(1f, 1f, 1f, 1f), WingLifeSec,
+                    VfxPlanDefaults.EjderAtlasCellF);
+                runes.Play(3, 1, Color.white);
+                ring.ShowOnSurface(_player.position, Vector3.up);
+                yield return null;
+
+                EjderVfxBatch batch = EjderVfxBatch.Current;
+                Assert.That(batch, Is.Not.Null, "ortak efekt batch'i yok");
+                AssertSharedAtlas(batch.SharedMaterial, "batch");
+                Assert.That(card.CardMaterial, Is.SameAs(batch.SharedMaterial), "silüet ayrı materyal");
+                Assert.That(runes.LetterMaterial, Is.SameAs(batch.SharedMaterial), "harf ayrı materyal");
+                Assert.That(ring.RingMaterial, Is.SameAs(batch.SharedMaterial), "halka ayrı materyal");
+                Assert.That(batch.QuadCount, Is.EqualTo(4), "silüet 1 + harf 2 + halka 1 dörtgen tek mesh'te");
+                Assert.That(batch.Renderer.enabled, Is.True, "batch çizilmiyor");
+                Assert.That(batch.BatchMesh.subMeshCount, Is.EqualTo(1), "tek alt mesh");
+
+                Material shared = batch.SharedMaterial;
+                Renderer[] others = Object.FindObjectsByType<Renderer>(FindObjectsInactive.Exclude)
+                    .Where(r => r != batch.Renderer && r.enabled && r.sharedMaterials.Contains(shared))
+                    .ToArray();
+                Assert.That(others, Is.Empty, "ortak materyal ikinci renderer'da: " + string.Join(", ", others.Select(r => r.name)));
+                Assert.That(Object.FindObjectsByType<Canvas>(FindObjectsInactive.Include)
+                        .Any(c => c.name == "DragonRuneFlashCanvas"), Is.False, "harf flaşı hâlâ UI tuvalinde");
+                Assert.That(ring.GetComponent<LineRenderer>(), Is.Null, "halka hâlâ LineRenderer");
+            }
+            finally
+            {
+                Object.Destroy(ring.gameObject);
+            }
             Assert.That(_errors, Is.Empty, string.Join("\n", _errors));
         }
 
@@ -203,7 +248,7 @@ namespace Dovus.Tests.PlayMode
                 w.Cells.Add(card.LastAtlasCell);
                 if (w.Cells.Count == 1)
                 {
-                    w.FirstSt = card.MainTexST;
+                    w.FirstUv = card.CellUv;
                     w.FirstLife = card.LastLifeSec;
                 }
             }
@@ -211,21 +256,26 @@ namespace Dovus.Tests.PlayMode
 
         static bool CaptureRequested() => Environment.GetCommandLineArgs().Contains(CaptureArg);
 
-        static void AssertSt(Vector4 actual, Vector4 expected, string what)
+        static void AssertUv(RuleEngineV4UvRect actual, Rect expected, string what)
         {
-            for (int i = 0; i < 4; i++)
-                Assert.That(actual[i], Is.EqualTo(expected[i]).Within(StTol), $"{what} _MainTex_ST[{i}] = {actual}");
+            string got = $"({actual.X}, {actual.Y}, {actual.W}, {actual.H})";
+            Assert.That(actual.X, Is.EqualTo(expected.x).Within(StTol), $"{what} UV x = {got}");
+            Assert.That(actual.Y, Is.EqualTo(expected.y).Within(StTol), $"{what} UV y = {got}");
+            Assert.That(actual.W, Is.EqualTo(expected.width).Within(StTol), $"{what} UV w = {got}");
+            Assert.That(actual.H, Is.EqualTo(expected.height).Within(StTol), $"{what} UV h = {got}");
         }
 
-        static void AssertRealSilhouetteAtlas(DragonSilhouetteCardView card)
+        static void AssertSharedAtlas(Material mat, string what)
         {
-            Material mat = card.CardMaterial;
-            Assert.That(mat, Is.Not.Null, "silüet materyali");
+            Assert.That(mat, Is.Not.Null, $"{what} materyali");
+            Assert.That(mat.shader.name, Is.EqualTo(RuleVfxDefaults.KorShaderName), $"{what} VFX_Kor değil");
+            Assert.That(mat.IsKeywordEnabled(VertexDissolveKeyword), Is.True, $"{what} köşe dissolve kapalı");
             Texture tex = mat.GetTexture("_MainTex");
             Assert.That(tex, Is.Not.Null, "_MainTex");
-            Assert.That(tex.name, Is.EqualTo(SilhouetteAtlasName), "silüet atlası");
-            Assert.That(tex.width, Is.EqualTo(1024), "silüet atlası genişlik");
-            Assert.That(tex.height, Is.EqualTo(512), "silüet atlası yükseklik");
+            Assert.That(tex.name, Is.EqualTo(SharedAtlasName), $"{what} ortak atlas değil");
+            Assert.That(tex.width, Is.EqualTo(SharedAtlasPx), "ortak atlas genişlik");
+            Assert.That(tex.height, Is.EqualTo(SharedAtlasPx), "ortak atlas yükseklik");
+            Assert.That(mat.GetTextureScale("_MainTex"), Is.EqualTo(Vector2.one), "atlas ölçeği hücreye kısılmış");
         }
 
         static SkillResolution KilicAtilSkill() =>

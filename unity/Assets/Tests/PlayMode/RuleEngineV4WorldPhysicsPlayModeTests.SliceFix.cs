@@ -42,13 +42,14 @@ namespace Dovus.Tests.PlayMode
             {
                 int rune = GlyphSliceRunes[i];
                 runes.Play(rune, rune, Color.white);
-                Texture tex = runes.VerbSprite.texture;
                 Assert.That(runes.VerbVisible, Is.True, $"fiil {rune} görünmüyor");
                 Assert.That(runes.AdjectiveVisible, Is.True, $"sıfat {rune} görünmüyor");
-                Assert.That(runes.VerbSprite.rect, Is.EqualTo(GlyphCellRect(tex, GlyphSliceVerbCells[i])),
-                    $"fiil {rune} → hücre {GlyphSliceVerbCells[i]}");
-                Assert.That(runes.AdjectiveSprite.rect, Is.EqualTo(GlyphCellRect(tex, GlyphSliceAdjectiveCells[i])),
-                    $"sıfat {rune} → hücre {GlyphSliceAdjectiveCells[i]}");
+                Assert.That(runes.VerbCell, Is.EqualTo(GlyphSliceVerbCells[i]), $"fiil {rune} → hücre");
+                Assert.That(runes.AdjectiveCell, Is.EqualTo(GlyphSliceAdjectiveCells[i]), $"sıfat {rune} → hücre");
+                Assert.That(ToRect(runes.VerbUv), Is.EqualTo(GlyphCellUv(GlyphSliceVerbCells[i])),
+                    $"fiil {rune} → hücre {GlyphSliceVerbCells[i]} UV");
+                Assert.That(ToRect(runes.AdjectiveUv), Is.EqualTo(GlyphCellUv(GlyphSliceAdjectiveCells[i])),
+                    $"sıfat {rune} → hücre {GlyphSliceAdjectiveCells[i]} UV");
             }
         }
 
@@ -322,15 +323,20 @@ namespace Dovus.Tests.PlayMode
             return runes;
         }
 
-        /// <summary>0 = sol üst; texture y alttan.</summary>
-        static Rect GlyphCellRect(Texture atlas, int cell)
+        /// <summary>Ortak atlas 2048²: harf bölgesi sol üstte, 8 sütun × 256 px; 0 = sol üst, UV y alttan.</summary>
+        static Rect GlyphCellUv(int cell)
         {
-            int cols = RuleVfxArtDefaults.GlyphCols;
-            int rows = RuleVfxArtDefaults.GlyphRows;
-            float cw = atlas.width / cols;
-            float ch = atlas.height / rows;
-            return new Rect(cell % cols * cw, (rows - 1 - cell / cols) * ch, cw, ch);
+            const float atlasPx = 2048f;
+            const float cellPx = 256f;
+            const int cols = 8;
+            return new Rect(
+                cell % cols * cellPx / atlasPx,
+                1f - (cell / cols + 1) * cellPx / atlasPx,
+                cellPx / atlasPx,
+                cellPx / atlasPx);
         }
+
+        static Rect ToRect(RuleEngineV4UvRect r) => new(r.X, r.Y, r.W, r.H);
 
         static string SessionCaptureDir()
         {

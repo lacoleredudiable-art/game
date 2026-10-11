@@ -1,3 +1,4 @@
+using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Actors;
 using Dovus.Game.Vfx;
 using UnityEngine;
@@ -6,18 +7,24 @@ namespace Dovus.Game.Skills.RuleEngineV4
 {
     /// <summary>
     /// Hedef seçme açıkken parmağın altındaki seçilebilir hedefte ince kor halkası:
-    /// sahibin renginde, VFX_Kor malzemesi, işaret decal'ıyla aynı çizgi dili.
+    /// sahibin renginde, ortak efekt atlasının halka hücresi, ortak VFX_Kor batch'i
+    /// (<see cref="EjderVfxBatch"/>; siluet ve harf flaşıyla aynı materyal).
     /// </summary>
-    public sealed class RuleEngineV4TargetPickRingView : MonoBehaviour
+    public sealed class RuleEngineV4TargetPickRingView : MonoBehaviour, IEjderVfxQuadSource
     {
-        LineRenderer _ring;
-        Material _material;
-        Vector3[] _points;
         System.Action _tick;
+        bool _visible;
+        Vector3 _center;
+        Vector3 _halfRight;
+        Vector3 _halfUp;
 
-        public bool Visible => _ring != null && _ring.enabled;
+        public bool Visible => _visible;
         public TargetableHost ShownTarget { get; private set; }
-        public Material RingMaterial => _material;
+        /// <summary>Ortak batch materyali (siluet, harf, halka aynı).</summary>
+        public Material RingMaterial => EjderVfxBatch.Instance.SharedMaterial;
+        /// <summary>Halka kor rengi (sahip rengi × HDR); köşe rengi = bu × yoğunluk.</summary>
+        public Color CoreColor { get; private set; }
+        public RuleEngineV4UvRect RingUv => RuleVfxSettings.Slice.Atlas.RingUv;
 
         /// <summary><paramref name="tick"/> her kare çağrılır (basılı tutma durumunu halka sürer).</summary>
         public static RuleEngineV4TargetPickRingView Create(Color ownerColor, System.Action tick)
@@ -33,29 +40,10 @@ namespace Dovus.Game.Skills.RuleEngineV4
 
         void Build(Color ownerColor)
         {
-            _ring = gameObject.AddComponent<LineRenderer>();
-            _ring.useWorldSpace = false;
-            _ring.loop = true;
-            _ring.alignment = LineAlignment.TransformZ;
-            _ring.widthMultiplier = RuleEngineV4SurfaceMarkDefaults.DecalLineWidthM;
-            _ring.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            _ring.receiveShadows = false;
-            _ring.startColor = Color.white;
-            _ring.endColor = Color.white;
-            Shader sh = Shader.Find(RuleVfxDefaults.KorShaderName)
-                ?? Shader.Find(RuleVfxDefaults.ParticlesUnlit);
-            _material = new Material(sh);
             Color core = ownerColor * RuleVfxArtDefaults.CoreHdrMult;
             core.a = 1;
-            if (_material.HasProperty("_CoreColor"))
-                _material.SetColor("_CoreColor", core);
-            if (_material.HasProperty("_Intensity"))
-                _material.SetFloat("_Intensity", RuleEngineV4TargetPickRingDefaults.Intensity);
-            if (_material.HasProperty("_Color"))
-                _material.SetColor("_Color", ownerColor);
-            _ring.sharedMaterial = _material;
-            _points = new Vector3[RuleEngineV4SurfaceMarkDefaults.DecalSegments];
-            _ring.enabled = false;
+            CoreColor = core;
+            EjderVfxBatch.Register(this);
         }
 
         public void ShowOnTarget(TargetableHost target)
@@ -83,8 +71,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
         public void Hide()
         {
             ShownTarget = null;
-            if (_ring != null)
-                _ring.enabled = false;
+            _visible = false;
         }
 
         void Place(Vector3 center, Vector3 normal, float radius)
@@ -92,23 +79,24 @@ namespace Dovus.Game.Skills.RuleEngineV4
             Vector3 up = Mathf.Abs(Vector3.Dot(normal, Vector3.up)) > RuleEngineV4SurfaceMarkDefaults.VerticalNormalDot
                 ? Vector3.forward
                 : Vector3.up;
-            transform.position = center;
-            transform.rotation = Quaternion.LookRotation(normal, up);
-            int n = _points.Length;
-            for (int i = 0; i < n; i++)
-            {
-                float a = i * (2 * Mathf.PI / n);
-                _points[i] = new Vector3(Mathf.Cos(a) * radius, Mathf.Sin(a) * radius, 0);
-            }
-            _ring.positionCount = n;
-            _ring.SetPositions(_points);
-            _ring.enabled = true;
+            Quaternion rot = Quaternion.LookRotation(normal, up);
+            float half = RuleVfxSettings.Slice.Atlas.RingQuadHalfM(radius);
+            transform.SetPositionAndRotation(center, rot);
+            _center = center;
+            _halfRight = rot * Vector3.right * half;
+            _halfUp = rot * Vector3.up * half;
+            _visible = true;
         }
 
-        void OnDestroy()
+        public void EmitQuads(EjderVfxBatch batch)
         {
-            if (_material != null)
-                Destroy(_material);
+            if (!_visible)
+                return;
+            Color c = CoreColor * RuleEngineV4TargetPickRingDefaults.Intensity;
+            c.a = 1f;
+            batch.AddQuad(_center, _halfRight, _halfUp, batch.Layout.RingUv, c, 0f);
         }
+
+        void OnDestroy() => EjderVfxBatch.Unregister(this);
     }
 }

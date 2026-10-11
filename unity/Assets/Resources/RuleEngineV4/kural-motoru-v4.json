@@ -230,6 +230,15 @@
     "floor_glow": { "radius_m": 18, "lift_m": 0.02 }
   },
   "slice_vfx": {
-    "blade_trail": { "life_sec": 0.25, "tail_width_frac": 0, "hilt_alpha": 0.55, "intensity": 2.2 }
+    "blade_trail": { "life_sec": 0.25, "tail_width_frac": 0, "hilt_alpha": 0.55, "intensity": 2.2 },
+    "atlas": {
+      "resource": "Vfx/Ejder/Ejder_Vfx_Atlas",
+      "material": "Vfx/Ejder/VFX_Kor_Ejder",
+      "size_px": 2048,
+      "glyphs": { "x_px": 0, "y_px": 0, "cols": 8, "rows": 3, "cell_px": 256 },
+      "silhouettes": { "x_px": 0, "y_px": 768, "cols": 4, "rows": 2, "cell_px": 256 },
+      "ring": { "x_px": 1024, "y_px": 768, "size_px": 512, "radius_frac": 0.84, "line_frac": 0.144 },
+      "dust": { "x_px": 1536, "y_px": 768, "size_px": 128 }
+    }
   }
 }

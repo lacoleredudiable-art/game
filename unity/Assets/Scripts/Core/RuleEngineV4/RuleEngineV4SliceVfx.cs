@@ -9,6 +9,7 @@ namespace Dovus.Core.RuleEngineV4
     public sealed class RuleEngineV4SliceVfx
     {
         public RuleEngineV4BladeTrailFx BladeTrail { get; private set; } = new();
+        public RuleEngineV4VfxAtlas Atlas { get; private set; } = new();
 
         public static RuleEngineV4SliceVfx FromJson(JsonValue root)
         {
@@ -17,6 +18,7 @@ namespace Dovus.Core.RuleEngineV4
             if (node.Kind != JsonKind.Object)
                 return v;
             v.BladeTrail = RuleEngineV4BladeTrailFx.FromJson(node["blade_trail"]);
+            v.Atlas = RuleEngineV4VfxAtlas.FromJson(node["atlas"]);
             return v;
         }
 
