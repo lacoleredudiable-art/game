@@ -53,6 +53,7 @@ namespace Dovus.Game.Composition
         {
             _tuning ??= new GameTuning();
             _tuning.EnsureRuntimeDefaults();
+            _tuning.RuleEngineV4.ApplySliceBuild();
             RuleEngineV4Feature.Enabled = _tuning.RuleEngineV4.Enabled;
             HexagonLayoutScreen.FitShortSideDp = _tuning.Input.HudFitShortSideDp;
 #if !UNITY_EDITOR

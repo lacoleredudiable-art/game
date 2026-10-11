@@ -20,7 +20,7 @@ namespace Dovus.Game.Editor
         internal const string KorPack = KorDir + "/ortam_kor_paket_2k_RGBA.png";
         internal const string RegistryPath = "Assets/Resources/Arena/ArenaVisualRegistry.asset";
         const string SimpleLit = "Universal Render Pipeline/Simple Lit";
-        const string DitherLit = "Dovus/Ortam/Ortam_DitherLit";
+        internal const string DitherLit = "Dovus/Ortam/Ortam_DitherLit";
         const string VfxKor = "Dovus/Vfx/VFX_Kor";
         const string Android = "Android";
         const int ModelTexMax = 1024;

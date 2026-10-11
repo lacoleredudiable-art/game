@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using Dovus.Game.Arena;
+using Dovus.Game.Config;
 using Dovus.Game.Diagnostics;
 using Dovus.Game.Skills;
 using Dovus.Game.Vfx;
@@ -32,6 +33,8 @@ namespace Dovus.Game.Editor
         /// </summary>
         public const string DebugDefine = "DOVUS_DEBUG";
 
+        public const string V4SliceArg = "-dovusV4Slice";
+
         /// <summary>Dev APK (eski menü adı korunur): Development + DOVUS_DEBUG.</summary>
         [MenuItem("Dovus/Build Android APK")]
         public static void BuildFromMenu()
@@ -51,14 +54,16 @@ namespace Dovus.Game.Editor
         }
 
         /// <summary>
-        /// Batchmode girişi: `-executeMethod Dovus.Game.EditorTools.AndroidBuilder.BuildFromCommandLine`.
-        /// `-dovusRelease` release APK alır; `-dovusOutput <yol>` çıktı yolu.
+        /// Batchmode girişi: `-executeMethod Dovus.Game.Editor.AndroidBuilder.BuildFromCommandLine`.
+        /// `-dovusRelease` release APK alır; `-dovusOutput <yol>` çıktı yolu;
+        /// `-dovusV4Slice` v4 dilim define'ını ekler (bayraklar yalnız o APK'da açık).
         /// </summary>
         public static void BuildFromCommandLine()
         {
             bool release = HasArg("-dovusRelease");
+            bool v4Slice = WantsV4Slice(Environment.GetCommandLineArgs());
             string output = ArgValue("-dovusOutput") ?? DefaultOutputPath(release);
-            BuildReport report = Build(output, release);
+            BuildReport report = Build(output, release, v4Slice);
             bool ok = report.summary.result == BuildResult.Succeeded;
 
             if (Application.isBatchMode)
@@ -95,22 +100,38 @@ namespace Dovus.Game.Editor
         public static string[] DefinesFor(bool release) =>
             release ? Array.Empty<string>() : new[] { DebugDefine };
 
+        public static string[] DefinesFor(bool release, bool v4Slice) =>
+            DefinesFor(release).Concat(SliceDefines(v4Slice)).ToArray();
+
+        static string[] SliceDefines(bool v4Slice) =>
+            v4Slice ? new[] { RuleEngineV4Settings.SliceBuildDefine } : Array.Empty<string>();
+
+        /// <summary>Komut satırı argümanlarından v4 dilim define'ı istenip istenmediği (saf; test edilebilir).</summary>
+        public static bool WantsV4Slice(string[] args) =>
+            args != null && args.Any(a => string.Equals(a, V4SliceArg, StringComparison.OrdinalIgnoreCase));
+
         /// <summary>
         /// Sahne koddan kuruluyor (AGENTS kural 2), yani hiçbir materyal bir asset'te durmuyor:
         /// materyaller çalışma anında `Shader.Find` ile yaratılıyor. Player build'i yalnızca
         /// asset'lerden REFERANS EDİLEN shader'ları paketler — `Shader.Find` telefonda null döner
         /// ve dünya macenta çıkar (T11 1. oturumda tam bu oldu). Bu yüzden çalışma anında aranan
-        /// her shader "Always Included" listesine yazılır.
+        /// her shader "Always Included" listesine yazılır. Ortam_DitherLit Shader.Find ile aranmıyor ama
+        /// KorDither/KorTriplanar include'unu VFX_Kor'la paylaşıyor; ikisi birlikte tüm varyantlarıyla paketlenir.
         /// </summary>
-        static readonly string[] RuntimeShaders =
+        public static readonly string[] RuntimeShaders =
         {
             "Universal Render Pipeline/Lit",     // arena, oyuncu, boss (GameBootstrapHost)
             "Universal Render Pipeline/Unlit",   // yedek yol
-            "Sprites/Default",                   // mürekkep, telegraf, hayalet, iz, tezahür
+            "Universal Render Pipeline/Simple Lit", // WeaponHandPropsView, HostileProjectileHost (ilk tercih)
+            "Sprites/Default",                   // mürekkep, telegraf, hayalet, iz, tezahür, v4 yüzey izi
             "Universal Render Pipeline/Particles/Unlit", // FeelVfx, CastFlashView, LivingEffectView, LavaDecor, BillboardVfxView
+            RuleVfxDefaults.KorShaderName,       // v4 dilim: kor izi, ATIL vuruşu, kor uyanışı, kıvılcım (VFX_Kor_Ejder materyali de bu shader)
+            OrtamAssetSetup.DitherLit,           // v4 dilim arena: kaburga (KorDither + KorTriplanar)
         };
 
-        static BuildReport Build(string outputPath, bool release)
+        static BuildReport Build(string outputPath, bool release) => Build(outputPath, release, v4Slice: false);
+
+        static BuildReport Build(string outputPath, bool release, bool v4Slice)
         {
             ApplyPlayerSettings();
             EnsureAlwaysIncludedShaders();
@@ -143,7 +164,7 @@ namespace Dovus.Game.Editor
                 // Release (K2): Development yok, DOVUS_DEBUG yok → DebugConfig kapalı.
                 // CleanBuildCache: incremental Bee bazen eski Data files bırakıyor (telefon APK).
                 options = OptionsFor(release),
-                extraScriptingDefines = DefinesFor(release)
+                extraScriptingDefines = DefinesFor(release).Concat(SliceDefines(v4Slice)).ToArray()
             };
 
             BuildReport report = BuildPipeline.BuildPlayer(options);
@@ -151,7 +172,7 @@ namespace Dovus.Game.Editor
 
             if (summary.result == BuildResult.Succeeded)
             {
-                Debug.Log($"[T11] APK hazır ({(release ? "release" : "dev")}): {summary.outputPath} " +
+                Debug.Log($"[T11] APK hazır ({(release ? "release" : "dev")}{(v4Slice ? " +v4 dilim" : "")}): {summary.outputPath} " +
                           $"({summary.totalSize / (1024f * 1024f):0.0} MB, {summary.totalTime.TotalSeconds:0} sn)");
             }
             else
