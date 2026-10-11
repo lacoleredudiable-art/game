@@ -6,8 +6,9 @@ namespace Dovus.Game.Weapons
         public const float StaffGlowLiftM = 0.02f;
         public const float StaffGlowScale = 0.06f;
 
-        public const float BladeHalfLengthFallbackM = 0.35f;
-        public const float BladeHalfLengthBoundsMult = 0.85f;
+        /// <summary>Tutuş ölçümü eşikleri (görev kabulü; spec'te yok).</summary>
+        public const float GripWristMaxDeg = 35f;
+        public const float GripAxisMaxDeviationDeg = 15f;
 
         public const float RightSwordMaxExtentM = 0.92f;
         public const float RightShieldMaxExtentM = 0.38f;

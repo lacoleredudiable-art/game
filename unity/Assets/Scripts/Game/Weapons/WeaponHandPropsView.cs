@@ -256,32 +256,96 @@ namespace Dovus.Game.Weapons
             }
         }
 
-        /// <summary>Mixamo kılıç: el + uç konumu ve dikeyden açı (derece) — feel doğrulama.</summary>
-        public static void LogMixamoSwordAngle(Animator animator, string tag)
+        /// <summary>Bilek-önkol açısı ve silah ekseninin hedef yönden sapması (derece).</summary>
+        public readonly struct GripAngles
+        {
+            public readonly float WristDeg;
+            public readonly float AxisDeviationDeg;
+
+            public GripAngles(float wristDeg, float axisDeviationDeg)
+            {
+                WristDeg = wristDeg;
+                AxisDeviationDeg = axisDeviationDeg;
+            }
+
+            public bool WithinLimits =>
+                WristDeg < WeaponHandPropsViewDefaults.GripWristMaxDeg
+                && AxisDeviationDeg < WeaponHandPropsViewDefaults.GripAxisMaxDeviationDeg;
+        }
+
+        /// <summary>
+        /// Kılıç (sağ el) / Yay (sol el) tutuş ölçümü. Bilek: önkol (dirsek→bilek) ile el (bilek→orta
+        /// parmak kökü ya da el kemiği ekseni) arası. Silah ekseni: Kılıç Vfx_Kabza→Vfx_Tip; Yay ok ekseni (yay yerel +X,
+        /// kiriş tarafından kabzaya). Hedef yön: karakterin yatay ileri yönü.
+        /// </summary>
+        public static bool TryMeasureGripAngles(Animator animator, string weaponKey, out GripAngles angles)
+        {
+            angles = default;
+            if (animator == null)
+                return false;
+            bool bow = weaponKey == "yay";
+            Transform forearm = animator.GetBoneTransform(bow ? HumanBodyBones.LeftLowerArm : HumanBodyBones.RightLowerArm);
+            Transform hand = animator.GetBoneTransform(bow ? HumanBodyBones.LeftHand : HumanBodyBones.RightHand);
+            if (forearm == null || hand == null)
+                return false;
+            Transform weapon = FindOwnWeapon(animator, weaponKey) ?? (bow ? null : FindRightSwordProp(hand));
+            if (weapon == null)
+                return false;
+
+            // Parmak kemiği eşlenmemişse (k3: yumruk blend shape) el yönü kemiğin +Y'si (Mixamo: parmaklara).
+            Transform finger = animator.GetBoneTransform(bow ? HumanBodyBones.LeftMiddleProximal : HumanBodyBones.RightMiddleProximal);
+            Vector3 handDir = finger != null ? finger.position - hand.position : hand.up;
+            float wrist = Vector3.Angle(hand.position - forearm.position, handDir);
+            Vector3 target = Vector3.ProjectOnPlane(animator.transform.forward, Vector3.up);
+            angles = new GripAngles(wrist, Vector3.Angle(WeaponAxis(weapon, bow), target));
+            return true;
+        }
+
+        /// <summary>Mixamo kılıç/yay: bilek-önkol açısı ve eksen sapması — feel doğrulama.</summary>
+        public static void LogMixamoWeaponAngle(Animator animator, string weaponKey, string tag)
         {
             if (animator == null || !WeaponGripView.IsMixamoRig(animator))
                 return;
-            Transform hand = animator.GetBoneTransform(HumanBodyBones.RightHand);
-            if (hand == null)
-                return;
-            Transform blade = FindRightSwordProp(hand);
-            if (blade == null)
+            if (!TryMeasureGripAngles(animator, weaponKey, out GripAngles a))
             {
-                DebugConfig.DevLog($"[SwordAngle] {tag} no prop");
+                DebugConfig.DevLog($"[GripAngle] {tag} {weaponKey} no prop");
                 return;
             }
-
-            Vector3 handPos = hand.position;
-            // ff-4: Warrior_Sword mesh'inin uzunluk ekseni local Z (blade.forward) — bounds
-            // ölçümü (mesh.vertices) grip ucu +Z'de, kabza 0'a yakın gösterdi. Önceki blade.up
-            // (Y) varsayımı yanlış eksendi → ölçülen açı gerçek bıçak yönünü yansıtmıyordu.
-            Vector3 tip = blade.position + blade.forward * EstimateBladeHalfLength(blade);
-            Vector3 shaft = tip - handPos;
-            float angleFromUp = shaft.sqrMagnitude > 1e-6f
-                ? Vector3.Angle(Vector3.up, shaft)
-                : 0f;
             DebugConfig.DevLog(
-                $"[SwordAngle] {tag} hand={handPos} tip={tip} angleFromVertical={angleFromUp:0.0}°");
+                $"[GripAngle] {tag} {weaponKey} wrist={a.WristDeg:0.0}° axisDev={a.AxisDeviationDeg:0.0}° ok={a.WithinLimits}");
+        }
+
+        static Transform FindOwnWeapon(Animator animator, string weaponKey)
+        {
+            string wanted = OwnWeaponName(weaponKey);
+            foreach (Transform t in animator.GetComponentsInChildren<Transform>(true))
+            {
+                if (t.name == wanted)
+                    return t;
+            }
+            return null;
+        }
+
+        static Vector3 WeaponAxis(Transform weapon, bool bow)
+        {
+            if (bow)
+                return weapon.right;
+            Transform hilt = FindChildDeep(weapon, "Vfx_Kabza");
+            Transform tip = FindChildDeep(weapon, "Vfx_Tip");
+            if (hilt != null && tip != null)
+                return tip.position - hilt.position;
+            // ff-4: Warrior_Sword mesh'inin uzunluk ekseni local Z.
+            return weapon.forward;
+        }
+
+        static Transform FindChildDeep(Transform t, string name)
+        {
+            foreach (Transform c in t.GetComponentsInChildren<Transform>(true))
+            {
+                if (c.name == name)
+                    return c;
+            }
+            return null;
         }
 
         static Transform FindRightSwordProp(Transform hand)
@@ -294,13 +358,6 @@ namespace Dovus.Game.Weapons
             }
 
             return null;
-        }
-
-        static float EstimateBladeHalfLength(Transform propRoot)
-        {
-            if (!TryRendererBounds(propRoot.gameObject, out Bounds b))
-                return WeaponHandPropsViewDefaults.BladeHalfLengthFallbackM;
-            return Mathf.Max(b.extents.y, b.extents.z) * WeaponHandPropsViewDefaults.BladeHalfLengthBoundsMult;
         }
 
         static void FitMixamoPropWorldSize(GameObject go, string weaponKey, bool isRight) =>
