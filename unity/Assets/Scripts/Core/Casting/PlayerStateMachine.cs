@@ -90,7 +90,11 @@ namespace Dovus.Core.Casting
 
         /// <summary>false → hareket yok; limited / based_on_cast_mobility / dodge_direction → Game yorumlar.</summary>
         public bool BlocksMove =>
-            string.Equals(CanMove, "false", StringComparison.Ordinal);
+            string.Equals(CanMove, "false", StringComparison.Ordinal)
+            && !(RuleEngineV4.RuleEngineV4Feature.DrawingKeepsMovement
+                 && string.Equals(CurrentId, DrawingStateId, StringComparison.Ordinal));
+
+        public const string DrawingStateId = "drawing";
 
         public bool MoveLimited =>
             string.Equals(CanMove, "limited", StringComparison.Ordinal);

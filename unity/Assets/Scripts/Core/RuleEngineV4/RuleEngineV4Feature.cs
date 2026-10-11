@@ -13,5 +13,27 @@ namespace Dovus.Core.RuleEngineV4
 
         /// <summary>Bayrak açıkken can/hasar kural-motoru-v4.json scale'inde; CombatScale çarpanı uygulanmaz.</summary>
         public static bool ScaleCombatMagnitudes => !Enabled;
+
+        /// <summary>Bayrak açıkken cümle fiil + sıfat ile sınırlı; kapalıyken eski tavan.</summary>
+        public static int SentenceDotCap(int legacyMax) =>
+            Enabled ? RuleEngineV4CastContext.VerbAdjectiveComboLen : legacyMax;
+
+        /// <summary>
+        /// Bayrak açıkken tavana ulaşan cümle kendiliğinden çözülmez: fazla noktalar yok sayılır,
+        /// merkez dokunuşu ya da pencere sonu onaylar, merkezde kalkan parmak iptal eder.
+        /// </summary>
+        public static bool HoldSentenceAtCapacity => Enabled;
+
+        /// <summary>
+        /// Bayrak açıkken çizim sürerken (en az bir nokta) parmak merkezde kalkarsa cümle iptal edilir.
+        /// Merkeze ayrı dokunuş (çizim yok) bu yoldan geçmez; onaylamayı sürdürür.
+        /// </summary>
+        public static bool CenterReleaseAbortsSentence(bool releasedOnCenter, Grammar.SentenceState sentence) =>
+            Enabled && releasedOnCenter && sentence != null
+            && sentence.Phase == Grammar.SentencePhase.Building
+            && sentence.Words != null && sentence.Words.Count >= 1;
+
+        /// <summary>Bayrak açıkken çizim (drawing) hareketi kökleyip yavaşlatmaz.</summary>
+        public static bool DrawingKeepsMovement => Enabled;
     }
 }

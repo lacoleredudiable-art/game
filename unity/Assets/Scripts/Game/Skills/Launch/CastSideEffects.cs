@@ -61,7 +61,8 @@ namespace Dovus.Game.Skills.Launch
 
         public void RefreshBuildingMobility(IReadOnlyList<SentenceWord> words)
         {
-            if (words == null || words.Count < 3 || _host.Skills == null)
+            if (words == null || words.Count < 3 || _host.Skills == null
+                || Dovus.Core.RuleEngineV4.RuleEngineV4Feature.DrawingKeepsMovement)
                 return;
             SkillResolution skill = _host.ResolveSkillWords(words);
             if (skill.IsEmpty)

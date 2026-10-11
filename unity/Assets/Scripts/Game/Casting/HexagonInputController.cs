@@ -38,6 +38,7 @@ namespace Dovus.Game.Casting
         StrokeCaster _stroke;
         DodgeTrigger _dodgeTrigger;
         PointerRouter _pointer;
+        internal PointerRouter Pointer => _pointer;
         bool _eventsHooked;
 
         /// <summary>İkinci rün hâlâ basılıyken yükleme fazı bekler.</summary>
@@ -210,7 +211,7 @@ namespace Dovus.Game.Casting
             _session.Skills = skills ?? _session.Skills;
             _session.Combat ??= new CombatTuning();
             if (_session.Skills != null && _session.Skills.MaxComboLength > 0)
-                _session.Combat.Sentence.MaxSentenceDots = _session.Skills.MaxComboLength;
+                _session.Combat.Sentence.MaxSentenceDots = Dovus.Core.RuleEngineV4.RuleEngineV4Feature.SentenceDotCap(_session.Skills.MaxComboLength);
             if (_session.SentenceHooked && _session.Engine != null)
             {
                 _session.Engine.SentenceCompleted -= OnSentenceCompleted;
@@ -371,7 +372,7 @@ namespace Dovus.Game.Casting
             {
                 _gate.EnsureSkills();
                 if (_session.Skills != null && _session.Skills.MaxComboLength > 0)
-                    _session.Combat.Sentence.MaxSentenceDots = _session.Skills.MaxComboLength;
+                    _session.Combat.Sentence.MaxSentenceDots = Dovus.Core.RuleEngineV4.RuleEngineV4Feature.SentenceDotCap(_session.Skills.MaxComboLength);
                 _session.Engine = new SentenceEngine(
                     _session.Combat.Sentence,
                     _session.Skills?.DefaultLoadout ?? RuneLoadout.Sequential);
