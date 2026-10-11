@@ -13,6 +13,13 @@ namespace Dovus.Core.RuleEngineV4
         public const float BladeTrailIntensity = 2.2f;
 
         /// <summary>Ortak efekt atlası 2048² (harf 2048×768 üstte, siluet 1024×512 altında).</summary>
+        /// <summary>Hedef halkası nabzı 2 Hz; bırakınca 0,1 s'de söner.</summary>
+        public const float TargetRingPulseHz = 2f;
+        public const float TargetRingReleaseFadeSec = 0.1f;
+        /// <summary>spec'te yok: "hafifçe" → yarıçap %6, parlaklık dipte %70.</summary>
+        public const float TargetRingPulseScale = 0.06f;
+        public const float TargetRingPulseMinBrightness = 0.7f;
+
         public const string AtlasResource = "Vfx/Ejder/Ejder_Vfx_Atlas";
         public const string AtlasMaterial = "Vfx/Ejder/VFX_Kor_Ejder";
         public const int AtlasSizePx = 2048;

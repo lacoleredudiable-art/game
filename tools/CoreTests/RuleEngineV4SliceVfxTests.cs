@@ -41,6 +41,33 @@ public sealed class RuleEngineV4SliceVfxTests
         RuleEngineV4SliceVfx v = RuleEngineV4SliceVfx.FromJson("{}");
         Assert.That(v.BladeTrail.LifeSec, Is.EqualTo(RuleEngineV4SliceVfxDefaults.BladeTrailLifeSec));
         Assert.That(v.BladeTrail.TailWidthFrac, Is.EqualTo(RuleEngineV4SliceVfxDefaults.BladeTrailTailWidthFrac));
+        Assert.That(v.TargetRing.PulseHz, Is.EqualTo(RuleEngineV4SliceVfxDefaults.TargetRingPulseHz));
+        Assert.That(v.TargetRing.ReleaseFadeSec, Is.EqualTo(RuleEngineV4SliceVfxDefaults.TargetRingReleaseFadeSec));
+    }
+
+    [Test]
+    public void Json_TargetRing_PulsesTwoHz_FadesInPointOneSec()
+    {
+        RuleEngineV4TargetRingFx r = Slice().TargetRing;
+        Assert.That(r.PulseHz, Is.EqualTo(2f).Within(1e-5f));
+        Assert.That(r.ReleaseFadeSec, Is.EqualTo(0.1f).Within(1e-5f));
+        Assert.That(r.PulseScale, Is.GreaterThan(0f).And.LessThan(0.15f), "nabız hafif olmalı");
+
+        float period = 1f / r.PulseHz;
+        r.Pulse(0f, out float s0, out float b0);
+        r.Pulse(period * 0.5f, out float sPeak, out float bPeak);
+        r.Pulse(period, out float s1, out float b1);
+        Assert.That(s0, Is.EqualTo(1f).Within(1e-5f), "dipte tam yarıçap");
+        Assert.That(sPeak, Is.EqualTo(1f + r.PulseScale).Within(1e-5f), "yarım periyotta tepe");
+        Assert.That(s1, Is.EqualTo(1f).Within(1e-4f), "0,5 s'de bir tam nabız");
+        Assert.That(b0, Is.EqualTo(r.PulseMinBrightness).Within(1e-5f));
+        Assert.That(bPeak, Is.EqualTo(1f).Within(1e-5f));
+        Assert.That(b1, Is.EqualTo(b0).Within(1e-4f));
+
+        Assert.That(r.ReleaseAlpha(0f), Is.EqualTo(1f).Within(1e-5f));
+        Assert.That(r.ReleaseAlpha(r.ReleaseFadeSec * 0.5f), Is.EqualTo(0.5f).Within(1e-4f));
+        Assert.That(r.ReleaseAlpha(r.ReleaseFadeSec), Is.EqualTo(0f).Within(1e-5f), "0,1 s'de sönmüş");
+        Assert.That(r.ReleaseAlpha(1f), Is.EqualTo(0f));
     }
 
     static readonly string ResourcesDir = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(JsonPath)!, ".."));
