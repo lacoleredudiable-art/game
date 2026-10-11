@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using Dovus.Game.Arena;
+using Dovus.Game.Config;
 using Dovus.Game.Diagnostics;
 using Dovus.Game.Skills;
 using Dovus.Game.Vfx;
@@ -32,6 +33,8 @@ namespace Dovus.Game.Editor
         /// </summary>
         public const string DebugDefine = "DOVUS_DEBUG";
 
+        public const string V4SliceArg = "-dovusV4Slice";
+
         /// <summary>Dev APK (eski menü adı korunur): Development + DOVUS_DEBUG.</summary>
         [MenuItem("Dovus/Build Android APK")]
         public static void BuildFromMenu()
@@ -52,13 +55,15 @@ namespace Dovus.Game.Editor
 
         /// <summary>
         /// Batchmode girişi: `-executeMethod Dovus.Game.Editor.AndroidBuilder.BuildFromCommandLine`.
-        /// `-dovusRelease` release APK alır; `-dovusOutput <yol>` çıktı yolu.
+        /// `-dovusRelease` release APK alır; `-dovusOutput <yol>` çıktı yolu;
+        /// `-dovusV4Slice` v4 dilim define'ını ekler (bayraklar yalnız o APK'da açık).
         /// </summary>
         public static void BuildFromCommandLine()
         {
             bool release = HasArg("-dovusRelease");
+            bool v4Slice = WantsV4Slice(Environment.GetCommandLineArgs());
             string output = ArgValue("-dovusOutput") ?? DefaultOutputPath(release);
-            BuildReport report = Build(output, release);
+            BuildReport report = Build(output, release, v4Slice);
             bool ok = report.summary.result == BuildResult.Succeeded;
 
             if (Application.isBatchMode)
@@ -92,8 +97,21 @@ namespace Dovus.Game.Editor
                 ? BuildOptions.CleanBuildCache
                 : BuildOptions.Development | BuildOptions.CleanBuildCache;
 
-        public static string[] DefinesFor(bool release) =>
-            release ? Array.Empty<string>() : new[] { DebugDefine };
+        public static string[] DefinesFor(bool release) => DefinesFor(release, v4Slice: false);
+
+        public static string[] DefinesFor(bool release, bool v4Slice)
+        {
+            var defines = new List<string>();
+            if (!release)
+                defines.Add(DebugDefine);
+            if (v4Slice)
+                defines.Add(RuleEngineV4Settings.SliceBuildDefine);
+            return defines.ToArray();
+        }
+
+        /// <summary>Komut satırı argümanlarından v4 dilim define'ı istenip istenmediği (saf; test edilebilir).</summary>
+        public static bool WantsV4Slice(string[] args) =>
+            args != null && args.Any(a => string.Equals(a, V4SliceArg, StringComparison.OrdinalIgnoreCase));
 
         /// <summary>
         /// Sahne koddan kuruluyor (AGENTS kural 2), yani hiçbir materyal bir asset'te durmuyor:
@@ -110,7 +128,9 @@ namespace Dovus.Game.Editor
             "Universal Render Pipeline/Particles/Unlit", // FeelVfx, CastFlashView, LivingEffectView, LavaDecor, BillboardVfxView
         };
 
-        static BuildReport Build(string outputPath, bool release)
+        static BuildReport Build(string outputPath, bool release) => Build(outputPath, release, v4Slice: false);
+
+        static BuildReport Build(string outputPath, bool release, bool v4Slice)
         {
             ApplyPlayerSettings();
             EnsureAlwaysIncludedShaders();
@@ -143,7 +163,7 @@ namespace Dovus.Game.Editor
                 // Release (K2): Development yok, DOVUS_DEBUG yok → DebugConfig kapalı.
                 // CleanBuildCache: incremental Bee bazen eski Data files bırakıyor (telefon APK).
                 options = OptionsFor(release),
-                extraScriptingDefines = DefinesFor(release)
+                extraScriptingDefines = DefinesFor(release, v4Slice)
             };
 
             BuildReport report = BuildPipeline.BuildPlayer(options);
@@ -151,7 +171,7 @@ namespace Dovus.Game.Editor
 
             if (summary.result == BuildResult.Succeeded)
             {
-                Debug.Log($"[T11] APK hazır ({(release ? "release" : "dev")}): {summary.outputPath} " +
+                Debug.Log($"[T11] APK hazır ({(release ? "release" : "dev")}{(v4Slice ? " +v4 dilim" : "")}): {summary.outputPath} " +
                           $"({summary.totalSize / (1024f * 1024f):0.0} MB, {summary.totalTime.TotalSeconds:0} sn)");
             }
             else

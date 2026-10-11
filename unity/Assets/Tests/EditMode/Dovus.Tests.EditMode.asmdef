@@ -3,6 +3,8 @@
     "rootNamespace": "",
     "references": [
         "Dovus.Core",
+        "Dovus.Game",
+        "Dovus.Game.Editor",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],
