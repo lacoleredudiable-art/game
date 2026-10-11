@@ -2,6 +2,11 @@
   "version": "4.5-pr3",
   "feature_flag": "kural_motoru_v4",
   "slice_runes": [1, 2, 3, 4, 6, 9],
+  "rune_glyphs": {
+    "verbs": { "1": "AK", "2": "SOL", "3": "SHEV", "4": "THAL", "5": "KRAG", "6": "NETH", "7": "GHUL", "8": "DRAK", "9": "SIL", "10": "MIR", "11": "ORN", "12": "KHOR" },
+    "adjectives": { "1": "VORN", "2": "VIS", "3": "SKAR", "4": "KETH", "5": "BRAN", "6": "HRAK", "7": "TZEK", "8": "ULTH", "9": "ZUL", "10": "SHIR", "11": "JEV", "12": "ROTH" },
+    "_not": "sıfat 7,8,10,12 A-20 onayı bekliyor"
+  },
   "scale": {
     "player_max_hp": 1000,
     "base_damage": 100,
