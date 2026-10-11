@@ -71,8 +71,20 @@ namespace Dovus.Tests.PlayMode
         }
 
         /// <summary>Kılıç ATIL: kök XZ pose'a gömülmez; kalça oyuncu nesnesinden ayrılmaz.</summary>
-        const float DashHipMaxOffsetM = 0.1f;
         const float ClipActiveWeight = 0.5f;
+        /// <summary>Animatör kararı: kalça kayması tavanı klipler.csv'den okunur (Assets'e göre yol).</summary>
+        const string ClipCsvRelativePath = "Art/Characters/k3/klipler.csv";
+        const string HipMaxOffsetColumn = "kalca_kayma_m";
+
+        static float ClipCsvFloat(string clip, string column)
+        {
+            string[] lines = File.ReadAllLines(Path.Combine(Application.dataPath, ClipCsvRelativePath));
+            int col = Array.IndexOf(lines[0].Split(';'), column);
+            Assert.That(col, Is.GreaterThanOrEqualTo(0), $"klipler.csv: {column} sütunu yok");
+            string[] row = lines.Skip(1).Select(l => l.Split(';')).FirstOrDefault(f => f[0] == clip);
+            Assert.That(row, Is.Not.Null, $"klipler.csv: {clip} satırı yok");
+            return float.Parse(row[col], System.Globalization.CultureInfo.InvariantCulture);
+        }
 
         [UnityTest]
         public IEnumerator K3_SwordDash_HipsStayOnPlayer()
@@ -112,7 +124,8 @@ namespace Dovus.Tests.PlayMode
             }
             Debug.Log($"[k3kanit] ATIL kalça-oyuncu en büyük yatay uzaklık={maxM:0.000} m (klip n={maxAtN:0.00}) kare={frames}");
             Assert.That(frames, Is.GreaterThan(0), $"{SwordDashClip} oynamadı");
-            Assert.That(maxM, Is.LessThanOrEqualTo(DashHipMaxOffsetM), $"ATIL kalçası oyuncudan {maxM:0.000} m kaydı");
+            float hipMaxM = ClipCsvFloat(SwordDashClip, HipMaxOffsetColumn);
+            Assert.That(maxM, Is.LessThanOrEqualTo(hipMaxM), $"ATIL kalçası oyuncudan {maxM:0.000} m kaydı (tavan {hipMaxM:0.00} m)");
             yield return WaitUntilIdle();
             Assert.That(_errors, Is.Empty, string.Join("\n", _errors));
         }
