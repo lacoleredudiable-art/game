@@ -1,0 +1,68 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: VFX_Kor_Ejder
+  m_Shader: {fileID: 4800000, guid: a1b2c3d4e5f6789012345678abcdef01, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - _MASKMODE_UV
+  - _VERTEX_DISSOLVE
+  m_InvalidKeywords:
+  - _ADDITIVE_ON
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _DissolveTex:
+        m_Texture: {fileID: 2800000, guid: 7018b7fe2cdc5a14c885a3dfb9f908ac, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _KorMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: 7018b7fe2cdc5a14c885a3dfb9f908ac, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _Additive: 1
+    - _ArchDither: 0
+    - _Dissolve: 0
+    - _EdgeBoost: 0.3
+    - _FadeFarM: 14
+    - _FadeNearM: 6
+    - _FadeSoftness: 0.35
+    - _FadeStrength: 0.6
+    - _FlowOffset: 0
+    - _Intensity: 1
+    - _MaskBlend: 6
+    - _MaskMode: 0
+    - _MaskTiling: 0.25
+    - _MaxGlow: 1
+    - _NoiseFloor: 1
+    - _NoiseScale: 0.07
+    - _PulseMin: 0.6
+    - _PulsePeriod: 0
+    - _UvMaskChannel: 0
+    - _VertexDissolve: 1
+    m_Colors:
+    - _CoreColor: {r: 1, g: 1, b: 1, a: 1}
+    - _FadeScreenCenter: {r: 0.5, g: 0.6, b: 0.35, a: 0.45}
+    - _MaskChannel: {r: 1, g: 0, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

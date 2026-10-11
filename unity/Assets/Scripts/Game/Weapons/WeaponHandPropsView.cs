@@ -15,7 +15,7 @@ namespace Dovus.Game.Weapons
     [DisallowMultipleComponent]
     public sealed partial class WeaponHandPropsView : MonoBehaviour
     {
-        const string OwnWeaponPrefix = "Silah_";
+        const string OwnWeaponPrefix = WeaponBladePoints.OwnWeaponPrefix;
 
         [SerializeField] Animator _animator;
 
@@ -74,7 +74,7 @@ namespace Dovus.Game.Weapons
         static bool HasLeftHandProp(string weaponKey) => weaponKey != "kilic";
 
         /// <summary>
-        /// Görselin kendi silahları (k3: Grip_R / Socket_L altında Silah_*): anahtarın silahı görünür,
+        /// Görselin kendi silahları (k3: Grip_R / Grip_L altında Silah_*): anahtarın silahı görünür,
         /// diğerleri gizlenir. Mesh'i olmayan yer tutucu sahiplik saymaz; o silahta kayıt prop'u takılır.
         /// </summary>
         Transform ShowOwnWeapon(string weaponKey)
@@ -275,8 +275,8 @@ namespace Dovus.Game.Weapons
 
         /// <summary>
         /// Kılıç (sağ el) / Yay (sol el) tutuş ölçümü. Bilek: önkol (dirsek→bilek) ile el (bilek→orta
-        /// parmak kökü ya da el kemiği ekseni) arası. Silah ekseni: Kılıç Vfx_Kabza→Vfx_Tip; Yay ok ekseni (yay yerel +X,
-        /// kiriş tarafından kabzaya). Hedef yön: karakterin yatay ileri yönü.
+        /// parmak kökü ya da el kemiği ekseni) arası. Silah ekseni: <see cref="WeaponBladePoints.WeaponAxis"/> (Vfx_Kabza→Vfx_Tip dünya
+        /// vektörü). Hedef yön: karakterin yatay ileri yönü.
         /// </summary>
         public static bool TryMeasureGripAngles(Animator animator, string weaponKey, out GripAngles angles)
         {
@@ -297,7 +297,7 @@ namespace Dovus.Game.Weapons
             Vector3 handDir = finger != null ? finger.position - hand.position : hand.up;
             float wrist = Vector3.Angle(hand.position - forearm.position, handDir);
             Vector3 target = Vector3.ProjectOnPlane(animator.transform.forward, Vector3.up);
-            angles = new GripAngles(wrist, Vector3.Angle(WeaponAxis(weapon, bow), target));
+            angles = new GripAngles(wrist, Vector3.Angle(WeaponBladePoints.WeaponAxis(weapon, bow), target));
             return true;
         }
 
@@ -322,28 +322,6 @@ namespace Dovus.Game.Weapons
             {
                 if (t.name == wanted)
                     return t;
-            }
-            return null;
-        }
-
-        static Vector3 WeaponAxis(Transform weapon, bool bow)
-        {
-            if (bow)
-                return weapon.right;
-            Transform hilt = FindChildDeep(weapon, "Vfx_Kabza");
-            Transform tip = FindChildDeep(weapon, "Vfx_Tip");
-            if (hilt != null && tip != null)
-                return tip.position - hilt.position;
-            // ff-4: Warrior_Sword mesh'inin uzunluk ekseni local Z.
-            return weapon.forward;
-        }
-
-        static Transform FindChildDeep(Transform t, string name)
-        {
-            foreach (Transform c in t.GetComponentsInChildren<Transform>(true))
-            {
-                if (c.name == name)
-                    return c;
             }
             return null;
         }
@@ -421,7 +399,7 @@ namespace Dovus.Game.Weapons
                 return false;
             if (name.IndexOf("mixamorig", System.StringComparison.OrdinalIgnoreCase) >= 0)
                 return false;
-            // Görselin kendi tutuş soketleri (k3 Grip_R / Socket_L) prop değil; silinirse silahı da gider.
+            // Görselin kendi tutuş soketleri (k3 Grip_R / Grip_L) prop değil; silinirse silahı da gider.
             if (name.StartsWith("Grip_", System.StringComparison.Ordinal)
                 || name.StartsWith("Socket_", System.StringComparison.Ordinal))
                 return false;

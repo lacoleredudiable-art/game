@@ -98,9 +98,7 @@ namespace Dovus.Game.Skills.Presentation
                 && int.TryParse(skill.Identity.Verb, out int v4Verb)
                 && int.TryParse(skill.Identity.Adjective, out int v4Adj)
                 && RuleEngineV4Slice.IsSliceCombo(v4Verb, v4Adj)
-                && _host.EquippedWeapon != null
-                && int.TryParse(_host.EquippedWeapon.Id, out int weaponNum)
-                && RuleEngineV4Slice.IsSliceWeapon(weaponNum))
+                && RuleEngineV4Slice.IsSliceWeapon(WeaponNumber(_host.EquippedWeapon?.Id)))
                 return;
 
             if (_host.Skills != null && _host.Skills.IsV61)
@@ -149,6 +147,15 @@ namespace Dovus.Game.Skills.Presentation
 
             double worldMs = _host.Clock != null ? _host.Clock.Director.WorldTimeMs : 0;
             _host.LastAnimationPlayApplied = _host.AnimationBridge.Play(node, _host.Visual.Animator, worldMs);
+        }
+
+        /// <summary>Silah kimliği "önek:numara" ya da yalnız numara.</summary>
+        static int WeaponNumber(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                return 0;
+            int colon = id.LastIndexOf(':');
+            return int.TryParse(colon >= 0 ? id.Substring(colon + 1) : id, out int n) ? n : 0;
         }
     }
 }

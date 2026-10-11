@@ -213,7 +213,7 @@ namespace Dovus.Game.Actors
 
         public void PulseRune(Rune rune, EffectSilhouette silhouette)
         {
-            if (_animator == null || !_animator.isActiveAndEnabled)
+            if (_animator == null || !_animator.isActiveAndEnabled || SkillClip.IsHeld(_animator))
                 return;
 
             CastBodyFamily family = CastBodyMapper.FromVerbAndSilhouette(rune, silhouette);
@@ -226,7 +226,7 @@ namespace Dovus.Game.Actors
         /// </summary>
         public void PulseAnimationType(string animationTypeId, EffectSilhouette silhouette)
         {
-            if (_animator == null || !_animator.isActiveAndEnabled)
+            if (_animator == null || !_animator.isActiveAndEnabled || SkillClip.IsHeld(_animator))
                 return;
 
             ApplyAxes(silhouette);

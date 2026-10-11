@@ -24,10 +24,15 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 return;
 
             director.EnsureLaunchServices();
-            director._animationBridge.PlaySkillClip(
+            AnimationBridge anim = director._animationBridge;
+            anim.PlaySkillClip(
                 binding.Clip,
                 binding.FallbackAnimatorState,
                 view.Animator);
+            if (anim.LastExactClipFound && anim.LastPlayApplied)
+                view.SkillClip.Hold(anim.LastClipName);
+            else
+                view.SkillClip.Release();
 
             SkillAnimVfxEventHost relay = EnsureRelay(view.Animator.gameObject, out RuleDrivenVfxDirector vfx);
             relay.SetEventMask(binding.Events);

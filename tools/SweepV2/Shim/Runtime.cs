@@ -180,7 +180,7 @@ namespace UnityEngine
         {
             if (type == typeof(TextAsset) || type == typeof(Object))
                 return LoadText(path);
-            return null;
+            return type == typeof(Material) && Root.Length > 0 && FindIgnoreCase(Root, path + ".mat") != null ? new Material((Shader)null) { name = Path.GetFileName(path) } : null;
         }
 
         static TextAsset LoadText(string path)

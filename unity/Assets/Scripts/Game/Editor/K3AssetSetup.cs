@@ -17,7 +17,7 @@ namespace Dovus.Game.Editor
     /// zaman = (kare-1)/30), k3 controller'ı, prefab olay alıcısı, k3_Mat emission ve dilim oyuncusu.
     /// Menu: Dovus/k3/*. Batch: -executeMethod Dovus.Game.Editor.K3AssetSetup.Reimport
     /// </summary>
-    public static class K3AssetSetup
+    public static partial class K3AssetSetup
     {
         internal const string Root = "Assets/Art/Characters/k3";
         internal const string PrefabPath = Root + "/k3.prefab";
@@ -45,30 +45,31 @@ namespace Dovus.Game.Editor
 
         static readonly Color EmissionColor = new(1f, 0.28f, 0.06f);
 
-        static readonly Vector4 BlenderIdentityWxyz = new(1f, 0f, 0f, 0f);
-
         /// <summary>
-        /// Blender soket-lokal ofsetleri (dönüş wxyz). Unity'de kemik yerel ekseni X'te aynalı:
-        /// konum (x,y,z) → (-x,y,z), dönüş (w,x,y,z) → Unity (x,-y,-z,w).
-        /// Grip_R'deki silah sıfır konum/sıfır açıyla takılır; Yay Blender'da sol elde (Socket_L) tutulur.
+        /// Kural: silah onu tutan elin Grip noktasına sıfır konum/sıfır açıyla takılır, model uzun ekseni +Z
+        /// (Vfx_Kabza orijinde, Vfx_Tip +Z ucunda). Silah başına açı yok; tutuş pozu Grip noktasındadır.
         /// </summary>
-        static readonly (string Name, string Fbx, string Socket, Vector3 BlenderPos, Vector4 BlenderRotWxyz)[] Weapons =
+        static readonly (string Name, string Fbx, string Socket)[] Weapons =
         {
-            ("Silah_Kilic", "Kilic", GripRight, Vector3.zero, BlenderIdentityWxyz),
-            ("Silah_Yay", "Yay", "Socket_L", new Vector3(0.0306f, 0.1050f, 0.0319f), new Vector4(0.6578f, 0.2980f, -0.3196f, -0.6135f)),
+            ("Silah_Kilic", "Kilic", GripRight),
+            ("Silah_Yay", "Yay", GripLeft),
         };
 
         internal const string GripRight = "Grip_R";
-        const string LegacySocketRight = "Socket_R";
+        internal const string GripLeft = "Grip_L";
+        static readonly (string Legacy, string Grip)[] LegacySockets = { ("Socket_R", GripRight), ("Socket_L", GripLeft) };
 
         /// <summary>
-        /// Grip_R avuç içi tutuş noktası: eski Socket_R (el kemiği ucu, +Y 0.08 m) + Kılıç'ın Blender
-        /// ofseti; Kılıç'ın dünya pozu değişmez. Socket_L kemik başında.
+        /// Grip noktaları = Blender Tutus_* boşlukları (soket-lokal; dönüş wxyz). Unity'de kemik yerel ekseni
+        /// X'te aynalı: konum (x,y,z) → (-x,y,z), dönüş (w,x,y,z) → Unity (x,-y,-z,w).
+        /// Grip_R: eski Socket_R (el kemiği ucu, +Y 0.08 m) + Tutus_Kilic. Grip_L: Socket_L (kemik başı) + Tutus_Yay.
+        /// Ek ±90° X verilmez: Blender v024'te silah uzun ekseni (+Z) Tutus altında birim dönüşle duruyor;
+        /// ±90° X her karede Blender pozundan 90° sapar.
         /// </summary>
         static readonly (string Socket, Vector3 BlenderPos, Vector4 BlenderRotWxyz)[] SocketOffsets =
         {
             (GripRight, new Vector3(-0.0324f, 0.1050f, 0.0281f), new Vector4(0.5141f, 0.3602f, 0.2514f, 0.7367f)),
-            ("Socket_L", Vector3.zero, BlenderIdentityWxyz),
+            (GripLeft, new Vector3(0.0306f, 0.1050f, 0.0319f), new Vector4(0.6578f, 0.2980f, -0.3196f, -0.6135f)),
         };
 
         /// <summary>ActorView'un genel state adları → k3 klibi.</summary>
@@ -110,12 +111,26 @@ namespace Dovus.Game.Editor
             Debug.Log("[k3] yeniden alma tamam");
         }
 
+        /// <summary>Yalnız klip içe aktarma ayarları + olaylar (klipler.csv); model ve prefab'a dokunmaz.</summary>
+        [MenuItem("Dovus/k3/Klip ayarlarını yeniden uygula (klipler.csv)")]
+        public static void ReapplyClips()
+        {
+            Dictionary<string, ClipRow> rows = ReadClipCsv();
+            Avatar avatar = AssetDatabase.LoadAllAssetsAtPath(ModelFbx).OfType<Avatar>().FirstOrDefault();
+            if (avatar == null || !avatar.isValid || !avatar.isHuman)
+                throw new InvalidOperationException("k3 avatarı geçersiz: " + ModelFbx);
+            foreach (string clip in ExportClips)
+                ConfigureClip(clip, rows[clip], avatar);
+            AssetDatabase.SaveAssets();
+            Debug.Log("[k3] klip ayarları yeniden uygulandı");
+        }
+
         /// <summary>Blender (w,x,y,z) soket-lokal dönüşü → Unity kemik-lokal dönüşü.</summary>
         internal static Quaternion BlenderToUnityLocal(Vector4 wxyz) => new(wxyz.y, -wxyz.z, -wxyz.w, wxyz.x);
 
         internal static Vector3 BlenderToUnityLocal(Vector3 p) => new(-p.x, p.y, p.z);
 
-        [MenuItem("Dovus/k3/Silahları soketlere tak (Grip_R / Socket_L)")]
+        [MenuItem("Dovus/k3/Silahları soketlere tak (Grip_R / Grip_L)")]
         public static void RemountWeapons()
         {
             GameObject root = PrefabUtility.LoadPrefabContents(PrefabPath);
@@ -204,7 +219,11 @@ namespace Dovus.Game.Editor
             clip.loopTime = clipName.StartsWith(LoopPrefix, StringComparison.Ordinal);
             clip.lockRootRotation = true;
             clip.lockRootHeightY = true;
-            clip.lockRootPositionXZ = true;
+            // Bake Into Pose kapalı + Based Upon Center of Mass: klibin ileri koşusu kökte kalır; oyuncuda
+            // applyRootMotion kapalı olduğundan atılışı yalnız hareket kalıbı taşır.
+            clip.lockRootPositionXZ = !row.RootXzFromCenterOfMass;
+            if (row.RootXzFromCenterOfMass)
+                clip.keepOriginalPositionXZ = false;
             clip.keepOriginalOrientation = true;
             clip.keepOriginalPositionY = true;
             clip.events = BuildEvents(row, clip.lastFrame - clip.firstFrame);
@@ -373,9 +392,12 @@ namespace Dovus.Game.Editor
         /// <summary>Soketteki boş Silah_* yer tutucusunun yerine silah FBX'i; Vfx_Tip/Vfx_Kabza FBX'ten gelir.</summary>
         static void MountWeapons(GameObject root)
         {
-            Transform legacy = FindDeep(root.transform, LegacySocketRight);
-            if (legacy != null && FindDeep(root.transform, GripRight) == null)
-                legacy.name = GripRight;
+            foreach ((string legacyName, string grip) in LegacySockets)
+            {
+                Transform legacy = FindDeep(root.transform, legacyName);
+                if (legacy != null && FindDeep(root.transform, grip) == null)
+                    legacy.name = grip;
+            }
 
             foreach ((string socketName, Vector3 offset, Vector4 rotWxyz) in SocketOffsets)
             {
@@ -405,8 +427,8 @@ namespace Dovus.Game.Editor
                     weapon.name = w.Name;
                     weapon.transform.SetSiblingIndex(sibling);
                 }
-                weapon.transform.localPosition = BlenderToUnityLocal(w.BlenderPos);
-                weapon.transform.localRotation = BlenderToUnityLocal(w.BlenderRotWxyz);
+                weapon.transform.localPosition = Vector3.zero;
+                weapon.transform.localRotation = Quaternion.identity;
                 weapon.transform.localScale = Vector3.one;
                 foreach (string vfx in new[] { "Vfx_Tip", "Vfx_Kabza" })
                 {
@@ -441,50 +463,5 @@ namespace Dovus.Game.Editor
             }
             return null;
         }
-
-        internal readonly struct ClipRow
-        {
-            public readonly int FirstFrame;
-            public readonly int LastFrame;
-            public readonly int ImpactFrame;
-            public readonly float? TrailOnSec;
-            public readonly float? TrailOffSec;
-            public readonly float? EjderSec;
-
-            public ClipRow(int first, int last, int impact, float? trailOn, float? trailOff, float? ejder)
-            {
-                FirstFrame = first;
-                LastFrame = last;
-                ImpactFrame = impact;
-                TrailOnSec = trailOn;
-                TrailOffSec = trailOff;
-                EjderSec = ejder;
-            }
-        }
-
-        internal static Dictionary<string, ClipRow> ReadClipCsv()
-        {
-            string[] lines = File.ReadAllLines(ClipCsvPath);
-            string[] head = lines[0].Split(';');
-            int Col(string n) => Array.IndexOf(head, n);
-            int cFirst = Col("bas_kare"), cLast = Col("son_kare"), cImpact = Col("impact_kare");
-            int cOn = Col("trail_on_sn"), cOff = Col("trail_off_sn"), cEjder = Col("ejder_sn");
-            var rows = new Dictionary<string, ClipRow>(StringComparer.Ordinal);
-            foreach (string line in lines.Skip(1))
-            {
-                if (string.IsNullOrWhiteSpace(line))
-                    continue;
-                string[] f = line.Split(';');
-                rows[f[0]] = new ClipRow(
-                    int.Parse(f[cFirst], CultureInfo.InvariantCulture),
-                    int.Parse(f[cLast], CultureInfo.InvariantCulture),
-                    string.IsNullOrEmpty(f[cImpact]) ? 0 : int.Parse(f[cImpact], CultureInfo.InvariantCulture),
-                    Sec(f[cOn]), Sec(f[cOff]), Sec(f[cEjder]));
-            }
-            return rows;
-        }
-
-        static float? Sec(string s) =>
-            string.IsNullOrEmpty(s) ? null : float.Parse(s, CultureInfo.InvariantCulture);
     }
 }

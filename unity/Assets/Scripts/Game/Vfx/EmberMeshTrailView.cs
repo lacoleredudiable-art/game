@@ -1,61 +1,67 @@
 using System.Collections.Generic;
 using Dovus.Core.Presentation;
+using Dovus.Core.RuleEngineV4;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace Dovus.Game.Vfx
 {
     /// <summary>
-    /// efekt-motoru §3.1 A: mesh trail — Kabza/Tip örnekleri, şerit mesh.
-    /// ATIL ömrü 0,25 s; _FlowOffset UV kayması.
+    /// efekt-motoru §3.1 A: kor izi — her kare silahın Vfx_Kabza / Vfx_Tip dünya konumları arasında
+    /// şerit örneği. Örnek kendi ömrüyle yaşlanır: kabza kenarı uca doğru kapanır (kuyrukta incelir)
+    /// ve söner. VFX_Kor toplamalı; ayar slice_vfx.blade_trail.
     /// </summary>
     public sealed class EmberMeshTrailView : MonoBehaviour
     {
         struct Sample
         {
-            public Vector3 Guard;
+            public Vector3 Hilt;
             public Vector3 Tip;
+            public float BornSec;
         }
 
-        readonly List<Sample> _ring = new(RuleVfxDefaults.MeshTrailSamples);
+        readonly List<Sample> _samples = new();
+        readonly List<Vector3> _positions = new();
+        readonly List<Vector2> _uvs = new();
+        readonly List<Color> _colors = new();
+        readonly List<int> _indices = new();
+        GameObject _ribbon;
         Mesh _mesh;
-        MeshFilter _filter;
         MeshRenderer _renderer;
         Material _mat;
-        float _life;
-        float _age;
+        RuleEngineV4BladeTrailFx _fx;
+        float _clock;
         float _flow;
-        Color _core;
         bool _emitting;
-        Vector3 _fallbackForward = Vector3.forward;
 
-        public void Begin(in VfxColorRgb color, float lifeSec, Vector3 forward)
+        public bool Emitting => _emitting;
+        public int SampleCount => _samples.Count;
+        public bool Visible => _renderer != null && _renderer.enabled;
+        public Material TrailMaterial => _mat;
+        public Mesh RibbonMesh => _mesh;
+
+        public void Begin(in VfxColorRgb color, RuleEngineV4BladeTrailFx fx)
         {
             EnsureMesh();
-            _core = new Color(
+            _fx = fx;
+            Color core = new Color(
                 color.R * RuleVfxArtDefaults.CoreHdrMult,
                 color.G * RuleVfxArtDefaults.CoreHdrMult,
                 color.B * RuleVfxArtDefaults.CoreHdrMult,
                 1f);
-            _life = Mathf.Max(RuleVfxArtDefaults.MeshLifeMin, lifeSec);
-            _age = 0f;
+            _mat.SetColor("_CoreColor", core);
+            _mat.SetFloat("_Intensity", fx.Intensity);
             _flow = 0f;
             _emitting = true;
-            _ring.Clear();
-            if (forward.sqrMagnitude > RuleVfxDefaults.PathSampleEpsSq)
-                _fallbackForward = forward.normalized;
-            if (_renderer != null)
-                _renderer.enabled = true;
-            ApplyMat(1f);
+            _samples.Clear();
+            _renderer.enabled = true;
         }
 
-        public void SampleBlade(Vector3 guard, Vector3 tip)
+        public void SampleBlade(Vector3 hilt, Vector3 tip)
         {
             if (!_emitting)
                 return;
-            _ring.Add(new Sample { Guard = guard, Tip = tip });
-            while (_ring.Count > RuleVfxDefaults.MeshTrailSamples)
-                _ring.RemoveAt(0);
+            _samples.Add(new Sample { Hilt = hilt, Tip = tip, BornSec = _clock });
             Rebuild();
         }
 
@@ -63,104 +69,87 @@ namespace Dovus.Game.Vfx
 
         void Update()
         {
-            if (_mesh == null || _life <= 0f)
+            _clock += Time.deltaTime;
+            if (_mesh == null || _fx == null || !_renderer.enabled)
                 return;
-            _age += Time.deltaTime;
-            _flow += Time.deltaTime * RuleVfxDefaults.TrailFlowTurnsPerSec;
-            float remain = 1f - Mathf.Clamp01(_age / _life);
-            ApplyMat(remain);
-            if (_mat != null && _mat.HasProperty("_FlowOffset"))
-                _mat.SetFloat("_FlowOffset", _flow);
-            if (_age >= _life)
+            int dead = 0;
+            while (dead < _samples.Count && _clock - _samples[dead].BornSec >= _fx.LifeSec)
+                dead++;
+            if (dead > 0)
+                _samples.RemoveRange(0, dead);
+            if (_samples.Count == 0 && !_emitting)
             {
-                if (_renderer != null)
-                    _renderer.enabled = false;
-                _life = 0f;
+                _mesh.Clear();
+                _renderer.enabled = false;
+                return;
             }
+            _flow += Time.deltaTime * RuleVfxDefaults.TrailFlowTurnsPerSec;
+            _mat.SetFloat("_FlowOffset", _flow);
+            Rebuild();
         }
 
         void EnsureMesh()
         {
-            if (_filter != null)
+            if (_ribbon != null)
                 return;
-            var go = new GameObject("EmberMeshTrail");
-            go.transform.SetParent(transform, false);
-            _filter = go.AddComponent<MeshFilter>();
-            _renderer = go.AddComponent<MeshRenderer>();
+            // Örnekler dünya konumu: şerit oyuncuyla taşınmasın diye kök nesnede, birim dönüşümde.
+            _ribbon = new GameObject("EmberMeshTrail");
+            _ribbon.AddComponent<MeshFilter>().sharedMesh = _mesh = new Mesh { name = "EmberTrailRibbon" };
+            _mesh.MarkDynamic();
+            _renderer = _ribbon.AddComponent<MeshRenderer>();
             _renderer.shadowCastingMode = ShadowCastingMode.Off;
             _renderer.receiveShadows = false;
-            _mesh = new Mesh { name = "EmberTrailRibbon" };
-            _mesh.MarkDynamic();
-            _filter.sharedMesh = _mesh;
-            Shader sh = Shader.Find(RuleVfxDefaults.KorShaderName)
-                ?? Shader.Find(RuleVfxDefaults.ParticlesUnlit);
-            _mat = new Material(sh);
+            Shader sh = Shader.Find(RuleVfxDefaults.KorShaderName);
+            if (sh == null)
+                Debug.LogError("[EmberMeshTrail] " + RuleVfxDefaults.KorShaderName + " shader yok.");
+            _mat = new Material(sh != null ? sh : Shader.Find(RuleVfxDefaults.ParticlesUnlit));
             _renderer.sharedMaterial = _mat;
+            _renderer.enabled = false;
         }
 
         void Rebuild()
         {
-            if (_ring.Count < 2 || _mesh == null)
+            int n = _samples.Count;
+            _mesh.Clear();
+            if (n < 2)
                 return;
-
-            int n = _ring.Count;
-            int verts = n * 2;
-            var positions = new Vector3[verts];
-            var uvs = new Vector2[verts];
-            var colors = new Color[verts];
-            var indices = new int[Mathf.Max(0, (n - 1) * 6)];
-
+            _positions.Clear();
+            _uvs.Clear();
+            _colors.Clear();
+            _indices.Clear();
             for (int i = 0; i < n; i++)
             {
-                Sample s = _ring[i];
-                positions[i * 2] = s.Guard;
-                positions[i * 2 + 1] = s.Tip;
+                Sample s = _samples[i];
+                _fx.Shape(_clock - s.BornSec, out float width, out float alpha);
+                _positions.Add(Vector3.LerpUnclamped(s.Tip, s.Hilt, width));
+                _positions.Add(s.Tip);
                 float u = i / (float)(n - 1);
-                uvs[i * 2] = new Vector2(u, 0f);
-                uvs[i * 2 + 1] = new Vector2(u, 1f);
-                float a = Mathf.Lerp(RuleVfxArtDefaults.TrailAlphaTail, 1f, u);
-                colors[i * 2] = new Color(1f, 1f, 1f, a * RuleVfxArtDefaults.TrailAlphaGuard);
-                colors[i * 2 + 1] = new Color(1f, 1f, 1f, a);
+                _uvs.Add(new Vector2(u, 0f));
+                _uvs.Add(new Vector2(u, 1f));
+                _colors.Add(new Color(1f, 1f, 1f, alpha * _fx.HiltAlpha));
+                _colors.Add(new Color(1f, 1f, 1f, alpha));
             }
-
-            int ti = 0;
             for (int i = 0; i < n - 1; i++)
             {
                 int a = i * 2;
-                indices[ti++] = a;
-                indices[ti++] = a + 1;
-                indices[ti++] = a + 2;
-                indices[ti++] = a + 1;
-                indices[ti++] = a + 3;
-                indices[ti++] = a + 2;
+                _indices.Add(a);
+                _indices.Add(a + 1);
+                _indices.Add(a + 2);
+                _indices.Add(a + 1);
+                _indices.Add(a + 3);
+                _indices.Add(a + 2);
             }
-
-            _mesh.Clear();
-            _mesh.SetVertices(positions);
-            _mesh.SetUVs(0, uvs);
-            _mesh.SetColors(colors);
-            _mesh.SetTriangles(indices, 0);
+            _mesh.SetVertices(_positions);
+            _mesh.SetUVs(0, _uvs);
+            _mesh.SetColors(_colors);
+            _mesh.SetTriangles(_indices, 0);
             _mesh.RecalculateBounds();
-        }
-
-        void ApplyMat(float alphaScale)
-        {
-            if (_mat == null)
-                return;
-            Color c = _core;
-            c.a = alphaScale;
-            if (_mat.HasProperty("_CoreColor"))
-                _mat.SetColor("_CoreColor", c);
-            if (_mat.HasProperty("_Intensity"))
-                _mat.SetFloat(
-                    "_Intensity",
-                    Mathf.Lerp(RuleVfxArtDefaults.TrailIntensityMin, RuleVfxArtDefaults.TrailIntensityMax, alphaScale));
-            if (_mat.HasProperty("_Color"))
-                _mat.SetColor("_Color", c);
         }
 
         void OnDestroy()
         {
+            if (_ribbon != null)
+                Destroy(_ribbon);
             if (_mesh != null)
                 Destroy(_mesh);
             if (_mat != null)

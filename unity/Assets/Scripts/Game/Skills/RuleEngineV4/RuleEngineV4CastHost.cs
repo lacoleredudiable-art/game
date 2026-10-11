@@ -5,6 +5,7 @@ using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Actors;
 using Dovus.Game.Diagnostics;
 using Dovus.Game.Skills;
+using Dovus.Game.Vfx;
 using UnityEngine;
 
 namespace Dovus.Game.Skills.RuleEngineV4
@@ -68,6 +69,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             {
                 LastDenial = denial;
                 DebugConfig.DevLog($"[RuleEngineV4] skill çıkmadı {key}: {denial}");
+                RuleDrivenVfxSink.NotCast(_director._visual != null ? _director._visual.transform : null, verb, adj, denial);
                 return true;
             }
             LastDenial = RuleEngineV4CastDenial.None;

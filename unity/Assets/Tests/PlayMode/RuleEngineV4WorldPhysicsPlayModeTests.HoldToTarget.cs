@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Actors;
 using Dovus.Game.Casting;
@@ -28,6 +29,74 @@ namespace Dovus.Tests.PlayMode
         {
             yield return new WaitForSecondsRealtime(HoldToTargetSec + HoldMarginSec);
             Assert.That(Held.PickOpen, Is.True, "hedef seçme açılmadı");
+        }
+
+        const float RingPulseWatchSec = 1.05f;
+        const float RingScaleTol = 0.01f;
+        const float RingAlphaTol = 1e-3f;
+
+        [UnityTest]
+        public IEnumerator TargetRing_Pulses2Hz_ReleaseFadesWithinFadeSec()
+        {
+            yield return null;
+            RuleEngineV4TargetRingFx fx = RuleVfxSettings.Slice.TargetRing;
+            var ring = RuleEngineV4TargetPickRingView.Create(VfxBatch(), _cast.OwnerColor, null);
+            try
+            {
+                ring.ShowOnSurface(_player.position, Vector3.up);
+                float shownAt = Time.unscaledTime;
+                var t = new System.Collections.Generic.List<float>();
+                var s = new System.Collections.Generic.List<float>();
+                float maxDt = 0f;
+                while (Time.unscaledTime - shownAt < RingPulseWatchSec)
+                {
+                    yield return null;
+                    VfxBatch().Rebuild();
+                    ring.ShowOnSurface(_player.position, Vector3.up);
+                    maxDt = Mathf.Max(maxDt, Time.unscaledDeltaTime);
+                    t.Add(Time.unscaledTime - shownAt);
+                    s.Add(ring.DrawScale);
+                    Assert.That(ring.DrawAlpha, Is.EqualTo(1f), "basılıyken halka sönük");
+                }
+                Assert.That(s.Max(), Is.EqualTo(1f + fx.PulseScale).Within(RingScaleTol), "nabız tepesi");
+                Assert.That(s.Min(), Is.EqualTo(1f).Within(RingScaleTol), "nabız dibi");
+                var peaks = new System.Collections.Generic.List<float>();
+                for (int i = 1; i < s.Count - 1; i++)
+                {
+                    if (s[i] > s[i - 1] && s[i] >= s[i + 1])
+                        peaks.Add(t[i]);
+                }
+                Assert.That(peaks.Count, Is.EqualTo(2), "1 s'de iki nabız (2 Hz): " + string.Join(", ", peaks));
+                Assert.That(peaks[1] - peaks[0], Is.EqualTo(1f / fx.PulseHz).Within(maxDt * 2f), "nabız periyodu");
+
+                ring.Hide();
+                float hiddenAt = Time.unscaledTime;
+                Assert.That(ring.Visible, Is.False);
+                Assert.That(ring.Fading, Is.True);
+                int fadeFrames = 0;
+                while (true)
+                {
+                    yield return null;
+                    VfxBatch().Rebuild();
+                    float since = Time.unscaledTime - hiddenAt;
+                    if (since < fx.ReleaseFadeSec)
+                    {
+                        fadeFrames++;
+                        Assert.That(ring.DrawAlpha, Is.EqualTo(1f - since / fx.ReleaseFadeSec).Within(RingAlphaTol),
+                            $"{since:0.000} s'de sönme alfası");
+                        continue;
+                    }
+                    Assert.That(ring.DrawAlpha, Is.EqualTo(0f), $"{since:0.000} s'de halka hâlâ çiziliyor");
+                    Assert.That(ring.Fading, Is.False, "sönme bitmedi");
+                    break;
+                }
+                Assert.That(fadeFrames, Is.GreaterThan(0), $"sönme karesi yok (kare süresi {maxDt:0.000} s)");
+            }
+            finally
+            {
+                Object.Destroy(ring.gameObject);
+            }
+            Assert.That(_errors, Is.Empty, string.Join("\n", _errors));
         }
 
         static Vector2 ScreenOf(Vector3 world)
@@ -109,7 +178,8 @@ namespace Dovus.Tests.PlayMode
             Assert.That(ring.Visible, Is.True, "hedef halkası görünmüyor");
             Assert.That(ring.ShownTarget, Is.EqualTo(picked), "halka parmağın altındaki hedefte değil");
             Assert.That(ring.RingMaterial.shader.name, Is.EqualTo(RuleVfxDefaults.KorShaderName), "halka VFX_Kor değil");
-            Color core = ring.RingMaterial.GetColor("_CoreColor");
+            Assert.That(ring.RingMaterial, Is.SameAs(VfxBatch().SharedMaterial), "halka ortak efekt materyalinde değil");
+            Color core = ring.CoreColor;
             Color owner = _cast.OwnerColor * RuleVfxArtDefaults.CoreHdrMult;
             Assert.That(core.r, Is.EqualTo(owner.r).Within(ColorTol), "halka sahip renginde değil (r)");
             Assert.That(core.g, Is.EqualTo(owner.g).Within(ColorTol), "halka sahip renginde değil (g)");
@@ -120,6 +190,7 @@ namespace Dovus.Tests.PlayMode
             Assert.That(_cast.IsRunning, Is.True, "seçilen hedefe skill çıkmadı");
             Assert.That(_cast.LastFocus, Is.EqualTo(picked.transform), "skill seçilen hedefe gitmedi");
             Assert.That(ring.Visible, Is.False, "bırakınca halka kalmadı");
+            Assert.That(ring.Fading, Is.True, "bırakınca halka sönmeye başlamadı");
             Assert.That(_md._targeting.Selected, Is.Not.EqualTo(picked), "basılı seçim kalıcı kilit olmamalı");
             Assert.That(_errors, Is.Empty, string.Join("\n", _errors));
         }

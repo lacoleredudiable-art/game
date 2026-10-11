@@ -83,31 +83,7 @@ namespace Dovus.Tests.PlayMode
 
         IEnumerator DrawAndWatch(HexagonInputController input, DragonRuneFlashView runes, int verb, string label, EvidenceLog log)
         {
-            int verbDot = DotForRune(input, verb);
-            int adjDot = 0;
-            for (int dot = 1; dot <= Dovus.Core.Input.HexagonLayout.DotCount && adjDot == 0; dot++)
-            {
-                if (dot != verbDot && RuleEngineV4Slice.IsSliceCombo(verb, input.Engine.Loadout.RuneIdAtSlot(dot)))
-                    adjDot = dot;
-            }
-            Assert.That(adjDot, Is.Not.Zero, $"{label}: yüklemede dilim sıfatı yok");
-            _label = $"{label} {verbDot}-{adjDot}";
-
-            int resolved = 0;
-            void OnResolved(Dovus.Core.Grammar.CompletedSentence s) => resolved++;
-            input.Engine.SentenceCompleted += OnResolved;
-            try
-            {
-                yield return DrawThroughDots(input, verbDot, adjDot);
-            }
-            finally
-            {
-                input.Engine.SentenceCompleted -= OnResolved;
-            }
-            string drawState = $"faz={input.Engine.State.Phase} kelime={input.Engine.State.Words.Count} kilit={input.SweepInputLocked}";
-            input.Pointer.EndPointer(cancelled: false);
-            Assert.That(_cast.IsRunning, Is.True,
-                $"{_label}: çizimle skill çıkmadı; çözülen={resolved} red={_cast.LastDenial} {drawState} {Diag()}");
+            yield return DrawSliceCombo(input, verb, label);
 
             string dir = CaptureDir();
             // Kayıtta altıgen paneli oyuncuyu örtüyor; çizim bittikten sonra yalnız kayıt için gizlenir.
@@ -129,6 +105,43 @@ namespace Dovus.Tests.PlayMode
             }
             if (hex != null)
                 hex.enabled = true;
+        }
+
+        int _lastDrawAdjDot;
+
+        /// <summary>
+        /// Gerçek çizim: fiil noktası → yüklemedeki ilk dilim sıfatı (<paramref name="skipAdjDot"/> hariç:
+        /// az önce kullanılan sıfat beklemede olabilir); parmak kalkınca skill çıkmalı.
+        /// </summary>
+        IEnumerator DrawSliceCombo(HexagonInputController input, int verb, string label, int skipAdjDot = 0)
+        {
+            int verbDot = DotForRune(input, verb);
+            int adjDot = 0;
+            for (int dot = 1; dot <= Dovus.Core.Input.HexagonLayout.DotCount && adjDot == 0; dot++)
+            {
+                if (dot != verbDot && dot != skipAdjDot
+                    && RuleEngineV4Slice.IsSliceCombo(verb, input.Engine.Loadout.RuneIdAtSlot(dot)))
+                    adjDot = dot;
+            }
+            Assert.That(adjDot, Is.Not.Zero, $"{label}: yüklemede dilim sıfatı yok");
+            _lastDrawAdjDot = adjDot;
+            _label = $"{label} {verbDot}-{adjDot}";
+
+            int resolved = 0;
+            void OnResolved(Dovus.Core.Grammar.CompletedSentence s) => resolved++;
+            input.Engine.SentenceCompleted += OnResolved;
+            try
+            {
+                yield return DrawThroughDots(input, verbDot, adjDot);
+            }
+            finally
+            {
+                input.Engine.SentenceCompleted -= OnResolved;
+            }
+            string drawState = $"faz={input.Engine.State.Phase} kelime={input.Engine.State.Words.Count} kilit={input.SweepInputLocked}";
+            input.Pointer.EndPointer(cancelled: false);
+            Assert.That(_cast.IsRunning, Is.True,
+                $"{_label}: çizimle skill çıkmadı; çözülen={resolved} red={_cast.LastDenial} {drawState} {Diag()}");
         }
 
         static bool EmberTrailVisible() =>

@@ -21,7 +21,7 @@ namespace Dovus.Tests.PlayMode
         const string SwordDashClip = "Kilic_ATIL";
         const string SwordStrikeClip = "Kilic_VUR";
         const string GripRight = "Grip_R";
-        const string BowSocket = "Socket_L";
+        const string GripLeft = "Grip_L";
         const string SwordObject = "Silah_Kilic";
         const string BowObject = "Silah_Yay";
         /// <summary>Komut satırı: -k3Capture &lt;klasör&gt; verilirse dilim sahnesinin görüntüsü kaydedilir.</summary>
@@ -66,13 +66,59 @@ namespace Dovus.Tests.PlayMode
             AnimationBridge bridge = _md.AnimationBridge;
             foreach (int adj in RuleEngineV4Slice.Runes)
                 yield return CastAndPlayOut(3, adj, SwordDashClip, anim, bridge);
-            // Kilic_ATIL olay taşımıyor; olaylı Kilic_VUR da alıcıyı sınar.
             yield return CastAndPlayOut(1, 2, SwordStrikeClip, anim, bridge);
             Assert.That(_errors, Is.Empty, string.Join("\n", _errors));
         }
 
+        /// <summary>Kılıç ATIL: kök XZ pose'a gömülmez; kalça oyuncu nesnesinden ayrılmaz.</summary>
+        const float DashHipMaxOffsetM = 0.1f;
+        const float ClipActiveWeight = 0.5f;
+
         [UnityTest]
-        public IEnumerator K3_OwnWeapons_SwordAtZeroOnGripR_BowOnSocketL()
+        public IEnumerator K3_SwordDash_HipsStayOnPlayer()
+        {
+            FreezeBoss();
+            Equip(Kilic);
+            Animator anim = PlayerAnimator();
+            Assert.That(anim.applyRootMotion, Is.False, "oyuncu Animator'ında applyRootMotion açık");
+            Transform hips = anim.GetBoneTransform(HumanBodyBones.Hips);
+            _label = "3-1 kılıç ATIL";
+            Arrange(Vector3.right);
+            Place(_minions[0].transform, Origin + Vector3.right * 4f);
+            Physics.SyncTransforms();
+            Assert.That(_cast.TryLaunchCombo(3, 1, out _), Is.True, $"{_label} cast edilmedi");
+            AnimationClip clip = anim.runtimeAnimatorController.animationClips.First(c => c.name == SwordDashClip);
+            float maxM = 0f;
+            float maxAtN = 0f;
+            int frames = 0;
+            float end = Time.realtimeSinceStartup + CastTimeoutSec;
+            while (Time.realtimeSinceStartup < end)
+            {
+                yield return new WaitForEndOfFrame();
+                if (!anim.GetCurrentAnimatorClipInfo(0).Any(c => c.clip == clip && c.weight > ClipActiveWeight))
+                {
+                    if (frames > 0)
+                        break;
+                    continue;
+                }
+                frames++;
+                Vector3 d = hips.position - _player.position;
+                d.y = 0f;
+                if (d.magnitude > maxM)
+                {
+                    maxM = d.magnitude;
+                    maxAtN = anim.GetCurrentAnimatorStateInfo(0).normalizedTime;
+                }
+            }
+            Debug.Log($"[k3kanit] ATIL kalça-oyuncu en büyük yatay uzaklık={maxM:0.000} m (klip n={maxAtN:0.00}) kare={frames}");
+            Assert.That(frames, Is.GreaterThan(0), $"{SwordDashClip} oynamadı");
+            Assert.That(maxM, Is.LessThanOrEqualTo(DashHipMaxOffsetM), $"ATIL kalçası oyuncudan {maxM:0.000} m kaydı");
+            yield return WaitUntilIdle();
+            Assert.That(_errors, Is.Empty, string.Join("\n", _errors));
+        }
+
+        [UnityTest]
+        public IEnumerator K3_OwnWeapons_AtZeroOnHoldingHandGrip()
         {
             Equip(Kilic);
             yield return null;
@@ -80,7 +126,9 @@ namespace Dovus.Tests.PlayMode
             Transform rightHand = anim.GetBoneTransform(HumanBodyBones.RightHand);
             Transform leftHand = anim.GetBoneTransform(HumanBodyBones.LeftHand);
             Transform sword = ChildPath(rightHand, GripRight, SwordObject);
-            Transform bow = ChildPath(leftHand, BowSocket, BowObject);
+            Transform bow = ChildPath(leftHand, GripLeft, BowObject);
+            Assert.That(bow.localPosition.magnitude, Is.LessThan(1e-4f), "Yay Grip_L'de sıfır konumda değil");
+            Assert.That(Quaternion.Angle(bow.localRotation, Quaternion.identity), Is.LessThan(0.01f), "Yay Grip_L'de sıfır açıda değil");
             Assert.That(sword.gameObject.activeInHierarchy, Is.True, "Kılıç seçiliyken Silah_Kilic görünmüyor");
             Assert.That(bow.gameObject.activeSelf, Is.False, "Kılıç seçiliyken Silah_Yay görünüyor");
             Assert.That(sword.localPosition.magnitude, Is.LessThan(1e-4f), "Kılıç Grip_R'de sıfır konumda değil");

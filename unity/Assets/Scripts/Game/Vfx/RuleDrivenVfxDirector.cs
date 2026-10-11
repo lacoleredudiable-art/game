@@ -2,15 +2,20 @@ using Dovus.Core.Grammar;
 using Dovus.Core.Presentation;
 using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Actors;
+using Dovus.Game.Weapons;
 using UnityEngine;
 
 namespace Dovus.Game.Vfx
 {
     /// <summary>
     /// efekt-motoru dikey dilim yönetmeni: VfxPlan dinler, Kılıç ATIL katmanlarını oynatır.
-    /// Zamanlama Animation Event (Trail_On/Off, Impact, Ejder) veya spec yedeği (uç hızı);
-    /// sabit klip karesi yok. Mekanik / hitbox değişmez.
+    /// Zamanlama yalnız Animation Event (Trail_On/Off, Impact, Ejder); sabit klip karesi yok.
+    /// Kor izi elde görünen silahın Vfx_Kabza / Vfx_Tip noktalarından örneklenir; nokta yoksa iz yok.
+    /// Mekanik / hitbox değişmez.
     /// </summary>
+    // Kılıç, kalıp (MotionTemplateBodyHost 12) ve zemin (ActorGroundingController 100) LateUpdate'te
+    // kökü yazdıktan sonra örneklenmeli; önce örneklenirse iz bir kare geride kalır.
+    [DefaultExecutionOrder(150)]
     public sealed class RuleDrivenVfxDirector : MonoBehaviour
     {
         MotionTemplateBodyHost _body;
@@ -21,6 +26,7 @@ namespace Dovus.Game.Vfx
         DragonSilhouetteCardView _silhouette;
         DragonRuneFlashView _runes;
         SkillAnimVfxEventHost _animRelay;
+        EjderVfxBatchHost _batch;
         Transform _fxRoot;
 
         VfxPlan _plan;
@@ -32,10 +38,10 @@ namespace Dovus.Game.Vfx
         bool _wasDisplacing;
         Vector3 _dashStart;
         Vector3 _lastPos;
-        Vector3 _lastTip;
         Vector3 _dashDir = Vector3.forward;
+        Transform _bladeHilt;
+        Transform _bladeTip;
         float _footSparkCooldown;
-        float _tipSpeedMps;
         int _entryCell = RuleEngineV4SkillAnimDefaults.NoEntrySilhouetteCell;
         float _entryLifeSec;
         VfxColorRgb _entryColor;
@@ -45,12 +51,17 @@ namespace Dovus.Game.Vfx
 
         public VfxPlan ActivePlan => _plan;
         public bool IsSliceActive => _armed && _plan.IsSwordDashSlice;
+        /// <summary>Siluet, harf flaşı ve hedef halkasının ortak atlas batch'i.</summary>
+        public EjderVfxBatchHost Batch => _batch;
 
-        public void Bind(FeelVfxRuntime feel)
+        public void Bind(FeelVfxRuntime feel, EjderVfxBatchHost batch)
         {
             _feel = feel;
+            _batch = batch;
             _body = GetComponent<MotionTemplateBodyHost>();
             EnsureChildren();
+            _silhouette.Bind(batch);
+            _runes.Bind(batch);
             EnsureAnimRelay();
         }
 
@@ -76,8 +87,6 @@ namespace Dovus.Game.Vfx
             _wasDisplacing = _body != null && _body.IsDisplacing;
             _dashStart = transform.position;
             _lastPos = _dashStart;
-            _lastTip = BladeTip();
-            _tipSpeedMps = 0f;
             _footSparkCooldown = 0f;
             _dashDir = transform.forward;
             _dashDir.y = 0f;
@@ -108,6 +117,14 @@ namespace Dovus.Game.Vfx
 
         /// <summary>Basılı tutulan skill iptal edildi: sonraki BeginSkill flaşı yeniden çalar.</summary>
         public void ClearRunePreflash() => _runesPreflashed = false;
+
+        /// <summary>Kombo tanındı ama atılmadı (mana / bekleme): sönük kül harfleri.</summary>
+        public void NotCast(int verbRuneId, int adjectiveRuneId, RuleEngineV4CastDenial denial)
+        {
+            EnsureChildren();
+            _runes.PlayNotCast(verbRuneId, adjectiveRuneId, denial);
+            _runesPreflashed = false;
+        }
 
         void PlayRunes(in VfxPlan plan)
         {
@@ -152,8 +169,13 @@ namespace Dovus.Game.Vfx
             if (!_trailOn)
                 return;
             _trailOn = false;
+            _bladeHilt = null;
+            _bladeTip = null;
             _meshTrail?.StopEmit();
         }
+
+        public bool TrailOn => _trailOn;
+        public EmberMeshTrailView MeshTrail => _meshTrail;
 
         /// <summary>Animation Event: Impact — isabet görseli (gameplay NotifyHit ile aynı kapı).</summary>
         public void OnImpactAnimEvent()
@@ -221,10 +243,7 @@ namespace Dovus.Game.Vfx
 
             float dt = Time.deltaTime;
             Vector3 pos = transform.position;
-            Vector3 tip = BladeTip();
             Vector3 delta = pos - _lastPos;
-            if (dt > 0f)
-                _tipSpeedMps = (tip - _lastTip).magnitude / dt;
 
             if (delta.sqrMagnitude > RuleVfxDefaults.PathSampleEpsSq)
             {
@@ -242,17 +261,18 @@ namespace Dovus.Game.Vfx
             if (justStartedDisplace && _plan.DragonTailArcSilhouette && !_silhouetteSpawned)
                 SpawnSilhouetteAlongDash();
 
-            // Trail_On yoksa yedek: uç hızı > TrailAutoOpenTipSpeedMps (§3.1); kare numarası yok.
-            if (!_trailOn
-                && _plan.LightningDashTrail
-                && _tipSpeedMps > RuleVfxDefaults.TrailAutoOpenTipSpeedMps)
-                StartTrail();
+            if (_trailOn && !BladeAlive())
+            {
+                Debug.LogError("[RuleDrivenVfx] Kor izi: Vfx_Kabza / Vfx_Tip iz sırasında kayboldu; iz kesildi.");
+                OnTrailOff();
+            }
 
             if (_trailOn)
             {
-                Vector3 guard = BladeGuard();
-                _meshTrail.SampleBlade(guard, tip);
-                _lightning.ExtendTip(tip);
+                Vector3 tip = _bladeTip.position;
+                _meshTrail.SampleBlade(_bladeHilt.position, tip);
+                if (_plan.LightningDashTrail)
+                    _lightning.ExtendTip(tip);
 
                 if (_plan.WingFootSparks)
                 {
@@ -266,7 +286,6 @@ namespace Dovus.Game.Vfx
             }
 
             _lastPos = pos;
-            _lastTip = tip;
 
             // Shout BeginSkill dash'ten önce gelir; bitiş yalnız displace→idle geçişinde.
             if (justEndedDisplace && !_endDone && _armed)
@@ -280,21 +299,38 @@ namespace Dovus.Game.Vfx
 
         void StartTrail()
         {
+            if (!ResolveBlade())
+            {
+                Debug.LogError("[RuleDrivenVfx] Kor izi çizilmedi: elde görünen Silah_* altında "
+                    + WeaponBladePoints.HiltPointName + " ve " + WeaponBladePoints.TipPointName + " yok.");
+                return;
+            }
             _trailOn = true;
             _dashStart = transform.position;
-            float trailLife = _plan.TrailLifeSec > 0f
-                ? _plan.TrailLifeSec
-                : RuleVfxDefaults.SwordDashTrailLifeSec;
-            _meshTrail.Begin(_plan.CoreColor, trailLife, _dashDir);
-            Vector3 tip = BladeTip();
-            Vector3 guard = BladeGuard();
-            _meshTrail.SampleBlade(guard, tip);
-            _lightning.Play(
-                _dashStart + Vector3.up * RuleVfxArtDefaults.DashStartLift,
-                tip,
-                _plan.CoreColor,
-                trailLife);
+            RuleEngineV4BladeTrailFx fx = RuleVfxSettings.Slice.BladeTrail;
+            _meshTrail.Begin(_plan.CoreColor, fx);
+            Vector3 tip = _bladeTip.position;
+            _meshTrail.SampleBlade(_bladeHilt.position, tip);
+            if (_plan.LightningDashTrail)
+            {
+                _lightning.Play(
+                    _dashStart + Vector3.up * RuleVfxArtDefaults.DashStartLift,
+                    tip,
+                    _plan.CoreColor,
+                    fx.LifeSec);
+            }
         }
+
+        bool ResolveBlade()
+        {
+            ActorView view = GetComponent<ActorView>();
+            Transform root = view != null && view.Animator != null ? view.Animator.transform : transform;
+            return WeaponBladePoints.TryActiveBladePoints(root, out _bladeHilt, out _bladeTip);
+        }
+
+        bool BladeAlive() =>
+            _bladeHilt != null && _bladeTip != null
+            && _bladeHilt.gameObject.activeInHierarchy && _bladeTip.gameObject.activeInHierarchy;
 
         void TickEntrySilhouette()
         {
@@ -350,20 +386,6 @@ namespace Dovus.Game.Vfx
             Vector3 side = Vector3.Cross(Vector3.up, _dashDir).normalized * RuleVfxDefaults.FootWingSideM;
             _feel?.HitSpark(foot + side, tint, crit: false);
             _feel?.HitSpark(foot - side, tint, crit: false);
-        }
-
-        Vector3 BladeTip()
-        {
-            return transform.position
-                + Vector3.up * RuleVfxDefaults.WeaponTipLocalY
-                + _dashDir * RuleVfxDefaults.BladeTipForwardM;
-        }
-
-        Vector3 BladeGuard()
-        {
-            return transform.position
-                + Vector3.up * RuleVfxDefaults.WeaponGuardLocalY
-                + _dashDir * RuleVfxDefaults.BladeGuardForwardM;
         }
 
         void EnsureAnimRelay()

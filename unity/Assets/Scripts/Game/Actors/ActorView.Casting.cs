@@ -81,24 +81,14 @@ namespace Dovus.Game.Actors
             if (string.Equals(_motionKey, playKey, System.StringComparison.Ordinal))
                 return;
             _motionKey = playKey ?? string.Empty;
+            if (SkillClip.IsHeld(_animator))
+                return;
             MotionAnimClip clip = (table ?? MotionAnimTable.BuiltIn).Resolve(_motionKey, weaponKey, verbId);
-            clip = ApplySidestepMirror(clip, blend.Strafe);
+            clip = SidestepMirror.Apply(clip, blend.Strafe, _animator);
             PlayMotionClip(clip, animSpeed, spin);
         }
 
-        /// <summary>
-        /// O-anim(c): yön zaten blend.Strafe'de ucuzca bilindiğinden "Sidestep" tek klibi sağa
-        /// giderken Animator'ın humanoid mirror'ıyla "SidestepRight"e döner; state yoksa (ör.
-        /// eski override controller) solda kalır — <see cref="PlayAction"/> HasState ile korur.
-        /// </summary>
-        MotionAnimClip ApplySidestepMirror(MotionAnimClip clip, float strafe)
-        {
-            if (strafe <= ActorViewDefaults.SidestepMirrorStrafeMin || !string.Equals(clip.State, "Sidestep", System.StringComparison.Ordinal))
-                return clip;
-            if (_animator == null || !_animator.HasState(0, Animator.StringToHash("SidestepRight")))
-                return clip;
-            return new MotionAnimClip(clip.Key, "SidestepRight", clip.Trigger, clip.Fallback);
-        }
+        public SkillClipHold SkillClip { get; } = new SkillClipHold();
 
         public void EndMotionAnim()
         {
