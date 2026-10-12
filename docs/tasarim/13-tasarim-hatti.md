@@ -40,7 +40,7 @@ işaretlenir ve tarihi yazılır.
 | D1 | Ortam kiti: zemin, çatlaklar, kenar sisi, ufuk (Deneme Sahnesi parçaları); krater duvarı ve uzak dağlar (Poly Haven kayaları); dikili taş (`runtasi`, 6–9 m'ye); basamak | Elde var, uyarlanır | C2 |
 | D2 | Yere saplanmış eski silahlar (12–20) | Kılıç + Quaternius kılıç ve hançer, paslı doku | C2 |
 | D3 | Ejderha kafası, boynu, iki ön pençesi (rigli) | Tripo → Blender; 40 bin üçgen bütçesi (O-15.6); iş kartı `16` §1 | Başladı 12 Ekim (onarım sürerken; C2'yi beklemez) |
-| D4 | Ejderha gövdesi: kuzey duvarını oluşturan sabit kaya kütlesi, kuyruk | Poly Haven kayaları + Blender | D3 |
+| D4 | Ejderha gövdesi ve kanatlar: kuzey duvarını oluşturan kaya kütlesi; kanatlar Kanat Savuruşu için oynar | Tripo kaba modelinden; v0 ✔ 12 Ekim | D3 |
 | D5 | Boss animasyonları: nefes, göz kırpma, baş takibi, her saldırı, doğruluş, kalbin açılması, ölüm | Blender | D3 |
 | D6 | Atmosfer ve boss efektleri: kül, kıvılcım, yer sisi, darbe tozu, boss ateşi, pul kırılması, ortam tehditleri | Shader + parçacık | D1 |
 | D7 | Ses: ejderha nefesi ve sesi, darbeler, ortam, faz müzik katmanları; **replik seslendirmesi sonra (12 Ekim kararı)**, o zamana kadar altyazı | — | D5 |

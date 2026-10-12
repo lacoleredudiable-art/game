@@ -46,17 +46,18 @@ geçer, değiştirilmez. Görünüm kuralları `12-sanat-incili.md`'dedir.
 
 ## 3. Ejderhanın gövdesi (duvar ve yamaç)
 
-`14` KE-2.2'deki yerleşim. Gövde sabit kaya kütlesidir; yalnız baş, boyun ve pençeler canlandırılır (`13` D3).
+`14` KE-2.2'deki yerleşim. Gövde sabit kaya kütlesidir; baş, boyun, pençeler ve kanatlar canlandırılır. Gövdenin
+ölçüleri Tripo kaba modelinden (`ejder_govde` v0, 12 Ekim) ölçülmüştür.
 
 | Kimlik | Parça | Konum | Ölçü | Not |
 |---|---|---|---|---|
 | KA-3.1 | Baş (faz 1) | Burun (0, 7,5), kafatası arkası (0, 16,5) | 9 m uzun, 7 m yüksek | KE-2.3 |
 | KA-3.2 | Ön pençeler | (−7, 9), (7, 9) | 4 × 3 m taban; bacak 8 m yükseklikte omza girer (omuzlar (±7, 18)) | KE-2.4 |
-| KA-3.3 | Boyun | (0, 16,5)'ten (2, 23)'e, duvarın üstünden geçer | Kalınlık 5 m | Azimut 0–5° |
-| KA-3.4 | Göğüs ve omuzlar | Duvarın kuzey kesiminin arkası, (0, 24) merkezli | 14 m geniş, sırt çizgisi 12–14 m yükseklikte | Azimut 330°–30° arasında duvarın kendisi ejderhanın göğsüdür |
-| KA-3.5 | Gövde | (4, 24)'ten (20, 14)'e, kraterin kenarı boyunca kıvrılır | Kalınlık 9–10 m, sırt 10–11 m yükseklikte | Azimut 10°–55°; r 23–25 m |
-| KA-3.6 | Kalça ve kuyruk | Kalça (20, 14); kuyruk (20, 14)'ten (24, 2)'ye, doğu kenarda | Kuyruk kökü 5 m, ucu 1,5 m kalınlıkta | Azimut 55°–90°; faz 2'de KE-6.6 için kalkar |
-| KA-3.7 | Doğu duvarı alçak | Azimut 55°–100° arasında duvarın görünen yüksekliği 4–5 m (başka yerde 6–9 m) | — | Kuyruk duvarın üstünden görünür; Kuyruk Savuruşu'nun hazırlığı okunur |
+| KA-3.3 | Boyun | Göğsün ortasından (0, 19), 10–12 m yükseklikten başın arkasına (0, 16,5) iner | Kalınlık 5 m | Göğsün kesik ön yüzünü kapatır |
+| KA-3.4 | Göğüs ve omuzlar | Ön yüz Z ≈ 18 (duvar çizgisi), X −10…10 | Sırt Z = 20'de 14 m, Z = 25'te 17 m yükseklikte | Azimut 330°–30° arasında duvarın kendisi ejderhanın göğsüdür |
+| KA-3.5 | Sırt ve kanatlar | Z 18–58; kanatlar Z 25–55 arasında X ±18'e yayılır, krater kenarının üstünde | En yüksek nokta 18 m (Z ≈ 35) | Kanatlar Kanat Savuruşu'nda açılır (KE-6.6) |
+| KA-3.6 | Kuyruk | Kanatların altına kıvrılı, görünmez | — | Ayrı model yok |
+| KA-3.7 | Kanat sektörleri | Azimut 300°–330° ve 30°–60° arasında duvarın görünen yüksekliği 6–7 m (kanadın ucu duvarın üstünden görünsün) | — | Kanat Savuruşu'nun hazırlığı okunur |
 
 ---
 
@@ -108,9 +109,9 @@ merkezden geçen çizgiye diktir (çember boyunca); değer azimut gibi okunur (0
 | Kimlik | Madde | Değer | Asset | Doğrulama |
 |---|---|---|---|---|
 | KA-6.1 | Çarpışma | Tek parça halka: iç yüz 18 m, 4 m yükseklik, kesintisiz; boss sektörü dahil (O-7.2, O-7.3) | Kodla üretilen halka çarpışması (teknik hattın `fix/arena-siniri-tek-kaynak` işi) | T, G |
-| KA-6.2 | Kaya duvarı (azimut 100°–330°) | 14 kaya yüzü parçası, iç yüzleri r 18 m'de, yüksekliği 6–9 m arasında düzensiz, merkeze bakar; komşu parçalar en az 1 m bindirir (arada boşluk yok) | `PolyHaven/rock_face_01`, `rock_face_02` (4000'er üçgen), dönüş ve ölçek çeşitlemesi | K (SI-13.1 ortam turu) |
+| KA-6.2 | Kaya duvarı (azimut 30°–330°) | 18 kaya yüzü parçası, iç yüzleri r 18 m'de, yüksekliği 6–9 m arasında düzensiz, merkeze bakar; komşu parçalar en az 1 m bindirir (arada boşluk yok) | `PolyHaven/rock_face_01`, `rock_face_02` (4000'er üçgen), dönüş ve ölçek çeşitlemesi | K (SI-13.1 ortam turu) |
 | KA-6.3 | Duvar dibi kayaları | 10 kaya bloğu r 17,8–19 m'de, yarısı duvara gömülü; oynanış alanına en çok 0,2 m taşar, çarpışmaları duvarın içinde kalır | `PolyHaven/boulder_01` (3000 üçgen) | T (r < 17,8 m'de kaya yok) |
-| KA-6.4 | Ejderha duvarı (azimut 330°–100°) | Duvarın görünen yüzü ejderhanın göğsü, omzu ve gövdesidir (KA-3.4–3.6) | `13` D4 (ejderha gövdesi) | K |
+| KA-6.4 | Ejderha duvarı (azimut 330°–30°) | Duvarın görünen yüzü ejderhanın göğsüdür (KA-3.4) | `13` D4 (ejderha gövdesi) | K |
 | KA-6.5 | Yamaç | 22–60 m arasında dışa doğru yükselen kaya; kenar çizgisi r 45–60 m'de 25–40 m yükseklikte. 8 yamaç parçası | `PolyHaven/mountainside`, `namaqualand_cliff_02` | K |
 | KA-6.6 | Güney basamakları | Azimut 175°–185° arasında, duvarın üstünden (r 22 m) yamaca (r 40 m) çıkan eski oyma basamaklar: basamak 0,18 m yüksek, 0,35 m derin, 2,2 m geniş, yer yer kırık. Savaşçıların krater'e indiği yol; çarpışma yok | Blender'da basit modüler basamak (yeni, küçük iş) | K |
 | KA-6.7 | Uzak dağlar | 60–250 m'de 3 katman silüet; en yakını 60–90 m, en uzağı 200–250 m | `DenemeSahnesi/Meshes/Skyline.obj` + `FogSilhouette` shader | K |
@@ -169,8 +170,8 @@ Model yapılmadan önce telefonda denenecek ilk sürüm. Her şey gerçek ölç�
 | Kimlik | Parça | Gri kutu şekli |
 |---|---|---|
 | KA-10.1 | Zemin | r 30 m düz disk, #26282C |
-| KA-10.2 | Duvar | r 18–22 m halka, 4 m yüksek (çarpışma) + görüntü için 7 m yüksek gri silindir halkası; doğu sektörü (55°–100°) 4,5 m |
-| KA-10.3 | Ejderha | Baş: 9 × 7 × 6 m kutu (burun (0, 7,5)); pençeler 4 × 3 × 4 m kutu; göğüs: duvarın arkasında 14 m geniş, 13 m yüksek blok; gözler iki turuncu küre |
+| KA-10.2 | Duvar | r 18–22 m halka, 4 m yüksek (çarpışma) + görüntü için 7 m yüksek gri silindir halkası; kuzey sektörü (330°–30°) boş, orada gövde durur |
+| KA-10.3 | Ejderha | Baş: 9 × 7 × 6 m kutu (burun (0, 7,5)); pençeler 4 × 3 × 4 m kutu; gövde: `ejder_govde` v0 doğrudan kullanılır (pivot arena merkezinde); gözler iki turuncu küre |
 | KA-10.4 | Taşlar | 2 × 1,5 m taban, 8 / 7 / 6 m yükseklikte kutular |
 | KA-10.5 | Çatlaklar | 15 turuncu şerit (4 × 0,4 m) |
 | KA-10.6 | Eski silahlar | 16 ince çubuk (1,1 m) |

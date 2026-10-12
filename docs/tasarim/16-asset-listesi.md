@@ -15,16 +15,16 @@ Kimlik `AL-x.y`. Kabul kontrol sayfası O-16.8 yoludur: kullanıcı onaylamadan 
 ### 1.1 Parçalar
 
 Ejderhanın tamamı tek modelde üretilmez: 45 m'lik bir modelde baş ayrıntısı kaybolur, ve gövdenin büyük kısmı
-hiç kıpırdamaz (`14` KE-2.2). Beş parça üretilir, Blender'da birleştirilir, üç dosya olarak çıkar.
+hiç kıpırdamaz (`14` KE-2.2). Dört parça üretilir, Blender'da birleştirilir, iki dosya olarak çıkar.
 
 | Kimlik | Parça | Tripo'da ayrı üretim | Çıkış dosyası | Hareket |
 |---|---|---|---|---|
-| AL-1.1 | Bütün ejderha (kaba) | Evet, bir kez | — (yalnız oran ve gövde için kaynak) | — |
+| AL-1.1 | Bütün ejderha (kaba) | Evet, bir kez — **✔ 12 Ekim** (`ejder_kaba.glb`, Tripo 3 numaralı çeşit) | — (gövde ve kanat kaynağı) | — |
 | AL-1.2 | Baş + boyun | Evet, en çok özen burada | `ejder_on.fbx` (tek iskelet: baş, boyun, göğüs, iki ön bacak) | Canlı |
 | AL-1.3 | Ön bacak + pençe | Evet, bir tane; Blender'da aynalanır | `ejder_on.fbx` içinde | Canlı |
 | AL-1.4 | Göğüs ve omuzlar | AL-1.1'den kesilir | `ejder_on.fbx` içinde | Canlı (faz 2'de kalkar) |
-| AL-1.5 | Gövde (sırt, kalça) | AL-1.1'den kesilir | `ejder_govde.fbx` | Sabit |
-| AL-1.6 | Kuyruk | Evet | `ejder_kuyruk.fbx` (zincir iskelet) | Canlı (faz 2 savuruşu) |
+| AL-1.5 | Gövde ve kanatlar | AL-1.1'den kesilir — **v0 ✔ 12 Ekim** (baş ve bacaklar kesildi, 10 000 üçgen, arena konumunda) | `ejder_govde.fbx` | Gövde sabit, kanatlar canlı (Kanat Savuruşu) |
+| AL-1.6 | Kuyruk | Yok (kanatların altında kıvrılı; Kanat Savuruşu kararı 12 Ekim) | — | — |
 
 ### 1.2 Tripo istemleri
 
@@ -44,12 +44,16 @@ realistic proportions, matte stone, no bright colors, no thin spikes
 
 **AL-1.8 — Baş ve boyun (asıl model):**
 ```
-Head and neck of an ancient stone dragon, chin resting on the ground, long wedge-shaped skull, heavy brow
-ridge, two thick backward-swept horns like weathered rock, mouth closed with a few stone teeth visible at
-the edge, deep-set narrow eyes with vertical slit pupils, overlapping large grey-blue basalt plates with
-fine cracks, ash on upper surfaces, noble, calm, ancient, angular blocky forms, symmetric, matte rock,
-realistic, no thin spikes, no bright colors
+Side three-quarter view of the head and long neck of an ancient stone dragon, the neck extends far back
+behind the head and is as long as the head, chin resting on the ground, long wedge-shaped skull, heavy brow
+ridge, two thick backward-swept horns like weathered rock, mouth closed, calm half-closed eyes with a faint
+ember-orange glow, large angular grey-blue basalt plates with fine cracks, ash on top surfaces, noble,
+ancient, serene expression, not angry, symmetric, matte stone, isolated single object on plain light grey
+background, no ground, no scenery, no body, no legs
 ```
+İlk deneme (12 Ekim) yalnız önden görünüş ve zeminli arka planla çıktı; 3B çevirmede derinlik tahmin edilemez.
+Önden görünüşte stil olarak 3 numaralı çeşit (köşeli kaya plakaları, gövdeyle uyumlu) seçildi; yukarıdaki istem
+o stili yandan ve uzun boyunla ister. Boyun, gövdenin kesik ön yüzünü (Z ≈ 18) kapatacak kadar uzun olmalı (KA-3.3).
 
 **AL-1.9 — Ön bacak ve pençe:**
 ```
@@ -58,12 +62,7 @@ dark rock, forearm armored with large rock plates, weathered grey-blue basalt, a
 angular blocky shapes, matte stone, realistic, no thin spikes
 ```
 
-**AL-1.10 — Kuyruk:**
-```
-Long thick tail of a stone dragon lying on the ground, slowly tapering, covered in overlapping rock plates,
-a ridge of short broken stone spines along the top, grey-blue basalt, ash on top surfaces, matte stone,
-realistic
-```
+**AL-1.10 — Kuyruk:** gerekmiyor (AL-1.6).
 
 Tripo ayarları: en yüksek kalite modeli ve PBR dokuyu aç. Tripo'nun otomatik iskeleti insan ve dört ayaklı
 gövde içindir; bu parçalara uymaz, **iskelet Blender'da kurulur**. Tripo'da düşük üçgenli (low poly /
@@ -87,14 +86,14 @@ Model bunları sağlamadan Unity'ye girmez. FBX'i bana gönderirsen ölçüleri 
 |---|---|---|---|
 | AL-1.16 | Ölçü (baş) | Çene yerdeyken 7 m yükseklik, burun ucundan kafatası arkasına 9 m | KE-2.3 |
 | AL-1.17 | Ölçü (pençe) | Taban 4 m uzun, 3 m geniş; ayak bileği 4 m yükseklikte, omuz 8 m | KE-2.4, KA-3.2 |
-| AL-1.18 | Ölçü (bütün) | Burundan kuyruk ucuna ~45 m, gövde arenanın kuzeydoğu kenarı boyunca kıvrık (KA-3.3–3.6'daki noktalar) | KE-2.2 |
-| AL-1.19 | Üçgen | `ejder_on` ≤ 26 000 (baş + boyun 14 000, göğüs 4 000, her bacak 4 000) · `ejder_kuyruk` ≤ 4 000 · `ejder_govde` ≤ 10 000 → toplam ≤ 40 000 | O-15.6 |
-| AL-1.20 | Doku | Her dosya tek doku seti; `ejder_on` 2048, gövde ve kuyruk 1024 + tekrarlayan kaya ayrıntı dokusu. Albedo SI-5.3 ailesine çekilir: taban #3A4048 (±5 L\*), boynuz ve pençe #5B5A57, yukarı bakan yüzlerde kül. **Emission maskesi** ayrı kanal: gözler, pul araları, göğüs çatlakları (kalp), boyun çatlakları. Doku ASTC | SI-5.3–5.5, O-15.7 |
+| AL-1.18 | Ölçü (bütün) | Burun Z 7,5; gövde Z 18–58, X ±18, 18 m yükseklik (KA-3) | KE-2.2 |
+| AL-1.19 | Üçgen | `ejder_on` ≤ 26 000 (baş + boyun 14 000, göğüs 4 000, her bacak 4 000) · `ejder_govde` (kanatlar dahil) ≤ 10 000 → toplam ≤ 36 000 | O-15.6 |
+| AL-1.20 | Doku | Her dosya tek doku seti; `ejder_on` 2048, gövde 1024 + tekrarlayan kaya ayrıntı dokusu. Albedo SI-5.3 ailesine çekilir: taban #3A4048 (±5 L\*), boynuz ve pençe #5B5A57, yukarı bakan yüzlerde kül. **Emission maskesi** ayrı kanal: gözler, pul araları, göğüs çatlakları (kalp), boyun çatlakları. Doku ASTC | SI-5.3–5.5, O-15.7 |
 | AL-1.21 | Kesimler | Alt çene ayrı parça (en çok 10° açılır, SI-8.6); göz kapakları şekil anahtarı (blend shape) ya da kemik (göz kırpma, SI-8.2); göğüs plakaları ayrı parçalar (faz 3'te açılır, KE-7.1) ve altında kalp (kor çekirdek) | SI-8, KE-7 |
-| AL-1.22 | Yön ve pivot | Baş +Z'ye bakar (arenada kod 180° döndürür). `ejder_on` sıfır noktası iki ön pençenin ortasında, zeminde; `ejder_kuyruk` sıfır noktası kuyruk kökünde; `ejder_govde` sıfır noktası arena merkezine göre konumlanmış (KA-3) | O-16.1 |
+| AL-1.22 | Yön ve pivot | Baş +Z'ye bakar (arenada kod 180° döndürür). `ejder_on` sıfır noktası iki ön pençenin ortasında, zeminde; `ejder_govde` sıfır noktası arena merkezi (0, 0, 0), konum ve dönüş sıfır, gövde arena koordinatlarında (KA-3) | O-16.1 |
 | AL-1.23 | İskelet (`ejder_on`) | Kök (göğüs) → Boyun_1–4 → Bas → Cene; Goz_Kapak_L/R; her bacak için Omuz → Kol_Ust → Kol_Alt → Bilek → Parmak_1–4. Adlar Türkçe karakter içermez | O-16.6 |
-| AL-1.24 | İskelet (`ejder_kuyruk`) | Kuyruk_01–08 zinciri | KE-6.6 |
-| AL-1.25 | Dışa aktarım | FBX, ölçek 1,0, "Apply Transform" açık, Y yukarı / Z ileri, adlar `ejder_on`, `ejder_govde`, `ejder_kuyruk` | O-16.1, O-16.6 |
+| AL-1.24 | İskelet (`ejder_govde`) | Kok (sabit) → Kanat_L_01–05, Kanat_R_01–05; gövde yalnız Kok'a bağlı | KE-6.6 |
+| AL-1.25 | Dışa aktarım | FBX, ölçek 1,0, "Apply Transform" açık, Y yukarı / Z ileri, adlar `ejder_on`, `ejder_govde` | O-16.1, O-16.6 |
 | AL-1.26 | Kontrol sayfası | Ön, yan, arka, oyun kamerası açısı (arena başlangıcından, (0, −14)) × 3 poz (yatıyor, faz 2 doğrulmuş, faz 3 göğüs yerde) = 12 görüntü | O-16.8 |
 
 ### 1.5 Animasyonlar (model onaylandıktan sonra)
@@ -110,7 +109,7 @@ Model bunları sağlamadan Unity'ye girmez. FBX'i bana gönderirsen ölçüleri 
 | AL-1.33 | Kor Dalgası / Göğün Çöküşü / Kraterin Kalbi (büyük saldırı başları) | 3 s duyuru + vuruş | KE-5.7, KE-6.7, KE-7.5 |
 | AL-1.34 | Doğruluş (faz 1 → 2) | 4 s | KE-6.1 |
 | AL-1.35 | Faz 2 bekleme, pençe çakması (yüksekten) | — | KE-6.4 |
-| AL-1.36 | Kuyruk Savuruşu (`ejder_kuyruk`) | 2,0 + 0,4 + 1,5 s | KE-6.6 |
+| AL-1.36 | Kanat Savuruşu, sol ve sağ (`ejder_govde`) | 2,0 + 0,4 + 1,5 s | KE-6.6 |
 | AL-1.37 | Göğüs yere (faz 2 → 3), göğüs plakaları açılır / kapanır | 4 s; açılma 0,6 s | KE-7.1, KE-7.8 |
 | AL-1.38 | Pençe Süpürmesi (sol, sağ) | 1,6 + 0,4 + 1,5 s | KE-7.2 |
 | AL-1.39 | Sendeleme (yatarken, doğrulmuşken çöküş) | 7 s | KE-8.1 |
