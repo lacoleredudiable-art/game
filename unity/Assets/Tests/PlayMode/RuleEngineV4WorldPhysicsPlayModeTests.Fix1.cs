@@ -41,8 +41,7 @@ namespace Dovus.Tests.PlayMode
             ParkAll();
             var motor = _player.GetComponent<KinematicMotorController>();
             Assert.That(motor, Is.Not.Null, "KinematicMotorController");
-            float bodyR = Mathf.Max(KinematicMotorControllerDefaults.CapsuleRadiusFloorM,
-                motor.BodyRadiusM * KinematicMotorControllerDefaults.CapsuleRadiusBodyScale);
+            float bodyR = motor.CapsuleRadiusM;
             float dodgeM = InputController().Combat.Dodge.DistanceM;
 
             RuleEngineV4SliceArenaColumn col = ArenaSpec.Columns[0];
