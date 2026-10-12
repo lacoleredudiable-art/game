@@ -5,6 +5,7 @@ kod düzeltilir. Belgede olmayan bir davranışı kod uydurmaz: kaynakta yoksa P
 ve kullanıcıya sorulur.
 
 **İş sırası:** `11-onarim-plani.md`. Hangi işin şimdi yapılacağını bu dosya söyler; adımlar sırayla yapılır.
+Tasarım hattının (boss, arena, görsel dil) sırası: `13-tasarim-hatti.md`.
 
 ## Öncelik sırası (çelişkide üstteki kazanır)
 
