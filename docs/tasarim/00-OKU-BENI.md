@@ -6,7 +6,7 @@ ve kullanıcıya sorulur.
 
 **İş sırası:** `11-onarim-plani.md`. Hangi işin şimdi yapılacağını bu dosya söyler; adımlar sırayla yapılır.
 Tasarım hattının (boss, arena, görsel dil) sırası: `13-tasarim-hatti.md`.
-Boss: `14-kul-ejderi.md` (KE-x.y). Arena: `15-krater-arenasi.md` (KA-x.y).
+Boss: `14-kul-ejderi.md` (KE-x.y). Arena: `15-krater-arenasi.md` (KA-x.y). Asset listesi: `16-asset-listesi.md` (AL-x.y).
 
 ## Öncelik sırası (çelişkide üstteki kazanır)
 

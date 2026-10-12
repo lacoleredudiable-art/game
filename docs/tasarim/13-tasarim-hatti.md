@@ -24,7 +24,7 @@ işaretlenir ve tarihi yazılır.
 | B2 | `14-kul-ejderi.md` (boss) | `10` §6.1 şablonunun bütün alanları: gövde ve çarpışma, her saldırı (ön işaret süresi, alan, hasar %, kesilebilirlik, açık kalma), tehdit ritmi (küçük / büyük / takım görevi), 3 faz ve geçişleri, can katmanları ve pul kırılması, takım görevleri (Kor Mührü, Kül Yağmuru), zorluk kademeleri, replikler, kamera notları (faz 2'de baş 15 m) | A1, A2 | ✔ 12 Ekim: onaylı |
 | B3 | `15-krater-arenasi.md` (arena) | Bölgeler (oynanış 0–18 m, duvar 18–22 m, yamaç 22–60 m, uzak 60–250 m), her nesnenin koordinatı, ölçüsü, çarpışması ve hangi asset'ten yapılacağı; dikili taşlar ve siperler; ortam tehditlerinin yerleri; başlangıç noktaları; ışık, sis ve ses kaynaklarının yerleşimi | B2 | ✔ 12 Ekim |
 | B4 | `10-olculer.md` güncellemesi | §6.3 ve §7 yeni belgelere bağlanır; eski satırlar kalkar; açık kalanlar `08`'e | B2, B3, A3 | ✔ 12 Ekim (yönlendirme notları; eski satırlar kod değişince silinir) |
-| B5 | `16-asset-listesi.md` | Her asset için: ölçü, üçgen ve doku bütçesi, kaynak (elde / Tripo / Poly Haven / el yapımı), kabul kontrol sayfası, sıra | B3 | — |
+| B5 | `16-asset-listesi.md` | Her asset için: ölçü, üçgen ve doku bütçesi, kaynak (elde / Tripo / Poly Haven / el yapımı), kabul kontrol sayfası, sıra | B3 | ✔ 12 Ekim |
 
 ## C. Gri kutu (blockout) — sanat yapılmadan önce
 
@@ -39,7 +39,7 @@ işaretlenir ve tarihi yazılır.
 |---|---|---|---|
 | D1 | Ortam kiti: zemin, çatlaklar, kenar sisi, ufuk (Deneme Sahnesi parçaları); krater duvarı ve uzak dağlar (Poly Haven kayaları); dikili taş (`runtasi`, 6–9 m'ye); basamak | Elde var, uyarlanır | C2 |
 | D2 | Yere saplanmış eski silahlar (12–20) | Kılıç + Quaternius kılıç ve hançer, paslı doku | C2 |
-| D3 | Ejderha kafası, boynu, iki ön pençesi (rigli) | Tripo → Blender; 40 bin üçgen bütçesi (O-15.6) | C2 |
+| D3 | Ejderha kafası, boynu, iki ön pençesi (rigli) | Tripo → Blender; 40 bin üçgen bütçesi (O-15.6); iş kartı `16` §1 | Başladı 12 Ekim (onarım sürerken; C2'yi beklemez) |
 | D4 | Ejderha gövdesi: kuzey duvarını oluşturan sabit kaya kütlesi, kuyruk | Poly Haven kayaları + Blender | D3 |
 | D5 | Boss animasyonları: nefes, göz kırpma, baş takibi, her saldırı, doğruluş, kalbin açılması, ölüm | Blender | D3 |
 | D6 | Atmosfer ve boss efektleri: kül, kıvılcım, yer sisi, darbe tozu, boss ateşi, pul kırılması, ortam tehditleri | Shader + parçacık | D1 |
