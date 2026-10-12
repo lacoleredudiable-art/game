@@ -18,6 +18,7 @@ using System.IO;
 namespace CoreTests;
 
 [TestFixture]
+[Category("EskiMotor")]
 public class ElementSystemDocumentTests
 {
     static string ElementJson()

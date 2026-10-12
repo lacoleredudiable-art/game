@@ -5,6 +5,7 @@ using NUnit.Framework;
 namespace CoreTests;
 
 [TestFixture]
+[Category("EskiMotor")]
 public sealed class ShimSurfaceTests
 {
     const int MaxShimFileCount = 18;

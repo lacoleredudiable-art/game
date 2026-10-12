@@ -6,6 +6,7 @@ using NUnit.Framework;
 namespace CoreTests;
 
 [TestFixture]
+[Category("EskiMotor")]
 public sealed class ClassSizeRatchetTests
 {
     static string ScriptsRoot =>

@@ -5,6 +5,7 @@ using System.IO;
 namespace CoreTests;
 
 [TestFixture]
+[Category("EskiMotor")]
 public class WeaponV611Tests
 {
     static EquipmentCatalog Load()

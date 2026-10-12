@@ -13,6 +13,7 @@ using Dovus.Core.Shared;
 namespace CoreTests;
 
 [TestFixture]
+[Category("EskiMotor")]
 public class SkillMotionMotorTests
 {
     static SkillResolution Teleport(string adjectiveId = "sizma", string elementOrigin = "Pus") =>

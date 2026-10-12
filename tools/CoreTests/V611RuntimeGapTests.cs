@@ -15,6 +15,7 @@ using Dovus.Core.Shared;
 namespace CoreTests;
 
 [TestFixture]
+[Category("EskiMotor")]
 public class V611RuntimeGapTests
 {
     string _json = null!;

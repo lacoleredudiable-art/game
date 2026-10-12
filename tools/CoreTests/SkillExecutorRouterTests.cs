@@ -7,6 +7,7 @@ using System.IO;
 namespace CoreTests;
 
 [TestFixture]
+[Category("EskiMotor")]
 public class SkillExecutorRouterTests
 {
     SkillMotor _motor = null!;

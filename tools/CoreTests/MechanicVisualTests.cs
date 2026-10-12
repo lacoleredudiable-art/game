@@ -8,6 +8,7 @@ namespace CoreTests;
 
 /// <summary>Skill görseli gramerden doğar: madde (fiil) × yol (silah) × silüet (sıfat) — tablo yok.</summary>
 [TestFixture]
+[Category("EskiMotor")]
 public class MechanicVisualTests
 {
     MechanicGrammar _grammar = null!;

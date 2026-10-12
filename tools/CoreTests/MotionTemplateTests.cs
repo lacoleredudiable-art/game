@@ -10,6 +10,7 @@ using Dovus.Core.Shared;
 namespace CoreTests;
 
 [TestFixture]
+[Category("EskiMotor")]
 public partial class MotionTemplateTests
 {
     MotionTemplateCatalog _catalog;

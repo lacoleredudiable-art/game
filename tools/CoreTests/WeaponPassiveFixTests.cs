@@ -16,6 +16,7 @@ namespace CoreTests;
 
 /// <summary>Pasiflerin yarım bağlanan parçaları: yay, sayaç, sersem, kutsal, blok, süre, poise.</summary>
 [TestFixture]
+[Category("EskiMotor")]
 public class WeaponPassiveFixTests
 {
     EquipmentCatalog _catalog;

@@ -4,6 +4,7 @@ using NUnit.Framework;
 namespace CoreTests;
 
 [TestFixture]
+[Category("EskiMotor")]
 public class SweepMotionTests
 {
     [Test]

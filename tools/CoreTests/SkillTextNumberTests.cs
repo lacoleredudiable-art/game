@@ -12,6 +12,7 @@ using System.Text;
 namespace CoreTests;
 
 [TestFixture]
+[Category("EskiMotor")]
 public class SkillTextNumberTests
 {
     static readonly string[] ForbiddenEffectNumberSources =

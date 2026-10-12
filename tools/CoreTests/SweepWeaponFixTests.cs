@@ -17,6 +17,7 @@ namespace CoreTests;
 /// Yerel 1440 tarama: Top geri tepmesi, düz atış, menzil kapanışı, yumruk kancası, 6-2, küre 8-11.
 /// </summary>
 [TestFixture]
+[Category("EskiMotor")]
 public class SweepWeaponFixTests
 {
     const float Body = 0.5f;

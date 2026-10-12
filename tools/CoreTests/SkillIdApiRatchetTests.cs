@@ -5,6 +5,7 @@ using NUnit.Framework;
 namespace CoreTests;
 
 [TestFixture]
+[Category("EskiMotor")]
 public sealed class SkillIdApiRatchetTests
 {
     const int MaxPublicStringSkillIdParameters = 0;

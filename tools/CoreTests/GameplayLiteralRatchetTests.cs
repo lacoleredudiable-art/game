@@ -10,6 +10,7 @@ namespace CoreTests;
 /// Tavan = MagicNumberRatchetTests / docs/ARCHITECTURE.md (origin/master + 2B.11).
 /// </summary>
 [TestFixture]
+[Category("EskiMotor")]
 public class GameplayLiteralRatchetTests
 {
     static readonly Regex FloatLiteral = new(@"\b\d+\.\d+f\b|\b\d+f\b", RegexOptions.Compiled);

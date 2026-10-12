@@ -21,6 +21,7 @@ namespace CoreTests;
 /// ve bu PR'ın Core uçları (TemplateDelivery itme/kıskaç, dünya profili, cleanse_count, shield_absorb).
 /// </summary>
 [TestFixture]
+[Category("EskiMotor")]
 public class JsonEffectRulesTests
 {
     string _root = null!;

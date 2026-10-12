@@ -8,6 +8,7 @@ namespace CoreTests;
 
 /// <summary>mermi_sil ailesi: her plan boş olmayan bir silme spec'i üretir, her mod ayrı bir spec'e gider.</summary>
 [TestFixture]
+[Category("EskiMotor")]
 public sealed class ProjectileEraseRulesTests
 {
     MechanicGrammar _grammar = null!;

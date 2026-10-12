@@ -10,6 +10,7 @@ namespace CoreTests;
 /// 6-2 geri çekilirken tek karede 0,15 m'den fazla sıçramamalı.
 /// </summary>
 [TestFixture]
+[Category("EskiMotor")]
 public class EmiciApproachTests
 {
     const float Body = 0.5f;
