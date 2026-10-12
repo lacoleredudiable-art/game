@@ -16,8 +16,10 @@ ve kullanıcıya sorulur.
 6. `10-olculer.md` — kural dışı bütün ölçüler: karakter, silah boyu ve tutuşu, animasyon evreleri, dodge,
    kamera, boss, arena, sanat yönü, efekt sınırları, ses, ekran, performans, asset hattı, oyun akışı. Her
    maddenin kimliği (`O-x.y`) ve doğrulama yolu var. §18'deki çift değerler bu belgenin değerine bağlanır.
-7. `06-animasyon-kurallari.md`, `07-efekt-motoru.md` — görünüm (oyun sonucunu değiştirmez).
-8. `08-acik-sorular.md` — karar verilmemiş maddeler (bunlara göre kod yazılmaz; sorulur).
+7. `12-sanat-incili.md` — görsel dil: palet, ışık, sis, malzeme, silüet, ölçek, boss ve ortam efektleri,
+   "yapılmaz" listesi. `10` §8'in ayrıntısıdır (kimlik `SI-x.y`).
+8. `06-animasyon-kurallari.md`, `07-efekt-motoru.md` — görünüm (oyun sonucunu değiştirmez).
+9. `08-acik-sorular.md` — karar verilmemiş maddeler (bunlara göre kod yazılmaz; sorulur).
 
 Sayılar `unity/Assets/Resources/RuleEngineV4/kural-motoru-v4.json` içindedir; belgedeki sayılar başlangıç
 değeridir, JSON'daki güncel değer geçerlidir.

@@ -281,6 +281,9 @@ Bugünkü değerler `Resources/Bosses/aglarin-kralicesi.json`'dan. Hasarlar v4 �
 
 ## 8. Sanat yönü
 
+Ayrıntılı görsel dil (palet, ışık, sis, malzeme, silüet, ölçek, yapılmaz listesi) `12-sanat-incili.md`'dedir.
+Aşağıdaki değerler orada aynen geçer.
+
 | Kimlik | Madde | Değer | Kaynak | Doğrulama |
 |---|---|---|---|---|
 | O-8.1 | Stil | Stilize gerçekçi: gerçek oranlar, abartısız; malzemeler sade (az ayrıntılı doku, net renk blokları). Ton: kasvetli karanlık fantezi, ejderha mitolojisi; kor ve kül | ÖNERİ | K |
