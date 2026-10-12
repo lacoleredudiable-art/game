@@ -230,7 +230,7 @@ namespace Dovus.Game.Composition.Builders
             director.BindProjectiles(projectileHost);
 
             ctx.Boss.GetComponent<MotionTemplateBodyHost>()?.Bind(
-                ctx.Clock, combat.SkillMotion.ArenaHalfSizeM, CompositionConstants.BossRadiusM);
+                ctx.Clock, ArenaBoundary.RadiusM(combat.SkillMotion), CompositionConstants.BossRadiusM);
             ctx.Boss.GetComponent<MotionTemplateBodyHost>()?.BindFollowCamera(follow);
             ctx.Player.GetComponent<MotionTemplateBodyHost>()?.BindFollowCamera(follow);
             var webFields = directorGo.AddComponent<WebFieldView>();

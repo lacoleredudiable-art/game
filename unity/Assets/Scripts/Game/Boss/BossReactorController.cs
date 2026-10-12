@@ -383,6 +383,6 @@ namespace Dovus.Game.Boss
 
         // T5 dersi: arena dışına sonsuza kayan gövde. Daire salon — kare clamp değil.
         Vector3 ClampToArena(Vector3 pos) =>
-            ArenaClamp.XZ(pos, Tuning.Arena.ArenaHalfSizeM, _bodyRadiusM);
+            ArenaClamp.XZ(pos, ArenaBoundary.RadiusM(Tuning), _bodyRadiusM);
     }
 }

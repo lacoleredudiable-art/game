@@ -33,7 +33,7 @@ Her PR açıklamasında **önce/sonra Gözcü sayısı** yazılır. Sayı düşm
 ### Adım 2 — K2: Her ölçünün tek değeri
 `10-olculer.md` §18'deki çift değerler tek değere bağlanır. Ayrı PR'lar:
 1. **Arena:** oynanış sınırı yalnız `kural-motoru-v4.json` `slice_arena.outer_wall_collision_radius_m` (18 m,
-   daire). `ArenaHalfSizeM` sahne değeri ve kare sınır (`ArenaClamp.XZ`) dilim yolunda kullanılmaz. Dodge,
+   daire). `ArenaHalfSizeM` sahne değeri 50 m'lik değer dilim yolunda kullanılmaz. Dodge,
    Hareket skilleri, itilme ve mermi aynı daire sınırını kullanır. (O-7.2, O-4.11)
 2. **Kamera:** uzaklık, eğim, bakış yüksekliği, FOV tek kaynaktan (O-5.1–O-5.4); sahne dosyasındaki ayrı
    değerler kaldırılır.

@@ -268,7 +268,7 @@ Bugünkü değerler `Resources/Bosses/aglarin-kralicesi.json`'dan. Hasarlar v4 �
 | Kimlik | Madde | Değer | Kaynak | Doğrulama |
 |---|---|---|---|---|
 | O-7.1 | Şekil | Daire | KOD (`slice_arena`) | — |
-| O-7.2 | Oynanış sınırı (duvarın iç yüzü) | Yarıçap 18 m. Oyuncu, boss, mermi ve itilen her şey bu dairenin içinde kalır | KOD `slice_arena.outer_wall_collision_radius_m` (§18: diğer iki değer bu değere bağlanır) | T, G |
+| O-7.2 | Oynanış sınırı (duvarın iç yüzü) | Yarıçap **16,41 m** (duvarın gerçek iç yüzü). `outer_wall_collision_radius_m` = 18 m duvar segmentlerinin dış köşesidir; 48 segment, derinlik 1,56 m → iç yüz 18·cos(π/48) − 1,555 = 16,406 m. Oyuncu, boss, mermi ve itilen her şey bu dairenin içinde kalır; gövde merkezi için sınır iç yüz − gövde yarıçapı (oyuncu 16,41 − 0,35 = 16,06 m) | KOD `slice_arena.outer_wall_collision_radius_m` + `outer_wall_segments`, iç yüz `RuleEngineV4SliceArenaWall.InnerFaceRadiusM` (§18: diğer iki değer bu değere bağlanır) | T, G |
 | O-7.3 | Duvar | İç yüz 18 m, dış yüz 22 m; çarpışma yüksekliği 4 m; görsel yükseklik 6–9 m arasında düzensiz (yıkık köy duvarı ve kaburgalar) | KOD + ÖNERİ (görsel yükseklik) | K |
 | O-7.4 | Engeller | 3 sütun (yarıçap 1 m, yükseklik 3 m): (−9, 4), (9, 4), (0, −10). 2 koza (yarıçap 0,6 m, 1,8 m, can 400): (−12, −6), (12, −6) | KOD `slice_arena` | T |
 | O-7.5 | Başlangıç noktaları | Oyuncu (0, −14), boss (0, 6) ve boss oyuncuya bakar; çok oyunculuda oyuncular (0, −14) çevresinde 2 m arayla yay şeklinde | ÖNERİ | T |
@@ -442,7 +442,7 @@ Dilimde çok oyunculu yok ve kodda ağ paketi yok. Kurulduğunda bu değerler ge
 
 | # | Ölçü | Yer 1 | Yer 2 | Yer 3 | Bu belgenin değeri |
 |---|---|---|---|---|---|
-| Ç-1 | Arena sınırı | `kural-motoru-v4.json` duvar çarpışması **18 m** (daire) | `ArenaSettings.ArenaHalfSizeM` **25 m** | `Prototype.unity` sahne değeri **50 m**; dodge ve Hareket skilleri bunu kullanır ve **kare** sınır uygular (`ArenaClamp.XZ`) | 18 m daire (O-7.2). Dodge'un duvardan geçmesinin bir sebebi: duvar 18 m'de, hareket sınırı 50 m'lik karede |
+| Ç-1 | Arena sınırı | `kural-motoru-v4.json` duvar çarpışması **18 m** (daire) | `ArenaSettings.ArenaHalfSizeM` **25 m** | `Prototype.unity` sahne değeri **50 m**; dodge ve Hareket skilleri bunu kullanır ve daire sınır uygular ama yarıçapı 50 m (`ArenaClamp.XZ`) | 18 m daire (O-7.2). Dodge'un duvardan geçmesinin bir sebebi: duvar 18 m'de, hareket sınırı 50 m'lik karede |
 | Ç-2 | Kamera uzaklığı | Kod varsayılanı 5,85 m | Sahne 3,4 m | — | 6,0 m (O-5.1) |
 | Ç-3 | Kamera FOV | Kod 54° | Sahne 56° | — | 55° (O-5.4) |
 | Ç-4 | Oyuncu canı | `scale.player_max_hp` 1000 | `PlayerSettings.PlayerMaxHp` 22, boss JSON 22 | — | 1000 (O-13.1) |

@@ -59,18 +59,14 @@ namespace Dovus.Game.Composition.Builders
         {
             var wallRoot = new GameObject("OuterWallCollision");
             wallRoot.transform.SetParent(parent, false);
-            int segments = Mathf.Max((int)RuleEngineV4SliceArenaBuilderDefaults.MinWallSegmentCount, arena.OuterWallSegments);
-            float radius = arena.OuterWallCollisionRadiusM;
-            float height = Mathf.Max(RuleEngineV4SliceArenaBuilderDefaults.MinWallHeightM, arena.OuterWallHeightM);
-            float arc = 2f * Mathf.PI * radius / segments;
-            float thickness = Mathf.Max(
-                RuleEngineV4SliceArenaBuilderDefaults.WallThicknessMinM,
-                arc * RuleEngineV4SliceArenaBuilderDefaults.WallThicknessArcScale);
-            float depth = thickness * RuleEngineV4SliceArenaBuilderDefaults.WallSegmentDepthScale;
             // Dış köşeler tam çarpışma yarıçapında: segmentler boşluksuz birleşir, 18 m dışına taşmaz.
-            float halfStep = Mathf.PI / segments;
-            float chord = 2f * radius * Mathf.Sin(halfStep);
-            float centerRadius = radius * Mathf.Cos(halfStep) - depth * 0.5f;
+            var geometry = new RuleEngineV4SliceArenaWall(arena);
+            int segments = geometry.Segments;
+            float height = Mathf.Max(RuleEngineV4SliceArenaBuilderDefaults.MinWallHeightM, arena.OuterWallHeightM);
+            float thickness = geometry.ThicknessM;
+            float depth = geometry.DepthM;
+            float chord = geometry.ChordM;
+            float centerRadius = geometry.CenterRadiusM;
             for (int i = 0; i < segments; i++)
             {
                 float angle = i * (2f * Mathf.PI / segments);

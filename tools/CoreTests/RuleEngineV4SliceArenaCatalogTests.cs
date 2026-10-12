@@ -41,6 +41,26 @@ public sealed class RuleEngineV4SliceArenaCatalogTests
         }
     }
 
+    /// <summary>O-7.2: oynanış sınırı dış duvarın iç yüzü (48 segment, dış köşeler 18 m).</summary>
+    [Test]
+    public void O_7_2_Json_OuterWall_InnerFaceRadius()
+    {
+        RuleEngineV4Catalog catalog = RuleEngineV4Catalog.FromJson(File.ReadAllText(Path.GetFullPath(JsonPath)));
+        Assert.That(catalog.SliceArena.HasOuterWallGeometry, Is.True);
+        var wall = new RuleEngineV4SliceArenaWall(catalog.SliceArena);
+        Assert.That(wall.Segments, Is.EqualTo(48));
+        Assert.That(wall.InnerFaceRadiusM, Is.EqualTo(16.406f).Within(0.001f));
+        Assert.That(wall.CenterRadiusM + wall.DepthM * 0.5f, Is.EqualTo(wall.InnerFaceRadiusM + wall.DepthM).Within(1e-4f));
+    }
+
+    [Test]
+    public void O_7_2_Json_MissingOuterWall_FlagFalse()
+    {
+        const string json = "{\"slice_arena\":{\"outer_wall_segments\":48}}";
+        Assert.That(RuleEngineV4Catalog.FromJson(json).SliceArena.HasOuterWallGeometry, Is.False);
+        Assert.That(RuleEngineV4Catalog.FromJson("{}").SliceArena.HasOuterWallGeometry, Is.False);
+    }
+
     [Test]
     public void Json_CocoonHeight_ReadFromData()
     {
