@@ -27,6 +27,8 @@ Ağların Kraliçesi) telefonda doğru çalışsın.
 - Her hata düzeltmesi önce hatayı oyunun GERÇEK yolundan (sahte dokunuş/çizim → görünen sonuç: oynayan klip,
   konum, çarpışma) yeniden üreten bir test yazar. Test düzeltmeden önce kırmızı, sonra yeşil olmalı.
   Hatayı yakalamayan testle "düzelttim" denmez.
+- Oynanışı değiştiren her PR, görsel duman testinin kontakt sayfasını PR'a ekler, sayfaya bakıp gözlemini yazar
+  ve Gözcü satırlarının sayısını raporlar.
 - Fonksiyonu doğrudan çağırıp geçen test, oynanış hatasının kanıtı sayılmaz.
 - Testler gevşetilmez; bir test kırılırsa nedeni PR'da yazılır.
 - Eski motor testleri (`[Category("EskiMotor")]`) dondurulmuştur: bakımı yapılmaz, gevşetilmez, yenisi eklenmez.
@@ -42,6 +44,8 @@ Ağların Kraliçesi) telefonda doğru çalışsın.
 - `dotnet test tools/CoreTests --filter "FullyQualifiedName~<Sınıf>"` (alan testi) · `dotnet test tools/IntegrationTests`
 - `python tools/GameCompile/check.py`
 - Dilim APK: AndroidBuilder `-dovusV4Slice`
+- Görsel duman testi (Unity batchmode): `-runTests -testPlatform PlayMode -testFilter GozcuSmoke -gozcuOut <klasör>`
+  → `kontakt.png`, `gozcu.txt`, `senaryo.txt` (varsayılan tools/verify-out/gozcu, git dışı)
 
 ## CI
 Her PR ve master push, hepsi engelleyici: OYUN.md kontrolü → CoreTests (`--filter "TestCategory!=EskiMotor"`)
