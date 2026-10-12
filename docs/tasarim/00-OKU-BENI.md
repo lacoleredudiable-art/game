@@ -4,6 +4,8 @@ Bu klasör oyunun tasarım kaynağıdır. Kod bu belgelerin uygulamasıdır; kod
 kod düzeltilir. Belgede olmayan bir davranışı kod uydurmaz: kaynakta yoksa PR'da "kaynakta yok" diye yazılır
 ve kullanıcıya sorulur.
 
+**İş sırası:** `11-onarim-plani.md`. Hangi işin şimdi yapılacağını bu dosya söyler; adımlar sırayla yapılır.
+
 ## Öncelik sırası (çelişkide üstteki kazanır)
 
 1. `09-sonraki-kararlar.md` — v4.5'ten sonra kullanıcının verdiği kararlar (en yeni).
