@@ -4,6 +4,7 @@
     "references": [
         "Dovus.Game",
         "Dovus.Game.Composition",
+        "Dovus.Game.DevTools",
         "Dovus.Core",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"

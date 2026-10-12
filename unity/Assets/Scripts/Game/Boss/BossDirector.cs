@@ -156,14 +156,14 @@ namespace Dovus.Game.Boss
             PlayerVitalsHost vitals,
             BossVitals bossVitals,
             BossTelegraphView telegraph,
-            CombatFeelDirector feel)
+            CombatFeelDirector feel, BossAttackDamage? sliceDamage = null)
         {
             _clock = clock;
             _combat = combat;
             _colors = colors;
             _reactor = reactor;
             _hexagonInput = input;
-            _attack = new BossAttack(combat.Boss);
+            _attack = new BossAttack(combat.Boss, sliceDamage);
             _poise = new BossPoise(combat.Boss.PoiseMax);
             _resolver = new ExchangeResolver(combat);
             _dodge = input.Dodge;

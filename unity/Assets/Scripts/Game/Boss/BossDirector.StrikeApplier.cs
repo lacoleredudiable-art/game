@@ -144,7 +144,7 @@ namespace Dovus.Game.Boss
                 if (board == null || _d._combat == null)
                     return;
                 IReadOnlyList<string> mechs = _d._activeAttackEntry?.Mechanics;
-                BossMechanicStatusMap.ApplyFireCone(board, _d._combat.Status, mechs);
+                BossMechanicStatusMap.ApplyFireCone(board, _d._combat.Status, mechs, _d._attack.DamageTable);
             }
 
             void FireVolley()
