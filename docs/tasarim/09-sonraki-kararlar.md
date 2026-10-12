@@ -57,6 +57,19 @@ Sabit'te duvar vardır.
 **[K] Taban sayılar** `kural-motoru-v4.json` → `scale` bloğundadır (mana 100, skill bedeli 25, cooldown 4 s,
 dolum 10/s; can ve hasar tabanı aynı blokta). Hasar silahın ritim çarpanıyla **bir kez** ölçeklenir.
 
+## Hasarsızlık ve süper zırh (12 Ekim)
+
+**[K] I-frame (hasarsızlık penceresi):** saldırı içinden geçer, hiç hasar alınmaz.
+- Dodge: tek basış 0,26 s, takla 0,52 s (`10-olculer` O-4.6). Pencere boyunca karakterde kor turuncusu parlama
+  görünür (O-4.6a).
+- **Hareket fiili skilleri yolculuk boyunca hasarsızdır** (kalkıştan varışa; 3-3 sekmeleri, 3-9 çekilmesi dahil).
+  Hareket kimseye vurmaz; karşılığı doğru zamanda kullanılınca saldırıdan kaçırmasıdır.
+
+**[K] Süper zırh:** hasar alınır ama sendeleme ve kesilme olmaz; animasyon sürer.
+- Yalnız ağır silahlar (Çekiç, Kalkan), yalnız skill ön süresinde. Hafif silahlarda (Kılıç, Yay ve diğerleri) yok.
+- 9 Ekim'de silinen AS-03 bu kapsamla geri gelir; "yakın-dodge iptali" kısmı silinmiş kalır.
+- Süper zırhtayken karakter kenarında ince kül grisi parıltı (kesilmeyeceği görünsün).
+
 ## Açık (karar bekliyor)
 
 **[AÇIK] Zaman fiili.** Karar: "zaman alanı ve ışınlanma 3–4 rünlü kombolara kaldı." Zaman fiilinin 2 rünlü

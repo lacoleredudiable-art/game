@@ -10,7 +10,8 @@ namespace Dovus.Game.Arena
     /// </summary>
     public static class SceneAtmosphere
     {
-        public static void Apply(Light sun, Camera camera, GameTuning tuning)
+        /// <param name="fixedFog">Verilirse (dilim) sis yalnız buradan yazılır ve kamera arka planı sis rengidir.</param>
+        public static void Apply(Light sun, Camera camera, GameTuning tuning, ArenaFog? fixedFog = null)
         {
             tuning ??= new GameTuning();
             RenderSettings.ambientMode = AmbientMode.Trilight;
@@ -18,14 +19,24 @@ namespace Dovus.Game.Arena
             RenderSettings.ambientEquatorColor = tuning.Arena.AmbientEquator;
             RenderSettings.ambientGroundColor = tuning.Arena.AmbientGround;
 
-            // Açık gri lav ovası (ambiyans portu, PR #43): doğrusal sis arena yarıçapına ölçeklenir.
             RenderSettings.skybox = null;
-            CombatAmbienceEnvironment.ConfigureArenaFog(tuning);
+            if (fixedFog.HasValue)
+            {
+                RenderSettings.fog = true;
+                RenderSettings.fogMode = FogMode.Exponential;
+                RenderSettings.fogDensity = fixedFog.Value.Density;
+                RenderSettings.fogColor = fixedFog.Value.Color;
+            }
+            else
+            {
+                // Açık gri lav ovası (ambiyans portu, PR #43): doğrusal sis arena yarıçapına ölçeklenir.
+                CombatAmbienceEnvironment.ConfigureArenaFog(tuning);
+            }
 
             if (camera != null)
             {
                 camera.clearFlags = CameraClearFlags.SolidColor;
-                camera.backgroundColor = tuning.Visuals.BackgroundColor;
+                camera.backgroundColor = fixedFog.HasValue ? fixedFog.Value.Color : tuning.Visuals.BackgroundColor;
                 camera.farClipPlane = Mathf.Max(ArenaDefaults.MinFarClipM, tuning.Arena.CameraFarClipM);
                 camera.fieldOfView = tuning.Camera.CameraFovDeg;
             }
@@ -47,6 +58,7 @@ namespace Dovus.Game.Arena
             volume.priority = 1f;
 
             var look = fx.AddComponent<LookPresetController>();
+            look.FixedFog = fixedFog.HasValue;
             look.Initialize(volume, sun, camera);
         }
 

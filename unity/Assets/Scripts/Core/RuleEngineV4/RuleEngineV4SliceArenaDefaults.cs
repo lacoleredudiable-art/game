@@ -21,6 +21,8 @@ namespace Dovus.Core.RuleEngineV4
         public const float OuterWallVisualOuterRadiusM = 22f;
         public const int OuterWallSegments = 48;
         public const float OuterWallHeightM = 4f;
+        /// <summary>O-8.2 taş gri-mavi.</summary>
+        public const string OuterWallColorHex = "#3A4048";
         public const int MinWallSegmentCount = 8;
         public const float WallThicknessMinM = 0.35f;
         public const float WallThicknessArcScale = 0.55f;

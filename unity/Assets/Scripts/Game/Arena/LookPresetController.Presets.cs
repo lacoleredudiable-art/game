@@ -47,6 +47,9 @@ namespace Dovus.Game.Arena
 
         public char ActivePreset { get; private set; } = 'B';
 
+        /// <summary>Sis ve kamera arka planı sabit (dilim, O-8.7): ön ayar yalnız ışık/PostFX/ortam ışığını değiştirir.</summary>
+        public bool FixedFog { get; set; }
+
         /// <summary>Aktif ön ayar derinlik dokusu/SSAO gerektiriyor mu (yalnız 'C').</summary>
         public bool ActiveRequiresDepthTexture => ActivePreset == 'C';
 
@@ -368,7 +371,7 @@ namespace Dovus.Game.Arena
 
         void ApplyCameraBackground(char preset)
         {
-            if (_mainCamera == null)
+            if (_mainCamera == null || FixedFog)
                 return;
             Color baseBg = _fogCached ? _savedCameraBackground : _mainCamera.backgroundColor;
             // Gri gökyüzü hedefi |R-B| < 20 olmalı (task-look-v2b problem 1 doğrulaması) — B/C'nin
@@ -397,15 +400,18 @@ namespace Dovus.Game.Arena
             float baseDensity = _fogCached ? _savedFogDensity : RenderSettings.fogDensity;
             if (baseDensity <= 0.0001f)
                 baseDensity = LookPresetsDefaults.FogBaseDensity;
-            RenderSettings.fog = true;
-            RenderSettings.fogMode = FogMode.Exponential;
             Color sky = _fogCached ? _savedAmbientSky : RenderSettings.ambientSkyColor;
-            RenderSettings.fogDensity = preset switch
+            if (!FixedFog)
             {
-                'B' => baseDensity * LookPresetsDefaults.FogDensityPresetBMult,
-                'C' => baseDensity * LookPresetsDefaults.FogDensityPresetCMult,
-                _ => baseDensity * LookPresetsDefaults.FogDensityScaleDefault,
-            };
+                RenderSettings.fog = true;
+                RenderSettings.fogMode = FogMode.Exponential;
+                RenderSettings.fogDensity = preset switch
+                {
+                    'B' => baseDensity * LookPresetsDefaults.FogDensityPresetBMult,
+                    'C' => baseDensity * LookPresetsDefaults.FogDensityPresetCMult,
+                    _ => baseDensity * LookPresetsDefaults.FogDensityScaleDefault,
+                };
+            }
             RenderSettings.ambientSkyColor = preset switch
             {
                 'B' => Color.Lerp(sky, new Color(0.52f, 0.56f, 0.62f), LookPresetsDefaults.SkyPresetBLerp),

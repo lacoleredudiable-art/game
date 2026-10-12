@@ -56,5 +56,14 @@ namespace Dovus.Core.RuleEngineV4
         /// <summary>spec'te yok: zemin kor örtüsü (18 m çarpışma halkası içi).</summary>
         public const float FloorGlowRadiusM = 18f;
         public const float FloorGlowLiftM = 0.02f;
+
+        /// <summary>O-7.7: duvar ötesi düz zemin yarıçapı.</summary>
+        public const float BeyondGroundRadiusM = 300f;
+        /// <summary>O-8.2 kül.</summary>
+        public const string BeyondGroundColorHex = "#5B5A57";
+        /// <summary>O-8.7: üstel sis.</summary>
+        public const float BeyondFogDensity = 0.012f;
+        /// <summary>O-8.2 / O-8.7 uzak sis.</summary>
+        public const string BeyondFogColorHex = "#4A5260";
     }
 }

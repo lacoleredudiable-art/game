@@ -29,5 +29,17 @@ namespace Dovus.Core.RuleEngineV4
         public float ChordM { get; }
         public float CenterRadiusM { get; }
         public float InnerFaceRadiusM { get; }
+
+        /// <summary>Segment <paramref name="i"/> yüzünün ortası (x = sin, z = cos).</summary>
+        public float SegmentAngleRad(int i) => i * 2f * MathF.PI / Segments;
+
+        /// <summary>
+        /// Görsel duvar köşeleri segment yüzleri arasındadır; böylece görsel yüzler çarpışma segmentleriyle aynı
+        /// açıda ve düz durur (O-7.3: görsel iç yüz = çarpışma iç yüzü).
+        /// </summary>
+        public float CornerAngleRad(int j) => (j + 0.5f) * 2f * MathF.PI / Segments;
+
+        /// <summary>Yüz uzaklığı (apothem) <paramref name="faceRadiusM"/> olan düzgün çokgenin köşe yarıçapı.</summary>
+        public float CornerRadiusM(float faceRadiusM) => faceRadiusM / MathF.Cos(MathF.PI / Segments);
     }
 }

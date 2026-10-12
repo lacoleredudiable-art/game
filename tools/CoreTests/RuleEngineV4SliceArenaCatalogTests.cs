@@ -73,6 +73,53 @@ public sealed class RuleEngineV4SliceArenaCatalogTests
         Assert.That(RuleEngineV4Catalog.FromJson("{}").SliceArena.HasOuterWallGeometry, Is.False);
     }
 
+    /// <summary>O-7.3: görsel duvar köşeleri segment yüzleri arasında; köşeden köşeye yüz, çarpışma yüzüyle aynı düzlem.</summary>
+    [Test]
+    public void O_7_3_Json_VisualWall_ColorAndCornersOnCollisionFaces()
+    {
+        RuleEngineV4SliceArena arena = RuleEngineV4Catalog.FromJson(File.ReadAllText(Path.GetFullPath(JsonPath))).SliceArena;
+        Assert.That(arena.HasOuterWallColor, Is.True);
+        Assert.That(arena.OuterWallColorHex, Is.EqualTo("#3A4048"));
+        Assert.That(arena.OuterWallHeightM, Is.EqualTo(4f));
+        var wall = new RuleEngineV4SliceArenaWall(arena);
+        float r = wall.CornerRadiusM(arena.OuterWallVisualInnerRadiusM);
+        for (int i = 0; i < wall.Segments; i++)
+        {
+            float face = wall.SegmentAngleRad(i);
+            foreach (float corner in new[] { wall.CornerAngleRad(i - 1), wall.CornerAngleRad(i) })
+                Assert.That(r * MathF.Cos(corner - face), Is.EqualTo(arena.OuterWallVisualInnerRadiusM).Within(1e-3f),
+                    $"segment {i}: köşe iç yüz düzleminde değil");
+        }
+    }
+
+    [Test]
+    public void O_7_3_Json_MissingWallColor_FlagFalse()
+    {
+        RuleEngineV4SliceArena arena = RuleEngineV4Catalog.FromJson("{\"slice_arena\":{}}").SliceArena;
+        Assert.That(arena.HasOuterWallColor, Is.False);
+        Assert.That(arena.OuterWallColorHex, Is.EqualTo(RuleEngineV4SliceArenaDefaults.OuterWallColorHex));
+    }
+
+    /// <summary>O-7.7 / O-8.7: duvar ötesi zemin 300 m, üstel sis 0,012 #4A5260.</summary>
+    [Test]
+    public void O_8_7_Json_BeyondWall_GroundAndFog()
+    {
+        RuleEngineV4SliceArenaBeyond beyond = RuleEngineV4Catalog.FromJson(File.ReadAllText(Path.GetFullPath(JsonPath)))
+            .SliceArenaVisuals.Beyond;
+        Assert.That(beyond.HasBlock, Is.True);
+        Assert.That(beyond.GroundRadiusM, Is.EqualTo(300f));
+        Assert.That(beyond.FogDensity, Is.EqualTo(0.012f).Within(1e-6f));
+        Assert.That(beyond.FogColorHex, Is.EqualTo("#4A5260"));
+        Assert.That(beyond.GroundColorHex, Is.EqualTo("#5B5A57"));
+    }
+
+    [Test]
+    public void O_8_7_Json_MissingBeyondWall_FlagFalse()
+    {
+        Assert.That(RuleEngineV4Catalog.FromJson("{\"slice_arena_visuals\":{}}").SliceArenaVisuals.Beyond.HasBlock, Is.False);
+        Assert.That(RuleEngineV4Catalog.FromJson("{}").SliceArenaVisuals.Beyond.HasBlock, Is.False);
+    }
+
     [Test]
     public void Json_CocoonHeight_ReadFromData()
     {

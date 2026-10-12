@@ -25,6 +25,7 @@ namespace Dovus.Core.RuleEngineV4
         public bool HasFloorGlow { get; private set; }
         public float FloorGlowRadiusM { get; private set; } = RuleEngineV4SliceArenaVisualsDefaults.FloorGlowRadiusM;
         public float FloorGlowLiftM { get; private set; } = RuleEngineV4SliceArenaVisualsDefaults.FloorGlowLiftM;
+        public RuleEngineV4SliceArenaBeyond Beyond { get; private set; } = RuleEngineV4SliceArenaBeyond.FromJson(JsonValue.Null);
 
         public static RuleEngineV4SliceArenaVisuals Disabled => new();
 
@@ -66,6 +67,7 @@ namespace Dovus.Core.RuleEngineV4
                 v.FloorGlowRadiusM = floor["radius_m"].AsFloat(v.FloorGlowRadiusM);
                 v.FloorGlowLiftM = floor["lift_m"].AsFloat(v.FloorGlowLiftM);
             }
+            v.Beyond = RuleEngineV4SliceArenaBeyond.FromJson(node["beyond_wall"]);
             return v;
         }
 
