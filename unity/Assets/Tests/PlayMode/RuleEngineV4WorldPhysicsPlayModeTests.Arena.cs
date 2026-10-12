@@ -66,23 +66,37 @@ namespace Dovus.Tests.PlayMode
             Assert.That(open, Is.Empty, "dış duvar 18 m'de kesintili; açık yönler (derece): " + string.Join(", ", open));
         }
 
+        /// <summary>
+        /// O-7.2 / O-7.3: duvar çarpışması görünen duvarın içindedir (iç yüz 18 m, dış yüz 22 m). İç yüzün
+        /// berisinde çarpışma görünmez duvardır; dış yüzün ötesinde çarpışma görünmeyen bir kalınlıktır.
+        /// </summary>
         [UnityTest]
-        public IEnumerator OuterRing_18To22_HasNoCollision()
+        public IEnumerator O_7_2_DuvarCarpismasi_GorunenDuvarIcinde_GorunmezDuvarYok()
         {
             yield return null;
             RuleEngineV4SliceArena spec = ArenaSpec;
-            float inner = spec.OuterWallCollisionRadiusM + PosTolM + RingProbeRadiusM;
-            float outer = spec.OuterWallVisualOuterRadiusM - PosTolM;
+            Transform wallRoot = GameObject.Find(ArenaRoot).transform.Find("OuterWallCollision");
+            float face = spec.OuterWallVisualInnerRadiusM;
+            float back = spec.OuterWallVisualOuterRadiusM;
+            float clear = PosTolM + RingProbeRadiusM;
             var hits = new HashSet<string>();
-            for (float r = inner; r <= outer; r += 0.25f)
-            for (int deg = 0; deg < 360; deg += 5)
-            for (float y = 0.5f; y <= spec.OuterWallHeightM; y += 1f)
+            void Probe(float fromR, float toR)
             {
-                Vector3 p = Quaternion.Euler(0f, deg, 0f) * Vector3.forward * r + Vector3.up * y;
-                foreach (Collider c in Physics.OverlapSphere(p, RingProbeRadiusM, ~0, QueryTriggerInteraction.Ignore))
-                    hits.Add($"{c.name}@r{r:0.00}");
+                for (float r = fromR; r <= toR; r += 0.25f)
+                for (int deg = 0; deg < 360; deg += 5)
+                for (float y = 0.5f; y <= spec.OuterWallHeightM; y += 1f)
+                {
+                    Vector3 p = Quaternion.Euler(0f, deg, 0f) * Vector3.forward * r + Vector3.up * y;
+                    foreach (Collider c in Physics.OverlapSphere(p, RingProbeRadiusM, ~0, QueryTriggerInteraction.Ignore))
+                        if (c.transform.IsChildOf(wallRoot))
+                            hits.Add($"{c.name}@r{r:0.00}");
+                }
             }
-            Assert.That(hits, Is.Empty, "18–22 m halkasında çarpışma var: " + string.Join(", ", hits.Take(12)));
+            Probe(face * 0.5f, face - clear);
+            Probe(face - clear, face - clear);
+            Probe(back + clear, back + 2f);
+            Assert.That(hits, Is.Empty,
+                $"duvar çarpışması görünen duvarın ({face:0.0}–{back:0.0} m) dışında: " + string.Join(", ", hits.Take(12)));
         }
 
         [UnityTest]

@@ -14,7 +14,8 @@ namespace Dovus.Core.RuleEngineV4
             float outerWallVisualInnerRadiusM,
             float outerWallVisualOuterRadiusM,
             int outerWallSegments,
-            float outerWallHeightM)
+            float outerWallHeightM,
+            bool hasOuterWallGeometry)
         {
             Columns = columns;
             Cocoons = cocoons;
@@ -23,6 +24,7 @@ namespace Dovus.Core.RuleEngineV4
             OuterWallVisualOuterRadiusM = outerWallVisualOuterRadiusM;
             OuterWallSegments = outerWallSegments;
             OuterWallHeightM = outerWallHeightM;
+            HasOuterWallGeometry = hasOuterWallGeometry;
         }
 
         public IReadOnlyList<RuleEngineV4SliceArenaColumn> Columns { get; }
@@ -32,6 +34,12 @@ namespace Dovus.Core.RuleEngineV4
         public float OuterWallVisualOuterRadiusM { get; }
         public int OuterWallSegments { get; }
         public float OuterWallHeightM { get; }
+
+        /// <summary>
+        /// <c>outer_wall_collision_radius_m</c> ve <c>outer_wall_segments</c> JSON'da var. Yoksa değerler
+        /// <see cref="RuleEngineV4SliceArenaDefaults"/>'tandır; okuyan taraf bunu görünür kılmalı.
+        /// </summary>
+        public bool HasOuterWallGeometry { get; }
 
         public static RuleEngineV4SliceArena Default => BuildDefaults();
 
@@ -94,7 +102,8 @@ namespace Dovus.Core.RuleEngineV4
                 visualInner,
                 visualOuter,
                 node["outer_wall_segments"].AsInt(RuleEngineV4SliceArenaDefaults.OuterWallSegments),
-                F(node["outer_wall_height_m"], null, RuleEngineV4SliceArenaDefaults.OuterWallHeightM));
+                F(node["outer_wall_height_m"], null, RuleEngineV4SliceArenaDefaults.OuterWallHeightM),
+                !node["outer_wall_collision_radius_m"].IsNull && !node["outer_wall_segments"].IsNull);
         }
 
         static RuleEngineV4SliceArena BuildDefaults()
@@ -135,7 +144,8 @@ namespace Dovus.Core.RuleEngineV4
                 RuleEngineV4SliceArenaDefaults.OuterWallCollisionRadiusM,
                 RuleEngineV4SliceArenaDefaults.OuterWallVisualOuterRadiusM,
                 RuleEngineV4SliceArenaDefaults.OuterWallSegments,
-                RuleEngineV4SliceArenaDefaults.OuterWallHeightM);
+                RuleEngineV4SliceArenaDefaults.OuterWallHeightM,
+                hasOuterWallGeometry: false);
         }
 
         static float F(JsonValue primary, JsonValue secondary, float fallback)

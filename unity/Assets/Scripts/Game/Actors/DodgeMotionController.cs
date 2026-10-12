@@ -231,7 +231,7 @@ namespace Dovus.Game.Actors
             if (_motor == null)
                 return pos;
 
-            return ArenaClamp.XZ(pos, _motor.Tuning.Arena.ArenaHalfSizeM, _motor.BodyRadiusM);
+            return ArenaClamp.XZ(pos, ArenaBoundary.RadiusM(_motor.Tuning), _motor.BodyRadiusM);
         }
     }
 }

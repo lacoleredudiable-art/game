@@ -1,3 +1,4 @@
+using Dovus.Game.Actors;
 using Dovus.Game.Arena;
 using Dovus.Game.Config;
 using Dovus.Game.Diagnostics;
@@ -14,7 +15,7 @@ namespace Dovus.Game.Composition.Builders
         {
             var tuning = ctx.Tuning;
             ctx.Arena = CreateArena(tuning);
-            float walkHalf = tuning.Arena.ArenaHalfSizeM;
+            float walkHalf = ArenaBoundary.RadiusM(tuning);
             ctx.WalkHalf = walkHalf;
             ctx.Combat.SkillMotion.ArenaHalfSizeM = walkHalf;
             if (AssetLoader.Load<Material>("Presentation/ParticlesUnlitAnchor", null) == null)

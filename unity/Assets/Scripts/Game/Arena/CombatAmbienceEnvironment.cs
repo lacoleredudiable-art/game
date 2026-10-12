@@ -1,3 +1,4 @@
+using Dovus.Game.Actors;
 using Dovus.Game.Cameras;
 using Dovus.Game.Config;
 using Dovus.Game.Assets;
@@ -102,7 +103,7 @@ namespace Dovus.Game.Arena
             if (tuning == null)
                 return;
 
-            float walkHalf = Mathf.Max(CombatAmbienceEnvironmentDefaults.WalkHalfMinM, tuning.Arena.ArenaHalfSizeM);
+            float walkHalf = Mathf.Max(CombatAmbienceEnvironmentDefaults.WalkHalfMinM, ArenaBoundary.RadiusM(tuning));
             RenderSettings.fog = true;
             RenderSettings.fogColor = tuning.Arena.FogColor;
             // spec'te yok — varsayılan: doğrusal sis, yürüme yarıçapına oranlı.

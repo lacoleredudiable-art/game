@@ -169,7 +169,7 @@ namespace Dovus.Game.Actors
             Vector3 from = transform.position;
             Vector3 next = SweepAndSlide(from, from + Velocity * dtSec);
             next = PushOutOfObstacles(next);
-            next = ArenaClamp.XZ(next, _tuning.Arena.ArenaHalfSizeM, _bodyRadiusM);
+            next = ArenaClamp.XZ(next, ArenaBoundary.RadiusM(_tuning), _bodyRadiusM);
             transform.position = next;
 
             Transform combatTarget = _combatFacingTarget?.Invoke();
@@ -213,7 +213,7 @@ namespace Dovus.Game.Actors
             }
 
             next = PushOutOfObstacles(next, anchoredTriggersBlock: true);
-            next = ArenaClamp.XZ(next, Tuning.Arena.ArenaHalfSizeM, _bodyRadiusM);
+            next = ArenaClamp.XZ(next, ArenaBoundary.RadiusM(Tuning), _bodyRadiusM);
             next.y = from.y;
             return next;
         }

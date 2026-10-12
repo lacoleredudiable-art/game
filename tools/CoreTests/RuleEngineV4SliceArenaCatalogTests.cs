@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Dovus.Core.RuleEngineV4;
 using NUnit.Framework;
@@ -39,6 +40,37 @@ public sealed class RuleEngineV4SliceArenaCatalogTests
             Assert.That(c.RadiusM, Is.EqualTo(0.6f).Within(0.001f), "radius_m");
             Assert.That(c.HeightM, Is.EqualTo(1.8f).Within(0.001f), "height_m");
         }
+    }
+
+    /// <summary>
+    /// O-7.2: çarpışma duvarının iç yüzü görünen duvarın iç yüzüyle aynı (18 m), görünmez duvar yok;
+    /// segmentler dışa doğru kurulur, boşluksuz birleşir ve görünen dış yüzü (O-7.3) aşmaz.
+    /// </summary>
+    [Test]
+    public void O_7_2_Json_OuterWall_InnerFace_EqualsVisibleInnerFace()
+    {
+        RuleEngineV4Catalog catalog = RuleEngineV4Catalog.FromJson(File.ReadAllText(Path.GetFullPath(JsonPath)));
+        RuleEngineV4SliceArena arena = catalog.SliceArena;
+        Assert.That(arena.HasOuterWallGeometry, Is.True);
+        var wall = new RuleEngineV4SliceArenaWall(arena);
+        Assert.That(wall.Segments, Is.EqualTo(48));
+        Assert.That(wall.InnerFaceRadiusM, Is.EqualTo(arena.OuterWallVisualInnerRadiusM).Within(0.001f), "sınır");
+        Assert.That(wall.CenterRadiusM - wall.DepthM * 0.5f, Is.EqualTo(arena.OuterWallVisualInnerRadiusM).Within(0.001f),
+            "segment iç yüzü");
+        float outerApothem = wall.CenterRadiusM + wall.DepthM * 0.5f;
+        float halfStep = MathF.PI / wall.Segments;
+        Assert.That(wall.ChordM * 0.5f, Is.GreaterThanOrEqualTo(outerApothem * MathF.Tan(halfStep) - 1e-4f),
+            "segmentler dış köşede birleşmiyor");
+        Assert.That(MathF.Sqrt(outerApothem * outerApothem + wall.ChordM * wall.ChordM * 0.25f),
+            Is.LessThanOrEqualTo(arena.OuterWallVisualOuterRadiusM), "çarpışma görünen dış yüzü aşıyor");
+    }
+
+    [Test]
+    public void O_7_2_Json_MissingOuterWall_FlagFalse()
+    {
+        const string json = "{\"slice_arena\":{\"outer_wall_segments\":48}}";
+        Assert.That(RuleEngineV4Catalog.FromJson(json).SliceArena.HasOuterWallGeometry, Is.False);
+        Assert.That(RuleEngineV4Catalog.FromJson("{}").SliceArena.HasOuterWallGeometry, Is.False);
     }
 
     [Test]
