@@ -124,7 +124,7 @@ namespace Dovus.Tests.PlayMode
             RuleEngineV4SurfaceMarkHost mark = _surfaceMark;
             float r = ArenaSpec.OuterWallCollisionRadiusM;
             Assert.That(Mathf.Abs(Vector3.Dot(mark.transform.position, AimSide)), Is.LessThan(PosTolM), "işaret nişan çizgisinde değil");
-            Assert.That(Vector3.Dot(mark.transform.position, AimDir), Is.LessThan(r), "işaret 18 m duvarın dışında");
+            Assert.That(Vector3.Dot(mark.transform.position, AimDir), Is.EqualTo(r).Within(PosTolM), "işaret 18 m duvarın iç yüzünde değil");
 
             yield return PullToSurfaceMark(mark, AimDir * (r - WallAimStandoffM - 1f), AimSide);
         }

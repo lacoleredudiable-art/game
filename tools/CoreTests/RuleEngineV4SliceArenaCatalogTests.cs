@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Dovus.Core.RuleEngineV4;
 using NUnit.Framework;
@@ -41,16 +42,27 @@ public sealed class RuleEngineV4SliceArenaCatalogTests
         }
     }
 
-    /// <summary>O-7.2: oynanış sınırı dış duvarın iç yüzü (48 segment, dış köşeler 18 m).</summary>
+    /// <summary>
+    /// O-7.2: çarpışma duvarının iç yüzü görünen duvarın iç yüzüyle aynı (18 m), görünmez duvar yok;
+    /// segmentler dışa doğru kurulur, boşluksuz birleşir ve görünen dış yüzü (O-7.3) aşmaz.
+    /// </summary>
     [Test]
-    public void O_7_2_Json_OuterWall_InnerFaceRadius()
+    public void O_7_2_Json_OuterWall_InnerFace_EqualsVisibleInnerFace()
     {
         RuleEngineV4Catalog catalog = RuleEngineV4Catalog.FromJson(File.ReadAllText(Path.GetFullPath(JsonPath)));
-        Assert.That(catalog.SliceArena.HasOuterWallGeometry, Is.True);
-        var wall = new RuleEngineV4SliceArenaWall(catalog.SliceArena);
+        RuleEngineV4SliceArena arena = catalog.SliceArena;
+        Assert.That(arena.HasOuterWallGeometry, Is.True);
+        var wall = new RuleEngineV4SliceArenaWall(arena);
         Assert.That(wall.Segments, Is.EqualTo(48));
-        Assert.That(wall.InnerFaceRadiusM, Is.EqualTo(16.406f).Within(0.001f));
-        Assert.That(wall.CenterRadiusM + wall.DepthM * 0.5f, Is.EqualTo(wall.InnerFaceRadiusM + wall.DepthM).Within(1e-4f));
+        Assert.That(wall.InnerFaceRadiusM, Is.EqualTo(arena.OuterWallVisualInnerRadiusM).Within(0.001f), "sınır");
+        Assert.That(wall.CenterRadiusM - wall.DepthM * 0.5f, Is.EqualTo(arena.OuterWallVisualInnerRadiusM).Within(0.001f),
+            "segment iç yüzü");
+        float outerApothem = wall.CenterRadiusM + wall.DepthM * 0.5f;
+        float halfStep = MathF.PI / wall.Segments;
+        Assert.That(wall.ChordM * 0.5f, Is.GreaterThanOrEqualTo(outerApothem * MathF.Tan(halfStep) - 1e-4f),
+            "segmentler dış köşede birleşmiyor");
+        Assert.That(MathF.Sqrt(outerApothem * outerApothem + wall.ChordM * wall.ChordM * 0.25f),
+            Is.LessThanOrEqualTo(arena.OuterWallVisualOuterRadiusM), "çarpışma görünen dış yüzü aşıyor");
     }
 
     [Test]

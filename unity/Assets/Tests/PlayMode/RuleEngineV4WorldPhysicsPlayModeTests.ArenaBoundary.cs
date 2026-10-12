@@ -14,8 +14,8 @@ namespace Dovus.Tests.PlayMode
 {
     /// <summary>
     /// Arena sınırı tek kaynak (O-7.2, O-4.9, O-4.11; 10-olculer §18 Ç-1): dilimde yürüme, dodge, takla ve
-    /// Hareket kombosu dış duvarın iç yüzünün (kural-motoru-v4.json <c>slice_arena</c> →
-    /// <see cref="RuleEngineV4SliceArenaWall"/>) içinde kalır, gövde hiçbir engelin içine girmez;
+    /// Hareket kombosu görünen duvarın iç yüzünün (kural-motoru-v4.json <c>slice_arena</c>, 18 m) içinde kalır ve
+    /// yürüyen oyuncu o yüze kadar varır (görünmez duvar yok); gövde hiçbir engelin içine girmez;
     /// sahnedeki <c>ArenaHalfSizeM</c> okunmaz. Girdi gerçek yoldan: dodge düğmesine dokunuş, çubuk, kombo.
     /// </summary>
     public sealed partial class RuleEngineV4WorldPhysicsPlayModeTests
@@ -45,7 +45,10 @@ namespace Dovus.Tests.PlayMode
 
         static float PlayerBodyM => RuleEngineV4WorldPhysicsRuntime.Active.BodyRadiusPlayerM;
 
-        float ArenaLimitM => new RuleEngineV4SliceArenaWall(ArenaSpec).InnerFaceRadiusM - PlayerBodyM;
+        /// <summary>O-7.2: sınır görünen duvarın iç yüzüdür; çarpışma geometrisinden türetilmez.</summary>
+        float VisibleInnerFaceM => ArenaSpec.OuterWallVisualInnerRadiusM;
+
+        float ArenaLimitM => VisibleInnerFaceM - PlayerBodyM;
 
         [UnityTest]
         public IEnumerator O_7_2_ArenaSiniri_TekKaynak_IcYuz()
@@ -184,6 +187,11 @@ namespace Dovus.Tests.PlayMode
                 move.SetScriptedDirection(null);
             }
             Judge(watch, start, fails);
+            // Görünmez duvar yok: duvara yürüyen gövde görünen iç yüze O-4.9 kenar payı kadar yaklaşır.
+            float gap = VisibleInnerFaceM - (Flat(_player.position).magnitude + PlayerBodyM);
+            float allowed = InputController().Combat.Dodge.EdgeGapM + PosTolM;
+            if (gap > allowed)
+                fails.Add($"{_label}: görünen duvara {gap:0.00} m kala durdu (izin {allowed:0.00} m), görünmez duvar");
         }
 
         IEnumerator CastScenario(

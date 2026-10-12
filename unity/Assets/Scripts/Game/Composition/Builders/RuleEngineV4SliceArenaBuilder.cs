@@ -59,7 +59,6 @@ namespace Dovus.Game.Composition.Builders
         {
             var wallRoot = new GameObject("OuterWallCollision");
             wallRoot.transform.SetParent(parent, false);
-            // Dış köşeler tam çarpışma yarıçapında: segmentler boşluksuz birleşir, 18 m dışına taşmaz.
             var geometry = new RuleEngineV4SliceArenaWall(arena);
             int segments = geometry.Segments;
             float height = Mathf.Max(RuleEngineV4SliceArenaBuilderDefaults.MinWallHeightM, arena.OuterWallHeightM);
