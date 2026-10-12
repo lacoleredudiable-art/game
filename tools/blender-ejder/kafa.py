@@ -14,10 +14,11 @@ SNOUT_X = 0.488
 TARGET_TRIS = 14000
 
 def m2a(x, y, z):            # model -> arena (dinlenme: dik boyun)
-    return np.array([z * S, 7.5 + (SNOUT_X - x) * S, y * S])
+    return np.array([-z * S, 7.5 + (SNOUT_X - x) * S, y * S])
 
+# Unity (sol el): X doğu, Y yukarı, Z kuzey. Blender (sağ el) karşılığı: doğu = -X, kuzey = -Y, yukarı = +Z.
 def a2b(p):                  # arena -> blender
-    return Vector((p[0], -p[1], p[2]))
+    return Vector((-p[0], -p[1], p[2]))
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.gltf(filepath=SRC)
@@ -60,7 +61,7 @@ bpy.ops.object.mode_set(mode="OBJECT")
 
 # --- ağırlıklar: merkez çizgisine izdüşüm, eklem yakınında yumuşak geçiş ---
 Pa = np.array(P)
-V = np.array([(v.co.x, -v.co.y, v.co.z) for v in me.vertices])  # arena
+V = np.array([(-v.co.x, -v.co.y, v.co.z) for v in me.vertices])  # arena
 nb = len(names)
 W = np.zeros((len(V), nb))
 best_d = np.full(len(V), np.inf); best_s = np.zeros(len(V), int); best_t = np.zeros(len(V))
@@ -134,7 +135,7 @@ for mat in obj.data.materials:
         if nd.type == "TEX_IMAGE" and nd.image:
             nd.image.filepath_raw = f"{OUT}/ejder_bas_albedo.png"; nd.image.file_format = "PNG"; nd.image.save()
 
-Va = np.array([(obj.matrix_world @ v.co) for v in me.vertices]); Va = np.c_[Va[:, 0], -Va[:, 1], Va[:, 2]]
+Va = np.array([(obj.matrix_world @ v.co) for v in me.vertices]); Va = np.c_[-Va[:, 0], -Va[:, 1], Va[:, 2]]
 print(f"RAPOR üçgen {tris} -> {tris2}; boyun uzunluğu {neck_len:.1f} m, eğri {ln:.1f} m, taban Z {zb:.1f}")
 print(f"RAPOR baş+boyun X {Va[:,0].min():.1f}..{Va[:,0].max():.1f} Z {Va[:,1].min():.1f}..{Va[:,1].max():.1f} H {Va[:,2].min():.1f}..{Va[:,2].max():.1f}")
 hm = Va[:, 1] < 17.5

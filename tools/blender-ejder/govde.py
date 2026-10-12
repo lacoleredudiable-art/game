@@ -36,7 +36,7 @@ for v in me.vertices:
     ax = -x * SCALE
     az = 7.5 + (y - ymin) * SCALE   # arena Z (kuzey)
     ah = z * SCALE                  # yükseklik
-    v.co = Vector((ax, -az, ah))    # Blender: Y = -arenaZ
+    v.co = Vector((ax, -az, ah))    # Blender: X = -arenaX (doğu = -X), Y = -arenaZ; tripo x -> -x 180° dönüşle aynı (aynalama yok)
 me.update()
 
 def arena(co):

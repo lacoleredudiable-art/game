@@ -11,8 +11,9 @@ BLEND, OUT = sys.argv[sys.argv.index("--") + 1:][:2]
 bpy.ops.wm.open_mainfile(filepath=BLEND)
 arm = bpy.data.objects["ejder_on_iskelet"]; body = bpy.data.objects["ejder_bas"]
 NECK = ["Boyun_1", "Boyun_2", "Boyun_3", "Boyun_4", "Boyun_5"]
-def a2b(p): return Vector((p[0], -p[1], p[2]))
-def b2a(v): return np.array([v.x, -v.y, v.z])
+# Unity (sol el): X doğu, Y yukarı, Z kuzey. Blender (sağ el) karşılığı: doğu = -X, kuzey = -Y, yukarı = +Z.
+def a2b(p): return Vector((-p[0], -p[1], p[2]))
+def b2a(v): return np.array([-v.x, -v.y, v.z])
 
 bones = arm.data.bones
 P = [b2a(bones[n].head_local) for n in NECK] + [b2a(bones["Bas"].head_local)]
@@ -65,8 +66,8 @@ def set_pose(J, pitch=0.0, yaw=0.0, roll=0.0):
 POSES = [
     ("Yatis",            (0, J0[1], J0[2]), 0, 0, 0),
     ("Nefes_Cekme",      (0, 17.6, 5.4), 6, 0, 0),
-    ("Bas_Sola_Cekik",   (-5.0, 18.0, 6.3), 4, 35, -6),
-    ("Bas_Saga_Cekik",   (5.0, 18.0, 6.3), 4, -35, 6),
+    ("Bas_Sola_Cekik",   (-5.0, 18.0, 6.3), 4, -35, -6),
+    ("Bas_Saga_Cekik",   (5.0, 18.0, 6.3), 4, 35, 6),
     ("Bas_Kalkik",       (0, 18.0, 10.3), 12, 0, 0),
     ("Bas_Yere_Vurmus",  (0, 16.6, 4.6), -4, 0, 0),
     ("Bas_Goge",         (0, 21.0, 15.0), 60, 0, 0),

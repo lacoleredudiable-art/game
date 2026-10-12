@@ -7,8 +7,8 @@ _a = sys.argv[sys.argv.index("--") + 1:]; BLEND, OUT = _a[:2]; EXTRA = _a[2:]
 bpy.ops.wm.open_mainfile(filepath=BLEND)
 sc = bpy.context.scene
 
-def A(x, z, y=0.0):            # arena (X doğu, Z kuzey, Y yukarı) -> Blender
-    return Vector((x, -z, y))
+def A(x, z, y=0.0):            # arena (X doğu, Z kuzey, Y yukarı) -> Blender (doğu = -X)
+    return Vector((-x, -z, y))
 
 def hexcol(h, a=1.0):
     h = h.lstrip("#"); c = [int(h[i:i+2], 16) / 255 for i in (0, 2, 4)]
@@ -53,12 +53,20 @@ bpy.context.view_layer.objects.active = w; bpy.ops.object.modifier_apply(modifie
 for (x, z, h) in [(-9, 4, 8), (9, 4, 7), (0, -10, 6)]:
     box("tas", x, z, 2, 1.5, h, stone)
 # baş: gerçek model varsa onu al, yoksa yer tutucu
+POZ = "Poz_Yatis"
 for fp in EXTRA:
+    if fp.startswith("poz="): POZ = fp[4:]; continue
     bpy.ops.import_scene.fbx(filepath=fp)
+for o in bpy.data.objects:
+    if o.type == "ARMATURE" and o.animation_data:
+        acts = [a for a in bpy.data.actions if a.name.endswith(POZ)]
+        if acts: o.animation_data.action = acts[0]
+EXTRA = [e for e in EXTRA if not e.startswith("poz=")]
 if not EXTRA:
     box("bas", 0, 12, 6, 9, 7, rock)
-for x in (-7, 7):
-    box("pence", x, 9, 3, 4, 4, rock)
+if not EXTRA:
+    for x in (-7, 7):
+        box("pence", x, 9, 3, 4, 4, rock)
 if not EXTRA:
     for x in (-1.6, 1.6):
         bpy.ops.mesh.primitive_uv_sphere_add(radius=0.5, location=A(x, 7.6, 4.8)); bpy.context.active_object.data.materials.append(kor)
@@ -70,7 +78,7 @@ bpy.context.active_object.data.materials.append(ply)
 bpy.ops.object.light_add(type="SUN"); sun = bpy.context.active_object
 sun.data.energy = 3.0; sun.data.color = hexcol("#F2C79A")[:3]
 az, el = math.radians(315), math.radians(20)
-d = Vector((math.sin(az) * math.cos(el), -math.cos(az) * math.cos(el), math.sin(el)))  # güneşe doğru yön
+d = Vector((-math.sin(az) * math.cos(el), -math.cos(az) * math.cos(el), math.sin(el)))  # güneşe doğru yön
 sun.rotation_euler = (-d).to_track_quat("-Z", "Y").to_euler()
 # dünya: sis rengi + hacimsel sis (SI-4.1, yoğunluk 0,012)
 wd = bpy.data.worlds.new("w"); sc.world = wd; wd.use_nodes = True
