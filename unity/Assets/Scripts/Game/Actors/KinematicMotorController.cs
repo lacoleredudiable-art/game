@@ -40,6 +40,7 @@ namespace Dovus.Game.Actors
 
         static readonly Collider[] ObstacleBuffer = new Collider[16];
         static readonly RaycastHit[] CastHits = new RaycastHit[8];
+        readonly RuleEngineV4WalkBodyBlock _bodyBlock = new();
 
         public void BindCamera(FollowCameraController follow) => _follow = follow;
 
@@ -194,6 +195,11 @@ namespace Dovus.Game.Actors
 
             Vector3 from = transform.position;
             Vector3 next = SweepAndSlide(from, from + Velocity * dtSec);
+            if (_tuning.RuleEngineV4.SliceScene)
+            {
+                BodyCapsule(next, out Vector3 bottom, out Vector3 top, out float radius);
+                next = _bodyBlock.Resolve(from, next, bottom, top, radius, transform);
+            }
             next = PushOutOfObstacles(next);
             next = ArenaClamp.XZ(next, ArenaBoundary.RadiusM(_tuning), _bodyRadiusM);
             transform.position = next;

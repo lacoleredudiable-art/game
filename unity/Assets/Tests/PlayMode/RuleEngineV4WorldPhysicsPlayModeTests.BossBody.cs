@@ -148,7 +148,7 @@ namespace Dovus.Tests.PlayMode
                     Measure();
                     yield return null;
                 }
-                // Yürüme boss'u engel saymaz; dodge bitince çubuk bırakılır ki yalnız dodge ölçülsün.
+                // Dodge bitince çubuk bırakılır ki yalnız dodge ölçülsün.
                 move.SetScriptedDirection(null);
                 for (int i = 0; i < BossDodgeSettleFrames; i++)
                 {
