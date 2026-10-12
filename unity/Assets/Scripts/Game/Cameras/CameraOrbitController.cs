@@ -45,7 +45,9 @@ namespace Dovus.Game.Cameras
             _hexagonInput = hexagonInput;
             _hexView = hexView;
             _tuning = tuning;
-            if (_tuning != null)
+            if (_camera != null)
+                _pitchDeg = _camera.BaseFrame.PitchDeg;
+            else if (_tuning != null)
                 _pitchDeg = _tuning.Camera.CameraDefaultPitchDeg;
         }
 

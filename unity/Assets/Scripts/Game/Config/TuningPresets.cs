@@ -115,7 +115,7 @@ namespace Dovus.Game.Config
             c.Boss.WindupMs = 900;
             c.Boss.RadiusM = 6.5f;
 
-            c.Feel.CameraPerfectZoomKick = 0.30f;
+            c.Feel.CameraPerfectZoomKick = 0.25f;
             c.Feel.CameraDodgeZoomKick = 0.18f;
             c.Feel.CameraRollDeg = 4f;
             c.Feel.ShakePerfectPx = 12f;

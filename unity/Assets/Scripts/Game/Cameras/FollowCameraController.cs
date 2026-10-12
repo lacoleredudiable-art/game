@@ -45,18 +45,13 @@ namespace Dovus.Game.Cameras
         float _windupVelocity;
         bool _windupHooked;
         Quaternion _aimRotation;
-        Transform[] _ignoreRoots;
-        int _collisionLayerMask;
-        bool _collisionFilterLogged;
-        float _smoothedAlongDistM;
-        float _alongDistVelocity;
-        float _collisionPulledInM;
+        readonly CameraCollisionSolver _collision = new();
         float _lockOnShoulderSign = 1f;
         float _lastLockOnOverlapPct = 1f;
-        static readonly RaycastHit[] CollisionHits = new RaycastHit[8];
+        CameraBaseFrame? _baseFrame;
 
         /// <summary>Son karede pivot→istenen mesafe ekseninde scenery çekişi (m).</summary>
-        public float CollisionPulledInM => _collisionPulledInM;
+        public float CollisionPulledInM => _collision.PulledInM;
 
         /// <summary>Lock-on: oyuncu ekran dikdörtgeninin boss örtüsüne göre görünür oranı (0–1).</summary>
         public float LockOnPlayerVisibleRatio => _lastLockOnOverlapPct;
@@ -118,6 +113,18 @@ namespace Dovus.Game.Cameras
 
         public Camera ViewCamera => _cam;
 
+        /// <summary>Dilim: temel kadraj tek kaynaktan (<c>slice_camera</c>); bağlanmamışsa ayar canlı okunur.</summary>
+        public void UseBaseFrame(CameraBaseFrame frame)
+        {
+            _baseFrame = frame;
+            _resolvedDistanceM = frame.DistanceM;
+        }
+
+        public CameraBaseFrame BaseFrame => _baseFrame ?? CameraBaseFrame.From(Tuning.Camera);
+
+        /// <summary>Bağlanmamışsa kilit mesafesi boss merkezinden, çarpışma gövdeyi saymaz.</summary>
+        public void BindBossBody(CameraBossBody body) => _collision.BindBossBody(body);
+
         void Awake()
         {
             _tuning ??= new GameTuning();
@@ -128,7 +135,7 @@ namespace Dovus.Game.Cameras
                 _aimRotation = transform.rotation;
             }
             _resolvedYawDeg = OrbitYawDeg;
-            _resolvedDistanceM = _tuning.Camera.CameraDistanceM;
+            _resolvedDistanceM = BaseFrame.DistanceM;
             if (_targetMotor == null && _target != null)
                 _targetMotor = _target.GetComponent<KinematicMotorController>();
         }
@@ -136,29 +143,8 @@ namespace Dovus.Game.Cameras
         void OnDisable() => UnhookBossDirector();
 
         /// <summary>Karakter/VFX kökleri spherecast'ten çıkar; layer mask bind'de kurulur.</summary>
-        public void BindCollisionFiltering(Transform playerRoot, Transform bossRoot, Transform allyRoot = null)
-        {
-            var roots = new List<Transform>(3);
-            if (playerRoot != null)
-                roots.Add(playerRoot);
-            if (bossRoot != null)
-                roots.Add(bossRoot);
-            if (allyRoot != null)
-                roots.Add(allyRoot);
-            _ignoreRoots = roots.ToArray();
-
-            int blocker = LayerMask.NameToLayer("CameraBlocker");
-            _collisionLayerMask = blocker >= 0
-                ? LayerMask.GetMask("Default", "CameraBlocker")
-                : LayerMask.GetMask("Default");
-            if (!_collisionFilterLogged)
-            {
-                DebugConfig.DevLog(
-                    $"[FollowCamera] collision mask layers={(blocker >= 0 ? "Default+CameraBlocker" : "Default only")} "
-                    + $"ignoreRoots={_ignoreRoots.Length} (player/boss/ally, triggers skipped)");
-                _collisionFilterLogged = true;
-            }
-        }
+        public void BindCollisionFiltering(Transform playerRoot, Transform bossRoot, Transform allyRoot = null) =>
+            _collision.BindFiltering(playerRoot, bossRoot, allyRoot);
 
         /// <summary>Boss windup telegrafı — yalnız sunum; boss zamanlamasına dokunulmaz.</summary>
         public void BindBossDirector(BossDirector director)
@@ -205,7 +191,10 @@ namespace Dovus.Game.Cameras
         /// </summary>
         public void Punch(float fovKick, float rollDeg, float shakePx, float decay)
         {
-            _fovKick = fovKick;
+            if (fovKick < 0f || fovKick > FollowCameraControllerDefaults.FovKickMax)
+                Debug.LogError($"[V4-FALLBACK] FollowCameraController.Punch: fovKick {fovKick:0.###} oran aralığı " +
+                    $"(0–{FollowCameraControllerDefaults.FovKickMax:0.##}) dışında; sıkıştırıldı");
+            _fovKick = Mathf.Clamp(fovKick, 0f, FollowCameraControllerDefaults.FovKickMax);
             _rollDeg = rollDeg;
             _punchT = 1f;
             _punchDecay = Mathf.Max(0.5f, decay);
@@ -268,7 +257,7 @@ namespace Dovus.Game.Cameras
                 dt);
 
             Vector3 playerAim = _target.position + lookAhead * FollowCameraControllerDefaults.LookAheadBlend
-                + Vector3.up * _tuning.Camera.CameraLookHeightM;
+                + Vector3.up * BaseFrame.LookHeightM;
 
             Vector3 shoulder = _tuning.Camera.CameraShoulderOffset;
             shoulder.y += _windupPullback * _tuning.Camera.CameraWindupExtraHeightM;
@@ -281,7 +270,7 @@ namespace Dovus.Game.Cameras
             Vector3 localOffset = shoulder + Vector3.back * _resolvedDistanceM;
             Vector3 offset = Quaternion.Euler(OrbitPitchDeg, _resolvedYawDeg, 0f) * localOffset;
             Vector3 desired = _target.position + offset + lookAhead + _shakeOffset;
-            desired = ApplyCameraCollision(playerAim, desired, dt);
+            desired = _collision.Resolve(playerAim, desired, dt, _tuning.Camera);
 
             transform.position = Vector3.SmoothDamp(
                 transform.position,
@@ -290,6 +279,8 @@ namespace Dovus.Game.Cameras
                 _tuning.Camera.FollowSmoothTimeSec,
                 Mathf.Infinity,
                 dt);
+            // Yumuşatma kamerayı gövdeye geç bırakabilir; O-5.15 her karedir.
+            transform.position = _collision.KeepOutOfBossBody(playerAim, transform.position, _tuning.Camera);
 
             Vector3 lookTarget = playerAim;
             if (_bossTarget != null)
@@ -307,30 +298,37 @@ namespace Dovus.Game.Cameras
                 }
             }
 
-            Quaternion look = Quaternion.LookRotation(lookTarget - transform.position, Vector3.up);
-            float aimBlend = 1f - Mathf.Exp(-dt / Mathf.Max(0.001f, _tuning.Camera.CameraAimDampingSec));
-            _aimRotation = Quaternion.Slerp(_aimRotation, look, aimBlend);
+            Vector3 toLook = lookTarget - transform.position;
+            if (toLook.sqrMagnitude > FollowCameraControllerDefaults.MinTargetAlongM * FollowCameraControllerDefaults.MinTargetAlongM)
+            {
+                Quaternion look = Quaternion.LookRotation(toLook, Vector3.up);
+                float aimBlend = 1f - Mathf.Exp(-dt / Mathf.Max(0.001f, _tuning.Camera.CameraAimDampingSec));
+                _aimRotation = Quaternion.Slerp(_aimRotation, look, aimBlend);
+            }
 
             AdvancePunch();
             transform.rotation = _aimRotation * Quaternion.Euler(0f, 0f, _rollDeg * _punchT);
             if (_cam != null)
             {
-                _baseFov = Mathf.Clamp(_tuning.Camera.CameraFovDeg, FollowCameraControllerDefaults.FovClampMinDeg, FollowCameraControllerDefaults.FovClampMaxDeg);
+                _baseFov = Mathf.Clamp(BaseFrame.FovDeg, FollowCameraControllerDefaults.FovClampMinDeg, FollowCameraControllerDefaults.FovClampMaxDeg);
                 _cam.fieldOfView = _baseFov * (1f - _fovKick * _punchT);
             }
         }
 
         float ResolveCameraDistance()
         {
-            float distance = _tuning.Camera.CameraDistanceM;
+            float distance = BaseFrame.DistanceM;
             // Mesafe büyümesi SADECE gerçek lock-on'da (ff-4) — menzil yakınlığıyla değil,
             // yoksa varsayılan == lock-on olur (eski bug).
             if (LockOnActive && _bossTarget != null)
             {
                 Vector3 toBoss = _bossTarget.position - _target.position;
                 toBoss.y = 0f;
+                // O-5.8: oyuncu-boss mesafesi boss gövdesinin kenarından.
+                CameraBossBody body = _collision.BossBody;
+                float separation = body != null && body.Is(_bossTarget) ? body.EdgeDistanceM(_target.position) : toBoss.magnitude;
                 float extra = Mathf.Min(
-                    toBoss.magnitude * _tuning.Camera.CameraLockOnDistancePerSepM,
+                    separation * _tuning.Camera.CameraLockOnDistancePerSepM,
                     _tuning.Camera.CameraLockOnMaxExtraDistanceM);
                 distance = Mathf.Clamp(
                     distance + extra,
@@ -342,24 +340,6 @@ namespace Dovus.Game.Cameras
             return distance * windupMul;
         }
 
-
-        bool IsBlockingCollider(Collider col)
-        {
-            if (col == null || col.isTrigger)
-                return false;
-            if (_ignoreRoots != null)
-            {
-                Transform t = col.transform;
-                for (int r = 0; r < _ignoreRoots.Length; r++)
-                {
-                    Transform root = _ignoreRoots[r];
-                    if (root != null && t.IsChildOf(root))
-                        return false;
-                }
-            }
-
-            return true;
-        }
 
         float ResolveLockOnShoulderSign(Vector3 playerAim, float dt)
         {

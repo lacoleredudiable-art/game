@@ -236,6 +236,13 @@
     "floor_glow": { "radius_m": 18, "lift_m": 0.02 },
     "beyond_wall": { "ground_radius_m": 300, "ground_color": "#5B5A57", "fog_density": 0.012, "fog_color": "#4A5260" }
   },
+  "slice_camera": {
+    "_not": "10-olculer §5. Dilimde takip kamerası bu dört değeri yalnız buradan okur; sahne (Prototype.unity) ve CameraSettings kod varsayılanı okunmaz (§18 Ç-2, Ç-3, Ç-6). Eğim = varsayılan orbit eğimi (O-5.12'deki eğimle aynı eksen).",
+    "distance_m": 6.0,
+    "pitch_deg": 30,
+    "look_height_m": 1.2,
+    "fov_deg": 55
+  },
   "slice_vfx": {
     "blade_trail": { "life_sec": 0.25, "tail_width_frac": 0, "hilt_alpha": 0.55, "intensity": 2.2 },
     "atlas": {

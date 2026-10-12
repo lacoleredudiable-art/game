@@ -60,18 +60,19 @@ namespace Dovus.Core.Tuning
         public float BossFlinchOffsetM = 0.06f;
         public int BossFlinchMs = 80;
 
-        // Kapanış kamera vuruşu — SkillFeel.CameraKick'teki gömülü değerler aynen taşındı.
-        public float SkillKickStrike = 3.2f;
+        // Kapanış kamera vuruşu. SkillKick* Punch FOV oranıdır (0–0,25; FOV = taban × (1 − oran × t)).
+        // ÖNERİ değerleri (12-kusur-envanteri A1); ayar masasında değişecek.
+        public float SkillKickStrike = 0.08f;
         public float SkillShakeStrikePx = 14f;
-        public float SkillKickDisrupt = 1.4f;
+        public float SkillKickDisrupt = 0.06f;
         public float SkillShakeDisruptPx = 22f;
-        public float SkillKickControl = 0.8f;
+        public float SkillKickControl = 0.04f;
         public float SkillShakeControlPx = 6f;
-        public float SkillKickZone = 2.4f;
+        public float SkillKickZone = 0.06f;
         public float SkillShakeZonePx = 18f;
-        public float SkillKickMotion = 2.0f;
+        public float SkillKickMotion = 0.05f;
         public float SkillShakeMotionPx = 10f;
-        public float SkillKickDefault = 1.6f;
+        public float SkillKickDefault = 0.05f;
         public float SkillShakeDefaultPx = 12f;
         public float SkillKickRollDeg = 1.2f;
         public float SkillKickDecay = 8f;

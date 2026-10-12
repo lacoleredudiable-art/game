@@ -35,6 +35,7 @@ namespace Dovus.Core.RuleEngineV4
         public RuleEngineV4SkillAnimCatalog SkillAnim { get; }
         public RuleEngineV4SliceArena SliceArena { get; }
         public RuleEngineV4SliceArenaVisuals SliceArenaVisuals { get; }
+        public RuleEngineV4SliceCamera SliceCamera { get; private set; } = new();
         public IReadOnlyList<int> SliceRunes { get; private set; } = Array.Empty<int>();
 
         public bool TryGetVerb(int id, out RuleEngineV4Verb verb) => _verbs.TryGetValue(id, out verb!);
@@ -120,6 +121,7 @@ namespace Dovus.Core.RuleEngineV4
 
             int[] sliceRunes = ParseRunes(root["slice_runes"]);
             catalog.SliceRunes = sliceRunes;
+            catalog.SliceCamera = RuleEngineV4SliceCamera.FromJson(root);
 
             RuleEngineV4WorldPhysicsRuntime.Bind(catalog.WorldPhysics);
             RuleEngineV4Slice.BindRunes(sliceRunes);

@@ -30,7 +30,6 @@ public sealed class ClassSizeRatchetTests
         ["TeamComboHost"] = 706,
         ["ActorView"] = 666,
         ["LivingEffectView"] = 671,
-        ["FollowCameraController"] = 660,
         ["StatusBoard"] = 632,
     };
 
