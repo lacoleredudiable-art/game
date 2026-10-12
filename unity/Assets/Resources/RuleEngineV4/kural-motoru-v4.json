@@ -243,6 +243,15 @@
     "look_height_m": 1.2,
     "fov_deg": 55
   },
+  "slice_boss_attacks": {
+    "_not": "10-olculer O-6.9, O-6.14–O-6.18 (hasarlar ÖNERİ, oyuncu canı 1000 ölçeğinde). Dilimde boss saldırı hasarı yalnız buradan okunur; Bosses/aglarin-kralicesi.json damage alanları ve BossTuning hasarları (eski 22 ölçeği) okunmaz (§18 Ç-4, Ç-5).",
+    "leg_slam_damage": 220,
+    "web_spit_damage_per_projectile": 60,
+    "poison_breath_damage": 180,
+    "poison_breath_poison_sec": 3,
+    "poison_breath_poison_per_sec": 20,
+    "pounce_damage": 140
+  },
   "slice_vfx": {
     "blade_trail": { "life_sec": 0.25, "tail_width_frac": 0, "hilt_alpha": 0.55, "intensity": 2.2 },
     "atlas": {

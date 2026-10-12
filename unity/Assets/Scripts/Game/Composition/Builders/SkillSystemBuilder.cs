@@ -103,9 +103,14 @@ namespace Dovus.Game.Composition.Builders
             var directorGo = ctx.Boss.gameObject;
             var bossDir = directorGo.AddComponent<BossDirector>();
             // kural_motoru_v4: denge çubuğu tavanı scale.boss_poise_bar (dünyaya özel CombatTuning örneği).
+            BossAttackDamage? sliceBossDamage = null;
             if (Dovus.Core.RuleEngineV4.RuleEngineV4Feature.Enabled)
+            {
                 combat.Boss.PoiseMax = ctx.Host.RuleEngineV4Scale.BossPoiseBar;
-            bossDir.Bind(ctx.Clock, combat, tuning, boss, input, player, vitals, ctx.BossVitals, telegraph, feel);
+                sliceBossDamage = RuleEngineV4BossDamage.Resolve(
+                    ctx.Host.RuleEngineV4Catalog.SliceBossAttacks, combat.Boss, combat.Status);
+            }
+            bossDir.Bind(ctx.Clock, combat, tuning, boss, input, player, vitals, ctx.BossVitals, telegraph, feel, sliceBossDamage);
             bossDir.BindTeam(ctx.TeamAccess);
             if (bossStatus != null)
                 bossDir.BindStatus(bossStatus);

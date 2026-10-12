@@ -6,6 +6,7 @@ using Dovus.Core.Casting;
 using Dovus.Core.Input;
 using Dovus.Core.Hud;
 using Dovus.Core.Passives;
+using Dovus.Core.RuleEngineV4;
 using Dovus.Core.Tuning;
 using Dovus.Game.Platform;
 using Dovus.Game.Platform;
@@ -72,8 +73,19 @@ namespace Dovus.Game.Actors
         /// T10: panel slider'ı `PlayerMaxHp`'i canlı değiştirebilsin diye — `Bind` tek seferlik
         /// (bir sonraki respawn'a kadar eski tavanda kalırdı). Güncel can, yeni tavana kırpılır
         /// (tavan düşürülürse anında ölüm YOK — kırpma, hasar değil).
+        /// Dilimde (O-13.1) can tavanı yalnız kural-motoru-v4.json scale.player_max_hp; panel değiştiremez.
         /// </summary>
-        public void SetMaxHp(int maxHp) => _health.SetMaxHp(maxHp);
+        public void SetMaxHp(int maxHp)
+        {
+            if (RuleEngineV4Feature.Enabled)
+            {
+                Debug.LogError(
+                    $"[V4-FALLBACK] PlayerVitalsHost.SetMaxHp: panel PlayerMaxHp {maxHp} istedi; dilimde oyuncu canı " +
+                    $"yalnız kural-motoru-v4.json scale.player_max_hp ({MaxHp}), değiştirilmedi");
+                return;
+            }
+            _health.SetMaxHp(maxHp);
+        }
 
         /// <summary>Play sweep vakası: yarı can, diriliş zamanlayıcısı sıfır (eski private alan yansıması).</summary>
         public void ResetForSweepCase() => _health.ResetForSweepCase();

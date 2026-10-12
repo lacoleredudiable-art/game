@@ -122,11 +122,24 @@ namespace Dovus.Game.Composition
             new DebugToolsBuilder().Build(ctx);
         }
 
-        RuleEngineV4Scale _ruleEngineV4Scale;
+        RuleEngineV4Catalog _ruleEngineV4Catalog;
 
-        /// <summary>kural-motoru-v4.json scale bloğu; yalnız RuleEngineV4Feature.Enabled iken okunur.</summary>
-        internal RuleEngineV4Scale RuleEngineV4Scale =>
-            _ruleEngineV4Scale ??= new Skills.RuleEngineV4.RuleEngineV4CatalogAccess().Catalog.Scale;
+        /// <summary>kural-motoru-v4.json; yalnız RuleEngineV4Feature.Enabled iken okunur.</summary>
+        internal RuleEngineV4Catalog RuleEngineV4Catalog
+        {
+            get
+            {
+                if (_ruleEngineV4Catalog != null)
+                    return _ruleEngineV4Catalog;
+                _ruleEngineV4Catalog = new Skills.RuleEngineV4.RuleEngineV4CatalogAccess().Catalog;
+                foreach (string key in _ruleEngineV4Catalog.Scale.MissingKeys)
+                    Debug.LogError($"[V4-FALLBACK] GameBootstrapHost: kural-motoru-v4.json scale.{key} yok; kod varsayılanı kullanıldı");
+                return _ruleEngineV4Catalog;
+            }
+        }
+
+        /// <summary>O-13.1, O-6.11: dilimde oyuncu, dost ve boss canının tek kaynağı (scale bloğu).</summary>
+        internal RuleEngineV4Scale RuleEngineV4Scale => RuleEngineV4Catalog.Scale;
 
         internal int AllyDummyHp(AssetCatalog assets) =>
             RuleEngineV4Feature.Enabled

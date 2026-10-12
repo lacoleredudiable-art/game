@@ -1,8 +1,10 @@
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Casting;
+using Dovus.Core.RuleEngineV4;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
+using UnityEngine;
 namespace Dovus.Game.Config
 {
 /// <summary>T10: hazır setler — teknoloji-kararlari §6 "Hazır setler" maddesi.</summary>
@@ -49,7 +51,11 @@ namespace Dovus.Game.Config
             c.Boss.Damage = 28;
             c.Boss.ApproachSpeedMps = 1.8f;
             p.Boss.BossApproachStopPadM = 0.6f;
-            p.Player.PlayerMaxHp = 30;
+            if (RuleEngineV4Feature.Enabled)
+                Debug.LogError("[V4-FALLBACK] TuningPresets.Agir: PlayerMaxHp 30 uygulanmadı; dilimde oyuncu canı yalnız " +
+                               "kural-motoru-v4.json scale.player_max_hp");
+            else
+                p.Player.PlayerMaxHp = 30;
 
             p.Camera.FollowSmoothTimeSec = 0.26f;
             c.Feel.CameraPerfectZoomKick = 0.18f;

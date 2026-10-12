@@ -14,10 +14,20 @@ namespace Dovus.App.Boss
 {
     public static class BossMechanicStatusMap
     {
-        public static void ApplyFireCone(StatusBoard board, StatusTuning t, IReadOnlyList<string> mechanics)
+        /// <summary>
+        /// <paramref name="sliceDamage"/> verildiyse (dilim, O-6.17) yalnız tablodaki zehir uygulanır; boss JSON'unun
+        /// mechanics etiketleri ve StatusTuning zehir değerleri okunmaz.
+        /// </summary>
+        public static void ApplyFireCone(
+            StatusBoard board, StatusTuning t, IReadOnlyList<string> mechanics, BossAttackDamage? sliceDamage = null)
         {
             if (board == null || t == null)
                 return;
+            if (sliceDamage is BossAttackDamage table)
+            {
+                board.Apply(StatusKind.Poison, table.PoisonSec * Units.SecToMs, table.PoisonPerSec);
+                return;
+            }
             if (mechanics == null || mechanics.Count == 0)
             {
                 board.Apply(StatusKind.Burn, t.BurnMs, t.BurnDamagePerSec);

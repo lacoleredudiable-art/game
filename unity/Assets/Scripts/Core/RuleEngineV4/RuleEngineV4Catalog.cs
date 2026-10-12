@@ -36,6 +36,7 @@ namespace Dovus.Core.RuleEngineV4
         public RuleEngineV4SliceArena SliceArena { get; }
         public RuleEngineV4SliceArenaVisuals SliceArenaVisuals { get; }
         public RuleEngineV4SliceCamera SliceCamera { get; private set; } = new();
+        public RuleEngineV4SliceBossAttacks SliceBossAttacks { get; private set; } = new();
         public IReadOnlyList<int> SliceRunes { get; private set; } = Array.Empty<int>();
 
         public bool TryGetVerb(int id, out RuleEngineV4Verb verb) => _verbs.TryGetValue(id, out verb!);
@@ -50,23 +51,33 @@ namespace Dovus.Core.RuleEngineV4
             RuleEngineV4WorldPhysics worldPhysics = ParseWorldPhysics(root["world_physics"]);
             RuleEngineV4SkillAnimCatalog skillAnim = RuleEngineV4SkillAnimCatalog.FromJson(root);
             RuleEngineV4SliceArena sliceArena = RuleEngineV4SliceArena.FromJson(root);
+            var missingScale = new List<string>();
+            float S(string key, float fallback)
+            {
+                JsonValue n = scaleNode[key];
+                if (n.Kind == JsonKind.Number)
+                    return (float)n.AsDouble(fallback);
+                missingScale.Add(key);
+                return fallback;
+            }
             var catalog = new RuleEngineV4Catalog(
                 new RuleEngineV4Scale
                 {
-                    PlayerMaxHp = F(scaleNode["player_max_hp"], RuleEngineV4CatalogDefaults.PlayerMaxHp),
-                    AllyDummyMaxHp = F(scaleNode["ally_dummy_max_hp"], RuleEngineV4CatalogDefaults.AllyDummyMaxHp),
-                    LightCreatureMaxHp = F(scaleNode["light_creature_max_hp"], RuleEngineV4CatalogDefaults.LightCreatureMaxHp),
-                    BossMaxHp = F(scaleNode["boss_max_hp"], RuleEngineV4CatalogDefaults.BossMaxHp),
-                    BaseDamage = F(scaleNode["base_damage"], RuleEngineV4CatalogDefaults.BaseDamage),
-                    BaseHeal = F(scaleNode["base_heal"], RuleEngineV4CatalogDefaults.BaseHeal),
-                    BasePoise = F(scaleNode["base_poise"], RuleEngineV4CatalogDefaults.BasePoise),
-                    BossPoiseBar = F(scaleNode["boss_poise_bar"], RuleEngineV4CatalogDefaults.BossPoiseBar),
-                    ManaPool = F(scaleNode["mana_pool"], RuleEngineV4CatalogDefaults.ManaPool),
-                    ManaRegenPerSec = F(scaleNode["mana_regen_per_sec"], RuleEngineV4CatalogDefaults.ManaRegenPerSec),
-                    ManaCostPerSkill = F(scaleNode["mana_cost_per_skill"], RuleEngineV4CatalogDefaults.ManaCostPerSkill),
-                    CooldownSec = F(scaleNode["cooldown_sec"], RuleEngineV4CatalogDefaults.CooldownSec),
-                    FizzleCooldownFrac = F(scaleNode["fizzle_cooldown_frac"], RuleEngineV4CatalogDefaults.FizzleCooldownFrac),
-                    RangeReferenceM = F(scaleNode["range_reference_m"], RuleEngineV4CatalogDefaults.RangeReferenceM),
+                    PlayerMaxHp = S("player_max_hp", RuleEngineV4CatalogDefaults.PlayerMaxHp),
+                    AllyDummyMaxHp = S("ally_dummy_max_hp", RuleEngineV4CatalogDefaults.AllyDummyMaxHp),
+                    LightCreatureMaxHp = S("light_creature_max_hp", RuleEngineV4CatalogDefaults.LightCreatureMaxHp),
+                    BossMaxHp = S("boss_max_hp", RuleEngineV4CatalogDefaults.BossMaxHp),
+                    BaseDamage = S("base_damage", RuleEngineV4CatalogDefaults.BaseDamage),
+                    BaseHeal = S("base_heal", RuleEngineV4CatalogDefaults.BaseHeal),
+                    BasePoise = S("base_poise", RuleEngineV4CatalogDefaults.BasePoise),
+                    BossPoiseBar = S("boss_poise_bar", RuleEngineV4CatalogDefaults.BossPoiseBar),
+                    ManaPool = S("mana_pool", RuleEngineV4CatalogDefaults.ManaPool),
+                    ManaRegenPerSec = S("mana_regen_per_sec", RuleEngineV4CatalogDefaults.ManaRegenPerSec),
+                    ManaCostPerSkill = S("mana_cost_per_skill", RuleEngineV4CatalogDefaults.ManaCostPerSkill),
+                    CooldownSec = S("cooldown_sec", RuleEngineV4CatalogDefaults.CooldownSec),
+                    FizzleCooldownFrac = S("fizzle_cooldown_frac", RuleEngineV4CatalogDefaults.FizzleCooldownFrac),
+                    RangeReferenceM = S("range_reference_m", RuleEngineV4CatalogDefaults.RangeReferenceM),
+                    MissingKeys = missingScale,
                 },
                 new RuleEngineV4Globals
                 {
@@ -122,6 +133,7 @@ namespace Dovus.Core.RuleEngineV4
             int[] sliceRunes = ParseRunes(root["slice_runes"]);
             catalog.SliceRunes = sliceRunes;
             catalog.SliceCamera = RuleEngineV4SliceCamera.FromJson(root);
+            catalog.SliceBossAttacks = RuleEngineV4SliceBossAttacks.FromJson(root);
 
             RuleEngineV4WorldPhysicsRuntime.Bind(catalog.WorldPhysics);
             RuleEngineV4Slice.BindRunes(sliceRunes);
