@@ -28,7 +28,8 @@ namespace Dovus.Tests.PlayMode
         /// <summary>3-3 hedefi en yakın düşman olsun diye koza 2'den uzak, hedef duvarın hemen önünde.</summary>
         const float WallSkillStartM = 11f;
         const float WallSkillTargetM = 15.5f;
-        const float BehindColumnM = 2.5f;
+        /// <summary>Hedef sütunun hemen arkasında; kenar mesafesi boss'un gövde kenarından (O-6.10, 2,5 m) yakın kalsın.</summary>
+        const float BehindColumnM = 1.8f;
         const float MarkCasterM = 15f;
         const float MarkTargetM = 19f;
         /// <summary>Dodge yer değiştirmesi ile istenen yön arasında en çok 30°.</summary>

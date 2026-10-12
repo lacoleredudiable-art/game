@@ -145,6 +145,7 @@ namespace Dovus.Core.RuleEngineV4
             {
                 BodyRadiusPlayerM = F(node["body_radius_player_m"], d.BodyRadiusPlayerM),
                 BodyRadiusBossM = F(node["body_radius_boss_m"], d.BodyRadiusBossM),
+                HasBodyRadiusBossM = node["body_radius_boss_m"].Kind == JsonKind.Number,
                 BodyRadiusCreatureM = F(node["body_radius_creature_m"], d.BodyRadiusCreatureM),
                 BodyRadiusStructureM = F(node["body_radius_structure_m"], d.BodyRadiusStructureM),
                 DashSpeedMps = F(node["dash_speed_mps"], d.DashSpeedMps),
