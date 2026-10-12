@@ -21,9 +21,9 @@ işaretlenir ve tarihi yazılır.
 | # | Belge | İçerik | Bağlı | Durum |
 |---|---|---|---|---|
 | B1 | `12-sanat-incili.md` | Palet, ışık, sis, malzeme, silüet, ölçek, efekt dili, yapılmaz listesi | — | ✔ 12 Ekim |
-| B2 | `14-kul-ejderi.md` (boss) | `10` §6.1 şablonunun bütün alanları: gövde ve çarpışma, her saldırı (ön işaret süresi, alan, hasar %, kesilebilirlik, açık kalma), tehdit ritmi (küçük / büyük / takım görevi), 3 faz ve geçişleri, can katmanları ve pul kırılması, takım görevleri (Kor Mührü, Kül Yağmuru), zorluk kademeleri, replikler, kamera notları (faz 2'de baş 15 m) | A1, A2 | ✔ 12 Ekim (onay bekliyor) |
-| B3 | `15-krater-arenasi.md` (arena) | Bölgeler (oynanış 0–18 m, duvar 18–22 m, yamaç 22–60 m, uzak 60–250 m), her nesnenin koordinatı, ölçüsü, çarpışması ve hangi asset'ten yapılacağı; dikili taşlar ve siperler; ortam tehditlerinin yerleri; başlangıç noktaları; ışık, sis ve ses kaynaklarının yerleşimi | B2 | — |
-| B4 | `10-olculer.md` güncellemesi | §6.3 ve §7 yeni belgelere bağlanır; eski satırlar kalkar; açık kalanlar `08`'e | B2, B3, A3 | — |
+| B2 | `14-kul-ejderi.md` (boss) | `10` §6.1 şablonunun bütün alanları: gövde ve çarpışma, her saldırı (ön işaret süresi, alan, hasar %, kesilebilirlik, açık kalma), tehdit ritmi (küçük / büyük / takım görevi), 3 faz ve geçişleri, can katmanları ve pul kırılması, takım görevleri (Kor Mührü, Kül Yağmuru), zorluk kademeleri, replikler, kamera notları (faz 2'de baş 15 m) | A1, A2 | ✔ 12 Ekim: onaylı |
+| B3 | `15-krater-arenasi.md` (arena) | Bölgeler (oynanış 0–18 m, duvar 18–22 m, yamaç 22–60 m, uzak 60–250 m), her nesnenin koordinatı, ölçüsü, çarpışması ve hangi asset'ten yapılacağı; dikili taşlar ve siperler; ortam tehditlerinin yerleri; başlangıç noktaları; ışık, sis ve ses kaynaklarının yerleşimi | B2 | ✔ 12 Ekim |
+| B4 | `10-olculer.md` güncellemesi | §6.3 ve §7 yeni belgelere bağlanır; eski satırlar kalkar; açık kalanlar `08`'e | B2, B3, A3 | ✔ 12 Ekim (yönlendirme notları; eski satırlar kod değişince silinir) |
 | B5 | `16-asset-listesi.md` | Her asset için: ölçü, üçgen ve doku bütçesi, kaynak (elde / Tripo / Poly Haven / el yapımı), kabul kontrol sayfası, sıra | B3 | — |
 
 ## C. Gri kutu (blockout) — sanat yapılmadan önce
@@ -43,7 +43,7 @@ işaretlenir ve tarihi yazılır.
 | D4 | Ejderha gövdesi: kuzey duvarını oluşturan sabit kaya kütlesi, kuyruk | Poly Haven kayaları + Blender | D3 |
 | D5 | Boss animasyonları: nefes, göz kırpma, baş takibi, her saldırı, doğruluş, kalbin açılması, ölüm | Blender | D3 |
 | D6 | Atmosfer ve boss efektleri: kül, kıvılcım, yer sisi, darbe tozu, boss ateşi, pul kırılması, ortam tehditleri | Shader + parçacık | D1 |
-| D7 | Ses: ejderha nefesi ve sesi, darbeler, ortam, faz müzik katmanları | — | D5 |
+| D7 | Ses: ejderha nefesi ve sesi, darbeler, ortam, faz müzik katmanları; **replik seslendirmesi sonra (12 Ekim kararı)**, o zamana kadar altyazı | — | D5 |
 
 ## E. Uygulama (teknik hat, ajanlar)
 

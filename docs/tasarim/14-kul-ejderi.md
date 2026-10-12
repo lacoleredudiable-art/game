@@ -41,7 +41,7 @@ belgesinde yazılacak; bu belge arenadan yalnız boss'un kullandığı noktalar�
 | Kimlik | Madde | Değer | Kaynak | Doğrulama |
 |---|---|---|---|---|
 | KE-2.1 | Toplam uzunluk | 45 m (oyuncunun 25 katı, SI-7.1) | YÖN | T |
-| KE-2.2 | Gövde | Kraterin kuzey duvarını oluşturur (Z ≥ 18 m, duvarın dışında); sabit kaya kütlesi, çarpışması duvarın çarpışmasıdır. Kuyruk güneydoğuda duvarın dışında yatar, faz 2'de duvarın üstünden savrulur (KE-6.6) | YÖN | K |
+| KE-2.2 | Gövde | Boyun kuzeyden (0, 18) duvara girer; gövde duvarın dışında kraterin kuzeydoğu kenarı boyunca saat yönünde kıvrılır, kalça (20, 14) civarında; kuyruk doğu kenarda yatar, ucu (24, 2) civarında. Baştan kuyruk ucuna ~45 m. Sabit kaya kütlesi, çarpışması duvarın çarpışmasıdır. Kuyruk faz 2'de doğu duvarın üstünden savrulur (KE-6.6). Yerleşim `15-krater-arenasi.md` §3 | YÖN + ÖNERİ (45 m'lik gövdeyle kuyruk güneydoğuya uzanamıyor; doğuya alındı) | K |
 | KE-2.3 | Baş (faz 1, yatarken) | 9 m uzun, 7 m yüksek. Burun ucu (0, 7,5), kafatasının arkası (0, 16,5); çene zemine yaslı. Boyun Z = 16,5–18 arasında duvara girer | YÖN | T |
 | KE-2.4 | Ön pençeler | İki pençe, her biri 4 m uzun, 3 m geniş, ayak bileği 4 m yükseklikte. Sol pençe merkezi (−7, 9), sağ pençe (7, 9). Bacaklar yukarıda gövdeye (duvara) girer | YÖN + ÖNERİ | T |
 | KE-2.5 | Çarpışma (oyuncu boss'un içine giremez) | Baş: kapsül, yarıçap 3,0 m, eksen Z, (0, 3, 9) – (0, 3, 15). Her pençe: kapsül, yarıçap 1,6 m, yükseklik 4 m, merkez (±7, 2, 9). Boyun ve gövde: duvar. Faz 2 ve 3'te konumlar KE-6'daki gibi değişir | ÖNERİ | T, G |
@@ -157,10 +157,10 @@ kalmayabilir.
 |---|---|---|---|---|---|---|---|---|---|
 | KE-6.4 | **Pençe Çakması** (yüksekten) | %35 | 1,2 s | 0,2 s | Daire r 5 m (merkez KE-5.4 gibi, 11 m sınırı) | %30 | Evet | 1,2 s | KE-5.4 gibi |
 | KE-6.5 | **Tepeden Kor Soluğu** | %35 | 2,0 s: arenanın bir kenarında başlangıç çizgisi ve yön oku | 3,0 s | 4 m genişliğinde şerit, arenayı batıdan doğuya ya da doğudan batıya baştan sona süpürür (6 m/s) | 0,25 s'de bir %10 | Evet (yalnız menzilli Kontrol ulaşır) | 1,5 s | Şeridin başlangıcı, en çok oyuncunun bulunduğu yarının karşı kenarı |
-| KE-6.6 | **Kuyruk Savuruşu** | %30 (en az 20 s arayla) | 2,0 s: kuyruk güneydoğuda duvarın üstüne kalkar, kırmızı yay dolar | 0,4 s | Arenanın güney üçte biri: Z < −6 olan bütün alan | %50 + 6 m kuzeye itme | **Hayır** (fazın tek kesilemez normal saldırısı, O-6.6) | 1,5 s | Alan sabit |
+| KE-6.6 | **Kuyruk Savuruşu** | %30 (en az 20 s arayla) | 2,0 s: kuyruk doğu duvarın üstüne kalkar, kırmızı alan dolar | 0,4 s | Arenanın doğu üçte biri: X > 4 olan bütün alan (arenanın ~%36'sı) | %50 + 6 m batıya itme | **Hayır** (fazın tek kesilemez normal saldırısı, O-6.6) | 1,5 s | Alan sabit |
 | KE-6.7 | **Göğün Çöküşü** (büyük, duyurulu) | — | 3 s yazı + geri sayım; ejderha başını göğe kaldırır | 8 yanan kaya, 0,6 s arayla düşer; her biri 1,2 s ön işaretli | Her kaya daire r 3 m; ilk 5'i oyuncuların o anki konumlarına (oyuncu sayısı < 5 ise kalanı rastgele), son 3'ü rastgele; merkezleri arası en az 4 m | %40 (kaya başına) | Hayır | 2,0 s | Herkes |
 
-Kuyruk Savuruşu oyuncuları ejderhanın altına, göğse doğru iter: göğüs bu fazın asıl hedefidir.
+Kuyruk Savuruşu oyuncuları arenanın ortasına ve batısına iter; doğuda oyalanan oyuncu cezalanır, kalabalık ortada toplanır ve Tepeden Kor Soluğu'nun şeridine açık hale gelir.
 
 ### 6.3 Takım görevi: Kül Yağmuru
 
@@ -254,8 +254,9 @@ gelir. Cehennem'de tur zaten yanar.
 
 ## 11. Replikler
 
-Ekranın alt ortasında altyazı (#E6E1D8, SI-11.1), ejderha sesiyle. Her biri en çok 8 kelime. Replik
-sırasında ejderha durur (SI-8.6).
+Ekranın alt ortasında altyazı (#E6E1D8, SI-11.1). Her biri en çok 8 kelime. Replik sırasında ejderha durur
+(SI-8.6). **Seslendirme sonra yapılacak (kullanıcı kararı, 12 Ekim);** o zamana kadar replikler yalnız
+altyazıdır, ejderha replik sırasında alçak bir hırıltı çıkarır.
 
 | Kimlik | An | Replik |
 |---|---|---|
