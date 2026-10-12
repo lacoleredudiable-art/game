@@ -10,7 +10,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
     /// <summary>Unity PhysX + gövde ölçümü (instance facade — mutable static ratchet).</summary>
     public sealed class RuleEngineV4PhysicsServices
     {
-        readonly RaycastHit[] _capsuleHits = new RaycastHit[16];
+        readonly RuleEngineV4MotionSweep _sweep = new();
         readonly Collider[] _hitBuffer = new Collider[24];
         readonly RaycastHit[] _castHits = new RaycastHit[64];
 
@@ -58,37 +58,16 @@ namespace Dovus.Game.Skills.RuleEngineV4
         {
             if (ignore != null && ignore.TryGetComponent(out KinematicMotorController motor))
                 return motor.Tuning != null
-                    ? SweepAndSlide(from, to, radiusM)
+                    ? _sweep.SweepAndSlide(from, to, radiusM, ignore)
                     : to;
-            return SweepAndSlide(from, to, radiusM);
+            return _sweep.SweepAndSlide(from, to, radiusM, ignore);
         }
 
-        /// <summary>Düz çizgide ilk katı collider'a kadar gidilebilecek mesafe (tetikler sayılmaz).</summary>
-        public float ClearDistance(Vector3 from, Vector3 dir, float meters, float radiusM, Transform self)
-        {
-            float radius = Mathf.Max(KinematicMotorControllerDefaults.CapsuleRadiusFloorM, radiusM);
-            Vector3 p1 = from + Vector3.up * (radius + KinematicMotorControllerDefaults.CapsuleProbeLiftM);
-            Vector3 p2 = from + Vector3.up * KinematicMotorControllerDefaults.CapsuleTopLiftM;
-            int hits = Physics.CapsuleCastNonAlloc(
-                p1, p2, radius, dir, _capsuleHits, meters, ~0, QueryTriggerInteraction.Ignore);
-            float best = meters;
-            bool blocked = false;
-            for (int i = 0; i < hits; i++)
-            {
-                Collider col = _capsuleHits[i].collider;
-                if (col == null || _capsuleHits[i].distance >= best)
-                    continue;
-                if (self != null && col.transform.IsChildOf(self))
-                    continue;
-                if (_capsuleHits[i].distance <= 0 && _capsuleHits[i].point == Vector3.zero)
-                    continue;
-                best = _capsuleHits[i].distance;
-                blocked = true;
-            }
-            if (blocked)
-                best -= KinematicMotorControllerDefaults.MoveStopInsetM;
-            return Mathf.Max(0, best);
-        }
+        /// <summary>Düz çizgide gidilebilecek mesafe: süpürenin gövde kapsülü, engelden kenar payı kala (O-1.13, O-4.9).</summary>
+        public float ClearDistance(Vector3 from, Vector3 dir, float meters, float radiusM, Transform self) =>
+            _sweep.ClearDistance(from, dir, meters, radiusM, self);
+
+        public float EdgeGapM(Transform self) => RuleEngineV4MotionSweep.EdgeGapM(self);
 
         public bool MeleeHitsTarget(
             Transform caster,
@@ -323,45 +302,6 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 }
             }
             return best;
-        }
-
-        Vector3 SweepAndSlide(Vector3 from, Vector3 to, float radiusM)
-        {
-            Vector3 delta = to - from;
-            delta.y = 0;
-            float dist = delta.magnitude;
-            if (dist < 0.0001f)
-                return from;
-            Vector3 dir = delta / dist;
-            float radius = Mathf.Max(KinematicMotorControllerDefaults.CapsuleRadiusFloorM, radiusM);
-            Vector3 p1 = from + Vector3.up * (radius + KinematicMotorControllerDefaults.CapsuleProbeLiftM);
-            Vector3 p2 = from + Vector3.up * KinematicMotorControllerDefaults.CapsuleTopLiftM;
-            int hits = Physics.CapsuleCastNonAlloc(
-                p1, p2, radius, dir, _capsuleHits, dist, ~0, QueryTriggerInteraction.Ignore);
-            if (hits <= 0)
-                return to;
-            float best = dist;
-            Vector3 bestNormal = Vector3.zero;
-            for (int i = 0; i < hits; i++)
-            {
-                if (_capsuleHits[i].collider == null)
-                    continue;
-                if (_capsuleHits[i].distance < best)
-                {
-                    best = _capsuleHits[i].distance;
-                    bestNormal = _capsuleHits[i].normal;
-                }
-            }
-            Vector3 stop = from + dir * Mathf.Max(0, best - KinematicMotorControllerDefaults.MoveStopInsetM);
-            bestNormal.y = 0;
-            if (bestNormal.sqrMagnitude < 0.0001f)
-                return stop;
-            bestNormal.Normalize();
-            float remain = dist - best;
-            if (remain <= 0.001f)
-                return stop;
-            Vector3 slide = Vector3.ProjectOnPlane(dir * remain, bestNormal);
-            return stop + slide;
         }
 
         static bool TryResolveTargetRoot(Transform hit, out Transform root)

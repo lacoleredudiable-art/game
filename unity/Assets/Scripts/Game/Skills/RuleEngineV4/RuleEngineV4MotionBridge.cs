@@ -44,7 +44,8 @@ namespace Dovus.Game.Skills.RuleEngineV4
             KinematicMotorController motor,
             MotionTemplate template,
             Func<MotionTarget> target,
-            float bodyRadiusM)
+            float bodyRadiusM,
+            float stopGapM)
         {
             if (body == null || template == null)
                 yield break;
@@ -57,7 +58,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             template = BuildLinearMove(template.Id, motion, meters, speed);
 
             body.CancelToGround();
-            body.Play(template, target, () => false, null, bodyRadiusM);
+            body.Play(template, target, () => false, null, bodyRadiusM, stopGapM);
             while (body.IsDisplacing)
                 yield return null;
         }
