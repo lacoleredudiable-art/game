@@ -1,5 +1,6 @@
 using Dovus.Game.Arena;
 using Dovus.Game.Cameras;
+using Dovus.Game.Skills.RuleEngineV4;
 using Dovus.Game.Vfx;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
@@ -39,7 +40,10 @@ namespace Dovus.Game.Composition.Builders
 
         public void ApplyAtmosphere(WorldContext ctx)
         {
-            SceneAtmosphere.Apply(ctx.Sun, ctx.MainCamera, ctx.Tuning);
+            ArenaFog? sliceFog = ctx.Tuning.RuleEngineV4.SliceScene
+                ? (ArenaFog?)RuleEngineV4SliceArenaShellBuilder.Fog(new RuleEngineV4CatalogAccess().Catalog.SliceArenaVisuals.Beyond)
+                : null;
+            SceneAtmosphere.Apply(ctx.Sun, ctx.MainCamera, ctx.Tuning, sliceFog);
             BillboardVfxView.CreateEmberField(ctx.Boss.transform, new Color(1f, 0.45f, 0.12f), rate: CameraBuilderDefaults.BossEmberRate);
         }
     }

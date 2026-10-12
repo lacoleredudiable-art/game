@@ -162,12 +162,14 @@ Bu yöntem her yeni model ya da animasyonda bozulur. Yerine şu standart gelir:
 | Kimlik | Madde | Değer | Kaynak | Doğrulama |
 |---|---|---|---|---|
 | O-4.4 | Bir basış = zıplama | Joystick yönünde (joystick boşsa karakterin baktığı yön) 3,8 m, 0,25 s, yay şeklinde. Yükseklik **yalnız klipte** (tepe 0,6 m); çarpışma kapsülü zeminde kalır | KOD `DodgeTuning.DistanceM`, `DurationMs` + BELGE (`06` §5) | T, G |
+| O-4.4a | İki faz | Dodge iki fazlıdır: **patlama** (ilk 0,25 s, mesafenin ~%75'i, kamera hafif hareket bulanıklığı) + **süzülme** (0,40 s, yavaşlayarak, kalan ~%25). Süzülme bitince doğrudan bekleme pozu; iniş sarsıntısı yok. Bugünkü süzülme kuyruğu 0,12 s (`GlideTailMs`) → 0,40 s. Referans: Dragon Nest 2:37,6 kare analizi (patlama 0,27 s, süzülme 0,40 s) | KOD→ÖNERİ (onaylı K 12 Ekim) | T, K |
 | O-4.5 | Havadayken ikinci basış = takla | İlk basıştan sonra 0,2 s içinde; toplam mesafe ×1,6 (6,1 m), toplam süre ×1,4 (0,35 s); takla klibi havada döner, ayaklar zeminin altına inmez | KOD `DoubleTapWindowMs`, `CombinedDistanceMult`, `CombinedDurationMult` + BELGE | T, G, K |
 | O-4.6 | Hasarsızlık penceresi | Tek basış: basıştan itibaren 0,26 s. Takla: 0,52 s | KOD `IframeMs`, `CombinedIframeMs` | T |
+| O-4.6a | Hasarsızlık görünür | I-frame penceresi boyunca karakterin kenarında kor turuncusu parlama (0,05 s'de açılır, pencere bitince 0,05 s'de söner); Hareket skillerinin yolculuğunda da aynı parlama. Referans: Dragon Nest dodge, 1. fazda altın parlama | ÖNERİ (onaylı K 12 Ekim) | K |
 | O-4.7 | Hak ve dolum | 2 hak; her biri 6 s'de dolar | KOD `MaxCharges`, `ChargeRechargeMs` | T |
 | O-4.8 | Kusursuz dodge | Boss vuruşuna 0,15 s kala yapılan dodge: hak iade edilir, sonraki 2 s içindeki ilk vuruş ×1,3; 0,2 s ağır çekim hissi | KOD `PerfectWindowMs` vb. | T, E |
 | O-4.9 | Engeller | Dodge duvardan, sütundan, kozadan ve boss gövdesinden geçemez: yol boyunca kapsül süpürülür (sweep), değdiği yerde kenardan 0,15 m önce durur | KOD `EdgeGapM` + ÖNERİ | G (her kare: oyuncu kapsülü bir engelin içinde ise kırmızı) |
-| O-4.10 | After-image (iz görüntüsü) | Yalnız gerçek yol üzerinde, oyuncunun arkasında; 3 kopya, 0,15 s ömür, %55 opaklık. İz oyuncunun önüne düşmez | KOD `AfterimageAlpha` + ÖNERİ | K |
+| O-4.10 | After-image (iz görüntüsü) | Yalnız süzülme fazında, gerçek yol üzerinde, oyuncunun arkasında; 4 kopya, 0,15 s ömür, %55 opaklık. İz oyuncunun önüne düşmez | KOD `AfterimageAlpha` + ÖNERİ | K |
 | O-4.11 | Arena sınırı | Dodge, takla, Hareket skilleri ve itilme arena duvarının (§7) içinde kalır; sınır daire şeklindedir, kare değil | ÖNERİ | G |
 
 ### 4.3 Girdi zamanlaması
