@@ -23,6 +23,7 @@ namespace CoreTests;
 
 /// <summary>App katmanı senaryoları — SweepV2'nin örneklediği kararların shim'siz doğrulaması.</summary>
 [TestFixture]
+[Category("EskiMotor")]
 public class AppSimulationTests
 {
     [Test]

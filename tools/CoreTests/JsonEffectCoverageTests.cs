@@ -17,6 +17,7 @@ namespace CoreTests;
 /// açıkça ertelenmiş (Deferred) olmalı. Yeni bir anahtar eklenip kodu yazılmazsa bu test kırılır.
 /// </summary>
 [TestFixture]
+[Category("EskiMotor")]
 public class JsonEffectCoverageTests
 {
     // Bu dosyalar anahtarı ÜRETİR ya da yalnız etiketler; kanıt sayılmaz.

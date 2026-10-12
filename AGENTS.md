@@ -24,7 +24,14 @@ Ağların Kraliçesi) telefonda doğru çalışsın.
 - Önce kanıt: hatanın sebebini log ya da ölçümle göster, sonra yalnız o sebebi düzelt.
 - "Bitti" telefonda görülür: oynanışı değiştiren her PR'da dilim APK'sından ekran kaydı ya da logcat çıktısı.
   Editör testi tek başına yeterli değildir.
+- Her hata düzeltmesi önce hatayı oyunun GERÇEK yolundan (sahte dokunuş/çizim → görünen sonuç: oynayan klip,
+  konum, çarpışma) yeniden üreten bir test yazar. Test düzeltmeden önce kırmızı, sonra yeşil olmalı.
+  Hatayı yakalamayan testle "düzelttim" denmez.
+- Fonksiyonu doğrudan çağırıp geçen test, oynanış hatasının kanıtı sayılmaz.
 - Testler gevşetilmez; bir test kırılırsa nedeni PR'da yazılır.
+- Eski motor testleri (`[Category("EskiMotor")]`) dondurulmuştur: bakımı yapılmaz, gevşetilmez, yenisi eklenmez.
+  Eski motor silinince onlarla birlikte silinir.
+- Yerelde yalnız değiştirdiğin alana ait testleri çalıştır (`dotnet test --filter`); tam set CI'ın işi.
 - Görevin adlandırmadığı dosyalara dokunma; repoyu baştan tarama.
 
 ## Okuma
@@ -32,10 +39,12 @@ Ağların Kraliçesi) telefonda doğru çalışsın.
 - Asla okuma: `unity/Library/`, `unity/Temp/`, `unity/obj/`, `unity/Logs/`, `docs/play-sweep/*.csv`.
 
 ## Komutlar (repo kökünden)
-- `dotnet test tools/CoreTests` · `dotnet test tools/IntegrationTests`
+- `dotnet test tools/CoreTests --filter "FullyQualifiedName~<Sınıf>"` (alan testi) · `dotnet test tools/IntegrationTests`
 - `python tools/GameCompile/check.py`
 - Dilim APK: AndroidBuilder `-dovusV4Slice`
 
 ## CI
-CoreTests → IntegrationTests → GameCompile. SweepV2 hash kapısı eski motoru korur; v4 dilim davranışını
-değiştiren PR'larda hash farkı beklenir ve kapı bu PR'ları engellemez (taşıma bitince kaldırılacak).
+Her PR ve master push, hepsi engelleyici: OYUN.md kontrolü → CoreTests (`--filter "TestCategory!=EskiMotor"`)
+→ IntegrationTests → GameCompile.
+Haftalık (schedule) ve elle (workflow_dispatch), engellemez: EskiMotor testleri → SweepV2 hash kapısı;
+sonuç job summary'de. Eski motoru korur; taşıma bitince kaldırılacak.

@@ -17,6 +17,7 @@ using Dovus.Core.Shared;
 namespace CoreTests;
 
 [TestFixture]
+[Category("EskiMotor")]
 public class SkillWorldPlannerTests
 {
     static string ElementJsonPath()

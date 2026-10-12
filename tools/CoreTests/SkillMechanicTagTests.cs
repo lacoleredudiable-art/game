@@ -10,6 +10,7 @@ using System.Linq;
 namespace CoreTests;
 
 [TestFixture]
+[Category("EskiMotor")]
 public partial class SkillMechanicTagTests
 {
     static string JsonPath()

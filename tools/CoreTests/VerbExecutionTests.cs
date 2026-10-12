@@ -18,6 +18,7 @@ namespace CoreTests;
 
 /// <summary>hitbox_vfx.fiil_hitbox + mobility_cc.i_frame + Hareket/kendine fiil kuralları.</summary>
 [TestFixture]
+[Category("EskiMotor")]
 public class VerbExecutionTests
 {
     string _json = null!;

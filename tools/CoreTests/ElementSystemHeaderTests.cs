@@ -5,6 +5,7 @@ using System.IO;
 namespace CoreTests;
 
 [TestFixture]
+[Category("EskiMotor")]
 public class ElementSystemHeaderTests
 {
     static string ElementSystemJson()

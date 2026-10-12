@@ -7,6 +7,7 @@ namespace CoreTests;
 
 /// <summary>PLAN 2B.21 — combo_system.current_max_length JSON ↔ SkillMotor (açık değer 2).</summary>
 [TestFixture]
+[Category("EskiMotor")]
 public class ComboMaxLengthJsonTests
 {
     const int ExpectedCurrentMaxLength = 2;

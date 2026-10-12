@@ -23,6 +23,7 @@ namespace CoreTests;
 /// Boss yarıçapı 0,85, oyuncu 0,50, duruş payı 0,15.
 /// </summary>
 [TestFixture]
+[Category("EskiMotor")]
 public partial class PlaySweepFixTests
 {
     const float Body = 0.5f;

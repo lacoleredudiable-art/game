@@ -7,6 +7,7 @@ using Dovus.Core.Shared;
 namespace CoreTests;
 
 [TestFixture]
+[Category("EskiMotor")]
 public class SkillEngineModifiersTests
 {
     static string JsonPath()

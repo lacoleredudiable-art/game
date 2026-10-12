@@ -13,6 +13,7 @@ namespace CoreTests;
 /// Her DEAD-TEMPLATE etkisi planda ve zamanında bir adım olarak durur.
 /// </summary>
 [TestFixture]
+[Category("EskiMotor")]
 public class TemplateDeliveryTests
 {
     SkillMotor _motor = null!;

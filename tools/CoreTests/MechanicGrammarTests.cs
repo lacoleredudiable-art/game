@@ -7,6 +7,7 @@ namespace CoreTests;
 
 /// <summary>mechanic_grammar: 1440 skill'in anlamlılık kontrolleri (tools/AtomSim ile aynı motor).</summary>
 [TestFixture]
+[Category("EskiMotor")]
 public class MechanicGrammarTests
 {
     MechanicGrammar _grammar = null!;

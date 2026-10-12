@@ -16,6 +16,7 @@ namespace CoreTests;
 /// Tavan = docs/ARCHITECTURE.md oynanış sabitleri / MagicNumberRatchetTests.
 /// </summary>
 [TestFixture]
+[Category("EskiMotor")]
 public sealed class MagicNumberRatchetTests
 {
     // Alan → tavan. 2B.11 öncesi toplam 1615; #114 sonrası 1499.

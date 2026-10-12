@@ -9,6 +9,7 @@ using System.Collections.Generic;
 namespace CoreTests;
 
 [TestFixture]
+[Category("EskiMotor")]
 public class SilhouetteBuilderTests
 {
     ManifestationTuning Tuning() => new();
