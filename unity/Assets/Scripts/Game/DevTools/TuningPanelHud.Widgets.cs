@@ -1,3 +1,4 @@
+using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Actors;
 using Dovus.Game.Cameras;
 using Dovus.Game.Casting;
@@ -37,14 +38,15 @@ namespace Dovus.Game.DevTools
             _refreshActions.Add(Refresh);
         }
 
-        void AddFloatSlider(string label, float min, float max, Func<float> getter, Action<float> setter, string unit, string format)
+        /// <param name="jsonPath">Ayar dosyası alan yolu; dilimde değeri kural-motoru-v4.json'dan geliyorsa satır gri ve etkisiz.</param>
+        void AddFloatSlider(string label, float min, float max, Func<float> getter, Action<float> setter, string unit, string format, string jsonPath = null)
         {
-            BuildSliderRow(label, min, max, false, () => getter(), raw => setter(raw), v => FormatValue(v, unit, format));
+            BuildSliderRow(label, min, max, false, () => getter(), raw => setter(raw), v => FormatValue(v, unit, format), jsonPath);
         }
 
-        void AddIntSlider(string label, int min, int max, Func<int> getter, Action<int> setter, string unit)
+        void AddIntSlider(string label, int min, int max, Func<int> getter, Action<int> setter, string unit, string jsonPath = null)
         {
-            BuildSliderRow(label, min, max, true, () => getter(), raw => setter(Mathf.RoundToInt(raw)), v => FormatValue(Mathf.RoundToInt(v), unit, "0"));
+            BuildSliderRow(label, min, max, true, () => getter(), raw => setter(Mathf.RoundToInt(raw)), v => FormatValue(Mathf.RoundToInt(v), unit, "0"), jsonPath);
         }
 
         static string FormatValue(float v, string unit, string format)
@@ -53,7 +55,7 @@ namespace Dovus.Game.DevTools
             return string.IsNullOrEmpty(unit) ? num : $"{num} {unit}";
         }
 
-        void BuildSliderRow(string label, float min, float max, bool wholeNumbers, Func<float> getter, Action<float> apply, Func<float, string> formatter)
+        void BuildSliderRow(string label, float min, float max, bool wholeNumbers, Func<float> getter, Action<float> apply, Func<float, string> formatter, string jsonPath)
         {
             var row = new GameObject("Row_" + label);
             row.transform.SetParent(_scrollContent, false);
@@ -80,6 +82,12 @@ namespace Dovus.Game.DevTools
             slider.minValue = min;
             slider.maxValue = max;
 
+            if (jsonPath != null && RuleEngineV4SliceTuningSources.TryGet(_sliceJson, jsonPath, out RuleEngineV4SliceTuningSources.Entry json))
+            {
+                BuildJsonLockedRow(label, min, max, getter, formatter, slider, labelText, json);
+                return;
+            }
+
             void Refresh()
             {
                 float v = Mathf.Clamp(getter(), min, max);
@@ -89,10 +97,43 @@ namespace Dovus.Game.DevTools
 
             slider.onValueChanged.AddListener(v =>
             {
-                apply(v);
+                _config.RecordPanelEdit(() => apply(v));
                 labelText.text = $"{label}: {formatter(getter())}";
-                MarkDirty();
             });
+
+            Refresh();
+            _refreshActions.Add(Refresh);
+        }
+
+        /// <summary>
+        /// O-17.8, Y4, Y10: dilimde değeri kural-motoru-v4.json'dan gelen ayar. Kaydırıcı gri ve etkileşimsiz, dinleyicisi
+        /// yok; etiket oyunun kullandığı değeri (ör. oyuncu canı 1000) ve "JSON"u gösterir.
+        /// </summary>
+        void BuildJsonLockedRow(
+            string label,
+            float min,
+            float max,
+            Func<float> getter,
+            Func<float, string> formatter,
+            Slider slider,
+            Text labelText,
+            RuleEngineV4SliceTuningSources.Entry json)
+        {
+            slider.interactable = false;
+            ColorBlock colors = slider.colors;
+            colors.disabledColor = JsonLockedColor;
+            slider.colors = colors;
+            if (slider.fillRect != null && slider.fillRect.TryGetComponent(out Image fill))
+                fill.color = JsonLockedColor;
+            labelText.color = JsonLockedLabelColor;
+
+            void Refresh()
+            {
+                float v = json.HasJson || !json.MissingFallsBackToTuning ? json.Value : getter();
+                slider.SetValueWithoutNotify(Mathf.Clamp(v, min, max));
+                string tag = json.HasJson ? "JSON" : "JSON'da yok, kod";
+                labelText.text = $"{label}: {formatter(v)} · {tag}";
+            }
 
             Refresh();
             _refreshActions.Add(Refresh);
@@ -128,9 +169,8 @@ namespace Dovus.Game.DevTools
 
             button.onClick.AddListener(() =>
             {
-                setter(!getter());
+                _config.RecordPanelEdit(() => setter(!getter()));
                 Refresh();
-                MarkDirty();
             });
 
             Refresh();
@@ -157,10 +197,9 @@ namespace Dovus.Game.DevTools
 
         void ApplyPreset(TuningPreset preset)
         {
-            _config.ApplyPreset(preset);
+            _config.RecordPanelEdit(() => _config.ApplyPreset(preset));
             RefreshAll();
-            MarkDirty();
-            ShowStatus($"{preset} preset'i uygulandı");
+            ShowStatus($"{preset} preset'i uygulandı (dosyaya KAYDET ile yazılır)");
         }
 
         void ResetToDefaults()
@@ -168,8 +207,16 @@ namespace Dovus.Game.DevTools
             _config.ResetToDefaults();
             _vitals?.SetMaxHp(_config.Prototype.Player.PlayerMaxHp);
             RefreshAll();
-            MarkDirty();
-            ShowStatus("Spec varsayılanlarına sıfırlandı");
+            ShowStatus("Spec varsayılanlarına sıfırlandı (dosyaya KAYDET ile yazılır)");
+        }
+
+        /// <summary>O-17.8: dosyaya yalnız bu düğme yazar; değişen alanlar "panelden kaydedildi" diye işaretlenir.</summary>
+        void SaveFromPanel()
+        {
+            int pending = _config.PendingPanelEdits.Count;
+            ShowStatus(_config.SaveFromPanel()
+                ? $"Kaydedildi: {pending} yeni alan, panelden kaydedilmiş toplam {_config.PanelSavedFields.Count}"
+                : "Kaydedilemedi (log'a bak)");
         }
 
         void CopyJsonToClipboard()
@@ -190,20 +237,6 @@ namespace Dovus.Game.DevTools
         {
             foreach (var action in _refreshActions)
                 action();
-        }
-
-        void MarkDirty()
-        {
-            _dirty = true;
-            _saveDebounceRemaining = SaveDebounceSec;
-        }
-
-        void FlushSaveIfDirty()
-        {
-            if (!_dirty)
-                return;
-            _dirty = false;
-            _config.Save();
         }
     }
 }

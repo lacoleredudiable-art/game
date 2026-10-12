@@ -81,6 +81,8 @@ namespace Dovus.Game.Composition
             var tuningConfig = TuningConfig.Create(combat, _tuning);
             if (DebugConfig.Enabled)
                 tuningConfig.TryLoad();
+            TuningSourceLog.Write(
+                tuningConfig, RuleEngineV4Feature.Enabled ? RuleEngineV4Catalog : null, tuningConfig.LastLoadReadFile);
 
             var ctx = new WorldContext(this)
             {

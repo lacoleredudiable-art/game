@@ -1,3 +1,4 @@
+using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Actors;
 using Dovus.Game.Cameras;
 using Dovus.Game.Casting;
@@ -39,7 +40,8 @@ namespace Dovus.Game.DevTools
         const float RowHeight = 58f;
         const float RowSpacing = 4f;
         const float HeaderHeight = 40f;
-        const float SaveDebounceSec = 0.35f;
+        static readonly Color JsonLockedColor = new(0.45f, 0.47f, 0.50f, 0.6f);
+        static readonly Color JsonLockedLabelColor = new(0.58f, 0.61f, 0.66f, 0.85f);
 
         public static bool IsOpen { get; private set; }
 
@@ -67,8 +69,8 @@ namespace Dovus.Game.DevTools
         float _statusUntil;
 
         readonly List<Action> _refreshActions = new();
-        bool _dirty;
-        float _saveDebounceRemaining;
+        /// <summary>Dilimde değeri kural-motoru-v4.json'dan gelen ayarlar; bayrak kapalıyken null.</summary>
+        IReadOnlyList<RuleEngineV4SliceTuningSources.Entry> _sliceJson;
 
         public void Configure(TuningConfig config, PlayerVitalsHost vitals, FollowCameraController followCamera = null)
         {
@@ -133,31 +135,15 @@ namespace Dovus.Game.DevTools
                     _toggleGo.SetActive(showToggle);
             }
 
-            if (_dirty)
-            {
-                _saveDebounceRemaining -= Time.unscaledDeltaTime;
-                if (_saveDebounceRemaining <= 0f)
-                    FlushSaveIfDirty();
-            }
-
             if (_statusText != null && _statusText.text.Length > 0 && Time.unscaledTime > _statusUntil)
                 _statusText.text = string.Empty;
         }
-
-        void OnApplicationPause(bool paused)
-        {
-            if (paused)
-                FlushSaveIfDirty();
-        }
-
-        void OnApplicationQuit() => FlushSaveIfDirty();
 
         void OnDestroy()
         {
 #if UNITY_EDITOR || DOVUS_DEBUG
             DebugPanelsChrome.Unregister(ApplyChrome);
 #endif
-            FlushSaveIfDirty();
         }
 
         // ---- Düşük seviye UI yardımcıları ---------------------------------------------------

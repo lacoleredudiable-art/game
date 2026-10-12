@@ -147,10 +147,12 @@ namespace Dovus.Tests.PlayMode
             Transform row = panel.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == PanelHpRow);
             Assert.That(row, Is.Not.Null, PanelHpRow);
             Slider slider = row.GetComponentInChildren<Slider>(true);
-            LogAssert.Expect(LogType.Error, PanelHpFallback);
+            // O-17.8 (Y10): dilimde kaydırıcı gri ve dinleyicisiz; değer yazılsa da can değişmez ve [V4-FALLBACK] yazılmaz.
+            Assert.That(slider.interactable, Is.False, "dilimde can kaydırıcısı gri değil");
             slider.value = Mathf.Approximately(slider.value, 40f) ? 30f : 40f;
             yield return null;
             Assert.That(vitals.MaxHp, Is.EqualTo(maxHp), "panel kaydırıcısı dilimde canı değiştirdi");
+            Assert.That(_errors.Where(e => PanelHpFallback.IsMatch(e)), Is.Empty, "gri kaydırıcı [V4-FALLBACK] yazdırdı");
 
             LogAssert.Expect(LogType.Error, PanelHpFallback);
             PanelButton(panel, "SIFIRLA").onClick.Invoke();
