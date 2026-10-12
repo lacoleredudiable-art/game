@@ -25,7 +25,7 @@ namespace UnityEngine
         None = 0, RealtimeEmissive = 1, BakedEmissive = 2, EmissiveIsBlack = 4, AnyEmissive = 3,
     }
 
-    public class Mesh : Object
+    public partial class Mesh : Object
     {
         Vector3[] _vertices = Array.Empty<Vector3>();
         int[] _triangles = Array.Empty<int>();
@@ -94,12 +94,6 @@ namespace UnityEngine
         public void UploadMeshData(bool markNoLongerReadable) { }
         public void SetVertices(List<Vector3> inVertices) => vertices = inVertices.ToArray();
         public void SetVertices(Vector3[] inVertices) => vertices = inVertices;
-        public MeshTopology GetTopology(int submesh) => MeshTopology.Triangles;
-        public void GetTriangles(List<int> tris, int submesh)
-        {
-            tris.Clear();
-            tris.AddRange(triangles);
-        }
         public void SetTriangles(int[] tris, int submesh) => triangles = tris;
         public void SetTriangles(List<int> tris, int submesh) => triangles = tris.ToArray();
         public void SetTriangles(int[] tris, int submesh, bool calculateBounds) => triangles = tris;
@@ -400,7 +394,7 @@ namespace UnityEngine
             sharedMesh != null ? MeshRenderer.TransformBounds(sharedMesh.bounds, transform.localToWorldMatrix) : base.bounds;
     }
 
-    public class LineRenderer : Renderer
+    public partial class LineRenderer : Renderer
     {
         Vector3[] _positions = Array.Empty<Vector3>();
 
@@ -435,7 +429,6 @@ namespace UnityEngine
         }
 
         public Vector3 GetPosition(int index) => index >= 0 && index < _positions.Length ? _positions[index] : Vector3.zero;
-        public void BakeMesh(Mesh mesh, Camera camera, bool useTransform) { }
 
         public void SetPositions(Vector3[] positions)
         {
@@ -464,7 +457,7 @@ namespace UnityEngine
         }
     }
 
-    public class TrailRenderer : Renderer
+    public partial class TrailRenderer : Renderer
     {
         public float time { get; set; } = 5f;
         public float startWidth { get; set; } = 1f;
@@ -483,7 +476,6 @@ namespace UnityEngine
         public LineAlignment alignment { get; set; }
         public int positionCount => 0;
         public void Clear() { }
-        public void BakeMesh(Mesh mesh, Camera camera, bool useTransform) { }
     }
 
     public class Light : Behaviour
