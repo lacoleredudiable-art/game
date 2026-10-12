@@ -81,55 +81,5 @@ namespace Dovus.Game.Cameras
             float distanceWeight = 1f - Mathf.SmoothStep(FollowCameraControllerDefaults.SoftLockDistanceWeightStart, 1f, toBoss.magnitude / range);
             return Mathf.Clamp01(distanceWeight);
         }
-
-        Vector3 ApplyCameraCollision(Vector3 pivot, Vector3 desiredWorld, float dt)
-        {
-            Vector3 delta = desiredWorld - pivot;
-            float targetAlong = delta.magnitude;
-            if (targetAlong < FollowCameraControllerDefaults.MinTargetAlongM)
-            {
-                _collisionPulledInM = 0f;
-                return desiredWorld;
-            }
-
-            Vector3 dir = delta / targetAlong;
-            float blockedAlong = targetAlong;
-            float radius = Mathf.Max(FollowCameraControllerDefaults.MinCollisionSphereRadiusM, _tuning.Camera.CameraCollisionSphereRadiusM);
-            int hitCount = Physics.SphereCastNonAlloc(
-                pivot,
-                radius,
-                dir,
-                CollisionHits,
-                targetAlong,
-                _collisionLayerMask,
-                QueryTriggerInteraction.Ignore);
-            float best = targetAlong;
-            for (int i = 0; i < hitCount; i++)
-            {
-                RaycastHit h = CollisionHits[i];
-                if (!IsBlockingCollider(h.collider))
-                    continue;
-                float along = h.distance - _tuning.Camera.CameraCollisionMarginM;
-                if (along < best)
-                    best = along;
-            }
-
-            blockedAlong = Mathf.Max(_tuning.Camera.CameraCollisionMinDistanceM, best);
-            bool pullingIn = blockedAlong < _smoothedAlongDistM - 0.001f;
-            float smooth = pullingIn
-                ? _tuning.Camera.CameraCollisionPullInSmoothSec
-                : _tuning.Camera.CameraCollisionPullOutSmoothSec;
-            if (_smoothedAlongDistM <= FollowCameraControllerDefaults.MinSmoothedAlongDistM)
-                _smoothedAlongDistM = targetAlong;
-            _smoothedAlongDistM = Mathf.SmoothDamp(
-                _smoothedAlongDistM,
-                Mathf.Min(targetAlong, blockedAlong),
-                ref _alongDistVelocity,
-                Mathf.Max(0.001f, smooth),
-                Mathf.Infinity,
-                dt);
-            _collisionPulledInM = Mathf.Max(0f, targetAlong - _smoothedAlongDistM);
-            return pivot + dir * _smoothedAlongDistM;
-        }
     }
 }

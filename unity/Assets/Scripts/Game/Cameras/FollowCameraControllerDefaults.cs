@@ -9,6 +9,8 @@ namespace Dovus.Game.Cameras
         public const float LookAheadBlend = 0.35f;
         public const float FovClampMinDeg = 35f;
         public const float FovClampMaxDeg = 85f;
+        /// <summary>Punch FOV oranı üst sınırı: FOV = taban × (1 − oran × t); 1'e yaklaşınca FOV 0'a düşer.</summary>
+        public const float FovKickMax = 0.25f;
         public const float SoftLockDistanceWeightStart = 0.72f;
         public const float MinTargetAlongM = 0.02f;
         public const float MinCollisionSphereRadiusM = 0.05f;
