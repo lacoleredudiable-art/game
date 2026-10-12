@@ -181,10 +181,12 @@ public class DocsTruthTests
         string root = RepoRoot();
         string py = Path.Combine(root, "tools", "gen-game-overview.py");
         Assert.That(File.Exists(py), Is.True);
+        (string exe, string prefix) = FindPython();
+        TestContext.Progress.WriteLine($"[DocsTruth] python komutu: {(exe + " " + prefix).Trim()}");
         var psi = new System.Diagnostics.ProcessStartInfo
         {
-            FileName = "python3",
-            Arguments = $"\"{py}\" --check",
+            FileName = exe,
+            Arguments = $"{prefix} \"{py}\" --check".TrimStart(),
             WorkingDirectory = root,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
@@ -193,6 +195,49 @@ public class DocsTruthTests
         using var p = System.Diagnostics.Process.Start(psi)!;
         p.WaitForExit(120_000);
         Assert.That(p.ExitCode, Is.EqualTo(0), p.StandardError.ReadToEnd() + p.StandardOutput.ReadToEnd());
+    }
+
+    /// <summary>Windows'ta python3 Microsoft Store takma adına gider; önce python, sonra py -3. CI (Linux) python3.</summary>
+    static (string Exe, string Prefix) FindPython()
+    {
+        if (!OperatingSystem.IsWindows())
+            return ("python3", "");
+        foreach ((string exe, string prefix) in new[] { ("python", ""), ("py", "-3") })
+        {
+            if (IsPython3(exe, prefix))
+                return (exe, prefix);
+        }
+        Assert.Fail("Windows'ta python ya da py -3 bulunamadı");
+        return default;
+    }
+
+    static bool IsPython3(string exe, string prefix)
+    {
+        var psi = new System.Diagnostics.ProcessStartInfo
+        {
+            FileName = exe,
+            Arguments = $"{prefix} --version".TrimStart(),
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+        };
+        try
+        {
+            using var p = System.Diagnostics.Process.Start(psi);
+            if (p == null)
+                return false;
+            string output = p.StandardOutput.ReadToEnd() + p.StandardError.ReadToEnd();
+            if (!p.WaitForExit(10_000))
+            {
+                p.Kill();
+                return false;
+            }
+            return p.ExitCode == 0 && output.Contains("Python 3", StringComparison.Ordinal);
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
+            return false;
+        }
     }
 
     [Test]
