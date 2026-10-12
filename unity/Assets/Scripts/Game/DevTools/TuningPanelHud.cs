@@ -40,8 +40,6 @@ namespace Dovus.Game.DevTools
         const float RowHeight = 58f;
         const float RowSpacing = 4f;
         const float HeaderHeight = 40f;
-        static readonly Color JsonLockedColor = new(0.45f, 0.47f, 0.50f, 0.6f);
-        static readonly Color JsonLockedLabelColor = new(0.58f, 0.61f, 0.66f, 0.85f);
 
         public static bool IsOpen { get; private set; }
 

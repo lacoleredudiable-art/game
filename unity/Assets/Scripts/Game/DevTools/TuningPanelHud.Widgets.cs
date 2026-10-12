@@ -84,7 +84,7 @@ namespace Dovus.Game.DevTools
 
             if (jsonPath != null && RuleEngineV4SliceTuningSources.TryGet(_sliceJson, jsonPath, out RuleEngineV4SliceTuningSources.Entry json))
             {
-                BuildJsonLockedRow(label, min, max, getter, formatter, slider, labelText, json);
+                _refreshActions.Add(JsonLockedSliderRow.Lock(label, min, max, getter, formatter, slider, labelText, json));
                 return;
             }
 
@@ -100,40 +100,6 @@ namespace Dovus.Game.DevTools
                 _config.RecordPanelEdit(() => apply(v));
                 labelText.text = $"{label}: {formatter(getter())}";
             });
-
-            Refresh();
-            _refreshActions.Add(Refresh);
-        }
-
-        /// <summary>
-        /// O-17.8, Y4, Y10: dilimde değeri kural-motoru-v4.json'dan gelen ayar. Kaydırıcı gri ve etkileşimsiz, dinleyicisi
-        /// yok; etiket oyunun kullandığı değeri (ör. oyuncu canı 1000) ve "JSON"u gösterir.
-        /// </summary>
-        void BuildJsonLockedRow(
-            string label,
-            float min,
-            float max,
-            Func<float> getter,
-            Func<float, string> formatter,
-            Slider slider,
-            Text labelText,
-            RuleEngineV4SliceTuningSources.Entry json)
-        {
-            slider.interactable = false;
-            ColorBlock colors = slider.colors;
-            colors.disabledColor = JsonLockedColor;
-            slider.colors = colors;
-            if (slider.fillRect != null && slider.fillRect.TryGetComponent(out Image fill))
-                fill.color = JsonLockedColor;
-            labelText.color = JsonLockedLabelColor;
-
-            void Refresh()
-            {
-                float v = json.HasJson || !json.MissingFallsBackToTuning ? json.Value : getter();
-                slider.SetValueWithoutNotify(Mathf.Clamp(v, min, max));
-                string tag = json.HasJson ? "JSON" : "JSON'da yok, kod";
-                labelText.text = $"{label}: {formatter(v)} · {tag}";
-            }
 
             Refresh();
             _refreshActions.Add(Refresh);
