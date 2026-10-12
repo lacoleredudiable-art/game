@@ -151,10 +151,7 @@ namespace Dovus.Game.DevTools
         {
             if (_motor == null)
                 return;
-            float r = BodyRadius();
-            Vector3 from = _player.position;
-            Vector3 p1 = from + Vector3.up * (r + KinematicMotorControllerDefaults.CapsuleProbeLiftM);
-            Vector3 p2 = from + Vector3.up * KinematicMotorControllerDefaults.CapsuleTopLiftM;
+            _motor.BodyCapsule(_player.position, out Vector3 p1, out Vector3 p2, out float r);
             int n = Physics.OverlapCapsuleNonAlloc(p1, p2, r, _overlap, ~0, QueryTriggerInteraction.Ignore);
             if (n == 0)
                 return;
@@ -183,11 +180,6 @@ namespace Dovus.Game.DevTools
             if (worst > _rules.BodyPenetrationMaxM)
                 Report(GozcuRule.BodyInCollider, Cm(worst) + "@" + worstCol.name);
         }
-
-        float BodyRadius() => _motor == null
-            ? KinematicMotorControllerDefaults.CapsuleRadiusFloorM
-            : Mathf.Max(KinematicMotorControllerDefaults.CapsuleRadiusFloorM,
-                _motor.BodyRadiusM * KinematicMotorControllerDefaults.CapsuleRadiusBodyScale);
 
         void CheckClip()
         {

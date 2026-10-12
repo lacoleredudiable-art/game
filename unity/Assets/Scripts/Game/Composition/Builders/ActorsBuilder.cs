@@ -111,6 +111,7 @@ namespace Dovus.Game.Composition.Builders
             var motor = ctx.Player.AddComponent<KinematicMotorController>();
             motor.Tuning = tuning;
             motor.BodyRadiusM = CompositionConstants.PlayerRadiusM;
+            motor.RootAboveSoleM = CompositionConstants.PlayerHeightM * 0.5f;
             motor.BindClock(clock);
 
             ctx.PlayerPose = ctx.Player.AddComponent<ActorPoseView>();

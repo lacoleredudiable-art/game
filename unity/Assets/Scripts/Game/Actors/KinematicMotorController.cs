@@ -24,6 +24,7 @@ namespace Dovus.Game.Actors
     {
         [SerializeField] GameTuning _tuning = new();
         [SerializeField] float _bodyRadiusM = 0.5f;
+        [SerializeField] float _rootAboveSoleM;
 
         GameClockHost _clock;
         MoveInputController _input;
@@ -73,6 +74,31 @@ namespace Dovus.Game.Actors
             get => _bodyRadiusM;
             set => _bodyRadiusM = value;
         }
+
+        /// <summary>Kökün ayak tabanından yüksekliği. Kök kapsül merkezindeyse yarı yükseklik; sondalar ayaktan ölçülür.</summary>
+        public float RootAboveSoleM
+        {
+            get => _rootAboveSoleM;
+            set => _rootAboveSoleM = value;
+        }
+
+        public float CapsuleRadiusM => Mathf.Max(KinematicMotorControllerDefaults.CapsuleRadiusFloorM, _bodyRadiusM);
+
+        /// <summary>
+        /// Gövde kapsülü (O-1.12, O-1.13): alt ucu ayak tabanında, üst ucu ayaktan <see cref="KinematicMotorControllerDefaults.BodyHeightM"/>;
+        /// <paramref name="bottom"/> ve <paramref name="top"/> uç kürelerin merkezleri.
+        /// </summary>
+        public void BodyCapsule(Vector3 root, out Vector3 bottom, out Vector3 top, out float radius)
+        {
+            radius = CapsuleRadiusM;
+            float sole = root.y - _rootAboveSoleM;
+            float height = Mathf.Max(2f * radius, KinematicMotorControllerDefaults.BodyHeightM);
+            bottom = new Vector3(root.x, sole + radius, root.z);
+            top = new Vector3(root.x, sole + height - radius, root.z);
+        }
+
+        Vector3 BodyMid(Vector3 root) =>
+            new(root.x, root.y - _rootAboveSoleM + KinematicMotorControllerDefaults.BodyHeightM * 0.5f, root.z);
 
         public Vector3 Velocity { get; private set; }
         public float LocoRefMps => _tuning != null ? _tuning.Player.WalkSpeedMps : KinematicMotorControllerDefaults.FallbackWalkSpeedMps;
@@ -218,14 +244,9 @@ namespace Dovus.Game.Actors
             return next;
         }
 
-        float CapsuleRadius() =>
-            Mathf.Max(KinematicMotorControllerDefaults.CapsuleRadiusFloorM, _bodyRadiusM * KinematicMotorControllerDefaults.CapsuleRadiusBodyScale);
-
         float FirstBlockDistance(Vector3 from, Vector3 dir, float dist)
         {
-            float radius = CapsuleRadius();
-            Vector3 p1 = from + Vector3.up * (radius + KinematicMotorControllerDefaults.CapsuleProbeLiftM);
-            Vector3 p2 = from + Vector3.up * KinematicMotorControllerDefaults.CapsuleTopLiftM;
+            BodyCapsule(from, out Vector3 p1, out Vector3 p2, out float radius);
             int hits = Physics.CapsuleCastNonAlloc(
                 p1, p2, radius, dir, CastHits, dist, ~0, QueryTriggerInteraction.Collide);
             float best = dist;
@@ -238,7 +259,7 @@ namespace Dovus.Game.Actors
                 if (h.distance <= 0f)
                 {
                     // Başlangıçta temas: engelden uzaklaşan dodge serbest; içine doğru olan durur.
-                    Vector3 probe = from + Vector3.up * KinematicMotorControllerDefaults.GroundProbeLiftM;
+                    Vector3 probe = BodyMid(from);
                     Vector3 toward = h.collider.ClosestPoint(probe) - probe;
                     toward.y = 0f;
                     if (Vector3.Dot(toward, dir) <= 0f)
@@ -273,9 +294,7 @@ namespace Dovus.Game.Actors
                 return from;
 
             Vector3 dir = delta / dist;
-            float radius = CapsuleRadius();
-            Vector3 p1 = from + Vector3.up * (radius + KinematicMotorControllerDefaults.CapsuleProbeLiftM);
-            Vector3 p2 = from + Vector3.up * KinematicMotorControllerDefaults.CapsuleTopLiftM;
+            BodyCapsule(from, out Vector3 p1, out Vector3 p2, out float radius);
             int hits = Physics.CapsuleCastNonAlloc(
                 p1, p2, radius, dir, CastHits, dist, ~0, QueryTriggerInteraction.Ignore);
             if (hits <= 0)
@@ -311,12 +330,13 @@ namespace Dovus.Game.Actors
 
         Vector3 PushOutOfObstacles(Vector3 pos, bool anchoredTriggersBlock = false)
         {
-            Vector3 probe = pos + Vector3.up * KinematicMotorControllerDefaults.GroundProbeLiftM;
+            Vector3 probe = BodyMid(pos);
+            BodyCapsule(pos, out Vector3 p1, out Vector3 p2, out float radius);
             // Tetik (dost vuruş kapsülü, skill alanı) duvar değildir. 11-8 dostu
             // yanına çağırınca bu itiş oyuncuya ikinci bir kayma yazıyordu.
             // Dodge'da yalnız sabit gövdeli tetik (koza) duvar sayılır.
-            int count = Physics.OverlapSphereNonAlloc(
-                probe, _bodyRadiusM, ObstacleBuffer, ~0,
+            int count = Physics.OverlapCapsuleNonAlloc(
+                p1, p2, radius, ObstacleBuffer, ~0,
                 anchoredTriggersBlock ? QueryTriggerInteraction.Collide : QueryTriggerInteraction.Ignore);
             for (int i = 0; i < count; i++)
             {
@@ -344,10 +364,10 @@ namespace Dovus.Game.Actors
                     away /= dist;
                 }
 
-                if (dist < _bodyRadiusM)
-                    pos += away * (_bodyRadiusM - dist + KinematicMotorControllerDefaults.SeparationInsetM);
+                if (dist < radius)
+                    pos += away * (radius - dist + KinematicMotorControllerDefaults.SeparationInsetM);
 
-                probe = pos + Vector3.up * KinematicMotorControllerDefaults.GroundProbeLiftM;
+                probe = BodyMid(pos);
             }
 
             return pos;
