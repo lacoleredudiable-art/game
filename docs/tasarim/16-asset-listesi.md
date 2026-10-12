@@ -92,28 +92,80 @@ Model bunları sağlamadan Unity'ye girmez. FBX'i bana gönderirsen ölçüleri 
 | AL-1.21 | Kesimler | Alt çene ayrı parça (en çok 10° açılır, SI-8.6); göz kapakları şekil anahtarı (blend shape) ya da kemik (göz kırpma, SI-8.2); göğüs plakaları ayrı parçalar (faz 3'te açılır, KE-7.1) ve altında kalp (kor çekirdek) | SI-8, KE-7 |
 | AL-1.22 | Yön ve pivot | Baş +Z'ye bakar (arenada kod 180° döndürür). `ejder_on` sıfır noktası iki ön pençenin ortasında, zeminde; `ejder_govde` sıfır noktası arena merkezi (0, 0, 0), konum ve dönüş sıfır, gövde arena koordinatlarında (KA-3) | O-16.1 |
 | AL-1.23 | İskelet (`ejder_on`) | Kök (göğüs) → Boyun_1–4 → Bas → Cene; Goz_Kapak_L/R; her bacak için Omuz → Kol_Ust → Kol_Alt → Bilek → Parmak_1–4. Adlar Türkçe karakter içermez | O-16.6 |
-| AL-1.24 | İskelet (`ejder_govde`) | Kok (sabit) → Kanat_L_01–05, Kanat_R_01–05; gövde yalnız Kok'a bağlı | KE-6.6 |
+| AL-1.24 | İskelet (`ejder_govde`) | Kok (sabit) → Gogus; Kok → Kanat_L_01–05, Kanat_R_01–05 | KE-6.6, KE-6.1 |
 | AL-1.25 | Dışa aktarım | FBX, ölçek 1,0, "Apply Transform" açık, Y yukarı / Z ileri, adlar `ejder_on`, `ejder_govde` | O-16.1, O-16.6 |
 | AL-1.26 | Kontrol sayfası | Ön, yan, arka, oyun kamerası açısı (arena başlangıcından, (0, −14)) × 3 poz (yatıyor, faz 2 doğrulmuş, faz 3 göğüs yerde) = 12 görüntü | O-16.8 |
 
-### 1.5 Animasyonlar (model onaylandıktan sonra)
+### 1.5 Animasyon: poz kütüphanesi + kodla zamanlama (karar 12 Ekim)
+
+Saldırılar klip olarak yapılmaz. Blender'da **donmuş pozlar** yapılır; Unity'de kod, pozlar arasında boss JSON'undaki
+sürelerle geçiş yapar. Böylece ön işaret ile hareket aynı sayıdan okunur ve dengelemede süre değişince animasyon
+yeniden yapılmaz. Yalnız 4 sinema anı klip olarak yapılır. Oyuncu karakterlerinin klip düzeni değişmez.
+
+**Dışa aktarım:** her poz, `ejder_on` ve `ejder_govde` FBX'lerinde tek karelik bir klip olarak durur, adı
+`Poz_<Ad>`. Dinlenme pozu = `Poz_Yatis`. Bir pozun dokunmadığı kemik dinlenme değerinde kalır.
+
+#### 1.5.1 Pozlar
+
+| Kimlik | Poz | Kemikler | Ne zaman |
+|---|---|---|---|
+| AL-1.27 | `Poz_Yatis` | Hepsi | Faz 1 bekleme (dinlenme pozu) |
+| AL-1.28 | `Poz_Nefes_Cekme` | Boyun_1–5, Gogus | Kor Soluğu hazırlığı: boyun 3–5° kalkar, göğüs şişer |
+| AL-1.29 | `Poz_Bas_Sola_Cekik` / `Poz_Bas_Saga_Cekik` | Boyun_3–5, Bas | Baş Savuruşu hazırlığı (savuruşun tersine çekilir, 35°, baş 2 m kalkık) |
+| AL-1.30 | `Poz_Bas_Kalkik` | Boyun_2–5, Bas | Kor Dalgası hazırlığı (baş 6 m yükselir) |
+| AL-1.31 | `Poz_Bas_Yere_Vurmus` | Boyun_4–5, Bas | Kor Dalgası vuruşu (çene yere çarpar) |
+| AL-1.32 | `Poz_Bas_Goge` | Boyun_1–5, Bas | Göğün Çöküşü duyurusu (baş göğe) |
+| AL-1.33 | `Poz_Pence_L_Havada` / `_R_` | Bacak zinciri | Pençe Çakması hazırlığı |
+| AL-1.34 | `Poz_Pence_L_Yerde` / `_R_` | Bacak zinciri | Pençe Çakması vuruşu ve açık kalma |
+| AL-1.35 | `Poz_Pence_L_Acik` / `_R_` | Bacak zinciri | Pençe Süpürmesi hazırlığı (yana açık) |
+| AL-1.36 | `Poz_Pence_L_Supurme_Sonu` / `_R_` | Bacak zinciri | Pençe Süpürmesi sonu |
+| AL-1.37 | `Poz_Dogrulmus` | Gogus, bacaklar, boyun, baş | Faz 2 bekleme (baş 15 m, bacaklar dik) |
+| AL-1.38 | `Poz_Dogrulmus_Pence_L_Havada` / `_R_` | Bacak zinciri | Faz 2 Pençe Çakması |
+| AL-1.39 | `Poz_Dogrulmus_Nefes` | Boyun, baş | Tepeden Kor Soluğu hazırlığı |
+| AL-1.40 | `Poz_Gogus_Yerde` | Gogus, bacaklar, boyun, baş | Faz 3 bekleme (baş 10 m) |
+| AL-1.41 | `Poz_Plaka_Acik` | Göğüs plakaları | Kor Mührü başarısı (kalp açık) |
+| AL-1.42 | `Poz_Kanat_L_Acik` / `_R_` | Kanat_L/R_01–05 | Kanat Savuruşu hazırlığı |
+| AL-1.43 | `Poz_Kanat_L_Supurme_Sonu` / `_R_` | Kanat zinciri | Kanat Savuruşu sonu |
+| AL-1.44 | `Poz_Sendeleme` | Hepsi | Sendeleme (baş yerde yan yatık) |
+| AL-1.45 | `Poz_Agiz_Acik` | Cene | Ayrı katman: soluk, kükreme, replik (çene en çok 10°, SI-8.6) |
+
+#### 1.5.2 Geçiş kuralları (kod)
+
+Her saldırı boss JSON'unda bir **poz dizisi** olarak yazılır: `[{poz, süre, eğri}]`. Süreler `14`'teki saldırı
+satırından gelir; kod ayrı süre uydurmaz.
+
+| Kimlik | Evre | Süre | Eğri | Örnek: Pençe Çakması (KE-5.4) |
+|---|---|---|---|---|
+| AL-1.46 | Hazırlık | Ön işaret süresinin tamamı | Yavaş başlar, yavaş biter (ease-in-out) | `Yatis` → `Pence_L_Havada`, 1,0 s |
+| AL-1.47 | Vuruş | Etkin süre | Hızlanarak (ease-in) | → `Pence_L_Yerde`, 0,2 s |
+| AL-1.48 | Açık kalma | Açık kalma süresi | Poz tutulur | `Pence_L_Yerde`, 1,2 s |
+| AL-1.49 | Toparlanma | 0,8 s | Yavaşlayarak (ease-out) | → `Yatis` |
+
+Kesilen saldırıda (KE §0) o anki poz 0,3 s'de `Poz_Sendeleme`'nin %40'ına karışır, 1,5 s tutulur, sonra bekleme pozuna döner.
+
+#### 1.5.3 Sürekli katmanlar (kod, pozların üstüne eklenir)
+
+| Kimlik | Katman | Değer | Kaynak |
+|---|---|---|---|
+| AL-1.50 | Nefes | Gogus ve Boyun_1: 6 s'lik sinüs, ölçek ±%2, dönüş ±1° | SI-8.1 |
+| AL-1.51 | Göz kırpma | 8–12 s'de bir, 0,4 s; göz kapağı şekil anahtarı | SI-8.2 |
+| AL-1.52 | Baş takibi | Bas + Boyun_5, hedef oyuncuya en çok 30 °/s, ±25° sınır; replik ve sendelemede kapalı | SI-8.3 |
+| AL-1.53 | Kıpırtı | Bütün kemiklerde ±0,5° yavaş gürültü (0,2 Hz) | SI-8.5 |
+
+#### 1.5.4 Sinema klipleri (4)
 
 | Kimlik | Klip | Süre | Kaynak |
 |---|---|---|---|
-| AL-1.27 | Nefes (bekleme) | 6 s döngü | SI-8.1 |
-| AL-1.28 | Göz kırpma | 0,4 s | SI-8.2 |
-| AL-1.29 | Uyanış | 4 s | KE-5.3 |
-| AL-1.30 | Pençe Çakması (sol, sağ) | ön işaret 1,0 s + vuruş 0,2 s + açık kalma 1,2 s | KE-5.4 |
-| AL-1.31 | Baş Savuruşu (iki yön) | 1,2 + 0,3 + 1,0 s | KE-5.5 |
-| AL-1.32 | Kor Soluğu (yatarken, doğrulmuş, geniş) | Ön işaret + etkin süre + açık kalma, her biri kendi satırındaki gibi | KE-5.6, KE-6.5, KE-7.4 |
-| AL-1.33 | Kor Dalgası / Göğün Çöküşü / Kraterin Kalbi (büyük saldırı başları) | 3 s duyuru + vuruş | KE-5.7, KE-6.7, KE-7.5 |
-| AL-1.34 | Doğruluş (faz 1 → 2) | 4 s | KE-6.1 |
-| AL-1.35 | Faz 2 bekleme, pençe çakması (yüksekten) | — | KE-6.4 |
-| AL-1.36 | Kanat Savuruşu, sol ve sağ (`ejder_govde`) | 2,0 + 0,4 + 1,5 s | KE-6.6 |
-| AL-1.37 | Göğüs yere (faz 2 → 3), göğüs plakaları açılır / kapanır | 4 s; açılma 0,6 s | KE-7.1, KE-7.8 |
-| AL-1.38 | Pençe Süpürmesi (sol, sağ) | 1,6 + 0,4 + 1,5 s | KE-7.2 |
-| AL-1.39 | Sendeleme (yatarken, doğrulmuşken çöküş) | 7 s | KE-8.1 |
-| AL-1.40 | Ölüm | 3 s | KE-7.12 |
+| AL-1.54 | `Klip_Uyanis` | 4 s | KE-5.3 |
+| AL-1.55 | `Klip_Dogrulus` | 4 s | KE-6.1 |
+| AL-1.56 | `Klip_Gogus_Yere` | 4 s | KE-7.1 |
+| AL-1.57 | `Klip_Olum` | 3 s | KE-7.12 |
+
+İlk sürümleri Claude Blender'da anahtar karelerle yapar; cilası sonra.
+
+**Gövde iskeleti eki:** faz 2 doğrulmasında göğsün kalkabilmesi için `ejder_govde` iskeletine `Gogus` kemiği
+eklenir (göğüs ön yüzünden sırtın ortasına; arka gövde Kok'ta sabit). AL-1.24 buna göre okunur.
+
 
 ---
 

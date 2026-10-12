@@ -41,7 +41,7 @@ işaretlenir ve tarihi yazılır.
 | D2 | Yere saplanmış eski silahlar (12–20) | Kılıç + Quaternius kılıç ve hançer, paslı doku | C2 |
 | D3 | Ejderha kafası, boynu, iki ön pençesi (rigli) | Tripo → Blender; 40 bin üçgen bütçesi (O-15.6); iş kartı `16` §1 | Başladı 12 Ekim (onarım sürerken; C2'yi beklemez) |
 | D4 | Ejderha gövdesi ve kanatlar: kuzey duvarını oluşturan kaya kütlesi; kanatlar Kanat Savuruşu için oynar | Tripo kaba modelinden; v0 ✔ 12 Ekim | D3 |
-| D5 | Boss animasyonları: nefes, göz kırpma, baş takibi, her saldırı, doğruluş, kalbin açılması, ölüm | Blender | D3 |
+| D5 | Boss animasyonu: poz kütüphanesi (~26 poz) + 4 sinema klibi; zamanlama ve sürekli katmanlar kodda (karar 12 Ekim, `16` §1.5) | Blender (Claude) + kod (ajan, E2) | D3 |
 | D6 | Atmosfer ve boss efektleri: kül, kıvılcım, yer sisi, darbe tozu, boss ateşi, pul kırılması, ortam tehditleri | Shader + parçacık | D1 |
 | D7 | Ses: ejderha nefesi ve sesi, darbeler, ortam, faz müzik katmanları; **replik seslendirmesi sonra (12 Ekim kararı)**, o zamana kadar altyazı | — | D5 |
 
