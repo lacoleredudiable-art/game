@@ -101,6 +101,14 @@ namespace UnityEngine
             return buf;
         }
 
+        public static bool ComputePenetration(Collider colliderA, Vector3 positionA, Quaternion rotationA,
+            Collider colliderB, Vector3 positionB, Quaternion rotationB, out Vector3 direction, out float distance)
+        {
+            direction = Vector3.zero;
+            distance = 0f;
+            return false;
+        }
+
         public static bool CheckCapsule(Vector3 start, Vector3 end, float radius, int layerMask = DefaultRaycastLayers,
             QueryTriggerInteraction q = QueryTriggerInteraction.UseGlobal) =>
             OverlapCapsuleNonAlloc(start, end, radius, new Collider[1], layerMask, q) > 0;

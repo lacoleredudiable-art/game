@@ -1,0 +1,72 @@
+t=3.01s [düz vuruş w2 #1] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=2525
+t=4.02s [düz vuruş w2 #1] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=2586
+t=5.02s [düz vuruş w2 #2] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=2646
+t=6.04s [dodge #1 çubuk=(1.00, 0.00)] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=2707
+t=7.05s [silah takası → w4] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=2768
+t=7.16s [kombo 1-1 w4] [GOZCU] kamera_fov_gecersiz fov0.0 kare=2774
+t=8.38s [kombo 1-2 w4] [GOZCU] kamera_fov_gecersiz fov0.0 kare=2847
+t=9.57s [kombo 1-4 w2] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=2919
+t=9.62s [kombo 1-4 w2] [GOZCU] kamera_fov_gecersiz fov0.0 kare=2922
+t=10.86s [kombo 1-6 w2] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=2996
+t=10.96s [kombo 1-9 w2] [GOZCU] kamera_fov_gecersiz fov0.0 kare=3002
+t=12.07s [kombo 2-2 w4] [GOZCU] kamera_fov_gecersiz fov0.0 kare=3069
+t=13.27s [kombo 2-4 w2] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=3141
+t=13.32s [kombo 2-4 w2] [GOZCU] kamera_fov_gecersiz fov0.0 kare=3144
+t=13.98s [kombo 2-6 w2] [GOZCU] kamera_aci_hizi 187dps kare=3183
+t=14.02s [kombo 2-6 w2] [GOZCU] oyuncu_ekran_disi vp=0.00,0.65,z6.1,fov13.7,asp1.33 kare=3186
+t=14.56s [kombo 2-6 w2] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=3218
+t=15.06s [kombo 2-9 w2] [GOZCU] kamera_fov_gecersiz fov0.0 kare=3248
+t=15.77s [kombo 3-1 w4] [GOZCU] efekt_ekran_kaplama 44%@MechanicGuardTrigger kare=3291
+t=16.37s [kombo 3-2 w4] [GOZCU] kamera_fov_gecersiz fov0.0 kare=3327
+t=17.02s [kombo 3-2 w4] [GOZCU] ayak_zemin_alti 3.6cm,kok100.0cm kare=3366
+t=17.39s [kombo 3-3 w4] [GOZCU] kamera_fov_gecersiz fov0.0 kare=3388
+t=18.21s [kombo 3-4 w2] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=3437
+t=18.26s [kombo 3-4 w2] [GOZCU] ayak_zemin_alti 14.3cm,kok100.0cm kare=3440
+t=19.16s [kombo 3-6 w2] [GOZCU] kamera_fov_gecersiz fov0.0 kare=3494
+t=19.49s [kombo 3-6 w2] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=3514
+t=19.52s [kombo 3-6 w2] [GOZCU] ayak_zemin_alti 3.2cm,kok100.0cm kare=3516
+t=20.39s [silah takası → w4] [GOZCU] kamera_aci_hizi 209dps kare=3568
+t=20.47s [silah takası → w4] [GOZCU] oyuncu_ekran_disi vp=-0.63,0.12,z3.1,fov54.0,asp1.33 kare=3573
+t=20.49s [silah takası → w4] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=3574
+t=22.37s [kombo 4-4 w2] [GOZCU] uyumsuz_klip Kilic_DURUS@w2 kare=3687
+t=22.66s [kombo 4-4 w2] [GOZCU] kamera_collider_icinde MechanicWall kare=3704
+t=24.37s [kombo 6-1 w4] [GOZCU] uyumsuz_klip Yay_DURUS@w4 kare=3807
+t=25.77s [kombo 6-2 w4] [GOZCU] efekt_ekran_kaplama 89%@MechanicField kare=3891
+t=26.84s [kombo 6-4 w2] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=3955
+t=27.03s [kombo 6-4 w2] [GOZCU] efekt_ekran_kaplama 87%@MechanicField kare=3966
+t=28.21s [kombo 6-9 w2] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=4037
+t=28.87s [kombo 9-1 w4] [GOZCU] kamera_fov_gecersiz fov0.0 kare=4077
+t=29.53s [kombo 9-2 w4] [GOZCU] efekt_ekran_kaplama 59%@MechanicField kare=4116
+t=29.89s [kombo 9-3 w4] [GOZCU] kamera_fov_gecersiz fov0.0 kare=4138
+t=30.59s [kombo 9-4 w2] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=4180
+t=30.78s [kombo 9-4 w2] [GOZCU] efekt_ekran_kaplama 46%@MechanicField kare=4191
+t=31.29s [kombo 9-6 w2] [GOZCU] kamera_fov_gecersiz fov0.0 kare=4222
+t=31.87s [kombo 9-6 w2] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=4257
+t=32.28s [kombo 9-9 w2] [GOZCU] efekt_ekran_kaplama 46%@MechanicField kare=4281
+t=33.09s [dodge #3 çubuk=(0.00, 1.00)] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=4330
+t=34.09s [boss'a yaklaşma] [GOZCU] uyumsuz_klip Loko_Kilic_Run@w2 kare=4390
+t=35.09s [boss'a yaklaşma] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=4450
+t=36.09s [boss'a yaklaşma] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=4510
+t=37.11s [boss'a yaklaşma] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=4571
+t=38.12s [boss'a yaklaşma] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=4632
+t=39.14s [boss'a yaklaşma] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=4693
+t=40.16s [boss'a yaklaşma] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=4754
+t=41.17s [boss'a yaklaşma] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=4815
+t=42.19s [boss'a yaklaşma] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=4876
+t=43.21s [boss'a yaklaşma] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=4937
+t=44.21s [boss'a yaklaşma] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=4997
+t=45.21s [boss'a yaklaşma] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=5057
+t=46.22s [boss'a yaklaşma] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=5118
+t=47.22s [boss'a yaklaşma] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=5178
+t=48.22s [boss'a yaklaşma] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=5238
+t=49.24s [boss'a yaklaşma] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=5299
+t=50.24s [boss'a yaklaşma] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=5359
+t=51.26s [boss'a yaklaşma] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=5420
+t=52.26s [boss'a yaklaşma] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=5480
+t=53.27s [boss'a yaklaşma] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=5541
+t=54.27s [boss'a yaklaşma] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=5601
+t=55.29s [boss'a yaklaşma] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=5662
+t=56.29s [boss'a yaklaşma] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=5722
+t=57.29s [boss'a yaklaşma] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=5782
+t=58.31s [boss'a yaklaşma] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=5843
+t=59.31s [boss'a yaklaşma] [GOZCU] uyumsuz_klip Loko_Kilic_Idle@w2 kare=5903

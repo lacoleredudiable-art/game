@@ -110,6 +110,7 @@ namespace Dovus.Tests.PlayMode
             _host.SceneTuning.RuleEngineV4.Enabled = false;
             _host.SceneTuning.RuleEngineV4.SliceScene = sliceScene;
             boot.SetActive(true);
+            RuleEngineV4WorldPhysicsPlayModeTests.DisableGozcu();
             yield return new WaitForSecondsRealtime(BootSettleSec);
 
             Assert.That(RuleEngineV4Feature.Enabled, Is.False, "bayrak açık");

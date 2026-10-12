@@ -25,7 +25,7 @@ namespace UnityEngine
         None = 0, RealtimeEmissive = 1, BakedEmissive = 2, EmissiveIsBlack = 4, AnyEmissive = 3,
     }
 
-    public class Mesh : Object
+    public partial class Mesh : Object
     {
         Vector3[] _vertices = Array.Empty<Vector3>();
         int[] _triangles = Array.Empty<int>();
@@ -394,7 +394,7 @@ namespace UnityEngine
             sharedMesh != null ? MeshRenderer.TransformBounds(sharedMesh.bounds, transform.localToWorldMatrix) : base.bounds;
     }
 
-    public class LineRenderer : Renderer
+    public partial class LineRenderer : Renderer
     {
         Vector3[] _positions = Array.Empty<Vector3>();
 
@@ -457,7 +457,7 @@ namespace UnityEngine
         }
     }
 
-    public class TrailRenderer : Renderer
+    public partial class TrailRenderer : Renderer
     {
         public float time { get; set; } = 5f;
         public float startWidth { get; set; } = 1f;

@@ -11,6 +11,12 @@ namespace UnityEngine
         public float m03, m13, m23, m33;
 
         public static Matrix4x4 identity => new() { m00 = 1f, m11 = 1f, m22 = 1f, m33 = 1f };
+        public static Matrix4x4 Translate(Vector3 v)
+        {
+            Matrix4x4 m = identity;
+            m.m03 = v.x; m.m13 = v.y; m.m23 = v.z;
+            return m;
+        }
         public static Matrix4x4 zero => new();
 
         public static Matrix4x4 TRS(Vector3 pos, Quaternion q, Vector3 s)
