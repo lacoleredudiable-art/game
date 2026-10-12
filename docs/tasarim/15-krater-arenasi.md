@@ -52,7 +52,7 @@ geçer, değiştirilmez. Görünüm kuralları `12-sanat-incili.md`'dedir.
 | Kimlik | Parça | Konum | Ölçü | Not |
 |---|---|---|---|---|
 | KA-3.1 | Baş (faz 1) | Burun (0, 7,5), kafatası arkası (0, 16,5) | 9 m uzun, 7 m yüksek | KE-2.3 |
-| KA-3.2 | Ön pençeler | (−7, 9), (7, 9) | 4 × 3 m taban; bacak 8 m yükseklikte omza girer (omuzlar (±7, 18)) | KE-2.4 |
+| KA-3.2 | Ön pençeler | Sol (−8, 13,7), sağ (8, 13,7); tırnak ucu Z 11,3 | 5,2 × 4,2 m taban; bacak dirsekte (Z 16,4, 4,5 m) geriye bükülür, omuz (±7,4, 18,9, 9,8) göğse girer | KE-2.4 |
 | KA-3.3 | Boyun | Göğsün ortasından (0, 19), 10–12 m yükseklikten başın arkasına (0, 16,5) iner | Kalınlık 5 m | Göğsün kesik ön yüzünü kapatır |
 | KA-3.4 | Göğüs ve omuzlar | Ön yüz Z ≈ 18 (duvar çizgisi), X −10…10 | Sırt Z = 20'de 14 m, Z = 25'te 17 m yükseklikte | Azimut 330°–30° arasında duvarın kendisi ejderhanın göğsüdür |
 | KA-3.5 | Sırt ve kanatlar | Z 18–58; kanatlar Z 25–55 arasında X ±18'e yayılır, krater kenarının üstünde | En yüksek nokta 18 m (Z ≈ 35) | Kanatlar Kanat Savuruşu'nda açılır (KE-6.6) |
@@ -171,7 +171,7 @@ Model yapılmadan önce telefonda denenecek ilk sürüm. Her şey gerçek ölç�
 |---|---|---|
 | KA-10.1 | Zemin | r 30 m düz disk, #26282C |
 | KA-10.2 | Duvar | r 18–22 m halka, 4 m yüksek (çarpışma) + görüntü için 7 m yüksek gri silindir halkası; kuzey sektörü (330°–30°) boş, orada gövde durur |
-| KA-10.3 | Ejderha | Baş: 9 × 7 × 6 m kutu (burun (0, 7,5)); pençeler 4 × 3 × 4 m kutu; gövde: `ejder_govde` v0 doğrudan kullanılır (pivot arena merkezinde); gözler iki turuncu küre |
+| KA-10.3 | Ejderha | Baş: 9 × 7 × 6 m kutu (burun (0, 7,5)); pençeler 5 × 4 × 4 m kutu, (±8, 13,7); gövde: `ejder_govde` v0 doğrudan kullanılır (pivot arena merkezinde); gözler iki turuncu küre |
 | KA-10.4 | Taşlar | 2 × 1,5 m taban, 8 / 7 / 6 m yükseklikte kutular |
 | KA-10.5 | Çatlaklar | 15 turuncu şerit (4 × 0,4 m) |
 | KA-10.6 | Eski silahlar | 16 ince çubuk (1,1 m) |

@@ -85,15 +85,15 @@ Model bunları sağlamadan Unity'ye girmez. FBX'i bana gönderirsen ölçüleri 
 | Kimlik | Madde | Değer | Kaynak |
 |---|---|---|---|
 | AL-1.16 | Ölçü (baş) | Çene yerdeyken 7 m yükseklik, burun ucundan kafatası arkasına 9 m | KE-2.3 |
-| AL-1.17 | Ölçü (pençe) | Taban 4 m uzun, 3 m geniş; ayak bileği 4 m yükseklikte, omuz 8 m | KE-2.4, KA-3.2 |
+| AL-1.17 | Ölçü (pençe) | Taban 5,2 × 4,2 m, bilek 1,6 m, dirsek 4,5 m, omuz 9,8 m yükseklikte (Tripo bacağı ×10, üst kol 2 kat uzatılıp göğse yatırıldı) | KE-2.4, KA-3.2 |
 | AL-1.18 | Ölçü (bütün) | Burun Z 7,5; gövde Z 18–58, X ±18, 18 m yükseklik (KA-3) | KE-2.2 |
 | AL-1.19 | Üçgen | `ejder_on` ≤ 26 000 (baş + boyun 14 000, göğüs 4 000, her bacak 4 000) · `ejder_govde` (kanatlar dahil) ≤ 10 000 → toplam ≤ 36 000 | O-15.6 |
 | AL-1.20 | Doku | Her dosya tek doku seti; `ejder_on` 2048, gövde 1024 + tekrarlayan kaya ayrıntı dokusu. Albedo SI-5.3 ailesine çekilir: taban #3A4048 (±5 L\*), boynuz ve pençe #5B5A57, yukarı bakan yüzlerde kül. **Emission maskesi** ayrı kanal: gözler, pul araları, göğüs çatlakları (kalp), boyun çatlakları. Doku ASTC | SI-5.3–5.5, O-15.7 |
 | AL-1.21 | Kesimler | Alt çene ayrı parça (en çok 10° açılır, SI-8.6); göz kapakları şekil anahtarı (blend shape) ya da kemik (göz kırpma, SI-8.2); göğüs plakaları ayrı parçalar (faz 3'te açılır, KE-7.1) ve altında kalp (kor çekirdek) | SI-8, KE-7 |
-| AL-1.22 | Yön ve pivot | Baş +Z'ye bakar (arenada kod 180° döndürür). `ejder_on` sıfır noktası iki ön pençenin ortasında, zeminde; `ejder_govde` sıfır noktası arena merkezi (0, 0, 0), konum ve dönüş sıfır, gövde arena koordinatlarında (KA-3) | O-16.1 |
-| AL-1.23 | İskelet (`ejder_on`) | Kök (göğüs) → Boyun_1–4 → Bas → Cene; Goz_Kapak_L/R; her bacak için Omuz → Kol_Ust → Kol_Alt → Bilek → Parmak_1–4. Adlar Türkçe karakter içermez | O-16.6 |
+| AL-1.22 | Yön ve pivot | Bütün dosyalar arena koordinatlarında, sıfır noktası arena merkezi (0, 0, 0); Unity'de konum ve dönüş sıfır, baş güneye (−Z) bakar. Blender'da arena doğusu −X, kuzeyi −Y'dir (Unity sol el, Blender sağ el); bu kurala uymayan dosya aynalanmış çıkar | O-16.1 |
+| AL-1.23 | İskelet (`ejder_on`) | Gogus → Boyun_1–5 → Bas (→ Cene, v1); Gogus → Omuz_L/R → Kol_Ust → Kol_Alt → Pence (parmak kemikleri yok); Goz_Kapak şekil anahtarı (v1). L = batı, R = doğu. Adlar Türkçe karakter içermez | O-16.6 |
 | AL-1.24 | İskelet (`ejder_govde`) | Kok (sabit) → Gogus; Kok → Kanat_L_01–05, Kanat_R_01–05 | KE-6.6, KE-6.1 |
-| AL-1.25 | Dışa aktarım | FBX, ölçek 1,0, "Apply Transform" açık, Y yukarı / Z ileri, adlar `ejder_on`, `ejder_govde` | O-16.1, O-16.6 |
+| AL-1.25 | Dışa aktarım | FBX, ölçek 1,0, "Apply Transform" açık, Y yukarı / Z ileri (Blender: ileri −Z, yukarı Y), adlar `ejder_on`, `ejder_govde` | O-16.1, O-16.6 |
 | AL-1.26 | Kontrol sayfası | Ön, yan, arka, oyun kamerası açısı (arena başlangıcından, (0, −14)) × 3 poz (yatıyor, faz 2 doğrulmuş, faz 3 göğüs yerde) = 12 görüntü | O-16.8 |
 
 ### 1.5 Animasyon: poz kütüphanesi + kodla zamanlama (karar 12 Ekim)
