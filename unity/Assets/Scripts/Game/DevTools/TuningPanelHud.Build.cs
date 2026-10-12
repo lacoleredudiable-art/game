@@ -1,8 +1,10 @@
+using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Actors;
 using Dovus.Game.Cameras;
 using Dovus.Game.Casting;
 using Dovus.Game.Config;
 using Dovus.Game.Hud;
+using Dovus.Game.Skills.RuleEngineV4;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -99,7 +101,7 @@ namespace Dovus.Game.DevTools
 
         void BuildFooter(Transform parent, out float footerTop01)
         {
-            // İki satır: hazır setler + sıfırla/kopyala. En altta sabit.
+            // İki satır: hazır setler + kaydet/sıfırla/kopyala. En altta sabit.
             footerTop01 = 0.155f;
 
             var presetsRow = new GameObject("Presets");
@@ -125,6 +127,7 @@ namespace Dovus.Game.DevTools
             actionsRect.offsetMax = new Vector2(-12f, -2f);
             AddHorizontalButtons(actionsRow.transform, new (string, Action)[]
             {
+                ("KAYDET", SaveFromPanel),
                 ("SIFIRLA", ResetToDefaults),
                 ("JSON'U KOPYALA", CopyJsonToClipboard),
             });
@@ -196,6 +199,9 @@ namespace Dovus.Game.DevTools
         {
             var c = _config.Combat;
             var p = _config.Prototype;
+            _sliceJson = RuleEngineV4Feature.Enabled
+                ? RuleEngineV4SliceTuningSources.Resolve(new RuleEngineV4CatalogAccess().Catalog)
+                : null;
 
             AddHeader("DODGE (§6)");
             AddIntSlider("Startup", 0, 150, () => c.Dodge.StartupMs, v => c.Dodge.StartupMs = v, "ms");
@@ -238,9 +244,12 @@ namespace Dovus.Game.DevTools
                 "AÇIK", "KAPALI");
             AddFloatSlider("Takip yumuşatma", 0.02f, 0.5f, () => p.Camera.FollowSmoothTimeSec, v => p.Camera.FollowSmoothTimeSec = v, "sn", "0.00");
             AddFloatSlider("Önden bakış", 0f, 4f, () => p.Camera.LookAheadM, v => p.Camera.LookAheadM = v, "m", "0.00");
-            AddFloatSlider("Mesafe (varsayılan)", 3f, 10f, () => p.Camera.CameraDistanceM, v => p.Camera.CameraDistanceM = v, "m", "0.00");
-            AddFloatSlider("Bakış yüksekliği", 0f, 1.5f, () => p.Camera.CameraLookHeightM, v => p.Camera.CameraLookHeightM = v, "m", "0.00");
-            AddFloatSlider("Pitch (varsayılan)", 0f, 35f, () => p.Camera.CameraDefaultPitchDeg, v => p.Camera.CameraDefaultPitchDeg = v, "°", "0.0");
+            AddFloatSlider("Mesafe (varsayılan)", 3f, 10f, () => p.Camera.CameraDistanceM, v => p.Camera.CameraDistanceM = v, "m", "0.00",
+                "prototype.CameraDistanceM");
+            AddFloatSlider("Bakış yüksekliği", 0f, 1.5f, () => p.Camera.CameraLookHeightM, v => p.Camera.CameraLookHeightM = v, "m", "0.00",
+                "prototype.CameraLookHeightM");
+            AddFloatSlider("Pitch (varsayılan)", 0f, 35f, () => p.Camera.CameraDefaultPitchDeg, v => p.Camera.CameraDefaultPitchDeg = v, "°", "0.0",
+                "prototype.CameraDefaultPitchDeg");
             AddFloatSlider("Boss bakış yüksekliği", 0.5f, 3f, () => p.Camera.CameraBossAimHeightM, v => p.Camera.CameraBossAimHeightM = v, "m", "0.00");
             AddFloatSlider("Lock-on min mesafe", 3f, 9f, () => p.Camera.CameraLockOnMinDistanceM, v => p.Camera.CameraLockOnMinDistanceM = v, "m", "0.00");
             AddFloatSlider("Lock-on max mesafe", 4f, 12f, () => p.Camera.CameraLockOnMaxDistanceM, v => p.Camera.CameraLockOnMaxDistanceM = v, "m", "0.00");
@@ -307,7 +316,7 @@ namespace Dovus.Game.DevTools
             AddIntSlider("Aynı varyant üst üste", 1, 5, () => c.Boss.MaxSameVariantStreak, v => c.Boss.MaxSameVariantStreak = v, "");
             AddIntSlider("Aktif pencere", 20, 300, () => c.Boss.ActiveMs, v => c.Boss.ActiveMs = v, "ms");
             AddIntSlider("Toparlanma", 100, 2000, () => c.Boss.RecoveryMs, v => c.Boss.RecoveryMs = v, "ms");
-            AddIntSlider("Hasar", 1, 60, () => c.Boss.Damage, v => c.Boss.Damage = v, "");
+            AddIntSlider("Hasar", 1, 60, () => c.Boss.Damage, v => c.Boss.Damage = v, "", "combat.Boss.Damage");
             AddIntSlider("Bekleme min", 100, 3000, () => c.Boss.IdleMinMs, v => c.Boss.IdleMinMs = v, "ms");
             AddIntSlider("Bekleme max", 100, 4000, () => c.Boss.IdleMaxMs, v => c.Boss.IdleMaxMs = v, "ms");
             AddFloatSlider("Yaklaşma hızı", 0f, 6f, () => c.Boss.ApproachSpeedMps, v => c.Boss.ApproachSpeedMps = v, "m/s", "0.00");
@@ -317,7 +326,7 @@ namespace Dovus.Game.DevTools
             {
                 p.Player.PlayerMaxHp = v;
                 _vitals?.SetMaxHp(v);
-            }, "");
+            }, "", "prototype.PlayerMaxHp");
 
             AddHeader("ÖLÇÜM (T11/T12)");
             AddBoolButton("Kare süresi göstergesi", () => p.Hud.ShowFrameTimeHud, v => p.Hud.ShowFrameTimeHud = v, "AÇIK", "KAPALI");

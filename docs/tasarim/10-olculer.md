@@ -451,7 +451,7 @@ Dilimde çok oyunculu yok ve kodda ağ paketi yok. Kurulduğunda bu değerler ge
 | Ç-5 | Boss canı | `scale.boss_max_hp` 15000 | Boss JSON `total_hp` 120 | `eksik-parametreler` önerisi 12000 | 15000 (O-6.11) |
 | Ç-6 | Kamera bakış yüksekliği | `CameraLookHeightM` 0,38 | — | — | 1,2 m (O-5.3) |
 | Ç-7 | Boss dönme hızı | `BossTurnRateDegPerSec` 240 | — | — | 90 °/s (O-6.5) |
-| Ç-8 | Telefondaki ayar dosyası | `tuning.vNN.json` cihazda saklanıyor; kod varsayılanı değişse de eski kayıt telefonda kalabilir | — | — | Sürüm değişince sıfırla (O-17.8); dilim APK'sında ayar dosyası okunmaz, değerler yalnız koddan/JSON'dan gelir |
+| Ç-8 | Telefondaki ayar dosyası | `tuning.vNN.json` cihazda saklanıyor; kod varsayılanı değişse de eski kayıt telefonda kalabilir | — | — | Sürüm değişince sıfırla (O-17.8). Ayar dosyası kalır; dosyadaki bir değer yalnız panelden bilerek "Kaydet"e basılarak yazılmışsa geçerlidir (dosya panelden kaydedilen alanları işaretler, işaretsiz alanlar kod/JSON değerinde kalır; otomatik kayıt kullanıcı değeri sayılmaz). Açılışta tek log bloğu her ayarı `ad = değer (kaynak: JSON / ayar dosyası / kod)` diye yazar. Dilimde JSON'dan gelen ayarların panel kaydırıcıları gri ve "JSON" etiketli, değiştirilemez (plan §2.4, 12 Ekim) |
 | Ç-9 | Yay'ın diğer Hareket kombolarında geri sıçrama | `kural-motoru-v4.json` Yay `_not_hareket`: "diğer Hareket kombolarında kısa geri sıçrama" | `09` [K]: 3-3 geri sıçrama değildir; Hareket kombolarında silah teslimi yok | — | `09` geçerli; JSON notu ve `backstep_m` 3-3 ile çelişiyorsa kaldırılır |
 
 ---

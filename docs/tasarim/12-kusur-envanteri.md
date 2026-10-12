@@ -1,6 +1,6 @@
 # 12 — Kusur envanteri (dilim)
 
-Sürüm 1.1 · 12 Ekim 2026 (#172 sonrası güncellendi) · master `b1dbb3a5` (#171 sonrası) üzerinde kod taramasıyla hazırlandı.
+Sürüm 1.2 · 12 Ekim 2026 (#173 sonrası güncellendi) · master `b1dbb3a5` (#171 sonrası) üzerinde kod taramasıyla hazırlandı.
 
 Bu liste onarım planının (`11`) kalan işini **önceden** çıkarır. Ajan sıradaki maddeyi alır, yalnız onu yapar.
 Çalışırken yeni bir kusur bulursa **düzeltmez**; PR açıklamasına "envantere eklenecek" diye yazar ve bu
@@ -14,7 +14,7 @@ Durum işaretleri: ⏳ verildi / devam · ☐ sırada · ✅ bitti.
 
 ## Biten (12 Ekim)
 ✅ #162 Gözcü · ✅ #163 tasarım kaynağı · ✅ #164 arena sınırı tek kaynak · ✅ #166 duvar halkası + sis ·
-✅ #167 gövde kapsülü · ✅ #169 Hareket süpürmesi · ✅ #170 boss yarıçapı · ✅ #171 yürürken boss/dost engel · ✅ #172 kamera tek kaynak (Gözcü 83 → 70)
+✅ #167 gövde kapsülü · ✅ #169 Hareket süpürmesi · ✅ #170 boss yarıçapı · ✅ #171 yürürken boss/dost engel · ✅ #172 kamera tek kaynak (Gözcü 83 → 70) · ✅ #173 can ve boss hasarı tek kaynak
 
 ---
 
@@ -40,7 +40,7 @@ Durum işaretleri: ⏳ verildi / devam · ☐ sırada · ✅ bitti.
   kamera boss kapsülü dışında.
 - **Ölçüt:** Gözcü `kamera_fov_gecersiz` = 0.
 
-### A2 ⏳ Can ve hasar ölçeği (2.3)
+### A2 ✅ Can ve hasar ölçeği (2.3) — #173
 - **Belirti:** canlar ve hasarlar tutarsız (oyuncu 22 / 1000).
 - **Yer:** `Game/Config/Sections/PlayerSettings.cs` (`PlayerMaxHp = 22`), `Resources/Bosses/aglarin-kralicesi.json`
   (`total_hp 120`, `player_hp 22`, saldırı hasarları), `kural-motoru-v4.json` → `scale`.
@@ -53,7 +53,7 @@ Durum işaretleri: ⏳ verildi / devam · ☐ sırada · ✅ bitti.
 - **Test:** `O_13_1_OyuncuCani_1000`, `O_6_11_BossCani_15000`, boss saldırı hasarları O-6.14–O-6.18 ile aynı;
   dilimde panel/hazır ayar canı değiştirmez.
 
-### A3 ☐ Ayar dosyası (2.4)
+### A3 ⏳ Ayar dosyası (2.4)
 - Plan `11` §2.4 tanımıyla: dosya kalır, sürümde sıfırlanır, açılışta değer kaynakları log'a yazılır.
 - **Yer:** `Game/Config/TuningConfig.cs`, `GameTuning.Migrate.cs`.
 
@@ -196,3 +196,9 @@ _(Ajanlar buraya yazar; madde numarası, bulan PR, kısa açıklama.)_
 | Y6 | #172 | Temizlik: `PlayerDodgeController._camera` kullanılmıyor; `FollowCameraController.Collision.cs` boş kaldı; `WallBase` test tanıları ayar değeri kullanıyor | C4 sonrası temizlik |
 | Y7 | #172 | JSON'da boss boyu alanı yok (5 m `BossVisualHeightM`, O-6.10). Ejderha (çok parçalı boss) için boss parça listesi gerekecek | Kül Ejderi işi |
 | Y8 | #172 | Telefonda elle kombo ve dodge görsel kontrolü yapılamadı (USB koptu) | Adım 2 sonu toplu telefon kontrolü |
+| Y9 | #173 | Zehir/yanma tiki oyuncuda her karede `CeilToInt` ile en az 1 can düşürüyor: Zehir Nefesi toplamı 240 yerine 253 (#173 ölçtü). Düzeltme: küsurat biriktirilir. Kırmızı `[Ignore]`'lu test #173'te | D3 (sayı hataları) |
+| Y10 | #173 | Panel "Hasar" kaydırıcısı dilimde etkisiz; "Oyuncu can tavanı" etiketi gerçek canı (1000) değil ayar değerini gösteriyor | A3 |
+| Y11 | #173 | Zehir Nefesi konisi kodda 6 m / 40° yarı açı; O-6.17'de 8 m / 60° | D3 (sayı hataları) |
+| Y12 | #173 | `BossCombatProfile` boss JSON'unu değil `element-sistemi.json`'u okuyor | B3 (sessiz yedekler) |
+| Y13 | #173 | Gözcü duman testi boss'u donduruyor; boss saldırılarını kapsamıyor (ör. boss efekti kaplaması duman testinde görünmez) | A4 (koruma kapısı) |
+| Y14 | #169, #173 | Telefonda 3 kez `MeshCollider doesn't exist` (APK'da kod ayıklama MeshCollider'ı siliyor) | B3 |

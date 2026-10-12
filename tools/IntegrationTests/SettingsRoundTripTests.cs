@@ -38,22 +38,47 @@ public class SettingsRoundTripTests
     public void SaveAndTryLoad_RoundTripsCombatAndPrototypeFields()
     {
         var combat = new CombatTuning();
-        combat.ClosingDamagePerEffect = 4.25f;
-        combat.BasicStrikePower = 11f;
-
         var prototype = new GameTuning();
-        prototype.Player.DodgeGlideSpeedMps = 9.5f;
-        prototype.Player.PlayerMaxHp = 420;
-
         var original = TuningConfig.Create(combat, prototype);
-        original.Save();
+        original.RecordPanelEdit(() =>
+        {
+            combat.ClosingDamagePerEffect = 4.25f;
+            combat.BasicStrikePower = 11f;
+            combat.Sentence.Steps[1].RecoverySec = 0.9f;
+            prototype.Player.DodgeGlideSpeedMps = 9.5f;
+            prototype.Player.PlayerMaxHp = 420;
+        });
+        Assert.That(original.SaveFromPanel(), Is.True);
 
         var loaded = TuningConfig.Create(new CombatTuning(), new GameTuning());
         Assert.That(loaded.TryLoad(), Is.True);
         Assert.That(loaded.Combat.ClosingDamagePerEffect, Is.EqualTo(4.25f).Within(0.001f));
         Assert.That(loaded.Combat.BasicStrikePower, Is.EqualTo(11f).Within(0.001f));
+        Assert.That(loaded.Combat.Sentence.Steps[1].RecoverySec, Is.EqualTo(0.9f).Within(0.001f));
         Assert.That(loaded.Prototype.Player.DodgeGlideSpeedMps, Is.EqualTo(9.5f).Within(0.001f));
         Assert.That(loaded.Prototype.Player.PlayerMaxHp, Is.EqualTo(420));
+        Assert.That(loaded.IsFromFile("combat.Sentence.Steps[1].RecoverySec"), Is.True);
+    }
+
+    /// <summary>O-17.8: dosyada olup panelden KAYDET ile işaretlenmemiş alan kod değerinde kalır.</summary>
+    [Test]
+    public void O_17_8_UnmarkedFileValue_NotApplied()
+    {
+        var combat = new CombatTuning();
+        var prototype = new GameTuning();
+        var original = TuningConfig.Create(combat, prototype);
+        original.RecordPanelEdit(() => prototype.Camera.LookAheadM = 2.2f);
+        combat.BasicStrikePower = 11f;
+        prototype.Player.DodgeGlideSpeedMps = 9.5f;
+        Assert.That(original.SaveFromPanel(), Is.True);
+
+        var loaded = TuningConfig.Create(new CombatTuning(), new GameTuning());
+        Assert.That(loaded.TryLoad(), Is.True);
+        Assert.That(loaded.Prototype.Camera.LookAheadM, Is.EqualTo(2.2f).Within(0.001f));
+        Assert.That(loaded.Combat.BasicStrikePower, Is.EqualTo(new CombatTuning().BasicStrikePower).Within(0.001f));
+        Assert.That(loaded.Prototype.Player.DodgeGlideSpeedMps,
+            Is.EqualTo(new GameTuning().Player.DodgeGlideSpeedMps).Within(0.001f));
+        Assert.That(loaded.PanelSavedFields, Is.EquivalentTo(new[] { "prototype.LookAheadM" }));
     }
 
     [Test]
