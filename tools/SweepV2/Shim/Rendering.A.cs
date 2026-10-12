@@ -94,6 +94,12 @@ namespace UnityEngine
         public void UploadMeshData(bool markNoLongerReadable) { }
         public void SetVertices(List<Vector3> inVertices) => vertices = inVertices.ToArray();
         public void SetVertices(Vector3[] inVertices) => vertices = inVertices;
+        public MeshTopology GetTopology(int submesh) => MeshTopology.Triangles;
+        public void GetTriangles(List<int> tris, int submesh)
+        {
+            tris.Clear();
+            tris.AddRange(triangles);
+        }
         public void SetTriangles(int[] tris, int submesh) => triangles = tris;
         public void SetTriangles(List<int> tris, int submesh) => triangles = tris.ToArray();
         public void SetTriangles(int[] tris, int submesh, bool calculateBounds) => triangles = tris;
@@ -429,6 +435,7 @@ namespace UnityEngine
         }
 
         public Vector3 GetPosition(int index) => index >= 0 && index < _positions.Length ? _positions[index] : Vector3.zero;
+        public void BakeMesh(Mesh mesh, Camera camera, bool useTransform) { }
 
         public void SetPositions(Vector3[] positions)
         {
@@ -476,6 +483,7 @@ namespace UnityEngine
         public LineAlignment alignment { get; set; }
         public int positionCount => 0;
         public void Clear() { }
+        public void BakeMesh(Mesh mesh, Camera camera, bool useTransform) { }
     }
 
     public class Light : Behaviour

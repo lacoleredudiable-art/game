@@ -199,6 +199,7 @@ namespace UnityEngine
         public AnimatorStateInfo GetCurrentAnimatorStateInfo(int layerIndex) => default;
         public AnimatorStateInfo GetNextAnimatorStateInfo(int layerIndex) => default;
         public AnimatorClipInfo[] GetCurrentAnimatorClipInfo(int layerIndex) => Array.Empty<AnimatorClipInfo>();
+        public void GetCurrentAnimatorClipInfo(int layerIndex, List<AnimatorClipInfo> clips) => clips.Clear();
 
         public void Play(string stateName) { }
         public void Play(string stateName, int layer) { }

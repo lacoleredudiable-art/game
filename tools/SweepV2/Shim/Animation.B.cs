@@ -68,6 +68,7 @@ namespace UnityEngine
         public void Simulate(float t, bool withChildren, bool restart) { }
         public bool IsAlive() => _playing;
         public bool IsAlive(bool withChildren) => _playing;
+        public int GetParticles(Particle[] particles) => 0;
 
         /// <summary>Unity: tüm parçacıklar ölünce stopAction çalışır.</summary>
         internal bool Finished(double now)
@@ -83,6 +84,13 @@ namespace UnityEngine
         internal void OnAwakeAutoPlay()
         {
             if (PlayOnAwake) Play();
+        }
+
+        public struct Particle
+        {
+            public Vector3 position { get; set; }
+            public float startSize { get; set; }
+            public float GetCurrentSize(ParticleSystem system) => startSize;
         }
 
         public struct EmitParams
