@@ -68,6 +68,8 @@ namespace Dovus.Tests.PlayMode
             host.SceneTuning.RuleEngineV4.SliceScene = true;
             host.SlicePlayerVisualPrefab = LoadSlicePlayerVisual();
             boot.SetActive(true);
+            if (!IsGozcuTest())
+                DisableGozcu();
             yield return new WaitForSecondsRealtime(BootSettleSec);
 
             _md = Object.FindAnyObjectByType<ManifestationDirector>();
@@ -105,6 +107,9 @@ namespace Dovus.Tests.PlayMode
 
         void OnLog(string msg, string stack, LogType type)
         {
+            // Gözcü satırları yalnız Gözcü testlerinin kapısı (_gozcuLines).
+            if (msg != null && msg.StartsWith(GozcuReporter.Tag, StringComparison.Ordinal))
+                return;
             if (msg != null && msg.Contains(MissingEventReceiver))
             {
                 _errors.Add($"{_label} [{type}] {msg}");

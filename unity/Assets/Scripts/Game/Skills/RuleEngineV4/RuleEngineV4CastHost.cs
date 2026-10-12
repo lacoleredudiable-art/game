@@ -57,6 +57,9 @@ namespace Dovus.Game.Skills.RuleEngineV4
 
         internal RuleEngineV4CastEconomy Economy => _economy ??= new RuleEngineV4CastEconomy(_catalogAccess.Catalog.Scale);
 
+        /// <summary>Yalnız PlayMode duman senaryosu: mana dolu, bekleme yok (36 kombo 60 sn'ye sığar).</summary>
+        internal void ResetEconomy() => _economy = null;
+
         internal RuleEngineV4CastDenial LastDenial { get; private set; }
 
         /// <summary>Oyun döküm yolu: mana + bekleme. Yetmezse skill çıkmaz; true döner ki eski yola düşmesin.</summary>
