@@ -33,22 +33,48 @@ jobs:
       - name: Integration testleri
         run: dotnet test tools/IntegrationTests
 
+      - name: GameCompile (Game katmanı derlemesi)
+        run: python tools/GameCompile/check.py
+
       - name: AtomSim derlemesi
         run: dotnet build tools/AtomSim
 
-      - name: Başsız Play taraması (1440 kombo, kapı)
-        run: >
-          dotnet run --project tools/SweepV2 -c Release --
-          --all --gate --quiet
-          --compare docs/play-sweep/pr35-final-4x.csv
-          --expect-sha256 @docs/play-sweep/headless-baseline.sha256
-          --out sweep-out --label headless-tum
+      # Eski motoru korur; v4 dilim PR'larında hash farkı beklenir, engellemez (taşıma bitince kaldırılacak).
+      - name: Başsız Play taraması (1440 kombo, kapı, engellemez)
+        id: sweep
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          mkdir -p sweep-out
+          dotnet run --project tools/SweepV2 -c Release -- \
+            --all --gate --quiet \
+            --compare docs/play-sweep/pr35-final-4x.csv \
+            --expect-sha256 @docs/play-sweep/headless-baseline.sha256 \
+            --out sweep-out --label headless-tum 2>&1 | tee sweep-out/sweep.log
 
       - name: Skor tablosu
         if: always()
+        env:
+          SWEEP_OUTCOME: ${{ steps.sweep.outcome }}
         run: |
-          if [ -f sweep-out/headless-tum-ozet.md ]; then
-            cat sweep-out/headless-tum-ozet.md >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "## SweepV2 kapısı: ${SWEEP_OUTCOME} (engellemez)"
+            echo
+            if [ -f sweep-out/sweep.log ]; then
+              echo '```'
+              grep -A 20 -E "Normalize sweep hash uyuşmuyor" sweep-out/sweep.log || echo "Normalize sweep hash: eşleşti"
+              grep -A 50 -E "^KAPI KALDI:" sweep-out/sweep.log || grep -E "^KAPI GEÇTİ" sweep-out/sweep.log || echo "Kapı sonucu yok (tarama tamamlanmadı)"
+              echo '```'
+            else
+              echo "sweep.log yok: tarama başlamadı."
+            fi
+            echo
+            if [ -f sweep-out/headless-tum-ozet.md ]; then
+              cat sweep-out/headless-tum-ozet.md
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "${SWEEP_OUTCOME}" = "failure" ]; then
+            echo "::warning title=SweepV2::Hash/144 kapısı kaldı (engellemez). Ayrıntı job summary'de."
           fi
 
       - name: CSV + detay
