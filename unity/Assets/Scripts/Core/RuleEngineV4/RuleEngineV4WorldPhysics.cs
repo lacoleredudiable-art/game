@@ -26,6 +26,8 @@ namespace Dovus.Core.RuleEngineV4
 
         public float BodyRadiusPlayerM { get; init; }
         public float BodyRadiusBossM { get; init; }
+        /// <summary>O-6.10: <c>body_radius_boss_m</c> JSON'dan okundu; yoksa <see cref="BodyRadiusBossM"/> kod varsayılanıdır.</summary>
+        public bool HasBodyRadiusBossM { get; init; }
         public float BodyRadiusCreatureM { get; init; }
         public float BodyRadiusStructureM { get; init; }
         public float DashSpeedMps { get; init; }

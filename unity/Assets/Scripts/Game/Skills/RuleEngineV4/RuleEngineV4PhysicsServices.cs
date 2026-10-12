@@ -223,7 +223,35 @@ namespace Dovus.Game.Skills.RuleEngineV4
                     hitRoot = root;
                 }
             }
+            BodyCircleFirstHit(origin, direction, rangeM, projectileRadiusM, ref best, ref hitRoot);
             return hitRoot != null;
+        }
+
+        /// <summary>
+        /// O-6.10, D-2: gövde yarıçaplı hedefin (boss) çarpışıcısı gövdesinden küçük; mermi gövde kenarına değdiği yerde
+        /// durur. Adaylar boss gövdesi kadar geniş bir ağla toplanır.
+        /// </summary>
+        void BodyCircleFirstHit(
+            Vector3 origin, Vector3 direction, float rangeM, float projectileRadiusM, ref float best, ref Transform hitRoot)
+        {
+            float net = projectileRadiusM + RuleEngineV4BossBody.RadiusM("RuleEngineV4PhysicsServices.mermi");
+            int count = Physics.OverlapCapsuleNonAlloc(
+                origin, origin + direction * rangeM, net, _hitBuffer, Physics.AllLayers, QueryTriggerInteraction.Collide);
+            for (int i = 0; i < count; i++)
+            {
+                if (!TryResolveTargetRoot(_hitBuffer[i].transform, out Transform root))
+                    continue;
+                float bodyR = root.GetComponent<TargetableHost>().BodyRadiusM;
+                if (bodyR <= 0)
+                    continue;
+                float at = RuleEngineV4MotionSweep.CircleEntry(
+                    origin, direction, rangeM, root.position, bodyR + projectileRadiusM);
+                if (at < rangeM && at < best)
+                {
+                    best = at;
+                    hitRoot = root;
+                }
+            }
         }
 
         public List<Transform> CollectAreaHits(Transform caster, float radiusM, int maxTargets)
@@ -240,27 +268,40 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 forward = Vector3.forward;
             forward.Normalize();
             float casterR = BodyRadius(caster);
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < count && results.Count < maxTargets; i++)
             {
-                if (!TryResolveTargetRoot(_hitBuffer[i].transform, out Transform root))
-                    continue;
-                if (root == caster)
-                    continue;
-                Vector3 to = root.position - center;
-                to.y = 0;
-                if (to.sqrMagnitude < 0.0001f)
-                    continue;
-                if (Vector3.Dot(forward, to.normalized) <= 0)
-                    continue;
-                float edge = EdgeDistance(center, root) - casterR;
-                if (edge > radiusM)
-                    continue;
-                if (!results.Contains(root))
-                    results.Add(root);
-                if (results.Count >= maxTargets)
-                    break;
+                if (TryResolveTargetRoot(_hitBuffer[i].transform, out Transform root))
+                    TryAddAreaHit(root, caster, center, forward, casterR, radiusM, results);
+            }
+
+            // O-6.10, D-2: gövde yarıçaplı hedefin (boss) çarpışıcısı gövdesinden küçük; aday ağı gövde kadar genişler.
+            float net = radiusM + casterR + RuleEngineV4BossBody.RadiusM("RuleEngineV4PhysicsServices.alan");
+            count = Physics.OverlapSphereNonAlloc(
+                center, net, _hitBuffer, Physics.AllLayers, QueryTriggerInteraction.Collide);
+            for (int i = 0; i < count && results.Count < maxTargets; i++)
+            {
+                if (TryResolveTargetRoot(_hitBuffer[i].transform, out Transform root)
+                    && root.GetComponent<TargetableHost>().BodyRadiusM > 0)
+                    TryAddAreaHit(root, caster, center, forward, casterR, radiusM, results);
             }
             return results;
+        }
+
+        void TryAddAreaHit(
+            Transform root, Transform caster, Vector3 center, Vector3 forward, float casterR, float radiusM,
+            List<Transform> results)
+        {
+            if (root == caster || results.Contains(root))
+                return;
+            Vector3 to = root.position - center;
+            to.y = 0;
+            if (to.sqrMagnitude < 0.0001f)
+                return;
+            if (Vector3.Dot(forward, to.normalized) <= 0)
+                return;
+            if (EdgeDistance(center, root) - casterR > radiusM)
+                return;
+            results.Add(root);
         }
 
         public Transform FindBounceTarget(

@@ -29,6 +29,7 @@ namespace Dovus.Game.Actors
             string _displayName = string.Empty;
             Func<bool> _available;
             Collider _collider;
+            float _bodyRadiusM;
     
             public int TeamId => _teamId;
             public ActorId ActorId => _actorId;
@@ -60,8 +61,20 @@ namespace Dovus.Game.Actors
                 _collider = GetComponent<Collider>();
             }
     
+            /// <summary>Gövde yarıçapı (0: verilmedi, çarpışıcıdan ölçülür).</summary>
+            public float BodyRadiusM => _bodyRadiusM;
+
+            /// <summary>D-2: mesafe ve halka çarpışıcı yerine bu yarıçaplı dikey silindirin kenarından ölçülür.</summary>
+            public void UseBodyRadius(float radiusM) => _bodyRadiusM = Mathf.Max(0f, radiusM);
+
             public float DistanceFrom(Vector3 origin)
             {
+                if (_bodyRadiusM > 0f)
+                {
+                    Vector3 flat = transform.position - origin;
+                    flat.y = 0f;
+                    return Mathf.Max(0f, flat.magnitude - _bodyRadiusM);
+                }
                 _collider ??= GetComponent<Collider>();
                 // ClosestPoint tetikleyici collider'da güvenilir değil (Unity noktayı geri verir,
                 // mesafe 0 olur ve her düşman menzilde sanılır). Bounds tetikten etkilenmez.
@@ -74,6 +87,8 @@ namespace Dovus.Game.Actors
     
             public float MarkerRadius(float padding)
             {
+                if (_bodyRadiusM > 0f)
+                    return _bodyRadiusM + padding;
                 _collider ??= GetComponent<Collider>();
                 if (_collider == null)
                     return Mathf.Max(0.1f, padding);

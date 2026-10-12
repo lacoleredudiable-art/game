@@ -178,7 +178,8 @@ namespace Dovus.Game.Skills.RuleEngineV4
             }
         }
 
-        static float CircleEntry(Vector3 from, Vector3 dir, float meters, Vector3 center, float separation)
+        /// <summary>Yatay doğrultuda merkezler arası <paramref name="separation"/>'a inilen ilk mesafe; yoksa <paramref name="meters"/>.</summary>
+        internal static float CircleEntry(Vector3 from, Vector3 dir, float meters, Vector3 center, float separation)
         {
             float sx = from.x - center.x;
             float sz = from.z - center.z;
@@ -203,7 +204,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
         {
             RuleEngineV4WorldPhysics wp = RuleEngineV4WorldPhysicsRuntime.Active;
             return Mathf.Max(
-                Mathf.Max(wp.BodyRadiusBossM, wp.BodyRadiusStructureM),
+                Mathf.Max(RuleEngineV4BossBody.RadiusM("RuleEngineV4MotionSweep"), wp.BodyRadiusStructureM),
                 Mathf.Max(wp.BodyRadiusCreatureM, wp.BodyRadiusPlayerM));
         }
     }
