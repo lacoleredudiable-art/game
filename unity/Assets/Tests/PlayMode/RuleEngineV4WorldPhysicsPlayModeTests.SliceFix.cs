@@ -88,7 +88,6 @@ namespace Dovus.Tests.PlayMode
         }
 
         [UnityTest]
-        [Ignore("Eski hata: WaitForEndOfFrame batchmode'da gelmiyor, 12 Ekim")]
         public IEnumerator Glyph_Flash_ShevSkar_SolVis_Capture()
         {
             yield return null;
@@ -105,7 +104,6 @@ namespace Dovus.Tests.PlayMode
         }
 
         [UnityTest]
-        [Ignore("Eski hata: WaitForEndOfFrame batchmode'da gelmiyor, 12 Ekim")]
         public IEnumerator MarkOnly_Column_NineNineThenThreeNine_PullsToPoint()
         {
             yield return CastMarkOnColumn();
@@ -120,7 +118,6 @@ namespace Dovus.Tests.PlayMode
         }
 
         [UnityTest]
-        [Ignore("Eski hata: WaitForEndOfFrame batchmode'da gelmiyor, 12 Ekim")]
         public IEnumerator MarkOnly_Wall_NineNineThenThreeNine_PullsToPoint()
         {
             yield return CastMarkOnWall();
@@ -133,7 +130,6 @@ namespace Dovus.Tests.PlayMode
         }
 
         [UnityTest]
-        [Ignore("Eski hata: WaitForEndOfFrame batchmode'da gelmiyor, 12 Ekim")]
         public IEnumerator MarkDecal_Column_AlignedToSurfaceNormal_OwnerColor()
         {
             yield return CastMarkOnColumn();
@@ -142,7 +138,6 @@ namespace Dovus.Tests.PlayMode
         }
 
         [UnityTest]
-        [Ignore("Eski hata: WaitForEndOfFrame batchmode'da gelmiyor, 12 Ekim")]
         public IEnumerator MarkDecal_Wall_AlignedToSurfaceNormal_OwnerColor()
         {
             yield return CastMarkOnWall();

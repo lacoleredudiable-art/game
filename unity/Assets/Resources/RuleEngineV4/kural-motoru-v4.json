@@ -261,11 +261,11 @@
     }
   },
   "gozcu": {
-    "_not": "Gözcü (bariz hata dedektörü), yalnız editör / DOVUS_DEBUG. Eşikler görevden: ayak 3 cm, gövde 5 cm, kamera 180°/s, efekt %35, ana kamera FOV en az 10°, fallback 0, kural başına saniyede 1 satır. log_interval_sec dışındaki yardımcı değerler (line_show_sec, clip_weight_min, camera_probe_radius_m) spec'te yok.",
+    "_not": "10-olculer O-5.6, O-9.1. Diğer eşikler görevden: ayak 3 cm, gövde 5 cm, ana kamera FOV en az 10°, fallback 0, kural başına saniyede 1 satır. Yardımcı değerler (line_show_sec, clip_weight_min, camera_probe_radius_m) spec'te yok.",
     "foot_below_ground_max_m": 0.03,
     "body_penetration_max_m": 0.05,
-    "camera_angular_speed_max_dps": 180,
-    "effect_screen_cover_max_frac": 0.35,
+    "camera_angular_speed_max_dps": 120,
+    "effect_screen_cover_max_frac": 0.25,
     "fallback_log_tag": "[V4-FALLBACK]",
     "fallback_log_max": 0,
     "log_interval_sec": 1.0,

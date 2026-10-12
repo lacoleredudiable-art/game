@@ -35,7 +35,6 @@ namespace Dovus.Tests.PlayMode
         }
 
         [UnityTest]
-        [Ignore("Eski hata: WaitForEndOfFrame batchmode'da gelmiyor, 12 Ekim")]
         public IEnumerator NotCast_NoMana_AshLetters_DustFalls_ScattersIn035()
         {
             ArrangeComboTarget();
@@ -64,7 +63,6 @@ namespace Dovus.Tests.PlayMode
         }
 
         [UnityTest]
-        [Ignore("Eski hata: WaitForEndOfFrame batchmode'da gelmiyor, 12 Ekim")]
         public IEnumerator NotCast_Cooldown_AshLetters_CrackSplits_ScattersIn035()
         {
             ArrangeComboTarget();

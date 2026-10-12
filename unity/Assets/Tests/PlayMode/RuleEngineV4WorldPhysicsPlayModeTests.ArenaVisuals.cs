@@ -200,7 +200,6 @@ namespace Dovus.Tests.PlayMode
         }
 
         [UnityTest]
-        [Ignore("Eski hata: WaitForEndOfFrame batchmode'da gelmiyor, 12 Ekim")]
         public IEnumerator ArenaVisuals_Evidence_GameCameraShots()
         {
             FreezeBoss();

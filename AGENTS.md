@@ -4,7 +4,12 @@ Mobil co-op boss baskın oyunu, alfa. Hedef: kural kitabı v4.5'in dilimi (Kıl�
 Ağların Kraliçesi) telefonda doğru çalışsın.
 
 ## Tasarım kaynağı
-- Tek tasarım kaynağı: kural kitabı v4.5 + `kural-motoru-v4.json`. Çelişkide kural kitabı kazanır.
+- Tasarım kaynağı `docs/tasarim/00-OKU-BENI.md`. Bir kombo üzerinde çalışmadan önce o hücreyi oku.
+- Hangi işin sırada olduğunu `docs/tasarim/11-onarim-plani.md` söyler. Her PR açıklamasına önce/sonra Gözcü satır
+  sayısını yaz.
+- Ölçü, kamera, dodge veya arena işinde `10-olculer.md`'deki madde kimliğini (ör. O-7.2) PR'a ve test adına yaz.
+- Belgede olmayan davranışı ya da ölçüyü uydurma, sor.
+- Sayılar `kural-motoru-v4.json`'dadır. Belgeler çelişirse `00-OKU-BENI.md`'deki öncelik sırası geçerlidir.
 - `element-sistemi.json` (v6.1.1) ve eski skill motoru (MechanicGrammar, SkillExecutorRouter, eski executor'lar,
   24 el ayarı) DONDURULDU: düzeltilmez, genişletilmez, yeni kod onlara bağlanmaz. Taşıma bitince silinecek.
 
@@ -28,13 +33,20 @@ Ağların Kraliçesi) telefonda doğru çalışsın.
   konum, çarpışma) yeniden üreten bir test yazar. Test düzeltmeden önce kırmızı, sonra yeşil olmalı.
   Hatayı yakalamayan testle "düzelttim" denmez.
 - Oynanışı değiştiren her PR, görsel duman testinin kontakt sayfasını PR'a ekler, sayfaya bakıp gözlemini yazar
-  ve Gözcü satırlarının sayısını raporlar.
+  ve Gözcü satırlarının sayısını raporlar. Resim PR açıklamasına eklenir, repoya kaydedilmez.
 - Fonksiyonu doğrudan çağırıp geçen test, oynanış hatasının kanıtı sayılmaz.
 - Testler gevşetilmez; bir test kırılırsa nedeni PR'da yazılır.
 - Eski motor testleri (`[Category("EskiMotor")]`) dondurulmuştur: bakımı yapılmaz, gevşetilmez, yenisi eklenmez.
   Eski motor silinince onlarla birlikte silinir.
 - Yerelde yalnız değiştirdiğin alana ait testleri çalıştır (`dotnet test --filter`); tam set CI'ın işi.
 - Görevin adlandırmadığı dosyalara dokunma; repoyu baştan tarama.
+
+## Testler
+- Kırmızı bir test görürsen önce master'da çalıştır; master'da da kırmızıysa düzeltme, PR'a yaz ve geç.
+- Yalnız ilgili test sınıflarını `-testFilter` ile çalıştır.
+- Başlamadan önce hangi testleri çalıştıracağını ve tahmini süreyi yaz.
+- 20 dakikayı geçen testi durdur ve kullanıcıya yaz.
+- Test çalıştırmadan önce bu projeyi açık tutan bir Unity editörü olup olmadığına bak; varsa kullanıcıya söyle.
 
 ## Okuma
 - Önce: kural kitabı v4.5 ilgili bölüm → `kural-motoru-v4.json` → görevin adlandırdığı dosyalar.

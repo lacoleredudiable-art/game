@@ -24,14 +24,20 @@ public sealed class RuleEngineV4GozcuTests
         RuleEngineV4Gozcu g = Json();
         Assert.That(g.FootBelowGroundMaxM, Is.EqualTo(0.03f).Within(1e-6f), "ayak 3 cm");
         Assert.That(g.BodyPenetrationMaxM, Is.EqualTo(0.05f).Within(1e-6f), "gövde 5 cm");
-        Assert.That(g.CameraAngularSpeedMaxDps, Is.EqualTo(180f), "kamera 180°/s");
-        Assert.That(g.EffectScreenCoverMaxFrac, Is.EqualTo(0.35f).Within(1e-6f), "efekt %35");
         Assert.That(g.CameraFovMinDeg, Is.EqualTo(10f), "ana kamera FOV < 10° ihlal");
         Assert.That(g.FallbackLogTag, Is.EqualTo("[V4-FALLBACK]"));
         Assert.That(g.FallbackLogMax, Is.Zero, "fallback > 0 ihlal");
         Assert.That(g.LogIntervalSec, Is.EqualTo(1f), "kural başına saniyede bir satır");
         Assert.That(g.WeaponClipNames[Bow], Is.EqualTo("Yay"));
         Assert.That(g.WeaponClipNames[Sword], Is.EqualTo("Kilic"));
+    }
+
+    [Test]
+    public void Json_CameraSpeed_O5_6_EffectCover_O9_1()
+    {
+        RuleEngineV4Gozcu g = Json();
+        Assert.That(g.CameraAngularSpeedMaxDps, Is.EqualTo(120f), "O-5.6 kamera 120°/s");
+        Assert.That(g.EffectScreenCoverMaxFrac, Is.EqualTo(0.25f).Within(1e-6f), "O-9.1 efekt %25");
     }
 
     [Test]

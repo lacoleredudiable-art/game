@@ -7,10 +7,10 @@ namespace Dovus.Core.RuleEngineV4
         public const float FootBelowGroundMaxM = 0.03f;
         /// <summary>Görev: gövde statik collider'a en çok 5 cm gömülür.</summary>
         public const float BodyPenetrationMaxM = 0.05f;
-        /// <summary>Görev: kamera açısal hızı en çok 180°/s.</summary>
-        public const float CameraAngularSpeedMaxDps = 180f;
-        /// <summary>Görev: tek efekt ekranın en çok %35'ini kaplar.</summary>
-        public const float EffectScreenCoverMaxFrac = 0.35f;
+        /// <summary>10-olculer O-5.6: kamera açısal hızı en çok 120°/s.</summary>
+        public const float CameraAngularSpeedMaxDps = 120f;
+        /// <summary>10-olculer O-9.1: tek efekt ekranın en çok %25'ini kaplar.</summary>
+        public const float EffectScreenCoverMaxFrac = 0.25f;
         public const string FallbackLogTag = "[V4-FALLBACK]";
         public const int FallbackLogMax = 0;
         /// <summary>Görev: aynı kural saniyede en çok bir kez yazılır.</summary>
