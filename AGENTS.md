@@ -5,6 +5,8 @@ Ağların Kraliçesi) telefonda doğru çalışsın.
 
 ## Tasarım kaynağı
 - Tasarım kaynağı `docs/tasarim/00-OKU-BENI.md`. Bir kombo üzerinde çalışmadan önce o hücreyi oku.
+- Hangi işin sırada olduğunu `docs/tasarim/11-onarim-plani.md` söyler. Her PR açıklamasına önce/sonra Gözcü satır
+  sayısını yaz.
 - Ölçü, kamera, dodge veya arena işinde `10-olculer.md`'deki madde kimliğini (ör. O-7.2) PR'a ve test adına yaz.
 - Belgede olmayan davranışı ya da ölçüyü uydurma, sor.
 - Sayılar `kural-motoru-v4.json`'dadır. Belgeler çelişirse `00-OKU-BENI.md`'deki öncelik sırası geçerlidir.
