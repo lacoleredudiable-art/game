@@ -291,7 +291,10 @@ namespace Dovus.Game.Skills.RuleEngineV4
             };
             if (body != null)
             {
-                yield return RuleEngineV4MotionBridge.CoRun(body, motor, template, targetFn, radius);
+                // Sabit varış gövde değil, süpürmenin bulduğu merkez noktası: koşucu ondan ayrıca pay bırakmaz.
+                float runnerBodyM = trackTarget != null ? radius : 0;
+                float runnerGapM = trackTarget != null ? _physics.EdgeGapM(caster) : 0;
+                yield return RuleEngineV4MotionBridge.CoRun(body, motor, template, targetFn, runnerBodyM, runnerGapM);
                 if (motionKind == "dash")
                 {
                     bool atEdge = requestedM - meters > MotionDefaults.MinDashM

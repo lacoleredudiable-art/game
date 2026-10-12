@@ -8,6 +8,7 @@ using Dovus.Core.RuleEngineV4;
 using Dovus.Core.Shared;
 using Dovus.Game.Actors;
 using Dovus.Game.Casting;
+using Dovus.Game.Skills.RuleEngineV4;
 using Dovus.Game.Vfx;
 using NUnit.Framework;
 using UnityEngine;
@@ -116,6 +117,12 @@ namespace Dovus.Tests.PlayMode
             }
 
             // Kılıç ATIL (shout BeginSkill + v4 atılış): kuyruk yayı F hâlâ doğar.
+            // 3-4'ün katı sabit yapısı (6 s) atılış yolunda kalır ve gövde kapsülünü durdurur (O-4.9); yol boş kurulur.
+            foreach (RuleEngineV4PhysicsBodyHost s in Object.FindObjectsByType<RuleEngineV4PhysicsBodyHost>())
+            {
+                if (s.name == "RuleEngineV4Structure")
+                    Object.DestroyImmediate(s.gameObject);
+            }
             _label = "3-1 kılıç ATIL";
             Arrange(Vector3.right);
             Place(_minions[0].transform, Origin + Vector3.right * 4f);
