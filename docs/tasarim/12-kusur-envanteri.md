@@ -1,6 +1,6 @@
 # 12 — Kusur envanteri (dilim)
 
-Sürüm 1.3 · 12 Ekim 2026 (#174 sonrası güncellendi) · master `b1dbb3a5` (#171 sonrası) üzerinde kod taramasıyla hazırlandı.
+Sürüm 1.4 · 13 Ekim 2026 (2.5 sırasında güncellendi) · master `b1dbb3a5` (#171 sonrası) üzerinde kod taramasıyla hazırlandı.
 
 Bu liste onarım planının (`11`) kalan işini **önceden** çıkarır. Ajan sıradaki maddeyi alır, yalnız onu yapar.
 Çalışırken yeni bir kusur bulursa **düzeltmez**; PR açıklamasına "envantere eklenecek" diye yazar ve bu
@@ -207,3 +207,5 @@ _(Ajanlar buraya yazar; madde numarası, bulan PR, kısa açıklama.)_
 | Y17 | #174 | Zehir değerleri dilimde koddan geliyor; `slice_boss_attacks` dışındaki zehir ayarlarının JSON karşılığı belgede net değil | D3 |
 | Y18 | #174 | Panelde FOV kaydırıcısı yok; FOV yalnız logda görünüyor | E (ayar masası) |
 | Y19 | #174 | Geliştirici APK'sında DevHp açık: oyuncunun gerçek can havuzu 1e9 (ölümsüz). Telefon testlerinde boss hasarı oyuncuyu öldürmez | A4 / E (dilim APK'sında kapalı olmalı) |
+| Y20 | 2.5 | Tek oyun saati yok: dünya saati (GameClockHost), kamera, efekt ömürleri (~30 dosya) ve dokunuş süresi `Time.unscaledTime`/`realtimeSinceStartup` ile çalışıyor; duman testi deterministik değil. Hepsi tek enjekte edilebilir saate bağlanır; bitince Gözcü `efekt_ekran_kaplama` cırcırı da engelleyici olur | C4 sonrası (Adım 4) |
+| Y21 | 2.5 | Ajan bilgisayarındaki Unity önbelleğinde 108 shadergraph'ın 102'si bozuk içe aktarılmıştı (`ShaderGraphMetadata`); yeniden içe aktarıldı (repo değişmedi). Daha önceki APK'larda shadergraph'lı malzemeler eksik/yedek shader'la çıkmış olabilir. Sonraki APK'da telefonda görsel kontrol | Adım 2 sonu telefon kontrolü / D11 |
