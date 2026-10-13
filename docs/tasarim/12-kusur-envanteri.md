@@ -1,6 +1,6 @@
 # 12 — Kusur envanteri (dilim)
 
-Sürüm 1.4 · 13 Ekim 2026 (2.5 sırasında güncellendi) · master `b1dbb3a5` (#171 sonrası) üzerinde kod taramasıyla hazırlandı.
+Sürüm 1.5 · 13 Ekim 2026 (B1 sırasında güncellendi) · master `b1dbb3a5` (#171 sonrası) üzerinde kod taramasıyla hazırlandı.
 
 Bu liste onarım planının (`11`) kalan işini **önceden** çıkarır. Ajan sıradaki maddeyi alır, yalnız onu yapar.
 Çalışırken yeni bir kusur bulursa **düzeltmez**; PR açıklamasına "envantere eklenecek" diye yazar ve bu
@@ -64,7 +64,14 @@ Durum işaretleri: ⏳ verildi / devam · ☐ sırada · ✅ bitti.
 
 ## B — Sessiz geri dönüşler (Adım 3)
 
-### B1 ⏳ Kılıç düz vuruşunda yumruk
+### B1 ✅ Kılıç düz vuruşunda yumruk
+- **Sonuç:** kod yolu doğruydu; telefonda 140+ vuruşta hiçbir koşul düşmedi (`[V4-FALLBACK]` 0), köprü her
+  seferinde `Kilic_VUR` oynattı. Yumruk görüntüsü klibin kendisiydi: k3 Blender'daki ritim düzeltmesi
+  (`RT_Kilic_VUR`, v024) Mixamo kaynağının yalnız hazırlığını (MX 16–27) almış, asıl kesişi (MX 27–31) atmıştı;
+  kol öne uzanıp bekleyip geri dönüyordu. v025: MX 22–31 birebir + MX31'de 3 kare donma (impact k7 = MX28).
+  Koşullar `[V4-FALLBACK] düz vuruş: …` yazar; dilimde `PulseBasicStrike` yedeği kaldırıldı.
+  Test `O_4_14_KilicDuzVurus_KesisSupurur`: iz penceresinde kılıç ucu ≥ 90° yatay yay (ölçülen 135°) ve
+  Impact'te uç gövdenin önünde.
 - **Belirti:** Kılıç'la merkeze dokununca yumruk görüntüsü.
 - **Yer:** `Game/Skills/Hosts/MdSkillServicesHost.cs` satır 101–102,
   `Game/Skills/RuleEngineV4/RuleEngineV4SkillAnimBridge.cs` satır 55–81.
@@ -208,3 +215,6 @@ _(Ajanlar buraya yazar; madde numarası, bulan PR, kısa açıklama.)_
 | Y19 | #174 | Geliştirici APK'sında DevHp açık: oyuncunun gerçek can havuzu 1e9 (ölümsüz). Telefon testlerinde boss hasarı oyuncuyu öldürmez | B3 |
 | Y20 | 2.5 | Tek oyun saati yok: dünya saati (GameClockHost), kamera, efekt ömürleri (~30 dosya) ve dokunuş süresi `Time.unscaledTime`/`realtimeSinceStartup` ile çalışıyor; duman testi deterministik değil. Hepsi tek enjekte edilebilir saate bağlanır; bitince Gözcü `efekt_ekran_kaplama` cırcırı da engelleyici olur | C4 sonrası (Adım 4) |
 | Y21 | 2.5 | Ajan bilgisayarındaki Unity önbelleğinde 108 shadergraph'ın 102'si bozuk içe aktarılmıştı (`ShaderGraphMetadata`); yeniden içe aktarıldı (repo değişmedi). Daha önceki APK'larda shadergraph'lı malzemeler eksik/yedek shader'la çıkmış olabilir. Sonraki APK'da telefonda görsel kontrol | Adım 2 sonu telefon kontrolü / D11 |
+| Y22 | B1 | Kılıç tutuş açısı (`Grip_R` / `Silah_Kilic`): Mixamo kesişi boyunca kılıç ileri yöne hiç yaklaşmıyor (MX 25–36 arasında ileri yönle en az 94°); vuruş anında namlu yana bakıyor. Tutuş `d631970d`'de 0°'ye alınmıştı | D13 (Kılıç kesiş zinciri) |
+| Y23 | B1 | k3 Blender boru hattı (`.blend` dosyaları, `ajan_dz.py`, `fbx_toplu_disa_aktar.py` vb.) repo dışında, `Desktop\k3`'te. FBX'ler repoda olduğu için derleme bağımsız, ama klip yeniden üretimi tek bilgisayara bağlı | Adım 6 / sanat boru hattı |
+| Y24 | B1 | Düz vuruş klibi sürerken gelen dokunuş için kural yok (O-4.14 yalnız 1,2 s zincir penceresini tanımlıyor). Kullanıcı kararı: sıraya alınır, mevcut klip bitince sonraki başlar. `10-olculer`'e yazılıp uygulanacak | D13 |
