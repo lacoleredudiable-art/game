@@ -1,6 +1,6 @@
 # Gözcü cırcırı (onarım planı Adım 2.5, envanter A4): duman testinde tür başına Gözcü satırı tavanı.
 # Biçim: <tür> <eşik> <engel|uyari>
-#   engel: sayı > eşik ise duman testi kırmızı (Unity kapısı kırmızı).
+#   engel: sayı > eşik ise duman testi kırmızı.
 #   uyari: sayı > eşik ise yalnız uyarı. Bu türler gerçek saate bağlı oynuyor (envanter Y20 "tek oyun saati");
 #          Y20 bitince engel olur.
 # Sayı eşiğin altına inerse: engel türünde test uyarır, o PR eşiği de düşürür; uyari türünde yalnız bilgi satırı.

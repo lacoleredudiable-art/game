@@ -12,7 +12,7 @@ namespace Dovus.Tests.PlayMode
     /// <summary>
     /// Gözcü cırcırı: duman testindeki Gözcü satırları tür başına tools/gozcu-esik.txt tavanıyla karşılaştırılır.
     /// "engel" türü tavanı aşarsa kırmızı; "uyari" türü (saate bağlı oynayan) yalnız uyarır.
-    /// Sonuç gozcu çıktısına cirlik.txt olarak yazılır (CI iş özeti onu okur).
+    /// Sonuç gozcu çıktısına cirlik.txt olarak yazılır (Gözcü tür tablosu; PR açıklamasına yapıştırılır).
     /// </summary>
     public sealed partial class RuleEngineV4WorldPhysicsPlayModeTests
     {
