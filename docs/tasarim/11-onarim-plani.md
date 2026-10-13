@@ -47,10 +47,13 @@ Her PR açıklamasında **önce/sonra Gözcü sayısı** yazılır. Sayı düşm
 
 ### Adım 2.5 — Koruma kapısı
 Amaç: bozan değişiklik master'a giremesin. (Envanter A4)
-1. **Unity kapısı (GameCI):** her PR'da ve master push'unda PlayMode testleri koşar: adı `O_` ile başlayan
-   bütün testler + `RuleEngineV4WorldPhysicsPlayModeTests` sınıfı (Gözcü duman testi dahil). `[Ignore]`'lu
-   testler atlanır. Unity lisansı GitHub gizli anahtarlarında. Test sonuçları (XML) ve Gözcü kontakt sayfası +
-   `gozcu.txt` iş çıktısı olarak yüklenir. Mevcut "PR kapısı" (Core/Integration/GameCompile) yanında kalır.
+1. **Unity kapısı (self-hosted Windows runner, etiket `unity-win`):** her PR'da (yalnız aynı repodaki dallar;
+   fork PR'ında koşmaz) ve master push'unda PlayMode testleri yüklü Unity ile batchmode'da koşar: adı `O_` ile
+   başlayan bütün testler + `RuleEngineV4WorldPhysicsPlayModeTests` sınıfı (Gözcü duman testi dahil).
+   `[Ignore]`'lu testler atlanır. Runner kendi checkout'unu kullanır (geliştiricinin çalışma kopyası ve açık
+   editör etkilenmez); Library orada kalıcı. Test sonuçları (XML) ve Gözcü kontakt sayfası + `gozcu.txt` iş
+   çıktısı olarak yüklenir. Mevcut "PR kapısı" (Core/Integration/GameCompile) yanında kalır. Unity 6 kişisel
+   lisansı `.ulf` üretmediği için GameCI (bulut) kullanılamadı.
 2. **Gözcü cırcırı:** `tools/gozcu-esik.txt` tür başına satır tavanı tutar. `engel` türü tavanı aşarsa kapı
    kırmızı ve hangi türün arttığını yazar; sayıyı düşüren PR eşiği de düşürür (düşürmezse test uyarır).
    Gerçek saate bağlı oynayan türler (`uyumsuz_klip`, `efekt_ekran_kaplama`) şimdilik `uyari`; envanter Y20
