@@ -130,7 +130,8 @@ namespace Dovus.Game.Boss
             {
                 if (!_d._volleyOnHit.IsValid || _d._playerStatus == null || _d._combat == null)
                     return;
-                if (!StatusKindUtil.TryParse(_d._volleyOnHit.Id, out StatusKind kind) || kind == StatusKind.None)
+                if (!StatusKindUtil.TryParse(_d._volleyOnHit.Id, out StatusKind kind) || kind == StatusKind.None
+                    || Dovus.Game.Skills.RuleEngineV4.RuleEngineV4BossDamage.RejectLegacyPoison(kind, "BossDirector volley"))
                     return;
                 BossMechanicStatusMap.ApplyKind(
                     _d._playerStatus.Board,
@@ -143,8 +144,7 @@ namespace Dovus.Game.Boss
             {
                 if (board == null || _d._combat == null)
                     return;
-                IReadOnlyList<string> mechs = _d._activeAttackEntry?.Mechanics;
-                BossMechanicStatusMap.ApplyFireCone(board, _d._combat.Status, mechs, _d._attack.DamageTable);
+                BossMechanicStatusMap.ApplyFireCone(board, _d._combat.Status, _d._activeAttackEntry?.Mechanics, _d._attack.DamageTable);
             }
 
             void FireVolley()

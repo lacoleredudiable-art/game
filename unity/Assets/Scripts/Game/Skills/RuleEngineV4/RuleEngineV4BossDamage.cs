@@ -1,6 +1,7 @@
 using Dovus.Core.Boss;
 using Dovus.Core.RuleEngineV4;
 using Dovus.Core.Shared;
+using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using UnityEngine;
 
@@ -40,6 +41,23 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 "poison_breath_cone_angle_deg", boss.FireConeArcHalfAngleDeg * 2f) * 0.5f;
             boss.FireConeWindupMs = Mathf.RoundToInt(Pick(json.HasPoisonBreathWindupSec, json.PoisonBreathWindupSec,
                 "poison_breath_windup_sec", (float)(boss.FireConeWindupMs / Units.SecToMs)) * (float)Units.SecToMs);
+        }
+
+        /// <summary>Y17 (13 Ekim, K): "Zehirli Ateş" ek tiki kural kitabında yok; dilimde kapalı.</summary>
+        public static void DisableLegacyPoisonCombo(StatusTuning status) => status.BurnPoisonComboBonusPerSec = 0;
+
+        /// <summary>
+        /// Y17 (13 Ekim, K): dilimde zehir yalnız Zehir Nefesi tablosundan gelir; StatusTuning zehri isteyen yol
+        /// uygulamaz, bunu [V4-FALLBACK] ile yazar.
+        /// </summary>
+        public static bool RejectLegacyPoison(StatusKind kind, string where)
+        {
+            if (kind != StatusKind.Poison || !RuleEngineV4Feature.Enabled)
+                return false;
+            Debug.LogError(
+                $"[V4-FALLBACK] {where}: dilimde zehir yalnız slice_boss_attacks.poison_breath_* ile uygulanır; " +
+                "StatusTuning poison uygulanmadı");
+            return true;
         }
 
         static float Pick(bool has, float value, string key, float legacy)

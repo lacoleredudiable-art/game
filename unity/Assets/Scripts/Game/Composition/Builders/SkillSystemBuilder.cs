@@ -110,6 +110,7 @@ namespace Dovus.Game.Composition.Builders
                 sliceBossDamage = RuleEngineV4BossDamage.Resolve(
                     ctx.Host.RuleEngineV4Catalog.SliceBossAttacks, combat.Boss, combat.Status);
                 RuleEngineV4BossDamage.ApplyPoisonBreathShape(ctx.Host.RuleEngineV4Catalog.SliceBossAttacks, combat.Boss);
+                RuleEngineV4BossDamage.DisableLegacyPoisonCombo(combat.Status);
             }
             bossDir.Bind(ctx.Clock, combat, tuning, boss, input, player, vitals, ctx.BossVitals, telegraph, feel, sliceBossDamage);
             bossDir.BindTeam(ctx.TeamAccess);
