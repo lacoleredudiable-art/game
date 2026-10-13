@@ -90,7 +90,9 @@ namespace Dovus.Game.Skills.Flow
                 {
                     _host.SyncVisualDelivery();
                     _host.PlayBasicStrikeVisual(basicDot);
-                    _host.TryBeginBasicStrikeStep();
+                    // Dilimde düz vuruş yerinde: Kılıç iaido, Yay'da ön sürede hareket yok (04 ritim tablosu).
+                    if (!Dovus.Core.RuleEngineV4.RuleEngineV4Feature.Enabled)
+                        _host.TryBeginBasicStrikeStep();
                     _host.Pose?.PulseRune(sentence.Words[0].Rune, _host.Clock.Director.WorldTimeMs);
                 }
                 else
