@@ -68,7 +68,6 @@ namespace Dovus.Tests.PlayMode
         }
 
         [UnityTest]
-        [Ignore("Eski hata: WaitForEndOfFrame batchmode'da gelmiyor, 12 Ekim")]
         public IEnumerator K3_RealDraw_SwordTrailRunsAlongBlade_ImpactFront_CombatDrawCalls()
         {
             FreezeBoss();
@@ -166,10 +165,9 @@ namespace Dovus.Tests.PlayMode
             {
                 int frame = 0;
                 int extraRenderFrame = int.MinValue;
-                float end = Time.realtimeSinceStartup + CastTimeoutSec;
-                while (Time.realtimeSinceStartup < end && (_cast.IsRunning || vfx.TrailOn || EmberTrailVisible()))
+                bool Watching() => _cast.IsRunning || vfx.TrailOn || EmberTrailVisible();
+                yield return EachLateFrame(CastTimeoutSec, () =>
                 {
-                    yield return new WaitForEndOfFrame();
                     frame++;
                     // Önden kayıt kamerası o kareye ve sonrakine ek render ekler; ölçüm yalnız oyun kamerası kareleri.
                     if (stats != null && _cast.IsRunning && frame > extraRenderFrame + 1 && BossAndMinionsOnScreen())
@@ -199,7 +197,7 @@ namespace Dovus.Tests.PlayMode
                     }
 
                     if (!vfx.TrailOn || vfx.MeshTrail == null || vfx.MeshTrail.SampleCount < 2)
-                        continue;
+                        return Watching();
                     log.TrailFrames++;
                     if (MeasureNewestSample(anim, vfx.MeshTrail, log))
                         log.OnBladeFrames++;
@@ -212,7 +210,8 @@ namespace Dovus.Tests.PlayMode
                             extraRenderFrame = frame;
                         }
                     }
-                }
+                    return Watching();
+                });
             }
             finally
             {
