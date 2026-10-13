@@ -45,6 +45,20 @@ Her PR açıklamasında **önce/sonra Gözcü sayısı** yazılır. Sayı düşm
 - Her PR'da: "bu değer şu tek yerde" diye test (`O_7_2_...` gibi adlı).
 - Ölçüt: §18'deki Ç-1…Ç-9 maddelerinin hepsi kapandı; Gözcü'de `ayak_zemin_alti` ve gövde-duvar satırı 0.
 
+### Adım 2.5 — Koruma kapısı
+Amaç: bozan değişiklik master'a giremesin. (Envanter A4)
+1. **Unity kapısı (GameCI):** her PR'da ve master push'unda PlayMode testleri koşar: adı `O_` ile başlayan
+   bütün testler + `RuleEngineV4WorldPhysicsPlayModeTests` sınıfı (Gözcü duman testi dahil). `[Ignore]`'lu
+   testler atlanır. Unity lisansı GitHub gizli anahtarlarında. Test sonuçları (XML) ve Gözcü kontakt sayfası +
+   `gozcu.txt` iş çıktısı olarak yüklenir. Mevcut "PR kapısı" (Core/Integration/GameCompile) yanında kalır.
+2. **Gözcü cırcırı:** `tools/gozcu-esik.txt` tür başına satır tavanı tutar. `engel` türü tavanı aşarsa kapı
+   kırmızı ve hangi türün arttığını yazar; sayıyı düşüren PR eşiği de düşürür (düşürmezse test uyarır).
+   Gerçek saate bağlı oynayan türler (`uyumsuz_klip`, `efekt_ekran_kaplama`) şimdilik `uyari`; envanter Y20
+   ("tek oyun saati") bitince `engel` olur.
+3. **Dal koruması:** master'a doğrudan push kapalı; "PR kapısı" ve "Unity kapısı" zorunlu durum denetimi.
+- Ölçüt: bilerek kırmızı yapılan bir `O_` testi Unity kapısını kırmızı yapar, geri alınınca yeşil; dal koruması
+  açık.
+
 ### Adım 3 — K3: Sessiz geri dönüş yasağı
 1. Dilim yolundaki her geri dönüş noktası (`PlayBasicStrike`'ın 5 koşulu, klip bulunamadı, efekt bulunamadı,
    kural bulunamadı) `[V4-FALLBACK] <ne> <neden>` diye `LogError` yazar ve sessizce başka bir şey oynatmaz.
