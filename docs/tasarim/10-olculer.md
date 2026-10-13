@@ -248,6 +248,9 @@ Her yeni boss bu alanların hepsini doldurmadan koda girmez.
 Bugünkü değerler `Resources/Bosses/aglarin-kralicesi.json`'dan. Hasarlar v4 ölçeğine çevrildi (oyuncu canı
 1000). Boss tasarım oturumunda yeniden bakılacak; o zamana kadar bunlar geçerli.
 
+**Ölçüm tanımı (13 Ekim, K):** Koni/yelpaze açısı TAM açıdır (eksenden ± yarısı); boss saldırı mesafeleri boss
+MERKEZİNDEN ölçülür.
+
 | Kimlik | Madde | Değer | Kaynak |
 |---|---|---|---|
 | O-6.10 | Boy / gövde | 5,0 m yükseklik; dev örümcek, 8 bacak; gövde yarıçapı 2,5 m | KOD `BossVisualHeightM` + BELGE |

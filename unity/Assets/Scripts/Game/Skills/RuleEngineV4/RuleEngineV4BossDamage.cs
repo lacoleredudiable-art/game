@@ -28,6 +28,20 @@ namespace Dovus.Game.Skills.RuleEngineV4
                     legacyStatus.PoisonDamagePerSec));
         }
 
+        /// <summary>
+        /// O-6.17: Zehir Nefesi konisi (menzil boss merkezinden, açı TAM açı) ve ön işareti dilimde JSON'dan;
+        /// <see cref="BossTuning"/> yarı açı ve ms tuttuğu için çevrilerek yazılır.
+        /// </summary>
+        public static void ApplyPoisonBreathShape(RuleEngineV4SliceBossAttacks json, BossTuning boss)
+        {
+            boss.FireConeRadiusM = Pick(json.HasPoisonBreathConeRangeM, json.PoisonBreathConeRangeM,
+                "poison_breath_cone_range_m", boss.FireConeRadiusM);
+            boss.FireConeArcHalfAngleDeg = Pick(json.HasPoisonBreathConeAngleDeg, json.PoisonBreathConeAngleDeg,
+                "poison_breath_cone_angle_deg", boss.FireConeArcHalfAngleDeg * 2f) * 0.5f;
+            boss.FireConeWindupMs = Mathf.RoundToInt(Pick(json.HasPoisonBreathWindupSec, json.PoisonBreathWindupSec,
+                "poison_breath_windup_sec", (float)(boss.FireConeWindupMs / Units.SecToMs)) * (float)Units.SecToMs);
+        }
+
         static float Pick(bool has, float value, string key, float legacy)
         {
             if (has)
