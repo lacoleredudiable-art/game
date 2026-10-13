@@ -261,6 +261,12 @@ namespace Dovus.Game.Skills.Motion
         /// <summary>Düz vuruş: katalogdaki basic_strike lunge; hasar zamanlamasına dokunmaz.</summary>
         public bool TryBeginBasicStrikeStep()
         {
+            if (Dovus.Core.RuleEngineV4.RuleEngineV4Feature.Enabled)
+            {
+                Debug.LogError("[V4-FALLBACK] eski motor: basic_strike lunge (MotionTemplateDriver.TryBeginBasicStrikeStep); " +
+                               "dilimde düz vuruş yerinde, adım atılmadı");
+                return false;
+            }
             if (_host.Player == null)
                 return false;
             EnsureMotionReady();
