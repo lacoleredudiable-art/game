@@ -47,19 +47,18 @@ Her PR açıklamasında **önce/sonra Gözcü sayısı** yazılır. Sayı düşm
 
 ### Adım 2.5 — Koruma kapısı
 Amaç: bozan değişiklik master'a giremesin. (Envanter A4)
-1. **Unity kapısı (self-hosted Windows runner, etiket `unity-win`):** her PR'da (yalnız aynı repodaki dallar;
-   fork PR'ında koşmaz) ve master push'unda PlayMode testleri yüklü Unity ile batchmode'da koşar: adı `O_` ile
-   başlayan bütün testler + `RuleEngineV4WorldPhysicsPlayModeTests` sınıfı (Gözcü duman testi dahil).
-   `[Ignore]`'lu testler atlanır. Runner kendi checkout'unu kullanır (geliştiricinin çalışma kopyası ve açık
-   editör etkilenmez); Library orada kalıcı. Test sonuçları (XML) ve Gözcü kontakt sayfası + `gozcu.txt` iş
-   çıktısı olarak yüklenir. Mevcut "PR kapısı" (Core/Integration/GameCompile) yanında kalır. Unity 6 kişisel
-   lisansı `.ulf` üretmediği için GameCI (bulut) kullanılamadı.
-2. **Gözcü cırcırı:** `tools/gozcu-esik.txt` tür başına satır tavanı tutar. `engel` türü tavanı aşarsa kapı
-   kırmızı ve hangi türün arttığını yazar; sayıyı düşüren PR eşiği de düşürür (düşürmezse test uyarır).
+GitHub'da Unity CI yok (Unity 6 kişisel lisans). Koruma = yerelde zorunlu O_ testleri + Gözcü tür bazlı cırcır +
+GitHub'daki hızlı PR kapısı.
+1. **Yerelde zorunlu PlayMode testleri:** her PR'dan önce adı `O_` ile başlayan PlayMode testleri + Gözcü duman
+   testi yerelde koşulur; geçen/kalan/atlanan sayısı ve Gözcü tür tablosu (`cirlik.txt`) PR açıklamasına
+   yapıştırılır. Yapıştırılmamış PR merge edilmez (AGENTS.md).
+2. **Gözcü cırcırı:** `tools/gozcu-esik.txt` tür başına satır tavanı tutar. `engel` türü tavanı aşarsa duman
+   testi kırmızı ve hangi türün arttığını yazar; sayıyı düşüren PR eşiği de düşürür (düşürmezse test uyarır).
    Gerçek saate bağlı oynayan türler (`uyumsuz_klip`, `efekt_ekran_kaplama`) şimdilik `uyari`; envanter Y20
    ("tek oyun saati") bitince `engel` olur.
-3. **Dal koruması:** master'a doğrudan push kapalı; "PR kapısı" ve "Unity kapısı" zorunlu durum denetimi.
-- Ölçüt: bilerek kırmızı yapılan bir `O_` testi Unity kapısını kırmızı yapar, geri alınınca yeşil; dal koruması
+3. **PR kapısı + dal koruması:** GitHub'daki "PR kapısı" (OYUN.md, Core, Integration, GameCompile) master için tek
+   zorunlu durum denetimi; master'a doğrudan push kapalı.
+- Ölçüt: Gözcü cırcırı tavanı aşan türde duman testini kırmızı yapar; AGENTS.md kuralı yazılı; dal koruması
   açık.
 
 ### Adım 3 — K3: Sessiz geri dönüş yasağı
