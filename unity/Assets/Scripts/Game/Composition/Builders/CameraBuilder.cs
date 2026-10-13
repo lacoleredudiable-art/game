@@ -43,16 +43,23 @@ namespace Dovus.Game.Composition.Builders
         /// <summary>
         /// O-5.1–O-5.4 tek kaynak (slice_camera); O-5.8 ve O-5.15 için boss gövdesi: yarıçap world_physics'ten,
         /// tepe görsel boydan (O-6.10 <c>BossVisualHeightM</c>, kökün altındaki taban ActorsBuilder'daki gibi).
+        /// O-5.6, O-5.7, O-5.9, O-5.11 kuralları da slice_camera'dan; eksikse bağlanmaz ([V4-FALLBACK]).
         /// </summary>
         static void BindSliceCamera(WorldContext ctx, FollowCameraController follow)
         {
             var catalog = new RuleEngineV4CatalogAccess().Catalog;
             follow.UseBaseFrame(RuleEngineV4CameraFrame.Resolve(catalog.SliceCamera, ctx.Tuning.Camera));
             float footBelowRootM = CompositionConstants.BossHeightM * 0.5f;
-            follow.BindBossBody(new CameraBossBody(
+            var body = new CameraBossBody(
                 ctx.Boss.transform,
                 RuleEngineV4BossBody.RadiusM("CameraBuilder.kamera"),
-                ctx.Tuning.Player.BossVisualHeightM - footBelowRootM));
+                ctx.Tuning.Player.BossVisualHeightM - footBelowRootM);
+            follow.BindBossBody(body);
+            CameraSliceRules? rules = RuleEngineV4CameraFrame.ResolveRules(catalog.SliceCamera);
+            if (!rules.HasValue)
+                return;
+            var fade = new CameraBossFade(ctx.Boss.transform, rules.Value.BossOccludedOpacity);
+            follow.SliceGuard = new CameraSliceGuard(rules.Value, body, fade);
         }
 
         public void ApplyAtmosphere(WorldContext ctx)

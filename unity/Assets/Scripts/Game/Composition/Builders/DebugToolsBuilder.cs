@@ -51,11 +51,15 @@ namespace Dovus.Game.Composition.Builders
             RuleEngineV4Gozcu rules = RuleEngineV4Gozcu.FromJson(json != null ? json.text : "{}");
             var go = new GameObject(nameof(Dovus.Game.DevTools.GozcuHost));
             go.transform.SetParent(ctx.SceneRoot, false);
-            go.AddComponent<Dovus.Game.DevTools.GozcuHost>().Configure(
+            var gozcu = go.AddComponent<Dovus.Game.DevTools.GozcuHost>();
+            gozcu.Configure(
                 rules,
                 ctx.Player != null ? ctx.Player.transform : null,
                 ctx.MainCamera,
                 ctx.ManifestationDirector);
+            CameraBossBody body = ctx.FollowCameraController != null ? ctx.FollowCameraController.BossBody : null;
+            if (body != null)
+                gozcu.WatchBossBody(body.Root, body.RadiusM, body.TopAboveRootM);
         }
 
         static void CreateTuningPanel(TuningConfig tuningConfig, PlayerVitalsHost vitals, FollowCameraController follow)

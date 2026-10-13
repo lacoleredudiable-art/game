@@ -113,6 +113,34 @@ namespace Dovus.Tests.PlayMode
             }
         }
 
+        /// <summary>Y2, O-5.15: kamera boss gövdesinin (yarıçap, tepe) içine konunca Gözcü satır yazar.</summary>
+        [UnityTest]
+        public IEnumerator Gozcu_FlagsCameraInsideBossBody()
+        {
+            LogAssert.ignoreFailingMessages = true;
+            FreezeBoss();
+            Assert.That(GameObject.Find(GozcuHostName), Is.Not.Null, "Gözcü kurulmadı (DebugToolsBuilder)");
+            Camera cam = Camera.main;
+            Assert.That(cam, Is.Not.Null, "oyun kamerası yok");
+            var follow = cam.GetComponent<FollowCameraController>();
+            _gozcuLines.Clear();
+            Application.logMessageReceived += OnGozcuLog;
+            try
+            {
+                follow.enabled = false;
+                cam.transform.position = new Vector3(_boss.position.x, _player.position.y + 1f, _boss.position.z)
+                    + Vector3.right * (RuleEngineV4WorldPhysicsRuntime.Active.BodyRadiusBossM * 0.5f);
+                yield return new WaitForSecondsRealtime(GozcuSelfCheckWaitSec);
+                Assert.That(_gozcuLines.Any(l => l.Contains(GozcuRule.CameraInBossBody)), Is.True,
+                    "boss gövdesindeki kamera Gözcü'ye düşmedi:\n" + string.Join("\n", _gozcuLines));
+            }
+            finally
+            {
+                Application.logMessageReceived -= OnGozcuLog;
+                follow.enabled = true;
+            }
+        }
+
         [UnityTest]
         [Timeout(600000)]
         public IEnumerator GozcuSmoke_SixtySecondSlice_WithinRatchet()

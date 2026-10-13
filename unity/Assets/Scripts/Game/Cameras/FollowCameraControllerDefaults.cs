@@ -30,5 +30,7 @@ namespace Dovus.Game.Cameras
         public const float ShakeAngleRateHz = 42f;
         public const float ShakeCosHarmonicMult = 1.3f;
         public const float ShakeAmplitudeFalloffMult = 0.35f;
+        /// <summary>O-5.6 tavanının kamerada kullanılan oranı: float açı yuvarlaması Gözcü'de eşiği geçmesin.</summary>
+        public const float TurnRateFloatMargin = 0.995f;
     }
 }
