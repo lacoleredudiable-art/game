@@ -5,7 +5,10 @@ using NUnit.Framework;
 
 namespace CoreTests;
 
-/// <summary>O-5.1–O-5.4: dilim kamerasının dört ölçüsü kural-motoru-v4.json <c>slice_camera</c>'dan okunur.</summary>
+/// <summary>
+/// O-5.1–O-5.4, O-5.6, O-5.7, O-5.9, O-5.11: dilim kamerasının ölçüleri kural-motoru-v4.json <c>slice_camera</c>'dan
+/// okunur.
+/// </summary>
 [TestFixture]
 public sealed class RuleEngineV4SliceCameraCatalogTests
 {
@@ -27,6 +30,20 @@ public sealed class RuleEngineV4SliceCameraCatalogTests
     }
 
     [Test]
+    public void O_5_6_O_5_7_O_5_9_O_5_11_Json_SliceCamera_MatchesSpec()
+    {
+        RuleEngineV4Catalog catalog = RuleEngineV4Catalog.FromJson(File.ReadAllText(Path.GetFullPath(JsonPath)));
+        RuleEngineV4SliceCamera c = catalog.SliceCamera;
+        Assert.That(c.HasTurnRateMaxDps && c.HasBossYawFreezeEdgeM && c.HasBossYawFreeEdgeM
+            && c.HasShoulderSwitchMinSec && c.HasBossOccludedOpacity, Is.True);
+        Assert.That(c.TurnRateMaxDps, Is.EqualTo(120f).Within(0.001f), "O-5.6 turn_rate_max_dps");
+        Assert.That(c.BossYawFreezeEdgeM, Is.EqualTo(2f).Within(0.001f), "O-5.7 boss_yaw_freeze_edge_m");
+        Assert.That(c.BossYawFreeEdgeM, Is.EqualTo(5f).Within(0.001f), "O-5.7 boss_yaw_free_edge_m");
+        Assert.That(c.ShoulderSwitchMinSec, Is.EqualTo(1.5f).Within(0.001f), "O-5.9 shoulder_switch_min_sec");
+        Assert.That(c.BossOccludedOpacity, Is.EqualTo(0.35f).Within(0.001f), "O-5.11 boss_occluded_opacity");
+    }
+
+    [Test]
     public void O_5_1_O_5_4_MissingField_HasFalse_NoDefault()
     {
         RuleEngineV4SliceCamera c = RuleEngineV4SliceCamera.FromJson(
@@ -39,5 +56,7 @@ public sealed class RuleEngineV4SliceCameraCatalogTests
 
         RuleEngineV4SliceCamera none = RuleEngineV4SliceCamera.FromJson(MiniJson.Parse("{}"));
         Assert.That(none.HasDistanceM || none.HasPitchDeg || none.HasLookHeightM || none.HasFovDeg, Is.False);
+        Assert.That(none.HasTurnRateMaxDps || none.HasBossYawFreezeEdgeM || none.HasBossYawFreeEdgeM
+            || none.HasShoulderSwitchMinSec || none.HasBossOccludedOpacity, Is.False);
     }
 }

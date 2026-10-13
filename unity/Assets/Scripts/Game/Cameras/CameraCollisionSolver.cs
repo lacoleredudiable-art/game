@@ -6,8 +6,9 @@ using UnityEngine;
 namespace Dovus.Game.Cameras
 {
     /// <summary>
-    /// Takip kamerasının çarpışması: bakış noktasından istenen konuma küre taraması (O-5.10, O-5.11) ve boss gövdesi
-    /// (O-5.15). Karakter/VFX kökleri ve tetikler engel sayılmaz; boss gövdesi silindir olarak ayrıca sayılır.
+    /// Takip kamerasının çarpışması: bakış noktasından istenen konuma küre taraması (O-5.10) ve boss gövdesi
+    /// (O-5.11, O-5.15). Karakter/VFX kökleri ve tetikler engel sayılmaz; boss gövdesi silindir olarak ayrıca sayılır
+    /// ve kamerayı öne çekmez, gövdenin arkasına iter.
     /// </summary>
     public sealed class CameraCollisionSolver
     {
@@ -83,10 +84,7 @@ namespace Dovus.Game.Cameras
                     best = along;
             }
 
-            // O-5.15: boss gövdesi tetik çarpıştırıcı; küre taraması onu görmez, silindir olarak sayılır.
-            if (_bossBody != null)
-                best = Mathf.Min(best, _bossBody.EntryAlong(pivot, dir, targetAlong, radius) - cam.CameraCollisionMarginM);
-
+            // O-5.11: boss gövdesi kamerayı öne çekmez (boss saydamlaşır); gövdeye girmeyi KeepOutOfBossBody önler.
             float blockedAlong = Mathf.Max(cam.CameraCollisionMinDistanceM, best);
             bool pullingIn = blockedAlong < _smoothedAlongM - 0.001f;
             float smooth = pullingIn
@@ -107,7 +105,7 @@ namespace Dovus.Game.Cameras
 
         /// <summary>
         /// O-5.15 sert sınır: kamera boss gövdesinin (yarıçap + kamera küresi) içindeyse bakış noktasından kameraya
-        /// giden ışında gövdeye giriş noktasının önüne alınır. Yumuşatma ve en yakın mesafe (O-5.10) bunu aşamaz.
+        /// giden ışında gövdenin çıkışının arkasına alınır (O-5.11 öne gelmez, Y3). Yumuşatma bunu aşamaz.
         /// </summary>
         public Vector3 KeepOutOfBossBody(Vector3 pivot, Vector3 camPos, CameraSettings cam)
         {

@@ -61,14 +61,17 @@ namespace Dovus.Game.Cameras
                     }
                 }
             }
+            if (_sliceGuard != null)
+                desired = _sliceGuard.HoldBossYaw(OrbitYawDeg, desired, _bossTarget, _target.position);
 
-            _resolvedYawDeg = Mathf.SmoothDampAngle(
+            float next = Mathf.SmoothDampAngle(
                 _resolvedYawDeg,
                 desired,
                 ref _yawVelocity,
                 Mathf.Max(FollowCameraControllerDefaults.MinPositiveSmoothSec, _tuning.Camera.FollowSmoothTimeSec),
                 Mathf.Infinity,
                 dt);
+            _resolvedYawDeg = _sliceGuard != null ? _sliceGuard.LimitYaw(_resolvedYawDeg, next, dt) : next;
         }
 
         float BossFramingWeight()

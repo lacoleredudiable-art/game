@@ -49,6 +49,7 @@ namespace Dovus.Game.Cameras
         float _lockOnShoulderSign = 1f;
         float _lastLockOnOverlapPct = 1f;
         CameraBaseFrame? _baseFrame;
+        CameraSliceGuard _sliceGuard;
 
         /// <summary>Son karede pivot→istenen mesafe ekseninde scenery çekişi (m).</summary>
         public float CollisionPulledInM => _collision.PulledInM;
@@ -124,6 +125,8 @@ namespace Dovus.Game.Cameras
 
         /// <summary>Bağlanmamışsa kilit mesafesi boss merkezinden, çarpışma gövdeyi saymaz.</summary>
         public void BindBossBody(CameraBossBody body) => _collision.BindBossBody(body);
+        public CameraBossBody BossBody => _collision.BossBody;
+        public CameraSliceGuard SliceGuard { get => _sliceGuard; set => _sliceGuard = value; }
 
         void Awake()
         {
@@ -271,6 +274,7 @@ namespace Dovus.Game.Cameras
             Vector3 offset = Quaternion.Euler(OrbitPitchDeg, _resolvedYawDeg, 0f) * localOffset;
             Vector3 desired = _target.position + offset + lookAhead + _shakeOffset;
             desired = _collision.Resolve(playerAim, desired, dt, _tuning.Camera);
+            desired = _collision.KeepOutOfBossBody(playerAim, desired, _tuning.Camera);
 
             transform.position = Vector3.SmoothDamp(
                 transform.position,
@@ -281,6 +285,7 @@ namespace Dovus.Game.Cameras
                 dt);
             // Yumuşatma kamerayı gövdeye geç bırakabilir; O-5.15 her karedir.
             transform.position = _collision.KeepOutOfBossBody(playerAim, transform.position, _tuning.Camera);
+            _sliceGuard?.UpdateFade(playerAim, transform.position);
 
             Vector3 lookTarget = playerAim;
             if (_bossTarget != null)
@@ -307,7 +312,8 @@ namespace Dovus.Game.Cameras
             }
 
             AdvancePunch();
-            transform.rotation = _aimRotation * Quaternion.Euler(0f, 0f, _rollDeg * _punchT);
+            Quaternion wanted = _aimRotation * Quaternion.Euler(0f, 0f, _rollDeg * _punchT);
+            transform.rotation = _sliceGuard != null ? _sliceGuard.LimitTurn(transform.rotation, wanted, dt) : wanted;
             if (_cam != null)
             {
                 _baseFov = Mathf.Clamp(BaseFrame.FovDeg, FollowCameraControllerDefaults.FovClampMinDeg, FollowCameraControllerDefaults.FovClampMaxDeg);
@@ -340,7 +346,6 @@ namespace Dovus.Game.Cameras
             return distance * windupMul;
         }
 
-
         float ResolveLockOnShoulderSign(Vector3 playerAim, float dt)
         {
             if (_cam == null || _bossTarget == null)
@@ -356,7 +361,7 @@ namespace Dovus.Game.Cameras
                     pick = _lockOnShoulderSign;
             }
 
-            return pick;
+            return _sliceGuard != null ? _sliceGuard.HoldShoulder(_lockOnShoulderSign, pick, Time.unscaledTime) : pick;
         }
 
         float ScoreShoulderSide(float sign, Vector3 playerAim)

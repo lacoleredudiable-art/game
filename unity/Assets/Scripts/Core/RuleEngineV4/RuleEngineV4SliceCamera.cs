@@ -4,8 +4,9 @@ namespace Dovus.Core.RuleEngineV4
 {
     /// <summary>
     /// kural-motoru-v4.json <c>slice_camera</c>: dilim takip kamerasının uzaklık (O-5.1), eğim (O-5.2), bakış
-    /// yüksekliği (O-5.3) ve FOV (O-5.4) değerlerinin tek kaynağı. Alan yoksa <c>Has*</c> false olur; okuyan taraf
-    /// bunu [V4-FALLBACK] ile görünür kılar. Kod varsayılanı yoktur.
+    /// yüksekliği (O-5.3), FOV (O-5.4), dönüş tavanı (O-5.6), boss'a yakın yaw dondurma (O-5.7), omuz değişimi
+    /// (O-5.9) ve boss arada kalınca opaklık (O-5.11) değerlerinin tek kaynağı. Alan yoksa <c>Has*</c> false olur;
+    /// okuyan taraf bunu [V4-FALLBACK] ile görünür kılar. Kod varsayılanı yoktur.
     /// </summary>
     public sealed class RuleEngineV4SliceCamera
     {
@@ -17,6 +18,16 @@ namespace Dovus.Core.RuleEngineV4
         public bool HasLookHeightM { get; private set; }
         public float FovDeg { get; private set; }
         public bool HasFovDeg { get; private set; }
+        public float TurnRateMaxDps { get; private set; }
+        public bool HasTurnRateMaxDps { get; private set; }
+        public float BossYawFreezeEdgeM { get; private set; }
+        public bool HasBossYawFreezeEdgeM { get; private set; }
+        public float BossYawFreeEdgeM { get; private set; }
+        public bool HasBossYawFreeEdgeM { get; private set; }
+        public float ShoulderSwitchMinSec { get; private set; }
+        public bool HasShoulderSwitchMinSec { get; private set; }
+        public float BossOccludedOpacity { get; private set; }
+        public bool HasBossOccludedOpacity { get; private set; }
 
         public static RuleEngineV4SliceCamera FromJson(JsonValue root)
         {
@@ -32,6 +43,16 @@ namespace Dovus.Core.RuleEngineV4
             c.LookHeightM = look;
             c.HasFovDeg = Read(n["fov_deg"], out float fov);
             c.FovDeg = fov;
+            c.HasTurnRateMaxDps = Read(n["turn_rate_max_dps"], out float turn);
+            c.TurnRateMaxDps = turn;
+            c.HasBossYawFreezeEdgeM = Read(n["boss_yaw_freeze_edge_m"], out float freeze);
+            c.BossYawFreezeEdgeM = freeze;
+            c.HasBossYawFreeEdgeM = Read(n["boss_yaw_free_edge_m"], out float free);
+            c.BossYawFreeEdgeM = free;
+            c.HasShoulderSwitchMinSec = Read(n["shoulder_switch_min_sec"], out float shoulder);
+            c.ShoulderSwitchMinSec = shoulder;
+            c.HasBossOccludedOpacity = Read(n["boss_occluded_opacity"], out float opacity);
+            c.BossOccludedOpacity = opacity;
             return c;
         }
 

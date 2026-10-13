@@ -4,7 +4,7 @@ namespace Dovus.Game.Cameras
 {
     /// <summary>
     /// Kameranın gördüğü boss gövdesi: kökün altından tepeye dikey silindir. Kilit mesafesi gövde kenarından
-    /// ölçülür (O-5.8); kamera gövdenin içine giremez ve içinden geçmez (O-5.15).
+    /// ölçülür (O-5.8); kamera gövdenin içine giremez (O-5.15) ve gövde arada kalınca öne gelmez (O-5.11).
     /// </summary>
     public sealed class CameraBossBody
     {
@@ -18,6 +18,10 @@ namespace Dovus.Game.Cameras
             _radiusM = radiusM;
             _topAboveRootM = topAboveRootM;
         }
+
+        public Transform Root => _root;
+        public float RadiusM => _radiusM;
+        public float TopAboveRootM => _topAboveRootM;
 
         public bool Is(Transform t) => _root != null && t == _root;
 
@@ -54,10 +58,19 @@ namespace Dovus.Game.Cameras
             return t;
         }
 
+        /// <summary>O-5.11: gövde, karakterden kameraya giden doğru parçasını kesiyor mu.</summary>
+        public bool Occludes(Vector3 character, Vector3 camPos)
+        {
+            Vector3 delta = camPos - character;
+            float len = delta.magnitude;
+            return len > Mathf.Epsilon && EntryAlong(character, delta / len, len, 0f) < len;
+        }
+
         /// <summary>
-        /// Kamera küresi (yarıçap <paramref name="sphereM"/>) gövdeye giriyorsa güvenli konumu verir: bakış noktasından
-        /// kameraya giden ışında giriş noktasının <paramref name="marginM"/> önü; bakış noktası da gövdedeyse yatayda
-        /// kenara itilir.
+        /// O-5.15 kamera küresi (yarıçap <paramref name="sphereM"/>) gövdeye giriyorsa güvenli konumu verir. O-5.11:
+        /// kamera öne (karaktere) çekilmez; bakış noktasından kameraya giden ışında gövdenin çıkışının
+        /// <paramref name="marginM"/> arkasına itilir (oyuncu boss dibindeyken kamera göğsüne itilmez, Y3).
+        /// Işın gövdeden çıkamıyorsa (bakış noktası gövdede ya da ışın dikey) yatayda kenara itilir.
         /// </summary>
         public bool TryKeepOut(Vector3 pivot, Vector3 camPos, float sphereM, float marginM, out Vector3 safe)
         {
@@ -66,15 +79,16 @@ namespace Dovus.Game.Cameras
                 return false;
             Vector3 c = _root.position;
             float r = _radiusM + sphereM;
-            if (FlatSqr(camPos - c) >= r * r || camPos.y > c.y + _topAboveRootM + sphereM)
+            float topY = c.y + _topAboveRootM + sphereM;
+            if (FlatSqr(camPos - c) >= r * r || camPos.y > topY)
                 return false;
 
             Vector3 delta = camPos - pivot;
             float len = delta.magnitude;
-            float entry = len > Mathf.Epsilon && FlatSqr(pivot - c) > r * r
-                ? EntryAlong(pivot, delta / len, len, sphereM)
+            float exit = len > Mathf.Epsilon && FlatSqr(pivot - c) > r * r
+                ? ExitAlong(pivot, delta / len, r, topY)
                 : float.PositiveInfinity;
-            if (float.IsPositiveInfinity(entry))
+            if (float.IsPositiveInfinity(exit))
             {
                 Vector3 flat = new Vector3(camPos.x - c.x, 0f, camPos.z - c.z);
                 Vector3 outward = flat.sqrMagnitude > Mathf.Epsilon ? flat.normalized : Vector3.back;
@@ -82,8 +96,23 @@ namespace Dovus.Game.Cameras
                 return true;
             }
 
-            safe = pivot + delta / len * Mathf.Clamp(entry - marginM, 0f, entry);
+            safe = pivot + delta / len * (exit + marginM);
             return true;
+        }
+
+        /// <summary>Işının yarıçapı <paramref name="r"/>, tepesi <paramref name="topY"/> silindirden çıkış t'si.</summary>
+        float ExitAlong(Vector3 origin, Vector3 dir, float r, float topY)
+        {
+            Vector3 c = _root.position;
+            float ox = origin.x - c.x;
+            float oz = origin.z - c.z;
+            float a = dir.x * dir.x + dir.z * dir.z;
+            float b = ox * dir.x + oz * dir.z;
+            float cc = ox * ox + oz * oz - r * r;
+            float disc = b * b - a * cc;
+            float side = a > Mathf.Epsilon && disc >= 0f ? (-b + Mathf.Sqrt(disc)) / a : float.PositiveInfinity;
+            float top = dir.y > Mathf.Epsilon ? (topY - origin.y) / dir.y : float.PositiveInfinity;
+            return Mathf.Min(side, top);
         }
 
         static float FlatSqr(Vector3 v) => v.x * v.x + v.z * v.z;
