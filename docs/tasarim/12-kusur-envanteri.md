@@ -1,6 +1,6 @@
 # 12 — Kusur envanteri (dilim)
 
-Sürüm 1.2 · 12 Ekim 2026 (#173 sonrası güncellendi) · master `b1dbb3a5` (#171 sonrası) üzerinde kod taramasıyla hazırlandı.
+Sürüm 1.3 · 12 Ekim 2026 (#174 sonrası güncellendi) · master `b1dbb3a5` (#171 sonrası) üzerinde kod taramasıyla hazırlandı.
 
 Bu liste onarım planının (`11`) kalan işini **önceden** çıkarır. Ajan sıradaki maddeyi alır, yalnız onu yapar.
 Çalışırken yeni bir kusur bulursa **düzeltmez**; PR açıklamasına "envantere eklenecek" diye yazar ve bu
@@ -14,7 +14,7 @@ Durum işaretleri: ⏳ verildi / devam · ☐ sırada · ✅ bitti.
 
 ## Biten (12 Ekim)
 ✅ #162 Gözcü · ✅ #163 tasarım kaynağı · ✅ #164 arena sınırı tek kaynak · ✅ #166 duvar halkası + sis ·
-✅ #167 gövde kapsülü · ✅ #169 Hareket süpürmesi · ✅ #170 boss yarıçapı · ✅ #171 yürürken boss/dost engel · ✅ #172 kamera tek kaynak (Gözcü 83 → 70) · ✅ #173 can ve boss hasarı tek kaynak
+✅ #167 gövde kapsülü · ✅ #169 Hareket süpürmesi · ✅ #170 boss yarıçapı · ✅ #171 yürürken boss/dost engel · ✅ #172 kamera tek kaynak (Gözcü 83 → 70) · ✅ #173 can ve boss hasarı tek kaynak · ✅ #174 ayar dosyası (KAYDET, kaynak logu)
 
 ---
 
@@ -53,11 +53,11 @@ Durum işaretleri: ⏳ verildi / devam · ☐ sırada · ✅ bitti.
 - **Test:** `O_13_1_OyuncuCani_1000`, `O_6_11_BossCani_15000`, boss saldırı hasarları O-6.14–O-6.18 ile aynı;
   dilimde panel/hazır ayar canı değiştirmez.
 
-### A3 ⏳ Ayar dosyası (2.4)
+### A3 ✅ Ayar dosyası (2.4) — #174
 - Plan `11` §2.4 tanımıyla: dosya kalır, sürümde sıfırlanır, açılışta değer kaynakları log'a yazılır.
 - **Yer:** `Game/Config/TuningConfig.cs`, `GameTuning.Migrate.cs`.
 
-### A4 ☐ Koruma kapısı (2.5) — 13 Ekim sabah ilk iş
+### A4 ⏳ Koruma kapısı (2.5) — 13 Ekim sabah ilk iş
 - PlayMode "O_" testleri ve Gözcü duman testi GitHub kapısında (GameCI, Unity lisansı gizli anahtar).
 - Gözcü cırcırı: satır sayısı kapıda tutulur; artıran PR kırmızı.
 
@@ -202,3 +202,8 @@ _(Ajanlar buraya yazar; madde numarası, bulan PR, kısa açıklama.)_
 | Y12 | #173 | `BossCombatProfile` boss JSON'unu değil `element-sistemi.json`'u okuyor | B3 (sessiz yedekler) |
 | Y13 | #173 | Gözcü duman testi boss'u donduruyor; boss saldırılarını kapsamıyor (ör. boss efekti kaplaması duman testinde görünmez) | A4 (koruma kapısı) |
 | Y14 | #169, #173 | Telefonda 3 kez `MeshCollider doesn't exist` (APK'da kod ayıklama MeshCollider'ı siliyor) | B3 |
+| Y15 | #174 | Dilimde panel SIFIRLA boss denge çubuğunu 300'den 100'e çekiyor ve `[V4-FALLBACK]` yazıyor | B3 |
+| Y16 | #174 | `TuningPanelHud.IsOpen` panel yok edilince sıfırlanmıyor (dokunma girişi kilitli kalabilir) | B3 |
+| Y17 | #174 | Zehir değerleri dilimde koddan geliyor; `slice_boss_attacks` dışındaki zehir ayarlarının JSON karşılığı belgede net değil | D3 |
+| Y18 | #174 | Panelde FOV kaydırıcısı yok; FOV yalnız logda görünüyor | E (ayar masası) |
+| Y19 | #174 | Geliştirici APK'sında DevHp açık: oyuncunun gerçek can havuzu 1e9 (ölümsüz). Telefon testlerinde boss hasarı oyuncuyu öldürmez | A4 / E (dilim APK'sında kapalı olmalı) |
