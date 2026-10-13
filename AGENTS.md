@@ -42,6 +42,8 @@ Ağların Kraliçesi) telefonda doğru çalışsın.
 - Görevin adlandırmadığı dosyalara dokunma; repoyu baştan tarama.
 
 ## Testler
+- Her PR'dan önce yerelde O_ PlayMode testleri + Gözcü duman testi koşulur; PR açıklamasına sonuç (geçen/kalan/
+  atlanan sayısı ve Gözcü tür tablosu) yapıştırılır. Yapıştırılmamış PR merge edilmez.
 - Kırmızı bir test görürsen önce master'da çalıştır; master'da da kırmızıysa düzeltme, PR'a yaz ve geç.
 - Yalnız ilgili test sınıflarını `-testFilter` ile çalıştır.
 - Başlamadan önce hangi testleri çalıştıracağını ve tahmini süreyi yaz.
@@ -57,7 +59,10 @@ Ağların Kraliçesi) telefonda doğru çalışsın.
 - `python tools/GameCompile/check.py`
 - Dilim APK: AndroidBuilder `-dovusV4Slice`
 - Görsel duman testi (Unity batchmode): `-runTests -testPlatform PlayMode -testFilter GozcuSmoke -gozcuOut <klasör>`
-  → `kontakt.png`, `gozcu.txt`, `senaryo.txt` (varsayılan tools/verify-out/gozcu, git dışı)
+  → `kontakt.png`, `gozcu.txt`, `senaryo.txt`, `cirlik.txt` (Gözcü tür tablosu; eşikler `tools/gozcu-esik.txt`)
+  (varsayılan tools/verify-out/gozcu, git dışı)
+- PR öncesi zorunlu set: `-runTests -testPlatform PlayMode -testFilter "\.O_;GozcuSmoke" -testResults <xml>
+  -gozcuOut <klasör>`
 
 ## CI
 Her PR ve master push, hepsi engelleyici: OYUN.md kontrolü → CoreTests (`--filter "TestCategory!=EskiMotor"`)

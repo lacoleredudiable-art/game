@@ -45,6 +45,22 @@ Her PR açıklamasında **önce/sonra Gözcü sayısı** yazılır. Sayı düşm
 - Her PR'da: "bu değer şu tek yerde" diye test (`O_7_2_...` gibi adlı).
 - Ölçüt: §18'deki Ç-1…Ç-9 maddelerinin hepsi kapandı; Gözcü'de `ayak_zemin_alti` ve gövde-duvar satırı 0.
 
+### Adım 2.5 — Koruma kapısı
+Amaç: bozan değişiklik master'a giremesin. (Envanter A4)
+GitHub'da Unity CI yok (Unity 6 kişisel lisans). Koruma = yerelde zorunlu O_ testleri + Gözcü tür bazlı cırcır +
+GitHub'daki hızlı PR kapısı.
+1. **Yerelde zorunlu PlayMode testleri:** her PR'dan önce adı `O_` ile başlayan PlayMode testleri + Gözcü duman
+   testi yerelde koşulur; geçen/kalan/atlanan sayısı ve Gözcü tür tablosu (`cirlik.txt`) PR açıklamasına
+   yapıştırılır. Yapıştırılmamış PR merge edilmez (AGENTS.md).
+2. **Gözcü cırcırı:** `tools/gozcu-esik.txt` tür başına satır tavanı tutar. `engel` türü tavanı aşarsa duman
+   testi kırmızı ve hangi türün arttığını yazar; sayıyı düşüren PR eşiği de düşürür (düşürmezse test uyarır).
+   Gerçek saate bağlı oynayan türler (`uyumsuz_klip`, `efekt_ekran_kaplama`) şimdilik `uyari`; envanter Y20
+   ("tek oyun saati") bitince `engel` olur.
+3. **PR kapısı + dal koruması:** GitHub'daki "PR kapısı" (OYUN.md, Core, Integration, GameCompile) master için tek
+   zorunlu durum denetimi; master'a doğrudan push kapalı.
+- Ölçüt: Gözcü cırcırı tavanı aşan türde duman testini kırmızı yapar; AGENTS.md kuralı yazılı; dal koruması
+  açık.
+
 ### Adım 3 — K3: Sessiz geri dönüş yasağı
 1. Dilim yolundaki her geri dönüş noktası (`PlayBasicStrike`'ın 5 koşulu, klip bulunamadı, efekt bulunamadı,
    kural bulunamadı) `[V4-FALLBACK] <ne> <neden>` diye `LogError` yazar ve sessizce başka bir şey oynatmaz.
