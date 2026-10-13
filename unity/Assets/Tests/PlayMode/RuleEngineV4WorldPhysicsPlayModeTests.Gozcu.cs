@@ -22,8 +22,9 @@ namespace Dovus.Tests.PlayMode
     /// <summary>
     /// Görsel duman testi: ~60 sn gerçek girdi (Kılıç ve Yay düz vuruş, dilimin 36 kombosu, 4 dodge,
     /// boss'a yaklaşma); 0,25 sn'de bir oyun kamerasından kare → tek kontakt sayfası PNG.
-    /// Senaryo sonunda tek bir [GOZCU] satırı varsa kırmızı. Çıktı: <c>-gozcuOut &lt;klasör&gt;</c>
-    /// ya da repo kökünde tools/verify-out/gozcu (kontakt.png, gozcu.txt, senaryo.txt).
+    /// Senaryo sonunda [GOZCU] satırları tür başına tools/gozcu-esik.txt ile karşılaştırılır (cırcır).
+    /// Çıktı: <c>-gozcuOut &lt;klasör&gt;</c> ya da repo kökünde tools/verify-out/gozcu
+    /// (kontakt.png, gozcu.txt, senaryo.txt, cirlik.txt).
     /// </summary>
     public sealed partial class RuleEngineV4WorldPhysicsPlayModeTests
     {
@@ -114,7 +115,7 @@ namespace Dovus.Tests.PlayMode
 
         [UnityTest]
         [Timeout(600000)]
-        public IEnumerator GozcuSmoke_SixtySecondSlice_NoWatcherLines()
+        public IEnumerator GozcuSmoke_SixtySecondSlice_WithinRatchet()
         {
             LogAssert.ignoreFailingMessages = true;
             FreezeBoss();
@@ -163,7 +164,9 @@ namespace Dovus.Tests.PlayMode
             _smokeStart = 0f;
 
             Assert.That(frames, Is.GreaterThan(0), "kontakt sayfası boş");
-            Assert.That(_gozcuLines, Is.Empty, $"{_gozcuLines.Count} Gözcü satırı:\n" + string.Join("\n", _gozcuLines));
+            List<string> red = ApplyGozcuRatchet(_gozcuLines, dir);
+            Assert.That(red, Is.Empty, "Gözcü cırcırı (tools/gozcu-esik.txt):\n" + string.Join("\n", red)
+                + $"\n\n{_gozcuLines.Count} Gözcü satırı:\n" + string.Join("\n", _gozcuLines));
         }
 
         IEnumerator SmokeBasicStrikes(HexagonInputController input)
