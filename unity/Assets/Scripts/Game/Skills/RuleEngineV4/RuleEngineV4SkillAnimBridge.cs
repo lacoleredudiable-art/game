@@ -54,24 +54,34 @@ namespace Dovus.Game.Skills.RuleEngineV4
         /// </summary>
         public static bool PlayBasicStrike(ManifestationDirector director, int slotRune)
         {
-            if (director == null || !RuleEngineV4Feature.Enabled)
-                return false;
+            if (director == null)
+                return BasicStrikeFallback("director yok", null, slotRune, 0, RuleEngineV4SkillAnimBinding.Empty, null);
+            if (!RuleEngineV4Feature.Enabled)
+                return BasicStrikeFallback("v4 bayrağı kapalı", director, slotRune, 0, RuleEngineV4SkillAnimBinding.Empty, null);
             RuleEngineV4DirectorBridge bridge = director._castPort?.RuleEngineV4Bridge;
             if (bridge == null || bridge.CastHost == null)
-                return false;
+                return BasicStrikeFallback(
+                    bridge == null ? "v4 köprüsü yok" : "v4 CastHost yok",
+                    director, slotRune, 0, RuleEngineV4SkillAnimBinding.Empty, null);
             int weaponId = director.EquippedWeaponNumber();
             if (!RuleEngineV4Slice.IsSliceWeapon(weaponId))
-                return false;
+                return BasicStrikeFallback("silah dilimde değil", director, slotRune, weaponId, RuleEngineV4SkillAnimBinding.Empty, null);
             RuleEngineV4SkillAnimBinding binding = bridge.CastHost.CatalogAccess.Catalog.SkillAnim.Resolve(slotRune, 0, weaponId);
             ActorView view = director._visual;
             if (binding.IsEmpty || view == null || view.Animator == null)
-                return false;
+                return BasicStrikeFallback(
+                    binding.IsEmpty ? "skill_anim bağlaması boş" : view == null ? "ActorView yok" : "Animator yok",
+                    director, slotRune, weaponId, binding, view != null ? view.Animator : null);
 
             director.EnsureLaunchServices();
             AnimationBridge anim = director._animationBridge;
             anim.PlaySkillClip(binding.Clip, binding.FallbackAnimatorState, view.Animator);
             if (!anim.LastPlayApplied)
-                return false;
+                return BasicStrikeFallback("klip oynatılamadı", director, slotRune, weaponId, binding, view.Animator);
+            if (anim.LastUsedFallbackState)
+                return BasicStrikeFallback(
+                    $"tam klip oynamadı, yedek durum '{binding.FallbackAnimatorState}' oynadı",
+                    director, slotRune, weaponId, binding, view.Animator);
             string state = anim.LastExactClipFound ? anim.LastClipName : binding.FallbackAnimatorState;
             view.SkillClip.Hold(state);
             SkillAnimVfxEventHost relay = EnsureRelay(view.Animator.gameObject, out _);
@@ -82,6 +92,38 @@ namespace Dovus.Game.Skills.RuleEngineV4
 
         /// <summary>Son yeni-yol düz vuruşunun oynattığı klip (log / test).</summary>
         public static string LastBasicStrikeClip { get; private set; } = string.Empty;
+
+        /// <summary>Dilimde düz vuruş yedeği yok (K3): düşen koşul ve değerleri LogError'a yazılır.</summary>
+        static bool BasicStrikeFallback(
+            string condition,
+            ManifestationDirector director,
+            int slotRune,
+            int weaponId,
+            in RuleEngineV4SkillAnimBinding binding,
+            Animator animator)
+        {
+            LastBasicStrikeClip = string.Empty;
+            string weaponRaw = director != null ? director._equippedWeapon?.Id ?? "null" : "-";
+            Debug.LogError(
+                $"[V4-FALLBACK] düz vuruş: {condition} silah={weaponId} (kimlik '{weaponRaw}') rün={slotRune} " +
+                $"bağlama=klip '{binding.Clip}' yedek '{binding.FallbackAnimatorState}' animator={DescribeAnimator(animator, binding.Clip)}");
+            return false;
+        }
+
+        static string DescribeAnimator(Animator animator, string clip)
+        {
+            if (animator == null)
+                return "yok";
+            RuntimeAnimatorController ctrl = animator.runtimeAnimatorController;
+            if (ctrl == null)
+                return $"'{animator.name}' controller yok";
+            bool hasState = !string.IsNullOrEmpty(clip) && animator.HasState(0, Animator.StringToHash(clip));
+            bool hasClip = false;
+            foreach (AnimationClip c in ctrl.animationClips)
+                hasClip |= c != null && c.name == clip;
+            return $"'{animator.name}' controller '{ctrl.name}' ({ctrl.GetType().Name}) etkin={animator.isActiveAndEnabled} " +
+                   $"klip var={hasClip} durum var={hasState}";
+        }
 
         static SkillAnimVfxEventHost EnsureRelay(GameObject animatorGo, out RuleDrivenVfxDirector director)
         {

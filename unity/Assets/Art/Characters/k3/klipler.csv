@@ -6,7 +6,7 @@ Cekic_ATIL;1;66;2.167;;;;;;;;;;;;
 Cekic_VUR;1;30;0.967;15;0.467;;;DZ;;;0.333;;;;
 Kilic_ATIL;1;17;0.533;;;0.067;0.533;DZ;;;;pencere = tüm klip, ölçüm: kalça düz koşu | ATIL kalça kayması ≤0,15 m, ölçüm: kütle merkezi;kutle_merkezi;0.15;
 Kilic_DURUS;1;38;1.233;;;;;DZ;;;;;;;
-Kilic_VUR;1;13;0.4;7;0.2;0.133;0.4;DZ;;;;;;;
+Kilic_VUR;1;13;0.4;7;0.2;0.133;0.4;DZ;;;;RT = Mixamo kare 22-31 birebir + 31'de donma, impact = MX28 (k3_anim_v025);;;
 Loko_Agir_Idle;1;58;1.9;;;;;;;;;;;;
 Loko_Agir_Run;1;23;0.733;;;;;;;;;;;;
 Loko_Kilic_Idle;1;107;3.533;;;;;DZ;;;;;;;

@@ -1,6 +1,6 @@
 # 12 — Kusur envanteri (dilim)
 
-Sürüm 1.4 · 13 Ekim 2026 (2.5 sırasında güncellendi) · master `b1dbb3a5` (#171 sonrası) üzerinde kod taramasıyla hazırlandı.
+Sürüm 1.5 · 13 Ekim 2026 (B1 sırasında güncellendi) · master `b1dbb3a5` (#171 sonrası) üzerinde kod taramasıyla hazırlandı.
 
 Bu liste onarım planının (`11`) kalan işini **önceden** çıkarır. Ajan sıradaki maddeyi alır, yalnız onu yapar.
 Çalışırken yeni bir kusur bulursa **düzeltmez**; PR açıklamasına "envantere eklenecek" diye yazar ve bu
@@ -57,15 +57,21 @@ Durum işaretleri: ⏳ verildi / devam · ☐ sırada · ✅ bitti.
 - Plan `11` §2.4 tanımıyla: dosya kalır, sürümde sıfırlanır, açılışta değer kaynakları log'a yazılır.
 - **Yer:** `Game/Config/TuningConfig.cs`, `GameTuning.Migrate.cs`.
 
-### A4 ⏳ Koruma kapısı (2.5) — 13 Ekim sabah ilk iş
-- PlayMode "O_" testleri ve Gözcü duman testi GitHub kapısında (GameCI, Unity lisansı gizli anahtar).
-- Gözcü cırcırı: satır sayısı kapıda tutulur; artıran PR kırmızı.
+### A4 ✅ Koruma kapısı (2.5) — #175
+- GitHub'da Unity CI yok; koruma = yerel zorunlu O_ testleri + Gözcü tür bazlı cırcır + PR kapısı + dal koruması.
 
 ---
 
 ## B — Sessiz geri dönüşler (Adım 3)
 
-### B1 ☐ Kılıç düz vuruşunda yumruk
+### B1 ✅ Kılıç düz vuruşunda yumruk — #176
+- **Sonuç:** kod yolu doğruydu; telefonda 140+ vuruşta hiçbir koşul düşmedi (`[V4-FALLBACK]` 0), köprü her
+  seferinde `Kilic_VUR` oynattı. Yumruk görüntüsü klibin kendisiydi: k3 Blender'daki ritim düzeltmesi
+  (`RT_Kilic_VUR`, v024) Mixamo kaynağının yalnız hazırlığını (MX 16–27) almış, asıl kesişi (MX 27–31) atmıştı;
+  kol öne uzanıp bekleyip geri dönüyordu. v025: MX 22–31 birebir + MX31'de 3 kare donma (impact k7 = MX28).
+  Koşullar `[V4-FALLBACK] düz vuruş: …` yazar; dilimde `PulseBasicStrike` yedeği kaldırıldı.
+  Test `O_4_14_KilicDuzVurus_KesisSupurur`: iz penceresinde kılıç ucu ≥ 90° yatay yay (ölçülen 135°) ve
+  Impact'te uç gövdenin önünde.
 - **Belirti:** Kılıç'la merkeze dokununca yumruk görüntüsü.
 - **Yer:** `Game/Skills/Hosts/MdSkillServicesHost.cs` satır 101–102,
   `Game/Skills/RuleEngineV4/RuleEngineV4SkillAnimBridge.cs` satır 55–81.
@@ -189,7 +195,7 @@ _(Ajanlar buraya yazar; madde numarası, bulan PR, kısa açıklama.)_
 | # | Bulan | Açıklama | Nereye bağlı |
 |---|---|---|---|
 | Y1 | #172 | `efekt_ekran_kaplama` 19 → 20 (+1), yeni kadrajdan sanılıyor, incelenmedi | D10 |
-| Y2 | #172 | Gözcü'de "kamera boss gövdesinin içinde" kuralı yok (O-5.15 G) | A4 (Gözcü kuralı olarak) |
+| Y2 | #172 | Gözcü'de "kamera boss gövdesinin içinde" kuralı yok (O-5.15 G) | D1 |
 | Y3 | #172 | Oyuncu boss'un dibindeyken kamera boss'a dönerse "gövdeye girme" kuralı kamerayı oyuncunun göğsüne itebilir (O-5.10 / O-5.15) | D1 |
 | Y4 | #172 | Paneldeki kamera kaydırıcıları (uzaklık, eğim, bakış yüksekliği, FOV) dilimde etkisiz; artık `slice_camera` okunuyor | A3 / E |
 | Y5 | #172 | `slice_camera`'ya taşınmayanlar: omuz kayması, yumuşak kilit menzil/gücü, kadraj ağırlığı, boss bakış yüksekliği. `Prototype.unity`'de 4 kamera değeri duruyor (dilim okumuyor) | D1 |
@@ -200,12 +206,15 @@ _(Ajanlar buraya yazar; madde numarası, bulan PR, kısa açıklama.)_
 | Y10 | #173 | Panel "Hasar" kaydırıcısı dilimde etkisiz; "Oyuncu can tavanı" etiketi gerçek canı (1000) değil ayar değerini gösteriyor | A3 |
 | Y11 | #173 | Zehir Nefesi konisi kodda 6 m / 40° yarı açı; O-6.17'de 8 m / 60° | D3 (sayı hataları) |
 | Y12 | #173 | `BossCombatProfile` boss JSON'unu değil `element-sistemi.json`'u okuyor | B3 (sessiz yedekler) |
-| Y13 | #173 | Gözcü duman testi boss'u donduruyor; boss saldırılarını kapsamıyor (ör. boss efekti kaplaması duman testinde görünmez) | A4 (koruma kapısı) |
+| Y13 | #173 | Gözcü duman testi boss'u donduruyor; boss saldırılarını kapsamıyor (ör. boss efekti kaplaması duman testinde görünmez) | D10 |
 | Y14 | #169, #173 | Telefonda 3 kez `MeshCollider doesn't exist` (APK'da kod ayıklama MeshCollider'ı siliyor) | B3 |
 | Y15 | #174 | Dilimde panel SIFIRLA boss denge çubuğunu 300'den 100'e çekiyor ve `[V4-FALLBACK]` yazıyor | B3 |
 | Y16 | #174 | `TuningPanelHud.IsOpen` panel yok edilince sıfırlanmıyor (dokunma girişi kilitli kalabilir) | B3 |
 | Y17 | #174 | Zehir değerleri dilimde koddan geliyor; `slice_boss_attacks` dışındaki zehir ayarlarının JSON karşılığı belgede net değil | D3 |
 | Y18 | #174 | Panelde FOV kaydırıcısı yok; FOV yalnız logda görünüyor | E (ayar masası) |
-| Y19 | #174 | Geliştirici APK'sında DevHp açık: oyuncunun gerçek can havuzu 1e9 (ölümsüz). Telefon testlerinde boss hasarı oyuncuyu öldürmez | A4 / E (dilim APK'sında kapalı olmalı) |
+| Y19 | #174 | Geliştirici APK'sında DevHp açık: oyuncunun gerçek can havuzu 1e9 (ölümsüz). Telefon testlerinde boss hasarı oyuncuyu öldürmez | B3 |
 | Y20 | 2.5 | Tek oyun saati yok: dünya saati (GameClockHost), kamera, efekt ömürleri (~30 dosya) ve dokunuş süresi `Time.unscaledTime`/`realtimeSinceStartup` ile çalışıyor; duman testi deterministik değil. Hepsi tek enjekte edilebilir saate bağlanır; bitince Gözcü `efekt_ekran_kaplama` cırcırı da engelleyici olur | C4 sonrası (Adım 4) |
 | Y21 | 2.5 | Ajan bilgisayarındaki Unity önbelleğinde 108 shadergraph'ın 102'si bozuk içe aktarılmıştı (`ShaderGraphMetadata`); yeniden içe aktarıldı (repo değişmedi). Daha önceki APK'larda shadergraph'lı malzemeler eksik/yedek shader'la çıkmış olabilir. Sonraki APK'da telefonda görsel kontrol | Adım 2 sonu telefon kontrolü / D11 |
+| Y22 | #176 | Kılıç tutuş açısı (`Grip_R` / `Silah_Kilic`): Mixamo kesişi boyunca kılıç ileri yöne hiç yaklaşmıyor (MX 25–36 arasında ileri yönle en az 94°); vuruş anında namlu yana bakıyor. Tutuş `d631970d`'de 0°'ye alınmıştı | D13 (Kılıç kesiş zinciri) |
+| Y23 | #176 | k3 Blender boru hattı (`.blend` dosyaları, `ajan_dz.py`, `fbx_toplu_disa_aktar.py` vb.) repo dışında, `Desktop\k3`'te. FBX'ler repoda olduğu için derleme bağımsız, ama klip yeniden üretimi tek bilgisayara bağlı | Adım 6 / sanat boru hattı |
+| Y24 | #176 | Düz vuruş klibi sürerken gelen dokunuş için kural yok (O-4.14 yalnız 1,2 s zincir penceresini tanımlıyor). Kullanıcı kararı: sıraya alınır, mevcut klip bitince sonraki başlar. `10-olculer`'e yazılıp uygulanacak | D13 |
