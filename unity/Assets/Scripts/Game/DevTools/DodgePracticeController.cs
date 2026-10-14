@@ -1,121 +1,180 @@
-using Dovus.Core.Boss;
-using Dovus.Core.Dodge;
-using Dovus.Core.Casting;
-using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using Dovus.Game.Actors;
 using Dovus.Game.Boss;
 using Dovus.Game.Casting;
+using Dovus.Game.Platform;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Dovus.Game.DevTools
 {
     /// <summary>
-    /// Play denemesi: yerde bir uyarı doğar, süre bitince oyuncuya vuruş gelir.
-    /// F8 daire. Menü koni / şerit ve "sıyrılabilir" bayrağını seçer.
-    /// Hasar 22 — PlayerVitalsHost başlığındaki spec çakması. BossTuning.Damage şu an 0.
+    /// Dodge frame denemesi (O-4.5, D-4). Boss donar, tek sabit kırmızı alan düzenli saldırır:
+    /// TEK (1 vuruş: tek dodge yeter) ve ZİNCİR (2 vuruş: yalnız zincirle kurtulunur) sırayla.
+    /// Vuruş yalnız oyuncu alanın içindeyse gelir. Vuruş anı dünya saatiyle; süreler DodgeTuning'den türer.
+    /// Düğme yok: alana gir, doğru anda dodge'a bas. Panelde yalnız "Boss dondur" ve "Otomatik saldırı" kutusu.
     /// </summary>
     public sealed class DodgePracticeController : MonoBehaviour
     {
         const int PracticeDamage = 22;
+        // Yerleşim ve tempo (ölçüm: his için başlangıç tahmini, kuralda yok).
+        const float AreaForwardM = 6f;
+        const float AreaRadiusM = 3f;
+        const int PauseBetweenMs = 1500;
+
+        enum Phase { Pause, Fill1, Fill2 }
 
         Transform _player;
         Transform _boss;
-        bool _dodgeable = true;
+        BossDirector _bossDirector;
+        GameClockHost _clock;
         AttackTelegraphView _live;
 
-        bool _chromeVisible = true;
+        bool _freezeBoss = true;
+        bool _auto = true;
+        bool _chainTurn;
+        Phase _phase = Phase.Pause;
+        int _phaseEndMs;
+        Vector3 _center;
+        bool _centerSet;
+        string _next = "";
+        string _result = "";
 
-        public void Bind(Transform player, Transform boss)
+        public void Bind(Transform player, Transform boss, BossDirector bossDirector = null, GameClockHost clock = null)
         {
             _player = player;
             _boss = boss;
-#if UNITY_EDITOR || DOVUS_DEBUG
-            DebugPanelsChrome.Register(ApplyChrome);
-            ApplyChrome(DebugPanelsChrome.Visible);
-#endif
+            _bossDirector = bossDirector;
+            _clock = clock;
+            ApplyFreeze();
         }
 
-#if UNITY_EDITOR || DOVUS_DEBUG
-        void ApplyChrome(bool visible) => _chromeVisible = visible;
+        void ApplyFreeze()
+        {
+            if (_bossDirector != null)
+                _bossDirector.PracticeFrozen = _freezeBoss;
+        }
 
-        void OnDestroy() => DebugPanelsChrome.Unregister(ApplyChrome);
-#endif
+        DodgeTuning Tuning()
+        {
+            HexagonInputController input = FindAnyObjectByType<HexagonInputController>();
+            return input != null && input.Combat != null && input.Combat.Dodge != null
+                ? input.Combat.Dodge
+                : new DodgeTuning();
+        }
+
+        int WorldMs() => _clock != null ? (int)_clock.Director.WorldTimeMs : 0;
 
         void Update()
         {
-            Keyboard kb = Keyboard.current;
-            if (kb != null && kb.f8Key.wasPressedThisFrame)
-                Spawn(TelegraphShape.Circle);
+            if (!_auto || _clock == null || _player == null)
+                return;
+
+            if (!_centerSet)
+            {
+                // Alan sabit: oyuncunun başladığı yerin önünde, boss'a doğru.
+                Vector3 fwd = _boss != null ? _boss.position - _player.position : _player.forward;
+                fwd.y = 0f;
+                fwd = fwd.sqrMagnitude > 0.01f ? fwd.normalized : Vector3.forward;
+                _center = _player.position + fwd * AreaForwardM;
+                _centerSet = true;
+                _phaseEndMs = WorldMs() + PauseBetweenMs;
+                _next = NextName();
+            }
+
+            int now = WorldMs();
+            if (now < _phaseEndMs)
+                return;
+
+            DodgeTuning t = Tuning();
+            switch (_phase)
+            {
+                case Phase.Pause:
+                    _phase = Phase.Fill1;
+                    _phaseEndMs = now + Mathf.Max(200, t.TelegraphLeadMs);
+                    ShowArea((_phaseEndMs - now) / 1000f);
+                    break;
+                case Phase.Fill1:
+                    Hit(_chainTurn ? "ZINCIR 1. vurus" : "TEK vurus");
+                    if (_chainTurn)
+                    {
+                        // 2. vuruş: tek pencerenin dışı, zincir penceresinin içi (orta nokta).
+                        int gap = (t.IframeMs + t.CombinedIframeMs) / 2;
+                        _phase = Phase.Fill2;
+                        _phaseEndMs = now + gap;
+                        ShowArea(gap / 1000f);
+                    }
+                    else
+                        EndAttack(now);
+                    break;
+                case Phase.Fill2:
+                    Hit("ZINCIR 2. vurus");
+                    EndAttack(now);
+                    break;
+            }
+        }
+
+        string NextName() => _chainTurn ? "ZINCIR (2 vurus)" : "TEK (1 vurus)";
+
+        void EndAttack(int now)
+        {
+            _chainTurn = !_chainTurn;
+            _next = NextName();
+            _phase = Phase.Pause;
+            _phaseEndMs = now + PauseBetweenMs;
+        }
+
+        void ShowArea(float sec)
+        {
+            if (_live != null)
+                Destroy(_live.gameObject);
+            var go = new GameObject("DodgePracticeTelegraph");
+            _live = go.AddComponent<AttackTelegraphView>();
+            _live.Begin(_center, Vector3.forward, TelegraphShape.Circle, sec, true, AreaRadiusM, 7f, 1.6f, 38f);
+        }
+
+        void Hit(string label)
+        {
+            Vector3 d = _player.position - _center;
+            d.y = 0f;
+            if (d.magnitude > AreaRadiusM)
+            {
+                _result = label + ": alan disinda";
+                return;
+            }
+
+            ActorStatusHost status = _player.GetComponent<ActorStatusHost>();
+            PlayerVitalsHost vitals = _player.GetComponent<PlayerVitalsHost>();
+            float taken;
+            if (status != null)
+            {
+                status.ApplyDamage(PracticeDamage, true);
+                taken = status.LastAppliedDamage;
+            }
+            else
+            {
+                vitals?.ApplyDamage(PracticeDamage, true);
+                taken = -1f;
+            }
+            _result = label + ": " + (taken == 0f ? "KURTULDU" : "VURULDU");
+            Debug.Log("[DODGE-DENEME] " + _result);
+
+            // Test sürsün: can bitmesin.
+            if (vitals != null && !vitals.IsDown && vitals.Hp < vitals.MaxHp)
+                vitals.ApplyHeal(vitals.MaxHp - vitals.Hp);
         }
 
         void OnGUI()
         {
-#if UNITY_EDITOR || DOVUS_DEBUG
-            if (!_chromeVisible)
-                return;
-#endif
-            GUI.Box(new Rect(8f, 72f, 210f, 132f), "Dodge deneme");
-            _dodgeable = GUI.Toggle(new Rect(16f, 98f, 190f, 22f), _dodgeable, "Sıyrılabilir");
-            if (GUI.Button(new Rect(16f, 122f, 190f, 22f), "Daire (F8)"))
-                Spawn(TelegraphShape.Circle);
-            if (GUI.Button(new Rect(16f, 146f, 92f, 22f), "Koni"))
-                Spawn(TelegraphShape.Cone);
-            if (GUI.Button(new Rect(114f, 146f, 92f, 22f), "Şerit"))
-                Spawn(TelegraphShape.Line);
-        }
-
-        void Spawn(TelegraphShape shape)
-        {
-            if (_player == null)
+            GUI.Box(new Rect(8f, 72f, 250f, 150f), "Dodge deneme");
+            bool freeze = GUI.Toggle(new Rect(16f, 98f, 230f, 22f), _freezeBoss, "Boss dondur");
+            if (freeze != _freezeBoss)
             {
-                GameObject found = GameObject.Find("Player");
-                if (found != null)
-                    _player = found.transform;
+                _freezeBoss = freeze;
+                ApplyFreeze();
             }
-            if (_player == null)
-                return;
-
-            if (_live != null)
-                Destroy(_live.gameObject);
-
-            var go = new GameObject("DodgePracticeTelegraph");
-            _live = go.AddComponent<AttackTelegraphView>();
-            Vector3 origin = _player.position;
-            Vector3 forward = _player.forward;
-            forward.y = 0f;
-            if (_boss != null)
-            {
-                Vector3 fromBoss = _player.position - _boss.position;
-                fromBoss.y = 0f;
-                if (fromBoss.sqrMagnitude > 0.01f)
-                    forward = fromBoss.normalized;
-            }
-
-            DodgeTuning tuning = new DodgeTuning();
-            HexagonInputController input = FindAnyObjectByType<HexagonInputController>();
-            if (input != null && input.Combat != null && input.Combat.Dodge != null)
-                tuning = input.Combat.Dodge;
-
-            float lead = Mathf.Max(0.2f, tuning.TelegraphLeadMs / 1000f);
-            _live.Begin(origin, forward, shape, lead, _dodgeable, 3.2f, 7f, 1.6f, 38f);
-            _live.Completed += OnDone;
-        }
-
-        void OnDone(AttackTelegraphView telegraph)
-        {
-            if (_player == null || telegraph == null)
-                return;
-            ActorStatusHost status = _player.GetComponent<ActorStatusHost>();
-            if (status != null)
-            {
-                status.ApplyDamage(PracticeDamage, telegraph.Dodgeable);
-                return;
-            }
-
-            PlayerVitalsHost vitals = _player.GetComponent<PlayerVitalsHost>();
-            vitals?.ApplyDamage(PracticeDamage, telegraph.Dodgeable);
+            _auto = GUI.Toggle(new Rect(16f, 120f, 230f, 22f), _auto, "Otomatik saldiri");
+            GUI.Label(new Rect(16f, 144f, 230f, 22f), "Siradaki: " + _next);
+            GUI.Label(new Rect(16f, 166f, 230f, 50f), _result);
         }
     }
 }

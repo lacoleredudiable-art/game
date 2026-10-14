@@ -79,7 +79,10 @@ namespace Dovus.Game.Boss
         public Vector3 LastWebFieldTarget { get; private set; }
 
         /// <summary>karadul.json faz sırası: 1 = Uyanış, 2 = Öfke (can ≤ %50).</summary>
-        public int BossPhase => _phase2Announced ? 2 : 1;
+        /// <summary>Dodge deneme modu: true iken boss ne yürür ne saldırır (yalnız DevTools yazar).</summary>
+        public bool PracticeFrozen { get; set; }
+
+        public int BossPhase =>_phase2Announced ? 2 : 1;
 
         /// <summary>Faz geçişi (HUD banner'ı için). Argüman yeni faz numarası.</summary>
         public event System.Action<int> BossPhaseChanged;
@@ -355,6 +358,16 @@ namespace Dovus.Game.Boss
             float dtSec = (float)(_clock.WorldDeltaMs / Units.SecToMs);
             _poise?.Tick(dtSec);
             HandlePlayerDown(worldMs);
+
+            // Dodge denemesi (DodgePracticeController): boss yerinde durur, kendi saldırısı yok.
+            if (PracticeFrozen)
+            {
+                _telegraph?.Hide();
+                _feel?.ClearThreat();
+                _brain?.EnsurePhaseIdleIfNot();
+                _visual?.SetSpeed(0f);
+                return;
+            }
 
             // Boss ölümünde çökme pozu sürerken saldırı yok (§11 noktalama).
             if (_bossVitals != null && _bossVitals.IsDown)
