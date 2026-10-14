@@ -45,20 +45,29 @@ public class DodgeChainTests
         Assert.That(dodge.IsInvulnerable(1300), Is.False);
     }
 
+    // 15-dodge-tasarimi §3.2: birleşme penceresi (T_tek) kapandıktan sonra gelen basış zincir değildir;
+    // takla yok, basış anında yeni T_tek penceresi açılır, 1 hak harcanır. Arada korunma olmaması
+    // bilinçli bir "boşluk mekaniği" değil, sıradan dodge davranışıdır.
     [Test]
-    public void O_4_5_GecIkinciBasis_BoslukKalir()
+    public void O_4_5_GecIkinciBasis_SiradanDodge()
     {
         var tuning = new DodgeTuning();
         var dodge = new DodgeState(tuning);
         var bank = new DodgeChargeBank(tuning);
+        int latePress = tuning.IframeMs + 100;
 
         DodgeChain.TryConsumePress(0, dodge, bank, tuning);
-        // birleşme penceresi (T_tek) kapandıktan sonra basış: zincir değil, yeni tek dodge
-        Assert.That(DodgeChain.TryConsumePress(tuning.IframeMs + 100, dodge, bank, tuning),
-            Is.EqualTo(DodgeChain.PressOutcome.StartedNew));
-        Assert.That(dodge.IsCombined, Is.False);
-        Assert.That(dodge.IsInvulnerable(tuning.IframeMs + 50), Is.False, "iki pencere arasında vuruş hasar vermeli");
-        Assert.That(dodge.IsInvulnerable(tuning.IframeMs + 100), Is.True);
+        Assert.That(bank.Ready, Is.EqualTo(1));
+
+        Assert.That(DodgeChain.TryConsumePress(latePress, dodge, bank, tuning),
+            Is.EqualTo(DodgeChain.PressOutcome.StartedNew), "zincir değil, sıradan yeni dodge");
+        Assert.That(dodge.IsCombined, Is.False, "takla yok");
+        Assert.That(bank.Ready, Is.EqualTo(0), "tam 1 hak harcanır");
+
+        Assert.That(dodge.IsInvulnerable(tuning.IframeMs + 50), Is.False, "eski pencere bitti, yeni basış henüz yok");
+        Assert.That(dodge.IsInvulnerable(latePress), Is.True, "yeni T_tek penceresi basış anında açılır");
+        Assert.That(dodge.IsInvulnerable(latePress + tuning.IframeMs - 1), Is.True);
+        Assert.That(dodge.IsInvulnerable(latePress + tuning.IframeMs), Is.False, "pencere T_tek, T_zincir değil");
     }
 
     [Test]
