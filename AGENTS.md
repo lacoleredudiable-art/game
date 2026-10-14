@@ -5,8 +5,8 @@ Ağların Kraliçesi) telefonda doğru çalışsın.
 
 ## Tasarım kaynağı
 - Tasarım kaynağı `docs/tasarim/00-OKU-BENI.md`. Bir kombo üzerinde çalışmadan önce o hücreyi oku.
-- Hangi işin sırada olduğunu `docs/tasarim/11-onarim-plani.md` söyler. Her PR açıklamasına önce/sonra Gözcü satır
-  sayısını yaz.
+- Hangi işin sırada olduğunu `docs/tasarim/14-kodlama-plani.md` söyler (aşamalar). Her aşama PR'ının açıklamasına
+  önce/sonra Gözcü satır sayısını yaz.
 - Ölçü, kamera, dodge veya arena işinde `10-olculer.md`'deki madde kimliğini (ör. O-7.2) PR'a ve test adına yaz.
 - Belgede olmayan davranışı ya da ölçüyü uydurma, sor.
 - Sayılar `kural-motoru-v4.json`'dadır. Belgeler çelişirse `00-OKU-BENI.md`'deki öncelik sırası geçerlidir.
@@ -45,14 +45,16 @@ tasarım sorusu olarak döner.
    bu sahiplik kuralına uyar; ikinci bir gizli konum yazan yol eklenmez.
 
 ## Çalışma biçimi
-- Bir PR = bir hata ya da bir özellik. Birden çok iş verilirse ilkini yap, diğerlerini PR'da "sonra" diye yaz.
+- İş aşamalarla yürür (`14-kodlama-plani.md`). Her aşamanın dalı `asama/N-<ad>`; aşama içindeki PR'lar bu dala girer,
+  master'a aşama başına bir kez, telefon testi geçince girilir.
+- Aşama içinde bir PR = bir hata ya da bir özellik. Birden çok iş verilirse ilkini yap, diğerlerini PR'da "sonra" diye yaz.
 - Önce kanıt: hatanın sebebini log ya da ölçümle göster, sonra yalnız o sebebi düzelt.
-- "Bitti" telefonda görülür: oynanışı değiştiren her PR'da dilim APK'sından ekran kaydı ya da logcat çıktısı.
+- "Bitti" telefonda görülür: her aşamanın master PR'ında dilim APK'sından ekran kaydı ya da logcat çıktısı.
   Editör testi tek başına yeterli değildir.
 - Her hata düzeltmesi önce hatayı oyunun GERÇEK yolundan (sahte dokunuş/çizim → görünen sonuç: oynayan klip,
   konum, çarpışma) yeniden üreten bir test yazar. Test düzeltmeden önce kırmızı, sonra yeşil olmalı.
   Hatayı yakalamayan testle "düzelttim" denmez.
-- Oynanışı değiştiren her PR, görsel duman testinin kontakt sayfasını PR'a ekler, sayfaya bakıp gözlemini yazar
+- Her aşamanın master PR'ı, görsel duman testinin kontakt sayfasını PR'a ekler, sayfaya bakıp gözlemini yazar
   ve Gözcü satırlarının sayısını raporlar. Resim PR açıklamasına eklenir, repoya kaydedilmez.
 - Fonksiyonu doğrudan çağırıp geçen test, oynanış hatasının kanıtı sayılmaz.
 - Testler gevşetilmez; bir test kırılırsa nedeni PR'da yazılır.
@@ -62,8 +64,11 @@ tasarım sorusu olarak döner.
 - Görevin adlandırmadığı dosyalara dokunma; repoyu baştan tarama.
 
 ## Testler
-- Her PR'dan önce yerelde O_ PlayMode testleri + Gözcü duman testi koşulur; PR açıklamasına sonuç (geçen/kalan/
-  atlanan sayısı ve Gözcü tür tablosu) yapıştırılır. Yapıştırılmamış PR merge edilmez.
+- Aşama içindeki PR: CI (OYUN.md, CoreTests, IntegrationTests, GameCompile) + değişen alanın `dotnet test --filter`
+  testi. Telefon ve Unity testi istemez.
+- Aşama sonunda, master PR'ından önce bir kez: yerelde O_ PlayMode testleri + Gözcü duman testi + dilim APK + telefon
+  testi; PR açıklamasına sonuç (geçen/kalan/atlanan sayısı ve Gözcü tür tablosu) yapıştırılır. Yapıştırılmamış PR
+  master'a merge edilmez.
 - Kırmızı bir test görürsen önce master'da çalıştır; master'da da kırmızıysa düzeltme, PR'a yaz ve geç.
 - Yalnız ilgili test sınıflarını `-testFilter` ile çalıştır.
 - Başlamadan önce hangi testleri çalıştıracağını ve tahmini süreyi yaz.

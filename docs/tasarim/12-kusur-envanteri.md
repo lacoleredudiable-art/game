@@ -2,7 +2,7 @@
 
 Sürüm 1.5 · 13 Ekim 2026 (B1 sırasında güncellendi) · master `b1dbb3a5` (#171 sonrası) üzerinde kod taramasıyla hazırlandı.
 
-Bu liste onarım planının (`11`) kalan işini **önceden** çıkarır. Ajan sıradaki maddeyi alır, yalnız onu yapar.
+Bu liste kodlama planının (`14`; önce `11`) kalan işini **önceden** çıkarır. Ajan sıradaki maddeyi alır, yalnız onu yapar.
 Çalışırken yeni bir kusur bulursa **düzeltmez**; PR açıklamasına "envantere eklenecek" diye yazar ve bu
 listenin sonuna eklenir. Her madde bir PR'dır (aksi yazmadıkça).
 
@@ -83,7 +83,7 @@ Durum işaretleri: ⏳ verildi / devam · ☐ sırada · ✅ bitti.
   yedeği dilimde kaldırılır. Log'dan düşen koşul bulunur, kökü düzeltilir.
 - **Test:** gerçek dokunuşla Kılıç düz vuruşu → oynayan klip `Kilic_VUR`; Yay → `Yay_VUR`. `[V4-FALLBACK]` 0.
 
-### B2 ☐ Silah değişince eski silahın yürüme klibi
+### B2 ✅ Silah değişince eski silahın yürüme klibi — #181
 - **Belirti:** Yay'a geçince karakter Kılıç gibi duruyor/yürüyor (Gözcü `uyumsuz_klip` 45).
 - **Yer:** `Game/Actors/ActorView.cs` (satır ~204, override controller değişimi),
   `Game/Weapons/WeaponVisualRegistry.cs`, `Game/Editor/K3AssetSetup.cs`.
@@ -105,7 +105,7 @@ Durum işaretleri: ⏳ verildi / devam · ☐ sırada · ✅ bitti.
 
 ## C — Eski motoru dilimden çıkar (Adım 4)
 
-### C1 ☐ Düz vuruşta ileri kayma
+### C1 ✅ Düz vuruşta ileri kayma — #177
 - **Belirti:** Yay'la düz vururken karakter yürümeden öne kayıyor.
 - **Yer:** `Game/Skills/Flow/SentenceManifestationBridge.cs` satır ~93 (`TryBeginBasicStrikeStep`),
   `Game/Skills/Motion/MotionTemplateDriver.cs` satır 262 (`TryBeginBasicStrikeStep`, "basic_strike lunge").
@@ -134,7 +134,7 @@ Durum işaretleri: ⏳ verildi / devam · ☐ sırada · ✅ bitti.
 
 ## D — Kalan belirtiler (Adım 5)
 
-### D1 ☐ Kamera davranışı (5.1)
+### D1 ✅ Kamera davranışı (5.1) — #179
 - Boss'a 2 m'den yakınken yaw dondur, 2–5 m karışım (O-5.7); dönüş tavanı 120°/s (O-5.6); omuz değişimi
   ≥ 1,5 s (O-5.9); boss arada kalırsa %35 saydam (O-5.11); dost kapsülü ve can çubuğu görüşü kapatınca
   kamera kayar.
