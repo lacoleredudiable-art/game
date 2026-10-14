@@ -2,10 +2,10 @@
 
 # Claude Code için oturum kuralları
 
-- Her oturum tek görev. Görev kullanıcının verdiği tek satırdır; bitince "telefonda şunu görmeliyim" cümlesi
-  doğrulanır. Görev dışı dosyaya dokunulmaz, repo baştan taranmaz.
+- Her oturum tek görev. Görev kullanıcının verdiği tek satır ya da `14-kodlama-plani.md`'deki bir aşama (veya onun
+  bir maddesi); aşama bitince "telefonda göreceğin" listesi doğrulanır. Görev dışı dosyaya dokunulmaz, repo baştan taranmaz.
 - Oturum başında yalnız şunlar okunur: bu dosya, görevin adlandırdığı dosyalar, gerekiyorsa
-  `docs/tasarim/11-onarim-plani.md`. Tasarım sorusu çıkarsa `docs/tasarim/13-vizyon-ve-cerceve.md` ve
+  `docs/tasarim/14-kodlama-plani.md`. Tasarım sorusu çıkarsa `docs/tasarim/13-vizyon-ve-cerceve.md` ve
   `docs/tasarim/00-OKU-BENI.md`.
 - Değişiklik yapmadan önce plan yazılır ve onay beklenir. Plan: dokunulacak dosyalar, eklenecek/değiştirilecek
   test, telefonda beklenen sonuç.

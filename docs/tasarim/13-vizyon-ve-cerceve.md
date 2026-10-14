@@ -4,7 +4,7 @@ Bu dosya kural kitabının **üstündeki** katmanı tutar: kim oynar, ne kadar, 
 zaman ekonomisi. `01-kural-kitabi-v4.5.md` ve `09-sonraki-kararlar.md` bunun altında çalışır.
 
 Buradaki hiçbir madde dilime (kök `AGENTS.md`: Kılıç + Yay, rünler 1-2-3-4-6-9, Ağların Kraliçesi) kendiliğinden
-girmez. Dilime giriş ayrı bir [K] kararıdır. Bu dosyadan kod yazılmaz; `11-onarim-plani.md` ne diyorsa o yapılır.
+girmez. Dilime giriş ayrı bir [K] kararıdır. Bu dosyadan kod yazılmaz; `14-kodlama-plani.md` ne diyorsa o yapılır.
 
 Etiketler:
 - **[K]** kullanıcı kararı (tarih: 13.10 aksi yazılmadıkça).
