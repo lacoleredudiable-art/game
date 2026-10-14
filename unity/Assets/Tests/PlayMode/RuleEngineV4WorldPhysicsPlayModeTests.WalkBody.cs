@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Casting;
 using NUnit.Framework;
 using UnityEngine;
@@ -33,8 +34,9 @@ namespace Dovus.Tests.PlayMode
     }
 
     /// <summary>
-    /// Yürüme gövdeye girmez (O-4.9, O-6.10, O-1.12): boss ve dost dünya fiziği yarıçaplı dikey silindirdir;
-    /// yürüyen oyuncunun merkezi gövde merkezine yarıçaplar toplamından (boss 2,5 + 0,35 = 2,85 m) yaklaşmaz.
+    /// Yürüme gövdeye girmez (O-4.9, O-6.10, O-1.12, O-7.4): boss, dost, minyon (world_physics) ve koza (slice_arena)
+    /// yarıçaplı dikey silindirdir; yürüyen oyuncunun merkezi gövde merkezine yarıçaplar toplamından
+    /// (boss 2,5 + 0,35 = 2,85 m; minyon 0,5 + 0,35; koza 0,6 + 0,35) yaklaşmaz.
     /// Gövdeye doğru yürümeye devam eden oyuncu yerinde titremez; yan açıyla gelen çevresinden kayarak geçer.
     /// Girdi gerçek yoldan: çubuk. Ölçü görünen konumdan (<see cref="WalkBodyRenderedProbe"/>).
     /// </summary>
@@ -71,16 +73,64 @@ namespace Dovus.Tests.PlayMode
         {
             FreezeBoss();
             ParkAll();
-            Vector3 bossC = Flat(_boss.position);
-            Vector3 toCenter = BossToCenter();
+            yield return BodySideWalk("boss'a yan açıyla yürüme", _boss, BossBodyM);
+        }
+
+        [UnityTest]
+        public IEnumerator O_4_9_MinyonaYuruyen_GovdeyeGirmez_Titremez()
+        {
+            FreezeBoss();
+            ParkAll();
+            Place(_minions[0].transform, Origin);
+            Physics.SyncTransforms();
+            yield return BodyHeadOnWalk("minyona doğru yürüme", _minions[0].transform, CreatureBodyM);
+        }
+
+        [UnityTest]
+        public IEnumerator O_4_9_MinyonaYanAciylaYuruyen_CevresindenKayar()
+        {
+            FreezeBoss();
+            ParkAll();
+            Place(_minions[0].transform, Origin);
+            Physics.SyncTransforms();
+            yield return BodySideWalk("minyona yan açıyla yürüme", _minions[0].transform, CreatureBodyM);
+        }
+
+        [UnityTest]
+        public IEnumerator O_4_9_KozayaYuruyen_GovdeyeGirmez_Titremez()
+        {
+            FreezeBoss();
+            ParkAll();
+            yield return BodyHeadOnWalk("kozaya doğru yürüme", Cocoons()[0].transform, ArenaSpec.Cocoons[0].RadiusM);
+        }
+
+        [UnityTest]
+        public IEnumerator O_4_9_KozayaYanAciylaYuruyen_CevresindenKayar()
+        {
+            FreezeBoss();
+            ParkAll();
+            yield return BodySideWalk("kozaya yan açıyla yürüme", Cocoons()[0].transform, ArenaSpec.Cocoons[0].RadiusM);
+        }
+
+        static float CreatureBodyM => RuleEngineV4WorldPhysicsRuntime.Active.BodyRadiusCreatureM;
+
+        /// <summary>
+        /// Oyuncu gövdenin yanından, düz yolu gövdenin içinden geçecek şekilde (merkezden temas mesafesinin
+        /// <see cref="BodyWalkSideOffsetFrac"/> katı yanda) yürür. Ölçüt: en yakın an ≥ yarıçaplar toplamı ve
+        /// <see cref="BodyWalkSec"/> içinde gövdenin öbür yanına geçer (teğet boyunca kayar, takılmaz).
+        /// </summary>
+        IEnumerator BodySideWalk(string label, Transform body, float bodyR)
+        {
+            Vector3 bodyC = Flat(body.position);
+            Vector3 toCenter = -bodyC;
+            toCenter = toCenter.sqrMagnitude > PosTolM * PosTolM ? toCenter.normalized : Vector3.back;
             Vector3 dir = Vector3.Cross(Vector3.up, toCenter).normalized;
-            float contact = BossBodyM + PlayerBodyM;
-            Vector3 start = bossC + toCenter * (contact * BodyWalkSideOffsetFrac) - dir * (contact + BodyWalkStartExtraM);
-            _label = "boss'a yan açıyla yürüme";
-            MoveInputController move = BeginScenario(_label, start, dir, out _, out _);
-            WalkBodyRenderedProbe probe = StartProbe(_boss);
+            float contact = bodyR + PlayerBodyM;
+            Vector3 start = bodyC + toCenter * (contact * BodyWalkSideOffsetFrac) - dir * (contact + BodyWalkStartExtraM);
+            MoveInputController move = BeginScenario(label, start, dir, out _, out _);
+            WalkBodyRenderedProbe probe = StartProbe(body);
             float nearest = float.MaxValue;
-            float along = Vector3.Dot(Flat(_player.position) - bossC, dir);
+            float along = Vector3.Dot(Flat(_player.position) - bodyC, dir);
             try
             {
                 double endMs = _md.MechanicsClock.Director.WorldTimeMs + BodyWalkSec * 1000.0;
@@ -102,15 +152,15 @@ namespace Dovus.Tests.PlayMode
                 Object.Destroy(probe.gameObject);
             }
 
-            Debug.Log($"[O-4.9] {_label}: boss merkezine en yakın {nearest:0.000} m (temas {contact:0.000} m), " +
-                      $"boss'un ötesine {along:0.00} m");
+            Debug.Log($"[O-4.9] {_label}: gövde merkezine en yakın {nearest:0.000} m (temas {contact:0.000} m = " +
+                      $"gövde {bodyR:0.00} + oyuncu {PlayerBodyM:0.00}), gövdenin ötesine {along:0.00} m");
             var fails = new List<string>();
             if (nearest < contact - PosTolM)
-                fails.Add($"{_label}: boss merkezine {nearest:0.000} m yaklaştı < {contact:0.000} m " +
+                fails.Add($"{_label}: gövde merkezine {nearest:0.000} m yaklaştı < {contact:0.000} m " +
                           $"({(contact - nearest) * 100f:0.0} cm içeride)");
             if (along < contact)
-                fails.Add($"{_label}: {BodyWalkSec:0} sn içinde boss'un çevresinden geçemedi " +
-                          $"(boss'un ötesine {along:0.00} m, gereken {contact:0.00} m)");
+                fails.Add($"{_label}: {BodyWalkSec:0} sn içinde gövdenin çevresinden geçemedi " +
+                          $"(gövdenin ötesine {along:0.00} m, gereken {contact:0.00} m)");
             Assert.That(fails, Is.Empty, string.Join("\n", fails));
             Assert.That(_errors, Is.Empty, string.Join("\n", _errors));
         }

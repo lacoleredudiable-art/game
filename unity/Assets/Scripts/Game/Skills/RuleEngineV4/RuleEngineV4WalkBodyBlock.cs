@@ -6,10 +6,11 @@ using UnityEngine;
 namespace Dovus.Game.Skills.RuleEngineV4
 {
     /// <summary>
-    /// Yürüme boss'un ve dostların gövdesine girmez (O-4.9, O-6.10, O-1.12). Gövdeler tetik çarpışıcılıdır;
-    /// dünya fiziği yarıçaplı dikey silindir sayılır (boss <see cref="RuleEngineV4BossBody.RadiusM"/>,
-    /// dost <c>world_physics.body_radius_player_m</c>). Merkezler arası mesafe yürüyen + gövde yarıçapının altına
-    /// inmez; değince kalan yol gövdenin teğeti boyunca kayar. Zaten o mesafenin içindeyse yalnız uzaklaşmaya izin var.
+    /// Yürüme boss'un, dostların, minyonların ve kozaların gövdesine girmez (O-4.9, O-6.10, O-1.12, O-7.4).
+    /// Gövdeler tetik çarpışıcılıdır; yarıçaplı dikey silindir sayılır (boss <see cref="RuleEngineV4BossBody.RadiusM"/>,
+    /// dost <c>world_physics.body_radius_player_m</c>, minyon <c>world_physics.body_radius_creature_m</c>,
+    /// koza <c>slice_arena.cocoons[].radius_m</c> — arena kurucusu gövdeye yazar). Merkezler arası mesafe
+    /// yürüyen + gövde yarıçapının altına inmez; değince kalan yol gövdenin teğeti boyunca kayar. Zaten o mesafenin içindeyse yalnız uzaklaşmaya izin var.
     /// </summary>
     public sealed class RuleEngineV4WalkBodyBlock
     {
@@ -23,8 +24,9 @@ namespace Dovus.Game.Skills.RuleEngineV4
         {
             float bossR = RuleEngineV4BossBody.RadiusM(Where);
             float allyR = RuleEngineV4WorldPhysicsRuntime.Active.BodyRadiusPlayerM;
+            float creatureR = RuleEngineV4WorldPhysicsRuntime.Active.BodyRadiusCreatureM;
             float step = Flat(to - from).magnitude;
-            float reach = radiusM + step + Mathf.Max(bossR, allyR);
+            float reach = radiusM + step + Mathf.Max(bossR, Mathf.Max(allyR, creatureR));
             int n = Physics.OverlapCapsuleNonAlloc(bottom, top, reach, _near, ~0, QueryTriggerInteraction.Collide);
             for (int i = 0; i < n; i++)
             {
@@ -41,6 +43,10 @@ namespace Dovus.Game.Skills.RuleEngineV4
                     bodyR = bossR;
                 else if (body.TryGetComponent(out AllyDummyController _))
                     bodyR = allyR;
+                else if (body.TryGetComponent(out SliceLightMinionHost _))
+                    bodyR = creatureR;
+                else if (body.TryGetComponent(out SliceArenaCocoonHost _))
+                    bodyR = body.BodyRadiusM;
                 else
                     continue;
                 to = KeepOut(from, to, body.transform.position, radiusM + bodyR);
