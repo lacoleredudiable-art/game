@@ -39,6 +39,18 @@ namespace Dovus.Core.Tuning
         public float EdgeGapM = 0.15f;
         public int TelegraphLeadMs = 700;
 
+        // O-4.9 engelde kayma. Hepsi (ölçüm) test başlangıç değeri, tahmin; telefonda ayarlanır.
+        /// <summary>Kayma bütçesi tabanı: bütçe = kalan yol × max(t, bu).</summary>
+        public float SlideMinRatio = 0.5f;
+        /// <summary>t bu eşikten büyükse taraf çubuğun teğet işaretinden gelir; değilse motor seçer.</summary>
+        public float EngineChoiceT = 0.17f;
+        /// <summary>Motorun taraf seçerken ileri taradığı mesafe (m).</summary>
+        public float SlideScanPadM = 0.5f;
+        /// <summary>Kayma adımı başına en çok iterasyon.</summary>
+        public int SlideMaxIter = 4;
+        /// <summary>Adımda gerçek ilerleme beklenenin bu oranından azsa (köşe) kayma durur.</summary>
+        public float SlideStallRatio = 0.1f;
+
         // Merkez düğmenin sürükleme eşiği (aşan sürükleme çizimdir). O1: süre eşiği (TapMaxMs 180)
         // kaldırıldı — kaçış/silah basınca tetiklenir, uzun basış düşmez.
         public int TapMaxMoveDp = 12;
@@ -68,6 +80,11 @@ namespace Dovus.Core.Tuning
             PerfectFeelSec = other.PerfectFeelSec;
             EdgeGapM = other.EdgeGapM;
             TelegraphLeadMs = other.TelegraphLeadMs;
+            SlideMinRatio = other.SlideMinRatio;
+            EngineChoiceT = other.EngineChoiceT;
+            SlideScanPadM = other.SlideScanPadM;
+            SlideMaxIter = other.SlideMaxIter;
+            SlideStallRatio = other.SlideStallRatio;
         }
 
         public void ResetToDefaults() => CopyFrom(new DodgeTuning());
