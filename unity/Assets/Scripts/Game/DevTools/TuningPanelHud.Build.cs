@@ -215,7 +215,7 @@ namespace Dovus.Game.DevTools
             AddIntSlider("Tap hareket eşiği", 4, 40, () => c.Dodge.TapMaxMoveDp, v => c.Dodge.TapMaxMoveDp = v, "dp");
             AddIntSlider("Hak dolumu", 1000, 12000, () => c.Dodge.ChargeRechargeMs, v => c.Dodge.ChargeRechargeMs = v, "ms");
             AddIntSlider("Çift basış penceresi", 50, 500, () => c.Dodge.DoubleTapWindowMs, v => c.Dodge.DoubleTapWindowMs = v, "ms");
-            AddIntSlider("Birleşik i-frame", 200, 1200, () => c.Dodge.CombinedIframeMs, v => c.Dodge.CombinedIframeMs = v, "ms");
+            AddIntSlider("Birleşik i-frame", 200, 2000, () => c.Dodge.CombinedIframeMs, v => c.Dodge.CombinedIframeMs = v, "ms");
             AddFloatSlider("Birleşik mesafe ×", 1f, 3f, () => c.Dodge.CombinedDistanceMult, v => c.Dodge.CombinedDistanceMult = v, "", "0.00");
             AddFloatSlider("Birleşik süre ×", 1f, 3f, () => c.Dodge.CombinedDurationMult, v => c.Dodge.CombinedDurationMult = v, "", "0.00");
             // O2: tek mükemmel pencere (PERFECT derecesi + iade + sonraki vuruş).

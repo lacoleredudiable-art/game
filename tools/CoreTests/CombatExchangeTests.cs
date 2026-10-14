@@ -105,7 +105,7 @@ public class CombatExchangeTests
     [Test]
     public void IframeExpiredBeforeStrike_Hits()
     {
-        int press = StrikeTime - 300;
+        int press = StrikeTime - (new DodgeTuning().IframeMs + 40);
         _dodge.Begin(press);
 
         Assert.That(_dodge.IsInvulnerable(StrikeTime), Is.False);

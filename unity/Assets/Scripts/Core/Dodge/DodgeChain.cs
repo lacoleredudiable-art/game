@@ -28,7 +28,7 @@ namespace Dovus.Core.Dodge
                 return false;
 
             int press = dodge.PressTimeMs.Value;
-            if (worldMs - press > tuning.DoubleTapWindowMs)
+            if (worldMs - press >= tuning.DoubleTapWindowMs)
                 return false;
             if (!dodge.IsActive(worldMs))
                 return false;
