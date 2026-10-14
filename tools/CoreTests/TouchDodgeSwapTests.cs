@@ -101,10 +101,10 @@ public class TouchDodgeSwapTests
         string json = ElementJson();
         float dist = float.Parse(Regex.Match(json, "\"dodge_distance_m\":\\s*([0-9.]+)").Groups[1].Value,
             System.Globalization.CultureInfo.InvariantCulture);
-        int iframe = int.Parse(Regex.Match(json, "\"i_frame_on_dodge_ms\":\\s*([0-9]+)").Groups[1].Value);
         var t = new DodgeTuning();
         Assert.That(t.DistanceM, Is.EqualTo(dist).Within(0.001f));
-        Assert.That(t.IframeMs, Is.EqualTo(iframe));
+        // IframeMs artık JSON'a bağlı değil: 15-dodge-tasarimi §3.4 test değeri (0,5 s); element-sistemi.json donduruldu.
+        Assert.That(t.IframeMs, Is.EqualTo(500));
         Assert.That(Game("Core/Tuning/DodgeTuning.cs"), Does.Not.Contain("public int CooldownMs"));
         Assert.That(Game("Core/Tuning/DodgeTuning.cs"), Does.Not.Contain("public int TapMaxMs"));
     }
