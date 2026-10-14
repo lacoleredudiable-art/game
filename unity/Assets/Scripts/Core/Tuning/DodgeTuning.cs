@@ -12,7 +12,8 @@ namespace Dovus.Core.Tuning
         public float DistanceM = 3.8f;
         public int DurationMs = 250;
         public float CurveExp = 3.6f;
-        public int GlideTailMs = 120;
+        /// <summary>O-4.4a süzülme fazı 0,40 s. Hareket (10+250+400) birleşme penceresini (500 ms) örter; kısa kuyrukta 380-500 ms arası basış takla olmazdı.</summary>
+        public int GlideTailMs = 400;
         // S2: CooldownMs (360) kaldırıldı — haklar her zaman var olduğu için hiç okunmuyordu.
         // JSON dodge_cooldown_sec 0.42 — 2 hak × 6 sn dolum (PLAN 1.3).
 

@@ -80,6 +80,61 @@ public class DodgeChainTests
         Assert.That(tuning.DoubleTapWindowMs, Is.EqualTo(tuning.IframeMs), "15 §3.4 / D-4: birleşme penceresi = T_tek");
     }
 
+    // O-4.4a: süzülme 0,40 s. Hareket (10 + 250 + 400 = 660 ms) birleşme penceresini (500 ms) örter;
+    // yoksa 380-500 ms arası ikinci basış takla olmaz, yeni tek dodge başlar.
+    [Test]
+    public void O_4_4a_HareketBirlesmePenceresiniOrter()
+    {
+        var tuning = new DodgeTuning();
+        var dodge = new DodgeState(tuning);
+        dodge.Begin(0);
+        for (int t = 0; t < tuning.DoubleTapWindowMs; t++)
+            Assert.That(dodge.IsActive(t), Is.True, $"t={t} ms hareket bitti, pencere hâlâ açık");
+    }
+
+    [Test]
+    public void O_4_5_Takla_SuzulmedeBasis_ZincirOlur()
+    {
+        var tuning = new DodgeTuning();
+        var dodge = new DodgeState(tuning);
+        var bank = new DodgeChargeBank(tuning);
+
+        DodgeChain.TryConsumePress(0, dodge, bank, tuning);
+        // 450 ms: patlama bitti, süzülme sürüyor, pencere (500 ms) açık
+        Assert.That(DodgeChain.TryConsumePress(450, dodge, bank, tuning), Is.EqualTo(DodgeChain.PressOutcome.UpgradedCombined));
+        Assert.That(bank.Ready, Is.EqualTo(0));
+    }
+
+    [TestCase(0)]
+    [TestCase(100)]
+    [TestCase(260)]
+    [TestCase(450)]
+    [TestCase(499)]
+    public void O_4_5_Takla_YolSureklidirVeToplamMesafeCarpandir(int promoteMs)
+    {
+        var tuning = new DodgeTuning();
+        var dodge = new DodgeState(tuning);
+        dodge.Begin(0);
+        float before = dodge.GetDisplacementRatio(promoteMs) * dodge.DistanceMultiplier;
+        dodge.PromoteToCombined(promoteMs);
+        float after = dodge.GetDisplacementRatio(promoteMs) * dodge.DistanceMultiplier;
+        Assert.That(after, Is.EqualTo(before).Within(1e-4f), "takla anında konum sıçradı");
+
+        // yol bitene kadar geri gitmez, adım başına sıçrama yok, sonunda ×CombinedDistanceMult
+        float prev = after;
+        int end = tuning.StartupMs + dodge.MoveDurationMs;
+        Assert.That(end, Is.GreaterThanOrEqualTo(promoteMs), "yol, taklanın başladığı andan önce bitmiş");
+        for (int t = promoteMs; t <= end; t++)
+        {
+            float r = dodge.GetDisplacementRatio(t) * dodge.DistanceMultiplier;
+            Assert.That(r, Is.GreaterThanOrEqualTo(prev - 1e-4f), $"t={t} geri gitti");
+            Assert.That(r - prev, Is.LessThan(0.35f), $"t={t} 1 ms'de sıçradı");
+            prev = r;
+        }
+        Assert.That(prev, Is.EqualTo(tuning.CombinedDistanceMult).Within(1e-3f));
+        Assert.That(dodge.IsActive(end), Is.True, "takla yolu bitmeden dodge kapandı");
+    }
+
     [Test]
     public void Recharge_IsSixSecondsPerCharge()
     {

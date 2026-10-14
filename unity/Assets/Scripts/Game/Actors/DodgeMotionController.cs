@@ -39,6 +39,8 @@ namespace Dovus.Game.Actors
         Vector3 _dir;
         Vector3 _glideExtra;
         int _pressMs = int.MinValue;
+        int _promotedMs = int.MinValue;
+        float _rollRatioBase;
         float _lastEmitRatio = -1f;
         ActorView _visual;
 
@@ -88,6 +90,10 @@ namespace Dovus.Game.Actors
                 _pressMs = press.Value;
                 BeginSlide();
             }
+            else if (_dodge.PromotedAtMs is int promoted && promoted != _promotedMs)
+            {
+                BeginRoll(promoted);
+            }
 
             if (!_dodge.IsActive(worldMs))
             {
@@ -98,7 +104,7 @@ namespace Dovus.Game.Actors
                 if (IsDisplacing && _tuning != null)
                 {
                     float dist = _tuning.DistanceM * (_dodge != null ? _dodge.DistanceMultiplier : 1f);
-                    transform.position = Place(_startPos + _dir * dist + _glideExtra);
+                    transform.position = Place(_startPos + _dir * dist * (1f - _rollRatioBase) + _glideExtra);
                     LastAppliedRatio = 1f;
                 }
 
@@ -108,7 +114,7 @@ namespace Dovus.Game.Actors
 
             float ratio = _dodge.GetDisplacementRatio(worldMs);
             float distanceM = _tuning.DistanceM * _dodge.DistanceMultiplier;
-            Vector3 target = _startPos + _dir * distanceM * ratio;
+            Vector3 target = _startPos + _dir * distanceM * (ratio - _rollRatioBase);
 
             float glide = _dodge.GetGlideVelocityRatio(worldMs);
             if (glide > 0f)
@@ -133,7 +139,9 @@ namespace Dovus.Game.Actors
             LastAppliedRatio = 0f;
             _glideExtra = Vector3.zero;
             _lastEmitRatio = -1f;
-            _dir = ResolveDirection();
+            _rollRatioBase = 0f;
+            _promotedMs = int.MinValue;
+            _dir = ResolveDirection(transform.forward);
             _afterimage?.Clear();
             IsDisplacing = true;
             if (_visual == null)
@@ -145,7 +153,30 @@ namespace Dovus.Game.Actors
             SlideStarted?.Invoke(_startPos, _dir);
         }
 
-        Vector3 ResolveDirection()
+        /// <summary>
+        /// Takla (O-4.5, 15-dodge-tasarimi §3.2): eski yol kesilir, yeni yol bulunduğu yerden başlar;
+        /// yön ikinci basıştaki çubuk yönü (boşsa birinci dodge'un yönü). Toplam mesafe ×CombinedDistanceMult
+        /// korunur (oran sürekli). Konumu yine bu denetleyici yazar: ikinci bir konum sahibi yok.
+        /// </summary>
+        void BeginRoll(int promotedMs)
+        {
+            _promotedMs = promotedMs;
+            _startPos = transform.position;
+            _glideExtra = Vector3.zero;
+            _rollRatioBase = _dodge.RatioAtPromote;
+            _lastEmitRatio = -1f;
+            _dir = ResolveDirection(_dir);
+            _afterimage?.Clear();
+            if (_visual == null)
+                _visual = GetComponent<ActorView>();
+            _visual?.Trigger(ActorView.TriggerDodge);
+            int nowMs = (int)_clock.Director.WorldTimeMs;
+            float rollSec = Mathf.Max(0, _pressMs + _dodge.SlideEndOffsetMs - nowMs) / (float)Units.SecToMs;
+            DodgeClipPlayback.ApplyDodge(_visual?.Animator, rollSec, _dodge.RecoveryMs / (float)Units.SecToMs);
+            SlideStarted?.Invoke(_startPos, _dir);
+        }
+
+        Vector3 ResolveDirection(Vector3 face)
         {
             Vector3 stick = Vector3.zero;
             if (_input != null)
@@ -159,7 +190,6 @@ namespace Dovus.Game.Actors
                 }
             }
 
-            Vector3 face = transform.forward;
             DodgeDirection.Resolve(stick.x, stick.z, face.x, face.z, out float x, out float z);
             return new Vector3(x, 0f, z);
         }
