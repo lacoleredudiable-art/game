@@ -81,6 +81,7 @@ namespace Dovus.Game.Actors
         GameClockHost _clock;
         BossVitals _bossVitals;
         PlayerVitalsHost _playerVitals;
+        float _dotCarry;
         BossReactorController _reactor;
         bool _stealthVisual;
         Renderer[] _renderers;
@@ -157,7 +158,7 @@ namespace Dovus.Game.Actors
             if (payload > 0f)
             {
                 // S4: DoT tiki (yanma/zehir) kaçışla yutulmaz ve zırhı deler (tasarım kararı); boss'ta sayı gösterilir.
-                ApplyDamage(payload, dodgeable: false, pierceArmor: true);
+                ApplyDamage(payload, dodgeable: false, pierceArmor: true, overTime: true);
                 if (_bossVitals != null && LastAppliedDamage > 0f)
                     DamageOverTimeDealt?.Invoke(LastAppliedDamage);
             }
@@ -211,7 +212,8 @@ namespace Dovus.Game.Actors
         public float LastThreat { get; set; }
         public float LastPoise { get; set; }
 
-        public void ApplyDamage(float raw, bool dodgeable = true, bool pierceArmor = false)
+        /// <param name="overTime">Kare kare DoT tiki: oyuncu canında kesirler biriktirilir, tam puan düşülür (Y9).</param>
+        public void ApplyDamage(float raw, bool dodgeable = true, bool pierceArmor = false, bool overTime = false)
         {
             LastAppliedDamage = 0f;
             if (raw <= 0f) return;
@@ -276,8 +278,18 @@ namespace Dovus.Game.Actors
             {
                 LastAppliedDamage = afterShield;
                 DamageTaken?.Invoke(afterShield);
-                _playerVitals.ApplyDamage(Mathf.CeilToInt(afterShield), dodgeable, shortShieldAlreadyApplied: true);
+                int hp = overTime ? TakeWholeDot(afterShield) : Mathf.CeilToInt(afterShield);
+                if (hp > 0)
+                    _playerVitals.ApplyDamage(hp, dodgeable, shortShieldAlreadyApplied: true);
             }
+        }
+
+        int TakeWholeDot(float amount)
+        {
+            _dotCarry += amount;
+            int whole = Mathf.FloorToInt(_dotCarry + ActorStatusHostDefaults.DotCarryEpsilon);
+            _dotCarry = Mathf.Max(0f, _dotCarry - whole);
+            return whole;
         }
 
         void TryReflect(float reflectBase)

@@ -29,6 +29,7 @@ namespace Dovus.Tests.PlayMode
         static readonly Regex PanelHpFallback = new(@"\[V4-FALLBACK\].*PlayerMaxHp");
         const float BossStrikeTimeoutSec = 25f;
         const float SettleAfterHitSec = 1.2f;
+        const float PoisonClearTimeoutSec = 5f;
         const string PanelHpRow = "Row_Oyuncu can tavanı";
 
         [UnityTest]
@@ -115,13 +116,116 @@ namespace Dovus.Tests.PlayMode
             Debug.Log($"[O-6.17] zehir sonrası toplam can kaybı {drops.Sum()} (vuruş 180 + zehir; belge 180 + 60)");
         }
 
+        /// <summary>Y9: zehir tikinin küsuratı birikir; 3 s × 20 = 60 can, kare sayısından bağımsız.</summary>
         [UnityTest]
-        [Ignore("Envantere eklenecek: oyuncuya giden DoT tiki kare başı CeilToInt ile en az 1 can (60 fps'te 3 s zehir ≈ 180)")]
         public IEnumerator O_6_17_ZehirNefesi_ZehirToplami_60()
         {
             var drops = new List<int>();
-            yield return BossAttacksPlayer(BossAttackKind.FireCone, toward: 1.2f, drops, waitAfterHitSec: 3.5f);
-            Assert.That(drops.Sum(), Is.EqualTo(180 + 60), "O-6.17 vuruş 180 + zehir 3 s × 20");
+            // Zehir 3 s sürerken boss ikinci nefesi atmasın: tek nefesin toplamı ölçülür.
+            yield return BossAttacksPlayer(BossAttackKind.FireCone, toward: 1.2f, drops, afterHit: FreezeBoss,
+                waitAfterHitSec: 3.5f);
+            Assert.That(drops.Sum(), Is.EqualTo(180 + 60),
+                "O-6.17 vuruş 180 + zehir 3 s × 20; düşüşler: " + string.Join(", ", drops));
+        }
+
+        /// <summary>O-6.17 koni 8 m (§6.3: mesafe boss merkezinden): eksende merkezden 7,5 m'deki oyuncu vurulur.</summary>
+        [UnityTest]
+        public IEnumerator O_6_17_ZehirNefesi_Koni_8m_MerkezdenOlculur()
+        {
+            var drops = new List<int>();
+            yield return PoisonBreathAt(centerDistM: 7.5f, offAxisDeg: 0f, drops);
+            Assert.That(drops, Is.Not.Empty, "O-6.17 merkezden 7,5 m'deki oyuncu konide değil (koni 8 m olmalı)");
+            Assert.That(drops[0], Is.GreaterThanOrEqualTo(180), "O-6.17 Zehir Nefesi vuruşu canı düşürmedi");
+        }
+
+        /// <summary>O-6.17 koni 60° TAM açı (§6.3: eksenden ±30°): 24°'deki oyuncu vurulur, 36°'deki vurulmaz.</summary>
+        [UnityTest]
+        public IEnumerator O_6_17_ZehirNefesi_Koni_60_TamAci()
+        {
+            var inside = new List<int>();
+            yield return PoisonBreathAt(centerDistM: 5f, offAxisDeg: 24f, inside);
+            Assert.That(inside, Is.Not.Empty, "O-6.17 eksenden 24°'deki oyuncu vurulmadı (yarı açı 30° olmalı)");
+
+            var outside = new List<int>();
+            yield return PoisonBreathAt(centerDistM: 5f, offAxisDeg: 36f, outside);
+            Assert.That(outside, Is.Empty,
+                "O-6.17 eksenden 36°'deki oyuncu vuruldu (60° tam açı: eksenden ±30°); düşüşler: " + string.Join(", ", outside));
+        }
+
+        /// <summary>
+        /// Boss yalnız Zehir Nefesi seçer. Ön işaret başlayınca (boss o an oyuncuya döner, sonra dönmez) oyuncu boss
+        /// merkezinden <paramref name="centerDistM"/> m, bakış ekseninden <paramref name="offAxisDeg"/>° uzağa kayar;
+        /// vuruştan sonra oyuncu canındaki düşüşler toplanır.
+        /// </summary>
+        IEnumerator PoisonBreathAt(float centerDistM, float offAxisDeg, List<int> drops)
+        {
+            ParkAll();
+            // Önceki senaryonun zehri bitmeden yeni ölçüm başlamaz.
+            float poisonEnd = Time.realtimeSinceStartup + PoisonClearTimeoutSec;
+            while (_md._playerStatus.Board.TryGet(StatusKind.Poison, out _, out _, out _)
+                   && Time.realtimeSinceStartup < poisonEnd)
+                yield return null;
+            BossDirector bossDir = _md.MechanicsBossDirector;
+            Assert.That(bossDir, Is.Not.Null, "BossDirector");
+            bossDir.enabled = true;
+            var reactor = _boss.GetComponent<BossReactorController>();
+            if (reactor != null)
+                reactor.enabled = true;
+            bossDir.BindTargets(null);
+            ForceAttackKinds(bossDir, BossAttackKind.FireCone);
+
+            Vector3 bossPos = bossDir.transform.position;
+            Vector3 toCenter = Flat(-bossPos);
+            Vector3 dir = toCenter.sqrMagnitude > 1f ? toCenter.normalized : Flat(bossDir.transform.forward).normalized;
+            Place(_player, bossPos + dir * (_physics.BodyRadius(_boss) + _physics.BodyRadius(_player) + 1.2f));
+            _player.rotation = Quaternion.LookRotation(-dir);
+            Physics.SyncTransforms();
+
+            PlayerVitalsHost vitals = AuthoredPlayerVitals();
+            vitals.ApplyHeal(vitals.MaxHp);
+            bool moved = false;
+            bool struck = false;
+            void OnWindup(BossAttackKind k)
+            {
+                if (k != BossAttackKind.FireCone || moved)
+                    return;
+                moved = true;
+                Vector3 axis = Flat(bossDir.transform.forward).normalized;
+                Vector3 to = Quaternion.Euler(0f, offAxisDeg, 0f) * axis;
+                Place(_player, bossDir.transform.position + to * centerDistM);
+                _player.rotation = Quaternion.LookRotation(-to);
+                Physics.SyncTransforms();
+            }
+            void OnStruck(BossAttackKind k)
+            {
+                if (k == BossAttackKind.FireCone && moved)
+                    struck = true;
+            }
+            bossDir.AttackWindupStarted += OnWindup;
+            bossDir.AttackStruck += OnStruck;
+            try
+            {
+                int prev = vitals.Hp;
+                float end = Time.realtimeSinceStartup + BossStrikeTimeoutSec;
+                float stopAt = float.MaxValue;
+                while (Time.realtimeSinceStartup < end && Time.realtimeSinceStartup < stopAt)
+                {
+                    yield return null;
+                    if (struck && stopAt == float.MaxValue)
+                        stopAt = Time.realtimeSinceStartup + SettleAfterHitSec;
+                    int hp = vitals.Hp;
+                    if (hp < prev)
+                        drops.Add(prev - hp);
+                    prev = hp;
+                }
+            }
+            finally
+            {
+                bossDir.AttackWindupStarted -= OnWindup;
+                bossDir.AttackStruck -= OnStruck;
+            }
+            FreezeBoss();
+            Assert.That(struck, Is.True, "Zehir Nefesi vurmadı (ön işaret ya da vuruş görülmedi)");
         }
 
         [UnityTest]

@@ -12,5 +12,9 @@ namespace Dovus.Core.Status
                 return 1f;
             return accuracy;
         }
+
+        /// <summary>Y9: kare içinde etkinin gerçekten sürdüğü saniye; son kare kalan süreyi aşmaz (3 s × 20/s tam 60).</summary>
+        public static float ActiveTickSec(double worldDtMs, double remainingMs) =>
+            (float)(System.Math.Max(0, System.Math.Min(worldDtMs, remainingMs)) / Dovus.Core.Shared.Units.SecToMs);
     }
 }

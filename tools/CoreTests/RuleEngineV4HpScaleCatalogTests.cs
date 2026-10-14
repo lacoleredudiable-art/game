@@ -55,6 +55,16 @@ public sealed class RuleEngineV4HpScaleCatalogTests
     }
 
     [Test]
+    public void O_6_17_Json_ZehirNefesi_KoniVeOnIsaret()
+    {
+        RuleEngineV4SliceBossAttacks a = RuleEngineV4Catalog.FromJson(JsonText).SliceBossAttacks;
+        Assert.That(a.HasPoisonBreathConeRangeM && a.HasPoisonBreathConeAngleDeg && a.HasPoisonBreathWindupSec, Is.True);
+        Assert.That(a.PoisonBreathConeRangeM, Is.EqualTo(8f), "O-6.17 koni menzili, boss merkezinden");
+        Assert.That(a.PoisonBreathConeAngleDeg, Is.EqualTo(60f), "O-6.17 koni TAM açısı");
+        Assert.That(a.PoisonBreathWindupSec, Is.EqualTo(0.8f).Within(1e-5f), "O-6.17 ön işaret");
+    }
+
+    [Test]
     public void O_6_9_SliceBossAttacks_MissingField_HasFalse_NoDefault()
     {
         RuleEngineV4SliceBossAttacks a = RuleEngineV4SliceBossAttacks.FromJson(

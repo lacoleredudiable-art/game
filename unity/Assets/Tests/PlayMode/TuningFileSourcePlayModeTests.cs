@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using Dovus.Core.RuleEngineV4;
 using Dovus.Core.Tuning;
 using Dovus.Game.Actors;
+using Dovus.Game.Boss;
 using Dovus.Game.Cameras;
 using Dovus.Game.Composition;
 using Dovus.Game.Config;
@@ -260,6 +261,38 @@ namespace Dovus.Tests.PlayMode
             List<string> fallbacks = _logs.Where(l => l.Contains(FallbackTag)).ToList();
             Assert.That(fallbacks, Is.Empty, "gri kaydırıcı " + FallbackTag + " yazdırdı:\n" + string.Join("\n", fallbacks));
         }
+
+        /// <summary>
+        /// O-6.17, Y17: dilimde Zehir Nefesi konisi (8 m, 60° TAM açı = eksenden ±30°) ve ön işareti (0,80 s)
+        /// slice_boss_attacks'tan gelir; ayar dosyasına panelden kaydedilmiş eski değerler boss'a uygulanmaz.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator O_6_17_ZehirNefesi_KoniVeOnIsaret_DilimdeJsondan()
+        {
+            var combat = new CombatTuning();
+            combat.Boss.FireConeRadiusM = 3f;
+            combat.Boss.FireConeArcHalfAngleDeg = 10f;
+            combat.Boss.FireConeWindupMs = 400;
+            File.WriteAllText(TuningPath, FileJson(TuningSchema.Version, new GameTuning().ToPanelFields(), combat,
+                FireConeRangePath, FireConeHalfAnglePath, FireConeWindupPath));
+
+            yield return Boot();
+            Dictionary<string, (string Value, string Source)> s = SourceLines();
+            AssertJson(s, FireConeRangePath, 8f);
+            AssertJson(s, FireConeHalfAnglePath, 30f);
+            AssertJson(s, FireConeWindupPath, 800f);
+
+            FieldInfo f = typeof(BossDirector).GetField("_combat", BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.That(f, Is.Not.Null, "BossDirector._combat");
+            var live = (CombatTuning)f.GetValue(_md.MechanicsBossDirector);
+            Assert.That(live.Boss.FireConeRadiusM, Is.EqualTo(8f).Within(0.0001f), "O-6.17 boss'taki koni menzili");
+            Assert.That(live.Boss.FireConeArcHalfAngleDeg, Is.EqualTo(30f).Within(0.0001f), "O-6.17 boss'taki koni yarı açısı");
+            Assert.That(live.Boss.FireConeWindupMs, Is.EqualTo(800), "O-6.17 boss'taki ön işaret");
+        }
+
+        const string FireConeRangePath = "combat.Boss.FireConeRadiusM";
+        const string FireConeHalfAnglePath = "combat.Boss.FireConeArcHalfAngleDeg";
+        const string FireConeWindupPath = "combat.Boss.FireConeWindupMs";
 
         // ---- kurulum ------------------------------------------------------------------------
 

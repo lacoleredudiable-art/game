@@ -231,9 +231,8 @@ namespace Dovus.Core.RuleEngineV4
                     break;
                 case 4:
                 {
+                    // K17: Yoğun Koruma süresi kendisi yarı süredir (0,45 s); YogunDurationMult ayrıca girmez.
                     float dur = powerMult > 1f ? g.KorumaYogunBlockSec : g.KorumaDefaultBlockSec;
-                    if (powerMult > 1f)
-                        dur *= g.YogunDurationMult;
                     commands.Add(new DurusAcCommand { DurationSec = dur, BlockRatio = 1f });
                     break;
                 }
