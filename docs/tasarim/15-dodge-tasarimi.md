@@ -30,7 +30,8 @@ Bundan çıkan üç kural:
 1. **Birinci basış = zıplama.** Hemen çıkar, kısa bir hasarsızlık penceresi açar (`06` §5.1, O-4.4).
 2. **İkinci basış = takla.** Birinci hareket sürerken basılırsa hareketi uzatır, yönü değiştirebilir.
 3. **Pencereler birleşir.** İkinci basış birinci pencere kapanmadan gelirse iki pencere tek, kesintisiz ve
-   daha uzun bir hasarsızlık penceresi olur. Arada boşluk kalmaz.
+   daha uzun bir hasarsızlık penceresi olur. Zincirin içinde iki pencere arasında boşluk kalmaz.
+   (Birleşme penceresi kaçınca ne olduğu §3.2'de: sıradan yeni dodge, zincir değil.)
 
 Tasarımdaki işlevi: boss saldırıları **süreleriyle** sınıflanabilir. Kısa saldırıya tek dodge yeter; uzun
 saldırı zinciri ister, yani iki hakkın ikisini birden harcatır. "Doğru yerde doğru dodge" böylece iki
@@ -55,9 +56,10 @@ kararlı olur: ne zaman başlayacağım, ve bu saldırı tek mi zincir mi istiyo
   - 1 hak daha harcar. Yani zincir iki hakkı birden yer.
   - Hasarsızlık penceresi kapanmadan uzar (§3.3).
 - **[Ö] Birleşme penceresi kapandıktan sonra** (birinci hareket hâlâ süzülürken) gelen basış zincir değildir:
-  süzülmeyi kesen **yeni bir tek dodge** olur (kendi kısa penceresiyle, takla yok). Bu durumda iki pencere
-  arasında **hasar alınabilen bir boşluk** kalır. Oyuncu bunu parlamanın sönüp yeniden yanmasından görür (§5).
-  Gerekçe: girdi yutulmaz, ama zincirin ödülü zamanında basana gider.
+  süzülmeyi kesen **sıradan yeni bir tek dodge** olur (kendi `T_tek` penceresi, takla yok, 1 hak). Özel bir
+  kural yoktur; zincir sayılmaz. Birinci pencerenin bittiği an ile bu basış arasında korunma yoktur, ama bu
+  bilinçli bir "boşluk mekaniği" değildir, yalnız sıradan dodge davranışıdır. Birleşme penceresi hareketle
+  (0,65 s) eşitlenmez; `T_tek` ayrı ayarlanır.
 - Havada en çok 1 takla; üçüncü basış yok sayılır (`06` §5.1). Hak kalmadıysa ikinci basış yok sayılır ve
   boş-hak geri bildirimi verir (§5).
 
@@ -80,7 +82,7 @@ kararlı olur: ne zaman başlayacağım, ve bu saldırı tek mi zincir mi istiyo
 | Zincir penceresi `T_zincir` (birinci basıştan) | 0,52 s (O-4.6, takla) | **1,3 s** (Mustafa örneği) | ölçüm, dengelemede |
 | Birleşme penceresi | O-4.5'te "ilk basıştan sonra 0,2 s" | **`= T_tek`** (0,5 s) | kâğıt [Ö] |
 | Tek dodge mesafe / süre | 3,8 m; patlama 0,25 s + süzülme 0,40 s (O-4.4, O-4.4a) | aynı | ölçüm |
-| Zincir mesafe | ×1,6 → 6,1 m (O-4.5); `06` H-3 tavanı ×1,5 | **×1,6** (büyük olan) | ölçüm, dengelemede |
+| Zincir mesafe | ×1,6 → 6,1 m (O-4.5); `06` H-3 tavanı ×1,5 | **×1,6** (kesin test değeri) | ölçüm, dengelemede |
 | Hak / dolum | 2 hak, 6 s (O-4.7) | aynı | ölçüm |
 
 Test değerleri `09` [K] 12 Ekim'deki 0,26 / 0,52 s'nin yerine geçmez; o satır "test değeri 0,5 / 1,3 s,
@@ -119,7 +121,7 @@ kesin değer dengelemede" diye güncellenir.
 
 - **Parlama (O-4.6a):** hasarsızlık penceresi boyunca karakter kenarında kor turuncusu parlama.
   **[Ö] Zincirde parlama sönmeden sürer.** Birleşmenin tek kanıtı budur: oyuncu "tuttu" diye görür.
-  Birleşme penceresi kaçmışsa (§3.2) parlama söner ve yeniden yanar; boşluk göze görünür.
+  Birleşme penceresi kaçmışsa (§3.2) parlama söner, yeni dodge ile yeniden yanar.
 - **Hareket:** birinci basış yay çizen zıplama, ikinci basış havada takla (`06` §5). Ayak zemin altına inmez
   (O-1.23).
 - **İz:** yalnız süzülme fazında, oyuncunun arkasında (O-4.10).
@@ -152,13 +154,13 @@ kesin değer dengelemede" diye güncellenir.
 
 | Kod | Soru | Seçenekler | Öneri |
 |---|---|---|---|
-| **D-4** | Birleşme penceresi | `= T_tek` (öneri) · O-4.5'teki sabit 0,2 s | `= T_tek`: pencere varken bas, birleşir |
-| **D-5** | `13` §8 "dodge coyote time" ne demek? | basış hasar karesinden biraz sonra gelse de say · kaldır | tanımlanmalı; mükemmel dodge'a dönmemeli |
-| **D-6** | Zincirin ikinci basışı Güdümlü kilidinde, silah değişiminde, iniş anında kabul edilir mi? | — | birinci basışla aynı kurallar |
 | **D-7** | Boss, hak tüketmek için iki "uzun" saldırıyı 6 s içinde arka arkaya atabilir mi? | evet (hak yönetimi sınavı) · hayır (aralık ≥ dolum süresi) | boss tasarım oturumunda |
 
 Kapananlar (14 Ekim): D-1 sayılar → test değeri 0,5 / 1,3 s, kesin değer dengelemede · D-2 → [K] Model A ·
-D-3 mesafe → test değeri ×1,6, kesin değer dengelemede.
+D-3 mesafe → test değeri ×1,6, kesin değer dengelemede · D-5 coyote time → **kaldırıldı**: hasar karesinden
+sonra gelen basış korumaz (`13` §3 [RED] mükemmel dodge'un sonucu; `13` §8'deki "dodge coyote time" ifadesi
+silinir) · D-6 → ikinci basış birinci basışla aynı kurallara uyar (Güdümlü kilidi, iniş; silah değişiminde
+zaten dodge yok) · D-4 birleşme penceresi `= T_tek`; sonrasında basış sıradan yeni dodge (§3.2).
 
 ## 8. Sınır: Koruma parry'si (ayrı konu)
 
@@ -173,12 +175,21 @@ D-3 mesafe → test değeri ×1,6, kesin değer dengelemede.
 
 - O-4.5: "0,2 s içinde" ve "toplam süre ×1,4 (0,35 s)" iki fazlı dodge'la (O-4.4a, 0,65 s) uyuşmuyor.
 - O-4.6 / `09` [K]: 0,26 / 0,52 s → test değeri 0,5 / 1,3 s, kesin değer dengelemede.
-- `06` §5.1 H-3 ×1,5 tavanı dodge takla için ×1,6 test değeriyle çelişir; dengelemede biri seçilir.
+- `06` §5.1 H-3 ×1,5 tavanı dodge taklasına uygulanmaz; dodge taklası ×1,6 kullanır (Mustafa, 14 Ekim: test
+  değerleri cömert). `06` satırı ayrı belge PR'ında güncellenir.
 - `13` §5 telegraf 0,8–1,5 s; saldırı etkin süresi ise ≤ `T_zincir` olmalı (iki farklı ölçü, karıştırılmasın).
+- **Belge kuralı:** dodge PR'ı yalnız bu belgeyi ekler; eski belgelerdeki (`10` O-4.5, O-4.6, O-4.8, O-10.4,
+  `09`, `06`, `13` §8 coyote) çelişen satırlara dokunmaz. Bu liste çelişkilerin kaydıdır; öncelik bu belgededir.
+  Eski satırlar ayrı bir belge PR'ında güncellenir.
 - `plan/asama-1-dodge.md` PR 1.2 eski O-4.5'e göre yazılmış; bu belgeye göre güncellenmeli.
 - O-4.8, O-10.4 (kusursuz dodge titreşimi), O-10.5 hâlâ belgede; [RED] satırına dönecek (A-13.13).
 
 ## 10. Kodlayan ajana yön
+
+**Bu belge kodlamak için yeterlidir; tasarım sorusunu kodlayan ajan Mustafa'ya sormaz.** Belgede cevabı
+olmayan bir durum çıkarsa en yakın kuralı uygular, PR'da "belgede yok, şunu varsaydım" diye yazar. [Ö] etiketli
+maddeler (5a–5e: anında çıkış, sönmeyen parlama, iki hak dilimi, boş hak sarsıntısı, `T_zincir ≥ 2 × T_tek`)
+kodlanacak varsayılandır; telefonda beğenilmezse değişir.
 
 - Okuma sırası: bu belge → `10` O-4.x → `06` §5 → `kural-motoru-v4.json` / `DodgeTuning`.
 - Sayı uydurma: §3.4'teki test değerleri kullanılır, tek yerden (tuning) okunur; PR'da "test değeri,
@@ -186,7 +197,8 @@ D-3 mesafe → test değeri ×1,6, kesin değer dengelemede.
   masası bunları telefonda değiştirecek).
 - Testler gerçek yoldan: sahte dodge dokunuşu → hasar alıp almadığı, konum, oynayan klip. Önerilen adlar:
   `O_4_5_Zincir_PencereBirlesir` (birleşme penceresinde ikinci basış → `T_zincir` boyunca boss vuruşu hasar
-  vermez), `O_4_5_GecIkinciBasis_BoslukKalir` (pencere kapandıktan sonra basış → arada vuruş hasar verir),
+  vermez), `O_4_5_GecIkinciBasis_SiradanDodge` (birleşme penceresi kapandıktan sonra basış → takla oynamaz, yeni
+  `T_tek` penceresi basış anında açılır, 1 hak harcanır, zincir sayılmaz),
   `O_4_7_Zincir_IkiHakYer`, `O_4_6a_Parlama_ZincirdeSonmez`.
 - Yapılmayacak: mükemmel dodge'un herhangi bir parçası; birinci basışı çift basış için bekletmek; ikinci gizli
   konum yazarı.
@@ -195,5 +207,5 @@ D-3 mesafe → test değeri ×1,6, kesin değer dengelemede.
 - Dodge'a bir bas: yay çizen zıplama, kısa turuncu parlama.
 - Zıplarken tekrar bas: havada takla, daha uzağa gider, turuncu parlama hiç sönmeden sürer, iki hak birden
   boşalır.
-- Geç basarsan: parlama söner ve yeniden yanar; arada vurulabilirsin.
+- Parlama bittikten sonra basarsan: takla yok, sıradan yeni bir dodge çıkar (yeni kısa parlama, 1 hak).
 - 1,2 s süren bir boss saldırısı: tek dodge ile (0,5 s) vurulursun, zincirle (1,3 s) hasar almadan geçersin.
