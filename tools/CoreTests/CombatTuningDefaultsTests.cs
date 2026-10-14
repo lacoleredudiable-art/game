@@ -33,7 +33,7 @@ public class CombatTuningDefaultsTests
             Assert.That(t.Dodge.PerfectNextHitMult, Is.EqualTo(1.3f));
             Assert.That(t.Dodge.PerfectChargeRefund, Is.EqualTo(1f));
             Assert.That(t.Dodge.CurveExp, Is.EqualTo(3.6f));
-            Assert.That(t.Dodge.GlideTailMs, Is.EqualTo(120));
+            Assert.That(t.Dodge.GlideTailMs, Is.EqualTo(400));
         });
 
         // Merkez düğmenin sürükleme eşiği (O1: süre eşiği yok)
