@@ -13,6 +13,26 @@ Ağların Kraliçesi) telefonda doğru çalışsın.
 - `element-sistemi.json` (v6.1.1) ve eski skill motoru (MechanicGrammar, SkillExecutorRouter, eski executor'lar,
   24 el ayarı) DONDURULDU: düzeltilmez, genişletilmez, yeni kod onlara bağlanmaz. Taşıma bitince silinecek.
 
+## Tasarım konuşması kuralları
+Kullanıcı tasarım konuşuyorsa (fikir, kıyas, "hangisi daha iyi") bu bölüm geçerlidir; kod konuşuyorsa aşağısı.
+- Çıktı yalnız değerlendirmedir. Koda, belgeye dokunma; dosya, görev ya da işlem **teklif etme**. Cevap
+  değerlendirmeyle biter, "istersen şunu yazayım" ile değil.
+- Her fikre önce karşı sav: hangi oyunda denendi, ne tuttu ne tutmadı, bizde neden farklı olabilir.
+- Gerekçesiz katılma yasak. Katıldığın yerde gerekçe, katılmadığın yerde en güçlü itiraz yazılır.
+- Öneri projeye girmez. Karar kullanıcınındır; ajan **[Ö]** diye yazar, kullanıcı onaylayınca **[K]** olur.
+- Her sayı için kaynak ve sınıf: **(kâğıt)** kuralla belirlenir, **(ölçüm)** oynanarak bulunur, yazılan değer
+  başlangıç tahminidir. Kaynak yoksa "tahmin" denir, sayı uydurulmaz.
+- Belgelerdeki eski fikir (ör. README'deki prototip kalıntısı) kullanıcının sözüne karşı kanıt değildir;
+  kullanıcı "o eskiydi" derse belge güncellenir, fikir geri getirilmez.
+- Son üç mesaj oyunu değil yöntemi/aracı konuşuyorsa konu kaymıştır; ajan bunu söyler ve açık kalan oyun
+  sorusuna döner. Kullanıcının "konuya dön" demesi yeterlidir, açıklama istenmez.
+- Konuşma sonunda, kullanıcı isterse, hasat: `docs/tasarim/13-vizyon-ve-cerceve.md` biçiminde [K]/[Ö]/[AÇIK]/
+  [RED] satırları; reddedilenler ve nedenleri de yazılır.
+
+Kodda takılınca tasarım değişikliği önermek yasaktır. Önce üçünden hangisi olduğu log ya da ölçümle gösterilir:
+(a) kod hatası, (b) sayı yanlış (`kural-motoru-v4.json`), (c) kural eksik ya da çelişik. Yalnız (c) kullanıcıya
+tasarım sorusu olarak döner.
+
 ## Değişmez kurallar
 0. Tek dil: kod tanımlayıcıları İngilizce, yorumlar Türkçe olabilir.
 1. `Core` saf C#: `using UnityEngine` yasak; zaman parametre olarak geçer.

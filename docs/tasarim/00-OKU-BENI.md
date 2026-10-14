@@ -20,6 +20,10 @@ kalan iş: `12-kusur-envanteri.md`.
 7. `06-animasyon-kurallari.md`, `07-efekt-motoru.md` — görünüm (oyun sonucunu değiştirmez).
 8. `08-acik-sorular.md` — karar verilmemiş maddeler (bunlara göre kod yazılmaz; sorulur).
 
+Sıralamanın dışında, **üstünde**: `13-vizyon-ve-cerceve.md` — kim oynar, ne kadar, zorluk, yetenek katmanı,
+zaman ekonomisi; [K]/[Ö]/[AÇIK]/[RED] etiketli. Yalnız **[K]** satırları karardır ve yukarıdaki sırada 1 ile aynı
+güçtedir; **[Ö]** satırları öneridir, koda girmez. Bu belgedeki hiçbir madde dilime kendiliğinden girmez.
+
 Sayılar `unity/Assets/Resources/RuleEngineV4/kural-motoru-v4.json` içindedir; belgedeki sayılar başlangıç
 değeridir, JSON'daki güncel değer geçerlidir.
 
