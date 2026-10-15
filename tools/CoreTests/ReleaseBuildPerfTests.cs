@@ -58,7 +58,12 @@ public class ReleaseBuildPerfTests
         string debug = Game("Composition/Builders/DebugToolsBuilder.cs");
         string hex = Game("Composition/Builders/HexagonInputBuilder.cs");
         Assert.That(Regex.Matches(hud, @"if \(DebugConfig\.Enabled\)\s*\{\s*var frameHud").Count, Is.EqualTo(1));
-        Assert.That(Regex.Matches(hud, @"if \(DebugConfig\.Enabled\)\s*\{\s*var practice").Count, Is.EqualTo(1));
+        // Dodge denemesi BossDirector kurulduktan sonra bağlanır: DebugToolsBuilder.BuildDebugTools içinde,
+        // o da yalnız #if + DebugConfig.Enabled kapısı arkasında çağrılır (aşağıdaki iki satır).
+        Assert.That(hud, Does.Not.Contain("DodgePracticeController"));
+        Assert.That(Regex.Matches(debug, @"static void BuildDebugTools\(WorldContext ctx\)\s*\{[^}]*var practice").Count, Is.EqualTo(1));
+        Assert.That(Regex.Matches(debug, @"#if UNITY_EDITOR \|\| DOVUS_DEBUG\s*if \(DebugConfig\.Enabled\)\s*\{\s*BuildDebugTools\(ctx\);").Count, Is.EqualTo(1));
+        Assert.That(Regex.Matches(debug, @"#if UNITY_EDITOR \|\| DOVUS_DEBUG\s*static void BuildDebugTools").Count, Is.EqualTo(1));
         Assert.That(debug, Does.Contain("if (DebugConfig.Enabled)"));
         Assert.That(debug, Does.Contain("var v6Panel"));
         Assert.That(hex, Does.Contain("DebugConfig.Enabled && _tuning.Hud.ShowSentenceDebugHud"));
