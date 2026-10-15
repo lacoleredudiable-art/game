@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Actors;
 using Dovus.Game.Cameras;
+using Dovus.Game.Casting;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
