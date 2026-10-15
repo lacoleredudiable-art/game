@@ -179,6 +179,7 @@ namespace Dovus.Game.Actors
 
         Transform _reactorOwner;
         BossReactorController _reactorCache;
+        bool _bossRadiusFallbackLogged;
 
         Vector3 KeepBossEdge(Vector3 pos)
         {
@@ -195,6 +196,12 @@ namespace Dovus.Game.Actors
             BossReactorController reactor = _reactorCache;
             if (reactor != null && reactor.BodyRadiusM > DodgeMotionControllerDefaults.MinBodyRadiusM)
                 bossR = reactor.BodyRadiusM;
+            else if (Dovus.Core.RuleEngineV4.RuleEngineV4Feature.Enabled && !_bossRadiusFallbackLogged)
+            {
+                _bossRadiusFallbackLogged = true;
+                Debug.LogError("[V4-FALLBACK] DodgeMotionController.KeepBossEdge: boss gövde yarıçapı okunamadı; "
+                    + $"yedek {CombatFallbacks.BossBodyRadiusFallbackM} m kullanıldı (world_physics.body_radius_boss_m)");
+            }
             float gap = EdgeGapM;
             float x = pos.x;
             float z = pos.z;
