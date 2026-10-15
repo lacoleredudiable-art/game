@@ -7,13 +7,15 @@ namespace IntegrationTests;
 public class GameTuningHexagonXMigrationTests
 {
     // v22 serileşmiş kopya yeni altıgen X'ini almazsa telefonda kayma görünmez.
-    [Test]
-    public void OldSerializedCopy_GetsNewHexagonCenterX()
+    // 23: ışık ve arayüz taslakları ayrı ayrı 23'e çıkmıştı; birleşik sürüm 24 ikisini de yeniden uygular.
+    [TestCase(22)]
+    [TestCase(23)]
+    public void OldSerializedCopy_GetsNewHexagonCenterX(int version)
     {
         var fresh = new GameTuning();
         fresh.EnsureRuntimeDefaults();
         var old = new GameTuning();
-        old.TuningVersion = 22;
+        old.TuningVersion = version;
         old.Input.HexagonCenterXNorm = 0.78f;
 
         old.EnsureRuntimeDefaults();

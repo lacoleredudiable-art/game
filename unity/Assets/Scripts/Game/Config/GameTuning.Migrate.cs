@@ -293,7 +293,8 @@ namespace Dovus.Game.Config
             Visuals.VfxTexHit = fresh.Visuals.VfxTexHit;
             Visuals.VfxTexInk = fresh.Visuals.VfxTexInk;
 
-            // v23: altıgen + dodge biraz sağa (0,78 → 0,81); arayüz sadeleştirme.
+            // v23–24 (tek adım, iki taslak PR birleşti): LED gibi beyaz ışık (teşhis 5) yukarıdaki
+            // Arena kopyasıyla gelir; altıgen + dodge biraz sağa (0,78 → 0,81), arayüz sadeleştirme.
             Input.HexagonCenterXNorm = fresh.Input.HexagonCenterXNorm;
 
             TuningVersion = CurrentVersion;
