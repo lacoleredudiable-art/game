@@ -3,6 +3,7 @@ using Dovus.Core.Element;
 using Dovus.Core.Grammar;
 using Dovus.Core.Manifestation;
 using Dovus.Core.Motion;
+using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Skills;
 using Dovus.Game.Weapons;
 using Dovus.Game.Assets;
@@ -103,6 +104,12 @@ namespace Dovus.Game.Actors
                 return;
             TryTrigger(clip.Trigger);
             bool played = PlayAction(clip.State);
+            if (!played && RuleEngineV4Feature.Enabled)
+            {
+                // Dilimde yedek klip oynatılmaz (B3): yanlış klip yerine eksik klip görünür ve log'a düşer.
+                Debug.LogError($"[V4-FALLBACK] hareket klibi: Animator state yok '{clip.State}' (anahtar={clip.Key}); yedek klip oynatılmadı");
+                return;
+            }
             if (!played)
             {
                 DesignWarnings.Once(
