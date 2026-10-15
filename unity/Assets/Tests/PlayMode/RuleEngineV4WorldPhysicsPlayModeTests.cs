@@ -50,6 +50,18 @@ namespace Dovus.Tests.PlayMode
         SliceLightMinionHost[] _minions;
         Transform[] _allies;
 
+        /// <summary>
+        /// Dev yapısındaki dodge denemesi (asama/1-dodge, DodgePracticeController) boss'u dondurur ve kendi alanıyla
+        /// vurur; kural testleri gerçek boss davranışını ölçer, deneme kapatılır ve donma kalkar.
+        /// </summary>
+        static void DisableDodgePractice()
+        {
+            foreach (var practice in Object.FindObjectsByType<Dovus.Game.DevTools.DodgePracticeController>(FindObjectsSortMode.None))
+                practice.enabled = false;
+            foreach (BossDirector director in Object.FindObjectsByType<BossDirector>(FindObjectsSortMode.None))
+                director.PracticeFrozen = false;
+        }
+
         [UnitySetUp]
         public IEnumerator SetUp()
         {
@@ -70,6 +82,7 @@ namespace Dovus.Tests.PlayMode
             boot.SetActive(true);
             if (!IsGozcuTest())
                 DisableGozcu();
+            DisableDodgePractice();
             yield return new WaitForSecondsRealtime(BootSettleSec);
 
             _md = Object.FindAnyObjectByType<ManifestationDirector>();
